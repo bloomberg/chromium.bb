@@ -18,10 +18,6 @@ namespace content {
 class MockResourceContext;
 }
 
-namespace extensions {
-class ExtensionPrefs;
-}
-
 namespace history {
 class TopSites;
 }
@@ -45,8 +41,6 @@ class BrowserContextDependencyManager;
 class ExtensionSpecialStoragePolicy;
 class HostContentSettingsMap;
 class PrefServiceSyncable;
-class ProfileSyncService;
-class TemplateURLService;
 class TestingPrefServiceSyncable;
 
 class TestingProfile : public Profile {
@@ -309,17 +303,9 @@ class TestingProfile : public Profile {
       content::ProtocolHandlerScopedVector protocol_interceptors) OVERRIDE;
   virtual net::SSLConfigService* GetSSLConfigService() OVERRIDE;
   virtual HostContentSettingsMap* GetHostContentSettingsMap() OVERRIDE;
-  virtual std::wstring GetName();
-  virtual void SetName(const std::wstring& name) {}
-  virtual std::wstring GetID();
-  virtual void SetID(const std::wstring& id);
   void set_last_session_exited_cleanly(bool value) {
     last_session_exited_cleanly_ = value;
   }
-  virtual void MergeResourceString(int message_id,
-                                   std::wstring* output_string) {}
-  virtual void MergeResourceInteger(int message_id, int* output_value) {}
-  virtual void MergeResourceBoolean(int message_id, bool* output_value) {}
   virtual bool IsSameProfile(Profile *p) OVERRIDE;
   virtual base::Time GetStartTime() const OVERRIDE;
   virtual base::FilePath last_selected_directory() OVERRIDE;
@@ -386,8 +372,6 @@ class TestingProfile : public Profile {
   // Internally, this is a TestURLRequestContextGetter that creates a dummy
   // request context. Currently, only the CookieMonster is hooked up.
   scoped_refptr<net::URLRequestContextGetter> extensions_request_context_;
-
-  std::wstring id_;
 
   bool incognito_;
   bool force_incognito_;

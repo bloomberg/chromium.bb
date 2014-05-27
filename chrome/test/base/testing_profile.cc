@@ -260,7 +260,6 @@ TestingProfile::TestingProfile(
       resource_context_(NULL),
       delegate_(delegate),
       policy_service_(policy_service.release()) {
-
   // If no profile path was supplied, create one.
   if (profile_path_.empty()) {
     CreateTempProfileDir();
@@ -830,18 +829,6 @@ TestingProfile::GetGeolocationPermissionContext() {
 
 content::BrowserPluginGuestManager* TestingProfile::GetGuestManager() {
   return GuestViewManager::FromBrowserContext(this);
-}
-
-std::wstring TestingProfile::GetName() {
-  return std::wstring();
-}
-
-std::wstring TestingProfile::GetID() {
-  return id_;
-}
-
-void TestingProfile::SetID(const std::wstring& id) {
-  id_ = id;
 }
 
 bool TestingProfile::IsSameProfile(Profile *p) {
