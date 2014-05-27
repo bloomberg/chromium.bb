@@ -31,6 +31,12 @@ class GL_EXPORT GLSurfaceOzoneEGL : public NativeViewGLSurfaceEGL {
 
     return NativeViewGLSurfaceEGL::Resize(size);
   }
+  virtual bool SwapBuffers() OVERRIDE {
+    if (!NativeViewGLSurfaceEGL::SwapBuffers())
+      return false;
+
+    return ozone_surface_->OnSwapBuffers();
+  }
 
  private:
   virtual ~GLSurfaceOzoneEGL() {

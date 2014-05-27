@@ -59,6 +59,8 @@ class SurfaceOzoneEgltest : public gfx::SurfaceOzoneEGL {
 
   virtual intptr_t GetNativeWindow() OVERRIDE { return native_window_; }
 
+  virtual bool OnSwapBuffers() OVERRIDE { return true; }
+
   virtual bool ResizeNativeWindow(const gfx::Size& viewport_size) OVERRIDE {
     return true;
   }

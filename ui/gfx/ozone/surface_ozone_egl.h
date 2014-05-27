@@ -30,6 +30,10 @@ class GFX_EXPORT SurfaceOzoneEGL {
   // size.
   virtual bool ResizeNativeWindow(const gfx::Size& viewport_size) = 0;
 
+  // Called after we swap buffers. This is usually a no-op but can
+  // be used to present the new front buffer if the platform requires this.
+  virtual bool OnSwapBuffers() = 0;
+
   // Returns a gfx::VsyncProvider for this surface. Note that this may be
   // called after we have entered the sandbox so if there are operations (e.g.
   // opening a file descriptor providing vsync events) that must be done
