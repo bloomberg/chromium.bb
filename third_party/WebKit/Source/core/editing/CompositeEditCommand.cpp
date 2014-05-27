@@ -933,6 +933,9 @@ PassRefPtr<Node> CompositeEditCommand::moveParagraphContentsToNewBlockIfNecessar
         }
     }
 
+    if (visibleParagraphEnd.isNull())
+        return nullptr;
+
     RefPtr<Node> newBlock = insertNewDefaultParagraphElementAt(upstreamStart);
 
     bool endWasBr = isHTMLBRElement(*visibleParagraphEnd.deepEquivalent().deprecatedNode());
