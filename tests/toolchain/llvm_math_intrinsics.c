@@ -30,15 +30,13 @@
 
 /* Volatile to prevent library-call constant folding optimizations. */
 volatile float f32[] =  {NAN, -INFINITY, -HUGE_VALF,
-                         /* e^(-M_PI) may be broken on mips QEMU. */
-                         -0.5, -0.0, 0.0,
-                         5.0, 16.0, 10.0, M_PI, M_PI_2, M_E,
+                         -M_E, -M_PI_2, -M_PI, -16.0, -0.5, -0.0,
+                         0.0, 5.0, 16.0, 10.0, M_PI, M_PI_2, M_E,
                          HUGE_VALF, INFINITY };
 volatile double f64[] = {NAN, -INFINITY, -HUGE_VAL,
-                         /* e^(-M_PI) may be broken on mips QEMU. */
-                         -0.5, -0.0, 0.0,
-                         5.0, 16.0, 10.0, M_PI, M_PI_2, M_E,
-                         HUGE_VAL, INFINITY };
+                         -M_E, -M_PI_2, -M_PI, -16.0, -0.5, -0.0,
+                         0.0, 5.0, 16.0, 10.0, M_PI, M_PI_2, M_E,
+                         HUGE_VAL, INFINITY};
 
 volatile float base32 = 2.0;
 volatile float neg_base32 = -2.0;
@@ -73,15 +71,6 @@ float llvm_intrinsic_sqrtf(float) __asm__("llvm.sqrt.f32");
 
 int main(int argc, char* argv[]) {
   int i;
-
-  /*
-   * Sqrt can end up converting SNaN to infinity under MIPS QEMU 0.12.
-   * For now, use 0.0f / 0.0f to work around that.
-   * http://code.google.com/p/nativeclient/issues/detail?id=3533
-   *
-   * Replace the NAN entries.
-   */
-  volatile float zero = 0.0f; f32[0] = zero / zero; f64[0] = zero / zero;
 
   for (i = 0; i < ARRAY_SIZE_UNSAFE(f32); ++i) {
     printf("\nf32 value is: %.6f\n",  f32[i]);
