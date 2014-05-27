@@ -354,11 +354,7 @@ void ProfileImpl::RegisterProfilePrefs(
 #endif
   registry->RegisterBooleanPref(
       prefs::kPrintPreviewDisabled,
-#if defined(GOOGLE_CHROME_BUILD)
       false,
-#else
-      true,
-#endif
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterBooleanPref(
       prefs::kForceEphemeralProfiles,
