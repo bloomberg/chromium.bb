@@ -78,9 +78,6 @@ public:
     template <typename CB, typename CBArg>
     static void scheduleCallback(ExecutionContext*, PassOwnPtr<CB>, const CBArg&);
 
-    template <typename CB>
-    static void scheduleCallback(ExecutionContext*, PassOwnPtr<CB>);
-
     template <typename CB, typename CBArg>
     void scheduleCallback(PassOwnPtr<CB> callback, PassRefPtrWillBeRawPtr<CBArg> callbackArg)
     {
@@ -135,23 +132,6 @@ private:
         CBArg m_callbackArg;
     };
 
-    template <typename CB>
-    class DispatchCallbackNoArgTask FINAL : public ExecutionContextTask {
-    public:
-        DispatchCallbackNoArgTask(PassOwnPtr<CB> callback)
-            : m_callback(callback)
-        {
-        }
-
-        virtual void performTask(ExecutionContext*) OVERRIDE
-        {
-            m_callback->handleEvent();
-        }
-
-    private:
-        OwnPtr<CB> m_callback;
-    };
-
     int m_numberOfPendingCallbacks;
 };
 
@@ -177,14 +157,6 @@ void DOMFileSystem::scheduleCallback(ExecutionContext* executionContext, PassOwn
     ASSERT(executionContext->isContextThread());
     if (callback)
         executionContext->postTask(adoptPtr(new DispatchCallbackNonPtrArgTask<CB, CBArg>(callback, arg)));
-}
-
-template <typename CB>
-void DOMFileSystem::scheduleCallback(ExecutionContext* executionContext, PassOwnPtr<CB> callback)
-{
-    ASSERT(executionContext->isContextThread());
-    if (callback)
-        executionContext->postTask(adoptPtr(new DispatchCallbackNoArgTask<CB>(callback)));
 }
 
 } // namespace
