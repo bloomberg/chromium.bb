@@ -31,6 +31,7 @@ SessionManagerOperation::SessionManagerOperation(const Callback& callback)
       weak_factory_(this),
       callback_(callback),
       force_key_load_(false),
+      slot_(NULL),
       is_loading_(false) {}
 
 SessionManagerOperation::~SessionManagerOperation() {}
