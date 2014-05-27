@@ -1052,8 +1052,7 @@ class TestPickling(cros_test_lib.TempDirTestCase):
     """Verify compatibility of current git HEAD against itself."""
     self._CheckTestData(self._GetTestData())
 
-  # TODO(dgarrett): Re-enable after chumping in big merge.
-  def notestToTCompatibility(self):
+  def testToTCompatibility(self):
     """Validate that ToT can use our pickles, and that we can use ToT's data."""
     repo = os.path.join(self.tempdir, 'chromite')
     reference = os.path.abspath(__file__)
