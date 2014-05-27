@@ -13,19 +13,16 @@
 
   'variables': {
     # Interface IDL files / Dependency IDL files
-    # Interface IDL files: generate individual bindings (includes testing)
-    'interface_idl_files': [
-      '<@(static_interface_idl_files)',
-      '<@(generated_interface_idl_files)',
-    ],
     # Dependency IDL files: don't generate individual bindings, but do process
     # in IDL dependency computation, and count as build dependencies
     'dependency_idl_files': [
       '<@(static_dependency_idl_files)',
       '<@(generated_dependency_idl_files)',
     ],
+
     # Main interface IDL files (excluding dependencies and testing)
     # are included as properties on global objects, and in aggregate bindings
+    # FIXME: split into core vs. modules http://crbug.com/358074
     'main_interface_idl_files': [
       '<@(core_idl_files)',
       '<@(modules_idl_files)',
@@ -42,6 +39,7 @@
     # line), but generated files must be passed at the command line, as their
     # paths are not fixed at GYP time, when the temporary file is generated,
     # because their paths depend on the build directory, which varies.
+    # FIXME: split into core vs. modules http://crbug.com/358074
     'static_idl_files': [
       '<@(static_interface_idl_files)',
       '<@(static_dependency_idl_files)',

@@ -216,8 +216,9 @@
         'injected_canvas_script_source',
         'injected_script_source',
         'debugger_script_source',
-        # FIXME: should be bindings_core only http://crbug.com/358074
-        '../bindings/generated.gyp:bindings_generated',
+        '../bindings/core/v8/generated.gyp:bindings_core_generated',
+        # FIXME: don't depend on bindings_modules http://crbug.com/358074
+        '../bindings/modules/v8/generated.gyp:bindings_modules_generated',
         '../platform/platform_generated.gyp:make_platform_generated',
         '../wtf/wtf.gyp:wtf',
         '<(DEPTH)/gin/gin.gyp:gin',
@@ -363,8 +364,6 @@
         'inspector_protocol_sources',
         'inspector_instrumentation_sources',
         'core_generated.gyp:make_core_generated',
-        # FIXME: split into core and modules http://crbug.com/358074
-        '../bindings/generated.gyp:bindings_generated',
         '../bindings/core/v8/generated.gyp:bindings_core_generated',
         # FIXME: don't depend on bindings_modules http://crbug.com/358074
         '../bindings/modules/v8/generated.gyp:bindings_modules_generated',

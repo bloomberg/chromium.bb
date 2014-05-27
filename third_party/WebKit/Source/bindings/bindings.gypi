@@ -7,6 +7,7 @@
         'v8/v8.gypi',
     ],
     'variables': {
+        'bindings_dir': '.',
         'blink_output_dir': '<(SHARED_INTERMEDIATE_DIR)/blink',
         'bindings_output_dir': '<(SHARED_INTERMEDIATE_DIR)/blink/bindings',
         'bindings_unittest_files': [
