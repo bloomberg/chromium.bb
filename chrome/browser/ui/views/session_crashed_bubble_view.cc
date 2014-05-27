@@ -8,6 +8,8 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/command_line.h"
+#include "base/metrics/field_trial.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -20,6 +22,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/installer/util/google_update_settings.h"
@@ -61,6 +64,10 @@ const int kMarginHeight = kMarginWidth;
 const SkColor kLightGrayBackgroundColor = 0xFFF0F0F0;
 const SkColor kWhiteBackgroundColor = 0xFFFFFFFF;
 
+// The Finch study name and group name that enables session crashed bubble UI.
+const char kEnableBubbleUIFinchName[] = "EnableSessionCrashedBubbleUI";
+const char kEnableBubbleUIGroupEnabled[] = "Enabled";
+
 bool ShouldOfferMetricsReporting() {
 // Stats collection only applies to Google Chrome builds.
 #if defined(GOOGLE_CHROME_BUILD)
@@ -72,6 +79,18 @@ bool ShouldOfferMetricsReporting() {
 #else
   return false;
 #endif  // defined(GOOGLE_CHROME_BUILD)
+}
+
+// Whether or not the bubble UI should be used.
+bool IsBubbleUIEnabled() {
+  const std::string group_name = base::FieldTrialList::FindFullName(
+      kEnableBubbleUIFinchName);
+  const base::CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  if (command_line.HasSwitch(switches::kDisableSessionCrashedBubble))
+    return false;
+  if (command_line.HasSwitch(switches::kEnableSessionCrashedBubble))
+    return true;
+  return group_name == kEnableBubbleUIGroupEnabled;
 }
 
 }  // namespace
@@ -417,6 +436,9 @@ void SessionCrashedBubbleView::CloseBubble() {
 }
 
 bool ShowSessionCrashedBubble(Browser* browser) {
-  SessionCrashedBubbleView::Show(browser);
-  return true;
+  if (IsBubbleUIEnabled()) {
+    SessionCrashedBubbleView::Show(browser);
+    return true;
+  }
+  return false;
 }

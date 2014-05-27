@@ -110,6 +110,7 @@ extern const char kDisableQuicTimeBasedLossDetection[];
 extern const char kDisableRestoreBackgroundContents[];
 extern const char kDisableSavePasswordBubble[];
 extern const char kDisableSearchButtonInOmnibox[];
+extern const char kDisableSessionCrashedBubble[];
 extern const char kDisableScriptedPrintThrottling[];
 extern const char kDisableSpdy31[];
 extern const char kDisableSuggestionsService[];

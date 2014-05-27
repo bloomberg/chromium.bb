@@ -1658,7 +1658,8 @@ const Experiment kExperiments[] = {
     IDS_FLAGS_ENABLE_SESSION_CRASHED_BUBBLE_NAME,
     IDS_FLAGS_ENABLE_SESSION_CRASHED_BUBBLE_DESCRIPTION,
     kOsWin | kOsLinux,
-    SINGLE_VALUE_TYPE(switches::kEnableSessionCrashedBubble)
+    ENABLE_DISABLE_VALUE_TYPE(switches::kEnableSessionCrashedBubble,
+                              switches::kDisableSessionCrashedBubble)
   },
   {
     "out-of-process-pdf",

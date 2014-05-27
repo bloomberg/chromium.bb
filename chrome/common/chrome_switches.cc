@@ -375,6 +375,9 @@ const char kDisableScriptedPrintThrottling[] =
 const char kDisableSearchButtonInOmnibox[]  =
     "disable-search-button-in-omnibox";
 
+// Disables using bubbles for session restore request.
+const char kDisableSessionCrashedBubble[] = "disable-session-crashed-bubble";
+
 // Disable SPDY/3.1. This is a temporary testing flag.
 const char kDisableSpdy31[]                 = "disable-spdy31";
 
