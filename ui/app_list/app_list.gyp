@@ -281,4 +281,44 @@
       'msvs_disabled_warnings': [ 4267, ],
     },
   ],
+  'conditions': [
+    ['toolkit_views==1', {
+      'targets': [
+        {
+          'target_name': 'app_list_demo',
+          'type': 'executable',
+          'sources': [
+            '../../content/app/startup_helper_win.cc',
+            'views/app_list_demo.cc',
+          ],
+          'dependencies': [
+            '../../base/base.gyp:base',
+            '../../content/content.gyp:content',
+            '../../skia/skia.gyp:skia',
+            '../../url/url.gyp:url_lib',
+            '../base/ui_base.gyp:ui_base',
+            '../events/events.gyp:events',
+            '../resources/ui_resources.gyp:ui_resources',
+            '../resources/ui_resources.gyp:ui_test_pak',
+            '../views/views.gyp:views',
+            '../views_content_client/views_content_client.gyp:views_content_client',
+            'app_list',
+            'app_list_test_support',
+          ],
+          'conditions': [
+            ['OS=="win"', {
+              'msvs_settings': {
+                'VCLinkerTool': {
+                  'SubSystem': '2',  # Set /SUBSYSTEM:WINDOWS
+                },
+              },
+              'dependencies': [
+                '../../sandbox/sandbox.gyp:sandbox',
+              ],
+            }],
+          ],
+        },
+      ],
+    }],  # toolkit_views==1
+  ],
 }

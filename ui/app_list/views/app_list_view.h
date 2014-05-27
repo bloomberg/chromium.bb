@@ -116,7 +116,7 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDelegateView,
   AppListMainView* app_list_main_view() { return app_list_main_view_; }
 
  private:
-  friend class test::AppListViewTestApi;
+  friend class ::test::AppListViewTestApi;
 
   void InitAsBubbleInternal(gfx::NativeView parent,
                             PaginationModel* pagination_model,

@@ -1,3 +1,10 @@
 include_rules = [
   "+content/public",
 ]
+
+specific_include_rules = {
+  "app_list_demo\.cc": [
+    "+sandbox",
+    "+ui/views_content_client",
+  ],
+}
