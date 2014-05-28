@@ -137,6 +137,17 @@ void Font::drawEmphasisMarks(GraphicsContext* context, const TextRunPaintInfo& r
         drawEmphasisMarksForComplexText(context, runInfo, mark, point);
 }
 
+static inline void updateGlyphOverflowFromBounds(const IntRectExtent& glyphBounds,
+    const FontMetrics& fontMetrics, GlyphOverflow* glyphOverflow)
+{
+    glyphOverflow->top = max<int>(glyphOverflow->top,
+        glyphBounds.top() - (glyphOverflow->computeBounds ? 0 : fontMetrics.ascent()));
+    glyphOverflow->bottom = max<int>(glyphOverflow->bottom,
+        glyphBounds.bottom() - (glyphOverflow->computeBounds ? 0 : fontMetrics.descent()));
+    glyphOverflow->left = glyphBounds.left();
+    glyphOverflow->right = glyphBounds.right();
+}
+
 float Font::width(const TextRun& run, HashSet<const SimpleFontData*>* fallbackFonts, GlyphOverflow* glyphOverflow) const
 {
     CodePath codePathToUse = codePath(run);
@@ -153,23 +164,33 @@ float Font::width(const TextRun& run, HashSet<const SimpleFontData*>* fallbackFo
     bool hasWordSpacingOrLetterSpacing = fontDescription().wordSpacing() || fontDescription().letterSpacing();
     bool isCacheable = (codePathToUse == ComplexPath || hasKerningOrLigatures)
         && !hasWordSpacingOrLetterSpacing // Word spacing and letter spacing can change the width of a word.
-        && !glyphOverflow // Since this is just a width cache, we don't have enough information to satisfy glyph queries.
         && !run.allowTabs(); // If we allow tabs and a tab occurs inside a word, the width of the word varies based on its position on the line.
 
-    float* cacheEntry = isCacheable
-        ? m_fontFallbackList->widthCache().add(run, std::numeric_limits<float>::quiet_NaN())
+    WidthCacheEntry* cacheEntry = isCacheable
+        ? m_fontFallbackList->widthCache().add(run, WidthCacheEntry())
         : 0;
-    if (cacheEntry && !std::isnan(*cacheEntry))
-        return *cacheEntry;
+    if (cacheEntry && cacheEntry->isValid()) {
+        if (glyphOverflow)
+            updateGlyphOverflowFromBounds(cacheEntry->glyphBounds, fontMetrics(), glyphOverflow);
+        return cacheEntry->width;
+    }
 
     float result;
-    if (codePathToUse == ComplexPath)
-        result = floatWidthForComplexText(run, fallbackFonts, glyphOverflow);
-    else
-        result = floatWidthForSimpleText(run, fallbackFonts, glyphOverflow);
+    IntRectExtent glyphBounds;
+    if (codePathToUse == ComplexPath) {
+        result = floatWidthForComplexText(run, fallbackFonts, &glyphBounds);
+    } else {
+        result = floatWidthForSimpleText(run, fallbackFonts,
+            glyphOverflow || isCacheable ? &glyphBounds : 0);
+    }
 
-    if (cacheEntry && (!fallbackFonts || fallbackFonts->isEmpty()))
-        *cacheEntry = result;
+    if (cacheEntry && (!fallbackFonts || fallbackFonts->isEmpty())) {
+        cacheEntry->glyphBounds = glyphBounds;
+        cacheEntry->width = result;
+    }
+
+    if (glyphOverflow)
+        updateGlyphOverflowFromBounds(glyphBounds, fontMetrics(), glyphOverflow);
     return result;
 }
 
@@ -744,17 +765,17 @@ void Font::drawEmphasisMarks(GraphicsContext* context, const TextRunPaintInfo& r
     drawGlyphBuffer(context, runInfo, markBuffer, startPoint);
 }
 
-float Font::floatWidthForSimpleText(const TextRun& run, HashSet<const SimpleFontData*>* fallbackFonts, GlyphOverflow* glyphOverflow) const
+float Font::floatWidthForSimpleText(const TextRun& run, HashSet<const SimpleFontData*>* fallbackFonts, IntRectExtent* glyphBounds) const
 {
-    WidthIterator it(this, run, fallbackFonts, glyphOverflow);
+    WidthIterator it(this, run, fallbackFonts, glyphBounds);
     GlyphBuffer glyphBuffer;
     it.advance(run.length(), (fontDescription().typesettingFeatures() & (Kerning | Ligatures)) ? &glyphBuffer : 0);
 
-    if (glyphOverflow) {
-        glyphOverflow->top = max<int>(glyphOverflow->top, floorf(-it.minGlyphBoundingBoxY()) - (glyphOverflow->computeBounds ? 0 : fontMetrics().ascent()));
-        glyphOverflow->bottom = max<int>(glyphOverflow->bottom, ceilf(it.maxGlyphBoundingBoxY()) - (glyphOverflow->computeBounds ? 0 : fontMetrics().descent()));
-        glyphOverflow->left = floorf(it.firstGlyphOverflow());
-        glyphOverflow->right = ceilf(it.lastGlyphOverflow());
+    if (glyphBounds) {
+        glyphBounds->setTop(floorf(-it.minGlyphBoundingBoxY()));
+        glyphBounds->setBottom(ceilf(it.maxGlyphBoundingBoxY()));
+        glyphBounds->setLeft(floorf(it.firstGlyphOverflow()));
+        glyphBounds->setRight(ceilf(it.lastGlyphOverflow()));
     }
 
     return it.m_runWidthSoFar;

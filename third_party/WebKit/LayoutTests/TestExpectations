@@ -189,6 +189,14 @@ crbug.com/318978 [ Linux ] permissionclient/plugin-permission.html [ Skip ]
 crbug.com/318978 [ Linux ] plugins/ [ Skip ]
 crbug.com/318978 [ Linux ] virtual/softwarecompositing/plugins/invalidate_rect.html [ Skip ]
 
+# Hits an assert on Snow-leopard Debug but not on any other platforms.
+crbug.com/347186 [ Snowleopard Debug ] inspector/sources/debugger/async-callstack-mutation-observer.html [ Skip ]
+crbug.com/347186 [ Snowleopard Debug ] inspector/sources/debugger/async-callstack.html [ Skip ]
+crbug.com/347186 [ Snowleopard Debug ] inspector/sources/debugger/async-callstack-scopes.html [ Skip ]
+crbug.com/347186 [ Snowleopard Debug ] inspector/console/console-format.html [ Skip ]
+crbug.com/347186 [ Snowleopard Debug ] inspector/elements/styles/pseudo-elements.html [ Skip ]
+crbug.com/347186 [ Snowleopard Debug ] inspector/sources/debugger/dom-breakpoints.html [ Skip ]
+
 # Flaky:
 crbug.com/374270 http/tests/security/frameNavigation/context-for-location.html [ Failure Pass ]
 crbug.com/374270 http/tests/security/frameNavigation/context-for-location-assign.html [ Failure Pass ]

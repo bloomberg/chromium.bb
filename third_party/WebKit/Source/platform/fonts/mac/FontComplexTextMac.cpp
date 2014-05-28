@@ -128,7 +128,7 @@ void Font::drawEmphasisMarksForComplexText(GraphicsContext* context, const TextR
     drawEmphasisMarks(context, runInfo, glyphBuffer, mark, FloatPoint(point.x() + initialAdvance, point.y()));
 }
 
-float Font::floatWidthForComplexText(const TextRun& run, HashSet<const SimpleFontData*>* fallbackFonts, GlyphOverflow* glyphOverflow) const
+float Font::floatWidthForComplexText(const TextRun& run, HashSet<const SimpleFontData*>* fallbackFonts, IntRectExtent* glyphBounds) const
 {
     if (preferHarfBuzz(this)) {
         HarfBuzzShaper shaper(this, run);
@@ -136,12 +136,11 @@ float Font::floatWidthForComplexText(const TextRun& run, HashSet<const SimpleFon
             return shaper.totalWidth();
     }
     ComplexTextController controller(this, run, true, fallbackFonts);
-    if (glyphOverflow) {
-        glyphOverflow->top = max<int>(glyphOverflow->top, floorf(-controller.minGlyphBoundingBoxY()) - (glyphOverflow->computeBounds ? 0 : fontMetrics().ascent()));
-        glyphOverflow->bottom = max<int>(glyphOverflow->bottom, ceilf(controller.maxGlyphBoundingBoxY()) - (glyphOverflow->computeBounds ? 0 : fontMetrics().descent()));
-        glyphOverflow->left = max<int>(0, floorf(-controller.minGlyphBoundingBoxX()));
-        glyphOverflow->right = max<int>(0, ceilf(controller.maxGlyphBoundingBoxX() - controller.totalWidth()));
-    }
+    glyphBounds->setTop(floorf(-controller.minGlyphBoundingBoxY()));
+    glyphBounds->setBottom(ceilf(controller.maxGlyphBoundingBoxY()));
+    glyphBounds->setLeft(max<int>(0, floorf(-controller.minGlyphBoundingBoxX())));
+    glyphBounds->setRight(max<int>(0, ceilf(controller.maxGlyphBoundingBoxX() - controller.totalWidth())));
+
     return controller.totalWidth();
 }
 
