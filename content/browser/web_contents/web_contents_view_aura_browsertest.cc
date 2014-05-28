@@ -682,11 +682,10 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest, HideContentOnParenHide) {
   WebContentsImpl* web_contents =
       static_cast<WebContentsImpl*>(shell()->web_contents());
   aura::Window* content = web_contents->GetNativeView()->parent();
-  aura::Window* parent = content->parent();
   EXPECT_TRUE(web_contents->should_normally_be_visible());
-  parent->Hide();
+  content->Hide();
   EXPECT_FALSE(web_contents->should_normally_be_visible());
-  parent->Show();
+  content->Show();
   EXPECT_TRUE(web_contents->should_normally_be_visible());
 }
 
