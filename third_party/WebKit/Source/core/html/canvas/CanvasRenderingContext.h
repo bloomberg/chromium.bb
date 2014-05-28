@@ -36,6 +36,7 @@ namespace blink { class WebLayer; }
 
 namespace WebCore {
 
+class CanvasImageSource;
 class HTMLCanvasElement;
 class KURL;
 class WebGLObject;
@@ -64,11 +65,15 @@ public:
 
     virtual void trace(Visitor* visitor) { visitor->trace(m_canvas); }
 
+    bool wouldTaintOrigin(CanvasImageSource*);
+
 protected:
     CanvasRenderingContext(HTMLCanvasElement*);
 
 private:
     RawPtrWillBeMember<HTMLCanvasElement> m_canvas;
+    HashSet<String> m_cleanURLs;
+    HashSet<String> m_dirtyURLs;
 };
 
 } // namespace WebCore

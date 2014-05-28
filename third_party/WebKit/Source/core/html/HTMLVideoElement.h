@@ -74,6 +74,7 @@ public:
     virtual bool isVideoElement() const OVERRIDE { return true; }
     virtual bool wouldTaintOrigin(SecurityOrigin*) const OVERRIDE;
     virtual FloatSize sourceSize() const OVERRIDE;
+    virtual const KURL& sourceURL() const OVERRIDE { return currentSrc(); }
 
 private:
     HTMLVideoElement(Document&);

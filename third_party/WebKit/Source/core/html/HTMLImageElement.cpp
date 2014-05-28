@@ -583,4 +583,10 @@ void HTMLImageElement::selectSourceURL(UpdateFromElementBehavior behavior)
     else
         m_imageLoader.updateFromElement();
 }
+
+const KURL& HTMLImageElement::sourceURL() const
+{
+    return cachedImage()->response().url();
+}
+
 }

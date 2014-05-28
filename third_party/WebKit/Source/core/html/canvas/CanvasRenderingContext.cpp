@@ -26,6 +26,7 @@
 #include "config.h"
 #include "core/html/canvas/CanvasRenderingContext.h"
 
+#include "core/html/canvas/CanvasImageSource.h"
 #include "platform/weborigin/SecurityOrigin.h"
 
 namespace WebCore {
@@ -34,6 +35,29 @@ CanvasRenderingContext::CanvasRenderingContext(HTMLCanvasElement* canvas)
     : m_canvas(canvas)
 {
 
+}
+
+bool CanvasRenderingContext::wouldTaintOrigin(CanvasImageSource* imageSource)
+{
+    const KURL& sourceURL = imageSource->sourceURL();
+    bool hasURL = (sourceURL.isValid() && !sourceURL.isAboutBlankURL());
+
+    if (hasURL) {
+        if (sourceURL.protocolIsData() || m_cleanURLs.contains(sourceURL.string()))
+            return false;
+        if (m_dirtyURLs.contains(sourceURL.string()))
+            return true;
+    }
+
+    bool taintOrigin = imageSource->wouldTaintOrigin(canvas()->securityOrigin());
+
+    if (hasURL) {
+        if (taintOrigin)
+            m_dirtyURLs.add(sourceURL.string());
+        else
+            m_cleanURLs.add(sourceURL.string());
+    }
+    return taintOrigin;
 }
 
 } // namespace WebCore

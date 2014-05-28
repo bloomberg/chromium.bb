@@ -1528,7 +1528,7 @@ void CanvasRenderingContext2D::drawImageInternal(CanvasImageSource* imageSource,
             canvas()->buffer()->flush();
     }
 
-    if (canvas()->originClean() && imageSource->wouldTaintOrigin(canvas()->securityOrigin()))
+    if (canvas()->originClean() && wouldTaintOrigin(imageSource))
         canvas()->setOriginTainted();
 
     didDraw(dirtyRect);
@@ -1704,7 +1704,9 @@ PassRefPtr<CanvasPattern> CanvasRenderingContext2D::createPattern(CanvasImageSou
     }
     ASSERT(imageForRendering);
 
-    return CanvasPattern::create(imageForRendering.release(), repeatX, repeatY, !imageSource->wouldTaintOrigin(canvas()->securityOrigin()));
+    bool originClean = !wouldTaintOrigin(imageSource);
+
+    return CanvasPattern::create(imageForRendering.release(), repeatX, repeatY, originClean);
 }
 
 bool CanvasRenderingContext2D::computeDirtyRect(const FloatRect& localRect, FloatRect* dirtyRect)
