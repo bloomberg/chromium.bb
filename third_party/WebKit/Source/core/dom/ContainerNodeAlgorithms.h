@@ -23,71 +23,9 @@
 #define ContainerNodeAlgorithms_h
 
 #include "core/dom/Document.h"
-#include "core/dom/ScriptForbiddenScope.h"
-#include "core/inspector/InspectorInstrumentation.h"
 #include "wtf/Assertions.h"
 
 namespace WebCore {
-
-class ChildNodeInsertionNotifier {
-public:
-    explicit ChildNodeInsertionNotifier(ContainerNode& insertionPoint)
-        : m_insertionPoint(insertionPoint)
-    {
-    }
-
-    void notify(Node&);
-
-private:
-    void notifyNodeInserted(Node&);
-
-    ContainerNode& m_insertionPoint;
-    Vector< RefPtr<Node> > m_postInsertionNotificationTargets;
-};
-
-inline void ChildNodeInsertionNotifier::notify(Node& node)
-{
-    ASSERT(!NoEventDispatchAssertion::isEventDispatchForbidden());
-
-    InspectorInstrumentation::didInsertDOMNode(&node);
-
-    RefPtr<Document> protectDocument(node.document());
-    RefPtr<Node> protectNode(node);
-
-    {
-        NoEventDispatchAssertion assertNoEventDispatch;
-        ScriptForbiddenScope forbidScript;
-        notifyNodeInserted(node);
-    }
-
-    for (size_t i = 0; i < m_postInsertionNotificationTargets.size(); ++i) {
-        Node* targetNode = m_postInsertionNotificationTargets[i].get();
-        if (targetNode->inDocument())
-            targetNode->didNotifySubtreeInsertionsToDocument();
-    }
-}
-
-class ChildNodeRemovalNotifier {
-public:
-    explicit ChildNodeRemovalNotifier(ContainerNode& insertionPoint)
-        : m_insertionPoint(insertionPoint)
-    {
-    }
-
-    void notify(Node&);
-
-private:
-    void notifyNodeRemoved(Node&);
-
-    ContainerNode& m_insertionPoint;
-};
-
-inline void ChildNodeRemovalNotifier::notify(Node& node)
-{
-    ScriptForbiddenScope forbidScript;
-    NoEventDispatchAssertion assertNoEventDispatch;
-    notifyNodeRemoved(node);
-}
 
 namespace Private {
 
@@ -161,7 +99,7 @@ namespace Private {
         {
             container.document().adoptIfNeeded(node);
             if (node.inDocument())
-                ChildNodeRemovalNotifier(container).notify(node);
+                container.notifyNodeRemoved(node);
         }
     };
 

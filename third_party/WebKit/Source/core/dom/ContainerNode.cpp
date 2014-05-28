@@ -36,11 +36,15 @@
 #include "core/dom/NodeRareData.h"
 #include "core/dom/NodeRenderStyle.h"
 #include "core/dom/NodeTraversal.h"
+#include "core/dom/ScriptForbiddenScope.h"
 #include "core/dom/SelectorQuery.h"
+#include "core/dom/shadow/ElementShadow.h"
+#include "core/dom/shadow/ShadowRoot.h"
 #include "core/events/MutationEvent.h"
 #include "core/html/HTMLCollection.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/html/RadioNodeList.h"
+#include "core/inspector/InspectorInstrumentation.h"
 #include "core/rendering/InlineTextBox.h"
 #include "core/rendering/RenderText.h"
 #include "core/rendering/RenderTheme.h"
@@ -289,7 +293,7 @@ void ContainerNode::parserInsertBefore(PassRefPtr<Node> newChild, Node& nextChil
 
     childrenChanged(true, newChild->previousSibling(), &nextChild, 1);
 
-    ChildNodeInsertionNotifier(*this).notify(*newChild);
+    notifyNodeInserted(*newChild);
 }
 
 void ContainerNode::replaceChild(PassRefPtr<Node> newChild, Node* oldChild, ExceptionState& exceptionState)
@@ -466,7 +470,7 @@ void ContainerNode::removeChild(Node* oldChild, ExceptionState& exceptionState)
         Node* next = child->nextSibling();
         removeBetween(prev, next, *child);
         childrenChanged(false, prev, next, -1);
-        ChildNodeRemovalNotifier(*this).notify(*child);
+        notifyNodeRemoved(*child);
     }
     dispatchSubtreeModifiedEvent();
 }
@@ -512,7 +516,7 @@ void ContainerNode::parserRemoveChild(Node& oldChild)
     removeBetween(prev, next, oldChild);
 
     childrenChanged(true, prev, next, -1);
-    ChildNodeRemovalNotifier(*this).notify(oldChild);
+    notifyNodeRemoved(oldChild);
 }
 
 // this differs from other remove functions because it forcibly removes all the children,
@@ -563,7 +567,7 @@ void ContainerNode::removeChildren()
         childrenChanged(false, 0, 0, -static_cast<int>(removedChildren.size()));
 
         for (size_t i = 0; i < removedChildren.size(); ++i)
-            ChildNodeRemovalNotifier(*this).notify(*removedChildren[i]);
+            notifyNodeRemoved(*removedChildren[i]);
     }
 
     dispatchSubtreeModifiedEvent();
@@ -650,7 +654,65 @@ void ContainerNode::parserAppendChild(PassRefPtr<Node> newChild)
     ChildListMutationScope(*this).childAdded(*newChild);
 
     childrenChanged(true, last, 0, 1);
-    ChildNodeInsertionNotifier(*this).notify(*newChild);
+    notifyNodeInserted(*newChild);
+}
+
+void ContainerNode::notifyNodeInserted(Node& root)
+{
+    ASSERT(!NoEventDispatchAssertion::isEventDispatchForbidden());
+
+    InspectorInstrumentation::didInsertDOMNode(&root);
+
+    RefPtr<Node> protectDocument(root.document());
+    RefPtr<Node> protectNode(root);
+
+    NodeVector postInsertionNotificationTargets;
+
+    {
+        NoEventDispatchAssertion assertNoEventDispatch;
+        ScriptForbiddenScope forbidScript;
+        notifyNodeInsertedInternal(root, postInsertionNotificationTargets);
+    }
+
+    for (size_t i = 0; i < postInsertionNotificationTargets.size(); ++i) {
+        Node* targetNode = postInsertionNotificationTargets[i].get();
+        if (targetNode->inDocument())
+            targetNode->didNotifySubtreeInsertionsToDocument();
+    }
+}
+
+void ContainerNode::notifyNodeInsertedInternal(Node& root, NodeVector& postInsertionNotificationTargets)
+{
+    for (Node* node = &root; node; node = NodeTraversal::next(*node, &root)) {
+        // As an optimization we don't notify leaf nodes when when inserting
+        // into detached subtrees.
+        if (!inDocument() && !node->isContainerNode())
+            continue;
+        if (Node::InsertionShouldCallDidNotifySubtreeInsertions == node->insertedInto(this))
+            postInsertionNotificationTargets.append(node);
+        for (ShadowRoot* shadowRoot = node->youngestShadowRoot(); shadowRoot; shadowRoot = shadowRoot->olderShadowRoot())
+            notifyNodeInsertedInternal(*shadowRoot, postInsertionNotificationTargets);
+    }
+}
+
+void ContainerNode::notifyNodeRemoved(Node& root)
+{
+    ScriptForbiddenScope forbidScript;
+    NoEventDispatchAssertion assertNoEventDispatch;
+
+    Document& document = root.document();
+    for (Node* node = &root; node; node = NodeTraversal::next(*node, &root)) {
+        // As an optimization we skip notifying Text nodes and other leaf nodes
+        // of removal when they're not in the Document tree since the virtual
+        // call to removedFrom is not needed.
+        if (!node->inDocument() && !node->isContainerNode())
+            continue;
+        if (document.cssTarget() == node)
+            document.setCSSTarget(0);
+        node->removedFrom(this);
+        for (ShadowRoot* shadowRoot = node->youngestShadowRoot(); shadowRoot; shadowRoot = shadowRoot->olderShadowRoot())
+            notifyNodeRemoved(*shadowRoot);
+    }
 }
 
 void ContainerNode::attach(const AttachContext& context)
@@ -1021,7 +1083,7 @@ void ContainerNode::updateTreeAfterInsertion(Node& child)
 
     childrenChanged(false, child.previousSibling(), child.nextSibling(), 1);
 
-    ChildNodeInsertionNotifier(*this).notify(child);
+    notifyNodeInserted(child);
 
     dispatchChildInsertionEvents(child);
 }

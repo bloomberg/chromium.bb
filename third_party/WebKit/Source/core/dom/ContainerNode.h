@@ -113,6 +113,12 @@ enum DynamicRestyleFlags {
     NumberOfDynamicRestyleFlags = 10,
 };
 
+// This constant controls how much buffer is initially allocated
+// for a Node Vector that is used to store child Nodes of a given Node.
+// FIXME: Optimize the value.
+const int initialNodeVectorSize = 11;
+typedef Vector<RefPtr<Node>, initialNodeVectorSize> NodeVector;
+
 class ContainerNode : public Node {
 public:
     virtual ~ContainerNode();
@@ -214,6 +220,9 @@ public:
 
     virtual void trace(Visitor*) OVERRIDE;
 
+    void notifyNodeInserted(Node&);
+    void notifyNodeRemoved(Node&);
+
 protected:
     ContainerNode(TreeScope*, ConstructionType = CreateContainer);
 
@@ -236,6 +245,8 @@ private:
     void updateTreeAfterInsertion(Node& child);
     void willRemoveChildren();
     void willRemoveChild(Node& child);
+
+    void notifyNodeInsertedInternal(Node&, NodeVector& postInsertionNotificationTargets);
 
     bool hasRestyleFlag(DynamicRestyleFlags mask) const { return hasRareData() && hasRestyleFlagInternal(mask); }
     bool hasRestyleFlags() const { return hasRareData() && hasRestyleFlagsInternal(); }
@@ -350,12 +361,6 @@ inline ContainerNode* Node::parentElementOrDocumentFragment() const
     ContainerNode* parent = parentNode();
     return parent && (parent->isElementNode() || parent->isDocumentFragment()) ? parent : 0;
 }
-
-// This constant controls how much buffer is initially allocated
-// for a Node Vector that is used to store child Nodes of a given Node.
-// FIXME: Optimize the value.
-const int initialNodeVectorSize = 11;
-typedef Vector<RefPtr<Node>, initialNodeVectorSize> NodeVector;
 
 inline void getChildNodes(Node& node, NodeVector& nodes)
 {

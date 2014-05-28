@@ -1937,7 +1937,6 @@
             'dom/Comment.cpp',
             'dom/Comment.h',
             'dom/ContainerNode.cpp',
-            'dom/ContainerNodeAlgorithms.cpp',
             'dom/ContainerNodeAlgorithms.h',
             'dom/ContextFeatures.cpp',
             'dom/ContextFeatures.h',

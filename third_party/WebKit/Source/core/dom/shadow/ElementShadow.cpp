@@ -27,7 +27,6 @@
 #include "config.h"
 #include "core/dom/shadow/ElementShadow.h"
 
-
 #include "core/css/StyleSheetList.h"
 #include "core/dom/ContainerNodeAlgorithms.h"
 #include "core/dom/ElementTraversal.h"
@@ -35,6 +34,7 @@
 #include "core/dom/shadow/ContentDistribution.h"
 #include "core/html/HTMLContentElement.h"
 #include "core/html/HTMLShadowElement.h"
+#include "core/inspector/InspectorInstrumentation.h"
 
 namespace WebCore {
 
@@ -154,7 +154,7 @@ ShadowRoot& ElementShadow::addShadowRoot(Element& shadowHost, ShadowRoot::Shadow
     shadowRoot->setParentOrShadowHostNode(&shadowHost);
     shadowRoot->setParentTreeScope(shadowHost.treeScope());
     m_shadowRoots.push(shadowRoot.get());
-    ChildNodeInsertionNotifier(shadowHost).notify(*shadowRoot);
+    shadowHost.notifyNodeInserted(*shadowRoot);
     setNeedsDistributionRecalc();
 
     InspectorInstrumentation::didPushShadowRoot(&shadowHost, shadowRoot.get());
