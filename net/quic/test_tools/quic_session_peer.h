@@ -23,7 +23,7 @@ class QuicSessionPeer {
   static QuicHeadersStream* GetHeadersStream(QuicSession* session);
   static void SetHeadersStream(QuicSession* session,
                                QuicHeadersStream* headers_stream);
-  static QuicWriteBlockedList* GetWriteblockedStreams(QuicSession* session);
+  static QuicWriteBlockedList* GetWriteBlockedStreams(QuicSession* session);
   static QuicDataStream* GetIncomingDataStream(QuicSession* session,
                                                QuicStreamId stream_id);
 

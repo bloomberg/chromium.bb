@@ -321,8 +321,9 @@ TEST_F(QuicSentPacketManagerTest, RetransmitThenAckPrevious) {
   received_info.largest_observed = 1;
   manager_.OnIncomingAck(received_info, clock_.ApproximateNow());
 
-  // No packets should be unacked.
-  VerifyUnackedPackets(NULL, 0);
+  // 2 should be unacked, since it may provide an RTT measurement.
+  QuicPacketSequenceNumber unacked[] = { 2 };
+  VerifyUnackedPackets(unacked, arraysize(unacked));
   EXPECT_FALSE(QuicSentPacketManagerPeer::HasPendingPackets(&manager_));
   VerifyRetransmittablePackets(NULL, 0);
 
@@ -415,8 +416,9 @@ TEST_F(QuicSentPacketManagerTest, RetransmitTwiceThenAckPreviousBeforeSend) {
   ExpectUpdatedRtt(1);
   manager_.OnIncomingAck(received_info, clock_.ApproximateNow());
 
-  // Since 2 was marked for retransmit, when 1 is acked, 2 is discarded.
-  VerifyUnackedPackets(NULL, 0);
+  // Since 2 was marked for retransmit, when 1 is acked, 2 is kept for RTT.
+  QuicPacketSequenceNumber unacked[] = { 2 };
+  VerifyUnackedPackets(unacked, arraysize(unacked));
   EXPECT_FALSE(QuicSentPacketManagerPeer::HasPendingPackets(&manager_));
   VerifyRetransmittablePackets(NULL, 0);
 
@@ -917,8 +919,8 @@ TEST_F(QuicSentPacketManagerTest, CryptoHandshakeSpuriousRetransmission) {
   manager_.OnRetransmissionTimeout();
   RetransmitNextPacket(3);
 
-  // Now ack the first crypto packet, and ensure the second gets abandoned and
-  // removed from unacked_packets.
+  // Now ack the second crypto packet, and ensure the first gets removed, but
+  // the third does not.
   ExpectUpdatedRtt(2);
   ReceivedPacketInfo received_info;
   received_info.largest_observed = 2;
@@ -926,7 +928,8 @@ TEST_F(QuicSentPacketManagerTest, CryptoHandshakeSpuriousRetransmission) {
   manager_.OnIncomingAck(received_info, clock_.ApproximateNow());
 
   EXPECT_FALSE(QuicSentPacketManagerPeer::HasUnackedCryptoPackets(&manager_));
-  VerifyUnackedPackets(NULL, 0);
+  QuicPacketSequenceNumber unacked[] = { 3 };
+  VerifyUnackedPackets(unacked, arraysize(unacked));
 }
 
 TEST_F(QuicSentPacketManagerTest, CryptoHandshakeTimeoutUnsentDataPacket) {

@@ -124,7 +124,7 @@ class QuicDispatcherTest : public ::testing::Test {
     scoped_ptr<QuicEncryptedPacket> packet(ConstructEncryptedPacket(
         connection_id, has_version_flag, false, 1, data));
     data_ = string(packet->data(), packet->length());
-    dispatcher_.ProcessPacket(server_address_, client_address, *packet.get());
+    dispatcher_.ProcessPacket(server_address_, client_address, *packet);
   }
 
   void ValidatePacket(const QuicEncryptedPacket& packet) {

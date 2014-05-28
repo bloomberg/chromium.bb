@@ -227,11 +227,11 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
   void MarkPacketRevived(QuicPacketSequenceNumber sequence_number,
                          QuicTime::Delta delta_largest_observed);
 
-  // Marks |sequence_number| as being fully handled, either due to receipt
-  // by the peer, or having been discarded as indecipherable.  Returns an
-  // iterator to the next remaining unacked packet.
+  // Removes the retransmittability and pending properties from the packet at
+  // |it| due to receipt by the peer.  Returns an iterator to the next remaining
+  // unacked packet.
   QuicUnackedPacketMap::const_iterator MarkPacketHandled(
-      QuicPacketSequenceNumber sequence_number,
+      QuicUnackedPacketMap::const_iterator it,
       QuicTime::Delta delta_largest_observed);
 
   // Request that |sequence_number| be retransmitted after the other pending

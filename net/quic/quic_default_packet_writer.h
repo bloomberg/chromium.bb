@@ -39,6 +39,11 @@ class NET_EXPORT_PRIVATE QuicDefaultPacketWriter : public QuicPacketWriter {
     connection_ = connection;
   }
 
+ protected:
+  void set_write_blocked(bool is_blocked) {
+    write_blocked_ = is_blocked;
+  }
+
  private:
   base::WeakPtrFactory<QuicDefaultPacketWriter> weak_factory_;
   DatagramClientSocket* socket_;

@@ -24,13 +24,15 @@
 #include "net/spdy/spdy_framer.h"
 #include "net/test/gtest_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "testing/gmock_mutant.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::hash_map;
 using std::set;
 using std::vector;
+using testing::CreateFunctor;
 using testing::InSequence;
-using testing::InvokeWithoutArgs;
+using testing::Invoke;
 using testing::Return;
 using testing::StrictMock;
 using testing::_;
@@ -162,8 +164,8 @@ class TestSession : public QuicSession {
     writev_consumes_all_data_ = val;
   }
 
-  QuicConsumedData SendStreamData() {
-    return WritevData(5, IOVector(), 0, true, NULL);
+  QuicConsumedData SendStreamData(QuicStreamId id) {
+    return WritevData(id, IOVector(), 0, true, NULL);
   }
 
  private:
@@ -354,9 +356,9 @@ TEST_P(QuicSessionTest, OnCanWrite) {
 
   InSequence s;
   StreamBlocker stream2_blocker(&session_, stream2->id());
-  EXPECT_CALL(*stream2, OnCanWrite()).WillOnce(
-      // Reregister, to test the loop limit.
-      InvokeWithoutArgs(&stream2_blocker, &StreamBlocker::MarkWriteBlocked));
+  // Reregister, to test the loop limit.
+  EXPECT_CALL(*stream2, OnCanWrite())
+      .WillOnce(Invoke(&stream2_blocker, &StreamBlocker::MarkWriteBlocked));
   EXPECT_CALL(*stream6, OnCanWrite());
   EXPECT_CALL(*stream4, OnCanWrite());
   session_.OnCanWrite();
@@ -376,23 +378,28 @@ TEST_P(QuicSessionTest, OnCanWriteBundlesStreams) {
   session_.MarkWriteBlocked(stream6->id(), kSomeMiddlePriority);
   session_.MarkWriteBlocked(stream4->id(), kSomeMiddlePriority);
 
-
   EXPECT_CALL(*send_algorithm, TimeUntilSend(_, _, _)).WillRepeatedly(
       Return(QuicTime::Delta::Zero()));
-  EXPECT_CALL(*send_algorithm, GetCongestionWindow()).WillOnce(
-      Return(kMaxPacketSize * 10));
-  EXPECT_CALL(*stream2, OnCanWrite()).WillOnce(IgnoreResult(
-      InvokeWithoutArgs(&session_, &TestSession::SendStreamData)));
-  EXPECT_CALL(*stream6, OnCanWrite()).WillOnce(IgnoreResult(
-      InvokeWithoutArgs(&session_, &TestSession::SendStreamData)));
-  EXPECT_CALL(*stream4, OnCanWrite()).WillOnce(IgnoreResult(
-      InvokeWithoutArgs(&session_, &TestSession::SendStreamData)));
+  EXPECT_CALL(*send_algorithm, GetCongestionWindow())
+      .WillOnce(Return(kMaxPacketSize * 10));
+  EXPECT_CALL(*stream2, OnCanWrite())
+      .WillOnce(IgnoreResult(Invoke(CreateFunctor(
+          &session_, &TestSession::SendStreamData, stream2->id()))));
+  EXPECT_CALL(*stream4, OnCanWrite())
+      .WillOnce(IgnoreResult(Invoke(CreateFunctor(
+          &session_, &TestSession::SendStreamData, stream4->id()))));
+  EXPECT_CALL(*stream6, OnCanWrite())
+      .WillOnce(IgnoreResult(Invoke(CreateFunctor(
+          &session_, &TestSession::SendStreamData, stream6->id()))));
+
+  // Expect that we only send one packet, the writes from different streams
+  // should be bundled together.
   MockPacketWriter* writer =
       static_cast<MockPacketWriter*>(
           QuicConnectionPeer::GetWriter(session_.connection()));
   EXPECT_CALL(*writer, WritePacket(_, _, _, _)).WillOnce(
                   Return(WriteResult(WRITE_STATUS_OK, 0)));
-  EXPECT_CALL(*send_algorithm, OnPacketSent(_, _, _, _, _));
+  EXPECT_CALL(*send_algorithm, OnPacketSent(_, _, _, _, _)).Times(1);
   session_.OnCanWrite();
   EXPECT_FALSE(session_.WillingAndAbleToWrite());
 }
@@ -475,14 +482,12 @@ TEST_P(QuicSessionTest, BufferedHandshake) {
   EXPECT_CALL(*crypto_stream, OnCanWrite());
 
   // Re-register all other streams, to show they weren't able to proceed.
-  EXPECT_CALL(*stream2, OnCanWrite()).WillOnce(
-      InvokeWithoutArgs(&stream2_blocker, &StreamBlocker::MarkWriteBlocked));
-
-  EXPECT_CALL(*stream3, OnCanWrite()).WillOnce(
-      InvokeWithoutArgs(&stream3_blocker, &StreamBlocker::MarkWriteBlocked));
-
-  EXPECT_CALL(*stream4, OnCanWrite()).WillOnce(
-      InvokeWithoutArgs(&stream4_blocker, &StreamBlocker::MarkWriteBlocked));
+  EXPECT_CALL(*stream2, OnCanWrite())
+      .WillOnce(Invoke(&stream2_blocker, &StreamBlocker::MarkWriteBlocked));
+  EXPECT_CALL(*stream3, OnCanWrite())
+      .WillOnce(Invoke(&stream3_blocker, &StreamBlocker::MarkWriteBlocked));
+  EXPECT_CALL(*stream4, OnCanWrite())
+      .WillOnce(Invoke(&stream4_blocker, &StreamBlocker::MarkWriteBlocked));
 
   session_.OnCanWrite();
   EXPECT_TRUE(session_.WillingAndAbleToWrite());

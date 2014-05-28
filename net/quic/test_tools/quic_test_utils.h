@@ -88,6 +88,11 @@ QuicVersionVector SupportedVersions(QuicVersion version);
 QuicAckFrame MakeAckFrame(QuicPacketSequenceNumber largest_observed,
                           QuicPacketSequenceNumber least_unacked);
 
+// Testing convenience method to construct a QuicAckFrame with |num_nack_ranges|
+// nack ranges of width 1 packet, starting from |least_unacked|.
+QuicAckFrame MakeAckFrameWithNackRanges(size_t num_nack_ranges,
+                                        QuicPacketSequenceNumber least_unacked);
+
 template<typename SaveType>
 class ValueRestore {
  public:

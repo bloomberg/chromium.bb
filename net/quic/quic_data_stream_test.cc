@@ -100,7 +100,7 @@ class QuicDataStreamTest : public ::testing::TestWithParam<QuicVersion> {
     stream2_.reset(new TestStream(kClientDataStreamId2, session_.get(),
                                   stream_should_process_data));
     write_blocked_list_ =
-        QuicSessionPeer::GetWriteblockedStreams(session_.get());
+        QuicSessionPeer::GetWriteBlockedStreams(session_.get());
   }
 
  protected:

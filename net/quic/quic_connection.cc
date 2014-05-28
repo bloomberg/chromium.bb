@@ -1466,8 +1466,8 @@ bool QuicConnection::ShouldDiscardPacket(
 
   if (retransmittable == HAS_RETRANSMITTABLE_DATA &&
       !sent_packet_manager_.HasRetransmittableFrames(sequence_number)) {
-    LOG(DFATAL) << ENDPOINT << "Dropping unacked packet: " << sequence_number
-                << " This should have been removed when it was Neutered.";
+    DVLOG(1) << ENDPOINT << "Dropping unacked packet: " << sequence_number
+             << " A previous transmission was acked while write blocked.";
     return true;
   }
 
@@ -1944,7 +1944,11 @@ QuicConnection::ScopedPacketBundler::ScopedPacketBundler(
     QuicConnection* connection,
     AckBundling send_ack)
     : connection_(connection),
-      already_in_batch_mode_(connection->packet_generator_.InBatchMode()) {
+      already_in_batch_mode_(connection != NULL &&
+                             connection->packet_generator_.InBatchMode()) {
+  if (connection_  == NULL) {
+    return;
+  }
   // Move generator into batch mode. If caller wants us to include an ack,
   // check the delayed-ack timer to see if there's ack info to be sent.
   if (!already_in_batch_mode_) {
@@ -1962,6 +1966,9 @@ QuicConnection::ScopedPacketBundler::ScopedPacketBundler(
 }
 
 QuicConnection::ScopedPacketBundler::~ScopedPacketBundler() {
+  if (connection_  == NULL) {
+    return;
+  }
   // If we changed the generator's batch state, restore original batch state.
   if (!already_in_batch_mode_) {
     DVLOG(1) << "Leaving Batch Mode.";

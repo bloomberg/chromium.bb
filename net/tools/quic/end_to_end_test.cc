@@ -1000,10 +1000,10 @@ TEST_P(EndToEndTest, ConnectionMigrationClientPortChanged) {
   EpollServer* eps = client_->client()->epoll_server();
   int old_fd = client_->client()->fd();
   eps->UnregisterFD(old_fd);
-  close(old_fd);
-
-  // Create a new socket, which will result in a new ephemeral port.
+  // Create a new socket before closing the old one, which will result in a new
+  // ephemeral port.
   QuicClientPeer::CreateUDPSocket(client_->client());
+  close(old_fd);
 
   // The packet writer needs to be updated to use the new FD.
   client_->client()->CreateQuicPacketWriter();

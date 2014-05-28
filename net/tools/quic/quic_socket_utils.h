@@ -63,6 +63,11 @@ class QuicSocketUtils {
                                  const IPAddressNumber& self_address,
                                  const IPEndPoint& peer_address);
 
+  // A helper for WritePacket which fills in the cmsg with the supplied self
+  // address.
+  static void SetIpInfoInCmsg(const IPAddressNumber& self_address,
+                              cmsghdr* cmsg);
+
  private:
   DISALLOW_COPY_AND_ASSIGN(QuicSocketUtils);
 };

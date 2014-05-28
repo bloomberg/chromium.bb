@@ -1489,8 +1489,8 @@ TEST_P(QuicFramerTest, StreamFrameWithVersion) {
 
   EXPECT_EQ(QUIC_NO_ERROR, framer_.error());
   ASSERT_TRUE(visitor_.header_.get());
-  EXPECT_TRUE(visitor_.header_.get()->public_header.version_flag);
-  EXPECT_EQ(GetParam(), visitor_.header_.get()->public_header.versions[0]);
+  EXPECT_TRUE(visitor_.header_->public_header.version_flag);
+  EXPECT_EQ(GetParam(), visitor_.header_->public_header.versions[0]);
   EXPECT_TRUE(CheckDecryption(encrypted, kIncludeVersion));
 
   ASSERT_EQ(1u, visitor_.stream_frames_.size());
@@ -1750,7 +1750,7 @@ TEST_P(QuicFramerTest, AckFrame15) {
   const size_t kNumMissingPacketOffset = kMissingDeltaTimeOffset +
       kQuicDeltaTimeLargestObservedSize;
   const size_t kMissingPacketsOffset = kNumMissingPacketOffset +
-      kNumberOfMissingPacketsSize;
+      kNumberOfNackRangesSize;
   const size_t kMissingPacketsRange = kMissingPacketsOffset +
       PACKET_1BYTE_SEQUENCE_NUMBER;
   const size_t kRevivedPacketsLength = kMissingPacketsRange +
@@ -1849,7 +1849,7 @@ TEST_P(QuicFramerTest, AckFrame) {
   const size_t kNumMissingPacketOffset = kMissingDeltaTimeOffset +
       kQuicDeltaTimeLargestObservedSize;
   const size_t kMissingPacketsOffset = kNumMissingPacketOffset +
-      kNumberOfMissingPacketsSize;
+      kNumberOfNackRangesSize;
   const size_t kMissingPacketsRange = kMissingPacketsOffset +
       PACKET_1BYTE_SEQUENCE_NUMBER;
   const size_t kRevivedPacketsLength = kMissingPacketsRange +
@@ -1947,7 +1947,7 @@ TEST_P(QuicFramerTest, AckFrameRevivedPackets) {
   const size_t kNumMissingPacketOffset = kMissingDeltaTimeOffset +
       kQuicDeltaTimeLargestObservedSize;
   const size_t kMissingPacketsOffset = kNumMissingPacketOffset +
-      kNumberOfMissingPacketsSize;
+      kNumberOfNackRangesSize;
   const size_t kMissingPacketsRange = kMissingPacketsOffset +
       PACKET_1BYTE_SEQUENCE_NUMBER;
   const size_t kRevivedPacketsLength = kMissingPacketsRange +
@@ -2061,7 +2061,7 @@ TEST_P(QuicFramerTest, AckFrameRevivedPackets15) {
   const size_t kNumMissingPacketOffset = kMissingDeltaTimeOffset +
       kQuicDeltaTimeLargestObservedSize;
   const size_t kMissingPacketsOffset = kNumMissingPacketOffset +
-      kNumberOfMissingPacketsSize;
+      kNumberOfNackRangesSize;
   const size_t kMissingPacketsRange = kMissingPacketsOffset +
       PACKET_1BYTE_SEQUENCE_NUMBER;
   const size_t kRevivedPacketsLength = kMissingPacketsRange +
@@ -3722,6 +3722,193 @@ TEST_P(QuicFramerTest, BuildAckFramePacket15) {
                                       AsChars(packet), arraysize(packet));
 }
 
+// TODO(jri): Add test for tuncated packets in which the original ack frame had
+// revived packets. (In both the large and small packet cases below).
+TEST_P(QuicFramerTest, BuildTruncatedAckFrameLargePacket) {
+  if (version_ <= QUIC_VERSION_15) {
+    return;
+  }
+  QuicPacketHeader header;
+  header.public_header.connection_id = GG_UINT64_C(0xFEDCBA9876543210);
+  header.public_header.reset_flag = false;
+  header.public_header.version_flag = false;
+  header.fec_flag = false;
+  header.entropy_flag = true;
+  header.packet_sequence_number = GG_UINT64_C(0x770123456789AA8);
+  header.fec_group = 0;
+
+  QuicAckFrame ack_frame;
+  // This entropy hash is different from what shows up in the packet below,
+  // since entropy is recomputed by the framer on ack truncation (by
+  // TestEntropyCalculator for this test.)
+  ack_frame.received_info.entropy_hash = 0x43;
+  ack_frame.received_info.largest_observed = 2 * 300;
+  ack_frame.received_info.delta_time_largest_observed = QuicTime::Delta::Zero();
+  for (size_t i = 1; i < 2 * 300; i += 2) {
+    ack_frame.received_info.missing_packets.insert(i);
+  }
+
+  QuicFrames frames;
+  frames.push_back(QuicFrame(&ack_frame));
+
+  unsigned char packet[] = {
+    // public flags (8 byte connection_id)
+    0x3C,
+    // connection_id
+    0x10, 0x32, 0x54, 0x76,
+    0x98, 0xBA, 0xDC, 0xFE,
+    // packet sequence number
+    0xA8, 0x9A, 0x78, 0x56,
+    0x34, 0x12,
+    // private flags (entropy)
+    0x01,
+
+    // frame type (ack frame)
+    // (has nacks, is truncated, 2 byte largest observed, 1 byte delta)
+    0x74,
+    // entropy hash of all received packets, set to 1 by TestEntropyCalculator
+    // since ack is truncated.
+    0x01,
+    // 2-byte largest observed packet sequence number.
+    // Expected to be 510 (0x1FE), since only 255 nack ranges can fit.
+    0xFE, 0x01,
+    // Zero delta time.
+    0x0, 0x0,
+    // num missing packet ranges (limited to 255 by size of this field).
+    0xFF,
+    // {missing packet delta, further missing packets in range}
+    // 6 nack ranges x 42 + 3 nack ranges
+    0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00,
+    0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00,
+    0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00,
+    0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00,
+    0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00,
+    0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00,
+    0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00,
+    0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00,
+    0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00,
+    0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00,
+
+    0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00,
+    0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00,
+    0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00,
+    0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00,
+    0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00,
+    0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00,
+    0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00,
+    0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00,
+    0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00,
+    0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00,
+
+    0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00,
+    0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00,
+    0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00,
+    0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00,
+    0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00,
+    0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00,
+    0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00,
+    0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00,
+    0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00,
+    0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00,
+
+    0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00,
+    0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00,
+    0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00,
+    0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00,
+    0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00,
+    0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00,
+    0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00,
+    0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00,
+    0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00,
+    0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00,
+
+    0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00,
+    0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00,
+    0x01, 0x00, 0x01, 0x00, 0x01, 0x00,
+
+    // 0 revived packets.
+    0x00,
+  };
+
+  scoped_ptr<QuicPacket> data(
+      framer_.BuildDataPacket(header, frames, kMaxPacketSize).packet);
+  ASSERT_TRUE(data != NULL);
+
+  test::CompareCharArraysWithHexError("constructed packet",
+                                      data->data(), data->length(),
+                                      AsChars(packet), arraysize(packet));
+}
+
+
+TEST_P(QuicFramerTest, BuildTruncatedAckFrameSmallPacket) {
+  if (version_ <= QUIC_VERSION_15) {
+    return;
+  }
+  QuicPacketHeader header;
+  header.public_header.connection_id = GG_UINT64_C(0xFEDCBA9876543210);
+  header.public_header.reset_flag = false;
+  header.public_header.version_flag = false;
+  header.fec_flag = false;
+  header.entropy_flag = true;
+  header.packet_sequence_number = GG_UINT64_C(0x770123456789AA8);
+  header.fec_group = 0;
+
+  QuicAckFrame ack_frame;
+  // This entropy hash is different from what shows up in the packet below,
+  // since entropy is recomputed by the framer on ack truncation (by
+  // TestEntropyCalculator for this test.)
+  ack_frame.received_info.entropy_hash = 0x43;
+  ack_frame.received_info.largest_observed = 2 * 300;
+  ack_frame.received_info.delta_time_largest_observed = QuicTime::Delta::Zero();
+  for (size_t i = 1; i < 2 * 300; i += 2) {
+    ack_frame.received_info.missing_packets.insert(i);
+  }
+
+  QuicFrames frames;
+  frames.push_back(QuicFrame(&ack_frame));
+
+  unsigned char packet[] = {
+    // public flags (8 byte connection_id)
+    0x3C,
+    // connection_id
+    0x10, 0x32, 0x54, 0x76,
+    0x98, 0xBA, 0xDC, 0xFE,
+    // packet sequence number
+    0xA8, 0x9A, 0x78, 0x56,
+    0x34, 0x12,
+    // private flags (entropy)
+    0x01,
+
+    // frame type (ack frame)
+    // (has nacks, is truncated, 2 byte largest observed, 1 byte delta)
+    0x74,
+    // entropy hash of all received packets, set to 1 by TestEntropyCalculator
+    // since ack is truncated.
+    0x01,
+    // 2-byte largest observed packet sequence number.
+    // Expected to be 12 (0x0C), since only 6 nack ranges can fit.
+    0x0C, 0x00,
+    // Zero delta time.
+    0x0, 0x0,
+    // num missing packet ranges (limited to 6 by packet size of 37).
+    0x06,
+    // {missing packet delta, further missing packets in range}
+    // 6 nack ranges
+    0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00,
+    // 0 revived packets.
+    0x00,
+  };
+
+  scoped_ptr<QuicPacket> data(
+      framer_.BuildDataPacket(header, frames, 37u).packet);
+  ASSERT_TRUE(data != NULL);
+  // Expect 1 byte unused since at least 2 bytes are needed to fit more nacks.
+  EXPECT_EQ(36u, data->length());
+  test::CompareCharArraysWithHexError("constructed packet",
+                                      data->data(), data->length(),
+                                      AsChars(packet), arraysize(packet));
+}
+
 TEST_P(QuicFramerTest, BuildCongestionFeedbackFramePacketTCP) {
   QuicPacketHeader header;
   header.public_header.connection_id = GG_UINT64_C(0xFEDCBA9876543210);
@@ -4470,7 +4657,7 @@ TEST_P(QuicFramerTest, EncryptPacketWithVersionFlag) {
   EXPECT_TRUE(CheckEncryption(sequence_number, raw.get()));
 }
 
-TEST_P(QuicFramerTest, Truncation) {
+TEST_P(QuicFramerTest, AckTruncationLargePacket) {
   if (framer_.version() <= QUIC_VERSION_15) {
     return;
   }
@@ -4483,31 +4670,25 @@ TEST_P(QuicFramerTest, Truncation) {
   header.packet_sequence_number = GG_UINT64_C(0x123456789ABC);
   header.fec_group = 0;
 
-  QuicAckFrame ack_frame;
-  ack_frame.received_info.largest_observed = 601;
-  for (uint64 i = 1; i < ack_frame.received_info.largest_observed; i += 2) {
-    ack_frame.received_info.missing_packets.insert(i);
-  }
-
-  // Create a packet with just the ack
+  // Create a packet with just the ack.
+  QuicAckFrame ack_frame = MakeAckFrameWithNackRanges(300, 0u);
   QuicFrame frame;
   frame.type = ACK_FRAME;
   frame.ack_frame = &ack_frame;
   QuicFrames frames;
   frames.push_back(frame);
 
+  // Build an ack packet with truncation due to limit in number of nack ranges.
   scoped_ptr<QuicPacket> raw_ack_packet(
-      framer_.BuildUnsizedDataPacket(header, frames).packet);
+      framer_.BuildDataPacket(header, frames, kMaxPacketSize).packet);
   ASSERT_TRUE(raw_ack_packet != NULL);
-
   scoped_ptr<QuicEncryptedPacket> ack_packet(
       framer_.EncryptPacket(ENCRYPTION_NONE, header.packet_sequence_number,
                             *raw_ack_packet));
-
-  // Now make sure we can turn our ack packet back into an ack frame
+  // Now make sure we can turn our ack packet back into an ack frame.
   ASSERT_TRUE(framer_.ProcessPacket(*ack_packet));
   ASSERT_EQ(1u, visitor_.ack_frames_.size());
-  const QuicAckFrame& processed_ack_frame = *visitor_.ack_frames_[0];
+  QuicAckFrame& processed_ack_frame = *visitor_.ack_frames_[0];
   EXPECT_TRUE(processed_ack_frame.received_info.is_truncated);
   EXPECT_EQ(510u, processed_ack_frame.received_info.largest_observed);
   ASSERT_EQ(255u, processed_ack_frame.received_info.missing_packets.size());
@@ -4517,6 +4698,49 @@ TEST_P(QuicFramerTest, Truncation) {
   SequenceNumberSet::const_reverse_iterator last_missing_iter =
       processed_ack_frame.received_info.missing_packets.rbegin();
   EXPECT_EQ(509u, *last_missing_iter);
+}
+
+TEST_P(QuicFramerTest, AckTruncationSmallPacket) {
+  if (framer_.version() <= QUIC_VERSION_15) {
+    return;
+  }
+  QuicPacketHeader header;
+  header.public_header.connection_id = GG_UINT64_C(0xFEDCBA9876543210);
+  header.public_header.reset_flag = false;
+  header.public_header.version_flag = false;
+  header.fec_flag = false;
+  header.entropy_flag = false;
+  header.packet_sequence_number = GG_UINT64_C(0x123456789ABC);
+  header.fec_group = 0;
+
+  // Create a packet with just the ack.
+  QuicAckFrame ack_frame = MakeAckFrameWithNackRanges(300, 0u);
+  QuicFrame frame;
+  frame.type = ACK_FRAME;
+  frame.ack_frame = &ack_frame;
+  QuicFrames frames;
+  frames.push_back(frame);
+
+  // Build an ack packet with truncation due to limit in number of nack ranges.
+  scoped_ptr<QuicPacket> raw_ack_packet(
+      framer_.BuildDataPacket(header, frames, 500).packet);
+  ASSERT_TRUE(raw_ack_packet != NULL);
+  scoped_ptr<QuicEncryptedPacket> ack_packet(
+      framer_.EncryptPacket(ENCRYPTION_NONE, header.packet_sequence_number,
+                            *raw_ack_packet));
+  // Now make sure we can turn our ack packet back into an ack frame.
+  ASSERT_TRUE(framer_.ProcessPacket(*ack_packet));
+  ASSERT_EQ(1u, visitor_.ack_frames_.size());
+  QuicAckFrame& processed_ack_frame = *visitor_.ack_frames_[0];
+  EXPECT_TRUE(processed_ack_frame.received_info.is_truncated);
+  EXPECT_EQ(476u, processed_ack_frame.received_info.largest_observed);
+  ASSERT_EQ(238u, processed_ack_frame.received_info.missing_packets.size());
+  SequenceNumberSet::const_iterator missing_iter =
+      processed_ack_frame.received_info.missing_packets.begin();
+  EXPECT_EQ(1u, *missing_iter);
+  SequenceNumberSet::const_reverse_iterator last_missing_iter =
+      processed_ack_frame.received_info.missing_packets.rbegin();
+  EXPECT_EQ(475u, *last_missing_iter);
 }
 
 TEST_P(QuicFramerTest, Truncation15) {
@@ -4539,7 +4763,7 @@ TEST_P(QuicFramerTest, Truncation15) {
     ack_frame.received_info.missing_packets.insert(i);
   }
 
-  // Create a packet with just the ack
+  // Create a packet with just the ack.
   QuicFrame frame;
   frame.type = ACK_FRAME;
   frame.ack_frame = &ack_frame;
@@ -4554,7 +4778,7 @@ TEST_P(QuicFramerTest, Truncation15) {
       framer_.EncryptPacket(ENCRYPTION_NONE, header.packet_sequence_number,
                             *raw_ack_packet));
 
-  // Now make sure we can turn our ack packet back into an ack frame
+  // Now make sure we can turn our ack packet back into an ack frame.
   ASSERT_TRUE(framer_.ProcessPacket(*ack_packet));
   ASSERT_EQ(1u, visitor_.ack_frames_.size());
   const QuicAckFrame& processed_ack_frame = *visitor_.ack_frames_[0];
@@ -4588,7 +4812,7 @@ TEST_P(QuicFramerTest, CleanTruncation) {
     ack_frame.received_info.missing_packets.insert(i);
   }
 
-  // Create a packet with just the ack
+  // Create a packet with just the ack.
   QuicFrame frame;
   frame.type = ACK_FRAME;
   frame.ack_frame = &ack_frame;
@@ -4603,7 +4827,7 @@ TEST_P(QuicFramerTest, CleanTruncation) {
       framer_.EncryptPacket(ENCRYPTION_NONE, header.packet_sequence_number,
                             *raw_ack_packet));
 
-  // Now make sure we can turn our ack packet back into an ack frame
+  // Now make sure we can turn our ack packet back into an ack frame.
   ASSERT_TRUE(framer_.ProcessPacket(*ack_packet));
 
   // Test for clean truncation of the ack by comparing the length of the

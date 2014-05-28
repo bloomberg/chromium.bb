@@ -1508,6 +1508,7 @@
       'quic/quic_stream_factory_test.cc',
       'quic/quic_stream_sequencer_test.cc',
       'quic/quic_time_test.cc',
+      'quic/quic_unacked_packet_map_test.cc',
       'quic/quic_utils_chromium_test.cc',
       'quic/quic_utils_test.cc',
       'quic/quic_write_blocked_list_test.cc',

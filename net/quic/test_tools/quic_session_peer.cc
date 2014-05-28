@@ -33,7 +33,7 @@ void QuicSessionPeer::SetHeadersStream(QuicSession* session,
 }
 
 // static
-QuicWriteBlockedList* QuicSessionPeer::GetWriteblockedStreams(
+QuicWriteBlockedList* QuicSessionPeer::GetWriteBlockedStreams(
     QuicSession* session) {
   return &session->write_blocked_streams_;
 }

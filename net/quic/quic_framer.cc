@@ -198,9 +198,12 @@ size_t QuicFramer::GetMinAckFrameSize(
     QuicVersion version,
     QuicSequenceNumberLength sequence_number_length,
     QuicSequenceNumberLength largest_observed_length) {
-  return kQuicFrameTypeSize + kQuicEntropyHashSize +
-      sequence_number_length + kQuicEntropyHashSize +
+  size_t len = kQuicFrameTypeSize + kQuicEntropyHashSize +
       largest_observed_length + kQuicDeltaTimeLargestObservedSize;
+  if (version <= QUIC_VERSION_15) {
+    len += sequence_number_length + kQuicEntropyHashSize;
+  }
+  return len;
 }
 
 // static
@@ -298,21 +301,25 @@ size_t QuicFramer::GetSerializedFrameLength(
   size_t frame_len =
       ComputeFrameLength(frame, last_frame, is_in_fec_group,
                          sequence_number_length);
-  if (frame_len > free_bytes) {
-    // Only truncate the first frame in a packet, so if subsequent ones go
-    // over, stop including more frames.
-    if (!first_frame) {
-      return 0;
-    }
-    if (CanTruncate(quic_version_, frame, free_bytes)) {
-      // Truncate the frame so the packet will not exceed kMaxPacketSize.
-      // Note that we may not use every byte of the writer in this case.
-      DVLOG(1) << "Truncating large frame";
-      return free_bytes;
-    } else if (!FLAGS_quic_allow_oversized_packets_for_test) {
-      return 0;
-    }
+  if (frame_len <= free_bytes) {
+    // Frame fits within packet. Note that acks may be truncated.
+    return frame_len;
   }
+  // Only truncate the first frame in a packet, so if subsequent ones go
+  // over, stop including more frames.
+  if (!first_frame) {
+    return 0;
+  }
+  if (CanTruncate(quic_version_, frame, free_bytes)) {
+    // Truncate the frame so the packet will not exceed kMaxPacketSize.
+    // Note that we may not use every byte of the writer in this case.
+    DVLOG(1) << "Truncating large frame, free bytes: " << free_bytes;
+    return free_bytes;
+  }
+  if (!FLAGS_quic_allow_oversized_packets_for_test) {
+    return 0;
+  }
+  LOG(DFATAL) << "Packet size too small to fit frame.";
   return frame_len;
 }
 
@@ -1818,11 +1825,11 @@ size_t QuicFramer::GetAckFrameSize(
                                        sequence_number_length,
                                        largest_observed_length);
   if (!ack_info.nack_ranges.empty()) {
-    ack_size += kNumberOfMissingPacketsSize  + kNumberOfRevivedPacketsSize;
-    ack_size += ack_info.nack_ranges.size() *
+    ack_size += kNumberOfNackRangesSize  + kNumberOfRevivedPacketsSize;
+    ack_size += min(ack_info.nack_ranges.size(), kMaxNackRanges) *
       (missing_sequence_number_length + PACKET_1BYTE_SEQUENCE_NUMBER);
-    ack_size +=
-        ack.received_info.revived_packets.size() * largest_observed_length;
+    ack_size += min(ack.received_info.revived_packets.size(),
+                    kMaxRevivedPackets) * largest_observed_length;
   }
   return ack_size;
 }
@@ -2028,18 +2035,17 @@ bool QuicFramer::AppendAckFrameAndTypeByte(
       GetMinSequenceNumberLength(ack_info.max_delta);
   // Determine whether we need to truncate ranges.
   size_t available_range_bytes = writer->capacity() - writer->length() -
+      kNumberOfRevivedPacketsSize - kNumberOfNackRangesSize -
       GetMinAckFrameSize(quic_version_,
                          header.public_header.sequence_number_length,
-                         largest_observed_length) - kNumberOfRevivedPacketsSize;
+                         largest_observed_length);
   size_t max_num_ranges = available_range_bytes /
       (missing_sequence_number_length + PACKET_1BYTE_SEQUENCE_NUMBER);
-  max_num_ranges =
-      min(static_cast<size_t>(numeric_limits<uint8>::max()), max_num_ranges);
+  max_num_ranges = min(kMaxNackRanges, max_num_ranges);
   bool truncated = ack_info.nack_ranges.size() > max_num_ranges;
   DVLOG_IF(1, truncated) << "Truncating ack from "
                          << ack_info.nack_ranges.size() << " ranges to "
                          << max_num_ranges;
-
   // Write out the type byte by setting the low order bits and doing shifts
   // to make room for the next bit flags to be set.
   // Whether there are any nacks.
@@ -2141,9 +2147,8 @@ bool QuicFramer::AppendAckFrameAndTypeByte(
 
   // Append revived packets.
   // If not all the revived packets fit, only mention the ones that do.
-  uint8 num_revived_packets =
-      min(received_info.revived_packets.size(),
-          static_cast<size_t>(numeric_limits<uint8>::max()));
+  uint8 num_revived_packets = min(received_info.revived_packets.size(),
+                                  kMaxRevivedPackets);
   num_revived_packets = min(
       static_cast<size_t>(num_revived_packets),
       (writer->capacity() - writer->length()) / largest_observed_length);

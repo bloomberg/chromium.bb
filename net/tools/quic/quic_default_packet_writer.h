@@ -32,6 +32,12 @@ class QuicDefaultPacketWriter : public QuicPacketWriter {
 
   void set_fd(int fd) { fd_ = fd; }
 
+ protected:
+  void set_write_blocked(bool is_blocked) {
+    write_blocked_ = is_blocked;
+  }
+  int fd() { return fd_; }
+
  private:
   int fd_;
   bool write_blocked_;

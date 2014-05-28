@@ -1037,8 +1037,8 @@ struct NET_EXPORT_PRIVATE TransmissionInfo {
   // Stores the sequence numbers of all transmissions of this packet.
   // Can never be null.
   SequenceNumberSet* all_transmissions;
-  // Pending packets have not been abandoned or lost.
-  bool pending;
+  // In flight packets have not been abandoned or lost.
+  bool in_flight;
 };
 
 // A struct for functions which consume data payloads and fins.

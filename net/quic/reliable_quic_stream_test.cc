@@ -121,7 +121,7 @@ class ReliableQuicStreamTest : public ::testing::TestWithParam<bool> {
     stream_.reset(new TestStream(kHeadersStreamId, session_.get(),
                                  stream_should_process_data));
     write_blocked_list_ =
-        QuicSessionPeer::GetWriteblockedStreams(session_.get());
+        QuicSessionPeer::GetWriteBlockedStreams(session_.get());
   }
 
   bool fin_sent() { return ReliableQuicStreamPeer::FinSent(stream_.get()); }
@@ -153,7 +153,8 @@ TEST_F(ReliableQuicStreamTest, WriteAllData) {
   connection_->options()->max_packet_length =
       1 + QuicPacketCreator::StreamFramePacketOverhead(
               connection_->version(), PACKET_8BYTE_CONNECTION_ID,
-              !kIncludeVersion, PACKET_6BYTE_SEQUENCE_NUMBER, NOT_IN_FEC_GROUP);
+              !kIncludeVersion, PACKET_6BYTE_SEQUENCE_NUMBER, 0u,
+              NOT_IN_FEC_GROUP);
   EXPECT_CALL(*session_, WritevData(kHeadersStreamId, _, _, _, _))
       .WillOnce(Return(QuicConsumedData(kDataLen, true)));
   stream_->WriteOrBufferData(kData1, false, NULL);
@@ -211,7 +212,7 @@ TEST_F(ReliableQuicStreamTest, WriteOrBufferData) {
   connection_->options()->max_packet_length =
       1 + QuicPacketCreator::StreamFramePacketOverhead(
           connection_->version(), PACKET_8BYTE_CONNECTION_ID, !kIncludeVersion,
-          PACKET_6BYTE_SEQUENCE_NUMBER, NOT_IN_FEC_GROUP);
+          PACKET_6BYTE_SEQUENCE_NUMBER, 0u, NOT_IN_FEC_GROUP);
   EXPECT_CALL(*session_, WritevData(_, _, _, _, _)).WillOnce(
       Return(QuicConsumedData(kDataLen - 1, false)));
   stream_->WriteOrBufferData(kData1, false, NULL);
@@ -325,16 +326,16 @@ TEST_F(ReliableQuicStreamTest, StreamFlowControlMultipleWindowUpdates) {
   // want to make sure we latch the largest offset we see.
 
   // Initially should be default.
-  EXPECT_EQ(initial_flow_control_window_bytes_,
-            QuicFlowControllerPeer::SendWindowOffset(
-                stream_.get()->flow_controller()));
+  EXPECT_EQ(
+      initial_flow_control_window_bytes_,
+      QuicFlowControllerPeer::SendWindowOffset(stream_->flow_controller()));
 
   // Check a single WINDOW_UPDATE results in correct offset.
   QuicWindowUpdateFrame window_update_1(stream_->id(), 1234);
   stream_->OnWindowUpdateFrame(window_update_1);
-  EXPECT_EQ(window_update_1.byte_offset,
-            QuicFlowControllerPeer::SendWindowOffset(
-                stream_.get()->flow_controller()));
+  EXPECT_EQ(
+      window_update_1.byte_offset,
+      QuicFlowControllerPeer::SendWindowOffset(stream_->flow_controller()));
 
   // Now send a few more WINDOW_UPDATES and make sure that only the largest is
   // remembered.
@@ -344,9 +345,9 @@ TEST_F(ReliableQuicStreamTest, StreamFlowControlMultipleWindowUpdates) {
   stream_->OnWindowUpdateFrame(window_update_2);
   stream_->OnWindowUpdateFrame(window_update_3);
   stream_->OnWindowUpdateFrame(window_update_4);
-  EXPECT_EQ(window_update_3.byte_offset,
-            QuicFlowControllerPeer::SendWindowOffset(
-                stream_.get()->flow_controller()));
+  EXPECT_EQ(
+      window_update_3.byte_offset,
+      QuicFlowControllerPeer::SendWindowOffset(stream_->flow_controller()));
 }
 
 TEST_F(ReliableQuicStreamTest, StreamFlowControlShouldNotBlockInLessThanQ017) {

@@ -93,6 +93,7 @@ class NET_EXPORT_PRIVATE QuicPacketCreator : public QuicFecBuilderInterface {
       QuicConnectionIdLength connection_id_length,
       bool include_version,
       QuicSequenceNumberLength sequence_number_length,
+      QuicStreamOffset offset,
       InFecGroup is_in_fec_group);
 
   bool HasRoomForStreamFrame(QuicStreamId id, QuicStreamOffset offset) const;
@@ -221,9 +222,10 @@ class NET_EXPORT_PRIVATE QuicPacketCreator : public QuicFecBuilderInterface {
 
   static bool ShouldRetransmit(const QuicFrame& frame);
 
-  // Starts a new FEC group with the next serialized packet, if FEC is enabled
-  // and there is not already an FEC group open.
-  InFecGroup MaybeStartFec();
+  // Updates sequence number length on a packet or FEC group boundary.
+  // Also starts an FEC group if FEC protection is on and there is not already
+  // an FEC group open.
+  InFecGroup MaybeUpdateLengthsAndStartFec();
 
   void FillPacketHeader(QuicFecGroupNumber fec_group,
                         bool fec_flag,

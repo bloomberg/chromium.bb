@@ -40,7 +40,7 @@ SequenceNumberSet TCPLossAlgorithm::DetectLostPackets(
 
   for (QuicUnackedPacketMap::const_iterator it = unacked_packets.begin();
        it != unacked_packets.end() && it->first <= largest_observed; ++it) {
-    if (!it->second.pending) {
+    if (!it->second.in_flight) {
       continue;
     }
 
@@ -52,7 +52,7 @@ SequenceNumberSet TCPLossAlgorithm::DetectLostPackets(
     }
 
     // Only early retransmit(RFC5827) when the last packet gets acked and
-    // there are pending retransmittable packets.
+    // there are retransmittable packets in flight.
     // This also implements a timer-protected variant of FACK.
     if (it->second.retransmittable_frames &&
         unacked_packets.largest_sent_packet() == largest_observed) {

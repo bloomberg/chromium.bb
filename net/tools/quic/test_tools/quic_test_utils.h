@@ -29,6 +29,11 @@ static const QuicConnectionId kTestConnectionId = 42;
 static const int kTestPort = 123;
 static const uint32 kInitialFlowControlWindowForTest = 32 * 1024;  // 32 KB
 
+// Testing convenience method to construct a QuicAckFrame with |num_nack_ranges|
+// nack ranges of width 1 packet, starting from |least_unacked|.
+QuicAckFrame MakeAckFrameWithNackRanges(size_t num_nack_ranges,
+                                        QuicPacketSequenceNumber least_unacked);
+
 // Simple random number generator used to compute random numbers suitable
 // for pseudo-randomly dropping packets in tests.  It works by computing
 // the sha1 hash of the current seed, and using the first 64 bits as

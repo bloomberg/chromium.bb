@@ -70,6 +70,7 @@ class QuicPacketCreatorTest : public ::testing::TestWithParam<TestParams> {
         data_("foo"),
         creator_(connection_id_, &client_framer_, &mock_random_, false) {
     client_framer_.set_visitor(&framer_visitor_);
+    client_framer_.set_received_entropy_calculator(&entropy_calculator_);
     server_framer_.set_visitor(&framer_visitor_);
   }
   ~QuicPacketCreatorTest() {
@@ -131,6 +132,7 @@ class QuicPacketCreatorTest : public ::testing::TestWithParam<TestParams> {
   string data_;
   MockRandom mock_random_;
   QuicPacketCreator creator_;
+  MockEntropyCalculator entropy_calculator_;
 };
 
 // Run all packet creator tests with all supported versions of QUIC, and with
@@ -251,6 +253,86 @@ TEST_P(QuicPacketCreatorTest, SerializeChangingSequenceNumberLength) {
   }
   ProcessPacket(serialized.packet);
   delete serialized.packet;
+}
+
+TEST_P(QuicPacketCreatorTest, ChangeSequenceNumberLengthMidPacket) {
+  if (GetParam().version <= QUIC_VERSION_15) {
+    return;
+  }
+  // Changing the sequence number length with queued frames in the creator
+  // should hold the change until after any currently queued frames are
+  // serialized.
+
+  // Packet 1.
+  // Queue a frame in the creator.
+  EXPECT_FALSE(creator_.HasPendingFrames());
+  QuicFrame ack_frame = QuicFrame(new QuicAckFrame(MakeAckFrame(0u, 0u)));
+  creator_.AddSavedFrame(ack_frame);
+
+  // Now change sequence number length.
+  creator_.options()->send_sequence_number_length =
+      PACKET_4BYTE_SEQUENCE_NUMBER;
+
+  // Add a STOP_WAITING frame since it contains a packet sequence number,
+  // whose length should be 1.
+  QuicStopWaitingFrame stop_waiting_frame;
+  EXPECT_TRUE(creator_.AddSavedFrame(QuicFrame(&stop_waiting_frame)));
+  EXPECT_TRUE(creator_.HasPendingFrames());
+
+  // Ensure the packet is successfully created.
+  SerializedPacket serialized = creator_.SerializePacket();
+  ASSERT_TRUE(serialized.packet);
+  EXPECT_EQ(PACKET_1BYTE_SEQUENCE_NUMBER, serialized.sequence_number_length);
+
+  // Verify that header in transmitted packet has 1 byte sequence length.
+  QuicPacketHeader header;
+  {
+    InSequence s;
+    EXPECT_CALL(framer_visitor_, OnPacket());
+    EXPECT_CALL(framer_visitor_, OnUnauthenticatedPublicHeader(_));
+    EXPECT_CALL(framer_visitor_, OnUnauthenticatedHeader(_));
+    EXPECT_CALL(framer_visitor_, OnDecryptedPacket(_));
+    EXPECT_CALL(framer_visitor_, OnPacketHeader(_)).WillOnce(
+        DoAll(SaveArg<0>(&header), Return(true)));
+    EXPECT_CALL(framer_visitor_, OnAckFrame(_));
+    EXPECT_CALL(framer_visitor_, OnStopWaitingFrame(_));
+    EXPECT_CALL(framer_visitor_, OnPacketComplete());
+  }
+  ProcessPacket(serialized.packet);
+  EXPECT_EQ(PACKET_1BYTE_SEQUENCE_NUMBER,
+            header.public_header.sequence_number_length);
+  delete serialized.packet;
+
+  // Packet 2.
+  EXPECT_FALSE(creator_.HasPendingFrames());
+  // Generate Packet 2 with one frame -- sequence number length should now
+  // change to 4 bytes.
+  EXPECT_TRUE(creator_.AddSavedFrame(QuicFrame(&stop_waiting_frame)));
+  EXPECT_TRUE(creator_.HasPendingFrames());
+
+  // Ensure the packet is successfully created.
+  serialized = creator_.SerializePacket();
+  ASSERT_TRUE(serialized.packet);
+  EXPECT_EQ(PACKET_4BYTE_SEQUENCE_NUMBER, serialized.sequence_number_length);
+
+  // Verify that header in transmitted packet has 4 byte sequence length.
+  {
+    InSequence s;
+    EXPECT_CALL(framer_visitor_, OnPacket());
+    EXPECT_CALL(framer_visitor_, OnUnauthenticatedPublicHeader(_));
+    EXPECT_CALL(framer_visitor_, OnUnauthenticatedHeader(_));
+    EXPECT_CALL(framer_visitor_, OnDecryptedPacket(_));
+    EXPECT_CALL(framer_visitor_, OnPacketHeader(_)).WillOnce(
+        DoAll(SaveArg<0>(&header), Return(true)));
+    EXPECT_CALL(framer_visitor_, OnStopWaitingFrame(_));
+    EXPECT_CALL(framer_visitor_, OnPacketComplete());
+  }
+  ProcessPacket(serialized.packet);
+  EXPECT_EQ(PACKET_4BYTE_SEQUENCE_NUMBER,
+            header.public_header.sequence_number_length);
+
+  delete serialized.packet;
+  delete ack_frame.ack_frame;
 }
 
 TEST_P(QuicPacketCreatorTest, SerializeWithFECChangingSequenceNumberLength) {
@@ -653,7 +735,7 @@ TEST_P(QuicPacketCreatorTest, SerializeVersionNegotiationPacket) {
     EXPECT_CALL(framer_visitor_, OnUnauthenticatedPublicHeader(_));
     EXPECT_CALL(framer_visitor_, OnVersionNegotiationPacket(_));
   }
-  client_framer_.ProcessPacket(*encrypted.get());
+  client_framer_.ProcessPacket(*encrypted);
 }
 
 TEST_P(QuicPacketCreatorTest, UpdatePacketSequenceNumberLengthLeastAwaiting) {
@@ -824,6 +906,85 @@ TEST_P(QuicPacketCreatorTest, AddFrameAndSerialize) {
                 NOT_IN_FEC_GROUP),
             creator_.BytesFree());
 }
+
+TEST_P(QuicPacketCreatorTest, SerializeTruncatedAckFrameWithLargePacketSize) {
+  if (!GetParam().version_serialization) {
+    creator_.StopSendingVersion();
+  }
+  creator_.options()->max_packet_length = kMaxPacketSize;
+  const size_t max_plaintext_size =
+      client_framer_.GetMaxPlaintextSize(creator_.options()->max_packet_length);
+
+  // Serialized length of ack frame with 2000 nack ranges should be limited by
+  // the number of nack ranges that can be fit in an ack frame.
+  QuicAckFrame ack_frame = MakeAckFrameWithNackRanges(2000u, 0u);
+  size_t frame_len = client_framer_.GetSerializedFrameLength(
+      QuicFrame(&ack_frame), creator_.BytesFree(), true, true,
+      NOT_IN_FEC_GROUP, PACKET_1BYTE_SEQUENCE_NUMBER);
+  EXPECT_GT(creator_.BytesFree(), frame_len);
+  EXPECT_GT(max_plaintext_size, creator_.PacketSize());
+
+  // Add ack frame to creator.
+  EXPECT_TRUE(creator_.AddSavedFrame(QuicFrame(&ack_frame)));
+  EXPECT_TRUE(creator_.HasPendingFrames());
+  EXPECT_GT(max_plaintext_size, creator_.PacketSize());
+  EXPECT_LT(0u, creator_.BytesFree());
+
+  // Make sure that an additional stream frame can be added to the packet.
+  QuicFrame stream_frame;
+  size_t consumed = creator_.CreateStreamFrame(
+      2u, MakeIOVector("test"), 0u, false, &stream_frame);
+  EXPECT_EQ(4u, consumed);
+  ASSERT_TRUE(stream_frame.stream_frame);
+  EXPECT_TRUE(creator_.AddSavedFrame(stream_frame));
+  EXPECT_TRUE(creator_.HasPendingFrames());
+
+  // Ensure the packet is successfully created, and the packet size estimate
+  // matches the serialized packet length.
+  EXPECT_CALL(entropy_calculator_,
+             EntropyHash(_)).WillOnce(testing::Return(0));
+  size_t est_packet_size = creator_.PacketSize();
+  SerializedPacket serialized = creator_.SerializePacket();
+  ASSERT_TRUE(serialized.packet);
+  EXPECT_EQ(est_packet_size, serialized.packet->length());
+  delete serialized.retransmittable_frames;
+  delete serialized.packet;
+}
+
+TEST_P(QuicPacketCreatorTest, SerializeTruncatedAckFrameWithSmallPacketSize) {
+  if (!GetParam().version_serialization) {
+    creator_.StopSendingVersion();
+  }
+  creator_.options()->max_packet_length = 500u;
+  const size_t max_plaintext_size =
+      client_framer_.GetMaxPlaintextSize(creator_.options()->max_packet_length);
+  EXPECT_EQ(max_plaintext_size - creator_.PacketSize(), creator_.BytesFree());
+
+  // Serialized length of ack frame with 2000 nack ranges should be limited by
+  // the packet size.
+  QuicAckFrame ack_frame = MakeAckFrameWithNackRanges(2000u, 0u);
+  size_t frame_len = client_framer_.GetSerializedFrameLength(
+      QuicFrame(&ack_frame), creator_.BytesFree(), true, true,
+      NOT_IN_FEC_GROUP, PACKET_1BYTE_SEQUENCE_NUMBER);
+  EXPECT_EQ(creator_.BytesFree(), frame_len);
+
+  // Add ack frame to creator.
+  EXPECT_TRUE(creator_.AddSavedFrame(QuicFrame(&ack_frame)));
+  EXPECT_TRUE(creator_.HasPendingFrames());
+  EXPECT_EQ(max_plaintext_size, creator_.PacketSize());
+  EXPECT_EQ(0u, creator_.BytesFree());
+
+  // Ensure the packet is successfully created, and the packet size estimate
+  // may not match the serialized packet length.
+  EXPECT_CALL(entropy_calculator_,
+             EntropyHash(_)).WillOnce(Return(0));
+  size_t est_packet_size = creator_.PacketSize();
+  SerializedPacket serialized = creator_.SerializePacket();
+  ASSERT_TRUE(serialized.packet);
+  EXPECT_GE(est_packet_size, serialized.packet->length());
+  delete serialized.packet;
+}
+
 
 TEST_P(QuicPacketCreatorTest, EntropyFlag) {
   frames_.push_back(QuicFrame(new QuicStreamFrame(0u, false, 0u, IOVector())));

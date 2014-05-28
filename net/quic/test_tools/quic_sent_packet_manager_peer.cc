@@ -62,7 +62,7 @@ size_t QuicSentPacketManagerPeer::GetPendingRetransmissionCount(
 // static
 bool QuicSentPacketManagerPeer::HasPendingPackets(
     const QuicSentPacketManager* sent_packet_manager) {
-  return sent_packet_manager->unacked_packets_.HasPendingPackets();
+  return sent_packet_manager->unacked_packets_.HasInFlightPackets();
 }
 
 // static

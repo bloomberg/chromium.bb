@@ -41,7 +41,7 @@ SequenceNumberSet TimeLossAlgorithm::DetectLostPackets(
 
   for (QuicUnackedPacketMap::const_iterator it = unacked_packets.begin();
        it != unacked_packets.end() && it->first <= largest_observed; ++it) {
-    if (!it->second.pending) {
+    if (!it->second.in_flight) {
       continue;
     }
     LOG_IF(DFATAL, it->second.nack_count == 0)

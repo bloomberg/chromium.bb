@@ -1433,8 +1433,12 @@ TEST_P(QuicConnectionTest, BasicSending) {
 TEST_P(QuicConnectionTest, FECSending) {
   // All packets carry version info till version is negotiated.
   size_t payload_length;
-  connection_.options()->max_packet_length =
-      GetPacketLengthForOneStream(
+  // GetPacketLengthForOneStream() assumes a stream offset of 0 in determining
+  // packet length. The size of the offset field in a stream frame is 0 for
+  // offset 0, and 2 for non-zero offsets up through 16K. Increase
+  // max_packet_length by 2 so that subsequent packets containing subsequent
+  // stream frames with non-zero offets will fit within the packet length.
+  connection_.options()->max_packet_length = 2 + GetPacketLengthForOneStream(
           connection_.version(), kIncludeVersion, PACKET_1BYTE_SEQUENCE_NUMBER,
           IN_FEC_GROUP, &payload_length);
   // And send FEC every two packets.
@@ -1443,8 +1447,8 @@ TEST_P(QuicConnectionTest, FECSending) {
 
   // Send 4 data packets and 2 FEC packets.
   EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(6);
-  // The first stream frame will consume 2 fewer bytes than the other three.
-  const string payload(payload_length * 4 - 6, 'a');
+  // The first stream frame will have 2 fewer overhead bytes than the other 3.
+  const string payload(payload_length * 4 + 2, 'a');
   connection_.SendStreamDataWithString(1, payload, 0, !kFin, NULL);
   // Expect the FEC group to be closed after SendStreamDataWithString.
   EXPECT_FALSE(creator_.ShouldSendFec(true));
@@ -1958,9 +1962,9 @@ TEST_P(QuicConnectionTest, RetransmitWriteBlockedAckedOriginalThenSent) {
   ProcessAckPacket(&ack);
 
   connection_.OnPacketSent(WriteResult(WRITE_STATUS_OK, 0));
-  // The retransmission alarm should not be set because there are
-  // no unacked packets.
-  EXPECT_FALSE(connection_.GetRetransmissionAlarm()->IsSet());
+  // There is now a pending packet, but with no retransmittable frames.
+  EXPECT_TRUE(connection_.GetRetransmissionAlarm()->IsSet());
+  EXPECT_FALSE(connection_.sent_packet_manager().HasRetransmittableFrames(2));
 }
 
 TEST_P(QuicConnectionTest, AlarmsWhenWriteBlocked) {
@@ -2885,15 +2889,19 @@ TEST_P(QuicConnectionTest, TestQueueLimitsOnSendStreamData) {
 TEST_P(QuicConnectionTest, LoopThroughSendingPackets) {
   // All packets carry version info till version is negotiated.
   size_t payload_length;
-  connection_.options()->max_packet_length =
-      GetPacketLengthForOneStream(
+  // GetPacketLengthForOneStream() assumes a stream offset of 0 in determining
+  // packet length. The size of the offset field in a stream frame is 0 for
+  // offset 0, and 2 for non-zero offsets up through 16K. Increase
+  // max_packet_length by 2 so that subsequent packets containing subsequent
+  // stream frames with non-zero offets will fit within the packet length.
+  connection_.options()->max_packet_length = 2 + GetPacketLengthForOneStream(
           connection_.version(), kIncludeVersion, PACKET_1BYTE_SEQUENCE_NUMBER,
           NOT_IN_FEC_GROUP, &payload_length);
 
   // Queue the first packet.
   EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(7);
-  // The first stream frame will consume 2 fewer bytes than the other six.
-  const string payload(payload_length * 7 - 12, 'a');
+  // The first stream frame will have 2 fewer overhead bytes than the other six.
+  const string payload(payload_length * 7 + 2, 'a');
   EXPECT_EQ(payload.size(),
             connection_.SendStreamDataWithString(1, payload, 0,
                                                  !kFin, NULL).bytes_consumed);

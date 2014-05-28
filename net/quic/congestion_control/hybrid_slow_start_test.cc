@@ -18,36 +18,36 @@ class HybridSlowStartTest : public ::testing::Test {
        rtt_(QuicTime::Delta::FromMilliseconds(60)) {
   }
   virtual void SetUp() {
-    slowStart_.reset(new HybridSlowStart(&clock_));
+    slow_start_.reset(new HybridSlowStart(&clock_));
   }
   const QuicTime::Delta one_ms_;
   const QuicTime::Delta rtt_;
   MockClock clock_;
-  scoped_ptr<HybridSlowStart> slowStart_;
+  scoped_ptr<HybridSlowStart> slow_start_;
 };
 
 TEST_F(HybridSlowStartTest, Simple) {
   QuicPacketSequenceNumber sequence_number = 1;
   QuicPacketSequenceNumber end_sequence_number = 3;
-  slowStart_->StartReceiveRound(end_sequence_number);
+  slow_start_->StartReceiveRound(end_sequence_number);
 
-  EXPECT_FALSE(slowStart_->IsEndOfRound(sequence_number++));
+  EXPECT_FALSE(slow_start_->IsEndOfRound(sequence_number++));
 
   // Test duplicates.
-  EXPECT_FALSE(slowStart_->IsEndOfRound(sequence_number));
+  EXPECT_FALSE(slow_start_->IsEndOfRound(sequence_number));
 
-  EXPECT_FALSE(slowStart_->IsEndOfRound(sequence_number++));
-  EXPECT_TRUE(slowStart_->IsEndOfRound(sequence_number++));
+  EXPECT_FALSE(slow_start_->IsEndOfRound(sequence_number++));
+  EXPECT_TRUE(slow_start_->IsEndOfRound(sequence_number++));
 
   // Test without a new registered end_sequence_number;
-  EXPECT_TRUE(slowStart_->IsEndOfRound(sequence_number++));
+  EXPECT_TRUE(slow_start_->IsEndOfRound(sequence_number++));
 
   end_sequence_number = 20;
-  slowStart_->StartReceiveRound(end_sequence_number);
+  slow_start_->StartReceiveRound(end_sequence_number);
   while (sequence_number < end_sequence_number) {
-    EXPECT_FALSE(slowStart_->IsEndOfRound(sequence_number++));
+    EXPECT_FALSE(slow_start_->IsEndOfRound(sequence_number++));
   }
-  EXPECT_TRUE(slowStart_->IsEndOfRound(sequence_number++));
+  EXPECT_TRUE(slow_start_->IsEndOfRound(sequence_number++));
 }
 
 // TODO(ianswett): Add tests which more realistically invoke the methods,
@@ -60,21 +60,22 @@ TEST_F(HybridSlowStartTest, AckTrain) {
   QuicPacketSequenceNumber sequence_number = 2;
   QuicPacketSequenceNumber end_sequence_number = 2;
   for (int burst = 0; burst < kMaxLoopCount; ++burst) {
-    slowStart_->StartReceiveRound(end_sequence_number);
+    slow_start_->StartReceiveRound(end_sequence_number);
     do {
       clock_.AdvanceTime(one_ms_);
-      EXPECT_FALSE(slowStart_->ShouldExitSlowStart(rtt_, rtt_, 100));
-    }  while (!slowStart_->IsEndOfRound(sequence_number++));
+      EXPECT_FALSE(slow_start_->ShouldExitSlowStart(rtt_, rtt_, 100));
+    }  while (!slow_start_->IsEndOfRound(sequence_number++));
     end_sequence_number *= 2;  // Exponential growth.
   }
-  slowStart_->StartReceiveRound(end_sequence_number);
+  slow_start_->StartReceiveRound(end_sequence_number);
 
-  for (int n = 0; n < 29 && !slowStart_->IsEndOfRound(sequence_number++); ++n) {
+  for (int n = 0;
+       n < 29 && !slow_start_->IsEndOfRound(sequence_number++); ++n) {
     clock_.AdvanceTime(one_ms_);
-    EXPECT_FALSE(slowStart_->ShouldExitSlowStart(rtt_, rtt_, 100));
+    EXPECT_FALSE(slow_start_->ShouldExitSlowStart(rtt_, rtt_, 100));
   }
   clock_.AdvanceTime(one_ms_);
-  EXPECT_TRUE(slowStart_->ShouldExitSlowStart(rtt_, rtt_, 100));
+  EXPECT_TRUE(slow_start_->ShouldExitSlowStart(rtt_, rtt_, 100));
 }
 
 TEST_F(HybridSlowStartTest, Delay) {
@@ -83,22 +84,22 @@ TEST_F(HybridSlowStartTest, Delay) {
   const int kHybridStartMinSamples = 8;  // Number of acks required to trigger.
 
   QuicPacketSequenceNumber end_sequence_number = 1;
-  slowStart_->StartReceiveRound(end_sequence_number++);
+  slow_start_->StartReceiveRound(end_sequence_number++);
 
   // Will not trigger since our lowest RTT in our burst is the same as the long
   // term RTT provided.
   for (int n = 0; n < kHybridStartMinSamples; ++n) {
-    EXPECT_FALSE(slowStart_->ShouldExitSlowStart(
+    EXPECT_FALSE(slow_start_->ShouldExitSlowStart(
         rtt_.Add(QuicTime::Delta::FromMilliseconds(n)), rtt_, 100));
   }
-  slowStart_->StartReceiveRound(end_sequence_number++);
+  slow_start_->StartReceiveRound(end_sequence_number++);
   for (int n = 1; n < kHybridStartMinSamples; ++n) {
-    EXPECT_FALSE(slowStart_->ShouldExitSlowStart(
+    EXPECT_FALSE(slow_start_->ShouldExitSlowStart(
         rtt_.Add(QuicTime::Delta::FromMilliseconds(n + 5)), rtt_, 100));
   }
   // Expect to trigger since all packets in this burst was above the long term
   // RTT provided.
-  EXPECT_TRUE(slowStart_->ShouldExitSlowStart(
+  EXPECT_TRUE(slow_start_->ShouldExitSlowStart(
       rtt_.Add(QuicTime::Delta::FromMilliseconds(5)), rtt_, 100));
 }
 

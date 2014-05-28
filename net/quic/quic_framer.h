@@ -46,9 +46,15 @@ const size_t kQuicEntropyHashSize = 1;
 // sequence number in ack frames.
 const size_t kQuicDeltaTimeLargestObservedSize = 2;
 // Size in bytes reserved for the number of missing packets in ack frames.
-const size_t kNumberOfMissingPacketsSize = 1;
+const size_t kNumberOfNackRangesSize = 1;
+// Maximum number of missing packet ranges that can fit within an ack frame.
+const size_t kMaxNackRanges =
+    (1 << (kNumberOfNackRangesSize * 8)) - 1;
 // Size in bytes reserved for the number of revived packets in ack frames.
 const size_t kNumberOfRevivedPacketsSize = 1;
+// Maximum number of revived packets that can fit within an ack frame.
+const size_t kMaxRevivedPackets =
+    (1 << (kNumberOfRevivedPacketsSize * 8)) - 1;
 
 // This class receives callbacks from the framer when packets
 // are processed.
