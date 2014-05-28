@@ -2071,9 +2071,9 @@ void RenderObject::setStyle(PassRefPtr<RenderStyle> style)
     if (updatedDiff.needsRepaint()) {
         // Repaint with the new style, e.g., for example if we go from not having
         // an outline to having an outline.
-        if (needsLayout())
+        if (RuntimeEnabledFeatures::repaintAfterLayoutEnabled() && needsLayout())
             setShouldDoFullRepaintAfterLayout(true);
-        else
+        else if (!selfNeedsLayout())
             repaint();
     }
 }
@@ -2112,9 +2112,9 @@ void RenderObject::styleWillChange(StyleDifference diff, const RenderStyle& newS
         }
 
         if (m_parent && diff.needsRepaintObject()) {
-            if (diff.needsLayout() || needsLayout())
+            if (RuntimeEnabledFeatures::repaintAfterLayoutEnabled() && (diff.needsLayout() || needsLayout()))
                 setShouldDoFullRepaintAfterLayout(true);
-            else
+            else if (!diff.needsFullLayout() && !selfNeedsLayout())
                 repaint();
         }
 
