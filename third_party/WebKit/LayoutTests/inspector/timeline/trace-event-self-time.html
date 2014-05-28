@@ -192,7 +192,7 @@ function test()
     model.setSessionIdForTest(sessionId);
     model._eventsCollected(rawTraceEvents);
     model._tracingComplete();
-    var events = model.inspectedTargetMainThreadEvents();
+    var events = model.inspectedTargetEvents();
     var bindings = new WebInspector.TimelineTraceEventBindings();
     bindings.setEvents(events);
     InspectorTest.assertEquals(8, events.length);

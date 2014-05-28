@@ -6,6 +6,7 @@
 <script>
 function test()
 {
+    WebInspector.inspectorView.showPanel("timeline");
     InspectorTest.invokeWithTracing("-*," + WebInspector.TracingModel.DevToolsMetadataEventCategory, "(function(callback) { callback(); })", processTracingEvents);
 
     function processTracingEvents()
@@ -20,10 +21,14 @@ function test()
 
     function processEvent(event)
     {
-        if (event.category !== WebInspector.TracingModel.DevToolsMetadataEventCategory ||
-            Object.values(WebInspector.TracingModel.DevToolsMetadataEvent).indexOf(event.name) < 0) {
+        var metadataEvents = [
+            WebInspector.TimelineTraceEventBindings.RecordType.SetLayerTreeId,
+            WebInspector.TimelineTraceEventBindings.RecordType.TracingStartedInPage
+        ];
+
+        if (event.category !== WebInspector.TracingModel.DevToolsMetadataEventCategory || metadataEvents.indexOf(event.name) < 0)
             return;
-        }
+
         InspectorTest.assertEquals(InspectorTest.tracingModel.sessionId(), event.args["sessionId"]);
         InspectorTest.addResult("Got DevTools metadata event: " + event.name);
     }
