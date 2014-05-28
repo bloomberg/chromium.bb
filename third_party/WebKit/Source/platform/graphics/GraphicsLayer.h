@@ -134,9 +134,6 @@ public:
     // The layer being replicated.
     GraphicsLayer* replicatedLayer() const { return m_replicatedLayer; }
 
-    const FloatPoint& replicatedLayerPosition() const { return m_replicatedLayerPosition; }
-    void setReplicatedLayerPosition(const FloatPoint& p) { m_replicatedLayerPosition = p; }
-
     enum ShouldSetNeedsDisplay {
         DontSetNeedsDisplay,
         SetNeedsDisplay

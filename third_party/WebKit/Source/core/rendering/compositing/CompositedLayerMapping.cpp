@@ -849,12 +849,6 @@ void CompositedLayerMapping::updateReflectionLayerGeometry()
 
     CompositedLayerMappingPtr reflectionCompositedLayerMapping = m_owningLayer.reflectionInfo()->reflectionLayer()->compositedLayerMapping();
     reflectionCompositedLayerMapping->updateGraphicsLayerGeometry(GraphicsLayerUpdater::ForceUpdate, &m_owningLayer);
-
-    // The reflection layer has the bounds of m_owningLayer.reflectionLayer(),
-    // but the reflected layer is the bounds of this layer, so we need to position it appropriately.
-    FloatRect layerBounds = compositedBounds();
-    FloatRect reflectionLayerBounds = reflectionCompositedLayerMapping->compositedBounds();
-    reflectionCompositedLayerMapping->mainGraphicsLayer()->setReplicatedLayerPosition(FloatPoint(layerBounds.location() - reflectionLayerBounds.location()));
 }
 
 void CompositedLayerMapping::updateScrollingLayerGeometry(const IntRect& localCompositingBounds)
