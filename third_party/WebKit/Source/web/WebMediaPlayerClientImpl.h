@@ -115,9 +115,6 @@ public:
     virtual void setPreload(WebCore::MediaPlayer::Preload) OVERRIDE;
     virtual bool hasSingleSecurityOrigin() const OVERRIDE;
     virtual double mediaTimeForTimeValue(double timeValue) const OVERRIDE;
-    virtual void showFullscreenOverlay() OVERRIDE;
-    virtual void hideFullscreenOverlay() OVERRIDE;
-    virtual bool canShowFullscreenOverlay() const OVERRIDE;
 
 #if ENABLE(WEB_AUDIO)
     virtual WebCore::AudioSourceProvider* audioSourceProvider() OVERRIDE;

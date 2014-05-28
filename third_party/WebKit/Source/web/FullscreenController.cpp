@@ -163,8 +163,8 @@ void FullscreenController::enterFullScreenForElement(WebCore::Element* element)
         // FIXME: There is no embedder-side handling in layout test mode.
         && !isRunningLayoutTest()) {
         HTMLMediaElement* mediaElement = toHTMLMediaElement(element);
-        if (mediaElement->player() && mediaElement->player()->canShowFullscreenOverlay()) {
-            mediaElement->player()->showFullscreenOverlay();
+        if (mediaElement->webMediaPlayer() && mediaElement->webMediaPlayer()->canEnterFullscreen()) {
+            mediaElement->webMediaPlayer()->enterFullscreen();
             m_provisionalFullScreenElement = element;
             return;
         }
@@ -187,8 +187,8 @@ void FullscreenController::exitFullScreenForElement(WebCore::Element* element)
         // FIXME: There is no embedder-side handling in layout test mode.
         && !isRunningLayoutTest()) {
         HTMLMediaElement* mediaElement = toHTMLMediaElement(element);
-        if (mediaElement->player())
-            mediaElement->player()->hideFullscreenOverlay();
+        if (mediaElement->webMediaPlayer())
+            mediaElement->webMediaPlayer()->exitFullscreen();
         return;
     }
     if (WebViewClient* client = m_webViewImpl->client())

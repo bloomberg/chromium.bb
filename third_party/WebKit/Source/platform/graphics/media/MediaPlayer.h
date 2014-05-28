@@ -149,10 +149,6 @@ public:
     enum Preload { None, MetaData, Auto };
     virtual void setPreload(Preload) = 0;
 
-    virtual void showFullscreenOverlay() = 0;
-    virtual void hideFullscreenOverlay() = 0;
-    virtual bool canShowFullscreenOverlay() const = 0;
-
     virtual bool hasSingleSecurityOrigin() const = 0;
 
     // Time value in the movie's time scale. It is only necessary to override this if the media

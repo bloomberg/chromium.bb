@@ -217,23 +217,6 @@ void WebMediaPlayerClientImpl::pause()
         m_webMediaPlayer->pause();
 }
 
-void WebMediaPlayerClientImpl::showFullscreenOverlay()
-{
-    if (m_webMediaPlayer)
-        m_webMediaPlayer->enterFullscreen();
-}
-
-void WebMediaPlayerClientImpl::hideFullscreenOverlay()
-{
-    if (m_webMediaPlayer)
-        m_webMediaPlayer->exitFullscreen();
-}
-
-bool WebMediaPlayerClientImpl::canShowFullscreenOverlay() const
-{
-    return m_webMediaPlayer && m_webMediaPlayer->canEnterFullscreen();
-}
-
 double WebMediaPlayerClientImpl::duration() const
 {
     if (m_webMediaPlayer)
