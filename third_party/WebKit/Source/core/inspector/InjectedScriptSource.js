@@ -973,7 +973,7 @@ InjectedScript.prototype = {
         if (this.isPrimitiveValue(obj))
             return null;
 
-        // Type is object, get subtype.
+        var type = typeof obj;
         var subtype = this._subtype(obj);
 
         if (subtype === "regexp")
@@ -1005,10 +1005,10 @@ InjectedScript.prototype = {
         }
 
         // NodeList in JSC is a function, check for array prior to this.
-        if (typeof obj === "function")
+        if (type === "function")
             return toString(obj);
 
-        if (typeof obj === "symbol") {
+        if (type === "symbol") {
             try {
                 return Symbol.prototype.toString.call(obj) || "Symbol";
             } catch (e) {

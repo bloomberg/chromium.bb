@@ -179,3 +179,14 @@ CallSite.prototype.getLineNumber = function() { }
  * @return {number}
  */
 CallSite.prototype.getColumnNumber = function() { }
+
+// FIXME: Remove once ES6 is supported natively by JS compiler.
+
+/** @typedef {?} */
+var symbol;
+
+/**
+ * @param {string} description
+ * @return {symbol}
+ */
+function Symbol(description) {}
