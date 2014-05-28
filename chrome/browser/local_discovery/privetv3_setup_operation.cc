@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/local_discovery/privetv2_setup_operation.h"
+#include "chrome/browser/local_discovery/privetv3_setup_operation.h"
 
 #include "base/logging.h"
 
 namespace local_discovery {
 
-scoped_ptr<PrivetV2SetupOperation> PrivetV2SetupOperation::Create(
-    PrivetV2Session* session,
+scoped_ptr<PrivetV3SetupOperation> PrivetV3SetupOperation::Create(
+    PrivetV3Session* session,
     const SetupStatusCallback& callback,
     const std::string& ticket_id) {
   NOTIMPLEMENTED();
-  return scoped_ptr<PrivetV2SetupOperation>();
+  return scoped_ptr<PrivetV3SetupOperation>();
 }
 
 }  // namespace local_discovery

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_LOCAL_DISCOVERY_PRIVETV2_SETUP_OPERATION_H_
-#define CHROME_BROWSER_LOCAL_DISCOVERY_PRIVETV2_SETUP_OPERATION_H_
+#ifndef CHROME_BROWSER_LOCAL_DISCOVERY_PRIVETV3_SETUP_OPERATION_H_
+#define CHROME_BROWSER_LOCAL_DISCOVERY_PRIVETV3_SETUP_OPERATION_H_
 
 #include <string>
 
@@ -12,18 +12,18 @@
 
 namespace local_discovery {
 
-class PrivetV2Session;
+class PrivetV3Session;
 
-class PrivetV2SetupOperation {
+class PrivetV3SetupOperation {
  public:
   enum Status { STATUS_SUCCESS, STATUS_SETUP_ERROR, STATUS_SESSION_ERROR };
 
-  virtual ~PrivetV2SetupOperation() {}
+  virtual ~PrivetV3SetupOperation() {}
 
   typedef base::Callback<void(Status status)> SetupStatusCallback;
 
-  static scoped_ptr<PrivetV2SetupOperation> Create(
-      PrivetV2Session* session,
+  static scoped_ptr<PrivetV3SetupOperation> Create(
+      PrivetV3Session* session,
       const SetupStatusCallback& callback,
       const std::string& ticket_id);
 
@@ -34,4 +34,4 @@ class PrivetV2SetupOperation {
 
 }  // namespace local_discovery
 
-#endif  // CHROME_BROWSER_LOCAL_DISCOVERY_PRIVETV2_SETUP_OPERATION_H_
+#endif  // CHROME_BROWSER_LOCAL_DISCOVERY_PRIVETV3_SETUP_OPERATION_H_

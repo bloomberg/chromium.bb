@@ -2,21 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/local_discovery/privetv2_setup_flow.h"
+#include "chrome/browser/local_discovery/privetv3_setup_flow.h"
 
 #include "base/logging.h"
 
 namespace local_discovery {
 
-scoped_ptr<PrivetV2SetupFlow> PrivetV2SetupFlow::CreateMDnsOnlyFlow(
+scoped_ptr<PrivetV3SetupFlow> PrivetV3SetupFlow::CreateMDnsOnlyFlow(
     ServiceDiscoveryClient* service_discovery_client,
     const std::string& service_name) {
   NOTIMPLEMENTED();
-  return scoped_ptr<PrivetV2SetupFlow>();
+  return scoped_ptr<PrivetV3SetupFlow>();
 }
 
 #if defined(ENABLE_WIFI_BOOTSTRAPPING)
-scoped_ptr<PrivetV2SetupFlow> PrivetV2SetupFlow::CreateWifiFlow(
+scoped_ptr<PrivetV3SetupFlow> PrivetV3SetupFlow::CreateWifiFlow(
     ServiceDiscoveryClient* service_discovery_client,
     wifi::WifiManager* wifi_manager,
     // The SSID of the network whose credentials we will be provisioning.
@@ -24,7 +24,7 @@ scoped_ptr<PrivetV2SetupFlow> PrivetV2SetupFlow::CreateWifiFlow(
     // The SSID of the device we will be provisioning.
     const std::string& device_ssid) {
   NOTIMPLEMENTED();
-  return scoped_ptr<PrivetV2SetupFlow>();
+  return scoped_ptr<PrivetV3SetupFlow>();
 }
 #endif
 

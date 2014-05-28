@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_LOCAL_DISCOVERY_PRIVETV2_SETUP_FLOW_H_
-#define CHROME_BROWSER_LOCAL_DISCOVERY_PRIVETV2_SETUP_FLOW_H_
+#ifndef CHROME_BROWSER_LOCAL_DISCOVERY_PRIVETV3_SETUP_FLOW_H_
+#define CHROME_BROWSER_LOCAL_DISCOVERY_PRIVETV3_SETUP_FLOW_H_
 
 #include <string>
 
@@ -20,7 +20,7 @@ class WifiManager;
 };
 #endif
 
-class PrivetV2SetupFlow {
+class PrivetV3SetupFlow {
  public:
   class Delegate {
    public:
@@ -43,14 +43,14 @@ class PrivetV2SetupFlow {
     virtual void OnSetupError() = 0;
   };
 
-  virtual ~PrivetV2SetupFlow() {}
+  virtual ~PrivetV3SetupFlow() {}
 
-  static scoped_ptr<PrivetV2SetupFlow> CreateMDnsOnlyFlow(
+  static scoped_ptr<PrivetV3SetupFlow> CreateMDnsOnlyFlow(
       ServiceDiscoveryClient* service_discovery_client,
       const std::string& service_name);
 
 #if defined(ENABLE_WIFI_BOOTSTRAPPING)
-  static scoped_ptr<PrivetV2SetupFlow> CreateWifiFlow(
+  static scoped_ptr<PrivetV3SetupFlow> CreateWifiFlow(
       ServiceDiscoveryClient* service_discovery_client,
       wifi::WifiManager* wifi_manager,
       // The SSID of the network whose credentials we will be provisioning.
@@ -64,4 +64,4 @@ class PrivetV2SetupFlow {
 
 }  // namespace local_discovery
 
-#endif  // CHROME_BROWSER_LOCAL_DISCOVERY_PRIVETV2_SETUP_FLOW_H_
+#endif  // CHROME_BROWSER_LOCAL_DISCOVERY_PRIVETV3_SETUP_FLOW_H_

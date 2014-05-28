@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_LOCAL_DISCOVERY_PRIVETV2_SESSION_H_
-#define CHROME_BROWSER_LOCAL_DISCOVERY_PRIVETV2_SESSION_H_
+#ifndef CHROME_BROWSER_LOCAL_DISCOVERY_PRIVETV3_SESSION_H_
+#define CHROME_BROWSER_LOCAL_DISCOVERY_PRIVETV3_SESSION_H_
 
 #include <string>
 
@@ -15,7 +15,7 @@ namespace local_discovery {
 
 class PrivetHTTPClient;
 
-class PrivetV2Session {
+class PrivetV3Session {
  public:
   typedef base::Callback<
       void(bool success, const base::DictionaryValue& response)>
@@ -43,9 +43,9 @@ class PrivetV2Session {
     virtual void Start() = 0;
   };
 
-  virtual ~PrivetV2Session() {}
+  virtual ~PrivetV3Session() {}
 
-  static scoped_ptr<PrivetV2Session> Create(PrivetHTTPClient* client);
+  static scoped_ptr<PrivetV3Session> Create(PrivetHTTPClient* client);
 
   // Establish a session, will call |OnSetupConfirmationNeeded| and then
   // |OnSessionEstablished|.
@@ -60,4 +60,4 @@ class PrivetV2Session {
 
 }  // namespace local_discovery
 
-#endif  // CHROME_BROWSER_LOCAL_DISCOVERY_PRIVETV2_SESSION_H_
+#endif  // CHROME_BROWSER_LOCAL_DISCOVERY_PRIVETV3_SESSION_H_
