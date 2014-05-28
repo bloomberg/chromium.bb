@@ -15,13 +15,13 @@ var t2 = async_test('Custom elements in async imports wait preceeding sync impor
 var latch = new ImportTestLatch(function() {
     window.setTimeout(function() {
         t1.step(function() {
-            assert_array_equals(['hello-slow', 'hello-1', 'hello-2'], Hello.ids);
+            assert_array_equals(['hello-slow', 'hello-2', 'hello-1'], Hello.ids);
             t1.done();
         });
 
         t2.step(function() {
             var Bye = registerTestingCustomElement('x-bye');
-            assert_array_equals(['bye-slow', 'bye-1', 'bye-2'], Bye.ids);
+            assert_array_equals(['bye-slow', 'bye-2', 'bye-1'], Bye.ids);
             t2.done();
         });
     }, 0);

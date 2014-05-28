@@ -68,11 +68,9 @@ private:
 
     void didUpgradeAllCustomElements();
     bool shouldWaitForImport() const;
-    bool shouldStopProcessing() const;
 
     // CustomElementMicrotaskStep
     virtual Result process() OVERRIDE FINAL;
-    virtual bool needsProcessOrStop() const OVERRIDE FINAL;
 
 #if !defined(NDEBUG)
     virtual void show(unsigned indent) OVERRIDE;

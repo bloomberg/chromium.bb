@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Google Inc. All rights reserved.
+ * Copyright (C) 2014 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -29,48 +29,27 @@
  */
 
 #include "config.h"
-#include "core/dom/custom/CustomElementMicrotaskResolutionStep.h"
+#include "core/dom/custom/CustomElementAsyncImportMicrotaskQueue.h"
 
-#include "core/dom/Element.h"
-#include "core/dom/custom/CustomElementRegistrationContext.h"
+#include "core/dom/custom/CustomElementMicrotaskImportStep.h"
 
 namespace WebCore {
 
-PassOwnPtrWillBeRawPtr<CustomElementMicrotaskResolutionStep> CustomElementMicrotaskResolutionStep::create(PassRefPtrWillBeRawPtr<CustomElementRegistrationContext> context, PassRefPtrWillBeRawPtr<Element> element, const CustomElementDescriptor& descriptor)
+void CustomElementAsyncImportMicrotaskQueue::enqueue(PassOwnPtr<CustomElementMicrotaskImportStep> step)
 {
-    return adoptPtrWillBeNoop(new CustomElementMicrotaskResolutionStep(context, element, descriptor));
+    m_queue.append(step);
 }
 
-CustomElementMicrotaskResolutionStep::CustomElementMicrotaskResolutionStep(PassRefPtrWillBeRawPtr<CustomElementRegistrationContext> context, PassRefPtrWillBeRawPtr<Element> element, const CustomElementDescriptor& descriptor)
-    : m_context(context)
-    , m_element(element)
-    , m_descriptor(descriptor)
+void CustomElementAsyncImportMicrotaskQueue::doDispatch()
 {
-}
+    WillBeHeapVector<OwnPtr<CustomElementMicrotaskStep> > remaining;
 
-CustomElementMicrotaskResolutionStep::~CustomElementMicrotaskResolutionStep()
-{
-}
+    for (unsigned i = 0; i < m_queue.size(); ++i) {
+        if (CustomElementMicrotaskStep::Processing == m_queue[i]->process())
+            remaining.append(m_queue[i].release());
+    }
 
-CustomElementMicrotaskStep::Result CustomElementMicrotaskResolutionStep::process()
-{
-    m_context->resolve(m_element.get(), m_descriptor);
-    return CustomElementMicrotaskStep::FinishedProcessing;
+    m_queue.swap(remaining);
 }
-
-void CustomElementMicrotaskResolutionStep::trace(Visitor* visitor)
-{
-    visitor->trace(m_context);
-    visitor->trace(m_element);
-    CustomElementMicrotaskStep::trace(visitor);
-}
-
-#if !defined(NDEBUG)
-void CustomElementMicrotaskResolutionStep::show(unsigned indent)
-{
-    fprintf(stderr, "%*sResolution: ", indent, "");
-    m_element->outerHTML().show();
-}
-#endif
 
 } // namespace WebCore

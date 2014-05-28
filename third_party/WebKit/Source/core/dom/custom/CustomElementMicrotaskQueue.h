@@ -42,30 +42,36 @@
 
 namespace WebCore {
 
-class CustomElementMicrotaskQueue FINAL : public RefCountedWillBeGarbageCollectedFinalized<CustomElementMicrotaskQueue> {
-    WTF_MAKE_NONCOPYABLE(CustomElementMicrotaskQueue);
+class CustomElementMicrotaskQueueBase : public RefCountedWillBeGarbageCollectedFinalized<CustomElementMicrotaskQueueBase> {
+    WTF_MAKE_NONCOPYABLE(CustomElementMicrotaskQueueBase);
 public:
-    static PassRefPtrWillBeRawPtr<CustomElementMicrotaskQueue> create()
-    {
-        return adoptRefWillBeNoop(new CustomElementMicrotaskQueue());
-    }
+    virtual ~CustomElementMicrotaskQueueBase() { }
 
     bool isEmpty() const { return m_queue.isEmpty(); }
-    void enqueue(PassOwnPtrWillBeRawPtr<CustomElementMicrotaskStep>);
-
-    typedef CustomElementMicrotaskStep::Result Result;
-    Result dispatch();
-    bool needsProcessOrStop() const;
+    void dispatch();
 
     void trace(Visitor*);
 
 #if !defined(NDEBUG)
     void show(unsigned indent);
 #endif
-private:
-    CustomElementMicrotaskQueue() { }
+
+protected:
+    CustomElementMicrotaskQueueBase() { }
+    virtual void doDispatch() = 0;
 
     WillBeHeapVector<OwnPtrWillBeMember<CustomElementMicrotaskStep> > m_queue;
+};
+
+class CustomElementMicrotaskQueue : public CustomElementMicrotaskQueueBase {
+public:
+    static PassRefPtrWillBeRawPtr<CustomElementMicrotaskQueue> create() { return adoptRefWillBeNoop(new CustomElementMicrotaskQueue()); }
+
+    void enqueue(PassOwnPtr<CustomElementMicrotaskStep>);
+
+private:
+    CustomElementMicrotaskQueue() { }
+    virtual void doDispatch();
 };
 
 }

@@ -2148,6 +2148,8 @@
             'dom/XMLDocument.h',
             'dom/custom/CustomElement.cpp',
             'dom/custom/CustomElement.h',
+            'dom/custom/CustomElementAsyncImportMicrotaskQueue.cpp',
+            'dom/custom/CustomElementAsyncImportMicrotaskQueue.h',
             'dom/custom/CustomElementCallbackDispatcher.cpp',
             'dom/custom/CustomElementCallbackDispatcher.h',
             'dom/custom/CustomElementCallbackInvocation.cpp',

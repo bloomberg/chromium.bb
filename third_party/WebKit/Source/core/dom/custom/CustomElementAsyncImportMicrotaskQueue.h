@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Google Inc. All rights reserved.
+ * Copyright (C) 2014 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -28,44 +28,26 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CustomElementMicrotaskResolutionStep_h
-#define CustomElementMicrotaskResolutionStep_h
+#ifndef CustomElementAsyncImportMicrotaskQueue_h
+#define CustomElementAsyncImportMicrotaskQueue_h
 
-#include "core/dom/custom/CustomElementDescriptor.h"
-#include "core/dom/custom/CustomElementMicrotaskStep.h"
-#include "platform/heap/Handle.h"
-#include "wtf/PassOwnPtr.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefPtr.h"
+#include "core/dom/custom/CustomElementMicrotaskQueue.h"
 
 namespace WebCore {
 
-class CustomElementRegistrationContext;
-class Element;
+class CustomElementMicrotaskImportStep;
 
-class CustomElementMicrotaskResolutionStep : public CustomElementMicrotaskStep {
-    WTF_MAKE_NONCOPYABLE(CustomElementMicrotaskResolutionStep);
+class CustomElementAsyncImportMicrotaskQueue : public CustomElementMicrotaskQueueBase {
 public:
-    static PassOwnPtrWillBeRawPtr<CustomElementMicrotaskResolutionStep> create(PassRefPtrWillBeRawPtr<CustomElementRegistrationContext>, PassRefPtrWillBeRawPtr<Element>, const CustomElementDescriptor&);
+    static PassRefPtrWillBeRawPtr<CustomElementAsyncImportMicrotaskQueue> create() { return adoptRefWillBeNoop(new CustomElementAsyncImportMicrotaskQueue()); }
 
-    virtual ~CustomElementMicrotaskResolutionStep();
-
-    virtual void trace(Visitor*) OVERRIDE;
+    void enqueue(PassOwnPtr<CustomElementMicrotaskImportStep>);
 
 private:
-    CustomElementMicrotaskResolutionStep(PassRefPtrWillBeRawPtr<CustomElementRegistrationContext>, PassRefPtrWillBeRawPtr<Element>, const CustomElementDescriptor&);
-
-    virtual Result process() OVERRIDE;
-
-#if !defined(NDEBUG)
-    virtual void show(unsigned indent) OVERRIDE;
-#endif
-
-    RefPtrWillBeMember<CustomElementRegistrationContext> m_context;
-    RefPtrWillBeMember<Element> m_element;
-    CustomElementDescriptor m_descriptor;
+    CustomElementAsyncImportMicrotaskQueue() { }
+    virtual void doDispatch() OVERRIDE;
 };
 
 }
 
-#endif // CustomElementMicrotaskResolutionStep_h
+#endif // CustomElementAsyncImportMicrotaskQueue_h

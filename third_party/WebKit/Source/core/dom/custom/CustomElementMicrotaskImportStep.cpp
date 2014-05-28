@@ -66,11 +66,6 @@ bool CustomElementMicrotaskImportStep::shouldWaitForImport() const
     return m_import && !m_import->isLoaded();
 }
 
-bool CustomElementMicrotaskImportStep::shouldStopProcessing() const
-{
-    return m_import && m_import->isSync();
-}
-
 void CustomElementMicrotaskImportStep::didUpgradeAllCustomElements()
 {
     ASSERT(m_queue);
@@ -80,20 +75,12 @@ void CustomElementMicrotaskImportStep::didUpgradeAllCustomElements()
 
 CustomElementMicrotaskStep::Result CustomElementMicrotaskImportStep::process()
 {
-    Result result = m_queue->dispatch();
-    if (!(result & ShouldStop) && !shouldWaitForImport())
-        didUpgradeAllCustomElements();
+    m_queue->dispatch();
+    if (!m_queue->isEmpty() || shouldWaitForImport())
+        return Processing;
 
-    if (shouldWaitForImport())
-        result = Result(result | ShouldRemain | ShouldStop);
-    if (!shouldStopProcessing())
-        result = Result(result & ~ShouldStop);
-    return result;
-}
-
-bool CustomElementMicrotaskImportStep::needsProcessOrStop() const
-{
-    return shouldStopProcessing() || m_queue->needsProcessOrStop();
+    didUpgradeAllCustomElements();
+    return FinishedProcessing;
 }
 
 void CustomElementMicrotaskImportStep::trace(Visitor* visitor)
@@ -105,7 +92,7 @@ void CustomElementMicrotaskImportStep::trace(Visitor* visitor)
 #if !defined(NDEBUG)
 void CustomElementMicrotaskImportStep::show(unsigned indent)
 {
-    fprintf(stderr, "%*sImport(wait=%d sync=%d, url=%s)\n", indent, "", shouldWaitForImport(), shouldStopProcessing(), m_import ? m_import->url().string().utf8().data() : "null");
+    fprintf(stderr, "%*sImport(wait=%d sync=%d, url=%s)\n", indent, "", shouldWaitForImport(), m_import && m_import->isSync(), m_import ? m_import->url().string().utf8().data() : "null");
     m_queue->show(indent + 1);
 }
 #endif

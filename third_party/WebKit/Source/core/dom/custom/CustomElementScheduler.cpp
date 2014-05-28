@@ -84,13 +84,11 @@ CustomElementMicrotaskImportStep* CustomElementScheduler::scheduleImport(HTMLImp
     ASSERT(!import->isDone());
     ASSERT(import->parent());
 
-    OwnPtrWillBeRawPtr<CustomElementMicrotaskImportStep> step = CustomElementMicrotaskImportStep::create(import);
-    CustomElementMicrotaskImportStep* rawStep = step.get();
-
     // Ownership of the new step is transferred to the parent
     // processing step, or the base queue.
-    CustomElementMicrotaskDispatcher::instance().enqueue(import->parent()->loader(), step.release());
-
+    OwnPtrWillBeRawPtr<CustomElementMicrotaskImportStep> step = CustomElementMicrotaskImportStep::create(import);
+    CustomElementMicrotaskImportStep* rawStep = step.get();
+    CustomElementMicrotaskDispatcher::instance().enqueue(import->parent()->loader(), step.release(), import->isSync());
     return rawStep;
 }
 

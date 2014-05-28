@@ -6,6 +6,7 @@
 #include "core/dom/custom/CustomElementMicrotaskDispatcher.h"
 
 #include "core/dom/Microtask.h"
+#include "core/dom/custom/CustomElementAsyncImportMicrotaskQueue.h"
 #include "core/dom/custom/CustomElementCallbackDispatcher.h"
 #include "core/dom/custom/CustomElementCallbackQueue.h"
 #include "core/dom/custom/CustomElementMicrotaskImportStep.h"
@@ -22,6 +23,7 @@ CustomElementMicrotaskDispatcher::CustomElementMicrotaskDispatcher()
     : m_hasScheduledMicrotask(false)
     , m_phase(Quiescent)
     , m_resolutionAndImports(CustomElementMicrotaskQueue::create())
+    , m_asyncImports(CustomElementAsyncImportMicrotaskQueue::create())
 {
 }
 
@@ -33,27 +35,45 @@ CustomElementMicrotaskDispatcher& CustomElementMicrotaskDispatcher::instance()
     return *instance;
 }
 
-void CustomElementMicrotaskDispatcher::enqueue(HTMLImportLoader* importLoader, PassOwnPtrWillBeRawPtr<CustomElementMicrotaskStep> step)
+void CustomElementMicrotaskDispatcher::enqueue(HTMLImportLoader* parentLoader, PassOwnPtrWillBeRawPtr<CustomElementMicrotaskStep> step)
 {
-    ASSERT(m_phase == Quiescent || m_phase == DispatchingCallbacks);
-    ensureMicrotaskScheduled();
-    if (importLoader)
-        importLoader->microtaskQueue()->enqueue(step);
+    ensureMicrotaskScheduledForMicrotaskSteps();
+    if (parentLoader)
+        parentLoader->microtaskQueue()->enqueue(step);
     else
         m_resolutionAndImports->enqueue(step);
 }
 
+void CustomElementMicrotaskDispatcher::enqueue(HTMLImportLoader* parentLoader, PassOwnPtr<CustomElementMicrotaskImportStep> step, bool importIsSync)
+{
+    ensureMicrotaskScheduledForMicrotaskSteps();
+    if (importIsSync)
+        enqueue(parentLoader, PassOwnPtr<CustomElementMicrotaskStep>(step));
+    else
+        m_asyncImports->enqueue(step);
+}
+
 void CustomElementMicrotaskDispatcher::enqueue(CustomElementCallbackQueue* queue)
 {
-    ASSERT(m_phase == Quiescent || m_phase == Resolving);
-    ensureMicrotaskScheduled();
+    ensureMicrotaskScheduledForElementQueue();
     queue->setOwner(kMicrotaskQueueId);
     m_elements.append(queue);
 }
 
 void CustomElementMicrotaskDispatcher::importDidFinish(CustomElementMicrotaskImportStep* step)
 {
+    ensureMicrotaskScheduledForMicrotaskSteps();
+}
+
+void CustomElementMicrotaskDispatcher::ensureMicrotaskScheduledForMicrotaskSteps()
+{
     ASSERT(m_phase == Quiescent || m_phase == DispatchingCallbacks);
+    ensureMicrotaskScheduled();
+}
+
+void CustomElementMicrotaskDispatcher::ensureMicrotaskScheduledForElementQueue()
+{
+    ASSERT(m_phase == Quiescent || m_phase == Resolving);
     ensureMicrotaskScheduled();
 }
 
@@ -84,6 +104,8 @@ void CustomElementMicrotaskDispatcher::doDispatch()
 
     m_phase = Resolving;
     m_resolutionAndImports->dispatch();
+    if (m_resolutionAndImports->isEmpty())
+        m_asyncImports->dispatch();
 
     m_phase = DispatchingCallbacks;
     for (WillBeHeapVector<RawPtrWillBeMember<CustomElementCallbackQueue> >::iterator it = m_elements.begin(); it != m_elements.end(); ++it) {
@@ -109,7 +131,11 @@ void CustomElementMicrotaskDispatcher::trace(Visitor* visitor)
 void CustomElementMicrotaskDispatcher::show()
 {
     fprintf(stderr, "Dispatcher:\n");
-    m_resolutionAndImports->show(1);
+    fprintf(stderr, "  Sync:\n");
+    m_resolutionAndImports->show(3);
+    fprintf(stderr, "  Async:\n");
+    m_asyncImports->show(3);
+
 }
 #endif
 
