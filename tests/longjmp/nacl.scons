@@ -19,6 +19,14 @@ env.AddNodeToTestSuite(node,
                        ['small_tests', 'toolchain_tests'],
                        'run_setlongjmp_test')
 
+nexe = env.ComponentProgram(
+    'longjmp_stackslots_test', 'longjmp_stackslots_test.c',
+    EXTRA_LIBS=['${NONIRT_LIBS}'])
+node = env.CommandSelLdrTestNacl('longjmp_stackslots_test.out', nexe)
+env.AddNodeToTestSuite(node,
+                       ['small_tests', 'toolchain_tests'],
+                       'run_longjmp_stackslots_test')
+
 # Test that ARM setjmp/longjmp saves and restores floating point regs.
 if env.Bit('target_arm') and not env.Bit('pnacl_generate_pexe'):
   native_env = env.Clone()
