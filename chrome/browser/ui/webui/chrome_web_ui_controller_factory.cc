@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/webui/chrome_web_ui_controller_factory.h"
 
+#include <vector>
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/location.h"
@@ -115,7 +117,6 @@
 #include "chrome/browser/ui/webui/chromeos/cryptohome_ui.h"
 #include "chrome/browser/ui/webui/chromeos/drive_internals_ui.h"
 #include "chrome/browser/ui/webui/chromeos/first_run/first_run_ui.h"
-#include "chrome/browser/ui/webui/chromeos/fsp_internals_ui.h"
 #include "chrome/browser/ui/webui/chromeos/imageburner/imageburner_ui.h"
 #include "chrome/browser/ui/webui/chromeos/keyboard_overlay_ui.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
@@ -123,6 +124,7 @@
 #include "chrome/browser/ui/webui/chromeos/network_ui.h"
 #include "chrome/browser/ui/webui/chromeos/nfc_debug_ui.h"
 #include "chrome/browser/ui/webui/chromeos/power_ui.h"
+#include "chrome/browser/ui/webui/chromeos/provided_file_systems_ui.h"
 #include "chrome/browser/ui/webui/chromeos/proxy_settings_ui.h"
 #include "chrome/browser/ui/webui/chromeos/salsa_ui.h"
 #include "chrome/browser/ui/webui/chromeos/set_time_ui.h"
@@ -414,8 +416,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<chromeos::CryptohomeUI>;
   if (url.host() == chrome::kChromeUIDriveInternalsHost)
     return &NewWebUI<chromeos::DriveInternalsUI>;
-  if (url.host() == chrome::kChromeUIFSPInternalsHost)
-    return &NewWebUI<chromeos::FSPInternalsUI>;
   if (url.host() == chrome::kChromeUIFirstRunHost)
     return &NewWebUI<chromeos::FirstRunUI>;
   if (url.host() == chrome::kChromeUIImageBurnerHost)
@@ -428,6 +428,8 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<chromeos::NfcDebugUI>;
   if (url.host() == chrome::kChromeUIOobeHost)
     return &NewWebUI<chromeos::OobeUI>;
+  if (url.host() == chrome::kChromeUIProvidedFileSystemsHost)
+    return &NewWebUI<chromeos::ProvidedFileSystemsUI>;
   if (url.host() == chrome::kChromeUIProxySettingsHost)
     return &NewWebUI<chromeos::ProxySettingsUI>;
   if (url.host() == chrome::kChromeUISalsaHost)

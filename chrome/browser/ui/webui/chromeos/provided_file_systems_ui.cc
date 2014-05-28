@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/chromeos/fsp_internals_ui.h"
+#include "chrome/browser/ui/webui/chromeos/provided_file_systems_ui.h"
+
+#include <vector>
 
 #include "base/bind.h"
 #include "base/memory/weak_ptr.h"
@@ -26,12 +28,12 @@ namespace chromeos {
 
 namespace {
 
-// Class to handle messages from chrome://fsp-internals.
-class FSPInternalsWebUIHandler : public content::WebUIMessageHandler {
+// Class to handle messages from chrome://provided-file-systems.
+class ProvidedFileSystemsWebUIHandler : public content::WebUIMessageHandler {
  public:
-  FSPInternalsWebUIHandler() : weak_ptr_factory_(this) {}
+  ProvidedFileSystemsWebUIHandler() : weak_ptr_factory_(this) {}
 
-  virtual ~FSPInternalsWebUIHandler() {}
+  virtual ~ProvidedFileSystemsWebUIHandler() {}
 
  private:
   // content::WebUIMessageHandler overrides.
@@ -44,26 +46,26 @@ class FSPInternalsWebUIHandler : public content::WebUIMessageHandler {
   // Invoked when updating file system list is requested.
   void OnUpdateFileSystems(const base::ListValue* args);
 
-  base::WeakPtrFactory<FSPInternalsWebUIHandler> weak_ptr_factory_;
+  base::WeakPtrFactory<ProvidedFileSystemsWebUIHandler> weak_ptr_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(FSPInternalsWebUIHandler);
+  DISALLOW_COPY_AND_ASSIGN(ProvidedFileSystemsWebUIHandler);
 };
 
-void FSPInternalsWebUIHandler::RegisterMessages() {
+void ProvidedFileSystemsWebUIHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "updateFileSystems",
-      base::Bind(&FSPInternalsWebUIHandler::OnUpdateFileSystems,
+      base::Bind(&ProvidedFileSystemsWebUIHandler::OnUpdateFileSystems,
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
-file_system_provider::Service* FSPInternalsWebUIHandler::GetService() {
+file_system_provider::Service* ProvidedFileSystemsWebUIHandler::GetService() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   Profile* const profile = Profile::FromWebUI(web_ui());
   return file_system_provider::ServiceFactory::FindExisting(profile);
 }
 
-void FSPInternalsWebUIHandler::OnUpdateFileSystems(
+void ProvidedFileSystemsWebUIHandler::OnUpdateFileSystems(
     const base::ListValue* args) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
@@ -106,15 +108,17 @@ void FSPInternalsWebUIHandler::OnUpdateFileSystems(
 
 }  // namespace
 
-FSPInternalsUI::FSPInternalsUI(content::WebUI* web_ui)
+ProvidedFileSystemsUI::ProvidedFileSystemsUI(content::WebUI* web_ui)
     : WebUIController(web_ui) {
-  web_ui->AddMessageHandler(new FSPInternalsWebUIHandler());
+  web_ui->AddMessageHandler(new ProvidedFileSystemsWebUIHandler());
 
-  content::WebUIDataSource* source =
-      content::WebUIDataSource::Create(chrome::kChromeUIFSPInternalsHost);
-  source->AddResourcePath("fsp_internals.css", IDR_FSP_INTERNALS_CSS);
-  source->AddResourcePath("fsp_internals.js", IDR_FSP_INTERNALS_JS);
-  source->SetDefaultResource(IDR_FSP_INTERNALS_HTML);
+  content::WebUIDataSource* source = content::WebUIDataSource::Create(
+      chrome::kChromeUIProvidedFileSystemsHost);
+  source->AddResourcePath("provided_file_systems.css",
+                          IDR_PROVIDED_FILE_SYSTEMS_CSS);
+  source->AddResourcePath("provided_file_systems.js",
+                          IDR_PROVIDED_FILE_SYSTEMS_JS);
+  source->SetDefaultResource(IDR_PROVIDED_FILE_SYSTEMS_HTML);
 
   Profile* profile = Profile::FromWebUI(web_ui);
   content::WebUIDataSource::Add(profile, source);

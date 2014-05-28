@@ -305,9 +305,9 @@
         <include name="IDR_DRIVE_INTERNALS_CSS" file="resources\chromeos\drive_internals.css" type="BINDATA" />
         <include name="IDR_DRIVE_INTERNALS_HTML" file="resources\chromeos\drive_internals.html" flattenhtml="true" type="BINDATA" />
         <include name="IDR_DRIVE_INTERNALS_JS" file="resources\chromeos\drive_internals.js" type="BINDATA" />
-        <include name="IDR_FSP_INTERNALS_CSS" file="resources\chromeos\fsp_internals.css" type="BINDATA" />
-        <include name="IDR_FSP_INTERNALS_HTML" file="resources\chromeos\fsp_internals.html" flattenhtml="true" type="BINDATA" />
-        <include name="IDR_FSP_INTERNALS_JS" file="resources\chromeos\fsp_internals.js" flattenhtml="true" type="BINDATA" />
+        <include name="IDR_PROVIDED_FILE_SYSTEMS_CSS" file="resources\chromeos\provided_file_systems.css" type="BINDATA" />
+        <include name="IDR_PROVIDED_FILE_SYSTEMS_HTML" file="resources\chromeos\provided_file_systems.html" flattenhtml="true" type="BINDATA" />
+        <include name="IDR_PROVIDED_FILE_SYSTEMS_JS" file="resources\chromeos\provided_file_systems.js" flattenhtml="true" type="BINDATA" />
          <include name="IDR_GUEST_SESSION_TAB_HTML" file="resources\chromeos\guest_session_tab.html" flattenhtml="true" type="BINDATA" />
         <include name="IDR_IMAGEBURNER_HTML" file="resources\chromeos\image_burner.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
         <include name="IDR_IMAGEBURNER_JS" file="resources\chromeos\image_burner.js" type="BINDATA" />
