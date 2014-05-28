@@ -33,9 +33,8 @@ if __name__ == '__main__':
                     'https://github.com/GoogleChrome/chromium-dashboard')
   options, args = parser.parse_args()
 
-  source_path = os.path.join(
-      '..', '..', '..',
-      'third_party', 'WebKit', 'Source', 'core', 'frame', 'UseCounter.h')
+  source_path = \
+      '../../../third_party/WebKit/Source/core/frame/UseCounter.h'
 
   START_MARKER = '^enum Feature {'
   END_MARKER = '^NumberOfFeatures'

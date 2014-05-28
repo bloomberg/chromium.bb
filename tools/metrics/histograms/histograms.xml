@@ -35393,7 +35393,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </enum>
 
 <enum name="FeatureObserver" type="int">
-<!-- Generated from ..\..\..\third_party\WebKit\Source\core\frame\UseCounter.h -->
+<!-- Generated from ../../../third_party/WebKit/Source/core/frame/UseCounter.h -->
 
   <int value="0" label="PageDestruction"/>
   <int value="1" label="LegacyNotifications"/>
@@ -35812,6 +35812,15 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="414" label="VTTCueRenderPositionNot50"/>
   <int value="415" label="VTTCueRenderSizeNot100"/>
   <int value="416" label="VTTCueRenderAlignNotMiddle"/>
+  <int value="417" label="ElementRequestPointerLock"/>
+  <int value="418" label="VTTCueRenderRtl"/>
+  <int value="419" label="PostMessageFromSecureToInsecure"/>
+  <int value="420" label="PostMessageFromInsecureToSecure"/>
+  <int value="421" label="DocumentExitPointerLock"/>
+  <int value="422" label="DocumentPointerLockElement"/>
+  <int value="423" label="MixedContentFont"/>
+  <int value="424" label="PrefixedCursorZoomIn"/>
+  <int value="425" label="PrefixedCursorZoomOut"/>
 </enum>
 
 <enum name="FFmpegCodecs" type="int">
