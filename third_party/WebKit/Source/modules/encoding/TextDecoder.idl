@@ -37,5 +37,7 @@
     MeasureAs=TextDecoderConstructor
 ] interface TextDecoder {
     readonly attribute DOMString encoding;
+    readonly attribute boolean fatal;
+    readonly attribute boolean ignoreBOM;
     [RaisesException, MeasureAs=TextDecoderDecode] DOMString decode(optional ArrayBufferView input, optional Dictionary options);
 };

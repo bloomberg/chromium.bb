@@ -50,6 +50,8 @@ public:
 
     // Implement the IDL
     String encoding() const;
+    bool fatal() const { return m_fatal; }
+    bool ignoreBOM() const { return m_ignoreBOM; }
     String decode(ArrayBufferView*, const Dictionary&, ExceptionState&);
     String decode(ExceptionState& exceptionState) { return decode(0, Dictionary(), exceptionState); }
 

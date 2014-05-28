@@ -62,4 +62,12 @@ bad.forEach(function(t) {
     }, 'Fatal flag: ' + t.encoding + ' - ' + t.name);
 });
 
+test(function() {
+    assert_true('fatal' in new TextDecoder(), 'The fatal attribute should exist on TextDecoder.');
+    assert_equals(typeof  new TextDecoder().fatal, 'boolean', 'The type of the fatal attribute should be boolean.');
+    assert_false(new TextDecoder().fatal, 'The fatal attribute should default to false.');
+    assert_true(new TextDecoder('utf-8', {fatal: true}).fatal, 'The fatal attribute can be set using an option.');
+
+}, 'The fatal attribute of TextDecoder');
+
 </script>

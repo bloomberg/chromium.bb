@@ -34,4 +34,12 @@ cases.forEach(function(testCase) {
     }, 'BOM is ignored if ignoreBOM option is specified: ' + testCase.encoding);
 });
 
+test(function() {
+    assert_true('ignoreBOM' in new TextDecoder(), 'The ignoreBOM attribute should exist on TextDecoder.');
+    assert_equals(typeof  new TextDecoder().ignoreBOM, 'boolean', 'The type of the ignoreBOM attribute should be boolean.');
+    assert_false(new TextDecoder().ignoreBOM, 'The ignoreBOM attribute should default to false.');
+    assert_true(new TextDecoder('utf-8', {ignoreBOM: true}).ignoreBOM, 'The ignoreBOM attribute can be set using an option.');
+
+}, 'The ignoreBOM attribute of TextDecoder');
+
 </script>

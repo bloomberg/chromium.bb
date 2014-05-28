@@ -2,5 +2,6 @@ This is a testharness.js-based test.
 PASS BOM is ignored if ignoreBOM option is specified: utf-8 
 PASS BOM is ignored if ignoreBOM option is specified: utf-16le 
 PASS BOM is ignored if ignoreBOM option is specified: utf-16be 
+PASS The ignoreBOM attribute of TextDecoder 
 Harness: the test ran to completion.
 

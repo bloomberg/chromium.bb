@@ -33,5 +33,6 @@ PASS Fatal flag: utf-8 - lead surrogate
 PASS Fatal flag: utf-8 - trail surrogate 
 PASS Fatal flag: utf-8 - surrogate pair 
 PASS Fatal flag: utf-16le - truncated code unit 
+PASS The fatal attribute of TextDecoder 
 Harness: the test ran to completion.
 
