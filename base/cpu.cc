@@ -183,8 +183,14 @@ void CPU::Initialize() {
     //   b) XSAVE is supported by the CPU and
     //   c) XSAVE is enabled by the kernel.
     // See http://software.intel.com/en-us/blogs/2011/04/14/is-avx-enabled
+    //
+    // In addition, we have observed some crashes with the xgetbv instruction
+    // even after following Intel's example code. (See crbug.com/375968.)
+    // Because of that, we also test the XSAVE bit because its description in
+    // the CPUID documentation suggests that it signals xgetbv support.
     has_avx_ =
         has_avx_hardware_ &&
+        (cpu_info[2] & 0x04000000) != 0 /* XSAVE */ &&
         (cpu_info[2] & 0x08000000) != 0 /* OSXSAVE */ &&
         (_xgetbv(0) & 6) == 6 /* XSAVE enabled by kernel */;
     has_aesni_ = (cpu_info[2] & 0x02000000) != 0;
