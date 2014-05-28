@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "V8SQLResultSetRowList.h"
+#include "bindings/modules/v8/V8SQLResultSetRowList.h"
 
 #include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"

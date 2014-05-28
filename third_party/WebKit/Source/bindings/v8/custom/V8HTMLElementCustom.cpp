@@ -29,9 +29,9 @@
  */
 
 #include "config.h"
-#include "V8HTMLElement.h"
+#include "bindings/core/v8/V8HTMLElement.h"
 
-#include "V8HTMLElementWrapperFactory.h"
+#include "V8HTMLElementWrapperFactory.h" // FIXME: should be bindings/core/v8
 
 namespace WebCore {
 

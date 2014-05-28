@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "V8FileReader.h"
+#include "bindings/core/v8/V8FileReader.h"
 
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/custom/V8ArrayBufferCustom.h"

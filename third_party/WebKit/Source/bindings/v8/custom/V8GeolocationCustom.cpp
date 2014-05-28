@@ -24,10 +24,10 @@
  */
 
 #include "config.h"
-#include "V8Geolocation.h"
+#include "bindings/modules/v8/V8Geolocation.h"
 
-#include "V8PositionCallback.h"
-#include "V8PositionErrorCallback.h"
+#include "bindings/modules/v8/V8PositionCallback.h"
+#include "bindings/modules/v8/V8PositionErrorCallback.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8Callback.h"
 #include "modules/geolocation/Geolocation.h"

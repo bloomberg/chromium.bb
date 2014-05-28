@@ -29,13 +29,13 @@
  */
 
 #include "config.h"
-#include "V8HTMLDocument.h"
+#include "bindings/core/v8/V8HTMLDocument.h"
 
 #include "HTMLNames.h"
-#include "V8HTMLAllCollection.h"
-#include "V8HTMLCollection.h"
-#include "V8Node.h"
-#include "V8Window.h"
+#include "bindings/core/v8/V8HTMLAllCollection.h"
+#include "bindings/core/v8/V8HTMLCollection.h"
+#include "bindings/core/v8/V8Node.h"
+#include "bindings/core/v8/V8Window.h"
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/V8Binding.h"
 #include "core/frame/LocalFrame.h"

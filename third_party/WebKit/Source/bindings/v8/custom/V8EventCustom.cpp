@@ -29,11 +29,11 @@
  */
 
 #include "config.h"
-#include "V8Event.h"
+#include "bindings/core/v8/V8Event.h"
 
 #include "EventModulesHeaders.h"
 #include "EventModulesInterfaces.h"
-#include "V8DataTransfer.h"
+#include "bindings/core/v8/V8DataTransfer.h"
 #include "bindings/v8/V8Binding.h"
 #include "core/clipboard/Clipboard.h"
 #include "core/events/ClipboardEvent.h"

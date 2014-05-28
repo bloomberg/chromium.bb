@@ -29,12 +29,12 @@
  */
 
 #include "config.h"
-#include "V8HTMLCollection.h"
+#include "bindings/core/v8/V8HTMLCollection.h"
 
-#include "V8HTMLAllCollection.h"
-#include "V8HTMLFormControlsCollection.h"
-#include "V8HTMLOptionsCollection.h"
-#include "V8Node.h"
+#include "bindings/core/v8/V8HTMLAllCollection.h"
+#include "bindings/core/v8/V8HTMLFormControlsCollection.h"
+#include "bindings/core/v8/V8HTMLOptionsCollection.h"
+#include "bindings/core/v8/V8Node.h"
 #include "bindings/v8/V8Binding.h"
 #include "core/html/HTMLCollection.h"
 

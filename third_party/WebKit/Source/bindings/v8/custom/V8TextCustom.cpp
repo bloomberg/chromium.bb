@@ -29,9 +29,9 @@
  */
 
 #include "config.h"
-#include "V8Text.h"
+#include "bindings/core/v8/V8Text.h"
 
-#include "V8CDATASection.h"
+#include "bindings/core/v8/V8CDATASection.h"
 #include "core/dom/Node.h"
 #include "core/dom/Text.h"
 

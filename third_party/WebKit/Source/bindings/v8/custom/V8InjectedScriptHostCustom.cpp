@@ -29,15 +29,15 @@
  */
 
 #include "config.h"
-#include "V8InjectedScriptHost.h"
+#include "bindings/core/v8/V8InjectedScriptHost.h"
 
-#include "V8Database.h"
-#include "V8EventTarget.h"
-#include "V8HTMLAllCollection.h"
-#include "V8HTMLCollection.h"
-#include "V8Node.h"
-#include "V8NodeList.h"
-#include "V8Storage.h"
+#include "bindings/core/v8/V8EventTarget.h"
+#include "bindings/core/v8/V8HTMLAllCollection.h"
+#include "bindings/core/v8/V8HTMLCollection.h"
+#include "bindings/core/v8/V8Node.h"
+#include "bindings/core/v8/V8NodeList.h"
+#include "bindings/core/v8/V8Storage.h"
+#include "bindings/modules/v8/V8Database.h"
 #include "bindings/v8/BindingSecurity.h"
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/ScriptDebugServer.h"

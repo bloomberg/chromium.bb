@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "V8EventTarget.h"
+#include "bindings/core/v8/V8EventTarget.h"
 
 #include "EventTargetHeaders.h"
 #include "EventTargetInterfaces.h"

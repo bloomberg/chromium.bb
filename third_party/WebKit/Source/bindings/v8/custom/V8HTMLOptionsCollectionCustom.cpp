@@ -29,11 +29,11 @@
  */
 
 #include "config.h"
-#include "V8HTMLOptionsCollection.h"
+#include "bindings/core/v8/V8HTMLOptionsCollection.h"
 
-#include "V8HTMLOptionElement.h"
-#include "V8Node.h"
-#include "V8NodeList.h"
+#include "bindings/core/v8/V8HTMLOptionElement.h"
+#include "bindings/core/v8/V8Node.h"
+#include "bindings/core/v8/V8NodeList.h"
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/V8Binding.h"
 #include "core/dom/ExceptionCode.h"

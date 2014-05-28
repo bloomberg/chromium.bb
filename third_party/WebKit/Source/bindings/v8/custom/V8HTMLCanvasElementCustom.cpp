@@ -30,11 +30,11 @@
  */
 
 #include "config.h"
-#include "V8HTMLCanvasElement.h"
+#include "bindings/core/v8/V8HTMLCanvasElement.h"
 
-#include "V8CanvasRenderingContext2D.h"
-#include "V8Node.h"
-#include "V8WebGLRenderingContext.h"
+#include "bindings/core/v8/V8CanvasRenderingContext2D.h"
+#include "bindings/core/v8/V8Node.h"
+#include "bindings/core/v8/V8WebGLRenderingContext.h"
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/V8Binding.h"
 #include "core/html/HTMLCanvasElement.h"

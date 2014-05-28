@@ -29,19 +29,19 @@
  */
 
 #include "config.h"
-#include "V8CSSRule.h"
+#include "bindings/core/v8/V8CSSRule.h"
 
-#include "V8CSSCharsetRule.h"
-#include "V8CSSFontFaceRule.h"
-#include "V8CSSImportRule.h"
-#include "V8CSSKeyframeRule.h"
-#include "V8CSSKeyframesRule.h"
-#include "V8CSSMediaRule.h"
-#include "V8CSSPageRule.h"
-#include "V8CSSStyleRule.h"
-#include "V8CSSSupportsRule.h"
-#include "V8CSSViewportRule.h"
-#include "V8WebKitCSSFilterRule.h"
+#include "bindings/core/v8/V8CSSCharsetRule.h"
+#include "bindings/core/v8/V8CSSFontFaceRule.h"
+#include "bindings/core/v8/V8CSSImportRule.h"
+#include "bindings/core/v8/V8CSSKeyframeRule.h"
+#include "bindings/core/v8/V8CSSKeyframesRule.h"
+#include "bindings/core/v8/V8CSSMediaRule.h"
+#include "bindings/core/v8/V8CSSPageRule.h"
+#include "bindings/core/v8/V8CSSStyleRule.h"
+#include "bindings/core/v8/V8CSSSupportsRule.h"
+#include "bindings/core/v8/V8CSSViewportRule.h"
+#include "bindings/core/v8/V8WebKitCSSFilterRule.h"
 
 namespace WebCore {
 

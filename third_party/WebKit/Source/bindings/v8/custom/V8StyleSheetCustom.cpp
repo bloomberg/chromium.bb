@@ -29,10 +29,10 @@
  */
 
 #include "config.h"
-#include "V8StyleSheet.h"
+#include "bindings/core/v8/V8StyleSheet.h"
 
-#include "V8CSSStyleSheet.h"
-#include "V8Node.h"
+#include "bindings/core/v8/V8CSSStyleSheet.h"
+#include "bindings/core/v8/V8Node.h"
 #include "bindings/v8/V8DOMWrapper.h"
 
 namespace WebCore {

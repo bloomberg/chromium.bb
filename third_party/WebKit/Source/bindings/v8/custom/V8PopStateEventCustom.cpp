@@ -29,9 +29,9 @@
  */
 
 #include "config.h"
-#include "V8PopStateEvent.h"
+#include "bindings/core/v8/V8PopStateEvent.h"
 
-#include "V8History.h"
+#include "bindings/core/v8/V8History.h"
 #include "bindings/v8/SerializedScriptValue.h"
 #include "bindings/v8/V8HiddenValue.h"
 #include "core/events/PopStateEvent.h"

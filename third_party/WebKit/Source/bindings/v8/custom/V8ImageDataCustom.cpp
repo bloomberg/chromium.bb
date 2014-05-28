@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "V8ImageData.h"
+#include "bindings/core/v8/V8ImageData.h"
 
 #include "bindings/v8/custom/V8Uint8ClampedArrayCustom.h"
 

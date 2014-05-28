@@ -28,9 +28,9 @@
  */
 
 #include "config.h"
-#include "V8TextTrackCue.h"
+#include "bindings/core/v8/V8TextTrackCue.h"
 
-#include "V8VTTCue.h"
+#include "bindings/core/v8/V8VTTCue.h"
 
 namespace WebCore {
 

@@ -29,10 +29,10 @@
  */
 
 #include "config.h"
-#include "V8CustomEvent.h"
+#include "bindings/core/v8/V8CustomEvent.h"
 
 #include "RuntimeEnabledFeatures.h"
-#include "V8Event.h"
+#include "bindings/core/v8/V8Event.h"
 #include "bindings/v8/Dictionary.h"
 #include "bindings/v8/SerializedScriptValue.h"
 #include "bindings/v8/V8Binding.h"

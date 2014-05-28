@@ -29,11 +29,11 @@
  */
 
 #include "config.h"
-#include "V8Element.h"
+#include "bindings/core/v8/V8Element.h"
 
 #include "RuntimeEnabledFeatures.h"
-#include "V8AnimationEffect.h"
-#include "V8AnimationPlayer.h"
+#include "bindings/core/v8/V8AnimationEffect.h"
+#include "bindings/core/v8/V8AnimationPlayer.h"
 #include "bindings/v8/Dictionary.h"
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/V8Binding.h"

@@ -29,12 +29,12 @@
  */
 
 #include "config.h"
-#include "V8CSSValue.h"
+#include "bindings/core/v8/V8CSSValue.h"
 
-#include "V8CSSPrimitiveValue.h"
-#include "V8CSSValueList.h"
-#include "V8WebKitCSSFilterValue.h"
-#include "V8WebKitCSSTransformValue.h"
+#include "bindings/core/v8/V8CSSPrimitiveValue.h"
+#include "bindings/core/v8/V8CSSValueList.h"
+#include "bindings/core/v8/V8WebKitCSSFilterValue.h"
+#include "bindings/core/v8/V8WebKitCSSTransformValue.h"
 
 namespace WebCore {
 

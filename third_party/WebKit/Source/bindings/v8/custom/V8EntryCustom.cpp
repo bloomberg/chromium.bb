@@ -29,11 +29,11 @@
  */
 
 #include "config.h"
-#include "V8Entry.h"
+#include "bindings/modules/v8/V8Entry.h"
 
-#include "V8Attr.h"
-#include "V8DirectoryEntry.h"
-#include "V8FileEntry.h"
+#include "bindings/core/v8/V8Attr.h"
+#include "bindings/modules/v8/V8DirectoryEntry.h"
+#include "bindings/modules/v8/V8FileEntry.h"
 #include "bindings/v8/V8Binding.h"
 #include "wtf/RefPtr.h"
 

@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "V8MessagePort.h"
+#include "bindings/core/v8/V8MessagePort.h"
 
 #include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"

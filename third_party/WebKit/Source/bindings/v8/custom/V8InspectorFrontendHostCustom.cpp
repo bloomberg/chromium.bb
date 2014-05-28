@@ -29,9 +29,9 @@
  */
 
 #include "config.h"
-#include "V8InspectorFrontendHost.h"
+#include "bindings/core/v8/V8InspectorFrontendHost.h"
 
-#include "V8MouseEvent.h"
+#include "bindings/core/v8/V8MouseEvent.h"
 #include "bindings/v8/V8Binding.h"
 #include "core/inspector/InspectorController.h"
 #include "core/inspector/InspectorFrontendClient.h"

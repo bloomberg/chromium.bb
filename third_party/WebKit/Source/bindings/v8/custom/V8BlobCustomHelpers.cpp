@@ -29,9 +29,9 @@
  */
 
 #include "config.h"
-#include "V8BlobCustomHelpers.h"
+#include "bindings/v8/custom/V8BlobCustomHelpers.h"
 
-#include "V8Blob.h"
+#include "bindings/core/v8/V8Blob.h"
 #include "bindings/v8/Dictionary.h"
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/V8Binding.h"

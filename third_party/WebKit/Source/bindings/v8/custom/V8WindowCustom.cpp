@@ -29,10 +29,10 @@
  */
 
 #include "config.h"
-#include "V8Window.h"
+#include "bindings/core/v8/V8Window.h"
 
-#include "V8HTMLCollection.h"
-#include "V8Node.h"
+#include "bindings/core/v8/V8HTMLCollection.h"
+#include "bindings/core/v8/V8Node.h"
 #include "bindings/v8/BindingSecurity.h"
 #include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"

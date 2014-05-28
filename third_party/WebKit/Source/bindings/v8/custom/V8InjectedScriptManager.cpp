@@ -31,8 +31,8 @@
 #include "config.h"
 #include "core/inspector/InjectedScriptManager.h"
 
-#include "V8InjectedScriptHost.h"
-#include "V8Window.h"
+#include "bindings/core/v8/V8InjectedScriptHost.h"
+#include "bindings/core/v8/V8Window.h"
 #include "bindings/v8/BindingSecurity.h"
 #include "bindings/v8/ScopedPersistent.h"
 #include "bindings/v8/ScriptDebugServer.h"

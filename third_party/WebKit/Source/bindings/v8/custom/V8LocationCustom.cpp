@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "V8Location.h"
+#include "bindings/core/v8/V8Location.h"
 
 namespace WebCore {
 

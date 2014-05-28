@@ -29,11 +29,11 @@
  */
 
 #include "config.h"
-#include "V8XSLTProcessor.h"
+#include "bindings/core/v8/V8XSLTProcessor.h"
 
-#include "V8Document.h"
-#include "V8DocumentFragment.h"
-#include "V8Node.h"
+#include "bindings/core/v8/V8Document.h"
+#include "bindings/core/v8/V8DocumentFragment.h"
+#include "bindings/core/v8/V8Node.h"
 #include "bindings/v8/V8Binding.h"
 #include "core/dom/Document.h"
 #include "core/dom/DocumentFragment.h"

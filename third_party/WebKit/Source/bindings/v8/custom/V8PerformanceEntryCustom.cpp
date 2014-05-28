@@ -29,11 +29,11 @@
  */
 
 #include "config.h"
-#include "V8PerformanceEntry.h"
+#include "bindings/core/v8/V8PerformanceEntry.h"
 
-#include "V8PerformanceMark.h"
-#include "V8PerformanceMeasure.h"
-#include "V8PerformanceResourceTiming.h"
+#include "bindings/core/v8/V8PerformanceMark.h"
+#include "bindings/core/v8/V8PerformanceMeasure.h"
+#include "bindings/core/v8/V8PerformanceResourceTiming.h"
 #include "core/timing/Performance.h"
 #include "core/timing/PerformanceMark.h"
 #include "core/timing/PerformanceMeasure.h"

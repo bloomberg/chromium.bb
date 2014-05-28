@@ -29,11 +29,11 @@
  */
 
 #include "config.h"
-#include "V8MessageEvent.h"
+#include "bindings/core/v8/V8MessageEvent.h"
 
-#include "V8Blob.h"
-#include "V8MessagePort.h"
-#include "V8Window.h"
+#include "bindings/core/v8/V8Blob.h"
+#include "bindings/core/v8/V8MessagePort.h"
+#include "bindings/core/v8/V8Window.h"
 #include "bindings/v8/SerializedScriptValue.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8HiddenValue.h"

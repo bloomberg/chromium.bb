@@ -29,10 +29,10 @@
  */
 
 #include "config.h"
-#include "V8SQLTransaction.h"
+#include "bindings/modules/v8/V8SQLTransaction.h"
 
-#include "V8SQLStatementCallback.h"
-#include "V8SQLStatementErrorCallback.h"
+#include "bindings/modules/v8/V8SQLStatementCallback.h"
+#include "bindings/modules/v8/V8SQLStatementErrorCallback.h"
 #include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/V8Binding.h"

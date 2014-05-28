@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "V8WorkerGlobalScope.h"
+#include "bindings/core/v8/V8WorkerGlobalScope.h"
 
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/ScheduledAction.h"

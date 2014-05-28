@@ -29,10 +29,10 @@
  */
 
 #include "config.h"
-#include "V8HTMLAllCollection.h"
+#include "bindings/core/v8/V8HTMLAllCollection.h"
 
-#include "V8Element.h"
-#include "V8NodeList.h"
+#include "bindings/core/v8/V8Element.h"
+#include "bindings/core/v8/V8NodeList.h"
 #include "bindings/v8/V8Binding.h"
 #include "core/dom/NamedNodesCollection.h"
 #include "core/html/HTMLAllCollection.h"

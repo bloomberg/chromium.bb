@@ -29,9 +29,9 @@
  */
 
 #include "config.h"
-#include "V8SQLTransactionSync.h"
+#include "bindings/modules/v8/V8SQLTransactionSync.h"
 
-#include "V8SQLResultSet.h"
+#include "bindings/modules/v8/V8SQLResultSet.h"
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/V8Binding.h"
 #include "core/dom/ExceptionCode.h"

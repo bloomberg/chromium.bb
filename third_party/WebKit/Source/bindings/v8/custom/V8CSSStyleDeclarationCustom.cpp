@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "V8CSSStyleDeclaration.h"
+#include "bindings/core/v8/V8CSSStyleDeclaration.h"
 
 #include "CSSPropertyNames.h"
 #include "bindings/v8/ExceptionState.h"

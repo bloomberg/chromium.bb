@@ -29,13 +29,13 @@
  */
 
 #include "config.h"
-#include "V8XMLHttpRequest.h"
+#include "bindings/core/v8/V8XMLHttpRequest.h"
 
-#include "V8Blob.h"
-#include "V8Document.h"
-#include "V8FormData.h"
-#include "V8HTMLDocument.h"
-#include "V8Stream.h"
+#include "bindings/core/v8/V8Blob.h"
+#include "bindings/core/v8/V8Document.h"
+#include "bindings/core/v8/V8FormData.h"
+#include "bindings/core/v8/V8HTMLDocument.h"
+#include "bindings/core/v8/V8Stream.h"
 #include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/V8Binding.h"

@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "V8WebKitPoint.h"
+#include "bindings/core/v8/V8WebKitPoint.h"
 
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8DOMWrapper.h"

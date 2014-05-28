@@ -29,9 +29,9 @@
  */
 
 #include "config.h"
-#include "V8TrackEvent.h"
+#include "bindings/core/v8/V8TrackEvent.h"
 
-#include "V8TextTrack.h"
+#include "bindings/core/v8/V8TextTrack.h"
 #include "core/html/track/TrackBase.h"
 #include "core/html/track/TrackEvent.h"
 

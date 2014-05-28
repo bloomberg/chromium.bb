@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 #include "config.h"
-#include "V8SubtleCrypto.h"
+#include "bindings/modules/v8/V8SubtleCrypto.h"
 
-#include "V8Key.h"
+#include "bindings/modules/v8/V8Key.h"
 #include "bindings/v8/Dictionary.h"
 #include "bindings/v8/custom/V8ArrayBufferCustom.h"
 #include "bindings/v8/custom/V8ArrayBufferViewCustom.h"
