@@ -19,14 +19,14 @@
 #  <http://www.gnu.org/licenses/>.
 
 include text_nabcc.dis
-include braille-patterns.cti # unicode braille.
+include braille-patternsin.cti # unicode braille.
 
 punctuation	\x2018 236 #left single quote
 punctuation	\x2019 356 #right single quote
 punctuation	\x201c 6-236 #left quote
 punctuation	\x201d 356-3 #right quote
 
-include en-us-g1.ctb
+include en-in-g1.ctb
 
 sign	\x0b82	56	# TAMIL SIGN ANUSVARA
 sign	\x0b83	6	# TAMIL SIGN VISARGA
