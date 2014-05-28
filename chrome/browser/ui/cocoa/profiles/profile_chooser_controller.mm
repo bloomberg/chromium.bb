@@ -1192,7 +1192,10 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 
   // Profile options. This can be a link to the accounts view, the profile's
   // username for signed in users, or a "Sign in" button for local profiles.
-  if (!isGuestSession_) {
+  SigninManagerBase* signinManager =
+      SigninManagerFactory::GetForProfile(
+          browser_->profile()->GetOriginalProfile());
+  if (!isGuestSession_ && signinManager->IsSigninAllowed()) {
     NSView* linksContainer =
         [self createCurrentProfileLinksForItem:item
                                           rect:NSMakeRect(xOffset, yOffset,
