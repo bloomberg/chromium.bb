@@ -4,7 +4,9 @@
 
 #include "content/renderer/screen_orientation/mock_screen_orientation_controller.h"
 
+#include "base/bind.h"
 #include "base/logging.h"
+#include "base/message_loop/message_loop.h"
 #include "third_party/WebKit/public/platform/WebScreenOrientationListener.h"
 
 namespace content {
@@ -14,6 +16,12 @@ MockScreenOrientationController::MockScreenOrientationController()
       device_orientation_(blink::WebScreenOrientationPortraitPrimary),
       current_orientation_(blink::WebScreenOrientationPortraitPrimary),
       listener_(NULL) {
+  // Since MockScreenOrientationController is held by LazyInstance reference,
+  // add this ref for it.
+  AddRef();
+}
+
+MockScreenOrientationController::~MockScreenOrientationController() {
 }
 
 void MockScreenOrientationController::SetListener(
@@ -29,6 +37,12 @@ void MockScreenOrientationController::ResetData() {
 
 void MockScreenOrientationController::UpdateLock(
     blink::WebScreenOrientationLockType lock) {
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&MockScreenOrientationController::UpdateLockSync, this, lock));
+}
+void MockScreenOrientationController::UpdateLockSync(
+    blink::WebScreenOrientationLockType lock) {
   DCHECK(lock != blink::WebScreenOrientationLockDefault);
   current_lock_ = lock;
   if (!IsOrientationAllowedByCurrentLock(current_orientation_))
@@ -36,6 +50,12 @@ void MockScreenOrientationController::UpdateLock(
 }
 
 void MockScreenOrientationController::ResetLock() {
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&MockScreenOrientationController::ResetLockSync, this));
+}
+
+void MockScreenOrientationController::ResetLockSync() {
   bool will_screen_orientation_need_updating =
       !IsOrientationAllowedByCurrentLock(device_orientation_);
   current_lock_ = blink::WebScreenOrientationLockDefault;
