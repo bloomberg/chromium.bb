@@ -164,7 +164,9 @@ def GetBotStepMap():
       B('fyi-component-builder-tests-dbg',
         H(compile_step, extra_gyp='component=shared_library'),
         T(std_tests, ['--experimental', flakiness_server])),
-      B('gpu-builder-tests-dbg', H(compile_step), T(['gpu'])),
+      B('gpu-builder-tests-dbg',
+        H(compile_step),
+        T(['gpu'], ['--install=ContentShell'])),
       # Pass empty T([]) so that logcat monitor and device status check are run.
       B('perf-bisect-builder-tests-dbg', H(['bisect_perf_regression']), T([])),
       B('perf-tests-rel', H(std_test_steps),
