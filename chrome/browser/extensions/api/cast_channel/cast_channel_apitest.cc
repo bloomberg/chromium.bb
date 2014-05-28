@@ -16,6 +16,7 @@
 #include "net/base/completion_callback.h"
 #include "net/base/net_errors.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "testing/gmock_mutant.h"
 
 namespace cast_channel =  extensions::api::cast_channel;
 using cast_channel::CastSocket;
@@ -23,8 +24,9 @@ using cast_channel::ChannelError;
 using cast_channel::MessageInfo;
 using cast_channel::ReadyState;
 
-using ::testing::A;
 using ::testing::_;
+using ::testing::A;
+using ::testing::DoAll;
 using ::testing::Invoke;
 using ::testing::InSequence;
 using ::testing::Return;
@@ -45,6 +47,10 @@ ACTION_TEMPLATE(InvokeCompletionCallback,
                 HAS_1_TEMPLATE_PARAMS(int, k),
                 AND_1_VALUE_PARAMS(result)) {
   ::std::tr1::get<k>(args).Run(result);
+}
+
+ACTION_P2(InvokeDelegateOnError, api_test, api) {
+  api_test->CallOnError(api);
 }
 
 class MockCastSocket : public CastSocket {
@@ -100,6 +106,11 @@ class CastChannelAPITest : public ExtensionApiTest {
 
   extensions::CastChannelAPI* GetApi() {
     return extensions::CastChannelAPI::Get(profile());
+  }
+
+  void CallOnError(extensions::CastChannelAPI* api) {
+    api->OnError(mock_cast_socket_,
+                 cast_channel::CHANNEL_ERROR_CONNECT_ERROR);
   }
 
  protected:
@@ -220,3 +231,30 @@ IN_PROC_BROWSER_TEST_F(CastChannelAPITest, MAYBE_TestOpenReceiveClose) {
   CallOnMessage("some-message");
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
+
+// TODO(munjal): Win Dbg has a workaround that makes RunExtensionSubtest
+// always return true without actually running the test. Remove when fixed.
+#if defined(OS_WIN) && !defined(NDEBUG)
+#define MAYBE_TestOpenError DISABLED_TestOpenError
+#else
+#define MAYBE_TestOpenError TestOpenError
+#endif
+// Test the case when socket open results in an error.
+IN_PROC_BROWSER_TEST_F(CastChannelAPITest, MAYBE_TestOpenError) {
+  SetUpMockCastSocket();
+
+  EXPECT_CALL(*mock_cast_socket_, Connect(_))
+      .WillOnce(DoAll(
+          InvokeDelegateOnError(this, GetApi()),
+          InvokeCompletionCallback<0>(net::ERR_FAILED)));
+  EXPECT_CALL(*mock_cast_socket_, ready_state())
+      .WillRepeatedly(Return(cast_channel::READY_STATE_CLOSED));
+  EXPECT_CALL(*mock_cast_socket_, Close(_));
+
+  EXPECT_TRUE(RunExtensionSubtest("cast_channel/api",
+                                  "test_open_error.html"));
+
+  ResultCatcher catcher;
+  EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
+}
+
