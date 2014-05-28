@@ -51,7 +51,7 @@
   <property name="native.libs.absolute.dir" location="${NATIVE_LIBS_DIR}" />
 
   <!-- Intermediate files -->
-  <property name="resource.package.file.name" value="${APK_NAME}.ap_" />
+  <property name="resource.package.file.name" value="${RESOURCE_PACKAGED_APK_NAME}" />
 
   <property name="dex.file.name" value="classes.dex" />
   <property name="intermediate.dex.file" location="${out.absolute.dir}/${dex.file.name}" />

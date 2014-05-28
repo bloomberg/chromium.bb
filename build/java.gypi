@@ -140,9 +140,14 @@
           # Dependent APKs include this target's resources via
           # additional_res_dirs, additional_res_packages, and
           # additional_R_text_files.
-          'additional_res_dirs': ['<(res_crunched_dir)',
-                                  '<(res_v14_compatibility_dir)',
-                                  '<@(res_input_dirs)'],
+          'additional_res_dirs': [
+              # The order of these is important to ensure that the proper
+              # version (i.e. the crunched version) of resources takes
+              # precedence.
+              '<(res_crunched_dir)',
+              '<(res_v14_compatibility_dir)',
+              '<@(res_input_dirs)'
+              ],
           'additional_res_packages': ['<(R_package)'],
           'additional_R_text_files': ['<(R_text_file)'],
         },
