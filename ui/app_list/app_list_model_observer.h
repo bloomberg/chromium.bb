@@ -22,6 +22,9 @@ class APP_LIST_EXPORT AppListModelObserver {
   // Triggered just before an item is deleted from the model.
   virtual void OnAppListItemWillBeDeleted(AppListItem* item) {}
 
+  // Triggered just after an item is deleted from the model.
+  virtual void OnAppListItemDeleted() {}
+
   // Triggered after |item| has moved, changed folders, or changed properties.
   virtual void OnAppListItemUpdated(AppListItem* item) {}
 

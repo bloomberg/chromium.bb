@@ -138,6 +138,8 @@
         'views/speech_view.h',
         'views/start_page_view.cc',
         'views/start_page_view.h',
+        'views/tile_item_view.cc',
+        'views/tile_item_view.h',
         'views/top_icon_animation_view.cc',
         'views/top_icon_animation_view.h',
       ],

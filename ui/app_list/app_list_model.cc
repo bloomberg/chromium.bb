@@ -234,6 +234,7 @@ void AppListModel::DeleteItem(const std::string& id) {
                       observers_,
                       OnAppListItemWillBeDeleted(item));
     top_level_item_list_->DeleteItem(id);
+    FOR_EACH_OBSERVER(AppListModelObserver, observers_, OnAppListItemDeleted());
     return;
   }
   AppListFolderItem* folder = FindFolderItem(item->folder_id());
@@ -244,6 +245,7 @@ void AppListModel::DeleteItem(const std::string& id) {
                     observers_,
                     OnAppListItemWillBeDeleted(item));
   child_item.reset();  // Deletes item.
+  FOR_EACH_OBSERVER(AppListModelObserver, observers_, OnAppListItemDeleted());
 }
 
 void AppListModel::NotifyExtensionPreferenceChanged() {

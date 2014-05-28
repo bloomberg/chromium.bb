@@ -78,10 +78,7 @@ ContentsView::ContentsView(AppListMainView* app_list_main_view,
   view_model_->Add(search_results_view, kIndexSearchResults);
 
   if (app_list::switches::IsExperimentalAppListEnabled()) {
-    content::WebContents* start_page_contents =
-        view_delegate->GetStartPageContents();
-    start_page_view_ =
-        new StartPageView(app_list_main_view, start_page_contents);
+    start_page_view_ = new StartPageView(app_list_main_view, view_delegate);
     AddChildView(start_page_view_);
     view_model_->Add(start_page_view_, kIndexStartPage);
   }

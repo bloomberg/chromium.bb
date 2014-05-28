@@ -20,6 +20,7 @@
 #include "ui/app_list/views/search_box_view.h"
 #include "ui/app_list/views/start_page_view.h"
 #include "ui/app_list/views/test/apps_grid_view_test_api.h"
+#include "ui/app_list/views/tile_item_view.h"
 #include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/window.h"
 #include "ui/views/test/views_test_base.h"
@@ -41,6 +42,17 @@ enum TestType {
 
 bool IsViewAtOrigin(views::View* view) {
   return view->bounds().origin().IsOrigin();
+}
+
+size_t GetVisibleTileItemViews(const std::vector<TileItemView*>& tiles) {
+  size_t count = 0;
+  for (std::vector<TileItemView*>::const_iterator it = tiles.begin();
+       it != tiles.end();
+       ++it) {
+    if ((*it)->visible())
+      count++;
+  }
+  return count;
 }
 
 // Choose a set that is 3 regular app list pages and 2 landscape app list pages.
@@ -248,7 +260,8 @@ void AppListViewTestContext::RunReshowWithOpenFolderTest() {
 void AppListViewTestContext::RunStartPageTest() {
   EXPECT_FALSE(view_->GetWidget()->IsVisible());
   EXPECT_EQ(-1, pagination_model_.total_pages());
-  delegate_->GetTestModel()->PopulateApps(kInitialItems);
+  AppListTestModel* model = delegate_->GetTestModel();
+  model->PopulateApps(3);
 
   Show();
 
@@ -267,6 +280,7 @@ void AppListViewTestContext::RunStartPageTest() {
     EXPECT_TRUE(IsViewAtOrigin(start_page_view));
     EXPECT_FALSE(
         IsViewAtOrigin(main_view->contents_view()->apps_container_view()));
+    EXPECT_EQ(3u, GetVisibleTileItemViews(start_page_view->tile_views()));
 
     main_view->contents_view()->SetShowState(ContentsView::SHOW_APPS);
     main_view->contents_view()->Layout();
@@ -274,6 +288,12 @@ void AppListViewTestContext::RunStartPageTest() {
     EXPECT_FALSE(IsViewAtOrigin(start_page_view));
     EXPECT_TRUE(
         IsViewAtOrigin(main_view->contents_view()->apps_container_view()));
+
+    // Check tiles hide and show on deletion and addition.
+    model->CreateAndAddItem("Test app");
+    EXPECT_EQ(4u, GetVisibleTileItemViews(start_page_view->tile_views()));
+    model->DeleteItem(model->GetItemName(0));
+    EXPECT_EQ(3u, GetVisibleTileItemViews(start_page_view->tile_views()));
   } else {
     EXPECT_EQ(NULL, start_page_view);
   }
