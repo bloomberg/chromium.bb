@@ -456,6 +456,23 @@
       ],
     },
     {
+      'target_name': 'mojo_geometry_lib',
+      'type': '<(component)',
+      'defines': [
+        'MOJO_GEOMETRY_IMPLEMENTATION',
+      ],
+      'dependencies': [
+        '../ui/gfx/gfx.gyp:gfx_geometry',
+        'mojo_environment_chromium',
+        'mojo_geometry_bindings',
+        'mojo_system_impl',
+      ],
+      'sources': [
+        'geometry/geometry_type_converters.cc',
+        'geometry/geometry_type_converters.h',
+      ],
+    },
+    {
       'target_name': 'mojo_shell_lib',
       'type': 'static_library',
       'dependencies': [

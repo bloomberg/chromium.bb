@@ -2,10 +2,27 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import "../public/interfaces/geometry/geometry.mojom"
-import "../public/interfaces/input_events/input_events.mojom"
+import "../../public/interfaces/geometry/geometry.mojom"
 
 module mojo {
+
+struct KeyData {
+  int32 key_code;
+  bool is_char;
+};
+
+struct TouchData {
+  int32 pointer_id;
+};
+
+struct Event {
+  int32 action;
+  int32 flags;
+  int64 time_stamp;
+  Point location;
+  KeyData key_data;
+  TouchData touch_data;
+};
 
 [Client=NativeViewportClient]
 interface NativeViewport {

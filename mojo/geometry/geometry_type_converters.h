@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_SERVICES_PUBLIC_CPP_GEOMETRY_GEOMETRY_TYPE_CONVERTERS_H_
-#define MOJO_SERVICES_PUBLIC_CPP_GEOMETRY_GEOMETRY_TYPE_CONVERTERS_H_
+#ifndef MOJO_GEOMETRY_GEOMETRY_TYPE_CONVERTERS_H_
+#define MOJO_GEOMETRY_GEOMETRY_TYPE_CONVERTERS_H_
 
-#include "mojo/services/public/cpp/geometry/mojo_geometry_export.h"
-#include "mojo/services/public/interfaces/geometry/geometry.mojom.h"
+#include "mojo/geometry/mojo_geometry_export.h"
+#include "mojo/public/interfaces/geometry/geometry.mojom.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace mojo {
@@ -40,4 +40,4 @@ class MOJO_GEOMETRY_EXPORT TypeConverter<Rect, gfx::Rect> {
 
 }  // namespace mojo
 
-#endif  // MOJO_SERVICES_PUBLIC_CPP_GEOMETRY_GEOMETRY_TYPE_CONVERTERS_H_
+#endif  // MOJO_GEOMETRY_GEOMETRY_TYPE_CONVERTERS_H_

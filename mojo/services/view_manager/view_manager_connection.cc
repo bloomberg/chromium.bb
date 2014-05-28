@@ -5,8 +5,8 @@
 #include "mojo/services/view_manager/view_manager_connection.h"
 
 #include "base/stl_util.h"
+#include "mojo/geometry/geometry_type_converters.h"
 #include "mojo/public/cpp/bindings/allocation_scope.h"
-#include "mojo/services/public/cpp/geometry/geometry_type_converters.h"
 #include "mojo/services/view_manager/node.h"
 #include "mojo/services/view_manager/root_node_manager.h"
 #include "mojo/services/view_manager/view.h"

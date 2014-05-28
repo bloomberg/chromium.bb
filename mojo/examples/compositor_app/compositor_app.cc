@@ -8,13 +8,13 @@
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "mojo/examples/compositor_app/compositor_host.h"
+#include "mojo/geometry/geometry_type_converters.h"
 #include "mojo/public/cpp/application/application.h"
 #include "mojo/public/cpp/bindings/allocation_scope.h"
 #include "mojo/public/cpp/gles2/gles2.h"
 #include "mojo/public/cpp/system/core.h"
 #include "mojo/public/interfaces/service_provider/service_provider.mojom.h"
 #include "mojo/services/native_viewport/native_viewport.mojom.h"
-#include "mojo/services/public/cpp/geometry/geometry_type_converters.h"
 #include "ui/gfx/rect.h"
 
 #if defined(WIN32)
