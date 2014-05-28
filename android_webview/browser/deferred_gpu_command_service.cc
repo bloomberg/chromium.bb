@@ -6,12 +6,43 @@
 
 #include "android_webview/browser/gl_view_renderer_manager.h"
 #include "android_webview/browser/shared_renderer_state.h"
+#include "base/synchronization/lock.h"
 #include "content/public/browser/android/synchronous_compositor.h"
 #include "gpu/command_buffer/service/shader_translator_cache.h"
 
 namespace android_webview {
 
 namespace {
+
+// TODO(boliu): Consider using base/atomicops.h.
+class ThreadSafeBool {
+ public:
+  ThreadSafeBool();
+  void Set(bool boolean);
+  bool Get();
+
+ private:
+  base::Lock lock_;
+  bool boolean_;
+  DISALLOW_COPY_AND_ASSIGN(ThreadSafeBool);
+};
+
+ThreadSafeBool::ThreadSafeBool() : boolean_(false) {
+}
+
+void ThreadSafeBool::Set(bool boolean) {
+  base::AutoLock lock(lock_);
+  boolean_ = boolean;
+}
+
+bool ThreadSafeBool::Get() {
+  base::AutoLock lock(lock_);
+  return boolean_;
+}
+
+base::LazyInstance<ThreadSafeBool> g_request_pending =
+    LAZY_INSTANCE_INITIALIZER;
+
 base::LazyInstance<scoped_refptr<DeferredGpuCommandService> >
     g_service = LAZY_INSTANCE_INITIALIZER;
 }  // namespace
@@ -31,13 +62,22 @@ ScopedAllowGL::ScopedAllowGL() {
     g_service.Get()->RunTasks();
 }
 
-ScopedAllowGL::~ScopedAllowGL() { allow_gl.Get().Set(false); }
+ScopedAllowGL::~ScopedAllowGL() {
+  allow_gl.Get().Set(false);
+  g_request_pending.Get().Set(false);
+
+  if (g_service.Get())
+    g_service.Get()->RunTasks();
+}
 
 // static
 void DeferredGpuCommandService::SetInstance() {
   if (!g_service.Get()) {
     g_service.Get() = new DeferredGpuCommandService;
     content::SynchronousCompositor::SetGpuService(g_service.Get());
+
+    // Initialize global booleans.
+    g_request_pending.Get().Set(false);
   }
 }
 
@@ -63,7 +103,11 @@ void DeferredGpuCommandService::RequestProcessGL() {
     LOG(ERROR) << "No hardware renderer. Deadlock likely";
     return;
   }
-  renderer_state->ClientRequestDrawGL();
+
+  if (!g_request_pending.Get().Get()) {
+    g_request_pending.Get().Set(true);
+    renderer_state->ClientRequestDrawGL();
+  }
 }
 
 // Called from different threads!
@@ -75,7 +119,6 @@ void DeferredGpuCommandService::ScheduleTask(const base::Closure& task) {
   if (ScopedAllowGL::IsAllowed()) {
     RunTasks();
   } else {
-    // TODO(boliu): Improve this to avoid PostTask storm.
     RequestProcessGL();
   }
 }
