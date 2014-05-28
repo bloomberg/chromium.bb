@@ -3,12 +3,10 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
-#include "base/command_line.h"
 #include "base/test/launcher/unit_test_launcher.h"
 #include "base/test/test_suite.h"
 #include "build/build_config.h"
 #include "media/base/media.h"
-#include "media/base/media_switches.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/jni_android.h"
@@ -39,8 +37,6 @@ void TestSuiteNoAtExit::Initialize() {
   // Run this here instead of main() to ensure an AtExitManager is already
   // present.
   media::InitializeMediaLibraryForTesting();
-  CommandLine* cmd_line = CommandLine::ForCurrentProcess();
-  cmd_line->AppendSwitch(switches::kEnableADTSStreamParser);
 }
 
 int main(int argc, char** argv) {

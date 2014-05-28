@@ -317,15 +317,6 @@ static bool CheckTypeAndCodecs(
     const SupportedTypeInfo& type_info = kSupportedTypeInfo[i];
     if (type == type_info.type) {
       if (codecs.empty()) {
-#if defined(USE_PROPRIETARY_CODECS)
-        if (type_info.codecs == kAudioADTSCodecs &&
-            !CommandLine::ForCurrentProcess()->HasSwitch(
-                switches::kEnableADTSStreamParser)) {
-          DVLOG(1) << "ADTSStreamParser is not enabled.";
-          return false;
-        }
-#endif
-
         const CodecInfo* codec_info = type_info.codecs[0];
         if (codec_info && !codec_info->pattern &&
             VerifyCodec(codec_info, audio_codecs, video_codecs)) {

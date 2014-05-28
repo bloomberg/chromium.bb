@@ -12,9 +12,6 @@ const char kAudioBufferSize[] = "audio-buffer-size";
 // Set number of threads to use for video decoding.
 const char kVideoThreads[] = "video-threads";
 
-// Enables ADTS stream parser for Media Source Extensions.
-const char kEnableADTSStreamParser[] = "enable-adts-stream-parser";
-
 // Bypass autodetection of the upper limit on resolution of streams that can
 // be hardware decoded.
 const char kIgnoreResolutionLimitsForAcceleratedVideoDecode[] =
