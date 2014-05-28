@@ -110,4 +110,7 @@ leak:LoginUtilsTest::PrepareProfile
 # http://crbug.com/371974
 leak:base::ImportantFileWriter::PostWriteTask
 
+# http://crbug.com/328092
+leak:WebCore::ResourceFetcher::requestResource
+
 # PLEASE READ ABOVE BEFORE ADDING NEW SUPPRESSIONS.
