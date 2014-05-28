@@ -59,7 +59,6 @@
       "content_unittests",
       "device_unittests",
       "media_unittests",
-      "net_unittests",
       "ppapi_unittests",
       "printing_unittests",
       "remoting_unittests",
@@ -77,20 +76,23 @@
       "sync_unit_tests",
       "unit_tests",
       "sql_unittests",
-      "nacl_loader_unittests"
+      "nacl_loader_unittests",
+      {"test": "browser_tests", "shard_index": 0, "total_shards": 3}
     ]
   },
   "Linux ChromiumOS Tests (dbg)(2)": {
     "gtest_tests": [
-      "browser_tests",
+      "app_shell_browsertests",
       "content_browsertests",
-      "app_shell_browsertests"
+      "net_unittests",
+      {"test": "browser_tests", "shard_index": 1, "total_shards": 3}
     ]
   },
   "Linux ChromiumOS Tests (dbg)(3)": {
     "gtest_tests": [
       "gcm_unit_tests",
-      "interactive_ui_tests"
+      "interactive_ui_tests",
+      {"test": "browser_tests", "shard_index": 2, "total_shards": 3}
     ]
   }
 }
