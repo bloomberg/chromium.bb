@@ -4129,7 +4129,7 @@ Make sure you do not expose any sensitive information.
         <ph name="EXTENSION_NAME">$1<ex>Gmail Checker</ex></ph>
       </message>
       <message name="IDS_EXTENSION_LAUNCH_APP_PROMPT_HEADING" desc="First bold line in the content area of the app launch prompt. Asks the user if they want to launch a particular app.">
-        Launch "<ph name="EXTENSION_NAME">$1<ex>Gmail Checker</ex></ph>"?
+        Try "<ph name="EXTENSION_NAME">$1<ex>Gmail Checker</ex></ph>"?
       </message>
       <message name="IDS_EXTENSION_REMOTE_INSTALL_PROMPT_HEADING" desc="First bold line in the content area of the extension or app installation prompt. Asks the user if they want to enable a particular extension or app that was installed remotely.">
         Enable "<ph name="EXTENSION_NAME">$1<ex>Gmail Checker</ex></ph>"?
@@ -13851,10 +13851,10 @@ Do you accept?
       Add
     </message>
     <message name="IDS_WEBSTORE_RESULT_LAUNCH" desc="Text of button on WebStore search result for launching an ephemeral app.">
-      Launch
+      Try
     </message>
     <message name="IDS_WEBSTORE_RESULT_LAUNCH_APP_TOOLTIP" desc="Tooltip of button on WebStore search result for launching an ephemeral app.">
-      Launch app
+      Try app without installing
     </message>
 
     <!-- Extension Storage Monitor notification strings -->
