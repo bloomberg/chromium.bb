@@ -1,5 +1,5 @@
 include_rules = [
-  "+mojo/geometry",
+  "+mojo/services/public/cpp/geometry",
   "+mojo/services/gles2",
   "+ui/events",
   "+ui/gfx",

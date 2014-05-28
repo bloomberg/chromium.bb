@@ -350,23 +350,6 @@
       ],
     },
     {
-      'target_name': 'mojo_geometry_bindings',
-      'type': 'static_library',
-      'sources': [
-        'public/interfaces/geometry/geometry.mojom',
-      ],
-      'variables': {
-        'mojom_base_output_dir': 'mojo',
-      },
-      'includes': [ 'public/tools/bindings/mojom_bindings_generator.gypi' ],
-      'dependencies': [
-        'mojo_cpp_bindings',
-      ],
-      'export_dependent_settings': [
-        'mojo_cpp_bindings',
-      ],
-    },
-    {
       'target_name': 'mojo_service_provider_bindings',
       'type': 'static_library',
       'sources': [
