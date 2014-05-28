@@ -8,8 +8,9 @@ source_set("common") {
   sources = rebase_path(content_common_gypi_values.public_common_sources,
                         ".", "//content")
 
+  defines = [ "CONTENT_IMPLEMENTATION" ]
+
   configs += [
-    "//content:content_implementation",
     # TODO(GYP) remove when blink_headers target is converted.
     "//content:blink_headers_stub_config",
   ]

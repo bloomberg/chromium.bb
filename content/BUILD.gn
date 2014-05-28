@@ -2,19 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//tools/grit/grit_rule.gni")
-
-# Applied by targets internal to content.
-config("content_implementation") {
-  defines = [ "CONTENT_IMPLEMENTATION" ]
-}
-
-grit("resources") {
-  source = "content_resources.grd"
-}
-
-# Stubs ------------------------------------------------------------------------
-
 # TODO(brettw) remove this and add a proper dependency on blink once that
 # target has been converted to GN. This config sets up the include directories
 # so content can compile in the meantime.
@@ -31,13 +18,10 @@ config("libjingle_stub_config") {
   include_dirs = [
     "//third_party/libjingle/overrides",
     "//third_party/libjingle/source",
+    "//third_party",
     "//third_party/libyuv/include",
     "//third_party/usrsctp",
-
-
-    "//third_party/webrtc/overrides",  # Must be before webrtc abd third_party.
     "//third_party/webrtc",
-    "//third_party",
   ]
 
   defines = [
@@ -67,13 +51,3 @@ config("libjingle_stub_config") {
   }
 }
 
-# This config is a placeholder to set up the V8 include path while the V8 GN
-# build is being worked on.
-config("v8_stub_config") {
-  include_dirs = [ "//v8/include" ]
-}
-
-config("widevine_stub_config") {
-  # The real implementation does a copy rule to copy the header to the gen dir.
-  include_dirs = [ "//third_party/widevine/cdm" ]
-}
