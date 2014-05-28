@@ -125,7 +125,7 @@ if [[ -n "${gcc_toolchain}" ]]; then
   cp "${LLVM_LIB_DIR}/libstdc++.so.6" $PDIR/lib
 fi
 
-# Copy built-in headers (lib/clang/3.2/include).
+# Copy built-in headers (lib/clang/3.x.y/include).
 # libcompiler-rt puts all kinds of libraries there too, but we want only some.
 if [ "$(uname -s)" = "Darwin" ]; then
   # Keep only the OSX (ASan and profile) and iossim (ASan) runtime libraries:
@@ -147,9 +147,13 @@ if [ "$(uname -s)" = "Darwin" ]; then
   done
 else
   # Keep only
-  # Release+Asserts/lib/clang/*/lib/linux/libclang_rt.{[atm]san,profile,ubsan}-*.a
+  # Release+Asserts/lib/clang/*/lib/linux/libclang_rt.{[atm]san,san,ubsan,profile}-*.a
+  # , but not dfsan.
   find "${LLVM_LIB_DIR}/clang" -type f -path '*lib/linux*' \
-       ! -name '*[atm]san*' ! -name '*profile*' ! -name '*ubsan*' | xargs rm
+       ! -name '*[atm]san*' ! -name '*ubsan*' ! -name '*libclang_rt.san*' \
+       ! -name '*profile*' | xargs rm
+  # Strip the debug info from the runtime libraries.
+  find "${LLVM_LIB_DIR}/clang" -type f -path '*lib/linux*' | xargs strip -g
 fi
 
 cp -R "${LLVM_LIB_DIR}/clang" $PDIR/lib
