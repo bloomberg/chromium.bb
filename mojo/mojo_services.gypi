@@ -18,6 +18,58 @@
       ],
     },
     {
+      'target_name': 'mojo_input_events_bindings',
+      'type': 'static_library',
+      'sources': [
+        'services/public/interfaces/input_events/input_events.mojom',
+      ],
+      'variables': {
+        'mojom_base_output_dir': 'mojo',
+      },
+      'includes': [ 'public/tools/bindings/mojom_bindings_generator.gypi' ],
+      'export_dependent_settings': [
+        'mojo_cpp_bindings',
+      ],
+      'dependencies': [
+        'mojo_cpp_bindings',
+        'mojo_geometry_bindings',
+      ],
+    },
+    {
+      'target_name': 'mojo_geometry_bindings',
+      'type': 'static_library',
+      'sources': [
+        'services/public/interfaces/geometry/geometry.mojom',
+      ],
+      'variables': {
+        'mojom_base_output_dir': 'mojo',
+      },
+      'includes': [ 'public/tools/bindings/mojom_bindings_generator.gypi' ],
+      'dependencies': [
+        'mojo_cpp_bindings',
+      ],
+      'export_dependent_settings': [
+        'mojo_cpp_bindings',
+      ],
+    },
+    {
+      'target_name': 'mojo_geometry_lib',
+      'type': '<(component)',
+      'defines': [
+        'MOJO_GEOMETRY_IMPLEMENTATION',
+      ],
+      'dependencies': [
+        '../ui/gfx/gfx.gyp:gfx_geometry',
+        'mojo_environment_chromium',
+        'mojo_geometry_bindings',
+        'mojo_system_impl',
+      ],
+      'sources': [
+        'services/public/cpp/geometry/lib/geometry_type_converters.cc',
+        'services/public/cpp/geometry/geometry_type_converters.h',
+      ],
+    },
+    {
       'target_name': 'mojo_gles2_bindings',
       'type': 'static_library',
       'sources': [
@@ -73,6 +125,7 @@
       ],
       'dependencies': [
         'mojo_geometry_bindings',
+        'mojo_input_events_bindings',
         'mojo_cpp_bindings',
       ],
     },
