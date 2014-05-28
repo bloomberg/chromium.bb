@@ -1000,14 +1000,14 @@ ContentProvider.ConvertContentMetadata = function(metadata, opt_result) {
 
   for (var key in metadata) {
     if (metadata.hasOwnProperty(key)) {
-      if (!('media' in result)) result.media = {};
+      if (!result.media)
+        result.media = {};
       result.media[key] = metadata[key];
     }
   }
 
-  if ('media' in result) {
+  if (result.media)
     result.fetchedMedia = result.media;
-  }
 
   return result;
 };

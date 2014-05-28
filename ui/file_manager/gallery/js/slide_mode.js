@@ -938,9 +938,12 @@ SlideMode.prototype.saveCurrentImage_ = function(callback) {
   this.showSpinner_(true);
   var metadataEncoder = ImageEncoder.encodeMetadata(
       this.selectedImageMetadata_.media, canvas, 1 /* quality */);
-
-  this.selectedImageMetadata_ = ContentProvider.ConvertContentMetadata(
+  var selectedImageMetadata = ContentProvider.ConvertContentMetadata(
       metadataEncoder.getMetadata(), this.selectedImageMetadata_);
+  this.selectedImageMetadata_ = selectedImageMetadata;
+  this.metadataCache_.set(oldEntry,
+                          Gallery.METADATA_TYPE,
+                          selectedImageMetadata);
 
   item.saveToFile(
       this.context_.saveDirEntry,
@@ -956,7 +959,7 @@ SlideMode.prototype.saveCurrentImage_ = function(callback) {
         var event = new Event('content');
         event.item = item;
         event.oldEntry = oldEntry;
-        event.metadata = this.selectedImageMetadata_;
+        event.metadata = selectedImageMetadata;
         this.dataModel_.dispatchEvent(event);
 
         // Allow changing the 'Overwrite original' setting only if the user
