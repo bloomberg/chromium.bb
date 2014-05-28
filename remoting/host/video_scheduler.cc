@@ -72,22 +72,19 @@ void VideoScheduler::OnCaptureCompleted(webrtc::DesktopFrame* frame) {
 
   capture_pending_ = false;
 
-  if (!frame) {
-    LOG(ERROR) << "Capture failed.";
-    return;
-  }
-
   scoped_ptr<webrtc::DesktopFrame> owned_frame(frame);
 
-  scheduler_.RecordCaptureTime(
-      base::TimeDelta::FromMilliseconds(frame->capture_time_ms()));
-
-  // Encode and send only non-empty frames.
-  if (!frame->updated_region().is_empty()) {
-    encode_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&VideoScheduler::EncodeFrame, this,
-                              base::Passed(&owned_frame), sequence_number_));
+  if (owned_frame) {
+    scheduler_.RecordCaptureTime(
+        base::TimeDelta::FromMilliseconds(owned_frame->capture_time_ms()));
   }
+
+  // Even when |frame| is NULL we still need to post it to the encode thread
+  // to make sure frames are freed in the same order they are received and
+  // that we don't start capturing frame n+2 before frame n is freed.
+  encode_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&VideoScheduler::EncodeFrame, this,
+                            base::Passed(&owned_frame), sequence_number_));
 
   // If a frame was skipped, try to capture it again.
   if (did_skip_frame_) {
@@ -313,7 +310,14 @@ void VideoScheduler::EncodeFrame(
     scoped_ptr<webrtc::DesktopFrame> frame,
     int64 sequence_number) {
   DCHECK(encode_task_runner_->BelongsToCurrentThread());
-  DCHECK(!frame->updated_region().is_empty());
+
+  // Drop the frame if there were no changes.
+  if (!frame || frame->updated_region().is_empty()) {
+    capture_task_runner_->DeleteSoon(FROM_HERE, frame.release());
+    capture_task_runner_->PostTask(
+        FROM_HERE, base::Bind(&VideoScheduler::FrameCaptureCompleted, this));
+    return;
+  }
 
   scoped_ptr<VideoPacket> packet = encoder_->Encode(*frame);
   packet->set_client_sequence_number(sequence_number);
