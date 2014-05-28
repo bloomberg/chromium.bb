@@ -572,10 +572,8 @@ GraphicsContext* HTMLCanvasElement::drawingContext() const
 
 GraphicsContext* HTMLCanvasElement::existingDrawingContext() const
 {
-    if (m_didFailToCreateImageBuffer) {
-        ASSERT(!hasImageBuffer());
+    if (!hasImageBuffer())
         return 0;
-    }
 
     return drawingContext();
 }
