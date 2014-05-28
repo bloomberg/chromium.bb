@@ -89,13 +89,14 @@ static bool makesCycle(HTMLImport* parent, const KURL& url)
     return false;
 }
 
-HTMLImportChild* HTMLImportsController::createChild(const KURL& url, HTMLImport* parent, HTMLImportChildClient* client)
+HTMLImportChild* HTMLImportsController::createChild(const KURL& url, HTMLImportLoader* loader, HTMLImport* parent, HTMLImportChildClient* client)
 {
     HTMLImport::SyncMode mode = client->isSync() && !makesCycle(parent, url) ? HTMLImport::Sync : HTMLImport::Async;
-    OwnPtr<HTMLImportChild> loader = adoptPtr(new HTMLImportChild(url, mode));
-    loader->setClient(client);
-    parent->appendImport(loader.get());
-    m_imports.append(loader.release());
+    OwnPtr<HTMLImportChild> child = adoptPtr(new HTMLImportChild(url, loader, mode));
+    child->setClient(client);
+    parent->appendImport(child.get());
+    loader->addImport(child.get());
+    m_imports.append(child.release());
     return m_imports.last().get();
 }
 
@@ -104,9 +105,11 @@ HTMLImportChild* HTMLImportsController::load(HTMLImport* parent, HTMLImportChild
     ASSERT(!request.url().isEmpty() && request.url().isValid());
     ASSERT(parent == this || toHTMLImportChild(parent)->loader()->isFirstImport(toHTMLImportChild(parent)));
 
-    if (findLinkFor(request.url())) {
-        HTMLImportChild* child = createChild(request.url(), parent, client);
-        child->wasAlreadyLoaded();
+    if (HTMLImportChild* childToShareWith = findLinkFor(request.url())) {
+        HTMLImportLoader* loader = childToShareWith->loader();
+        ASSERT(loader);
+        HTMLImportChild* child = createChild(request.url(), loader, parent, client);
+        child->didShareLoader();
         return child;
     }
 
@@ -118,10 +121,12 @@ HTMLImportChild* HTMLImportsController::load(HTMLImport* parent, HTMLImportChild
     if (!resource)
         return 0;
 
-    HTMLImportChild* child = createChild(request.url(), parent, client);
+    HTMLImportLoader* loader = createLoader();
+    HTMLImportChild* child = createChild(request.url(), loader, parent, client);
     // We set resource after the import tree is built since
     // Resource::addClient() immediately calls back to feed the bytes when the resource is cached.
-    child->startLoading(resource);
+    loader->startLoading(resource);
+    child->didStartLoading();
 
     return child;
 }
@@ -131,11 +136,11 @@ void HTMLImportsController::showSecurityErrorMessage(const String& message)
     m_master->addConsoleMessage(JSMessageSource, ErrorMessageLevel, message);
 }
 
-HTMLImportChild* HTMLImportsController::findLinkFor(const KURL& url, HTMLImport* excluding) const
+HTMLImportChild* HTMLImportsController::findLinkFor(const KURL& url) const
 {
     for (size_t i = 0; i < m_imports.size(); ++i) {
         HTMLImportChild* candidate = m_imports[i].get();
-        if (candidate != excluding && equalIgnoringFragmentIdentifier(candidate->url(), url) && candidate->loader())
+        if (equalIgnoringFragmentIdentifier(candidate->url(), url) && candidate->loader())
             return candidate;
     }
 

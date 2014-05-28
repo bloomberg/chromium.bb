@@ -41,11 +41,11 @@
 
 namespace WebCore {
 
-HTMLImportChild::HTMLImportChild(const KURL& url, SyncMode sync)
+HTMLImportChild::HTMLImportChild(const KURL& url, HTMLImportLoader* loader, SyncMode sync)
     : HTMLImport(sync)
     , m_url(url)
     , m_weakFactory(this)
-    , m_loader(0)
+    , m_loader(loader)
     , m_client(0)
 {
 }
@@ -59,25 +59,14 @@ HTMLImportChild::~HTMLImportChild()
         m_client->importChildWasDestroyed(this);
 }
 
-void HTMLImportChild::wasAlreadyLoaded()
+void HTMLImportChild::didShareLoader()
 {
-    ASSERT(!m_loader);
-    ASSERT(m_client);
-    shareLoader();
+    createCustomElementMicrotaskStepIfNeeded();
     stateWillChange();
 }
 
-void HTMLImportChild::startLoading(const ResourcePtr<RawResource>& resource)
+void HTMLImportChild::didStartLoading()
 {
-    ASSERT(!m_loader);
-
-    if (m_loader)
-        return;
-
-    m_loader = toHTMLImportsController(root())->createLoader();
-    m_loader->addImport(this);
-    m_loader->startLoading(resource);
-
     createCustomElementMicrotaskStepIfNeeded();
 }
 
@@ -165,18 +154,6 @@ void HTMLImportChild::createCustomElementMicrotaskStepIfNeeded()
 
     for (HTMLImport* child = firstChild(); child; child = child->next())
         toHTMLImportChild(child)->createCustomElementMicrotaskStepIfNeeded();
-}
-
-void HTMLImportChild::shareLoader()
-{
-    ASSERT(!m_loader);
-
-    if (HTMLImportChild* childToShareWith = toHTMLImportsController(root())->findLinkFor(m_url, this)) {
-        m_loader = childToShareWith->m_loader;
-        m_loader->addImport(this);
-    }
-
-    createCustomElementMicrotaskStepIfNeeded();
 }
 
 bool HTMLImportChild::isDone() const

@@ -31,7 +31,6 @@
 #ifndef HTMLImportChild_h
 #define HTMLImportChild_h
 
-#include "core/fetch/RawResource.h"
 #include "core/html/imports/HTMLImport.h"
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
@@ -53,15 +52,15 @@ class HTMLLinkElement;
 //
 class HTMLImportChild FINAL : public HTMLImport {
 public:
-    HTMLImportChild(const KURL&, SyncMode);
+    HTMLImportChild(const KURL&, HTMLImportLoader*, SyncMode);
     virtual ~HTMLImportChild();
 
     HTMLLinkElement* link() const;
     Document* importedDocument() const;
     const KURL& url() const { return m_url; }
 
-    void wasAlreadyLoaded();
-    void startLoading(const ResourcePtr<RawResource>&);
+    void didShareLoader();
+    void didStartLoading();
     void importDestroyed();
     WeakPtr<HTMLImportChild> weakPtr() { return m_weakFactory.createWeakPtr(); }
 

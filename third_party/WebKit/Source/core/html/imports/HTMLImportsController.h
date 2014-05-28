@@ -85,10 +85,10 @@ public:
     HTMLImportLoader* loaderFor(const Document&) const;
 
     void scheduleRecalcState();
-    HTMLImportChild* findLinkFor(const KURL&, HTMLImport* excluding = 0) const;
+    HTMLImportChild* findLinkFor(const KURL&) const;
 
 private:
-    HTMLImportChild* createChild(const KURL&, HTMLImport* parent, HTMLImportChildClient*);
+    HTMLImportChild* createChild(const KURL&, HTMLImportLoader*, HTMLImport* parent, HTMLImportChildClient*);
     void clear();
 
     Document* m_master;
