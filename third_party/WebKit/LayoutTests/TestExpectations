@@ -85,18 +85,13 @@ crbug.com/371916 [ Debug ] http/tests/security/contentSecurityPolicy/xsl-unaffec
 crbug.com/371916 [ Debug ] http/tests/security/contentSecurityPolicy/xsl-allowed.php [ Crash Timeout ]
 
 # Pixel tests for RTL iframe scrollbar is erroneous. Cannot observe on actual browser.
-crbug.com/338794 [ Mac ] compositing/rtl/rtl-iframe-absolute-overflow.html [ Pass Failure ]
-crbug.com/338794 [ Mac ] compositing/rtl/rtl-iframe-absolute-overflow-scrolled.html [ Pass Failure ]
-crbug.com/338794 [ Mac ] compositing/rtl/rtl-iframe-fixed-overflow.html [ Pass Failure ]
-crbug.com/338794 [ Mac ] compositing/rtl/rtl-iframe-fixed-overflow-scrolled.html [ Pass Failure ]
-crbug.com/338794 [ Mac ] virtual/softwarecompositing/rtl/rtl-iframe-absolute-overflow-scrolled.html [ Pass Failure ]
-crbug.com/338794 [ Mac ] virtual/softwarecompositing/rtl/rtl-iframe-fixed-overflow.html [ Pass Failure ]
-crbug.com/338794 [ Mac ] virtual/softwarecompositing/rtl/rtl-iframe-fixed-overflow-scrolled.html [ Pass Failure ]
-crbug.com/192172 [ Win Linux Android Debug ] compositing/rtl/rtl-iframe-absolute-overflow.html [ Failure Pass ]
-crbug.com/192172 [ Win Linux Android Debug ] compositing/rtl/rtl-iframe-fixed-overflow-scrolled.html [ Failure Pass ]
-crbug.com/192172 [ Win Linux Android Debug ] virtual/softwarecompositing/rtl/rtl-iframe-fixed-overflow-scrolled.html [ Failure Pass ]
-crbug.com/192172 [ Win Linux Android Debug ] compositing/rtl/rtl-iframe-fixed-overflow.html [ Failure Pass ]
-crbug.com/192172 [ Win Linux Android Debug ] virtual/softwarecompositing/rtl/rtl-iframe-fixed-overflow.html [ Failure Pass ]
+crbug.com/338794 crbug.com/192172 compositing/rtl/rtl-iframe-absolute-overflow.html [ Pass Failure ]
+crbug.com/338794 compositing/rtl/rtl-iframe-absolute-overflow-scrolled.html [ Pass Failure ]
+crbug.com/338794 compositing/rtl/rtl-iframe-fixed-overflow.html [ Pass Failure ]
+crbug.com/338794 crbug.com/192172 compositing/rtl/rtl-iframe-fixed-overflow-scrolled.html [ Pass Failure ]
+crbug.com/338794 virtual/softwarecompositing/rtl/rtl-iframe-absolute-overflow-scrolled.html [ Pass Failure ]
+crbug.com/338794 crbug.com/192172 virtual/softwarecompositing/rtl/rtl-iframe-fixed-overflow.html [ Pass Failure ]
+crbug.com/338794 crbug.com/192172 virtual/softwarecompositing/rtl/rtl-iframe-fixed-overflow-scrolled.html [ Pass Failure ]
 
 crbug.com/239811 crbug.com/229113 http/tests/history/redirect-js-location-assign-0-seconds.html [ Failure Pass ]
 
