@@ -335,7 +335,7 @@ int QuicStreamFactory::Job::DoConnectComplete(int rv) {
   // existing session instead.
   AddressList address(session_->connection()->peer_address());
   if (factory_->OnResolution(server_id_, address)) {
-    session_->connection()->SendConnectionClose(QUIC_NO_ERROR);
+    session_->connection()->SendConnectionClose(QUIC_CONNECTION_IP_POOLED);
     session_ = NULL;
     return OK;
   }

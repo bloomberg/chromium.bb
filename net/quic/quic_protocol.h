@@ -453,6 +453,8 @@ enum QuicErrorCode {
   QUIC_INVALID_HEADERS_STREAM_DATA = 56,
   // The peer violated the flow control protocol.
   QUIC_FLOW_CONTROL_ERROR = 59,
+  // The connection has been IP pooled into an existing connection.
+  QUIC_CONNECTION_IP_POOLED = 62,
 
   // Crypto errors.
 
@@ -508,7 +510,7 @@ enum QuicErrorCode {
   QUIC_VERSION_NEGOTIATION_MISMATCH = 55,
 
   // No error. Used as bound while iterating.
-  QUIC_LAST_ERROR = 62,
+  QUIC_LAST_ERROR = 63,
 };
 
 struct NET_EXPORT_PRIVATE QuicPacketPublicHeader {
