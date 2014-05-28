@@ -39,7 +39,7 @@ class IDBTransaction;
 
 class IDBCursorWithValue FINAL : public IDBCursor {
 public:
-    static PassRefPtrWillBeRawPtr<IDBCursorWithValue> create(PassOwnPtr<blink::WebIDBCursor>, blink::WebIDBCursor::Direction, IDBRequest*, IDBAny* source, IDBTransaction*);
+    static IDBCursorWithValue* create(PassOwnPtr<blink::WebIDBCursor>, blink::WebIDBCursor::Direction, IDBRequest*, IDBAny* source, IDBTransaction*);
     virtual ~IDBCursorWithValue();
 
     // The value attribute defined in the IDL is simply implemented in IDBCursor (but not exposed via

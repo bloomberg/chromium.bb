@@ -37,7 +37,7 @@ using namespace WebCore;
 
 namespace {
 
-PassRefPtrWillBeRawPtr<IDBKey> checkKeyFromValueAndKeyPathInternal(v8::Isolate* isolate, const ScriptValue& value, const String& keyPath)
+IDBKey* checkKeyFromValueAndKeyPathInternal(v8::Isolate* isolate, const ScriptValue& value, const String& keyPath)
 {
     IDBKeyPath idbKeyPath(keyPath);
     EXPECT_TRUE(idbKeyPath.isValid());
@@ -47,11 +47,10 @@ PassRefPtrWillBeRawPtr<IDBKey> checkKeyFromValueAndKeyPathInternal(v8::Isolate* 
 
 void checkKeyPathNullValue(v8::Isolate* isolate, const ScriptValue& value, const String& keyPath)
 {
-    RefPtrWillBeRawPtr<IDBKey> idbKey = checkKeyFromValueAndKeyPathInternal(isolate, value, keyPath);
-    ASSERT_FALSE(idbKey.get());
+    ASSERT_FALSE(checkKeyFromValueAndKeyPathInternal(isolate, value, keyPath));
 }
 
-bool injectKey(ScriptState* scriptState, PassRefPtrWillBeRawPtr<IDBKey> key, ScriptValue& value, const String& keyPath)
+bool injectKey(ScriptState* scriptState, IDBKey* key, ScriptValue& value, const String& keyPath)
 {
     IDBKeyPath idbKeyPath(keyPath);
     EXPECT_TRUE(idbKeyPath.isValid());
@@ -59,32 +58,31 @@ bool injectKey(ScriptState* scriptState, PassRefPtrWillBeRawPtr<IDBKey> key, Scr
     return injectV8KeyIntoV8Value(scriptState->isolate(), keyValue.v8Value(), value.v8Value(), idbKeyPath);
 }
 
-void checkInjection(ScriptState* scriptState, PassRefPtrWillBeRawPtr<IDBKey> prpKey, ScriptValue& value, const String& keyPath)
+void checkInjection(ScriptState* scriptState, IDBKey* key, ScriptValue& value, const String& keyPath)
 {
-    RefPtrWillBeRawPtr<IDBKey> key = prpKey;
     bool result = injectKey(scriptState, key, value, keyPath);
     ASSERT_TRUE(result);
-    RefPtrWillBeRawPtr<IDBKey> extractedKey = checkKeyFromValueAndKeyPathInternal(scriptState->isolate(), value, keyPath);
-    EXPECT_TRUE(key->isEqual(extractedKey.get()));
+    IDBKey* extractedKey = checkKeyFromValueAndKeyPathInternal(scriptState->isolate(), value, keyPath);
+    EXPECT_TRUE(key->isEqual(extractedKey));
 }
 
-void checkInjectionFails(ScriptState* scriptState, PassRefPtrWillBeRawPtr<IDBKey> key, ScriptValue& value, const String& keyPath)
+void checkInjectionFails(ScriptState* scriptState, IDBKey* key, ScriptValue& value, const String& keyPath)
 {
     EXPECT_FALSE(injectKey(scriptState, key, value, keyPath));
 }
 
 void checkKeyPathStringValue(v8::Isolate* isolate, const ScriptValue& value, const String& keyPath, const String& expected)
 {
-    RefPtrWillBeRawPtr<IDBKey> idbKey = checkKeyFromValueAndKeyPathInternal(isolate, value, keyPath);
-    ASSERT_TRUE(idbKey.get());
+    IDBKey* idbKey = checkKeyFromValueAndKeyPathInternal(isolate, value, keyPath);
+    ASSERT_TRUE(idbKey);
     ASSERT_EQ(IDBKey::StringType, idbKey->type());
     ASSERT_TRUE(expected == idbKey->string());
 }
 
 void checkKeyPathNumberValue(v8::Isolate* isolate, const ScriptValue& value, const String& keyPath, int expected)
 {
-    RefPtrWillBeRawPtr<IDBKey> idbKey = checkKeyFromValueAndKeyPathInternal(isolate, value, keyPath);
-    ASSERT_TRUE(idbKey.get());
+    IDBKey* idbKey = checkKeyFromValueAndKeyPathInternal(isolate, value, keyPath);
+    ASSERT_TRUE(idbKey);
     ASSERT_EQ(IDBKey::NumberType, idbKey->type());
     ASSERT_TRUE(expected == idbKey->number());
 }

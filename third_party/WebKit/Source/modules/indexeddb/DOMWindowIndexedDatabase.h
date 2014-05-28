@@ -55,7 +55,7 @@ private:
     static const char* supplementName();
 
     DOMWindow& m_window;
-    RefPtrWillBeMember<IDBFactory> m_idbFactory;
+    PersistentWillBeMember<IDBFactory> m_idbFactory;
 };
 
 } // namespace WebCore

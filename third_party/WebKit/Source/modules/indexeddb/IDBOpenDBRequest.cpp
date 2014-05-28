@@ -39,14 +39,14 @@ using blink::WebIDBDatabase;
 
 namespace WebCore {
 
-PassRefPtrWillBeRawPtr<IDBOpenDBRequest> IDBOpenDBRequest::create(ExecutionContext* context, PassRefPtrWillBeRawPtr<IDBDatabaseCallbacks> callbacks, int64_t transactionId, int64_t version)
+IDBOpenDBRequest* IDBOpenDBRequest::create(ExecutionContext* context, IDBDatabaseCallbacks* callbacks, int64_t transactionId, int64_t version)
 {
-    RefPtrWillBeRawPtr<IDBOpenDBRequest> request(adoptRefWillBeRefCountedGarbageCollected(new IDBOpenDBRequest(context, callbacks, transactionId, version)));
+    IDBOpenDBRequest* request(adoptRefCountedGarbageCollected(new IDBOpenDBRequest(context, callbacks, transactionId, version)));
     request->suspendIfNeeded();
-    return request.release();
+    return request;
 }
 
-IDBOpenDBRequest::IDBOpenDBRequest(ExecutionContext* context, PassRefPtrWillBeRawPtr<IDBDatabaseCallbacks> callbacks, int64_t transactionId, int64_t version)
+IDBOpenDBRequest::IDBOpenDBRequest(ExecutionContext* context, IDBDatabaseCallbacks* callbacks, int64_t transactionId, int64_t version)
     : IDBRequest(context, IDBAny::createNull(), 0)
     , m_databaseCallbacks(callbacks)
     , m_transactionId(transactionId)
@@ -94,7 +94,7 @@ void IDBOpenDBRequest::onUpgradeNeeded(int64_t oldVersion, PassOwnPtr<WebIDBData
 
     ASSERT(m_databaseCallbacks);
 
-    RefPtrWillBeRawPtr<IDBDatabase> idbDatabase = IDBDatabase::create(executionContext(), backend, m_databaseCallbacks.release());
+    IDBDatabase* idbDatabase = IDBDatabase::create(executionContext(), backend, m_databaseCallbacks.release());
     idbDatabase->setMetadata(metadata);
 
     if (oldVersion == IDBDatabaseMetadata::NoIntVersion) {
@@ -104,8 +104,8 @@ void IDBOpenDBRequest::onUpgradeNeeded(int64_t oldVersion, PassOwnPtr<WebIDBData
     IDBDatabaseMetadata oldMetadata(metadata);
     oldMetadata.intVersion = oldVersion;
 
-    m_transaction = IDBTransaction::create(executionContext(), m_transactionId, idbDatabase.get(), this, oldMetadata);
-    setResult(IDBAny::create(idbDatabase.release()));
+    m_transaction = IDBTransaction::create(executionContext(), m_transactionId, idbDatabase, this, oldMetadata);
+    setResult(IDBAny::create(idbDatabase));
 
     if (m_version == IDBDatabaseMetadata::NoIntVersion)
         m_version = 1;
@@ -124,7 +124,7 @@ void IDBOpenDBRequest::onSuccess(PassOwnPtr<WebIDBDatabase> backend, const IDBDa
     if (!shouldEnqueueEvent())
         return;
 
-    RefPtrWillBeRawPtr<IDBDatabase> idbDatabase;
+    IDBDatabase* idbDatabase = 0;
     if (resultAsAny()) {
         // Previous onUpgradeNeeded call delivered the backend.
         ASSERT(!backend.get());
@@ -135,7 +135,7 @@ void IDBOpenDBRequest::onSuccess(PassOwnPtr<WebIDBDatabase> backend, const IDBDa
         ASSERT(backend.get());
         ASSERT(m_databaseCallbacks);
         idbDatabase = IDBDatabase::create(executionContext(), backend, m_databaseCallbacks.release());
-        setResult(IDBAny::create(idbDatabase.get()));
+        setResult(IDBAny::create(idbDatabase));
     }
     idbDatabase->setMetadata(metadata);
     enqueueEvent(Event::create(EventTypeNames::success));
@@ -170,7 +170,7 @@ bool IDBOpenDBRequest::dispatchEvent(PassRefPtrWillBeRawPtr<Event> event)
     // an "error" event should be fired instead.
     if (event->type() == EventTypeNames::success && resultAsAny()->type() == IDBAny::IDBDatabaseType && resultAsAny()->idbDatabase()->isClosePending()) {
         dequeueEvent(event.get());
-        setResult(nullptr);
+        setResult(0);
         onError(DOMError::create(AbortError, "The connection was closed."));
         return false;
     }

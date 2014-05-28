@@ -34,19 +34,19 @@
 
 namespace WebCore {
 
-PassRefPtrWillBeRawPtr<IDBAny> IDBAny::createUndefined()
+IDBAny* IDBAny::createUndefined()
 {
-    return adoptRefWillBeNoop(new IDBAny(UndefinedType));
+    return new IDBAny(UndefinedType);
 }
 
-PassRefPtrWillBeRawPtr<IDBAny> IDBAny::createNull()
+IDBAny* IDBAny::createNull()
 {
-    return adoptRefWillBeNoop(new IDBAny(NullType));
+    return new IDBAny(NullType);
 }
 
-PassRefPtrWillBeRawPtr<IDBAny> IDBAny::createString(const String& value)
+IDBAny* IDBAny::createString(const String& value)
 {
-    return adoptRefWillBeNoop(new IDBAny(value));
+    return new IDBAny(value);
 }
 
 IDBAny::IDBAny(Type type)
@@ -153,35 +153,35 @@ IDBAny::IDBAny(PassRefPtrWillBeRawPtr<DOMStringList> value)
 {
 }
 
-IDBAny::IDBAny(PassRefPtrWillBeRawPtr<IDBCursor> value)
+IDBAny::IDBAny(IDBCursor* value)
     : m_type(value->isCursorWithValue() ? IDBCursorWithValueType : IDBCursorType)
     , m_idbCursor(value)
     , m_integer(0)
 {
 }
 
-IDBAny::IDBAny(PassRefPtrWillBeRawPtr<IDBDatabase> value)
+IDBAny::IDBAny(IDBDatabase* value)
     : m_type(IDBDatabaseType)
     , m_idbDatabase(value)
     , m_integer(0)
 {
 }
 
-IDBAny::IDBAny(PassRefPtrWillBeRawPtr<IDBIndex> value)
+IDBAny::IDBAny(IDBIndex* value)
     : m_type(IDBIndexType)
     , m_idbIndex(value)
     , m_integer(0)
 {
 }
 
-IDBAny::IDBAny(PassRefPtrWillBeRawPtr<IDBTransaction> value)
+IDBAny::IDBAny(IDBTransaction* value)
     : m_type(IDBTransactionType)
     , m_idbTransaction(value)
     , m_integer(0)
 {
 }
 
-IDBAny::IDBAny(PassRefPtrWillBeRawPtr<IDBObjectStore> value)
+IDBAny::IDBAny(IDBObjectStore* value)
     : m_type(IDBObjectStoreType)
     , m_idbObjectStore(value)
     , m_integer(0)
@@ -196,7 +196,7 @@ IDBAny::IDBAny(PassRefPtr<SharedBuffer> value, const Vector<blink::WebBlobInfo>*
 {
 }
 
-IDBAny::IDBAny(PassRefPtr<SharedBuffer> value, const Vector<blink::WebBlobInfo>* blobInfo, PassRefPtrWillBeRawPtr<IDBKey> key, const IDBKeyPath& keyPath)
+IDBAny::IDBAny(PassRefPtr<SharedBuffer> value, const Vector<blink::WebBlobInfo>* blobInfo, IDBKey* key, const IDBKeyPath& keyPath)
     : m_type(BufferKeyAndKeyPathType)
     , m_idbKey(key)
     , m_idbKeyPath(keyPath)
@@ -206,7 +206,7 @@ IDBAny::IDBAny(PassRefPtr<SharedBuffer> value, const Vector<blink::WebBlobInfo>*
 {
 }
 
-IDBAny::IDBAny(PassRefPtrWillBeRawPtr<IDBKey> key)
+IDBAny::IDBAny(IDBKey* key)
     : m_type(KeyType)
     , m_idbKey(key)
     , m_integer(0)

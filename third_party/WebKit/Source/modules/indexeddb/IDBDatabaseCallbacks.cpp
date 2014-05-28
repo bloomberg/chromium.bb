@@ -30,9 +30,9 @@
 
 namespace WebCore {
 
-PassRefPtrWillBeRawPtr<IDBDatabaseCallbacks> IDBDatabaseCallbacks::create()
+IDBDatabaseCallbacks* IDBDatabaseCallbacks::create()
 {
-    return adoptRefWillBeNoop(new IDBDatabaseCallbacks());
+    return new IDBDatabaseCallbacks();
 }
 
 IDBDatabaseCallbacks::IDBDatabaseCallbacks()

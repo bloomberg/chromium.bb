@@ -29,7 +29,7 @@
 
 [
     ActiveDOMObject,
-    WillBeGarbageCollected,
+    GarbageCollected,
 ] interface IDBRequest : EventTarget {
     [RaisesException=Getter, CachedAttribute=isResultDirty] readonly attribute any result;
     [RaisesException=Getter] readonly attribute DOMError error;

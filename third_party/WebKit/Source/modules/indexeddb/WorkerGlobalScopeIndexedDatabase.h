@@ -52,7 +52,7 @@ private:
     IDBFactory* indexedDB();
     static const char* supplementName();
 
-    RefPtrWillBeMember<IDBFactory> m_idbFactory;
+    PersistentWillBeMember<IDBFactory> m_idbFactory;
 };
 
 } // namespace WebCore

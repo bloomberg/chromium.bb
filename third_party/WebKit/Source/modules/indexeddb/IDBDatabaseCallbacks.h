@@ -28,16 +28,15 @@
 
 #include "platform/heap/Handle.h"
 #include "wtf/PassRefPtr.h"
-#include "wtf/RefCounted.h"
 
 namespace WebCore {
 
 class DOMError;
 class IDBDatabase;
 
-class IDBDatabaseCallbacks : public RefCountedWillBeGarbageCollectedFinalized<IDBDatabaseCallbacks> {
+class IDBDatabaseCallbacks : public GarbageCollectedFinalized<IDBDatabaseCallbacks> {
 public:
-    static PassRefPtrWillBeRawPtr<IDBDatabaseCallbacks> create();
+    static IDBDatabaseCallbacks* create();
     virtual ~IDBDatabaseCallbacks();
     void trace(Visitor*);
 
@@ -62,7 +61,7 @@ private:
     // GC. WebIDBDatabaseCallbacks can survive the GC, and IDBDatabaseCallbacks
     // can survive too. m_database should be a weak reference to avoid that an
     // IDBDatabase survives the GC with the IDBDatabaseCallbacks.
-    RawPtrWillBeWeakMember<IDBDatabase> m_database;
+    WeakMember<IDBDatabase> m_database;
 };
 
 } // namespace WebCore

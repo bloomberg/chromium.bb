@@ -48,9 +48,9 @@ using blink::WebIDBDatabase;
 
 namespace WebCore {
 
-PassRefPtrWillBeRawPtr<IDBCursor> IDBCursor::create(PassOwnPtr<blink::WebIDBCursor> backend, WebIDBCursor::Direction direction, IDBRequest* request, IDBAny* source, IDBTransaction* transaction)
+IDBCursor* IDBCursor::create(PassOwnPtr<blink::WebIDBCursor> backend, WebIDBCursor::Direction direction, IDBRequest* request, IDBAny* source, IDBTransaction* transaction)
 {
-    return adoptRefWillBeNoop(new IDBCursor(backend, direction, request, source, transaction));
+    return new IDBCursor(backend, direction, request, source, transaction);
 }
 
 const AtomicString& IDBCursor::directionNext()
@@ -109,43 +109,43 @@ void IDBCursor::trace(Visitor* visitor)
     visitor->trace(m_primaryKey);
 }
 
-PassRefPtrWillBeRawPtr<IDBRequest> IDBCursor::update(ExecutionContext* executionContext, ScriptValue& value, ExceptionState& exceptionState)
+IDBRequest* IDBCursor::update(ExecutionContext* executionContext, ScriptValue& value, ExceptionState& exceptionState)
 {
     IDB_TRACE("IDBCursor::update");
 
     if (!m_gotValue) {
         exceptionState.throwDOMException(InvalidStateError, IDBDatabase::noValueErrorMessage);
-        return nullptr;
+        return 0;
     }
     if (isKeyCursor()) {
         exceptionState.throwDOMException(InvalidStateError, IDBDatabase::isKeyCursorErrorMessage);
-        return nullptr;
+        return 0;
     }
     if (isDeleted()) {
         exceptionState.throwDOMException(InvalidStateError, IDBDatabase::sourceDeletedErrorMessage);
-        return nullptr;
+        return 0;
     }
     if (m_transaction->isFinished() || m_transaction->isFinishing()) {
         exceptionState.throwDOMException(TransactionInactiveError, IDBDatabase::transactionFinishedErrorMessage);
-        return nullptr;
+        return 0;
     }
     if (!m_transaction->isActive()) {
         exceptionState.throwDOMException(TransactionInactiveError, IDBDatabase::transactionInactiveErrorMessage);
-        return nullptr;
+        return 0;
     }
     if (m_transaction->isReadOnly()) {
         exceptionState.throwDOMException(ReadOnlyError, "The record may not be updated inside a read-only transaction.");
-        return nullptr;
+        return 0;
     }
 
-    RefPtrWillBeRawPtr<IDBObjectStore> objectStore = effectiveObjectStore();
+    IDBObjectStore* objectStore = effectiveObjectStore();
     const IDBKeyPath& keyPath = objectStore->metadata().keyPath;
     const bool usesInLineKeys = !keyPath.isNull();
     if (usesInLineKeys) {
-        RefPtrWillBeRawPtr<IDBKey> keyPathKey = createIDBKeyFromScriptValueAndKeyPath(toIsolate(executionContext), value, keyPath);
+        IDBKey* keyPathKey = createIDBKeyFromScriptValueAndKeyPath(toIsolate(executionContext), value, keyPath);
         if (!keyPathKey || !keyPathKey->isEqual(m_primaryKey.get())) {
             exceptionState.throwDOMException(DataError, "The effective object store of this cursor uses in-line keys and evaluating the key path of the value parameter results in a different value than the cursor's effective key.");
-            return nullptr;
+            return 0;
         }
     }
 
@@ -185,27 +185,27 @@ void IDBCursor::advance(unsigned long count, ExceptionState& exceptionState)
 void IDBCursor::continueFunction(ExecutionContext* context, const ScriptValue& keyValue, ExceptionState& exceptionState)
 {
     IDB_TRACE("IDBCursor::continue");
-    RefPtrWillBeRawPtr<IDBKey> key = keyValue.isUndefined() || keyValue.isNull() ? nullptr : scriptValueToIDBKey(toIsolate(context), keyValue);
+    IDBKey* key = keyValue.isUndefined() || keyValue.isNull() ? 0 : scriptValueToIDBKey(toIsolate(context), keyValue);
     if (key && !key->isValid()) {
         exceptionState.throwDOMException(DataError, IDBDatabase::notValidKeyErrorMessage);
         return;
     }
-    continueFunction(key.release(), nullptr, exceptionState);
+    continueFunction(key, 0, exceptionState);
 }
 
 void IDBCursor::continuePrimaryKey(ExecutionContext* context, const ScriptValue& keyValue, const ScriptValue& primaryKeyValue, ExceptionState& exceptionState)
 {
     IDB_TRACE("IDBCursor::continuePrimaryKey");
-    RefPtrWillBeRawPtr<IDBKey> key = scriptValueToIDBKey(toIsolate(context), keyValue);
-    RefPtrWillBeRawPtr<IDBKey> primaryKey = scriptValueToIDBKey(toIsolate(context), primaryKeyValue);
+    IDBKey* key = scriptValueToIDBKey(toIsolate(context), keyValue);
+    IDBKey* primaryKey = scriptValueToIDBKey(toIsolate(context), primaryKeyValue);
     if (!key->isValid() || !primaryKey->isValid()) {
         exceptionState.throwDOMException(DataError, IDBDatabase::notValidKeyErrorMessage);
         return;
     }
-    continueFunction(key.release(), primaryKey.release(), exceptionState);
+    continueFunction(key, primaryKey, exceptionState);
 }
 
-void IDBCursor::continueFunction(PassRefPtrWillBeRawPtr<IDBKey> key, PassRefPtrWillBeRawPtr<IDBKey> primaryKey, ExceptionState& exceptionState)
+void IDBCursor::continueFunction(IDBKey* key, IDBKey* primaryKey, ExceptionState& exceptionState)
 {
     ASSERT(!primaryKey || (key && primaryKey));
 
@@ -231,8 +231,8 @@ void IDBCursor::continueFunction(PassRefPtrWillBeRawPtr<IDBKey> key, PassRefPtrW
     if (key) {
         ASSERT(m_key);
         if (m_direction == WebIDBCursor::Next || m_direction == WebIDBCursor::NextNoDuplicate) {
-            const bool ok = m_key->isLessThan(key.get())
-                || (primaryKey && m_key->isEqual(key.get()) && m_primaryKey->isLessThan(primaryKey.get()));
+            const bool ok = m_key->isLessThan(key)
+                || (primaryKey && m_key->isEqual(key) && m_primaryKey->isLessThan(primaryKey));
             if (!ok) {
                 exceptionState.throwDOMException(DataError, "The parameter is less than or equal to this cursor's position.");
                 return;
@@ -255,45 +255,45 @@ void IDBCursor::continueFunction(PassRefPtrWillBeRawPtr<IDBKey> key, PassRefPtrW
     m_backend->continueFunction(key, primaryKey, WebIDBCallbacksImpl::create(m_request).leakPtr());
 }
 
-PassRefPtrWillBeRawPtr<IDBRequest> IDBCursor::deleteFunction(ExecutionContext* context, ExceptionState& exceptionState)
+IDBRequest* IDBCursor::deleteFunction(ExecutionContext* context, ExceptionState& exceptionState)
 {
     IDB_TRACE("IDBCursor::delete");
     if (m_transaction->isFinished() || m_transaction->isFinishing()) {
         exceptionState.throwDOMException(TransactionInactiveError, IDBDatabase::transactionFinishedErrorMessage);
-        return nullptr;
+        return 0;
     }
     if (!m_transaction->isActive()) {
         exceptionState.throwDOMException(TransactionInactiveError, IDBDatabase::transactionInactiveErrorMessage);
-        return nullptr;
+        return 0;
     }
     if (m_transaction->isReadOnly()) {
         exceptionState.throwDOMException(ReadOnlyError, "The record may not be deleted inside a read-only transaction.");
-        return nullptr;
+        return 0;
     }
 
     if (!m_gotValue) {
         exceptionState.throwDOMException(InvalidStateError, IDBDatabase::noValueErrorMessage);
-        return nullptr;
+        return 0;
     }
     if (isKeyCursor()) {
         exceptionState.throwDOMException(InvalidStateError, IDBDatabase::isKeyCursorErrorMessage);
-        return nullptr;
+        return 0;
     }
     if (isDeleted()) {
         exceptionState.throwDOMException(InvalidStateError, IDBDatabase::sourceDeletedErrorMessage);
-        return nullptr;
+        return 0;
     }
     if (!m_transaction->backendDB()) {
         exceptionState.throwDOMException(InvalidStateError, IDBDatabase::databaseClosedErrorMessage);
-        return nullptr;
+        return 0;
     }
 
-    RefPtrWillBeRawPtr<IDBKeyRange> keyRange = IDBKeyRange::only(m_primaryKey, exceptionState);
+    IDBKeyRange* keyRange = IDBKeyRange::only(m_primaryKey, exceptionState);
     ASSERT(!exceptionState.hadException());
 
-    RefPtrWillBeRawPtr<IDBRequest> request = IDBRequest::create(context, IDBAny::create(this), m_transaction.get());
-    m_transaction->backendDB()->deleteRange(m_transaction->id(), effectiveObjectStore()->id(), keyRange.release(), WebIDBCallbacksImpl::create(request).leakPtr());
-    return request.release();
+    IDBRequest* request = IDBRequest::create(context, IDBAny::create(this), m_transaction.get());
+    m_transaction->backendDB()->deleteRange(m_transaction->id(), effectiveObjectStore()->id(), keyRange, WebIDBCallbacksImpl::create(request).leakPtr());
+    return request;
 }
 
 void IDBCursor::postSuccessHandlerCallback()
@@ -304,28 +304,10 @@ void IDBCursor::postSuccessHandlerCallback()
 
 void IDBCursor::close()
 {
-    // The notifier may be the last reference to this cursor.
-    RefPtrWillBeRawPtr<IDBCursor> protect(this);
     handleBlobAcks();
     m_request.clear();
     m_backend.clear();
 }
-
-#if !ENABLE(OILPAN)
-void IDBCursor::checkForReferenceCycle()
-{
-    // If this cursor and its request have the only references
-    // to each other, then explicitly break the cycle.
-    if (!m_request || m_request->getResultCursor() != this)
-        return;
-
-    if (!hasOneRef() || !m_request->hasOneRef())
-        return;
-
-    handleBlobAcks();
-    m_request.clear();
-}
-#endif
 
 ScriptValue IDBCursor::key(ScriptState* scriptState)
 {
@@ -343,9 +325,9 @@ ScriptValue IDBCursor::value(ScriptState* scriptState)
 {
     ASSERT(isCursorWithValue());
 
-    RefPtrWillBeRawPtr<IDBObjectStore> objectStore = effectiveObjectStore();
+    IDBObjectStore* objectStore = effectiveObjectStore();
     const IDBObjectStoreMetadata& metadata = objectStore->metadata();
-    RefPtrWillBeRawPtr<IDBAny> value;
+    IDBAny* value;
     if (metadata.autoIncrement && !metadata.keyPath.isNull()) {
         value = IDBAny::create(m_value, m_blobInfo.get(), m_primaryKey, metadata.keyPath);
 #ifndef NDEBUG
@@ -366,7 +348,7 @@ ScriptValue IDBCursor::source(ScriptState* scriptState) const
     return idbAnyToScriptValue(scriptState, m_source);
 }
 
-void IDBCursor::setValueReady(PassRefPtrWillBeRawPtr<IDBKey> key, PassRefPtrWillBeRawPtr<IDBKey> primaryKey, PassRefPtr<SharedBuffer> value, PassOwnPtr<Vector<blink::WebBlobInfo> > blobInfo)
+void IDBCursor::setValueReady(IDBKey* key, IDBKey* primaryKey, PassRefPtr<SharedBuffer> value, PassOwnPtr<Vector<blink::WebBlobInfo> > blobInfo)
 {
     m_key = key;
     m_keyDirty = true;
@@ -384,7 +366,7 @@ void IDBCursor::setValueReady(PassRefPtrWillBeRawPtr<IDBKey> key, PassRefPtrWill
     m_gotValue = true;
 }
 
-PassRefPtrWillBeRawPtr<IDBObjectStore> IDBCursor::effectiveObjectStore() const
+IDBObjectStore* IDBCursor::effectiveObjectStore() const
 {
     if (m_source->type() == IDBAny::IDBObjectStoreType)
         return m_source->idbObjectStore();

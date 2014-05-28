@@ -24,7 +24,7 @@
  */
 
 [
-    WillBeGarbageCollected
+    GarbageCollected
 ] interface IDBIndex {
     readonly attribute DOMString name;
     readonly attribute IDBObjectStore objectStore;

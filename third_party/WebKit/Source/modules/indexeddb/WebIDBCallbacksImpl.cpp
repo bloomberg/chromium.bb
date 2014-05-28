@@ -54,12 +54,12 @@ using blink::WebVector;
 namespace WebCore {
 
 // static
-PassOwnPtr<WebIDBCallbacksImpl> WebIDBCallbacksImpl::create(PassRefPtrWillBeRawPtr<IDBRequest> request)
+PassOwnPtr<WebIDBCallbacksImpl> WebIDBCallbacksImpl::create(IDBRequest* request)
 {
     return adoptPtr(new WebIDBCallbacksImpl(request));
 }
 
-WebIDBCallbacksImpl::WebIDBCallbacksImpl(PassRefPtrWillBeRawPtr<IDBRequest> request)
+WebIDBCallbacksImpl::WebIDBCallbacksImpl(IDBRequest* request)
     : m_request(request)
 {
 }

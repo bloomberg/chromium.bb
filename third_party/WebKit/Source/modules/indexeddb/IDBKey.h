@@ -29,42 +29,41 @@
 #include "platform/SharedBuffer.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
-#include "wtf/RefCounted.h"
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
-class IDBKey : public RefCountedWillBeGarbageCollectedFinalized<IDBKey> {
+class IDBKey : public GarbageCollectedFinalized<IDBKey> {
 public:
-    typedef WillBeHeapVector<RefPtrWillBeMember<IDBKey> > KeyArray;
+    typedef HeapVector<Member<IDBKey> > KeyArray;
 
-    static PassRefPtrWillBeRawPtr<IDBKey> createInvalid()
+    static IDBKey* createInvalid()
     {
-        return adoptRefWillBeNoop(new IDBKey());
+        return new IDBKey();
     }
 
-    static PassRefPtrWillBeRawPtr<IDBKey> createNumber(double number)
+    static IDBKey* createNumber(double number)
     {
-        return adoptRefWillBeNoop(new IDBKey(NumberType, number));
+        return new IDBKey(NumberType, number);
     }
 
-    static PassRefPtrWillBeRawPtr<IDBKey> createBinary(PassRefPtr<SharedBuffer> binary)
+    static IDBKey* createBinary(PassRefPtr<SharedBuffer> binary)
     {
-        return adoptRefWillBeNoop(new IDBKey(binary));
+        return new IDBKey(binary);
     }
 
-    static PassRefPtrWillBeRawPtr<IDBKey> createString(const String& string)
+    static IDBKey* createString(const String& string)
     {
-        return adoptRefWillBeNoop(new IDBKey(string));
+        return new IDBKey(string);
     }
 
-    static PassRefPtrWillBeRawPtr<IDBKey> createDate(double date)
+    static IDBKey* createDate(double date)
     {
-        return adoptRefWillBeNoop(new IDBKey(DateType, date));
+        return new IDBKey(DateType, date);
     }
 
-    static PassRefPtrWillBeRawPtr<IDBKey> createMultiEntryArray(const KeyArray& array)
+    static IDBKey* createMultiEntryArray(const KeyArray& array)
     {
         KeyArray result;
 
@@ -83,14 +82,14 @@ public:
                 result.append(array[i]);
             }
         }
-        RefPtrWillBeRawPtr<IDBKey> idbKey = adoptRefWillBeNoop(new IDBKey(result));
+        IDBKey* idbKey = new IDBKey(result);
         ASSERT(idbKey->isValid());
-        return idbKey.release();
+        return idbKey;
     }
 
-    static PassRefPtrWillBeRawPtr<IDBKey> createArray(const KeyArray& array)
+    static IDBKey* createArray(const KeyArray& array)
     {
-        return adoptRefWillBeNoop(new IDBKey(array));
+        return new IDBKey(array);
     }
 
     ~IDBKey();

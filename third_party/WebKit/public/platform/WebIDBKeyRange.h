@@ -53,9 +53,9 @@ public:
     BLINK_EXPORT void reset();
 
 #if BLINK_IMPLEMENTATION
-    WebIDBKeyRange(const PassRefPtrWillBeRawPtr<WebCore::IDBKeyRange>&);
-    WebIDBKeyRange& operator=(const PassRefPtrWillBeRawPtr<WebCore::IDBKeyRange>&);
-    operator PassRefPtrWillBeRawPtr<WebCore::IDBKeyRange>() const;
+    WebIDBKeyRange(WebCore::IDBKeyRange*);
+    WebIDBKeyRange& operator=(WebCore::IDBKeyRange*);
+    operator WebCore::IDBKeyRange*() const;
 #endif
 
 private:

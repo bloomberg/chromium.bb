@@ -167,7 +167,7 @@ static v8::Handle<v8::Value> toV8(const IDBAny* impl, v8::Handle<v8::Object> cre
 
 static const size_t maximumDepth = 2000;
 
-static PassRefPtrWillBeRawPtr<IDBKey> createIDBKeyFromValue(v8::Isolate* isolate, v8::Handle<v8::Value> value, Vector<v8::Handle<v8::Array> >& stack, bool allowExperimentalTypes = false)
+static IDBKey* createIDBKeyFromValue(v8::Isolate* isolate, v8::Handle<v8::Value> value, Vector<v8::Handle<v8::Array> >& stack, bool allowExperimentalTypes = false)
 {
     if (value->IsNumber() && !std::isnan(value->NumberValue()))
         return IDBKey::createNumber(value->NumberValue());
@@ -187,16 +187,16 @@ static PassRefPtrWillBeRawPtr<IDBKey> createIDBKeyFromValue(v8::Isolate* isolate
         v8::Handle<v8::Array> array = v8::Handle<v8::Array>::Cast(value);
 
         if (stack.contains(array))
-            return nullptr;
+            return 0;
         if (stack.size() >= maximumDepth)
-            return nullptr;
+            return 0;
         stack.append(array);
 
         IDBKey::KeyArray subkeys;
         uint32_t length = array->Length();
         for (uint32_t i = 0; i < length; ++i) {
             v8::Local<v8::Value> item = array->Get(v8::Int32::New(isolate, i));
-            RefPtrWillBeRawPtr<IDBKey> subkey = createIDBKeyFromValue(isolate, item, stack, allowExperimentalTypes);
+            IDBKey* subkey = createIDBKeyFromValue(isolate, item, stack, allowExperimentalTypes);
             if (!subkey)
                 subkeys.append(IDBKey::createInvalid());
             else
@@ -206,13 +206,13 @@ static PassRefPtrWillBeRawPtr<IDBKey> createIDBKeyFromValue(v8::Isolate* isolate
         stack.removeLast();
         return IDBKey::createArray(subkeys);
     }
-    return nullptr;
+    return 0;
 }
 
-static PassRefPtrWillBeRawPtr<IDBKey> createIDBKeyFromValue(v8::Isolate* isolate, v8::Handle<v8::Value> value, bool allowExperimentalTypes = false)
+static IDBKey* createIDBKeyFromValue(v8::Isolate* isolate, v8::Handle<v8::Value> value, bool allowExperimentalTypes = false)
 {
     Vector<v8::Handle<v8::Array> > stack;
-    if (RefPtrWillBeRawPtr<IDBKey> key = createIDBKeyFromValue(isolate, value, stack, allowExperimentalTypes))
+    if (IDBKey* key = createIDBKeyFromValue(isolate, value, stack, allowExperimentalTypes))
         return key;
     return IDBKey::createInvalid();
 }
@@ -304,7 +304,7 @@ static v8::Handle<v8::Value> ensureNthValueOnKeyPath(v8::Isolate* isolate, v8::H
     return currentValue;
 }
 
-static PassRefPtrWillBeRawPtr<IDBKey> createIDBKeyFromScriptValueAndKeyPathInternal(v8::Isolate* isolate, const ScriptValue& value, const String& keyPath, bool allowExperimentalTypes)
+static IDBKey* createIDBKeyFromScriptValueAndKeyPathInternal(v8::Isolate* isolate, const ScriptValue& value, const String& keyPath, bool allowExperimentalTypes)
 {
     Vector<String> keyPathElements;
     IDBKeyPathParseError error;
@@ -316,11 +316,11 @@ static PassRefPtrWillBeRawPtr<IDBKey> createIDBKeyFromScriptValueAndKeyPathInter
     v8::Handle<v8::Value> v8Value(value.v8Value());
     v8::Handle<v8::Value> v8Key(getNthValueOnKeyPath(isolate, v8Value, keyPathElements, keyPathElements.size()));
     if (v8Key.IsEmpty())
-        return nullptr;
+        return 0;
     return createIDBKeyFromValue(isolate, v8Key, allowExperimentalTypes);
 }
 
-static PassRefPtrWillBeRawPtr<IDBKey> createIDBKeyFromScriptValueAndKeyPathInternal(v8::Isolate* isolate, const ScriptValue& value, const IDBKeyPath& keyPath, bool allowExperimentalTypes = false)
+static IDBKey* createIDBKeyFromScriptValueAndKeyPathInternal(v8::Isolate* isolate, const ScriptValue& value, const IDBKeyPath& keyPath, bool allowExperimentalTypes = false)
 {
     ASSERT(!keyPath.isNull());
     v8::HandleScope handleScope(isolate);
@@ -328,9 +328,9 @@ static PassRefPtrWillBeRawPtr<IDBKey> createIDBKeyFromScriptValueAndKeyPathInter
         IDBKey::KeyArray result;
         const Vector<String>& array = keyPath.array();
         for (size_t i = 0; i < array.size(); ++i) {
-            RefPtrWillBeRawPtr<IDBKey> key = createIDBKeyFromScriptValueAndKeyPathInternal(isolate, value, array[i], allowExperimentalTypes);
+            IDBKey* key = createIDBKeyFromScriptValueAndKeyPathInternal(isolate, value, array[i], allowExperimentalTypes);
             if (!key)
-                return nullptr;
+                return 0;
             result.append(key);
         }
         return IDBKey::createArray(result);
@@ -340,7 +340,7 @@ static PassRefPtrWillBeRawPtr<IDBKey> createIDBKeyFromScriptValueAndKeyPathInter
     return createIDBKeyFromScriptValueAndKeyPathInternal(isolate, value, keyPath.string(), allowExperimentalTypes);
 }
 
-PassRefPtrWillBeRawPtr<IDBKey> createIDBKeyFromScriptValueAndKeyPath(v8::Isolate* isolate, const ScriptValue& value, const IDBKeyPath& keyPath)
+IDBKey* createIDBKeyFromScriptValueAndKeyPath(v8::Isolate* isolate, const ScriptValue& value, const IDBKeyPath& keyPath)
 {
     IDB_TRACE("createIDBKeyFromScriptValueAndKeyPath");
     return createIDBKeyFromScriptValueAndKeyPathInternal(isolate, value, keyPath);
@@ -400,23 +400,23 @@ bool canInjectIDBKeyIntoScriptValue(v8::Isolate* isolate, const ScriptValue& scr
     return canInjectNthValueOnKeyPath(isolate, v8Value, keyPathElements, keyPathElements.size() - 1);
 }
 
-ScriptValue idbAnyToScriptValue(ScriptState* scriptState, PassRefPtrWillBeRawPtr<IDBAny> any)
+ScriptValue idbAnyToScriptValue(ScriptState* scriptState, IDBAny* any)
 {
     v8::Isolate* isolate = scriptState->isolate();
     v8::HandleScope handleScope(isolate);
-    v8::Handle<v8::Value> v8Value(toV8(any.get(), scriptState->context()->Global(), isolate));
+    v8::Handle<v8::Value> v8Value(toV8(any, scriptState->context()->Global(), isolate));
     return ScriptValue(scriptState, v8Value);
 }
 
-ScriptValue idbKeyToScriptValue(ScriptState* scriptState, PassRefPtrWillBeRawPtr<IDBKey> key)
+ScriptValue idbKeyToScriptValue(ScriptState* scriptState, IDBKey* key)
 {
     v8::Isolate* isolate = scriptState->isolate();
     v8::HandleScope handleScope(isolate);
-    v8::Handle<v8::Value> v8Value(toV8(key.get(), scriptState->context()->Global(), isolate));
+    v8::Handle<v8::Value> v8Value(toV8(key, scriptState->context()->Global(), isolate));
     return ScriptValue(scriptState, v8Value);
 }
 
-PassRefPtrWillBeRawPtr<IDBKey> scriptValueToIDBKey(v8::Isolate* isolate, const ScriptValue& scriptValue)
+IDBKey* scriptValueToIDBKey(v8::Isolate* isolate, const ScriptValue& scriptValue)
 {
     ASSERT(isolate->InContext());
     v8::HandleScope handleScope(isolate);
@@ -424,7 +424,7 @@ PassRefPtrWillBeRawPtr<IDBKey> scriptValueToIDBKey(v8::Isolate* isolate, const S
     return createIDBKeyFromValue(isolate, v8Value);
 }
 
-PassRefPtrWillBeRawPtr<IDBKeyRange> scriptValueToIDBKeyRange(v8::Isolate* isolate, const ScriptValue& scriptValue)
+IDBKeyRange* scriptValueToIDBKeyRange(v8::Isolate* isolate, const ScriptValue& scriptValue)
 {
     v8::HandleScope handleScope(isolate);
     v8::Handle<v8::Value> value(scriptValue.v8Value());
@@ -432,10 +432,8 @@ PassRefPtrWillBeRawPtr<IDBKeyRange> scriptValueToIDBKeyRange(v8::Isolate* isolat
 }
 
 #ifndef NDEBUG
-void assertPrimaryKeyValidOrInjectable(ScriptState* scriptState, PassRefPtr<SharedBuffer> buffer, const Vector<blink::WebBlobInfo>* blobInfo, PassRefPtrWillBeRawPtr<IDBKey> prpKey, const IDBKeyPath& keyPath)
+void assertPrimaryKeyValidOrInjectable(ScriptState* scriptState, PassRefPtr<SharedBuffer> buffer, const Vector<blink::WebBlobInfo>* blobInfo, IDBKey* key, const IDBKeyPath& keyPath)
 {
-    RefPtrWillBeRawPtr<IDBKey> key(prpKey);
-
     ScriptState::Scope scope(scriptState);
     v8::Isolate* isolate = scriptState->isolate();
     ScriptValue keyValue = idbKeyToScriptValue(scriptState, key);
@@ -443,8 +441,8 @@ void assertPrimaryKeyValidOrInjectable(ScriptState* scriptState, PassRefPtr<Shar
 
     // This assertion is about already persisted data, so allow experimental types.
     const bool allowExperimentalTypes = true;
-    RefPtrWillBeRawPtr<IDBKey> expectedKey = createIDBKeyFromScriptValueAndKeyPathInternal(isolate, scriptValue, keyPath, allowExperimentalTypes);
-    ASSERT(!expectedKey || expectedKey->isEqual(key.get()));
+    IDBKey* expectedKey = createIDBKeyFromScriptValueAndKeyPathInternal(isolate, scriptValue, keyPath, allowExperimentalTypes);
+    ASSERT(!expectedKey || expectedKey->isEqual(key));
 
     bool injected = injectV8KeyIntoV8Value(isolate, keyValue.v8Value(), scriptValue.v8Value(), keyPath);
     ASSERT_UNUSED(injected, injected);

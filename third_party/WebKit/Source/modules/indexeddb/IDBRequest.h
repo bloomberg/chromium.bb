@@ -52,24 +52,15 @@ class IDBCursor;
 struct IDBDatabaseMetadata;
 class SharedBuffer;
 
-#if ENABLE(OILPAN)
-typedef RefCountedGarbageCollected<IDBRequest> IDBRequestBase;
-#else
-// Base class to simplify usage of event target refcounting.
-class IDBRequestBase : public WTF::RefCountedBase {
-public:
-    virtual void deref() = 0;
-
-protected:
-    virtual ~IDBRequestBase() { }
-};
-#endif
-
-class IDBRequest : public IDBRequestBase, public ScriptWrappable, public EventTargetWithInlineData, public ActiveDOMObject {
-    DEFINE_EVENT_TARGET_REFCOUNTING(IDBRequestBase);
+class IDBRequest
+    : public RefCountedGarbageCollected<IDBRequest>
+    , public ScriptWrappable
+    , public EventTargetWithInlineData
+    , public ActiveDOMObject {
+    DEFINE_EVENT_TARGET_REFCOUNTING(RefCountedGarbageCollected<IDBRequest>);
 
 public:
-    static PassRefPtrWillBeRawPtr<IDBRequest> create(ExecutionContext*, PassRefPtrWillBeRawPtr<IDBAny> source, IDBTransaction*);
+    static IDBRequest* create(ExecutionContext*, IDBAny* source, IDBTransaction*);
     virtual ~IDBRequest();
     virtual void trace(Visitor*);
 
@@ -79,7 +70,7 @@ public:
     IDBTransaction* transaction() const { return m_transaction.get(); }
 
     bool isResultDirty() const { return m_resultDirty; }
-    PassRefPtrWillBeRawPtr<IDBAny> resultAsAny() const { return m_result; }
+    IDBAny* resultAsAny() const { return m_result; }
 
     // Requests made during index population are implementation details and so
     // events should not be visible to script.
@@ -98,18 +89,18 @@ public:
     DEFINE_ATTRIBUTE_EVENT_LISTENER(error);
 
     void setCursorDetails(IndexedDB::CursorType, blink::WebIDBCursor::Direction);
-    void setPendingCursor(PassRefPtrWillBeRawPtr<IDBCursor>);
+    void setPendingCursor(IDBCursor*);
     void abort();
 
     virtual void onError(PassRefPtrWillBeRawPtr<DOMError>);
     virtual void onSuccess(const Vector<String>&);
-    virtual void onSuccess(PassOwnPtr<blink::WebIDBCursor>, PassRefPtrWillBeRawPtr<IDBKey>, PassRefPtrWillBeRawPtr<IDBKey> primaryKey, PassRefPtr<SharedBuffer>, PassOwnPtr<Vector<blink::WebBlobInfo> >);
-    virtual void onSuccess(PassRefPtrWillBeRawPtr<IDBKey>);
+    virtual void onSuccess(PassOwnPtr<blink::WebIDBCursor>, IDBKey*, IDBKey* primaryKey, PassRefPtr<SharedBuffer>, PassOwnPtr<Vector<blink::WebBlobInfo> >);
+    virtual void onSuccess(IDBKey*);
     virtual void onSuccess(PassRefPtr<SharedBuffer>, PassOwnPtr<Vector<blink::WebBlobInfo> >);
-    virtual void onSuccess(PassRefPtr<SharedBuffer>, PassOwnPtr<Vector<blink::WebBlobInfo> >, PassRefPtrWillBeRawPtr<IDBKey>, const IDBKeyPath&);
+    virtual void onSuccess(PassRefPtr<SharedBuffer>, PassOwnPtr<Vector<blink::WebBlobInfo> >, IDBKey*, const IDBKeyPath&);
     virtual void onSuccess(int64_t);
     virtual void onSuccess();
-    virtual void onSuccess(PassRefPtrWillBeRawPtr<IDBKey>, PassRefPtrWillBeRawPtr<IDBKey> primaryKey, PassRefPtr<SharedBuffer>, PassOwnPtr<Vector<blink::WebBlobInfo> >);
+    virtual void onSuccess(IDBKey*, IDBKey* primaryKey, PassRefPtr<SharedBuffer>, PassOwnPtr<Vector<blink::WebBlobInfo> >);
 
     // Only IDBOpenDBRequest instances should receive these:
     virtual void onBlocked(int64_t oldVersion) { ASSERT_NOT_REACHED(); }
@@ -133,41 +124,28 @@ public:
     // the upcoming "success" or "error").
     void transactionDidFinishAndDispatch();
 
-#if !ENABLE(OILPAN)
-    virtual void deref() OVERRIDE FINAL
-    {
-        if (derefBase())
-            delete this;
-        else if (hasOneRef())
-            checkForReferenceCycle();
-    }
-#endif
-
     IDBCursor* getResultCursor() const;
 
 protected:
-    IDBRequest(ExecutionContext*, PassRefPtrWillBeRawPtr<IDBAny> source, IDBTransaction*);
+    IDBRequest(ExecutionContext*, IDBAny* source, IDBTransaction*);
     void enqueueEvent(PassRefPtrWillBeRawPtr<Event>);
     void dequeueEvent(Event*);
     virtual bool shouldEnqueueEvent() const;
-    void onSuccessInternal(PassRefPtrWillBeRawPtr<IDBAny>);
-    void setResult(PassRefPtrWillBeRawPtr<IDBAny>);
+    void onSuccessInternal(IDBAny*);
+    void setResult(IDBAny*);
 
     bool m_contextStopped;
-    RefPtrWillBeMember<IDBTransaction> m_transaction;
+    Member<IDBTransaction> m_transaction;
     ReadyState m_readyState;
     bool m_requestAborted; // May be aborted by transaction then receive async onsuccess; ignore vs. assert.
 
 private:
-    void setResultCursor(PassRefPtrWillBeRawPtr<IDBCursor>, PassRefPtrWillBeRawPtr<IDBKey>, PassRefPtrWillBeRawPtr<IDBKey> primaryKey, PassRefPtr<SharedBuffer> value, PassOwnPtr<Vector<blink::WebBlobInfo> >);
+    void setResultCursor(IDBCursor*, IDBKey*, IDBKey* primaryKey, PassRefPtr<SharedBuffer> value, PassOwnPtr<Vector<blink::WebBlobInfo> >);
     void handleBlobAcks();
-#if !ENABLE(OILPAN)
-    void checkForReferenceCycle();
-#endif
 
     RefPtr<ScriptState> m_scriptState;
-    RefPtrWillBeMember<IDBAny> m_source;
-    RefPtrWillBeMember<IDBAny> m_result;
+    Member<IDBAny> m_source;
+    Member<IDBAny> m_result;
     RefPtrWillBeMember<DOMError> m_error;
 
     bool m_hasPendingActivity;
@@ -177,10 +155,10 @@ private:
     IndexedDB::CursorType m_cursorType;
     blink::WebIDBCursor::Direction m_cursorDirection;
     // When a cursor is continued/advanced, m_result is cleared and m_pendingCursor holds it.
-    RefPtrWillBeMember<IDBCursor> m_pendingCursor;
+    Member<IDBCursor> m_pendingCursor;
     // New state is not applied to the cursor object until the event is dispatched.
-    RefPtrWillBeMember<IDBKey> m_cursorKey;
-    RefPtrWillBeMember<IDBKey> m_cursorPrimaryKey;
+    Member<IDBKey> m_cursorKey;
+    Member<IDBKey> m_cursorPrimaryKey;
     RefPtr<SharedBuffer> m_cursorValue;
     OwnPtr<Vector<blink::WebBlobInfo> > m_blobInfo;
 

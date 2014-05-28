@@ -37,16 +37,15 @@ namespace WebCore {
 
 class ExecutionContext;
 
-class IndexedDBClient : public RefCountedWillBeGarbageCollected<IndexedDBClient> {
-    DECLARE_EMPTY_VIRTUAL_DESTRUCTOR_WILL_BE_REMOVED(IndexedDBClient);
+class IndexedDBClient : public GarbageCollected<IndexedDBClient> {
 public:
-    static PassRefPtrWillBeRawPtr<IndexedDBClient> create();
+    static IndexedDBClient* create();
     void trace(Visitor*) { }
 
     virtual bool allowIndexedDB(ExecutionContext*, const String& name) = 0;
 };
 
-typedef PassRefPtrWillBeRawPtr<IndexedDBClient> CreateIndexedDBClient();
+typedef IndexedDBClient* CreateIndexedDBClient();
 
 void setIndexedDBClientCreateFunction(CreateIndexedDBClient);
 

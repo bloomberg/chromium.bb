@@ -50,13 +50,9 @@ namespace WebCore {
 
 static const char permissionDeniedErrorMessage[] = "The user denied permission to access the database.";
 
-IDBFactory::IDBFactory(PassRefPtrWillBeRawPtr<IndexedDBClient> permissionClient)
+IDBFactory::IDBFactory(IndexedDBClient* permissionClient)
     : m_permissionClient(permissionClient)
 {
-#if !ENABLE(OILPAN)
-    // We pass a reference to this object before it can be adopted.
-    relaxAdoptionRequirement();
-#endif
     ScriptWrappable::init(this);
 }
 
@@ -79,17 +75,17 @@ static bool isContextValid(ExecutionContext* context)
     return true;
 }
 
-PassRefPtrWillBeRawPtr<IDBRequest> IDBFactory::getDatabaseNames(ExecutionContext* context, ExceptionState& exceptionState)
+IDBRequest* IDBFactory::getDatabaseNames(ExecutionContext* context, ExceptionState& exceptionState)
 {
     IDB_TRACE("IDBFactory::getDatabaseNames");
     if (!isContextValid(context))
-        return nullptr;
+        return 0;
     if (!context->securityOrigin()->canAccessDatabase()) {
         exceptionState.throwSecurityError("access to the Indexed Database API is denied in this context.");
-        return nullptr;
+        return 0;
     }
 
-    RefPtrWillBeRawPtr<IDBRequest> request = IDBRequest::create(context, IDBAny::createNull(), 0);
+    IDBRequest* request = IDBRequest::create(context, IDBAny::createNull(), 0);
 
     if (!m_permissionClient->allowIndexedDB(context, "Database Listing")) {
         request->onError(DOMError::create(UnknownError, permissionDeniedErrorMessage));
@@ -100,66 +96,66 @@ PassRefPtrWillBeRawPtr<IDBRequest> IDBFactory::getDatabaseNames(ExecutionContext
     return request;
 }
 
-PassRefPtrWillBeRawPtr<IDBOpenDBRequest> IDBFactory::open(ExecutionContext* context, const String& name, unsigned long long version, ExceptionState& exceptionState)
+IDBOpenDBRequest* IDBFactory::open(ExecutionContext* context, const String& name, unsigned long long version, ExceptionState& exceptionState)
 {
     IDB_TRACE("IDBFactory::open");
     if (!version) {
         exceptionState.throwTypeError("The version provided must not be 0.");
-        return nullptr;
+        return 0;
     }
     return openInternal(context, name, version, exceptionState);
 }
 
-PassRefPtrWillBeRawPtr<IDBOpenDBRequest> IDBFactory::openInternal(ExecutionContext* context, const String& name, int64_t version, ExceptionState& exceptionState)
+IDBOpenDBRequest* IDBFactory::openInternal(ExecutionContext* context, const String& name, int64_t version, ExceptionState& exceptionState)
 {
     blink::Platform::current()->histogramEnumeration("WebCore.IndexedDB.FrontEndAPICalls", IDBOpenCall, IDBMethodsMax);
     ASSERT(version >= 1 || version == IDBDatabaseMetadata::NoIntVersion);
     if (name.isNull()) {
         exceptionState.throwTypeError("The name provided must not be empty.");
-        return nullptr;
+        return 0;
     }
     if (!isContextValid(context))
-        return nullptr;
+        return 0;
     if (!context->securityOrigin()->canAccessDatabase()) {
         exceptionState.throwSecurityError("access to the Indexed Database API is denied in this context.");
-        return nullptr;
+        return 0;
     }
 
-    RefPtrWillBeRawPtr<IDBDatabaseCallbacks> databaseCallbacks = IDBDatabaseCallbacks::create();
+    IDBDatabaseCallbacks* databaseCallbacks = IDBDatabaseCallbacks::create();
     int64_t transactionId = IDBDatabase::nextTransactionId();
-    RefPtrWillBeRawPtr<IDBOpenDBRequest> request = IDBOpenDBRequest::create(context, databaseCallbacks, transactionId, version);
+    IDBOpenDBRequest* request = IDBOpenDBRequest::create(context, databaseCallbacks, transactionId, version);
 
     if (!m_permissionClient->allowIndexedDB(context, name)) {
         request->onError(DOMError::create(UnknownError, permissionDeniedErrorMessage));
         return request;
     }
 
-    blink::Platform::current()->idbFactory()->open(name, version, transactionId, WebIDBCallbacksImpl::create(request).leakPtr(), WebIDBDatabaseCallbacksImpl::create(databaseCallbacks.release()).leakPtr(), createDatabaseIdentifierFromSecurityOrigin(context->securityOrigin()));
+    blink::Platform::current()->idbFactory()->open(name, version, transactionId, WebIDBCallbacksImpl::create(request).leakPtr(), WebIDBDatabaseCallbacksImpl::create(databaseCallbacks).leakPtr(), createDatabaseIdentifierFromSecurityOrigin(context->securityOrigin()));
     return request;
 }
 
-PassRefPtrWillBeRawPtr<IDBOpenDBRequest> IDBFactory::open(ExecutionContext* context, const String& name, ExceptionState& exceptionState)
+IDBOpenDBRequest* IDBFactory::open(ExecutionContext* context, const String& name, ExceptionState& exceptionState)
 {
     IDB_TRACE("IDBFactory::open");
     return openInternal(context, name, IDBDatabaseMetadata::NoIntVersion, exceptionState);
 }
 
-PassRefPtrWillBeRawPtr<IDBOpenDBRequest> IDBFactory::deleteDatabase(ExecutionContext* context, const String& name, ExceptionState& exceptionState)
+IDBOpenDBRequest* IDBFactory::deleteDatabase(ExecutionContext* context, const String& name, ExceptionState& exceptionState)
 {
     IDB_TRACE("IDBFactory::deleteDatabase");
     blink::Platform::current()->histogramEnumeration("WebCore.IndexedDB.FrontEndAPICalls", IDBDeleteDatabaseCall, IDBMethodsMax);
     if (name.isNull()) {
         exceptionState.throwTypeError("The name provided must not be empty.");
-        return nullptr;
+        return 0;
     }
     if (!isContextValid(context))
-        return nullptr;
+        return 0;
     if (!context->securityOrigin()->canAccessDatabase()) {
         exceptionState.throwSecurityError("access to the Indexed Database API is denied in this context.");
-        return nullptr;
+        return 0;
     }
 
-    RefPtrWillBeRawPtr<IDBOpenDBRequest> request = IDBOpenDBRequest::create(context, nullptr, 0, IDBDatabaseMetadata::DefaultIntVersion);
+    IDBOpenDBRequest* request = IDBOpenDBRequest::create(context, 0, 0, IDBDatabaseMetadata::DefaultIntVersion);
 
     if (!m_permissionClient->allowIndexedDB(context, name)) {
         request->onError(DOMError::create(UnknownError, permissionDeniedErrorMessage));
@@ -172,8 +168,8 @@ PassRefPtrWillBeRawPtr<IDBOpenDBRequest> IDBFactory::deleteDatabase(ExecutionCon
 
 short IDBFactory::cmp(ExecutionContext* context, const ScriptValue& firstValue, const ScriptValue& secondValue, ExceptionState& exceptionState)
 {
-    RefPtrWillBeRawPtr<IDBKey> first = scriptValueToIDBKey(toIsolate(context), firstValue);
-    RefPtrWillBeRawPtr<IDBKey> second = scriptValueToIDBKey(toIsolate(context), secondValue);
+    IDBKey* first = scriptValueToIDBKey(toIsolate(context), firstValue);
+    IDBKey* second = scriptValueToIDBKey(toIsolate(context), secondValue);
 
     ASSERT(first);
     ASSERT(second);
@@ -183,7 +179,7 @@ short IDBFactory::cmp(ExecutionContext* context, const ScriptValue& firstValue, 
         return 0;
     }
 
-    return static_cast<short>(first->compare(second.get()));
+    return static_cast<short>(first->compare(second));
 }
 
 } // namespace WebCore

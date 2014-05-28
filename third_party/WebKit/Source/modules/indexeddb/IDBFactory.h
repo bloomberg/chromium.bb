@@ -32,9 +32,6 @@
 #include "modules/indexeddb/IDBOpenDBRequest.h"
 #include "modules/indexeddb/IndexedDBClient.h"
 #include "platform/heap/Handle.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefCounted.h"
-#include "wtf/RefPtr.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {
@@ -44,29 +41,29 @@ class IDBKey;
 class IDBKeyRange;
 class ExecutionContext;
 
-class IDBFactory : public RefCountedWillBeGarbageCollectedFinalized<IDBFactory>, public ScriptWrappable {
+class IDBFactory : public GarbageCollectedFinalized<IDBFactory>, public ScriptWrappable {
 public:
-    static PassRefPtrWillBeRawPtr<IDBFactory> create(PassRefPtrWillBeRawPtr<IndexedDBClient> client)
+    static IDBFactory* create(IndexedDBClient* client)
     {
-        return adoptRefWillBeNoop(new IDBFactory(client));
+        return new IDBFactory(client);
     }
     ~IDBFactory();
     void trace(Visitor*);
 
-    PassRefPtrWillBeRawPtr<IDBRequest> getDatabaseNames(ExecutionContext*, ExceptionState&);
+    IDBRequest* getDatabaseNames(ExecutionContext*, ExceptionState&);
 
-    PassRefPtrWillBeRawPtr<IDBOpenDBRequest> open(ExecutionContext*, const String& name, ExceptionState&);
-    PassRefPtrWillBeRawPtr<IDBOpenDBRequest> open(ExecutionContext*, const String& name, unsigned long long version, ExceptionState&);
-    PassRefPtrWillBeRawPtr<IDBOpenDBRequest> deleteDatabase(ExecutionContext*, const String& name, ExceptionState&);
+    IDBOpenDBRequest* open(ExecutionContext*, const String& name, ExceptionState&);
+    IDBOpenDBRequest* open(ExecutionContext*, const String& name, unsigned long long version, ExceptionState&);
+    IDBOpenDBRequest* deleteDatabase(ExecutionContext*, const String& name, ExceptionState&);
 
     short cmp(ExecutionContext*, const ScriptValue& first, const ScriptValue& second, ExceptionState&);
 
 private:
-    explicit IDBFactory(PassRefPtrWillBeRawPtr<IndexedDBClient>);
+    explicit IDBFactory(IndexedDBClient*);
 
-    PassRefPtrWillBeRawPtr<IDBOpenDBRequest> openInternal(ExecutionContext*, const String& name, int64_t version, ExceptionState&);
+    IDBOpenDBRequest* openInternal(ExecutionContext*, const String& name, int64_t version, ExceptionState&);
 
-    RefPtrWillBeMember<IndexedDBClient> m_permissionClient;
+    Member<IndexedDBClient> m_permissionClient;
 };
 
 } // namespace WebCore

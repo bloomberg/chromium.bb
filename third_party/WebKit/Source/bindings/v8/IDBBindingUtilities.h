@@ -50,15 +50,15 @@ class SharedBuffer;
 bool injectV8KeyIntoV8Value(v8::Isolate*, v8::Handle<v8::Value> key, v8::Handle<v8::Value>, const IDBKeyPath&);
 
 // For use by Source/modules/indexeddb:
-PassRefPtrWillBeRawPtr<IDBKey> createIDBKeyFromScriptValueAndKeyPath(v8::Isolate*, const ScriptValue&, const IDBKeyPath&);
+IDBKey* createIDBKeyFromScriptValueAndKeyPath(v8::Isolate*, const ScriptValue&, const IDBKeyPath&);
 bool canInjectIDBKeyIntoScriptValue(v8::Isolate*, const ScriptValue&, const IDBKeyPath&);
-ScriptValue idbAnyToScriptValue(ScriptState*, PassRefPtrWillBeRawPtr<IDBAny>);
-ScriptValue idbKeyToScriptValue(ScriptState*, PassRefPtrWillBeRawPtr<IDBKey>);
-PassRefPtrWillBeRawPtr<IDBKey> scriptValueToIDBKey(v8::Isolate*, const ScriptValue&);
-PassRefPtrWillBeRawPtr<IDBKeyRange> scriptValueToIDBKeyRange(v8::Isolate*, const ScriptValue&);
+ScriptValue idbAnyToScriptValue(ScriptState*, IDBAny*);
+ScriptValue idbKeyToScriptValue(ScriptState*, IDBKey*);
+IDBKey* scriptValueToIDBKey(v8::Isolate*, const ScriptValue&);
+IDBKeyRange* scriptValueToIDBKeyRange(v8::Isolate*, const ScriptValue&);
 
 #ifndef NDEBUG
-void assertPrimaryKeyValidOrInjectable(ScriptState*, PassRefPtr<SharedBuffer>, const Vector<blink::WebBlobInfo>*, PassRefPtrWillBeRawPtr<IDBKey>, const IDBKeyPath&);
+void assertPrimaryKeyValidOrInjectable(ScriptState*, PassRefPtr<SharedBuffer>, const Vector<blink::WebBlobInfo>*, IDBKey*, const IDBKeyPath&);
 #endif
 
 } // namespace WebCore

@@ -44,9 +44,9 @@ using namespace WebCore;
 
 namespace blink {
 
-PassRefPtrWillBeRawPtr<IndexedDBClient> IndexedDBClientImpl::create()
+IndexedDBClient* IndexedDBClientImpl::create()
 {
-    return adoptRefWillBeNoop(new IndexedDBClientImpl());
+    return new IndexedDBClientImpl();
 }
 
 bool IndexedDBClientImpl::allowIndexedDB(ExecutionContext* context, const String& name)

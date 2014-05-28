@@ -35,7 +35,7 @@ class IDBDatabaseCallbacks;
 
 class IDBOpenDBRequest FINAL : public IDBRequest {
 public:
-    static PassRefPtrWillBeRawPtr<IDBOpenDBRequest> create(ExecutionContext*, PassRefPtrWillBeRawPtr<IDBDatabaseCallbacks>, int64_t transactionId, int64_t version);
+    static IDBOpenDBRequest* create(ExecutionContext*, IDBDatabaseCallbacks*, int64_t transactionId, int64_t version);
     virtual ~IDBOpenDBRequest();
     virtual void trace(Visitor*) OVERRIDE;
 
@@ -57,9 +57,9 @@ protected:
     virtual bool shouldEnqueueEvent() const OVERRIDE;
 
 private:
-    IDBOpenDBRequest(ExecutionContext*, PassRefPtrWillBeRawPtr<IDBDatabaseCallbacks>, int64_t transactionId, int64_t version);
+    IDBOpenDBRequest(ExecutionContext*, IDBDatabaseCallbacks*, int64_t transactionId, int64_t version);
 
-    RefPtrWillBeMember<IDBDatabaseCallbacks> m_databaseCallbacks;
+    Member<IDBDatabaseCallbacks> m_databaseCallbacks;
     const int64_t m_transactionId;
     int64_t m_version;
 };

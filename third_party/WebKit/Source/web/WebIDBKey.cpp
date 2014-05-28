@@ -88,7 +88,7 @@ void WebIDBKey::assign(const WebIDBKey& value)
     m_private = value.m_private;
 }
 
-static PassRefPtrWillBeRawPtr<IDBKey> convertFromWebIDBKeyArray(const WebVector<WebIDBKey>& array)
+static IDBKey* convertFromWebIDBKeyArray(const WebVector<WebIDBKey>& array)
 {
     IDBKey::KeyArray keys;
     keys.reserveCapacity(array.size());
@@ -126,7 +126,7 @@ static void convertToWebIDBKeyArray(const IDBKey::KeyArray& array, WebVector<Web
     WebVector<WebIDBKey> keys(array.size());
     WebVector<WebIDBKey> subkeys;
     for (size_t i = 0; i < array.size(); ++i) {
-        RefPtrWillBeRawPtr<IDBKey> key = array[i];
+        IDBKey* key = array[i];
         switch (key->type()) {
         case IDBKey::ArrayType:
             convertToWebIDBKeyArray(key->array(), subkeys);
@@ -236,18 +236,18 @@ double WebIDBKey::number() const
     return m_private->number();
 }
 
-WebIDBKey::WebIDBKey(const PassRefPtrWillBeRawPtr<IDBKey>& value)
+WebIDBKey::WebIDBKey(IDBKey* value)
     : m_private(value)
 {
 }
 
-WebIDBKey& WebIDBKey::operator=(const PassRefPtrWillBeRawPtr<IDBKey>& value)
+WebIDBKey& WebIDBKey::operator=(IDBKey* value)
 {
     m_private = value;
     return *this;
 }
 
-WebIDBKey::operator PassRefPtrWillBeRawPtr<IDBKey>() const
+WebIDBKey::operator IDBKey*() const
 {
     return m_private.get();
 }

@@ -57,7 +57,7 @@ private:
     IDBPendingTransactionMonitor();
     static const char* supplementName();
 
-    typedef WillBePersistentHeapVector<RefPtrWillBeMember<IDBTransaction> > TransactionList;
+    typedef PersistentHeapVector<Member<IDBTransaction> > TransactionList;
     TransactionList m_transactions;
 };
 
