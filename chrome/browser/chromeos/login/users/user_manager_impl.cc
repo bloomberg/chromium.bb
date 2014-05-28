@@ -1561,7 +1561,12 @@ void UserManagerImpl::NotifyOnLogin() {
     if (GetLoggedInUsers().size() == 1) {
       base::FilePath homedir = ProfileHelper::GetProfilePathByUserIdHash(
           primary_user_->username_hash());
-      PathService::Override(base::DIR_HOME, homedir);
+      // This path has been either created by cryptohome (on real Chrome OS
+      // device) or by ProfileManager (on chromeos=1 desktop builds).
+      PathService::OverrideAndCreateIfNeeded(base::DIR_HOME,
+                                             homedir,
+                                             true /* path is absolute */,
+                                             false /* don't create */);
     }
   }
 
