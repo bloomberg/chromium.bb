@@ -58,7 +58,6 @@ class PPAPITestBase : public InProcessBrowserTest {
   virtual void RunTestIfAudioOutputAvailable(const std::string& test_case);
   virtual void RunTestViaHTTPIfAudioOutputAvailable(
       const std::string& test_case);
-  std::string StripPrefixes(const std::string& test_name);
 
  protected:
   class InfoBarObserver : public content::NotificationObserver {

@@ -25,10 +25,12 @@
 #include "content/public/browser/dom_operation_notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_switches.h"
 #include "media/base/media_switches.h"
 #include "net/base/filename_util.h"
 #include "net/base/test_data_directory.h"
 #include "ppapi/shared_impl/ppapi_switches.h"
+#include "ppapi/shared_impl/test_harness_utils.h"
 #include "ui/gl/gl_switches.h"
 
 using content::DomOperationNotificationDetails;
@@ -36,15 +38,6 @@ using content::RenderViewHost;
 using content::TestMessageHandler;
 
 namespace {
-
-// Platform-specific filename relative to the chrome executable.
-#if defined(OS_WIN)
-const wchar_t library_name[] = L"ppapi_tests.dll";
-#elif defined(OS_MACOSX)
-const char library_name[] = "ppapi_tests.plugin";
-#elif defined(OS_POSIX)
-const char library_name[] = "libppapi_tests.so";
-#endif
 
 void AddPrivateSwitches(base::CommandLine* command_line) {
   // For TestRequestOSFileHandle.
@@ -256,15 +249,6 @@ void PPAPITestBase::RunTestViaHTTPIfAudioOutputAvailable(
   RunTestViaHTTP(test_case);
 }
 
-std::string PPAPITestBase::StripPrefixes(const std::string& test_name) {
-  const char* const prefixes[] = {
-      "FAILS_", "FLAKY_", "DISABLED_", "SLOW_" };
-  for (size_t i = 0; i < sizeof(prefixes)/sizeof(prefixes[0]); ++i)
-    if (test_name.find(prefixes[i]) == 0)
-      return test_name.substr(strlen(prefixes[i]));
-  return test_name;
-}
-
 void PPAPITestBase::RunTestURL(const GURL& test_url) {
 #if defined(OS_WIN) && defined(USE_ASH)
   // PPAPITests are broken in Ash browser tests (http://crbug.com/263548).
@@ -314,7 +298,7 @@ void PPAPITest::SetUpCommandLine(base::CommandLine* command_line) {
   base::FilePath plugin_dir;
   EXPECT_TRUE(PathService::Get(base::DIR_MODULE, &plugin_dir));
 
-  base::FilePath plugin_lib = plugin_dir.Append(library_name);
+  base::FilePath plugin_lib = plugin_dir.Append(ppapi::GetTestLibraryName());
   EXPECT_TRUE(base::PathExists(plugin_lib));
   base::FilePath::StringType pepper_plugin = plugin_lib.value();
   pepper_plugin.append(FILE_PATH_LITERAL(";application/x-ppapi-tests"));

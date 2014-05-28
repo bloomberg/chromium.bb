@@ -1049,6 +1049,7 @@
             '../ppapi/ppapi_internal.gyp:ppapi_ipc',
             '../ppapi/ppapi_internal.gyp:ppapi_proxy',
             '../ppapi/ppapi_internal.gyp:ppapi_shared',
+            '../ppapi/ppapi_internal.gyp:ppapi_tests',
             '../ppapi/ppapi_internal.gyp:ppapi_unittest_shared',
             '../testing/gmock.gyp:gmock',
             '../testing/gtest.gyp:gtest',
@@ -1165,6 +1166,9 @@
             'test/accessibility_browser_test_utils.cc',
             'test/accessibility_browser_test_utils.h',
             'test/content_browser_test_test.cc',
+            'test/ppapi/ppapi_browsertest.cc',
+            'test/ppapi/ppapi_test.cc',
+            'test/ppapi/ppapi_test.h',
             'test/webui_resource_browsertest.cc',
           ],
           'conditions': [
@@ -1290,6 +1294,9 @@
               'sources!': [
                 'browser/plugin_service_impl_browsertest.cc',
                 'browser/plugin_data_remover_impl_browsertest.cc',
+                'test/ppapi/ppapi_browsertest.cc',
+                'test/ppapi/ppapi_test.cc',
+                'test/ppapi/ppapi_test.h',
               ],
             }],
             ['input_speech==0', {

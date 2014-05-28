@@ -108,6 +108,8 @@
           'shared_impl/scoped_pp_var.h',
           'shared_impl/socket_option_data.cc',
           'shared_impl/socket_option_data.h',
+          'shared_impl/test_harness_utils.cc',
+          'shared_impl/test_harness_utils.h',
           'shared_impl/thread_aware_callback.cc',
           'shared_impl/thread_aware_callback.h',
           'shared_impl/time_conversion.cc',

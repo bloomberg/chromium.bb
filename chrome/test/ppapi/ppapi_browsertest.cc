@@ -17,11 +17,12 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/test/javascript_test_observer.h"
 #include "content/public/test/test_renderer_host.h"
+#include "ppapi/shared_impl/test_harness_utils.h"
 
 using content::RenderViewHost;
 
 // This macro finesses macro expansion to do what we want.
-#define STRIP_PREFIXES(test_name) StripPrefixes(#test_name)
+#define STRIP_PREFIXES(test_name) ppapi::StripTestPrefixes(#test_name)
 // Turn the given token into a string. This allows us to use precompiler stuff
 // to turn names into DISABLED_Foo, but still pass a string to RunTest.
 #define STRINGIFY(test_name) #test_name
@@ -192,8 +193,7 @@ TEST_PPAPI_IN_PROCESS(MAYBE_Core)
 TEST_PPAPI_OUT_OF_PROCESS(MAYBE_Core)
 TEST_PPAPI_NACL(MAYBE_Core)
 
-TEST_PPAPI_IN_PROCESS(TraceEvent)
-TEST_PPAPI_OUT_OF_PROCESS(TraceEvent)
+// Non-NaCl TraceEvent tests are in content/test/ppapi/ppapi_browsertest.cc.
 TEST_PPAPI_NACL(TraceEvent)
 
 TEST_PPAPI_OUT_OF_PROCESS(InputEvent)
@@ -631,9 +631,6 @@ TEST_PPAPI_OUT_OF_PROCESS(URLUtil)
 
 TEST_PPAPI_IN_PROCESS(CharSet)
 TEST_PPAPI_OUT_OF_PROCESS(CharSet)
-
-TEST_PPAPI_IN_PROCESS(Crypto)
-TEST_PPAPI_OUT_OF_PROCESS(Crypto)
 
 TEST_PPAPI_IN_PROCESS(Var)
 TEST_PPAPI_OUT_OF_PROCESS(Var)
