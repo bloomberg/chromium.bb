@@ -109,25 +109,14 @@ enum MediaKeyError {
 // http://www.w3.org/TR/dom/#domexception
 // Some DOM4 exceptions are not included as they are not expected to be used.
 enum Error {
-  kNoModificationAllowedError = 7,
-  kNotFoundError = 8,
   kNotSupportedError = 9,
   kInvalidStateError = 11,
-  kSyntaxError = 12,
-  kInvalidModificationError = 13,
   kInvalidAccessError = 15,
-  kSecurityError = 18,
-  kAbortError = 20,
   kQuotaExceededError = 22,
-  kTimeoutError = 23,
 
   // Additional exceptions that don't have assigned codes.
   // There are other non-EME-specific values, not included in this list.
   kUnknownError = 30,
-  kDataError = 31,
-  kVersionError = 32,
-  kNotReadableError = 33,
-  kOperationError = 34,
 
   // Additional values from previous EME versions. They currently have no
   // matching DOMException.
