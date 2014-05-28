@@ -59,6 +59,9 @@ std::set<autofill::AutofillEntry> GetAllKeys(int profile) WARN_UNUSED_RESULT;
 // |profile_a| and |profile_b|. Returns true if they match.
 bool KeysMatch(int profile_a, int profile_b) WARN_UNUSED_RESULT;
 
+// Allows syncers to run until KeysMatch() returns true.
+bool AwaitKeysMatch(int profile_a, int profile_b);
+
 // Replaces the Autofill profiles in sync profile |profile| with
 // |autofill_profiles|.
 void SetProfiles(int profile,
@@ -102,6 +105,9 @@ bool ProfilesMatch(int profile_a, int profile_b) WARN_UNUSED_RESULT;
 // Compares the autofill profiles for all sync profiles, and returns true if
 // they all match.
 bool AllProfilesMatch() WARN_UNUSED_RESULT;
+
+// Allows the syncers to run until ProfilesMatch() returns true.
+bool AwaitProfilesMatch(int profile_a, int profile_b);
 
 // Creates a test autofill profile based on the persona specified in |type|.
 autofill::AutofillProfile CreateAutofillProfile(ProfileType type);

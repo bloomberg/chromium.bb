@@ -9,6 +9,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_test_util.h"
+#include "chrome/browser/sync/test/integration/multi_client_status_change_checker.h"
 #include "chrome/browser/sync/test/integration/sync_datatype_helper.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/webdata/web_data_service_factory.h"
@@ -236,6 +237,47 @@ bool KeysMatch(int profile_a, int profile_b) {
   return GetAllKeys(profile_a) == GetAllKeys(profile_b);
 }
 
+namespace {
+
+class KeysMatchStatusChecker : public MultiClientStatusChangeChecker {
+ public:
+  KeysMatchStatusChecker(int profile_a, int profile_b);
+  virtual ~KeysMatchStatusChecker();
+
+  virtual bool IsExitConditionSatisfied() OVERRIDE;
+  virtual std::string GetDebugMessage() const OVERRIDE;
+
+ private:
+  const int profile_a_;
+  const int profile_b_;
+};
+
+KeysMatchStatusChecker::KeysMatchStatusChecker(int profile_a, int profile_b)
+    : MultiClientStatusChangeChecker(
+          sync_datatype_helper::test()->GetSyncServices()),
+      profile_a_(profile_a),
+      profile_b_(profile_b) {
+}
+
+KeysMatchStatusChecker::~KeysMatchStatusChecker() {
+}
+
+bool KeysMatchStatusChecker::IsExitConditionSatisfied() {
+  return KeysMatch(profile_a_, profile_b_);
+}
+
+std::string KeysMatchStatusChecker::GetDebugMessage() const {
+  return "Waiting for matching autofill keys";
+}
+
+}  // namespace
+
+bool AwaitKeysMatch(int a, int b) {
+  KeysMatchStatusChecker checker(a, b);
+  checker.Wait();
+  return !checker.TimedOut();
+}
+
 void SetProfiles(int profile, std::vector<AutofillProfile>* autofill_profiles) {
   MockPersonalDataManagerObserver observer;
   EXPECT_CALL(observer, OnPersonalDataChanged()).
@@ -312,50 +354,145 @@ int GetKeyCount(int profile) {
   return GetAllKeys(profile).size();
 }
 
-bool ProfilesMatch(int profile_a, int profile_b) {
-  const std::vector<AutofillProfile*>& autofill_profiles_a =
-      GetAllProfiles(profile_a);
+namespace {
+
+bool ProfilesMatchImpl(
+    int profile_a,
+    const std::vector<AutofillProfile*>& autofill_profiles_a,
+    int profile_b,
+    const std::vector<AutofillProfile*>& autofill_profiles_b) {
   std::map<std::string, AutofillProfile> autofill_profiles_a_map;
   for (size_t i = 0; i < autofill_profiles_a.size(); ++i) {
     const AutofillProfile* p = autofill_profiles_a[i];
     autofill_profiles_a_map[p->guid()] = *p;
   }
 
-  const std::vector<AutofillProfile*>& autofill_profiles_b =
-      GetAllProfiles(profile_b);
   for (size_t i = 0; i < autofill_profiles_b.size(); ++i) {
     const AutofillProfile* p = autofill_profiles_b[i];
     if (!autofill_profiles_a_map.count(p->guid())) {
-      LOG(ERROR) << "GUID " << p->guid() << " not found in profile "
-                 << profile_b << ".";
+      DVLOG(1) << "GUID " << p->guid() << " not found in profile " << profile_b
+               << ".";
       return false;
     }
     AutofillProfile* expected_profile = &autofill_profiles_a_map[p->guid()];
     expected_profile->set_guid(p->guid());
     if (*expected_profile != *p) {
-      LOG(ERROR) << "Mismatch in profile with GUID " << p->guid() << ".";
+      DVLOG(1) << "Mismatch in profile with GUID " << p->guid() << ".";
       return false;
     }
     autofill_profiles_a_map.erase(p->guid());
   }
 
   if (autofill_profiles_a_map.size()) {
-    LOG(ERROR) << "Entries present in Profile " << profile_a
-               << " but not in " << profile_b << ".";
+    DVLOG(1) << "Entries present in Profile " << profile_a << " but not in "
+             << profile_b << ".";
     return false;
   }
   return true;
 }
 
+}  // namespace
+
+bool ProfilesMatch(int profile_a, int profile_b) {
+  const std::vector<AutofillProfile*>& autofill_profiles_a =
+      GetAllProfiles(profile_a);
+  const std::vector<AutofillProfile*>& autofill_profiles_b =
+      GetAllProfiles(profile_b);
+  return ProfilesMatchImpl(
+      profile_a, autofill_profiles_a, profile_b, autofill_profiles_b);
+}
+
 bool AllProfilesMatch() {
   for (int i = 1; i < test()->num_clients(); ++i) {
     if (!ProfilesMatch(0, i)) {
-      LOG(ERROR) << "Profile " << i << "does not contain the same autofill "
-                                       "profiles as profile 0.";
+      DVLOG(1) << "Profile " << i << "does not contain the same autofill "
+                                     "profiles as profile 0.";
       return false;
     }
   }
   return true;
+}
+
+namespace {
+
+class ProfilesMatchStatusChecker : public StatusChangeChecker,
+                                   public PersonalDataManagerObserver {
+ public:
+  ProfilesMatchStatusChecker(int profile_a, int profile_b);
+  virtual ~ProfilesMatchStatusChecker();
+
+  // StatusChangeChecker implementation.
+  virtual bool IsExitConditionSatisfied() OVERRIDE;
+  virtual std::string GetDebugMessage() const OVERRIDE;
+
+  // PersonalDataManager implementation.
+  virtual void OnPersonalDataChanged() OVERRIDE;
+
+  // Wait for conidtion to beome true.
+  void Wait();
+
+ private:
+  const int profile_a_;
+  const int profile_b_;
+  bool registered_;
+};
+
+ProfilesMatchStatusChecker::ProfilesMatchStatusChecker(int profile_a,
+                                                       int profile_b)
+    : profile_a_(profile_a), profile_b_(profile_b), registered_(false) {
+}
+
+ProfilesMatchStatusChecker::~ProfilesMatchStatusChecker() {
+  PersonalDataManager* pdm_a = GetPersonalDataManager(profile_a_);
+  PersonalDataManager* pdm_b = GetPersonalDataManager(profile_b_);
+  if (registered_) {
+    pdm_a->RemoveObserver(this);
+    pdm_b->RemoveObserver(this);
+  }
+}
+
+bool ProfilesMatchStatusChecker::IsExitConditionSatisfied() {
+  PersonalDataManager* pdm_a = GetPersonalDataManager(profile_a_);
+  PersonalDataManager* pdm_b = GetPersonalDataManager(profile_b_);
+
+  const std::vector<AutofillProfile*>& autofill_profiles_a =
+      pdm_a->web_profiles();
+  const std::vector<AutofillProfile*>& autofill_profiles_b =
+      pdm_b->web_profiles();
+
+  return ProfilesMatchImpl(
+      profile_a_, autofill_profiles_a, profile_b_, autofill_profiles_b);
+}
+
+void ProfilesMatchStatusChecker::Wait() {
+  PersonalDataManager* pdm_a = GetPersonalDataManager(profile_a_);
+  PersonalDataManager* pdm_b = GetPersonalDataManager(profile_b_);
+
+  pdm_a->AddObserver(this);
+  pdm_b->AddObserver(this);
+
+  pdm_a->Refresh();
+  pdm_b->Refresh();
+
+  registered_ = true;
+
+  StartBlockingWait();
+}
+
+std::string ProfilesMatchStatusChecker::GetDebugMessage() const {
+  return "Waiting for matching autofill profiles";
+}
+
+void ProfilesMatchStatusChecker::OnPersonalDataChanged() {
+  CheckExitCondition();
+}
+
+}  // namespace
+
+bool AwaitProfilesMatch(int a, int b) {
+  ProfilesMatchStatusChecker checker(a, b);
+  checker.Wait();
+  return !checker.TimedOut();
 }
 
 }  // namespace autofill_helper
