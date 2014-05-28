@@ -1458,7 +1458,13 @@
         'conditions': [
           ['OS=="android"', {
             # We directly set the gcc versions since we know what we use.
-            'gcc_version%': 48,
+            'conditions': [
+              ['target_arch=="x64" or target_arch=="arm64"', {
+                'gcc_version%': 48,
+              }, {
+                'gcc_version%': 46,
+              }],
+            ],
           }, {
             'gcc_version%': '<!pymod_do_main(compiler_version target compiler)',
           }],
@@ -1605,7 +1611,7 @@
               'android_gdbserver%': '<(android_ndk_root)/prebuilt/android-x86/gdbserver/gdbserver',
               'android_ndk_sysroot%': '<(android_ndk_root)/platforms/android-14/arch-x86',
               'android_ndk_lib_dir%': 'usr/lib',
-              'android_toolchain%': '<(android_ndk_root)/toolchains/x86-4.8/prebuilt/<(host_os)-<(android_host_arch)/bin',
+              'android_toolchain%': '<(android_ndk_root)/toolchains/x86-4.6/prebuilt/<(host_os)-<(android_host_arch)/bin',
             }],
             ['target_arch == "x64"', {
               'android_app_abi%': 'x86_64',
@@ -1626,7 +1632,7 @@
               'android_gdbserver%': '<(android_ndk_root)/prebuilt/android-arm/gdbserver/gdbserver',
               'android_ndk_sysroot%': '<(android_ndk_root)/platforms/android-14/arch-arm',
               'android_ndk_lib_dir%': 'usr/lib',
-              'android_toolchain%': '<(android_ndk_root)/toolchains/arm-linux-androideabi-4.8/prebuilt/<(host_os)-<(android_host_arch)/bin',
+              'android_toolchain%': '<(android_ndk_root)/toolchains/arm-linux-androideabi-4.6/prebuilt/<(host_os)-<(android_host_arch)/bin',
             }],
             ['target_arch == "arm64"', {
               'android_app_abi%': 'arm64-v8a',
@@ -1641,7 +1647,7 @@
               'android_gdbserver%': '<(android_ndk_root)/prebuilt/android-mips/gdbserver/gdbserver',
               'android_ndk_sysroot%': '<(android_ndk_root)/platforms/android-14/arch-mips',
               'android_ndk_lib_dir%': 'usr/lib',
-              'android_toolchain%': '<(android_ndk_root)/toolchains/mipsel-linux-android-4.8/prebuilt/<(host_os)-<(android_host_arch)/bin',
+              'android_toolchain%': '<(android_ndk_root)/toolchains/mipsel-linux-android-4.6/prebuilt/<(host_os)-<(android_host_arch)/bin',
             }],
           ],
         },
@@ -2124,7 +2130,7 @@
       }],
       ['arm_version==7 and android_webview_build==0', {
         'arm_arch%': 'armv7-a',
-        'arm_tune%': 'generic-armv7-a',
+        'arm_tune%': '',
         'conditions': [
           ['arm_neon==1', {
             'arm_fpu%': 'neon',
@@ -3550,7 +3556,7 @@
                     # Most of the following flags are derived from what Android
                     # uses by default when building for arm, reference for which
                     # can be found in the following file in the Android NDK:
-                    # toolchains/arm-linux-androideabi-4.8/setup.mk
+                    # toolchains/arm-linux-androideabi-4.4.3/setup.mk
                     'cflags': [
                       # The tree-sra optimization (scalar replacement for
                       # aggregates enabling subsequent optimizations) leads to
@@ -3558,15 +3564,6 @@
                       # compiler (r5-r7). This can be verified using
                       # webkit_unit_tests' WTF.Checked_int8_t test.
                       '-fno-tree-sra',
-                      # The following 6 options are disabled to save on
-                      # binary size in gcc 4.8.
-                      # TODO(fdegans) Reevaluate when we upgrade GCC.
-                      '-fno-partial-inlining',
-                      '-fno-early-inlining',
-                      '-fno-tree-copy-prop',
-                      '-fno-tree-loop-optimize',
-                      '-fno-move-loop-invariants',
-                      '-fno-caller-saves',
                       '-Wno-psabi',
                     ],
                     # Android now supports .relro sections properly.
@@ -3602,12 +3599,6 @@
                           '-mthumb-interwork',
                           '-finline-limit=64',
                           '-fno-tree-sra',
-                          '-fno-partial-inlining',
-                          '-fno-early-inlining',
-                          '-fno-tree-copy-prop',
-                          '-fno-tree-loop-optimize',
-                          '-fno-move-loop-invariants',
-                          '-fno-caller-saves',
                           '-Wno-psabi',
                         ],
                         'cflags': [
