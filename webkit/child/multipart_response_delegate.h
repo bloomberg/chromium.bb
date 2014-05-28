@@ -60,10 +60,12 @@ class WebURLLoader;
 class WebURLLoaderClient;
 }
 
-namespace webkit_glue {
-
+namespace content {
 // Used by unit tests to access private members.
 class MultipartResponseDelegateTester;
+}
+
+namespace webkit_glue {
 
 class WEBKIT_CHILD_EXPORT MultipartResponseDelegate {
  public:
@@ -98,7 +100,7 @@ class WEBKIT_CHILD_EXPORT MultipartResponseDelegate {
       int64* content_range_instance_size);
 
  private:
-  friend class MultipartResponseDelegateTester;  // For unittests.
+  friend class content::MultipartResponseDelegateTester;  // For unittests.
 
   // Pointers to the client and associated loader so we can make callbacks as
   // we parse pieces of data.
