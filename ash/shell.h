@@ -64,6 +64,7 @@ class TooltipController;
 namespace wm {
 class CompoundEventFilter;
 class InputMethodEventFilter;
+class NestedAcceleratorController;
 class ShadowController;
 class VisibilityController;
 class UserActivityDetector;
@@ -106,7 +107,6 @@ class MaximizeModeWindowManager;
 class MediaDelegate;
 class MouseCursorEventFilter;
 class MruWindowTracker;
-class NestedDispatcherController;
 class NewWindowDelegate;
 class OverlayEventFilter;
 class PartialMagnificationController;
@@ -631,7 +631,7 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   std::vector<WindowAndBoundsPair> to_restore_;
 
   scoped_ptr<UserMetricsRecorder> user_metrics_recorder_;
-  scoped_ptr<NestedDispatcherController> nested_dispatcher_controller_;
+  scoped_ptr< ::wm::NestedAcceleratorController> nested_accelerator_controller_;
   scoped_ptr<AcceleratorController> accelerator_controller_;
   scoped_ptr<ShellDelegate> delegate_;
   scoped_ptr<SystemTrayDelegate> system_tray_delegate_;

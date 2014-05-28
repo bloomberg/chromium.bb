@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_ACCELERATORS_ACCELERATOR_DISPATCHER_H_
-#define ASH_ACCELERATORS_ACCELERATOR_DISPATCHER_H_
+#ifndef UI_WM_CORE_NESTED_ACCELERATOR_DISPATCHER_H_
+#define UI_WM_CORE_NESTED_ACCELERATOR_DISPATCHER_H_
 
-#include "ash/ash_export.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "ui/wm/wm_export.h"
 
 namespace base {
 class MessagePumpDispatcher;
@@ -18,7 +18,9 @@ namespace ui {
 class KeyEvent;
 }
 
-namespace ash {
+namespace wm {
+
+class NestedAcceleratorDelegate;
 
 // Dispatcher for handling accelerators from menu.
 //
@@ -27,32 +29,27 @@ namespace ash {
 // passed back to the default dispatcher.
 // TODO(pkotwicz): Add support for a |nested_dispatcher| which sends
 //  events to a system IME.
-class ASH_EXPORT AcceleratorDispatcher {
+class WM_EXPORT NestedAcceleratorDispatcher {
  public:
-  virtual ~AcceleratorDispatcher() {}
+  virtual ~NestedAcceleratorDispatcher();
 
-  static scoped_ptr<AcceleratorDispatcher> Create(
+  static scoped_ptr<NestedAcceleratorDispatcher> Create(
+      NestedAcceleratorDelegate* dispatcher_delegate,
       base::MessagePumpDispatcher* nested_dispatcher);
 
   // Creates a base::RunLoop object to run a nested message loop.
   virtual scoped_ptr<base::RunLoop> CreateRunLoop() = 0;
 
  protected:
-  AcceleratorDispatcher() {}
+  explicit NestedAcceleratorDispatcher(NestedAcceleratorDelegate* delegate);
 
-  // Closes any open menu if the key-event could potentially be a system
-  // accelerator.
-  // Returns whether a menu was closed.
-  bool MenuClosedForPossibleAccelerator(const ui::KeyEvent& key_event);
-
-  // Attempts to trigger an accelerator for the key-event.
-  // Returns whether an accelerator was triggered.
-  bool AcceleratorProcessedForKeyEvent(const ui::KeyEvent& key_event);
+  NestedAcceleratorDelegate*
+      delegate_;  // Owned by NestedAcceleratorController.
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(AcceleratorDispatcher);
+  DISALLOW_COPY_AND_ASSIGN(NestedAcceleratorDispatcher);
 };
 
-}  // namespace ash
+}  // namespace wm
 
-#endif  // ASH_ACCELERATORS_ACCELERATOR_DISPATCHER_H_
+#endif  // UI_WM_CORE_NESTED_ACCELERATOR_DISPATCHER_H_

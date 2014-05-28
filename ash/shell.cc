@@ -10,7 +10,7 @@
 #include "ash/accelerators/accelerator_controller.h"
 #include "ash/accelerators/accelerator_filter.h"
 #include "ash/accelerators/focus_manager_factory.h"
-#include "ash/accelerators/nested_dispatcher_controller.h"
+#include "ash/accelerators/nested_accelerator_delegate.h"
 #include "ash/accelerometer/accelerometer_controller.h"
 #include "ash/ash_switches.h"
 #include "ash/autoclick/autoclick_controller.h"
@@ -108,6 +108,7 @@
 #include "ui/wm/core/compound_event_filter.h"
 #include "ui/wm/core/focus_controller.h"
 #include "ui/wm/core/input_method_event_filter.h"
+#include "ui/wm/core/nested_accelerator_controller.h"
 #include "ui/wm/core/shadow_controller.h"
 #include "ui/wm/core/user_activity_detector.h"
 #include "ui/wm/core/visibility_controller.h"
@@ -761,7 +762,7 @@ Shell::~Shell() {
   partial_magnification_controller_.reset();
   tooltip_controller_.reset();
   event_client_.reset();
-  nested_dispatcher_controller_.reset();
+  nested_accelerator_controller_.reset();
   toplevel_window_event_handler_.reset();
   visibility_controller_.reset();
   // |shelf_item_delegate_manager_| observes |shelf_model_|. It must be
@@ -887,7 +888,8 @@ void Shell::Init(const ShellInitParams& init_params) {
 
   cursor_manager_.SetDisplay(GetScreen()->GetPrimaryDisplay());
 
-  nested_dispatcher_controller_.reset(new NestedDispatcherController);
+  nested_accelerator_controller_.reset(
+      new ::wm::NestedAcceleratorController(new NestedAcceleratorDelegate));
   accelerator_controller_.reset(new AcceleratorController);
   maximize_mode_controller_.reset(new MaximizeModeController());
 
@@ -1100,9 +1102,9 @@ void Shell::InitRootWindow(aura::Window* root_window) {
   root_window->AddPreTargetHandler(toplevel_window_event_handler_.get());
   root_window->AddPostTargetHandler(toplevel_window_event_handler_.get());
 
-  if (nested_dispatcher_controller_) {
+  if (nested_accelerator_controller_) {
     aura::client::SetDispatcherClient(root_window,
-                                      nested_dispatcher_controller_.get());
+                                      nested_accelerator_controller_.get());
   }
 }
 

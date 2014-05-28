@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/accelerators/accelerator_dispatcher.h"
+#include "ash/accelerators/nested_accelerator_delegate.h"
 
 #include "ash/accelerators/accelerator_controller.h"
 #include "ash/shell.h"
@@ -35,21 +35,26 @@ bool IsPossibleAcceleratorNotForMenu(const ui::KeyEvent& key_event) {
 
 }  // namespace
 
-bool AcceleratorDispatcher::MenuClosedForPossibleAccelerator(
+NestedAcceleratorDelegate::NestedAcceleratorDelegate() {
+}
+
+NestedAcceleratorDelegate::~NestedAcceleratorDelegate() {
+}
+
+bool NestedAcceleratorDelegate::ShouldProcessEventNow(
     const ui::KeyEvent& key_event) {
   if (!IsPossibleAcceleratorNotForMenu(key_event))
-    return false;
+    return true;
 
   if (views::MenuController* menu_controller =
           views::MenuController::GetActiveInstance()) {
     menu_controller->CancelAll();
-    return true;
+    return false;
   }
-  return false;
+  return true;
 }
 
-bool AcceleratorDispatcher::AcceleratorProcessedForKeyEvent(
-    const ui::KeyEvent& key_event) {
+bool NestedAcceleratorDelegate::ProcessEvent(const ui::KeyEvent& key_event) {
   ash::AcceleratorController* accelerator_controller =
       ash::Shell::GetInstance()->accelerator_controller();
   if (!accelerator_controller)
