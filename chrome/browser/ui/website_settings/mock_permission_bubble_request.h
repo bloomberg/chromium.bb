@@ -14,6 +14,8 @@ class MockPermissionBubbleRequest : public PermissionBubbleRequest {
   MockPermissionBubbleRequest();
   explicit MockPermissionBubbleRequest(const std::string& text);
   explicit MockPermissionBubbleRequest(const std::string& text,
+                                       const GURL& url);
+  explicit MockPermissionBubbleRequest(const std::string& text,
                                        const std::string& accept_label,
                                        const std::string& deny_label);
   virtual ~MockPermissionBubbleRequest();
@@ -33,14 +35,18 @@ class MockPermissionBubbleRequest : public PermissionBubbleRequest {
   bool cancelled();
   bool finished();
 
+  void SetHasUserGesture();
+
  private:
   bool granted_;
   bool cancelled_;
   bool finished_;
+  bool user_gesture_;
 
   base::string16 text_;
   base::string16 accept_label_;
   base::string16 deny_label_;
+  GURL hostname_;
 };
 
 #endif  // CHROME_BROWSER_UI_WEBSITE_SETTINGS_MOCK_PERMISSION_BUBBLE_REQUEST_H_

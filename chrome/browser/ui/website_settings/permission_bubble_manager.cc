@@ -9,6 +9,7 @@
 #include "chrome/browser/ui/website_settings/permission_bubble_request.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/navigation_details.h"
 #include "content/public/browser/user_metrics.h"
 
 namespace {
@@ -101,46 +102,39 @@ void PermissionBubbleManager::AddRequest(PermissionBubbleRequest* request) {
   // correct behavior on interstitials -- we probably want to basically queue
   // any request for which GetVisibleURL != GetLastCommittedURL.
   request_url_ = web_contents()->GetLastCommittedURL();
+  bool is_main_frame =
+      request->GetRequestingHostname().GetOrigin() == request_url_.GetOrigin();
 
   // Don't re-add an existing request or one with a duplicate text request.
-  std::vector<PermissionBubbleRequest*>::iterator requests_iter;
-  for (requests_iter = requests_.begin();
-       requests_iter != requests_.end();
-       requests_iter++) {
-    if (*requests_iter == request)
-      return;
-    // TODO(gbillock): worry about the requesting host name as well.
-    if ((*requests_iter)->GetMessageTextFragment() ==
-        request->GetMessageTextFragment()) {
+  bool same_object = false;
+  if (ExistingRequest(request, requests_, &same_object) ||
+      ExistingRequest(request, queued_requests_, &same_object) ||
+      ExistingRequest(request, queued_frame_requests_, &same_object)) {
+    if (!same_object)
       request->RequestFinished();
-      return;
-    }
-  }
-  for (requests_iter = queued_requests_.begin();
-       requests_iter != queued_requests_.end();
-       requests_iter++) {
-    if (*requests_iter == request)
-      return;
-    if ((*requests_iter)->GetMessageTextFragment() ==
-        request->GetMessageTextFragment()) {
-      request->RequestFinished();
-      return;
-    }
+    return;
   }
 
   if (bubble_showing_) {
     content::RecordAction(
         base::UserMetricsAction("PermissionBubbleRequestQueued"));
-    queued_requests_.push_back(request);
+    if (is_main_frame)
+      queued_requests_.push_back(request);
+    else
+      queued_frame_requests_.push_back(request);
     return;
   }
 
-  requests_.push_back(request);
-  // TODO(gbillock): do we need to make default state a request property?
-  accept_states_.push_back(true);
+  if (is_main_frame) {
+    requests_.push_back(request);
+    // TODO(gbillock): do we need to make default state a request property?
+    accept_states_.push_back(true);
+  } else {
+    queued_frame_requests_.push_back(request);
+  }
 
   if (request->HasUserGesture())
-    ShowBubble();
+    ScheduleShowBubble();
 }
 
 void PermissionBubbleManager::CancelRequest(PermissionBubbleRequest* request) {
@@ -172,7 +166,7 @@ void PermissionBubbleManager::CancelRequest(PermissionBubbleRequest* request) {
       (*requests_iter)->RequestFinished();
       requests_.erase(requests_iter);
       accept_states_.erase(accepts_iter);
-      ShowBubble();  // Will redraw the bubble if it is being shown.
+      TriggerShowBubble();  // Will redraw the bubble if it is being shown.
       return;
     }
 
@@ -203,7 +197,7 @@ void PermissionBubbleManager::SetView(PermissionBubbleView* view) {
     return;
 
   view->SetDelegate(this);
-  ShowBubble();
+  TriggerShowBubble();
 }
 
 void PermissionBubbleManager::DocumentOnLoadCompletedInMainFrame() {
@@ -213,11 +207,14 @@ void PermissionBubbleManager::DocumentOnLoadCompletedInMainFrame() {
   // callbacks finding the UI thread still. This makes sure we allow those
   // scheduled calls to AddRequest to complete before we show the page-load
   // permissions bubble.
-  // TODO(gbillock): make this bind safe with a weak ptr.
-  content::BrowserThread::PostTask(
-      content::BrowserThread::UI, FROM_HERE,
-      base::Bind(&PermissionBubbleManager::ShowBubble,
-                 weak_factory_.GetWeakPtr()));
+  ScheduleShowBubble();
+}
+
+void PermissionBubbleManager::DocumentLoadedInFrame(
+    int64 frame_id,
+    content::RenderViewHost* render_view_host) {
+  if (request_url_has_loaded_)
+    ScheduleShowBubble();
 }
 
 void PermissionBubbleManager::NavigationEntryCommitted(
@@ -226,8 +223,9 @@ void PermissionBubbleManager::NavigationEntryCommitted(
   if (request_url_.is_empty())
     return;
 
-  // If we have navigated to a new url...
-  if (request_url_ != web_contents()->GetLastCommittedURL()) {
+  // If we have navigated to a new url or reloaded the page...
+  if (request_url_ != web_contents()->GetLastCommittedURL() ||
+      details.type == content::NAVIGATION_TYPE_EXISTING_PAGE) {
     // Kill off existing bubble and cancel any pending requests.
     CancelPendingQueue();
     FinalizeBubble();
@@ -292,16 +290,42 @@ void PermissionBubbleManager::Closing() {
   FinalizeBubble();
 }
 
-// TODO(gbillock): find a better name for this method.
-void PermissionBubbleManager::ShowBubble() {
+void PermissionBubbleManager::ScheduleShowBubble() {
+  content::BrowserThread::PostTask(
+      content::BrowserThread::UI,
+      FROM_HERE,
+      base::Bind(&PermissionBubbleManager::TriggerShowBubble,
+                 weak_factory_.GetWeakPtr()));
+}
+
+void PermissionBubbleManager::TriggerShowBubble() {
   if (!view_)
-    return;
-  if (requests_.empty())
     return;
   if (bubble_showing_)
     return;
   if (!request_url_has_loaded_)
     return;
+  if (requests_.empty() && queued_requests_.empty() &&
+      queued_frame_requests_.empty())
+    return;
+
+  if (requests_.empty()) {
+    // Queues containing a user-gesture-generated request have priority.
+    if (HasUserGestureRequest(queued_requests_))
+      requests_.swap(queued_requests_);
+    else if (HasUserGestureRequest(queued_frame_requests_))
+      requests_.swap(queued_frame_requests_);
+    else if (queued_requests_.size())
+      requests_.swap(queued_requests_);
+    else
+      requests_.swap(queued_frame_requests_);
+
+    // Sets the default value for each request to be 'accept'.
+    // TODO(leng):  Currently all requests default to true.  If that changes:
+    // a) Add additional accept_state queues to store default values.
+    // b) Change the request API to provide the default value.
+    accept_states_.resize(requests_.size(), true);
+  }
 
   // Note: this should appear above Show() for testing, since in that
   // case we may do in-line calling of finalization.
@@ -322,11 +346,8 @@ void PermissionBubbleManager::FinalizeBubble() {
   }
   requests_.clear();
   accept_states_.clear();
-  if (queued_requests_.size()) {
-    requests_ = queued_requests_;
-    accept_states_.resize(requests_.size(), true);
-    queued_requests_.clear();
-    ShowBubble();
+  if (queued_requests_.size() || queued_frame_requests_.size()) {
+    TriggerShowBubble();
   } else {
     request_url_ = GURL();
   }
@@ -339,4 +360,35 @@ void PermissionBubbleManager::CancelPendingQueue() {
        requests_iter++) {
     (*requests_iter)->RequestFinished();
   }
+}
+
+bool PermissionBubbleManager::ExistingRequest(
+    PermissionBubbleRequest* request,
+    const std::vector<PermissionBubbleRequest*>& queue,
+    bool* same_object) {
+  CHECK(same_object);
+  *same_object = false;
+  std::vector<PermissionBubbleRequest*>::const_iterator iter;
+  for (iter = queue.begin(); iter != queue.end(); iter++) {
+    if (*iter == request) {
+      *same_object = true;
+      return true;
+    }
+    if ((*iter)->GetMessageTextFragment() ==
+            request->GetMessageTextFragment() &&
+        (*iter)->GetRequestingHostname() == request->GetRequestingHostname()) {
+      return true;
+    }
+  }
+  return false;
+}
+
+bool PermissionBubbleManager::HasUserGestureRequest(
+    const std::vector<PermissionBubbleRequest*>& queue) {
+  std::vector<PermissionBubbleRequest*>::const_iterator iter;
+  for (iter = queue.begin(); iter != queue.end(); iter++) {
+    if ((*iter)->HasUserGesture())
+      return true;
+  }
+  return false;
 }

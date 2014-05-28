@@ -9,27 +9,53 @@
 #include "grit/theme_resources.h"
 
 MockPermissionBubbleRequest::MockPermissionBubbleRequest()
-    : granted_(false), cancelled_(false), finished_(false) {
+    : granted_(false),
+      cancelled_(false),
+      finished_(false),
+      user_gesture_(false) {
   text_ = base::ASCIIToUTF16("test");
   accept_label_ = base::ASCIIToUTF16("button");
   deny_label_ = base::ASCIIToUTF16("button");
+  hostname_ = GURL("http://www.google.com");
 }
 
 MockPermissionBubbleRequest::MockPermissionBubbleRequest(
     const std::string& text)
-    : granted_(false), cancelled_(false), finished_(false) {
+    : granted_(false),
+      cancelled_(false),
+      finished_(false),
+      user_gesture_(false) {
   text_ = base::UTF8ToUTF16(text);
   accept_label_ = base::ASCIIToUTF16("button");
   deny_label_ = base::ASCIIToUTF16("button");
+  hostname_ = GURL("http://www.google.com");
 }
 
 MockPermissionBubbleRequest::MockPermissionBubbleRequest(
-    const std::string& text, const std::string& accept_label,
+    const std::string& text,
+    const GURL& url)
+    : granted_(false),
+      cancelled_(false),
+      finished_(false),
+      user_gesture_(false) {
+  text_ = base::UTF8ToUTF16(text);
+  accept_label_ = base::ASCIIToUTF16("button");
+  deny_label_ = base::ASCIIToUTF16("button");
+  hostname_ = url;
+}
+
+MockPermissionBubbleRequest::MockPermissionBubbleRequest(
+    const std::string& text,
+    const std::string& accept_label,
     const std::string& deny_label)
-    : granted_(false), cancelled_(false), finished_(false) {
+    : granted_(false),
+      cancelled_(false),
+      finished_(false),
+      user_gesture_(false) {
   text_ = base::UTF8ToUTF16(text);
   accept_label_ = base::UTF8ToUTF16(accept_label);
   deny_label_ = base::UTF8ToUTF16(deny_label);
+  hostname_ = GURL("http://www.google.com");
 }
 
 MockPermissionBubbleRequest::~MockPermissionBubbleRequest() {}
@@ -48,11 +74,11 @@ base::string16 MockPermissionBubbleRequest::GetMessageTextFragment() const {
 }
 
 bool MockPermissionBubbleRequest::HasUserGesture() const {
-  return false;
+  return user_gesture_;
 }
 
 GURL MockPermissionBubbleRequest::GetRequestingHostname() const {
-  return GURL("http://www.google.com");
+  return hostname_;
 }
 
 void MockPermissionBubbleRequest::PermissionGranted() {
@@ -82,4 +108,8 @@ bool MockPermissionBubbleRequest::cancelled() {
 
 bool MockPermissionBubbleRequest::finished() {
   return finished_;
+}
+
+void MockPermissionBubbleRequest::SetHasUserGesture() {
+  user_gesture_ = true;
 }
