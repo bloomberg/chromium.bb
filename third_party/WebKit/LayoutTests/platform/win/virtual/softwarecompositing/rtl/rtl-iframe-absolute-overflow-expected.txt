@@ -41,12 +41,12 @@
                   )
                 )
                 (GraphicsLayer
-                  (position 15.00 385.00)
-                  (bounds 385.00 15.00)
+                  (bounds 15.00 385.00)
                   (drawsContent 1)
                 )
                 (GraphicsLayer
-                  (bounds 15.00 385.00)
+                  (position 15.00 385.00)
+                  (bounds 385.00 15.00)
                   (drawsContent 1)
                 )
                 (GraphicsLayer
