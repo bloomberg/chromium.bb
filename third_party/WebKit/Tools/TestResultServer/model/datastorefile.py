@@ -186,7 +186,12 @@ class DataStoreFile(db.Model):
             result = future.get_result()
             if not result:
                 logging.error("No data found for key: %s.", key)
-                return None
+                # FIXME: This really shouldn't happen, but it seems to be happening in practice.
+                # Figure out how and then change this back to returning None.
+                # In the meantime, return empty string so we at least start collecting
+                # results from new runs even though it'll mean that the old data is lost.
+                # crbug.com/377594
+                return ''
             data.append(result)
 
         self.data = "".join([d.data for d in data])
