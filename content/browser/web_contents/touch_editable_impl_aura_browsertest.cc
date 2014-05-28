@@ -91,31 +91,6 @@ class TestTouchEditableImplAura : public TouchEditableImplAura {
   DISALLOW_COPY_AND_ASSIGN(TestTouchEditableImplAura);
 };
 
-// This class ignores mouse-moved, mouse-entered and mouse-exited events
-// without passing them to TouchEditableImplAura. Normally, we should not
-// receive these events; but, sometimes we receive them which breaks the tests
-// and makes them flaky: crbug.com/276992.
-class TestTouchEditableImplAuraIgnoreMouseMovement
-    : public TestTouchEditableImplAura {
- public:
-  TestTouchEditableImplAuraIgnoreMouseMovement() {}
-
-  virtual bool HandleInputEvent(const ui::Event* event) OVERRIDE {
-    if (event->type() == ui::ET_MOUSE_ENTERED ||
-        event->type() == ui::ET_MOUSE_MOVED ||
-        event->type() == ui::ET_MOUSE_EXITED) {
-      return false;
-    }
-    return TestTouchEditableImplAura::HandleInputEvent(event);
-  }
-
- protected:
-  virtual ~TestTouchEditableImplAuraIgnoreMouseMovement() {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TestTouchEditableImplAuraIgnoreMouseMovement);
-};
-
 class TouchEditableImplAuraTest : public ContentBrowserTest {
  public:
   TouchEditableImplAuraTest() {}
@@ -169,8 +144,7 @@ IN_PROC_BROWSER_TEST_F(TouchEditableImplAuraTest,
   RenderFrameHost* main_frame = web_contents->GetMainFrame();
   WebContentsViewAura* view_aura = static_cast<WebContentsViewAura*>(
       web_contents->GetView());
-  TestTouchEditableImplAura* touch_editable =
-      new TestTouchEditableImplAuraIgnoreMouseMovement;
+  TestTouchEditableImplAura* touch_editable = new TestTouchEditableImplAura;
   view_aura->SetTouchEditableForTest(touch_editable);
   RenderWidgetHostViewAura* rwhva = static_cast<RenderWidgetHostViewAura*>(
       web_contents->GetRenderWidgetHostView());
@@ -355,8 +329,7 @@ IN_PROC_BROWSER_TEST_F(TouchEditableImplAuraTest,
   RenderFrameHost* main_frame = web_contents->GetMainFrame();
   WebContentsViewAura* view_aura = static_cast<WebContentsViewAura*>(
       web_contents->GetView());
-  TestTouchEditableImplAura* touch_editable =
-      new TestTouchEditableImplAuraIgnoreMouseMovement;
+  TestTouchEditableImplAura* touch_editable = new TestTouchEditableImplAura;
   view_aura->SetTouchEditableForTest(touch_editable);
   RenderWidgetHostViewAura* rwhva = static_cast<RenderWidgetHostViewAura*>(
       web_contents->GetRenderWidgetHostView());

@@ -104,6 +104,7 @@ void TouchEditableImplAura::EndTouchEditing(bool quick) {
     if (touch_selection_controller_->IsHandleDragInProgress()) {
       touch_selection_controller_->SelectionChanged();
     } else {
+      selection_gesture_in_process_ = false;
       touch_selection_controller_->HideHandles(quick);
       touch_selection_controller_.reset();
     }
@@ -135,12 +136,9 @@ void TouchEditableImplAura::OnTextInputTypeChanged(ui::TextInputType type) {
 
 bool TouchEditableImplAura::HandleInputEvent(const ui::Event* event) {
   DCHECK(rwhva_);
-  if (event->IsTouchEvent())
-    return false;
-
   if (!event->IsGestureEvent()) {
-    selection_gesture_in_process_ = false;
-    EndTouchEditing(false);
+    // Ignore all non-gesture events. Non-gesture events that can deactivate
+    // touch editing are handled in TouchSelectionControllerImpl.
     return false;
   }
 
