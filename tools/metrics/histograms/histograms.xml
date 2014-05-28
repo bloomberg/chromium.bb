@@ -11246,6 +11246,26 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Net.AlternateProtocolUsage.1000Truncated"
+    enum="AlternateProtocolUsage">
+  <owner>rch@chromium.org</owner>
+  <summary>
+    Breakdown of how requests which could potentially make use of an alternate
+    protocol use or don't use the protocol. Loaded data for 1000 servers and we
+    have persisted 1000 MRU servers.
+  </summary>
+</histogram>
+
+<histogram name="Net.AlternateProtocolUsage.200Truncated"
+    enum="AlternateProtocolUsage">
+  <owner>rch@chromium.org</owner>
+  <summary>
+    Breakdown of how requests which could potentially make use of an alternate
+    protocol use or don't use the protocol. Loaded data for 200 servers and we
+    have persisted 1000 MRU servers.
+  </summary>
+</histogram>
+
 <histogram name="Net.AsyncResourceHandler_PendingDataCount">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
