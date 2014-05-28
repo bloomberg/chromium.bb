@@ -12,7 +12,7 @@
 #include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
-#import "chrome/browser/ui/cocoa/gradient_button_cell.h"
+#import "chrome/browser/ui/cocoa/image_button_cell.h"
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
 #import "chrome/browser/ui/cocoa/view_resizer_pong.h"
 #include "chrome/common/pref_names.h"
@@ -247,8 +247,8 @@ TEST_F(ToolbarControllerTest, HoverButtonForEvent) {
   EXPECT_FALSE([bar_ hoverButtonForEvent:event]);
 
   // Now!
-  base::scoped_nsobject<GradientButtonCell> cell(
-      [[GradientButtonCell alloc] init]);
+  base::scoped_nsobject<ImageButtonCell> cell(
+      [[ImageButtonCell alloc] init]);
   [button setCell:cell.get()];
   EXPECT_TRUE([bar_ hoverButtonForEvent:nil]);
 }
