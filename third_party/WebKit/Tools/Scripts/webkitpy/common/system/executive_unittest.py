@@ -166,22 +166,14 @@ class ExecutiveTest(unittest.TestCase):
         self.assertEqual(output, encoded_tor)
 
     def serial_test_kill_process(self):
+        if sys.platform in ("win32", "cygwin"):
+            return  # Windows does not return consistent exit codes.
+
         executive = Executive()
         process = subprocess.Popen(never_ending_command(), stdout=subprocess.PIPE)
         self.assertEqual(process.poll(), None)  # Process is running
         executive.kill_process(process.pid)
-        # Note: Can't use a ternary since signal.SIGKILL is undefined for sys.platform == "win32"
-        if sys.platform == "win32":
-            # FIXME: https://bugs.webkit.org/show_bug.cgi?id=54790
-            # We seem to get either 0 or 1 here for some reason.
-            self.assertIn(process.wait(), (0, 1))
-        elif sys.platform == "cygwin":
-            # FIXME: https://bugs.webkit.org/show_bug.cgi?id=98196
-            # cygwin seems to give us either SIGABRT or SIGKILL
-            self.assertIn(process.wait(), (-signal.SIGABRT, -signal.SIGKILL))
-        else:
-            expected_exit_code = -signal.SIGKILL
-            self.assertEqual(process.wait(), expected_exit_code)
+        self.assertEqual(process.wait(), -signal.SIGKILL)
 
         # Killing again should fail silently.
         executive.kill_process(process.pid)
