@@ -21,6 +21,8 @@
         '../..',
       ],
       'sources': [
+        'athena_launcher.cc',
+        'athena_launcher.h',
         'athena_main.cc',
         'placeholder.cc',
         'placeholder.h',

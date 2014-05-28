@@ -2,3 +2,9 @@ include_rules = [
   "+athena/screen/public",
   "+ui/aura",
 ]
+
+specific_include_rules = {
+  ".*unittest\.cc": [
+    "+athena/test",
+  ],
+}

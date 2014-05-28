@@ -34,6 +34,45 @@
         'wm/window_manager_impl.cc',
       ],
     },
+    {
+      'target_name': 'athena_test_support',
+      'type': 'static_library',
+      'dependencies': [
+        '../base/base.gyp:test_support_base',
+        '../skia/skia.gyp:skia',
+        '../testing/gtest.gyp:gtest',
+        '../ui/accessibility/accessibility.gyp:ax_gen',
+        '../ui/aura/aura.gyp:aura_test_support',
+        '../ui/base/ui_base.gyp:ui_base_test_support',
+        '../ui/compositor/compositor.gyp:compositor_test_support',
+        '../ui/views/views.gyp:views',
+        '../ui/wm/wm.gyp:wm',
+        'athena_lib',
+      ],
+      'sources': [
+        'main/athena_launcher.cc',
+        'main/athena_launcher.h',
+        'main/placeholder.cc',
+        'main/placeholder.h',
+        'test/athena_test_base.cc',
+        'test/athena_test_base.h',
+        'test/athena_test_helper.cc',
+        'test/athena_test_helper.h',
+      ],
+    },
+    {
+      'target_name': 'athena_unittests',
+      'type': 'executable',
+      'dependencies': [
+        '../testing/gtest.gyp:gtest',
+        'athena_lib',
+        'athena_test_support',
+      ],
+      'sources': [
+        'test/athena_unittests.cc',
+        'wm/window_manager_unittest.cc',
+      ],
+    }
   ],
 }
 

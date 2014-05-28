@@ -1,0 +1,9 @@
+include_rules = [
+  "+athena/main",
+  "+ui/aura",
+  "+ui/base",
+  "+ui/compositor",
+  "+ui/gfx",
+  "+ui/gl",
+  "+ui/wm/core",
+]
