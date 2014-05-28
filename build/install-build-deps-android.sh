@@ -47,7 +47,7 @@ sudo apt-get -y install checkstyle lighttpd python-pexpect xvfb x11-utils
 # Few binaries in the Android SDK require 32-bit libraries on the host.
 sudo apt-get -y install lib32z1 g++-multilib
 
-sudo apt-get -y install ant1.8
+sudo apt-get -y install ant
 
 # Install openjdk and openjre 7 stuff
 sudo apt-get -y install openjdk-7-jre openjdk-7-jdk
