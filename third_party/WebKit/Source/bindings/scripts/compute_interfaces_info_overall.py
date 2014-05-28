@@ -132,9 +132,16 @@ def dict_of_dicts_of_lists_update_or_append(existing, other):
         for inner_key, inner_value in value.iteritems():
             existing_value[inner_key].extend(inner_value)
 
+
 ################################################################################
 # Computations
 ################################################################################
+
+def read_interfaces_info(interfaces_info_individual_filenames):
+    # Read in individual info from files
+    for interfaces_info_individual_filename in interfaces_info_individual_filenames:
+        with open(interfaces_info_individual_filename) as interfaces_info_individual_file:
+            yield pickle.load(interfaces_info_individual_file)
 
 
 def compute_inheritance_info(interface_name):
@@ -159,23 +166,20 @@ def compute_inheritance_info(interface_name):
     })
 
 
-def compute_interfaces_info_overall(interfaces_info_individual_filenames):
+def compute_interfaces_info_overall(info_individuals):
     """Compute information about IDL files.
 
     Information is stored in global interfaces_info.
     """
-    # Read in individual info from files
-    for interfaces_info_individual_filename in interfaces_info_individual_filenames:
-        with open(interfaces_info_individual_filename) as interfaces_info_individual_file:
-            info = pickle.load(interfaces_info_individual_file)
-            # No overlap between interface names, so ok to use dict.update
-            interfaces_info.update(info['interfaces_info'])
-            # Interfaces in one component may have partial interfaces in
-            # another component. This is ok (not a layering violation), since
-            # partial interfaces are used to *extend* interfaces.
-            # We thus need to update or append if already present
-            dict_of_dicts_of_lists_update_or_append(
-                    partial_interface_files, info['partial_interface_files'])
+    for info in info_individuals:
+        # No overlap between interface names, so ok to use dict.update
+        interfaces_info.update(info['interfaces_info'])
+        # Interfaces in one component may have partial interfaces in
+        # another component. This is ok (not a layering violation), since
+        # partial interfaces are used to *extend* interfaces.
+        # We thus need to update or append if already present
+        dict_of_dicts_of_lists_update_or_append(
+                partial_interface_files, info['partial_interface_files'])
 
     # Record inheritance information individually
     for interface_name, interface_info in interfaces_info.iteritems():
@@ -255,8 +259,9 @@ def main():
     options, args = parse_options()
     # args = Input1, Input2, ..., Output
     interfaces_info_filename = args.pop()
+    info_individuals = read_interfaces_info(args)
 
-    compute_interfaces_info_overall(args)
+    compute_interfaces_info_overall(info_individuals)
     write_pickle_file(interfaces_info_filename,
                       interfaces_info,
                       options.write_file_only_if_changed)

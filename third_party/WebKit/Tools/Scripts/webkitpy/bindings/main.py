@@ -39,7 +39,10 @@ source_path = os.path.normpath(os.path.join(module_path, os.pardir, os.pardir,
                                             os.pardir, os.pardir, 'Source'))
 sys.path.append(source_path)  # for Source/bindings imports
 
-from bindings.scripts.compute_interfaces_info import compute_interfaces_info, interfaces_info
+import bindings.scripts.compute_interfaces_info_individual
+from bindings.scripts.compute_interfaces_info_individual import compute_info_individual, info_individual
+import bindings.scripts.compute_interfaces_info_overall
+from bindings.scripts.compute_interfaces_info_overall import compute_interfaces_info_overall, interfaces_info
 from bindings.scripts.idl_compiler import IdlCompilerV8
 
 
@@ -104,7 +107,12 @@ def generate_interface_dependencies():
     # since this is also special-cased and Node inherits from EventTarget,
     # but this inheritance information requires computing dependencies for
     # the real Node.idl file.
-    compute_interfaces_info(idl_paths_recursive(source_path))
+
+    # 2-stage computation: individual, then overall
+    for idl_filename in idl_paths_recursive(source_path):
+        compute_info_individual(idl_filename)
+    info_individuals = [info_individual()]
+    compute_interfaces_info_overall(info_individuals)
 
 
 def bindings_tests(output_directory, verbose):

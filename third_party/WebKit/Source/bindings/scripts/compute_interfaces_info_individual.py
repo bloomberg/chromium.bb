@@ -100,7 +100,7 @@ def add_paths_to_partials_dict(partial_interface_name, full_path, this_include_p
         paths_dict['include_paths'].append(this_include_path)
 
 
-def compute_individual_info(idl_filename):
+def compute_info_individual(idl_filename):
     full_path = os.path.realpath(idl_filename)
     idl_file_contents = get_file_contents(full_path)
 
@@ -145,6 +145,15 @@ def compute_individual_info(idl_filename):
     }
 
 
+def info_individual():
+    """Returns info packaged as a dict."""
+    return {
+        'interfaces_info': interfaces_info,
+        # Can't pickle defaultdict, convert to dict
+        'partial_interface_files': dict(partial_interface_files),
+    }
+
+
 ################################################################################
 
 def main():
@@ -163,14 +172,10 @@ def main():
     # Information is stored in global variables interfaces_info and
     # partial_interface_files.
     for idl_filename in idl_files:
-        compute_individual_info(idl_filename)
+        compute_info_individual(idl_filename)
 
     write_pickle_file(options.interfaces_info_file,
-                      {
-                          'interfaces_info': interfaces_info,
-                          # Can't pickle defaultdict, convert to dict
-                          'partial_interface_files': dict(partial_interface_files),
-                      },
+                      info_individual(),
                       options.write_file_only_if_changed)
 
 
