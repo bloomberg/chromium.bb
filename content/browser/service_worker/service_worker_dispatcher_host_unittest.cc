@@ -131,6 +131,9 @@ TEST_F(ServiceWorkerDispatcherHostTest, EarlyContextDeletion) {
 
   helper_->ShutdownContext();
 
+  // Let the shutdown reach the simulated IO thread.
+  base::RunLoop().RunUntilIdle();
+
   dispatcher_host->OnMessageReceived(
       ServiceWorkerHostMsg_RegisterServiceWorker(-1, -1, -1, GURL(), GURL()));
 

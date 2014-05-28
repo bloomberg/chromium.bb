@@ -35,8 +35,8 @@ ServiceWorkerProcessManager::ProcessInfo::~ProcessInfo() {
 }
 
 ServiceWorkerProcessManager::ServiceWorkerProcessManager(
-    ServiceWorkerContextWrapper* context_wrapper)
-    : context_wrapper_(context_wrapper),
+    BrowserContext* browser_context)
+    : browser_context_(browser_context),
       process_id_for_test_(-1),
       weak_this_factory_(this),
       weak_this_(weak_this_factory_.GetWeakPtr()) {
@@ -44,6 +44,13 @@ ServiceWorkerProcessManager::ServiceWorkerProcessManager(
 
 ServiceWorkerProcessManager::~ServiceWorkerProcessManager() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(browser_context_ == NULL)
+      << "Call Shutdown() before destroying |this|, so that racing method "
+      << "invocations don't use a destroyed BrowserContext.";
+}
+
+void ServiceWorkerProcessManager::Shutdown() {
+  browser_context_ = NULL;
 }
 
 void ServiceWorkerProcessManager::AllocateWorkerProcess(
@@ -91,7 +98,7 @@ void ServiceWorkerProcessManager::AllocateWorkerProcess(
     }
   }
 
-  if (!context_wrapper_->browser_context_) {
+  if (!browser_context_) {
     // Shutdown has started.
     BrowserThread::PostTask(
         BrowserThread::IO,
@@ -100,8 +107,8 @@ void ServiceWorkerProcessManager::AllocateWorkerProcess(
     return;
   }
   // No existing processes available; start a new one.
-  scoped_refptr<SiteInstance> site_instance = SiteInstance::CreateForURL(
-      context_wrapper_->browser_context_, script_url);
+  scoped_refptr<SiteInstance> site_instance =
+      SiteInstance::CreateForURL(browser_context_, script_url);
   RenderProcessHost* rph = site_instance->GetProcess();
   // This Init() call posts a task to the IO thread that adds the RPH's
   // ServiceWorkerDispatcherHost to the
