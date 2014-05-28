@@ -716,7 +716,8 @@ class ViewManagerConnectionTest : public testing::Test {
   void EstablishBackgroundConnectionWithRoot1() {
     std::vector<Change> changes(
         EstablishBackgroundConnectionWithRoots(CreateNodeId(1, 1), 0));
-    ASSERT_NO_FATAL_FAILURE();
+    if (HasFatalFailure())
+      return;
     ASSERT_EQ(1u, changes.size());
     EXPECT_EQ("OnConnectionEstablished", ChangesToDescription1(changes)[0]);
     EXPECT_EQ("[node=1,1 parent=null view=null]",
@@ -1535,7 +1536,8 @@ TEST_F(ViewManagerConnectionTest, SetRoots) {
   {
     std::vector<Change> changes(EstablishBackgroundConnectionWithRoots(
                                     CreateNodeId(1, 1), CreateNodeId(1, 3)));
-    ASSERT_NO_FATAL_FAILURE();
+    if (HasFatalFailure())
+      return;
     ASSERT_EQ(1u, changes.size());
     EXPECT_EQ("OnConnectionEstablished", ChangesToDescription1(changes)[0]);
     EXPECT_EQ("[node=1,1 parent=null view=null],"
