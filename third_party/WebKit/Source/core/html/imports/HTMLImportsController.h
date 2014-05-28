@@ -98,7 +98,7 @@ private:
     typedef Vector<OwnPtr<HTMLImportChild> > ImportList;
     ImportList m_imports;
 
-    typedef Vector<RefPtr<HTMLImportLoader> > LoaderList;
+    typedef Vector<OwnPtr<HTMLImportLoader> > LoaderList;
     LoaderList m_loaders;
 };
 

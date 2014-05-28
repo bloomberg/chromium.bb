@@ -50,10 +50,10 @@ class HTMLImportsController;
 //
 // Owning imported Document lifetime. It also implements ResourceClient through ResourceOwner
 // to feed fetched bytes to the DocumentWriter of the imported document.
-// HTMLImportLoader is owned by and shared between HTMLImportChild.
+// HTMLImportLoader is owned by HTMLImportsController.
 //
 //
-class HTMLImportLoader FINAL : public RefCounted<HTMLImportLoader>, public ResourceOwner<RawResource> {
+class HTMLImportLoader FINAL : public ResourceOwner<RawResource> {
 public:
     enum State {
         StateLoading,
@@ -63,9 +63,9 @@ public:
         StateError
     };
 
-    static PassRefPtr<HTMLImportLoader> create(HTMLImportsController* controller)
+    static PassOwnPtr<HTMLImportLoader> create(HTMLImportsController* controller)
     {
-        return adoptRef(new HTMLImportLoader(controller));
+        return adoptPtr(new HTMLImportLoader(controller));
     }
 
     virtual ~HTMLImportLoader();
@@ -84,7 +84,13 @@ public:
 
     void importDestroyed();
     void startLoading(const ResourcePtr<RawResource>&);
+
+    // Tells the loader that the parser is done with this import.
+    // Called by Document::finishedParsing, after DOMContentLoaded was dispatched.
     void didFinishParsing();
+    // Tells the loader that all of the import's stylesheets finished
+    // loading.
+    // Called by Document::didRemoveAllPendingStylesheet.
     void didRemoveAllPendingStylesheet();
 
     PassRefPtrWillBeRawPtr<CustomElementMicrotaskQueue> microtaskQueue() const;
