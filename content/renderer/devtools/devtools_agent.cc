@@ -243,7 +243,6 @@ void DevToolsAgent::OnGpuTasksChunk(const std::vector<GpuTaskInfo>& tasks) {
 void DevToolsAgent::enableDeviceEmulation(
     const blink::WebDeviceEmulationParams& params) {
   RenderViewImpl* impl = static_cast<RenderViewImpl*>(render_view());
-  impl->webview()->settings()->setForceCompositingMode(true);
   impl->EnableScreenMetricsEmulation(params);
 }
 
