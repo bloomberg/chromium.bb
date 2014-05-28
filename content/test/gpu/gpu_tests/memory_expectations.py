@@ -30,3 +30,6 @@ class MemoryExpectations(test_expectations.TestExpectations):
     # particular bot happens to catch it when its low. Remove
     # once the bug is fixed.
     self.Fail('Memory.CSS3D', ['win'], bug=373098)
+
+    # Test has turned flaky on Linux also.  Remove once the bug is fixed.
+    self.Fail('Memory.CSS3D', ['linux'], bug=373098)
