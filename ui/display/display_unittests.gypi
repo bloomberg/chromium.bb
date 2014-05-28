@@ -13,6 +13,7 @@
   ],
   'sources': [
     'chromeos/display_configurator_unittest.cc',
+    'chromeos/touchscreen_delegate_impl_unittest.cc',
     'chromeos/x11/display_util_x11_unittest.cc',
     'chromeos/x11/native_display_event_dispatcher_x11_unittest.cc',
     'util/display_util_unittest.cc',

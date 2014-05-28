@@ -17,6 +17,7 @@ namespace ui {
 class CursorFactoryOzone;
 class EventFactoryOzone;
 class NativeDisplayDelegate;
+class TouchscreenDeviceManager;
 
 // Base class for Ozone platform implementations.
 //
@@ -55,6 +56,8 @@ class OZONE_EXPORT OzonePlatform {
 #if defined(OS_CHROMEOS)
   virtual scoped_ptr<ui::NativeDisplayDelegate>
       CreateNativeDisplayDelegate() = 0;
+  virtual scoped_ptr<ui::TouchscreenDeviceManager>
+      CreateTouchscreenDeviceManager() = 0;
 #endif
 
  private:

@@ -43,6 +43,8 @@
         # 'chromeos' folder name.
         'common/chromeos/native_display_delegate_ozone.cc',
         'common/chromeos/native_display_delegate_ozone.h',
+        'common/chromeos/touchscreen_device_manager_ozone.cc',
+        'common/chromeos/touchscreen_device_manager_ozone.h',
         'ozone_platform.cc',
         'ozone_platform.h',
         'ozone_switches.cc',
