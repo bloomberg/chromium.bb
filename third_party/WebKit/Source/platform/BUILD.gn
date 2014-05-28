@@ -20,6 +20,7 @@ blink_platform_neon_files = [
   "graphics/cpu/arm/filters/NEONHelpers.h",
 ]
 
+# blink_common in blink_platform.gyp
 component("blink_common") {
   sources = [
     "exported/WebCString.cpp",
@@ -75,6 +76,8 @@ if (is_mac) {
   }
 }
 
+# FontFamilyNames action in make_platform_generated in
+# platform_generated.gyp
 action("font_family_names") {
   script = "../build/scripts/make_names.py"
 
@@ -94,6 +97,8 @@ action("font_family_names") {
   ]
 }
 
+# RuntimeEnabledFeatures action in make_platform_generated in
+# platform_generated.gyp
 action("runtime_enabled_features") {
   script = "../build/scripts/make_runtime_features.py"
 
@@ -107,7 +112,7 @@ action("runtime_enabled_features") {
   output_path = "$root_gen_dir/blink"
   outputs = [
     "$output_path/RuntimeEnabledFeatures.cpp",
-    "$output_path/blink/RuntimeEnabledFeatures.h",
+    "$output_path/RuntimeEnabledFeatures.h",
   ]
 
   args = [
@@ -117,6 +122,7 @@ action("runtime_enabled_features") {
   ]
 }
 
+# ColorData action in make_platform_generated in platform_generated.gyp
 action("color_data") {
   script = "../build/scripts/gperf.py"
 
@@ -135,7 +141,19 @@ action("color_data") {
   ]
 }
 
+# This isn't strictly necessary since we can just add the deps to "platform",
+# but it helps to have the targets match the GYP build.
+group("make_platform_generated") {
+  deps = [
+    ":blink_common",
+    ":color_data",
+    ":font_family_names",
+    ":runtime_enabled_features",
+  ]
+}
+
 # TODO(brettw) Objective C Renaming postbuild steps on Mac.
+# blink_platform target in blink_platform.gyp
 component("platform") {
   output_name = "blink_platform"
 
@@ -164,10 +182,7 @@ component("platform") {
   ]
 
   deps = [
-    ":blink_common",
-    ":color_data",
-    ":font_family_names",
-    ":runtime_enabled_features",
+    ":make_platform_generated",
     "//gpu/command_buffer/client:gles2_c_lib",
     "//skia",
     "//third_party:jpeg",

@@ -1,0 +1,47 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# This file is gn GN version of modules.gypi. Note that all file lists are
+# relative to the source root.
+_gypi = exec_script(
+    "//build/gypi_to_gn.py",
+    [ rebase_path("modules.gypi"),
+      "--replace=<(SHARED_INTERMEDIATE_DIR)=$root_gen_dir"],
+    "scope",
+    [ "modules.gypi" ])
+
+_tmp_modules_idl_files = _gypi.modules_idl_files
+# modules_idl_files has a magic variable in it that is an embedder hook,
+# remove that since it's not a file (need to do this before rebasing).
+_tmp_modules_idl_files -= [
+  "<@(extra_blink_module_idl_files)",
+]
+modules_idl_files = rebase_path(_tmp_modules_idl_files, "//")
+
+# 'partial interface' or target (right side of) 'implements'
+modules_dependency_idl_files =
+  rebase_path(_gypi.modules_dependency_idl_files, "//")
+
+# Relative to the modules directory.
+modules_event_idl_files = _gypi.modules_event_idl_files
+
+# interfaces that inherit from Event
+generated_modules_files = rebase_path(_gypi.generated_modules_files, "//")
+
+# Remove GYP variables from the list (need to do this before rebasing).
+_tmp_modules_files = _gypi.modules_files
+_tmp_modules_files -= [
+  "<@(extra_blink_module_files)",
+  "<@(generated_modules_files)",
+]
+modules_files = rebase_path(_tmp_modules_files, "//")
+modules_files += generated_modules_files  # Account for GYP var expansion.
+
+# 'partial interface' or target (right side of) 'implements'
+modules_testing_dependency_idl_files =
+  rebase_path(_gypi.modules_testing_dependency_idl_files, "//")
+
+# Relative to the modules dir.
+modules_testing_files = _gypi.modules_testing_files
+modules_unittest_files = _gypi.modules_unittest_files

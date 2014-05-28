@@ -1,0 +1,127 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//third_party/WebKit/Source/bindings/bindings.gni")
+import("//third_party/WebKit/Source/build/scripts/scripts.gni")
+import("//third_party/WebKit/Source/modules/modules.gni")
+
+source_set("modules") {
+  sources = rebase_path(modules_files, ".", "//")
+  sources += rebase_path(bindings_modules_generated_aggregate_files, ".", "//")
+
+  if (!is_win) {
+    sources -= [
+      "webdatabase/sqlite/SQLiteFileSystemWin.cpp",
+    ]
+  }
+  if (!is_posix) {
+    sources -= [
+      "webdatabase/sqlite/SQLiteFileSystemPosix.cpp",
+    ]
+  }
+
+  configs += [
+    "//third_party/WebKit/Source:config",
+    "//third_party/WebKit/Source:inside_blink",
+  ]
+
+  deps = [
+    ":make_modules_generated",
+    "//third_party/WebKit/Source/core",
+    "//third_party/sqlite",
+    "//third_party/zlib",
+  ]
+
+  if (is_win) {
+    cflags = [
+      "/wd4267",  # Size to int truncations.
+      "/wd4334",  # Result of 32-bit shift implicitly converted to 64 bits.
+    ]
+  }
+}
+
+source_set("modules_testing") {
+  sources = modules_testing_files
+
+  configs += [
+    "//third_party/WebKit/Source:config",
+    "//third_party/WebKit/Source:inside_blink",
+  ]
+
+  deps = [
+    "//third_party/WebKit/Source/core",
+  ]
+}
+
+# modules_bindings_generated ---------------------------------------------------
+
+# This target exists to mirror the GYP structure, even though it only has one
+# action dependency.
+source_set("modules_bindings_generated") {
+  deps = [
+    ":modules_bindings_generated_event_interfaces",
+  ]
+}
+
+generate_event_interfaces("modules_bindings_generated_event_interfaces") {
+  sources = modules_event_idl_files
+  output_file = "EventModulesInterfaces.in"
+  suffix = "Modules"
+}
+
+# make_modules_generated -------------------------------------------------------
+
+source_set("make_modules_generated") {
+  deps = [
+    ":make_modules_generated_event_modules_names",
+    ":make_modules_generated_event_target_modules_factory",
+    ":make_modules_generated_event_target_modules_names",
+    "//third_party/WebKit/Source/bindings:core_bindings_generated",
+  ]
+}
+
+# EventModulesFactory action in make_modules_generated in modules.gyp.
+make_event_factory("make_modules_generated_event_modules_factory") {
+  in_files = [
+    "$root_gen_dir/blink/EventModulesInterfaces.in",
+  ]
+  outputs = [
+    "EventModules.cpp",
+    "EventModulesHeaders.h",
+    "EventModulesInterfaces.h",
+  ]
+}
+
+# EventModulesNames action in make_modules_generated in modules.gyp.
+make_names("make_modules_generated_event_modules_names") {
+  in_files = [
+    "$root_gen_dir/blink/EventModulesInterfaces.in",
+  ]
+  outputs = [
+    "EventModulesNames.cpp",
+    "EventModulesNames.h",
+  ]
+}
+
+# EventTargetModulesFactory action in make_modules_generated in modules.gyp.
+make_event_factory("make_modules_generated_event_target_modules_factory") {
+  in_files = [
+    "EventTargetModulesFactory.in",
+  ]
+  outputs = [
+    "EventTargetModulesHeaders.h",
+    "EventTargetModulesInterfaces.h",
+  ]
+}
+
+# EventTargetModulesNames action in make_modules_generated in modules.gyp.
+make_names("make_modules_generated_event_target_modules_names") {
+  in_files = [
+    "EventTargetModulesFactory.in",
+  ]
+  outputs = [
+    "EventTargetModulesNames.cpp",
+    "EventTargetModulesNames.h",
+  ]
+}

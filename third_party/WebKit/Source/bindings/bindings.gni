@@ -5,13 +5,70 @@
 # TODO(brettw) enable this to read the bindings sources (needs some work on the
 # .gypi reading script).
 #
-#_gypi = exec_script(
-#    "//build/gypi_to_gn.py",
-#    [ rebase_path("bindings.gypi") ],
-#    "scope",
-#    [ "bindings.gypi" ])
-#
-#bindings_v8_dir = "//" + rebase_path(_gypi.bindings_v8_dir, "//")
+_gypi = exec_script(
+    "//build/gypi_to_gn.py",
+    [ rebase_path("v8/v8.gypi"),
+      "--replace=<(SHARED_INTERMEDIATE_DIR)=$root_gen_dir" ],
+    "scope",
+    [ "v8/v8.gypi" ])
 
-# For now, hardcode the only value we need.
 bindings_v8_dir = "//third_party/WebKit/Source/bindings/v8"
+blink_output_dir = "$root_gen_dir/blink"
+bindings_output_dir = "$blink_output_dir/bindings"
+
+# Note: these are relative to the bindings/v8 directory.
+bindings_v8_files = _gypi.bindings_v8_files
+bindings_v8_unittest_files = _gypi.bindings_v8_unittest_files
+
+if (is_win && is_official_build) {
+  # On Windows Official release builds, we try to preserve symbol space.
+  bindings_core_generated_aggregate_files = [
+    "$bindings_output_dir/V8GeneratedCoreBindings.cpp",
+  ]
+  bindings_modules_generated_aggregate_files = [
+    "$bindings_output_dir/V8GeneratedModulesBindings.cpp",
+  ]
+} else {
+  bindings_core_generated_aggregate_files = [
+    "$bindings_output_dir/V8GeneratedCoreBindings01.cpp",
+    "$bindings_output_dir/V8GeneratedCoreBindings02.cpp",
+    "$bindings_output_dir/V8GeneratedCoreBindings03.cpp",
+    "$bindings_output_dir/V8GeneratedCoreBindings04.cpp",
+    "$bindings_output_dir/V8GeneratedCoreBindings05.cpp",
+    "$bindings_output_dir/V8GeneratedCoreBindings06.cpp",
+    "$bindings_output_dir/V8GeneratedCoreBindings07.cpp",
+    "$bindings_output_dir/V8GeneratedCoreBindings08.cpp",
+    "$bindings_output_dir/V8GeneratedCoreBindings09.cpp",
+    "$bindings_output_dir/V8GeneratedCoreBindings10.cpp",
+    "$bindings_output_dir/V8GeneratedCoreBindings11.cpp",
+    "$bindings_output_dir/V8GeneratedCoreBindings12.cpp",
+    "$bindings_output_dir/V8GeneratedCoreBindings13.cpp",
+    "$bindings_output_dir/V8GeneratedCoreBindings14.cpp",
+    "$bindings_output_dir/V8GeneratedCoreBindings15.cpp",
+    "$bindings_output_dir/V8GeneratedCoreBindings16.cpp",
+    "$bindings_output_dir/V8GeneratedCoreBindings17.cpp",
+    "$bindings_output_dir/V8GeneratedCoreBindings18.cpp",
+    "$bindings_output_dir/V8GeneratedCoreBindings19.cpp",
+  ]
+  bindings_modules_generated_aggregate_files = [
+    "$bindings_output_dir/V8GeneratedModulesBindings01.cpp",
+    "$bindings_output_dir/V8GeneratedModulesBindings02.cpp",
+    "$bindings_output_dir/V8GeneratedModulesBindings03.cpp",
+    "$bindings_output_dir/V8GeneratedModulesBindings04.cpp",
+    "$bindings_output_dir/V8GeneratedModulesBindings05.cpp",
+    "$bindings_output_dir/V8GeneratedModulesBindings06.cpp",
+    "$bindings_output_dir/V8GeneratedModulesBindings07.cpp",
+    "$bindings_output_dir/V8GeneratedModulesBindings08.cpp",
+    "$bindings_output_dir/V8GeneratedModulesBindings09.cpp",
+    "$bindings_output_dir/V8GeneratedModulesBindings10.cpp",
+    "$bindings_output_dir/V8GeneratedModulesBindings11.cpp",
+    "$bindings_output_dir/V8GeneratedModulesBindings12.cpp",
+    "$bindings_output_dir/V8GeneratedModulesBindings13.cpp",
+    "$bindings_output_dir/V8GeneratedModulesBindings14.cpp",
+    "$bindings_output_dir/V8GeneratedModulesBindings15.cpp",
+    "$bindings_output_dir/V8GeneratedModulesBindings16.cpp",
+    "$bindings_output_dir/V8GeneratedModulesBindings17.cpp",
+    "$bindings_output_dir/V8GeneratedModulesBindings18.cpp",
+    "$bindings_output_dir/V8GeneratedModulesBindings19.cpp",
+  ]
+}

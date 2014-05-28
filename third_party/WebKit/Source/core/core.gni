@@ -1,0 +1,33 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# This file is gn GN version of core.gypi. Note that all file lists are
+# relative to the source root unless otherwise noted.
+_gypi = exec_script(
+    "//build/gypi_to_gn.py",
+    [ rebase_path("core.gypi"),
+      "--replace=<(SHARED_INTERMEDIATE_DIR)=$root_gen_dir" ],
+    "scope",
+    [ "core.gypi" ])
+
+# Files for which bindings (.cpp and .h files) will be generated
+core_idl_files = rebase_path(_gypi.core_idl_files, "//")
+
+# 'partial interface', target (right side of) 'implements', and
+# interfaces with static bindings (in bindings/v8/)
+core_dependency_idl_files = rebase_path(_gypi.core_dependency_idl_files, "//")
+
+# Interfaces that inherit from Event, including Event itself.
+# Files relative to Source/core
+core_event_idl_files = _gypi.core_event_idl_files
+
+webcore_files = rebase_path(_gypi.webcore_files, "//")
+webcore_dom_files = rebase_path(_gypi.webcore_dom_files, "//")
+webcore_html_files = rebase_path(_gypi.webcore_html_files, "//")
+webcore_svg_files = rebase_path(_gypi.webcore_svg_files, "//")
+webcore_testing_idl_files = rebase_path(_gypi.webcore_testing_idl_files, "//")
+generated_webcore_testing_idl_files =
+  rebase_path(_gypi.generated_webcore_testing_idl_files, "//")
+webcore_testing_files = rebase_path(_gypi.webcore_testing_files, "//")
+core_unittest_files = rebase_path(_gypi.core_unittest_files, "//")

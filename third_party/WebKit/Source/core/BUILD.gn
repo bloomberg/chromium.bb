@@ -2,9 +2,36 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-group("generated") {
+import("//build/config/ui.gni")
+import("//third_party/WebKit/Source/bindings/bindings.gni")
+import("//third_party/WebKit/Source/config.gni")
+import("//third_party/WebKit/Source/core/core.gni")
+import("//third_party/WebKit/Source/build/scripts/scripts.gni")
+
+blink_gen_dir = "$root_gen_dir/blink"
+# The blink_gen_dir relative to the root build directory. We use this a log.
+rel_blink_gen_dir = rebase_path(blink_gen_dir, root_build_dir)
+
+# TODO(GYP) when we add real targets to this file, don't forget to enable:
+#  - wexit_time_destructors
+#  - optimize: max (check what this does on Android before using).
+
+config("core_include_dirs") {
+  include_dirs = [
+    "..",
+    "../..",
+    blink_gen_dir,
+    bindings_output_dir,
+  ]
+  if (is_android && use_openmax_dl_fft) {
+    include_dirs += [ "//third_party/openmax_dl" ]
+  }
+}
+
+source_set("generated") {
   deps = [
-    "../wtf",
+    ":make_core_generated",
+    ":prerequisites",
     "inspector:debugger_script_source",
     "inspector:inspector_overlay_page",
     "inspector:protocol_sources",
@@ -17,16 +44,979 @@ group("generated") {
     "//third_party/libwebp",
     "//third_party/qcms",
     "//third_party/sqlite",
+    "//third_party/WebKit/Source/bindings",
+    "//third_party/WebKit/Source/wtf",
     "//url",
     # TODO(GYP)
     #"//v8",
-    #'webcore_prerequisites',
-    #'core_generated.gyp:make_core_generated',
-    #'../bindings/generated_bindings.gyp:generated_bindings',
     #'../platform/platform_generated.gyp:make_platform_generated',
     #'<(DEPTH)/gin/gin.gyp:gin',
     #'<(DEPTH)/third_party/libxml/libxml.gyp:libxml',
     #'<(DEPTH)/third_party/libxslt/libxslt.gyp:libxslt',
     #'<(DEPTH)/third_party/npapi/npapi.gyp:npapi',
   ]
+}
+
+# Corresponds to webcore_prerequisites in core.gyp.
+source_set("prerequisites") {
+  exported_deps = [
+    "//third_party/WebKit/Source/wtf",
+    "//gpu/command_buffer/client:gles2_c_lib",
+    "//skia",
+    #'<(angle_path)/src/build_angle.gyp:translator',
+    "//third_party/iccjpeg",
+    "//third_party/libpng",
+    "//third_party/libwebp",
+    "//third_party/libxml",
+    #"//third_party/libxslt",
+    #"//third_party/npapi",
+    "//third_party/ots",
+    "//third_party/qcms",
+    "//third_party/sqlite",
+    "//third_party/zlib",
+    "//url",
+    #"//v8",
+  ]
+
+  deps = [
+    ":make_core_generated",
+    "inspector:debugger_script_source",
+    "inspector:injected_canvas_script_source",
+    "inspector:injected_script_source",
+    "inspector:inspector_overlay_page",
+    "inspector:protocol_sources",
+    "inspector:instrumentation_sources",
+    "//third_party/WebKit/Source/bindings",
+    "//third_party/WebKit/Source/platform",
+  ] + exported_deps
+
+  forward_dependent_configs_from = exported_deps
+
+  direct_dependent_configs = [
+    ":core_include_dirs",
+    "//third_party/WebKit/Source:config",
+    "//third_party/WebKit/Source:inside_blink",
+    "//third_party/WebKit/Source:npapi_stub",
+    "//third_party/WebKit/Source/platform:v8_stub_config",
+  ]
+}
+
+# Corresponds to core.gyp:webcore
+#
+# Note that this is a source set rather than a group, even though it has no
+# sources. A group would implicitly forward all direct dependent configs
+# through it, but we want to keep our internal targets'
+# direct_dependent_configs private and only forward some of them.
+source_set("core") {
+  exported_deps = [
+    ":core_generated",
+    "//skia",
+    #"//third_party/npapi",  # TODO(GYP)
+    "//third_party/qcms",
+    "//third_party/WebKit/Source/wtf",
+    "//url",
+    #"//v8",  # TODO(GYP)
+  ]
+
+  deps = [
+    ":dom",
+    ":html",
+    ":remaining",
+    ":rendering",
+    ":svg",
+  ] + exported_deps
+
+  forward_dependent_configs_from = exported_deps
+
+  direct_dependent_configs = [
+    ":core_include_dirs",
+    "//third_party/WebKit/Source:npapi_stub",
+    "//third_party/WebKit/Source/platform:v8_stub_config",
+  ]
+
+  # TODO(GYP) IPP libraries pkg-config. These seem to be experimental and used
+  # only on x86 Android. See also below. There should be one pkg-config call
+  # that creates a config used in both of these cases.
+}
+
+# webcore_dom in core.gyp
+source_set("dom") {
+  sources = rebase_path(webcore_dom_files, ".", "//")
+
+  if (is_win) {
+    cflags = [ "/wd4267" ]  # size_t to int truncation.
+  }
+
+  deps = [
+    ":prerequisites",
+  ]
+}
+
+# webcore_html in core.gyp
+source_set("html") {
+  sources = rebase_path(webcore_html_files, ".", "//")
+
+  deps = [
+    ":prerequisites",
+  ]
+
+  # TODO(GYP)
+  # Shard this target into parts to work around linker limitations.
+  # on link time code generation builds.
+  #['OS=="win" and buildtype=="Official"', {
+  #  'msvs_shard': 5,
+  #}],
+}
+
+# webcore_svg in core.gyp
+source_set("svg") {
+  sources = rebase_path(webcore_svg_files, ".", "//")
+
+  deps = [
+    ":prerequisites",
+  ]
+
+  # TODO(GYP)
+  # Shard this taret into parts to work around linker limitations.
+  # on link time code generation builds.
+  #['OS=="win" and buildtype=="Official"', {
+  #  'msvs_shard': 5,
+  #}],
+}
+
+# webcore_remaining in core.gyp
+source_set("remaining") {
+  # This is currently a mashup of "webcore_rendering" and "webcore_remaining"
+  # in GYP. The file list variable is the same and then GYP filters on wether
+  # the path starts with "rendering/" or not. We should tweak the .gypis a bit
+  # to separate out the rendering files.
+  sources = rebase_path(webcore_files, ".", "//")
+
+  cflags = []
+  libs = []
+
+  deps = [
+    ":prerequisites",
+  ]
+
+  if (is_win) {
+    cflags += [
+      "/wd4267",
+      "/wd4334",
+    ]
+  } else {  # !is_win
+    sources -= [
+      "rendering/RenderThemeChromiumFontProviderWin.cpp",
+    ]
+  }
+  if (!is_linux) {
+    sources -= [
+      "rendering/RenderThemeChromiumFontProviderLinux.cpp",
+    ]
+  }
+
+  if (is_android) {
+    # Due to a bug in gcc 4.6 in android NDK, we got warnings about
+    # uninitialized variable.
+    # TODO: try removing now that we are on GCC 4.8.
+    cflags += [ "-Wno-uninitialized" ]
+  } else {  # !is_android
+    sources -= [
+      "rendering/RenderThemeChromiumAndroid.cpp",
+      "rendering/RenderThemeChromiumAndroid.h",
+    ]
+  }
+
+  if (is_mac) {
+    sources -= [
+      "rendering/RenderThemeChromiumFontProvider.cpp",
+      "rendering/RenderThemeChromiumFontProvider.h",
+      "rendering/RenderThemeChromiumSkia.cpp",
+      "rendering/RenderThemeChromiumSkia.h",
+    ]
+    libs += [ "Carbon.framework" ]
+  } else {  # !is_mac
+    sources -= [
+      "editing/SmartReplaceCF.cpp",
+    ]
+  }
+
+  if (!use_default_render_theme) {
+    sources -= [
+      "rendering/RenderThemeChromiumDefault.cpp",
+      "rendering/RenderThemeChromiumDefault.h",
+    ]
+  }
+}
+
+# webcore_rendering in core.gyp
+source_set("rendering") {
+  # The files that go here are currently in "remaining".
+}
+
+# webcore_generated from core.gyp
+source_set("core_generated") {
+  sources = rebase_path(bindings_v8_files, ".", "../bindings/v8")
+  # These files include all the .cpp files generated from the .idl files
+  # in webcore_files.
+  sources += bindings_core_generated_aggregate_files
+
+  sources += [
+    # Additional .cpp files for HashTools.h
+    "$root_gen_dir/blink/CSSPropertyNames.cpp",
+    "$root_gen_dir/blink/CSSValueKeywords.cpp",
+
+    # Additional .cpp files from make_core_generated actions.
+    "$root_gen_dir/blink/Event.cpp",
+    "$root_gen_dir/blink/EventHeaders.h",
+    "$root_gen_dir/blink/EventInterfaces.h",
+    "$root_gen_dir/blink/EventNames.cpp",
+    "$root_gen_dir/blink/EventNames.h",
+    "$root_gen_dir/blink/EventTargetHeaders.h",
+    "$root_gen_dir/blink/EventTargetInterfaces.h",
+    "$root_gen_dir/blink/EventTargetNames.cpp",
+    "$root_gen_dir/blink/EventTargetNames.h",
+    "$root_gen_dir/blink/EventTypeNames.cpp",
+    "$root_gen_dir/blink/EventTypeNames.h",
+    "$root_gen_dir/blink/FetchInitiatorTypeNames.cpp",
+    "$root_gen_dir/blink/HTMLElementFactory.cpp",
+    "$root_gen_dir/blink/HTMLElementFactory.h",
+    "$root_gen_dir/blink/HTMLElementLookupTrie.cpp",
+    "$root_gen_dir/blink/HTMLElementLookupTrie.h",
+    "$root_gen_dir/blink/HTMLNames.cpp",
+    "$root_gen_dir/blink/HTMLTokenizerNames.cpp",
+    "$root_gen_dir/blink/InputTypeNames.cpp",
+    "$root_gen_dir/blink/MathMLNames.cpp",
+    "$root_gen_dir/blink/SVGNames.cpp",
+    "$root_gen_dir/blink/UserAgentStyleSheetsData.cpp",
+    "$root_gen_dir/blink/V8HTMLElementWrapperFactory.cpp",
+    "$root_gen_dir/blink/XLinkNames.cpp",
+    "$root_gen_dir/blink/XMLNSNames.cpp",
+    "$root_gen_dir/blink/XMLNames.cpp",
+
+    # Generated from HTMLEntityNames.in
+    "$root_gen_dir/blink/HTMLEntityTable.cpp",
+
+    # Generated from MediaFeatureNames.in
+    "$root_gen_dir/blink/MediaFeatureNames.cpp",
+
+    # Generated from MediaTypeNames.in
+    "$root_gen_dir/blink/MediaTypeNames.cpp",
+
+    # Generated from CSSTokenizer-in.cpp
+    "$root_gen_dir/blink/CSSTokenizer.cpp",
+
+    # Generated from BisonCSSParser-in.cpp
+    "$root_gen_dir/blink/BisonCSSParser.cpp",
+
+    # Generated from HTMLMetaElement-in.cpp
+    "$root_gen_dir/blink/HTMLMetaElement.cpp",
+
+    # Additional .cpp files from the make_core_generated rules.
+    "$root_gen_dir/blink/CSSGrammar.cpp",
+    "$root_gen_dir/blink/XPathGrammar.cpp",
+
+    # Additional .cpp files from the inspector_protocol_sources list.
+    "$root_gen_dir/blink/InspectorFrontend.cpp",
+    "$root_gen_dir/blink/InspectorBackendDispatcher.cpp",
+    "$root_gen_dir/blink/InspectorTypeBuilder.cpp",
+
+    # Additional .cpp files from the inspector_instrumentation_sources list.
+    "$root_gen_dir/blink/InspectorCanvasInstrumentationInl.h",
+    "$root_gen_dir/blink/InspectorConsoleInstrumentationInl.h",
+    "$root_gen_dir/blink/InspectorInstrumentationInl.h",
+    "$root_gen_dir/blink/InspectorOverridesInl.h",
+    "$root_gen_dir/blink/InstrumentingAgentsInl.h",
+    "$root_gen_dir/blink/InspectorInstrumentationImpl.cpp",
+
+    # Additional .cpp files for SVG.
+    "$root_gen_dir/blink/SVGElementFactory.cpp",
+    "$root_gen_dir/blink/V8SVGElementWrapperFactory.cpp",
+
+    # Generated from make_style_shorthands.py
+    "$root_gen_dir/blink/StylePropertyShorthand.cpp",
+
+    # Generated from make_style_builder.py
+    "$root_gen_dir/blink/StyleBuilder.cpp",
+    "$root_gen_dir/blink/StyleBuilderFunctions.cpp",
+  ]
+
+  configs += [
+    "..:inside_blink",
+    # TODO(GYP) erase when v8 is ported.
+    "../platform:v8_stub_config",
+    "..:npapi_stub",
+  ]
+
+  deps = [
+    ":make_core_generated",
+    ":prerequisites",
+    "inspector:inspector_overlay_page",
+    "inspector:protocol_sources",
+    "inspector:instrumentation_sources",
+    "inspector:injected_canvas_script_source",
+    "inspector:injected_script_source",
+    "inspector:debugger_script_source",
+    #"//gin",  TODO(GYP)
+    "//skia",
+    "//third_party/iccjpeg",
+    "//third_party/libpng",
+    "//third_party/libwebp",
+    "//third_party/libxml",
+    #"//third_party/libxslt/libxslt.gyp:libxslt",  TODO(GYP)
+    #"//third_party/npapi",  TODO(GYP)
+    "//third_party/qcms",
+    "//third_party/sqlite",
+    "//third_party/WebKit/Source/bindings",
+    # The GYP build does not have this dependency. But some of the bindings
+    # (like bindings/v8/custom/V8EventTargetCustom.cpp) include
+    # EventTargetModulesHeaders.h which is generated by make_modules_generated.
+    "//third_party/WebKit/Source/modules:make_modules_generated",
+    "//third_party/WebKit/Source/platform:make_platform_generated",
+    "//third_party/WebKit/Source/wtf",
+    "//url",
+    #"//v8",  TODO(GYP)
+  ]
+
+  configs += [ ":core_include_dirs" ]
+  include_dirs = [
+    "$root_gen_dir/blink",
+    "$bindings_output_dir",
+    # FIXME: Remove these once the bindings script generates qualified
+    # includes for these correctly. (Sequences don"t work yet.)
+    "$bindings_v8_dir/custom",
+    "html",
+    "html/shadow",
+    "inspector",
+    "svg",
+  ]
+
+  cflags = []
+  defines = []
+
+  if (is_win && component_mode == "shared_library") {
+    defines += [ "USING_V8_SHARED" ]
+  }
+
+  if (is_win) {
+    cflags += [
+      # In generated bindings code: "switch contains default but no case".
+      # Disable c4267 warnings until we fix size_t to int truncations.
+      # 4702 is disabled because of issues in Bison-generated
+      # XPathGrammar.cpp and CSSGrammar.cpp.
+      "/wd4065",
+      "/wd4267",
+      "/wd4702",
+    ]
+  }
+
+  # TODO(GYP) More IPP libraries, see above.
+  #if ((is_linux || is_android) && use_webaudio_ipp)
+  #  ["OS in ("linux", "android") and "WTF_USE_WEBAUDIO_IPP=1" in feature_defines", {
+  #    "cflags": [
+  #      "<!@(pkg-config --cflags-only-I ipp)",
+  #    ],
+  #  }],
+  #],
+}
+
+# generated_testing_idls -------------------------------------------------------
+
+group("generated_testing_idls") {
+  deps = [
+    ":generated_testing_idls_settings",
+    ":generated_testing_idls_internal_runtime_flags",
+  ]
+}
+
+# "Settings" action in generated_testing_idls from GYP.
+action("generated_testing_idls_settings") {
+  script = "../build/scripts/make_settings.py"
+
+  source_prereqs = scripts_for_in_files + [
+    "../build/scripts/make_settings.py",
+    "../build/scripts/templates/InternalSettingsGenerated.idl.tmpl",
+    "../build/scripts/templates/InternalSettingsGenerated.cpp.tmpl",
+    "../build/scripts/templates/InternalSettingsGenerated.h.tmpl",
+    "../build/scripts/templates/SettingsMacros.h.tmpl",
+    "frame/Settings.in",
+  ]
+  outputs = [
+    "$blink_gen_dir/SettingsMacros.h",
+    "$blink_gen_dir/InternalSettingsGenerated.idl",
+    "$blink_gen_dir/InternalSettingsGenerated.cpp",
+  ]
+
+  args = [
+    rebase_path("frame/Settings.in", root_build_dir),
+    "--output_dir", rel_blink_gen_dir,
+  ]
+}
+
+# "InternalRuntimeFlags" action in generated_testing_idls from GYP.
+action("generated_testing_idls_internal_runtime_flags") {
+  script = "../build/scripts/make_internal_runtime_flags.py"
+
+  source_prereqs = scripts_for_in_files + [
+    "../build/scripts/make_internal_runtime_flags.py",
+    "../platform/RuntimeEnabledFeatures.in",
+    "../build/scripts/templates/InternalRuntimeFlags.h.tmpl",
+    "../build/scripts/templates/InternalRuntimeFlags.idl.tmpl",
+  ]
+  outputs = [
+    "$blink_gen_dir/InternalRuntimeFlags.idl",
+    "$blink_gen_dir/InternalRuntimeFlags.h",
+  ]
+
+  args = [
+    rebase_path("../platform/RuntimeEnabledFeatures.in", root_build_dir),
+    "--output_dir", rel_blink_gen_dir,
+  ]
+}
+
+# make_core_generated ----------------------------------------------------------
+
+group("make_core_generated") {
+  deps = [
+    ":make_core_generated_xml_viewer_css",
+    ":make_core_generated_css_property_names",
+    ":make_core_generated_media_feature_names",
+    ":make_core_generated_media_features",
+    ":make_core_generated_style_property_shorthand",
+    ":make_core_generated_style_builder",
+    ":make_core_generated_css_value_keywords",
+    ":make_core_generated_html_element_factory",
+    ":make_core_generated_html_element_type_helpers",
+    ":make_core_generated_svg_names",
+    ":make_core_generated_svg_element_type_helpers",
+    ":make_core_generated_event_factory",
+    ":make_core_generated_event_target_factory",
+    ":make_core_generated_media_type_names",
+    ":make_core_generated_event_names",
+    ":make_core_generated_event_target_names",
+    ":make_core_generated_fetch_initiator_type_names",
+    ":make_core_generated_event_type_names",
+    ":make_core_generated_html_tokenizer_names",
+    ":make_core_generated_input_type_names",
+    ":make_core_generated_math_ml_names",
+    ":make_core_generated_xlink_names",
+    ":make_core_generated_xml_names",
+    ":make_core_generated_make_token_matcher",
+    ":make_core_generated_make_parser",
+    ":make_core_generated_make_token_matcher_for_viewport",
+    ":make_core_generated_xml_viewer_css",
+    ":make_core_generated_xml_viewer_js",
+    ":make_core_generated_html_entity_table",
+    ":make_core_generated_media_query_tokenizer_codepoints",
+    ":make_core_generated_user_agent_style_sheets",
+    ":make_core_generated_html_element_lookup_trie",
+    ":make_core_generated_bison",
+  ]
+}
+
+# "CSSPropertyNames" in make_core_generated from GYP.
+process_in_files("make_core_generated_css_property_names") {
+  script = "../build/scripts/make_css_property_names.py"
+  in_files = [ 
+    "css/CSSPropertyNames.in",
+    "css/SVGCSSPropertyNames.in",
+  ]
+  outputs = [
+    "CSSPropertyNames.cpp",
+    "CSSPropertyNames.h",
+  ]
+  other_args = [ "--defines", feature_defines_string ]
+}
+
+# "MediaFeatures" in make_core_generated from GYP.
+process_in_files("make_core_generated_media_features") {
+  script = "../build/scripts/make_media_features.py"
+  in_files = [
+    "css/MediaFeatureNames.in",
+  ]
+  other_inputs = [
+    "../build/scripts/make_media_features.py",
+    "../build/scripts/templates/MediaFeatures.h.tmpl",
+  ]
+  outputs = [
+    "MediaFeatures.h",
+  ]
+  other_args = [ "--defines", feature_defines_string ]
+}
+
+# "StylePropertyShorthand" in make_core_generated from GYP.
+process_in_files("make_core_generated_style_property_shorthand") {
+  script = "../build/scripts/make_style_shorthands.py"
+  in_files = [
+    "css/CSSShorthands.in",
+  ]
+  other_inputs = [
+    "../build/scripts/templates/StylePropertyShorthand.cpp.tmpl",
+    "../build/scripts/templates/StylePropertyShorthand.h.tmpl",
+  ]
+  outputs = [
+    "StylePropertyShorthand.cpp",
+    "StylePropertyShorthand.h",
+  ]
+}
+
+# "StyleBuilder" in make_core_generated from GYP.
+process_in_files("make_core_generated_style_builder") {
+  script = "../build/scripts/make_style_builder.py"
+
+  in_files = [
+    "css/CSSProperties.in",
+  ]
+  other_inputs = [
+    "../build/scripts/templates/StyleBuilder.cpp.tmpl",
+    "../build/scripts/templates/StyleBuilderFunctions.cpp.tmpl",
+    "../build/scripts/templates/StyleBuilderFunctions.h.tmpl",
+  ]
+  outputs = [
+    "StyleBuilder.cpp",
+    "StyleBuilderFunctions.h",
+    "StyleBuilderFunctions.cpp",
+  ]
+}
+
+# "CSSValueKeywords" in make_core_generated from GYP.
+process_in_files("make_core_generated_css_value_keywords") {
+  script = "../build/scripts/make_css_value_keywords.py"
+
+  in_files = [
+    "css/CSSValueKeywords.in",
+    "css/SVGCSSValueKeywords.in",
+  ]
+  outputs = [
+    "CSSValueKeywords.cpp",
+    "CSSValueKeywords.h",
+  ]
+  other_args = [
+    "--gperf", gperf_exe,
+    "--defines", feature_defines_string
+  ]
+}
+
+# "HTMLElementFactory" in make_core_generated from GYP.
+process_in_files("make_core_generated_html_element_factory") {
+  script = "../build/scripts/make_element_factory.py"
+
+  in_files = [
+    "html/HTMLTagNames.in",
+    "html/HTMLAttributeNames.in",
+  ]
+  other_inputs = make_element_factory_files
+  outputs = [
+    "HTMLElementFactory.cpp",
+    "HTMLElementFactory.h",
+    "HTMLNames.cpp",
+    "HTMLNames.h",
+    "V8HTMLElementWrapperFactory.cpp",
+    "V8HTMLElementWrapperFactory.h",
+  ]
+}
+
+# "HTMLElementTypeHelpers" in make_core_generated from GYP.
+process_in_files("make_core_generated_html_element_type_helpers") {
+  script = "../build/scripts/make_element_type_helpers.py"
+
+  in_files = [
+    "html/HTMLTagNames.in",
+  ]
+  other_inputs = make_element_type_helpers_files
+  outputs = [
+    "HTMLElementTypeHelpers.h",
+  ]
+}
+
+# "SVGNames" in make_core_generated from GYP.
+process_in_files("make_core_generated_svg_names") {
+  script = "../build/scripts/make_element_factory.py"
+
+  in_files = [
+    "svg/SVGTagNames.in",
+    "svg/SVGAttributeNames.in",
+  ]
+  other_inputs = make_element_factory_files
+  outputs = [
+    "SVGElementFactory.cpp",
+    "SVGElementFactory.h",
+    "SVGNames.cpp",
+    "SVGNames.h",
+    "V8SVGElementWrapperFactory.cpp",
+    "V8SVGElementWrapperFactory.h",
+  ]
+}
+
+# "SVGElementTypeHelpers" in make_core_generated from GYP.
+process_in_files("make_core_generated_svg_element_type_helpers") {
+  script = "../build/scripts/make_element_type_helpers.py"
+
+  in_files = [
+    "svg/SVGTagNames.in",
+  ]
+  other_inputs = make_element_type_helpers_files
+  outputs = [
+    "SVGElementTypeHelpers.h",
+  ]
+}
+
+# "EventFactory" in make_core_generated from GYP.
+process_in_files("make_core_generated_event_factory") {
+  script = "../build/scripts/make_event_factory.py"
+
+  in_files = [
+    "$blink_gen_dir/EventInterfaces.in",
+    "events/EventAliases.in",
+  ]
+  other_inputs = make_event_factory_files
+  outputs = [
+    "Event.cpp",
+    "EventHeaders.h",
+    "EventInterfaces.h",
+  ]
+}
+
+# make_event_factory -----------------------------------------------------------
+
+# "EventTargetFactory" in make_core_generated from GYP.
+make_event_factory("make_core_generated_event_target_factory") {
+  in_files = [
+    "events/EventTargetFactory.in",
+  ]
+  outputs = [
+    "EventTargetHeaders.h",
+    "EventTargetInterfaces.h",
+  ]
+}
+
+# "MediaFeatureNames" in make_core_generated from GYP.
+process_in_files("make_core_generated_media_feature_names") {
+  script = "../build/scripts/make_media_feature_names.py"
+  in_files = [
+    "css/MediaFeatureNames.in",
+  ]
+  other_inputs = make_names_files
+  outputs = [
+    "MediaFeatureNames.cpp",
+    "MediaFeatureNames.h",
+  ]
+  other_args = [ "--defines", feature_defines_string ]
+}
+
+# make_names -------------------------------------------------------------------
+
+# "MediaTypeNames" in make_core_generated from GYP.
+make_names("make_core_generated_media_type_names") {
+  in_files = [
+    "css/MediaTypeNames.in",
+  ]
+  outputs = [
+    "MediaTypeNames.cpp",
+    "MediaTypeNames.h",
+  ]
+}
+
+# "EventNames" in make_core_generated from GYP.
+make_names("make_core_generated_event_names") {
+  in_files = [
+    "$blink_gen_dir/EventInterfaces.in",
+  ]
+  outputs = [
+    "EventNames.cpp",
+    "EventNames.h",
+  ]
+}
+
+# "EventTargetNames" in make_core_generated from GYP.
+make_names("make_core_generated_event_target_names") {
+  in_files = [
+    "events/EventTargetFactory.in",
+  ]
+  outputs = [
+    "EventTargetNames.cpp",
+    "EventTargetNames.h",
+  ]
+}
+
+# "FetchInitiatorTypeNames" in make_core_generated from GYP.
+make_names("make_core_generated_fetch_initiator_type_names") {
+  in_files = [
+    "fetch/FetchInitiatorTypeNames.in",
+  ]
+  outputs = [
+    "FetchInitiatorTypeNames.cpp",
+    "FetchInitiatorTypeNames.h",
+  ]
+}
+
+# "EventTypeNames" in make_core_generated from GYP.
+make_names("make_core_generated_event_type_names") {
+  in_files = [
+    "events/EventTypeNames.in",
+  ]
+  outputs = [
+    "EventTypeNames.cpp",
+    "EventTypeNames.h",
+  ]
+}
+
+# "HTMLTokenizerNames" in make_core_generated from GYP.
+make_names("make_core_generated_html_tokenizer_names") {
+  in_files = [
+    "html/parser/HTMLTokenizerNames.in",
+  ]
+  outputs = [
+    "HTMLTokenizerNames.cpp",
+    "HTMLTokenizerNames.h",
+  ]
+}
+
+# "InputTypeNames" in make_core_generated from GYP.
+make_names("make_core_generated_input_type_names") {
+  in_files = [
+    "html/forms/InputTypeNames.in",
+  ]
+  outputs = [
+    "InputTypeNames.cpp",
+    "InputTypeNames.h",
+  ]
+}
+
+# make_qualified_names ---------------------------------------------------------
+
+# "MathMLNames" in make_core_generated from GYP.
+make_qualified_names("make_core_generated_math_ml_names") {
+  in_files = [
+    "html/parser/MathMLTagNames.in",
+    "html/parser/MathMLAttributeNames.in",
+  ]
+  outputs = [
+    "MathMLNames.cpp",
+    "MathMLNames.h",
+  ]
+}
+
+# "XLinkNames" in make_core_generated from GYP.
+make_qualified_names("make_core_generated_xlink_names") {
+  in_files = [
+    "svg/xlinkattrs.in",
+  ]
+  outputs = [
+    "XLinkNames.cpp",
+    "XLinkNames.h",
+  ]
+}
+
+# "XMLNSNames" in make_core_generated from GYP.
+make_qualified_names("make_core_generated_xml_ns_names") {
+  in_files = [
+    "xml/xmlnsattrs.in",
+  ]
+  outputs = [
+    "XMLNSNames.cpp",
+    "XMLNSNames.h",
+  ]
+}
+
+# "XMLNames" in make_core_generated from GYP.
+make_qualified_names("make_core_generated_xml_names") {
+  in_files = [
+    "xml/xmlattrs.in",
+  ]
+  outputs = [
+    "XMLNames.cpp",
+    "XMLNames.h",
+  ]
+}
+
+# make_token_matcher -----------------------------------------------------------
+
+# "MakeTokenMatcher" in make_core_generated from GYP.
+make_token_matcher("make_core_generated_make_token_matcher") {
+  input_file = "css/CSSTokenizer-in.cpp"
+  output_file = "CSSTokenizer.cpp"
+}
+
+# "MakeParser" in make_core_generated from GYP.
+make_token_matcher("make_core_generated_make_parser") {
+  input_file = "css/parser/BisonCSSParser-in.cpp"
+  output_file = "BisonCSSParser.cpp"
+}
+
+# "MakeTokenMatcherForViewport" in make_core_generated from GYP.
+make_token_matcher("make_core_generated_make_token_matcher_for_viewport") {
+  input_file = "html/HTMLMetaElement-in.cpp"
+  output_file = "HTMLMetaElement.cpp"
+}
+
+# One-off scripts --------------------------------------------------------------
+
+# "generateXMLViewerCSS" in make_core_generated from GYP.
+action("make_core_generated_xml_viewer_css") {
+  visibility = ":make_core_generated"
+  script = "../build/scripts/xxd.py"
+
+  source_prereqs = [
+    "xml/XMLViewer.css",
+  ]
+  outputs = [
+    "$blink_gen_dir/XMLViewerCSS.h",
+  ]
+
+  args = [
+    "XMLViewer_css",
+    rebase_path(source_prereqs[0], root_build_dir),
+    rebase_path(outputs[0], root_build_dir),
+  ]
+
+  deps = make_core_generated_deps
+}
+
+# "generateXMLViewerJS" in make_core_generated from GYP.
+action("make_core_generated_xml_viewer_js") {
+  visibility = ":make_core_generated"
+  script = "../build/scripts/xxd.py"
+
+  source_prereqs = [
+    "xml/XMLViewer.js",
+  ]
+  outputs = [
+    "$blink_gen_dir/XMLViewerJS.h",
+  ]
+
+  args = [
+    "XMLViewer_js",
+    rebase_path(source_prereqs[0], root_build_dir),
+    rebase_path(outputs[0], root_build_dir),
+  ]
+
+  deps = make_core_generated_deps
+}
+
+# "HTMLEntityTable" in make_core_generated from GYP.
+action("make_core_generated_html_entity_table") {
+  visibility = ":make_core_generated"
+  script = "html/parser/create-html-entity-table"
+
+  source_prereqs = [
+    "html/parser/HTMLEntityNames.in",
+  ]
+  outputs = [
+    "$blink_gen_dir/HTMLEntityTable.cpp",
+  ]
+
+  args = [ "-o" ] + rebase_path(outputs, root_build_dir) 
+  args += rebase_path(source_prereqs, root_build_dir)
+
+  deps = make_core_generated_deps
+}
+
+# "MediaQueryTokenizerCodepoints" in make_core_generated from GYP.
+action("make_core_generated_media_query_tokenizer_codepoints") {
+  visibility = ":make_core_generated"
+  script = "../build/scripts/make_mediaquery_tokenizer_codepoints.py"
+
+  outputs = [
+    "$blink_gen_dir/MediaQueryTokenizerCodepoints.cpp",
+  ]
+
+  args = [
+    "--output_dir", rel_blink_gen_dir,
+    "--defines", feature_defines_string
+  ]
+
+  deps = make_core_generated_deps
+}
+
+# "UserAgentStyleSheets" in make_core_generated from GYP.
+action("make_core_generated_user_agent_style_sheets") {
+  visibility = ":make_core_generated"
+  script = "../build/scripts/action_useragentstylesheets.py"
+
+  scripts = [
+    "css/make-css-file-arrays.pl",
+    "../build/scripts/preprocessor.pm",
+  ]
+  stylesheets = [
+    "css/html.css",
+    "css/quirks.css",
+    "css/view-source.css",
+    "css/themeChromium.css",
+    "css/themeChromiumAndroid.css",
+    "css/themeChromiumLinux.css",
+    "css/themeChromiumSkia.css",
+    "css/themeMac.css",
+    "css/themeWin.css",
+    "css/themeWinQuirks.css",
+    "css/svg.css",
+    "css/navigationTransitions.css",
+    "css/mathml.css",
+    "css/mediaControls.css",
+    "css/mediaControlsAndroid.css",
+    "css/fullscreen.css",
+    "css/xhtmlmp.css",
+    "css/viewportAndroid.css",
+  ]
+
+  source_prereqs = scripts + stylesheets
+  outputs = [
+    "$blink_gen_dir/UserAgentStyleSheets.h",
+    "$blink_gen_dir/UserAgentStyleSheetsData.cpp",
+  ]
+
+  args =
+    rebase_path(outputs, root_build_dir) +
+    rebase_path(stylesheets, root_build_dir) +
+    [ "--" ] +
+    rebase_path(scripts, root_build_dir) +
+    [ "--", "--defines", feature_defines_string ] +
+    [ preprocessor ] +
+    [ "--perl", perl_exe ]
+
+  deps = make_core_generated_deps
+}
+
+# "HTMLElementLookupTrie" in make_core_generated from GYP.
+action("make_core_generated_html_element_lookup_trie") {
+  visibility = ":make_core_generated"
+  script = "../build/scripts/make_element_lookup_trie.py"
+
+  input_file = "html/HTMLTagNames.in"
+  source_prereqs = scripts_for_in_files + [
+    input_file,
+    "../build/scripts/templates/ElementLookupTrie.cpp.tmpl",
+    "../build/scripts/templates/ElementLookupTrie.h.tmpl",
+  ]
+  outputs = [
+    "$blink_gen_dir/HTMLElementLookupTrie.cpp",
+    "$blink_gen_dir/HTMLElementLookupTrie.h",
+  ]
+
+  args = [
+    rebase_path(input_file, root_build_dir),
+    "--output_dir", rel_blink_gen_dir,
+  ]
+
+  deps = make_core_generated_deps
+}
+
+# The bison rules from make_core_generated.
+action_foreach("make_core_generated_bison") {
+  script = "../build/scripts/rule_bison.py"
+  sources = [
+    "css/CSSGrammar.y",
+    "xml/XPathGrammar.y",
+  ]
+  outputs = [
+    "$blink_gen_dir/{{source_name_part}}.cpp",
+    "$blink_gen_dir/{{source_name_part}}.h",
+  ]
+  args = [
+    "{{source}}",
+    rel_blink_gen_dir,
+    bison_exe,
+  ]
+
+  deps = make_core_generated_deps
 }

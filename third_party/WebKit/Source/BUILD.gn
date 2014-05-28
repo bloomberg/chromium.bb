@@ -10,58 +10,16 @@ if (is_clang) {
 # features ---------------------------------------------------------------------
 
 config("features") {
+  defines = feature_defines_list
+}
+
+# inside_blink -----------------------------------------------------------------
+
+config("inside_blink") {
   defines = [
-    "ENABLE_CUSTOM_SCHEME_HANDLER=0",
-    "ENABLE_SVG_FONTS=1",
+    "BLINK_IMPLEMENTATION=1",
+    "INSIDE_BLINK",
   ]
-
-  if (is_debug) {
-    # TODO(GYP) this should also be set when release_valgrind_build is set,
-    # but we don't have that flag in the GN build yet.
-    defines += [ "WTF_USE_DYNAMIC_ANNOTATIONS=1" ]
-  }
-
-  if (use_concatenated_impulse_responses) {
-    defines += [ "WTF_USE_CONCATENATED_IMPULSE_RESPONSES=1" ]
-  }
-
-  if (is_android) {
-    defines += [
-      "ENABLE_FAST_MOBILE_SCROLLING=1",
-      "ENABLE_MEDIA_CAPTURE=1",
-    ]
-  } else {
-    defines += [
-      "ENABLE_INPUT_MULTIPLE_FIELDS_UI=1",
-      "ENABLE_MEDIA_CAPTURE=0",
-      "ENABLE_WEB_AUDIO=1",
-    ]
-  }
-
-  if (use_webaudio_ffmpeg) {
-    defines += [ "WTF_USE_WEBAUDIO_FFMPEG=1" ]
-  }
-
-  if (use_openmax_dl_fft) {
-    defines += [
-      "WTF_USE_WEBAUDIO_OPENMAX_DL_FFT=1",
-      # Enabling the FFT is enough to enable WebAudio support to
-      # allow most WebAudio features to work on Android.
-      "ENABLE_WEB_AUDIO=1",
-    ]
-  }
-
-  if (!is_mac) {
-    # Mac OS X has not implemented support for ENABLE(OPENTYPE_VERTICAL) yet.
-    defines += [ "ENABLE_OPENTYPE_VERTICAL=1" ]
-  }
-
-  if (use_default_render_theme) {
-    defines += [ "WTF_USE_DEFAULT_RENDER_THEME=1" ]
-  }
-  if (enable_oilpan) {
-    defines += [ "ENABLE_OILPAN=1" ]
-  }
 }
 
 # config -----------------------------------------------------------------------
@@ -107,4 +65,12 @@ config("config") {
       #'cflags': ['<!@(../../../tools/clang/scripts/blink_gc_plugin_flags.sh enable-oilpan=<(enable_oilpan) dump-graph=<(blink_gc_plugin_dump_graph))'],
     }
   }
+}
+
+# stubs ------------------------------------------------------------------------
+
+# These set up include paths for targets that haven't been converted yet. They
+# can be removed when the corresponding targets have been converted to GN.
+config("npapi_stub") {
+  include_dirs = [ "//third_party/npapi", "//third_party/npapi/bindings" ]
 }

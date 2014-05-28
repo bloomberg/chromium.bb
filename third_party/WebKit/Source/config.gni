@@ -45,3 +45,67 @@ use_webaudio_ffmpeg = !is_mac && !is_android
 # panner in WebAudio.
 # TODO(brettw) do we need this or can we assume its always on?
 use_concatenated_impulse_responses = true
+
+# feature_defines_list ---------------------------------------------------------
+
+feature_defines_list = [
+  "ENABLE_CUSTOM_SCHEME_HANDLER=0",
+  "ENABLE_SVG_FONTS=1",
+]
+
+if (is_debug) {
+  # TODO(GYP) this should also be set when release_valgrind_build is set,
+  # but we don't have that flag in the GN build yet.
+  feature_defines_list += [ "WTF_USE_DYNAMIC_ANNOTATIONS=1" ]
+}
+
+if (use_concatenated_impulse_responses) {
+  feature_defines_list += [ "WTF_USE_CONCATENATED_IMPULSE_RESPONSES=1" ]
+}
+
+if (is_android) {
+  feature_defines_list += [
+    "ENABLE_FAST_MOBILE_SCROLLING=1",
+    "ENABLE_MEDIA_CAPTURE=1",
+  ]
+} else {
+  feature_defines_list += [
+    "ENABLE_INPUT_MULTIPLE_FIELDS_UI=1",
+    "ENABLE_MEDIA_CAPTURE=0",
+    "ENABLE_WEB_AUDIO=1",
+  ]
+}
+
+if (use_webaudio_ffmpeg) {
+  feature_defines_list += [ "WTF_USE_WEBAUDIO_FFMPEG=1" ]
+}
+
+if (use_openmax_dl_fft) {
+  feature_defines_list += [
+    "WTF_USE_WEBAUDIO_OPENMAX_DL_FFT=1",
+    # Enabling the FFT is enough to enable WebAudio support to
+    # allow most WebAudio features to work on Android.
+    "ENABLE_WEB_AUDIO=1",
+  ]
+}
+
+if (!is_mac) {
+  # Mac OS X has not implemented support for ENABLE(OPENTYPE_VERTICAL) yet.
+  feature_defines_list += [ "ENABLE_OPENTYPE_VERTICAL=1" ]
+}
+
+if (use_default_render_theme) {
+  feature_defines_list += [ "WTF_USE_DEFAULT_RENDER_THEME=1" ]
+}
+if (enable_oilpan) {
+  feature_defines_list += [ "ENABLE_OILPAN=1" ]
+}
+
+# feature_defines_string -------------------------------------------------------
+
+# Convert the list to a space-separated string for passing to scripts.
+# This would be the equivalent of passing '<(feature_defines)' in GYP.
+feature_defines_string = exec_script(
+    "build/gn_list_to_space_separated_string.py",
+    feature_defines_list,
+    "trim string")
