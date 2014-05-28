@@ -204,9 +204,6 @@ public:
     virtual void setWideViewportQuirkEnabled(bool) = 0;
     virtual void setXSSAuditorEnabled(bool) = 0;
 
-    // FIXME: Remove these unused settings.
-    virtual void setFixedPositionCreatesStackingContext(bool) { }
-
 protected:
     ~WebSettings() { }
 };
