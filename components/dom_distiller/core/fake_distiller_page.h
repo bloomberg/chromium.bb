@@ -19,6 +19,10 @@ class MockDistillerPageFactory : public DistillerPageFactory {
   virtual scoped_ptr<DistillerPage> CreateDistillerPage() const OVERRIDE {
     return scoped_ptr<DistillerPage>(CreateDistillerPageImpl());
   }
+  virtual scoped_ptr<DistillerPage> CreateDistillerPageWithHandle(
+      scoped_ptr<SourcePageHandle> handle) const OVERRIDE {
+    return scoped_ptr<DistillerPage>(CreateDistillerPageImpl());
+  }
 };
 
 class MockDistillerPage : public DistillerPage {

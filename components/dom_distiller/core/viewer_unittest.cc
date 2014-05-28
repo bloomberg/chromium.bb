@@ -62,6 +62,10 @@ class TestDomDistillerService : public DomDistillerServiceInterface {
   virtual scoped_ptr<DistillerPage> CreateDefaultDistillerPage() {
     return scoped_ptr<DistillerPage>();
   }
+  virtual scoped_ptr<DistillerPage> CreateDefaultDistillerPageWithHandle(
+      scoped_ptr<SourcePageHandle> handle) {
+    return scoped_ptr<DistillerPage>();
+  }
 };
 
 class DomDistillerViewerTest : public testing::Test {
