@@ -21,13 +21,19 @@ const int kInvalidProcessId = -1;
 
 TestSigninClient::TestSigninClient()
     : request_context_(new net::TestURLRequestContextGetter(
-          base::MessageLoopProxy::current())) {
+          base::MessageLoopProxy::current())),
+      pref_service_(NULL) {
   LoadDatabase();
 }
 
+TestSigninClient::TestSigninClient(PrefService* pref_service)
+    : pref_service_(pref_service) {}
+
 TestSigninClient::~TestSigninClient() {}
 
-PrefService* TestSigninClient::GetPrefs() { return NULL; }
+PrefService* TestSigninClient::GetPrefs() {
+  return pref_service_;
+}
 
 scoped_refptr<TokenWebData> TestSigninClient::GetDatabase() {
   return database_;

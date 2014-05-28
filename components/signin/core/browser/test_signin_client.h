@@ -17,12 +17,15 @@
 #include "ios/public/test/fake_profile_oauth2_token_service_ios_provider.h"
 #endif
 
+class PrefService;
+
 // An implementation of SigninClient for use in unittests. Instantiates test
 // versions of the various objects that SigninClient is required to provide as
 // part of its interface.
 class TestSigninClient : public SigninClient {
  public:
   TestSigninClient();
+  TestSigninClient(PrefService* pref_service);
   virtual ~TestSigninClient();
 
   // SigninClient implementation that is specialized for unit tests.
@@ -73,6 +76,8 @@ class TestSigninClient : public SigninClient {
   scoped_refptr<net::TestURLRequestContextGetter> request_context_;
   scoped_refptr<TokenWebData> database_;
   int signin_host_id_;
+
+  PrefService* pref_service_;
 
 #if defined(OS_IOS)
   scoped_ptr<ios::FakeProfileOAuth2TokenServiceIOSProvider> iosProvider_;

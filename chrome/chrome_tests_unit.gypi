@@ -1293,6 +1293,7 @@
         'browser/signin/signin_names_io_thread_unittest.cc',
         'browser/signin/signin_promo_unittest.cc',
         'browser/signin/signin_tracker_unittest.cc',
+        'browser/signin/test_signin_client_builder.cc',
         'browser/speech/extension_api/extension_manifests_tts_unittest.cc',
         'browser/speech/tts_controller_unittest.cc',
         'browser/spellchecker/feedback_sender_unittest.cc',
