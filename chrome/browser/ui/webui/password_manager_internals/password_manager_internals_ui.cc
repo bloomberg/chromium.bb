@@ -46,13 +46,12 @@ PasswordManagerInternalsUI::PasswordManagerInternalsUI(content::WebUI* web_ui)
 }
 
 PasswordManagerInternalsUI::~PasswordManagerInternalsUI() {
-  if (!registered_with_logging_service_)
-    return;
-  PasswordManagerInternalsService* service =
-      PasswordManagerInternalsServiceFactory::GetForBrowserContext(
-          Profile::FromWebUI(web_ui()));
-  if (service)
-    service->UnregisterReceiver(this);
+  UnregisterFromLoggingService();
+}
+
+void PasswordManagerInternalsUI::DidStartLoading(
+    content::RenderViewHost* /* render_view_host */) {
+  UnregisterFromLoggingService();
 }
 
 void PasswordManagerInternalsUI::DidStopLoading(
@@ -76,4 +75,14 @@ void PasswordManagerInternalsUI::LogSavePasswordProgress(
   base::StringValue text_string_value(net::EscapeForHTML(no_quotes));
   web_ui()->CallJavascriptFunction("addSavePasswordProgressLog",
                                    text_string_value);
+}
+
+void PasswordManagerInternalsUI::UnregisterFromLoggingService() {
+  if (!registered_with_logging_service_)
+    return;
+  PasswordManagerInternalsService* service =
+      PasswordManagerInternalsServiceFactory::GetForBrowserContext(
+          Profile::FromWebUI(web_ui()));
+  if (service)
+    service->UnregisterReceiver(this);
 }
