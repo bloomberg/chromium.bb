@@ -159,7 +159,7 @@ public:
     void insertAlreadyParsedChild(HTMLStackItem* newParent, HTMLElementStack::ElementRecord* child);
     void takeAllChildren(HTMLStackItem* newParent, HTMLElementStack::ElementRecord* oldParent);
 
-    PassRefPtr<HTMLStackItem> createElementFromSavedToken(HTMLStackItem*);
+    PassRefPtrWillBeRawPtr<HTMLStackItem> createElementFromSavedToken(HTMLStackItem*);
 
     bool shouldFosterParent() const;
     void fosterParent(PassRefPtrWillBeRawPtr<Node>);
@@ -240,7 +240,7 @@ private:
     // and a Document in all other cases.
     RawPtrWillBeMember<ContainerNode> m_attachmentRoot;
 
-    RefPtr<HTMLStackItem> m_head;
+    RefPtrWillBeMember<HTMLStackItem> m_head;
     RefPtrWillBeMember<HTMLFormElement> m_form;
     mutable HTMLElementStack m_openElements;
     mutable HTMLFormattingElementList m_activeFormattingElements;

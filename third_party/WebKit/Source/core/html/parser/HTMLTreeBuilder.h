@@ -196,6 +196,7 @@ private:
 
     class FragmentParsingContext {
         WTF_MAKE_NONCOPYABLE(FragmentParsingContext);
+        DISALLOW_ALLOCATION();
     public:
         FragmentParsingContext();
         FragmentParsingContext(DocumentFragment*, Element* contextElement);
@@ -205,9 +206,11 @@ private:
         Element* contextElement() const { ASSERT(m_fragment); return m_contextElementStackItem->element(); }
         HTMLStackItem* contextElementStackItem() const { ASSERT(m_fragment); return m_contextElementStackItem.get(); }
 
+        void trace(Visitor*);
+
     private:
-        DocumentFragment* m_fragment;
-        RefPtr<HTMLStackItem> m_contextElementStackItem;
+        RawPtrWillBeMember<DocumentFragment> m_fragment;
+        RefPtrWillBeMember<HTMLStackItem> m_contextElementStackItem;
     };
 
     bool m_framesetOk;

@@ -79,7 +79,7 @@ HTMLFormattingElementList::Bookmark HTMLFormattingElementList::bookmarkFor(Eleme
     return Bookmark(&at(index));
 }
 
-void HTMLFormattingElementList::swapTo(Element* oldElement, PassRefPtr<HTMLStackItem> newItem, const Bookmark& bookmark)
+void HTMLFormattingElementList::swapTo(Element* oldElement, PassRefPtrWillBeRawPtr<HTMLStackItem> newItem, const Bookmark& bookmark)
 {
     ASSERT(contains(oldElement));
     ASSERT(!contains(newItem->element()));
@@ -94,7 +94,7 @@ void HTMLFormattingElementList::swapTo(Element* oldElement, PassRefPtr<HTMLStack
     remove(oldElement);
 }
 
-void HTMLFormattingElementList::append(PassRefPtr<HTMLStackItem> item)
+void HTMLFormattingElementList::append(PassRefPtrWillBeRawPtr<HTMLStackItem> item)
 {
     ensureNoahsArkCondition(item.get());
     m_entries.append(item);
@@ -123,7 +123,7 @@ void HTMLFormattingElementList::clearToLastMarker()
     }
 }
 
-void HTMLFormattingElementList::tryToEnsureNoahsArkConditionQuickly(HTMLStackItem* newItem, Vector<HTMLStackItem*>& remainingCandidates)
+void HTMLFormattingElementList::tryToEnsureNoahsArkConditionQuickly(HTMLStackItem* newItem, WillBeHeapVector<RawPtrWillBeMember<HTMLStackItem> >& remainingCandidates)
 {
     ASSERT(remainingCandidates.isEmpty());
 
@@ -132,7 +132,7 @@ void HTMLFormattingElementList::tryToEnsureNoahsArkConditionQuickly(HTMLStackIte
 
     // Use a vector with inline capacity to avoid a malloc in the common case
     // of a quickly ensuring the condition.
-    Vector<HTMLStackItem*, 10> candidates;
+    WillBeHeapVector<RawPtrWillBeMember<HTMLStackItem>, 10> candidates;
 
     size_t newItemAttributeCount = newItem->attributes().size();
 
@@ -160,14 +160,14 @@ void HTMLFormattingElementList::tryToEnsureNoahsArkConditionQuickly(HTMLStackIte
 
 void HTMLFormattingElementList::ensureNoahsArkCondition(HTMLStackItem* newItem)
 {
-    Vector<HTMLStackItem*> candidates;
+    WillBeHeapVector<RawPtrWillBeMember<HTMLStackItem> > candidates;
     tryToEnsureNoahsArkConditionQuickly(newItem, candidates);
     if (candidates.isEmpty())
         return;
 
     // We pre-allocate and re-use this second vector to save one malloc per
     // attribute that we verify.
-    Vector<HTMLStackItem*> remainingCandidates;
+    WillBeHeapVector<RawPtrWillBeMember<HTMLStackItem> > remainingCandidates;
     remainingCandidates.reserveInitialCapacity(candidates.size());
 
     const Vector<Attribute>& attributes = newItem->attributes();

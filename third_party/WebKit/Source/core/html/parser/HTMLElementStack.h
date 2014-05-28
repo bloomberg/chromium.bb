@@ -44,35 +44,40 @@ class QualifiedName;
 // NOTE: The HTML5 spec uses a backwards (grows downward) stack.  We're using
 // more standard (grows upwards) stack terminology here.
 class HTMLElementStack {
-    WTF_MAKE_NONCOPYABLE(HTMLElementStack); WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_NONCOPYABLE(HTMLElementStack);
+    DISALLOW_ALLOCATION();
 public:
     HTMLElementStack();
     ~HTMLElementStack();
 
-    class ElementRecord {
-        WTF_MAKE_NONCOPYABLE(ElementRecord); WTF_MAKE_FAST_ALLOCATED;
+    class ElementRecord FINAL : public NoBaseWillBeGarbageCollected<ElementRecord> {
+        WTF_MAKE_NONCOPYABLE(ElementRecord); WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
     public:
+#if !ENABLE(OILPAN)
         ~ElementRecord(); // Public for ~PassOwnPtr()
+#endif
 
         Element* element() const { return m_item->element(); }
         ContainerNode* node() const { return m_item->node(); }
         const AtomicString& namespaceURI() const { return m_item->namespaceURI(); }
-        PassRefPtr<HTMLStackItem> stackItem() const { return m_item; }
-        void replaceElement(PassRefPtr<HTMLStackItem>);
+        PassRefPtrWillBeRawPtr<HTMLStackItem> stackItem() const { return m_item; }
+        void replaceElement(PassRefPtrWillBeRawPtr<HTMLStackItem>);
 
         bool isAbove(ElementRecord*) const;
 
         ElementRecord* next() const { return m_next.get(); }
+
+        void trace(Visitor*);
     private:
         friend class HTMLElementStack;
 
-        ElementRecord(PassRefPtr<HTMLStackItem>, PassOwnPtr<ElementRecord>);
+        ElementRecord(PassRefPtrWillBeRawPtr<HTMLStackItem>, PassOwnPtrWillBeRawPtr<ElementRecord>);
 
-        PassOwnPtr<ElementRecord> releaseNext() { return m_next.release(); }
-        void setNext(PassOwnPtr<ElementRecord> next) { m_next = next; }
+        PassOwnPtrWillBeRawPtr<ElementRecord> releaseNext() { return m_next.release(); }
+        void setNext(PassOwnPtrWillBeRawPtr<ElementRecord> next) { m_next = next; }
 
-        RefPtr<HTMLStackItem> m_item;
-        OwnPtr<ElementRecord> m_next;
+        RefPtrWillBeMember<HTMLStackItem> m_item;
+        OwnPtrWillBeMember<ElementRecord> m_next;
     };
 
     unsigned stackDepth() const { return m_stackDepth; }
@@ -103,13 +108,13 @@ public:
     ElementRecord* furthestBlockForFormattingElement(Element*) const;
     ElementRecord* topmost(const AtomicString& tagName) const;
 
-    void insertAbove(PassRefPtr<HTMLStackItem>, ElementRecord*);
+    void insertAbove(PassRefPtrWillBeRawPtr<HTMLStackItem>, ElementRecord*);
 
-    void push(PassRefPtr<HTMLStackItem>);
-    void pushRootNode(PassRefPtr<HTMLStackItem>);
-    void pushHTMLHtmlElement(PassRefPtr<HTMLStackItem>);
-    void pushHTMLHeadElement(PassRefPtr<HTMLStackItem>);
-    void pushHTMLBodyElement(PassRefPtr<HTMLStackItem>);
+    void push(PassRefPtrWillBeRawPtr<HTMLStackItem>);
+    void pushRootNode(PassRefPtrWillBeRawPtr<HTMLStackItem>);
+    void pushHTMLHtmlElement(PassRefPtrWillBeRawPtr<HTMLStackItem>);
+    void pushHTMLHeadElement(PassRefPtrWillBeRawPtr<HTMLStackItem>);
+    void pushHTMLBodyElement(PassRefPtrWillBeRawPtr<HTMLStackItem>);
 
     void pop();
     void popUntil(const AtomicString& tagName);
@@ -159,26 +164,28 @@ public:
 
     ContainerNode* rootNode() const;
 
+    void trace(Visitor*);
+
 #ifndef NDEBUG
     void show();
 #endif
 
 private:
-    void pushCommon(PassRefPtr<HTMLStackItem>);
-    void pushRootNodeCommon(PassRefPtr<HTMLStackItem>);
+    void pushCommon(PassRefPtrWillBeRawPtr<HTMLStackItem>);
+    void pushRootNodeCommon(PassRefPtrWillBeRawPtr<HTMLStackItem>);
     void popCommon();
     void removeNonTopCommon(Element*);
 
-    OwnPtr<ElementRecord> m_top;
+    OwnPtrWillBeMember<ElementRecord> m_top;
 
     // We remember the root node, <head> and <body> as they are pushed. Their
     // ElementRecords keep them alive. The root node is never popped.
     // FIXME: We don't currently require type-specific information about
     // these elements so we haven't yet bothered to plumb the types all the
     // way down through createElement, etc.
-    ContainerNode* m_rootNode;
-    Element* m_headElement;
-    Element* m_bodyElement;
+    RawPtrWillBeMember<ContainerNode> m_rootNode;
+    RawPtrWillBeMember<Element> m_headElement;
+    RawPtrWillBeMember<Element> m_bodyElement;
     unsigned m_stackDepth;
 };
 

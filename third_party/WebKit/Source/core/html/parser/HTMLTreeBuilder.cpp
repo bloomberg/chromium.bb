@@ -318,6 +318,7 @@ HTMLTreeBuilder::~HTMLTreeBuilder()
 
 void HTMLTreeBuilder::trace(Visitor* visitor)
 {
+    visitor->trace(m_fragmentContext);
     visitor->trace(m_tree);
     visitor->trace(m_parser);
     visitor->trace(m_scriptToProcess);
@@ -336,7 +337,7 @@ void HTMLTreeBuilder::detach()
 }
 
 HTMLTreeBuilder::FragmentParsingContext::FragmentParsingContext()
-    : m_fragment(0)
+    : m_fragment(nullptr)
 {
 }
 
@@ -349,6 +350,12 @@ HTMLTreeBuilder::FragmentParsingContext::FragmentParsingContext(DocumentFragment
 
 HTMLTreeBuilder::FragmentParsingContext::~FragmentParsingContext()
 {
+}
+
+void HTMLTreeBuilder::FragmentParsingContext::trace(Visitor* visitor)
+{
+    visitor->trace(m_fragment);
+    visitor->trace(m_contextElementStackItem);
 }
 
 PassRefPtrWillBeRawPtr<Element> HTMLTreeBuilder::takeScriptToProcess(TextPosition& scriptStartPosition)
@@ -487,7 +494,7 @@ void HTMLTreeBuilder::processCloseWhenNestedTag(AtomicHTMLToken* token)
     m_framesetOk = false;
     HTMLElementStack::ElementRecord* nodeRecord = m_tree.openElements()->topRecord();
     while (1) {
-        RefPtr<HTMLStackItem> item = nodeRecord->stackItem();
+        RefPtrWillBeRawPtr<HTMLStackItem> item = nodeRecord->stackItem();
         if (shouldClose(item.get())) {
             ASSERT(item->isElementNode());
             processFakeEndTag(item->localName());
@@ -1448,7 +1455,7 @@ void HTMLTreeBuilder::processAnyOtherEndTagForInBody(AtomicHTMLToken* token)
     ASSERT(token->type() == HTMLToken::EndTag);
     HTMLElementStack::ElementRecord* record = m_tree.openElements()->topRecord();
     while (1) {
-        RefPtr<HTMLStackItem> item = record->stackItem();
+        RefPtrWillBeRawPtr<HTMLStackItem> item = record->stackItem();
         if (item->matchesHTMLTag(token->name())) {
             m_tree.generateImpliedEndTagsWithExclusion(token->name());
             if (!m_tree.currentStackItem()->matchesHTMLTag(token->name()))
@@ -1507,7 +1514,7 @@ void HTMLTreeBuilder::callTheAdoptionAgency(AtomicHTMLToken* token)
         }
         // 7.
         ASSERT(furthestBlock->isAbove(formattingElementRecord));
-        RefPtr<HTMLStackItem> commonAncestor = formattingElementRecord->next()->stackItem();
+        RefPtrWillBeRawPtr<HTMLStackItem> commonAncestor = formattingElementRecord->next()->stackItem();
         // 8.
         HTMLFormattingElementList::Bookmark bookmark = m_tree.activeFormattingElements()->bookmarkFor(formattingElement);
         // 9.
@@ -1530,7 +1537,7 @@ void HTMLTreeBuilder::callTheAdoptionAgency(AtomicHTMLToken* token)
             if (node == formattingElementRecord)
                 break;
             // 9.7
-            RefPtr<HTMLStackItem> newItem = m_tree.createElementFromSavedToken(node->stackItem().get());
+            RefPtrWillBeRawPtr<HTMLStackItem> newItem = m_tree.createElementFromSavedToken(node->stackItem().get());
 
             HTMLFormattingElementList::Entry* nodeEntry = m_tree.activeFormattingElements()->find(node->element());
             nodeEntry->replaceElement(newItem);
@@ -1547,7 +1554,7 @@ void HTMLTreeBuilder::callTheAdoptionAgency(AtomicHTMLToken* token)
         // 10.
         m_tree.insertAlreadyParsedChild(commonAncestor.get(), lastNode);
         // 11.
-        RefPtr<HTMLStackItem> newItem = m_tree.createElementFromSavedToken(formattingElementRecord->stackItem().get());
+        RefPtrWillBeRawPtr<HTMLStackItem> newItem = m_tree.createElementFromSavedToken(formattingElementRecord->stackItem().get());
         // 12.
         m_tree.takeAllChildren(newItem.get(), furthestBlock);
         // 13.
@@ -1566,7 +1573,7 @@ void HTMLTreeBuilder::resetInsertionModeAppropriately()
     bool last = false;
     HTMLElementStack::ElementRecord* nodeRecord = m_tree.openElements()->topRecord();
     while (1) {
-        RefPtr<HTMLStackItem> item = nodeRecord->stackItem();
+        RefPtrWillBeRawPtr<HTMLStackItem> item = nodeRecord->stackItem();
         if (item->node() == m_tree.openElements()->rootNode()) {
             last = true;
             if (isParsingFragment())
