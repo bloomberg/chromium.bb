@@ -168,6 +168,8 @@
         'cflags': [
           '--sysroot=<(android_ndk_sysroot)',
           '-I<(android_stlport_include)',
+          '-fPIE',
+          '-fvisibility=default',
           '-ffunction-sections',
           '-funwind-tables',
           '-g',
@@ -184,6 +186,11 @@
         ],
         'ldflags!': ['-pthread'],
         'ldflags': [
+          '-Bdynamic',
+          '-Wl,--gc-sections',
+          '-Wl,-z,nocopyreloc',
+          '-pie',
+          '-rdynamic',
           '--sysroot=<(android_ndk_sysroot)',
           '-nostdlib',
           '-Wl,--no-undefined',

@@ -581,7 +581,7 @@ if pre_base_env.Bit('clang'):
 # from the path of correctness.
 
 def EnsureRequiredBuildWarnings(env):
-  if env.Bit('linux') or env.Bit('mac'):
+  if (env.Bit('linux') or env.Bit('mac')) and not env.Bit('android'):
     required_env_flags = set(['-pedantic', '-Wall'] + werror_flags)
     ccflags = set(env.get('CCFLAGS'))
 
@@ -2581,90 +2581,104 @@ def SetUpLinuxEnvArm(env):
 def SetUpAndroidEnv(env):
   env.FilterOut(CPPDEFINES=[['NACL_ANDROID', '0']])
   env.Prepend(CPPDEFINES=[['NACL_ANDROID', '1']])
-  ndk = os.environ.get('ANDROID_NDK_ROOT')
-  sdk = os.environ.get('ANDROID_SDK_ROOT')
-  arch_cflags = []
-  if env.Bit('build_arm'):
-    ndk_target = 'arm-linux-androideabi'
-    ndk_tctarget = ndk_target
-    arch = 'arm'
-    libarch = 'armeabi-v7a'
-    arch_cflags += ['-march=armv7-a', '-mfloat-abi=softfp']
-  elif env.Bit('build_mips32'):
-    ndk_target = 'mipsel-linux-android'
-    ndk_tctarget = ndk_target
-    arch = 'mips'
-    libarch = 'mips'
-  else:
-    ndk_target = 'i686-linux-android'
-    # x86 toolchain has strange location, not using GNU triplet
-    ndk_tctarget = 'x86'
-    arch = 'x86'
-    libarch = 'x86'
-  ndk_version = '4.8'
-  if not ndk or not sdk:
-    print 'Please define ANDROID_NDK_ROOT and ANDROID_SDK_ROOT'
-    sys.exit(-1)
-  ndk_platform_path_map = {
+  android_ndk_root = os.path.join('${SOURCE_ROOT}', 'src', 'third_party',
+                                  'android_tools', 'ndk')
+  android_ndk_experimental_root = os.path.join('${SOURCE_ROOT}', 'src',
+                                               'third_party', 'android_tools',
+                                               'ndk_experimental')
+  android_sdk_root = os.path.join('${SOURCE_ROOT}', 'src', 'third_party',
+                                  'android_tools', 'sdk')
+  android_sdk_version = 19
+  android_stlport_root = os.path.join(android_ndk_root, 'sources', 'cxx-stl',
+                                      'stlport')
+  ndk_host_os_map = {
       pynacl.platform.OS_WIN : 'win',
       pynacl.platform.OS_MAC: 'darwin',
       pynacl.platform.OS_LINUX : 'linux'
       }
-  ndk_platform_path = ndk_platform_path_map[pynacl.platform.GetOS()]
-  tc = '%s/toolchains/%s-%s/prebuilt/%s-x86_64/bin/' % (
-      ndk, ndk_tctarget, ndk_version, ndk_platform_path)
-  tc_prefix = '%s/%s-' % (tc, ndk_target)
-  platform_prefix = '%s/platforms/android-14/arch-%s' % (ndk, arch)
-  stl_path =  '%s/sources/cxx-stl/gnu-libstdc++/%s' % (ndk, ndk_version)
-  env.Replace(CC=tc_prefix + 'gcc',
-              CXX=tc_prefix + 'g++',
-              LD=tc_prefix + 'g++',
-              AR=tc_prefix + 'ar',
-              RANLIB=tc_prefix + 'ranlib',
-              EMULATOR=sdk + '/tools/emulator',
+  host_os = ndk_host_os_map[pynacl.platform.GetOS()]
+  android_sdk = os.path.join(android_sdk_root, 'platforms',
+                             'android-%s' % android_sdk_version)
+  arch_cflags = []
+  if env.Bit('build_arm'):
+    android_ndk_target_prefix = 'arm-linux-androideabi'
+    android_ndk_version = '4.8'
+    android_app_abi = 'armeabi-v7a'
+    android_ndk_sysroot = os.path.join(android_ndk_root, 'platforms',
+                                       'android-14', 'arch-arm')
+    android_ndk_lib_dir = os.path.join('usr', 'lib')
+    android_toolchain = os.path.join(android_ndk_root, 'toolchains',
+                                     'arm-linux-androideabi-4.6', 'prebuilt',
+                                     '%s-x86_64' % host_os, 'bin')
+    arch_cflags += ['-march=armv7-a', '-mfloat-abi=softfp']
+  # TODO(sehr): add other android architecture platform settings here.
+  android_ndk_include = os.path.join(android_ndk_sysroot, 'usr', 'include')
+  android_ndk_lib = os.path.join(android_ndk_sysroot, android_ndk_lib_dir)
+  android_sdk_jar = os.path.join(android_sdk, 'android.jar')
+  android_stlport_include = os.path.join(android_stlport_root, 'stlport')
+  android_stlport_libs_dir = os.path.join(android_stlport_root, 'libs',
+                                          android_app_abi)
+  env.FilterOut(CCFLAGS=['-Werror', '-Wundef'])
+  android_ndk_libgcc_path = os.path.join(android_toolchain, '..', 'lib', 'gcc',
+                                         android_ndk_target_prefix,
+                                         android_ndk_version)
+  env.Replace(CC=os.path.join(android_toolchain,
+                              '%s-gcc' % android_ndk_target_prefix),
+              CXX=os.path.join(android_toolchain,
+                              '%s-g++' % android_ndk_target_prefix),
+              LD=os.path.join(android_toolchain,
+                              '%s-g++' % android_ndk_target_prefix),
+              AR=os.path.join(android_toolchain,
+                              '%s-ar' % android_ndk_target_prefix),
+              RANLIB=os.path.join(android_toolchain,
+                                  '%s-ranlib' % android_ndk_target_prefix),
+              READELF=os.path.join(android_toolchain,
+                                   '%s-readelf' % android_ndk_target_prefix),
+              STRIP=os.path.join(android_toolchain,
+                                 '%s-strip' % android_ndk_target_prefix),
+              EMULATOR=os.path.join(android_sdk_root, 'tools', 'emulator'),
               LIBPATH=['${LIB_DIR}',
-                       '%s/libs/%s' % (stl_path, libarch),
-                       '%s/usr/lib' % (platform_prefix),
+                       android_ndk_lib,
+                       android_ndk_libgcc_path,
+                       os.path.join(android_stlport_root, 'libs',
+                                    android_app_abi),
                        ],
-              LIBS=['gnustl_static', # Yes, that stdc++.
-                    'supc++',
-                    'c',
-                    'm',
+              LIBS=['stlport_shared',
                     'gcc',
-                    # Second time, to have mutual libgcc<->libc deps resolved.
                     'c',
+                    'dl',
+                    'm',
+                    os.path.join(android_ndk_lib, 'crtend_android.o'),
                     ],
               )
-  env.Append(CCFLAGS=['--sysroot='+ platform_prefix,
-                      '-isystem='+ platform_prefix + '/usr/include',
+  env.Append(CCFLAGS=['--sysroot=' + android_ndk_sysroot,
+                      '-isystem=' + os.path.join(android_ndk_sysroot, 'usr',
+                                                 'include'),
+                      '-I<(android_stlport_include)',
+                      '-ffunction-sections',
+                      '-g',
+                      '-fstack-protector',
+                      '-fno-short-enums',
+                      '-finline-limit=64',
+                      '-Wa,--noexecstack',
                       '-DANDROID',
                       '-D__ANDROID__',
                       # Due to bogus warnings on uintptr_t formats.
                       '-Wno-format',
                       ] + arch_cflags,
-             CXXFLAGS=['-I%s/include' % (stl_path),
-                       '-I%s/libs/%s/include' % (stl_path, libarch),
-                       '-std=gnu++0x',
+             CXXFLAGS=['-I%s' % android_stlport_include,
+                       '-I%s' % android_ndk_include,
                        '-fno-exceptions',
                        ],
-             LINKFLAGS=['-Wl,-rpath-link=' + platform_prefix + '/usr/lib',
-                        '-Wl,-Ttext,0x50000000',
-                        '-static',
+             LINKFLAGS=['--sysroot=' + android_ndk_sysroot,
                         '-nostdlib',
-                        '-L%s/../lib/gcc/%s/%s' \
-                          % (tc, ndk_target, ndk_version),
-                        # Note that we have to use crtbegin_static.o
-                        # if compile -static, and crtbegin_dynamic.o
-                        # otherwise. Also, this apporach skips
-                        # all static initializers invocations.
-                        # TODO(olonho): implement proper static
-                        # initializers solution.
-                        platform_prefix + '/usr/lib/crtbegin_static.o',
-                        platform_prefix + '/usr/lib/crtend_android.o',
+                        '-Wl,--no-undefined',
+                        # Don't export symbols from statically linked libraries.
+                        '-Wl,--exclude-libs=ALL',
+                        # crtbegin_dynamic.o should be the last item in ldflags.
+                        os.path.join(android_ndk_lib, 'crtbegin_dynamic.o'),
                         ],
              )
-  # As we want static binary, not PIE.
-  env.FilterOut(LINKFLAGS=['-pie'])
   return env
 
 def SetUpLinuxEnvMips(env):
