@@ -289,7 +289,7 @@ html[dir=rtl] .user-type-icon-area {
 }
 
 .user-type-icon-area.supervised .user-type-icon-image {
-  background-image: url('chrome://theme/IDR_MANAGED_MODE_ICON');
+  background-image: url('chrome://theme/IDR_MANAGED_USER_ICON');
 }
 
 .user-type-icon-area.policy .user-type-icon-image {
