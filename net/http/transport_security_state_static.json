@@ -775,6 +775,7 @@
     { "name": "mobile.usaa.com", "mode": "force-https" },
     { "name": "subrosa.io", "include_subdomains": true, "mode": "force-https" },
     { "name": "detectify.com", "mode": "force-https" },
+    { "name": "crbug.com", "include_subdomains": true, "mode": "force-https" },
 
     // Entries that are only valid if the client supports SNI.
     { "name": "gmail.com", "mode": "force-https", "pins": "google", "snionly": true },
