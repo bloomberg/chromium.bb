@@ -15,4 +15,5 @@ the host, to support host build tools.  It is not linked into chrome.
 
 Local Modifications:
 
-There are no local code changes.
+config.h created by running configure and then anonymizing MODVERSION.
+No other local code changes.
