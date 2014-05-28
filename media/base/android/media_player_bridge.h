@@ -176,6 +176,9 @@ class MEDIA_EXPORT MediaPlayerBridge : public MediaPlayerAndroid {
   // Whether player is currently using a surface.
   bool is_surface_in_use_;
 
+  // Volume of playback.
+  double volume_;
+
   // Weak pointer passed to |listener_| for callbacks.
   // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<MediaPlayerBridge> weak_factory_;
