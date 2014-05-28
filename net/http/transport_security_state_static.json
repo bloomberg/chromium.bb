@@ -776,6 +776,10 @@
     { "name": "subrosa.io", "include_subdomains": true, "mode": "force-https" },
     { "name": "detectify.com", "mode": "force-https" },
     { "name": "crbug.com", "include_subdomains": true, "mode": "force-https" },
+    { "name": "manageprojects.com", "include_subdomains": true, "mode": "force-https" },
+    { "name": "tinfoilsecurity.com", "mode": "force-https" },
+    { "name": "www.tinfoilsecurity.com", "mode": "force-https" },
+    { "name": "waveapps.com", "include_subdomains": true, "mode": "force-https" },
 
     // Entries that are only valid if the client supports SNI.
     { "name": "gmail.com", "mode": "force-https", "pins": "google", "snionly": true },
