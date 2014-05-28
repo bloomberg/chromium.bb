@@ -19,5 +19,16 @@
         ],
       },
     }],
+    # TODO(kbr): these two dependencies seem to be necessary when
+    # running the component build to avoid "Failed to mmap datapack"
+    # errors. Should investigate further.
+    ['OS=="linux" or OS=="win"', {
+      'variables': {
+        'isolate_dependency_tracked': [
+          '<(PRODUCT_DIR)/content_resources.pak',
+          '<(PRODUCT_DIR)/ui_test.pak',
+        ],
+      },
+    }],
   ],
 }
