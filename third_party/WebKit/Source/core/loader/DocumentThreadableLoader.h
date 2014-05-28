@@ -87,10 +87,13 @@ class DocumentThreadableLoader FINAL : public ThreadableLoader, private Resource
 
         void didTimeout(Timer<DocumentThreadableLoader>*);
         void makeCrossOriginAccessRequest(const ResourceRequest&);
-        void preflightSuccess();
-        void preflightFailure(const String& url, const String& errorDescription);
+        // Loads m_actualRequest.
+        void loadActualRequest();
+        // Clears m_actualRequest and reports access control check failure to
+        // m_client.
+        void handlePreflightFailure(const String& url, const String& errorDescription);
         // Investigates the response for the preflight request. If successful,
-        // the actual request will be made later in didFinishLoading().
+        // the actual request will be made later in handleSuccessfulFinish().
         void handlePreflightResponse(unsigned long identifier, const ResourceResponse&);
 
         void loadRequest(const ResourceRequest&);

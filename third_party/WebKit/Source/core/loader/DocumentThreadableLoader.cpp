@@ -126,7 +126,7 @@ void DocumentThreadableLoader::makeCrossOriginAccessRequest(const ResourceReques
         m_actualRequest = crossOriginRequest.release();
 
         if (CrossOriginPreflightResultCache::shared().canSkipPreflight(securityOrigin()->toString(), m_actualRequest->url(), m_options.allowCredentials, m_actualRequest->httpMethod(), m_actualRequest->httpHeaderFields())) {
-            preflightSuccess();
+            loadActualRequest();
         } else {
             ResourceRequest preflightRequest = createAccessControlPreflightRequest(*m_actualRequest, securityOrigin());
             loadRequest(preflightRequest);
@@ -268,7 +268,7 @@ void DocumentThreadableLoader::responseReceived(Resource* resource, const Resour
 
 void DocumentThreadableLoader::handlePreflightResponse(unsigned long identifier, const ResourceResponse& response)
 {
-    // Notifying the inspector here is necessary because a call to preflightFailure() might synchronously
+    // Notifying the inspector here is necessary because a call to handlePreflightFailure() might synchronously
     // cause the underlying ResourceLoader to be cancelled before it tells the inspector about the response.
     // In that case, if we don't tell the inspector about the response now, the resource type in the inspector
     // will default to "other" instead of something more descriptive.
@@ -280,12 +280,12 @@ void DocumentThreadableLoader::handlePreflightResponse(unsigned long identifier,
     String accessControlErrorDescription;
 
     if (!passesAccessControlCheck(response, m_options.allowCredentials, securityOrigin(), accessControlErrorDescription)) {
-        preflightFailure(response.url().string(), accessControlErrorDescription);
+        handlePreflightFailure(response.url().string(), accessControlErrorDescription);
         return;
     }
 
     if (!passesPreflightStatusCheck(response, accessControlErrorDescription)) {
-        preflightFailure(response.url().string(), accessControlErrorDescription);
+        handlePreflightFailure(response.url().string(), accessControlErrorDescription);
         return;
     }
 
@@ -293,7 +293,7 @@ void DocumentThreadableLoader::handlePreflightResponse(unsigned long identifier,
     if (!preflightResult->parse(response, accessControlErrorDescription)
         || !preflightResult->allowsCrossOriginMethod(m_actualRequest->httpMethod(), accessControlErrorDescription)
         || !preflightResult->allowsCrossOriginHeaders(m_actualRequest->httpHeaderFields(), accessControlErrorDescription)) {
-        preflightFailure(response.url().string(), accessControlErrorDescription);
+        handlePreflightFailure(response.url().string(), accessControlErrorDescription);
         return;
     }
 
@@ -352,7 +352,7 @@ void DocumentThreadableLoader::handleSuccessfulFinish(unsigned long identifier, 
     if (m_actualRequest) {
         ASSERT(!m_sameOriginRequest);
         ASSERT(m_options.crossOriginRequestPolicy == UseAccessControl);
-        preflightSuccess();
+        loadActualRequest();
     } else
         m_client->didFinishLoading(identifier, finishTime);
 }
@@ -369,7 +369,7 @@ void DocumentThreadableLoader::didTimeout(Timer<DocumentThreadableLoader>* timer
     cancelWithError(error);
 }
 
-void DocumentThreadableLoader::preflightSuccess()
+void DocumentThreadableLoader::loadActualRequest()
 {
     OwnPtr<ResourceRequest> actualRequest;
     actualRequest.swap(m_actualRequest);
@@ -381,7 +381,7 @@ void DocumentThreadableLoader::preflightSuccess()
     loadRequest(*actualRequest);
 }
 
-void DocumentThreadableLoader::preflightFailure(const String& url, const String& errorDescription)
+void DocumentThreadableLoader::handlePreflightFailure(const String& url, const String& errorDescription)
 {
     ResourceError error(errorDomainBlinkInternal, 0, url, errorDescription);
 
