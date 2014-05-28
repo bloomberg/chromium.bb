@@ -1,8 +1,8 @@
 layer at (0,0) size 800x600
   RenderView at (0,0) size 800x600
-layer at (0,0) size 800x285
-  RenderBlock {HTML} at (0,0) size 800x285
-    RenderBody {BODY} at (8,8) size 784x269
+layer at (0,0) size 800x450
+  RenderBlock {HTML} at (0,0) size 800x450
+    RenderBody {BODY} at (8,8) size 784x434
       RenderMenuList {SELECT} at (4,4) size 42x20 [bgcolor=#C0C0C0] [border: (1px solid #A9A9A9)]
         RenderBlock (anonymous) at (1,1) size 40x18
           RenderText at (4,1) size 17x16
@@ -101,3 +101,21 @@ layer at (0,0) size 800x285
       RenderText {#text} at (149,236) size 4x19
         text run at (149,236) width 4: " "
       RenderBR {BR} at (153,236) size 0x19
+      RenderListBox {SELECT} at (4,273) size 200x25 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+      RenderText {#text} at (208,280) size 4x19
+        text run at (208,280) width 4: " "
+      RenderBR {BR} at (212,280) size 0x19
+      RenderListBox {SELECT} at (4,306) size 200x25 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+      RenderText {#text} at (208,313) size 4x19
+        text run at (208,313) width 4: " "
+      RenderBR {BR} at (212,313) size 0x19
+      RenderListBox {SELECT} at (4,339) size 200x25 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+      RenderText {#text} at (208,346) size 4x19
+        text run at (208,346) width 4: " "
+      RenderBR {BR} at (212,346) size 0x19
+      RenderListBox {SELECT} at (4,372) size 200x25 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+      RenderText {#text} at (208,379) size 4x19
+        text run at (208,379) width 4: " "
+      RenderBR {BR} at (212,379) size 0x19
+      RenderListBox {SELECT} at (4,405) size 200x25 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+      RenderText {#text} at (0,0) size 0x0

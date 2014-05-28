@@ -45,6 +45,7 @@
 #include "core/rendering/RenderView.h"
 #include "platform/fonts/FontCache.h"
 #include "platform/geometry/IntSize.h"
+#include "platform/text/PlatformLocale.h"
 
 using namespace std;
 
@@ -215,19 +216,51 @@ void RenderMenuList::setTextFromOption(int optionIndex)
 {
     HTMLSelectElement* select = selectElement();
     const WillBeHeapVector<RawPtrWillBeMember<HTMLElement> >& listItems = select->listItems();
-    int size = listItems.size();
+    const int size = listItems.size();
 
-    int i = select->optionToListIndex(optionIndex);
     String text = emptyString();
-    if (i >= 0 && i < size) {
-        Element* element = listItems[i];
-        if (isHTMLOptionElement(*element)) {
-            text = toHTMLOptionElement(element)->textIndentedToRespectGroupLabel();
-            m_optionStyle = element->renderStyle();
+    m_optionStyle.clear();
+
+    if (multiple()) {
+        unsigned selectedCount = 0;
+        int firstSelectedIndex = -1;
+        for (int i = 0; i < size; ++i) {
+            Element* element = listItems[i];
+            if (!isHTMLOptionElement(*element))
+                continue;
+
+            if (toHTMLOptionElement(element)->selected()) {
+                if (++selectedCount == 1)
+                    firstSelectedIndex = i;
+            }
+        }
+
+        if (selectedCount == 1) {
+            ASSERT(0 <= firstSelectedIndex);
+            ASSERT(firstSelectedIndex < size);
+            HTMLOptionElement* selectedOptionElement = toHTMLOptionElement(listItems[firstSelectedIndex]);
+            ASSERT(selectedOptionElement->selected());
+            text = selectedOptionElement->textIndentedToRespectGroupLabel();
+            m_optionStyle = selectedOptionElement->renderStyle();
+        } else {
+            Locale& locale = select->locale();
+            String localizedNumberString = locale.convertToLocalizedNumber(String::number(selectedCount));
+            text = locale.queryString(blink::WebLocalizedString::SelectMenuListText, localizedNumberString);
+            ASSERT(!m_optionStyle);
+        }
+    } else {
+        const int i = select->optionToListIndex(optionIndex);
+        if (i >= 0 && i < size) {
+            Element* element = listItems[i];
+            if (isHTMLOptionElement(*element)) {
+                text = toHTMLOptionElement(element)->textIndentedToRespectGroupLabel();
+                m_optionStyle = element->renderStyle();
+            }
         }
     }
 
     setText(text.stripWhiteSpace());
+
     didUpdateActiveOption(optionIndex);
 }
 
