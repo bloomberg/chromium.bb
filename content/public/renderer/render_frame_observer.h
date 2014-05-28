@@ -39,6 +39,10 @@ class CONTENT_EXPORT RenderFrameObserver : public IPC::Listener,
   // Called when a load is explicitly stopped by the user or browser.
   virtual void OnStop() {}
 
+  // Called when the RenderFrame visiblity is changed.
+  virtual void WasHidden() {}
+  virtual void WasShown() {}
+
   // These match the Blink API notifications
   virtual void DidCommitProvisionalLoad(bool is_new_navigation) {}
   virtual void DidStartProvisionalLoad() {}

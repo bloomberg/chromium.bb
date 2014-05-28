@@ -113,6 +113,11 @@ class CONTENT_EXPORT RenderWidget
   void RegisterSwappedOutChildFrame(RenderFrameImpl* frame);
   void UnregisterSwappedOutChildFrame(RenderFrameImpl* frame);
 
+  // Functions to track all RenderFrame objects associated with this
+  // RenderWidget.
+  void RegisterRenderFrame(RenderFrameImpl* frame);
+  void UnregisterRenderFrame(RenderFrameImpl* frame);
+
 #if defined(VIDEO_HOLE)
   void RegisterVideoHoleFrame(RenderFrameImpl* frame);
   void UnregisterVideoHoleFrame(RenderFrameImpl* frame);
@@ -719,6 +724,11 @@ class CONTENT_EXPORT RenderWidget
 #if defined(VIDEO_HOLE)
   ObserverList<RenderFrameImpl> video_hole_frames_;
 #endif  // defined(VIDEO_HOLE)
+
+  // A list of RenderFrames associated with this RenderWidget. Notifications
+  // are sent to each frame in the list for events such as changing
+  // visibility state for example.
+  ObserverList<RenderFrameImpl> render_frames_;
 
   ui::MenuSourceType context_menu_source_type_;
   gfx::Point touch_editing_context_menu_location_;

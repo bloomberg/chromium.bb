@@ -131,6 +131,10 @@ class CONTENT_EXPORT RenderFrameImpl
   // Notification from RenderView.
   virtual void OnStop();
 
+  // Notifications from RenderWidget.
+  void WasHidden();
+  void WasShown();
+
   // Start/Stop loading notifications.
   // TODO(nasko): Those are page-level methods at this time and come from
   // WebViewClient. We should move them to be WebFrameClient calls and put

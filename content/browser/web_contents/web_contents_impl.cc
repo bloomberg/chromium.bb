@@ -217,6 +217,11 @@ void SendToAllFramesInternal(IPC::Message* message, RenderFrameHost* rfh) {
   rfh->Send(message_copy);
 }
 
+void AddRenderWidgetHostToSet(std::set<RenderWidgetHostImpl*>* set,
+                              RenderFrameHost* rfh) {
+  set->insert(static_cast<RenderFrameHostImpl*>(rfh)->GetRenderWidgetHost());
+}
+
 }  // namespace
 
 WebContents* WebContents::Create(const WebContents::CreateParams& params) {
@@ -938,12 +943,18 @@ base::TimeTicks WebContentsImpl::GetLastActiveTime() const {
 
 void WebContentsImpl::WasShown() {
   controller_.SetActive(true);
-  RenderWidgetHostView* rwhv = GetRenderWidgetHostView();
-  if (rwhv) {
-    rwhv->Show();
+
+  std::set<RenderWidgetHostImpl*> widgets = GetRenderWidgetHostsInTree();
+  for (std::set<RenderWidgetHostImpl*>::iterator iter = widgets.begin();
+       iter != widgets.end();
+       iter++) {
+    RenderWidgetHostView* rwhv = (*iter)->GetView();
+    if (rwhv) {
+      rwhv->Show();
 #if defined(OS_MACOSX)
-    rwhv->SetActive(true);
+      rwhv->SetActive(true);
 #endif
+    }
   }
 
   last_active_time_ = base::TimeTicks::Now();
@@ -971,9 +982,14 @@ void WebContentsImpl::WasHidden() {
     // removes the |GetRenderViewHost()|; then when we actually destroy the
     // window, OnWindowPosChanged() notices and calls WasHidden() (which
     // calls us).
-    RenderWidgetHostView* rwhv = GetRenderWidgetHostView();
-    if (rwhv)
-      rwhv->Hide();
+    std::set<RenderWidgetHostImpl*> widgets = GetRenderWidgetHostsInTree();
+    for (std::set<RenderWidgetHostImpl*>::iterator iter = widgets.begin();
+         iter != widgets.end();
+         iter++) {
+      RenderWidgetHostView* rwhv = (*iter)->GetView();
+      if (rwhv)
+        rwhv->Hide();
+    }
   }
 
   FOR_EACH_OBSERVER(WebContentsObserver, observers_, WasHidden());
@@ -1127,6 +1143,12 @@ void WebContentsImpl::AddObserver(WebContentsObserver* observer) {
 
 void WebContentsImpl::RemoveObserver(WebContentsObserver* observer) {
   observers_.RemoveObserver(observer);
+}
+
+std::set<RenderWidgetHostImpl*> WebContentsImpl::GetRenderWidgetHostsInTree() {
+  std::set<RenderWidgetHostImpl*> set;
+  ForEachFrame(base::Bind(&AddRenderWidgetHostToSet, base::Unretained(&set)));
+  return set;
 }
 
 void WebContentsImpl::Activate() {

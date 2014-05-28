@@ -416,6 +416,8 @@ RenderFrameImpl::RenderFrameImpl(RenderViewImpl* render_view, int routing_id)
       g_routing_id_frame_map.Get().insert(std::make_pair(routing_id_, this));
   CHECK(result.second) << "Inserting a duplicate item.";
 
+  render_view_->RegisterRenderFrame(this);
+
 #if defined(OS_ANDROID)
   new JavaBridgeDispatcher(this);
 #endif
@@ -428,10 +430,13 @@ RenderFrameImpl::RenderFrameImpl(RenderViewImpl* render_view, int routing_id)
 RenderFrameImpl::~RenderFrameImpl() {
   FOR_EACH_OBSERVER(RenderFrameObserver, observers_, RenderFrameGone());
   FOR_EACH_OBSERVER(RenderFrameObserver, observers_, OnDestruct());
+
 #if defined(VIDEO_HOLE)
   if (media_player_manager_)
     render_view_->UnregisterVideoHoleFrame(this);
 #endif  // defined(VIDEO_HOLE)
+
+  render_view_->UnregisterRenderFrame(this);
   g_routing_id_frame_map.Get().erase(routing_id_);
   RenderThread::Get()->RemoveRoute(routing_id_);
 }
@@ -2885,6 +2890,14 @@ void RenderFrameImpl::RemoveObserver(RenderFrameObserver* observer) {
 
 void RenderFrameImpl::OnStop() {
   FOR_EACH_OBSERVER(RenderFrameObserver, observers_, OnStop());
+}
+
+void RenderFrameImpl::WasHidden() {
+  FOR_EACH_OBSERVER(RenderFrameObserver, observers_, WasHidden());
+}
+
+void RenderFrameImpl::WasShown() {
+  FOR_EACH_OBSERVER(RenderFrameObserver, observers_, WasShown());
 }
 
 // Tell the embedding application that the URL of the active page has changed.

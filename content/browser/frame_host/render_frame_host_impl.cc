@@ -19,6 +19,7 @@
 #include "content/browser/renderer_host/input/input_router.h"
 #include "content/browser/renderer_host/input/timeout_monitor.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
+#include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/common/desktop_notification_messages.h"
 #include "content/common/frame_messages.h"
 #include "content/common/input_messages.h"
@@ -486,6 +487,10 @@ void RenderFrameHostImpl::OnNavigate(const IPC::Message& msg) {
   }
 
   frame_tree_node()->navigator()->DidNavigate(this, validated_params);
+}
+
+RenderWidgetHostImpl* RenderFrameHostImpl::GetRenderWidgetHost() {
+  return static_cast<RenderWidgetHostImpl*>(render_view_host_);
 }
 
 int RenderFrameHostImpl::GetEnabledBindings() {

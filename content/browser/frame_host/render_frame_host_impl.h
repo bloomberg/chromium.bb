@@ -39,6 +39,7 @@ class RenderFrameHostDelegate;
 class RenderFrameProxyHost;
 class RenderProcessHost;
 class RenderViewHostImpl;
+class RenderWidgetHostImpl;
 struct ContextMenuParams;
 struct GlobalRequestID;
 struct Referrer;
@@ -80,6 +81,9 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost {
   RenderViewHostImpl* render_view_host() { return render_view_host_; }
   RenderFrameHostDelegate* delegate() { return delegate_; }
   FrameTreeNode* frame_tree_node() { return frame_tree_node_; }
+  // TODO(nasko): The RenderWidgetHost will be owned by RenderFrameHost in
+  // the future, so update this accessor to return the right pointer.
+  RenderWidgetHostImpl* GetRenderWidgetHost();
 
   // This function is called when this is a swapped out RenderFrameHost that
   // lives in the same process as the parent frame. The

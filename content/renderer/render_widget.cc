@@ -768,6 +768,8 @@ void RenderWidget::OnWasHidden() {
   TRACE_EVENT0("renderer", "RenderWidget::OnWasHidden");
   // Go into a mode where we stop generating paint and scrolling events.
   SetHidden(true);
+  FOR_EACH_OBSERVER(RenderFrameImpl, render_frames_,
+                    WasHidden());
 }
 
 void RenderWidget::OnWasShown(bool needs_repainting) {
@@ -778,6 +780,8 @@ void RenderWidget::OnWasShown(bool needs_repainting) {
 
   // See OnWasHidden
   SetHidden(false);
+  FOR_EACH_OBSERVER(RenderFrameImpl, render_frames_,
+                    WasShown());
 
   if (!needs_repainting)
     return;
@@ -2122,6 +2126,14 @@ void RenderWidget::RegisterSwappedOutChildFrame(RenderFrameImpl* frame) {
 
 void RenderWidget::UnregisterSwappedOutChildFrame(RenderFrameImpl* frame) {
   swapped_out_frames_.RemoveObserver(frame);
+}
+
+void RenderWidget::RegisterRenderFrame(RenderFrameImpl* frame) {
+  render_frames_.AddObserver(frame);
+}
+
+void RenderWidget::UnregisterRenderFrame(RenderFrameImpl* frame) {
+  render_frames_.RemoveObserver(frame);
 }
 
 #if defined(VIDEO_HOLE)

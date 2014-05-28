@@ -216,6 +216,14 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, CrossSiteIframe) {
   NavigateFrameToURL(root->child_at(0), http_url);
   EXPECT_EQ(http_url, observer.navigation_url());
   EXPECT_TRUE(observer.navigation_succeeded());
+  {
+    // There should be only one RenderWidgetHost when there are no
+    // cross-process iframes.
+    std::set<RenderWidgetHostImpl*> widgets_set =
+        static_cast<WebContentsImpl*>(shell()->web_contents())
+            ->GetRenderWidgetHostsInTree();
+    EXPECT_EQ(1U, widgets_set.size());
+  }
 
   // These must stay in scope with replace_host.
   GURL::Replacements replace_host;
@@ -238,6 +246,14 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, CrossSiteIframe) {
   EXPECT_NE(shell()->web_contents()->GetRenderViewHost(), rvh);
   EXPECT_NE(shell()->web_contents()->GetSiteInstance(), site_instance);
   EXPECT_NE(shell()->web_contents()->GetRenderProcessHost(), rph);
+  {
+    // There should be now two RenderWidgetHosts, one for each process
+    // rendering a frame.
+    std::set<RenderWidgetHostImpl*> widgets_set =
+        static_cast<WebContentsImpl*>(shell()->web_contents())
+            ->GetRenderWidgetHostsInTree();
+    EXPECT_EQ(2U, widgets_set.size());
+  }
 
   // Load another cross-site page into the same iframe.
   cross_site_url = test_server()->GetURL("files/title3.html");
@@ -262,6 +278,12 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, CrossSiteIframe) {
   EXPECT_NE(shell()->web_contents()->GetRenderProcessHost(),
             child->current_frame_host()->GetProcess());
   EXPECT_NE(rph, child->current_frame_host()->GetProcess());
+  {
+    std::set<RenderWidgetHostImpl*> widgets_set =
+        static_cast<WebContentsImpl*>(shell()->web_contents())
+            ->GetRenderWidgetHostsInTree();
+    EXPECT_EQ(2U, widgets_set.size());
+  }
 }
 
 // Crash a subframe and ensures its children are cleared from the FrameTree.
