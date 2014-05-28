@@ -12,40 +12,27 @@
 
 namespace local_discovery {
 
-CloudPrintPrinterList::CloudPrintPrinterList(
-    net::URLRequestContextGetter* request_context,
-    OAuth2TokenService* token_service,
-    const std::string& account_id,
-    CloudDeviceListDelegate* delegate)
-    : delegate_(delegate),
-      api_flow_(request_context,
-                token_service,
-                account_id,
-                this) {
+CloudPrintPrinterList::CloudPrintPrinterList(CloudDeviceListDelegate* delegate)
+    : delegate_(delegate) {
 }
 
 CloudPrintPrinterList::~CloudPrintPrinterList() {
 }
 
-void CloudPrintPrinterList::Start() {
-  api_flow_.Start();
-}
-
-void CloudPrintPrinterList::OnGCDAPIFlowError(GCDBaseApiFlow* flow,
-                                              GCDBaseApiFlow::Status status) {
+void CloudPrintPrinterList::OnGCDAPIFlowError(GCDApiFlow::Status status) {
   delegate_->OnDeviceListUnavailable();
 }
 
 void CloudPrintPrinterList::OnGCDAPIFlowComplete(
-    GCDBaseApiFlow* flow,
-    const base::DictionaryValue* value) {
+    const base::DictionaryValue& value) {
   const base::ListValue* printers;
 
-  if (!value->GetList(cloud_print::kPrinterListValue, &printers)) {
+  if (!value.GetList(cloud_print::kPrinterListValue, &printers)) {
     delegate_->OnDeviceListUnavailable();
     return;
   }
 
+  std::vector<CloudDeviceListDelegate::Device> devices;
   for (base::ListValue::const_iterator i = printers->begin();
        i != printers->end();
        i++) {
@@ -55,13 +42,13 @@ void CloudPrintPrinterList::OnGCDAPIFlowComplete(
     if (!(*i)->GetAsDictionary(&printer))
       continue;
 
-    if (!FillPrinterDetails(printer, &printer_details))
+    if (!FillPrinterDetails(*printer, &printer_details))
       continue;
 
-    printer_list_.push_back(printer_details);
+    devices.push_back(printer_details);
   }
 
-  delegate_->OnDeviceListReady();
+  delegate_->OnDeviceListReady(devices);
 }
 
 GURL CloudPrintPrinterList::GetURL() {
@@ -69,19 +56,19 @@ GURL CloudPrintPrinterList::GetURL() {
 }
 
 bool CloudPrintPrinterList::FillPrinterDetails(
-    const base::DictionaryValue* printer_value,
+    const base::DictionaryValue& printer_value,
     CloudDeviceListDelegate::Device* printer_details) {
-  if (!printer_value->GetString(cloud_print::kIdValue, &printer_details->id))
+  if (!printer_value.GetString(cloud_print::kIdValue, &printer_details->id))
     return false;
 
-  if (!printer_value->GetString(cloud_print::kDisplayNameValue,
-                                &printer_details->display_name)) {
+  if (!printer_value.GetString(cloud_print::kDisplayNameValue,
+                               &printer_details->display_name)) {
     return false;
   }
 
   // Non-essential.
-  printer_value->GetString(cloud_print::kPrinterDescValue,
-                           &printer_details->description);
+  printer_value.GetString(cloud_print::kPrinterDescValue,
+                          &printer_details->description);
 
   printer_details->type = CloudDeviceListDelegate::kDeviceTypePrinter;
 

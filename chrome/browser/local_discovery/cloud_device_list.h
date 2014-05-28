@@ -9,45 +9,30 @@
 #include <vector>
 
 #include "chrome/browser/local_discovery/cloud_device_list_delegate.h"
-#include "chrome/browser/local_discovery/gcd_base_api_flow.h"
+#include "chrome/browser/local_discovery/gcd_api_flow.h"
 
 namespace local_discovery {
 
-class CloudDeviceList : public GCDBaseApiFlow::Delegate {
+class CloudDeviceList : public GCDApiFlowRequest {
  public:
   typedef std::vector<CloudDeviceListDelegate::Device> DeviceList;
   typedef DeviceList::const_iterator iterator;
 
-  CloudDeviceList(net::URLRequestContextGetter* request_context,
-                  OAuth2TokenService* token_service,
-                  const std::string& account_id,
-                  CloudDeviceListDelegate* delegate);
+  explicit CloudDeviceList(CloudDeviceListDelegate* delegate);
   virtual ~CloudDeviceList();
 
-  void Start();
-
-  virtual void OnGCDAPIFlowError(GCDBaseApiFlow* flow,
-                                 GCDBaseApiFlow::Status status) OVERRIDE;
+  virtual void OnGCDAPIFlowError(GCDApiFlow::Status status) OVERRIDE;
 
   virtual void OnGCDAPIFlowComplete(
-      GCDBaseApiFlow* flow,
-      const base::DictionaryValue* value) OVERRIDE;
+      const base::DictionaryValue& value) OVERRIDE;
 
   virtual GURL GetURL() OVERRIDE;
 
-  GCDBaseApiFlow* GetOAuth2ApiFlowForTests() { return &api_flow_; }
-
-  const DeviceList& device_list() const {
-    return device_list_;
-  }
-
  private:
-  bool FillDeviceDetails(const base::DictionaryValue* value,
+  bool FillDeviceDetails(const base::DictionaryValue& value,
                          CloudDeviceListDelegate::Device* device);
 
-  DeviceList device_list_;
   CloudDeviceListDelegate* delegate_;
-  GCDBaseApiFlow api_flow_;
 };
 
 }  // namespace local_discovery

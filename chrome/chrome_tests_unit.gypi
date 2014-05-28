@@ -1043,6 +1043,7 @@
         'browser/invalidation/invalidator_storage_unittest.cc',
         'browser/invalidation/ticl_invalidation_service_unittest.cc',
         'browser/invalidation/ticl_profile_settings_provider_unittest.cc',
+        'browser/local_discovery/gcd_api_flow_unittest.cc',
         'browser/local_discovery/privet_confirm_api_flow_unittest.cc',
         'browser/local_discovery/privet_http_unittest.cc',
         'browser/local_discovery/privet_url_fetcher_unittest.cc',

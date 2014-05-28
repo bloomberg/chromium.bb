@@ -11,38 +11,26 @@
 
 namespace local_discovery {
 
-CloudDeviceList::CloudDeviceList(net::URLRequestContextGetter* request_context,
-                                 OAuth2TokenService* token_service,
-                                 const std::string& account_id,
-                                 CloudDeviceListDelegate* delegate)
-    : delegate_(delegate),
-      api_flow_(request_context,
-                token_service,
-                account_id,
-                this) {
+CloudDeviceList::CloudDeviceList(CloudDeviceListDelegate* delegate)
+    : delegate_(delegate) {
 }
 
 CloudDeviceList::~CloudDeviceList() {
 }
 
-void CloudDeviceList::Start() {
-  api_flow_.Start();
-}
-
-void CloudDeviceList::OnGCDAPIFlowError(GCDBaseApiFlow* flow,
-                                        GCDBaseApiFlow::Status status) {
+void CloudDeviceList::OnGCDAPIFlowError(GCDApiFlow::Status status) {
   delegate_->OnDeviceListUnavailable();
 }
 
-void CloudDeviceList::OnGCDAPIFlowComplete(GCDBaseApiFlow* flow,
-                                           const base::DictionaryValue* value) {
+void CloudDeviceList::OnGCDAPIFlowComplete(const base::DictionaryValue& value) {
   const base::ListValue* devices;
 
-  if (!value->GetList("devices", &devices)) {
+  if (!value.GetList("devices", &devices)) {
     delegate_->OnDeviceListUnavailable();
     return;
   }
 
+  std::vector<CloudDeviceListDelegate::Device> result;
   for (base::ListValue::const_iterator i = devices->begin();
        i != devices->end(); i++) {
     base::DictionaryValue* device;
@@ -51,13 +39,13 @@ void CloudDeviceList::OnGCDAPIFlowComplete(GCDBaseApiFlow* flow,
     if (!(*i)->GetAsDictionary(&device))
       continue;
 
-    if (!FillDeviceDetails(device, &details))
+    if (!FillDeviceDetails(*device, &details))
       continue;
 
-    device_list_.push_back(details);
+    result.push_back(details);
   }
 
-  delegate_->OnDeviceListReady();
+  delegate_->OnDeviceListReady(result);
 }
 
 GURL CloudDeviceList::GetURL() {
@@ -65,21 +53,21 @@ GURL CloudDeviceList::GetURL() {
 }
 
 bool CloudDeviceList::FillDeviceDetails(
-    const base::DictionaryValue* device_value,
+    const base::DictionaryValue& device_value,
     CloudDeviceListDelegate::Device* details) {
-  if (!device_value->GetString("id", &details->id))
+  if (!device_value.GetString("id", &details->id))
     return false;
 
-  if (!device_value->GetString("displayName", &details->display_name) &&
-      !device_value->GetString("systemName", &details->display_name)) {
+  if (!device_value.GetString("displayName", &details->display_name) &&
+      !device_value.GetString("systemName", &details->display_name)) {
     return false;
   }
 
-  if (!device_value->GetString("deviceKind", &details->type))
+  if (!device_value.GetString("deviceKind", &details->type))
     return false;
 
   // Non-essential.
-  device_value->GetString("description", &details->description);
+  device_value.GetString("description", &details->description);
 
   return true;
 }

@@ -6,16 +6,13 @@
 #define CHROME_BROWSER_LOCAL_DISCOVERY_CLOUD_DEVICE_LIST_DELEGATE_H_
 
 #include <string>
+#include <vector>
 
 namespace local_discovery {
 
 class CloudDeviceListDelegate {
  public:
   static const char kDeviceTypePrinter[];
-
-  CloudDeviceListDelegate();
-  virtual ~CloudDeviceListDelegate();
-
   struct Device {
     Device();
     ~Device();
@@ -26,7 +23,12 @@ class CloudDeviceListDelegate {
     std::string description;
   };
 
-  virtual void OnDeviceListReady() = 0;
+  typedef std::vector<Device> DeviceList;
+
+  CloudDeviceListDelegate();
+  virtual ~CloudDeviceListDelegate();
+
+  virtual void OnDeviceListReady(const DeviceList& devices) = 0;
   virtual void OnDeviceListUnavailable() = 0;
 };
 

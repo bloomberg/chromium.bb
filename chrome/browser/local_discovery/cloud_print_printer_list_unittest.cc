@@ -6,19 +6,15 @@
 
 #include <set>
 
-#include "base/message_loop/message_loop.h"
-#include "base/run_loop.h"
-#include "components/cloud_devices/common/cloud_devices_urls.h"
-#include "content/public/test/test_browser_thread.h"
-#include "google_apis/gaia/fake_oauth2_token_service.h"
-#include "net/url_request/test_url_fetcher_factory.h"
-#include "net/url_request/url_request_test_util.h"
+#include "base/json/json_reader.h"
+#include "chrome/browser/local_discovery/cloud_device_list_delegate.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using testing::Mock;
-using testing::NiceMock;
+using testing::SaveArg;
 using testing::StrictMock;
+using testing::_;
 
 namespace local_discovery {
 
@@ -35,71 +31,48 @@ const char kSampleSuccessResponseOAuth[] = "{"
 
 class MockDelegate : public CloudDeviceListDelegate {
  public:
+  MOCK_METHOD1(OnDeviceListReady, void(const DeviceList&));
   MOCK_METHOD0(OnDeviceListUnavailable, void());
-  MOCK_METHOD0(OnDeviceListReady, void());
 };
 
-class CloudPrintPrinterListTest : public testing::Test {
- public:
-  CloudPrintPrinterListTest()
-      : ui_thread_(content::BrowserThread::UI, &loop_),
-        request_context_(new net::TestURLRequestContextGetter(
-            base::MessageLoopProxy::current())),
-        fetcher_factory_(NULL),
-        printer_list_(request_context_.get(), &token_service_, "account_id",
-                      &delegate_) {
-  }
+TEST(CloudPrintPrinterListTest, Params) {
+  CloudPrintPrinterList device_list(NULL);
+  EXPECT_EQ(GURL("https://www.google.com/cloudprint/search"),
+            device_list.GetURL());
+  EXPECT_EQ("https://www.googleapis.com/auth/cloudprint",
+            device_list.GetOAuthScope());
+  EXPECT_EQ(net::URLFetcher::GET, device_list.GetRequestType());
+  EXPECT_FALSE(device_list.GetExtraRequestHeaders().empty());
+}
 
-  virtual void SetUp() OVERRIDE {
-    ui_thread_.Stop();  // HACK: Fake being on the UI thread
-    token_service_.set_request_context(request_context_.get());
-    token_service_.AddAccount("account_id");
-  }
+TEST(CloudPrintPrinterListTest, Parsing) {
+  StrictMock<MockDelegate> delegate;
+  CloudPrintPrinterList device_list(&delegate);
+  CloudDeviceListDelegate::DeviceList devices;
+  EXPECT_CALL(delegate, OnDeviceListReady(_)).WillOnce(SaveArg<0>(&devices));
 
- protected:
-  base::MessageLoopForUI loop_;
-  content::TestBrowserThread ui_thread_;
-  scoped_refptr<net::TestURLRequestContextGetter> request_context_;
-  net::FakeURLFetcherFactory fetcher_factory_;
-  FakeOAuth2TokenService token_service_;
-  StrictMock<MockDelegate> delegate_;
-  CloudPrintPrinterList printer_list_;
-};
+  scoped_ptr<base::Value> value(
+      base::JSONReader::Read(kSampleSuccessResponseOAuth));
+  const base::DictionaryValue* dictionary = NULL;
+  ASSERT_TRUE(value->GetAsDictionary(&dictionary));
+  device_list.OnGCDAPIFlowComplete(*dictionary);
 
-TEST_F(CloudPrintPrinterListTest, List) {
-  fetcher_factory_.SetFakeResponse(
-      cloud_devices::GetCloudPrintRelativeURL("search"),
-      kSampleSuccessResponseOAuth,
-      net::HTTP_OK,
-      net::URLRequestStatus::SUCCESS);
-
-  GCDBaseApiFlow* cloudprint_flow = printer_list_.GetOAuth2ApiFlowForTests();
-
-  printer_list_.Start();
-
-  cloudprint_flow->OnGetTokenSuccess(NULL, "SomeToken", base::Time());
-
-  EXPECT_CALL(delegate_, OnDeviceListReady());
-
-  base::RunLoop().RunUntilIdle();
-
-  Mock::VerifyAndClear(&delegate_);
+  Mock::VerifyAndClear(&delegate);
 
   std::set<std::string> ids_found;
   std::set<std::string> ids_expected;
   ids_expected.insert("someID");
 
-  for (CloudPrintPrinterList::iterator i = printer_list_.printer_list().begin();
-       i != printer_list_.printer_list().end(); i++) {
-    ids_found.insert(i->id);
+  for (size_t i = 0; i != devices.size(); ++i) {
+    ids_found.insert(devices[i].id);
   }
 
   ASSERT_EQ(ids_expected, ids_found);
 
-  EXPECT_EQ("someID", printer_list_.printer_list()[0].id);
-  EXPECT_EQ("someDisplayName", printer_list_.printer_list()[0].display_name);
-  EXPECT_EQ("someDescription", printer_list_.printer_list()[0].description);
-  EXPECT_EQ("printer", printer_list_.printer_list()[0].type);
+  EXPECT_EQ("someID", devices[0].id);
+  EXPECT_EQ("someDisplayName", devices[0].display_name);
+  EXPECT_EQ("someDescription", devices[0].description);
+  EXPECT_EQ("printer", devices[0].type);
 }
 
 }  // namespace

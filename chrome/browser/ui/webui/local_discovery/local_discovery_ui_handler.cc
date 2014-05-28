@@ -216,33 +216,23 @@ void LocalDiscoveryUIHandler::HandleCancelRegistration(
 
 void LocalDiscoveryUIHandler::HandleRequestDeviceList(
     const base::ListValue* args) {
-  Profile* profile = Profile::FromWebUI(web_ui());
-  ProfileOAuth2TokenService* token_service =
-      ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
-
-  SigninManagerBase* signin_manager =
-      SigninManagerFactory::GetInstance()->GetForProfile(profile);
-
   failed_list_count_ = 0;
   succeded_list_count_ = 0;
+  cloud_devices_.clear();
 
-  cloud_print_printer_list_.reset(
-      new CloudPrintPrinterList(profile->GetRequestContext(),
-                                token_service,
-                                signin_manager->GetAuthenticatedAccountId(),
-                                this));
+  cloud_print_printer_list_ = CreateApiFlow(
+      scoped_ptr<GCDApiFlow::Request>(new CloudPrintPrinterList(this)));
   if (CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableCloudDevices)) {
-    cloud_device_list_.reset(
-        new CloudDeviceList(profile->GetRequestContext(),
-                            token_service,
-                            signin_manager->GetAuthenticatedAccountId(),
-                            this));
+    cloud_device_list_ = CreateApiFlow(
+        scoped_ptr<GCDApiFlow::Request>(new CloudDeviceList(this)));
   }
 
-  cloud_print_printer_list_->Start();
+  if (cloud_print_printer_list_)
+    cloud_print_printer_list_->Start();
   if (cloud_device_list_)
     cloud_device_list_->Start();
+  CheckListingDone();
 }
 
 void LocalDiscoveryUIHandler::HandleOpenCloudPrintURL(
@@ -301,30 +291,15 @@ void LocalDiscoveryUIHandler::OnPrivetRegisterClaimToken(
     return;
   }
 
-  Profile* profile = Profile::FromWebUI(web_ui());
-
-  ProfileOAuth2TokenService* token_service =
-      ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
-
-  if (!token_service) {
+  confirm_api_call_flow_ = CreateApiFlow(
+      scoped_ptr<GCDApiFlow::Request>(new PrivetConfirmApiCallFlow(
+          token,
+          base::Bind(&LocalDiscoveryUIHandler::OnConfirmDone,
+                     base::Unretained(this)))));
+  if (!confirm_api_call_flow_) {
     SendRegisterError();
     return;
   }
-
-  SigninManagerBase* signin_manager =
-      SigninManagerFactory::GetInstance()->GetForProfile(profile);
-  if (!signin_manager) {
-    SendRegisterError();
-    return;
-  }
-
-  confirm_api_call_flow_.reset(new PrivetConfirmApiCallFlow(
-      profile->GetRequestContext(),
-      token_service,
-      signin_manager->GetAuthenticatedAccountId(),
-      token,
-      base::Bind(&LocalDiscoveryUIHandler::OnConfirmDone,
-                 base::Unretained(this))));
   confirm_api_call_flow_->Start();
 }
 
@@ -376,8 +351,8 @@ void LocalDiscoveryUIHandler::OnPrivetRegisterDone(
   SendRegisterDone(found->first, found->second);
 }
 
-void LocalDiscoveryUIHandler::OnConfirmDone(GCDBaseApiFlow::Status status) {
-  if (status == GCDBaseApiFlow::SUCCESS) {
+void LocalDiscoveryUIHandler::OnConfirmDone(GCDApiFlow::Status status) {
+  if (status == GCDApiFlow::SUCCESS) {
     confirm_api_call_flow_.reset();
     current_register_operation_->CompleteRegistration();
   } else {
@@ -426,7 +401,9 @@ void LocalDiscoveryUIHandler::DeviceCacheFlushed() {
   privet_lister_->DiscoverNewDevices(false);
 }
 
-void LocalDiscoveryUIHandler::OnDeviceListReady() {
+void LocalDiscoveryUIHandler::OnDeviceListReady(
+    const std::vector<Device>& devices) {
+  cloud_devices_.insert(cloud_devices_.end(), devices.begin(), devices.end());
   ++succeded_list_count_;
   CheckListingDone();
 }
@@ -524,19 +501,32 @@ void LocalDiscoveryUIHandler::CheckListingDone() {
     local_ids.insert(i->second.id);
   }
 
-  if (cloud_print_printer_list_) {
-    ReadDevicesList(cloud_print_printer_list_->printer_list(), local_ids,
-                    &devices_list);
-  }
-  if (cloud_device_list_) {
-    ReadDevicesList(cloud_device_list_->device_list(), local_ids,
-                    &devices_list);
-  }
+  ReadDevicesList(cloud_devices_, local_ids, &devices_list);
 
   web_ui()->CallJavascriptFunction(
       "local_discovery.onCloudDeviceListAvailable", devices_list);
   cloud_print_printer_list_.reset();
   cloud_device_list_.reset();
+}
+
+scoped_ptr<GCDApiFlow> LocalDiscoveryUIHandler::CreateApiFlow(
+    scoped_ptr<GCDApiFlow::Request> request) {
+  Profile* profile = Profile::FromWebUI(web_ui());
+  if (!profile)
+    return scoped_ptr<GCDApiFlow>();
+  ProfileOAuth2TokenService* token_service =
+      ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
+  if (!token_service)
+    return scoped_ptr<GCDApiFlow>();
+  SigninManagerBase* signin_manager =
+      SigninManagerFactory::GetInstance()->GetForProfile(profile);
+  if (!signin_manager)
+    return scoped_ptr<GCDApiFlow>();
+  return make_scoped_ptr(
+      new GCDApiFlow(profile->GetRequestContext(),
+                     token_service,
+                     signin_manager->GetAuthenticatedAccountId(),
+                     request.Pass()));
 }
 
 #if defined(CLOUD_PRINT_CONNECTOR_UI_AVAILABLE)
@@ -644,6 +634,7 @@ void LocalDiscoveryUIHandler::RefreshCloudPrintStatusFromService() {
     CloudPrintProxyServiceFactory::GetForProfile(Profile::FromWebUI(web_ui()))->
         RefreshStatusFromService();
 }
+
 #endif // cloud print connector option stuff
 
 }  // namespace local_discovery

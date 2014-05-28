@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/local_discovery/gcd_base_api_flow.h"
+#include "chrome/browser/local_discovery/gcd_api_flow.h"
 
 #include "base/json/json_reader.h"
 #include "base/strings/string_number_conversions.h"
@@ -23,49 +23,47 @@ namespace {
 const char kCloudPrintOAuthHeaderFormat[] = "Authorization: Bearer %s";
 }
 
-std::string GCDBaseApiFlow::Delegate::GetOAuthScope() {
-  return cloud_devices::kCloudDevicesAuthScope;
+GCDApiFlow::Request::Request() {
 }
 
-net::URLFetcher::RequestType GCDBaseApiFlow::Delegate::GetRequestType() {
+GCDApiFlow::Request::~Request() {
+}
+
+net::URLFetcher::RequestType GCDApiFlow::Request::GetRequestType() {
   return net::URLFetcher::GET;
 }
 
-std::vector<std::string> GCDBaseApiFlow::Delegate::GetExtraRequestHeaders() {
-  return std::vector<std::string>();
-}
-
-void GCDBaseApiFlow::Delegate::GetUploadData(std::string* upload_type,
-                                             std::string* upload_data) {
+void GCDApiFlow::Request::GetUploadData(std::string* upload_type,
+                                        std::string* upload_data) {
   *upload_type = std::string();
   *upload_data = std::string();
 }
 
-GCDBaseApiFlow::GCDBaseApiFlow(net::URLRequestContextGetter* request_context,
-                               OAuth2TokenService* token_service,
-                               const std::string& account_id,
-                               Delegate* delegate)
+GCDApiFlow::GCDApiFlow(net::URLRequestContextGetter* request_context,
+                       OAuth2TokenService* token_service,
+                       const std::string& account_id,
+                       scoped_ptr<Request> delegate)
     : OAuth2TokenService::Consumer("cloud_print"),
       request_context_(request_context),
       token_service_(token_service),
       account_id_(account_id),
-      delegate_(delegate) {
+      request_(delegate.Pass()) {
 }
 
-GCDBaseApiFlow::~GCDBaseApiFlow() {}
+GCDApiFlow::~GCDApiFlow() {
+}
 
-void GCDBaseApiFlow::Start() {
+void GCDApiFlow::Start() {
   OAuth2TokenService::ScopeSet oauth_scopes;
-  oauth_scopes.insert(delegate_->GetOAuthScope());
+  oauth_scopes.insert(request_->GetOAuthScope());
   oauth_request_ =
       token_service_->StartRequest(account_id_, oauth_scopes, this);
 }
 
-void GCDBaseApiFlow::OnGetTokenSuccess(
-    const OAuth2TokenService::Request* request,
-    const std::string& access_token,
-    const base::Time& expiration_time) {
-  CreateRequest(delegate_->GetURL());
+void GCDApiFlow::OnGetTokenSuccess(const OAuth2TokenService::Request* request,
+                                   const std::string& access_token,
+                                   const base::Time& expiration_time) {
+  CreateRequest(request_->GetURL());
 
   std::string authorization_header =
       base::StringPrintf(kCloudPrintOAuthHeaderFormat, access_token.c_str());
@@ -76,32 +74,31 @@ void GCDBaseApiFlow::OnGetTokenSuccess(
   url_fetcher_->Start();
 }
 
-void GCDBaseApiFlow::OnGetTokenFailure(
-    const OAuth2TokenService::Request* request,
-    const GoogleServiceAuthError& error) {
-  delegate_->OnGCDAPIFlowError(this, ERROR_TOKEN);
+void GCDApiFlow::OnGetTokenFailure(const OAuth2TokenService::Request* request,
+                                   const GoogleServiceAuthError& error) {
+  request_->OnGCDAPIFlowError(ERROR_TOKEN);
 }
 
-void GCDBaseApiFlow::CreateRequest(const GURL& url) {
-  net::URLFetcher::RequestType request_type = delegate_->GetRequestType();
+void GCDApiFlow::CreateRequest(const GURL& url) {
+  net::URLFetcher::RequestType request_type = request_->GetRequestType();
 
   url_fetcher_.reset(net::URLFetcher::Create(url, request_type, this));
 
   if (request_type != net::URLFetcher::GET) {
     std::string upload_type;
     std::string upload_data;
-    delegate_->GetUploadData(&upload_type, &upload_data);
+    request_->GetUploadData(&upload_type, &upload_data);
     url_fetcher_->SetUploadData(upload_type, upload_data);
   }
 
   url_fetcher_->SetRequestContext(request_context_.get());
 
-  std::vector<std::string> extra_headers = delegate_->GetExtraRequestHeaders();
+  std::vector<std::string> extra_headers = request_->GetExtraRequestHeaders();
   for (size_t i = 0; i < extra_headers.size(); ++i)
     url_fetcher_->AddExtraRequestHeader(extra_headers[i]);
 }
 
-void GCDBaseApiFlow::OnURLFetchComplete(const net::URLFetcher* source) {
+void GCDApiFlow::OnURLFetchComplete(const net::URLFetcher* source) {
   // TODO(noamsml): Error logging.
 
   // TODO(noamsml): Extract this and PrivetURLFetcher::OnURLFetchComplete into
@@ -110,12 +107,12 @@ void GCDBaseApiFlow::OnURLFetchComplete(const net::URLFetcher* source) {
 
   if (source->GetStatus().status() != net::URLRequestStatus::SUCCESS ||
       !source->GetResponseAsString(&response_str)) {
-    delegate_->OnGCDAPIFlowError(this, ERROR_NETWORK);
+    request_->OnGCDAPIFlowError(ERROR_NETWORK);
     return;
   }
 
   if (source->GetResponseCode() != net::HTTP_OK) {
-    delegate_->OnGCDAPIFlowError(this, ERROR_HTTP_CODE);
+    request_->OnGCDAPIFlowError(ERROR_HTTP_CODE);
     return;
   }
 
@@ -124,22 +121,38 @@ void GCDBaseApiFlow::OnURLFetchComplete(const net::URLFetcher* source) {
   const base::DictionaryValue* dictionary_value = NULL;
 
   if (!value || !value->GetAsDictionary(&dictionary_value)) {
-    delegate_->OnGCDAPIFlowError(this, ERROR_MALFORMED_RESPONSE);
+    request_->OnGCDAPIFlowError(ERROR_MALFORMED_RESPONSE);
     return;
   }
 
-  delegate_->OnGCDAPIFlowComplete(this, dictionary_value);
+  request_->OnGCDAPIFlowComplete(*dictionary_value);
 }
 
-CloudPrintApiFlowDelegate::CloudPrintApiFlowDelegate() {}
+GCDApiFlowRequest::GCDApiFlowRequest() {
+}
 
-CloudPrintApiFlowDelegate::~CloudPrintApiFlowDelegate() {}
+GCDApiFlowRequest::~GCDApiFlowRequest() {
+}
 
-std::string CloudPrintApiFlowDelegate::GetOAuthScope() {
+std::string GCDApiFlowRequest::GetOAuthScope() {
+  return cloud_devices::kCloudDevicesAuthScope;
+}
+
+std::vector<std::string> GCDApiFlowRequest::GetExtraRequestHeaders() {
+  return std::vector<std::string>();
+}
+
+CloudPrintApiFlowRequest::CloudPrintApiFlowRequest() {
+}
+
+CloudPrintApiFlowRequest::~CloudPrintApiFlowRequest() {
+}
+
+std::string CloudPrintApiFlowRequest::GetOAuthScope() {
   return cloud_devices::kCloudPrintAuthScope;
 }
 
-std::vector<std::string> CloudPrintApiFlowDelegate::GetExtraRequestHeaders() {
+std::vector<std::string> CloudPrintApiFlowRequest::GetExtraRequestHeaders() {
   return std::vector<std::string>(1, cloud_print::kChromeCloudPrintProxyHeader);
 }
 

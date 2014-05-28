@@ -7,42 +7,31 @@
 
 #include <string>
 
-#include "chrome/browser/local_discovery/gcd_base_api_flow.h"
+#include "chrome/browser/local_discovery/gcd_api_flow.h"
 #include "net/url_request/url_request_context_getter.h"
 
 
 namespace local_discovery {
 
-// API call flow for server-side communication with cloudprint for registration.
-class PrivetConfirmApiCallFlow : public CloudPrintApiFlowDelegate {
+// API call flow for server-side communication with CloudPrint for registration.
+class PrivetConfirmApiCallFlow : public CloudPrintApiFlowRequest {
  public:
-  typedef base::Callback<void(GCDBaseApiFlow::Status /*success*/)>
-      ResponseCallback;
+  typedef base::Callback<void(GCDApiFlow::Status /*success*/)> ResponseCallback;
 
   // Create an OAuth2-based confirmation
-  PrivetConfirmApiCallFlow(net::URLRequestContextGetter* request_context,
-                           OAuth2TokenService* token_service_,
-                           const std::string& account_id,
-                           const std::string& token,
+  PrivetConfirmApiCallFlow(const std::string& token,
                            const ResponseCallback& callback);
 
   virtual ~PrivetConfirmApiCallFlow();
 
-  void Start();
-
-  virtual void OnGCDAPIFlowError(GCDBaseApiFlow* flow,
-                                 GCDBaseApiFlow::Status status) OVERRIDE;
-  virtual void OnGCDAPIFlowComplete(GCDBaseApiFlow* flow,
-                                    const base::DictionaryValue* value)
-      OVERRIDE;
+  virtual void OnGCDAPIFlowError(GCDApiFlow::Status status) OVERRIDE;
+  virtual void OnGCDAPIFlowComplete(
+      const base::DictionaryValue& value) OVERRIDE;
   virtual net::URLFetcher::RequestType GetRequestType() OVERRIDE;
 
   virtual GURL GetURL() OVERRIDE;
 
-  GCDBaseApiFlow* GetBaseApiFlowForTests() { return &flow_; }
-
  private:
-  GCDBaseApiFlow flow_;
   ResponseCallback callback_;
   std::string token_;
 };

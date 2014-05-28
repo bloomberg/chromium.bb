@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_LOCAL_DISCOVERY_GCD_BASE_API_FLOW_H_
-#define CHROME_BROWSER_LOCAL_DISCOVERY_GCD_BASE_API_FLOW_H_
+#ifndef CHROME_BROWSER_LOCAL_DISCOVERY_GCD_API_FLOW_H_
+#define CHROME_BROWSER_LOCAL_DISCOVERY_GCD_API_FLOW_H_
 
 #include <string>
 
@@ -16,9 +16,9 @@
 
 namespace local_discovery {
 
-// API call flow for communicating with cloud print.
-class GCDBaseApiFlow : public net::URLFetcherDelegate,
-                       public OAuth2TokenService::Consumer {
+// API flow for communicating with cloud print and cloud devices.
+class GCDApiFlow : public net::URLFetcherDelegate,
+                   public OAuth2TokenService::Consumer {
  public:
   // TODO(noamsml): Better error model for this class.
   enum Status {
@@ -30,35 +30,40 @@ class GCDBaseApiFlow : public net::URLFetcherDelegate,
     ERROR_MALFORMED_RESPONSE
   };
 
-  class Delegate {
+  // Provides GCDApiFlow with parameters required to make request.
+  // Parses results of requests.
+  class Request {
    public:
-    virtual ~Delegate() {}
+    Request();
+    virtual ~Request();
 
-    virtual void OnGCDAPIFlowError(GCDBaseApiFlow* flow, Status status) = 0;
+    virtual void OnGCDAPIFlowError(Status status) = 0;
 
-    virtual void OnGCDAPIFlowComplete(GCDBaseApiFlow* flow,
-                                      const base::DictionaryValue* value) = 0;
+    virtual void OnGCDAPIFlowComplete(const base::DictionaryValue& value) = 0;
 
     virtual GURL GetURL() = 0;
 
-    virtual std::string GetOAuthScope();
+    virtual std::string GetOAuthScope() = 0;
 
     virtual net::URLFetcher::RequestType GetRequestType();
 
-    virtual std::vector<std::string> GetExtraRequestHeaders();
+    virtual std::vector<std::string> GetExtraRequestHeaders() = 0;
 
     // If there is no data, set upload_type and upload_data to ""
     virtual void GetUploadData(std::string* upload_type,
                                std::string* upload_data);
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(Request);
   };
 
   // Create an OAuth2-based confirmation.
-  GCDBaseApiFlow(net::URLRequestContextGetter* request_context,
-                 OAuth2TokenService* token_service,
-                 const std::string& account_id,
-                 Delegate* delegate);
+  GCDApiFlow(net::URLRequestContextGetter* request_context,
+             OAuth2TokenService* token_service,
+             const std::string& account_id,
+             scoped_ptr<Request> request);
 
-  virtual ~GCDBaseApiFlow();
+  virtual ~GCDApiFlow();
 
   void Start();
 
@@ -80,23 +85,36 @@ class GCDBaseApiFlow : public net::URLFetcherDelegate,
   scoped_refptr<net::URLRequestContextGetter> request_context_;
   OAuth2TokenService* token_service_;
   std::string account_id_;
-  Delegate* delegate_;
-  DISALLOW_COPY_AND_ASSIGN(GCDBaseApiFlow);
+  scoped_ptr<Request> request_;
+  DISALLOW_COPY_AND_ASSIGN(GCDApiFlow);
 };
 
-class CloudPrintApiFlowDelegate : public GCDBaseApiFlow::Delegate {
+class GCDApiFlowRequest : public GCDApiFlow::Request {
  public:
-  CloudPrintApiFlowDelegate();
-  virtual ~CloudPrintApiFlowDelegate();
+  GCDApiFlowRequest();
+  virtual ~GCDApiFlowRequest();
 
-  // GCDBaseApiFlow::Delegate implementation
+  // GCDApiFlowRequest implementation
   virtual std::string GetOAuthScope() OVERRIDE;
   virtual std::vector<std::string> GetExtraRequestHeaders() OVERRIDE;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(CloudPrintApiFlowDelegate);
+  DISALLOW_COPY_AND_ASSIGN(GCDApiFlowRequest);
+};
+
+class CloudPrintApiFlowRequest : public GCDApiFlow::Request {
+ public:
+  CloudPrintApiFlowRequest();
+  virtual ~CloudPrintApiFlowRequest();
+
+  // GCDApiFlowRequest implementation
+  virtual std::string GetOAuthScope() OVERRIDE;
+  virtual std::vector<std::string> GetExtraRequestHeaders() OVERRIDE;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(CloudPrintApiFlowRequest);
 };
 
 }  // namespace local_discovery
 
-#endif  // CHROME_BROWSER_LOCAL_DISCOVERY_GCD_BASE_API_FLOW_H_
+#endif  // CHROME_BROWSER_LOCAL_DISCOVERY_GCD_API_FLOW_H_
