@@ -236,7 +236,6 @@ class GLES2DecoderVertexArraysOESTest : public GLES2DecoderWithShaderTest {
 
   virtual void SetUp() {
     InitState init;
-    init.extensions = "GL_OES_vertex_array_object";
     init.gl_version = "opengl es 2.0";
     init.bind_generates_resource = true;
     InitDecoder(init);
@@ -361,6 +360,7 @@ class GLES2DecoderEmulatedVertexArraysOESTest
     InitState init;
     init.gl_version = "3.0";
     init.bind_generates_resource = true;
+    init.use_native_vao = false;
     InitDecoder(init);
     SetupDefaultProgram();
 

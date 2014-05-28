@@ -164,6 +164,7 @@ class GLES2DecoderTestBase : public ::testing::TestWithParam<bool> {
     bool request_stencil;
     bool bind_generates_resource;
     bool lose_context_when_out_of_memory;
+    bool use_native_vao;  // default is true.
   };
 
   void InitDecoder(const InitState& init);
