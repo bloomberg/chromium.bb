@@ -60,10 +60,6 @@ class MockBluetoothAdapter : public BluetoothAdapter {
   MOCK_METHOD1(GetDevice, BluetoothDevice*(const std::string& address));
   MOCK_CONST_METHOD1(GetDevice,
                      const BluetoothDevice*(const std::string& address));
-  MOCK_METHOD2(
-      ReadLocalOutOfBandPairingData,
-      void(const BluetoothOutOfBandPairingDataCallback& callback,
-           const ErrorCallback& error_callback));
   MOCK_METHOD2(AddPairingDelegate,
                void(BluetoothDevice::PairingDelegate* pairing_delegate,
                     enum PairingDelegatePriority priority));

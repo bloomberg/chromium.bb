@@ -62,10 +62,6 @@ class BluetoothAdapterChromeOS
       const base::Closure& callback,
       const ErrorCallback& error_callback) OVERRIDE;
   virtual bool IsDiscovering() const OVERRIDE;
-  virtual void ReadLocalOutOfBandPairingData(
-      const device::BluetoothAdapter::BluetoothOutOfBandPairingDataCallback&
-          callback,
-      const ErrorCallback& error_callback) OVERRIDE;
   virtual void CreateRfcommService(
       const device::BluetoothUUID& uuid,
       int channel,

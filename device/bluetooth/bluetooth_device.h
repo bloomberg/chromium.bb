@@ -23,8 +23,6 @@ class BluetoothProfile;
 class BluetoothSocket;
 class BluetoothUUID;
 
-struct BluetoothOutOfBandPairingData;
-
 // BluetoothDevice represents a remote Bluetooth device, both its properties and
 // capabilities as discovered by a local adapter and actions that may be
 // performed on the remove device such as pairing, connection and disconnection.
@@ -394,19 +392,6 @@ class BluetoothDevice {
       const BluetoothUUID& uuid,
       const ConnectToServiceCallback& callback,
       const ConnectToServiceErrorCallback& error_callback) = 0;
-
-  // Sets the Out Of Band pairing data for this device to |data|.  Exactly one
-  // of |callback| or |error_callback| will be run.
-  virtual void SetOutOfBandPairingData(
-      const BluetoothOutOfBandPairingData& data,
-      const base::Closure& callback,
-      const ErrorCallback& error_callback) = 0;
-
-  // Clears the Out Of Band pairing data for this device.  Exactly one of
-  // |callback| or |error_callback| will be run.
-  virtual void ClearOutOfBandPairingData(
-      const base::Closure& callback,
-      const ErrorCallback& error_callback) = 0;
 
   // Starts monitoring the connection properties, RSSI and TX power. These
   // properties will be tracked, and updated when their values change. Exactly

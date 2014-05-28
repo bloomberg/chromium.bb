@@ -13,7 +13,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
-#include "device/bluetooth/bluetooth_out_of_band_pairing_data.h"
 #include "device/bluetooth/bluetooth_profile_mac.h"
 #include "device/bluetooth/bluetooth_service_record_mac.h"
 #include "device/bluetooth/bluetooth_socket_mac.h"
@@ -206,19 +205,6 @@ void BluetoothDeviceMac::ConnectToService(
     const ConnectToServiceCallback& callback,
     const ConnectToServiceErrorCallback& error_callback) {
   // TODO(keybuk): implement
-  NOTIMPLEMENTED();
-}
-
-void BluetoothDeviceMac::SetOutOfBandPairingData(
-    const BluetoothOutOfBandPairingData& data,
-    const base::Closure& callback,
-    const ErrorCallback& error_callback) {
-  NOTIMPLEMENTED();
-}
-
-void BluetoothDeviceMac::ClearOutOfBandPairingData(
-    const base::Closure& callback,
-    const ErrorCallback& error_callback) {
   NOTIMPLEMENTED();
 }
 

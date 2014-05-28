@@ -231,12 +231,6 @@ bool BluetoothAdapterChromeOS::IsDiscovering() const {
   return properties->discovering.value();
 }
 
-void BluetoothAdapterChromeOS::ReadLocalOutOfBandPairingData(
-    const BluetoothAdapter::BluetoothOutOfBandPairingDataCallback& callback,
-    const ErrorCallback& error_callback) {
-  error_callback.Run();
-}
-
 void BluetoothAdapterChromeOS::CreateRfcommService(
     const BluetoothUUID& uuid,
     int channel,

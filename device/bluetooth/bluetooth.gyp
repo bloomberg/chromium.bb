@@ -49,7 +49,6 @@
         'bluetooth_gatt_service.h',
         'bluetooth_init_win.cc',
         'bluetooth_init_win.h',
-        'bluetooth_out_of_band_pairing_data.h',
         'bluetooth_pairing_chromeos.cc',
         'bluetooth_pairing_chromeos.h',
         'bluetooth_profile.cc',

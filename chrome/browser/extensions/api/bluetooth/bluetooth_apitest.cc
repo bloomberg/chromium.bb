@@ -15,7 +15,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "device/bluetooth/bluetooth_adapter.h"
-#include "device/bluetooth/bluetooth_out_of_band_pairing_data.h"
 #include "device/bluetooth/bluetooth_uuid.h"
 #include "device/bluetooth/test/mock_bluetooth_adapter.h"
 #include "device/bluetooth/test/mock_bluetooth_device.h"
@@ -27,7 +26,6 @@
 using device::BluetoothAdapter;
 using device::BluetoothDevice;
 using device::BluetoothDiscoverySession;
-using device::BluetoothOutOfBandPairingData;
 using device::BluetoothProfile;
 using device::BluetoothUUID;
 using device::MockBluetoothAdapter;
@@ -138,38 +136,9 @@ class TestBluetoothAddProfileFunction
   BluetoothProfile* profile_;
 };
 
-// This is the canonical UUID for the short UUID 0010.
-static const char kOutOfBandPairingDataHash[] = "0123456789ABCDEh";
-static const char kOutOfBandPairingDataRandomizer[] = "0123456789ABCDEr";
-
-static BluetoothOutOfBandPairingData GetOutOfBandPairingData() {
-  BluetoothOutOfBandPairingData data;
-  memcpy(&(data.hash), kOutOfBandPairingDataHash,
-      device::kBluetoothOutOfBandPairingDataSize);
-  memcpy(&(data.randomizer), kOutOfBandPairingDataRandomizer,
-      device::kBluetoothOutOfBandPairingDataSize);
-  return data;
-}
-
-static bool CallClosure(const base::Closure& callback) {
-  callback.Run();
-  return true;
-}
-
-static bool CallErrorClosure(const BluetoothDevice::ErrorCallback& callback) {
-  callback.Run();
-  return true;
-}
-
 static void StopDiscoverySessionCallback(const base::Closure& callback,
                                          const base::Closure& error_callback) {
   callback.Run();
-}
-
-static void CallOutOfBandPairingDataCallback(
-    const BluetoothAdapter::BluetoothOutOfBandPairingDataCallback& callback,
-    const BluetoothAdapter::ErrorCallback& error_callback) {
-  callback.Run(GetOutOfBandPairingData());
 }
 
 }  // namespace
@@ -263,81 +232,6 @@ IN_PROC_BROWSER_TEST_F(BluetoothApiTest, GetAdapterState) {
   EXPECT_FALSE(state.discovering);
   EXPECT_EQ(kName, state.name);
   EXPECT_EQ(kAdapterAddress, state.address);
-}
-
-IN_PROC_BROWSER_TEST_F(BluetoothApiTest, GetLocalOutOfBandPairingData) {
-  EXPECT_CALL(*mock_adapter_,
-              ReadLocalOutOfBandPairingData(testing::_, testing::_))
-      .WillOnce(testing::Invoke(CallOutOfBandPairingDataCallback));
-
-  scoped_refptr<api::BluetoothGetLocalOutOfBandPairingDataFunction>
-      get_oob_function(setupFunction(
-            new api::BluetoothGetLocalOutOfBandPairingDataFunction));
-
-  scoped_ptr<base::Value> result(utils::RunFunctionAndReturnSingleResult(
-      get_oob_function.get(), "[]", browser()));
-
-  base::DictionaryValue* dict;
-  EXPECT_TRUE(result->GetAsDictionary(&dict));
-
-  base::BinaryValue* binary_value;
-  EXPECT_TRUE(dict->GetBinary("hash", &binary_value));
-  EXPECT_STREQ(kOutOfBandPairingDataHash,
-      std::string(binary_value->GetBuffer(), binary_value->GetSize()).c_str());
-  EXPECT_TRUE(dict->GetBinary("randomizer", &binary_value));
-  EXPECT_STREQ(kOutOfBandPairingDataRandomizer,
-      std::string(binary_value->GetBuffer(), binary_value->GetSize()).c_str());
-
-  // Try again with an error
-  testing::Mock::VerifyAndClearExpectations(mock_adapter_);
-  EXPECT_CALL(*mock_adapter_,
-              ReadLocalOutOfBandPairingData(
-                  testing::_,
-                  testing::Truly(CallClosure)));
-
-  get_oob_function =
-      setupFunction(new api::BluetoothGetLocalOutOfBandPairingDataFunction);
-
-  std::string error(utils::RunFunctionAndReturnError(
-      get_oob_function.get(), "[]", browser()));
-  EXPECT_FALSE(error.empty());
-}
-
-IN_PROC_BROWSER_TEST_F(BluetoothApiTest, SetOutOfBandPairingData) {
-  EXPECT_CALL(*mock_adapter_, GetDevice(device1_->GetAddress()))
-      .WillOnce(testing::Return(device1_.get()));
-  EXPECT_CALL(*device1_,
-              ClearOutOfBandPairingData(testing::Truly(CallClosure),
-                                        testing::_));
-
-  std::string params = base::StringPrintf(
-      "[{\"deviceAddress\":\"%s\"}]", device1_->GetAddress().c_str());
-
-  scoped_refptr<api::BluetoothSetOutOfBandPairingDataFunction> set_oob_function;
-  set_oob_function = setupFunction(
-      new api::BluetoothSetOutOfBandPairingDataFunction);
-  // There isn't actually a result.
-  (void) utils::RunFunctionAndReturnSingleResult(
-      set_oob_function.get(), params, browser());
-
-  // Try again with an error
-  testing::Mock::VerifyAndClearExpectations(mock_adapter_);
-  testing::Mock::VerifyAndClearExpectations(device1_.get());
-  EXPECT_CALL(*mock_adapter_, GetDevice(device1_->GetAddress()))
-      .WillOnce(testing::Return(device1_.get()));
-  EXPECT_CALL(
-      *device1_,
-      ClearOutOfBandPairingData(testing::_, testing::Truly(CallErrorClosure)));
-
-  set_oob_function = setupFunction(
-      new api::BluetoothSetOutOfBandPairingDataFunction);
-  std::string error(utils::RunFunctionAndReturnError(
-      set_oob_function.get(), params, browser()));
-  EXPECT_FALSE(error.empty());
-
-  // TODO(bryeung): Also test setting the data when there is support for
-  // ArrayBuffers in the arguments to the RunFunctionAnd* methods.
-  // crbug.com/132796
 }
 
 IN_PROC_BROWSER_TEST_F(BluetoothApiTest, DeviceEvents) {

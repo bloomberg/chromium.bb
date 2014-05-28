@@ -161,12 +161,6 @@ void BluetoothAdapterWin::DiscoveryStopped() {
   MaybePostStartDiscoveryTask();
 }
 
-void BluetoothAdapterWin::ReadLocalOutOfBandPairingData(
-    const BluetoothOutOfBandPairingDataCallback& callback,
-    const ErrorCallback& error_callback) {
-  NOTIMPLEMENTED();
-}
-
 void BluetoothAdapterWin::CreateRfcommService(
     const BluetoothUUID& uuid,
     int channel,

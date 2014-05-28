@@ -458,21 +458,6 @@ void BluetoothDeviceChromeOS::ConnectToService(
                   error_callback);
 }
 
-void BluetoothDeviceChromeOS::SetOutOfBandPairingData(
-    const device::BluetoothOutOfBandPairingData& data,
-    const base::Closure& callback,
-    const ErrorCallback& error_callback) {
-  // TODO(keybuk): implement
-  error_callback.Run();
-}
-
-void BluetoothDeviceChromeOS::ClearOutOfBandPairingData(
-    const base::Closure& callback,
-    const ErrorCallback& error_callback) {
-  // TODO(keybuk): implement
-  error_callback.Run();
-}
-
 void BluetoothDeviceChromeOS::StartConnectionMonitor(
     const base::Closure& callback,
     const ErrorCallback& error_callback) {

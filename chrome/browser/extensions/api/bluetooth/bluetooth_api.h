@@ -28,7 +28,6 @@ class BrowserContext;
 
 namespace device {
 class BluetoothAdapter;
-struct BluetoothOutOfBandPairingData;
 }
 
 namespace net {
@@ -254,38 +253,6 @@ class BluetoothGetSocketsFunction : public AsyncExtensionFunction {
 
   // AsyncExtensionFunction:
   virtual bool RunAsync() OVERRIDE;
-};
-
-class BluetoothGetLocalOutOfBandPairingDataFunction
-    : public BluetoothExtensionFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION("bluetooth.getLocalOutOfBandPairingData",
-                             BLUETOOTH_GETLOCALOUTOFBANDPAIRINGDATA)
-
- protected:
-  virtual ~BluetoothGetLocalOutOfBandPairingDataFunction() {}
-
-  void ReadCallback(const device::BluetoothOutOfBandPairingData& data);
-  void ErrorCallback();
-
-  // BluetoothExtensionFunction:
-  virtual bool DoWork(scoped_refptr<device::BluetoothAdapter> adapter) OVERRIDE;
-};
-
-class BluetoothSetOutOfBandPairingDataFunction
-    : public BluetoothExtensionFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION("bluetooth.setOutOfBandPairingData",
-                             BLUETOOTH_SETOUTOFBANDPAIRINGDATA)
-
- protected:
-  virtual ~BluetoothSetOutOfBandPairingDataFunction() {}
-
-  void OnSuccessCallback();
-  void OnErrorCallback();
-
-  // BluetoothExtensionFunction:
-  virtual bool DoWork(scoped_refptr<device::BluetoothAdapter> adapter) OVERRIDE;
 };
 
 class BluetoothStartDiscoveryFunction : public BluetoothExtensionFunction {

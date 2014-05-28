@@ -11,7 +11,6 @@
 #include "base/memory/scoped_vector.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/stringprintf.h"
-#include "device/bluetooth/bluetooth_out_of_band_pairing_data.h"
 #include "device/bluetooth/bluetooth_profile_win.h"
 #include "device/bluetooth/bluetooth_service_record_win.h"
 #include "device/bluetooth/bluetooth_socket_thread.h"
@@ -218,19 +217,6 @@ void BluetoothDeviceWin::ConnectToService(
     const ConnectToServiceCallback& callback,
     const ConnectToServiceErrorCallback& error_callback) {
   // TODO(keybuk): implement
-  NOTIMPLEMENTED();
-}
-
-void BluetoothDeviceWin::SetOutOfBandPairingData(
-    const BluetoothOutOfBandPairingData& data,
-    const base::Closure& callback,
-    const ErrorCallback& error_callback) {
-  NOTIMPLEMENTED();
-}
-
-void BluetoothDeviceWin::ClearOutOfBandPairingData(
-    const base::Closure& callback,
-    const ErrorCallback& error_callback) {
   NOTIMPLEMENTED();
 }
 

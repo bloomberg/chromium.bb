@@ -166,16 +166,6 @@ namespace bluetooth {
     boolean paused;
   };
 
-  dictionary OutOfBandPairingData {
-    // Simple Pairing Hash C.
-    // Always 16 octets long.
-    ArrayBuffer hash;
-
-    // Simple Pairing Randomizer R.
-    // Always 16 octets long.
-    ArrayBuffer randomizer;
-  };
-
   callback AdapterStateCallback = void(AdapterState result);
   callback AddressCallback = void(DOMString result);
   callback BooleanCallback = void(boolean result);
@@ -183,7 +173,6 @@ namespace bluetooth {
   callback DeviceCallback = void(Device result);
   callback DevicesCallback = void(Device[] result);
   callback NameCallback = void(DOMString result);
-  callback OutOfBandPairingDataCallback = void(OutOfBandPairingData data);
   callback ResultCallback = void();
   callback SizeCallback = void(long result);
   callback SocketCallback = void(Socket result);
@@ -201,17 +190,6 @@ namespace bluetooth {
   dictionary DisconnectOptions {
     // The socket identifier.
     long socketId;
-  };
-
-  // Options for the setOutOfBandPairingData function.
-  dictionary SetOutOfBandPairingDataOptions {
-    // The address of the remote device that the data should be associated
-    // with. |deviceAddress| should be in the format 'XX:XX:XX:XX:XX:XX'.
-    DOMString address;
-
-    // The Out Of Band Pairing Data. If this is omitted, the data for the
-    // device is cleared instead.
-    OutOfBandPairingData? data;
   };
 
   // Callback from the <code>getSocket</code> method.
@@ -324,18 +302,6 @@ namespace bluetooth {
     // Retrieves the list of currently opened sockets owned by the application.
     // |callback| : Called when the list of sockets is available.
     static void getSockets(GetSocketsCallback callback);
-
-    // Get the local Out of Band Pairing data.
-    // |callback| : Called with the data.
-    static void getLocalOutOfBandPairingData(
-        OutOfBandPairingDataCallback callback);
-
-    // Set the Out of Band Pairing data for a remote device.
-    // Any previous Out Of Band Pairing Data for this device is overwritten.
-    // |options|  : The options for this function.
-    // |callback| : Called to indicate success or failure.
-    static void setOutOfBandPairingData(SetOutOfBandPairingDataOptions options,
-                                        optional ResultCallback callback);
 
     // Start discovery. Newly discovered devices will be returned via the
     // onDeviceAdded event. Previously discovered devices already known to

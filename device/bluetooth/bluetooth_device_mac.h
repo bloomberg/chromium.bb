@@ -66,13 +66,6 @@ class BluetoothDeviceMac : public BluetoothDevice {
       const BluetoothUUID& uuid,
       const ConnectToServiceCallback& callback,
       const ConnectToServiceErrorCallback& error_callback) OVERRIDE;
-  virtual void SetOutOfBandPairingData(
-      const BluetoothOutOfBandPairingData& data,
-      const base::Closure& callback,
-      const ErrorCallback& error_callback) OVERRIDE;
-  virtual void ClearOutOfBandPairingData(
-      const base::Closure& callback,
-      const ErrorCallback& error_callback) OVERRIDE;
   virtual void StartConnectionMonitor(
       const base::Closure& callback,
       const ErrorCallback& error_callback) OVERRIDE;

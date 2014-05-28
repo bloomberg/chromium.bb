@@ -22,8 +22,6 @@ class BluetoothDiscoverySession;
 class BluetoothSocket;
 class BluetoothUUID;
 
-struct BluetoothOutOfBandPairingData;
-
 // BluetoothAdapter represents a local Bluetooth adapter which may be used to
 // interact with remote Bluetooth devices. As well as providing support for
 // determining whether an adapter is present and whether the radio is powered,
@@ -84,11 +82,6 @@ class BluetoothAdapter : public base::RefCounted<BluetoothAdapter> {
   // The ErrorCallback is used for methods that can fail in which case it is
   // called, in the success case the callback is simply not called.
   typedef base::Closure ErrorCallback;
-
-  // The BluetoothOutOfBandPairingDataCallback is used to return
-  // BluetoothOutOfBandPairingData to the caller.
-  typedef base::Callback<void(const BluetoothOutOfBandPairingData& data)>
-      BluetoothOutOfBandPairingDataCallback;
 
   // The InitCallback is used to trigger a callback after asynchronous
   // initialization, if initialization is asynchronous on the platform.
@@ -192,11 +185,6 @@ class BluetoothAdapter : public base::RefCounted<BluetoothAdapter> {
   // no such device is known.
   virtual BluetoothDevice* GetDevice(const std::string& address);
   virtual const BluetoothDevice* GetDevice(const std::string& address) const;
-
-  // Requests the local Out Of Band pairing data.
-  virtual void ReadLocalOutOfBandPairingData(
-      const BluetoothOutOfBandPairingDataCallback& callback,
-      const ErrorCallback& error_callback) = 0;
 
   // Possible priorities for AddPairingDelegate(), low is intended for
   // permanent UI and high is intended for interactive UI or applications.

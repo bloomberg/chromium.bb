@@ -17,7 +17,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_device.h"
-#include "device/bluetooth/bluetooth_out_of_band_pairing_data.h"
 #include "device/bluetooth/bluetooth_profile.h"
 #include "device/bluetooth/bluetooth_service_record.h"
 #include "device/bluetooth/bluetooth_socket.h"
@@ -43,16 +42,10 @@ namespace Disconnect = extensions::api::bluetooth::Disconnect;
 namespace GetDevice = extensions::api::bluetooth::GetDevice;
 namespace GetDevices = extensions::api::bluetooth::GetDevices;
 namespace RemoveProfile = extensions::api::bluetooth::RemoveProfile;
-namespace SetOutOfBandPairingData =
-    extensions::api::bluetooth::SetOutOfBandPairingData;
 namespace Send = extensions::api::bluetooth::Send;
 
 namespace {
 
-const char kCouldNotGetLocalOutOfBandPairingData[] =
-    "Could not get local Out Of Band Pairing Data";
-const char kCouldNotSetOutOfBandPairingData[] =
-    "Could not set Out Of Band Pairing Data";
 const char kInvalidDevice[] = "Invalid device";
 const char kInvalidUuid[] = "Invalid UUID";
 const char kPermissionDenied[] = "Permission to add profile denied.";
@@ -531,105 +524,6 @@ bool BluetoothGetSocketsFunction::RunAsync() {
   // TODO(keybuk): Remove.
   SetError("Removed. Use chrome.bluetoothSocket.getSockets() instead.");
   return false;
-}
-
-void BluetoothSetOutOfBandPairingDataFunction::OnSuccessCallback() {
-  SendResponse(true);
-}
-
-void BluetoothSetOutOfBandPairingDataFunction::OnErrorCallback() {
-  SetError(kCouldNotSetOutOfBandPairingData);
-  SendResponse(false);
-}
-
-bool BluetoothSetOutOfBandPairingDataFunction::DoWork(
-    scoped_refptr<BluetoothAdapter> adapter) {
-  // TODO(bryeung): update to new-style parameter passing when ArrayBuffer
-  // support is added
-  base::DictionaryValue* options;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &options));
-  std::string address;
-  EXTENSION_FUNCTION_VALIDATE(options->GetString("deviceAddress", &address));
-
-  BluetoothDevice* device = adapter->GetDevice(address);
-  if (!device) {
-    SetError(kInvalidDevice);
-    SendResponse(false);
-    return false;
-  }
-
-  if (options->HasKey("data")) {
-    base::DictionaryValue* data_in;
-    EXTENSION_FUNCTION_VALIDATE(options->GetDictionary("data", &data_in));
-
-    device::BluetoothOutOfBandPairingData data_out;
-
-    base::BinaryValue* tmp_data;
-    EXTENSION_FUNCTION_VALIDATE(data_in->GetBinary("hash", &tmp_data));
-    EXTENSION_FUNCTION_VALIDATE(
-        tmp_data->GetSize() == device::kBluetoothOutOfBandPairingDataSize);
-    memcpy(data_out.hash,
-        reinterpret_cast<uint8_t*>(tmp_data->GetBuffer()),
-        device::kBluetoothOutOfBandPairingDataSize);
-
-    EXTENSION_FUNCTION_VALIDATE(data_in->GetBinary("randomizer", &tmp_data));
-    EXTENSION_FUNCTION_VALIDATE(
-        tmp_data->GetSize() == device::kBluetoothOutOfBandPairingDataSize);
-    memcpy(data_out.randomizer,
-        reinterpret_cast<uint8_t*>(tmp_data->GetBuffer()),
-        device::kBluetoothOutOfBandPairingDataSize);
-
-    device->SetOutOfBandPairingData(
-        data_out,
-        base::Bind(&BluetoothSetOutOfBandPairingDataFunction::OnSuccessCallback,
-            this),
-        base::Bind(&BluetoothSetOutOfBandPairingDataFunction::OnErrorCallback,
-            this));
-  } else {
-    device->ClearOutOfBandPairingData(
-        base::Bind(&BluetoothSetOutOfBandPairingDataFunction::OnSuccessCallback,
-            this),
-        base::Bind(&BluetoothSetOutOfBandPairingDataFunction::OnErrorCallback,
-            this));
-  }
-
-  return true;
-}
-
-void BluetoothGetLocalOutOfBandPairingDataFunction::ReadCallback(
-    const device::BluetoothOutOfBandPairingData& data) {
-  base::BinaryValue* hash = base::BinaryValue::CreateWithCopiedBuffer(
-      reinterpret_cast<const char*>(data.hash),
-      device::kBluetoothOutOfBandPairingDataSize);
-  base::BinaryValue* randomizer = base::BinaryValue::CreateWithCopiedBuffer(
-      reinterpret_cast<const char*>(data.randomizer),
-      device::kBluetoothOutOfBandPairingDataSize);
-
-  // TODO(bryeung): convert to bluetooth::OutOfBandPairingData
-  // when ArrayBuffer support within objects is completed.
-  base::DictionaryValue* result = new base::DictionaryValue();
-  result->Set("hash", hash);
-  result->Set("randomizer", randomizer);
-
-  SetResult(result);
-
-  SendResponse(true);
-}
-
-void BluetoothGetLocalOutOfBandPairingDataFunction::ErrorCallback() {
-  SetError(kCouldNotGetLocalOutOfBandPairingData);
-  SendResponse(false);
-}
-
-bool BluetoothGetLocalOutOfBandPairingDataFunction::DoWork(
-    scoped_refptr<BluetoothAdapter> adapter) {
-  adapter->ReadLocalOutOfBandPairingData(
-      base::Bind(&BluetoothGetLocalOutOfBandPairingDataFunction::ReadCallback,
-          this),
-      base::Bind(&BluetoothGetLocalOutOfBandPairingDataFunction::ErrorCallback,
-          this));
-
-  return true;
 }
 
 void BluetoothStartDiscoveryFunction::OnSuccessCallback() {

@@ -175,11 +175,6 @@ bool BluetoothAdapterMac::IsDiscovering() const {
       discovery_status_ == DISCOVERY_STOPPING;
 }
 
-void BluetoothAdapterMac::ReadLocalOutOfBandPairingData(
-    const BluetoothOutOfBandPairingDataCallback& callback,
-    const ErrorCallback& error_callback) {
-}
-
 void BluetoothAdapterMac::CreateRfcommService(
     const BluetoothUUID& uuid,
     int channel,
