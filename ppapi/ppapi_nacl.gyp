@@ -74,7 +74,7 @@
         # We compile with --strip-all under extra_args so debug info is
         # discarded anyway.  Remove this and the --strip-all flag if
         # debug info is really needed.
-       'compile_flags!': [
+        'compile_flags!': [
           '-g',
         ],
         'defines': [
@@ -135,6 +135,7 @@
           '--strip-all',
         ],
         'create_nmf': '<(DEPTH)/native_client_sdk/src/tools/create_nmf.py',
+        'create_nonsfi_test_nmf': 'tests/create_nonsfi_test_nmf.py',
       },
       'conditions': [
         ['target_arch!="arm" and target_arch!="mipsel" and disable_glibc==0', {
@@ -212,7 +213,21 @@
           # by translating from .pexe binary, for non-SFI mode PPAPI testing.
           'variables': {
             'enable_x86_32_nonsfi': 1,
+            'nmf_nonsfi%': '<(PRODUCT_DIR)/>(nexe_target)_pnacl_nonsfi.nmf',
           },
+          'actions': [
+            {
+              'action_name': 'Generate PNACL NEWLIB NONSFI NMF',
+              'inputs': ['>(create_nonsfi_test_nmf)'],
+              'outputs': ['>(nmf_nonsfi)'],
+              'action': [
+                'python',
+                '>(create_nonsfi_test_nmf)',
+                '--output=>(nmf_nonsfi)',
+                '--program=>(out_pnacl_newlib_x86_32_nonsfi_nexe)',
+              ],
+            },
+          ],
         }],
         ['disable_pnacl==0 and target_arch=="arm"', {
           'variables': {
