@@ -84,6 +84,7 @@
             'type': 'executable',
             'variables': { 'enable_wexit_time_destructors': 1, },
             'dependencies': [
+                '../config.gyp:unittest_config',
                 '../../public/blink.gyp:blink',
                 '../wtf/wtf_tests.gyp:wtf_unittest_helpers',
                 'web.gyp:blink_web_test_support',

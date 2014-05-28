@@ -102,9 +102,12 @@ public:
         {
         }
 
+#if !ENABLE(OILPAN)
         ~CreateFileResult()
         {
         }
+#endif
+
         friend class RefCountedWillBeGarbageCollected<CreateFileResult>;
     };
 
