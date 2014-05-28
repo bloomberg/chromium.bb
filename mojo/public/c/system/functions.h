@@ -14,16 +14,16 @@
 #include "mojo/public/c/system/system_export.h"
 #include "mojo/public/c/system/types.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 // Note: Pointer parameters that are labelled "optional" may be null (at least
 // under some circumstances). Non-const pointer parameters are also labeled
 // "in", "out", or "in/out", to indicate how they are used. (Note that how/if
 // such a parameter is used may depend on other parameters or the requested
 // operation's success/failure. E.g., a separate |flags| parameter may control
 // whether a given "in/out" parameter is used for input, output, or both.)
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 // Platform-dependent monotonically increasing tick count representing "right
 // now." The resolution of this clock is ~1-15ms.  Resolution varies depending

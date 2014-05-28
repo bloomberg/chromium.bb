@@ -17,6 +17,8 @@
 #include "mojo/embedder/platform_handle.h"
 #include "mojo/embedder/platform_handle_vector.h"
 #include "mojo/public/c/system/core.h"
+#include "mojo/public/c/system/message_pipe.h"
+#include "mojo/public/c/system/types.h"
 #include "mojo/system/system_impl_export.h"
 
 namespace mojo {
