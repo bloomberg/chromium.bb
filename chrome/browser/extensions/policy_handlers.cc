@@ -12,7 +12,7 @@
 #include "components/policy/core/common/policy_map.h"
 #include "extensions/browser/pref_names.h"
 #include "extensions/common/extension.h"
-#include "grit/component_strings.h"
+#include "grit/components_strings.h"
 #include "policy/policy_constants.h"
 
 namespace extensions {

@@ -8,7 +8,7 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/translate/translate_infobar_delegate.h"
 #include "components/translate/core/browser/translate_driver.h"
-#include "grit/component_strings.h"
+#include "grit/components_strings.h"
 #include "grit/locale_settings.h"
 #include "ui/base/l10n/l10n_util.h"
 

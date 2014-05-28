@@ -662,7 +662,7 @@
               'variables': {
                 'pak_inputs': [
                   '<(SHARED_INTERMEDIATE_DIR)/components/component_resources.pak',
-                  '<(SHARED_INTERMEDIATE_DIR)/components/strings/component_strings_en-US.pak',
+                  '<(SHARED_INTERMEDIATE_DIR)/components/strings/components_strings_en-US.pak',
                 ],
                 'pak_output': '<(PRODUCT_DIR)/components_resources.pak',
               },

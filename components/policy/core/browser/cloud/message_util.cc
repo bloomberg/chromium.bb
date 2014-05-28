@@ -5,7 +5,7 @@
 #include "components/policy/core/browser/cloud/message_util.h"
 
 #include "base/logging.h"
-#include "grit/component_strings.h"
+#include "grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace policy {

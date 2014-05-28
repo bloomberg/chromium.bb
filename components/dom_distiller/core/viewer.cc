@@ -17,7 +17,7 @@
 #include "components/dom_distiller/core/url_constants.h"
 #include "components/dom_distiller/core/url_utils.h"
 #include "grit/component_resources.h"
-#include "grit/component_strings.h"
+#include "grit/components_strings.h"
 #include "net/base/escape.h"
 #include "net/url_request/url_request.h"
 #include "ui/base/l10n/l10n_util.h"

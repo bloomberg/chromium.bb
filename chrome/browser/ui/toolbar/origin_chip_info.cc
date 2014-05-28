@@ -22,7 +22,7 @@
 #include "extensions/common/constants.h"
 #include "extensions/common/manifest_handlers/icons_handler.h"
 #include "grit/chromium_strings.h"
-#include "grit/component_strings.h"
+#include "grit/components_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "net/base/net_util.h"

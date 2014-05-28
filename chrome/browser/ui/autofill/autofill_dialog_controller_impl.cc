@@ -77,7 +77,7 @@
 #include "content/public/common/url_constants.h"
 #include "grit/chromium_strings.h"
 #include "grit/component_scaled_resources.h"
-#include "grit/component_strings.h"
+#include "grit/components_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/libaddressinput_strings.h"
 #include "grit/platform_locale_settings.h"

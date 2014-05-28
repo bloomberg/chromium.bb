@@ -11,7 +11,7 @@
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/field_types.h"
-#include "grit/component_strings.h"
+#include "grit/components_strings.h"
 #include "third_party/libaddressinput/chromium/cpp/include/libaddressinput/address_data.h"
 #include "third_party/libaddressinput/chromium/cpp/include/libaddressinput/address_field.h"
 #include "third_party/libaddressinput/chromium/cpp/include/libaddressinput/address_ui.h"

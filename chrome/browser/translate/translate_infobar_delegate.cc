@@ -17,7 +17,7 @@
 #include "components/translate/core/browser/translate_driver.h"
 #include "components/translate/core/browser/translate_manager.h"
 #include "components/translate/core/common/translate_constants.h"
-#include "grit/component_strings.h"
+#include "grit/components_strings.h"
 #include "grit/theme_resources.h"
 #include "third_party/icu/source/i18n/unicode/coll.h"
 #include "ui/base/l10n/l10n_util.h"
