@@ -864,8 +864,6 @@
         'browser/idle_chromeos.cc',
         'browser/idle_linux.cc',
         'browser/idle_mac.mm',
-        'browser/idle_query_x11.cc',
-        'browser/idle_query_x11.h',
         'browser/idle_win.cc',
         'browser/image_decoder.cc',
         'browser/image_decoder.h',
@@ -3074,7 +3072,11 @@
             '../ui/gl/gl.gyp:gl',
           ],
         }],
-        ['use_x11==1', {
+        ['use_x11==1 and chromeos==0', {
+          'sources': [
+            'browser/idle_query_x11.cc',
+            'browser/idle_query_x11.h',
+          ],
           'dependencies': [
             '../build/linux/system.gyp:xscrnsaver',
           ],

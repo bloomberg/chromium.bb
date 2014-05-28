@@ -306,23 +306,6 @@
           },
         },
         {
-          'target_name': 'xscrnsaver',
-          'type': 'none',
-          'direct_dependent_settings': {
-            'cflags': [
-              '<!@(<(pkg-config) --cflags xscrnsaver)',
-            ],
-          },
-          'link_settings': {
-            'ldflags': [
-              '<!@(<(pkg-config) --libs-only-L --libs-only-other xscrnsaver)',
-            ],
-            'libraries': [
-              '<!@(<(pkg-config) --libs-only-l xscrnsaver)',
-            ],
-          },
-        },
-        {
           'target_name': 'xtst',
           'type': 'none',
           'toolsets': ['host', 'target'],
@@ -358,6 +341,27 @@
             }]
           ]
         }
+      ],  # targets
+    }],
+    ['use_x11==1 and chromeos==0', {
+      'targets': [
+        {
+          'target_name': 'xscrnsaver',
+          'type': 'none',
+          'direct_dependent_settings': {
+            'cflags': [
+              '<!@(<(pkg-config) --cflags xscrnsaver)',
+            ],
+          },
+          'link_settings': {
+            'ldflags': [
+              '<!@(<(pkg-config) --libs-only-L --libs-only-other xscrnsaver)',
+            ],
+            'libraries': [
+              '<!@(<(pkg-config) --libs-only-l xscrnsaver)',
+            ],
+          },
+        },
       ],  # targets
     }],
     ['use_evdev_gestures==1', {
