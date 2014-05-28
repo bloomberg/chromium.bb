@@ -62,16 +62,14 @@ EphemeralAppService* EphemeralAppService::Get(Profile* profile) {
 
 EphemeralAppService::EphemeralAppService(Profile* profile)
     : profile_(profile),
+      extension_registry_observer_(this),
       ephemeral_app_count_(-1) {
   if (!CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kEnableEphemeralApps))
     return;
 
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_EXTENSION_INSTALLED_DEPRECATED,
-                 content::Source<Profile>(profile_));
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNINSTALLED,
-                 content::Source<Profile>(profile_));
+  extension_registry_observer_.Add(
+      extensions::ExtensionRegistry::Get(profile_));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSIONS_READY,
                  content::Source<Profile>(profile_));
   registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
@@ -90,26 +88,6 @@ void EphemeralAppService::Observe(
       Init();
       break;
     }
-    case chrome::NOTIFICATION_EXTENSION_INSTALLED_DEPRECATED: {
-      const Extension* extension =
-          content::Details<const InstalledExtensionInfo>(details)->extension;
-      DCHECK(extension);
-      if (extensions::util::IsEphemeralApp(extension->id(), profile_)) {
-        ++ephemeral_app_count_;
-        if (ephemeral_app_count_ >= kGarbageCollectAppsTriggerCount)
-          TriggerGarbageCollect(
-              base::TimeDelta::FromSeconds(kGarbageCollectAppsInstallDelay));
-      }
-      break;
-    }
-    case chrome::NOTIFICATION_EXTENSION_UNINSTALLED: {
-      const Extension* extension =
-          content::Details<const Extension>(details).ptr();
-      DCHECK(extension);
-      if (extensions::util::IsEphemeralApp(extension->id(), profile_))
-        --ephemeral_app_count_;
-      break;
-    }
     case chrome::NOTIFICATION_PROFILE_DESTROYED: {
       // Ideally we need to know when the extension system is shutting down.
       garbage_collect_apps_timer_.Stop();
@@ -118,6 +96,26 @@ void EphemeralAppService::Observe(
     default:
       NOTREACHED();
   }
+}
+
+void EphemeralAppService::OnExtensionWillBeInstalled(
+    content::BrowserContext* browser_context,
+    const extensions::Extension* extension,
+    bool is_update,
+    const std::string& old_name) {
+  if (extensions::util::IsEphemeralApp(extension->id(), profile_)) {
+    ++ephemeral_app_count_;
+    if (ephemeral_app_count_ >= kGarbageCollectAppsTriggerCount)
+      TriggerGarbageCollect(
+          base::TimeDelta::FromSeconds(kGarbageCollectAppsInstallDelay));
+  }
+}
+
+void EphemeralAppService::OnExtensionUninstalled(
+    content::BrowserContext* browser_context,
+    const extensions::Extension* extension) {
+  if (extensions::util::IsEphemeralApp(extension->id(), profile_))
+    --ephemeral_app_count_;
 }
 
 void EphemeralAppService::Init() {

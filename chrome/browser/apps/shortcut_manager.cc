@@ -25,6 +25,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension_set.h"
 
@@ -64,18 +65,16 @@ void AppShortcutManager::RegisterProfilePrefs(
 AppShortcutManager::AppShortcutManager(Profile* profile)
     : profile_(profile),
       is_profile_info_cache_observer_(false),
-      prefs_(profile->GetPrefs()) {
+      prefs_(profile->GetPrefs()),
+      extension_registry_observer_(this) {
   // Use of g_browser_process requires that we are either on the UI thread, or
   // there are no threads initialized (such as in unit tests).
   DCHECK(!content::BrowserThread::IsThreadInitialized(
              content::BrowserThread::UI) ||
          content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_EXTENSION_INSTALLED_DEPRECATED,
-                 content::Source<Profile>(profile_));
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNINSTALLED,
-                 content::Source<Profile>(profile_));
+  extension_registry_observer_.Add(
+      extensions::ExtensionRegistry::Get(profile_));
   // Wait for extensions to be ready before running OnceOffCreateShortcuts.
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSIONS_READY,
                  content::Source<Profile>(profile_));
@@ -100,36 +99,30 @@ AppShortcutManager::~AppShortcutManager() {
 void AppShortcutManager::Observe(int type,
                                  const content::NotificationSource& source,
                                  const content::NotificationDetails& details) {
-  switch (type) {
-    case chrome::NOTIFICATION_EXTENSIONS_READY: {
-      OnceOffCreateShortcuts();
-      break;
-    }
-    case chrome::NOTIFICATION_EXTENSION_INSTALLED_DEPRECATED: {
-      const extensions::InstalledExtensionInfo* installed_info =
-          content::Details<const extensions::InstalledExtensionInfo>(details)
-              .ptr();
-      const Extension* extension = installed_info->extension;
-      // If the app is being updated, update any existing shortcuts but do not
-      // create new ones. If it is being installed, automatically create a
-      // shortcut in the applications menu (e.g., Start Menu).
-      if (installed_info->is_update) {
-        web_app::UpdateAllShortcuts(
-            base::UTF8ToUTF16(installed_info->old_name), profile_, extension);
-      } else if (ShouldCreateShortcutFor(profile_, extension)) {
-        CreateShortcutsInApplicationsMenu(profile_, extension);
-      }
-      break;
-    }
-    case chrome::NOTIFICATION_EXTENSION_UNINSTALLED: {
-      const Extension* extension = content::Details<const Extension>(
-          details).ptr();
-      web_app::DeleteAllShortcuts(profile_, extension);
-      break;
-    }
-    default:
-      NOTREACHED();
+  DCHECK_EQ(chrome::NOTIFICATION_EXTENSIONS_READY, type);
+  OnceOffCreateShortcuts();
+}
+
+void AppShortcutManager::OnExtensionWillBeInstalled(
+    content::BrowserContext* browser_context,
+    const Extension* extension,
+    bool is_update,
+    const std::string& old_name) {
+  // If the app is being updated, update any existing shortcuts but do not
+  // create new ones. If it is being installed, automatically create a
+  // shortcut in the applications menu (e.g., Start Menu).
+  if (is_update) {
+    web_app::UpdateAllShortcuts(
+        base::UTF8ToUTF16(old_name), profile_, extension);
+  } else if (ShouldCreateShortcutFor(profile_, extension)) {
+    CreateShortcutsInApplicationsMenu(profile_, extension);
   }
+}
+
+void AppShortcutManager::OnExtensionUninstalled(
+    content::BrowserContext* browser_context,
+    const Extension* extension) {
+  web_app::DeleteAllShortcuts(profile_, extension);
 }
 
 void AppShortcutManager::OnProfileWillBeRemoved(

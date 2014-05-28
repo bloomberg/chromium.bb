@@ -8,20 +8,24 @@
 #include <map>
 #include <set>
 
+#include "base/scoped_observer.h"
 #include "base/timer/timer.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "extensions/browser/extension_registry_observer.h"
 
 class Profile;
 
 namespace extensions {
 class Extension;
+class ExtensionRegistry;
 }  // namespace extensions
 
 // Performs the background garbage collection of ephemeral apps.
 class EphemeralAppService : public KeyedService,
-                            public content::NotificationObserver {
+                            public content::NotificationObserver,
+                            public extensions::ExtensionRegistryObserver {
  public:
   // Returns the instance for the given profile. This is a convenience wrapper
   // around EphemeralAppServiceFactory::GetForProfile.
@@ -52,6 +56,16 @@ class EphemeralAppService : public KeyedService,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
+  // extensions::ExtensionRegistryObserver.
+  virtual void OnExtensionWillBeInstalled(
+      content::BrowserContext* browser_context,
+      const extensions::Extension* extension,
+      bool is_update,
+      const std::string& old_name) OVERRIDE;
+  virtual void OnExtensionUninstalled(
+      content::BrowserContext* browser_context,
+      const extensions::Extension* extension) OVERRIDE;
+
   void Init();
   void InitEphemeralAppCount();
 
@@ -69,6 +83,10 @@ class EphemeralAppService : public KeyedService,
   Profile* profile_;
 
   content::NotificationRegistrar registrar_;
+
+  ScopedObserver<extensions::ExtensionRegistry,
+                 extensions::ExtensionRegistryObserver>
+      extension_registry_observer_;
 
   base::OneShotTimer<EphemeralAppService> garbage_collect_apps_timer_;
   base::OneShotTimer<EphemeralAppService> garbage_collect_data_timer_;
