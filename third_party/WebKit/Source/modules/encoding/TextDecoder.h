@@ -56,11 +56,12 @@ public:
     void trace(Visitor*) { }
 
 private:
-    TextDecoder(const WTF::TextEncoding&, bool fatal);
+    TextDecoder(const WTF::TextEncoding&, bool fatal, bool ignoreBOM);
 
     WTF::TextEncoding m_encoding;
     OwnPtr<WTF::TextCodec> m_codec;
     bool m_fatal;
+    bool m_ignoreBOM;
     bool m_bomSeen;
 };
 

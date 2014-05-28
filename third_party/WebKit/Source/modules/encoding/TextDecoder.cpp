@@ -54,14 +54,18 @@ TextDecoder* TextDecoder::create(const String& label, const Dictionary& options,
     bool fatal = false;
     options.get("fatal", fatal);
 
-    return new TextDecoder(encoding, fatal);
+    bool ignoreBOM = false;
+    options.get("ignoreBOM", ignoreBOM);
+
+    return new TextDecoder(encoding, fatal, ignoreBOM);
 }
 
 
-TextDecoder::TextDecoder(const WTF::TextEncoding& encoding, bool fatal)
+TextDecoder::TextDecoder(const WTF::TextEncoding& encoding, bool fatal, bool ignoreBOM)
     : m_encoding(encoding)
     , m_codec(newTextCodec(encoding))
     , m_fatal(fatal)
+    , m_ignoreBOM(ignoreBOM)
     , m_bomSeen(false)
 {
 }
@@ -98,7 +102,7 @@ String TextDecoder::decode(ArrayBufferView* input, const Dictionary& options, Ex
         return String();
     }
 
-    if (!m_bomSeen && !s.isEmpty()) {
+    if (!m_ignoreBOM && !m_bomSeen && !s.isEmpty()) {
         m_bomSeen = true;
         String name(m_encoding.name());
         if ((name == "UTF-8" || name == "UTF-16LE" || name == "UTF-16BE") && s[0] == 0xFEFF)
