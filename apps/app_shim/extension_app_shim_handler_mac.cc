@@ -72,7 +72,7 @@ bool FocusWindows(const AppWindowList& windows) {
   // Allow workspace switching. For the browser process, we can reasonably rely
   // on OS X to switch spaces for us and honor relevant user settings. But shims
   // don't have windows, so we have to do it ourselves.
-  ui::FocusWindowSet(native_windows, true);
+  ui::FocusWindowSet(native_windows);
   return true;
 }
 

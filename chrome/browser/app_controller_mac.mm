@@ -613,7 +613,7 @@ class AppControllerProfileObserver : public ProfileInfoCacheObserver {
     browserWindows.insert(browser->window()->GetNativeWindow());
   }
   if (!browserWindows.empty()) {
-    ui::FocusWindowSet(browserWindows, false);
+    ui::FocusWindowSetOnCurrentSpace(browserWindows);
   }
 }
 
@@ -1200,7 +1200,7 @@ class AppControllerProfileObserver : public ProfileInfoCacheObserver {
         // See http://crbug.com/309656.
         reopenTime_ = base::TimeTicks::Now();
       } else {
-        ui::FocusWindowSet(browserWindows, false);
+        ui::FocusWindowSetOnCurrentSpace(browserWindows);
       }
       // Return NO; we've done (or soon will do) the deminiaturize, so
       // AppKit shouldn't do anything.

@@ -8,32 +8,14 @@
 
 namespace ui {
 
+namespace {
+
 // This attempts to match OS X's native behavior, namely that a window
 // is only ever deminiaturized if ALL windows on ALL workspaces are
-// miniaturized. (This callback runs before AppKit picks its own
-// window to deminiaturize, so we get to pick one from the right set.)
-//
-// In addition, limit to the windows on the current
-// workspace. Otherwise we jump spaces haphazardly.
-//
-// NOTE: If this is called in the
-// applicationShouldHandleReopen:hasVisibleWindows: hook when clicking
-// the dock icon, and that caused OS X to begin switch spaces,
-// isOnActiveSpace gives the answer for the PREVIOUS space. This means
-// that we actually raise and focus the wrong space's windows, leaving
-// the new key window off-screen. To detect this, check if the key
-// window prior to calling is on an active space.
-//
-// Also, if we decide to deminiaturize a window during a space switch,
-// that can switch spaces and then switch back. Fortunately, this only
-// happens if, say, space 1 contains an app, space 2 contains a
-// miniaturized browser. We click the icon, OS X switches to space 1,
-// we deminiaturize the browser, and that triggers switching back.
-//
-// TODO(davidben): To limit those cases, consider preferentially
-// deminiaturizing a window on the current space.
-void FocusWindowSet(const std::set<NSWindow*>& windows,
-                    bool allow_workspace_switch) {
+// miniaturized.
+void FocusWindowSetHelper(const std::set<NSWindow*>& windows,
+                          bool allow_workspace_switch,
+                          bool visible_windows_only) {
   NSArray* ordered_windows = [NSApp orderedWindows];
   NSWindow* frontmost_window = nil;
   NSWindow* frontmost_window_all_spaces = nil;
@@ -41,16 +23,16 @@ void FocusWindowSet(const std::set<NSWindow*>& windows,
   bool all_miniaturized = true;
   for (int i = [ordered_windows count] - 1; i >= 0; i--) {
     NSWindow* win = [ordered_windows objectAtIndex:i];
-    if (windows.find(win) != windows.end()) {
-      if ([win isMiniaturized]) {
-        frontmost_miniaturized_window = win;
-      } else if ([win isVisible]) {
-        all_miniaturized = false;
-        frontmost_window_all_spaces = win;
-        if ([win isOnActiveSpace]) {
-          [win orderFront:nil];
-          frontmost_window = win;
-        }
+    if (windows.find(win) == windows.end())
+      continue;
+    if ([win isMiniaturized]) {
+      frontmost_miniaturized_window = win;
+    } else if (!visible_windows_only || [win isVisible]) {
+      all_miniaturized = false;
+      frontmost_window_all_spaces = win;
+      if ([win isOnActiveSpace]) {
+        [win orderFront:nil];
+        frontmost_window = win;
       }
     }
   }
@@ -69,6 +51,41 @@ void FocusWindowSet(const std::set<NSWindow*>& windows,
     [frontmost_window makeMainWindow];
     [frontmost_window makeKeyWindow];
   }
+}
+
+}  // namespace
+
+void FocusWindowSet(const std::set<NSWindow*>& windows) {
+  FocusWindowSetHelper(windows, true, true);
+}
+
+void FocusWindowSetOnCurrentSpace(const std::set<NSWindow*>& windows) {
+  // This callback runs before AppKit picks its own window to
+  // deminiaturize, so we get to pick one from the right set. Limit to
+  // the windows on the current workspace. Otherwise we jump spaces
+  // haphazardly.
+  //
+  // Also consider both visible and hidden windows; this call races
+  // with the system unhiding the application. http://crbug.com/368238
+  //
+  // NOTE: If this is called in the
+  // applicationShouldHandleReopen:hasVisibleWindows: hook when
+  // clicking the dock icon, and that caused OS X to begin switch
+  // spaces, isOnActiveSpace gives the answer for the PREVIOUS
+  // space. This means that we actually raise and focus the wrong
+  // space's windows, leaving the new key window off-screen. To detect
+  // this, check if the key window is on the active space prior to
+  // calling.
+  //
+  // Also, if we decide to deminiaturize a window during a space switch,
+  // that can switch spaces and then switch back. Fortunately, this only
+  // happens if, say, space 1 contains an app, space 2 contains a
+  // miniaturized browser. We click the icon, OS X switches to space 1,
+  // we deminiaturize the browser, and that triggers switching back.
+  //
+  // TODO(davidben): To limit those cases, consider preferentially
+  // deminiaturizing a window on the current space.
+  FocusWindowSetHelper(windows, false, false);
 }
 
 }  // namespace ui

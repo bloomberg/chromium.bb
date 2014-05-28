@@ -15,8 +15,17 @@ namespace ui {
 // Brings a group of windows to the front without changing their order, and
 // makes the frontmost one key and main. If none are visible, the frontmost
 // miniaturized window is deminiaturized.
-UI_BASE_EXPORT void FocusWindowSet(const std::set<gfx::NativeWindow>& windows,
-                                   bool allow_workspace_switch);
+UI_BASE_EXPORT void FocusWindowSet(const std::set<gfx::NativeWindow>& windows);
+
+// Brings a group of windows to the front without changing their
+// order, and makes the frontmost one key and main. If none are
+// visible, the frontmost miniaturized window is deminiaturized. This
+// variant is meant to clean up after the system-default Dock icon
+// behavior. Unlike FocusWindowSet, only windows on the current space
+// are considered. It also ignores the hidden state of windows; the
+// window system may be in the middle of unhiding the application.
+UI_BASE_EXPORT void FocusWindowSetOnCurrentSpace(
+    const std::set<gfx::NativeWindow>& windows);
 
 }  // namespace ui
 
