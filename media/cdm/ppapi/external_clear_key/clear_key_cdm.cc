@@ -562,7 +562,7 @@ void ClearKeyCdm::OnSessionCreated(uint32 session_id,
 
 void ClearKeyCdm::OnSessionMessage(uint32 session_id,
                                    const std::vector<uint8>& message,
-                                   const std::string& destination_url) {
+                                   const GURL& destination_url) {
   DVLOG(1) << "OnSessionMessage: " << message.size();
 
   // Ignore the message when we are waiting to update the loadable session.
@@ -572,8 +572,8 @@ void ClearKeyCdm::OnSessionMessage(uint32 session_id,
   host_->OnSessionMessage(session_id,
                           reinterpret_cast<const char*>(message.data()),
                           message.size(),
-                          destination_url.data(),
-                          destination_url.size());
+                          destination_url.spec().data(),
+                          destination_url.spec().size());
 }
 
 void ClearKeyCdm::OnSessionReady(uint32 session_id) {

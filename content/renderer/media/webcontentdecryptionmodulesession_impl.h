@@ -42,7 +42,7 @@ class WebContentDecryptionModuleSessionImpl
   // Callbacks.
   void OnSessionCreated(const std::string& web_session_id);
   void OnSessionMessage(const std::vector<uint8>& message,
-                        const std::string& destination_url);
+                        const GURL& destination_url);
   void OnSessionReady();
   void OnSessionClosed();
   void OnSessionError(media::MediaKeys::KeyError error_code,

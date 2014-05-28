@@ -119,7 +119,7 @@ class FakeEncryptedMedia {
 
     virtual void OnSessionMessage(uint32 session_id,
                                   const std::vector<uint8>& message,
-                                  const std::string& destination_url) = 0;
+                                  const GURL& destination_url) = 0;
 
     virtual void OnSessionReady(uint32 session_id) = 0;
 
@@ -161,7 +161,7 @@ class FakeEncryptedMedia {
 
   void OnSessionMessage(uint32 session_id,
                         const std::vector<uint8>& message,
-                        const std::string& destination_url) {
+                        const GURL& destination_url) {
     app_->OnSessionMessage(session_id, message, destination_url);
   }
 
@@ -202,7 +202,7 @@ class KeyProvidingApp : public FakeEncryptedMedia::AppBase {
 
   virtual void OnSessionMessage(uint32 session_id,
                                 const std::vector<uint8>& message,
-                                const std::string& default_url) OVERRIDE {
+                                const GURL& default_url) OVERRIDE {
     EXPECT_GT(session_id, 0u);
     EXPECT_FALSE(message.empty());
 
@@ -329,7 +329,7 @@ class NoResponseApp : public FakeEncryptedMedia::AppBase {
 
   virtual void OnSessionMessage(uint32 session_id,
                                 const std::vector<uint8>& message,
-                                const std::string& default_url) OVERRIDE {
+                                const GURL& default_url) OVERRIDE {
     EXPECT_GT(session_id, 0u);
     EXPECT_FALSE(message.empty());
     FAIL() << "Unexpected KeyMessage";

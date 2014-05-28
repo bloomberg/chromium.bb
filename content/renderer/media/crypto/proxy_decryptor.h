@@ -100,7 +100,7 @@ class ProxyDecryptor {
   void OnSessionCreated(uint32 session_id, const std::string& web_session_id);
   void OnSessionMessage(uint32 session_id,
                         const std::vector<uint8>& message,
-                        const std::string& default_url);
+                        const GURL& default_url);
   void OnSessionReady(uint32 session_id);
   void OnSessionClosed(uint32 session_id);
   void OnSessionError(uint32 session_id,

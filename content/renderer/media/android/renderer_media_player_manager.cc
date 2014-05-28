@@ -322,7 +322,7 @@ void RendererMediaPlayerManager::OnSessionMessage(
 
   ProxyMediaKeys* media_keys = GetMediaKeys(cdm_id);
   if (media_keys)
-    media_keys->OnSessionMessage(session_id, message, destination_url.spec());
+    media_keys->OnSessionMessage(session_id, message, destination_url);
 }
 
 void RendererMediaPlayerManager::OnSessionReady(int cdm_id, uint32 session_id) {

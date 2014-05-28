@@ -13,6 +13,9 @@
 #include "media/base/android/demuxer_stream_player_params.h"
 #include "media/base/media_export.h"
 #include "media/base/media_keys.h"
+#include "url/gurl.h"
+
+class GURL;
 
 namespace media {
 
@@ -91,7 +94,7 @@ class MEDIA_EXPORT MediaPlayerManager {
   virtual void OnSessionMessage(int cdm_id,
                                 uint32 session_id,
                                 const std::vector<uint8>& message,
-                                const std::string& destination_url) = 0;
+                                const GURL& destination_url) = 0;
 
   // Called when CDM wants to send a Ready event.
   virtual void OnSessionReady(int cdm_id, uint32 session_id) = 0;

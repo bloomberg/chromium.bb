@@ -80,7 +80,7 @@ class MockMediaPlayerManager : public MediaPlayerManager {
   virtual void OnSessionMessage(int cdm_id,
                                 uint32 session_id,
                                 const std::vector<uint8>& message,
-                                const std::string& destination_url) OVERRIDE {}
+                                const GURL& destination_url) OVERRIDE {}
   virtual void OnSessionReady(int cdm_id, uint32 session_id) OVERRIDE {}
   virtual void OnSessionClosed(int cdm_id, uint32 session_id) OVERRIDE {}
   virtual void OnSessionError(int cdm_id,

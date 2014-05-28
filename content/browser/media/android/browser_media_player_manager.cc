@@ -365,16 +365,16 @@ void BrowserMediaPlayerManager::OnSessionMessage(
     int cdm_id,
     uint32 session_id,
     const std::vector<uint8>& message,
-    const std::string& destination_url) {
-  GURL destination_gurl(destination_url);
-  if (!destination_gurl.is_valid() && !destination_gurl.is_empty()) {
+    const GURL& destination_url) {
+  GURL verified_gurl = destination_url;
+  if (!verified_gurl.is_valid() && !verified_gurl.is_empty()) {
     DLOG(WARNING) << "SessionMessage destination_url is invalid : "
-                  << destination_gurl.possibly_invalid_spec();
-    destination_gurl = GURL::EmptyGURL();  // Replace invalid destination_url.
+                  << destination_url.possibly_invalid_spec();
+    verified_gurl = GURL::EmptyGURL();  // Replace invalid destination_url.
   }
 
   Send(new CdmMsg_SessionMessage(
-      RoutingID(), cdm_id, session_id, message, destination_gurl));
+      RoutingID(), cdm_id, session_id, message, verified_gurl));
 }
 
 void BrowserMediaPlayerManager::OnSessionReady(int cdm_id, uint32 session_id) {

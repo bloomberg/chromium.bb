@@ -473,8 +473,13 @@ void MediaDrmBridge::OnSessionMessage(JNIEnv* env,
   uint32 session_id = j_session_id;
   std::vector<uint8> message;
   JavaByteArrayToByteVector(env, j_message, &message);
-  std::string destination_url = ConvertJavaStringToUTF8(env, j_destination_url);
-  session_message_cb_.Run(session_id, message, destination_url);
+  GURL destination_gurl = GURL(ConvertJavaStringToUTF8(env, j_destination_url));
+  if (!destination_gurl.is_valid() && !destination_gurl.is_empty()) {
+    DLOG(WARNING) << "SessionMessage destination_url is invalid : "
+                  << destination_gurl.possibly_invalid_spec();
+    destination_gurl = GURL::EmptyGURL();  // Replace invalid destination_url.
+  }
+  session_message_cb_.Run(session_id, message, destination_gurl);
 }
 
 void MediaDrmBridge::OnSessionReady(JNIEnv* env,

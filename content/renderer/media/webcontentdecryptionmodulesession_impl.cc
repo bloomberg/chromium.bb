@@ -71,10 +71,9 @@ void WebContentDecryptionModuleSessionImpl::OnSessionCreated(
 
 void WebContentDecryptionModuleSessionImpl::OnSessionMessage(
     const std::vector<uint8>& message,
-    const std::string& destination_url) {
-  client_->message(message.empty() ? NULL : &message[0],
-                   message.size(),
-                   GURL(destination_url));
+    const GURL& destination_url) {
+  client_->message(
+      message.empty() ? NULL : &message[0], message.size(), destination_url);
 }
 
 void WebContentDecryptionModuleSessionImpl::OnSessionReady() {

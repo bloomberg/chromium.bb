@@ -76,6 +76,7 @@
           'defines': ['CDM_IMPLEMENTATION'],
           'dependencies': [
             'media',
+            '../url/url.gyp:url_lib',
             # Include the following for media::AudioBus.
             'shared_memory_support',
             '<(DEPTH)/base/base.gyp:base',

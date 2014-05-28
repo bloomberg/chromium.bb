@@ -247,7 +247,7 @@ bool AesDecryptor::CreateSession(uint32 session_id,
     message.assign(init_data, init_data + init_data_length);
 
   session_created_cb_.Run(session_id, web_session_id_string);
-  session_message_cb_.Run(session_id, message, std::string());
+  session_message_cb_.Run(session_id, message, GURL());
   return true;
 }
 

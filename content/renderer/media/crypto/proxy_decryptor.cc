@@ -223,9 +223,10 @@ void ProxyDecryptor::OnSessionCreated(uint32 session_id,
 
 void ProxyDecryptor::OnSessionMessage(uint32 session_id,
                                       const std::vector<uint8>& message,
-                                      const std::string& destination_url) {
+                                      const GURL& destination_url) {
   // Assumes that OnSessionCreated() has been called before this.
-  key_message_cb_.Run(LookupWebSessionId(session_id), message, destination_url);
+  key_message_cb_.Run(
+      LookupWebSessionId(session_id), message, destination_url.spec());
 }
 
 void ProxyDecryptor::OnSessionReady(uint32 session_id) {

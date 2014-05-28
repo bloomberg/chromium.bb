@@ -12,6 +12,7 @@
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "media/base/media_export.h"
+#include "url/gurl.h"
 
 namespace media {
 
@@ -82,11 +83,9 @@ typedef base::Callback<
     void(uint32 session_id, const std::string& web_session_id)>
     SessionCreatedCB;
 
-// TODO(xhwang): Use GURL for |destination_url|. See http://crbug.com/372877
 typedef base::Callback<void(uint32 session_id,
                             const std::vector<uint8>& message,
-                            const std::string& destination_url)>
-    SessionMessageCB;
+                            const GURL& destination_url)> SessionMessageCB;
 
 typedef base::Callback<void(uint32 session_id)> SessionReadyCB;
 

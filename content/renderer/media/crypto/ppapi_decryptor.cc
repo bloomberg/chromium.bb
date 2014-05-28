@@ -361,7 +361,7 @@ void PpapiDecryptor::OnSessionCreated(uint32 session_id,
 
 void PpapiDecryptor::OnSessionMessage(uint32 session_id,
                                       const std::vector<uint8>& message,
-                                      const std::string& destination_url) {
+                                      const GURL& destination_url) {
   DCHECK(render_loop_proxy_->BelongsToCurrentThread());
   session_message_cb_.Run(session_id, message, destination_url);
 }

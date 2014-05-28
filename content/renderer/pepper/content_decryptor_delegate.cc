@@ -591,6 +591,7 @@ void ContentDecryptorDelegate::OnSessionCreated(uint32 session_id,
 void ContentDecryptorDelegate::OnSessionMessage(uint32 session_id,
                                                 PP_Var message_var,
                                                 PP_Var default_url_var) {
+  // TODO(amogh.bihani): Replace all the default_url with destination_url.
   if (session_message_cb_.is_null())
     return;
 
@@ -609,7 +610,14 @@ void ContentDecryptorDelegate::OnSessionMessage(uint32 session_id,
     return;
   }
 
-  session_message_cb_.Run(session_id, message, default_url_string->value());
+  GURL verified_gurl = GURL(default_url_string->value());
+  if (!verified_gurl.is_valid() && !verified_gurl.is_empty()) {
+    DLOG(WARNING) << "SessionMessage default_url is invalid : "
+                  << verified_gurl.possibly_invalid_spec();
+    verified_gurl = GURL::EmptyGURL();  // Replace invalid default_url.
+  }
+
+  session_message_cb_.Run(session_id, message, verified_gurl);
 }
 
 void ContentDecryptorDelegate::OnSessionReady(uint32 session_id) {

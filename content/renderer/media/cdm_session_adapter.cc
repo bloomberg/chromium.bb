@@ -112,7 +112,7 @@ void CdmSessionAdapter::OnSessionCreated(uint32 session_id,
 
 void CdmSessionAdapter::OnSessionMessage(uint32 session_id,
                                          const std::vector<uint8>& message,
-                                         const std::string& destination_url) {
+                                         const GURL& destination_url) {
   WebContentDecryptionModuleSessionImpl* session = GetSession(session_id);
   DLOG_IF(WARNING, !session) << __FUNCTION__ << " for unknown session "
                              << session_id;

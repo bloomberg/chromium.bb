@@ -23,6 +23,8 @@ using ::testing::StrNe;
 
 MATCHER(IsEmpty, "") { return arg.empty(); }
 
+class GURL;
+
 namespace media {
 
 const uint8 kOriginalData[] = "Original subsample data.";
@@ -226,7 +228,7 @@ class AesDecryptorTest : public testing::Test {
     DCHECK(!key_id.empty());
     uint32 session_id = next_session_id_++;
     EXPECT_CALL(*this, OnSessionCreated(session_id, StrNe(std::string())));
-    EXPECT_CALL(*this, OnSessionMessage(session_id, key_id, ""));
+    EXPECT_CALL(*this, OnSessionMessage(session_id, key_id, GURL::EmptyGURL()));
     EXPECT_TRUE(decryptor_.CreateSession(
         session_id, std::string(), &key_id[0], key_id.size()));
     return session_id;
@@ -328,7 +330,7 @@ class AesDecryptorTest : public testing::Test {
   MOCK_METHOD3(OnSessionMessage,
                void(uint32 session_id,
                     const std::vector<uint8>& message,
-                    const std::string& default_url));
+                    const GURL& default_url));
   MOCK_METHOD1(OnSessionReady, void(uint32 session_id));
   MOCK_METHOD1(OnSessionClosed, void(uint32 session_id));
   MOCK_METHOD3(OnSessionError,
@@ -354,24 +356,28 @@ class AesDecryptorTest : public testing::Test {
 
 TEST_F(AesDecryptorTest, CreateSessionWithNullInitData) {
   uint32 session_id = 8;
-  EXPECT_CALL(*this, OnSessionMessage(session_id, IsEmpty(), ""));
+  EXPECT_CALL(*this,
+              OnSessionMessage(session_id, IsEmpty(), GURL::EmptyGURL()));
   EXPECT_CALL(*this, OnSessionCreated(session_id, StrNe(std::string())));
   EXPECT_TRUE(decryptor_.CreateSession(session_id, std::string(), NULL, 0));
 }
 
 TEST_F(AesDecryptorTest, MultipleCreateSession) {
   uint32 session_id1 = 10;
-  EXPECT_CALL(*this, OnSessionMessage(session_id1, IsEmpty(), ""));
+  EXPECT_CALL(*this,
+              OnSessionMessage(session_id1, IsEmpty(), GURL::EmptyGURL()));
   EXPECT_CALL(*this, OnSessionCreated(session_id1, StrNe(std::string())));
   EXPECT_TRUE(decryptor_.CreateSession(session_id1, std::string(), NULL, 0));
 
   uint32 session_id2 = 11;
-  EXPECT_CALL(*this, OnSessionMessage(session_id2, IsEmpty(), ""));
+  EXPECT_CALL(*this,
+              OnSessionMessage(session_id2, IsEmpty(), GURL::EmptyGURL()));
   EXPECT_CALL(*this, OnSessionCreated(session_id2, StrNe(std::string())));
   EXPECT_TRUE(decryptor_.CreateSession(session_id2, std::string(), NULL, 0));
 
   uint32 session_id3 = 23;
-  EXPECT_CALL(*this, OnSessionMessage(session_id3, IsEmpty(), ""));
+  EXPECT_CALL(*this,
+              OnSessionMessage(session_id3, IsEmpty(), GURL::EmptyGURL()));
   EXPECT_CALL(*this, OnSessionCreated(session_id3, StrNe(std::string())));
   EXPECT_TRUE(decryptor_.CreateSession(session_id3, std::string(), NULL, 0));
 }
