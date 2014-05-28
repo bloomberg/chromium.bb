@@ -50,6 +50,7 @@ public:
     virtual ~SVGAnimatedPropertyBase();
 
     virtual SVGPropertyBase* currentValueBase() = 0;
+    virtual bool isAnimating() const = 0;
 
     virtual void animationStarted();
     virtual PassRefPtr<SVGPropertyBase> createAnimatedValue() = 0;
@@ -74,11 +75,6 @@ public:
         return m_attributeName;
     }
 
-    bool isAnimating() const
-    {
-        return m_isAnimating;
-    }
-
     bool isReadOnly() const
     {
         return m_isReadOnly;
@@ -97,7 +93,6 @@ protected:
 private:
     const AnimatedPropertyType m_type;
     bool m_isReadOnly;
-    bool m_isAnimating;
 
     // This reference is kept alive from V8 wrapper
     SVGElement* m_contextElement;
@@ -130,6 +125,11 @@ public:
         return currentValue();
     }
 
+    virtual bool isAnimating() const OVERRIDE
+    {
+        return m_currentValue;
+    }
+
     void setBaseValueAsString(const String& value, SVGParsingError& parseError)
     {
         TrackExceptionState es;
@@ -147,8 +147,6 @@ public:
 
     virtual void setAnimatedValue(PassRefPtr<SVGPropertyBase> passValue) OVERRIDE
     {
-        ASSERT(isAnimating());
-
         RefPtr<SVGPropertyBase> value = passValue;
         ASSERT(value->type() == Property::classType());
         m_currentValue = static_pointer_cast<Property>(value.release());
@@ -156,7 +154,6 @@ public:
 
     virtual void animationEnded() OVERRIDE
     {
-        ASSERT(m_currentValue);
         m_currentValue.clear();
 
         SVGAnimatedPropertyBase::animationEnded();

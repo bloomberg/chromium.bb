@@ -49,6 +49,11 @@ SVGPropertyBase* SVGStaticStringList::currentValueBase()
     return m_value.get();
 }
 
+bool SVGStaticStringList::isAnimating() const
+{
+    return false;
+}
+
 void SVGStaticStringList::animationStarted()
 {
     ASSERT_NOT_REACHED();

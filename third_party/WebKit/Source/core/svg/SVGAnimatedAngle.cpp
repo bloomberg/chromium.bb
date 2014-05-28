@@ -49,8 +49,6 @@ SVGAnimatedAngle::~SVGAnimatedAngle()
 
 void SVGAnimatedAngle::synchronizeAttribute()
 {
-    ASSERT(needsSynchronizeAttribute());
-
     AtomicString value;
     if (m_orientType->currentValue()->enumValue() == SVGMarkerOrientAuto)
         value = "auto";

@@ -38,7 +38,6 @@ namespace WebCore {
 SVGAnimatedPropertyBase::SVGAnimatedPropertyBase(AnimatedPropertyType type, SVGElement* contextElement, const QualifiedName& attributeName)
     : m_type(type)
     , m_isReadOnly(false)
-    , m_isAnimating(false)
     , m_contextElement(contextElement)
     , m_attributeName(attributeName)
 {
@@ -51,29 +50,20 @@ SVGAnimatedPropertyBase::SVGAnimatedPropertyBase(AnimatedPropertyType type, SVGE
 
 SVGAnimatedPropertyBase::~SVGAnimatedPropertyBase()
 {
-    // FIXME: Oilpan: We need to investigate why this assert fails in
-    // Oilpan builds.
-#if !ENABLE(OILPAN)
-    ASSERT(!isAnimating());
-#endif
 }
 
 void SVGAnimatedPropertyBase::animationStarted()
 {
-    ASSERT(!isAnimating());
-    m_isAnimating = true;
+    // FIXME: remove this function and its overrides
 }
 
 void SVGAnimatedPropertyBase::animationEnded()
 {
     synchronizeAttribute();
-    ASSERT(isAnimating());
-    m_isAnimating = false;
 }
 
 void SVGAnimatedPropertyBase::synchronizeAttribute()
 {
-    ASSERT(needsSynchronizeAttribute());
     AtomicString value(currentValueBase()->valueAsString());
     m_contextElement->setSynchronizedLazyAttribute(m_attributeName, value);
 }

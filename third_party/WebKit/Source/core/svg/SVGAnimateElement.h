@@ -70,7 +70,6 @@ private:
     RefPtr<SVGPropertyBase> m_toAtEndOfDurationProperty;
     RefPtr<SVGPropertyBase> m_animatedProperty;
 
-    WillBeHeapVector<RawPtrWillBeMember<SVGElement> > m_animatedElements;
     OwnPtrWillBeMember<SVGAnimatedTypeAnimator> m_animator;
 };
 

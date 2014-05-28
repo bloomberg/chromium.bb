@@ -51,6 +51,7 @@ public:
 
     // SVGAnimatedPropertyBase:
     virtual SVGPropertyBase* currentValueBase() OVERRIDE;
+    virtual bool isAnimating() const OVERRIDE;
     virtual void animationStarted() OVERRIDE;
     virtual PassRefPtr<SVGPropertyBase> createAnimatedValue() OVERRIDE;
     virtual void setAnimatedValue(PassRefPtr<SVGPropertyBase>) OVERRIDE;

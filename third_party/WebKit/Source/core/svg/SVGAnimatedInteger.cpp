@@ -37,7 +37,6 @@ namespace WebCore {
 
 void SVGAnimatedInteger::synchronizeAttribute()
 {
-    ASSERT(needsSynchronizeAttribute());
     if (m_parentIntegerOptionalInteger) {
         m_parentIntegerOptionalInteger->synchronizeAttribute();
         return;

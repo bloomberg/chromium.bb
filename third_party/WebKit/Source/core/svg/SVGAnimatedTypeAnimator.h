@@ -59,6 +59,9 @@ public:
     void setContextElement(SVGElement* contextElement) { m_contextElement = contextElement; }
     AnimatedPropertyType type() const { return m_type; }
 
+    bool isAnimatingSVGDom() const { return m_animatedProperty; }
+    bool isAnimatingCSSProperty() const { return !m_animatedProperty; }
+
     void trace(Visitor*);
 
 private:
@@ -67,9 +70,6 @@ private:
     friend class ParsePropertyFromString;
     PassRefPtr<SVGPropertyBase> createPropertyForAnimation(const String&);
     PassRefPtr<SVGPropertyBase> resetAnimation(const WillBeHeapVector<RawPtrWillBeMember<SVGElement> >&);
-
-    bool isAnimatingSVGDom() const { return m_animatedProperty; }
-    bool isAnimatingCSSProperty() const { return !m_animatedProperty; }
 
     AnimatedPropertyType m_type;
     RawPtrWillBeMember<SVGAnimationElement> m_animationElement;
