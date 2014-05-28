@@ -58,8 +58,24 @@ def Manager():
     osutils.SetGlobalTempDir(old_tempdir_value, old_tempdir_env)
 
 
-class BackgroundFailure(failures_lib.StepFailure):
+class BackgroundFailure(failures_lib.CompoundFailure):
   """Exception to show a step failed while running in a background process."""
+
+
+class ProcessExitTimeout(Exception):
+  """Raised if a process cannot exit within the timeout."""
+
+
+class ProcessUnexpectedExit(Exception):
+  """Raised if a process exits unexpectedly."""
+
+
+class ProcessSilentTimeout(Exception):
+  """Raised when there is no output for a prolonged period of time."""
+
+
+class UnexpectedException(Exception):
+  """Raised when exception occurs at an unexpected place."""
 
 
 class _BackgroundTask(multiprocessing.Process):
@@ -182,15 +198,19 @@ class _BackgroundTask(multiprocessing.Process):
       results = []
       with open(self._output.name, 'r') as output:
         pos = 0
-        running, exited_cleanly, msg, error = (True, False, None, None)
+        running, exited_cleanly, task_errors, all_errors = (True, False, [], [])
         possibly_flaky = False
         while running:
           # Check whether the process is still alive.
           running = self.is_alive()
 
           try:
-            error, results, possibly_flaky = \
+            errors, results, possibly_flaky = \
                 self._queue.get(True, self.PRINT_INTERVAL)
+            if errors:
+              task_errors.extend(errors)
+              all_errors.extend(errors)
+
             running = False
             exited_cleanly = True
           except Queue.Empty:
@@ -202,6 +222,8 @@ class _BackgroundTask(multiprocessing.Process):
             self.join(self.EXIT_TIMEOUT)
             if self.exitcode is None:
               msg = '%r hung for %r seconds' % (self, self.EXIT_TIMEOUT)
+              all_errors.extend(
+                  failures_lib.CreateExceptInfo(ProcessExitTimeout(msg), ''))
               self._KillChildren([self])
             elif not exited_cleanly:
               # Treat SIGKILL signals as potentially flaky.
@@ -209,6 +231,8 @@ class _BackgroundTask(multiprocessing.Process):
                 possibly_flaky = True
               msg = ('%r exited unexpectedly with code %s' %
                      (self, self.exitcode))
+              all_errors.extend(
+                  failures_lib.CreateExceptInfo(ProcessUnexpectedExit(msg), ''))
 
           # Read output from process.
           output.seek(pos)
@@ -219,6 +243,8 @@ class _BackgroundTask(multiprocessing.Process):
           elif running and time.time() > silent_death_time:
             msg = ('No output from %r for %r seconds' %
                    (self, self.SILENT_TIMEOUT))
+            all_errors.extend(
+                failures_lib.CreateExceptInfo(ProcessSilentTimeout(msg), ''))
             self._KillChildren([self])
 
             # Timeouts are possibly flaky.
@@ -238,10 +264,10 @@ class _BackgroundTask(multiprocessing.Process):
             buf = output.read(_BUFSIZE)
 
           # Print error messages if anything exceptional occurred.
-          if msg:
+          if len(all_errors) > len(task_errors):
             cros_build_lib.PrintBuildbotStepFailure()
-            error = '\n'.join(x for x in (error, msg) if x)
-            logger.warning(error)
+            msg = '\n'.join(x.str for x in all_errors if x)
+            logger.warning(msg)
             traceback.print_stack()
 
           sys.stdout.flush()
@@ -254,8 +280,8 @@ class _BackgroundTask(multiprocessing.Process):
     finally:
       self.Cleanup(silent=True)
 
-    # If a traceback occurred, return it.
-    return error, possibly_flaky
+    # If an error occurred, return it.
+    return all_errors, possibly_flaky
 
   def start(self):
     """Invoke multiprocessing.Process.start after flushing output/err."""
@@ -274,15 +300,16 @@ class _BackgroundTask(multiprocessing.Process):
     if self._semaphore is not None:
       self._semaphore.acquire()
 
-    error = 'Unexpected exception in %r' % self
+    errors = failures_lib.CreateExceptInfo(
+        UnexpectedException('Unexpected exception in %r' % self), '')
     possibly_flaky = False
     pid = os.getpid()
     try:
-      error, possibly_flaky = self._Run()
+      errors, possibly_flaky = self._Run()
     finally:
       if not self._killing.is_set() and os.getpid() == pid:
         results = results_lib.Results.Get()
-        self._queue.put((error, results, possibly_flaky))
+        self._queue.put((errors, results, possibly_flaky))
         if self._semaphore is not None:
           self._semaphore.release()
 
@@ -298,6 +325,7 @@ class _BackgroundTask(multiprocessing.Process):
 
     sys.stdout.flush()
     sys.stderr.flush()
+    errors = []
     possibly_flaky = False
     # Send all output to a named temporary file.
     with open(self._output.name, 'w', 0) as output:
@@ -313,7 +341,6 @@ class _BackgroundTask(multiprocessing.Process):
       sys.stdout = os.fdopen(sys.__stdout__.fileno(), 'w', 0)
       sys.stderr = os.fdopen(sys.__stderr__.fileno(), 'w', 0)
 
-      error = None
       try:
         self._started.set()
         results_lib.Results.Clear()
@@ -325,18 +352,20 @@ class _BackgroundTask(multiprocessing.Process):
         # Actually launch the task.
         self._task(*self._task_args, **self._task_kwargs)
       except failures_lib.StepFailure as ex:
-        error = str(ex)
+        errors.extend(failures_lib.CreateExceptInfo(
+            ex, traceback.format_exc()))
         possibly_flaky = ex.possibly_flaky
       except BaseException as ex:
+        errors.extend(failures_lib.CreateExceptInfo(
+            ex, traceback.format_exc()))
         possibly_flaky = isinstance(ex, timeout_util.TimeoutError)
-        error = traceback.format_exc()
         if self._killing.is_set():
           traceback.print_exc()
       finally:
         sys.stdout.flush()
         sys.stderr.flush()
 
-    return error, possibly_flaky
+    return errors, possibly_flaky
 
   @classmethod
   def _KillChildren(cls, bg_tasks, log_level=logging.WARNING):
@@ -418,14 +447,14 @@ class _BackgroundTask(multiprocessing.Process):
         yield
       finally:
         # Wait for each step to complete.
-        tracebacks = []
+        errors = []
         flaky_tasks = []
         while bg_tasks:
           task = bg_tasks.popleft()
-          error, possibly_flaky = task.Wait()
-          if error is not None:
+          task_errors, possibly_flaky = task.Wait()
+          if task_errors:
             flaky_tasks.append(possibly_flaky)
-            tracebacks.append(error)
+            errors.extend(task_errors)
             if halt_on_error:
               break
 
@@ -434,9 +463,10 @@ class _BackgroundTask(multiprocessing.Process):
           cls._KillChildren(bg_tasks, log_level=logging.DEBUG)
 
         # Propagate any exceptions.
-        if tracebacks:
+        if errors:
           possibly_flaky = flaky_tasks and all(flaky_tasks)
-          raise BackgroundFailure('\n' + ''.join(tracebacks), possibly_flaky)
+          raise BackgroundFailure(exc_infos=errors,
+                                  possibly_flaky=possibly_flaky)
 
   @staticmethod
   def TaskRunner(queue, task, onexit=None, task_args=None, task_kwargs=None):
@@ -461,7 +491,7 @@ class _BackgroundTask(multiprocessing.Process):
     if task_kwargs is None:
       task_kwargs = {}
 
-    tracebacks = []
+    errors = []
     while True:
       # Wait for a new item to show up on the queue. This is a blocking wait,
       # so if there's nothing to do, we just sit here.
@@ -475,19 +505,20 @@ class _BackgroundTask(multiprocessing.Process):
         x = task_args + x
 
       # If no tasks failed yet, process the remaining tasks.
-      if not tracebacks:
+      if not errors:
         try:
           task(*x, **task_kwargs)
-        except BaseException:
-          tracebacks.append(traceback.format_exc())
+        except BaseException as ex:
+          errors.extend(
+              failures_lib.CreateExceptInfo(ex, traceback.format_exc()))
 
     # Run exit handlers.
     if onexit:
       onexit()
 
     # Propagate any exceptions.
-    if tracebacks:
-      raise BackgroundFailure('\n' + ''.join(tracebacks))
+    if errors:
+      raise BackgroundFailure(exc_infos=errors)
 
 
 def RunParallelSteps(steps, max_parallel=None, halt_on_error=False,

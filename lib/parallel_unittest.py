@@ -337,21 +337,28 @@ class TestExceptions(cros_test_lib.MockOutputTestCase):
   def _BadPickler(self):
     return self._BadPickler
 
-  def testExceptionRaising(self):
+  def _VerifyExceptionRaised(self, fn, exc_type):
+    """A helper function to verify the correct |exc_type| is raised."""
     # pylint: disable=E1101
+    for task in (lambda: parallel.RunTasksInProcessPool(fn, [[]]),
+                 lambda: parallel.RunParallelSteps([fn])):
+      output_str = ex_str = ex = None
+      with self.OutputCapturer() as capture:
+        try:
+          task()
+        except parallel.BackgroundFailure as ex:
+          output_str = capture.GetStdout()
+          ex_str = str(ex)
+
+      self.assertTrue(exc_type in [x.type for x in ex.exc_infos])
+      self.assertTrue('Traceback' in ex_str)
+      self.assertEqual(output_str, _GREETING)
+
+  def testExceptionRaising(self):
+    """Tests the exceptions are raised correctly."""
     self.StartPatcher(BackgroundTaskVerifier())
-    for fn in (self._SystemExit, self._KeyboardInterrupt):
-      for task in (lambda: parallel.RunTasksInProcessPool(fn, [[]]),
-                   lambda: parallel.RunParallelSteps([fn])):
-        output_str = ex_str = None
-        with self.OutputCapturer() as capture:
-          try:
-            task()
-          except parallel.BackgroundFailure as ex:
-            output_str = capture.GetStdout()
-            ex_str = str(ex)
-        self.assertTrue('Traceback' in ex_str)
-        self.assertEqual(output_str, _GREETING)
+    self._VerifyExceptionRaised(self._KeyboardInterrupt, KeyboardInterrupt)
+    self._VerifyExceptionRaised(self._SystemExit, SystemExit)
 
   def testFailedPickle(self):
     """PicklingError should be thrown when an argument fails to pickle."""

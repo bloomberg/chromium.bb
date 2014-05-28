@@ -69,15 +69,15 @@ class SetFailureTypeTest(cros_test_lib.TestCase):
     """Tests that the list of ExceptInfo objects are copied over."""
     tb1 = 'Dummy traceback1'
     tb2 = 'Dummy traceback2'
-    org_exc_infos = [failures_lib.CreateExceptInfo(ValueError('No taco.'), tb1),
-                     failures_lib.CreateExceptInfo(OSError('No salsa'), tb2)]
+    org_infos = failures_lib.CreateExceptInfo(ValueError('No taco.'), tb1) + \
+                failures_lib.CreateExceptInfo(OSError('No salsa'), tb2)
     try:
       self._GetFunction(self.SubparLunch, self.TacoNotTasty,
-                        exc_infos=org_exc_infos)()
+                        exc_infos=org_infos)()
     except Exception as e:
       self.assertTrue(isinstance(e, self.SubparLunch))
       # The orignal exceptions stored in exc_infos are preserved.
-      self.assertEqual(e.exc_infos, org_exc_infos)
+      self.assertEqual(e.exc_infos, org_infos)
       # All essential inforamtion should be included in the message of
       # the new excpetion.
       self.assertTrue(tb1 in str(e))
@@ -111,12 +111,12 @@ class ExceptInfoTest(cros_test_lib.TestCase):
     """Tests converting an exception to an ExceptInfo object."""
     traceback = 'Dummy traceback'
     message = 'Taco is not a valid option!'
-    except_info = failures_lib.CreateExceptInfo(
+    except_infos = failures_lib.CreateExceptInfo(
         ValueError(message), traceback)
 
-    self.assertEqual(except_info.type, ValueError)
-    self.assertEqual(except_info.str, message)
-    self.assertEqual(except_info.traceback, traceback)
+    self.assertEqual(except_infos[0].type, ValueError)
+    self.assertEqual(except_infos[0].str, message)
+    self.assertEqual(except_infos[0].traceback, traceback)
 
 
 if __name__ == '__main__':

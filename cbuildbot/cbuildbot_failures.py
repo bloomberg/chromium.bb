@@ -44,7 +44,12 @@ ExceptInfo = collections.namedtuple(
 
 
 def CreateExceptInfo(exception, tb):
-  """Creates an ExceptInfo objection from |exception| and |tb|.
+  """Creates a list of ExceptInfo objects from |exception| and |tb|.
+
+  Creates an ExceptInfo object from |exception| and |tb|. If
+  |exception| is a CompoundFailure with non-empty list of exc_infos,
+  simly returns exception.exc_infos. Note that we do not preserve type
+  of |exception| in this case.
 
   Args:
     exception: The exception.
@@ -53,7 +58,10 @@ def CreateExceptInfo(exception, tb):
   Returns:
     A list of ExceptInfo objects.
   """
-  return ExceptInfo(exception.__class__, str(exception), tb)
+  if issubclass(exception.__class__, CompoundFailure) and exception.exc_infos:
+    return exception.exc_infos
+
+  return [ExceptInfo(exception.__class__, str(exception), tb)]
 
 
 class CompoundFailure(StepFailure):
@@ -103,14 +111,7 @@ class SetFailureType(object):
           # exception type because it offers more information.
           raise
         else:
-          exc_infos = [CreateExceptInfo(exc_value, exc_traceback)]
-          if issubclass(exc_type, CompoundFailure) and exc_value.exc_infos:
-            # If the original exception is already a CompoundFailure,
-            # and have non-empty exc_infos, make sure we preserve the
-            # list of ExceptInfo objects. Note that we do not preserve
-            # the original CompoundFailure type in this case.
-            exc_infos = exc_value.exc_infos
-
+          exc_infos = CreateExceptInfo(exc_value, exc_traceback)
           raise self.category_exception(exc_infos=exc_infos)
 
     return wrapped_functor
