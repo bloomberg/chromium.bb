@@ -15,7 +15,7 @@
         '<(proto_in_dir)/mtp_file_entry.proto',
         '<(proto_in_dir)/field_trial_list.proto',
       ],
-      'includes': ['../common-mk/protoc.gypi'],
+      'includes': ['../../platform2/common-mk/protoc.gypi'],
     },
     {
       'target_name': 'system_api-power_manager-protos',
@@ -34,7 +34,7 @@
         '<(proto_in_dir)/policy.proto',
         '<(proto_in_dir)/power_supply_properties.proto',
       ],
-      'includes': ['../common-mk/protoc.gypi'],
+      'includes': ['../../platform2/common-mk/protoc.gypi'],
     },
     {
       'target_name': 'system_api-cryptohome-protos',
@@ -51,7 +51,7 @@
         '<(proto_in_dir)/rpc.proto',
         '<(proto_in_dir)/signed_secret.proto',
       ],
-      'includes': ['../common-mk/protoc.gypi'],
+      'includes': ['../../platform2/common-mk/protoc.gypi'],
     },
     {
       'target_name': 'system_api-headers',
