@@ -21,7 +21,6 @@ import time
 from pylib import android_commands
 from pylib import constants
 from pylib import device_settings
-from pylib.cmd_helper import GetCmdOutput
 from pylib.device import device_utils
 
 sys.path.append(os.path.join(constants.DIR_SOURCE_ROOT,
@@ -128,14 +127,16 @@ def ProvisionDevices(options):
   for device_serial in devices:
     device = device_utils.DeviceUtils(device_serial)
     device.old_interface.EnableAdbRoot()
-    install_output = GetCmdOutput(
-      ['%s/build/android/adb_install_apk.py' % constants.DIR_SOURCE_ROOT,
-       '--apk',
-       '%s/build/android/CheckInstallApk-debug.apk' % constants.DIR_SOURCE_ROOT
-       ])
-    failure_string = 'Failure [INSTALL_FAILED_INSUFFICIENT_STORAGE]'
-    if failure_string in install_output:
-      WipeDeviceData(device)
+    WipeDeviceData(device)
+  try:
+    (device_utils.DeviceUtils.parallel(devices)
+     .old_interface.Reboot(True))
+  except errors.DeviceUnresponsiveError:
+    pass
+  for device_serial in devices:
+    device = device_utils.DeviceUtils(device_serial)
+    device.WaitUntilFullyBooted(timeout=90)
+    device.old_interface.EnableAdbRoot()
     _ConfigureLocalProperties(device)
     device_settings.ConfigureContentSettingsDict(
         device, device_settings.DETERMINISTIC_DEVICE_SETTINGS)
