@@ -248,14 +248,11 @@ def SetUpArch():
   env.set('LLC_MCPU', '-mcpu=%s' % cpu_map[base_arch])
 
   llc_flags_map = {
-      'ARM': ['-arm-reserve-r9', '-sfi-disable-cp', '-sfi-load', '-sfi-store',
-              '-sfi-stack', '-sfi-branch', '-sfi-data',
-              '-no-inline-jumptables', '-float-abi=hard', '-mattr=+neon'],
+      'ARM': ['-float-abi=hard', '-mattr=+neon'],
       # Once PNaCl's build of compiler-rt (libgcc.a) defines __aeabi_*
       # functions, we can drop the following ad-hoc option.
       'ARM_NONSFI': ['-arm-enable-aeabi-functions=0'],
-      'MIPS32': ['-sfi-load', '-sfi-store', '-sfi-stack',
-                 '-sfi-branch', '-sfi-data']}
+      }
   env.set('LLC_FLAGS_ARCH', *llc_flags_map.get(env.getone('ARCH'), []))
   # When linking against a host OS's libc (such as Linux glibc), don't
   # use %gs:0 to read the thread pointer because that won't be
