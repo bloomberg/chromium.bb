@@ -7,12 +7,14 @@
 
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/containers/hash_tables.h"
-#include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
+
+namespace metrics {
+class MetricSample;
+}  // namespace metrics
 
 namespace chromeos {
 
@@ -31,14 +33,19 @@ class ExternalMetrics : public base::RefCountedThreadSafe<ExternalMetrics> {
   // File thread but are executed in the UI thread.
   void Start();
 
+  // Creates an ExternalMetrics instance reading from |filename| for testing
+  // purpose.
+  static scoped_refptr<ExternalMetrics> CreateForTesting(
+      const std::string& filename);
+
  private:
   friend class base::RefCountedThreadSafe<ExternalMetrics>;
-  FRIEND_TEST_ALL_PREFIXES(ExternalMetricsTest, ParseExternalMetricsFile);
+  friend class ExternalMetricsTest;
 
-  // There is one function with this type for each action.
-  typedef void (*RecordFunctionType)();
-
-  typedef void (*RecorderType)(const char*, const char*);  // For testing only.
+  FRIEND_TEST_ALL_PREFIXES(ExternalMetricsTest, CanReceiveHistogram);
+  FRIEND_TEST_ALL_PREFIXES(ExternalMetricsTest, HandleMissingFile);
+  FRIEND_TEST_ALL_PREFIXES(ExternalMetricsTest,
+                           IncorrectHistogramsAreDiscarded);
 
   // The max length of a message (name-value pair, plus header)
   static const int kMetricsMessageMaxLength = 1024;  // be generous
@@ -49,7 +56,7 @@ class ExternalMetrics : public base::RefCountedThreadSafe<ExternalMetrics> {
   void RecordActionUI(std::string action_string);
 
   // Passes an action event to the UMA service.
-  void RecordAction(const char* action_name);
+  void RecordAction(const std::string& action_name);
 
   // Records an external crash of the given string description to
   // UMA service on the UI thread.
@@ -58,21 +65,20 @@ class ExternalMetrics : public base::RefCountedThreadSafe<ExternalMetrics> {
   // Records an external crash of the given string description.
   void RecordCrash(const std::string& crash_kind);
 
-  // Passes an histogram event to the UMA service.  |histogram_data| is in the
-  // form <histogram-name> <sample> <min> <max> <buckets_count>.
-  void RecordHistogram(const char* histogram_data);
+  // Records an histogram. |sample| is expected to be an histogram.
+  void RecordHistogram(const metrics::MetricSample& sample);
 
-  // Passes a linear histogram event to the UMA service.  |histogram_data| is
-  // in the form <histogram-name> <sample> <max>.
-  void RecordLinearHistogram(const char* histogram_data);
+  // Records a sparse histogram. |sample| is expected to be a sparse histogram.
+  void RecordSparseHistogram(const metrics::MetricSample& sample);
 
-  // Passes a sparse histogram event to the UMA service.  |histogram_data| is
-  // in the form <histogram-name> <sample>.
-  void RecordSparseHistogram(const char* histogram_data);
+  // Records a linear histogram. |sample| is expected to be a linear histogram.
+  void RecordLinearHistogram(const metrics::MetricSample& sample);
 
   // Collects external events from metrics log file.  This is run at periodic
   // intervals.
-  void CollectEvents();
+  //
+  // Returns the number of events collected.
+  int CollectEvents();
 
   // Calls CollectEvents and reschedules a future collection.
   void CollectEventsAndReschedule();
@@ -86,15 +92,11 @@ class ExternalMetrics : public base::RefCountedThreadSafe<ExternalMetrics> {
   // from ChromeOS.
   void SetupFieldTrialsOnFileThread();
 
-  // Maps histogram or action names to recorder structs.
-  base::hash_map<std::string, RecordFunctionType> action_recorders_;
-
   // Set containing known user actions.
   base::hash_set<std::string> valid_user_actions_;
 
-  // Used for testing only.
-  RecorderType test_recorder_;
-  base::FilePath test_path_;
+  // File used by libmetrics to send metrics to Chrome.
+  std::string uma_events_file_;
 
   DISALLOW_COPY_AND_ASSIGN(ExternalMetrics);
 };

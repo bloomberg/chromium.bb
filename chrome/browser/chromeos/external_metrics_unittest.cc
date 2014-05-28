@@ -2,135 +2,67 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <errno.h>
-#include <sys/file.h>
-
-#include "base/basictypes.h"
-#include "base/containers/hash_tables.h"
+#include "base/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/metrics/statistics_recorder.h"
 #include "chrome/browser/chromeos/external_metrics.h"
-#include "testing/gtest/include/gtest/gtest.h"
+#include "chrome/test/base/uma_histogram_helper.h"
+#include "components/metrics/chromeos/metric_sample.h"
+#include "components/metrics/chromeos/serialization_utils.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 
 namespace chromeos {  // Need this because of the FRIEND_TEST
 
 class ExternalMetricsTest : public testing::Test {
+ public:
+  virtual void SetUp() OVERRIDE {
+    ASSERT_TRUE(dir_.CreateUniqueTempDir());
+    external_metrics_ = ExternalMetrics::CreateForTesting(
+        dir_.path().Append("testfile").value());
+
+    base::StatisticsRecorder::Initialize();
+  }
+
+  base::ScopedTempDir dir_;
+  scoped_refptr<ExternalMetrics> external_metrics_;
+  content::TestBrowserThreadBundle thread_bundle_;
 };
 
-// Because the metrics service is not essential, errors will not cause the
-// program to terminate.  However, the errors produce logs.
+TEST_F(ExternalMetricsTest, HandleMissingFile) {
+  ASSERT_TRUE(base::DeleteFile(
+      base::FilePath(external_metrics_->uma_events_file_), false));
 
-#define MAXLENGTH ExternalMetrics::kMetricsMessageMaxLength
-
-static void SendMessage(const char* path, const char* name, const char* value) {
-  int fd = open(path, O_CREAT | O_APPEND | O_WRONLY, 0666);
-  int32 l = strlen(name) + strlen(value) + 2 + sizeof(l);
-  size_t num_bytes = 0;
-  num_bytes += write(fd, &l, sizeof(l));
-  num_bytes += write(fd, name, strlen(name) + 1);
-  num_bytes += write(fd, value, strlen(value) + 1);
-  EXPECT_EQ(num_bytes, sizeof(l) + strlen(name) + strlen(value) + 2);
-  close(fd);
+  EXPECT_EQ(0, external_metrics_->CollectEvents());
 }
 
-static scoped_ptr<std::string> received_name;
-static scoped_ptr<std::string> received_value;
-int received_count = 0;
+TEST_F(ExternalMetricsTest, CanReceiveHistogram) {
+  scoped_ptr<metrics::MetricSample> hist =
+      metrics::MetricSample::HistogramSample("foo", 2, 1, 100, 10);
 
-static void ReceiveMessage(const char* name, const char* value) {
-  received_name.reset(new std::string(name));
-  received_value.reset(new std::string(value));
-  received_count++;
+  EXPECT_TRUE(metrics::SerializationUtils::WriteMetricToFile(
+      *hist.get(), external_metrics_->uma_events_file_));
+
+  EXPECT_EQ(1, external_metrics_->CollectEvents());
+
+  UMAHistogramHelper helper;
+  helper.Fetch();
+  helper.ExpectTotalCount("foo", 1);
 }
 
-static void CheckMessage(const char* name, const char* value, int count) {
-  EXPECT_EQ(*received_name.get(), name);
-  EXPECT_EQ(*received_value.get(), value);
-  EXPECT_EQ(received_count, count);
-}
+TEST_F(ExternalMetricsTest, IncorrectHistogramsAreDiscarded) {
+  // Malformed histogram (min > max).
+  scoped_ptr<metrics::MetricSample> hist =
+      metrics::MetricSample::HistogramSample("bar", 30, 200, 20, 10);
 
-TEST(ExternalMetricsTest, ParseExternalMetricsFile) {
-  const char *histogram_data[] = {
-    "BootTime 9500 0 20000 50",
-    "BootTime 10000 0 20000 50",
-    "BootTime 9200 0 20000 50",
-    "ConnmanIdle 1000 0 2000 20",
-    "ConnmanIdle 1200 0 2000 20",
-    "ConnmanDisconnect 1000 0 2000 20",
-    "ConnmanFailure 1000 0 2000 20",
-    "ConnmanFailure 13000 2000 20",
-    "ConnmanAssociation 1000 0 2000 20",
-    "ConnmanConfiguration 1000 0 2000 20",
-    "ConnmanOffline 1000 0 2000 20",
-    "ConnmanOnline 1000 0 2000 20",
-    "ConnmanOffline 2000 0 2000 20",
-    "ConnmanReady 33000 0 100000 50",
-    "ConnmanReady 44000 0 100000 50",
-    "ConnmanReady 22000 0 100000 50",
-  };
-  int nhist = ARRAYSIZE_UNSAFE(histogram_data);
-  int32 i;
-  const char* path = "/tmp/.chromeos-metrics";
-  scoped_refptr<chromeos::ExternalMetrics>
-      external_metrics(new chromeos::ExternalMetrics());
-  external_metrics->test_recorder_ = &ReceiveMessage;
-  external_metrics->test_path_ = base::FilePath(path);
-  EXPECT_TRUE(unlink(path) == 0 || errno == ENOENT);
+  EXPECT_TRUE(metrics::SerializationUtils::WriteMetricToFile(
+      *hist.get(), external_metrics_->uma_events_file_));
 
-  // Sends a few valid messages.  Once in a while, collects them and checks the
-  // last message.  We don't want to check every single message because we also
-  // want to test the ability to deal with a file containing more than one
-  // message.
-  for (i = 0; i < nhist; i++) {
-    SendMessage(path, "histogram", histogram_data[i]);
-    if (i % 3 == 2) {
-      external_metrics->CollectEvents();
-      CheckMessage("histogram", histogram_data[i], i + 1);
-    }
-  }
+  external_metrics_->CollectEvents();
 
-  // Sends a crash message.
-  int expect_count = nhist;
-  SendMessage(path, "crash", "user");
-  external_metrics->CollectEvents();
-  CheckMessage("crash", "user", ++expect_count);
-
-  // Sends a message that's too large.
-  char b[MAXLENGTH + 100];
-  for (i = 0; i < MAXLENGTH + 99; i++) {
-    b[i] = 'x';
-  }
-  b[i] = '\0';
-  SendMessage(path, b, "yyy");
-  // Expect logged errors about bad message size.
-  external_metrics->CollectEvents();
-  EXPECT_EQ(expect_count, received_count);
-
-  // Sends a malformed message (first string is not null-terminated).
-  i = 100 + sizeof(i);
-  int fd = open(path, O_CREAT | O_WRONLY, 0666);
-  EXPECT_GT(fd, 0);
-  EXPECT_EQ(static_cast<int>(sizeof(i)), write(fd, &i, sizeof(i)));
-  EXPECT_EQ(i, write(fd, b, i));
-  EXPECT_EQ(0, close(fd));
-
-  external_metrics->CollectEvents();
-  EXPECT_EQ(expect_count, received_count);
-
-  // Sends a malformed message (second string is not null-terminated).
-  b[50] = '\0';
-  fd = open(path, O_CREAT | O_WRONLY, 0666);
-  EXPECT_GT(fd, 0);
-  EXPECT_EQ(static_cast<int>(sizeof(i)), write(fd, &i, sizeof(i)));
-  EXPECT_EQ(i, write(fd, b, i));
-  EXPECT_EQ(0, close(fd));
-
-  external_metrics->CollectEvents();
-  EXPECT_EQ(expect_count, received_count);
-
-  // Checks that we survive when file doesn't exist.
-  EXPECT_EQ(0, unlink(path));
-  external_metrics->CollectEvents();
-  EXPECT_EQ(expect_count, received_count);
+  UMAHistogramHelper helper;
+  helper.Fetch();
+  helper.ExpectTotalCount("bar", 0);
 }
 
 }  // namespace chromeos
