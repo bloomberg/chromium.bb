@@ -150,6 +150,46 @@ TEST_F(QueryTest, DISABLED_LatencyQueryBasic) {
   EXPECT_LE(query_result, kTimePrecisionMicroseconds);
 }
 
+TEST_F(QueryTest, CommandsCompleted) {
+  if (!GLTestHelper::HasExtension("GL_CHROMIUM_sync_query")) {
+    LOG(INFO) << "GL_CHROMIUM_sync_query not supported. Skipping test...";
+    return;
+  }
+
+  GLuint query;
+  glGenQueriesEXT(1, &query);
+  glBeginQueryEXT(GL_COMMANDS_COMPLETED_CHROMIUM, query);
+  glClearColor(0.0, 0.0, 1.0, 1.0);
+  glClear(GL_COLOR_BUFFER_BIT);
+  glEndQueryEXT(GL_COMMANDS_COMPLETED_CHROMIUM);
+  glFlush();
+  GLuint result = 0;
+  glGetQueryObjectuivEXT(query, GL_QUERY_RESULT_EXT, &result);
+  EXPECT_EQ(0u, result);
+  glDeleteQueriesEXT(1, &query);
+  GLTestHelper::CheckGLError("no errors", __LINE__);
+}
+
+TEST_F(QueryTest, CommandsCompletedWithFinish) {
+  if (!GLTestHelper::HasExtension("GL_CHROMIUM_sync_query")) {
+    LOG(INFO) << "GL_CHROMIUM_sync_query not supported. Skipping test...";
+    return;
+  }
+
+  GLuint query;
+  glGenQueriesEXT(1, &query);
+  glBeginQueryEXT(GL_COMMANDS_COMPLETED_CHROMIUM, query);
+  glClearColor(0.0, 0.0, 1.0, 1.0);
+  glClear(GL_COLOR_BUFFER_BIT);
+  glEndQueryEXT(GL_COMMANDS_COMPLETED_CHROMIUM);
+  glFinish();
+  GLuint result = 0;
+  glGetQueryObjectuivEXT(query, GL_QUERY_RESULT_AVAILABLE_EXT, &result);
+  EXPECT_EQ(1u, result);
+  glDeleteQueriesEXT(1, &query);
+  GLTestHelper::CheckGLError("no errors", __LINE__);
+}
+
 }  // namespace gpu
 
 
