@@ -289,8 +289,8 @@ rm -rf "$DUMMY_STAGING_DIR"
 # Additional dependencies not in the dpkg-shlibdeps output.
 # Pull a more recent version of NSS than required by runtime linking, for
 # security and stability updates in NSS.
-ADDITION_DEPS="ca-certificates, libcurl3, libnss3 (>= 3.14.3), \
-  lsb-base (>=3.2), xdg-utils (>= 1.0.2), wget"
+ADDITION_DEPS="ca-certificates, libappindicator1, libcurl3, \
+  libnss3 (>= 3.14.3), lsb-base (>=3.2), xdg-utils (>= 1.0.2), wget"
 
 # Fix-up libnspr dependency due to renaming in Ubuntu (the old package still
 # exists, but it was moved to "universe" repository, which isn't installed by
