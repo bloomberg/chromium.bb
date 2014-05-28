@@ -14,6 +14,12 @@ _ Fixed a bug in backtranslation, when a letsign was encountered, the
 - Fix for Norwegian where letsign is affecting some extra characters
   thanks to Lars Bjørndal
 - Much improved hyphenation for Norwegian thanks to Lars Bjørndal
+- New Hebrew table that is based on the new unified Hebrew Braille
+  code standard that was put together on January 2014 after a
+  conference with all of the specialists in this field in Israel. It
+  includes improved representation of Hebrew letters, special letters
+  that are called Nikud, and punctuation symbols. The old Braille
+  standard is not relevant any more. Thanks to Adi Kushnir.
 
 * Noteworthy changes in release 2.5.4 (2014-3-3)
 This release contains nine months worth of braille table improvements
