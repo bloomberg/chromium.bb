@@ -7,7 +7,6 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/prefs/pref_service.h"
-#include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/services/gcm/gcm_utils.h"
 #include "chrome/browser/signin/profile_identity_provider.h"
@@ -30,33 +29,8 @@
 namespace gcm {
 
 // static
-GCMProfileService::GCMEnabledState GCMProfileService::GetGCMEnabledState(
-    Profile* profile) {
-  const base::Value* gcm_enabled_value =
-      profile->GetPrefs()->GetUserPrefValue(prefs::kGCMChannelEnabled);
-  if (!gcm_enabled_value)
-    return ENABLED_FOR_APPS;
-
-  bool gcm_enabled = false;
-  if (!gcm_enabled_value->GetAsBoolean(&gcm_enabled))
-    return ENABLED_FOR_APPS;
-
-  return gcm_enabled ? ALWAYS_ENABLED : ALWAYS_DISABLED;
-}
-
-// static
-std::string GCMProfileService::GetGCMEnabledStateString(GCMEnabledState state) {
-  switch (state) {
-    case GCMProfileService::ALWAYS_ENABLED:
-      return "ALWAYS_ENABLED";
-    case GCMProfileService::ENABLED_FOR_APPS:
-      return "ENABLED_FOR_APPS";
-    case GCMProfileService::ALWAYS_DISABLED:
-      return "ALWAYS_DISABLED";
-    default:
-      NOTREACHED();
-      return std::string();
-  }
+bool GCMProfileService::IsGCMEnabled(Profile* profile) {
+  return profile->GetPrefs()->GetBoolean(prefs::kGCMChannelEnabled);
 }
 
 // static

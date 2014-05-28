@@ -1018,20 +1018,14 @@ void ProfileSyncService::OnExperimentsChanged(
   current_experiments_ = experiments;
 
   // Handle preference-backed experiments first.
-  if (experiments.gcm_channel_state != syncer::Experiments::UNSET) {
-    profile()->GetPrefs()->SetBoolean(prefs::kGCMChannelEnabled,
-                                      experiments.gcm_channel_state ==
-                                          syncer::Experiments::ENABLED);
-    gcm::GCMProfileService* gcm_profile_service =
-        gcm::GCMProfileServiceFactory::GetForProfile(profile());
-    if (gcm_profile_service && gcm_profile_service->driver()) {
-      if (experiments.gcm_channel_state == syncer::Experiments::SUPPRESSED)
-        gcm_profile_service->driver()->Disable();
-      else
-        gcm_profile_service->driver()->Enable();
-    }
+  if (experiments.gcm_channel_state == syncer::Experiments::SUPPRESSED) {
+    profile()->GetPrefs()->SetBoolean(prefs::kGCMChannelEnabled, false);
+    gcm::GCMProfileServiceFactory::GetForProfile(profile())->driver()
+        ->Disable();
   } else {
     profile()->GetPrefs()->ClearPref(prefs::kGCMChannelEnabled);
+    gcm::GCMProfileServiceFactory::GetForProfile(profile())->driver()
+        ->Enable();
   }
 
   profile()->GetPrefs()->SetBoolean(prefs::kInvalidationServiceUseGCMChannel,

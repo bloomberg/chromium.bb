@@ -32,9 +32,8 @@ TiclProfileSettingsProvider::~TiclProfileSettingsProvider() {
 }
 
 bool TiclProfileSettingsProvider::UseGCMChannel() const {
-  if (gcm::GCMProfileService::GetGCMEnabledState(profile_) !=
-          gcm::GCMProfileService::ALWAYS_ENABLED) {
-    // Do not use GCM channel if GCM is disabled or is to be used for apps only.
+  if (!gcm::GCMProfileService::IsGCMEnabled(profile_)) {
+    // Do not try to use GCM channel if GCM is disabled.
     return false;
   }
 

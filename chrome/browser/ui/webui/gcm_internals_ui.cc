@@ -152,9 +152,8 @@ void GcmInternalsUIMessageHandler::ReturnResults(
   results.Set("deviceInfo", device_info);
 
   device_info->SetBoolean("profileServiceCreated", profile_service != NULL);
-  device_info->SetString("gcmEnabledState",
-      gcm::GCMProfileService::GetGCMEnabledStateString(
-          gcm::GCMProfileService::GetGCMEnabledState(profile)));
+  device_info->SetBoolean("gcmEnabled",
+                          gcm::GCMProfileService::IsGCMEnabled(profile));
   if (profile_service) {
     device_info->SetString("signedInUserName",
                            profile_service->driver()->SignedInUserName());

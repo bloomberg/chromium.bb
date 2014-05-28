@@ -98,8 +98,7 @@ bool GcmApiFunction::IsGcmApiEnabled() const {
   if (profile->IsOffTheRecord())
     return false;
 
-  return gcm::GCMProfileService::GetGCMEnabledState(profile) !=
-      gcm::GCMProfileService::ALWAYS_DISABLED;
+  return gcm::GCMProfileService::IsGCMEnabled(profile);
 }
 
 gcm::GCMDriver* GcmApiFunction::GetGCMDriver() const {

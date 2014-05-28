@@ -29,7 +29,7 @@ cr.define('gcmInternals', function() {
   function displayDeviceInfo(info) {
     setIfExists(info, 'androidId', 'android-id');
     setIfExists(info, 'profileServiceCreated', 'profile-service-created');
-    setIfExists(info, 'gcmEnabledState', 'gcm-enabled-state');
+    setIfExists(info, 'gcmEnabled', 'gcm-enabled');
     setIfExists(info, 'signedInUserName', 'signed-in-username');
     setIfExists(info, 'gcmClientCreated', 'gcm-client-created');
     setIfExists(info, 'gcmClientState', 'gcm-client-state');

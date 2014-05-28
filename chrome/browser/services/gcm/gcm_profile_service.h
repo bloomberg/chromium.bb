@@ -29,23 +29,8 @@ class GCMDriver;
 // Providing GCM service, via GCMDriver, to a profile.
 class GCMProfileService : public KeyedService {
  public:
-  // Any change made to this enum should have corresponding change in the
-  // GetGCMEnabledStateString(...) function.
-  enum GCMEnabledState {
-    // GCM is always enabled. GCMClient will always load and connect with GCM.
-    ALWAYS_ENABLED,
-    // GCM is only enabled for apps. GCMClient will start to load and connect
-    // with GCM only when GCM API is used.
-    ENABLED_FOR_APPS,
-    // GCM is always disabled. GCMClient will never load and connect with GCM.
-    ALWAYS_DISABLED
-  };
-
-  // Returns the GCM enabled state.
-  static GCMEnabledState GetGCMEnabledState(Profile* profile);
-
-  // Returns text representation of a GCMEnabledState enum entry.
-  static std::string GetGCMEnabledStateString(GCMEnabledState state);
+  // Returns whether GCM is enabled for |profile|.
+  static bool IsGCMEnabled(Profile* profile);
 
   // Register profile-specific prefs for GCM.
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
