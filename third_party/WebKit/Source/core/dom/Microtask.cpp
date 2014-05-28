@@ -47,14 +47,7 @@ void Microtask::performCheckpoint()
     if (isolateData->recursionLevel() || isolateData->performingMicrotaskCheckpoint())
         return;
     isolateData->setPerformingMicrotaskCheckpoint(true);
-
-    v8::HandleScope handleScope(isolate);
-    v8::Local<v8::Context> context = isolateData->ensureDomInJSContext();
-    if (!context.IsEmpty()) {
-        v8::Context::Scope scope(context);
-        isolate->RunMicrotasks();
-    }
-
+    isolate->RunMicrotasks();
     isolateData->setPerformingMicrotaskCheckpoint(false);
 }
 

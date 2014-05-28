@@ -5,37 +5,9 @@
 #include "config.h"
 #include "bindings/v8/ScriptPromiseResolverWithContext.h"
 
-#include "bindings/v8/V8PerIsolateData.h"
-#include "core/dom/ExecutionContextTask.h"
-#include "wtf/PassOwnPtr.h"
+#include "bindings/v8/V8RecursionScope.h"
 
 namespace WebCore {
-
-namespace {
-
-class RunMicrotasksTask FINAL : public ExecutionContextTask {
-public:
-    static PassOwnPtr<RunMicrotasksTask> create(ScriptState* scriptState)
-    {
-        return adoptPtr<RunMicrotasksTask>(new RunMicrotasksTask(scriptState));
-    }
-
-    virtual void performTask(ExecutionContext* executionContext) OVERRIDE
-    {
-        if (m_scriptState->contextIsEmpty())
-            return;
-        if (executionContext->activeDOMObjectsAreStopped())
-            return;
-        ScriptState::Scope scope(m_scriptState.get());
-        m_scriptState->isolate()->RunMicrotasks();
-    }
-
-private:
-    explicit RunMicrotasksTask(ScriptState* scriptState) : m_scriptState(scriptState) { }
-    RefPtr<ScriptState> m_scriptState;
-};
-
-} // namespace
 
 ScriptPromiseResolverWithContext::ScriptPromiseResolverWithContext(ScriptState* scriptState)
     : ActiveDOMObject(scriptState->executionContext())
@@ -67,30 +39,26 @@ void ScriptPromiseResolverWithContext::onTimerFired(Timer<ScriptPromiseResolverW
 {
     RefPtr<ScriptPromiseResolverWithContext> protect(this);
     ScriptState::Scope scope(m_scriptState.get());
-    v8::Isolate* isolate = m_scriptState->isolate();
     resolveOrRejectImmediately();
-
-    // There is no need to post a RunMicrotasksTask because it is safe to
-    // call RunMicrotasks here.
-    isolate->RunMicrotasks();
 }
 
 void ScriptPromiseResolverWithContext::resolveOrRejectImmediately()
 {
     ASSERT(!executionContext()->activeDOMObjectsAreStopped());
     ASSERT(!executionContext()->activeDOMObjectsAreSuspended());
-    if (m_state == Resolving) {
-        m_resolver->resolve(m_value.newLocal(m_scriptState->isolate()));
-    } else {
-        ASSERT(m_state == Rejecting);
-        m_resolver->reject(m_value.newLocal(m_scriptState->isolate()));
+    {
+        // FIXME: The V8RecursionScope is only necessary to force microtask delivery for promises
+        // resolved or rejected in workers. It can be removed once worker threads run microtasks
+        // at the end of every task (rather than just the main thread).
+        V8RecursionScope scope(m_scriptState->isolate(), m_scriptState->executionContext());
+        if (m_state == Resolving) {
+            m_resolver->resolve(m_value.newLocal(m_scriptState->isolate()));
+        } else {
+            ASSERT(m_state == Rejecting);
+            m_resolver->reject(m_value.newLocal(m_scriptState->isolate()));
+        }
     }
     clear();
-}
-
-void ScriptPromiseResolverWithContext::postRunMicrotasks()
-{
-    executionContext()->postTask(RunMicrotasksTask::create(m_scriptState.get()));
 }
 
 void ScriptPromiseResolverWithContext::clear()

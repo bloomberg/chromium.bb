@@ -103,16 +103,11 @@ private:
 
         ScriptState::Scope scope(m_scriptState.get());
         m_value.set(m_scriptState->isolate(), toV8Value(value));
-        if (!executionContext()->activeDOMObjectsAreSuspended()) {
+        if (!executionContext()->activeDOMObjectsAreSuspended())
             resolveOrRejectImmediately();
-            // |this| can't be deleted here, so it is safe to call an instance
-            // method.
-            postRunMicrotasks();
-        }
     }
 
     void resolveOrRejectImmediately();
-    void postRunMicrotasks();
     void onTimerFired(Timer<ScriptPromiseResolverWithContext>*);
     void clear();
 
