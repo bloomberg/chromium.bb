@@ -34,6 +34,8 @@ class EphemeralAppService : public KeyedService,
   explicit EphemeralAppService(Profile* profile);
   virtual ~EphemeralAppService();
 
+  int ephemeral_app_count() const { return ephemeral_app_count_; }
+
   // Constants exposed for testing purposes:
 
   // The number of days of inactivity before an ephemeral app will be removed.

@@ -104,19 +104,27 @@ void EphemeralAppService::OnExtensionWillBeInstalled(
     bool is_update,
     bool from_ephemeral,
     const std::string& old_name) {
-  if (extensions::util::IsEphemeralApp(extension->id(), profile_)) {
+  if (from_ephemeral) {
+    // An ephemeral app was just promoted to a regular installed app.
+    --ephemeral_app_count_;
+    DCHECK_GE(ephemeral_app_count_, 0);
+  } else if (!is_update &&
+             extensions::util::IsEphemeralApp(extension->id(), profile_)) {
     ++ephemeral_app_count_;
-    if (ephemeral_app_count_ >= kGarbageCollectAppsTriggerCount)
+    if (ephemeral_app_count_ >= kGarbageCollectAppsTriggerCount) {
       TriggerGarbageCollect(
           base::TimeDelta::FromSeconds(kGarbageCollectAppsInstallDelay));
+    }
   }
 }
 
 void EphemeralAppService::OnExtensionUninstalled(
     content::BrowserContext* browser_context,
     const extensions::Extension* extension) {
-  if (extensions::util::IsEphemeralApp(extension->id(), profile_))
+  if (extensions::util::IsEphemeralApp(extension->id(), profile_)) {
     --ephemeral_app_count_;
+    DCHECK_GE(ephemeral_app_count_, 0);
+  }
 }
 
 void EphemeralAppService::Init() {

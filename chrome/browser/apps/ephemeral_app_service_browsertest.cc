@@ -4,7 +4,7 @@
 
 #include <vector>
 
-#include "chrome/browser/apps/app_browsertest_util.h"
+#include "chrome/browser/apps/ephemeral_app_browsertest.h"
 #include "chrome/browser/apps/ephemeral_app_service.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -13,7 +13,6 @@
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/manifest.h"
 
-using extensions::PlatformAppBrowserTest;
 using extensions::Extension;
 using extensions::ExtensionPrefs;
 using extensions::ExtensionSystem;
@@ -22,23 +21,18 @@ namespace {
 
 const int kNumTestApps = 2;
 const char* kTestApps[] = {
-  "platform_apps/app_window/generic",
-  "platform_apps/minimal"
+  "app_window/generic",
+  "minimal"
 };
 
 }  // namespace
 
-class EphemeralAppServiceBrowserTest : public PlatformAppBrowserTest {
+class EphemeralAppServiceBrowserTest : public EphemeralAppTestBase {
  protected:
   void LoadApps() {
     for (int i = 0; i < kNumTestApps; ++i) {
-      base::FilePath path = test_data_dir_.AppendASCII(kTestApps[i]);
-      const Extension* extension =
-          InstallExtensionWithSourceAndFlags(
-              path,
-              1,
-              extensions::Manifest::INTERNAL,
-              Extension::IS_EPHEMERAL);
+      const Extension* extension = InstallEphemeralApp(kTestApps[i]);
+      ASSERT_TRUE(extension);
       app_ids_.push_back(extension->id());
     }
 
@@ -52,6 +46,10 @@ class EphemeralAppServiceBrowserTest : public PlatformAppBrowserTest {
     ephemeral_service->GarbageCollectApps();
   }
 
+  void InitEphemeralAppCount(EphemeralAppService* ephemeral_service) {
+    ephemeral_service->InitEphemeralAppCount();
+  }
+
   std::vector<std::string> app_ids_;
 };
 
@@ -61,6 +59,11 @@ class EphemeralAppServiceBrowserTest : public PlatformAppBrowserTest {
 // like an integration test.
 IN_PROC_BROWSER_TEST_F(EphemeralAppServiceBrowserTest,
                        GarbageCollectInactiveApps) {
+  EphemeralAppService* ephemeral_service =
+      EphemeralAppService::Get(browser()->profile());
+  ASSERT_TRUE(ephemeral_service);
+  InitEphemeralAppCount(ephemeral_service);
+
   LoadApps();
 
   const base::Time time_now = base::Time::Now();
@@ -88,7 +91,41 @@ IN_PROC_BROWSER_TEST_F(EphemeralAppServiceBrowserTest,
 
   ExtensionService* service = ExtensionSystem::Get(browser()->profile())
       ->extension_service();
-  EXPECT_TRUE(service);
+  ASSERT_TRUE(service);
   EXPECT_FALSE(service->GetInstalledExtension(inactive_app_id));
   EXPECT_TRUE(service->GetInstalledExtension(active_app_id));
+
+  EXPECT_EQ(1, ephemeral_service->ephemeral_app_count());
+}
+
+// Verify that the count of ephemeral apps is maintained correctly.
+IN_PROC_BROWSER_TEST_F(EphemeralAppServiceBrowserTest,
+                       EphemeralAppCount) {
+  EphemeralAppService* ephemeral_service =
+      EphemeralAppService::Get(browser()->profile());
+  ASSERT_TRUE(ephemeral_service);
+  InitEphemeralAppCount(ephemeral_service);
+
+  // The count should not increase for regular installed apps.
+  EXPECT_TRUE(InstallPlatformApp("minimal"));
+  EXPECT_EQ(0, ephemeral_service->ephemeral_app_count());
+
+  // The count should increase when an ephemeral app is added.
+  const Extension* app = InstallEphemeralApp(kMessagingReceiverApp);
+  ASSERT_TRUE(app);
+  EXPECT_EQ(1, ephemeral_service->ephemeral_app_count());
+
+  // The count should remain constant if the ephemeral app is updated.
+  const std::string app_id = app->id();
+  app = UpdateEphemeralApp(
+      app_id, GetTestPath(kMessagingReceiverAppV2),
+      GetTestPath(kMessagingReceiverApp).ReplaceExtension(
+          FILE_PATH_LITERAL(".pem")));
+  ASSERT_TRUE(app);
+  EXPECT_EQ(1, ephemeral_service->ephemeral_app_count());
+
+  // The count should decrease when an ephemeral app is promoted to a regular
+  // installed app.
+  PromoteEphemeralApp(app);
+  EXPECT_EQ(0, ephemeral_service->ephemeral_app_count());
 }
