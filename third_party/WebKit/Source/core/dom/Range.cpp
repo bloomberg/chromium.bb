@@ -34,12 +34,12 @@
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/NodeWithIndex.h"
 #include "core/dom/ProcessingInstruction.h"
-#include "core/events/ScopedEventQueue.h"
 #include "core/dom/Text.h"
 #include "core/editing/TextIterator.h"
 #include "core/editing/VisiblePosition.h"
 #include "core/editing/VisibleUnits.h"
 #include "core/editing/markup.h"
+#include "core/events/ScopedEventQueue.h"
 #include "core/html/HTMLElement.h"
 #include "core/rendering/RenderBoxModelObject.h"
 #include "core/rendering/RenderText.h"
@@ -470,7 +470,10 @@ void Range::deleteContents(ExceptionState& exceptionState)
     if (exceptionState.hadException())
         return;
 
-    processContents(DELETE_CONTENTS, exceptionState);
+    {
+        EventQueueScope eventQueueScope;
+        processContents(DELETE_CONTENTS, exceptionState);
+    }
 }
 
 bool Range::intersectsNode(Node* refNode, ExceptionState& exceptionState)
