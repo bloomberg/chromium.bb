@@ -368,6 +368,11 @@ deps_os = {
     "src/third_party/yasm/binaries":
       "/trunk/deps/third_party/yasm/binaries@154708",
 
+    # Binary level profile guided optimizations. This points to the
+    # latest release binaries for the toolchain.
+    "src/third_party/syzygy/binaries":
+      (Var("googlecode_url") % "sawbuck") + "/trunk/syzygy/binaries@2154",
+
     # Binaries for nacl sdk.
     "src/third_party/nacl_sdk_binaries":
       "/trunk/deps/third_party/nacl_sdk_binaries@111576",
@@ -761,17 +766,6 @@ hooks = [
                 "--no_auth",
                 "--bucket", "chromium-eu-strip",
                 "-s", "src/build/linux/bin/eu-strip.sha1",
-    ],
-  },
-  # Pull the Syzygy binaries, used for optimization and instrumentation.
-  {
-    "name": "syzygy-binaries",
-    "pattern": ".",
-    "action": ["python",
-               "src/build/get_syzygy_binaries.py",
-               "--output-dir=src/third_party/syzygy/binaries",
-               "--revision=b08fb72610963d31cc3eae33f746a04e263bd860",
-               "--overwrite",
     ],
   },
   {
