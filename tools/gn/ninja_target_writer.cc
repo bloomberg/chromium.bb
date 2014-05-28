@@ -90,7 +90,12 @@ std::string NinjaTargetWriter::WriteInputDepsStampAndGetDep(
   // as the source prereqs.
   bool list_sources_as_input_deps = target_->output_type() == Target::ACTION;
 
-  if (extra_hard_deps.empty() &&
+  // Actions get implicit dependencies on the script itself.
+  bool add_script_source_as_dep = target_->output_type() == Target::ACTION ||
+    target_->output_type() == Target::ACTION_FOREACH;
+
+  if (!add_script_source_as_dep &&
+      extra_hard_deps.empty() &&
       target_->source_prereqs().empty() &&
       target_->recursive_hard_deps().empty() &&
       (!list_sources_as_input_deps || target_->sources().empty()))
@@ -112,6 +117,12 @@ std::string NinjaTargetWriter::WriteInputDepsStampAndGetDep(
   std::string stamp_file_string = stamp_file_stream.str();
 
   out_ << "build " << stamp_file_string << ": stamp";
+
+  // Script file (if applicable).
+  if (add_script_source_as_dep) {
+    out_ << " ";
+    path_output_.WriteFile(out_, target_->action_values().script());
+  }
 
   // Input files are order-only deps.
   const Target::FileList& prereqs = target_->source_prereqs();

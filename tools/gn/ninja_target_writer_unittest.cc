@@ -35,6 +35,7 @@ TEST(NinjaTargetWriter, WriteInputDepsStampAndGetDep) {
   // Make a base target that's a hard dep (action).
   Target base_target(setup.settings(), Label(SourceDir("//foo/"), "base"));
   base_target.set_output_type(Target::ACTION);
+  base_target.action_values().set_script(SourceFile("//foo/script.py"));
 
   // Dependent target that also includes a source prerequisite (should get
   // included) and a source (should not be included).
@@ -48,6 +49,7 @@ TEST(NinjaTargetWriter, WriteInputDepsStampAndGetDep) {
   // source_prereqs.
   Target action(setup.settings(), Label(SourceDir("//foo/"), "action"));
   action.set_output_type(Target::ACTION);
+  action.action_values().set_script(SourceFile("//foo/script.py"));
   action.sources().push_back(SourceFile("//foo/action_source.txt"));
   action.deps().push_back(LabelTargetPair(&target));
 
@@ -55,15 +57,17 @@ TEST(NinjaTargetWriter, WriteInputDepsStampAndGetDep) {
   target.OnResolved();
   action.OnResolved();
 
-  // Input deps for the base (should be nothing, it has no hard deps).
+  // Input deps for the base (should be only the script itself).
   {
     std::ostringstream stream;
     TestingNinjaTargetWriter writer(&base_target, setup.toolchain(), stream);
     std::string dep =
         writer.WriteInputDepsStampAndGetDep(std::vector<const Target*>());
 
-    EXPECT_TRUE(dep.empty());
-    EXPECT_TRUE(stream.str().empty());
+    EXPECT_EQ(" | obj/foo/base.inputdeps.stamp", dep);
+    EXPECT_EQ("build obj/foo/base.inputdeps.stamp: stamp "
+                  "../../foo/script.py\n",
+              stream.str());
   }
 
   // Input deps for the target (should depend on the base).
@@ -88,7 +92,7 @@ TEST(NinjaTargetWriter, WriteInputDepsStampAndGetDep) {
         writer.WriteInputDepsStampAndGetDep(std::vector<const Target*>());
 
     EXPECT_EQ(" | obj/foo/action.inputdeps.stamp", dep);
-    EXPECT_EQ("build obj/foo/action.inputdeps.stamp: stamp "
+    EXPECT_EQ("build obj/foo/action.inputdeps.stamp: stamp ../../foo/script.py "
                   "../../foo/action_source.txt obj/foo/base.stamp\n",
               stream.str());
   }
