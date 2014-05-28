@@ -10,7 +10,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/managed_mode/custodian_profile_downloader_service.h"
 #include "chrome/browser/managed_mode/custodian_profile_downloader_service_factory.h"
@@ -43,9 +42,8 @@
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/browser/signin_manager_base.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_source.h"
 #include "content/public/browser/user_metrics.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension_set.h"
 #include "google_apis/gaia/google_service_auth_error.h"
@@ -127,6 +125,7 @@ void ManagedUserService::URLFilterContext::SetManualURLs(
 
 ManagedUserService::ManagedUserService(Profile* profile)
     : profile_(profile),
+      extension_registry_observer_(this),
       waiting_for_sync_initialization_(false),
       is_profile_active_(false),
       elevated_for_testing_(false),
@@ -334,30 +333,19 @@ void ManagedUserService::OnStateChanged() {
       << "Credentials rejected";
 }
 
-void ManagedUserService::Observe(int type,
-                          const content::NotificationSource& source,
-                          const content::NotificationDetails& details) {
-  switch (type) {
-    case chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED: {
-      const extensions::Extension* extension =
-          content::Details<extensions::Extension>(details).ptr();
-      if (!extensions::ManagedModeInfo::GetContentPackSiteList(
-              extension).empty()) {
-        UpdateSiteLists();
-      }
-      break;
-    }
-    case chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED: {
-      const extensions::UnloadedExtensionInfo* extension_info =
-          content::Details<extensions::UnloadedExtensionInfo>(details).ptr();
-      if (!extensions::ManagedModeInfo::GetContentPackSiteList(
-              extension_info->extension).empty()) {
-        UpdateSiteLists();
-      }
-      break;
-    }
-    default:
-      NOTREACHED();
+void ManagedUserService::OnExtensionLoaded(
+    content::BrowserContext* browser_context,
+    const extensions::Extension* extension) {
+  if (!extensions::ManagedModeInfo::GetContentPackSiteList(extension).empty()) {
+    UpdateSiteLists();
+  }
+}
+void ManagedUserService::OnExtensionUnloaded(
+    content::BrowserContext* browser_context,
+    const extensions::Extension* extension,
+    extensions::UnloadedExtensionInfo::Reason reason) {
+  if (!extensions::ManagedModeInfo::GetContentPackSiteList(extension).empty()) {
+    UpdateSiteLists();
   }
 }
 
@@ -566,11 +554,8 @@ void ManagedUserService::Init() {
   if (management_policy)
     extension_system->management_policy()->RegisterProvider(this);
 
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
-                 content::Source<Profile>(profile_));
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
-                 content::Source<Profile>(profile_));
+  extension_registry_observer_.Add(
+      extensions::ExtensionRegistry::Get(profile_));
 
   pref_change_registrar_.Init(profile_->GetPrefs());
   pref_change_registrar_.Add(
