@@ -20,7 +20,7 @@
 #include "config.h"
 #include "core/css/MediaQueryListListener.h"
 
-#include "V8MediaQueryList.h"
+#include "bindings/core/v8/V8MediaQueryList.h"
 #include "bindings/v8/V8Callback.h"
 
 namespace WebCore {

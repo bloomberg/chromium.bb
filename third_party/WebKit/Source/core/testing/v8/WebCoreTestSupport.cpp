@@ -28,7 +28,7 @@
 
 #include "InternalSettings.h"
 #include "Internals.h"
-#include "V8Internals.h"
+#include "bindings/core/v8/V8Internals.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/frame/LocalFrame.h"

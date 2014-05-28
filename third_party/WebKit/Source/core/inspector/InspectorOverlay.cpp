@@ -30,7 +30,7 @@
 #include "core/inspector/InspectorOverlay.h"
 
 #include "InspectorOverlayPage.h"
-#include "V8InspectorOverlayHost.h"
+#include "bindings/core/v8/V8InspectorOverlayHost.h"
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/ScriptSourceCode.h"
 #include "core/dom/Element.h"
