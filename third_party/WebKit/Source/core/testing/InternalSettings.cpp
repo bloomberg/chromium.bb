@@ -73,6 +73,7 @@ InternalSettings::Backup::Backup(Settings* settings)
     , m_imagesEnabled(settings->imagesEnabled())
     , m_defaultVideoPosterURL(settings->defaultVideoPosterURL())
     , m_originalLayerSquashingEnabled(settings->layerSquashingEnabled())
+    , m_originalPseudoClassesInMatchingCriteriaInAuthorShadowTreesEnabled(RuntimeEnabledFeatures::pseudoClassesInMatchingCriteriaInAuthorShadowTreesEnabled())
 {
 }
 
@@ -94,6 +95,7 @@ void InternalSettings::Backup::restoreTo(Settings* settings)
     settings->setDefaultVideoPosterURL(m_defaultVideoPosterURL);
     settings->setLayerSquashingEnabled(m_originalLayerSquashingEnabled);
     settings->genericFontFamilySettings().reset();
+    RuntimeEnabledFeatures::setPseudoClassesInMatchingCriteriaInAuthorShadowTreesEnabled(m_originalPseudoClassesInMatchingCriteriaInAuthorShadowTreesEnabled);
 }
 
 #if ENABLE(OILPAN)
@@ -182,6 +184,11 @@ void InternalSettings::setStyleScopedEnabled(bool enabled)
 void InternalSettings::setExperimentalContentSecurityPolicyFeaturesEnabled(bool enabled)
 {
     RuntimeEnabledFeatures::setExperimentalContentSecurityPolicyFeaturesEnabled(enabled);
+}
+
+void InternalSettings::setPseudoClassesInMatchingCriteriaInAuthorShadowTreesEnabled(bool enabled)
+{
+    RuntimeEnabledFeatures::setPseudoClassesInMatchingCriteriaInAuthorShadowTreesEnabled(enabled);
 }
 
 void InternalSettings::setOverlayScrollbarsEnabled(bool enabled)

@@ -70,6 +70,7 @@ public:
         bool m_imagesEnabled;
         String m_defaultVideoPosterURL;
         bool m_originalLayerSquashingEnabled;
+        bool m_originalPseudoClassesInMatchingCriteriaInAuthorShadowTreesEnabled;
     };
 
     static PassRefPtrWillBeRawPtr<InternalSettings> create(Page& page)
@@ -116,6 +117,7 @@ public:
     void setOverlayScrollbarsEnabled(bool);
     void setStyleScopedEnabled(bool);
     void setExperimentalContentSecurityPolicyFeaturesEnabled(bool);
+    void setPseudoClassesInMatchingCriteriaInAuthorShadowTreesEnabled(bool);
 
     virtual void trace(Visitor*) OVERRIDE;
 
