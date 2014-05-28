@@ -10,6 +10,8 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
 #include "net/base/net_errors.h"
+#include "sql/connection.h"
+#include "sql/test/test_helpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -341,6 +343,37 @@ TEST_F(WebRTCIdentityStoreTest, IdentityPersistentAcrossRestart) {
   EXPECT_TRUE(completed_2);
   EXPECT_EQ(cert_1, cert_2);
   EXPECT_EQ(key_1, key_2);
+}
+
+TEST_F(WebRTCIdentityStoreTest, HandleDBErrors) {
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  Restart(temp_dir.path());
+
+  bool completed_1 = false;
+  std::string cert_1, key_1;
+
+  // Creates an identity.
+  RequestIdentityAndRunUtilIdle(kFakeOrigin,
+                                kFakeIdentityName1,
+                                kFakeCommonName1,
+                                &completed_1,
+                                &cert_1,
+                                &key_1);
+
+  // Make the table corrupted.
+  base::FilePath db_path =
+      temp_dir.path().Append(FILE_PATH_LITERAL("WebRTCIdentityStore"));
+  EXPECT_TRUE(sql::test::CorruptSizeInHeader(db_path));
+
+  // Reset to commit the DB changes, which should fail and not crash.
+  webrtc_identity_store_ = NULL;
+  RunUntilIdle();
+
+  // Verifies the corrupted table was razed.
+  scoped_ptr<sql::Connection> db(new sql::Connection());
+  EXPECT_TRUE(db->Open(db_path));
+  EXPECT_EQ(0U, sql::test::CountSQLTables(db.get()));
 }
 
 }  // namespace content

@@ -6,6 +6,8 @@
 
 #include "base/file_util.h"
 #include "base/files/file_path.h"
+#include "base/memory/scoped_vector.h"
+#include "base/strings/string_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/net_errors.h"
 #include "sql/error_delegate_util.h"
@@ -31,6 +33,7 @@ static bool InitDB(sql::Connection* db) {
         db->DoesColumnExist(kWebRTCIdentityStoreDBName, "private_key") &&
         db->DoesColumnExist(kWebRTCIdentityStoreDBName, "creation_time"))
       return true;
+
     if (!db->Execute("DROP TABLE webrtc_identity_store"))
       return false;
   }
@@ -153,7 +156,7 @@ class WebRTCIdentityStoreBackend::SqlLiteStorage
     std::string identity_name;
     Identity identity;
   };
-  typedef std::vector<PendingOperation*> PendingOperationList;
+  typedef ScopedVector<PendingOperation> PendingOperationList;
 
   virtual ~SqlLiteStorage() {}
   void OnDatabaseError(int error, sql::Statement* stmt);
@@ -343,7 +346,7 @@ void WebRTCIdentityStoreBackend::OnLoaded(scoped_ptr<IdentityMap> out_map) {
   if (state_ != LOADING)
     return;
 
-  DVLOG(2) << "WebRTC identity store has loaded.";
+  DVLOG(3) << "WebRTC identity store has loaded.";
 
   state_ = LOADED;
   identities_.swap(*out_map);
@@ -370,7 +373,7 @@ void WebRTCIdentityStoreBackend::SqlLiteStorage::Load(IdentityMap* out_map) {
   // from it.
   const base::FilePath dir = path_.DirName();
   if (!base::PathExists(dir) && !base::CreateDirectory(dir)) {
-    DLOG(ERROR) << "Unable to open DB file path.";
+    DVLOG(2) << "Unable to open DB file path.";
     return;
   }
 
@@ -379,13 +382,13 @@ void WebRTCIdentityStoreBackend::SqlLiteStorage::Load(IdentityMap* out_map) {
   db_->set_error_callback(base::Bind(&SqlLiteStorage::OnDatabaseError, this));
 
   if (!db_->Open(path_)) {
-    DLOG(ERROR) << "Unable to open DB.";
+    DVLOG(2) << "Unable to open DB.";
     db_.reset();
     return;
   }
 
   if (!InitDB(db_.get())) {
-    DLOG(ERROR) << "Unable to init DB.";
+    DVLOG(2) << "Unable to init DB.";
     db_.reset();
     return;
   }
@@ -470,21 +473,26 @@ void WebRTCIdentityStoreBackend::SqlLiteStorage::DeleteBetween(
 
   sql::Transaction transaction(db_.get());
   if (!transaction.Begin()) {
-    DLOG(ERROR) << "Failed to begin the transaction.";
+    DVLOG(2) << "Failed to begin the transaction.";
     return;
   }
 
-  CHECK(del_stmt.Run());
-  transaction.Commit();
+  if (!del_stmt.Run()) {
+    DVLOG(2) << "Failed to run the delete statement.";
+    return;
+  }
+
+  if (!transaction.Commit())
+    DVLOG(2) << "Failed to commit the transaction.";
 }
 
 void WebRTCIdentityStoreBackend::SqlLiteStorage::OnDatabaseError(
     int error,
     sql::Statement* stmt) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
-  if (!sql::IsErrorCatastrophic(error))
-    return;
+
   db_->RazeAndClose();
+  // It's not safe to reset |db_| here.
 }
 
 void WebRTCIdentityStoreBackend::SqlLiteStorage::BatchOperation(
@@ -542,33 +550,44 @@ void WebRTCIdentityStoreBackend::SqlLiteStorage::Commit() {
 
   sql::Transaction transaction(db_.get());
   if (!transaction.Begin()) {
-    DLOG(ERROR) << "Failed to begin the transaction.";
+    DVLOG(2) << "Failed to begin the transaction.";
     return;
   }
 
-  for (PendingOperationList::iterator it = pending_operations_.begin();
-       it != pending_operations_.end();
+  // Swaps |pending_operations_| into a temporary list to make sure
+  // |pending_operations_| is always cleared in case of DB errors.
+  PendingOperationList pending_operations_copy;
+  pending_operations_.swap(pending_operations_copy);
+
+  for (PendingOperationList::const_iterator it =
+           pending_operations_copy.begin();
+       it != pending_operations_copy.end();
        ++it) {
-    scoped_ptr<PendingOperation> po(*it);
-    switch (po->type) {
+    switch ((*it)->type) {
       case ADD_IDENTITY: {
         add_stmt.Reset(true);
-        add_stmt.BindString(0, po->origin.spec());
-        add_stmt.BindString(1, po->identity_name);
-        add_stmt.BindString(2, po->identity.common_name);
-        const std::string& cert = po->identity.certificate;
+        add_stmt.BindString(0, (*it)->origin.spec());
+        add_stmt.BindString(1, (*it)->identity_name);
+        add_stmt.BindString(2, (*it)->identity.common_name);
+        const std::string& cert = (*it)->identity.certificate;
         add_stmt.BindBlob(3, cert.data(), cert.size());
-        const std::string& private_key = po->identity.private_key;
+        const std::string& private_key = (*it)->identity.private_key;
         add_stmt.BindBlob(4, private_key.data(), private_key.size());
-        add_stmt.BindInt64(5, po->identity.creation_time);
-        CHECK(add_stmt.Run());
+        add_stmt.BindInt64(5, (*it)->identity.creation_time);
+        if (!add_stmt.Run()) {
+          DVLOG(2) << "Failed to add the identity to DB.";
+          return;
+        }
         break;
       }
       case DELETE_IDENTITY:
         del_stmt.Reset(true);
-        del_stmt.BindString(0, po->origin.spec());
-        del_stmt.BindString(1, po->identity_name);
-        CHECK(del_stmt.Run());
+        del_stmt.BindString(0, (*it)->origin.spec());
+        del_stmt.BindString(1, (*it)->identity_name);
+        if (!del_stmt.Run()) {
+          DVLOG(2) << "Failed to delete the identity from DB.";
+          return;
+        }
         break;
 
       default:
@@ -576,8 +595,9 @@ void WebRTCIdentityStoreBackend::SqlLiteStorage::Commit() {
         break;
     }
   }
-  transaction.Commit();
-  pending_operations_.clear();
+
+  if (!transaction.Commit())
+    DVLOG(2) << "Failed to commit the transaction.";
 }
 
 }  // namespace content
