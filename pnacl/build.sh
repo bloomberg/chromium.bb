@@ -3239,6 +3239,9 @@ print-tagged-tool-sizes() {
   echo "RESULT ${tag}: data= ${sizes[1]} bytes"
   echo "RESULT ${tag}: bss= ${sizes[2]} bytes"
   echo "RESULT ${tag}: total= ${sizes[3]} bytes"
+
+  local file_size=($(du --bytes "${binary}"))
+  echo "RESULT ${tag}: file_size= ${file_size[0]} bytes"
 }
 
 ######################################################################
