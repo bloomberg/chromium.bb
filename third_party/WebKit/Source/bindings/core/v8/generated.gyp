@@ -8,92 +8,23 @@
 
 {
   'includes': [
+    '../../../core/core.gypi',
     '../../bindings.gypi',
-    '../../idl.gypi',
+    # FIXME: need list of modules IDL files because some core IDL files depend
+    # on modules IDL files  http://crbug.com/358074
+    '../../modules/idl.gypi',
     '../../scripts/scripts.gypi',
+    '../idl.gypi',
     'generated.gypi',
   ],
 
+  # Write lists of main IDL files to a file, so that the command lines don't
+  # exceed OS length limits.
   'variables': {
-    # IDL file lists; see: http://www.chromium.org/developers/web-idl-interfaces
-    # Interface IDL files: generate individual bindings (includes testing)
-    'core_interface_idl_files': [
-      '<@(core_idl_files)',
-      '<@(webcore_testing_idl_files)',
-      '<@(generated_webcore_testing_idl_files)',
-    ],
+      'core_idl_files_list': '<|(core_idl_files_list.tmp <@(core_idl_files))',
   },
 
   'targets': [
-################################################################################
-  {
-    # FIXME: Generate separate interfaces_info_individual_core and
-    # interfaces_info_individual_modules http://crbug.com/358074
-    'target_name': 'interfaces_info_individual',
-    'type': 'none',
-    'dependencies': [
-      # Generated IDLs
-      '../../../core/core_generated.gyp:generated_testing_idls',
-      '<(bindings_dir)/generated.gyp:global_constructors_idls',
-    ],
-    'actions': [{
-      'action_name': 'compute_interfaces_info_individual',
-      'inputs': [
-        '<(bindings_scripts_dir)/compute_interfaces_info_individual.py',
-        '<(bindings_scripts_dir)/utilities.py',
-        '<(static_idl_files_list)',
-        '<@(static_idl_files)',
-        '<@(generated_idl_files)',
-      ],
-      'outputs': [
-        '<(blink_output_dir)/InterfacesInfoIndividual.pickle',
-      ],
-      'action': [
-        'python',
-        '<(bindings_scripts_dir)/compute_interfaces_info_individual.py',
-        '--idl-files-list',
-        '<(static_idl_files_list)',
-        '--interfaces-info-file',
-        '<(blink_output_dir)/InterfacesInfoIndividual.pickle',
-        '--write-file-only-if-changed',
-        '<(write_file_only_if_changed)',
-        '--',
-        # Generated files must be passed at command line
-        '<@(generated_idl_files)',
-      ],
-      'message': 'Computing global information about individual IDL files',
-      }]
-  },
-################################################################################
-  {
-    # FIXME: Generate separate interfaces_info_core and interfaces_info_modules
-    # http://crbug.com/358074
-    'target_name': 'interfaces_info',
-    'type': 'none',
-    'dependencies': [
-        'interfaces_info_individual',
-    ],
-    'actions': [{
-      'action_name': 'compute_interfaces_info_overall',
-      'inputs': [
-        '<(bindings_scripts_dir)/compute_interfaces_info_overall.py',
-        '<(blink_output_dir)/InterfacesInfoIndividual.pickle',
-      ],
-      'outputs': [
-        '<(blink_output_dir)/InterfacesInfo.pickle',
-      ],
-      'action': [
-        'python',
-        '<(bindings_scripts_dir)/compute_interfaces_info_overall.py',
-        '--write-file-only-if-changed',
-        '<(write_file_only_if_changed)',
-        '--',
-        '<(blink_output_dir)/InterfacesInfoIndividual.pickle',
-        '<(blink_output_dir)/InterfacesInfo.pickle',
-      ],
-      'message': 'Computing overall global information about IDL files',
-      }]
-  },
 ################################################################################
   {
     'target_name': 'bindings_core_generated_individual',
@@ -107,7 +38,7 @@
       '<(bindings_scripts_dir)/scripts.gyp:cached_lex_yacc_tables',
       # FIXME: should be interfaces_info_core (w/o modules)
       # http://crbug.com/358074
-      'interfaces_info',
+      '../../modules/generated.gyp:interfaces_info',
     ],
     'sources': [
       '<@(core_interface_idl_files)',
@@ -134,9 +65,9 @@
         # file-by-file.
         # FIXME: This is too conservative, and causes excess rebuilds:
         # compute this file-by-file.  http://crbug.com/341748
-        # FIXME: should be core_dependency_idl_files only, but some core IDL
+        # FIXME: should be core_all_dependency_idl_files only, but some core IDL
         # files depend on modules IDL files  http://crbug.com/358074
-        '<@(dependency_idl_files)',
+        '<@(all_dependency_idl_files)',
       ],
       'outputs': [
         '<(bindings_output_dir)/V8<(RULE_INPUT_ROOT).cpp',

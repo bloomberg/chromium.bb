@@ -37,8 +37,6 @@
   'includes': [
     'bindings.gypi',
     'idl.gypi',
-    'scripts/scripts.gypi',
-    'templates/templates.gypi',
   ],
 
   'targets': [
@@ -46,6 +44,8 @@
   {
     # FIXME: Global constructors are used by bindings_core (e.g., V8Window.cpp)
     # but depend on modules, which violates layering http://crbug.com/358074
+    # FIXME: Generate separate core_global_constructors_idls
+    # http://crbug.com/358074
     'target_name': 'global_constructors_idls',
     'type': 'none',
     'actions': [{
@@ -82,6 +82,15 @@
        'message': 'Generating IDL files for constructors on global objects',
       }]
   },
+################################################################################
+  {
+    'target_name': 'generated_idls',
+    'type': 'none',
+    'dependencies': [
+      '../core/core_generated.gyp:generated_testing_idls',
+      'global_constructors_idls',
+      ],
+  }
 ################################################################################
   ],  # targets
 }

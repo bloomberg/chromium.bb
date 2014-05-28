@@ -8,14 +8,20 @@
 
 {
   'includes': [
+    '../../../modules/modules.gypi',
     '../../bindings.gypi',
-    '../../idl.gypi',
+    '../../core/idl.gypi',
     '../../scripts/scripts.gypi',
+    '../idl.gypi',
     'generated.gypi',
   ],
 
   'variables': {
     # IDL file lists; see: http://www.chromium.org/developers/web-idl-interfaces
+    # Write lists of main IDL files to a file, so that the command lines don't
+    # exceed OS length limits.
+    'modules_idl_files_list': '<|(modules_idl_files_list.tmp <@(modules_idl_files))',
+
     # Interface IDL files: generate individual bindings (includes testing)
     'modules_interface_idl_files': [
       # No testing or generated interface IDL files in modules currently
@@ -32,8 +38,7 @@
     # https://code.google.com/p/gyp/wiki/InputFormatReference#Linking_Dependencies
     'hard_dependency': 1,
     'dependencies': [
-      '../../../core/core_generated.gyp:generated_testing_idls',
-      '<(bindings_dir)/core/v8/generated.gyp:interfaces_info',
+      '../generated.gyp:interfaces_info',
       '<(bindings_scripts_dir)/scripts.gyp:cached_jinja_templates',
       '<(bindings_scripts_dir)/scripts.gyp:cached_lex_yacc_tables',
     ],
@@ -62,7 +67,7 @@
         # file-by-file.
         # FIXME: This is too conservative, and causes excess rebuilds:
         # compute this file-by-file.  http://crbug.com/341748
-        '<@(dependency_idl_files)',
+        '<@(all_dependency_idl_files)',
       ],
       'outputs': [
         '<(bindings_output_dir)/V8<(RULE_INPUT_ROOT).cpp',
