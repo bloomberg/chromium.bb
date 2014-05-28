@@ -38,6 +38,7 @@
 #include "cc/base/switches.h"
 #include "content/browser/appcache/appcache_dispatcher_host.h"
 #include "content/browser/appcache/chrome_appcache_service.h"
+#include "content/browser/battery_status/battery_status_message_filter.h"
 #include "content/browser/browser_child_process_host_impl.h"
 #include "content/browser/browser_main.h"
 #include "content/browser/browser_main_loop.h"
@@ -833,6 +834,7 @@ void RenderProcessHostImpl::CreateMessageFilters() {
   screen_orientation_dispatcher_host_ = new ScreenOrientationDispatcherHost();
   AddFilter(screen_orientation_dispatcher_host_);
   AddFilter(new PushMessagingMessageFilter());
+  AddFilter(new BatteryStatusMessageFilter());
 }
 
 int RenderProcessHostImpl::GetNextRoutingID() {

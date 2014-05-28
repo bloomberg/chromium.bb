@@ -23,6 +23,7 @@
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/timer/hi_res_timer_manager.h"
+#include "content/browser/battery_status/battery_status_service.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/device_sensors/device_inertial_sensor_service.h"
 #include "content/browser/download/save_file_manager.h"
@@ -877,6 +878,10 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
   {
     TRACE_EVENT0("shutdown", "BrowserMainLoop::Subsystem:SensorService");
     DeviceInertialSensorService::GetInstance()->Shutdown();
+  }
+  {
+    TRACE_EVENT0("shutdown", "BrowserMainLoop::Subsystem:BatteryStatusService");
+    BatteryStatusService::GetInstance()->Shutdown();
   }
   {
     TRACE_EVENT0("shutdown", "BrowserMainLoop::Subsystem:DeleteDataSources");

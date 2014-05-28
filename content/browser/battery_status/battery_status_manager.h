@@ -11,23 +11,23 @@
 #include "base/android/scoped_java_ref.h"
 #endif
 
-#include "content/browser/battery_status/battery_status_update_callback.h"
-#include "content/common/content_export.h"
+#include "content/browser/battery_status/battery_status_service.h"
 
 namespace content {
 
 // Platform specific manager class for fetching battery status data.
 class CONTENT_EXPORT BatteryStatusManager {
  public:
-  explicit BatteryStatusManager(const BatteryStatusUpdateCallback& callback);
+  explicit BatteryStatusManager(
+      const BatteryStatusService::BatteryUpdateCallback& callback);
   virtual ~BatteryStatusManager();
 
   // Start listening for battery status changes. New updates are signalled
   // by invoking the callback provided at construction time.
-  bool StartListeningBatteryChange();
+  virtual bool StartListeningBatteryChange();
 
-  // Stop listenting for battery status changes.
-  void StopListeningBatteryChange();
+  // Stop listening for battery status changes.
+  virtual void StopListeningBatteryChange();
 
 #if defined(OS_ANDROID)
   // Must be called at startup.
@@ -39,12 +39,15 @@ class CONTENT_EXPORT BatteryStatusManager {
                         jdouble level);
 #endif
 
+ protected:
+  BatteryStatusManager();
+  BatteryStatusService::BatteryUpdateCallback callback_;
+
  private:
 #if defined(OS_ANDROID)
   // Java provider of battery status info.
   base::android::ScopedJavaGlobalRef<jobject> j_manager_;
 #endif
-  BatteryStatusUpdateCallback callback_;
 
   DISALLOW_COPY_AND_ASSIGN(BatteryStatusManager);
 };

@@ -12,14 +12,17 @@ using base::android::AttachCurrentThread;
 namespace content {
 
 BatteryStatusManager::BatteryStatusManager(
-    const BatteryStatusUpdateCallback& callback) : callback_(callback) {
+    const BatteryStatusService::BatteryUpdateCallback& callback)
+    : callback_(callback) {
   j_manager_.Reset(
       Java_BatteryStatusManager_getInstance(
           AttachCurrentThread(), base::android::GetApplicationContext()));
 }
 
+BatteryStatusManager::BatteryStatusManager() {
+}
+
 BatteryStatusManager::~BatteryStatusManager() {
-  StopListeningBatteryChange();
 }
 
 bool BatteryStatusManager::Register(JNIEnv* env) {

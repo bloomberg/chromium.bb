@@ -9,7 +9,11 @@
 namespace content {
 
 BatteryStatusManager::BatteryStatusManager(
-    const BatteryStatusUpdateCallback& callback) : callback_(callback) {
+    const BatteryStatusService::BatteryUpdateCallback& callback)
+    : callback_(callback) {
+}
+
+BatteryStatusManager::BatteryStatusManager() {
 }
 
 BatteryStatusManager::~BatteryStatusManager() {
