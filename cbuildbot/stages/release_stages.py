@@ -377,3 +377,10 @@ class PaygenStage(artifact_stages.ArchivingStage):
         # being processed (so the build is locked), or that it's been marked
         # to skip (probably done manually).
         cros_build_lib.Info('Paygen skipped because: %s', e)
+      except cbuildbot_failures.InfrastructureFailure as e:
+        # TODO(dgarrett): chromium:377208 We should generate a warning for the
+        # stage. That's current difficult, but should be easy after CL:200682
+        # lands.
+
+        # Tests were not correctly scheduled.
+        logging.warning('Failed to schedule Payload tests: %s', e)

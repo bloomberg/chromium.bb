@@ -13,6 +13,7 @@ sys.path.insert(0, os.path.abspath('%s/../../..' % os.path.dirname(__file__)))
 from chromite.cbuildbot.stages import artifact_stages
 from chromite.cbuildbot.stages import generic_stages_unittest
 from chromite.cbuildbot.stages import release_stages
+from chromite.cbuildbot import cbuildbot_failures
 from chromite.lib import cros_test_lib
 from chromite.lib import timeout_util
 
@@ -431,6 +432,32 @@ class PaygenStageTest(generic_stages_unittest.AbstractStageTest):
           skip_test_payloads=True,
           skip_autotest=True)
 
+  @unittest.skipIf(not CROSTOOLS_AVAILABLE,
+                   'Internal crostools repository needed.')
+  def testRunPaygenInProcessRunSuiteFails(self):
+    """Test that _RunPaygenInProcess with arguments that are more unusual."""
+    with patch(paygen_build_lib, 'CreatePayloads') as create_payloads:
+      create_payloads.side_effect = cbuildbot_failures.TestLabFailure
+
+      # Call the method under test.
+      # Use release tools channel naming, and a board name including a variant.
+      stage = self.ConstructStage()
+      stage._RunPaygenInProcess('foo-channel', 'foo-board-variant',
+                                'foo-version', True, False)
+
+      # Ensure arguments are properly converted and passed along.
+      create_payloads.assert_called_with(
+          gspaths.Build(version='foo-version',
+                        board='foo-board-variant',
+                        channel='foo-channel'),
+          dry_run=True,
+          work_dir=mock.ANY,
+          run_parallel=True,
+          run_on_builder=True,
+          skip_test_payloads=True,
+          skip_autotest=True)
+
+      # Notice that no exception was raised, instead we kept going.
 
 if __name__ == '__main__':
   cros_test_lib.main()
