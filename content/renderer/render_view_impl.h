@@ -415,7 +415,6 @@ class CONTENT_EXPORT RenderViewImpl
       const blink::WebString& path,
       blink::WebFileChooserCompletion* chooser_completion);
   virtual void didCancelCompositionOnSelectionChange();
-  virtual void didExecuteCommand(const blink::WebString& command_name);
   virtual bool handleCurrentKeyboardEvent();
   virtual bool runFileChooser(
       const blink::WebFileChooserParams& params,
