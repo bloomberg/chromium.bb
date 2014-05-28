@@ -83,45 +83,5 @@
       }]
   },
 ################################################################################
-  {
-    # FIXME: interfaces_info is used by bindings_core, but depend on modules,
-    # which violates layering http://crbug.com/358074
-    # Generate separate interfaces_info_core and interfaces_info_modules
-    'target_name': 'interfaces_info',
-    'type': 'none',
-    'dependencies': [
-      # Generated IDLs
-      'global_constructors_idls',
-      '../core/core_generated.gyp:generated_testing_idls',
-    ],
-    'actions': [{
-      'action_name': 'compute_interfaces_info',
-      'inputs': [
-        'scripts/compute_interfaces_info.py',
-        'scripts/utilities.py',
-        '<(static_idl_files_list)',
-        '<@(static_idl_files)',
-        '<@(generated_idl_files)',
-      ],
-      'outputs': [
-        '<(blink_output_dir)/InterfacesInfo.pickle',
-      ],
-      'action': [
-        'python',
-        'scripts/compute_interfaces_info.py',
-        '--idl-files-list',
-        '<(static_idl_files_list)',
-        '--interfaces-info-file',
-        '<(blink_output_dir)/InterfacesInfo.pickle',
-        '--write-file-only-if-changed',
-        '<(write_file_only_if_changed)',
-        '--',
-        # Generated files must be passed at command line
-        '<@(generated_idl_files)',
-      ],
-      'message': 'Computing global information about IDL files',
-      }]
-  },
-################################################################################
   ],  # targets
 }

@@ -77,15 +77,11 @@ Design doc: http://www.chromium.org/developers/design-documents/idl-build
 """
 
 from collections import defaultdict
+import cPickle as pickle
 import optparse
-import os
-import posixpath
 import sys
 
-from utilities import get_file_contents, write_pickle_file, get_interface_extended_attributes_from_idl, is_callback_interface_from_idl, get_partial_interface_name_from_idl, get_implements_from_idl, get_parent_interface, get_put_forward_interfaces_from_idl
-
-module_path = os.path.dirname(__file__)
-source_path = os.path.normpath(os.path.join(module_path, os.pardir, os.pardir))
+from utilities import write_pickle_file
 
 INHERITED_EXTENDED_ATTRIBUTES = set([
     'ActiveDOMObject',
@@ -112,17 +108,11 @@ class IdlInterfaceFileNotFoundError(Exception):
 
 
 def parse_options():
-    usage = 'Usage: %prog [options] [generated1.idl]...'
+    usage = 'Usage: %prog [InfoIndividual.pickle]... [Info.pickle]'
     parser = optparse.OptionParser(usage=usage)
-    parser.add_option('--idl-files-list', help='file listing IDL files')
-    parser.add_option('--interfaces-info-file', help='output pickle file')
     parser.add_option('--write-file-only-if-changed', type='int', help='if true, do not write an output file if it would be identical to the existing one, which avoids unnecessary rebuilds in ninja')
 
     options, args = parser.parse_args()
-    if options.interfaces_info_file is None:
-        parser.error('Must specify an output file using --interfaces-info-file.')
-    if options.idl_files_list is None:
-        parser.error('Must specify a file listing IDL files using --idl-files-list.')
     if options.write_file_only_if_changed is None:
         parser.error('Must specify whether file is only written if changed using --write-file-only-if-changed.')
     options.write_file_only_if_changed = bool(options.write_file_only_if_changed)
@@ -132,80 +122,6 @@ def parse_options():
 ################################################################################
 # Computations
 ################################################################################
-
-def include_path(idl_filename, implemented_as=None):
-    """Returns relative path to header file in POSIX format; used in includes.
-
-    POSIX format is used for consistency of output, so reference tests are
-    platform-independent.
-    """
-    relative_path_local = os.path.relpath(idl_filename, source_path)
-    relative_dir_local = os.path.dirname(relative_path_local)
-    relative_dir_posix = relative_dir_local.replace(os.path.sep, posixpath.sep)
-
-    idl_file_basename, _ = os.path.splitext(os.path.basename(idl_filename))
-    cpp_class_name = implemented_as or idl_file_basename
-
-    return posixpath.join(relative_dir_posix, cpp_class_name + '.h')
-
-
-def add_paths_to_partials_dict(partial_interface_name, full_path, this_include_path=None):
-    paths_dict = partial_interface_files[partial_interface_name]
-    paths_dict['full_paths'].append(full_path)
-    if this_include_path:
-        paths_dict['include_paths'].append(this_include_path)
-
-
-def compute_individual_info(idl_filename):
-    full_path = os.path.realpath(idl_filename)
-    idl_file_contents = get_file_contents(full_path)
-
-    extended_attributes = get_interface_extended_attributes_from_idl(idl_file_contents)
-    implemented_as = extended_attributes.get('ImplementedAs')
-    this_include_path = include_path(idl_filename, implemented_as)
-
-    # Handle partial interfaces
-    partial_interface_name = get_partial_interface_name_from_idl(idl_file_contents)
-    if partial_interface_name:
-        add_paths_to_partials_dict(partial_interface_name, full_path, this_include_path)
-        return
-
-    # If not a partial interface, the basename is the interface name
-    interface_name, _ = os.path.splitext(os.path.basename(idl_filename))
-
-    # 'implements' statements can be included in either the file for the
-    # implement*ing* interface (lhs of 'implements') or implement*ed* interface
-    # (rhs of 'implements'). Store both for now, then merge to implement*ing*
-    # interface later.
-    left_interfaces, right_interfaces = get_implements_from_idl(idl_file_contents, interface_name)
-
-    interfaces_info[interface_name] = {
-        'full_path': full_path,
-        'implemented_as': implemented_as,
-        'implemented_by_interfaces': left_interfaces,  # private, merged to next
-        'implements_interfaces': right_interfaces,
-        'include_path': this_include_path,
-        # FIXME: temporary private field, while removing old treatement of
-        # 'implements': http://crbug.com/360435
-        'is_legacy_treat_as_partial_interface': 'LegacyTreatAsPartialInterface' in extended_attributes,
-        'is_callback_interface': is_callback_interface_from_idl(idl_file_contents),
-        # Interfaces that are referenced (used as types) and that we introspect
-        # during code generation (beyond interface-level data ([ImplementedAs],
-        # is_callback_interface, ancestors, and inherited extended attributes):
-        # deep dependencies.
-        # These cause rebuilds of referrers, due to the dependency, so these
-        # should be minimized; currently only targets of [PutForwards].
-        'referenced_interfaces': get_put_forward_interfaces_from_idl(idl_file_contents),
-    }
-
-    # Record inheritance information
-    inherited_extended_attributes_by_interface[interface_name] = dict(
-            (key, value)
-            for key, value in extended_attributes.iteritems()
-            if key in INHERITED_EXTENDED_ATTRIBUTES)
-    parent = get_parent_interface(idl_file_contents)
-    if parent:
-        parent_interfaces[interface_name] = parent
 
 
 def compute_inheritance_info(interface_name):
@@ -230,14 +146,28 @@ def compute_inheritance_info(interface_name):
     })
 
 
-def compute_interfaces_info(idl_files):
+def compute_interfaces_info_overall(interfaces_info_individual_filenames):
     """Compute information about IDL files.
 
     Information is stored in global interfaces_info.
     """
-    # Compute information for individual files
-    for idl_filename in idl_files:
-        compute_individual_info(idl_filename)
+    # Read in individual info from files
+    for interfaces_info_individual_filename in interfaces_info_individual_filenames:
+        with open(interfaces_info_individual_filename) as interfaces_info_individual_file:
+            info = pickle.load(interfaces_info_individual_file)
+            interfaces_info.update(info['interfaces_info'])
+            partial_interface_files.update(info['partial_interface_files'])
+
+    # Record inheritance information individually
+    for interface_name, interface_info in interfaces_info.iteritems():
+        extended_attributes = interface_info['extended_attributes']
+        inherited_extended_attributes_by_interface[interface_name] = dict(
+                (key, value)
+                for key, value in extended_attributes.iteritems()
+                if key in INHERITED_EXTENDED_ATTRIBUTES)
+        parent = interface_info['parent']
+        if parent:
+            parent_interfaces[interface_name] = parent
 
     # Once all individual files handled, can compute inheritance information
     # and dependencies
@@ -295,25 +225,20 @@ def compute_interfaces_info(idl_files):
 
     # Clean up temporary private information
     for interface_info in interfaces_info.itervalues():
+        del interface_info['extended_attributes']
         del interface_info['is_legacy_treat_as_partial_interface']
+        del interface_info['parent']
 
 
 ################################################################################
 
 def main():
     options, args = parse_options()
+    # args = Input1, Input2, ..., Output
+    interfaces_info_filename = args.pop()
 
-    # Static IDL files are passed in a file (generated at GYP time), due to OS
-    # command line length limits
-    with open(options.idl_files_list) as idl_files_list:
-        idl_files = [line.rstrip('\n') for line in idl_files_list]
-    # Generated IDL files are passed at the command line, since these are in the
-    # build directory, which is determined at build time, not GYP time, so these
-    # cannot be included in the file listing static files
-    idl_files.extend(args)
-
-    compute_interfaces_info(idl_files)
-    write_pickle_file(options.interfaces_info_file,
+    compute_interfaces_info_overall(args)
+    write_pickle_file(interfaces_info_filename,
                       interfaces_info,
                       options.write_file_only_if_changed)
 

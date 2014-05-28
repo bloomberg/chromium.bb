@@ -27,6 +27,75 @@
   'targets': [
 ################################################################################
   {
+    # FIXME: Generate separate interfaces_info_individual_core and
+    # interfaces_info_individual_modules http://crbug.com/358074
+    'target_name': 'interfaces_info_individual',
+    'type': 'none',
+    'dependencies': [
+      # Generated IDLs
+      '../../../core/core_generated.gyp:generated_testing_idls',
+      '<(bindings_dir)/generated.gyp:global_constructors_idls',
+    ],
+    'actions': [{
+      'action_name': 'compute_interfaces_info_individual',
+      'inputs': [
+        '<(bindings_scripts_dir)/compute_interfaces_info_individual.py',
+        '<(bindings_scripts_dir)/utilities.py',
+        '<(static_idl_files_list)',
+        '<@(static_idl_files)',
+        '<@(generated_idl_files)',
+      ],
+      'outputs': [
+        '<(blink_output_dir)/InterfacesInfoIndividual.pickle',
+      ],
+      'action': [
+        'python',
+        '<(bindings_scripts_dir)/compute_interfaces_info_individual.py',
+        '--idl-files-list',
+        '<(static_idl_files_list)',
+        '--interfaces-info-file',
+        '<(blink_output_dir)/InterfacesInfoIndividual.pickle',
+        '--write-file-only-if-changed',
+        '<(write_file_only_if_changed)',
+        '--',
+        # Generated files must be passed at command line
+        '<@(generated_idl_files)',
+      ],
+      'message': 'Computing global information about individual IDL files',
+      }]
+  },
+################################################################################
+  {
+    # FIXME: Generate separate interfaces_info_core and interfaces_info_modules
+    # http://crbug.com/358074
+    'target_name': 'interfaces_info',
+    'type': 'none',
+    'dependencies': [
+        'interfaces_info_individual',
+    ],
+    'actions': [{
+      'action_name': 'compute_interfaces_info_overall',
+      'inputs': [
+        '<(bindings_scripts_dir)/compute_interfaces_info_overall.py',
+        '<(blink_output_dir)/InterfacesInfoIndividual.pickle',
+      ],
+      'outputs': [
+        '<(blink_output_dir)/InterfacesInfo.pickle',
+      ],
+      'action': [
+        'python',
+        '<(bindings_scripts_dir)/compute_interfaces_info_overall.py',
+        '--write-file-only-if-changed',
+        '<(write_file_only_if_changed)',
+        '--',
+        '<(blink_output_dir)/InterfacesInfoIndividual.pickle',
+        '<(blink_output_dir)/InterfacesInfo.pickle',
+      ],
+      'message': 'Computing overall global information about IDL files',
+      }]
+  },
+################################################################################
+  {
     'target_name': 'bindings_core_generated_individual',
     'type': 'none',
     # The 'binding' rule generates .h files, so mark as hard_dependency, per:
@@ -34,9 +103,11 @@
     'hard_dependency': 1,
     'dependencies': [
       '../../../core/core_generated.gyp:generated_testing_idls',
-      '<(bindings_dir)/generated.gyp:interfaces_info',
       '<(bindings_scripts_dir)/scripts.gyp:cached_jinja_templates',
       '<(bindings_scripts_dir)/scripts.gyp:cached_lex_yacc_tables',
+      # FIXME: should be interfaces_info_core (w/o modules)
+      # http://crbug.com/358074
+      'interfaces_info',
     ],
     'sources': [
       '<@(core_interface_idl_files)',

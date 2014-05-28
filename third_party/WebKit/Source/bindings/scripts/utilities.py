@@ -39,8 +39,12 @@ def write_file(new_text, destination_filename, only_if_changed):
 def write_pickle_file(pickle_filename, data, only_if_changed):
     if only_if_changed and os.path.isfile(pickle_filename):
         with open(pickle_filename) as pickle_file:
-            if pickle.load(pickle_file) == data:
-                return
+            try:
+                if pickle.load(pickle_file) == data:
+                    return
+            except (EOFError, pickle.UnpicklingError):
+                # If trouble unpickling, overwrite
+                pass
     with open(pickle_filename, 'w') as pickle_file:
         pickle.dump(data, pickle_file)
 

@@ -33,7 +33,7 @@
     'hard_dependency': 1,
     'dependencies': [
       '../../../core/core_generated.gyp:generated_testing_idls',
-      '<(bindings_dir)/generated.gyp:interfaces_info',
+      '<(bindings_dir)/core/v8/generated.gyp:interfaces_info',
       '<(bindings_scripts_dir)/scripts.gyp:cached_jinja_templates',
       '<(bindings_scripts_dir)/scripts.gyp:cached_lex_yacc_tables',
     ],
