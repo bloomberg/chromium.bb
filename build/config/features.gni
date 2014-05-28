@@ -56,3 +56,7 @@ use_seccomp_bpf = (is_linux || is_android) &&
   (cpu_arch == "x86" || cpu_arch == "x64" || cpu_arch == "arm")
 
 enable_webrtc = !is_ios
+
+# Enable notifications everywhere except Android.
+# Android is http://crbug.com/115320
+enable_notifications = !is_android
