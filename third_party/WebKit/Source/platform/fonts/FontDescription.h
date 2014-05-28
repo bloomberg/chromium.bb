@@ -67,7 +67,6 @@ public:
         , m_weight(FontWeightNormal)
         , m_stretch(FontStretchNormal)
         , m_genericFamily(NoFamily)
-        , m_usePrinterFont(false)
         , m_kerning(AutoKerning)
         , m_commonLigaturesState(NormalLigaturesState)
         , m_discretionaryLigaturesState(NormalLigaturesState)
@@ -100,11 +99,7 @@ public:
     FontWeight lighterWeight() const;
     FontWeight bolderWeight() const;
     GenericFamilyType genericFamily() const { return static_cast<GenericFamilyType>(m_genericFamily); }
-#if OS(MACOSX)
-    bool usePrinterFont() const { return false; }
-#else
-    bool usePrinterFont() const { return m_usePrinterFont; }
-#endif
+
     // only use fixed default size when there is only one font family, and that family is "monospace"
     bool useFixedDefaultSize() const { return genericFamily() == MonospaceFamily && !family().next() && family().family() == FontFamilyNames::webkit_monospace; }
     Kerning kerning() const { return static_cast<Kerning>(m_kerning); }
@@ -141,7 +136,6 @@ public:
     void setWeight(FontWeight w) { m_weight = w; }
     void setStretch(FontStretch s) { m_stretch = s; }
     void setGenericFamily(GenericFamilyType genericFamily) { m_genericFamily = genericFamily; }
-    void setUsePrinterFont(bool p) { m_usePrinterFont = p; }
     void setKerning(Kerning kerning) { m_kerning = kerning; updateTypesettingFeatures(); }
     void setCommonLigaturesState(LigaturesState commonLigaturesState) { m_commonLigaturesState = commonLigaturesState; updateTypesettingFeatures(); }
     void setDiscretionaryLigaturesState(LigaturesState discretionaryLigaturesState) { m_discretionaryLigaturesState = discretionaryLigaturesState; updateTypesettingFeatures(); }
@@ -194,7 +188,6 @@ private:
     unsigned m_weight : 4; // FontWeight
     unsigned m_stretch : 4; // FontStretch
     unsigned m_genericFamily : 3; // GenericFamilyType
-    unsigned m_usePrinterFont : 1;
 
     unsigned m_kerning : 2; // Kerning
 
@@ -234,7 +227,6 @@ inline bool FontDescription::operator==(const FontDescription& other) const
         && m_weight == other.m_weight
         && m_stretch == other.m_stretch
         && m_genericFamily == other.m_genericFamily
-        && m_usePrinterFont == other.m_usePrinterFont
         && m_kerning == other.m_kerning
         && m_commonLigaturesState == other.m_commonLigaturesState
         && m_discretionaryLigaturesState == other.m_discretionaryLigaturesState

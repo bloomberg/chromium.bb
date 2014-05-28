@@ -133,15 +133,14 @@ FontCacheKey FontDescription::cacheKey(const AtomicString& familyName, FontTrait
         : traits();
 
     unsigned options =
-        static_cast<unsigned>(m_syntheticItalic) << 8 | // bit 9
-        static_cast<unsigned>(m_syntheticBold) << 7 | // bit 8
-        static_cast<unsigned>(m_fontSmoothing) << 5 | // bits 6-7
-        static_cast<unsigned>(m_textRendering) << 3 | // bits 4-5
-        static_cast<unsigned>(m_orientation) << 2 | // bit 3
-        static_cast<unsigned>(m_usePrinterFont) << 1 | // bit 2
+        static_cast<unsigned>(m_syntheticItalic) << 7 | // bit 8
+        static_cast<unsigned>(m_syntheticBold) << 6 | // bit 7
+        static_cast<unsigned>(m_fontSmoothing) << 4 | // bits 5-6
+        static_cast<unsigned>(m_textRendering) << 2 | // bits 3-4
+        static_cast<unsigned>(m_orientation) << 1 | // bit 2
         static_cast<unsigned>(m_subpixelTextPosition); // bit 1
 
-    return FontCacheKey(familyName, effectiveFontSize(), options | fontTraits.mask() << 9);
+    return FontCacheKey(familyName, effectiveFontSize(), options | fontTraits.mask() << 8);
 }
 
 

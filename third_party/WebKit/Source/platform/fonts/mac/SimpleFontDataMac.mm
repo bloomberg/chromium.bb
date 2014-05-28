@@ -119,14 +119,13 @@ const SimpleFontData* SimpleFontData::getCompositeFontReferenceFontData(NSFont *
                 return found;
         }
         if (CFMutableDictionaryRef dictionary = m_derivedFontData->compositeFontReferences.get()) {
-            bool isUsingPrinterFont = platformData().isPrinterFont();
-            NSFont *substituteFont = isUsingPrinterFont ? [key printerFont] : [key screenFont];
+            NSFont *substituteFont = [key printerFont];
 
             CTFontSymbolicTraits traits = CTFontGetSymbolicTraits(toCTFontRef(substituteFont));
             bool syntheticBold = platformData().syntheticBold() && !(traits & kCTFontBoldTrait);
             bool syntheticOblique = platformData().syntheticOblique() && !(traits & kCTFontItalicTrait);
 
-            FontPlatformData substitutePlatform(substituteFont, platformData().size(), isUsingPrinterFont, syntheticBold, syntheticOblique, platformData().orientation(), platformData().widthVariant());
+            FontPlatformData substitutePlatform(substituteFont, platformData().size(), syntheticBold, syntheticOblique, platformData().orientation(), platformData().widthVariant());
             SimpleFontData* value = new SimpleFontData(substitutePlatform, isCustomFont() ? CustomFontData::create() : nullptr);
             if (value) {
                 CFDictionaryAddValue(dictionary, key, value);
@@ -314,11 +313,11 @@ PassRefPtr<SimpleFontData> SimpleFontData::platformCreateScaledFontData(const Fo
 
     BEGIN_BLOCK_OBJC_EXCEPTIONS;
     float size = m_platformData.size() * scaleFactor;
-    FontPlatformData scaledFontData([[NSFontManager sharedFontManager] convertFont:m_platformData.font() toSize:size], size, m_platformData.isPrinterFont(), false, false, m_platformData.orientation());
+    FontPlatformData scaledFontData([[NSFontManager sharedFontManager] convertFont:m_platformData.font() toSize:size], size, false, false, m_platformData.orientation());
 
-    // AppKit resets the type information (screen/printer) when you convert a font to a different size.
-    // We have to fix up the font that we're handed back.
-    scaledFontData.setFont(fontDescription.usePrinterFont() ? [scaledFontData.font() printerFont] : [scaledFontData.font() screenFont]);
+    // Until we replace AppKit API (NSFontManager etc.), we always want to disable hinting,
+    // so we use the printerFont here.
+    scaledFontData.setFont([scaledFontData.font() printerFont]);
 
     if (scaledFontData.font()) {
         NSFontManager *fontManager = [NSFontManager sharedFontManager];

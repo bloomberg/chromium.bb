@@ -31,6 +31,7 @@
 #import "platform/fonts/FontCache.h"
 
 #import <AppKit/AppKit.h>
+#import "platform/LayoutTestSupport.h"
 #import "platform/fonts/FontDescription.h"
 #import "platform/fonts/FontPlatformData.h"
 #import "platform/fonts/SimpleFontData.h"
@@ -160,12 +161,15 @@ PassRefPtr<SimpleFontData> FontCache::platformFallbackForCharacter(const FontDes
         }
     }
 
-    substituteFont = fontDescription.usePrinterFont() ? [substituteFont printerFont] : [substituteFont screenFont];
+    // Enable hinting, which is equivalent to using the screen font,
+    // only when running the set of standard non-subpixel layout tests,
+    // otherwise use subpixel glyph positioning.
+    substituteFont = !isRunningLayoutTest() || isFontAntialiasingEnabledForTest() ? [substituteFont printerFont] : [substituteFont screenFont];
 
     substituteFontTraits = [fontManager traitsOfFont:substituteFont];
     substituteFontWeight = [fontManager weightOfFont:substituteFont];
 
-    FontPlatformData alternateFont(substituteFont, platformData.size(), platformData.isPrinterFont(),
+    FontPlatformData alternateFont(substituteFont, platformData.size(),
         isAppKitFontWeightBold(weight) && !isAppKitFontWeightBold(substituteFontWeight),
         (traits & NSFontItalicTrait) && !(substituteFontTraits & NSFontItalicTrait),
         platformData.m_orientation);
@@ -207,13 +211,16 @@ FontPlatformData* FontCache::createFontPlatformData(const FontDescription& fontD
         actualTraits = [fontManager traitsOfFont:nsFont];
     NSInteger actualWeight = [fontManager weightOfFont:nsFont];
 
-    NSFont *platformFont = fontDescription.usePrinterFont() ? [nsFont printerFont] : [nsFont screenFont];
+    // Enable hinting, which is equivalent to using the screen font,
+    // only when running the set of standard non-subpixel layout tests,
+    // otherwise use subpixel glyph positioning.
+    NSFont *platformFont = !isRunningLayoutTest() || isFontAntialiasingEnabledForTest() ? [nsFont printerFont] : [nsFont screenFont];
     bool syntheticBold = (isAppKitFontWeightBold(weight) && !isAppKitFontWeightBold(actualWeight)) || fontDescription.isSyntheticBold();
     bool syntheticOblique = ((traits & NSFontItalicTrait) && !(actualTraits & NSFontItalicTrait)) || fontDescription.isSyntheticItalic();
 
     // FontPlatformData::font() can be null for the case of Chromium out-of-process font loading.
     // In that case, we don't want to use the platformData.
-    OwnPtr<FontPlatformData> platformData = adoptPtr(new FontPlatformData(platformFont, size, fontDescription.usePrinterFont(), syntheticBold, syntheticOblique, fontDescription.orientation(), fontDescription.widthVariant()));
+    OwnPtr<FontPlatformData> platformData = adoptPtr(new FontPlatformData(platformFont, size, syntheticBold, syntheticOblique, fontDescription.orientation(), fontDescription.widthVariant()));
     if (!platformData->font())
         return 0;
     return platformData.leakPtr();

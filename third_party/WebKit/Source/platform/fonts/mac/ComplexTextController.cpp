@@ -525,7 +525,7 @@ void ComplexTextController::adjustGlyphsAndAdvances()
         const CGSize* advances = complexTextRun.advances();
 
         bool lastRun = r + 1 == runCount;
-        bool roundsAdvances = !m_font.fontDescription().usePrinterFont() && fontData->platformData().roundsGlyphAdvances();
+        bool roundsAdvances = fontData->platformData().roundsGlyphAdvances();
         float spaceWidth = fontData->spaceWidth() - fontData->syntheticBoldOffset();
         CGFloat roundedSpaceWidth = roundCGFloat(spaceWidth);
         const UChar* cp = complexTextRun.characters();

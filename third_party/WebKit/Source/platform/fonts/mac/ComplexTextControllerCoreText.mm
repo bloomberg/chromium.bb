@@ -279,7 +279,7 @@ void ComplexTextController::collectComplexTextRunsForCharacters(const UChar* cp,
                     // Core Text may have used a font that is not known to NSFontManager. In that case, fall back on
                     // using the font as returned, even though it may not have the best NSFontRenderingMode.
                     if (!runFontData) {
-                        FontPlatformData runFontPlatformData((NSFont *)runFont, CTFontGetSize(runFont), m_font.fontDescription().usePrinterFont());
+                        FontPlatformData runFontPlatformData((NSFont *)runFont, CTFontGetSize(runFont));
                         runFontData = FontCache::fontCache()->fontDataFromFontPlatformData(&runFontPlatformData, DoNotRetain).get();
                     }
                 }

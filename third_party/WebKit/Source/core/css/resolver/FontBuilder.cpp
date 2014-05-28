@@ -101,7 +101,6 @@ void FontBuilder::setInitial(float effectiveZoom)
     FontDescriptionChangeScope scope(this);
 
     scope.reset();
-    scope.fontDescription().setUsePrinterFont(m_document->printing());
     setFontFamilyToStandard(scope.fontDescription(), m_document);
     scope.fontDescription().setKeywordSize(CSSValueMedium - CSSValueXxSmall + 1);
     setSize(scope.fontDescription(), effectiveZoom, FontSize::fontSizeForKeyword(m_document, CSSValueMedium, false));
@@ -135,7 +134,6 @@ void FontBuilder::fromSystemFont(CSSValueID valueId, float effectiveZoom)
     ASSERT(settings); // If we're doing style resolution, this document should always be in a frame and thus have settings
     if (!settings)
         return;
-    fontDescription.setUsePrinterFont(m_document->printing());
 
     // Handle the zoom factor.
     fontDescription.setComputedSize(getComputedSizeFromSpecifiedSize(fontDescription, effectiveZoom, fontDescription.specifiedSize()));
@@ -655,7 +653,6 @@ void FontBuilder::createFontForDocument(PassRefPtrWillBeRawPtr<FontSelector> fon
 {
     FontDescription fontDescription = FontDescription();
     fontDescription.setScript(localeToScriptCodeForFontSelection(documentStyle->locale()));
-    fontDescription.setUsePrinterFont(m_document->printing());
 
     setFontFamilyToStandard(fontDescription, m_document);
     fontDescription.setKeywordSize(CSSValueMedium - CSSValueXxSmall + 1);

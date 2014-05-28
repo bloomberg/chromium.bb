@@ -38,7 +38,7 @@ namespace WebCore {
 // These CoreText Text Spacing feature selectors are not defined in CoreText.
 enum TextSpacingCTFeatureSelector { TextSpacingProportional, TextSpacingFullWidth, TextSpacingHalfWidth, TextSpacingThirdWidth, TextSpacingQuarterWidth };
 
-FontPlatformData::FontPlatformData(NSFont *nsFont, float size, bool isPrinterFont, bool syntheticBold, bool syntheticOblique, FontOrientation orientation, FontWidthVariant widthVariant)
+FontPlatformData::FontPlatformData(NSFont *nsFont, float size, bool syntheticBold, bool syntheticOblique, FontOrientation orientation, FontWidthVariant widthVariant)
     : m_syntheticBold(syntheticBold)
     , m_syntheticOblique(syntheticOblique)
     , m_orientation(orientation)
@@ -47,7 +47,6 @@ FontPlatformData::FontPlatformData(NSFont *nsFont, float size, bool isPrinterFon
     , m_font(nsFont)
     , m_isColorBitmapFont(false)
     , m_isCompositeFontReference(false)
-    , m_isPrinterFont(isPrinterFont)
 {
     ASSERT_ARG(nsFont, nsFont);
 

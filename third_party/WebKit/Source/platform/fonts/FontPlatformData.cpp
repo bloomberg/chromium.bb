@@ -45,9 +45,6 @@ FontPlatformData::FontPlatformData(WTF::HashTableDeletedValueType)
 #endif
     , m_isColorBitmapFont(false)
     , m_isCompositeFontReference(false)
-#if OS(MACOSX)
-    , m_isPrinterFont(false)
-#endif
 {
 }
 
@@ -62,9 +59,6 @@ FontPlatformData::FontPlatformData()
 #endif
     , m_isColorBitmapFont(false)
     , m_isCompositeFontReference(false)
-#if OS(MACOSX)
-    , m_isPrinterFont(false)
-#endif
 {
 }
 
@@ -79,9 +73,6 @@ FontPlatformData::FontPlatformData(float size, bool syntheticBold, bool syntheti
 #endif
     , m_isColorBitmapFont(false)
     , m_isCompositeFontReference(false)
-#if OS(MACOSX)
-    , m_isPrinterFont(false)
-#endif
 {
 }
 
@@ -96,7 +87,6 @@ FontPlatformData::FontPlatformData(CGFontRef cgFont, float size, bool syntheticB
     , m_cgFont(cgFont)
     , m_isColorBitmapFont(false)
     , m_isCompositeFontReference(false)
-    , m_isPrinterFont(false)
 {
 }
 #endif
@@ -109,9 +99,6 @@ FontPlatformData::FontPlatformData(const FontPlatformData& source)
     , m_widthVariant(source.m_widthVariant)
     , m_isColorBitmapFont(source.m_isColorBitmapFont)
     , m_isCompositeFontReference(source.m_isCompositeFontReference)
-#if OS(MACOSX)
-    , m_isPrinterFont(source.m_isPrinterFont)
-#endif
 {
     platformDataInit(source);
 }
@@ -129,9 +116,6 @@ const FontPlatformData& FontPlatformData::operator=(const FontPlatformData& othe
     m_widthVariant = other.m_widthVariant;
     m_isColorBitmapFont = other.m_isColorBitmapFont;
     m_isCompositeFontReference = other.m_isCompositeFontReference;
-#if OS(MACOSX)
-    m_isPrinterFont = other.m_isPrinterFont;
-#endif
 
     return platformDataAssign(other);
 }

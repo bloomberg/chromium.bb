@@ -87,7 +87,7 @@ public:
     FontPlatformData(float size, bool syntheticBold, bool syntheticOblique, FontOrientation = Horizontal, FontWidthVariant = RegularWidth);
 
 #if OS(MACOSX)
-    FontPlatformData(NSFont*, float size, bool isPrinterFont = false, bool syntheticBold = false, bool syntheticOblique = false,
+    FontPlatformData(NSFont*, float size, bool syntheticBold = false, bool syntheticOblique = false,
                      FontOrientation = Horizontal, FontWidthVariant = RegularWidth);
     FontPlatformData(CGFontRef, float size, bool syntheticBold, bool syntheticOblique, FontOrientation, FontWidthVariant);
 #endif
@@ -116,9 +116,7 @@ public:
     bool syntheticOblique() const { return m_syntheticOblique; }
     bool isColorBitmapFont() const { return m_isColorBitmapFont; }
     bool isCompositeFontReference() const { return m_isCompositeFontReference; }
-#if OS(MACOSX)
-    bool isPrinterFont() const { return m_isPrinterFont; }
-#endif
+
     FontOrientation orientation() const { return m_orientation; }
     FontWidthVariant widthVariant() const { return m_widthVariant; }
 
@@ -132,7 +130,7 @@ public:
     {
 #if OS(MACOSX)
         ASSERT(m_font || !m_cgFont);
-        uintptr_t hashCodes[3] = { (uintptr_t)m_font, m_widthVariant, static_cast<uintptr_t>(m_isPrinterFont << 3 | m_orientation << 2 | m_syntheticBold << 1 | m_syntheticOblique) };
+        uintptr_t hashCodes[3] = { (uintptr_t)m_font, m_widthVariant, static_cast<uintptr_t>(m_orientation << 2 | m_syntheticBold << 1 | m_syntheticOblique) };
         return StringHasher::hashMemory<sizeof(hashCodes)>(hashCodes);
 #endif
     }
@@ -147,9 +145,6 @@ public:
             && m_syntheticOblique == other.m_syntheticOblique
             && m_isColorBitmapFont == other.m_isColorBitmapFont
             && m_isCompositeFontReference == other.m_isCompositeFontReference
-#if OS(MACOSX)
-            && m_isPrinterFont == other.m_isPrinterFont
-#endif
             && m_orientation == other.m_orientation
             && m_widthVariant == other.m_widthVariant;
     }
@@ -203,9 +198,6 @@ private:
 
     bool m_isColorBitmapFont;
     bool m_isCompositeFontReference;
-#if OS(MACOSX)
-    bool m_isPrinterFont;
-#endif
 };
 
 } // namespace WebCore
