@@ -11,7 +11,6 @@
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_ui_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -23,8 +22,6 @@
 #include "chrome/common/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_source.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension_set.h"
@@ -66,7 +63,8 @@ AppShortcutManager::AppShortcutManager(Profile* profile)
     : profile_(profile),
       is_profile_info_cache_observer_(false),
       prefs_(profile->GetPrefs()),
-      extension_registry_observer_(this) {
+      extension_registry_observer_(this),
+      weak_ptr_factory_(this) {
   // Use of g_browser_process requires that we are either on the UI thread, or
   // there are no threads initialized (such as in unit tests).
   DCHECK(!content::BrowserThread::IsThreadInitialized(
@@ -76,8 +74,10 @@ AppShortcutManager::AppShortcutManager(Profile* profile)
   extension_registry_observer_.Add(
       extensions::ExtensionRegistry::Get(profile_));
   // Wait for extensions to be ready before running OnceOffCreateShortcuts.
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSIONS_READY,
-                 content::Source<Profile>(profile_));
+  extensions::ExtensionSystem::Get(profile)->ready().Post(
+      FROM_HERE,
+      base::Bind(&AppShortcutManager::OnceOffCreateShortcuts,
+                 weak_ptr_factory_.GetWeakPtr()));
 
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   // profile_manager might be NULL in testing environments.
@@ -94,13 +94,6 @@ AppShortcutManager::~AppShortcutManager() {
     if (profile_manager)
       profile_manager->GetProfileInfoCache().RemoveObserver(this);
   }
-}
-
-void AppShortcutManager::Observe(int type,
-                                 const content::NotificationSource& source,
-                                 const content::NotificationDetails& details) {
-  DCHECK_EQ(chrome::NOTIFICATION_EXTENSIONS_READY, type);
-  OnceOffCreateShortcuts();
 }
 
 void AppShortcutManager::OnExtensionWillBeInstalled(

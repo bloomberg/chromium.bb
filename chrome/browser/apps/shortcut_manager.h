@@ -5,11 +5,10 @@
 #ifndef CHROME_BROWSER_APPS_SHORTCUT_MANAGER_H_
 #define CHROME_BROWSER_APPS_SHORTCUT_MANAGER_H_
 
+#include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/profiles/profile_info_cache_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "extensions/browser/extension_registry_observer.h"
 #include "extensions/common/extension.h"
 
@@ -26,7 +25,6 @@ class PrefRegistrySyncable;
 
 // This class manages the installation of shortcuts for platform apps.
 class AppShortcutManager : public KeyedService,
-                           public content::NotificationObserver,
                            public extensions::ExtensionRegistryObserver,
                            public ProfileInfoCacheObserver {
  public:
@@ -39,11 +37,6 @@ class AppShortcutManager : public KeyedService,
   // Checks if kShortcutsEnabled is set in prefs. If not, this sets it and
   // creates shortcuts for all apps.
   void OnceOffCreateShortcuts();
-
-  // content::NotificationObserver.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
 
   // extensions::ExtensionRegistryObserver.
   virtual void OnExtensionWillBeInstalled(
@@ -63,7 +56,6 @@ class AppShortcutManager : public KeyedService,
  private:
   void DeleteApplicationShortcuts(const extensions::Extension* extension);
 
-  content::NotificationRegistrar registrar_;
   Profile* profile_;
   bool is_profile_info_cache_observer_;
   PrefService* prefs_;
@@ -71,6 +63,8 @@ class AppShortcutManager : public KeyedService,
   ScopedObserver<extensions::ExtensionRegistry,
                  extensions::ExtensionRegistryObserver>
       extension_registry_observer_;
+
+  base::WeakPtrFactory<AppShortcutManager> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AppShortcutManager);
 };
