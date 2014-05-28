@@ -105,12 +105,11 @@ cr.define('uber', function() {
       var params = resolvePageInfo();
       assert(params.id === e.state.pageId);
 
-      // If the page doesn't exist, create it. Otherwise, swap it in.
-      var frame = $(params.id).querySelector('iframe');
-      if (!frame)
+      // If the page isn't the current page, load it fresh. Even if the page is
+      // already loaded, it may have state not reflected in the URL, such as the
+      // history page's "Remove selected items" overlay. http://crbug.com/377386
+      if (getRequiredElement(params.id) !== getSelectedIframe())
         showPage(params.id, HISTORY_STATE_OPTION.NONE, params.path);
-      else
-        selectPage(params.id);
 
       // Either way, send the state down to it.
       //
@@ -224,12 +223,11 @@ cr.define('uber', function() {
 
   /**
    * Changes the path past the page title (i.e. chrome://chrome/settings/(.*)).
-   * @param {string} pageId Should match an id of one of the iframe containers.
    * @param {Object} state The page's state object for the navigation.
    * @param {string} path The new /path/ to be set after the page name.
    * @param {number} historyOption The type of history modification to make.
    */
-  function changePathTo(pageId, state, path, historyOption) {
+  function changePathTo(state, path, historyOption) {
     assert(!path || path.substr(-1) != '/', 'invalid path given');
 
     var histFunc;
@@ -240,6 +238,7 @@ cr.define('uber', function() {
 
     assert(histFunc, 'invalid historyOption given ' + historyOption);
 
+    var pageId = getSelectedIframe().id;
     var args = [{pageId: pageId, pageState: state},
                 '',
                 '/' + pageId + '/' + (path || '')];
@@ -261,7 +260,7 @@ cr.define('uber', function() {
     // Only update the currently displayed path if this is the visible frame.
     var container = getIframeFromOrigin(origin).parentNode;
     if (container == getSelectedIframe())
-      changePathTo(container.id, state, path, historyOption);
+      changePathTo(state, path, historyOption);
   }
 
   /**
@@ -341,23 +340,8 @@ cr.define('uber', function() {
       frame.dataset.ready = false;
     }
 
-    // This must be called before selectPage so that the title change applies to
-    // the new history entry.
-    if (historyOption != HISTORY_STATE_OPTION.NONE)
-      changePathTo(pageId, {}, path, historyOption);
-
-    selectPage(pageId);
-  }
-
-  /**
-   * Switches to a subpage. The subpage must already exist.
-   * @param {string} pageId Should match an id of one of the iframe containers.
-   */
-  function selectPage(pageId) {
-    var container = getRequiredElement(pageId);
-    var lastSelected = document.querySelector('.iframe-container.selected');
-
     // If the last selected container is already showing, ignore the rest.
+    var lastSelected = document.querySelector('.iframe-container.selected');
     if (lastSelected === container)
       return;
 
@@ -385,6 +369,9 @@ cr.define('uber', function() {
 
     var selectedFrame = getSelectedIframe().querySelector('iframe');
     uber.invokeMethodOnWindow(selectedFrame.contentWindow, 'frameSelected');
+
+    if (historyOption != HISTORY_STATE_OPTION.NONE)
+      changePathTo({}, path, historyOption);
 
     if (container.dataset.title)
       document.title = container.dataset.title;
