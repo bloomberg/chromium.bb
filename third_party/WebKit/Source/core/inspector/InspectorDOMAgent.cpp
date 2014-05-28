@@ -88,7 +88,7 @@ namespace WebCore {
 using namespace HTMLNames;
 
 namespace DOMAgentState {
-static const char documentRequested[] = "documentRequested";
+static const char domAgentEnabled[] = "domAgentEnabled";
 };
 
 static const size_t maxTextSize = 10000;
@@ -268,7 +268,7 @@ void InspectorDOMAgent::clearFrontend()
 
     m_frontend = 0;
     m_instrumentingAgents->setInspectorDOMAgent(0);
-    m_state->setBoolean(DOMAgentState::documentRequested, false);
+    disable(0);
     reset();
 }
 
@@ -311,7 +311,7 @@ void InspectorDOMAgent::setDocument(Document* doc)
 
     m_document = doc;
 
-    if (!m_state->getBoolean(DOMAgentState::documentRequested))
+    if (!enabled())
         return;
 
     // Immediately communicate 0 document or document that has finished loading.
@@ -481,9 +481,30 @@ Element* InspectorDOMAgent::assertEditableElement(ErrorString* errorString, int 
     return element;
 }
 
+void InspectorDOMAgent::enable(ErrorString*)
+{
+    if (enabled())
+        return;
+    m_state->setBoolean(DOMAgentState::domAgentEnabled, true);
+}
+
+bool InspectorDOMAgent::enabled() const
+{
+    return m_state->getBoolean(DOMAgentState::domAgentEnabled);
+}
+
+void InspectorDOMAgent::disable(ErrorString*)
+{
+    if (!enabled())
+        return;
+    m_state->setBoolean(DOMAgentState::domAgentEnabled, false);
+    reset();
+}
+
 void InspectorDOMAgent::getDocument(ErrorString* errorString, RefPtr<TypeBuilder::DOM::Node>& root)
 {
-    m_state->setBoolean(DOMAgentState::documentRequested, true);
+    // Backward compatibility. Mark agent as enabled when it requests document.
+    enable(errorString);
 
     if (!m_document) {
         *errorString = "Document is not available";
@@ -1715,7 +1736,7 @@ void InspectorDOMAgent::domContentLoadedEventFired(LocalFrame* frame)
 
     // Re-push document once it is loaded.
     discardFrontendBindings();
-    if (m_state->getBoolean(DOMAgentState::documentRequested))
+    if (enabled())
         m_frontend->documentUpdated();
 }
 

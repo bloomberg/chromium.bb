@@ -112,6 +112,8 @@ public:
     void reset();
 
     // Methods called from the frontend for DOM nodes inspection.
+    virtual void enable(ErrorString*) OVERRIDE;
+    virtual void disable(ErrorString*) OVERRIDE;
     virtual void querySelector(ErrorString*, int nodeId, const String& selectors, int* elementId) OVERRIDE;
     virtual void querySelectorAll(ErrorString*, int nodeId, const String& selectors, RefPtr<TypeBuilder::Array<int> >& result) OVERRIDE;
     virtual void getDocument(ErrorString*, RefPtr<TypeBuilder::DOM::Node>& root) OVERRIDE;
@@ -205,6 +207,7 @@ private:
 
     InspectorDOMAgent(InspectorPageAgent*, InjectedScriptManager*, InspectorOverlay*);
 
+    bool enabled() const;
     void setSearchingForNode(ErrorString*, SearchMode, JSONObject* highlightConfig);
     PassOwnPtr<HighlightConfig> highlightConfigFromInspectorObject(ErrorString*, JSONObject* highlightInspectorObject);
 
