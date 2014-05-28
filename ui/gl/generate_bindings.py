@@ -99,10 +99,12 @@ GL_FUNCTIONS = [
                'GLbitfield mask, GLenum filter', },
 { 'return_type': 'void',
   'names': ['glBufferData'],
-  'arguments': 'GLenum target, GLsizei size, const void* data, GLenum usage', },
+  'arguments':
+      'GLenum target, GLsizeiptr size, const void* data, GLenum usage', },
 { 'return_type': 'void',
   'names': ['glBufferSubData'],
-  'arguments': 'GLenum target, GLint offset, GLsizei size, const void* data', },
+  'arguments':
+      'GLenum target, GLintptr offset, GLsizeiptr size, const void* data', },
 { 'return_type': 'GLenum',
   'names': ['glCheckFramebufferStatusEXT',
             'glCheckFramebufferStatus'],
