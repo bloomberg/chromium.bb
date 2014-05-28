@@ -46,8 +46,10 @@ const char* kApisForRapporMetric[] = {
   ad_injection_constants::kHtmlAnchorHrefApiName
 };
 
+// The "Extensions.PossibleAdInjection2" metric uses different Rappor
+// parameters than the original metric.
 const char* kExtensionAdInjectionRapporMetricName =
-    "Extensions.PossibleAdInjection";
+    "Extensions.PossibleAdInjection2";
 
 // The names of different types of HTML elements we check for ad injection.
 const char* kIframeElementType = "HTMLIFrameElement";

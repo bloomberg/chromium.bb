@@ -12,6 +12,7 @@ namespace rappor {
 enum Probability {
   PROBABILITY_75,    // 75%
   PROBABILITY_50,    // 50%
+  PROBABILITY_25,    // 25%
 };
 
 // An object describing a rappor metric and the parameters used to generate it.
@@ -21,6 +22,12 @@ enum Probability {
 struct RapporParameters {
   // Get a string representing the parameters, for DCHECK_EQ.
   std::string ToString() const;
+
+  // The maximum number of cohorts we divide clients into.
+  static const int kMaxCohorts;
+
+  // The number of cohorts to divide the reports for this metric into.
+  int num_cohorts;
 
   // The number of bytes stored in the Bloom filter.
   int bloom_filter_size_bytes;

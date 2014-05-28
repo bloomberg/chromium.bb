@@ -82,7 +82,7 @@ void PrefMetricsService::RecordLaunchPrefs() {
           SEARCH_ENGINE_MAX);
       if (g_browser_process->rappor_service()) {
         g_browser_process->rappor_service()->RecordSample(
-            "Settings.HomePage",
+            "Settings.HomePage2",
             rappor::ETLD_PLUS_ONE_RAPPOR_TYPE,
             net::registry_controlled_domains::GetDomainAndRegistry(homepage_url,
                 net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES));

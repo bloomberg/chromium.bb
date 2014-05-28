@@ -22,9 +22,6 @@ namespace rappor {
 
 namespace {
 
-// The number of cohorts we divide clients into.
-const int kNumCohorts = 32;
-
 // Seconds before the initial log is generated.
 const int kInitialLogIntervalSeconds = 15;
 // Interval between ongoing logs.
@@ -46,12 +43,13 @@ GURL GetServerUrl() {
 
 const RapporParameters kRapporParametersForType[NUM_RAPPOR_TYPES] = {
     // ETLD_PLUS_ONE_RAPPOR_TYPE
-    {16 /* Bloom filter size bytes */,
+    {128 /* Num cohorts */,
+     16 /* Bloom filter size bytes */,
      2 /* Bloom filter hash count */,
-     rappor::PROBABILITY_75 /* Fake data probability */,
+     rappor::PROBABILITY_50 /* Fake data probability */,
      rappor::PROBABILITY_50 /* Fake one probability */,
      rappor::PROBABILITY_75 /* One coin probability */,
-     rappor::PROBABILITY_50 /* Zero coin probability */},
+     rappor::PROBABILITY_25 /* Zero coin probability */},
 };
 
 }  // namespace
@@ -96,20 +94,24 @@ void RapporService::OnLogInterval() {
 // static
 void RapporService::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterStringPref(prefs::kRapporSecret, std::string());
-  registry->RegisterIntegerPref(prefs::kRapporCohort, -1);
+  registry->RegisterIntegerPref(prefs::kRapporCohortDeprecated, -1);
+  registry->RegisterIntegerPref(prefs::kRapporCohortSeed, -1);
 }
 
 void RapporService::LoadCohort(PrefService* pref_service) {
   DCHECK(!IsInitialized());
-  cohort_ = pref_service->GetInteger(prefs::kRapporCohort);
+  // Ignore and delete old cohort parameter.
+  pref_service->ClearPref(prefs::kRapporCohortDeprecated);
+
+  cohort_ = pref_service->GetInteger(prefs::kRapporCohortSeed);
   // If the user is already assigned to a valid cohort, we're done.
-  if (cohort_ >= 0 && cohort_ < kNumCohorts)
+  if (cohort_ >= 0 && cohort_ < RapporParameters::kMaxCohorts)
     return;
 
   // This is the first time the client has started the service (or their
   // preferences were corrupted).  Randomly assign them to a cohort.
-  cohort_ = base::RandGenerator(kNumCohorts);
-  pref_service->SetInteger(prefs::kRapporCohort, cohort_);
+  cohort_ = base::RandGenerator(RapporParameters::kMaxCohorts);
+  pref_service->SetInteger(prefs::kRapporCohortSeed, cohort_);
 }
 
 void RapporService::LoadSecret(PrefService* pref_service) {

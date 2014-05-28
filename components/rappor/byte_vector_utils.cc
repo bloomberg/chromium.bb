@@ -78,9 +78,17 @@ bool HMAC_DRBG_Update(const std::string& provided_data,
 
 }  // namespace
 
+ByteVector* ByteVectorAnd(const ByteVector& lhs, ByteVector* rhs) {
+  DCHECK_EQ(lhs.size(), rhs->size());
+  for (size_t i = 0; i < lhs.size(); ++i) {
+    (*rhs)[i] = lhs[i] & (*rhs)[i];
+  }
+  return rhs;
+}
+
 ByteVector* ByteVectorOr(const ByteVector& lhs, ByteVector* rhs) {
   DCHECK_EQ(lhs.size(), rhs->size());
-  for (size_t i = 0, len = lhs.size(); i < len; ++i) {
+  for (size_t i = 0; i < lhs.size(); ++i) {
     (*rhs)[i] = lhs[i] | (*rhs)[i];
   }
   return rhs;
@@ -90,7 +98,7 @@ ByteVector* ByteVectorMerge(const ByteVector& mask,
                             const ByteVector& lhs,
                             ByteVector* rhs) {
   DCHECK_EQ(lhs.size(), rhs->size());
-  for (size_t i = 0, len = lhs.size(); i < len; ++i) {
+  for (size_t i = 0; i < lhs.size(); ++i) {
     (*rhs)[i] = (lhs[i] & ~mask[i]) | ((*rhs)[i] & mask[i]);
   }
   return rhs;
@@ -127,6 +135,8 @@ ByteVector ByteVectorGenerator::GetWeightedRandomByteVector(
       return *ByteVectorOr(GetRandomByteVector(), &bytes);
     case PROBABILITY_50:
       return bytes;
+    case PROBABILITY_25:
+      return *ByteVectorAnd(GetRandomByteVector(), &bytes);
   }
   NOTREACHED();
   return bytes;

@@ -10,7 +10,8 @@ namespace prefs {
 
 // Alphabetical list of preference names specific to the Rappor
 // component. Keep alphabetized, and document each in the .cc file.
-extern const char kRapporCohort[];
+extern const char kRapporCohortDeprecated[];
+extern const char kRapporCohortSeed[];
 extern const char kRapporSecret[];
 
 }  // namespace prefs

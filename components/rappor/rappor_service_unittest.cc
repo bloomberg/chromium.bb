@@ -25,6 +25,7 @@ class TestRapporService : public RapporService {
 
 TEST(RapporServiceTest, RecordAndExportMetrics) {
   const RapporParameters kTestRapporParameters = {
+      1 /* Num cohorts */,
       16 /* Bloom filter size bytes */,
       4 /* Bloom filter hash count */,
       PROBABILITY_75 /* Fake data probability */,

@@ -17,6 +17,10 @@ namespace rappor {
 // A vector of 8-bit integers used to store a set of binary bits.
 typedef std::vector<uint8_t> ByteVector;
 
+// Computes a bitwise AND of byte vectors and stores the result in rhs.
+// Returns rhs for chaining.
+ByteVector* ByteVectorAnd(const ByteVector& lhs, ByteVector* rhs);
+
 // Computes a bitwise OR of byte vectors and stores the result in rhs.
 // Returns rhs for chaining.
 ByteVector* ByteVectorOr(const ByteVector& lhs, ByteVector* rhs);

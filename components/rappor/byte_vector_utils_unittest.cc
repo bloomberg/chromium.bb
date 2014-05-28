@@ -26,6 +26,15 @@ std::string HexToString(const char* hex) {
 
 }  // namespace
 
+TEST(ByteVectorTest, ByteVectorAnd) {
+  ByteVector lhs(2);
+  lhs[1] = 0x12;
+  ByteVector rhs(2);
+  rhs[1] = 0x03;
+
+  EXPECT_EQ(0x02, (*ByteVectorAnd(lhs, &rhs))[1]);
+}
+
 TEST(ByteVectorTest, ByteVectorOr) {
   ByteVector lhs(2);
   lhs[1] = 0x12;

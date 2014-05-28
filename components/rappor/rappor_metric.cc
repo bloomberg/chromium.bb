@@ -10,13 +10,15 @@ namespace rappor {
 
 RapporMetric::RapporMetric(const std::string& metric_name,
                            const RapporParameters& parameters,
-                           int32_t cohort)
+                           int32_t cohort_seed)
     : metric_name_(metric_name),
       parameters_(parameters),
       bloom_filter_(parameters.bloom_filter_size_bytes,
                     parameters.bloom_filter_hash_function_count,
-                    cohort * parameters.bloom_filter_hash_function_count) {
-  DCHECK_GE(cohort, 0);
+                    (cohort_seed % parameters.num_cohorts) *
+                        parameters.bloom_filter_hash_function_count) {
+  DCHECK_GE(cohort_seed, 0);
+  DCHECK_LT(cohort_seed, RapporParameters::kMaxCohorts);
 }
 
 RapporMetric::~RapporMetric() {}
