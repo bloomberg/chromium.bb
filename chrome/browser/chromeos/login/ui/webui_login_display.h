@@ -47,9 +47,6 @@ class WebUILoginDisplay : public LoginDisplay,
   virtual void ShowGaiaPasswordChanged(const std::string& username) OVERRIDE;
   virtual void ShowPasswordChangedDialog(bool show_password_error) OVERRIDE;
   virtual void ShowSigninUI(const std::string& email) OVERRIDE;
-  virtual void ShowControlBar(bool show) OVERRIDE;
-  virtual void SetKeyboardState(bool shown) OVERRIDE;
-  virtual void SetClientAreaSize(int width, int height) OVERRIDE;
 
   // NativeWindowDelegate implementation:
   virtual gfx::NativeWindow GetNativeWindow() const OVERRIDE;
