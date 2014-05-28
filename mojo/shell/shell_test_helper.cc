@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
+#include "mojo/service_manager/service_loader.h"
 #include "mojo/shell/context.h"
 #include "mojo/shell/init.h"
 
@@ -29,6 +30,12 @@ void StartShellOnShellThread(ShellTestHelper::State* state) {
   state->test_api.reset(
       new ServiceManager::TestAPI(state->context->service_manager()));
   state->service_provider_handle = state->test_api->GetServiceProviderHandle();
+}
+
+void SetLoaderForURLOnShellThread(ShellTestHelper::State* state,
+                                  scoped_ptr<ServiceLoader> loader,
+                                  const GURL& url) {
+  state->context->service_manager()->SetLoaderForURL(loader.Pass(), url);
 }
 
 }  // namespace
@@ -77,6 +84,14 @@ void ShellTestHelper::Init() {
                  base::Unretained(this)));
   run_loop_.reset(new base::RunLoop);
   run_loop_->Run();
+}
+
+void ShellTestHelper::SetLoaderForURL(scoped_ptr<ServiceLoader> loader,
+                                      const GURL& url) {
+  service_provider_thread_.message_loop()->message_loop_proxy()->PostTask(
+      FROM_HERE,
+      base::Bind(&SetLoaderForURLOnShellThread, state_, base::Passed(&loader),
+                 url));
 }
 
 void ShellTestHelper::OnServiceProviderStarted() {

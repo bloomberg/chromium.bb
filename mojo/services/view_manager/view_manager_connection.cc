@@ -87,6 +87,16 @@ const View* ViewManagerConnection::GetView(const ViewId& id) const {
   return root_node_manager_->GetView(id);
 }
 
+void ViewManagerConnection::SetRoots(const Array<TransportNodeId>& node_ids) {
+  DCHECK_EQ(0, id_);  // Only valid before connection established.
+  NodeIdSet roots;
+  for (size_t i = 0; i < node_ids.size(); ++i) {
+    DCHECK(GetNode(NodeIdFromTransportId(node_ids[i])));
+    roots.insert(node_ids[i]);
+  }
+  roots_.swap(roots);
+}
+
 void ViewManagerConnection::ProcessNodeBoundsChanged(
     const Node* node,
     const gfx::Rect& old_bounds,
@@ -188,6 +198,11 @@ void ViewManagerConnection::ProcessViewDeleted(const ViewId& view,
   client()->OnViewDeleted(ViewIdToTransportId(view));
 }
 
+void ViewManagerConnection::OnConnectionError() {
+  // TODO(sky): figure out if need to cleanup here if this
+  // ViewManagerConnection is the result of a Connect().
+}
+
 bool ViewManagerConnection::CanRemoveNodeFromParent(const Node* node) const {
   if (!node)
     return false;
@@ -246,6 +261,16 @@ bool ViewManagerConnection::CanSetView(const Node* node,
 bool ViewManagerConnection::CanGetNodeTree(const Node* node) const {
   return node &&
       (IsNodeDescendantOfRoots(node) || node->id().connection_id == id_);
+}
+
+bool ViewManagerConnection::CanConnect(
+    const mojo::Array<uint32_t>& node_ids) const {
+  for (size_t i = 0; i < node_ids.size(); ++i) {
+    const Node* node = GetNode(NodeIdFromTransportId(node_ids[i]));
+    if (!node || node->id().connection_id != id_)
+      return false;
+  }
+  return node_ids.size() > 0;
 }
 
 bool ViewManagerConnection::DeleteNodeImpl(ViewManagerConnection* source,
@@ -383,40 +408,6 @@ bool ViewManagerConnection::ShouldNotifyOnHierarchyChange(
   // Otherwise only communicate the change if the node was known. We shouldn't
   // need to communicate any nodes on a remove.
   return known_nodes_.count(NodeIdToTransportId(node->id())) > 0;
-}
-
-bool ViewManagerConnection::ProcessSetRoots(
-    TransportConnectionId source_connection_id,
-    const Array<TransportNodeId>& transport_node_ids) {
-  // TODO(sky): these DCHECKs can go away once this is part of a real API. Also
-  // make sure that when roots are set nodes are communicate to client. Code in
-  // ProcessNodeHierarchyChanged() is depending on this.
-  DCHECK(node_map_.empty());
-  DCHECK(view_map_.empty());
-
-  NodeIdSet roots;
-  for (size_t i = 0; i < transport_node_ids.size(); ++i) {
-    const Node* node = GetNode(NodeIdFromTransportId(transport_node_ids[i]));
-    // Only allow setting roots that are owned by the source connection.
-    if (!node || node->id().connection_id != source_connection_id)
-      return false;
-    roots.insert(transport_node_ids[i]);
-  }
-  roots_.swap(roots);
-
-  // TODO(sky): remove |known_nodes_.clear()| temporary while this is done here
-  // instead of at creation time.
-  known_nodes_.clear();
-  std::vector<const Node*> to_send;
-  for (NodeIdSet::const_iterator i = roots_.begin(); i != roots_.end(); ++i)
-    GetUnknownNodesFrom(GetNode(NodeIdFromTransportId(*i)), &to_send);
-  AllocationScope allocation_scope;
-  client()->OnViewManagerConnectionEstablished(
-      id_,
-      root_node_manager_->next_server_change_id(),
-      NodesToINodes(to_send));
-
-  return true;
 }
 
 Array<INode> ViewManagerConnection::NodesToINodes(
@@ -580,16 +571,6 @@ void ViewManagerConnection::SetViewContents(
   callback.Run(true);
 }
 
-void ViewManagerConnection::SetRoots(
-    TransportConnectionId connection_id,
-    const Array<TransportNodeId>& transport_node_ids,
-    const Callback<void(bool)>& callback) {
-  ViewManagerConnection* connection =
-      root_node_manager_->GetConnection(connection_id);
-  callback.Run(connection &&
-               connection->ProcessSetRoots(id_, transport_node_ids));
-}
-
 void ViewManagerConnection::SetNodeBounds(
     TransportNodeId node_id,
     const Rect& bounds,
@@ -614,6 +595,15 @@ void ViewManagerConnection::SetNodeBounds(
   callback.Run(true);
 }
 
+void ViewManagerConnection::Connect(const String& url,
+                                    const Array<uint32_t>& node_ids,
+                                    const Callback<void(bool)>& callback) {
+  const bool success = CanConnect(node_ids);
+  if (success)
+    root_node_manager_->Connect(url, node_ids);
+  callback.Run(success);
+}
+
 void ViewManagerConnection::OnNodeHierarchyChanged(const Node* node,
                                                    const Node* new_parent,
                                                    const Node* old_parent) {
@@ -628,10 +618,19 @@ void ViewManagerConnection::OnNodeViewReplaced(const Node* node,
 
 void ViewManagerConnection::OnConnectionEstablished() {
   DCHECK_EQ(0, id_);  // Should only get OnConnectionEstablished() once.
+
   id_ = root_node_manager_->GetAndAdvanceNextConnectionId();
+
   root_node_manager_->AddConnection(this);
+
   std::vector<const Node*> to_send;
-  GetUnknownNodesFrom(root_node_manager_->root(), &to_send);
+  if (roots_.empty()) {
+    GetUnknownNodesFrom(root_node_manager_->root(), &to_send);
+  } else {
+    for (NodeIdSet::const_iterator i = roots_.begin(); i != roots_.end(); ++i)
+      GetUnknownNodesFrom(GetNode(NodeIdFromTransportId(*i)), &to_send);
+  }
+
   AllocationScope allocation_scope;
   client()->OnViewManagerConnectionEstablished(
       id_,

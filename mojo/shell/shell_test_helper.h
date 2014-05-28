@@ -12,12 +12,17 @@
 #include "mojo/public/cpp/environment/environment.h"
 #include "mojo/public/interfaces/service_provider/service_provider.mojom.h"
 
+class GURL;
+
 namespace base {
 class MessageLoopProxy;
 class RunLoop;
 }
 
 namespace mojo {
+
+class ServiceLoader;
+
 namespace shell {
 
 // ShellTestHelper is useful for tests to establish a connection to the
@@ -36,6 +41,10 @@ class ShellTestHelper {
   // Returns a handle to the ServiceProvider. ShellTestHelper owns the
   // ServiceProvider.
   ServiceProvider* service_provider() { return service_provider_.get(); }
+
+  // Sets a ServiceLoader for the specified URL. |loader| is ultimately used on
+  // the thread this class spawns.
+  void SetLoaderForURL(scoped_ptr<ServiceLoader> loader, const GURL& url);
 
  private:
   class TestServiceProvider;

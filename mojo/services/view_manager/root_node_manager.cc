@@ -5,6 +5,7 @@
 #include "mojo/services/view_manager/root_node_manager.h"
 
 #include "base/logging.h"
+#include "mojo/public/interfaces/service_provider/service_provider.mojom.h"
 #include "mojo/services/view_manager/view_manager_connection.h"
 #include "ui/aura/env.h"
 
@@ -35,7 +36,8 @@ RootNodeManager::Context::~Context() {
 }
 
 RootNodeManager::RootNodeManager(ServiceProvider* service_provider)
-    : next_connection_id_(1),
+    : service_provider_(service_provider),
+      next_connection_id_(1),
       next_server_change_id_(1),
       change_source_(kRootConnection),
       is_processing_delete_node_(false),
@@ -44,6 +46,8 @@ RootNodeManager::RootNodeManager(ServiceProvider* service_provider)
 }
 
 RootNodeManager::~RootNodeManager() {
+  while (!connections_created_by_connect_.empty())
+    delete *(connections_created_by_connect_.begin());
   // All the connections should have been destroyed.
   DCHECK(connection_map_.empty());
 }
@@ -61,6 +65,17 @@ void RootNodeManager::AddConnection(ViewManagerConnection* connection) {
 
 void RootNodeManager::RemoveConnection(ViewManagerConnection* connection) {
   connection_map_.erase(connection->id());
+  connections_created_by_connect_.erase(connection);
+}
+
+void RootNodeManager::Connect(const String& url,
+                              const Array<TransportNodeId>& node_ids) {
+  MessagePipe pipe;
+  service_provider_->ConnectToService(url, pipe.handle1.Pass());
+  ViewManagerConnection* connection = new ViewManagerConnection(this);
+  connection->SetRoots(node_ids);
+  BindToPipe(connection, pipe.handle0.Pass());
+  connections_created_by_connect_.insert(connection);
 }
 
 ViewManagerConnection* RootNodeManager::GetConnection(

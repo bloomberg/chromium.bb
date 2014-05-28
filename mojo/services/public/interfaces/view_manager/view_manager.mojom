@@ -88,15 +88,16 @@ interface IViewManager {
                   handle<shared_buffer> buffer,
                   uint32 buffer_size) => (bool success);
 
-  // Sets the ids of the roots for the specified connection.
-  // TODO(sky): this is temporary for testing. This needs to be conveyed at
-  // creation time of a new connection.
-  SetRoots(uint16 connection_id, uint32[] nodes) => (bool success);
+  // Connects to |url| creating a connection that has the roots |nodes|. Fails
+  // if |nodes| is empty or contains nodes that were not created by this
+  // connection.
+  Connect(string url, uint32[] nodes) => (bool success);
 };
 
 // Changes to nodes/views are not sent to the connection that originated the
 // change. For example, if connection 1 attaches a view to a node (SetView())
 // connection 1 does not receive OnNodeViewReplaced().
+[Client=IViewManager]
 interface IViewManagerClient {
   // Invoked once the connection has been established. |connection_id| is the id
   // that uniquely identifies this connection. |next_server_change_id| is the

@@ -6,8 +6,10 @@
 #define MOJO_SERVICES_VIEW_MANAGER_ROOT_NODE_MANAGER_H_
 
 #include <map>
+#include <set>
 
 #include "base/basictypes.h"
+#include "mojo/public/cpp/bindings/array.h"
 #include "mojo/services/view_manager/ids.h"
 #include "mojo/services/view_manager/node.h"
 #include "mojo/services/view_manager/node_delegate.h"
@@ -64,6 +66,8 @@ class MOJO_VIEW_MANAGER_EXPORT RootNodeManager : public NodeDelegate {
 
   void AddConnection(ViewManagerConnection* connection);
   void RemoveConnection(ViewManagerConnection* connection);
+
+  void Connect(const String& url, const Array<TransportNodeId>& node_ids);
 
   // Returns the connection by id.
   ViewManagerConnection* GetConnection(TransportConnectionId connection_id);
@@ -129,6 +133,8 @@ class MOJO_VIEW_MANAGER_EXPORT RootNodeManager : public NodeDelegate {
 
   Context context_;
 
+  ServiceProvider* service_provider_;
+
   // ID to use for next ViewManagerConnection.
   TransportConnectionId next_connection_id_;
 
@@ -147,6 +153,10 @@ class MOJO_VIEW_MANAGER_EXPORT RootNodeManager : public NodeDelegate {
 
   // Root node.
   Node root_;
+
+  // Set of ViewManagerConnections created by way of Connect(). These have to be
+  // explicitly destroyed.
+  std::set<ViewManagerConnection*> connections_created_by_connect_;
 
   DISALLOW_COPY_AND_ASSIGN(RootNodeManager);
 };

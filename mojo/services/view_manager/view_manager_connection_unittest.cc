@@ -7,17 +7,21 @@
 
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_vector.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "mojo/common/common_type_converters.h"
+#include "mojo/public/cpp/application/application.h"
 #include "mojo/public/cpp/application/connect.h"
 #include "mojo/public/cpp/bindings/allocation_scope.h"
 #include "mojo/public/cpp/environment/environment.h"
+#include "mojo/service_manager/service_manager.h"
 #include "mojo/services/public/cpp/geometry/geometry_type_converters.h"
 #include "mojo/services/public/cpp/view_manager/util.h"
 #include "mojo/services/public/cpp/view_manager/view_manager_types.h"
 #include "mojo/services/public/interfaces/view_manager/view_manager.mojom.h"
+#include "mojo/services/view_manager/test_change_tracker.h"
 #include "mojo/shell/shell_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/rect.h"
@@ -45,6 +49,353 @@ namespace {
 
 base::RunLoop* current_run_loop = NULL;
 
+const char kTestServiceURL[] = "mojo:test_url";
+
+void INodesToTestNodes(const Array<INode>& data,
+                       std::vector<TestNode>* test_nodes) {
+  for (size_t i = 0; i < data.size(); ++i) {
+    TestNode node;
+    node.parent_id = data[i].parent_id();
+    node.node_id = data[i].node_id();
+    node.view_id = data[i].view_id();
+    test_nodes->push_back(node);
+  }
+}
+
+// BackgroundConnection is used when a child ViewManagerConnection is created by
+// way of Connect(). BackgroundConnection is created on a background thread (the
+// thread where the shell lives). All public methods are to be invoked on the
+// main thread. They wait for a result (by spinning a nested message loop),
+// calling through to background thread, then the underlying IViewManager* and
+// respond back to the calling thread to return control to the test.
+class BackgroundConnection : public TestChangeTracker::Delegate {
+ public:
+  BackgroundConnection(TestChangeTracker* tracker,
+                       base::MessageLoop* loop)
+      : tracker_(tracker),
+        main_loop_(loop),
+        background_loop_(base::MessageLoop::current()),
+        view_manager_(NULL),
+        quit_count_(0) {
+    main_loop_->PostTask(FROM_HERE,
+                         base::Bind(&BackgroundConnection::SetInstance, this));
+  }
+
+  virtual ~BackgroundConnection() {
+    instance_ = NULL;
+  }
+
+  void set_view_manager(IViewManager* view_manager) {
+    view_manager_ = view_manager;
+  }
+
+  // Runs a message loop until the single instance has been created.
+  static BackgroundConnection* WaitForInstance() {
+    if (!instance_)
+      RunMainLoop();
+    return instance_;
+  }
+
+  // Runs the main loop until |count| changes have been received.
+  std::vector<Change> DoRunLoopUntilChangesCount(size_t count) {
+    background_loop_->PostTask(FROM_HERE,
+                               base::Bind(&BackgroundConnection::SetQuitCount,
+                                          base::Unretained(this), count));
+    // Run the current message loop. When the quit count is reached we'll quit.
+    RunMainLoop();
+    return changes_;
+  }
+
+  // The following functions mirror that of IViewManager. They bounce the
+  // function to the right thread and return the result.
+  bool CreateNode(TransportNodeId node_id) {
+    bool result = false;
+    background_loop_->PostTask(
+        FROM_HERE,
+        base::Bind(&BackgroundConnection::CreateNodeOnBackgroundThread,
+                   base::Unretained(this), node_id, &result));
+    RunMainLoop();
+    return result;
+  }
+  bool AddNode(TransportNodeId parent,
+               TransportNodeId child,
+               TransportChangeId server_change_id) {
+    bool result = false;
+    background_loop_->PostTask(
+        FROM_HERE,
+        base::Bind(&BackgroundConnection::AddNodeOnBackgroundThread,
+                   base::Unretained(this), parent, child, server_change_id,
+                   &result));
+    RunMainLoop();
+    return result;
+  }
+  bool RemoveNodeFromParent(TransportNodeId node_id,
+                            TransportChangeId server_change_id) {
+    bool result = false;
+    background_loop_->PostTask(
+        FROM_HERE,
+        base::Bind(
+            &BackgroundConnection::RemoveNodeFromParentOnBackgroundThread,
+            base::Unretained(this), node_id, server_change_id, &result));
+    RunMainLoop();
+    return result;
+  }
+  bool SetView(TransportNodeId node_id, TransportViewId view_id) {
+    bool result = false;
+    background_loop_->PostTask(
+        FROM_HERE,
+        base::Bind(
+            &BackgroundConnection::SetViewOnBackgroundThread,
+            base::Unretained(this), node_id, view_id, &result));
+    RunMainLoop();
+    return result;
+  }
+  bool CreateView(TransportViewId view_id) {
+    bool result = false;
+    background_loop_->PostTask(
+        FROM_HERE,
+        base::Bind(
+            &BackgroundConnection::CreateViewOnBackgroundThread,
+            base::Unretained(this), view_id, &result));
+    RunMainLoop();
+    return result;
+  }
+  void GetNodeTree(TransportNodeId node_id, std::vector<TestNode>* nodes) {
+    background_loop_->PostTask(
+        FROM_HERE,
+        base::Bind(
+            &BackgroundConnection::GetNodeTreeOnBackgroundThread,
+            base::Unretained(this), node_id, nodes));
+    RunMainLoop();
+  }
+
+ private:
+  void SetQuitCount(size_t count) {
+    DCHECK_EQ(background_loop_, base::MessageLoop::current());
+    if (tracker_->changes()->size() >= count) {
+      QuitCountReached();
+      return;
+    }
+    quit_count_ = count - tracker_->changes()->size();
+  }
+
+  static void RunMainLoop() {
+    DCHECK(!main_run_loop_);
+    main_run_loop_ = new base::RunLoop;
+    main_run_loop_->Run();
+    delete main_run_loop_;
+    main_run_loop_ = NULL;
+  }
+
+  void QuitCountReached() {
+    std::vector<Change> changes;
+    tracker_->changes()->swap(changes);
+    main_loop_->PostTask(
+        FROM_HERE,
+        base::Bind(&BackgroundConnection::QuitCountReachedOnMain,
+                   base::Unretained(this), changes));
+  }
+
+  void QuitCountReachedOnMain(const std::vector<Change>& changes) {
+    changes_ = changes;
+    DCHECK(main_run_loop_);
+    main_run_loop_->Quit();
+  }
+
+  static void SetInstance(BackgroundConnection* instance) {
+    DCHECK(!instance_);
+    instance_ = instance;
+    if (main_run_loop_)
+      main_run_loop_->Quit();
+  }
+
+  // Callbacks from the various IViewManager functions.
+  void GotResultOnBackgroundThread(bool* result_cache, bool result) {
+    *result_cache = result;
+    main_loop_->PostTask(
+        FROM_HERE,
+        base::Bind(&BackgroundConnection::QuitOnMainThread,
+                   base::Unretained(this)));
+  }
+
+  void GotNodeTreeOnBackgroundThread(std::vector<TestNode>* nodes,
+                                     const Array<INode>& results) {
+    INodesToTestNodes(results, nodes);
+    main_loop_->PostTask(
+        FROM_HERE,
+        base::Bind(&BackgroundConnection::QuitOnMainThread,
+                   base::Unretained(this)));
+  }
+
+  void QuitOnMainThread() {
+    DCHECK(main_run_loop_);
+    main_run_loop_->Quit();
+  }
+
+  // The following functions correspond to the IViewManager functions. These run
+  // on the background thread.
+  void CreateNodeOnBackgroundThread(TransportNodeId node_id, bool* result) {
+    view_manager_->CreateNode(
+        node_id,
+        base::Bind(&BackgroundConnection::GotResultOnBackgroundThread,
+                   base::Unretained(this), result));
+  }
+  void AddNodeOnBackgroundThread(TransportNodeId parent,
+                                 TransportNodeId child,
+                                 TransportChangeId server_change_id,
+                                 bool* result) {
+    view_manager_->AddNode(
+        parent, child, server_change_id,
+        base::Bind(&BackgroundConnection::GotResultOnBackgroundThread,
+                   base::Unretained(this), result));
+  }
+  void RemoveNodeFromParentOnBackgroundThread(
+      TransportNodeId node_id,
+      TransportChangeId server_change_id,
+      bool* result) {
+    view_manager_->RemoveNodeFromParent(node_id, server_change_id,
+        base::Bind(&BackgroundConnection::GotResultOnBackgroundThread,
+                   base::Unretained(this), result));
+  }
+  void SetViewOnBackgroundThread(TransportNodeId node_id,
+                                 TransportViewId view_id,
+                                 bool* result) {
+    view_manager_->SetView(node_id, view_id,
+        base::Bind(&BackgroundConnection::GotResultOnBackgroundThread,
+                   base::Unretained(this), result));
+  }
+  void CreateViewOnBackgroundThread(TransportViewId view_id, bool* result) {
+    view_manager_->CreateView(view_id,
+        base::Bind(&BackgroundConnection::GotResultOnBackgroundThread,
+                   base::Unretained(this), result));
+  }
+  void GetNodeTreeOnBackgroundThread(TransportNodeId node_id,
+                                     std::vector<TestNode>* nodes) {
+    view_manager_->GetNodeTree(node_id,
+        base::Bind(&BackgroundConnection::GotNodeTreeOnBackgroundThread,
+                   base::Unretained(this), nodes));
+  }
+
+  // TestChangeTracker::Delegate:
+  virtual void OnChangeAdded() OVERRIDE {
+    if (quit_count_ > 0 && --quit_count_ == 0)
+      QuitCountReached();
+  }
+
+  static BackgroundConnection* instance_;
+  static base::RunLoop* main_run_loop_;
+
+  TestChangeTracker* tracker_;
+
+  // MessageLoop of the test.
+  base::MessageLoop* main_loop_;
+
+  // MessageLoop BackgroundConnection lives on.
+  base::MessageLoop* background_loop_;
+
+  IViewManager* view_manager_;
+
+  // Number of changes we're waiting on until we quit the current loop.
+  size_t quit_count_;
+
+  std::vector<Change> changes_;
+
+  DISALLOW_COPY_AND_ASSIGN(BackgroundConnection);
+};
+
+// static
+BackgroundConnection* BackgroundConnection::instance_ = NULL;
+
+// static
+base::RunLoop* BackgroundConnection::main_run_loop_ = NULL;
+
+class TestViewManagerClientConnection
+    : public InterfaceImpl<IViewManagerClient> {
+ public:
+  explicit TestViewManagerClientConnection(base::MessageLoop* loop)
+      : connection_(&tracker_, loop) {
+    tracker_.set_delegate(&connection_);
+  }
+
+  // InterfaceImp:
+  virtual void OnConnectionEstablished() OVERRIDE {
+    connection_.set_view_manager(client());
+  }
+
+  // IViewMangerClient:
+  virtual void OnViewManagerConnectionEstablished(
+      TransportConnectionId connection_id,
+      TransportChangeId next_server_change_id,
+      const Array<INode>& nodes) OVERRIDE {
+    tracker_.OnViewManagerConnectionEstablished(
+        connection_id, next_server_change_id, nodes);
+  }
+  virtual void OnServerChangeIdAdvanced(
+      TransportChangeId next_server_change_id) OVERRIDE {
+    tracker_.OnServerChangeIdAdvanced(next_server_change_id);
+  }
+  virtual void OnNodeBoundsChanged(TransportNodeId node_id,
+                                   const Rect& old_bounds,
+                                   const Rect& new_bounds) OVERRIDE {
+    tracker_.OnNodeBoundsChanged(node_id, old_bounds, new_bounds);
+  }
+  virtual void OnNodeHierarchyChanged(
+      TransportNodeId node,
+      TransportNodeId new_parent,
+      TransportNodeId old_parent,
+      TransportChangeId server_change_id,
+      const Array<INode>& nodes) OVERRIDE {
+    tracker_.OnNodeHierarchyChanged(node, new_parent, old_parent,
+                                     server_change_id, nodes);
+  }
+  virtual void OnNodeDeleted(TransportNodeId node,
+                             TransportChangeId server_change_id) OVERRIDE {
+    tracker_.OnNodeDeleted(node, server_change_id);
+  }
+  virtual void OnViewDeleted(TransportViewId view) OVERRIDE {
+    tracker_.OnViewDeleted(view);
+  }
+  virtual void OnNodeViewReplaced(TransportNodeId node,
+                                  TransportViewId new_view_id,
+                                  TransportViewId old_view_id) OVERRIDE {
+    tracker_.OnNodeViewReplaced(node, new_view_id, old_view_id);
+  }
+
+ private:
+  TestChangeTracker tracker_;
+  BackgroundConnection connection_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestViewManagerClientConnection);
+};
+
+// Used with IViewManager::Connect(). Creates a TestViewManagerClientConnection,
+// which creates and owns the BackgroundConnection.
+class ConnectServiceLoader : public ServiceLoader {
+ public:
+  ConnectServiceLoader() : initial_loop_(base::MessageLoop::current()) {
+  }
+  virtual ~ConnectServiceLoader() {
+  }
+
+  // ServiceLoader:
+  virtual void LoadService(ServiceManager* manager,
+                           const GURL& url,
+                           ScopedMessagePipeHandle shell_handle) OVERRIDE {
+    scoped_ptr<Application> app(new Application(shell_handle.Pass()));
+    app->AddService<TestViewManagerClientConnection>(initial_loop_);
+    apps_.push_back(app.release());
+  }
+  virtual void OnServiceError(ServiceManager* manager,
+                              const GURL& url) OVERRIDE {
+  }
+
+ private:
+  base::MessageLoop* initial_loop_;
+  ScopedVector<Application> apps_;
+
+  DISALLOW_COPY_AND_ASSIGN(ConnectServiceLoader);
+};
+
 // Sets |current_run_loop| and runs it. It is expected that someone else quits
 // the loop.
 void DoRunLoop() {
@@ -56,21 +407,6 @@ void DoRunLoop() {
   current_run_loop = NULL;
 }
 
-// Converts |id| into a string.
-std::string NodeIdToString(TransportNodeId id) {
-  return (id == 0) ? "null" :
-      base::StringPrintf("%d,%d", HiWord(id), LoWord(id));
-}
-
-// Converts |rect| into a string.
-std::string RectToString(const Rect& rect) {
-  return base::StringPrintf("%d,%d %dx%d",
-                            rect.position().x(),
-                            rect.position().y(),
-                            rect.size().width(),
-                            rect.size().height());
-}
-
 // Boolean callback. Sets |result_cache| to the value of |result| and quits
 // the run loop.
 void BooleanCallback(bool* result_cache, bool result) {
@@ -78,34 +414,10 @@ void BooleanCallback(bool* result_cache, bool result) {
   current_run_loop->Quit();
 }
 
-struct TestNode {
-  std::string ToString() const {
-    return base::StringPrintf("node=%s parent=%s view=%s",
-                              NodeIdToString(node_id).c_str(),
-                              NodeIdToString(parent_id).c_str(),
-                              NodeIdToString(view_id).c_str());
-  }
-
-  TransportNodeId parent_id;
-  TransportNodeId node_id;
-  TransportNodeId view_id;
-};
-
-void INodesToTestNodes(const mojo::Array<INode>& data,
-                       std::vector<TestNode>* test_nodes) {
-  for (size_t i = 0; i < data.size(); ++i) {
-    TestNode node;
-    node.parent_id = data[i].parent_id();
-    node.node_id = data[i].node_id();
-    node.view_id = data[i].view_id();
-    test_nodes->push_back(node);
-  }
-}
-
 // Callback that results in a vector of INodes. The INodes are converted to
 // TestNodes.
 void INodesCallback(std::vector<TestNode>* test_nodes,
-                    const mojo::Array<INode>& data) {
+                    const Array<INode>& data) {
   INodesToTestNodes(data, test_nodes);
   current_run_loop->Quit();
 }
@@ -214,13 +526,18 @@ bool SetView(IViewManager* view_manager,
   return result;
 }
 
-bool SetRoots(IViewManager* view_manager,
-              TransportConnectionId connection_id,
-              const std::vector<uint32_t>& node_ids) {
+bool Connect(IViewManager* view_manager,
+             const std::string& url,
+             TransportNodeId id,
+             TransportNodeId id2) {
+  AllocationScope scope;
   bool result = false;
-  view_manager->SetRoots(connection_id,
-                         Array<uint32_t>::From(node_ids),
-                         base::Bind(&BooleanCallback, &result));
+  std::vector<TransportNodeId> node_ids;
+  node_ids.push_back(id);
+  if (id2 != 0)
+    node_ids.push_back(id2);
+  view_manager->Connect(url, Array<uint32_t>::From(node_ids),
+                        base::Bind(&BooleanCallback, &result));
   DoRunLoop();
   return result;
 }
@@ -229,12 +546,40 @@ bool SetRoots(IViewManager* view_manager,
 
 typedef std::vector<std::string> Changes;
 
+class MainLoopTrackerDelegate : public TestChangeTracker::Delegate {
+ public:
+  explicit MainLoopTrackerDelegate(TestChangeTracker* tracker)
+      : tracker_(tracker),
+        quit_count_(0) {}
+
+  void DoRunLoopUntilChangesCount(size_t count) {
+    if (tracker_->changes()->size() >= count)
+      return;
+    quit_count_ = count - tracker_->changes()->size();
+    DoRunLoop();
+  }
+
+  // TestChangeTracker::Delegate:
+  virtual void OnChangeAdded() OVERRIDE {
+    if (quit_count_ > 0 && --quit_count_ == 0)
+      current_run_loop->Quit();
+  }
+
+ private:
+  TestChangeTracker* tracker_;
+  size_t quit_count_;
+
+  DISALLOW_COPY_AND_ASSIGN(MainLoopTrackerDelegate);
+};
+
 class ViewManagerClientImpl : public IViewManagerClient {
  public:
   ViewManagerClientImpl()
       : id_(0),
         next_server_change_id_(0),
-        quit_count_(0) {}
+        main_loop_tracker_delegate_(&tracker_) {
+    tracker_.set_delegate(&main_loop_tracker_delegate_);
+  }
 
   TransportConnectionId id() const { return id_; }
 
@@ -249,8 +594,8 @@ class ViewManagerClientImpl : public IViewManagerClient {
   }
 
   Changes GetAndClearChanges() {
-    Changes changes;
-    changes.swap(changes_);
+    Changes changes = ChangesToDescription1(*tracker_.changes());
+    tracker_.changes()->clear();
     return changes;
   }
 
@@ -264,10 +609,7 @@ class ViewManagerClientImpl : public IViewManagerClient {
   }
 
   void DoRunLoopUntilChangesCount(size_t count) {
-    if (changes_.size() >= count)
-      return;
-    quit_count_ = count - changes_.size();
-    DoRunLoop();
+    main_loop_tracker_delegate_.DoRunLoopUntilChangesCount(count);
   }
 
  private:
@@ -275,90 +617,49 @@ class ViewManagerClientImpl : public IViewManagerClient {
   virtual void OnViewManagerConnectionEstablished(
       TransportConnectionId connection_id,
       TransportChangeId next_server_change_id,
-      const mojo::Array<INode>& nodes) OVERRIDE {
+      const Array<INode>& nodes) OVERRIDE {
     id_ = connection_id;
     next_server_change_id_ = next_server_change_id;
     initial_nodes_.clear();
     INodesToTestNodes(nodes, &initial_nodes_);
-    changes_.push_back("OnConnectionEstablished");
-    QuitIfNecessary();
+    tracker_.OnViewManagerConnectionEstablished(
+        connection_id, next_server_change_id, nodes);
   }
   virtual void OnServerChangeIdAdvanced(
-      uint32_t next_server_change_id) OVERRIDE {
-    changes_.push_back(
-        base::StringPrintf(
-            "ServerChangeIdAdvanced %d",
-            static_cast<int>(next_server_change_id)));
-    QuitIfNecessary();
+      TransportChangeId next_server_change_id) OVERRIDE {
+    tracker_.OnServerChangeIdAdvanced(next_server_change_id);
   }
   virtual void OnNodeBoundsChanged(TransportNodeId node_id,
                                    const Rect& old_bounds,
                                    const Rect& new_bounds) OVERRIDE {
-    changes_.push_back(
-        base::StringPrintf(
-            "BoundsChanged node=%s old_bounds=%s new_bounds=%s",
-            NodeIdToString(node_id).c_str(),
-            RectToString(old_bounds).c_str(),
-            RectToString(new_bounds).c_str()));
-    QuitIfNecessary();
+    tracker_.OnNodeBoundsChanged(node_id, old_bounds, new_bounds);
   }
   virtual void OnNodeHierarchyChanged(
       TransportNodeId node,
       TransportNodeId new_parent,
       TransportNodeId old_parent,
       TransportChangeId server_change_id,
-      const mojo::Array<INode>& nodes) OVERRIDE {
-    changes_.push_back(
-        base::StringPrintf(
-            "HierarchyChanged change_id=%d node=%s new_parent=%s old_parent=%s",
-            static_cast<int>(server_change_id),
-            NodeIdToString(node).c_str(),
-            NodeIdToString(new_parent).c_str(),
-            NodeIdToString(old_parent).c_str()));
+      const Array<INode>& nodes) OVERRIDE {
+    tracker_.OnNodeHierarchyChanged(node, new_parent, old_parent,
+                                    server_change_id, nodes);
     hierarchy_changed_nodes_.clear();
     INodesToTestNodes(nodes, &hierarchy_changed_nodes_);
-    QuitIfNecessary();
   }
   virtual void OnNodeDeleted(TransportNodeId node,
                              TransportChangeId server_change_id) OVERRIDE {
-    changes_.push_back(
-        base::StringPrintf(
-            "NodeDeleted change_id=%d node=%s",
-            static_cast<int>(server_change_id),
-            NodeIdToString(node).c_str()));
-    QuitIfNecessary();
+    tracker_.OnNodeDeleted(node, server_change_id);
   }
   virtual void OnViewDeleted(TransportViewId view) OVERRIDE {
-    changes_.push_back(
-        base::StringPrintf(
-            "ViewDeleted view=%s",
-            NodeIdToString(view).c_str()));
-    QuitIfNecessary();
+    tracker_.OnViewDeleted(view);
   }
   virtual void OnNodeViewReplaced(TransportNodeId node,
                                   TransportViewId new_view_id,
                                   TransportViewId old_view_id) OVERRIDE {
-    changes_.push_back(
-        base::StringPrintf(
-            "ViewReplaced node=%s new_view=%s old_view=%s",
-            NodeIdToString(node).c_str(),
-            NodeIdToString(new_view_id).c_str(),
-            NodeIdToString(old_view_id).c_str()));
-    QuitIfNecessary();
-  }
-
-  void QuitIfNecessary() {
-    if (quit_count_ > 0 && --quit_count_ == 0)
-      current_run_loop->Quit();
+    tracker_.OnNodeViewReplaced(node, new_view_id, old_view_id);
   }
 
   TransportConnectionId id_;
   TransportChangeId next_server_change_id_;
-
-  // Used to determine when/if to quit the run loop.
-  size_t quit_count_;
-
-  Changes changes_;
 
   // Set of nodes sent when connection created.
   std::vector<TestNode> initial_nodes_;
@@ -366,12 +667,15 @@ class ViewManagerClientImpl : public IViewManagerClient {
   // Nodes sent from last OnNodeHierarchyChanged.
   std::vector<TestNode> hierarchy_changed_nodes_;
 
+  TestChangeTracker tracker_;
+  MainLoopTrackerDelegate main_loop_tracker_delegate_;
+
   DISALLOW_COPY_AND_ASSIGN(ViewManagerClientImpl);
 };
 
 class ViewManagerConnectionTest : public testing::Test {
  public:
-  ViewManagerConnectionTest() {}
+  ViewManagerConnectionTest() : background_connection_(NULL) {}
 
   virtual void SetUp() OVERRIDE {
     test_helper_.Init();
@@ -383,6 +687,10 @@ class ViewManagerConnectionTest : public testing::Test {
 
     client_.WaitForId();
     client_.GetAndClearChanges();
+
+    test_helper_.SetLoaderForURL(
+        scoped_ptr<ServiceLoader>(new ConnectServiceLoader()),
+        GURL(kTestServiceURL));
   }
 
  protected:
@@ -397,22 +705,22 @@ class ViewManagerConnectionTest : public testing::Test {
     client2_.GetAndClearChanges();
   }
 
-  void EstablishSecondConnectionWithRoot(TransportNodeId root_id) {
-    EstablishSecondConnection();
-    client2_.ClearId();
+  std::vector<Change> EstablishBackgroundConnectionWithRoots(
+      TransportNodeId id1,
+      TransportNodeId id2) {
+    Connect(view_manager_.get(), kTestServiceURL, id1, id2);
+    background_connection_ = BackgroundConnection::WaitForInstance();
+    return background_connection_->DoRunLoopUntilChangesCount(1);
+  }
 
-    AllocationScope scope;
-    std::vector<uint32_t> roots;
-    roots.push_back(root_id);
-    ASSERT_TRUE(SetRoots(view_manager_.get(), 2, roots));
-    client2_.DoRunLoopUntilChangesCount(1);
-    Changes changes(client2_.GetAndClearChanges());
+  void EstablishBackgroundConnectionWithRoot1() {
+    std::vector<Change> changes(
+        EstablishBackgroundConnectionWithRoots(CreateNodeId(1, 1), 0));
+    ASSERT_NO_FATAL_FAILURE();
     ASSERT_EQ(1u, changes.size());
-    EXPECT_EQ("OnConnectionEstablished", changes[0]);
-    ASSERT_NE(0u, client2_.id());
-    const std::vector<TestNode>& nodes(client2_.initial_nodes());
-    ASSERT_EQ(1u, nodes.size());
-    EXPECT_EQ("node=1,1 parent=null view=null", nodes[0].ToString());
+    EXPECT_EQ("OnConnectionEstablished", ChangesToDescription1(changes)[0]);
+    EXPECT_EQ("[node=1,1 parent=null view=null]",
+              ChangeNodeDescription(changes));
   }
 
   void DestroySecondConnection() {
@@ -427,6 +735,8 @@ class ViewManagerConnectionTest : public testing::Test {
 
   ViewManagerClientImpl client2_;
   IViewManagerPtr view_manager2_;
+
+  BackgroundConnection* background_connection_;
 
   DISALLOW_COPY_AND_ASSIGN(ViewManagerConnectionTest);
 };
@@ -1222,23 +1532,15 @@ TEST_F(ViewManagerConnectionTest, SetRoots) {
                       1));
 
   // Establish the second connection and give it the roots 1 and 3.
-  EstablishSecondConnection();
-  client2_.ClearId();
   {
-    AllocationScope scope;
-    std::vector<uint32_t> roots;
-    roots.push_back(CreateNodeId(1, 1));
-    roots.push_back(CreateNodeId(1, 3));
-    ASSERT_TRUE(SetRoots(view_manager_.get(), 2, roots));
-    client2_.DoRunLoopUntilChangesCount(1);
-    Changes changes(client2_.GetAndClearChanges());
+    std::vector<Change> changes(EstablishBackgroundConnectionWithRoots(
+                                    CreateNodeId(1, 1), CreateNodeId(1, 3)));
+    ASSERT_NO_FATAL_FAILURE();
     ASSERT_EQ(1u, changes.size());
-    EXPECT_EQ("OnConnectionEstablished", changes[0]);
-    ASSERT_NE(0u, client2_.id());
-    const std::vector<TestNode>& nodes(client2_.initial_nodes());
-    ASSERT_EQ(2u, nodes.size());
-    EXPECT_EQ("node=1,1 parent=null view=null", nodes[0].ToString());
-    EXPECT_EQ("node=1,3 parent=null view=null", nodes[1].ToString());
+    EXPECT_EQ("OnConnectionEstablished", ChangesToDescription1(changes)[0]);
+    EXPECT_EQ("[node=1,1 parent=null view=null],"
+              "[node=1,3 parent=null view=null]",
+              ChangeNodeDescription(changes));
   }
 
   // Create 4 and add it to the root, connection 2 should only get id advanced.
@@ -1248,8 +1550,8 @@ TEST_F(ViewManagerConnectionTest, SetRoots) {
                         CreateNodeId(0, 1),
                         CreateNodeId(client_.id(), 4),
                         2));
-    client2_.DoRunLoopUntilChangesCount(1);
-    Changes changes(client2_.GetAndClearChanges());
+    Changes changes = ChangesToDescription1(
+        background_connection_->DoRunLoopUntilChangesCount(1));
     ASSERT_EQ(1u, changes.size());
     EXPECT_EQ("ServerChangeIdAdvanced 3", changes[0]);
   }
@@ -1260,15 +1562,15 @@ TEST_F(ViewManagerConnectionTest, SetRoots) {
                         CreateNodeId(1, 3),
                         CreateNodeId(1, 4),
                         3));
-    client2_.DoRunLoopUntilChangesCount(1);
-    Changes changes(client2_.GetAndClearChanges());
-    ASSERT_EQ(1u, changes.size());
+    std::vector<Change> changes =
+        background_connection_->DoRunLoopUntilChangesCount(1);
+    Changes change_strings(ChangesToDescription1(changes));
+    ASSERT_EQ(1u, change_strings.size());
     EXPECT_EQ(
         "HierarchyChanged change_id=3 node=1,4 new_parent=1,3 "
-        "old_parent=null", changes[0]);
-    const std::vector<TestNode>& nodes(client2_.hierarchy_changed_nodes());
-    ASSERT_EQ(1u, nodes.size());
-    EXPECT_EQ("node=1,4 parent=1,3 view=null", nodes[0].ToString());
+        "old_parent=null", change_strings[0]);
+    EXPECT_EQ("[node=1,4 parent=1,3 view=null]",
+              ChangeNodeDescription(changes));
   }
 
   // Move 4 under 2, since 2 isn't a root client should get a delete.
@@ -1277,8 +1579,8 @@ TEST_F(ViewManagerConnectionTest, SetRoots) {
                         CreateNodeId(1, 2),
                         CreateNodeId(1, 4),
                         4));
-    client2_.DoRunLoopUntilChangesCount(1);
-    Changes changes(client2_.GetAndClearChanges());
+    Changes changes = ChangesToDescription1(
+        background_connection_->DoRunLoopUntilChangesCount(1));
     ASSERT_EQ(1u, changes.size());
     EXPECT_EQ("NodeDeleted change_id=4 node=1,4", changes[0]);
   }
@@ -1289,8 +1591,8 @@ TEST_F(ViewManagerConnectionTest, SetRoots) {
     ASSERT_TRUE(DeleteNode(view_manager_.get(), CreateNodeId(client_.id(), 4)));
     ASSERT_TRUE(client_.GetAndClearChanges().empty());
 
-    client2_.DoRunLoopUntilChangesCount(1);
-    Changes changes(client2_.GetAndClearChanges());
+    Changes changes = ChangesToDescription1(
+        background_connection_->DoRunLoopUntilChangesCount(1));
     ASSERT_EQ(1u, changes.size());
     EXPECT_EQ("ServerChangeIdAdvanced 6", changes[0]);
   }
@@ -1302,25 +1604,18 @@ TEST_F(ViewManagerConnectionTest, CantMoveNodesFromOtherRoot) {
   ASSERT_TRUE(CreateNode(view_manager_.get(), 1, 1));
   ASSERT_TRUE(CreateNode(view_manager_.get(), 1, 2));
 
-  // Establish the second connection and give it the root 1.
-  ASSERT_NO_FATAL_FAILURE(
-      EstablishSecondConnectionWithRoot(CreateNodeId(1, 1)));
+  ASSERT_NO_FATAL_FAILURE(EstablishBackgroundConnectionWithRoot1());
 
   // Try to move 2 to be a child of 1 from connection 2. This should fail as 2
   // should not be able to access 1.
-  ASSERT_FALSE(AddNode(view_manager2_.get(),
-                       CreateNodeId(1, 1),
-                       CreateNodeId(1, 2),
-                       1));
+  ASSERT_FALSE(background_connection_->AddNode(
+                   CreateNodeId(1, 1), CreateNodeId(1, 2), 1));
 
   // Try to reparent 1 to the root. A connection is not allowed to reparent its
   // roots.
-  ASSERT_FALSE(AddNode(view_manager2_.get(),
-                       CreateNodeId(0, 1),
-                       CreateNodeId(1, 1),
-                       1));
+  ASSERT_FALSE(background_connection_->AddNode(CreateNodeId(0, 1),
+                                               CreateNodeId(1, 1), 1));
 }
-
 
 // Verify RemoveNodeFromParent fails for nodes that are descendants of the
 // roots.
@@ -1339,30 +1634,24 @@ TEST_F(ViewManagerConnectionTest, CantRemoveNodesInOtherRoots) {
                       2));
 
   // Establish the second connection and give it the root 1.
-  ASSERT_NO_FATAL_FAILURE(
-      EstablishSecondConnectionWithRoot(CreateNodeId(1, 1)));
+  ASSERT_NO_FATAL_FAILURE(EstablishBackgroundConnectionWithRoot1());
 
   // Connection 2 should not be able to remove node 2 or 1 from its parent.
-  ASSERT_FALSE(RemoveNodeFromParent(view_manager2_.get(),
-                                    CreateNodeId(1, 2),
-                                    3));
-  ASSERT_FALSE(RemoveNodeFromParent(view_manager2_.get(),
-                                    CreateNodeId(1, 1),
-                                    3));
+  ASSERT_FALSE(background_connection_->RemoveNodeFromParent(
+                   CreateNodeId(1, 2), 3));
+  ASSERT_FALSE(background_connection_->RemoveNodeFromParent(CreateNodeId(1, 1),
+                                                            3));
 
   // Create nodes 10 and 11 in 2.
-  ASSERT_TRUE(CreateNode(view_manager2_.get(), 2, 10));
-  ASSERT_TRUE(CreateNode(view_manager2_.get(), 2, 11));
+  ASSERT_TRUE(background_connection_->CreateNode(CreateNodeId(2, 10)));
+  ASSERT_TRUE(background_connection_->CreateNode(CreateNodeId(2, 11)));
 
   // Parent 11 to 10.
-  ASSERT_TRUE(AddNode(view_manager2_.get(),
-                      CreateNodeId(client2_.id(), 10),
-                      CreateNodeId(client2_.id(), 11),
-                      3));
+  ASSERT_TRUE(background_connection_->AddNode(CreateNodeId(2, 10),
+                                              CreateNodeId(2, 11), 3));
   // Remove 11 from 10.
-  ASSERT_TRUE(RemoveNodeFromParent(view_manager2_.get(),
-                                   CreateNodeId(2, 11),
-                                   4));
+  ASSERT_TRUE(background_connection_->RemoveNodeFromParent(
+                  CreateNodeId(2, 11), 4));
 
   // Verify nothing was actually removed.
   {
@@ -1391,21 +1680,17 @@ TEST_F(ViewManagerConnectionTest, CantRemoveSetViewInOtherRoots) {
                       CreateNodeId(client_.id(), 2),
                       2));
 
-  // Establish the second connection and give it the root 1.
-  ASSERT_NO_FATAL_FAILURE(
-      EstablishSecondConnectionWithRoot(CreateNodeId(1, 1)));
+  ASSERT_NO_FATAL_FAILURE(EstablishBackgroundConnectionWithRoot1());
 
   // Create a view in the second connection.
-  ASSERT_TRUE(CreateView(view_manager2_.get(), 2, 51));
+  ASSERT_TRUE(background_connection_->CreateView(CreateViewId(2, 51)));
 
   // Connection 2 should be able to set the view on node 1 (it's root), but not
   // on 2.
-  ASSERT_TRUE(SetView(view_manager2_.get(),
-                      CreateNodeId(client_.id(), 1),
-                      CreateViewId(client2_.id(), 51)));
-  ASSERT_FALSE(SetView(view_manager2_.get(),
-                       CreateNodeId(client_.id(), 2),
-                       CreateViewId(client2_.id(), 51)));
+  ASSERT_TRUE(background_connection_->SetView(CreateNodeId(client_.id(), 1),
+                                              CreateViewId(2, 51)));
+  ASSERT_FALSE(background_connection_->SetView(CreateNodeId(client_.id(), 2),
+                                               CreateViewId(2, 51)));
 }
 
 // Verify GetNodeTree fails for nodes that are not descendants of the roots.
@@ -1423,25 +1708,36 @@ TEST_F(ViewManagerConnectionTest, CantGetNodeTreeOfOtherRoots) {
                       CreateNodeId(client_.id(), 2),
                       2));
 
-  // Establish the second connection and give it the root 1.
-  ASSERT_NO_FATAL_FAILURE(
-      EstablishSecondConnectionWithRoot(CreateNodeId(1, 1)));
+  ASSERT_NO_FATAL_FAILURE(EstablishBackgroundConnectionWithRoot1());
 
   AllocationScope scope;
   std::vector<TestNode> nodes;
 
   // Should get nothing for the root.
-  GetNodeTree(view_manager2_.get(), CreateNodeId(0, 1), &nodes);
+  background_connection_->GetNodeTree(CreateNodeId(0, 1), &nodes);
   ASSERT_TRUE(nodes.empty());
 
   // Should get nothing for node 2.
-  GetNodeTree(view_manager2_.get(), CreateNodeId(1, 2), &nodes);
+  background_connection_->GetNodeTree(CreateNodeId(1, 2), &nodes);
   ASSERT_TRUE(nodes.empty());
 
   // Should get node 1 if asked for.
-  GetNodeTree(view_manager2_.get(), CreateNodeId(1, 1), &nodes);
+  background_connection_->GetNodeTree(CreateNodeId(1, 1), &nodes);
   ASSERT_EQ(1u, nodes.size());
   EXPECT_EQ("node=1,1 parent=null view=null", nodes[0].ToString());
+}
+
+// Verify GetNodeTree fails for nodes that are not descendants of the roots.
+TEST_F(ViewManagerConnectionTest, Connect) {
+  ASSERT_TRUE(CreateNode(view_manager_.get(), 1, 1));
+  ASSERT_TRUE(Connect(view_manager_.get(), kTestServiceURL, CreateNodeId(1, 1),
+                      0));
+  BackgroundConnection* instance = BackgroundConnection::WaitForInstance();
+  ASSERT_TRUE(instance != NULL);
+  Changes changes(
+      ChangesToDescription1(instance->DoRunLoopUntilChangesCount(1)));;
+  ASSERT_EQ(1u, changes.size());
+  EXPECT_EQ("OnConnectionEstablished", changes[0]);
 }
 
 // TODO(sky): add coverage of test that destroys connections and ensures other
