@@ -2186,4 +2186,3 @@ name=bug_377728
 *!HunspellEngine::FillSuggestionList
 *!SpellcheckLanguage::SpellCheckWord
 *!SpellCheck::SpellCheckWord
-*!SpellCheckTest_SpellCheckSuggestions_EN_US_Test::TestBody
