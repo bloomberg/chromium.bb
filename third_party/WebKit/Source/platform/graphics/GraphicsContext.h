@@ -112,6 +112,10 @@ public:
     // ---------- State management methods -----------------
     void save();
     void restore();
+    unsigned saveCount() { return m_canvasStateStack.size(); }
+#if !ASSERT_DISABLED
+    void disableDestructionChecks() { m_disableDestructionChecks = true; }
+#endif
 
     void saveLayer(const SkRect* bounds, const SkPaint*);
     void restoreLayer();
@@ -513,6 +517,7 @@ private:
 #if !ASSERT_DISABLED
     unsigned m_annotationCount;
     unsigned m_layerCount;
+    bool m_disableDestructionChecks;
 #endif
     // Tracks the region painted opaque via the GraphicsContext.
     OpaqueRegionSkia m_opaqueRegion;

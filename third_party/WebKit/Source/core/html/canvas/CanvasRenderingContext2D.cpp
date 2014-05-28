@@ -102,9 +102,6 @@ CanvasRenderingContext2D::CanvasRenderingContext2D(HTMLCanvasElement* canvas, co
 
 void CanvasRenderingContext2D::unwindStateStack()
 {
-    // Ensure that the state stack in the ImageBuffer's context
-    // is cleared before destruction, to avoid assertions in the
-    // GraphicsContext dtor.
     if (size_t stackSize = m_stateStack.size()) {
         if (GraphicsContext* context = canvas()->existingDrawingContext()) {
             while (--stackSize)
@@ -115,10 +112,14 @@ void CanvasRenderingContext2D::unwindStateStack()
 
 CanvasRenderingContext2D::~CanvasRenderingContext2D()
 {
-#if !ENABLE(OILPAN)
+}
+
+void CanvasRenderingContext2D::validateStateStack()
+{
 #if !ASSERT_DISABLED
-    unwindStateStack();
-#endif
+    GraphicsContext* context = canvas()->existingDrawingContext();
+    if (context && !context->contextDisabled())
+        ASSERT(context->saveCount() == m_stateStack.size());
 #endif
 }
 
@@ -226,10 +227,12 @@ void CanvasRenderingContext2D::dispatchContextRestoredEvent(Timer<CanvasRenderin
 
 void CanvasRenderingContext2D::reset()
 {
+    validateStateStack();
     unwindStateStack();
     m_stateStack.resize(1);
     m_stateStack.first() = adoptPtrWillBeNoop(new State());
     m_path.clear();
+    validateStateStack();
 }
 
 // Important: Several of these properties are also stored in GraphicsContext's
@@ -348,6 +351,7 @@ void CanvasRenderingContext2D::State::fontsNeedUpdate(CSSFontSelector* fontSelec
 
 void CanvasRenderingContext2D::realizeSaves()
 {
+    validateStateStack();
     if (state().m_unrealizedSaveCount) {
         ASSERT(m_stateStack.size() >= 1);
         // Reduce the current state's unrealized count by one now,
@@ -360,13 +364,16 @@ void CanvasRenderingContext2D::realizeSaves()
         // turn necessary to support correct resizing and unwinding of the stack).
         m_stateStack.last()->m_unrealizedSaveCount = 0;
         GraphicsContext* context = drawingContext();
+        ASSERT(context);
         if (context)
             context->save();
+        validateStateStack();
     }
 }
 
 void CanvasRenderingContext2D::restore()
 {
+    validateStateStack();
     if (state().m_unrealizedSaveCount) {
         // We never realized the save, so just record that it was unnecessary.
         --m_stateStack.last()->m_unrealizedSaveCount;
@@ -381,6 +388,7 @@ void CanvasRenderingContext2D::restore()
     GraphicsContext* c = drawingContext();
     if (c)
         c->restore();
+    validateStateStack();
 }
 
 CanvasStyle* CanvasRenderingContext2D::strokeStyle() const
@@ -1240,6 +1248,7 @@ void CanvasRenderingContext2D::clearRect(float x, float y, float width, float he
     if (saved)
         context->restore();
 
+    validateStateStack();
     didDraw(dirtyRect);
 }
 
@@ -1535,6 +1544,7 @@ void CanvasRenderingContext2D::drawVideo(HTMLVideoElement* video, FloatRect srcR
     c->translate(-srcRect.x(), -srcRect.y());
     video->paintCurrentFrameInContext(c, IntRect(IntPoint(), IntSize(video->videoWidth(), video->videoHeight())));
     stateSaver.restore();
+    validateStateStack();
 }
 
 void CanvasRenderingContext2D::drawImageFromRect(HTMLImageElement* image,
@@ -2351,7 +2361,7 @@ void CanvasRenderingContext2D::drawFocusRing(const Path& path)
     c->setCompositeOperation(CompositeSourceOver, blink::WebBlendModeNormal);
     c->drawFocusRing(path, focusRingWidth, focusRingOutline, focusRingColor);
     c->restore();
-
+    validateStateStack();
     didDraw(dirtyRect);
 }
 

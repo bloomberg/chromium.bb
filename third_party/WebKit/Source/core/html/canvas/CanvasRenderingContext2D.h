@@ -334,6 +334,8 @@ private:
     bool focusRingCallIsValid(const Path&, Element*);
     void drawFocusRing(const Path&);
 
+    void validateStateStack();
+
     virtual bool is2d() const OVERRIDE { return true; }
     virtual bool isAccelerated() const OVERRIDE;
     virtual bool hasAlpha() const OVERRIDE { return m_hasAlpha; }

@@ -122,6 +122,7 @@ GraphicsContext::GraphicsContext(SkCanvas* canvas, DisabledMode disableContextOr
 #if !ASSERT_DISABLED
     , m_annotationCount(0)
     , m_layerCount(0)
+    , m_disableDestructionChecks(false)
 #endif
     , m_disabledState(disableContextOrPainting)
     , m_trackOpaqueRegion(false)
@@ -144,20 +145,15 @@ GraphicsContext::GraphicsContext(SkCanvas* canvas, DisabledMode disableContextOr
 
 GraphicsContext::~GraphicsContext()
 {
-#if !ENABLE(OILPAN)
-    // FIXME: Oilpan: These asserts are not true for
-    // CanvasRenderingContext2D. Therefore, there is debug mode code
-    // in the CanvasRenderingContext2D that forces this to be true so
-    // that the assertions can be here for all the other cases. With
-    // Oilpan we cannot run that code in the CanvasRenderingContext2D
-    // destructor because it touches other objects that are already
-    // dead. We need to find another way of doing these asserts when
-    // Oilpan is enabled.
-    ASSERT(!m_paintStateIndex);
-    ASSERT(!m_paintState->saveCount());
-    ASSERT(!m_annotationCount);
-    ASSERT(!m_layerCount);
-    ASSERT(m_recordingStateStack.isEmpty());
+#if !ASSERT_DISABLED
+    if (!m_disableDestructionChecks) {
+        ASSERT(!m_paintStateIndex);
+        ASSERT(!m_paintState->saveCount());
+        ASSERT(!m_annotationCount);
+        ASSERT(!m_layerCount);
+        ASSERT(m_recordingStateStack.isEmpty());
+        ASSERT(m_canvasStateStack.isEmpty());
+    }
 #endif
 }
 

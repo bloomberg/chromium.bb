@@ -98,7 +98,9 @@ HTMLCanvasElement::~HTMLCanvasElement()
     HashSet<RawPtr<CanvasObserver> >::iterator end = m_observers.end();
     for (HashSet<RawPtr<CanvasObserver> >::iterator it = m_observers.begin(); it != end; ++it)
         (*it)->canvasDestroyed(this);
-    m_context.clear(); // Ensure this goes away before the ImageBuffer.
+    // Ensure these go away before the ImageBuffer.
+    m_contextStateSaver.clear();
+    m_context.clear();
 #endif
 }
 
@@ -515,6 +517,9 @@ void HTMLCanvasElement::createImageBufferInternal()
     // See CanvasRenderingContext2D::State::State() for more information.
     m_imageBuffer->context()->setMiterLimit(10);
     m_imageBuffer->context()->setStrokeThickness(1);
+#if !ASSERT_DISABLED
+    m_imageBuffer->context()->disableDestructionChecks(); // 2D canvas is allowed to leave context in an unfinalized state.
+#endif
     m_contextStateSaver = adoptPtr(new GraphicsContextStateSaver(*m_imageBuffer->context()));
 
     if (m_context)
