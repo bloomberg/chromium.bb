@@ -9,7 +9,7 @@ vars = {
     'git_url':
          'https://chromium.googlesource.com',
     'webkit_rev':
-         '@5eb25539f89efea9fd9eaa06fa78db22e05275b0',
+         '@6ffcf01a45d85d9a96af5f7c35c5b2d0170f573d',
     'angle_revision':
          '28bcf4ffeb49322fa019e2778c1fdd20f61d9ea6'
 }
@@ -18,7 +18,7 @@ deps = {
     'src/breakpad/src':
         Var('git_url') + '/external/google-breakpad/src.git@f62f589ebb57fe948d1f762dc42728b564c28856',
     'src/buildtools':
-        Var('git_url') + '/chromium/buildtools.git@8349035e86305fc9e4fd871610821336120a4bad',
+        Var('git_url') + '/chromium/buildtools.git@83ed7189066fd9b4b9ea15ffc2d4ab6d2da62571',
     'src/chrome/browser/resources/pdf/html_office':
         Var('git_url') + '/chromium/html-office-public.git@eeff97614f65e0578529490d44d412032c3d7359',
     'src/chrome/test/data/extensions/api_test/permissions/nacl_enabled/bin':
