@@ -1456,12 +1456,14 @@ PassRefPtr<Node> CompositeEditCommand::splitTreeToNode(Node* start, Node* end, b
     ASSERT(end);
     ASSERT(start != end);
 
-    RefPtr<Node> node;
     if (shouldSplitAncestor && end->parentNode())
         end = end->parentNode();
+    if (!start->isDescendantOf(end))
+        return end;
 
     RefPtr<Node> endNode = end;
-    for (node = start; node && node->parentNode() != endNode; node = node->parentNode()) {
+    RefPtr<Node> node;
+    for (node = start; node->parentNode() != endNode; node = node->parentNode()) {
         if (!node->parentNode()->isElementNode())
             break;
         // Do not split a node when doing so introduces an empty node.
