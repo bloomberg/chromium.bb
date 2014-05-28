@@ -16237,6 +16237,16 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Network.Shill.Wifi.FallbackDNSTestResult"
+    enum="FallbackDNSTestResult">
+  <owner>zqiu@chromium.org</owner>
+  <summary>
+    Chrome OS network performance metric that tracks the result of the fallback
+    DNS test. The fallback DNS test is performed when portal detection failed
+    due to DNS failure.
+  </summary>
+</histogram>
+
 <histogram name="Network.Shill.WiFi.FrequenciesConnectedEver">
   <owner>quiche@chromium.org</owner>
   <summary>
@@ -35360,6 +35370,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="1" label="Generic unfused device"/>
   <int value="2" label="Unfused; lot ID NZVPU"/>
   <int value="3" label="Unfused; lot ID NZVR7"/>
+</enum>
+
+<enum name="FallbackDNSTestResult" type="int">
+  <int value="0" label="Success"/>
+  <int value="1" label="Failure"/>
 </enum>
 
 <enum name="FallbackSSLVersion" type="int">
