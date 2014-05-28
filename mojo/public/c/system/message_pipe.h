@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 // This file contains types/constants and functions specific to message pipes.
-
+//
 // Note: This header should be compilable as C.
 
 #ifndef MOJO_PUBLIC_C_SYSTEM_MESSAGE_PIPE_H_

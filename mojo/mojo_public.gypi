@@ -27,6 +27,7 @@
       },
       'sources': [
         'public/c/system/core.h',
+        'public/c/system/data_pipe.h',
         'public/c/system/functions.h',
         'public/c/system/macros.h',
         'public/c/system/message_pipe.h',
