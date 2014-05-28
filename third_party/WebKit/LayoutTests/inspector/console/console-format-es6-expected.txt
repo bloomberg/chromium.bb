@@ -1,0 +1,15 @@
+CONSOLE MESSAGE: line 11: 
+CONSOLE MESSAGE: line 12: Symbol()
+CONSOLE MESSAGE: line 11: 
+CONSOLE MESSAGE: line 12: Symbol(a)
+Tests that console properly displays information about ES6 features.
+
+Symbol() console-format-es6.html:11
+[Symbol()]0: Symbol()length: 1__proto__: Array[0] console-format-es6.html:12
+globals[0]
+Symbol()
+Symbol(a) console-format-es6.html:11
+[Symbol(a)]0: Symbol(a)length: 1__proto__: Array[0] console-format-es6.html:12
+globals[1]
+Symbol(a)
+

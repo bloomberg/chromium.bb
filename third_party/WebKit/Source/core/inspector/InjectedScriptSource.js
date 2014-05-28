@@ -1008,6 +1008,14 @@ InjectedScript.prototype = {
         if (typeof obj === "function")
             return toString(obj);
 
+        if (typeof obj === "symbol") {
+            try {
+                return Symbol.prototype.toString.call(obj) || "Symbol";
+            } catch (e) {
+                return "Symbol";
+            }
+        }
+
         if (className === "Object") {
             // In Chromium DOM wrapper prototypes will have Object as their constructor name,
             // get the real DOM wrapper name from the constructor property.

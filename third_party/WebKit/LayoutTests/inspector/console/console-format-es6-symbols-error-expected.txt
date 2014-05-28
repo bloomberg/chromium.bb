@@ -1,0 +1,5 @@
+CONSOLE MESSAGE: line 11: 
+Tests that console properly displays information about ES6 Symbols.
+
+Symbol console-format-es6-symbols-error.html:11
+
