@@ -21,12 +21,10 @@
 #include "third_party/WebKit/public/platform/WebURLLoaderClient.h"
 #include "webkit/child/weburlresponse_extradata_impl.h"
 
-using net::FtpDirectoryListingEntry;
-
 using blink::WebURLLoader;
 using blink::WebURLLoaderClient;
 using blink::WebURLResponse;
-
+using net::FtpDirectoryListingEntry;
 using webkit_glue::WebURLResponseExtraDataImpl;
 
 namespace {
@@ -70,6 +68,11 @@ FtpDirectoryListingResponseDelegate::FtpDirectoryListingResponseDelegate(
     extra_data->set_is_ftp_directory_listing(true);
   }
   Init(response.url());
+}
+
+void FtpDirectoryListingResponseDelegate::Cancel() {
+  client_ = NULL;
+  loader_ = NULL;
 }
 
 void FtpDirectoryListingResponseDelegate::OnReceivedData(const char* data,
@@ -119,7 +122,8 @@ void FtpDirectoryListingResponseDelegate::Init(const GURL& response_url) {
 
 void FtpDirectoryListingResponseDelegate::SendDataToClient(
     const std::string& data) {
-  client_->didReceiveData(loader_, data.data(), data.length(), -1);
+  if (client_)
+    client_->didReceiveData(loader_, data.data(), data.length(), -1);
 }
 
 }  // namespace content

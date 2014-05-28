@@ -28,6 +28,9 @@ class FtpDirectoryListingResponseDelegate {
                                       blink::WebURLLoader* loader,
                                       const blink::WebURLResponse& response);
 
+  // The request has been canceled, so stop making calls to the client.
+  void Cancel();
+
   // Passed through from ResourceHandleInternal
   void OnReceivedData(const char* data, int data_len);
   void OnCompletedRequest();
