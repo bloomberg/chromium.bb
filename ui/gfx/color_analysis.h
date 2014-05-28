@@ -52,10 +52,10 @@ class GFX_EXPORT GridSampler : public KMeanImageSampler {
 GFX_EXPORT SkColor FindClosestColor(const uint8_t* image, int width, int height,
                                     SkColor color);
 
-// Returns an SkColor that represents the calculated dominant color in the png.
-// This uses a KMean clustering algorithm to find clusters of pixel colors in
-// RGB space.
-// |png| represents the data of a png encoded image.
+// Returns an SkColor that represents the calculated dominant color in the
+// image. This uses a KMean clustering algorithm to find clusters of pixel
+// colors in RGB space.
+// |png|/|bitmap| represents the data of a png/bitmap encoded image.
 // |darkness_limit| represents the minimum sum of the RGB components that is
 // acceptable as a color choice. This can be from 0 to 765.
 // |brightness_limit| represents the maximum sum of the RGB components that is
@@ -94,9 +94,19 @@ GFX_EXPORT SkColor CalculateKMeanColorOfPNG(
     uint32_t darkness_limit,
     uint32_t brightness_limit,
     KMeanImageSampler* sampler);
+// Computes a dominant color using the above algorithm and reasonable defaults
+// for |darkness_limit|, |brightness_limit| and |sampler|.
+GFX_EXPORT SkColor CalculateKMeanColorOfPNG(
+    scoped_refptr<base::RefCountedMemory> png);
 
-// Computes a dominant color for an SkBitmap using the above algorithm and
-// reasonable defaults for |darkness_limit|, |brightness_limit| and |sampler|.
+// Returns an SkColor that represents the calculated dominant color in the
+// image. See CalculateKMeanColorOfPNG() for details.
+GFX_EXPORT SkColor CalculateKMeanColorOfBitmap(const SkBitmap& bitmap,
+                                               uint32_t darkness_limit,
+                                               uint32_t brightness_limit,
+                                               KMeanImageSampler* sampler);
+// Computes a dominant color using the above algorithm and reasonable defaults
+// for |darkness_limit|, |brightness_limit| and |sampler|.
 GFX_EXPORT SkColor CalculateKMeanColorOfBitmap(const SkBitmap& bitmap);
 
 // Compute color covariance matrix for the input bitmap.

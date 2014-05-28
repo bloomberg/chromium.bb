@@ -382,7 +382,15 @@ SkColor CalculateKMeanColorOfPNG(scoped_refptr<base::RefCountedMemory> png,
   return color;
 }
 
-SkColor CalculateKMeanColorOfBitmap(const SkBitmap& bitmap) {
+SkColor CalculateKMeanColorOfPNG(scoped_refptr<base::RefCountedMemory> png) {
+  GridSampler sampler;
+  return CalculateKMeanColorOfPNG(png, kMinDarkness, kMaxBrightness, &sampler);
+}
+
+SkColor CalculateKMeanColorOfBitmap(const SkBitmap& bitmap,
+                                    uint32_t darkness_limit,
+                                    uint32_t brightness_limit,
+                                    KMeanImageSampler* sampler) {
   // SkBitmap uses pre-multiplied alpha but the KMean clustering function
   // above uses non-pre-multiplied alpha. Transform the bitmap before we
   // analyze it because the function reads each pixel multiple times.
@@ -390,15 +398,18 @@ SkColor CalculateKMeanColorOfBitmap(const SkBitmap& bitmap) {
   scoped_ptr<uint32_t[]> image(new uint32_t[pixel_count]);
   UnPreMultiply(bitmap, image.get(), pixel_count);
 
+  return CalculateKMeanColorOfBuffer(reinterpret_cast<uint8_t*>(image.get()),
+                                     bitmap.width(),
+                                     bitmap.height(),
+                                     darkness_limit,
+                                     brightness_limit,
+                                     sampler);
+}
+
+SkColor CalculateKMeanColorOfBitmap(const SkBitmap& bitmap) {
   GridSampler sampler;
-  SkColor color = CalculateKMeanColorOfBuffer(
-      reinterpret_cast<uint8_t*>(image.get()),
-      bitmap.width(),
-      bitmap.height(),
-      kMinDarkness,
-      kMaxBrightness,
-      &sampler);
-  return color;
+  return CalculateKMeanColorOfBitmap(
+      bitmap, kMinDarkness, kMaxBrightness, &sampler);
 }
 
 gfx::Matrix3F ComputeColorCovariance(const SkBitmap& bitmap) {
