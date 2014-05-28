@@ -291,7 +291,14 @@ class ExtensionService
   // when installation of that extension was previously delayed because the
   // extension was in use.
   virtual void FinishDelayedInstallation(
-     const std::string& extension_id) OVERRIDE;
+      const std::string& extension_id) OVERRIDE;
+
+  // Promotes an ephemeral app to a regular installed app. Ephemeral apps
+  // are already installed in extension system (albiet transiently) and only
+  // need to be exposed in the UI. Set |is_from_sync| to true if the
+  // install was initiated via sync.
+  void PromoteEphemeralApp(
+      const extensions::Extension* extension, bool is_from_sync);
 
   // Returns an update for an extension with the specified id, if installation
   // of that update was previously delayed because the extension was in use. If
@@ -429,7 +436,7 @@ class ExtensionService
   }
 
   void FinishInstallationForTest(const extensions::Extension* extension) {
-    FinishInstallation(extension);
+    FinishInstallation(extension, false);
   }
 #endif
 
@@ -501,8 +508,10 @@ class ExtensionService
       const extensions::Extension* extension,
       extensions::UnloadedExtensionInfo::Reason reason);
 
-  // Common helper to finish installing the given extension.
-  void FinishInstallation(const extensions::Extension* extension);
+  // Common helper to finish installing the given extension. |was_ephemeral|
+  // should be true if the extension was previously installed and ephemeral.
+  void FinishInstallation(const extensions::Extension* extension,
+                          bool was_ephemeral);
 
   // Updates the |extension|'s active permission set to include only permissions
   // currently requested by the extension and all the permissions required by

@@ -1891,6 +1891,7 @@ void ExtensionService::AddNewOrUpdatedExtension(
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   const bool blacklisted_for_malware =
       blacklist_state == extensions::BLACKLISTED_MALWARE;
+  bool was_ephemeral = extension_prefs_->IsEphemeralApp(extension->id());
   extension_prefs_->OnExtensionInstalled(extension,
                                          initial_state,
                                          blacklisted_for_malware,
@@ -1900,7 +1901,7 @@ void ExtensionService::AddNewOrUpdatedExtension(
   delayed_installs_.Remove(extension->id());
   if (InstallVerifier::NeedsVerification(*extension))
     system_->install_verifier()->VerifyExtension(extension->id());
-  FinishInstallation(extension);
+  FinishInstallation(extension, was_ephemeral);
 }
 
 void ExtensionService::MaybeFinishDelayedInstallation(
@@ -1945,13 +1946,15 @@ void ExtensionService::FinishDelayedInstallation(
   CHECK(extension.get());
   delayed_installs_.Remove(extension_id);
 
+  bool was_ephemeral = extension_prefs_->IsEphemeralApp(extension->id());
   if (!extension_prefs_->FinishDelayedInstallInfo(extension_id))
     NOTREACHED();
 
-  FinishInstallation(extension.get());
+  FinishInstallation(extension.get(), was_ephemeral);
 }
 
-void ExtensionService::FinishInstallation(const Extension* extension) {
+void ExtensionService::FinishInstallation(
+    const Extension* extension, bool was_ephemeral) {
   const extensions::Extension* existing_extension =
       GetInstalledExtension(extension->id());
   bool is_update = false;
@@ -1960,14 +1963,17 @@ void ExtensionService::FinishInstallation(const Extension* extension) {
     is_update = true;
     old_name = existing_extension->name();
   }
-  extensions::InstalledExtensionInfo details(extension, is_update, old_name);
+  bool from_ephemeral =
+      was_ephemeral && !extension_prefs_->IsEphemeralApp(extension->id());
+  extensions::InstalledExtensionInfo details(
+      extension, is_update, from_ephemeral, old_name);
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_EXTENSION_INSTALLED_DEPRECATED,
       content::Source<Profile>(profile_),
       content::Details<const extensions::InstalledExtensionInfo>(&details));
 
-  ExtensionRegistry::Get(profile_)
-      ->TriggerOnWillBeInstalled(extension, is_update, old_name);
+  ExtensionRegistry::Get(profile_)->TriggerOnWillBeInstalled(
+      extension, is_update, from_ephemeral, old_name);
 
   bool unacknowledged_external = IsUnacknowledgedExternalExtension(extension);
 
@@ -2004,6 +2010,70 @@ void ExtensionService::FinishInstallation(const Extension* extension) {
   if (SharedModuleInfo::IsSharedModule(extension)) {
     MaybeFinishDelayedInstallations();
   }
+}
+
+void ExtensionService::PromoteEphemeralApp(
+    const extensions::Extension* extension, bool is_from_sync) {
+  DCHECK(GetInstalledExtension(extension->id()) &&
+         extension_prefs_->IsEphemeralApp(extension->id()));
+
+  if (!is_from_sync) {
+    if (extension->RequiresSortOrdinal()) {
+      // Reset the sort ordinals of the app to ensure it is added to the default
+      // position, like newly installed apps would.
+      extension_prefs_->app_sorting()->ClearOrdinals(extension->id());
+      extension_prefs_->app_sorting()->EnsureValidOrdinals(
+          extension->id(), syncer::StringOrdinal());
+    }
+
+    if (extension_prefs_->IsExtensionDisabled(extension->id()) &&
+        !extension_prefs_->IsExtensionBlacklisted(extension->id())) {
+      // If the extension is not blacklisted and was disabled due to permission
+      // increase or user action only, we can enable it because the user was
+      // prompted.
+      extension_prefs_->RemoveDisableReason(
+          extension->id(),
+          Extension::DISABLE_PERMISSIONS_INCREASE);
+      extension_prefs_->RemoveDisableReason(
+          extension->id(),
+          Extension::DISABLE_USER_ACTION);
+      if (!extension_prefs_->GetDisableReasons(extension->id()))
+        EnableExtension(extension->id());
+    }
+  }
+
+  // Remove the ephemeral flags from the preferences.
+  extension_prefs_->OnEphemeralAppPromoted(extension->id());
+
+  // Fire install-related events to allow observers to handle the promotion
+  // of the ephemeral app.
+  extensions::InstalledExtensionInfo details(
+      extension,
+      true /* is update */,
+      true /* from ephemeral */,
+      extension->name() /* old name */);
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_EXTENSION_INSTALLED_DEPRECATED,
+      content::Source<Profile>(profile_),
+      content::Details<const extensions::InstalledExtensionInfo>(&details));
+
+  registry_->TriggerOnWillBeInstalled(
+      extension,
+      true /* is update */,
+      true /* from ephemeral */,
+      extension->name() /* old name */);
+
+  if (registry_->enabled_extensions().Contains(extension->id())) {
+    content::NotificationService::current()->Notify(
+        chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
+        content::Source<Profile>(profile_),
+        content::Details<const Extension>(extension));
+
+    registry_->TriggerOnLoaded(extension);
+  }
+
+  if (!is_from_sync && extension_sync_service_)
+    extension_sync_service_->SyncExtensionChangeIfNeeded(*extension);
 }
 
 const Extension* ExtensionService::GetPendingExtensionUpdate(

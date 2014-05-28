@@ -199,6 +199,8 @@ class WebstorePrivateCompleteInstallFunction
 
  private:
   scoped_ptr<WebstoreInstaller::Approval> approval_;
+
+  void OnInstallSuccess(const std::string& id);
 };
 
 class WebstorePrivateEnableAppLauncherFunction

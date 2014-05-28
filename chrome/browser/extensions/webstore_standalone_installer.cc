@@ -13,6 +13,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_prefs.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extension_util.h"
 #include "extensions/common/extension.h"
@@ -231,31 +232,33 @@ void WebstoreStandaloneInstaller::InstallUIProceed() {
     return;
   }
 
+  scoped_ptr<WebstoreInstaller::Approval> approval = CreateApproval();
+
   ExtensionService* extension_service =
       ExtensionSystem::Get(profile_)->extension_service();
   const Extension* extension =
       extension_service->GetExtensionById(id_, true /* include disabled */);
   if (extension) {
     std::string install_result;  // Empty string for install success.
-    if (!extension_service->IsExtensionEnabled(id_)) {
-      if (!ExtensionPrefs::Get(profile_)->IsExtensionBlacklisted(id_)) {
-        // If the extension is installed but disabled, and not blacklisted,
-        // enable it.
-        extension_service->EnableExtension(id_);
-      } else {  // Don't install a blacklisted extension.
-        install_result = kExtensionIsBlacklisted;
-      }
-    } else if (!util::IsEphemeralApp(extension->id(), profile_)) {
-      // else extension is installed and enabled; no work to be done.
-      CompleteInstall(install_result);
-      return;
-    }
 
-    // TODO(tmdiep): Optimize installation of ephemeral apps. For now we just
-    // reinstall the app.
+    if (ExtensionPrefs::Get(profile_)->IsExtensionBlacklisted(id_)) {
+      // Don't install a blacklisted extension.
+      install_result = kExtensionIsBlacklisted;
+    } else if (util::IsEphemeralApp(extension->id(), profile_) &&
+               !approval->is_ephemeral) {
+      // If the target extension has already been installed ephemerally, it can
+      // be promoted to a regular installed extension and downloading from the
+      // Web Store is not necessary.
+      extension_service->PromoteEphemeralApp(extension, false);
+    } else if (!extension_service->IsExtensionEnabled(id_)) {
+      // If the extension is installed but disabled, and not blacklisted,
+      // enable it.
+      extension_service->EnableExtension(id_);
+    }  // else extension is installed and enabled; no work to be done.
+
+    CompleteInstall(install_result);
+    return;
   }
-
-  scoped_ptr<WebstoreInstaller::Approval> approval = CreateApproval();
 
   scoped_refptr<WebstoreInstaller> installer = new WebstoreInstaller(
       profile_,

@@ -61,6 +61,7 @@ class EphemeralAppService : public KeyedService,
       content::BrowserContext* browser_context,
       const extensions::Extension* extension,
       bool is_update,
+      bool from_ephemeral,
       const std::string& old_name) OVERRIDE;
   virtual void OnExtensionUninstalled(
       content::BrowserContext* browser_context,

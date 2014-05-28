@@ -64,6 +64,7 @@ class TestObserver : public ExtensionRegistryObserver {
       content::BrowserContext* browser_context,
       const Extension* extension,
       bool is_update,
+      bool from_ephemeral,
       const std::string& old_name) OVERRIDE {
     installed_.push_back(extension);
   }
@@ -240,13 +241,14 @@ TEST_F(ExtensionRegistryTest, Observer) {
   scoped_refptr<const Extension> extension =
       test_util::CreateExtensionWithID("id");
 
-  registry.TriggerOnWillBeInstalled(extension, false, base::EmptyString());
+  registry.TriggerOnWillBeInstalled(
+      extension, false, false, base::EmptyString());
   EXPECT_TRUE(HasSingleExtension(observer.installed(), extension.get()));
 
   registry.AddEnabled(extension);
   registry.TriggerOnLoaded(extension);
 
-  registry.TriggerOnWillBeInstalled(extension, true, "foo");
+  registry.TriggerOnWillBeInstalled(extension, true, false, "foo");
 
   EXPECT_TRUE(HasSingleExtension(observer.loaded(), extension.get()));
   EXPECT_TRUE(observer.unloaded().empty());

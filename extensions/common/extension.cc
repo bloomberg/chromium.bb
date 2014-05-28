@@ -770,9 +770,11 @@ ExtensionInfo::~ExtensionInfo() {}
 InstalledExtensionInfo::InstalledExtensionInfo(
     const Extension* extension,
     bool is_update,
+    bool from_ephemeral,
     const std::string& old_name)
     : extension(extension),
       is_update(is_update),
+      from_ephemeral(from_ephemeral),
       old_name(old_name) {}
 
 UnloadedExtensionInfo::UnloadedExtensionInfo(

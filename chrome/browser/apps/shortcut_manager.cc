@@ -107,6 +107,7 @@ void AppShortcutManager::OnExtensionWillBeInstalled(
     content::BrowserContext* browser_context,
     const Extension* extension,
     bool is_update,
+    bool from_ephemeral,
     const std::string& old_name) {
   // If the app is being updated, update any existing shortcuts but do not
   // create new ones. If it is being installed, automatically create a

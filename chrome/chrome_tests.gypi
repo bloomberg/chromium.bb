@@ -879,6 +879,7 @@
         'browser/apps/app_window_browsertest.cc',
         'browser/apps/app_url_redirector_browsertest.cc',
         'browser/apps/ephemeral_app_browsertest.cc',
+        'browser/apps/ephemeral_app_browsertest.h',
         'browser/apps/ephemeral_app_service_browsertest.cc',
         'browser/apps/event_page_browsertest.cc',
         'browser/apps/speech_recognition_browsertest.cc',

@@ -145,6 +145,7 @@ void InstallTracker::OnExtensionWillBeInstalled(
     content::BrowserContext* browser_context,
     const Extension* extension,
     bool is_update,
+    bool from_ephemeral,
     const std::string& old_name) {
   FOR_EACH_OBSERVER(
       InstallObserver, observers_, OnExtensionInstalled(extension));

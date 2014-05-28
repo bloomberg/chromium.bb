@@ -203,6 +203,7 @@ class WebstoreInstaller : public content::NotificationObserver,
       content::BrowserContext* browser_context,
       const Extension* extension,
       bool is_update,
+      bool from_ephemeral,
       const std::string& old_name) OVERRIDE;
 
   // Removes the reference to the delegate passed in the constructor. Used when

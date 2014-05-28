@@ -41,6 +41,7 @@
 #include "content/public/common/referrer.h"
 #include "extensions/browser/extension_function_dispatcher.h"
 #include "extensions/browser/extension_prefs.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extension_util.h"
 #include "extensions/common/error_utils.h"
@@ -564,8 +565,6 @@ bool WebstorePrivateCompleteInstallFunction::RunAsync() {
     return false;
   }
 
-  // Balanced in OnExtensionInstallSuccess() or OnExtensionInstallFailure().
-  AddRef();
   AppListService* app_list_service =
       AppListService::Get(GetCurrentBrowser()->host_desktop_type());
 
@@ -583,6 +582,22 @@ bool WebstorePrivateCompleteInstallFunction::RunAsync() {
       app_list_service->AutoShowForProfile(GetProfile());
   }
 
+  // If the target extension has already been installed ephemerally, it can
+  // be promoted to a regular installed extension and downloading from the Web
+  // Store is not necessary.
+  const Extension* extension = ExtensionRegistry::Get(GetProfile())->
+      GetExtensionById(params->expected_id, ExtensionRegistry::EVERYTHING);
+  if (extension && util::IsEphemeralApp(extension->id(), GetProfile())) {
+    ExtensionService* extension_service =
+        ExtensionSystem::Get(GetProfile())->extension_service();
+    extension_service->PromoteEphemeralApp(extension, false);
+    OnInstallSuccess(extension->id());
+    return true;
+  }
+
+  // Balanced in OnExtensionInstallSuccess() or OnExtensionInstallFailure().
+  AddRef();
+
   // The extension will install through the normal extension install flow, but
   // the whitelist entry will bypass the normal permissions install dialog.
   scoped_refptr<WebstoreInstaller> installer = new WebstoreInstaller(
@@ -599,13 +614,7 @@ bool WebstorePrivateCompleteInstallFunction::RunAsync() {
 
 void WebstorePrivateCompleteInstallFunction::OnExtensionInstallSuccess(
     const std::string& id) {
-  if (test_webstore_installer_delegate)
-    test_webstore_installer_delegate->OnExtensionInstallSuccess(id);
-
-  VLOG(1) << "Install success, sending response";
-  g_pending_installs.Get().EraseInstall(GetProfile(), id);
-  SendResponse(true);
-
+  OnInstallSuccess(id);
   RecordWebstoreExtensionInstallResult(true);
 
   // Matches the AddRef in RunAsync().
@@ -630,6 +639,16 @@ void WebstorePrivateCompleteInstallFunction::OnExtensionInstallFailure(
 
   // Matches the AddRef in RunAsync().
   Release();
+}
+
+void WebstorePrivateCompleteInstallFunction::OnInstallSuccess(
+    const std::string& id) {
+  if (test_webstore_installer_delegate)
+    test_webstore_installer_delegate->OnExtensionInstallSuccess(id);
+
+  VLOG(1) << "Install success, sending response";
+  g_pending_installs.Get().EraseInstall(GetProfile(), id);
+  SendResponse(true);
 }
 
 WebstorePrivateEnableAppLauncherFunction::

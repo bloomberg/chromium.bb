@@ -490,15 +490,23 @@ bool ExtensionSyncService::ProcessExtensionSyncDataHelper(
   // incognito flag invalidates the |extension| pointer (it reloads the
   // extension).
   bool extension_installed = (extension != NULL);
-  int result = extension ?
+  int version_compare_result = extension ?
       extension->version()->CompareTo(extension_sync_data.version()) : 0;
+
+  // If the target extension has already been installed ephemerally, it can
+  // be promoted to a regular installed extension and downloading from the Web
+  // Store is not necessary.
+  if (extension && extensions::util::IsEphemeralApp(id, profile_))
+    extension_service_->PromoteEphemeralApp(extension, true);
+
+  // Update the incognito flag.
   extensions::util::SetIsIncognitoEnabled(
       id, profile_, extension_sync_data.incognito_enabled());
   extension = NULL;  // No longer safe to use.
 
   if (extension_installed) {
     // If the extension is already installed, check if it's outdated.
-    if (result < 0) {
+    if (version_compare_result < 0) {
       // Extension is outdated.
       return false;
     }

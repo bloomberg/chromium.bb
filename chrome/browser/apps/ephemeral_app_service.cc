@@ -102,6 +102,7 @@ void EphemeralAppService::OnExtensionWillBeInstalled(
     content::BrowserContext* browser_context,
     const extensions::Extension* extension,
     bool is_update,
+    bool from_ephemeral,
     const std::string& old_name) {
   if (extensions::util::IsEphemeralApp(extension->id(), profile_)) {
     ++ephemeral_app_count_;

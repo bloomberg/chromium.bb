@@ -480,6 +480,9 @@ class ExtensionPrefs : public ExtensionScopedPrefs, public KeyedService {
   // Returns true if the extension is an ephemeral app.
   bool IsEphemeralApp(const std::string& extension_id) const;
 
+  // Promotes an ephemeral app to a regular installed app.
+  void OnEphemeralAppPromoted(const std::string& extension_id);
+
   // Returns true if the user repositioned the app on the app launcher via drag
   // and drop.
   bool WasAppDraggedByUser(const std::string& extension_id);

@@ -403,6 +403,7 @@ void WebstoreInstaller::OnExtensionWillBeInstalled(
     content::BrowserContext* browser_context,
     const Extension* extension,
     bool is_update,
+    bool from_ephemeral,
     const std::string& old_name) {
   CHECK(profile_->IsSameProfile(Profile::FromBrowserContext(browser_context)));
   if (pending_modules_.empty())
