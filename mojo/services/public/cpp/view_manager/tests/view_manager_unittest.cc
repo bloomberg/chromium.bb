@@ -216,6 +216,36 @@ void WaitForDestruction(ViewManager* view_manager,
   DoRunLoop();
 }
 
+// Tracks a node's destruction. Query is_valid() for current state.
+class NodeTracker : public ViewTreeNodeObserver {
+ public:
+  explicit NodeTracker(ViewTreeNode* node) : node_(node) {
+    node_->AddObserver(this);
+  }
+  virtual ~NodeTracker() {
+    if (node_)
+      node_->RemoveObserver(this);
+  }
+
+  bool is_valid() const { return !!node_; }
+
+ private:
+  // Overridden from ViewTreeNodeObserver:
+  virtual void OnNodeDestroy(
+      ViewTreeNode* node,
+      ViewTreeNodeObserver::DispositionChangePhase phase) OVERRIDE {
+    if (phase != ViewTreeNodeObserver::DISPOSITION_CHANGED)
+      return;
+    DCHECK_EQ(node, node_);
+    node_ = NULL;
+  }
+
+  int id_;
+  ViewTreeNode* node_;
+
+  DISALLOW_COPY_AND_ASSIGN(NodeTracker);
+};
+
 }  // namespace
 
 // ViewManager -----------------------------------------------------------------
@@ -548,6 +578,8 @@ TEST_F(ViewManagerTest, MapSubtreeOnAttach) {
   ViewTreeNode* node11 = CreateNodeInParent(node1);
   View* view11 = View::Create(view_manager_1());
   node11->SetActiveView(view11);
+  gfx::Rect node11_bounds(800, 600);
+  node11->SetBounds(node11_bounds);
   WaitForAllChangesToBeAcked(view_manager_1());
 
   // Now attach this node tree to the root & wait for it to show up in the
@@ -559,6 +591,7 @@ TEST_F(ViewManagerTest, MapSubtreeOnAttach) {
   View* view11_2 = view_manager_2()->GetViewById(view11->id());
   EXPECT_TRUE(node11_2 != NULL);
   EXPECT_EQ(view11_2, node11_2->active_view());
+  EXPECT_EQ(node11_bounds, node11_2->bounds());
 }
 
 // Verifies that bounds changes applied to a node hierarchy in one connection
@@ -573,8 +606,35 @@ TEST_F(ViewManagerTest, SetBounds) {
   node1->SetBounds(gfx::Rect(0, 0, 100, 100));
   WaitForBoundsToChange(node1_2);
   EXPECT_EQ(node1->bounds(), node1_2->bounds());
+}
 
+// Verifies that bounds changes applied to a node owned by a different
+// connection are refused.
+TEST_F(ViewManagerTest, SetBoundsSecurity) {
+  ViewTreeNode* node1 = CreateNodeInParent(view_manager_1()->tree());
+  node1->SetBounds(gfx::Rect(800, 600));
+  WaitForTreeSizeToMatch(view_manager_2()->tree(), 2);
 
+  ViewTreeNode* node1_2 = view_manager_2()->GetNodeById(node1->id());
+  node1_2->SetBounds(gfx::Rect(1024, 768));
+  // Bounds change should have been rejected.
+  EXPECT_EQ(node1->bounds(), node1_2->bounds());
+}
+
+// Verifies that a node can only be destroyed by the connection that created it.
+TEST_F(ViewManagerTest, DestroySecurity) {
+  ViewTreeNode* node1 = CreateNodeInParent(view_manager_1()->tree());
+  WaitForTreeSizeToMatch(view_manager_2()->tree(), 3);
+
+  ViewTreeNode* node1_2 = view_manager_2()->GetNodeById(node1->id());
+  NodeTracker tracker2(node1_2);
+  node1_2->Destroy();
+  // Node should not have been destroyed.
+  EXPECT_TRUE(tracker2.is_valid());
+
+  NodeTracker tracker1(node1);
+  node1->Destroy();
+  EXPECT_FALSE(tracker1.is_valid());
 }
 
 }  // namespace view_manager

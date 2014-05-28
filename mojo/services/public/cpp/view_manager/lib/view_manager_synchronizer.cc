@@ -26,13 +26,15 @@ uint32_t MakeTransportId(uint16_t connection_id, uint16_t local_id) {
 ViewTreeNode* AddNodeToViewManager(ViewManager* manager,
                                    ViewTreeNode* parent,
                                    TransportNodeId node_id,
-                                   TransportViewId view_id) {
+                                   TransportViewId view_id,
+                                   const gfx::Rect& bounds) {
   // We don't use the ctor that takes a ViewManager here, since it will call
   // back to the service and attempt to create a new node.
   ViewTreeNode* node = ViewTreeNodePrivate::LocalCreate();
   ViewTreeNodePrivate private_node(node);
   private_node.set_view_manager(manager);
   private_node.set_id(node_id);
+  private_node.LocalSetBounds(gfx::Rect(), bounds);
   if (parent)
     ViewTreeNodePrivate(parent).LocalAddChild(node);
   ViewManagerPrivate private_manager(manager);
@@ -69,7 +71,8 @@ ViewTreeNode* BuildNodeTree(ViewManager* manager,
         manager,
         !parents.empty() ? parents.back() : NULL,
         nodes[i].node_id(),
-        nodes[i].view_id());
+        nodes[i].view_id(),
+        nodes[i].bounds());
     if (!last_node)
       root = node;
     last_node = node;

@@ -10,6 +10,7 @@ struct INode {
   uint32 parent_id;
   uint32 node_id;
   uint32 view_id;
+  mojo.Rect bounds;
 };
 
 // Functions that mutate the hierarchy take a change id. This is an ever

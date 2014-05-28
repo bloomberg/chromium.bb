@@ -39,6 +39,8 @@ class MOJO_VIEW_MANAGER_EXPORT Node
 
   aura::Window* window() { return &window_; }
 
+  const gfx::Rect& bounds() const { return window_.bounds(); }
+
   const Node* GetParent() const;
   Node* GetParent() {
     return const_cast<Node*>(const_cast<const Node*>(this)->GetParent());

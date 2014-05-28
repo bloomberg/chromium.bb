@@ -436,6 +436,7 @@ Array<INode> ViewManagerConnection::NodesToINodes(
     node_builder.set_node_id(NodeIdToTransportId(node->id()));
     node_builder.set_view_id(ViewIdToTransportId(
         node->view() ? node->view()->id() : ViewId()));
+    node_builder.set_bounds(node->bounds());
     array_builder[i] = node_builder.Finish();
   }
   return array_builder.Finish();

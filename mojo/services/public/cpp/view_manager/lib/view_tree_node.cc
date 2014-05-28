@@ -180,6 +180,12 @@ class ScopedDestructionNotifier {
   DISALLOW_COPY_AND_ASSIGN(ScopedDestructionNotifier);
 };
 
+// Some operations are only permitted in the connection that created the node.
+bool OwnsNode(ViewManager* manager, ViewTreeNode* node) {
+  return !manager ||
+      ViewManagerPrivate(manager).synchronizer()->OwnsNode(node->id());
+}
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -193,7 +199,9 @@ ViewTreeNode* ViewTreeNode::Create(ViewManager* view_manager) {
 }
 
 void ViewTreeNode::Destroy() {
-  // TODO(beng): only proceed if |manager_| OwnsNode(this).
+  if (!OwnsNode(manager_, this))
+    return;
+
   if (manager_)
     ViewManagerPrivate(manager_).synchronizer()->DestroyViewTreeNode(id_);
   while (!children_.empty())
@@ -202,7 +210,9 @@ void ViewTreeNode::Destroy() {
 }
 
 void ViewTreeNode::SetBounds(const gfx::Rect& bounds) {
-  // TODO(beng): only proceed if |manager_| OwnsNode(this).
+  if (!OwnsNode(manager_, this))
+    return;
+
   if (manager_)
     ViewManagerPrivate(manager_).synchronizer()->SetBounds(id_, bounds);
   LocalSetBounds(bounds_, bounds);
@@ -217,6 +227,8 @@ void ViewTreeNode::RemoveObserver(ViewTreeNodeObserver* observer) {
 }
 
 void ViewTreeNode::AddChild(ViewTreeNode* child) {
+  // TODO(beng): not necessarily valid to all connections, but possibly to the
+  //             embeddee in an embedder-embeddee relationship.
   if (manager_)
     CHECK_EQ(ViewTreeNodePrivate(child).view_manager(), manager_);
   LocalAddChild(child);
@@ -225,6 +237,8 @@ void ViewTreeNode::AddChild(ViewTreeNode* child) {
 }
 
 void ViewTreeNode::RemoveChild(ViewTreeNode* child) {
+  // TODO(beng): not necessarily valid to all connections, but possibly to the
+  //             embeddee in an embedder-embeddee relationship.
   if (manager_)
     CHECK_EQ(ViewTreeNodePrivate(child).view_manager(), manager_);
   LocalRemoveChild(child);
@@ -256,6 +270,8 @@ ViewTreeNode* ViewTreeNode::GetChildById(TransportNodeId id) {
 }
 
 void ViewTreeNode::SetActiveView(View* view) {
+  // TODO(beng): not necessarily valid to all connections, but possibly to the
+  //             embeddee in an embedder-embeddee relationship.
   if (manager_)
     CHECK_EQ(ViewPrivate(view).view_manager(), manager_);
   LocalSetActiveView(view);
