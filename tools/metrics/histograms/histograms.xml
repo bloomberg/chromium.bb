@@ -5115,7 +5115,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <owner>pastarmovj@chromium.org</owner>
   <summary>
     Whether we were able to contact the AD Domain Controller. This check is
-    performed once at start-up.
+    performed once at start-up on Windows.
   </summary>
 </histogram>
 
@@ -5124,7 +5124,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <owner>pastarmovj@chromium.org</owner>
   <summary>
     Enum of possible things that can fail while checking for enterprise env.
-    This check is performed once at start-up.
+    This check is performed once at start-up on Windows.
   </summary>
 </histogram>
 
@@ -5133,7 +5133,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <owner>pastarmovj@chromium.org</owner>
   <summary>
     Whether the machine is part of an AD domain. This check is performed once at
-    start-up.
+    start-up on Windows.
   </summary>
 </histogram>
 
@@ -5142,9 +5142,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <owner>joaodasilva@chromium.org</owner>
   <owner>pastarmovj@chromium.org</owner>
   <summary>
-    The number of disabled policy entries due to integrity violations while
-    parsing the policy data which happens on start-up and when the policy has
-    changed.
+    The number of disabled policy entries on Windows due to integrity violations
+    while parsing the policy data which happens on start-up and when the policy
+    has changed.
   </summary>
 </histogram>
 
@@ -5153,7 +5153,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <owner>pastarmovj@chromium.org</owner>
   <summary>
     The rough Windows suite we are runnnig on. This check is performed once at
-    start-up.
+    start-up on Windows.
   </summary>
 </histogram>
 
