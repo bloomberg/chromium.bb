@@ -80,7 +80,6 @@ public:
 
 private:
     const CSSToLengthConversionData& cssToLengthConversionData() const;
-    bool useSVGZoomRules() const;
 
     PassRefPtr<StyleImage> styleImage(CSSPropertyID, CSSValue*);
 

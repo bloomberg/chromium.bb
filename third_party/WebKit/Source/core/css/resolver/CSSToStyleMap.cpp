@@ -47,11 +47,6 @@ const CSSToLengthConversionData& CSSToStyleMap::cssToLengthConversionData() cons
     return m_state.cssToLengthConversionData();
 }
 
-bool CSSToStyleMap::useSVGZoomRules() const
-{
-    return m_state.useSVGZoomRules();
-}
-
 PassRefPtr<StyleImage> CSSToStyleMap::styleImage(CSSPropertyID propertyId, CSSValue* value)
 {
     return m_elementStyleResources.styleImage(m_state.document(), m_state.document().textLinkColors(), m_state.style()->color(), propertyId, value);
@@ -548,16 +543,14 @@ BorderImageLengthBox CSSToStyleMap::mapNinePieceImageQuad(CSSValue* value) const
     if (!value || !value->isPrimitiveValue())
         return BorderImageLengthBox(Length(Auto));
 
-    float zoom = useSVGZoomRules() ? 1.0f : cssToLengthConversionData().zoom();
     Quad* slices = toCSSPrimitiveValue(value)->getQuadValue();
 
     // Set up a border image length box to represent our image slices.
-    const CSSToLengthConversionData& conversionData = cssToLengthConversionData().copyWithAdjustedZoom(zoom);
     return BorderImageLengthBox(
-        toBorderImageLength(*slices->top(), conversionData),
-        toBorderImageLength(*slices->right(), conversionData),
-        toBorderImageLength(*slices->bottom(), conversionData),
-        toBorderImageLength(*slices->left(), conversionData));
+        toBorderImageLength(*slices->top(), cssToLengthConversionData()),
+        toBorderImageLength(*slices->right(), cssToLengthConversionData()),
+        toBorderImageLength(*slices->bottom(), cssToLengthConversionData()),
+        toBorderImageLength(*slices->left(), cssToLengthConversionData()));
 }
 
 void CSSToStyleMap::mapNinePieceImageRepeat(CSSValue* value, NinePieceImage& image) const
