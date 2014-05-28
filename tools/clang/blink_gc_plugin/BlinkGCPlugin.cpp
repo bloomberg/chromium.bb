@@ -1093,17 +1093,15 @@ class BlinkGCPluginConsumer : public ASTConsumer {
   bool InCheckedNamespace(RecordInfo* info) {
     if (!info)
       return false;
-    DeclContext* context = info->record()->getDeclContext();
-    if (context->isRecord())
-      return InCheckedNamespace(cache_.Lookup(context));
-    while (context->isNamespace()) {
-      NamespaceDecl* decl = dyn_cast<NamespaceDecl>(context);
-      if (decl->isAnonymousNamespace())
-        return false;
-      if (options_.checked_namespaces.find(decl->getNameAsString()) !=
-          options_.checked_namespaces.end())
-        return true;
-      context = decl->getDeclContext();
+    for (DeclContext* context = info->record()->getDeclContext();
+         !context->isTranslationUnit();
+         context = context->getParent()) {
+      if (NamespaceDecl* decl = dyn_cast<NamespaceDecl>(context)) {
+        if (options_.checked_namespaces.find(decl->getNameAsString()) !=
+            options_.checked_namespaces.end()) {
+          return true;
+        }
+      }
     }
     return false;
   }
