@@ -33,6 +33,7 @@
 
 #include "core/dom/custom/CustomElementDescriptor.h"
 #include "core/dom/custom/CustomElementMicrotaskStep.h"
+#include "platform/heap/Handle.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
@@ -45,12 +46,14 @@ class Element;
 class CustomElementMicrotaskResolutionStep : public CustomElementMicrotaskStep {
     WTF_MAKE_NONCOPYABLE(CustomElementMicrotaskResolutionStep);
 public:
-    static PassOwnPtr<CustomElementMicrotaskResolutionStep> create(PassRefPtr<CustomElementRegistrationContext>, PassRefPtr<Element>, const CustomElementDescriptor&);
+    static PassOwnPtrWillBeRawPtr<CustomElementMicrotaskResolutionStep> create(PassRefPtrWillBeRawPtr<CustomElementRegistrationContext>, PassRefPtrWillBeRawPtr<Element>, const CustomElementDescriptor&);
 
     virtual ~CustomElementMicrotaskResolutionStep();
 
+    virtual void trace(Visitor*) OVERRIDE;
+
 private:
-    CustomElementMicrotaskResolutionStep(PassRefPtr<CustomElementRegistrationContext>, PassRefPtr<Element>, const CustomElementDescriptor&);
+    CustomElementMicrotaskResolutionStep(PassRefPtrWillBeRawPtr<CustomElementRegistrationContext>, PassRefPtrWillBeRawPtr<Element>, const CustomElementDescriptor&);
 
     virtual Result process() OVERRIDE;
     virtual bool needsProcessOrStop() const OVERRIDE;
@@ -59,8 +62,8 @@ private:
     virtual void show(unsigned indent) OVERRIDE;
 #endif
 
-    RefPtr<CustomElementRegistrationContext> m_context;
-    RefPtr<Element> m_element;
+    RefPtrWillBeMember<CustomElementRegistrationContext> m_context;
+    RefPtrWillBeMember<Element> m_element;
     CustomElementDescriptor m_descriptor;
 };
 

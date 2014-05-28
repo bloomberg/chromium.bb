@@ -33,12 +33,12 @@
 
 namespace WebCore {
 
-PassOwnPtr<CustomElementCallbackQueue> CustomElementCallbackQueue::create(PassRefPtr<Element> element)
+PassOwnPtrWillBeRawPtr<CustomElementCallbackQueue> CustomElementCallbackQueue::create(PassRefPtrWillBeRawPtr<Element> element)
 {
-    return adoptPtr(new CustomElementCallbackQueue(element));
+    return adoptPtrWillBeNoop(new CustomElementCallbackQueue(element));
 }
 
-CustomElementCallbackQueue::CustomElementCallbackQueue(PassRefPtr<Element> element)
+CustomElementCallbackQueue::CustomElementCallbackQueue(PassRefPtrWillBeRawPtr<Element> element)
     : m_element(element)
     , m_owner(-1)
     , m_index(0)
@@ -70,6 +70,11 @@ bool CustomElementCallbackQueue::processInElementQueue(ElementQueueId caller)
     }
 
     return didWork;
+}
+
+void CustomElementCallbackQueue::trace(Visitor* visitor)
+{
+    visitor->trace(m_element);
 }
 
 } // namespace WebCore

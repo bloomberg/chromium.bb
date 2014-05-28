@@ -45,9 +45,9 @@
 
 namespace WebCore {
 
-class HTMLImport;
+DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(CustomElementScheduler)
 
-void CustomElementScheduler::scheduleCallback(PassRefPtr<CustomElementLifecycleCallbacks> callbacks, PassRefPtr<Element> element, CustomElementLifecycleCallbacks::CallbackType type)
+void CustomElementScheduler::scheduleCallback(PassRefPtr<CustomElementLifecycleCallbacks> callbacks, PassRefPtrWillBeRawPtr<Element> element, CustomElementLifecycleCallbacks::CallbackType type)
 {
     ASSERT(type != CustomElementLifecycleCallbacks::AttributeChanged);
 
@@ -58,7 +58,7 @@ void CustomElementScheduler::scheduleCallback(PassRefPtr<CustomElementLifecycleC
     queue.append(CustomElementCallbackInvocation::createInvocation(callbacks, type));
 }
 
-void CustomElementScheduler::scheduleAttributeChangedCallback(PassRefPtr<CustomElementLifecycleCallbacks> callbacks, PassRefPtr<Element> element, const AtomicString& name, const AtomicString& oldValue, const AtomicString& newValue)
+void CustomElementScheduler::scheduleAttributeChangedCallback(PassRefPtr<CustomElementLifecycleCallbacks> callbacks, PassRefPtrWillBeRawPtr<Element> element, const AtomicString& name, const AtomicString& oldValue, const AtomicString& newValue)
 {
     if (!callbacks->hasCallback(CustomElementLifecycleCallbacks::AttributeChanged))
         return;
@@ -67,7 +67,7 @@ void CustomElementScheduler::scheduleAttributeChangedCallback(PassRefPtr<CustomE
     queue.append(CustomElementCallbackInvocation::createAttributeChangedInvocation(callbacks, name, oldValue, newValue));
 }
 
-void CustomElementScheduler::resolveOrScheduleResolution(PassRefPtr<CustomElementRegistrationContext> context, PassRefPtr<Element> element, const CustomElementDescriptor& descriptor)
+void CustomElementScheduler::resolveOrScheduleResolution(PassRefPtrWillBeRawPtr<CustomElementRegistrationContext> context, PassRefPtrWillBeRawPtr<Element> element, const CustomElementDescriptor& descriptor)
 {
     if (CustomElementCallbackDispatcher::inCallbackDeliveryScope()) {
         context->resolve(element.get(), descriptor);
@@ -75,7 +75,7 @@ void CustomElementScheduler::resolveOrScheduleResolution(PassRefPtr<CustomElemen
     }
 
     HTMLImportLoader* loader = element->document().importLoader();
-    OwnPtr<CustomElementMicrotaskResolutionStep> step = CustomElementMicrotaskResolutionStep::create(context, element, descriptor);
+    OwnPtrWillBeRawPtr<CustomElementMicrotaskResolutionStep> step = CustomElementMicrotaskResolutionStep::create(context, element, descriptor);
     CustomElementMicrotaskDispatcher::instance().enqueue(loader, step.release());
 }
 
@@ -84,7 +84,7 @@ CustomElementMicrotaskImportStep* CustomElementScheduler::scheduleImport(HTMLImp
     ASSERT(!import->isDone());
     ASSERT(import->parent());
 
-    OwnPtr<CustomElementMicrotaskImportStep> step = CustomElementMicrotaskImportStep::create(import);
+    OwnPtrWillBeRawPtr<CustomElementMicrotaskImportStep> step = CustomElementMicrotaskImportStep::create(import);
     CustomElementMicrotaskImportStep* rawStep = step.get();
 
     // Ownership of the new step is transferred to the parent
@@ -96,11 +96,11 @@ CustomElementMicrotaskImportStep* CustomElementScheduler::scheduleImport(HTMLImp
 
 CustomElementScheduler& CustomElementScheduler::instance()
 {
-    DEFINE_STATIC_LOCAL(CustomElementScheduler, instance, ());
-    return instance;
+    DEFINE_STATIC_LOCAL(OwnPtrWillBePersistent<CustomElementScheduler>, instance, (adoptPtrWillBeNoop (new CustomElementScheduler())));
+    return *instance;
 }
 
-CustomElementCallbackQueue& CustomElementScheduler::ensureCallbackQueue(PassRefPtr<Element> element)
+CustomElementCallbackQueue& CustomElementScheduler::ensureCallbackQueue(PassRefPtrWillBeRawPtr<Element> element)
 {
     ElementCallbackQueueMap::ValueType* it = m_elementCallbackQueueMap.add(element.get(), nullptr).storedValue;
     if (!it->value)
@@ -127,9 +127,9 @@ void CustomElementScheduler::clearElementCallbackQueueMap()
 }
 
 // Finds or creates the callback queue for element.
-CustomElementCallbackQueue& CustomElementScheduler::schedule(PassRefPtr<Element> passElement)
+CustomElementCallbackQueue& CustomElementScheduler::schedule(PassRefPtrWillBeRawPtr<Element> passElement)
 {
-    RefPtr<Element> element(passElement);
+    RefPtrWillBeRawPtr<Element> element(passElement);
 
     CustomElementCallbackQueue& callbackQueue = ensureCallbackQueue(element);
     if (callbackQueue.inCreatedCallback()) {
@@ -148,6 +148,11 @@ CustomElementCallbackQueue& CustomElementScheduler::schedule(PassRefPtr<Element>
 
     CustomElementMicrotaskDispatcher::instance().enqueue(&callbackQueue);
     return callbackQueue;
+}
+
+void CustomElementScheduler::trace(Visitor* visitor)
+{
+    visitor->trace(m_elementCallbackQueueMap);
 }
 
 } // namespace WebCore

@@ -25,13 +25,15 @@ CustomElementMicrotaskDispatcher::CustomElementMicrotaskDispatcher()
 {
 }
 
+DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(CustomElementMicrotaskDispatcher)
+
 CustomElementMicrotaskDispatcher& CustomElementMicrotaskDispatcher::instance()
 {
-    DEFINE_STATIC_LOCAL(CustomElementMicrotaskDispatcher, instance, ());
-    return instance;
+    DEFINE_STATIC_LOCAL(OwnPtrWillBePersistent<CustomElementMicrotaskDispatcher>, instance, (adoptPtrWillBeNoop(new CustomElementMicrotaskDispatcher())));
+    return *instance;
 }
 
-void CustomElementMicrotaskDispatcher::enqueue(HTMLImportLoader* importLoader, PassOwnPtr<CustomElementMicrotaskStep> step)
+void CustomElementMicrotaskDispatcher::enqueue(HTMLImportLoader* importLoader, PassOwnPtrWillBeRawPtr<CustomElementMicrotaskStep> step)
 {
     ASSERT(m_phase == Quiescent || m_phase == DispatchingCallbacks);
     ensureMicrotaskScheduled();
@@ -84,7 +86,7 @@ void CustomElementMicrotaskDispatcher::doDispatch()
     m_resolutionAndImports->dispatch();
 
     m_phase = DispatchingCallbacks;
-    for (Vector<CustomElementCallbackQueue*>::iterator it = m_elements.begin();it != m_elements.end(); ++it) {
+    for (WillBeHeapVector<RawPtrWillBeMember<CustomElementCallbackQueue> >::iterator it = m_elements.begin(); it != m_elements.end(); ++it) {
         // Created callback may enqueue an attached callback.
         CustomElementCallbackDispatcher::CallbackDeliveryScope scope;
         (*it)->processInElementQueue(kMicrotaskQueueId);
@@ -93,6 +95,14 @@ void CustomElementMicrotaskDispatcher::doDispatch()
     m_elements.clear();
     CustomElementScheduler::microtaskDispatcherDidFinish();
     m_phase = Quiescent;
+}
+
+void CustomElementMicrotaskDispatcher::trace(Visitor* visitor)
+{
+    visitor->trace(m_resolutionAndImports);
+#if ENABLE(OILPAN)
+    visitor->trace(m_elements);
+#endif
 }
 
 #if !defined(NDEBUG)

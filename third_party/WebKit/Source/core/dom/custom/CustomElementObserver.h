@@ -31,15 +31,15 @@
 #ifndef CustomElementObserver_h
 #define CustomElementObserver_h
 
+#include "platform/heap/Handle.h"
 #include "wtf/HashMap.h"
 
 namespace WebCore {
 
 class Element;
 
-class CustomElementObserver {
+class CustomElementObserver : public NoBaseWillBeGarbageCollectedFinalized<CustomElementObserver> {
 public:
-    CustomElementObserver() { }
     virtual ~CustomElementObserver() { }
 
     // API for CustomElement to kick off notifications
@@ -47,18 +47,16 @@ public:
     static void notifyElementDidFinishParsingChildren(Element*);
     static void notifyElementWasDestroyed(Element*);
 
+    virtual void trace(Visitor*) { }
+
 protected:
+    CustomElementObserver() { }
+
     void observe(Element*);
     void unobserve(Element*);
 
     virtual void elementDidFinishParsingChildren(Element*) = 0;
     virtual void elementWasDestroyed(Element* element) { unobserve(element); }
-
-private:
-    // Maps elements to the observer watching them. At most one per
-    // element at a time.
-    typedef HashMap<Element*, CustomElementObserver*> ElementObserverMap;
-    static ElementObserverMap& elementObservers();
 };
 
 }

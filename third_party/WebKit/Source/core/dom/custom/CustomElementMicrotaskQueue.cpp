@@ -75,7 +75,7 @@ private:
 MicrotaskQueueInvocationScope* MicrotaskQueueInvocationScope::s_top = 0;
 #endif
 
-void CustomElementMicrotaskQueue::enqueue(PassOwnPtr<CustomElementMicrotaskStep> step)
+void CustomElementMicrotaskQueue::enqueue(PassOwnPtrWillBeRawPtr<CustomElementMicrotaskStep> step)
 {
     m_queue.append(step);
 }
@@ -83,7 +83,7 @@ void CustomElementMicrotaskQueue::enqueue(PassOwnPtr<CustomElementMicrotaskStep>
 CustomElementMicrotaskStep::Result CustomElementMicrotaskQueue::dispatch()
 {
     MicrotaskQueueInvocationScope scope(this);
-    Vector<OwnPtr<CustomElementMicrotaskStep> > remaining;
+    WillBeHeapVector<OwnPtrWillBeMember<CustomElementMicrotaskStep> > remaining;
     Result accumulatedResult = CustomElementMicrotaskStep::ContinueWithRemoving;
 
     unsigned i;
@@ -111,6 +111,11 @@ bool CustomElementMicrotaskQueue::needsProcessOrStop() const
     }
 
     return false;
+}
+
+void CustomElementMicrotaskQueue::trace(Visitor* visitor)
+{
+    visitor->trace(m_queue);
 }
 
 #if !defined(NDEBUG)

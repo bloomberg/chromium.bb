@@ -211,7 +211,7 @@ bool HTMLImportLoader::shouldBlockScriptExecution() const
     return firstImport()->state().shouldBlockScriptExecution();
 }
 
-PassRefPtr<CustomElementMicrotaskQueue> HTMLImportLoader::microtaskQueue() const
+PassRefPtrWillBeRawPtr<CustomElementMicrotaskQueue> HTMLImportLoader::microtaskQueue() const
 {
     return m_microtaskQueue;
 }

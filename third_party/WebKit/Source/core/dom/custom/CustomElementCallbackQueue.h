@@ -33,6 +33,7 @@
 
 #include "core/dom/Element.h"
 #include "core/dom/custom/CustomElementProcessingStep.h"
+#include "platform/heap/Handle.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
@@ -43,10 +44,10 @@ namespace WebCore {
 
 // FIXME: Rename this because it contains resolution and upgrade as
 // well as callbacks.
-class CustomElementCallbackQueue {
+class CustomElementCallbackQueue : public NoBaseWillBeGarbageCollectedFinalized<CustomElementCallbackQueue> {
     WTF_MAKE_NONCOPYABLE(CustomElementCallbackQueue);
 public:
-    static PassOwnPtr<CustomElementCallbackQueue> create(PassRefPtr<Element>);
+    static PassOwnPtrWillBeRawPtr<CustomElementCallbackQueue> create(PassRefPtrWillBeRawPtr<Element>);
 
     typedef int ElementQueueId;
     ElementQueueId owner() const { return m_owner; }
@@ -64,10 +65,12 @@ public:
     void append(PassOwnPtr<CustomElementProcessingStep> invocation) { m_queue.append(invocation); }
     bool inCreatedCallback() const { return m_inCreatedCallback; }
 
-private:
-    CustomElementCallbackQueue(PassRefPtr<Element>);
+    void trace(Visitor*);
 
-    RefPtr<Element> m_element;
+private:
+    explicit CustomElementCallbackQueue(PassRefPtrWillBeRawPtr<Element>);
+
+    RefPtrWillBeMember<Element> m_element;
     Vector<OwnPtr<CustomElementProcessingStep> > m_queue;
     ElementQueueId m_owner;
     size_t m_index;

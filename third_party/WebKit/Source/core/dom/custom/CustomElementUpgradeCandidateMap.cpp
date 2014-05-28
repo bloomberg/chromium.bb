@@ -35,11 +35,20 @@
 
 namespace WebCore {
 
+PassOwnPtrWillBeRawPtr<CustomElementUpgradeCandidateMap> CustomElementUpgradeCandidateMap::create()
+{
+    return adoptPtrWillBeNoop(new CustomElementUpgradeCandidateMap());
+}
+
 CustomElementUpgradeCandidateMap::~CustomElementUpgradeCandidateMap()
 {
+#if !ENABLE(OILPAN)
+    // With Oilpan enabled, the observer table keeps a weak reference to the
+    // element; no need for explicit removal.
     UpgradeCandidateMap::const_iterator::Keys end = m_upgradeCandidates.end().keys();
     for (UpgradeCandidateMap::const_iterator::Keys it = m_upgradeCandidates.begin().keys(); it != end; ++it)
         unobserve(*it);
+#endif
 }
 
 void CustomElementUpgradeCandidateMap::add(const CustomElementDescriptor& descriptor, Element* element)
@@ -52,32 +61,21 @@ void CustomElementUpgradeCandidateMap::add(const CustomElementDescriptor& descri
     UnresolvedDefinitionMap::iterator it = m_unresolvedDefinitions.find(descriptor);
     ElementSet* elements;
     if (it == m_unresolvedDefinitions.end())
-        elements = &m_unresolvedDefinitions.add(descriptor, ElementSet()).storedValue->value;
+        elements = m_unresolvedDefinitions.add(descriptor, adoptPtrWillBeNoop(new ElementSet())).storedValue->value.get();
     else
-        elements = &it->value;
+        elements = it->value.get();
     elements->add(element);
-}
-
-void CustomElementUpgradeCandidateMap::remove(Element* element)
-{
-    unobserve(element);
-    removeCommon(element);
 }
 
 void CustomElementUpgradeCandidateMap::elementWasDestroyed(Element* element)
 {
     CustomElementObserver::elementWasDestroyed(element);
-    removeCommon(element);
-}
-
-void CustomElementUpgradeCandidateMap::removeCommon(Element* element)
-{
     UpgradeCandidateMap::iterator candidate = m_upgradeCandidates.find(element);
     ASSERT_WITH_SECURITY_IMPLICATION(candidate != m_upgradeCandidates.end());
 
     UnresolvedDefinitionMap::iterator elements = m_unresolvedDefinitions.find(candidate->value);
     ASSERT_WITH_SECURITY_IMPLICATION(elements != m_unresolvedDefinitions.end());
-    elements->value.remove(element);
+    elements->value->remove(element);
     m_upgradeCandidates.remove(candidate);
 }
 
@@ -95,19 +93,28 @@ void CustomElementUpgradeCandidateMap::moveToEnd(Element* element)
 
     UnresolvedDefinitionMap::iterator elements = m_unresolvedDefinitions.find(candidate->value);
     ASSERT_WITH_SECURITY_IMPLICATION(elements != m_unresolvedDefinitions.end());
-    elements->value.appendOrMoveToLast(element);
+    elements->value->appendOrMoveToLast(element);
 }
 
-ListHashSet<Element*> CustomElementUpgradeCandidateMap::takeUpgradeCandidatesFor(const CustomElementDescriptor& descriptor)
+PassOwnPtrWillBeRawPtr<CustomElementUpgradeCandidateMap::ElementSet> CustomElementUpgradeCandidateMap::takeUpgradeCandidatesFor(const CustomElementDescriptor& descriptor)
 {
-    const ListHashSet<Element*>& candidates = m_unresolvedDefinitions.take(descriptor);
+    OwnPtrWillBeRawPtr<ElementSet> candidates = m_unresolvedDefinitions.take(descriptor);
 
-    for (ElementSet::const_iterator candidate = candidates.begin(); candidate != candidates.end(); ++candidate) {
+    if (!candidates)
+        return nullptr;
+
+    for (ElementSet::const_iterator candidate = candidates->begin(); candidate != candidates->end(); ++candidate) {
         unobserve(*candidate);
         m_upgradeCandidates.remove(*candidate);
     }
+    return candidates.release();
+}
 
-    return candidates;
+void CustomElementUpgradeCandidateMap::trace(Visitor* visitor)
+{
+    visitor->trace(m_upgradeCandidates);
+    visitor->trace(m_unresolvedDefinitions);
+    CustomElementObserver::trace(visitor);
 }
 
 }

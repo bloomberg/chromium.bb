@@ -33,6 +33,7 @@
 
 #include "core/dom/custom/CustomElementCallbackQueue.h"
 #include "core/dom/custom/CustomElementLifecycleCallbacks.h"
+#include "platform/heap/Handle.h"
 #include "wtf/HashMap.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassRefPtr.h"
@@ -45,24 +46,28 @@ class CustomElementMicrotaskImportStep;
 class Element;
 class HTMLImportChild;
 
-class CustomElementScheduler {
+class CustomElementScheduler FINAL : public NoBaseWillBeGarbageCollected<CustomElementScheduler> {
+    DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(CustomElementScheduler);
 public:
-    static void scheduleCallback(PassRefPtr<CustomElementLifecycleCallbacks>, PassRefPtr<Element>, CustomElementLifecycleCallbacks::CallbackType);
-    static void scheduleAttributeChangedCallback(PassRefPtr<CustomElementLifecycleCallbacks>, PassRefPtr<Element>, const AtomicString& name, const AtomicString& oldValue, const AtomicString& newValue);
 
-    static void resolveOrScheduleResolution(PassRefPtr<CustomElementRegistrationContext>, PassRefPtr<Element>, const CustomElementDescriptor&);
+    static void scheduleCallback(PassRefPtr<CustomElementLifecycleCallbacks>, PassRefPtrWillBeRawPtr<Element>, CustomElementLifecycleCallbacks::CallbackType);
+    static void scheduleAttributeChangedCallback(PassRefPtr<CustomElementLifecycleCallbacks>, PassRefPtrWillBeRawPtr<Element>, const AtomicString& name, const AtomicString& oldValue, const AtomicString& newValue);
+
+    static void resolveOrScheduleResolution(PassRefPtrWillBeRawPtr<CustomElementRegistrationContext>, PassRefPtrWillBeRawPtr<Element>, const CustomElementDescriptor&);
     static CustomElementMicrotaskImportStep* scheduleImport(HTMLImportChild*);
 
     static void microtaskDispatcherDidFinish();
     static void callbackDispatcherDidFinish();
+
+    void trace(Visitor*);
 
 private:
     CustomElementScheduler() { }
 
     static CustomElementScheduler& instance();
 
-    CustomElementCallbackQueue& ensureCallbackQueue(PassRefPtr<Element>);
-    CustomElementCallbackQueue& schedule(PassRefPtr<Element>);
+    CustomElementCallbackQueue& ensureCallbackQueue(PassRefPtrWillBeRawPtr<Element>);
+    CustomElementCallbackQueue& schedule(PassRefPtrWillBeRawPtr<Element>);
 
     // FIXME: Consider moving the element's callback queue to
     // ElementRareData. Then the scheduler can become completely
@@ -71,7 +76,7 @@ private:
 
     // The element -> callback queue map is populated by the scheduler
     // and owns the lifetimes of the CustomElementCallbackQueues.
-    typedef HashMap<Element*, OwnPtr<CustomElementCallbackQueue> > ElementCallbackQueueMap;
+    typedef WillBeHeapHashMap<RawPtrWillBeMember<Element>, OwnPtrWillBeMember<CustomElementCallbackQueue> > ElementCallbackQueueMap;
     ElementCallbackQueueMap m_elementCallbackQueueMap;
 };
 

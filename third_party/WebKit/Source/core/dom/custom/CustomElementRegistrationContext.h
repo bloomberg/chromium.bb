@@ -49,9 +49,12 @@ class Document;
 class Element;
 class ExceptionState;
 
-class CustomElementRegistrationContext : public RefCounted<CustomElementRegistrationContext> {
+class CustomElementRegistrationContext FINAL : public RefCountedWillBeGarbageCollectedFinalized<CustomElementRegistrationContext> {
 public:
-    static PassRefPtr<CustomElementRegistrationContext> create();
+    static PassRefPtrWillBeRawPtr<CustomElementRegistrationContext> create()
+    {
+        return adoptRefWillBeNoop(new CustomElementRegistrationContext());
+    }
 
     ~CustomElementRegistrationContext() { }
 
@@ -64,8 +67,10 @@ public:
 
     void resolve(Element*, const CustomElementDescriptor&);
 
+    void trace(Visitor*);
+
 protected:
-    CustomElementRegistrationContext() { }
+    CustomElementRegistrationContext();
 
     // Instance creation
     void didGiveTypeExtension(Element*, const AtomicString& type);
@@ -76,7 +81,7 @@ private:
     CustomElementRegistry m_registry;
 
     // Element creation
-    CustomElementUpgradeCandidateMap m_candidates;
+    OwnPtrWillBeMember<CustomElementUpgradeCandidateMap> m_candidates;
 };
 
 }

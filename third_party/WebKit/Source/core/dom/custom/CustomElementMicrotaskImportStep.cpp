@@ -39,9 +39,9 @@
 
 namespace WebCore {
 
-PassOwnPtr<CustomElementMicrotaskImportStep> CustomElementMicrotaskImportStep::create(HTMLImportChild* import)
+PassOwnPtrWillBeRawPtr<CustomElementMicrotaskImportStep> CustomElementMicrotaskImportStep::create(HTMLImportChild* import)
 {
-    return adoptPtr(new CustomElementMicrotaskImportStep(import));
+    return adoptPtrWillBeNoop(new CustomElementMicrotaskImportStep(import));
 }
 
 CustomElementMicrotaskImportStep::CustomElementMicrotaskImportStep(HTMLImportChild* import)
@@ -94,6 +94,12 @@ CustomElementMicrotaskStep::Result CustomElementMicrotaskImportStep::process()
 bool CustomElementMicrotaskImportStep::needsProcessOrStop() const
 {
     return shouldStopProcessing() || m_queue->needsProcessOrStop();
+}
+
+void CustomElementMicrotaskImportStep::trace(Visitor* visitor)
+{
+    visitor->trace(m_queue);
+    CustomElementMicrotaskStep::trace(visitor);
 }
 
 #if !defined(NDEBUG)

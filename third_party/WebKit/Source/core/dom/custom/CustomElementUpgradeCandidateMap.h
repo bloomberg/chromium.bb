@@ -35,38 +35,40 @@
 #include "core/dom/custom/CustomElementDescriptorHash.h"
 #include "core/dom/custom/CustomElementObserver.h"
 #include "wtf/HashMap.h"
-#include "wtf/ListHashSet.h"
+#include "wtf/LinkedHashSet.h"
 #include "wtf/Noncopyable.h"
 
 namespace WebCore {
 
 class Element;
 
-class CustomElementUpgradeCandidateMap : CustomElementObserver {
+class CustomElementUpgradeCandidateMap FINAL : public CustomElementObserver {
     WTF_MAKE_NONCOPYABLE(CustomElementUpgradeCandidateMap);
 public:
-    CustomElementUpgradeCandidateMap() { }
-    ~CustomElementUpgradeCandidateMap();
+    static PassOwnPtrWillBeRawPtr<CustomElementUpgradeCandidateMap> create();
+    virtual ~CustomElementUpgradeCandidateMap();
 
     // API for CustomElementRegistrationContext to save and take candidates
 
-    typedef ListHashSet<Element*> ElementSet;
+    typedef WillBeHeapLinkedHashSet<RawPtrWillBeWeakMember<Element> > ElementSet;
 
     void add(const CustomElementDescriptor&, Element*);
-    void remove(Element*);
-    ElementSet takeUpgradeCandidatesFor(const CustomElementDescriptor&);
+    PassOwnPtrWillBeRawPtr<ElementSet> takeUpgradeCandidatesFor(const CustomElementDescriptor&);
+
+    virtual void trace(Visitor*) OVERRIDE;
 
 private:
+    CustomElementUpgradeCandidateMap() { }
+
     virtual void elementWasDestroyed(Element*) OVERRIDE;
-    void removeCommon(Element*);
 
     virtual void elementDidFinishParsingChildren(Element*) OVERRIDE;
     void moveToEnd(Element*);
 
-    typedef HashMap<Element*, CustomElementDescriptor> UpgradeCandidateMap;
+    typedef WillBeHeapHashMap<RawPtrWillBeWeakMember<Element>, CustomElementDescriptor> UpgradeCandidateMap;
     UpgradeCandidateMap m_upgradeCandidates;
 
-    typedef HashMap<CustomElementDescriptor, ElementSet> UnresolvedDefinitionMap;
+    typedef WillBeHeapHashMap<CustomElementDescriptor, OwnPtrWillBeMember<ElementSet> > UnresolvedDefinitionMap;
     UnresolvedDefinitionMap m_unresolvedDefinitions;
 };
 

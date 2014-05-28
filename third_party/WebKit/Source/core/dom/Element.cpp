@@ -171,12 +171,10 @@ Element::~Element()
 #if !ENABLE(OILPAN)
     if (hasRareData())
         elementRareData()->clearShadow();
-#endif
 
     if (isCustomElement())
         CustomElement::wasDestroyed(this);
 
-#if !ENABLE(OILPAN)
     if (hasSyntheticAttrChildNodes())
         detachAllAttrNodesFromElement();
 

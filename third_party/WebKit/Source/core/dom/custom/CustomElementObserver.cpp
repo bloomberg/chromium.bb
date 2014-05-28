@@ -31,12 +31,18 @@
 #include "config.h"
 #include "core/dom/custom/CustomElementObserver.h"
 
+#include "core/dom/Element.h"
+
 namespace WebCore {
 
-CustomElementObserver::ElementObserverMap& CustomElementObserver::elementObservers()
+// Maps elements to the observer watching them. At most one per
+// element at a time.
+typedef WillBeHeapHashMap<RawPtrWillBeWeakMember<Element>, RawPtrWillBeMember<CustomElementObserver> > ElementObserverMap;
+
+static ElementObserverMap& elementObservers()
 {
-    DEFINE_STATIC_LOCAL(ElementObserverMap, map, ());
-    return map;
+    DEFINE_STATIC_LOCAL(OwnPtrWillBePersistent<ElementObserverMap>, map, (adoptPtrWillBeNoop(new ElementObserverMap())));
+    return *map;
 }
 
 void CustomElementObserver::notifyElementDidFinishParsingChildren(Element* element)

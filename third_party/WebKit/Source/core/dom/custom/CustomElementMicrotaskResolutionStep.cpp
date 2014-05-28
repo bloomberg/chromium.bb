@@ -36,12 +36,12 @@
 
 namespace WebCore {
 
-PassOwnPtr<CustomElementMicrotaskResolutionStep> CustomElementMicrotaskResolutionStep::create(PassRefPtr<CustomElementRegistrationContext> context, PassRefPtr<Element> element, const CustomElementDescriptor& descriptor)
+PassOwnPtrWillBeRawPtr<CustomElementMicrotaskResolutionStep> CustomElementMicrotaskResolutionStep::create(PassRefPtrWillBeRawPtr<CustomElementRegistrationContext> context, PassRefPtrWillBeRawPtr<Element> element, const CustomElementDescriptor& descriptor)
 {
-    return adoptPtr(new CustomElementMicrotaskResolutionStep(context, element, descriptor));
+    return adoptPtrWillBeNoop(new CustomElementMicrotaskResolutionStep(context, element, descriptor));
 }
 
-CustomElementMicrotaskResolutionStep::CustomElementMicrotaskResolutionStep(PassRefPtr<CustomElementRegistrationContext> context, PassRefPtr<Element> element, const CustomElementDescriptor& descriptor)
+CustomElementMicrotaskResolutionStep::CustomElementMicrotaskResolutionStep(PassRefPtrWillBeRawPtr<CustomElementRegistrationContext> context, PassRefPtrWillBeRawPtr<Element> element, const CustomElementDescriptor& descriptor)
     : m_context(context)
     , m_element(element)
     , m_descriptor(descriptor)
@@ -61,6 +61,13 @@ CustomElementMicrotaskStep::Result CustomElementMicrotaskResolutionStep::process
 bool CustomElementMicrotaskResolutionStep::needsProcessOrStop() const
 {
     return true;
+}
+
+void CustomElementMicrotaskResolutionStep::trace(Visitor* visitor)
+{
+    visitor->trace(m_context);
+    visitor->trace(m_element);
+    CustomElementMicrotaskStep::trace(visitor);
 }
 
 #if !defined(NDEBUG)

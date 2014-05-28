@@ -32,6 +32,7 @@
 #define CustomElementMicrotaskQueue_h
 
 #include "core/dom/custom/CustomElementMicrotaskStep.h"
+#include "platform/heap/Handle.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
@@ -41,18 +42,22 @@
 
 namespace WebCore {
 
-class CustomElementMicrotaskQueue : public RefCounted<CustomElementMicrotaskQueue> {
+class CustomElementMicrotaskQueue FINAL : public RefCountedWillBeGarbageCollectedFinalized<CustomElementMicrotaskQueue> {
     WTF_MAKE_NONCOPYABLE(CustomElementMicrotaskQueue);
 public:
-    static PassRefPtr<CustomElementMicrotaskQueue> create() { return adoptRef(new CustomElementMicrotaskQueue()); }
-
+    static PassRefPtrWillBeRawPtr<CustomElementMicrotaskQueue> create()
+    {
+        return adoptRefWillBeNoop(new CustomElementMicrotaskQueue());
+    }
 
     bool isEmpty() const { return m_queue.isEmpty(); }
-    void enqueue(PassOwnPtr<CustomElementMicrotaskStep>);
+    void enqueue(PassOwnPtrWillBeRawPtr<CustomElementMicrotaskStep>);
 
     typedef CustomElementMicrotaskStep::Result Result;
     Result dispatch();
     bool needsProcessOrStop() const;
+
+    void trace(Visitor*);
 
 #if !defined(NDEBUG)
     void show(unsigned indent);
@@ -60,7 +65,7 @@ public:
 private:
     CustomElementMicrotaskQueue() { }
 
-    Vector<OwnPtr<CustomElementMicrotaskStep> > m_queue;
+    WillBeHeapVector<OwnPtrWillBeMember<CustomElementMicrotaskStep> > m_queue;
 };
 
 }

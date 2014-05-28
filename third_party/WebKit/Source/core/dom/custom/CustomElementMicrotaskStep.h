@@ -31,11 +31,12 @@
 #ifndef CustomElementMicrotaskStep_h
 #define CustomElementMicrotaskStep_h
 
+#include "platform/heap/Handle.h"
 #include "wtf/Noncopyable.h"
 
 namespace WebCore {
 
-class CustomElementMicrotaskStep {
+class CustomElementMicrotaskStep : public NoBaseWillBeGarbageCollectedFinalized<CustomElementMicrotaskStep> {
     WTF_MAKE_NONCOPYABLE(CustomElementMicrotaskStep);
 public:
     CustomElementMicrotaskStep() { }
@@ -49,6 +50,8 @@ public:
 
     virtual Result process() = 0;
     virtual bool needsProcessOrStop() const = 0;
+
+    virtual void trace(Visitor*) { }
 
 #if !defined(NDEBUG)
     virtual void show(unsigned indent) = 0;

@@ -31,6 +31,7 @@
 #ifndef CustomElementDescriptor_h
 #define CustomElementDescriptor_h
 
+#include "platform/heap/Handle.h"
 #include "wtf/HashTableDeletedValueType.h"
 #include "wtf/text/AtomicString.h"
 
@@ -41,6 +42,7 @@ struct CustomElementDescriptorHash;
 // A Custom Element descriptor is everything necessary to match a
 // Custom Element instance to a definition.
 class CustomElementDescriptor {
+    ALLOW_ONLY_INLINE_ALLOCATION();
 public:
     CustomElementDescriptor(const AtomicString& type, const AtomicString& namespaceURI, const AtomicString& localName)
         : m_type(type)

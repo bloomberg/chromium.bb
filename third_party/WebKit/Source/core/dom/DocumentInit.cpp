@@ -139,7 +139,7 @@ DocumentInit& DocumentInit::withNewRegistrationContext()
     return *this;
 }
 
-PassRefPtr<CustomElementRegistrationContext> DocumentInit::registrationContext(Document* document) const
+PassRefPtrWillBeRawPtr<CustomElementRegistrationContext> DocumentInit::registrationContext(Document* document) const
 {
     if (!document->isHTMLDocument() && !document->isXHTMLDocument())
         return nullptr;

@@ -1368,7 +1368,7 @@ private:
     OwnPtr<TextAutosizer> m_textAutosizer;
     OwnPtr<FastTextAutosizer> m_fastTextAutosizer;
 
-    RefPtr<CustomElementRegistrationContext> m_registrationContext;
+    RefPtrWillBeMember<CustomElementRegistrationContext> m_registrationContext;
 
     void elementDataCacheClearTimerFired(Timer<Document>*);
     Timer<Document> m_elementDataCacheClearTimer;

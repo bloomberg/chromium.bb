@@ -33,6 +33,7 @@
 
 #include "core/fetch/RawResource.h"
 #include "core/fetch/ResourceOwner.h"
+#include "platform/heap/Handle.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/Vector.h"
@@ -86,7 +87,7 @@ public:
     void didFinishParsing();
     void didRemoveAllPendingStylesheet();
 
-    PassRefPtr<CustomElementMicrotaskQueue> microtaskQueue() const;
+    PassRefPtrWillBeRawPtr<CustomElementMicrotaskQueue> microtaskQueue() const;
 
 private:
     HTMLImportLoader(HTMLImportsController*);
@@ -111,7 +112,7 @@ private:
     State m_state;
     RefPtr<Document> m_importedDocument;
     RefPtr<DocumentWriter> m_writer;
-    RefPtr<CustomElementMicrotaskQueue> m_microtaskQueue;
+    RefPtrWillBePersistent<CustomElementMicrotaskQueue> m_microtaskQueue;
 };
 
 } // namespace WebCore

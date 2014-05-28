@@ -32,6 +32,7 @@
 #define CustomElementMicrotaskImportStep_h
 
 #include "core/dom/custom/CustomElementMicrotaskStep.h"
+#include "platform/heap/Handle.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
@@ -52,7 +53,7 @@ class HTMLImportChild;
 class CustomElementMicrotaskImportStep : public CustomElementMicrotaskStep {
     WTF_MAKE_NONCOPYABLE(CustomElementMicrotaskImportStep);
 public:
-    static PassOwnPtr<CustomElementMicrotaskImportStep> create(HTMLImportChild*);
+    static PassOwnPtrWillBeRawPtr<CustomElementMicrotaskImportStep> create(HTMLImportChild*);
     virtual ~CustomElementMicrotaskImportStep();
 
     // API for HTML Imports
@@ -60,8 +61,10 @@ public:
     void importDidFinishLoading();
     WeakPtr<CustomElementMicrotaskImportStep> weakPtr() { return m_weakFactory.createWeakPtr(); }
 
+    virtual void trace(Visitor*) OVERRIDE;
+
 private:
-    CustomElementMicrotaskImportStep(HTMLImportChild*);
+    explicit CustomElementMicrotaskImportStep(HTMLImportChild*);
 
     void didUpgradeAllCustomElements();
     bool shouldWaitForImport() const;
@@ -75,7 +78,7 @@ private:
     virtual void show(unsigned indent) OVERRIDE;
 #endif
     WeakPtr<HTMLImportChild> m_import;
-    RefPtr<CustomElementMicrotaskQueue> m_queue;
+    RefPtrWillBeMember<CustomElementMicrotaskQueue> m_queue;
     WeakPtrFactory<CustomElementMicrotaskImportStep> m_weakFactory;
 };
 

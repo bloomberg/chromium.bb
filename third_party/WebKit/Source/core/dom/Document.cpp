@@ -620,9 +620,9 @@ void Document::dispose()
     m_associatedFormControls.clear();
 
     detachParser();
-#endif
 
     m_registrationContext.clear();
+#endif
 
     if (m_importsController) {
         m_importsController->wasDetachedFrom(*this);
@@ -5784,6 +5784,7 @@ void Document::trace(Visitor* visitor)
     visitor->trace(m_contextFeatures);
     visitor->trace(m_styleSheetList);
     visitor->trace(m_mediaQueryMatcher);
+    visitor->trace(m_registrationContext);
     visitor->trace(m_associatedFormControls);
     visitor->trace(m_templateDocument);
     visitor->trace(m_templateDocumentHost);

@@ -45,6 +45,11 @@
 
 namespace WebCore {
 
+CustomElementRegistrationContext::CustomElementRegistrationContext()
+    : m_candidates(CustomElementUpgradeCandidateMap::create())
+{
+}
+
 void CustomElementRegistrationContext::registerElement(Document* document, CustomElementConstructorBuilder* constructorBuilder, const AtomicString& type, CustomElement::NameSet validNames, ExceptionState& exceptionState)
 {
     CustomElementDefinition* definition = m_registry.registerElement(document, constructorBuilder, type, validNames, exceptionState);
@@ -53,8 +58,12 @@ void CustomElementRegistrationContext::registerElement(Document* document, Custo
         return;
 
     // Upgrade elements that were waiting for this definition.
-    const CustomElementUpgradeCandidateMap::ElementSet& upgradeCandidates = m_candidates.takeUpgradeCandidatesFor(definition->descriptor());
-    for (CustomElementUpgradeCandidateMap::ElementSet::const_iterator it = upgradeCandidates.begin(); it != upgradeCandidates.end(); ++it)
+    OwnPtrWillBeRawPtr<CustomElementUpgradeCandidateMap::ElementSet> upgradeCandidates = m_candidates->takeUpgradeCandidatesFor(definition->descriptor());
+
+    if (!upgradeCandidates)
+        return;
+
+    for (CustomElementUpgradeCandidateMap::ElementSet::const_iterator it = upgradeCandidates->begin(); it != upgradeCandidates->end(); ++it)
         CustomElement::define(*it, definition);
 }
 
@@ -105,13 +114,8 @@ void CustomElementRegistrationContext::resolve(Element* element, const CustomEle
         CustomElement::define(element, definition);
     } else {
         ASSERT(element->customElementState() == Element::WaitingForUpgrade);
-        m_candidates.add(descriptor, element);
+        m_candidates->add(descriptor, element);
     }
-}
-
-PassRefPtr<CustomElementRegistrationContext> CustomElementRegistrationContext::create()
-{
-    return adoptRef(new CustomElementRegistrationContext());
 }
 
 void CustomElementRegistrationContext::setIsAttributeAndTypeExtension(Element* element, const AtomicString& type)
@@ -148,6 +152,11 @@ void CustomElementRegistrationContext::setTypeExtension(Element* element, const 
 
     element->setCustomElementState(Element::WaitingForUpgrade);
     context->didGiveTypeExtension(element, type);
+}
+
+void CustomElementRegistrationContext::trace(Visitor* visitor)
+{
+    visitor->trace(m_candidates);
 }
 
 } // namespace WebCore
