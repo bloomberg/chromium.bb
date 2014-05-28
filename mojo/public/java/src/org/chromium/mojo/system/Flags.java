@@ -11,6 +11,7 @@ package org.chromium.mojo.system;
  */
 public abstract class Flags<F extends Flags<F>> {
     private int mFlags;
+    private boolean mImmutable;
 
     /**
      * Dedicated constructor.
@@ -18,6 +19,7 @@ public abstract class Flags<F extends Flags<F>> {
      * @param flags initial value of the flag.
      */
     protected Flags(int flags) {
+        mImmutable = false;
         mFlags = flags;
     }
 
@@ -35,11 +37,24 @@ public abstract class Flags<F extends Flags<F>> {
      * @return this.
      */
     protected F setFlag(int flag, boolean value) {
+        if (mImmutable) {
+            throw new UnsupportedOperationException("Flags is immutable.");
+        }
         if (value) {
             mFlags |= flag;
         } else {
             mFlags &= ~flag;
         }
+        @SuppressWarnings("unchecked")
+        F f = (F) this;
+        return f;
+    }
+
+    /**
+     * Makes this flag immutable. This is a non-reversable operation.
+     */
+    protected F immutable() {
+        mImmutable = true;
         @SuppressWarnings("unchecked")
         F f = (F) this;
         return f;

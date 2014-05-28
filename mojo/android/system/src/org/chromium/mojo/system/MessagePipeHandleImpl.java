@@ -30,7 +30,7 @@ class MessagePipeHandleImpl extends HandleBase implements MessagePipeHandle {
      * @see MessagePipeHandle#writeMessage(ByteBuffer, List, WriteFlags)
      */
     @Override
-    public void writeMessage(ByteBuffer bytes, List<Handle> handles, WriteFlags flags) {
+    public void writeMessage(ByteBuffer bytes, List<? extends Handle> handles, WriteFlags flags) {
         mCore.writeMessage(this, bytes, handles, flags);
     }
 

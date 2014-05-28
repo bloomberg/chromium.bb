@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/android/javatests/core_test.h"
+#include "mojo/android/javatests/mojo_test_case.h"
 
 #include "base/android/jni_android.h"
 #include "base/android/scoped_java_ref.h"
@@ -11,7 +11,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/test/test_support_android.h"
-#include "jni/CoreTest_jni.h"
+#include "jni/MojoTestCase_jni.h"
 #include "mojo/public/cpp/environment/environment.h"
 
 namespace {
@@ -53,7 +53,7 @@ static void RunLoop(JNIEnv* env, jobject jcaller, jlong timeout_ms) {
   run_loop.Run();
 }
 
-bool RegisterCoreTest(JNIEnv* env) {
+bool RegisterMojoTestCase(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
 

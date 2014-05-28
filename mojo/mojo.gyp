@@ -699,7 +699,7 @@
             'mojo_java_set_jni_headers',
           ],
           'sources': [
-            'android/javatests/src/org/chromium/mojo/system/CoreTest.java',
+            'android/javatests/src/org/chromium/mojo/system/MojoTestCase.java',
             'android/system/src/org/chromium/mojo/system/CoreImpl.java',
             'services/native_viewport/android/src/org/chromium/mojo/NativeViewportAndroid.java',
             'shell/android/apk/src/org/chromium/mojo_shell_apk/MojoMain.java',
@@ -748,8 +748,8 @@
             'mojo_jni_headers',
           ],
           'sources': [
-            'android/javatests/core_test.cc',
-            'android/javatests/core_test.h',
+            'android/javatests/mojo_test_case.cc',
+            'android/javatests/mojo_test_case.h',
             'android/javatests/init_library.cc',
           ],
         },

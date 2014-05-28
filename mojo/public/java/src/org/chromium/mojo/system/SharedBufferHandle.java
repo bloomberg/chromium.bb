@@ -18,6 +18,11 @@ public interface SharedBufferHandle extends Handle {
         private static final int FLAG_NONE = 0;
 
         /**
+         * Immutable flag with not bit set.
+         */
+        public static final CreateFlags NONE = CreateFlags.none().immutable();
+
+        /**
          * Dedicated constructor.
          *
          * @param flags initial value of the flags.
@@ -55,6 +60,11 @@ public interface SharedBufferHandle extends Handle {
      */
     public static class DuplicateFlags extends Flags<DuplicateFlags> {
         private static final int FLAG_NONE = 0;
+
+        /**
+         * Immutable flag with not bit set.
+         */
+        public static final DuplicateFlags NONE = DuplicateFlags.none().immutable();
 
         /**
          * Dedicated constructor.
@@ -95,6 +105,11 @@ public interface SharedBufferHandle extends Handle {
      */
     public static class MapFlags extends Flags<MapFlags> {
         private static final int FLAG_NONE = 0;
+
+        /**
+         * Immutable flag with not bit set.
+         */
+        public static final MapFlags NONE = MapFlags.none().immutable();
 
         /**
          * Dedicated constructor.

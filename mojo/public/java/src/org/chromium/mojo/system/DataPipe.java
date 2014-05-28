@@ -21,6 +21,11 @@ public interface DataPipe {
         private static final int FLAG_MAY_DISCARD = 1 << 0;
 
         /**
+         * Immutable flag with not bit set.
+         */
+        public static final CreateFlags NONE = CreateFlags.none().immutable();
+
+        /**
          * Dedicated constructor.
          *
          * @param flags initial value of the flags.
@@ -117,6 +122,11 @@ public interface DataPipe {
         private static final int FLAG_ALL_OR_NONE = 1 << 0;
 
         /**
+         * Immutable flag with not bit set.
+         */
+        public static final WriteFlags NONE = WriteFlags.none().immutable();
+
+        /**
          * Dedicated constructor.
          *
          * @param flags initial value of the flags.
@@ -151,6 +161,11 @@ public interface DataPipe {
         private static final int FLAG_NONE = 0;
         private static final int FLAG_ALL_OR_NONE = 1 << 0;
         private static final int FLAG_QUERY = 1 << 2;
+
+        /**
+         * Immutable flag with not bit set.
+         */
+        public static final ReadFlags NONE = ReadFlags.none().immutable();
 
         /**
          * Dedicated constructor.

@@ -19,6 +19,11 @@ public interface MessagePipeHandle extends Handle {
         private static final int FLAG_NONE = 0;
 
         /**
+         * Immutable flag with no bit set.
+         */
+        public static final WriteFlags NONE = WriteFlags.none().immutable();
+
+        /**
          * Dedicated constructor.
          *
          * @param flags initial value of the flag.
@@ -41,6 +46,11 @@ public interface MessagePipeHandle extends Handle {
     public static class ReadFlags extends Flags<ReadFlags> {
         private static final int FLAG_NONE = 0;
         private static final int FLAG_MAY_DISCARD = 1 << 0;
+
+        /**
+         * Immutable flag with no bit set.
+         */
+        public static final ReadFlags NONE = ReadFlags.none().immutable();
 
         /**
          * Dedicated constructor.
@@ -82,16 +92,16 @@ public interface MessagePipeHandle extends Handle {
      * receive equivalent, but logically different, handles). Handles to be sent should not be in
      * simultaneous use (e.g., on another thread).
      */
-    void writeMessage(ByteBuffer bytes, List<Handle> handles, WriteFlags flags);
+    void writeMessage(ByteBuffer bytes, List<? extends Handle> handles, WriteFlags flags);
 
     /**
      * Result of the |readMessage| method.
      */
     public static class ReadMessageResult {
         /**
-         * <code>true</code> if a message was read.
+         * The MojoResult value of the read call.
          */
-        private boolean mWasMessageRead;
+        private int mMojoResult;
         /**
          * If a message was read, the size in bytes of the message, otherwise the size in bytes of
          * the next message.
@@ -108,17 +118,17 @@ public interface MessagePipeHandle extends Handle {
         private List<UntypedHandle> mHandles;
 
         /**
-         * @return the wasMessageRead
+         * @return the mojoResult
          */
-        public boolean getWasMessageRead() {
-            return mWasMessageRead;
+        public int getMojoResult() {
+            return mMojoResult;
         }
 
         /**
-         * @param wasMessageRead the wasMessageRead to set
+         * @param mojoResult the mojoResult to set
          */
-        public void setWasMessageRead(boolean wasMessageRead) {
-            mWasMessageRead = wasMessageRead;
+        public void setMojoResult(int mojoResult) {
+            mMojoResult = mojoResult;
         }
 
         /**

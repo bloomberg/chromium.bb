@@ -4,12 +4,8 @@
 
 package org.chromium.mojo.system;
 
-import android.content.Context;
-import android.test.InstrumentationTestCase;
 import android.test.suitebuilder.annotation.SmallTest;
 
-import org.chromium.base.JNINamespace;
-import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.mojo.system.AsyncWaiter.Callback;
 import org.chromium.mojo.system.AsyncWaiter.Cancellable;
 import org.chromium.mojo.system.Core.WaitFlags;
@@ -32,35 +28,12 @@ import java.util.concurrent.TimeUnit;
 /**
  * Testing the core API.
  */
-@JNINamespace("mojo::android")
-public class CoreTest extends InstrumentationTestCase {
+public class CoreTest extends MojoTestCase {
 
     private static final long RUN_LOOP_TIMEOUT_MS = 5;
 
     private static final ScheduledExecutorService WORKER =
             Executors.newSingleThreadScheduledExecutor();
-
-    private long mTestEnvironmentPointer;
-
-    /**
-     * @see junit.framework.TestCase#setUp()
-     */
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        LibraryLoader.ensureInitialized();
-        nativeInitApplicationContext(getInstrumentation().getTargetContext());
-        mTestEnvironmentPointer = nativeSetupTestEnvironment();
-    }
-
-    /**
-     * @see android.test.InstrumentationTestCase#tearDown()
-     */
-    @Override
-    protected void tearDown() throws Exception {
-        nativeTearDownTestEnvironment(mTestEnvironmentPointer);
-        super.tearDown();
-    }
 
     /**
      * Runnable that will close the given handle.
@@ -92,7 +65,7 @@ public class CoreTest extends InstrumentationTestCase {
         ByteBuffer receiveBuffer = ByteBuffer.allocateDirect(bytes.length / 2);
         MessagePipeHandle.ReadMessageResult result = out.readMessage(receiveBuffer, 0,
                 MessagePipeHandle.ReadFlags.none());
-        assertFalse(result.getWasMessageRead());
+        assertEquals(MojoResult.RESOURCE_EXHAUSTED, result.getMojoResult());
         assertEquals(bytes.length, result.getMessageSize());
         assertEquals(0, result.getHandlesCount());
 
@@ -100,7 +73,7 @@ public class CoreTest extends InstrumentationTestCase {
         receiveBuffer = ByteBuffer.allocateDirect(bytes.length);
         result = out.readMessage(receiveBuffer, 0,
                 MessagePipeHandle.ReadFlags.none());
-        assertTrue(result.getWasMessageRead());
+        assertEquals(MojoResult.OK, result.getMojoResult());
         assertEquals(bytes.length, result.getMessageSize());
         assertEquals(0, result.getHandlesCount());
         assertEquals(0, receiveBuffer.position());
@@ -163,14 +136,9 @@ public class CoreTest extends InstrumentationTestCase {
                     handles.first.wait(WaitFlags.none().setReadable(true), 0));
 
             // Testing read on an empty pipe.
-            boolean exception = false;
-            try {
-                handles.first.readMessage(null, 0, MessagePipeHandle.ReadFlags.none());
-            } catch (MojoException e) {
-                assertEquals(MojoResult.SHOULD_WAIT, e.getMojoResult());
-                exception = true;
-            }
-            assertTrue(exception);
+            ReadMessageResult result = handles.first.readMessage(null, 0,
+                    MessagePipeHandle.ReadFlags.none());
+            assertEquals(MojoResult.SHOULD_WAIT, result.getMojoResult());
 
             // Closing a pipe while waiting.
             WORKER.schedule(new CloseHandle(handles.first), 10, TimeUnit.MILLISECONDS);
@@ -239,7 +207,7 @@ public class CoreTest extends InstrumentationTestCase {
             MessagePipeHandle.ReadMessageResult result = handles.second.readMessage(receiveBuffer,
                     0,
                     MessagePipeHandle.ReadFlags.none());
-            assertFalse(result.getWasMessageRead());
+            assertEquals(MojoResult.RESOURCE_EXHAUSTED, result.getMojoResult());
             assertEquals(bytes.length, result.getMessageSize());
             assertEquals(0, result.getHandlesCount());
         } finally {
@@ -819,11 +787,4 @@ public class CoreTest extends InstrumentationTestCase {
         }
     }
 
-    private native void nativeInitApplicationContext(Context context);
-
-    private native long nativeSetupTestEnvironment();
-
-    private native void nativeTearDownTestEnvironment(long testEnvironment);
-
-    private native void nativeRunLoop(long timeoutMS);
 }

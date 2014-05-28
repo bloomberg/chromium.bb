@@ -183,7 +183,7 @@ static jobject ReadMessage(JNIEnv* env,
   MojoResult result = MojoReadMessage(
       mojo_handle, buffer_start, &buffer_size, handles, &num_handles, flags);
   // Jave code will handle taking ownership of any received handle.
-  return Java_CoreImpl_newNativeReadMessageResult(
+  return Java_CoreImpl_newReadMessageResult(
              env, result, buffer_size, num_handles).Release();
 }
 

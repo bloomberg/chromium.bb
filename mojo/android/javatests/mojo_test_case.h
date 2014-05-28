@@ -12,7 +12,7 @@
 namespace mojo {
 namespace android {
 
-JNI_EXPORT bool RegisterCoreTest(JNIEnv* env);
+JNI_EXPORT bool RegisterMojoTestCase(JNIEnv* env);
 
 }  // namespace android
 }  // namespace mojo

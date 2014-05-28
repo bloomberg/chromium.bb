@@ -169,7 +169,7 @@ public class InvalidHandle implements UntypedHandle, MessagePipeHandle, Consumer
      *      MessagePipeHandle.WriteFlags)
      */
     @Override
-    public void writeMessage(ByteBuffer bytes, List<Handle> handles, WriteFlags flags) {
+    public void writeMessage(ByteBuffer bytes, List<? extends Handle> handles, WriteFlags flags) {
         throw new MojoException(MojoResult.INVALID_ARGUMENT);
     }
 

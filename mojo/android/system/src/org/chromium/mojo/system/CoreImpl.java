@@ -20,7 +20,9 @@ import java.util.List;
 /**
  * Implementation of {@link Core}.
  */
-@JNIAdditionalImport(AsyncWaiter.class)
+@JNIAdditionalImport({
+    AsyncWaiter.class,
+    MessagePipeHandle.class })
 @JNINamespace("mojo::android")
 public class CoreImpl implements Core, AsyncWaiter {
 
@@ -189,7 +191,7 @@ public class CoreImpl implements Core, AsyncWaiter {
      * @see MessagePipeHandle#writeMessage(ByteBuffer, List, MessagePipeHandle.WriteFlags)
      */
     void writeMessage(MessagePipeHandleImpl pipeHandle, ByteBuffer bytes,
-            List<Handle> handles, MessagePipeHandle.WriteFlags flags) {
+            List<? extends Handle> handles, MessagePipeHandle.WriteFlags flags) {
         ByteBuffer handlesBuffer = null;
         if (handles != null && !handles.isEmpty()) {
             handlesBuffer = allocateDirectBuffer(handles.size() * HANDLE_SIZE);
@@ -224,28 +226,29 @@ public class CoreImpl implements Core, AsyncWaiter {
         if (maxNumberOfHandles > 0) {
             handlesBuffer = allocateDirectBuffer(maxNumberOfHandles * HANDLE_SIZE);
         }
-        NativeReadMessageResult result = nativeReadMessage(
+        MessagePipeHandle.ReadMessageResult result = nativeReadMessage(
                 handle.getMojoHandle(), bytes, handlesBuffer, flags.getFlags());
         if (result.getMojoResult() != MojoResult.OK &&
-                result.getMojoResult() != MojoResult.RESOURCE_EXHAUSTED) {
+                result.getMojoResult() != MojoResult.RESOURCE_EXHAUSTED &&
+                result.getMojoResult() != MojoResult.SHOULD_WAIT) {
             throw new MojoException(result.getMojoResult());
         }
 
         if (result.getMojoResult() == MojoResult.OK) {
             if (bytes != null) {
                 bytes.position(0);
-                bytes.limit(result.getReadMessageResult().getMessageSize());
+                bytes.limit(result.getMessageSize());
             }
 
             List<UntypedHandle> handles = new ArrayList<UntypedHandle>(
-                    result.getReadMessageResult().getHandlesCount());
-            for (int i = 0; i < result.getReadMessageResult().getHandlesCount(); ++i) {
+                    result.getHandlesCount());
+            for (int i = 0; i < result.getHandlesCount(); ++i) {
                 int mojoHandle = handlesBuffer.getInt(HANDLE_SIZE * i);
                 handles.add(new UntypedHandleImpl(this, mojoHandle));
             }
-            result.getReadMessageResult().setHandles(handles);
+            result.setHandles(handles);
         }
-        return result.getReadMessageResult();
+        return result;
     }
 
     /**
@@ -524,55 +527,18 @@ public class CoreImpl implements Core, AsyncWaiter {
         return result;
     }
 
-    private static class NativeReadMessageResult {
-        public int mMojoResult;
-        public MessagePipeHandle.ReadMessageResult mReadMessageResult;
-
-        /**
-         * @return the mojoResult
-         */
-        public int getMojoResult() {
-            return mMojoResult;
-        }
-
-        /**
-         * @param mojoResult the mojoResult to set
-         */
-        public void setMojoResult(int mojoResult) {
-            this.mMojoResult = mojoResult;
-        }
-
-        /**
-         * @return the readMessageResult
-         */
-        public MessagePipeHandle.ReadMessageResult getReadMessageResult() {
-            return mReadMessageResult;
-        }
-
-        /**
-         * @param readMessageResult the readMessageResult to set
-         */
-        public void setReadMessageResult(MessagePipeHandle.ReadMessageResult readMessageResult) {
-            this.mReadMessageResult = readMessageResult;
-        }
-    }
-
     @CalledByNative
-    private static NativeReadMessageResult newNativeReadMessageResult(int mojoResult,
+    private static MessagePipeHandle.ReadMessageResult newReadMessageResult(int mojoResult,
             int messageSize,
             int handlesCount) {
-        NativeReadMessageResult result = new NativeReadMessageResult();
+        MessagePipeHandle.ReadMessageResult result = new MessagePipeHandle.ReadMessageResult();
         if (mojoResult >= 0) {
             result.setMojoResult(MojoResult.OK);
         } else {
             result.setMojoResult(mojoResult);
         }
-        MessagePipeHandle.ReadMessageResult readMessageResult =
-                new MessagePipeHandle.ReadMessageResult();
-        readMessageResult.setWasMessageRead(result.getMojoResult() == MojoResult.OK);
-        readMessageResult.setMessageSize(messageSize);
-        readMessageResult.setHandlesCount(handlesCount);
-        result.setReadMessageResult(readMessageResult);
+        result.setMessageSize(messageSize);
+        result.setHandlesCount(handlesCount);
         return result;
     }
 
@@ -654,7 +620,8 @@ public class CoreImpl implements Core, AsyncWaiter {
     private native int nativeWriteMessage(int mojoHandle, ByteBuffer bytes, int numBytes,
             ByteBuffer handlesBuffer, int flags);
 
-    private native NativeReadMessageResult nativeReadMessage(int mojoHandle, ByteBuffer bytes,
+    private native MessagePipeHandle.ReadMessageResult nativeReadMessage(int mojoHandle,
+            ByteBuffer bytes,
             ByteBuffer handlesBuffer,
             int flags);
 
