@@ -8,16 +8,25 @@
 var pass = chrome.test.callbackPass;
 
 var EXPECTED_EVENTS = [
-  { "command": "line_up" },
-  { "command": "line_down" },
-  { "command": "pan_left" },
-  { "command": "pan_right" },
-  { "command": "top" },
-  { "command": "bottom" },
-  { "command": "routing", "displayPosition": 5 },
+  { command: "line_up" },
+  { command: "line_down" },
+  { command: "pan_left" },
+  { command: "pan_right" },
+  { command: "top" },
+  { command: "bottom" },
+  { command: "routing", "displayPosition": 5 },
+  { command: "standard_key", standardKeyChar: "A" },
+  { command: "standard_key", standardKeyChar: "\u00E5" },
+  { command: "standard_key", standardKeyChar: "\u0100" },
+  // UTF-16 of U+1F639.
+  { command: "standard_key", standardKeyChar: "\uD83D\uDE39" },
+  { command: "standard_key", standardKeyCode: "Backspace" },
+  { command: "standard_key", standardKeyCode: "Tab", shiftKey: true },
+  { command: "standard_key", standardKeyCode: "F3", altKey: true },
+  { command: "dots", ctrlKey: true, brailleDots: 0x1 | 0x2}
 ]
 for (var i = 0; i < 256; ++i) {
-  EXPECTED_EVENTS.push({ "command": "dots", "brailleDots": i });
+  EXPECTED_EVENTS.push({ command: "dots", "brailleDots": i });
 }
 
 var event_number = 0;

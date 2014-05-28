@@ -61,7 +61,6 @@ class BrailleControllerImpl : public BrailleController {
   void Disconnect();
   scoped_ptr<BrlapiConnection> CreateBrlapiConnection();
   void DispatchKeys();
-  scoped_ptr<KeyEvent> MapKeyCode(brlapi_keyCode_t code);
   void DispatchKeyEvent(scoped_ptr<KeyEvent> event);
   void DispatchOnDisplayStateChanged(scoped_ptr<DisplayState> new_state);
 

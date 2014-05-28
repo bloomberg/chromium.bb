@@ -42,6 +42,9 @@ namespace {
 
 const char kTestUserName[] = "owner@invalid.domain";
 
+// Used to make ReadKeys return an error.
+brlapi_keyCode_t kErrorKeyCode = BRLAPI_KEY_MAX;
+
 }  // namespace
 
 // Data maintained by the mock BrlapiConnection.  This data lives throughout
@@ -114,9 +117,9 @@ class MockBrlapiConnection : public BrlapiConnection {
 
   virtual int ReadKey(brlapi_keyCode_t* key_code) OVERRIDE {
     if (!data_->pending_keys.empty()) {
-      int queued_key_code = data_->pending_keys.front();
+      brlapi_keyCode_t queued_key_code = data_->pending_keys.front();
       data_->pending_keys.pop_front();
-      if (queued_key_code < 0) {
+      if (queued_key_code == kErrorKeyCode) {
         data_->error.brlerrno = BRLAPI_ERROR_EOF;
         return -1;  // Signal error.
       }
@@ -194,6 +197,8 @@ IN_PROC_BROWSER_TEST_F(BrailleDisplayPrivateApiTest, WriteDots) {
 
 IN_PROC_BROWSER_TEST_F(BrailleDisplayPrivateApiTest, KeyEvents) {
   connection_data_.display_size = 11;
+
+  // Braille navigation commands.
   connection_data_.pending_keys.push_back(BRLAPI_KEY_TYPE_CMD |
                                           BRLAPI_KEY_CMD_LNUP);
   connection_data_.pending_keys.push_back(BRLAPI_KEY_TYPE_CMD |
@@ -208,17 +213,54 @@ IN_PROC_BROWSER_TEST_F(BrailleDisplayPrivateApiTest, KeyEvents) {
                                           BRLAPI_KEY_CMD_BOT);
   connection_data_.pending_keys.push_back(BRLAPI_KEY_TYPE_CMD |
                                           BRLAPI_KEY_CMD_ROUTE | 5);
-  // Space (0) and all combinations of dots.
+
+  // Braille display standard keyboard emulation.
+
+  // An ascii character.
+  connection_data_.pending_keys.push_back(BRLAPI_KEY_TYPE_SYM | 'A');
+  // A non-ascii 'latin1' character.  Small letter a with ring above.
+  connection_data_.pending_keys.push_back(BRLAPI_KEY_TYPE_SYM | 0xE5);
+  // A non-latin1 Unicode character.  LATIN SMALL LETTER A WITH MACRON.
+  connection_data_.pending_keys.push_back(
+      BRLAPI_KEY_TYPE_SYM | BRLAPI_KEY_SYM_UNICODE | 0x100);
+  // A Unicode character outside the BMP.  CAT FACE WITH TEARS OF JOY.
+  // With anticipation for the first emoji-enabled braille display.
+  connection_data_.pending_keys.push_back(
+      BRLAPI_KEY_TYPE_SYM | BRLAPI_KEY_SYM_UNICODE | 0x1F639);
+  // Invalid Unicode character.
+  connection_data_.pending_keys.push_back(
+      BRLAPI_KEY_TYPE_SYM | BRLAPI_KEY_SYM_UNICODE | 0x110000);
+
+  // Non-alphanumeric function keys.
+
+  // Backspace.
+  connection_data_.pending_keys.push_back(
+      BRLAPI_KEY_TYPE_SYM | BRLAPI_KEY_SYM_BACKSPACE);
+  // Shift+Tab.
+  connection_data_.pending_keys.push_back(
+      BRLAPI_KEY_TYPE_SYM | BRLAPI_KEY_FLG_SHIFT | BRLAPI_KEY_SYM_TAB);
+  // Alt+F3. (0-based).
+  connection_data_.pending_keys.push_back(
+      BRLAPI_KEY_TYPE_SYM | BRLAPI_KEY_FLG_META |
+      (BRLAPI_KEY_SYM_FUNCTION + 2));
+
+  // ctrl+dot1+dot2.
+  connection_data_.pending_keys.push_back(
+      BRLAPI_KEY_TYPE_CMD | BRLAPI_KEY_FLG_CONTROL | BRLAPI_KEY_CMD_PASSDOTS |
+      BRLAPI_DOT1 | BRLAPI_DOT2);
+
+  // Braille dot keys, all combinations including space (0).
   for (int i = 0; i < 256; ++i) {
     connection_data_.pending_keys.push_back(BRLAPI_KEY_TYPE_CMD |
                                             BRLAPI_KEY_CMD_PASSDOTS | i);
   }
+
   ASSERT_TRUE(RunComponentExtensionTest("braille_display_private/key_events"));
 }
 
 IN_PROC_BROWSER_TEST_F(BrailleDisplayPrivateApiTest, DisplayStateChanges) {
   connection_data_.display_size = 11;
-  connection_data_.pending_keys.push_back(-1);
+  connection_data_.pending_keys.push_back(kErrorKeyCode);
   connection_data_.reappear_on_disconnect = true;
   ASSERT_TRUE(RunComponentExtensionTest(
       "braille_display_private/display_state_changes"));

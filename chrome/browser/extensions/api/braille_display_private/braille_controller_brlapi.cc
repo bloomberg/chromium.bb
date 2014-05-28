@@ -13,6 +13,7 @@
 #include "base/bind_helpers.h"
 #include "base/time/time.h"
 #include "chrome/browser/extensions/api/braille_display_private/brlapi_connection.h"
+#include "chrome/browser/extensions/api/braille_display_private/brlapi_keycode_map.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace extensions {
@@ -29,11 +30,6 @@ const int64 kConnectionDelayMs = 500;
 // How long to periodically retry connecting after a brltty restart.
 // Some displays are slow to connect.
 const int64 kConnectRetryTimeout = 20000;
-// Bitmask for all braille dots in a key command argument, which coincides
-// with the representation in the braille_dots member of the KeyEvent
-// class.
-const int kAllDots = BRLAPI_DOT1 | BRLAPI_DOT2 | BRLAPI_DOT3 | BRLAPI_DOT4 |
-                     BRLAPI_DOT5 | BRLAPI_DOT6 | BRLAPI_DOT7 | BRLAPI_DOT8;
 }  // namespace
 
 BrailleController::BrailleController() {
@@ -268,53 +264,6 @@ scoped_ptr<BrlapiConnection> BrailleControllerImpl::CreateBrlapiConnection() {
   return BrlapiConnection::Create(&libbrlapi_loader_);
 }
 
-scoped_ptr<KeyEvent> BrailleControllerImpl::MapKeyCode(brlapi_keyCode_t code) {
-  brlapi_expandedKeyCode_t expanded;
-  if (libbrlapi_loader_.brlapi_expandKeyCode(code, &expanded) != 0) {
-    LOG(ERROR) << "Couldn't expand key code " << code;
-    return scoped_ptr<KeyEvent>();
-  }
-  scoped_ptr<KeyEvent> result(new KeyEvent);
-  result->command = KEY_COMMAND_NONE;
-  switch (expanded.type) {
-    case BRLAPI_KEY_TYPE_CMD:
-      switch (expanded.command) {
-        case BRLAPI_KEY_CMD_LNUP:
-          result->command = KEY_COMMAND_LINE_UP;
-          break;
-        case BRLAPI_KEY_CMD_LNDN:
-          result->command = KEY_COMMAND_LINE_DOWN;
-          break;
-        case BRLAPI_KEY_CMD_FWINLT:
-          result->command = KEY_COMMAND_PAN_LEFT;
-          break;
-        case BRLAPI_KEY_CMD_FWINRT:
-          result->command = KEY_COMMAND_PAN_RIGHT;
-          break;
-        case BRLAPI_KEY_CMD_TOP:
-          result->command = KEY_COMMAND_TOP;
-          break;
-        case BRLAPI_KEY_CMD_BOT:
-          result->command = KEY_COMMAND_BOTTOM;
-          break;
-        case BRLAPI_KEY_CMD_ROUTE:
-          result->command = KEY_COMMAND_ROUTING;
-          result->display_position.reset(new int(expanded.argument));
-          break;
-        case BRLAPI_KEY_CMD_PASSDOTS:
-          result->command = KEY_COMMAND_DOTS;
-          result->braille_dots.reset(new int(expanded.argument & kAllDots));
-          if ((expanded.argument & BRLAPI_DOTC) != 0)
-            result->space_key.reset(new bool(true));
-          break;
-      }
-      break;
-  }
-  if (result->command == KEY_COMMAND_NONE)
-    result.reset();
-  return result.Pass();
-}
-
 void BrailleControllerImpl::DispatchKeys() {
   DCHECK(connection_.get());
   brlapi_keyCode_t code;
@@ -331,7 +280,7 @@ void BrailleControllerImpl::DispatchKeys() {
     } else if (result == 0) { // No more data.
       return;
     }
-    scoped_ptr<KeyEvent> event = MapKeyCode(code);
+    scoped_ptr<KeyEvent> event = BrlapiKeyCodeToEvent(code);
     if (event)
       DispatchKeyEvent(event.Pass());
   }

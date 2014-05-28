@@ -191,6 +191,8 @@
         'browser/extensions/api/braille_display_private/braille_display_private_api.cc',
         'browser/extensions/api/braille_display_private/brlapi_connection.cc',
         'browser/extensions/api/braille_display_private/brlapi_connection.h',
+        'browser/extensions/api/braille_display_private/brlapi_keycode_map.cc',
+        'browser/extensions/api/braille_display_private/brlapi_keycode_map.h',
         'browser/extensions/api/braille_display_private/stub_braille_controller.cc',
         'browser/extensions/api/braille_display_private/stub_braille_controller.h',
         'browser/extensions/api/browser/browser_api.cc',
@@ -1219,6 +1221,7 @@
           'sources!': [
             'browser/extensions/api/braille_display_private/braille_controller_brlapi.cc',
             'browser/extensions/api/braille_display_private/brlapi_connection.cc',
+            'browser/extensions/api/braille_display_private/brlapi_keycode_map.cc',
           ],
         }],
         ['enable_webrtc==0', {

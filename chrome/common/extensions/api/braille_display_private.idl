@@ -28,8 +28,15 @@ namespace brailleDisplayPrivate {
     // Braille dot keys that were pressed, stored in the low-order bits.
     // Dot 1 is stored in bit 0, dot2 in bit 1, etc.
     long? brailleDots;
-    // DOM keyboard event for a key that corresponds to a standard key.
-    DOMString? standardKeyName;
+    // DOM keyboard event code.  This is present when command is standard_key
+    // and the braille display event represents a non-alphanumeric key such
+    // as an arrow key or function key.
+    // The value is as defined by the |code| property in
+    // http://www.w3.org/TR/uievents/#keyboard-event-interface
+    DOMString? standardKeyCode;
+    // DOM keyboard event character value.  This is present if the
+    // braille key event corresponds to a character.
+    DOMString? standardKeyChar;
     // Whether the space key was pressed.
     boolean? spaceKey;
     // Whether the alt key was pressed.

@@ -746,7 +746,6 @@
                      '--link-directly=<(linux_link_libbrlapi)',
                      'brlapi_getHandleSize',
                      'brlapi_error_location',
-                     'brlapi_expandKeyCode',
                      'brlapi_strerror',
                      'brlapi__acceptKeys',
                      'brlapi__openConnection',
