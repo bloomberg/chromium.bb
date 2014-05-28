@@ -311,11 +311,8 @@ void HTMLTableElement::collectStyleForPresentationAttribute(const QualifiedName&
         addHTMLColorToStyle(style, CSSPropertyBackgroundColor, value);
     else if (name == backgroundAttr) {
         String url = stripLeadingAndTrailingHTMLSpaces(value);
-        if (!url.isEmpty()) {
-            RefPtrWillBeRawPtr<CSSImageValue> imageValue = CSSImageValue::create(url, document().completeURL(url));
-            imageValue->setReferrer(document().outgoingReferrer());
-            style->setProperty(CSSProperty(CSSPropertyBackgroundImage, imageValue.release()));
-        }
+        if (!url.isEmpty())
+            style->setProperty(CSSProperty(CSSPropertyBackgroundImage, CSSImageValue::create(url, document().completeURL(url))));
     } else if (name == valignAttr) {
         if (!value.isEmpty())
             addPropertyToPresentationAttributeStyle(style, CSSPropertyVerticalAlign, value);

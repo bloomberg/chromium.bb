@@ -53,7 +53,6 @@ public:
     bool isLocal() const { return m_isLocal; }
 
     void setFormat(const String& format) { m_format = format; }
-    void setReferrer(const String& referrer) { m_referrer = referrer; }
 
     bool isSupportedFormat() const;
 
@@ -90,7 +89,6 @@ private:
 
     String m_resource;
     String m_format;
-    String m_referrer;
     bool m_isLocal;
 
     ResourcePtr<FontResource> m_fetched;

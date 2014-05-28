@@ -53,9 +53,6 @@ public:
 
     const String& url() { return m_absoluteURL; }
 
-    void setReferrer(const String& referrer) { m_referrer = referrer; }
-    const String& referrer() { return m_referrer; }
-
     void reResolveURL(const Document&);
 
     String customCSSText() const;
@@ -78,7 +75,6 @@ private:
 
     String m_relativeURL;
     String m_absoluteURL;
-    String m_referrer;
     RefPtr<StyleImage> m_image;
     bool m_accessedImage;
     AtomicString m_initiatorName;

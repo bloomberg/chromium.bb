@@ -56,7 +56,6 @@ public:
 
     struct ImageWithScale {
         String imageURL;
-        String referrer;
         float scaleFactor;
     };
 
