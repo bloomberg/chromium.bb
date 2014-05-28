@@ -72,11 +72,11 @@ uint64_t ComputeThreadTicks() {
   NOTREACHED();
   return 0;
 #else
-  base::mac::ScopedMachPort thread(mach_thread_self());
+  base::mac::ScopedMachSendRight thread(mach_thread_self());
   mach_msg_type_number_t thread_info_count = THREAD_BASIC_INFO_COUNT;
   thread_basic_info_data_t thread_info_data;
 
-  if (thread == MACH_PORT_NULL) {
+  if (thread.get() == MACH_PORT_NULL) {
     DLOG(ERROR) << "Failed to get mach_thread_self()";
     return 0;
   }

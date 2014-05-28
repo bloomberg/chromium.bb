@@ -228,7 +228,7 @@ TEST_F(BootstrapSandboxTest, PolicySubstitutePort) {
   mach_port_t port;
   ASSERT_EQ(KERN_SUCCESS, mach_port_allocate(mach_task_self(),
       MACH_PORT_RIGHT_RECEIVE, &port));
-  base::mac::ScopedMachPort scoped_port(port);
+  base::mac::ScopedMachReceiveRight scoped_port(port);
 
   BootstrapSandboxPolicy policy(BaselinePolicy());
   policy[kTestServer] = Rule(port);

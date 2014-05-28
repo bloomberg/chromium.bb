@@ -7,6 +7,8 @@
 
 #include <stdlib.h>
 
+#include <algorithm>
+
 #include "base/compiler_specific.h"
 #include "base/move.h"
 

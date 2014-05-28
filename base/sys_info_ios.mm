@@ -65,7 +65,7 @@ void SysInfo::OperatingSystemVersionNumbers(int32* major_version,
 int64 SysInfo::AmountOfPhysicalMemory() {
   struct host_basic_info hostinfo;
   mach_msg_type_number_t count = HOST_BASIC_INFO_COUNT;
-  base::mac::ScopedMachPort host(mach_host_self());
+  base::mac::ScopedMachSendRight host(mach_host_self());
   int result = host_info(host,
                          HOST_BASIC_INFO,
                          reinterpret_cast<host_info_t>(&hostinfo),
@@ -80,7 +80,7 @@ int64 SysInfo::AmountOfPhysicalMemory() {
 
 // static
 int64 SysInfo::AmountOfAvailablePhysicalMemory() {
-  base::mac::ScopedMachPort host(mach_host_self());
+  base::mac::ScopedMachSendRight host(mach_host_self());
   vm_statistics_data_t vm_info;
   mach_msg_type_number_t count = HOST_VM_INFO_COUNT;
   if (host_statistics(host.get(),

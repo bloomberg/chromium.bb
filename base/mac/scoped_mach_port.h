@@ -8,41 +8,55 @@
 #include <mach/mach.h>
 
 #include "base/base_export.h"
-#include "base/basictypes.h"
-#include "base/compiler_specific.h"
+#include "base/scoped_generic.h"
 
 namespace base {
 namespace mac {
 
-// A class for managing the life of a Mach port, releasing via
-// mach_port_deallocate either its send and/or receive rights.
-class BASE_EXPORT ScopedMachPort {
+namespace internal {
+
+struct BASE_EXPORT SendRightTraits {
+  static mach_port_t InvalidValue() {
+    return MACH_PORT_NULL;
+  }
+
+  static void Free(mach_port_t port);
+};
+
+struct BASE_EXPORT ReceiveRightTraits {
+  static mach_port_t InvalidValue() {
+    return MACH_PORT_NULL;
+  }
+
+  static void Free(mach_port_t port);
+};
+
+}  // namespace internal
+
+// A scoper for handling a Mach port that names a send right. Send rights are
+// reference counted, and this takes ownership of the right on construction
+// and then removes a reference to the right on destruction. If the reference
+// is the last one on the right, the right is deallocated.
+class BASE_EXPORT ScopedMachSendRight :
+    public base::ScopedGeneric<mach_port_t, internal::SendRightTraits> {
  public:
-  // Creates a scoper by taking ownership of the port.
-  explicit ScopedMachPort(mach_port_t port);
+  explicit ScopedMachSendRight(mach_port_t port = traits_type::InvalidValue())
+      : ScopedGeneric(port) {}
 
-  ~ScopedMachPort();
+  operator mach_port_t() const { return get(); }
+};
 
-  void reset(mach_port_t port = MACH_PORT_NULL);
+// A scoper for handling a Mach port's receive right. There is only one
+// receive right per port. This takes ownership of the receive right on
+// construction and then destroys the right on destruction, turning all
+// outstanding send rights into dead names.
+class BASE_EXPORT ScopedMachReceiveRight :
+    public base::ScopedGeneric<mach_port_t, internal::ReceiveRightTraits> {
+ public:
+  explicit ScopedMachReceiveRight(
+      mach_port_t port = traits_type::InvalidValue()) : ScopedGeneric(port) {}
 
-  operator mach_port_t() const {
-    return port_;
-  }
-
-  mach_port_t get() const {
-    return port_;
-  }
-
-  mach_port_t release() WARN_UNUSED_RESULT {
-    mach_port_t temp = port_;
-    port_ = MACH_PORT_NULL;
-    return temp;
-  }
-
- private:
-  mach_port_t port_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedMachPort);
+  operator mach_port_t() const { return get(); }
 };
 
 }  // namespace mac

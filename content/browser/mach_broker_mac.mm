@@ -53,7 +53,7 @@ class MachListenerThreadDelegate : public base::PlatformThread::Delegate {
   }
 
   bool Init() {
-    DCHECK(server_port_ == MACH_PORT_NULL);
+    DCHECK(server_port_.get() == MACH_PORT_NULL);
 
     mach_port_t port;
     kern_return_t kr = mach_port_allocate(mach_task_self(),
@@ -63,6 +63,7 @@ class MachListenerThreadDelegate : public base::PlatformThread::Delegate {
       MACH_LOG(ERROR, kr) << "mach_port_allocate";
       return false;
     }
+    server_port_.reset(port);
 
     // Allocate a send right for the server port.
     kr = mach_port_insert_right(
@@ -71,8 +72,8 @@ class MachListenerThreadDelegate : public base::PlatformThread::Delegate {
       MACH_LOG(ERROR, kr) << "mach_port_insert_right";
       return false;
     }
-
-    server_port_.reset(port);
+    // Deallocate the right after registering with the bootstrap server.
+    base::mac::ScopedMachSendRight send_right(port);
 
     // Register the port with the bootstrap server. Because bootstrap_register
     // is deprecated, this has to be wraped in an ObjC interface.
@@ -126,7 +127,7 @@ class MachListenerThreadDelegate : public base::PlatformThread::Delegate {
   // NULL.
   MachBroker* broker_;  // weak
 
-  base::mac::ScopedMachPort server_port_;
+  base::mac::ScopedMachReceiveRight server_port_;
 
   DISALLOW_COPY_AND_ASSIGN(MachListenerThreadDelegate);
 };
@@ -134,20 +135,14 @@ class MachListenerThreadDelegate : public base::PlatformThread::Delegate {
 bool MachBroker::ChildSendTaskPortToParent() {
   // Look up the named MachBroker port that's been registered with the
   // bootstrap server.
-  mach_port_t bootstrap_port;
-  kern_return_t kr = task_get_bootstrap_port(mach_task_self(), &bootstrap_port);
-  if (kr != KERN_SUCCESS) {
-    MACH_LOG(ERROR, kr) << "task_get_bootstrap_port";
-    return false;
-  }
-
   mach_port_t parent_port;
-  kr = bootstrap_look_up(bootstrap_port,
+  kern_return_t kr = bootstrap_look_up(bootstrap_port,
       const_cast<char*>(GetMachPortName().c_str()), &parent_port);
   if (kr != KERN_SUCCESS) {
     BOOTSTRAP_LOG(ERROR, kr) << "bootstrap_look_up";
     return false;
   }
+  base::mac::ScopedMachSendRight scoped_right(parent_port);
 
   // Create the check in message. This will copy a send right on this process'
   // (the child's) task port and send it to the parent.

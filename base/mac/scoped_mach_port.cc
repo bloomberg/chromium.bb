@@ -4,22 +4,27 @@
 
 #include "base/mac/scoped_mach_port.h"
 
+#include "base/mac/mach_logging.h"
+
 namespace base {
 namespace mac {
+namespace internal {
 
-ScopedMachPort::ScopedMachPort(mach_port_t port) : port_(port) {
+// static
+void SendRightTraits::Free(mach_port_t port) {
+  kern_return_t kr = mach_port_deallocate(mach_task_self(), port);
+  MACH_LOG_IF(ERROR, kr != KERN_SUCCESS, kr)
+      << "ScopedMachSendRight mach_port_deallocate";
 }
 
-ScopedMachPort::~ScopedMachPort() {
-  reset();
+// static
+void ReceiveRightTraits::Free(mach_port_t port) {
+  kern_return_t kr =
+      mach_port_mod_refs(mach_task_self(), port, MACH_PORT_RIGHT_RECEIVE, -1);
+  MACH_LOG_IF(ERROR, kr != KERN_SUCCESS, kr)
+      << "ScopedMachReceiveRight mach_port_mod_refs";
 }
 
-void ScopedMachPort::reset(mach_port_t port) {
-  if (port_ != MACH_PORT_NULL) {
-    mach_port_deallocate(mach_task_self(), port_);
-  }
-  port_ = port;
-}
-
+}  // namespace internal
 }  // namespace mac
 }  // namespace base

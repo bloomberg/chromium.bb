@@ -15,26 +15,36 @@ const int kNotAPolicy = -1;
 
 // static
 scoped_ptr<BootstrapSandbox> BootstrapSandbox::Create() {
+  scoped_ptr<BootstrapSandbox> null;  // Used for early returns.
   scoped_ptr<BootstrapSandbox> sandbox(new BootstrapSandbox());
   sandbox->server_.reset(new LaunchdInterceptionServer(sandbox.get()));
 
-  if (!sandbox->server_->Initialize()) {
-    sandbox.reset();
-  } else {
-    // Note that the extern global bootstrap_port (in bootstrap.h) will not
-    // be changed here. The parent only has its bootstrap port replaced
-    // permanently because changing it repeatedly in a multi-threaded program
-    // could lead to unsafe access patterns. In a single-threaded program,
-    // the port would be restored after fork(). See the design document for
-    // a larger discussion.
-    //
-    // By not changing the global bootstrap_port, users of the bootstrap port
-    // in the parent can potentially skip an unnecessary indirection through
-    // the sandbox server.
-    kern_return_t kr = task_set_special_port(mach_task_self(),
-        TASK_BOOTSTRAP_PORT, sandbox->server_->server_port());
-    if (kr != KERN_SUCCESS)
-      sandbox.reset();
+  if (!sandbox->server_->Initialize())
+    return null.Pass();
+
+  mach_port_t port = sandbox->server_->server_port();
+  kern_return_t kr = mach_port_insert_right(mach_task_self(), port, port,
+      MACH_MSG_TYPE_MAKE_SEND);
+  if (kr != KERN_SUCCESS) {
+    MACH_LOG(ERROR, kr) << "Failed to insert send right on bootstrap port.";
+    return null.Pass();
+  }
+  base::mac::ScopedMachSendRight scoped_right(port);
+
+  // Note that the extern global bootstrap_port (in bootstrap.h) will not
+  // be changed here. The parent only has its bootstrap port replaced
+  // permanently because changing it repeatedly in a multi-threaded program
+  // could lead to unsafe access patterns. In a single-threaded program,
+  // the port would be restored after fork(). See the design document for
+  // a larger discussion.
+  //
+  // By not changing the global bootstrap_port, users of the bootstrap port
+  // in the parent can potentially skip an unnecessary indirection through
+  // the sandbox server.
+  kr = task_set_special_port(mach_task_self(), TASK_BOOTSTRAP_PORT, port);
+  if (kr != KERN_SUCCESS) {
+    MACH_LOG(ERROR, kr) << "Failed to set new bootstrap port.";
+    return null.Pass();
   }
 
   return sandbox.Pass();

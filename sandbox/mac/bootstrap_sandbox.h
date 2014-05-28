@@ -88,7 +88,7 @@ class SANDBOX_EXPORT BootstrapSandbox {
 
   // The original bootstrap port of the process, which is connected to the
   // real launchd server.
-  base::mac::ScopedMachPort real_bootstrap_port_;
+  base::mac::ScopedMachSendRight real_bootstrap_port_;
 
   // The |lock_| protects all the following variables.
   mutable base::Lock lock_;

@@ -47,11 +47,6 @@ bool LaunchdInterceptionServer::Initialize() {
     MACH_LOG(ERROR, kr) << "Failed to allocate new bootstrap port.";
     return false;
   }
-  if ((kr = mach_port_insert_right(task, port, port, MACH_MSG_TYPE_MAKE_SEND))
-          != KERN_SUCCESS) {
-    MACH_LOG(ERROR, kr) << "Failed to insert send right on bootstrap port.";
-    return false;
-  }
   server_port_.reset(port);
 
   // Allocate the message request and reply buffers.

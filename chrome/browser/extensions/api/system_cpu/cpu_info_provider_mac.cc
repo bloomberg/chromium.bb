@@ -16,7 +16,7 @@ bool CpuInfoProvider::QueryCpuTimePerProcessor(
   DCHECK(infos);
 
   natural_t num_of_processors;
-  base::mac::ScopedMachPort host(mach_host_self());
+  base::mac::ScopedMachSendRight host(mach_host_self());
   mach_msg_type_number_t type;
   processor_cpu_load_info_data_t* cpu_infos;
 
