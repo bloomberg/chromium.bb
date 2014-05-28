@@ -190,8 +190,6 @@ void UpdateScreen::UpdateStatusChanged(
       break;
     case UpdateEngineClient::UPDATE_STATUS_UPDATED_NEED_REBOOT:
       MakeSureScreenIsShown();
-      // Make sure that first OOBE stage won't be shown after reboot.
-      StartupUtils::MarkOobeCompleted();
       actor_->SetProgress(kProgressComplete);
       actor_->ShowEstimatedTimeLeft(false);
       if (HasCriticalUpdate()) {

@@ -4,13 +4,17 @@
 
 #include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/prefs/pref_service.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/screens/mock_error_screen.h"
 #include "chrome/browser/chromeos/login/screens/mock_screen_observer.h"
 #include "chrome/browser/chromeos/login/screens/update_screen.h"
+#include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/test/wizard_in_process_browser_test.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/net/network_portal_detector.h"
 #include "chrome/browser/chromeos/net/network_portal_detector_test_impl.h"
+#include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/fake_dbus_thread_manager.h"
 #include "chromeos/dbus/fake_update_engine_client.h"
@@ -177,6 +181,11 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestUpdateAvailable) {
   update_screen_->UpdateStatusChanged(status);
   // UpdateStatusChanged(status) calls RebootAfterUpdate().
   EXPECT_EQ(1, fake_update_engine_client_->reboot_after_update_call_count());
+  // Check that OOBE will resume back at this screen.
+  base::MessageLoop::current()->RunUntilIdle();
+  EXPECT_FALSE(StartupUtils::IsOobeCompleted());
+  EXPECT_EQ(update_screen_->GetName(),
+      g_browser_process->local_state()->GetString(prefs::kOobeScreenPending));
 }
 
 IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestErrorIssuingUpdateCheck) {
