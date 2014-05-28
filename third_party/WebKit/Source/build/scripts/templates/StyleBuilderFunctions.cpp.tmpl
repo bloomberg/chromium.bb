@@ -479,7 +479,7 @@ namespace WebCore {
     {% set property = properties[property_id] %}
     if (value->isPrimitiveValue()) {
         CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
-        if (primitiveValue->getValueID() == CSSValueAuto)
+        if (primitiveValue->getValueID() == CSSValueNone)
             {{set_value(property)}}(nullptr);
     } else if (value->isImageValue() || value->isImageGeneratorValue() || value->isImageSetValue()) {
         {{set_value(property)}}(ShapeValue::createImageValue(state.styleImage({{property_id}}, value)));

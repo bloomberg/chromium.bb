@@ -224,7 +224,7 @@ inline static PassRefPtrWillBeRawPtr<AnimatableValue> createFromShapeValue(Shape
 {
     if (value)
         return AnimatableShapeValue::create(value);
-    return AnimatableUnknown::create(CSSValueAuto);
+    return AnimatableUnknown::create(CSSValueNone);
 }
 
 static double fontWeightToDouble(FontWeight fontWeight)
