@@ -170,7 +170,7 @@ TEST_F(FileSystemProviderFileStreamReader, Read_WrongFile) {
   base::RunLoop().RunUntilIdle();
 
   ASSERT_EQ(1u, logger.results().size());
-  EXPECT_EQ(net::ERR_FAILED, logger.results()[0]);
+  EXPECT_EQ(net::ERR_FILE_NOT_FOUND, logger.results()[0]);
 }
 
 TEST_F(FileSystemProviderFileStreamReader, Read_InChunks) {
@@ -288,7 +288,7 @@ TEST_F(FileSystemProviderFileStreamReader, GetLength_WrongFile) {
   base::RunLoop().RunUntilIdle();
 
   ASSERT_EQ(1u, logger.results().size());
-  EXPECT_EQ(net::ERR_FAILED, logger.results()[0]);
+  EXPECT_EQ(net::ERR_FILE_NOT_FOUND, logger.results()[0]);
 }
 
 }  // namespace file_system_provider

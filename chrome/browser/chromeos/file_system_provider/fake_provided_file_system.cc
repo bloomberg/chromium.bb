@@ -146,12 +146,19 @@ void FakeProvidedFileSystem::OpenFile(const base::FilePath& file_path,
                                       OpenFileMode mode,
                                       bool create,
                                       const OpenFileCallback& callback) {
-  if (file_path.AsUTF8Unsafe() != "/hello.txt" ||
-      mode == OPEN_FILE_MODE_WRITE || create) {
+  if (mode == OPEN_FILE_MODE_WRITE || create) {
+    base::MessageLoopProxy::current()->PostTask(
+        FROM_HERE,
+        base::Bind(callback,
+                   0 /* file_handle */,
+                   base::File::FILE_ERROR_ACCESS_DENIED));
+  }
+
+  if (file_path.AsUTF8Unsafe() != "/hello.txt") {
     base::MessageLoopProxy::current()->PostTask(
         FROM_HERE,
         base::Bind(
-            callback, 0 /* file_handle */, base::File::FILE_ERROR_SECURITY));
+            callback, 0 /* file_handle */, base::File::FILE_ERROR_NOT_FOUND));
     return;
   }
 
@@ -192,7 +199,7 @@ void FakeProvidedFileSystem::ReadFile(
         base::Bind(callback,
                    0 /* chunk_length */,
                    false /* has_next */,
-                   base::File::FILE_ERROR_SECURITY));
+                   base::File::FILE_ERROR_INVALID_OPERATION));
     return;
   }
 

@@ -117,8 +117,8 @@ KeyedService* CreateService(content::BrowserContext* context) {
 // Tests in this file are very lightweight and just test integration between
 // AsyncFileUtil and ProvideFileSystemInterface. Currently it tests if not
 // implemented operations return a correct error code. For not allowed
-// operations it is FILE_ERROR_SECURITY, and for not implemented the error is
-// FILE_ERROR_NOT_FOUND.
+// operations it is FILE_ERROR_ACCESS_DENIED, and for not implemented the error
+// is FILE_ERROR_INVALID_OPERATION.
 class FileSystemProviderProviderAsyncFileUtilTest : public testing::Test {
  protected:
   FileSystemProviderProviderAsyncFileUtilTest() {}
@@ -191,7 +191,7 @@ TEST_F(FileSystemProviderProviderAsyncFileUtilTest, CreateOrOpen_Create) {
       base::Bind(&EventLogger::OnCreateOrOpen, logger.GetWeakPtr()));
 
   ASSERT_TRUE(logger.error());
-  EXPECT_EQ(base::File::FILE_ERROR_SECURITY, *logger.error());
+  EXPECT_EQ(base::File::FILE_ERROR_ACCESS_DENIED, *logger.error());
 }
 
 TEST_F(FileSystemProviderProviderAsyncFileUtilTest, CreateOrOpen_CreateAlways) {
@@ -204,7 +204,7 @@ TEST_F(FileSystemProviderProviderAsyncFileUtilTest, CreateOrOpen_CreateAlways) {
       base::Bind(&EventLogger::OnCreateOrOpen, logger.GetWeakPtr()));
 
   ASSERT_TRUE(logger.error());
-  EXPECT_EQ(base::File::FILE_ERROR_SECURITY, *logger.error());
+  EXPECT_EQ(base::File::FILE_ERROR_ACCESS_DENIED, *logger.error());
 }
 
 TEST_F(FileSystemProviderProviderAsyncFileUtilTest, CreateOrOpen_OpenAlways) {
@@ -217,7 +217,7 @@ TEST_F(FileSystemProviderProviderAsyncFileUtilTest, CreateOrOpen_OpenAlways) {
       base::Bind(&EventLogger::OnCreateOrOpen, logger.GetWeakPtr()));
 
   ASSERT_TRUE(logger.error());
-  EXPECT_EQ(base::File::FILE_ERROR_SECURITY, *logger.error());
+  EXPECT_EQ(base::File::FILE_ERROR_ACCESS_DENIED, *logger.error());
 }
 
 TEST_F(FileSystemProviderProviderAsyncFileUtilTest,
@@ -231,7 +231,7 @@ TEST_F(FileSystemProviderProviderAsyncFileUtilTest,
       base::Bind(&EventLogger::OnCreateOrOpen, logger.GetWeakPtr()));
 
   ASSERT_TRUE(logger.error());
-  EXPECT_EQ(base::File::FILE_ERROR_SECURITY, *logger.error());
+  EXPECT_EQ(base::File::FILE_ERROR_ACCESS_DENIED, *logger.error());
 }
 
 TEST_F(FileSystemProviderProviderAsyncFileUtilTest, CreateOrOpen_Open) {
@@ -244,7 +244,7 @@ TEST_F(FileSystemProviderProviderAsyncFileUtilTest, CreateOrOpen_Open) {
       base::Bind(&EventLogger::OnCreateOrOpen, logger.GetWeakPtr()));
 
   ASSERT_TRUE(logger.error());
-  EXPECT_EQ(base::File::FILE_ERROR_NOT_FOUND, *logger.error());
+  EXPECT_EQ(base::File::FILE_ERROR_INVALID_OPERATION, *logger.error());
 }
 
 TEST_F(FileSystemProviderProviderAsyncFileUtilTest, EnsureFileExists) {
@@ -256,7 +256,7 @@ TEST_F(FileSystemProviderProviderAsyncFileUtilTest, EnsureFileExists) {
       base::Bind(&EventLogger::OnEnsureFileExists, logger.GetWeakPtr()));
 
   ASSERT_TRUE(logger.error());
-  EXPECT_EQ(base::File::FILE_ERROR_SECURITY, *logger.error());
+  EXPECT_EQ(base::File::FILE_ERROR_ACCESS_DENIED, *logger.error());
 }
 
 TEST_F(FileSystemProviderProviderAsyncFileUtilTest, CreateDirectory) {
@@ -270,7 +270,7 @@ TEST_F(FileSystemProviderProviderAsyncFileUtilTest, CreateDirectory) {
       base::Bind(&EventLogger::OnStatus, logger.GetWeakPtr()));
 
   ASSERT_TRUE(logger.error());
-  EXPECT_EQ(base::File::FILE_ERROR_SECURITY, *logger.error());
+  EXPECT_EQ(base::File::FILE_ERROR_ACCESS_DENIED, *logger.error());
 }
 
 TEST_F(FileSystemProviderProviderAsyncFileUtilTest, GetFileInfo) {
@@ -310,7 +310,7 @@ TEST_F(FileSystemProviderProviderAsyncFileUtilTest, Touch) {
       base::Bind(&EventLogger::OnStatus, logger.GetWeakPtr()));
 
   ASSERT_TRUE(logger.error());
-  EXPECT_EQ(base::File::FILE_ERROR_SECURITY, *logger.error());
+  EXPECT_EQ(base::File::FILE_ERROR_ACCESS_DENIED, *logger.error());
 }
 
 TEST_F(FileSystemProviderProviderAsyncFileUtilTest, Truncate) {
@@ -323,7 +323,7 @@ TEST_F(FileSystemProviderProviderAsyncFileUtilTest, Truncate) {
       base::Bind(&EventLogger::OnStatus, logger.GetWeakPtr()));
 
   ASSERT_TRUE(logger.error());
-  EXPECT_EQ(base::File::FILE_ERROR_SECURITY, *logger.error());
+  EXPECT_EQ(base::File::FILE_ERROR_ACCESS_DENIED, *logger.error());
 }
 
 TEST_F(FileSystemProviderProviderAsyncFileUtilTest, CopyFileLocal) {
@@ -338,7 +338,7 @@ TEST_F(FileSystemProviderProviderAsyncFileUtilTest, CopyFileLocal) {
       base::Bind(&EventLogger::OnStatus, logger.GetWeakPtr()));
 
   ASSERT_TRUE(logger.error());
-  EXPECT_EQ(base::File::FILE_ERROR_SECURITY, *logger.error());
+  EXPECT_EQ(base::File::FILE_ERROR_ACCESS_DENIED, *logger.error());
 }
 
 TEST_F(FileSystemProviderProviderAsyncFileUtilTest, MoveFileLocal) {
@@ -352,7 +352,7 @@ TEST_F(FileSystemProviderProviderAsyncFileUtilTest, MoveFileLocal) {
       base::Bind(&EventLogger::OnStatus, logger.GetWeakPtr()));
 
   ASSERT_TRUE(logger.error());
-  EXPECT_EQ(base::File::FILE_ERROR_SECURITY, *logger.error());
+  EXPECT_EQ(base::File::FILE_ERROR_ACCESS_DENIED, *logger.error());
 }
 
 TEST_F(FileSystemProviderProviderAsyncFileUtilTest, CopyInForeignFile) {
@@ -365,7 +365,7 @@ TEST_F(FileSystemProviderProviderAsyncFileUtilTest, CopyInForeignFile) {
       base::Bind(&EventLogger::OnStatus, logger.GetWeakPtr()));
 
   ASSERT_TRUE(logger.error());
-  EXPECT_EQ(base::File::FILE_ERROR_SECURITY, *logger.error());
+  EXPECT_EQ(base::File::FILE_ERROR_ACCESS_DENIED, *logger.error());
 }
 
 TEST_F(FileSystemProviderProviderAsyncFileUtilTest, DeleteFile) {
@@ -377,7 +377,7 @@ TEST_F(FileSystemProviderProviderAsyncFileUtilTest, DeleteFile) {
       base::Bind(&EventLogger::OnStatus, logger.GetWeakPtr()));
 
   ASSERT_TRUE(logger.error());
-  EXPECT_EQ(base::File::FILE_ERROR_SECURITY, *logger.error());
+  EXPECT_EQ(base::File::FILE_ERROR_ACCESS_DENIED, *logger.error());
 }
 
 TEST_F(FileSystemProviderProviderAsyncFileUtilTest, DeleteDirectory) {
@@ -389,7 +389,7 @@ TEST_F(FileSystemProviderProviderAsyncFileUtilTest, DeleteDirectory) {
       base::Bind(&EventLogger::OnStatus, logger.GetWeakPtr()));
 
   ASSERT_TRUE(logger.error());
-  EXPECT_EQ(base::File::FILE_ERROR_SECURITY, *logger.error());
+  EXPECT_EQ(base::File::FILE_ERROR_ACCESS_DENIED, *logger.error());
 }
 
 TEST_F(FileSystemProviderProviderAsyncFileUtilTest, DeleteRecursively) {
@@ -401,7 +401,7 @@ TEST_F(FileSystemProviderProviderAsyncFileUtilTest, DeleteRecursively) {
       base::Bind(&EventLogger::OnStatus, logger.GetWeakPtr()));
 
   ASSERT_TRUE(logger.error());
-  EXPECT_EQ(base::File::FILE_ERROR_SECURITY, *logger.error());
+  EXPECT_EQ(base::File::FILE_ERROR_ACCESS_DENIED, *logger.error());
 }
 
 TEST_F(FileSystemProviderProviderAsyncFileUtilTest, CreateSnapshotFile) {
@@ -413,7 +413,7 @@ TEST_F(FileSystemProviderProviderAsyncFileUtilTest, CreateSnapshotFile) {
       base::Bind(&EventLogger::OnCreateSnapshotFile, logger.GetWeakPtr()));
 
   ASSERT_TRUE(logger.error());
-  EXPECT_EQ(base::File::FILE_ERROR_NOT_FOUND, *logger.error());
+  EXPECT_EQ(base::File::FILE_ERROR_INVALID_OPERATION, *logger.error());
 }
 
 }  // namespace file_system_provider
