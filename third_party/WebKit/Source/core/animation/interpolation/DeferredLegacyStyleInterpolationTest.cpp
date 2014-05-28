@@ -23,8 +23,8 @@ protected:
         if (propertyID == CSSPropertyFloodColor)
             parserMode = SVGAttributeMode;
         RefPtrWillBeRawPtr<MutableStylePropertySet> dummyStyle = MutableStylePropertySet::create();
-        bool ok = BisonCSSParser::parseValue(dummyStyle.get(), propertyID, string, false, parserMode, 0);
-        ASSERT(ok);
+        bool parseSuccess = BisonCSSParser::parseValue(dummyStyle.get(), propertyID, string, false, parserMode, 0);
+        ASSERT_UNUSED(parseSuccess, parseSuccess);
         return DeferredLegacyStyleInterpolation::interpolationRequiresStyleResolve(*dummyStyle->getPropertyCSSValue(propertyID));
     }
 };
