@@ -981,8 +981,8 @@ class SourceControl(object):
     Returns:
       The return code of the call.
     """
-    return bisect_utils.RunGClient(['sync', '--revision',
-        revision, '--verbose', '--nohooks', '--reset', '--force'])
+    return bisect_utils.RunGClient(['sync', '--verbose', '--reset', '--force',
+        '--delete_unversioned_trees', '--nohooks', '--revision', revision])
 
   def SyncToRevisionWithRepo(self, timestamp):
     """Uses repo to sync all the underlying git depots to the specified
@@ -2277,7 +2277,8 @@ class BisectPerformanceMetrics(object):
 
     if self.was_blink != is_blink:
       self.was_blink = is_blink
-      return bisect_utils.RemoveThirdPartyWebkitDirectory()
+      # Removes third_party/Webkit directory.
+      return bisect_utils.RemoveThirdPartyDirectory('Webkit')
     return True
 
   def PerformCrosChrootCleanup(self):
@@ -2313,7 +2314,13 @@ class BisectPerformanceMetrics(object):
       True if successful.
     """
     if depot == 'chromium':
-      if not bisect_utils.RemoveThirdPartyLibjingleDirectory():
+      # Removes third_party/libjingle. At some point, libjingle was causing
+      # issues syncing when using the git workflow (crbug.com/266324).
+      if not bisect_utils.RemoveThirdPartyDirectory('libjingle'):
+        return False
+      # Removes third_party/skia. At some point, skia was causing
+      #  issues syncing when using the git workflow (crbug.com/377951).
+      if not bisect_utils.RemoveThirdPartyDirectory('skia'):
         return False
       return self.PerformWebkitDirectoryCleanup(revision)
     elif depot == 'cros':

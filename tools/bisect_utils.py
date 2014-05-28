@@ -253,22 +253,6 @@ def IsDepsFileBlink():
   return 'blink.git' in locals['vars']['webkit_url']
 
 
-def RemoveThirdPartyWebkitDirectory():
-  """Removes third_party/WebKit.
-
-  Returns:
-    True on success.
-  """
-  try:
-    path_to_dir = os.path.join(os.getcwd(), 'third_party', 'WebKit')
-    if os.path.exists(path_to_dir):
-      shutil.rmtree(path_to_dir)
-  except OSError, e:
-    if e.errno != errno.ENOENT:
-      return False
-  return True
-
-
 def OnAccessError(func, path, exc_info):
   """
   Source: http://stackoverflow.com/questions/2656322/python-shutil-rmtree-fails-on-windows-with-access-is-denied
@@ -293,14 +277,17 @@ def OnAccessError(func, path, exc_info):
     raise
 
 
-def RemoveThirdPartyLibjingleDirectory():
-  """Removes third_party/libjingle. At some point, libjingle was causing issues
-  syncing when using the git workflow (crbug.com/266324).
+def RemoveThirdPartyDirectory(dir_name):
+  """Removes third_party directory from the source.
+
+  At some point, some of the third_parties were causing issues to changes in
+  the way they are synced. We remove such folder in order to avoid sync errors
+  while bisecting.
 
   Returns:
-    True on success.
+    True on success, otherwise False.
   """
-  path_to_dir = os.path.join(os.getcwd(), 'third_party', 'libjingle')
+  path_to_dir = os.path.join(os.getcwd(), 'third_party', dir_name)
   try:
     if os.path.exists(path_to_dir):
       shutil.rmtree(path_to_dir, onerror=OnAccessError)
@@ -361,11 +348,13 @@ def SetupGitDepot(opts, custom_deps):
       cwd = os.getcwd()
       os.chdir('src')
       if not IsDepsFileBlink():
-        passed_deps_check = RemoveThirdPartyWebkitDirectory()
+        passed_deps_check = RemoveThirdPartyDirectory('Webkit')
       else:
         passed_deps_check = True
       if passed_deps_check:
-        passed_deps_check = RemoveThirdPartyLibjingleDirectory()
+        passed_deps_check = RemoveThirdPartyDirectory('libjingle')
+      if passed_deps_check:
+        passed_deps_check = RemoveThirdPartyDirectory('skia')
       os.chdir(cwd)
 
     if passed_deps_check:
