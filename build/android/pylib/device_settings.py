@@ -35,6 +35,9 @@ def ConfigureContentSettingsDict(device, desired_settings):
     logging.error('Skipping content settings configuration due to outdated sdk')
     return
 
+  device.old_interface.system_properties['persist.sys.usb.config'] = 'adb'
+  device.old_interface.WaitForDevicePm()
+
   for table, key_value in sorted(desired_settings.iteritems()):
     settings = content_settings.ContentSettings(table, device)
     for key, value in key_value.iteritems():
