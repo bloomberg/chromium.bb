@@ -314,31 +314,29 @@ static void BoundingBoxForArc(const gfx::Point3F& point,
       return;
 
     v1.Scale(1.f / v1_length);
-
     gfx::Vector3dF v2 = gfx::CrossProduct(normal, v1);
+    // v1 is the basis vector in the direction of the point.
+    // i.e. with a rotation of 0, v1 is our +x vector.
+    // v2 is a perpenticular basis vector of our plane (+y).
 
-    // Now figure out where (1, 0, 0) and (0, 0, 1) project on the rotation
-    // plane.
-    gfx::Point3F px(1.f, 0.f, 0.f);
-    gfx::Vector3dF to_px = px - center;
-    gfx::Point3F px_projected =
-        px - gfx::ScaleVector3d(normal, gfx::DotProduct(to_px, normal));
-    gfx::Vector3dF vx = px_projected - origin;
-
-    gfx::Point3F pz(0.f, 0.f, 1.f);
-    gfx::Vector3dF to_pz = pz - center;
-    gfx::Point3F pz_projected =
-        pz - ScaleVector3d(normal, gfx::DotProduct(to_pz, normal));
-    gfx::Vector3dF vz = pz_projected - origin;
-
-    double phi_x = atan2(gfx::DotProduct(v2, vx), gfx::DotProduct(v1, vx));
-    double phi_z = atan2(gfx::DotProduct(v2, vz), gfx::DotProduct(v1, vz));
-
-    candidates[0] = atan2(normal.y(), normal.x() * normal.z()) + phi_x;
+    // Take the parametric equation of a circle.
+    // x = r*cos(t); y = r*sin(t);
+    // We can treat that as a circle on the plane v1xv2.
+    // From that we get the parametric equations for a circle on the
+    // plane in 3d space of:
+    // x(t) = r*cos(t)*v1.x + r*sin(t)*v2.x + cx
+    // y(t) = r*cos(t)*v1.y + r*sin(t)*v2.y + cy
+    // z(t) = r*cos(t)*v1.z + r*sin(t)*v2.z + cz
+    // Taking the derivative of (x, y, z) and solving for 0 gives us our
+    // maximum/minimum x, y, z values.
+    // x'(t) = r*cos(t)*v2.x - r*sin(t)*v1.x = 0
+    // tan(t) = v2.x/v1.x
+    // t = atan2(v2.x, v1.x) + n*M_PI;
+    candidates[0] = atan2(v2.x(), v1.x());
     candidates[1] = candidates[0] + M_PI;
-    candidates[2] = atan2(-normal.z(), normal.x() * normal.y()) + phi_x;
+    candidates[2] = atan2(v2.y(), v1.y());
     candidates[3] = candidates[2] + M_PI;
-    candidates[4] = atan2(normal.y(), -normal.x() * normal.z()) + phi_z;
+    candidates[4] = atan2(v2.z(), v1.z());
     candidates[5] = candidates[4] + M_PI;
   }
 

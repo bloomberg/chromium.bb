@@ -61,7 +61,11 @@ bool TransformOperations::BlendedBoundsForBox(const gfx::BoxF& box,
   size_t num_operations =
       std::max(from_identity ? 0 : from.operations_.size(),
                to_identity ? 0 : operations_.size());
-  for (size_t i = 0; i < num_operations; ++i) {
+
+  // Because we are squashing all of the matrices together when applying
+  // them to the animation, we must apply them in reverse order when
+  // not squashing them.
+  for (int i = num_operations - 1; i >= 0; --i) {
     gfx::BoxF bounds_for_operation;
     const TransformOperation* from_op =
         from_identity ? NULL : &from.operations_[i];

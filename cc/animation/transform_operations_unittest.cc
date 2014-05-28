@@ -1219,15 +1219,39 @@ TEST(TransformOperationTest, BlendedBoundsForSkew) {
   }
 }
 
+TEST(TransformOperationTest, NonCommutativeRotations) {
+  TransformOperations operations_from;
+  operations_from.AppendRotate(1.0, 0.0, 0.0, 0.0);
+  operations_from.AppendRotate(0.0, 1.0, 0.0, 0.0);
+  TransformOperations operations_to;
+  operations_to.AppendRotate(1.0, 0.0, 0.0, 45.0);
+  operations_to.AppendRotate(0.0, 1.0, 0.0, 135.0);
+
+  gfx::BoxF box(0, 0, 0, 1, 1, 1);
+  gfx::BoxF bounds;
+
+  SkMScalar min_progress = 0.0f;
+  SkMScalar max_progress = 1.0f;
+  EXPECT_TRUE(operations_to.BlendedBoundsForBox(
+      box, operations_from, min_progress, max_progress, &bounds));
+  gfx::Transform blended_transform =
+      operations_to.Blend(operations_from, max_progress);
+  gfx::Point3F blended_point(0.9f, 0.9f, 0.0f);
+  blended_transform.TransformPoint(&blended_point);
+  gfx::BoxF expanded_bounds = bounds;
+  expanded_bounds.ExpandTo(blended_point);
+  EXPECT_EQ(bounds.ToString(), expanded_bounds.ToString());
+}
+
 TEST(TransformOperationTest, BlendedBoundsForSequence) {
   TransformOperations operations_from;
-  operations_from.AppendTranslate(2.0, 4.0, -1.0);
-  operations_from.AppendScale(-1.0, 2.0, 3.0);
   operations_from.AppendTranslate(1.0, -5.0, 1.0);
+  operations_from.AppendScale(-1.0, 2.0, 3.0);
+  operations_from.AppendTranslate(2.0, 4.0, -1.0);
   TransformOperations operations_to;
-  operations_to.AppendTranslate(6.0, -2.0, 3.0);
-  operations_to.AppendScale(-3.0, -2.0, 5.0);
   operations_to.AppendTranslate(13.0, -1.0, 5.0);
+  operations_to.AppendScale(-3.0, -2.0, 5.0);
+  operations_to.AppendTranslate(6.0, -2.0, 3.0);
 
   gfx::BoxF box(1.f, 2.f, 3.f, 4.f, 4.f, 4.f);
   gfx::BoxF bounds;
