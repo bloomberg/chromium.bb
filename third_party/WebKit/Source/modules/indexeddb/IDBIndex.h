@@ -58,24 +58,24 @@ public:
     bool unique() const { return m_metadata.unique; }
     bool multiEntry() const { return m_metadata.multiEntry; }
 
-    IDBRequest* openCursor(ExecutionContext*, const ScriptValue& key, const String& direction, ExceptionState&);
-    IDBRequest* openKeyCursor(ExecutionContext*, const ScriptValue& range, const String& direction, ExceptionState&);
-    IDBRequest* count(ExecutionContext*, const ScriptValue& range, ExceptionState&);
-    IDBRequest* get(ExecutionContext*, const ScriptValue& key, ExceptionState&);
-    IDBRequest* getKey(ExecutionContext*, const ScriptValue& key, ExceptionState&);
+    IDBRequest* openCursor(ScriptState*, const ScriptValue& key, const String& direction, ExceptionState&);
+    IDBRequest* openKeyCursor(ScriptState*, const ScriptValue& range, const String& direction, ExceptionState&);
+    IDBRequest* count(ScriptState*, const ScriptValue& range, ExceptionState&);
+    IDBRequest* get(ScriptState*, const ScriptValue& key, ExceptionState&);
+    IDBRequest* getKey(ScriptState*, const ScriptValue& key, ExceptionState&);
 
     void markDeleted() { m_deleted = true; }
     bool isDeleted() const;
 
     // Used internally and by InspectorIndexedDBAgent:
-    IDBRequest* openCursor(ExecutionContext*, IDBKeyRange*, blink::WebIDBCursor::Direction);
+    IDBRequest* openCursor(ScriptState*, IDBKeyRange*, blink::WebIDBCursor::Direction);
 
     blink::WebIDBDatabase* backendDB() const;
 
 private:
     IDBIndex(const IDBIndexMetadata&, IDBObjectStore*, IDBTransaction*);
 
-    IDBRequest* getInternal(ExecutionContext*, const ScriptValue& key, ExceptionState&, bool keyOnly);
+    IDBRequest* getInternal(ScriptState*, const ScriptValue& key, ExceptionState&, bool keyOnly);
 
     IDBIndexMetadata m_metadata;
     Member<IDBObjectStore> m_objectStore;

@@ -50,18 +50,18 @@ public:
     ~IDBFactory();
     void trace(Visitor*);
 
-    IDBRequest* getDatabaseNames(ExecutionContext*, ExceptionState&);
+    IDBRequest* getDatabaseNames(ScriptState*, ExceptionState&);
 
-    IDBOpenDBRequest* open(ExecutionContext*, const String& name, ExceptionState&);
-    IDBOpenDBRequest* open(ExecutionContext*, const String& name, unsigned long long version, ExceptionState&);
-    IDBOpenDBRequest* deleteDatabase(ExecutionContext*, const String& name, ExceptionState&);
+    IDBOpenDBRequest* open(ScriptState*, const String& name, ExceptionState&);
+    IDBOpenDBRequest* open(ScriptState*, const String& name, unsigned long long version, ExceptionState&);
+    IDBOpenDBRequest* deleteDatabase(ScriptState*, const String& name, ExceptionState&);
 
-    short cmp(ExecutionContext*, const ScriptValue& first, const ScriptValue& second, ExceptionState&);
+    short cmp(ScriptState*, const ScriptValue& first, const ScriptValue& second, ExceptionState&);
 
 private:
     explicit IDBFactory(IndexedDBClient*);
 
-    IDBOpenDBRequest* openInternal(ExecutionContext*, const String& name, int64_t version, ExceptionState&);
+    IDBOpenDBRequest* openInternal(ScriptState*, const String& name, int64_t version, ExceptionState&);
 
     Member<IndexedDBClient> m_permissionClient;
 };

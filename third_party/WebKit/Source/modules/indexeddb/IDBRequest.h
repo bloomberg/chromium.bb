@@ -60,7 +60,7 @@ class IDBRequest
     DEFINE_EVENT_TARGET_REFCOUNTING(RefCountedGarbageCollected<IDBRequest>);
 
 public:
-    static IDBRequest* create(ExecutionContext*, IDBAny* source, IDBTransaction*);
+    static IDBRequest* create(ScriptState*, IDBAny* source, IDBTransaction*);
     virtual ~IDBRequest();
     virtual void trace(Visitor*);
 
@@ -127,7 +127,7 @@ public:
     IDBCursor* getResultCursor() const;
 
 protected:
-    IDBRequest(ExecutionContext*, IDBAny* source, IDBTransaction*);
+    IDBRequest(ScriptState*, IDBAny* source, IDBTransaction*);
     void enqueueEvent(PassRefPtrWillBeRawPtr<Event>);
     void dequeueEvent(Event*);
     virtual bool shouldEnqueueEvent() const;

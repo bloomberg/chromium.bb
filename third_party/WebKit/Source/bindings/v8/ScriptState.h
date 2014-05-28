@@ -46,7 +46,7 @@ public:
     };
 
     static PassRefPtr<ScriptState> create(v8::Handle<v8::Context>, PassRefPtr<DOMWrapperWorld>);
-    ~ScriptState();
+    virtual ~ScriptState();
 
     static ScriptState* current(v8::Isolate* isolate)
     {
@@ -68,8 +68,9 @@ public:
 
     v8::Isolate* isolate() const { return m_isolate; }
     DOMWrapperWorld& world() const { return *m_world; }
-    ExecutionContext* executionContext() const;
     DOMWindow* domWindow() const;
+    virtual ExecutionContext* executionContext() const;
+    virtual void setExecutionContext(PassRefPtr<ExecutionContext>);
 
     // This can return an empty handle if the v8::Context is gone.
     v8::Handle<v8::Context> context() const { return m_context.newLocal(m_isolate); }
@@ -83,9 +84,10 @@ public:
     void setEvalEnabled(bool);
     ScriptValue getFromGlobalObject(const char* name);
 
-private:
+protected:
     ScriptState(v8::Handle<v8::Context>, PassRefPtr<DOMWrapperWorld>);
 
+private:
     v8::Isolate* m_isolate;
     // This persistent handle is weak.
     ScopedPersistent<v8::Context> m_context;
@@ -98,6 +100,19 @@ private:
     // So you must explicitly clear the OwnPtr by calling disposePerContextData()
     // once you no longer need V8PerContextData. Otherwise, the v8::Context will leak.
     OwnPtr<V8PerContextData> m_perContextData;
+};
+
+class ScriptStateForTesting : public ScriptState {
+public:
+    static PassRefPtr<ScriptStateForTesting> create(v8::Handle<v8::Context>, PassRefPtr<DOMWrapperWorld>);
+
+    virtual ExecutionContext* executionContext() const OVERRIDE;
+    virtual void setExecutionContext(PassRefPtr<ExecutionContext>) OVERRIDE;
+
+private:
+    ScriptStateForTesting(v8::Handle<v8::Context>, PassRefPtr<DOMWrapperWorld>);
+
+    RefPtr<ExecutionContext> m_executionContext;
 };
 
 // ScriptStateProtectingContext keeps the context associated with the ScriptState alive.

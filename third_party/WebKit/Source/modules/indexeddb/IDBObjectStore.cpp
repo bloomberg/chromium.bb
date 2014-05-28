@@ -84,7 +84,7 @@ PassRefPtrWillBeRawPtr<DOMStringList> IDBObjectStore::indexNames() const
     return indexNames.release();
 }
 
-IDBRequest* IDBObjectStore::get(ExecutionContext* context, const ScriptValue& key, ExceptionState& exceptionState)
+IDBRequest* IDBObjectStore::get(ScriptState* scriptState, const ScriptValue& key, ExceptionState& exceptionState)
 {
     IDB_TRACE("IDBObjectStore::get");
     if (isDeleted()) {
@@ -99,7 +99,7 @@ IDBRequest* IDBObjectStore::get(ExecutionContext* context, const ScriptValue& ke
         exceptionState.throwDOMException(TransactionInactiveError, IDBDatabase::transactionInactiveErrorMessage);
         return 0;
     }
-    IDBKeyRange* keyRange = IDBKeyRange::fromScriptValue(context, key, exceptionState);
+    IDBKeyRange* keyRange = IDBKeyRange::fromScriptValue(scriptState->executionContext(), key, exceptionState);
     if (exceptionState.hadException())
         return 0;
     if (!keyRange) {
@@ -111,7 +111,7 @@ IDBRequest* IDBObjectStore::get(ExecutionContext* context, const ScriptValue& ke
         return 0;
     }
 
-    IDBRequest* request = IDBRequest::create(context, IDBAny::create(this), m_transaction.get());
+    IDBRequest* request = IDBRequest::create(scriptState, IDBAny::create(this), m_transaction.get());
     backendDB()->get(m_transaction->id(), id(), IDBIndexMetadata::InvalidId, keyRange, false, WebIDBCallbacksImpl::create(request).leakPtr());
     return request;
 }
@@ -139,25 +139,25 @@ static void generateIndexKeysForValue(v8::Isolate* isolate, const IDBIndexMetada
     }
 }
 
-IDBRequest* IDBObjectStore::add(ExecutionContext* executionContext, ScriptValue& value, const ScriptValue& key, ExceptionState& exceptionState)
+IDBRequest* IDBObjectStore::add(ScriptState* scriptState, ScriptValue& value, const ScriptValue& key, ExceptionState& exceptionState)
 {
     IDB_TRACE("IDBObjectStore::add");
-    return put(executionContext, WebIDBDatabase::AddOnly, IDBAny::create(this), value, key, exceptionState);
+    return put(scriptState, WebIDBDatabase::AddOnly, IDBAny::create(this), value, key, exceptionState);
 }
 
-IDBRequest* IDBObjectStore::put(ExecutionContext* executionContext, ScriptValue& value, const ScriptValue& key, ExceptionState& exceptionState)
+IDBRequest* IDBObjectStore::put(ScriptState* scriptState, ScriptValue& value, const ScriptValue& key, ExceptionState& exceptionState)
 {
     IDB_TRACE("IDBObjectStore::put");
-    return put(executionContext, WebIDBDatabase::AddOrUpdate, IDBAny::create(this), value, key, exceptionState);
+    return put(scriptState, WebIDBDatabase::AddOrUpdate, IDBAny::create(this), value, key, exceptionState);
 }
 
-IDBRequest* IDBObjectStore::put(ExecutionContext* executionContext, WebIDBDatabase::PutMode putMode, IDBAny* source, ScriptValue& value, const ScriptValue& keyValue, ExceptionState& exceptionState)
+IDBRequest* IDBObjectStore::put(ScriptState* scriptState, WebIDBDatabase::PutMode putMode, IDBAny* source, ScriptValue& value, const ScriptValue& keyValue, ExceptionState& exceptionState)
 {
-    IDBKey* key = keyValue.isUndefined() ? 0 : scriptValueToIDBKey(toIsolate(executionContext), keyValue);
-    return put(executionContext, putMode, source, value, key, exceptionState);
+    IDBKey* key = keyValue.isUndefined() ? nullptr : scriptValueToIDBKey(scriptState->isolate(), keyValue);
+    return put(scriptState, putMode, source, value, key, exceptionState);
 }
 
-IDBRequest* IDBObjectStore::put(ExecutionContext* executionContext, WebIDBDatabase::PutMode putMode, IDBAny* source, ScriptValue& value, IDBKey* key, ExceptionState& exceptionState)
+IDBRequest* IDBObjectStore::put(ScriptState* scriptState, WebIDBDatabase::PutMode putMode, IDBAny* source, ScriptValue& value, IDBKey* key, ExceptionState& exceptionState)
 {
     if (isDeleted()) {
         exceptionState.throwDOMException(InvalidStateError, IDBDatabase::objectStoreDeletedErrorMessage);
@@ -178,7 +178,7 @@ IDBRequest* IDBObjectStore::put(ExecutionContext* executionContext, WebIDBDataba
 
     Vector<WebBlobInfo> blobInfo;
 
-    RefPtr<SerializedScriptValue> serializedValue = SerializedScriptValue::create(value, &blobInfo, exceptionState, toIsolate(executionContext));
+    RefPtr<SerializedScriptValue> serializedValue = SerializedScriptValue::create(value, &blobInfo, exceptionState, scriptState->isolate());
     if (exceptionState.hadException())
         return 0;
 
@@ -202,7 +202,7 @@ IDBRequest* IDBObjectStore::put(ExecutionContext* executionContext, WebIDBDataba
         return 0;
     }
     if (usesInLineKeys) {
-        IDBKey* keyPathKey = createIDBKeyFromScriptValueAndKeyPath(toIsolate(executionContext), value, keyPath);
+        IDBKey* keyPathKey = createIDBKeyFromScriptValueAndKeyPath(scriptState->isolate(), value, keyPath);
         if (keyPathKey && !keyPathKey->isValid()) {
             exceptionState.throwDOMException(DataError, "Evaluating the object store's key path yielded a value that is not a valid key.");
             return 0;
@@ -212,7 +212,7 @@ IDBRequest* IDBObjectStore::put(ExecutionContext* executionContext, WebIDBDataba
             return 0;
         }
         if (hasKeyGenerator && !keyPathKey) {
-            if (!canInjectIDBKeyIntoScriptValue(toIsolate(executionContext), value, keyPath)) {
+            if (!canInjectIDBKeyIntoScriptValue(scriptState->isolate(), value, keyPath)) {
                 exceptionState.throwDOMException(DataError, "A generated key could not be inserted into the value.");
                 return 0;
             }
@@ -234,12 +234,12 @@ IDBRequest* IDBObjectStore::put(ExecutionContext* executionContext, WebIDBDataba
     HeapVector<IndexKeys> indexKeys;
     for (IDBObjectStoreMetadata::IndexMap::const_iterator it = m_metadata.indexes.begin(); it != m_metadata.indexes.end(); ++it) {
         IndexKeys keys;
-        generateIndexKeysForValue(toIsolate(executionContext), it->value, value, &keys);
+        generateIndexKeysForValue(scriptState->isolate(), it->value, value, &keys);
         indexIds.append(it->key);
         indexKeys.append(keys);
     }
 
-    IDBRequest* request = IDBRequest::create(executionContext, source, m_transaction.get());
+    IDBRequest* request = IDBRequest::create(scriptState, source, m_transaction.get());
     Vector<char> wireBytes;
     serializedValue->toWireBytes(wireBytes);
     RefPtr<SharedBuffer> valueBuffer = SharedBuffer::adoptVector(wireBytes);
@@ -248,7 +248,7 @@ IDBRequest* IDBObjectStore::put(ExecutionContext* executionContext, WebIDBDataba
     return request;
 }
 
-IDBRequest* IDBObjectStore::deleteFunction(ExecutionContext* context, const ScriptValue& key, ExceptionState& exceptionState)
+IDBRequest* IDBObjectStore::deleteFunction(ScriptState* scriptState, const ScriptValue& key, ExceptionState& exceptionState)
 {
     IDB_TRACE("IDBObjectStore::delete");
     if (isDeleted()) {
@@ -268,7 +268,7 @@ IDBRequest* IDBObjectStore::deleteFunction(ExecutionContext* context, const Scri
         return 0;
     }
 
-    IDBKeyRange* keyRange = IDBKeyRange::fromScriptValue(context, key, exceptionState);
+    IDBKeyRange* keyRange = IDBKeyRange::fromScriptValue(scriptState->executionContext(), key, exceptionState);
     if (exceptionState.hadException())
         return 0;
     if (!keyRange) {
@@ -280,12 +280,12 @@ IDBRequest* IDBObjectStore::deleteFunction(ExecutionContext* context, const Scri
         return 0;
     }
 
-    IDBRequest* request = IDBRequest::create(context, IDBAny::create(this), m_transaction.get());
+    IDBRequest* request = IDBRequest::create(scriptState, IDBAny::create(this), m_transaction.get());
     backendDB()->deleteRange(m_transaction->id(), id(), keyRange, WebIDBCallbacksImpl::create(request).leakPtr());
     return request;
 }
 
-IDBRequest* IDBObjectStore::clear(ExecutionContext* context, ExceptionState& exceptionState)
+IDBRequest* IDBObjectStore::clear(ScriptState* scriptState, ExceptionState& exceptionState)
 {
     IDB_TRACE("IDBObjectStore::clear");
     if (isDeleted()) {
@@ -309,7 +309,7 @@ IDBRequest* IDBObjectStore::clear(ExecutionContext* context, ExceptionState& exc
         return 0;
     }
 
-    IDBRequest* request = IDBRequest::create(context, IDBAny::create(this), m_transaction.get());
+    IDBRequest* request = IDBRequest::create(scriptState, IDBAny::create(this), m_transaction.get());
     backendDB()->clear(m_transaction->id(), id(), WebIDBCallbacksImpl::create(request).leakPtr());
     return request;
 }
@@ -343,8 +343,9 @@ private:
     {
     }
 
-    virtual void handleEvent(ExecutionContext* context, Event* event) OVERRIDE
+    virtual void handleEvent(ExecutionContext* executionContext, Event* event) OVERRIDE
     {
+        ASSERT(m_scriptState->executionContext() == executionContext);
         ASSERT(event->type() == EventTypeNames::success);
         EventTarget* target = event->target();
         IDBRequest* request = static_cast<IDBRequest*>(target);
@@ -366,7 +367,7 @@ private:
             ScriptValue value = cursor->value(m_scriptState.get());
 
             IDBObjectStore::IndexKeys indexKeys;
-            generateIndexKeysForValue(toIsolate(context), m_indexMetadata, value, &indexKeys);
+            generateIndexKeysForValue(m_scriptState->isolate(), m_indexMetadata, value, &indexKeys);
 
             HeapVector<IDBObjectStore::IndexKeys> indexKeysList;
             indexKeysList.append(indexKeys);
@@ -456,7 +457,7 @@ IDBIndex* IDBObjectStore::createIndex(ScriptState* scriptState, const String& na
     if (exceptionState.hadException())
         return 0;
 
-    IDBRequest* indexRequest = openCursor(scriptState->executionContext(), static_cast<IDBKeyRange*>(0), blink::WebIDBCursor::Next, WebIDBDatabase::PreemptiveTask);
+    IDBRequest* indexRequest = openCursor(scriptState, static_cast<IDBKeyRange*>(0), blink::WebIDBCursor::Next, WebIDBDatabase::PreemptiveTask);
     indexRequest->preventPropagation();
 
     // This is kept alive by being the success handler of the request, which is in turn kept alive by the owning transaction.
@@ -542,7 +543,7 @@ void IDBObjectStore::deleteIndex(const String& name, ExceptionState& exceptionSt
     }
 }
 
-IDBRequest* IDBObjectStore::openCursor(ExecutionContext* context, const ScriptValue& range, const String& directionString, ExceptionState& exceptionState)
+IDBRequest* IDBObjectStore::openCursor(ScriptState* scriptState, const ScriptValue& range, const String& directionString, ExceptionState& exceptionState)
 {
     IDB_TRACE("IDBObjectStore::openCursor");
     if (isDeleted()) {
@@ -562,7 +563,7 @@ IDBRequest* IDBObjectStore::openCursor(ExecutionContext* context, const ScriptVa
     if (exceptionState.hadException())
         return 0;
 
-    IDBKeyRange* keyRange = IDBKeyRange::fromScriptValue(context, range, exceptionState);
+    IDBKeyRange* keyRange = IDBKeyRange::fromScriptValue(scriptState->executionContext(), range, exceptionState);
     if (exceptionState.hadException())
         return 0;
 
@@ -571,19 +572,19 @@ IDBRequest* IDBObjectStore::openCursor(ExecutionContext* context, const ScriptVa
         return 0;
     }
 
-    return openCursor(context, keyRange, direction, WebIDBDatabase::NormalTask);
+    return openCursor(scriptState, keyRange, direction, WebIDBDatabase::NormalTask);
 }
 
-IDBRequest* IDBObjectStore::openCursor(ExecutionContext* context, IDBKeyRange* range, WebIDBCursor::Direction direction, WebIDBDatabase::TaskType taskType)
+IDBRequest* IDBObjectStore::openCursor(ScriptState* scriptState, IDBKeyRange* range, WebIDBCursor::Direction direction, WebIDBDatabase::TaskType taskType)
 {
-    IDBRequest* request = IDBRequest::create(context, IDBAny::create(this), m_transaction.get());
+    IDBRequest* request = IDBRequest::create(scriptState, IDBAny::create(this), m_transaction.get());
     request->setCursorDetails(IndexedDB::CursorKeyAndValue, direction);
 
     backendDB()->openCursor(m_transaction->id(), id(), IDBIndexMetadata::InvalidId, range, direction, false, taskType, WebIDBCallbacksImpl::create(request).leakPtr());
     return request;
 }
 
-IDBRequest* IDBObjectStore::openKeyCursor(ExecutionContext* context, const ScriptValue& range, const String& directionString, ExceptionState& exceptionState)
+IDBRequest* IDBObjectStore::openKeyCursor(ScriptState* scriptState, const ScriptValue& range, const String& directionString, ExceptionState& exceptionState)
 {
     IDB_TRACE("IDBObjectStore::openKeyCursor");
     if (isDeleted()) {
@@ -603,7 +604,7 @@ IDBRequest* IDBObjectStore::openKeyCursor(ExecutionContext* context, const Scrip
     if (exceptionState.hadException())
         return 0;
 
-    IDBKeyRange* keyRange = IDBKeyRange::fromScriptValue(context, range, exceptionState);
+    IDBKeyRange* keyRange = IDBKeyRange::fromScriptValue(scriptState->executionContext(), range, exceptionState);
     if (exceptionState.hadException())
         return 0;
 
@@ -612,14 +613,14 @@ IDBRequest* IDBObjectStore::openKeyCursor(ExecutionContext* context, const Scrip
         return 0;
     }
 
-    IDBRequest* request = IDBRequest::create(context, IDBAny::create(this), m_transaction.get());
+    IDBRequest* request = IDBRequest::create(scriptState, IDBAny::create(this), m_transaction.get());
     request->setCursorDetails(IndexedDB::CursorKeyOnly, direction);
 
     backendDB()->openCursor(m_transaction->id(), id(), IDBIndexMetadata::InvalidId, keyRange, direction, true, WebIDBDatabase::NormalTask, WebIDBCallbacksImpl::create(request).leakPtr());
     return request;
 }
 
-IDBRequest* IDBObjectStore::count(ExecutionContext* context, const ScriptValue& range, ExceptionState& exceptionState)
+IDBRequest* IDBObjectStore::count(ScriptState* scriptState, const ScriptValue& range, ExceptionState& exceptionState)
 {
     IDB_TRACE("IDBObjectStore::count");
     if (isDeleted()) {
@@ -635,7 +636,7 @@ IDBRequest* IDBObjectStore::count(ExecutionContext* context, const ScriptValue& 
         return 0;
     }
 
-    IDBKeyRange* keyRange = IDBKeyRange::fromScriptValue(context, range, exceptionState);
+    IDBKeyRange* keyRange = IDBKeyRange::fromScriptValue(scriptState->executionContext(), range, exceptionState);
     if (exceptionState.hadException())
         return 0;
 
@@ -644,7 +645,7 @@ IDBRequest* IDBObjectStore::count(ExecutionContext* context, const ScriptValue& 
         return 0;
     }
 
-    IDBRequest* request = IDBRequest::create(context, IDBAny::create(this), m_transaction.get());
+    IDBRequest* request = IDBRequest::create(scriptState, IDBAny::create(this), m_transaction.get());
     backendDB()->count(m_transaction->id(), id(), IDBIndexMetadata::InvalidId, keyRange, WebIDBCallbacksImpl::create(request).leakPtr());
     return request;
 }

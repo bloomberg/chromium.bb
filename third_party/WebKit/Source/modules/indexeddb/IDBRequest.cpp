@@ -45,9 +45,9 @@ using blink::WebIDBCursor;
 
 namespace WebCore {
 
-IDBRequest* IDBRequest::create(ExecutionContext* context, IDBAny* source, IDBTransaction* transaction)
+IDBRequest* IDBRequest::create(ScriptState* scriptState, IDBAny* source, IDBTransaction* transaction)
 {
-    IDBRequest* request(adoptRefCountedGarbageCollected(new IDBRequest(context, source, transaction)));
+    IDBRequest* request(adoptRefCountedGarbageCollected(new IDBRequest(scriptState, source, transaction)));
     request->suspendIfNeeded();
     // Requests associated with IDBFactory (open/deleteDatabase/getDatabaseNames) are not associated with transactions.
     if (transaction)
@@ -55,13 +55,13 @@ IDBRequest* IDBRequest::create(ExecutionContext* context, IDBAny* source, IDBTra
     return request;
 }
 
-IDBRequest::IDBRequest(ExecutionContext* context, IDBAny* source, IDBTransaction* transaction)
-    : ActiveDOMObject(context)
+IDBRequest::IDBRequest(ScriptState* scriptState, IDBAny* source, IDBTransaction* transaction)
+    : ActiveDOMObject(scriptState->executionContext())
     , m_contextStopped(false)
     , m_transaction(transaction)
     , m_readyState(PENDING)
     , m_requestAborted(false)
-    , m_scriptState(ScriptState::current(toIsolate(context)))
+    , m_scriptState(scriptState)
     , m_source(source)
     , m_hasPendingActivity(true)
     , m_cursorType(IndexedDB::CursorKeyAndValue)

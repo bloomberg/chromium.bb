@@ -923,13 +923,13 @@ private:
     v8::Isolate* m_isolate;
 };
 
-class V8ExecutionScope {
+class V8TestingScope {
 public:
-    static PassOwnPtr<V8ExecutionScope> create(v8::Isolate*);
-    explicit V8ExecutionScope(v8::Isolate*);
+    static PassOwnPtr<V8TestingScope> create(v8::Isolate*);
+    explicit V8TestingScope(v8::Isolate*);
     ScriptState* scriptState() const;
     v8::Isolate* isolate() const;
-    ~V8ExecutionScope();
+    ~V8TestingScope();
 
 private:
     v8::HandleScope m_handleScope;

@@ -6,6 +6,7 @@
 #include "bindings/v8/ScriptState.h"
 
 #include "bindings/v8/V8Binding.h"
+#include "core/dom/ExecutionContext.h"
 #include "core/frame/LocalFrame.h"
 
 namespace WebCore {
@@ -68,6 +69,11 @@ ExecutionContext* ScriptState::executionContext() const
     return toExecutionContext(context());
 }
 
+void ScriptState::setExecutionContext(PassRefPtr<ExecutionContext>)
+{
+    ASSERT_NOT_REACHED();
+}
+
 DOMWindow* ScriptState::domWindow() const
 {
     v8::HandleScope scope(m_isolate);
@@ -79,6 +85,30 @@ ScriptState* ScriptState::forMainWorld(LocalFrame* frame)
     v8::Isolate* isolate = toIsolate(frame);
     v8::HandleScope handleScope(isolate);
     return ScriptState::from(toV8Context(isolate, frame, DOMWrapperWorld::mainWorld()));
+}
+
+PassRefPtr<ScriptStateForTesting> ScriptStateForTesting::create(v8::Handle<v8::Context> context, PassRefPtr<DOMWrapperWorld> world)
+{
+    RefPtr<ScriptStateForTesting> scriptState = adoptRef(new ScriptStateForTesting(context, world));
+    // This ref() is for keeping this ScriptState alive as long as the v8::Context is alive.
+    // This is deref()ed in the weak callback of the v8::Context.
+    scriptState->ref();
+    return scriptState;
+}
+
+ScriptStateForTesting::ScriptStateForTesting(v8::Handle<v8::Context> context, PassRefPtr<DOMWrapperWorld> world)
+    : ScriptState(context, world)
+{
+}
+
+ExecutionContext* ScriptStateForTesting::executionContext() const
+{
+    return m_executionContext.get();
+}
+
+void ScriptStateForTesting::setExecutionContext(PassRefPtr<ExecutionContext> executionContext)
+{
+    m_executionContext = executionContext;
 }
 
 }

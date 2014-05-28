@@ -17,7 +17,7 @@ class AnimationTimingInputTest : public ::testing::Test {
 protected:
     AnimationTimingInputTest()
         : m_isolate(v8::Isolate::GetCurrent())
-        , m_scope(V8ExecutionScope::create(m_isolate))
+        , m_scope(V8TestingScope::create(m_isolate))
     {
     }
 
@@ -40,7 +40,7 @@ protected:
     v8::Isolate* m_isolate;
 
 private:
-    OwnPtr<V8ExecutionScope> m_scope;
+    OwnPtr<V8TestingScope> m_scope;
 };
 
 TEST_F(AnimationTimingInputTest, TimingInputStartDelay)

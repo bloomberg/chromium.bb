@@ -39,15 +39,15 @@ using blink::WebIDBDatabase;
 
 namespace WebCore {
 
-IDBOpenDBRequest* IDBOpenDBRequest::create(ExecutionContext* context, IDBDatabaseCallbacks* callbacks, int64_t transactionId, int64_t version)
+IDBOpenDBRequest* IDBOpenDBRequest::create(ScriptState* scriptState, IDBDatabaseCallbacks* callbacks, int64_t transactionId, int64_t version)
 {
-    IDBOpenDBRequest* request(adoptRefCountedGarbageCollected(new IDBOpenDBRequest(context, callbacks, transactionId, version)));
+    IDBOpenDBRequest* request(adoptRefCountedGarbageCollected(new IDBOpenDBRequest(scriptState, callbacks, transactionId, version)));
     request->suspendIfNeeded();
     return request;
 }
 
-IDBOpenDBRequest::IDBOpenDBRequest(ExecutionContext* context, IDBDatabaseCallbacks* callbacks, int64_t transactionId, int64_t version)
-    : IDBRequest(context, IDBAny::createNull(), 0)
+IDBOpenDBRequest::IDBOpenDBRequest(ScriptState* scriptState, IDBDatabaseCallbacks* callbacks, int64_t transactionId, int64_t version)
+    : IDBRequest(scriptState, IDBAny::createNull(), 0)
     , m_databaseCallbacks(callbacks)
     , m_transactionId(transactionId)
     , m_version(version)

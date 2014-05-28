@@ -65,13 +65,13 @@ public:
     IDBTransaction* transaction() const { return m_transaction.get(); }
     bool autoIncrement() const { return m_metadata.autoIncrement; }
 
-    IDBRequest* openCursor(ExecutionContext*, const ScriptValue& range, const String& direction, ExceptionState&);
-    IDBRequest* openKeyCursor(ExecutionContext*, const ScriptValue& range, const String& direction, ExceptionState&);
-    IDBRequest* get(ExecutionContext*, const ScriptValue& key, ExceptionState&);
-    IDBRequest* add(ExecutionContext*, ScriptValue&, const ScriptValue& key, ExceptionState&);
-    IDBRequest* put(ExecutionContext*, ScriptValue&, const ScriptValue& key, ExceptionState&);
-    IDBRequest* deleteFunction(ExecutionContext*, const ScriptValue& key, ExceptionState&);
-    IDBRequest* clear(ExecutionContext*, ExceptionState&);
+    IDBRequest* openCursor(ScriptState*, const ScriptValue& range, const String& direction, ExceptionState&);
+    IDBRequest* openKeyCursor(ScriptState*, const ScriptValue& range, const String& direction, ExceptionState&);
+    IDBRequest* get(ScriptState*, const ScriptValue& key, ExceptionState&);
+    IDBRequest* add(ScriptState*, ScriptValue&, const ScriptValue& key, ExceptionState&);
+    IDBRequest* put(ScriptState*, ScriptValue&, const ScriptValue& key, ExceptionState&);
+    IDBRequest* deleteFunction(ScriptState*, const ScriptValue& key, ExceptionState&);
+    IDBRequest* clear(ScriptState*, ExceptionState&);
 
     IDBIndex* createIndex(ScriptState* scriptState, const String& name, const String& keyPath, const Dictionary& options, ExceptionState& exceptionState)
     {
@@ -84,13 +84,13 @@ public:
     IDBIndex* index(const String& name, ExceptionState&);
     void deleteIndex(const String& name, ExceptionState&);
 
-    IDBRequest* count(ExecutionContext*, const ScriptValue& range, ExceptionState&);
+    IDBRequest* count(ScriptState*, const ScriptValue& range, ExceptionState&);
 
     // Used by IDBCursor::update():
-    IDBRequest* put(ExecutionContext*, blink::WebIDBDatabase::PutMode, IDBAny* source, ScriptValue&, IDBKey*, ExceptionState&);
+    IDBRequest* put(ScriptState*, blink::WebIDBDatabase::PutMode, IDBAny* source, ScriptValue&, IDBKey*, ExceptionState&);
 
     // Used internally and by InspectorIndexedDBAgent:
-    IDBRequest* openCursor(ExecutionContext*, IDBKeyRange*, blink::WebIDBCursor::Direction, blink::WebIDBDatabase::TaskType = blink::WebIDBDatabase::NormalTask);
+    IDBRequest* openCursor(ScriptState*, IDBKeyRange*, blink::WebIDBCursor::Direction, blink::WebIDBDatabase::TaskType = blink::WebIDBDatabase::NormalTask);
 
     void markDeleted() { m_deleted = true; }
     bool isDeleted() const { return m_deleted; }
@@ -108,7 +108,7 @@ private:
 
     IDBIndex* createIndex(ScriptState*, const String& name, const IDBKeyPath&, const Dictionary&, ExceptionState&);
     IDBIndex* createIndex(ScriptState*, const String& name, const IDBKeyPath&, bool unique, bool multiEntry, ExceptionState&);
-    IDBRequest* put(ExecutionContext*, blink::WebIDBDatabase::PutMode, IDBAny* source, ScriptValue&, const ScriptValue& key, ExceptionState&);
+    IDBRequest* put(ScriptState*, blink::WebIDBDatabase::PutMode, IDBAny* source, ScriptValue&, const ScriptValue& key, ExceptionState&);
 
     int64_t findIndexId(const String& name) const;
     bool containsIndex(const String& name) const

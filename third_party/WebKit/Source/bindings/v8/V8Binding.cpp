@@ -745,21 +745,31 @@ PassRefPtr<JSONValue> v8ToJSONValue(v8::Isolate* isolate, v8::Handle<v8::Value> 
     return nullptr;
 }
 
-PassOwnPtr<V8ExecutionScope> V8ExecutionScope::create(v8::Isolate* isolate)
+PassOwnPtr<V8TestingScope> V8TestingScope::create(v8::Isolate* isolate)
 {
-    return adoptPtr(new V8ExecutionScope(isolate));
+    return adoptPtr(new V8TestingScope(isolate));
 }
 
-V8ExecutionScope::V8ExecutionScope(v8::Isolate* isolate)
+V8TestingScope::V8TestingScope(v8::Isolate* isolate)
     : m_handleScope(isolate)
     , m_contextScope(v8::Context::New(isolate))
-    , m_scriptState(ScriptState::create(isolate->GetCurrentContext(), DOMWrapperWorld::create()))
+    , m_scriptState(ScriptStateForTesting::create(isolate->GetCurrentContext(), DOMWrapperWorld::create()))
 {
 }
 
-V8ExecutionScope::~V8ExecutionScope()
+V8TestingScope::~V8TestingScope()
 {
     m_scriptState->disposePerContextData();
+}
+
+ScriptState* V8TestingScope::scriptState() const
+{
+    return m_scriptState.get();
+}
+
+v8::Isolate* V8TestingScope::isolate() const
+{
+    return m_scriptState->isolate();
 }
 
 void GetDevToolsFunctionInfo(v8::Handle<v8::Function> function, v8::Isolate* isolate, int& scriptId, String& resourceName, int& lineNumber)
@@ -784,16 +794,6 @@ PassRefPtr<TraceEvent::ConvertableToTraceFormat> devToolsTraceEventData(Executio
     int lineNumber = 1;
     GetDevToolsFunctionInfo(function, isolate, scriptId, resourceName, lineNumber);
     return InspectorFunctionCallEvent::data(context, scriptId, resourceName, lineNumber);
-}
-
-ScriptState* V8ExecutionScope::scriptState() const
-{
-    return m_scriptState.get();
-}
-
-v8::Isolate* V8ExecutionScope::isolate() const
-{
-    return m_scriptState->isolate();
 }
 
 } // namespace WebCore

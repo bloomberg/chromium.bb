@@ -109,7 +109,7 @@ void IDBCursor::trace(Visitor* visitor)
     visitor->trace(m_primaryKey);
 }
 
-IDBRequest* IDBCursor::update(ExecutionContext* executionContext, ScriptValue& value, ExceptionState& exceptionState)
+IDBRequest* IDBCursor::update(ScriptState* scriptState, ScriptValue& value, ExceptionState& exceptionState)
 {
     IDB_TRACE("IDBCursor::update");
 
@@ -142,14 +142,14 @@ IDBRequest* IDBCursor::update(ExecutionContext* executionContext, ScriptValue& v
     const IDBKeyPath& keyPath = objectStore->metadata().keyPath;
     const bool usesInLineKeys = !keyPath.isNull();
     if (usesInLineKeys) {
-        IDBKey* keyPathKey = createIDBKeyFromScriptValueAndKeyPath(toIsolate(executionContext), value, keyPath);
+        IDBKey* keyPathKey = createIDBKeyFromScriptValueAndKeyPath(scriptState->isolate(), value, keyPath);
         if (!keyPathKey || !keyPathKey->isEqual(m_primaryKey.get())) {
             exceptionState.throwDOMException(DataError, "The effective object store of this cursor uses in-line keys and evaluating the key path of the value parameter results in a different value than the cursor's effective key.");
             return 0;
         }
     }
 
-    return objectStore->put(executionContext, WebIDBDatabase::CursorUpdate, IDBAny::create(this), value, m_primaryKey, exceptionState);
+    return objectStore->put(scriptState, WebIDBDatabase::CursorUpdate, IDBAny::create(this), value, m_primaryKey, exceptionState);
 }
 
 void IDBCursor::advance(unsigned long count, ExceptionState& exceptionState)
@@ -182,10 +182,10 @@ void IDBCursor::advance(unsigned long count, ExceptionState& exceptionState)
     m_backend->advance(count, WebIDBCallbacksImpl::create(m_request).leakPtr());
 }
 
-void IDBCursor::continueFunction(ExecutionContext* context, const ScriptValue& keyValue, ExceptionState& exceptionState)
+void IDBCursor::continueFunction(ScriptState* scriptState, const ScriptValue& keyValue, ExceptionState& exceptionState)
 {
     IDB_TRACE("IDBCursor::continue");
-    IDBKey* key = keyValue.isUndefined() || keyValue.isNull() ? 0 : scriptValueToIDBKey(toIsolate(context), keyValue);
+    IDBKey* key = keyValue.isUndefined() || keyValue.isNull() ? nullptr : scriptValueToIDBKey(scriptState->isolate(), keyValue);
     if (key && !key->isValid()) {
         exceptionState.throwDOMException(DataError, IDBDatabase::notValidKeyErrorMessage);
         return;
@@ -193,11 +193,11 @@ void IDBCursor::continueFunction(ExecutionContext* context, const ScriptValue& k
     continueFunction(key, 0, exceptionState);
 }
 
-void IDBCursor::continuePrimaryKey(ExecutionContext* context, const ScriptValue& keyValue, const ScriptValue& primaryKeyValue, ExceptionState& exceptionState)
+void IDBCursor::continuePrimaryKey(ScriptState* scriptState, const ScriptValue& keyValue, const ScriptValue& primaryKeyValue, ExceptionState& exceptionState)
 {
     IDB_TRACE("IDBCursor::continuePrimaryKey");
-    IDBKey* key = scriptValueToIDBKey(toIsolate(context), keyValue);
-    IDBKey* primaryKey = scriptValueToIDBKey(toIsolate(context), primaryKeyValue);
+    IDBKey* key = scriptValueToIDBKey(scriptState->isolate(), keyValue);
+    IDBKey* primaryKey = scriptValueToIDBKey(scriptState->isolate(), primaryKeyValue);
     if (!key->isValid() || !primaryKey->isValid()) {
         exceptionState.throwDOMException(DataError, IDBDatabase::notValidKeyErrorMessage);
         return;
@@ -255,7 +255,7 @@ void IDBCursor::continueFunction(IDBKey* key, IDBKey* primaryKey, ExceptionState
     m_backend->continueFunction(key, primaryKey, WebIDBCallbacksImpl::create(m_request).leakPtr());
 }
 
-IDBRequest* IDBCursor::deleteFunction(ExecutionContext* context, ExceptionState& exceptionState)
+IDBRequest* IDBCursor::deleteFunction(ScriptState* scriptState, ExceptionState& exceptionState)
 {
     IDB_TRACE("IDBCursor::delete");
     if (m_transaction->isFinished() || m_transaction->isFinishing()) {
@@ -291,7 +291,7 @@ IDBRequest* IDBCursor::deleteFunction(ExecutionContext* context, ExceptionState&
     IDBKeyRange* keyRange = IDBKeyRange::only(m_primaryKey, exceptionState);
     ASSERT(!exceptionState.hadException());
 
-    IDBRequest* request = IDBRequest::create(context, IDBAny::create(this), m_transaction.get());
+    IDBRequest* request = IDBRequest::create(scriptState, IDBAny::create(this), m_transaction.get());
     m_transaction->backendDB()->deleteRange(m_transaction->id(), effectiveObjectStore()->id(), keyRange, WebIDBCallbacksImpl::create(request).leakPtr());
     return request;
 }

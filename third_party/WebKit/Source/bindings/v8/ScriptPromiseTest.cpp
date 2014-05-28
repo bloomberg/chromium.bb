@@ -70,7 +70,7 @@ private:
 class ScriptPromiseTest : public testing::Test {
 public:
     ScriptPromiseTest()
-        : m_scope(V8ExecutionScope::create(v8::Isolate::GetCurrent()))
+        : m_scope(V8TestingScope::create(v8::Isolate::GetCurrent()))
     {
     }
 
@@ -87,7 +87,7 @@ public:
     v8::Isolate* isolate() const { return m_scope->isolate(); }
 
 protected:
-    OwnPtr<V8ExecutionScope> m_scope;
+    OwnPtr<V8TestingScope> m_scope;
 };
 
 TEST_F(ScriptPromiseTest, constructFromNonPromise)

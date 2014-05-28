@@ -26,10 +26,10 @@
 [
     GarbageCollected
 ] interface IDBFactory {
-    [CallWith=ExecutionContext, ImplementedAs=getDatabaseNames, RaisesException] IDBRequest webkitGetDatabaseNames();
+    [CallWith=ScriptState, ImplementedAs=getDatabaseNames, RaisesException] IDBRequest webkitGetDatabaseNames();
 
-    [CallWith=ExecutionContext, RaisesException] IDBOpenDBRequest open(DOMString name, [EnforceRange] optional unsigned long long version);
-    [CallWith=ExecutionContext, RaisesException] IDBOpenDBRequest deleteDatabase(DOMString name);
+    [CallWith=ScriptState, RaisesException] IDBOpenDBRequest open(DOMString name, [EnforceRange] optional unsigned long long version);
+    [CallWith=ScriptState, RaisesException] IDBOpenDBRequest deleteDatabase(DOMString name);
 
-    [CallWith=ExecutionContext, RaisesException] short cmp(any first, any second);
+    [CallWith=ScriptState, RaisesException] short cmp(any first, any second);
 };

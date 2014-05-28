@@ -71,11 +71,11 @@ public:
     ScriptValue value(ScriptState*);
     ScriptValue source(ScriptState*) const;
 
-    IDBRequest* update(ExecutionContext*, ScriptValue&, ExceptionState&);
+    IDBRequest* update(ScriptState*, ScriptValue&, ExceptionState&);
     void advance(unsigned long, ExceptionState&);
-    void continueFunction(ExecutionContext*, const ScriptValue& key, ExceptionState&);
-    void continuePrimaryKey(ExecutionContext*, const ScriptValue& key, const ScriptValue& primaryKey, ExceptionState&);
-    IDBRequest* deleteFunction(ExecutionContext*, ExceptionState&);
+    void continueFunction(ScriptState*, const ScriptValue& key, ExceptionState&);
+    void continuePrimaryKey(ScriptState*, const ScriptValue& key, const ScriptValue& primaryKey, ExceptionState&);
+    IDBRequest* deleteFunction(ScriptState*, ExceptionState&);
 
     bool isKeyDirty() const { return m_keyDirty; }
     bool isPrimaryKeyDirty() const { return m_primaryKeyDirty; }

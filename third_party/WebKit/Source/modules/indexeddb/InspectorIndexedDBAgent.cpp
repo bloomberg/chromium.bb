@@ -191,7 +191,7 @@ void ExecutableWithDatabase::start(IDBFactory* idbFactory, SecurityOrigin*, cons
 {
     RefPtr<OpenDatabaseCallback> callback = OpenDatabaseCallback::create(this);
     TrackExceptionState exceptionState;
-    IDBOpenDBRequest* idbOpenDBRequest = idbFactory->open(context(), databaseName, exceptionState);
+    IDBOpenDBRequest* idbOpenDBRequest = idbFactory->open(scriptState(), databaseName, exceptionState);
     if (exceptionState.hadException()) {
         requestCallback()->sendFailure("Could not open database.");
         return;
@@ -510,9 +510,9 @@ public:
                 return;
             }
 
-            idbRequest = idbIndex->openCursor(context(), m_idbKeyRange.get(), blink::WebIDBCursor::Next);
+            idbRequest = idbIndex->openCursor(scriptState(), m_idbKeyRange.get(), blink::WebIDBCursor::Next);
         } else {
-            idbRequest = idbObjectStore->openCursor(context(), m_idbKeyRange.get(), blink::WebIDBCursor::Next);
+            idbRequest = idbObjectStore->openCursor(scriptState(), m_idbKeyRange.get(), blink::WebIDBCursor::Next);
         }
         idbRequest->addEventListener(EventTypeNames::success, openCursorCallback, false);
     }
@@ -623,9 +623,10 @@ void InspectorIndexedDBAgent::requestDatabaseNames(ErrorString* errorString, con
     if (!idbFactory)
         return;
 
-    ScriptState::Scope scope(ScriptState::forMainWorld(frame));
+    ScriptState* scriptState = ScriptState::forMainWorld(frame);
+    ScriptState::Scope scope(scriptState);
     TrackExceptionState exceptionState;
-    IDBRequest* idbRequest = idbFactory->getDatabaseNames(document, exceptionState);
+    IDBRequest* idbRequest = idbFactory->getDatabaseNames(scriptState, exceptionState);
     if (exceptionState.hadException()) {
         requestCallback->sendFailure("Could not obtain database names.");
         return;
@@ -738,8 +739,7 @@ public:
         }
 
         TrackExceptionState exceptionState;
-        // FXIME: Can we remove the local variable idbRequest?
-        IDBRequest* idbRequest ALLOW_UNUSED = idbObjectStore->clear(context(), exceptionState);
+        idbObjectStore->clear(scriptState(), exceptionState);
         ASSERT(!exceptionState.hadException());
         if (exceptionState.hadException()) {
             ExceptionCode ec = exceptionState.code();

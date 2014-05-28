@@ -35,7 +35,7 @@ class IDBDatabaseCallbacks;
 
 class IDBOpenDBRequest FINAL : public IDBRequest {
 public:
-    static IDBOpenDBRequest* create(ExecutionContext*, IDBDatabaseCallbacks*, int64_t transactionId, int64_t version);
+    static IDBOpenDBRequest* create(ScriptState*, IDBDatabaseCallbacks*, int64_t transactionId, int64_t version);
     virtual ~IDBOpenDBRequest();
     virtual void trace(Visitor*) OVERRIDE;
 
@@ -57,7 +57,7 @@ protected:
     virtual bool shouldEnqueueEvent() const OVERRIDE;
 
 private:
-    IDBOpenDBRequest(ExecutionContext*, IDBDatabaseCallbacks*, int64_t transactionId, int64_t version);
+    IDBOpenDBRequest(ScriptState*, IDBDatabaseCallbacks*, int64_t transactionId, int64_t version);
 
     Member<IDBDatabaseCallbacks> m_databaseCallbacks;
     const int64_t m_transactionId;
