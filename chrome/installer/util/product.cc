@@ -116,7 +116,8 @@ bool Product::SetMsiMarker(bool system_install, bool set) const {
   HKEY reg_root = system_install ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
   RegKey client_state_key;
   LONG result = client_state_key.Open(reg_root,
-      distribution_->GetStateKey().c_str(), KEY_READ | KEY_WRITE);
+                                      distribution_->GetStateKey().c_str(),
+                                      KEY_READ | KEY_WRITE | KEY_WOW64_32KEY);
   if (result == ERROR_SUCCESS) {
     result = client_state_key.WriteValue(google_update::kRegMSIField,
                                          set ? 1 : 0);

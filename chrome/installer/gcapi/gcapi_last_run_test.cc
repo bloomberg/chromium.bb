@@ -36,7 +36,7 @@ class GCAPILastRunTest : public ::testing::Test {
     reg_path += google_update::kChromeUpgradeCode;
     RegKey client_state(HKEY_CURRENT_USER,
                         reg_path.c_str(),
-                        KEY_CREATE_SUB_KEY);
+                        KEY_CREATE_SUB_KEY | KEY_WOW64_32KEY);
     ASSERT_TRUE(client_state.Valid());
 
     // Place a bogus "pv" value in the right places to make the last run
@@ -46,7 +46,7 @@ class GCAPILastRunTest : public ::testing::Test {
     clients_path += google_update::kChromeUpgradeCode;
     RegKey client_key(HKEY_CURRENT_USER,
                       clients_path.c_str(),
-                      KEY_CREATE_SUB_KEY | KEY_SET_VALUE);
+                      KEY_CREATE_SUB_KEY | KEY_SET_VALUE | KEY_WOW64_32KEY);
     ASSERT_TRUE(client_key.Valid());
     client_key.WriteValue(L"pv", L"1.2.3.4");
   }
@@ -61,7 +61,8 @@ class GCAPILastRunTest : public ::testing::Test {
     path += L"\\";
     path += google_update::kChromeUpgradeCode;
 
-    RegKey client_state(HKEY_CURRENT_USER, path.c_str(), KEY_SET_VALUE);
+    RegKey client_state(
+        HKEY_CURRENT_USER, path.c_str(), KEY_SET_VALUE | KEY_WOW64_32KEY);
     return (client_state.Valid() &&
             client_state.WriteValue(
                 google_update::kRegLastRunTimeField,

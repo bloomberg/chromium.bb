@@ -97,7 +97,7 @@ void AddChannelValueUpdateWorkItems(
           BrowserDistribution::GetSpecificDistribution(dist_type);
       update_list->AddSetRegValueWorkItem(reg_root,
                                           other_dist->GetStateKey(),
-                                          WorkItem::kWow64Default,
+                                          KEY_WOW64_32KEY,
                                           google_update::kRegApField,
                                           channel_info.value(),
                                           true);
@@ -1179,14 +1179,13 @@ InstallStatus UninstallProduct(const InstallationState& original_state,
 
   // Remove Control Panel uninstall link.
   if (product.ShouldCreateUninstallEntry()) {
-    InstallUtil::DeleteRegistryKey(reg_root,
-                                   browser_dist->GetUninstallRegPath(),
-                                   WorkItem::kWow64Default);
+    InstallUtil::DeleteRegistryKey(
+        reg_root, browser_dist->GetUninstallRegPath(), KEY_WOW64_32KEY);
   }
 
   // Remove Omaha product key.
-  InstallUtil::DeleteRegistryKey(reg_root, browser_dist->GetVersionKey(),
-                                 WorkItem::kWow64Default);
+  InstallUtil::DeleteRegistryKey(
+      reg_root, browser_dist->GetVersionKey(), KEY_WOW64_32KEY);
 
   // Also try to delete the MSI value in the ClientState key (it might not be
   // there). This is due to a Google Update behaviour where an uninstall and a
@@ -1281,7 +1280,7 @@ InstallStatus UninstallProduct(const InstallationState& original_state,
         InstallUtil::DeleteRegistryKey(
             reg_root,
             shadow_app_launcher_dist->GetVersionKey(),
-            WorkItem::kWow64Default);
+            KEY_WOW64_32KEY);
       }
     }
   }

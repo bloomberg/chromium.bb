@@ -263,15 +263,19 @@ installer::InstallStatus RenameChromeExecutables(
   for (Products::const_iterator it = products.begin(); it < products.end();
        ++it) {
     version_key = (*it)->distribution()->GetVersionKey();
+    install_list->AddDeleteRegValueWorkItem(reg_root,
+                                            version_key,
+                                            KEY_WOW64_32KEY,
+                                            google_update::kRegOldVersionField);
     install_list->AddDeleteRegValueWorkItem(
-        reg_root, version_key, WorkItem::kWow64Default,
-        google_update::kRegOldVersionField);
-    install_list->AddDeleteRegValueWorkItem(
-        reg_root, version_key, WorkItem::kWow64Default,
+        reg_root,
+        version_key,
+        KEY_WOW64_32KEY,
         google_update::kRegCriticalVersionField);
-    install_list->AddDeleteRegValueWorkItem(
-        reg_root, version_key, WorkItem::kWow64Default,
-        google_update::kRegRenameCmdField);
+    install_list->AddDeleteRegValueWorkItem(reg_root,
+                                            version_key,
+                                            KEY_WOW64_32KEY,
+                                            google_update::kRegRenameCmdField);
   }
   installer::InstallStatus ret = installer::RENAME_SUCCESSFUL;
   if (!install_list->Do()) {

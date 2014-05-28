@@ -221,8 +221,9 @@ void InstallUtil::GetChromeVersion(BrowserDistribution* dist,
   DCHECK(dist);
   RegKey key;
   HKEY reg_root = (system_install) ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
-  LONG result = key.Open(reg_root, dist->GetVersionKey().c_str(),
-                         KEY_QUERY_VALUE);
+  LONG result = key.Open(reg_root,
+                         dist->GetVersionKey().c_str(),
+                         KEY_QUERY_VALUE | KEY_WOW64_32KEY);
 
   base::string16 version_str;
   if (result == ERROR_SUCCESS)
@@ -246,8 +247,9 @@ void InstallUtil::GetCriticalUpdateVersion(BrowserDistribution* dist,
   DCHECK(dist);
   RegKey key;
   HKEY reg_root = (system_install) ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
-  LONG result =
-      key.Open(reg_root, dist->GetVersionKey().c_str(), KEY_QUERY_VALUE);
+  LONG result = key.Open(reg_root,
+                         dist->GetVersionKey().c_str(),
+                         KEY_QUERY_VALUE | KEY_WOW64_32KEY);
 
   base::string16 version_str;
   if (result == ERROR_SUCCESS)
@@ -286,17 +288,16 @@ void InstallUtil::AddInstallerResultItems(
   DCHECK(install_list);
   const HKEY root = system_install ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
   DWORD installer_result = (GetInstallReturnCode(status) == 0) ? 0 : 1;
-  install_list->AddCreateRegKeyWorkItem(
-      root, state_key, WorkItem::kWow64Default);
+  install_list->AddCreateRegKeyWorkItem(root, state_key, KEY_WOW64_32KEY);
   install_list->AddSetRegValueWorkItem(root,
                                        state_key,
-                                       WorkItem::kWow64Default,
+                                       KEY_WOW64_32KEY,
                                        installer::kInstallerResult,
                                        installer_result,
                                        true);
   install_list->AddSetRegValueWorkItem(root,
                                        state_key,
-                                       WorkItem::kWow64Default,
+                                       KEY_WOW64_32KEY,
                                        installer::kInstallerError,
                                        static_cast<DWORD>(status),
                                        true);
@@ -304,7 +305,7 @@ void InstallUtil::AddInstallerResultItems(
     base::string16 msg = installer::GetLocalizedString(string_resource_id);
     install_list->AddSetRegValueWorkItem(root,
                                          state_key,
-                                         WorkItem::kWow64Default,
+                                         KEY_WOW64_32KEY,
                                          installer::kInstallerResultUIString,
                                          msg,
                                          true);
@@ -313,7 +314,7 @@ void InstallUtil::AddInstallerResultItems(
     install_list->AddSetRegValueWorkItem(
         root,
         state_key,
-        WorkItem::kWow64Default,
+        KEY_WOW64_32KEY,
         installer::kInstallerSuccessLaunchCmdLine,
         *launch_cmd,
         true);
@@ -327,8 +328,10 @@ void InstallUtil::UpdateInstallerStage(bool system_install,
   DCHECK_GT(installer::NUM_STAGES, stage);
   const HKEY root = system_install ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
   RegKey state_key;
-  LONG result = state_key.Open(root, state_key_path.c_str(),
-                               KEY_QUERY_VALUE | KEY_SET_VALUE);
+  LONG result =
+      state_key.Open(root,
+                     state_key_path.c_str(),
+                     KEY_QUERY_VALUE | KEY_SET_VALUE | KEY_WOW64_32KEY);
   if (result == ERROR_SUCCESS) {
     if (stage == installer::NO_STAGE) {
       result = state_key.DeleteValue(installer::kInstallerExtraCode1);

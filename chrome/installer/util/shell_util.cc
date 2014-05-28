@@ -712,7 +712,9 @@ bool ElevateAndRegisterChrome(BrowserDistribution* dist,
   if (!base::PathExists(exe_path)) {
     HKEY reg_root = InstallUtil::IsPerUserInstall(chrome_exe.c_str()) ?
         HKEY_CURRENT_USER : HKEY_LOCAL_MACHINE;
-    RegKey key(reg_root, dist->GetUninstallRegPath().c_str(), KEY_READ);
+    RegKey key(reg_root,
+               dist->GetUninstallRegPath().c_str(),
+               KEY_READ | KEY_WOW64_32KEY);
     base::string16 uninstall_string;
     key.ReadValue(installer::kUninstallStringField, &uninstall_string);
     CommandLine command_line = CommandLine::FromString(uninstall_string);

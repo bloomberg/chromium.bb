@@ -145,7 +145,9 @@ bool OpenClientStateKey(HKEY root_key, const wchar_t* app_guid, REGSAM access,
   PathString client_state_key;
   return client_state_key.assign(kApRegistryKeyBase) &&
          client_state_key.append(app_guid) &&
-         (key->Open(root_key, client_state_key.get(), access) == ERROR_SUCCESS);
+         (key->Open(root_key,
+                    client_state_key.get(),
+                    access | KEY_WOW64_32KEY) == ERROR_SUCCESS);
 }
 
 // This function sets the flag in registry to indicate that Google Update

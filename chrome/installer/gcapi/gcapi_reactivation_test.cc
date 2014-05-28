@@ -31,7 +31,7 @@ class GCAPIReactivationTest : public ::testing::Test {
     reg_path += google_update::kChromeUpgradeCode;
     RegKey client_state(hive,
                         reg_path.c_str(),
-                        KEY_CREATE_SUB_KEY | KEY_SET_VALUE);
+                        KEY_CREATE_SUB_KEY | KEY_SET_VALUE | KEY_WOW64_32KEY);
     return (client_state.Valid() &&
             client_state.WriteValue(
                 google_update::kRegVersionField, L"1.2.3.4") == ERROR_SUCCESS);
@@ -51,7 +51,7 @@ class GCAPIReactivationTest : public ::testing::Test {
     path += L"\\";
     path += google_update::kChromeUpgradeCode;
 
-    RegKey client_state(hive, path.c_str(), KEY_SET_VALUE);
+    RegKey client_state(hive, path.c_str(), KEY_SET_VALUE | KEY_WOW64_32KEY);
     return (client_state.Valid() &&
             client_state.WriteValue(
                 google_update::kRegLastRunTimeField,
@@ -65,7 +65,7 @@ class GCAPIReactivationTest : public ::testing::Test {
 
     RegKey client_state_key(hive,
                             client_state_path.c_str(),
-                            KEY_QUERY_VALUE);
+                            KEY_QUERY_VALUE | KEY_WOW64_32KEY);
     return client_state_key.Valid() &&
         client_state_key.HasValue(google_update::kExperimentLabels);
   }
@@ -79,7 +79,7 @@ class GCAPIReactivationTest : public ::testing::Test {
     path += L"\\";
     path += google_update::kChromeUpgradeCode;
 
-    RegKey client_state(hive, path.c_str(), KEY_QUERY_VALUE);
+    RegKey client_state(hive, path.c_str(), KEY_QUERY_VALUE | KEY_WOW64_32KEY);
     if (client_state.Valid()) {
       std::wstring actual_brand;
       if (client_state.ReadValue(google_update::kRegRLZReactivationBrandField,

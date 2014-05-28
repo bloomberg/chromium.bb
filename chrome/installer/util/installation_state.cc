@@ -36,7 +36,8 @@ bool ProductState::Initialize(bool system_install,
 // static
 bool ProductState::InitializeCommands(const base::win::RegKey& version_key,
                                       AppCommands* commands) {
-  static const DWORD kAccess = KEY_ENUMERATE_SUB_KEYS | KEY_QUERY_VALUE;
+  static const DWORD kAccess =
+      KEY_ENUMERATE_SUB_KEYS | KEY_QUERY_VALUE | KEY_WOW64_32KEY;
   base::win::RegKey commands_key;
 
   if (commands_key.Open(version_key.Handle(), google_update::kRegCommandsKey,
@@ -47,6 +48,7 @@ bool ProductState::InitializeCommands(const base::win::RegKey& version_key,
 
 bool ProductState::Initialize(bool system_install,
                               BrowserDistribution* distribution) {
+  static const DWORD kAccess = KEY_QUERY_VALUE | KEY_WOW64_32KEY;
   const std::wstring version_key(distribution->GetVersionKey());
   const std::wstring state_key(distribution->GetStateKey());
   const HKEY root_key = system_install ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
@@ -56,8 +58,7 @@ bool ProductState::Initialize(bool system_install,
   Clear();
 
   // Read from the Clients key.
-  if (key.Open(root_key, version_key.c_str(),
-               KEY_QUERY_VALUE) == ERROR_SUCCESS) {
+  if (key.Open(root_key, version_key.c_str(), kAccess) == ERROR_SUCCESS) {
     base::string16 version_str;
     if (key.ReadValue(google_update::kRegVersionField,
                       &version_str) == ERROR_SUCCESS) {
@@ -82,8 +83,7 @@ bool ProductState::Initialize(bool system_install,
   }
 
   // Read from the ClientState key.
-  if (key.Open(root_key, state_key.c_str(),
-               KEY_QUERY_VALUE) == ERROR_SUCCESS) {
+  if (key.Open(root_key, state_key.c_str(), kAccess) == ERROR_SUCCESS) {
     std::wstring setup_path;
     std::wstring uninstall_arguments;
     // "ap" will be absent if not managed by Google Update.
@@ -124,8 +124,8 @@ bool ProductState::Initialize(bool system_install,
   // Read from the ClientStateMedium key.  Values here override those in
   // ClientState.
   if (system_install &&
-      key.Open(root_key, distribution->GetStateMediumKey().c_str(),
-               KEY_QUERY_VALUE) == ERROR_SUCCESS) {
+      key.Open(root_key, distribution->GetStateMediumKey().c_str(), kAccess) ==
+          ERROR_SUCCESS) {
     DWORD dword_value = 0;
 
     if (key.ReadValueDW(google_update::kRegUsageStatsField,

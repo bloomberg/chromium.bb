@@ -17,7 +17,14 @@ namespace installer {
 base::FilePath GetChromeInstallPath(bool system_install,
                                     BrowserDistribution* dist) {
   base::FilePath install_path;
+#if defined(_WIN64)
+  // TODO(wfh): Place Chrome binaries into DIR_PROGRAM_FILESX86 until the code
+  // to support moving the binaries is added.
+  int key =
+      system_install ? base::DIR_PROGRAM_FILESX86 : base::DIR_LOCAL_APP_DATA;
+#else
   int key = system_install ? base::DIR_PROGRAM_FILES : base::DIR_LOCAL_APP_DATA;
+#endif
   if (PathService::Get(key, &install_path)) {
     install_path = install_path.Append(dist->GetInstallSubDir());
     install_path = install_path.Append(kInstallBinaryDir);
