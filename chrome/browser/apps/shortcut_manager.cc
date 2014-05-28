@@ -102,10 +102,13 @@ void AppShortcutManager::OnExtensionWillBeInstalled(
     bool is_update,
     bool from_ephemeral,
     const std::string& old_name) {
+  if (!extension->is_app())
+    return;
+
   // If the app is being updated, update any existing shortcuts but do not
   // create new ones. If it is being installed, automatically create a
   // shortcut in the applications menu (e.g., Start Menu).
-  if (is_update) {
+  if (is_update && !from_ephemeral) {
     web_app::UpdateAllShortcuts(
         base::UTF8ToUTF16(old_name), profile_, extension);
   } else if (ShouldCreateShortcutFor(profile_, extension)) {
