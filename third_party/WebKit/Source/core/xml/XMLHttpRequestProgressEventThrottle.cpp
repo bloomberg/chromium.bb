@@ -48,11 +48,18 @@ XMLHttpRequestProgressEventThrottle::~XMLHttpRequestProgressEventThrottle()
 {
 }
 
-void XMLHttpRequestProgressEventThrottle::dispatchProgressEvent(bool lengthComputable, unsigned long long loaded, unsigned long long total)
+void XMLHttpRequestProgressEventThrottle::dispatchProgressEvent(const AtomicString& type, bool lengthComputable, unsigned long long loaded, unsigned long long total)
 {
+    RefPtrWillBeRawPtr<XMLHttpRequestProgressEvent> progressEvent = XMLHttpRequestProgressEvent::create(type, lengthComputable, loaded, total);
+
+    if (type != EventTypeNames::progress) {
+        dispatchEvent(progressEvent);
+        return;
+    }
+
     if (m_deferEvents) {
         // Only store the latest progress event while suspended.
-        m_deferredProgressEvent = XMLHttpRequestProgressEvent::create(EventTypeNames::progress, lengthComputable, loaded, total);
+        m_deferredProgressEvent = progressEvent;
         return;
     }
 
@@ -64,7 +71,7 @@ void XMLHttpRequestProgressEventThrottle::dispatchProgressEvent(bool lengthCompu
         ASSERT(!m_loaded);
         ASSERT(!m_total);
 
-        dispatchEvent(XMLHttpRequestProgressEvent::create(EventTypeNames::progress, lengthComputable, loaded, total));
+        dispatchEvent(progressEvent);
         startRepeating(minimumProgressEventDispatchingIntervalInSeconds, FROM_HERE);
         return;
     }
@@ -96,14 +103,6 @@ void XMLHttpRequestProgressEventThrottle::dispatchEvent(PassRefPtrWillBeRawPtr<E
         m_deferredEvents.append(event);
     } else
         m_target->dispatchEvent(event);
-}
-
-void XMLHttpRequestProgressEventThrottle::dispatchEventAndLoadEnd(const AtomicString& type, bool lengthComputable, unsigned long long bytesSent, unsigned long long total)
-{
-    ASSERT(type == EventTypeNames::load || type == EventTypeNames::abort || type == EventTypeNames::error || type == EventTypeNames::timeout);
-
-    dispatchEvent(XMLHttpRequestProgressEvent::create(type, lengthComputable, bytesSent, total));
-    dispatchEvent(XMLHttpRequestProgressEvent::create(EventTypeNames::loadend, lengthComputable, bytesSent, total));
 }
 
 bool XMLHttpRequestProgressEventThrottle::flushDeferredProgressEvent()

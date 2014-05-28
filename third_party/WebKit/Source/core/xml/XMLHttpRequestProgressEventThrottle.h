@@ -52,10 +52,16 @@ public:
     explicit XMLHttpRequestProgressEventThrottle(EventTarget*);
     virtual ~XMLHttpRequestProgressEventThrottle();
 
-    void dispatchProgressEvent(bool lengthComputable, unsigned long long loaded, unsigned long long total);
+    // Dispatches a ProgressEvent.
+    //
+    // Special treatment for events named "progress" is implemented to dispatch
+    // them at the required frequency. If this object is suspended, the given
+    // ProgressEvent overwrites the existing. I.e. only the latest one gets
+    // queued. If the timer is running, this method just updates
+    // m_lengthComputable, m_loaded and m_total. They'll be used on next
+    // fired() call.
+    void dispatchProgressEvent(const AtomicString&, bool lengthComputable, unsigned long long loaded, unsigned long long total);
     void dispatchReadyStateChangeEvent(PassRefPtrWillBeRawPtr<Event>, ProgressEventAction = DoNotFlushProgressEvent);
-    void dispatchEvent(PassRefPtrWillBeRawPtr<Event>);
-    void dispatchEventAndLoadEnd(const AtomicString&, bool, unsigned long long, unsigned long long);
 
     void suspend();
     void resume();
@@ -64,6 +70,9 @@ public:
 
 private:
     static const double minimumProgressEventDispatchingIntervalInSeconds;
+
+    // Dispatches an event. If suspended, just queues the given event.
+    void dispatchEvent(PassRefPtrWillBeRawPtr<Event>);
 
     virtual void fired() OVERRIDE;
     void dispatchDeferredEvents(Timer<XMLHttpRequestProgressEventThrottle>*);

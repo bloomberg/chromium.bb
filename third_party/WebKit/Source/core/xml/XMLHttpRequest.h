@@ -188,15 +188,11 @@ private:
 
     void createRequest(ExceptionState&);
 
-    // Dispatches an event of the specified type to m_progressEventThrottle.
-    void dispatchEventAndLoadEnd(const AtomicString&, long long, long long);
-
-    // Dispatches a response progress event to m_progressEventThrottle.
-    void dispatchThrottledProgressEvent(const AtomicString&, long long, long long);
-
-    // Dispatches a response progress event using values sampled from
+    // Dispatches a response ProgressEvent.
+    void dispatchProgressEvent(const AtomicString&, long long, long long);
+    // Dispatches a response ProgressEvent using values sampled from
     // m_receivedLength and m_response.
-    void dispatchThrottledProgressEventSnapshot(const AtomicString&);
+    void dispatchProgressEventFromSnapshot(const AtomicString&);
 
     // Does clean up common for all kind of didFail() call.
     void handleDidFailGeneric();

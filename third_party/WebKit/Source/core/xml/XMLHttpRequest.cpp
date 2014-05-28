@@ -416,7 +416,7 @@ void XMLHttpRequest::trackProgress(int length)
     m_receivedLength += length;
 
     if (m_async)
-        dispatchThrottledProgressEventSnapshot(EventTypeNames::progress);
+        dispatchProgressEventFromSnapshot(EventTypeNames::progress);
 
     if (m_state != LOADING) {
         changeState(LOADING);
@@ -465,10 +465,10 @@ void XMLHttpRequest::dispatchReadyStateChangeEvent()
             TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "XHRLoad", "data", InspectorXhrLoadEvent::data(executionContext(), this));
             TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline.stack"), "CallStack", "stack", InspectorCallStackEvent::currentCallStack());
             InspectorInstrumentationCookie cookie = InspectorInstrumentation::willDispatchXHRLoadEvent(executionContext(), this);
-            dispatchThrottledProgressEventSnapshot(EventTypeNames::load);
+            dispatchProgressEventFromSnapshot(EventTypeNames::load);
             InspectorInstrumentation::didDispatchXHRLoadEvent(cookie);
         }
-        dispatchThrottledProgressEventSnapshot(EventTypeNames::loadend);
+        dispatchProgressEventFromSnapshot(EventTypeNames::loadend);
         TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "UpdateCounters", "data", InspectorUpdateCountersEvent::data());
     }
 }
@@ -804,7 +804,7 @@ void XMLHttpRequest::createRequest(ExceptionState& exceptionState)
     // Also, only async requests support upload progress events.
     bool uploadEvents = false;
     if (m_async) {
-        m_progressEventThrottle.dispatchEvent(XMLHttpRequestProgressEvent::create(EventTypeNames::loadstart));
+        dispatchProgressEvent(EventTypeNames::loadstart, 0, 0);
         if (m_requestEntityBody && m_upload) {
             uploadEvents = m_upload->hasEventListeners();
             m_upload->dispatchEvent(XMLHttpRequestProgressEvent::create(EventTypeNames::loadstart));
@@ -994,30 +994,18 @@ void XMLHttpRequest::handleDidFailGeneric()
     m_error = true;
 }
 
-void XMLHttpRequest::dispatchEventAndLoadEnd(const AtomicString& type, long long receivedLength, long long expectedLength)
+void XMLHttpRequest::dispatchProgressEvent(const AtomicString& type, long long receivedLength, long long expectedLength)
 {
     bool lengthComputable = expectedLength > 0 && receivedLength <= expectedLength;
     unsigned long long loaded = receivedLength >= 0 ? static_cast<unsigned long long>(receivedLength) : 0;
     unsigned long long total = lengthComputable ? static_cast<unsigned long long>(expectedLength) : 0;
 
-    m_progressEventThrottle.dispatchEventAndLoadEnd(type, lengthComputable, loaded, total);
+    m_progressEventThrottle.dispatchProgressEvent(type, lengthComputable, loaded, total);
 }
 
-void XMLHttpRequest::dispatchThrottledProgressEvent(const AtomicString& type, long long receivedLength, long long expectedLength)
+void XMLHttpRequest::dispatchProgressEventFromSnapshot(const AtomicString& type)
 {
-    bool lengthComputable = expectedLength > 0 && receivedLength <= expectedLength;
-    unsigned long long loaded = receivedLength >= 0 ? static_cast<unsigned long long>(receivedLength) : 0;
-    unsigned long long total = lengthComputable ? static_cast<unsigned long long>(expectedLength) : 0;
-
-    if (type == EventTypeNames::progress)
-        m_progressEventThrottle.dispatchProgressEvent(lengthComputable, loaded, total);
-    else
-        m_progressEventThrottle.dispatchEvent(XMLHttpRequestProgressEvent::create(type, lengthComputable, loaded, total));
-}
-
-void XMLHttpRequest::dispatchThrottledProgressEventSnapshot(const AtomicString& type)
-{
-    dispatchThrottledProgressEvent(type, m_receivedLength, m_response.expectedContentLength());
+    dispatchProgressEvent(type, m_receivedLength, m_response.expectedContentLength());
 }
 
 void XMLHttpRequest::handleNetworkError()
@@ -1069,8 +1057,9 @@ void XMLHttpRequest::handleRequestError(ExceptionCode exceptionCode, const Atomi
             m_upload->handleRequestError(type);
     }
 
-    dispatchThrottledProgressEvent(EventTypeNames::progress, receivedLength, expectedLength);
-    dispatchEventAndLoadEnd(type, receivedLength, expectedLength);
+    dispatchProgressEvent(EventTypeNames::progress, receivedLength, expectedLength);
+    dispatchProgressEvent(type, receivedLength, expectedLength);
+    dispatchProgressEvent(EventTypeNames::loadend, receivedLength, expectedLength);
 }
 
 void XMLHttpRequest::dropProtectionSoon()
