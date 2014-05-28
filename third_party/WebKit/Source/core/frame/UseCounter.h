@@ -97,7 +97,6 @@ public:
         MinAttribute = 43,
         PatternAttribute = 44,
         PlaceholderAttribute = 45,
-        PrecisionAttribute = 46,
         PrefixedDirectoryAttribute = 47,
         RequiredAttribute = 49,
         ResultsAttribute = 50,
