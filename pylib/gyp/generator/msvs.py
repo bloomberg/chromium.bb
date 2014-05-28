@@ -284,7 +284,7 @@ def _BuildCommandLineForRuleRaw(spec, cmd, cygwin_shell, has_input_path,
   if [x for x in cmd if '$(InputDir)' in x]:
     input_dir_preamble = (
       'set INPUTDIR=$(InputDir)\n'
-      'set INPUTDIR=%INPUTDIR:$(ProjectDir)=%\n'
+      'if NOT DEFINED INPUTDIR set INPUTDIR=.\\\n'
       'set INPUTDIR=%INPUTDIR:~0,-1%\n'
       )
   else:

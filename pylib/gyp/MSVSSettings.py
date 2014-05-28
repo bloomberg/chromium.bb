@@ -417,11 +417,11 @@ def ConvertVCMacrosToMSBuild(s):
   if '$' in s:
     replace_map = {
         '$(ConfigurationName)': '$(Configuration)',
-        '$(InputDir)': '%(RootDir)%(Directory)',
+        '$(InputDir)': '%(RelativeDir)',
         '$(InputExt)': '%(Extension)',
         '$(InputFileName)': '%(Filename)%(Extension)',
         '$(InputName)': '%(Filename)',
-        '$(InputPath)': '%(FullPath)',
+        '$(InputPath)': '%(Identity)',
         '$(ParentName)': '$(ProjectFileName)',
         '$(PlatformName)': '$(Platform)',
         '$(SafeInputName)': '%(Filename)',
