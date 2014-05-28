@@ -16,7 +16,7 @@
 #include "base/synchronization/lock.h"
 #include "mojo/embedder/platform_handle.h"
 #include "mojo/embedder/platform_handle_vector.h"
-#include "mojo/public/c/system/core.h"
+#include "mojo/public/c/system/buffer.h"
 #include "mojo/public/c/system/data_pipe.h"
 #include "mojo/public/c/system/message_pipe.h"
 #include "mojo/public/c/system/types.h"

@@ -26,6 +26,7 @@
         ],
       },
       'sources': [
+        'public/c/system/buffer.h',
         'public/c/system/core.h',
         'public/c/system/data_pipe.h',
         'public/c/system/functions.h',

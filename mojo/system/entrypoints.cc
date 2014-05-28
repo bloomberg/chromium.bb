@@ -2,6 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "mojo/system/entrypoints.h"
+
+#include "mojo/public/c/system/buffer.h"
+#include "mojo/public/c/system/data_pipe.h"
+#include "mojo/public/c/system/functions.h"
+#include "mojo/public/c/system/message_pipe.h"
 #include "mojo/system/core.h"
 
 static mojo::system::Core* g_core = NULL;
