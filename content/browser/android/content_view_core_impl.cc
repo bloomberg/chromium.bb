@@ -1308,6 +1308,13 @@ void ContentViewCoreImpl::ScrollFocusedEditableNodeIntoView(JNIEnv* env,
       host->GetRoutingID(), gfx::Rect()));
 }
 
+void ContentViewCoreImpl::SelectWordAroundCaret(JNIEnv* env, jobject obj) {
+  RenderViewHost* host = web_contents_->GetRenderViewHost();
+  if (!host)
+    return;
+  host->SelectWordAroundCaret();
+}
+
 namespace {
 
 static void AddNavigationEntryToHistory(JNIEnv* env, jobject obj,

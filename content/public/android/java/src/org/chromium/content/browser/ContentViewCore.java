@@ -1551,6 +1551,15 @@ public class ContentViewCore
     }
 
     /**
+     * Selects the word around the caret, if any.
+     * The caller can check if selection actually occurred by listening to OnSelectionChanged.
+     */
+    public void selectWordAroundCaret() {
+        if (mNativeContentViewCore == 0) return;
+        nativeSelectWordAroundCaret(mNativeContentViewCore);
+    }
+
+    /**
      * @see View#onWindowFocusChanged(boolean)
      */
     public void onWindowFocusChanged(boolean hasWindowFocus) {
@@ -3160,6 +3169,8 @@ public class ContentViewCore
     private native void nativeSelectPopupMenuItems(long nativeContentViewCoreImpl, int[] indices);
 
     private native void nativeScrollFocusedEditableNodeIntoView(long nativeContentViewCoreImpl);
+
+    private native void nativeSelectWordAroundCaret(long nativeContentViewCoreImpl);
 
     private native void nativeClearHistory(long nativeContentViewCoreImpl);
 
