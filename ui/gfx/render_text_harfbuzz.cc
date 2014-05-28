@@ -127,6 +127,50 @@ hb_bool_t GetGlyphHorizontalOrigin(hb_font_t* font,
   return true;
 }
 
+hb_position_t GetGlyphKerning(FontData* font_data,
+                              hb_codepoint_t first_glyph,
+                              hb_codepoint_t second_glyph) {
+  SkTypeface* typeface = font_data->paint_.getTypeface();
+  const uint16_t glyphs[2] = { first_glyph, second_glyph };
+  int32_t kerning_adjustments[1] = { 0 };
+
+  if (!typeface->getKerningPairAdjustments(glyphs, 2, kerning_adjustments))
+    return 0;
+
+  SkScalar upm = SkIntToScalar(typeface->getUnitsPerEm());
+  SkScalar size = font_data->paint_.getTextSize();
+  return SkiaScalarToHarfBuzzPosition(
+      SkScalarMulDiv(SkIntToScalar(kerning_adjustments[0]), size, upm));
+}
+
+hb_position_t GetGlyphHorizontalKerning(hb_font_t* font,
+                                        void* data,
+                                        hb_codepoint_t left_glyph,
+                                        hb_codepoint_t right_glyph,
+                                        void* user_data) {
+  FontData* font_data = reinterpret_cast<FontData*>(data);
+  if (font_data->paint_.isVerticalText()) {
+    // We don't support cross-stream kerning.
+    return 0;
+  }
+
+  return GetGlyphKerning(font_data, left_glyph, right_glyph);
+}
+
+hb_position_t GetGlyphVerticalKerning(hb_font_t* font,
+                                      void* data,
+                                      hb_codepoint_t top_glyph,
+                                      hb_codepoint_t bottom_glyph,
+                                      void* user_data) {
+  FontData* font_data = reinterpret_cast<FontData*>(data);
+  if (!font_data->paint_.isVerticalText()) {
+    // We don't support cross-stream kerning.
+    return 0;
+  }
+
+  return GetGlyphKerning(font_data, top_glyph, bottom_glyph);
+}
+
 // Writes the |extents| of |glyph|.
 hb_bool_t GetGlyphExtents(hb_font_t* font,
                           void* data,
@@ -145,7 +189,6 @@ hb_font_funcs_t* GetFontFuncs() {
 
   // We don't set callback functions which we can't support.
   // HarfBuzz will use the fallback implementation if they aren't set.
-  // TODO(ckocagil): Merge Blink's kerning funcs.
   if (!font_funcs) {
     // The object created by |hb_font_funcs_create()| below lives indefinitely
     // and is intentionally leaked.
@@ -153,8 +196,12 @@ hb_font_funcs_t* GetFontFuncs() {
     hb_font_funcs_set_glyph_func(font_funcs, GetGlyph, 0, 0);
     hb_font_funcs_set_glyph_h_advance_func(
         font_funcs, GetGlyphHorizontalAdvance, 0, 0);
+    hb_font_funcs_set_glyph_h_kerning_func(
+        font_funcs, GetGlyphHorizontalKerning, 0, 0);
     hb_font_funcs_set_glyph_h_origin_func(
         font_funcs, GetGlyphHorizontalOrigin, 0, 0);
+    hb_font_funcs_set_glyph_v_kerning_func(
+        font_funcs, GetGlyphVerticalKerning, 0, 0);
     hb_font_funcs_set_glyph_extents_func(
         font_funcs, GetGlyphExtents, 0, 0);
     hb_font_funcs_make_immutable(font_funcs);
