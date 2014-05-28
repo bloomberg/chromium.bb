@@ -145,6 +145,7 @@ void ConnectionToHost::OnSessionManagerReady() {
   if (!audio_stub_) {
     candidate_config->DisableAudioChannel();
   }
+  candidate_config->EnableVideoCodec(ChannelConfig::CODEC_VP9);
 
   session_ = session_manager_->Connect(
       host_jid_, authenticator_.Pass(), candidate_config.Pass());
