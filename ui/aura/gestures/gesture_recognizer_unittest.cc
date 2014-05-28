@@ -262,7 +262,7 @@ class GestureEventConsumeDelegate : public TestWindowDelegate {
       case ui::ET_GESTURE_SHOW_PRESS:
         show_press_ = true;
         break;
-      case ui::ET_GESTURE_MULTIFINGER_SWIPE:
+      case ui::ET_GESTURE_SWIPE:
         swipe_left_ = gesture->details().swipe_left();
         swipe_right_ = gesture->details().swipe_right();
         swipe_up_ = gesture->details().swipe_up();

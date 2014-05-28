@@ -80,22 +80,22 @@ struct EVENTS_BASE_EXPORT GestureEventDetails {
   }
 
   bool swipe_left() const {
-    DCHECK_EQ(ET_GESTURE_MULTIFINGER_SWIPE, type_);
+    DCHECK_EQ(ET_GESTURE_SWIPE, type_);
     return data.swipe.left;
   }
 
   bool swipe_right() const {
-    DCHECK_EQ(ET_GESTURE_MULTIFINGER_SWIPE, type_);
+    DCHECK_EQ(ET_GESTURE_SWIPE, type_);
     return data.swipe.right;
   }
 
   bool swipe_up() const {
-    DCHECK_EQ(ET_GESTURE_MULTIFINGER_SWIPE, type_);
+    DCHECK_EQ(ET_GESTURE_SWIPE, type_);
     return data.swipe.up;
   }
 
   bool swipe_down() const {
-    DCHECK_EQ(ET_GESTURE_MULTIFINGER_SWIPE, type_);
+    DCHECK_EQ(ET_GESTURE_SWIPE, type_);
     return data.swipe.down;
   }
 

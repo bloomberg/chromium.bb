@@ -226,7 +226,7 @@ blink::WebGestureEvent MakeWebGestureEventFromUIEvent(
       break;
     case ui::ET_GESTURE_BEGIN:
     case ui::ET_GESTURE_END:
-    case ui::ET_GESTURE_MULTIFINGER_SWIPE:
+    case ui::ET_GESTURE_SWIPE:
       gesture_event.type = blink::WebInputEvent::Undefined;
       break;
     default:

@@ -344,7 +344,10 @@ void ToplevelWindowEventHandler::OnGestureEvent(ui::GestureEvent* event) {
       }
       event->StopPropagation();
       return;
-    case ui::ET_GESTURE_MULTIFINGER_SWIPE:
+    case ui::ET_GESTURE_SWIPE:
+      DCHECK_GT(event->details().touch_points(), 0);
+      if (event->details().touch_points() == 1)
+        return;
       if (!wm::GetWindowState(target)->IsNormalOrSnapped())
         return;
 

@@ -157,6 +157,7 @@ class GestureDetector {
   bool IsConsideredDoubleTap(const MotionEvent& first_down,
                              const MotionEvent& first_up,
                              const MotionEvent& second_down) const;
+  bool HandleSwipeIfNeeded(const MotionEvent& up, float vx, float vy);
 
   class TimeoutGestureHandler;
   scoped_ptr<TimeoutGestureHandler> timeout_handler_;

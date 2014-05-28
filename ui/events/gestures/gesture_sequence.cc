@@ -1088,7 +1088,7 @@ void GestureSequence::AppendSwipeGesture(const GesturePoint& point,
                                          int swipe_y,
                                          Gestures* gestures) {
   gestures->push_back(CreateGestureEvent(
-      GestureEventDetails(ui::ET_GESTURE_MULTIFINGER_SWIPE, swipe_x, swipe_y),
+      GestureEventDetails(ui::ET_GESTURE_SWIPE, swipe_x, swipe_y),
       bounding_box_.CenterPoint(),
       flags_,
       base::Time::FromDoubleT(point.last_touch_time()),

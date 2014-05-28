@@ -996,10 +996,10 @@ TEST_F(TouchDispositionGestureFilterTest, TestAllowedMultiFingerSwipe) {
   EXPECT_TRUE(GesturesMatch(Gestures(ET_GESTURE_PINCH_BEGIN),
                             GetAndResetSentGestures()));
 
-  PushGesture(ET_GESTURE_MULTIFINGER_SWIPE);
+  PushGesture(ET_GESTURE_SWIPE);
   PressTouchPoint(1, 1);
   SendTouchNotConsumedAck();
-  EXPECT_TRUE(GesturesMatch(Gestures(ET_GESTURE_MULTIFINGER_SWIPE),
+  EXPECT_TRUE(GesturesMatch(Gestures(ET_GESTURE_SWIPE),
                             GetAndResetSentGestures()));
 }
 
@@ -1018,7 +1018,7 @@ TEST_F(TouchDispositionGestureFilterTest, TestDisallowedMultiFingerSwipe) {
   SendTouchNotConsumedAck();
   EXPECT_FALSE(GesturesSent());
 
-  PushGesture(ET_GESTURE_MULTIFINGER_SWIPE);
+  PushGesture(ET_GESTURE_SWIPE);
   PressTouchPoint(1, 1);
   SendTouchNotConsumedAck();
   EXPECT_FALSE(GesturesSent());

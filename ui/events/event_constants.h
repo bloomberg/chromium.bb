@@ -46,9 +46,10 @@ enum EventType {
   ET_GESTURE_PINCH_UPDATE,
   ET_GESTURE_LONG_PRESS,
   ET_GESTURE_LONG_TAP,
-  // A SWIPE gesture can happen at the end of a TAP_UP gesture if the
-  // finger(s) were moving quickly before they are released.
-  ET_GESTURE_MULTIFINGER_SWIPE,
+  // A SWIPE gesture can happen at the end of a touch sequence involving one or
+  // more fingers if the finger velocity was high enough when the first finger
+  // was released.
+  ET_GESTURE_SWIPE,
   ET_GESTURE_SHOW_PRESS,
 
   // Sent by Win8+ metro when the user swipes from the bottom or top.

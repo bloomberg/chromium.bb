@@ -39,7 +39,7 @@ GestureEventDetails::GestureEventDetails(ui::EventType type,
       CHECK_EQ(0.f, delta_y) << "Unknown data in delta_y for pinch";
       break;
 
-    case ui::ET_GESTURE_MULTIFINGER_SWIPE:
+    case ui::ET_GESTURE_SWIPE:
       data.swipe.left = delta_x < 0;
       data.swipe.right = delta_x > 0;
       data.swipe.up = delta_y < 0;

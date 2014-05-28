@@ -385,10 +385,8 @@ class GestureProvider::GestureListenerImpl
                        const MotionEvent& e2,
                        float velocity_x,
                        float velocity_y) OVERRIDE {
-    GestureEventDetails swipe_details(
-        ET_GESTURE_MULTIFINGER_SWIPE, velocity_x, velocity_y);
-    provider_->Send(
-        CreateGesture(ET_GESTURE_MULTIFINGER_SWIPE, e2, swipe_details));
+    GestureEventDetails swipe_details(ET_GESTURE_SWIPE, velocity_x, velocity_y);
+    provider_->Send(CreateGesture(ET_GESTURE_SWIPE, e2, swipe_details));
     return true;
   }
 

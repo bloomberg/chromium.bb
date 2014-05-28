@@ -92,7 +92,7 @@ bool OverviewGestureHandler::ProcessGestureEvent(
   }
 
   if (!in_top_bezel_gesture_ ||
-      event.type() != ui::ET_GESTURE_MULTIFINGER_SWIPE ||
+      event.type() != ui::ET_GESTURE_SWIPE ||
       !event.details().swipe_down() ||
       event.details().touch_points() != 3) {
     return false;

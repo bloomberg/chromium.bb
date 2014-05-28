@@ -272,29 +272,7 @@ bool GestureDetector::OnTouchEvent(const MotionEvent& ev) {
         vy_total += vy2;
       }
 
-      if (swipe_enabled_ && (vx_total || vy_total)) {
-        float vx = vx_total / count;
-        float vy = vy_total / count;
-        float vx_abs = std::abs(vx);
-        float vy_abs = std::abs(vy);
-
-        if (vx_abs < min_swipe_velocity_)
-          vx_abs = vx = 0;
-        if (vy_abs < min_swipe_velocity_)
-          vy_abs = vy = 0;
-
-        // Note that the ratio will be 0 if both velocites are below the min.
-        float ratio = vx_abs > vy_abs ? vx_abs / std::max(vy_abs, 0.001f)
-                                      : vy_abs / std::max(vx_abs, 0.001f);
-        if (ratio > min_swipe_direction_component_ratio_) {
-          if (vx_abs > vy_abs)
-            vy = 0;
-          else
-            vx = 0;
-
-          handled = listener_->OnSwipe(*current_down_event_, ev, vx, vy);
-        }
-      }
+      handled = HandleSwipeIfNeeded(ev, vx_total / count, vy_total / count);
 
       if (two_finger_tap_allowed_for_gesture_ && ev.GetPointerCount() == 2 &&
           (ev.GetEventTime() - secondary_pointer_down_event_->GetEventTime() <=
@@ -433,6 +411,8 @@ bool GestureDetector::OnTouchEvent(const MotionEvent& ev) {
             handled = listener_->OnFling(
                 *current_down_event_, ev, velocity_x, velocity_y);
           }
+
+          handled |= HandleSwipeIfNeeded(ev, velocity_x, velocity_y);
         }
 
         previous_up_event_ = ev.Clone();
@@ -547,6 +527,33 @@ bool GestureDetector::IsConsideredDoubleTap(
   const float delta_x = first_down.GetX() - second_down.GetX();
   const float delta_y = first_down.GetY() - second_down.GetY();
   return (delta_x * delta_x + delta_y * delta_y < double_tap_slop_square_);
+}
+
+bool GestureDetector::HandleSwipeIfNeeded(const MotionEvent& up,
+                                          float vx,
+                                          float vy) {
+  if (!swipe_enabled_ || (!vx && !vy))
+    return false;
+  float vx_abs = std::abs(vx);
+  float vy_abs = std::abs(vy);
+
+  if (vx_abs < min_swipe_velocity_)
+    vx_abs = vx = 0;
+  if (vy_abs < min_swipe_velocity_)
+    vy_abs = vy = 0;
+
+  // Note that the ratio will be 0 if both velocites are below the min.
+  float ratio = vx_abs > vy_abs ? vx_abs / std::max(vy_abs, 0.001f)
+                                : vy_abs / std::max(vx_abs, 0.001f);
+
+  if (ratio < min_swipe_direction_component_ratio_)
+    return false;
+
+  if (vx_abs > vy_abs)
+    vy = 0;
+  else
+    vx = 0;
+  return listener_->OnSwipe(*current_down_event_, up, vx, vy);
 }
 
 }  // namespace ui

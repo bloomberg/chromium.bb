@@ -200,7 +200,7 @@ class GestureProviderTest : public testing::Test, public GestureProviderClient {
     SetUpWithConfig(config);
   }
 
-  void EnableMultiFingerSwipe() {
+  void EnableSwipe() {
     GestureProvider::Config config = GetDefaultConfig();
     config.gesture_detector_config.swipe_enabled = true;
     SetUpWithConfig(config);
@@ -274,6 +274,12 @@ class GestureProviderTest : public testing::Test, public GestureProviderClient {
     EXPECT_EQ(1, GetMostRecentGestureEvent().details.touch_points());
     EXPECT_EQ(BoundsForSingleMockTouchAtLocation(scroll_to_x, scroll_to_y),
               GetMostRecentGestureEvent().details.bounding_box());
+  }
+
+  void OneFingerSwipe(float vx, float vy) {
+    std::vector<gfx::Vector2dF> velocities;
+    velocities.push_back(gfx::Vector2dF(vx, vy));
+    MultiFingerSwipe(velocities);
   }
 
   void TwoFingerSwipe(float vx0, float vy0, float vx1, float vy1) {
@@ -1455,27 +1461,56 @@ TEST_F(GestureProviderTest, PinchZoom) {
 
 // Verify that multi-finger swipe sends the proper event sequence.
 TEST_F(GestureProviderTest, MultiFingerSwipe) {
-  EnableMultiFingerSwipe();
+  EnableSwipe();
   gesture_provider_->SetMultiTouchZoomSupportEnabled(false);
   const float min_swipe_velocity = GetMinSwipeVelocity();
 
+  // One finger - swipe right
+  OneFingerSwipe(2 * min_swipe_velocity, 0);
+  EXPECT_TRUE(HasReceivedGesture(ET_GESTURE_SWIPE));
+  EXPECT_TRUE(GetMostRecentGestureEvent().details.swipe_right());
+  EXPECT_EQ(1, GetMostRecentGestureEvent().details.touch_points());
+  ResetGestureDetection();
+
+  // One finger - swipe left
+  OneFingerSwipe(-2 * min_swipe_velocity, 0);
+  EXPECT_TRUE(HasReceivedGesture(ET_GESTURE_SWIPE));
+  EXPECT_TRUE(GetMostRecentGestureEvent().details.swipe_left());
+  EXPECT_EQ(1, GetMostRecentGestureEvent().details.touch_points());
+  ResetGestureDetection();
+
+  // One finger - swipe down
+  OneFingerSwipe(0, 2 * min_swipe_velocity);
+  EXPECT_TRUE(HasReceivedGesture(ET_GESTURE_SWIPE));
+  EXPECT_TRUE(GetMostRecentGestureEvent().details.swipe_down());
+  EXPECT_EQ(1, GetMostRecentGestureEvent().details.touch_points());
+  ResetGestureDetection();
+
+  // One finger - swipe up
+  OneFingerSwipe(0, -2 * min_swipe_velocity);
+  EXPECT_TRUE(HasReceivedGesture(ET_GESTURE_SWIPE));
+  EXPECT_TRUE(GetMostRecentGestureEvent().details.swipe_up());
+  EXPECT_EQ(1, GetMostRecentGestureEvent().details.touch_points());
+  ResetGestureDetection();
+
+  // Two fingers
   // Swipe right.
   TwoFingerSwipe(min_swipe_velocity * 2, 0, min_swipe_velocity * 2, 0);
-  EXPECT_TRUE(HasReceivedGesture(ET_GESTURE_MULTIFINGER_SWIPE));
+  EXPECT_TRUE(HasReceivedGesture(ET_GESTURE_SWIPE));
   EXPECT_TRUE(GetMostRecentGestureEvent().details.swipe_right());
   EXPECT_EQ(2, GetMostRecentGestureEvent().details.touch_points());
   ResetGestureDetection();
 
   // Swipe left.
   TwoFingerSwipe(-min_swipe_velocity * 2, 0, -min_swipe_velocity * 2, 0);
-  EXPECT_TRUE(HasReceivedGesture(ET_GESTURE_MULTIFINGER_SWIPE));
+  EXPECT_TRUE(HasReceivedGesture(ET_GESTURE_SWIPE));
   EXPECT_TRUE(GetMostRecentGestureEvent().details.swipe_left());
   EXPECT_EQ(2, GetMostRecentGestureEvent().details.touch_points());
   ResetGestureDetection();
 
   // No swipe with different touch directions.
   TwoFingerSwipe(min_swipe_velocity * 2, 0, -min_swipe_velocity * 2, 0);
-  EXPECT_FALSE(HasReceivedGesture(ET_GESTURE_MULTIFINGER_SWIPE));
+  EXPECT_FALSE(HasReceivedGesture(ET_GESTURE_SWIPE));
   ResetGestureDetection();
 
   // No swipe without a dominant direction.
@@ -1483,26 +1518,26 @@ TEST_F(GestureProviderTest, MultiFingerSwipe) {
                  min_swipe_velocity * 2,
                  min_swipe_velocity * 2,
                  min_swipe_velocity * 2);
-  EXPECT_FALSE(HasReceivedGesture(ET_GESTURE_MULTIFINGER_SWIPE));
+  EXPECT_FALSE(HasReceivedGesture(ET_GESTURE_SWIPE));
   ResetGestureDetection();
 
-  // Swipe up with non-zero velocities on both axes and dominant direction.
+  // Swipe down with non-zero velocities on both axes and dominant direction.
   TwoFingerSwipe(-min_swipe_velocity,
                  min_swipe_velocity * 4,
                  -min_swipe_velocity,
                  min_swipe_velocity * 4);
-  EXPECT_TRUE(HasReceivedGesture(ET_GESTURE_MULTIFINGER_SWIPE));
+  EXPECT_TRUE(HasReceivedGesture(ET_GESTURE_SWIPE));
   EXPECT_TRUE(GetMostRecentGestureEvent().details.swipe_down());
   EXPECT_FALSE(GetMostRecentGestureEvent().details.swipe_left());
   EXPECT_EQ(2, GetMostRecentGestureEvent().details.touch_points());
   ResetGestureDetection();
 
-  // Swipe down with non-zero velocities on both axes.
+  // Swipe up with non-zero velocities on both axes.
   TwoFingerSwipe(min_swipe_velocity,
                  -min_swipe_velocity * 4,
                  min_swipe_velocity,
                  -min_swipe_velocity * 4);
-  EXPECT_TRUE(HasReceivedGesture(ET_GESTURE_MULTIFINGER_SWIPE));
+  EXPECT_TRUE(HasReceivedGesture(ET_GESTURE_SWIPE));
   EXPECT_TRUE(GetMostRecentGestureEvent().details.swipe_up());
   EXPECT_FALSE(GetMostRecentGestureEvent().details.swipe_right());
   EXPECT_EQ(2, GetMostRecentGestureEvent().details.touch_points());
@@ -1510,7 +1545,7 @@ TEST_F(GestureProviderTest, MultiFingerSwipe) {
 
   // No swipe without sufficient velocity.
   TwoFingerSwipe(min_swipe_velocity / 2, 0, 0, 0);
-  EXPECT_FALSE(HasReceivedGesture(ET_GESTURE_MULTIFINGER_SWIPE));
+  EXPECT_FALSE(HasReceivedGesture(ET_GESTURE_SWIPE));
   ResetGestureDetection();
 
   // Swipe up with one small and one medium velocity in slightly different but
@@ -1519,7 +1554,7 @@ TEST_F(GestureProviderTest, MultiFingerSwipe) {
                  min_swipe_velocity / 2,
                  0,
                  min_swipe_velocity * 2);
-  EXPECT_TRUE(HasReceivedGesture(ET_GESTURE_MULTIFINGER_SWIPE));
+  EXPECT_TRUE(HasReceivedGesture(ET_GESTURE_SWIPE));
   EXPECT_TRUE(GetMostRecentGestureEvent().details.swipe_down());
   EXPECT_FALSE(GetMostRecentGestureEvent().details.swipe_right());
   EXPECT_EQ(2, GetMostRecentGestureEvent().details.touch_points());
@@ -1527,7 +1562,7 @@ TEST_F(GestureProviderTest, MultiFingerSwipe) {
 
   // No swipe in orthogonal directions.
   TwoFingerSwipe(min_swipe_velocity * 2, 0, 0, min_swipe_velocity * 7);
-  EXPECT_FALSE(HasReceivedGesture(ET_GESTURE_MULTIFINGER_SWIPE));
+  EXPECT_FALSE(HasReceivedGesture(ET_GESTURE_SWIPE));
   ResetGestureDetection();
 
   // Three finger swipe in same directions.
@@ -1537,7 +1572,7 @@ TEST_F(GestureProviderTest, MultiFingerSwipe) {
                    0,
                    min_swipe_velocity * 4,
                    0);
-  EXPECT_TRUE(HasReceivedGesture(ET_GESTURE_MULTIFINGER_SWIPE));
+  EXPECT_TRUE(HasReceivedGesture(ET_GESTURE_SWIPE));
   EXPECT_TRUE(GetMostRecentGestureEvent().details.swipe_right());
   EXPECT_EQ(3, GetMostRecentGestureEvent().details.touch_points());
   ResetGestureDetection();
@@ -1549,7 +1584,7 @@ TEST_F(GestureProviderTest, MultiFingerSwipe) {
                    min_swipe_velocity * 3,
                    min_swipe_velocity * 4,
                    0);
-  EXPECT_FALSE(HasReceivedGesture(ET_GESTURE_MULTIFINGER_SWIPE));
+  EXPECT_FALSE(HasReceivedGesture(ET_GESTURE_SWIPE));
 }
 
 // Verify that the timer of LONG_PRESS will be cancelled when scrolling begins

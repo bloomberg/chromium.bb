@@ -24,41 +24,44 @@
 namespace {
 
 enum UMAEventType {
-  UMA_ET_UNKNOWN,
-  UMA_ET_TOUCH_RELEASED,
-  UMA_ET_TOUCH_PRESSED,
-  UMA_ET_TOUCH_MOVED,
-  UMA_ET_TOUCH_STATIONARY,  // Deprecated. Do not remove.
-  UMA_ET_TOUCH_CANCELLED,
-  UMA_ET_GESTURE_SCROLL_BEGIN,
-  UMA_ET_GESTURE_SCROLL_END,
-  UMA_ET_GESTURE_SCROLL_UPDATE,
-  UMA_ET_GESTURE_TAP,
-  UMA_ET_GESTURE_TAP_DOWN,
-  UMA_ET_GESTURE_BEGIN,
-  UMA_ET_GESTURE_END,
-  UMA_ET_GESTURE_DOUBLE_TAP,
-  UMA_ET_GESTURE_TRIPLE_TAP,
-  UMA_ET_GESTURE_TWO_FINGER_TAP,
-  UMA_ET_GESTURE_PINCH_BEGIN,
-  UMA_ET_GESTURE_PINCH_END,
-  UMA_ET_GESTURE_PINCH_UPDATE,
-  UMA_ET_GESTURE_LONG_PRESS,
-  UMA_ET_GESTURE_MULTIFINGER_SWIPE,
-  UMA_ET_SCROLL,
-  UMA_ET_SCROLL_FLING_START,
-  UMA_ET_SCROLL_FLING_CANCEL,
-  UMA_ET_GESTURE_MULTIFINGER_SWIPE_3,
-  UMA_ET_GESTURE_MULTIFINGER_SWIPE_4P,  // 4+ fingers
-  UMA_ET_GESTURE_SCROLL_UPDATE_2,
-  UMA_ET_GESTURE_SCROLL_UPDATE_3,
-  UMA_ET_GESTURE_SCROLL_UPDATE_4P,
-  UMA_ET_GESTURE_PINCH_UPDATE_3,
-  UMA_ET_GESTURE_PINCH_UPDATE_4P,
-  UMA_ET_GESTURE_LONG_TAP,
-  UMA_ET_GESTURE_SHOW_PRESS,
-  UMA_ET_GESTURE_TAP_CANCEL,
-  UMA_ET_GESTURE_WIN8_EDGE_SWIPE,
+  // WARNING: Do not change the numerical values of any of these types.
+  // Do not remove deprecated types - just comment them as deprecated.
+  UMA_ET_UNKNOWN = 0,
+  UMA_ET_TOUCH_RELEASED = 1,
+  UMA_ET_TOUCH_PRESSED = 2,
+  UMA_ET_TOUCH_MOVED = 3,
+  UMA_ET_TOUCH_STATIONARY = 4,  // Deprecated. Do not remove.
+  UMA_ET_TOUCH_CANCELLED = 5,
+  UMA_ET_GESTURE_SCROLL_BEGIN = 6,
+  UMA_ET_GESTURE_SCROLL_END = 7,
+  UMA_ET_GESTURE_SCROLL_UPDATE = 8,
+  UMA_ET_GESTURE_TAP = 9,
+  UMA_ET_GESTURE_TAP_DOWN = 10,
+  UMA_ET_GESTURE_BEGIN = 11,
+  UMA_ET_GESTURE_END = 12,
+  UMA_ET_GESTURE_DOUBLE_TAP = 13,
+  UMA_ET_GESTURE_TRIPLE_TAP = 14,
+  UMA_ET_GESTURE_TWO_FINGER_TAP = 15,
+  UMA_ET_GESTURE_PINCH_BEGIN = 16,
+  UMA_ET_GESTURE_PINCH_END = 17,
+  UMA_ET_GESTURE_PINCH_UPDATE = 18,
+  UMA_ET_GESTURE_LONG_PRESS = 19,
+  UMA_ET_GESTURE_SWIPE_2 = 20,   // Swipe with 2 fingers
+  UMA_ET_SCROLL = 21,
+  UMA_ET_SCROLL_FLING_START = 22,
+  UMA_ET_SCROLL_FLING_CANCEL = 23,
+  UMA_ET_GESTURE_SWIPE_3 = 24,   // Swipe with 3 fingers
+  UMA_ET_GESTURE_SWIPE_4P = 25,  // Swipe with 4+ fingers
+  UMA_ET_GESTURE_SCROLL_UPDATE_2 = 26,
+  UMA_ET_GESTURE_SCROLL_UPDATE_3 = 27,
+  UMA_ET_GESTURE_SCROLL_UPDATE_4P = 28,
+  UMA_ET_GESTURE_PINCH_UPDATE_3 = 29,
+  UMA_ET_GESTURE_PINCH_UPDATE_4P = 30,
+  UMA_ET_GESTURE_LONG_TAP = 31,
+  UMA_ET_GESTURE_SHOW_PRESS = 32,
+  UMA_ET_GESTURE_TAP_CANCEL = 33,
+  UMA_ET_GESTURE_WIN8_EDGE_SWIPE = 34,
+  UMA_ET_GESTURE_SWIPE_1 = 35,   // Swipe with 1 finger
   // NOTE: Add new event types only immediately above this line. Make sure to
   // update the UIEventType enum in tools/metrics/histograms/histograms.xml
   // accordingly.
@@ -113,13 +116,13 @@ UMAEventType UMAEventTypeFromEvent(const ui::Event& event) {
     case ui::ET_GESTURE_SCROLL_UPDATE: {
       const ui::GestureEvent& gesture =
           static_cast<const ui::GestureEvent&>(event);
-      if (gesture.details().touch_points() >= 4)
-        return UMA_ET_GESTURE_SCROLL_UPDATE_4P;
-      else if (gesture.details().touch_points() == 3)
-        return UMA_ET_GESTURE_SCROLL_UPDATE_3;
+      if (gesture.details().touch_points() == 1)
+        return UMA_ET_GESTURE_SCROLL_UPDATE;
       else if (gesture.details().touch_points() == 2)
         return UMA_ET_GESTURE_SCROLL_UPDATE_2;
-      return UMA_ET_GESTURE_SCROLL_UPDATE;
+      else if (gesture.details().touch_points() == 3)
+        return UMA_ET_GESTURE_SCROLL_UPDATE_3;
+      return UMA_ET_GESTURE_SCROLL_UPDATE_4P;
     }
     case ui::ET_GESTURE_TAP: {
       const ui::GestureEvent& gesture =
@@ -159,14 +162,16 @@ UMAEventType UMAEventTypeFromEvent(const ui::Event& event) {
       return UMA_ET_GESTURE_LONG_PRESS;
     case ui::ET_GESTURE_LONG_TAP:
       return UMA_ET_GESTURE_LONG_TAP;
-    case ui::ET_GESTURE_MULTIFINGER_SWIPE: {
+    case ui::ET_GESTURE_SWIPE: {
       const ui::GestureEvent& gesture =
           static_cast<const ui::GestureEvent&>(event);
-      if (gesture.details().touch_points() >= 4)
-        return UMA_ET_GESTURE_MULTIFINGER_SWIPE_4P;
+      if (gesture.details().touch_points() == 1)
+        return UMA_ET_GESTURE_SWIPE_1;
+      else if (gesture.details().touch_points() == 2)
+        return UMA_ET_GESTURE_SWIPE_2;
       else if (gesture.details().touch_points() == 3)
-        return UMA_ET_GESTURE_MULTIFINGER_SWIPE_3;
-      return UMA_ET_GESTURE_MULTIFINGER_SWIPE;
+        return UMA_ET_GESTURE_SWIPE_3;
+      return UMA_ET_GESTURE_SWIPE_4P;
     }
     case ui::ET_GESTURE_WIN8_EDGE_SWIPE:
       return UMA_ET_GESTURE_WIN8_EDGE_SWIPE;
