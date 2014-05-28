@@ -111,6 +111,8 @@ class ScaleGestureDetector : public GestureDetector::SimpleGestureListener {
   void AddTouchHistory(const MotionEvent& ev);
   void ClearTouchHistory();
 
+  void ResetScaleWithSpan(float span);
+
   ScaleGestureListener* const listener_;
 
   Config config_;

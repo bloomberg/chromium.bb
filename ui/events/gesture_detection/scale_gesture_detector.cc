@@ -110,13 +110,9 @@ bool ScaleGestureDetector::OnTouchEvent(const MotionEvent& event) {
     // This means the app probably didn't give us all the events. Shame on it.
     if (in_progress_) {
       listener_->OnScaleEnd(*this, event);
-      in_progress_ = false;
-      initial_span_ = 0;
-      double_tap_mode_ = DOUBLE_TAP_MODE_NONE;
+      ResetScaleWithSpan(0);
     } else if (InDoubleTapMode() && stream_complete) {
-      in_progress_ = false;
-      initial_span_ = 0;
-      double_tap_mode_ = DOUBLE_TAP_MODE_NONE;
+      ResetScaleWithSpan(0);
     }
 
     if (stream_complete) {
@@ -135,7 +131,9 @@ bool ScaleGestureDetector::OnTouchEvent(const MotionEvent& event) {
   // Determine focal point.
   float sum_x = 0, sum_y = 0;
   const int count = static_cast<int>(event.GetPointerCount());
-  const int div = pointer_up ? count - 1 : count;
+  const int unreleased_point_count = pointer_up ? count - 1 : count;
+  const float inverse_unreleased_point_count = 1.0f / unreleased_point_count;
+
   float focus_x;
   float focus_y;
   if (InDoubleTapMode()) {
@@ -156,8 +154,8 @@ bool ScaleGestureDetector::OnTouchEvent(const MotionEvent& event) {
       sum_y += event.GetY(i);
     }
 
-    focus_x = sum_x / div;
-    focus_y = sum_y / div;
+    focus_x = sum_x * inverse_unreleased_point_count;
+    focus_y = sum_y * inverse_unreleased_point_count;
   }
 
   AddTouchHistory(event);
@@ -168,13 +166,15 @@ bool ScaleGestureDetector::OnTouchEvent(const MotionEvent& event) {
     if (skip_index == i)
       continue;
 
-    // Convert the resulting diameter into a radius.
-    const float touch_size = touch_history_last_accepted_ / 2;
-    dev_sum_x += std::abs(event.GetX(i) - focus_x) + touch_size;
-    dev_sum_y += std::abs(event.GetY(i) - focus_y) + touch_size;
+    dev_sum_x += std::abs(event.GetX(i) - focus_x);
+    dev_sum_y += std::abs(event.GetY(i) - focus_y);
   }
-  const float dev_x = dev_sum_x / div;
-  const float dev_y = dev_sum_y / div;
+  // Convert the resulting diameter into a radius, to include touch
+  // radius in overall deviation.
+  const float touch_size = touch_history_last_accepted_ / 2;
+
+  const float dev_x = (dev_sum_x * inverse_unreleased_point_count) + touch_size;
+  const float dev_y = (dev_sum_y * inverse_unreleased_point_count) + touch_size;
 
   // Span is the average distance between touch points through the focal point;
   // i.e. the diameter of the circle with a radius of the average deviation from
@@ -197,9 +197,7 @@ bool ScaleGestureDetector::OnTouchEvent(const MotionEvent& event) {
   if (!InDoubleTapMode() && in_progress_ &&
       (span < min_span_ || config_changed)) {
     listener_->OnScaleEnd(*this, event);
-    in_progress_ = false;
-    initial_span_ = span;
-    double_tap_mode_ = DOUBLE_TAP_MODE_NONE;
+    ResetScaleWithSpan(span);
   }
   if (config_changed) {
     prev_span_x_ = curr_span_x_ = span_x;
@@ -371,6 +369,12 @@ void ScaleGestureDetector::ClearTouchHistory() {
   touch_history_last_accepted_ = std::numeric_limits<float>::quiet_NaN();
   touch_history_direction_ = 0;
   touch_history_last_accepted_time_ = base::TimeTicks();
+}
+
+void ScaleGestureDetector::ResetScaleWithSpan(float span) {
+  in_progress_ = false;
+  initial_span_ = span;
+  double_tap_mode_ = DOUBLE_TAP_MODE_NONE;
 }
 
 }  // namespace ui
