@@ -56,7 +56,7 @@ class SmoothnessController(object):
     for event in renderer_thread.async_slices:
       if not tir_module.IsTimelineInteractionRecord(event.name):
         continue
-      r = tir_module.TimelineInteractionRecord.FromEvent(event)
+      r = tir_module.TimelineInteractionRecord.FromAsyncEvent(event)
       if r.logical_name == RUN_SMOOTH_ACTIONS:
         assert run_smooth_actions_record is None, (
           'SmoothnessController cannot issue more than 1 %s record' %
