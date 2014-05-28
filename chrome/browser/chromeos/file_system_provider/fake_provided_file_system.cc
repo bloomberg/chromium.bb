@@ -148,13 +148,17 @@ void FakeProvidedFileSystem::OpenFile(const base::FilePath& file_path,
                                       const OpenFileCallback& callback) {
   if (file_path.AsUTF8Unsafe() != "/hello.txt" ||
       mode == OPEN_FILE_MODE_WRITE || create) {
-    callback.Run(0 /* file_handle */, base::File::FILE_ERROR_SECURITY);
+    base::MessageLoopProxy::current()->PostTask(
+        FROM_HERE,
+        base::Bind(
+            callback, 0 /* file_handle */, base::File::FILE_ERROR_SECURITY));
     return;
   }
 
   const int file_handle = ++last_file_handle_;
   opened_files_[file_handle] = file_path;
-  callback.Run(file_handle, base::File::FILE_OK);
+  base::MessageLoopProxy::current()->PostTask(
+      FROM_HERE, base::Bind(callback, file_handle, base::File::FILE_OK));
 }
 
 void FakeProvidedFileSystem::CloseFile(
@@ -196,8 +200,8 @@ void FakeProvidedFileSystem::ReadFile(
   size_t current_offset = static_cast<size_t>(offset);
   size_t current_length = static_cast<size_t>(length);
 
-  // Reading behind EOF, is fine, it will just read 0 bytes.
-  if (current_offset > kFakeFileSize || !current_length) {
+  // Reading behind EOF is fine, it will just return 0 bytes.
+  if (current_offset >= kFakeFileSize || !current_length) {
     base::MessageLoopProxy::current()->PostTask(
         FROM_HERE,
         base::Bind(callback,
@@ -210,7 +214,10 @@ void FakeProvidedFileSystem::ReadFile(
     buffer->data()[current_offset - offset] = kFakeFileText[current_offset];
     const bool has_next =
         (current_offset + 1 < kFakeFileSize) && (current_length - 1);
-    callback.Run(1, has_next, base::File::FILE_OK);
+    base::MessageLoopProxy::current()->PostTask(
+        FROM_HERE,
+        base::Bind(
+            callback, 1 /* chunk_length */, has_next, base::File::FILE_OK));
     current_offset++;
     current_length--;
   }
