@@ -48,14 +48,4 @@
 #
 # START OVERRIDES HERE
 
-# https://code.google.com/p/skia/source/detail?r=14683 fixed swapped
-# position/thickness in DirectWrite. Needs a corresponding change in Blink:
-# https://codereview.chromium.org/281523004/ before rebaselining.
-crbug.com/372497 fast/text/decorations-with-text-combine.html [ ImageOnlyFailure ]
-crbug.com/372497 fast/text/international/rtl-white-space-pre-wrap.html [ ImageOnlyFailure ]
-crbug.com/372497 fast/text/line-breaks.html [ ImageOnlyFailure ]
-crbug.com/372497 fast/text/stroking-decorations.html [ ImageOnlyFailure ]
-crbug.com/372497 fast/text/trailing-white-space-2.html [ ImageOnlyFailure ]
-crbug.com/372497 fast/text/trailing-white-space.html [ ImageOnlyFailure ]
-
 # END OVERRIDES HERE (this line ensures that the file is newline-terminated)
