@@ -21,6 +21,22 @@ extern const char kSamplePakContents[] = {
 
 extern const size_t kSamplePakSize = sizeof(kSamplePakContents);
 
+extern const char kSampleCorruptPakContents[] = {
+    0x04, 0x00, 0x00, 0x00,               // header(version
+    0x04, 0x00, 0x00, 0x00,               //        no. entries
+    0x01,                                 //        encoding)
+    0x01, 0x00, 0x27, 0x00, 0x00, 0x00,   // index entry 1
+    0x04, 0x00, 0x27, 0x00, 0x00, 0x00,   // index entry 4
+    0x06, 0x00, 0x33, 0x00, 0x00, 0x00,   // index entry 6
+    0x0a, 0x00, 0x3f, 0x00, 0x00, 0x00,   // index entry 10
+    0x00, 0x00, 0x40, 0x00, 0x00, 0x00,   // extra entry for the size of last,
+                                          // extends past END OF FILE.
+    't', 'h', 'i', 's', ' ', 'i', 's', ' ', 'i', 'd', ' ', '4',
+    't', 'h', 'i', 's', ' ', 'i', 's', ' ', 'i', 'd', ' ', '6'
+};
+
+extern const size_t kSampleCorruptPakSize = sizeof(kSampleCorruptPakContents);
+
 extern const char kSamplePakContents2x[] = {
     0x04, 0x00, 0x00, 0x00,               // header(version
     0x01, 0x00, 0x00, 0x00,               //        no. entries

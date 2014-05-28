@@ -134,8 +134,9 @@ bool DataPack::LoadImpl() {
   }
 
   // Sanity check the file.
-  // 1) Check we have enough entries.
-  if (kHeaderLength + resource_count_ * sizeof(DataPackEntry) >
+  // 1) Check we have enough entries. There's an extra entry after the last item
+  // which gives the length of the last item.
+  if (kHeaderLength + (resource_count_ + 1) * sizeof(DataPackEntry) >
       mmap_->length()) {
     LOG(ERROR) << "Data pack file corruption: too short for number of "
                   "entries specified.";
@@ -188,8 +189,19 @@ bool DataPack::GetStringPiece(uint16 resource_id,
   }
 
   const DataPackEntry* next_entry = target + 1;
-  size_t length = next_entry->file_offset - target->file_offset;
+  // If the next entry points beyond the end of the file this data pack's entry
+  // table is corrupt. Log an error and return false. See
+  // http://crbug.com/371301.
+  if (next_entry->file_offset > mmap_->length()) {
+    size_t entry_index = target -
+        reinterpret_cast<const DataPackEntry*>(mmap_->data() + kHeaderLength);
+    LOG(ERROR) << "Entry #" << entry_index << " in data pack points off end "
+               << "of file. This should have been caught when loading. Was the "
+               << "file modified?";
+    return false;
+  }
 
+  size_t length = next_entry->file_offset - target->file_offset;
   data->set(reinterpret_cast<const char*>(mmap_->data() + target->file_offset),
             length);
   return true;
