@@ -682,8 +682,8 @@
             'mojo_java_set_jni_headers',
           ],
           'sources': [
-            'android/javatests/src/org/chromium/mojo/system/MojoTestCase.java',
-            'android/system/src/org/chromium/mojo/system/CoreImpl.java',
+            'android/javatests/src/org/chromium/mojo/MojoTestCase.java',
+            'android/system/src/org/chromium/mojo/system/impl/CoreImpl.java',
             'services/native_viewport/android/src/org/chromium/mojo/NativeViewportAndroid.java',
             'shell/android/apk/src/org/chromium/mojo_shell_apk/MojoMain.java',
           ],

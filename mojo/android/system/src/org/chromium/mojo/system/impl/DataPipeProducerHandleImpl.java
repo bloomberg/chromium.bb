@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.mojo.system;
+package org.chromium.mojo.system.impl;
 
 import org.chromium.mojo.system.DataPipe.ProducerHandle;
 import org.chromium.mojo.system.DataPipe.WriteFlags;
@@ -29,7 +29,7 @@ class DataPipeProducerHandleImpl extends HandleBase implements ProducerHandle {
     }
 
     /**
-     * @see DataPipe.ProducerHandle#writeData(ByteBuffer, WriteFlags)
+     * @see ProducerHandle#writeData(ByteBuffer, WriteFlags)
      */
     @Override
     public int writeData(ByteBuffer elements, WriteFlags flags) {
@@ -37,7 +37,7 @@ class DataPipeProducerHandleImpl extends HandleBase implements ProducerHandle {
     }
 
     /**
-     * @see DataPipe.ProducerHandle#beginWriteData(int, WriteFlags)
+     * @see ProducerHandle#beginWriteData(int, WriteFlags)
      */
     @Override
     public ByteBuffer beginWriteData(int numBytes, WriteFlags flags) {
@@ -45,7 +45,7 @@ class DataPipeProducerHandleImpl extends HandleBase implements ProducerHandle {
     }
 
     /**
-     * @see DataPipe.ProducerHandle#endWriteData(int)
+     * @see ProducerHandle#endWriteData(int)
      */
     @Override
     public void endWriteData(int numBytesWritten) {

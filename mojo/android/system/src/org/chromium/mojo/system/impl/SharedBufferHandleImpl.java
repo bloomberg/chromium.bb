@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.mojo.system;
+package org.chromium.mojo.system.impl;
+
+import org.chromium.mojo.system.SharedBufferHandle;
 
 import java.nio.ByteBuffer;
 

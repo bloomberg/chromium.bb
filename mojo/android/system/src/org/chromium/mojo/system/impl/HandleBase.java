@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.mojo.system;
+package org.chromium.mojo.system.impl;
 
 import android.util.Log;
 
 import org.chromium.mojo.system.Core.WaitFlags;
+import org.chromium.mojo.system.Handle;
+import org.chromium.mojo.system.UntypedHandle;
 
 /**
  * Implementation of {@link Handle}.

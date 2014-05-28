@@ -2,17 +2,28 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.mojo.system;
+package org.chromium.mojo.system.impl;
 
 import android.test.suitebuilder.annotation.SmallTest;
 
+import org.chromium.mojo.MojoTestCase;
+import org.chromium.mojo.system.AsyncWaiter;
 import org.chromium.mojo.system.AsyncWaiter.Callback;
 import org.chromium.mojo.system.AsyncWaiter.Cancellable;
+import org.chromium.mojo.system.Core;
 import org.chromium.mojo.system.Core.WaitFlags;
 import org.chromium.mojo.system.Core.WaitManyResult;
+import org.chromium.mojo.system.DataPipe;
+import org.chromium.mojo.system.Handle;
+import org.chromium.mojo.system.InvalidHandle;
+import org.chromium.mojo.system.MessagePipeHandle;
 import org.chromium.mojo.system.MessagePipeHandle.ReadFlags;
 import org.chromium.mojo.system.MessagePipeHandle.ReadMessageResult;
 import org.chromium.mojo.system.MessagePipeHandle.WriteFlags;
+import org.chromium.mojo.system.MojoException;
+import org.chromium.mojo.system.MojoResult;
+import org.chromium.mojo.system.Pair;
+import org.chromium.mojo.system.SharedBufferHandle;
 import org.chromium.mojo.system.SharedBufferHandle.MapFlags;
 
 import java.nio.ByteBuffer;
@@ -28,7 +39,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * Testing the core API.
  */
-public class CoreTest extends MojoTestCase {
+public class CoreImplTest extends MojoTestCase {
 
     private static final long RUN_LOOP_TIMEOUT_MS = 5;
 

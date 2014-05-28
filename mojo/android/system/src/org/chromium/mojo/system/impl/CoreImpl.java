@@ -2,15 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.mojo.system;
+package org.chromium.mojo.system.impl;
 
 import org.chromium.base.CalledByNative;
-import org.chromium.base.JNIAdditionalImport;
 import org.chromium.base.JNINamespace;
+import org.chromium.mojo.system.AsyncWaiter;
+import org.chromium.mojo.system.Core;
+import org.chromium.mojo.system.DataPipe;
 import org.chromium.mojo.system.DataPipe.ConsumerHandle;
 import org.chromium.mojo.system.DataPipe.ProducerHandle;
+import org.chromium.mojo.system.Handle;
+import org.chromium.mojo.system.MessagePipeHandle;
+import org.chromium.mojo.system.MojoException;
+import org.chromium.mojo.system.MojoResult;
+import org.chromium.mojo.system.Pair;
+import org.chromium.mojo.system.SharedBufferHandle;
 import org.chromium.mojo.system.SharedBufferHandle.DuplicateOptions;
 import org.chromium.mojo.system.SharedBufferHandle.MapFlags;
+import org.chromium.mojo.system.UntypedHandle;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -20,9 +29,6 @@ import java.util.List;
 /**
  * Implementation of {@link Core}.
  */
-@JNIAdditionalImport({
-    AsyncWaiter.class,
-    MessagePipeHandle.class })
 @JNINamespace("mojo::android")
 public class CoreImpl implements Core, AsyncWaiter {
 
@@ -252,7 +258,7 @@ public class CoreImpl implements Core, AsyncWaiter {
     }
 
     /**
-     * @see DataPipe.ConsumerHandle#discardData(int, DataPipe.ReadFlags)
+     * @see ConsumerHandle#discardData(int, DataPipe.ReadFlags)
      */
     int discardData(DataPipeConsumerHandleImpl handle, int numBytes,
             DataPipe.ReadFlags flags) {
@@ -265,7 +271,7 @@ public class CoreImpl implements Core, AsyncWaiter {
     }
 
     /**
-     * @see DataPipe.ConsumerHandle#readData(ByteBuffer, DataPipe.ReadFlags)
+     * @see ConsumerHandle#readData(ByteBuffer, DataPipe.ReadFlags)
      */
     int readData(DataPipeConsumerHandleImpl handle, ByteBuffer elements,
             DataPipe.ReadFlags flags) {
@@ -282,7 +288,7 @@ public class CoreImpl implements Core, AsyncWaiter {
     }
 
     /**
-     * @see DataPipe.ConsumerHandle#beginReadData(int, DataPipe.ReadFlags)
+     * @see ConsumerHandle#beginReadData(int, DataPipe.ReadFlags)
      */
     ByteBuffer beginReadData(DataPipeConsumerHandleImpl handle,
             int numBytes, DataPipe.ReadFlags flags) {
@@ -297,7 +303,7 @@ public class CoreImpl implements Core, AsyncWaiter {
     }
 
     /**
-     * @see DataPipe.ConsumerHandle#endReadData(int)
+     * @see ConsumerHandle#endReadData(int)
      */
     void endReadData(DataPipeConsumerHandleImpl handle,
             int numBytesRead) {
@@ -308,7 +314,7 @@ public class CoreImpl implements Core, AsyncWaiter {
     }
 
     /**
-     * @see DataPipe.ProducerHandle#writeData(ByteBuffer, DataPipe.WriteFlags)
+     * @see ProducerHandle#writeData(ByteBuffer, DataPipe.WriteFlags)
      */
     int writeData(DataPipeProducerHandleImpl handle, ByteBuffer elements,
             DataPipe.WriteFlags flags) {
@@ -317,7 +323,7 @@ public class CoreImpl implements Core, AsyncWaiter {
     }
 
     /**
-     * @see DataPipe.ProducerHandle#beginWriteData(int, DataPipe.WriteFlags)
+     * @see ProducerHandle#beginWriteData(int, DataPipe.WriteFlags)
      */
     ByteBuffer beginWriteData(DataPipeProducerHandleImpl handle,
             int numBytes, DataPipe.WriteFlags flags) {
@@ -332,7 +338,7 @@ public class CoreImpl implements Core, AsyncWaiter {
     }
 
     /**
-     * @see DataPipe.ProducerHandle#endWriteData(int)
+     * @see ProducerHandle#endWriteData(int)
      */
     void endWriteData(DataPipeProducerHandleImpl handle,
             int numBytesWritten) {
@@ -463,7 +469,7 @@ public class CoreImpl implements Core, AsyncWaiter {
     }
 
     /**
-     * Implementation of {@link AsyncWaiter.Cancellable}.
+     * Implementation of {@link org.chromium.mojo.system.AsyncWaiter.Cancellable}.
      */
     private class AsyncWaiterCancellableImpl implements AsyncWaiter.Cancellable {
 
@@ -477,7 +483,7 @@ public class CoreImpl implements Core, AsyncWaiter {
         }
 
         /**
-         * @see AsyncWaiter.Cancellable#cancel()
+         * @see org.chromium.mojo.system.AsyncWaiter.Cancellable#cancel()
          */
         @Override
         public void cancel() {
