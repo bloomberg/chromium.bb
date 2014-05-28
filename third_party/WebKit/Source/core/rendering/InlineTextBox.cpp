@@ -478,7 +478,13 @@ void InlineTextBox::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset, 
     LayoutUnit paintEnd = isHorizontal() ? paintInfo.rect.maxX() : paintInfo.rect.maxY();
     LayoutUnit paintStart = isHorizontal() ? paintInfo.rect.x() : paintInfo.rect.y();
 
-    LayoutPoint adjustedPaintOffset = roundedIntPoint(paintOffset);
+    // When subpixel font scaling is enabled text runs are positioned at
+    // subpixel boundaries on the x-axis and thus there is no reason to
+    // snap the x value. We still round the y-axis to ensure consistent
+    // line heights.
+    LayoutPoint adjustedPaintOffset = RuntimeEnabledFeatures::subpixelFontScalingEnabled()
+        ? LayoutPoint(paintOffset.x(), paintOffset.y().round())
+        : roundedIntPoint(paintOffset);
 
     if (logicalStart >= paintEnd || logicalStart + logicalExtent <= paintStart)
         return;
@@ -517,7 +523,6 @@ void InlineTextBox::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset, 
     adjustedPaintOffset.move(0, styleToUse->isHorizontalWritingMode() ? 0 : -logicalHeight());
 
     FloatPoint boxOrigin = locationIncludingFlipping();
-    // FIXME: Shouldn't these offsets be rounded?
     boxOrigin.move(adjustedPaintOffset.x().toFloat(), adjustedPaintOffset.y().toFloat());
     FloatRect boxRect(boxOrigin, LayoutSize(logicalWidth(), logicalHeight()));
 
