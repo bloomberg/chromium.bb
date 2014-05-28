@@ -37,6 +37,7 @@ dashboards = [
     ["Times", "/dashboards/treemap.html"],
     ["Stats", "/dashboards/aggregate_results.html"],
     ["Stats Timeline", "/dashboards/timeline_explorer.html"],
+    ["Load failures", "/dashboards/load_failures.html"],
 ]
 
 menu = [

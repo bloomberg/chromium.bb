@@ -99,6 +99,12 @@ loader.Loader.prototype = {
     {
         this._errors.show();
     },
+    buildersThatFailedToLoad: function() {
+        return this._buildersThatFailedToLoad;
+    },
+    staleBuilders: function() {
+        return this._staleBuilders;
+    },
     _loadNext: function()
     {
         var loadingStep = this._loadingSteps.shift();
@@ -189,8 +195,6 @@ loader.Loader.prototype = {
     },
     _handleResultsFileLoadError: function(builderName)
     {
-        console.error('Failed to load results file for ' + builderName + '.');
-
         // FIXME: loader shouldn't depend on state defined in dashboard_base.js.
         this._buildersThatFailedToLoad.push(builderName);
 
