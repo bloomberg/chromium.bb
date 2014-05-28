@@ -453,7 +453,7 @@ function DirectoryContents(context,
 
   this.scannerFactory_ = scannerFactory;
   this.scanner_ = null;
-  this.prefetchMetadataQueue_ = new AsyncUtil.Queue();
+  this.processNewEntriesQueue_ = new AsyncUtil.Queue();
   this.scanCancelled_ = false;
 }
 
@@ -505,7 +505,7 @@ DirectoryContents.prototype.replaceContextFileList = function() {
  * @return {boolean} If the scan is active.
  */
 DirectoryContents.prototype.isScanning = function() {
-  return this.scanner_ || this.prefetchMetadataQueue_.isRunning();
+  return this.scanner_ || this.processNewEntriesQueue_.isRunning();
 };
 
 /**
@@ -566,7 +566,7 @@ DirectoryContents.prototype.cancelScan = function() {
 
   this.onScanFinished_();
 
-  this.prefetchMetadataQueue_.cancel();
+  this.processNewEntriesQueue_.cancel();
   cr.dispatchSimpleEvent(this, 'scan-cancelled');
 };
 
@@ -579,7 +579,7 @@ DirectoryContents.prototype.cancelScan = function() {
 DirectoryContents.prototype.onScanFinished_ = function() {
   this.scanner_ = null;
 
-  this.prefetchMetadataQueue_.run(function(callback) {
+  this.processNewEntriesQueue_.run(function(callback) {
     // TODO(yoshiki): Here we should fire the update event of changed
     // items. Currently we have a method this.fileList_.updateIndex() to
     // fire an event, but this method takes only 1 argument and invokes sort
@@ -603,7 +603,7 @@ DirectoryContents.prototype.onScanCompleted_ = function() {
   if (this.scanCancelled_)
     return;
 
-  this.prefetchMetadataQueue_.run(function(callback) {
+  this.processNewEntriesQueue_.run(function(callback) {
     // Call callback first, so isScanning() returns false in the event handlers.
     callback();
 
@@ -619,7 +619,7 @@ DirectoryContents.prototype.onScanError_ = function() {
   if (this.scanCancelled_)
     return;
 
-  this.prefetchMetadataQueue_.run(function(callback) {
+  this.processNewEntriesQueue_.run(function(callback) {
     // Call callback first, so isScanning() returns false in the event handlers.
     callback();
     cr.dispatchSimpleEvent(this, 'scan-failed');
@@ -649,25 +649,39 @@ DirectoryContents.prototype.onNewEntries_ = function(entries) {
 
   this.context_.metadataCache.setCacheSize(this.fileList_.length);
 
-  // Because the prefetchMetadata can be slow, throttling by splitting entries
-  // into smaller chunks to reduce UI latency.
-  // TODO(hidehiko,mtomasz): This should be handled in MetadataCache.
-  var MAX_CHUNK_SIZE = 50;
-  for (var i = 0; i < entriesFiltered.length; i += MAX_CHUNK_SIZE) {
-    var chunk = entriesFiltered.slice(i, i + MAX_CHUNK_SIZE);
-    this.prefetchMetadataQueue_.run(function(chunk, callback) {
-      this.prefetchMetadata(chunk, function() {
-        if (this.scanCancelled_) {
-          // Do nothing if the scanning is cancelled.
-          callback();
-          return;
-        }
+  this.processNewEntriesQueue_.run(function(callbackOuter) {
+    // Because the prefetchMetadata can be slow, throttling by splitting entries
+    // into smaller chunks to reduce UI latency.
+    // TODO(hidehiko,mtomasz): This should be handled in MetadataCache.
+    var MAX_CHUNK_SIZE = 25;
+    var prefetchMetadataQueue = new AsyncUtil.ConcurrentQueue(4);
+    for (var i = 0; i < entriesFiltered.length; i += MAX_CHUNK_SIZE) {
+      if (prefetchMetadataQueue.isCancelled())
+        break;
 
-        cr.dispatchSimpleEvent(this, 'scan-updated');
-        callback();
-      }.bind(this));
-    }.bind(this, chunk));
-  }
+      var chunk = entriesFiltered.slice(i, i + MAX_CHUNK_SIZE);
+      prefetchMetadataQueue.run(function(chunk, callbackInner) {
+        this.prefetchMetadata(chunk, function() {
+          if (!prefetchMetadataQueue.isCancelled()) {
+            if (this.scanCancelled_)
+              prefetchMetadataQueue.cancel();
+            else
+              cr.dispatchSimpleEvent(this, 'scan-updated');
+          }
+
+          // Checks if this is the last task.
+          if (prefetchMetadataQueue.getWaitingTasksCount() === 0 &&
+              prefetchMetadataQueue.getRunningTasksCount() === 1) {
+            // |callbackOuter| must be called before |callbackInner|, to prevent
+            // double-calling.
+            callbackOuter();
+          }
+
+          callbackInner();
+        }.bind(this));
+      }.bind(this, chunk));
+    }
+  }.bind(this));
 };
 
 /**
