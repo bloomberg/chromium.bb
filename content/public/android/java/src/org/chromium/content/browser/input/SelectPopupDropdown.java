@@ -8,6 +8,7 @@ import android.content.Context;
 import android.graphics.Rect;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.PopupWindow;
 
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.RenderCoordinates;
@@ -27,6 +28,7 @@ public class SelectPopupDropdown implements SelectPopup {
 
     private DropdownPopupWindow mDropdownPopupWindow;
     private int mInitialSelection = -1;
+    private boolean mAlreadySelectedItems = false;
 
     public SelectPopupDropdown(ContentViewCore contentViewCore, List<SelectPopupItem> items,
             Rect bounds, int[] selected) {
@@ -39,6 +41,7 @@ public class SelectPopupDropdown implements SelectPopup {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 int[] selectedIndices = {position};
                 mContentViewCore.selectPopupMenuItems(selectedIndices);
+                mAlreadySelectedItems = true;
                 hide();
             }
         });
@@ -57,6 +60,15 @@ public class SelectPopupDropdown implements SelectPopup {
         float anchorHeight = renderCoordinates.fromPixToDip(
                 renderCoordinates.fromLocalCssToPix(bounds.bottom)) - anchorY;
         mDropdownPopupWindow.setAnchorRect(anchorX, anchorY, anchorWidth, anchorHeight);
+        mDropdownPopupWindow.setOnDismissListener(
+            new PopupWindow.OnDismissListener() {
+                @Override
+                public void onDismiss() {
+                    if (!mAlreadySelectedItems) {
+                        mContentViewCore.selectPopupMenuItems(null);
+                    }
+                }
+            });
     }
 
     @Override
