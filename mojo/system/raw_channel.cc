@@ -130,6 +130,10 @@ void RawChannel::WriteBuffer::GetBuffers(std::vector<Buffer>* buffers) const {
     return;
   }
 
+  // TODO(vtl): We could actually send out buffers from multiple messages, with
+  // the "stopping" condition being reaching a message with platform handles
+  // attached.
+
   // Write from both buffers.
   DCHECK_EQ(bytes_to_write, message->main_buffer_size() - data_offset_ +
                                 transport_data_buffer_size);
@@ -311,39 +315,48 @@ void RawChannel::OnReadCompleted(bool result, size_t bytes_read) {
         return;
       }
 
-      embedder::ScopedPlatformHandleVectorPtr platform_handles;
-      if (message_view.transport_data_buffer()) {
-        size_t num_platform_handles;
-        const void* platform_handle_table;
-        TransportData::GetPlatformHandleTable(
-            message_view.transport_data_buffer(),
-            &num_platform_handles,
-            &platform_handle_table);
+      if (message_view.type() == MessageInTransit::kTypeRawChannel) {
+        if (!OnReadMessageForRawChannel(message_view)) {
+          read_stopped_ = true;
+          CallOnFatalError(Delegate::FATAL_ERROR_FAILED_READ);
+          return;
+        }
+      } else {
+        embedder::ScopedPlatformHandleVectorPtr platform_handles;
+        if (message_view.transport_data_buffer()) {
+          size_t num_platform_handles;
+          const void* platform_handle_table;
+          TransportData::GetPlatformHandleTable(
+              message_view.transport_data_buffer(),
+              &num_platform_handles,
+              &platform_handle_table);
 
-        if (num_platform_handles > 0) {
-          platform_handles =
-              GetReadPlatformHandles(num_platform_handles,
-                                     platform_handle_table).Pass();
-          if (!platform_handles) {
-            LOG(WARNING) << "Invalid number of platform handles received";
-            read_stopped_ = true;
-            CallOnFatalError(Delegate::FATAL_ERROR_FAILED_READ);
-            return;
+          if (num_platform_handles > 0) {
+            platform_handles =
+                GetReadPlatformHandles(num_platform_handles,
+                                       platform_handle_table).Pass();
+            if (!platform_handles) {
+              LOG(WARNING) << "Invalid number of platform handles received";
+              read_stopped_ = true;
+              CallOnFatalError(Delegate::FATAL_ERROR_FAILED_READ);
+              return;
+            }
           }
+        }
+
+        // TODO(vtl): In the case that we aren't expecting any platform handles,
+        // for the POSIX implementation, we should confirm that none are stored.
+
+        // Dispatch the message.
+        DCHECK(delegate_);
+        delegate_->OnReadMessage(message_view, platform_handles.Pass());
+        if (read_stopped_) {
+          // |Shutdown()| was called in |OnReadMessage()|.
+          // TODO(vtl): Add test for this case.
+          return;
         }
       }
 
-      // TODO(vtl): In the case that we aren't expecting any platform handles,
-      // for the POSIX implementation, we should confirm that none are stored.
-
-      // Dispatch the message.
-      DCHECK(delegate_);
-      delegate_->OnReadMessage(message_view, platform_handles.Pass());
-      if (read_stopped_) {
-        // |Shutdown()| was called in |OnReadMessage()|.
-        // TODO(vtl): Add test for this case.
-        return;
-      }
       did_dispatch_message = true;
 
       // Update our state.
@@ -416,6 +429,14 @@ void RawChannel::OnWriteCompleted(bool result,
 void RawChannel::EnqueueMessageNoLock(scoped_ptr<MessageInTransit> message) {
   write_lock_.AssertAcquired();
   write_buffer_->message_queue_.push_back(message.release());
+}
+
+bool RawChannel::OnReadMessageForRawChannel(
+    const MessageInTransit::View& message_view) {
+  // No non-implementation specific |RawChannel| control messages.
+  LOG(ERROR) << "Invalid control message (subtype " << message_view.subtype()
+             << ")";
+  return false;
 }
 
 void RawChannel::CallOnFatalError(Delegate::FatalError fatal_error) {

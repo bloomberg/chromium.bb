@@ -63,8 +63,7 @@ struct TransportData::PrivateStructForCompileAsserts {
 };
 
 TransportData::TransportData(scoped_ptr<DispatcherVector> dispatchers,
-                             Channel* channel)
-    : buffer_size_(0) {
+                             Channel* channel) {
   DCHECK(dispatchers);
   DCHECK(channel);
 
@@ -193,6 +192,17 @@ TransportData::TransportData(scoped_ptr<DispatcherVector> dispatchers,
   // |dispatchers_| will be destroyed as it goes out of scope.
 }
 
+#if defined(OS_POSIX)
+TransportData::TransportData(
+    embedder::ScopedPlatformHandleVectorPtr platform_handles)
+    : buffer_size_(sizeof(Header)),
+      platform_handles_(platform_handles.Pass()) {
+  buffer_.reset(static_cast<char*>(
+      base::AlignedAlloc(buffer_size_, MessageInTransit::kMessageAlignment)));
+  memset(buffer_.get(), 0, buffer_size_);
+}
+#endif  // defined(OS_POSIX)
+
 TransportData::~TransportData() {
 }
 
@@ -212,8 +222,15 @@ const char* TransportData::ValidateBuffer(
 
   const Header* header = static_cast<const Header*>(buffer);
   const size_t num_handles = header->num_handles;
+
+#if !defined(OS_POSIX)
+  // On POSIX, we send control messages with platform handles (but no handles)
+  // attached (see the comments for
+  // |TransportData(embedder::ScopedPlatformHandleVectorPtr)|. (This check isn't
+  // important security-wise anyway.)
   if (num_handles == 0)
     return "Message has no handles attached, but secondary buffer present";
+#endif
 
   // Sanity-check |num_handles| (before multiplying it against anything).
   if (num_handles > kMaxMessageNumHandles)

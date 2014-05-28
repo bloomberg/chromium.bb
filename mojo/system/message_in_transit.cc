@@ -20,6 +20,8 @@ STATIC_CONST_MEMBER_DEFINITION const MessageInTransit::Type
     MessageInTransit::kTypeMessagePipe;
 STATIC_CONST_MEMBER_DEFINITION const MessageInTransit::Type
     MessageInTransit::kTypeChannel;
+STATIC_CONST_MEMBER_DEFINITION const MessageInTransit::Type
+    MessageInTransit::kTypeRawChannel;
 STATIC_CONST_MEMBER_DEFINITION const MessageInTransit::Subtype
     MessageInTransit::kSubtypeMessagePipeEndpointData;
 STATIC_CONST_MEMBER_DEFINITION const MessageInTransit::Subtype
@@ -28,6 +30,8 @@ STATIC_CONST_MEMBER_DEFINITION const MessageInTransit::Subtype
     MessageInTransit::kSubtypeChannelRemoveMessagePipeEndpoint;
 STATIC_CONST_MEMBER_DEFINITION const MessageInTransit::Subtype
     MessageInTransit::kSubtypeChannelRemoveMessagePipeEndpointAck;
+STATIC_CONST_MEMBER_DEFINITION const MessageInTransit::Subtype
+    MessageInTransit::kSubtypeRawChannelPosixExtraPlatformHandles;
 STATIC_CONST_MEMBER_DEFINITION const MessageInTransit::EndpointId
     MessageInTransit::kInvalidEndpointId;
 STATIC_CONST_MEMBER_DEFINITION const size_t MessageInTransit::kMessageAlignment;
@@ -158,12 +162,22 @@ void MessageInTransit::SetDispatchers(
     scoped_ptr<DispatcherVector> dispatchers) {
   DCHECK(dispatchers);
   DCHECK(!dispatchers_);
+  DCHECK(!transport_data_);
 
   dispatchers_ = dispatchers.Pass();
 #ifndef NDEBUG
   for (size_t i = 0; i < dispatchers_->size(); i++)
     DCHECK(!(*dispatchers_)[i] || (*dispatchers_)[i]->HasOneRef());
 #endif
+}
+
+void MessageInTransit::SetTransportData(
+    scoped_ptr<TransportData> transport_data) {
+  DCHECK(transport_data);
+  DCHECK(!transport_data_);
+  DCHECK(!dispatchers_);
+
+  transport_data_ = transport_data.Pass();
 }
 
 void MessageInTransit::SerializeAndCloseDispatchers(Channel* channel) {

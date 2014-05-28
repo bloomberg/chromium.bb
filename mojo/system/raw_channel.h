@@ -89,8 +89,10 @@ class MOJO_SYSTEM_IMPL_EXPORT RawChannel {
   // This must be called (on the I/O thread) before this object is destroyed.
   void Shutdown();
 
-  // Writes the given message (or schedules it to be written). This is
-  // thread-safe. Returns true on success.
+  // Writes the given message (or schedules it to be written). |message| must
+  // have no |Dispatcher|s still attached (i.e.,
+  // |SerializeAndCloseDispatchers()| should have been called). This method is
+  // thread-safe and may be called from any thread. Returns true on success.
   bool WriteMessage(scoped_ptr<MessageInTransit> message);
 
   // Returns true if the write buffer is empty (i.e., all messages written using
@@ -208,6 +210,15 @@ class MOJO_SYSTEM_IMPL_EXPORT RawChannel {
   // override this to add any additional "control" messages needed. This is
   // called (on any thread) with |write_lock_| held.
   virtual void EnqueueMessageNoLock(scoped_ptr<MessageInTransit> message);
+
+  // Handles any control messages targeted to the |RawChannel| (or
+  // implementation subclass). Implementation subclasses may override this to
+  // handle any implementation-specific control messages, but should call
+  // |RawChannel::OnReadMessageForRawChannel()| for any remaining messages.
+  // Returns true on success and false on error (e.g., invalid control message).
+  // This is only called on the I/O thread.
+  virtual bool OnReadMessageForRawChannel(
+      const MessageInTransit::View& message_view);
 
   // Reads into |read_buffer()|.
   // This class guarantees that:

@@ -41,10 +41,13 @@ class RawChannelPosix : public RawChannel,
 
  private:
   // |RawChannel| protected methods:
-  // Actually override |EnqueueMessageNoLock()| so that we can send multiple
-  // messages with FDs if necessary.
+  // Actually override this so that we can send multiple messages with (only)
+  // FDs if necessary.
   virtual void EnqueueMessageNoLock(
       scoped_ptr<MessageInTransit> message) OVERRIDE;
+  // Override this to handle those extra FD-only messages.
+  virtual bool OnReadMessageForRawChannel(
+      const MessageInTransit::View& message_view) OVERRIDE;
   virtual IOResult Read(size_t* bytes_read) OVERRIDE;
   virtual IOResult ScheduleRead() OVERRIDE;
   virtual embedder::ScopedPlatformHandleVectorPtr GetReadPlatformHandles(
@@ -118,9 +121,55 @@ size_t RawChannelPosix::GetSerializedPlatformHandleSize() const {
 
 void RawChannelPosix::EnqueueMessageNoLock(
     scoped_ptr<MessageInTransit> message) {
-  // TODO(vtl): Split any message with too many platform handles into multiple
-  // messages.
+  if (message->transport_data()) {
+    embedder::PlatformHandleVector* const platform_handles =
+        message->transport_data()->platform_handles();
+    if (platform_handles &&
+        platform_handles->size() > embedder::kPlatformChannelMaxNumHandles) {
+      // We can't attach all the FDs to a single message, so we have to "split"
+      // the message. Send as many control messages as needed first with FDs
+      // attached (and no data).
+      size_t i = 0;
+      for (; platform_handles->size() - i >
+                 embedder::kPlatformChannelMaxNumHandles;
+           i += embedder::kPlatformChannelMaxNumHandles) {
+        scoped_ptr<MessageInTransit> fd_message(
+            new MessageInTransit(
+                MessageInTransit::kTypeRawChannel,
+                MessageInTransit::kSubtypeRawChannelPosixExtraPlatformHandles,
+                0,
+                NULL));
+        embedder::ScopedPlatformHandleVectorPtr fds(
+            new embedder::PlatformHandleVector(
+                platform_handles->begin() + i,
+                platform_handles->begin() + i +
+                    embedder::kPlatformChannelMaxNumHandles));
+        fd_message->SetTransportData(
+            make_scoped_ptr(new TransportData(fds.Pass())));
+        RawChannel::EnqueueMessageNoLock(fd_message.Pass());
+      }
+
+      // Remove the handles that we "moved" into the other messages.
+      platform_handles->erase(platform_handles->begin(),
+                              platform_handles->begin() + i);
+    }
+  }
+
   RawChannel::EnqueueMessageNoLock(message.Pass());
+}
+
+bool RawChannelPosix::OnReadMessageForRawChannel(
+    const MessageInTransit::View& message_view) {
+  DCHECK_EQ(message_view.type(), MessageInTransit::kTypeRawChannel);
+
+  if (message_view.subtype() ==
+          MessageInTransit::kSubtypeRawChannelPosixExtraPlatformHandles) {
+    // We don't need to do anything. |RawChannel| won't extract the platform
+    // handles, and they'll be accumulated in |Read()|.
+    return true;
+  }
+
+  return RawChannel::OnReadMessageForRawChannel(message_view);
 }
 
 RawChannel::IOResult RawChannelPosix::Read(size_t* bytes_read) {
@@ -141,11 +190,6 @@ RawChannel::IOResult RawChannelPosix::Read(size_t* bytes_read) {
     DCHECK_LE(read_platform_handles_.size() - old_num_platform_handles,
               embedder::kPlatformChannelMaxNumHandles);
 
-    if (read_result != 1) {
-      LOG(WARNING) << "Invalid control message with platform handles";
-      return IO_FAILED;
-    }
-
     // We should never accumulate more than |TransportData::kMaxPlatformHandles
     // + embedder::kPlatformChannelMaxNumHandles| handles. (The latter part is
     // possible because we could have accumulated all the handles for a message,
@@ -158,9 +202,6 @@ RawChannel::IOResult RawChannelPosix::Read(size_t* bytes_read) {
       read_platform_handles_.clear();
       return IO_FAILED;
     }
-
-    // This wasn't a data read (platform handles just get stashed).
-    return ScheduleRead();
   }
 
   if (read_result > 0) {
@@ -218,33 +259,39 @@ RawChannel::IOResult RawChannelPosix::WriteNoLock(
 
   DCHECK(!pending_write_);
 
+  size_t num_platform_handles = 0;
+  ssize_t write_result;
   if (write_buffer_no_lock()->HavePlatformHandlesToSend()) {
-    size_t num_platform_handles;
     embedder::PlatformHandle* platform_handles;
     void* serialization_data;  // Actually unused.
     write_buffer_no_lock()->GetPlatformHandlesToSend(&num_platform_handles,
                                                      &platform_handles,
                                                      &serialization_data);
     DCHECK_GT(num_platform_handles, 0u);
+    DCHECK_LE(num_platform_handles, embedder::kPlatformChannelMaxNumHandles);
     DCHECK(platform_handles);
-    DCHECK(serialization_data);
 
-    size_t num_to_send = std::min(num_platform_handles,
-                                  embedder::kPlatformChannelMaxNumHandles);
-    bool succeeded = embedder::PlatformChannelSendHandles(fd_.get(),
-                                                          platform_handles,
-                                                          num_to_send);
-    if (succeeded) {
-      *platform_handles_written = num_to_send;
-      *bytes_written = 0;
-      return IO_SUCCEEDED;
+    // TODO(vtl): Reduce code duplication. (This is duplicated from below.)
+    std::vector<WriteBuffer::Buffer> buffers;
+    write_buffer_no_lock()->GetBuffers(&buffers);
+    DCHECK(!buffers.empty());
+    const size_t kMaxBufferCount = 10;
+    iovec iov[kMaxBufferCount];
+    size_t buffer_count = std::min(buffers.size(), kMaxBufferCount);
+    for (size_t i = 0; i < buffer_count; ++i) {
+      iov[i].iov_base = const_cast<char*>(buffers[i].addr);
+      iov[i].iov_len = buffers[i].size;
     }
+
+    write_result = embedder::PlatformChannelSendmsgWithHandles(
+        fd_.get(), iov, buffer_count, platform_handles, num_platform_handles);
+    for (size_t i = 0; i < num_platform_handles; i++)
+      platform_handles[i].CloseIfNecessary();
   } else {
     std::vector<WriteBuffer::Buffer> buffers;
     write_buffer_no_lock()->GetBuffers(&buffers);
     DCHECK(!buffers.empty());
 
-    ssize_t write_result;
     if (buffers.size() == 1) {
       write_result = embedder::PlatformChannelWrite(fd_.get(), buffers[0].addr,
                                                     buffers[0].size);
@@ -252,7 +299,6 @@ RawChannel::IOResult RawChannelPosix::WriteNoLock(
       const size_t kMaxBufferCount = 10;
       iovec iov[kMaxBufferCount];
       size_t buffer_count = std::min(buffers.size(), kMaxBufferCount);
-
       for (size_t i = 0; i < buffer_count; ++i) {
         iov[i].iov_base = const_cast<char*>(buffers[i].addr);
         iov[i].iov_len = buffers[i].size;
@@ -261,12 +307,12 @@ RawChannel::IOResult RawChannelPosix::WriteNoLock(
       write_result = embedder::PlatformChannelWritev(fd_.get(), iov,
                                                      buffer_count);
     }
+  }
 
-    if (write_result >= 0) {
-      *platform_handles_written = 0;
-      *bytes_written = static_cast<size_t>(write_result);
-      return IO_SUCCEEDED;
-    }
+  if (write_result >= 0) {
+    *platform_handles_written = num_platform_handles;
+    *bytes_written = static_cast<size_t>(write_result);
+    return IO_SUCCEEDED;
   }
 
   if (errno != EAGAIN && errno != EWOULDBLOCK) {

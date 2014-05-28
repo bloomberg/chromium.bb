@@ -46,8 +46,10 @@ class MOJO_SYSTEM_IMPL_EXPORT MessageInTransit {
   static const Type kTypeMessagePipeEndpoint = 0;
   // Messages that are forwarded to |MessagePipe|s.
   static const Type kTypeMessagePipe = 1;
-  // Messages that are consumed by the channel.
+  // Messages that are consumed by the |Channel|.
   static const Type kTypeChannel = 2;
+  // Messages that are consumed by the |RawChannel| (implementation).
+  static const Type kTypeRawChannel = 3;
 
   typedef uint16_t Subtype;
   // Subtypes for type |kTypeMessagePipeEndpoint|:
@@ -58,6 +60,8 @@ class MOJO_SYSTEM_IMPL_EXPORT MessageInTransit {
   static const Subtype kSubtypeChannelRunMessagePipeEndpoint = 0;
   static const Subtype kSubtypeChannelRemoveMessagePipeEndpoint = 1;
   static const Subtype kSubtypeChannelRemoveMessagePipeEndpointAck = 2;
+  // Subtypes for type |kTypeRawChannel|:
+  static const Subtype kSubtypeRawChannelPosixExtraPlatformHandles = 0;
 
   typedef uint32_t EndpointId;
   // Never a valid endpoint ID.
@@ -151,6 +155,10 @@ class MOJO_SYSTEM_IMPL_EXPORT MessageInTransit {
   // table), i.e., each dispatcher must have a reference count of 1. This
   // message must not already have dispatchers.
   void SetDispatchers(scoped_ptr<DispatcherVector> dispatchers);
+
+  // Sets the |TransportData| for this message. This should only be done when
+  // there are no dispatchers and no existing |TransportData|.
+  void SetTransportData(scoped_ptr<TransportData> transport_data);
 
   // Serializes any dispatchers to the secondary buffer. This message must not
   // already have a secondary buffer (so this must only be called once). The

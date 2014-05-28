@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/aligned_memory.h"
 #include "base/memory/scoped_ptr.h"
+#include "build/build_config.h"
 #include "mojo/embedder/platform_handle.h"
 #include "mojo/embedder/platform_handle_vector.h"
 #include "mojo/system/dispatcher.h"
@@ -19,6 +20,8 @@
 
 namespace mojo {
 namespace system {
+
+class Channel;
 
 // This class is used by |MessageInTransit| to represent handles (|Dispatcher|s)
 // in various stages of serialization.
@@ -87,6 +90,17 @@ class MOJO_SYSTEM_IMPL_EXPORT TransportData {
   static const size_t kMaxPlatformHandles;
 
   TransportData(scoped_ptr<DispatcherVector> dispatchers, Channel* channel);
+
+#if defined(OS_POSIX)
+  // This is a hacky POSIX-only constructor to directly attach only platform
+  // handles to a message, used by |RawChannelPosix| to split messages with too
+  // many platform handles into multiple messages. |Header| will be present, but
+  // be zero. (No other information will be attached, and
+  // |RawChannel::GetSerializedPlatformHandleSize()| should return zero.)
+  explicit TransportData(
+      embedder::ScopedPlatformHandleVectorPtr platform_handles);
+#endif
+
   ~TransportData();
 
   const void* buffer() const { return buffer_.get(); }
