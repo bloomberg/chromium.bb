@@ -12,6 +12,7 @@
 #include "base/files/file.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_info.h"
@@ -24,6 +25,19 @@ namespace file_system_provider {
 // extensions.
 class RequestManager {
  public:
+  // Request type, passed to |CreateRequest|. For logging purposes.
+  enum RequestType {
+    REQUEST_UNMOUNT,
+    GET_METADATA,
+    READ_DIRECTORY,
+    OPEN_FILE,
+    CLOSE_FILE,
+    READ_FILE,
+    TESTING
+  };
+
+  // Handles requests. Each request implementation must implement
+  // this interface.
   class HandlerInterface {
    public:
     virtual ~HandlerInterface() {}
@@ -45,12 +59,37 @@ class RequestManager {
     virtual void OnError(int request_id, base::File::Error error) = 0;
   };
 
+  // Observes activities in the request manager.
+  class Observer {
+   public:
+    virtual ~Observer() {}
+
+    // Called when the request is created.
+    virtual void OnRequestCreated(int request_id, RequestType type) = 0;
+
+    // Called when the request is destroyed.
+    virtual void OnRequestDestroyed(int request_id) = 0;
+
+    // Called when the request is executed.
+    virtual void OnRequestExecuted(int request_id) = 0;
+
+    // Called when the request is fulfilled with a success.
+    virtual void OnRequestFulfilled(int request_id, bool has_more) = 0;
+
+    // Called when the request is rejected with an error.
+    virtual void OnRequestRejected(int request_id, base::File::Error error) = 0;
+
+    // Called when the request is timeouted.
+    virtual void OnRequestTimeouted(int request_id) = 0;
+  };
+
   RequestManager();
   virtual ~RequestManager();
 
   // Creates a request and returns its request id (greater than 0). Returns 0 in
-  // case of an error (eg. too many requests).
-  int CreateRequest(scoped_ptr<HandlerInterface> handler);
+  // case of an error (eg. too many requests). The |type| argument indicates
+  // what kind of request it is.
+  int CreateRequest(RequestType type, scoped_ptr<HandlerInterface> handler);
 
   // Handles successful response for the |request_id|. If |has_next| is false,
   // then the request is disposed, after handling the |response|. On error,
@@ -71,6 +110,10 @@ class RequestManager {
   // TODO(mtomasz): Introduce a logger class to gather more information
   size_t GetActiveRequestsForLogging() const;
 
+  // Adds and removes observers.
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
+
  private:
   struct Request {
     Request();
@@ -88,6 +131,9 @@ class RequestManager {
 
   typedef std::map<int, Request*> RequestMap;
 
+  // Destroys the request with the passed |request_id|.
+  void DestroyRequest(int request_id);
+
   // Called when a request with |request_id| timeouts.
   void OnRequestTimeout(int request_id);
 
@@ -95,6 +141,7 @@ class RequestManager {
   int next_id_;
   base::TimeDelta timeout_;
   base::WeakPtrFactory<RequestManager> weak_ptr_factory_;
+  ObserverList<Observer> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(RequestManager);
 };

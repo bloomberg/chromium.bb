@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <string>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -141,6 +142,108 @@ class FakeHandler : public RequestManager::HandlerInterface {
   DISALLOW_COPY_AND_ASSIGN(FakeHandler);
 };
 
+// Observer the request manager for request events.
+class RequestObserver : public RequestManager::Observer {
+ public:
+  class Event {
+   public:
+    explicit Event(int request_id) : request_id_(request_id) {}
+    virtual ~Event() {}
+    int request_id() const { return request_id_; }
+
+   private:
+    int request_id_;
+  };
+
+  class CreatedEvent : public Event {
+   public:
+    CreatedEvent(int request_id, RequestManager::RequestType type)
+        : Event(request_id), type_(type) {}
+    virtual ~CreatedEvent() {}
+
+    RequestManager::RequestType type() const { return type_; }
+
+   private:
+    RequestManager::RequestType type_;
+  };
+
+  class FulfilledEvent : public Event {
+   public:
+    FulfilledEvent(int request_id, bool has_more)
+        : Event(request_id), has_more_(has_more) {}
+    virtual ~FulfilledEvent() {}
+
+    bool has_more() const { return has_more_; }
+
+   private:
+    bool has_more_;
+  };
+
+  class RejectedEvent : public Event {
+   public:
+    RejectedEvent(int request_id, base::File::Error error)
+        : Event(request_id), error_(error) {}
+    virtual ~RejectedEvent() {}
+
+    base::File::Error error() const { return error_; }
+
+   private:
+    base::File::Error error_;
+  };
+
+  RequestObserver() {}
+  virtual ~RequestObserver() {}
+
+  // RequestManager::Observer overrides.
+  virtual void OnRequestCreated(int request_id,
+                                RequestManager::RequestType type) OVERRIDE {
+    created_.push_back(CreatedEvent(request_id, type));
+  }
+
+  // RequestManager::Observer overrides.
+  virtual void OnRequestDestroyed(int request_id) OVERRIDE {
+    destroyed_.push_back(Event(request_id));
+  }
+
+  // RequestManager::Observer overrides.
+  virtual void OnRequestExecuted(int request_id) OVERRIDE {
+    executed_.push_back(Event(request_id));
+  }
+
+  // RequestManager::Observer overrides.
+  virtual void OnRequestFulfilled(int request_id, bool has_more) OVERRIDE {
+    fulfilled_.push_back(FulfilledEvent(request_id, has_more));
+  }
+
+  // RequestManager::Observer overrides.
+  virtual void OnRequestRejected(int request_id,
+                                 base::File::Error error) OVERRIDE {
+    rejected_.push_back(RejectedEvent(request_id, error));
+  }
+
+  // RequestManager::Observer overrides.
+  virtual void OnRequestTimeouted(int request_id) OVERRIDE {
+    timeouted_.push_back(Event(request_id));
+  }
+
+  const std::vector<CreatedEvent>& created() const { return created_; }
+  const std::vector<Event>& destroyed() const { return destroyed_; }
+  const std::vector<Event>& executed() const { return executed_; }
+  const std::vector<FulfilledEvent>& fulfilled() const { return fulfilled_; }
+  const std::vector<RejectedEvent>& rejected() const { return rejected_; }
+  const std::vector<Event>& timeouted() const { return timeouted_; }
+
+ private:
+  std::vector<CreatedEvent> created_;
+  std::vector<Event> destroyed_;
+  std::vector<Event> executed_;
+  std::vector<FulfilledEvent> fulfilled_;
+  std::vector<RejectedEvent> rejected_;
+  std::vector<Event> timeouted_;
+
+  DISALLOW_COPY_AND_ASSIGN(RequestObserver);
+};
+
 }  // namespace
 
 class FileSystemProviderRequestManagerTest : public testing::Test {
@@ -156,16 +259,48 @@ class FileSystemProviderRequestManagerTest : public testing::Test {
   scoped_ptr<RequestManager> request_manager_;
 };
 
-TEST_F(FileSystemProviderRequestManagerTest, CreateAndFulFill) {
+TEST_F(FileSystemProviderRequestManagerTest, CreateFailure) {
   EventLogger logger;
+  RequestObserver observer;
+  request_manager_->AddObserver(&observer);
 
   const int request_id = request_manager_->CreateRequest(
+      RequestManager::TESTING,
+      make_scoped_ptr<RequestManager::HandlerInterface>(
+          new FakeHandler(logger.GetWeakPtr(), false /* execute_reply */)));
+
+  EXPECT_EQ(0, request_id);
+  EXPECT_EQ(0u, logger.success_events().size());
+  EXPECT_EQ(0u, logger.error_events().size());
+
+  EXPECT_EQ(1u, observer.created().size());
+  EXPECT_EQ(RequestManager::TESTING, observer.created()[0].type());
+  EXPECT_EQ(1u, observer.destroyed().size());
+  EXPECT_EQ(0u, observer.executed().size());
+
+  request_manager_->RemoveObserver(&observer);
+}
+
+TEST_F(FileSystemProviderRequestManagerTest, CreateAndFulFill) {
+  EventLogger logger;
+  RequestObserver observer;
+  request_manager_->AddObserver(&observer);
+
+  const int request_id = request_manager_->CreateRequest(
+      RequestManager::TESTING,
       make_scoped_ptr<RequestManager::HandlerInterface>(
           new FakeHandler(logger.GetWeakPtr(), true /* execute_reply */)));
 
   EXPECT_EQ(1, request_id);
   EXPECT_EQ(0u, logger.success_events().size());
   EXPECT_EQ(0u, logger.error_events().size());
+
+  ASSERT_EQ(1u, observer.created().size());
+  EXPECT_EQ(request_id, observer.created()[0].request_id());
+  EXPECT_EQ(RequestManager::TESTING, observer.created()[0].type());
+
+  ASSERT_EQ(1u, observer.executed().size());
+  EXPECT_EQ(request_id, observer.executed()[0].request_id());
 
   scoped_ptr<RequestValue> response(
       RequestValue::CreateForTesting("i-like-vanilla"));
@@ -174,6 +309,10 @@ TEST_F(FileSystemProviderRequestManagerTest, CreateAndFulFill) {
   bool result =
       request_manager_->FulfillRequest(request_id, response.Pass(), has_next);
   EXPECT_TRUE(result);
+
+  ASSERT_EQ(1u, observer.fulfilled().size());
+  EXPECT_EQ(request_id, observer.fulfilled()[0].request_id());
+  EXPECT_FALSE(observer.fulfilled()[0].has_more());
 
   // Validate if the callback has correct arguments.
   ASSERT_EQ(1u, logger.success_events().size());
@@ -192,6 +331,7 @@ TEST_F(FileSystemProviderRequestManagerTest, CreateAndFulFill) {
     bool retry =
         request_manager_->FulfillRequest(request_id, response.Pass(), has_next);
     EXPECT_FALSE(retry);
+    EXPECT_EQ(1u, observer.fulfilled().size());
   }
 
   // Rejecting should also fail.
@@ -199,19 +339,36 @@ TEST_F(FileSystemProviderRequestManagerTest, CreateAndFulFill) {
     bool retry = request_manager_->RejectRequest(request_id,
                                                  base::File::FILE_ERROR_FAILED);
     EXPECT_FALSE(retry);
+    EXPECT_EQ(0u, observer.rejected().size());
   }
+
+  ASSERT_EQ(1u, observer.destroyed().size());
+  EXPECT_EQ(request_id, observer.destroyed()[0].request_id());
+  EXPECT_EQ(0u, observer.timeouted().size());
+
+  request_manager_->RemoveObserver(&observer);
 }
 
 TEST_F(FileSystemProviderRequestManagerTest, CreateAndFulFill_WithHasNext) {
   EventLogger logger;
+  RequestObserver observer;
+  request_manager_->AddObserver(&observer);
 
   const int request_id = request_manager_->CreateRequest(
+      RequestManager::TESTING,
       make_scoped_ptr<RequestManager::HandlerInterface>(
           new FakeHandler(logger.GetWeakPtr(), true /* execute_reply */)));
 
   EXPECT_EQ(1, request_id);
   EXPECT_EQ(0u, logger.success_events().size());
   EXPECT_EQ(0u, logger.error_events().size());
+
+  ASSERT_EQ(1u, observer.created().size());
+  EXPECT_EQ(request_id, observer.created()[0].request_id());
+  EXPECT_EQ(RequestManager::TESTING, observer.created()[0].type());
+
+  ASSERT_EQ(1u, observer.executed().size());
+  EXPECT_EQ(request_id, observer.executed()[0].request_id());
 
   scoped_ptr<RequestValue> response;
   const bool has_next = true;
@@ -227,6 +384,10 @@ TEST_F(FileSystemProviderRequestManagerTest, CreateAndFulFill_WithHasNext) {
   EXPECT_FALSE(event->result());
   EXPECT_TRUE(event->has_next());
 
+  ASSERT_EQ(1u, observer.fulfilled().size());
+  EXPECT_EQ(request_id, observer.fulfilled()[0].request_id());
+  EXPECT_TRUE(observer.fulfilled()[0].has_more());
+
   // Confirm, that the request is not removed (since it has has_next == true).
   // Basically, fulfilling again for the same request, should not fail.
   {
@@ -234,6 +395,10 @@ TEST_F(FileSystemProviderRequestManagerTest, CreateAndFulFill_WithHasNext) {
     bool retry = request_manager_->FulfillRequest(
         request_id, response.Pass(), new_has_next);
     EXPECT_TRUE(retry);
+
+    ASSERT_EQ(2u, observer.fulfilled().size());
+    EXPECT_EQ(request_id, observer.fulfilled()[1].request_id());
+    EXPECT_FALSE(observer.fulfilled()[1].has_more());
   }
 
   // Since |new_has_next| is false, then the request should be removed. To check
@@ -243,19 +408,36 @@ TEST_F(FileSystemProviderRequestManagerTest, CreateAndFulFill_WithHasNext) {
     bool retry = request_manager_->FulfillRequest(
         request_id, response.Pass(), new_has_next);
     EXPECT_FALSE(retry);
+    EXPECT_EQ(0u, observer.rejected().size());
   }
+
+  ASSERT_EQ(1u, observer.destroyed().size());
+  EXPECT_EQ(request_id, observer.destroyed()[0].request_id());
+  EXPECT_EQ(0u, observer.timeouted().size());
+
+  request_manager_->RemoveObserver(&observer);
 }
 
 TEST_F(FileSystemProviderRequestManagerTest, CreateAndReject) {
   EventLogger logger;
+  RequestObserver observer;
+  request_manager_->AddObserver(&observer);
 
   const int request_id = request_manager_->CreateRequest(
+      RequestManager::TESTING,
       make_scoped_ptr<RequestManager::HandlerInterface>(
           new FakeHandler(logger.GetWeakPtr(), true /* execute_reply */)));
 
   EXPECT_EQ(1, request_id);
   EXPECT_EQ(0u, logger.success_events().size());
   EXPECT_EQ(0u, logger.error_events().size());
+
+  ASSERT_EQ(1u, observer.created().size());
+  EXPECT_EQ(request_id, observer.created()[0].request_id());
+  EXPECT_EQ(RequestManager::TESTING, observer.created()[0].type());
+
+  ASSERT_EQ(1u, observer.executed().size());
+  EXPECT_EQ(request_id, observer.executed()[0].request_id());
 
   base::File::Error error = base::File::FILE_ERROR_NO_MEMORY;
   bool result = request_manager_->RejectRequest(request_id, error);
@@ -267,6 +449,10 @@ TEST_F(FileSystemProviderRequestManagerTest, CreateAndReject) {
   EventLogger::ErrorEvent* event = logger.error_events()[0];
   EXPECT_EQ(error, event->error());
 
+  ASSERT_EQ(1u, observer.rejected().size());
+  EXPECT_EQ(request_id, observer.rejected()[0].request_id());
+  EXPECT_EQ(error, observer.rejected()[0].error());
+
   // Confirm, that the request is removed. Basically, fulfilling again for the
   // same request, should fail.
   {
@@ -275,20 +461,31 @@ TEST_F(FileSystemProviderRequestManagerTest, CreateAndReject) {
     bool retry =
         request_manager_->FulfillRequest(request_id, response.Pass(), has_next);
     EXPECT_FALSE(retry);
+    EXPECT_EQ(0u, observer.fulfilled().size());
   }
 
   // Rejecting should also fail.
   {
     bool retry = request_manager_->RejectRequest(request_id, error);
     EXPECT_FALSE(retry);
+    EXPECT_EQ(1u, observer.rejected().size());
   }
+
+  ASSERT_EQ(1u, observer.destroyed().size());
+  EXPECT_EQ(request_id, observer.destroyed()[0].request_id());
+  EXPECT_EQ(0u, observer.timeouted().size());
+
+  request_manager_->RemoveObserver(&observer);
 }
 
 TEST_F(FileSystemProviderRequestManagerTest,
        CreateAndFulfillWithWrongRequestId) {
   EventLogger logger;
+  RequestObserver observer;
+  request_manager_->AddObserver(&observer);
 
   const int request_id = request_manager_->CreateRequest(
+      RequestManager::TESTING,
       make_scoped_ptr<RequestManager::HandlerInterface>(
           new FakeHandler(logger.GetWeakPtr(), true /* execute_reply */)));
 
@@ -296,32 +493,59 @@ TEST_F(FileSystemProviderRequestManagerTest,
   EXPECT_EQ(0u, logger.success_events().size());
   EXPECT_EQ(0u, logger.error_events().size());
 
-  base::File::Error error = base::File::FILE_ERROR_NO_MEMORY;
-  bool result = request_manager_->RejectRequest(request_id + 1, error);
+  ASSERT_EQ(1u, observer.created().size());
+  EXPECT_EQ(request_id, observer.created()[0].request_id());
+  EXPECT_EQ(RequestManager::TESTING, observer.created()[0].type());
+
+  ASSERT_EQ(1u, observer.executed().size());
+  EXPECT_EQ(request_id, observer.executed()[0].request_id());
+
+  scoped_ptr<RequestValue> response;
+  const bool has_more = true;
+
+  const bool result = request_manager_->FulfillRequest(
+      request_id + 1, response.Pass(), has_more);
   EXPECT_FALSE(result);
 
   // Callbacks should not be called.
   EXPECT_EQ(0u, logger.error_events().size());
   EXPECT_EQ(0u, logger.success_events().size());
 
-  // Confirm, that the request hasn't been removed, by rejecting it correctly.
+  EXPECT_EQ(0u, observer.fulfilled().size());
+  EXPECT_EQ(request_id, observer.executed()[0].request_id());
+
+  // Confirm, that the request hasn't been removed, by fulfilling it correctly.
   {
-    bool retry = request_manager_->RejectRequest(request_id, error);
+    const bool retry =
+        request_manager_->FulfillRequest(request_id, response.Pass(), has_more);
     EXPECT_TRUE(retry);
+    EXPECT_EQ(1u, observer.fulfilled().size());
   }
+
+  request_manager_->RemoveObserver(&observer);
 }
 
 TEST_F(FileSystemProviderRequestManagerTest,
        CreateAndRejectWithWrongRequestId) {
   EventLogger logger;
+  RequestObserver observer;
+  request_manager_->AddObserver(&observer);
 
   const int request_id = request_manager_->CreateRequest(
+      RequestManager::TESTING,
       make_scoped_ptr<RequestManager::HandlerInterface>(
           new FakeHandler(logger.GetWeakPtr(), true /* execute_reply */)));
 
   EXPECT_EQ(1, request_id);
   EXPECT_EQ(0u, logger.success_events().size());
   EXPECT_EQ(0u, logger.error_events().size());
+
+  ASSERT_EQ(1u, observer.created().size());
+  EXPECT_EQ(request_id, observer.created()[0].request_id());
+  EXPECT_EQ(RequestManager::TESTING, observer.created()[0].type());
+
+  ASSERT_EQ(1u, observer.executed().size());
+  EXPECT_EQ(request_id, observer.executed()[0].request_id());
 
   base::File::Error error = base::File::FILE_ERROR_NO_MEMORY;
   bool result = request_manager_->RejectRequest(request_id + 1, error);
@@ -331,21 +555,28 @@ TEST_F(FileSystemProviderRequestManagerTest,
   EXPECT_EQ(0u, logger.error_events().size());
   EXPECT_EQ(0u, logger.success_events().size());
 
+  EXPECT_EQ(0u, observer.rejected().size());
+
   // Confirm, that the request hasn't been removed, by rejecting it correctly.
   {
     bool retry = request_manager_->RejectRequest(request_id, error);
     EXPECT_TRUE(retry);
+    EXPECT_EQ(1u, observer.rejected().size());
   }
+
+  request_manager_->RemoveObserver(&observer);
 }
 
 TEST_F(FileSystemProviderRequestManagerTest, UniqueIds) {
   EventLogger logger;
 
   const int first_request_id = request_manager_->CreateRequest(
+      RequestManager::TESTING,
       make_scoped_ptr<RequestManager::HandlerInterface>(
           new FakeHandler(logger.GetWeakPtr(), true /* execute_reply */)));
 
   const int second_request_id = request_manager_->CreateRequest(
+      RequestManager::TESTING,
       make_scoped_ptr<RequestManager::HandlerInterface>(
           new FakeHandler(logger.GetWeakPtr(), true /* execute_reply */)));
 
@@ -355,16 +586,35 @@ TEST_F(FileSystemProviderRequestManagerTest, UniqueIds) {
 
 TEST_F(FileSystemProviderRequestManagerTest, AbortOnDestroy) {
   EventLogger logger;
+  RequestObserver observer;
+  int request_id;
 
   {
     RequestManager request_manager;
-    const int request_id = request_manager.CreateRequest(
+    request_manager.AddObserver(&observer);
+
+    request_id = request_manager.CreateRequest(
+        RequestManager::TESTING,
         make_scoped_ptr<RequestManager::HandlerInterface>(
             new FakeHandler(logger.GetWeakPtr(), true /* execute_reply */)));
 
     EXPECT_EQ(1, request_id);
     EXPECT_EQ(0u, logger.success_events().size());
     EXPECT_EQ(0u, logger.error_events().size());
+
+    ASSERT_EQ(1u, observer.created().size());
+    EXPECT_EQ(request_id, observer.created()[0].request_id());
+    EXPECT_EQ(RequestManager::TESTING, observer.created()[0].type());
+
+    ASSERT_EQ(1u, observer.executed().size());
+    EXPECT_EQ(request_id, observer.executed()[0].request_id());
+
+    EXPECT_EQ(0u, observer.fulfilled().size());
+    EXPECT_EQ(0u, observer.rejected().size());
+    EXPECT_EQ(0u, observer.destroyed().size());
+    EXPECT_EQ(0u, observer.timeouted().size());
+
+    // Do not remove the observer, to catch events while destructing.
   }
 
   // All active requests should be aborted in the destructor of RequestManager.
@@ -373,24 +623,52 @@ TEST_F(FileSystemProviderRequestManagerTest, AbortOnDestroy) {
   EXPECT_EQ(base::File::FILE_ERROR_ABORT, event->error());
 
   EXPECT_EQ(0u, logger.success_events().size());
+
+  EXPECT_EQ(0u, observer.fulfilled().size());
+  EXPECT_EQ(0u, observer.timeouted().size());
+  ASSERT_EQ(1u, observer.rejected().size());
+  EXPECT_EQ(request_id, observer.rejected()[0].request_id());
+  EXPECT_EQ(base::File::FILE_ERROR_ABORT, observer.rejected()[0].error());
+  ASSERT_EQ(1u, observer.destroyed().size());
 }
 
 TEST_F(FileSystemProviderRequestManagerTest, AbortOnTimeout) {
   EventLogger logger;
-  base::RunLoop run_loop;
+  RequestObserver observer;
+  request_manager_->AddObserver(&observer);
 
   request_manager_->SetTimeoutForTests(base::TimeDelta::FromSeconds(0));
   const int request_id = request_manager_->CreateRequest(
+      RequestManager::TESTING,
       make_scoped_ptr<RequestManager::HandlerInterface>(
           new FakeHandler(logger.GetWeakPtr(), true /* execute_reply */)));
-  EXPECT_LT(0, request_id);
+  EXPECT_EQ(1, request_id);
+  EXPECT_EQ(0u, logger.success_events().size());
+  EXPECT_EQ(0u, logger.error_events().size());
+
+  ASSERT_EQ(1u, observer.created().size());
+  EXPECT_EQ(request_id, observer.created()[0].request_id());
+  EXPECT_EQ(RequestManager::TESTING, observer.created()[0].type());
+
+  ASSERT_EQ(1u, observer.executed().size());
+  EXPECT_EQ(request_id, observer.executed()[0].request_id());
 
   // Wait until the request is timeouted.
-  run_loop.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   ASSERT_EQ(1u, logger.error_events().size());
   EventLogger::ErrorEvent* event = logger.error_events()[0];
   EXPECT_EQ(base::File::FILE_ERROR_ABORT, event->error());
+
+  ASSERT_EQ(1u, observer.rejected().size());
+  EXPECT_EQ(request_id, observer.rejected()[0].request_id());
+  EXPECT_EQ(base::File::FILE_ERROR_ABORT, observer.rejected()[0].error());
+  ASSERT_EQ(1u, observer.timeouted().size());
+  EXPECT_EQ(request_id, observer.timeouted()[0].request_id());
+  ASSERT_EQ(1u, observer.destroyed().size());
+  EXPECT_EQ(request_id, observer.destroyed()[0].request_id());
+
+  request_manager_->RemoveObserver(&observer);
 }
 
 }  // namespace file_system_provider

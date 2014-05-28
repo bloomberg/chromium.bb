@@ -36,7 +36,8 @@ RequestManager::~RequestManager() {
   STLDeleteValues(&requests_);
 }
 
-int RequestManager::CreateRequest(scoped_ptr<HandlerInterface> handler) {
+int RequestManager::CreateRequest(RequestType type,
+                                  scoped_ptr<HandlerInterface> handler) {
   // The request id is unique per request manager, so per service, thereof
   // per profile.
   int request_id = next_id_++;
@@ -54,15 +55,18 @@ int RequestManager::CreateRequest(scoped_ptr<HandlerInterface> handler) {
                                           request_id));
   requests_[request_id] = request;
 
+  FOR_EACH_OBSERVER(Observer, observers_, OnRequestCreated(request_id, type));
+
   // Execute the request implementation. In case of an execution failure,
   // unregister and return 0. This may often happen, eg. if the providing
   // extension is not listening for the request event being sent.
-  // In such case, there is no reason we should abort as soon as possible.
+  // In such case, we should abort as soon as possible.
   if (!request->handler->Execute(request_id)) {
-    delete request;
-    requests_.erase(request_id);
+    DestroyRequest(request_id);
     return 0;
   }
+
+  FOR_EACH_OBSERVER(Observer, observers_, OnRequestExecuted(request_id));
 
   return request_id;
 }
@@ -71,30 +75,32 @@ bool RequestManager::FulfillRequest(int request_id,
                                     scoped_ptr<RequestValue> response,
                                     bool has_next) {
   RequestMap::iterator request_it = requests_.find(request_id);
-
   if (request_it == requests_.end())
     return false;
 
   request_it->second->handler->OnSuccess(request_id, response.Pass(), has_next);
-  if (!has_next) {
-    delete request_it->second;
-    requests_.erase(request_it);
-  } else {
+
+  FOR_EACH_OBSERVER(
+      Observer, observers_, OnRequestFulfilled(request_id, has_next));
+
+  if (!has_next)
+    DestroyRequest(request_id);
+  else
     request_it->second->timeout_timer.Reset();
-  }
 
   return true;
 }
 
 bool RequestManager::RejectRequest(int request_id, base::File::Error error) {
   RequestMap::iterator request_it = requests_.find(request_id);
-
   if (request_it == requests_.end())
     return false;
 
   request_it->second->handler->OnError(request_id, error);
-  delete request_it->second;
-  requests_.erase(request_it);
+
+  FOR_EACH_OBSERVER(Observer, observers_, OnRequestRejected(request_id, error));
+
+  DestroyRequest(request_id);
 
   return true;
 }
@@ -103,17 +109,40 @@ void RequestManager::SetTimeoutForTests(const base::TimeDelta& timeout) {
   timeout_ = timeout;
 }
 
-void RequestManager::OnRequestTimeout(int request_id) {
-  RejectRequest(request_id, base::File::FILE_ERROR_ABORT);
-}
-
 size_t RequestManager::GetActiveRequestsForLogging() const {
   return requests_.size();
+}
+
+void RequestManager::AddObserver(Observer* observer) {
+  DCHECK(observer);
+  observers_.AddObserver(observer);
+}
+
+void RequestManager::RemoveObserver(Observer* observer) {
+  DCHECK(observer);
+  observers_.RemoveObserver(observer);
 }
 
 RequestManager::Request::Request() {}
 
 RequestManager::Request::~Request() {}
+
+void RequestManager::OnRequestTimeout(int request_id) {
+  FOR_EACH_OBSERVER(Observer, observers_, OnRequestTimeouted(request_id));
+
+  RejectRequest(request_id, base::File::FILE_ERROR_ABORT);
+}
+
+void RequestManager::DestroyRequest(int request_id) {
+  RequestMap::iterator request_it = requests_.find(request_id);
+  if (request_it == requests_.end())
+    return;
+
+  delete request_it->second;
+  requests_.erase(request_it);
+
+  FOR_EACH_OBSERVER(Observer, observers_, OnRequestDestroyed(request_id));
+}
 
 }  // namespace file_system_provider
 }  // namespace chromeos
