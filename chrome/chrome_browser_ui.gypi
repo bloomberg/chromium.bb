@@ -1192,6 +1192,8 @@
         'browser/ui/host_desktop.h',
         'browser/ui/hung_plugin_tab_helper.cc',
         'browser/ui/hung_plugin_tab_helper.h',
+        'browser/ui/login/login_interstitial_delegate.cc',
+        'browser/ui/login/login_interstitial_delegate.h',
         'browser/ui/login/login_prompt.cc',
         'browser/ui/login/login_prompt.h',
         'browser/ui/media_utils.cc',

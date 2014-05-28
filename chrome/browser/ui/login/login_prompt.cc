@@ -14,6 +14,7 @@
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/tab_contents/tab_util.h"
+#include "chrome/browser/ui/login/login_interstitial_delegate.h"
 #include "components/password_manager/core/browser/browser_save_password_progress_logger.h"
 #include "components/password_manager/core/browser/password_manager.h"
 #include "content/public/browser/browser_thread.h"
@@ -25,6 +26,7 @@
 #include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
 #include "net/base/auth.h"
+#include "net/base/load_flags.h"
 #include "net/base/net_util.h"
 #include "net/http/http_transaction_factory.h"
 #include "net/url_request/url_request.h"
@@ -396,6 +398,16 @@ void LoginHandler::CloseContentsDeferred() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   CloseDialog();
+
+  WebContents* requesting_contents = GetWebContentsForLogin();
+  if (!requesting_contents)
+    return;
+  // If a (blank) login interstitial was displayed, proceed so that the
+  // navigation is committed.
+  content::InterstitialPage* interstitial_page =
+      requesting_contents->GetInterstitialPage();
+  if (interstitial_page)
+    interstitial_page->Proceed();
 }
 
 // Helper to create a PasswordForm and stuff it into a vector as input
@@ -433,21 +445,13 @@ void MakeInputForPasswordManager(
   handler->SetPasswordForm(dialog_form);
 }
 
-// This callback is run on the UI thread and creates a constrained window with
-// a LoginView to prompt the user.  The response will be sent to LoginHandler,
-// which then routes it to the net::URLRequest on the I/O thread.
-void LoginDialogCallback(const GURL& request_url,
-                         net::AuthChallengeInfo* auth_info,
-                         LoginHandler* handler) {
+void ShowLoginPrompt(const GURL& request_url,
+                     net::AuthChallengeInfo* auth_info,
+                     LoginHandler* handler) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   WebContents* parent_contents = handler->GetWebContentsForLogin();
-  if (!parent_contents || handler->WasAuthHandled()) {
-    // The request may have been cancelled, or it may be for a renderer
-    // not hosted by a tab (e.g. an extension). Cancel just in case
-    // (cancelling twice is a no-op).
-    handler->CancelAuth();
+  if (!parent_contents)
     return;
-  }
-
   prerender::PrerenderContents* prerender_contents =
       prerender::PrerenderContents::FromWebContents(parent_contents);
   if (prerender_contents) {
@@ -485,15 +489,56 @@ void LoginDialogCallback(const GURL& request_url,
   handler->BuildViewForPasswordManager(password_manager, explanation);
 }
 
+// This callback is run on the UI thread and creates a constrained window with
+// a LoginView to prompt the user. If the prompt is triggered because of
+// a cross origin navigation in the main frame, a blank interstitial is first
+// created which in turn creates the LoginView. Otherwise, a LoginView is
+// directly in this callback. In both cases, the response will be sent to
+// LoginHandler, which then routes it to the net::URLRequest on the I/O thread.
+void LoginDialogCallback(const GURL& request_url,
+                         net::AuthChallengeInfo* auth_info,
+                         LoginHandler* handler,
+                         bool is_main_frame) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  WebContents* parent_contents = handler->GetWebContentsForLogin();
+  if (!parent_contents || handler->WasAuthHandled()) {
+    // The request may have been cancelled, or it may be for a renderer
+    // not hosted by a tab (e.g. an extension). Cancel just in case
+    // (cancelling twice is a no-op).
+    handler->CancelAuth();
+    return;
+  }
+
+  if (is_main_frame &&
+      parent_contents->GetVisibleURL().GetOrigin() != request_url.GetOrigin()) {
+    // Show a blank interstitial for main-frame, cross origin requests
+    // so that the correct URL is shown in the omnibox.
+    base::Closure callback = base::Bind(&ShowLoginPrompt,
+                                        request_url,
+                                        make_scoped_refptr(auth_info),
+                                        make_scoped_refptr(handler));
+    // This is owned by the interstitial it creates.
+    new LoginInterstitialDelegate(parent_contents,
+                                  request_url,
+                                  callback);
+  } else {
+    ShowLoginPrompt(request_url,
+                    auth_info,
+                    handler);
+  }
+}
+
 // ----------------------------------------------------------------------------
 // Public API
 
 LoginHandler* CreateLoginPrompt(net::AuthChallengeInfo* auth_info,
                                 net::URLRequest* request) {
+  bool is_main_frame = (request->load_flags() & net::LOAD_MAIN_FRAME) != 0;
   LoginHandler* handler = LoginHandler::Create(auth_info, request);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&LoginDialogCallback, request->url(),
-                 make_scoped_refptr(auth_info), make_scoped_refptr(handler)));
+                 make_scoped_refptr(auth_info), make_scoped_refptr(handler),
+                 is_main_frame));
   return handler;
 }

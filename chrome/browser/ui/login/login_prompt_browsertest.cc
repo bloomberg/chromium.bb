@@ -16,10 +16,12 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/test_navigation_observer.h"
 #include "net/base/auth.h"
 #include "net/dns/mock_host_resolver.h"
 
@@ -193,6 +195,42 @@ void WindowedLoadStopObserver::Observe(
     const content::NotificationDetails& details) {
   if (--remaining_notification_count_ == 0)
     WindowedNotificationObserver::Observe(type, source, details);
+}
+
+class InterstitialObserver : public content::WebContentsObserver {
+ public:
+  InterstitialObserver(content::WebContents* web_contents,
+                       const base::Closure& attach_callback,
+                       const base::Closure& detach_callback)
+      : WebContentsObserver(web_contents),
+        attach_callback_(attach_callback),
+        detach_callback_(detach_callback) {
+  }
+
+  virtual void DidAttachInterstitialPage() OVERRIDE {
+    attach_callback_.Run();
+  }
+
+  virtual void DidDetachInterstitialPage() OVERRIDE {
+    detach_callback_.Run();
+  }
+
+ private:
+  base::Closure attach_callback_;
+  base::Closure detach_callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(InterstitialObserver);
+};
+
+void WaitForInterstitialAttach(content::WebContents* web_contents) {
+  scoped_refptr<content::MessageLoopRunner> interstitial_attach_loop_runner(
+      new content::MessageLoopRunner);
+  InterstitialObserver observer(
+      web_contents,
+      interstitial_attach_loop_runner->QuitClosure(),
+      base::Closure());
+  if (!content::InterstitialPage::GetInterstitialPage(web_contents))
+    interstitial_attach_loop_runner->Run();
 }
 
 typedef WindowedNavigationObserver<chrome::NOTIFICATION_AUTH_NEEDED>
@@ -758,7 +796,7 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, NoLoginPromptForFavicon) {
 
 // Block crossdomain image login prompting as a phishing defense.
 IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest,
-                       BlockCrossdomainPrompt) {
+                       BlockCrossdomainPromptForSubresources) {
   const char* kTestPage = "files/login/load_img_from_b.html";
 
   host_resolver()->AddRule("www.a.com", "127.0.0.1");
@@ -829,7 +867,7 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest,
 
 // Allow crossdomain iframe login prompting despite the above.
 IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest,
-                       AllowCrossdomainPrompt) {
+                       AllowCrossdomainPromptForSubframes) {
   const char* kTestPage = "files/login/load_iframe_from_b.html";
 
   host_resolver()->AddRule("www.a.com", "127.0.0.1");
@@ -866,10 +904,18 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest,
       LoginHandler* handler = *observer.handlers_.begin();
 
       ASSERT_TRUE(handler);
+      // When a cross origin iframe displays a login prompt, the blank
+      // interstitial shouldn't be displayed and the omnibox should show the
+      // main frame's url, not the iframe's.
+      EXPECT_EQ(new_host, contents->GetURL().host());
+
       handler->CancelAuth();
       auth_cancelled_waiter.Wait();
     }
   }
+
+  // Should stay on the main frame's url once the prompt the iframe is closed.
+  EXPECT_EQ("www.a.com", contents->GetURL().host());
 
   EXPECT_EQ(1, observer.auth_needed_count_);
   EXPECT_TRUE(test_server()->Stop());
@@ -1253,6 +1299,55 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest,
   EXPECT_EQ(1, observer.auth_needed_count_);
   EXPECT_EQ(1, observer.auth_cancelled_count_);
   EXPECT_TRUE(test_server()->Stop());
+}
+
+// If a cross origin navigation triggers a login prompt, the destination URL
+// should be shown in the omnibox.
+IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest,
+                       ShowCorrectUrlForCrossOriginMainFrameRequests) {
+  const char* kTestPage = "files/login/cross_origin.html";
+  host_resolver()->AddRule("www.a.com", "127.0.0.1");
+  ASSERT_TRUE(test_server()->Start());
+
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  NavigationController* controller = &contents->GetController();
+  LoginPromptBrowserTestObserver observer;
+
+  observer.Register(content::Source<NavigationController>(controller));
+
+  // Load a page which navigates to a cross origin page with a login prompt.
+  {
+    GURL test_page = test_server()->GetURL(kTestPage);
+    ASSERT_EQ("127.0.0.1", test_page.host());
+
+    WindowedAuthNeededObserver auth_needed_waiter(controller);
+    browser()->OpenURL(OpenURLParams(
+        test_page, Referrer(), CURRENT_TAB, content::PAGE_TRANSITION_TYPED,
+        false));
+    ASSERT_EQ("127.0.0.1", contents->GetURL().host());
+    auth_needed_waiter.Wait();
+    ASSERT_EQ(1u, observer.handlers_.size());
+    WaitForInterstitialAttach(contents);
+
+    // The omnibox should show the correct origin for the new page when the
+    // login prompt is shown.
+    EXPECT_EQ("www.a.com", contents->GetURL().host());
+    EXPECT_TRUE(contents->ShowingInterstitialPage());
+
+    // Cancel and wait for the interstitial to detach.
+    LoginHandler* handler = *observer.handlers_.begin();
+    scoped_refptr<content::MessageLoopRunner> loop_runner(
+        new content::MessageLoopRunner);
+    InterstitialObserver interstitial_observer(contents,
+                                               base::Closure(),
+                                               loop_runner->QuitClosure());
+    handler->CancelAuth();
+    if (content::InterstitialPage::GetInterstitialPage(contents))
+      loop_runner->Run();
+    EXPECT_EQ("www.a.com", contents->GetURL().host());
+    EXPECT_FALSE(contents->ShowingInterstitialPage());
+  }
 }
 
 }  // namespace
