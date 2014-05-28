@@ -318,9 +318,6 @@ class TestRunner : public WebTestRunner,
   void SetAllowFileAccessFromFileURLs(bool allow);
   void OverridePreference(const std::string key, v8::Handle<v8::Value> value);
 
-  // Modify accept_languages in RendererPreferences.
-  void SetAcceptLanguages(const std::string& accept_languages);
-
   // Enable or disable plugins.
   void SetPluginsEnabled(bool enabled);
 

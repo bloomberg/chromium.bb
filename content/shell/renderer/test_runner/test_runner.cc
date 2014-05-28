@@ -184,7 +184,6 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
   void SetAllowUniversalAccessFromFileURLs(bool allow);
   void SetAllowFileAccessFromFileURLs(bool allow);
   void OverridePreference(const std::string key, v8::Handle<v8::Value> value);
-  void SetAcceptLanguages(const std::string& accept_languages);
   void SetPluginsEnabled(bool enabled);
   void DumpEditingCallbacks();
   void DumpAsText();
@@ -384,7 +383,6 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
       .SetMethod("setAllowFileAccessFromFileURLs",
                  &TestRunnerBindings::SetAllowFileAccessFromFileURLs)
       .SetMethod("overridePreference", &TestRunnerBindings::OverridePreference)
-      .SetMethod("setAcceptLanguages", &TestRunnerBindings::SetAcceptLanguages)
       .SetMethod("setPluginsEnabled", &TestRunnerBindings::SetPluginsEnabled)
       .SetMethod("dumpEditingCallbacks",
                  &TestRunnerBindings::DumpEditingCallbacks)
@@ -920,14 +918,6 @@ void TestRunnerBindings::OverridePreference(const std::string key,
                                             v8::Handle<v8::Value> value) {
   if (runner_)
     runner_->OverridePreference(key, value);
-}
-
-void TestRunnerBindings::SetAcceptLanguages(
-    const std::string& accept_languages) {
-  if (!runner_)
-    return;
-
-  runner_->SetAcceptLanguages(accept_languages);
 }
 
 void TestRunnerBindings::SetPluginsEnabled(bool enabled) {
@@ -2330,10 +2320,6 @@ void TestRunner::OverridePreference(const std::string key,
     delegate_->printMessage(std::string("CONSOLE MESSAGE: ") + message + "\n");
   }
   delegate_->applyPreferences();
-}
-
-void TestRunner::SetAcceptLanguages(const std::string& accept_languages) {
-  proxy_->SetAcceptLanguages(accept_languages);
 }
 
 void TestRunner::SetPluginsEnabled(bool enabled) {

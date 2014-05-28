@@ -134,8 +134,6 @@ class WebTestProxyBase : public blink::WebCompositeAndReadbackAsyncCallback {
   // WebCompositeAndReadbackAsyncCallback implementation.
   virtual void didCompositeAndReadback(const SkBitmap& bitmap);
 
-  void SetAcceptLanguages(const std::string& accept_languages);
-
  protected:
   WebTestProxyBase();
   ~WebTestProxyBase();
@@ -213,8 +211,6 @@ class WebTestProxyBase : public blink::WebCompositeAndReadbackAsyncCallback {
                                         blink::WebDOMMessageEvent);
   void ResetInputMethod();
 
-  blink::WebString acceptLanguages();
-
  private:
   template <class, typename, typename>
   friend class WebFrameTestProxy;
@@ -244,8 +240,6 @@ class WebTestProxyBase : public blink::WebCompositeAndReadbackAsyncCallback {
 
   scoped_ptr<blink::WebMIDIClientMock> m_midiClient;
   scoped_ptr<MockWebSpeechRecognizer> m_speechRecognizer;
-
-  std::string accept_languages_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WebTestProxyBase);
@@ -362,9 +356,6 @@ class WebTestProxy : public Base, public WebTestProxyBase {
   }
   virtual void postSpellCheckEvent(const blink::WebString& eventName) {
     WebTestProxyBase::PostSpellCheckEvent(eventName);
-  }
-  virtual blink::WebString acceptLanguages() {
-    return WebTestProxyBase::acceptLanguages();
   }
 
  private:

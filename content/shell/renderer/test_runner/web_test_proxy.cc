@@ -317,7 +317,6 @@ void WebTestProxyBase::Reset() {
   resource_identifier_map_.clear();
   log_console_output_ = true;
   if (m_midiClient.get()) m_midiClient->resetMock();
-  accept_languages_ = "en-US";
 }
 
 WebSpellCheckClient* WebTestProxyBase::GetSpellCheckClient() const {
@@ -417,14 +416,6 @@ void WebTestProxyBase::didCompositeAndReadback(const SkBitmap& bitmap) {
   DCHECK(!composite_and_readback_callbacks_.empty());
   composite_and_readback_callbacks_.front().Run(bitmap);
   composite_and_readback_callbacks_.pop_front();
-}
-
-void WebTestProxyBase::SetAcceptLanguages(const std::string& accept_languages) {
-  bool notify = accept_languages_ != accept_languages;
-  accept_languages_ = accept_languages;
-
-  if (notify)
-    GetWebView()->acceptLanguagesChanged();
 }
 
 void WebTestProxyBase::CapturePixelsForPrinting(
@@ -1120,10 +1111,6 @@ void WebTestProxyBase::ResetInputMethod() {
   // If a composition text exists, then we need to let the browser process
   // to cancel the input method's ongoing composition session.
   if (web_widget_) web_widget_->confirmComposition();
-}
-
-blink::WebString WebTestProxyBase::acceptLanguages() {
-  return WebString::fromUTF8(accept_languages_);
 }
 
 }  // namespace content
