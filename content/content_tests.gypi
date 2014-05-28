@@ -1374,20 +1374,6 @@
             'common/gpu/client/gl_helper_benchmark.cc',
           ],
         },
-        {
-          # TODO(enne): Remove this once dependencies in Blink
-          # point to test_support_content instead.
-          'target_name': 'content_webkit_unit_test_support',
-          'type': 'static_library',
-          'dependencies': [
-            'test_support_content',
-          ],
-          'include_dirs': [
-            '..',
-          ],
-          'sources': [
-          ],
-        },
       ],
     }],
     ['chromeos==1 or OS=="win" or OS=="android"', {
