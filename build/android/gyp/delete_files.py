@@ -11,6 +11,8 @@ import optparse
 import os
 import sys
 
+from util import build_utils
+
 def main():
   parser = optparse.OptionParser()
   parser.add_option(
@@ -19,6 +21,9 @@ def main():
   parser.add_option(
       '--keep',
       help='Files to keep even if they matches the pattern.')
+  parser.add_option(
+      '--stamp',
+      help='Path to touch on success')
 
   options, args = parser.parse_args()
 
@@ -39,6 +44,9 @@ def main():
 
       if os.path.isfile(target_file):
         os.remove(target_file)
+
+  if options.stamp:
+    build_utils.Touch(options.stamp)
 
 if __name__ == '__main__':
   sys.exit(main())
