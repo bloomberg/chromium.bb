@@ -644,10 +644,6 @@ String UseCounter::deprecationMessage(Feature feature)
     case PrefixedStorageInfo:
         return "'window.webkitStorageInfo' is deprecated. Please use 'navigator.webkitTemporaryStorage' or 'navigator.webkitPersistentStorage' instead.";
 
-    // HTML Media Capture
-    case CaptureAttributeAsEnum:
-        return "Using the 'capture' attribute as an enum is deprecated. Please use it as a boolean and specify the media types that should be accepted in the 'accept' attribute.";
-
     // Keyboard Event (DOM Level 3)
     case KeyboardEventKeyLocation:
         return "'KeyboardEvent.keyLocation' is deprecated. Please use 'KeyboardEvent.location' instead.";

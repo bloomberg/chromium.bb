@@ -238,10 +238,6 @@ public:
 
     String defaultToolTip() const;
 
-#if ENABLE(MEDIA_CAPTURE)
-    bool capture() const;
-#endif
-
     static const int maximumLength;
 
     unsigned height() const;

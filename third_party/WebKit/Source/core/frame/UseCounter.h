@@ -126,7 +126,6 @@ public:
         DocumentAll = 83,
         FormElement = 84,
         DemotedFormElement = 85,
-        CaptureAttributeAsEnum = 86,
         SVGAnimationElement = 90,
         KeyboardEventKeyLocation = 91,
         LineClamp = 96,
@@ -248,7 +247,6 @@ public:
         ContentSecurityPolicyReportOnlyInMeta = 241,
         ResetReferrerPolicy = 243,
         CaseInsensitiveAttrSelectorMatch = 244, // Case-insensitivity dropped from specification.
-        CaptureAttributeAsBoolean = 245,
         FormNameAccessForImageElement = 246,
         FormNameAccessForPastNamesMap = 247,
         FormAssociationByParser = 248,

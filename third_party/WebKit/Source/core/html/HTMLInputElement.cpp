@@ -1679,25 +1679,6 @@ bool HTMLInputElement::shouldAppearIndeterminate() const
     return m_inputType->supportsIndeterminateAppearance() && indeterminate();
 }
 
-#if ENABLE(MEDIA_CAPTURE)
-bool HTMLInputElement::capture() const
-{
-    if (!isFileUpload() || !fastHasAttribute(captureAttr))
-        return false;
-
-    // As per crbug.com/240252, emit a deprecation warning when the "capture"
-    // attribute is used as an enum. The spec has been updated and "capture" is
-    // supposed to be used as a boolean.
-    bool hasDeprecatedUsage = !fastGetAttribute(captureAttr).isEmpty();
-    if (hasDeprecatedUsage)
-        UseCounter::countDeprecation(document(), UseCounter::CaptureAttributeAsEnum);
-    else
-        UseCounter::count(document(), UseCounter::CaptureAttributeAsBoolean);
-
-    return true;
-}
-#endif
-
 bool HTMLInputElement::isInRequiredRadioButtonGroup()
 {
     ASSERT(isRadioButton());
