@@ -194,8 +194,10 @@ void FileTemplate::WriteWithNinjaExpansions(std::ostream& out) const {
       }
     }
 
-    if (needs_quoting) {
-      // Need to shell quote the whole string.
+    if (needs_quoting || item_str.empty()) {
+      // Need to shell quote the whole string. We also need to quote empty
+      // strings or it would be impossible to pass "" as a command-line
+      // argument.
       out << '"' << item_str << '"';
     } else {
       out << item_str;

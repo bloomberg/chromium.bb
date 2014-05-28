@@ -56,6 +56,7 @@ TEST(FileTemplate, NinjaExpansions) {
   templates.push_back("-i");
   templates.push_back("{{source}}");
   templates.push_back("--out=foo bar\"{{source_name_part}}\".o");
+  templates.push_back("");  // Test empty string.
 
   FileTemplate t(templates);
 
@@ -65,7 +66,7 @@ TEST(FileTemplate, NinjaExpansions) {
   // The third argument should get quoted since it contains a space, and the
   // embedded quotes should get shell escaped.
   EXPECT_EQ(
-      " -i ${source} \"--out=foo$ bar\\\"${source_name_part}\\\".o\"",
+      " -i ${source} \"--out=foo$ bar\\\"${source_name_part}\\\".o\" \"\"",
       out.str());
 }
 
