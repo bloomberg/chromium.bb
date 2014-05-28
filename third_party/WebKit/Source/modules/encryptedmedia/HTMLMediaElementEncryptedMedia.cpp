@@ -338,6 +338,12 @@ void HTMLMediaElementEncryptedMedia::keyNeeded(HTMLMediaElement& element, const 
 
 void HTMLMediaElementEncryptedMedia::playerDestroyed(HTMLMediaElement& element)
 {
+#if ENABLE(OILPAN)
+    // FIXME: Oilpan: remove this once the media player is on the heap. crbug.com/378229
+    if (element.isFinalizing())
+        return;
+#endif
+
     HTMLMediaElementEncryptedMedia& thisElement = HTMLMediaElementEncryptedMedia::from(element);
     thisElement.setMediaKeysInternal(element, 0);
 }

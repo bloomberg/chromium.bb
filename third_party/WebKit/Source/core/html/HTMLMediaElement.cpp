@@ -282,6 +282,9 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tagName, Document& docum
     , m_tracksAreReady(true)
     , m_haveVisibleTextTrack(false)
     , m_processingPreferenceChange(false)
+#if ENABLE(OILPAN)
+    , m_isFinalizing(false)
+#endif
     , m_lastTextTrackUpdateTime(-1)
     , m_textTracks(nullptr)
     , m_ignoreTrackDisplayUpdate(0)
@@ -363,6 +366,20 @@ HTMLMediaElement::~HTMLMediaElement()
     document().incrementLoadEventDelayCount();
 #endif
 
+#if ENABLE(OILPAN)
+    // Oilpan: the player must be released, but the player object
+    // cannot safely access this player client any longer as parts of
+    // it may have been finalized already (like the media element's
+    // supplementable table.)  Handled for now by entering an
+    // is-finalizing state, which is explicitly checked for if the
+    // player tries to access the media element during shutdown.
+    //
+    // FIXME: Oilpan: move the media player to the heap instead and
+    // avoid having to finalize it from here; this whole #if block
+    // could then be removed (along with the state bit it depends on.)
+    // crbug.com/378229
+    m_isFinalizing = true;
+#endif
     clearMediaPlayerAndAudioSourceProviderClient();
 
 #if !ENABLE(OILPAN)

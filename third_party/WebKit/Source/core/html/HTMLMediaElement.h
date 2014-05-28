@@ -274,6 +274,10 @@ public:
     // and m_mediaController multipliers into account.
     double playerVolume() const;
 
+#if ENABLE(OILPAN)
+    bool isFinalizing() const { return m_isFinalizing; }
+#endif
+
 protected:
     HTMLMediaElement(const QualifiedName&, Document&);
     virtual ~HTMLMediaElement();
@@ -502,6 +506,9 @@ private:
     bool m_tracksAreReady : 1;
     bool m_haveVisibleTextTrack : 1;
     bool m_processingPreferenceChange : 1;
+#if ENABLE(OILPAN)
+    bool m_isFinalizing : 1;
+#endif
     double m_lastTextTrackUpdateTime;
 
     RefPtrWillBeMember<TextTrackList> m_textTracks;
