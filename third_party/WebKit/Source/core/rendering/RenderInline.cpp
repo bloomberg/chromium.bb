@@ -1365,6 +1365,9 @@ void RenderInline::addFocusRingRects(Vector<IntRect>& rects, const LayoutPoint& 
     }
 
     if (continuation()) {
+        // If the continuation doesn't paint into the same container, let its repaint container handle it.
+        if (paintContainer != continuation()->containerForRepaint())
+            return;
         if (continuation()->isInline())
             continuation()->addFocusRingRects(rects, flooredLayoutPoint(additionalOffset + continuation()->containingBlock()->location() - containingBlock()->location()), paintContainer);
         else
