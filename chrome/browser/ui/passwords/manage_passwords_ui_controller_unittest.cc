@@ -11,6 +11,7 @@
 #include "chrome/browser/ui/passwords/manage_passwords_icon.h"
 #include "chrome/browser/ui/passwords/manage_passwords_icon_mock.h"
 #include "chrome/browser/ui/passwords/manage_passwords_ui_controller_mock.h"
+#include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/mock_password_manager_driver.h"
@@ -23,35 +24,33 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-class ManagePasswordsUIControllerTest : public testing::Test {
+class ManagePasswordsUIControllerTest : public ChromeRenderViewHostTestHarness {
  public:
-  ManagePasswordsUIControllerTest()
-      : test_web_contents_(
-            content::WebContentsTester::CreateTestWebContents(&profile_,
-                                                              NULL)) {}
+  ManagePasswordsUIControllerTest() {}
 
   virtual void SetUp() OVERRIDE {
+    ChromeRenderViewHostTestHarness::SetUp();
+
     // Create the test UIController here so that it's bound to
     // |test_web_contents_|, and will be retrieved correctly via
     // ManagePasswordsUIController::FromWebContents in |controller()|.
-    new ManagePasswordsUIControllerMock(test_web_contents_.get());
+    new ManagePasswordsUIControllerMock(web_contents());
 
     test_form_.origin = GURL("http://example.com");
+
+    // We need to be on a "webby" URL for most tests.
+    content::WebContentsTester::For(web_contents())
+        ->NavigateAndCommit(GURL("http://example.com"));
   }
 
   autofill::PasswordForm& test_form() { return test_form_; }
 
   ManagePasswordsUIControllerMock* controller() {
     return static_cast<ManagePasswordsUIControllerMock*>(
-        ManagePasswordsUIController::FromWebContents(
-            test_web_contents_.get()));
+        ManagePasswordsUIController::FromWebContents(web_contents()));
   }
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
-  TestingProfile profile_;
-  scoped_ptr<content::WebContents> test_web_contents_;
-
   autofill::PasswordForm test_form_;
 };
 
@@ -99,6 +98,30 @@ TEST_F(ManagePasswordsUIControllerTest, PasswordSubmitted) {
   ManagePasswordsIconMock mock;
   controller()->UpdateIconAndBubbleState(&mock);
   EXPECT_EQ(password_manager::ui::PENDING_PASSWORD_STATE, mock.state());
+}
+
+TEST_F(ManagePasswordsUIControllerTest, PasswordSubmittedToNonWebbyURL) {
+  // Navigate to a non-webby URL, then see what happens!
+  content::WebContentsTester::For(web_contents())
+      ->NavigateAndCommit(GURL("chrome://sign-in"));
+
+  password_manager::StubPasswordManagerClient client;
+  password_manager::MockPasswordManagerDriver driver;
+  password_manager::PasswordFormManager* test_form_manager =
+      new password_manager::PasswordFormManager(
+          NULL, &client, &driver, test_form(), false);
+  controller()->OnPasswordSubmitted(test_form_manager);
+  EXPECT_EQ(password_manager::ui::INACTIVE_STATE, controller()->state());
+  EXPECT_FALSE(controller()->PasswordPendingUserDecision());
+
+  // TODO(mkwst): This should be the value of test_form().origin, but
+  // it's being masked by the stub implementation of
+  // ManagePasswordsUIControllerMock::PendingCredentials.
+  EXPECT_EQ(GURL::EmptyGURL(), controller()->origin());
+
+  ManagePasswordsIconMock mock;
+  controller()->UpdateIconAndBubbleState(&mock);
+  EXPECT_EQ(password_manager::ui::INACTIVE_STATE, mock.state());
 }
 
 TEST_F(ManagePasswordsUIControllerTest, BlacklistBlockedAutofill) {

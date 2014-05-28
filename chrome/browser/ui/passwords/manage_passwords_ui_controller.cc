@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/passwords/manage_passwords_ui_controller.h"
 
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/ui/browser_command_controller.h"
@@ -46,6 +47,13 @@ ManagePasswordsUIController::ManagePasswordsUIController(
 ManagePasswordsUIController::~ManagePasswordsUIController() {}
 
 void ManagePasswordsUIController::UpdateBubbleAndIconVisibility() {
+  // If we're not on a "webby" URL (e.g. "chrome://sign-in"), we shouldn't
+  // display either the bubble or the icon.
+  if (!BrowsingDataHelper::IsWebScheme(
+          web_contents()->GetLastCommittedURL().scheme())) {
+    state_ = password_manager::ui::INACTIVE_STATE;
+  }
+
   #if !defined(OS_ANDROID)
     Browser* browser = chrome::FindBrowserWithWebContents(web_contents());
     if (!browser)
@@ -152,6 +160,7 @@ void ManagePasswordsUIController::UnblacklistSite() {
   // form. We can safely pull it out, send it over to the password store
   // for removal, and update our internal state.
   DCHECK(!password_form_map_.empty());
+  DCHECK(password_form_map_.begin()->second);
   DCHECK(state_ == password_manager::ui::BLACKLIST_STATE);
   password_manager::PasswordStore* password_store =
       GetPasswordStore(web_contents());
