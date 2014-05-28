@@ -244,13 +244,19 @@ QuicClientSession::~QuicClientSession() {
     }
   }
   const QuicConnectionStats stats = connection()->GetStats();
-  uint64 reordering = (stats.min_rtt_us == 0) ? GG_UINT64_C(100)
-      : GG_UINT64_C(100) * stats.max_time_reordering_us / stats.min_rtt_us;
+  if (stats.max_sequence_reordering == 0)
+    return;
+  const uint64 kMaxReordering = 100;
+  uint64 reordering = kMaxReordering;
+  if (stats.min_rtt_us > 0 ) {
+    reordering =
+        GG_UINT64_C(100) * stats.max_time_reordering_us / stats.min_rtt_us;
+  }
   UMA_HISTOGRAM_CUSTOM_COUNTS("Net.QuicSession.MaxReorderingTime",
-                                reordering, 0, 100, 50);
-  if (stats.min_rtt_us > 100) {
+                                reordering, 0, kMaxReordering, 50);
+  if (stats.min_rtt_us > 100 * 1000) {
     UMA_HISTOGRAM_CUSTOM_COUNTS("Net.QuicSession.MaxReorderingTimeLongRtt",
-                                reordering, 0, 100, 50);
+                                reordering, 0, kMaxReordering, 50);
   }
   UMA_HISTOGRAM_COUNTS("Net.QuicSession.MaxReordering",
                        stats.max_sequence_reordering);
