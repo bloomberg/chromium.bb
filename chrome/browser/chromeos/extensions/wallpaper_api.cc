@@ -8,13 +8,17 @@
 #include "base/file_util.h"
 #include "base/lazy_instance.h"
 #include "base/path_service.h"
+#include "base/prefs/pref_service.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/worker_pool.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/users/user.h"
 #include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/extensions/extension_constants.h"
+#include "chrome/common/pref_names.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/url_fetcher.h"
@@ -158,6 +162,17 @@ void WallpaperSetWallpaperFunction::OnWallpaperDecoded(
                    thumbnail_path,
                    base::Passed(deep_copy.Pass())));
   } else {
+    // Save current extenion name. It will be displayed in the component
+    // wallpaper picker app. If current extension is the component wallpaper
+    // picker, set an empty string.
+    Profile* profile = Profile::FromBrowserContext(browser_context());
+    if (GetExtension()->id() == extension_misc::kWallpaperManagerId) {
+      profile->GetPrefs()->SetString(prefs::kCurrentWallpaperAppName,
+                                     std::string());
+    } else {
+      profile->GetPrefs()->SetString(prefs::kCurrentWallpaperAppName,
+                                     GetExtension()->name());
+    }
     SendResponse(true);
   }
 }

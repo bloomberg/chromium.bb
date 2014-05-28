@@ -150,6 +150,10 @@ void Profile::RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
       prefs::kApplicationLocaleAccepted,
       std::string(),
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterStringPref(
+      prefs::kCurrentWallpaperAppName,
+      std::string(),
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 #endif
 
 #if defined(OS_ANDROID)

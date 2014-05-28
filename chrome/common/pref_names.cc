@@ -867,6 +867,10 @@ const char kSAMLLastGAIASignInTime[] = "saml.last_gaia_sign_in_time";
 // The total number of seconds that the machine has spent sitting on the
 // OOBE screen.
 const char kTimeOnOobe[] = "settings.time_on_oobe";
+
+// The app/extension name who sets the current wallpaper. If current wallpaper
+// is set by the component wallpaper picker, it is set to an empty string.
+const char kCurrentWallpaperAppName[] = "wallpaper.app.name";
 #endif  // defined(OS_CHROMEOS)
 
 // The disabled messages in IPC logging.

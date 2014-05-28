@@ -276,6 +276,7 @@ extern const char kFirstRunTutorialShown[];
 extern const char kSAMLOfflineSigninTimeLimit[];
 extern const char kSAMLLastGAIASignInTime[];
 extern const char kTimeOnOobe[];
+extern const char kCurrentWallpaperAppName[];
 #endif  // defined(OS_CHROMEOS)
 extern const char kIpcDisabledMessages[];
 extern const char kShowHomeButton[];
