@@ -32,6 +32,7 @@
 #define AnimationPlayer_h
 
 #include "core/animation/AnimationNode.h"
+#include "core/dom/ActiveDOMObject.h"
 #include "core/events/EventTarget.h"
 #include "wtf/RefPtr.h"
 
@@ -40,12 +41,14 @@ namespace WebCore {
 class AnimationTimeline;
 class ExceptionState;
 
-class AnimationPlayer FINAL : public RefCountedWillBeRefCountedGarbageCollected<AnimationPlayer>, public EventTargetWithInlineData {
+class AnimationPlayer FINAL : public RefCountedWillBeRefCountedGarbageCollected<AnimationPlayer>
+    , public ActiveDOMObject
+    , public EventTargetWithInlineData {
     DEFINE_EVENT_TARGET_REFCOUNTING(RefCountedWillBeRefCountedGarbageCollected<AnimationPlayer>);
 public:
 
     ~AnimationPlayer();
-    static PassRefPtrWillBeRawPtr<AnimationPlayer> create(AnimationTimeline&, AnimationNode*);
+    static PassRefPtrWillBeRawPtr<AnimationPlayer> create(ExecutionContext*, AnimationTimeline&, AnimationNode*);
 
     // Returns whether the player is finished.
     bool update(TimingUpdateReason);
@@ -78,6 +81,9 @@ public:
 
     virtual const AtomicString& interfaceName() const OVERRIDE;
     virtual ExecutionContext* executionContext() const OVERRIDE;
+    virtual bool hasPendingActivity() const OVERRIDE;
+    virtual void stop() OVERRIDE;
+    virtual bool dispatchEvent(PassRefPtrWillBeRawPtr<Event>) OVERRIDE;
 
     double playbackRate() const { return m_playbackRate; }
     void setPlaybackRate(double);
@@ -150,7 +156,7 @@ public:
     void trace(Visitor*);
 
 private:
-    AnimationPlayer(AnimationTimeline&, AnimationNode*);
+    AnimationPlayer(ExecutionContext*, AnimationTimeline&, AnimationNode*);
     double sourceEnd() const;
     bool limited(double currentTime) const;
     double currentTimeWithoutLag() const;
@@ -177,6 +183,10 @@ private:
     bool m_outdated;
 
     bool m_finished;
+    // Holds a 'finished' event queued for asynchronous dispatch via the
+    // ScriptedAnimationController. This object remains active until the
+    // event is actually dispatched.
+    RefPtrWillBeMember<Event> m_pendingFinishedEvent;
 };
 
 } // namespace
