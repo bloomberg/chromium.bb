@@ -88,7 +88,7 @@ Error EventListenerLock::WaitOnEvent(uint32_t events, int ms_timeout) {
   AbsoluteFromDeltaMS(&timeout, ms_timeout);
 
   emitter_->RegisterListener_Locked(this, events);
-  while ((emitter_->GetEventStatus() & events) == 0) {
+  while ((emitter_->GetEventStatus_Locked() & events) == 0) {
     int return_code;
     if (ms_timeout >= 0) {
       return_code = pthread_cond_timedwait(&signal_cond_,
@@ -99,7 +99,7 @@ Error EventListenerLock::WaitOnEvent(uint32_t events, int ms_timeout) {
                                       emitter_->GetLock().mutex());
     }
 
-    if (emitter_->GetEventStatus() & POLLERR)
+    if (emitter_->GetEventStatus_Locked() & POLLERR)
       return_code = EINTR;
 
     // Return the failure, unlocked

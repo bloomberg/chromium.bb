@@ -12,6 +12,7 @@
 
 #include "nacl_io/error.h"
 
+#include "sdk_util/auto_lock.h"
 #include "sdk_util/macros.h"
 #include "sdk_util/ref_object.h"
 #include "sdk_util/scoped_ref.h"
@@ -42,8 +43,13 @@ class EventEmitter : public sdk_util::RefObject {
   EventEmitter();
 
   // This returns a snapshot, to ensure the status doesn't change from
-  // fetch to use, hold the lock.
-  uint32_t GetEventStatus() { return event_status_; }
+  // fetch to use, hold the lock and call GetEventStatus_Locked.
+  uint32_t GetEventStatus() {
+    AUTO_LOCK(emitter_lock_);
+    return GetEventStatus_Locked();
+  }
+
+  uint32_t GetEventStatus_Locked() { return event_status_; }
 
   sdk_util::SimpleLock& GetLock() { return emitter_lock_; }
 

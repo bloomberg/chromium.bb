@@ -80,9 +80,10 @@ class EmitterTest : public ::testing::Test {
 
   void TearDown() { pthread_cond_destroy(&multi_cond_); }
 
-  void CreateThread() {
+  pthread_t CreateThread() {
     pthread_t id;
     EXPECT_EQ(0, pthread_create(&id, NULL, ThreadThunk, this));
+    return id;
   }
 
   static void* ThreadThunk(void* ptr) {
@@ -96,22 +97,32 @@ class EmitterTest : public ::testing::Test {
     waiting_++;
     EXPECT_EQ(0, listener.WaitOnEvent(POLLIN, -1));
     emitter_.ClearEvents_Locked(POLLIN);
+    AUTO_LOCK(signaled_lock_);
     signaled_++;
     return NULL;
+  }
+
+  int GetSignaledCount() {
+    AUTO_LOCK(signaled_lock_);
+    return signaled_;
   }
 
  protected:
   pthread_cond_t multi_cond_;
   EventEmitter emitter_;
+  int waiting_;
 
-  uint32_t waiting_;
-  uint32_t signaled_;
+ private:
+  int signaled_;
+  sdk_util::SimpleLock signaled_lock_;
 };
 
 const int NUM_THREADS = 10;
 TEST_F(EmitterTest, MultiThread) {
+  pthread_t threads[NUM_THREADS];
+
   for (int a = 0; a < NUM_THREADS; a++)
-    CreateThread();
+    threads[a] = CreateThread();
 
   {
     AUTO_LOCK(emitter_.GetLock());
@@ -120,7 +131,7 @@ TEST_F(EmitterTest, MultiThread) {
     while (waiting_ < NUM_THREADS)
       pthread_cond_wait(&multi_cond_, emitter_.GetLock().mutex());
 
-    ASSERT_EQ(0, signaled_);
+    ASSERT_EQ(0, GetSignaledCount());
 
     emitter_.RaiseEvents_Locked(POLLIN);
   }
@@ -129,7 +140,7 @@ TEST_F(EmitterTest, MultiThread) {
   struct timespec sleeptime = {0, 50 * 1000 * 1000};
   nanosleep(&sleeptime, NULL);
 
-  EXPECT_EQ(1, signaled_);
+  EXPECT_EQ(1, GetSignaledCount());
 
   {
     AUTO_LOCK(emitter_.GetLock());
@@ -137,13 +148,16 @@ TEST_F(EmitterTest, MultiThread) {
   }
 
   nanosleep(&sleeptime, NULL);
-  EXPECT_EQ(2, signaled_);
+  EXPECT_EQ(2, GetSignaledCount());
 
   // Clean up remaining threads.
-  while (signaled_ < waiting_) {
+  while (GetSignaledCount() < waiting_) {
     AUTO_LOCK(emitter_.GetLock());
     emitter_.RaiseEvents_Locked(POLLIN);
   }
+
+  for (int a = 0; a < NUM_THREADS; a++)
+    pthread_join(threads[a], NULL);
 }
 
 TEST(EventListenerPollTest, WaitForAny) {
