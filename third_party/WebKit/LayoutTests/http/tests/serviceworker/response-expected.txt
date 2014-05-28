@@ -1,0 +1,3 @@
+
+FAIL Response in ServiceWorkerGlobalScope assert_unreached: Unregister should not fail: NotSupportedError Reached unreachable code
+

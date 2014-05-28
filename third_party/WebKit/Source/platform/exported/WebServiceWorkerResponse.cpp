@@ -7,34 +7,73 @@
 
 namespace blink {
 
-void WebServiceWorkerResponse::setStatusCode(unsigned short statusCode)
+class WebServiceWorkerResponsePrivate : public RefCounted<WebServiceWorkerResponsePrivate> {
+public:
+    unsigned short status;
+    WebString statusText;
+    HashMap<String, String> headers;
+};
+
+WebServiceWorkerResponse::WebServiceWorkerResponse()
+    : m_private(adoptRef(new WebServiceWorkerResponsePrivate))
 {
-    m_statusCode = statusCode;
 }
 
-unsigned short WebServiceWorkerResponse::statusCode() const
+void WebServiceWorkerResponse::reset()
 {
-    return m_statusCode;
+    m_private.reset();
+}
+
+void WebServiceWorkerResponse::assign(const WebServiceWorkerResponse& other)
+{
+    m_private = other.m_private;
+}
+
+void WebServiceWorkerResponse::setStatus(unsigned short status)
+{
+    m_private->status = status;
+}
+
+unsigned short WebServiceWorkerResponse::status() const
+{
+    return m_private->status;
 }
 
 void WebServiceWorkerResponse::setStatusText(const WebString& statusText)
 {
-    m_statusText = statusText;
+    m_private->statusText = statusText;
 }
 
 WebString WebServiceWorkerResponse::statusText() const
 {
-    return m_statusText;
+    return m_private->statusText;
 }
 
-void WebServiceWorkerResponse::setMethod(const WebString& method)
+void WebServiceWorkerResponse::setHeader(const WebString& key, const WebString& value)
 {
-    m_method = method;
+    m_private->headers.set(key, value);
 }
 
-WebString WebServiceWorkerResponse::method() const
+WebVector<WebString> WebServiceWorkerResponse::getHeaderKeys() const
 {
-    return m_method;
+    Vector<String> keys;
+    copyKeysToVector(m_private->headers, keys);
+    return keys;
+}
+
+WebString WebServiceWorkerResponse::getHeader(const WebString& key) const
+{
+    return m_private->headers.get(key);
+}
+
+void WebServiceWorkerResponse::setHeaders(const HashMap<String, String>& headers)
+{
+    m_private->headers = headers;
+}
+
+const HashMap<String, String>& WebServiceWorkerResponse::headers() const
+{
+    return m_private->headers;
 }
 
 } // namespace blink

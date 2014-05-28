@@ -7,7 +7,9 @@
 
 #include "bindings/v8/Dictionary.h"
 #include "bindings/v8/ScriptWrappable.h"
+#include "modules/serviceworkers/HeaderMap.h"
 #include "wtf/RefCounted.h"
+#include "wtf/RefPtr.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink { class WebServiceWorkerResponse; }
@@ -22,26 +24,17 @@ public:
     static PassRefPtr<Response> create(const Dictionary& responseInit);
     ~Response() { };
 
-    unsigned short statusCode() { return m_statusCode; }
-    void setStatusCode(unsigned short statusCode) { m_statusCode = statusCode; }
-
-    String statusText() { return m_statusText; }
-    void setStatusText(const String& statusText) { m_statusText = statusText; }
-
-    String method() { return m_method; }
-    void setMethod(const String& method) { m_method = method; }
-
-    Dictionary* headers();
-    void headers(const Dictionary&);
+    unsigned short status() const { return m_status; }
+    String statusText() const { return m_statusText; }
+    PassRefPtr<HeaderMap> headers() const;
 
     void populateWebServiceWorkerResponse(blink::WebServiceWorkerResponse&);
 
 private:
     explicit Response(const ResponseInit&);
-    unsigned short m_statusCode;
+    unsigned short m_status;
     String m_statusText;
-    String m_method;
-    Dictionary m_headers;
+    RefPtr<HeaderMap> m_headers;
 };
 
 } // namespace WebCore

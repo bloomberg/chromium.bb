@@ -2,21 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// https://slightlyoff.github.io/ServiceWorker/spec/service_worker/index.html#response-objects
+// FIXME: Split this idl/impl into AbstractResponse and Response.
 [
     Constructor(optional Dictionary responseInitDict),
     RuntimeEnabled=ServiceWorker,
     Exposed=ServiceWorker
 ] interface Response {
-    attribute unsigned short statusCode;
+    readonly attribute unsigned short status;
 
-    // FIXME: Spec uses ByteString for these. We must perform the DOMString -> ByteString conversion manually (crbug.com/347426).
-    attribute DOMString statusText;
-    attribute DOMString method;
+    // FIXME: Spec uses ByteString for this. We must perform the DOMString -> ByteString conversion manually (crbug.com/347426).
+    readonly attribute DOMString statusText;
 
-    // FIXME: Implement HeaderMap which uses the MapClass WebIDL attribute (crbug.com/347435).
-    // FIXME: Can't return Dictionaries yet (crbug.com/364025).
-    // getter Dictionary headers();
-    setter void headers(Dictionary items);
+    readonly attribute HeaderMap headers;
 
     // FIXME: Implement the following:
     // attribute DOMString url;

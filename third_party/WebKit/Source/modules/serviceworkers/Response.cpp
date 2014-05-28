@@ -22,31 +22,28 @@ PassRefPtr<Response> Response::create(const Dictionary& responseInit)
     return adoptRef(new Response(ResponseInit(responseInit)));
 }
 
-void Response::headers(const Dictionary& headers)
-{
-    notImplemented();
-}
-
-Dictionary* Response::headers()
+PassRefPtr<HeaderMap> Response::headers() const
 {
     // FIXME: Implement. Spec will eventually whitelist allowable headers.
-    return &m_headers;
+    return m_headers;
 }
 
 void Response::populateWebServiceWorkerResponse(blink::WebServiceWorkerResponse& response)
 {
-    response.setStatusCode(statusCode());
+    response.setStatus(status());
     response.setStatusText(statusText());
-    response.setMethod(method());
+    response.setHeaders(m_headers->headerMap());
 }
 
 Response::Response(const ResponseInit& responseInit)
-    : m_statusCode(responseInit.statusCode)
+    : m_status(responseInit.status)
     , m_statusText(responseInit.statusText)
-    , m_method(responseInit.method)
     , m_headers(responseInit.headers)
 {
     ScriptWrappable::init(this);
+
+    if (!m_headers)
+        m_headers = HeaderMap::create();
 }
 
 } // namespace WebCore

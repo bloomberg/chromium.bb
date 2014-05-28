@@ -29,6 +29,7 @@
 #include "V8DOMError.h"
 #include "V8EventTarget.h"
 #include "V8Gamepad.h"
+#include "V8HeaderMap.h"
 #include "V8IDBKeyRange.h"
 #include "V8MIDIPort.h"
 #include "V8MediaKeyError.h"
@@ -567,6 +568,16 @@ bool Dictionary::get(const String& key, Dictionary& value) const
         value = Dictionary(v8Value, m_isolate);
     }
 
+    return true;
+}
+
+bool Dictionary::get(const String& key, RefPtr<HeaderMap>& value) const
+{
+    v8::Local<v8::Value> v8Value;
+    if (!getKey(key, v8Value))
+        return false;
+
+    value = V8HeaderMap::toNativeWithTypeCheck(m_isolate, v8Value);
     return true;
 }
 
