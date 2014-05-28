@@ -1157,6 +1157,9 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
           <message name="IDS_SAVE_PAGE" desc="The text label of the Save Page As menu item">
             Save page &amp;as...
           </message>
+          <message name="IDS_DISTILL_PAGE" desc="The text label of the 'Distill page' menu item">
+            Distill page
+          </message>
           <message name="IDS_PRINT" desc="The text label of the Print... menu item. Opens a dialog box to select print settings">
             &amp;Print...
           </message>
@@ -1230,6 +1233,9 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
           </message>
           <message name="IDS_SAVE_PAGE" desc="In Title Case: The text label of the Save Page As menu item">
             Save Page &amp;As...
+          </message>
+          <message name="IDS_DISTILL_PAGE" desc="The text label of the 'Distill Page' menu item">
+            Distill Page
           </message>
           <message name="IDS_PRINT" desc="In Title Case: The text label of the Print... menu item. Opens a dialog box to select print settings">
             &amp;Print...

@@ -765,6 +765,9 @@ void BrowserCommandController::ExecuteCommandWithDisposition(
     case IDC_TOGGLE_SPEECH_INPUT:
       ToggleSpeechInput(browser_);
       break;
+    case IDC_DISTILL_PAGE:
+      DistillCurrentPage(browser_);
+      break;
 
     default:
       LOG(WARNING) << "Received Unimplemented Command: " << id;
@@ -1007,6 +1010,12 @@ void BrowserCommandController::InitCommandState() {
 
   // Toggle speech input
   command_updater_.UpdateCommandEnabled(IDC_TOGGLE_SPEECH_INPUT, true);
+
+  // Distill current page.
+  command_updater_.UpdateCommandEnabled(
+      IDC_DISTILL_PAGE,
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableDomDistiller));
 
   // Initialize other commands whose state changes based on various conditions.
   UpdateCommandsForFullscreenMode();

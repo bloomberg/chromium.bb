@@ -561,6 +561,11 @@ void WrenchMenuModel::Build(bool is_new_menu) {
   if (!is_new_menu)
     CreateZoomMenu(is_new_menu);
 
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableDomDistiller)) {
+    AddItemWithStringId(IDC_DISTILL_PAGE, IDS_DISTILL_PAGE);
+  }
+
   AddItemWithStringId(IDC_SAVE_PAGE, IDS_SAVE_PAGE);
   AddItemWithStringId(IDC_FIND, IDS_FIND);
   AddItemWithStringId(IDC_PRINT, IDS_PRINT);

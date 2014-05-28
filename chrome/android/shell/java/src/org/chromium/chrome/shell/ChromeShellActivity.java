@@ -25,6 +25,7 @@ import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.chrome.browser.DevToolsServer;
 import org.chromium.chrome.browser.appmenu.AppMenuHandler;
 import org.chromium.chrome.browser.appmenu.AppMenuPropertiesDelegate;
+import org.chromium.chrome.browser.dom_distiller.DomDistillerTabUtils;
 import org.chromium.chrome.browser.printing.PrintingControllerFactory;
 import org.chromium.chrome.browser.printing.TabPrinter;
 import org.chromium.chrome.browser.share.ShareHelper;
@@ -302,9 +303,8 @@ public class ChromeShellActivity extends Activity implements AppMenuPropertiesDe
                 return true;
             case R.id.distill_page:
                 if (activeTab != null) {
-                    String viewUrl = DomDistillerUrlUtils.getDistillerViewUrlFromUrl(
-                            CHROME_DISTILLER_SCHEME, activeTab.getUrl());
-                    activeTab.loadUrlWithSanitization(viewUrl);
+                    DomDistillerTabUtils.distillCurrentPageAndView(
+                            activeTab.getContentViewCore().getWebContents());
                 }
                 return true;
             case R.id.back_menu_id:
