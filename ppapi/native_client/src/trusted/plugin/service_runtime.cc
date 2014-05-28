@@ -505,13 +505,21 @@ bool ServiceRuntime::SetupCommandChannel() {
   return true;
 }
 
-bool ServiceRuntime::LoadModule(nacl::DescWrapper* nacl_desc) {
-  NaClLog(4, "ServiceRuntime::LoadModule"
-          " (this=%p, subprocess=%p)\n",
-          static_cast<void*>(this),
-          static_cast<void*>(subprocess_.get()));
-  CHECK(nacl_desc);
-  if (!subprocess_->LoadModule(&command_channel_, nacl_desc)) {
+bool ServiceRuntime::LoadModule(PP_NaClFileInfo file_info) {
+  NaClFileInfo nacl_file_info;
+  nacl_file_info.desc = ConvertFileDescriptor(file_info.handle, true);
+  nacl_file_info.file_token.lo = file_info.token_lo;
+  nacl_file_info.file_token.hi = file_info.token_hi;
+  NaClDesc* desc = NaClDescIoFromFileInfo(nacl_file_info, O_RDONLY);
+  if (desc == NULL)
+    return false;
+
+  // We don't use a scoped_ptr here since we would immediately release the
+  // DescWrapper to LoadModule().
+  nacl::DescWrapper* wrapper =
+      plugin_->wrapper_factory()->MakeGenericCleanup(desc);
+
+  if (!subprocess_->LoadModule(&command_channel_, wrapper)) {
     if (main_service_runtime_) {
       ErrorInfo error_info;
       error_info.SetReport(PP_NACL_ERROR_SEL_LDR_COMMUNICATION_CMD_CHANNEL,
@@ -688,13 +696,17 @@ void ServiceRuntime::SignalStartSelLdrDone() {
   NaClXCondVarSignal(&cond_);
 }
 
-bool ServiceRuntime::LoadNexeAndStart(nacl::DescWrapper* nacl_desc,
+bool ServiceRuntime::LoadNexeAndStart(PP_NaClFileInfo file_info,
                                       const pp::CompletionCallback& crash_cb) {
-  NaClLog(4, "ServiceRuntime::LoadNexeAndStart (nacl_desc=%p)\n",
-          reinterpret_cast<void*>(nacl_desc));
+  NaClLog(4, "ServiceRuntime::LoadNexeAndStart (handle_valid=%d "
+             "token_lo=%" NACL_PRIu64 " token_hi=%" NACL_PRIu64 ")\n",
+      file_info.handle != PP_kInvalidFileHandle,
+      file_info.token_lo,
+      file_info.token_hi);
+
   bool ok = SetupCommandChannel() &&
             InitReverseService() &&
-            LoadModule(nacl_desc) &&
+            LoadModule(file_info) &&
             StartModule();
   if (!ok) {
     // On a load failure the service runtime does not crash itself to

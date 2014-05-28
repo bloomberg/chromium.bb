@@ -191,9 +191,9 @@ class ServiceRuntime {
   void SignalStartSelLdrDone();
 
   // Establish an SrpcClient to the sel_ldr instance and load the nexe.
-  // The nexe to be started is passed through |nacl_file_desc|.
+  // The nexe to be started is passed through |file_info|.
   // On success, returns true. On failure, returns false.
-  bool LoadNexeAndStart(nacl::DescWrapper* nacl_file_desc,
+  bool LoadNexeAndStart(PP_NaClFileInfo file_info,
                         const pp::CompletionCallback& crash_cb);
 
   // Starts the application channel to the nexe.
@@ -215,7 +215,7 @@ class ServiceRuntime {
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(ServiceRuntime);
   bool SetupCommandChannel();
-  bool LoadModule(nacl::DescWrapper* shm);
+  bool LoadModule(PP_NaClFileInfo file_info);
   bool InitReverseService();
   bool StartModule();
 

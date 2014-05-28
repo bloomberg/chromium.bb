@@ -1320,18 +1320,16 @@ class ProgressEventRateLimiter {
 
 void DownloadNexeCompletion(const DownloadNexeRequest& request,
                             base::PlatformFile target_file,
-                            PP_FileHandle* out_handle,
+                            PP_NaClFileInfo* out_file_info,
                             FileDownloader::Status status,
                             int http_status);
 
 void DownloadNexe(PP_Instance instance,
                   const char* url,
-                  PP_FileHandle* out_handle,
-                  uint64_t* file_token_lo,
-                  uint64_t* file_token_hi,
+                  PP_NaClFileInfo* out_file_info,
                   PP_CompletionCallback callback) {
   CHECK(url);
-  CHECK(out_handle);
+  CHECK(out_file_info);
   DownloadNexeRequest request;
   request.instance = instance;
   request.url = url;
@@ -1339,14 +1337,14 @@ void DownloadNexe(PP_Instance instance,
   request.start_time = base::Time::Now();
 
   // Try the fast path for retrieving the file first.
-  PP_FileHandle file_handle = OpenNaClExecutable(instance,
-                                                 url,
-                                                 file_token_lo,
-                                                 file_token_hi);
-  if (file_handle != PP_kInvalidFileHandle) {
+  PP_FileHandle handle = OpenNaClExecutable(instance,
+                                            url,
+                                            &out_file_info->token_lo,
+                                            &out_file_info->token_hi);
+  if (handle != PP_kInvalidFileHandle) {
     DownloadNexeCompletion(request,
-                           file_handle,
-                           out_handle,
+                           handle,
+                           out_file_info,
                            FileDownloader::SUCCESS,
                            200);
     return;
@@ -1377,7 +1375,7 @@ void DownloadNexe(PP_Instance instance,
   FileDownloader* file_downloader = new FileDownloader(
       url_loader.Pass(),
       target_file,
-      base::Bind(&DownloadNexeCompletion, request, target_file, out_handle),
+      base::Bind(&DownloadNexeCompletion, request, target_file, out_file_info),
       base::Bind(&ProgressEventRateLimiter::ReportProgress,
                  base::Owned(tracker), url));
   file_downloader->Load(url_request);
@@ -1385,12 +1383,12 @@ void DownloadNexe(PP_Instance instance,
 
 void DownloadNexeCompletion(const DownloadNexeRequest& request,
                             base::PlatformFile target_file,
-                            PP_FileHandle* out_handle,
+                            PP_NaClFileInfo* out_file_info,
                             FileDownloader::Status status,
                             int http_status) {
   int32_t pp_error = FileDownloaderToPepperError(status);
   if (pp_error == PP_OK)
-    *out_handle = target_file;
+    out_file_info->handle = target_file;
 
   int64_t bytes_read = -1;
   if (pp_error == PP_OK && target_file != base::kInvalidPlatformFileValue) {

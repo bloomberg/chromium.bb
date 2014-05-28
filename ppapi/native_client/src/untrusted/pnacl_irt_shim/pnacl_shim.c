@@ -3394,9 +3394,9 @@ static void Pnacl_M25_PPB_NaCl_Private_PostMessageToJavaScript(PP_Instance insta
   iface->PostMessageToJavaScript(instance, message);
 }
 
-static void Pnacl_M25_PPB_NaCl_Private_DownloadNexe(PP_Instance instance, const char* url, PP_FileHandle* handle, uint64_t* file_token_lo, uint64_t* file_token_hi, struct PP_CompletionCallback* callback) {
+static void Pnacl_M25_PPB_NaCl_Private_DownloadNexe(PP_Instance instance, const char* url, struct PP_NaClFileInfo* file_info, struct PP_CompletionCallback* callback) {
   const struct PPB_NaCl_Private_1_0 *iface = Pnacl_WrapperInfo_PPB_NaCl_Private_1_0.real_iface;
-  iface->DownloadNexe(instance, url, handle, file_token_lo, file_token_hi, *callback);
+  iface->DownloadNexe(instance, url, file_info, *callback);
 }
 
 static void Pnacl_M25_PPB_NaCl_Private_DownloadFile(PP_Instance instance, const char* url, struct PP_NaClFileInfo* file_info, struct PP_CompletionCallback* callback) {
@@ -5164,7 +5164,7 @@ static const struct PPB_NaCl_Private_1_0 Pnacl_Wrappers_PPB_NaCl_Private_1_0 = {
     .GetPnaclResourceInfo = (PP_Bool (*)(PP_Instance instance, const char* filename, struct PP_Var* llc_tool_name, struct PP_Var* ld_tool_name))&Pnacl_M25_PPB_NaCl_Private_GetPnaclResourceInfo,
     .GetCpuFeatureAttrs = (struct PP_Var (*)(void))&Pnacl_M25_PPB_NaCl_Private_GetCpuFeatureAttrs,
     .PostMessageToJavaScript = (void (*)(PP_Instance instance, const char* message))&Pnacl_M25_PPB_NaCl_Private_PostMessageToJavaScript,
-    .DownloadNexe = (void (*)(PP_Instance instance, const char* url, PP_FileHandle* handle, uint64_t* file_token_lo, uint64_t* file_token_hi, struct PP_CompletionCallback callback))&Pnacl_M25_PPB_NaCl_Private_DownloadNexe,
+    .DownloadNexe = (void (*)(PP_Instance instance, const char* url, struct PP_NaClFileInfo* file_info, struct PP_CompletionCallback callback))&Pnacl_M25_PPB_NaCl_Private_DownloadNexe,
     .DownloadFile = (void (*)(PP_Instance instance, const char* url, struct PP_NaClFileInfo* file_info, struct PP_CompletionCallback callback))&Pnacl_M25_PPB_NaCl_Private_DownloadFile
 };
 

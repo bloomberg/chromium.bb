@@ -126,13 +126,14 @@ bool Plugin::LoadNaClModuleFromBackgroundThread(
   if (!service_runtime_started)
     return false;
 
-  // TODO(teravest): Get rid of this conversion to DescWrapper.
-  int32_t fd = ConvertFileDescriptor(file_handle, true);
-  nacl::DescWrapper* wrapper = wrapper_factory()->MakeFileDesc(fd, O_RDONLY);
+  PP_NaClFileInfo info;
+  info.handle = file_handle;
+  info.token_lo = 0;
+  info.token_hi = 0;
 
   // Now actually load the nexe, which can happen on a background thread.
   bool nexe_loaded = service_runtime->LoadNexeAndStart(
-      wrapper, pp::BlockUntilComplete());
+      info, pp::BlockUntilComplete());
   PLUGIN_PRINTF(("Plugin::LoadNaClModuleFromBackgroundThread "
                  "(nexe_loaded=%d)\n",
                  nexe_loaded));
@@ -159,14 +160,13 @@ void Plugin::SignalStartSelLdrDone(int32_t pp_error,
   service_runtime->SignalStartSelLdrDone();
 }
 
-void Plugin::LoadNaClModule(nacl::DescWrapper* wrapper,
+void Plugin::LoadNaClModule(PP_NaClFileInfo file_info,
                             bool uses_nonsfi_mode,
                             bool enable_dyncode_syscalls,
                             bool enable_exception_handling,
                             bool enable_crash_throttling,
                             const pp::CompletionCallback& init_done_cb,
                             const pp::CompletionCallback& crash_cb) {
-  nacl::scoped_ptr<nacl::DescWrapper> scoped_wrapper(wrapper);
   CHECK(pp::Module::Get()->core()->IsMainThread());
   // Before forking a new sel_ldr process, ensure that we do not leak
   // the ServiceRuntime object for an existing subprocess, and that any
@@ -202,22 +202,21 @@ void Plugin::LoadNaClModule(nacl::DescWrapper* wrapper,
   }
 
   pp::CompletionCallback callback = callback_factory_.NewCallback(
-      &Plugin::LoadNexeAndStart, scoped_wrapper.release(), service_runtime,
+      &Plugin::LoadNexeAndStart, file_info, service_runtime,
       crash_cb);
   StartSelLdrOnMainThread(
       static_cast<int32_t>(PP_OK), service_runtime, params, callback);
 }
 
 void Plugin::LoadNexeAndStart(int32_t pp_error,
-                              nacl::DescWrapper* wrapper,
+                              PP_NaClFileInfo file_info,
                               ServiceRuntime* service_runtime,
                               const pp::CompletionCallback& crash_cb) {
-  nacl::scoped_ptr<nacl::DescWrapper> scoped_wrapper(wrapper);
   if (pp_error != PP_OK)
     return;
 
   // Now actually load the nexe, which can happen on a background thread.
-  bool nexe_loaded = service_runtime->LoadNexeAndStart(wrapper, crash_cb);
+  bool nexe_loaded = service_runtime->LoadNexeAndStart(file_info, crash_cb);
   PLUGIN_PRINTF(("Plugin::LoadNaClModule (nexe_loaded=%d)\n",
                  nexe_loaded));
   if (nexe_loaded) {
@@ -333,9 +332,6 @@ Plugin::Plugin(PP_Instance pp_instance)
       wrapper_factory_(NULL),
       time_of_last_progress_event_(0),
       manifest_id_(-1),
-      nexe_handle_(PP_kInvalidFileHandle),
-      nexe_token_lo_(0),
-      nexe_token_hi_(0),
       nacl_interface_(NULL),
       uma_interface_(this) {
   PLUGIN_PRINTF(("Plugin::Plugin (this=%p, pp_instance=%"
@@ -350,6 +346,9 @@ Plugin::Plugin(PP_Instance pp_instance)
   // We call set_exit_status() here to ensure that the 'exitStatus' property is
   // set. This can only be called when nacl_interface_ is not NULL.
   set_exit_status(-1);
+  nexe_file_info_.handle = PP_kInvalidFileHandle;
+  nexe_file_info_.token_lo = 0;
+  nexe_file_info_.token_hi = 0;
 }
 
 
@@ -415,26 +414,9 @@ void Plugin::NexeFileDidOpen(int32_t pp_error) {
   if (pp_error != PP_OK)
     return;
 
-  NaClFileInfo nexe_file_info;
-  nexe_file_info.desc = ConvertFileDescriptor(nexe_handle_, true);
-  nexe_file_info.file_token.lo = nexe_token_lo_;
-  nexe_file_info.file_token.hi = nexe_token_hi_;
-  nexe_handle_ = PP_kInvalidFileHandle;  // Clear out nexe handle.
-  nexe_token_lo_ = 0;
-  nexe_token_hi_ = 0;
-
-  NaClDesc *desc = NaClDescIoFromFileInfo(nexe_file_info, O_RDONLY);
-  if (desc == NULL)
-    return;
-  // nexe_file_info_ is handed to desc, clear out old copy.
-  memset(&nexe_file_info, 0, sizeof nexe_file_info);
-  nexe_file_info.desc = -1;
-
-  nacl::scoped_ptr<nacl::DescWrapper>
-      wrapper(wrapper_factory()->MakeGenericCleanup(desc));
   NaClLog(4, "NexeFileDidOpen: invoking LoadNaClModule\n");
   LoadNaClModule(
-      wrapper.release(),
+      nexe_file_info_,
       uses_nonsfi_mode_,
       true, /* enable_dyncode_syscalls */
       true, /* enable_exception_handling */
@@ -486,10 +468,13 @@ void Plugin::BitcodeDidTranslate(int32_t pp_error) {
 
   // Inform JavaScript that we successfully translated the bitcode to a nexe.
   PP_FileHandle handle = pnacl_coordinator_->TakeTranslatedFileHandle();
-  int32_t fd = ConvertFileDescriptor(handle, true);
-  nacl::DescWrapper* wrapper = wrapper_factory()->MakeFileDesc(fd, O_RDONLY);
+
+  PP_NaClFileInfo info;
+  info.handle = handle;
+  info.token_lo = 0;
+  info.token_hi = 0;
   LoadNaClModule(
-      wrapper,
+      info,
       false, /* uses_nonsfi_mode */
       false, /* enable_dyncode_syscalls */
       false, /* enable_exception_handling */
@@ -542,9 +527,7 @@ void Plugin::NaClManifestFileDidOpen(int32_t pp_error) {
       // Will always call the callback on success or failure.
       nacl_interface_->DownloadNexe(pp_instance(),
                                     program_url_.c_str(),
-                                    &nexe_handle_,
-                                    &nexe_token_lo_,
-                                    &nexe_token_hi_,
+                                    &nexe_file_info_,
                                     open_callback.pp_completion_callback());
       return;
     }

@@ -66,13 +66,10 @@ class Plugin : public pp::Instance {
   // Handles document load, when the plugin is a MIME type handler.
   virtual bool HandleDocumentLoad(const pp::URLLoader& url_loader);
 
-  // ----- Plugin interface support.
-
   // Load support.
-  // NaCl module can be loaded given a DescWrapper.
   //
   // Starts NaCl module but does not wait until low-level
-  // initialization (e.g., ld.so dynamic loading of manifest files) is
+  // initialization (e.g. ld.so dynamic loading of manifest files) is
   // done.  The module will become ready later, asynchronously.  Other
   // event handlers should block until the module is ready before
   // trying to communicate with it, i.e., until nacl_ready_state is
@@ -84,9 +81,7 @@ class Plugin : public pp::Instance {
   // should include a time-out at which point we declare the
   // nacl_ready_state to be done, and let the normal crash detection
   // mechanism(s) take over.
-  //
-  // Updates nacl_module_origin() and nacl_module_url().
-  void LoadNaClModule(nacl::DescWrapper* wrapper,
+  void LoadNaClModule(PP_NaClFileInfo file_info,
                       bool uses_nonsfi_mode,
                       bool enable_dyncode_syscalls,
                       bool enable_exception_handling,
@@ -197,7 +192,7 @@ class Plugin : public pp::Instance {
                              ServiceRuntime* service_runtime);
 
   void LoadNexeAndStart(int32_t pp_error,
-                        nacl::DescWrapper* wrapper,
+                        PP_NaClFileInfo file_info,
                         ServiceRuntime* service_runtime,
                         const pp::CompletionCallback& crash_cb);
 
@@ -263,9 +258,7 @@ class Plugin : public pp::Instance {
 
   int32_t manifest_id_;
 
-  PP_FileHandle nexe_handle_;
-  uint64_t nexe_token_lo_;
-  uint64_t nexe_token_hi_;
+  PP_NaClFileInfo nexe_file_info_;
 
   const PPB_NaCl_Private* nacl_interface_;
   pp::UMAPrivate uma_interface_;
