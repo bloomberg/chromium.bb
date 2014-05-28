@@ -40,12 +40,13 @@ namespace {
 
 class Html5FsForTesting : public Html5Fs {
  public:
-  Html5FsForTesting(StringMap_t& string_map, PepperInterface* ppapi) {
+  Html5FsForTesting(StringMap_t& string_map, PepperInterface* ppapi,
+                    int expected_error = 0) {
     FsInitArgs args;
     args.string_map = string_map;
     args.ppapi = ppapi;
     Error error = Init(args);
-    EXPECT_EQ(0, error);
+    EXPECT_EQ(expected_error, error);
   }
 };
 
@@ -115,6 +116,36 @@ TEST_F(Html5FsTest, FilesystemType) {
 
       Mock::VerifyAndClearExpectations(&filesystem_mock);
     }
+  }
+}
+
+TEST_F(Html5FsTest, PassFilesystemResource) {
+  // Fail if given a bad resource.
+  {
+    StringMap_t map;
+    map["filesystem_resource"] = "0";
+    ScopedRef<Html5FsForTesting> fs(
+        new Html5FsForTesting(map, &ppapi_, EINVAL));
+  }
+
+  {
+    EXPECT_TRUE(ppapi_html5_.filesystem_template()->AddEmptyFile("/foo", NULL));
+    PP_Resource filesystem = ppapi_html5_.GetFileSystemInterface()->Create(
+        ppapi_html5_.GetInstance(), PP_FILESYSTEMTYPE_LOCALPERSISTENT);
+
+    ASSERT_EQ(int32_t(PP_OK), ppapi_html5_.GetFileSystemInterface()->Open(
+              filesystem, 0, PP_BlockUntilComplete()));
+
+    StringMap_t map;
+    char buffer[30];
+    snprintf(buffer, 30, "%d", filesystem);
+    map["filesystem_resource"] = buffer;
+    ScopedRef<Html5FsForTesting> fs(
+        new Html5FsForTesting(map, &ppapi_));
+
+    ASSERT_EQ(0, fs->Access(Path("/foo"), R_OK | W_OK | X_OK));
+
+    ppapi_html5_.GetCoreInterface()->ReleaseResource(filesystem);
   }
 }
 

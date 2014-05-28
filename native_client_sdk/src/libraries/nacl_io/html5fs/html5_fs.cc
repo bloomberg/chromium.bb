@@ -161,11 +161,24 @@ Error Html5Fs::Init(const FsInitArgs& args) {
       }
     } else if (iter->first == "expected_size") {
       expected_size = strtoull(iter->second.c_str(), NULL, 10);
+    } else if (iter->first == "filesystem_resource") {
+      PP_Resource resource = strtoull(iter->second.c_str(), NULL, 10);
+      if (!ppapi_->GetFileSystemInterface()->IsFileSystem(resource))
+        return EINVAL;
+
+      filesystem_resource_ = resource;
+      ppapi_->AddRefResource(filesystem_resource_);
     }
   }
 
+  if (filesystem_resource_ != 0) {
+    filesystem_open_has_result_ = true;
+    filesystem_open_error_ = PP_OK;
+    return 0;
+  }
+
   // Initialize filesystem.
-  filesystem_resource_ = args.ppapi->GetFileSystemInterface()->Create(
+  filesystem_resource_ = ppapi_->GetFileSystemInterface()->Create(
       ppapi_->GetInstance(), filesystem_type);
   if (filesystem_resource_ == 0)
     return ENOSYS;
@@ -173,13 +186,13 @@ Error Html5Fs::Init(const FsInitArgs& args) {
   // We can't block the main thread, so make an asynchronous call if on main
   // thread. If we are off-main-thread, then don't make an asynchronous call;
   // otherwise we require a message loop.
-  bool main_thread = args.ppapi->GetCoreInterface()->IsMainThread();
+  bool main_thread = ppapi_->GetCoreInterface()->IsMainThread();
   PP_CompletionCallback cc =
       main_thread ? PP_MakeCompletionCallback(
                         &Html5Fs::FilesystemOpenCallbackThunk, this)
                   : PP_BlockUntilComplete();
 
-  int32_t result = args.ppapi->GetFileSystemInterface()->Open(
+  int32_t result = ppapi_->GetFileSystemInterface()->Open(
       filesystem_resource_, expected_size, cc);
 
   if (!main_thread) {

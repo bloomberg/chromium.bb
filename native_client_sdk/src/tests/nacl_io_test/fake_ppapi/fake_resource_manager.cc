@@ -57,6 +57,9 @@ void FakeResourceManager::AddRef(PP_Resource handle) {
 }
 
 void FakeResourceManager::Release(PP_Resource handle) {
+  if (handle == 0)
+    return;
+
   sdk_util::AutoLock lock(lock_);
   ResourceMap::iterator iter = resource_map_.find(handle);
   ASSERT_NE(resource_map_.end(), iter) << "Releasing unknown resource "
@@ -84,13 +87,17 @@ void FakeResourceManager::Release(PP_Resource handle) {
   }
 }
 
-FakeResourceTracker* FakeResourceManager::Get(PP_Resource handle) {
+FakeResourceTracker* FakeResourceManager::Get(PP_Resource handle,
+                                              bool not_found_ok) {
   AUTO_LOCK(lock_);
   ResourceMap::iterator iter = resource_map_.find(handle);
   if (iter == resource_map_.end()) {
-    // Can't use FAIL() because it tries to return void.
-    EXPECT_TRUE(false) << "Trying to get resource " << handle
-                       << " that doesn't exist!";
+    if (!not_found_ok) {
+      // Can't use FAIL() because it tries to return void.
+      EXPECT_TRUE(false) << "Trying to get resource " << handle
+                         << " that doesn't exist!";
+    }
+
     return NULL;
   }
 

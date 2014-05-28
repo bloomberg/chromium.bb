@@ -658,6 +658,14 @@ FakeFileSystemInterface::FakeFileSystemInterface(
     FakeCoreInterface* core_interface)
     : core_interface_(core_interface) {}
 
+PP_Bool FakeFileSystemInterface::IsFileSystem(PP_Resource resource) {
+  bool not_found_ok = true;
+  FakeFileSystemResource* file_system_resource =
+      core_interface_->resource_manager()->Get<FakeFileSystemResource>(
+          resource, not_found_ok);
+  return file_system_resource != NULL ? PP_TRUE : PP_FALSE;
+}
+
 PP_Resource FakeFileSystemInterface::Create(PP_Instance instance,
                                             PP_FileSystemType filesystem_type) {
   FakeInstanceResource* instance_resource =

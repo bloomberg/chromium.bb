@@ -28,10 +28,10 @@ class FakeResourceManager {
   void AddRef(PP_Resource handle);
   void Release(PP_Resource handle);
   template <typename T>
-  T* Get(PP_Resource handle);
+  T* Get(PP_Resource handle, bool not_found_ok=false);
 
  private:
-  FakeResourceTracker* Get(PP_Resource handle);
+  FakeResourceTracker* Get(PP_Resource handle, bool not_found_ok);
 
   typedef std::map<PP_Resource, FakeResourceTracker*> ResourceMap;
   PP_Resource next_handle_;
@@ -103,8 +103,11 @@ class FakeResource {
 };
 
 template <typename T>
-inline T* FakeResourceManager::Get(PP_Resource handle) {
-  return Get(handle)->resource<T>();
+inline T* FakeResourceManager::Get(PP_Resource handle, bool not_found_ok) {
+  FakeResourceTracker* tracker = Get(handle, not_found_ok);
+  if (!tracker)
+    return NULL;
+  return tracker->resource<T>();
 }
 
 #define CREATE_RESOURCE(MANAGER, TYPE, RESOURCE) \

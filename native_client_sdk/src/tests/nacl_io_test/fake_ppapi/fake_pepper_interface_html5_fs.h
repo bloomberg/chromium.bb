@@ -164,6 +164,7 @@ class FakeFileSystemInterface : public nacl_io::FileSystemInterface {
  public:
   FakeFileSystemInterface(FakeCoreInterface* core_interface);
 
+  virtual PP_Bool IsFileSystem(PP_Resource resource);
   virtual PP_Resource Create(PP_Instance instance, PP_FileSystemType type);
   virtual int32_t Open(PP_Resource file_system,
                        int64_t expected_size,
