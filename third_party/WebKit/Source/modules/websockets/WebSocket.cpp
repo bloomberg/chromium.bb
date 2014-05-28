@@ -686,6 +686,7 @@ void WebSocket::trace(Visitor* visitor)
 {
     visitor->trace(m_channel);
     visitor->trace(m_eventQueue);
+    EventTargetWithInlineData::trace(visitor);
 }
 
 } // namespace WebCore

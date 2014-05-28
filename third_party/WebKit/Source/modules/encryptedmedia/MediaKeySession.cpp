@@ -273,6 +273,7 @@ void MediaKeySession::stop()
 void MediaKeySession::trace(Visitor* visitor)
 {
     visitor->trace(m_keys);
+    EventTargetWithInlineData::trace(visitor);
 }
 
 }

@@ -234,6 +234,7 @@ void SVGElementInstance::trace(Visitor* visitor)
     visitor->trace(m_nextSibling);
     visitor->trace(m_firstChild);
     visitor->trace(m_lastChild);
+    EventTarget::trace(visitor);
 }
 
 }

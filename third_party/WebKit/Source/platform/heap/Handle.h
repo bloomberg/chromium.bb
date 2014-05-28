@@ -798,6 +798,7 @@ template<typename T, typename U> inline bool operator!=(const PassRefPtr<T>& a, 
 #define WeakPtrWillBeWeakMember WebCore::WeakMember
 #define NoBaseWillBeGarbageCollected WebCore::GarbageCollected
 #define NoBaseWillBeGarbageCollectedFinalized WebCore::GarbageCollectedFinalized
+#define NoBaseWillBeRefCountedGarbageCollected WebCore::RefCountedGarbageCollected
 #define WillBeHeapHashMap WebCore::HeapHashMap
 #define WillBePersistentHeapHashMap WebCore::PersistentHeapHashMap
 #define WillBeHeapHashSet WebCore::HeapHashSet
@@ -851,6 +852,13 @@ template<typename T> PassOwnPtrWillBeRawPtr<T> adoptPtrWillBeNoop(T* ptr)
     return PassOwnPtrWillBeRawPtr<T>(ptr);
 }
 
+template<typename T> T* adoptPtrWillBeRefCountedGarbageCollected(T* ptr)
+{
+    static const bool isRefCountedGarbageCollected = WTF::IsSubclassOfTemplate<typename WTF::RemoveConst<T>::Type, RefCountedGarbageCollected>::value;
+    COMPILE_ASSERT(isRefCountedGarbageCollected, useAdoptRefWillBeNoop);
+    return adoptRefCountedGarbageCollected(ptr);
+}
+
 #define WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED // do nothing when oilpan is enabled.
 #define DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(type) // do nothing
 #define DECLARE_EMPTY_VIRTUAL_DESTRUCTOR_WILL_BE_REMOVED(type) // do nothing
@@ -892,6 +900,7 @@ public:
 #define WeakPtrWillBeWeakMember WTF::WeakPtr
 #define NoBaseWillBeGarbageCollected WebCore::DummyBase
 #define NoBaseWillBeGarbageCollectedFinalized WebCore::DummyBase
+#define NoBaseWillBeRefCountedGarbageCollected WebCore::DummyBase
 #define WillBeHeapHashMap WTF::HashMap
 #define WillBePersistentHeapHashMap WTF::HashMap
 #define WillBeHeapHashSet WTF::HashSet
@@ -917,6 +926,7 @@ template<typename T> PassRefPtrWillBeRawPtr<T> adoptRefWillBeNoop(T* ptr) { retu
 template<typename T> PassRefPtrWillBeRawPtr<T> adoptRefWillBeRefCountedGarbageCollected(T* ptr) { return adoptRef(ptr); }
 template<typename T> PassRefPtrWillBeRawPtr<T> adoptRefWillBeThreadSafeRefCountedGarbageCollected(T* ptr) { return adoptRef(ptr); }
 template<typename T> PassOwnPtrWillBeRawPtr<T> adoptPtrWillBeNoop(T* ptr) { return adoptPtr(ptr); }
+template<typename T> PassOwnPtrWillBeRawPtr<T> adoptPtrWillBeRefCountedGarbageCollected(T* ptr) { return adoptPtr(ptr); }
 
 #define WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED WTF_MAKE_FAST_ALLOCATED
 #define DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(type) \

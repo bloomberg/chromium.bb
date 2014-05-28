@@ -52,7 +52,8 @@ namespace WebCore {
 class ExecutionContext;
 
 class MIDIAccess FINAL : public RefCountedWillBeRefCountedGarbageCollected<MIDIAccess>, public ScriptWrappable, public ActiveDOMObject, public EventTargetWithInlineData, public MIDIAccessorClient {
-    DEFINE_EVENT_TARGET_REFCOUNTING(RefCountedWillBeRefCountedGarbageCollected<MIDIAccess>);
+    REFCOUNTED_EVENT_TARGET(MIDIAccess);
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(MIDIAccess);
 public:
     virtual ~MIDIAccess();
     // Returns a promise object that will be resolved with this MIDIAccess.
@@ -84,7 +85,7 @@ public:
     // |timeStampInMilliseconds| is in the same time coordinate system as performance.now().
     void sendMIDIData(unsigned portIndex, const unsigned char* data, size_t length, double timeStampInMilliseconds);
 
-    void trace(Visitor*);
+    virtual void trace(Visitor*) OVERRIDE;
 
 private:
     class PostAction;

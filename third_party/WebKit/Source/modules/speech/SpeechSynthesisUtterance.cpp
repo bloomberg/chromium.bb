@@ -74,6 +74,7 @@ void SpeechSynthesisUtterance::setVoice(SpeechSynthesisVoice* voice)
 void SpeechSynthesisUtterance::trace(Visitor* visitor)
 {
     visitor->trace(m_voice);
+    EventTargetWithInlineData::trace(visitor);
 }
 
 } // namespace WebCore

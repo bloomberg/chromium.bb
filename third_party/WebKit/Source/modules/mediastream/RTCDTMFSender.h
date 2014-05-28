@@ -44,7 +44,8 @@ class ExceptionState;
 class MediaStreamTrack;
 
 class RTCDTMFSender FINAL : public RefCountedWillBeRefCountedGarbageCollected<RTCDTMFSender>, public ScriptWrappable, public EventTargetWithInlineData, public blink::WebRTCDTMFSenderHandlerClient, public ActiveDOMObject {
-    DEFINE_EVENT_TARGET_REFCOUNTING(RefCountedWillBeRefCountedGarbageCollected<RTCDTMFSender>);
+    REFCOUNTED_EVENT_TARGET(RTCDTMFSender);
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(RTCDTMFSender);
 public:
     static PassRefPtrWillBeRawPtr<RTCDTMFSender> create(ExecutionContext*, blink::WebRTCPeerConnectionHandler*, PassRefPtrWillBeRawPtr<MediaStreamTrack>, ExceptionState&);
     virtual ~RTCDTMFSender();
@@ -68,7 +69,7 @@ public:
     // ActiveDOMObject
     virtual void stop() OVERRIDE;
 
-    void trace(Visitor*);
+    virtual void trace(Visitor*) OVERRIDE;
 
 private:
     RTCDTMFSender(ExecutionContext*, PassRefPtrWillBeRawPtr<MediaStreamTrack>, PassOwnPtr<blink::WebRTCDTMFSenderHandler>);

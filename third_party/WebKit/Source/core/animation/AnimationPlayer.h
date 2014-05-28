@@ -44,7 +44,8 @@ class ExceptionState;
 class AnimationPlayer FINAL : public RefCountedWillBeRefCountedGarbageCollected<AnimationPlayer>
     , public ActiveDOMObject
     , public EventTargetWithInlineData {
-    DEFINE_EVENT_TARGET_REFCOUNTING(RefCountedWillBeRefCountedGarbageCollected<AnimationPlayer>);
+    REFCOUNTED_EVENT_TARGET(AnimationPlayer);
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(AnimationPlayer);
 public:
 
     ~AnimationPlayer();
@@ -153,7 +154,7 @@ public:
 
     virtual bool addEventListener(const AtomicString& eventType, PassRefPtr<EventListener>, bool useCapture = false) OVERRIDE;
 
-    void trace(Visitor*);
+    virtual void trace(Visitor*) OVERRIDE;
 
 private:
     AnimationPlayer(ExecutionContext*, AnimationTimeline&, AnimationNode*);

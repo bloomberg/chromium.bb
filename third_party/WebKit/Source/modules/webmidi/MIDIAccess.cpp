@@ -228,6 +228,7 @@ void MIDIAccess::trace(Visitor* visitor)
 {
     visitor->trace(m_inputs);
     visitor->trace(m_outputs);
+    EventTargetWithInlineData::trace(visitor);
 }
 
 } // namespace WebCore

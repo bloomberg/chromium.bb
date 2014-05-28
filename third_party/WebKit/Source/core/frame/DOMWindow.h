@@ -94,7 +94,7 @@ enum PageshowEventPersistence {
 
     class DOMWindow FINAL : public RefCountedWillBeRefCountedGarbageCollected<DOMWindow>, public ScriptWrappable, public EventTargetWithInlineData, public DOMWindowBase64, public FrameDestructionObserver, public WillBeHeapSupplementable<DOMWindow>, public LifecycleContext<DOMWindow> {
         WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(DOMWindow);
-        DEFINE_EVENT_TARGET_REFCOUNTING(RefCountedWillBeRefCountedGarbageCollected<DOMWindow>);
+        REFCOUNTED_EVENT_TARGET(DOMWindow);
     public:
         static PassRefPtrWillBeRawPtr<Document> createDocument(const String& mimeType, const DocumentInit&, bool forceXHTML);
         static PassRefPtrWillBeRawPtr<DOMWindow> create(LocalFrame& frame)
@@ -326,7 +326,7 @@ enum PageshowEventPersistence {
         // FIXME: This shouldn't be public once DOMWindow becomes ExecutionContext.
         void clearEventQueue();
 
-        void trace(Visitor*);
+        virtual void trace(Visitor*) OVERRIDE;
 
     protected:
         DOMWindowLifecycleNotifier& lifecycleNotifier();

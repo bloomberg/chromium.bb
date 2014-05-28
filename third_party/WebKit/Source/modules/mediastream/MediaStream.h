@@ -42,7 +42,8 @@ class ExceptionState;
 
 class MediaStream FINAL : public RefCountedWillBeRefCountedGarbageCollected<MediaStream>, public ScriptWrappable,
     public URLRegistrable, public MediaStreamDescriptorClient, public EventTargetWithInlineData, public ContextLifecycleObserver {
-    DEFINE_EVENT_TARGET_REFCOUNTING(RefCountedWillBeRefCountedGarbageCollected<MediaStream>);
+    REFCOUNTED_EVENT_TARGET(MediaStream);
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(MediaStream);
 public:
     static PassRefPtrWillBeRawPtr<MediaStream> create(ExecutionContext*);
     static PassRefPtrWillBeRawPtr<MediaStream> create(ExecutionContext*, PassRefPtrWillBeRawPtr<MediaStream>);
@@ -84,7 +85,7 @@ public:
     // URLRegistrable
     virtual URLRegistry& registry() const OVERRIDE;
 
-    void trace(Visitor*);
+    virtual void trace(Visitor*) OVERRIDE;
 
 private:
     MediaStream(ExecutionContext*, PassRefPtr<MediaStreamDescriptor>);

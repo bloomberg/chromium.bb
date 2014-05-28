@@ -592,6 +592,7 @@ void AudioNode::printNodeCounts()
 void AudioNode::trace(Visitor* visitor)
 {
     visitor->trace(m_context);
+    EventTargetWithInlineData::trace(visitor);
 }
 
 #if ENABLE(OILPAN)

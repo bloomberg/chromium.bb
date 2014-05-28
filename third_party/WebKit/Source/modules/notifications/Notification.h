@@ -50,7 +50,7 @@ class NotificationPermissionCallback;
 
 class Notification : public RefCountedGarbageCollected<Notification>, public ScriptWrappable, public ActiveDOMObject, public EventTargetWithInlineData {
     DEFINE_EVENT_TARGET_REFCOUNTING(RefCountedGarbageCollected<Notification>);
-
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(Notification);
 public:
     static Notification* create(ExecutionContext*, const String& title, const Dictionary& options);
 
@@ -90,8 +90,6 @@ public:
     // ActiveDOMObject interface.
     virtual void stop() OVERRIDE;
     virtual bool hasPendingActivity() const OVERRIDE;
-
-    void trace(Visitor*) { }
 
 private:
     Notification(const String& title, ExecutionContext*, NotificationClient*);

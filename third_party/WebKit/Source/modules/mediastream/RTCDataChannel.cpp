@@ -316,6 +316,7 @@ void RTCDataChannel::scheduledEventTimerFired(Timer<RTCDataChannel>*)
 void RTCDataChannel::trace(Visitor* visitor)
 {
     visitor->trace(m_scheduledEvents);
+    EventTargetWithInlineData::trace(visitor);
 }
 
 } // namespace WebCore

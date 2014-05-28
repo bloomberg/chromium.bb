@@ -445,6 +445,7 @@ void TextTrack::trace(Visitor* visitor)
     visitor->trace(m_regions);
     visitor->trace(m_trackList);
     TrackBase::trace(visitor);
+    EventTargetWithInlineData::trace(visitor);
 }
 
 } // namespace WebCore

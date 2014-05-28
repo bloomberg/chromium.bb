@@ -52,7 +52,8 @@ class Blob;
 class ExceptionState;
 
 class WebSocket FINAL : public RefCountedWillBeRefCountedGarbageCollected<WebSocket>, public ScriptWrappable, public EventTargetWithInlineData, public ActiveDOMObject, public WebSocketChannelClient {
-    DEFINE_EVENT_TARGET_REFCOUNTING(RefCountedWillBeRefCountedGarbageCollected<WebSocket>);
+    REFCOUNTED_EVENT_TARGET(WebSocket);
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(WebSocket);
 public:
     static const char* subProtocolSeperator();
     // WebSocket instances must be used with a wrapper since this class's
@@ -123,7 +124,7 @@ public:
     virtual void didStartClosingHandshake() OVERRIDE;
     virtual void didClose(unsigned long unhandledBufferedAmount, ClosingHandshakeCompletionStatus, unsigned short code, const String& reason) OVERRIDE;
 
-    void trace(Visitor*);
+    virtual void trace(Visitor*) OVERRIDE;
 
 private:
     // FIXME: This should inherit WebCore::EventQueue.

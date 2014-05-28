@@ -46,7 +46,8 @@ class MediaStreamComponent;
 class MediaStreamTrackSourcesCallback;
 
 class MediaStreamTrack FINAL : public RefCountedWillBeRefCountedGarbageCollected<MediaStreamTrack>, public ScriptWrappable, public ActiveDOMObject, public EventTargetWithInlineData, public MediaStreamSource::Observer {
-    DEFINE_EVENT_TARGET_REFCOUNTING(RefCountedWillBeRefCountedGarbageCollected<MediaStreamTrack>);
+    REFCOUNTED_EVENT_TARGET(MediaStreamTrack);
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(MediaStreamTrack);
 public:
     static PassRefPtrWillBeRawPtr<MediaStreamTrack> create(ExecutionContext*, MediaStreamComponent*);
     virtual ~MediaStreamTrack();
@@ -83,7 +84,7 @@ public:
 
     PassOwnPtr<AudioSourceProvider> createWebAudioSource();
 
-    void trace(Visitor*);
+    virtual void trace(Visitor*) OVERRIDE;
 
 private:
     MediaStreamTrack(ExecutionContext*, MediaStreamComponent*);

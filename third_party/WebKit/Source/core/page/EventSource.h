@@ -53,7 +53,8 @@ class ThreadableLoader;
 
 class EventSource FINAL : public RefCountedWillBeRefCountedGarbageCollected<EventSource>, public ScriptWrappable, public EventTargetWithInlineData, private ThreadableLoaderClient, public ActiveDOMObject {
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
-    DEFINE_EVENT_TARGET_REFCOUNTING(RefCountedWillBeRefCountedGarbageCollected<EventSource>);
+    REFCOUNTED_EVENT_TARGET(EventSource);
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(EventSource);
 public:
     static PassRefPtrWillBeRawPtr<EventSource> create(ExecutionContext*, const String& url, const Dictionary&, ExceptionState&);
     virtual ~EventSource();
@@ -86,8 +87,6 @@ public:
     // loader, and therefore the methods of this class for receiving
     // asynchronous events from the loader won't be invoked.
     virtual void stop() OVERRIDE;
-
-    void trace(Visitor*) { }
 
 private:
     EventSource(ExecutionContext*, const KURL&, const Dictionary&);

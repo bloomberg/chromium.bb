@@ -2558,8 +2558,8 @@ void Node::trace(Visitor* visitor)
     visitor->trace(m_next);
     if (hasRareData())
         visitor->trace(rareData());
-
     visitor->trace(m_treeScope);
+    EventTarget::trace(visitor);
 }
 
 } // namespace WebCore

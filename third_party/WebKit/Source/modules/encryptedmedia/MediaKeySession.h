@@ -66,7 +66,8 @@ class MediaKeys;
 class MediaKeySession FINAL
     : public RefCountedWillBeRefCountedGarbageCollected<MediaKeySession>, public ActiveDOMObject, public ScriptWrappable, public EventTargetWithInlineData
     , private blink::WebContentDecryptionModuleSession::Client {
-    DEFINE_EVENT_TARGET_REFCOUNTING(RefCountedWillBeRefCountedGarbageCollected<MediaKeySession>);
+    REFCOUNTED_EVENT_TARGET(MediaKeySession);
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(MediaKeySession);
 public:
     static PassRefPtrWillBeRawPtr<MediaKeySession> create(ExecutionContext*, blink::WebContentDecryptionModule*, WeakPtrWillBeRawPtr<MediaKeys>);
     virtual ~MediaKeySession();
@@ -91,7 +92,7 @@ public:
     virtual bool hasPendingActivity() const OVERRIDE;
     virtual void stop() OVERRIDE;
 
-    void trace(Visitor*);
+    virtual void trace(Visitor*) OVERRIDE;
 
 private:
     // A struct holding the pending action.

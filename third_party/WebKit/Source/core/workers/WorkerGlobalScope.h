@@ -60,7 +60,7 @@ namespace WebCore {
 
     class WorkerGlobalScope : public RefCountedWillBeRefCountedGarbageCollected<WorkerGlobalScope>, public ScriptWrappable, public SecurityContext, public ExecutionContext, public ExecutionContextClient, public WillBeHeapSupplementable<WorkerGlobalScope>, public EventTargetWithInlineData, public DOMWindowBase64 {
         WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(WorkerGlobalScope);
-        DEFINE_EVENT_TARGET_REFCOUNTING(RefCountedWillBeRefCountedGarbageCollected<WorkerGlobalScope>);
+        REFCOUNTED_EVENT_TARGET(WorkerGlobalScope);
     public:
         virtual ~WorkerGlobalScope();
 
@@ -138,7 +138,7 @@ namespace WebCore {
         using SecurityContext::securityOrigin;
         using SecurityContext::contentSecurityPolicy;
 
-        virtual void trace(Visitor*);
+        virtual void trace(Visitor*) OVERRIDE;
 
     protected:
         WorkerGlobalScope(const KURL&, const String& userAgent, WorkerThread*, double timeOrigin, PassOwnPtrWillBeRawPtr<WorkerClients>);

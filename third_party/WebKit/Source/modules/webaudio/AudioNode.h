@@ -52,6 +52,7 @@ class ExceptionState;
 
 // AudioNode has its own ref-counting mechanism that use RefTypes so we cannot use RefCountedGarbageCollected.
 class AudioNode : public NoBaseWillBeGarbageCollectedFinalized<AudioNode>, public ScriptWrappable, public EventTargetWithInlineData {
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(AudioNode);
 public:
     enum { ProcessingSizeInFrames = 128 };
 
@@ -180,7 +181,7 @@ public:
     virtual const AtomicString& interfaceName() const OVERRIDE FINAL;
     virtual ExecutionContext* executionContext() const OVERRIDE FINAL;
 
-    virtual void trace(Visitor*);
+    virtual void trace(Visitor*) OVERRIDE;
 
 #if ENABLE(OILPAN)
     void clearKeepAlive();

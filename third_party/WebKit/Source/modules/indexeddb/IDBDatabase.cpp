@@ -99,6 +99,7 @@ void IDBDatabase::trace(Visitor* visitor)
     visitor->trace(m_enqueuedEvents);
 #endif
     visitor->trace(m_databaseCallbacks);
+    EventTargetWithInlineData::trace(visitor);
 }
 
 int64_t IDBDatabase::nextTransactionId()

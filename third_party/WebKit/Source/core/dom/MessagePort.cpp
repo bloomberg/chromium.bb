@@ -44,7 +44,7 @@ namespace WebCore {
 
 PassRefPtr<MessagePort> MessagePort::create(ExecutionContext& executionContext)
 {
-    RefPtr<MessagePort> port = adoptRef(new MessagePort(executionContext));
+    RefPtrWillBeRawPtr<MessagePort> port = adoptRefWillBeRefCountedGarbageCollected(new MessagePort(executionContext));
     port->suspendIfNeeded();
     return port.release();
 }

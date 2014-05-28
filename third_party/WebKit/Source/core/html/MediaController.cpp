@@ -43,7 +43,7 @@ using namespace std;
 
 PassRefPtr<MediaController> MediaController::create(ExecutionContext* context)
 {
-    return adoptRef(new MediaController(context));
+    return adoptRefWillBeRefCountedGarbageCollected(new MediaController(context));
 }
 
 MediaController::MediaController(ExecutionContext* context)

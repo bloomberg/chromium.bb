@@ -37,9 +37,9 @@
 
 namespace WebCore {
 
-PassOwnPtr<InputMethodContext> InputMethodContext::create(HTMLElement* element)
+PassOwnPtrWillBeRawPtr<InputMethodContext> InputMethodContext::create(HTMLElement* element)
 {
-    return adoptPtr(new InputMethodContext(element));
+    return adoptPtrWillBeRefCountedGarbageCollected(new InputMethodContext(element));
 }
 
 InputMethodContext::InputMethodContext(HTMLElement* element)
@@ -183,6 +183,12 @@ void InputMethodContext::dispatchCandidateWindowUpdateEvent()
 void InputMethodContext::dispatchCandidateWindowHideEvent()
 {
     dispatchEvent(Event::create(EventTypeNames::candidatewindowhide));
+}
+
+void InputMethodContext::trace(Visitor* visitor)
+{
+    visitor->trace(m_element);
+    EventTargetWithInlineData::trace(visitor);
 }
 
 } // namespace WebCore

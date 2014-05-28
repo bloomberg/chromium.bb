@@ -93,6 +93,7 @@ ExecutionContext* SourceBufferList::executionContext() const
 void SourceBufferList::trace(Visitor* visitor)
 {
     visitor->trace(m_list);
+    EventTargetWithInlineData::trace(visitor);
 }
 
 } // namespace WebCore

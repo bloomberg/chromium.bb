@@ -113,6 +113,7 @@ class Node : public TreeSharedWillBeRefCountedGarbageCollected<Node>, public Eve
     friend class TreeScopeAdopter;
 
     DEFINE_EVENT_TARGET_REFCOUNTING(TreeSharedWillBeRefCountedGarbageCollected<Node>);
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(Node);
 public:
     enum NodeType {
         ELEMENT_NODE = 1,
@@ -671,7 +672,7 @@ public:
 
     bool isFinishedParsingChildren() const { return getFlag(IsFinishedParsingChildrenFlag); }
 
-    virtual void trace(Visitor*);
+    virtual void trace(Visitor*) OVERRIDE;
 
 private:
     enum NodeFlags {

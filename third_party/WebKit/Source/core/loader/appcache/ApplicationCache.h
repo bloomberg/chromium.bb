@@ -42,7 +42,8 @@ class LocalFrame;
 class KURL;
 
 class ApplicationCache FINAL : public RefCountedWillBeRefCountedGarbageCollected<ApplicationCache>, public ScriptWrappable, public EventTargetWithInlineData, public DOMWindowProperty {
-    DEFINE_EVENT_TARGET_REFCOUNTING(RefCountedWillBeRefCountedGarbageCollected<ApplicationCache>);
+    REFCOUNTED_EVENT_TARGET(ApplicationCache);
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(ApplicationCache);
 public:
     static PassRefPtrWillBeRawPtr<ApplicationCache> create(LocalFrame* frame)
     {
@@ -72,8 +73,6 @@ public:
     virtual ExecutionContext* executionContext() const OVERRIDE;
 
     static const AtomicString& toEventType(ApplicationCacheHost::EventID);
-
-    void trace(Visitor*) { }
 
 private:
     explicit ApplicationCache(LocalFrame*);

@@ -724,6 +724,7 @@ void RTCPeerConnection::trace(Visitor* visitor)
     visitor->trace(m_remoteStreams);
     visitor->trace(m_dataChannels);
     visitor->trace(m_scheduledEvents);
+    EventTargetWithInlineData::trace(visitor);
 }
 
 } // namespace WebCore

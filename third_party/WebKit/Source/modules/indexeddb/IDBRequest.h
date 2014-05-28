@@ -58,11 +58,11 @@ class IDBRequest
     , public EventTargetWithInlineData
     , public ActiveDOMObject {
     DEFINE_EVENT_TARGET_REFCOUNTING(RefCountedGarbageCollected<IDBRequest>);
-
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(IDBRequest);
 public:
     static IDBRequest* create(ScriptState*, IDBAny* source, IDBTransaction*);
     virtual ~IDBRequest();
-    virtual void trace(Visitor*);
+    virtual void trace(Visitor*) OVERRIDE;
 
     ScriptValue result(ExceptionState&);
     PassRefPtrWillBeRawPtr<DOMError> error(ExceptionState&) const;

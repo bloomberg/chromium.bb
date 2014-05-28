@@ -713,6 +713,7 @@ void SourceBuffer::trace(Visitor* visitor)
 {
     visitor->trace(m_source);
     visitor->trace(m_stream);
+    EventTargetWithInlineData::trace(visitor);
 }
 
 } // namespace WebCore

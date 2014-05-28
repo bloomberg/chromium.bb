@@ -48,7 +48,8 @@ class KURL;
 class ExecutionContext;
 
 class AbstractWorker : public RefCountedWillBeRefCountedGarbageCollected<AbstractWorker>, public EventTargetWithInlineData, public ActiveDOMObject {
-    DEFINE_EVENT_TARGET_REFCOUNTING(RefCountedWillBeRefCountedGarbageCollected<AbstractWorker>);
+    REFCOUNTED_EVENT_TARGET(AbstractWorker);
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(AbstractWorker);
 public:
     // EventTarget APIs
     virtual ExecutionContext* executionContext() const OVERRIDE FINAL { return ActiveDOMObject::executionContext(); }
@@ -57,8 +58,6 @@ public:
 
     AbstractWorker(ExecutionContext*);
     virtual ~AbstractWorker();
-
-    virtual void trace(Visitor*) { }
 
 protected:
     // Helper function that converts a URL to an absolute URL and checks the result for validity.

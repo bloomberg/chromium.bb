@@ -39,6 +39,7 @@ class SVGUseElement;
 // SVGElementInstance mimics Node, but without providing all its functionality
 class SVGElementInstance FINAL : public TreeSharedWillBeRefCountedGarbageCollected<SVGElementInstance>, public EventTarget, public ScriptWrappable {
     DEFINE_EVENT_TARGET_REFCOUNTING(TreeSharedWillBeRefCountedGarbageCollected<SVGElementInstance>);
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(SVGElementInstance);
 public:
     static PassRefPtrWillBeRawPtr<SVGElementInstance> create(SVGUseElement* correspondingUseElement, SVGUseElement* directUseElement, PassRefPtrWillBeRawPtr<SVGElement> originalElement);
 
@@ -73,7 +74,7 @@ public:
 
     inline Document* ownerDocument() const;
 
-    virtual void trace(Visitor*);
+    virtual void trace(Visitor*) OVERRIDE;
 
     // EventTarget API
     DECLARE_FORWARDING_ATTRIBUTE_EVENT_LISTENER(correspondingElement(), abort);

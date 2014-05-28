@@ -54,12 +54,12 @@ class IDBTransaction FINAL
     , public EventTargetWithInlineData
     , public ActiveDOMObject {
     DEFINE_EVENT_TARGET_REFCOUNTING(RefCountedGarbageCollected<IDBTransaction>);
-
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(IDBTransaction);
 public:
     static IDBTransaction* create(ExecutionContext*, int64_t, const Vector<String>& objectStoreNames, blink::WebIDBDatabase::TransactionMode, IDBDatabase*);
     static IDBTransaction* create(ExecutionContext*, int64_t, IDBDatabase*, IDBOpenDBRequest*, const IDBDatabaseMetadata& previousMetadata);
     virtual ~IDBTransaction();
-    void trace(Visitor*);
+    virtual void trace(Visitor*) OVERRIDE;
 
     static const AtomicString& modeReadOnly();
     static const AtomicString& modeReadWrite();

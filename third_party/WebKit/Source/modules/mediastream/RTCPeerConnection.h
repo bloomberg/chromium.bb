@@ -57,7 +57,8 @@ class RTCStatsCallback;
 class VoidCallback;
 
 class RTCPeerConnection FINAL : public RefCountedWillBeRefCountedGarbageCollected<RTCPeerConnection>, public ScriptWrappable, public blink::WebRTCPeerConnectionHandlerClient, public EventTargetWithInlineData, public ActiveDOMObject {
-    DEFINE_EVENT_TARGET_REFCOUNTING(RefCountedWillBeRefCountedGarbageCollected<RTCPeerConnection>);
+    REFCOUNTED_EVENT_TARGET(RTCPeerConnection);
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(RTCPeerConnection);
 public:
     static PassRefPtrWillBeRawPtr<RTCPeerConnection> create(ExecutionContext*, const Dictionary& rtcConfiguration, const Dictionary& mediaConstraints, ExceptionState&);
     virtual ~RTCPeerConnection();
@@ -132,7 +133,7 @@ public:
     virtual void stop() OVERRIDE;
     virtual bool hasPendingActivity() const OVERRIDE { return !m_stopped; }
 
-    void trace(Visitor*);
+    virtual void trace(Visitor*) OVERRIDE;
 
 private:
     RTCPeerConnection(ExecutionContext*, PassRefPtr<RTCConfiguration>, blink::WebMediaConstraints, ExceptionState&);

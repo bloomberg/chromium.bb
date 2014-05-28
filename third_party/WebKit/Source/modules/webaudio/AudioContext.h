@@ -76,13 +76,14 @@ class WaveShaperNode;
 
 class AudioContext : public ThreadSafeRefCountedWillBeThreadSafeRefCountedGarbageCollected<AudioContext>, public ActiveDOMObject, public ScriptWrappable, public EventTargetWithInlineData {
     DEFINE_EVENT_TARGET_REFCOUNTING(ThreadSafeRefCountedWillBeThreadSafeRefCountedGarbageCollected<AudioContext>);
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(AudioContext);
 public:
     // Create an AudioContext for rendering to the audio hardware.
     static PassRefPtrWillBeRawPtr<AudioContext> create(Document&, ExceptionState&);
 
     virtual ~AudioContext();
 
-    virtual void trace(Visitor*);
+    virtual void trace(Visitor*) OVERRIDE;
 
     bool isInitialized() const;
     // The constructor of an AudioNode must call this to initialize the context.

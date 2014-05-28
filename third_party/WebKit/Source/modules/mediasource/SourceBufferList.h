@@ -43,7 +43,8 @@ class SourceBuffer;
 class GenericEventQueue;
 
 class SourceBufferList FINAL : public RefCountedWillBeRefCountedGarbageCollected<SourceBufferList>, public ScriptWrappable, public EventTargetWithInlineData {
-    DEFINE_EVENT_TARGET_REFCOUNTING(RefCountedWillBeRefCountedGarbageCollected<SourceBufferList>);
+    REFCOUNTED_EVENT_TARGET(SourceBufferList);
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(SourceBufferList);
 public:
     static PassRefPtrWillBeRawPtr<SourceBufferList> create(ExecutionContext* context, GenericEventQueue* asyncEventQueue)
     {
@@ -63,7 +64,7 @@ public:
     virtual const AtomicString& interfaceName() const OVERRIDE;
     virtual ExecutionContext* executionContext() const OVERRIDE;
 
-    void trace(Visitor*);
+    virtual void trace(Visitor*) OVERRIDE;
 
 private:
     SourceBufferList(ExecutionContext*, GenericEventQueue*);

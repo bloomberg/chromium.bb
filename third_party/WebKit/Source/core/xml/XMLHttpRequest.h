@@ -55,7 +55,8 @@ typedef int ExceptionCode;
 
 class XMLHttpRequest FINAL : public RefCountedWillBeRefCountedGarbageCollected<XMLHttpRequest>, public ScriptWrappable, public XMLHttpRequestEventTarget, private ThreadableLoaderClient, public ActiveDOMObject {
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
-    DEFINE_EVENT_TARGET_REFCOUNTING(RefCountedWillBeRefCountedGarbageCollected<XMLHttpRequest>);
+    REFCOUNTED_EVENT_TARGET(XMLHttpRequest);
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(XMLHttpRequest);
 public:
     static PassRefPtrWillBeRawPtr<XMLHttpRequest> create(ExecutionContext*, PassRefPtr<SecurityOrigin> = nullptr);
     virtual ~XMLHttpRequest();
@@ -143,7 +144,7 @@ public:
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(readystatechange);
 
-    void trace(Visitor*);
+    virtual void trace(Visitor*) OVERRIDE;
 
 private:
     XMLHttpRequest(ExecutionContext*, PassRefPtr<SecurityOrigin>);
@@ -208,7 +209,7 @@ private:
 
     void handleRequestError(ExceptionCode, const AtomicString&, long long, long long);
 
-    OwnPtr<XMLHttpRequestUpload> m_upload;
+    OwnPtrWillBeMember<XMLHttpRequestUpload> m_upload;
 
     KURL m_url;
     AtomicString m_method;

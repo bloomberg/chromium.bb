@@ -50,7 +50,8 @@ class ExceptionState;
 class ExecutionContext;
 
 class FileReader FINAL : public RefCountedWillBeRefCountedGarbageCollected<FileReader>, public ScriptWrappable, public ActiveDOMObject, public FileReaderLoaderClient, public EventTargetWithInlineData {
-    DEFINE_EVENT_TARGET_REFCOUNTING(RefCountedWillBeRefCountedGarbageCollected<FileReader>);
+    REFCOUNTED_EVENT_TARGET(FileReader);
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(FileReader);
 public:
     static PassRefPtrWillBeRawPtr<FileReader> create(ExecutionContext*);
 
@@ -97,7 +98,7 @@ public:
     DEFINE_ATTRIBUTE_EVENT_LISTENER(error);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(loadend);
 
-    void trace(Visitor*);
+    virtual void trace(Visitor*) OVERRIDE;
 
 private:
     class ThrottlingController;

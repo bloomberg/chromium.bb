@@ -40,8 +40,9 @@ class ExceptionState;
 class ExecutionContext;
 class GenericEventQueue;
 
-class MediaController FINAL : public RefCounted<MediaController>, public ScriptWrappable, public EventTargetWithInlineData {
+class MediaController FINAL : public RefCountedWillBeRefCountedGarbageCollected<MediaController>, public ScriptWrappable, public EventTargetWithInlineData {
     REFCOUNTED_EVENT_TARGET(MediaController);
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(MediaController);
 public:
     static PassRefPtr<MediaController> create(ExecutionContext*);
     virtual ~MediaController();

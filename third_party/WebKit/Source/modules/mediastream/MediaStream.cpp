@@ -397,6 +397,7 @@ void MediaStream::trace(Visitor* visitor)
     visitor->trace(m_audioTracks);
     visitor->trace(m_videoTracks);
     visitor->trace(m_scheduledEvents);
+    EventTargetWithInlineData::trace(visitor);
 }
 
 } // namespace WebCore

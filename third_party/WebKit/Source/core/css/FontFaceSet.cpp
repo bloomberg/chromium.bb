@@ -586,6 +586,7 @@ void FontFaceSet::trace(Visitor* visitor)
     visitor->trace(m_failedFonts);
     visitor->trace(m_nonCSSConnectedFaces);
     DocumentSupplement::trace(visitor);
+    EventTargetWithInlineData::trace(visitor);
 }
 #endif
 

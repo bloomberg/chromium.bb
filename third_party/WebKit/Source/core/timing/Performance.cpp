@@ -281,6 +281,7 @@ void Performance::trace(Visitor* visitor)
     visitor->trace(m_timing);
     visitor->trace(m_resourceTimingBuffer);
     visitor->trace(m_userTiming);
+    EventTargetWithInlineData::trace(visitor);
 }
 
 } // namespace WebCore

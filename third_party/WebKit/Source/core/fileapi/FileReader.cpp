@@ -407,6 +407,7 @@ String FileReader::stringResult()
 void FileReader::trace(Visitor* visitor)
 {
     visitor->trace(m_error);
+    EventTargetWithInlineData::trace(visitor);
 }
 
 } // namespace WebCore

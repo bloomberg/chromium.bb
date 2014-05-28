@@ -196,6 +196,7 @@ void SpeechRecognition::trace(Visitor* visitor)
 {
     visitor->trace(m_grammars);
     visitor->trace(m_finalResults);
+    EventTargetWithInlineData::trace(visitor);
 }
 
 } // namespace WebCore

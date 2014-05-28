@@ -42,7 +42,8 @@ namespace WebCore {
 class ExceptionState;
 
 class TextTrackCue : public RefCountedWillBeRefCountedGarbageCollected<TextTrackCue>, public EventTargetWithInlineData {
-    DEFINE_EVENT_TARGET_REFCOUNTING(RefCountedWillBeRefCountedGarbageCollected<TextTrackCue>);
+    REFCOUNTED_EVENT_TARGET(TextTrackCue);
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(TextTrackCue);
 public:
     static const AtomicString& cueShadowPseudoId()
     {
@@ -95,7 +96,7 @@ public:
     DEFINE_ATTRIBUTE_EVENT_LISTENER(enter);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(exit);
 
-    virtual void trace(Visitor*);
+    virtual void trace(Visitor*) OVERRIDE;
 
 protected:
     TextTrackCue(double start, double end);

@@ -56,11 +56,11 @@ class IDBDatabase FINAL
     , public EventTargetWithInlineData
     , public ActiveDOMObject {
     DEFINE_EVENT_TARGET_REFCOUNTING(RefCountedGarbageCollected<IDBDatabase>);
-
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(IDBDatabase);
 public:
     static IDBDatabase* create(ExecutionContext*, PassOwnPtr<blink::WebIDBDatabase>, IDBDatabaseCallbacks*);
     virtual ~IDBDatabase();
-    void trace(Visitor*);
+    virtual void trace(Visitor*) OVERRIDE;
 
     void setMetadata(const IDBDatabaseMetadata& metadata) { m_metadata = metadata; }
     void indexCreated(int64_t objectStoreId, const IDBIndexMetadata&);

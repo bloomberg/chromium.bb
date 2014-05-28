@@ -337,4 +337,5 @@ void TextTrackList::trace(Visitor* visitor)
     visitor->trace(m_addTrackTracks);
     visitor->trace(m_elementTracks);
     visitor->trace(m_inbandTracks);
+    EventTargetWithInlineData::trace(visitor);
 }

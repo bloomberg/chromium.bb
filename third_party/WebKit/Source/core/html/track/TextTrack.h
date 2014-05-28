@@ -46,7 +46,8 @@ class VTTRegion;
 class VTTRegionList;
 
 class TextTrack : public TrackBase, public ScriptWrappable, public EventTargetWithInlineData {
-    DEFINE_EVENT_TARGET_REFCOUNTING(RefCountedWillBeRefCountedGarbageCollected<TrackBase>);
+    REFCOUNTED_EVENT_TARGET(TrackBase);
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(TextTrack);
 public:
     static PassRefPtrWillBeRawPtr<TextTrack> create(Document& document, const AtomicString& kind, const AtomicString& label, const AtomicString& language)
     {

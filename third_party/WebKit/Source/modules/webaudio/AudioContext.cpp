@@ -973,6 +973,7 @@ void AudioContext::trace(Visitor* visitor)
     visitor->trace(m_destinationNode);
     visitor->trace(m_listener);
     visitor->trace(m_dirtySummingJunctions);
+    EventTargetWithInlineData::trace(visitor);
 }
 
 } // namespace WebCore

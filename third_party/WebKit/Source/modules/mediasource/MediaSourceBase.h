@@ -50,7 +50,8 @@ class ExceptionState;
 class GenericEventQueue;
 
 class MediaSourceBase : public RefCountedWillBeRefCountedGarbageCollected<MediaSourceBase>, public HTMLMediaSource, public ActiveDOMObject, public EventTargetWithInlineData {
-    DEFINE_EVENT_TARGET_REFCOUNTING(RefCountedWillBeRefCountedGarbageCollected<MediaSourceBase>);
+    REFCOUNTED_EVENT_TARGET(MediaSourceBase);
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(MediaSourceBase);
 public:
     static const AtomicString& openKeyword();
     static const AtomicString& closedKeyword();
@@ -88,8 +89,6 @@ public:
 
     // URLRegistrable interface
     virtual URLRegistry& registry() const OVERRIDE FINAL;
-
-    virtual void trace(Visitor*) { }
 
 protected:
     explicit MediaSourceBase(ExecutionContext*);

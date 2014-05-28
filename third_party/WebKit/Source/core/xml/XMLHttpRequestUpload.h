@@ -43,15 +43,22 @@ namespace WebCore {
 class ExecutionContext;
 class XMLHttpRequest;
 
-class XMLHttpRequestUpload FINAL : public ScriptWrappable, public XMLHttpRequestEventTarget {
+class XMLHttpRequestUpload FINAL : public NoBaseWillBeRefCountedGarbageCollected<XMLHttpRequestUpload>, public ScriptWrappable, public XMLHttpRequestEventTarget {
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(XMLHttpRequestUpload);
 public:
-    static PassOwnPtr<XMLHttpRequestUpload> create(XMLHttpRequest* xmlHttpRequest)
+    static PassOwnPtrWillBeRawPtr<XMLHttpRequestUpload> create(XMLHttpRequest* xmlHttpRequest)
     {
-        return adoptPtr(new XMLHttpRequestUpload(xmlHttpRequest));
+        return adoptPtrWillBeRefCountedGarbageCollected(new XMLHttpRequestUpload(xmlHttpRequest));
     }
 
+#if ENABLE(OILPAN)
+    using RefCountedGarbageCollected::ref;
+    using RefCountedGarbageCollected::deref;
+#else
     void ref() { m_xmlHttpRequest->ref(); }
     void deref() { m_xmlHttpRequest->deref(); }
+#endif
+
     XMLHttpRequest* xmlHttpRequest() const { return m_xmlHttpRequest; }
 
     virtual const AtomicString& interfaceName() const OVERRIDE;
@@ -62,13 +69,15 @@ public:
 
     void handleRequestError(const AtomicString&);
 
+    virtual void trace(Visitor*) OVERRIDE;
+
 private:
     explicit XMLHttpRequestUpload(XMLHttpRequest*);
 
     virtual void refEventTarget() OVERRIDE { ref(); }
     virtual void derefEventTarget() OVERRIDE { deref(); }
 
-    XMLHttpRequest* m_xmlHttpRequest;
+    RawPtrWillBeMember<XMLHttpRequest> m_xmlHttpRequest;
     EventTargetData m_eventTargetData;
 
     // Last progress event values; used when issuing the

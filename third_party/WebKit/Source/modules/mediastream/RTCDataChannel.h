@@ -45,7 +45,8 @@ class Blob;
 class ExceptionState;
 
 class RTCDataChannel FINAL : public RefCountedWillBeRefCountedGarbageCollected<RTCDataChannel>, public ScriptWrappable, public EventTargetWithInlineData, public blink::WebRTCDataChannelHandlerClient {
-    DEFINE_EVENT_TARGET_REFCOUNTING(RefCountedWillBeRefCountedGarbageCollected<RTCDataChannel>);
+    REFCOUNTED_EVENT_TARGET(RTCDataChannel);
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(RTCDataChannel);
 public:
     static PassRefPtrWillBeRawPtr<RTCDataChannel> create(ExecutionContext*, PassOwnPtr<blink::WebRTCDataChannelHandler>);
     static PassRefPtrWillBeRawPtr<RTCDataChannel> create(ExecutionContext*, blink::WebRTCPeerConnectionHandler*, const String& label, const blink::WebRTCDataChannelInit&, ExceptionState&);
@@ -82,11 +83,11 @@ public:
 
     void stop();
 
-    void trace(Visitor*);
-
     // EventTarget
     virtual const AtomicString& interfaceName() const OVERRIDE;
     virtual ExecutionContext* executionContext() const OVERRIDE;
+
+    virtual void trace(Visitor*) OVERRIDE;
 
 private:
     RTCDataChannel(ExecutionContext*, PassOwnPtr<blink::WebRTCDataChannelHandler>);

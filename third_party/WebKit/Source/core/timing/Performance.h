@@ -57,7 +57,8 @@ class UserTiming;
 typedef WillBeHeapVector<RefPtrWillBeMember<PerformanceEntry> > PerformanceEntryVector;
 
 class Performance FINAL : public RefCountedWillBeRefCountedGarbageCollected<Performance>, public ScriptWrappable, public DOMWindowProperty, public EventTargetWithInlineData {
-    DEFINE_EVENT_TARGET_REFCOUNTING(RefCountedWillBeRefCountedGarbageCollected<Performance>);
+    REFCOUNTED_EVENT_TARGET(Performance);
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(Performance);
 public:
     static PassRefPtrWillBeRawPtr<Performance> create(LocalFrame* frame)
     {
@@ -90,7 +91,7 @@ public:
     void measure(const String& measureName, const String& startMark, const String& endMark, ExceptionState&);
     void clearMeasures(const String& measureName);
 
-    void trace(Visitor*);
+    virtual void trace(Visitor*) OVERRIDE;
 
 private:
     explicit Performance(LocalFrame*);

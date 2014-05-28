@@ -46,13 +46,19 @@ class ExecutionContext;
 class InputMethodController;
 class Node;
 
-class InputMethodContext FINAL : public ScriptWrappable, public EventTargetWithInlineData {
+class InputMethodContext FINAL : public NoBaseWillBeRefCountedGarbageCollected<InputMethodContext>, public ScriptWrappable, public EventTargetWithInlineData {
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(InputMethodContext);
 public:
-    static PassOwnPtr<InputMethodContext> create(HTMLElement*);
+    static PassOwnPtrWillBeRawPtr<InputMethodContext> create(HTMLElement*);
     virtual ~InputMethodContext();
 
+#if ENABLE(OILPAN)
+    using RefCountedGarbageCollected<InputMethodContext>::ref;
+    using RefCountedGarbageCollected<InputMethodContext>::deref;
+#else
     void ref() { m_element->ref(); }
     void deref() { m_element->deref(); }
+#endif
 
     String locale() const;
     HTMLElement* target() const;
@@ -76,6 +82,8 @@ public:
     void dispatchCandidateWindowUpdateEvent();
     void dispatchCandidateWindowHideEvent();
 
+    virtual void trace(Visitor*) OVERRIDE;
+
 private:
     InputMethodContext(HTMLElement*);
     bool hasFocus() const;
@@ -85,7 +93,7 @@ private:
     virtual void refEventTarget() OVERRIDE { ref(); }
     virtual void derefEventTarget() OVERRIDE { deref(); }
 
-    HTMLElement* m_element;
+    RawPtrWillBeMember<HTMLElement> m_element;
     Vector<unsigned> m_segments;
 };
 

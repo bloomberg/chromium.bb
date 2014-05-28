@@ -45,7 +45,8 @@ class ExceptionState;
 class PlatformSpeechSynthesizerClient;
 
 class SpeechSynthesis FINAL : public RefCountedWillBeRefCountedGarbageCollected<SpeechSynthesis>, public PlatformSpeechSynthesizerClient, public ScriptWrappable, public ContextLifecycleObserver, public EventTargetWithInlineData {
-    DEFINE_EVENT_TARGET_REFCOUNTING(RefCountedWillBeRefCountedGarbageCollected<SpeechSynthesis>);
+    REFCOUNTED_EVENT_TARGET(SpeechSynthesis);
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(SpeechSynthesis);
 public:
     static PassRefPtrWillBeRawPtr<SpeechSynthesis> create(ExecutionContext*);
 
@@ -67,7 +68,7 @@ public:
 
     virtual ExecutionContext* executionContext() const OVERRIDE;
 
-    void trace(Visitor*);
+    virtual void trace(Visitor*) OVERRIDE;
 
 private:
     explicit SpeechSynthesis(ExecutionContext*);

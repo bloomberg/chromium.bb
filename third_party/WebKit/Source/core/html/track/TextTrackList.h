@@ -42,7 +42,8 @@ class GenericEventQueue;
 class TextTrack;
 
 class TextTrackList FINAL : public RefCountedWillBeRefCountedGarbageCollected<TextTrackList>, public ScriptWrappable, public EventTargetWithInlineData {
-    DEFINE_EVENT_TARGET_REFCOUNTING(RefCountedWillBeRefCountedGarbageCollected<TextTrackList>);
+    REFCOUNTED_EVENT_TARGET(TextTrackList);
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(TextTrackList);
 public:
     static PassRefPtrWillBeRawPtr<TextTrackList> create(HTMLMediaElement* owner)
     {
@@ -76,7 +77,7 @@ public:
     void scheduleChangeEvent();
     void removeAllInbandTracks();
 
-    void trace(Visitor*);
+    virtual void trace(Visitor*) OVERRIDE;
 
 private:
     explicit TextTrackList(HTMLMediaElement*);

@@ -165,6 +165,7 @@ const AtomicString& TextTrackCue::interfaceName() const
 void TextTrackCue::trace(Visitor* visitor)
 {
     visitor->trace(m_track);
+    EventTargetWithInlineData::trace(visitor);
 }
 
 } // namespace WebCore

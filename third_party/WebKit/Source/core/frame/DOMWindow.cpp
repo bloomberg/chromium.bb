@@ -1906,6 +1906,7 @@ void DOMWindow::trace(Visitor* visitor)
     visitor->trace(m_performance);
     visitor->trace(m_css);
     WillBeHeapSupplementable<DOMWindow>::trace(visitor);
+    EventTargetWithInlineData::trace(visitor);
 }
 
 } // namespace WebCore

@@ -72,4 +72,10 @@ void XMLHttpRequestUpload::handleRequestError(const AtomicString& type)
     dispatchEventAndLoadEnd(type, lengthComputable, m_lastBytesSent, m_lastTotalBytesToBeSent);
 }
 
+void XMLHttpRequestUpload::trace(Visitor* visitor)
+{
+    visitor->trace(m_xmlHttpRequest);
+    XMLHttpRequestEventTarget::trace(visitor);
+}
+
 } // namespace WebCore
