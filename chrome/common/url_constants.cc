@@ -567,6 +567,7 @@ const char* const kChromeHostURLs[] = {
   kChromeUINetInternalsHost,
   kChromeUINewTabHost,
   kChromeUIOmniboxHost,
+  kChromeUIPasswordManagerInternalsHost,
   kChromeUIPredictorsHost,
   kChromeUIProfilerHost,
   kChromeUISignInInternalsHost,
