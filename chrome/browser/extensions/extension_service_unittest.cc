@@ -2316,7 +2316,14 @@ TEST_F(ExtensionServiceTest, PackExtensionOpenSSLKey) {
   InstallCRX(crx_path, INSTALL_NEW);
 }
 
-TEST_F(ExtensionServiceTest, InstallTheme) {
+#if defined(THREAD_SANITIZER)
+// Flaky under Tsan. http://crbug.com/377702
+#define MAYBE_InstallTheme DISABLED_InstallTheme
+#else
+#define MAYBE_InstallTheme InstallTheme
+#endif
+
+TEST_F(ExtensionServiceTest, MAYBE_InstallTheme) {
   InitializeEmptyExtensionService();
   service_->Init();
 
