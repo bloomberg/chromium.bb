@@ -39,7 +39,7 @@ bool ExtensionErrorUIDefault::ShowErrorInBubbleView() {
 
 void ExtensionErrorUIDefault::ShowExtensions() {
   DCHECK(browser_);
-  chrome::ShowExtensions(browser_, base::EmptyString());
+  chrome::ShowExtensions(browser_, std::string());
 }
 
 void ExtensionErrorUIDefault::Close() {

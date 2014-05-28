@@ -32,13 +32,12 @@ using base::string16;
 
 namespace {
 
-// Force the singleton used by Empty[W]String[16] to be a unique type. This
+// Force the singleton used by EmptyString[16] to be a unique type. This
 // prevents other code that might accidentally use Singleton<string> from
 // getting our internal one.
 struct EmptyStrings {
   EmptyStrings() {}
   const std::string s;
-  const std::wstring ws;
   const string16 s16;
 
   static EmptyStrings* GetInstance() {
@@ -106,10 +105,6 @@ bool IsWprintfFormatPortable(const wchar_t* format) {
 
 const std::string& EmptyString() {
   return EmptyStrings::GetInstance()->s;
-}
-
-const std::wstring& EmptyWString() {
-  return EmptyStrings::GetInstance()->ws;
 }
 
 const string16& EmptyString16() {

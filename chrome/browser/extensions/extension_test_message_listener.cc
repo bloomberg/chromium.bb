@@ -94,7 +94,7 @@ void ExtensionTestMessageListener::Observe(
     // Reply immediately, or save the function for future use.
     function_ = function;
     if (!will_reply_)
-      Reply(base::EmptyString());
+      Reply(std::string());
 
     if (waiting_) {
       waiting_ = false;

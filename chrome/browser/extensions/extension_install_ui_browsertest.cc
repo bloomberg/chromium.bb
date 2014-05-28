@@ -240,7 +240,7 @@ IN_PROC_BROWSER_TEST_F(NewTabUISortingBrowserTest,
   EXPECT_FALSE(service->GetInstalledExtension(app_id));
   // Move the test app from the end to be before the web store.
   sorting->OnExtensionMoved(
-      app_id, base::EmptyString(), extension_misc::kWebStoreAppId);
+      app_id, std::string(), extension_misc::kWebStoreAppId);
   EXPECT_EQ(app_id, last_reordered_extension_id_);
 
   // Now install the app.

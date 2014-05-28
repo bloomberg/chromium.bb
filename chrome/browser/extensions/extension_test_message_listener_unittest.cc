@@ -12,6 +12,7 @@ namespace extensions {
 
 namespace {
 
+const char kFormat[] = "[\"%s\"]";
 const char kTestMessage[] = "test message";
 const char kTestMessage2[] = "test message 2";
 const char kFailureMessage[] = "failure";
@@ -26,7 +27,7 @@ TEST_F(ExtensionTestMessageListenerUnittest, BasicTestExtensionMessageTest) {
     ExtensionTestMessageListener listener(kTestMessage, false);  // won't reply
     EXPECT_FALSE(listener.was_satisfied());
     RunFunction(new TestSendMessageFunction,
-                base::StringPrintf("[\"%s\"]", kTestMessage));
+                base::StringPrintf(kFormat, kTestMessage));
     EXPECT_TRUE(listener.was_satisfied());
     EXPECT_EQ(kTestMessage, listener.message());
   }
@@ -36,7 +37,7 @@ TEST_F(ExtensionTestMessageListenerUnittest, BasicTestExtensionMessageTest) {
     ExtensionTestMessageListener listener(false);  // won't reply
     EXPECT_FALSE(listener.was_satisfied());
     RunFunction(new TestSendMessageFunction,
-                base::StringPrintf("[\"%s\"]", kTestMessage2));
+                base::StringPrintf(kFormat, kTestMessage2));
     EXPECT_TRUE(listener.was_satisfied());
     EXPECT_EQ(kTestMessage2, listener.message());
   }
@@ -47,14 +48,14 @@ TEST_F(ExtensionTestMessageListenerUnittest, BasicTestExtensionMessageTest) {
     ExtensionTestMessageListener listener(false);  // won't reply
     EXPECT_FALSE(listener.was_satisfied());
     RunFunction(new TestSendMessageFunction,
-                base::StringPrintf("[\"%s\"]", kTestMessage));
+                base::StringPrintf(kFormat, kTestMessage));
     EXPECT_EQ(kTestMessage, listener.message());
     EXPECT_TRUE(listener.was_satisfied());
     listener.Reset();
     EXPECT_FALSE(listener.was_satisfied());
-    EXPECT_EQ(base::EmptyString(), listener.message());
+    EXPECT_TRUE(listener.message().empty());
     RunFunction(new TestSendMessageFunction,
-                base::StringPrintf("[\"%s\"]", kTestMessage2));
+                base::StringPrintf(kFormat, kTestMessage2));
     EXPECT_TRUE(listener.was_satisfied());
     EXPECT_EQ(kTestMessage2, listener.message());
   }
@@ -65,12 +66,12 @@ TEST_F(ExtensionTestMessageListenerUnittest, BasicTestExtensionMessageTest) {
     ExtensionTestMessageListener listener(kTestMessage, false);  // won't reply
     listener.set_failure_message(kFailureMessage);
     RunFunction(new TestSendMessageFunction,
-                base::StringPrintf("[\"%s\"]", kTestMessage));
+                base::StringPrintf(kFormat, kTestMessage));
     EXPECT_TRUE(listener.WaitUntilSatisfied());  // succeeds
     EXPECT_EQ(kTestMessage, listener.message());
     listener.Reset();
     RunFunction(new TestSendMessageFunction,
-                base::StringPrintf("[\"%s\"]", kFailureMessage));
+                base::StringPrintf(kFormat, kFailureMessage));
     EXPECT_FALSE(listener.WaitUntilSatisfied());  // fails
     EXPECT_EQ(kFailureMessage, listener.message());
   }
