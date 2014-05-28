@@ -35,7 +35,7 @@ from webkitpy.layout_tests.models import test_expectations
 class BotTestExpectationsTest(unittest.TestCase):
     # FIXME: Find a way to import this map from Tools/TestResultServer/model/jsonresults.py.
     FAILURE_MAP = {"A": "AUDIO", "C": "CRASH", "F": "TEXT", "I": "IMAGE", "O": "MISSING",
-        "N": "NO DATA", "P": "PASS", "T": "TIMEOUT", "Y": "NOTRUN", "X": "SKIP", "Z": "IMAGE+TEXT"}
+        "N": "NO DATA", "P": "PASS", "T": "TIMEOUT", "Y": "NOTRUN", "X": "SKIP", "Z": "IMAGE+TEXT", "K": "LEAK"}
 
     # All result_string's in this file expect newest result
     # on left: "PFF", means it just passed after 2 failures.
@@ -112,14 +112,14 @@ class BotTestExpectationsTest(unittest.TestCase):
         test_data = {
             'tests': {
                 'foo': {
-                    'allfailures.html': self._results_from_string('FPFPCNCNTXTXIZIZOCYOCY'),
+                    'allfailures.html': self._results_from_string('FPFPCNCNTXTXIZIZOCOCYKYK'),
                     'imageplustextflake.html': self._results_from_string('ZPZPPPPPPPPPPPPPPPPP'),
                 }
             }
         }
         self._assert_expectations(test_data, {
             'foo/imageplustextflake.html': sorted(["IMAGE+TEXT", "PASS"]),
-            'foo/allfailures.html': sorted(["TEXT", "PASS", "IMAGE+TEXT", "TIMEOUT", "CRASH", "IMAGE", "MISSING"]),
+            'foo/allfailures.html': sorted(["TEXT", "PASS", "IMAGE+TEXT", "TIMEOUT", "CRASH", "IMAGE", "MISSING", "LEAK"]),
         }, only_ignore_very_flaky=True)
 
     def test_unexpected_results_no_unexpected(self):
@@ -147,7 +147,7 @@ class BotTestExpectationsTest(unittest.TestCase):
                     'crash.html': {'results': [[2, 'F'], [1, 'C']], 'expected': 'WONTFIX'},
                     'image.html': {'results': [[2, 'F'], [1, 'I']], 'expected': 'CRASH FAIL'},
                     'i_f.html': {'results': [[1, 'F'], [5, 'I']], 'expected': 'PASS'},
-                    'all.html': self._results_from_string('FPFPCNCNTXTXIZIZOCYOCY'),
+                    'all.html': self._results_from_string('FPFPCNCNTXTXIZIZOCOCYKYK'),
                 }
             }
         }
@@ -160,5 +160,5 @@ class BotTestExpectationsTest(unittest.TestCase):
             'foo/crash.html': sorted(["WONTFIX", "CRASH", "TEXT"]),
             'foo/image.html': sorted(["CRASH", "FAIL", "IMAGE"]),
             'foo/i_f.html': sorted(["PASS", "IMAGE", "TEXT"]),
-            'foo/all.html': sorted(["TEXT", "PASS", "IMAGE+TEXT", "TIMEOUT", "CRASH", "IMAGE", "MISSING"]),
+            'foo/all.html': sorted(["TEXT", "PASS", "IMAGE+TEXT", "TIMEOUT", "CRASH", "IMAGE", "MISSING", "LEAK"]),
         })

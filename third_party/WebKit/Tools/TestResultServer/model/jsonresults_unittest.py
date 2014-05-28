@@ -99,6 +99,10 @@ FULL_RESULT_EXAMPLE = """ADD_RESULTS({
                 "expected": "IMAGE",
                 "actual": "IMAGE",
                 "time": 0.1
+            },
+            "unexpected-leak.html": {
+                "expected": "PASS",
+                "actual": "LEAK"
             }
         }
     },
@@ -125,7 +129,8 @@ FULL_RESULT_EXAMPLE = """ADD_RESULTS({
         "TIMEOUT": 16,
         "IMAGE+TEXT": 0,
         "FAIL": 2,
-        "AUDIO": 0
+        "AUDIO": 0,
+        "LEAK": 1
     },
     "has_wdiff": true,
     "chromium_revision": "5678"
@@ -376,7 +381,7 @@ class JsonResultsTest(unittest.TestCase):
                 "buildNumbers": ["3"],
                 "chromeRevision": ["5678"],
                 "failure_map": CHAR_TO_FAILURE,
-                "num_failures_by_type": {"AUDIO": [0], "CRASH": [3], "FAIL": [2], "IMAGE": [1], "IMAGE+TEXT": [0], "MISSING": [0], "PASS": [10], "SKIP": [2], "TEXT": [3], "TIMEOUT": [16]},
+                "num_failures_by_type": {"AUDIO": [0], "CRASH": [3], "FAIL": [2], "IMAGE": [1], "IMAGE+TEXT": [0], "MISSING": [0], "PASS": [10], "SKIP": [2], "TEXT": [3], "TIMEOUT": [16], "LEAK": [1]},
                 "secondsSinceEpoch": [1368146629],
                 "tests": {
                     "media": {
@@ -420,6 +425,10 @@ class JsonResultsTest(unittest.TestCase):
                         },
                         "unexpected-fail.html": {
                             "results": [[1, FAIL]],
+                            "times": [[1, 0]],
+                        },
+                        "unexpected-leak.html": {
+                            "results": [[1, LEAK]],
                             "times": [[1, 0]],
                         },
                     }

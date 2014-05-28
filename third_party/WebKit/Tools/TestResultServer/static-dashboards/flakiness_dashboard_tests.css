@@ -136,6 +136,9 @@
 .FLAKY {
     background-color: turquoise;
 }
+.LEAK {
+    background-color: pink;
+}
 .separator {
     border: 1px solid lightgray;
     height: 0px;
@@ -256,4 +259,3 @@ pre.expectation {
 .skipped-builder:last-child:after {
     content: '';
 }
-
