@@ -45,9 +45,13 @@ ThreadableWebSocketChannelClientWrapper::ThreadableWebSocketChannelClientWrapper
 {
 }
 
-PassRefPtr<ThreadableWebSocketChannelClientWrapper> ThreadableWebSocketChannelClientWrapper::create(WebSocketChannelClient* client)
+ThreadableWebSocketChannelClientWrapper::~ThreadableWebSocketChannelClientWrapper()
 {
-    return adoptRef(new ThreadableWebSocketChannelClientWrapper(client));
+}
+
+PassRefPtrWillBeRawPtr<ThreadableWebSocketChannelClientWrapper> ThreadableWebSocketChannelClientWrapper::create(WebSocketChannelClient* client)
+{
+    return adoptRefWillBeNoop(new ThreadableWebSocketChannelClientWrapper(client));
 }
 
 String ThreadableWebSocketChannelClientWrapper::subprotocol() const
@@ -151,49 +155,49 @@ void ThreadableWebSocketChannelClientWrapper::processPendingTasks()
         (*iter)->performTask(0);
 }
 
-void ThreadableWebSocketChannelClientWrapper::didConnectCallback(ExecutionContext* context, PassRefPtr<ThreadableWebSocketChannelClientWrapper> wrapper)
+void ThreadableWebSocketChannelClientWrapper::didConnectCallback(ExecutionContext* context, PassRefPtrWillBeRawPtr<ThreadableWebSocketChannelClientWrapper> wrapper)
 {
     ASSERT_UNUSED(context, !context);
     if (wrapper->m_client)
         wrapper->m_client->didConnect();
 }
 
-void ThreadableWebSocketChannelClientWrapper::didReceiveMessageCallback(ExecutionContext* context, PassRefPtr<ThreadableWebSocketChannelClientWrapper> wrapper, const String& message)
+void ThreadableWebSocketChannelClientWrapper::didReceiveMessageCallback(ExecutionContext* context, PassRefPtrWillBeRawPtr<ThreadableWebSocketChannelClientWrapper> wrapper, const String& message)
 {
     ASSERT_UNUSED(context, !context);
     if (wrapper->m_client)
         wrapper->m_client->didReceiveMessage(message);
 }
 
-void ThreadableWebSocketChannelClientWrapper::didReceiveBinaryDataCallback(ExecutionContext* context, PassRefPtr<ThreadableWebSocketChannelClientWrapper> wrapper, PassOwnPtr<Vector<char> > binaryData)
+void ThreadableWebSocketChannelClientWrapper::didReceiveBinaryDataCallback(ExecutionContext* context, PassRefPtrWillBeRawPtr<ThreadableWebSocketChannelClientWrapper> wrapper, PassOwnPtr<Vector<char> > binaryData)
 {
     ASSERT_UNUSED(context, !context);
     if (wrapper->m_client)
         wrapper->m_client->didReceiveBinaryData(binaryData);
 }
 
-void ThreadableWebSocketChannelClientWrapper::didUpdateBufferedAmountCallback(ExecutionContext* context, PassRefPtr<ThreadableWebSocketChannelClientWrapper> wrapper, unsigned long bufferedAmount)
+void ThreadableWebSocketChannelClientWrapper::didUpdateBufferedAmountCallback(ExecutionContext* context, PassRefPtrWillBeRawPtr<ThreadableWebSocketChannelClientWrapper> wrapper, unsigned long bufferedAmount)
 {
     ASSERT_UNUSED(context, !context);
     if (wrapper->m_client)
         wrapper->m_client->didUpdateBufferedAmount(bufferedAmount);
 }
 
-void ThreadableWebSocketChannelClientWrapper::didStartClosingHandshakeCallback(ExecutionContext* context, PassRefPtr<ThreadableWebSocketChannelClientWrapper> wrapper)
+void ThreadableWebSocketChannelClientWrapper::didStartClosingHandshakeCallback(ExecutionContext* context, PassRefPtrWillBeRawPtr<ThreadableWebSocketChannelClientWrapper> wrapper)
 {
     ASSERT_UNUSED(context, !context);
     if (wrapper->m_client)
         wrapper->m_client->didStartClosingHandshake();
 }
 
-void ThreadableWebSocketChannelClientWrapper::didCloseCallback(ExecutionContext* context, PassRefPtr<ThreadableWebSocketChannelClientWrapper> wrapper, unsigned long unhandledBufferedAmount, WebSocketChannelClient::ClosingHandshakeCompletionStatus closingHandshakeCompletion, unsigned short code, const String& reason)
+void ThreadableWebSocketChannelClientWrapper::didCloseCallback(ExecutionContext* context, PassRefPtrWillBeRawPtr<ThreadableWebSocketChannelClientWrapper> wrapper, unsigned long unhandledBufferedAmount, WebSocketChannelClient::ClosingHandshakeCompletionStatus closingHandshakeCompletion, unsigned short code, const String& reason)
 {
     ASSERT_UNUSED(context, !context);
     if (wrapper->m_client)
         wrapper->m_client->didClose(unhandledBufferedAmount, closingHandshakeCompletion, code, reason);
 }
 
-void ThreadableWebSocketChannelClientWrapper::didReceiveMessageErrorCallback(ExecutionContext* context, PassRefPtr<ThreadableWebSocketChannelClientWrapper> wrapper)
+void ThreadableWebSocketChannelClientWrapper::didReceiveMessageErrorCallback(ExecutionContext* context, PassRefPtrWillBeRawPtr<ThreadableWebSocketChannelClientWrapper> wrapper)
 {
     ASSERT_UNUSED(context, !context);
     if (wrapper->m_client)
