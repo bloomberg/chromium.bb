@@ -174,6 +174,13 @@ namespace dom_distiller {
             }
             message.set_extract_text_only(field_value);
           }
+          if (dict->HasKey("2")) {
+            int field_value;
+            if (!dict->GetInteger("2", &field_value)) {
+              goto error;
+            }
+            message.set_debug_level(field_value);
+          }
           return message;
 
         error:
@@ -184,6 +191,9 @@ namespace dom_distiller {
           scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
           if (message.has_extract_text_only()) {
             dict->SetBoolean("1", message.extract_text_only());
+          }
+          if (message.has_debug_level()) {
+            dict->SetInteger("2", message.debug_level());
           }
           return dict.PassAs<base::Value>();
         }
