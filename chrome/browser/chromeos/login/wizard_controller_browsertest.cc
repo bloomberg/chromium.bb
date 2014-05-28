@@ -634,6 +634,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest,
 
   UserContext user_context(kUsername);
   user_context.SetKey(Key(kPassword));
+  user_context.SetUserIDHash(user_context.GetUserID());
   LoginUtils::Set(new TestLoginUtils(user_context));
   MockConsumer mock_consumer;
 

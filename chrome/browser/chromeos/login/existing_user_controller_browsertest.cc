@@ -300,6 +300,7 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerTest,
       .Times(1);
   UserContext user_context(kNewUsername);
   user_context.SetKey(Key(kPassword));
+  user_context.SetUserIDHash(kNewUsername);
   EXPECT_CALL(*mock_login_utils_, CreateAuthenticator(_))
       .Times(1)
       .WillOnce(WithArg<0>(CreateAuthenticator(user_context)));
@@ -307,7 +308,6 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerTest,
       base::Bind(&MockUserManager::AddUser,
                  base::Unretained(mock_user_manager_),
                  kNewUsername);
-  user_context.SetUserIDHash(kNewUsername);
   EXPECT_CALL(*mock_login_utils_, PrepareProfile(user_context, _, _, _, _))
       .Times(1)
       .WillOnce(DoAll(
