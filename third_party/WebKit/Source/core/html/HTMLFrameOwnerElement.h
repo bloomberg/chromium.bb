@@ -33,7 +33,7 @@ class Frame;
 class RenderPart;
 class Widget;
 
-class HTMLFrameOwnerElement : public FrameOwner, public HTMLElement {
+class HTMLFrameOwnerElement : public HTMLElement, public FrameOwner {
 public:
     virtual ~HTMLFrameOwnerElement();
 

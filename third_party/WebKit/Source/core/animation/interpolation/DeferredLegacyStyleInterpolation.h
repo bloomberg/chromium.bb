@@ -44,8 +44,8 @@ private:
     {
     }
 
-    RefPtrWillBeRawPtr<CSSValue> m_startCSSValue;
-    RefPtrWillBeRawPtr<CSSValue> m_endCSSValue;
+    RefPtrWillBeMember<CSSValue> m_startCSSValue;
+    RefPtrWillBeMember<CSSValue> m_endCSSValue;
 };
 
 }

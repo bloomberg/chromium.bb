@@ -144,9 +144,9 @@ bool DeferredLegacyStyleInterpolation::interpolationRequiresStyleResolve(const C
 
 void DeferredLegacyStyleInterpolation::trace(Visitor* visitor)
 {
-    StyleInterpolation::trace(visitor);
     visitor->trace(m_startCSSValue);
     visitor->trace(m_endCSSValue);
+    StyleInterpolation::trace(visitor);
 }
 
 }
