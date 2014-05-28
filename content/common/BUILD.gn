@@ -2,12 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# TODO(brettw) this file is a work in progress, it is not currently hooked up
-# to the build, but currently represents the state of content/common's deps.
-
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
 import("//content/common/common.gni")
+import("//mojo/public/tools/bindings/mojom.gni")
 
 source_set("common") {
   # Only targets in the content tree can depend directly on this target.
@@ -23,6 +21,7 @@ source_set("common") {
 
   configs += [
     "//content:blink_headers_stub_config",
+    "//content:content_implementation",
     "//content:libjingle_stub_config",
   ]
 
@@ -70,8 +69,8 @@ source_set("common") {
     ]
   }
 
+  defines = []
   include_dirs = []
-  defines = [ "CONTENT_IMPLEMENTATION" ]
   libs = []
   ldflags = []
 
@@ -264,3 +263,8 @@ source_set("common") {
   }
 }
 
+mojom("mojo_bindings") {
+  sources = [
+    "web_ui_setup.mojom",
+  ]
+}

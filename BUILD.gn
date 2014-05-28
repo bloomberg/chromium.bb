@@ -33,6 +33,7 @@ group("root") {
     "//components/translate:translate_core_common",
     "//components/url_matcher",
     "//content/public/common",
+    "//content/public/renderer",
     "//crypto",
     "//device/usb",
     #"//extensions/common/api:extensions_api",
@@ -96,6 +97,7 @@ group("root") {
   if (is_android) {
     deps -= [
       "//content/public/common",
+      "//content/public/renderer",
       "//ppapi:ppapi_c",
       "//third_party/libusb",
       #"//third_party/WebKit/Source/platform",
