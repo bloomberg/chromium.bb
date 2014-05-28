@@ -11,7 +11,6 @@ config("sdk") {
 
   defines = [
     "_ATL_NO_OPENGL",
-    "_SECURE_ATL",
     "_WIN32_WINNT=0x0602",
     "_WINDOWS",
     "CERT_CHAIN_PARA_HAS_EXTRA_FIELDS",
@@ -31,6 +30,21 @@ config("sdk") {
     "$visual_studio_path\VC\include",
     "$visual_studio_path\VC\atlmfc\include",
   ]
+
+  if (is_visual_studio_express) {
+    include_dirs += [
+      "$wdk_path/inc/atl71",
+      "$wdk_path/inc/mfc42",
+    ]
+
+    # https://code.google.com/p/chromium/issues/detail?id=372451#c20
+    # Warning 4702 ("Unreachable code") should be re-enabled once Express users
+    # are updated to VS2013 Update 2.
+    cflags = [ "/wd4702" ]
+  } else {
+    # Only supported on non-Express versions.
+    defines += [ "_SECURE_ATL" ]
+  }
 }
 
 # Linker flags for Windows SDK setup, this is applied only to EXEs and DLLs.
@@ -42,6 +56,9 @@ config("sdk_link") {
       "$visual_studio_path\VC\lib\amd64",
       "$visual_studio_path\VC\atlmfc\lib\amd64",
     ]
+    if (is_visual_studio_express) {
+      lib_dirs += [ "$wdk_path/lib/ATL/amd64" ]
+    }
   } else {
     ldflags = [
       "/MACHINE:X86",
@@ -52,9 +69,25 @@ config("sdk_link") {
       "$visual_studio_path\VC\lib",
       "$visual_studio_path\VC\atlmfc\lib",
     ]
+    if (is_visual_studio_express) {
+      lib_dirs += [ "$wdk_path/lib/ATL/i386" ]
+    }
     if (!is_asan) {
       ldflags += [ "/largeaddressaware" ]
     }
+  }
+
+  if (is_visual_studio_express) {
+    # Explicitly required when using the ATL with express.
+    libs = [ "atlthunk.lib" ]
+
+    # ATL 8.0 included in WDK 7.1 makes the linker to generate almost eight
+    # hundred LNK4254 and LNK4078 warnings:
+    #   - warning LNK4254: section 'ATL' (50000040) merged into '.rdata'
+    #     (40000040) with different attributes
+    #   - warning LNK4078: multiple 'ATL' sections found with different
+    #     attributes
+    ldflags += [ "/ignore:4254", "/ignore:4078" ]
   }
 }
 

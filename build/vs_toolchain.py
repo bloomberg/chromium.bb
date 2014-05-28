@@ -141,10 +141,17 @@ def Update():
 
 def GetToolchainDir():
   """Gets location information about the current toolchain (must have been
-  previously updated by 'update')."""
+  previously updated by 'update'). This is used for the GN build."""
   SetEnvironmentAndGetRuntimeDllDirs()
-  print '["%s", "%s"]' % (
-      os.environ['GYP_MSVS_OVERRIDE_PATH'], os.environ['WINDOWSSDKDIR'])
+  print '''vs_path = "%s"
+sdk_path = "%s"
+vs_version = "%s"
+wdk_dir = "%s"
+''' % (
+      os.environ['GYP_MSVS_OVERRIDE_PATH'],
+      os.environ['WINDOWSSDKDIR'],
+      os.environ['GYP_MSVS_VERSION'],
+      os.environ['WDK_DIR'])
 
 
 def main():
