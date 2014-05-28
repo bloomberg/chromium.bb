@@ -230,6 +230,8 @@ ExceptionHandler::~ExceptionHandler() {
       std::find(handler_stack_->begin(), handler_stack_->end(), this);
   handler_stack_->erase(handler);
   if (handler_stack_->empty()) {
+    delete handler_stack_;
+    handler_stack_ = NULL;
     RestoreAlternateStackLocked();
     RestoreHandlersLocked();
   }
