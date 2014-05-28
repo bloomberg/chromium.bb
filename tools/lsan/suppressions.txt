@@ -112,5 +112,7 @@ leak:base::ImportantFileWriter::PostWriteTask
 
 # http://crbug.com/328092
 leak:WebCore::ResourceFetcher::requestResource
+leak:content::ResourceFetcherTests::ResourceFetcherDeletedInCallbackOnRenderer
+leak:content::ResourceFetcherTests::ResourceFetcherTimeoutOnRenderer
 
 # PLEASE READ ABOVE BEFORE ADDING NEW SUPPRESSIONS.
