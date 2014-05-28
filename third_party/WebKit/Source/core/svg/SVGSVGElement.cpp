@@ -781,6 +781,7 @@ void SVGSVGElement::finishParsingChildren()
 
 void SVGSVGElement::trace(Visitor* visitor)
 {
+    visitor->trace(m_timeContainer);
     visitor->trace(m_viewSpec);
     SVGGraphicsElement::trace(visitor);
 }

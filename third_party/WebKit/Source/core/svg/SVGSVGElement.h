@@ -156,7 +156,7 @@ private:
     virtual AffineTransform localCoordinateSpaceTransform(SVGElement::CTMScope) const OVERRIDE;
 
     bool m_useCurrentView;
-    RefPtr<SMILTimeContainer> m_timeContainer;
+    RefPtrWillBeMember<SMILTimeContainer> m_timeContainer;
     RefPtr<SVGPoint> m_translation;
     RefPtrWillBeMember<SVGViewSpec> m_viewSpec;
 

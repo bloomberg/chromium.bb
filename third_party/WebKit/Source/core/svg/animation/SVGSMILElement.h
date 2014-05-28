@@ -255,7 +255,7 @@ private:
 
     SMILTime m_nextProgressTime;
 
-    RefPtr<SMILTimeContainer> m_timeContainer;
+    RefPtrWillBeMember<SMILTimeContainer> m_timeContainer;
     unsigned m_documentOrderIndex;
 
     Vector<unsigned> m_repeatEventCountList;

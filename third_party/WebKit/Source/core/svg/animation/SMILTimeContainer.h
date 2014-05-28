@@ -29,6 +29,7 @@
 #include "core/dom/QualifiedName.h"
 #include "core/svg/animation/SMILTime.h"
 #include "platform/Timer.h"
+#include "platform/heap/Handle.h"
 #include "wtf/HashMap.h"
 #include "wtf/HashSet.h"
 #include "wtf/PassRefPtr.h"
@@ -43,9 +44,9 @@ class SVGElement;
 class SVGSMILElement;
 class SVGSVGElement;
 
-class SMILTimeContainer : public RefCounted<SMILTimeContainer>  {
+class SMILTimeContainer : public RefCountedWillBeGarbageCollectedFinalized<SMILTimeContainer>  {
 public:
-    static PassRefPtr<SMILTimeContainer> create(SVGSVGElement& owner) { return adoptRef(new SMILTimeContainer(owner)); }
+    static PassRefPtrWillBeRawPtr<SMILTimeContainer> create(SVGSVGElement& owner) { return adoptRefWillBeNoop(new SMILTimeContainer(owner)); }
     ~SMILTimeContainer();
 
     void schedule(SVGSMILElement*, SVGElement*, const QualifiedName&);
@@ -67,8 +68,10 @@ public:
 
     void setDocumentOrderIndexesDirty() { m_documentOrderIndexesDirty = true; }
 
+    void trace(Visitor*);
+
 private:
-    SMILTimeContainer(SVGSVGElement& owner);
+    explicit SMILTimeContainer(SVGSVGElement& owner);
 
     enum FrameSchedulingState {
         // No frame scheduled.
@@ -108,9 +111,9 @@ private:
 
     Timer<SMILTimeContainer> m_wakeupTimer;
 
-    typedef pair<SVGElement*, QualifiedName> ElementAttributePair;
-    typedef Vector<SVGSMILElement*> AnimationsVector;
-    typedef HashMap<ElementAttributePair, OwnPtr<AnimationsVector> > GroupedAnimationsMap;
+    typedef pair<RawPtrWillBeWeakMember<SVGElement>, QualifiedName> ElementAttributePair;
+    typedef WillBeHeapLinkedHashSet<RawPtrWillBeWeakMember<SVGSMILElement> > AnimationsLinkedHashSet;
+    typedef WillBeHeapHashMap<ElementAttributePair, OwnPtrWillBeMember<AnimationsLinkedHashSet> > GroupedAnimationsMap;
     GroupedAnimationsMap m_scheduledAnimations;
 
     SVGSVGElement& m_ownerSVGElement;

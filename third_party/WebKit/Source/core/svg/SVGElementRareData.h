@@ -43,7 +43,7 @@ public:
         : m_cursorElement(nullptr)
 #endif
         , m_cursorImageValue(nullptr)
-        , m_correspondingElement(0)
+        , m_correspondingElement(nullptr)
         , m_instancesUpdatesBlocked(false)
         , m_useOverrideComputedStyle(false)
         , m_needsOverrideComputedStyleUpdate(false)
@@ -96,6 +96,7 @@ public:
 #if ENABLE(OILPAN)
         visitor->trace(m_animatedSMILStyleProperties);
         visitor->trace(m_elementInstances);
+        visitor->trace(m_correspondingElement);
         visitor->trace(m_owner);
         visitor->registerWeakMembers<SVGElementRareData, &SVGElementRareData::processWeakMembers>(this);
 #endif
@@ -129,7 +130,7 @@ private:
     WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement> > m_elementInstances;
     RawPtrWillBeWeakMember<SVGCursorElement> m_cursorElement;
     RawPtrWillBeWeakMember<CSSCursorImageValue> m_cursorImageValue;
-    SVGElement* m_correspondingElement;
+    RawPtrWillBeMember<SVGElement> m_correspondingElement;
     bool m_instancesUpdatesBlocked : 1;
     bool m_useOverrideComputedStyle : 1;
     bool m_needsOverrideComputedStyleUpdate : 1;

@@ -205,7 +205,9 @@ SVGSMILElement::~SVGSMILElement()
     smilRepeatEventSender().cancelEvent(this);
     smilRepeatNEventSender().cancelEvent(this);
 #if !ENABLE(OILPAN)
+    // FIXME: Oilpan: Clear |m_syncBaseDependents| using weak processing.
     clearConditions();
+
     if (m_timeContainer && m_targetElement && hasValidAttributeName())
         m_timeContainer->unschedule(this, m_targetElement, m_attributeName);
 #endif
@@ -1349,6 +1351,7 @@ void SVGSMILElement::Condition::trace(Visitor* visitor)
 void SVGSMILElement::trace(Visitor* visitor)
 {
     visitor->trace(m_targetElement);
+    visitor->trace(m_timeContainer);
     visitor->trace(m_conditions);
     visitor->trace(m_syncBaseDependents);
     SVGElement::trace(visitor);
