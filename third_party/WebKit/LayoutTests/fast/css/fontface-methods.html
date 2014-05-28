@@ -4,7 +4,7 @@
 <style>
 @font-face {
     font-family: Font1;
-    src: url(../../resources/Ahem.ttf);
+    src: url(../../resources/Ahem.ttf?font1);
 }
 
 @font-face {
@@ -51,7 +51,7 @@ function testStep2() {
 function testStep3() {
     shouldBeEqualToString('face2.status', 'error');
 
-    face3 = new FontFace('Font3', 'url(../../resources/Ahem.ttf)', {});
+    face3 = new FontFace('Font3', 'url(../../resources/Ahem.ttf?font3)', {});
     shouldBeEqualToString('face3.status', 'unloaded');
     face3.load();
     shouldBeEqualToString('face3.status', 'loading');
@@ -71,7 +71,7 @@ function testStep4() {
 function testStep5() {
     shouldBeEqualToString('face4.status', 'error');
 
-    face5 = new FontFace('Font5', 'url(data:font/truetype;base64,), url(../../resources/Ahem.ttf)', {});
+    face5 = new FontFace('Font5', 'url(data:font/truetype;base64,), url(../../resources/Ahem.ttf?font5)', {});
     shouldBeEqualToString('face5.status', 'unloaded');
     face5.load().then(testStep6, fail('face5.load() rejected'));
     shouldBeEqualToString('face5.status', 'loading');
