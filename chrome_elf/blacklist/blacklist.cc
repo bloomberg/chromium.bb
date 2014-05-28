@@ -279,9 +279,6 @@ bool Initialize(bool force) {
     key = NULL;
   }
 
-  // Record that we have initialized the blacklist.
-  g_blacklist_initialized = true;
-
   BYTE* thunk_storage = reinterpret_cast<BYTE*>(&g_thunk_storage);
 
   // Mark the thunk storage as readable and writeable, since we
@@ -333,6 +330,9 @@ bool Initialize(bool force) {
                               NULL);
 #endif
   delete thunk;
+
+  // Record if we have initialized the blacklist.
+  g_blacklist_initialized = NT_SUCCESS(ret);
 
   // Mark the thunk storage as executable and prevent any future writes to it.
   page_executable = page_executable && VirtualProtect(&g_thunk_storage,
