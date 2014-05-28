@@ -584,6 +584,13 @@ function addActionLink(row, text, handler, opt_disabled) {
 
   link.textContent = text;
   link.addEventListener('click', handler, true);
+  function handleKey(e) {
+    if (e.keyIdentifier == 'Enter' || e.keyIdentifier == 'U+0020') {
+      e.preventDefault();
+      handler();
+    }
+  }
+  link.addEventListener('keydown', handleKey, true);
   row.querySelector('.actions').appendChild(link);
 }
 
