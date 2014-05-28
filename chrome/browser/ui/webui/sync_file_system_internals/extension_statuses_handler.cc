@@ -81,13 +81,17 @@ void ExtensionStatusesHandler::GetExtensionStatusesAsDictionary(
 
   sync_file_system::SyncFileSystemService* sync_service =
       SyncFileSystemServiceFactory::GetForProfile(profile);
-  if (!sync_service)
+  if (!sync_service) {
+    callback.Run(base::ListValue());
     return;
+  }
 
   ExtensionService* extension_service =
       extensions::ExtensionSystem::Get(profile)->extension_service();
-  if (!extension_service)
+  if (!extension_service) {
+    callback.Run(base::ListValue());
     return;
+  }
 
   sync_service->GetExtensionStatusMap(base::Bind(
       &ConvertExtensionStatusToDictionary,
