@@ -69,7 +69,7 @@ class ChildProcessSecurityPolicyTest : public testing::Test {
     // net::URLRequest::IsHandledURL() no longer claims support for default
     // protocols as this is the responsibility of the browser (which is
     // responsible for adding the appropriate ProtocolHandler).
-    test_browser_client_.AddScheme(kFileScheme);
+    test_browser_client_.AddScheme(url::kFileScheme);
   }
 
   virtual void TearDown() {
@@ -122,11 +122,11 @@ TEST_F(ChildProcessSecurityPolicyTest, IsWebSafeSchemeTest) {
 
   EXPECT_TRUE(p->IsWebSafeScheme(url::kHttpScheme));
   EXPECT_TRUE(p->IsWebSafeScheme(url::kHttpsScheme));
-  EXPECT_TRUE(p->IsWebSafeScheme(kFtpScheme));
-  EXPECT_TRUE(p->IsWebSafeScheme(kDataScheme));
+  EXPECT_TRUE(p->IsWebSafeScheme(url::kFtpScheme));
+  EXPECT_TRUE(p->IsWebSafeScheme(url::kDataScheme));
   EXPECT_TRUE(p->IsWebSafeScheme("feed"));
-  EXPECT_TRUE(p->IsWebSafeScheme(kBlobScheme));
-  EXPECT_TRUE(p->IsWebSafeScheme(kFileSystemScheme));
+  EXPECT_TRUE(p->IsWebSafeScheme(url::kBlobScheme));
+  EXPECT_TRUE(p->IsWebSafeScheme(url::kFileSystemScheme));
 
   EXPECT_FALSE(p->IsWebSafeScheme("registered-web-safe-scheme"));
   p->RegisterWebSafeScheme("registered-web-safe-scheme");
@@ -140,7 +140,7 @@ TEST_F(ChildProcessSecurityPolicyTest, IsPseudoSchemeTest) {
       ChildProcessSecurityPolicyImpl::GetInstance();
 
   EXPECT_TRUE(p->IsPseudoScheme(kAboutScheme));
-  EXPECT_TRUE(p->IsPseudoScheme(kJavaScriptScheme));
+  EXPECT_TRUE(p->IsPseudoScheme(url::kJavaScriptScheme));
   EXPECT_TRUE(p->IsPseudoScheme(kViewSourceScheme));
 
   EXPECT_FALSE(p->IsPseudoScheme("registered-pseudo-scheme"));

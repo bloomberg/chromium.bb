@@ -15,7 +15,6 @@
 #include "chrome/common/ntp_logging_events.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/renderer/searchbox/searchbox.h"
-#include "content/public/common/url_constants.h"
 #include "content/public/renderer/render_view.h"
 #include "extensions/common/extension.h"
 #include "grit/renderer_resources.h"
@@ -28,6 +27,7 @@
 #include "ui/base/window_open_disposition.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "url/gurl.h"
+#include "url/url_constants.h"
 #include "v8/include/v8.h"
 
 namespace {
@@ -1038,7 +1038,7 @@ void SearchBoxExtensionWrapper::NavigateContentWindow(
 
   // Navigate the main frame.
   if (destination_url.is_valid() &&
-      !destination_url.SchemeIs(content::kJavaScriptScheme)) {
+      !destination_url.SchemeIs(url::kJavaScriptScheme)) {
     WindowOpenDisposition disposition = CURRENT_TAB;
     if (args[1]->IsNumber()) {
       disposition = (WindowOpenDisposition) args[1]->Uint32Value();

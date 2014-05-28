@@ -55,7 +55,7 @@ void ExtensionWebContentsObserver::RenderViewCreated(
     ExtensionPrefs* prefs = ExtensionPrefs::Get(browser_context_);
     if (prefs->AllowFileAccess(extension->id())) {
       content::ChildProcessSecurityPolicy::GetInstance()->GrantScheme(
-          process->GetID(), content::kFileScheme);
+          process->GetID(), url::kFileScheme);
     }
   }
 

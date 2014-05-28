@@ -180,7 +180,7 @@ bool ParseHelper(Extension* extension,
       // to match all paths.
       pattern.SetPath("/*");
       int valid_schemes = pattern.valid_schemes();
-      if (pattern.MatchesScheme(content::kFileScheme) &&
+      if (pattern.MatchesScheme(url::kFileScheme) &&
           !PermissionsData::CanExecuteScriptEverywhere(extension)) {
         extension->set_wants_file_access(true);
         if (!(extension->creation_flags() & Extension::ALLOW_FILE_ACCESS))

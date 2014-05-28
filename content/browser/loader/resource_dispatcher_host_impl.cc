@@ -70,7 +70,6 @@
 #include "content/public/browser/user_metrics.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/process_type.h"
-#include "content/public/common/url_constants.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_message_start.h"
 #include "net/base/auth.h"
@@ -88,6 +87,7 @@
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_job_factory.h"
+#include "url/url_constants.h"
 #include "webkit/common/blob/blob_data.h"
 #include "webkit/browser/blob/blob_data_handle.h"
 #include "webkit/browser/blob/blob_storage_context.h"
@@ -533,7 +533,7 @@ DownloadInterruptReason ResourceDispatcherHostImpl::BeginDownload(
       CreateRequestInfo(child_id, route_id, true, context);
   extra_info->AssociateWithRequest(request.get());  // Request takes ownership.
 
-  if (request->url().SchemeIs(kBlobScheme)) {
+  if (request->url().SchemeIs(url::kBlobScheme)) {
     ChromeBlobStorageContext* blob_context =
         GetChromeBlobStorageContextForResourceContext(context);
     webkit_blob::BlobProtocolHandler::SetRequestedBlobDataHandle(
@@ -1091,7 +1091,7 @@ void ResourceDispatcherHostImpl::BeginRequest(
   // Request takes ownership.
   extra_info->AssociateWithRequest(new_request.get());
 
-  if (new_request->url().SchemeIs(kBlobScheme)) {
+  if (new_request->url().SchemeIs(url::kBlobScheme)) {
     // Hang on to a reference to ensure the blob is not released prior
     // to the job being started.
     webkit_blob::BlobProtocolHandler::SetRequestedBlobDataHandle(

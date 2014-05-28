@@ -1071,7 +1071,7 @@ void WebViewGuest::NavigateGuest(const std::string& src) {
       (!content::ChildProcessSecurityPolicy::GetInstance()->IsWebSafeScheme(
           url.scheme()) &&
       !url.SchemeIs(content::kAboutScheme)) ||
-      url.SchemeIs(content::kJavaScriptScheme);
+      url.SchemeIs(url::kJavaScriptScheme);
   if (scheme_is_blocked || !url.is_valid()) {
     std::string error_type;
     base::RemoveChars(net::ErrorToString(net::ERR_ABORTED), "net::",

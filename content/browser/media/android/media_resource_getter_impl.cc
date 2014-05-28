@@ -237,14 +237,14 @@ void MediaResourceGetterImpl::GetCookiesCallback(
 void MediaResourceGetterImpl::GetPlatformPathFromURL(
     const GURL& url, const GetPlatformPathCB& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(url.SchemeIsFileSystem() || url.SchemeIs(kBlobScheme));
+  DCHECK(url.SchemeIsFileSystem() || url.SchemeIs(url::kBlobScheme));
 
   GetPlatformPathCB cb =
       base::Bind(&MediaResourceGetterImpl::GetPlatformPathCallback,
                  weak_factory_.GetWeakPtr(),
                  callback);
 
-  if (url.SchemeIs(kBlobScheme)) {
+  if (url.SchemeIs(url::kBlobScheme)) {
     BrowserThread::PostTask(
         BrowserThread::IO,
         FROM_HERE,

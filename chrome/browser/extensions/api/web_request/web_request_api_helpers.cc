@@ -17,7 +17,6 @@
 #include "chrome/browser/extensions/extension_warning_set.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/renderer_host/web_cache_manager.h"
-#include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "extensions/browser/extension_system.h"
@@ -27,6 +26,7 @@
 #include "net/cookies/parsed_cookie.h"
 #include "net/http/http_util.h"
 #include "net/url_request/url_request.h"
+#include "url/url_constants.h"
 
 // TODO(battre): move all static functions into an anonymous namespace at the
 // top of this file.
@@ -427,7 +427,7 @@ static bool MergeRedirectUrlOfResponsesHelper(
     if ((*delta)->new_url.is_empty())
       continue;
     if (consider_only_cancel_scheme_urls &&
-        !(*delta)->new_url.SchemeIs(content::kDataScheme) &&
+        !(*delta)->new_url.SchemeIs(url::kDataScheme) &&
         (*delta)->new_url.spec() != "about:blank") {
       continue;
     }

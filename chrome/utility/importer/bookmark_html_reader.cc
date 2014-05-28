@@ -14,10 +14,10 @@
 #include "chrome/common/importer/imported_bookmark_entry.h"
 #include "chrome/common/importer/imported_favicon_usage.h"
 #include "chrome/utility/importer/favicon_reencode.h"
-#include "content/public/common/url_constants.h"
 #include "net/base/data_url.h"
 #include "net/base/escape.h"
 #include "url/gurl.h"
+#include "url/url_constants.h"
 
 namespace {
 
@@ -57,7 +57,7 @@ void DataURLToFaviconUsage(
     const GURL& favicon_data,
     std::vector<ImportedFaviconUsage>* favicons) {
   if (!link_url.is_valid() || !favicon_data.is_valid() ||
-      !favicon_data.SchemeIs(content::kDataScheme))
+      !favicon_data.SchemeIs(url::kDataScheme))
     return;
 
   // Parse the data URL.

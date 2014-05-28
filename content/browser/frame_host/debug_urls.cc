@@ -100,7 +100,7 @@ bool IsRendererDebugURL(const GURL& url) {
   if (!url.is_valid())
     return false;
 
-  if (url.SchemeIs(kJavaScriptScheme))
+  if (url.SchemeIs(url::kJavaScriptScheme))
     return true;
 
   return url == GURL(kChromeUICrashURL) ||

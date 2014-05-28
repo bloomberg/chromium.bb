@@ -176,7 +176,7 @@ class ChildProcessSecurityPolicyImpl::SecurityState {
 
     // file:// URLs are more granular.  The child may have been given
     // permission to a specific file but not the file:// scheme in general.
-    if (url.SchemeIs(kFileScheme)) {
+    if (url.SchemeIs(url::kFileScheme)) {
       base::FilePath path;
       if (net::FileURLToFilePath(url, &path))
         return ContainsKey(request_file_set_, path);
@@ -310,15 +310,15 @@ ChildProcessSecurityPolicyImpl::ChildProcessSecurityPolicyImpl() {
   // We know about these schemes and believe them to be safe.
   RegisterWebSafeScheme(url::kHttpScheme);
   RegisterWebSafeScheme(url::kHttpsScheme);
-  RegisterWebSafeScheme(kFtpScheme);
-  RegisterWebSafeScheme(kDataScheme);
+  RegisterWebSafeScheme(url::kFtpScheme);
+  RegisterWebSafeScheme(url::kDataScheme);
   RegisterWebSafeScheme("feed");
-  RegisterWebSafeScheme(kBlobScheme);
-  RegisterWebSafeScheme(kFileSystemScheme);
+  RegisterWebSafeScheme(url::kBlobScheme);
+  RegisterWebSafeScheme(url::kFileSystemScheme);
 
   // We know about the following pseudo schemes and treat them specially.
   RegisterPseudoScheme(kAboutScheme);
-  RegisterPseudoScheme(kJavaScriptScheme);
+  RegisterPseudoScheme(url::kJavaScriptScheme);
   RegisterPseudoScheme(kViewSourceScheme);
 }
 
@@ -434,7 +434,7 @@ void ChildProcessSecurityPolicyImpl::GrantRequestURL(
 void ChildProcessSecurityPolicyImpl::GrantRequestSpecificFileURL(
     int child_id,
     const GURL& url) {
-  if (!url.SchemeIs(kFileScheme))
+  if (!url.SchemeIs(url::kFileScheme))
     return;
 
   {
@@ -558,7 +558,7 @@ void ChildProcessSecurityPolicyImpl::GrantWebUIBindings(int child_id) {
   state->second->GrantScheme(kChromeUIScheme);
 
   // Web UI pages can contain links to file:// URLs.
-  state->second->GrantScheme(kFileScheme);
+  state->second->GrantScheme(url::kFileScheme);
 }
 
 void ChildProcessSecurityPolicyImpl::GrantReadRawCookies(int child_id) {

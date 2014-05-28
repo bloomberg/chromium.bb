@@ -14,10 +14,6 @@
 
 namespace url {
 
-const char kFileScheme[] = "file";
-const char kFileSystemScheme[] = "filesystem";
-const char kMailtoScheme[] = "mailto";
-
 namespace {
 
 // ASCII-specific tolower.  The standard library's tolower is locale sensitive,
@@ -161,12 +157,12 @@ bool DoCanonicalize(const CHAR* in_spec,
   // This is the parsed version of the input URL, we have to canonicalize it
   // before storing it in our object.
   bool success;
-  if (DoCompareSchemeComponent(spec, scheme, kFileScheme)) {
+  if (DoCompareSchemeComponent(spec, scheme, url::kFileScheme)) {
     // File URLs are special.
     ParseFileURL(spec, spec_len, &parsed_input);
     success = CanonicalizeFileURL(spec, spec_len, parsed_input,
                                   charset_converter, output, output_parsed);
-  } else if (DoCompareSchemeComponent(spec, scheme, kFileSystemScheme)) {
+  } else if (DoCompareSchemeComponent(spec, scheme, url::kFileSystemScheme)) {
     // Filesystem URLs are special.
     ParseFileSystemURL(spec, spec_len, &parsed_input);
     success = CanonicalizeFileSystemURL(spec, spec_len, parsed_input,
@@ -179,7 +175,7 @@ bool DoCanonicalize(const CHAR* in_spec,
     success = CanonicalizeStandardURL(spec, spec_len, parsed_input,
                                       charset_converter, output, output_parsed);
 
-  } else if (DoCompareSchemeComponent(spec, scheme, kMailtoScheme)) {
+  } else if (DoCompareSchemeComponent(spec, scheme, url::kMailToScheme)) {
     // Mailto are treated like a standard url with only a scheme, path, query
     ParseMailtoURL(spec, spec_len, &parsed_input);
     success = CanonicalizeMailtoURL(spec, spec_len, parsed_input, output,
@@ -335,11 +331,11 @@ bool DoReplaceComponents(const char* spec,
 
   // If we get here, then we know the scheme doesn't need to be replaced, so can
   // just key off the scheme in the spec to know how to do the replacements.
-  if (DoCompareSchemeComponent(spec, parsed.scheme, kFileScheme)) {
+  if (DoCompareSchemeComponent(spec, parsed.scheme, url::kFileScheme)) {
     return ReplaceFileURL(spec, parsed, replacements, charset_converter, output,
                           out_parsed);
   }
-  if (DoCompareSchemeComponent(spec, parsed.scheme, kFileSystemScheme)) {
+  if (DoCompareSchemeComponent(spec, parsed.scheme, url::kFileSystemScheme)) {
     return ReplaceFileSystemURL(spec, parsed, replacements, charset_converter,
                                 output, out_parsed);
   }
@@ -347,7 +343,7 @@ bool DoReplaceComponents(const char* spec,
     return ReplaceStandardURL(spec, parsed, replacements, charset_converter,
                               output, out_parsed);
   }
-  if (DoCompareSchemeComponent(spec, parsed.scheme, kMailtoScheme)) {
+  if (DoCompareSchemeComponent(spec, parsed.scheme, url::kMailToScheme)) {
     return ReplaceMailtoURL(spec, parsed, replacements, output, out_parsed);
   }
 

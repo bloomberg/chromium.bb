@@ -8,7 +8,6 @@
 #include "base/message_loop/message_loop.h"
 #include "content/child/image_decoder.h"
 #include "content/common/image_messages.h"
-#include "content/public/common/url_constants.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/renderer/fetchers/multi_resolution_image_resource_fetcher.h"
 #include "net/base/data_url.h"
@@ -20,6 +19,7 @@
 #include "ui/gfx/favicon_size.h"
 #include "ui/gfx/size.h"
 #include "ui/gfx/skbitmap_operations.h"
+#include "url/url_constants.h"
 
 using blink::WebFrame;
 using blink::WebVector;
@@ -110,7 +110,7 @@ void ImageLoadingHelper::OnDownloadImage(int id,
                                          uint32_t max_image_size) {
   std::vector<SkBitmap> result_images;
   std::vector<gfx::Size> result_original_image_sizes;
-  if (image_url.SchemeIs(kDataScheme)) {
+  if (image_url.SchemeIs(url::kDataScheme)) {
     SkBitmap data_image = ImageFromDataUrl(image_url);
     if (!data_image.empty()) {
       result_images.push_back(ResizeImage(data_image, max_image_size));

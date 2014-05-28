@@ -247,7 +247,7 @@ void ContentSettingsObserver::DidCommitProvisionalLoad(bool is_new_navigation) {
   // If we start failing this DCHECK, please makes sure we don't regress
   // this bug: http://code.google.com/p/chromium/issues/detail?id=79304
   DCHECK(frame->document().securityOrigin().toString() == "null" ||
-         !url.SchemeIs(content::kDataScheme));
+         !url.SchemeIs(url::kDataScheme));
 }
 
 bool ContentSettingsObserver::allowDatabase(const WebString& name,
@@ -697,8 +697,8 @@ bool ContentSettingsObserver::IsWhitelistedForContentSettings(
 
   // If the scheme is file:, an empty file name indicates a directory listing,
   // which requires JavaScript to function properly.
-  if (EqualsASCII(origin.protocol(), content::kFileScheme)) {
-    return document_url.SchemeIs(content::kFileScheme) &&
+  if (EqualsASCII(origin.protocol(), url::kFileScheme)) {
+    return document_url.SchemeIs(url::kFileScheme) &&
            document_url.ExtractFileName().empty();
   }
 

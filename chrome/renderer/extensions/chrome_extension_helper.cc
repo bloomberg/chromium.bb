@@ -7,11 +7,11 @@
 #include "base/strings/string16.h"
 #include "chrome/common/extensions/chrome_extension_messages.h"
 #include "chrome/renderer/web_apps.h"
-#include "content/public/common/url_constants.h"
 #include "content/public/renderer/render_view.h"
 #include "ipc/ipc_message_macros.h"
 #include "third_party/WebKit/public/web/WebView.h"
 #include "url/gurl.h"
+#include "url/url_constants.h"
 
 namespace extensions {
 
@@ -47,7 +47,7 @@ void ChromeExtensionHelper::OnGetApplicationInfo(int page_id) {
   // to decode arbitrary data URLs in the browser process.  See
   // http://b/issue?id=1162972
   for (size_t i = 0; i < app_info.icons.size(); ++i) {
-    if (app_info.icons[i].url.SchemeIs(content::kDataScheme)) {
+    if (app_info.icons[i].url.SchemeIs(url::kDataScheme)) {
       app_info.icons.erase(app_info.icons.begin() + i);
       --i;
     }

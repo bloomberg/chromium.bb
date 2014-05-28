@@ -72,7 +72,7 @@ std::string CanonicalizeHost(const GURL& url) {
   // "google.com".
 
   if (url.SchemeIsFile()) {
-    return std::string(content::kFileScheme) +
+    return std::string(url::kFileScheme) +
            content::kStandardSchemeSeparator;
   }
 
@@ -559,7 +559,7 @@ CookieTreeNode::DetailedInfo CookieTreeRootNode::GetDetailedInfo() const {
 // static
 base::string16 CookieTreeHostNode::TitleForUrl(const GURL& url) {
   const std::string file_origin_node_name(
-      std::string(content::kFileScheme) + content::kStandardSchemeSeparator);
+      std::string(url::kFileScheme) + content::kStandardSchemeSeparator);
   return base::UTF8ToUTF16(url.SchemeIsFile() ? file_origin_node_name
                                               : url.host());
 }
@@ -583,7 +583,7 @@ CookieTreeHostNode::~CookieTreeHostNode() {}
 
 const std::string CookieTreeHostNode::GetHost() const {
   const std::string file_origin_node_name(
-      std::string(content::kFileScheme) + content::kStandardSchemeSeparator);
+      std::string(url::kFileScheme) + content::kStandardSchemeSeparator);
   return url_.SchemeIsFile() ? file_origin_node_name : url_.host();
 }
 

@@ -28,11 +28,11 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/cookie_crypto_delegate.h"
 #include "content/public/browser/cookie_store_factory.h"
-#include "content/public/common/url_constants.h"
 #include "jni/AwCookieManager_jni.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/cookies/cookie_options.h"
 #include "net/url_request/url_request_context.h"
+#include "url/url_constants.h"
 
 using base::FilePath;
 using base::WaitableEvent;
@@ -508,7 +508,7 @@ bool CookieManager::AllowFileSchemeCookies() {
 }
 
 bool CookieManager::AllowFileSchemeCookiesLocked() {
-  return cookie_monster_->IsCookieableScheme(content::kFileScheme);
+  return cookie_monster_->IsCookieableScheme(url::kFileScheme);
 }
 
 void CookieManager::SetAcceptFileSchemeCookies(bool accept) {

@@ -26,11 +26,11 @@ static bool HandleViewSource(GURL* url, BrowserContext* browser_context) {
     static const char* const default_allowed_sub_schemes[] = {
         url::kHttpScheme,
         url::kHttpsScheme,
-        kFtpScheme,
+        url::kFtpScheme,
         kChromeDevToolsScheme,
         kChromeUIScheme,
-        kFileScheme,
-        kFileSystemScheme
+        url::kFileScheme,
+        url::kFileSystemScheme
     };
 
     // Merge all the schemes for which view-source is allowed by default, with

@@ -203,7 +203,7 @@ void AwContentBrowserClient::RenderProcessWillLaunch(
   content::ChildProcessSecurityPolicy::GetInstance()->GrantScheme(
       host->GetID(), android_webview::kContentScheme);
   content::ChildProcessSecurityPolicy::GetInstance()->GrantScheme(
-      host->GetID(), content::kFileScheme);
+      host->GetID(), url::kFileScheme);
 
   host->AddFilter(new AwContentsMessageFilter(host->GetID()));
   host->AddFilter(new cdm::CdmMessageFilterAndroid());

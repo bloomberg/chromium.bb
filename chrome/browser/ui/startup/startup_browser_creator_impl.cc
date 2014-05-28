@@ -503,7 +503,7 @@ bool StartupBrowserCreatorImpl::OpenApplicationWindow(
     ChildProcessSecurityPolicy* policy =
         ChildProcessSecurityPolicy::GetInstance();
     if (policy->IsWebSafeScheme(url.scheme()) ||
-        url.SchemeIs(content::kFileScheme)) {
+        url.SchemeIs(url::kFileScheme)) {
       const extensions::Extension* extension =
           extensions::ExtensionRegistry::Get(profile)
               ->enabled_extensions().GetAppByURL(url);

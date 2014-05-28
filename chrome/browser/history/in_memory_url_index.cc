@@ -40,11 +40,11 @@ void InitializeSchemeWhitelist(std::set<std::string>* whitelist) {
     return;  // Nothing to do, already initialized.
   whitelist->insert(std::string(content::kAboutScheme));
   whitelist->insert(std::string(content::kChromeUIScheme));
-  whitelist->insert(std::string(content::kFileScheme));
-  whitelist->insert(std::string(content::kFtpScheme));
+  whitelist->insert(std::string(url::kFileScheme));
+  whitelist->insert(std::string(url::kFtpScheme));
   whitelist->insert(std::string(url::kHttpScheme));
   whitelist->insert(std::string(url::kHttpsScheme));
-  whitelist->insert(std::string(content::kMailToScheme));
+  whitelist->insert(std::string(url::kMailToScheme));
 }
 
 // Restore/SaveCacheObserver ---------------------------------------------------

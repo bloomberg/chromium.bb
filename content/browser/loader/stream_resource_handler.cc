@@ -9,9 +9,9 @@
 #include "content/browser/streams/stream.h"
 #include "content/browser/streams/stream_registry.h"
 #include "content/public/browser/resource_controller.h"
-#include "content/public/common/url_constants.h"
 #include "net/base/io_buffer.h"
 #include "net/url_request/url_request_status.h"
+#include "url/url_constants.h"
 
 namespace content {
 
@@ -22,7 +22,7 @@ StreamResourceHandler::StreamResourceHandler(net::URLRequest* request,
       read_buffer_(NULL) {
   // TODO(tyoshino): Find a way to share this with the blob URL creation in
   // WebKit.
-  GURL url(std::string(kBlobScheme) + ":" + origin.spec() +
+  GURL url(std::string(url::kBlobScheme) + ":" + origin.spec() +
            base::GenerateGUID());
   stream_ = new Stream(registry, this, url);
 }

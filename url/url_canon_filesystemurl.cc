@@ -43,7 +43,7 @@ bool DoCanonicalizeFileSystemURL(const CHAR* spec,
     return false;
 
   bool success = true;
-  if (CompareSchemeComponent(spec, inner_parsed->scheme, kFileScheme)) {
+  if (CompareSchemeComponent(spec, inner_parsed->scheme, url::kFileScheme)) {
     new_inner_parsed.scheme.begin = output->length();
     output->Append("file://", 7);
     new_inner_parsed.scheme.len = 4;

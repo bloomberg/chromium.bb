@@ -37,11 +37,11 @@
 #include "content/public/browser/user_metrics.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_constants.h"
-#include "content/public/common/url_constants.h"
 #include "net/base/escape.h"
 #include "net/base/mime_util.h"
 #include "net/base/net_util.h"
 #include "skia/ext/platform_canvas.h"
+#include "url/url_constants.h"
 
 namespace content {
 namespace {
@@ -664,7 +664,7 @@ void NavigationControllerImpl::LoadURLWithParams(const LoadURLParams& params) {
       }
       break;
     case LOAD_TYPE_DATA:
-      if (!params.url.SchemeIs(kDataScheme)) {
+      if (!params.url.SchemeIs(url::kDataScheme)) {
         NOTREACHED() << "Data load must use data scheme.";
         return;
       }

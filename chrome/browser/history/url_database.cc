@@ -315,7 +315,7 @@ bool URLDatabase::IsTypedHost(const std::string& host) {
   const char* schemes[] = {
     url::kHttpScheme,
     url::kHttpsScheme,
-    content::kFtpScheme
+    url::kFtpScheme
   };
   URLRows dummy;
   for (size_t i = 0; i < arraysize(schemes); ++i) {

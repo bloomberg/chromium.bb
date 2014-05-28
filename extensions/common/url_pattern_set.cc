@@ -10,10 +10,10 @@
 #include "base/memory/linked_ptr.h"
 #include "base/stl_util.h"
 #include "base/values.h"
-#include "content/public/common/url_constants.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/url_pattern.h"
 #include "url/gurl.h"
+#include "url/url_constants.h"
 
 namespace extensions {
 
@@ -198,7 +198,7 @@ bool URLPatternSet::Populate(const std::vector<std::string>& patterns,
       }
       return false;
     }
-    if (!allow_file_access && pattern.MatchesScheme(content::kFileScheme)) {
+    if (!allow_file_access && pattern.MatchesScheme(url::kFileScheme)) {
       pattern.SetValidSchemes(
           pattern.valid_schemes() & ~URLPattern::SCHEME_FILE);
     }

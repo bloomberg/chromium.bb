@@ -438,7 +438,7 @@ std::vector<GURL> StartupBrowserCreator::GetURLsFromCommandLine(
       ChildProcessSecurityPolicy* policy =
           ChildProcessSecurityPolicy::GetInstance();
       if (policy->IsWebSafeScheme(url.scheme()) ||
-          url.SchemeIs(content::kFileScheme) ||
+          url.SchemeIs(url::kFileScheme) ||
 #if defined(OS_CHROMEOS)
           // In ChromeOS, allow a settings page to be specified on the
           // command line. See ExistingUserController::OnLoginSuccess.

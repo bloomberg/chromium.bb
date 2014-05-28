@@ -131,5 +131,5 @@ bool TranslateService::IsTranslatableURL(const GURL& url) {
          !(url.SchemeIs(extensions::kExtensionScheme) &&
            url.DomainIs(file_manager::kFileManagerAppId)) &&
 #endif
-         !url.SchemeIs(content::kFtpScheme);
+         !url.SchemeIs(url::kFtpScheme);
 }

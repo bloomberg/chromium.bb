@@ -17,11 +17,11 @@ const char* kValidSchemes[] = {
     content::kChromeUIScheme,
     url::kHttpScheme,
     url::kHttpsScheme,
-    content::kFileScheme,
-    content::kFtpScheme,
-    content::kJavaScriptScheme,
-    content::kDataScheme,
-    content::kFileSystemScheme,
+    url::kFileScheme,
+    url::kFtpScheme,
+    url::kJavaScriptScheme,
+    url::kDataScheme,
+    url::kFileSystemScheme,
 };
 
 }  // namespace

@@ -197,7 +197,7 @@ base::string16 OriginChip::LabelFromURLForProfile(const GURL& provided_url,
         base::UTF8ToUTF16(extension->name()) : base::UTF8ToUTF16(url.host());
   }
 
-  if (url.SchemeIsHTTPOrHTTPS() || url.SchemeIs(content::kFtpScheme)) {
+  if (url.SchemeIsHTTPOrHTTPS() || url.SchemeIs(url::kFtpScheme)) {
     // See ToolbarModelImpl::GetText(). Does not pay attention to any user
     // edits, and uses GetURL/net::FormatUrl -- We don't really care about
     // length or the autocomplete parser.
@@ -230,14 +230,14 @@ base::string16 OriginChip::LabelFromURLForProfile(const GURL& provided_url,
   // to see. In these cases, the site chip will display the first
   // part of the full URL.
   if (url.SchemeIs(chrome::kChromeNativeScheme) ||
-      url.SchemeIs(content::kBlobScheme) ||
+      url.SchemeIs(url::kBlobScheme) ||
       url.SchemeIs(content::kChromeDevToolsScheme) ||
-      url.SchemeIs(content::kDataScheme) ||
-      url.SchemeIs(content::kFileScheme) ||
-      url.SchemeIs(content::kFileSystemScheme) ||
+      url.SchemeIs(url::kDataScheme) ||
+      url.SchemeIs(url::kFileScheme) ||
+      url.SchemeIs(url::kFileSystemScheme) ||
       url.SchemeIs(content::kGuestScheme) ||
-      url.SchemeIs(content::kJavaScriptScheme) ||
-      url.SchemeIs(content::kMailToScheme) ||
+      url.SchemeIs(url::kJavaScriptScheme) ||
+      url.SchemeIs(url::kMailToScheme) ||
       url.SchemeIs(content::kMetadataScheme) ||
       url.SchemeIs(content::kSwappedOutScheme)) {
     std::string truncated_url;

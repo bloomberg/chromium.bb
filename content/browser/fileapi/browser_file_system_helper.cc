@@ -17,7 +17,7 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/url_constants.h"
+#include "url/url_constants.h"
 #include "webkit/browser/fileapi/external_mount_points.h"
 #include "webkit/browser/fileapi/file_permission_policy.h"
 #include "webkit/browser/fileapi/file_system_backend.h"
@@ -41,7 +41,7 @@ FileSystemOptions CreateBrowserFileSystemOptions(bool is_incognito) {
       &additional_allowed_schemes);
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kAllowFileAccessFromFiles)) {
-    additional_allowed_schemes.push_back(kFileScheme);
+    additional_allowed_schemes.push_back(url::kFileScheme);
   }
   return FileSystemOptions(profile_mode, additional_allowed_schemes, NULL);
 }

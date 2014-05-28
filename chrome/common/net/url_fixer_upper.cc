@@ -424,21 +424,21 @@ std::string SegmentURLInternal(std::string* text, url::Parsed* parts) {
       // Couldn't determine the scheme, so just pick one.
       parts->scheme.reset();
       scheme = StartsWithASCII(*text, "ftp.", false) ?
-          content::kFtpScheme : url::kHttpScheme;
+          url::kFtpScheme : url::kHttpScheme;
     }
   }
 
   // Proceed with about and chrome schemes, but not file or nonstandard schemes.
   if ((scheme != content::kAboutScheme) &&
       (scheme != content::kChromeUIScheme) &&
-      ((scheme == content::kFileScheme) ||
+      ((scheme == url::kFileScheme) ||
        !url::IsStandard(scheme.c_str(),
                         url::Component(0,
                                        static_cast<int>(scheme.length()))))) {
     return scheme;
   }
 
-  if (scheme == content::kFileSystemScheme) {
+  if (scheme == url::kFileSystemScheme) {
     // Have the GURL parser do the heavy lifting for us.
     url::ParseFileSystemURL(text->data(), static_cast<int>(text->length()),
                             parts);
@@ -524,11 +524,11 @@ GURL URLFixerUpper::FixupURL(const std::string& text,
   }
 
   // We handle the file scheme separately.
-  if (scheme == content::kFileScheme)
+  if (scheme == url::kFileScheme)
     return GURL(parts.scheme.is_valid() ? text : FixupPath(text));
 
   // We handle the filesystem scheme separately.
-  if (scheme == content::kFileSystemScheme) {
+  if (scheme == url::kFileSystemScheme) {
     if (parts.inner_parsed() && parts.inner_parsed()->scheme.is_valid())
       return GURL(text);
     return GURL();

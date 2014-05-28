@@ -19,12 +19,12 @@
 #include "content/plugin/plugin_channel.h"
 #include "content/plugin/plugin_thread.h"
 #include "content/public/common/content_client.h"
-#include "content/public/common/url_constants.h"
 #include "skia/ext/platform_canvas.h"
 #include "skia/ext/platform_device.h"
 #include "third_party/WebKit/public/web/WebBindings.h"
 #include "ui/gfx/blit.h"
 #include "ui/gfx/canvas.h"
+#include "url/url_constants.h"
 
 #if defined(OS_MACOSX)
 #include "base/mac/mac_util.h"
@@ -290,7 +290,7 @@ void WebPluginProxy::HandleURLRequest(const char* url,
       GURL request_url(url);
       if (!request_url.SchemeIs(url::kHttpScheme) &&
           !request_url.SchemeIs(url::kHttpsScheme) &&
-          !request_url.SchemeIs(kFtpScheme)) {
+          !request_url.SchemeIs(url::kFtpScheme)) {
         return;
       }
     }

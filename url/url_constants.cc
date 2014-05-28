@@ -6,7 +6,14 @@
 
 namespace url {
 
+const char kBlobScheme[] = "blob";
+const char kDataScheme[] = "data";
+const char kFileScheme[] = "file";
+const char kFileSystemScheme[] = "filesystem";
+const char kFtpScheme[] = "ftp";
 const char kHttpScheme[] = "http";
 const char kHttpsScheme[] = "https";
+const char kJavaScriptScheme[] = "javascript";
+const char kMailToScheme[] = "mailto";
 
 }  // namespace url

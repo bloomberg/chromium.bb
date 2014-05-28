@@ -72,7 +72,6 @@
 #include "content/public/common/context_menu_params.h"
 #include "content/public/common/drop_data.h"
 #include "content/public/common/result_codes.h"
-#include "content/public/common/url_constants.h"
 #include "content/public/common/url_utils.h"
 #include "net/base/filename_util.h"
 #include "net/base/net_util.h"
@@ -87,6 +86,7 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/native_theme/native_theme_switches.h"
 #include "ui/shell_dialogs/selected_file_info.h"
+#include "url/url_constants.h"
 #include "webkit/browser/fileapi/isolated_context.h"
 
 #if defined(OS_MACOSX)
@@ -1252,7 +1252,7 @@ void RenderViewHostImpl::OnStartDragging(
       ChildProcessSecurityPolicyImpl::GetInstance();
 
   // Allow drag of Javascript URLs to enable bookmarklet drag to bookmark bar.
-  if (!filtered_data.url.SchemeIs(kJavaScriptScheme))
+  if (!filtered_data.url.SchemeIs(url::kJavaScriptScheme))
     process->FilterURL(true, &filtered_data.url);
   process->FilterURL(false, &filtered_data.html_base_url);
   // Filter out any paths that the renderer didn't have access to. This prevents

@@ -20,7 +20,6 @@
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
@@ -32,6 +31,7 @@
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_family.h"
 #include "ui/gfx/image/image_skia.h"
+#include "url/url_constants.h"
 
 #if defined(OS_WIN)
 #include "ui/gfx/icon_util.h"
@@ -403,9 +403,9 @@ void UpdateAllShortcuts(const base::string16& old_app_title,
 
 bool IsValidUrl(const GURL& url) {
   static const char* const kValidUrlSchemes[] = {
-      content::kFileScheme,
-      content::kFileSystemScheme,
-      content::kFtpScheme,
+      url::kFileScheme,
+      url::kFileSystemScheme,
+      url::kFtpScheme,
       url::kHttpScheme,
       url::kHttpsScheme,
       extensions::kExtensionScheme,

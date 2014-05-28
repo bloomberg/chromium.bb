@@ -13,7 +13,6 @@
 #include "base/strings/string_util.h"
 #include "chrome/browser/chromeos/offline/offline_load_page.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
-#include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/resource_controller.h"
@@ -24,6 +23,7 @@
 #include "net/base/network_change_notifier.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
+#include "url/url_constants.h"
 #include "webkit/browser/appcache/appcache_service.h"
 
 using content::BrowserThread;
@@ -118,7 +118,7 @@ void OfflineResourceThrottle::OnBlockingPageComplete(bool proceed) {
 }
 
 bool OfflineResourceThrottle::IsRemote(const GURL& url) const {
-  return !net::IsLocalhost(url.host()) && (url.SchemeIs(content::kFtpScheme) ||
+  return !net::IsLocalhost(url.host()) && (url.SchemeIs(url::kFtpScheme) ||
                                            url.SchemeIs(url::kHttpScheme) ||
                                            url.SchemeIs(url::kHttpsScheme));
 }

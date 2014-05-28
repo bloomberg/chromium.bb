@@ -192,12 +192,12 @@ bool ShellContentBrowserClient::IsHandledURL(const GURL& url) {
   // Keep in sync with ProtocolHandlers added by
   // ShellURLRequestContextGetter::GetURLRequestContext().
   static const char* const kProtocolList[] = {
-      kBlobScheme,
-      kFileSystemScheme,
+      url::kBlobScheme,
+      url::kFileSystemScheme,
       kChromeUIScheme,
       kChromeDevToolsScheme,
-      kDataScheme,
-      kFileScheme,
+      url::kDataScheme,
+      url::kFileScheme,
   };
   for (size_t i = 0; i < arraysize(kProtocolList); ++i) {
     if (url.scheme() == kProtocolList[i])

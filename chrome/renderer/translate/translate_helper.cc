@@ -126,7 +126,7 @@ void TranslateHelper::PrepareForUrl(const GURL& url) {
     return;
   if (url.SchemeIs(content::kChromeDevToolsScheme))
     return;
-  if (url.SchemeIs(content::kFtpScheme))
+  if (url.SchemeIs(url::kFtpScheme))
     return;
 #if defined(OS_CHROMEOS)
   if (url.SchemeIs(extensions::kExtensionScheme) &&

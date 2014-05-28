@@ -172,7 +172,7 @@ bool LoadUserScriptFromDictionary(const base::DictionaryValue* content_script,
           pattern.valid_schemes() & ~URLPattern::SCHEME_CHROMEUI);
     }
 
-    if (pattern.MatchesScheme(content::kFileScheme) &&
+    if (pattern.MatchesScheme(url::kFileScheme) &&
         !PermissionsData::CanExecuteScriptEverywhere(extension)) {
       extension->set_wants_file_access(true);
       if (!(extension->creation_flags() & Extension::ALLOW_FILE_ACCESS)) {

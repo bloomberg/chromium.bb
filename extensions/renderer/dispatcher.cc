@@ -795,9 +795,9 @@ void Dispatcher::UpdateOriginPermissions(
     const char* schemes[] = {
         url::kHttpScheme,
         url::kHttpsScheme,
-        content::kFileScheme,
+        url::kFileScheme,
         content::kChromeUIScheme,
-        content::kFtpScheme,
+        url::kFtpScheme,
     };
     for (size_t j = 0; j < arraysize(schemes); ++j) {
       if (i->MatchesScheme(schemes[j])) {

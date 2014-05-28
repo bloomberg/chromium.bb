@@ -24,7 +24,6 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/drop_data.h"
-#include "content/public/common/url_constants.h"
 #include "grit/ui_resources.h"
 #include "net/base/escape.h"
 #include "net/base/filename_util.h"
@@ -32,6 +31,7 @@
 #include "ui/base/clipboard/custom_data_helper.h"
 #include "ui/base/dragdrop/cocoa_dnd_util.h"
 #include "ui/gfx/image/image.h"
+#include "url/url_constants.h"
 
 using base::SysNSStringToUTF8;
 using base::SysUTF8ToNSString;
@@ -169,7 +169,7 @@ void PromiseWriterHelper(const DropData& drop_data,
     NSURL* url = [NSURL URLWithString:SysUTF8ToNSString(dropData_->url.spec())];
     // If NSURL creation failed, check for a badly-escaped JavaScript URL.
     // Strip out any existing escapes and then re-escape uniformly.
-    if (!url && dropData_->url.SchemeIs(content::kJavaScriptScheme)) {
+    if (!url && dropData_->url.SchemeIs(url::kJavaScriptScheme)) {
       net::UnescapeRule::Type unescapeRules =
           net::UnescapeRule::SPACES |
           net::UnescapeRule::URL_SPECIAL_CHARS |

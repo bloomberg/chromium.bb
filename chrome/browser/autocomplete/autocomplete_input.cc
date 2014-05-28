@@ -161,7 +161,7 @@ AutocompleteInput::Type AutocompleteInput::Parse(
   if (!canonicalized_url->is_valid())
     return QUERY;
 
-  if (LowerCaseEqualsASCII(parsed_scheme, content::kFileScheme)) {
+  if (LowerCaseEqualsASCII(parsed_scheme, url::kFileScheme)) {
     // A user might or might not type a scheme when entering a file URL.  In
     // either case, |parsed_scheme| will tell us that this is a file URL, but
     // |parts->scheme| might be empty, e.g. if the user typed "C:\foo".
@@ -184,8 +184,8 @@ AutocompleteInput::Type AutocompleteInput::Parse(
     // still claim to handle them.
     if (ProfileIOData::IsHandledProtocol(base::UTF16ToASCII(parsed_scheme)) ||
         LowerCaseEqualsASCII(parsed_scheme, content::kViewSourceScheme) ||
-        LowerCaseEqualsASCII(parsed_scheme, content::kJavaScriptScheme) ||
-        LowerCaseEqualsASCII(parsed_scheme, content::kDataScheme))
+        LowerCaseEqualsASCII(parsed_scheme, url::kJavaScriptScheme) ||
+        LowerCaseEqualsASCII(parsed_scheme, url::kDataScheme))
       return URL;
 
     // Not an internal protocol.  Check and see if the user has explicitly
@@ -456,7 +456,7 @@ void AutocompleteInput::ParseForEmphasizeComponents(const base::string16& text,
         host->reset();
       }
     }
-  } else if (LowerCaseEqualsASCII(scheme_str, content::kFileSystemScheme) &&
+  } else if (LowerCaseEqualsASCII(scheme_str, url::kFileSystemScheme) &&
              parts.inner_parsed() && parts.inner_parsed()->scheme.is_valid()) {
     *host = parts.inner_parsed()->host;
   }

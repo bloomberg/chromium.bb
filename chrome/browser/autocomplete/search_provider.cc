@@ -39,7 +39,6 @@
 #include "chrome/browser/ui/search/instant_controller.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/common/url_constants.h"
 #include "content/public/browser/user_metrics.h"
 #include "grit/generated_resources.h"
 #include "net/base/escape.h"
@@ -49,6 +48,7 @@
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_status.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "url/url_constants.h"
 #include "url/url_util.h"
 
 // Helpers --------------------------------------------------------------------
@@ -564,7 +564,7 @@ bool SearchProvider::IsQuerySuitableForSuggest() const {
   // assume we're OK.
   if (!LowerCaseEqualsASCII(input_.scheme(), url::kHttpScheme) &&
       !LowerCaseEqualsASCII(input_.scheme(), url::kHttpsScheme) &&
-      !LowerCaseEqualsASCII(input_.scheme(), content::kFtpScheme))
+      !LowerCaseEqualsASCII(input_.scheme(), url::kFtpScheme))
     return (input_.type() == AutocompleteInput::QUERY);
 
   // Don't send URLs with usernames, queries or refs.  Some of these are

@@ -3227,14 +3227,14 @@ WebNavigationPolicy RenderFrameImpl::DecidePolicyForNavigation(
         (frame->isViewSourceModeEnabled() &&
             type != blink::WebNavigationTypeReload);
 
-    if (!should_fork && url.SchemeIs(kFileScheme)) {
+    if (!should_fork && url.SchemeIs(url::kFileScheme)) {
       // Fork non-file to file opens.  Check the opener URL if this is the
       // initial navigation in a newly opened window.
       GURL source_url(old_url);
       if (is_initial_navigation && source_url.is_empty() && frame->opener())
         source_url = frame->opener()->top()->document().url();
       DCHECK(!source_url.is_empty());
-      should_fork = !source_url.SchemeIs(kFileScheme);
+      should_fork = !source_url.SchemeIs(url::kFileScheme);
     }
 
     if (!should_fork) {

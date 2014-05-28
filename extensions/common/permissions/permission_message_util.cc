@@ -6,13 +6,13 @@
 
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "content/public/common/url_constants.h"
 #include "extensions/common/permissions/permission_message.h"
 #include "extensions/common/permissions/permission_set.h"
 #include "extensions/common/url_pattern_set.h"
 #include "grit/extensions_strings.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "url/url_constants.h"
 
 using extensions::PermissionMessage;
 using extensions::PermissionSet;
@@ -102,7 +102,7 @@ std::set<std::string> GetDistinctHosts(const URLPatternSet& host_patterns,
   for (URLPatternSet::const_iterator i = host_patterns.begin();
        i != host_patterns.end();
        ++i) {
-    if (exclude_file_scheme && i->scheme() == content::kFileScheme)
+    if (exclude_file_scheme && i->scheme() == url::kFileScheme)
       continue;
 
     std::string host = i->host();
