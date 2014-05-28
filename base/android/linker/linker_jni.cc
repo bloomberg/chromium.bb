@@ -28,11 +28,10 @@
 
 #if DEBUG
 #define LOG_INFO(...) __android_log_print(ANDROID_LOG_INFO, TAG, __VA_ARGS__)
-#define LOG_ERROR(...) __android_log_print(ANDROID_LOG_ERROR, TAG, __VA_ARGS__)
 #else
 #define LOG_INFO(...) ((void)0)
-#define LOG_ERROR(...) ((void)0)
 #endif
+#define LOG_ERROR(...) __android_log_print(ANDROID_LOG_ERROR, TAG, __VA_ARGS__)
 
 #define UNUSED __attribute__((unused))
 
