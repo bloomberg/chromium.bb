@@ -199,7 +199,9 @@ TEST_F(PinchViewportTest, TestResize)
 static void turnOffForceCompositingMode(WebSettings* settings)
 {
     PinchViewportTest::configureSettings(settings);
-    settings->setForceCompositingMode(false);
+    // FIXME: This setting is being removed, so this test needs to be rewritten to
+    // do something else. crbug.com/173949
+    settings->setAcceleratedCompositingEnabled(false);
 }
 
 // Test that the container layer gets sized properly if the WebView is resized
@@ -211,12 +213,12 @@ TEST_F(PinchViewportTest, TestWebViewResizedBeforeAttachment)
 
     navigateTo("about:blank");
     forceFullCompositingUpdate();
-    webViewImpl()->enterForceCompositingMode(true);
+    webViewImpl()->settings()->setAcceleratedCompositingEnabled(true);
+    webViewImpl()->layout();
 
     PinchViewport& pinchViewport = frame()->page()->frameHost().pinchViewport();
     EXPECT_FLOAT_SIZE_EQ(FloatSize(320, 240), pinchViewport.rootGraphicsLayer()->size());
 }
-
 // Make sure that the visibleRect method acurately reflects the scale and scroll location
 // of the viewport.
 TEST_F(PinchViewportTest, TestVisibleRect)
