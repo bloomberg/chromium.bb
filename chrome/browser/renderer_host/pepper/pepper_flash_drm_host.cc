@@ -170,13 +170,17 @@ int32_t PepperFlashDRMHost::OnHostMsgGetHmonitor(
 int32_t PepperFlashDRMHost::OnHostMsgMonitorIsExternal(
     ppapi::host::HostMessageContext* context) {
   int64_t monitor_id = monitor_finder_->GetMonitor();
-  if (monitor_id) {
-    // TODO(bbudge) get information about whether monitor is external.
-    context->reply_msg =
-        PpapiPluginMsg_FlashDRM_MonitorIsExternalReply(PP_FALSE);
-    return PP_OK;
-  }
-  return PP_ERROR_FAILED;
+  if (!monitor_id)
+    return PP_ERROR_FAILED;
+
+  PP_Bool is_external = PP_FALSE;
+#if defined(OS_MACOSX)
+  if (!MonitorFinder::IsMonitorBuiltIn(monitor_id))
+    is_external = PP_TRUE;
+#endif
+  context->reply_msg =
+      PpapiPluginMsg_FlashDRM_MonitorIsExternalReply(is_external);
+  return PP_OK;
 }
 
 void PepperFlashDRMHost::GotDeviceID(
