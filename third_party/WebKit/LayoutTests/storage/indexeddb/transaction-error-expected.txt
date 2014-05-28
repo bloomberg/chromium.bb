@@ -1,4 +1,4 @@
-CONSOLE ERROR: line 78: Uncaught Error: This should *NOT* be caught!
+CONSOLE ERROR: line 82: Uncaught Error: This should *NOT* be caught!
 Test IDBTransaction.error cases.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
@@ -27,6 +27,8 @@ PASS trans.error is null
 If the transaction is aborted due to a request error that is not prevented, IDBTransaction.error should match:
 trans = db.transaction('storeName', 'readwrite')
 request = trans.objectStore('storeName').add('value2', 'key')
+PASS request.result is undefined.
+PASS request.error is non-null.
 PASS request.error.name is 'ConstraintError'
 request_error = request.error
 Transaction received abort event.
@@ -38,6 +40,8 @@ PASS trans.error is request_error
 If the transaction is aborted due to an exception thrown from event callback, IDBTransaction.error should be AbortError:
 trans = db.transaction('storeName', 'readwrite')
 request = trans.objectStore('storeName').add('value2', 'key')
+PASS request.result is undefined.
+PASS request.error is non-null.
 PASS request.error.name is 'ConstraintError'
 Throwing exception...
 Transaction received abort event.

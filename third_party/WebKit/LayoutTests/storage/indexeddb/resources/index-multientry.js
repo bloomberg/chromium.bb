@@ -99,7 +99,11 @@ function verifyUniqueConstraint()
             debug("This should fail the uniqueness constraint on the index, and fail:");
             request = evalAndLog("transaction.objectStore('store-unique').put({x: [5, 2], y: 'c'}, 'should fail')");
             request.onsuccess = unexpectedSuccessCallback;
-            request.onerror = function() { debug("Request failed, as expected (" + request.error.name + ")"); };
+            request.onerror = function() {
+                shouldBeUndefined("request.result");
+                shouldBeNonNull("request.error");
+                debug("Request failed, as expected (" + request.error.name + ")");
+            };
         };
     };
 }

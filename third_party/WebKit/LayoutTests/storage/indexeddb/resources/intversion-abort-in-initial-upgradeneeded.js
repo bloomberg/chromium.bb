@@ -44,10 +44,10 @@ function onAbort(evt)
 function onError(evt)
 {
     preamble(evt);
-    shouldBe("db", "event.target.result");
     shouldBe("request", "event.target");
+    shouldBeUndefined("event.target.result");
+    shouldBeNonNull("event.target.error");
     shouldBeEqualToString("event.target.error.name", "AbortError");
-    shouldBe("event.target.result.version", "0");
     shouldBeNull("request.transaction");
     finishJSTest();
 }

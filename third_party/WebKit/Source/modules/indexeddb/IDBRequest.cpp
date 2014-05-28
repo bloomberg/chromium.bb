@@ -234,6 +234,7 @@ void IDBRequest::onError(PassRefPtrWillBeRawPtr<DOMError> error)
         return;
 
     m_error = error;
+    setResult(IDBAny::createUndefined());
     m_pendingCursor.clear();
     enqueueEvent(Event::createCancelableBubble(EventTypeNames::error));
 }

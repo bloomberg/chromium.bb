@@ -34,6 +34,8 @@ function addFirstSuccess()
 
 function addSecondExpectedError()
 {
+    shouldBeUndefined("event.target.result");
+    shouldBeNonNull("event.target.error");
     shouldBe("event.target.error.name", "'ConstraintError'");
     event.preventDefault();
     finishJSTest();
