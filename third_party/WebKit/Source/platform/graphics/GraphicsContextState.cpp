@@ -36,27 +36,30 @@ GraphicsContextState::GraphicsContextState()
     m_fillPaint.setAntiAlias(m_shouldAntialias);
 }
 
-void GraphicsContextState::copy(GraphicsContextState* source)
+GraphicsContextState::GraphicsContextState(const GraphicsContextState& other)
+    : m_strokePaint(other.m_strokePaint)
+    , m_fillPaint(other.m_fillPaint)
+    , m_strokeData(other.m_strokeData)
+    , m_fillColor(other.m_fillColor)
+    , m_fillRule(other.m_fillRule)
+    , m_fillGradient(other.m_fillGradient)
+    , m_fillPattern(other.m_fillPattern)
+    , m_looper(other.m_looper)
+    , m_textDrawingMode(other.m_textDrawingMode)
+    , m_alpha(other.m_alpha)
+    , m_xferMode(other.m_xferMode)
+    , m_colorFilter(other.m_colorFilter)
+    , m_compositeOperator(other.m_compositeOperator)
+    , m_blendMode(other.m_blendMode)
+    , m_interpolationQuality(other.m_interpolationQuality)
+    , m_saveCount(0)
+    , m_shouldAntialias(other.m_shouldAntialias)
+    , m_shouldSmoothFonts(other.m_shouldSmoothFonts)
+    , m_shouldClampToSourceRect(other.m_shouldClampToSourceRect) { }
+
+void GraphicsContextState::copy(const GraphicsContextState& source)
 {
-    m_strokePaint = source->m_strokePaint;
-    m_fillPaint = source->m_fillPaint;
-    m_strokeData = source->m_strokeData;
-    m_fillColor = source->m_fillColor;
-    m_fillRule = source->m_fillRule;
-    m_fillGradient = source->m_fillGradient;
-    m_fillPattern = source->m_fillPattern;
-    m_looper = source->m_looper;
-    m_textDrawingMode = source->m_textDrawingMode;
-    m_alpha = source->m_alpha;
-    m_xferMode = source->m_xferMode;
-    m_colorFilter = source->m_colorFilter;
-    m_compositeOperator = source->m_compositeOperator;
-    m_blendMode = source->m_blendMode;
-    m_interpolationQuality = source->m_interpolationQuality;
-    m_saveCount = 0;
-    m_shouldAntialias = source->m_shouldAntialias;
-    m_shouldSmoothFonts = source->m_shouldSmoothFonts;
-    m_shouldClampToSourceRect = source->m_shouldClampToSourceRect;
+    new (this) GraphicsContextState(source);
 }
 
 const SkPaint& GraphicsContextState::strokePaint(int strokedPathLength) const

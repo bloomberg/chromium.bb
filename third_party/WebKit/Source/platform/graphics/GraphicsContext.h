@@ -466,11 +466,14 @@ private:
         if (m_paintState->saveCount()) {
             m_paintState->decrementSaveCount();
             ++m_paintStateIndex;
-            if (m_paintStateStack.size() == m_paintStateIndex)
-                m_paintStateStack.append(GraphicsContextState::create());
-            GraphicsContextState* priorPaintState = m_paintState;
-            m_paintState = m_paintStateStack[m_paintStateIndex].get();
-            m_paintState->copy(priorPaintState);
+            if (m_paintStateStack.size() == m_paintStateIndex) {
+                m_paintStateStack.append(GraphicsContextState::createAndCopy(*m_paintState));
+                m_paintState = m_paintStateStack[m_paintStateIndex].get();
+            } else {
+                GraphicsContextState* priorPaintState = m_paintState;
+                m_paintState = m_paintStateStack[m_paintStateIndex].get();
+                m_paintState->copy(*priorPaintState);
+            }
         }
     }
 
