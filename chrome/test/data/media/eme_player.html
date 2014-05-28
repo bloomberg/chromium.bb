@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang='en-US'>
+  <head>
+    <title>EME playback test application</title>
+  </head>
+  <body style='font-family:"Lucida Console", Monaco, monospace; font-size:14px'>
+    <i>Clearkey works only with content encrypted using bear key.</i><br><br>
+    <table>
+    <tr>
+      <td><label for='mediaFile'>Encrypted video URL:</label></td>
+      <td><input id='mediaFile' type='text' size='64'></td>
+    </tr>
+    <tr>
+      <td><label for='licenseServer'>License sever URL:</label></td>
+      <td><input id='licenseServer' type='text' size='64'></td>
+    </tr>
+    <tr>
+      <td><label for='keySystemList'>Key system:</label></td>
+      <td><select id='keySystemList'></select></td>
+    </tr>
+    <tr>
+      <td><label for='mediaTypeList'>Media type:</label></td>
+      <td><select id='mediaTypeList'></select></td>
+    </tr>
+    <tr>
+      <td><label for='usePrefixedEME'>EME API version:</label></td>
+      <td><select id='usePrefixedEME'></select>
+      </td>
+    </tr>
+    <tr>
+      <td><label for='useSRC'>Load media by:</label></td>
+      <td>
+        <select id='useSRC'>
+          <option value='false' selected='selected'>MSE</option>
+          <option value='true'>src</option>
+        </select>
+      </td>
+    </tr>
+    </table>
+    <br>
+    <button onclick='Play();'>Play</button>
+    <br><br>
+    Decoded fps: <span id='decodedFPS'></span>
+    <br>
+    Dropped fps: <span id='droppedFPS'></span>
+    <br>
+    Total dropped frames: <span id='droppedFrames'></span>
+    <br><br>
+    <table>
+    <tr>
+      <td valign='top'><span id='video'></span></td>
+      <td valign='top'>
+        <label for='logs' onclick="toggleDisplay('logs');"><i>Click to toggle logs visibility (newest at top).</i><br></label>
+        <div id='logs' style='overflow: auto; height: 480px; width: 480px; white-space: nowrap; display: none'></div>
+      </td>
+    </tr>
+    </table>
+    <div></div>
+  </body>
+  <script src='eme_player_js/app_loader.js' type='text/javascript'></script>
+  <script type='text/javascript'>
+    TestConfig.updateDocument();
+    function Play () {
+      TestConfig.init();
+      TestApp.play();
+    };
+
+    function toggleDisplay(id) {
+      var element = document.getElementById(id);
+      if (!element)
+        return;
+      if (element.style['display'] != 'none')
+        element.style['display'] = 'none';
+      else
+        element.style['display'] = '';
+    }
+    Play();
+  </script>
+</html>
