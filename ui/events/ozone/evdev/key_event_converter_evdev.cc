@@ -264,7 +264,7 @@ void KeyEventConverterEvdev::ConvertKeyEvent(int key, int value) {
   int flags = modifiers_->GetModifierFlags();
 
   KeyEvent key_event(
-      down ? ET_KEY_PRESSED : ET_KEY_RELEASED, code, flags, true);
+      down ? ET_KEY_PRESSED : ET_KEY_RELEASED, code, flags, false);
   DispatchEventToCallback(&key_event);
 }
 
