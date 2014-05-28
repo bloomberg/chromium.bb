@@ -8,6 +8,7 @@
 #include "V8TestInterfaceGarbageCollected.h"
 
 #include "RuntimeEnabledFeatures.h"
+#include "bindings/tests/v8/V8TestInterfaceGarbageCollected.h"
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/V8DOMConfiguration.h"
 #include "bindings/v8/V8HiddenValue.h"

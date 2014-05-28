@@ -326,7 +326,8 @@ def includes_for_type(idl_type):
     if base_idl_type.endswith('Constructor'):
         # FIXME: replace with a [ConstructorAttribute] extended attribute
         base_idl_type = idl_type.constructor_type_name
-    return set(['V8%s.h' % base_idl_type])
+    return set(['bindings/%s/v8/V8%s.h' % (component_dir[base_idl_type],
+                                           base_idl_type)])
 
 IdlType.includes_for_type = property(includes_for_type)
 IdlUnionType.includes_for_type = property(
@@ -347,6 +348,12 @@ def includes_for_interface(interface_name):
 
 def add_includes_for_interface(interface_name):
     includes.update(includes_for_interface(interface_name))
+
+component_dir = {}
+
+
+def set_component_dirs(new_component_dirs):
+        component_dir.update(new_component_dirs)
 
 
 ################################################################################

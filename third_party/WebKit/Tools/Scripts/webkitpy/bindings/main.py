@@ -109,8 +109,13 @@ def generate_interface_dependencies():
     # the real Node.idl file.
 
     # 2-stage computation: individual, then overall
+    #
+    # Properly should compute separately by component (currently test
+    # includes are invalid), but that's brittle (would need to update this file
+    # for each new component) and doesn't test the code generator any better
+    # than using a single component.
     for idl_filename in idl_paths_recursive(source_path):
-        compute_info_individual(idl_filename)
+        compute_info_individual(idl_filename, 'tests')
     info_individuals = [info_individual()]
     compute_interfaces_info_overall(info_individuals)
 

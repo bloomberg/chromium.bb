@@ -7,8 +7,8 @@
 #ifndef V8TestInterfaceDocument_h
 #define V8TestInterfaceDocument_h
 
-#include "V8Document.h"
 #include "bindings/tests/idls/TestInterfaceDocument.h"
+#include "bindings/tests/v8/V8Document.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8DOMWrapper.h"
 #include "bindings/v8/WrapperTypeInfo.h"

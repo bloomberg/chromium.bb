@@ -8,11 +8,9 @@
 #include "V8TestTypedefs.h"
 
 #include "RuntimeEnabledFeatures.h"
-#include "V8Bar.h"
-#include "V8Foo.h"
-#include "V8TestCallbackInterface.h"
-#include "V8TestInterfaceEmpty.h"
-#include "V8TestSubObj.h"
+#include "bindings/tests/v8/V8TestCallbackInterface.h"
+#include "bindings/tests/v8/V8TestInterface.h"
+#include "bindings/tests/v8/V8TestInterfaceEmpty.h"
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/V8DOMConfiguration.h"
 #include "bindings/v8/V8HiddenValue.h"
@@ -192,14 +190,14 @@ static void uLongLongMethodTestInterfaceEmptyTypeSequenceArgMethodCallback(const
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 
-static void fooOrBarMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+static void testInterfaceOrTestInterfaceEmptyMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestTypedefs* impl = V8TestTypedefs::toNative(info.Holder());
     bool result0Enabled = false;
-    RefPtr<Foo> result0;
+    RefPtr<TestInterfaceImplementation> result0;
     bool result1Enabled = false;
-    RefPtr<Bar> result1;
-    impl->fooOrBarMethod(result0Enabled, result0, result1Enabled, result1);
+    RefPtr<TestInterfaceEmpty> result1;
+    impl->testInterfaceOrTestInterfaceEmptyMethod(result0Enabled, result0, result1Enabled, result1);
     if (result0Enabled) {
         v8SetReturnValue(info, result0.release());
         return;
@@ -211,10 +209,10 @@ static void fooOrBarMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info
     v8SetReturnValueNull(info);
 }
 
-static void fooOrBarMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+static void testInterfaceOrTestInterfaceEmptyMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
-    TestTypedefsV8Internal::fooOrBarMethodMethod(info);
+    TestTypedefsV8Internal::testInterfaceOrTestInterfaceEmptyMethodMethod(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 
@@ -284,7 +282,7 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
 
 static const V8DOMConfiguration::AttributeConfiguration V8TestTypedefsAttributes[] = {
     {"uLongLongAttribute", TestTypedefsV8Internal::uLongLongAttributeAttributeGetterCallback, TestTypedefsV8Internal::uLongLongAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
-    {"tAttribute", TestTypedefsV8Internal::TestTypedefsConstructorGetter, TestTypedefsV8Internal::TestTypedefsReplaceableAttributeSetterCallback, 0, 0, const_cast<WrapperTypeInfo*>(&V8TestSubObj::wrapperTypeInfo), static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::DontEnum), 0 /* on instance */},
+    {"tAttribute", TestTypedefsV8Internal::TestTypedefsConstructorGetter, TestTypedefsV8Internal::TestTypedefsReplaceableAttributeSetterCallback, 0, 0, const_cast<WrapperTypeInfo*>(&V8TestInterface::wrapperTypeInfo), static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::DontEnum), 0 /* on instance */},
 };
 
 static const V8DOMConfiguration::MethodConfiguration V8TestTypedefsMethods[] = {
@@ -292,7 +290,7 @@ static const V8DOMConfiguration::MethodConfiguration V8TestTypedefsMethods[] = {
     {"voidMethodFloatArgStringArg", TestTypedefsV8Internal::voidMethodFloatArgStringArgMethodCallback, 0, 2},
     {"voidMethodTestCallbackInterfaceTypeArg", TestTypedefsV8Internal::voidMethodTestCallbackInterfaceTypeArgMethodCallback, 0, 1},
     {"uLongLongMethodTestInterfaceEmptyTypeSequenceArg", TestTypedefsV8Internal::uLongLongMethodTestInterfaceEmptyTypeSequenceArgMethodCallback, 0, 1},
-    {"fooOrBarMethod", TestTypedefsV8Internal::fooOrBarMethodMethodCallback, 0, 0},
+    {"testInterfaceOrTestInterfaceEmptyMethod", TestTypedefsV8Internal::testInterfaceOrTestInterfaceEmptyMethodMethodCallback, 0, 0},
     {"arrayOfStringsMethodArrayOfStringsArg", TestTypedefsV8Internal::arrayOfStringsMethodArrayOfStringsArgMethodCallback, 0, 1},
     {"stringArrayMethodStringArrayArg", TestTypedefsV8Internal::stringArrayMethodStringArrayArgMethodCallback, 0, 1},
 };

@@ -9,13 +9,13 @@
 #include "V8TestInterface.h"
 
 #include "RuntimeEnabledFeatures.h"
-#include "V8Node.h"
-#include "V8TestImplementedAs.h"
-#include "V8TestInterfaceEmpty.h"
 #include "bindings/tests/idls/TestImplements2.h"
 #include "bindings/tests/idls/TestImplements3Implementation.h"
 #include "bindings/tests/idls/TestPartialInterface.h"
 #include "bindings/tests/idls/TestPartialInterfaceImplementation.h"
+#include "bindings/tests/v8/V8Node.h"
+#include "bindings/tests/v8/V8TestInterface.h"
+#include "bindings/tests/v8/V8TestInterfaceEmpty.h"
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/ScriptValue.h"
 #include "bindings/v8/V8AbstractEventListener.h"
@@ -1315,7 +1315,7 @@ void V8TestInterface::visitDOMWrapper(void* object, const v8::Persistent<v8::Obj
 
 static const V8DOMConfiguration::AttributeConfiguration V8TestInterfaceAttributes[] = {
     {"testInterfaceAttribute", TestInterfaceImplementationV8Internal::testInterfaceAttributeAttributeGetterCallback, TestInterfaceImplementationV8Internal::testInterfaceAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
-    {"testImplementedAsConstructorAttribute", TestInterfaceImplementationV8Internal::TestInterfaceImplementationConstructorGetter, TestInterfaceImplementationV8Internal::TestInterfaceImplementationReplaceableAttributeSetterCallback, 0, 0, const_cast<WrapperTypeInfo*>(&V8TestImplementedAs::wrapperTypeInfo), static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::DontEnum), 0 /* on instance */},
+    {"testInterfaceConstructorAttribute", TestInterfaceImplementationV8Internal::TestInterfaceImplementationConstructorGetter, TestInterfaceImplementationV8Internal::TestInterfaceImplementationReplaceableAttributeSetterCallback, 0, 0, const_cast<WrapperTypeInfo*>(&V8TestInterface::wrapperTypeInfo), static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::DontEnum), 0 /* on instance */},
     {"doubleAttribute", TestInterfaceImplementationV8Internal::doubleAttributeAttributeGetterCallback, TestInterfaceImplementationV8Internal::doubleAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"floatAttribute", TestInterfaceImplementationV8Internal::floatAttributeAttributeGetterCallback, TestInterfaceImplementationV8Internal::floatAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"unrestrictedDoubleAttribute", TestInterfaceImplementationV8Internal::unrestrictedDoubleAttributeAttributeGetterCallback, TestInterfaceImplementationV8Internal::unrestrictedDoubleAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},

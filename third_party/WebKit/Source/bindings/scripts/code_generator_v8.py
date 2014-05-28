@@ -106,6 +106,9 @@ class CodeGeneratorV8(object):
             interface_name
             for interface_name, interface_info in interfaces_info.iteritems()
             if 'WillBeGarbageCollected' in interface_info['inherited_extended_attributes']))
+        v8_types.set_component_dirs(dict(
+            (interface_name, interface_info['component_dir'])
+            for interface_name, interface_info in interfaces_info.iteritems()))
 
     def generate_code(self, definitions, interface_name):
         """Returns .h/.cpp code as (header_text, cpp_text)."""

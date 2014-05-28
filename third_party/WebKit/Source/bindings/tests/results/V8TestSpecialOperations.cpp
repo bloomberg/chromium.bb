@@ -8,8 +8,8 @@
 #include "V8TestSpecialOperations.h"
 
 #include "RuntimeEnabledFeatures.h"
-#include "V8Node.h"
-#include "V8NodeList.h"
+#include "bindings/tests/v8/V8Node.h"
+#include "bindings/tests/v8/V8NodeList.h"
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/V8DOMConfiguration.h"
 #include "bindings/v8/V8HiddenValue.h"

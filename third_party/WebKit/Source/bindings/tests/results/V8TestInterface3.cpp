@@ -8,7 +8,7 @@
 #include "V8TestInterface3.h"
 
 #include "RuntimeEnabledFeatures.h"
-#include "V8Node.h"
+#include "bindings/tests/v8/V8Node.h"
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/V8DOMConfiguration.h"
 #include "bindings/v8/V8HiddenValue.h"

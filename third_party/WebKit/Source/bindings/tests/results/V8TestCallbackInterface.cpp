@@ -7,8 +7,8 @@
 #include "config.h"
 #include "V8TestCallbackInterface.h"
 
-#include "V8TestInterfaceEmpty.h"
-#include "V8TestInterfaceWillBeGarbageCollected.h"
+#include "bindings/tests/v8/V8TestInterfaceEmpty.h"
+#include "bindings/tests/v8/V8TestInterfaceWillBeGarbageCollected.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8Callback.h"
 #include "core/dom/ExecutionContext.h"

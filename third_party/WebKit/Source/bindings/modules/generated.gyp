@@ -41,6 +41,8 @@
       'action': [
         'python',
         '<(bindings_scripts_dir)/compute_interfaces_info_individual.py',
+        '--component-dir',
+        'modules',
         '--idl-files-list',
         '<(modules_static_idl_files_list)',
         '--interfaces-info-file',

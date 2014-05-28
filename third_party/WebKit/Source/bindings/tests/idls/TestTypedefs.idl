@@ -39,8 +39,8 @@ typedef long[]                     ArrayOfLongs;
 typedef DOMString                  String;
 typedef DOMString[]                ArrayOfStrings;
 typedef TestCallbackInterface      TestCallbackInterfaceType;
-typedef TestSubObjConstructor      T;
-typedef (Foo or Bar)               FooOrBar;
+typedef TestInterfaceConstructor   T;
+typedef (TestInterface or TestInterfaceEmpty) TestInterfaceOrTestInterfaceEmpty;
 
 [
     Constructor(String stringArg),
@@ -54,7 +54,7 @@ typedef (Foo or Bar)               FooOrBar;
     void voidMethodTestCallbackInterfaceTypeArg(TestCallbackInterfaceType testCallbackInterfaceTypeArg);
 
     ULongLong uLongLongMethodTestInterfaceEmptyTypeSequenceArg(sequence<TestInterfaceEmptyType> testInterfaceEmptyTypeSequenceArg);
-    FooOrBar fooOrBarMethod();
+    TestInterfaceOrTestInterfaceEmpty testInterfaceOrTestInterfaceEmptyMethod();
 
     ArrayOfStrings arrayOfStringsMethodArrayOfStringsArg(ArrayOfStrings arrayOfStringsArg);
     String[] stringArrayMethodStringArrayArg(String[] stringArrayArg);

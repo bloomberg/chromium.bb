@@ -8,7 +8,7 @@
 #include "V8TestInterfaceConstructor2.h"
 
 #include "RuntimeEnabledFeatures.h"
-#include "V8TestInterfaceEmpty.h"
+#include "bindings/tests/v8/V8TestInterfaceEmpty.h"
 #include "bindings/v8/Dictionary.h"
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/V8DOMConfiguration.h"

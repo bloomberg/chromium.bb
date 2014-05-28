@@ -7,8 +7,8 @@
 #ifndef V8TestInterfaceNode_h
 #define V8TestInterfaceNode_h
 
-#include "V8Node.h"
 #include "bindings/tests/idls/TestInterfaceNode.h"
+#include "bindings/tests/v8/V8Node.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8DOMWrapper.h"
 #include "bindings/v8/WrapperTypeInfo.h"

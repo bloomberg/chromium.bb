@@ -48,7 +48,7 @@
     [Reflect=CONST_CPP] const short CONST_JAVASCRIPT = 1;
 
     attribute TestInterface testInterfaceAttribute; // Self-referential interface type with [ImplementedAs]
-    attribute TestImplementedAsConstructor testImplementedAsConstructorAttribute;
+    attribute TestInterfaceConstructor testInterfaceConstructorAttribute;
     attribute double doubleAttribute;
     attribute float floatAttribute;
     attribute unrestricted double unrestrictedDoubleAttribute;

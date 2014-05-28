@@ -7,8 +7,8 @@
 #ifndef V8TestInterfaceWillBeGarbageCollected_h
 #define V8TestInterfaceWillBeGarbageCollected_h
 
-#include "V8EventTarget.h"
 #include "bindings/tests/idls/TestInterfaceWillBeGarbageCollected.h"
+#include "bindings/tests/v8/V8EventTarget.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8DOMWrapper.h"
 #include "bindings/v8/WrapperTypeInfo.h"

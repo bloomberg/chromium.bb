@@ -8,9 +8,8 @@
 #include "V8TestInterface2.h"
 
 #include "RuntimeEnabledFeatures.h"
-#include "V8Interface1.h"
-#include "V8Interface2.h"
-#include "V8TestInterfaceEmpty.h"
+#include "bindings/tests/v8/V8TestInterface.h"
+#include "bindings/tests/v8/V8TestInterfaceEmpty.h"
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/V8DOMConfiguration.h"
 #include "bindings/v8/V8GCController.h"
@@ -491,10 +490,10 @@ TestInterface2* V8TestInterface2::toNativeWithTypeCheck(v8::Isolate* isolate, v8
 v8::Handle<v8::Object> wrap(TestInterface2* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     ASSERT(impl);
-    if (impl->isInterface1())
-        return wrap(toInterface1(impl), creationContext, isolate);
-    if (impl->isInterface2())
-        return wrap(toInterface2(impl), creationContext, isolate);
+    if (impl->isTestInterface())
+        return wrap(toTestInterface(impl), creationContext, isolate);
+    if (impl->isTestInterfaceEmpty())
+        return wrap(toTestInterfaceEmpty(impl), creationContext, isolate);
     v8::Handle<v8::Object> wrapper = V8TestInterface2::createWrapper(impl, creationContext, isolate);
     return wrapper;
 }
