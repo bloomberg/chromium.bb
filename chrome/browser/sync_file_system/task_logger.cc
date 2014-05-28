@@ -48,7 +48,7 @@ void TaskLogger::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
-const std::deque<TaskLog*>& TaskLogger::GetLog() const {
+const TaskLogger::LogList& TaskLogger::GetLog() const {
   return log_history_;
 }
 

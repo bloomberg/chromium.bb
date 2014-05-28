@@ -7,6 +7,7 @@
 
 #include <deque>
 #include <string>
+#include <vector>
 
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -27,6 +28,8 @@ class TaskLogger : public base::SupportsWeakPtr<TaskLogger> {
     TaskLog();
     ~TaskLog();
   };
+
+  typedef std::deque<TaskLog*> LogList;
 
   class Observer {
    public:
@@ -49,7 +52,7 @@ class TaskLogger : public base::SupportsWeakPtr<TaskLogger> {
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
-  const std::deque<TaskLog*>& GetLog() const;
+  const LogList& GetLog() const;
 
  private:
   std::deque<TaskLog*> log_history_;
