@@ -12,7 +12,7 @@ cd ${SCRIPT_DIR}
 
 OUT_DIR=out
 NACLPORTS_URL=http://naclports.googlecode.com/svn/trunk/src
-NACLPORTS_REV=1174
+NACLPORTS_REV=1290
 NACLPORTS_DIR=${OUT_DIR}/naclports
 
 if [ -z "${NACL_SDK_ROOT:-}" ]; then
@@ -68,7 +68,7 @@ popd
 
 Banner Building lua
 pushd ${NACLPORTS_DIR}/src
-make NACL_ARCH=pnacl lua_ppapi
+make TOOLCHAIN=pnacl lua-ppapi
 popd
 
 Banner Done!

@@ -11,7 +11,7 @@ cd ${SCRIPT_DIR}
 
 OUT_DIR=out
 NACLPORTS_URL=https://chromium.googlesource.com/external/naclports
-NACLPORTS_SHA=0096083c0fa71c014f6218bb14d7e1742d9a6b0c
+NACLPORTS_SHA=04ba2e1abe8557ef888b653b7a0da974e4734641
 NACLPORTS_DIR=${OUT_DIR}/naclports
 NACLAM_URL=https://github.com/johnmccutchan/NaClAMBase
 NACLAM_DIR=${OUT_DIR}/NaClAMBase
