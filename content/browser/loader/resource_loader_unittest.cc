@@ -127,46 +127,37 @@ class ResourceHandlerStub : public ResourceHandler {
   }
 
   // ResourceHandler implementation:
-  virtual bool OnUploadProgress(int request_id,
-                                uint64 position,
-                                uint64 size) OVERRIDE {
+  virtual bool OnUploadProgress(uint64 position, uint64 size) OVERRIDE {
     NOTREACHED();
     return true;
   }
 
-  virtual bool OnRequestRedirected(int request_id,
-                                   const GURL& url,
+  virtual bool OnRequestRedirected(const GURL& url,
                                    ResourceResponse* response,
                                    bool* defer) OVERRIDE {
     NOTREACHED();
     return true;
   }
 
-  virtual bool OnResponseStarted(int request_id,
-                                 ResourceResponse* response,
+  virtual bool OnResponseStarted(ResourceResponse* response,
                                  bool* defer) OVERRIDE {
     EXPECT_FALSE(response_);
     response_ = response;
     return true;
   }
 
-  virtual bool OnWillStart(int request_id,
-                           const GURL& url,
-                           bool* defer) OVERRIDE {
+  virtual bool OnWillStart(const GURL& url, bool* defer) OVERRIDE {
     EXPECT_TRUE(start_url_.is_empty());
     start_url_ = url;
     *defer = defer_request_on_will_start_;
     return true;
   }
 
-  virtual bool OnBeforeNetworkStart(int request_id,
-                                    const GURL& url,
-                                    bool* defer) OVERRIDE {
+  virtual bool OnBeforeNetworkStart(const GURL& url, bool* defer) OVERRIDE {
     return true;
   }
 
-  virtual bool OnWillRead(int request_id,
-                          scoped_refptr<net::IOBuffer>* buf,
+  virtual bool OnWillRead(scoped_refptr<net::IOBuffer>* buf,
                           int* buf_size,
                           int min_size) OVERRIDE {
     EXPECT_TRUE(expect_reads_);
@@ -180,9 +171,7 @@ class ResourceHandlerStub : public ResourceHandler {
     return true;
   }
 
-  virtual bool OnReadCompleted(int request_id,
-                               int bytes_read,
-                               bool* defer) OVERRIDE {
+  virtual bool OnReadCompleted(int bytes_read, bool* defer) OVERRIDE {
     EXPECT_TRUE(received_on_will_read_);
     EXPECT_TRUE(expect_reads_);
     EXPECT_FALSE(received_response_completed_);
@@ -201,8 +190,7 @@ class ResourceHandlerStub : public ResourceHandler {
     return !cancel_on_read_completed_;
   }
 
-  virtual void OnResponseCompleted(int request_id,
-                                   const net::URLRequestStatus& status,
+  virtual void OnResponseCompleted(const net::URLRequestStatus& status,
                                    const std::string& security_info,
                                    bool* defer) OVERRIDE {
     EXPECT_FALSE(received_response_completed_);
@@ -213,8 +201,7 @@ class ResourceHandlerStub : public ResourceHandler {
     status_ = status;
   }
 
-  virtual void OnDataDownloaded(int request_id,
-                                int bytes_downloaded) OVERRIDE {
+  virtual void OnDataDownloaded(int bytes_downloaded) OVERRIDE {
     EXPECT_FALSE(expect_reads_);
     total_bytes_downloaded_ += bytes_downloaded;
   }

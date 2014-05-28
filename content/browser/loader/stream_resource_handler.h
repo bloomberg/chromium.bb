@@ -31,45 +31,33 @@ class StreamResourceHandler : public StreamWriteObserver,
                         const GURL& origin);
   virtual ~StreamResourceHandler();
 
-  virtual bool OnUploadProgress(int request_id,
-                                uint64 position,
-                                uint64 size) OVERRIDE;
+  virtual bool OnUploadProgress(uint64 position, uint64 size) OVERRIDE;
 
   // Not needed, as this event handler ought to be the final resource.
-  virtual bool OnRequestRedirected(int request_id,
-                                   const GURL& url,
+  virtual bool OnRequestRedirected(const GURL& url,
                                    ResourceResponse* resp,
                                    bool* defer) OVERRIDE;
 
-  virtual bool OnResponseStarted(int request_id,
-                                 ResourceResponse* resp,
+  virtual bool OnResponseStarted(ResourceResponse* resp,
                                  bool* defer) OVERRIDE;
 
-  virtual bool OnWillStart(int request_id,
-                           const GURL& url,
-                           bool* defer) OVERRIDE;
+  virtual bool OnWillStart(const GURL& url, bool* defer) OVERRIDE;
 
-  virtual bool OnBeforeNetworkStart(int request_id,
-                                    const GURL& url,
-                                    bool* defer) OVERRIDE;
+  virtual bool OnBeforeNetworkStart(const GURL& url, bool* defer) OVERRIDE;
 
   // Create a new buffer to store received data.
-  virtual bool OnWillRead(int request_id,
-                          scoped_refptr<net::IOBuffer>* buf,
+  virtual bool OnWillRead(scoped_refptr<net::IOBuffer>* buf,
                           int* buf_size,
                           int min_size) OVERRIDE;
 
   // A read was completed, forward the data to the Stream.
-  virtual bool OnReadCompleted(int request_id,
-                               int bytes_read,
-                               bool* defer) OVERRIDE;
+  virtual bool OnReadCompleted(int bytes_read, bool* defer) OVERRIDE;
 
-  virtual void OnResponseCompleted(int request_id,
-                                   const net::URLRequestStatus& status,
+  virtual void OnResponseCompleted(const net::URLRequestStatus& status,
                                    const std::string& sec_info,
                                    bool* defer) OVERRIDE;
 
-  virtual void OnDataDownloaded(int request_id, int bytes_downloaded) OVERRIDE;
+  virtual void OnDataDownloaded(int bytes_downloaded) OVERRIDE;
 
   Stream* stream() { return stream_.get(); }
 

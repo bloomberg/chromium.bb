@@ -31,17 +31,13 @@ class ThrottlingResourceHandler : public LayeredResourceHandler,
   virtual ~ThrottlingResourceHandler();
 
   // LayeredResourceHandler overrides:
-  virtual bool OnRequestRedirected(int request_id, const GURL& url,
+  virtual bool OnRequestRedirected(const GURL& url,
                                    ResourceResponse* response,
                                    bool* defer) OVERRIDE;
-  virtual bool OnResponseStarted(int request_id,
-                                 ResourceResponse* response,
+  virtual bool OnResponseStarted(ResourceResponse* response,
                                  bool* defer) OVERRIDE;
-  virtual bool OnWillStart(int request_id, const GURL& url,
-                           bool* defer) OVERRIDE;
-  virtual bool OnBeforeNetworkStart(int request_id,
-                                  const GURL& url,
-                                  bool* defer) OVERRIDE;
+  virtual bool OnWillStart(const GURL& url, bool* defer) OVERRIDE;
+  virtual bool OnBeforeNetworkStart(const GURL& url, bool* defer) OVERRIDE;
 
   // ResourceController implementation:
   virtual void Cancel() OVERRIDE;

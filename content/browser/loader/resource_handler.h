@@ -45,15 +45,13 @@ class CONTENT_EXPORT ResourceHandler
   virtual void SetController(ResourceController* controller);
 
   // Called as upload progress is made.  The return value is ignored.
-  virtual bool OnUploadProgress(int request_id,
-                                uint64 position,
-                                uint64 size) = 0;
+  virtual bool OnUploadProgress(uint64 position, uint64 size) = 0;
 
   // The request was redirected to a new URL.  |*defer| has an initial value of
   // false.  Set |*defer| to true to defer the redirect.  The redirect may be
   // followed later on via ResourceDispatcherHost::FollowDeferredRedirect.  If
   // the handler returns false, then the request is cancelled.
-  virtual bool OnRequestRedirected(int request_id, const GURL& url,
+  virtual bool OnRequestRedirected(const GURL& url,
                                    ResourceResponse* response,
                                    bool* defer) = 0;
 
@@ -61,26 +59,22 @@ class CONTENT_EXPORT ResourceHandler
   // false, then the request is cancelled.  Set |*defer| to true to defer
   // processing of the response.  Call ResourceDispatcherHostImpl::
   // ResumeDeferredRequest to continue processing the response.
-  virtual bool OnResponseStarted(int request_id,
-                                 ResourceResponse* response,
-                                 bool* defer) = 0;
+  virtual bool OnResponseStarted(ResourceResponse* response, bool* defer) = 0;
 
-  // Called before the net::URLRequest for |request_id| (whose url is |url|) is
-  // to be started.  If the handler returns false, then the request is
-  // cancelled.  Otherwise if the return value is true, the ResourceHandler can
-  // delay the request from starting by setting |*defer = true|.  A deferred
-  // request will not have called net::URLRequest::Start(), and will not resume
-  // until someone calls ResourceDispatcherHost::StartDeferredRequest().
-  virtual bool OnWillStart(int request_id, const GURL& url, bool* defer) = 0;
+  // Called before the net::URLRequest (whose url is |url|) is to be started.
+  // If the handler returns false, then the request is cancelled.  Otherwise if
+  // the return value is true, the ResourceHandler can delay the request from
+  // starting by setting |*defer = true|.  A deferred request will not have
+  // called net::URLRequest::Start(), and will not resume until someone calls
+  // ResourceDispatcherHost::StartDeferredRequest().
+  virtual bool OnWillStart(const GURL& url, bool* defer) = 0;
 
-  // Called before the net::URLRequest for |request_id| (whose url is |url|}
-  // uses the network for the first time to load the resource. If the handler
-  // returns false, then the request is cancelled. Otherwise if the return value
-  // is true, the ResourceHandler can delay the request from starting by setting
-  // |*defer = true|. Call controller()->Resume() to continue if deferred.
-  virtual bool OnBeforeNetworkStart(int request_id,
-                                    const GURL& url,
-                                    bool* defer) = 0;
+  // Called before the net::URLRequest (whose url is |url|} uses the network for
+  // the first time to load the resource. If the handler returns false, then the
+  // request is cancelled. Otherwise if the return value is true, the
+  // ResourceHandler can delay the request from starting by setting |*defer =
+  // true|. Call controller()->Resume() to continue if deferred.
+  virtual bool OnBeforeNetworkStart(const GURL& url, bool* defer) = 0;
 
   // Data will be read for the response.  Upon success, this method places the
   // size and address of the buffer where the data is to be written in its
@@ -92,8 +86,7 @@ class CONTENT_EXPORT ResourceHandler
   //
   // If the handler returns false, then the request is cancelled.  Otherwise,
   // once data is available, OnReadCompleted will be called.
-  virtual bool OnWillRead(int request_id,
-                          scoped_refptr<net::IOBuffer>* buf,
+  virtual bool OnWillRead(scoped_refptr<net::IOBuffer>* buf,
                           int* buf_size,
                           int min_size) = 0;
 
@@ -102,14 +95,12 @@ class CONTENT_EXPORT ResourceHandler
   // reading data.  Set |*defer| to true to defer reading more response data.
   // Call controller()->Resume() to continue reading response data.  A zero
   // |bytes_read| signals that no further data is available.
-  virtual bool OnReadCompleted(int request_id, int bytes_read,
-                               bool* defer) = 0;
+  virtual bool OnReadCompleted(int bytes_read, bool* defer) = 0;
 
   // The response is complete.  The final response status is given.  Set
   // |*defer| to true to defer destruction to a later time.  Otherwise, the
   // request will be destroyed upon return.
-  virtual void OnResponseCompleted(int request_id,
-                                   const net::URLRequestStatus& status,
+  virtual void OnResponseCompleted(const net::URLRequestStatus& status,
                                    const std::string& security_info,
                                    bool* defer) = 0;
 
@@ -117,7 +108,7 @@ class CONTENT_EXPORT ResourceHandler
   // to indicate progress of 'download_to_file' requests. OnReadCompleted
   // calls are consumed by the RedirectToFileResourceHandler and replaced
   // with OnDataDownloaded calls.
-  virtual void OnDataDownloaded(int request_id, int bytes_downloaded) = 0;
+  virtual void OnDataDownloaded(int bytes_downloaded) = 0;
 
  protected:
   ResourceHandler(net::URLRequest* request);

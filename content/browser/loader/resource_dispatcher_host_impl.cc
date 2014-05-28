@@ -1338,11 +1338,6 @@ void ResourceDispatcherHostImpl::BeginSaveFile(
   base::debug::Alias(url_buf);
   CHECK(ContainsKey(active_resource_contexts_, context));
 
-  scoped_ptr<ResourceHandler> handler(
-      new SaveFileResourceHandler(child_id,
-                                  route_id,
-                                  url,
-                                  save_file_manager_.get()));
   request_id_--;
 
   const net::URLRequestContext* request_context = context->GetRequestContext();
@@ -1374,6 +1369,13 @@ void ResourceDispatcherHostImpl::BeginSaveFile(
   ResourceRequestInfoImpl* extra_info =
       CreateRequestInfo(child_id, route_id, false, context);
   extra_info->AssociateWithRequest(request.get());  // Request takes ownership.
+
+  scoped_ptr<ResourceHandler> handler(
+      new SaveFileResourceHandler(request.get(),
+                                  child_id,
+                                  route_id,
+                                  url,
+                                  save_file_manager_.get()));
 
   BeginRequestInternal(request.Pass(), handler.Pass());
 }
@@ -1643,8 +1645,7 @@ void ResourceDispatcherHostImpl::BeginRequestInternal(
     request->CancelWithError(net::ERR_INSUFFICIENT_RESOURCES);
 
     bool defer = false;
-    handler->OnResponseCompleted(info->GetRequestID(), request->status(),
-                                 std::string(), &defer);
+    handler->OnResponseCompleted(request->status(), std::string(), &defer);
     if (defer) {
       // TODO(darin): The handler is not ready for us to kill the request. Oops!
       NOTREACHED();

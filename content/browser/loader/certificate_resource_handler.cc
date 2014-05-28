@@ -29,43 +29,36 @@ CertificateResourceHandler::CertificateResourceHandler(
 CertificateResourceHandler::~CertificateResourceHandler() {
 }
 
-bool CertificateResourceHandler::OnUploadProgress(int request_id,
-                                                 uint64 position,
-                                                 uint64 size) {
+bool CertificateResourceHandler::OnUploadProgress(uint64 position,
+                                                  uint64 size) {
   return true;
 }
 
-bool CertificateResourceHandler::OnRequestRedirected(int request_id,
-                                                    const GURL& url,
-                                                    ResourceResponse* resp,
-                                                    bool* defer) {
+bool CertificateResourceHandler::OnRequestRedirected(const GURL& url,
+                                                     ResourceResponse* resp,
+                                                     bool* defer) {
   url_ = url;
   return true;
 }
 
-bool CertificateResourceHandler::OnResponseStarted(int request_id,
-                                                  ResourceResponse* resp,
-                                                  bool* defer) {
+bool CertificateResourceHandler::OnResponseStarted(ResourceResponse* resp,
+                                                   bool* defer) {
   cert_type_ = net::GetCertificateMimeTypeForMimeType(resp->head.mime_type);
   return cert_type_ != net::CERTIFICATE_MIME_TYPE_UNKNOWN;
 }
 
-bool CertificateResourceHandler::OnWillStart(int request_id,
-                                            const GURL& url,
-                                            bool* defer) {
+bool CertificateResourceHandler::OnWillStart(const GURL& url, bool* defer) {
   return true;
 }
 
-bool CertificateResourceHandler::OnBeforeNetworkStart(int request_id,
-                                                      const GURL& url,
+bool CertificateResourceHandler::OnBeforeNetworkStart(const GURL& url,
                                                       bool* defer) {
   return true;
 }
 
-bool CertificateResourceHandler::OnWillRead(int request_id,
-                                           scoped_refptr<net::IOBuffer>* buf,
-                                           int* buf_size,
-                                           int min_size) {
+bool CertificateResourceHandler::OnWillRead(scoped_refptr<net::IOBuffer>* buf,
+                                            int* buf_size,
+                                            int min_size) {
   static const int kReadBufSize = 32768;
 
   // TODO(gauravsh): Should we use 'min_size' here?
@@ -79,9 +72,7 @@ bool CertificateResourceHandler::OnWillRead(int request_id,
   return true;
 }
 
-bool CertificateResourceHandler::OnReadCompleted(int request_id,
-                                                int bytes_read,
-                                                bool* defer) {
+bool CertificateResourceHandler::OnReadCompleted(int bytes_read, bool* defer) {
   if (!bytes_read)
     return true;
 
@@ -100,7 +91,6 @@ bool CertificateResourceHandler::OnReadCompleted(int request_id,
 }
 
 void CertificateResourceHandler::OnResponseCompleted(
-    int request_id,
     const net::URLRequestStatus& urs,
     const std::string& sec_info,
     bool* defer) {
@@ -144,9 +134,7 @@ void CertificateResourceHandler::AssembleResource() {
   DCHECK_EQ(content_length_, bytes_copied);
 }
 
-void CertificateResourceHandler::OnDataDownloaded(
-    int request_id,
-    int bytes_downloaded) {
+void CertificateResourceHandler::OnDataDownloaded(int bytes_downloaded) {
   NOTREACHED();
 }
 

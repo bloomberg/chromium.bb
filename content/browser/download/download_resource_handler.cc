@@ -135,14 +135,12 @@ DownloadResourceHandler::DownloadResourceHandler(
       "Download in progress");
 }
 
-bool DownloadResourceHandler::OnUploadProgress(int request_id,
-                                               uint64 position,
+bool DownloadResourceHandler::OnUploadProgress(uint64 position,
                                                uint64 size) {
   return true;
 }
 
 bool DownloadResourceHandler::OnRequestRedirected(
-    int request_id,
     const GURL& url,
     ResourceResponse* response,
     bool* defer) {
@@ -154,7 +152,6 @@ bool DownloadResourceHandler::OnRequestRedirected(
 
 // Send the download creation information to the download thread.
 bool DownloadResourceHandler::OnResponseStarted(
-    int request_id,
     ResourceResponse* response,
     bool* defer) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
@@ -162,8 +159,7 @@ bool DownloadResourceHandler::OnResponseStarted(
   DCHECK(!on_response_started_called_);
   on_response_started_called_ = true;
 
-  VLOG(20) << __FUNCTION__ << "()" << DebugString()
-           << " request_id = " << request_id;
+  VLOG(20) << __FUNCTION__ << "()" << DebugString();
   download_start_time_ = base::TimeTicks::Now();
 
   // If it's a download, we don't want to poison the cache with it.
@@ -279,22 +275,18 @@ void DownloadResourceHandler::CallStartedCB(
   started_cb_.Reset();
 }
 
-bool DownloadResourceHandler::OnWillStart(int request_id,
-                                          const GURL& url,
-                                          bool* defer) {
+bool DownloadResourceHandler::OnWillStart(const GURL& url, bool* defer) {
   return true;
 }
 
-bool DownloadResourceHandler::OnBeforeNetworkStart(int request_id,
-                                                   const GURL& url,
+bool DownloadResourceHandler::OnBeforeNetworkStart(const GURL& url,
                                                    bool* defer) {
   return true;
 }
 
 // Create a new buffer, which will be handed to the download thread for file
 // writing and deletion.
-bool DownloadResourceHandler::OnWillRead(int request_id,
-                                         scoped_refptr<net::IOBuffer>* buf,
+bool DownloadResourceHandler::OnWillRead(scoped_refptr<net::IOBuffer>* buf,
                                          int* buf_size,
                                          int min_size) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
@@ -309,8 +301,7 @@ bool DownloadResourceHandler::OnWillRead(int request_id,
 }
 
 // Pass the buffer to the download file writer.
-bool DownloadResourceHandler::OnReadCompleted(int request_id, int bytes_read,
-                                              bool* defer) {
+bool DownloadResourceHandler::OnReadCompleted(int bytes_read, bool* defer) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(read_buffer_.get());
 
@@ -350,14 +341,12 @@ bool DownloadResourceHandler::OnReadCompleted(int request_id, int bytes_read,
 }
 
 void DownloadResourceHandler::OnResponseCompleted(
-    int request_id,
     const net::URLRequestStatus& status,
     const std::string& security_info,
     bool* defer) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   int response_code = status.is_success() ? request()->GetResponseCode() : 0;
   VLOG(20) << __FUNCTION__ << "()" << DebugString()
-           << " request_id = " << request_id
            << " status.status() = " << status.status()
            << " status.error() = " << status.error()
            << " response_code = " << response_code;
@@ -466,9 +455,7 @@ void DownloadResourceHandler::OnResponseCompleted(
   read_buffer_ = NULL;
 }
 
-void DownloadResourceHandler::OnDataDownloaded(
-    int request_id,
-    int bytes_downloaded) {
+void DownloadResourceHandler::OnDataDownloaded(int bytes_downloaded) {
   NOTREACHED();
 }
 

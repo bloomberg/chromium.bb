@@ -29,18 +29,14 @@ class CrossSiteResourceHandler : public LayeredResourceHandler {
   virtual ~CrossSiteResourceHandler();
 
   // ResourceHandler implementation:
-  virtual bool OnRequestRedirected(int request_id,
-                                   const GURL& new_url,
+  virtual bool OnRequestRedirected(const GURL& new_url,
                                    ResourceResponse* response,
                                    bool* defer) OVERRIDE;
-  virtual bool OnResponseStarted(int request_id,
-                                 ResourceResponse* response,
+  virtual bool OnResponseStarted(ResourceResponse* response,
                                  bool* defer) OVERRIDE;
-  virtual bool OnReadCompleted(int request_id,
-                               int bytes_read,
+  virtual bool OnReadCompleted(int bytes_read,
                                bool* defer) OVERRIDE;
-  virtual void OnResponseCompleted(int request_id,
-                                   const net::URLRequestStatus& status,
+  virtual void OnResponseCompleted(const net::URLRequestStatus& status,
                                    const std::string& security_info,
                                    bool* defer) OVERRIDE;
 
@@ -56,8 +52,7 @@ class CrossSiteResourceHandler : public LayeredResourceHandler {
  private:
   // Prepare to render the cross-site response in a new RenderViewHost, by
   // telling the old RenderViewHost to run its onunload handler.
-  void StartCrossSiteTransition(int request_id,
-                                ResourceResponse* response,
+  void StartCrossSiteTransition(ResourceResponse* response,
                                 bool should_transfer);
 
   // Defer the navigation to the UI thread to check whether transfer is required

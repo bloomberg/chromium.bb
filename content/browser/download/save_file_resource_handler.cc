@@ -15,11 +15,12 @@
 
 namespace content {
 
-SaveFileResourceHandler::SaveFileResourceHandler(int render_process_host_id,
+SaveFileResourceHandler::SaveFileResourceHandler(net::URLRequest* request,
+                                                 int render_process_host_id,
                                                  int render_view_id,
                                                  const GURL& url,
                                                  SaveFileManager* manager)
-    : ResourceHandler(NULL),
+    : ResourceHandler(request),
       save_id_(-1),
       render_process_id_(render_process_host_id),
       render_view_id_(render_view_id),
@@ -31,14 +32,11 @@ SaveFileResourceHandler::SaveFileResourceHandler(int render_process_host_id,
 SaveFileResourceHandler::~SaveFileResourceHandler() {
 }
 
-bool SaveFileResourceHandler::OnUploadProgress(int request_id,
-                                               uint64 position,
-                                               uint64 size) {
+bool SaveFileResourceHandler::OnUploadProgress(uint64 position, uint64 size) {
   return true;
 }
 
 bool SaveFileResourceHandler::OnRequestRedirected(
-    int request_id,
     const GURL& url,
     ResourceResponse* response,
     bool* defer) {
@@ -46,10 +44,8 @@ bool SaveFileResourceHandler::OnRequestRedirected(
   return true;
 }
 
-bool SaveFileResourceHandler::OnResponseStarted(
-    int request_id,
-    ResourceResponse* response,
-    bool* defer) {
+bool SaveFileResourceHandler::OnResponseStarted(ResourceResponse* response,
+                                                bool* defer) {
   save_id_ = save_manager_->GetNextId();
   // |save_manager_| consumes (deletes):
   SaveFileCreateInfo* info = new SaveFileCreateInfo;
@@ -59,7 +55,7 @@ bool SaveFileResourceHandler::OnResponseStarted(
   info->save_id = save_id_;
   info->render_process_id = render_process_id_;
   info->render_view_id = render_view_id_;
-  info->request_id = request_id;
+  info->request_id = GetRequestID();
   info->content_disposition = content_disposition_;
   info->save_source = SaveFileCreateInfo::SAVE_FILE_FROM_NET;
   BrowserThread::PostTask(
@@ -68,20 +64,16 @@ bool SaveFileResourceHandler::OnResponseStarted(
   return true;
 }
 
-bool SaveFileResourceHandler::OnWillStart(int request_id,
-                                          const GURL& url,
-                                          bool* defer) {
+bool SaveFileResourceHandler::OnWillStart(const GURL& url, bool* defer) {
   return true;
 }
 
-bool SaveFileResourceHandler::OnBeforeNetworkStart(int request_id,
-                                                   const GURL& url,
+bool SaveFileResourceHandler::OnBeforeNetworkStart(const GURL& url,
                                                    bool* defer) {
   return true;
 }
 
-bool SaveFileResourceHandler::OnWillRead(int request_id,
-                                         scoped_refptr<net::IOBuffer>* buf,
+bool SaveFileResourceHandler::OnWillRead(scoped_refptr<net::IOBuffer>* buf,
                                          int* buf_size,
                                          int min_size) {
   DCHECK(buf && buf_size);
@@ -93,8 +85,7 @@ bool SaveFileResourceHandler::OnWillRead(int request_id,
   return true;
 }
 
-bool SaveFileResourceHandler::OnReadCompleted(int request_id, int bytes_read,
-                                              bool* defer) {
+bool SaveFileResourceHandler::OnReadCompleted(int bytes_read, bool* defer) {
   DCHECK(read_buffer_.get());
   // We are passing ownership of this buffer to the save file manager.
   scoped_refptr<net::IOBuffer> buffer;
@@ -107,7 +98,6 @@ bool SaveFileResourceHandler::OnReadCompleted(int request_id, int bytes_read,
 }
 
 void SaveFileResourceHandler::OnResponseCompleted(
-    int request_id,
     const net::URLRequestStatus& status,
     const std::string& security_info,
     bool* defer) {
@@ -118,9 +108,7 @@ void SaveFileResourceHandler::OnResponseCompleted(
   read_buffer_ = NULL;
 }
 
-void SaveFileResourceHandler::OnDataDownloaded(
-    int request_id,
-    int bytes_downloaded) {
+void SaveFileResourceHandler::OnDataDownloaded(int bytes_downloaded) {
   NOTREACHED();
 }
 

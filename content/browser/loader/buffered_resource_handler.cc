@@ -103,10 +103,8 @@ void BufferedResourceHandler::SetController(ResourceController* controller) {
   next_handler_->SetController(this);
 }
 
-bool BufferedResourceHandler::OnResponseStarted(
-    int request_id,
-    ResourceResponse* response,
-    bool* defer) {
+bool BufferedResourceHandler::OnResponseStarted(ResourceResponse* response,
+                                                bool* defer) {
   response_ = response;
 
   // TODO(darin): It is very odd to special-case 304 responses at this level.
@@ -146,12 +144,11 @@ bool BufferedResourceHandler::OnResponseStarted(
 
 // We'll let the original event handler provide a buffer, and reuse it for
 // subsequent reads until we're done buffering.
-bool BufferedResourceHandler::OnWillRead(int request_id,
-                                         scoped_refptr<net::IOBuffer>* buf,
+bool BufferedResourceHandler::OnWillRead(scoped_refptr<net::IOBuffer>* buf,
                                          int* buf_size,
                                          int min_size) {
   if (state_ == STATE_STREAMING)
-    return next_handler_->OnWillRead(request_id, buf, buf_size, min_size);
+    return next_handler_->OnWillRead(buf, buf_size, min_size);
 
   DCHECK_EQ(-1, min_size);
 
@@ -160,7 +157,7 @@ bool BufferedResourceHandler::OnWillRead(int request_id,
     *buf = new DependentIOBuffer(read_buffer_.get(), bytes_read_);
     *buf_size = read_buffer_size_ - bytes_read_;
   } else {
-    if (!next_handler_->OnWillRead(request_id, buf, buf_size, min_size))
+    if (!next_handler_->OnWillRead(buf, buf_size, min_size))
       return false;
 
     read_buffer_ = *buf;
@@ -170,10 +167,9 @@ bool BufferedResourceHandler::OnWillRead(int request_id,
   return true;
 }
 
-bool BufferedResourceHandler::OnReadCompleted(int request_id, int bytes_read,
-                                              bool* defer) {
+bool BufferedResourceHandler::OnReadCompleted(int bytes_read, bool* defer) {
   if (state_ == STATE_STREAMING)
-    return next_handler_->OnReadCompleted(request_id, bytes_read, defer);
+    return next_handler_->OnReadCompleted(bytes_read, defer);
 
   DCHECK_EQ(state_, STATE_BUFFERING);
   bytes_read_ += bytes_read;
@@ -186,7 +182,6 @@ bool BufferedResourceHandler::OnReadCompleted(int request_id, int bytes_read,
 }
 
 void BufferedResourceHandler::OnResponseCompleted(
-    int request_id,
     const net::URLRequestStatus& status,
     const std::string& security_info,
     bool* defer) {
@@ -194,7 +189,7 @@ void BufferedResourceHandler::OnResponseCompleted(
   // handler defers OnResponseCompleted.
   state_ = STATE_STREAMING;
 
-  next_handler_->OnResponseCompleted(request_id, status, security_info, defer);
+  next_handler_->OnResponseCompleted(status, security_info, defer);
 }
 
 void BufferedResourceHandler::Resume() {
@@ -242,7 +237,7 @@ bool BufferedResourceHandler::ProcessResponse(bool* defer) {
 
   state_ = STATE_REPLAYING;
 
-  if (!next_handler_->OnResponseStarted(GetRequestID(), response_.get(), defer))
+  if (!next_handler_->OnResponseStarted(response_.get(), defer))
     return false;
 
   if (!read_buffer_.get()) {
@@ -369,21 +364,18 @@ bool BufferedResourceHandler::UseAlternateNextHandler(
     return false;
   }
 
-  int request_id = GetRequestID();
-
   // Inform the original ResourceHandler that this will be handled entirely by
   // the new ResourceHandler.
   // TODO(darin): We should probably check the return values of these.
   bool defer_ignored = false;
-  next_handler_->OnResponseStarted(request_id, response_.get(), &defer_ignored);
+  next_handler_->OnResponseStarted(response_.get(), &defer_ignored);
   // Although deferring OnResponseStarted is legal, the only downstream handler
   // which does so is CrossSiteResourceHandler. Cross-site transitions should
   // not trigger when switching handlers.
   DCHECK(!defer_ignored);
   net::URLRequestStatus status(net::URLRequestStatus::CANCELED,
                                net::ERR_ABORTED);
-  next_handler_->OnResponseCompleted(request_id, status, std::string(),
-                                     &defer_ignored);
+  next_handler_->OnResponseCompleted(status, std::string(), &defer_ignored);
   DCHECK(!defer_ignored);
 
   // This is handled entirely within the new ResourceHandler, so just reset the
@@ -391,14 +383,13 @@ bool BufferedResourceHandler::UseAlternateNextHandler(
   next_handler_ = new_handler.Pass();
   next_handler_->SetController(this);
 
-  return CopyReadBufferToNextHandler(request_id);
+  return CopyReadBufferToNextHandler();
 }
 
 bool BufferedResourceHandler::ReplayReadCompleted(bool* defer) {
   DCHECK(read_buffer_.get());
 
-  bool result = next_handler_->OnReadCompleted(GetRequestID(), bytes_read_,
-                                               defer);
+  bool result = next_handler_->OnReadCompleted(bytes_read_, defer);
 
   read_buffer_ = NULL;
   read_buffer_size_ = 0;
@@ -458,13 +449,13 @@ bool BufferedResourceHandler::HasSupportingPlugin(bool* stale) {
 #endif
 }
 
-bool BufferedResourceHandler::CopyReadBufferToNextHandler(int request_id) {
+bool BufferedResourceHandler::CopyReadBufferToNextHandler() {
   if (!read_buffer_.get())
     return true;
 
   scoped_refptr<net::IOBuffer> buf;
   int buf_len = 0;
-  if (!next_handler_->OnWillRead(request_id, &buf, &buf_len, bytes_read_))
+  if (!next_handler_->OnWillRead(&buf, &buf_len, bytes_read_))
     return false;
 
   CHECK((buf_len >= bytes_read_) && (bytes_read_ >= 0));

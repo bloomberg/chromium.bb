@@ -29,67 +29,60 @@ void LayeredResourceHandler::SetController(ResourceController* controller) {
   next_handler_->SetController(controller);
 }
 
-bool LayeredResourceHandler::OnUploadProgress(int request_id, uint64 position,
+bool LayeredResourceHandler::OnUploadProgress(uint64 position,
                                               uint64 size) {
   DCHECK(next_handler_.get());
-  return next_handler_->OnUploadProgress(request_id, position, size);
+  return next_handler_->OnUploadProgress(position, size);
 }
 
-bool LayeredResourceHandler::OnRequestRedirected(int request_id,
-                                                 const GURL& url,
+bool LayeredResourceHandler::OnRequestRedirected(const GURL& url,
                                                  ResourceResponse* response,
                                                  bool* defer) {
   DCHECK(next_handler_.get());
-  return next_handler_->OnRequestRedirected(request_id, url, response, defer);
+  return next_handler_->OnRequestRedirected(url, response, defer);
 }
 
-bool LayeredResourceHandler::OnResponseStarted(int request_id,
-                                               ResourceResponse* response,
+bool LayeredResourceHandler::OnResponseStarted(ResourceResponse* response,
                                                bool* defer) {
   DCHECK(next_handler_.get());
-  return next_handler_->OnResponseStarted(request_id, response, defer);
+  return next_handler_->OnResponseStarted(response, defer);
 }
 
-bool LayeredResourceHandler::OnWillStart(int request_id, const GURL& url,
+bool LayeredResourceHandler::OnWillStart(const GURL& url,
                                          bool* defer) {
   DCHECK(next_handler_.get());
-  return next_handler_->OnWillStart(request_id, url, defer);
+  return next_handler_->OnWillStart(url, defer);
 }
 
-bool LayeredResourceHandler::OnBeforeNetworkStart(int request_id,
-                                                  const GURL& url,
+bool LayeredResourceHandler::OnBeforeNetworkStart(const GURL& url,
                                                   bool* defer) {
   DCHECK(next_handler_.get());
-  return next_handler_->OnBeforeNetworkStart(request_id, url, defer);
+  return next_handler_->OnBeforeNetworkStart(url, defer);
 }
 
-bool LayeredResourceHandler::OnWillRead(int request_id,
-                                        scoped_refptr<net::IOBuffer>* buf,
+bool LayeredResourceHandler::OnWillRead(scoped_refptr<net::IOBuffer>* buf,
                                         int* buf_size,
                                         int min_size) {
   DCHECK(next_handler_.get());
-  return next_handler_->OnWillRead(request_id, buf, buf_size, min_size);
+  return next_handler_->OnWillRead(buf, buf_size, min_size);
 }
 
-bool LayeredResourceHandler::OnReadCompleted(int request_id, int bytes_read,
-                                             bool* defer) {
+bool LayeredResourceHandler::OnReadCompleted(int bytes_read, bool* defer) {
   DCHECK(next_handler_.get());
-  return next_handler_->OnReadCompleted(request_id, bytes_read, defer);
+  return next_handler_->OnReadCompleted(bytes_read, defer);
 }
 
 void LayeredResourceHandler::OnResponseCompleted(
-    int request_id,
     const net::URLRequestStatus& status,
     const std::string& security_info,
     bool* defer) {
   DCHECK(next_handler_.get());
-  next_handler_->OnResponseCompleted(request_id, status, security_info, defer);
+  next_handler_->OnResponseCompleted(status, security_info, defer);
 }
 
-void LayeredResourceHandler::OnDataDownloaded(int request_id,
-                                              int bytes_downloaded) {
+void LayeredResourceHandler::OnDataDownloaded(int bytes_downloaded) {
   DCHECK(next_handler_.get());
-  next_handler_->OnDataDownloaded(request_id, bytes_downloaded);
+  next_handler_->OnDataDownloaded(bytes_downloaded);
 }
 
 }  // namespace content

@@ -155,7 +155,6 @@ void RedirectToFileResourceHandler::
 }
 
 bool RedirectToFileResourceHandler::OnResponseStarted(
-    int request_id,
     ResourceResponse* response,
     bool* defer) {
   if (response->head.error_code == net::OK ||
@@ -163,12 +162,10 @@ bool RedirectToFileResourceHandler::OnResponseStarted(
     DCHECK(writer_);
     response->head.download_file_path = writer_->path();
   }
-  return next_handler_->OnResponseStarted(request_id, response, defer);
+  return next_handler_->OnResponseStarted(response, defer);
 }
 
-bool RedirectToFileResourceHandler::OnWillStart(int request_id,
-                                                const GURL& url,
-                                                bool* defer) {
+bool RedirectToFileResourceHandler::OnWillStart(const GURL& url, bool* defer) {
   DCHECK(!writer_);
 
   // Defer starting the request until we have created the temporary file.
@@ -189,7 +186,6 @@ bool RedirectToFileResourceHandler::OnWillStart(int request_id,
 }
 
 bool RedirectToFileResourceHandler::OnWillRead(
-    int request_id,
     scoped_refptr<net::IOBuffer>* buf,
     int* buf_size,
     int min_size) {
@@ -208,8 +204,7 @@ bool RedirectToFileResourceHandler::OnWillRead(
   return true;
 }
 
-bool RedirectToFileResourceHandler::OnReadCompleted(int request_id,
-                                                    int bytes_read,
+bool RedirectToFileResourceHandler::OnReadCompleted(int bytes_read,
                                                     bool* defer) {
   DCHECK(buf_write_pending_);
   buf_write_pending_ = false;
@@ -233,7 +228,6 @@ bool RedirectToFileResourceHandler::OnReadCompleted(int request_id,
 }
 
 void RedirectToFileResourceHandler::OnResponseCompleted(
-    int request_id,
     const net::URLRequestStatus& status,
     const std::string& security_info,
     bool* defer) {
@@ -245,7 +239,7 @@ void RedirectToFileResourceHandler::OnResponseCompleted(
     *defer = true;
     return;
   }
-  next_handler_->OnResponseCompleted(request_id, status, security_info, defer);
+  next_handler_->OnResponseCompleted(status, security_info, defer);
 }
 
 void RedirectToFileResourceHandler::DidCreateTemporaryFile(
@@ -263,7 +257,7 @@ void RedirectToFileResourceHandler::DidCreateTemporaryFile(
   // Resume the request.
   DCHECK(did_defer_);
   bool defer = false;
-  if (!next_handler_->OnWillStart(GetRequestID(), will_start_url_, &defer)) {
+  if (!next_handler_->OnWillStart(will_start_url_, &defer)) {
     controller()->Cancel();
   } else if (!defer) {
     ResumeIfDeferred();
@@ -274,11 +268,9 @@ void RedirectToFileResourceHandler::DidCreateTemporaryFile(
 }
 
 void RedirectToFileResourceHandler::DidWriteToFile(int result) {
-  int request_id = GetRequestID();
-
   bool failed = false;
   if (result > 0) {
-    next_handler_->OnDataDownloaded(request_id, result);
+    next_handler_->OnDataDownloaded(result);
     write_cursor_ += result;
     failed = !WriteMore();
   } else {
@@ -304,8 +296,7 @@ void RedirectToFileResourceHandler::DidWriteToFile(int result) {
     // this should run even in the |failed| case above, otherwise a failed write
     // leaves the handler stuck.
     bool defer = false;
-    next_handler_->OnResponseCompleted(request_id,
-                                       completed_status_,
+    next_handler_->OnResponseCompleted(completed_status_,
                                        completed_security_info_,
                                        &defer);
     if (!defer) {
@@ -357,7 +348,7 @@ bool RedirectToFileResourceHandler::WriteMore() {
       return true;
     if (rv <= 0)
       return false;
-    next_handler_->OnDataDownloaded(GetRequestID(), rv);
+    next_handler_->OnDataDownloaded(rv);
     write_cursor_ += rv;
   }
 }

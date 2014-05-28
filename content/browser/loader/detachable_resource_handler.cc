@@ -44,8 +44,7 @@ void DetachableResourceHandler::Detach() {
     net::URLRequestStatus status(net::URLRequestStatus::CANCELED,
                                  net::ERR_ABORTED);
     bool defer_ignored = false;
-    next_handler_->OnResponseCompleted(GetRequestID(), status, std::string(),
-                                       &defer_ignored);
+    next_handler_->OnResponseCompleted(status, std::string(), &defer_ignored);
     DCHECK(!defer_ignored);
     // If |next_handler_| were to defer its shutdown in OnResponseCompleted,
     // this would destroy it anyway. Fortunately, AsyncResourceHandler never
@@ -83,17 +82,14 @@ void DetachableResourceHandler::SetController(ResourceController* controller) {
     next_handler_->SetController(this);
 }
 
-bool DetachableResourceHandler::OnUploadProgress(int request_id,
-                                                 uint64 position,
-                                                 uint64 size) {
+bool DetachableResourceHandler::OnUploadProgress(uint64 position, uint64 size) {
   if (!next_handler_)
     return true;
 
-  return next_handler_->OnUploadProgress(request_id, position, size);
+  return next_handler_->OnUploadProgress(position, size);
 }
 
-bool DetachableResourceHandler::OnRequestRedirected(int request_id,
-                                                    const GURL& url,
+bool DetachableResourceHandler::OnRequestRedirected(const GURL& url,
                                                     ResourceResponse* response,
                                                     bool* defer) {
   DCHECK(!is_deferred_);
@@ -101,14 +97,12 @@ bool DetachableResourceHandler::OnRequestRedirected(int request_id,
   if (!next_handler_)
     return true;
 
-  bool ret = next_handler_->OnRequestRedirected(request_id, url, response,
-                                                &is_deferred_);
+  bool ret = next_handler_->OnRequestRedirected(url, response, &is_deferred_);
   *defer = is_deferred_;
   return ret;
 }
 
-bool DetachableResourceHandler::OnResponseStarted(int request_id,
-                                                  ResourceResponse* response,
+bool DetachableResourceHandler::OnResponseStarted(ResourceResponse* response,
                                                   bool* defer) {
   DCHECK(!is_deferred_);
 
@@ -116,25 +110,23 @@ bool DetachableResourceHandler::OnResponseStarted(int request_id,
     return true;
 
   bool ret =
-      next_handler_->OnResponseStarted(request_id, response, &is_deferred_);
+      next_handler_->OnResponseStarted(response, &is_deferred_);
   *defer = is_deferred_;
   return ret;
 }
 
-bool DetachableResourceHandler::OnWillStart(int request_id, const GURL& url,
-                                            bool* defer) {
+bool DetachableResourceHandler::OnWillStart(const GURL& url, bool* defer) {
   DCHECK(!is_deferred_);
 
   if (!next_handler_)
     return true;
 
-  bool ret = next_handler_->OnWillStart(request_id, url, &is_deferred_);
+  bool ret = next_handler_->OnWillStart(url, &is_deferred_);
   *defer = is_deferred_;
   return ret;
 }
 
-bool DetachableResourceHandler::OnBeforeNetworkStart(int request_id,
-                                                     const GURL& url,
+bool DetachableResourceHandler::OnBeforeNetworkStart(const GURL& url,
                                                      bool* defer) {
   DCHECK(!is_deferred_);
 
@@ -142,13 +134,12 @@ bool DetachableResourceHandler::OnBeforeNetworkStart(int request_id,
     return true;
 
   bool ret =
-      next_handler_->OnBeforeNetworkStart(request_id, url, &is_deferred_);
+      next_handler_->OnBeforeNetworkStart(url, &is_deferred_);
   *defer = is_deferred_;
   return ret;
 }
 
-bool DetachableResourceHandler::OnWillRead(int request_id,
-                                           scoped_refptr<net::IOBuffer>* buf,
+bool DetachableResourceHandler::OnWillRead(scoped_refptr<net::IOBuffer>* buf,
                                            int* buf_size,
                                            int min_size) {
   if (!next_handler_) {
@@ -160,24 +151,22 @@ bool DetachableResourceHandler::OnWillRead(int request_id,
     return true;
   }
 
-  return next_handler_->OnWillRead(request_id, buf, buf_size, min_size);
+  return next_handler_->OnWillRead(buf, buf_size, min_size);
 }
 
-bool DetachableResourceHandler::OnReadCompleted(int request_id, int bytes_read,
-                                                bool* defer) {
+bool DetachableResourceHandler::OnReadCompleted(int bytes_read, bool* defer) {
   DCHECK(!is_deferred_);
 
   if (!next_handler_)
     return true;
 
   bool ret =
-      next_handler_->OnReadCompleted(request_id, bytes_read, &is_deferred_);
+      next_handler_->OnReadCompleted(bytes_read, &is_deferred_);
   *defer = is_deferred_;
   return ret;
 }
 
 void DetachableResourceHandler::OnResponseCompleted(
-    int request_id,
     const net::URLRequestStatus& status,
     const std::string& security_info,
     bool* defer) {
@@ -189,17 +178,15 @@ void DetachableResourceHandler::OnResponseCompleted(
 
   is_finished_ = true;
 
-  next_handler_->OnResponseCompleted(request_id, status, security_info,
-                                     &is_deferred_);
+  next_handler_->OnResponseCompleted(status, security_info, &is_deferred_);
   *defer = is_deferred_;
 }
 
-void DetachableResourceHandler::OnDataDownloaded(int request_id,
-                                                 int bytes_downloaded) {
+void DetachableResourceHandler::OnDataDownloaded(int bytes_downloaded) {
   if (!next_handler_)
     return;
 
-  next_handler_->OnDataDownloaded(request_id, bytes_downloaded);
+  next_handler_->OnDataDownloaded(bytes_downloaded);
 }
 
 void DetachableResourceHandler::Resume() {
