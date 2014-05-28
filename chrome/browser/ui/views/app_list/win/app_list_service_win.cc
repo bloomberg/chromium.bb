@@ -143,10 +143,9 @@ void SetDidRunForNDayActiveStats() {
     BrowserDistribution* app_launcher_dist =
         BrowserDistribution::GetSpecificDistribution(
             BrowserDistribution::CHROME_APP_HOST);
-    GoogleUpdateSettings::UpdateDidRunStateForDistribution(
-        app_launcher_dist,
-        true /* did_run */,
-        system_install);
+    GoogleUpdateSettings::UpdateDidRunStateForApp(
+        app_launcher_dist->GetAppRegistrationData(),
+        true /* did_run */);
   }
 }
 

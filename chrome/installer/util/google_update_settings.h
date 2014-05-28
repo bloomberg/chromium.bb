@@ -13,6 +13,7 @@
 #include "base/version.h"
 #include "chrome/installer/util/util_constants.h"
 
+class AppRegistrationData;
 class BrowserDistribution;
 
 namespace installer {
@@ -154,15 +155,16 @@ class GoogleUpdateSettings {
   // true if this operation succeeded.
   static bool ClearReferral();
 
-  // Set did_run "dr" in the client state value. This is used to measure
-  // active users. Returns false if writting to the registry failed.
-  static bool UpdateDidRunState(bool did_run, bool system_level);
+  // Set did_run "dr" in the client state value for app specified by
+  // |app_reg_data|. This is used to measure active users. Returns false if
+  // registry write fails.
+  static bool UpdateDidRunStateForApp(const AppRegistrationData& app_reg_data,
+                                      bool did_run);
 
-  // Set did_run "dr" in the client state value for |dist|. This is used to
-  // measure active users. Returns false if writting to the registry failed.
-  static bool UpdateDidRunStateForDistribution(BrowserDistribution* dist,
-                                               bool did_run,
-                                               bool system_level);
+  // Convenience routine: UpdateDidRunStateForApp() specialized for the current
+  // BrowserDistribution, and also updates Chrome Binary's did_run if the
+  // current distribution is multi-install.
+  static bool UpdateDidRunState(bool did_run, bool system_level);
 
   // Returns only the channel name: "" (stable), "dev", "beta", "canary", or
   // "unknown" if unknown. This value will not be modified by "-m" for a

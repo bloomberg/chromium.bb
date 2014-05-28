@@ -17,6 +17,7 @@
 #include "chrome/installer/util/helper.h"
 #include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/l10n_string_util.h"
+#include "chrome/installer/util/updating_app_registration_data.h"
 
 #include "installer_util_strings.h"  // NOLINT
 
@@ -27,11 +28,9 @@ const wchar_t kChromeAppHostGuid[] = L"{FDA71E6F-AC4C-4a00-8B70-9958A68906BF}";
 }  // namespace
 
 ChromeAppHostDistribution::ChromeAppHostDistribution()
-    : BrowserDistribution(CHROME_APP_HOST) {
-}
-
-base::string16 ChromeAppHostDistribution::GetAppGuid() {
-  return kChromeAppHostGuid;
+    : BrowserDistribution(CHROME_APP_HOST,
+          make_scoped_ptr(
+              new UpdatingAppRegistrationData(kChromeAppHostGuid))) {
 }
 
 base::string16 ChromeAppHostDistribution::GetBaseAppName() {
@@ -90,20 +89,6 @@ std::string ChromeAppHostDistribution::GetSafeBrowsingName() {
   return "googlechromeapphost";
 }
 
-base::string16 ChromeAppHostDistribution::GetStateKey() {
-  base::string16 key(google_update::kRegPathClientState);
-  key.append(L"\\");
-  key.append(kChromeAppHostGuid);
-  return key;
-}
-
-base::string16 ChromeAppHostDistribution::GetStateMediumKey() {
-  base::string16 key(google_update::kRegPathClientStateMedium);
-  key.append(L"\\");
-  key.append(kChromeAppHostGuid);
-  return key;
-}
-
 std::string ChromeAppHostDistribution::GetNetworkStatsServer() const {
   return chrome_common_net::kEchoTestServerLocation;
 }
@@ -117,13 +102,6 @@ base::string16 ChromeAppHostDistribution::GetUninstallLinkName() {
 base::string16 ChromeAppHostDistribution::GetUninstallRegPath() {
   return L"Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\"
          L"Google Chrome App Launcher";
-}
-
-base::string16 ChromeAppHostDistribution::GetVersionKey() {
-  base::string16 key(google_update::kRegPathClients);
-  key.append(L"\\");
-  key.append(kChromeAppHostGuid);
-  return key;
 }
 
 BrowserDistribution::DefaultBrowserControlPolicy

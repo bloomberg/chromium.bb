@@ -11,17 +11,9 @@
 
 class GoogleChromeBinariesDistribution : public ChromiumBinariesDistribution {
  public:
-  virtual base::string16 GetAppGuid();
-
   virtual base::string16 GetDisplayName();
 
   virtual base::string16 GetShortcutName(ShortcutType shortcut_type);
-
-  virtual base::string16 GetStateKey();
-
-  virtual base::string16 GetStateMediumKey();
-
-  virtual base::string16 GetVersionKey();
 
   virtual void UpdateInstallStatus(bool system_install,
       installer::ArchiveType archive_type,

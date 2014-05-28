@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "chrome/common/chrome_icon_resources_win.h"
+#include "chrome/installer/util/updating_app_registration_data.h"
 
 #include "installer_util_strings.h"  // NOLINT
 
@@ -25,8 +26,9 @@ const wchar_t kCommandExecuteImplUuid[] =
 }  // namespace
 
 GoogleChromeSxSDistribution::GoogleChromeSxSDistribution()
-    : GoogleChromeDistribution() {
-  GoogleChromeDistribution::set_product_guid(kChromeSxSGuid);
+    : GoogleChromeDistribution(
+          make_scoped_ptr(
+              new UpdatingAppRegistrationData(kChromeSxSGuid))) {
 }
 
 base::string16 GoogleChromeSxSDistribution::GetBaseAppName() {

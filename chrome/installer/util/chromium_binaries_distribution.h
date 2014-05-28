@@ -9,12 +9,11 @@
 
 #include <string>
 
+#include "base/memory/scoped_ptr.h"
 #include "chrome/installer/util/browser_distribution.h"
 
 class ChromiumBinariesDistribution : public BrowserDistribution {
  public:
-  virtual base::string16 GetAppGuid() OVERRIDE;
-
   virtual base::string16 GetBrowserProgIdPrefix() OVERRIDE;
 
   virtual base::string16 GetBrowserProgIdDesc() OVERRIDE;
@@ -39,15 +38,9 @@ class ChromiumBinariesDistribution : public BrowserDistribution {
 
   virtual std::string GetSafeBrowsingName() OVERRIDE;
 
-  virtual base::string16 GetStateKey() OVERRIDE;
-
-  virtual base::string16 GetStateMediumKey() OVERRIDE;
-
   virtual base::string16 GetUninstallLinkName() OVERRIDE;
 
   virtual base::string16 GetUninstallRegPath() OVERRIDE;
-
-  virtual base::string16 GetVersionKey() OVERRIDE;
 
   virtual DefaultBrowserControlPolicy GetDefaultBrowserControlPolicy() OVERRIDE;
 
@@ -60,6 +53,9 @@ class ChromiumBinariesDistribution : public BrowserDistribution {
   friend class BrowserDistribution;
 
   ChromiumBinariesDistribution();
+
+  explicit ChromiumBinariesDistribution(
+      scoped_ptr<AppRegistrationData> app_reg_data);
 
   BrowserDistribution* browser_distribution_;
 

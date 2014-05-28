@@ -18,6 +18,7 @@
 #include "base/win/windows_version.h"
 #include "chrome/common/chrome_icon_resources_win.h"
 #include "chrome/common/env_vars.h"
+#include "chrome/installer/util/app_registration_data.h"
 #include "chrome/installer/util/chrome_app_host_distribution.h"
 #include "chrome/installer/util/chrome_frame_distribution.h"
 #include "chrome/installer/util/chromium_binaries_distribution.h"
@@ -27,6 +28,7 @@
 #include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/l10n_string_util.h"
 #include "chrome/installer/util/master_preferences.h"
+#include "chrome/installer/util/non_updating_app_registration_data.h"
 
 #include "installer_util_strings.h"  // NOLINT
 
@@ -55,12 +57,17 @@ BrowserDistribution::Type GetCurrentDistributionType() {
 }  // end namespace
 
 BrowserDistribution::BrowserDistribution()
-    : type_(CHROME_BROWSER) {
+    : type_(CHROME_BROWSER),
+      app_reg_data_(make_scoped_ptr(
+          new NonUpdatingAppRegistrationData(L"Software\\Chromium"))) {
 }
 
-BrowserDistribution::BrowserDistribution(Type type)
-    : type_(type) {
+BrowserDistribution::BrowserDistribution(
+    Type type, scoped_ptr<AppRegistrationData> app_reg_data)
+    : type_(type), app_reg_data_(app_reg_data.Pass()) {
 }
+
+BrowserDistribution::~BrowserDistribution() {}
 
 template<class DistributionClass>
 BrowserDistribution* BrowserDistribution::GetOrCreateBrowserDistribution(
@@ -125,6 +132,26 @@ BrowserDistribution* BrowserDistribution::GetSpecificDistribution(
   return dist;
 }
 
+const AppRegistrationData& BrowserDistribution::GetAppRegistrationData() const {
+  return *app_reg_data_;
+}
+
+base::string16 BrowserDistribution::GetAppGuid() const {
+  return app_reg_data_->GetAppGuid();
+}
+
+base::string16 BrowserDistribution::GetStateKey() const {
+  return app_reg_data_->GetStateKey();
+}
+
+base::string16 BrowserDistribution::GetStateMediumKey() const {
+  return app_reg_data_->GetStateMediumKey();
+}
+
+base::string16 BrowserDistribution::GetVersionKey() const {
+  return app_reg_data_->GetVersionKey();
+}
+
 void BrowserDistribution::DoPostUninstallOperations(
     const Version& version, const base::FilePath& local_data_path,
     const base::string16& distribution_data) {
@@ -132,10 +159,6 @@ void BrowserDistribution::DoPostUninstallOperations(
 
 base::string16 BrowserDistribution::GetActiveSetupGuid() {
   return kChromiumActiveSetupGuid;
-}
-
-base::string16 BrowserDistribution::GetAppGuid() {
-  return L"";
 }
 
 base::string16 BrowserDistribution::GetBaseAppName() {
@@ -224,14 +247,6 @@ std::string BrowserDistribution::GetSafeBrowsingName() {
   return "chromium";
 }
 
-base::string16 BrowserDistribution::GetStateKey() {
-  return L"Software\\Chromium";
-}
-
-base::string16 BrowserDistribution::GetStateMediumKey() {
-  return L"Software\\Chromium";
-}
-
 std::string BrowserDistribution::GetNetworkStatsServer() const {
   return "";
 }
@@ -246,10 +261,6 @@ base::string16 BrowserDistribution::GetUninstallLinkName() {
 
 base::string16 BrowserDistribution::GetUninstallRegPath() {
   return L"Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Chromium";
-}
-
-base::string16 BrowserDistribution::GetVersionKey() {
-  return L"Software\\Chromium";
 }
 
 BrowserDistribution::DefaultBrowserControlPolicy

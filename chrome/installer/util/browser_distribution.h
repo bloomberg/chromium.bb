@@ -11,6 +11,7 @@
 
 #include "base/basictypes.h"
 #include "base/files/file_path.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "base/version.h"
 #include "chrome/installer/util/util_constants.h"
@@ -18,6 +19,8 @@
 #if defined(OS_WIN)
 #include <windows.h>  // NOLINT
 #endif
+
+class AppRegistrationData;
 
 class BrowserDistribution {
  public:
@@ -46,13 +49,20 @@ class BrowserDistribution {
     DEFAULT_BROWSER_FULL_CONTROL
   };
 
-  virtual ~BrowserDistribution() {}
+  virtual ~BrowserDistribution();
 
   static BrowserDistribution* GetDistribution();
 
   static BrowserDistribution* GetSpecificDistribution(Type type);
 
   Type GetType() const { return type_; }
+
+  // Getter and adaptors for the underlying |app_reg_data_|.
+  const AppRegistrationData& GetAppRegistrationData() const;
+  base::string16 GetAppGuid() const;
+  base::string16 GetStateKey() const;
+  base::string16 GetStateMediumKey() const;
+  base::string16 GetVersionKey() const;
 
   virtual void DoPostUninstallOperations(
       const Version& version,
@@ -61,8 +71,6 @@ class BrowserDistribution {
 
   // Returns the GUID to be used when registering for Active Setup.
   virtual base::string16 GetActiveSetupGuid();
-
-  virtual base::string16 GetAppGuid();
 
   // Returns the unsuffixed application name of this program.
   // This is the base of the name registered with Default Programs on Windows.
@@ -119,10 +127,6 @@ class BrowserDistribution {
 
   virtual std::string GetSafeBrowsingName();
 
-  virtual base::string16 GetStateKey();
-
-  virtual base::string16 GetStateMediumKey();
-
   virtual std::string GetNetworkStatsServer() const;
 
 #if defined(OS_WIN)
@@ -132,8 +136,6 @@ class BrowserDistribution {
   virtual base::string16 GetUninstallLinkName();
 
   virtual base::string16 GetUninstallRegPath();
-
-  virtual base::string16 GetVersionKey();
 
   // Returns an enum specifying the different ways in which this distribution
   // is allowed to be set as default.
@@ -162,13 +164,15 @@ class BrowserDistribution {
   virtual bool HasUserExperiments();
 
  protected:
-  explicit BrowserDistribution(Type type);
+  BrowserDistribution(Type type, scoped_ptr<AppRegistrationData> app_reg_data);
 
   template<class DistributionClass>
   static BrowserDistribution* GetOrCreateBrowserDistribution(
       BrowserDistribution** dist);
 
   const Type type_;
+
+  scoped_ptr<AppRegistrationData> app_reg_data_;
 
  private:
   BrowserDistribution();

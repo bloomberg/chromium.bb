@@ -13,8 +13,6 @@
 
 class ChromeAppHostDistribution : public BrowserDistribution {
  public:
-  virtual base::string16 GetAppGuid() OVERRIDE;
-
   virtual base::string16 GetDisplayName() OVERRIDE;
 
   virtual base::string16 GetBrowserProgIdPrefix() OVERRIDE;
@@ -40,17 +38,11 @@ class ChromeAppHostDistribution : public BrowserDistribution {
 
   virtual std::string GetSafeBrowsingName() OVERRIDE;
 
-  virtual base::string16 GetStateKey() OVERRIDE;
-
-  virtual base::string16 GetStateMediumKey() OVERRIDE;
-
   virtual std::string GetNetworkStatsServer() const OVERRIDE;
 
   virtual base::string16 GetUninstallLinkName() OVERRIDE;
 
   virtual base::string16 GetUninstallRegPath() OVERRIDE;
-
-  virtual base::string16 GetVersionKey() OVERRIDE;
 
   virtual DefaultBrowserControlPolicy GetDefaultBrowserControlPolicy() OVERRIDE;
 

@@ -15,9 +15,18 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/values.h"
+#include "chrome/installer/util/app_registration_data.h"
+#include "chrome/installer/util/non_updating_app_registration_data.h"
 
 GoogleChromeDistribution::GoogleChromeDistribution()
-    : BrowserDistribution(CHROME_BROWSER) {
+    : BrowserDistribution(CHROME_BROWSER,
+          make_scoped_ptr(
+              new NonUpdatingAppRegistrationData(base::string16()))) {
+}
+
+GoogleChromeDistribution::GoogleChromeDistribution(
+    scoped_ptr<AppRegistrationData> app_reg_data)
+    : BrowserDistribution(CHROME_BROWSER, app_reg_data.Pass()) {
 }
 
 void GoogleChromeDistribution::DoPostUninstallOperations(
@@ -27,10 +36,6 @@ void GoogleChromeDistribution::DoPostUninstallOperations(
 }
 
 base::string16 GoogleChromeDistribution::GetActiveSetupGuid() {
-  return base::string16();
-}
-
-base::string16 GoogleChromeDistribution::GetAppGuid() {
   return base::string16();
 }
 
@@ -75,14 +80,6 @@ std::string GoogleChromeDistribution::GetSafeBrowsingName() {
   return std::string();
 }
 
-base::string16 GoogleChromeDistribution::GetStateKey() {
-  return base::string16();
-}
-
-base::string16 GoogleChromeDistribution::GetStateMediumKey() {
-  return base::string16();
-}
-
 std::string GoogleChromeDistribution::GetNetworkStatsServer() const {
   return std::string();
 }
@@ -96,10 +93,6 @@ base::string16 GoogleChromeDistribution::GetUninstallLinkName() {
 }
 
 base::string16 GoogleChromeDistribution::GetUninstallRegPath() {
-  return base::string16();
-}
-
-base::string16 GoogleChromeDistribution::GetVersionKey() {
   return base::string16();
 }
 

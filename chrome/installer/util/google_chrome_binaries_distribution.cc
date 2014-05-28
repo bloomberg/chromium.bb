@@ -9,6 +9,7 @@
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "chrome/installer/util/install_util.h"
+#include "chrome/installer/util/updating_app_registration_data.h"
 
 namespace {
 
@@ -18,11 +19,9 @@ const wchar_t kChromeBinariesName[] = L"Google Chrome binaries";
 }  // namespace
 
 GoogleChromeBinariesDistribution::GoogleChromeBinariesDistribution()
-    : ChromiumBinariesDistribution() {
-}
-
-base::string16 GoogleChromeBinariesDistribution::GetAppGuid() {
-  return kChromeBinariesGuid;
+    : ChromiumBinariesDistribution(
+          make_scoped_ptr(
+              new UpdatingAppRegistrationData(kChromeBinariesGuid))) {
 }
 
 base::string16 GoogleChromeBinariesDistribution::GetDisplayName() {
@@ -33,24 +32,6 @@ base::string16 GoogleChromeBinariesDistribution::GetShortcutName(
     ShortcutType shortcut_type) {
   NOTREACHED();
   return base::string16();
-}
-
-base::string16 GoogleChromeBinariesDistribution::GetStateKey() {
-  return base::string16(google_update::kRegPathClientState)
-      .append(1, L'\\')
-      .append(kChromeBinariesGuid);
-}
-
-base::string16 GoogleChromeBinariesDistribution::GetStateMediumKey() {
-  return base::string16(google_update::kRegPathClientStateMedium)
-      .append(1, L'\\')
-      .append(kChromeBinariesGuid);
-}
-
-base::string16 GoogleChromeBinariesDistribution::GetVersionKey() {
-  return base::string16(google_update::kRegPathClients)
-      .append(1, L'\\')
-      .append(kChromeBinariesGuid);
 }
 
 void GoogleChromeBinariesDistribution::UpdateInstallStatus(bool system_install,

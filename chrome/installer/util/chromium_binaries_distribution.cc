@@ -7,6 +7,8 @@
 #include "chrome/installer/util/google_chrome_binaries_distribution.h"
 
 #include "base/logging.h"
+#include "chrome/installer/util/app_registration_data.h"
+#include "chrome/installer/util/non_updating_app_registration_data.h"
 
 namespace {
 
@@ -15,13 +17,18 @@ const wchar_t kChromiumBinariesName[] = L"Chromium Binaries";
 }  // namespace
 
 ChromiumBinariesDistribution::ChromiumBinariesDistribution()
-    : BrowserDistribution(CHROME_BINARIES),
+    : BrowserDistribution(CHROME_BINARIES,
+          make_scoped_ptr(new NonUpdatingAppRegistrationData(
+              base::string16(L"Software\\").append(kChromiumBinariesName)))),
       browser_distribution_(
           BrowserDistribution::GetSpecificDistribution(CHROME_BROWSER)) {
 }
 
-base::string16 ChromiumBinariesDistribution::GetAppGuid() {
-  return base::string16();
+ChromiumBinariesDistribution::ChromiumBinariesDistribution(
+    scoped_ptr<AppRegistrationData> app_reg_data)
+    : BrowserDistribution(CHROME_BINARIES, app_reg_data.Pass()),
+      browser_distribution_(
+          BrowserDistribution::GetSpecificDistribution(CHROME_BROWSER)) {
 }
 
 base::string16 ChromiumBinariesDistribution::GetBaseAppName() {
@@ -78,14 +85,6 @@ std::string ChromiumBinariesDistribution::GetSafeBrowsingName() {
   return std::string();
 }
 
-base::string16 ChromiumBinariesDistribution::GetStateKey() {
-  return base::string16(L"Software\\").append(kChromiumBinariesName);
-}
-
-base::string16 ChromiumBinariesDistribution::GetStateMediumKey() {
-  return base::string16(L"Software\\").append(kChromiumBinariesName);
-}
-
 base::string16 ChromiumBinariesDistribution::GetUninstallLinkName() {
   NOTREACHED();
   return base::string16();
@@ -94,10 +93,6 @@ base::string16 ChromiumBinariesDistribution::GetUninstallLinkName() {
 base::string16 ChromiumBinariesDistribution::GetUninstallRegPath() {
   NOTREACHED();
   return base::string16();
-}
-
-base::string16 ChromiumBinariesDistribution::GetVersionKey() {
-  return base::string16(L"Software\\").append(kChromiumBinariesName);
 }
 
 BrowserDistribution::DefaultBrowserControlPolicy
