@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SERVICES_GCM_FAKE_GCM_CLIENT_FACTORY_H_
-#define CHROME_BROWSER_SERVICES_GCM_FAKE_GCM_CLIENT_FACTORY_H_
+#ifndef COMPONENTS_GCM_DRIVER_FAKE_GCM_CLIENT_FACTORY_H_
+#define COMPONENTS_GCM_DRIVER_FAKE_GCM_CLIENT_FACTORY_H_
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "chrome/browser/services/gcm/fake_gcm_client.h"
+#include "components/gcm_driver/fake_gcm_client.h"
 #include "components/gcm_driver/gcm_client_factory.h"
 
 namespace base {
@@ -39,4 +39,4 @@ class FakeGCMClientFactory : public GCMClientFactory {
 
 }  // namespace gcm
 
-#endif  // CHROME_BROWSER_SERVICES_GCM_FAKE_GCM_CLIENT_FACTORY_H_
+#endif  // COMPONENTS_GCM_DRIVER_FAKE_GCM_CLIENT_FACTORY_H_

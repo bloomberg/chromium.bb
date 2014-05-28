@@ -8,7 +8,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/services/gcm/fake_gcm_client_factory.h"
+#include "components/gcm_driver/fake_gcm_client_factory.h"
 #include "content/public/browser/browser_context.h"
 
 namespace gcm {

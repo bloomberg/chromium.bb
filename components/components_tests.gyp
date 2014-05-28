@@ -97,6 +97,7 @@
             'domain_reliability/util_unittest.cc',
             'enhanced_bookmarks/image_store_unittest.cc',
             'feedback/feedback_uploader_unittest.cc',
+            'gcm_driver/gcm_driver_unittest.cc',
             'invalidation/invalidation_logger_unittest.cc',
             'json_schema/json_schema_validator_unittest.cc',
             'json_schema/json_schema_validator_unittest_base.cc',
@@ -243,6 +244,10 @@
 
             # Dependencies of feedback
             'components.gyp:feedback_component',
+            
+            # Dependencies of gcm
+            'components.gyp:gcm_driver',
+            'components.gyp:gcm_driver_test_support',
 
             # Dependencies of invalidation
             'components.gyp:invalidation',
@@ -360,6 +365,7 @@
                 ['include', '^bookmarks/'],
                 ['include', '^data_reduction_proxy/'],
                 ['include', '^dom_distiller/'],
+                ['include', '^gcm_driver/'],
                 ['include', '^invalidation/'],
                 ['include', '^json_schema/'],
                 ['include', '^keyed_service/core/'],

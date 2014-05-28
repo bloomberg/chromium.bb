@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SERVICES_GCM_GCM_DRIVER_H_
-#define CHROME_BROWSER_SERVICES_GCM_GCM_DRIVER_H_
+#ifndef COMPONENTS_GCM_DRIVER_GCM_DRIVER_H_
+#define COMPONENTS_GCM_DRIVER_GCM_DRIVER_H_
 
 #include <map>
 #include <string>
@@ -230,4 +230,4 @@ class GCMDriver : public IdentityProvider::Observer {
 
 }  // namespace gcm
 
-#endif  // CHROME_BROWSER_SERVICES_GCM_GCM_DRIVER_H_
+#endif  // COMPONENTS_GCM_DRIVER_GCM_DRIVER_H_

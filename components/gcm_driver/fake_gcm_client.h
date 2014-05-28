@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SERVICES_GCM_FAKE_GCM_CLIENT_H_
-#define CHROME_BROWSER_SERVICES_GCM_FAKE_GCM_CLIENT_H_
+#ifndef COMPONENTS_GCM_DRIVER_FAKE_GCM_CLIENT_H_
+#define COMPONENTS_GCM_DRIVER_FAKE_GCM_CLIENT_H_
 
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
@@ -99,4 +99,4 @@ class FakeGCMClient : public GCMClient {
 
 }  // namespace gcm
 
-#endif  // CHROME_BROWSER_SERVICES_GCM_FAKE_GCM_CLIENT_H_
+#endif  // COMPONENTS_GCM_DRIVER_FAKE_GCM_CLIENT_H_

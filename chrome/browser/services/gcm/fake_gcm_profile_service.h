@@ -8,8 +8,8 @@
 #include <list>
 #include <vector>
 
-#include "chrome/browser/services/gcm/gcm_driver.h"
 #include "chrome/browser/services/gcm/gcm_profile_service.h"
+#include "components/gcm_driver/gcm_driver.h"
 
 namespace content {
 class BrowserContext;

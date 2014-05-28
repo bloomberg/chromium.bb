@@ -13,10 +13,10 @@
 #include "base/strings/string_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/services/gcm/gcm_driver.h"
 #include "chrome/browser/services/gcm/gcm_profile_service.h"
 #include "chrome/browser/services/gcm/gcm_profile_service_factory.h"
 #include "chrome/common/extensions/api/gcm.h"
+#include "components/gcm_driver/gcm_driver.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/common/extension.h"
 

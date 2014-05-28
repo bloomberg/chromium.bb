@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/services/gcm/gcm_driver.h"
+#include "components/gcm_driver/gcm_driver.h"
 
 #include <algorithm>
 #include <utility>
@@ -14,7 +14,6 @@
 #include "base/logging.h"
 #include "base/sequenced_task_runner.h"
 #include "base/threading/sequenced_worker_pool.h"
-#include "chrome/common/chrome_version_info.h"
 #include "components/gcm_driver/gcm_app_handler.h"
 #include "components/gcm_driver/gcm_client_factory.h"
 #include "components/gcm_driver/system_encryptor.h"

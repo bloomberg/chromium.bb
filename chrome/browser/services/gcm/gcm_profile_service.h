@@ -12,7 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 // TODO(jianli): include needed for obsolete methods that are going to be
 // removed soon.
-#include "chrome/browser/services/gcm/gcm_driver.h"
+#include "components/gcm_driver/gcm_driver.h"
 #include "components/keyed_service/core/keyed_service.h"
 
 class Profile;

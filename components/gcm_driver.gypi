@@ -8,9 +8,10 @@
       'target_name': 'gcm_driver',
       'type': 'static_library',
       'dependencies': [
+        'os_crypt',
         '../base/base.gyp:base',
         '../google_apis/gcm/gcm.gyp:gcm',
-        'os_crypt',
+        '../net/net.gyp:net',
       ],
       'include_dirs': [
         '..',
@@ -23,6 +24,8 @@
         'gcm_driver/gcm_app_handler.h',
         'gcm_driver/gcm_client_factory.cc',
         'gcm_driver/gcm_client_factory.h',
+        'gcm_driver/gcm_driver.cc',
+        'gcm_driver/gcm_driver.h',
         'gcm_driver/gcm_driver_android.cc',
         'gcm_driver/gcm_driver_android.h',
         'gcm_driver/system_encryptor.cc',
@@ -36,6 +39,26 @@
         }],
       ],
     },
+    {
+      'target_name': 'gcm_driver_test_support',
+      'type': 'static_library',
+      'dependencies': [
+        'gcm_driver',
+        '../base/base.gyp:base',
+        '../testing/gtest.gyp:gtest',
+      ],
+      'include_dirs': [
+        '..',
+      ],
+      'sources': [
+        'gcm_driver/fake_gcm_app_handler.cc',
+        'gcm_driver/fake_gcm_app_handler.h',
+        'gcm_driver/fake_gcm_client.cc',
+        'gcm_driver/fake_gcm_client.h',
+        'gcm_driver/fake_gcm_client_factory.cc',
+        'gcm_driver/fake_gcm_client_factory.h',
+      ],
+    },    
   ],
   'conditions': [
     ['OS == "android"', {

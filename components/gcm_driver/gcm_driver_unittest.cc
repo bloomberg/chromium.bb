@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/services/gcm/gcm_driver.h"
+#include "components/gcm_driver/gcm_driver.h"
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -14,12 +14,11 @@
 #include "base/strings/string_util.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread.h"
-#include "chrome/browser/services/gcm/fake_gcm_app_handler.h"
-#include "chrome/browser/services/gcm/fake_gcm_client.h"
-#include "chrome/browser/services/gcm/fake_gcm_client_factory.h"
-#include "chrome/browser/services/gcm/gcm_app_handler.h"
+#include "components/gcm_driver/fake_gcm_app_handler.h"
+#include "components/gcm_driver/fake_gcm_client.h"
+#include "components/gcm_driver/fake_gcm_client_factory.h"
+#include "components/gcm_driver/gcm_app_handler.h"
 #include "components/gcm_driver/gcm_client_factory.h"
-#include "content/public/browser/browser_thread.h"
 #include "google_apis/gaia/fake_identity_provider.h"
 #include "google_apis/gaia/fake_oauth2_token_service.h"
 #include "net/url_request/url_request_context_getter.h"

@@ -4,11 +4,11 @@
 
 #include "base/run_loop.h"
 #include "chrome/browser/invalidation/gcm_invalidation_bridge.h"
-#include "chrome/browser/services/gcm/gcm_driver.h"
 #include "chrome/browser/signin/fake_profile_oauth2_token_service.h"
 #include "chrome/browser/signin/fake_profile_oauth2_token_service_builder.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/gcm_driver/gcm_driver.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "google_apis/gaia/fake_identity_provider.h"
 #include "google_apis/gaia/google_service_auth_error.h"

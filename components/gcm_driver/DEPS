@@ -1,5 +1,7 @@
 include_rules = [
   "+components/os_crypt",
+  "+google_apis/gaia",
   "+google_apis/gcm",
   "+jni",
+  "+net",
 ]

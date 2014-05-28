@@ -9,7 +9,7 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/invalidation/gcm_invalidation_bridge.h"
 #include "chrome/browser/invalidation/invalidation_service_test_template.h"
-#include "chrome/browser/services/gcm/gcm_driver.h"
+#include "components/gcm_driver/gcm_driver.h"
 #include "google_apis/gaia/fake_identity_provider.h"
 #include "google_apis/gaia/fake_oauth2_token_service.h"
 #include "net/url_request/url_request_context_getter.h"

@@ -2014,8 +2014,6 @@
         'browser/search_engines/template_url_service_observer.h',
         'browser/search_engines/util.cc',
         'browser/search_engines/util.h',
-        'browser/services/gcm/gcm_driver.cc',
-        'browser/services/gcm/gcm_driver.h',
         'browser/services/gcm/gcm_profile_service.cc',
         'browser/services/gcm/gcm_profile_service.h',
         'browser/services/gcm/gcm_profile_service_factory.cc',
