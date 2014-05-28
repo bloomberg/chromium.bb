@@ -134,7 +134,7 @@
       ],  # end of 'targets'
     }],  # 'OS=="android"'
 
-    ['OS=="android" and gtest_target_type=="shared_library"', {
+    ['OS=="android"', {
       'targets': [
         {
           'target_name': 'remoting_unittests_apk',
@@ -148,6 +148,6 @@
           'includes': [ '../build/apk_test.gypi' ],
         },
       ],
-    }],  # 'OS=="android" and gtest_target_type=="shared_library"'
+    }],  # 'OS=="android"
   ],  # end of 'conditions'
 }

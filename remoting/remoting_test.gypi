@@ -56,7 +56,7 @@
         'base/util_unittest.cc',
         'client/audio_player_unittest.cc',
         'client/key_event_mapper_unittest.cc',
-	'client/server_log_entry_client_unittest.cc',
+        'client/server_log_entry_client_unittest.cc',
         'client/plugin/normalizing_input_filter_cros_unittest.cc',
         'client/plugin/normalizing_input_filter_mac_unittest.cc',
         'codec/audio_encoder_opus_unittest.cc',
@@ -104,7 +104,7 @@
         'host/screen_capturer_fake.cc',
         'host/screen_capturer_fake.h',
         'host/screen_resolution_unittest.cc',
-	'host/server_log_entry_host_unittest.cc',
+        'host/server_log_entry_host_unittest.cc',
         'host/setup/me2me_native_messaging_host.cc',
         'host/setup/me2me_native_messaging_host.h',
         'host/setup/me2me_native_messaging_host_unittest.cc',
@@ -124,8 +124,8 @@
         'jingle_glue/mock_objects.cc',
         'jingle_glue/mock_objects.h',
         'jingle_glue/network_settings_unittest.cc',
-	'jingle_glue/server_log_entry_unittest.cc',
-	'jingle_glue/server_log_entry_unittest.h',
+        'jingle_glue/server_log_entry_unittest.cc',
+        'jingle_glue/server_log_entry_unittest.h',
         'protocol/authenticator_test_base.cc',
         'protocol/authenticator_test_base.h',
         'protocol/buffered_socket_writer_unittest.cc',
@@ -211,7 +211,7 @@
             'remoting_client_plugin',
           ],
         }],
-        [ 'OS=="android" and gtest_target_type=="shared_library"', {
+        [ 'OS=="android"', {
           'dependencies': [
             '../testing/android/native_test.gyp:native_test_native_code',
           ],
