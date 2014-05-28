@@ -285,7 +285,7 @@ void FrameLoader::setHistoryItemStateForCommit(HistoryCommitType historyCommitTy
     if (isPushOrReplaceState)
         m_currentItem->setStateObject(stateObject);
     m_currentItem->setReferrer(Referrer(m_documentLoader->request().httpReferrer(), m_documentLoader->request().referrerPolicy()));
-    m_currentItem->setFormInfoFromRequest(isPushOrReplaceState ? ResourceRequest() : m_documentLoader->request());
+    m_currentItem->setFormInfoFromRequest(m_documentLoader->request());
 }
 
 static HistoryCommitType loadTypeToCommitType(FrameLoadType type)
@@ -532,7 +532,7 @@ void FrameLoader::updateForSameDocumentNavigation(const KURL& newURL, SameDocume
 {
     // Update the data source's request with the new URL to fake the URL change
     m_frame->document()->setURL(newURL);
-    documentLoader()->updateForSameDocumentNavigation(newURL);
+    documentLoader()->updateForSameDocumentNavigation(newURL, sameDocumentNavigationSource);
 
     // Generate start and stop notifications only when loader is completed so that we
     // don't fire them for fragment redirection that happens in window.onload handler.

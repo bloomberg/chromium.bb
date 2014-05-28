@@ -131,11 +131,15 @@ const KURL& DocumentLoader::url() const
     return m_request.url();
 }
 
-void DocumentLoader::updateForSameDocumentNavigation(const KURL& newURL)
+void DocumentLoader::updateForSameDocumentNavigation(const KURL& newURL, SameDocumentNavigationSource sameDocumentNavigationSource)
 {
     KURL oldURL = m_request.url();
     m_originalRequest.setURL(newURL);
     m_request.setURL(newURL);
+    if (sameDocumentNavigationSource == SameDocumentNavigationHistoryApi) {
+        m_request.setHTTPMethod("GET");
+        m_request.setHTTPBody(nullptr);
+    }
     clearRedirectChain();
     if (m_isClientRedirect)
         appendRedirect(oldURL);

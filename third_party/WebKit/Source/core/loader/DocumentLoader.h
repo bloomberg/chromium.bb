@@ -100,7 +100,7 @@ namespace WebCore {
 
         const AtomicString& responseMIMEType() const;
 
-        void updateForSameDocumentNavigation(const KURL&);
+        void updateForSameDocumentNavigation(const KURL&, SameDocumentNavigationSource);
         void stopLoading();
         bool isCommitted() const { return m_committed; }
         bool isLoading() const;
