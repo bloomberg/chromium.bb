@@ -355,7 +355,7 @@ class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
     # Start with all the changes in the validation pool.
     changes = self.sync_stage.pool.changes
 
-    self.SendInfraAlertIfNeeded(failing, inflight)
+    self.SendInfraAlertIfNeeded(failing, inflight, no_stat)
 
     if failing and not inflight:
       # Even if there was a failure, we can submit the changes that indicate
@@ -406,15 +406,17 @@ class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
     return [x for x in msgs if
             x.HasFailureType(failures_lib.InfrastructureFailure)]
 
-  def SendInfraAlertIfNeeded(self, failing, inflight):
+  def SendInfraAlertIfNeeded(self, failing, inflight, no_stat):
     """Send infra alerts if needed.
 
     Args:
       failing: The names of the failing builders.
       inflight: The names of the builders that are still running.
+      no_stat: The names of the builders that had status None.
     """
     msgs = [str(x) for x in self._GetInfraFailMessages(failing)]
     msgs += ['%s timed out' % x for x in inflight]
+    msgs += ['%s did not start' % x for x in no_stat]
     if msgs:
       builder_name = self._run.config.name
       title = '%s has encountered infra failures:' % (builder_name,)
