@@ -34,10 +34,6 @@ inline bool InvalidColorProfileLength(size_t length) {
   return (length < kMinProfileLength) || (length > kMaxProfileLength);
 }
 
-// Loads the monitor color space if available.
-// TODO(noel): is this function used anywhere? If not, remove it.
-GFX_EXPORT void GetColorProfile(std::vector<char>* profile);
-
 // Return the color profile of the display nearest the screen bounds. On Win32,
 // this may read a file from disk, so it shouldn't be run on the UI/IO threads.
 // If the given bounds are empty, or are off-screen, return false meaning there
