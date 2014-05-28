@@ -161,10 +161,4 @@ void V8MessageEvent::initMessageEventMethodCustom(const v8::FunctionCallbackInfo
     }
 }
 
-void V8MessageEvent::webkitInitMessageEventMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    initMessageEventMethodCustom(info);
-}
-
-
 } // namespace WebCore
