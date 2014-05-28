@@ -39,6 +39,8 @@
       'sources': [
         'app_indicator_icon.cc',
         'app_indicator_icon.h',
+        'app_indicator_icon_menu.cc',
+        'app_indicator_icon_menu.h',
         'chrome_gtk_frame.cc',
         'chrome_gtk_frame.h',
         'chrome_gtk_menu_subclasses.cc',
@@ -55,6 +57,8 @@
         'gtk2_key_bindings_handler.h',
         'gtk2_signal_registrar.cc',
         'gtk2_signal_registrar.h',
+        'gtk2_status_icon.cc',
+        'gtk2_status_icon.h',
         'gtk2_ui.cc',
         'gtk2_ui.h',
         'gtk2_util.cc',
