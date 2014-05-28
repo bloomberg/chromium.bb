@@ -132,7 +132,10 @@ class VIEWS_EXPORT HWNDMessageHandler :
   void GetWindowPlacement(gfx::Rect* bounds,
                           ui::WindowShowState* show_state) const;
 
-  void SetBounds(const gfx::Rect& bounds_in_pixels);
+  // Sets the bounds of the HWND to |bounds_in_pixels|. If the HWND size is not
+  // changed, |force_size_changed| determines if we should pretend it is.
+  void SetBounds(const gfx::Rect& bounds_in_pixels, bool force_size_changed);
+
   void SetSize(const gfx::Size& size);
   void CenterWindow(const gfx::Size& size);
 

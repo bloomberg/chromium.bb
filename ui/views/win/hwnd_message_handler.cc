@@ -525,13 +525,24 @@ void HWNDMessageHandler::GetWindowPlacement(
   }
 }
 
-void HWNDMessageHandler::SetBounds(const gfx::Rect& bounds_in_pixels) {
+void HWNDMessageHandler::SetBounds(const gfx::Rect& bounds_in_pixels,
+                                   bool force_size_changed) {
   LONG style = GetWindowLong(hwnd(), GWL_STYLE);
   if (style & WS_MAXIMIZE)
     SetWindowLong(hwnd(), GWL_STYLE, style & ~WS_MAXIMIZE);
+
+  gfx::Size old_size = GetClientAreaBounds().size();
   SetWindowPos(hwnd(), NULL, bounds_in_pixels.x(), bounds_in_pixels.y(),
                bounds_in_pixels.width(), bounds_in_pixels.height(),
                SWP_NOACTIVATE | SWP_NOZORDER);
+
+  // If HWND size is not changed, we will not receive standard size change
+  // notifications. If |force_size_changed| is |true|, we should pretend size is
+  // changed.
+  if (old_size == bounds_in_pixels.size() && force_size_changed) {
+    delegate_->HandleClientSizeChanged(GetClientAreaBounds().size());
+    ResetWindowRegion(false, true);
+  }
 }
 
 void HWNDMessageHandler::SetSize(const gfx::Size& size) {

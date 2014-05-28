@@ -486,12 +486,7 @@ void DesktopWindowTreeHostWin::SetBounds(const gfx::Rect& bounds) {
   window_enlargement_ =
       gfx::Vector2d(new_expanded.width() - expanded.width(),
                     new_expanded.height() - expanded.height());
-  message_handler_->SetBounds(new_expanded);
-
-  // The client area size may have changed even though the window bounds have
-  // not, if the window bounds were expanded to 64 pixels both times.
-  if (old_hwnd_size == new_expanded.size() && old_content_size != bounds.size())
-    HandleClientSizeChanged(new_expanded.size());
+  message_handler_->SetBounds(new_expanded, old_content_size != bounds.size());
 }
 
 gfx::Point DesktopWindowTreeHostWin::GetLocationOnNativeScreen() const {
