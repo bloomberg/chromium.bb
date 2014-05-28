@@ -235,9 +235,10 @@ int GlassBrowserFrameView::NonClientHitTest(const gfx::Point& point) {
   // See if we're in the sysmenu region.  We still have to check the tabstrip
   // first so that clicks in a tab don't get treated as sysmenu clicks.
   int nonclient_border_thickness = NonClientBorderThickness();
-  if (gfx::Rect(nonclient_border_thickness, GetSystemMetrics(SM_CXSIZEFRAME),
-                GetSystemMetrics(SM_CXSMICON),
-                GetSystemMetrics(SM_CYSMICON)).Contains(point))
+  if (gfx::Rect(nonclient_border_thickness,
+                gfx::win::GetSystemMetricsInDIP(SM_CXSIZEFRAME),
+                gfx::win::GetSystemMetricsInDIP(SM_CXSMICON),
+                gfx::win::GetSystemMetricsInDIP(SM_CYSMICON)).Contains(point))
     return (frame_component == HTCLIENT) ? HTCLIENT : HTSYSMENU;
 
   if (frame_component != HTNOWHERE)
@@ -297,7 +298,7 @@ void GlassBrowserFrameView::ButtonPressed(views::Button* sender,
 
 int GlassBrowserFrameView::FrameBorderThickness() const {
   return (frame()->IsMaximized() || frame()->IsFullscreen()) ?
-      0 : GetSystemMetrics(SM_CXSIZEFRAME);
+      0 : gfx::win::GetSystemMetricsInDIP(SM_CXSIZEFRAME);
 }
 
 int GlassBrowserFrameView::NonClientBorderThickness() const {
