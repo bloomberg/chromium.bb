@@ -222,8 +222,6 @@ int ChromeBrowserMainPartsWin::PreCreateThreads() {
     // TODO(cpu): disable other troublesome features for safe mode.
     CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kDisableGpu);
-    CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-        switches::kHighDPISupport, "0");
   }
   // TODO(viettrungluu): why don't we run this earlier?
   if (!parsed_command_line().HasSwitch(switches::kNoErrorDialogs) &&

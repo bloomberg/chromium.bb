@@ -205,9 +205,6 @@ bool PluginProcessHost::Init(const WebPluginInfo& info) {
     switches::kDisableCoreAnimationPlugins,
     switches::kEnableSandboxLogging,
 #endif
-#if defined(OS_WIN)
-    switches::kHighDPISupport,
-#endif
   };
 
   cmd_line->CopySwitchesFrom(browser_command_line, kSwitchNames,

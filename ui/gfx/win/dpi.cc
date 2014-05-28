@@ -145,7 +145,6 @@ float GetDPIScale() {
 }
 
 void ForceHighDPISupportForTesting(float scale) {
-  force_highdpi_for_testing = true;
   g_device_scale_factor = scale;
 }
 
@@ -155,8 +154,8 @@ bool IsHighDPIEnabled() {
   // Default is disabled.
   static DWORD value = ReadRegistryValue(
       HKEY_CURRENT_USER, kRegistryProfilePath,
-      kHighDPISupportW, FALSE);
-  return force_highdpi_for_testing || (value == 1);
+      kHighDPISupportW, TRUE);
+  return value != 0;
 }
 
 bool IsInHighDPIMode() {

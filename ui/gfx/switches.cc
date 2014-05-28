@@ -34,7 +34,4 @@ const char kEnableWebkitTextSubpixelPositioning[] =
 // Overrides the device scale factor for the browser UI and the contents.
 const char kForceDeviceScaleFactor[] = "force-device-scale-factor";
 
-// Enables/Disables High DPI support (windows)
-const char kHighDPISupport[] = "high-dpi-support";
-
 }  // namespace switches

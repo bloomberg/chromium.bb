@@ -954,9 +954,6 @@ bool GpuProcessHost::LaunchGpuProcess(const std::string& channel_id) {
 #if defined(USE_OZONE)
     switches::kOzonePlatform,
 #endif
-#if defined(OS_WIN)
-    switches::kHighDPISupport,
-#endif
   };
   cmd_line->CopySwitchesFrom(browser_command_line, kSwitchNames,
                              arraysize(kSwitchNames));
