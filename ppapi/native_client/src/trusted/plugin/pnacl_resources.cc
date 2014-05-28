@@ -16,18 +16,14 @@ namespace plugin {
 
 namespace {
 
+static const char kPnaclBaseUrl[] = "chrome://pnacl-translator/";
+
 nacl::string GetFullUrl(const nacl::string& partial_url) {
-  return PnaclUrls::GetBaseUrl() + GetNaClInterface()->GetSandboxArch() + "/" +
-         partial_url;
+  return nacl::string(kPnaclBaseUrl) + GetNaClInterface()->GetSandboxArch() +
+         "/" + partial_url;
 }
 
 }  // namespace
-
-static const char kPnaclBaseUrl[] = "chrome://pnacl-translator/";
-
-nacl::string PnaclUrls::GetBaseUrl() {
-  return nacl::string(kPnaclBaseUrl);
-}
 
 // Determine if a URL is for a pnacl-component file, or if it is some other
 // type of URL (e.g., http://, https://, chrome-extension://).
@@ -55,10 +51,6 @@ nacl::string PnaclUrls::PnaclComponentURLToFilename(
   return r;
 }
 
-nacl::string PnaclUrls::GetResourceInfoUrl() {
-  return "pnacl.json";
-}
-
 //////////////////////////////////////////////////////////////////////
 
 PnaclResources::~PnaclResources() {
@@ -69,18 +61,13 @@ PnaclResources::~PnaclResources() {
 }
 
 void PnaclResources::ReadResourceInfo(
-    const nacl::string& resource_info_url,
     const pp::CompletionCallback& resource_info_read_cb) {
-  PLUGIN_PRINTF(("PnaclResources::ReadResourceInfo\n"));
-
-  nacl::string full_url = PnaclUrls::GetBaseUrl() + resource_info_url;
-  PLUGIN_PRINTF(("Resolved resources info url: %s\n", full_url.c_str()));
+  nacl::string full_url = "chrome://pnacl-translator/pnacl.json";
   nacl::string resource_info_filename =
-    PnaclUrls::PnaclComponentURLToFilename(full_url);
+      PnaclUrls::PnaclComponentURLToFilename(full_url);
 
   PLUGIN_PRINTF(("Pnacl-converted resources info url: %s\n",
                  resource_info_filename.c_str()));
-
   PP_Var pp_llc_tool_name_var;
   PP_Var pp_ld_tool_name_var;
   if (!plugin_->nacl_interface()->GetPnaclResourceInfo(

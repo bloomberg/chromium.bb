@@ -19,23 +19,15 @@
 
 namespace plugin {
 
-class Manifest;
 class Plugin;
 class PnaclCoordinator;
 
 // Constants for loading LLC and LD.
 class PnaclUrls {
  public:
-  // Get the base URL prefix for Pnacl resources (without platform prefix).
-  static nacl::string GetBaseUrl();
-
   static bool IsPnaclComponent(const nacl::string& full_url);
   static nacl::string PnaclComponentURLToFilename(
       const nacl::string& full_url);
-
-  // Get the URL for the resource info JSON file that contains information
-  // about loadable resources.
-  static nacl::string GetResourceInfoUrl();
 };
 
 // Loads a list of resources, providing a way to get file descriptors for
@@ -55,7 +47,6 @@ class PnaclResources {
   // Read the resource info JSON file.  This is the first step after
   // construction; it has to be completed before StartLoad is called.
   virtual void ReadResourceInfo(
-      const nacl::string& resource_info_url,
       const pp::CompletionCallback& resource_info_read_cb);
 
   // Start loading the resources.

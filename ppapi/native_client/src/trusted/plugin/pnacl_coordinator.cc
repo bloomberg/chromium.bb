@@ -383,8 +383,7 @@ void PnaclCoordinator::BitcodeStreamDidOpen(int32_t pp_error) {
   // The first step of loading resources: read the resource info file.
   pp::CompletionCallback resource_info_read_cb =
       callback_factory_.NewCallback(&PnaclCoordinator::ResourceInfoWasRead);
-  resources_->ReadResourceInfo(PnaclUrls::GetResourceInfoUrl(),
-                               resource_info_read_cb);
+  resources_->ReadResourceInfo(resource_info_read_cb);
 }
 
 void PnaclCoordinator::ResourceInfoWasRead(int32_t pp_error) {
