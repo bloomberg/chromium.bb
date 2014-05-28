@@ -95,6 +95,18 @@
           'mac_bundle_resources': [
             '<(PRODUCT_DIR)/ui/en.lproj/locale.pak',
           ],
+          'actions': [
+            {
+              'action_name': 'copy_test_data',
+              'variables': {
+                'test_data_files': [
+                  'base/test/data',
+                ],
+                'test_data_prefix' : 'ui',
+              },
+              'includes': [ '../build/copy_test_data_ios.gypi' ],
+            },
+          ],
         }],
         ['OS == "win"', {
           'sources': [

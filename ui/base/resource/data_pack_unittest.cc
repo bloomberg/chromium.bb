@@ -101,9 +101,7 @@ INSTANTIATE_TEST_CASE_P(WriteUTF16, DataPackTest, ::testing::Values(
 
 TEST(DataPackTest, LoadFileWithTruncatedHeader) {
   base::FilePath data_path;
-  // TODO(tfarina): This fails on ios_dbg_simulator. Investigate and add
-  // ASSERT_TRUE to PathService::Get() call again.
-  PathService::Get(UI_DIR_TEST_DATA, &data_path);
+  ASSERT_TRUE(PathService::Get(UI_DIR_TEST_DATA, &data_path));
   data_path = data_path.AppendASCII("data_pack_unittest/truncated-header.pak");
 
   DataPack pack(SCALE_FACTOR_100P);
