@@ -9,7 +9,12 @@ Settings overrides are a way for extensions to override selected Chrome settings
 Here is an example how <a href="#homepage">homepage</a>, <a
 href="#search_provider">search provider</a> and <a href="#startup_pages">startup
 pages</a> can be modified in the <a href="manifest">extension
-manifest</a>.</p>
+manifest</a>. Web sites used in the settings API must be
+<a href="https://support.google.com/webmasters/answer/35179">verified</a> (via
+Webmaster Tools) as being associated with that item in the Chrome Web Store.
+Note that if you verify ownership for a domain (for example, http://example.com)
+you can use any subdomain or page (for example, http://app.example.com or
+http://example.com/page.html) within your extension.</p>
 
 <pre>{
   "name": "My extension",
