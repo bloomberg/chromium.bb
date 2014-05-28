@@ -1,36 +1,17 @@
-<html>
-<head>
-<script src='resources/worker-util.js'></script>
-<script>
 var workersStarted;
 var workersClosed;
-
-var testNumber = -1;
-var syncOperationTests = new Array('openDatabaseSync', 'requestFileSystemSync', 'fileSyncOperations');
-
 // 30 workers seemed to cause the crash to happen frequently.
 var workers = new Array(30);
 
-function startNextTest()
+function startWorkers(operationName)
 {
-    testNumber++;
-    log('Waiting for all workers to exit.');
-    if (testNumber >= syncOperationTests.length) {
-        waitUntilWorkerThreadsExit(done)
-        return;
-    }
-    waitUntilWorkerThreadsExit(startWorkers)
-}
-
-function startWorkers()
-{
-    log('Testing interrupting: ' +  syncOperationTests[testNumber]);
+    log('Testing interrupting: ' +  operationName);
     log('Starting workers.');
     workersStarted = 0;
     workersClosed = 0;
     for (var i = 0; i < workers.length; ++i) {
         workers[i] = new Worker('resources/sync-operations.js?arg=' + i)
-        workers[i].onmessage = onWorkerStarted;
+        workers[i].onmessage = onWorkerStarted.bind(null, operationName);
     }
 }
 
@@ -38,7 +19,7 @@ function startWorkers()
 // call by waiting for the worker to start and then
 // telling it to do the open database call (and
 // then terminate the worker).
-function onWorkerStarted()
+function onWorkerStarted(operationName)
 {
     workersStarted++;
     log('Started worker count: ' + workersStarted);
@@ -47,7 +28,7 @@ function onWorkerStarted()
 
     log('Running operation.');
     for (var i = 0; i < workers.length; ++i)
-        workers[i].postMessage(syncOperationTests[testNumber]);
+        workers[i].postMessage(operationName);
 
     setTimeout('closeWorker()', 0);
 }
@@ -60,23 +41,15 @@ function closeWorker()
     if (workersClosed < workers.length)
         setTimeout('closeWorker()', 3);
     else
-        startNextTest();
+        waitUntilWorkerThreadsExit(done)
 }
 
-function runTest()
+function runTest(operationName)
 {
     log('Starting test run.');
     if (window.testRunner) {
         testRunner.dumpAsText();
         testRunner.waitUntilDone();
     }
-    startNextTest();
+    startWorkers(operationName);
 }
-</script>
-</head>
-<body onload='runTest()'>
-<p>Test that terminating the worker while it is performing synchronous file or database operations will not cause any crashes, asserts, etc.</p>
-<div id='result'>
-</div>
-</body>
-</html>
