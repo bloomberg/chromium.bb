@@ -671,6 +671,7 @@ void ProfileChooserView::ButtonPressed(views::Button* sender,
   } else if (current_profile_photo_ &&
              sender == current_profile_photo_->change_photo_button()) {
     avatar_menu_->EditProfile(avatar_menu_->GetActiveProfileIndex());
+    PostActionPerformed(ProfileMetrics::PROFILE_DESKTOP_MENU_EDIT_IMAGE);
   } else if (sender == signin_current_profile_link_) {
     // Only show the inline signin if the new UI flag is flipped. Otherwise,
     // use the tab signin page.
@@ -777,6 +778,7 @@ bool ProfileChooserView::HandleKeyEvent(views::Textfield* sender,
       return true;
 
     profiles::UpdateProfileName(profile, new_profile_name);
+    PostActionPerformed(ProfileMetrics::PROFILE_DESKTOP_MENU_EDIT_NAME);
     current_profile_name_->ShowReadOnlyView();
     return true;
   }

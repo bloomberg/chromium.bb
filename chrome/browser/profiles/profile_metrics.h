@@ -111,6 +111,10 @@ class ProfileMetrics {
     PROFILE_DESKTOP_MENU_REMOVE_ACCT,
     // User opened the user menu, and started adding an account.
     PROFILE_DESKTOP_MENU_ADD_ACCT,
+    // User opened the user menu, and changed the profile name.
+    PROFILE_DESKTOP_MENU_EDIT_NAME,
+    // User opened the user menu, and started selecting a new profile image.
+    PROFILE_DESKTOP_MENU_EDIT_IMAGE,
     NUM_PROFILE_DESKTOP_MENU_METRICS,
   };
 

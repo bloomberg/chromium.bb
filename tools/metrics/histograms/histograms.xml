@@ -41142,14 +41142,20 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </enum>
 
 <enum name="ProfileDesktopMenu" type="int">
-  <int value="0" label="Locked In Menu from Button">
+  <int value="0" label="Locked in Menu">
     User opened the user menu, and clicked lock.
   </int>
-  <int value="1" label="Remove Account in Menu from Button.">
+  <int value="1" label="Remove Account in Menu">
     User opened the user menu, and removed an account.
   </int>
-  <int value="2" label="Add Account in Menu from Button">
+  <int value="2" label="Add Account in Menu">
     User opened the user menu, and started adding an account.
+  </int>
+  <int value="3" label="Edit Profile Name in Menu">
+    User opened the user menu, and changed the profile name.
+  </int>
+  <int value="4" label="Edit Profile Image in Menu">
+    User opened the user menu, and started selecting a new profile image.
   </int>
 </enum>
 
