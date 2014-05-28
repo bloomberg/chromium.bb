@@ -725,12 +725,12 @@ TEST_PPAPI_OUT_OF_PROCESS(VideoDecoderDev)
 #define MAYBE_FileIO DISABLED_FileIO
 #define MAYBE_FileIO_Private DISABLED_FileIO_Private
 #else
-// Flaky on Mac. http://crbug.com/377599
-# if defined(OS_MACOSX)
+// Flaky on Mac and Win. http://crbug.com/377599
+#if defined(OS_MACOSX) || defined(OS_WIN)
 #define MAYBE_FileIO DISABLED_FileIO
-# else
+#else
 #define MAYBE_FileIO FileIO
-# endif  // defined(OS_MACOSX)
+#endif  // OS_MACOSX || OS_WIN
 #define MAYBE_FileIO_Private FileIO_Private
 #endif
 
