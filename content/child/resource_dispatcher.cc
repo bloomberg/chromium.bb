@@ -587,8 +587,10 @@ void ResourceDispatcher::CancelPendingRequest(int request_id) {
     return;
   }
 
-  // |request_id| will be removed from |pending_requests_| when
-  // OnRequestComplete returns with ERR_ABORTED.
+  PendingRequestInfo& request_info = it->second;
+  ReleaseResourcesInMessageQueue(&request_info.deferred_message_queue);
+  pending_requests_.erase(it);
+
   message_sender()->Send(new ResourceHostMsg_CancelRequest(request_id));
 }
 
