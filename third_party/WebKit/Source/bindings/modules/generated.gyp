@@ -9,8 +9,10 @@
 {
   'includes': [
     '../bindings.gypi',
+    '../core/core.gypi',
     '../scripts/scripts.gypi',
     'idl.gypi',
+    'modules.gypi',
   ],
 
   'targets': [
@@ -34,7 +36,7 @@
         # '<@(modules_generated_idl_files)',
       ],
       'outputs': [
-        '<(blink_output_dir)/InterfacesInfoModulesIndividual.pickle',
+        '<(bindings_modules_output_dir)/InterfacesInfoModulesIndividual.pickle',
       ],
       'action': [
         'python',
@@ -42,7 +44,7 @@
         '--idl-files-list',
         '<(modules_static_idl_files_list)',
         '--interfaces-info-file',
-        '<(blink_output_dir)/InterfacesInfoModulesIndividual.pickle',
+        '<(bindings_modules_output_dir)/InterfacesInfoModulesIndividual.pickle',
         '--write-file-only-if-changed',
         '<(write_file_only_if_changed)',
         # No generated files currently, will add with constructors
@@ -65,11 +67,11 @@
       'action_name': 'compute_interfaces_info_overall',
       'inputs': [
         '<(bindings_scripts_dir)/compute_interfaces_info_overall.py',
-        '<(blink_output_dir)/InterfacesInfoCoreIndividual.pickle',
-        '<(blink_output_dir)/InterfacesInfoModulesIndividual.pickle',
+        '<(bindings_core_output_dir)/InterfacesInfoCoreIndividual.pickle',
+        '<(bindings_modules_output_dir)/InterfacesInfoModulesIndividual.pickle',
       ],
       'outputs': [
-        '<(blink_output_dir)/InterfacesInfo.pickle',
+        '<(bindings_modules_output_dir)/InterfacesInfoModules.pickle',
       ],
       'action': [
         'python',
@@ -77,9 +79,9 @@
         '--write-file-only-if-changed',
         '<(write_file_only_if_changed)',
         '--',
-        '<(blink_output_dir)/InterfacesInfoCoreIndividual.pickle',
-        '<(blink_output_dir)/InterfacesInfoModulesIndividual.pickle',
-        '<(blink_output_dir)/InterfacesInfo.pickle',
+        '<(bindings_core_output_dir)/InterfacesInfoCoreIndividual.pickle',
+        '<(bindings_modules_output_dir)/InterfacesInfoModulesIndividual.pickle',
+        '<(bindings_modules_output_dir)/InterfacesInfoModules.pickle',
       ],
       'message': 'Computing overall global information about IDL files',
       }]

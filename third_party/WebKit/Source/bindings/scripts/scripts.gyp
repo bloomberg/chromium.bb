@@ -29,13 +29,13 @@
         '<@(idl_lexer_parser_files)',
       ],
       'outputs': [
-        '<(bindings_output_dir)/lextab.py',
-        '<(bindings_output_dir)/parsetab.pickle',
+        '<(bindings_scripts_output_dir)/lextab.py',
+        '<(bindings_scripts_output_dir)/parsetab.pickle',
       ],
       'action': [
         'python',
         'blink_idl_parser.py',
-        '<(bindings_output_dir)',
+        '<(bindings_scripts_output_dir)',
       ],
       'message': 'Caching PLY lex & yacc lex/parse tables',
     }],
@@ -55,13 +55,13 @@
         '<@(code_generator_template_files)',
       ],
       'outputs': [
-        '<(bindings_output_dir)/cached_jinja_templates.stamp',  # Dummy to track dependency
+        '<(bindings_scripts_output_dir)/cached_jinja_templates.stamp',  # Dummy to track dependency
       ],
       'action': [
         'python',
         'code_generator_v8.py',
-        '<(bindings_output_dir)',
-        '<(bindings_output_dir)/cached_jinja_templates.stamp',
+        '<(bindings_scripts_output_dir)',
+        '<(bindings_scripts_output_dir)/cached_jinja_templates.stamp',
       ],
       'message': 'Caching bytecode of Jinja templates',
     }],

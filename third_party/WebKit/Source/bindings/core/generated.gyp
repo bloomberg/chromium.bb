@@ -10,6 +10,7 @@
   'includes': [
     '../bindings.gypi',
     '../scripts/scripts.gypi',
+    'core.gypi',
     'idl.gypi',
   ],
 
@@ -33,7 +34,7 @@
         '<@(core_generated_idl_files)',
       ],
       'outputs': [
-        '<(blink_output_dir)/InterfacesInfoCoreIndividual.pickle',
+        '<(bindings_core_output_dir)/InterfacesInfoCoreIndividual.pickle',
       ],
       'action': [
         'python',
@@ -41,7 +42,7 @@
         '--idl-files-list',
         '<(core_static_idl_files_list)',
         '--interfaces-info-file',
-        '<(blink_output_dir)/InterfacesInfoCoreIndividual.pickle',
+        '<(bindings_core_output_dir)/InterfacesInfoCoreIndividual.pickle',
         '--write-file-only-if-changed',
         '<(write_file_only_if_changed)',
         '--',

@@ -38,8 +38,9 @@ This can be a single output file, to preserve symbol space; or multiple output
 files, to reduce maximum compilation unit size and allow parallel compilation.
 
 Usage:
-aggregate_generated_bindings.py IDL_FILES_LIST -- OUTPUT_FILE1 OUTPUT_FILE2 ...
+aggregate_generated_bindings.py COMPONENT_DIR IDL_FILES_LIST -- OUTPUT_FILE1 OUTPUT_FILE2 ...
 
+COMPONENT_DIR is the relative directory of a component, e.g., 'core', 'modules'.
 IDL_FILES_LIST is a text file containing the IDL file paths, so the command
 line doesn't exceed OS length limits.
 OUTPUT_FILE1 etc. are filenames of output files.
@@ -145,7 +146,7 @@ def extract_meta_data(file_paths):
     return meta_data_list
 
 
-def generate_content(files_meta_data_this_partition):
+def generate_content(component_dir, files_meta_data_this_partition):
     # Add fixed content.
     output = [COPYRIGHT_TEMPLATE,
               '#define NO_IMPLICIT_ATOMICSTRING\n\n']
@@ -164,7 +165,8 @@ def generate_content(files_meta_data_this_partition):
                 output.append('\n#if %s\n' % format_conditional(conditional))
         prev_conditional = conditional
 
-        output.append('#include "bindings/V8%s.cpp"\n' % meta_data['name'])
+        output.append('#include "bindings/%s/v8/V8%s.cpp"\n' %
+                      (component_dir, meta_data['name']))
 
     if prev_conditional:
         output.append('#endif\n')
@@ -197,9 +199,10 @@ def resolve_cygpath(cygdrive_names):
 
 
 def main(args):
-    if len(args) <= 3:
-        raise Exception('Expected at least 4 arguments.')
-    input_file_name = args[1]
+    if len(args) <= 4:
+        raise Exception('Expected at least 5 arguments.')
+    component_dir = args[1]
+    input_file_name = args[2]
     in_out_break_index = args.index('--')
     output_file_names = args[in_out_break_index + 1:]
 
@@ -218,7 +221,8 @@ def main(args):
         files_meta_data_this_partition = [
                 meta_data for meta_data in files_meta_data
                 if hash(meta_data['name']) % total_partitions == partition]
-        file_contents = generate_content(files_meta_data_this_partition)
+        file_contents = generate_content(component_dir,
+                                         files_meta_data_this_partition)
         write_content(file_contents, file_name)
 
 
