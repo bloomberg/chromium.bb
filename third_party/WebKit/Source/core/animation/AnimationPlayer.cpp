@@ -451,6 +451,7 @@ void AnimationPlayer::trace(Visitor* visitor)
 {
     visitor->trace(m_content);
     visitor->trace(m_timeline);
+    visitor->trace(m_pendingFinishedEvent);
 }
 
 } // namespace
