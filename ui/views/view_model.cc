@@ -33,6 +33,11 @@ void ViewModel::Remove(int index) {
 }
 
 void ViewModel::Move(int index, int target_index) {
+  DCHECK_LT(index, static_cast<int>(entries_.size()));
+  DCHECK_GE(index, 0);
+  DCHECK_LT(target_index, static_cast<int>(entries_.size()));
+  DCHECK_GE(target_index, 0);
+
   if (index == target_index)
     return;
   Entry entry(entries_[index]);

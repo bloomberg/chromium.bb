@@ -36,5 +36,14 @@ void AppsGridViewTestApi::PressItemAt(int index) {
       ui::KeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_RETURN, 0, false));
 }
 
+void AppsGridViewTestApi::DisableSynchronousDrag() {
+#if defined(OS_WIN)
+  DCHECK(view_->synchronous_drag_ == NULL) << "DisableSynchronousDrag needs to "
+                                              "be called before "
+                                              "synchronous_drag_ is set up.";
+  view_->use_synchronous_drag_ = false;
+#endif
+}
+
 }  // namespace test
 }  // namespace app_list

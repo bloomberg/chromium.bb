@@ -454,6 +454,7 @@ TEST_F(AppsGridControllerTest, ModelUpdate) {
   EXPECT_NSEQ(@"UpdatedItem", [button title]);
 
   // Test icon updates through the model observer by ensuring the icon changes.
+  item_model->SetIcon(gfx::ImageSkia(), false);
   NSSize icon_size = [[button image] size];
   EXPECT_EQ(0, icon_size.width);
   EXPECT_EQ(0, icon_size.height);

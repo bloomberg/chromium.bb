@@ -53,6 +53,9 @@ class AppListTestModel : public AppListModel {
 
   AppListFolderItem* CreateAndAddOemFolder(const std::string& id);
 
+  AppListFolderItem* CreateSingleItemFolder(const std::string& folder_id,
+                                            const std::string& item_id);
+
   // Populate the model with an item titled "Item |id|".
   void PopulateAppWithId(int id);
 

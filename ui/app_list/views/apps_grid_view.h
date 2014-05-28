@@ -403,9 +403,9 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   // Gets the bounds of the tile located at |row| and |col| on current page.
   gfx::Rect GetTileBounds(int row, int col) const;
 
-  // Returns true if the slot of |index| is the first empty slot next to the
-  // last item on the last page.
-  bool IsFirstEmptySlot(const Index& index) const;
+  // Returns true if the slot of |index| is the last possible slot to drop
+  // an item, i.e. first empty slot next to the last item on the last page.
+  bool IsLastPossibleDropTarget(const Index& index) const;
 
   // Gets the item view located at |slot| on the current page. If there is
   // no item located at |slot|, returns NULL.
@@ -497,6 +497,9 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   // Created when a drag is started (ie: drag exceeds the drag threshold), but
   // not Run() until supplied with a shortcut path.
   scoped_refptr<SynchronousDrag> synchronous_drag_;
+
+  // Whether to use SynchronousDrag to support dropping to task bar etc.
+  bool use_synchronous_drag_;
 #endif
 
   Pointer drag_pointer_;

@@ -30,6 +30,8 @@ class AppsGridViewTestApi {
 
   void PressItemAt(int index);
 
+  void DisableSynchronousDrag();
+
  private:
   AppsGridView* view_;
 
