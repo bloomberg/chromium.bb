@@ -6,6 +6,7 @@
 
 #include <map>
 
+#include "base/i18n/bidi_line_iterator.h"
 #include "base/i18n/break_iterator.h"
 #include "base/i18n/char_iterator.h"
 #include "third_party/harfbuzz-ng/src/hb.h"
@@ -328,7 +329,7 @@ namespace internal {
 TextRunHarfBuzz::TextRunHarfBuzz()
     : width(0),
       preceding_run_widths(0),
-      direction(UBIDI_LTR),
+      is_rtl(false),
       level(0),
       script(USCRIPT_INVALID_CODE),
       glyph_count(-1),
@@ -343,7 +344,7 @@ TextRunHarfBuzz::~TextRunHarfBuzz() {}
 size_t TextRunHarfBuzz::CharToGlyph(size_t pos) const {
   DCHECK(range.start() <= pos && pos < range.end());
 
-  if (direction == UBIDI_LTR) {
+  if (!is_rtl) {
     for (size_t i = 0; i < glyph_count - 1; ++i) {
       if (pos < glyph_to_char[i + 1])
         return i;
@@ -386,14 +387,13 @@ int TextRunHarfBuzz::GetGlyphXBoundary(size_t text_index, bool trailing) const {
   Range glyph_range;
   if (text_index == range.end()) {
     trailing = true;
-    glyph_range = direction == UBIDI_LTR ?
-        Range(glyph_count - 1, glyph_count) : Range(0, 1);
+    glyph_range = is_rtl ? Range(0, 1) : Range(glyph_count - 1, glyph_count);
   } else {
     glyph_range = CharRangeToGlyphRange(Range(text_index, text_index + 1));
   }
   const int trailing_step = trailing ? 1 : 0;
-  const size_t glyph_pos = glyph_range.start() +
-      (direction == UBIDI_LTR ? trailing_step : (1 - trailing_step));
+  const size_t glyph_pos =
+      glyph_range.start() + (is_rtl ? (1 - trailing_step) : trailing_step);
   x += glyph_pos < glyph_count ?
       SkScalarRoundToInt(positions[glyph_pos].x()) : width;
   return x;
@@ -426,16 +426,16 @@ SelectionModel RenderTextHarfBuzz::FindCursorPosition(const Point& point) {
     const SkScalar end =
         i + 1 == run.glyph_count ? run.width : run.positions[i + 1].x();
     const SkScalar middle = (end + run.positions[i].x()) / 2;
-    const bool is_rtl = run.direction == UBIDI_RTL;
+
     if (offset < middle) {
       return SelectionModel(LayoutIndexToTextIndex(
-          run.glyph_to_char[i] + (is_rtl ? 1 : 0)),
-          (is_rtl ? CURSOR_BACKWARD : CURSOR_FORWARD));
+          run.glyph_to_char[i] + (run.is_rtl ? 1 : 0)),
+          (run.is_rtl ? CURSOR_BACKWARD : CURSOR_FORWARD));
     }
     if (offset < end) {
       return SelectionModel(LayoutIndexToTextIndex(
-          run.glyph_to_char[i] + (is_rtl ? 0 : 1)),
-          (is_rtl ? CURSOR_FORWARD : CURSOR_BACKWARD));
+          run.glyph_to_char[i] + (run.is_rtl ? 0 : 1)),
+          (run.is_rtl ? CURSOR_FORWARD : CURSOR_BACKWARD));
     }
   }
   return EdgeSelectionModel(CURSOR_RIGHT);
@@ -469,8 +469,7 @@ SelectionModel RenderTextHarfBuzz::AdjacentCharSelectionModel(
     // grapheme in the appropriate direction.
     run = runs_[run_index];
     size_t caret = selection.caret_pos();
-    bool forward_motion =
-        (run->direction == UBIDI_RTL) == (direction == CURSOR_LEFT);
+    bool forward_motion = run->is_rtl == (direction == CURSOR_LEFT);
     if (forward_motion) {
       if (caret < LayoutIndexToTextIndex(run->range.end())) {
         caret = IndexOfAdjacentGrapheme(caret, CURSOR_FORWARD);
@@ -489,8 +488,7 @@ SelectionModel RenderTextHarfBuzz::AdjacentCharSelectionModel(
       return EdgeSelectionModel(direction);
     run = runs_[visual_to_logical_[visual_index]];
   }
-  bool forward_motion =
-      (run->direction == UBIDI_RTL) == (direction == CURSOR_LEFT);
+  bool forward_motion = run->is_rtl == (direction == CURSOR_LEFT);
   return forward_motion ? FirstSelectionModelInsideRun(run) :
                           LastSelectionModelInsideRun(run);
 }
@@ -794,29 +792,15 @@ SelectionModel RenderTextHarfBuzz::LastSelectionModelInsideRun(
 
 void RenderTextHarfBuzz::ItemizeText() {
   const base::string16& text = GetLayoutText();
-  const bool is_rtl = GetTextDirection() == base::i18n::RIGHT_TO_LEFT;
+  const bool is_text_rtl = GetTextDirection() == base::i18n::RIGHT_TO_LEFT;
   DCHECK_NE(0U, text.length());
 
   // If ICU fails to itemize the text, we set |fake_runs| and create a run that
   // spans the entire text. This is needed because early returning and leaving
   // the runs set empty causes some clients to crash/misbehave since they expect
   // non-zero text metrics from a non-empty text.
-  bool fake_runs = false;
-  UErrorCode result = U_ZERO_ERROR;
-
-  UBiDi* line = ubidi_openSized(text.length(), 0, &result);
-  if (U_FAILURE(result)) {
-    NOTREACHED();
-    fake_runs = true;
-  } else {
-    ubidi_setPara(line, text.c_str(), text.length(),
-                  is_rtl ? UBIDI_DEFAULT_RTL : UBIDI_DEFAULT_LTR, NULL,
-                  &result);
-    if (U_FAILURE(result)) {
-      NOTREACHED();
-      fake_runs = true;
-    }
-  }
+  base::i18n::BiDiLineIterator bidi_iterator;
+  bool fake_runs = !bidi_iterator.Open(text, is_text_rtl, false);
 
   // Temporarily apply composition underlines and selection colors.
   ApplyCompositionAndSelectionStyles();
@@ -840,7 +824,7 @@ void RenderTextHarfBuzz::ItemizeText() {
       run_break = text.length();
     } else {
       int32 script_item_break = 0;
-      ubidi_getLogicalRun(line, run_break, &script_item_break, &run->level);
+      bidi_iterator.GetLogicalRun(run_break, &script_item_break, &run->level);
       // Find the length and script of this script run.
       script_item_break = ScriptInterval(text, run_break,
           script_item_break - run_break, &run->script) + run_break;
@@ -873,17 +857,14 @@ void RenderTextHarfBuzz::ItemizeText() {
     DCHECK(IsValidCodePointIndex(text, run_break));
     style.UpdatePosition(LayoutIndexToTextIndex(run_break));
     run->range.set_end(run_break);
-    const UChar* uchar_start = ubidi_getText(line);
-    // TODO(ckocagil): Add |ubidi_getBaseDirection| to i18n::BiDiLineIterator
-    // and remove the bare ICU use here.
-    run->direction = ubidi_getBaseDirection(uchar_start + run->range.start(),
-                                            run->range.length());
-    if (run->direction == UBIDI_NEUTRAL)
-      run->direction = is_rtl ? UBIDI_RTL : UBIDI_LTR;
+    UBiDiDirection direction = ubidi_getBaseDirection(
+        text.c_str() + run->range.start(), run->range.length());
+    if (direction == UBIDI_NEUTRAL)
+      run->is_rtl = is_text_rtl;
+    else
+      run->is_rtl = direction == UBIDI_RTL;
     runs_.push_back(run);
   }
-
-  ubidi_close(line);
 
   // Undo the temporarily applied composition underlines and selection colors.
   UndoCompositionAndSelectionStyles();
@@ -917,7 +898,7 @@ void RenderTextHarfBuzz::ShapeRun(internal::TextRunHarfBuzz* run) {
                       text.length(), run->range.start(), run->range.length());
   hb_buffer_set_script(buffer, ICUScriptToHBScript(run->script));
   hb_buffer_set_direction(buffer,
-      run->direction == UBIDI_LTR ? HB_DIRECTION_LTR : HB_DIRECTION_RTL);
+      run->is_rtl ? HB_DIRECTION_RTL : HB_DIRECTION_LTR);
   // TODO(ckocagil): Should we determine the actual language?
   hb_buffer_set_language(buffer, hb_language_get_default());
 

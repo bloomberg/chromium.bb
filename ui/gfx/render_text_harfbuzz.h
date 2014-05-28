@@ -39,7 +39,7 @@ struct TextRunHarfBuzz {
   int width;
   int preceding_run_widths;
   Range range;
-  UBiDiDirection direction;
+  bool is_rtl;
   UBiDiLevel level;
   UScriptCode script;
 
