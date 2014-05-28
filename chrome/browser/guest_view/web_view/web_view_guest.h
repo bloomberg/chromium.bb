@@ -129,7 +129,6 @@ class WebViewGuest : public GuestView<WebViewGuest>,
   // GuestDelegate implementation.
   virtual void DidAttach() OVERRIDE;
   virtual void EmbedderDestroyed() OVERRIDE;
-  virtual void GuestProcessGone(base::TerminationStatus status) OVERRIDE;
   virtual bool IsDragAndDropEnabled() OVERRIDE;
   virtual void SizeChanged(const gfx::Size& old_size, const gfx::Size& new_size)
       OVERRIDE;
@@ -305,6 +304,7 @@ class WebViewGuest : public GuestView<WebViewGuest>,
   virtual bool OnMessageReceived(
       const IPC::Message& message,
       content::RenderFrameHost* render_frame_host) OVERRIDE;
+  virtual void RenderProcessGone(base::TerminationStatus status) OVERRIDE;
   virtual void WebContentsDestroyed() OVERRIDE;
   virtual void UserAgentOverrideSet(const std::string& user_agent) OVERRIDE;
   virtual void RenderViewReady() OVERRIDE;

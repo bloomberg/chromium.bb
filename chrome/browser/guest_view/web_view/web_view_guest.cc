@@ -4,7 +4,6 @@
 
 #include "chrome/browser/guest_view/web_view/web_view_guest.h"
 
-#include "base/debug/stack_trace.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -428,17 +427,6 @@ void WebViewGuest::FindReply(WebContents* source,
                              bool final_update) {
   find_helper_.FindReply(request_id, number_of_matches, selection_rect,
                          active_match_ordinal, final_update);
-}
-
-void WebViewGuest::GuestProcessGone(base::TerminationStatus status) {
-  // Cancel all find sessions in progress.
-  find_helper_.CancelAllFindSessions();
-
-  scoped_ptr<base::DictionaryValue> args(new base::DictionaryValue());
-  args->SetInteger(webview::kProcessId,
-                   guest_web_contents()->GetRenderProcessHost()->GetID());
-  args->SetString(webview::kReason, TerminationStatusToString(status));
-  DispatchEvent(new GuestViewBase::Event(webview::kEventExit, args.Pass()));
 }
 
 void WebViewGuest::HandleKeyboardEvent(
@@ -874,6 +862,17 @@ bool WebViewGuest::OnMessageReceived(const IPC::Message& message,
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
+}
+
+void WebViewGuest::RenderProcessGone(base::TerminationStatus status) {
+  // Cancel all find sessions in progress.
+  find_helper_.CancelAllFindSessions();
+
+  scoped_ptr<base::DictionaryValue> args(new base::DictionaryValue());
+  args->SetInteger(webview::kProcessId,
+                   guest_web_contents()->GetRenderProcessHost()->GetID());
+  args->SetString(webview::kReason, TerminationStatusToString(status));
+  DispatchEvent(new GuestViewBase::Event(webview::kEventExit, args.Pass()));
 }
 
 void WebViewGuest::WebContentsDestroyed() {

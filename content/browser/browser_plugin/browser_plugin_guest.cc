@@ -482,8 +482,6 @@ void BrowserPluginGuest::RenderProcessGone(base::TerminationStatus status) {
     default:
       break;
   }
-  if (delegate_)
-    delegate_->GuestProcessGone(status);
 }
 
 // static

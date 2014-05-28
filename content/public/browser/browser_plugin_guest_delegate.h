@@ -26,13 +26,6 @@ class CONTENT_EXPORT BrowserPluginGuestDelegate {
   // Notification that the embedder has completed attachment.
   virtual void DidAttach() {}
 
-  // Informs the delegate that the guest render process is gone. |status|
-  // indicates whether the guest was killed, crashed, or was terminated
-  // gracefully.
-  // TODO(fsamuel): Delete this once BrowserPluginGuest is no longer a
-  // WebContentsDelegate.
-  virtual void GuestProcessGone(base::TerminationStatus status) {}
-
   // Informs the delegate that the embedder has been destroyed.
   virtual void EmbedderDestroyed() {}
 
