@@ -1883,7 +1883,7 @@ void RenderBlock::paintColumnContents(PaintInfo& paintInfo, const LayoutPoint& p
         }
         colRect.moveBy(paintOffset);
         PaintInfo info(paintInfo);
-        info.rect.intersect(pixelSnappedIntRect(colRect));
+        info.rect.intersect(enclosingIntRect(colRect));
 
         if (!info.rect.isEmpty()) {
             GraphicsContextStateSaver stateSaver(*context);
@@ -1899,7 +1899,7 @@ void RenderBlock::paintColumnContents(PaintInfo& paintInfo, const LayoutPoint& p
             // like overflow:hidden.
             // FIXME: Content and column rules that extend outside column boxes at the edges of the multi-column element
             // are clipped according to the 'overflow' property.
-            context->clip(pixelSnappedIntRect(clipRect));
+            context->clip(enclosingIntRect(clipRect));
 
             // Adjust our x and y when painting.
             LayoutPoint adjustedPaintOffset = paintOffset + offset;

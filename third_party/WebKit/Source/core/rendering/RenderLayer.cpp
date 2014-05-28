@@ -2616,7 +2616,7 @@ void RenderLayer::paintChildLayerIntoColumns(RenderLayer* childLayer, GraphicsCo
 
             // Each strip pushes a clip, since column boxes are specified as being
             // like overflow:hidden.
-            context->clip(pixelSnappedIntRect(colRect));
+            context->clip(enclosingIntRect(colRect));
 
             if (!colIndex) {
                 // Apply a translation transform to change where the layer paints.

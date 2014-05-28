@@ -859,6 +859,20 @@ crbug.com/316150 inspector/timeline/timeline-network-received-data.html [ Failur
 # Macs do not support keyboard events to show a context menu.
 crbug.com/345913 [ Mac ] editing/spelling/spelling-on-context-menu-key.html [ Failure ]
 
+crbug.com/164167 [ Mac ] css3/unicode-bidi-isolate-basic.html [ NeedsRebaseline ]
+crbug.com/164167 fast/borders/border-antialiasing.html [ NeedsRebaseline ]
+crbug.com/164167 fast/multicol/overflow-across-columns-percent-height.html [ NeedsRebaseline ]
+crbug.com/164167 fast/multicol/scrolling-overflow.html [ NeedsRebaseline ]
+crbug.com/164167 fast/multicol/overflow-unsplittable.html [ NeedsRebaseline ]
+crbug.com/164167 fast/multicol/nested-columns.html [ NeedsRebaseline ]
+crbug.com/164167 fast/multicol/vertical-rl/nested-columns.html [ NeedsRebaseline ]
+crbug.com/164167 fast/multicol/column-rules-stacking.html [ NeedsRebaseline ]
+crbug.com/164167 fast/multicol/vertical-lr/nested-columns.html [ NeedsRebaseline ]
+crbug.com/164167 fast/multicol/span/anonymous-style-inheritance.html [ NeedsRebaseline ]
+crbug.com/164167 fast/multicol/overflow-across-columns.html [ NeedsRebaseline ]
+crbug.com/164167 fast/multicol/column-rules.html [ NeedsRebaseline ]
+crbug.com/164167 fast/multicol/positive-leading.html [ NeedsRebaseline ]
+
 crbug.com/316349 inspector-protocol/page/enable-disable.html [ Failure Pass ]
 
 crbug.com/316730 canvas/synchronous-create-pattern.html [ ImageOnlyFailure Pass ]
