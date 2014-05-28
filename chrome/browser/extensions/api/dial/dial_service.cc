@@ -29,7 +29,6 @@
 #if defined(OS_CHROMEOS)
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
-#include "chromeos/network/shill_property_util.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #endif
 

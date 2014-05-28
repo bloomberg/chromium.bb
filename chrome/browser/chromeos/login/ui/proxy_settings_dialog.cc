@@ -10,7 +10,7 @@
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/common/url_constants.h"
 #include "chromeos/network/network_state.h"
-#include "chromeos/network/shill_property_util.h"
+#include "chromeos/network/network_type_pattern.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"

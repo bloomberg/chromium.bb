@@ -14,6 +14,7 @@
 #include "base/values.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/shill_profile_client.h"
+#include "chromeos/network/network_type_pattern.h"
 #include "chromeos/network/network_ui_data.h"
 #include "chromeos/network/onc/onc_signature.h"
 #include "chromeos/network/onc/onc_translator.h"

@@ -27,7 +27,6 @@
 #include "chrome/common/pref_names.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
-#include "chromeos/network/shill_property_util.h"
 #include "content/public/browser/web_contents.h"
 
 using apps::AppWindowRegistry;

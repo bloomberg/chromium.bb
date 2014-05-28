@@ -20,7 +20,6 @@
 #include "chromeos/network/favorite_state.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler_observer.h"
-#include "chromeos/network/shill_property_util.h"
 #include "dbus/object_path.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"

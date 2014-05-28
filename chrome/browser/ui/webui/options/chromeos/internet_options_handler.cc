@@ -49,7 +49,6 @@
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/network_ui_data.h"
 #include "chromeos/network/network_util.h"
-#include "chromeos/network/shill_property_util.h"
 #include "components/onc/onc_constants.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/user_metrics.h"

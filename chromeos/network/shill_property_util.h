@@ -81,55 +81,6 @@ bool GetHomeProviderFromProperty(const base::Value& value,
 
 }  // namespace shill_property_util
 
-class CHROMEOS_EXPORT NetworkTypePattern {
- public:
-  // Matches any network.
-  static NetworkTypePattern Default();
-
-  // Matches wireless (WiFi, cellular, etc.) networks
-  static NetworkTypePattern Wireless();
-
-  // Matches cellular or wimax networks.
-  static NetworkTypePattern Mobile();
-
-  // Matches non virtual networks.
-  static NetworkTypePattern NonVirtual();
-
-  // Matches ethernet networks (with or without EAP).
-  static NetworkTypePattern Ethernet();
-
-  static NetworkTypePattern WiFi();
-  static NetworkTypePattern Cellular();
-  static NetworkTypePattern VPN();
-  static NetworkTypePattern Wimax();
-
-  // Matches only networks of exactly the type |shill_network_type|, which must
-  // be one of the types defined in service_constants.h (e.g.
-  // shill::kTypeWifi).
-  // Note: Shill distinguishes Ethernet without EAP from Ethernet with EAP. If
-  // unsure, better use one of the matchers above.
-  static NetworkTypePattern Primitive(const std::string& shill_network_type);
-
-  bool Equals(const NetworkTypePattern& other) const;
-  bool MatchesType(const std::string& shill_network_type) const;
-
-  // Returns true if this pattern matches at least one network type that
-  // |other_pattern| matches (according to MatchesType). Thus MatchesPattern is
-  // symmetric and reflexive but not transitive.
-  // See the unit test for examples.
-  bool MatchesPattern(const NetworkTypePattern& other_pattern) const;
-
-  std::string ToDebugString() const;
-
- private:
-  explicit NetworkTypePattern(int pattern);
-
-  // The bit array of the matching network types.
-  int pattern_;
-
-  DISALLOW_ASSIGN(NetworkTypePattern);
-};
-
 }  // namespace chromeos
 
 #endif  // CHROMEOS_NETWORK_SHILL_PROPERTY_UTIL_H_

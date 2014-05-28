@@ -13,7 +13,6 @@
 #include "chromeos/network/network_event_log.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
-#include "chromeos/network/shill_property_util.h"
 #include "net/base/network_change_notifier.h"
 #include "net/dns/dns_config_service_posix.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"

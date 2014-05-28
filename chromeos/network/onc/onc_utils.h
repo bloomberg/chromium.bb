@@ -13,7 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "chromeos/chromeos_export.h"
-#include "chromeos/network/shill_property_util.h"
+#include "chromeos/network/network_type_pattern.h"
 #include "components/onc/onc_constants.h"
 
 namespace base {

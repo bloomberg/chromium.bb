@@ -23,7 +23,6 @@
 #include "chromeos/dbus/shill_service_client.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
-#include "chromeos/network/shill_property_util.h"
 #include "components/captive_portal/captive_portal_detector.h"
 #include "components/captive_portal/captive_portal_testing_utils.h"
 #include "content/public/test/test_browser_thread_bundle.h"

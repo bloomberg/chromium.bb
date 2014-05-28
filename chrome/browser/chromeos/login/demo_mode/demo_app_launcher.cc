@@ -20,7 +20,6 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state_handler.h"
-#include "chromeos/network/shill_property_util.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
 #include "grit/browser_resources.h"

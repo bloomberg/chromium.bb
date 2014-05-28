@@ -25,7 +25,6 @@
 #include "chromeos/network/onc/onc_signature.h"
 #include "chromeos/network/onc/onc_translator.h"
 #include "chromeos/network/onc/onc_utils.h"
-#include "chromeos/network/shill_property_util.h"
 #include "components/onc/onc_constants.h"
 #include "extensions/browser/extension_function_registry.h"
 

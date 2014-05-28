@@ -19,6 +19,7 @@
 #include "chromeos/network/managed_state.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_handler_callbacks.h"
+#include "chromeos/network/network_type_pattern.h"
 #include "chromeos/network/shill_property_handler.h"
 
 namespace base {
@@ -37,7 +38,6 @@ class DeviceState;
 class NetworkState;
 class NetworkStateHandlerObserver;
 class NetworkStateHandlerTest;
-class NetworkTypePattern;
 
 // Class for tracking the list of visible networks and their properties.
 //

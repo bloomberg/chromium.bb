@@ -10,7 +10,7 @@
 #include "chromeos/network/favorite_state.h"
 #include "chromeos/network/network_event_log.h"
 #include "chromeos/network/network_state.h"
-#include "chromeos/network/shill_property_util.h"
+#include "chromeos/network/network_type_pattern.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace chromeos {

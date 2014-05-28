@@ -9,7 +9,7 @@
 #include "base/logging.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
-#include "chromeos/network/shill_property_util.h"
+#include "chromeos/network/network_type_pattern.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
