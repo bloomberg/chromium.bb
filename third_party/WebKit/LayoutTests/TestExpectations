@@ -1090,9 +1090,6 @@ crbug.com/356957 [ Win Debug ] editing/spelling/spellcheck-editable-on-focus.htm
 
 crbug.com/344238 [ Mac Win Debug ] virtual/deferred/inspector/timeline/timeline-window-filter.html [ Pass Timeout ]
 
-crbug.com/366387 [ Debug ] svg/as-object/deep-nested-embedded-svg-size-changes-no-layout-triggers-1.html [ Crash ]
-crbug.com/366387 [ Debug ] svg/as-object/deep-nested-embedded-svg-size-changes-no-layout-triggers-2.html [ Crash ]
-
 crbug.com/359960 compositing/iframes/scrolling-iframe.html [ Pass Failure ]
 crbug.com/359960 virtual/softwarecompositing/iframes/scrolling-iframe.html [ Pass Failure ]
 crbug.com/359961 inspector/timeline/timeline-window-filter.html [ Pass Timeout ]
@@ -1180,8 +1177,6 @@ crbug.com/369600 fast/events/onerror-no-constructor.html [ Failure ]
 crbug.com/377476 fast/js/function-name.html [ NeedsManualRebaseline ]
 crbug.com/377476 fast/js/getOwnPropertyDescriptor.html [ NeedsManualRebaseline ]
 crbug.com/377476 fast/js/mozilla/strict/function-name-arity.html [ NeedsManualRebaseline ]
-
-crbug.com/370789 fast/dom/document-contentType-data-uri.html [ Failure ]
 
 crbug.com/370906 fast/dom/StyleSheet/gc-declaration-parent-rule.html [ Failure ]
 
