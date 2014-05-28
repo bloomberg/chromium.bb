@@ -133,6 +133,7 @@ class ProfileChooserView : public views::BubbleDelegateView,
   views::View* CreateGuestProfileView();
   views::View* CreateOtherProfilesView(const Indexes& avatars_to_show);
   views::View* CreateOptionsView(bool enable_lock);
+  views::View* CreateSupervisedUserDisclaimerView();
 
   // Account Management view for the profile |avatar_item|.
   views::View* CreateCurrentProfileAccountsView(

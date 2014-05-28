@@ -847,6 +847,13 @@ views::View* ProfileChooserView::CreateProfileChooserView(
   layout->StartRow(1, 0);
   layout->AddView(current_profile_view);
 
+  if (browser_->profile()->IsManaged()) {
+    layout->StartRow(0, 0);
+    layout->AddView(new views::Separator(views::Separator::HORIZONTAL));
+    layout->StartRow(1, 0);
+    layout->AddView(CreateSupervisedUserDisclaimerView());
+  }
+
   if (view_mode_ == profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER) {
     layout->StartRow(1, 0);
     if (switches::IsFastUserSwitching())
@@ -1185,6 +1192,26 @@ views::View* ProfileChooserView::CreateOptionsView(bool enable_lock) {
       0, kButtonHeight + views::kRelatedControlVerticalSpacing));
     layout->AddView(lock_button_);
   }
+  return view;
+}
+
+views::View* ProfileChooserView::CreateSupervisedUserDisclaimerView() {
+  views::View* view = new views::View();
+  views::GridLayout* layout = CreateSingleColumnLayout(
+      view, kFixedMenuWidth - 2 * views::kButtonHEdgeMarginNew);
+  layout->SetInsets(views::kRelatedControlVerticalSpacing,
+                    views::kButtonHEdgeMarginNew,
+                    views::kRelatedControlVerticalSpacing,
+                    views::kButtonHEdgeMarginNew);
+  views::Label* disclaimer = new views::Label(
+      avatar_menu_->GetManagedUserInformation());
+  disclaimer->SetMultiLine(true);
+  disclaimer->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
+  disclaimer->SetFontList(rb->GetFontList(ui::ResourceBundle::SmallFont));
+  layout->StartRow(1, 0);
+  layout->AddView(disclaimer);
+
   return view;
 }
 
