@@ -18,9 +18,10 @@ namespace sync_file_system {
 class TaskLogger : public base::SupportsWeakPtr<TaskLogger> {
  public:
   struct TaskLog {
-    base::TimeDelta duration;
-    std::string type;
-    std::string summary;
+    base::TimeTicks start_time;
+    base::TimeTicks end_time;
+    std::string task_description;
+    std::string result_description;
     std::vector<std::string> details;
 
     TaskLog();

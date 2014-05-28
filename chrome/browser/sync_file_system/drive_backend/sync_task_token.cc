@@ -93,6 +93,31 @@ void SyncTaskToken::clear_blocking_factor() {
   blocking_factor_.reset();
 }
 
+void SyncTaskToken::InitializeTaskLog(const std::string& task_description) {
+  DCHECK(task_log_);
+  task_log_->start_time = base::TimeTicks::Now();
+  task_log_->task_description = task_description;
+}
+
+void SyncTaskToken::FinalizeTaskLog(const std::string& result_description) {
+  DCHECK(task_log_);
+  task_log_->result_description = result_description;
+  task_log_->end_time = base::TimeTicks::Now();
+}
+
+void SyncTaskToken::RecordLog(const std::string& message) {
+  DCHECK(task_log_);
+  task_log_->details.push_back(message);
+}
+
+void SyncTaskToken::SetTaskLog(scoped_ptr<TaskLogger::TaskLog> task_log) {
+  task_log_ = task_log.Pass();
+}
+
+scoped_ptr<TaskLogger::TaskLog> SyncTaskToken::PassTaskLog() {
+  return task_log_.Pass();
+}
+
 SyncTaskToken::SyncTaskToken(const base::WeakPtr<SyncTaskManager>& manager,
                              int64 token_id,
                              scoped_ptr<BlockingFactor> blocking_factor,

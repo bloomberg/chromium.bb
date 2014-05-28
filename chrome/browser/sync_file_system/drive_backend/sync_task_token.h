@@ -10,6 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/sync_file_system/sync_callbacks.h"
+#include "chrome/browser/sync_file_system/task_logger.h"
 
 namespace sync_file_system {
 namespace drive_backend {
@@ -53,6 +54,13 @@ class SyncTaskToken {
 
   int64 token_id() const { return token_id_; }
 
+  void InitializeTaskLog(const std::string& task_description);
+  void FinalizeTaskLog(const std::string& result_description);
+  void RecordLog(const std::string& message);
+
+  void SetTaskLog(scoped_ptr<TaskLogger::TaskLog> task_log);
+  scoped_ptr<TaskLogger::TaskLog> PassTaskLog();
+
  private:
   SyncTaskToken(const base::WeakPtr<SyncTaskManager>& manager,
                 int64 token_id,
@@ -64,6 +72,7 @@ class SyncTaskToken {
   int64 token_id_;
   SyncStatusCallback callback_;
 
+  scoped_ptr<TaskLogger::TaskLog> task_log_;
   scoped_ptr<BlockingFactor> blocking_factor_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncTaskToken);

@@ -141,6 +141,7 @@ class SyncTaskManager
   // Non-static version of UpdateBlockingFactor.
   void UpdateBlockingFactorBody(scoped_ptr<SyncTaskToken> foreground_task_token,
                                 scoped_ptr<SyncTaskToken> background_task_token,
+                                scoped_ptr<TaskLogger::TaskLog> task_log,
                                 scoped_ptr<BlockingFactor> blocking_factor,
                                 const Continuation& continuation);
 
