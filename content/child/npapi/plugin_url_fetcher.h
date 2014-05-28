@@ -56,12 +56,10 @@ class PluginURLFetcher : public RequestPeer {
  private:
   // RequestPeer implementation:
   virtual void OnUploadProgress(uint64 position, uint64 size) OVERRIDE;
-  virtual bool OnReceivedRedirect(
-      const GURL& new_url,
-      const GURL& new_first_party_for_cookies,
-      const webkit_glue::ResourceResponseInfo& info) OVERRIDE;
-  virtual void OnReceivedResponse(
-      const webkit_glue::ResourceResponseInfo& info) OVERRIDE;
+  virtual bool OnReceivedRedirect(const GURL& new_url,
+                                  const GURL& new_first_party_for_cookies,
+                                  const ResourceResponseInfo& info) OVERRIDE;
+  virtual void OnReceivedResponse(const ResourceResponseInfo& info) OVERRIDE;
   virtual void OnDownloadedData(int len, int encoded_data_length) OVERRIDE;
   virtual void OnReceivedData(const char* data,
                               int data_length,

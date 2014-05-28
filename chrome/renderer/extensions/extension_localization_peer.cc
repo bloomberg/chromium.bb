@@ -49,13 +49,13 @@ void ExtensionLocalizationPeer::OnUploadProgress(
 bool ExtensionLocalizationPeer::OnReceivedRedirect(
     const GURL& new_url,
     const GURL& new_first_party_for_cookies,
-    const webkit_glue::ResourceResponseInfo& info) {
+    const content::ResourceResponseInfo& info) {
   NOTREACHED();
   return false;
 }
 
 void ExtensionLocalizationPeer::OnReceivedResponse(
-    const webkit_glue::ResourceResponseInfo& info) {
+    const content::ResourceResponseInfo& info) {
   response_info_ = info;
 }
 

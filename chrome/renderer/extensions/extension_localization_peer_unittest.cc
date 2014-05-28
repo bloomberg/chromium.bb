@@ -58,9 +58,9 @@ class MockResourceLoaderBridgePeer : public content::RequestPeer {
   MOCK_METHOD3(OnReceivedRedirect,
                bool(const GURL& new_url,
                     const GURL& new_first_party_for_cookies,
-                    const webkit_glue::ResourceResponseInfo& info));
-  MOCK_METHOD1(OnReceivedResponse, void(
-      const webkit_glue::ResourceResponseInfo& info));
+                    const content::ResourceResponseInfo& info));
+  MOCK_METHOD1(OnReceivedResponse,
+               void(const content::ResourceResponseInfo& info));
   MOCK_METHOD2(OnDownloadedData, void(int len, int encoded_data_length));
   MOCK_METHOD3(OnReceivedData, void(const char* data,
                                     int data_length,

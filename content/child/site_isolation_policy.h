@@ -16,11 +16,9 @@
 
 class GURL;
 
-namespace webkit_glue {
-struct ResourceResponseInfo;
-}
-
 namespace content {
+
+struct ResourceResponseInfo;
 
 // SiteIsolationPolicy implements the cross-site document blocking policy (XSDP)
 // for Site Isolation. XSDP will monitor network responses to a renderer and
@@ -86,9 +84,11 @@ class CONTENT_EXPORT SiteIsolationPolicy {
   // request identified by |request_id|. Any data returned should then be
   // passed to ShouldBlockResponse with the first packet.
   static linked_ptr<SiteIsolationResponseMetaData> OnReceivedResponse(
-      const GURL& frame_origin, const GURL& response_url,
-      ResourceType::Type resource_type, int origin_pid,
-      const webkit_glue::ResourceResponseInfo& info);
+      const GURL& frame_origin,
+      const GURL& response_url,
+      ResourceType::Type resource_type,
+      int origin_pid,
+      const ResourceResponseInfo& info);
 
   // Examines the first network packet in case response_url is registered as a
   // cross-site document by DidReceiveResponse().  In case that this response is

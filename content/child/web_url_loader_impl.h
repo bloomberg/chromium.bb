@@ -9,11 +9,9 @@
 #include "content/common/content_export.h"
 #include "third_party/WebKit/public/platform/WebURLLoader.h"
 
-namespace webkit_glue {
-struct ResourceResponseInfo;
-}
-
 namespace content {
+
+struct ResourceResponseInfo;
 
 class WebURLLoaderImpl : public blink::WebURLLoader {
  public:
@@ -25,7 +23,7 @@ class WebURLLoaderImpl : public blink::WebURLLoader {
                                         int reason);
   CONTENT_EXPORT static void PopulateURLResponse(
       const GURL& url,
-      const webkit_glue::ResourceResponseInfo& info,
+      const ResourceResponseInfo& info,
       blink::WebURLResponse* response);
 
   // WebURLLoader methods:

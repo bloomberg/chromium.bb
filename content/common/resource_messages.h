@@ -84,7 +84,7 @@ IPC_ENUM_TRAITS_MAX_VALUE( \
     net::HttpResponseInfo::NUM_OF_CONNECTION_INFOS - 1)
 
 IPC_STRUCT_TRAITS_BEGIN(content::ResourceResponseHead)
-  IPC_STRUCT_TRAITS_PARENT(webkit_glue::ResourceResponseInfo)
+IPC_STRUCT_TRAITS_PARENT(content::ResourceResponseInfo)
   IPC_STRUCT_TRAITS_MEMBER(error_code)
   IPC_STRUCT_TRAITS_MEMBER(request_start)
   IPC_STRUCT_TRAITS_MEMBER(response_start)
@@ -96,7 +96,7 @@ IPC_STRUCT_TRAITS_BEGIN(content::SyncLoadResult)
   IPC_STRUCT_TRAITS_MEMBER(data)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_TRAITS_BEGIN(webkit_glue::ResourceResponseInfo)
+IPC_STRUCT_TRAITS_BEGIN(content::ResourceResponseInfo)
   IPC_STRUCT_TRAITS_MEMBER(request_time)
   IPC_STRUCT_TRAITS_MEMBER(response_time)
   IPC_STRUCT_TRAITS_MEMBER(headers)

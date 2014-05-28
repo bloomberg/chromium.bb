@@ -11,9 +11,9 @@
 #include "base/metrics/histogram.h"
 #include "base/strings/string_util.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/resource_response_info.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/http/http_response_headers.h"
-#include "webkit/common/resource_response_info.h"
 
 using base::StringPiece;
 
@@ -140,12 +140,11 @@ void SiteIsolationPolicy::SetPolicyEnabled(bool enabled) {
 }
 
 linked_ptr<SiteIsolationResponseMetaData>
-SiteIsolationPolicy::OnReceivedResponse(
-    const GURL& frame_origin,
-    const GURL& response_url,
-    ResourceType::Type resource_type,
-    int origin_pid,
-    const webkit_glue::ResourceResponseInfo& info) {
+SiteIsolationPolicy::OnReceivedResponse(const GURL& frame_origin,
+                                        const GURL& response_url,
+                                        ResourceType::Type resource_type,
+                                        int origin_pid,
+                                        const ResourceResponseInfo& info) {
   if (!g_policy_enabled)
     return linked_ptr<SiteIsolationResponseMetaData>();
 

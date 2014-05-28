@@ -18,6 +18,7 @@
 #include "content/child/web_url_loader_impl.h"
 #include "content/common/resource_request_body.h"
 #include "content/common/service_worker/service_worker_types.h"
+#include "content/public/common/resource_response_info.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
@@ -25,7 +26,6 @@
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
 #include "webkit/child/multipart_response_delegate.h"
 #include "webkit/child/resource_loader_bridge.h"
-#include "webkit/common/resource_response_info.h"
 
 namespace content {
 namespace {
@@ -191,7 +191,7 @@ void PluginURLFetcher::OnUploadProgress(uint64 position, uint64 size) {
 bool PluginURLFetcher::OnReceivedRedirect(
     const GURL& new_url,
     const GURL& new_first_party_for_cookies,
-    const webkit_glue::ResourceResponseInfo& info) {
+    const ResourceResponseInfo& info) {
   if (!plugin_stream_)
     return false;
 
@@ -236,8 +236,7 @@ bool PluginURLFetcher::OnReceivedRedirect(
   return true;
 }
 
-void PluginURLFetcher::OnReceivedResponse(
-    const webkit_glue::ResourceResponseInfo& info) {
+void PluginURLFetcher::OnReceivedResponse(const ResourceResponseInfo& info) {
   if (!plugin_stream_)
     return;
 

@@ -6,7 +6,7 @@
 #define CHROME_RENDERER_SECURITY_FILTER_PEER_H_
 
 #include "content/public/child/request_peer.h"
-#include "webkit/common/resource_response_info.h"
+#include "content/public/common/resource_response_info.h"
 #include "webkit/common/resource_type.h"
 
 // The SecurityFilterPeer is a proxy to a
@@ -34,9 +34,9 @@ class SecurityFilterPeer : public content::RequestPeer {
   virtual bool OnReceivedRedirect(
       const GURL& new_url,
       const GURL& new_first_party_for_cookies,
-      const webkit_glue::ResourceResponseInfo& info) OVERRIDE;
+      const content::ResourceResponseInfo& info) OVERRIDE;
   virtual void OnReceivedResponse(
-      const webkit_glue::ResourceResponseInfo& info) OVERRIDE;
+      const content::ResourceResponseInfo& info) OVERRIDE;
   virtual void OnDownloadedData(int len, int encoded_data_length) OVERRIDE {}
   virtual void OnReceivedData(const char* data,
                               int data_length,
@@ -66,7 +66,7 @@ class BufferedPeer : public SecurityFilterPeer {
 
   // content::RequestPeer Implementation.
   virtual void OnReceivedResponse(
-      const webkit_glue::ResourceResponseInfo& info) OVERRIDE;
+      const content::ResourceResponseInfo& info) OVERRIDE;
   virtual void OnReceivedData(const char* data,
                               int data_length,
                               int encoded_data_length) OVERRIDE;
@@ -85,7 +85,7 @@ class BufferedPeer : public SecurityFilterPeer {
   // original peer, if it returns false, an error is sent instead.
   virtual bool DataReady() = 0;
 
-  webkit_glue::ResourceResponseInfo response_info_;
+  content::ResourceResponseInfo response_info_;
   std::string data_;
 
  private:
@@ -109,7 +109,7 @@ class ReplaceContentPeer : public SecurityFilterPeer {
 
   // content::RequestPeer Implementation.
   virtual void OnReceivedResponse(
-      const webkit_glue::ResourceResponseInfo& info) OVERRIDE;
+      const content::ResourceResponseInfo& info) OVERRIDE;
   virtual void OnReceivedData(const char* data,
                               int data_length,
                               int encoded_data_length) OVERRIDE;
@@ -122,7 +122,7 @@ class ReplaceContentPeer : public SecurityFilterPeer {
       int64 total_transfer_size) OVERRIDE;
 
  private:
-  webkit_glue::ResourceResponseInfo response_info_;
+  content::ResourceResponseInfo response_info_;
   std::string mime_type_;
   std::string data_;
 

@@ -23,7 +23,6 @@
 #include "webkit/common/appcache/appcache_interfaces.h"
 
 using webkit_glue::ResourceLoaderBridge;
-using webkit_glue::ResourceResponseInfo;
 
 namespace content {
 

@@ -1,9 +1,9 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_COMMON_RESOURCE_RESPONSE_INFO_H_
-#define WEBKIT_COMMON_RESOURCE_RESPONSE_INFO_H_
+#ifndef CONTENT_PUBLIC_COMMON_RESOURCE_RESPONSE_INFO_H_
+#define CONTENT_PUBLIC_COMMON_RESOURCE_RESPONSE_INFO_H_
 
 #include <string>
 
@@ -11,17 +11,18 @@
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
+#include "content/common/content_export.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/load_timing_info.h"
 #include "net/http/http_response_info.h"
 #include "url/gurl.h"
 #include "webkit/common/resource_devtools_info.h"
 
-namespace webkit_glue {
+namespace content {
 
 struct ResourceResponseInfo {
-  WEBKIT_COMMON_EXPORT ResourceResponseInfo();
-  WEBKIT_COMMON_EXPORT ~ResourceResponseInfo();
+  CONTENT_EXPORT ResourceResponseInfo();
+  CONTENT_EXPORT ~ResourceResponseInfo();
 
   // The time at which the request was made that resulted in this response.
   // For cached responses, this time could be "far" in the past.
@@ -66,7 +67,7 @@ struct ResourceResponseInfo {
   // Actual request and response headers, as obtained from the network stack.
   // Only present if request had LOAD_REPORT_RAW_HEADERS in load_flags, and
   // requesting renderer had CanReadRowCookies permission.
-  scoped_refptr<ResourceDevToolsInfo> devtools_info;
+  scoped_refptr<webkit_glue::ResourceDevToolsInfo> devtools_info;
 
   // The path to a file that will contain the response body.  It may only
   // contain a portion of the response body at the time that the ResponseInfo
@@ -98,6 +99,6 @@ struct ResourceResponseInfo {
   net::HostPortPair socket_address;
 };
 
-}  // namespace webkit_glue
+}  // namespace content
 
-#endif  // WEBKIT_COMMON_RESOURCE_RESPONSE_INFO_H_
+#endif  // CONTENT_PUBLIC_COMMON_RESOURCE_RESPONSE_INFO_H_

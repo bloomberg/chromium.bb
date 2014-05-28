@@ -12,14 +12,14 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
+#include "content/public/common/resource_response_info.h"
 #include "net/url_request/url_request_status.h"
 #include "url/gurl.h"
-#include "webkit/common/resource_response_info.h"
 
 namespace content {
 
 // Parameters for a resource response header.
-struct ResourceResponseHead : webkit_glue::ResourceResponseInfo {
+struct ResourceResponseHead : ResourceResponseInfo {
   // The response error_code.
   int error_code;
   // TimeTicks::Now() when the browser received the request from the renderer.

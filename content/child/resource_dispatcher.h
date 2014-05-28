@@ -25,12 +25,12 @@ struct ResourceMsg_RequestCompleteData;
 
 namespace webkit_glue {
 class ResourceLoaderBridge;
-struct ResourceResponseInfo;
 }
 
 namespace content {
 class RequestPeer;
 class ResourceDispatcherDelegate;
+struct ResourceResponseInfo;
 struct RequestInfo;
 struct ResourceResponseHead;
 struct SiteIsolationResponseMetaData;
@@ -166,10 +166,9 @@ class CONTENT_EXPORT ResourceDispatcher : public IPC::Listener {
   // again in the deferred state.
   void FlushDeferredMessages(int request_id);
 
-  void ToResourceResponseInfo(
-      const PendingRequestInfo& request_info,
-      const ResourceResponseHead& browser_info,
-      webkit_glue::ResourceResponseInfo* renderer_info) const;
+  void ToResourceResponseInfo(const PendingRequestInfo& request_info,
+                              const ResourceResponseHead& browser_info,
+                              ResourceResponseInfo* renderer_info) const;
 
   base::TimeTicks ToRendererCompletionTime(
       const PendingRequestInfo& request_info,

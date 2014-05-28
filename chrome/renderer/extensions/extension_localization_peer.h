@@ -8,7 +8,7 @@
 #include <string>
 
 #include "content/public/child/request_peer.h"
-#include "webkit/common/resource_response_info.h"
+#include "content/public/common/resource_response_info.h"
 
 namespace IPC {
 class Sender;
@@ -36,9 +36,9 @@ class ExtensionLocalizationPeer : public content::RequestPeer {
   virtual bool OnReceivedRedirect(
       const GURL& new_url,
       const GURL& new_first_party_for_cookies,
-      const webkit_glue::ResourceResponseInfo& info) OVERRIDE;
+      const content::ResourceResponseInfo& info) OVERRIDE;
   virtual void OnReceivedResponse(
-      const webkit_glue::ResourceResponseInfo& info) OVERRIDE;
+      const content::ResourceResponseInfo& info) OVERRIDE;
   virtual void OnDownloadedData(int len, int encoded_data_length) OVERRIDE {}
   virtual void OnReceivedData(const char* data,
                               int data_length,
@@ -66,7 +66,7 @@ class ExtensionLocalizationPeer : public content::RequestPeer {
   content::RequestPeer* original_peer_;
 
   // We just pass though the response info. This holds the copy of the original.
-  webkit_glue::ResourceResponseInfo response_info_;
+  content::ResourceResponseInfo response_info_;
 
   // Sends ExtensionHostMsg_GetMessageBundle message to the browser to fetch
   // message catalog.

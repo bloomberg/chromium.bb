@@ -7,14 +7,14 @@
 
 #include <string>
 
+#include "content/public/common/resource_response_info.h"
 #include "url/gurl.h"
-#include "webkit/common/resource_response_info.h"
 
 namespace content {
 
 // See the SyncLoad method. (The name of this struct is not
 // suffixed with "Info" because it also contains the response data.)
-struct SyncLoadResponse : webkit_glue::ResourceResponseInfo {
+struct SyncLoadResponse : ResourceResponseInfo {
   SyncLoadResponse();
   ~SyncLoadResponse();
 

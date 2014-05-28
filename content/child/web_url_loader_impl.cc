@@ -60,7 +60,6 @@ using blink::WebURLResponse;
 using webkit_glue::MultipartResponseDelegate;
 using webkit_glue::ResourceDevToolsInfo;
 using webkit_glue::ResourceLoaderBridge;
-using webkit_glue::ResourceResponseInfo;
 using webkit_glue::WebURLResponseExtraDataImpl;
 
 namespace content {
