@@ -31,6 +31,9 @@ class CONTENT_EXPORT StreamHandle {
 
   // Get the HTTP response headers associated with this Stream.
   virtual scoped_refptr<net::HttpResponseHeaders> GetResponseHeaders() = 0;
+
+  // Add a callback which will be called when the Stream is closed.
+  virtual void AddCloseListener(const base::Closure& callback) = 0;
 };
 
 }  // namespace content

@@ -12,6 +12,15 @@
 
 namespace content {
 
+namespace {
+
+void RunCloseListeners(const std::vector<base::Closure>& close_listeners) {
+  for (size_t i = 0; i < close_listeners.size(); ++i)
+    close_listeners[i].Run();
+}
+
+}  // namespace
+
 StreamHandleImpl::StreamHandleImpl(
     const base::WeakPtr<Stream>& stream,
     const GURL& original_url,
@@ -25,8 +34,9 @@ StreamHandleImpl::StreamHandleImpl(
       stream_message_loop_(base::MessageLoopProxy::current().get()) {}
 
 StreamHandleImpl::~StreamHandleImpl() {
-  stream_message_loop_->PostTask(FROM_HERE,
-                                 base::Bind(&Stream::CloseHandle, stream_));
+  stream_message_loop_->PostTaskAndReply(FROM_HERE,
+      base::Bind(&Stream::CloseHandle, stream_),
+      base::Bind(&RunCloseListeners, close_listeners_));
 }
 
 const GURL& StreamHandleImpl::GetURL() {
@@ -43,6 +53,10 @@ const std::string& StreamHandleImpl::GetMimeType() {
 
 scoped_refptr<net::HttpResponseHeaders> StreamHandleImpl::GetResponseHeaders() {
   return response_headers_;
+}
+
+void StreamHandleImpl::AddCloseListener(const base::Closure& callback) {
+  close_listeners_.push_back(callback);
 }
 
 }  // namespace content

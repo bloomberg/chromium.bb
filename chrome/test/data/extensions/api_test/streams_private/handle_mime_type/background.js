@@ -51,6 +51,42 @@ chrome.streamsPrivate.onExecuteMimeTypeHandler.addListener(
     return;
   }
 
+  // StreamsPrivateApiTest.Abort uses the application/pdf type to test aborting
+  // the stream.
+  if (params.mimeType == 'application/rtf') {
+    var url = params.originalUrl.split('/');
+    var filename = url[url.length - 1];
+    if (filename == 'no_abort.rtf') {
+      // Test a stream URL can be fetched properly.
+      var xhr = new XMLHttpRequest();
+      xhr.open("GET", params.streamUrl, false);
+      xhr.send(null);
+      if (xhr.status == 200) {
+        chrome.test.notifyPass();
+      } else {
+        chrome.test.notifyFail(
+            'Expected a stream URL response of 200, got ' + xhr.status + '.');
+        hasFailed = true;
+      }
+    }
+    if (filename == 'abort.rtf') {
+      // Test a stream URL fails to be fetched if it is aborted.
+      chrome.streamsPrivate.abort(params.streamUrl, function() {
+        var xhr = new XMLHttpRequest();
+        xhr.open("GET", params.streamUrl, false);
+        xhr.send(null);
+        if (xhr.status == 404) {
+          chrome.test.notifyPass();
+        } else {
+          chrome.test.notifyFail(
+              'Expected a stream URL response of 404, got ' + xhr.status + '.');
+          hasFailed = true;
+        }
+      });
+    }
+    return;
+  }
+
   // MIME type 'test/done' is received only when tests for which no events
   // should be raised to notify the extension it's job is done. If the extension
   // receives the 'test/done' and there were no previous failures, notify that

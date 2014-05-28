@@ -101,6 +101,14 @@ scoped_ptr<HttpResponse> HandleRequest(const HttpRequest& request) {
     return response.PassAs<HttpResponse>();
   }
 
+  // RTF files for testing chrome.streamsPrivate.abort().
+  if (request.relative_url == "/abort.rtf" ||
+      request.relative_url == "/no_abort.rtf") {
+    response->set_code(net::HTTP_OK);
+    response->set_content_type("application/rtf");
+    return response.PassAs<HttpResponse>();
+  }
+
   // Respond to /favicon.ico for navigating to the page.
   if (request.relative_url == "/favicon.ico") {
     response->set_code(net::HTTP_NOT_FOUND);
@@ -418,6 +426,28 @@ IN_PROC_BROWSER_TEST_F(StreamsPrivateApiTest, Headers) {
 
   // The test extension should receive onExecuteContentHandler event with MIME
   // type 'application/msexcel' (and call chrome.test.notifySuccess).
+  EXPECT_TRUE(catcher.GetNextResult());
+}
+
+// Tests that chrome.streamsPrivate.abort() works correctly.
+IN_PROC_BROWSER_TEST_F(StreamsPrivateApiTest, Abort) {
+#if defined(OS_WIN) && defined(USE_ASH)
+  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAshBrowserTests))
+    return;
+#endif
+
+  ASSERT_TRUE(LoadTestExtension()) << message_;
+
+  ResultCatcher catcher;
+  ui_test_utils::NavigateToURL(browser(),
+                               test_server_->GetURL("/no_abort.rtf"));
+  base::MessageLoop::current()->RunUntilIdle();
+  EXPECT_TRUE(catcher.GetNextResult());
+
+  ui_test_utils::NavigateToURL(browser(),
+                               test_server_->GetURL("/abort.rtf"));
+  base::MessageLoop::current()->RunUntilIdle();
   EXPECT_TRUE(catcher.GetNextResult());
 }
 

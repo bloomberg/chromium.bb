@@ -5,6 +5,8 @@
 #ifndef CONTENT_BROWSER_STREAMS_STREAM_HANDLE_IMPL_H_
 #define CONTENT_BROWSER_STREAMS_STREAM_HANDLE_IMPL_H_
 
+#include <vector>
+
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/lock.h"
 #include "content/public/browser/stream_handle.h"
@@ -31,6 +33,7 @@ class StreamHandleImpl : public StreamHandle {
   virtual const GURL& GetOriginalURL() OVERRIDE;
   virtual const std::string& GetMimeType() OVERRIDE;
   virtual scoped_refptr<net::HttpResponseHeaders> GetResponseHeaders() OVERRIDE;
+  virtual void AddCloseListener(const base::Closure& callback) OVERRIDE;
 
   base::WeakPtr<Stream> stream_;
   GURL url_;
@@ -38,6 +41,7 @@ class StreamHandleImpl : public StreamHandle {
   std::string mime_type_;
   scoped_refptr<net::HttpResponseHeaders> response_headers_;
   base::MessageLoopProxy* stream_message_loop_;
+  std::vector<base::Closure> close_listeners_;
 };
 
 }  // namespace content

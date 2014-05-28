@@ -88,11 +88,48 @@ void StreamsPrivateAPI::ExecuteMimeTypeHandler(
   streams_[extension_id][url] = make_linked_ptr(stream.release());
 }
 
+void StreamsPrivateAPI::AbortStream(const std::string& extension_id,
+                                    const GURL& stream_url,
+                                    const base::Closure& callback) {
+  StreamMap::iterator extension_it = streams_.find(extension_id);
+  if (extension_it == streams_.end()) {
+    callback.Run();
+    return;
+  }
+
+  StreamMap::mapped_type* url_map = &extension_it->second;
+  StreamMap::mapped_type::iterator url_it = url_map->find(stream_url);
+  if (url_it == url_map->end()) {
+    callback.Run();
+    return;
+  }
+
+  url_it->second->AddCloseListener(callback);
+  url_map->erase(url_it);
+}
+
 void StreamsPrivateAPI::OnExtensionUnloaded(
     content::BrowserContext* browser_context,
     const Extension* extension,
     UnloadedExtensionInfo::Reason reason) {
   streams_.erase(extension->id());
+}
+
+StreamsPrivateAbortFunction::StreamsPrivateAbortFunction() {
+}
+
+ExtensionFunction::ResponseAction StreamsPrivateAbortFunction::Run() {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &stream_url_));
+  StreamsPrivateAPI::Get(browser_context())->AbortStream(
+      extension_id(), GURL(stream_url_), base::Bind(
+          &StreamsPrivateAbortFunction::OnClose, this));
+  return RespondLater();
+}
+
+void StreamsPrivateAbortFunction::OnClose() {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  Respond(NoArguments());
 }
 
 static base::LazyInstance<BrowserContextKeyedAPIFactory<StreamsPrivateAPI> >

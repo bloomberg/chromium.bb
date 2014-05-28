@@ -29,6 +29,17 @@ namespace streamsPrivate {
     object responseHeaders;
   };
 
+  callback AbortCallback = void ();
+
+  interface Functions {
+    // Abort the URL request on the given stream.
+    // |streamUrl| : The URL of the stream to abort.
+    // |callback| : Called when the stream URL is guaranteed to be invalid. The
+    // underlying URL request may not yet have been aborted when this is run.
+    static void abort(DOMString streamUrl,
+                      optional AbortCallback callback);
+  };
+
   interface Events {
     // Fired when a resource is fetched which matches a mime type handled by
     // this extension. The resource request is cancelled, and the extension is

@@ -7,8 +7,9 @@
     "scripts": ["background.js"]
   },
   "mime_types": [
-    "application/msword",
     "application/msexcel",
+    "application/msword",
+    "application/rtf",
     "text/plain"
   ],
   "permissions": [

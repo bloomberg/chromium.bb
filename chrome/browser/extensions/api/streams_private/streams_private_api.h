@@ -35,6 +35,10 @@ class StreamsPrivateAPI : public BrowserContextKeyedAPI,
                               scoped_ptr<content::StreamHandle> stream,
                               int64 expected_content_size);
 
+  void AbortStream(const std::string& extension_id,
+                   const GURL& stream_url,
+                   const base::Closure& callback);
+
   // BrowserContextKeyedAPI implementation.
   static BrowserContextKeyedAPIFactory<StreamsPrivateAPI>* GetFactoryInstance();
 
@@ -64,6 +68,23 @@ class StreamsPrivateAPI : public BrowserContextKeyedAPI,
   // Listen to extension unloaded notifications.
   ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
       extension_registry_observer_;
+};
+
+class StreamsPrivateAbortFunction : public UIThreadExtensionFunction {
+ public:
+  StreamsPrivateAbortFunction();
+  DECLARE_EXTENSION_FUNCTION("streamsPrivate.abort", STREAMSPRIVATE_ABORT)
+
+ protected:
+  virtual ~StreamsPrivateAbortFunction() {}
+
+  // ExtensionFunction:
+  virtual ExtensionFunction::ResponseAction Run() OVERRIDE;
+
+ private:
+  void OnClose();
+
+  std::string stream_url_;
 };
 
 }  // namespace extensions
