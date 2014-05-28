@@ -1,0 +1,34 @@
+This is visited link
+==== Styles for unvisited link ====
+Dumping matched rules: 
+*#redlink* {    regular
+    color: gray;
+}
+*#redlink:link* {    regular
+    color: blue;
+}
+==== Styles for visited link ====
+Dumping matched rules: 
+*#redlink* {    regular
+    color: gray;
+}
+*#redlink:visited* {    regular
+    color: red;
+}
+==== Styles for unvisited link ====
+Dumping matched rules: 
+*.shadow-link* {    regular
+    color: lightgray;
+}
+*.shadow-link:link* {    regular
+    color: green;
+}
+==== Styles for visited link ====
+Dumping matched rules: 
+*.shadow-link* {    regular
+    color: lightgray;
+}
+*.shadow-link:visited* {    regular
+    color: blue;
+}
+
