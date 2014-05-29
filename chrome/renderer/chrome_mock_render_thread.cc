@@ -7,7 +7,7 @@
 #include <vector>
 
 #include "base/values.h"
-#include "chrome/renderer/mock_printer.h"
+#include "chrome/renderer/printing/mock_printer.h"
 #include "extensions/common/extension_messages.h"
 #include "ipc/ipc_sync_message.h"
 #include "printing/page_range.h"

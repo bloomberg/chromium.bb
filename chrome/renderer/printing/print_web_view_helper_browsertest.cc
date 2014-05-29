@@ -6,7 +6,7 @@
 #include "base/run_loop.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/print_messages.h"
-#include "chrome/renderer/mock_printer.h"
+#include "chrome/renderer/printing/mock_printer.h"
 #include "chrome/renderer/printing/print_web_view_helper.h"
 #include "chrome/test/base/chrome_render_view_test.h"
 #include "content/public/renderer/render_view.h"

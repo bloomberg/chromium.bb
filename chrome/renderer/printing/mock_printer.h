@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_RENDERER_MOCK_PRINTER_H_
-#define CHROME_RENDERER_MOCK_PRINTER_H_
+#ifndef CHROME_RENDERER_PRINTING_MOCK_PRINTER_H_
+#define CHROME_RENDERER_PRINTING_MOCK_PRINTER_H_
 
 #include <string>
 #include <vector>
@@ -163,4 +163,4 @@ class MockPrinter {
   DISALLOW_COPY_AND_ASSIGN(MockPrinter);
 };
 
-#endif  // CHROME_RENDERER_MOCK_PRINTER_H_
+#endif  // CHROME_RENDERER_PRINTING_MOCK_PRINTER_H_

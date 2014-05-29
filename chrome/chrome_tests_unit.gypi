@@ -212,8 +212,8 @@
         'renderer/chrome_mock_render_thread.h',
         'renderer/media/mock_webrtc_logging_message_filter.cc',
         'renderer/media/mock_webrtc_logging_message_filter.h',
-        'renderer/mock_printer.cc',
-        'renderer/mock_printer.h',
+        'renderer/printing/mock_printer.cc',
+        'renderer/printing/mock_printer.h',
         'renderer/safe_browsing/mock_feature_extractor_clock.cc',
         'renderer/safe_browsing/mock_feature_extractor_clock.h',
         'renderer/safe_browsing/test_utils.cc',
@@ -368,8 +368,8 @@
         }],
         ['enable_printing==0', {
           'sources/': [
-            ['exclude', '^renderer/mock_printer.cc'],
-            ['exclude', '^renderer/mock_printer.h'],
+            ['exclude', '^renderer/printing/mock_printer.cc'],
+            ['exclude', '^renderer/printing/mock_printer.h'],
           ],
         }],
         ['OS=="android"', {
