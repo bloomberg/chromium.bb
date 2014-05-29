@@ -1,5 +1,5 @@
 {
-    0 : "data:application/javascript: (data)"
+    0 : "data:application/javascript: 200OK"
     1 : "network-test.js: Finished"
     2 : "non-existent-file.js: (failed)"
 }

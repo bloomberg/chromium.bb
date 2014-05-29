@@ -135,6 +135,7 @@ static URLSchemesMap& CORSEnabledSchemes()
     if (CORSEnabledSchemes.isEmpty()) {
         CORSEnabledSchemes.add("http");
         CORSEnabledSchemes.add("https");
+        CORSEnabledSchemes.add("data");
     }
 
     return CORSEnabledSchemes;

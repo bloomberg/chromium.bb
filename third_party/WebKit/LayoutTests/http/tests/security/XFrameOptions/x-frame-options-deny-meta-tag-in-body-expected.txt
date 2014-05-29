@@ -3,7 +3,7 @@ http://127.0.0.1:8000/security/XFrameOptions/resources/x-frame-options-deny-meta
 http://127.0.0.1:8000/security/XFrameOptions/resources/x-frame-options-deny-meta-tag-subframe-in-body.html - didFinishLoading
 CONSOLE ERROR: Refused to display 'http://127.0.0.1:8000/security/XFrameOptions/resources/x-frame-options-deny-meta-tag-subframe-in-body.html' in a frame because it set 'X-Frame-Options' to 'deny'.
 data:, - willSendRequest <NSURLRequest URL data:,, main document URL http://127.0.0.1:8000/security/XFrameOptions/x-frame-options-deny-meta-tag-in-body.html, http method GET> redirectResponse (null)
-data:, - didReceiveResponse <NSURLResponse data:,, http status code 0>
+data:, - didReceiveResponse <NSURLResponse data:,, http status code 200>
 data:, - didFinishLoading
 CONSOLE MESSAGE: line 14: PASS: Access to contentWindow.location.href threw an exception.
 There should be no content in the iframe below
