@@ -32,8 +32,8 @@ def Log(message):
 
 
 def ReadHistogramValues(filename, start_marker, end_marker):
-  """Reads in values from |filename|, returning a list of (label, value) pairs
-  corresponding to the enum framed by |start_marker| and |end_marker|.
+  """Reads in values from |filename|, returning a dictionary mapping value to
+  label corresponding to the enum framed by |start_marker| and |end_marker|.
   """
   # Read the file as a list of lines
   with open(filename) as f:
@@ -96,44 +96,44 @@ def UpdateHistogramDefinitions(histogram_enum_name, source_enum_values,
   else:
     raise UserError('No {0} enum node found'.format(name))
 
-  new_children = []
+  new_item_nodes = {}
+  new_comments = []
 
   # Add a "Generated from (...)" comment.
-  new_children.append(
+  new_comments.append(
       document.createComment(' Generated from {0} '.format(source_enum_path)))
 
-  # Scan existing nodes in |enum_node| and build |new_children|.
-  # - For each int node in |enum_node|, if there is a corresponding entry in
-  #   |source_enum_values|, drop the existing node and add a node newly created
-  #   from |source_enum_values| to |new_children|.
-  # - Drop existing "Generated from (...)" comment in |enum_node|.
-  # - Copy anything else.
+  # Create item nodes for each of the enum values.
+  for value, label in source_enum_values.iteritems():
+    new_item_nodes[value] = CreateEnumItemNode(document, value, label)
+
+  # Scan existing nodes in |enum_node| for old values and preserve them.
+  # - Preserve comments other than the 'Generated from' comment. NOTE:
+  #   this does not preserve the order of the comments in relation to the
+  #   old values.
+  # - Drop anything else.
   SOURCE_COMMENT_REGEX = re.compile('^ Generated from ')
   for child in enum_node.childNodes:
     if child.nodeName == 'int':
       value = int(child.attributes['value'].value)
-      if source_enum_values.has_key(value):
-        new_children.append(
-            CreateEnumItemNode(document, value, source_enum_values[value]))
-        del source_enum_values[value]
-      else:
-        new_children.append(child)
-    # Drop existing source comments if any.
-    elif (child.nodeType != minidom.Node.COMMENT_NODE or
+      if not source_enum_values.has_key(value):
+        new_item_nodes[value] = child
+    # Preserve existing non-generated comments.
+    elif (child.nodeType == minidom.Node.COMMENT_NODE and
           SOURCE_COMMENT_REGEX.match(child.data) is None):
-      new_children.append(child)
+      new_comments.append(child)
 
-  # Add remaining entries i.e. new enum values, in the |source_enum_values| to
-  # the |new_children|.
-  for value in sorted(source_enum_values.iterkeys()):
-    new_children.append(
-        CreateEnumItemNode(document, value, source_enum_values[value]))
-
-  # Update |enum_node|.
+  # Update |enum_node|. First, remove everything existing.
   while enum_node.hasChildNodes():
     enum_node.removeChild(enum_node.lastChild)
-  for child in new_children:
-    enum_node.appendChild(child)
+
+  # Add comments at the top.
+  for comment in new_comments:
+    enum_node.appendChild(comment)
+
+  # Add in the new enums.
+  for value in sorted(new_item_nodes.iterkeys()):
+    enum_node.appendChild(new_item_nodes[value])
 
 
 def UpdateHistogramFromDict(histogram_enum_name, source_enum_values,

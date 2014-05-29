@@ -38903,6 +38903,8 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </enum>
 
 <enum name="NetErrorCodes" type="int">
+<!-- Generated from ../../../net/base/net_error_list.h -->
+
   <int value="0" label="OK"/>
   <int value="1" label="IO_PENDING"/>
   <int value="2" label="FAILED"/>
@@ -38926,6 +38928,8 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="20" label="BLOCKED_BY_CLIENT"/>
   <int value="21" label="NETWORK_CHANGED"/>
   <int value="22" label="BLOCKED_BY_ADMINISTRATOR"/>
+  <int value="23" label="SOCKET_IS_CONNECTED"/>
+  <int value="24" label="BLOCKED_ENROLLMENT_CHECK_PENDING"/>
   <int value="100" label="CONNECTION_CLOSED"/>
   <int value="101" label="CONNECTION_RESET"/>
   <int value="102" label="CONNECTION_REFUSED"/>
@@ -38969,7 +38973,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="140" label="HTTPS_PROXY_TUNNEL_RESPONSE"/>
   <int value="141" label="SSL_CLIENT_AUTH_SIGNATURE_FAILED"/>
   <int value="142" label="MSG_TOO_BIG"/>
-  <int value="143" label="KASPERSKY_ANTI_VIRUS_SSL_INTERCEPTION"/>
+  <int value="143" label="SPDY_SESSION_ALREADY_EXISTS"/>
   <int value="144" label="LIMIT_VIOLATION"/>
   <int value="145" label="WS_PROTOCOL_ERROR"/>
   <int value="146" label="PROTOCOL_SWITCHED"/>
@@ -38979,6 +38983,17 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="150" label="SSL_PINNED_KEY_NOT_IN_CERT_CHAIN"/>
   <int value="151" label="CLIENT_AUTH_CERT_TYPE_UNSUPPORTED"/>
   <int value="152" label="ORIGIN_BOUND_CERT_GENERATION_TYPE_MISMATCH"/>
+  <int value="153" label="SSL_DECRYPT_ERROR_ALERT"/>
+  <int value="154" label="WS_THROTTLE_QUEUE_TOO_LARGE"/>
+  <int value="155" label="TOO_MANY_SOCKET_STREAMS"/>
+  <int value="156" label="SSL_SERVER_CERT_CHANGED"/>
+  <int value="157" label="SSL_INAPPROPRIATE_FALLBACK"/>
+  <int value="158" label="CT_NO_SCTS_VERIFIED_OK"/>
+  <int value="159" label="SSL_UNRECOGNIZED_NAME_ALERT"/>
+  <int value="160" label="SOCKET_SET_RECEIVE_BUFFER_SIZE_ERROR"/>
+  <int value="161" label="SOCKET_SET_SEND_BUFFER_SIZE_ERROR"/>
+  <int value="162" label="SOCKET_RECEIVE_BUFFER_SIZE_UNCHANGEABLE"/>
+  <int value="163" label="SOCKET_SEND_BUFFER_SIZE_UNCHANGEABLE"/>
   <int value="200" label="CERT_COMMON_NAME_INVALID"/>
   <int value="201" label="CERT_DATE_INVALID"/>
   <int value="202" label="CERT_AUTHORITY_INVALID"/>
@@ -38991,6 +39006,8 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="209" label="CERT_NOT_IN_DNS"/>
   <int value="210" label="CERT_NON_UNIQUE_NAME"/>
   <int value="211" label="CERT_WEAK_KEY"/>
+  <int value="212" label="CERT_NAME_CONSTRAINT_VIOLATION"/>
+  <int value="213" label="CERT_END"/>
   <int value="300" label="INVALID_URL"/>
   <int value="301" label="DISALLOWED_URL_SCHEME"/>
   <int value="302" label="UNKNOWN_URL_SCHEME"/>
@@ -39035,6 +39052,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="355" label="INCOMPLETE_CHUNKED_ENCODING"/>
   <int value="356" label="QUIC_PROTOCOL_ERROR"/>
   <int value="357" label="RESPONSE_HEADERS_TRUNCATED"/>
+  <int value="358" label="QUIC_HANDSHAKE_FAILED"/>
+  <int value="359" label="REQUEST_FOR_SECURE_RESOURCE_OVER_INSECURE_QUIC"/>
+  <int value="360" label="SPDY_INADEQUATE_TRANSPORT_SECURITY"/>
   <int value="400" label="CACHE_MISS"/>
   <int value="401" label="CACHE_READ_FAILURE"/>
   <int value="402" label="CACHE_WRITE_FAILURE"/>
@@ -39042,8 +39062,8 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="404" label="CACHE_OPEN_FAILURE"/>
   <int value="405" label="CACHE_CREATE_FAILURE"/>
   <int value="406" label="CACHE_RACE"/>
-  <int value="407" label="CACHE_CACHE_CHECKSUM_READ_FAILURE"/>
-  <int value="408" label="CACHE_CACHE_CHECKSUM_MISMATCH"/>
+  <int value="407" label="CACHE_CHECKSUM_READ_FAILURE"/>
+  <int value="408" label="CACHE_CHECKSUM_MISMATCH"/>
   <int value="501" label="INSECURE_RESPONSE"/>
   <int value="502" label="NO_PRIVATE_KEY_FOR_CERT"/>
   <int value="503" label="ADD_USER_CERT_FAILED"/>
@@ -39066,6 +39086,8 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="710" label="KEY_GENERATION_FAILED"/>
   <int value="711" label="ORIGIN_BOUND_CERT_GENERATION_FAILED"/>
   <int value="712" label="PRIVATE_KEY_EXPORT_FAILED"/>
+  <int value="713" label="SELF_SIGNED_CERT_GENERATION_FAILED"/>
+  <int value="714" label="CERT_DATABASE_CHANGED"/>
   <int value="800" label="DNS_MALFORMED_RESPONSE"/>
   <int value="801" label="DNS_SERVER_REQUIRES_TCP"/>
   <int value="802" label="DNS_SERVER_FAILED"/>
