@@ -133,6 +133,7 @@ const AcceleratorMapping kAcceleratorMap[] = {
   { ui::VKEY_F6, ui::EF_SHIFT_DOWN, IDC_FOCUS_PREVIOUS_PANE },
   { ui::VKEY_F10, ui::EF_NONE, IDC_FOCUS_MENU_BAR },
   { ui::VKEY_F11, ui::EF_NONE, IDC_FULLSCREEN },
+  { ui::VKEY_ESCAPE, ui::EF_SHIFT_DOWN, IDC_TASK_MANAGER },
 
   // Platform-specific key maps.
 #if defined(OS_LINUX)
@@ -169,8 +170,6 @@ const AcceleratorMapping kAcceleratorMap[] = {
   { ui::VKEY_OEM_PLUS, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN, IDC_ZOOM_PLUS },
   { ui::VKEY_OEM_MINUS, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN,
     IDC_ZOOM_MINUS },
-#endif  // OS_CHROMEOS
-#if !defined(OS_CHROMEOS)
   // For each entry here add an entry into kChromeCmdId2AshActionId below
   // if Ash has a corresponding accelerator.
 #if defined(GOOGLE_CHROME_BUILD)
@@ -182,7 +181,6 @@ const AcceleratorMapping kAcceleratorMap[] = {
   { ui::VKEY_T, ui::EF_CONTROL_DOWN, IDC_NEW_TAB },
   { ui::VKEY_N, ui::EF_CONTROL_DOWN, IDC_NEW_WINDOW },
   { ui::VKEY_T, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN, IDC_RESTORE_TAB },
-  { ui::VKEY_ESCAPE, ui::EF_SHIFT_DOWN, IDC_TASK_MANAGER },
 #endif
 };
 const size_t kAcceleratorMapLength = arraysize(kAcceleratorMap);
