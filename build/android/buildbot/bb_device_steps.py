@@ -456,10 +456,10 @@ def RunWebRTCNativeTests(options):
 
 
 def RunGPUTests(options):
-  InstallApk(options, INSTRUMENTATION_TESTS['ContentShell'], False)
-
-  bb_annotations.PrintNamedStep('gpu_tests')
   revision = _GetRevision(options)
+  builder_name = options.build_properties.get('buildername', 'noname')
+
+  bb_annotations.PrintNamedStep('pixel_tests')
   RunCmd(['content/test/gpu/run_gpu_test.py',
           'pixel',
           '--browser',
@@ -472,8 +472,7 @@ def RunGPUTests(options):
           '--os-type',
           'android',
           '--test-machine-name',
-          EscapeBuilderName(
-              options.build_properties.get('buildername', 'noname'))])
+          EscapeBuilderName(builder_name)])
 
   bb_annotations.PrintNamedStep('webgl_conformance_tests')
   RunCmd(['content/test/gpu/run_gpu_test.py',
