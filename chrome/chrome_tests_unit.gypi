@@ -373,7 +373,7 @@
           ],
         }],
         ['OS=="android"', {
-          '!dependencies': [
+          'dependencies!': [
             '../components/components.gyp:storage_monitor_test_support',
           ],
           'sources/': [

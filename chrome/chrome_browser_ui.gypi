@@ -2516,11 +2516,6 @@
             '../printing/printing.gyp:printing',
           ],
         }],
-        ['OS == "android"', {
-          'dependencies': [
-            '../third_party/openssl/openssl.gyp:openssl',
-          ],
-        }],
         ['OS!="android" and OS!="ios"', {
           'sources!': [
             'browser/ui/auto_login_infobar_delegate.cc',
@@ -2788,9 +2783,11 @@
         ['OS=="android"', {
           'dependencies': [
             '../components/components.gyp:web_contents_delegate_android',
+            '../third_party/openssl/openssl.gyp:openssl',
             'chrome_browser_jni_headers',
           ],
           'dependencies!': [
+             '../components/components.gyp:feedback_proto',
              '../third_party/libusb/libusb.gyp:libusb',
              '../ui/events/events.gyp:events',
              'chrome_browser_ui_views.gyp:browser_ui_views',

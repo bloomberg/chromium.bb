@@ -142,7 +142,6 @@
                 'context_menus.json',
                 'downloads.idl',
                 'events.json',
-                'feedback_private.idl',
                 'file_system.idl',
                 'manifest_types.json',
                 'omnibox.json',

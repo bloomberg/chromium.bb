@@ -3185,6 +3185,7 @@
             'chrome_browser_jni_headers',
           ],
           'dependencies!': [
+            '../components/components.gyp:feedback_component',
             '../components/components.gyp:storage_monitor',
             '../components/components.gyp:usb_service',
             '../components/components.gyp:web_modal',
@@ -3305,6 +3306,7 @@
           'sources/': [
             ['exclude', '^browser/captive_portal/'],
             ['exclude', '^browser/diagnostics/'],
+            ['exclude', '^browser/feedback/'],
             ['exclude', '^browser/first_run/'],
             ['exclude', '^browser/importer/'],
             ['exclude', '^browser/media_galleries/'],

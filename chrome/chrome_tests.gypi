@@ -2020,7 +2020,7 @@
           ]
         }],
         ['enable_autofill_dialog!=1 or OS=="android" or OS=="ios"', {
-          '!dependencies': [
+          'dependencies!': [
             '../third_party/libaddressinput/libaddressinput.gyp:libaddressinput',
           ],
         }],
