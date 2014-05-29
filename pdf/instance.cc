@@ -308,6 +308,10 @@ Instance::Instance(PP_Instance instance)
 
 Instance::~Instance() {
   RemovePerInstanceObject(kPPPPdfInterface, this);
+  // TODO(vitalybuka): remove after crbug.com/372095 fixed.
+  // Reset to NULL to make it crash in HandleDocumentLoad if called for
+  // deleted instance. scoped_ptr::~scoped_ptr does not reset pointer to NULL.
+  engine_.reset();
 }
 
 bool Instance::Init(uint32_t argc, const char* argn[], const char* argv[]) {
