@@ -803,7 +803,7 @@ void ExistingUserController::OnProfilePrepared(Profile* profile) {
     // Mark the device as registered., i.e. the second part of OOBE as
     // completed.
     if (!StartupUtils::IsDeviceRegistered())
-      StartupUtils::MarkDeviceRegistered();
+      StartupUtils::MarkDeviceRegistered(base::Closure());
 
     if (CommandLine::ForCurrentProcess()->HasSwitch(
           chromeos::switches::kOobeSkipPostLogin)) {
@@ -827,7 +827,7 @@ void ExistingUserController::OnOffTheRecordLoginSuccess() {
 
   // Mark the device as registered., i.e. the second part of OOBE as completed.
   if (!StartupUtils::IsDeviceRegistered())
-    StartupUtils::MarkDeviceRegistered();
+    StartupUtils::MarkDeviceRegistered(base::Closure());
 
   LoginUtils::Get()->CompleteOffTheRecordLogin(guest_mode_url_);
 

@@ -213,18 +213,27 @@ void EnrollmentScreen::RegisterForDevicePolicy(
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
+void EnrollmentScreen::ShowEnrollmentStatusOnSuccess(
+    const policy::EnrollmentStatus& status) {
+  actor_->ShowEnrollmentStatus(status);
+}
+
 void EnrollmentScreen::ReportEnrollmentStatus(
     policy::EnrollmentStatus status) {
   bool success = status.status() == policy::EnrollmentStatus::STATUS_SUCCESS;
   enrollment_failed_once_ |= !success;
+  if (status.status() == policy::EnrollmentStatus::STATUS_SUCCESS) {
+    StartupUtils::MarkDeviceRegistered(
+        base::Bind(&EnrollmentScreen::ShowEnrollmentStatusOnSuccess,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   status));
+    UMA(is_auto_enrollment() ? policy::kMetricEnrollmentAutoOK
+                             : policy::kMetricEnrollmentOK);
+    return;
+  }
   actor_->ShowEnrollmentStatus(status);
 
   switch (status.status()) {
-    case policy::EnrollmentStatus::STATUS_SUCCESS:
-      StartupUtils::MarkDeviceRegistered();
-      UMA(is_auto_enrollment() ? policy::kMetricEnrollmentAutoOK
-                               : policy::kMetricEnrollmentOK);
-      return;
     case policy::EnrollmentStatus::STATUS_REGISTRATION_FAILED:
     case policy::EnrollmentStatus::STATUS_POLICY_FETCH_FAILED:
       switch (status.client_status()) {
@@ -283,6 +292,9 @@ void EnrollmentScreen::ReportEnrollmentStatus(
       return;
     case policy::EnrollmentStatus::STATUS_ROBOT_REFRESH_STORE_FAILED:
       UMAFailure(policy::kMetricEnrollmentRobotRefreshTokenStoreFailed);
+      return;
+    case policy::EnrollmentStatus::STATUS_SUCCESS:
+      NOTREACHED();
       return;
   }
 

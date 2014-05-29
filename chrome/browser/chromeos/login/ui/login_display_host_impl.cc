@@ -669,7 +669,7 @@ void LoginDisplayHostImpl::StartSignInScreen(
   if (!StartupUtils::IsDeviceRegistered() && !users.empty()) {
     VLOG(1) << "Mark device registered because there are remembered users: "
             << users.size();
-    StartupUtils::MarkDeviceRegistered();
+    StartupUtils::MarkDeviceRegistered(base::Closure());
   }
 
   sign_in_controller_.reset();  // Only one controller in a time.

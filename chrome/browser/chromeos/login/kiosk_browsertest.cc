@@ -1133,7 +1133,7 @@ class KioskHiddenWebUITest : public KioskTest,
     KioskTest::SetUpOnMainThread();
     ash::Shell::GetInstance()->desktop_background_controller()
         ->AddObserver(this);
-    StartupUtils::MarkDeviceRegistered();
+    StartupUtils::MarkDeviceRegistered(base::Closure());
   }
 
   virtual void TearDownOnMainThread() OVERRIDE {

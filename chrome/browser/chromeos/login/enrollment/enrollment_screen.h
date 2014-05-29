@@ -62,6 +62,10 @@ class EnrollmentScreen
   // show the specified enrollment status.
   void ReportEnrollmentStatus(policy::EnrollmentStatus status);
 
+  // Shows successful enrollment status after all enrollment related file
+  // operations are completed.
+  void ShowEnrollmentStatusOnSuccess(const policy::EnrollmentStatus& status);
+
   // Logs a UMA event in the kMetricEnrollment histogram. If auto-enrollment is
   // on |sample| is ignored and a kMetricEnrollmentAutoFailed sample is logged
   // instead.

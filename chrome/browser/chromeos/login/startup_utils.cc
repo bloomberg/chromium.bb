@@ -137,12 +137,20 @@ bool StartupUtils::IsDeviceRegistered() {
 }
 
 // static
-void StartupUtils::MarkDeviceRegistered() {
+void StartupUtils::MarkDeviceRegistered(const base::Closure& done_callback) {
   SaveIntegerPreferenceForced(prefs::kDeviceRegistered, 1);
-  BrowserThread::PostTask(
-      BrowserThread::FILE,
-      FROM_HERE,
-      base::Bind(&CreateOobeCompleteFlagFile));
+  if (done_callback.is_null()) {
+    BrowserThread::PostTask(
+        BrowserThread::FILE,
+        FROM_HERE,
+        base::Bind(&CreateOobeCompleteFlagFile));
+  } else {
+    BrowserThread::PostTaskAndReply(
+        BrowserThread::FILE,
+        FROM_HERE,
+        base::Bind(&CreateOobeCompleteFlagFile),
+        done_callback);
+  }
 }
 
 // static
