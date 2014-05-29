@@ -216,7 +216,7 @@ class TestExternalAgentDelegate: public DevToolsExternalAgentProxyDelegate {
     EXPECT_EQ(count, event_counter_[name]);
   }
 
-  virtual void Attach() OVERRIDE {
+  virtual void Attach(DevToolsExternalAgentProxy* proxy) OVERRIDE {
     recordEvent("Attach");
   };
 
@@ -239,12 +239,10 @@ class TestExternalAgentDelegate: public DevToolsExternalAgentProxyDelegate {
 };
 
 TEST_F(DevToolsManagerTest, TestExternalProxy) {
-  TestExternalAgentDelegate delegate;
+  TestExternalAgentDelegate* delegate = new TestExternalAgentDelegate();
 
-  scoped_ptr<DevToolsExternalAgentProxy> proxy(
-      DevToolsExternalAgentProxy::Create(&delegate));
-
-  scoped_refptr<DevToolsAgentHost> agent_host = proxy->GetAgentHost();
+  scoped_refptr<DevToolsAgentHost> agent_host =
+      DevToolsAgentHost::Create(delegate);
   EXPECT_EQ(agent_host, DevToolsAgentHost::GetForId(agent_host->GetId()));
 
   DevToolsManager* manager = DevToolsManager::GetInstance();

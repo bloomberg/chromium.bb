@@ -202,7 +202,8 @@ void WorkerTarget::Inspect(Profile* profile) const {
 DevToolsTargetImpl::~DevToolsTargetImpl() {
 }
 
-DevToolsTargetImpl::DevToolsTargetImpl(DevToolsAgentHost* agent_host)
+DevToolsTargetImpl::DevToolsTargetImpl(
+    scoped_refptr<DevToolsAgentHost> agent_host)
     : agent_host_(agent_host) {
 }
 

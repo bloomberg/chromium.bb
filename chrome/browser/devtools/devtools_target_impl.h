@@ -20,7 +20,8 @@ class RenderViewHost;
 
 class DevToolsTargetImpl : public content::DevToolsTarget {
  public:
-  explicit DevToolsTargetImpl(content::DevToolsAgentHost* agent_host);
+  explicit DevToolsTargetImpl(
+      scoped_refptr<content::DevToolsAgentHost> agent_host);
   virtual ~DevToolsTargetImpl();
 
   // content::DevToolsTarget overrides:

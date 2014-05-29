@@ -17,15 +17,6 @@ class DevToolsExternalAgentProxyDelegate;
 // Describes interface for communication with an external DevTools agent.
 class DevToolsExternalAgentProxy {
  public:
-  // Creates DevToolsExternalAgentProxy to communicate with an agent
-  // via the provided |delegate|.
-  // Caller get the proxy ownership and keeps the |delegate| ownership.
-  static CONTENT_EXPORT DevToolsExternalAgentProxy* Create(
-      DevToolsExternalAgentProxyDelegate* delegate);
-
-  // Returns the local DevToolsAgentHost for the external agent.
-  virtual scoped_refptr<DevToolsAgentHost> GetAgentHost() = 0;
-
   // Sends the message to the client host.
   virtual void DispatchOnClientHost(const std::string& message) = 0;
 

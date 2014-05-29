@@ -14,6 +14,7 @@
 
 namespace content {
 
+class DevToolsExternalAgentProxyDelegate;
 class RenderViewHost;
 class WebContents;
 
@@ -41,6 +42,12 @@ class CONTENT_EXPORT DevToolsAgentHost
   // with given worker process host id and routing id.
   static scoped_refptr<DevToolsAgentHost> GetForWorker(int worker_process_id,
                                                        int worker_route_id);
+
+  // Creates DevToolsAgentHost that communicates to the target by means of
+  // provided |delegate|. |delegate| ownership is passed to the created agent
+  // host.
+  static scoped_refptr<DevToolsAgentHost> Create(
+      DevToolsExternalAgentProxyDelegate* delegate);
 
   static bool IsDebuggerAttached(WebContents* web_contents);
 

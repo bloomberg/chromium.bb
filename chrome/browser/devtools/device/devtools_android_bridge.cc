@@ -345,7 +345,7 @@ class AgentHostDelegate
     : public content::DevToolsExternalAgentProxyDelegate,
       public DevToolsAndroidBridge::AndroidWebSocket::Delegate {
  public:
-  static content::DevToolsAgentHost* GetOrCreateAgentHost(
+  static scoped_refptr<content::DevToolsAgentHost> GetOrCreateAgentHost(
       const std::string& id,
       scoped_refptr<DevToolsAndroidBridge::RemoteBrowser> browser,
       const std::string& debug_url);
@@ -356,7 +356,7 @@ class AgentHostDelegate
       scoped_refptr<DevToolsAndroidBridge::RemoteBrowser> browser,
       const std::string& debug_url);
   virtual ~AgentHostDelegate();
-  virtual void Attach() OVERRIDE;
+  virtual void Attach(content::DevToolsExternalAgentProxy* proxy) OVERRIDE;
   virtual void Detach() OVERRIDE;
   virtual void SendMessageToBackend(
       const std::string& message) OVERRIDE;
@@ -370,22 +370,27 @@ class AgentHostDelegate
   bool is_web_view_;
   std::vector<std::string> pending_messages_;
   scoped_refptr<DevToolsAndroidBridge::AndroidWebSocket> web_socket_;
-  scoped_ptr<content::DevToolsExternalAgentProxy> proxy_;
+  content::DevToolsAgentHost* agent_host_;
+  content::DevToolsExternalAgentProxy* proxy_;
   DISALLOW_COPY_AND_ASSIGN(AgentHostDelegate);
 };
 
 // static
-content::DevToolsAgentHost* AgentHostDelegate::GetOrCreateAgentHost(
+scoped_refptr<content::DevToolsAgentHost>
+AgentHostDelegate::GetOrCreateAgentHost(
     const std::string& id,
     scoped_refptr<DevToolsAndroidBridge::RemoteBrowser> browser,
     const std::string& debug_url) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  AgentHostDelegates::iterator it = g_host_delegates.Get().find(id);
-  if (it != g_host_delegates.Get().end())
-    return it->second->proxy_->GetAgentHost();
+   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+   AgentHostDelegates::iterator it = g_host_delegates.Get().find(id);
+   if (it != g_host_delegates.Get().end())
+     return it->second->agent_host_;
 
   AgentHostDelegate* delegate = new AgentHostDelegate(id, browser, debug_url);
-  return delegate->proxy_->GetAgentHost();
+  scoped_refptr<content::DevToolsAgentHost> result =
+      content::DevToolsAgentHost::Create(delegate);
+  delegate->agent_host_ = result.get();
+  return result;
 }
 
 AgentHostDelegate::AgentHostDelegate(
@@ -397,15 +402,18 @@ AgentHostDelegate::AgentHostDelegate(
       detached_(false),
       is_web_view_(browser->IsWebView()),
       web_socket_(browser->CreateWebSocket(debug_url, this)),
-      proxy_(content::DevToolsExternalAgentProxy::Create(this)) {
+      agent_host_(NULL),
+      proxy_(NULL) {
   g_host_delegates.Get()[id] = this;
 }
 
 AgentHostDelegate::~AgentHostDelegate() {
   g_host_delegates.Get().erase(id_);
+  web_socket_->ClearDelegate();
 }
 
-void AgentHostDelegate::Attach() {
+void AgentHostDelegate::Attach(content::DevToolsExternalAgentProxy* proxy) {
+  proxy_ = proxy;
   content::RecordAction(base::UserMetricsAction(is_web_view_ ?
       "DevTools_InspectAndroidWebView" : "DevTools_InspectAndroidPage"));
   web_socket_->Connect();
@@ -439,13 +447,13 @@ void AgentHostDelegate::OnSocketOpened() {
 }
 
 void AgentHostDelegate::OnFrameRead(const std::string& message) {
-  proxy_->DispatchOnClientHost(message);
+  if (proxy_)
+      proxy_->DispatchOnClientHost(message);
 }
 
 void AgentHostDelegate::OnSocketClosed(bool closed_by_device) {
   if (proxy_ && closed_by_device)
     proxy_->ConnectionClosed();
-  delete this;
 }
 
 //// RemotePageTarget ----------------------------------------------

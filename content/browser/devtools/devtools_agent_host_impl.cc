@@ -10,6 +10,7 @@
 #include "base/guid.h"
 #include "base/lazy_instance.h"
 #include "content/browser/devtools/devtools_manager_impl.h"
+#include "content/browser/devtools/forwarding_agent_host.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace content {
@@ -31,6 +32,7 @@ DevToolsAgentHostImpl::~DevToolsAgentHostImpl() {
   g_instances.Get().erase(g_instances.Get().find(id_));
 }
 
+//static
 scoped_refptr<DevToolsAgentHost> DevToolsAgentHost::GetForId(
     const std::string& id) {
   if (g_instances == NULL)
@@ -39,6 +41,12 @@ scoped_refptr<DevToolsAgentHost> DevToolsAgentHost::GetForId(
   if (it == g_instances.Get().end())
     return NULL;
   return it->second;
+}
+
+//static
+scoped_refptr<DevToolsAgentHost> DevToolsAgentHost::Create(
+    DevToolsExternalAgentProxyDelegate* delegate) {
+  return new ForwardingAgentHost(delegate);
 }
 
 bool DevToolsAgentHostImpl::IsAttached() {

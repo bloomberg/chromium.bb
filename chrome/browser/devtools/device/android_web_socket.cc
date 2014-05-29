@@ -30,8 +30,8 @@ class WebSocketImpl : public DevToolsAndroidBridge::AndroidWebSocket {
 
   virtual void Connect() OVERRIDE;
   virtual void Disconnect() OVERRIDE;
-
   virtual void SendFrame(const std::string& message) OVERRIDE;
+  virtual void ClearDelegate() OVERRIDE;
 
  private:
   friend class base::RefCountedThreadSafe<AndroidWebSocket>;
@@ -96,6 +96,10 @@ void WebSocketImpl::SendFrame(const std::string& message) {
   device_message_loop_->PostTask(
       FROM_HERE,
       base::Bind(&WebSocketImpl::SendFrameOnHandlerThread, this, message));
+}
+
+void WebSocketImpl::ClearDelegate() {
+  delegate_ = NULL;
 }
 
 void WebSocketImpl::SendFrameOnHandlerThread(const std::string& message) {
@@ -211,15 +215,18 @@ void WebSocketImpl::DisconnectOnHandlerThread(bool closed_by_device) {
 }
 
 void WebSocketImpl::OnSocketOpened() {
-  delegate_->OnSocketOpened();
+  if (delegate_)
+    delegate_->OnSocketOpened();
 }
 
 void WebSocketImpl::OnFrameRead(const std::string& message) {
-  delegate_->OnFrameRead(message);
+  if (delegate_)
+    delegate_->OnFrameRead(message);
 }
 
 void WebSocketImpl::OnSocketClosed(bool closed_by_device) {
-  delegate_->OnSocketClosed(closed_by_device);
+  if (delegate_)
+    delegate_->OnSocketClosed(closed_by_device);
 }
 
 }  // namespace

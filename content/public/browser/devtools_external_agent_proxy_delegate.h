@@ -11,20 +11,21 @@
 
 namespace content {
 
+class DevToolsExternalAgentProxy;
+
 // Describes the interface for sending messages to an external DevTools agent.
 class DevToolsExternalAgentProxyDelegate {
  public:
+   virtual ~DevToolsExternalAgentProxyDelegate() {}
+
    // Informs the agent that a client host has attached.
-   virtual void Attach() = 0;
+   virtual void Attach(DevToolsExternalAgentProxy* proxy) = 0;
 
    // Informs the agent that a client host has detached.
    virtual void Detach() = 0;
 
    // Sends a message to the agent.
    virtual void SendMessageToBackend(const std::string& message) = 0;
-
- protected:
-  virtual ~DevToolsExternalAgentProxyDelegate() {}
 };
 
 }  // namespace content
