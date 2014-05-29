@@ -44,5 +44,34 @@ TEST(MacrosTest, CompileAssert) {
                       bad_compile_assert_failure);
 }
 
+TEST(MacrosTest, Alignof) {
+  // Strictly speaking, this isn't a portable test, but I think it'll pass on
+  // all the platforms we currently support.
+  EXPECT_EQ(1u, MOJO_ALIGNOF(char));
+  EXPECT_EQ(4u, MOJO_ALIGNOF(int32_t));
+  EXPECT_EQ(8u, MOJO_ALIGNOF(int64_t));
+  EXPECT_EQ(8u, MOJO_ALIGNOF(double));
+}
+
+// These structs are used in the Alignas test. Define them globally to avoid
+// MSVS warnings/errors.
+#if defined(_MSC_VER)
+#pragma warning(push)
+// Disable the warning "structure was padded due to __declspec(align())".
+#pragma warning(disable:4324)
+#endif
+struct MOJO_ALIGNAS(1) StructAlignas1 { char x; };
+struct MOJO_ALIGNAS(4) StructAlignas4 { char x; };
+struct MOJO_ALIGNAS(8) StructAlignas8 { char x; };
+#if defined(_MSC_VER)
+#pragma warning(pop)
+#endif
+
+TEST(MacrosTest, Alignas) {
+  EXPECT_EQ(1u, MOJO_ALIGNOF(StructAlignas1));
+  EXPECT_EQ(4u, MOJO_ALIGNOF(StructAlignas4));
+  EXPECT_EQ(8u, MOJO_ALIGNOF(StructAlignas8));
+}
+
 }  // namespace
 }  // namespace mojo

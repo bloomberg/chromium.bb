@@ -38,7 +38,8 @@ const MojoCreateSharedBufferOptionsFlags
     ((MojoCreateSharedBufferOptionsFlags) 0)
 #endif
 
-struct MojoCreateSharedBufferOptions {
+MOJO_COMPILE_ASSERT(MOJO_ALIGNOF(int64_t) == 8, int64_t_has_weird_alignment);
+struct MOJO_ALIGNAS(8) MojoCreateSharedBufferOptions {
   uint32_t struct_size;
   MojoCreateSharedBufferOptionsFlags flags;
 };

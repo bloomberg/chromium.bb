@@ -46,7 +46,8 @@ const MojoCreateDataPipeOptionsFlags
     ((MojoCreateDataPipeOptionsFlags) 1 << 0)
 #endif
 
-struct MojoCreateDataPipeOptions {
+MOJO_COMPILE_ASSERT(MOJO_ALIGNOF(int64_t) == 8, int64_t_has_weird_alignment);
+struct MOJO_ALIGNAS(8) MojoCreateDataPipeOptions {
   uint32_t struct_size;
   MojoCreateDataPipeOptionsFlags flags;
   uint32_t element_num_bytes;
