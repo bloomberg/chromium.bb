@@ -1324,6 +1324,7 @@ _x86_release_boards = frozenset([
   'leon',
   'link',
   'lumpy',
+  'mccloud',
   'monroe',
   'panther',
   'parrot',
@@ -2184,8 +2185,20 @@ _AddGroupConfig('slippy', 'peppy', (
 # beltino-based haswell boards
 # beltino itself is deprecated in favor of the below boards, so we don't bother
 # building it.
+
+# TODO(dnj): Remove this once the associated Master change using -a,-b variants
+# lands (#202040)
 _AddGroupConfig('beltino', 'panther', (
     'monroe',
+    'tricky',
+    'zako',
+))
+
+_AddGroupConfig('beltino-a', 'panther', (
+    'mccloud',
+))
+
+_AddGroupConfig('beltino-b', 'monroe', (
     'tricky',
     'zako',
 ))
