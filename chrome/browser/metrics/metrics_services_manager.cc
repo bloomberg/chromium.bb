@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/prefs/pref_service.h"
+#include "chrome/browser/metrics/chrome_metrics_service_client.h"
 #include "chrome/browser/metrics/extensions_metrics_provider.h"
 #include "chrome/browser/metrics/metrics_service.h"
 #include "chrome/browser/metrics/metrics_state_manager.h"
@@ -28,15 +29,15 @@ MetricsServicesManager::~MetricsServicesManager() {
 
 MetricsService* MetricsServicesManager::GetMetricsService() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (!metrics_service_) {
-    metrics_service_.reset(new MetricsService(
-        GetMetricsStateManager(), &metrics_service_client_, local_state_));
-    metrics_service_client_.set_service(metrics_service_.get());
-    metrics_service_->RegisterMetricsProvider(
+  if (!metrics_service_client_) {
+    metrics_service_client_ =
+        ChromeMetricsServiceClient::Create(GetMetricsStateManager(),
+                                           local_state_);
+    metrics_service_client_->metrics_service()->RegisterMetricsProvider(
         scoped_ptr<metrics::MetricsProvider>(
             new ExtensionsMetricsProvider(GetMetricsStateManager())));
   }
-  return metrics_service_.get();
+  return metrics_service_client_->metrics_service();
 }
 
 rappor::RapporService* MetricsServicesManager::GetRapporService() {

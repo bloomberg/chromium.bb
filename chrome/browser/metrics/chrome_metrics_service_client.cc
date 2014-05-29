@@ -84,9 +84,9 @@ class MetricsMemoryDetails : public MemoryDetails {
 
 }  // namespace
 
-ChromeMetricsServiceClient::ChromeMetricsServiceClient()
-    : service_(NULL),
-      waiting_for_collect_final_metrics_step_(false),
+ChromeMetricsServiceClient::ChromeMetricsServiceClient(
+    metrics::MetricsStateManager* state_manager)
+    : waiting_for_collect_final_metrics_step_(false),
       num_async_histogram_fetches_in_progress_(0),
       weak_ptr_factory_(this) {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -100,6 +100,19 @@ ChromeMetricsServiceClient::ChromeMetricsServiceClient()
 
 ChromeMetricsServiceClient::~ChromeMetricsServiceClient() {
   DCHECK(thread_checker_.CalledOnValidThread());
+}
+
+// static
+scoped_ptr<ChromeMetricsServiceClient> ChromeMetricsServiceClient::Create(
+    metrics::MetricsStateManager* state_manager,
+    PrefService* local_state) {
+  // Perform two-phase initialization so that |client->metrics_service_| only
+  // receives pointers to fully constructed objects.
+  scoped_ptr<ChromeMetricsServiceClient> client(
+      new ChromeMetricsServiceClient(state_manager));
+  client->metrics_service_.reset(
+      new MetricsService(state_manager, client.get(), local_state));
+  return client.Pass();
 }
 
 void ChromeMetricsServiceClient::SetClientID(const std::string& client_id) {
@@ -288,9 +301,7 @@ void ChromeMetricsServiceClient::Observe(
     case content::NOTIFICATION_LOAD_START:
     case content::NOTIFICATION_RENDERER_PROCESS_CLOSED:
     case content::NOTIFICATION_RENDER_WIDGET_HOST_HANG:
-      // TODO(isherman): Remove this NULL check: http://crbug.com/375248
-      if (service_)
-        service_->OnApplicationNotIdle();
+      metrics_service_->OnApplicationNotIdle();
       break;
 
     default:
