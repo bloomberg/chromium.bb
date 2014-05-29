@@ -63,9 +63,9 @@ class ServiceConnectorBase {
  public:
   class Owner : public ServiceProvider {
    public:
+    Owner();
     Owner(ScopedMessagePipeHandle service_provider_handle);
     virtual ~Owner();
-    ServiceProvider* service_provider() { return service_provider_.get(); }
     virtual void AddServiceConnector(
         internal::ServiceConnectorBase* service_connector) = 0;
     virtual void RemoveServiceConnector(
@@ -80,7 +80,6 @@ class ServiceConnectorBase {
   };
   ServiceConnectorBase() : owner_(NULL) {}
   virtual ~ServiceConnectorBase();
-  ServiceProvider* service_provider() { return owner_->service_provider(); }
   virtual void ConnectToService(const std::string& url,
                                 ScopedMessagePipeHandle client_handle) = 0;
 

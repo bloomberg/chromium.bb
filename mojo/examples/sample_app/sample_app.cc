@@ -8,7 +8,6 @@
 #include "mojo/examples/sample_app/gles2_client_impl.h"
 #include "mojo/public/cpp/application/application.h"
 #include "mojo/public/cpp/bindings/allocation_scope.h"
-#include "mojo/public/cpp/environment/environment.h"
 #include "mojo/public/cpp/gles2/gles2.h"
 #include "mojo/public/cpp/system/core.h"
 #include "mojo/public/cpp/system/macros.h"
@@ -16,23 +15,19 @@
 #include "mojo/public/interfaces/service_provider/service_provider.mojom.h"
 #include "mojo/services/native_viewport/native_viewport.mojom.h"
 
-#if defined(WIN32)
-#if !defined(CDECL)
-#define CDECL __cdecl
-#endif
-#define SAMPLE_APP_EXPORT __declspec(dllexport)
-#else
-#define CDECL
-#define SAMPLE_APP_EXPORT __attribute__((visibility("default")))
-#endif
-
 namespace mojo {
 namespace examples {
 
 class SampleApp : public Application, public NativeViewportClient {
  public:
-  explicit SampleApp(MojoHandle service_provider_handle)
-      : Application(service_provider_handle) {
+  SampleApp() {}
+
+  virtual ~SampleApp() {
+    // TODO(darin): Fix shutdown so we don't need to leak this.
+    MOJO_ALLOW_UNUSED GLES2ClientImpl* leaked = gles2_client_.release();
+  }
+
+  virtual void Initialize() MOJO_OVERRIDE {
     ConnectTo("mojo:mojo_native_viewport_service", &viewport_);
     viewport_.set_client(this);
 
@@ -55,11 +50,6 @@ class SampleApp : public Application, public NativeViewportClient {
     gles2_client_.reset(new GLES2ClientImpl(gles2_pipe.handle1.Pass()));
   }
 
-  virtual ~SampleApp() {
-    // TODO(darin): Fix shutdown so we don't need to leak this.
-    MOJO_ALLOW_UNUSED GLES2ClientImpl* leaked = gles2_client_.release();
-  }
-
   virtual void OnCreated() MOJO_OVERRIDE {
   }
 
@@ -79,20 +69,18 @@ class SampleApp : public Application, public NativeViewportClient {
   }
 
  private:
+  mojo::GLES2Initializer gles2;
   scoped_ptr<GLES2ClientImpl> gles2_client_;
   NativeViewportPtr viewport_;
+
+  DISALLOW_COPY_AND_ASSIGN(SampleApp);
 };
 
 }  // namespace examples
-}  // namespace mojo
 
-extern "C" SAMPLE_APP_EXPORT MojoResult CDECL MojoMain(
-    MojoHandle service_provider_handle) {
-  mojo::Environment env;
-  mojo::RunLoop loop;
-  mojo::GLES2Initializer gles2;
-
-  mojo::examples::SampleApp app(service_provider_handle);
-  loop.Run();
-  return MOJO_RESULT_OK;
+// static
+Application* Application::Create() {
+  return new examples::SampleApp();
 }
+
+}  // namespace mojo

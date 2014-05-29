@@ -13,23 +13,12 @@
 #include "mojo/examples/pepper_container_app/type_converters.h"
 #include "mojo/public/cpp/application/application.h"
 #include "mojo/public/cpp/bindings/allocation_scope.h"
-#include "mojo/public/cpp/environment/environment.h"
 #include "mojo/public/cpp/gles2/gles2.h"
 #include "mojo/public/cpp/system/core.h"
 #include "mojo/public/interfaces/service_provider/service_provider.mojom.h"
 #include "mojo/services/native_viewport/native_viewport.mojom.h"
 #include "ppapi/c/pp_rect.h"
 #include "ppapi/shared_impl/proxy_lock.h"
-
-#if defined(OS_WIN)
-#if !defined(CDECL)
-#define CDECL __cdecl
-#endif
-#define PEPPER_CONTAINER_APP_EXPORT __declspec(dllexport)
-#else
-#define CDECL
-#define PEPPER_CONTAINER_APP_EXPORT __attribute__((visibility("default")))
-#endif
 
 namespace mojo {
 namespace examples {
@@ -38,10 +27,14 @@ class PepperContainerApp: public Application,
                           public NativeViewportClient,
                           public MojoPpapiGlobals::Delegate {
  public:
-  explicit PepperContainerApp(MojoHandle service_provider_handle)
-      : Application(service_provider_handle),
+  explicit PepperContainerApp()
+      : Application(),
         ppapi_globals_(this),
-        plugin_module_(new PluginModule) {
+        plugin_module_(new PluginModule) {}
+
+  virtual ~PepperContainerApp() {}
+
+   virtual void Initialize() MOJO_OVERRIDE {
     mojo::AllocationScope scope;
 
     ConnectTo("mojo:mojo_native_viewport_service", &viewport_);
@@ -59,8 +52,6 @@ class PepperContainerApp: public Application,
     viewport_->Create(rect.Finish());
     viewport_->Show();
   }
-
-  virtual ~PepperContainerApp() {}
 
   // NativeViewportClient implementation.
   virtual void OnCreated() OVERRIDE {
@@ -117,15 +108,10 @@ class PepperContainerApp: public Application,
 };
 
 }  // namespace examples
-}  // namespace mojo
 
-extern "C" PEPPER_CONTAINER_APP_EXPORT MojoResult CDECL MojoMain(
-    MojoHandle service_provider_handle) {
-  mojo::Environment env;
-  mojo::GLES2Initializer gles2;
-  base::MessageLoop run_loop;
-  mojo::examples::PepperContainerApp app(service_provider_handle);
-
-  run_loop.Run();
-  return MOJO_RESULT_OK;
+// static
+Application* Application::Create() {
+  return new examples::PepperContainerApp();
 }
+
+}  // namespace mojo

@@ -12,27 +12,18 @@
 #include "mojo/public/cpp/environment/environment.h"
 #include "mojo/public/cpp/system/core.h"
 #include "mojo/public/cpp/system/macros.h"
-#include "mojo/public/cpp/utility/run_loop.h"
 #include "mojo/public/interfaces/service_provider/service_provider.mojom.h"
 #include "mojo/services/dbus_echo/echo.mojom.h"
-
-#if defined(WIN32)
-#if !defined(CDECL)
-#define CDECL __cdecl
-#endif
-#define DBUS_ECHO_APP_EXPORT __declspec(dllexport)
-#else
-#define CDECL
-#define DBUS_ECHO_APP_EXPORT __attribute__((visibility("default")))
-#endif
 
 namespace mojo {
 namespace examples {
 
 class DBusEchoApp : public Application {
  public:
-  explicit DBusEchoApp(MojoHandle service_provider_handle)
-      : Application(service_provider_handle) {
+  DBusEchoApp() {}
+  virtual ~DBusEchoApp() {}
+
+  virtual void Initialize() MOJO_OVERRIDE {
     ConnectTo("dbus:org.chromium.EchoService/org/chromium/MojoImpl",
               &echo_service_);
 
@@ -41,26 +32,21 @@ class DBusEchoApp : public Application {
                                           base::Unretained(this)));
   }
 
-  virtual ~DBusEchoApp() {
-  }
-
  private:
   void OnEcho(const String& echoed) {
     LOG(INFO) << "echo'd " << echoed.To<std::string>();
   }
 
   EchoServicePtr echo_service_;
+
+  DISALLOW_COPY_AND_ASSIGN(DBusEchoApp);
 };
 
 }  // namespace examples
-}  // namespace mojo
 
-extern "C" DBUS_ECHO_APP_EXPORT MojoResult CDECL MojoMain(
-    MojoHandle service_provider_handle) {
-  mojo::Environment env;
-  mojo::RunLoop loop;
-
-  mojo::examples::DBusEchoApp app(service_provider_handle);
-  loop.Run();
-  return MOJO_RESULT_OK;
+// static
+Application* Application::Create() {
+  return new examples::DBusEchoApp();
 }
+
+}  // namespace mojo

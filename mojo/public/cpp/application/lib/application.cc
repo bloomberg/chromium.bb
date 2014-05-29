@@ -6,6 +6,8 @@
 
 namespace mojo {
 
+Application::Application() {}
+
 Application::Application(ScopedMessagePipeHandle service_provider_handle)
     : internal::ServiceConnectorBase::Owner(service_provider_handle.Pass()) {
 }
@@ -21,6 +23,8 @@ Application::~Application() {
     delete *it;
   }
 }
+
+void Application::Initialize() {}
 
 void Application::AddServiceConnector(
     internal::ServiceConnectorBase* service_connector) {
@@ -40,6 +44,12 @@ void Application::RemoveServiceConnector(
   }
   if (service_connectors_.empty())
     service_provider_.reset();
+}
+
+void Application::BindServiceProvider(
+    ScopedMessagePipeHandle service_provider_handle) {
+  service_provider_.Bind(service_provider_handle.Pass());
+  service_provider_.set_client(this);
 }
 
 void Application::ConnectToService(const mojo::String& url,

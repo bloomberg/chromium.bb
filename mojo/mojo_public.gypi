@@ -379,6 +379,32 @@
         'mojo_service_provider_bindings',
       ],
     },
+    {
+      'target_name': 'mojo_main_standalone',
+      'type': 'static_library',
+      'sources': [
+        'public/cpp/application/lib/mojo_main_standalone.cc',
+      ],
+      'dependencies': [
+        'mojo_application',
+      ],
+      'export_dependent_settings': [
+        'mojo_application',
+      ],
+    },
+    {
+      'target_name': 'mojo_main_chromium',
+      'type': 'static_library',
+      'sources': [
+        'public/cpp/application/lib/mojo_main_chromium.cc',
+      ],
+      'dependencies': [
+        'mojo_application',
+      ],
+      'export_dependent_settings': [
+        'mojo_application',
+      ],
+    },
   ],
   'conditions': [
     ['OS == "android"', {

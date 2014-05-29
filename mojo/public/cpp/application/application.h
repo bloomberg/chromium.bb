@@ -4,13 +4,30 @@
 
 #ifndef MOJO_PUBLIC_APPLICATION_APPLICATION_H_
 #define MOJO_PUBLIC_APPLICATION_APPLICATION_H_
-
 #include <vector>
 
 #include "mojo/public/cpp/application/connect.h"
 #include "mojo/public/cpp/application/lib/service_connector.h"
 #include "mojo/public/cpp/system/core.h"
 #include "mojo/public/interfaces/service_provider/service_provider.mojom.h"
+
+#if defined(WIN32)
+#if !defined(CDECL)
+#define CDECL __cdecl
+#endif
+#define APPLICATION_EXPORT __declspec(dllexport)
+#else
+#define CDECL
+#define APPLICATION_EXPORT __attribute__((visibility("default")))
+#endif
+
+// DSOs can either implement MojoMain directly or utilize the
+// mojo_main_{standalone|chromium} gyp targets and implement
+// Application::Create();
+// TODO(davemoore): Establish this as part of our SDK for third party mojo
+// application writers.
+extern "C" APPLICATION_EXPORT MojoResult CDECL MojoMain(
+    MojoHandle service_provider_handle);
 
 namespace mojo {
 
@@ -49,9 +66,15 @@ namespace mojo {
 //
 class Application : public internal::ServiceConnectorBase::Owner {
  public:
+  Application();
   explicit Application(ScopedMessagePipeHandle service_provider_handle);
   explicit Application(MojoHandle service_provider_handle);
   virtual ~Application();
+
+  // Override this to do any necessary initialization. There's no need to call
+  // Application's implementation.
+  // The service_provider will be bound to its pipe before this is called.
+  virtual void Initialize();
 
   template <typename Impl, typename Context>
   void AddService(Context* context) {
@@ -69,6 +92,9 @@ class Application : public internal::ServiceConnectorBase::Owner {
     mojo::ConnectToService(service_provider(), url, ptr);
   }
 
+  ServiceProvider* service_provider() { return service_provider_.get(); }
+  void BindServiceProvider(ScopedMessagePipeHandle service_provider_handle);
+
  protected:
   // ServiceProvider methods.
   // Override this to dispatch to correct service when there's more than one.
@@ -78,6 +104,11 @@ class Application : public internal::ServiceConnectorBase::Owner {
       MOJO_OVERRIDE;
 
  private:
+  friend MojoResult (::MojoMain)(MojoHandle);
+
+  // Implement this method to create the specific subclass of Application.
+  static Application* Create();
+
   // internal::ServiceConnectorBase::Owner methods.
   // Takes ownership of |service_connector|.
   virtual void AddServiceConnector(
