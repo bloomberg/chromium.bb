@@ -13,7 +13,6 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/sequenced_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 
 // TODO(tzik): Merge this file to media/base/bind_to_current_loop.h.
@@ -39,114 +38,95 @@ RebindForward(T& t) {
   return t;
 }
 
-template <typename T>
-class CallbackHolder {
- public:
-  CallbackHolder(base::SequencedTaskRunner* task_runner,
-                 const tracked_objects::Location& from_here,
-                 const base::Callback<T>& callback)
-      : task_runner_(task_runner),
-        from_here_(from_here),
-        callback_(new base::Callback<T>(callback)) {
-    DCHECK(task_runner_);
-  }
-
-  ~CallbackHolder() {
-    base::Callback<T>* callback = callback_.release();
-    if (!task_runner_->DeleteSoon(from_here_, callback))
-      delete callback;
-  }
-
-  base::SequencedTaskRunner* task_runner() const { return task_runner_; }
-  const tracked_objects::Location& from_here() const { return from_here_; }
-  const base::Callback<T>& callback() const { return *callback_; }
-
- private:
-  scoped_refptr<base::SequencedTaskRunner> task_runner_;
-  const tracked_objects::Location from_here_;
-  scoped_ptr<base::Callback<T> > callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(CallbackHolder);
-};
-
 template <typename>
 struct RelayToTaskRunnerHelper;
 
 template <>
 struct RelayToTaskRunnerHelper<void()> {
-  static void Run(CallbackHolder<void()>* holder) {
-    holder->task_runner()->PostTask(holder->from_here(),
-        base::Bind(holder->callback()));
+  static void Run(base::TaskRunner* task_runner,
+                  const tracked_objects::Location& from_here,
+                  const base::Callback<void()>& callback) {
+    task_runner->PostTask(from_here, base::Bind(callback));
   }
 };
 
 template <typename A1>
 struct RelayToTaskRunnerHelper<void(A1)> {
-  static void Run(CallbackHolder<void(A1)>* holder, A1 a1) {
-    holder->task_runner()->PostTask(holder->from_here(),
-        base::Bind(holder->callback(), RebindForward(a1)));
+  static void Run(base::TaskRunner* task_runner,
+                  const tracked_objects::Location& from_here,
+                  const base::Callback<void(A1)>& callback, A1 a1) {
+    task_runner->PostTask(from_here, base::Bind(callback, RebindForward(a1)));
   }
 };
 
 template <typename A1, typename A2>
 struct RelayToTaskRunnerHelper<void(A1, A2)> {
-  static void Run(CallbackHolder<void(A1, A2)>* holder, A1 a1, A2 a2) {
-    holder->task_runner()->PostTask(holder->from_here(),
-        base::Bind(holder->callback(), RebindForward(a1), RebindForward(a2)));
+  static void Run(base::TaskRunner* task_runner,
+                  const tracked_objects::Location& from_here,
+                  const base::Callback<void(A1, A2)>& callback, A1 a1, A2 a2) {
+    task_runner->PostTask(from_here, base::Bind(callback, RebindForward(a1),
+        RebindForward(a2)));
   }
 };
 
 template <typename A1, typename A2, typename A3>
 struct RelayToTaskRunnerHelper<void(A1, A2, A3)> {
-  static void Run(CallbackHolder<void(A1, A2, A3)>* holder, A1 a1, A2 a2,
-      A3 a3) {
-    holder->task_runner()->PostTask(holder->from_here(),
-        base::Bind(holder->callback(), RebindForward(a1), RebindForward(a2),
-        RebindForward(a3)));
+  static void Run(base::TaskRunner* task_runner,
+                  const tracked_objects::Location& from_here,
+                  const base::Callback<void(A1, A2, A3)>& callback, A1 a1,
+                      A2 a2, A3 a3) {
+    task_runner->PostTask(from_here, base::Bind(callback, RebindForward(a1),
+        RebindForward(a2), RebindForward(a3)));
   }
 };
 
 template <typename A1, typename A2, typename A3, typename A4>
 struct RelayToTaskRunnerHelper<void(A1, A2, A3, A4)> {
-  static void Run(CallbackHolder<void(A1, A2, A3, A4)>* holder, A1 a1, A2 a2,
-      A3 a3, A4 a4) {
-    holder->task_runner()->PostTask(holder->from_here(),
-        base::Bind(holder->callback(), RebindForward(a1), RebindForward(a2),
-        RebindForward(a3), RebindForward(a4)));
+  static void Run(base::TaskRunner* task_runner,
+                  const tracked_objects::Location& from_here,
+                  const base::Callback<void(A1, A2, A3, A4)>& callback, A1 a1,
+                      A2 a2, A3 a3, A4 a4) {
+    task_runner->PostTask(from_here, base::Bind(callback, RebindForward(a1),
+        RebindForward(a2), RebindForward(a3), RebindForward(a4)));
   }
 };
 
 template <typename A1, typename A2, typename A3, typename A4, typename A5>
 struct RelayToTaskRunnerHelper<void(A1, A2, A3, A4, A5)> {
-  static void Run(CallbackHolder<void(A1, A2, A3, A4, A5)>* holder, A1 a1,
-      A2 a2, A3 a3, A4 a4, A5 a5) {
-    holder->task_runner()->PostTask(holder->from_here(),
-        base::Bind(holder->callback(), RebindForward(a1), RebindForward(a2),
-        RebindForward(a3), RebindForward(a4), RebindForward(a5)));
+  static void Run(base::TaskRunner* task_runner,
+                  const tracked_objects::Location& from_here,
+                  const base::Callback<void(A1, A2, A3, A4, A5)>& callback,
+                      A1 a1, A2 a2, A3 a3, A4 a4, A5 a5) {
+    task_runner->PostTask(from_here, base::Bind(callback, RebindForward(a1),
+        RebindForward(a2), RebindForward(a3), RebindForward(a4),
+        RebindForward(a5)));
   }
 };
 
 template <typename A1, typename A2, typename A3, typename A4, typename A5,
     typename A6>
 struct RelayToTaskRunnerHelper<void(A1, A2, A3, A4, A5, A6)> {
-  static void Run(CallbackHolder<void(A1, A2, A3, A4, A5, A6)>* holder, A1 a1,
-      A2 a2, A3 a3, A4 a4, A5 a5, A6 a6) {
-    holder->task_runner()->PostTask(holder->from_here(),
-        base::Bind(holder->callback(), RebindForward(a1), RebindForward(a2),
-        RebindForward(a3), RebindForward(a4), RebindForward(a5),
-        RebindForward(a6)));
+  static void Run(base::TaskRunner* task_runner,
+                  const tracked_objects::Location& from_here,
+                  const base::Callback<void(A1, A2, A3, A4, A5, A6)>& callback,
+                      A1 a1, A2 a2, A3 a3, A4 a4, A5 a5, A6 a6) {
+    task_runner->PostTask(from_here, base::Bind(callback, RebindForward(a1),
+        RebindForward(a2), RebindForward(a3), RebindForward(a4),
+        RebindForward(a5), RebindForward(a6)));
   }
 };
 
 template <typename A1, typename A2, typename A3, typename A4, typename A5,
     typename A6, typename A7>
 struct RelayToTaskRunnerHelper<void(A1, A2, A3, A4, A5, A6, A7)> {
-  static void Run(CallbackHolder<void(A1, A2, A3, A4, A5, A6, A7)>* holder,
-      A1 a1, A2 a2, A3 a3, A4 a4, A5 a5, A6 a6, A7 a7) {
-    holder->task_runner()->PostTask(holder->from_here(),
-        base::Bind(holder->callback(), RebindForward(a1), RebindForward(a2),
-        RebindForward(a3), RebindForward(a4), RebindForward(a5),
-        RebindForward(a6), RebindForward(a7)));
+  static void Run(base::TaskRunner* task_runner,
+                  const tracked_objects::Location& from_here,
+                  const base::Callback<void(A1, A2, A3, A4, A5, A6,
+                      A7)>& callback, A1 a1, A2 a2, A3 a3, A4 a4, A5 a5, A6 a6,
+                      A7 a7) {
+    task_runner->PostTask(from_here, base::Bind(callback, RebindForward(a1),
+        RebindForward(a2), RebindForward(a3), RebindForward(a4),
+        RebindForward(a5), RebindForward(a6), RebindForward(a7)));
   }
 };
 
@@ -154,7 +134,7 @@ struct RelayToTaskRunnerHelper<void(A1, A2, A3, A4, A5, A6, A7)> {
 
 template <typename T>
 base::Callback<T> RelayCallbackToTaskRunner(
-    base::SequencedTaskRunner* task_runner,
+    base::TaskRunner* task_runner,
     const tracked_objects::Location& from_here,
     const base::Callback<T>& callback) {
   DCHECK(task_runner->RunsTasksOnCurrentThread());
@@ -163,8 +143,8 @@ base::Callback<T> RelayCallbackToTaskRunner(
     return base::Callback<T>();
 
   return base::Bind(&internal::RelayToTaskRunnerHelper<T>::Run,
-                    base::Owned(new internal::CallbackHolder<T>(
-                        task_runner, from_here, callback)));
+                    make_scoped_refptr(task_runner), from_here,
+                    callback);
 }
 
 template <typename T>

@@ -17,7 +17,6 @@ $var MAX_ARITY = 7
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/sequenced_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 
 // TODO(tzik): Merge this file to media/base/bind_to_current_loop.h.
@@ -43,36 +42,6 @@ RebindForward(T& t) {
   return t;
 }
 
-template <typename T>
-class CallbackHolder {
- public:
-  CallbackHolder(base::SequencedTaskRunner* task_runner,
-                 const tracked_objects::Location& from_here,
-                 const base::Callback<T>& callback)
-      : task_runner_(task_runner),
-        from_here_(from_here),
-        callback_(new base::Callback<T>(callback)) {
-    DCHECK(task_runner_);
-  }
-
-  ~CallbackHolder() {
-    base::Callback<T>* callback = callback_.release();
-    if (!task_runner_->DeleteSoon(from_here_, callback))
-      delete callback;
-  }
-
-  base::SequencedTaskRunner* task_runner() const { return task_runner_; }
-  const tracked_objects::Location& from_here() const { return from_here_; }
-  const base::Callback<T>& callback() const { return *callback_; }
-
- private:
-  scoped_refptr<base::SequencedTaskRunner> task_runner_;
-  const tracked_objects::Location from_here_;
-  scoped_ptr<base::Callback<T> > callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(CallbackHolder);
-};
-
 template <typename>
 struct RelayToTaskRunnerHelper;
 
@@ -82,11 +51,13 @@ $range ARG 1..ARITY
 
 template <$for ARG , [[typename A$(ARG)]]>
 struct RelayToTaskRunnerHelper<void($for ARG , [[A$(ARG)]])> {
-  static void Run(CallbackHolder<void($for ARG , [[A$(ARG)]])>* holder
+  static void Run(base::TaskRunner* task_runner,
+                  const tracked_objects::Location& from_here,
+                  const base::Callback<void($for ARG , [[A$(ARG)]])>& callback
 $if ARITY != 0 [[, ]]
 $for ARG , [[A$(ARG) a$(ARG)]]
 ) {
-    holder->task_runner()->PostTask(holder->from_here(), base::Bind(holder->callback()
+    task_runner->PostTask(from_here, base::Bind(callback
 $if ARITY != 0 [[, ]]
 $for ARG , [[RebindForward(a$(ARG))]]));
   }
@@ -98,7 +69,7 @@ $for ARG , [[RebindForward(a$(ARG))]]));
 
 template <typename T>
 base::Callback<T> RelayCallbackToTaskRunner(
-    base::SequencedTaskRunner* task_runner,
+    base::TaskRunner* task_runner,
     const tracked_objects::Location& from_here,
     const base::Callback<T>& callback) {
   DCHECK(task_runner->RunsTasksOnCurrentThread());
@@ -107,8 +78,8 @@ base::Callback<T> RelayCallbackToTaskRunner(
     return base::Callback<T>();
 
   return base::Bind(&internal::RelayToTaskRunnerHelper<T>::Run,
-                    base::Owned(new internal::CallbackHolder<T>(
-                        task_runner, from_here, callback)));
+                    make_scoped_refptr(task_runner), from_here,
+                    callback);
 }
 
 template <typename T>
