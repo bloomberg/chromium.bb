@@ -52,4 +52,21 @@ size_t GetMaxFds() {
   return static_cast<size_t>(max_fds);
 }
 
+
+void SetFdLimit(unsigned int max_descriptors) {
+  struct rlimit limits;
+  if (getrlimit(RLIMIT_NOFILE, &limits) == 0) {
+    unsigned int new_limit = max_descriptors;
+    if (limits.rlim_max > 0 && limits.rlim_max < max_descriptors) {
+      new_limit = limits.rlim_max;
+    }
+    limits.rlim_cur = new_limit;
+    if (setrlimit(RLIMIT_NOFILE, &limits) != 0) {
+      PLOG(INFO) << "Failed to set file descriptor limit";
+    }
+  } else {
+    PLOG(INFO) << "Failed to get file descriptor limit";
+  }
+}
+
 }  // namespace base

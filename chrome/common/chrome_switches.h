@@ -203,7 +203,6 @@ extern const char kFakeVariationsChannel[];
 extern const char kFastStart[];
 extern const char kFlagSwitchesBegin[];
 extern const char kFlagSwitchesEnd[];
-extern const char kFileDescriptorLimit[];
 extern const char kForceAppMode[];
 extern const char kForceFirstRun[];
 extern const char kForceVariationIds[];

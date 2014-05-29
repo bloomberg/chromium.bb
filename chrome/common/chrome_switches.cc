@@ -703,11 +703,6 @@ const char kFastStart[]            = "fast-start";
 const char kFlagSwitchesBegin[]             = "flag-switches-begin";
 const char kFlagSwitchesEnd[]               = "flag-switches-end";
 
-// The file descriptor limit is set to the value of this switch, subject to the
-// OS hard limits. Useful for testing that file descriptor exhaustion is
-// handled gracefully.
-const char kFileDescriptorLimit[]           = "file-descriptor-limit";
-
 // Forces application mode. This hides certain system UI elements and forces
 // the app to be installed if it hasn't been already.
 const char kForceAppMode[]                  = "force-app-mode";
