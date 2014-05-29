@@ -69,6 +69,7 @@ class RenderWidgetFullscreenPepper;
 struct CustomContextMenuContext;
 
 #if defined(OS_ANDROID)
+class RendererCdmManager;
 class RendererMediaPlayerManager;
 #endif
 
@@ -533,11 +534,12 @@ class CONTENT_EXPORT RenderFrameImpl
   virtual scoped_ptr<MediaStreamRendererFactory> CreateRendererFactory();
 
 #if defined(OS_ANDROID)
- blink::WebMediaPlayer* CreateAndroidWebMediaPlayer(
+  blink::WebMediaPlayer* CreateAndroidWebMediaPlayer(
       const blink::WebURL& url,
       blink::WebMediaPlayerClient* client);
 
- RendererMediaPlayerManager* GetMediaPlayerManager();
+  RendererMediaPlayerManager* GetMediaPlayerManager();
+  RendererCdmManager* GetCdmManager();
 #endif
 
   // Stores the WebLocalFrame we are associated with.
@@ -606,10 +608,11 @@ class CONTENT_EXPORT RenderFrameImpl
   blink::WebUserMediaClient* web_user_media_client_;
 
 #if defined(OS_ANDROID)
-  // Manages all media players in this render frame for communicating with the
-  // real media player and CDM objects in the browser process. It's okay to use
-  // raw pointers since it's a RenderFrameObserver.
+  // These manage all media players and CDMs in this render frame for
+  // communicating with the real media player and CDM objects in the browser
+  // process. It's okay to use raw pointers since they are RenderFrameObservers.
   RendererMediaPlayerManager* media_player_manager_;
+  RendererCdmManager* cdm_manager_;
 #endif
 
   base::WeakPtrFactory<RenderFrameImpl> weak_factory_;

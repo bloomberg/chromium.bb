@@ -1,25 +1,24 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media/android/proxy_media_keys.h"
+#include "content/renderer/media/crypto/proxy_media_keys.h"
 
 #include <vector>
 
 #include "base/basictypes.h"
 #include "base/logging.h"
-#include "content/renderer/media/android/renderer_media_player_manager.h"
 #include "content/renderer/media/crypto/key_systems.h"
+#include "content/renderer/media/crypto/renderer_cdm_manager.h"
 
 namespace content {
 
-int ProxyMediaKeys::next_cdm_id_ =
-    RendererMediaPlayerManager::kInvalidCdmId + 1;
+int ProxyMediaKeys::next_cdm_id_ = RendererCdmManager::kInvalidCdmId + 1;
 
 scoped_ptr<ProxyMediaKeys> ProxyMediaKeys::Create(
     const std::string& key_system,
     const GURL& security_origin,
-    RendererMediaPlayerManager* manager,
+    RendererCdmManager* manager,
     const media::SessionCreatedCB& session_created_cb,
     const media::SessionMessageCB& session_message_cb,
     const media::SessionReadyCB& session_ready_cb,
@@ -117,7 +116,7 @@ int ProxyMediaKeys::GetCdmId() const {
 }
 
 ProxyMediaKeys::ProxyMediaKeys(
-    RendererMediaPlayerManager* manager,
+    RendererCdmManager* manager,
     const media::SessionCreatedCB& session_created_cb,
     const media::SessionMessageCB& session_message_cb,
     const media::SessionReadyCB& session_ready_cb,

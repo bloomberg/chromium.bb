@@ -22,6 +22,7 @@
 #include "content/renderer/media/android/renderer_demuxer_android.h"
 #include "content/renderer/media/android/renderer_media_player_manager.h"
 #include "content/renderer/media/crypto/key_systems.h"
+#include "content/renderer/media/crypto/renderer_cdm_manager.h"
 #include "content/renderer/media/webcontentdecryptionmodule_impl.h"
 #include "content/renderer/media/webmediaplayer_delegate.h"
 #include "content/renderer/media/webmediaplayer_util.h"
@@ -85,7 +86,8 @@ WebMediaPlayerAndroid::WebMediaPlayerAndroid(
     blink::WebFrame* frame,
     blink::WebMediaPlayerClient* client,
     base::WeakPtr<WebMediaPlayerDelegate> delegate,
-    RendererMediaPlayerManager* manager,
+    RendererMediaPlayerManager* player_manager,
+    RendererCdmManager* cdm_manager,
     scoped_refptr<StreamTextureFactory> factory,
     const scoped_refptr<base::MessageLoopProxy>& media_loop,
     media::MediaLog* media_log)
@@ -99,7 +101,8 @@ WebMediaPlayerAndroid::WebMediaPlayerAndroid(
       pending_seek_(false),
       seeking_(false),
       did_loading_progress_(false),
-      manager_(manager),
+      player_manager_(player_manager),
+      cdm_manager_(cdm_manager),
       network_state_(WebMediaPlayer::NetworkStateEmpty),
       ready_state_(WebMediaPlayer::ReadyStateHaveNothing),
       texture_id_(0),
@@ -121,17 +124,18 @@ WebMediaPlayerAndroid::WebMediaPlayerAndroid(
       media_log_(media_log),
       web_cdm_(NULL),
       weak_factory_(this) {
-  DCHECK(manager_);
+  DCHECK(player_manager_);
+  DCHECK(cdm_manager_);
 
   DCHECK(main_thread_checker_.CalledOnValidThread());
 
-  player_id_ = manager_->RegisterMediaPlayer(this);
+  player_id_ = player_manager_->RegisterMediaPlayer(this);
 
 #if defined(VIDEO_HOLE)
   force_use_overlay_embedded_video_ = CommandLine::ForCurrentProcess()->
       HasSwitch(switches::kForceUseOverlayEmbeddedVideo);
   if (force_use_overlay_embedded_video_ ||
-      manager_->ShouldUseVideoOverlayForEmbeddedEncryptedVideo()) {
+    player_manager_->ShouldUseVideoOverlayForEmbeddedEncryptedVideo()) {
     // Defer stream texture creation until we are sure it's necessary.
     needs_establish_peer_ = false;
     current_frame_ = VideoFrame::CreateBlackFrame(gfx::Size(1, 1));
@@ -144,9 +148,9 @@ WebMediaPlayerAndroid::~WebMediaPlayerAndroid() {
   SetVideoFrameProviderClient(NULL);
   client_->setWebLayer(NULL);
 
-  if (manager_) {
-    manager_->DestroyPlayer(player_id_);
-    manager_->UnregisterMediaPlayer(player_id_);
+  if (player_manager_) {
+    player_manager_->DestroyPlayer(player_id_);
+    player_manager_->UnregisterMediaPlayer(player_id_);
   }
 
   if (stream_id_) {
@@ -232,11 +236,11 @@ void WebMediaPlayerAndroid::load(LoadType load_type,
 
   url_ = url;
   GURL first_party_url = frame_->document().firstPartyForCookies();
-  manager_->Initialize(
+  player_manager_->Initialize(
       player_type_, player_id_, url, first_party_url, demuxer_client_id);
 
-  if (manager_->ShouldEnterFullscreen(frame_))
-    manager_->EnterFullscreen(player_id_, frame_);
+  if (player_manager_->ShouldEnterFullscreen(frame_))
+    player_manager_->EnterFullscreen(player_id_, frame_);
 
   UpdateNetworkState(WebMediaPlayer::NetworkStateLoading);
   UpdateReadyState(WebMediaPlayer::ReadyStateHaveNothing);
@@ -266,20 +270,22 @@ void WebMediaPlayerAndroid::DidLoadMediaInfo(MediaInfoLoader::Status status) {
 void WebMediaPlayerAndroid::play() {
 #if defined(VIDEO_HOLE)
   if (hasVideo() && needs_external_surface_ &&
-      !manager_->IsInFullscreen(frame_)) {
+      !player_manager_->IsInFullscreen(frame_)) {
     DCHECK(!needs_establish_peer_);
-    manager_->RequestExternalSurface(player_id_, last_computed_rect_);
+    player_manager_->RequestExternalSurface(player_id_, last_computed_rect_);
   }
 #endif  // defined(VIDEO_HOLE)
 
   TryCreateStreamTextureProxyIfNeeded();
   // There is no need to establish the surface texture peer for fullscreen
   // video.
-  if (hasVideo() && needs_establish_peer_ && !manager_->IsInFullscreen(frame_))
+  if (hasVideo() && needs_establish_peer_ &&
+      !player_manager_->IsInFullscreen(frame_)) {
     EstablishSurfaceTexturePeer();
+  }
 
   if (paused())
-    manager_->Start(player_id_);
+    player_manager_->Start(player_id_);
   UpdatePlayingState(true);
   UpdateNetworkState(WebMediaPlayer::NetworkStateLoading);
   playing_started_ = true;
@@ -330,7 +336,7 @@ void WebMediaPlayerAndroid::seek(double seconds) {
     media_source_delegate_->StartWaitingForSeek(seek_time_);
 
   // Kick off the asynchronous seek!
-  manager_->Seek(player_id_, seek_time_);
+  player_manager_->Seek(player_id_, seek_time_);
 }
 
 bool WebMediaPlayerAndroid::supportsSave() const {
@@ -342,7 +348,7 @@ void WebMediaPlayerAndroid::setRate(double rate) {
 }
 
 void WebMediaPlayerAndroid::setVolume(double volume) {
-  manager_->SetVolume(player_id_, volume);
+  player_manager_->SetVolume(player_id_, volume);
 }
 
 bool WebMediaPlayerAndroid::hasVideo() const {
@@ -697,10 +703,10 @@ void WebMediaPlayerAndroid::OnVideoSizeChanged(int width, int height) {
   // TODO(qinmin): Change this so that only EME needs the H/W surface
   if (force_use_overlay_embedded_video_ ||
       (media_source_delegate_ && media_source_delegate_->IsVideoEncrypted() &&
-       manager_->ShouldUseVideoOverlayForEmbeddedEncryptedVideo())) {
+       player_manager_->ShouldUseVideoOverlayForEmbeddedEncryptedVideo())) {
     needs_external_surface_ = true;
-    if (!paused() && !manager_->IsInFullscreen(frame_))
-      manager_->RequestExternalSurface(player_id_, last_computed_rect_);
+    if (!paused() && !player_manager_->IsInFullscreen(frame_))
+      player_manager_->RequestExternalSurface(player_id_, last_computed_rect_);
   } else if (stream_texture_proxy_ && !stream_id_) {
     // Do deferred stream texture creation finally.
     DoCreateStreamTexture();
@@ -757,10 +763,10 @@ void WebMediaPlayerAndroid::OnDisconnectedFromRemoteDevice() {
 }
 
 void WebMediaPlayerAndroid::OnDidEnterFullscreen() {
-  if (!manager_->IsInFullscreen(frame_)) {
+  if (!player_manager_->IsInFullscreen(frame_)) {
     frame_->view()->willEnterFullScreen();
     frame_->view()->didEnterFullScreen();
-    manager_->DidEnterFullscreen(frame_);
+    player_manager_->DidEnterFullscreen(frame_);
   }
 }
 
@@ -775,12 +781,12 @@ void WebMediaPlayerAndroid::OnDidExitFullscreen() {
 
 #if defined(VIDEO_HOLE)
   if (!paused() && needs_external_surface_)
-    manager_->RequestExternalSurface(player_id_, last_computed_rect_);
+    player_manager_->RequestExternalSurface(player_id_, last_computed_rect_);
 #endif  // defined(VIDEO_HOLE)
 
   frame_->view()->willExitFullScreen();
   frame_->view()->didExitFullScreen();
-  manager_->DidExitFullscreen();
+  player_manager_->DidExitFullscreen();
   client_->repaint();
 }
 
@@ -866,13 +872,13 @@ void WebMediaPlayerAndroid::ReleaseMediaResources() {
     case WebMediaPlayer::NetworkStateDecodeError:
       break;
   }
-  manager_->ReleaseResources(player_id_);
+  player_manager_->ReleaseResources(player_id_);
   OnPlayerReleased();
 }
 
 void WebMediaPlayerAndroid::OnDestruct() {
-  if (manager_)
-    manager_->UnregisterMediaPlayer(player_id_);
+  if (player_manager_)
+    player_manager_->UnregisterMediaPlayer(player_id_);
   Detach();
 }
 
@@ -891,11 +897,11 @@ void WebMediaPlayerAndroid::Detach() {
     current_frame_ = NULL;
   }
   is_remote_ = false;
-  manager_ = NULL;
+  player_manager_ = NULL;
 }
 
 void WebMediaPlayerAndroid::Pause(bool is_media_related_action) {
-  manager_->Pause(player_id_, is_media_related_action);
+  player_manager_->Pause(player_id_, is_media_related_action);
   UpdatePlayingState(false);
 }
 
@@ -1145,7 +1151,7 @@ void WebMediaPlayerAndroid::SetNeedsEstablishPeer(bool needs_establish_peer) {
 }
 
 void WebMediaPlayerAndroid::setPoster(const blink::WebURL& poster) {
-  manager_->SetPoster(player_id_, poster);
+  player_manager_->SetPoster(player_id_, poster);
 }
 
 void WebMediaPlayerAndroid::UpdatePlayingState(bool is_playing) {
@@ -1305,7 +1311,7 @@ WebMediaPlayerAndroid::GenerateKeyRequestInternal(
   if (current_key_system_.empty()) {
     if (!proxy_decryptor_) {
       proxy_decryptor_.reset(new ProxyDecryptor(
-          manager_,
+          cdm_manager_,
           base::Bind(&WebMediaPlayerAndroid::OnKeyAdded,
                      weak_factory_.GetWeakPtr()),
           base::Bind(&WebMediaPlayerAndroid::OnKeyError,
@@ -1323,7 +1329,11 @@ WebMediaPlayerAndroid::GenerateKeyRequestInternal(
           .Run(proxy_decryptor_->GetDecryptor());
     }
 
-    manager_->SetCdm(player_id_, proxy_decryptor_->GetCdmId());
+    // Only browser CDMs have CDM ID. Render side CDMs (e.g. ClearKey CDM) do
+    // not have a CDM ID and there is no need to call player_manager_->SetCdm().
+    if (proxy_decryptor_->GetCdmId() != RendererCdmManager::kInvalidCdmId)
+      player_manager_->SetCdm(player_id_, proxy_decryptor_->GetCdmId());
+
     current_key_system_ = key_system;
   } else if (key_system != current_key_system_) {
     return WebMediaPlayer::MediaKeyExceptionInvalidPlayerState;
@@ -1438,7 +1448,8 @@ void WebMediaPlayerAndroid::setContentDecryptionModule(
   if (!decryptor_ready_cb_.is_null())
     base::ResetAndReturn(&decryptor_ready_cb_).Run(web_cdm_->GetDecryptor());
 
-  manager_->SetCdm(player_id_, web_cdm_->GetCdmId());
+  if (web_cdm_->GetCdmId() != RendererCdmManager::kInvalidCdmId)
+    player_manager_->SetCdm(player_id_, web_cdm_->GetCdmId());
 }
 
 void WebMediaPlayerAndroid::OnKeyAdded(const std::string& session_id) {
@@ -1546,18 +1557,18 @@ void WebMediaPlayerAndroid::SetDecryptorReadyCB(
 }
 
 void WebMediaPlayerAndroid::enterFullscreen() {
-  if (manager_->CanEnterFullscreen(frame_)) {
-    manager_->EnterFullscreen(player_id_, frame_);
+  if (player_manager_->CanEnterFullscreen(frame_)) {
+    player_manager_->EnterFullscreen(player_id_, frame_);
     SetNeedsEstablishPeer(false);
   }
 }
 
 void WebMediaPlayerAndroid::exitFullscreen() {
-  manager_->ExitFullscreen(player_id_);
+  player_manager_->ExitFullscreen(player_id_);
 }
 
 bool WebMediaPlayerAndroid::canEnterFullscreen() const {
-  return manager_->CanEnterFullscreen(frame_);
+  return player_manager_->CanEnterFullscreen(frame_);
 }
 
 }  // namespace content

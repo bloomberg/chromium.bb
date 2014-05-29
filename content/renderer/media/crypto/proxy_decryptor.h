@@ -26,7 +26,7 @@ class GURL;
 namespace content {
 
 #if defined(OS_ANDROID)
-class RendererMediaPlayerManager;
+class RendererCdmManager;
 #endif  // defined(OS_ANDROID)
 
 // ProxyDecryptor is for EME v0.1b only. It should not be used for the WD API.
@@ -58,7 +58,7 @@ class ProxyDecryptor {
 #if defined(ENABLE_PEPPER_CDMS)
       const CreatePepperCdmCB& create_pepper_cdm_cb,
 #elif defined(OS_ANDROID)
-      RendererMediaPlayerManager* manager,
+      RendererCdmManager* manager,
 #endif  // defined(ENABLE_PEPPER_CDMS)
       const KeyAddedCB& key_added_cb,
       const KeyErrorCB& key_error_cb,
@@ -119,7 +119,7 @@ class ProxyDecryptor {
   // Callback to create the Pepper plugin.
   CreatePepperCdmCB create_pepper_cdm_cb_;
 #elif defined(OS_ANDROID)
-  RendererMediaPlayerManager* manager_;
+  RendererCdmManager* manager_;
   int cdm_id_;
 #endif  // defined(ENABLE_PEPPER_CDMS)
 

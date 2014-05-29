@@ -125,6 +125,7 @@
 #include "content/renderer/media/android/renderer_media_player_manager.h"
 #include "content/renderer/media/android/stream_texture_factory_impl.h"
 #include "content/renderer/media/android/webmediaplayer_android.h"
+#include "content/renderer/media/crypto/renderer_cdm_manager.h"
 #endif
 
 using blink::WebContextMenuData;
@@ -408,6 +409,7 @@ RenderFrameImpl::RenderFrameImpl(RenderViewImpl* render_view, int routing_id)
       web_user_media_client_(NULL),
 #if defined(OS_ANDROID)
       media_player_manager_(NULL),
+      cdm_manager_(NULL),
 #endif
       weak_factory_(this) {
   RenderThread::Get()->AddRoute(routing_id_, this);
@@ -3509,6 +3511,7 @@ WebMediaPlayer* RenderFrameImpl::CreateAndroidWebMediaPlayer(
       client,
       weak_factory_.GetWeakPtr(),
       GetMediaPlayerManager(),
+      GetCdmManager(),
       stream_texture_factory,
       RenderThreadImpl::current()->GetMediaThreadMessageLoopProxy(),
       new RenderMediaLog());
@@ -3522,6 +3525,12 @@ RendererMediaPlayerManager* RenderFrameImpl::GetMediaPlayerManager() {
 #endif  // defined(VIDEO_HOLE)
   }
   return media_player_manager_;
+}
+
+RendererCdmManager* RenderFrameImpl::GetCdmManager() {
+  if (!cdm_manager_)
+    cdm_manager_ = new RendererCdmManager(this);
+  return cdm_manager_;
 }
 
 #endif  // defined(OS_ANDROID)

@@ -1,9 +1,9 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_MEDIA_ANDROID_PROXY_MEDIA_KEYS_H_
-#define CONTENT_RENDERER_MEDIA_ANDROID_PROXY_MEDIA_KEYS_H_
+#ifndef CONTENT_RENDERER_MEDIA_CRYPTO_PROXY_MEDIA_KEYS_H_
+#define CONTENT_RENDERER_MEDIA_CRYPTO_PROXY_MEDIA_KEYS_H_
 
 #include "base/basictypes.h"
 #include "media/base/media_keys.h"
@@ -12,18 +12,15 @@ class GURL;
 
 namespace content {
 
-class RendererMediaPlayerManager;
+class RendererCdmManager;
 
-// A MediaKeys proxy that wraps the EME part of RendererMediaPlayerManager.
-// TODO(xhwang): Instead of accessing RendererMediaPlayerManager directly, let
-// RendererMediaPlayerManager return a MediaKeys object that can be used by
-// ProxyDecryptor directly. Then we can remove this class!
+// A MediaKeys proxy that wraps the EME part of RendererCdmManager.
 class ProxyMediaKeys : public media::MediaKeys {
  public:
   static scoped_ptr<ProxyMediaKeys> Create(
       const std::string& key_system,
       const GURL& security_origin,
-      RendererMediaPlayerManager* manager,
+      RendererCdmManager* manager,
       const media::SessionCreatedCB& session_created_cb,
       const media::SessionMessageCB& session_message_cb,
       const media::SessionReadyCB& session_ready_cb,
@@ -58,7 +55,7 @@ class ProxyMediaKeys : public media::MediaKeys {
   int GetCdmId() const;
 
  private:
-  ProxyMediaKeys(RendererMediaPlayerManager* manager,
+  ProxyMediaKeys(RendererCdmManager* manager,
                  const media::SessionCreatedCB& session_created_cb,
                  const media::SessionMessageCB& session_message_cb,
                  const media::SessionReadyCB& session_ready_cb,
@@ -68,11 +65,12 @@ class ProxyMediaKeys : public media::MediaKeys {
   void InitializeCdm(const std::string& key_system,
                      const GURL& security_origin);
 
-  // CDM ID should be unique per renderer process.
+  // CDM ID should be unique per renderer frame.
   // TODO(xhwang): Use uint32 to prevent undefined overflow behavior.
+  // TODO(xhwang): Let the |manager_| generate CDM IDs.
   static int next_cdm_id_;
 
-  RendererMediaPlayerManager* manager_;
+  RendererCdmManager* manager_;
   int cdm_id_;
   media::SessionCreatedCB session_created_cb_;
   media::SessionMessageCB session_message_cb_;
@@ -85,4 +83,4 @@ class ProxyMediaKeys : public media::MediaKeys {
 
 }  // namespace content
 
-#endif  // CONTENT_RENDERER_MEDIA_ANDROID_PROXY_MEDIA_KEYS_H_
+#endif  // CONTENT_RENDERER_MEDIA_CRYPTO_PROXY_MEDIA_KEYS_H_

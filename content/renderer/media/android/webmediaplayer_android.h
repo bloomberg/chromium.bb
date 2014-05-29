@@ -54,6 +54,7 @@ class WebLayerImpl;
 }
 
 namespace content {
+class RendererCdmManager;
 class RendererMediaPlayerManager;
 class WebContentDecryptionModuleImpl;
 class WebMediaPlayerDelegate;
@@ -75,7 +76,8 @@ class WebMediaPlayerAndroid : public blink::WebMediaPlayer,
   WebMediaPlayerAndroid(blink::WebFrame* frame,
                         blink::WebMediaPlayerClient* client,
                         base::WeakPtr<WebMediaPlayerDelegate> delegate,
-                        RendererMediaPlayerManager* manager,
+                        RendererMediaPlayerManager* player_manager,
+                        RendererCdmManager* cdm_manager,
                         scoped_refptr<StreamTextureFactory> factory,
                         const scoped_refptr<base::MessageLoopProxy>& media_loop,
                         media::MediaLog* media_log);
@@ -333,11 +335,16 @@ class WebMediaPlayerAndroid : public blink::WebMediaPlayer,
   // Whether loading has progressed since the last call to didLoadingProgress.
   bool did_loading_progress_;
 
-  // Manager for managing this object and for delegating method calls on
-  // Render Thread.
-  RendererMediaPlayerManager* manager_;
+  // Manages this object and delegates player calls to the browser process.
+  // Owned by RenderFrameImpl.
+  RendererMediaPlayerManager* player_manager_;
 
-  // Player ID assigned by the |manager_|.
+  // Delegates EME calls to the browser process. Owned by RenderFrameImpl.
+  // TODO(xhwang): Remove |cdm_manager_| when prefixed EME is deprecated. See
+  // http://crbug.com/249976
+  RendererCdmManager* cdm_manager_;
+
+  // Player ID assigned by the |player_manager_|.
   int player_id_;
 
   // Current player states.
@@ -439,7 +446,7 @@ class WebMediaPlayerAndroid : public blink::WebMediaPlayer,
   // This is only Used by Clear Key key system implementation, where a renderer
   // side CDM will be used. This is similar to WebMediaPlayerImpl. For other key
   // systems, a browser side CDM will be used and we set CDM by calling
-  // manager_->SetCdm() directly.
+  // player_manager_->SetCdm() directly.
   media::DecryptorReadyCB decryptor_ready_cb_;
 
   // NOTE: Weak pointers must be invalidated before all other member variables.

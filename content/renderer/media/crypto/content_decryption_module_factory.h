@@ -18,7 +18,7 @@ class GURL;
 
 namespace content {
 
-class RendererMediaPlayerManager;
+class RendererCdmManager;
 
 class ContentDecryptionModuleFactory {
  public:
@@ -30,7 +30,7 @@ class ContentDecryptionModuleFactory {
 #if defined(ENABLE_PEPPER_CDMS)
       const CreatePepperCdmCB& create_pepper_cdm_cb,
 #elif defined(OS_ANDROID)
-      RendererMediaPlayerManager* manager,
+      RendererCdmManager* manager,
       int* cdm_id,  // Output parameter indicating the CDM ID of the MediaKeys.
 #endif  // defined(ENABLE_PEPPER_CDMS)
       const media::SessionCreatedCB& session_created_cb,

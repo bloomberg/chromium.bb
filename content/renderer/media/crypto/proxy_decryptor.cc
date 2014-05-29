@@ -19,7 +19,7 @@
 #endif  // defined(ENABLE_PEPPER_CDMS)
 
 #if defined(OS_ANDROID)
-#include "content/renderer/media/android/renderer_media_player_manager.h"
+#include "content/renderer/media/crypto/renderer_cdm_manager.h"
 #endif  // defined(OS_ANDROID)
 
 namespace content {
@@ -41,7 +41,7 @@ ProxyDecryptor::ProxyDecryptor(
 #if defined(ENABLE_PEPPER_CDMS)
     const CreatePepperCdmCB& create_pepper_cdm_cb,
 #elif defined(OS_ANDROID)
-    RendererMediaPlayerManager* manager,
+    RendererCdmManager* manager,
 #endif  // defined(ENABLE_PEPPER_CDMS)
     const KeyAddedCB& key_added_cb,
     const KeyErrorCB& key_error_cb,
@@ -51,7 +51,7 @@ ProxyDecryptor::ProxyDecryptor(
       create_pepper_cdm_cb_(create_pepper_cdm_cb),
 #elif defined(OS_ANDROID)
       manager_(manager),
-      cdm_id_(RendererMediaPlayerManager::kInvalidCdmId),
+      cdm_id_(RendererCdmManager::kInvalidCdmId),
 #endif  // defined(ENABLE_PEPPER_CDMS)
       key_added_cb_(key_added_cb),
       key_error_cb_(key_error_cb),
