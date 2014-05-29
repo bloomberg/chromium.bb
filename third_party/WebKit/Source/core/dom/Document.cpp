@@ -3963,8 +3963,6 @@ void Document::addListenerTypeIfNeeded(const AtomicString& eventType)
         addListenerType(TRANSITIONEND_LISTENER);
     } else if (eventType == EventTypeNames::scroll) {
         addListenerType(SCROLL_LISTENER);
-    } else if (eventType == EventTypeNames::DOMFocusIn || eventType == EventTypeNames::DOMFocusOut) {
-        UseCounter::count(*this, UseCounter::DOMFocusInOutEvent);
     }
 }
 

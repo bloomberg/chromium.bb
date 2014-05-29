@@ -299,6 +299,12 @@ void EventTarget::fireEventListeners(Event* event, EventTargetData* d, EventList
     } else if (event->type() == EventTypeNames::unload) {
         if (DOMWindow* executingWindow = this->executingWindow())
             UseCounter::count(executingWindow->document(), UseCounter::DocumentUnloadFired);
+    } else if (event->type() == EventTypeNames::DOMFocusIn || event->type() == EventTypeNames::DOMFocusOut) {
+        if (DOMWindow* executingWindow = this->executingWindow())
+            UseCounter::count(executingWindow->document(), UseCounter::DOMFocusInOutEvent);
+    } else if (event->type() == EventTypeNames::focusin || event->type() == EventTypeNames::focusout) {
+        if (DOMWindow* executingWindow = this->executingWindow())
+            UseCounter::count(executingWindow->document(), UseCounter::FocusInOutEvent);
     }
 
     size_t i = 0;
