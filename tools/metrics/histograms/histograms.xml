@@ -1775,6 +1775,32 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="BlinkGC.CollectGarbage" units="milliseconds">
+  <owner>haraken@chromium.org</owner>
+  <summary>Duration of time taken to run Heap::collectGarbage().</summary>
+</histogram>
+
+<histogram name="BlinkGC.PerformPendingSweep" units="milliseconds">
+  <owner>haraken@chromium.org</owner>
+  <summary>
+    Duration of time taken to run ThreadState::performPendingSweep().
+  </summary>
+</histogram>
+
+<histogram name="BlinkGC.TotalAllocatedSpace" units="KB">
+  <owner>haraken@chromium.org</owner>
+  <summary>
+    The total size of allocated space in OS when a Blink GC is triggered.
+  </summary>
+</histogram>
+
+<histogram name="BlinkGC.TotalObjectSpace" units="KB">
+  <owner>haraken@chromium.org</owner>
+  <summary>
+    The total size of object space in all threads when a Blink GC is triggered.
+  </summary>
+</histogram>
+
 <histogram name="Bluetooth.ConnectedDeviceCount" units="devices">
   <owner>keybuk@chromium.org</owner>
   <summary>
