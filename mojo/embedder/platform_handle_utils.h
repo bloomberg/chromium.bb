@@ -6,11 +6,13 @@
 #define MOJO_EMBEDDER_PLATFORM_HANDLE_UTILS_H_
 
 #include "mojo/embedder/platform_handle.h"
+#include "mojo/embedder/scoped_platform_handle.h"
 #include "mojo/system/system_impl_export.h"
 
 namespace mojo {
 namespace embedder {
 
+// Closes all the |PlatformHandle|s in the given container.
 template <typename PlatformHandleContainer>
 MOJO_SYSTEM_IMPL_EXPORT inline void CloseAllPlatformHandles(
     PlatformHandleContainer* platform_handles) {
@@ -20,6 +22,11 @@ MOJO_SYSTEM_IMPL_EXPORT inline void CloseAllPlatformHandles(
        ++it)
     it->CloseIfNecessary();
 }
+
+// Duplicates the given |PlatformHandle| (which must be valid). (Returns an
+// invalid |ScopedPlatformHandle| on failure.)
+MOJO_SYSTEM_IMPL_EXPORT ScopedPlatformHandle DuplicatePlatformHandle(
+    PlatformHandle platform_handle);
 
 }  // namespace embedder
 }  // namespace mojo
