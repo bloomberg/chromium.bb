@@ -52,7 +52,7 @@ void ChannelProxy::Context::CreateChannel(const IPC::ChannelHandle& handle,
                                           const Channel::Mode& mode) {
   DCHECK(!channel_);
   channel_id_ = handle.name;
-  channel_ = Channel::CreateByModeForProxy(handle, mode, this);
+  channel_.reset(new Channel(handle, mode, this));
 }
 
 bool ChannelProxy::Context::TryFilters(const Message& message) {

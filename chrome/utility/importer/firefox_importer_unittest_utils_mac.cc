@@ -130,7 +130,9 @@ bool FFUnitTestDecryptorProxy::Setup(const base::FilePath& nss_path) {
   message_loop_.reset(new base::MessageLoopForIO());
 
   listener_.reset(new FFDecryptorServerChannelListener());
-  channel_ = IPC::Channel::CreateServer(kTestChannelID, listener_.get());
+  channel_.reset(new IPC::Channel(kTestChannelID,
+                                  IPC::Channel::MODE_SERVER,
+                                  listener_.get()));
   CHECK(channel_->Connect());
   listener_->SetSender(channel_.get());
 
@@ -262,10 +264,9 @@ MULTIPROCESS_IPC_TEST_MAIN(NSSDecrypterChildProcess) {
   base::MessageLoopForIO main_message_loop;
   FFDecryptorClientChannelListener listener;
 
-  scoped_ptr<IPC::Channel> channel = IPC::Channel::CreateClient(
-      kTestChannelID, &listener);
-  CHECK(channel->Connect());
-  listener.SetSender(channel.get());
+  IPC::Channel channel(kTestChannelID, IPC::Channel::MODE_CLIENT, &listener);
+  CHECK(channel.Connect());
+  listener.SetSender(&channel);
 
   // run message loop
   base::MessageLoop::current()->Run();

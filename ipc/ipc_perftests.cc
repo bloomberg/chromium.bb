@@ -265,10 +265,11 @@ TEST_F(IPCChannelPerfTest, Performance) {
 MULTIPROCESS_IPC_TEST_CLIENT_MAIN(PerformanceClient) {
   base::MessageLoopForIO main_message_loop;
   ChannelReflectorListener listener;
-  scoped_ptr<IPC::Channel> channel(IPC::Channel::CreateClient(
-      IPCTestBase::GetChannelName("PerformanceClient"), &listener));
-  listener.Init(channel.get());
-  CHECK(channel->Connect());
+  IPC::Channel channel(IPCTestBase::GetChannelName("PerformanceClient"),
+                       IPC::Channel::MODE_CLIENT,
+                       &listener);
+  listener.Init(&channel);
+  CHECK(channel.Connect());
 
   base::MessageLoop::current()->Run();
   return 0;

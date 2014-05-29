@@ -329,7 +329,8 @@ NaClIPCAdapter::NaClIPCAdapter(const IPC::ChannelHandle& handle,
       cond_var_(&lock_),
       task_runner_(runner),
       locked_data_() {
-  io_thread_data_.channel_ = IPC::Channel::CreateServer(handle, this);
+  io_thread_data_.channel_.reset(
+      new IPC::Channel(handle, IPC::Channel::MODE_SERVER, this));
   // Note, we can not PostTask for ConnectChannelOnIOThread here. If we did,
   // and that task ran before this constructor completes, the reference count
   // would go to 1 and then to 0 because of the Task, before we've been returned

@@ -40,7 +40,8 @@ void NaClBrokerListener::Listen() {
   std::string channel_name =
       CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kProcessChannelID);
-  channel_ = IPC::Channel::CreateClient(channel_name, this);
+  channel_.reset(new IPC::Channel(
+      channel_name, IPC::Channel::MODE_CLIENT, this));
   CHECK(channel_->Connect());
   base::MessageLoop::current()->Run();
 }
