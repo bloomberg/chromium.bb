@@ -250,13 +250,18 @@ int ExtensionDisabledGlobalError::MenuItemCommandID() {
 }
 
 base::string16 ExtensionDisabledGlobalError::MenuItemLabel() {
+  std::string extension_name = extension_->name();
+  // Ampersands need to be escaped to avoid being treated like
+  // mnemonics in the menu.
+  base::ReplaceChars(extension_name, "&", "&&", &extension_name);
+
   if (is_remote_install_) {
     return l10n_util::GetStringFUTF16(
         IDS_EXTENSION_DISABLED_REMOTE_INSTALL_ERROR_TITLE,
-        base::UTF8ToUTF16(extension_->name()));
+        base::UTF8ToUTF16(extension_name));
   } else {
     return l10n_util::GetStringFUTF16(IDS_EXTENSION_DISABLED_ERROR_TITLE,
-                                      base::UTF8ToUTF16(extension_->name()));
+                                      base::UTF8ToUTF16(extension_name));
   }
 }
 
