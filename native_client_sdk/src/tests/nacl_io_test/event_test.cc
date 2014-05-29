@@ -117,8 +117,11 @@ class EmitterTest : public ::testing::Test {
   sdk_util::SimpleLock signaled_lock_;
 };
 
+// Temporarily disabled since it seems to be causing lockup in whe
+// KernelWrapTests later on.
+// TODO(sbc): renable once we fix http://crbug.com/378596
 const int NUM_THREADS = 10;
-TEST_F(EmitterTest, MultiThread) {
+TEST_F(EmitterTest, DISABLED_MultiThread) {
   pthread_t threads[NUM_THREADS];
 
   for (int a = 0; a < NUM_THREADS; a++)
