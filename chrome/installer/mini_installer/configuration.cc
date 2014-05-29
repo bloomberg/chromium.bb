@@ -37,6 +37,7 @@ void Configuration::Clear() {
   has_app_host_ = false;
   is_multi_install_ = false;
   is_system_level_ = false;
+  query_component_build_ = false;
 }
 
 bool Configuration::Initialize() {
@@ -69,6 +70,8 @@ bool Configuration::InitializeFromCommandLine(const wchar_t* command_line) {
         is_system_level_ = true;
       else if (0 == ::lstrcmpi(args_[i], L"--cleanup"))
         operation_ = CLEANUP;
+      else if (0 == ::lstrcmpi(args_[i], L"--query-component-build"))
+        query_component_build_ = true;
     }
 
     // Single-install defaults to Chrome.

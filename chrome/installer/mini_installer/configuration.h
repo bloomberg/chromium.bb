@@ -55,6 +55,11 @@ class Configuration {
   // Returns true if --system-level is on the command line.
   bool is_system_level() const { return is_system_level_; }
 
+  // Returns true if --query-component-build is on the command line.
+  // This will cause mini_installer to exit and return 1 if this is
+  // a component install or 0 otherwise.
+  bool query_component_build() const { return query_component_build_; }
+
  protected:
   void Clear();
   bool InitializeFromCommandLine(const wchar_t* command_line);
@@ -69,6 +74,7 @@ class Configuration {
   bool has_app_host_;
   bool is_multi_install_;
   bool is_system_level_;
+  bool query_component_build_;
 
  private:
   Configuration(const Configuration&);

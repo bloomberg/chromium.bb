@@ -242,6 +242,21 @@ def RunTests(mini_installer_path, config, force_clean):
   return result.wasSuccessful()
 
 
+def IsComponentBuild(mini_installer_path):
+  """ Invokes the mini_installer asking whether it is a component build.
+
+  Args:
+    mini_installer_path: The path to mini_installer.exe.
+
+  Returns:
+    True if the mini_installer is a component build, False otherwise.
+  """
+  query_command = mini_installer_path + ' --query-component-build'
+  script_dir = os.path.dirname(os.path.abspath(__file__))
+  exit_status = subprocess.call(query_command, shell=True, cwd=script_dir)
+  return exit_status != 0
+
+
 def main():
   usage = 'usage: %prog [options] config_filename'
   parser = optparse.OptionParser(usage, description='Test the installer.')
@@ -261,6 +276,14 @@ def main():
                                      'mini_installer.exe')
   assert os.path.exists(mini_installer_path), ('Could not find file %s' %
                                                mini_installer_path)
+
+  # Set the env var used by mini_installer.exe to decide to not show UI.
+  os.environ['MINI_INSTALLER_TEST'] = '1'
+  if IsComponentBuild(mini_installer_path):
+    print ('Component build is currently unsupported by the mini_installer: '
+           'http://crbug.com/377839')
+    return 0
+
   config = ParseConfigFile(config_filename)
   if not RunTests(mini_installer_path, config, options.force_clean):
     return 1
