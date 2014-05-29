@@ -69,7 +69,7 @@ class MOJO_SYSTEM_IMPL_EXPORT ProxyMessagePipeEndpoint
 #endif
 
   bool is_attached() const {
-    return !!channel_.get();
+    return !!channel_;
   }
 
   bool is_running() const {

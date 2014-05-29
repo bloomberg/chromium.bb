@@ -90,7 +90,7 @@ void Channel::Shutdown() {
       it->second.message_pipe->OnRemove(it->second.port);
       num_live++;
     } else {
-      DCHECK(!it->second.message_pipe.get());
+      DCHECK(!it->second.message_pipe);
       num_zombies++;
     }
   }

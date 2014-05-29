@@ -164,11 +164,11 @@ class MOJO_SYSTEM_IMPL_EXPORT DataPipe :
 
   bool has_local_producer_no_lock() const {
     lock_.AssertAcquired();
-    return !!producer_waiter_list_.get();
+    return !!producer_waiter_list_;
   }
   bool has_local_consumer_no_lock() const {
     lock_.AssertAcquired();
-    return !!consumer_waiter_list_.get();
+    return !!consumer_waiter_list_;
   }
 
   const bool may_discard_;

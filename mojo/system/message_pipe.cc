@@ -35,7 +35,7 @@ unsigned MessagePipe::GetPeerPort(unsigned port) {
 MessagePipeEndpoint::Type MessagePipe::GetType(unsigned port) {
   DCHECK(port == 0 || port == 1);
   base::AutoLock locker(lock_);
-  DCHECK(endpoints_[port].get());
+  DCHECK(endpoints_[port]);
 
   return endpoints_[port]->GetType();
 }
@@ -44,7 +44,7 @@ void MessagePipe::CancelAllWaiters(unsigned port) {
   DCHECK(port == 0 || port == 1);
 
   base::AutoLock locker(lock_);
-  DCHECK(endpoints_[port].get());
+  DCHECK(endpoints_[port]);
   endpoints_[port]->CancelAllWaiters();
 }
 
@@ -54,10 +54,10 @@ void MessagePipe::Close(unsigned port) {
   unsigned destination_port = GetPeerPort(port);
 
   base::AutoLock locker(lock_);
-  DCHECK(endpoints_[port].get());
+  DCHECK(endpoints_[port]);
 
   endpoints_[port]->Close();
-  if (endpoints_[destination_port].get()) {
+  if (endpoints_[destination_port]) {
     if (!endpoints_[destination_port]->OnPeerClose())
       endpoints_[destination_port].reset();
   }
@@ -91,7 +91,7 @@ MojoResult MessagePipe::ReadMessage(unsigned port,
   DCHECK(port == 0 || port == 1);
 
   base::AutoLock locker(lock_);
-  DCHECK(endpoints_[port].get());
+  DCHECK(endpoints_[port]);
 
   return endpoints_[port]->ReadMessage(bytes, num_bytes, dispatchers,
                                        num_dispatchers, flags);
@@ -104,7 +104,7 @@ MojoResult MessagePipe::AddWaiter(unsigned port,
   DCHECK(port == 0 || port == 1);
 
   base::AutoLock locker(lock_);
-  DCHECK(endpoints_[port].get());
+  DCHECK(endpoints_[port]);
 
   return endpoints_[port]->AddWaiter(waiter, flags, wake_result);
 }
@@ -113,7 +113,7 @@ void MessagePipe::RemoveWaiter(unsigned port, Waiter* waiter) {
   DCHECK(port == 0 || port == 1);
 
   base::AutoLock locker(lock_);
-  DCHECK(endpoints_[port].get());
+  DCHECK(endpoints_[port]);
 
   endpoints_[port]->RemoveWaiter(waiter);
 }
@@ -122,10 +122,10 @@ void MessagePipe::ConvertLocalToProxy(unsigned port) {
   DCHECK(port == 0 || port == 1);
 
   base::AutoLock locker(lock_);
-  DCHECK(endpoints_[port].get());
+  DCHECK(endpoints_[port]);
   DCHECK_EQ(endpoints_[port]->GetType(), MessagePipeEndpoint::kTypeLocal);
 
-  bool is_peer_open = !!endpoints_[GetPeerPort(port)].get();
+  bool is_peer_open = !!endpoints_[GetPeerPort(port)];
 
   // TODO(vtl): Hopefully this will work if the peer has been closed and when
   // the peer is local. If the peer is remote, we should do something more
@@ -151,11 +151,11 @@ bool MessagePipe::Attach(unsigned port,
                          scoped_refptr<Channel> channel,
                          MessageInTransit::EndpointId local_id) {
   DCHECK(port == 0 || port == 1);
-  DCHECK(channel.get());
+  DCHECK(channel);
   DCHECK_NE(local_id, MessageInTransit::kInvalidEndpointId);
 
   base::AutoLock locker(lock_);
-  if (!endpoints_[port].get())
+  if (!endpoints_[port])
     return false;
 
   DCHECK_EQ(endpoints_[port]->GetType(), MessagePipeEndpoint::kTypeProxy);
@@ -168,7 +168,7 @@ void MessagePipe::Run(unsigned port, MessageInTransit::EndpointId remote_id) {
   DCHECK_NE(remote_id, MessageInTransit::kInvalidEndpointId);
 
   base::AutoLock locker(lock_);
-  DCHECK(endpoints_[port].get());
+  DCHECK(endpoints_[port]);
   if (!endpoints_[port]->Run(remote_id))
     endpoints_[port].reset();
 }
@@ -178,11 +178,11 @@ void MessagePipe::OnRemove(unsigned port) {
 
   base::AutoLock locker(lock_);
   // A |OnPeerClose()| can come in first, before |OnRemove()| gets called.
-  if (!endpoints_[port].get())
+  if (!endpoints_[port])
     return;
 
   endpoints_[port]->OnRemove();
-  if (endpoints_[destination_port].get()) {
+  if (endpoints_[destination_port]) {
     if (!endpoints_[destination_port]->OnPeerClose())
       endpoints_[destination_port].reset();
   }
@@ -193,8 +193,8 @@ MessagePipe::~MessagePipe() {
   // Owned by the dispatchers. The owning dispatchers should only release us via
   // their |Close()| method, which should inform us of being closed via our
   // |Close()|. Thus these should already be null.
-  DCHECK(!endpoints_[0].get());
-  DCHECK(!endpoints_[1].get());
+  DCHECK(!endpoints_[0]);
+  DCHECK(!endpoints_[1]);
 }
 
 MojoResult MessagePipe::EnqueueMessageInternal(
@@ -202,7 +202,7 @@ MojoResult MessagePipe::EnqueueMessageInternal(
     scoped_ptr<MessageInTransit> message,
     std::vector<DispatcherTransport>* transports) {
   DCHECK(port == 0 || port == 1);
-  DCHECK(message.get());
+  DCHECK(message);
 
   if (message->type() == MessageInTransit::kTypeMessagePipe) {
     DCHECK(!transports);
@@ -212,10 +212,10 @@ MojoResult MessagePipe::EnqueueMessageInternal(
   DCHECK_EQ(message->type(), MessageInTransit::kTypeMessagePipeEndpoint);
 
   base::AutoLock locker(lock_);
-  DCHECK(endpoints_[GetPeerPort(port)].get());
+  DCHECK(endpoints_[GetPeerPort(port)]);
 
   // The destination port need not be open, unlike the source port.
-  if (!endpoints_[port].get())
+  if (!endpoints_[port])
     return MOJO_RESULT_FAILED_PRECONDITION;
 
   if (transports) {

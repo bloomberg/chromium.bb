@@ -100,11 +100,11 @@ class RemoteMessagePipeTest : public testing::Test {
   void TearDownOnIOThread() {
     CHECK_EQ(base::MessageLoop::current(), io_thread()->message_loop());
 
-    if (channels_[0].get()) {
+    if (channels_[0]) {
       channels_[0]->Shutdown();
       channels_[0] = NULL;
     }
-    if (channels_[1].get()) {
+    if (channels_[1]) {
       channels_[1]->Shutdown();
       channels_[1] = NULL;
     }
@@ -113,7 +113,7 @@ class RemoteMessagePipeTest : public testing::Test {
   void CreateAndInitChannel(unsigned channel_index) {
     CHECK_EQ(base::MessageLoop::current(), io_thread()->message_loop());
     CHECK(channel_index == 0 || channel_index == 1);
-    CHECK(!channels_[channel_index].get());
+    CHECK(!channels_[channel_index]);
 
     channels_[channel_index] = new Channel();
     CHECK(channels_[channel_index]->Init(
@@ -124,9 +124,9 @@ class RemoteMessagePipeTest : public testing::Test {
                                      scoped_refptr<MessagePipe> mp1) {
     CHECK_EQ(base::MessageLoop::current(), io_thread()->message_loop());
 
-    if (!channels_[0].get())
+    if (!channels_[0])
       CreateAndInitChannel(0);
-    if (!channels_[1].get())
+    if (!channels_[1])
       CreateAndInitChannel(1);
 
     MessageInTransit::EndpointId local_id0 =
@@ -498,7 +498,7 @@ TEST_F(RemoteMessagePipeTest, HandlePassing) {
   EXPECT_STREQ(kHello, read_buffer);
   EXPECT_EQ(1u, read_dispatchers.size());
   EXPECT_EQ(1u, read_num_dispatchers);
-  ASSERT_TRUE(read_dispatchers[0].get());
+  ASSERT_TRUE(read_dispatchers[0]);
   EXPECT_TRUE(read_dispatchers[0]->HasOneRef());
 
   EXPECT_EQ(Dispatcher::kTypeMessagePipe, read_dispatchers[0]->GetType());
@@ -632,7 +632,7 @@ TEST_F(RemoteMessagePipeTest, MAYBE_PlatformHandlePassing) {
   EXPECT_STREQ(kWorld, read_buffer);
   EXPECT_EQ(1u, read_dispatchers.size());
   EXPECT_EQ(1u, read_num_dispatchers);
-  ASSERT_TRUE(read_dispatchers[0].get());
+  ASSERT_TRUE(read_dispatchers[0]);
   EXPECT_TRUE(read_dispatchers[0]->HasOneRef());
 
   EXPECT_EQ(Dispatcher::kTypePlatformHandle, read_dispatchers[0]->GetType());

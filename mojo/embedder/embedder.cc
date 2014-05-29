@@ -164,7 +164,7 @@ MojoResult PassWrappedPlatformHandle(MojoHandle platform_handle_wrapper_handle,
   DCHECK(core);
   scoped_refptr<system::Dispatcher> dispatcher(
       core->GetDispatcher(platform_handle_wrapper_handle));
-  if (!dispatcher.get())
+  if (!dispatcher)
     return MOJO_RESULT_INVALID_ARGUMENT;
 
   if (dispatcher->GetType() != system::Dispatcher::kTypePlatformHandle)

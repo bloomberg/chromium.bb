@@ -108,8 +108,8 @@ RawChannelPosix::~RawChannelPosix() {
   DCHECK(!weak_ptr_factory_.HasWeakPtrs());
 
   // These must have been shut down/destroyed on the I/O thread.
-  DCHECK(!read_watcher_.get());
-  DCHECK(!write_watcher_.get());
+  DCHECK(!read_watcher_);
+  DCHECK(!write_watcher_);
 
   embedder::CloseAllPlatformHandles(&read_platform_handles_);
 }
@@ -351,9 +351,9 @@ RawChannel::IOResult RawChannelPosix::ScheduleWriteNoLock() {
 bool RawChannelPosix::OnInit() {
   DCHECK_EQ(base::MessageLoop::current(), message_loop_for_io());
 
-  DCHECK(!read_watcher_.get());
+  DCHECK(!read_watcher_);
   read_watcher_.reset(new base::MessageLoopForIO::FileDescriptorWatcher());
-  DCHECK(!write_watcher_.get());
+  DCHECK(!write_watcher_);
   write_watcher_.reset(new base::MessageLoopForIO::FileDescriptorWatcher());
 
   if (!message_loop_for_io()->WatchFileDescriptor(fd_.get().fd, true,
@@ -410,7 +410,7 @@ void RawChannelPosix::OnFileCanReadWithoutBlocking(int fd) {
   // TODO(yzshen): An alternative is to stop watching if RawChannel doesn't
   // schedule a new read. But that code won't be reached under the current
   // RawChannel implementation.
-  DCHECK(!read_watcher_.get() || pending_read_);
+  DCHECK(!read_watcher_ || pending_read_);
 }
 
 void RawChannelPosix::OnFileCanWriteWithoutBlocking(int fd) {
@@ -439,7 +439,7 @@ void RawChannelPosix::OnFileCanWriteWithoutBlocking(int fd) {
 void RawChannelPosix::WaitToWrite() {
   DCHECK_EQ(base::MessageLoop::current(), message_loop_for_io());
 
-  DCHECK(write_watcher_.get());
+  DCHECK(write_watcher_);
 
   if (!message_loop_for_io()->WatchFileDescriptor(
           fd_.get().fd, false, base::MessageLoopForIO::WATCH_WRITE,

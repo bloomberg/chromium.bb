@@ -34,7 +34,7 @@ MessagePipeDispatcher::MessagePipeDispatcher()
 
 void MessagePipeDispatcher::Init(scoped_refptr<MessagePipe> message_pipe,
                                  unsigned port) {
-  DCHECK(message_pipe.get());
+  DCHECK(message_pipe);
   DCHECK(port == 0 || port == 1);
 
   message_pipe_ = message_pipe;
@@ -104,7 +104,7 @@ scoped_refptr<MessagePipeDispatcher> MessagePipeDispatcher::Deserialize(
 
 MessagePipeDispatcher::~MessagePipeDispatcher() {
   // |Close()|/|CloseImplNoLock()| should have taken care of the pipe.
-  DCHECK(!message_pipe_.get());
+  DCHECK(!message_pipe_);
 }
 
 MessagePipe* MessagePipeDispatcher::GetMessagePipeNoLock() const {

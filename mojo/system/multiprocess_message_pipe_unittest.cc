@@ -92,7 +92,7 @@ class ChannelThread {
   }
 
   void ShutdownChannelOnIOThread() {
-    CHECK(channel_.get());
+    CHECK(channel_);
     channel_->Shutdown();
     channel_ = NULL;
   }
