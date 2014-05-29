@@ -2315,16 +2315,6 @@ void CanvasRenderingContext2D::drawFocusIfNeededInternal(const Path& path, Eleme
         drawFocusRing(path);
 }
 
-bool CanvasRenderingContext2D::drawCustomFocusRing(Element* element)
-{
-    if (!focusRingCallIsValid(m_path, element))
-        return false;
-
-    // Return true if the application should draw the focus ring. The spec allows us to
-    // override this for accessibility, but currently Blink doesn't take advantage of this.
-    return element->focused();
-}
-
 bool CanvasRenderingContext2D::focusRingCallIsValid(const Path& path, Element* element)
 {
     ASSERT(element);

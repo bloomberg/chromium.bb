@@ -1,7 +1,0 @@
-PASS canvas.drawCustomFocusRing(button1) is false
-PASS canvas.drawCustomFocusRing(button2) is false
-PASS button1.focus(); canvas.drawCustomFocusRing(button1) is true
-PASS successfullyParsed is true
-
-TEST COMPLETE
-

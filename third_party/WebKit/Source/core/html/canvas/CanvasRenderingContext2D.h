@@ -226,7 +226,6 @@ public:
 
     void drawFocusIfNeeded(Element*);
     void drawFocusIfNeeded(Path2D*, Element*);
-    bool drawCustomFocusRing(Element*);
 
     void loseContext();
     void restoreContext();
