@@ -35,6 +35,11 @@ void SupportsUserData::DetachUserDataThread() {
 
 SupportsUserData::~SupportsUserData() {
   DCHECK(thread_checker_.CalledOnValidThread() || user_data_.empty());
+  DataMap local_user_data;
+  user_data_.swap(local_user_data);
+  // Now this->user_data_ is empty, and any destructors called transitively from
+  // the destruction of |local_user_data| will see it that way instead of
+  // examining a being-destroyed object.
 }
 
 }  // namespace base
