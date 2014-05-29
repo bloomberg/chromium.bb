@@ -14,11 +14,6 @@
       'sources': [
         'common/web_ui_setup.mojom',
       ],
-      # TODO(sky): this shouldn't be necessary. It's working around a bug in
-      # gyp.
-      'variables': {
-        'mojom_base_output_dir': 'content',
-      },
       'includes': [ '../mojo/public/tools/bindings/mojom_bindings_generator.gypi' ],
       'export_dependent_settings': [
         '../mojo/mojo.gyp:mojo_cpp_bindings',

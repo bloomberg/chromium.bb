@@ -13,9 +13,6 @@
         'browser/ui/webui/omnibox/omnibox.mojom',
       ],
       'includes': [ '../mojo/public/tools/bindings/mojom_bindings_generator.gypi' ],
-      'variables': {
-        'mojom_base_output_dir': 'chrome',
-      },
     },
   ],
 }
