@@ -23,6 +23,7 @@ class DictionaryValue;
 namespace chromeos {
 class AppLaunchSplashScreenActor;
 class BaseScreenHandler;
+class CoreOobeHandler;
 class ErrorScreenHandler;
 class KioskAppMenuHandler;
 class KioskEnableScreenActor;
@@ -79,7 +80,6 @@ class OobeUI : public OobeDisplay,
   // OobeDisplay implementation:
   virtual void ShowScreen(WizardScreen* screen) OVERRIDE;
   virtual void HideScreen(WizardScreen* screen) OVERRIDE;
-  virtual CoreOobeActor* GetCoreOobeActor() OVERRIDE;
   virtual UpdateScreenActor* GetUpdateScreenActor() OVERRIDE;
   virtual NetworkScreenActor* GetNetworkScreenActor() OVERRIDE;
   virtual EulaScreenActor* GetEulaScreenActor() OVERRIDE;

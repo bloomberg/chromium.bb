@@ -154,6 +154,15 @@ class LoginDisplay : public RemoveUserDelegate {
   // Shows signin UI with specified email.
   virtual void ShowSigninUI(const std::string& email) = 0;
 
+  // Hides or shows login UI control bar with [Shut down] / [Add user] buttons.
+  virtual void ShowControlBar(bool show) = 0;
+
+  // Sets the virtual keyboard state.
+  virtual void SetKeyboardState(bool shown) = 0;
+
+  // Sets the WebUI client area size (based on display dimensions).
+  virtual void SetClientAreaSize(int width, int height) = 0;
+
   gfx::Rect background_bounds() const { return background_bounds_; }
   void set_background_bounds(const gfx::Rect& background_bounds) {
     background_bounds_ = background_bounds;

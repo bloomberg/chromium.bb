@@ -39,7 +39,6 @@
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/login_wizard.h"
-#include "chrome/browser/chromeos/login/screens/core_oobe_actor.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/ui/input_events_blocker.h"
 #include "chrome/browser/chromeos/login/ui/keyboard_driven_oobe_key_handler.h"
@@ -907,17 +906,17 @@ void LoginDisplayHostImpl::OnKeyboardBoundsChanging(
     const gfx::Rect& new_bounds) {
   if (new_bounds.IsEmpty() && !keyboard_bounds_.IsEmpty()) {
     // Keyboard has been hidden.
-    if (GetOobeUI()) {
-      GetOobeUI()->GetCoreOobeActor()->ShowControlBar(true);
+    if (webui_login_display_) {
+      webui_login_display_->ShowControlBar(true);
       if (login::LoginScrollIntoViewEnabled())
-        GetOobeUI()->GetCoreOobeActor()->SetKeyboardState(false);
+        webui_login_display_->SetKeyboardState(false);
     }
   } else if (!new_bounds.IsEmpty() && keyboard_bounds_.IsEmpty()) {
     // Keyboard has been shown.
-    if (GetOobeUI()) {
-      GetOobeUI()->GetCoreOobeActor()->ShowControlBar(false);
+    if (webui_login_display_) {
+      webui_login_display_->ShowControlBar(false);
       if (login::LoginScrollIntoViewEnabled())
-        GetOobeUI()->GetCoreOobeActor()->SetKeyboardState(true);
+        webui_login_display_->SetKeyboardState(true);
     }
   }
 
@@ -940,10 +939,9 @@ void LoginDisplayHostImpl::OnDisplayMetricsChanged(const gfx::Display& display,
     return;
   }
 
-  if (GetOobeUI()) {
+  if (webui_login_display_) {
     const gfx::Size& size = ash::Shell::GetScreen()->GetPrimaryDisplay().size();
-    GetOobeUI()->GetCoreOobeActor()->SetClientAreaSize(size.width(),
-                                                       size.height());
+    webui_login_display_->SetClientAreaSize(size.width(), size.height());
   }
 }
 

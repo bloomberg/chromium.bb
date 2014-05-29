@@ -13,7 +13,6 @@
 namespace chromeos {
 
 class AppLaunchSplashScreenActor;
-class CoreOobeActor;
 class EnrollmentScreenActor;
 class ErrorScreenActor;
 class EulaScreenActor;
@@ -70,7 +69,6 @@ class OobeDisplay {
 
   // Pointers to actors which should be used by the specific screens. Actors
   // must be owned by the OobeDisplay implementation.
-  virtual CoreOobeActor* GetCoreOobeActor() = 0;
   virtual UpdateScreenActor* GetUpdateScreenActor() = 0;
   virtual NetworkScreenActor* GetNetworkScreenActor() = 0;
   virtual EulaScreenActor* GetEulaScreenActor() = 0;
