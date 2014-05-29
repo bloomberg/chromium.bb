@@ -272,3 +272,6 @@ deadlock:media::AudioStreamHandler::AudioStreamContainer::OnMoreData
 
 # http://crbug.com/374151
 deadlock:media::FakeAudioConsumer::Worker::DoRead
+
+# http://crbug.com/377420
+deadlock:media::AudioRendererMixerInput::Play
