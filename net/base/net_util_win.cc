@@ -85,6 +85,12 @@ struct WlanApi {
 
 // Converts Windows defined types to NetworkInterfaceType.
 NetworkChangeNotifier::ConnectionType GetNetworkInterfaceType(DWORD ifType) {
+  // Bail out for pre-Vista versions of Windows which are documented to give
+  // inaccurate results like returning Ethernet for WiFi.
+  // http://msdn.microsoft.com/en-us/library/windows/desktop/aa366058.aspx
+  if (base::win::GetVersion() < base::win::VERSION_VISTA)
+    return NetworkChangeNotifier::CONNECTION_UNKNOWN;
+
   NetworkChangeNotifier::ConnectionType type =
       NetworkChangeNotifier::CONNECTION_UNKNOWN;
   if (ifType == IF_TYPE_ETHERNET_CSMACD) {
