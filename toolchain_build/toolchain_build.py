@@ -74,6 +74,8 @@ TAR_FILES = {
 
 GIT_BASE_URL = 'https://chromium.googlesource.com/native_client'
 
+KNOWN_MIRRORS = [('http://git.chromium.org/native_client/',
+                  'https://chromium.googlesource.com/native_client/')]
 
 def GitUrl(package):
   repo = GIT_REVISIONS[package].get('repo', package)
@@ -107,7 +109,8 @@ def CollectSources():
     sources[package] = {
         'type': 'source',
         'commands': command.SyncGitRepoCmds(GitUrl(package), '%(output)s',
-                                            info['rev']),
+                                            info['rev'],
+                                            known_mirrors=KNOWN_MIRRORS),
         }
     patch_packages.append(package)
     patch_info = {'name': package}

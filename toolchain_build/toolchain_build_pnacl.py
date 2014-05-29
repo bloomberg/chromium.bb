@@ -62,6 +62,9 @@ GIT_REPOS = {
 GIT_BASE_URL = 'https://chromium.googlesource.com/native_client/'
 GIT_DEPS_FILE = os.path.join(NACL_DIR, 'pnacl', 'COMPONENT_REVISIONS')
 
+KNOWN_MIRRORS = [('http://git.chromium.org/native_client/',
+                  'https://chromium.googlesource.com/native_client/')]
+
 # TODO(dschuff): Some of this mingw logic duplicates stuff in command.py
 BUILD_CROSS_MINGW = False
 # Path to the mingw cross-compiler libs on Ubuntu
@@ -212,8 +215,8 @@ def GetGitSyncCmdsCallback(revisions):
   """
   def GetGitSyncCmds(component):
     git_url = GIT_BASE_URL + GIT_REPOS[component]
-    return (command.SyncGitRepoCmds(git_url, '%(output)s',
-                                    revisions[component]) +
+    return (command.SyncGitRepoCmds(git_url, '%(output)s', revisions[component],
+                                    known_mirrors=KNOWN_MIRRORS) +
             [command.Runnable(None,
                               pnacl_commands.CmdCheckoutGitBundleForTrybot,
                               component, '%(output)s')])
@@ -465,7 +468,8 @@ def GetGitSyncPNaClReposCmdsCallback(revisions):
     # changes). TODO(dschuff): find a better way to handle nacl newlib headers.
     is_newlib = repo == 'nacl-newlib'
     return (command.SyncGitRepoCmds(git_url, '%(output)s', revisions[repo],
-                                    clean=is_newlib) +
+                                    clean=is_newlib,
+                                    known_mirrors=KNOWN_MIRRORS) +
             [command.Runnable(None,
                               pnacl_commands.CmdCheckoutGitBundleForTrybot,
                               repo, '%(output)s')])

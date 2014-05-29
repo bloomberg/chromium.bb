@@ -301,7 +301,8 @@ def WriteData(data, dst, run_cond=None):
 
 
 def SyncGitRepoCmds(url, destination, revision, clobber_invalid_repo=False,
-                    reclone=False, clean=False, pathspec=None, run_cond=None):
+                    reclone=False, clean=False, pathspec=None, known_mirrors=[],
+                    run_cond=None):
   """Returns a list of commands to sync and validate a git repo.
 
   Args:
@@ -315,11 +316,34 @@ def SyncGitRepoCmds(url, destination, revision, clobber_invalid_repo=False,
     pathspec: If not None, add the path to the git checkout command, which
               causes it to just update the working tree without switching
               branches.
+    known_mirrors: List of tuples specifying known mirrors for a subset of the
+                   git URL. IE: [('http://mirror.com/mirror', 'http://git.com')]
     run_cond: Run condition for when to sync the git repo.
 
   Returns:
     List of commands, this is a little different from the other command funcs.
   """
+  def update_valid_mirrors(subst, url, directory, known_mirrors):
+    abs_dir = subst.SubstituteAbsPaths(directory)
+    git_dir = os.path.join(abs_dir, '.git')
+    if known_mirrors and os.path.exists(git_dir):
+      repos_list = pynacl.repo_tools.GitRemoteRepoList(abs_dir,
+                                                       include_push=False)
+      tracked_url = dict(repos_list).get('origin', 'None')
+      if tracked_url == url:
+        return
+
+      updated_url = tracked_url
+      for mirror, url_subset in known_mirrors:
+        if mirror in updated_url:
+          updated_url = updated_url.replace(mirror, url_subset)
+
+      if updated_url != tracked_url:
+        logging.warn('Your git repository is using an old mirror: %s', abs_dir)
+        logging.warn('Updating git repo using known mirror: %s -> %s',
+                     tracked_url, updated_url)
+        pynacl.repo_tools.GitSetRemoteRepo(updated_url, abs_dir)
+
   def validate(subst, url, directory):
     pynacl.repo_tools.ValidateGitRepo(url, subst.SubstituteAbsPaths(directory),
                                       clobber_mismatch=True)
@@ -330,18 +354,18 @@ def SyncGitRepoCmds(url, destination, revision, clobber_invalid_repo=False,
       pynacl.repo_tools.SyncGitRepo(url, abs_dest, revision, reclone, clean,
                                     pathspec)
     except pynacl.repo_tools.InvalidRepoException, e:
-      logging.error('Invalid Git Repo: %s' % e)
       remote_repos = dict(pynacl.repo_tools.GitRemoteRepoList(abs_dest))
       tracked_url = remote_repos.get('origin', 'None')
+      logging.error('Invalid Git Repo: %s' % e)
       logging.error('Destination Directory: %s', abs_dest)
       logging.error('Currently Tracked Repo: %s', tracked_url)
-      logging.error('Expected Repo: %s', url)
+      logging.error('Expected Repo: %s', e.expected_repo)
       logging.warn('Possible solutions:')
       logging.warn('  1. The simplest way if you have no local changes is to'
                    ' simply delete the directory and let the tool resync.')
       logging.warn('  2. If the tracked repo is merely a mirror, simply go to'
                    ' the directory and run "git remote set-url origin %s"',
-                   url)
+                   e.expected_repo)
       raise Exception('Could not validate local git repository.')
 
   def ClobberInvalidRepoCondition(cmd_opts):
@@ -352,7 +376,9 @@ def SyncGitRepoCmds(url, destination, revision, clobber_invalid_repo=False,
       return True
     return cmd_opts.IsBot()
 
-  return [Runnable(ClobberInvalidRepoCondition, validate, url, destination),
+  return [Runnable(run_cond, update_valid_mirrors, url, destination,
+                   known_mirrors),
+          Runnable(ClobberInvalidRepoCondition, validate, url, destination),
           Runnable(run_cond, sync, url, destination, revision, reclone,
                    clean, pathspec)]
 

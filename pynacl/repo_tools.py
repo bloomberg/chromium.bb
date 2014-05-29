@@ -14,8 +14,10 @@ import log_tools
 import platform
 
 class InvalidRepoException(Exception):
-  def __init__(self, msg, *args):
+  def __init__(self, expected_repo, msg, *args):
     Exception.__init__(self, msg % args)
+    self.expected_repo = expected_repo
+
 
 def GitCmd():
   """Return the git command to execute for the host platform."""
@@ -58,7 +60,8 @@ def ValidateGitRepo(url, directory, clobber_mismatch=False):
   clobber_mismatch: If True, will delete invalid directories instead of raising
                     an exception.
   """
-  if os.path.exists(directory):
+  git_dir = os.path.join(directory, '.git')
+  if os.path.exists(git_dir):
     try:
       if IsURLInRemoteRepoList(url, directory, include_fetch=True,
                                include_push=False):
@@ -70,7 +73,7 @@ def ValidateGitRepo(url, directory, clobber_mismatch=False):
       logging.error('Invalid git repo: %s', directory)
 
     if not clobber_mismatch:
-      raise InvalidRepoException('Invalid local git repo: %s', directory)
+      raise InvalidRepoException(url, 'Invalid local git repo: %s', directory)
     else:
       logging.debug('Clobbering invalid git repo %s' % directory)
       file_tools.RemoveDirectoryIfPresent(directory)
@@ -97,7 +100,7 @@ def SyncGitRepo(url, destination, revision, reclone=False, clean=False,
     if not IsURLInRemoteRepoList(url, destination, include_fetch=True,
                                  include_push=False):
       logging.error('Git Repo (%s) does not track URL: %s', destination, url)
-      raise InvalidRepoException('Could not sync local git repo: %s',
+      raise InvalidRepoException(url, 'Could not sync local git repo: %s',
                                  destination)
 
   if reclone:
@@ -200,6 +203,30 @@ def GitRemoteRepoList(directory, include_fetch=True, include_push=True):
       repo_set.add((repo_name, repo_url))
 
   return sorted(repo_set)
+
+
+def GitSetRemoteRepo(url, directory, push_url=None, repo_name='origin'):
+  """Sets the remotely tracked URL for a git repository.
+
+  Args:
+      url: Remote git URL to set.
+      directory: Local git repository to set tracked repo for.
+      push_url: If specified, uses a different URL for pushing.
+      repo_name: set the URL for a particular remote repo name.
+  """
+  git = GitCmd()
+  try:
+    log_tools.CheckCall(git + ['remote', 'set-url', repo_name, url],
+                        cwd=directory)
+  except subprocess.CalledProcessError:
+    # If setting the URL failed, repo_name may be new. Try adding the URL.
+    log_tools.CheckCall(git + ['remote', 'add', repo_name, url],
+                        cwd=directory)
+
+  if push_url:
+    log_tools.CheckCall(git + ['remote', 'set-url', '--push',
+                               repo_name, push_url],
+                        cwd=directory)
 
 
 def IsURLInRemoteRepoList(url, directory, include_fetch=True, include_push=True,
