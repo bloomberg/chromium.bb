@@ -5,6 +5,7 @@
 #include "components/signin/core/browser/mutable_profile_oauth2_token_service.h"
 
 #include "components/signin/core/browser/signin_client.h"
+#include "components/signin/core/browser/signin_metrics.h"
 #include "components/signin/core/browser/webdata/token_web_data.h"
 #include "components/webdata/common/web_data_service_base.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
@@ -300,6 +301,8 @@ void MutableProfileOAuth2TokenService::UpdateCredentials(
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!account_id.empty());
   DCHECK(!refresh_token.empty());
+
+  signin_metrics::LogSigninAddAccount();
 
   bool refresh_token_present = refresh_tokens_.count(account_id) > 0;
   if (!refresh_token_present ||

@@ -25,6 +25,9 @@ void LogSigninAccountReconciliation(int total_number_accounts,
                                     bool primary_accounts_same,
                                     bool is_first_reconcile);
 
+// Track a successful signin.
+void LogSigninAddAccount();
+
 }  // namespace signin_metrics
 
 #endif  // COMPONENTS_SIGNIN_CORE_BROWSER_SIGNIN_METRICS_H_

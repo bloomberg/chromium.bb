@@ -37,4 +37,12 @@ void LogSigninAccountReconciliation(int total_number_accounts,
   }
 }
 
+void LogSigninAddAccount() {
+  // Account signin may fail for a wide variety of reasons. There is no
+  // explicit false, but one can compare this value with the various UI
+  // flows that lead to account sign-in, and deduce that the difference
+  // counts the failures.
+  UMA_HISTOGRAM_BOOLEAN("Signin.AddAccount", true);
+}
+
 }  // namespace signin_metrics

@@ -24266,6 +24266,13 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Signin.AddAccount" enum="BooleanSuccess">
+  <owner>mlerman@chromium.org</owner>
+  <summary>
+    Track when chrome successfully adds an account. Failures are not tracked.
+  </summary>
+</histogram>
+
 <histogram name="Signin.OneClickConfirmation" enum="SigninFlowConfirmations">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
