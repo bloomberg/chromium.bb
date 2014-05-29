@@ -640,10 +640,6 @@ void RenderWidgetHostViewAndroid::SelectionBoundsChanged(
   }
 }
 
-void RenderWidgetHostViewAndroid::SelectionRootBoundsChanged(
-    const gfx::Rect& bounds) {
-}
-
 void RenderWidgetHostViewAndroid::ScrollOffsetChanged() {
 }
 

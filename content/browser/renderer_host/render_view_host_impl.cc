@@ -1001,10 +1001,6 @@ bool RenderViewHostImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_TakeFocus, OnTakeFocus)
     IPC_MESSAGE_HANDLER(ViewHostMsg_FocusedNodeChanged, OnFocusedNodeChanged)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ClosePage_ACK, OnClosePageACK)
-#if defined(OS_ANDROID)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_SelectionRootBoundsChanged,
-                        OnSelectionRootBoundsChanged)
-#endif
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidZoomURL, OnDidZoomURL)
 #if defined(OS_MACOSX) || defined(OS_ANDROID)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ShowPopup, OnShowPopup)
@@ -1216,15 +1212,6 @@ void RenderViewHostImpl::OnDidChangeScrollOffsetPinningForMainFrame(
 
 void RenderViewHostImpl::OnDidChangeNumWheelEvents(int count) {
 }
-
-#if defined(OS_ANDROID)
-void RenderViewHostImpl::OnSelectionRootBoundsChanged(
-    const gfx::Rect& bounds) {
-  if (view_) {
-    view_->SelectionRootBoundsChanged(bounds);
-  }
-}
-#endif
 
 void RenderViewHostImpl::OnRouteCloseEvent() {
   // Have the delegate route this to the active RenderViewHost.

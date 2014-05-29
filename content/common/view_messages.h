@@ -1401,12 +1401,6 @@ IPC_MESSAGE_ROUTED3(ViewHostMsg_SelectionChanged,
 IPC_MESSAGE_ROUTED1(ViewHostMsg_SelectionBoundsChanged,
                     ViewHostMsg_SelectionBounds_Params)
 
-#if defined(OS_ANDROID)
-// Notification that the selection root bounds have changed.
-IPC_MESSAGE_ROUTED1(ViewHostMsg_SelectionRootBoundsChanged,
-                    gfx::Rect /* bounds of the selection root */)
-#endif
-
 // Asks the browser to display the file chooser.  The result is returned in a
 // ViewMsg_RunFileChooserResponse message.
 IPC_MESSAGE_ROUTED1(ViewHostMsg_RunFileChooser,

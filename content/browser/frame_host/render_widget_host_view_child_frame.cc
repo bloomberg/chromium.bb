@@ -191,10 +191,6 @@ void RenderWidgetHostViewChildFrame::ShowDisambiguationPopup(
     const SkBitmap& zoomed_bitmap) {
 }
 
-void RenderWidgetHostViewChildFrame::SelectionRootBoundsChanged(
-    const gfx::Rect& bounds) {
-}
-
 void RenderWidgetHostViewChildFrame::LockCompositingSurface() {
 }
 

@@ -324,9 +324,6 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   virtual void ShowDisambiguationPopup(const gfx::Rect& target_rect,
                                        const SkBitmap& zoomed_bitmap) = 0;
 
-  // Notifies the View that the renderer selection root bounds has changed.
-  virtual void SelectionRootBoundsChanged(const gfx::Rect& bounds) = 0;
-
   // Instructs the view to not drop the surface even when the view is hidden.
   virtual void LockCompositingSurface() = 0;
   virtual void UnlockCompositingSurface() = 0;

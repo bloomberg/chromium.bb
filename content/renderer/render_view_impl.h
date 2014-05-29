@@ -571,9 +571,6 @@ class CONTENT_EXPORT RenderViewImpl
   virtual void InstrumentDidBeginFrame() OVERRIDE;
   virtual void InstrumentDidCancelFrame() OVERRIDE;
   virtual void InstrumentWillComposite() OVERRIDE;
-#if defined(OS_ANDROID)
-  virtual void UpdateSelectionRootBounds() OVERRIDE;
-#endif
 
  protected:
   explicit RenderViewImpl(RenderViewImplParams* params);
@@ -774,7 +771,6 @@ class CONTENT_EXPORT RenderViewImpl
                                 bool enable_showing,
                                 bool animate);
   void OnExtractSmartClipData(const gfx::Rect& rect);
-  void GetSelectionRootBounds(gfx::Rect* bounds) const;
 #elif defined(OS_MACOSX)
   void OnPluginImeCompositionCompleted(const base::string16& text,
                                        int plugin_id);

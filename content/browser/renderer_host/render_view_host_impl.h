@@ -495,9 +495,6 @@ class CONTENT_EXPORT RenderViewHostImpl
   void OnDidChangeScrollOffsetPinningForMainFrame(bool is_pinned_to_left,
                                                   bool is_pinned_to_right);
   void OnDidChangeNumWheelEvents(int count);
-#if defined(OS_ANDROID)
-  void OnSelectionRootBoundsChanged(const gfx::Rect& bounds);
-#endif
   void OnPasteFromSelectionClipboard();
   void OnRouteCloseEvent();
   void OnRouteMessageEvent(const ViewMsg_PostMessage_Params& params);

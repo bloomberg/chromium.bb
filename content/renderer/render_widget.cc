@@ -1203,7 +1203,6 @@ void RenderWidget::willBeginCompositorFrame() {
   UpdateTextInputType();
 #if defined(OS_ANDROID)
   UpdateTextInputState(NO_SHOW_IME, FROM_NON_IME);
-  UpdateSelectionRootBounds();
 #endif
   UpdateSelectionBounds();
 }
@@ -1642,9 +1641,6 @@ void RenderWidget::FinishHandlingImeEvent() {
   // While handling an ime event, text input state and selection bounds updates
   // are ignored. These must explicitly be updated once finished handling the
   // ime event.
-#if defined(OS_ANDROID)
-  UpdateSelectionRootBounds();
-#endif
   UpdateSelectionBounds();
 #if defined(OS_ANDROID)
   UpdateTextInputState(NO_SHOW_IME, FROM_IME);
@@ -2042,11 +2038,6 @@ void RenderWidget::didUpdateTextOfFocusedElementByNonUserInput() {
   text_field_is_dirty_ = true;
 #endif
 }
-
-#if defined(OS_ANDROID)
-void RenderWidget::UpdateSelectionRootBounds() {
-}
-#endif
 
 bool RenderWidget::HasTouchEventHandlersAt(const gfx::Point& point) const {
   return true;

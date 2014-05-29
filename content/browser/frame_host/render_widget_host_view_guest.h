@@ -130,7 +130,6 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
 
 #if defined(OS_ANDROID)
   // RenderWidgetHostViewBase implementation.
-  virtual void SelectionRootBoundsChanged(const gfx::Rect& bounds) OVERRIDE;
   virtual void ShowDisambiguationPopup(const gfx::Rect& target_rect,
                                        const SkBitmap& zoomed_bitmap) OVERRIDE;
   virtual void LockCompositingSurface() OVERRIDE;
