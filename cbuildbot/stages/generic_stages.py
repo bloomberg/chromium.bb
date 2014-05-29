@@ -677,24 +677,32 @@ class ArchivingStageMixin(object):
         return True
     return False
 
-  def _GetUploadUrls(self, filename, board=None):
+  def _GetUploadUrls(self, filename, builder_run=None):
     """Returns a list of all urls for which to upload filename to.
 
     Args:
       filename: The filename of the file we want to upload.
-      board: Board whose overlay to search for the artifacts.json file.
-             If none, self._current_board is used if it exists.
+      builder_run: builder_run object from which to get the board, base upload
+                   url, and bot_id. If none, this stage's values.
     """
+    board = None
     urls = [self.upload_url]
+    bot_id = self._bot_id
+    if builder_run:
+      urls = [builder_run.GetArchive().upload_url]
+      bot_id = builder_run.GetArchive().bot_id
+      if (builder_run.config['boards'] and
+          len(builder_run.config['boards']) == 1):
+        board = builder_run.config['boards'][0]
     if (not self._IsInUploadBlacklist(filename) and
         (hasattr(self, '_current_board') or board)):
-      board = board if board else self._current_board
+      board = board or self._current_board
       custom_artifacts_file = portage_utilities.ReadOverlayFile(
           'scripts/artifacts.json', board=board)
       if custom_artifacts_file is not None:
         json_file = json.loads(custom_artifacts_file)
         for url in json_file.get('extra_upload_urls', []):
-          urls.append('/'.join([url, self._bot_id, self.version]))
+          urls.append('/'.join([url, bot_id, self.version]))
     return urls
 
   def UploadArtifact(self, path, archive=True, strict=True):
