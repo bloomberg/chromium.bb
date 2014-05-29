@@ -18,6 +18,7 @@ group("root") {
     #"//base(//build/toolchain/nacl:x86_newlib)",
 
     "//apps/common/api:apps_api",
+    "//cc",
     #"//chrome",
     "//components/favicon_base",
     "//components/language_usage_metrics",
@@ -38,8 +39,7 @@ group("root") {
     "//device/usb",
     #"//extensions/common/api:extensions_api",
     "//gin",
-    "//gpu/command_buffer/client",
-    "//gpu/command_buffer/service",
+    "//gpu",
     "//google_apis",
     "//ipc",
     "//mojo",
@@ -98,6 +98,7 @@ group("root") {
 
   if (is_android) {
     deps -= [
+      "//cc",
       "//content/public/common",
       "//content/public/renderer",
       "//ppapi:ppapi_c",
@@ -109,8 +110,7 @@ group("root") {
       # This stuff all depends on ui/surface which requires some .class jni
       # generators (ui/gl/gl.gyp:surface_jni_headers).
       "//ui/gl",
-      "//gpu/command_buffer/client",
-      "//gpu/command_buffer/service",
+      "//gpu",
       "//ui/surface",
     ]
   }

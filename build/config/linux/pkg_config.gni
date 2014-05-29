@@ -20,6 +20,9 @@ import("//build/config/sysroot.gni")
 #
 # You can also use "extra args" to filter out results (see pkg-config.py):
 #   extra_args = [ "-v, "foo" ]
+# To ignore libs and ldflags (only cflags/defines will be set, which is useful
+# when doing manual dynamic linking), set:
+#   ignore_libs = true
 
 template("pkg_config") {
   assert(defined(invoker.packages),
@@ -40,9 +43,12 @@ template("pkg_config") {
                             args, "value")
     include_dirs = pkgresult[0]
     cflags = pkgresult[1]
-    libs = pkgresult[2]
-    lib_dirs = pkgresult[3]
-    ldflags = pkgresult[4]
+
+    if (!defined(invoker.ignore_libs) || !invoker.ignore_libs) {
+      libs = pkgresult[2]
+      lib_dirs = pkgresult[3]
+      ldflags = pkgresult[4]
+    }
 
     if (defined(invoker.defines)) {
       defines = invoker.defines

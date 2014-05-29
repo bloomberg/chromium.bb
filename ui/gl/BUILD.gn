@@ -301,6 +301,28 @@ action("generate_gl_bindings") {
   ]
 }
 
+config("gl_unittest_utils_config") {
+  include_dirs = [ gl_binding_output_dir ]
+}
+
+source_set("gl_unittest_utils") {
+  sources = [
+    "gl_mock.h",
+    "gl_mock.cc",
+    "$gl_binding_output_dir/gl_bindings_autogen_mock.cc",
+    "$gl_binding_output_dir/gl_bindings_autogen_mock.h",
+    "$gl_binding_output_dir/gl_mock_autogen_gl.h",
+  ]
+
+  configs += [ "//third_party/khronos:khronos_headers" ]
+  direct_dependent_configs = [ ":gl_unittest_utils_config" ]
+
+  deps = [
+    ":gl",
+    "//testing/gmock",
+  ]
+}
+
 if (is_android) {
   generate_jni("gl_jni_headers") {
     sources = [
