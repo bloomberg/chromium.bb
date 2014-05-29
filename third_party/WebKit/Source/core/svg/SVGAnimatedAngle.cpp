@@ -58,12 +58,6 @@ void SVGAnimatedAngle::synchronizeAttribute()
     contextElement()->setSynchronizedLazyAttribute(attributeName(), value);
 }
 
-void SVGAnimatedAngle::animationStarted()
-{
-    SVGAnimatedProperty<SVGAngle>::animationStarted();
-    m_orientType->animationStarted();
-}
-
 void SVGAnimatedAngle::setAnimatedValue(PassRefPtr<SVGPropertyBase> value)
 {
     SVGAnimatedProperty<SVGAngle>::setAnimatedValue(value);

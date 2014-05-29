@@ -53,7 +53,6 @@ public:
 
     virtual void synchronizeAttribute() OVERRIDE;
 
-    virtual void animationStarted() OVERRIDE;
     virtual void setAnimatedValue(PassRefPtr<SVGPropertyBase>) OVERRIDE;
     virtual void animationEnded() OVERRIDE;
 

@@ -52,7 +52,6 @@ public:
     virtual SVGPropertyBase* currentValueBase() = 0;
     virtual bool isAnimating() const = 0;
 
-    virtual void animationStarted();
     virtual PassRefPtr<SVGPropertyBase> createAnimatedValue() = 0;
     virtual void setAnimatedValue(PassRefPtr<SVGPropertyBase>) = 0;
     virtual void animationEnded();

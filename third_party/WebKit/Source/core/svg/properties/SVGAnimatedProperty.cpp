@@ -52,11 +52,6 @@ SVGAnimatedPropertyBase::~SVGAnimatedPropertyBase()
 {
 }
 
-void SVGAnimatedPropertyBase::animationStarted()
-{
-    // FIXME: remove this function and its overrides
-}
-
 void SVGAnimatedPropertyBase::animationEnded()
 {
     synchronizeAttribute();

@@ -33,13 +33,6 @@ SVGAnimatedNumberOptionalNumber::SVGAnimatedNumberOptionalNumber(SVGElement* con
     m_secondNumber->setParentOptionalNumber(this);
 }
 
-void SVGAnimatedNumberOptionalNumber::animationStarted()
-{
-    SVGAnimatedPropertyCommon<SVGNumberOptionalNumber>::animationStarted();
-    m_firstNumber->animationStarted();
-    m_secondNumber->animationStarted();
-}
-
 void SVGAnimatedNumberOptionalNumber::setAnimatedValue(PassRefPtr<SVGPropertyBase> value)
 {
     SVGAnimatedPropertyCommon<SVGNumberOptionalNumber>::setAnimatedValue(value);

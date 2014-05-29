@@ -44,13 +44,6 @@ SVGAnimatedIntegerOptionalInteger::SVGAnimatedIntegerOptionalInteger(SVGElement*
     m_secondInteger->setParentOptionalInteger(this);
 }
 
-void SVGAnimatedIntegerOptionalInteger::animationStarted()
-{
-    SVGAnimatedPropertyCommon<SVGIntegerOptionalInteger>::animationStarted();
-    m_firstInteger->animationStarted();
-    m_secondInteger->animationStarted();
-}
-
 void SVGAnimatedIntegerOptionalInteger::setAnimatedValue(PassRefPtr<SVGPropertyBase> value)
 {
     SVGAnimatedPropertyCommon<SVGIntegerOptionalInteger>::setAnimatedValue(value);

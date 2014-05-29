@@ -199,8 +199,6 @@ PassRefPtr<SVGPropertyBase> SVGAnimatedTypeAnimator::startAnimValAnimation(const
     ASSERT(isAnimatingSVGDom());
     SVGElement::InstanceUpdateBlocker blocker(m_contextElement);
 
-    invokeMethodOnAllTargetProperties(list, m_animatedProperty->attributeName(), &SVGAnimatedPropertyBase::animationStarted);
-
     return resetAnimation(list);
 }
 

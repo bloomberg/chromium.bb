@@ -54,11 +54,6 @@ bool SVGStaticStringList::isAnimating() const
     return false;
 }
 
-void SVGStaticStringList::animationStarted()
-{
-    ASSERT_NOT_REACHED();
-}
-
 PassRefPtr<SVGPropertyBase> SVGStaticStringList::createAnimatedValue()
 {
     ASSERT_NOT_REACHED();

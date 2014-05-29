@@ -48,7 +48,6 @@ public:
         return adoptRef(new SVGAnimatedNumberOptionalNumber(contextElement, attributeName, initialFirstValue, initialSecondValue));
     }
 
-    virtual void animationStarted() OVERRIDE;
     virtual void setAnimatedValue(PassRefPtr<SVGPropertyBase>) OVERRIDE;
     virtual bool needsSynchronizeAttribute() OVERRIDE;
     virtual void animationEnded() OVERRIDE;
