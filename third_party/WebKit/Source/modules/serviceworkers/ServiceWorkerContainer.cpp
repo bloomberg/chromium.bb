@@ -142,8 +142,10 @@ ScriptPromise ServiceWorkerContainer::unregisterServiceWorker(ExecutionContext* 
 
 void ServiceWorkerContainer::setCurrentServiceWorker(blink::WebServiceWorker* serviceWorker)
 {
-    if (!executionContext())
+    if (!executionContext()) {
+        delete serviceWorker;
         return;
+    }
     m_current = ServiceWorker::create(executionContext(), adoptPtr(serviceWorker));
 }
 
