@@ -18,6 +18,7 @@
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_job.h"
+#include "net/url_request/url_request_job_factory.h"
 #include "net/url_request/url_request_status.h"
 #include "testing/platform_test.h"
 #include "url/gurl.h"
@@ -73,6 +74,8 @@ class Result {
   int64 bytes_written_;
   FileWriterDelegate::WriteProgressStatus write_status_;
 };
+
+class BlobURLRequestJobFactory;
 
 }  // namespace (anonymous)
 
@@ -141,8 +144,6 @@ class FileWriterDelegateTest : public PlatformTest {
         blob_url, net::DEFAULT_PRIORITY, file_writer_delegate_.get(), NULL);
   }
 
-  static net::URLRequest::ProtocolFactory Factory;
-
   // This should be alive until the very end of this instance.
   base::MessageLoopForIO loop_;
 
@@ -151,6 +152,7 @@ class FileWriterDelegateTest : public PlatformTest {
   net::URLRequestContext empty_context_;
   scoped_ptr<FileWriterDelegate> file_writer_delegate_;
   scoped_ptr<net::URLRequest> request_;
+  scoped_ptr<BlobURLRequestJobFactory> job_factory_;
 
   base::ScopedTempDir dir_;
 
@@ -208,16 +210,39 @@ class FileWriterDelegateTestJob : public net::URLRequestJob {
   int cursor_;
 };
 
-}  // namespace (anonymous)
+class BlobURLRequestJobFactory : public net::URLRequestJobFactory {
+ public:
+  explicit BlobURLRequestJobFactory(const char** content_data)
+      : content_data_(content_data) {
+  }
 
-// static
-net::URLRequestJob* FileWriterDelegateTest::Factory(
-    net::URLRequest* request,
-    net::NetworkDelegate* network_delegate,
-    const std::string& scheme) {
-  return new FileWriterDelegateTestJob(
-      request, network_delegate, FileWriterDelegateTest::content_);
-}
+  virtual net::URLRequestJob* MaybeCreateJobWithProtocolHandler(
+      const std::string& scheme,
+      net::URLRequest* request,
+      net::NetworkDelegate* network_delegate) const OVERRIDE {
+    return new FileWriterDelegateTestJob(
+        request, network_delegate, *content_data_);
+  }
+
+  virtual bool IsHandledProtocol(const std::string& scheme) const OVERRIDE {
+    return scheme == "blob";
+  }
+
+  virtual bool IsHandledURL(const GURL& url) const OVERRIDE {
+    return url.SchemeIs("blob");
+  }
+
+  virtual bool IsSafeRedirectTarget(const GURL& location) const OVERRIDE {
+    return true;
+  }
+
+ private:
+  const char** content_data_;
+
+  DISALLOW_COPY_AND_ASSIGN(BlobURLRequestJobFactory);
+};
+
+}  // namespace (anonymous)
 
 void FileWriterDelegateTest::SetUp() {
   ASSERT_TRUE(dir_.CreateUniqueTempDir());
@@ -227,11 +252,11 @@ void FileWriterDelegateTest::SetUp() {
   ASSERT_EQ(base::File::FILE_OK,
             AsyncFileTestHelper::CreateFile(
                 file_system_context_, GetFileSystemURL("test")));
-  net::URLRequest::Deprecated::RegisterProtocolFactory("blob", &Factory);
+  job_factory_.reset(new BlobURLRequestJobFactory(&content_));
+  empty_context_.set_job_factory(job_factory_.get());
 }
 
 void FileWriterDelegateTest::TearDown() {
-  net::URLRequest::Deprecated::RegisterProtocolFactory("blob", NULL);
   file_system_context_ = NULL;
   base::RunLoop().RunUntilIdle();
 }
