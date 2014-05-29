@@ -98,6 +98,12 @@ void ChromeStabilityMetricsProvider::ProvideStabilityMetrics(
     pref->SetInteger(prefs::kStabilityPageLoadCount, 0);
   }
 
+  count = pref->GetInteger(prefs::kStabilityChildProcessCrashCount);
+  if (count) {
+    stability_proto->set_child_process_crash_count(count);
+    pref->SetInteger(prefs::kStabilityChildProcessCrashCount, 0);
+  }
+
   count = pref->GetInteger(prefs::kStabilityRendererCrashCount);
   if (count) {
     stability_proto->set_renderer_crash_count(count);

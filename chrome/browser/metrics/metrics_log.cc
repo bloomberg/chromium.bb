@@ -301,12 +301,6 @@ void MetricsLog::WriteRealtimeStabilityAttributes(
   SystemProfileProto::Stability* stability =
       uma_proto()->mutable_system_profile()->mutable_stability();
 
-  int count = pref->GetInteger(prefs::kStabilityChildProcessCrashCount);
-  if (count) {
-    stability->set_child_process_crash_count(count);
-    pref->SetInteger(prefs::kStabilityChildProcessCrashCount, 0);
-  }
-
   const uint64 incremental_uptime_sec = incremental_uptime.InSeconds();
   if (incremental_uptime_sec)
     stability->set_incremental_uptime_sec(incremental_uptime_sec);
