@@ -138,10 +138,12 @@ can have the following properties:</p>
     <td>boolean</td>
     <td><em>Optional.</em>
     Whether to insert the content script on <code>about:blank</code> and
-    <code>about:srcdoc</code>. Content scripts will only be injected on pages if
-    your extension has access to the page's parent document. Scripts are only
-    inserted in a top-level <code>about:blank</code> frame when its opener is
-    accessible by the extension.
+    <code>about:srcdoc</code>. Content scripts will only be injected on pages
+    when their inherit URL is matched by one of the declared patterns in the
+    <code>matches</code> field. The inherit URL is the URL of the document that
+    created the frame or window.
+    <br>
+    Content scripts cannot be inserted in sandboxed frames.
     <br><br>
     Defaults to <code>false</code>.</td>
   </tr>
