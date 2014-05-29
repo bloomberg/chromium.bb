@@ -70,11 +70,11 @@ public:
     LayoutRect repaintRectIncludingNonCompositingDescendants() const;
 
     void repaintAfterLayout(bool shouldCheckForRepaint);
-    void repaintIncludingNonCompositingDescendants(const RenderLayerModelObject* repaintContainer);
+    void repaintIncludingNonCompositingDescendants();
 
     void setRepaintStatus(RepaintStatus status) { m_repaintStatus = status; }
 
-    void computeRepaintRects(const RenderLayerModelObject* repaintContainer);
+    void computeRepaintRects();
     void computeRepaintRectsIncludingDescendants();
 
     // Indicate that the layer contents need to be repainted. Only has an effect
@@ -85,6 +85,8 @@ public:
     void setFilterBackendNeedsRepaintingInRect(const LayoutRect&);
 
 private:
+    void repaintIncludingNonCompositingDescendantsInternal(const RenderLayerModelObject* repaintContainer);
+
     bool shouldRepaintLayer() const;
 
     void clearRepaintRects();

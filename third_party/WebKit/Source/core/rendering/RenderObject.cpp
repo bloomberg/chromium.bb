@@ -1411,6 +1411,16 @@ static PassRefPtr<JSONValue> jsonObjectForRepaintInfo(const IntRect& rect, const
     return object.release();
 }
 
+LayoutRect RenderObject::computeRepaintRect() const
+{
+    return computeRepaintRectInternal(containerForRepaint());
+}
+
+LayoutRect RenderObject::computeRepaintRectInternal(const RenderLayerModelObject* repaintContainer) const
+{
+    return clippedOverflowRectForRepaint(repaintContainer);
+}
+
 void RenderObject::repaintUsingContainer(const RenderLayerModelObject* repaintContainer, const IntRect& r, InvalidationReason invalidationReason) const
 {
     if (r.isEmpty())
@@ -1475,7 +1485,7 @@ void RenderObject::repaint() const
     // Until those states are fully fledged, I'll just disable the ASSERTS.
     DisableCompositingQueryAsserts disabler;
     const RenderLayerModelObject* repaintContainer = containerForRepaint();
-    repaintUsingContainer(repaintContainer, pixelSnappedIntRect(clippedOverflowRectForRepaint(repaintContainer)), InvalidationRepaint);
+    repaintUsingContainer(repaintContainer, pixelSnappedIntRect(computeRepaintRectInternal(repaintContainer)), InvalidationRepaint);
 }
 
 void RenderObject::repaintRectangle(const LayoutRect& r) const
@@ -1569,8 +1579,8 @@ bool RenderObject::repaintAfterLayoutIfNeeded(const RenderLayerModelObject* repa
 
     // This ASSERT fails due to animations.  See https://bugs.webkit.org/show_bug.cgi?id=37048
     // ASSERT(!newBoundsPtr || *newBoundsPtr == clippedOverflowRectForRepaint(repaintContainer));
-    LayoutRect newBounds = newBoundsPtr ? *newBoundsPtr : clippedOverflowRectForRepaint(repaintContainer);
-    LayoutPoint newLocation = newLocationPtr ? *newLocationPtr : positionFromRepaintContainer(repaintContainer);
+    LayoutRect newBounds = newBoundsPtr ? *newBoundsPtr : computeRepaintRect();
+    LayoutPoint newLocation = newLocationPtr ? (*newLocationPtr) : positionFromRepaintContainer(repaintContainer);
 
     // FIXME: This should use a ConvertableToTraceFormat when they are available in Blink.
     TRACE_EVENT2(TRACE_DISABLED_BY_DEFAULT("blink.invalidation"), "RenderObject::repaintAfterLayoutIfNeeded()",

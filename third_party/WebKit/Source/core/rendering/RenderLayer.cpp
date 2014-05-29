@@ -503,7 +503,7 @@ void RenderLayer::updateLayerPositionsAfterScroll(RenderGeometryMap* geometryMap
 
     if ((flags & IsOverflowScroll) && (flags & HasSeenAncestorWithOverflowClip) && !m_canSkipRepaintRectsUpdateOnScroll) {
         // FIXME: We could track the repaint container as we walk down the tree.
-        repainter().computeRepaintRects(renderer()->containerForRepaint());
+        repainter().computeRepaintRects();
     } else {
         // Check that RenderLayerRepainter's cached rects are correct.
         // FIXME: re-enable these assertions when the issue with table cells is resolved: https://bugs.webkit.org/show_bug.cgi?id=103432
@@ -721,7 +721,7 @@ void RenderLayer::setHasVisibleContent()
 
     setNeedsToUpdateAncestorDependentProperties();
 
-    repainter().computeRepaintRects(renderer()->containerForRepaint());
+    repainter().computeRepaintRects();
     if (!m_stackingNode->isNormalFlowOnly()) {
         // We don't collect invisible layers in z-order lists if we are not in compositing mode.
         // As we became visible, we need to dirty our stacking containers ancestors to be properly

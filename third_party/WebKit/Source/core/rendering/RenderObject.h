@@ -806,6 +806,10 @@ public:
     const RenderLayerModelObject* adjustCompositedContainerForSpecialAncestors(const RenderLayerModelObject* repaintContainer) const;
     bool isRepaintContainer() const;
 
+    // Returns the repaint rect for this RenderObject in the coordinate space of the composited layer that this RenderObject paints into, or the RenderView if not
+    // composited.
+    LayoutRect computeRepaintRect() const;
+
     // Actually do the repaint of rect r for this object which has been computed in the coordinate space
     // of repaintContainer. If repaintContainer is 0, repaint via the view.
     void repaintUsingContainer(const RenderLayerModelObject* repaintContainer, const IntRect&, InvalidationReason) const;
@@ -1073,6 +1077,8 @@ protected:
     virtual void computeSelfHitTestRects(Vector<LayoutRect>&, const LayoutPoint& layerOffset) const { };
 
 private:
+    LayoutRect computeRepaintRectInternal(const RenderLayerModelObject* repaintContainer) const;
+
     RenderBlock* containerForFixedPosition(const RenderLayerModelObject* repaintContainer = 0, bool* repaintContainerSkipped = 0) const;
 
     RenderFlowThread* locateFlowThreadContainingBlock() const;

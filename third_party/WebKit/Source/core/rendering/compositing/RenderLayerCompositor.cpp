@@ -622,9 +622,7 @@ void RenderLayerCompositor::repaintOnCompositingChange(RenderLayer* layer)
     if (layer->renderer() != &m_renderView && !layer->renderer()->parent())
         return;
 
-    const RenderLayerModelObject* repaintContainer = layer->renderer()->containerForRepaint();
-    ASSERT(repaintContainer);
-    layer->repainter().repaintIncludingNonCompositingDescendants(repaintContainer);
+    layer->repainter().repaintIncludingNonCompositingDescendants();
 }
 
 // This method assumes that layout is up-to-date, unlike repaintOnCompositingChange().

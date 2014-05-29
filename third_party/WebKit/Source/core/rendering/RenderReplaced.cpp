@@ -581,7 +581,7 @@ void RenderReplaced::setSelectionState(SelectionState state)
     // We only include the space below the baseline in our layer's cached repaint rect if the
     // image is selected. Since the selection state has changed update the rect.
     if (hasLayer())
-        layer()->repainter().computeRepaintRects(containerForRepaint());
+        layer()->repainter().computeRepaintRects();
 
     if (canUpdateSelectionOnRootLineBoxes())
         inlineBoxWrapper()->root().setHasSelectedChildren(isSelected());

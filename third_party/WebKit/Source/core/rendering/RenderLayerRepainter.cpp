@@ -76,7 +76,7 @@ void RenderLayerRepainter::repaintAfterLayout(bool shouldCheckForRepaint)
         const RenderLayerModelObject* repaintContainer = m_renderer.containerForRepaint();
         LayoutRect oldRepaintRect = m_repaintRect;
         LayoutPoint oldOffset = m_offset;
-        computeRepaintRects(repaintContainer);
+        computeRepaintRects();
         shouldCheckForRepaint &= shouldRepaintLayer();
 
         if (shouldCheckForRepaint) {
@@ -105,15 +105,16 @@ void RenderLayerRepainter::clearRepaintRects()
     m_repaintRect = IntRect();
 }
 
-void RenderLayerRepainter::computeRepaintRects(const RenderLayerModelObject* repaintContainer)
+void RenderLayerRepainter::computeRepaintRects()
 {
+    const RenderLayerModelObject* repaintContainer = m_renderer.containerForRepaint();
     if (RuntimeEnabledFeatures::repaintAfterLayoutEnabled()) {
         // FIXME: We want RenderLayerRepainter to go away when
         // repaint-after-layout is on by default so we need to figure out how to
         // handle this update.
-        m_renderer.setPreviousRepaintRect(m_renderer.clippedOverflowRectForRepaint(m_renderer.containerForRepaint()));
+        m_renderer.setPreviousRepaintRect(m_renderer.computeRepaintRect());
     } else {
-        m_repaintRect = m_renderer.clippedOverflowRectForRepaint(repaintContainer);
+        m_repaintRect = m_renderer.computeRepaintRect();
         m_offset = m_renderer.positionFromRepaintContainer(repaintContainer);
     }
 }
@@ -123,7 +124,7 @@ void RenderLayerRepainter::computeRepaintRectsIncludingDescendants()
     // FIXME: computeRepaintRects() has to walk up the parent chain for every layer to compute the rects.
     // We should make this more efficient.
     // FIXME: it's wrong to call this when layout is not up-to-date, which we do.
-    computeRepaintRects(m_renderer.containerForRepaint());
+    computeRepaintRects();
 
     for (RenderLayer* layer = m_renderer.layer()->firstChild(); layer; layer = layer->nextSibling())
         layer->repainter().computeRepaintRectsIncludingDescendants();
@@ -143,13 +144,18 @@ inline bool RenderLayerRepainter::shouldRepaintLayer() const
 }
 
 // Since we're only painting non-composited layers, we know that they all share the same repaintContainer.
-void RenderLayerRepainter::repaintIncludingNonCompositingDescendants(const RenderLayerModelObject* repaintContainer)
+void RenderLayerRepainter::repaintIncludingNonCompositingDescendants()
 {
-    m_renderer.repaintUsingContainer(repaintContainer, pixelSnappedIntRect(m_renderer.clippedOverflowRectForRepaint(repaintContainer)), InvalidationLayer);
+    repaintIncludingNonCompositingDescendantsInternal(m_renderer.containerForRepaint());
+}
+
+void RenderLayerRepainter::repaintIncludingNonCompositingDescendantsInternal(const RenderLayerModelObject* repaintContainer)
+{
+    m_renderer.repaintUsingContainer(repaintContainer, pixelSnappedIntRect(m_renderer.computeRepaintRect()), InvalidationLayer);
 
     for (RenderLayer* curr = m_renderer.layer()->firstChild(); curr; curr = curr->nextSibling()) {
         if (!curr->hasCompositedLayerMapping())
-            curr->repainter().repaintIncludingNonCompositingDescendants(repaintContainer);
+            curr->repainter().repaintIncludingNonCompositingDescendantsInternal(repaintContainer);
     }
 }
 
