@@ -13,7 +13,9 @@
 #include "third_party/WebKit/public/platform/WebContentDecryptionModule.h"
 
 namespace blink {
+#if defined(ENABLE_PEPPER_CDMS)
 class WebLocalFrame;
+#endif
 class WebSecurityOrigin;
 }
 
@@ -25,13 +27,20 @@ class MediaKeys;
 namespace content {
 
 class CdmSessionAdapter;
+#if defined(OS_ANDROID)
+class RendererCdmManager;
+#endif
 class WebContentDecryptionModuleSessionImpl;
 
 class WebContentDecryptionModuleImpl
     : public blink::WebContentDecryptionModule {
  public:
   static WebContentDecryptionModuleImpl* Create(
+#if defined(ENABLE_PEPPER_CDMS)
       blink::WebLocalFrame* frame,
+#elif defined(OS_ANDROID)
+      RendererCdmManager* manager,
+#endif
       const blink::WebSecurityOrigin& security_origin,
       const base::string16& key_system);
 

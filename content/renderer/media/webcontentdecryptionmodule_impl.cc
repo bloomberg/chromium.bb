@@ -24,17 +24,21 @@
 #include "content/renderer/media/crypto/pepper_cdm_wrapper_impl.h"
 #endif
 
-namespace blink {
-class WebFrame;
-}
-
 namespace content {
 
 WebContentDecryptionModuleImpl* WebContentDecryptionModuleImpl::Create(
+#if defined(ENABLE_PEPPER_CDMS)
     blink::WebLocalFrame* frame,
+#elif defined(OS_ANDROID)
+    RendererCdmManager* manager,
+#endif
     const blink::WebSecurityOrigin& security_origin,
     const base::string16& key_system) {
+#if defined(ENABLE_PEPPER_CDMS)
   DCHECK(frame);
+#elif defined(OS_ANDROID)
+  DCHECK(manager);
+#endif
   DCHECK(!security_origin.isNull());
   DCHECK(!key_system.empty());
 
@@ -61,6 +65,8 @@ WebContentDecryptionModuleImpl* WebContentDecryptionModuleImpl::Create(
   if (!adapter->Initialize(
 #if defined(ENABLE_PEPPER_CDMS)
           base::Bind(&PepperCdmWrapperImpl::Create, frame),
+#elif defined(OS_ANDROID)
+          manager,
 #endif
           key_system_ascii,
           security_origin_as_gurl)) {

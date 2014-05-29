@@ -1412,7 +1412,13 @@ RenderFrameImpl::createContentDecryptionModule(
     const blink::WebString& key_system) {
   DCHECK(!frame_ || frame_ == frame);
   return WebContentDecryptionModuleImpl::Create(
-      frame, security_origin, key_system);
+#if defined(ENABLE_PEPPER_CDMS)
+      frame,
+#elif defined(OS_ANDROID)
+      GetCdmManager(),
+#endif
+      security_origin,
+      key_system);
 }
 
 blink::WebApplicationCacheHost* RenderFrameImpl::createApplicationCacheHost(
