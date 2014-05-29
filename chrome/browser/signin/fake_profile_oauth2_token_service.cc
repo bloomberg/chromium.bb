@@ -14,7 +14,8 @@ FakeProfileOAuth2TokenService::PendingRequest::~PendingRequest() {
 }
 
 FakeProfileOAuth2TokenService::FakeProfileOAuth2TokenService()
-    : auto_post_fetch_response_on_message_loop_(false) {
+    : auto_post_fetch_response_on_message_loop_(false),
+      weak_ptr_factory_(this) {
   SigninAccountIdHelper::SetDisableForTest(true);
 }
 
@@ -178,7 +179,7 @@ void FakeProfileOAuth2TokenService::FetchOAuth2Token(
   if (auto_post_fetch_response_on_message_loop_) {
     base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
         &FakeProfileOAuth2TokenService::IssueAllTokensForAccount,
-        base::Unretained(this),
+        weak_ptr_factory_.GetWeakPtr(),
         account_id,
         "access_token",
         base::Time::Max()));

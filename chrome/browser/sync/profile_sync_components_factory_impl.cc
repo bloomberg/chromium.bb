@@ -435,10 +435,11 @@ browser_sync::SyncBackendHost*
 ProfileSyncComponentsFactoryImpl::CreateSyncBackendHost(
     const std::string& name,
     Profile* profile,
+    invalidation::InvalidationService* invalidator,
     const base::WeakPtr<sync_driver::SyncPrefs>& sync_prefs,
     const base::FilePath& sync_folder) {
-  return new browser_sync::SyncBackendHostImpl(name, profile, sync_prefs,
-                                               sync_folder);
+  return new browser_sync::SyncBackendHostImpl(name, profile, invalidator,
+                                               sync_prefs, sync_folder);
 }
 
 base::WeakPtr<syncer::SyncableService> ProfileSyncComponentsFactoryImpl::

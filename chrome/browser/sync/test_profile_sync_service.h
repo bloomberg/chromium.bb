@@ -39,6 +39,7 @@ class SyncBackendHostForProfileSyncTest : public SyncBackendHostImpl {
  public:
   SyncBackendHostForProfileSyncTest(
       Profile* profile,
+      invalidation::InvalidationService* invalidator,
       const base::WeakPtr<sync_driver::SyncPrefs>& sync_prefs,
       base::Closure callback);
   virtual ~SyncBackendHostForProfileSyncTest();

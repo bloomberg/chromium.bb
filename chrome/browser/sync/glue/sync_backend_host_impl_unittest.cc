@@ -13,6 +13,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/test/test_timeouts.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/invalidation/invalidation_service_factory.h"
 #include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/browser/sync/glue/device_info.h"
 #include "chrome/browser/sync/glue/synced_device_tracker.h"
@@ -158,6 +159,7 @@ class SyncBackendHostTest : public testing::Test {
     backend_.reset(new SyncBackendHostImpl(
         profile_->GetDebugName(),
         profile_,
+        invalidation::InvalidationServiceFactory::GetForProfile(profile_),
         sync_prefs_->AsWeakPtr(),
         base::FilePath(kTestSyncDir)));
     credentials_.email = "user@example.com";

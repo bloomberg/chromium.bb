@@ -17,7 +17,7 @@ using ::testing::Return;
 
 namespace {
 
-#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_MACOSX) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
 
 class MockSigninManagerWrapper : public ManagedUserSigninManagerWrapper {
  public:

@@ -446,6 +446,7 @@ ModelTypeSet BackupTypes() {
   result.Put(EXTENSIONS);
   result.Put(SEARCH_ENGINES);
   result.Put(APPS);
+  result.Put(APP_LIST);
   result.Put(APP_SETTINGS);
   result.Put(EXTENSION_SETTINGS);
   result.Put(PRIORITY_PREFERENCES);

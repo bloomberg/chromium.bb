@@ -74,6 +74,7 @@ class SyncBackendHostImpl
   // |sync_prefs|.
   SyncBackendHostImpl(const std::string& name,
                       Profile* profile,
+                      invalidation::InvalidationService* invalidator,
                       const base::WeakPtr<sync_driver::SyncPrefs>& sync_prefs,
                       const base::FilePath& sync_folder);
   virtual ~SyncBackendHostImpl();

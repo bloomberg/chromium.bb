@@ -8,7 +8,6 @@
 #include "base/logging.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/invalidation/invalidation_service_factory.h"
 #include "chrome/browser/network_time/network_time_tracker.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/glue/sync_backend_host_core.h"
@@ -68,6 +67,7 @@ void UpdateNetworkTime(const base::Time& network_time,
 SyncBackendHostImpl::SyncBackendHostImpl(
     const std::string& name,
     Profile* profile,
+    invalidation::InvalidationService* invalidator,
     const base::WeakPtr<sync_driver::SyncPrefs>& sync_prefs,
     const base::FilePath& sync_folder)
     : frontend_loop_(base::MessageLoop::current()),
@@ -77,11 +77,9 @@ SyncBackendHostImpl::SyncBackendHostImpl(
       sync_prefs_(sync_prefs),
       frontend_(NULL),
       cached_passphrase_type_(syncer::IMPLICIT_PASSPHRASE),
-      invalidator_(
-          invalidation::InvalidationServiceFactory::GetForProfile(profile)),
+      invalidator_(invalidator),
       invalidation_handler_registered_(false),
       weak_ptr_factory_(this) {
-  CHECK(invalidator_);
   core_ = new SyncBackendHostCore(
       name_,
       profile_->GetPath().Append(sync_folder),
@@ -147,7 +145,7 @@ void SyncBackendHostImpl::Initialize(
           base::Bind(&UpdateNetworkTime),
           core_->GetRequestContextCancelationSignal()),
       credentials,
-      invalidator_->GetInvalidatorClientId(),
+      invalidator_ ? invalidator_->GetInvalidatorClientId() : "",
       sync_manager_factory.Pass(),
       delete_sync_data_folder,
       sync_prefs_->GetEncryptionBootstrapToken(),
@@ -454,7 +452,9 @@ syncer::UserShare* SyncBackendHostImpl::GetUserShare() const {
 }
 
 scoped_ptr<syncer::SyncCoreProxy> SyncBackendHostImpl::GetSyncCoreProxy() {
-  return scoped_ptr<syncer::SyncCoreProxy>(sync_core_proxy_->Clone());
+  return sync_core_proxy_.get() ?
+      scoped_ptr<syncer::SyncCoreProxy>(sync_core_proxy_->Clone()) :
+      scoped_ptr<syncer::SyncCoreProxy>();
 }
 
 SyncBackendHostImpl::Status SyncBackendHostImpl::GetDetailedStatus() {
@@ -486,7 +486,8 @@ base::Time SyncBackendHostImpl::GetExplicitPassphraseTime() const {
 
 bool SyncBackendHostImpl::IsCryptographerReady(
     const syncer::BaseTransaction* trans) const {
-  return initialized() && trans->GetCryptographer()->is_ready();
+  return initialized() && trans->GetCryptographer() &&
+      trans->GetCryptographer()->is_ready();
 }
 
 void SyncBackendHostImpl::GetModelSafeRoutingInfo(
@@ -594,9 +595,11 @@ void SyncBackendHostImpl::FinishConfigureDataTypesOnFrontendLoop(
   if (!frontend_)
     return;
 
-  invalidator_->UpdateRegisteredInvalidationIds(
-      this,
-      ModelTypeSetToObjectIdSet(enabled_types));
+  if (invalidator_) {
+    invalidator_->UpdateRegisteredInvalidationIds(
+        this,
+        ModelTypeSetToObjectIdSet(enabled_types));
+  }
 
   if (!ready_task.is_null())
     ready_task.Run(succeeded_configuration_types, failed_configuration_types);
@@ -637,19 +640,22 @@ void SyncBackendHostImpl::HandleInitializationSuccessOnFrontendLoop(
     syncer::SyncCoreProxy* sync_core_proxy) {
   DCHECK_EQ(base::MessageLoop::current(), frontend_loop_);
 
-  sync_core_proxy_ = sync_core_proxy->Clone();
+  if (sync_core_proxy)
+    sync_core_proxy_ = sync_core_proxy->Clone();
 
   if (!frontend_)
     return;
 
   initialized_ = true;
 
-  invalidator_->RegisterInvalidationHandler(this);
-  invalidation_handler_registered_ = true;
+  if (invalidator_) {
+    invalidator_->RegisterInvalidationHandler(this);
+    invalidation_handler_registered_ = true;
 
-  // Fake a state change to initialize the SyncManager's cached invalidator
-  // state.
-  OnInvalidatorStateChange(invalidator_->GetInvalidatorState());
+    // Fake a state change to initialize the SyncManager's cached invalidator
+    // state.
+    OnInvalidatorStateChange(invalidator_->GetInvalidatorState());
+  }
 
   // Start forwarding refresh requests to the SyncManager
   notification_registrar_.Add(this, chrome::NOTIFICATION_SYNC_REFRESH_LOCAL,

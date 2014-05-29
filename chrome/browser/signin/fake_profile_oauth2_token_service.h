@@ -153,6 +153,8 @@ class FakeProfileOAuth2TokenService
   // |IssueTokenForScope| in this case.
   bool auto_post_fetch_response_on_message_loop_;
 
+  base::WeakPtrFactory<FakeProfileOAuth2TokenService> weak_ptr_factory_;
+
   DISALLOW_COPY_AND_ASSIGN(FakeProfileOAuth2TokenService);
 };
 

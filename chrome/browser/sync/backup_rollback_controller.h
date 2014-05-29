@@ -18,7 +18,8 @@ namespace browser_sync {
 
 // BackupRollbackController takes two closures for starting backup/rollback
 // process. It calls the closures according to user's signin status or
-// received rollback command.
+// received rollback command. Backup is not run when user signed in, even when
+// sync is not running.
 class BackupRollbackController {
  public:
   BackupRollbackController(sync_driver::SyncPrefs* sync_prefs,

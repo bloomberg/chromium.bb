@@ -12,7 +12,7 @@
 
 namespace browser_sync {
 
-#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_MACOSX) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
 // Number of rollback attempts to try before giving up.
 static const int kRollbackLimits = 3;
 #endif
@@ -33,7 +33,7 @@ BackupRollbackController::~BackupRollbackController() {
 }
 
 void BackupRollbackController::Start(base::TimeDelta delay) {
-#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_MACOSX) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
   if (!CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kSyncEnableBackupRollback)) {
     return;
@@ -52,13 +52,13 @@ void BackupRollbackController::Start(base::TimeDelta delay) {
 }
 
 void BackupRollbackController::OnRollbackReceived() {
-#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_MACOSX) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
   sync_prefs_->SetRemainingRollbackTries(kRollbackLimits);
 #endif
 }
 
 void BackupRollbackController::OnRollbackDone() {
-#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_MACOSX) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
   sync_prefs_->SetRemainingRollbackTries(0);
 #endif
 }

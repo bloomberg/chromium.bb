@@ -103,6 +103,10 @@ void SyncBackupManager::NormalizeEntries() {
 
     if (!entry.GetId().ServerKnows())
       entry.PutId(syncable::Id::CreateFromServerId(entry.GetId().value()));
+    if (!entry.GetParentId().ServerKnows()) {
+      entry.PutParentId(syncable::Id::CreateFromServerId(
+          entry.GetParentId().value()));
+    }
     entry.PutBaseVersion(1);
     entry.PutIsUnsynced(false);
   }

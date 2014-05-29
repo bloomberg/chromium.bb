@@ -25,8 +25,11 @@ Cryptographer* BaseTransaction::GetCryptographer() const {
 }
 
 ModelTypeSet BaseTransaction::GetEncryptedTypes() const {
-  return GetDirectory()->GetNigoriHandler()->GetEncryptedTypes(
-      this->GetWrappedTrans());
+  syncable::NigoriHandler* nigori_handler =
+      GetDirectory()->GetNigoriHandler();
+  return nigori_handler ?
+      nigori_handler->GetEncryptedTypes(this->GetWrappedTrans()) :
+      ModelTypeSet();
 }
 
 }  // namespace syncer

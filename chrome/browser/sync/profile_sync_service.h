@@ -21,6 +21,7 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/sync/backend_unrecoverable_error_handler.h"
+#include "chrome/browser/sync/backup_rollback_controller.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
 #include "chrome/browser/sync/glue/synced_device_tracker.h"
 #include "chrome/browser/sync/profile_sync_service_base.h"
@@ -241,7 +242,16 @@ class ProfileSyncService : public ProfileSyncServiceBase,
     SETUP_INCOMPLETE,
     DATATYPES_NOT_INITIALIZED,
     INITIALIZED,
+    BACKUP_USER_DATA,
+    ROLLBACK_USER_DATA,
     UNKNOWN_ERROR,
+  };
+
+  enum BackendMode {
+    IDLE,       // No backend.
+    SYNC,       // Backend for syncing.
+    BACKUP,     // Backend for backup.
+    ROLLBACK    // Backend for rollback.
   };
 
   // Default sync server URL.
@@ -750,6 +760,12 @@ class ProfileSyncService : public ProfileSyncServiceBase,
 
   virtual bool IsSessionsDataTypeControllerRunning() const;
 
+  void SetBackupStartDelayForTest(base::TimeDelta delay);
+
+  BackendMode backend_mode() const {
+    return backend_mode_;
+  }
+
  protected:
   // Helper to configure the priority data types.
   void ConfigurePriorityDataTypes();
@@ -848,6 +864,9 @@ class ProfileSyncService : public ProfileSyncServiceBase,
   // token.
   virtual void RequestAccessToken();
 
+  // Return true if backend should start from a fresh sync DB.
+  bool ShouldDeleteSyncFolder();
+
   // If |delete_sync_data_folder| is true, then this method will delete all
   // previous "Sync Data" folders. (useful if the folder is partial/corrupt).
   void InitializeBackend(bool delete_sync_data_folder);
@@ -865,8 +884,9 @@ class ProfileSyncService : public ProfileSyncServiceBase,
 
   void ClearUnrecoverableError();
 
-  // Starts up the backend sync components.
-  void StartUpSlowBackendComponents();
+  // Starts up the backend sync components. |mode| specifies the kind of
+  // backend to start, one of SYNC, BACKUP or ROLLBACK.
+  void StartUpSlowBackendComponents(BackendMode mode);
 
   // About-flags experiment names for datatypes that aren't enabled by default
   // yet.
@@ -902,6 +922,18 @@ class ProfileSyncService : public ProfileSyncServiceBase,
                                     const std::string& message,
                                     bool delete_sync_database,
                                     UnrecoverableErrorReason reason);
+
+  // Returns the type of manager to use according to |backend_mode_|.
+  syncer::SyncManagerFactory::MANAGER_TYPE GetManagerType() const;
+
+  // Update UMA for syncing backend.
+  void UpdateBackendInitUMA(bool success);
+
+  // Various setup following backend initialization, mostly for syncing backend.
+  void PostBackendInitialization();
+
+  // True if a syncing backend exists.
+  bool HasSyncingBackend() const;
 
  // Factory used to create various dependent objects.
   scoped_ptr<ProfileSyncComponentsFactory> factory_;
@@ -1057,6 +1089,15 @@ class ProfileSyncService : public ProfileSyncServiceBase,
   scoped_ptr<syncer::NetworkResources> network_resources_;
 
   browser_sync::StartupController startup_controller_;
+
+  browser_sync::BackupRollbackController backup_rollback_controller_;
+
+  // Mode of current backend.
+  BackendMode backend_mode_;
+
+  // When browser starts, delay sync backup/rollback backend start for this
+  // time.
+  base::TimeDelta backup_start_delay_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileSyncService);
 };

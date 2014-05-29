@@ -56,7 +56,7 @@ StartupController::StartupController(
     int timeout = kDeferredInitFallbackSeconds;
     if (base::StringToInt(CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
             switches::kSyncDeferredStartupTimeoutSeconds), &timeout)) {
-      DCHECK_GE(0, timeout);
+      DCHECK_GE(timeout, 0);
       DVLOG(2) << "Sync StartupController overriding startup timeout to "
                << timeout << " seconds.";
       fallback_timeout_ = base::TimeDelta::FromSeconds(timeout);
