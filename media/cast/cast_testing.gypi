@@ -125,6 +125,42 @@
       ], # source
     },
     {
+      'target_name': 'cast_benchmarks',
+      'type': '<(gtest_target_type)',
+      'include_dirs': [
+        '<(DEPTH)/',
+      ],
+      'dependencies': [
+        'cast_base',
+        'cast_receiver',
+        'cast_rtcp',
+        'cast_sender',
+        'cast_test_utility',
+        'cast_transport',
+        '<(DEPTH)/base/base.gyp:test_support_base',
+        '<(DEPTH)/net/net.gyp:net',
+        '<(DEPTH)/testing/gtest.gyp:gtest',
+      ],
+      'sources': [
+        'test/cast_benchmarks.cc',
+        'test/fake_single_thread_task_runner.cc',
+        'test/fake_single_thread_task_runner.h',
+        'test/fake_video_encode_accelerator.cc',
+        'test/fake_video_encode_accelerator.h',
+        'test/utility/test_util.cc',
+        'test/utility/test_util.h',
+      ], # source
+      'conditions': [
+        ['os_posix==1 and OS!="mac" and OS!="ios" and use_allocator!="none"',
+          {
+            'dependencies': [
+              '<(DEPTH)/base/allocator/allocator.gyp:allocator',
+            ],
+          }
+        ],
+      ],
+    },
+    {
       # This is a target for the collection of cast development tools.
       # They are built on bots but not shipped.
       'target_name': 'cast_tools',
