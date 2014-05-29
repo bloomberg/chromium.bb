@@ -139,7 +139,7 @@ Action::InjectionType Action::DidInjectAd(
 
   if (injection_type != NO_AD_INJECTION) {
     UMA_HISTOGRAM_ENUMERATION(
-        "Extensions.AdInjection.Type", ad_type, Action::NUM_AD_TYPES);
+        "Extensions.AdInjection.AdType", ad_type, Action::NUM_AD_TYPES);
   }
 
   return injection_type;
