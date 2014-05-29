@@ -158,10 +158,6 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
 
   bool enable_port_selection() const { return enable_port_selection_; }
 
-  bool has_quic_server_info_factory() {
-    return quic_server_info_factory_ != NULL;
-  }
-
   void set_quic_server_info_factory(
       QuicServerInfoFactory* quic_server_info_factory) {
     DCHECK(!quic_server_info_factory_);

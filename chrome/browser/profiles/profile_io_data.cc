@@ -28,8 +28,6 @@
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
-#include "chrome/browser/devtools/devtools_network_controller.h"
-#include "chrome/browser/devtools/devtools_network_transaction_factory.h"
 #include "chrome/browser/download/download_service.h"
 #include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/extensions/extension_resource_protocols.h"
@@ -1144,44 +1142,28 @@ void ProfileIOData::DestroyResourceContext() {
   resource_context_.reset();
 }
 
-scoped_ptr<net::HttpCache> ProfileIOData::CreateMainHttpFactory(
+void ProfileIOData::PopulateNetworkSessionParams(
     const ProfileParams* profile_params,
-    net::HttpCache::BackendFactory* main_backend) const {
-  net::HttpNetworkSession::Params params;
+    net::HttpNetworkSession::Params* params) const {
+
   ChromeURLRequestContext* context = main_request_context();
 
   IOThread* const io_thread = profile_params->io_thread;
 
-  io_thread->InitializeNetworkSessionParams(&params);
+  io_thread->InitializeNetworkSessionParams(params);
 
-  params.host_resolver = context->host_resolver();
-  params.cert_verifier = context->cert_verifier();
-  params.server_bound_cert_service = context->server_bound_cert_service();
-  params.transport_security_state = context->transport_security_state();
-  params.cert_transparency_verifier = context->cert_transparency_verifier();
-  params.proxy_service = context->proxy_service();
-  params.ssl_session_cache_shard = GetSSLSessionCacheShard();
-  params.ssl_config_service = context->ssl_config_service();
-  params.http_auth_handler_factory = context->http_auth_handler_factory();
-  params.network_delegate = network_delegate();
-  params.http_server_properties = context->http_server_properties();
-  params.net_log = context->net_log();
-
-  network_controller_.reset(new DevToolsNetworkController());
-
-  net::HttpNetworkSession* session = new net::HttpNetworkSession(params);
-  return scoped_ptr<net::HttpCache>(new net::HttpCache(
-      new DevToolsNetworkTransactionFactory(network_controller_.get(), session),
-      context->net_log(), main_backend));
-}
-
-scoped_ptr<net::HttpCache> ProfileIOData::CreateHttpFactory(
-    net::HttpNetworkSession* shared_session,
-    net::HttpCache::BackendFactory* backend) const {
-  return scoped_ptr<net::HttpCache>(new net::HttpCache(
-      new DevToolsNetworkTransactionFactory(
-          network_controller_.get(), shared_session),
-      shared_session->net_log(), backend));
+  params->host_resolver = context->host_resolver();
+  params->cert_verifier = context->cert_verifier();
+  params->server_bound_cert_service = context->server_bound_cert_service();
+  params->transport_security_state = context->transport_security_state();
+  params->cert_transparency_verifier = context->cert_transparency_verifier();
+  params->proxy_service = context->proxy_service();
+  params->ssl_session_cache_shard = GetSSLSessionCacheShard();
+  params->ssl_config_service = context->ssl_config_service();
+  params->http_auth_handler_factory = context->http_auth_handler_factory();
+  params->network_delegate = network_delegate();
+  params->http_server_properties = context->http_server_properties();
+  params->net_log = context->net_log();
 }
 
 void ProfileIOData::SetCookieSettingsForTesting(

@@ -5,13 +5,9 @@
 #ifndef CHROME_BROWSER_DEVTOOLS_CHROME_DEVTOOLS_MANAGER_DELEGATE_H_
 #define CHROME_BROWSER_DEVTOOLS_CHROME_DEVTOOLS_MANAGER_DELEGATE_H_
 
-#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "chrome/browser/devtools/devtools_protocol.h"
 #include "content/public/browser/devtools_manager_delegate.h"
-
-class Profile;
 
 class ChromeDevToolsManagerDelegate : public content::DevToolsManagerDelegate {
  public:
@@ -26,21 +22,6 @@ class ChromeDevToolsManagerDelegate : public content::DevToolsManagerDelegate {
       base::DictionaryValue* command_dict) OVERRIDE;
 
  private:
-  base::Callback<void(content::DevToolsAgentHost*, bool)> devtools_callback_;
-  bool devtools_callback_registered_;
-  void EnsureDevtoolsCallbackRegistered();
-
-  Profile* GetProfile(content::DevToolsAgentHost* agent_host);
-
-  scoped_ptr<DevToolsProtocol::Response> EmulateNetworkConditions(
-      content::DevToolsAgentHost* agent_host,
-      DevToolsProtocol::Command* command);
-
-  void UpdateNetworkState(content::DevToolsAgentHost* agent_host, bool offline);
-
-  void OnDevToolsStateChanged(content::DevToolsAgentHost* agent_host,
-                              bool attached);
-
   DISALLOW_COPY_AND_ASSIGN(ChromeDevToolsManagerDelegate);
 };
 

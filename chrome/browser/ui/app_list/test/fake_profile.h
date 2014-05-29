@@ -111,7 +111,6 @@ class FakeProfile : public Profile {
 
   virtual PrefProxyConfigTracker* GetProxyConfigTracker() OVERRIDE;
   virtual chrome_browser_net::Predictor* GetNetworkPredictor() OVERRIDE;
-  virtual DevToolsNetworkController* GetDevToolsNetworkController() OVERRIDE;
   virtual void ClearNetworkingHistorySince(
       base::Time time, const base::Closure& completion) OVERRIDE;
   virtual void ClearDomainReliabilityMonitor(
