@@ -165,7 +165,7 @@ static void initializedByEventConstructorReadonlyTestInterfaceEmptyArrayAttribut
 {
     v8::Handle<v8::Object> holder = info.Holder();
     TestInterfaceEventConstructor* impl = V8TestInterfaceEventConstructor::toNative(holder);
-    v8SetReturnValue(info, v8Array(impl->initializedByEventConstructorReadonlyTestInterfaceEmptyArrayAttribute(), info.GetIsolate()));
+    v8SetReturnValue(info, v8Array(impl->initializedByEventConstructorReadonlyTestInterfaceEmptyArrayAttribute(), info.Holder(), info.GetIsolate()));
 }
 
 static void initializedByEventConstructorReadonlyTestInterfaceEmptyArrayAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)

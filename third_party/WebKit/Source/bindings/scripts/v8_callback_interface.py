@@ -121,7 +121,7 @@ def generate_arguments_contents(arguments, call_with_this_handle):
             # used.
             'cpp_value_to_v8_value': argument.idl_type.cpp_value_to_v8_value(
                 argument.name, isolate='isolate',
-                creation_context='v8::Handle<v8::Object>()'),
+                creation_context='m_scriptState->context()->Global()'),
         }
 
     argument_declarations = ['ScriptValue thisValue'] if call_with_this_handle else []

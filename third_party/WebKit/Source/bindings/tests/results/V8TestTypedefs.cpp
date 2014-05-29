@@ -228,7 +228,7 @@ static void arrayOfStringsMethodArrayOfStringsArgMethod(const v8::FunctionCallba
         v8::TryCatch block;
         TONATIVE_VOID_INTERNAL(arrayOfStringsArg, toNativeArray<String>(info[0], 1, info.GetIsolate()));
     }
-    v8SetReturnValue(info, v8Array(impl->arrayOfStringsMethodArrayOfStringsArg(arrayOfStringsArg), info.GetIsolate()));
+    v8SetReturnValue(info, v8Array(impl->arrayOfStringsMethodArrayOfStringsArg(arrayOfStringsArg), info.Holder(), info.GetIsolate()));
 }
 
 static void arrayOfStringsMethodArrayOfStringsArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -250,7 +250,7 @@ static void stringArrayMethodStringArrayArgMethod(const v8::FunctionCallbackInfo
         v8::TryCatch block;
         TONATIVE_VOID_INTERNAL(stringArrayArg, toNativeArray<String>(info[0], 1, info.GetIsolate()));
     }
-    v8SetReturnValue(info, v8Array(impl->stringArrayMethodStringArrayArg(stringArrayArg), info.GetIsolate()));
+    v8SetReturnValue(info, v8Array(impl->stringArrayMethodStringArrayArg(stringArrayArg), info.Holder(), info.GetIsolate()));
 }
 
 static void stringArrayMethodStringArrayArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)

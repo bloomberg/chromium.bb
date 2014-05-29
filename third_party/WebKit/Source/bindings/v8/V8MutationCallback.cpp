@@ -69,7 +69,7 @@ void V8MutationCallback::call(const WillBeHeapVector<RefPtrWillBeMember<Mutation
         return;
 
     v8::Handle<v8::Object> thisObject = v8::Handle<v8::Object>::Cast(observerHandle);
-    v8::Handle<v8::Value> argv[] = { v8Array(mutations, isolate), observerHandle };
+    v8::Handle<v8::Value> argv[] = { v8Array(mutations, m_scriptState->context()->Global(), isolate), observerHandle };
 
     v8::TryCatch exceptionCatcher;
     exceptionCatcher.SetVerbose(true);

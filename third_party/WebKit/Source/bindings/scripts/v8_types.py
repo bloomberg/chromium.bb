@@ -664,12 +664,12 @@ CPP_VALUE_TO_V8_VALUE = {
     'ScriptValue': '{cpp_value}.v8Value()',
     'SerializedScriptValue': '{cpp_value} ? {cpp_value}->deserialize() : v8::Handle<v8::Value>(v8::Null({isolate}))',
     # General
-    'array': 'v8Array({cpp_value}, {isolate})',
+    'array': 'v8Array({cpp_value}, {creation_context}, {isolate})',
     'DOMWrapper': 'toV8({cpp_value}, {creation_context}, {isolate})',
 }
 
 
-def cpp_value_to_v8_value(idl_type, cpp_value, isolate='info.GetIsolate()', creation_context='', extended_attributes=None):
+def cpp_value_to_v8_value(idl_type, cpp_value, isolate='info.GetIsolate()', creation_context='info.Holder()', extended_attributes=None):
     """Returns an expression that converts a C++ value to a V8 value."""
     # the isolate parameter is needed for callback interfaces
     idl_type, cpp_value = preprocess_idl_type_and_value(idl_type, cpp_value, extended_attributes)

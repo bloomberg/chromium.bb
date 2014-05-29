@@ -68,12 +68,6 @@ public:
     virtual void resume() OVERRIDE;
     virtual void stop() OVERRIDE;
 
-    // Used by ToV8Value<ScriptPromiseResolverWithContext, ScriptState*>.
-    static v8::Handle<v8::Object> getCreationContext(ScriptState* scriptState)
-    {
-        return scriptState->context()->Global();
-    }
-
 protected:
     explicit ScriptPromiseResolverWithContext(ScriptState*);
 
@@ -88,7 +82,7 @@ private:
     template<typename T>
     v8::Handle<v8::Value> toV8Value(const T& value)
     {
-        return ToV8Value<ScriptPromiseResolverWithContext, ScriptState*>::toV8Value(value, m_scriptState.get(), m_scriptState->isolate());
+        return ToV8Value<ScriptPromiseResolverWithContext, v8::Handle<v8::Object> >::toV8Value(value, m_scriptState->context()->Global(), m_scriptState->isolate());
     }
 
     template <typename T>

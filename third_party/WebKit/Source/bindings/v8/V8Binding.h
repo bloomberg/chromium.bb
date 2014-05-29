@@ -229,15 +229,15 @@ struct V8ValueTraits {
     // FIXME: This function requires the associated generated header to be
     // included. Also, this function does not match with other V8ValueTraits
     // classes. Remove this V8ValueTraits if possible.
-    static inline v8::Handle<v8::Value> toV8Value(const T& value, v8::Isolate* isolate)
+    static inline v8::Handle<v8::Value> toV8Value(const T& value, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
     {
-        return toV8(WTF::getPtr(value), v8::Handle<v8::Object>(), isolate);
+        return toV8(WTF::getPtr(value), creationContext, isolate);
     }
 };
 
 template<>
 struct V8ValueTraits<String> {
-    static inline v8::Handle<v8::Value> toV8Value(const String& value, v8::Isolate* isolate)
+    static inline v8::Handle<v8::Value> toV8Value(const String& value, v8::Handle<v8::Object>, v8::Isolate* isolate)
     {
         return v8String(isolate, value);
     }
@@ -245,7 +245,7 @@ struct V8ValueTraits<String> {
 
 template<>
 struct V8ValueTraits<AtomicString> {
-    static inline v8::Handle<v8::Value> toV8Value(const AtomicString& value, v8::Isolate* isolate)
+    static inline v8::Handle<v8::Value> toV8Value(const AtomicString& value, v8::Handle<v8::Object>, v8::Isolate* isolate)
     {
         return v8String(isolate, value);
     }
@@ -253,7 +253,7 @@ struct V8ValueTraits<AtomicString> {
 
 template<size_t n>
 struct V8ValueTraits<char[n]> {
-    static inline v8::Handle<v8::Value> toV8Value(char const (&value)[n], v8::Isolate* isolate)
+    static inline v8::Handle<v8::Value> toV8Value(char const (&value)[n], v8::Handle<v8::Object>, v8::Isolate* isolate)
     {
         return v8String(isolate, value);
     }
@@ -261,7 +261,7 @@ struct V8ValueTraits<char[n]> {
 
 template<>
 struct V8ValueTraits<const char*> {
-    static inline v8::Handle<v8::Value> toV8Value(const char* const& value, v8::Isolate* isolate)
+    static inline v8::Handle<v8::Value> toV8Value(const char* const& value, v8::Handle<v8::Object>, v8::Isolate* isolate)
     {
         return v8String(isolate, value);
     }
@@ -269,7 +269,7 @@ struct V8ValueTraits<const char*> {
 
 template<>
 struct V8ValueTraits<int> {
-    static inline v8::Handle<v8::Value> toV8Value(const int& value, v8::Isolate* isolate)
+    static inline v8::Handle<v8::Value> toV8Value(const int& value, v8::Handle<v8::Object>, v8::Isolate* isolate)
     {
         return v8::Integer::New(isolate, value);
     }
@@ -277,7 +277,7 @@ struct V8ValueTraits<int> {
 
 template<>
 struct V8ValueTraits<long> {
-    static inline v8::Handle<v8::Value> toV8Value(const long& value, v8::Isolate* isolate)
+    static inline v8::Handle<v8::Value> toV8Value(const long& value, v8::Handle<v8::Object>, v8::Isolate* isolate)
     {
         return v8::Integer::New(isolate, value);
     }
@@ -285,7 +285,7 @@ struct V8ValueTraits<long> {
 
 template<>
 struct V8ValueTraits<unsigned> {
-    static inline v8::Handle<v8::Value> toV8Value(const unsigned& value, v8::Isolate* isolate)
+    static inline v8::Handle<v8::Value> toV8Value(const unsigned& value, v8::Handle<v8::Object>, v8::Isolate* isolate)
     {
         return v8::Integer::NewFromUnsigned(isolate, value);
     }
@@ -293,7 +293,7 @@ struct V8ValueTraits<unsigned> {
 
 template<>
 struct V8ValueTraits<unsigned long> {
-    static inline v8::Handle<v8::Value> toV8Value(const unsigned long& value, v8::Isolate* isolate)
+    static inline v8::Handle<v8::Value> toV8Value(const unsigned long& value, v8::Handle<v8::Object>, v8::Isolate* isolate)
     {
         return v8::Integer::NewFromUnsigned(isolate, value);
     }
@@ -301,7 +301,7 @@ struct V8ValueTraits<unsigned long> {
 
 template<>
 struct V8ValueTraits<float> {
-    static inline v8::Handle<v8::Value> toV8Value(const float& value, v8::Isolate* isolate)
+    static inline v8::Handle<v8::Value> toV8Value(const float& value, v8::Handle<v8::Object>, v8::Isolate* isolate)
     {
         return v8::Number::New(isolate, value);
     }
@@ -309,7 +309,7 @@ struct V8ValueTraits<float> {
 
 template<>
 struct V8ValueTraits<double> {
-    static inline v8::Handle<v8::Value> toV8Value(const double& value, v8::Isolate* isolate)
+    static inline v8::Handle<v8::Value> toV8Value(const double& value, v8::Handle<v8::Object>, v8::Isolate* isolate)
     {
         return v8::Number::New(isolate, value);
     }
@@ -317,7 +317,7 @@ struct V8ValueTraits<double> {
 
 template<>
 struct V8ValueTraits<bool> {
-    static inline v8::Handle<v8::Value> toV8Value(const bool& value, v8::Isolate* isolate)
+    static inline v8::Handle<v8::Value> toV8Value(const bool& value, v8::Handle<v8::Object>, v8::Isolate* isolate)
     {
         return v8::Boolean::New(isolate, value);
     }
@@ -329,7 +329,7 @@ class V8UndefinedType { };
 
 template<>
 struct V8ValueTraits<V8NullType> {
-    static inline v8::Handle<v8::Value> toV8Value(const V8NullType&, v8::Isolate* isolate)
+    static inline v8::Handle<v8::Value> toV8Value(const V8NullType&, v8::Handle<v8::Object>, v8::Isolate* isolate)
     {
         return v8::Null(isolate);
     }
@@ -337,7 +337,7 @@ struct V8ValueTraits<V8NullType> {
 
 template<>
 struct V8ValueTraits<V8UndefinedType> {
-    static inline v8::Handle<v8::Value> toV8Value(const V8UndefinedType&, v8::Isolate* isolate)
+    static inline v8::Handle<v8::Value> toV8Value(const V8UndefinedType&, v8::Handle<v8::Object>, v8::Isolate* isolate)
     {
         return v8::Undefined(isolate);
     }
@@ -345,7 +345,7 @@ struct V8ValueTraits<V8UndefinedType> {
 
 template<>
 struct V8ValueTraits<ScriptValue> {
-    static inline v8::Handle<v8::Value> toV8Value(const ScriptValue& value, v8::Isolate*)
+    static inline v8::Handle<v8::Value> toV8Value(const ScriptValue& value, v8::Handle<v8::Object>, v8::Isolate*)
     {
         return value.v8Value();
     }
@@ -353,7 +353,7 @@ struct V8ValueTraits<ScriptValue> {
 
 template<>
 struct V8ValueTraits<v8::Handle<v8::Value> > {
-    static inline v8::Handle<v8::Value> toV8Value(const v8::Handle<v8::Value>& value, v8::Isolate*)
+    static inline v8::Handle<v8::Value> toV8Value(const v8::Handle<v8::Value>& value, v8::Handle<v8::Object>, v8::Isolate*)
     {
         return value;
     }
@@ -361,55 +361,55 @@ struct V8ValueTraits<v8::Handle<v8::Value> > {
 
 template<>
 struct V8ValueTraits<v8::Local<v8::Value> > {
-    static inline v8::Handle<v8::Value> toV8Value(const v8::Local<v8::Value>& value, v8::Isolate*)
+    static inline v8::Handle<v8::Value> toV8Value(const v8::Local<v8::Value>& value, v8::Handle<v8::Object>, v8::Isolate*)
     {
         return value;
     }
 };
 
 template<typename T, size_t inlineCapacity>
-v8::Handle<v8::Value> v8Array(const Vector<T, inlineCapacity>& iterator, v8::Isolate* isolate)
+v8::Handle<v8::Value> v8Array(const Vector<T, inlineCapacity>& iterator, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     v8::Local<v8::Array> result = v8::Array::New(isolate, iterator.size());
     int index = 0;
     typename Vector<T, inlineCapacity>::const_iterator end = iterator.end();
     typedef V8ValueTraits<T> TraitsType;
     for (typename Vector<T, inlineCapacity>::const_iterator iter = iterator.begin(); iter != end; ++iter)
-        result->Set(v8::Integer::New(isolate, index++), TraitsType::toV8Value(*iter, isolate));
+        result->Set(v8::Integer::New(isolate, index++), TraitsType::toV8Value(*iter, creationContext, isolate));
     return result;
 }
 
 template<typename T, size_t inlineCapacity>
-v8::Handle<v8::Value> v8Array(const HeapVector<T, inlineCapacity>& iterator, v8::Isolate* isolate)
+v8::Handle<v8::Value> v8Array(const HeapVector<T, inlineCapacity>& iterator, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     v8::Local<v8::Array> result = v8::Array::New(isolate, iterator.size());
     int index = 0;
     typename HeapVector<T, inlineCapacity>::const_iterator end = iterator.end();
     typedef V8ValueTraits<T> TraitsType;
     for (typename HeapVector<T, inlineCapacity>::const_iterator iter = iterator.begin(); iter != end; ++iter)
-        result->Set(v8::Integer::New(isolate, index++), TraitsType::toV8Value(*iter, isolate));
+        result->Set(v8::Integer::New(isolate, index++), TraitsType::toV8Value(*iter, creationContext, isolate));
     return result;
 }
 
 template<typename T, size_t inlineCapacity>
-v8::Handle<v8::Value> v8ArrayNoInline(const Vector<T, inlineCapacity>& iterator, v8::Isolate* isolate)
+v8::Handle<v8::Value> v8ArrayNoInline(const Vector<T, inlineCapacity>& iterator, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     v8::Local<v8::Array> result = v8::Array::New(isolate, iterator.size());
     int index = 0;
     typename Vector<T, inlineCapacity>::const_iterator end = iterator.end();
     for (typename Vector<T, inlineCapacity>::const_iterator iter = iterator.begin(); iter != end; ++iter)
-        result->Set(v8::Integer::New(isolate, index++), toV8NoInline(WTF::getPtr(*iter), v8::Handle<v8::Object>(), isolate));
+        result->Set(v8::Integer::New(isolate, index++), toV8NoInline(WTF::getPtr(*iter), creationContext, isolate));
     return result;
 }
 
 template<typename T, size_t inlineCapacity>
-v8::Handle<v8::Value> v8ArrayNoInline(const HeapVector<T, inlineCapacity>& iterator, v8::Isolate* isolate)
+v8::Handle<v8::Value> v8ArrayNoInline(const HeapVector<T, inlineCapacity>& iterator, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     v8::Local<v8::Array> result = v8::Array::New(isolate, iterator.size());
     int index = 0;
     typename HeapVector<T, inlineCapacity>::const_iterator end = iterator.end();
     for (typename HeapVector<T, inlineCapacity>::const_iterator iter = iterator.begin(); iter != end; ++iter)
-        result->Set(v8::Integer::New(isolate, index++), toV8NoInline(WTF::getPtr(*iter), v8::Handle<v8::Object>(), isolate));
+        result->Set(v8::Integer::New(isolate, index++), toV8NoInline(WTF::getPtr(*iter), creationContext, isolate));
     return result;
 }
 
@@ -829,17 +829,17 @@ template<typename U, typename Context>
 class ToV8Value {
 public:
     template<typename T>
-    static v8::Handle<v8::Value> toV8Value(const T& value, Context, v8::Isolate* isolate)
+    static v8::Handle<v8::Value> toV8Value(const T& value, Context context, v8::Isolate* isolate)
     {
         // Default implementaion: for types that don't need the context.
-        return V8ValueTraits<T>::toV8Value(value, isolate);
+        return V8ValueTraits<T>::toV8Value(value, context, isolate);
     }
 
     // Pointer specializations.
     template<typename T>
     static v8::Handle<v8::Value> toV8Value(T* const& value, Context context, v8::Isolate* isolate)
     {
-        return toV8NoInline(value, U::getCreationContext(context), isolate);
+        return toV8NoInline(value, context, isolate);
     }
     template<typename T>
     static v8::Handle<v8::Value> toV8Value(const RefPtr<T>& value, Context context, v8::Isolate* isolate)
@@ -868,27 +868,27 @@ public:
     }
 
     // const char* should use V8ValueTraits.
-    static v8::Handle<v8::Value> toV8Value(const char* const& value, Context, v8::Isolate* isolate)
+    static v8::Handle<v8::Value> toV8Value(const char* const& value, Context context, v8::Isolate* isolate)
     {
-        return V8ValueTraits<const char*>::toV8Value(value, isolate);
+        return V8ValueTraits<const char*>::toV8Value(value, context, isolate);
     }
 
     template<typename T, size_t inlineCapacity>
-    static v8::Handle<v8::Value> toV8Value(const Vector<T, inlineCapacity>& value, Context, v8::Isolate* isolate)
+    static v8::Handle<v8::Value> toV8Value(const Vector<T, inlineCapacity>& value, Context context, v8::Isolate* isolate)
     {
-        return v8ArrayNoInline(value, isolate);
+        return v8ArrayNoInline(value, context, isolate);
     }
 
     template<typename T, size_t inlineCapacity>
-    static v8::Handle<v8::Value> toV8Value(const HeapVector<T, inlineCapacity>& value, Context, v8::Isolate* isolate)
+    static v8::Handle<v8::Value> toV8Value(const HeapVector<T, inlineCapacity>& value, Context context, v8::Isolate* isolate)
     {
-        return v8ArrayNoInline(value, isolate);
+        return v8ArrayNoInline(value, context, isolate);
     }
 
     template<typename T, size_t inlineCapacity>
-    static v8::Handle<v8::Value> toV8Value(const PersistentHeapVector<T, inlineCapacity>& value, Context, v8::Isolate* isolate)
+    static v8::Handle<v8::Value> toV8Value(const PersistentHeapVector<T, inlineCapacity>& value, Context context, v8::Isolate* isolate)
     {
-        return v8ArrayNoInline(static_cast<HeapVector<T, inlineCapacity> >(value), isolate);
+        return v8ArrayNoInline(static_cast<HeapVector<T, inlineCapacity> >(value), context, isolate);
     }
 };
 

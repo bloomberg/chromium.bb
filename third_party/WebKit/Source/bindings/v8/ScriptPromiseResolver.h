@@ -125,17 +125,6 @@ public:
     void resolve(v8::Handle<v8::Value>);
     void reject(v8::Handle<v8::Value>);
 
-    // Used by ToV8Value<ScriptPromiseResolver, v8::Handle<v8::Object> >.
-    static v8::Handle<v8::Object> getCreationContext(v8::Handle<v8::Object> creationContext)
-    {
-        return creationContext;
-    }
-    // Used by ToV8Value<ScriptPromiseResolver, ScriptState*>.
-    static v8::Handle<v8::Object> getCreationContext(ScriptState* scriptState)
-    {
-        return scriptState->context()->Global();
-    }
-
 private:
     template<typename T>
     v8::Handle<v8::Value> toV8Value(const T& value, v8::Handle<v8::Object> creationContext)
@@ -146,7 +135,7 @@ private:
     template<typename T>
     v8::Handle<v8::Value> toV8Value(const T& value)
     {
-        return ToV8Value<ScriptPromiseResolver, ScriptState*>::toV8Value(value, m_scriptState.get(), m_scriptState->isolate());
+        return ToV8Value<ScriptPromiseResolver, v8::Handle<v8::Object> >::toV8Value(value, m_scriptState->context()->Global(), m_scriptState->isolate());
     }
 
     explicit ScriptPromiseResolver(ScriptState*);
