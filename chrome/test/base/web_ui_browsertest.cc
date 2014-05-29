@@ -12,6 +12,7 @@
 #include "base/lazy_instance.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/path_service.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/chrome_content_browser_client.h"
@@ -109,17 +110,6 @@ WebUIBrowserTest::~WebUIBrowserTest() {}
 
 void WebUIBrowserTest::AddLibrary(const base::FilePath& library_path) {
   user_libraries_.push_back(library_path);
-}
-
-// Add a helper JS library to the given WebUIBrowserTest from a path relative to
-// base::DIR_SOURCE_ROOT.
-// static
-void AddLibraryFromSourceRoot(WebUIBrowserTest* browser_test,
-                              const base::FilePath& path) {
-  base::FilePath filePath;
-  ASSERT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &filePath));
-  filePath = filePath.Append(path);
-  browser_test->AddLibrary(filePath);
 }
 
 bool WebUIBrowserTest::RunJavascriptFunction(const std::string& function_name) {
@@ -412,10 +402,19 @@ void WebUIBrowserTest::SetUpOnMainThread() {
   test_factory_->AddFactoryOverride(
       GURL(kDummyURL).host(), mock_provider_.Pointer());
 
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_data_directory_));
-  test_data_directory_ = test_data_directory_.Append(kWebUITestFolder);
+  base::FilePath test_data_directory;
+  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_data_directory));
+  test_data_directory = test_data_directory.Append(kWebUITestFolder);
+  library_search_paths_.push_back(test_data_directory);
+
+  base::FilePath gen_test_data_directory;
   ASSERT_TRUE(PathService::Get(chrome::DIR_GEN_TEST_DATA,
-                               &gen_test_data_directory_));
+                               &gen_test_data_directory));
+  library_search_paths_.push_back(gen_test_data_directory);
+
+  base::FilePath source_root_directory;
+  ASSERT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &source_root_directory));
+  library_search_paths_.push_back(source_root_directory);
 
   // TODO(dtseng): should this be part of every BrowserTest or just WebUI test.
   base::FilePath resources_pack_path;
@@ -423,8 +422,8 @@ void WebUIBrowserTest::SetUpOnMainThread() {
   ResourceBundle::GetSharedInstance().AddDataPackFromPath(
       resources_pack_path, ui::SCALE_FACTOR_NONE);
 
-  AddLibraryFromSourceRoot(this, base::FilePath(kA11yAuditLibraryJSPath));
-  AddLibraryFromSourceRoot(this, base::FilePath(kMockJSPath));
+  AddLibrary(base::FilePath(kA11yAuditLibraryJSPath));
+  AddLibrary(base::FilePath(kMockJSPath));
   AddLibrary(base::FilePath(kWebUILibraryJS));
 }
 
@@ -460,9 +459,9 @@ GURL WebUIBrowserTest::WebUITestDataPathToURL(
   return net::FilePathToFileURL(test_path);
 }
 
-void WebUIBrowserTest::BuildJavascriptLibraries(base::string16* content) {
-  ASSERT_TRUE(content != NULL);
-  std::string utf8_content;
+void WebUIBrowserTest::BuildJavascriptLibraries(
+    std::vector<base::string16>* libraries) {
+  ASSERT_TRUE(libraries != NULL);
   std::vector<base::FilePath>::iterator user_libraries_iterator;
   for (user_libraries_iterator = user_libraries_.begin();
        user_libraries_iterator != user_libraries_.end();
@@ -473,20 +472,29 @@ void WebUIBrowserTest::BuildJavascriptLibraries(base::string16* content) {
                                               &library_content))
           << user_libraries_iterator->value();
     } else {
-      bool ok = base::ReadFileToString(
-          gen_test_data_directory_.Append(*user_libraries_iterator),
-          &library_content);
-      if (!ok) {
+      bool ok = false;
+      std::vector<base::FilePath>::iterator library_search_path_iterator;
+      for (library_search_path_iterator = library_search_paths_.begin();
+           library_search_path_iterator != library_search_paths_.end();
+           ++library_search_path_iterator) {
         ok = base::ReadFileToString(
-            test_data_directory_.Append(*user_libraries_iterator),
+            base::MakeAbsoluteFilePath(
+                library_search_path_iterator->Append(*user_libraries_iterator)),
             &library_content);
+        if (ok)
+          break;
       }
-      ASSERT_TRUE(ok) << user_libraries_iterator->value();
+      ASSERT_TRUE(ok) << "User library not found: "
+                      << user_libraries_iterator->value();
     }
-    utf8_content.append(library_content);
-    utf8_content.append(";\n");
+    library_content.append(";\n");
+
+    // This magic code puts filenames in stack traces.
+    library_content.append("//# sourceURL=");
+    library_content.append(user_libraries_iterator->BaseName().AsUTF8Unsafe());
+    library_content.append("\n");
+    libraries->push_back(base::UTF8ToUTF16(library_content));
   }
-  content->append(base::UTF8ToUTF16(utf8_content));
 }
 
 base::string16 WebUIBrowserTest::BuildRunTestJSCall(
@@ -516,10 +524,18 @@ bool WebUIBrowserTest::RunJavascriptUsingHandler(
     bool is_test,
     bool is_async,
     RenderViewHost* preload_host) {
-
+  // Get the user libraries. Preloading them individually is best, then
+  // we can assign each one a filename for better stack traces. Otherwise
+  // append them all to |content|.
   base::string16 content;
-  if (!libraries_preloaded_)
-    BuildJavascriptLibraries(&content);
+  std::vector<base::string16> libraries;
+  if (!libraries_preloaded_) {
+    BuildJavascriptLibraries(&libraries);
+    if (!preload_host) {
+      content = JoinString(libraries, '\n');
+      libraries.clear();
+    }
+  }
 
   if (!function_name.empty()) {
     base::string16 called_function;
@@ -538,6 +554,9 @@ bool WebUIBrowserTest::RunJavascriptUsingHandler(
     SetupHandlers();
 
   bool result = true;
+
+  for (size_t i = 0; i < libraries.size(); ++i)
+    test_handler_->PreloadJavaScript(libraries[i], preload_host);
 
   if (is_test)
     result = test_handler_->RunJavaScriptTestWithResult(content);

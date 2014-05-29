@@ -49,6 +49,8 @@ def main ():
       shutil.copyfile(inputfile, jsoutfile)
     except Exception, ex:
       if os.path.exists(cxxoutfile):
+        # The contents of the output file will include the error message.
+        print open(cxxoutfile).read()
         os.remove(cxxoutfile)
       if os.path.exists(jsoutfile):
         os.remove(jsoutfile)

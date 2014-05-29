@@ -256,7 +256,7 @@ bool ChromeRenderViewObserver::OnMessageReceived(const IPC::Message& message) {
 
 void ChromeRenderViewObserver::OnWebUIJavaScript(
     const base::string16& javascript) {
-  webui_javascript_ = javascript;
+  webui_javascript_.push_back(javascript);
 }
 
 #if defined(OS_ANDROID)
@@ -390,7 +390,10 @@ void ChromeRenderViewObserver::OnGetFPS() {
 void ChromeRenderViewObserver::DidStartLoading() {
   if ((render_view()->GetEnabledBindings() & content::BINDINGS_POLICY_WEB_UI) &&
       !webui_javascript_.empty()) {
-    render_view()->GetMainRenderFrame()->ExecuteJavaScript(webui_javascript_);
+    for (size_t i = 0; i < webui_javascript_.size(); ++i) {
+      render_view()->GetMainRenderFrame()->ExecuteJavaScript(
+          webui_javascript_[i]);
+    }
     webui_javascript_.clear();
   }
 }

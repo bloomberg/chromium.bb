@@ -137,8 +137,8 @@ class WebUIBrowserTest : public InProcessBrowserTest {
   static GURL WebUITestDataPathToURL(const base::FilePath::StringType& path);
 
  private:
-  // Builds a string containing all added javascript libraries.
-  void BuildJavascriptLibraries(base::string16* content);
+  // Builds a vector of strings of all added javascript libraries.
+  void BuildJavascriptLibraries(std::vector<base::string16>* libraries);
 
   // Builds a string with a call to the runTest JS function, passing the
   // given |is_async|, |test_name| and its |args|.
@@ -166,15 +166,6 @@ class WebUIBrowserTest : public InProcessBrowserTest {
   // Handles test framework messages.
   scoped_ptr<WebUITestHandler> test_handler_;
 
-  // Location of test data (currently test/data/webui).
-  base::FilePath test_data_directory_;
-
-  // Location of generated test data (<(PROGRAM_DIR)/test_data).
-  base::FilePath gen_test_data_directory_;
-
-  // User added libraries
-  std::vector<base::FilePath> user_libraries_;
-
   // Indicates that the libraries have been pre-loaded and to not load them
   // again.
   bool libraries_preloaded_;
@@ -183,6 +174,12 @@ class WebUIBrowserTest : public InProcessBrowserTest {
   // PreloadJavascriptLibraries().
   std::string preload_test_fixture_;
   std::string preload_test_name_;
+
+  // User added libraries.
+  std::vector<base::FilePath> user_libraries_;
+
+  // User library search paths.
+  std::vector<base::FilePath> library_search_paths_;
 
   // When this is non-NULL, this is The WebUI instance used for testing.
   // Otherwise the selected tab's web_ui is used.

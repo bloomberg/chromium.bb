@@ -92,7 +92,7 @@ class ChromeRenderViewObserver : public content::RenderViewObserver {
   bool HasRefreshMetaTag(blink::WebFrame* frame);
 
   // Save the JavaScript to preload if a ViewMsg_WebUIJavaScript is received.
-  base::string16 webui_javascript_;
+  std::vector<base::string16> webui_javascript_;
 
   // Owned by ChromeContentRendererClient and outlive us.
   ChromeRenderProcessObserver* chrome_render_process_observer_;
