@@ -13,11 +13,13 @@ Chromoting</translation>
 <translation id="2801119484858626560">Wykryto niezgodną wersję Pulpitu zdalnego Chrome. Upewnij się, że masz najnowszą wersję Chrome oraz Pulpitu zdalnego Chrome na obu komputerach i spróbuj ponownie.</translation>
 <translation id="6998989275928107238">Do</translation>
 <translation id="406849768426631008">Chcesz komuś pomóc, jednocześnie rozmawiając z tą osobą przez czat wideo? Wypróbuj <ph name="LINK_BEGIN"/>Pulpit zdalny w Google Hangouts<ph name="LINK_END"/>.</translation>
+<translation id="906458777597946297">Maksymalizuj okno</translation>
 <translation id="5397086374758643919">Program do odinstalowywania hosta Pulpitu zdalnego Chrome</translation>
 <translation id="3258789396564295715">Możesz bezpiecznie korzystać z tego komputera przez Pulpit zdalny Chrome.</translation>
 <translation id="5070121137485264635">Host zdalny wymaga uwierzytelnienia w witrynie innej firmy. Aby kontynuować, musisz udzielić Pulpitowi zdalnemu Chrome dodatkowych uprawnień dostępu do tego adresu:</translation>
 <translation id="2124408767156847088">Uzyskaj bezpieczny dostęp do swoich komputerów z urządzenia z Androidem.</translation>
 <translation id="3194245623920924351">Pulpit zdalny Chrome</translation>
+<translation id="3649256019230929621">Minimalizuj okno</translation>
 <translation id="4808503597364150972">Wpisz PIN dla: <ph name="HOSTNAME"/>.</translation>
 <translation id="7672203038394118626">Połączenia zdalne z tym komputerem zostały wyłączone.</translation>
 <translation id="8244400547700556338">Dowiedz się jak.</translation>
@@ -31,6 +33,7 @@ Chromoting</translation>
 <translation id="5925497314631808737">• Implementacja pełnego ekranu/trybu pojemnego.
 • Poprawiona ikona do ukrywania paska działania.</translation>
 <translation id="2707879711568641861">Brak niektórych elementów wymaganych przez Pulpit zdalny Chrome. Upewnij się, że masz zainstalowaną najnowszą wersję i spróbuj ponownie.</translation>
+<translation id="1779766957982586368">Zamknij okno</translation>
 <translation id="2499160551253595098">Pomóż nam udoskonalić Pulpit zdalny Chrome, zezwalając na gromadzenie przez nas statystyk użytkowania i raportów o awariach.</translation>
 <translation id="7868137160098754906">Wpisz kod PIN komputera zdalnego.</translation>
 <translation id="677755392401385740">Uruchomiono host dla użytkownika: <ph name="HOST_USERNAME"/>.</translation>
@@ -215,5 +218,6 @@ zdalnego Chrome</translation>
 <translation id="1818475040640568770">Brak zarejestrowanych komputerów.</translation>
 <translation id="4394049700291259645">Wyłącz</translation>
 <translation id="4156740505453712750">Aby zabezpieczyć dostęp do tego komputera, wybierz PIN złożony z <ph name="BOLD_START"/>co najmniej sześciu cyfr<ph name="BOLD_END"/>. Będzie on wymagany przy łączeniu się z innej lokalizacji.</translation>
+<translation id="6398765197997659313">Zamknij pełny ekran</translation>
 <translation id="3286521253923406898">Kontroler hosta funkcji Chromoting</translation>
 </translationbundle>

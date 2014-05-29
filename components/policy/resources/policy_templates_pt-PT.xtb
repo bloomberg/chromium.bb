@@ -420,7 +420,6 @@
 
           Se a ação for a suspensão, o <ph name="PRODUCT_OS_NAME"/> pode ser configurado separadamente para bloquear ou não bloquear o ecrã antes da suspensão.</translation>
 <translation id="3915395663995367577">URL para um ficheiro .pac de proxy</translation>
-<translation id="2144674628322086778">Permitir que o utilizador empresarial seja principal e secundário (comportamento predefinido)</translation>
 <translation id="1022361784792428773">IDs das extensões que os utilizadores não poderão instalar (ou * para todas)</translation>
 <translation id="3805659594028420438">Ativar extensão de certificados de vinculação ao domínio TLS (obsoleto)</translation>
 <translation id="5499375345075963939">Esta política está ativa apenas no modo de retalho.
@@ -795,7 +794,6 @@
           Esta política destina-se unicamente à utilização interna pelo próprio Chrome.</translation>
 <translation id="5586942249556966598">Não fazer nada</translation>
 <translation id="131353325527891113">Mostrar nomes de utilizador no ecrã de início de sessão</translation>
-<translation id="4057110413331612451">Permitir que o utilizador empresarial seja apenas utilizador principal de multiperfil</translation>
 <translation id="5365946944967967336">Mostrar o botão Página Inicial na barra de ferramentas</translation>
 <translation id="3709266154059827597">Configurar lista negra de instalação de extensões</translation>
 <translation id="1933378685401357864">Imagem de fundo</translation>

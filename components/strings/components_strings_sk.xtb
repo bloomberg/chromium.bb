@@ -9,6 +9,7 @@
 <translation id="777702478322588152">Prefektúra</translation>
 <translation id="151501797353681931">Importované z prehliadača Safari</translation>
 <translation id="2972581237482394796">&amp;Dopredu</translation>
+<translation id="7600965453749440009">Nikdy neprekladať jazyk <ph name="LANGUAGE"/></translation>
 <translation id="2262243747453050782">Chyba protokolu HTTP</translation>
 <translation id="1339601241726513588">Doména registrácie:</translation>
 <translation id="7298195798382681320">Odporúčané</translation>
@@ -16,6 +17,7 @@
 <translation id="5299298092464848405">Pri analýze pravidla sa vyskytla chyba</translation>
 <translation id="2815693974042551705">Priečinok so záložkami</translation>
 <translation id="3088325635286126843">&amp;Premenovať...</translation>
+<translation id="6831043979455480757">Preložiť</translation>
 <translation id="1228893227497259893">Nesprávny identifikátor entity</translation>
 <translation id="5111692334209731439">&amp;Správca záložiek</translation>
 <translation id="6337534724793800597">Filtrovať pravidlá podľa mena</translation>
@@ -28,13 +30,16 @@
 <translation id="3583757800736429874">&amp;Znova presunúť</translation>
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="277499241957683684">Chýbajúci záznam zariadenia</translation>
+<translation id="8553075262323480129">Prekladanie zlyhalo, pretože sa nepodarilo určiť jazyk stránky.</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
 <translation id="8368859634510605990">&amp;Otvoriť všetky záložky</translation>
+<translation id="1103523840287552314">Vždy preložiť nasledujúci jazyk: <ph name="LANGUAGE"/></translation>
 <translation id="1227633850867390598">Skryť hodnotu</translation>
 <translation id="6753269504797312559">Hodnota pravidla</translation>
 <translation id="5078638979202084724">Uložiť všetky karty ako záložky</translation>
 <translation id="7550830279652415241">bookmarks_<ph name="DATESTAMP"/>.html</translation>
 <translation id="7400418766976504921">Adresa URL</translation>
+<translation id="7378627244592794276">Nie</translation>
 <translation id="6949306908218145636">Pridať otvorené stránky medzi záložky...</translation>
 <translation id="2704283930420550640">Hodnota nezodpovedá formátu.</translation>
 <translation id="1055184225775184556">&amp;Vrátiť späť pridanie</translation>
@@ -45,7 +50,6 @@
 <translation id="719464814642662924">Visa</translation>
 <translation id="6839929833149231406">Oblasť</translation>
 <translation id="1871208020102129563">Proxy je nastavené na použitie pevne daných serverov proxy, nie skriptov PAC adresy URL.</translation>
-<translation id="8642489171979176277">Importované z Panela s nástrojmi Google</translation>
 <translation id="3380365263193509176">Neznáma chyba</translation>
 <translation id="112840717907525620">Vyrovnávacia pamäť pravidla je v poriadku</translation>
 <translation id="37613671848467444">Otvoriť v &amp;okne inkognito</translation>
@@ -56,6 +60,7 @@
 <translation id="939736085109172342">Nový priečinok</translation>
 <translation id="7690853182226561458">Pridať &amp;priečinok...</translation>
 <translation id="6973656660372572881">Určené sú pevne dané servery proxy aj skript PAC adresy URL.</translation>
+<translation id="7108649287766967076">Preklad do jazyka <ph name="TARGET_LANGUAGE"/> zlyhal.</translation>
 <translation id="4103249731201008433">Sériové číslo zariadenia je neplatné</translation>
 <translation id="3667681724235208644">Zobraziť pôvodnú stránku</translation>
 <translation id="4079302484614802869">Konfigurácia proxy je nastavená na použitie skriptu PAC adresy URL, nie pevne daných serverov proxy.</translation>
@@ -84,6 +89,7 @@
 <translation id="2367567093518048410">Úroveň</translation>
 <translation id="7610193165460212391">Hodnota (<ph name="VALUE"/>) presahuje povolený rozsah.</translation>
 <translation id="8790007591277257123">&amp;Znova vymazať</translation>
+<translation id="370665806235115550">Načítava sa...</translation>
 <translation id="2902382079633781842">Záložka sa pridala.</translation>
 <translation id="2096368010154057602">Oddelenie</translation>
 <translation id="6529602333819889595">&amp;Znova odstrániť</translation>
@@ -113,16 +119,20 @@
 <translation id="1383876407941801731">Vyhľadávanie</translation>
 <translation id="4883178195103750615">Exportovať záložky do súboru HTML ...</translation>
 <translation id="3174168572213147020">Ostrov</translation>
+<translation id="9137013805542155359">Zobraziť originál</translation>
 <translation id="2213606439339815911">Načítavanie záznamov...</translation>
 <translation id="6263376278284652872">Záložky domény <ph name="DOMAIN"/></translation>
 <translation id="8487693399751278191">Importovať záložky...</translation>
+<translation id="498957508165411911">Preložiť z jazyka <ph name="ORIGINAL_LANGUAGE"/> do jazyka <ph name="TARGET_LANGUAGE"/>?</translation>
 <translation id="1181037720776840403">Odstrániť</translation>
 <translation id="5261073535210137151">Tento priečinok obsahuje záložky (<ph name="COUNT"/>). Naozaj ho chcete odstrániť?</translation>
+<translation id="7186367841673660872">Táto stránka bola preložená z jazyka<ph name="ORIGINAL_LANGUAGE"/>do jazyka<ph name="LANGUAGE_LANGUAGE"/></translation>
 <translation id="6549689063733911810">Nedávne</translation>
 <translation id="7139724024395191329">Emirát</translation>
 <translation id="6702639462873609204">&amp;Upraviť...</translation>
 <translation id="5145883236150621069">V odpovedi na pravidlo sa nachádza kód chyby</translation>
 <translation id="971774202801778802">Adresa URL záložky</translation>
+<translation id="7983301409776629893">Vždy preložiť jazyk <ph name="ORIGINAL_LANGUAGE"/> do jazyka <ph name="TARGET_LANGUAGE"/></translation>
 <translation id="6970216967273061347">Štvrť</translation>
 <translation id="1122960773616686544">Názov záložky</translation>
 <translation id="3427342743765426898">&amp;Znova upraviť</translation>
@@ -130,6 +140,7 @@
 <translation id="6445051938772793705">Krajina</translation>
 <translation id="1047726139967079566">Pridať túto stránku medzi záložky...</translation>
 <translation id="1774833706453699074">Pridať otvorené stránky medzi záložky...</translation>
+<translation id="5031870354684148875">O službe Prekladač Google</translation>
 <translation id="3950820424414687140">Prihlásiť sa</translation>
 <translation id="2025186561304664664">Proxy je nastavené na automatickú konfiguráciu.</translation>
 <translation id="1853748787962613237">Článok sa nepodarilo zobraziť.</translation>
@@ -142,7 +153,6 @@
 <translation id="7805768142964895445">Stav</translation>
 <translation id="2805756323405976993">Aplikácie</translation>
 <translation id="4853020600495124913">Otvoriť v &amp;novom okne</translation>
-<translation id="4002066346123236978">Názov</translation>
 <translation id="1113869188872983271">&amp;Vrátiť späť zmenu poradia</translation>
 <translation id="536296301121032821">Nastavenia pravidla sa nepodarilo uložiť</translation>
 <translation id="3254409185687681395">Vytvoriť záložku pre túto stránku</translation>
@@ -154,8 +164,10 @@
 <translation id="678528074488531090">Chyba overenia: <ph name="VALIDATION_ERROR"/>.</translation>
 <translation id="2556876185419854533">&amp;Vrátiť späť úpravu</translation>
 <translation id="4594403342090139922">&amp;Vrátiť späť odstránenie</translation>
+<translation id="8571890674111243710">Prebieha preklad stránky do jazyka: <ph name="LANGUAGE"/>...</translation>
 <translation id="4117700440116928470">Rozsah pravidla nie je podporovaný.</translation>
 <translation id="2114841414352855701">Ignorované, pretože bolo prepísané pravidlom <ph name="POLICY_NAME"/>.</translation>
+<translation id="3228969707346345236">Prekladanie zlyhalo, pretože stránka už je v jazyku: <ph name="LANGUAGE"/></translation>
 <translation id="8891727572606052622">Neplatný režim proxy.</translation>
 <translation id="399179161741278232">Importované</translation>
 <translation id="5857090052475505287">Nový priečinok</translation>
@@ -165,12 +177,15 @@
 <translation id="4926049483395192435">Musí byť určená.</translation>
 <translation id="7542995811387359312">Automatické dopĺňanie údajov o kreditnej karte je zakázané, pretože tento formulár nepoužíva zabezpečené pripojenie.</translation>
 <translation id="9024127637873500333">&amp;Otvoriť na novej karte</translation>
+<translation id="5179510805599951267">Text sa nezobrazil v jazyku <ph name="ORIGINAL_LANGUAGE"/>? Nahláste túto chybu</translation>
 <translation id="8088680233425245692">Článok sa nepodarilo zobraziť.</translation>
 <translation id="6397592254427394018">Otvoriť všetky záložky v &amp;okne inkognito</translation>
+<translation id="8725066075913043281">Skúsiť znova</translation>
 <translation id="1821930232296380041">Neplatná žiadosť alebo parametre žiadosti</translation>
 <translation id="580571955903695899">Zoradiť podľa názvu</translation>
 <translation id="6059232451013891645">Priečinok:</translation>
 <translation id="1640180200866533862">Pravidlá pre používateľa</translation>
+<translation id="375403751935624634">Preklad zlyhal v dôsledku chyby servera.</translation>
 <translation id="5629630648637658800">Nastavenia pravidla sa nepodarilo načítať</translation>
 <translation id="4030383055268325496">&amp;Vrátiť späť pridanie</translation>
 <translation id="3650584904733503804">Overenie bolo úspešné</translation>
@@ -185,14 +200,17 @@
 <translation id="5470861586879999274">&amp;Znova upraviť</translation>
 <translation id="6965978654500191972">Zariadenie</translation>
 <translation id="8249320324621329438">Naposledy načítané:</translation>
+<translation id="1285320974508926690">Nikdy neprekladať tieto webové stránky</translation>
 <translation id="3613422051106148727">&amp;Otvoriť na novej karte</translation>
 <translation id="6282194474023008486">PSČ</translation>
 <translation id="443673843213245140">Použitie servera proxy je zakázané, ale je určená explicitná konfigurácia servera proxy.</translation>
 <translation id="3623476034248543066">Zobraziť hodnotu</translation>
+<translation id="9020542370529661692">Táto stránka bola preložená do jazyka <ph name="TARGET_LANGUAGE"/></translation>
 <translation id="5631439013527180824">Neplatný token správy zariadenia</translation>
 <translation id="6804671422566312077">Otvoriť všetky záložky v &amp;novom okne</translation>
 <translation id="560412284261940334">Správa nie je podporovaná</translation>
 <translation id="3169472444629675720">Discover</translation>
+<translation id="4923417429809017348">Táto stránka bola preložená z neznámeho jazyka do jazyka <ph name="LANGUAGE_LANGUAGE"/></translation>
 <translation id="5626134646977739690">Názov:</translation>
 <translation id="4813512666221746211">Chyba siete</translation>
 <translation id="1254117744268754948">Vybrať priečinok</translation>
@@ -214,6 +232,7 @@
 <translation id="6644283850729428850">Toto pravidlo bolo označené ako zastarané.</translation>
 <translation id="8488350697529856933">Platí pre</translation>
 <translation id="5565735124758917034">Aktívne</translation>
+<translation id="7568593326407688803">Táto stránka je v jazyku<ph name="ORIGINAL_LANGUAGE"/>Chceli by ste ju preložiť?</translation>
 <translation id="3828029223314399057">Prehľadať záložky</translation>
 <translation id="8876793034577346603">Konfiguráciu siete sa nepodarilo analyzovať.</translation>
 <translation id="6268747994388690914">Importovať záložky zo súboru HTML...</translation>
@@ -223,6 +242,7 @@
 <translation id="7961015016161918242">Nikdy</translation>
 <translation id="2835170189407361413">Vymazať formulár</translation>
 <translation id="713122686776214250">Pridať strán&amp;ku...</translation>
+<translation id="6550675742724504774">Možnosti</translation>
 <translation id="8804164990146287819">Pravidlá ochrany osobných údajov</translation>
 <translation id="5337776961545044340">Peňaženka Google nepodporuje pre tohto obchodníka tento typ karty. Vyberte inú kartu.</translation>
 <translation id="4268574628540273656">Adresa URL:</translation>
@@ -250,6 +270,7 @@
 <translation id="3406605057700382950">&amp;Zobraziť panel so záložkami</translation>
 <translation id="2455981314101692989">Táto webová stránka zakázala automatické dopĺňanie tohto formulára.</translation>
 <translation id="7336748286991450492"><ph name="SIGN_IN_LINK"/> a majte svoje záložky všade k dispozícii.</translation>
+<translation id="8308427013383895095">Preklad zlyhal v dôsledku problému so sieťovým pripojením.</translation>
 <translation id="5720705177508910913">Aktuálny používateľ</translation>
 <translation id="3380864720620200369">ID klienta:</translation>
 </translationbundle>

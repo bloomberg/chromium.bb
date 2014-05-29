@@ -13,11 +13,13 @@ host</translation>
 <translation id="2801119484858626560">Er is een incompatibele versie van Chrome Remote Desktop gedetecteerd. Controleer of beide computers beschikken over de nieuwste versie van Chrome en Chrome Remote Desktop en probeer het opnieuw.</translation>
 <translation id="6998989275928107238">Aan</translation>
 <translation id="406849768426631008">Wil je tijdens een videochat iemand helpen? Probeer <ph name="LINK_BEGIN"/> Remote Desktop in Google Hangouts<ph name="LINK_END"/>.</translation>
+<translation id="906458777597946297">Venster maximaliseren</translation>
 <translation id="5397086374758643919">Verwijderprogramma voor Chrome Remote Desktop-host</translation>
 <translation id="3258789396564295715">Je kunt veilig toegang krijgen tot deze computer via Chrome Remote Desktop.</translation>
 <translation id="5070121137485264635">De externe host vereist dat je op een website van derden wordt geverifieerd. Als je wilt doorgaan, moet je Chrome Remote Desktop aanvullende machtigingen geven om toegang tot dit adres te krijgen:</translation>
 <translation id="2124408767156847088">Veilig toegang tot je computers vanaf je Android-apparaat.</translation>
 <translation id="3194245623920924351">Chrome Remote Desktop</translation>
+<translation id="3649256019230929621">Venster minimaliseren</translation>
 <translation id="4808503597364150972">Geef je pincode voor <ph name="HOSTNAME"/> op.</translation>
 <translation id="7672203038394118626">Externe verbindingen voor deze computer zijn uitgeschakeld.</translation>
 <translation id="8244400547700556338">Meer informatie.</translation>
@@ -31,6 +33,7 @@ host</translation>
 <translation id="5925497314631808737">• Volledig/uitgebreid scherm geïmplementeerd.
 • Pictogram voor het verbergen van de actiebalk verbeterd.</translation>
 <translation id="2707879711568641861">Er ontbreken enkele componenten die vereist zijn voor Chrome Remote Desktop. Controleer of je de nieuwste versie hebt geïnstalleerd en probeer het opnieuw.</translation>
+<translation id="1779766957982586368">Venster sluiten</translation>
 <translation id="2499160551253595098">Help ons Chrome Remote Desktop te verbeteren door ons toestemming te geven gebruiksstatistieken en crashrapporten te verzamelen.</translation>
 <translation id="7868137160098754906">Voer je pincode voor de externe computer in.</translation>
 <translation id="677755392401385740">Host gestart voor gebruiker: <ph name="HOST_USERNAME"/>.</translation>
@@ -215,5 +218,6 @@ Desktop-host</translation>
 <translation id="1818475040640568770">Je hebt geen computers geregistreerd.</translation>
 <translation id="4394049700291259645">Uitschakelen</translation>
 <translation id="4156740505453712750">Om de toegang tot deze computer te beschermen, kies je een pincode van <ph name="BOLD_START"/>ten minste zes cijfers<ph name="BOLD_END"/>. Je moet deze pincode opgeven wanneer je verbinding maakt vanaf een andere locatie.</translation>
+<translation id="6398765197997659313">Volledig scherm sluiten</translation>
 <translation id="3286521253923406898">Controller voor Chromoting-host</translation>
 </translationbundle>

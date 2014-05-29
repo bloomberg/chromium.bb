@@ -13,11 +13,13 @@ Chromoting</translation>
 <translation id="2801119484858626560">Une version incompatible du bureau à distance Google Chrome a été détectée. Veuillez vous assurer que vous utilisez la dernière version de Google Chrome et du bureau à distance sur les deux ordinateurs, puis réessayer.</translation>
 <translation id="6998989275928107238">À</translation>
 <translation id="406849768426631008">Vous voulez aider une personne au cours d'un chat vidéo avec elle ? Essayez <ph name="LINK_BEGIN"/> le Bureau à distance dans Google Hangouts<ph name="LINK_END"/>.</translation>
+<translation id="906458777597946297">Agrandir la fenêtre</translation>
 <translation id="5397086374758643919">Programme de désinstallation de l'hôte Bureau à distance Google Chrome</translation>
 <translation id="3258789396564295715">Vous pouvez accéder à cet ordinateur en toute sécurité via le bureau à distance Google Chrome.</translation>
 <translation id="5070121137485264635">L'hôte distant nécessite votre authentification auprès d'un site Web tiers. Pour continuer, vous devez accorder au Bureau à distance Chrome des autorisations supplémentaires afin d'accéder à l'adresse suivante :</translation>
 <translation id="2124408767156847088">Accédez à vos ordinateurs en toute sécurité depuis votre appareil Android</translation>
 <translation id="3194245623920924351">Bureau à distance Chrome</translation>
+<translation id="3649256019230929621">Réduire la fenêtre</translation>
 <translation id="4808503597364150972">Veuillez saisir le code d'accès pour <ph name="HOSTNAME"/>.</translation>
 <translation id="7672203038394118626">Les connexions à distance ont été désactivées pour cet ordinateur.</translation>
 <translation id="8244400547700556338">En savoir plus</translation>
@@ -31,6 +33,7 @@ Chromoting</translation>
 <translation id="5925497314631808737">• Implémentation du plein écran/mode immersif
 • Amélioration de l'icône permettant de masquer la barre d'action</translation>
 <translation id="2707879711568641861">Certains composants nécessaires à l'utilisation du bureau à distance Google Chrome sont introuvables. Veuillez vous assurer que vous utilisez la dernière version, puis réessayer.</translation>
+<translation id="1779766957982586368">Fermer la fenêtre</translation>
 <translation id="2499160551253595098">Aidez-nous à améliorer le bureau à distance Google Chrome en nous autorisant à recueillir des statistiques d'utilisation et des rapports d'erreur.</translation>
 <translation id="7868137160098754906">Veuillez saisir le code d'accès de l'ordinateur distant.</translation>
 <translation id="677755392401385740">Hôte démarré pour l'utilisateur &quot;<ph name="HOST_USERNAME"/>&quot;</translation>
@@ -215,5 +218,6 @@ Google Chrome</translation>
 <translation id="1818475040640568770">Vous n'avez pas d'ordinateurs enregistrés.</translation>
 <translation id="4394049700291259645">Désactiver</translation>
 <translation id="4156740505453712750">Pour protéger l'accès à cet ordinateur, veuillez choisir un code d'accès d'<ph name="BOLD_START"/>au moins six chiffres<ph name="BOLD_END"/>. Ce code d'accès sera demandé lors d'une connexion depuis un autre appareil.</translation>
+<translation id="6398765197997659313">Quitter le mode plein écran</translation>
 <translation id="3286521253923406898">Contrôleur de l'hôte Chromoting</translation>
 </translationbundle>

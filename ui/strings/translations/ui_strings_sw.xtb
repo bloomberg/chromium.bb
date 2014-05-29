@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="sw">
 <translation id="4820616160060340806">Amri+ <ph name="KEY_COMBO_NAME"/></translation>
+<translation id="8806053966018712535">Folda ya <ph name="FOLDER_NAME"/></translation>
 <translation id="1871244248791675517">Ins</translation>
 <translation id="6135826906199951471">Futa</translation>
 <translation id="528468243742722775">Mwisho</translation>
@@ -18,7 +19,6 @@
 <translation id="542155483965056918">dakika <ph name="NUMBER_ZERO"/> zilizopita</translation>
 <translation id="7121570032414343252">zimesalia sekunde <ph name="NUMBER_TWO"/></translation>
 <translation id="7511635910912978956">zimesalia saa <ph name="NUMBER_FEW"/></translation>
-<translation id="8717309436826820190"><ph name="NUMBER_OF_NOTIFICATIONS"/> zaidi kutoka <ph name="SOURCE_OF_NOTIFICATIONS"/></translation>
 <translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME"/></translation>
 <translation id="7658239707568436148">Ghairi</translation>
 <translation id="7222373446505536781">F11</translation>
@@ -139,6 +139,7 @@
 <translation id="8331626408530291785">Sogeza Juu</translation>
 <translation id="7907591526440419938">Fungua Faili</translation>
 <translation id="2864069933652346933">zimesalia siku <ph name="NUMBER_ZERO"/></translation>
+<translation id="2803313416453193357">Fungua folda</translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="2797524280730715045">Saa <ph name="NUMBER_DEFAULT"/> zilizopita</translation>
 <translation id="815598010540052116">Sogeza Chini</translation>
@@ -176,7 +177,6 @@
 <translation id="2704295676501803339">Sogeza Kushoto</translation>
 <translation id="9098468523912235228">sekunde <ph name="NUMBER_DEFAULT"/> zilizopita</translation>
 <translation id="494645311413743213">zimesalia sekunde <ph name="NUMBER_TWO"/></translation>
-<translation id="4570886800634958009">Panua arifa</translation>
 <translation id="566737009157135450">Futa Neno Kwa Kuelekea Nyuma</translation>
 <translation id="436869212180315161">Bofya</translation>
 <translation id="4860787810836767172">sekunde <ph name="NUMBER_FEW"/> zilizopita</translation>
@@ -196,6 +196,7 @@
 <translation id="822618367988303761">siku <ph name="NUMBER_TWO"/> zilizopita</translation>
 <translation id="4745438305783437565">dakika <ph name="NUMBER_FEW"/></translation>
 <translation id="1963692530539281474">Zimesalia siku <ph name="NUMBER_DEFAULT"/></translation>
+<translation id="6786750046913594791">Funga Folda</translation>
 <translation id="7509440305564869263">Dakika <ph name="NUMBER_FEW"/></translation>
 <translation id="5906719743126878045">zimesalia saa <ph name="NUMBER_TWO"/></translation>
 <translation id="8959208747503200525">Saa <ph name="NUMBER_TWO"/> zilizopita</translation>

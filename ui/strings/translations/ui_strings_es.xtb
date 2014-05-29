@@ -2,13 +2,14 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="es">
 <translation id="4820616160060340806">Comando+<ph name="KEY_COMBO_NAME"/></translation>
+<translation id="8806053966018712535">Carpeta <ph name="FOLDER_NAME"/></translation>
 <translation id="1871244248791675517">Insert</translation>
 <translation id="6135826906199951471">Supr</translation>
 <translation id="528468243742722775">Fin</translation>
 <translation id="5341849548509163798">hace <ph name="NUMBER_MANY"/> horas</translation>
-<translation id="6310545596129886942"><ph name="NUMBER_FEW"/> segundos restantes</translation>
-<translation id="9213479837033539041"><ph name="NUMBER_MANY"/> segundos restantes</translation>
-<translation id="1209866192426315618"><ph name="NUMBER_DEFAULT"/> minutos restantes</translation>
+<translation id="6310545596129886942">Quedan <ph name="NUMBER_FEW"/> segundos</translation>
+<translation id="9213479837033539041">Quedan <ph name="NUMBER_MANY"/> segundos</translation>
+<translation id="1209866192426315618">Quedan <ph name="NUMBER_DEFAULT"/> minutos</translation>
 <translation id="1801827354178857021">Punto</translation>
 <translation id="1190609913194133056">Centro de notificaciones</translation>
 <translation id="7470933019269157899">Quedan <ph name="NUMBER_DEFAULT"/> minutos</translation>
@@ -17,8 +18,7 @@
 <translation id="8602707065186045623">Archivo <ph name="SAVEAS_EXTENSION_TYPE"/> (.<ph name="SAVEAS_EXTENSION_NAME"/>)</translation>
 <translation id="542155483965056918"><ph name="NUMBER_ZERO"/> mins ago</translation>
 <translation id="7121570032414343252"><ph name="NUMBER_TWO"/> seg.</translation>
-<translation id="7511635910912978956"><ph name="NUMBER_FEW"/> horas restantes</translation>
-<translation id="8717309436826820190"><ph name="NUMBER_OF_NOTIFICATIONS"/> notificaciones más de <ph name="SOURCE_OF_NOTIFICATIONS"/></translation>
+<translation id="7511635910912978956">Quedan <ph name="NUMBER_FEW"/> horas</translation>
 <translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME"/></translation>
 <translation id="7658239707568436148">Cancelar</translation>
 <translation id="7222373446505536781">F11</translation>
@@ -32,11 +32,11 @@
 <translation id="9038489124413477075">Carpeta sin nombre</translation>
 <translation id="1940483897317142625">Eliminar hasta el final de la línea</translation>
 <translation id="8507996248087185956"><ph name="NUMBER_DEFAULT"/> minutos</translation>
-<translation id="3520476450377425184"><ph name="NUMBER_MANY"/> días restantes</translation>
+<translation id="3520476450377425184">Quedan <ph name="NUMBER_MANY"/> días</translation>
 <translation id="932327136139879170">Inicio</translation>
-<translation id="5600907569873192868"><ph name="NUMBER_MANY"/> minutos restantes</translation>
-<translation id="8666066831007952346">Faltan <ph name="NUMBER_TWO"/> días</translation>
-<translation id="6390842777729054533"><ph name="NUMBER_ZERO"/> segundos restantes</translation>
+<translation id="5600907569873192868">Quedan <ph name="NUMBER_MANY"/> minutos</translation>
+<translation id="8666066831007952346">Quedan <ph name="NUMBER_TWO"/> días</translation>
+<translation id="6390842777729054533">Quedan <ph name="NUMBER_ZERO"/> segundos</translation>
 <translation id="3909791450649380159">Cor&amp;tar</translation>
 <translation id="2560788951337264832">Quedan <ph name="NUMBER_ZERO"/> minutos</translation>
 <translation id="688711909580084195">Página web sin título</translation>
@@ -50,7 +50,7 @@
 <translation id="3234408098842461169">Flecha abajo</translation>
 <translation id="3087734570205094154">Inferior</translation>
 <translation id="8828991073132329143">Quedan <ph name="NUMBER_MANY"/> segundos</translation>
-<translation id="5935630983280450497">Falta <ph name="NUMBER_ONE"/> minuto</translation>
+<translation id="5935630983280450497">Queda <ph name="NUMBER_ONE"/> minuto</translation>
 <translation id="1860796786778352021">Cerrar notificación</translation>
 <translation id="6364916375976753737">Desplazar hacia la izquierda</translation>
 <translation id="2629089419211541119">hace <ph name="NUMBER_ONE"/> hora</translation>
@@ -66,7 +66,7 @@
 <translation id="2953767478223974804"><ph name="NUMBER_ONE"/> min</translation>
 <translation id="8210608804940886430">Avanzar página</translation>
 <translation id="1572103024875503863"><ph name="NUMBER_MANY"/> días</translation>
-<translation id="7163503212501929773"><ph name="NUMBER_MANY"/> horas restantes</translation>
+<translation id="7163503212501929773">Quedan <ph name="NUMBER_MANY"/> horas</translation>
 <translation id="5329858601952122676">&amp;Suprimir</translation>
 <translation id="6556866813142980365">Rehacer</translation>
 <translation id="8088823334188264070"><ph name="NUMBER_MANY"/> seg.</translation>
@@ -75,7 +75,7 @@
 <translation id="7275974018215686543">hace <ph name="NUMBER_MANY"/> segundos</translation>
 <translation id="7781829728241885113">Ayer</translation>
 <translation id="3424538384153559412"><ph name="NUMBER_TWO"/> minutos</translation>
-<translation id="50960180632766478"><ph name="NUMBER_FEW"/> minutos restantes</translation>
+<translation id="50960180632766478">Quedan <ph name="NUMBER_FEW"/> minutos</translation>
 <translation id="5517291721709019259">Quedan <ph name="NUMBER_FEW"/> segundos</translation>
 <translation id="6903282483217634857">Mover hacia la derecha</translation>
 <translation id="6659594942844771486">Pestaña</translation>
@@ -89,7 +89,7 @@
 <translation id="7814458197256864873">&amp;Copiar</translation>
 <translation id="3889424535448813030">Flecha derecha</translation>
 <translation id="4229495110203539533">hace <ph name="NUMBER_ONE"/> segundo</translation>
-<translation id="2544782972264605588"><ph name="NUMBER_DEFAULT"/> segundos restantes</translation>
+<translation id="2544782972264605588">Quedan <ph name="NUMBER_DEFAULT"/> segundos</translation>
 <translation id="6829324100069873704">Volver a las notificaciones</translation>
 <translation id="6528179044667508675">No molestar</translation>
 <translation id="5066177358602611309"><ph name="NUMBER_DEFAULT"/> segundos</translation>
@@ -101,7 +101,7 @@
 <translation id="1398853756734560583">Maximizar</translation>
 <translation id="4250229828105606438">Captura de pantalla</translation>
 <translation id="6690744523875189208"><ph name="NUMBER_TWO"/> horas</translation>
-<translation id="5260878308685146029">Faltan <ph name="NUMBER_TWO"/> minutos</translation>
+<translation id="5260878308685146029">Quedan <ph name="NUMBER_TWO"/> minutos</translation>
 <translation id="2557207087669398617">Mover hasta el inicio de la línea</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY"/> GB</translation>
 <translation id="1901303067676059328">Seleccionar &amp;todo</translation>
@@ -127,11 +127,11 @@
 <translation id="4373894838514502496">hace <ph name="NUMBER_FEW"/> minutos</translation>
 <translation id="4115153316875436289"><ph name="NUMBER_TWO"/> días</translation>
 <translation id="2190355936436201913">(vacío)</translation>
-<translation id="1164369517022005061"><ph name="NUMBER_DEFAULT"/> horas restantes</translation>
-<translation id="152482086482215392">Falta <ph name="NUMBER_ONE"/> segundo</translation>
+<translation id="1164369517022005061">Quedan <ph name="NUMBER_DEFAULT"/> horas</translation>
+<translation id="152482086482215392">Queda <ph name="NUMBER_ONE"/> segundo</translation>
 <translation id="8447116497070723931">RePág</translation>
 <translation id="4588090240171750605">Desplazar a la derecha</translation>
-<translation id="7414887922320653780">Falta <ph name="NUMBER_ONE"/> hora</translation>
+<translation id="7414887922320653780">Queda <ph name="NUMBER_ONE"/> hora</translation>
 <translation id="1413622004203049571">Inhabilitar notificaciones de <ph name="NOTIFIER_NAME"/></translation>
 <translation id="2666092431469916601">Superior</translation>
 <translation id="2538759511191347839">Mover hasta el final de la línea y modificar selección</translation>
@@ -139,6 +139,7 @@
 <translation id="8331626408530291785">Desplazar hacia arriba</translation>
 <translation id="7907591526440419938">Abrir archivo</translation>
 <translation id="2864069933652346933"><ph name="NUMBER_ZERO"/> days left</translation>
+<translation id="2803313416453193357">Abrir carpeta</translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="2797524280730715045">hace <ph name="NUMBER_DEFAULT"/> horas</translation>
 <translation id="815598010540052116">Desplazar hacia abajo</translation>
@@ -148,10 +149,10 @@
 <translation id="5349525451964472598">Mover hacia la izquierda y modificar selección</translation>
 <translation id="1781701194097416995">Mover una palabra a la izquierda</translation>
 <translation id="1243314992276662751">Subir</translation>
-<translation id="50030952220075532">Falta <ph name="NUMBER_ONE"/> día</translation>
+<translation id="50030952220075532">Queda <ph name="NUMBER_ONE"/> día</translation>
 <translation id="8179976553408161302">Entrar</translation>
 <translation id="8471049483003785219">Mover una palabra a la izquierda y modificar selección</translation>
-<translation id="945522503751344254">Danos tu opinión</translation>
+<translation id="945522503751344254">Enviar comentarios</translation>
 <translation id="9170848237812810038">&amp;Deshacer</translation>
 <translation id="1285266685456062655">hace <ph name="NUMBER_FEW"/> horas</translation>
 <translation id="6918245111648057970">Permitir que cada usuario reciba notificaciones de:</translation>
@@ -175,8 +176,7 @@
 <translation id="6644971472240498405"><ph name="NUMBER_ONE"/> día</translation>
 <translation id="2704295676501803339">Mover hacia la izquierda</translation>
 <translation id="9098468523912235228">hace <ph name="NUMBER_DEFAULT"/> segundos</translation>
-<translation id="494645311413743213">Faltan <ph name="NUMBER_TWO"/> segundos</translation>
-<translation id="4570886800634958009">Ampliar notificación</translation>
+<translation id="494645311413743213">Quedan <ph name="NUMBER_TWO"/> segundos</translation>
 <translation id="566737009157135450">Eliminar palabra anterior</translation>
 <translation id="436869212180315161">Pulsar</translation>
 <translation id="4860787810836767172">hace <ph name="NUMBER_FEW"/> segundos</translation>
@@ -195,15 +195,16 @@
 <translation id="7457942297256758195">Borrar todo</translation>
 <translation id="822618367988303761">hace <ph name="NUMBER_TWO"/> días</translation>
 <translation id="4745438305783437565"><ph name="NUMBER_FEW"/> minutos</translation>
-<translation id="1963692530539281474"><ph name="NUMBER_DEFAULT"/> días restantes</translation>
+<translation id="1963692530539281474">Quedan <ph name="NUMBER_DEFAULT"/> días</translation>
+<translation id="6786750046913594791">Cerrar carpeta</translation>
 <translation id="7509440305564869263"><ph name="NUMBER_FEW"/> minutos</translation>
-<translation id="5906719743126878045"><ph name="NUMBER_TWO"/> horas restantes</translation>
+<translation id="5906719743126878045">Quedan <ph name="NUMBER_TWO"/> horas</translation>
 <translation id="8959208747503200525">hace <ph name="NUMBER_TWO"/> horas</translation>
 <translation id="8400147561352026160">Mayús+<ph name="KEY_COMBO_NAME"/></translation>
 <translation id="8421864404045570940"><ph name="NUMBER_DEFAULT"/> seg.</translation>
 <translation id="4197700912384709145"><ph name="NUMBER_ZERO"/> seg.</translation>
 <translation id="27199337101878275"><ph name="NUMBER_MANY"/> segundos</translation>
-<translation id="3759876923365568382"><ph name="NUMBER_FEW"/> días restantes</translation>
+<translation id="3759876923365568382">Quedan <ph name="NUMBER_FEW"/> días</translation>
 <translation id="6907759265145635167"><ph name="QUANTITY"/> PB/s</translation>
 <translation id="2743387203779672305">Copiar al portapapeles</translation>
 <translation id="8371695176452482769">Habla ahora</translation>

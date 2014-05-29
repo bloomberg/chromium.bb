@@ -13,11 +13,13 @@ gazdagép</translation>
 <translation id="2801119484858626560">A Chrome távoliasztal-szolgáltatás egy nem kompatibilis verziója található a számítógépen. Kérjük, ellenőrizze, hogy mindkét számítógépen a Chrome és a Chrome távoliasztal-szolgáltatás legfrissebb verziói futnak-e, majd próbálja újra.</translation>
 <translation id="6998989275928107238">Ide:</translation>
 <translation id="406849768426631008">Szeretne segíteni valakinek, miközben egyúttal videocsevegést is folytatnak? Próbálja ki a <ph name="LINK_BEGIN"/>Google Hangouts távoliasztal-szolgáltatását<ph name="LINK_END"/>.</translation>
+<translation id="906458777597946297">Ablak teljes méretre állítása</translation>
 <translation id="5397086374758643919">Chrome távoliasztal-szolgáltatási gazdagép eltávolítóprogramja</translation>
 <translation id="3258789396564295715">Biztonságosan hozzáférhet a számítógéphez a Chrome távoliasztal-szolgáltatás segítségével.</translation>
 <translation id="5070121137485264635">A távoli gazdagép hitelesítést kér egy harmadik féltől származó webhelyhez. A folytatáshoz további engedélyeket kell adnia a Chrome távoliasztal-szolgáltatásnak a cím eléréséhez:</translation>
 <translation id="2124408767156847088">Számítógépek biztonságos elérése androidos eszközéről</translation>
 <translation id="3194245623920924351">Chrome távoliasztal-szolgáltatás</translation>
+<translation id="3649256019230929621">Ablak kis méretre állítása</translation>
 <translation id="4808503597364150972">Kérjük, adja meg a(z) <ph name="HOSTNAME"/> PIN kódját.</translation>
 <translation id="7672203038394118626">A távoli kapcsolatok le vannak tiltva ezen a számítógépen.</translation>
 <translation id="8244400547700556338">Tudja meg, hogyan.</translation>
@@ -31,6 +33,7 @@ gazdagép</translation>
 <translation id="5925497314631808737">• Megvalósított teljes képernyős/kiterjesztett mód.
 • Továbbfejlesztett ikon a műveletsáv elrejtéséhez.</translation>
 <translation id="2707879711568641861">A Chrome távoliasztal-szolgáltatás egyes szükséges összetevői hiányoznak. Kérjük, ellenőrizze, hogy telepítve van-e a legfrissebb verzió, majd próbálja újra.</translation>
+<translation id="1779766957982586368">Ablak bezárása</translation>
 <translation id="2499160551253595098">Segítsen fejleszteni a Chrome távoliasztal-szolgáltatást azáltal, hogy rendelkezésünkre bocsátja a használati statisztikákat és hibajelentéseket.</translation>
 <translation id="7868137160098754906">Kérjük, adja meg a PIN kódot a távoli számítógéphez.</translation>
 <translation id="677755392401385740">Gazdagép elindítva a következő felhasználó számára: <ph name="HOST_USERNAME"/>.</translation>
@@ -215,5 +218,6 @@ gazdagép</translation>
 <translation id="1818475040640568770">Nincs regisztrált számítógépe.</translation>
 <translation id="4394049700291259645">Kikapcsolás</translation>
 <translation id="4156740505453712750">A számítógép hozzáférésének védelméhez válasszon egy <ph name="BOLD_START"/>legalább hat számjegyből álló<ph name="BOLD_END"/> PIN kódot. Ezt a PIN kódot kéri a rendszer, ha más helyről kísérlik meg a kapcsolódást.</translation>
+<translation id="6398765197997659313">Kilépés a teljes képernyős módból</translation>
 <translation id="3286521253923406898">Chromoting gazdagépvezérlő</translation>
 </translationbundle>

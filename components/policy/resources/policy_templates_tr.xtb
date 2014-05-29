@@ -492,7 +492,6 @@ politikayı geçersiz kılamaz.
 
           İşlem askıya alma ise, <ph name="PRODUCT_OS_NAME"/> askıya almadan önce ekranı kilitleyecek veya kilitlemeyecek şekilde ayrı olarak yapılandırılabilir.</translation>
 <translation id="3915395663995367577">Proxy .pac dosyası için URL</translation>
-<translation id="2144674628322086778">Kurumsal kullanıcının hem birincil hem de ikincil olmasına izin ver (Varsayılan çalışma biçimi)</translation>
 <translation id="1022361784792428773">Kullanıcının yüklemesine engel olunacak uzantı kimlikleri (veya tümü için *)</translation>
 <translation id="3805659594028420438">TLS alan adına bağlı sertifikalar uzantısını etkinleştir (kullanımdan kaldırıldı)</translation>
 <translation id="5499375345075963939">Bu politika yalnızca mağaza modunda etkindir.
@@ -953,7 +952,6 @@ NOT: Bu politika şu an yalnızca Kiosk modunda çalışırken desteklenir.</tra
           Bu politika sadece Chrome tarafından dahili kullanım içindir.</translation>
 <translation id="5586942249556966598">Hiçbir şey yapma</translation>
 <translation id="131353325527891113">Kullanıcı adlarını giriş ekranında göster</translation>
-<translation id="4057110413331612451">Kurumsal kullanıcının sadece birincil çoklu oturum kullanıcısı olmasına izin ver</translation>
 <translation id="5365946944967967336">Araç çubuğunda Ana Sayfa düğmesini göster</translation>
 <translation id="3709266154059827597">Uzantı kurulum kara listesini yapılandır</translation>
 <translation id="1933378685401357864">Duvar kağıdı resmi</translation>

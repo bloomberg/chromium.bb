@@ -9,6 +9,7 @@
 <translation id="777702478322588152">Prefettura</translation>
 <translation id="151501797353681931">Importati da Safari</translation>
 <translation id="2972581237482394796">&amp;Ripeti</translation>
+<translation id="7600965453749440009">Non tradurre mai <ph name="LANGUAGE"/></translation>
 <translation id="2262243747453050782">Errore HTTP</translation>
 <translation id="1339601241726513588">Dominio registrazione:</translation>
 <translation id="7298195798382681320">Consigliate</translation>
@@ -16,6 +17,7 @@
 <translation id="5299298092464848405">Errore durante l'analisi del criterio</translation>
 <translation id="2815693974042551705">Aggiungi la cartella ai segnalibri</translation>
 <translation id="3088325635286126843">&amp;Rinomina...</translation>
+<translation id="6831043979455480757">Traduci</translation>
 <translation id="1228893227497259893">Identificatore entità errato</translation>
 <translation id="5111692334209731439">&amp;Gestione Preferiti</translation>
 <translation id="6337534724793800597">Filtra i criteri per nome</translation>
@@ -28,13 +30,16 @@
 <translation id="3583757800736429874">&amp;Ripeti spostamento</translation>
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="277499241957683684">Record del dispositivo mancante</translation>
+<translation id="8553075262323480129">La traduzione non è riuscita perché non è stato possibile determinare la lingua della pagina.</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
 <translation id="8368859634510605990">&amp;Apri tutti i Preferiti</translation>
+<translation id="1103523840287552314">Traduci sempre <ph name="LANGUAGE"/></translation>
 <translation id="1227633850867390598">Nascondi valore</translation>
 <translation id="6753269504797312559">Valore norma</translation>
 <translation id="5078638979202084724">Aggiungi tutte le schede ai Preferiti</translation>
 <translation id="7550830279652415241">bookmarks_<ph name="DATESTAMP"/>.html</translation>
 <translation id="7400418766976504921">URL</translation>
+<translation id="7378627244592794276">No</translation>
 <translation id="6949306908218145636">Aggiungi pagine aperte ai Preferiti...</translation>
 <translation id="2704283930420550640">Il valore non corrisponde al formato.</translation>
 <translation id="1055184225775184556">&amp;Annulla aggiunta</translation>
@@ -45,7 +50,6 @@
 <translation id="719464814642662924">Visa</translation>
 <translation id="6839929833149231406">Area</translation>
 <translation id="1871208020102129563">L'impostazione del proxy prevede l'utilizzo di server proxy fissi, non di un URL script .pac.</translation>
-<translation id="8642489171979176277">Importati da Google Toolbar</translation>
 <translation id="3380365263193509176">Errore sconosciuto</translation>
 <translation id="112840717907525620">Cache dei criteri integra</translation>
 <translation id="37613671848467444">Apri in finestra di navigazione in &amp;incognito</translation>
@@ -56,6 +60,7 @@
 <translation id="939736085109172342">Nuova cartella</translation>
 <translation id="7690853182226561458">Aggiungi &amp;cartella...</translation>
 <translation id="6973656660372572881">Sono stati specificati sia i server proxy fissi che un URL script .pac.</translation>
+<translation id="7108649287766967076">Traduzione in <ph name="TARGET_LANGUAGE"/> non riuscita.</translation>
 <translation id="4103249731201008433">Il numero di serie del dispositivo non è valido</translation>
 <translation id="3667681724235208644">Visualizza originale</translation>
 <translation id="4079302484614802869">L'impostazione della configurazione proxy prevede l'utilizzo di un URL script .pac, non di server proxy fissi.</translation>
@@ -84,6 +89,7 @@
 <translation id="2367567093518048410">Livello</translation>
 <translation id="7610193165460212391">Il valore non è compreso nell'intervallo (<ph name="VALUE"/>).</translation>
 <translation id="8790007591277257123">&amp;Ripeti eliminazione</translation>
+<translation id="370665806235115550">Caricamento in corso...</translation>
 <translation id="2902382079633781842">Preferito aggiunto.</translation>
 <translation id="2096368010154057602">Dipartimento</translation>
 <translation id="6529602333819889595">&amp;Ripeti eliminazione</translation>
@@ -113,16 +119,20 @@
 <translation id="1383876407941801731">Ricerca</translation>
 <translation id="4883178195103750615">Esporta i preferiti in file HTML...</translation>
 <translation id="3174168572213147020">Isola</translation>
+<translation id="9137013805542155359">Mostra originale</translation>
 <translation id="2213606439339815911">Recupero voci...</translation>
 <translation id="6263376278284652872">Segnalibri di <ph name="DOMAIN"/></translation>
 <translation id="8487693399751278191">Importa preferiti adesso...</translation>
+<translation id="498957508165411911">Tradurre da <ph name="ORIGINAL_LANGUAGE"/> in <ph name="TARGET_LANGUAGE"/>?</translation>
 <translation id="1181037720776840403">Rimuovi</translation>
 <translation id="5261073535210137151">Questa cartella contiene <ph name="COUNT"/> preferiti. Eliminarla?</translation>
+<translation id="7186367841673660872">Questa pagina è stata tradotta da<ph name="ORIGINAL_LANGUAGE"/>a<ph name="LANGUAGE_LANGUAGE"/></translation>
 <translation id="6549689063733911810">Recenti</translation>
 <translation id="7139724024395191329">Emirato</translation>
 <translation id="6702639462873609204">&amp;Modifica...</translation>
 <translation id="5145883236150621069">Codice di errore presente nella risposta del criterio</translation>
 <translation id="971774202801778802">Aggiungi l'URL ai segnalibri</translation>
+<translation id="7983301409776629893">Traduci sempre <ph name="ORIGINAL_LANGUAGE"/> in <ph name="TARGET_LANGUAGE"/></translation>
 <translation id="6970216967273061347">Distretto</translation>
 <translation id="1122960773616686544">Aggiungi il nome ai segnalibri</translation>
 <translation id="3427342743765426898">&amp;Ripeti modifica</translation>
@@ -130,6 +140,7 @@
 <translation id="6445051938772793705">Paese</translation>
 <translation id="1047726139967079566">Aggiungi questa pagina ai Preferiti...</translation>
 <translation id="1774833706453699074">Aggiungi pagine aperte ai Preferiti...</translation>
+<translation id="5031870354684148875">Informazioni su Google Traduttore</translation>
 <translation id="3950820424414687140">Accedi</translation>
 <translation id="2025186561304664664">È stata impostata la configurazione automatica del proxy.</translation>
 <translation id="1853748787962613237">Impossibile visualizzare l'articolo.</translation>
@@ -142,7 +153,6 @@
 <translation id="7805768142964895445">Stato</translation>
 <translation id="2805756323405976993">Applicazioni</translation>
 <translation id="4853020600495124913">Apri in &amp;un'altra finestra</translation>
-<translation id="4002066346123236978">Titolo</translation>
 <translation id="1113869188872983271">&amp;Annulla ridisposizione</translation>
 <translation id="536296301121032821">Archiviazione delle impostazioni criterio non riuscita</translation>
 <translation id="3254409185687681395">Aggiungi ai Preferiti</translation>
@@ -154,8 +164,10 @@
 <translation id="678528074488531090">Errore di convalida. <ph name="VALIDATION_ERROR"/>.</translation>
 <translation id="2556876185419854533">&amp;Annulla modifica</translation>
 <translation id="4594403342090139922">&amp;Annulla eliminazione</translation>
+<translation id="8571890674111243710">Traduzione della pagina in <ph name="LANGUAGE"/> in corso...</translation>
 <translation id="4117700440116928470">L'ambito della norma non è supportato.</translation>
 <translation id="2114841414352855701">Ignorata perché è stata sostituita da <ph name="POLICY_NAME"/>.</translation>
+<translation id="3228969707346345236">La traduzione non è riuscita perché la pagina è già in <ph name="LANGUAGE"/>.</translation>
 <translation id="8891727572606052622">Modalità proxy non valida.</translation>
 <translation id="399179161741278232">Importati</translation>
 <translation id="5857090052475505287">Nuova cartella</translation>
@@ -165,12 +177,15 @@
 <translation id="4926049483395192435">Deve essere specificato.</translation>
 <translation id="7542995811387359312">La compilazione automatica della carta di credito è disattivata perché questo modulo non utilizza una connessione sicura.</translation>
 <translation id="9024127637873500333">&amp;Apri in un'altra scheda</translation>
+<translation id="5179510805599951267">Non in <ph name="ORIGINAL_LANGUAGE"/>? Segnala questo errore</translation>
 <translation id="8088680233425245692">Impossibile visualizzare l'articolo.</translation>
 <translation id="6397592254427394018">Apri tutti i Preferiti nella finestra di navigazione in &amp;incognito</translation>
+<translation id="8725066075913043281">Riprova</translation>
 <translation id="1821930232296380041">Richiesta o parametri della richiesta non validi</translation>
 <translation id="580571955903695899">Riordina per titolo</translation>
 <translation id="6059232451013891645">Cartella:</translation>
 <translation id="1640180200866533862">Criteri utente</translation>
+<translation id="375403751935624634">La traduzione non è riuscita a causa di un errore del server.</translation>
 <translation id="5629630648637658800">Caricamento delle impostazioni criterio non riuscito</translation>
 <translation id="4030383055268325496">&amp;Annulla aggiunta</translation>
 <translation id="3650584904733503804">Convalida riuscita</translation>
@@ -185,14 +200,17 @@
 <translation id="5470861586879999274">&amp;Ripeti modifica</translation>
 <translation id="6965978654500191972">Dispositivo</translation>
 <translation id="8249320324621329438">Ultimo recupero:</translation>
+<translation id="1285320974508926690">Non tradurre mai questo sito</translation>
 <translation id="3613422051106148727">&amp;Apri in un'altra scheda</translation>
 <translation id="6282194474023008486">Codice postale</translation>
 <translation id="443673843213245140">L'utilizzo di un proxy è stato disattivato ma è stata specificata una configurazione proxy esplicita.</translation>
 <translation id="3623476034248543066">Mostra valore</translation>
+<translation id="9020542370529661692">Questa pagina è stata tradotta in <ph name="TARGET_LANGUAGE"/></translation>
 <translation id="5631439013527180824">Token di gestione del dispositivo non valido</translation>
 <translation id="6804671422566312077">Apri tutti i Preferiti in &amp;un'altra finestra</translation>
 <translation id="560412284261940334">Gestione non supportata</translation>
 <translation id="3169472444629675720">Discover</translation>
+<translation id="4923417429809017348">Questa pagina è stata tradotta da una lingua sconosciuta in <ph name="LANGUAGE_LANGUAGE"/></translation>
 <translation id="5626134646977739690">Nome:</translation>
 <translation id="4813512666221746211">Errore di rete</translation>
 <translation id="1254117744268754948">Scegli cartella</translation>
@@ -214,6 +232,7 @@
 <translation id="6644283850729428850">Questa norma è obsoleta.</translation>
 <translation id="8488350697529856933">Si applica a</translation>
 <translation id="5565735124758917034">Attivo</translation>
+<translation id="7568593326407688803">Questa pagina è in<ph name="ORIGINAL_LANGUAGE"/>Vuoi tradurla?</translation>
 <translation id="3828029223314399057">Cerca tra i Preferiti</translation>
 <translation id="8876793034577346603">Analisi della configurazione di rete non riuscita.</translation>
 <translation id="6268747994388690914">Importa i preferiti da file HTML...</translation>
@@ -223,6 +242,7 @@
 <translation id="7961015016161918242">Mai</translation>
 <translation id="2835170189407361413">Cancella modulo</translation>
 <translation id="713122686776214250">Aggiungi pa&amp;gina...</translation>
+<translation id="6550675742724504774">Opzioni</translation>
 <translation id="8804164990146287819">Norme sulla privacy</translation>
 <translation id="5337776961545044340">Questo tipo di carta non è supportato da Google Wallet per questo commerciante. Seleziona un'altra carta.</translation>
 <translation id="4268574628540273656">URL:</translation>
@@ -250,6 +270,7 @@
 <translation id="3406605057700382950">&amp;Mostra barra dei Preferiti</translation>
 <translation id="2455981314101692989">La pagina web ha disattivato la compilazione automatica per questo modulo.</translation>
 <translation id="7336748286991450492"><ph name="SIGN_IN_LINK"/> per avere a disposizione i tuoi Preferiti ovunque.</translation>
+<translation id="8308427013383895095">La traduzione non è riuscita a causa di un problema con la connessione di rete.</translation>
 <translation id="5720705177508910913">Utente corrente</translation>
 <translation id="3380864720620200369">ID client:</translation>
 </translationbundle>

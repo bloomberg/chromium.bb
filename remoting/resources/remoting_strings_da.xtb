@@ -13,11 +13,13 @@ host</translation>
 <translation id="2801119484858626560">Der er registreret en inkompatibel version af Chrome Fjernskrivebord. Kontrollér, at du har den nyeste version af Chrome og Chrome Fjernskrivebord på begge computere, og prøv igen.</translation>
 <translation id="6998989275928107238">Til</translation>
 <translation id="406849768426631008">Vil du hjælpe en anden person, mens I videochatter? Prøv <ph name="LINK_BEGIN"/>Fjernskrivebord i Google Hangouts<ph name="LINK_END"/>.</translation>
+<translation id="906458777597946297">Maksimér vinduet</translation>
 <translation id="5397086374758643919">Afinstallationsprogram til host for Chrome Fjernskrivebord</translation>
 <translation id="3258789396564295715">Du kan få sikker adgang til denne computer via Chrome Fjernskrivebord.</translation>
 <translation id="5070121137485264635">Fjernværten kræver, at du bekræftes over for et tredjepartswebsite. Du skal give Chrome Fjernskrivebord yderligere tilladelser til at få adgang til denne adresse, før du kan fortsætte:</translation>
 <translation id="2124408767156847088">Sikker adgang til dine computere fra din Android-enhed.</translation>
 <translation id="3194245623920924351">Chrome Fjernskrivebord</translation>
+<translation id="3649256019230929621">Minimer vinduet</translation>
 <translation id="4808503597364150972">Indtast din pinkode til <ph name="HOSTNAME"/>.</translation>
 <translation id="7672203038394118626">Fjernforbindelserne til denne computer er blevet deaktiveret.</translation>
 <translation id="8244400547700556338">Få flere oplysninger.</translation>
@@ -31,6 +33,7 @@ host</translation>
 <translation id="5925497314631808737">• Fuld skærm/fordybningstilstand er implementeret.
 • Ikon til at skjule handlingsbjælken er forbedret.</translation>
 <translation id="2707879711568641861">Nogle komponenter, der kræves til Chrome Fjernskrivebord, mangler. Kontrollér, at du har den nyeste version af Google Chrome, og prøv igen.</translation>
+<translation id="1779766957982586368">Luk vindue</translation>
 <translation id="2499160551253595098">Hjælp os med at forbedre Chrome Fjernskrivebord ved at lade os indsamle brugsstatistikker og rapporter om nedbrud.</translation>
 <translation id="7868137160098754906">Indtast din pinkode til fjerncomputeren.</translation>
 <translation id="677755392401385740">Host er startet for bruger: <ph name="HOST_USERNAME"/>.</translation>
@@ -215,5 +218,6 @@ Fjernskrivebord</translation>
 <translation id="1818475040640568770">Du har ingen registrerede computere.</translation>
 <translation id="4394049700291259645">Deaktiver</translation>
 <translation id="4156740505453712750">Beskyt adgangen til denne computer ved at vælge en pinkode på <ph name="BOLD_START"/>mindst seks cifre<ph name="BOLD_END"/>. Denne pinkode skal indtastes, når du opretter forbindelse fra et andet sted.</translation>
+<translation id="6398765197997659313">Afslut fuld skærm</translation>
 <translation id="3286521253923406898">Administration af Chromoting-host</translation>
 </translationbundle>

@@ -489,7 +489,6 @@ Ak toto pravidlo nie je nastavené alebo je prázdne, akýkoľvek používateľ 
 
           Ak zvolíte prechod do režimu spánku, môžete nastaviť, či má systém <ph name="PRODUCT_OS_NAME"/> pred prechodom do režimu spánku obrazovku uzamknúť alebo nie.</translation>
 <translation id="3915395663995367577">Adresa URL súboru PAC servera proxy</translation>
-<translation id="2144674628322086778">Povoliť podnikovému používateľovi byť súčasťou primárneho aj sekundárneho viacnásobného profilu (predvolené správanie)</translation>
 <translation id="1022361784792428773">ID rozšírení, ktorých inštalácia by mala byť používateľovi zakázaná (alebo hodnota * pre všetky)</translation>
 <translation id="3805659594028420438">Povolí rozšírenie pre certifikáty TLS typu domain-bound (ktorého podpora bola ukončená)</translation>
 <translation id="5499375345075963939">Toto pravidlo je aktívne iba v režime predaja.
@@ -950,7 +949,6 @@ Ak toto pravidlo nie je nastavené alebo je prázdne, akýkoľvek používateľ 
           Toto pravidlo sa vzťahuje iba na interné používanie prehliadača Chrome.</translation>
 <translation id="5586942249556966598">Nevykonať žiadnu akciu</translation>
 <translation id="131353325527891113">Zobraziť používateľské mená na prihlasovacej obrazovke</translation>
-<translation id="4057110413331612451">Povoliť podnikovému používateľovi byť iba primárnym používateľom s viacnásobným profilom</translation>
 <translation id="5365946944967967336">Zobraziť tlačidlo Domov na paneli s nástrojmi</translation>
 <translation id="3709266154059827597">Konfigurovať zoznam rozšírení, ktorých inštalácia je zakázaná</translation>
 <translation id="1933378685401357864">Obrázok tapety</translation>

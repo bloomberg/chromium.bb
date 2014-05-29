@@ -420,7 +420,6 @@
 
           Jika tindakan ini ditangguhkan, <ph name="PRODUCT_OS_NAME"/> dapat dikonfigurasi secara terpisah baik untuk mengunci atau tidak mengunci layar sebelum menangguhkan.</translation>
 <translation id="3915395663995367577">URL untuk proxy file .pac</translation>
-<translation id="2144674628322086778">Izinkan pengguna perusahaan untuk menjadi utama atau sekunder (Perilaku default)</translation>
 <translation id="1022361784792428773">ID ekstensi yang tidak diizinkan dipasang pengguna (atau * untuk semua)</translation>
 <translation id="3805659594028420438">Aktifkan ekstensi sertifikat terikat domain TLS (tidak lagi digunakan)</translation>
 <translation id="5499375345075963939">Kebijakan ini hanya aktif pada mode ritel.
@@ -794,7 +793,6 @@
           Kebijakan ini untuk penggunaan internal oleh Chrome itu sendiri.</translation>
 <translation id="5586942249556966598">Tidak melakukan apa-apa</translation>
 <translation id="131353325527891113">Tampilkan nama pengguna pada layar masuk</translation>
-<translation id="4057110413331612451">Izinkan pengguna perusahaan untuk menjadi multiprofil utama saja</translation>
 <translation id="5365946944967967336">Tampilkan tombol Beranda di bilah alat</translation>
 <translation id="3709266154059827597">Konfigurasikan daftar hitam pemasangan ekstensi</translation>
 <translation id="1933378685401357864">Gambar wallpaper</translation>

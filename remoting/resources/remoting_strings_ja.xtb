@@ -13,11 +13,13 @@
 <translation id="2801119484858626560">互換性のないバージョンの Chrome リモート デスクトップが検出されました。最新バージョンの Chrome と Chrome リモート デスクトップが両方のパソコンにインストールされていることを確認して、もう一度お試しください。</translation>
 <translation id="6998989275928107238">接続先</translation>
 <translation id="406849768426631008">他のユーザーがサポートを必要としているときに、ビデオ チャットしながらサポートできます。<ph name="LINK_BEGIN"/>Google ハングアウトのリモート デスクトップ機能<ph name="LINK_END"/>をお試しください。</translation>
+<translation id="906458777597946297">ウィンドウを最大化</translation>
 <translation id="5397086374758643919">Chrome リモート デスクトップ ホストのアンインストーラ</translation>
 <translation id="3258789396564295715">Chrome リモート デスクトップを使用して、このパソコンに安全にアクセスできます。</translation>
 <translation id="5070121137485264635">リモート ホストで、サードパーティ ウェブサイトへの認証が求められています。続行するには、次のアドレスにアクセスできるように Chrome リモート デスクトップに追加の権限を与える必要があります:</translation>
 <translation id="2124408767156847088">Android搭載デバイスからパソコンに安全にアクセス。</translation>
 <translation id="3194245623920924351">Chrome リモート デスクトップ</translation>
+<translation id="3649256019230929621">ウィンドウを最小化</translation>
 <translation id="4808503597364150972"><ph name="HOSTNAME"/> の PIN を入力してください。</translation>
 <translation id="7672203038394118626">このパソコンのリモート接続が無効になりました。</translation>
 <translation id="8244400547700556338">詳細を見る。</translation>
@@ -31,6 +33,7 @@
 <translation id="5925497314631808737">• フルスクリーン/没入モードを実装しました。
 • 操作バーを非表示にするアイコンを改善しました。</translation>
 <translation id="2707879711568641861">Chrome リモート デスクトップに必要なコンポーネントが見つかりません。最新のバージョンがインストールされていることを確認して、もう一度お試しください。</translation>
+<translation id="1779766957982586368">ウィンドウを閉じる</translation>
 <translation id="2499160551253595098">Chrome リモート デスクトップの改善のため、使用統計情報とクラッシュ レポートの収集に協力する</translation>
 <translation id="7868137160098754906">リモート パソコンの PIN を入力してください。</translation>
 <translation id="677755392401385740">次のユーザーのホストを開始しました: <ph name="HOST_USERNAME"/>。</translation>
@@ -215,5 +218,6 @@ US英語以外のキーボードを使用しているリモートパソコンで
 <translation id="1818475040640568770">パソコンが登録されていません。</translation>
 <translation id="4394049700291259645">無効にする</translation>
 <translation id="4156740505453712750">このパソコンへのアクセスを保護するには、<ph name="BOLD_START"/>6 桁以上<ph name="BOLD_END"/>の PIN を選択してください。この PIN は別の場所から接続するときに必要となります。</translation>
+<translation id="6398765197997659313">全画面表示を終了</translation>
 <translation id="3286521253923406898">Chromoting ホスト コントローラ</translation>
 </translationbundle>

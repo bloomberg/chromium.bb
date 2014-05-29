@@ -54,7 +54,6 @@
 <translation id="4831257561365056138">Desinstalli Chromiumi rakenduste käiviti</translation>
 <translation id="4222580632002216401">Olete nüüd Chromiumi sisse logitud. Administraator on sünkroonimise keelanud.</translation>
 <translation id="4207043877577553402"><ph name="BEGIN_BOLD"/>Hoiatus:<ph name="END_BOLD"/> Chromium ei saa takistada rakendusi teie sirvimisajalugu talletamast. Kui soovite laienduse inkognitorežiimis keelata, siis tühistage see valik.</translation>
-<translation id="4516868174453854611">Kui olete sisse logitud, näete oma vahelehti, järjehoidjaid ja muud Chromiumi kraami kõikjal oma sülearvutis, telefonis ja tahvelarvutis. Google'i teenused pakuvad teile ka asjakohasemaid soovitusi ja funktsioone.</translation>
 <translation id="985602178874221306">The Chromium Authors</translation>
 <translation id="8628626585870903697">Chromium ei sisalda PDF-vaaturit, mida on printimise eelvaate jaoks vaja.</translation>
 <translation id="7138853919861947730">Chromium võib kasutada veebiteenuseid sirvimiskogemuse täiustamiseks.</translation>
@@ -115,7 +114,6 @@
 <translation id="8493179195440786826">Chromium on aegunud</translation>
 <translation id="911206726377975832">Kas kustutada ka teie sirvimisandmed?</translation>
 <translation id="95514773681268843">Domeen <ph name="DOMAIN"/> nõuab, et loete enne selle seadme kasutamist läbi järgmised teenusetingimused ja nõustute nendega. Need tingimused ei laienda, muuda ega piira Chromium OS-i tingimusi.</translation>
-<translation id="5603085937604338780">chromium</translation>
 <translation id="1699664235656412242">Sulgege kõik Chromiumi aknad (ka Windows 8 režiimis) ja proovige uuesti.</translation>
 <translation id="6734080038664603509">Värskenda &amp;Chromiumi</translation>
 <translation id="8862326446509486874">Teil ei ole süsteemi tasemel installimiseks sobivaid õigusi. Proovige installijat administraatorina uuesti käivitada.</translation>

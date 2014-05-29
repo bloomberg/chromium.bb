@@ -417,7 +417,6 @@
 
           Jeśli działaniem jest wstrzymanie, system <ph name="PRODUCT_OS_NAME"/> można skonfigurować osobno tak, by ekran był lub nie był blokowany przed wstrzymaniem.</translation>
 <translation id="3915395663995367577">Adres URL pliku PAC serwera proxy</translation>
-<translation id="2144674628322086778">Zezwalaj użytkownikom firmowym na pełnienie funkcji zarówno użytkownika głównego, jak i dodatkowego (ustawienie domyślne)</translation>
 <translation id="1022361784792428773">Identyfikatory rozszerzeń, których nie może instalować użytkownik (wartość * oznacza wszystkie)</translation>
 <translation id="3805659594028420438">Włącz rozszerzenie certyfikatów TLS powiązanych z domeną (wycofana)</translation>
 <translation id="5499375345075963939">Ta zasada jest aktywna tylko w trybie sklepu.
@@ -783,7 +782,6 @@
           Ta zasada przeznaczona jest do użytku wewnętrznego przez Chrome.</translation>
 <translation id="5586942249556966598">Nic nie rób</translation>
 <translation id="131353325527891113">Pokaż nazwy użytkowników na ekranie logowania</translation>
-<translation id="4057110413331612451">Zezwalaj użytkownikom firmowym na pełnienie funkcji tylko użytkownika głównego w trybie wieloprofilowym</translation>
 <translation id="5365946944967967336">Pokaż przycisk strony startowej na pasku narzędzi</translation>
 <translation id="3709266154059827597">Konfiguruj czarną listę instalacji rozszerzeń</translation>
 <translation id="1933378685401357864">Tapeta</translation>

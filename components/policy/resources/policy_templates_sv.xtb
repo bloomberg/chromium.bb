@@ -497,7 +497,6 @@
 
           Om åtgärden är att enheten ska stängas av kan <ph name="PRODUCT_OS_NAME"/> konfigureras separat så att skärmen låses eller inte låses innan enheten stängs av.</translation>
 <translation id="3915395663995367577">Webbadress till en PAC-proxyfil</translation>
-<translation id="2144674628322086778">Tillåt att företagsanvändare både är primära och sekundära (standardinställning)</translation>
 <translation id="1022361784792428773">Tilläggs-ID:n som användaren inte får installera (eller * om det gäller alla)</translation>
 <translation id="3805659594028420438">Aktivera domänbundna TLS-certifikattillägg (föråldrad)</translation>
 <translation id="5499375345075963939">Policyn är endast aktiv i återförsäljarläge.
@@ -958,7 +957,6 @@
           Denna policy är endast för intern användning i Chrome.</translation>
 <translation id="5586942249556966598">Gör ingenting</translation>
 <translation id="131353325527891113">Visa användarnamn på inloggningsskärmen</translation>
-<translation id="4057110413331612451">Tillåt att företagsanvändare endast är en primär multiprofilanvändare</translation>
 <translation id="5365946944967967336">Visa knappen Startsida i verktygsfältet</translation>
 <translation id="3709266154059827597">Konfigurera svartlista för tilläggsinstallation</translation>
 <translation id="1933378685401357864">Bakgrundsbild</translation>

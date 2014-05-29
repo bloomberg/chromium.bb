@@ -13,11 +13,13 @@ trên Chrome</translation>
 <translation id="2801119484858626560">Đã phát hiện ra phiên bản Chrome Remote Desktop không tương thích. Vui lòng đảm bảo rằng bạn đã cài đặt phiên bản Chrome và Chrome Remote Desktop mới nhất trên cả hai máy tính và thử lại.</translation>
 <translation id="6998989275928107238">Đến</translation>
 <translation id="406849768426631008">Bạn có muốn trợ giúp ai đó trong khi trò chuyện video với họ không? Hãy thử ứng dụng <ph name="LINK_BEGIN"/> Remote Desktop trong Google Hangouts<ph name="LINK_END"/>.</translation>
+<translation id="906458777597946297">Phóng to cửa sổ</translation>
 <translation id="5397086374758643919">Trình gỡ cài đặt máy chủ Chrome Remote Desktop</translation>
 <translation id="3258789396564295715">Bạn có thể truy cập an toàn vào máy tính này bằng Chrome Remote Desktop.</translation>
 <translation id="5070121137485264635">Máy chủ lưu trữ từ xa yêu cầu bạn xác thực với một trang web của bên thứ ba. Để tiếp tục, bạn phải cấp cho Chrome Remote Desktop thêm quyền truy cập vào địa chỉ sau:</translation>
 <translation id="2124408767156847088">Truy cập máy tính an toàn từ thiết bị Android của bạn.</translation>
 <translation id="3194245623920924351">Chrome Remote Desktop</translation>
+<translation id="3649256019230929621">Thu nhỏ cửa sổ</translation>
 <translation id="4808503597364150972">Vui lòng nhập mã PIN của bạn cho <ph name="HOSTNAME"/>.</translation>
 <translation id="7672203038394118626">Kết nối từ xa cho máy tính này đã bị tắt.</translation>
 <translation id="8244400547700556338">Tìm hiểu cách thức.</translation>
@@ -31,6 +33,7 @@ trên Chrome</translation>
 <translation id="5925497314631808737">• Chế độ toàn màn hình / chế độ chìm được triển khai.
 • Biểu tượng ẩn thanh tác vụ được cải thiện.</translation>
 <translation id="2707879711568641861">Thiếu một số thành phần cần thiết cho Chrome Remote Desktop. Vui lòng đảm bảo rằng bạn đã cài đặt phiên bản mới nhất và thử lại.</translation>
+<translation id="1779766957982586368">Đóng cửa sổ</translation>
 <translation id="2499160551253595098">Giúp chúng tôi cải tiến Chrome Remote Desktop bằng cách cho phép chúng tôi thu thập số liệu thống kê sử dụng và báo cáo sự cố.</translation>
 <translation id="7868137160098754906">Hãy nhập mã PIN của bạn cho máy tính từ xa.</translation>
 <translation id="677755392401385740">Máy chủ đã khởi động cho người dùng: <ph name="HOST_USERNAME"/>.</translation>
@@ -215,5 +218,6 @@ Remote Desktop</translation>
 <translation id="1818475040640568770">Bạn chưa đăng ký máy tính nào.</translation>
 <translation id="4394049700291259645">Vô hiệu hóa</translation>
 <translation id="4156740505453712750">Để bảo vệ quyền truy cập vào máy tính này, vui lòng chọn một mã PIN <ph name="BOLD_START"/>ít nhất sáu chữ số<ph name="BOLD_END"/>. Mã PIN này sẽ được yêu cầu khi kết nối từ một vị trí khác.</translation>
+<translation id="6398765197997659313">Thoát khỏi chế độ toàn màn hình</translation>
 <translation id="3286521253923406898">Trình điều khiển máy chủ kết nối từ xa trên Chrome</translation>
 </translationbundle>

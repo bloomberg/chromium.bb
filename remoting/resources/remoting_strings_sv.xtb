@@ -13,11 +13,13 @@ Host</translation>
 <translation id="2801119484858626560">Du använder en inkompatibel version av Chrome Remote Desktop. Se till att den senaste versionen av Chrome och Chrome Remote Desktop har installerats på båda datorerna och försök igen.</translation>
 <translation id="6998989275928107238">Till</translation>
 <translation id="406849768426631008">Vill du hjälpa någon samtidigt som ni har kontakt genom en videochatt? Pröva <ph name="LINK_BEGIN"/>Fjärrskrivbord i Google Hangouts<ph name="LINK_END"/>.</translation>
+<translation id="906458777597946297">Maximera fönstret</translation>
 <translation id="5397086374758643919">Chrome Remote Desktop Host Uninstaller</translation>
 <translation id="3258789396564295715">Du kan få säker åtkomst till den här datorn med Chrome Remote Desktop.</translation>
 <translation id="5070121137485264635">Fjärrvärden kräver att du autentiserar via en tredje parts webbplats. Om du vill fortsätta måste du ge Chrome Remote Desktop ytterligare behörigheter att komma åt den här adressen:</translation>
 <translation id="2124408767156847088">Få säker åtkomst till dina datorer från Android-enheten.</translation>
 <translation id="3194245623920924351">Chrome Remote Desktop</translation>
+<translation id="3649256019230929621">Minimera fönstret</translation>
 <translation id="4808503597364150972">Ange din PIN-kod för <ph name="HOSTNAME"/>.</translation>
 <translation id="7672203038394118626">Fjärranslutningar har inaktiverats för den här datorn.</translation>
 <translation id="8244400547700556338">Läs mer.</translation>
@@ -31,6 +33,7 @@ Host</translation>
 <translation id="5925497314631808737">• Helskärmsläge har implementerats.
 • Bättre ikon för att dölja åtgärdsfältet.</translation>
 <translation id="2707879711568641861">Vissa komponenter som krävs för Chrome Remote Desktop saknas. Kontrollera att du har installerat den senaste versionen och försök igen.</translation>
+<translation id="1779766957982586368">Stäng fönstret</translation>
 <translation id="2499160551253595098">Hjälp oss att förbättra Chrome Remote Desktop genom att låta oss samla in användningsstatistik och felrapporter.</translation>
 <translation id="7868137160098754906">Ange din pinkod för fjärrdatorn.</translation>
 <translation id="677755392401385740">Värd startad för användaren: <ph name="HOST_USERNAME"/>.</translation>
@@ -215,5 +218,6 @@ Desktop Host</translation>
 <translation id="1818475040640568770">Du har inga registrerade datorer.</translation>
 <translation id="4394049700291259645">Inaktivera</translation>
 <translation id="4156740505453712750">Om du vill skydda åtkomsten till den här datorn väljer du en PIN-kod som består av <ph name="BOLD_START"/>minst sex siffror<ph name="BOLD_END"/>. PIN-koden krävs när du ansluter från en annan plats.</translation>
+<translation id="6398765197997659313">Avsluta helskärmsläge</translation>
 <translation id="3286521253923406898">Chromoting Host Controller</translation>
 </translationbundle>

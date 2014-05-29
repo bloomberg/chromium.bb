@@ -13,11 +13,13 @@
 <translation id="2801119484858626560">系统检测到不兼容的 Chrome 远程桌面版本。请确保两台计算机上使用的 Chrome 和 Chrome 远程桌面都是最新版本，然后重试。</translation>
 <translation id="6998989275928107238">指向</translation>
 <translation id="406849768426631008">想要通过视频聊天的方式为其他用户提供帮助吗？请尝试使用 <ph name="LINK_BEGIN"/>Google 环聊的远程桌面功能<ph name="LINK_END"/>。</translation>
+<translation id="906458777597946297">最大化窗口</translation>
 <translation id="5397086374758643919">Chrome 远程桌面主机卸载程序</translation>
 <translation id="3258789396564295715">您可使用 Chrome 远程桌面安全地访问此计算机。</translation>
 <translation id="5070121137485264635">远程主机要求您对第三方网站进行身份验证。要继续操作，您必须向 Chrome 远程桌面授予访问以下地址的额外权限：</translation>
 <translation id="2124408767156847088">通过您的Android设备安全地访问自己的计算机。</translation>
 <translation id="3194245623920924351">Chrome远程桌面</translation>
+<translation id="3649256019230929621">最小化窗口</translation>
 <translation id="4808503597364150972">请输入您用于“<ph name="HOSTNAME"/>”的 PIN。</translation>
 <translation id="7672203038394118626">此计算机的远程连接已停用。</translation>
 <translation id="8244400547700556338">了解详情。</translation>
@@ -31,6 +33,7 @@
 <translation id="5925497314631808737">• 采用了全屏/沉浸模式。
 • 改进了用于隐藏操作栏的图标。</translation>
 <translation id="2707879711568641861">缺少 Chrome 远程桌面所需的某些组件。请确保您已安装最新版本，然后重试。</translation>
+<translation id="1779766957982586368">关闭窗口</translation>
 <translation id="2499160551253595098">允许我们收集使用情况统计信息和崩溃报告，以帮助改进 Chrome 远程桌面。</translation>
 <translation id="7868137160098754906">请为远程计算机输入PIN码。</translation>
 <translation id="677755392401385740">已为用户<ph name="HOST_USERNAME"/>启动主机。</translation>
@@ -215,5 +218,6 @@
 <translation id="1818475040640568770">您未注册任何计算机。</translation>
 <translation id="4394049700291259645">停用</translation>
 <translation id="4156740505453712750">为防止他人擅自访问此计算机，请选用一个<ph name="BOLD_START"/>至少 6 位数<ph name="BOLD_END"/>的 PIN。当从其他位置连接时，将需要输入此 PIN。</translation>
+<translation id="6398765197997659313">退出全屏模式</translation>
 <translation id="3286521253923406898">Chrome 远程访问主机控制器</translation>
 </translationbundle>

@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="gu">
-<translation id="8719282907381795632"><ph name="WEBSITE_1"/> પર તમારા ડેટાને ઍક્સેસ કરો</translation>
 <translation id="7809034755304591547">વ્યવસ્થાપક દ્વારા <ph name="EXTENSION_NAME"/> (એક્સટેન્શન ID &quot;<ph name="EXTENSION_ID"/>&quot;) અવરોધિત કરેલ છે.</translation>
 <translation id="2857834222104759979">મેનિફેસ્ટ ફાઇલ અમાન્ય છે.</translation>
 <translation id="3828484226910527078">USB ઉપકરણને ઍક્સેસ કરો</translation>
@@ -9,11 +8,8 @@
 <translation id="5911798608827489036">સ્થાનિક નેટવર્ક અથવા ઇન્ટરનેટ પર કોઈપણ કમ્પ્યુટર સાથે ડેટા વિનિમય કરો</translation>
 <translation id="4719685943208231314"><ph name="VENDOR_NAME"/> ના USB ઉપકરણને ઍક્સેસ કરો</translation>
 <translation id="657064425229075395">પૃષ્ઠભૂમિ સ્ક્રિપ્ટ '<ph name="BACKGROUND_SCRIPT"/>' લોડ કરી શકાઈ નથી.</translation>
-<translation id="3093853184108622112">તમારા <ph name="WEBSITE_1"/> પરનો ડેટા અને <ph name="WEBSITE_2"/> ઍક્સેસ કરો</translation>
 <translation id="8597109877291678953"><ph name="HOSTNAME"/> નામના કમ્પ્યુટર સાથે ડેટા વિનિમય કરો</translation>
-<translation id="6914908792814954894"><ph name="NUMBER_OF_WEBSITES"/> વેબસાઇટ્સ પર તમારો ડેટા ઍક્સેસ કરો</translation>
 <translation id="5456409301717116725">આ એક્સટેન્શનમાં '<ph name="KEY_PATH"/>' કી ફાઇલ શામેલ છે. તમે કદાચ એ કરવા માંગતા નથી.</translation>
-<translation id="6968649314782363508">તમારા <ph name="WEBSITE_1"/> , <ph name="WEBSITE_2"/>  અને <ph name="WEBSITE_3"/> પરનાં ડેટાને ઍક્સેસ કરો</translation>
 <translation id="2350172092385603347">લૉકલાઇઝેશન વપરાયુ, પરંતુ default_locale નો ઉલ્લેખ મેનિફેસ્ટમાં નહોતો.</translation>
 <translation id="8058376558882514200"><ph name="VENDOR_NAME"/> ના <ph name="PRODUCT_NAME"/> USB ઉપકરણને ઍક્સેસ કરો</translation>
 <translation id="8774379383902544371">USB ઉપકરણો ઍક્સેસ કરો</translation>
@@ -21,7 +17,6 @@
 <translation id="6344170822609224263">નેટવર્ક કનેક્શન્સની ઍક્સેસ સૂચિ</translation>
 <translation id="2518849872271000461">આ નામના કમ્પ્યુટર્સ સાથે ડેટા વિનિમય કરો: <ph name="HOSTNAMES"/></translation>
 <translation id="1389014510128217152">- <ph name="WEBSITE_1"/></translation>
-<translation id="5530391389158154052"><ph name="NUMBER_OF_WEBSITES"/> વેબસાઇટ્સ પર તમારો ડેટા ઍક્સેસ કરો</translation>
 <translation id="961805664415579088"><ph name="DOMAIN"/> ડોમેનમાંના કોઈપણ કમ્પ્યુટર સાથે ડેટા વિનિમય કરો</translation>
 <translation id="4968399700653439437">આ ડોમેન્સમાં કોઈપણ કમ્પ્યુટર સાથે ડેટા વિનિમય કરો : <ph name="DOMAINS"/></translation>
 <translation id="8662911384982557515">તમારા હોમ પેજને આ પર બદલો: <ph name="HOME_PAGE"/></translation>

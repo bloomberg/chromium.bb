@@ -13,11 +13,13 @@ Hostiteľ</translation>
 <translation id="2801119484858626560">Bola zistená nekompatibilná verzia Vzdialenej plochy Chrome. Uistite sa, že máte najnovšiu verziu prehliadača Chrome a Vzdialenej plochy Chrome na oboch počítačoch a skúste to znova.</translation>
 <translation id="6998989275928107238">Komu</translation>
 <translation id="406849768426631008">Chcete niekomu pomôcť a súčasne s ním viesť videohovor? Vyskúšajte funkciu <ph name="LINK_BEGIN"/>Vzdialený počítač v službe Google Hangouts<ph name="LINK_END"/>.</translation>
+<translation id="906458777597946297">Maximalizovať okno</translation>
 <translation id="5397086374758643919">Nástroj na odinštalovanie hostiteľa Vzdialenej plochy Chrome</translation>
 <translation id="3258789396564295715">K tomuto počítaču môžete bezpečne pristupovať pomocou Vzdialenej plochy Chrome.</translation>
 <translation id="5070121137485264635">Vzdialený hostiteľ od vás vyžaduje overenie na webových stránkach tretej strany. Ak chcete pokračovať, musíte vzdialenej ploche Chrome udeliť dodatočné oprávnenie na prístup k tejto adrese:</translation>
 <translation id="2124408767156847088">Zaistite bezpečný prístup k svojim počítačom zo zariadenia s Androidom.</translation>
 <translation id="3194245623920924351">Vzdialená plocha Chrome</translation>
+<translation id="3649256019230929621">Minimalizovať okno</translation>
 <translation id="4808503597364150972">Zadajte kód PIN pre počítač <ph name="HOSTNAME"/>.</translation>
 <translation id="7672203038394118626">Vzdialené pripojenia k tomuto počítaču boli zakázané.</translation>
 <translation id="8244400547700556338">Ďalšie informácie.</translation>
@@ -31,6 +33,7 @@ Hostiteľ</translation>
 <translation id="5925497314631808737">• Implementovaný režim celej obrazovky / imerzný režim.
 • Vylepšená ikona na skrývanie panela akcií.</translation>
 <translation id="2707879711568641861">Niektoré komponenty potrebné pre Vzdialenú plochu Chrome chýbajú. Uistite sa, že ste nainštalovali najnovšiu verziu a skúste to znova.</translation>
+<translation id="1779766957982586368">Zavrieť okno</translation>
 <translation id="2499160551253595098">Pomôžte nám vylepšiť službu Vzdialená plocha Chrome tým, že nám umožníte zhromažďovať štatistiky používania a správy o zlyhaní.</translation>
 <translation id="7868137160098754906">Zadajte číslo PIN pre vzdialený počítač.</translation>
 <translation id="677755392401385740">Hostiteľ bol spustený pre používateľa: <ph name="HOST_USERNAME"/>.</translation>
@@ -215,5 +218,6 @@ Hostiteľ pracovnej plochy</translation>
 <translation id="1818475040640568770">Nemáte zaregistrované žiadne počítače.</translation>
 <translation id="4394049700291259645">Zakázať</translation>
 <translation id="4156740505453712750">Ak chcete ochrániť tento počítač pred neautorizovaným prístupom, nastavte si kód PIN obsahujúci <ph name="BOLD_START"/>najmenej šesť číslic<ph name="BOLD_END"/>. Tento kód PIN budete musieť zadať pri pokuse o pripojenie z iného miesta.</translation>
+<translation id="6398765197997659313">Ukončiť zobrazenie na celú obrazovku</translation>
 <translation id="3286521253923406898">Ovládač hostiteľa funkcie Chromoting</translation>
 </translationbundle>

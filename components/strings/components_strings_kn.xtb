@@ -9,6 +9,7 @@
 <translation id="777702478322588152">ಪ್ರಿಫೆಕ್ಚರ್‌‌</translation>
 <translation id="151501797353681931">Safari ಯಿಂದ ಆಮದು ಮಾಡಲಾಗಿದೆ</translation>
 <translation id="2972581237482394796">&amp;ಮತ್ತೆಮಾಡು</translation>
+<translation id="7600965453749440009"><ph name="LANGUAGE"/> ಅನ್ನು ಎಂದಿಗೂ ಅನುವಾದಿಸಬೇಡ</translation>
 <translation id="2262243747453050782">HTTP ದೋಷ</translation>
 <translation id="1339601241726513588">ಡೊಮೇನ್ ದಾಖಲಾತಿ:</translation>
 <translation id="7298195798382681320">ಶಿಫಾರಸು ಮಾಡಲಾಗಿದೆ</translation>
@@ -16,6 +17,7 @@
 <translation id="5299298092464848405">ನೀತಿಯ ಪಾರ್ಸಿಂಗ್‌ನಲ್ಲಿ ದೋಷ</translation>
 <translation id="2815693974042551705">ಬುಕ್‌ಮಾರ್ಕ್ ಫೋಲ್ಡರ್</translation>
 <translation id="3088325635286126843">&amp;ಮರುಹೆಸರಿಸು...</translation>
+<translation id="6831043979455480757">ಅನುವಾದಿಸು</translation>
 <translation id="1228893227497259893">ತಪ್ಪಾದ ಅಸ್ತಿತ್ವದ ಗುರುತು</translation>
 <translation id="5111692334209731439">&amp;ಬುಕ್‌ಮಾರ್ಕ್ ವ್ಯವಸ್ಥಾಪಕ</translation>
 <translation id="6337534724793800597">ಹೆಸರಿನ ಪ್ರಕಾರವಾಗಿ ನೀತಿಗಳನ್ನು ಫಿಲ್ಟರ್ ಮಾಡಿ</translation>
@@ -28,13 +30,16 @@
 <translation id="3583757800736429874">&amp;ಸರಿಸುವುದನ್ನು ಮತ್ತೆಮಾಡು</translation>
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="277499241957683684">ಸಾಧನದ ರೆಕಾರ್ಡ್ ಕಾಣೆಯಾಗಿದೆ</translation>
+<translation id="8553075262323480129">ಪುಟದ ಭಾಷೆಯನ್ನು ಗುರುತಿಸಲು ಅಸಾಧ್ಯವಾದ ಕಾರಣ ಭಾಷಾಂತರವು ವಿಫಲವಾಗಿದೆ.</translation>
 <translation id="7935318582918952113">DOM ಡಿಸ್ಟಿಲರ್</translation>
 <translation id="8368859634510605990">&amp;ಎಲ್ಲ ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳನ್ನು ತೆರೆಯಿರಿ</translation>
+<translation id="1103523840287552314">ಯಾವಾಗಲೂ ಭಾಷಾಂತರಿಸಿ <ph name="LANGUAGE"/></translation>
 <translation id="1227633850867390598">ಮೌಲ್ಯವನ್ನು ಮರೆಮಾಡಿ</translation>
 <translation id="6753269504797312559">ನೀತಿ ಮೌಲ್ಯ</translation>
 <translation id="5078638979202084724">ಎಲ್ಲಾ ಟ್ಯಾಬ್‌ಗಳನ್ನು ಬುಕ್‌ಮಾರ್ಕ್ ಮಾಡಿ</translation>
 <translation id="7550830279652415241">bookmarks_<ph name="DATESTAMP"/>.html</translation>
 <translation id="7400418766976504921">URL</translation>
+<translation id="7378627244592794276">ಬೇಡ</translation>
 <translation id="6949306908218145636">ತೆರೆದ ಪುಟಗಳನ್ನು ಬುಕ್‌ಮಾರ್ಕ್ ಮಾಡಿ...</translation>
 <translation id="2704283930420550640">ಮೌಲ್ಯವು ಸ್ವರೂಪಕ್ಕೆ ಹೊಂದಿಕೆಯಾಗುವುದಿಲ್ಲ.</translation>
 <translation id="1055184225775184556">&amp;ಸೇರಿಸುವುದನ್ನು ರದ್ದುಗೊಳಿಸಿ</translation>
@@ -45,7 +50,6 @@
 <translation id="719464814642662924">ವೀಸಾ</translation>
 <translation id="6839929833149231406">ಪ್ರದೇಶ</translation>
 <translation id="1871208020102129563">.pac ಸ್ಕ್ರಿಪ್ಟ್ URL ಅಲ್ಲದೆ, ನಿಗಧಿತ ಪ್ರಾಕ್ಸಿ ಸರ್ವರ್‌ಗಳನ್ನು ಬಳಸಲು ಪ್ರಾಕ್ಸಿಯನ್ನು ಹೊಂದಿಸಲಾಗಿದೆ.</translation>
-<translation id="8642489171979176277">Google ಟೂಲ್‌ಬಾರ್‌ನಿಂದ ಆಮದು ಮಾಡಲಾಗಿದೆ</translation>
 <translation id="3380365263193509176">ಅಜ್ಞಾತ ದೋಷ</translation>
 <translation id="112840717907525620">ನೀತಿಯ ಸಂಗ್ರಹ ಸರಿಯಾಗಿದೆ</translation>
 <translation id="37613671848467444">&amp;ಅಜ್ಞಾತ ವಿಂಡೋದಲ್ಲಿ ತೆರೆಯಿರಿ</translation>
@@ -56,6 +60,7 @@
 <translation id="939736085109172342">ಹೊಸ ಫೋಲ್ಡರ್</translation>
 <translation id="7690853182226561458">&amp;ಫೋಲ್ಡರ್ ಅನ್ನು ಸೇರಿಸಿ...</translation>
 <translation id="6973656660372572881">ಹೊಂದಿಸಿದ ಪ್ರಾಕ್ಸಿ ಸರ್ವರ್‌ಗಳು ಮತ್ತು .pac ಸ್ಕ್ರಿಪ್ಟ್ URL ಎರಡನ್ನೂ ನಿರ್ದಿಷ್ಟಪಡಿಸಲಾಗಿದೆ.</translation>
+<translation id="7108649287766967076"><ph name="TARGET_LANGUAGE"/> ಗೆ ಅನುವಾದ ವಿಫಲವಾಗಿದೆ.</translation>
 <translation id="4103249731201008433">ಸಾಧನದ ಸರಣಿಯ ಸಂಖ್ಯೆ ಅಮಾನ್ಯವಾಗಿದೆ</translation>
 <translation id="3667681724235208644">ಮೂಲಪುಟವನ್ನು ವೀಕ್ಷಿಸಿ</translation>
 <translation id="4079302484614802869">ಪ್ರಾಕ್ಸಿ ಕಾನ್ಫಿಗರೇಶನ್ ಅನ್ನು .pac ಸ್ಕ್ರಿಪ್ಟ್ URL ಬಳಸುವಂತೆ ಹೊಂದಿಸಲಾಗಿದೆ, ಹೊಂದಿಸಿದ ಪ್ರಾಕ್ಸಿ ಸರ್ವರ್‌ಗಳಲ್ಲ.</translation>
@@ -84,6 +89,7 @@
 <translation id="2367567093518048410">ಹಂತ</translation>
 <translation id="7610193165460212391">ಮೌಲ್ಯವು ವ್ಯಾಪ್ತಿಯಿಂದ <ph name="VALUE"/> ಹೊರಗಿದೆ.</translation>
 <translation id="8790007591277257123">&amp;ಅಳಿಸುವುದನ್ನು ಮತ್ತೆಮಾಡು</translation>
+<translation id="370665806235115550">ಲೋಡ್ ಮಾಡಲಾಗುತ್ತಿದೆ...</translation>
 <translation id="2902382079633781842">ಬುಕ್‌ಮಾರ್ಕ್ ಸೇರಿಸಲಾಗಿದೆ!</translation>
 <translation id="2096368010154057602">ವಿಭಾಗ</translation>
 <translation id="6529602333819889595">&amp;ಅಳಿಸುವುದನ್ನು ಮತ್ತೆಮಾಡು</translation>
@@ -113,16 +119,20 @@
 <translation id="1383876407941801731">ಹುಡುಕಾಟ</translation>
 <translation id="4883178195103750615">ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳನ್ನು HTML ಫೈಲ್‌ಗೆ ರಪ್ತು ಮಾಡಿ...</translation>
 <translation id="3174168572213147020">ದ್ವೀಪ</translation>
+<translation id="9137013805542155359">ಮೂಲವನ್ನು ತೋರಿಸಿ</translation>
 <translation id="2213606439339815911">ನಮೂದುಗಳನ್ನು ಪಡೆಯಲಾಗುತ್ತಿದೆ...</translation>
 <translation id="6263376278284652872"><ph name="DOMAIN"/> ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳು</translation>
 <translation id="8487693399751278191">ಇದೀಗ ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳನ್ನು ಆಮದು ಮಾಡಿ...</translation>
+<translation id="498957508165411911"><ph name="ORIGINAL_LANGUAGE"/> ರಿಂದ <ph name="TARGET_LANGUAGE"/> ಗೆ ಅನುವಾದಿಸಬೇಕೇ?</translation>
 <translation id="1181037720776840403">ತೆಗೆದುಹಾಕು</translation>
 <translation id="5261073535210137151">ಈ ಫೋಲ್ಡರ್ <ph name="COUNT"/> ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳನ್ನು ಒಳಗೊಂಡಿವೆ. ನೀವು ಇದನ್ನು ಖಚಿತವಾಗಿ ಅಳಿಸಲು ಬಯಸುವಿರಾ?</translation>
+<translation id="7186367841673660872">ಈ ಪುಟವನ್ನು<ph name="ORIGINAL_LANGUAGE"/>ನಿಂದ<ph name="LANGUAGE_LANGUAGE"/>ಗೆ ಭಾಷಾಂತರಿಸಲಾಗಿದೆ</translation>
 <translation id="6549689063733911810">ಇತ್ತೀಚಿನದು</translation>
 <translation id="7139724024395191329">ಎಮಿರೇಟ್</translation>
 <translation id="6702639462873609204">&amp;ಸಂಪಾದಿಸು...</translation>
 <translation id="5145883236150621069">ನೀತಿ ಪ್ರತಿಕ್ರಿಯೆಯಲ್ಲಿ ದೋಷದ ಕೋಡ್ ಅಸ್ತಿತ್ವದಲ್ಲಿದೆ</translation>
 <translation id="971774202801778802">ಬುಕ್‌ಮಾರ್ಕ್‌ URL</translation>
+<translation id="7983301409776629893">ಯಾವಾಗಲೂ <ph name="ORIGINAL_LANGUAGE"/> ಅನ್ನು <ph name="TARGET_LANGUAGE"/> ಗೆ ಭಾಷಾಂತರಿಸಿ</translation>
 <translation id="6970216967273061347">ಜಿಲ್ಲೆ</translation>
 <translation id="1122960773616686544">ಬುಕ್‌ಮಾರ್ಕ್‌ ಹೆಸರು</translation>
 <translation id="3427342743765426898">&amp;ಸಂಪಾದಿಸುವುದನ್ನು ಮತ್ತೆಮಾಡು</translation>
@@ -130,6 +140,7 @@
 <translation id="6445051938772793705">ರಾಷ್ಟ್ರ</translation>
 <translation id="1047726139967079566">ಈ ಪುಟವನ್ನು ಬುಕ್‌ಮಾರ್ಕ್ ಮಾಡಿ...</translation>
 <translation id="1774833706453699074">ತೆರೆದ ಪುಟಗಳನ್ನು ಬುಕ್‌ಮಾರ್ಕ್ ಮಾಡಿ...</translation>
+<translation id="5031870354684148875">Google ಅನುವಾದದ ಕುರಿತು</translation>
 <translation id="3950820424414687140">ಸೈನ್ ಇನ್</translation>
 <translation id="2025186561304664664">ಪ್ರಾಕ್ಸಿಯನ್ನು ಸ್ವಯಂ ಕಾನ್ಫಿಗರ್ ಆಗಿ ಹೊಂದಿಸಲಾಗಿದೆ.</translation>
 <translation id="1853748787962613237">ಲೇಖನವನ್ನು ಪ್ರದರ್ಶಿಸಲು ವಿಫಲವಾಗಿದೆ.</translation>
@@ -142,7 +153,6 @@
 <translation id="7805768142964895445">ಸ್ಥಿತಿ</translation>
 <translation id="2805756323405976993">ಅಪ್ಲಿಕೇಶನ್‌ಗಳು</translation>
 <translation id="4853020600495124913">&amp;ಹೊಸ ವಿಂಡೋನಲ್ಲಿ ತೆರೆಯಿರಿ</translation>
-<translation id="4002066346123236978">ಶೀರ್ಷಿಕೆ</translation>
 <translation id="1113869188872983271">&amp;ಮರುಕ್ರಮಗೊಳಿಸುವುದನ್ನು ರದ್ದುಗೊಳಿಸಿ</translation>
 <translation id="536296301121032821">ನೀತಿಯ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಸಂಗ್ರಹಿಸುವಲ್ಲಿ ವಿಫಲವಾಗಿದೆ</translation>
 <translation id="3254409185687681395">ಈ ಪುಟ ಬುಕ್‌ಮಾರ್ಕ್ ಮಾಡಿ</translation>
@@ -154,8 +164,10 @@
 <translation id="678528074488531090">ಊರ್ಜಿತಗೊಳಿಸುವಿಕೆಯ ದೋಷ: <ph name="VALIDATION_ERROR"/>.</translation>
 <translation id="2556876185419854533">&amp;ಸಂಪಾದಿಸುವುದನ್ನು ರದ್ದುಗೊಳಿಸಿ</translation>
 <translation id="4594403342090139922">&amp;ಅಳಿಸುವುದನ್ನು ರದ್ದುಗೊಳಿಸಿ</translation>
+<translation id="8571890674111243710"><ph name="LANGUAGE"/> ಗೆ ಪುಟವನ್ನು ಭಾಷಾಂತರಿಸಲಾಗುತ್ತಿದೆ...</translation>
 <translation id="4117700440116928470">ನೀತಿಯ ವ್ಯಾಪ್ತಿಯು ಬೆಂಬಲಿತವಾಗಿಲ್ಲ.</translation>
 <translation id="2114841414352855701"><ph name="POLICY_NAME"/> ರಿಂದ ಅತಿಕ್ರಮಿಸಲಾಗಿರುವ ಕಾರಣ ಇದನ್ನು ನಿರ್ಲಕ್ಷಿಸಲಾಗಿದೆ.</translation>
+<translation id="3228969707346345236">ಪುಟವು ಈಗಾಗಲೇ <ph name="LANGUAGE"/> ರಲ್ಲಿ ಇರುವುದರ ಕಾರಣ ಭಾಷಾಂತರವು ವಿಫಲವಾಗಿದೆ.</translation>
 <translation id="8891727572606052622">ಅಮಾನ್ಯವಾದ ಪ್ರಾಕ್ಸಿ ಮೋಡ್.</translation>
 <translation id="399179161741278232">ಆಮದುಮಾಡಲಾಗಿದೆ</translation>
 <translation id="5857090052475505287">ಹೊಸ ಫೋಲ್ಡರ್</translation>
@@ -165,12 +177,15 @@
 <translation id="4926049483395192435">ನಿರ್ದಿಷ್ಟಪಡಿಸಬೇಕಾಗಿದೆ.</translation>
 <translation id="7542995811387359312">ಈ ಫಾರ್ಮ್ ಸುರಕ್ಷಿತವಾದ ಸಂಪರ್ಕವನ್ನು ಬಳಸುತ್ತಿಲ್ಲವಾದ ಕಾರಣ ಸ್ವಯಂಚಾಲಿತ ಕ್ರೆಡಿಟ್ ಕಾರ್ಡ್ ಭರ್ತಿ ಮಾಡುವಿಕೆಯನ್ನು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಲಾಗಿದೆ.</translation>
 <translation id="9024127637873500333">&amp;ಹೊಸ ಟ್ಯಾಬ್‌ನಲ್ಲಿ ತೆರೆಯಿರಿ</translation>
+<translation id="5179510805599951267"><ph name="ORIGINAL_LANGUAGE"/> ರಲ್ಲಿ ಇಲ್ಲವೆ? ಈ ದೋಷವನ್ನು ವರದಿ ಮಾಡಿ</translation>
 <translation id="8088680233425245692">ಲೇಖನವನ್ನು ವೀಕ್ಷಿಸಲು ವಿಫಲವಾಗಿದೆ.</translation>
 <translation id="6397592254427394018">&amp;ಅಜ್ಞಾತ ವಿಂಡೋದಲ್ಲಿ ಎಲ್ಲ ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳನ್ನು ತೆರೆಯಿರಿ</translation>
+<translation id="8725066075913043281">ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ</translation>
 <translation id="1821930232296380041">ಅಮಾನ್ಯವಾದ ವಿನಂತಿ ಅಥವಾ ವಿನಂತಿ ಪ್ಯಾರಾಮೀಟರ್‌ಗಳು</translation>
 <translation id="580571955903695899">ಶೀರ್ಷಿಕೆಯಂತೆ ಮರುಕ್ರಮಗೊಳಿಸಿ</translation>
 <translation id="6059232451013891645">ಫೋಲ್ಡರ್:</translation>
 <translation id="1640180200866533862">ಬಳಕೆದಾರನ ನೀತಿಗಳು</translation>
+<translation id="375403751935624634">ಸರ್ವರ್ ದೋಷದ ಕಾರಣ ಅನುವಾದವು ವಿಫಲವಾಗಿದೆ.</translation>
 <translation id="5629630648637658800">ನೀತಿಯ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಲೋಡ್ ಮಾಡುವಲ್ಲಿ ವಿಫಲವಾಗಿದೆ</translation>
 <translation id="4030383055268325496">&amp;ಸೇರಿಸುವುದನ್ನು ರದ್ದುಗೊಳಿಸಿ</translation>
 <translation id="3650584904733503804">ಊರ್ಜಿತಗೊಳಿಸುವಿಕೆಯು ಯಶಸ್ವಿಯಾಗಿದೆ</translation>
@@ -185,14 +200,17 @@
 <translation id="5470861586879999274">&amp;ಸಂಪಾದಿಸುವುದನ್ನು ಮತ್ತೆಮಾಡು</translation>
 <translation id="6965978654500191972">ಸಾಧನ</translation>
 <translation id="8249320324621329438">ಕಳೆದ ಬಾರಿ ಪಡೆದಿರುವುದು:</translation>
+<translation id="1285320974508926690">ಈ ಸೈಟ್ ಅನ್ನು ಎಂದಿಗೂ ಭಾಷಾಂತರಿಸದಿರಿ</translation>
 <translation id="3613422051106148727">ಹೊಸ ಟ್ಯಾಬ್‌ನಲ್ಲಿ &amp;ತೆರೆಯಿರಿ</translation>
 <translation id="6282194474023008486">ಪೋಸ್ಟಲ್ ಕೋಡ್</translation>
 <translation id="443673843213245140">ಪ್ರಾಕ್ಸಿಯ ಬಳಕೆಯನ್ನು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಲಾಗಿದೆ ಆದರೆ ಬಹಿರಂಗ ಪ್ರಾಕ್ಸಿ ಕಾನ್ಫಿಗರೇಶನ್ ಅನ್ನು ನಿರ್ದಿಷ್ಟಪಡಿಸಲಾಗಿದೆ.</translation>
 <translation id="3623476034248543066">ಮೌಲ್ಯವನ್ನು ತೋರಿಸಿ</translation>
+<translation id="9020542370529661692">ಈ ಪುಟವನ್ನು <ph name="TARGET_LANGUAGE"/> ಗೆ ಅನುವಾದಿಸಲಾಗಿದೆ</translation>
 <translation id="5631439013527180824">ಅಮಾನ್ಯವಾದ ಸಾಧನ ನಿರ್ವಹಣೆ ಟೋಕನ್</translation>
 <translation id="6804671422566312077">&amp;ಹೊಸ ವಿಂಡೋನಲ್ಲಿ ಎಲ್ಲ ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳನ್ನು ತೆರೆಯಿರಿ</translation>
 <translation id="560412284261940334">ನಿರ್ವಾಹಕ ಬೆಂಬಲಿಸುವುದಿಲ್ಲ</translation>
 <translation id="3169472444629675720">Discover</translation>
+<translation id="4923417429809017348">ಗೊತ್ತಿಲ್ಲದ ಭಾಷೆಯಿಂದ <ph name="LANGUAGE_LANGUAGE"/> ಗೆ ಈ ಪುಟವನ್ನು ಭಾಷಾಂತರಿಸಲಾಗಿದೆ</translation>
 <translation id="5626134646977739690">ಹೆಸರು:</translation>
 <translation id="4813512666221746211">ನೆಟ್‌ವರ್ಕ್  ದೋಷ</translation>
 <translation id="1254117744268754948">ಫೋಲ್ಡರ್ ಆರಿಸಿ</translation>
@@ -214,6 +232,7 @@
 <translation id="6644283850729428850">ಈ ನೀತಿಯನ್ನು ವಿನಂತಿಸಲಾಗಿದೆ.</translation>
 <translation id="8488350697529856933">ಇದಕ್ಕೆ ಅನ್ವಯಿಸಲಾಗುತ್ತದೆ</translation>
 <translation id="5565735124758917034">ಸಕ್ರಿಯ</translation>
+<translation id="7568593326407688803">ಈ ಪುಟವು<ph name="ORIGINAL_LANGUAGE"/>ನಲ್ಲಿದೆ ನೀವು ಅದನ್ನು ಭಾಷಾಂತರಿಸಲು ಬಯಸುವಿರಾ?</translation>
 <translation id="3828029223314399057">ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳನ್ನು ಹುಡುಕಿ</translation>
 <translation id="8876793034577346603">ಪಾರ್ಸ್ ಮಾಡಬೇಕಾಗಿರುವ ನೆಟ್‌ವರ್ಕ್ ಕಾನ್ಫಿಗರೇಶನ್ ವಿಫಲವಾಗಿದೆ.</translation>
 <translation id="6268747994388690914">HTML ಫೈಲ್‌ಗಳಿಂದ ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳನ್ನು ಆಮದು ಮಾಡಿ......</translation>
@@ -223,6 +242,7 @@
 <translation id="7961015016161918242">ಎಂದಿಗೂ ಇಲ್ಲ</translation>
 <translation id="2835170189407361413">ಫಾರ್ಮ್ ತೆರವುಗೊಳಿಸು</translation>
 <translation id="713122686776214250">&amp;ಪುಟ ಸೇರಿಸು...</translation>
+<translation id="6550675742724504774">ಆಯ್ಕೆಗಳು</translation>
 <translation id="8804164990146287819">ಗೌಪ್ಯತಾ ನೀತಿ</translation>
 <translation id="5337776961545044340">ಈ ವರ್ತಕರಿಗೆ Google Wallet ನಿಂದ ಈ ಪ್ರಕಾರದ ಕಾರ್ಡ್ ಬೆಂಬಲಿತವಾಗಿಲ್ಲ. ದಯವಿಟ್ಟು ಬೇರೆಯ ಕಾರ್ಡ್ ಆಯ್ಕೆಮಾಡಿ.</translation>
 <translation id="4268574628540273656">URL:</translation>
@@ -250,6 +270,7 @@
 <translation id="3406605057700382950">ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳ ಪಟ್ಟಿಯನ್ನು &amp;ತೋರಿಸಿ</translation>
 <translation id="2455981314101692989">ಈ ಫಾರ್ಮ್ ಅನ್ನು ಭರ್ತಿ ಮಾಡುವ ಸಲುವಾಗಿ ಈ ವೆಬ್‌ಪುಟವನ್ನು ಸ್ವಯಂಚಾಲಿತವಾಗಿ ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಲಾಗಿದೆ.</translation>
 <translation id="7336748286991450492">ಎಲ್ಲೆಡೆಯೂ ನಿಮ್ಮ ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳನ್ನು ಪಡೆಯಲು <ph name="SIGN_IN_LINK"/> ಮಾಡಿ.</translation>
+<translation id="8308427013383895095">ನೆಟ್‌ವರ್ಕ್ ಸಂಪರ್ಕದಲ್ಲಿನ ಸಮಸ್ಯೆಯಿಂದಾಗಿ ಭಾಷಾಂತರವು ವಿಫಲವಾಗಿದೆ.</translation>
 <translation id="5720705177508910913">ಪ್ರಸ್ತುತ ಬಳಕೆದಾರ</translation>
 <translation id="3380864720620200369">ಕ್ಲೈಂಟ್ ID:</translation>
 </translationbundle>

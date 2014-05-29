@@ -419,7 +419,6 @@
 
           Dacă măsura este suspendarea, <ph name="PRODUCT_OS_NAME"/> se poate configura separat pentru a bloca sau a nu bloca ecranul înainte de suspendare.</translation>
 <translation id="3915395663995367577">Adresa URL a unui fișier .pac pentru proxy</translation>
-<translation id="2144674628322086778">Permite ca utilizatorul întreprindere să fie atât principal, cât și secundar (comportament prestabilit)</translation>
 <translation id="1022361784792428773">ID-urile extensiilor particulare pe care utilizatorul nu are permisiunea să le instaleze (sau * pentru toate)</translation>
 <translation id="3805659594028420438">Activați extensia pentru certificatele TLS legate la domeniu (învechită)</translation>
 <translation id="5499375345075963939">Această politică este activă numai în modul Vânzare.
@@ -793,7 +792,6 @@
           Această politică este destinată să fie utilizată la nivel intern de Chrome.</translation>
 <translation id="5586942249556966598">Nicio acțiune</translation>
 <translation id="131353325527891113">Afișați numele de utilizator pe ecranul de conectare</translation>
-<translation id="4057110413331612451">Permite ca utilizatorul întreprindere să fie numai unul cu profil multiplu principal</translation>
 <translation id="5365946944967967336">Afișați butonul Pagina de pornire în bara de instrumente</translation>
 <translation id="3709266154059827597">Configurați lista neagră pentru instalarea extensiilor</translation>
 <translation id="1933378685401357864">Imagine de fundal</translation>

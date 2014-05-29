@@ -13,11 +13,13 @@ Host</translation>
 <translation id="2801119484858626560">S'ha detectat una versió incompatible de l'escriptori remot de Chrome. Assegureu-vos que teniu la versió més recent de Google Chrome i de l'escriptori remot de Chrome als dos ordinadors i torneu-ho a provar.</translation>
 <translation id="6998989275928107238">Per a</translation>
 <translation id="406849768426631008">Voleu ajudar algú mentre manteniu una videotrucada? Proveu <ph name="LINK_BEGIN"/> Escriptori remot a Google Hangouts<ph name="LINK_END"/>.</translation>
+<translation id="906458777597946297">Maximitza la finestra</translation>
 <translation id="5397086374758643919">Programa de desinstal·lació de l'amfitrió de l'escriptori remot de Chrome</translation>
 <translation id="3258789396564295715">Podeu accedir de manera segura a aquest ordinador mitjançant l'escriptori remot de Chrome.</translation>
 <translation id="5070121137485264635">L'amfitrió remot necessita que us autentiqueu en un lloc web de tercers. Per continuar, cal que concediu permisos addicionals a l'escriptori remot de Chrome per accedir a aquesta adreça:</translation>
 <translation id="2124408767156847088">Accediu de manera segura als vostres ordinadors des del dispositiu Android.</translation>
 <translation id="3194245623920924351">Escriptori remot de Chrome</translation>
+<translation id="3649256019230929621">Minimitza la finestra</translation>
 <translation id="4808503597364150972">Introduïu el vostre PIN per a <ph name="HOSTNAME"/>.</translation>
 <translation id="7672203038394118626">S'han desactivat les connexions remotes en aquest ordinador.</translation>
 <translation id="8244400547700556338">Més informació</translation>
@@ -31,6 +33,7 @@ Host</translation>
 <translation id="5925497314631808737">• S'ha implementat el mode de pantalla completa/envoltant.
 • S'ha millorat la icona per amagar la barra d'accions.</translation>
 <translation id="2707879711568641861">Falten alguns components necessaris per a l'escriptori remot de Chrome. Assegureu-vos que heu instal·lat la versió més recent i torneu-ho a provar.</translation>
+<translation id="1779766957982586368">Tanca la finestra</translation>
 <translation id="2499160551253595098">Ajudeu-nos a millorar l'escriptori remot de Chrome: permeteu-nos recollir estadístiques d'ús i informes d'error.</translation>
 <translation id="7868137160098754906">Introduïu el vostre PIN de l'ordinador remot.</translation>
 <translation id="677755392401385740">L'amfitrió ha començat per a l'usuari: <ph name="HOST_USERNAME"/>.</translation>
@@ -215,5 +218,6 @@ remot de Chrome</translation>
 <translation id="1818475040640568770">No teniu cap ordinador registrat.</translation>
 <translation id="4394049700291259645">Desactiva</translation>
 <translation id="4156740505453712750">Per protegir l'accés a aquest ordinador, trieu un PIN de <ph name="BOLD_START"/>sis dígits com a mínim<ph name="BOLD_END"/>. Necessitareu aquest PIN per connectar-vos a aquest ordinador des d'una altra ubicació.</translation>
+<translation id="6398765197997659313">Surt del mode de pantalla completa</translation>
 <translation id="3286521253923406898">Controlador de Chromoting Host</translation>
 </translationbundle>

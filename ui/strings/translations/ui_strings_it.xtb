@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="it">
 <translation id="4820616160060340806">Comando+<ph name="KEY_COMBO_NAME"/></translation>
+<translation id="8806053966018712535">Cartella <ph name="FOLDER_NAME"/></translation>
 <translation id="1871244248791675517">Ins</translation>
 <translation id="6135826906199951471">Canc</translation>
 <translation id="528468243742722775">Fine</translation>
@@ -18,7 +19,6 @@
 <translation id="542155483965056918"><ph name="NUMBER_ZERO"/> mins ago</translation>
 <translation id="7121570032414343252"><ph name="NUMBER_TWO"/> sec.</translation>
 <translation id="7511635910912978956"><ph name="NUMBER_FEW"/> ore rimanenti</translation>
-<translation id="8717309436826820190">Altre <ph name="NUMBER_OF_NOTIFICATIONS"/> da <ph name="SOURCE_OF_NOTIFICATIONS"/></translation>
 <translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME"/></translation>
 <translation id="7658239707568436148">Annulla</translation>
 <translation id="7222373446505536781">F11</translation>
@@ -139,6 +139,7 @@
 <translation id="8331626408530291785">Scorri verso l'alto</translation>
 <translation id="7907591526440419938">Apri file</translation>
 <translation id="2864069933652346933"><ph name="NUMBER_ZERO"/> days left</translation>
+<translation id="2803313416453193357">Apri cartella</translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="2797524280730715045"><ph name="NUMBER_DEFAULT"/> ore fa</translation>
 <translation id="815598010540052116">Scorri verso il basso</translation>
@@ -176,7 +177,6 @@
 <translation id="2704295676501803339">Sposta a sinistra</translation>
 <translation id="9098468523912235228"><ph name="NUMBER_DEFAULT"/> secondi fa</translation>
 <translation id="494645311413743213"><ph name="NUMBER_TWO"/> sec. rimanenti</translation>
-<translation id="4570886800634958009">Espansione notifica</translation>
 <translation id="566737009157135450">Elimina una parola indietro</translation>
 <translation id="436869212180315161">Premi</translation>
 <translation id="4860787810836767172"><ph name="NUMBER_FEW"/> secondi fa</translation>
@@ -196,6 +196,7 @@
 <translation id="822618367988303761"><ph name="NUMBER_TWO"/> giorni fa</translation>
 <translation id="4745438305783437565"><ph name="NUMBER_FEW"/> min.</translation>
 <translation id="1963692530539281474"><ph name="NUMBER_DEFAULT"/> giorni rimanenti</translation>
+<translation id="6786750046913594791">Chiudi cartella</translation>
 <translation id="7509440305564869263"><ph name="NUMBER_FEW"/> minutes</translation>
 <translation id="5906719743126878045"><ph name="NUMBER_TWO"/> ore rimanenti</translation>
 <translation id="8959208747503200525"><ph name="NUMBER_TWO"/> ore fa</translation>

@@ -56,7 +56,6 @@ Es posible que algunas funciones no estén disponibles y que no se guarden los c
 <translation id="4831257561365056138">Desinstalar menú de aplicaciones de Chromium</translation>
 <translation id="4222580632002216401">Has iniciado sesión en Chromium. El administrador ha inhabilitado la sincronización.</translation>
 <translation id="4207043877577553402"><ph name="BEGIN_BOLD"/>Advertencia:<ph name="END_BOLD"/> Chromium no puede evitar que las extensiones registren el historial de búsqueda. Para inhabilitar la ejecución de esta extensión en modo incógnito, desactiva la casilla correspondiente a esta opción.</translation>
-<translation id="4516868174453854611">Al haber iniciado sesión, puedes ver tus pestañas, tus marcadores y otros elementos de Chromium en tu portátil, teléfono y tablet. También recibirás funciones y sugerencias más relevantes en relación con los servicios de Google.</translation>
 <translation id="985602178874221306">Los creadores de Chromium</translation>
 <translation id="8628626585870903697">Chromium no incluye el visor de PDF que se necesita para que la vista previa de impresión funcione.</translation>
 <translation id="7138853919861947730">Chromium puede utilizar servicios web para mejorar la experiencia de navegación de los usuarios.</translation>
@@ -118,7 +117,6 @@ Es posible que algunas funciones no estén disponibles y que no se guarden los c
 <translation id="8493179195440786826">Chromium no está actualizado</translation>
 <translation id="911206726377975832">¿Quieres borrar también los datos de navegación?</translation>
 <translation id="95514773681268843"><ph name="DOMAIN"/> requiere que leas y aceptes las siguientes Condiciones de servicio para poder utilizar este dispositivo. Estas condiciones no amplían, modifican ni limitan los términos de Chromium OS.</translation>
-<translation id="5603085937604338780">chromium</translation>
 <translation id="1699664235656412242">Cierra todas las ventanas de Chromium (incluidas las ventanas en modo Windows 8) y vuelve a intentarlo.</translation>
 <translation id="6734080038664603509">Actualizar &amp;Chromium</translation>
 <translation id="8862326446509486874">No dispones de los derechos necesarios para la instalación en el sistema. Intenta ejecutar de nuevo el programa de instalación como administrador.</translation>

@@ -56,7 +56,6 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="4831257561365056138">Avinstallera Chromium App Launcher</translation>
 <translation id="4222580632002216401">Nu är du inloggad på Chromium. Synkronisering har inaktiverats av administratören.</translation>
 <translation id="4207043877577553402"><ph name="BEGIN_BOLD"/>Varning!<ph name="END_BOLD"/> Chromium kan inte förhindra att tillägg registrerar din webbhistorik. Om du vill inaktivera det här tillägget i inkognitoläge avmarkerar du detta alternativ.</translation>
-<translation id="4516868174453854611">Nu när du har loggat in kommer du åt flikar, bokmärken och andra grejer i Chromium på din laptop, mobil och surfplatta. Du får även tillgång till mer relevanta förslag och funktioner i Googles tjänster.</translation>
 <translation id="985602178874221306">The Chromium Authors</translation>
 <translation id="8628626585870903697">Chromium har inte det PDF-visningsprogram som krävs för att förhandsgranskning ska fungera.</translation>
 <translation id="7138853919861947730">Chromium kan använda webbtjänster för att förbättra din upplevelse när du surfar.</translation>
@@ -117,7 +116,6 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="8493179195440786826">Den här versionen av Chromium är inaktuell</translation>
 <translation id="911206726377975832">Vill du även ta bort din webbinformation?</translation>
 <translation id="95514773681268843"><ph name="DOMAIN"/> kräver att du läser och godkänner följande användarvillkor innan du använder enheten. Villkoren varken utökar, ändrar eller begränsar villkoren för Chromium OS.</translation>
-<translation id="5603085937604338780">chromium</translation>
 <translation id="1699664235656412242">Stäng alla Chromium-fönster (inklusive i Windows 8-läge) och försök igen.</translation>
 <translation id="6734080038664603509">Uppdatera &amp;Chromium</translation>
 <translation id="8862326446509486874">Du har inte behörighet att göra en installation på systemnivå. Försök köra installationsprogrammet igen som administratör.</translation>

@@ -50,7 +50,6 @@ Trykk på Shift + Alt for å bytte.</translation>
 <translation id="4625920103690741805">Rotasjon låst (trykk her for å endre)</translation>
 <translation id="3799026279081545374">Det kan hende laderen din fungerer dårlig. Hvis du bor i USA, kan du ringe 866-628-1371 for å få hjelp og erstatning. Hvis du bor i Storbritannia, kan du ringe 0800-026-0613. Hvis du bor i Irland, kan du ringe 1-800-832-664. Hvis du bor i Canada, kan du ringe
 866-628-1372. Hvis du bor i Australia, kan du ringe 1-800-067-460.</translation>
-<translation id="3026237328237090306">Konfigurer mobildata</translation>
 <translation id="5871632337994001636">Administrer enheter</translation>
 <translation id="785750925697875037">Se mobilkontoen</translation>
 <translation id="153454903766751181">Starter mobilmodemet ...</translation>
@@ -177,7 +176,6 @@ Trykk på Shift + Alt for å bytte.</translation>
 <translation id="68610848741840742">ChromeVox (muntlig tilbakemelding)</translation>
 <translation id="6981982820502123353">Tilgjengelighet</translation>
 <translation id="4274292172790327596">Ukjent feil</translation>
-<translation id="4032485810211612751"><ph name="HOURS"/>:<ph name="MINUTES"/>:<ph name="SECONDS"/></translation>
 <translation id="5977415296283489383">Hodetelefon</translation>
 <translation id="225680501294068881">Leter etter enheter ...</translation>
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY"/> <ph name="DATE"/></translation>
@@ -230,7 +228,6 @@ Trykk på Søk eller Shift for å avbryte.</translation>
 <translation id="6165508094623778733">Les mer</translation>
 <translation id="9046895021617826162">Tilkoblingen mislyktes</translation>
 <translation id="7168224885072002358">Går tilbake til den gamle oppløsningen om <ph name="TIMEOUT_SECONDS"/></translation>
-<translation id="973896785707726617">Denne økten slutter om <ph name="SESSION_TIME_REMAINING"/>. Du logges ut automatisk.</translation>
 <translation id="743058460480092004">Kameraet og mikrofonen er i bruk.</translation>
 <translation id="8372369524088641025">Feil WEP-nøkkel</translation>
 <translation id="6636709850131805001">Ikke gjenkjent tilstand</translation>

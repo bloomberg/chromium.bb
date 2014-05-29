@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="lt">
 <translation id="4820616160060340806">„Command“ + „<ph name="KEY_COMBO_NAME"/>“</translation>
+<translation id="8806053966018712535">Aplankas „<ph name="FOLDER_NAME"/>“</translation>
 <translation id="1871244248791675517">Ins</translation>
 <translation id="6135826906199951471">Del</translation>
 <translation id="528468243742722775">Pabaiga</translation>
@@ -18,7 +19,6 @@
 <translation id="542155483965056918"><ph name="NUMBER_ZERO"/> mins ago</translation>
 <translation id="7121570032414343252"><ph name="NUMBER_TWO"/> sek.</translation>
 <translation id="7511635910912978956">liko <ph name="NUMBER_FEW"/> valandos (-ų)</translation>
-<translation id="8717309436826820190">Dar <ph name="NUMBER_OF_NOTIFICATIONS"/> iš „<ph name="SOURCE_OF_NOTIFICATIONS"/>“</translation>
 <translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME"/></translation>
 <translation id="7658239707568436148">Atšaukti</translation>
 <translation id="7222373446505536781">F11</translation>
@@ -139,6 +139,7 @@
 <translation id="8331626408530291785">Slinkti į viršų</translation>
 <translation id="7907591526440419938">Atidaryti failą</translation>
 <translation id="2864069933652346933"><ph name="NUMBER_ZERO"/> days left</translation>
+<translation id="2803313416453193357">Atidaryti aplanką</translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="2797524280730715045">Prieš <ph name="NUMBER_DEFAULT"/> val.</translation>
 <translation id="815598010540052116">Slinkti žemyn</translation>
@@ -176,7 +177,6 @@
 <translation id="2704295676501803339">Perkelti į kairę</translation>
 <translation id="9098468523912235228">Prieš <ph name="NUMBER_DEFAULT"/> sek.</translation>
 <translation id="494645311413743213">liko <ph name="NUMBER_TWO"/> sek.</translation>
-<translation id="4570886800634958009">Išplėsti pranešimą</translation>
 <translation id="566737009157135450">Trinti žodį atgal</translation>
 <translation id="436869212180315161">Spustelėti</translation>
 <translation id="4860787810836767172">Prieš <ph name="NUMBER_FEW"/> sek.</translation>
@@ -196,6 +196,7 @@
 <translation id="822618367988303761">Prieš <ph name="NUMBER_TWO"/> dienas</translation>
 <translation id="4745438305783437565"><ph name="NUMBER_FEW"/> min.</translation>
 <translation id="1963692530539281474">liko <ph name="NUMBER_DEFAULT"/> dienos (-ų)</translation>
+<translation id="6786750046913594791">Uždaryti aplanką</translation>
 <translation id="7509440305564869263"><ph name="NUMBER_FEW"/> min.</translation>
 <translation id="5906719743126878045">liko <ph name="NUMBER_TWO"/> valandos (-ų)</translation>
 <translation id="8959208747503200525">Prieš <ph name="NUMBER_TWO"/> val.</translation>

@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ro">
 <translation id="4820616160060340806">Command+<ph name="KEY_COMBO_NAME"/></translation>
+<translation id="8806053966018712535">Dosarul <ph name="FOLDER_NAME"/></translation>
 <translation id="1871244248791675517">Ins (Inserați)</translation>
 <translation id="6135826906199951471">Del</translation>
 <translation id="528468243742722775">End (La sfârșit)</translation>
@@ -18,7 +19,6 @@
 <translation id="542155483965056918">Cu <ph name="NUMBER_ZERO"/> minute în urmă</translation>
 <translation id="7121570032414343252"><ph name="NUMBER_TWO"/> secunde</translation>
 <translation id="7511635910912978956"><ph name="NUMBER_FEW"/> ore rămase</translation>
-<translation id="8717309436826820190">Încă <ph name="NUMBER_OF_NOTIFICATIONS"/> de la <ph name="SOURCE_OF_NOTIFICATIONS"/></translation>
 <translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME"/></translation>
 <translation id="7658239707568436148">Anulaţi</translation>
 <translation id="7222373446505536781">F11</translation>
@@ -139,6 +139,7 @@
 <translation id="8331626408530291785">Derulați în sus</translation>
 <translation id="7907591526440419938">Deschideți fișierul</translation>
 <translation id="2864069933652346933"><ph name="NUMBER_ZERO"/> zile rămase</translation>
+<translation id="2803313416453193357">Deschideți dosarul</translation>
 <translation id="1293699935367580298">Esc (Ieșiți)</translation>
 <translation id="2797524280730715045">Cu <ph name="NUMBER_DEFAULT"/> (de) ore în urmă</translation>
 <translation id="815598010540052116">Derulați în jos</translation>
@@ -176,7 +177,6 @@
 <translation id="2704295676501803339">Mutați spre stânga</translation>
 <translation id="9098468523912235228">Cu <ph name="NUMBER_DEFAULT"/> (de) secunde în urmă</translation>
 <translation id="494645311413743213"><ph name="NUMBER_TWO"/> secunde rămase</translation>
-<translation id="4570886800634958009">Buton de extindere a notificării</translation>
 <translation id="566737009157135450">Ștergeți înapoi un cuvânt</translation>
 <translation id="436869212180315161">Apăsați</translation>
 <translation id="4860787810836767172">Cu <ph name="NUMBER_FEW"/> secunde în urmă</translation>
@@ -196,6 +196,7 @@
 <translation id="822618367988303761">Cu <ph name="NUMBER_TWO"/> zile în urmă</translation>
 <translation id="4745438305783437565"><ph name="NUMBER_FEW"/> minute</translation>
 <translation id="1963692530539281474"><ph name="NUMBER_DEFAULT"/> zile rămase</translation>
+<translation id="6786750046913594791">Închideți dosarul</translation>
 <translation id="7509440305564869263"><ph name="NUMBER_FEW"/> minute</translation>
 <translation id="5906719743126878045"><ph name="NUMBER_TWO"/> ore rămase</translation>
 <translation id="8959208747503200525">Cu <ph name="NUMBER_TWO"/> ore în urmă</translation>

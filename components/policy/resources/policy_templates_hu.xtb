@@ -420,7 +420,6 @@ Bármely érték, amely nem ebben a tartományban van, a közelebbi határhoz le
 
           Ha a művelet a felfüggesztés, a(z) <ph name="PRODUCT_OS_NAME"/> rendszerben külön beállítható, hogy lezárja-e a képernyőt a felfüggesztés előtt.</translation>
 <translation id="3915395663995367577">URL egy proxy .pac fájlhoz</translation>
-<translation id="2144674628322086778">A vállalati felhasználó elsődleges és másodlagos felhasználó is lehet  (alapértelmezett viselkedés)</translation>
 <translation id="1022361784792428773">Bővítményazonosítók, amelyek felhasználói telepítését meg kell akadályozni (vagy * az összes esetén)</translation>
 <translation id="3805659594028420438">TLS-domainhez kötött tanúsítványbővítmények engedélyezése (elavult)</translation>
 <translation id="5499375345075963939">Ez a házirend csak kiállító módban aktív.
@@ -794,7 +793,6 @@ Ha a házirend konfigurálatlanul marad, a felhasználó döntheti el, hogy kív
           A házirend belső felhasználású, és azt maga a Chrome használja.</translation>
 <translation id="5586942249556966598">Ne tegyen semmit</translation>
 <translation id="131353325527891113">Felhasználónevek megjelenítése a bejelentkezési képernyőn</translation>
-<translation id="4057110413331612451">A vállalati felhasználó csak elsődleges felhasználó lehet többprofilos módban</translation>
 <translation id="5365946944967967336">Kezdőoldal gomb megjelenítése az eszköztáron</translation>
 <translation id="3709266154059827597">Bővítménytelepítési feketelista beállítása</translation>
 <translation id="1933378685401357864">Háttérkép</translation>

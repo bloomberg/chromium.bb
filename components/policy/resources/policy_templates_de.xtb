@@ -420,7 +420,6 @@ Falls die Richtlinie auf &quot;false&quot; gesetzt oder nicht festgelegt wird, k
 
           Falls der Suspend-Modus als Aktion festgelegt wird, kann gesondert konfiguriert werden, ob <ph name="PRODUCT_OS_NAME"/> den Bildschirm vorher sperren soll oder nicht.</translation>
 <translation id="3915395663995367577">URL einer PAC-Proxy-Datei</translation>
-<translation id="2144674628322086778">Nutzern in Unternehmen die Verwendung eines primären oder sekundären Mehrfachprofils gestatten (Standardverhalten)</translation>
 <translation id="1022361784792428773">Erweiterungs-IDs, die der Nutzer nicht installieren darf (&quot;*&quot; für alle)</translation>
 <translation id="3805659594028420438">Erweiterung für domaingebundene TLS-Zertifikate aktivieren (veraltet)</translation>
 <translation id="5499375345075963939">Diese Richtlinie ist nur im Händlermodus aktiv.
@@ -794,7 +793,6 @@ Falls die Richtlinie auf &quot;false&quot; gesetzt oder nicht festgelegt wird, k
 Diese Richtlinien dienen ausschließlich zur internen Verwendung in Chrome.</translation>
 <translation id="5586942249556966598">Nichts tun</translation>
 <translation id="131353325527891113">Nutzernamen auf Anmeldeseite zeigen</translation>
-<translation id="4057110413331612451">Nutzer in Unternehmen dürfen bei Mehrfachprofilen nur der primäre Nutzer sein</translation>
 <translation id="5365946944967967336">Startseiten-Schaltfläche auf Symbolleiste anzeigen</translation>
 <translation id="3709266154059827597">Schwarze Liste für Installation von Erweiterungen konfigurieren</translation>
 <translation id="1933378685401357864">Hintergrundbild</translation>

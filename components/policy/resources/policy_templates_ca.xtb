@@ -417,7 +417,6 @@ Si no es configura aquest paràmetre, no s'aplicarà cap restricció als tipus d
 
           Si se suspèn l'acció, <ph name="PRODUCT_OS_NAME"/> es pot configurar per separat per bloquejar la pantalla abans de la suspensió o per deixar-la desbloquejada.</translation>
 <translation id="3915395663995367577">URL d'un fitxer .pac d'un servidor intermediari</translation>
-<translation id="2144674628322086778">Permet que l'usuari empresarial sigui tant principal com secundari (opció predeterminada)</translation>
 <translation id="1022361784792428773">ID de les extensions que l'usuari no pot instal·lar (o bé * per a totes)</translation>
 <translation id="3805659594028420438">Activa l'extensió de certificats lligats al domini TLS (obsolet)</translation>
 <translation id="5499375345075963939">Aquesta política només està activa en mode de venda.
@@ -793,7 +792,6 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
           Aquesta política és d'ús intern a Chrome.</translation>
 <translation id="5586942249556966598">No facis res</translation>
 <translation id="131353325527891113">Mostra els noms d'usuari a la pantalla d'inici de sessió</translation>
-<translation id="4057110413331612451">Permet que l'usuari empresarial sigui només un usuari principal als perfils múltiples</translation>
 <translation id="5365946944967967336">Mostra el botó Pàgina d'inici a la barra d'eines</translation>
 <translation id="3709266154059827597">Configura la llista negra d'instal·lació d'extensions</translation>
 <translation id="1933378685401357864">Imatge de fons de pantalla</translation>

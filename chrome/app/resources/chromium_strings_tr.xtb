@@ -53,7 +53,6 @@
 <translation id="4831257561365056138">Chromium Uygulama Başlatıcı'nın yüklemesini kaldır</translation>
 <translation id="4222580632002216401">Chromium'da oturum açtınız! Senkronizasyon, yöneticiniz tarafından devre dışı bırakıldı.</translation>
 <translation id="4207043877577553402"><ph name="BEGIN_BOLD"/>Uyarı:<ph name="END_BOLD"/>, Chromium uzantıların göz atma geçmişinizi kaydetmesini engelleyemez. Gizli modda bu uzantıyı devre dışı bırakmak için, bu seçeneğin onay işaretini kaldırın.</translation>
-<translation id="4516868174453854611">Artık oturum açtığınıza göre dizüstü bilgisayarınıza, telefonunuza ve tabletinize sekmeleri, yer işaretlerini ve diğer Chromium öğelerini alabilirsiniz. Google hizmetlerinde daha alakalı öneriler ve özellikler de alırsınız.</translation>
 <translation id="985602178874221306">The Chromium Authors</translation>
 <translation id="8628626585870903697">Chromium, Baskı Önizleme için gerekli olan PDF görüntüleyiciyi içermez.</translation>
 <translation id="7138853919861947730">Chromium, tarama deneyiminizi iyileştirmek için Web hizmetlerinden yararlanabilir.</translation>
@@ -111,7 +110,6 @@
 <translation id="8493179195440786826">Chromium Sürümü Eski</translation>
 <translation id="911206726377975832">Tarama verileriniz de silinsin mi?</translation>
 <translation id="95514773681268843"><ph name="DOMAIN"/>, bu cihazı kullanmadan önce aşağıdaki Hizmet Şartları'nı okuyup kabul etmenizi gerektirmektedir. Bu şartlar, Chromium OS Şartları'nın kapsamını genişletmez, değiştirmez veya sınırlamaz.</translation>
-<translation id="5603085937604338780">chromium</translation>
 <translation id="1699664235656412242">Lütfen, (Windows 8 modunda olanlar dahil) Chromium pencerelerinin tümünü kapatın ve tekrar deneyin.</translation>
 <translation id="6734080038664603509">&amp;Chromium'u güncelle</translation>
 <translation id="8862326446509486874">Sistem düzeyinde yükleme için gerekli haklara sahip değilsiniz. Yükleyiciyi Yönetici olarak tekrar çalıştırmayı deneyin.</translation>

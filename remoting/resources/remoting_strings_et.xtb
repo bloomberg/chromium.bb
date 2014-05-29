@@ -13,11 +13,13 @@ Host</translation>
 <translation id="2801119484858626560">Tuvastati Chrome Remote Desktopi ühildumatu verisoon. Veenduge, et mõlemasse arvutisse on installitud Google Chrome'i ja Chrome Remote Desktopi uusim versioon, ning proovige uuesti.</translation>
 <translation id="6998989275928107238">Host</translation>
 <translation id="406849768426631008">Kas soovite kedagi aidata, pidades temaga samal ajal ka videovestlust? Proovige <ph name="LINK_BEGIN"/> Google Hangoutsi kaugtöölauafunktsiooni<ph name="LINK_END"/>.</translation>
+<translation id="906458777597946297">Maksimeeri akent</translation>
 <translation id="5397086374758643919">Chrome Remote Desktopi hosti desinstaller</translation>
 <translation id="3258789396564295715">Pääsete turvaliselt arvuti juurde Chrome Remote Desktopi abil.</translation>
 <translation id="5070121137485264635">Kaughost vajab autentimist kolmanda osapoole veebisaidil. Jätkamiseks peate andma Chrome Remote Desktopile täiendavad load juurdepääsuks sellele aadressile:</translation>
 <translation id="2124408767156847088">Hankige oma Android-seadmest turvaliselt juurdepääs oma arvutitele.</translation>
 <translation id="3194245623920924351">Chrome Remote Desktop</translation>
+<translation id="3649256019230929621">Minimeeri aken</translation>
 <translation id="4808503597364150972">Sisestage hosti <ph name="HOSTNAME"/> PIN-kood.</translation>
 <translation id="7672203038394118626">Selles arvutis on kaugühendused keelatud.</translation>
 <translation id="8244400547700556338">Lisateave.</translation>
@@ -31,6 +33,7 @@ Host</translation>
 <translation id="5925497314631808737">• Rakendatakse täisekraani / immersiivset režiimi.
 • Täiustatud ikoon toiminguriba peitmiseks.</translation>
 <translation id="2707879711568641861">Mõned Chrome Remote Desktopi jaoks vajalikud komponendid on puudu. Veenduge, et installitud on uusim versioon, ja proovige uuesti.</translation>
+<translation id="1779766957982586368">Sulgeb akna</translation>
 <translation id="2499160551253595098">Aidake meil Chrome Remote Desktopi täiustada, lubades meil koguda kasutusstatistikat ja krahhiaruandeid.</translation>
 <translation id="7868137160098754906">Sisestage kaugarvuti PIN-kood.</translation>
 <translation id="677755392401385740">Kasutajale käivitati host: <ph name="HOST_USERNAME"/>.</translation>
@@ -215,5 +218,6 @@ Desktopi host</translation>
 <translation id="1818475040640568770">Te ei ole registreerinud ühtegi arvutit.</translation>
 <translation id="4394049700291259645">Keela</translation>
 <translation id="4156740505453712750">Arvuti kaitsmiseks valige PIN-kood, mis koosneb <ph name="BOLD_START"/>vähemalt kuuest numbrist<ph name="BOLD_END"/>. PIN-kood tuleb sisestada muust asukohast ühenduse loomisel.</translation>
+<translation id="6398765197997659313">Välju täisekraanilt</translation>
 <translation id="3286521253923406898">Chromootimise hosti kontroller</translation>
 </translationbundle>

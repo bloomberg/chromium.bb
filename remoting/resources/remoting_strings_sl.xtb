@@ -13,11 +13,13 @@ povezovanje s Chromom</translation>
 <translation id="2801119484858626560">Zaznana je bila nezdružljiva različica Oddaljenega namizja za Chrome. Preverite, ali imate v obeh računalnikih najnovejši različici Google Chroma in Oddaljenega namizja za Chrome, ter poskusite znova.</translation>
 <translation id="6998989275928107238">Za</translation>
 <translation id="406849768426631008">Želite nekomu pomagati in hkrati v živo prek videa klepetati z njimi? Preskusite <ph name="LINK_BEGIN"/> Oddaljeno namizje v klepetalnicah Google Hangouts<ph name="LINK_END"/>.</translation>
+<translation id="906458777597946297">Povečanje okna</translation>
 <translation id="5397086374758643919">Odstranitveni program gostitelja za Oddaljeno namizje za Chrome</translation>
 <translation id="3258789396564295715">Oddaljeno namizje za Chrome omogoča varen dostop do tega računalnika.</translation>
 <translation id="5070121137485264635">Oddaljeni gostitelj zahteva, da previte pristnost na spletnem mestu tretje osebe. Če želite nadaljevati, morate Oddaljenemu namizju za Chrome dodeliti dodatna dovoljenja za dostop do tega naslova:</translation>
 <translation id="2124408767156847088">Varno dostopajte do računalnikov iz naprave s sistemom Android.</translation>
 <translation id="3194245623920924351">Oddaljeno namizje za Chrome</translation>
+<translation id="3649256019230929621">Pomanjšanje olna</translation>
 <translation id="4808503597364150972">Vnesite kodo PIN za gostitelja <ph name="HOSTNAME"/>.</translation>
 <translation id="7672203038394118626">Oddaljene povezave za ta računalnik so onemogočene.</translation>
 <translation id="8244400547700556338">Več o tem.</translation>
@@ -31,6 +33,7 @@ povezovanje s Chromom</translation>
 <translation id="5925497314631808737">• Na voljo je celozaslonski/potopni način.
 • Izboljšana ikona za skrivanje vrstice dejanj.</translation>
 <translation id="2707879711568641861">Ni nekaterih delov, ki so zahtevani za Oddaljeno namizje za Chrome. Preverite, ali imate najnovejšo različico Google Chroma in poskusite znova.</translation>
+<translation id="1779766957982586368">Zapre okno</translation>
 <translation id="2499160551253595098">Pomagajte nam izboljšati Oddaljeno namizje za Chrome, tako da nam dovolite zbiranje statističnih podatkov o uporabi in poročil o zrušitvah.</translation>
 <translation id="7868137160098754906">Vnesite PIN za oddaljeni računalnik.</translation>
 <translation id="677755392401385740">Gostitelj zagnan za uporabnika: <ph name="HOST_USERNAME"/>.</translation>
@@ -215,5 +218,6 @@ namizje za Chrome</translation>
 <translation id="1818475040640568770">Nimate registriranih računalnikov.</translation>
 <translation id="4394049700291259645">Onemogoči</translation>
 <translation id="4156740505453712750">Če želite zaščititi dostop do tega računalnika, izberite vsaj <ph name="BOLD_START"/>šestmestni<ph name="BOLD_END"/> PIN. Ta bo zahtevan pri povezovanju z drugega mesta.</translation>
+<translation id="6398765197997659313">Izhod iz celozaslonskega načina</translation>
 <translation id="3286521253923406898">Krmilnik gostitelja za Oddaljeno povezovanje s Chromom</translation>
 </translationbundle>

@@ -13,11 +13,13 @@ Ana Makinesi</translation>
 <translation id="2801119484858626560">Chrome Uzaktan Masaüstü uygulamasının uyumsuz bir sürümü algılandı. Lütfen, her iki bilgisayarda Google Chrome ve Chrome Uzaktan Masaüstü uygulamalarının son sürümlerinin bulunduğundan emin olun ve tekrar deneyin.</translation>
 <translation id="6998989275928107238">Kime</translation>
 <translation id="406849768426631008">Biriyle görüntülü sohbet yaparken aynı anda ona yardım etmek ister misiniz? <ph name="LINK_BEGIN"/>Google Hangouts'taki Uzaktan Masaüstü'nü<ph name="LINK_END"/> deneyin.</translation>
+<translation id="906458777597946297">Pencereyi ekranı kaplayacak şekilde büyüt</translation>
 <translation id="5397086374758643919">Chrome Uzaktan Masaüstü Ana Makine Yüklemesini Kaldırma Programı</translation>
 <translation id="3258789396564295715">Chrome Uzaktan Masaüstü uygulamasını kullanarak bu bilgisayara güvenli bir şekilde erişebilirsiniz.</translation>
 <translation id="5070121137485264635">Uzak ana makine üçüncü taraf bir web sitesine kimlik doğrulama işlemi yapmanızı gerektiriyor. Devam etmek üzere şu adrese erişim için Chrome Uzaktan Masaüstü'ne ek izinler vermelisiniz:</translation>
 <translation id="2124408767156847088">Android cihazınızdan bilgisayarlarınıza güvenle erişin.</translation>
 <translation id="3194245623920924351">Chrome Uzaktan Masaüstü</translation>
+<translation id="3649256019230929621">Pencereyi simge durumuna küçült</translation>
 <translation id="4808503597364150972">Lütfen <ph name="HOSTNAME"/> için PIN'inizi girin.</translation>
 <translation id="7672203038394118626">Bu bilgisayara uzaktan bağlantılar devre dışı bırakıldı.</translation>
 <translation id="8244400547700556338">Nasıl yapıldığını öğrenin.</translation>
@@ -31,6 +33,7 @@ Ana Makinesi</translation>
 <translation id="5925497314631808737">• Tam ekran / yoğun içerik modu uygulandı
 • İşlem çubuğunu gizleme simgesi iyileştirildi</translation>
 <translation id="2707879711568641861">Chrome Uzaktan Masaüstü için gereken bazı bileşenler eksik. Lütfen son sürümü yüklediğinizden emin olun ve tekrar deneyin.</translation>
+<translation id="1779766957982586368">Pencereyi kapat</translation>
 <translation id="2499160551253595098">Kullanım istatistiklerini ve kilitlenme raporlarını toplamamıza izin vererek Chrome Uzaktan Masaüstü'nü daha iyi hale getirmemize yardımcı olun.</translation>
 <translation id="7868137160098754906">Lütfen uzak bilgisayara ilişkin PIN'inizi girin.</translation>
 <translation id="677755392401385740">Ana makine bu kullanıcı için başlatıldı: <ph name="HOST_USERNAME"/>.</translation>
@@ -215,5 +218,6 @@ Masaüstü Ana Makinesi</translation>
 <translation id="1818475040640568770">Kayıtlı bilgisayarınız yok.</translation>
 <translation id="4394049700291259645">Devre dışı bırak</translation>
 <translation id="4156740505453712750">Bu bilgisayara erişimi korumak için lütfen <ph name="BOLD_START"/>en az altı basamaklı<ph name="BOLD_END"/> bir PIN seçin. Başka bir yerden bağlanırken bu PIN gerekecektir.</translation>
+<translation id="6398765197997659313">Tam ekrandan çık</translation>
 <translation id="3286521253923406898">Chromoting Ana Makine Denetleyicisi</translation>
 </translationbundle>

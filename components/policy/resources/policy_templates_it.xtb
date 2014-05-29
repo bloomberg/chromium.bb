@@ -408,7 +408,6 @@ Se questa norma non viene impostata, viene eseguita l'azione predefinita, vale a
 
 Se l'azione è la sospensione, è possibile configurare separatamente il blocco o meno dello schermo prima della sospensione in <ph name="PRODUCT_OS_NAME"/>.</translation>
 <translation id="3915395663995367577">URL di un file proxy .pac</translation>
-<translation id="2144674628322086778">Permetti all'utente aziendale di essere sia principale che secondario (comportamento predefinito)</translation>
 <translation id="1022361784792428773">ID delle estensioni (oppure * per tutte le estensioni) per cui non è consentita l'installazione</translation>
 <translation id="3805659594028420438">Attiva estensione di certificati associati al dominio TLS (obsoleta)</translation>
 <translation id="5499375345075963939">Questa norma è attiva soltanto in modalità retail.
@@ -776,7 +775,6 @@ Questa norma viene applicata per tutti i tipi di ingressi video e non soltanto p
           Questa norma è per uso interno di Chrome.</translation>
 <translation id="5586942249556966598">Non fare niente</translation>
 <translation id="131353325527891113">Mostra nomi utente nella schermata di accesso</translation>
-<translation id="4057110413331612451">Permetti all'utente aziendale di essere soltanto un utente principale del profilo multiplo</translation>
 <translation id="5365946944967967336">Mostra il pulsante Pagina iniziale nella barra degli strumenti</translation>
 <translation id="3709266154059827597">Configura blacklist per l'installazione delle estensioni</translation>
 <translation id="1933378685401357864">Immagine di sfondo</translation>

@@ -49,7 +49,6 @@
 <translation id="3846575436967432996">利用可能なネットワーク情報がありません</translation>
 <translation id="4625920103690741805">回転しない（タップして変更）</translation>
 <translation id="3799026279081545374">充電器に問題がある可能性があります。お住まいの国に応じて、それぞれのサポート/交換対応窓口までお問い合わせください。米国にお住まいの場合は 866-628-1371 までお電話ください。英国にお住まいの場合は 0800-026-0613 までお電話ください。アイルランドにお住まいの場合は 1-800-832-664 までお電話ください。カナダにお住まいの場合は 866-628-1372 までお電話ください。オーストラリアにお住まいの場合は 1-800-067-460 までお電話ください。</translation>
-<translation id="3026237328237090306">モバイル データをセットアップ</translation>
 <translation id="5871632337994001636">デバイスを管理...</translation>
 <translation id="785750925697875037">モバイル アカウントを表示</translation>
 <translation id="153454903766751181">セルラー モデムを初期化しています...</translation>
@@ -176,7 +175,6 @@
 <translation id="68610848741840742">ChromeVox（音声フィードバック）</translation>
 <translation id="6981982820502123353">アクセシビリティ</translation>
 <translation id="4274292172790327596">不明なエラー</translation>
-<translation id="4032485810211612751"><ph name="HOURS"/>:<ph name="MINUTES"/>:<ph name="SECONDS"/></translation>
 <translation id="5977415296283489383">ヘッドホン</translation>
 <translation id="225680501294068881">デバイスをスキャンしています...</translation>
 <translation id="5597451508971090205"><ph name="DATE"/> (<ph name="SHORT_WEEKDAY"/>)</translation>
@@ -229,7 +227,6 @@
 <translation id="6165508094623778733">詳しく見る</translation>
 <translation id="9046895021617826162">接続に失敗しました</translation>
 <translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS"/> 秒後に元の解像度に戻ります</translation>
-<translation id="973896785707726617">このセッションはあと <ph name="SESSION_TIME_REMAINING"/>で終了します。終了すると、自動的にログアウトします。</translation>
 <translation id="743058460480092004">カメラとマイクが使用中です。</translation>
 <translation id="8372369524088641025">WEP キーが正しくありません</translation>
 <translation id="6636709850131805001">不明な状態</translation>

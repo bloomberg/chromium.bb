@@ -13,11 +13,13 @@ Chromoting</translation>
 <translation id="2801119484858626560">È stata rilevata una versione incompatibile di Chrome Remote Desktop. Verifica che la versione più recente di Chrome e di Chrome Remote Desktop sia installata su entrambi i computer e riprova.</translation>
 <translation id="6998989275928107238">A</translation>
 <translation id="406849768426631008">Vuoi aiutare qualcuno mentre videochatti con lui? Prova <ph name="LINK_BEGIN"/>Desktop remoto in Google Hangouts<ph name="LINK_END"/>.</translation>
+<translation id="906458777597946297">Ingrandisci la finestra</translation>
 <translation id="5397086374758643919">Programma di disinstallazione host Chrome Remote Desktop</translation>
 <translation id="3258789396564295715">Puoi accedere a questo computer in sicurezza utilizzando Chrome Remote Desktop.</translation>
 <translation id="5070121137485264635">L'host remoto richiede l'autenticazione su un sito web di terze parti. Per continuare, devi concedere a Chrome Remote Desktop ulteriori autorizzazioni per accedere a questo indirizzo:</translation>
 <translation id="2124408767156847088">Accedi in sicurezza ai tuoi computer dal tuo dispositivo Android.</translation>
 <translation id="3194245623920924351">Chrome Remote Desktop</translation>
+<translation id="3649256019230929621">Riduci la finestra</translation>
 <translation id="4808503597364150972">Inserisci il PIN di <ph name="HOSTNAME"/>.</translation>
 <translation id="7672203038394118626">Le connessioni remote per questo computer sono state disattivate.</translation>
 <translation id="8244400547700556338">Scopri come.</translation>
@@ -31,6 +33,7 @@ Chromoting</translation>
 <translation id="5925497314631808737">• È stata implementata la modalità immersiva/a schermo intero.
 • È stata migliorata l'icona per nascondere la barra delle azioni.</translation>
 <translation id="2707879711568641861">Mancano alcuni componenti necessari per Chrome Remote Desktop. Verifica che sia installata la versione più recente e riprova.</translation>
+<translation id="1779766957982586368">Chiudi finestra</translation>
 <translation id="2499160551253595098">Aiutaci a migliorare Chrome Remote Desktop consentendo l'acquisizione di dati per statistiche di utilizzo e rapporti sugli arresti anomali.</translation>
 <translation id="7868137160098754906">Inserisci il codice PIN per il computer remoto.</translation>
 <translation id="677755392401385740">Host avviato per utente: <ph name="HOST_USERNAME"/>.</translation>
@@ -215,5 +218,6 @@ Remote Desktop</translation>
 <translation id="1818475040640568770">Non sono presenti computer registrati.</translation>
 <translation id="4394049700291259645">Disabilita</translation>
 <translation id="4156740505453712750">Per proteggere l'accesso a questo computer, scegli un PIN di <ph name="BOLD_START"/>almeno sei cifre<ph name="BOLD_END"/>. Questo PIN sarà richiesto quando ti connetti da un'altra posizione.</translation>
+<translation id="6398765197997659313">Esci da schermo intero</translation>
 <translation id="3286521253923406898">Controller host Chromoting</translation>
 </translationbundle>

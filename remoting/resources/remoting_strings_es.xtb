@@ -13,11 +13,13 @@ Chromoting</translation>
 <translation id="2801119484858626560">Hemos detectado que tu versión de Escritorio remoto de Chrome no es compatible. Asegúrate de haber instalado en ambos ordenadores la última versión de Chrome y de Escritorio remoto de Chrome.</translation>
 <translation id="6998989275928107238">Para</translation>
 <translation id="406849768426631008">¿Quieres ayudar a otra persona mientras mantienes con ella un chat de vídeo? Prueba <ph name="LINK_BEGIN"/>Escritorio remoto en Google Hangouts<ph name="LINK_END"/>.</translation>
+<translation id="906458777597946297">Maximizar ventana</translation>
 <translation id="5397086374758643919">Programa de desinstalación del host de Escritorio remoto de Chrome</translation>
 <translation id="3258789396564295715">Puedes acceder de forma segura a este ordenador con Escritorio remoto de Chrome.</translation>
 <translation id="5070121137485264635">El host remoto requiere tu autenticación en un sitio web de terceros. Para continuar, debes conceder a la aplicación Escritorio remoto de Chrome permisos adicionales para acceder a la siguiente dirección:</translation>
 <translation id="2124408767156847088">Accede de forma segura a tus ordenadores desde tu dispositivo Android.</translation>
 <translation id="3194245623920924351">Escritorio remoto de Chrome</translation>
+<translation id="3649256019230929621">Minimizar ventana</translation>
 <translation id="4808503597364150972">Introduce el PIN de <ph name="HOSTNAME"/>.</translation>
 <translation id="7672203038394118626">Se han inhabilitado las conexiones remotas con este ordenador.</translation>
 <translation id="8244400547700556338">Más información</translation>
@@ -31,6 +33,7 @@ Chromoting</translation>
 <translation id="5925497314631808737">• Modo de pantalla completa/envolvente implementado.
 • Icono mejorado para ocultar la barra de acciones.</translation>
 <translation id="2707879711568641861">Faltan algunos de los componentes necesarios para Escritorio remoto de Chrome. Asegúrate de haber instalado la última versión y vuelve a intentarlo.</translation>
+<translation id="1779766957982586368">Cerrar ventana</translation>
 <translation id="2499160551253595098">Ayúdanos a mejorar la aplicación Escritorio remoto de Chrome autorizando la recopilación de estadísticas de uso e informes sobre fallos.</translation>
 <translation id="7868137160098754906">Introduce tu código PIN para el ordenador remoto.</translation>
 <translation id="677755392401385740">Host iniciado para usuario: <ph name="HOST_USERNAME"/>.</translation>
@@ -215,5 +218,6 @@ remoto de Chrome</translation>
 <translation id="1818475040640568770">No tienes ordenadores registrados.</translation>
 <translation id="4394049700291259645">Inhabilitar</translation>
 <translation id="4156740505453712750">Debes elegir un PIN de <ph name="BOLD_START"/>al menos seis dígitos<ph name="BOLD_END"/> para proteger el acceso a este ordenador. Se solicitará ese PIN cada vez que se establezca conexión con ese ordenador desde otra ubicación.</translation>
+<translation id="6398765197997659313">Salir del modo de pantalla completa</translation>
 <translation id="3286521253923406898">Controlador de host de Chromoting</translation>
 </translationbundle>

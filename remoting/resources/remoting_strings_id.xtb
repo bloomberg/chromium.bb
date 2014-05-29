@@ -13,11 +13,13 @@ Chromoting</translation>
 <translation id="2801119484858626560">Versi Chrome Desktop Jarak Jauh yang tidak kompatibel terdeteksi. Pastikan bahwa Anda memiliki Chrome dan Chrome Desktop Jarak Jauh versi teranyar di kedua komputer, lalu coba lagi.</translation>
 <translation id="6998989275928107238">Ke</translation>
 <translation id="406849768426631008">Ingin membantu seseorang sambil video chat dengannya? Coba <ph name="LINK_BEGIN"/> Desktop Jarak Jauh di Google Hangouts<ph name="LINK_END"/>.</translation>
+<translation id="906458777597946297">Memaksimalkan jendela</translation>
 <translation id="5397086374758643919">Pencopot Pemasangan Host Chrome Desktop Jarak Jauh</translation>
 <translation id="3258789396564295715">Mungkin Anda dapat mengakses komputer ini dengan aman menggunakan Chrome Desktop Jarak Jauh.</translation>
 <translation id="5070121137485264635">Hosting jarak jauh mewajibkan Anda mengautentikasi ke situs web pihak ketiga. Untuk melanjutkan, Anda harus memberikan izin tambahan ke Chrome Desktop Jarak Jauh untuk mengakses alamat ini:</translation>
 <translation id="2124408767156847088">Akses komputer dari perangkat Android Anda dengan aman.</translation>
 <translation id="3194245623920924351">Chrome Desktop Jarak Jauh</translation>
+<translation id="3649256019230929621">Meminimalkan jendela</translation>
 <translation id="4808503597364150972">Masukkan PIN Anda untuk <ph name="HOSTNAME"/>.</translation>
 <translation id="7672203038394118626">Sambungan jarak jauh untuk komputer ini telah dinonaktifkan.</translation>
 <translation id="8244400547700556338">Pelajari caranya.</translation>
@@ -31,6 +33,7 @@ Chromoting</translation>
 <translation id="5925497314631808737">• Penerapan layar penuh / mode yang lebih mendalam.
 • Peningkatan ikon untuk menyembunyikan bilah tindakan.</translation>
 <translation id="2707879711568641861">Beberapa komponen yang diperlukan untuk Chrome Desktop Jarak Jauh hilang. Pastikan bahwa Anda telah memasang versi teranyar dan coba lagi.</translation>
+<translation id="1779766957982586368">Tutup jendela</translation>
 <translation id="2499160551253595098">Bantu kami meningkatkan Chrome Desktop Jarak Jauh dengan mengizinkan kami mengumpulkan statistik penggunaan dan laporan kerusakan.</translation>
 <translation id="7868137160098754906">Masukkan PIN komputer jarak jauh Anda.</translation>
 <translation id="677755392401385740">Host dimulai untuk pengguna: <ph name="HOST_USERNAME"/>.</translation>
@@ -215,5 +218,6 @@ Desktop Jarak Jauh</translation>
 <translation id="1818475040640568770">Anda tidak memiliki komputer yang terdaftar.</translation>
 <translation id="4394049700291259645">Nonaktifkan</translation>
 <translation id="4156740505453712750">Untuk melindungi akses ke komputer ini, gunakan PIN <ph name="BOLD_START"/>setidaknya enam digit<ph name="BOLD_END"/>. PIN ini akan diperlukan saat menyambung dari lokasi lainnya.</translation>
+<translation id="6398765197997659313">Keluar dari tampilan layar penuh</translation>
 <translation id="3286521253923406898">Pengontrol Host Chromoting</translation>
 </translationbundle>

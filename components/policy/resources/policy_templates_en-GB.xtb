@@ -498,7 +498,6 @@
 
           If the action is suspend, <ph name="PRODUCT_OS_NAME"/> can separately be configured to either lock or not lock the screen before suspending.</translation>
 <translation id="3915395663995367577">URL to a proxy .pac file</translation>
-<translation id="2144674628322086778">Allow enterprise user to be both primary and secondary  (Default behaviour)</translation>
 <translation id="1022361784792428773">Extension IDs the user should be prevented from installing (or * for all)</translation>
 <translation id="3805659594028420438">Enable TLS domain-bound certificates extension (deprecated)</translation>
 <translation id="5499375345075963939">This policy is active in retail mode only.
@@ -957,7 +956,6 @@
           This policy is for internal use by Chrome itself.</translation>
 <translation id="5586942249556966598">Do nothing</translation>
 <translation id="131353325527891113">Show usernames on login screen</translation>
-<translation id="4057110413331612451">Allow enterprise user to be primary multiprofile user only</translation>
 <translation id="5365946944967967336">Show Home button on the toolbar</translation>
 <translation id="3709266154059827597">Configure extension installation blacklist</translation>
 <translation id="1933378685401357864">Wallpaper image</translation>

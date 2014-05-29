@@ -13,11 +13,13 @@ isäntä</translation>
 <translation id="2801119484858626560">Havaittiin yhteensopimaton Chrome-etäkäyttöversio. Varmista, että molemmissa tietokoneissa on uusimmat Chrome- ja Chrome-etäkäyttöversiot, ja yritä uudelleen.</translation>
 <translation id="6998989275928107238">Kohde</translation>
 <translation id="406849768426631008">Haluatko auttaa jotakuta videopuhelun kautta? Kokeile <ph name="LINK_BEGIN"/> etäkäyttöä Googlen Hangout-keskusteluissa<ph name="LINK_END"/>.</translation>
+<translation id="906458777597946297">Suurenna ikkuna</translation>
 <translation id="5397086374758643919">Chrome-etäkäytön isännän asennuksen poisto</translation>
 <translation id="3258789396564295715">Tähän tietokoneeseen voi muodostaa suojatun yhteyden Chrome-etäkäytön avulla.</translation>
 <translation id="5070121137485264635">Etäisäntä edellyttää todennusta kolmannen osapuolen sivustossa. Jos haluat jatkaa, anna Chrome-etäkäytölle lisäkäyttölupia tämän osoitteen avaamiseksi:</translation>
 <translation id="2124408767156847088">Käytä tietokoneitasi turvallisesti Android-laitteella.</translation>
 <translation id="3194245623920924351">Chrome-etäkäyttö</translation>
+<translation id="3649256019230929621">Pienennä ikkuna</translation>
 <translation id="4808503597364150972">Anna kohteen <ph name="HOSTNAME"/> PIN-koodi.</translation>
 <translation id="7672203038394118626">Tietokoneen etäyhteydet on poistettu käytöstä.</translation>
 <translation id="8244400547700556338">Lisätietoja.</translation>
@@ -31,6 +33,7 @@ isäntä</translation>
 <translation id="5925497314631808737">• Koko näytön tila / immersiivinen tila lisätty.
 • Toimintapalkin piilotuskuvaketta parannettu.</translation>
 <translation id="2707879711568641861">Jotkin Chrome-etäkäyttöön vaadittavat komponentit puuttuvat. Varmista, että olet asentanut uusimman Google Chrome -version, ja yritä uudelleen.</translation>
+<translation id="1779766957982586368">Sulje ikkuna</translation>
 <translation id="2499160551253595098">Auta meitä parantamaan Chrome-etäkäyttöä antamalla meidän kerätä käyttötilastoja ja virheraportteja.</translation>
 <translation id="7868137160098754906">Anna etätietokoneen PIN-koodi.</translation>
 <translation id="677755392401385740">Käyttäjän <ph name="HOST_USERNAME"/> isäntä käynnistettiin.</translation>
@@ -215,5 +218,6 @@ isäntä</translation>
 <translation id="1818475040640568770">Et ole rekisteröinyt tietokoneita.</translation>
 <translation id="4394049700291259645">Poista käytöstä</translation>
 <translation id="4156740505453712750">Suojaa tämän tietokoneen käyttöä valitsemalla <ph name="BOLD_START"/>vähintään kuusinumeroinen<ph name="BOLD_END"/> PIN-koodi. Tarvitset PIN-koodin muodostaessasi yhteyden toiselta koneelta.</translation>
+<translation id="6398765197997659313">Poistu koko näytön tilasta</translation>
 <translation id="3286521253923406898">Chromoting-isännän hallinta</translation>
 </translationbundle>

@@ -498,7 +498,6 @@
 
           Ja tiek izvēlēta darbības apturēšana, operētājsistēmā <ph name="PRODUCT_OS_NAME"/> var atsevišķi konfigurēt, vai bloķēt vai nebloķēt ekrānu pirms darbības apturēšanas.</translation>
 <translation id="3915395663995367577">URL uz starpniekservera .pac failu</translation>
-<translation id="2144674628322086778">Atļaut korporatīvajam lietotājam būt gan primārajam, gan sekundārajam lietotājam (noklusējuma rīcība)</translation>
 <translation id="1022361784792428773">Paplašinājumu ID numuri, kurus lietotājam nav atļauts instalēt (vai *, lai iestatītu visus)</translation>
 <translation id="3805659594028420438">TLS domēnam piesaistīto sertifikātu paplašinājumu iespējošana (vairs netiek izmantota)</translation>
 <translation id="5499375345075963939">Šī politika ir aktīva tikai mazumtirdzniecības režīmā.
@@ -954,7 +953,6 @@ definēts Atvērta tīkla konfigurācijas formātā, kas aprakstīts šeit: <ph 
           Šī politika ir paredzēta tikai Chrome iekšējai lietošanai.</translation>
 <translation id="5586942249556966598">Nedarīt neko</translation>
 <translation id="131353325527891113">Rādīt lietotājvārdus pieteikšanās ekrānā</translation>
-<translation id="4057110413331612451">Atļaut korporatīvajam lietotājam būt tikai primārajam lietotājam vairākprofilu sesijā</translation>
 <translation id="5365946944967967336">Rīkjoslā parāda pogu Sākums</translation>
 <translation id="3709266154059827597">Konfigurē paplašinājumu instalēšanas melno sarakstu</translation>
 <translation id="1933378685401357864">Fona tapetes attēls</translation>

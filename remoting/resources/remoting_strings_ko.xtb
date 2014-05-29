@@ -13,11 +13,13 @@
 <translation id="2801119484858626560">Chrome 원격 데스크톱의 호환되지 않는 버전이 감지되었습니다. 양쪽 컴퓨터의 Chrome과 Chrome 원격 데스크톱이 모두 최신 버전인지 확인한 뒤 다시 시도해 주세요.</translation>
 <translation id="6998989275928107238">호스트</translation>
 <translation id="406849768426631008">영상 채팅 중 다른 사용자를 도와주려면 <ph name="LINK_BEGIN"/>Google 행아웃의 원격 데스크톱<ph name="LINK_END"/>을 사용해보세요.</translation>
+<translation id="906458777597946297">창 최대화</translation>
 <translation id="5397086374758643919">Chrome 원격 데스크톱 호스트 제거 프로그램</translation>
 <translation id="3258789396564295715">Chrome 원격 데스크톱을 사용하여 컴퓨터에 안전하게 액세스할 수 있습니다.</translation>
 <translation id="5070121137485264635">원격 호스트는 타사 웹사이트에 대한 인증이 필요합니다. 계속하려면 이 주소에 액세스할 수 있도록 Chrome 원격 데스크톱에 추가 권한을 허용해야 합니다.</translation>
 <translation id="2124408767156847088">Android 기기에서 컴퓨터에 안전하게 액세스하세요.</translation>
 <translation id="3194245623920924351">Chrome 원격 데스크톱</translation>
+<translation id="3649256019230929621">창 최소화</translation>
 <translation id="4808503597364150972"><ph name="HOSTNAME"/>의 PIN을 입력하세요.</translation>
 <translation id="7672203038394118626">컴퓨터의 원격 연결이 사용중지되었습니다.</translation>
 <translation id="8244400547700556338">자세히 알아보기</translation>
@@ -31,6 +33,7 @@
 <translation id="5925497314631808737">• 전체 화면/몰입형 모드를 구현했습니다.
 • 작업 표시줄을 숨기는 데 사용되는 아이콘이 개선되었습니다.</translation>
 <translation id="2707879711568641861">Chrome 원격 데스크톱에 필요한 일부 구성 요소가 누락되었습니다. 최신 버전을 설치했는지 확인한 뒤 다시 시도해 주세요.</translation>
+<translation id="1779766957982586368">창 닫기</translation>
 <translation id="2499160551253595098">사용 통계 및 오류 보고서 수집을 허용하여 Chrome 원격 데스크톱 개선에 참여하겠습니다.</translation>
 <translation id="7868137160098754906">원격 컴퓨터의 PIN을 입력하세요.</translation>
 <translation id="677755392401385740">사용자(<ph name="HOST_USERNAME"/>)의 호스트가 시작되었습니다.</translation>
@@ -215,5 +218,6 @@
 <translation id="1818475040640568770">등록된 컴퓨터가 없습니다.</translation>
 <translation id="4394049700291259645">사용 중지</translation>
 <translation id="4156740505453712750">액세스 제한을 통해 이 컴퓨터를 보호하려면 <ph name="BOLD_START"/>최소 6자리<ph name="BOLD_END"/>의 PIN을 선택하세요. 이 PIN은 다른 위치에서 연결할 때 필요합니다.</translation>
+<translation id="6398765197997659313">전체화면 닫기</translation>
 <translation id="3286521253923406898">Chromoting 호스트 컨트롤러</translation>
 </translationbundle>

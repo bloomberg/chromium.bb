@@ -55,7 +55,6 @@
 <translation id="4831257561365056138">Chromium 앱 실행기 제거</translation>
 <translation id="4222580632002216401">Chromium에 로그인했습니다! 관리자가 동기화를 사용 중지했습니다.</translation>
 <translation id="4207043877577553402"><ph name="BEGIN_BOLD"/>경고:<ph name="END_BOLD"/> Chromium은 확장 프로그램이 인터넷 사용기록을 저장하지 못하도록 할 수 없습니다. 시크릿 모드에서 이 확장 프로그램을 사용 중지하려면 옵션을 선택 취소하세요.</translation>
-<translation id="4516868174453854611">이제 로그인했으므로 노트북, 휴대전화 및 태블릿에서 탭과 북마크, 기타 Chromium 콘텐츠를 사용할 수 있습니다. 또한 Google 서비스에서 더 관련성 높은 추천검색어와 기능이 제공됩니다.</translation>
 <translation id="985602178874221306">The Chromium Authors</translation>
 <translation id="8628626585870903697">Chromium은 인쇄 미리보기에 필요한 PDF 뷰어가 포함되어 있지 않습니다.</translation>
 <translation id="7138853919861947730">Chromium은 사용자의 탐색 환경을 개선하기 위해 웹 서비스를 사용할 수 있습니다.</translation>
@@ -115,7 +114,6 @@
 <translation id="8493179195440786826">Chromium이 이전 버전임</translation>
 <translation id="911206726377975832">인터넷 사용정보도 삭제하시겠습니까?</translation>
 <translation id="95514773681268843">이 기기를 사용하기 전에 <ph name="DOMAIN"/>에서 다음 서비스 약관을 읽고 동의해야 합니다. 이 약관은 Chromium OS 약관을 확장, 수정 또는 제한하지 않습니다.</translation>
-<translation id="5603085937604338780">chromium</translation>
 <translation id="1699664235656412242">Chromium 창(Windows 8 모드의 창 포함)을 모두 닫고 다시 시도해 보세요.</translation>
 <translation id="6734080038664603509">Chromium 업데이트</translation>
 <translation id="8862326446509486874">시스템 수준의 설치 권한이 없습니다. 관리자 권한으로 설치 프로그램을 다시 실행해 보세요.</translation>

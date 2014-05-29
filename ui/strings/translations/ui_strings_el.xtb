@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="el">
 <translation id="4820616160060340806">Εντολή+<ph name="KEY_COMBO_NAME"/></translation>
+<translation id="8806053966018712535">Φάκελος <ph name="FOLDER_NAME"/></translation>
 <translation id="1871244248791675517">Ins</translation>
 <translation id="6135826906199951471">Del</translation>
 <translation id="528468243742722775">End</translation>
@@ -18,7 +19,6 @@
 <translation id="542155483965056918"><ph name="NUMBER_ZERO"/> mins ago</translation>
 <translation id="7121570032414343252"><ph name="NUMBER_TWO"/> δευτερόλεπτα</translation>
 <translation id="7511635910912978956">Υπολείπονται <ph name="NUMBER_FEW"/> ώρες</translation>
-<translation id="8717309436826820190"><ph name="NUMBER_OF_NOTIFICATIONS"/> ακόμη από <ph name="SOURCE_OF_NOTIFICATIONS"/></translation>
 <translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME"/></translation>
 <translation id="7658239707568436148">Ακύρωση</translation>
 <translation id="7222373446505536781">F11</translation>
@@ -137,8 +137,9 @@
 <translation id="2538759511191347839">Μετακίνηση στο τέλος της γραμμής και τροποποίηση επιλογής</translation>
 <translation id="928465423150706909">Μετακίνηση στο τέλος της γραμμής</translation>
 <translation id="8331626408530291785">Κύλιση επάνω</translation>
-<translation id="7907591526440419938">Άνοιγμα Αρχείου</translation>
+<translation id="7907591526440419938">Άνοιγμα αρχείου</translation>
 <translation id="2864069933652346933"><ph name="NUMBER_ZERO"/> days left</translation>
+<translation id="2803313416453193357">Άνοιγμα φακέλου</translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="2797524280730715045">Πριν από <ph name="NUMBER_DEFAULT"/> ώρες</translation>
 <translation id="815598010540052116">Κύλιση κάτω</translation>
@@ -176,7 +177,6 @@
 <translation id="2704295676501803339">Μετακίνηση αριστερά</translation>
 <translation id="9098468523912235228">Πριν από <ph name="NUMBER_DEFAULT"/> δευτερόλεπτα</translation>
 <translation id="494645311413743213">Υπολείπονται <ph name="NUMBER_TWO"/> δευτερόλεπτα</translation>
-<translation id="4570886800634958009">Επέκταση ειδοποίησης</translation>
 <translation id="566737009157135450">Διαγραφή λέξης προς τα πίσω</translation>
 <translation id="436869212180315161">Πιέστε</translation>
 <translation id="4860787810836767172">Πριν από <ph name="NUMBER_FEW"/> δευτερόλεπτα</translation>
@@ -192,10 +192,11 @@
 <translation id="5445120697129764393">Απομένουν <ph name="NUMBER_DEFAULT"/> δευτερόλεπτα</translation>
 <translation id="8226233771743600312">Μην ενοχλείτε για μία ημέρα</translation>
 <translation id="4252565523989510616">Διαγραφή επόμενης λέξης προς τα εμπρός</translation>
-<translation id="7457942297256758195">Εκκαθάριση όλων</translation>
+<translation id="7457942297256758195">Διαγραφή όλων</translation>
 <translation id="822618367988303761">Πριν από <ph name="NUMBER_TWO"/> ημέρες</translation>
 <translation id="4745438305783437565"><ph name="NUMBER_FEW"/> λεπτά</translation>
 <translation id="1963692530539281474">Υπολείπονται <ph name="NUMBER_DEFAULT"/> ημέρες</translation>
+<translation id="6786750046913594791">Κλείσιμο φακέλου</translation>
 <translation id="7509440305564869263"><ph name="NUMBER_FEW"/> λεπτά</translation>
 <translation id="5906719743126878045">Υπολείπονται <ph name="NUMBER_TWO"/> ώρες</translation>
 <translation id="8959208747503200525">Πριν από <ph name="NUMBER_TWO"/> ώρες</translation>

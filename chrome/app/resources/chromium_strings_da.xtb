@@ -54,7 +54,6 @@
 <translation id="4831257561365056138">Afinstaller Chromium-appliste</translation>
 <translation id="4222580632002216401">Du er nu logget ind på Chromium. Synkronisering er deaktiveret af din administrator.</translation>
 <translation id="4207043877577553402"><ph name="BEGIN_BOLD"/>Advarsel!<ph name="END_BOLD"/> Chromium kan ikke forhindre udvidelser i at registrere din browserhistorik. Fjern markeringen for at deaktivere denne udvidelse i inkognitotilstand.</translation>
-<translation id="4516868174453854611">Nu, hvor du er logget ind, kan du få dine faner, bogmærker og andre Chromium-ting på din bærbare computer, telefon og tablet. Du vil også modtage flere relevante forslag og funktioner på Google-tjenester.</translation>
 <translation id="985602178874221306">Forfatterne til Chromium</translation>
 <translation id="8628626585870903697">Chromium inkluderer ikke PDF-fremviseren, som er påkrævet, for at Vis udskrift kan fungere.</translation>
 <translation id="7138853919861947730">Chromium kan bruge webtjenester til at forbedre din søgeoplevelse.</translation>
@@ -115,7 +114,6 @@
 <translation id="8493179195440786826">Chromium er forældet</translation>
 <translation id="911206726377975832">Slet også dine browserdata?</translation>
 <translation id="95514773681268843"><ph name="DOMAIN"/> kræver, at du læser og accepterer følgende servicevilkår, inden du bruger denne enhed. Disse vilkår udvider, ændrer eller begrænser på ingen måde vilkårene for Chromium OS.</translation>
-<translation id="5603085937604338780">chromium</translation>
 <translation id="1699664235656412242">Luk alle Chromium-vinduer (herunder dem i Windows 8-tilstand), og prøv igen.</translation>
 <translation id="6734080038664603509">Opdater &amp;Chromium</translation>
 <translation id="8862326446509486874">Du har ikke de nødvendige rettigheder til en installation på systemniveau. Prøv at køre installationsprogrammet igen som administrator.</translation>

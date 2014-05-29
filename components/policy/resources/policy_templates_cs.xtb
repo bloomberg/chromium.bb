@@ -482,7 +482,6 @@ Hodnota prodloužení musí být 100 % nebo více. Hodnoty, které by prodlevu 
 
           Pokud je zvolenou akcí přechod do režimu spánku, můžete zvlášť nastavit, zda má systém <ph name="PRODUCT_OS_NAME"/> před přechodem do tohoto režimu uzamknout obrazovku, nebo ne.</translation>
 <translation id="3915395663995367577">Adresa URL souboru PAC serveru proxy</translation>
-<translation id="2144674628322086778">Povolí podnikovým uživatelům být součástí primárního či sekundárního multiprofilu (výchozí chování)</translation>
 <translation id="1022361784792428773">ID rozšíření, která by uživatelé neměli instalovat (* znamená, že se černá listina týká všech rozšíření)</translation>
 <translation id="3805659594028420438">Povolit rozšíření certifikátů TLS vázaných na doménu (zastaralé)</translation>
 <translation id="5499375345075963939">Tato zásada je aktivní pouze v režimu prodeje.
@@ -937,7 +936,6 @@ Tato zásada ovlivňuje kromě integrované webové kamery i všechny ostatní v
           Tato zásada je určena k internímu použití prohlížečem Chrome.</translation>
 <translation id="5586942249556966598">Nedělat nic</translation>
 <translation id="131353325527891113">Zobrazit uživatelská jména na přihlašovací obrazovce</translation>
-<translation id="4057110413331612451">Povolí podnikovým uživatelům být součástí pouze primárního multiprofilu</translation>
 <translation id="5365946944967967336">Zobrazit na liště tlačítko Domů</translation>
 <translation id="3709266154059827597">Konfigurace černé listiny instalace rozšíření</translation>
 <translation id="1933378685401357864">Obrázek tapety</translation>

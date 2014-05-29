@@ -497,7 +497,6 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
 
           Jei veiksmas yra laikinas sustabdymas, galima atskirai sukonfigūruoti „<ph name="PRODUCT_OS_NAME"/>“, kad prieš laikinai sustabdant ekranas būtų užrakinamas arba neužrakinamas.</translation>
 <translation id="3915395663995367577">URL, siejantis su tarpinio serverio .pac failu</translation>
-<translation id="2144674628322086778">Leisti įmonės naudotojui būti pirminiu ir antriniu (numatytoji elgsena)</translation>
 <translation id="1022361784792428773">Plėtinių, kurių diegti naudotojams turi būti neleidžiama (arba „*“, jei neleidžiama nė vieno), ID</translation>
 <translation id="3805659594028420438">Įgalinti TLS domenų sertifikatų plėtinį (nebenaudojamas)</translation>
 <translation id="5499375345075963939">Ši politika taikoma tik mažmeninės prekybos režimu.
@@ -960,7 +959,6 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
 Ši politika skirta naudoti tik „Chrome“ viduje.</translation>
 <translation id="5586942249556966598">Nieko nedaryti</translation>
 <translation id="131353325527891113">Rodyti naudotojų vardus prisijungimo ekrane</translation>
-<translation id="4057110413331612451">Leisti įmonei būti tik pirminiu kelių profilių naudotoju</translation>
 <translation id="5365946944967967336">Rodyti įrankių juostoje pagrindinio puslapio mygtuką</translation>
 <translation id="3709266154059827597">Konfigūruoti plėtinių diegimo juodąjį sąrašą</translation>
 <translation id="1933378685401357864">Ekrano fono vaizdas</translation>

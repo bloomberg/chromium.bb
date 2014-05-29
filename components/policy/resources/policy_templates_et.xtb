@@ -482,7 +482,6 @@
 
           Kui toiming on peatamine, saab süsteemi <ph name="PRODUCT_OS_NAME"/> eraldi seadistada enne peatamist ekraani lukustama või seda mitte tegema.</translation>
 <translation id="3915395663995367577">Puhverserveri pac-faili URL</translation>
-<translation id="2144674628322086778">Lubage ettevõtte kasutajal olla nii esmane kui ka teisene (vaikekäitumine)</translation>
 <translation id="1022361784792428773">Laienduste ID-d, mida kasutajatel ei ole lubatud installida (märk * keelab kõik)</translation>
 <translation id="3805659594028420438">Luba TLS-i domeenisuunaliste sertifikaatide laiendus (pakkumine on peatatud)</translation>
 <translation id="5499375345075963939">Reegel on aktiivne ainult jaerežiimis.
@@ -939,7 +938,6 @@ Seade lubamisel saadavad registreeritud seadmed teavet ajaperioodide kohta, mil 
           Reegel on mõeldud Chrome'ile sisekasutuseks.</translation>
 <translation id="5586942249556966598">Ära tee midagi</translation>
 <translation id="131353325527891113">Kuva kasutajanimed sisselogimiskuval</translation>
-<translation id="4057110413331612451">Lubage ettevõtte kasutajal olla ainult esmane multiprofiili kasutaja</translation>
 <translation id="5365946944967967336">Kuva tööriistaribal nuppu Avaleht</translation>
 <translation id="3709266154059827597">Laienduste installimise musta nimekirja seadistamine</translation>
 <translation id="1933378685401357864">Taustapildi kujutis</translation>

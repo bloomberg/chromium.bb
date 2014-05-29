@@ -428,7 +428,6 @@
 
           Ako je radnja obustavljena, moguće je zasebno konfigurirati <ph name="PRODUCT_OS_NAME"/> da zaključa ili ne zaključa zaslon prije obustavljanja.</translation>
 <translation id="3915395663995367577">URL prema proxy .pac datoteci</translation>
-<translation id="2144674628322086778">Dopusti poslovnom korisniku da bude primarni i sekundarni (zadano ponašanje)</translation>
 <translation id="1022361784792428773">ID-jevi proširenja u čijem bi instaliranju korisnik trebao biti spriječen (ili * za sve)</translation>
 <translation id="3805659594028420438">Omogući proširenje TLS certifikata vezanih uz domenu (zastarjelo)</translation>
 <translation id="5499375345075963939">To je pravilo aktivno samo u prodajnom načinu.
@@ -803,7 +802,6 @@
           To je pravilo za Chromeovu internu upotrebu.</translation>
 <translation id="5586942249556966598">Ne radi ništa</translation>
 <translation id="131353325527891113">Prikaži korisnička imena na zaslonu prijave</translation>
-<translation id="4057110413331612451">Dopusti poslovnom korisniku da bude samo primarni korisnik višestrukog profila</translation>
 <translation id="5365946944967967336">Prikaži gumb Početna na alatnoj traci</translation>
 <translation id="3709266154059827597">Konfiguriraj crnu listu instalacije proširenja</translation>
 <translation id="1933378685401357864">Pozadinska slika</translation>

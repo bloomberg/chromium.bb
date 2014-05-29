@@ -498,7 +498,6 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 
           Če se izvede prekinitev, lahko <ph name="PRODUCT_OS_NAME"/> posebej konfigurirate, da pred prekinitvijo zaslon zaklene ali ne.</translation>
 <translation id="3915395663995367577">URL za datoteko .pac v proxyju</translation>
-<translation id="2144674628322086778">Dovoli uporabnikom v podjetjih, da so primarni in sekundarni (privzeti način delovanja)</translation>
 <translation id="1022361784792428773">ID-ji razširitev, katerih namestitev je treba uporabniku preprečiti (ali * za vse)</translation>
 <translation id="3805659594028420438">Omogoči razširitev za potrdila, domensko vezana na TLS (zastarelo)</translation>
 <translation id="5499375345075963939">Ta pravilnik je aktiven samo v maloprodajnem načinu.
@@ -960,7 +959,6 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
           Ta pravilnik je namenjen za notranjo uporabo v Chromu samem.</translation>
 <translation id="5586942249556966598">Ne naredi nič</translation>
 <translation id="131353325527891113">Pokaži uporabniška imena na zaslonu za prijavo</translation>
-<translation id="4057110413331612451">Dovoli uporabnikom v podjetjih, da so samo primarni večprofilni uporabniki</translation>
 <translation id="5365946944967967336">V orodni vrstici pokaži gumb »Domov«</translation>
 <translation id="3709266154059827597">Nastavi seznam razširitev, katerih namestitev je prepovedana</translation>
 <translation id="1933378685401357864">Slika za ozadje</translation>

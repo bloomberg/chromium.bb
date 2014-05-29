@@ -54,7 +54,6 @@
 <translation id="4831257561365056138">解除安裝 Chromium 應用程式啟動器</translation>
 <translation id="4222580632002216401">您現在已登入 Chromium！但管理員已關閉同步功能。</translation>
 <translation id="4207043877577553402"><ph name="BEGIN_BOLD"/>警告：<ph name="END_BOLD"/>Chromium 無法阻止擴充功能記錄您的瀏覽活動，如要在無痕模式中停用這個擴充功能，請取消選取這個選項。 </translation>
-<translation id="4516868174453854611">您已成功登入 Chromium，現在可以使用您在筆電、手機和平板電腦中的分頁、書籤和其他 Chromium 設定。此外，您將收到更多 Google 服務的相關建議和功能。</translation>
 <translation id="985602178874221306">The Chromium Authors</translation>
 <translation id="8628626585870903697">Chromium 不含 PDF 檢視器，因此無法執行預覽列印功能。</translation>
 <translation id="7138853919861947730">Chromium 透過網路服務改善瀏覽品質。</translation>
@@ -115,7 +114,6 @@
 <translation id="8493179195440786826">Chromium 版本過舊</translation>
 <translation id="911206726377975832">您要一併刪除瀏覽資料嗎？</translation>
 <translation id="95514773681268843">在使用這個裝置前，<ph name="DOMAIN"/> 要求您詳讀並接受下列《服務條款》。這些條款不會擴展、修改或限制《Chromium 作業系統條款》。</translation>
-<translation id="5603085937604338780">chromium</translation>
 <translation id="1699664235656412242">請將所有 Chromium 視窗 (包括在 Windows 8 模式中的視窗) 關閉，然後再試一次。</translation>
 <translation id="6734080038664603509">更新 Chromium(&amp;C)</translation>
 <translation id="8862326446509486874">您沒有在系統層級進行安裝的權限，請以管理員的身分執行安裝檔。</translation>

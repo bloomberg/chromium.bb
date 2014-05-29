@@ -9,6 +9,7 @@
 <translation id="777702478322588152">Präfektur</translation>
 <translation id="151501797353681931">Von Safari importiert</translation>
 <translation id="2972581237482394796">&amp;Wiederholen</translation>
+<translation id="7600965453749440009"><ph name="LANGUAGE"/> nie übersetzen</translation>
 <translation id="2262243747453050782">HTTP-Fehler</translation>
 <translation id="1339601241726513588">Anmeldedomain:</translation>
 <translation id="7298195798382681320">Empfohlen</translation>
@@ -16,6 +17,7 @@
 <translation id="5299298092464848405">Fehler beim Parsen der Richtlinie</translation>
 <translation id="2815693974042551705">Lesezeichenordner</translation>
 <translation id="3088325635286126843">&amp;Umbenennen...</translation>
+<translation id="6831043979455480757">Übersetzen</translation>
 <translation id="1228893227497259893">Falsche Entitätskennung</translation>
 <translation id="5111692334209731439">&amp;Lesezeichen-Manager</translation>
 <translation id="6337534724793800597">Richtlinien nach Name filtern</translation>
@@ -28,13 +30,16 @@
 <translation id="3583757800736429874">&amp;Verschieben wiederholen</translation>
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="277499241957683684">Fehlender Gerätedatensatz</translation>
+<translation id="8553075262323480129">Die Übersetzung ist fehlgeschlagen, weil die Sprache der Seite nicht ermittelt werden konnte.</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
 <translation id="8368859634510605990">&amp;Alle Lesezeichen öffnen</translation>
+<translation id="1103523840287552314"><ph name="LANGUAGE"/> immer übersetzen</translation>
 <translation id="1227633850867390598">Wert ausblenden</translation>
 <translation id="6753269504797312559">Wert der Richtlinie</translation>
 <translation id="5078638979202084724">Alle Tabs als Lesezeichen speichern</translation>
 <translation id="7550830279652415241">bookmarks_<ph name="DATESTAMP"/>.html</translation>
 <translation id="7400418766976504921">URL</translation>
+<translation id="7378627244592794276">Nein</translation>
 <translation id="6949306908218145636">Offene Seiten als Lesezeichen speichern...</translation>
 <translation id="2704283930420550640">Wert stimmt nicht mit dem Format überein.</translation>
 <translation id="1055184225775184556">&amp;Hinzufügen rückgängig machen</translation>
@@ -45,7 +50,6 @@
 <translation id="719464814642662924">Visa</translation>
 <translation id="6839929833149231406">Gebiet</translation>
 <translation id="1871208020102129563">Der Proxy ist zur Verwendung von festen Proxyservern konfiguriert, nicht zur Verwendung einer PAC-Skript-URL.</translation>
-<translation id="8642489171979176277">Aus Google Toolbar importiert</translation>
 <translation id="3380365263193509176">Unbekannter Fehler</translation>
 <translation id="112840717907525620">Richtlinien-Cache einwandfrei</translation>
 <translation id="37613671848467444">In &amp;Inkognito-Fenster öffnen</translation>
@@ -56,6 +60,7 @@
 <translation id="939736085109172342">Neuer Ordner</translation>
 <translation id="7690853182226561458">&amp;Ordner hinzufügen...</translation>
 <translation id="6973656660372572881">Sowohl feste Proxyserver als auch eine PAC-Skript-URL sind festgelegt.</translation>
+<translation id="7108649287766967076">Bei der Übersetzung (<ph name="TARGET_LANGUAGE"/>) ist ein Fehler aufgetreten.</translation>
 <translation id="4103249731201008433">Seriennummer des Geräts ist ungültig.</translation>
 <translation id="3667681724235208644">Original ansehen</translation>
 <translation id="4079302484614802869">Die Proxy-Konfiguration ist auf die Verwendung einer PAC-Skript-URL und nicht die von festen Proxyservern eingestellt.</translation>
@@ -84,6 +89,7 @@
 <translation id="2367567093518048410">Ebene</translation>
 <translation id="7610193165460212391">Wert liegt außerhalb des zulässigen Bereichs (<ph name="VALUE"/>).</translation>
 <translation id="8790007591277257123">&amp;Löschen wiederholen</translation>
+<translation id="370665806235115550">Wird geladen...</translation>
 <translation id="2902382079633781842">Lesezeichen hinzugefügt</translation>
 <translation id="2096368010154057602">Gebiet</translation>
 <translation id="6529602333819889595">&amp;Löschen wiederholen</translation>
@@ -113,16 +119,20 @@
 <translation id="1383876407941801731">Suche</translation>
 <translation id="4883178195103750615">Lesezeichen in HTML-Datei exportieren...</translation>
 <translation id="3174168572213147020">Insel</translation>
+<translation id="9137013805542155359">Original anzeigen</translation>
 <translation id="2213606439339815911">Einträge werden abgerufen...</translation>
 <translation id="6263376278284652872"><ph name="DOMAIN"/>-Lesezeichen</translation>
 <translation id="8487693399751278191">Lesezeichen jetzt importieren...</translation>
+<translation id="498957508165411911">Übersetzen (<ph name="ORIGINAL_LANGUAGE"/> &gt; <ph name="TARGET_LANGUAGE"/>)?</translation>
 <translation id="1181037720776840403">Entfernen</translation>
 <translation id="5261073535210137151">Dieser Ordner enthält <ph name="COUNT"/> Lesezeichen. Möchten Sie ihn wirklich löschen?</translation>
+<translation id="7186367841673660872">Diese Seite wurde von<ph name="ORIGINAL_LANGUAGE"/>in<ph name="LANGUAGE_LANGUAGE"/>übersetzt.</translation>
 <translation id="6549689063733911810">Zuletzt geöffnet</translation>
 <translation id="7139724024395191329">Emirat</translation>
 <translation id="6702639462873609204">&amp;Bearbeiten...</translation>
 <translation id="5145883236150621069">Fehlercode in der Richtlinienantwort</translation>
 <translation id="971774202801778802">URL als Lesezeichen speichern</translation>
+<translation id="7983301409776629893"><ph name="ORIGINAL_LANGUAGE"/> immer auf <ph name="TARGET_LANGUAGE"/> übersetzen</translation>
 <translation id="6970216967273061347">Bezirk</translation>
 <translation id="1122960773616686544">Name des Lesezeichens</translation>
 <translation id="3427342743765426898">&amp;Bearbeiten wiederholen</translation>
@@ -130,6 +140,7 @@
 <translation id="6445051938772793705">Land</translation>
 <translation id="1047726139967079566">Lesezeichen für diese Seite erstellen</translation>
 <translation id="1774833706453699074">Offene Seiten als Lesezeichen speichern...</translation>
+<translation id="5031870354684148875">Über Google Übersetzer</translation>
 <translation id="3950820424414687140">Anmelden</translation>
 <translation id="2025186561304664664">Proxy ist auf automatische Konfiguration eingestellt.</translation>
 <translation id="1853748787962613237">Der Artikel kann nicht angezeigt werden.</translation>
@@ -142,7 +153,6 @@
 <translation id="7805768142964895445">Status</translation>
 <translation id="2805756323405976993">Apps</translation>
 <translation id="4853020600495124913">In &amp;neuem Fenster öffnen</translation>
-<translation id="4002066346123236978">Titel</translation>
 <translation id="1113869188872983271">&amp;Neu anordnen rückgängig machen</translation>
 <translation id="536296301121032821">Fehler beim Speichern der Richtlinieneinstellungen</translation>
 <translation id="3254409185687681395">Lesezeichen für diese Seite erstellen</translation>
@@ -154,8 +164,10 @@
 <translation id="678528074488531090">Fehler bei der Überprüfung: <ph name="VALIDATION_ERROR"/>.</translation>
 <translation id="2556876185419854533">&amp;Bearbeiten rückgängig machen</translation>
 <translation id="4594403342090139922">&amp;Löschen rückgängig machen</translation>
+<translation id="8571890674111243710">Seite wird in folgende Sprache übersetzt: <ph name="LANGUAGE"/>...</translation>
 <translation id="4117700440116928470">Richtlinienbereich wird nicht unterstützt.</translation>
 <translation id="2114841414352855701">Wird ignoriert, da sie von <ph name="POLICY_NAME"/> außer Kraft gesetzt wurde.</translation>
+<translation id="3228969707346345236">Die Übersetzung ist fehlgeschlagen, weil die Seite bereits auf <ph name="LANGUAGE"/> ist.</translation>
 <translation id="8891727572606052622">Ungültiger Proxy-Modus</translation>
 <translation id="399179161741278232">Importiert</translation>
 <translation id="5857090052475505287">Neuer Ordner</translation>
@@ -165,12 +177,15 @@
 <translation id="4926049483395192435">Angabe erforderlich</translation>
 <translation id="7542995811387359312">Die Funktion zur automatischen Ausfüllung der Kreditkartendaten ist deaktiviert, da dieses Formular keine sichere Verbindung nutzt.</translation>
 <translation id="9024127637873500333">In &amp;neuem Tab öffnen</translation>
+<translation id="5179510805599951267">Nicht auf <ph name="ORIGINAL_LANGUAGE"/>? Diesen Fehler melden</translation>
 <translation id="8088680233425245692">Der Artikel kann nicht angezeigt werden.</translation>
 <translation id="6397592254427394018">Alle Lesezeichen in &amp;Inkognito-Fenster öffnen</translation>
+<translation id="8725066075913043281">Erneut versuchen</translation>
 <translation id="1821930232296380041">Anfrage oder Anfrageparameter ungültig</translation>
 <translation id="580571955903695899">Neu sortieren nach Titel</translation>
 <translation id="6059232451013891645">Ordner:</translation>
 <translation id="1640180200866533862">Nutzerrichtlinien</translation>
+<translation id="375403751935624634">Aufgrund eines Serverfehlers ist die Übersetzung fehlgeschlagen.</translation>
 <translation id="5629630648637658800">Fehler beim Laden der Richtlinieneinstellungen</translation>
 <translation id="4030383055268325496">&amp;Hinzufügen rückgängig machen</translation>
 <translation id="3650584904733503804">Überprüfung erfolgreich</translation>
@@ -185,14 +200,17 @@
 <translation id="5470861586879999274">&amp;Bearbeiten wiederholen</translation>
 <translation id="6965978654500191972">Gerät</translation>
 <translation id="8249320324621329438">Letzter Abruf:</translation>
+<translation id="1285320974508926690">Diese Website nie übersetzen</translation>
 <translation id="3613422051106148727">In &amp;neuem Tab öffnen</translation>
 <translation id="6282194474023008486">Postleitzahl</translation>
 <translation id="443673843213245140">Die Proxy-Nutzung ist deaktiviert, es ist jedoch eine explizite Proxy-Konfiguration festgelegt.</translation>
 <translation id="3623476034248543066">Wert zeigen</translation>
+<translation id="9020542370529661692">Die Seite wurde übersetzt und liegt nun auf <ph name="TARGET_LANGUAGE"/> vor.</translation>
 <translation id="5631439013527180824">Ungültiges Management-Token für das Gerät</translation>
 <translation id="6804671422566312077">Alle Lesezeichen in &amp;neuem Fenster öffnen</translation>
 <translation id="560412284261940334">Verwaltung wird nicht unterstützt.</translation>
 <translation id="3169472444629675720">Discover</translation>
+<translation id="4923417429809017348">Diese Seite wurde von einer unbekannten Sprache in <ph name="LANGUAGE_LANGUAGE"/> übersetzt.</translation>
 <translation id="5626134646977739690">Name:</translation>
 <translation id="4813512666221746211">Netzwerkfehler</translation>
 <translation id="1254117744268754948">Ordner wählen</translation>
@@ -214,6 +232,7 @@
 <translation id="6644283850729428850">Diese Richtlinie ist veraltet.</translation>
 <translation id="8488350697529856933">Gilt für</translation>
 <translation id="5565735124758917034">Aktiv</translation>
+<translation id="7568593326407688803">Diese Seite ist auf<ph name="ORIGINAL_LANGUAGE"/>Soll sie übersetzt werden?</translation>
 <translation id="3828029223314399057">In Lesezeichen suchen</translation>
 <translation id="8876793034577346603">Fehler beim Parsen der Netzwerkkonfiguration</translation>
 <translation id="6268747994388690914">Lesezeichen aus HTML-Datei importieren...</translation>
@@ -223,6 +242,7 @@
 <translation id="7961015016161918242">Nie</translation>
 <translation id="2835170189407361413">Formular leeren</translation>
 <translation id="713122686776214250">&amp;Seite hinzufügen...</translation>
+<translation id="6550675742724504774">Optionen</translation>
 <translation id="8804164990146287819">Datenschutzerklärung</translation>
 <translation id="5337776961545044340">Dieser Kartentyp wird von Google Wallet für diesen Händler nicht unterstützt. Bitte verwenden Sie eine andere Karte.</translation>
 <translation id="4268574628540273656">URL:</translation>
@@ -250,6 +270,7 @@
 <translation id="3406605057700382950">&amp;Lesezeichenleiste anzeigen</translation>
 <translation id="2455981314101692989">Auf dieser Webseite ist die AutoFill-Funktion für das Formular deaktiviert.</translation>
 <translation id="7336748286991450492"><ph name="SIGN_IN_LINK"/>, um überall auf Ihre Lesezeichen zugreifen zu können</translation>
+<translation id="8308427013383895095">Die Übersetzung ist aufgrund eines Problems mit der Netzwerkverbindung fehlgeschlagen.</translation>
 <translation id="5720705177508910913">Aktueller Nutzer</translation>
 <translation id="3380864720620200369">Client-ID:</translation>
 </translationbundle>

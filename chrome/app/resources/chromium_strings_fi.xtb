@@ -54,7 +54,6 @@
 <translation id="4831257561365056138">Poista Chromiumin sovellusten käynnistysohjelma</translation>
 <translation id="4222580632002216401">Olet nyt kirjautunut sisään Chromiumiin! Järjestelmänvalvoja on poistanut synkronoinnin käytöstä.</translation>
 <translation id="4207043877577553402"><ph name="BEGIN_BOLD"/>Varoitus:<ph name="END_BOLD"/> Chromium ei voi estää laajennuksia tallentamasta selaushistoriaasi. Poista tämä valinta, jos haluat poistaa tämän laajennuksen käytöstä incognito-tilassa.</translation>
-<translation id="4516868174453854611">Kirjautuneena käyttäjänä voit käyttää välilehtiäsi, kirjanmerkkejäsi ja muuta Chromium-sisältöäsi kannettavalla tietokoneellasi, puhelimellasi ja tablet-laitteellasi. Saat myös osuvampia ehdotuksia ja voit käyttää paranneltuja ominaisuuksia Googlen palveluissa.</translation>
 <translation id="985602178874221306">The Chromium Authors</translation>
 <translation id="8628626585870903697">Chromium ei sisällä PDF-katseluohjelmaa, joka tarvitaan tulostuksen esikatseluun.</translation>
 <translation id="7138853919861947730">Chromium voi käyttää verkkopalveluita parantaakseen selauskokemusta.</translation>
@@ -115,7 +114,6 @@
 <translation id="8493179195440786826">Chromium on vanhentunut</translation>
 <translation id="911206726377975832">Poistetaanko myös selailutiedot?</translation>
 <translation id="95514773681268843"><ph name="DOMAIN"/> edellyttää, että luet ja hyväksyt seuraavat käyttöehdot ennen tämän laitteen käyttöä. Nämä ehdot eivät laajenna, muokkaa tai rajoita Chromium-käyttöliittymän ehtoja.</translation>
-<translation id="5603085937604338780">chromium</translation>
 <translation id="1699664235656412242">Sulje kaikki Chromium-ikkunat (myös Windows 8 -tilassa käytettävät) ja yritä uudelleen.</translation>
 <translation id="6734080038664603509">Päivitä &amp;Chromium</translation>
 <translation id="8862326446509486874">Sinulla ei ole käyttöoikeuksia järjestelmätason asennukseen. Kokeile asennusohjelman suorittamista uudelleen järjestelmänvalvojana.</translation>

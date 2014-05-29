@@ -423,7 +423,6 @@
 
           Si la medida es la suspensión, <ph name="PRODUCT_OS_NAME"/> puede configurarse por separado para bloquear o no bloquear la pantalla antes de la suspensión.</translation>
 <translation id="3915395663995367577">URL a un archivo proxy .pac</translation>
-<translation id="2144674628322086778">Permitir que el usuario de empresa sea tanto usuario principal como secundario (comportamiento predeterminado)</translation>
 <translation id="1022361784792428773">ID de extensiones que el usuario no debe poder instalar (o * para incluirlas todas).</translation>
 <translation id="3805659594028420438">Habilitar la extensión TLS de certificados vinculados al dominio (en desuso)</translation>
 <translation id="5499375345075963939">Esta política solo se encuentra activa en el modo de venta.
@@ -796,7 +795,6 @@ El formato del valor sigue los nombres de las zonas horarias de la &quot;Base de
           Esta política es para uso interno de Chrome.</translation>
 <translation id="5586942249556966598">No hacer nada</translation>
 <translation id="131353325527891113">Mostrar los nombres de usuario en la pantalla de inicio de sesión</translation>
-<translation id="4057110413331612451">Permitir que el usuario de empresa solo sea usuario principal de la función de varios perfiles</translation>
 <translation id="5365946944967967336">Mostrar el botón &quot;Página principal&quot; en la barra de herramientas</translation>
 <translation id="3709266154059827597">Configurar la lista negra de instalación de extensiones</translation>
 <translation id="1933378685401357864">Imagen de fondo de pantalla</translation>

@@ -410,7 +410,6 @@
 
           如果您將動作設為暫停，您可另行設定 <ph name="PRODUCT_OS_NAME"/> 是否要在暫停前鎖定螢幕。</translation>
 <translation id="3915395663995367577">Proxy .pac 檔案的網址</translation>
-<translation id="2144674628322086778">允許企業使用者成為主要或次要使用者 (預設值)</translation>
 <translation id="1022361784792428773">使用者應避免安裝的擴充功能 ID (使用星號 (*) 排除所有擴充功能)</translation>
 <translation id="3805659594028420438">啟用 TLS 網域專屬憑證擴充功能 (已不適用)</translation>
 <translation id="5499375345075963939">這項政策僅於零售模式中有效。
@@ -789,7 +788,6 @@
           這項政策僅供 Chrome 內部使用。</translation>
 <translation id="5586942249556966598">不要處理</translation>
 <translation id="131353325527891113">在登入畫面中顯示使用者名稱</translation>
-<translation id="4057110413331612451">允許企業使用者僅成為多重設定檔的主要使用者</translation>
 <translation id="5365946944967967336">在工具列上顯示 [首頁] 按鈕</translation>
 <translation id="3709266154059827597">設定擴充功能安裝黑名單</translation>
 <translation id="1933378685401357864">桌布圖片</translation>

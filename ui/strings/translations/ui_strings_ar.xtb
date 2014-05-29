@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ar">
 <translation id="4820616160060340806">‏المفتاح Command+<ph name="KEY_COMBO_NAME"/></translation>
+<translation id="8806053966018712535">مجلد <ph name="FOLDER_NAME"/></translation>
 <translation id="1871244248791675517">‏مفتاح Ins</translation>
 <translation id="6135826906199951471">‏مفتاح Del (حذف)</translation>
 <translation id="528468243742722775">‏مفتاح End</translation>
@@ -18,7 +19,6 @@
 <translation id="542155483965056918">قبل <ph name="NUMBER_ZERO"/> دقيقة</translation>
 <translation id="7121570032414343252">عدد الثواني: <ph name="NUMBER_TWO"/></translation>
 <translation id="7511635910912978956">عدد الساعات المتبقية: <ph name="NUMBER_FEW"/></translation>
-<translation id="8717309436826820190"><ph name="NUMBER_OF_NOTIFICATIONS"/> أكثر من <ph name="SOURCE_OF_NOTIFICATIONS"/></translation>
 <translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME"/></translation>
 <translation id="7658239707568436148">إلغاء</translation>
 <translation id="7222373446505536781">F11</translation>
@@ -139,6 +139,7 @@
 <translation id="8331626408530291785">التمرير إلى أعلى</translation>
 <translation id="7907591526440419938">فتح ملف</translation>
 <translation id="2864069933652346933">متبقٍ <ph name="NUMBER_ZERO"/> يوم</translation>
+<translation id="2803313416453193357">فتح المجلد</translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="2797524280730715045">قبل <ph name="NUMBER_DEFAULT"/> ساعة</translation>
 <translation id="815598010540052116">التمرير إلى أسفل</translation>
@@ -149,7 +150,7 @@
 <translation id="1781701194097416995">الانتقال كلمة يسارًا</translation>
 <translation id="1243314992276662751">تحميل</translation>
 <translation id="50030952220075532">عدد الأيام المتبقية <ph name="NUMBER_ONE"/></translation>
-<translation id="8179976553408161302">تفضل</translation>
+<translation id="8179976553408161302">Enter</translation>
 <translation id="8471049483003785219">الانتقال كلمة يسارًا وتعديل التحديد</translation>
 <translation id="945522503751344254">إرسال تعليقات</translation>
 <translation id="9170848237812810038">&amp;إلغاء</translation>
@@ -176,7 +177,6 @@
 <translation id="2704295676501803339">الانتقال يسارًا</translation>
 <translation id="9098468523912235228">قبل <ph name="NUMBER_DEFAULT"/> ثانية</translation>
 <translation id="494645311413743213">عدد الثواني المتبقية: <ph name="NUMBER_TWO"/></translation>
-<translation id="4570886800634958009">توسيع الإشعار</translation>
 <translation id="566737009157135450">حذف كلمة للخلف</translation>
 <translation id="436869212180315161">اضغط</translation>
 <translation id="4860787810836767172">قبل <ph name="NUMBER_FEW"/> ثانية</translation>
@@ -196,6 +196,7 @@
 <translation id="822618367988303761">قبل <ph name="NUMBER_TWO"/> يوم</translation>
 <translation id="4745438305783437565"><ph name="NUMBER_FEW"/> دقيقة</translation>
 <translation id="1963692530539281474">عدد الأيام المتبقية <ph name="NUMBER_DEFAULT"/></translation>
+<translation id="6786750046913594791">إغلاق المجلد</translation>
 <translation id="7509440305564869263"><ph name="NUMBER_FEW"/> دقائق</translation>
 <translation id="5906719743126878045">عدد الساعات المتبقية: <ph name="NUMBER_TWO"/></translation>
 <translation id="8959208747503200525">قبل <ph name="NUMBER_TWO"/> ساعة</translation>

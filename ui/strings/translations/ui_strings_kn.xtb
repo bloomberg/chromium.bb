@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="kn">
 <translation id="4820616160060340806">ಕಮಾಂಡ್+<ph name="KEY_COMBO_NAME"/></translation>
+<translation id="8806053966018712535">ಫೋಲ್ಡರ್ <ph name="FOLDER_NAME"/></translation>
 <translation id="1871244248791675517">Ins</translation>
 <translation id="6135826906199951471">Del</translation>
 <translation id="528468243742722775">ಅಂತ್ಯ</translation>
@@ -18,7 +19,6 @@
 <translation id="542155483965056918"><ph name="NUMBER_ZERO"/> mins ago</translation>
 <translation id="7121570032414343252"><ph name="NUMBER_TWO"/> ಸೆಕೆಂಡುಗಳು</translation>
 <translation id="7511635910912978956"><ph name="NUMBER_FEW"/> ಗಂಟೆಗಳು ಉಳಿದಿವೆ</translation>
-<translation id="8717309436826820190"><ph name="SOURCE_OF_NOTIFICATIONS"/> ನಿಂದ ಹೆಚ್ಚಿನ <ph name="NUMBER_OF_NOTIFICATIONS"/></translation>
 <translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME"/></translation>
 <translation id="7658239707568436148">ರದ್ದುಮಾಡು</translation>
 <translation id="7222373446505536781">F11</translation>
@@ -139,12 +139,13 @@
 <translation id="8331626408530291785">ಮೇಲೆ ಸ್ಕ್ರೋಲ್ ಮಾಡು</translation>
 <translation id="7907591526440419938">ಫೈಲ್ ತೆರೆಯಿರಿ</translation>
 <translation id="2864069933652346933"><ph name="NUMBER_ZERO"/> days left</translation>
+<translation id="2803313416453193357">ಫೋಲ್ಡರ್ ತೆರೆಯಿರಿ</translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="2797524280730715045"><ph name="NUMBER_DEFAULT"/> hours ago</translation>
 <translation id="815598010540052116">ಕೆಳಗೆ ಸ್ಕ್ರೋಲ್ ಮಾಡು</translation>
 <translation id="6808150112686056157">ಮೀಡಿಯಾ ನಿಲುಗಡೆ</translation>
 <translation id="1308727876662951186"><ph name="NUMBER_ZERO"/> mins left</translation>
-<translation id="3157931365184549694">ಪುನಃಸ್ಥಾಪನೆ</translation>
+<translation id="3157931365184549694">ಮರುಸ್ಥಾಪನೆ</translation>
 <translation id="5349525451964472598">ಎಡಕ್ಕೆ ಸರಿಸಿ ಮತ್ತು ಆಯ್ಕೆಯನ್ನು ಮಾರ್ಪಡಿಸಿ</translation>
 <translation id="1781701194097416995">ಪದವನ್ನು ಎಡಕ್ಕೆ ಸರಿಸಿ</translation>
 <translation id="1243314992276662751">ಅಪ್‌ಲೋಡ್</translation>
@@ -176,7 +177,6 @@
 <translation id="2704295676501803339">ಎಡಕ್ಕೆ ಸರಿಸಿ</translation>
 <translation id="9098468523912235228"><ph name="NUMBER_DEFAULT"/> secs ago</translation>
 <translation id="494645311413743213"><ph name="NUMBER_TWO"/> ಸೆಕೆಂಡುಗಳು ಉಳಿದಿದೆ</translation>
-<translation id="4570886800634958009">ಅಧಿಸೂಚನೆ ವಿಸ್ತರಿಸು</translation>
 <translation id="566737009157135450">ಪದವನ್ನು ಹಿಂದಕ್ಕೆ ಅಳಿಸಿ</translation>
 <translation id="436869212180315161">ಒತ್ತಿರಿ</translation>
 <translation id="4860787810836767172"><ph name="NUMBER_FEW"/> secs ago</translation>
@@ -196,6 +196,7 @@
 <translation id="822618367988303761"><ph name="NUMBER_TWO"/> days ago</translation>
 <translation id="4745438305783437565"><ph name="NUMBER_FEW"/> ನಿಮಿಷಗಳು</translation>
 <translation id="1963692530539281474"><ph name="NUMBER_DEFAULT"/> ದಿನಗಳು ಉಳಿದಿವೆ</translation>
+<translation id="6786750046913594791">ಫೋಲ್ಡರ್ ಮುಚ್ಚಿರಿ</translation>
 <translation id="7509440305564869263"><ph name="NUMBER_FEW"/> ನಿಮಿಷಗಳು</translation>
 <translation id="5906719743126878045"><ph name="NUMBER_TWO"/> ಗಂಟೆಗಳು ಉಳಿದಿದೆ</translation>
 <translation id="8959208747503200525"><ph name="NUMBER_TWO"/> hours ago</translation>

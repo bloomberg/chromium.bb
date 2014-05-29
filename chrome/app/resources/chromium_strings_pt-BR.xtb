@@ -54,7 +54,6 @@
 <translation id="4831257561365056138">Desinstalar Iniciador de aplicativos Chromium</translation>
 <translation id="4222580632002216401">Agora, você está conectado ao Chromium. A sincronização está desativada por seu administrador.</translation>
 <translation id="4207043877577553402"><ph name="BEGIN_BOLD"/>Aviso:<ph name="END_BOLD"/> O Chromium não pode impedir que as extensões gravem seu histórico de navegação. Para desativar esta extensão no modo anônimo, desmarque esta opção.</translation>
-<translation id="4516868174453854611">Agora que você está conectado, pode ver suas guias, favoritos e outras coisas do Chromium no seu laptop, telefone ou tablet. Você também receberá sugestões e recursos mais relevantes nos serviços do Google.</translation>
 <translation id="985602178874221306">Autores do Chromium</translation>
 <translation id="8628626585870903697">O Chromium não inclui o visualizador de PDF que é necessário para que a visualização de impressão funcione.</translation>
 <translation id="7138853919861947730">O Chromium pode usar os serviços da web para melhorar sua experiência de navegação.</translation>
@@ -113,7 +112,6 @@
 <translation id="8493179195440786826">O Chromium está desatualizado</translation>
 <translation id="911206726377975832">Excluir também dados de navegação?</translation>
 <translation id="95514773681268843"><ph name="DOMAIN"/> requer que você leia e aceite os Termos de Serviço a seguir antes de utilizar o serviço. Esses termos não ampliam, modificam nem limitam os Termos do Chromium OS.</translation>
-<translation id="5603085937604338780">chromium</translation>
 <translation id="1699664235656412242">Feche todas as janelas do Chromium, (incluindo as que estejam no modo Windows 8) e tente novamente.</translation>
 <translation id="6734080038664603509">Atualizar o &amp;Chromium</translation>
 <translation id="8862326446509486874">Você não tem os direitos adequados para instalação no nível do sistema. Tente executar o instalador novamente como administrador.</translation>

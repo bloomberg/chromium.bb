@@ -13,11 +13,13 @@ Chromoting</translation>
 <translation id="2801119484858626560">‏המערכת זיהתה גירסה לא תואמת של 'שולחן עבודה מרוחק של Chrome'. ודא שבשני המחשבים מותקנת הגירסה העדכנית ביותר של Google Chrome ושל 'שולחן עבודה מרוחק של Chrome' ונסה שוב.</translation>
 <translation id="6998989275928107238">אל</translation>
 <translation id="406849768426631008">‏רוצה לעזור למישהו תוך כדי שאתה גם מקיים אתו שיחת וידאו צ'אט? נסה את <ph name="LINK_BEGIN"/> שולחן העבודה המרוחק ב-Google Hangouts‏<ph name="LINK_END"/>.</translation>
+<translation id="906458777597946297">הגדל את החלון</translation>
 <translation id="5397086374758643919">‏מסיר ההתקנה של מארח שולחן העבודה המרוחק של Chrome‏</translation>
 <translation id="3258789396564295715">‏תוכל לגשת למחשב זה באופן מאובטח באמצעות 'שולחן עבודה מרוחק של Chrome'.</translation>
 <translation id="5070121137485264635">‏המארח המרוחק דורש שתבצע אימות מול אתר של צד שלישי. כדי להמשיך, עליך להעניק לשולחן העבודה המרוחק של Chrome הרשאות נוספות כדי לגשת לכתובת זו:</translation>
 <translation id="2124408767156847088">‏גש למחשבים שלך באופן מאובטח ממכשיר Android שלך.</translation>
 <translation id="3194245623920924351">‏שולחן עבודה מרוחק של Chrome</translation>
+<translation id="3649256019230929621">מזער את החלון</translation>
 <translation id="4808503597364150972">‏הזן את ה-PIN של <ph name="HOSTNAME"/>.</translation>
 <translation id="7672203038394118626">חיבורים מרוחקים למחשב זה הושבתו.</translation>
 <translation id="8244400547700556338">למד כיצד.</translation>
@@ -31,6 +33,7 @@ Chromoting</translation>
 <translation id="5925497314631808737">• הוחל מצב מסך מלא / מצב עשיר.
 • הסמל להסתרת סרגל הפעולות שופר.</translation>
 <translation id="2707879711568641861">‏חלק מהרכיבים הדרושים עבור 'שולחן עבודה מרוחק של Chrome' חסרים. ודא שהתקנת את הגירסה העדכנית ביותר ונסה שוב.</translation>
+<translation id="1779766957982586368">סגור חלון</translation>
 <translation id="2499160551253595098">‏עזור לנו לשפר את 'שולחן עבודה מרוחק של Chrome' בכך שתאפשר לנו לאסוף סטטיסטיקות שימוש ודוחות קריסה.</translation>
 <translation id="7868137160098754906">‏הזן את מספר ה-PIN עבור המחשב המרוחק.</translation>
 <translation id="677755392401385740">המארח הופעל עבור המשתמש: <ph name="HOST_USERNAME"/>.</translation>
@@ -215,5 +218,6 @@ Chromoting</translation>
 <translation id="1818475040640568770">אין לך מחשבים רשומים.</translation>
 <translation id="4394049700291259645">השבת</translation>
 <translation id="4156740505453712750">‏כדי להגן על הגישה למחשב זה, בחר PIN באורך <ph name="BOLD_START"/>שש ספרות לפחות<ph name="BOLD_END"/>. PIN זה יידרש בעת התחברות ממיקום אחר.</translation>
+<translation id="6398765197997659313">צא ממסך מלא</translation>
 <translation id="3286521253923406898">‏בקר מארח Chromoting</translation>
 </translationbundle>

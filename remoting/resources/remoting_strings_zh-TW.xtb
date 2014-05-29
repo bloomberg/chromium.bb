@@ -13,11 +13,13 @@
 <translation id="2801119484858626560">偵測到不相容的 Chrome 遠端桌面版本。請確認您與共用對象的電腦使用的都是最新版本的 Chrome 和 Chrome 遠端桌面，然後再試一次。</translation>
 <translation id="6998989275928107238">目標電腦</translation>
 <translation id="406849768426631008">想要透過視訊通訊功能協助其他使用者解決問題嗎？建議您試試 <ph name="LINK_BEGIN"/>Google Hangouts 的遠端桌面<ph name="LINK_END"/>。</translation>
+<translation id="906458777597946297">將視窗放到最大</translation>
 <translation id="5397086374758643919">Chrome 遠端桌面主機端解除安裝程式</translation>
 <translation id="3258789396564295715">您可以透過 Chrome 遠端桌面安全地存取這台電腦。</translation>
 <translation id="5070121137485264635">遠端主機要求您向第三方網站進行驗證。如要繼續，您必須授予額外權限，讓 Chrome 遠端桌面能夠存取這個位址：</translation>
 <translation id="2124408767156847088">透過 Android 裝置安全存取您的電腦。</translation>
 <translation id="3194245623920924351">Chrome 遠端桌面</translation>
+<translation id="3649256019230929621">將視窗縮到最小</translation>
 <translation id="4808503597364150972">請輸入 <ph name="HOSTNAME"/> 的 PIN。</translation>
 <translation id="7672203038394118626">這台電腦的遠端連線已停用。</translation>
 <translation id="8244400547700556338">瞭解詳情</translation>
@@ -31,6 +33,7 @@
 <translation id="5925497314631808737">• 實作全螢幕/沈浸模式。
 • 改善隱藏動作列圖示。</translation>
 <translation id="2707879711568641861">找不到 Chrome 遠端桌面所需的部分元件。請確認您已安裝最新版本，然後再試一次。</translation>
+<translation id="1779766957982586368">關閉視窗</translation>
 <translation id="2499160551253595098">允許我們收集使用統計資料和當機報告，協助我們改善 Chrome 遠端桌面。</translation>
 <translation id="7868137160098754906">請為遠端電腦輸入您的 PIN。</translation>
 <translation id="677755392401385740">已為下列使用者啟動主機：<ph name="HOST_USERNAME"/>。</translation>
@@ -215,5 +218,6 @@
 <translation id="1818475040640568770">您尚未註冊任何電腦。</translation>
 <translation id="4394049700291259645">停用</translation>
 <translation id="4156740505453712750">如要保護這台電腦，避免不明人士入侵，請選擇一個<ph name="BOLD_START"/>至少 6 位數<ph name="BOLD_END"/>的 PIN。當使用者從其他位置連線時，必須先輸入這個 PIN 驗證身分。</translation>
+<translation id="6398765197997659313">退出全螢幕模式</translation>
 <translation id="3286521253923406898">Chromoting 主機控制器</translation>
 </translationbundle>

@@ -419,7 +419,6 @@
 
           Se a ação for a suspensão, o <ph name="PRODUCT_OS_NAME"/> pode ser configurado separadamente para bloquear ou não a tela antes da suspensão.</translation>
 <translation id="3915395663995367577">URL de um arquivo proxy .pac</translation>
-<translation id="2144674628322086778">Permitir que o usuário corporativo seja primário e secundário (comportamento padrão)</translation>
 <translation id="1022361784792428773">IDs de extensão que devem ser impedidos de serem instalados pelo usuário (ou * para todos)</translation>
 <translation id="3805659594028420438">Ativar extensão dos certificados vinculados ao domínio TLS (obsoleto)</translation>
 <translation id="5499375345075963939">Esta política só fica ativada em modo de varejo.
@@ -770,7 +769,6 @@
           Esta política é destinada a uso interno do próprio Chrome.</translation>
 <translation id="5586942249556966598">Não fazer nada</translation>
 <translation id="131353325527891113">Mostrar nomes de usuário na tela de login</translation>
-<translation id="4057110413331612451">Permitir que o usuário corporativo seja somente usuário primário de diversos perfis</translation>
 <translation id="5365946944967967336">Exibir o botão da Página inicial na barra de ferramentas</translation>
 <translation id="3709266154059827597">Configurar a lista negra de instalação da extensão</translation>
 <translation id="1933378685401357864">Imagem do plano de fundo</translation>

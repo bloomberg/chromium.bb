@@ -54,7 +54,6 @@
 <translation id="4831257561365056138">Desinstalar selector de aplicaciones de Chromium</translation>
 <translation id="4222580632002216401">Accediste a Chromium. El administrador inhabilitó la sincronización.</translation>
 <translation id="4207043877577553402"><ph name="BEGIN_BOLD"/>Advertencia:<ph name="END_BOLD"/> Chromium no puede evitar que las extensiones registren tu historial de búsqueda. Para desactivar esta extensión en modo incógnito, desmarca la casilla de esta opción.</translation>
-<translation id="4516868174453854611">Al acceder, ya puedes ver las pestañas, los marcadores y otros elementos de Chromium en tu computadora portátil, teléfono o tablet. También recibirás más sugerencias y funciones pertinentes en relación con los servicios de Google.</translation>
 <translation id="985602178874221306">Los creadores de Chromium</translation>
 <translation id="8628626585870903697">Chromium no incluye el visor de PDF que se requiere para la vista previa de impresión.</translation>
 <translation id="7138853919861947730">Chromium puede utilizar servicios web para mejorar tu experiencia de navegación.</translation>
@@ -113,7 +112,6 @@
 <translation id="8493179195440786826">Chromium no actualizado</translation>
 <translation id="911206726377975832">¿También eliminar datos de navegación?</translation>
 <translation id="95514773681268843"><ph name="DOMAIN"/> requiere que leas y aceptes las siguientes Condiciones del servicio antes de usar este dispositivo. Estas condiciones no amplían, modifican ni limitan las Condiciones de Chromium OS.</translation>
-<translation id="5603085937604338780">chromium</translation>
 <translation id="1699664235656412242">Cierra todas las ventanas de Chromium (incluidas las que están en modo Windows 8) e inténtalo nuevamente.</translation>
 <translation id="6734080038664603509">Actualizar &amp;Chromium</translation>
 <translation id="8862326446509486874">No tienes los derechos que se requieren para realizar la instalación al nivel del sistema. Intenta ejecutar el instalador nuevamente como Administrador.</translation>

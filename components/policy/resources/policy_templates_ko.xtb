@@ -492,7 +492,6 @@
 
           작업이 일시중지되면 일시중지되기 전에 <ph name="PRODUCT_OS_NAME"/>에서 화면을 잠그거나 잠그지 않도록 별도로 설정할 수 있습니다.</translation>
 <translation id="3915395663995367577">proxy .pac 파일에 대한 URL</translation>
-<translation id="2144674628322086778">기업 사용자가 기본 및 보조에 모두 해당하도록 허용(기본 동작)</translation>
 <translation id="1022361784792428773">사용자가 설치할 수 없는 확장 프로그램 ID(또는 전체 확장 프로그램의 경우 *)</translation>
 <translation id="3805659594028420438">TLS 도메인 바인딩 인증서 확장 프로그램 사용(지원 중단됨)</translation>
 <translation id="5499375345075963939">이 정책은 소매 모드일 때만 사용할 수 있습니다.
@@ -955,7 +954,6 @@
           이 정책은 Chrome 내부 용도로만 사용합니다.</translation>
 <translation id="5586942249556966598">취소</translation>
 <translation id="131353325527891113">로그인 화면에 사용자 이름 표시</translation>
-<translation id="4057110413331612451">기업 사용자가 기본 멀티 프로필 사용자에만 해당되도록 허용</translation>
 <translation id="5365946944967967336">툴바에 홈 버튼 표시</translation>
 <translation id="3709266154059827597">확장 프로그램 설치 차단목록 설정</translation>
 <translation id="1933378685401357864">배경화면 이미지</translation>

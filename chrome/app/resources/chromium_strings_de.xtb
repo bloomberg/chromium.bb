@@ -47,7 +47,6 @@
 <translation id="4831257561365056138">Chromium App Launcher deinstallieren</translation>
 <translation id="4222580632002216401">Sie sind nun in Chromium angemeldet. Die Synchronisierung wurde von Ihrem Administrator deaktiviert.</translation>
 <translation id="4207043877577553402"><ph name="BEGIN_BOLD"/>Achtung:<ph name="END_BOLD"/> Chromium kann nicht verhindern, dass Ihr Browserverlauf von Erweiterungen protokolliert wird. Deaktivieren Sie diese Erweiterung für den Inkognito-Modus, indem Sie das entsprechende Kontrollkästchen deaktivieren.</translation>
-<translation id="4516868174453854611">Nach der Anmeldung können Sie nun Ihre Tabs, Lesezeichen und sonstigen Chromium-Inhalte über Ihren Laptop, Ihr Telefon und Tablet hinweg nutzen. Sie erhalten außerdem relevantere Vorschläge und Funktionen zu den Google-Diensten.</translation>
 <translation id="985602178874221306">Die Chromium-Autoren</translation>
 <translation id="8628626585870903697">Chromium verfügt nicht über den PDF-Viewer, der für die Druckvorschau erforderlich ist.</translation>
 <translation id="7138853919861947730">Chromium kann das Browserverhalten mithilfe von Webdiensten verbessern.</translation>
@@ -101,7 +100,6 @@
 <translation id="8493179195440786826">Chromium ist veraltet.</translation>
 <translation id="911206726377975832">Auch die Browserdaten löschen?</translation>
 <translation id="95514773681268843">Vor der Verwendung dieses Geräts ist es erforderlich, dass Sie die folgenden Nutzungsbedingungen von <ph name="DOMAIN"/> akzeptieren. Durch diese Nutzungsbedingungen werden die Chromium OS-Nutzungsbedingungen nicht erweitert, geändert oder eingeschränkt.</translation>
-<translation id="5603085937604338780">chromium</translation>
 <translation id="1699664235656412242">Schließen Sie alle Chromium-Fenster einschließlich der Fenster im Windows 8-Modus und versuchen Sie es erneut.</translation>
 <translation id="6734080038664603509">&amp;Chromium aktualisieren</translation>
 <translation id="8862326446509486874">Sie verfügen nicht über die erforderlichen Rechte für eine systemweite Installation. Starten Sie das Installationsprogramm als Administrator.</translation>

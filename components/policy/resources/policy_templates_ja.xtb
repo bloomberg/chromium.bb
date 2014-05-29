@@ -419,7 +419,6 @@
 
           操作を停止する場合は、停止する前に <ph name="PRODUCT_OS_NAME"/> で画面をロックするかどうかを個別に設定できます。</translation>
 <translation id="3915395663995367577">プロキシ .pac ファイルへの URL</translation>
-<translation id="2144674628322086778">プライマリとセカンダリの両方を企業ユーザーに許可する（デフォルトの動作）</translation>
 <translation id="1022361784792428773">ユーザーに対してインストールを禁止する拡張機能 ID (すべて指定する場合は *)</translation>
 <translation id="3805659594028420438">TLS ドメイン固定証明書の拡張機能を有効にする（サポート終了）</translation>
 <translation id="5499375345075963939">このポリシーは小売りモードでのみアクティブになります。
@@ -799,7 +798,6 @@
           このポリシーは、Chrome 自体が内部で使用するためのものです。</translation>
 <translation id="5586942249556966598">何もしない</translation>
 <translation id="131353325527891113">ログイン画面でユーザー名を表示する</translation>
-<translation id="4057110413331612451">プライマリ マルチプロフィール ユーザーのみを企業ユーザーに許可する</translation>
 <translation id="5365946944967967336">ツールバーにホーム ボタンを表示する</translation>
 <translation id="3709266154059827597">拡張機能インストールのブラックリストを設定する</translation>
 <translation id="1933378685401357864">壁紙の画像</translation>

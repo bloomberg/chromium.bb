@@ -49,7 +49,6 @@
 <translation id="3846575436967432996">没有可用的网络信息</translation>
 <translation id="4625920103690741805">旋转功能已锁定（点按此处可进行更改）</translation>
 <translation id="3799026279081545374">您的充电器可能有问题。如果您居住在美国，请拨打866-628-1371寻求帮助并申请更换充电器。如果您居住在英国，请拨打0800-026-0613。如果您居住在爱尔兰，请拨打1-800-832-664。如果您居住在加拿大，请拨打866-628-1372。如果您居住在澳大利亚，请拨打1-800-067-460。</translation>
-<translation id="3026237328237090306">设置移动数据</translation>
 <translation id="5871632337994001636">管理设备…</translation>
 <translation id="785750925697875037">查看移动帐户</translation>
 <translation id="153454903766751181">正在初始化蜂窝调制解调器...</translation>
@@ -176,7 +175,6 @@
 <translation id="68610848741840742">ChromeVox（语音反馈）</translation>
 <translation id="6981982820502123353">辅助功能</translation>
 <translation id="4274292172790327596">未识别的错误</translation>
-<translation id="4032485810211612751"><ph name="HOURS"/>:<ph name="MINUTES"/>:<ph name="SECONDS"/></translation>
 <translation id="5977415296283489383">耳机</translation>
 <translation id="225680501294068881">正在查找设备...</translation>
 <translation id="5597451508971090205"><ph name="DATE"/><ph name="SHORT_WEEKDAY"/></translation>
@@ -229,7 +227,6 @@
 <translation id="6165508094623778733">了解详情</translation>
 <translation id="9046895021617826162">连接失败</translation>
 <translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS"/>秒后恢复到原分辨率</translation>
-<translation id="973896785707726617">该会话将在 <ph name="SESSION_TIME_REMAINING"/>后结束，到时您将自动退出。</translation>
 <translation id="743058460480092004">摄像头和麦克风处于使用状态。</translation>
 <translation id="8372369524088641025">WEP 密钥错误</translation>
 <translation id="6636709850131805001">未知状态</translation>

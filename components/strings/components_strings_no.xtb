@@ -9,6 +9,7 @@
 <translation id="777702478322588152">Prefektur</translation>
 <translation id="151501797353681931">Importert fra Safari</translation>
 <translation id="2972581237482394796">Gjø&amp;r om</translation>
+<translation id="7600965453749440009">Oversett aldri <ph name="LANGUAGE"/></translation>
 <translation id="2262243747453050782">HTTP-feil</translation>
 <translation id="1339601241726513588">Registreringsdomene:</translation>
 <translation id="7298195798382681320">Anbefalt</translation>
@@ -16,6 +17,7 @@
 <translation id="5299298092464848405">Feil under analysen av enhetsinnstillingene</translation>
 <translation id="2815693974042551705">Bokmerke-mappen</translation>
 <translation id="3088325635286126843">&amp;Gi nytt navn</translation>
+<translation id="6831043979455480757">Oversett</translation>
 <translation id="1228893227497259893">Feil enhetsidentifikator</translation>
 <translation id="5111692334209731439">&amp;Bokmerkebehandling</translation>
 <translation id="6337534724793800597">Filtrér retningslinjer etter navn</translation>
@@ -28,13 +30,16 @@
 <translation id="3583757800736429874">&amp;Flytt likevel</translation>
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="277499241957683684">Manglende enhetsoppføring</translation>
+<translation id="8553075262323480129">Oversettelsen mislyktes fordi sidens språk ikke kunne fastslås.</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
 <translation id="8368859634510605990">&amp;Åpne alle bokmerker</translation>
+<translation id="1103523840287552314">Oversett alltid <ph name="LANGUAGE"/></translation>
 <translation id="1227633850867390598">Skjul verdien</translation>
 <translation id="6753269504797312559">Retningslinjeverdi</translation>
 <translation id="5078638979202084724">Legg inn alle faner som bokmerke</translation>
 <translation id="7550830279652415241">bookmarks_<ph name="DATESTAMP"/>.html</translation>
 <translation id="7400418766976504921">Nettadresse</translation>
+<translation id="7378627244592794276">Nei takk</translation>
 <translation id="6949306908218145636">Bokmerk åpne sider</translation>
 <translation id="2704283930420550640">Verdien samsvarer ikke med formatet.</translation>
 <translation id="1055184225775184556">&amp;Angre tilleggingen</translation>
@@ -45,7 +50,6 @@
 <translation id="719464814642662924">Visa</translation>
 <translation id="6839929833149231406">Område</translation>
 <translation id="1871208020102129563">Mellomtjeneren er angitt til å bruke statiske proxytjenere, ikke en nettadresse med .pac-skript.</translation>
-<translation id="8642489171979176277">Importert fra Google-verktøylinjen</translation>
 <translation id="3380365263193509176">Ukjent feil</translation>
 <translation id="112840717907525620">Bufferen for enhetsinnstillinger er OK</translation>
 <translation id="37613671848467444">Åpne i &amp;inkognitovindu</translation>
@@ -56,6 +60,7 @@
 <translation id="939736085109172342">Ny mappe</translation>
 <translation id="7690853182226561458">Legg til &amp;mappe</translation>
 <translation id="6973656660372572881">Både statiske proxytjenere og en .pac-skriptnettadresse er angitt.</translation>
+<translation id="7108649287766967076">Oversettelsen til <ph name="TARGET_LANGUAGE"/> mislyktes.</translation>
 <translation id="4103249731201008433">Enhetens serienummer er ugyldig</translation>
 <translation id="3667681724235208644">Se originalen</translation>
 <translation id="4079302484614802869">Konfigurasjonen av proxytjeneren er angitt til å bruke en nettadresse med .pac-skript, ikke statiske proxytjenere.</translation>
@@ -84,6 +89,7 @@
 <translation id="2367567093518048410">Nivå</translation>
 <translation id="7610193165460212391">Verdien er utenfor rekkevidden <ph name="VALUE"/>.</translation>
 <translation id="8790007591277257123">&amp;Slett likevel</translation>
+<translation id="370665806235115550">Laster inn...</translation>
 <translation id="2902382079633781842">Bokmerke er lagt til.</translation>
 <translation id="2096368010154057602">Departement</translation>
 <translation id="6529602333819889595">&amp;Slett likevel</translation>
@@ -113,16 +119,20 @@
 <translation id="1383876407941801731">Søk</translation>
 <translation id="4883178195103750615">Eksporter bokmerker til HTML-fil</translation>
 <translation id="3174168572213147020">Øy</translation>
+<translation id="9137013805542155359">Vis original</translation>
 <translation id="2213606439339815911">Henter oppføringer …</translation>
 <translation id="6263376278284652872"><ph name="DOMAIN"/>-bokmerker</translation>
 <translation id="8487693399751278191">Importér bokmerker nå</translation>
+<translation id="498957508165411911">Vil du oversette fra <ph name="ORIGINAL_LANGUAGE"/> til <ph name="TARGET_LANGUAGE"/>?</translation>
 <translation id="1181037720776840403">Fjern</translation>
 <translation id="5261073535210137151">Denne mappen inneholder <ph name="COUNT"/> bokmerker. Er du sikker på at du vil slette den?</translation>
+<translation id="7186367841673660872">Denne siden har blitt oversatt fra<ph name="ORIGINAL_LANGUAGE"/>til<ph name="LANGUAGE_LANGUAGE"/></translation>
 <translation id="6549689063733911810">Siste</translation>
 <translation id="7139724024395191329">Emirat</translation>
 <translation id="6702639462873609204">&amp;Rediger</translation>
 <translation id="5145883236150621069">Feilkode i responsen for enhetsinnstillinger</translation>
 <translation id="971774202801778802">Bokmerkenettadresse</translation>
+<translation id="7983301409776629893">Oversett alltid <ph name="ORIGINAL_LANGUAGE"/> til <ph name="TARGET_LANGUAGE"/></translation>
 <translation id="6970216967273061347">Distrikt</translation>
 <translation id="1122960773616686544">Bokmerkenavn</translation>
 <translation id="3427342743765426898">&amp;Endre likevel</translation>
@@ -130,6 +140,7 @@
 <translation id="6445051938772793705">Land</translation>
 <translation id="1047726139967079566">Legg til bokmerke for denne siden</translation>
 <translation id="1774833706453699074">Bokmerk åpne sider …</translation>
+<translation id="5031870354684148875">Om Google Oversett</translation>
 <translation id="3950820424414687140">Logg på</translation>
 <translation id="2025186561304664664">Mellomtjeneren er innstilt på automatisk konfigurasjon.</translation>
 <translation id="1853748787962613237">Kunne ikke vise artikkelen.</translation>
@@ -142,7 +153,6 @@
 <translation id="7805768142964895445">Status</translation>
 <translation id="2805756323405976993">Programmer</translation>
 <translation id="4853020600495124913">Åpne i &amp;nytt vindu</translation>
-<translation id="4002066346123236978">Tittel</translation>
 <translation id="1113869188872983271">&amp;Angre omorganiseringen</translation>
 <translation id="536296301121032821">Kunne ikke lagre angivelsen for enhetsinnstillinger</translation>
 <translation id="3254409185687681395">Legg til bokmerke for denne siden</translation>
@@ -154,8 +164,10 @@
 <translation id="678528074488531090">Valideringsfeil: <ph name="VALIDATION_ERROR"/>.</translation>
 <translation id="2556876185419854533">&amp;Angre endringen</translation>
 <translation id="4594403342090139922">&amp;Angre slettingen</translation>
+<translation id="8571890674111243710">Oversett siden til <ph name="LANGUAGE"/></translation>
 <translation id="4117700440116928470">Omfanget for innstillingen støttes ikke.</translation>
 <translation id="2114841414352855701">Ignorert fordi det ble overstyrt av <ph name="POLICY_NAME"/>.</translation>
+<translation id="3228969707346345236">Oversettelsen mislyktes fordi siden allerede er på <ph name="LANGUAGE"/>.</translation>
 <translation id="8891727572606052622">Ugyldig modus for mellomtjener.</translation>
 <translation id="399179161741278232">Importert</translation>
 <translation id="5857090052475505287">Ny mappe</translation>
@@ -165,12 +177,15 @@
 <translation id="4926049483395192435">Må angis.</translation>
 <translation id="7542995811387359312">Automatisk utfylling av kredittkort er deaktivert fordi dette skjemaet ikke bruker en sikker tilkobling.</translation>
 <translation id="9024127637873500333">&amp;Åpne i ny fane</translation>
+<translation id="5179510805599951267">Er ikke dette <ph name="ORIGINAL_LANGUAGE"/>? Rapportér denne feilen</translation>
 <translation id="8088680233425245692">Kunne ikke åpne artikkelen.</translation>
 <translation id="6397592254427394018">Åpne alle bokmerker i &amp;inkognitovindu</translation>
+<translation id="8725066075913043281">Prøv igjen</translation>
 <translation id="1821930232296380041">Ugyldig forespørsel eller forespørselsparametere</translation>
 <translation id="580571955903695899">Sortér etter tittel</translation>
 <translation id="6059232451013891645">Mappe:</translation>
 <translation id="1640180200866533862">Brukerretningslinjer</translation>
+<translation id="375403751935624634">Oversettelsen mislyktes på grunn av en tjenerfeil.</translation>
 <translation id="5629630648637658800">Kunne ikke laste in angivelsen for enhetsinnstillinger</translation>
 <translation id="4030383055268325496">&amp;Angre tilleggingen</translation>
 <translation id="3650584904733503804">Valideringen var vellykket</translation>
@@ -185,14 +200,17 @@
 <translation id="5470861586879999274">&amp;Endre likevel</translation>
 <translation id="6965978654500191972">Enhet</translation>
 <translation id="8249320324621329438">Sist hentet:</translation>
+<translation id="1285320974508926690">Oversett aldri dette nettstedet</translation>
 <translation id="3613422051106148727">&amp;Åpne i ny fane</translation>
 <translation id="6282194474023008486">Postnummer</translation>
 <translation id="443673843213245140">Bruk av mellomtjener er deaktivert, men det er angitt en uttrykkelig mellomtjenerkonfigurasjon.</translation>
 <translation id="3623476034248543066">Vis verdien</translation>
+<translation id="9020542370529661692">Denne siden har blitt oversatt til <ph name="TARGET_LANGUAGE"/></translation>
 <translation id="5631439013527180824">Ugyldig token for enhetsadministrering</translation>
 <translation id="6804671422566312077">Åpne alle bokmerker i &amp;nytt vindu</translation>
 <translation id="560412284261940334">Administrering støttes ikke</translation>
 <translation id="3169472444629675720">Discover</translation>
+<translation id="4923417429809017348">Denne siden er oversatt til <ph name="LANGUAGE_LANGUAGE"/> fra et ukjent språk</translation>
 <translation id="5626134646977739690">Navn:</translation>
 <translation id="4813512666221746211">Nettverksfeil</translation>
 <translation id="1254117744268754948">Valg av mappe</translation>
@@ -214,6 +232,7 @@
 <translation id="6644283850729428850">Denne retningslinjen er foreldet.</translation>
 <translation id="8488350697529856933">Gjelder for</translation>
 <translation id="5565735124758917034">Aktiv</translation>
+<translation id="7568593326407688803">Denne siden er på<ph name="ORIGINAL_LANGUAGE"/>Vil du ha den oversatt?</translation>
 <translation id="3828029223314399057">Søk i bokmerker</translation>
 <translation id="8876793034577346603">Nettverkskonfigurasjon kunne ikke analyseres.</translation>
 <translation id="6268747994388690914">Importér bokmerker fra HTML-fil</translation>
@@ -223,6 +242,7 @@
 <translation id="7961015016161918242">Aldri</translation>
 <translation id="2835170189407361413">Slett skjemaet</translation>
 <translation id="713122686776214250">Legg til si&amp;de</translation>
+<translation id="6550675742724504774">Alternativer</translation>
 <translation id="8804164990146287819">Personvernregler</translation>
 <translation id="5337776961545044340">Google Wallet støtter ikke denne korttypen for denne selgeren. Du må velge et annet kort.</translation>
 <translation id="4268574628540273656">Nettadresse:</translation>
@@ -250,6 +270,7 @@
 <translation id="3406605057700382950">&amp;Vis bokmerkerad</translation>
 <translation id="2455981314101692989">Denne nettsiden har deaktivert automatisk utfylling for dette skjemaet.</translation>
 <translation id="7336748286991450492"><ph name="SIGN_IN_LINK"/> for å bruke bokmerkene dine overalt.</translation>
+<translation id="8308427013383895095">Oversettelsen mislyktes på grunn av et problem med nettverksforbindelsen.</translation>
 <translation id="5720705177508910913">Gjeldende bruker</translation>
 <translation id="3380864720620200369">Klient-ID:</translation>
 </translationbundle>

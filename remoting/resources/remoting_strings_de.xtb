@@ -13,11 +13,13 @@ Host</translation>
 <translation id="2801119484858626560">Eine inkompatible Version von Chrome Remote Desktop wurde erkannt. Überprüfen Sie, ob die neueste Version von Chrome und Chrome Remote Desktop auf beiden Computern installiert ist, und versuchen Sie es erneut.</translation>
 <translation id="6998989275928107238">Zu</translation>
 <translation id="406849768426631008">Möchten Sie jemandem helfen und gleichzeitig per Video mit ihm chatten? Testen Sie <ph name="LINK_BEGIN"/>Remote Desktop in Google Hangouts<ph name="LINK_END"/>.</translation>
+<translation id="906458777597946297">Fenster maximieren</translation>
 <translation id="5397086374758643919">Deinstallationsprogramm für Chrome Remote Desktop Host</translation>
 <translation id="3258789396564295715">Mit Chrome Remote Desktop erhalten Sie sicheren Zugriff auf diesen Computer.</translation>
 <translation id="5070121137485264635">Der Remote-Host verlangt, dass Sie sich über eine Drittanbieter-Website authentifizieren. Um fortfahren zu können, geben Sie Chrome Remote Desktop zusätzliche Berechtigungen für den Zugriff auf die folgende Adresse:</translation>
 <translation id="2124408767156847088">Für den sicheren Zugriff von Ihrem Android-Gerät auf Ihre Computer</translation>
 <translation id="3194245623920924351">Chrome Remote Desktop</translation>
+<translation id="3649256019230929621">Fenster minimieren</translation>
 <translation id="4808503597364150972">Bitte geben Sie Ihre PIN für <ph name="HOSTNAME"/> ein.</translation>
 <translation id="7672203038394118626">Die Remote-Verbindungen für diesen Computer wurden deaktiviert.</translation>
 <translation id="8244400547700556338">Weitere Informationen</translation>
@@ -31,6 +33,7 @@ Host</translation>
 <translation id="5925497314631808737">• Vollbild-/immersiver Modus implementiert
 • Symbol zum Ausblenden der Aktionsleiste optimiert</translation>
 <translation id="2707879711568641861">Es fehlen einige Komponenten, die für Chrome Remote Desktop erforderlich sind. Überprüfen Sie, ob die neueste Version installiert ist, und versuchen Sie es erneut.</translation>
+<translation id="1779766957982586368">Fenster schließen</translation>
 <translation id="2499160551253595098">Helfen Sie uns bei der Verbesserung von Chrome Remote Desktop, indem Sie zulassen, dass wir Nutzungsstatistiken und Absturzberichte erfassen.</translation>
 <translation id="7868137160098754906">Geben Sie Ihre PIN für den Remote-Computer ein.</translation>
 <translation id="677755392401385740">Host für folgenden Nutzer gestartet: <ph name="HOST_USERNAME"/></translation>
@@ -215,5 +218,6 @@ Desktop Host</translation>
 <translation id="1818475040640568770">Es sind keine registrierten Computer vorhanden.</translation>
 <translation id="4394049700291259645">Deaktivieren</translation>
 <translation id="4156740505453712750">Um den Zugriff auf diesen Computer zu schützen, wählen Sie eine PIN mit <ph name="BOLD_START"/>mindestens 6 Ziffern<ph name="BOLD_END"/> aus. Die Eingabe dieser PIN ist erforderlich, wenn eine Verbindung von einem anderen Ort aus hergestellt wird.</translation>
+<translation id="6398765197997659313">Vollbildmodus beenden</translation>
 <translation id="3286521253923406898">Chromoting Host-Controller</translation>
 </translationbundle>

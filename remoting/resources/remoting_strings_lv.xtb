@@ -13,11 +13,13 @@ saimniekdators</translation>
 <translation id="2801119484858626560">Tika konstatēta nesaderīga Chrome attālās darbvirsmas versija. Pārbaudiet, vai abos datoros lietojat pārlūka Chrome un lietotnes Chrome attālā darbvirsma jaunāko versiju, un mēģiniet vēlreiz.</translation>
 <translation id="6998989275928107238">Ar</translation>
 <translation id="406849768426631008">Vai vēlaties palīdzēt kādam lietotājam video tērzēšanas sarunas laikā? Izmēģiniet <ph name="LINK_BEGIN"/>Google Hangouts lietotni Attālā darbvirsma<ph name="LINK_END"/>.</translation>
+<translation id="906458777597946297">Maksimizēt logu</translation>
 <translation id="5397086374758643919">Chrome attālās darbvirsmas saimniekdatora atinstalēšanas programma</translation>
 <translation id="3258789396564295715">Varat izveidot drošu savienojumu ar šo datoru, izmantojot Chrome attālo darbvirsmu.</translation>
 <translation id="5070121137485264635">Attālajā saimniekdatorā tiek pieprasīts, lai veicat autentificēšanu trešās puses vietnē. Lai turpinātu, jums jāpiešķir Chrome attālajai darbvirsmai papildu atļaujas piekļūt šai adresei:</translation>
 <translation id="2124408767156847088">Droši piekļūstiet saviem datoriem no Android ierīces.</translation>
 <translation id="3194245623920924351">Chrome attālā darbvirsma</translation>
+<translation id="3649256019230929621">Minimizēt logu</translation>
 <translation id="4808503597364150972">Lūdzu, ievadiet saimniekdatora <ph name="HOSTNAME"/> PIN.</translation>
 <translation id="7672203038394118626">Šim datoram tika atspējoti attālie savienojumi.</translation>
 <translation id="8244400547700556338">Uzziniet vairāk</translation>
@@ -31,6 +33,7 @@ saimniekdators</translation>
 <translation id="5925497314631808737">• Ieviest pilnekrāna/iekļaujošais režīms.
 • Uzlabota darbību joslas slēpšanas ikona.</translation>
 <translation id="2707879711568641861">Trūkst dažu Chrome attālajai darbvirsmai nepieciešamo komponentu. Pārbaudiet, vai esat instalējis jaunāko versiju, un mēģiniet vēlreiz.</translation>
+<translation id="1779766957982586368">Aizvērt logu</translation>
 <translation id="2499160551253595098">Palīdziet mums uzlabot Chrome attālo darbvirsmu, ļaujot mums apkopot lietojuma statistiku un avāriju pārskatus.</translation>
 <translation id="7868137160098754906">Lūdzu, ievadiet attālā datora PIN.</translation>
 <translation id="677755392401385740">Saimniekdators startēts šādam lietotājam: <ph name="HOST_USERNAME"/>.</translation>
@@ -215,5 +218,6 @@ darbvirsmas saimniekdators</translation>
 <translation id="1818475040640568770">Jums nav neviena reģistrēta datora.</translation>
 <translation id="4394049700291259645">Atspējot</translation>
 <translation id="4156740505453712750">Lai izveidotu drošu savienojumu ar šo datoru, lūdzu, izvēlieties tādu PIN, kura garums ir <ph name="BOLD_START"/>vismaz seši cipari<ph name="BOLD_END"/>. Šis PIN būs nepieciešams, lai izveidotu savienojumu no citas atrašanās vietas.</translation>
+<translation id="6398765197997659313">Iziet no pilnekrāna režīma</translation>
 <translation id="3286521253923406898">Chrome saites saimniekdatora kontrolleris</translation>
 </translationbundle>

@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="bn">
 <translation id="4820616160060340806">Command+<ph name="KEY_COMBO_NAME"/></translation>
+<translation id="8806053966018712535"><ph name="FOLDER_NAME"/> ফোল্ডার</translation>
 <translation id="1871244248791675517">Ins</translation>
 <translation id="6135826906199951471">Del</translation>
 <translation id="528468243742722775">End</translation>
@@ -18,7 +19,6 @@
 <translation id="542155483965056918"><ph name="NUMBER_ZERO"/> mins ago</translation>
 <translation id="7121570032414343252"><ph name="NUMBER_TWO"/> সেকেন্ড</translation>
 <translation id="7511635910912978956"><ph name="NUMBER_FEW"/> ঘন্টা বাকি</translation>
-<translation id="8717309436826820190"><ph name="SOURCE_OF_NOTIFICATIONS"/> থেকে আরো <ph name="NUMBER_OF_NOTIFICATIONS"/>টি</translation>
 <translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME"/></translation>
 <translation id="7658239707568436148">বাতিল</translation>
 <translation id="7222373446505536781">F11</translation>
@@ -86,7 +86,7 @@
 <translation id="7487278341251176613"><ph name="NUMBER_TWO"/> মিনিট বাকি</translation>
 <translation id="5110450810124758964"><ph name="NUMBER_ONE"/> day ago</translation>
 <translation id="2820806154655529776"><ph name="NUMBER_ONE"/> সেকেন্ড</translation>
-<translation id="7814458197256864873">&amp;copy</translation>
+<translation id="7814458197256864873">&amp;অনুলিপি</translation>
 <translation id="3889424535448813030">Right Arrow</translation>
 <translation id="4229495110203539533"><ph name="NUMBER_ONE"/> sec ago</translation>
 <translation id="2544782972264605588"><ph name="NUMBER_DEFAULT"/> সেকেন্ড বাকি</translation>
@@ -139,6 +139,7 @@
 <translation id="8331626408530291785">উপরে স্ক্রোল করুন</translation>
 <translation id="7907591526440419938">খোলা ফাইল</translation>
 <translation id="2864069933652346933"><ph name="NUMBER_ZERO"/> days left</translation>
+<translation id="2803313416453193357">ফোল্ডার খুলুন</translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="2797524280730715045"><ph name="NUMBER_DEFAULT"/> ঘন্টা আগে</translation>
 <translation id="815598010540052116">নীচে স্ক্রোল করুন</translation>
@@ -151,7 +152,7 @@
 <translation id="50030952220075532"><ph name="NUMBER_ONE"/> দিন বাকি</translation>
 <translation id="8179976553408161302">প্রবেশ করুন</translation>
 <translation id="8471049483003785219">শব্দকে বামদিকে সরান এবং নির্বাচন পরিবর্তন করুন</translation>
-<translation id="945522503751344254">প্রতিক্রিয়া প্রেরণ করুন</translation>
+<translation id="945522503751344254">প্রতিক্রিয়া পাঠান</translation>
 <translation id="9170848237812810038">&amp;পূর্বাবস্থায় ফিরুন</translation>
 <translation id="1285266685456062655"><ph name="NUMBER_FEW"/> hours ago</translation>
 <translation id="6918245111648057970">প্রত্যেক ব্যবহারকারীর জন্য নিম্নলিখিত থেকে বিজ্ঞপ্তি মঞ্জুর করুন:</translation>
@@ -176,7 +177,6 @@
 <translation id="2704295676501803339">বামদিকে সরান</translation>
 <translation id="9098468523912235228"><ph name="NUMBER_DEFAULT"/> সেকেন্ড আগে</translation>
 <translation id="494645311413743213"><ph name="NUMBER_TWO"/> সেকেন্ড বাকি</translation>
-<translation id="4570886800634958009">বিজ্ঞপ্তি প্রসারিত করুন</translation>
 <translation id="566737009157135450">পিছনের দিকে শব্দকে মুছুন</translation>
 <translation id="436869212180315161">টিপুন</translation>
 <translation id="4860787810836767172"><ph name="NUMBER_FEW"/> secs ago</translation>
@@ -196,6 +196,7 @@
 <translation id="822618367988303761"><ph name="NUMBER_TWO"/> days ago</translation>
 <translation id="4745438305783437565"><ph name="NUMBER_FEW"/> মিনিট</translation>
 <translation id="1963692530539281474"><ph name="NUMBER_DEFAULT"/> দিন বাকি</translation>
+<translation id="6786750046913594791">ফোল্ডার বন্ধ করুন</translation>
 <translation id="7509440305564869263"><ph name="NUMBER_FEW"/> মিনিট</translation>
 <translation id="5906719743126878045"><ph name="NUMBER_TWO"/> ঘন্টা বাকি</translation>
 <translation id="8959208747503200525"><ph name="NUMBER_TWO"/> hours ago</translation>

@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="sl">
 <translation id="4820616160060340806">Command + <ph name="KEY_COMBO_NAME"/></translation>
+<translation id="8806053966018712535">Mapa <ph name="FOLDER_NAME"/></translation>
 <translation id="1871244248791675517">Ins</translation>
 <translation id="6135826906199951471">Del</translation>
 <translation id="528468243742722775">End</translation>
@@ -18,7 +19,6 @@
 <translation id="542155483965056918"><ph name="NUMBER_ZERO"/> mins ago</translation>
 <translation id="7121570032414343252"><ph name="NUMBER_TWO"/> sek</translation>
 <translation id="7511635910912978956">še <ph name="NUMBER_FEW"/> h</translation>
-<translation id="8717309436826820190">Še <ph name="NUMBER_OF_NOTIFICATIONS"/> iz vira <ph name="SOURCE_OF_NOTIFICATIONS"/></translation>
 <translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME"/></translation>
 <translation id="7658239707568436148">Prekliči</translation>
 <translation id="7222373446505536781">F11</translation>
@@ -139,6 +139,7 @@
 <translation id="8331626408530291785">Pomik gor</translation>
 <translation id="7907591526440419938">Odpri datoteko</translation>
 <translation id="2864069933652346933"><ph name="NUMBER_ZERO"/> days left</translation>
+<translation id="2803313416453193357">Odpri mapo</translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="2797524280730715045">Pred <ph name="NUMBER_DEFAULT"/> h</translation>
 <translation id="815598010540052116">Pomik dol</translation>
@@ -176,7 +177,6 @@
 <translation id="2704295676501803339">Premik levo</translation>
 <translation id="9098468523912235228">Pred <ph name="NUMBER_DEFAULT"/> s</translation>
 <translation id="494645311413743213">še <ph name="NUMBER_TWO"/> sek</translation>
-<translation id="4570886800634958009">Razširi obvestilo</translation>
 <translation id="566737009157135450">Brisanje besede nazaj</translation>
 <translation id="436869212180315161">Pritisnite</translation>
 <translation id="4860787810836767172">Pred <ph name="NUMBER_FEW"/> s</translation>
@@ -196,6 +196,7 @@
 <translation id="822618367988303761">Pred <ph name="NUMBER_TWO"/> dnevoma</translation>
 <translation id="4745438305783437565"><ph name="NUMBER_FEW"/> min</translation>
 <translation id="1963692530539281474">še <ph name="NUMBER_DEFAULT"/> dni</translation>
+<translation id="6786750046913594791">Zapri mapo</translation>
 <translation id="7509440305564869263"><ph name="NUMBER_FEW"/> minute</translation>
 <translation id="5906719743126878045">še <ph name="NUMBER_TWO"/> uri</translation>
 <translation id="8959208747503200525">Pred <ph name="NUMBER_TWO"/> h</translation>

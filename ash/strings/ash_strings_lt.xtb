@@ -49,7 +49,6 @@
 <translation id="3846575436967432996">Nėra tinklo informacijos</translation>
 <translation id="4625920103690741805">Kaitaliojimas užrakintas (palieskite čia, kad pakeistumėte)</translation>
 <translation id="3799026279081545374">Turbūt jūsų kroviklis yra netinkamas. Jei gyvenate JAV, skambinkite numeriu 866-628-1371, kad gautumėte pagalbos ir būtų pakeistas kroviklis. Jei gyvenate JK, skambinkite numeriu 0800-026-0613. Jei gyvenate Airijoje, skambinkite numeriu 1-800-832-664. Jei gyvenate Kanadoje, skambinkite numeriu 866-628-1372. Jei gyvenate Australijoje, skambinkite numeriu 1-800-067-460.</translation>
-<translation id="3026237328237090306">Nustatyti duomenis mobiliesiems</translation>
 <translation id="5871632337994001636">Valdyti įrenginius...</translation>
 <translation id="785750925697875037">Žiūrėti paskyrą mobiliesiems</translation>
 <translation id="153454903766751181">Inicijuojamas korinio ryšio modemas...</translation>
@@ -176,7 +175,6 @@
 <translation id="68610848741840742">„ChromeVox“ (žodiniai atsiliepimai)</translation>
 <translation id="6981982820502123353">Pritaikymas neįgaliesiems</translation>
 <translation id="4274292172790327596">Neatpažįstama klaida</translation>
-<translation id="4032485810211612751"><ph name="HOURS"/>:<ph name="MINUTES"/>:<ph name="SECONDS"/></translation>
 <translation id="5977415296283489383">Ausinės</translation>
 <translation id="225680501294068881">Ieškoma įrenginių...</translation>
 <translation id="5597451508971090205"><ph name="DATE"/>, <ph name="SHORT_WEEKDAY"/></translation>
@@ -229,7 +227,6 @@ Jei norite atšaukti, paspauskite paieškos arba antrojo lygio klavišą.</trans
 <translation id="6165508094623778733">Sužinokite daugiau</translation>
 <translation id="9046895021617826162">Nepavyko prisijungti</translation>
 <translation id="7168224885072002358">Po <ph name="TIMEOUT_SECONDS"/> bus grąžinta sena skyra</translation>
-<translation id="973896785707726617">Ši sesija baigsis po <ph name="SESSION_TIME_REMAINING"/>. Būsite automatiškai atjungti.</translation>
 <translation id="743058460480092004">Kamera ir mikrofonas naudojami.</translation>
 <translation id="8372369524088641025">Netinkamas WEP raktas</translation>
 <translation id="6636709850131805001">Neatpažinta būsena</translation>

@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="am">
 <translation id="4820616160060340806">Command+<ph name="KEY_COMBO_NAME"/></translation>
+<translation id="8806053966018712535">አቃፊ <ph name="FOLDER_NAME"/></translation>
 <translation id="1871244248791675517">Ins</translation>
 <translation id="6135826906199951471">Del</translation>
 <translation id="528468243742722775">ጨርስ</translation>
@@ -18,7 +19,6 @@
 <translation id="542155483965056918">ከ<ph name="NUMBER_ZERO"/> ደቂቃ በፊት</translation>
 <translation id="7121570032414343252"><ph name="NUMBER_TWO"/> ሴኮንድ</translation>
 <translation id="7511635910912978956"><ph name="NUMBER_FEW"/> ሰዓቶች ይቀራሉ</translation>
-<translation id="8717309436826820190"><ph name="NUMBER_OF_NOTIFICATIONS"/> ተጨማሪ ከ<ph name="SOURCE_OF_NOTIFICATIONS"/></translation>
 <translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME"/></translation>
 <translation id="7658239707568436148">ይቅር</translation>
 <translation id="7222373446505536781">F11</translation>
@@ -139,6 +139,7 @@
 <translation id="8331626408530291785">ወደ ላይ ሸብልል</translation>
 <translation id="7907591526440419938">ፋይል ክፈት</translation>
 <translation id="2864069933652346933"><ph name="NUMBER_ZERO"/> ቀን ይቀራል</translation>
+<translation id="2803313416453193357">አቃፊ ክፈት</translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="2797524280730715045">ከ<ph name="NUMBER_DEFAULT"/> ሰዓት በፊት</translation>
 <translation id="815598010540052116">ወደ ታች ሸብልል</translation>
@@ -176,7 +177,6 @@
 <translation id="2704295676501803339">ወደ ግራ ውሰድ</translation>
 <translation id="9098468523912235228">ከ<ph name="NUMBER_DEFAULT"/> ሴኮንድ በፊት</translation>
 <translation id="494645311413743213"><ph name="NUMBER_TWO"/> ሴኮንድ ይቀራል</translation>
-<translation id="4570886800634958009">ማሳወቂያ ዘርጋ</translation>
 <translation id="566737009157135450">ቃለል ወደኋላ ሰርዝ</translation>
 <translation id="436869212180315161">ተጫን</translation>
 <translation id="4860787810836767172">ከ<ph name="NUMBER_FEW"/> ሴኮንድ በፊት</translation>
@@ -196,6 +196,7 @@
 <translation id="822618367988303761">ከ<ph name="NUMBER_TWO"/> ቀኖች በፊት</translation>
 <translation id="4745438305783437565"><ph name="NUMBER_FEW"/> ደቂቃ</translation>
 <translation id="1963692530539281474"><ph name="NUMBER_DEFAULT"/> ቀን ይቀራል</translation>
+<translation id="6786750046913594791">አቃፊ ዝጋ</translation>
 <translation id="7509440305564869263"><ph name="NUMBER_FEW"/> ደቂቃዎች</translation>
 <translation id="5906719743126878045"><ph name="NUMBER_TWO"/> ሰዓቶች ይቀራሉ</translation>
 <translation id="8959208747503200525">ከ<ph name="NUMBER_TWO"/> ሰዓቶች በፊት</translation>

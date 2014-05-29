@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="et">
 <translation id="4820616160060340806">Käsk + <ph name="KEY_COMBO_NAME"/></translation>
+<translation id="8806053966018712535">Kaust <ph name="FOLDER_NAME"/></translation>
 <translation id="1871244248791675517">Ins</translation>
 <translation id="6135826906199951471">Del</translation>
 <translation id="528468243742722775">End</translation>
@@ -18,7 +19,6 @@
 <translation id="542155483965056918"><ph name="NUMBER_ZERO"/> mins ago</translation>
 <translation id="7121570032414343252"><ph name="NUMBER_TWO"/> sekundit</translation>
 <translation id="7511635910912978956"><ph name="NUMBER_FEW"/> tundi jäänud</translation>
-<translation id="8717309436826820190">Veel <ph name="NUMBER_OF_NOTIFICATIONS"/> allikast <ph name="SOURCE_OF_NOTIFICATIONS"/></translation>
 <translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME"/></translation>
 <translation id="7658239707568436148">Tühista</translation>
 <translation id="7222373446505536781">F11</translation>
@@ -113,7 +113,7 @@
 <translation id="7634624804467787019"><ph name="NUMBER_ONE"/> minut</translation>
 <translation id="8448317557906454022"><ph name="NUMBER_ZERO"/> sekundit tagasi</translation>
 <translation id="4927753642311223124">Siin pole ühtegi märguannet, liikuge edasi.</translation>
-<translation id="2482878487686419369">Teatised</translation>
+<translation id="2482878487686419369">Märguanded</translation>
 <translation id="6357135709975569075"><ph name="NUMBER_ZERO"/> days</translation>
 <translation id="3183922693828471536">Keri siia</translation>
 <translation id="4552416320897244156">PgDwn</translation>
@@ -139,6 +139,7 @@
 <translation id="8331626408530291785">Keri üles</translation>
 <translation id="7907591526440419938">Faili avamine</translation>
 <translation id="2864069933652346933"><ph name="NUMBER_ZERO"/> days left</translation>
+<translation id="2803313416453193357">Kausta avamine</translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="2797524280730715045"><ph name="NUMBER_DEFAULT"/> tundi tagasi</translation>
 <translation id="815598010540052116">Keri alla</translation>
@@ -176,7 +177,6 @@
 <translation id="2704295676501803339">Liiguta vasakule</translation>
 <translation id="9098468523912235228"><ph name="NUMBER_DEFAULT"/> sekundit tagasi</translation>
 <translation id="494645311413743213"><ph name="NUMBER_TWO"/> sekundit jäänud</translation>
-<translation id="4570886800634958009">Märguande laiendamine</translation>
 <translation id="566737009157135450">Kustuta sõna tagasisuunas</translation>
 <translation id="436869212180315161">Vajuta</translation>
 <translation id="4860787810836767172"><ph name="NUMBER_FEW"/> sekundit tagasi</translation>
@@ -196,6 +196,7 @@
 <translation id="822618367988303761"><ph name="NUMBER_TWO"/> päeva tagasi</translation>
 <translation id="4745438305783437565"><ph name="NUMBER_FEW"/> minutit</translation>
 <translation id="1963692530539281474"><ph name="NUMBER_DEFAULT"/> päeva jäänud</translation>
+<translation id="6786750046913594791">Kausta sulgemine</translation>
 <translation id="7509440305564869263"><ph name="NUMBER_FEW"/> minutes</translation>
 <translation id="5906719743126878045"><ph name="NUMBER_TWO"/> tundi jäänud</translation>
 <translation id="8959208747503200525"><ph name="NUMBER_TWO"/> tundi tagasi</translation>

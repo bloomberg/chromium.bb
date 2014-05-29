@@ -467,7 +467,6 @@ Hvis du aktiverer denne innstillingen, sendes anonym rapportering av bruk og pro
 
           Hvis handlingen er suspender, kan <ph name="PRODUCT_OS_NAME"/> konfigureres til å enten låse eller ikke låse skjermen før suspenderingen.</translation>
 <translation id="3915395663995367577">Nettadresse til en .pac-fil for mellomtjener</translation>
-<translation id="2144674628322086778">Tillat bedriftsbrukeren å være både primær og sekundær (standard atferd)</translation>
 <translation id="1022361784792428773">Utvidelses-ID-er brukeren skal hindres i å installere (eller * for alle)</translation>
 <translation id="3805659594028420438">Aktiver TLS-domenebetingede sertifikatutvidelser (foreldet)</translation>
 <translation id="5499375345075963939">Denne retningslinjen er aktiv bare i detaljistmodus.
@@ -890,7 +889,6 @@ Hvis denne retningslinjen ikke angis, svartelistes ingen nettadresser i nettlese
           Denne regelen er bare for intern bruk i Chrome.</translation>
 <translation id="5586942249556966598">Ikke gjør noe</translation>
 <translation id="131353325527891113">Vis brukernavn på påloggingssiden</translation>
-<translation id="4057110413331612451">Tillat bedriftsbrukeren å bare være primær flerprofilbruker</translation>
 <translation id="5365946944967967336">Vis startsideknappen på verktøylinjen</translation>
 <translation id="3709266154059827597">Konfigurer installasjonssperrelisten for utvidelser</translation>
 <translation id="1933378685401357864">Bakgrunnsbilde</translation>

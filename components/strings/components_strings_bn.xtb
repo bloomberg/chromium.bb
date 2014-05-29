@@ -9,6 +9,7 @@
 <translation id="777702478322588152">জেলা</translation>
 <translation id="151501797353681931">Safari থেকে আমদানি করা</translation>
 <translation id="2972581237482394796">&amp;পুনরায় করুন</translation>
+<translation id="7600965453749440009"><ph name="LANGUAGE"/> কখনও অনুবাদ করবেন না</translation>
 <translation id="2262243747453050782">HTTP ত্রুটি</translation>
 <translation id="1339601241726513588">ডোমেন নথিভুক্ত করুন:</translation>
 <translation id="7298195798382681320">প্রস্তাবিত</translation>
@@ -16,6 +17,7 @@
 <translation id="5299298092464848405">নীতি বিশ্লেষণ করার সময় ত্রুটি</translation>
 <translation id="2815693974042551705">বুকমার্ক ফোল্ডার</translation>
 <translation id="3088325635286126843">&amp;পুনঃনামকরণ...</translation>
+<translation id="6831043979455480757">অনুবাদ করুন</translation>
 <translation id="1228893227497259893">ভুল সত্তা সনাক্তকারী</translation>
 <translation id="5111692334209731439">&amp;বুকমার্ক পরিচালক</translation>
 <translation id="6337534724793800597">নাম অনুসারে ফিল্টারগুলি বাছাই করুন</translation>
@@ -28,13 +30,16 @@
 <translation id="3583757800736429874">&amp;সরানোর কাজটি পুনরায় করুন</translation>
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="277499241957683684">ডিভাইস রেকর্ড অনুপস্থিত</translation>
+<translation id="8553075262323480129">পৃষ্ঠার ভাষা নির্ধারণ না করতে পারার কারণে অনুবাদ ব্যর্থ হয়েছে৷</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
 <translation id="8368859634510605990">&amp;সকল বুকমার্ক খুলুন</translation>
+<translation id="1103523840287552314">সর্বদা অনুবাদ করুন <ph name="LANGUAGE"/></translation>
 <translation id="1227633850867390598">মান লুকান</translation>
 <translation id="6753269504797312559">নীতি মান</translation>
 <translation id="5078638979202084724">সকল ট্যাব বুকমার্ক করুন</translation>
 <translation id="7550830279652415241">bookmarks_<ph name="DATESTAMP"/>.html</translation>
 <translation id="7400418766976504921">URL</translation>
+<translation id="7378627244592794276">না</translation>
 <translation id="6949306908218145636">খোলা পৃষ্ঠাগুলিকে বুকমার্ক করুন...</translation>
 <translation id="2704283930420550640">বিন্যাসের সাথে মূল্য মেলে না৷</translation>
 <translation id="1055184225775184556">&amp;যোগ করাকে পূর্বাবস্থায় ফেরান</translation>
@@ -46,7 +51,6 @@
 <translation id="6839929833149231406">এলাকা</translation>
 <translation id="1871208020102129563">
 প্রক্সি স্থির প্রক্সি সার্ভারগুলি ব্যবহার করতে সেট করা আছে কোনো .pac স্ক্রিপ্ট URL নয়৷</translation>
-<translation id="8642489171979176277">Google সরঞ্জামদণ্ড থেকে আমদানিকৃত</translation>
 <translation id="3380365263193509176">অজানা ত্রুটি</translation>
 <translation id="112840717907525620">নীতি ক্যাশেটি ঠিক আছে</translation>
 <translation id="37613671848467444">ছদ্মবেশী উইন্ডোতে খুলু&amp;ন</translation>
@@ -57,6 +61,7 @@
 <translation id="939736085109172342">নতুন ফোল্ডার</translation>
 <translation id="7690853182226561458">ফোল্ডার যুক্ত &amp;করুন...</translation>
 <translation id="6973656660372572881">স্থির প্রক্সি সার্ভার এবং .pac স্ক্রিপ্ট URL-এর উভয়ই নির্দিষ্ট আছে৷</translation>
+<translation id="7108649287766967076"><ph name="TARGET_LANGUAGE"/> এ অনুবাদ ব্যর্থ হয়েছে৷</translation>
 <translation id="4103249731201008433">ডিভাইসের ক্রমিক সংখ্যা অবৈধ</translation>
 <translation id="3667681724235208644">আসলটি দেখুন</translation>
 <translation id="4079302484614802869">প্রক্সি কনফিগারেশনটি .pac স্ক্রিপ্ট URL-এ ব্যবহার করাতে সেট থাকে স্থির প্রক্সি সার্ভারগুলিতে নয়৷</translation>
@@ -85,6 +90,7 @@
 <translation id="2367567093518048410">স্তর</translation>
 <translation id="7610193165460212391">সীমার বাইরে মান <ph name="VALUE"/>৷</translation>
 <translation id="8790007591277257123">&amp;মুছে ফেলাকে পুনরায় করুন</translation>
+<translation id="370665806235115550">লোড হচ্ছে...</translation>
 <translation id="2902382079633781842">বুকমার্ক যোগ করা হয়েছে!</translation>
 <translation id="2096368010154057602">বিভাগ</translation>
 <translation id="6529602333819889595">&amp;মুছে ফেলাকে পুনরায় করুন</translation>
@@ -114,16 +120,20 @@
 <translation id="1383876407941801731">অনুসন্ধান</translation>
 <translation id="4883178195103750615">বুকমার্কগুলিকে HTML ফাইলে রপ্তানি করুন...</translation>
 <translation id="3174168572213147020">আইল্যাণ্ড</translation>
+<translation id="9137013805542155359">প্রকৃত রূপ দেখান</translation>
 <translation id="2213606439339815911">এন্ট্রিগুলি আনা হচ্ছে...</translation>
 <translation id="6263376278284652872"><ph name="DOMAIN"/> বুকমার্কগুলি</translation>
 <translation id="8487693399751278191">এখনই বুকমার্কগুলি আমদানি করুন...</translation>
+<translation id="498957508165411911"><ph name="ORIGINAL_LANGUAGE"/> থেকে <ph name="TARGET_LANGUAGE"/> তে অনুবাদ করবেন?</translation>
 <translation id="1181037720776840403">সরান</translation>
 <translation id="5261073535210137151">ফোল্ডারে <ph name="COUNT"/> বুকমার্ক আছে৷ আপনি কি এটি মুছতে চান? </translation>
+<translation id="7186367841673660872">এই পৃষ্ঠাটি<ph name="ORIGINAL_LANGUAGE"/>থেকে<ph name="LANGUAGE_LANGUAGE"/>তে অনুবাদ করা হয়েছে</translation>
 <translation id="6549689063733911810">সাম্প্রতিক</translation>
 <translation id="7139724024395191329">এমিরেট</translation>
 <translation id="6702639462873609204">&amp;সম্পাদনা করুন...</translation>
 <translation id="5145883236150621069">নীতি প্রতিক্রিয়ার মধ্যে ত্রুটি কোড উপস্থিত</translation>
 <translation id="971774202801778802">বুকমার্ক URL</translation>
+<translation id="7983301409776629893">সর্বদা <ph name="ORIGINAL_LANGUAGE"/>-কে <ph name="TARGET_LANGUAGE"/>-তে অনুবাদ করুন</translation>
 <translation id="6970216967273061347">জেলা</translation>
 <translation id="1122960773616686544">বুকমার্কের নাম</translation>
 <translation id="3427342743765426898">&amp;সম্পাদনাকে পুনরায় করুন</translation>
@@ -131,6 +141,7 @@
 <translation id="6445051938772793705">দেশ</translation>
 <translation id="1047726139967079566">এই পৃষ্ঠাটি বুকমার্ক করুন...</translation>
 <translation id="1774833706453699074">খোলা পৃষ্ঠাগুলি বুকমার্ক করুন...</translation>
+<translation id="5031870354684148875">Google অনুবাদ সম্বন্ধে</translation>
 <translation id="3950820424414687140">সাইন ইন</translation>
 <translation id="2025186561304664664">স্বতঃ কনফিগার করতে প্রক্সি সেট করা হয়৷</translation>
 <translation id="1853748787962613237">নিবন্ধ প্রদর্শন করতে ব্যর্থ হয়েছে৷</translation>
@@ -143,7 +154,6 @@
 <translation id="7805768142964895445">স্থিতি</translation>
 <translation id="2805756323405976993">আ্যাপ্স</translation>
 <translation id="4853020600495124913">&amp;নতুন উইন্ডোতে খুলুন</translation>
-<translation id="4002066346123236978">শিরোনাম</translation>
 <translation id="1113869188872983271">&amp;পুনর্বিন্যাসকে পূর্বাবস্থায় ফেরান</translation>
 <translation id="536296301121032821">নীতি সেটিংস সংরক্ষণ করতে ব্যর্থ হয়েছে</translation>
 <translation id="3254409185687681395">এই পৃষ্ঠাটি বুকমার্ক করুন</translation>
@@ -155,8 +165,10 @@
 <translation id="678528074488531090">বৈধতা যাচাইকরণে ত্রুটি: <ph name="VALIDATION_ERROR"/>৷</translation>
 <translation id="2556876185419854533">&amp;সম্পাদনাকে পূর্বাবস্থায় ফেরান</translation>
 <translation id="4594403342090139922">&amp;মুছে ফেলাকে পূর্বাবস্থায় ফেরান</translation>
+<translation id="8571890674111243710">পৃষ্ঠাটি<ph name="LANGUAGE"/>তে অনুবাদ করুন...</translation>
 <translation id="4117700440116928470">নীতির সুযোগটি সমর্থিত নয়৷</translation>
 <translation id="2114841414352855701">এড়িয়ে যাওয়া হয়েছে কারণ এটি <ph name="POLICY_NAME"/>-দ্বারা ওভাররাইড করা হয়েছিল৷</translation>
+<translation id="3228969707346345236">পৃষ্ঠাটি ইতিমধ্যে <ph name="LANGUAGE"/>-এ থাকার কারণে অনুবাদ ব্যর্থ হয়েছে৷</translation>
 <translation id="8891727572606052622">প্রক্সি মোড অবৈধ৷</translation>
 <translation id="399179161741278232">আমদানিকৃত</translation>
 <translation id="5857090052475505287">নতুন ফোল্ডার</translation>
@@ -166,12 +178,15 @@
 <translation id="4926049483395192435">নির্দিষ্ট করা উচিত৷</translation>
 <translation id="7542995811387359312">স্বয়ংক্রিয় ক্রেডিট কার্ড পূরণটি অক্ষম রয়েছে কারণ এই ফর্মটি কোনও সুরক্ষিত সংযোগ ব্যবহার করে না৷</translation>
 <translation id="9024127637873500333">&amp;নতুন ট্যাবে খুলুন</translation>
+<translation id="5179510805599951267"><ph name="ORIGINAL_LANGUAGE"/>-এ নেই? এই ত্রুটি রিপোর্ট করুন</translation>
 <translation id="8088680233425245692">নিবন্ধ দেখতে ব্যর্থ হয়েছে৷</translation>
 <translation id="6397592254427394018">ছ্দ্মবেশী উইন্ডোতে &amp;সকল বুকমার্ক খুলুন</translation>
+<translation id="8725066075913043281">আবার চেষ্টা করুন</translation>
 <translation id="1821930232296380041">অবৈধ অনুরোধ বা অনুরোধ মাপকাঠিগুলি</translation>
 <translation id="580571955903695899">শিরোনাম অনুসারে পুনঃক্রম করুন</translation>
 <translation id="6059232451013891645">ফোল্ডার:</translation>
 <translation id="1640180200866533862">ব্যবহারকারীর নীতিসমূহ</translation>
+<translation id="375403751935624634">একটি সার্ভার ত্রুটির কারণে অনুবাদ ব্যর্থ হয়েছে৷</translation>
 <translation id="5629630648637658800">নীতি সেটিংস লোড করতে ব্যর্থ হয়েছে</translation>
 <translation id="4030383055268325496">&amp;যোগ করাকে পূর্বাবস্থায় ফেরান</translation>
 <translation id="3650584904733503804">বৈধতা যাচাইকরণ সফল হয়েছে</translation>
@@ -186,14 +201,17 @@
 <translation id="5470861586879999274">&amp;সম্পাদনাকে পুনরায় করুন</translation>
 <translation id="6965978654500191972">ডিভাইস</translation>
 <translation id="8249320324621329438">সর্বশেষ প্রাপ্ত করেছে:</translation>
+<translation id="1285320974508926690">কখনই এই সাইটটিকে অনুবাদ করবেন না</translation>
 <translation id="3613422051106148727">&amp;নতুন ট্যাবে খুলুন</translation>
 <translation id="6282194474023008486">পোস্টাল কোড</translation>
 <translation id="443673843213245140">প্রক্সির ব্যবহার অক্ষম করা হয়েছে কিন্তু কোনো স্পষ্ট প্রক্সি কনফিগারেশান নির্দিষ্ট করা হয়েছে৷</translation>
 <translation id="3623476034248543066">মান দেখান</translation>
+<translation id="9020542370529661692">এই পৃষ্ঠাটি <ph name="TARGET_LANGUAGE"/> এ অনুবাদ করা হয়েছে</translation>
 <translation id="5631439013527180824">অবৈধ ডিভাইস পরিচালনা টোকেন</translation>
 <translation id="6804671422566312077">নতুন উইন্ডোতে স&amp;কল বুকমার্ক খুলুন</translation>
 <translation id="560412284261940334">পরিচালনা সমর্থিত নয়</translation>
 <translation id="3169472444629675720">আবিষ্কার করুন</translation>
+<translation id="4923417429809017348">এই পৃষ্ঠাটি কোন অজানা ভাষা থেকে <ph name="LANGUAGE_LANGUAGE"/>-এ অনুবাদ করা হয়েছে</translation>
 <translation id="5626134646977739690">নাম:</translation>
 <translation id="4813512666221746211">নেটওয়ার্ক  ত্রুটি</translation>
 <translation id="1254117744268754948">ফোল্ডার চয়ন করুন</translation>
@@ -215,6 +233,7 @@
 <translation id="6644283850729428850">এই নীতিটি অসমর্থিত হয়েছে৷</translation>
 <translation id="8488350697529856933">এতে প্রয়োগ হয়</translation>
 <translation id="5565735124758917034">সক্রিয়</translation>
+<translation id="7568593326407688803">এই পৃষ্ঠাটি<ph name="ORIGINAL_LANGUAGE"/>ভাষাতে আছে আপনি কি এটিকে অনুবাদ করতে চাইবেন?</translation>
 <translation id="3828029223314399057">বুকমার্কগুলি খুঁজুন</translation>
 <translation id="8876793034577346603">নেটওয়ার্ক কনফিগারেশন বিশ্লেষণ করতে ব্যর্থ হয়েছে৷</translation>
 <translation id="6268747994388690914">HTML ফাইল থেকে বুকমার্ক আমদানি করুন...</translation>
@@ -224,6 +243,7 @@
 <translation id="7961015016161918242">কখনই নয়</translation>
 <translation id="2835170189407361413">ফর্ম সাফ করুন</translation>
 <translation id="713122686776214250">&amp;পৃষ্ঠা জুড়ুন...</translation>
+<translation id="6550675742724504774">বিকল্পসমূহ</translation>
 <translation id="8804164990146287819">গোপনীয়তা নীতি</translation>
 <translation id="5337776961545044340">এই বণিকের জন্য এই ধরনের কার্ড Google Wallet এর দ্বারা সমর্থিত নয়৷ দয়া করে একটি আলাদা কার্ড নির্বাচন করুন৷</translation>
 <translation id="4268574628540273656">URL:</translation>
@@ -251,6 +271,7 @@
 <translation id="3406605057700382950">&amp;বুকমার্ক দণ্ড দেখান</translation>
 <translation id="2455981314101692989">এই ওয়েবপৃষ্ঠাটি এই ফর্মটির জন্য  স্বয়ংক্রিয় পূরণ ফর্মকে অক্ষম করেছে৷</translation>
 <translation id="7336748286991450492">সব জায়গায় আপনার বুকমার্কগুলি পাওয়ার জন্য <ph name="SIGN_IN_LINK"/>৷</translation>
+<translation id="8308427013383895095">নেটওয়ার্ক সংযোগে কোন সমস্যা হওয়ার কারণে অনুবাদ ব্যর্থ হয়েছে৷</translation>
 <translation id="5720705177508910913">বর্তমান ব্যবহারকারী</translation>
 <translation id="3380864720620200369">ক্লায়েন্ট ID:</translation>
 </translationbundle>

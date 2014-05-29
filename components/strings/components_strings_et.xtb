@@ -9,6 +9,7 @@
 <translation id="777702478322588152">Prefektuur</translation>
 <translation id="151501797353681931">Imporditud Safarist</translation>
 <translation id="2972581237482394796">&amp;Tee uuesti</translation>
+<translation id="7600965453749440009">Ära kunagi tõlgi: <ph name="LANGUAGE"/></translation>
 <translation id="2262243747453050782">HTTP viga</translation>
 <translation id="1339601241726513588">Registreerimisdomeen:</translation>
 <translation id="7298195798382681320">Soovitatud</translation>
@@ -16,6 +17,7 @@
 <translation id="5299298092464848405">Reegli sõelumisel ilmnes viga</translation>
 <translation id="2815693974042551705">Järjehoidjakaust</translation>
 <translation id="3088325635286126843">&amp;Nimeta ümber ...</translation>
+<translation id="6831043979455480757">Tõlgi</translation>
 <translation id="1228893227497259893">Üksuse vale identifikaator</translation>
 <translation id="5111692334209731439">&amp;Järjehoidjate haldur</translation>
 <translation id="6337534724793800597">Reeglite filtreerimine nime järgi</translation>
@@ -28,13 +30,16 @@
 <translation id="3583757800736429874">&amp;Teisalda uuesti</translation>
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="277499241957683684">Seadme kirje puudub</translation>
+<translation id="8553075262323480129">Tõlkimine nurjus, kuna lehe keelt ei õnnestunud määrata.</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
 <translation id="8368859634510605990">&amp;Ava kõik järjehoidjad</translation>
+<translation id="1103523840287552314">Tõlgi alati: <ph name="LANGUAGE"/></translation>
 <translation id="1227633850867390598">Peida väärtus</translation>
 <translation id="6753269504797312559">Reegli väärtus</translation>
 <translation id="5078638979202084724">Lisab kõik vahelehed järjehoidjatesse</translation>
 <translation id="7550830279652415241">bookmarks_<ph name="DATESTAMP"/>.html</translation>
 <translation id="7400418766976504921">URL</translation>
+<translation id="7378627244592794276">Ei</translation>
 <translation id="6949306908218145636">Lisa avatud lehed järjehoidjasse ...</translation>
 <translation id="2704283930420550640">Väärtus ei vasta vormingule.</translation>
 <translation id="1055184225775184556">&amp;Võta lisamine tagasi</translation>
@@ -45,7 +50,6 @@
 <translation id="719464814642662924">Visa</translation>
 <translation id="6839929833149231406">Piirkond</translation>
 <translation id="1871208020102129563">Puhverserver on seatud kasutama fikseeritud puhverservereid, mitte pac-skripti URL-i.</translation>
-<translation id="8642489171979176277">Imporditud Google'i tööriistaribalt</translation>
 <translation id="3380365263193509176">Tundmatu viga</translation>
 <translation id="112840717907525620">Reegli vahemälu töötab probleemideta</translation>
 <translation id="37613671848467444">&amp;Ava inkognito aknas</translation>
@@ -56,6 +60,7 @@
 <translation id="939736085109172342">Uus kaust</translation>
 <translation id="7690853182226561458">Lisa &amp;kaust ...</translation>
 <translation id="6973656660372572881">Määratud on nii fikseeritud puhverserverid kui ka pac-skriptiga URL.</translation>
+<translation id="7108649287766967076">Tõlkimine <ph name="TARGET_LANGUAGE"/> keelde ebaõnnestus.</translation>
 <translation id="4103249731201008433">Seadme seerianumber on kehtetu</translation>
 <translation id="3667681724235208644">Originaali kuvamine</translation>
 <translation id="4079302484614802869">Puhverserveri konfigureerimine on määratud kasutama pac-skripti URL-i, mitte fikseeritud puhverservereid.</translation>
@@ -84,6 +89,7 @@
 <translation id="2367567093518048410">Tase</translation>
 <translation id="7610193165460212391">Väärtus on vahemikust (<ph name="VALUE"/>) väljaspool.</translation>
 <translation id="8790007591277257123">&amp;Kustuta uuesti</translation>
+<translation id="370665806235115550">Laadimine...</translation>
 <translation id="2902382079633781842">Järjehoidja on lisatud.</translation>
 <translation id="2096368010154057602">Osakond</translation>
 <translation id="6529602333819889595">&amp;Kustuta uuesti</translation>
@@ -113,16 +119,20 @@
 <translation id="1383876407941801731">Otsing</translation>
 <translation id="4883178195103750615">Järjehoidjate eksportimine HTML-faili ...</translation>
 <translation id="3174168572213147020">Saar</translation>
+<translation id="9137013805542155359">Kuva originaal</translation>
 <translation id="2213606439339815911">Kirjete toomine ...</translation>
 <translation id="6263376278284652872">Domeeni <ph name="DOMAIN"/> järjehoidjad</translation>
 <translation id="8487693399751278191">Impordi kohe järjehoidjaid...</translation>
+<translation id="498957508165411911">Kas tõlkida <ph name="ORIGINAL_LANGUAGE"/> keelest <ph name="TARGET_LANGUAGE"/> keelde?</translation>
 <translation id="1181037720776840403">Eemalda</translation>
 <translation id="5261073535210137151">Kaustas on <ph name="COUNT"/> järjehoidjat. Kas soovite kindlasti kausta kustutada?</translation>
+<translation id="7186367841673660872">See leht on tõlgitud keelest<ph name="ORIGINAL_LANGUAGE"/>keelde<ph name="LANGUAGE_LANGUAGE"/></translation>
 <translation id="6549689063733911810">Hiljutised</translation>
 <translation id="7139724024395191329">Emiraat</translation>
 <translation id="6702639462873609204">&amp;Muuda ...</translation>
 <translation id="5145883236150621069">Reegli vastuses sisaldus veakood</translation>
 <translation id="971774202801778802">Järjehoidja URL</translation>
+<translation id="7983301409776629893">Tõlgi alati keelest <ph name="ORIGINAL_LANGUAGE"/> keelde <ph name="TARGET_LANGUAGE"/></translation>
 <translation id="6970216967273061347">Piirkond</translation>
 <translation id="1122960773616686544">Järjehoidja nimi</translation>
 <translation id="3427342743765426898">&amp;Muuda uuesti</translation>
@@ -130,6 +140,7 @@
 <translation id="6445051938772793705">Riik</translation>
 <translation id="1047726139967079566">Lisa selle lehe järjehoidja...</translation>
 <translation id="1774833706453699074">Lisa avatud lehed järjehoidjatesse ...</translation>
+<translation id="5031870354684148875">Teave Google'i tõlke kohta</translation>
 <translation id="3950820424414687140">Sisselogimine</translation>
 <translation id="2025186561304664664">Puhverserver seadistatakse automaatselt.</translation>
 <translation id="1853748787962613237">Artikli kuvamine ebaõnnestus.</translation>
@@ -142,7 +153,6 @@
 <translation id="7805768142964895445">Olek</translation>
 <translation id="2805756323405976993">Rakendused</translation>
 <translation id="4853020600495124913">Ava &amp;uues aknas</translation>
-<translation id="4002066346123236978">Pealkiri</translation>
 <translation id="1113869188872983271">&amp;Võta korrastamine tagasi</translation>
 <translation id="536296301121032821">Reegli seadete talletamine ebaõnnestus</translation>
 <translation id="3254409185687681395">Lisa see lehekülg järjehoidjatesse</translation>
@@ -154,8 +164,10 @@
 <translation id="678528074488531090">Viga valideerimisel: <ph name="VALIDATION_ERROR"/>.</translation>
 <translation id="2556876185419854533">&amp;Võta muudatus tagasi</translation>
 <translation id="4594403342090139922">&amp;Võta kustutamine tagasi</translation>
+<translation id="8571890674111243710">Lehe tõlkimine <ph name="LANGUAGE"/> keelde...</translation>
 <translation id="4117700440116928470">Reegli ulatust ei toetata.</translation>
 <translation id="2114841414352855701">Seda ignoreeritakse, kuna reegel <ph name="POLICY_NAME"/> alistab selle.</translation>
+<translation id="3228969707346345236">Tõlkimine nurjus, kuna lehe keel on juba <ph name="LANGUAGE"/>.</translation>
 <translation id="8891727572606052622">Kehtetu puhverserveri režiim.</translation>
 <translation id="399179161741278232">Imporditud</translation>
 <translation id="5857090052475505287">Uus kaust</translation>
@@ -165,12 +177,15 @@
 <translation id="4926049483395192435">Tuleb määrata.</translation>
 <translation id="7542995811387359312">Automaatne krediitkaardi täide on keelatud, sest see vorm ei kasuta turvalist ühendust.</translation>
 <translation id="9024127637873500333">&amp;Ava uuel vahelehel</translation>
+<translation id="5179510805599951267">Tegu ei ole <ph name="ORIGINAL_LANGUAGE"/> keelega? Andke veast teada</translation>
 <translation id="8088680233425245692">Artikli kuvamine ebaõnnestus.</translation>
 <translation id="6397592254427394018">Ava kõik järjehoidjad &amp;inkognito aknas</translation>
+<translation id="8725066075913043281">Proovi uuesti</translation>
 <translation id="1821930232296380041">Taotlus või selle parameetrid on kehtetud</translation>
 <translation id="580571955903695899">Järjesta pealkirja alusel uuesti</translation>
 <translation id="6059232451013891645">Kaust:</translation>
 <translation id="1640180200866533862">Kasutajareeglid</translation>
+<translation id="375403751935624634">Tõlkimine ebaõnnestus serverivea tõttu.</translation>
 <translation id="5629630648637658800">Reegli seadete laadimine ebaõnnestus</translation>
 <translation id="4030383055268325496">&amp;Võta lisamine tagasi</translation>
 <translation id="3650584904733503804">Valideerimine õnnestus</translation>
@@ -185,14 +200,17 @@
 <translation id="5470861586879999274">&amp;Muuda uuesti</translation>
 <translation id="6965978654500191972">Seade</translation>
 <translation id="8249320324621329438">Viimati toodud:</translation>
+<translation id="1285320974508926690">Ära kunagi seda saiti tõlgi</translation>
 <translation id="3613422051106148727">&amp;Ava uuel vahelehel</translation>
 <translation id="6282194474023008486">Sihtnumber</translation>
 <translation id="443673843213245140">Puhverserveri kasutamine on keelatud, kuid määratud on ka konkreetne puhverserveri konfigureerimine.</translation>
 <translation id="3623476034248543066">Kuva väärtused</translation>
+<translation id="9020542370529661692">See leht on tõlgitud <ph name="TARGET_LANGUAGE"/> keelde</translation>
 <translation id="5631439013527180824">Seadme halduse luba on kehtetu</translation>
 <translation id="6804671422566312077">Ava kõik järjehoidjad &amp;uues aknas</translation>
 <translation id="560412284261940334">Haldust ei toetata</translation>
 <translation id="3169472444629675720">Discover</translation>
+<translation id="4923417429809017348">Leht on tõlgitud teadmata keelest <ph name="LANGUAGE_LANGUAGE"/> keelde</translation>
 <translation id="5626134646977739690">Nimi:</translation>
 <translation id="4813512666221746211">Võrgu viga</translation>
 <translation id="1254117744268754948">Kausta valimine</translation>
@@ -214,6 +232,7 @@
 <translation id="6644283850729428850">See reegel on aegunud.</translation>
 <translation id="8488350697529856933">Kehtib:</translation>
 <translation id="5565735124758917034">Aktiivne</translation>
+<translation id="7568593326407688803">See leht on keeles<ph name="ORIGINAL_LANGUAGE"/>Kas soovite seda tõlkida?</translation>
 <translation id="3828029223314399057">Otsi jäjehoidjaid</translation>
 <translation id="8876793034577346603">Võrgu seadistust ei õnnestunud sõeluda.</translation>
 <translation id="6268747994388690914">Impordi järjehoidjad HTML-failist ...</translation>
@@ -223,6 +242,7 @@
 <translation id="7961015016161918242">Mitte kunagi</translation>
 <translation id="2835170189407361413">Tühjenda vorm</translation>
 <translation id="713122686776214250">Lisa le&amp;ht ...</translation>
+<translation id="6550675742724504774">Valikud</translation>
 <translation id="8804164990146287819">Privaatsuseeskirjad</translation>
 <translation id="5337776961545044340">Google Wallet ei toeta selle kaupmehe puhul seda tüüpi kaarti. Valige teine kaart.</translation>
 <translation id="4268574628540273656">URL:</translation>
@@ -250,6 +270,7 @@
 <translation id="3406605057700382950">&amp;Näita järjehoidjariba</translation>
 <translation id="2455981314101692989">See veebileht on keelanud automaatse täitmise selle vormi puhul.</translation>
 <translation id="7336748286991450492"><ph name="SIGN_IN_LINK"/> – nii saate järjehoidjaid kõikjal kasutada.</translation>
+<translation id="8308427013383895095">Tõlkimine ebaõnnestus võrguühenduse probleemi tõttu.</translation>
 <translation id="5720705177508910913">Praegune kasutaja</translation>
 <translation id="3380864720620200369">Kliendi ID:</translation>
 </translationbundle>

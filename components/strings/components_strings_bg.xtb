@@ -9,6 +9,7 @@
 <translation id="777702478322588152">Префектура</translation>
 <translation id="151501797353681931">Импортирани от Safari</translation>
 <translation id="2972581237482394796">&amp;Възстановяване</translation>
+<translation id="7600965453749440009">Никога да не се превежда от <ph name="LANGUAGE"/></translation>
 <translation id="2262243747453050782">HTTP грешка</translation>
 <translation id="1339601241726513588">Домейн за записване:</translation>
 <translation id="7298195798382681320">Препоръчително</translation>
@@ -16,6 +17,7 @@
 <translation id="5299298092464848405">Грешка при синтактичния анализ на правилото</translation>
 <translation id="2815693974042551705">Папка на отметката</translation>
 <translation id="3088325635286126843">&amp;Преименуване...</translation>
+<translation id="6831043979455480757">Превод</translation>
 <translation id="1228893227497259893">Грешен идентификатор на обект</translation>
 <translation id="5111692334209731439">&amp;Диспечер на отметките</translation>
 <translation id="6337534724793800597">Филтриране на правилата по име</translation>
@@ -28,13 +30,16 @@
 <translation id="3583757800736429874">&amp;Възстановяване на преместването</translation>
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="277499241957683684">Липсващ запис за устройството</translation>
+<translation id="8553075262323480129">Преводът не бе успешен, защото езикът на страницата не можа да бъде определен.</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
 <translation id="8368859634510605990">&amp;Отваряне на всички отметки</translation>
+<translation id="1103523840287552314">Винаги да се превежда от <ph name="LANGUAGE"/></translation>
 <translation id="1227633850867390598">Скриване на стойността</translation>
 <translation id="6753269504797312559">Стойност за правилото</translation>
 <translation id="5078638979202084724">Запазване на отметки към всички раздели</translation>
 <translation id="7550830279652415241">bookmarks_<ph name="DATESTAMP"/>.html</translation>
 <translation id="7400418766976504921">URL адрес</translation>
+<translation id="7378627244592794276">Не</translation>
 <translation id="6949306908218145636">Запазване на отметки за отворените страници...</translation>
 <translation id="2704283930420550640">Стойността не съответства на формата.</translation>
 <translation id="1055184225775184556">&amp;Отмяна на добавянето</translation>
@@ -45,7 +50,6 @@
 <translation id="719464814642662924">Visa</translation>
 <translation id="6839929833149231406">Район</translation>
 <translation id="1871208020102129563">За прокси сървъра е зададено да използва фиксирани прокси сървъри, а не URL адрес на скрипт във формат .pac.</translation>
-<translation id="8642489171979176277">Импортирани от Google Toolbar</translation>
 <translation id="3380365263193509176">Неизвестна грешка</translation>
 <translation id="112840717907525620">Кешът на правилото е в добро състояние</translation>
 <translation id="37613671848467444">Отваряне на прозорец в режим „&amp;инкогнито“</translation>
@@ -56,6 +60,7 @@
 <translation id="939736085109172342">Нова папка</translation>
 <translation id="7690853182226561458">Добавяне на &amp;папка...</translation>
 <translation id="6973656660372572881">Посочени са както фиксирани прокси сървъри, така и URL адрес на скрипт във формат .pac.</translation>
+<translation id="7108649287766967076">Преводът на <ph name="TARGET_LANGUAGE"/> не бе успешен.</translation>
 <translation id="4103249731201008433">Серийният номер на устройството е невалиден</translation>
 <translation id="3667681724235208644">Преглед на оригинала</translation>
 <translation id="4079302484614802869">За конфигурацията на прокси сървъра е зададено да използва URL адрес на скрипт във формат .pac, а не фиксирани прокси сървъри.</translation>
@@ -84,6 +89,7 @@
 <translation id="2367567093518048410">Ниво</translation>
 <translation id="7610193165460212391">Стойността е извън обхват <ph name="VALUE"/>.</translation>
 <translation id="8790007591277257123">&amp;Възстановяване на изтриването</translation>
+<translation id="370665806235115550">Зарежда се...</translation>
 <translation id="2902382079633781842">Отметката бе добавена!</translation>
 <translation id="2096368010154057602">Департамент</translation>
 <translation id="6529602333819889595">&amp;Възстановяване на изтриването</translation>
@@ -113,16 +119,20 @@
 <translation id="1383876407941801731">Търсене</translation>
 <translation id="4883178195103750615">Експортиране на отметки в HTML файл...</translation>
 <translation id="3174168572213147020">Остров</translation>
+<translation id="9137013805542155359">Показване на оригинала</translation>
 <translation id="2213606439339815911">Записите се извличат...</translation>
 <translation id="6263376278284652872">Отметки от <ph name="DOMAIN"/></translation>
 <translation id="8487693399751278191">Импортиране на отметките сега...</translation>
+<translation id="498957508165411911">Да се преведе ли от <ph name="ORIGINAL_LANGUAGE"/> на <ph name="TARGET_LANGUAGE"/>?</translation>
 <translation id="1181037720776840403">Премахване</translation>
 <translation id="5261073535210137151">Тази папка съдържа <ph name="COUNT"/> отметки. Наистина ли искате да я изтриете?</translation>
+<translation id="7186367841673660872">Тази страница е преведена от<ph name="ORIGINAL_LANGUAGE"/>на<ph name="LANGUAGE_LANGUAGE"/></translation>
 <translation id="6549689063733911810">Скорошни</translation>
 <translation id="7139724024395191329">Емирство</translation>
 <translation id="6702639462873609204">&amp;Редактиране...</translation>
 <translation id="5145883236150621069">В отговора за правилото присъства код на грешка</translation>
 <translation id="971774202801778802">URL адрес на отметката</translation>
+<translation id="7983301409776629893">Винаги да се превежда от <ph name="ORIGINAL_LANGUAGE"/> на <ph name="TARGET_LANGUAGE"/></translation>
 <translation id="6970216967273061347">Окръг</translation>
 <translation id="1122960773616686544">Име на отметката</translation>
 <translation id="3427342743765426898">&amp;Възстановяване на редактирането</translation>
@@ -130,6 +140,7 @@
 <translation id="6445051938772793705">Държава</translation>
 <translation id="1047726139967079566">Запазване на отметка към тази страница...</translation>
 <translation id="1774833706453699074">Запазване на отметки за отворените страници...</translation>
+<translation id="5031870354684148875">Всичко за Google Преводач</translation>
 <translation id="3950820424414687140">Вход</translation>
 <translation id="2025186561304664664">За прокси сървъра е зададена автоматична конфигурация.</translation>
 <translation id="1853748787962613237">Показването на статията не бе успешно.</translation>
@@ -142,7 +153,6 @@
 <translation id="7805768142964895445">Състояние</translation>
 <translation id="2805756323405976993">Приложения</translation>
 <translation id="4853020600495124913">Отваряне в &amp;нов прозорец</translation>
-<translation id="4002066346123236978">Заглавие</translation>
 <translation id="1113869188872983271">&amp;Отмяна на пренареждането</translation>
 <translation id="536296301121032821">Съхраняването на настройките за правилото не бе успешно</translation>
 <translation id="3254409185687681395">Запазване на отметка към тази страница</translation>
@@ -154,8 +164,10 @@
 <translation id="678528074488531090">Грешка при потвърждаването: <ph name="VALIDATION_ERROR"/>.</translation>
 <translation id="2556876185419854533">&amp;Отмяна на редактирането</translation>
 <translation id="4594403342090139922">&amp;Отмяна на изтриването</translation>
+<translation id="8571890674111243710">Превод на страницата на <ph name="LANGUAGE"/>...</translation>
 <translation id="4117700440116928470">Обхватът на правилата не се поддържа.</translation>
 <translation id="2114841414352855701">Бе пренебрегнато, защото бе отменено от <ph name="POLICY_NAME"/>.</translation>
+<translation id="3228969707346345236">Преводът не бе успешен, защото страницата вече е на <ph name="LANGUAGE"/>.</translation>
 <translation id="8891727572606052622">Невалиден режим на прокси сървъра.</translation>
 <translation id="399179161741278232">Импортирани</translation>
 <translation id="5857090052475505287">Нова папка</translation>
@@ -165,12 +177,15 @@
 <translation id="4926049483395192435">Трябва да се посочи.</translation>
 <translation id="7542995811387359312">Автоматичното попълване на кредитната карта е деактивирано, защото този формуляр не използва защитена връзка.</translation>
 <translation id="9024127637873500333">&amp;Отваряне в нов раздел</translation>
+<translation id="5179510805599951267">Не е на <ph name="ORIGINAL_LANGUAGE"/>? Подайте сигнал за тази грешка</translation>
 <translation id="8088680233425245692">Преглеждането на статията не бе успешно.</translation>
 <translation id="6397592254427394018">Отваряне на всички отметки в прозорец в режим „&amp;инкогнито“</translation>
+<translation id="8725066075913043281">Опитайте отново</translation>
 <translation id="1821930232296380041">Заявката или параметрите й са невалидни</translation>
 <translation id="580571955903695899">Преподреждане по азбучен ред</translation>
 <translation id="6059232451013891645">Папка:</translation>
 <translation id="1640180200866533862">Правила за потребителите</translation>
+<translation id="375403751935624634">Преводът не бе успешен поради грешка в сървъра.</translation>
 <translation id="5629630648637658800">Зареждането на настройките за правилото не бе успешно</translation>
 <translation id="4030383055268325496">&amp;Отмяна на добавянето</translation>
 <translation id="3650584904733503804">Потвърждаването е успешно</translation>
@@ -185,14 +200,17 @@
 <translation id="5470861586879999274">&amp;Възстановяване на редактирането</translation>
 <translation id="6965978654500191972">Устройство</translation>
 <translation id="8249320324621329438">Последно извличане:</translation>
+<translation id="1285320974508926690">Този сайт да не се превежда никога</translation>
 <translation id="3613422051106148727">&amp;Отваряне в нов раздел</translation>
 <translation id="6282194474023008486">Пощенски код</translation>
 <translation id="443673843213245140">Използването на прокси сървър е деактивирано, но е посочена изрична негова конфигурация.</translation>
 <translation id="3623476034248543066">Показване на стойността</translation>
+<translation id="9020542370529661692">Тази страница е преведена на <ph name="TARGET_LANGUAGE"/></translation>
 <translation id="5631439013527180824">Невалидно означение за управление на устройството</translation>
 <translation id="6804671422566312077">Отваряне на всички отметки в &amp;нов прозорец</translation>
 <translation id="560412284261940334">Управлението не се поддържа</translation>
 <translation id="3169472444629675720">Discover</translation>
+<translation id="4923417429809017348">Тази страница е преведена от непознат език на <ph name="LANGUAGE_LANGUAGE"/></translation>
 <translation id="5626134646977739690">Име:</translation>
 <translation id="4813512666221746211">Грешка в мрежата</translation>
 <translation id="1254117744268754948">Избор на папка</translation>
@@ -214,6 +232,7 @@
 <translation id="6644283850729428850">Това правило е оттеглено.</translation>
 <translation id="8488350697529856933">Прилага се към</translation>
 <translation id="5565735124758917034">Активно</translation>
+<translation id="7568593326407688803">Тази страница е на<ph name="ORIGINAL_LANGUAGE"/>Искате ли да я преведете?</translation>
 <translation id="3828029223314399057">Търсене в отметките</translation>
 <translation id="8876793034577346603">Синтактичният анализ на конфигурацията на мрежата не бе успешен.</translation>
 <translation id="6268747994388690914">Импортиране на отметки от HTML файл...</translation>
@@ -223,6 +242,7 @@
 <translation id="7961015016161918242">Никога</translation>
 <translation id="2835170189407361413">Изчистване на формуляра</translation>
 <translation id="713122686776214250">Добавяне на &amp;страница...</translation>
+<translation id="6550675742724504774">Опции</translation>
 <translation id="8804164990146287819">Декларация за поверителност</translation>
 <translation id="5337776961545044340">Използваният тип карта не се поддържа от Google Wallet за този търговец. Моля, изберете друга.</translation>
 <translation id="4268574628540273656">URL адрес:</translation>
@@ -250,6 +270,7 @@
 <translation id="3406605057700382950">&amp;Показване на лентата на отметките</translation>
 <translation id="2455981314101692989">Тази уеб страница е деактивирала автоматичното попълване за този формуляр.</translation>
 <translation id="7336748286991450492"><ph name="SIGN_IN_LINK"/>, за да имате достъп до отметките си от всяко място.</translation>
+<translation id="8308427013383895095">Преводът не бе успешен поради проблем с връзката към мрежата.</translation>
 <translation id="5720705177508910913">Текущият потребител</translation>
 <translation id="3380864720620200369">Идент. № на клиентската програма:</translation>
 </translationbundle>
