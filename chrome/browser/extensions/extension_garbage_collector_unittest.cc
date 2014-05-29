@@ -17,6 +17,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "extensions/browser/extension_prefs.h"
 
 namespace extensions {
 

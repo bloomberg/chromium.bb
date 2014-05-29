@@ -17,6 +17,7 @@
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/sync_helper.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "extensions/browser/extension_system.h"

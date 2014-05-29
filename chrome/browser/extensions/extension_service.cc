@@ -51,11 +51,13 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "components/startup_metric_utils/startup_metric_utils.h"
+#include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/storage_partition.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_host.h"
+#include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/pref_names.h"
@@ -66,6 +68,7 @@
 #include "extensions/common/file_util.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/manifest_handlers/background_info.h"
+#include "extensions/common/one_shot_event.h"
 #include "extensions/common/permissions/permission_message_provider.h"
 #include "extensions/common/permissions/permissions_data.h"
 
@@ -363,10 +366,6 @@ ExtensionService::ExtensionService(Profile* profile,
 
 const ExtensionSet* ExtensionService::extensions() const {
   return &registry_->enabled_extensions();
-}
-
-const ExtensionSet* ExtensionService::delayed_installs() const {
-  return &delayed_installs_;
 }
 
 extensions::PendingExtensionManager*
@@ -1106,10 +1105,6 @@ void ExtensionService::NotifyExtensionUnloaded(
   UpdateActiveExtensionsInCrashReporter();
 }
 
-Profile* ExtensionService::profile() {
-  return profile_;
-}
-
 content::BrowserContext* ExtensionService::GetBrowserContext() const {
   // Implemented in the .cc file to avoid adding a profile.h dependency to
   // extension_service.h.
@@ -1134,10 +1129,6 @@ base::SequencedTaskRunner* ExtensionService::GetFileTaskRunner() {
         BrowserThread::GetBlockingPool()->GetNamedSequenceToken(token),
         base::SequencedWorkerPool::SKIP_ON_SHUTDOWN);
   return file_task_runner_.get();
-}
-
-extensions::ExtensionUpdater* ExtensionService::updater() {
-  return updater_.get();
 }
 
 void ExtensionService::CheckManagementPolicy() {

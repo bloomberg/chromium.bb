@@ -67,6 +67,7 @@
 #include "extensions/browser/extension_function_util.h"
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/file_reader.h"
+#include "extensions/common/constants.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_l10n_util.h"

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/extension_disabled_ui.h"
 
+#include <bitset>
 #include <string>
 
 #include "base/bind.h"
@@ -32,6 +33,7 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_source.h"
 #include "extensions/browser/extension_util.h"
+#include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_icon_set.h"
 #include "extensions/common/manifest_handlers/icons_handler.h"

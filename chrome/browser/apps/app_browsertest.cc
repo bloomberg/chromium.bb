@@ -40,6 +40,7 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/event_router.h"
+#include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/pref_names.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"

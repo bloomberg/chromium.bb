@@ -25,6 +25,7 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension_set.h"
+#include "extensions/common/one_shot_event.h"
 
 using extensions::Extension;
 

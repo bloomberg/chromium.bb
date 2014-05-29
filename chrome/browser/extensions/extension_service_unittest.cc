@@ -45,6 +45,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_special_storage_policy.h"
 #include "chrome/browser/extensions/extension_sync_data.h"
+#include "chrome/browser/extensions/extension_sync_service.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/external_install_ui.h"
 #include "chrome/browser/extensions/external_policy_loader.h"
@@ -2627,7 +2628,6 @@ TEST_F(ExtensionServiceTest, InstallAppsWithUnlimitedStorage) {
   EXPECT_EQ(origin1, origin2);
   EXPECT_TRUE(profile_->GetExtensionSpecialStoragePolicy()->
       IsStorageUnlimited(origin2));
-
 
   // Uninstall one of them, unlimited storage should still be granted
   // to the origin.

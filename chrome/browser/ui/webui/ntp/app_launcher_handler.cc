@@ -47,6 +47,7 @@
 #include "content/public/browser/web_ui.h"
 #include "content/public/common/favicon_url.h"
 #include "extensions/browser/app_sorting.h"
+#include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/management_policy.h"

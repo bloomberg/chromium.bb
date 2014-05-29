@@ -15,6 +15,7 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "content/public/browser/notification_service.h"
 #include "extensions/browser/event_router.h"
+#include "extensions/common/constants.h"
 
 using content::BrowserContext;
 

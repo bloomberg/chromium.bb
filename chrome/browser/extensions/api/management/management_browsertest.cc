@@ -25,6 +25,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/test/net/url_request_prepackaged_interceptor.h"
 #include "extensions/browser/extension_host.h"
+#include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/pref_names.h"

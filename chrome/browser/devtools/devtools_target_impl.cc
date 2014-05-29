@@ -21,6 +21,7 @@
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/common/constants.h"
 
 using content::BrowserThread;
 using content::DevToolsAgentHost;

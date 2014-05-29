@@ -41,6 +41,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/resource_dispatcher_host.h"
 #include "content/public/browser/user_metrics.h"
+#include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension_icon_set.h"
 #include "extensions/common/feature_switch.h"

@@ -28,6 +28,7 @@
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/file_util.h"
+#include "extensions/common/one_shot_event.h"
 
 namespace extensions {
 
