@@ -18,7 +18,7 @@ import sys
 # main, our user must ensure it is in PYTHONPATH.
 if __name__ == '__main__':
   sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', '..',
-                               'tools', 'checkdeps'))
+                               'buildtools', 'checkdeps'))
 
 
 import count_ifdefs
