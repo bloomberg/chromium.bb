@@ -217,6 +217,10 @@ void WebNotificationTray::OnMessageCenterTrayChanged() {
       status_icon_menu_->SetCommandIdChecked(kToggleQuietMode,
                                              quiet_mode_state);
     }
+  } else if (message_center()->NotificationCount() == 0) {
+    // If there's no existing status icon and we still don't have any
+    // notifications to display, nothing needs to be done.
+    return;
   }
 
   // See the comments in ash/system/web_notification/web_notification_tray.cc

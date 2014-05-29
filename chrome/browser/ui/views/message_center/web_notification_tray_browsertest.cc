@@ -227,4 +227,23 @@ IN_PROC_BROWSER_TEST_F(WebNotificationTrayTest,
     EXPECT_TRUE(tray->message_center_delegate_->GetWidget()->IsClosed());
 }
 
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+#define MAYBE_StatusIconBehavior DISABLED_StatusIconBehavior
+#else
+#define MAYBE_StatusIconBehavior StatusIconBehavior
+#endif
+IN_PROC_BROWSER_TEST_F(WebNotificationTrayTest, MAYBE_StatusIconBehavior) {
+  scoped_ptr<WebNotificationTray> tray(new WebNotificationTray(NULL));
+
+  EXPECT_TRUE(tray->status_icon_ == NULL);
+  tray->OnMessageCenterTrayChanged();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(tray->status_icon_ == NULL);
+  AddNotification("test_id", "replace_id");
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(tray->status_icon_ != NULL);
+  RemoveNotification("test_id");
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(tray->status_icon_ != NULL);
+}
 }  // namespace message_center
