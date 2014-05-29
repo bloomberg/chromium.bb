@@ -1,0 +1,85 @@
+one two אחתשתיים three four שלושהארבעה
+
+one two אחתשתיים three four שלושהארבעה
+
+Tests that we can compute the bounds of a range of text from the accessibility tree in bidirectional text.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+
+Testing bounds of word one in horizontalParagraph
+PASS axBounds.x is within 2 of 8
+PASS axBounds.y is within 2 of 8
+PASS axBounds.width is within 2 of 22
+PASS axBounds.height is within 2 of 19
+
+Testing bounds of word two in horizontalParagraph
+PASS axBounds.x is within 2 of 34
+PASS axBounds.y is within 2 of 8
+PASS axBounds.width is within 2 of 23
+PASS axBounds.height is within 2 of 19
+
+Testing bounds of word three in horizontalParagraph
+PASS axBounds.x is within 2 of 123
+PASS axBounds.y is within 2 of 8
+PASS axBounds.width is within 2 of 30
+PASS axBounds.height is within 2 of 19
+
+Testing bounds of word four in horizontalParagraph
+PASS axBounds.x is within 2 of 157
+PASS axBounds.y is within 2 of 8
+PASS axBounds.width is within 2 of 24
+PASS axBounds.height is within 2 of 19
+
+Testing bounds of word אחתשתיים in horizontalParagraph
+PASS axBounds.x is within 2 of 61
+PASS axBounds.y is within 2 of 8
+PASS axBounds.width is within 2 of 58
+PASS axBounds.height is within 2 of 19
+
+Testing bounds of word שלושהארבעה in horizontalParagraph
+PASS axBounds.x is within 2 of 185
+PASS axBounds.y is within 2 of 8
+PASS axBounds.width is within 2 of 77
+PASS axBounds.height is within 2 of 19
+
+Testing bounds of word one in verticalParagraph
+PASS axBounds.x is within 2 of 24
+PASS axBounds.y is within 2 of 44
+PASS axBounds.width is within 2 of 19
+PASS axBounds.height is within 2 of 22
+
+Testing bounds of word two in verticalParagraph
+PASS axBounds.x is within 2 of 24
+PASS axBounds.y is within 2 of 70
+PASS axBounds.width is within 2 of 19
+PASS axBounds.height is within 2 of 23
+
+Testing bounds of word three in verticalParagraph
+PASS axBounds.x is within 2 of 24
+PASS axBounds.y is within 2 of 159
+PASS axBounds.width is within 2 of 19
+PASS axBounds.height is within 2 of 30
+
+Testing bounds of word four in verticalParagraph
+PASS axBounds.x is within 2 of 24
+PASS axBounds.y is within 2 of 193
+PASS axBounds.width is within 2 of 19
+PASS axBounds.height is within 2 of 24
+
+Testing bounds of word אחתשתיים in verticalParagraph
+PASS axBounds.x is within 2 of 24
+PASS axBounds.y is within 2 of 97
+PASS axBounds.width is within 2 of 19
+PASS axBounds.height is within 2 of 58
+
+Testing bounds of word שלושהארבעה in verticalParagraph
+PASS axBounds.x is within 2 of 24
+PASS axBounds.y is within 2 of 221
+PASS axBounds.width is within 2 of 19
+PASS axBounds.height is within 2 of 77
+PASS successfullyParsed is true
+
+TEST COMPLETE
+
