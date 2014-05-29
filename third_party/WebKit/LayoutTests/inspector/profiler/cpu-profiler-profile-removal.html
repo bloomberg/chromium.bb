@@ -16,7 +16,7 @@ function pageFunction() {
 function test()
 {
     InspectorTest.startProfilerTest(function() {
-        function viewLoaded(view) {
+        function viewLoaded() {
             var profiles = WebInspector.panels.profiles;
             var type = WebInspector.ProfileTypeRegistry.instance.cpuProfileType;
             while (type.getProfiles().length !== 0)
@@ -31,7 +31,7 @@ function test()
         WebInspector.inspectorView.showPanel("profiles");
         InspectorTest.evaluateInConsole("pageFunction()", function() {});
         InspectorTest.showProfileWhenAdded("p2");
-        InspectorTest.waitUntilProfileViewIsShown("p2", viewLoaded);
+        InspectorTest.waitUntilProfileViewIsShown("p2", setTimeout.bind(null, viewLoaded, 0));
     });
 }
 
