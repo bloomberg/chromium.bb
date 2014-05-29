@@ -369,6 +369,7 @@ class DriveFileSyncServiceSyncTest : public testing::Test {
   void TestLocalFileDeletion();
   void TestRemoteFileDeletion();
 
+  ScopedDisableSyncFSV2 scoped_disable_v2_;
   content::TestBrowserThreadBundle thread_bundle_;
 
   scoped_ptr<leveldb::Env> in_memory_env_;

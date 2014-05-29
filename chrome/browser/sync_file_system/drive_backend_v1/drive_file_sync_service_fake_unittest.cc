@@ -417,6 +417,7 @@ class DriveFileSyncServiceFakeTest : public testing::Test {
   void TestGetRemoteVersions();
 
  private:
+  ScopedDisableSyncFSV2 scoped_disable_v2_;
   content::TestBrowserThreadBundle thread_bundle_;
 
   TestingProfileManager profile_manager_;

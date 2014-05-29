@@ -508,7 +508,6 @@ class DriveBackendSyncTest : public testing::Test,
 
  private:
   content::TestBrowserThreadBundle thread_bundle_;
-  ScopedEnableSyncFSV2 enable_syncfs_v2_;
 
   base::ScopedTempDir base_dir_;
   scoped_ptr<leveldb::Env> in_memory_env_;

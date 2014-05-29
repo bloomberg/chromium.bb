@@ -251,6 +251,8 @@ TEST_F(SyncableFileSystemTest, ChangeTrackerSimple) {
 
 // Make sure directory operation is disabled (when it's configured so).
 TEST_F(SyncableFileSystemTest, DisableDirectoryOperations) {
+  ScopedDisableSyncFSV2 scoped_disable_v2;
+
   bool was_enabled = IsSyncFSDirectoryOperationEnabled();
   SetEnableSyncFSDirectoryOperation(false);
   EXPECT_EQ(base::File::FILE_OK,

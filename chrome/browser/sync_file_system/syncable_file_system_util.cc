@@ -45,7 +45,7 @@ const base::FilePath::CharType kSyncFileSystemDirDev[] =
 
 // Flags to enable features for testing.
 bool g_is_directory_operation_enabled = false;
-bool g_is_syncfs_v2_enabled = false;
+bool g_is_syncfs_v2_enabled = true;
 
 }  // namespace
 
@@ -186,13 +186,13 @@ ScopedEnableSyncFSDirectoryOperation::~ScopedEnableSyncFSDirectoryOperation() {
   SetEnableSyncFSDirectoryOperation(was_enabled_);
 }
 
-ScopedEnableSyncFSV2::ScopedEnableSyncFSV2() {
+ScopedDisableSyncFSV2::ScopedDisableSyncFSV2() {
   was_enabled_ = IsV2Enabled();
-  g_is_syncfs_v2_enabled = true;
+  g_is_syncfs_v2_enabled = false;
 }
 
-ScopedEnableSyncFSV2::~ScopedEnableSyncFSV2() {
-  DCHECK(IsV2Enabled());
+ScopedDisableSyncFSV2::~ScopedDisableSyncFSV2() {
+  DCHECK(!IsV2Enabled());
   g_is_syncfs_v2_enabled = was_enabled_;
 }
 

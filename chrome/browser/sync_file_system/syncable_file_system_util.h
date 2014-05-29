@@ -115,16 +115,16 @@ class ScopedEnableSyncFSDirectoryOperation {
   DISALLOW_COPY_AND_ASSIGN(ScopedEnableSyncFSDirectoryOperation);
 };
 
-// Enables V2 backend for syncable filesystems temporarily for testing.
-class ScopedEnableSyncFSV2 {
+// Disables V2 backend for syncable filesystems temporarily for testing.
+class ScopedDisableSyncFSV2 {
  public:
-  ScopedEnableSyncFSV2();
-  ~ScopedEnableSyncFSV2();
+  ScopedDisableSyncFSV2();
+  ~ScopedDisableSyncFSV2();
 
  private:
   bool was_enabled_;
 
-  DISALLOW_COPY_AND_ASSIGN(ScopedEnableSyncFSV2);
+  DISALLOW_COPY_AND_ASSIGN(ScopedDisableSyncFSV2);
 };
 
 // Posts |callback| to the current thread.
