@@ -35,25 +35,15 @@ typedef pp::CompletionCallbackWithOutput<FileStreamData> StreamCallback;
 // the url into a file and providing an open file descriptor.
 class FileDownloader {
  public:
-  // Ctor initializes |instance_| to NULL, be sure to call Initialize() before
-  // calling Open(), or Open() will fail.
-  FileDownloader()
-      : instance_(NULL),
-        file_open_notify_callback_(pp::BlockUntilComplete()),
-        stream_finish_callback_(pp::BlockUntilComplete()),
-        mode_(DOWNLOAD_NONE),
-        data_stream_callback_source_(NULL) {}
+  explicit FileDownloader(Plugin* instance);
   ~FileDownloader() {}
-
-  // Initialize() can only be called once during the lifetime of this instance.
-  void Initialize(Plugin* instance);
 
   // Issues a GET on |url| to start downloading the response into a file,
   // and finish streaming it. |callback| will be run after streaming is
   // done or if an error prevents streaming from completing.
   // Returns true when callback is scheduled to be called on success or failure.
-  // Returns false if callback is NULL, Initialize() has not been called or if
-  // the PPB_FileIO_Trusted interface is not available.
+  // Returns false if callback is NULL, or if the PPB_FileIO_Trusted interface
+  // is not available.
   // If |record_progress| is true, then download progress will be recorded,
   // and can be polled through GetDownloadProgress().
   // If |progress_callback| is not NULL and |record_progress| is true,
@@ -64,26 +54,20 @@ class FileDownloader {
   // caller without writing to a temporary file. The callbacks provided by
   // |stream_callback_source| are expected to copy the data before returning.
   // |callback| is called once the response headers are received,
-  // and streaming must be completed separately via FinishStreaming().
+  // and streaming must be completed separately via BeginStreaming().
   bool OpenStream(const nacl::string& url,
                   const pp::CompletionCallback& callback,
                   StreamCallbackSource* stream_callback_source);
 
   // Finish streaming the response body for a URL request started by either
   // OpenStream(). Runs the given |callback| when streaming is done.
-  void FinishStreaming(const pp::CompletionCallback& callback);
-
-  // Returns the url passed to Open().
-  const nacl::string& url() const { return url_; }
+  void BeginStreaming(const pp::CompletionCallback& callback);
 
   // Once the GET request has finished, and the contents of the file
   // represented by |url_| are available, |full_url_| is the full URL including
   // the scheme, host and full path.
   // Returns an empty string before the GET request has finished.
   const nacl::string& full_url() const { return full_url_; }
-
-  // Returns the PP_Resource of the active URL loader, or kInvalidResource.
-  PP_Resource url_loader() const { return url_loader_.pp_resource(); }
 
   // GetDownloadProgress() returns the current download progress, which is
   // meaningful after Open() has been called. Progress only refers to the
@@ -105,23 +89,22 @@ class FileDownloader {
     extra_request_headers_ = extra_request_headers;
   }
 
-
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(FileDownloader);
+
   // For DOWNLOAD_TO_BUFFER_AND_STREAM, the process is very similar:
   //   1) Ask the browser to start streaming |url_| to an internal buffer.
   //   2) Ask the browser to finish streaming to |temp_buffer_| on success.
   //   3) Wait for streaming to finish, passing the data directly to the user.
   // Each step is done asynchronously using callbacks.  We create callbacks
   // through a factory to take advantage of ref-counting.
-  // The public Open*() functions start step 1), and the public FinishStreaming
+  // The public Open*() functions start step 1), and the public BeginStreaming
   // function proceeds to step 2) and 3).
   bool InitialResponseIsValid();
   void URLLoadStartNotify(int32_t pp_error);
   void URLReadBodyNotify(int32_t pp_error);
 
   Plugin* instance_;
-  nacl::string url_;
   nacl::string full_url_;
 
   nacl::string extra_request_headers_;
@@ -136,5 +119,7 @@ class FileDownloader {
   std::vector<char> temp_buffer_;
   StreamCallbackSource* data_stream_callback_source_;
 };
-}  // namespace plugin;
+
+}  // namespace plugin
+
 #endif  // NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_FILE_DOWNLOADER_H_

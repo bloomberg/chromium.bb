@@ -20,12 +20,12 @@
 
 namespace plugin {
 
-void FileDownloader::Initialize(Plugin* instance) {
-  PLUGIN_PRINTF(("FileDownloader::FileDownloader (this=%p)\n",
-                 static_cast<void*>(this)));
-  CHECK(instance != NULL);
-  CHECK(instance_ == NULL);  // Can only initialize once.
-  instance_ = instance;
+FileDownloader::FileDownloader(Plugin* instance)
+   : instance_(instance),
+     file_open_notify_callback_(pp::BlockUntilComplete()),
+     stream_finish_callback_(pp::BlockUntilComplete()),
+     mode_(DOWNLOAD_NONE),
+     data_stream_callback_source_(NULL) {
   callback_factory_.Initialize(this);
   temp_buffer_.resize(kTempBufferSize);
 }
@@ -40,7 +40,6 @@ bool FileDownloader::OpenStream(
     return false;
 
   status_code_ = -1;
-  url_ = url;
   file_open_notify_callback_ = callback;
   mode_ = DOWNLOAD_TO_BUFFER_AND_STREAM;
   pp::URLRequestInfo url_request(instance_);
@@ -63,7 +62,7 @@ bool FileDownloader::OpenStream(
   url_request.SetRecordDownloadProgress(true);
 
   // Prepare the url request.
-  url_request.SetURL(url_);
+  url_request.SetURL(url);
 
   // Request asynchronous download of the url providing an on-load callback.
   // As long as this step is guaranteed to be asynchronous, we can call
@@ -117,7 +116,7 @@ void FileDownloader::URLLoadStartNotify(int32_t pp_error) {
   file_open_notify_callback_.RunAndClear(PP_OK);
 }
 
-void FileDownloader::FinishStreaming(
+void FileDownloader::BeginStreaming(
     const pp::CompletionCallback& callback) {
   stream_finish_callback_ = callback;
 

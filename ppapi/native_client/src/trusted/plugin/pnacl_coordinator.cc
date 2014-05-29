@@ -336,8 +336,7 @@ void PnaclCoordinator::NexeReadDidOpen(int32_t pp_error) {
 
 void PnaclCoordinator::OpenBitcodeStream() {
   // Now open the pexe stream.
-  streaming_downloader_.reset(new FileDownloader());
-  streaming_downloader_->Initialize(plugin_);
+  streaming_downloader_.reset(new FileDownloader(plugin_));
   // Mark the request as requesting a PNaCl bitcode file,
   // so that component updater can detect this user action.
   streaming_downloader_->set_request_headers(
@@ -474,12 +473,12 @@ void PnaclCoordinator::NexeFdDidOpen(int32_t pp_error) {
     invalid_desc_wrapper_.reset(plugin_->wrapper_factory()->MakeInvalid());
 
     // Meanwhile, a miss means we know we need to stream the bitcode, so stream
-    // the rest of it now. (Calling FinishStreaming means that the downloader
+    // the rest of it now. (Calling BeginStreaming means that the downloader
     // will begin handing data to the coordinator, which is safe any time after
     // the translate_thread_ object has been initialized).
     pp::CompletionCallback finish_cb = callback_factory_.NewCallback(
         &PnaclCoordinator::BitcodeStreamDidFinish);
-    streaming_downloader_->FinishStreaming(finish_cb);
+    streaming_downloader_->BeginStreaming(finish_cb);
 
     if (num_object_files_opened_ == split_module_count_) {
       // Open the nexe file for connecting ld and sel_ldr.
