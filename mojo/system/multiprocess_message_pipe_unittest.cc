@@ -326,14 +326,7 @@ MOJO_MULTIPROCESS_TEST_CHILD_MAIN(CheckPlatformHandleFile) {
 }
 
 #if defined(OS_POSIX)
-#if defined(OS_MACOSX)
-// TODO(vtl): Apparently, cmsgs on SOCK_STREAM AF_UNIX sockets don't work the
-// way I thought they work, at least on Mac. (The non-control data gets merged
-// with subsequent data.)
-#define MAYBE_PlatformHandlePassing DISABLED_PlatformHandlePassing
-#else
 #define MAYBE_PlatformHandlePassing PlatformHandlePassing
-#endif
 #else
 // Not yet implemented (on Windows).
 #define MAYBE_PlatformHandlePassing DISABLED_PlatformHandlePassing
