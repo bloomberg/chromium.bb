@@ -380,7 +380,6 @@ MetricsService::MetricsService(metrics::MetricsStateManager* state_manager,
       has_initial_stability_log_(false),
       idle_since_last_transmission_(false),
       session_id_(-1),
-      next_window_id_(0),
       self_ptr_factory_(this),
       state_saver_factory_(this),
       waiting_for_asynchronous_reporting_step_(false) {

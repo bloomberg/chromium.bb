@@ -472,13 +472,6 @@ class MetricsService
   // A number that identifies the how many times the app has been launched.
   int session_id_;
 
-  // Maps WebContentses (corresponding to tabs) or Browsers (corresponding to
-  // Windows) to a unique integer that we will use to identify them.
-  // |next_window_id_| is used to track which IDs we have used so far.
-  typedef std::map<uintptr_t, int> WindowMap;
-  WindowMap window_map_;
-  int next_window_id_;
-
   // Weak pointers factory used to post task on different threads. All weak
   // pointers managed by this factory have the same lifetime as MetricsService.
   base::WeakPtrFactory<MetricsService> self_ptr_factory_;
