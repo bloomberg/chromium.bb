@@ -151,7 +151,8 @@ void ChromeMidiPermissionContext::RequestMidiSysExPermission(
   if (!web_contents)
     return;
 
-  const PermissionRequestID id(render_process_id, render_view_id, bridge_id, 0);
+  const PermissionRequestID id(
+      render_process_id, render_view_id, bridge_id, GURL());
 
   GURL embedder = web_contents->GetURL();
   // |requesting_frame| can be empty and invalid when the frame is a local
@@ -176,7 +177,8 @@ void ChromeMidiPermissionContext::CancelMidiSysExPermissionRequest(
     int bridge_id,
     const GURL& requesting_frame) {
   CancelPendingInfobarRequest(
-      PermissionRequestID(render_process_id, render_view_id, bridge_id, 0));
+      PermissionRequestID(
+          render_process_id, render_view_id, bridge_id, GURL()));
 }
 
 void ChromeMidiPermissionContext::DecidePermission(

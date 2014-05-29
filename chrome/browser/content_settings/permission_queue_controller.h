@@ -41,9 +41,6 @@ class PermissionQueueController : public content::NotificationObserver {
   // Cancels a specific infobar request.
   void CancelInfoBarRequest(const PermissionRequestID& id);
 
-  // Cancels all infobar requests that match |group_id|.
-  void CancelInfoBarRequests(int group_id);
-
   // Called by the InfoBarDelegate to notify permission has been set.
   // It'll notify and dismiss any other pending InfoBar request for the same
   // |requesting_frame| and embedder.

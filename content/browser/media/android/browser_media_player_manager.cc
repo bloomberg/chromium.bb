@@ -633,8 +633,6 @@ void BrowserMediaPlayerManager::OnCreateSession(
   context->RequestProtectedMediaIdentifierPermission(
       web_contents()->GetRenderProcessHost()->GetID(),
       web_contents()->GetRenderViewHost()->GetRoutingID(),
-      static_cast<int>(session_id),
-      cdm_id,
       iter->second,
       base::Bind(&BrowserMediaPlayerManager::CreateSessionIfPermitted,
                  weak_ptr_factory_.GetWeakPtr(),
@@ -698,7 +696,14 @@ void BrowserMediaPlayerManager::OnDestroyCdm(int cdm_id) {
 void BrowserMediaPlayerManager::CancelAllPendingSessionCreations(int cdm_id) {
   BrowserContext* context =
       web_contents()->GetRenderProcessHost()->GetBrowserContext();
-  context->CancelProtectedMediaIdentifierPermissionRequests(cdm_id);
+  std::map<int, GURL>::const_iterator iter =
+      cdm_security_origin_map_.find(cdm_id);
+  if (iter == cdm_security_origin_map_.end())
+    return;
+  context->CancelProtectedMediaIdentifierPermissionRequests(
+      web_contents()->GetRenderProcessHost()->GetID(),
+      web_contents()->GetRenderViewHost()->GetRoutingID(),
+      iter->second);
 }
 
 void BrowserMediaPlayerManager::AddPlayer(MediaPlayerAndroid* player) {

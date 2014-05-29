@@ -119,16 +119,16 @@ void TestBrowserContext::CancelMidiSysExPermissionRequest(
 void TestBrowserContext::RequestProtectedMediaIdentifierPermission(
     int render_process_id,
     int render_view_id,
-    int bridge_id,
-    int group_id,
-    const GURL& requesting_frame,
+    const GURL& origin,
     const ProtectedMediaIdentifierPermissionCallback& callback) {
   // Always reject requests for testing.
   callback.Run(false);
 }
 
 void TestBrowserContext::CancelProtectedMediaIdentifierPermissionRequests(
-    int group_id) {
+    int render_process_id,
+    int render_view_id,
+    const GURL& origin) {
 }
 
 ResourceContext* TestBrowserContext::GetResourceContext() {

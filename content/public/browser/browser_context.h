@@ -157,14 +157,14 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
   virtual void RequestProtectedMediaIdentifierPermission(
       int render_process_id,
       int render_view_id,
-      int bridge_id,
-      int group_id,
-      const GURL& requesting_frame,
+      const GURL& origin,
       const ProtectedMediaIdentifierPermissionCallback& callback) = 0;
 
   // Cancels pending protected media identifier permission requests.
   virtual void CancelProtectedMediaIdentifierPermissionRequests(
-      int group_id) = 0;
+      int render_process_id,
+      int render_view_id,
+      const GURL& origin) = 0;
 
   // Returns the resource context.
   virtual ResourceContext* GetResourceContext() = 0;

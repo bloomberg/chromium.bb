@@ -206,15 +206,15 @@ void ShellBrowserContext::CancelMidiSysExPermissionRequest(
 void ShellBrowserContext::RequestProtectedMediaIdentifierPermission(
     int render_process_id,
     int render_view_id,
-    int bridge_id,
-    int group_id,
-    const GURL& requesting_frame,
+    const GURL& origin,
     const ProtectedMediaIdentifierPermissionCallback& callback) {
   callback.Run(true);
 }
 
 void ShellBrowserContext::CancelProtectedMediaIdentifierPermissionRequests(
-    int group_id) {
+    int render_process_id,
+    int render_view_id,
+    const GURL& origin) {
 }
 
 net::URLRequestContextGetter*

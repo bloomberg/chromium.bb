@@ -10,18 +10,19 @@
 PermissionRequestID::PermissionRequestID(int render_process_id,
                                          int render_view_id,
                                          int bridge_id,
-                                         int group_id)
+                                         const GURL& origin)
     : render_process_id_(render_process_id),
       render_view_id_(render_view_id),
       bridge_id_(bridge_id),
-      group_id_(group_id) {
+      origin_(origin) {
 }
 
 PermissionRequestID::~PermissionRequestID() {
 }
 
 bool PermissionRequestID::Equals(const PermissionRequestID& other) const {
-  return IsForSameTabAs(other) && (bridge_id_ == other.bridge_id_);
+  return IsForSameTabAs(other) && (bridge_id_ == other.bridge_id_) &&
+      (origin_ == other.origin());
 }
 
 bool PermissionRequestID::IsForSameTabAs(
@@ -31,9 +32,9 @@ bool PermissionRequestID::IsForSameTabAs(
 }
 
 std::string PermissionRequestID::ToString() const {
-  return base::StringPrintf("%d,%d,%d,%d",
+  return base::StringPrintf("%d,%d,%d,%s",
                             render_process_id_,
                             render_view_id_,
                             bridge_id_,
-                            group_id_);
+                            origin_.spec().c_str());
 }

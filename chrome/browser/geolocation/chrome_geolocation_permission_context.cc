@@ -156,7 +156,8 @@ void ChromeGeolocationPermissionContext::RequestGeolocationPermission(
 
   int render_process_id = web_contents->GetRenderProcessHost()->GetID();
   int render_view_id = web_contents->GetRenderViewHost()->GetRoutingID();
-  const PermissionRequestID id(render_process_id, render_view_id, bridge_id, 0);
+  const PermissionRequestID id(
+      render_process_id, render_view_id, bridge_id, GURL());
   ExtensionRegistry* extension_registry = ExtensionRegistry::Get(profile_);
   if (extension_registry) {
     const extensions::Extension* extension =
@@ -213,7 +214,7 @@ void ChromeGeolocationPermissionContext::CancelGeolocationPermissionRequest(
   int render_process_id = web_contents->GetRenderProcessHost()->GetID();
   int render_view_id = web_contents->GetRenderViewHost()->GetRoutingID();
   CancelPendingInfobarRequest(PermissionRequestID(
-      render_process_id, render_view_id, bridge_id, 0));
+      render_process_id, render_view_id, bridge_id, GURL()));
 }
 
 void ChromeGeolocationPermissionContext::DecidePermission(

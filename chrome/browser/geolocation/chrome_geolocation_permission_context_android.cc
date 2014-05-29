@@ -13,7 +13,7 @@
 
 ChromeGeolocationPermissionContextAndroid::
 PermissionRequestInfo::PermissionRequestInfo()
-    : id(0, 0, 0, 0),
+    : id(0, 0, 0, GURL()),
       user_gesture(false) {}
 
 ChromeGeolocationPermissionContextAndroid::

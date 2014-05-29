@@ -182,36 +182,6 @@ void PermissionQueueController::CancelInfoBarRequest(
   }
 }
 
-void PermissionQueueController::CancelInfoBarRequests(int group_id) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-
-  // If we remove an infobar in the following loop, the next pending infobar
-  // will be shown. Therefore, we erase all the pending infobars first and
-  // remove an infobar later.
-  PendingInfobarRequests infobar_requests_to_cancel;
-  for (PendingInfobarRequests::iterator i = pending_infobar_requests_.begin();
-       i != pending_infobar_requests_.end();) {
-    if (i->id().group_id() == group_id) {
-      if (i->has_infobar()) {
-        // |i| will be erased from |pending_infobar_requests_|
-        // in |PermissionQueueController::Observe| when the infobar is removed.
-        infobar_requests_to_cancel.push_back(*i);
-        ++i;
-      } else {
-        i = pending_infobar_requests_.erase(i);
-      }
-    } else {
-      ++i;
-    }
-  }
-
-  for (PendingInfobarRequests::iterator i = infobar_requests_to_cancel.begin();
-       i != infobar_requests_to_cancel.end();
-       ++i) {
-    GetInfoBarService(i->id())->RemoveInfoBar(i->infobar());
-  }
-}
-
 void PermissionQueueController::OnPermissionSet(
     const PermissionRequestID& id,
     const GURL& requesting_frame,
