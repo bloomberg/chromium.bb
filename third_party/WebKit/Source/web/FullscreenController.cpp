@@ -83,6 +83,8 @@ void FullscreenController::didEnterFullScreen()
                 m_exitFullscreenScrollOffset = m_webViewImpl->mainFrame()->scrollOffset();
                 m_exitFullscreenPinchViewportOffset = m_webViewImpl->pinchViewportOffset();
                 m_webViewImpl->setPageScaleFactor(1.0f);
+                m_webViewImpl->setMainFrameScrollOffset(IntPoint());
+                m_webViewImpl->setPinchViewportOffset(FloatPoint());
             }
 
             FullscreenElementStack::from(*doc).webkitDidEnterFullScreenForElement(0);

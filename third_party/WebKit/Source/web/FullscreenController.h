@@ -57,6 +57,8 @@ public:
     void enterFullScreenForElement(WebCore::Element*);
     void exitFullScreenForElement(WebCore::Element*);
 
+    bool isFullscreen() { return m_fullScreenFrame; }
+
 protected:
     explicit FullscreenController(WebViewImpl*);
 

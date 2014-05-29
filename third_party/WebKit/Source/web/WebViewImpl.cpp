@@ -1595,7 +1595,7 @@ void WebViewImpl::resize(const WebSize& newSize)
     m_size = newSize;
 
     bool shouldAnchorAndRescaleViewport = settings()->mainFrameResizesAreOrientationChanges()
-        && oldSize.width && oldContentsWidth && newSize.width != oldSize.width;
+        && oldSize.width && oldContentsWidth && newSize.width != oldSize.width && !m_fullscreenController->isFullscreen();
 
     ViewportAnchor viewportAnchor(&mainFrameImpl()->frame()->eventHandler());
     if (shouldAnchorAndRescaleViewport) {
