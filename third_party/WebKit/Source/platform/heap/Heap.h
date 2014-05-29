@@ -946,6 +946,8 @@ public:
     // collection where threads are known to be at safe points.
     static void getStats(HeapStats*);
 
+    static void getHeapSpaceSize(uint64_t*, uint64_t*);
+
     static bool isConsistentForGC();
     static void makeConsistentForGC();
 

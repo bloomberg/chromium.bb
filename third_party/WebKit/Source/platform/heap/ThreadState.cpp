@@ -35,6 +35,7 @@
 #include "platform/heap/AddressSanitizer.h"
 #include "platform/heap/Handle.h"
 #include "platform/heap/Heap.h"
+#include "public/platform/Platform.h"
 #include "wtf/ThreadingPrimitives.h"
 
 #if OS(WIN)
@@ -818,6 +819,7 @@ void ThreadState::performPendingSweep()
         return;
 
     TRACE_EVENT0("Blink", "ThreadState::performPendingSweep");
+    double timeStamp = WTF::currentTimeMS();
     const char* samplingState = TRACE_EVENT_GET_SAMPLING_STATE();
     if (isMainThread())
         TRACE_EVENT_SET_SAMPLING_STATE("Blink", "BlinkGCSweeping");
@@ -836,6 +838,10 @@ void ThreadState::performPendingSweep()
     m_sweepInProgress = false;
     clearGCRequested();
     clearSweepRequested();
+
+    if (blink::Platform::current()) {
+        blink::Platform::current()->histogramCustomCounts("BlinkGC.PerformPendingSweep", WTF::currentTimeMS() - timeStamp, 0, 10 * 1000, 50);
+    }
 
     if (isMainThread())
         TRACE_EVENT_SET_NONCONST_SAMPLING_STATE(samplingState);

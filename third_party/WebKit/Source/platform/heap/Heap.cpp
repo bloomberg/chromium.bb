@@ -33,6 +33,7 @@
 
 #include "platform/TraceEvent.h"
 #include "platform/heap/ThreadState.h"
+#include "public/platform/Platform.h"
 #include "wtf/Assertions.h"
 #include "wtf/LeakAnnotations.h"
 #include "wtf/PassOwnPtr.h"
@@ -1648,6 +1649,7 @@ void Heap::collectGarbage(ThreadState::StackState stackState)
 
     TRACE_EVENT0("Blink", "Heap::collectGarbage");
     TRACE_EVENT_SCOPED_SAMPLING_STATE("Blink", "BlinkGC");
+    double timeStamp = WTF::currentTimeMS();
 #if ENABLE(GC_TRACING)
     static_cast<MarkingVisitor*>(s_markingVisitor)->objectGraph().clear();
 #endif
@@ -1674,6 +1676,15 @@ void Heap::collectGarbage(ThreadState::StackState stackState)
 #if ENABLE(GC_TRACING)
     static_cast<MarkingVisitor*>(s_markingVisitor)->reportStats();
 #endif
+
+    if (blink::Platform::current()) {
+        uint64_t objectSpaceSize;
+        uint64_t allocatedSpaceSize;
+        getHeapSpaceSize(&objectSpaceSize, &allocatedSpaceSize);
+        blink::Platform::current()->histogramCustomCounts("BlinkGC.CollectGarbage", WTF::currentTimeMS() - timeStamp, 0, 10 * 1000, 50);
+        blink::Platform::current()->histogramCustomCounts("BlinkGC.TotalObjectSpace", objectSpaceSize / 1024, 0, 4 * 1024 * 1024, 50);
+        blink::Platform::current()->histogramCustomCounts("BlinkGC.TotalAllocatedSpace", allocatedSpaceSize / 1024, 0, 4 * 1024 * 1024, 50);
+    }
 }
 
 void Heap::collectAllGarbage()
@@ -1690,6 +1701,19 @@ void Heap::collectAllGarbage()
 void Heap::setForcePreciseGCForTesting()
 {
     ThreadState::current()->setForcePreciseGCForTesting(true);
+}
+
+void Heap::getHeapSpaceSize(uint64_t* objectSpaceSize, uint64_t* allocatedSpaceSize)
+{
+    *objectSpaceSize = 0;
+    *allocatedSpaceSize = 0;
+    ASSERT(ThreadState::isAnyThreadInGC());
+    ThreadState::AttachedThreadStateSet& threads = ThreadState::attachedThreads();
+    typedef ThreadState::AttachedThreadStateSet::iterator ThreadStateIterator;
+    for (ThreadStateIterator it = threads.begin(), end = threads.end(); it != end; ++it) {
+        *objectSpaceSize += (*it)->stats().totalObjectSpace();
+        *allocatedSpaceSize += (*it)->stats().totalAllocatedSpace();
+    }
 }
 
 void Heap::getStats(HeapStats* stats)
