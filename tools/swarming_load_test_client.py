@@ -99,7 +99,7 @@ def trigger_task(
   for key in result['test_keys']:
     key.pop('config_name')
     test_keys.append(key.pop('test_key'))
-    assert re.match('[0-9a-f]+-1', test_keys[-1]), test_keys
+    assert re.match('[0-9a-f]+', test_keys[-1]), test_keys
   expected = {
     u'test_case_name': unicode(name),
     u'test_keys': [
@@ -117,7 +117,7 @@ def trigger_task(
     new_test_keys = swarming.get_task_keys(swarming_url, name)
     if not new_test_keys:
       return 'no_test_keys'
-    assert test_keys == new_test_keys, test_keys
+    assert test_keys == new_test_keys, (test_keys, new_test_keys)
     out = [
       output
       for _index, output in swarming.yield_results(
