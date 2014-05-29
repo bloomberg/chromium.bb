@@ -36,6 +36,10 @@ bool PluginPermissionHelper::OnMessageReceived(
                         OnBlockedUnauthorizedPlugin)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_NPAPINotSupported,
                         OnNPAPINotSupported)
+#if defined(ENABLE_PLUGIN_INSTALLATION)
+    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_FindMissingPlugin,
+                        OnFindMissingPlugin)
+#endif
     IPC_MESSAGE_UNHANDLED(return false)
   IPC_END_MESSAGE_MAP()
 
@@ -49,8 +53,6 @@ bool PluginPermissionHelper::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_OpenAboutPlugins,
                         OnOpenAboutPlugins)
 #if defined(ENABLE_PLUGIN_INSTALLATION)
-    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_FindMissingPlugin,
-                        OnFindMissingPlugin)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_RemovePluginPlaceholderHost,
                         OnRemovePluginPlaceholderHost)
 #endif
