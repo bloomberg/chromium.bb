@@ -8,17 +8,11 @@
 #include <string>
 #include <vector>
 
-#include "base/auto_reset.h"
-#include "base/bind.h"
-#include "base/bind_helpers.h"
-#include "base/callback.h"
 #include "base/command_line.h"
-#include "base/message_loop/message_loop.h"
 #include "base/pickle.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "grit/ui_strings.h"
-#include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
@@ -36,7 +30,6 @@
 #include "ui/views/ime/mock_input_method.h"
 #include "ui/views/test/test_views_delegate.h"
 #include "ui/views/test/views_test_base.h"
-#include "ui/views/widget/native_widget_private.h"
 #include "ui/views/widget/widget.h"
 #include "url/gurl.h"
 
@@ -81,20 +74,6 @@ class TestTextfield : public views::Textfield {
   bool key_received_;
 
   DISALLOW_COPY_AND_ASSIGN(TestTextfield);
-};
-
-// A helper class for use with ui::TextInputClient::GetTextFromRange().
-class GetTextHelper {
- public:
-  GetTextHelper() {}
-
-  void set_text(const base::string16& text) { text_ = text; }
-  const base::string16& text() const { return text_; }
-
- private:
-  base::string16 text_;
-
-  DISALLOW_COPY_AND_ASSIGN(GetTextHelper);
 };
 
 // Convenience to make constructing a GestureEvent simpler.
@@ -1103,15 +1082,9 @@ TEST_F(TextfieldTest, TextInputClientTest) {
   EXPECT_TRUE(client->GetSelectionRange(&range));
   EXPECT_EQ(gfx::Range(1, 4), range);
 
-  // This code can't be compiled because of a bug in base::Callback.
-#if 0
-  GetTextHelper helper;
-  base::Callback<void(base::string16)> callback =
-      base::Bind(&GetTextHelper::set_text, base::Unretained(&helper));
-
-  EXPECT_TRUE(client->GetTextFromRange(range, callback));
-  EXPECT_STR_EQ("123", helper.text());
-#endif
+  base::string16 substring;
+  EXPECT_TRUE(client->GetTextFromRange(range, &substring));
+  EXPECT_STR_EQ("123", substring);
 
   EXPECT_TRUE(client->DeleteRange(range));
   EXPECT_STR_EQ("0456789", textfield_->text());
