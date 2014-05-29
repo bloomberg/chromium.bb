@@ -18,9 +18,10 @@
     "storage",
     "tabs",
     "webstorePrivate",
-    // TODO(vadimt): Replace <all_urls> with real URL patterns once we know
-    // them.
-    "<all_urls>"
+    "*://*.google.com/*",
+    "*://*.gstatic.com/*",
+    "https://*.googleapis.com/chromenow/v1/*",
+    "https://*.googleusercontent.com/*"
   ],
   "optional_permissions": ["background"],
   "manifest_version": 2,
