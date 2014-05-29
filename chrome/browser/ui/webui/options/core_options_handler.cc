@@ -25,7 +25,11 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_ui.h"
+#include "extensions/browser/extension_pref_value_map.h"
+#include "extensions/browser/extension_pref_value_map_factory.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/common/extension.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
@@ -49,6 +53,24 @@ bool AllowMetricsReportingChange(const base::Value* to_value) {
   }
 
   return enable == OptionsUtil::ResolveMetricsReportingEnabled(enable);
+}
+
+// Whether "controlledBy" property of pref value sent to options web UI needs to
+// be set to "extension" when the preference is controlled by an extension.
+bool CanSetExtensionControlledPrefValue(
+    const PrefService::Preference* preference) {
+#if defined(OS_WIN)
+  // These have more obvious UI than the standard one for extension controlled
+  // values (an extension puzzle piece) on the settings page. To avoiding
+  // showing the extension puzzle piece for these settings, their "controlledBy"
+  // value should never be set to "extension".
+  return preference->name() != prefs::kURLsToRestoreOnStartup &&
+         preference->name() != prefs::kRestoreOnStartup &&
+         preference->name() != prefs::kHomePage &&
+         preference->name() != prefs::kHomePageIsNewTabPage;
+#else
+  return true;
+#endif
 }
 
 }  // namespace
@@ -356,14 +378,30 @@ base::Value* CoreOptionsHandler::CreateValueForPref(
   if (!controlling_pref)
     controlling_pref = pref;
 
-  // We don't show a UI here for extension controlled values because we opted to
-  // show a more obvious UI than an extension puzzle piece on the settings page.
   base::DictionaryValue* dict = new base::DictionaryValue;
   dict->Set("value", pref->GetValue()->DeepCopy());
-  if (controlling_pref->IsManaged())
+  if (controlling_pref->IsManaged()) {
     dict->SetString("controlledBy", "policy");
-  else if (controlling_pref->IsRecommended())
+  } else if (controlling_pref->IsExtensionControlled() &&
+             CanSetExtensionControlledPrefValue(controlling_pref)) {
+    Profile* profile = Profile::FromWebUI(web_ui());
+    ExtensionPrefValueMap* extension_pref_value_map =
+        ExtensionPrefValueMapFactory::GetForBrowserContext(profile);
+    std::string extension_id =
+        extension_pref_value_map->GetExtensionControllingPref(
+            controlling_pref->name());
+
+    const extensions::Extension* extension =
+        extensions::ExtensionRegistry::Get(profile)->GetExtensionById(
+            extension_id, extensions::ExtensionRegistry::EVERYTHING);
+    if (extension) {
+      dict->SetString("controlledBy", "extension");
+      dict->Set("extension",
+                extensions::util::GetExtensionInfo(extension).release());
+    }
+  } else if (controlling_pref->IsRecommended()) {
     dict->SetString("controlledBy", "recommended");
+  }
 
   const base::Value* recommended_value =
       controlling_pref->GetRecommendedValue();
