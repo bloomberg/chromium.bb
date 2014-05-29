@@ -1958,6 +1958,7 @@ void LayerTreeHostImpl::EnforceZeroBudget(bool zero_budget) {
 
 bool LayerTreeHostImpl::InitializeRenderer(
     scoped_ptr<OutputSurface> output_surface) {
+  TRACE_EVENT0("cc", "LayerTreeHostImpl::InitializeRenderer");
 #if DCHECK_IS_ON
   DCHECK(!renderer_ || did_lose_called_);
 #endif

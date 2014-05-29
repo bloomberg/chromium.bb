@@ -128,6 +128,7 @@ void CommandBufferProxyImpl::SetChannelErrorCallback(
 }
 
 bool CommandBufferProxyImpl::Initialize() {
+  TRACE_EVENT0("gpu", "CommandBufferProxyImpl::Initialize");
   shared_state_shm_.reset(channel_->factory()->AllocateSharedMemory(
       sizeof(*shared_state())).release());
   if (!shared_state_shm_)

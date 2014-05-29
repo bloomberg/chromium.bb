@@ -144,6 +144,7 @@ bool GLES2Implementation::Initialize(
     unsigned int min_transfer_buffer_size,
     unsigned int max_transfer_buffer_size,
     unsigned int mapped_memory_limit) {
+  TRACE_EVENT0("gpu", "GLES2Implementation::Initialize");
   DCHECK_GE(starting_transfer_buffer_size, min_transfer_buffer_size);
   DCHECK_LE(starting_transfer_buffer_size, max_transfer_buffer_size);
   DCHECK_GE(min_transfer_buffer_size, kStartingOffset);
@@ -215,6 +216,7 @@ bool GLES2Implementation::Initialize(
 }
 
 bool GLES2Implementation::QueryAndCacheStaticState() {
+  TRACE_EVENT0("gpu", "GLES2Implementation::QueryAndCacheStaticState");
   // Setup query for multiple GetIntegerv's
   static const GLenum pnames[] = {
     GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS,
@@ -375,6 +377,8 @@ void GLES2Implementation::SignalQuery(uint32 query,
 }
 
 void GLES2Implementation::SetSurfaceVisible(bool visible) {
+  TRACE_EVENT1(
+      "gpu", "GLES2Implementation::SetSurfaceVisible", "visible", visible);
   // TODO(piman): This probably should be ShallowFlushCHROMIUM().
   Flush();
   gpu_control_->SetSurfaceVisible(visible);

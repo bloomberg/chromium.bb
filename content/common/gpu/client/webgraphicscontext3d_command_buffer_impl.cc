@@ -181,6 +181,7 @@ bool WebGraphicsContext3DCommandBufferImpl::MaybeInitializeGL() {
     };
     GLint pvalues[pcount] = { 0, 0, 0, 0 };
 
+    TRACE_EVENT0("gpu", "WebGfxCtx3DCmdBfrImpl initializing actual attributes");
     gl_->GetMultipleIntegervCHROMIUM(pnames, pcount,
                                      pvalues, sizeof(pvalues));
 
@@ -257,6 +258,7 @@ bool WebGraphicsContext3DCommandBufferImpl::InitializeCommandBuffer(
 }
 
 bool WebGraphicsContext3DCommandBufferImpl::CreateContext(bool onscreen) {
+  TRACE_EVENT0("gpu", "WebGfxCtx3DCmdBfrImpl::CreateContext");
   // Ensure the gles2 library is initialized first in a thread safe way.
   g_gles2_initializer.Get();
 
