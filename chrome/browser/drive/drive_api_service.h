@@ -88,10 +88,10 @@ class DriveAPIService : public DriveServiceInterface,
       const google_apis::GetResourceListCallback& callback) OVERRIDE;
   virtual google_apis::CancelCallback GetChangeList(
       int64 start_changestamp,
-      const google_apis::GetResourceListCallback& callback) OVERRIDE;
+      const google_apis::ChangeListCallback& callback) OVERRIDE;
   virtual google_apis::CancelCallback GetRemainingChangeList(
       const GURL& next_link,
-      const google_apis::GetResourceListCallback& callback) OVERRIDE;
+      const google_apis::ChangeListCallback& callback) OVERRIDE;
   virtual google_apis::CancelCallback GetRemainingFileList(
       const GURL& next_link,
       const google_apis::GetResourceListCallback& callback) OVERRIDE;

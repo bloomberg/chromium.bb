@@ -480,7 +480,7 @@ void APIUtil::ListChanges(int64 start_changestamp,
 
   drive_service_->GetChangeList(
       start_changestamp,
-      base::Bind(&APIUtil::DidGetResourceList, AsWeakPtr(), callback));
+      base::Bind(&APIUtil::DidGetChangeList, AsWeakPtr(), callback));
 }
 
 void APIUtil::ContinueListing(const GURL& next_link,
@@ -673,6 +673,24 @@ void APIUtil::OnConnectionTypeChanged(
   // TODO(kinuko): Check the uploader behavior if it's the expected behavior
   // (http://crbug.com/223818)
   CancelAllUploads(google_apis::GDATA_NO_CONNECTION);
+}
+
+void APIUtil::DidGetChangeList(
+    const ResourceListCallback& callback,
+    google_apis::GDataErrorCode error,
+    scoped_ptr<google_apis::ChangeList> change_list) {
+  DCHECK(CalledOnValidThread());
+
+  if (error != google_apis::HTTP_SUCCESS) {
+    DVLOG(2) << "Error on listing changes: " << error;
+    callback.Run(error, scoped_ptr<google_apis::ResourceList>());
+    return;
+  }
+
+  DVLOG(2) << "Got change list";
+  DCHECK(change_list);
+  callback.Run(error,
+               drive::util::ConvertChangeListToResourceList(*change_list));
 }
 
 void APIUtil::DidGetResourceList(

@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/format_macros.h"
 #include "base/location.h"
-#include "chrome/browser/drive/drive_api_util.h"
 #include "chrome/browser/drive/drive_service_interface.h"
 #include "chrome/browser/sync_file_system/drive_backend/drive_backend_util.h"
 #include "chrome/browser/sync_file_system/drive_backend/metadata_database.h"
@@ -22,22 +21,6 @@
 
 namespace sync_file_system {
 namespace drive_backend {
-
-namespace {
-
-scoped_ptr<google_apis::ChangeResource> ConvertResourceEntryToChangeResource(
-    const google_apis::ResourceEntry& entry) {
-  scoped_ptr<google_apis::ChangeResource> out(new google_apis::ChangeResource);
-  out->set_file_id(entry.resource_id());
-  if (!entry.deleted())
-    out->set_file(drive::util::ConvertResourceEntryToFileResource(entry));
-  out->set_change_id(entry.changestamp());
-  out->set_deleted(entry.deleted());
-
-  return out.Pass();
-}
-
-}  // namespace
 
 ListChangesTask::ListChangesTask(SyncEngineContext* sync_context)
     : sync_context_(sync_context),
@@ -76,7 +59,7 @@ void ListChangesTask::StartListing(scoped_ptr<SyncTaskToken> token) {
 void ListChangesTask::DidListChanges(
     scoped_ptr<SyncTaskToken> token,
     google_apis::GDataErrorCode error,
-    scoped_ptr<google_apis::ResourceList> resource_list) {
+    scoped_ptr<google_apis::ChangeList> change_list) {
   SyncStatusCode status = GDataErrorCodeToSyncStatusCode(error);
   if (status != SYNC_STATUS_OK) {
     util::Log(logging::LOG_VERBOSE, FROM_HERE,
@@ -86,7 +69,7 @@ void ListChangesTask::DidListChanges(
     return;
   }
 
-  if (!resource_list) {
+  if (!change_list) {
     NOTREACHED();
     util::Log(logging::LOG_VERBOSE, FROM_HERE,
               "[Changes] Got invalid change list.");
@@ -95,16 +78,16 @@ void ListChangesTask::DidListChanges(
     return;
   }
 
-  change_list_.reserve(change_list_.size() + resource_list->entries().size());
-  for (size_t i = 0; i < resource_list->entries().size(); ++i) {
-    change_list_.push_back(ConvertResourceEntryToChangeResource(
-        *resource_list->entries()[i]).release());
-  }
+  std::vector<google_apis::ChangeResource*> changes;
+  change_list->mutable_items()->release(&changes);
 
-  GURL next_feed;
-  if (resource_list->GetNextFeedURL(&next_feed)) {
+  change_list_.reserve(change_list_.size() + changes.size());
+  for (size_t i = 0; i < changes.size(); ++i)
+    change_list_.push_back(changes[i]);
+
+  if (!change_list->next_link().is_empty()) {
     drive_service()->GetRemainingChangeList(
-        next_feed,
+        change_list->next_link(),
         base::Bind(
             &ListChangesTask::DidListChanges,
             weak_ptr_factory_.GetWeakPtr(),
@@ -126,7 +109,7 @@ void ListChangesTask::DidListChanges(
       blocking_factor.Pass(),
       base::Bind(&ListChangesTask::CheckInChangeList,
                  weak_ptr_factory_.GetWeakPtr(),
-                 resource_list->largest_changestamp()));
+                 change_list->largest_change_id()));
 }
 
 void ListChangesTask::CheckInChangeList(int64 largest_change_id,

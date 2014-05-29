@@ -42,11 +42,11 @@ class DriveServiceWrapper : public base::SupportsWeakPtr<DriveServiceWrapper> {
 
   void GetChangeList(
       int64 start_changestamp,
-      const google_apis::GetResourceListCallback& callback);
+      const google_apis::ChangeListCallback& callback);
 
   void GetRemainingChangeList(
       const GURL& next_link,
-      const google_apis::GetResourceListCallback& callback);
+      const google_apis::ChangeListCallback& callback);
 
   void GetRemainingFileList(
       const GURL& next_link,

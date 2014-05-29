@@ -58,13 +58,13 @@ void DriveServiceWrapper::GetAboutResource(
 
 void DriveServiceWrapper::GetChangeList(
     int64 start_changestamp,
-    const google_apis::GetResourceListCallback& callback) {
+    const google_apis::ChangeListCallback& callback) {
   drive_service_->GetChangeList(start_changestamp, callback);
 }
 
 void DriveServiceWrapper::GetRemainingChangeList(
     const GURL& next_link,
-    const google_apis::GetResourceListCallback& callback) {
+    const google_apis::ChangeListCallback& callback) {
   drive_service_->GetRemainingChangeList(next_link, callback);
 }
 

@@ -111,7 +111,7 @@ google_apis::CancelCallback DriveServiceOnWorker::GetAboutResource(
 
 google_apis::CancelCallback DriveServiceOnWorker::GetChangeList(
     int64 start_changestamp,
-    const google_apis::GetResourceListCallback& callback) {
+    const google_apis::ChangeListCallback& callback) {
   ui_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&DriveServiceWrapper::GetChangeList,
@@ -127,7 +127,7 @@ google_apis::CancelCallback DriveServiceOnWorker::GetChangeList(
 
 google_apis::CancelCallback DriveServiceOnWorker::GetRemainingChangeList(
     const GURL& next_link,
-    const google_apis::GetResourceListCallback& callback) {
+    const google_apis::ChangeListCallback& callback) {
   ui_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&DriveServiceWrapper::GetRemainingChangeList,

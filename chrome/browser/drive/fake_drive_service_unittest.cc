@@ -24,6 +24,8 @@
 
 using google_apis::AboutResource;
 using google_apis::AppList;
+using google_apis::ChangeList;
+using google_apis::ChangeResource;
 using google_apis::GDATA_NO_CONNECTION;
 using google_apis::GDATA_OTHER_ERROR;
 using google_apis::GDataErrorCode;
@@ -374,19 +376,19 @@ TEST_F(FakeDriveServiceTest, GetChangeList_NoNewEntries) {
   ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
-  scoped_ptr<ResourceList> resource_list;
+  scoped_ptr<ChangeList> change_list;
   fake_service_.GetChangeList(
       fake_service_.about_resource().largest_change_id() + 1,
-      test_util::CreateCopyResultCallback(&error, &resource_list));
+      test_util::CreateCopyResultCallback(&error, &change_list));
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(HTTP_SUCCESS, error);
-  ASSERT_TRUE(resource_list);
+  ASSERT_TRUE(change_list);
   EXPECT_EQ(fake_service_.about_resource().largest_change_id(),
-            resource_list->largest_changestamp());
+            change_list->largest_change_id());
   // This should be empty as the latest changestamp was passed to
   // GetResourceList(), hence there should be no new entries.
-  EXPECT_EQ(0U, resource_list->entries().size());
+  EXPECT_EQ(0U, change_list->items().size());
   // It's considered loaded even if the result is empty.
   EXPECT_EQ(1, fake_service_.change_list_load_count());
 }
@@ -402,19 +404,20 @@ TEST_F(FakeDriveServiceTest, GetChangeList_WithNewEntry) {
 
   // Get the resource list newer than old_largest_change_id.
   GDataErrorCode error = GDATA_OTHER_ERROR;
-  scoped_ptr<ResourceList> resource_list;
+  scoped_ptr<ChangeList> change_list;
   fake_service_.GetChangeList(
       old_largest_change_id + 1,
-      test_util::CreateCopyResultCallback(&error, &resource_list));
+      test_util::CreateCopyResultCallback(&error, &change_list));
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(HTTP_SUCCESS, error);
-  ASSERT_TRUE(resource_list);
+  ASSERT_TRUE(change_list);
   EXPECT_EQ(fake_service_.about_resource().largest_change_id(),
-            resource_list->largest_changestamp());
+            change_list->largest_change_id());
   // The result should only contain the newly created directory.
-  ASSERT_EQ(1U, resource_list->entries().size());
-  EXPECT_EQ("new directory", resource_list->entries()[0]->title());
+  ASSERT_EQ(1U, change_list->items().size());
+  ASSERT_TRUE(change_list->items()[0]->file());
+  EXPECT_EQ("new directory", change_list->items()[0]->file()->title());
   EXPECT_EQ(1, fake_service_.change_list_load_count());
 }
 
@@ -423,14 +426,14 @@ TEST_F(FakeDriveServiceTest, GetChangeList_Offline) {
   fake_service_.set_offline(true);
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
-  scoped_ptr<ResourceList> resource_list;
+  scoped_ptr<ChangeList> change_list;
   fake_service_.GetChangeList(
       654321,  // start_changestamp
-      test_util::CreateCopyResultCallback(&error, &resource_list));
+      test_util::CreateCopyResultCallback(&error, &change_list));
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(GDATA_NO_CONNECTION, error);
-  EXPECT_FALSE(resource_list);
+  EXPECT_FALSE(change_list);
 }
 
 TEST_F(FakeDriveServiceTest, GetChangeList_DeletedEntry) {
@@ -449,22 +452,22 @@ TEST_F(FakeDriveServiceTest, GetChangeList_DeletedEntry) {
 
   // Get the resource list newer than old_largest_change_id.
   error = GDATA_OTHER_ERROR;
-  scoped_ptr<ResourceList> resource_list;
+  scoped_ptr<ChangeList> change_list;
   fake_service_.GetChangeList(
       old_largest_change_id + 1,
-      test_util::CreateCopyResultCallback(&error, &resource_list));
+      test_util::CreateCopyResultCallback(&error, &change_list));
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(HTTP_SUCCESS, error);
-  ASSERT_TRUE(resource_list);
+  ASSERT_TRUE(change_list);
   EXPECT_EQ(fake_service_.about_resource().largest_change_id(),
-            resource_list->largest_changestamp());
+            change_list->largest_change_id());
   // The result should only contain the deleted file.
-  ASSERT_EQ(1U, resource_list->entries().size());
-  const ResourceEntry& entry = *resource_list->entries()[0];
-  EXPECT_EQ("file:2_file_resource_id", entry.resource_id());
-  EXPECT_TRUE(entry.title().empty());
-  EXPECT_TRUE(entry.deleted());
+  ASSERT_EQ(1U, change_list->items().size());
+  const ChangeResource& item = *change_list->items()[0];
+  EXPECT_EQ("file:2_file_resource_id", item.file_id());
+  EXPECT_FALSE(item.file());
+  EXPECT_TRUE(item.is_deleted());
   EXPECT_EQ(1, fake_service_.change_list_load_count());
 }
 
@@ -483,25 +486,26 @@ TEST_F(FakeDriveServiceTest, GetChangeList_TrashedEntry) {
 
   // Get the resource list newer than old_largest_change_id.
   error = GDATA_OTHER_ERROR;
-  scoped_ptr<ResourceList> resource_list;
+  scoped_ptr<ChangeList> change_list;
   fake_service_.GetChangeList(
       old_largest_change_id + 1,
-      test_util::CreateCopyResultCallback(&error, &resource_list));
+      test_util::CreateCopyResultCallback(&error, &change_list));
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(HTTP_SUCCESS, error);
-  ASSERT_TRUE(resource_list);
+  ASSERT_TRUE(change_list);
   EXPECT_EQ(fake_service_.about_resource().largest_change_id(),
-            resource_list->largest_changestamp());
+            change_list->largest_change_id());
   // The result should only contain the trashed file.
-  ASSERT_EQ(1U, resource_list->entries().size());
-  const ResourceEntry& entry = *resource_list->entries()[0];
-  EXPECT_EQ("file:2_file_resource_id", entry.resource_id());
-  EXPECT_TRUE(entry.deleted());
+  ASSERT_EQ(1U, change_list->items().size());
+  const ChangeResource& item = *change_list->items()[0];
+  EXPECT_EQ("file:2_file_resource_id", item.file_id());
+  ASSERT_TRUE(item.file());
+  EXPECT_TRUE(item.file()->labels().is_trashed());
   EXPECT_EQ(1, fake_service_.change_list_load_count());
 }
 
-TEST_F(FakeDriveServiceTest, GetRemainingChangeList_GetAllResourceList) {
+TEST_F(FakeDriveServiceTest, GetRemainingFileList_GetAllResourceList) {
   ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
   fake_service_.set_default_max_results(6);
 
@@ -528,7 +532,7 @@ TEST_F(FakeDriveServiceTest, GetRemainingChangeList_GetAllResourceList) {
 
   error = GDATA_OTHER_ERROR;
   resource_list.reset();
-  fake_service_.GetRemainingChangeList(
+  fake_service_.GetRemainingFileList(
       next_url,
       test_util::CreateCopyResultCallback(&error, &resource_list));
   base::RunLoop().RunUntilIdle();
@@ -546,7 +550,7 @@ TEST_F(FakeDriveServiceTest, GetRemainingChangeList_GetAllResourceList) {
 
   error = GDATA_OTHER_ERROR;
   resource_list.reset();
-  fake_service_.GetRemainingChangeList(
+  fake_service_.GetRemainingFileList(
       next_url,
       test_util::CreateCopyResultCallback(&error, &resource_list));
   base::RunLoop().RunUntilIdle();
@@ -669,56 +673,51 @@ TEST_F(FakeDriveServiceTest, GetRemainingChangeList_GetChangeList) {
   }
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
-  scoped_ptr<ResourceList> resource_list;
+  scoped_ptr<ChangeList> change_list;
   fake_service_.GetChangeList(
       old_largest_change_id + 1,  // start_changestamp
-      test_util::CreateCopyResultCallback(&error, &resource_list));
+      test_util::CreateCopyResultCallback(&error, &change_list));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(HTTP_SUCCESS, error);
-  ASSERT_TRUE(resource_list);
+  ASSERT_TRUE(change_list);
 
   // Do some sanity check.
   // The number of results is 5 entries. Thus, it should split into three
   // chunks: 2, 2 and then 1.
-  EXPECT_EQ(2U, resource_list->entries().size());
+  EXPECT_EQ(2U, change_list->items().size());
   EXPECT_EQ(1, fake_service_.change_list_load_count());
 
   // Second page loading.
-  const google_apis::Link* next_link =
-      resource_list->GetLinkByType(Link::LINK_NEXT);
-  ASSERT_TRUE(next_link);
-  // Keep the next url before releasing the |resource_list|.
-  GURL next_url(next_link->href());
+  // Keep the next url before releasing the |change_list|.
+  GURL next_url = change_list->next_link();
 
   error = GDATA_OTHER_ERROR;
-  resource_list.reset();
+  change_list.reset();
   fake_service_.GetRemainingChangeList(
       next_url,
-      test_util::CreateCopyResultCallback(&error, &resource_list));
+      test_util::CreateCopyResultCallback(&error, &change_list));
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(HTTP_SUCCESS, error);
-  ASSERT_TRUE(resource_list);
+  ASSERT_TRUE(change_list);
 
-  EXPECT_EQ(2U, resource_list->entries().size());
+  EXPECT_EQ(2U, change_list->items().size());
   EXPECT_EQ(1, fake_service_.change_list_load_count());
 
   // Third page loading.
-  next_link = resource_list->GetLinkByType(Link::LINK_NEXT);
-  ASSERT_TRUE(next_link);
-  next_url = GURL(next_link->href());
+  next_url = change_list->next_link();
 
   error = GDATA_OTHER_ERROR;
-  resource_list.reset();
+  change_list.reset();
   fake_service_.GetRemainingChangeList(
       next_url,
-      test_util::CreateCopyResultCallback(&error, &resource_list));
+      test_util::CreateCopyResultCallback(&error, &change_list));
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(HTTP_SUCCESS, error);
-  ASSERT_TRUE(resource_list);
+  ASSERT_TRUE(change_list);
 
-  EXPECT_EQ(1U, resource_list->entries().size());
+  EXPECT_EQ(1U, change_list->items().size());
   EXPECT_EQ(1, fake_service_.change_list_load_count());
 }
 

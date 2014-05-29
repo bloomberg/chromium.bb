@@ -16,8 +16,8 @@ class DriveServiceInterface;
 }
 
 namespace google_apis {
+class ChangeList;
 class ChangeResource;
-class ResourceList;
 }
 
 namespace sync_file_system {
@@ -37,7 +37,7 @@ class ListChangesTask : public SyncTask {
   void StartListing(scoped_ptr<SyncTaskToken> token);
   void DidListChanges(scoped_ptr<SyncTaskToken> token,
                       google_apis::GDataErrorCode error,
-                      scoped_ptr<google_apis::ResourceList> resource_list);
+                      scoped_ptr<google_apis::ChangeList> change_list);
   void CheckInChangeList(int64 largest_change_id,
                          scoped_ptr<SyncTaskToken> token);
 

@@ -12,6 +12,7 @@ using google_apis::AppListCallback;
 using google_apis::AuthStatusCallback;
 using google_apis::AuthorizeAppCallback;
 using google_apis::CancelCallback;
+using google_apis::ChangeListCallback;
 using google_apis::DownloadActionCallback;
 using google_apis::EntryActionCallback;
 using google_apis::GetContentCallback;
@@ -74,11 +75,11 @@ CancelCallback DummyDriveService::SearchByTitle(
 
 CancelCallback DummyDriveService::GetChangeList(
     int64 start_changestamp,
-    const GetResourceListCallback& callback) { return CancelCallback(); }
+    const ChangeListCallback& callback) { return CancelCallback(); }
 
 CancelCallback DummyDriveService::GetRemainingChangeList(
     const GURL& next_link,
-    const GetResourceListCallback& callback) { return CancelCallback(); }
+    const ChangeListCallback& callback) { return CancelCallback(); }
 
 CancelCallback DummyDriveService::GetRemainingFileList(
     const GURL& next_link,

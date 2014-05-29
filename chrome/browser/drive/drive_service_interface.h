@@ -198,9 +198,9 @@ class DriveServiceInterface {
   // |callback| must not be null.
   virtual google_apis::CancelCallback GetChangeList(
       int64 start_changestamp,
-      const google_apis::GetResourceListCallback& callback) = 0;
+      const google_apis::ChangeListCallback& callback) = 0;
 
-  // The result of GetChangeList() and GetAllResourceList() may be paged.
+  // The result of GetChangeList() may be paged.
   // In such a case, a next link to fetch remaining result is returned.
   // The page token can be used for this method. |callback| will be called upon
   // completion.
@@ -208,12 +208,12 @@ class DriveServiceInterface {
   // |next_link| must not be empty. |callback| must not be null.
   virtual google_apis::CancelCallback GetRemainingChangeList(
       const GURL& next_link,
-      const google_apis::GetResourceListCallback& callback) = 0;
+      const google_apis::ChangeListCallback& callback) = 0;
 
-  // The result of GetResourceListInDirectory(), Search() and SearchByTitle()
-  // may be paged. In such a case, a next link to fetch remaining result is
-  // returned. The page token can be used for this method. |callback| will be
-  // called upon completion.
+  // The result of GetAllResourceList(), GetResourceListInDirectory(), Search()
+  // and SearchByTitle() may be paged. In such a case, a next link to fetch
+  // remaining result is returned. The page token can be used for this method.
+  // |callback| will be called upon completion.
   //
   // |next_link| must not be empty. |callback| must not be null.
   virtual google_apis::CancelCallback GetRemainingFileList(

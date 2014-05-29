@@ -130,10 +130,10 @@ class FakeDriveService : public DriveServiceInterface {
       const google_apis::GetResourceListCallback& callback) OVERRIDE;
   virtual google_apis::CancelCallback GetChangeList(
       int64 start_changestamp,
-      const google_apis::GetResourceListCallback& callback) OVERRIDE;
+      const google_apis::ChangeListCallback& callback) OVERRIDE;
   virtual google_apis::CancelCallback GetRemainingChangeList(
       const GURL& next_link,
-      const google_apis::GetResourceListCallback& callback) OVERRIDE;
+      const google_apis::ChangeListCallback& callback) OVERRIDE;
   virtual google_apis::CancelCallback GetRemainingFileList(
       const GURL& next_link,
       const google_apis::GetResourceListCallback& callback) OVERRIDE;
@@ -311,7 +311,7 @@ class FakeDriveService : public DriveServiceInterface {
       int start_offset,
       int max_results,
       int* load_counter,
-      const google_apis::GetResourceListCallback& callback);
+      const google_apis::ChangeListCallback& callback);
 
   // Returns new upload session URL.
   GURL GetNewUploadSessionUrl();

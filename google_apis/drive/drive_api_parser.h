@@ -601,12 +601,10 @@ class FileList {
 
   // Returns a set of files in this list.
   const ScopedVector<FileResource>& items() const { return items_; }
+  ScopedVector<FileResource>* mutable_items() { return &items_; }
 
   void set_next_link(const GURL& next_link) {
     next_link_ = next_link;
-  }
-  void set_items(ScopedVector<FileResource> items) {
-    items_ = items.Pass();
   }
 
  private:
@@ -715,15 +713,13 @@ class ChangeList {
 
   // Returns a set of changes in this list.
   const ScopedVector<ChangeResource>& items() const { return items_; }
+  ScopedVector<ChangeResource>* mutable_items() { return &items_; }
 
   void set_next_link(const GURL& next_link) {
     next_link_ = next_link;
   }
   void set_largest_change_id(int64 largest_change_id) {
     largest_change_id_ = largest_change_id;
-  }
-  void set_items(ScopedVector<ChangeResource> items) {
-    items_ = items.Pass();
   }
 
  private:
