@@ -7785,6 +7785,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_PPAPI_BROKER_TAB_LABEL" desc="Label for PPAPI broker tab on Content Settings dialog">
         Unsandboxed plug-in access
       </message>
+      <message name="IDS_PPAPI_BROKER_HEADER" desc="Label for PPAPI broker tab exception management page on Content Settings dialog">
+        Unsandboxed plug-in access exceptions
+      </message>
       <message name="IDS_PPAPI_BROKER_ALLOW_RADIO" desc="A radio button in Content Settings dialog to allow all sites to access the PPAPI broker.">
         Allow all sites to use a plug-in to access your computer
       </message>

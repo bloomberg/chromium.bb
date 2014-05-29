@@ -396,8 +396,7 @@ void ContentSettingsHandler::GetLocalizedValues(
     { "mediaPepperFlashGlobalPrivacyURL", IDS_FLASH_GLOBAL_PRIVACY_URL },
     { "mediaPepperFlashWebsitePrivacyURL", IDS_FLASH_WEBSITE_PRIVACY_URL },
     // PPAPI broker filter.
-    // TODO(bauerb): Use IDS_PPAPI_BROKER_HEADER.
-    { "ppapi-broker_header", IDS_PPAPI_BROKER_TAB_LABEL },
+    { "ppapi-broker_header", IDS_PPAPI_BROKER_HEADER },
     { "ppapiBrokerTabLabel", IDS_PPAPI_BROKER_TAB_LABEL },
     { "ppapi_broker_allow", IDS_PPAPI_BROKER_ALLOW_RADIO },
     { "ppapi_broker_ask", IDS_PPAPI_BROKER_ASK_RADIO },
