@@ -6,7 +6,6 @@
 #define PDF_DOCUMENT_LOADER_H_
 
 #include <list>
-#include <map>
 #include <string>
 #include <vector>
 
@@ -117,7 +116,6 @@ class DocumentLoader {
   bool is_multipart_;
   std::string multipart_boundary_;
   uint32 requests_count_;
-  std::map<uint32, uint32> chunk_size_table_;
   std::list<std::vector<unsigned char> > chunk_buffer_;
 };
 

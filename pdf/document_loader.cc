@@ -93,17 +93,6 @@ bool DocumentLoader::Init(const pp::URLLoader& loader,
   document_size_ = content_length;
   requests_count_ = 0;
 
-  // Document loading strategy.
-  // Following table shows the growth on the minimal request size depending
-  // on the number requests that has been made already.
-  chunk_size_table_[10] = 32*1024;
-  chunk_size_table_[20] = 64*1024;
-  chunk_size_table_[30] = 128*1024;
-  chunk_size_table_[40] = 256*1024;
-  chunk_size_table_[50] = 512*1024;
-  chunk_size_table_[60] = 1024*1024;
-  chunk_size_table_[70] = 2048*1024;
-
   // Enable partial loading only if file size is above the threshold.
   // It will allow avoiding latency for multiple requests.
   if (content_length > kMinFileSize &&
@@ -505,11 +494,12 @@ void DocumentLoader::ReadComplete() {
 }
 
 uint32 DocumentLoader::GetRequestSize() const {
-  std::map<uint32, uint32>::const_iterator iter =
-      chunk_size_table_.lower_bound(requests_count_);
-  if (iter == chunk_size_table_.end())
-    iter--;
-  return iter->second;
+  // Document loading strategy:
+  // For first 10 requests, we use 32k chunk sizes, for the next 10 requests we
+  // double the size (64k), and so on, until we cap max request size at 2M for
+  // 71 or more requests.
+  uint32 limited_count = std::min(std::max(requests_count_, 10u), 70u);
+  return 32*1024 * (1 << ((limited_count - 1) / 10u));
 }
 
 }  // namespace chrome_pdf
