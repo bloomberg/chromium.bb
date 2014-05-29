@@ -309,6 +309,10 @@ void OobeUI::HideScreen(WizardScreen* screen) {
   screen->Hide();
 }
 
+CoreOobeActor* OobeUI::GetCoreOobeActor() {
+  return core_handler_;
+}
+
 UpdateScreenActor* OobeUI::GetUpdateScreenActor() {
   return update_screen_handler_;
 }
