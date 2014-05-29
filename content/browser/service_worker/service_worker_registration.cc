@@ -36,6 +36,7 @@ ServiceWorkerRegistrationInfo ServiceWorkerRegistration::GetInfo() {
   return ServiceWorkerRegistrationInfo(
       script_url(),
       pattern(),
+      registration_id_,
       active_version_ ? active_version_->GetInfo() : ServiceWorkerVersionInfo(),
       pending_version_ ? pending_version_->GetInfo()
                        : ServiceWorkerVersionInfo());

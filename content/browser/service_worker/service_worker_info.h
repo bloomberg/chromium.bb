@@ -20,7 +20,8 @@ class CONTENT_EXPORT ServiceWorkerVersionInfo {
                            ServiceWorkerVersion::Status status,
                            int64 version_id,
                            int process_id,
-                           int thread_id);
+                           int thread_id,
+                           int devtools_agent_route_id);
   ~ServiceWorkerVersionInfo();
 
   bool is_null;
@@ -29,6 +30,7 @@ class CONTENT_EXPORT ServiceWorkerVersionInfo {
   int64 version_id;
   int process_id;
   int thread_id;
+  int devtools_agent_route_id;
 };
 
 class CONTENT_EXPORT ServiceWorkerRegistrationInfo {
@@ -37,12 +39,14 @@ class CONTENT_EXPORT ServiceWorkerRegistrationInfo {
   ServiceWorkerRegistrationInfo(
       const GURL& script_url,
       const GURL& pattern,
+      int64 registration_id,
       const ServiceWorkerVersionInfo& active_version,
       const ServiceWorkerVersionInfo& pending_version);
   ~ServiceWorkerRegistrationInfo();
 
   GURL script_url;
   GURL pattern;
+  int64 registration_id;
   ServiceWorkerVersionInfo active_version;
   ServiceWorkerVersionInfo pending_version;
 };

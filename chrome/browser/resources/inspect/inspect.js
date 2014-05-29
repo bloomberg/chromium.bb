@@ -29,11 +29,10 @@ function sendTargetCommand(command, target) {
   sendCommand(command, target.source, target.id);
 }
 
-function sendServiceWorkerCommand(action, partition_path, scope) {
+function sendServiceWorkerCommand(action, worker) {
   $('serviceworker-internals').contentWindow.postMessage({
     'action': action,
-    'partition_path': partition_path,
-    'scope': scope
+    'worker': worker
   },'chrome://serviceworker-internals');
 }
 
@@ -127,18 +126,12 @@ function populateServiceWorkers(partition_id, workers) {
     addActionLink(
         row,
         'inspect',
-        sendServiceWorkerCommand.bind(null,
-                                      'inspect',
-                                      worker.partition_path,
-                                      worker.scope),
+        sendServiceWorkerCommand.bind(null, 'inspect', worker),
         false);
     addActionLink(
         row,
         'terminate',
-        sendServiceWorkerCommand.bind(null,
-                                      'stop',
-                                      worker.partition_path,
-                                      worker.scope),
+        sendServiceWorkerCommand.bind(null, 'stop', worker),
         false);
   }
 }

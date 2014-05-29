@@ -151,6 +151,9 @@ class CONTENT_EXPORT ServiceWorkerContextCore
   void AddLiveVersion(ServiceWorkerVersion* version);
   void RemoveLiveVersion(int64 registration_id);
 
+  std::vector<ServiceWorkerRegistrationInfo> GetAllLiveRegistrationInfo();
+  std::vector<ServiceWorkerVersionInfo> GetAllLiveVersionInfo();
+
   // Returns new context-local unique ID for ServiceWorkerHandle.
   int GetNewServiceWorkerHandleId();
 

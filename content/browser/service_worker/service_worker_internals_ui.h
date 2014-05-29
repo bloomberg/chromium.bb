@@ -32,6 +32,10 @@ class ServiceWorkerInternalsUI
     : public WebUIController,
       public base::SupportsWeakPtr<ServiceWorkerInternalsUI> {
  public:
+  typedef base::Callback<void(ServiceWorkerStatusCode)> StatusCallback;
+  typedef void (ServiceWorkerVersion::*ServiceWorkerVersionMethod)(
+      const StatusCallback& callback);
+
   explicit ServiceWorkerInternalsUI(WebUI* web_ui);
 
  private:
@@ -45,17 +49,18 @@ class ServiceWorkerInternalsUI
 
   // Called from Javascript.
   void GetAllRegistrations(const base::ListValue* args);
-  void StartWorker(const base::ListValue* args);
-  void StopWorker(const base::ListValue* args);
-  void DispatchSyncEventToWorker(const base::ListValue* args);
+  void CallServiceWorkerVersionMethod(ServiceWorkerVersionMethod method,
+                                      const base::ListValue* args);
   void InspectWorker(const base::ListValue* args);
   void Unregister(const base::ListValue* args);
+  void StartWorker(const base::ListValue* args);
 
-  bool GetRegistrationInfo(
-      const base::ListValue* args,
-      base::FilePath* partition_path,
-      GURL* scope,
+  bool GetServiceWorkerContext(
+      int partition_id,
       scoped_refptr<ServiceWorkerContextWrapper>* context) const;
+  void FindContext(int partition_id,
+                   StoragePartition** result_partition,
+                   StoragePartition* storage_partition) const;
 
   base::ScopedPtrHashMap<uintptr_t, PartitionObserver> observers_;
   int next_partition_id_;

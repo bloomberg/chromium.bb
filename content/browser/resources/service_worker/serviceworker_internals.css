@@ -17,6 +17,10 @@
     position: relative;
 }
 
+.serviceworker-registration {
+    padding: 5px;
+}
+
 .serviceworker-scope {
     color: rgb(85, 102, 221);
     display: inline-block;
@@ -30,6 +34,7 @@
 }
 
 .serviceworker-version {
+    padding-bottom: 3px;
     padding-left: 10px;
 }
 

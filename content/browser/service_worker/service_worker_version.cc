@@ -139,11 +139,13 @@ void ServiceWorkerVersion::RegisterStatusChangeCallback(
 
 ServiceWorkerVersionInfo ServiceWorkerVersion::GetInfo() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  return ServiceWorkerVersionInfo(running_status(),
-                                  status(),
-                                  version_id(),
-                                  embedded_worker()->process_id(),
-                                  embedded_worker()->thread_id());
+  return ServiceWorkerVersionInfo(
+      running_status(),
+      status(),
+      version_id(),
+      embedded_worker()->process_id(),
+      embedded_worker()->thread_id(),
+      embedded_worker()->worker_devtools_agent_route_id());
 }
 
 void ServiceWorkerVersion::StartWorker(const StatusCallback& callback) {

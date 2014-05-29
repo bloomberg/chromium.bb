@@ -578,6 +578,7 @@ void ServiceWorkerStorage::DidGetAllRegistrations(
     ServiceWorkerRegistrationInfo info;
     info.pattern = it->scope;
     info.script_url = it->script;
+    info.registration_id = it->registration_id;
     info.active_version.is_null = false;
     if (it->is_active)
       info.active_version.status = ServiceWorkerVersion::ACTIVE;

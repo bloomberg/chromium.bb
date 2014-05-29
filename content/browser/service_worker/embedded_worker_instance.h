@@ -97,6 +97,9 @@ class CONTENT_EXPORT EmbeddedWorkerInstance {
   Status status() const { return status_; }
   int process_id() const { return process_id_; }
   int thread_id() const { return thread_id_; }
+  int worker_devtools_agent_route_id() const {
+    return worker_devtools_agent_route_id_;
+  }
 
   void AddListener(Listener* listener);
   void RemoveListener(Listener* listener);

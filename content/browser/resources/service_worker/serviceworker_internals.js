@@ -3,221 +3,277 @@
 // found in the LICENSE file.
 
 cr.define('serviceworker', function() {
-    'use strict';
+  'use strict';
 
-    function initialize() {
-        if (window.location.hash == "#iframe") {
-            // This page is loaded from chrome://inspect.
-            window.addEventListener('message', onMessage.bind(this), false);
-        }
-        update();
+  function initialize() {
+    if (window.location.hash == "#iframe") {
+      // This page is loaded from chrome://inspect.
+      window.addEventListener('message', onMessage.bind(this), false);
     }
+    update();
+  }
 
-    function onMessage(event) {
-        if (event.origin != 'chrome://inspect') {
-            return;
-        }
-        chrome.send(event.data.action,
-                    [event.data.partition_path, event.data.scope]);
+  function onMessage(event) {
+    if (event.origin != 'chrome://inspect') {
+      return;
     }
+    sendCommand(event.data.action, event.data.worker);
+  }
 
-    function update() {
-        chrome.send('getAllRegistrations');
-    }
+  function update() {
+    chrome.send('getAllRegistrations');
+  }
 
-    function progressNodeFor(link) {
-        return link.parentNode.querySelector('.operation-status');
-    }
+  function progressNodeFor(link) {
+    return link.parentNode.querySelector('.operation-status');
+  }
 
-    // All commands are sent with the partition_path and scope, and
-    // are all completed with 'onOperationComplete'.
-    var COMMANDS = ['unregister', 'start', 'stop', 'sync', 'inspect'];
-    function commandHandler(command) {
-        return function(event) {
-            var link = event.target;
-            progressNodeFor(link).style.display = 'inline';
-            chrome.send(command, [link.partition_path,
-                                  link.scope]);
-            return false;
-        };
+  // All commands are completed with 'onOperationComplete'.
+  var COMMANDS = ['stop', 'sync', 'inspect', 'unregister', 'start'];
+  function commandHandler(command) {
+    return function(event) {
+      var link = event.target;
+      progressNodeFor(link).style.display = 'inline';
+      sendCommand(command, link.cmdArgs, (function(status) {
+        progressNodeFor(link).style.display = 'none';
+      }).bind(null, link));
+      return false;
     };
+  };
 
-    function withNode(selector, partition_path, scope, callback) {
-        var links = document.querySelectorAll(selector);
-        for (var i = 0; i < links.length; ++i) {
-            var link = links[i];
-            if (partition_path == link.partition_path &&
-                scope == link.scope) {
-                callback(link);
-            }
-        }
+  var commandCallbacks = [];
+  function sendCommand(command, args, callback) {
+    var callbackId = 0;
+    while (callbackId in commandCallbacks) {
+      callbackId++;
     }
+    commandCallbacks[callbackId] = callback;
+    chrome.send(command, [callbackId, args]);
+  }
 
-    // Fired from the backend after the start call has completed
-    function onOperationComplete(status, path, scope) {
-        // refreshes the ui, displaying any relevant buttons
-        withNode('button', path, scope, function(link) {
-            progressNodeFor(link).style.display = 'none';
+  // Fired from the backend after the command call has completed.
+  function onOperationComplete(status, callbackId) {
+    var callback = commandCallbacks[callbackId];
+    delete commandCallbacks[callbackId];
+    if (callback) {
+      callback(status);
+    }
+    update();
+  }
+
+  // Send the active ServiceWorker information to chrome://inspect.
+  function sendToInspectPage(live_registrations,
+                 partition_id) {
+    var workers = [];
+    live_registrations.forEach(function(registration) {
+      [registration.active, registration.pending].forEach(function(version) {
+        if (!version || version.running_status != 'RUNNING') {
+          return;
+        }
+        workers.push({
+          'scope': registration.scope,
+          'url': registration.script_url,
+          'partition_id': partition_id,
+          'version_id': version.version_id,
+          'process_id': version.process_id,
+          'devtools_agent_route_id':
+            version.devtools_agent_route_id
         });
-        update();
+      });
+    });
+    window.parent.postMessage(
+        {'partition_id': partition_id, 'workers': workers},
+        'chrome://inspect');
+  }
+
+  var allLogMessages = {};
+  // Set log for a worker version.
+  function fillLogForVersion(partition_id, version) {
+    if (!version) {
+      return;
     }
-
-    var allLogMessages = {};
-
-    // Send the active ServiceWorker information to chrome://inspect.
-    function sendToInspectPage(registrations, partition_id, partition_path) {
-        var workers = [];
-        for (var i = 0; i < registrations.length; i++) {
-            var registration = registrations[i];
-            if (!registration.active ||
-                registration.active.running_status != 'RUNNING') {
-                continue;
-            }
-            workers.push({
-                'partition_path': partition_path,
-                'scope': registration.scope,
-                'url': registration.script_url
-            })
-        }
-        window.parent.postMessage({
-            'partition_id': partition_id,
-            'workers': workers,
-        }, 'chrome://inspect')
+    if (!(partition_id in allLogMessages)) {
+      allLogMessages[partition_id] = {};
     }
+    var logMessages = allLogMessages[partition_id];
+    if (version.version_id in logMessages) {
+      version.log = logMessages[version.version_id];
+    } else {
+      version.log = '';
+    }
+  }
 
-    // Fired once per partition from the backend.
-    function onPartitionData(registrations, partition_id, partition_path) {
-        if (window.location.hash == "#iframe") {
-            // This page is loaded from chrome://inspect.
-            sendToInspectPage(registrations, partition_id, partition_path);
-            return;
-        }
-        var template;
-        var container = $('serviceworker-list');
-
-        // Existing templates are keyed by partition_path. This allows
-        // the UI to be updated in-place rather than refreshing the
-        // whole page.
-        for (var i = 0; i < container.childNodes.length; ++i) {
-            if (container.childNodes[i].partition_path == partition_path) {
-                template = container.childNodes[i];
-            }
-        }
-
-        // This is probably the first time we're loading.
-        if (!template) {
-            template = jstGetTemplate('serviceworker-list-template');
-            container.appendChild(template);
-        }
-
-        // Set log for each worker versions.
-        if (!(partition_id in allLogMessages)) {
-            allLogMessages[partition_id] = {};
-        }
-        var logMessages = allLogMessages[partition_id];
-        registrations.forEach(function (worker) {
-            [worker.active, worker.pending].forEach(function (version) {
-                if (version) {
-                    if (version.version_id in logMessages) {
-                        version.log = logMessages[version.version_id];
-                    } else {
-                        version.log = '';
-                    }
-                }
-            });
+  // Get the unregistered workers.
+  // |unregistered_registrations| will be filled with the registrations which
+  // are in |live_registrations| but not in |stored_registrations|.
+  // |unregistered_versions| will be filled with the versions which
+  // are in |live_versions| but not in |stored_registrations| nor in
+  // |live_registrations|.
+  function getUnregisteredWorkers(stored_registrations,
+                                  live_registrations,
+                                  live_versions,
+                                  unregistered_registrations,
+                                  unregistered_versions) {
+    var registration_id_set = {};
+    var version_id_set = {};
+    stored_registrations.forEach(function(registration) {
+      registration_id_set[registration.registration_id] = true;
+    });
+    [stored_registrations, live_registrations].forEach(function(registrations) {
+      registrations.forEach(function(registration) {
+        [registration.active, registration.pending].forEach(function(version) {
+          if (version) {
+            version_id_set[version.version_id] = true;
+          }
         });
+      });
+    });
+    live_registrations.forEach(function(registration) {
+      if (!registration_id_set[registration.registration_id]) {
+        registration.unregistered = true;
+        unregistered_registrations.push(registration);
+      }
+    });
+    live_versions.forEach(function(version) {
+      if (!version_id_set[version.version_id]) {
+        unregistered_versions.push(version);
+      }
+    });
+  }
 
-        jstProcess(new JsEvalContext({ registrations: registrations,
-                                       partition_id: partition_id,
-                                       partition_path: partition_path}),
-                   template);
-        for (var i = 0; i < COMMANDS.length; ++i) {
-            var handler = commandHandler(COMMANDS[i]);
-            var links = container.querySelectorAll('button.' + COMMANDS[i]);
-            for (var j = 0; j < links.length; ++j) {
-                if (!links[j].hasClickEvent) {
-                    links[j].addEventListener('click', handler, false);
-                    links[j].hasClickEvent = true;
-                }
-            }
+  // Fired once per partition from the backend.
+  function onPartitionData(live_registrations,
+                           live_versions,
+                           stored_registrations,
+                           partition_id,
+                           partition_path) {
+    if (window.location.hash == "#iframe") {
+      // This page is loaded from chrome://inspect.
+      sendToInspectPage(live_registrations, partition_id);
+      return;
+    }
+    var unregistered_registrations = [];
+    var unregistered_versions = [];
+    getUnregisteredWorkers(stored_registrations,
+                           live_registrations,
+                           live_versions,
+                           unregistered_registrations,
+                           unregistered_versions);
+    var template;
+    var container = $('serviceworker-list');
+    // Existing templates are keyed by partition_path. This allows
+    // the UI to be updated in-place rather than refreshing the
+    // whole page.
+    for (var i = 0; i < container.childNodes.length; ++i) {
+      if (container.childNodes[i].partition_path == partition_path) {
+        template = container.childNodes[i];
+      }
+    }
+    // This is probably the first time we're loading.
+    if (!template) {
+      template = jstGetTemplate('serviceworker-list-template');
+      container.appendChild(template);
+    }
+    var fillLogFunc = fillLogForVersion.bind(this, partition_id);
+    stored_registrations.forEach(function(registration) {
+      [registration.active, registration.pending].forEach(fillLogFunc);
+    });
+    unregistered_registrations.forEach(function(registration) {
+      [registration.active, registration.pending].forEach(fillLogFunc);
+    });
+    unregistered_versions.forEach(fillLogFunc);
+    jstProcess(new JsEvalContext({
+                 stored_registrations: stored_registrations,
+                 unregistered_registrations: unregistered_registrations,
+                 unregistered_versions: unregistered_versions,
+                 partition_id: partition_id,
+                 partition_path: partition_path}),
+               template);
+    for (var i = 0; i < COMMANDS.length; ++i) {
+      var handler = commandHandler(COMMANDS[i]);
+      var links = container.querySelectorAll('button.' + COMMANDS[i]);
+      for (var j = 0; j < links.length; ++j) {
+        if (!links[j].hasClickEvent) {
+          links[j].addEventListener('click', handler, false);
+          links[j].hasClickEvent = true;
         }
+      }
+    }
+  }
+
+  function onWorkerStarted(partition_id, version_id, process_id, thread_id) {
+    update();
+  }
+
+  function onWorkerStopped(partition_id, version_id, process_id, thread_id) {
+    update();
+  }
+
+  function onErrorReported(partition_id,
+                           version_id,
+                           process_id,
+                           thread_id,
+                           error_info) {
+    outputLogMessage(partition_id,
+                     version_id,
+                     'Error: ' + JSON.stringify(error_info) + '\n');
+  }
+
+  function onConsoleMessageReported(partition_id,
+                                    version_id,
+                                    process_id,
+                                    thread_id,
+                                    message) {
+    outputLogMessage(partition_id,
+                     version_id,
+                     'Console: ' + JSON.stringify(message) + '\n');
+  }
+
+  function onVersionStateChanged(partition_id, version_id) {
+    update();
+  }
+
+  function onRegistrationStored(scope) {
+    update();
+  }
+
+  function onRegistrationDeleted(scope) {
+    update();
+  }
+
+  function outputLogMessage(partition_id, version_id, message) {
+    if (!(partition_id in allLogMessages)) {
+      allLogMessages[partition_id] = {};
+    }
+    var logMessages = allLogMessages[partition_id];
+    if (version_id in logMessages) {
+      logMessages[version_id] += message;
+    } else {
+      logMessages[version_id] = message;
     }
 
-    function onWorkerStarted(partition_id, version_id, process_id, thread_id) {
-        update();
+    var logAreas = document.querySelectorAll('textarea.serviceworker-log');
+    for (var i = 0; i < logAreas.length; ++i) {
+      var logArea = logAreas[i];
+      if (logArea.partition_id == partition_id &&
+        logArea.version_id == version_id) {
+        logArea.value += message;
+      }
     }
+  }
 
-    function onWorkerStopped(partition_id, version_id, process_id, thread_id) {
-        update();
-    }
-
-    function onErrorReported(partition_id,
-                             version_id,
-                             process_id,
-                             thread_id,
-                             error_info) {
-        outputLogMessage(partition_id,
-                         version_id,
-                         'Error: ' + JSON.stringify(error_info) + '\n');
-    }
-
-    function onConsoleMessageReported(partition_id,
-                             version_id,
-                             process_id,
-                             thread_id,
-                             message) {
-        outputLogMessage(partition_id,
-                         version_id,
-                         'Console: ' + JSON.stringify(message) + '\n');
-    }
-
-    function onVersionStateChanged(partition_id, version_id) {
-        update();
-    }
-
-    function onRegistrationStored(scope) {
-        update();
-    }
-
-    function onRegistrationDeleted(scope) {
-        update();
-    }
-
-    function outputLogMessage(partition_id, version_id, message) {
-        if (!(partition_id in allLogMessages)) {
-            allLogMessages[partition_id] = {};
-        }
-        var logMessages = allLogMessages[partition_id];
-        if (version_id in logMessages) {
-            logMessages[version_id] += message;
-        } else {
-            logMessages[version_id] = message;
-        }
-
-        var logAreas =
-            document.querySelectorAll('textarea.serviceworker-log');
-        for (var i = 0; i < logAreas.length; ++i) {
-            var logArea = logAreas[i];
-            if (logArea.partition_id == partition_id &&
-                logArea.version_id == version_id) {
-                logArea.value += message;
-            }
-        }
-    }
-
-    return {
-        initialize: initialize,
-        update: update,
-        onOperationComplete: onOperationComplete,
-        onPartitionData: onPartitionData,
-        onWorkerStarted: onWorkerStarted,
-        onWorkerStopped: onWorkerStopped,
-        onErrorReported: onErrorReported,
-        onConsoleMessageReported: onConsoleMessageReported,
-        onVersionStateChanged: onVersionStateChanged,
-        onRegistrationStored: onRegistrationStored,
-        onRegistrationDeleted: onRegistrationDeleted,
-    };
+  return {
+    initialize: initialize,
+    onOperationComplete: onOperationComplete,
+    onPartitionData: onPartitionData,
+    onWorkerStarted: onWorkerStarted,
+    onWorkerStopped: onWorkerStopped,
+    onErrorReported: onErrorReported,
+    onConsoleMessageReported: onConsoleMessageReported,
+    onVersionStateChanged: onVersionStateChanged,
+    onRegistrationStored: onRegistrationStored,
+    onRegistrationDeleted: onRegistrationDeleted,
+  };
 });
 
 document.addEventListener('DOMContentLoaded', serviceworker.initialize);

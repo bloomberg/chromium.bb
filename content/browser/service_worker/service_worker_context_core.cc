@@ -244,6 +244,30 @@ void ServiceWorkerContextCore::RemoveLiveVersion(int64 id) {
   live_versions_.erase(id);
 }
 
+std::vector<ServiceWorkerRegistrationInfo>
+ServiceWorkerContextCore::GetAllLiveRegistrationInfo() {
+  std::vector<ServiceWorkerRegistrationInfo> infos;
+  for (std::map<int64, ServiceWorkerRegistration*>::const_iterator iter =
+           live_registrations_.begin();
+       iter != live_registrations_.end();
+       ++iter) {
+    infos.push_back(iter->second->GetInfo());
+  }
+  return infos;
+}
+
+std::vector<ServiceWorkerVersionInfo>
+ServiceWorkerContextCore::GetAllLiveVersionInfo() {
+  std::vector<ServiceWorkerVersionInfo> infos;
+  for (std::map<int64, ServiceWorkerVersion*>::const_iterator iter =
+           live_versions_.begin();
+       iter != live_versions_.end();
+       ++iter) {
+    infos.push_back(iter->second->GetInfo());
+  }
+  return infos;
+}
+
 int ServiceWorkerContextCore::GetNewServiceWorkerHandleId() {
   return next_handle_id_++;
 }
