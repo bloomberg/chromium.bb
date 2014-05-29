@@ -8,6 +8,7 @@
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/wm/overview/scoped_transform_overview_window.h"
+#include "ash/wm/overview/transparent_activate_window_button.h"
 #include "base/auto_reset.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/aura/window.h"
@@ -18,6 +19,11 @@
 #include "ui/views/widget/widget.h"
 
 namespace ash {
+
+// In the conceptual overview table, the window margin is the space reserved
+// around the window within the cell. This margin does not overlap so the
+// closest distance between adjacent windows will be twice this amount.
+static const int kWindowMargin = 30;
 
 // Foreground label color.
 static const SkColor kLabelColor = SK_ColorWHITE;
@@ -87,9 +93,21 @@ void WindowSelectorItem::SetBounds(aura::Window* root_window,
   base::AutoReset<bool> auto_reset_in_bounds_update(&in_bounds_update_, true);
   root_window_ = root_window;
   target_bounds_ = target_bounds;
-  SetItemBounds(root_window, target_bounds, animate);
+
+  // Set the bounds of the transparent window handler to cover the entire
+  // bounding box area.
+  if (!activate_window_button_) {
+    activate_window_button_.reset(
+        new TransparentActivateWindowButton(SelectionWindow()));
+  }
+  activate_window_button_->SetBounds(target_bounds);
+
   // TODO(nsatragno): Handle window title updates.
   UpdateWindowLabels(target_bounds, root_window, animate);
+
+  gfx::Rect inset_bounds(target_bounds);
+  inset_bounds.Inset(kWindowMargin, kWindowMargin);
+  SetItemBounds(root_window, inset_bounds, animate);
 }
 
 void WindowSelectorItem::RecomputeWindowTransforms() {
@@ -97,7 +115,9 @@ void WindowSelectorItem::RecomputeWindowTransforms() {
     return;
   DCHECK(root_window_);
   base::AutoReset<bool> auto_reset_in_bounds_update(&in_bounds_update_, true);
-  SetItemBounds(root_window_, target_bounds_, false);
+  gfx::Rect inset_bounds(target_bounds_);
+  inset_bounds.Inset(kWindowMargin, kWindowMargin);
+  SetItemBounds(root_window_, inset_bounds, false);
 }
 
 void WindowSelectorItem::UpdateWindowLabels(const gfx::Rect& window_bounds,
@@ -121,7 +141,9 @@ void WindowSelectorItem::UpdateWindowLabels(const gfx::Rect& window_bounds,
     window_label_.reset(CreateWindowLabel(root_window,
                                           SelectionWindow()->title()));
     label_bounds.set_height(window_label_->
-                            GetContentsView()->GetPreferredSize().height());
+                                GetContentsView()->GetPreferredSize().height());
+    label_bounds.set_y(label_bounds.y() - window_label_->
+                           GetContentsView()->GetPreferredSize().height());
     window_label_->GetNativeWindow()->SetBounds(label_bounds);
     ui::Layer* layer = window_label_->GetNativeWindow()->layer();
 
@@ -141,7 +163,9 @@ void WindowSelectorItem::UpdateWindowLabels(const gfx::Rect& window_bounds,
     layer->SetOpacity(1);
   } else {
     label_bounds.set_height(window_label_->
-                            GetContentsView()->GetPreferredSize().height());
+                                GetContentsView()->GetPreferredSize().height());
+    label_bounds.set_y(label_bounds.y() - window_label_->
+                           GetContentsView()->GetPreferredSize().height());
     if (animate) {
       ui::ScopedLayerAnimationSettings settings(
           window_label_->GetNativeWindow()->layer()->GetAnimator());
@@ -154,7 +178,6 @@ void WindowSelectorItem::UpdateWindowLabels(const gfx::Rect& window_bounds,
       window_label_->GetNativeWindow()->SetBounds(label_bounds);
     }
   }
-
 }
 
 }  // namespace ash

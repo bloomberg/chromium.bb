@@ -9,6 +9,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_vector.h"
 #include "ui/gfx/rect.h"
+#include "ui/views/controls/button/button.h"
 
 namespace ash {
 
@@ -29,7 +30,7 @@ class WindowSelectorPanels : public WindowSelectorItem {
   // WindowSelectorItem:
   virtual aura::Window* GetRootWindow() OVERRIDE;
   virtual bool HasSelectableWindow(const aura::Window* window) OVERRIDE;
-  virtual aura::Window* TargetedWindow(const aura::Window* target) OVERRIDE;
+  virtual bool Contains(const aura::Window* target) OVERRIDE;
   virtual void RestoreWindowOnExit(aura::Window* window) OVERRIDE;
   virtual aura::Window* SelectionWindow() OVERRIDE;
   virtual void RemoveWindow(const aura::Window* window) OVERRIDE;

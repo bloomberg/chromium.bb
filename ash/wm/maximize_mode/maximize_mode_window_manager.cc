@@ -31,7 +31,7 @@ void CancelOverview() {
   WindowSelectorController* controller =
       Shell::GetInstance()->window_selector_controller();
   if (controller && controller->IsSelecting())
-    controller->OnSelectionCanceled();
+    controller->OnSelectionEnded();
 }
 
 }  // namespace

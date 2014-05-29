@@ -32,7 +32,7 @@ class WindowSelectorWindow : public WindowSelectorItem,
   // WindowSelectorItem:
   virtual aura::Window* GetRootWindow() OVERRIDE;
   virtual bool HasSelectableWindow(const aura::Window* window) OVERRIDE;
-  virtual aura::Window* TargetedWindow(const aura::Window* target) OVERRIDE;
+  virtual bool Contains(const aura::Window* target) OVERRIDE;
   virtual void RestoreWindowOnExit(aura::Window* window) OVERRIDE;
   virtual aura::Window* SelectionWindow() OVERRIDE;
   virtual void RemoveWindow(const aura::Window* window) OVERRIDE;

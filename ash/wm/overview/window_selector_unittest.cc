@@ -198,7 +198,7 @@ TEST_F(WindowSelectorTest, A11yAlertOnOverviewMode) {
             A11Y_ALERT_WINDOW_OVERVIEW_MODE_ENTERED);
 }
 
-// Tests entering overview mode with two windows and selecting one.
+// Tests entering overview mode with two windows and selecting one by clicking.
 TEST_F(WindowSelectorTest, Basic) {
   gfx::Rect bounds(0, 0, 400, 400);
   aura::Window* root_window = Shell::GetPrimaryRootWindow();
@@ -225,12 +225,6 @@ TEST_F(WindowSelectorTest, Basic) {
   // item.
   EXPECT_TRUE(WindowsOverlapping(panel1.get(), panel2.get()));
 
-  // The cursor should be visible and locked as a pointer
-  EXPECT_EQ(ui::kCursorPointer,
-            root_window->GetHost()->last_cursor().native_type());
-  EXPECT_TRUE(aura::client::GetCursorClient(root_window)->IsCursorLocked());
-  EXPECT_TRUE(aura::client::GetCursorClient(root_window)->IsCursorVisible());
-
   // Clicking window 1 should activate it.
   ClickWindow(window1.get());
   EXPECT_TRUE(wm::IsActiveWindow(window1.get()));
@@ -239,6 +233,78 @@ TEST_F(WindowSelectorTest, Basic) {
 
   // Cursor should have been unlocked.
   EXPECT_FALSE(aura::client::GetCursorClient(root_window)->IsCursorLocked());
+}
+
+// Tests selecting a window by tapping on it.
+TEST_F(WindowSelectorTest, BasicGesture) {
+  gfx::Rect bounds(0, 0, 400, 400);
+  scoped_ptr<aura::Window> window1(CreateWindow(bounds));
+  scoped_ptr<aura::Window> window2(CreateWindow(bounds));
+  wm::ActivateWindow(window1.get());
+  EXPECT_EQ(window1.get(), GetFocusedWindow());
+  ToggleOverview();
+  EXPECT_EQ(NULL, GetFocusedWindow());
+  aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
+                                       window2.get());
+  generator.GestureTapAt(gfx::ToEnclosingRect(
+      GetTransformedTargetBounds(window2.get())).CenterPoint());
+  EXPECT_EQ(window2.get(), GetFocusedWindow());
+}
+
+// Tests that a window does not receive located events when in overview mode.
+TEST_F(WindowSelectorTest, WindowDoesNotReceiveEvents) {
+  gfx::Rect window_bounds(20, 10, 200, 300);
+  aura::Window* root_window = Shell::GetPrimaryRootWindow();
+  scoped_ptr<aura::Window> window(CreateWindow(window_bounds));
+
+  gfx::Point point1(window_bounds.x() + 10, window_bounds.y() + 10);
+
+  ui::MouseEvent event1(ui::ET_MOUSE_PRESSED, point1, point1,
+                        ui::EF_NONE, ui::EF_NONE);
+
+  ui::EventTarget* root_target = root_window;
+  ui::EventTargeter* targeter = root_target->GetEventTargeter();
+
+  // The event should target the window because we are still not in overview
+  // mode.
+  EXPECT_EQ(window, static_cast<aura::Window*>(
+      targeter->FindTargetForEvent(root_target, &event1)));
+
+  ToggleOverview();
+
+  // The bounds have changed, take that into account.
+  gfx::RectF bounds = GetTransformedBoundsInRootWindow(window.get());
+  gfx::Point point2(bounds.x() + 10, bounds.y() + 10);
+  ui::MouseEvent event2(ui::ET_MOUSE_PRESSED, point2, point2,
+                        ui::EF_NONE, ui::EF_NONE);
+
+  // Now the transparent window should be intercepting this event.
+  EXPECT_NE(window, static_cast<aura::Window*>(
+        targeter->FindTargetForEvent(root_target, &event2)));
+}
+
+// Tests that clicking on the close button effectively closes the window.
+TEST_F(WindowSelectorTest, CloseButton) {
+  scoped_ptr<aura::Window> window1(CreateWindow(gfx::Rect(200, 300, 250, 450)));
+
+  // We need a widget for the close button the work, a bare window will crash.
+  scoped_ptr<views::Widget> widget(new views::Widget);
+  views::Widget::InitParams params;
+  params.bounds = gfx::Rect(0, 0, 400, 400);
+  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  params.parent = window1->parent();
+  widget->Init(params);
+  widget->Show();
+  ToggleOverview();
+
+  aura::Window* window2 = widget->GetNativeWindow();
+  gfx::RectF bounds = GetTransformedBoundsInRootWindow(window2);
+  gfx::Point point(bounds.top_right().x() - 1, bounds.top_right().y() - 1);
+  aura::test::EventGenerator event_generator(window2->GetRootWindow(), point);
+
+  EXPECT_FALSE(widget->IsClosed());
+  event_generator.ClickLeftButton();
+  EXPECT_TRUE(widget->IsClosed());
 }
 
 // Tests entering overview mode with two windows and selecting one.
@@ -625,39 +691,6 @@ TEST_F(WindowSelectorTest, DISABLED_DragDropInProgress) {
   RunAllPendingInMessageLoop();
 }
 
-TEST_F(WindowSelectorTest, HitTestingInOverview) {
-  gfx::Rect window_bounds(20, 10, 200, 300);
-  aura::Window* root_window = Shell::GetPrimaryRootWindow();
-  scoped_ptr<aura::Window> window1(CreateWindow(window_bounds));
-  scoped_ptr<aura::Window> window2(CreateWindow(window_bounds));
-
-  ToggleOverview();
-  gfx::RectF bounds1 = GetTransformedBoundsInRootWindow(window1.get());
-  gfx::RectF bounds2 = GetTransformedBoundsInRootWindow(window2.get());
-  EXPECT_NE(bounds1.ToString(), bounds2.ToString());
-
-  ui::EventTarget* root_target = root_window;
-  ui::EventTargeter* targeter = root_target->GetEventTargeter();
-  aura::Window* windows[] = { window1.get(), window2.get() };
-  for (size_t w = 0; w < arraysize(windows); ++w) {
-    gfx::RectF bounds = GetTransformedBoundsInRootWindow(windows[w]);
-    // The close button covers the top-right corner of the window so we skip
-    // this in hit testing.
-    gfx::Point points[] = {
-      gfx::Point(bounds.x(), bounds.y()),
-      gfx::Point(bounds.x(), bounds.bottom() - 1),
-      gfx::Point(bounds.right() - 1, bounds.bottom() - 1),
-    };
-
-    for (size_t p = 0; p < arraysize(points); ++p) {
-      ui::MouseEvent event(ui::ET_MOUSE_MOVED, points[p], points[p],
-                           ui::EF_NONE, ui::EF_NONE);
-      EXPECT_EQ(windows[w],
-                targeter->FindTargetForEvent(root_target, &event));
-    }
-  }
-}
-
 // Test that a label is created under the window on entering overview mode.
 TEST_F(WindowSelectorTest, CreateLabelUnderWindow) {
   scoped_ptr<aura::Window> window(CreateWindow(gfx::Rect(0, 0, 100, 100)));
@@ -702,7 +735,7 @@ TEST_F(WindowSelectorTest, CreateLabelUnderPanel) {
   EXPECT_EQ(label->text(), panel1_title);
 }
 
-// Tests that overview updates the window postions if the display orientation
+// Tests that overview updates the window positions if the display orientation
 // changes.
 TEST_F(WindowSelectorTest, DisplayOrientationChanged) {
   if (!SupportsHostWindowResize())

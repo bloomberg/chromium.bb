@@ -5,9 +5,11 @@
 #include "ash/wm/overview/scoped_transform_overview_window.h"
 
 #include "ash/screen_util.h"
-#include "ash/shell.h"
+#include "ash/shell_window_ids.h"
 #include "ash/wm/overview/scoped_window_copy.h"
+#include "ash/wm/overview/window_selector_item.h"
 #include "ash/wm/window_state.h"
+#include "ash/wm/window_util.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/window.h"

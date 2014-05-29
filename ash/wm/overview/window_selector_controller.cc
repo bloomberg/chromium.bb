@@ -38,7 +38,7 @@ bool WindowSelectorController::CanSelect() {
 
 void WindowSelectorController::ToggleOverview() {
   if (IsSelecting()) {
-    OnSelectionCanceled();
+    OnSelectionEnded();
   } else {
     // Don't start overview if window selection is not allowed.
     if (!CanSelect())
@@ -59,21 +59,14 @@ bool WindowSelectorController::IsSelecting() {
   return window_selector_.get() != NULL;
 }
 
-void WindowSelectorController::OnWindowSelected(aura::Window* window) {
-  wm::ActivateWindow(window);
+// TODO(nsatragno): Make WindowSelectorController observe the activation of
+// windows, so we can remove WindowSelectorDelegate.
+void WindowSelectorController::OnSelectionEnded() {
   window_selector_.reset();
   last_selection_time_ = base::Time::Now();
-  Shell::GetInstance()->mru_window_tracker()->SetIgnoreActivations(false);
-}
-
-void WindowSelectorController::OnSelectionCanceled() {
-  window_selector_.reset();
-  last_selection_time_ = base::Time::Now();
-  Shell::GetInstance()->mru_window_tracker()->SetIgnoreActivations(false);
 }
 
 void WindowSelectorController::OnSelectionStarted() {
-  Shell::GetInstance()->mru_window_tracker()->SetIgnoreActivations(true);
   Shell* shell = Shell::GetInstance();
   shell->metrics()->RecordUserMetricsAction(UMA_WINDOW_SELECTION);
   if (!last_selection_time_.is_null()) {

@@ -17,11 +17,8 @@ namespace ash {
 // Implement this class to handle the selection event from WindowSelector.
 class ASH_EXPORT WindowSelectorDelegate {
  public:
-  // Invoked when a window is selected.
-  virtual void OnWindowSelected(aura::Window* window) = 0;
-
-  // Invoked if selection is canceled.
-  virtual void OnSelectionCanceled() = 0;
+  // Invoked if selection is ended.
+  virtual void OnSelectionEnded() = 0;
 
  protected:
   virtual ~WindowSelectorDelegate() {}

@@ -22,10 +22,7 @@
 namespace aura {
 class RootWindow;
 class Window;
-namespace client {
-class CursorClient;
-}  // namespace client
-}  // namespace aura
+}
 
 namespace gfx {
 class Rect;
@@ -55,17 +52,11 @@ class ASH_EXPORT WindowSelector
                  WindowSelectorDelegate* delegate);
   virtual ~WindowSelector();
 
-  // Choose |window| from the available windows to select.
-  void SelectWindow(aura::Window* window);
-
   // Cancels window selection.
   void CancelSelection();
 
   // ui::EventHandler:
   virtual void OnKeyEvent(ui::KeyEvent* event) OVERRIDE;
-  virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE;
-  virtual void OnScrollEvent(ui::ScrollEvent* event) OVERRIDE;
-  virtual void OnTouchEvent(ui::TouchEvent* event) OVERRIDE;
 
   // gfx::DisplayObserver:
   virtual void OnDisplayAdded(const gfx::Display& display) OVERRIDE;
@@ -93,6 +84,10 @@ class ASH_EXPORT WindowSelector
   // Begins positioning windows such that all windows are visible on the screen.
   void StartOverview();
 
+  // Returns true if a window is contained in the overview, and therefore should
+  // not be hidden prior to entering overview mode.
+  bool Contains(const aura::Window* window);
+
   // Position all of the windows based on the current selection mode.
   void PositionWindows(bool animate);
   // Position all of the windows from |root_window| on |root_window|.
@@ -104,14 +99,6 @@ class ASH_EXPORT WindowSelector
 
   // |focus|, restores focus to the stored window.
   void ResetFocusRestoreWindow(bool focus);
-
-  // Returns the target of |event| or NULL if the event is not targeted at
-  // any of the windows in the selector.
-  aura::Window* GetEventTarget(ui::LocatedEvent* event);
-
-  // Returns the top-level window selected by targeting |window| or NULL if
-  // no overview window was found for |window|.
-  aura::Window* GetTargetedWindow(aura::Window* window);
 
   // The collection of items in the overview wrapped by a helper class which
   // restores their state and helps transform them to other root windows.
@@ -132,9 +119,6 @@ class ASH_EXPORT WindowSelector
   // True when performing operations that may cause window activations. This is
   // used to prevent handling the resulting expected activation.
   bool ignore_activations_;
-
-  // The cursor client used to lock the current cursor during overview.
-  aura::client::CursorClient* cursor_client_;
 
   // The time when overview was started.
   base::Time overview_start_time_;

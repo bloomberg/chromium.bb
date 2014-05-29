@@ -1,4 +1,4 @@
-#a Copyright (c) 2012 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -597,6 +597,8 @@
         'wm/window_cycle_controller.h',
         'wm/window_cycle_list.cc',
         'wm/window_cycle_list.h',
+        'wm/overview/transparent_activate_window_button.cc',
+        'wm/overview/transparent_activate_window_button.h',
         'wm/overview/window_selector_controller.cc',
         'wm/overview/window_selector_controller.h',
         'wm/overview/window_selector_delegate.h',

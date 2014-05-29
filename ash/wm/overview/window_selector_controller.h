@@ -45,8 +45,7 @@ class ASH_EXPORT WindowSelectorController
   bool IsSelecting();
 
   // WindowSelectorDelegate:
-  virtual void OnWindowSelected(aura::Window* window) OVERRIDE;
-  virtual void OnSelectionCanceled() OVERRIDE;
+  virtual void OnSelectionEnded() OVERRIDE;
 
  private:
   friend class WindowSelectorTest;

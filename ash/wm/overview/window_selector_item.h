@@ -19,6 +19,7 @@ class Widget;
 }
 
 namespace ash {
+class TransparentActivateWindowButton;
 
 // This class represents an item in overview mode. An item can have one or more
 // windows, of which only one can be activated by keyboard (i.e. alt+tab) but
@@ -39,9 +40,8 @@ class WindowSelectorItem {
   // window.
   virtual bool HasSelectableWindow(const aura::Window* window) = 0;
 
-  // Returns the targeted window given the event |target| window.
-  // Returns NULL if no Window in this item was selected.
-  virtual aura::Window* TargetedWindow(const aura::Window* target) = 0;
+  // Returns true if |target| is contained in this WindowSelectorItem.
+  virtual bool Contains(const aura::Window* target) = 0;
 
   // Restores |window| on exiting window overview rather than returning it
   // to its previous state.
@@ -76,8 +76,9 @@ class WindowSelectorItem {
   const gfx::Rect& target_bounds() { return target_bounds_; }
 
  protected:
-  // Sets the bounds of this selector item to |target_bounds| in |root_window|.
-  // If |animate| the windows are animated from their current location.
+  // Sets the bounds of this selector's items to |target_bounds| in
+  // |root_window|. If |animate| the windows are animated from their current
+  // location.
   virtual void SetItemBounds(aura::Window* root_window,
                              const gfx::Rect& target_bounds,
                              bool animate) = 0;
@@ -110,6 +111,10 @@ class WindowSelectorItem {
 
   // Label under the window displaying its active tab name.
   scoped_ptr<views::Widget> window_label_;
+
+  // Transparent window on top of the real windows in the overview that
+  // activates them on click or tap.
+  scoped_ptr<TransparentActivateWindowButton> activate_window_button_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowSelectorItem);
 };

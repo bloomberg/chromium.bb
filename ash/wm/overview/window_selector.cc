@@ -25,7 +25,6 @@
 #include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "ui/aura/client/cursor_client.h"
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
@@ -47,11 +46,6 @@ namespace {
 // fixed aspect ratio. The number of columns is determined by maximizing the
 // area of them based on the number of windows.
 const float kCardAspectRatio = 4.0f / 3.0f;
-
-// In the conceptual overview table, the window margin is the space reserved
-// around the window within the cell. This margin does not overlap so the
-// closest distance between adjacent windows will be twice this amount.
-const int kWindowMargin = 30;
 
 // The minimum number of cards along the major axis (i.e. horizontally on a
 // landscape orientation).
@@ -126,7 +120,7 @@ struct WindowSelectorItemTargetComparator
   }
 
   bool operator()(WindowSelectorItem* window) const {
-    return window->TargetedWindow(target) != NULL;
+    return window->Contains(target);
   }
 
   const aura::Window* target;
@@ -199,7 +193,7 @@ WindowSelector::WindowSelector(const WindowList& windows,
       windows_.push_back(item);
     }
     // Verify that the window has been added to an item in overview.
-    CHECK(item->TargetedWindow(windows[i]));
+    CHECK(item->Contains(windows[i]));
   }
   UMA_HISTOGRAM_COUNTS_100("Ash.WindowSelector.Items", windows_.size());
 
@@ -244,8 +238,6 @@ WindowSelector::~WindowSelector() {
     (*iter)->Show();
   }
 
-  if (cursor_client_)
-    cursor_client_->UnlockCursor();
   shell->RemovePreTargetHandler(this);
   shell->GetScreen()->RemoveObserver(this);
   UMA_HISTOGRAM_MEDIUM_TIMES(
@@ -261,68 +253,18 @@ WindowSelector::~WindowSelector() {
   UpdateShelfVisibility();
 }
 
-void WindowSelector::SelectWindow(aura::Window* window) {
-  ResetFocusRestoreWindow(false);
-  ScopedVector<WindowSelectorItem>::iterator iter =
-      std::find_if(windows_.begin(), windows_.end(),
-                   WindowSelectorItemTargetComparator(window));
-  DCHECK(iter != windows_.end());
-  // The selected window should not be minimized when window selection is
-  // ended.
-  (*iter)->RestoreWindowOnExit(window);
-  delegate_->OnWindowSelected(window);
-}
-
 void WindowSelector::CancelSelection() {
-  delegate_->OnSelectionCanceled();
+  delegate_->OnSelectionEnded();
 }
 
 void WindowSelector::OnKeyEvent(ui::KeyEvent* event) {
-  if (GetTargetedWindow(static_cast<aura::Window*>(event->target())))
-    event->StopPropagation();
   if (event->type() != ui::ET_KEY_PRESSED)
     return;
 
-  if (event->key_code() == ui::VKEY_ESCAPE)
+  if (event->key_code() == ui::VKEY_ESCAPE) {
     CancelSelection();
-}
-
-void WindowSelector::OnMouseEvent(ui::MouseEvent* event) {
-  aura::Window* target = GetEventTarget(event);
-  if (!target)
-    return;
-
-  event->SetHandled();
-  if (event->type() != ui::ET_MOUSE_RELEASED)
-    return;
-
-  SelectWindow(target);
-}
-
-void WindowSelector::OnScrollEvent(ui::ScrollEvent* event) {
-  // Set the handled flag to prevent delivering scroll events to the window but
-  // still allowing other pretarget handlers to process the scroll event.
-  if (GetTargetedWindow(static_cast<aura::Window*>(event->target())))
     event->SetHandled();
-}
-
-void WindowSelector::OnTouchEvent(ui::TouchEvent* event) {
-  // Existing touches should be allowed to continue. This prevents getting
-  // stuck in a gesture or with pressed fingers being tracked elsewhere.
-  if (event->type() != ui::ET_TOUCH_PRESSED)
-    return;
-
-  aura::Window* target = GetEventTarget(event);
-  if (!target)
-    return;
-
-  // TODO(flackr): StopPropogation prevents generation of gesture events.
-  // We should find a better way to prevent events from being delivered to
-  // the window, perhaps a transparent window in front of the target window
-  // or using EventClientImpl::CanProcessEventsWithinSubtree and then a tap
-  // gesture could be used to activate the window.
-  event->SetHandled();
-  SelectWindow(target);
+  }
 }
 
 void WindowSelector::OnDisplayAdded(const gfx::Display& display) {
@@ -400,6 +342,14 @@ void WindowSelector::OnWindowActivated(aura::Window* gained_active,
                                        aura::Window* lost_active) {
   if (ignore_activations_ || !gained_active)
     return;
+
+  ScopedVector<WindowSelectorItem>::iterator iter = std::find_if(
+      windows_.begin(), windows_.end(),
+      WindowSelectorItemComparator(gained_active));
+
+  if (iter != windows_.end())
+    (*iter)->RestoreWindowOnExit(gained_active);
+
   // Don't restore focus on exit if a window was just activated.
   ResetFocusRestoreWindow(false);
   CancelSelection();
@@ -407,11 +357,7 @@ void WindowSelector::OnWindowActivated(aura::Window* gained_active,
 
 void WindowSelector::OnAttemptToReactivateWindow(aura::Window* request_active,
                                                  aura::Window* actual_active) {
-  if (ignore_activations_)
-    return;
-  // Don't restore focus on exit if a window was just activated.
-  ResetFocusRestoreWindow(false);
-  CancelSelection();
+  OnWindowActivated(request_active, actual_active);
 }
 
 void WindowSelector::StartOverview() {
@@ -428,17 +374,6 @@ void WindowSelector::StartOverview() {
   }
   PositionWindows(/* animate */ true);
   DCHECK(!windows_.empty());
-  cursor_client_ = aura::client::GetCursorClient(
-      windows_.front()->GetRootWindow());
-  if (cursor_client_) {
-    cursor_client_->SetCursor(ui::kCursorPointer);
-    cursor_client_->ShowCursor();
-    // TODO(flackr): Only prevent cursor changes for windows in the overview.
-    // This will be easier to do without exposing the overview mode code if the
-    // cursor changes are moved to ToplevelWindowEventHandler::HandleMouseMoved
-    // as suggested there.
-    cursor_client_->LockCursor();
-  }
   shell->PrependPreTargetHandler(this);
   shell->GetScreen()->AddObserver(this);
   shell->metrics()->RecordUserMetricsAction(UMA_WINDOW_OVERVIEW);
@@ -448,6 +383,15 @@ void WindowSelector::StartOverview() {
       A11Y_ALERT_WINDOW_OVERVIEW_MODE_ENTERED);
 
   UpdateShelfVisibility();
+}
+
+bool WindowSelector::Contains(const aura::Window* window) {
+  for (WindowSelectorItemList::iterator iter = windows_.begin();
+      iter != windows_.end(); ++iter) {
+    if ((*iter)->Contains(window))
+      return true;
+  }
+  return false;
 }
 
 void WindowSelector::PositionWindows(bool animate) {
@@ -500,7 +444,6 @@ void WindowSelector::PositionWindowsFromRoot(aura::Window* root_window,
                             window_size.height() * row + y_offset,
                             window_size.width(),
                             window_size.height());
-    target_bounds.Inset(kWindowMargin, kWindowMargin);
     windows[i]->SetBounds(root_window, target_bounds, animate);
   }
 }
@@ -517,7 +460,7 @@ void WindowSelector::HideAndTrackNonOverviewWindows() {
       for (aura::Window::Windows::const_iterator iter =
            container->children().begin(); iter != container->children().end();
            ++iter) {
-        if (GetTargetedWindow(*iter) || !(*iter)->IsVisible())
+        if (Contains(*iter) || !(*iter)->IsVisible())
           continue;
         hidden_windows_.Add(*iter);
       }
@@ -558,27 +501,6 @@ void WindowSelector::ResetFocusRestoreWindow(bool focus) {
     restore_focus_window_->RemoveObserver(this);
   }
   restore_focus_window_ = NULL;
-}
-
-aura::Window* WindowSelector::GetEventTarget(ui::LocatedEvent* event) {
-  aura::Window* target = static_cast<aura::Window*>(event->target());
-  // If the target window doesn't actually contain the event location (i.e.
-  // mouse down over the window and mouse up elsewhere) then do not select the
-  // window.
-  if (!target->ContainsPoint(event->location()))
-    return NULL;
-
-  return GetTargetedWindow(target);
-}
-
-aura::Window* WindowSelector::GetTargetedWindow(aura::Window* window) {
-  for (WindowSelectorItemList::iterator iter = windows_.begin();
-       iter != windows_.end(); ++iter) {
-    aura::Window* selected = (*iter)->TargetedWindow(window);
-    if (selected)
-      return selected;
-  }
-  return NULL;
 }
 
 }  // namespace ash

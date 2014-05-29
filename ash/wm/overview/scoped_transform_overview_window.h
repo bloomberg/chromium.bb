@@ -6,9 +6,11 @@
 #define ASH_WM_OVERVIEW_SCOPED_TRANSFORM_OVERVIEW_WINDOW_H_
 
 #include "base/compiler_specific.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/transform.h"
+#include "ui/views/widget/widget.h"
 
 namespace aura {
 class Window;
@@ -49,7 +51,7 @@ class ScopedTransformOverviewWindow {
   virtual ~ScopedTransformOverviewWindow();
 
   // Returns true if this window selector window contains the |target|. This is
-  // used to determine if an event targetted this window.
+  // used to determine if an event targeted this window.
   bool Contains(const aura::Window* target) const;
 
   // Returns the original bounds of all transformed windows.
@@ -73,9 +75,9 @@ class ScopedTransformOverviewWindow {
   // Sets |transform| on the window and a copy of the window if the target
   // |root_window| is not the window's root window. If |animate| the transform
   // is animated in, otherwise it is immediately applied.
-  void SetTransform(aura::Window* root_window,
-                    const gfx::Transform& transform,
-                    bool animate);
+  virtual void SetTransform(aura::Window* root_window,
+                            const gfx::Transform& transform,
+                            bool animate);
 
   aura::Window* window() const { return window_; }
 
