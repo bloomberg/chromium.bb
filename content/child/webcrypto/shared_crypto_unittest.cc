@@ -117,8 +117,10 @@ bool SupportsRsaOaep() {
 #if defined(USE_OPENSSL)
   return false;
 #else
+#if defined(USE_NSS)
   if (!NSS_VersionCheck("3.16.2"))
     return false;
+#endif
   crypto::ScopedPK11Slot slot(PK11_GetInternalKeySlot());
   return !!PK11_DoesMechanism(slot.get(), CKM_RSA_PKCS_OAEP);
 #endif
