@@ -1,25 +1,25 @@
 layer at (0,0) size 800x600
   RenderView at (0,0) size 800x600
-layer at (0,0) size 800x220
-  RenderBlock {HTML} at (0,0) size 800x220
-    RenderBody {BODY} at (8,16) size 784x112
-      RenderBlock {P} at (0,0) size 784x20 [color=#000080]
-        RenderText {#text} at (0,0) size 378x19
-          text run at (0,0) width 233: "In the following test, the purple square "
-          text run at (233,0) width 145: "should be on the left (\x{21E6}"
-        RenderImage {IMG} at (378,0) size 19x19.19
-        RenderText {#text} at (397,0) size 206x19
-          text run at (397,0) width 206: "), and the teal square on the right ("
-        RenderImage {IMG} at (603,0) size 19x19.19
-        RenderText {#text} at (622,0) size 149x19
-          text run at (622,0) width 91: "\x{21E8}) of the blue "
-          text run at (713,0) width 58: "rectangle."
-      RenderBlock {DIV} at (0,36) size 784x76
-        RenderBlock {DIV} at (16,0) size 752x76 [color=#0000FF] [bgcolor=#000080]
+layer at (0,0) size 800x238
+  RenderBlock {HTML} at (0,0) size 800x238
+    RenderBody {BODY} at (8,16) size 784x124
+      RenderBlock {P} at (0,0) size 784x38 [color=#000080]
+        RenderText {#text} at (0,2) size 407x17
+          text run at (0,2) width 252: "In the following test, the purple square "
+          text run at (251,2) width 156: "should be on the left (\x{21E6}"
+        RenderImage {IMG} at (406.48,0) size 19x19.19
+        RenderText {#text} at (425,2) size 221x17
+          text run at (425,2) width 221: "), and the teal square on the right ("
+        RenderImage {IMG} at (645.41,0) size 19x19.19
+        RenderText {#text} at (664,2) size 758x35
+          text run at (664,2) width 94: "\x{21E8}) of the blue"
+          text run at (0,20) width 63: "rectangle."
+      RenderBlock {DIV} at (0,54) size 784x70
+        RenderBlock {DIV} at (16,0) size 752x70 [color=#0000FF] [bgcolor=#000080]
           RenderImage {IMG} at (8,8) size 160x160
           RenderImage {IMG} at (584,8) size 160x160
-          RenderText {#text} at (168,8) size 399x59
-            text run at (168,8) width 399: "Blue rectangle. Blue rectangle. Blue rectangle. Blue rectangle. Blue"
-            text run at (168,28) width 155: "rectangle. Blue rectangle. "
-            text run at (323,28) width 213: "Blue rectangle. Blue rectangle. Blue"
-            text run at (168,48) width 337: "rectangle. Blue rectangle. Blue rectangle. Blue rectangle."
+          RenderText {#text} at (168,8) size 400x53
+            text run at (168,8) width 400: "Blue rectangle. Blue rectangle. Blue rectangle. Blue rectangle."
+            text run at (168,26) width 202: "Blue rectangle. Blue rectangle. "
+            text run at (369,26) width 199: "Blue rectangle. Blue rectangle."
+            text run at (168,44) width 400: "Blue rectangle. Blue rectangle. Blue rectangle. Blue rectangle."

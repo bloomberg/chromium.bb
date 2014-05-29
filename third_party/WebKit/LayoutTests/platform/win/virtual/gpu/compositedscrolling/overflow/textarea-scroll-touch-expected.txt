@@ -19,7 +19,7 @@
               (bounds 189.00 124.00)
               (children 1
                 (GraphicsLayer
-                  (bounds 189.00 328.00)
+                  (bounds 189.00 337.00)
                   (shouldFlattenTransform 0)
                   (drawsContent 1)
                 )
@@ -49,7 +49,7 @@
               (bounds 189.00 124.00)
               (children 1
                 (GraphicsLayer
-                  (bounds 189.00 328.00)
+                  (bounds 189.00 337.00)
                   (shouldFlattenTransform 0)
                   (drawsContent 1)
                 )

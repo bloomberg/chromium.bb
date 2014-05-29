@@ -3,30 +3,30 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   RenderBlock {HTML} at (0,0) size 800x600
     RenderBody {BODY} at (8,8) size 784x584
-      RenderTextControl {INPUT} at (2,2) size 455x81 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-        RenderFlexibleBox {DIV} at (3,3) size 449x46
-          RenderBlock {DIV} at (0,17.50) size 1x11
-          RenderBlock {DIV} at (1,0) size 423x46
-      RenderBR {BR} at (459,41) size 0x0
-      RenderTextControl {INPUT} at (2,87) size 453x81 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-      RenderBR {BR} at (457,126) size 0x0
-      RenderTextControl {INPUT} at (2,170) size 236x25 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-        RenderFlexibleBox {DIV} at (6,0.50) size 224x24
-          RenderBlock {DIV} at (0,6.50) size 1x11
-          RenderBlock {DIV} at (1,0) size 205x24
-layer at (14,13) size 423x46
-  RenderBlock {DIV} at (0,0) size 423x46
-    RenderText {#text} at (0,0) size 357x45
-      text run at (0,0) width 357: "value jgq not clipped"
-layer at (12,98) size 449x46
-  RenderBlock {DIV} at (2,3) size 449x46
-    RenderText {#text} at (0,0) size 357x45
-      text run at (0,0) width 357: "value jgq not clipped"
-layer at (17,179) size 205x24
-  RenderBlock {DIV} at (0,0) size 205x24
-    RenderText {#text} at (0,0) size 115x23
-      text run at (0,0) width 115: "Sample Input"
-layer at (438,26) size 21x21 transparent
-  RenderBlock {DIV} at (425,12.50) size 21x21
-layer at (223,184) size 14x14 transparent
-  RenderBlock {DIV} at (207,5) size 14x14
+      RenderTextControl {INPUT} at (2,2) size 406x80 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+        RenderFlexibleBox {DIV} at (3,3) size 400x45
+          RenderBlock {DIV} at (0,17) size 1x11
+          RenderBlock {DIV} at (1,0) size 374x45
+      RenderBR {BR} at (410,41) size 0x0
+      RenderTextControl {INPUT} at (2,86) size 404x80 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+      RenderBR {BR} at (408,125) size 0x0
+      RenderTextControl {INPUT} at (2,168) size 212x25 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+        RenderFlexibleBox {DIV} at (6,1) size 200x23
+          RenderBlock {DIV} at (0,6) size 1x11
+          RenderBlock {DIV} at (1,0) size 181x23
+layer at (14,13) size 374x45
+  RenderBlock {DIV} at (0,0) size 374x45
+    RenderText {#text} at (0,0) size 365x44
+      text run at (0,0) width 365: "value jgq not clipped"
+layer at (12,97) size 400x45
+  RenderBlock {DIV} at (2,3) size 400x45
+    RenderText {#text} at (0,0) size 365x44
+      text run at (0,0) width 365: "value jgq not clipped"
+layer at (17,177) size 181x23
+  RenderBlock {DIV} at (0,0) size 181x23
+    RenderText {#text} at (0,0) size 118x22
+      text run at (0,0) width 118: "Sample Input"
+layer at (389,25) size 21x21 transparent
+  RenderBlock {DIV} at (376,12) size 21x21
+layer at (199,182) size 14x14 transparent
+  RenderBlock {DIV} at (183,4.50) size 14x14

@@ -11,74 +11,74 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 Testing bounds of word one in horizontalParagraph
 PASS axBounds.x is within 2 of 8
 PASS axBounds.y is within 2 of 8
-PASS axBounds.width is within 2 of 22
-PASS axBounds.height is within 2 of 19
+PASS axBounds.width is within 2 of 23
+PASS axBounds.height is within 2 of 17
 
 Testing bounds of word two in horizontalParagraph
-PASS axBounds.x is within 2 of 34
-PASS axBounds.y is within 2 of 8
-PASS axBounds.width is within 2 of 23
-PASS axBounds.height is within 2 of 19
-
-Testing bounds of word three in horizontalParagraph
-PASS axBounds.x is within 2 of 123
-PASS axBounds.y is within 2 of 8
-PASS axBounds.width is within 2 of 30
-PASS axBounds.height is within 2 of 19
-
-Testing bounds of word four in horizontalParagraph
-PASS axBounds.x is within 2 of 157
+PASS axBounds.x is within 2 of 35
 PASS axBounds.y is within 2 of 8
 PASS axBounds.width is within 2 of 24
-PASS axBounds.height is within 2 of 19
+PASS axBounds.height is within 2 of 17
+
+Testing bounds of word three in horizontalParagraph
+PASS axBounds.x is within 2 of 124
+PASS axBounds.y is within 2 of 8
+PASS axBounds.width is within 2 of 33
+PASS axBounds.height is within 2 of 17
+
+Testing bounds of word four in horizontalParagraph
+PASS axBounds.x is within 2 of 160
+PASS axBounds.y is within 2 of 8
+PASS axBounds.width is within 2 of 27
+PASS axBounds.height is within 2 of 17
 
 Testing bounds of word אחתשתיים in horizontalParagraph
-PASS axBounds.x is within 2 of 61
+PASS axBounds.x is within 2 of 63.1015625
 PASS axBounds.y is within 2 of 8
-PASS axBounds.width is within 2 of 58
-PASS axBounds.height is within 2 of 19
+PASS axBounds.width is within 2 of 57.8984375
+PASS axBounds.height is within 2 of 17
 
 Testing bounds of word שלושהארבעה in horizontalParagraph
-PASS axBounds.x is within 2 of 185
+PASS axBounds.x is within 2 of 191.4765625
 PASS axBounds.y is within 2 of 8
-PASS axBounds.width is within 2 of 77
-PASS axBounds.height is within 2 of 19
+PASS axBounds.width is within 2 of 75.7265625
+PASS axBounds.height is within 2 of 17
 
 Testing bounds of word one in verticalParagraph
 PASS axBounds.x is within 2 of 24
-PASS axBounds.y is within 2 of 44
-PASS axBounds.width is within 2 of 19
-PASS axBounds.height is within 2 of 22
+PASS axBounds.y is within 2 of 42
+PASS axBounds.width is within 2 of 17
+PASS axBounds.height is within 2 of 23
 
 Testing bounds of word two in verticalParagraph
 PASS axBounds.x is within 2 of 24
-PASS axBounds.y is within 2 of 70
-PASS axBounds.width is within 2 of 19
-PASS axBounds.height is within 2 of 23
+PASS axBounds.y is within 2 of 69
+PASS axBounds.width is within 2 of 17
+PASS axBounds.height is within 2 of 24
 
 Testing bounds of word three in verticalParagraph
 PASS axBounds.x is within 2 of 24
-PASS axBounds.y is within 2 of 159
-PASS axBounds.width is within 2 of 19
-PASS axBounds.height is within 2 of 30
+PASS axBounds.y is within 2 of 158
+PASS axBounds.width is within 2 of 17
+PASS axBounds.height is within 2 of 33
 
 Testing bounds of word four in verticalParagraph
 PASS axBounds.x is within 2 of 24
-PASS axBounds.y is within 2 of 193
-PASS axBounds.width is within 2 of 19
-PASS axBounds.height is within 2 of 24
+PASS axBounds.y is within 2 of 194
+PASS axBounds.width is within 2 of 17
+PASS axBounds.height is within 2 of 27
 
 Testing bounds of word אחתשתיים in verticalParagraph
 PASS axBounds.x is within 2 of 24
-PASS axBounds.y is within 2 of 97
-PASS axBounds.width is within 2 of 19
-PASS axBounds.height is within 2 of 58
+PASS axBounds.y is within 2 of 97.1015625
+PASS axBounds.width is within 2 of 17
+PASS axBounds.height is within 2 of 57.8984375
 
 Testing bounds of word שלושהארבעה in verticalParagraph
 PASS axBounds.x is within 2 of 24
-PASS axBounds.y is within 2 of 221
-PASS axBounds.width is within 2 of 19
-PASS axBounds.height is within 2 of 77
+PASS axBounds.y is within 2 of 225.4765625
+PASS axBounds.width is within 2 of 17
+PASS axBounds.height is within 2 of 75.7265625
 PASS successfullyParsed is true
 
 TEST COMPLETE

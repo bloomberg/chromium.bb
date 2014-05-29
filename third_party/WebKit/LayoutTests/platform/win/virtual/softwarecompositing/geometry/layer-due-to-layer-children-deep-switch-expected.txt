@@ -28,7 +28,7 @@ Second dump layer tree:
           (drawsContent 1)
           (children 1
             (GraphicsLayer
-              (position 31.00 41.00)
+              (position 31.00 39.00)
               (bounds 250.00 220.00)
               (contentsOpaque 1)
               (drawsContent 1)
@@ -63,10 +63,10 @@ Second dump layer tree:
 
 Third dump layer tree:
 (GraphicsLayer
-  (bounds 1032.00 1286.00)
+  (bounds 1007.00 1226.00)
   (children 1
     (GraphicsLayer
-      (bounds 1032.00 1286.00)
+      (bounds 1007.00 1226.00)
       (contentsOpaque 1)
       (drawsContent 1)
     )

@@ -16,10 +16,10 @@ Case: No src, no poster
 
 Case: Displaying poster
 (GraphicsLayer
-  (bounds 785.00 605.00)
+  (bounds 800.00 600.00)
   (children 1
     (GraphicsLayer
-      (bounds 785.00 605.00)
+      (bounds 800.00 600.00)
       (contentsOpaque 1)
       (drawsContent 1)
     )
@@ -29,10 +29,10 @@ Case: Displaying poster
 
 Case: Displaying movie
 (GraphicsLayer
-  (bounds 785.00 813.00)
+  (bounds 785.00 782.00)
   (children 1
     (GraphicsLayer
-      (bounds 785.00 813.00)
+      (bounds 785.00 782.00)
       (contentsOpaque 1)
       (drawsContent 1)
       (children 1

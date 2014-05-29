@@ -3,24 +3,24 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   RenderBlock {HTML} at (0,0) size 800x600
     RenderBody {BODY} at (8,8) size 784x584
-      RenderTable {TABLE} at (0,0) size 409x88 [border: (1px outset #808080)]
-        RenderTableSection {TBODY} at (1,1) size 407x86
-          RenderTableRow {TR} at (0,2) size 407x56
-            RenderTableCell {TD} at (2,18) size 117x24 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 27x19
-                text run at (2,2) width 27: "Blah"
-            RenderTableCell {TD} at (121,2) size 284x56 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
-              RenderTable {TABLE} at (106.50,2) size 71x52 [border: (1px outset #808080)]
-                RenderTableSection {TBODY} at (1,1) size 69x50
-                  RenderTableRow {TR} at (0,2) size 69x46
-                    RenderTableCell {TD} at (2,2) size 65x46 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
-                      RenderBlock {FORM} at (2,2) size 61x26
-                        RenderButton {INPUT} at (2,2) size 57x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
-                          RenderBlock (anonymous) at (8,3) size 41x16
-                            RenderText {#text} at (0,0) size 41x16
-                              text run at (0,0) width 41: "Submit"
+      RenderTable {TABLE} at (0,0) size 439x85 [border: (1px outset #808080)]
+        RenderTableSection {TBODY} at (1,1) size 437x83
+          RenderTableRow {TR} at (0,2) size 437x55
+            RenderTableCell {TD} at (2,18) size 135x22 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
+              RenderText {#text} at (2,2) size 31x17
+                text run at (2,2) width 31: "Blah"
+            RenderTableCell {TD} at (139,2) size 296x55 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
+              RenderTable {TABLE} at (112,2) size 72x51 [border: (1px outset #808080)]
+                RenderTableSection {TBODY} at (1,1) size 70x49
+                  RenderTableRow {TR} at (0,2) size 70x45
+                    RenderTableCell {TD} at (2,2) size 66x45 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
+                      RenderBlock {FORM} at (2,2) size 62x25
+                        RenderButton {INPUT} at (2,2) size 57.50x21 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
+                          RenderBlock (anonymous) at (8,3) size 41.50x15
+                            RenderText {#text} at (0,0) size 42x15
+                              text run at (0,0) width 42: "Submit"
                         RenderText {#text} at (0,0) size 0x0
-          RenderTableRow {TR} at (0,60) size 407x24
-            RenderTableCell {TD} at (2,60) size 403x24 [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=2]
-              RenderText {#text} at (2,2) size 399x19
-                text run at (2,2) width 399: "This line is only here to separate the two columns in the row above"
+          RenderTableRow {TR} at (0,59) size 437x22
+            RenderTableCell {TD} at (2,59) size 433x22 [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=2]
+              RenderText {#text} at (2,2) size 429x17
+                text run at (2,2) width 429: "This line is only here to separate the two columns in the row above"

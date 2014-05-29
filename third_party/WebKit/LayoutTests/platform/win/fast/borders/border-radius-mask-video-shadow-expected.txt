@@ -1,25 +1,25 @@
 layer at (0,0) size 800x600
   RenderView at (0,0) size 800x600
-layer at (0,0) size 800x394
-  RenderBlock {HTML} at (0,0) size 800x394.44
-    RenderBody {BODY} at (8,18.72) size 784x367.72
-      RenderBlock {H3} at (0,0) size 784x23
-        RenderText {#text} at (0,0) size 92x22
-          text run at (0,0) width 92: "It passes if:"
-      RenderBlock {UL} at (0,41.72) size 784x60
-        RenderListItem {LI} at (40,0) size 744x20
-          RenderListMarker at (-18,0) size 7x19: bullet
-          RenderText {#text} at (0,0) size 389x19
-            text run at (0,0) width 389: "the video content has rounded corners (top left and bottom right)"
-        RenderListItem {LI} at (40,20) size 744x20
-          RenderListMarker at (-18,0) size 7x19: bullet
-          RenderText {#text} at (0,0) size 451x19
-            text run at (0,0) width 451: "the remaining space is gray and has same rounded corners as video content"
-        RenderListItem {LI} at (40,40) size 744x20
-          RenderListMarker at (-18,0) size 7x19: bullet
-          RenderText {#text} at (0,0) size 253x19
-            text run at (0,0) width 253: "has box shadow around the video element"
-      RenderBlock (anonymous) at (0,117.72) size 784x250
+layer at (0,0) size 800x385
+  RenderBlock {HTML} at (0,0) size 800x385.44
+    RenderBody {BODY} at (8,18.72) size 784x358.72
+      RenderBlock {H3} at (0,0) size 784x21
+        RenderText {#text} at (0,0) size 91x20
+          text run at (0,0) width 91: "It passes if:"
+      RenderBlock {UL} at (0,39.72) size 784x54
+        RenderListItem {LI} at (40,0) size 744x18
+          RenderListMarker at (-17,0) size 7x17: bullet
+          RenderText {#text} at (0,0) size 415x17
+            text run at (0,0) width 415: "the video content has rounded corners (top left and bottom right)"
+        RenderListItem {LI} at (40,18) size 744x18
+          RenderListMarker at (-17,0) size 7x17: bullet
+          RenderText {#text} at (0,0) size 480x17
+            text run at (0,0) width 480: "the remaining space is gray and has same rounded corners as video content"
+        RenderListItem {LI} at (40,36) size 744x18
+          RenderListMarker at (-17,0) size 7x17: bullet
+          RenderText {#text} at (0,0) size 269x17
+            text run at (0,0) width 269: "has box shadow around the video element"
+      RenderBlock (anonymous) at (0,109.72) size 784x249
         RenderText {#text} at (0,0) size 0x0
-layer at (18,146) size 500x225
+layer at (18,138) size 500x225
   RenderVideo {VIDEO} at (10,10) size 500x225 [bgcolor=#808080]

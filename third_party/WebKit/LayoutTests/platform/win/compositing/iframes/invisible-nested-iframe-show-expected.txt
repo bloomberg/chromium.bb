@@ -21,10 +21,10 @@
                     (GraphicsLayer
                       (children 1
                         (GraphicsLayer
-                          (bounds 285.00 193.00)
+                          (bounds 285.00 192.00)
                           (children 1
                             (GraphicsLayer
-                              (bounds 285.00 193.00)
+                              (bounds 285.00 192.00)
                               (drawsContent 1)
                               (children 1
                                 (GraphicsLayer
@@ -84,7 +84,7 @@
           )
         )
         (GraphicsLayer
-          (position 18.00 203.00)
+          (position 18.00 202.00)
           (bounds 210.00 210.00)
           (contentsOpaque 1)
           (drawsContent 1)
@@ -101,10 +101,10 @@
 Frame: '-->'
 --------
 (GraphicsLayer
-  (bounds 285.00 193.00)
+  (bounds 285.00 192.00)
   (children 1
     (GraphicsLayer
-      (bounds 285.00 193.00)
+      (bounds 285.00 192.00)
       (drawsContent 1)
       (children 1
         (GraphicsLayer

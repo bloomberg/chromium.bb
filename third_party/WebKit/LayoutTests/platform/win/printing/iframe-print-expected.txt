@@ -1,41 +1,41 @@
-layer at (0,0) size 1000x325
-  RenderView at (0,0) size 1000x325
-layer at (0,0) size 1000x325
-  RenderBlock {HTML} at (0,0) size 1000x325
-    RenderBody {BODY} at (8,8) size 984x309
-      RenderText {#text} at (304,289) size 4x19
-        text run at (304,289) width 4: " "
+layer at (0,0) size 1000x324
+  RenderView at (0,0) size 1000x324
+layer at (0,0) size 1000x324
+  RenderBlock {HTML} at (0,0) size 1000x324
+    RenderBody {BODY} at (8,8) size 984x308
+      RenderText {#text} at (304,290) size 4x17
+        text run at (304,290) width 4: " "
       RenderText {#text} at (0,0) size 0x0
 layer at (8,208) size 304x104
   RenderPartObject {IFRAME} at (0,200) size 304x104 [border: (2px inset #EEEEEE)]
     layer at (0,0) size 300x100
       RenderView at (0,0) size 300x100
-    layer at (0,0) size 300x36
-      RenderBlock {HTML} at (0,0) size 300x36
-        RenderBody {BODY} at (8,8) size 284x20
-          RenderText {#text} at (0,0) size 229x19
-            text run at (0,0) width 229: "You should see this text when printed."
+    layer at (0,0) size 300x34
+      RenderBlock {HTML} at (0,0) size 300x34
+        RenderBody {BODY} at (8,8) size 284x18
+          RenderText {#text} at (0,0) size 246x17
+            text run at (0,0) width 246: "You should see this text when printed."
 layer at (316,8) size 304x304
   RenderPartObject {IFRAME} at (308,0) size 304x304 [border: (2px inset #EEEEEE)]
     layer at (0,0) size 300x300
       RenderView at (0,0) size 300x300
-    layer at (35,0) size 265x300
-      RenderBlock {HTML} at (0,0) size 265x300
-        RenderBody {BODY} at (8,8) size 249x284
-          RenderText {#text} at (0,0) size 19x233
-            text run at (0,0) width 233: "You should see this text when printed. "
-          RenderBR {BR} at (0,233) size 19x0
-          RenderText {#text} at (20,0) size 19x152
-            text run at (20,0) width 152: "Vertical text on the right. "
-          RenderBR {BR} at (20,152) size 19x0
+    layer at (40,0) size 260x300
+      RenderBlock {HTML} at (0,0) size 260x300
+        RenderBody {BODY} at (8,8) size 244x284
+          RenderText {#text} at (0,0) size 17x250
+            text run at (0,0) width 250: "You should see this text when printed. "
+          RenderBR {BR} at (0,249) size 17x1
+          RenderText {#text} at (18,0) size 17x166
+            text run at (18,0) width 166: "Vertical text on the right. "
+          RenderBR {BR} at (18,165) size 17x1
           RenderText {#text} at (0,0) size 0x0
-    layer at (48,8) size 204x154
-      RenderPartObject {IFRAME} at (40,0) size 204x154 [border: (2px inset #EEEEEE)]
+    layer at (52,8) size 204x154
+      RenderPartObject {IFRAME} at (36,0) size 204x154 [border: (2px inset #EEEEEE)]
         layer at (0,0) size 200x150
           RenderView at (0,0) size 200x150
-        layer at (0,0) size 200x56
-          RenderBlock {HTML} at (0,0) size 200x56
-            RenderBody {BODY} at (8,8) size 184x40
-              RenderText {#text} at (0,0) size 179x39
-                text run at (0,0) width 179: "You should see this text when"
-                text run at (0,20) width 46: "printed."
+        layer at (0,0) size 200x52
+          RenderBlock {HTML} at (0,0) size 200x52
+            RenderBody {BODY} at (8,8) size 184x36
+              RenderText {#text} at (0,0) size 154x35
+                text run at (0,0) width 154: "You should see this text"
+                text run at (0,18) width 88: "when printed."

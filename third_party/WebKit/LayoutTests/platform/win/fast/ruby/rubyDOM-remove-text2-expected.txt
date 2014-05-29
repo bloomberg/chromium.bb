@@ -3,40 +3,40 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   RenderBlock {HTML} at (0,0) size 800x600
     RenderBody {BODY} at (8,8) size 784x576
-      RenderBlock {P} at (0,0) size 784x20
-        RenderText {#text} at (0,0) size 690x19
-          text run at (0,0) width 690: "The following is a test for DOM manipulation within <ruby>: Removing a ruby base object, leaving the base empty."
-      RenderBlock {P} at (0,36) size 784x20
-        RenderText {#text} at (0,0) size 409x19
-          text run at (0,0) width 409: "Both lines should look identical (the first line is the one manipulated)."
-      RenderBlock (anonymous) at (0,72) size 784x40
-        RenderBR {BR} at (0,0) size 0x19
-        RenderBR {BR} at (0,20) size 0x19
-      RenderBlock {P} at (0,128) size 784x20
-        RenderText {#text} at (0,0) size 146x19
-          text run at (0,0) width 146: "<ruby> is defined in the "
-        RenderRuby (inline) {RUBY} at (0,0) size 121x19
-          RenderRubyRun (anonymous) at (146,17) size 113x0
-            RenderRubyText {RT} at (0,-12) size 113x12
-              RenderText {#text} at (0,0) size 113x12
-                text run at (0,0) width 113: "Hyper-text Markup Language"
-          RenderRubyRun (anonymous) at (259,0) size 8x20
-            RenderRubyBase (anonymous) at (0,0) size 8x20
-              RenderText {#text} at (0,0) size 8x19
+      RenderBlock {P} at (0,0) size 784x18
+        RenderText {#text} at (0,0) size 746x17
+          text run at (0,0) width 746: "The following is a test for DOM manipulation within <ruby>: Removing a ruby base object, leaving the base empty."
+      RenderBlock {P} at (0,34) size 784x18
+        RenderText {#text} at (0,0) size 448x17
+          text run at (0,0) width 448: "Both lines should look identical (the first line is the one manipulated)."
+      RenderBlock (anonymous) at (0,68) size 784x36
+        RenderBR {BR} at (0,0) size 0x17
+        RenderBR {BR} at (0,18) size 0x17
+      RenderBlock {P} at (0,120) size 784x18
+        RenderText {#text} at (0,0) size 159x17
+          text run at (0,0) width 159: "<ruby> is defined in the "
+        RenderRuby (inline) {RUBY} at (0,0) size 116x17
+          RenderRubyRun (anonymous) at (158.02,16) size 107.47x0
+            RenderRubyText {RT} at (0,-10) size 107.47x10
+              RenderText {#text} at (0,0) size 108x10
+                text run at (0,0) width 108: "Hyper-text Markup Language"
+          RenderRubyRun (anonymous) at (265.48,0) size 8x18
+            RenderRubyBase (anonymous) at (0,0) size 8x18
+              RenderText {#text} at (0,0) size 8x17
                 text run at (0,0) width 8: "5"
-        RenderText {#text} at (267,0) size 36x19
-          text run at (267,0) width 36: " spec."
-      RenderBlock {P} at (0,164) size 784x20
-        RenderText {#text} at (0,0) size 146x19
-          text run at (0,0) width 146: "<ruby> is defined in the "
-        RenderRuby (inline) {RUBY} at (0,0) size 121x19
-          RenderRubyRun (anonymous) at (146,17) size 113x0
-            RenderRubyText {RT} at (0,-12) size 113x12
-              RenderText {#text} at (0,0) size 113x12
-                text run at (0,0) width 113: "Hyper-text Markup Language"
-          RenderRubyRun (anonymous) at (259,0) size 8x20
-            RenderRubyBase (anonymous) at (0,0) size 8x20
-              RenderText {#text} at (0,0) size 8x19
+        RenderText {#text} at (273,0) size 37x17
+          text run at (273,0) width 37: " spec."
+      RenderBlock {P} at (0,154) size 784x18
+        RenderText {#text} at (0,0) size 159x17
+          text run at (0,0) width 159: "<ruby> is defined in the "
+        RenderRuby (inline) {RUBY} at (0,0) size 116x17
+          RenderRubyRun (anonymous) at (158.02,16) size 107.47x0
+            RenderRubyText {RT} at (0,-10) size 107.47x10
+              RenderText {#text} at (0,0) size 108x10
+                text run at (0,0) width 108: "Hyper-text Markup Language"
+          RenderRubyRun (anonymous) at (265.48,0) size 8x18
+            RenderRubyBase (anonymous) at (0,0) size 8x18
+              RenderText {#text} at (0,0) size 8x17
                 text run at (0,0) width 8: "5"
-        RenderText {#text} at (267,0) size 36x19
-          text run at (267,0) width 36: " spec."
+        RenderText {#text} at (273,0) size 37x17
+          text run at (273,0) width 37: " spec."

@@ -1,85 +1,85 @@
-layer at (0,0) size 800x1211
+layer at (0,0) size 800x1187
   RenderView at (0,0) size 800x600
-layer at (0,0) size 800x1211
-  RenderBlock {HTML} at (0,0) size 800x1211
-    RenderBody {BODY} at (0,0) size 800x1210
+layer at (0,0) size 800x1187
+  RenderBlock {HTML} at (0,0) size 800x1187
+    RenderBody {BODY} at (0,0) size 800x1186
       RenderBlock {DIV} at (0,0) size 600x48
-        RenderText {#text} at (0,0) size 306x19
-          text run at (0,0) width 306: "Table autosizing tests - table-with-inline-block.html"
-        RenderBR {BR} at (306,0) size 0x19
-        RenderText {#text} at (0,20) size 358x19
-          text run at (0,20) width 358: "This test passes if there is not extra space in the pink boxes."
-      RenderTable {TABLE} at (1,49) size 798x292 [border: none]
-        RenderTableSection {TBODY} at (0,0) size 797x291
-          RenderTableRow {TR} at (0,0) size 797x291
-            RenderTableCell {TD} at (0,0) size 797x291 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=0 c=0 rs=1 cs=1]
-              RenderText {#text} at (2,3) size 740x142
-                text run at (2,3) width 740: "Autosize Autosize Autosize Autosize Autosize"
-                text run at (2,51) width 740: "Autosize Autosize Autosize Autosize Autosize"
-                text run at (2,99) width 600: "Autosize Autosize Autosize Autosize "
-              RenderBlock {B} at (602,120) size 86x20 [bgcolor=#FFC0CB]
-                RenderText {#text} at (0,0) size 86x19
-                  text run at (0,0) width 86: "wrapped text"
-              RenderText {#text} at (2,147) size 740x142
-                text run at (2,147) width 740: "Autosize Autosize Autosize Autosize Autosize"
-                text run at (2,195) width 740: "Autosize Autosize Autosize Autosize Autosize"
-                text run at (2,243) width 590: "Autosize Autosize Autosize Autosize"
-      RenderTable {TABLE} at (1,342) size 144x868 [border: none]
-        RenderTableSection {TBODY} at (0,0) size 143x867
-          RenderTableRow {TR} at (0,0) size 143x867
-            RenderTableCell {TD} at (0,0) size 143x867 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=0 c=0 rs=1 cs=1]
-              RenderText {#text} at (2,3) size 140x46
-                text run at (2,3) width 140: "Autosize"
-              RenderBR {BR} at (142,3) size 0x46
-              RenderBlock {B} at (2,72) size 91x20 [bgcolor=#FFC0CB]
-                RenderText {#text} at (0,0) size 91x19
-                  text run at (0,0) width 91: "Wrapped text"
-              RenderBR {BR} at (93,51) size 0x46
-              RenderText {#text} at (2,99) size 140x46
-                text run at (2,99) width 140: "Autosize"
-              RenderBR {BR} at (142,99) size 0x46
-              RenderText {#text} at (2,147) size 140x46
-                text run at (2,147) width 140: "Autosize"
-              RenderBR {BR} at (142,147) size 0x46
-              RenderText {#text} at (2,195) size 140x46
-                text run at (2,195) width 140: "Autosize"
-              RenderBR {BR} at (142,195) size 0x46
-              RenderText {#text} at (2,243) size 140x46
-                text run at (2,243) width 140: "Autosize"
-              RenderBR {BR} at (142,243) size 0x46
-              RenderText {#text} at (2,291) size 140x46
-                text run at (2,291) width 140: "Autosize"
-              RenderBR {BR} at (142,291) size 0x46
-              RenderText {#text} at (2,339) size 140x46
-                text run at (2,339) width 140: "Autosize"
-              RenderBR {BR} at (142,339) size 0x46
-              RenderText {#text} at (2,387) size 140x46
-                text run at (2,387) width 140: "Autosize"
-              RenderBR {BR} at (142,387) size 0x46
-              RenderText {#text} at (2,435) size 140x46
-                text run at (2,435) width 140: "Autosize"
-              RenderBR {BR} at (142,435) size 0x46
-              RenderText {#text} at (2,483) size 140x46
-                text run at (2,483) width 140: "Autosize"
-              RenderBR {BR} at (142,483) size 0x46
-              RenderText {#text} at (2,531) size 140x46
-                text run at (2,531) width 140: "Autosize"
-              RenderBR {BR} at (142,531) size 0x46
-              RenderText {#text} at (2,579) size 140x46
-                text run at (2,579) width 140: "Autosize"
-              RenderBR {BR} at (142,579) size 0x46
-              RenderText {#text} at (2,627) size 140x46
-                text run at (2,627) width 140: "Autosize"
-              RenderBR {BR} at (142,627) size 0x46
-              RenderText {#text} at (2,675) size 140x46
-                text run at (2,675) width 140: "Autosize"
-              RenderBR {BR} at (142,675) size 0x46
-              RenderText {#text} at (2,723) size 140x46
-                text run at (2,723) width 140: "Autosize"
-              RenderBR {BR} at (142,723) size 0x46
-              RenderText {#text} at (2,771) size 140x46
-                text run at (2,771) width 140: "Autosize"
-              RenderBR {BR} at (142,771) size 0x46
-              RenderText {#text} at (2,819) size 140x46
-                text run at (2,819) width 140: "Autosize"
-              RenderBR {BR} at (142,819) size 0x46
+        RenderText {#text} at (0,0) size 333x17
+          text run at (0,0) width 333: "Table autosizing tests - table-with-inline-block.html"
+        RenderBR {BR} at (332,0) size 1x17
+        RenderText {#text} at (0,18) size 382x17
+          text run at (0,18) width 382: "This test passes if there is not extra space in the pink boxes."
+      RenderTable {TABLE} at (1,49) size 798x286 [border: none]
+        RenderTableSection {TBODY} at (0,0) size 797x285
+          RenderTableRow {TR} at (0,0) size 797x285
+            RenderTableCell {TD} at (0,0) size 797x285 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=0 c=0 rs=1 cs=1]
+              RenderText {#text} at (2,3) size 751x139
+                text run at (2,3) width 751: "Autosize Autosize Autosize Autosize Autosize"
+                text run at (2,50) width 751: "Autosize Autosize Autosize Autosize Autosize"
+                text run at (2,97) width 609: "Autosize Autosize Autosize Autosize "
+              RenderBlock {B} at (610.75,119) size 90.22x18 [bgcolor=#FFC0CB]
+                RenderText {#text} at (0,0) size 91x17
+                  text run at (0,0) width 91: "wrapped text"
+              RenderText {#text} at (2,144) size 751x139
+                text run at (2,144) width 751: "Autosize Autosize Autosize Autosize Autosize"
+                text run at (2,191) width 751: "Autosize Autosize Autosize Autosize Autosize"
+                text run at (2,238) width 599: "Autosize Autosize Autosize Autosize"
+      RenderTable {TABLE} at (1,336) size 147x850 [border: none]
+        RenderTableSection {TBODY} at (0,0) size 146x849
+          RenderTableRow {TR} at (0,0) size 146x849
+            RenderTableCell {TD} at (0,0) size 146x849 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=0 c=0 rs=1 cs=1]
+              RenderText {#text} at (2,3) size 143x45
+                text run at (2,3) width 143: "Autosize"
+              RenderBR {BR} at (144,3) size 1x45
+              RenderBlock {B} at (2,72) size 94.66x18 [bgcolor=#FFC0CB]
+                RenderText {#text} at (0,0) size 95x17
+                  text run at (0,0) width 95: "Wrapped text"
+              RenderBR {BR} at (96,50) size 1x45
+              RenderText {#text} at (2,97) size 143x45
+                text run at (2,97) width 143: "Autosize"
+              RenderBR {BR} at (144,97) size 1x45
+              RenderText {#text} at (2,144) size 143x45
+                text run at (2,144) width 143: "Autosize"
+              RenderBR {BR} at (144,144) size 1x45
+              RenderText {#text} at (2,191) size 143x45
+                text run at (2,191) width 143: "Autosize"
+              RenderBR {BR} at (144,191) size 1x45
+              RenderText {#text} at (2,238) size 143x45
+                text run at (2,238) width 143: "Autosize"
+              RenderBR {BR} at (144,238) size 1x45
+              RenderText {#text} at (2,285) size 143x45
+                text run at (2,285) width 143: "Autosize"
+              RenderBR {BR} at (144,285) size 1x45
+              RenderText {#text} at (2,332) size 143x45
+                text run at (2,332) width 143: "Autosize"
+              RenderBR {BR} at (144,332) size 1x45
+              RenderText {#text} at (2,379) size 143x45
+                text run at (2,379) width 143: "Autosize"
+              RenderBR {BR} at (144,379) size 1x45
+              RenderText {#text} at (2,426) size 143x45
+                text run at (2,426) width 143: "Autosize"
+              RenderBR {BR} at (144,426) size 1x45
+              RenderText {#text} at (2,473) size 143x45
+                text run at (2,473) width 143: "Autosize"
+              RenderBR {BR} at (144,473) size 1x45
+              RenderText {#text} at (2,520) size 143x45
+                text run at (2,520) width 143: "Autosize"
+              RenderBR {BR} at (144,520) size 1x45
+              RenderText {#text} at (2,567) size 143x45
+                text run at (2,567) width 143: "Autosize"
+              RenderBR {BR} at (144,567) size 1x45
+              RenderText {#text} at (2,614) size 143x45
+                text run at (2,614) width 143: "Autosize"
+              RenderBR {BR} at (144,614) size 1x45
+              RenderText {#text} at (2,661) size 143x45
+                text run at (2,661) width 143: "Autosize"
+              RenderBR {BR} at (144,661) size 1x45
+              RenderText {#text} at (2,708) size 143x45
+                text run at (2,708) width 143: "Autosize"
+              RenderBR {BR} at (144,708) size 1x45
+              RenderText {#text} at (2,755) size 143x45
+                text run at (2,755) width 143: "Autosize"
+              RenderBR {BR} at (144,755) size 1x45
+              RenderText {#text} at (2,802) size 143x45
+                text run at (2,802) width 143: "Autosize"
+              RenderBR {BR} at (144,802) size 1x45

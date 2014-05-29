@@ -3,12 +3,12 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   RenderBlock {HTML} at (0,0) size 800x600
     RenderBody {BODY} at (8,8) size 784x584
-      RenderBlock {P} at (0,0) size 784x20
-        RenderText {#text} at (0,0) size 239x19
-          text run at (0,0) width 239: "These two glyphs should look the same:"
-      RenderBlock {DIV} at (0,36) size 784x57
-        RenderText {#text} at (0,1) size 48x55
+      RenderBlock {P} at (0,0) size 784x18
+        RenderText {#text} at (0,0) size 257x17
+          text run at (0,0) width 257: "These two glyphs should look the same:"
+      RenderBlock {DIV} at (0,34) size 784x55
+        RenderText {#text} at (0,1) size 48x53
           text run at (0,1) width 48: "\x{D842}\x{DF9F}"
-      RenderBlock {DIV} at (0,93) size 57x48
-        RenderText {#text} at (1,0) size 55x48
+      RenderBlock {DIV} at (0,89) size 55x48
+        RenderText {#text} at (1,0) size 53x48
           text run at (1,0) width 48: "\x{D842}\x{DF9F}"

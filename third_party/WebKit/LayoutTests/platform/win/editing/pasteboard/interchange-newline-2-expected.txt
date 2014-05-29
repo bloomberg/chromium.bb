@@ -2,6 +2,7 @@ EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotificatio
 EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
 EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
 EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
 EDITING DELEGATE: webViewDidChange:WebViewDidChangeNotification
 This demonstrates a bug in interchange newline handling during paste.
 The selection being pasted into contain multiple blocks, which breaks the old code in paste that handled interchange newlines.
@@ -9,4 +10,4 @@ The selection being pasted into contain multiple blocks, which breaks the old co
 |   "fbar"
 | "baz"
 | <div>
-|   "<#selection-caret>bar"
+|   "<#selection-caret>ar"

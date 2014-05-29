@@ -1,21 +1,21 @@
 layer at (0,0) size 800x600
   RenderView at (0,0) size 800x600
-layer at (0,0) size 800x354
-  RenderBlock {HTML} at (0,0) size 800x354.44
-    RenderBody {BODY} at (8,18.72) size 784x327.72
-      RenderBlock {H3} at (0,0) size 784x23
-        RenderText {#text} at (0,0) size 92x22
-          text run at (0,0) width 92: "It passes if:"
-      RenderBlock {UL} at (0,41.72) size 784x40
-        RenderListItem {LI} at (40,0) size 744x20
-          RenderListMarker at (-18,0) size 7x19: bullet
-          RenderText {#text} at (0,0) size 389x19
-            text run at (0,0) width 389: "the video content has rounded corners (top left and bottom right)"
-        RenderListItem {LI} at (40,20) size 744x20
-          RenderListMarker at (-18,0) size 7x19: bullet
-          RenderText {#text} at (0,0) size 179x19
-            text run at (0,0) width 179: "gray background is not visible"
-      RenderBlock (anonymous) at (0,97.72) size 784x230
+layer at (0,0) size 800x347
+  RenderBlock {HTML} at (0,0) size 800x347.44
+    RenderBody {BODY} at (8,18.72) size 784x320.72
+      RenderBlock {H3} at (0,0) size 784x21
+        RenderText {#text} at (0,0) size 91x20
+          text run at (0,0) width 91: "It passes if:"
+      RenderBlock {UL} at (0,39.72) size 784x36
+        RenderListItem {LI} at (40,0) size 744x18
+          RenderListMarker at (-17,0) size 7x17: bullet
+          RenderText {#text} at (0,0) size 415x17
+            text run at (0,0) width 415: "the video content has rounded corners (top left and bottom right)"
+        RenderListItem {LI} at (40,18) size 744x18
+          RenderListMarker at (-17,0) size 7x17: bullet
+          RenderText {#text} at (0,0) size 194x17
+            text run at (0,0) width 194: "gray background is not visible"
+      RenderBlock (anonymous) at (0,91.72) size 784x229
         RenderText {#text} at (0,0) size 0x0
-layer at (8,116) size 400x225
+layer at (8,110) size 400x225
   RenderVideo {VIDEO} at (0,0) size 400x225 [bgcolor=#808080]

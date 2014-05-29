@@ -12,23 +12,23 @@ layer at (49,39) size 720x540
     RenderSVGEllipse {circle} at (193,93) size 432x432 [fill={[type=LINEAR-GRADIENT] [id="gradient"]}] [cx=50.00] [cy=50.00] [r=30.00]
 layer at (48,38) size 722x542 layerType: foreground only
   RenderBody {body} at (48,38) size 722x542 [border: (1px solid #000000)]
-    RenderBlock {form} at (1,1) size 720x137.59
-      RenderFieldSet {fieldset} at (2,0) size 716x137.59 [border: (2px groove #C0C0C0)]
-        RenderBlock {legend} at (14,0) size 84x20
-          RenderText {#text} at (2,0) size 80x19
-            text run at (2,0) width 80: "HTML Form"
-        RenderBlock {p} at (14,41.59) size 688x26
-          RenderInline {label} at (0,0) size 99x19
-            RenderText {#text} at (0,3) size 99x19
-              text run at (0,3) width 99: "Enter something:"
-          RenderText {#text} at (99,3) size 4x19
-            text run at (99,3) width 4: " "
-          RenderTextControl {input} at (105,2) size 153x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+    RenderBlock {form} at (1,1) size 720x133.59
+      RenderFieldSet {fieldset} at (2,0) size 716x133.59 [border: (2px groove #C0C0C0)]
+        RenderBlock {legend} at (14,0) size 88x18
+          RenderText {#text} at (2,0) size 84x17
+            text run at (2,0) width 84: "HTML Form"
+        RenderBlock {p} at (14,39.59) size 688x25
+          RenderInline {label} at (0,0) size 110x17
+            RenderText {#text} at (0,3) size 110x17
+              text run at (0,3) width 110: "Enter something:"
+          RenderText {#text} at (109,3) size 5x17
+            text run at (109,3) width 5: " "
+          RenderTextControl {input} at (115.75,2) size 144x21 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
           RenderText {#text} at (0,0) size 0x0
-        RenderBlock {p} at (14,83.59) size 688x26
-          RenderButton {button} at (2,2) size 65x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
-            RenderBlock (anonymous) at (8,3) size 49x16
-              RenderText {#text} at (0,0) size 49x16
-                text run at (0,0) width 49: "Activate!"
-layer at (172,86) size 149x16
-  RenderBlock {div} at (2,3) size 149x16
+        RenderBlock {p} at (14,80.59) size 688x25
+          RenderButton {button} at (2,2) size 67.13x21 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
+            RenderBlock (anonymous) at (8,3) size 51.13x15
+              RenderText {#text} at (0,0) size 52x15
+                text run at (0,0) width 52: "Activate!"
+layer at (183,84) size 140x15
+  RenderBlock {div} at (2,3) size 140x15

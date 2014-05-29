@@ -4,14 +4,14 @@ layer at (0,0) size 800x600
   RenderBlock {HTML} at (0,0) size 800x600
     RenderBody {BODY} at (8,8) size 784x584
       RenderImage {IMG} at (643,10) size 121x84
-      RenderInline {A} at (0,0) size 358x19 [color=#0000EE]
-        RenderText {#text} at (0,0) size 358x19
-          text run at (0,0) width 358: "http://www.apple.com/pr/library/2003/jan/02ical_isync.html"
-      RenderBR {BR} at (358,15) size 0x0
-      RenderInline {A} at (0,0) size 162x19 [color=#0000EE]
-        RenderText {#text} at (0,20) size 162x19
-          text run at (0,20) width 162: "http://www.apple.com/ical/"
-      RenderBR {BR} at (162,35) size 0x0
-      RenderInline {A} at (0,0) size 172x19 [color=#0000EE]
-        RenderText {#text} at (0,40) size 172x19
-          text run at (0,40) width 172: "http://www.apple.com/isync/"
+      RenderInline {A} at (0,0) size 388x17 [color=#0000EE]
+        RenderText {#text} at (0,0) size 388x17
+          text run at (0,0) width 388: "http://www.apple.com/pr/library/2003/jan/02ical_isync.html"
+      RenderBR {BR} at (387,14) size 1x0
+      RenderInline {A} at (0,0) size 176x17 [color=#0000EE]
+        RenderText {#text} at (0,18) size 176x17
+          text run at (0,18) width 176: "http://www.apple.com/ical/"
+      RenderBR {BR} at (175,32) size 1x0
+      RenderInline {A} at (0,0) size 186x17 [color=#0000EE]
+        RenderText {#text} at (0,36) size 186x17
+          text run at (0,36) width 186: "http://www.apple.com/isync/"

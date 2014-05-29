@@ -1748,6 +1748,9 @@ class Port(object):
                              'platform/linux/fast/text/subpixel',
                              ['--enable-webkit-text-subpixel-positioning',
                               '--force-compositing-mode']),
+            # FIXME: Merge with mac-antialiasedtext and rename
+            # antialiasedtext as a separate change once DW has been
+            # enabled for a couple of days.
             VirtualTestSuite('windows-directwrite',
                              'fast/text',
                              ['--enable-direct-write',

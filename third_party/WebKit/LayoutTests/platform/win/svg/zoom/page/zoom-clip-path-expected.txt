@@ -1,8 +1,8 @@
 layer at (0,0) size 800x600
   RenderView at (0,0) size 800x600
-layer at (0,0) size 800x249
-  RenderBlock {HTML} at (0,0) size 800x249.16
-    RenderBody {BODY} at (16.58,16.58) size 766.84x216
+layer at (0,0) size 800x248
+  RenderBlock {HTML} at (0,0) size 800x248.16
+    RenderBody {BODY} at (16.58,16.58) size 766.84x215
       RenderSVGRoot {svg} at (16,16) size 1x1
         RenderSVGHiddenContainer {defs} at (0,0) size 0x0
           RenderSVGResourceClipper {clipPath} [id="clip1"] [clipPathUnits=userSpaceOnUse]

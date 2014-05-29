@@ -3,33 +3,33 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   RenderBlock {HTML} at (0,0) size 800x600
     RenderBody {BODY} at (8,8) size 784x576
-      RenderBlock {P} at (0,0) size 784x40
-        RenderText {#text} at (0,0) size 131x19
-          text run at (0,0) width 131: "This is a pixel test for "
-        RenderInline {I} at (0,0) size 756x39
-          RenderInline {A} at (0,0) size 350x19 [color=#0000EE]
-            RenderText {#text} at (131,0) size 350x19
-              text run at (131,0) width 350: "http://bugzilla.opendarwin.org/show_bug.cgi?id=4334"
-          RenderText {#text} at (481,0) size 756x39
-            text run at (481,0) width 4: " "
-            text run at (485,0) width 271: "REGRESSION: Flickering when css-hover"
-            text run at (0,20) width 277: "should change opacity on floating elements"
-        RenderText {#text} at (277,20) size 4x19
-          text run at (277,20) width 4: "."
-      RenderBlock {P} at (0,56) size 784x20
-        RenderText {#text} at (0,0) size 467x19
-          text run at (0,0) width 467: "There should be a solid green square below mixed in with a paragraph of text."
-      RenderBlock {HR} at (0,92) size 784x2 [border: (1px inset #EEEEEE)]
-      RenderBlock {DIV} at (0,112.72) size 784x141.72
-        RenderBlock {DIV} at (0,0) size 784x141.72
+      RenderBlock {P} at (0,0) size 784x36
+        RenderText {#text} at (0,0) size 144x17
+          text run at (0,0) width 144: "This is a pixel test for "
+        RenderInline {I} at (0,0) size 774x35
+          RenderInline {A} at (0,0) size 354x17 [color=#0000EE]
+            RenderText {#text} at (143,0) size 354x17
+              text run at (143,0) width 354: "http://bugzilla.opendarwin.org/show_bug.cgi?id=4334"
+          RenderText {#text} at (496,0) size 774x35
+            text run at (496,0) width 5: " "
+            text run at (500,0) width 274: "REGRESSION: Flickering when css-hover"
+            text run at (0,18) width 278: "should change opacity on floating elements"
+        RenderText {#text} at (277,18) size 5x17
+          text run at (277,18) width 5: "."
+      RenderBlock {P} at (0,52) size 784x18
+        RenderText {#text} at (0,0) size 499x17
+          text run at (0,0) width 499: "There should be a solid green square below mixed in with a paragraph of text."
+      RenderBlock {HR} at (0,86) size 784x2 [border: (1px inset #EEEEEE)]
+      RenderBlock {DIV} at (0,106.72) size 784x129.72
+        RenderBlock {DIV} at (0,0) size 784x129.72
           RenderBlock (floating) {DIV} at (3,3) size 75x75 [bgcolor=#008000]
-          RenderBlock {H3} at (0,0) size 784x23
-            RenderText {#text} at (81,0) size 164x22
-              text run at (81,0) width 164: "Stanley Park Forest"
-          RenderBlock {P} at (0,41.72) size 784x100
-            RenderText {#text} at (81,0) size 768x99
-              text run at (81,0) width 673: "The forest is primarily second and third growth. The area was saved from development because of its status as a"
-              text run at (81,20) width 630: "federal military reserve; it occupied a strategic location for defending the former provincial capital of New"
-              text run at (0,40) width 768: "Westminster in the case of an American naval invasion. Nevertheless, the federal government allowed logging operations there in"
-              text run at (0,60) width 736: "the mid-nineteenth century. Large swathes of the park were also deforested by natural causes on two occasions in the 20th"
-              text run at (0,80) width 48: "century."
+          RenderBlock {H3} at (0,0) size 784x21
+            RenderText {#text} at (81,0) size 160x20
+              text run at (81,0) width 160: "Stanley Park Forest"
+          RenderBlock {P} at (0,39.72) size 784x90
+            RenderText {#text} at (81,0) size 772x89
+              text run at (81,0) width 689: "The forest is primarily second and third growth. The area was saved from development because of its status"
+              text run at (81,18) width 677: "as a federal military reserve; it occupied a strategic location for defending the former provincial capital of"
+              text run at (81,36) width 689: "New Westminster in the case of an American naval invasion. Nevertheless, the federal government allowed"
+              text run at (0,54) width 772: "logging operations there in the mid-nineteenth century. Large swathes of the park were also deforested by natural causes"
+              text run at (0,72) width 239: "on two occasions in the 20th century."

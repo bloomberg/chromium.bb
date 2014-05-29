@@ -6,8 +6,8 @@
       (contentsOpaque 1)
       (drawsContent 1)
       (repaint rects
-        (rect 110.00 130.00 25.00 50.00)
-        (rect 100.00 120.00 35.00 50.00)
+        (rect 110.00 128.00 25.00 50.00)
+        (rect 100.00 118.00 35.00 50.00)
       )
     )
   )

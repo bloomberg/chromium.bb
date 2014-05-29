@@ -3,21 +3,21 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   RenderBlock {HTML} at (0,0) size 800x600
     RenderBody {BODY} at (8,8) size 784x576
-      RenderBlock (anonymous) at (0,0) size 784x40
-        RenderText {#text} at (0,0) size 210x19
-          text run at (0,0) width 210: "This is a initial test for simple ruby. "
-        RenderBR {BR} at (210,15) size 0x0
-        RenderBR {BR} at (0,20) size 0x19
-      RenderBlock {P} at (0,56) size 784x32
-        RenderText {#text} at (0,12) size 151x19
-          text run at (0,12) width 151: "Ruby is often used in the "
-        RenderRuby (inline) {RUBY} at (0,0) size 111x19
-          RenderRubyRun (anonymous) at (151,12) size 111x20
-            RenderRubyText {RT} at (0,-12) size 111x12
-              RenderText {#text} at (38,0) size 35x12
-                text run at (38,0) width 35: "Nihongo"
-            RenderRubyBase (anonymous) at (0,0) size 111x20
-              RenderText {#text} at (0,0) size 111x19
-                text run at (0,0) width 111: "Japanese language"
-        RenderText {#text} at (262,12) size 4x19
-          text run at (262,12) width 4: "."
+      RenderBlock (anonymous) at (0,0) size 784x36
+        RenderText {#text} at (0,0) size 233x17
+          text run at (0,0) width 233: "This is a initial test for simple ruby. "
+        RenderBR {BR} at (232,14) size 1x0
+        RenderBR {BR} at (0,18) size 0x17
+      RenderBlock {P} at (0,52) size 784x28
+        RenderText {#text} at (0,10) size 164x17
+          text run at (0,10) width 164: "Ruby is often used in the "
+        RenderRuby (inline) {RUBY} at (0,0) size 120x17
+          RenderRubyRun (anonymous) at (163.53,10) size 118.61x18
+            RenderRubyText {RT} at (0,-10) size 118.61x10
+              RenderText {#text} at (43,0) size 32x10
+                text run at (43,0) width 32: "Nihongo"
+            RenderRubyBase (anonymous) at (0,0) size 118.61x18
+              RenderText {#text} at (0,0) size 119x17
+                text run at (0,0) width 119: "Japanese language"
+        RenderText {#text} at (282,10) size 5x17
+          text run at (282,10) width 5: "."

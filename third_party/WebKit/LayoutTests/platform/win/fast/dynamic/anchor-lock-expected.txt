@@ -1,39 +1,39 @@
-layer at (0,0) size 785x2130
+layer at (0,0) size 785x2122
   RenderView at (0,0) size 785x600
-layer at (0,0) size 785x2130
-  RenderBlock {HTML} at (0,0) size 785x2130.44
-    RenderBody {BODY} at (8,8) size 769x2114.44
+layer at (0,0) size 785x2122
+  RenderBlock {HTML} at (0,0) size 785x2122.44
+    RenderBody {BODY} at (8,8) size 769x2106.44
       RenderBlock {H1} at (0,0) size 769x37
-        RenderText {#text} at (0,0) size 179x36
-          text run at (0,0) width 179: "Anchor Lock"
-      RenderBlock {P} at (0,58.44) size 769x40
-        RenderText {#text} at (0,0) size 756x39
-          text run at (0,0) width 756: "This tests WebKit's ability to lock to an anchor and maintain focus on it as images are loaded above and below it. The Anchor"
-          text run at (0,20) width 300: "text should be visible and this message should not."
-      RenderBlock {P} at (0,114.44) size 769x200
+        RenderText {#text} at (0,0) size 181x36
+          text run at (0,0) width 181: "Anchor Lock"
+      RenderBlock {P} at (0,58.44) size 769x36
+        RenderText {#text} at (0,0) size 755x35
+          text run at (0,0) width 755: "This tests WebKit's ability to lock to an anchor and maintain focus on it as images are loaded above and below it. The"
+          text run at (0,18) width 376: "Anchor text should be visible and this message should not."
+      RenderBlock {P} at (0,110.44) size 769x200
         RenderImage {IMG} at (0,0) size 200x200
-      RenderBlock {P} at (0,330.44) size 769x200
+      RenderBlock {P} at (0,326.44) size 769x200
         RenderImage {IMG} at (0,0) size 200x200
-      RenderBlock {P} at (0,546.44) size 769x200
+      RenderBlock {P} at (0,542.44) size 769x200
         RenderImage {IMG} at (0,0) size 200x200
-      RenderBlock {P} at (0,762.44) size 769x200
+      RenderBlock {P} at (0,758.44) size 769x200
         RenderImage {IMG} at (0,0) size 200x200
-      RenderBlock (anonymous) at (0,978.44) size 769x20
-        RenderInline {A} at (0,0) size 289x19
-          RenderText {#text} at (0,0) size 289x19
-            text run at (0,0) width 289: "Anchor text - this should be the only visible text."
+      RenderBlock (anonymous) at (0,974.44) size 769x18
+        RenderInline {A} at (0,0) size 313x17
+          RenderText {#text} at (0,0) size 313x17
+            text run at (0,0) width 313: "Anchor text - this should be the only visible text."
         RenderText {#text} at (0,0) size 0x0
-      RenderBlock {P} at (0,1014.44) size 769x200
+      RenderBlock {P} at (0,1008.44) size 769x200
         RenderImage {IMG} at (0,0) size 200x200
-      RenderBlock {P} at (0,1230.44) size 769x200
+      RenderBlock {P} at (0,1224.44) size 769x200
         RenderImage {IMG} at (0,0) size 200x200
-      RenderBlock {P} at (0,1446.44) size 769x200
+      RenderBlock {P} at (0,1440.44) size 769x200
         RenderImage {IMG} at (0,0) size 200x200
-      RenderBlock {P} at (0,1662.44) size 769x200
+      RenderBlock {P} at (0,1656.44) size 769x200
         RenderImage {IMG} at (0,0) size 200x200
-      RenderBlock {P} at (0,1878.44) size 769x200
+      RenderBlock {P} at (0,1872.44) size 769x200
         RenderImage {IMG} at (0,0) size 200x200
-      RenderBlock (anonymous) at (0,2094.44) size 769x20
-        RenderText {#text} at (0,0) size 57x19
-          text run at (0,0) width 57: "#anchor1"
-scrolled to 0,986
+      RenderBlock (anonymous) at (0,2088.44) size 769x18
+        RenderText {#text} at (0,0) size 60x17
+          text run at (0,0) width 60: "#anchor1"
+scrolled to 0,982

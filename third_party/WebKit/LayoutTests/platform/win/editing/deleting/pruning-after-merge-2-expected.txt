@@ -7,21 +7,21 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   RenderBlock {HTML} at (0,0) size 800x600
     RenderBody {BODY} at (8,8) size 784x584
-      RenderBlock {P} at (0,0) size 784x40
-        RenderText {#text} at (0,0) size 751x19
-          text run at (0,0) width 631: "This tests to see if deletion correctly prunes the containers of the paragraph being moved during a merge. "
-          text run at (631,0) width 120: "You should see 'foo"
-        RenderInline {B} at (0,0) size 22x19
-          RenderText {#text} at (751,0) size 22x19
-            text run at (751,0) width 22: "bar"
-        RenderText {#text} at (773,0) size 776x39
-          text run at (773,0) width 3: "'"
-          text run at (0,20) width 41: "below."
-      RenderBlock {DIV} at (0,56) size 784x20
-        RenderBlock {DIV} at (0,0) size 784x20
-          RenderText {#text} at (0,0) size 20x19
-            text run at (0,0) width 20: "foo"
-          RenderInline {SPAN} at (0,0) size 22x19
-            RenderText {#text} at (20,0) size 22x19
-              text run at (20,0) width 22: "bar"
+      RenderBlock {P} at (0,0) size 784x36
+        RenderText {#text} at (0,0) size 776x35
+          text run at (0,0) width 677: "This tests to see if deletion correctly prunes the containers of the paragraph being moved during a merge. "
+          text run at (676,0) width 100: "You should see"
+          text run at (0,18) width 25: "'foo"
+        RenderInline {B} at (0,0) size 25x17
+          RenderText {#text} at (24,18) size 25x17
+            text run at (24,18) width 25: "bar"
+        RenderText {#text} at (48,18) size 51x17
+          text run at (48,18) width 51: "' below."
+      RenderBlock {DIV} at (0,52) size 784x18
+        RenderBlock {DIV} at (0,0) size 784x18
+          RenderText {#text} at (0,0) size 22x17
+            text run at (0,0) width 22: "foo"
+          RenderInline {SPAN} at (0,0) size 25x17
+            RenderText {#text} at (21,0) size 25x17
+              text run at (21,0) width 25: "bar"
 caret: position 3 of child 0 {#text} of child 0 {DIV} of child 2 {DIV} of body

@@ -1,15 +1,15 @@
 layer at (0,0) size 800x600
   RenderView at (0,0) size 800x600
-layer at (0,0) size 800x144
-  RenderBlock {HTML} at (0,0) size 800x144
-    RenderBody {BODY} at (8,8) size 784x120
+layer at (0,0) size 800x142
+  RenderBlock {HTML} at (0,0) size 800x142
+    RenderBody {BODY} at (8,8) size 784x118
       RenderBlock (anonymous) at (0,0) size 784x84
         RenderTextControl {INPUT} at (0,2) size 204x80 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
         RenderText {#text} at (0,0) size 0x0
-      RenderBlock {P} at (0,100) size 784x20
-        RenderText {#text} at (0,0) size 527x19
-          text run at (0,0) width 344: "The last character (and only the last character) should be "
-          text run at (344,0) width 183: "selected in the text box above."
+      RenderBlock {P} at (0,100) size 784x18
+        RenderText {#text} at (0,0) size 560x17
+          text run at (0,0) width 367: "The last character (and only the last character) should be "
+          text run at (366,0) width 194: "selected in the text box above."
 layer at (10,13) size 200x74
   RenderBlock {DIV} at (2,3) size 200x74
     RenderText {#text} at (34,1) size 166x72

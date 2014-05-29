@@ -6,7 +6,7 @@
       (contentsOpaque 1)
       (drawsContent 1)
       (repaint rects
-        (rect 8.00 92.00 200.00 109.00)
+        (rect 8.00 84.00 200.00 119.00)
       )
     )
   )

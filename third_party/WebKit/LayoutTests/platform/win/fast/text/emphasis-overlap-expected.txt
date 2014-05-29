@@ -22,8 +22,8 @@ layer at (0,0) size 800x600
           RenderBR {BR} at (0,0) size 0x0
           RenderText {#text} at (0,112) size 128x32
             text run at (0,112) width 128: "4444"
-        RenderText {#text} at (160,147) size 4x19
-          text run at (160,147) width 4: " "
+        RenderText {#text} at (160,148) size 4x17
+          text run at (160,148) width 4: " "
         RenderBlock {DIV} at (164,24) size 160x144
           RenderText {#text} at (0,0) size 160x32
             text run at (0,0) width 160: "1111 "
@@ -42,8 +42,8 @@ layer at (0,0) size 800x600
           RenderBR {BR} at (0,0) size 0x0
           RenderText {#text} at (0,112) size 128x32
             text run at (0,112) width 128: "4444"
-        RenderText {#text} at (324,147) size 4x19
-          text run at (324,147) width 4: " "
+        RenderText {#text} at (324,148) size 4x17
+          text run at (324,148) width 4: " "
         RenderBlock {DIV} at (328,8) size 160x160
           RenderText {#text} at (0,0) size 160x32
             text run at (0,0) width 160: "1111 "
@@ -82,8 +82,8 @@ layer at (0,0) size 800x600
           RenderBR {BR} at (0,0) size 0x0
           RenderText {#text} at (0,112) size 128x32
             text run at (0,112) width 128: "4444"
-        RenderText {#text} at (160,10) size 4x19
-          text run at (160,10) width 4: " "
+        RenderText {#text} at (160,11) size 4x17
+          text run at (160,11) width 4: " "
         RenderBlock {DIV} at (164,8) size 160x144
           RenderText {#text} at (0,0) size 160x32
             text run at (0,0) width 160: "1111 "
@@ -102,8 +102,8 @@ layer at (0,0) size 800x600
           RenderBR {BR} at (0,0) size 0x0
           RenderText {#text} at (0,112) size 128x32
             text run at (0,112) width 128: "4444"
-        RenderText {#text} at (324,10) size 4x19
-          text run at (324,10) width 4: " "
+        RenderText {#text} at (324,11) size 4x17
+          text run at (324,11) width 4: " "
         RenderBlock {DIV} at (328,8) size 160x160
           RenderText {#text} at (0,0) size 160x32
             text run at (0,0) width 160: "1111 "
