@@ -38,15 +38,16 @@ gfx::Size TypeConverter<Size, gfx::Size>::ConvertTo(const Size& input) {
 Rect TypeConverter<Rect, gfx::Rect>::ConvertFrom(const gfx::Rect& input,
                                                  Buffer* buf) {
   Rect::Builder rect(buf);
-  rect.set_position(input.origin());
-  rect.set_size(input.size());
+  rect.set_x(input.x());
+  rect.set_y(input.y());
+  rect.set_width(input.width());
+  rect.set_height(input.height());
   return rect.Finish();
 }
 
 // static
 gfx::Rect TypeConverter<Rect, gfx::Rect>::ConvertTo(const Rect& input) {
-  return gfx::Rect(input.position().x(), input.position().y(),
-                    input.size().width(), input.size().height());
+  return gfx::Rect(input.x(), input.y(), input.width(), input.height());
 }
 
 }  // namespace mojo

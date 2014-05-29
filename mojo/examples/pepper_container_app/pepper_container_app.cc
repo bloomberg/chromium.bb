@@ -41,14 +41,10 @@ class PepperContainerApp: public Application,
     viewport_.set_client(this);
 
     Rect::Builder rect;
-    Point::Builder point;
-    point.set_x(10);
-    point.set_y(10);
-    rect.set_position(point.Finish());
-    Size::Builder size;
-    size.set_width(800);
-    size.set_height(600);
-    rect.set_size(size.Finish());
+    rect.set_x(10);
+    rect.set_y(10);
+    rect.set_width(800);
+    rect.set_height(600);
     viewport_->Create(rect.Finish());
     viewport_->Show();
   }

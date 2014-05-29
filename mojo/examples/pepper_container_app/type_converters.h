@@ -54,15 +54,16 @@ class TypeConverter<Rect, PP_Rect> {
  public:
   static Rect ConvertFrom(const PP_Rect& input, Buffer* buf) {
     Rect::Builder rect(buf);
-    rect.set_position(input.point);
-    rect.set_size(input.size);
+    rect.set_x(input.point.x);
+    rect.set_y(input.point.y);
+    rect.set_width(input.size.width);
+    rect.set_height(input.size.height);
     return rect.Finish();
   }
 
   static PP_Rect ConvertTo(const Rect& input) {
-    PP_Rect rect = { input.position().To<PP_Point>(),
-                     input.size().To<PP_Size>() };
-    return rect;
+    return PP_MakeRectFromXYWH(input.x(), input.y(),
+                               input.width(), input.height());
   }
 
   MOJO_ALLOW_IMPLICIT_TYPE_CONVERSION();

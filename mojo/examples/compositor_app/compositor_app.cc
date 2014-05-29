@@ -46,7 +46,11 @@ class SampleApp : public Application, public NativeViewportClient {
   }
 
   virtual void OnBoundsChanged(const Rect& bounds) OVERRIDE {
-    host_->SetSize(bounds.size());
+    AllocationScope scope;
+    Size::Builder size;
+    size.set_width(bounds.width());
+    size.set_height(bounds.height());
+    host_->SetSize(size.Finish());
   }
 
   virtual void OnEvent(const Event& event,

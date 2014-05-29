@@ -139,8 +139,7 @@ void WindowTreeHostMojo::OnCreated() {
 }
 
 void WindowTreeHostMojo::OnBoundsChanged(const Rect& bounds) {
-  bounds_ = gfx::Rect(bounds.position().x(), bounds.position().y(),
-                      bounds.size().width(), bounds.size().height());
+  bounds_ = bounds;
   window()->SetBounds(gfx::Rect(bounds_.size()));
   OnHostResized(bounds_.size());
 }

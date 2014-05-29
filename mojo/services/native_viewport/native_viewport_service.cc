@@ -64,9 +64,8 @@ class NativeViewportImpl
   }
 
   virtual void SetBounds(const Rect& bounds) OVERRIDE {
-    gfx::Rect gfx_bounds(bounds.position().x(), bounds.position().y(),
-                         bounds.size().width(), bounds.size().height());
-    native_viewport_->SetBounds(gfx_bounds);
+    AllocationScope scope;
+    native_viewport_->SetBounds(bounds);
   }
 
   virtual void CreateGLES2Context(ScopedMessagePipeHandle client_handle)
