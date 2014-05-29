@@ -944,10 +944,6 @@ const char kEnableWebRtcHWVp8Encoding[]     = "enable-webrtc-hw-vp8-encoding";
 #endif
 
 #if defined(OS_ANDROID)
-// Disable user gesture requirement for the media element to enter fullscreen.
-const char kDisableGestureRequirementForMediaFullscreen[] =
-    "disable-gesture-requirement-for-media-fullscreen";
-
 // Disable user gesture requirement for media playback.
 const char kDisableGestureRequirementForMediaPlayback[] =
     "disable-gesture-requirement-for-media-playback";

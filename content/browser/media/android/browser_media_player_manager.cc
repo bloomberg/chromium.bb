@@ -340,15 +340,6 @@ void BrowserMediaPlayerManager::RequestFullScreen(int player_id) {
     OnError(player_id, MediaPlayerAndroid::MEDIA_ERROR_DECODE);
     return;
   }
-
-  // Send an IPC to the render process to request the video element to enter
-  // fullscreen. OnEnterFullscreen() will be called later on success.
-  // This guarantees the fullscreen video will be rendered correctly.
-  // TODO(qinmin): make this flag default on android.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableGestureRequirementForMediaFullscreen)) {
-    Send(new MediaPlayerMsg_RequestFullscreen(RoutingID(), player_id));
-  }
 }
 
 // The following 5 functions are EME MediaKeySession events.
