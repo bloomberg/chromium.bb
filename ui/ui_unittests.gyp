@@ -46,7 +46,6 @@
         '<@(_common_sources)',
         'base/accelerators/accelerator_manager_unittest.cc',
         'base/accelerators/menu_label_accelerator_util_linux_unittest.cc',
-        'base/clipboard/clipboard_unittest.cc',
         'base/clipboard/custom_data_helper_unittest.cc',
         'base/cocoa/base_view_unittest.mm',
         'base/cocoa/cocoa_base_utils_unittest.mm',
