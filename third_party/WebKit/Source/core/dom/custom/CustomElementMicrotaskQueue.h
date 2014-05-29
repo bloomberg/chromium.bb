@@ -67,7 +67,7 @@ class CustomElementMicrotaskQueue : public CustomElementMicrotaskQueueBase {
 public:
     static PassRefPtrWillBeRawPtr<CustomElementMicrotaskQueue> create() { return adoptRefWillBeNoop(new CustomElementMicrotaskQueue()); }
 
-    void enqueue(PassOwnPtr<CustomElementMicrotaskStep>);
+    void enqueue(PassOwnPtrWillBeRawPtr<CustomElementMicrotaskStep>);
 
 private:
     CustomElementMicrotaskQueue() { }

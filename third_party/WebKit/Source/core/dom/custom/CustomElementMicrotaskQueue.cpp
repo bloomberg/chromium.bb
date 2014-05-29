@@ -98,7 +98,7 @@ void CustomElementMicrotaskQueueBase::show(unsigned indent)
 }
 #endif
 
-void CustomElementMicrotaskQueue::enqueue(PassOwnPtr<CustomElementMicrotaskStep> step)
+void CustomElementMicrotaskQueue::enqueue(PassOwnPtrWillBeRawPtr<CustomElementMicrotaskStep> step)
 {
     m_queue.append(step);
 }

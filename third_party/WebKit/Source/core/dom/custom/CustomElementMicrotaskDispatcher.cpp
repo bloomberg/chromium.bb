@@ -44,11 +44,11 @@ void CustomElementMicrotaskDispatcher::enqueue(HTMLImportLoader* parentLoader, P
         m_resolutionAndImports->enqueue(step);
 }
 
-void CustomElementMicrotaskDispatcher::enqueue(HTMLImportLoader* parentLoader, PassOwnPtr<CustomElementMicrotaskImportStep> step, bool importIsSync)
+void CustomElementMicrotaskDispatcher::enqueue(HTMLImportLoader* parentLoader, PassOwnPtrWillBeRawPtr<CustomElementMicrotaskImportStep> step, bool importIsSync)
 {
     ensureMicrotaskScheduledForMicrotaskSteps();
     if (importIsSync)
-        enqueue(parentLoader, PassOwnPtr<CustomElementMicrotaskStep>(step));
+        enqueue(parentLoader, PassOwnPtrWillBeRawPtr<CustomElementMicrotaskStep>(step));
     else
         m_asyncImports->enqueue(step);
 }
@@ -122,6 +122,7 @@ void CustomElementMicrotaskDispatcher::doDispatch()
 void CustomElementMicrotaskDispatcher::trace(Visitor* visitor)
 {
     visitor->trace(m_resolutionAndImports);
+    visitor->trace(m_asyncImports);
 #if ENABLE(OILPAN)
     visitor->trace(m_elements);
 #endif

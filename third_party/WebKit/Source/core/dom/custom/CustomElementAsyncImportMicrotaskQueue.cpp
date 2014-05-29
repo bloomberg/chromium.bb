@@ -35,14 +35,14 @@
 
 namespace WebCore {
 
-void CustomElementAsyncImportMicrotaskQueue::enqueue(PassOwnPtr<CustomElementMicrotaskImportStep> step)
+void CustomElementAsyncImportMicrotaskQueue::enqueue(PassOwnPtrWillBeRawPtr<CustomElementMicrotaskImportStep> step)
 {
     m_queue.append(step);
 }
 
 void CustomElementAsyncImportMicrotaskQueue::doDispatch()
 {
-    WillBeHeapVector<OwnPtr<CustomElementMicrotaskStep> > remaining;
+    WillBeHeapVector<OwnPtrWillBeMember<CustomElementMicrotaskStep> > remaining;
 
     for (unsigned i = 0; i < m_queue.size(); ++i) {
         if (CustomElementMicrotaskStep::Processing == m_queue[i]->process())
