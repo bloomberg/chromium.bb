@@ -126,10 +126,6 @@ class KernelWrapTest : public ::testing::Test {
         .WillOnce(Return(0))
         .WillOnce(Return(1))
         .WillOnce(Return(2));
-    // And will call mount / and /dev.
-    EXPECT_CALL(mock, mount(_, _, _, _, _))
-        .WillOnce(Return(0))
-        .WillOnce(Return(0));
 
     ASSERT_EQ(0, ki_push_state_for_testing());
     ASSERT_EQ(0, ki_init(&mock));

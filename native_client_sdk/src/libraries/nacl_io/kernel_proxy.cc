@@ -26,6 +26,7 @@
 #include "nacl_io/httpfs/http_fs.h"
 #include "nacl_io/kernel_handle.h"
 #include "nacl_io/kernel_wrap_real.h"
+#include "nacl_io/log.h"
 #include "nacl_io/memfs/mem_fs.h"
 #include "nacl_io/node.h"
 #include "nacl_io/osmman.h"
@@ -49,16 +50,17 @@
 
 namespace nacl_io {
 
-
-KernelProxy::KernelProxy() : dev_(0), ppapi_(NULL),
-                             exit_handler_(NULL),
-                             signal_emitter_(new EventEmitter) {
-   memset(&sigwinch_handler_, 0, sizeof(sigwinch_handler_));
-   sigwinch_handler_.sa_handler = SIG_DFL;
+KernelProxy::KernelProxy()
+    : dev_(0),
+      ppapi_(NULL),
+      exit_handler_(NULL),
+      signal_emitter_(new EventEmitter) {
+  memset(&sigwinch_handler_, 0, sizeof(sigwinch_handler_));
+  sigwinch_handler_.sa_handler = SIG_DFL;
 }
 
 KernelProxy::~KernelProxy() {
-  // Clean up the MountFactories.
+  // Clean up the FsFactories.
   for (FsFactoryMap_t::iterator i = factories_.begin(); i != factories_.end();
        ++i) {
     delete i->second;
@@ -76,18 +78,26 @@ Error KernelProxy::Init(PepperInterface* ppapi) {
   factories_["httpfs"] = new TypedFsFactory<HttpFs>;
   factories_["passthroughfs"] = new TypedFsFactory<PassthroughFs>;
 
-  int result;
-  result = mount("", "/", "passthroughfs", 0, NULL);
-  if (result != 0) {
+  ScopedFilesystem root_fs;
+  rtn = MountInternal("", "/", "passthroughfs", 0, NULL, false, &root_fs);
+  if (rtn != 0)
     assert(false);
-    rtn = errno;
-  }
 
-  result = mount("", "/dev", "dev", 0, NULL);
-  if (result != 0) {
+  ScopedFilesystem fs;
+  rtn = MountInternal("", "/dev", "dev", 0, NULL, false, &fs);
+  if (rtn != 0)
     assert(false);
-    rtn = errno;
-  }
+  dev_fs_ = sdk_util::static_scoped_ref_cast<DevFs>(fs);
+
+  // Create the filesystem nodes for / and /dev afterward. They can't be
+  // created the normal way because the dev filesystem didn't exist yet.
+  rtn = CreateFsNode(root_fs);
+  if (rtn != 0)
+    assert(false);
+
+  rtn = CreateFsNode(dev_fs_);
+  if (rtn != 0)
+    assert(false);
 
   // Open the first three in order to get STDIN, STDOUT, STDERR
   int fd;
@@ -113,8 +123,8 @@ Error KernelProxy::Init(PepperInterface* ppapi) {
   FsInitArgs args;
   args.dev = dev_++;
   args.ppapi = ppapi_;
-  stream_mount_.reset(new StreamFs());
-  result = stream_mount_->Init(args);
+  stream_fs_.reset(new StreamFs());
+  int result = stream_fs_->Init(args);
   if (result != 0) {
     assert(false);
     rtn = result;
@@ -204,12 +214,12 @@ int KernelProxy::open(const char* path, int open_flags) {
 }
 
 int KernelProxy::pipe(int pipefds[2]) {
-  PipeNode* pipe = new PipeNode(stream_mount_.get());
+  PipeNode* pipe = new PipeNode(stream_fs_.get());
   ScopedNode node(pipe);
 
   if (pipe->Init(O_RDWR) == 0) {
-    ScopedKernelHandle handle0(new KernelHandle(stream_mount_, node));
-    ScopedKernelHandle handle1(new KernelHandle(stream_mount_, node));
+    ScopedKernelHandle handle0(new KernelHandle(stream_fs_, node));
+    ScopedKernelHandle handle1(new KernelHandle(stream_fs_, node));
 
     // Should never fail, but...
     if (handle0->Init(O_RDONLY) || handle1->Init(O_WRONLY)) {
@@ -381,20 +391,35 @@ int KernelProxy::stat(const char* path, struct stat* buf) {
   return result;
 }
 
-
 int KernelProxy::mount(const char* source,
                        const char* target,
                        const char* filesystemtype,
                        unsigned long mountflags,
                        const void* data) {
+  ScopedFilesystem fs;
+  Error error = MountInternal(
+      source, target, filesystemtype, mountflags, data, true, &fs);
+  if (error) {
+    errno = error;
+    return -1;
+  }
+
+  return 0;
+}
+
+Error KernelProxy::MountInternal(const char* source,
+                                 const char* target,
+                                 const char* filesystemtype,
+                                 unsigned long mountflags,
+                                 const void* data,
+                                 bool create_fs_node,
+                                 ScopedFilesystem* out_filesystem) {
   std::string abs_path = GetAbsParts(target).Join();
 
   // Find a factory of that type
   FsFactoryMap_t::iterator factory = factories_.find(filesystemtype);
-  if (factory == factories_.end()) {
-    errno = ENODEV;
-    return -1;
-  }
+  if (factory == factories_.end())
+    return ENODEV;
 
   // Create a map of settings
   StringMap_t smap;
@@ -406,7 +431,8 @@ int KernelProxy::mount(const char* source,
     sdk_util::SplitString(static_cast<const char*>(data), ',', &elements);
 
     for (std::vector<std::string>::const_iterator it = elements.begin();
-         it != elements.end(); ++it) {
+         it != elements.end();
+         ++it) {
       size_t location = it->find('=');
       if (location != std::string::npos) {
         std::string key = it->substr(0, location);
@@ -425,25 +451,41 @@ int KernelProxy::mount(const char* source,
 
   ScopedFilesystem fs;
   Error error = factory->second->CreateFilesystem(args, &fs);
-  if (error) {
-    errno = error;
-    return -1;
-  }
+  if (error)
+    return error;
 
   error = AttachFsAtPath(fs, abs_path);
-  if (error) {
-    errno = error;
-    return -1;
+  if (error)
+    return error;
+
+  if (create_fs_node) {
+    error = CreateFsNode(fs);
+    if (error)
+      return error;
   }
 
+  *out_filesystem = fs;
   return 0;
 }
 
+Error KernelProxy::CreateFsNode(const ScopedFilesystem& fs) {
+  assert(dev_fs_);
+
+  return dev_fs_->CreateFsNode(fs.get());
+}
+
 int KernelProxy::umount(const char* path) {
-  Error error = DetachFsAtPath(path);
+  ScopedFilesystem fs;
+  Error error = DetachFsAtPath(path, &fs);
   if (error) {
     errno = error;
     return -1;
+  }
+
+  error = dev_fs_->DestroyFsNode(fs.get());
+  if (error) {
+    // Ignore any errors here, just log.
+    LOG_ERROR("Unable to destroy FsNode: %s", strerror(error));
   }
   return 0;
 }
@@ -739,8 +781,8 @@ int KernelProxy::fchmod(int fd, int mode) {
 int KernelProxy::fcntl(int fd, int request, va_list args) {
   Error error = 0;
 
-  // F_GETFD and F_SETFD are descirptor specific flags that
-  // are stored in the KernelObject's decriptor map unlink
+  // F_GETFD and F_SETFD are descriptor specific flags that
+  // are stored in the KernelObject's decriptor map unlike
   // F_GETFL and F_SETFL which are handle specific.
   switch (request) {
     case F_GETFD: {
@@ -798,12 +840,12 @@ int KernelProxy::access(const char* path, int amode) {
   return 0;
 }
 
-int KernelProxy::readlink(const char *path, char *buf, size_t count) {
+int KernelProxy::readlink(const char* path, char* buf, size_t count) {
   errno = EINVAL;
   return -1;
 }
 
-int KernelProxy::utimes(const char *filename, const struct timeval times[2]) {
+int KernelProxy::utimes(const char* filename, const struct timeval times[2]) {
   errno = EINVAL;
   return -1;
 }
@@ -915,8 +957,9 @@ int KernelProxy::tcgetattr(int fd, struct termios* termios_p) {
   return 0;
 }
 
-int KernelProxy::tcsetattr(int fd, int optional_actions,
-                           const struct termios *termios_p) {
+int KernelProxy::tcsetattr(int fd,
+                           int optional_actions,
+                           const struct termios* termios_p) {
   ScopedKernelHandle handle;
   Error error = AcquireHandle(fd, &handle);
   if (error) {
@@ -965,7 +1008,8 @@ int KernelProxy::kill(pid_t pid, int sig) {
   return 0;
 }
 
-int KernelProxy::sigaction(int signum, const struct sigaction* action,
+int KernelProxy::sigaction(int signum,
+                           const struct sigaction* action,
                            struct sigaction* oaction) {
   if (action && action->sa_flags & SA_SIGINFO) {
     // We don't support SA_SIGINFO (sa_sigaction field) yet
@@ -1025,8 +1069,11 @@ int KernelProxy::sigaction(int signum, const struct sigaction* action,
 
 #ifdef PROVIDES_SOCKET_API
 
-int KernelProxy::select(int nfds, fd_set* readfds, fd_set* writefds,
-                        fd_set* exceptfds, struct timeval* timeout) {
+int KernelProxy::select(int nfds,
+                        fd_set* readfds,
+                        fd_set* writefds,
+                        fd_set* exceptfds,
+                        struct timeval* timeout) {
   std::vector<pollfd> pollfds;
 
   for (int fd = 0; fd < nfds; fd++) {
@@ -1061,8 +1108,8 @@ int KernelProxy::select(int nfds, fd_set* readfds, fd_set* writefds,
 
     // If the timeout is invalid or too long (larger than signed 32 bit).
     if ((timeout->tv_sec < 0) || (timeout->tv_sec >= (INT_MAX / 1000)) ||
-        (timeout->tv_usec < 0) || (timeout->tv_usec >= 1000000) ||
-        (ms < 0) || (ms >= INT_MAX)) {
+        (timeout->tv_usec < 0) || (timeout->tv_usec >= 1000000) || (ms < 0) ||
+        (ms >= INT_MAX)) {
       errno = EINVAL;
       return -1;
     }
@@ -1103,7 +1150,7 @@ struct PollInfo {
 
 typedef std::map<EventEmitter*, PollInfo> EventPollMap_t;
 
-int KernelProxy::poll(struct pollfd *fds, nfds_t nfds, int timeout) {
+int KernelProxy::poll(struct pollfd* fds, nfds_t nfds, int timeout) {
   EventPollMap_t event_map;
 
   std::vector<EventRequest> requests;
@@ -1184,7 +1231,6 @@ int KernelProxy::poll(struct pollfd *fds, nfds_t nfds, int timeout) {
   return event_cnt;
 }
 
-
 // Socket Functions
 int KernelProxy::accept(int fd, struct sockaddr* addr, socklen_t* len) {
   if (NULL == addr || NULL == len) {
@@ -1206,7 +1252,7 @@ int KernelProxy::accept(int fd, struct sockaddr* addr, socklen_t* len) {
     return -1;
   }
 
-  SocketNode* sock = new TcpNode(stream_mount_.get(), new_sock);
+  SocketNode* sock = new TcpNode(stream_fs_.get(), new_sock);
 
   // The SocketNode now holds a reference to the new socket
   // so we release ours.
@@ -1218,7 +1264,7 @@ int KernelProxy::accept(int fd, struct sockaddr* addr, socklen_t* len) {
   }
 
   ScopedNode node(sock);
-  ScopedKernelHandle new_handle(new KernelHandle(stream_mount_, node));
+  ScopedKernelHandle new_handle(new KernelHandle(stream_fs_, node));
   error = new_handle->Init(O_RDWR);
   if (error != 0) {
     errno = error;
@@ -1269,11 +1315,12 @@ int KernelProxy::connect(int fd, const struct sockaddr* addr, socklen_t len) {
   return 0;
 }
 
-void KernelProxy::freeaddrinfo(struct addrinfo *res) {
+void KernelProxy::freeaddrinfo(struct addrinfo* res) {
   return host_resolver_.freeaddrinfo(res);
 }
 
-int KernelProxy::getaddrinfo(const char* node, const char* service,
+int KernelProxy::getaddrinfo(const char* node,
+                             const char* service,
                              const struct addrinfo* hints,
                              struct addrinfo** res) {
   return host_resolver_.getaddrinfo(node, service, hints, res);
@@ -1358,10 +1405,7 @@ int KernelProxy::listen(int fd, int backlog) {
   return 0;
 }
 
-ssize_t KernelProxy::recv(int fd,
-                          void* buf,
-                          size_t len,
-                          int flags) {
+ssize_t KernelProxy::recv(int fd, void* buf, size_t len, int flags) {
   if (NULL == buf) {
     errno = EFAULT;
     return -1;
@@ -1418,7 +1462,7 @@ ssize_t KernelProxy::recvfrom(int fd,
 }
 
 ssize_t KernelProxy::recvmsg(int fd, struct msghdr* msg, int flags) {
-  if (NULL == msg ) {
+  if (NULL == msg) {
     errno = EFAULT;
     return -1;
   }
@@ -1564,11 +1608,11 @@ int KernelProxy::socket(int domain, int type, int protocol) {
   SocketNode* sock = NULL;
   switch (type) {
     case SOCK_DGRAM:
-      sock = new UdpNode(stream_mount_.get());
+      sock = new UdpNode(stream_fs_.get());
       break;
 
     case SOCK_STREAM:
-      sock = new TcpNode(stream_mount_.get());
+      sock = new TcpNode(stream_fs_.get());
       break;
 
     case SOCK_SEQPACKET:
@@ -1589,7 +1633,7 @@ int KernelProxy::socket(int domain, int type, int protocol) {
     return -1;
   }
 
-  ScopedKernelHandle handle(new KernelHandle(stream_mount_, node));
+  ScopedKernelHandle handle(new KernelHandle(stream_fs_, node));
   rtn = handle->Init(open_flags);
   if (rtn != 0) {
     errno = rtn;

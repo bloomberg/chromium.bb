@@ -81,6 +81,11 @@ class ScopedRef : public ScopedRefBase {
   }
 };
 
+template <typename U, typename T>
+ScopedRef<U> static_scoped_ref_cast(const ScopedRef<T>& ptr) {
+  return ScopedRef<U>(static_cast<U*>(ptr.get()));
+}
+
 }  // namespace sdk_util
 
 #endif  // LIBRARIES_SDK_UTIL_SCOPED_REF_H_

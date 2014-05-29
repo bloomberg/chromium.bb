@@ -49,7 +49,7 @@ class KernelObject {
   Error AttachFsAtPath(const ScopedFilesystem& fs, const std::string& path);
 
   // Unmap the Filesystem object from the specified path and release it.
-  Error DetachFsAtPath(const std::string& path);
+  Error DetachFsAtPath(const std::string& path, ScopedFilesystem* out_fs);
 
   // Find the filesystem for the given path, and acquires it and return a
   // path relative to the filesystem.

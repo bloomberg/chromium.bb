@@ -8,6 +8,7 @@
 #include <map>
 #include <string>
 
+#include "nacl_io/devfs/dev_fs.h"
 #include "nacl_io/event_emitter.h"
 #include "nacl_io/fs_factory.h"
 #include "nacl_io/host_resolver.h"
@@ -206,8 +207,20 @@ class KernelProxy : protected KernelObject {
 #endif  // PROVIDES_SOCKET_API
 
  protected:
+  Error MountInternal(const char* source,
+                      const char* target,
+                      const char* filesystemtype,
+                      unsigned long mountflags,
+                      const void* data,
+                      bool create_fs_node,
+                      ScopedFilesystem* out_filesystem);
+
+  Error CreateFsNode(const ScopedFilesystem& fs);
+
+ protected:
   FsFactoryMap_t factories_;
-  sdk_util::ScopedRef<StreamFs> stream_mount_;
+  sdk_util::ScopedRef<StreamFs> stream_fs_;
+  sdk_util::ScopedRef<DevFs> dev_fs_;
   int dev_;
   PepperInterface* ppapi_;
   static KernelProxy *s_instance_;

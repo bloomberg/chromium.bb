@@ -40,7 +40,8 @@ Error KernelObject::AttachFsAtPath(const ScopedFilesystem& fs,
   return 0;
 }
 
-Error KernelObject::DetachFsAtPath(const std::string& path) {
+Error KernelObject::DetachFsAtPath(const std::string& path,
+                                   ScopedFilesystem* out_fs) {
   std::string abs_path = GetAbsParts(path).Join();
 
   AUTO_LOCK(fs_lock_);
@@ -51,6 +52,8 @@ Error KernelObject::DetachFsAtPath(const std::string& path) {
   // It is only legal to unmount if there are no open references
   if (it->second->RefCount() != 1)
     return EBUSY;
+
+  *out_fs = it->second;
 
   filesystems_.erase(it);
   return 0;

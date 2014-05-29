@@ -58,6 +58,7 @@ class Filesystem : public sdk_util::RefObject {
 
  public:
   PepperInterface* ppapi() { return ppapi_; }
+  int dev() { return dev_; }
 
   // All paths in functions below are expected to containing a leading "/".
 
@@ -84,6 +85,7 @@ class Filesystem : public sdk_util::RefObject {
   virtual Error Rmdir(const Path& path) = 0;
   virtual Error Remove(const Path& path) = 0;
   virtual Error Rename(const Path& path, const Path& newpath) = 0;
+  virtual Error Filesystem_VIoctl(int request, va_list args);
 
   // Assumes that |node| is non-NULL.
   void OnNodeCreated(Node* node);

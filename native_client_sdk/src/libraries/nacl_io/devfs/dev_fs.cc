@@ -11,6 +11,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <pthread.h>
+#include <stdio.h>
 #include <string.h>
 
 #include "nacl_io/devfs/jspipe_node.h"
@@ -109,6 +110,19 @@ class UrandomNode : public Node {
   nacl_irt_random random_interface_;
   bool interface_ok_;
 #endif
+};
+
+class FsNode : public Node {
+ public:
+  FsNode(Filesystem* filesystem, Filesystem* other_fs);
+
+  virtual Error VIoctl(int request, va_list args);
+
+ private:
+  // Don't addref the filesystem. We are relying on the fact that the
+  // KernelObject will keep the filsystem around as long as we need it, and
+  // this node will be destroyed when the filesystem is destroyed.
+  Filesystem* other_fs_;
 };
 
 RealNode::RealNode(Filesystem* filesystem, int fd) : Node(filesystem), fd_(fd) {
@@ -261,6 +275,14 @@ Error UrandomNode::Write(const HandleAttr& attr,
   return 0;
 }
 
+FsNode::FsNode(Filesystem* filesystem, Filesystem* other_fs)
+    : Node(filesystem), other_fs_(other_fs) {
+}
+
+Error FsNode::VIoctl(int request, va_list args) {
+  return other_fs_->Filesystem_VIoctl(request, args);
+}
+
 }  // namespace
 
 Error DevFs::Access(const Path& path, int a_mode) {
@@ -278,7 +300,16 @@ Error DevFs::Access(const Path& path, int a_mode) {
 
 Error DevFs::Open(const Path& path, int open_flags, ScopedNode* out_node) {
   out_node->reset(NULL);
-  int error = root_->FindChild(path.Join(), out_node);
+  int error;
+  if (path.Part(1) == "fs") {
+    if (path.Size() == 3)
+      error = fs_dir_->FindChild(path.Part(2), out_node);
+    else
+      error = ENOENT;
+  } else {
+    error = root_->FindChild(path.Join(), out_node);
+  }
+
   // Only return EACCES when trying to create a node that does not exist.
   if ((error == ENOENT) && (open_flags & O_CREAT))
     return EACCES;
@@ -295,6 +326,22 @@ Error DevFs::Rmdir(const Path& path) { return EPERM; }
 Error DevFs::Remove(const Path& path) { return EPERM; }
 
 Error DevFs::Rename(const Path& path, const Path& newpath) { return EPERM; }
+
+Error DevFs::CreateFsNode(Filesystem* other_fs) {
+  int dev = other_fs->dev();
+  char path[32];
+  snprintf(path, 32, "%d", dev);
+  ScopedNode new_node(new FsNode(this, other_fs));
+  return fs_dir_->AddChild(path, new_node);
+}
+
+Error DevFs::DestroyFsNode(Filesystem* other_fs) {
+  int dev = other_fs->dev();
+  char path[32];
+  snprintf(path, 32, "%d", dev);
+  return fs_dir_->RemoveChild(path);
+}
+
 
 DevFs::DevFs() {}
 
@@ -335,6 +382,12 @@ Error DevFs::Init(const FsInitArgs& args) {
   new_node->Ioctl(NACL_IOC_PIPE_SETNAME, "jspipe2");
   INITIALIZE_DEV_NODE("/jspipe3", JSPipeNode);
   new_node->Ioctl(NACL_IOC_PIPE_SETNAME, "jspipe3");
+
+  // Add a directory for "fs" nodes; they represent all currently-mounted
+  // filesystems. We can ioctl these nodes to make changes or provide input to
+  // a mounted filesystem.
+  INITIALIZE_DEV_NODE("/fs", DirNode);
+  fs_dir_ = new_node;
 
   return 0;
 }

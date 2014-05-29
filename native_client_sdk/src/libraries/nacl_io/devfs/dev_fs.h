@@ -22,6 +22,9 @@ class DevFs : public Filesystem {
   virtual Error Remove(const Path& path);
   virtual Error Rename(const Path& path, const Path& newpath);
 
+  Error CreateFsNode(Filesystem* fs);
+  Error DestroyFsNode(Filesystem* fs);
+
  protected:
   DevFs();
 
@@ -29,6 +32,7 @@ class DevFs : public Filesystem {
 
  private:
   ScopedNode root_;
+  ScopedNode fs_dir_;
 
   friend class TypedFsFactory<DevFs>;
   DISALLOW_COPY_AND_ASSIGN(DevFs);

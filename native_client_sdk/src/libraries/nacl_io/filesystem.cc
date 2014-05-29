@@ -48,4 +48,8 @@ void Filesystem::OnNodeDestroyed(Node* node) {
     inode_pool_.Release(node->stat_.st_ino);
 }
 
+Error Filesystem::Filesystem_VIoctl(int request, va_list args) {
+  return EINVAL;
+}
+
 }  // namespace nacl_io
