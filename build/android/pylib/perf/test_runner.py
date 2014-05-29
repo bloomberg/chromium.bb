@@ -49,9 +49,9 @@ import sys
 import threading
 import time
 
+from pylib import cmd_helper
 from pylib import constants
 from pylib import forwarder
-from pylib import pexpect
 from pylib.base import base_test_result
 from pylib.base import base_test_runner
 
@@ -200,13 +200,12 @@ class TestRunner(base_test_runner.BaseTestRunner):
     cwd = os.path.abspath(constants.DIR_SOURCE_ROOT)
     if full_cmd.startswith('src/'):
       cwd = os.path.abspath(os.path.join(constants.DIR_SOURCE_ROOT, os.pardir))
-    output, exit_code = pexpect.run(
-        full_cmd, cwd=cwd,
-        withexitstatus=True, logfile=logfile, timeout=timeout,
-        env=os.environ)
-    if self._options.single_step:
-      # Stop the logger.
-      logfile.stop()
+    try:
+      exit_code, output = cmd_helper.GetCmdStatusAndOutputWithTimeout(
+          full_cmd, timeout, cwd=cwd, shell=True, logfile=logfile)
+    finally:
+      if self._options.single_step:
+        logfile.stop()
     end_time = datetime.datetime.now()
     if exit_code is None:
       exit_code = -1
