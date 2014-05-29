@@ -134,15 +134,6 @@ void ChromeOSMetricsProvider::OnDidCreateMetricsLog() {
 
 void ChromeOSMetricsProvider::ProvideSystemProfileMetrics(
     metrics::SystemProfileProto* system_profile_proto) {
-  std::vector<PerfDataProto> perf_data;
-  if (perf_provider_.GetPerfData(&perf_data)) {
-    for (std::vector<PerfDataProto>::iterator iter = perf_data.begin();
-         iter != perf_data.end();
-         ++iter) {
-      uma_proto_->add_perf_data()->Swap(&(*iter));
-    }
-  }
-
   WriteBluetoothProto(system_profile_proto);
   UpdateMultiProfileUserCount(system_profile_proto);
 
@@ -177,6 +168,18 @@ void ChromeOSMetricsProvider::ProvideStabilityMetrics(
   if (count) {
     stability_proto->set_unclean_system_shutdown_count(count);
     pref->SetInteger(prefs::kStabilitySystemUncleanShutdownCount, 0);
+  }
+}
+
+void ChromeOSMetricsProvider::ProvideGeneralMetrics(
+    metrics::ChromeUserMetricsExtension* uma_proto) {
+  std::vector<PerfDataProto> perf_data;
+  if (perf_provider_.GetPerfData(&perf_data)) {
+    for (std::vector<PerfDataProto>::iterator iter = perf_data.begin();
+         iter != perf_data.end();
+         ++iter) {
+      uma_proto->add_perf_data()->Swap(&(*iter));
+    }
   }
 }
 

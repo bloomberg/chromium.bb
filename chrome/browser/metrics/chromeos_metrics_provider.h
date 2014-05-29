@@ -36,6 +36,8 @@ class ChromeOSMetricsProvider : public metrics::MetricsProvider {
       metrics::SystemProfileProto* system_profile_proto) OVERRIDE;
   virtual void ProvideStabilityMetrics(
       metrics::SystemProfileProto* system_profile_proto) OVERRIDE;
+  virtual void ProvideGeneralMetrics(
+      metrics::ChromeUserMetricsExtension* uma_proto) OVERRIDE;
 
  private:
   // Update the number of users logged into a multi-profile session.
@@ -55,7 +57,6 @@ class ChromeOSMetricsProvider : public metrics::MetricsProvider {
 
   // Bluetooth Adapter instance for collecting information about paired devices.
   scoped_refptr<device::BluetoothAdapter> adapter_;
-  metrics::ChromeUserMetricsExtension* uma_proto_;
 
   // Whether the user count was registered at the last log initialization.
   bool registered_user_count_at_log_initialization_;
