@@ -882,7 +882,8 @@ function WallpaperManager(dialogDom) {
                                                            failure) {
     var self = this;
     var onFinished = function(opt_thumbnail) {
-      if (chrome.runtime.lastError != undefined) {
+      if (chrome.runtime.lastError != undefined &&
+          chrome.runtime.lastError.message != str('canceledWallpaper')) {
         self.showError_(chrome.runtime.lastError.message);
         $('set-wallpaper-layout').disabled = true;
         failure();
@@ -915,7 +916,8 @@ function WallpaperManager(dialogDom) {
     if (opt_selectedGridItem)
       this.progressManager_.hideProgressBar(opt_selectedGridItem);
 
-    if (chrome.runtime.lastError != undefined) {
+    if (chrome.runtime.lastError != undefined &&
+        chrome.runtime.lastError.message != str('canceledWallpaper')) {
       this.showError_(chrome.runtime.lastError.message);
     } else if (opt_selectedItem) {
       this.wallpaperGrid_.activeItem = opt_selectedItem;
@@ -929,7 +931,8 @@ function WallpaperManager(dialogDom) {
     var layout = getSelectedLayout();
     var self = this;
     chrome.wallpaperPrivate.setCustomWallpaperLayout(layout, function() {
-      if (chrome.runtime.lastError != undefined) {
+      if (chrome.runtime.lastError != undefined &&
+          chrome.runtime.lastError.message != str('canceledWallpaper')) {
         self.showError_(chrome.runtime.lastError.message);
         self.removeCustomWallpaper(fileName);
         $('set-wallpaper-layout').disabled = true;

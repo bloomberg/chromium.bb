@@ -27,6 +27,8 @@ const int kWallpaperLayoutCount = arraysize(kWallpaperLayoutArrays);
 
 } // namespace
 
+const char kCancelWallpaperMessage[] = "Set wallpaper was canceled.";
+
 ash::WallpaperLayout GetLayoutEnum(const std::string& layout) {
   for (int i = 0; i < kWallpaperLayoutCount; i++) {
     if (layout.compare(kWallpaperLayoutArrays[i]) == 0)
@@ -113,6 +115,7 @@ void WallpaperFunctionBase::StartDecode(const std::string& data) {
 
 void WallpaperFunctionBase::OnCancel() {
   unsafe_wallpaper_decoder_ = NULL;
+  SetError(wallpaper_api_util::kCancelWallpaperMessage);
   SendResponse(false);
 }
 

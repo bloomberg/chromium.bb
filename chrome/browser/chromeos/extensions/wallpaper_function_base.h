@@ -10,6 +10,7 @@
 #include "ui/gfx/image/image_skia.h"
 
 namespace wallpaper_api_util {
+extern const char kCancelWallpaperMessage[];
 ash::WallpaperLayout GetLayoutEnum(const std::string& layout);
 }  // namespace wallpaper_api_util
 

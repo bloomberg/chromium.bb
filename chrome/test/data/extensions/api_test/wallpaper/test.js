@@ -99,7 +99,7 @@ chrome.test.getConfig(function(config) {
       // The first request should be canceled.
       testSetWallpaperFromURL('test.png',
                               false,
-                              'Downloading wallpaper test.png is canceled.');
+                              'Set wallpaper was canceled.');
       testSetWallpaperFromURL('test.jpg', true);
     }
   ]);

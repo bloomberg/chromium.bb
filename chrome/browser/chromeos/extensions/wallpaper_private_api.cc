@@ -279,6 +279,8 @@ bool WallpaperPrivateGetStringsFunction::RunSync() {
 #endif
 
   dict->SetBoolean("isOEMDefaultWallpaper", IsOEMDefaultWallpaper());
+  dict->SetString("canceledWallpaper",
+                  wallpaper_api_util::kCancelWallpaperMessage);
   return true;
 }
 

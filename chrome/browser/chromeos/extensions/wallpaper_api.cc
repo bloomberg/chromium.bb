@@ -74,10 +74,7 @@ class WallpaperFetcher : public net::URLFetcherDelegate {
 
   void CancelPreviousFetch() {
     if (url_fetcher_.get()) {
-      std::string error = base::StringPrintf(
-          "Downloading wallpaper %s is canceled.",
-          url_fetcher_->GetOriginalURL().ExtractFileName().c_str());
-      callback_.Run(false, error);
+      callback_.Run(false, wallpaper_api_util::kCancelWallpaperMessage);
       url_fetcher_.reset();
     }
   }
@@ -98,6 +95,7 @@ WallpaperSetWallpaperFunction::~WallpaperSetWallpaperFunction() {
 }
 
 bool WallpaperSetWallpaperFunction::RunAsync() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   params_ = set_wallpaper::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params_);
 
