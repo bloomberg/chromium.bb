@@ -181,15 +181,10 @@ void MigrateChromiumShortcutsCallback() {
 // be retrieved in the HKCR registry subkey method implemented below. We call
 // AssocQueryString with the new Win8-only flag ASSOCF_IS_PROTOCOL instead.
 base::string16 GetAppForProtocolUsingAssocQuery(const GURL& url) {
-  base::string16 url_spec = base::ASCIIToWide(url.possibly_invalid_spec());
+  base::string16 url_scheme = base::ASCIIToWide(url.scheme());
   // Don't attempt to query protocol association on an empty string.
-  if (url_spec.empty())
+  if (url_scheme.empty())
     return base::string16();
-
-  // Elide the colon from the end of the spec or Windows will not find it in
-  // the protocol association map.
-  DCHECK(*url_spec.rbegin() == ':');
-  url_spec.erase(url_spec.length() - 1);
 
   // Query AssocQueryString for a human-readable description of the program
   // that will be invoked given the provided URL spec. This is used only to
@@ -199,7 +194,7 @@ base::string16 GetAppForProtocolUsingAssocQuery(const GURL& url) {
   DWORD buffer_size = arraysize(out_buffer);
   HRESULT hr = AssocQueryString(ASSOCF_IS_PROTOCOL,
                                 ASSOCSTR_FRIENDLYAPPNAME,
-                                url_spec.c_str(),
+                                url_scheme.c_str(),
                                 NULL,
                                 out_buffer,
                                 &buffer_size);
