@@ -1070,7 +1070,7 @@ void DXVAVideoDecodeAccelerator::FlushInternal() {
 void DXVAVideoDecodeAccelerator::DecodeInternal(
     const base::win::ScopedComPtr<IMFSample>& sample) {
   DCHECK(CalledOnValidThread());
-  
+
   if (state_ == kUninitialized)
     return;
 
