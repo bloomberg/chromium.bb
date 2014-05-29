@@ -25,6 +25,9 @@ TEST(HTMLSrcsetParserTest, Basic)
     TestCase testCases[] = {
         {2.0, -1, "", "1x.gif 1x, 2x.gif 2x", "2x.gif", 2.0, -1},
         {2.0, -1, "", "1x.gif 1x, 2x.gif -2x", "1x.gif", 1.0, -1},
+        {2.0, -1, "", "0x.gif 0x", "0x.gif", 0.0, -1},
+        {2.0, -1, "", "0x.gif -0x", "0x.gif", 0.0, -1},
+        {2.0, -1, "", "neg.gif -2x", "", 1.0, -1},
         {2.0, -1, "", "1x.gif 1x, 2x.gif 2q", "1x.gif", 1.0, -1},
         {2.0, -1, "1x.gif 1x, 2x.gif 2x", "1x.gif 1x, 2x.gif 2x", "2x.gif", 2.0, -1},
         {1.0, -1, "1x.gif 1x, 2x.gif 2x", "1x.gif 1x, 2x.gif 2x", "1x.gif", 1.0, -1},
