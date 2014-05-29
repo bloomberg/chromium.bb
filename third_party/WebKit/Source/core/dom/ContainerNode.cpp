@@ -667,12 +667,7 @@ void ContainerNode::notifyNodeInserted(Node& root)
     RefPtr<Node> protectNode(root);
 
     NodeVector postInsertionNotificationTargets;
-
-    {
-        NoEventDispatchAssertion assertNoEventDispatch;
-        ScriptForbiddenScope forbidScript;
-        notifyNodeInsertedInternal(root, postInsertionNotificationTargets);
-    }
+    notifyNodeInsertedInternal(root, postInsertionNotificationTargets);
 
     for (size_t i = 0; i < postInsertionNotificationTargets.size(); ++i) {
         Node* targetNode = postInsertionNotificationTargets[i].get();
@@ -683,6 +678,9 @@ void ContainerNode::notifyNodeInserted(Node& root)
 
 void ContainerNode::notifyNodeInsertedInternal(Node& root, NodeVector& postInsertionNotificationTargets)
 {
+    NoEventDispatchAssertion assertNoEventDispatch;
+    ScriptForbiddenScope forbidScript;
+
     for (Node* node = &root; node; node = NodeTraversal::next(*node, &root)) {
         // As an optimization we don't notify leaf nodes when when inserting
         // into detached subtrees.
