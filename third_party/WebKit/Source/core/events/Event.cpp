@@ -227,7 +227,7 @@ PassRefPtrWillBeRawPtr<NodeList> Event::path() const
     size_t eventPathSize = m_eventPath->size();
     for (size_t i = 0; i < eventPathSize; ++i) {
         if (node == (*m_eventPath)[i].node()) {
-            return (*m_eventPath)[i].treeScopeEventContext()->ensureEventPath(*m_eventPath);
+            return (*m_eventPath)[i].treeScopeEventContext().ensureEventPath(*m_eventPath);
         }
     }
     return StaticNodeList::createEmpty();

@@ -2,13 +2,13 @@
 click #B
 
 event.path on node #B (target: #B)
-#B, #A, #sandbox, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], length: 6
+#B, #H, #SR-MIDDLE, #F, #SR-YOUNGEST, #A, #sandbox, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], length: 10
 
 event.path on node #H (target: #B)
-#B, #H, #SR-MIDDLE, #A, #sandbox, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], length: 8
+#B, #H, #SR-MIDDLE, #F, #SR-YOUNGEST, #A, #sandbox, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], length: 10
 
 event.path on node #SR-MIDDLE (target: #B)
-#B, #H, #SR-MIDDLE, #A, #sandbox, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], length: 8
+#B, #H, #SR-MIDDLE, #F, #SR-YOUNGEST, #A, #sandbox, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], length: 10
 
 event.path on node #F (target: #B)
 #B, #H, #SR-MIDDLE, #F, #SR-YOUNGEST, #A, #sandbox, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], length: 10
@@ -17,7 +17,7 @@ event.path on node #SR-YOUNGEST (target: #B)
 #B, #H, #SR-MIDDLE, #F, #SR-YOUNGEST, #A, #sandbox, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], length: 10
 
 event.path on node #A (target: #B)
-#B, #A, #sandbox, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], length: 6
+#B, #H, #SR-MIDDLE, #F, #SR-YOUNGEST, #A, #sandbox, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], length: 10
 
 click #A/E
 
@@ -28,15 +28,15 @@ event.path on node #SR-OLDEST (target: #E)
 #E, #SR-OLDEST, #A, #sandbox, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], length: 7
 
 event.path on node #A (target: #A)
-#A, #sandbox, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], length: 5
+#E, #SR-OLDEST, #A, #sandbox, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], length: 7
 
 click #A//I
 
 event.path on node #I (target: #I)
-#I, #SR-MIDDLE, #A, #sandbox, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], length: 7
+#I, #SR-MIDDLE, #F, #SR-YOUNGEST, #A, #sandbox, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], length: 9
 
 event.path on node #SR-MIDDLE (target: #I)
-#I, #SR-MIDDLE, #A, #sandbox, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], length: 7
+#I, #SR-MIDDLE, #F, #SR-YOUNGEST, #A, #sandbox, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], length: 9
 
 event.path on node #F (target: #I)
 #I, #SR-MIDDLE, #F, #SR-YOUNGEST, #A, #sandbox, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], length: 9
@@ -45,7 +45,7 @@ event.path on node #SR-YOUNGEST (target: #I)
 #I, #SR-MIDDLE, #F, #SR-YOUNGEST, #A, #sandbox, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], length: 9
 
 event.path on node #A (target: #A)
-#A, #sandbox, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], length: 5
+#I, #SR-MIDDLE, #F, #SR-YOUNGEST, #A, #sandbox, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], length: 9
 
 click #A///G
 
@@ -56,7 +56,7 @@ event.path on node #SR-YOUNGEST (target: #G)
 #G, #SR-YOUNGEST, #A, #sandbox, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], length: 7
 
 event.path on node #A (target: #A)
-#A, #sandbox, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], length: 5
+#G, #SR-YOUNGEST, #A, #sandbox, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], length: 7
 PASS successfullyParsed is true
 
 TEST COMPLETE
