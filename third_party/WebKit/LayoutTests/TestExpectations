@@ -432,12 +432,7 @@ crbug.com/378610 [ Win7 ] fast/text/multiglyph-characters.html [ Failure ]
 # Image tests that needs investigation or test changes.
 crbug.com/378610 [ Win7 ] fast/text/selection-rect-rounding.html [ Failure ]
 
-Bug(eae) [ Win ] fast/inline-block/002.html [ NeedsRebaseline ]
-Bug(eae) [ Win ] ietestcenter/css3/text/textshadow-005.htm [ NeedsRebaseline ]
-Bug(eae) [ Win ] ietestcenter/css3/text/textshadow-007.htm [ NeedsRebaseline ]
-Bug(eae) [ Win ] ietestcenter/css3/text/textshadow-008.htm [ NeedsRebaseline ]
 Bug(eae) virtual/gpu/compositedscrolling/overflow/overflow-positioning.html [ NeedsManualRebaseline ]
-Bug(eae) [ Win ] fast/forms/week-multiple-fields/week-multiple-fields-mouse-events.html [ NeedsRebaseline ]
 
 crbug.com/371725 http/tests/webfont/slow-loading.html [ Pass ImageOnlyFailure Timeout ]
 
