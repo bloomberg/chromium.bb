@@ -250,6 +250,7 @@ void ContainerNode::insertBefore(PassRefPtr<Node> newChild, Node* refChild, Exce
 void ContainerNode::insertBeforeCommon(Node& nextChild, Node& newChild)
 {
     NoEventDispatchAssertion assertNoEventDispatch;
+    ScriptForbiddenScope forbidScript;
 
     ASSERT(!newChild.parentNode()); // Use insertBefore if you need to handle reparenting (and want DOM mutation events).
     ASSERT(!newChild.nextSibling());
