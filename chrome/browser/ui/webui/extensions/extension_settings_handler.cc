@@ -80,9 +80,11 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_icon_set.h"
 #include "extensions/common/extension_set.h"
+#include "extensions/common/feature_switch.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_handlers/background_info.h"
 #include "extensions/common/manifest_handlers/incognito_info.h"
+#include "extensions/common/permissions/permissions_data.h"
 #include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -253,6 +255,20 @@ base::DictionaryValue* ExtensionSettingsHandler::CreateExtensionDetailValue(
   extension_data->SetBoolean("is_platform_app", extension->is_platform_app());
   extension_data->SetBoolean("homepageProvided",
       ManifestURL::GetHomepageURL(extension).is_valid());
+
+  // Extensions only want all URL access if:
+  // - The feature is enabled.
+  // - The extension has access to enough urls that we can't just let it run
+  //   on those specified in the permissions.
+  bool wants_all_urls =
+      FeatureSwitch::scripts_require_action()->IsEnabled() &&
+      PermissionsData::RequiresActionForScriptExecution(extension);
+  extension_data->SetBoolean("wantsAllUrls", wants_all_urls);
+  extension_data->SetBoolean(
+      "allowAllUrls",
+      util::AllowedScriptingOnAllUrls(
+          extension->id(),
+          extension_service_->GetBrowserContext()));
 
   base::string16 location_text;
   if (Manifest::IsPolicyLocation(extension->location())) {
@@ -442,6 +458,8 @@ void ExtensionSettingsHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_ENABLE_ERROR_COLLECTION));
   source->AddString("extensionSettingsAllowFileAccess",
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_ALLOW_FILE_ACCESS));
+  source->AddString("extensionSettingsAllowOnAllUrls",
+      l10n_util::GetStringUTF16(IDS_EXTENSIONS_ALLOW_ON_ALL_URLS));
   source->AddString("extensionSettingsIncognitoWarning",
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_INCOGNITO_WARNING));
   source->AddString("extensionSettingsReloadTerminated",
@@ -569,6 +587,9 @@ void ExtensionSettingsHandler::RegisterMessages() {
                  AsWeakPtr()));
   web_ui()->RegisterMessageCallback("extensionSettingsAllowFileAccess",
       base::Bind(&ExtensionSettingsHandler::HandleAllowFileAccessMessage,
+                 AsWeakPtr()));
+  web_ui()->RegisterMessageCallback("extensionSettingsAllowOnAllUrls",
+      base::Bind(&ExtensionSettingsHandler::HandleAllowOnAllUrlsMessage,
                  AsWeakPtr()));
   web_ui()->RegisterMessageCallback("extensionSettingsUninstall",
       base::Bind(&ExtensionSettingsHandler::HandleUninstallMessage,
@@ -980,6 +1001,19 @@ void ExtensionSettingsHandler::HandleAllowFileAccessMessage(
 
   util::SetAllowFileAccess(
       extension_id, extension_service_->profile(), allow_str == "true");
+}
+
+void ExtensionSettingsHandler::HandleAllowOnAllUrlsMessage(
+    const base::ListValue* args) {
+  DCHECK(FeatureSwitch::scripts_require_action()->IsEnabled());
+  CHECK_EQ(2u, args->GetSize());
+  std::string extension_id;
+  std::string allow_str;
+  CHECK(args->GetString(0, &extension_id));
+  CHECK(args->GetString(1, &allow_str));
+  util::SetAllowedScriptingOnAllUrls(extension_id,
+                                     extension_service_->GetBrowserContext(),
+                                     allow_str == "true");
 }
 
 void ExtensionSettingsHandler::HandleUninstallMessage(

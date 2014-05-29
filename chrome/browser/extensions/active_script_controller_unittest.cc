@@ -7,6 +7,7 @@
 #include "base/values.h"
 #include "chrome/browser/extensions/active_script_controller.h"
 #include "chrome/browser/extensions/active_tab_permission_granter.h"
+#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
@@ -17,6 +18,7 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/feature_switch.h"
+#include "extensions/common/id_util.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/value_builder.h"
 
@@ -80,7 +82,7 @@ ActiveScriptControllerUnitTest::~ActiveScriptControllerUnitTest() {
 }
 
 const Extension* ActiveScriptControllerUnitTest::AddExtension() {
-  static const char kId[] = "all_hosts_extension";
+  const std::string kId = id_util::GenerateId("all_hosts_extension");
   scoped_refptr<const Extension> extension =
       ExtensionBuilder()
           .SetManifest(
@@ -297,6 +299,30 @@ TEST_F(ActiveScriptControllerUnitTest, ActiveScriptsUseActiveTabPermissions) {
   // granted.
   EXPECT_EQ(1u, GetExecutionCountForExtension(extension->id()));
   EXPECT_FALSE(controller()->GetActionForExtension(extension));
+}
+
+TEST_F(ActiveScriptControllerUnitTest, ActiveScriptsCanHaveAllUrlsPref) {
+  const Extension* extension = AddExtension();
+  ASSERT_TRUE(extension);
+
+  NavigateAndCommit(GURL("https://www.google.com"));
+  EXPECT_TRUE(controller()->RequiresUserConsentForScriptInjection(extension));
+
+  // Enable the extension on all urls.
+  util::SetAllowedScriptingOnAllUrls(extension->id(), profile(), true);
+
+  EXPECT_FALSE(controller()->RequiresUserConsentForScriptInjection(extension));
+  // This should carry across navigations, and websites.
+  NavigateAndCommit(GURL("http://www.foo.com"));
+  EXPECT_FALSE(controller()->RequiresUserConsentForScriptInjection(extension));
+
+  // Turning off the preference should have instant effect.
+  util::SetAllowedScriptingOnAllUrls(extension->id(), profile(), false);
+  EXPECT_TRUE(controller()->RequiresUserConsentForScriptInjection(extension));
+
+  // And should also persist across navigations and websites.
+  NavigateAndCommit(GURL("http://www.bar.com"));
+  EXPECT_TRUE(controller()->RequiresUserConsentForScriptInjection(extension));
 }
 
 }  // namespace extensions

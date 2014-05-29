@@ -29,6 +29,13 @@
 namespace extensions {
 namespace util {
 
+namespace {
+// The entry into the ExtensionPrefs for allowing an extension to script on
+// all urls without explicit permission.
+const char kExtensionAllowedOnAllUrlsPrefName[] =
+    "extension_can_script_all_urls";
+}
+
 bool IsIncognitoEnabled(const std::string& extension_id,
                         content::BrowserContext* context) {
   const Extension* extension = ExtensionRegistry::Get(context)->
@@ -140,6 +147,25 @@ void SetAllowFileAccess(const std::string& extension_id,
   bool extension_is_enabled = service->extensions()->Contains(extension_id);
   if (extension_is_enabled)
     service->ReloadExtension(extension_id);
+}
+
+bool AllowedScriptingOnAllUrls(const std::string& extension_id,
+                               content::BrowserContext* context) {
+  bool allowed = false;
+  return ExtensionPrefs::Get(context)->ReadPrefAsBoolean(
+             extension_id,
+             kExtensionAllowedOnAllUrlsPrefName,
+             &allowed) &&
+         allowed;
+}
+
+void SetAllowedScriptingOnAllUrls(const std::string& extension_id,
+                                  content::BrowserContext* context,
+                                  bool allowed) {
+  ExtensionPrefs::Get(context)->UpdateExtensionPref(
+      extension_id,
+      kExtensionAllowedOnAllUrlsPrefName,
+      allowed ? new base::FundamentalValue(true) : NULL);
 }
 
 bool IsAppLaunchable(const std::string& extension_id,

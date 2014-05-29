@@ -162,6 +162,19 @@ cr.define('options', function() {
         });
       }
 
+      // The 'allow on all urls' checkbox. This should only be visible if
+      // active script restrictions are enabled. If they are not enabled, no
+      // extensions should want all urls.
+      if (extension.wantsAllUrls) {
+        var allUrls = node.querySelector('.all-urls-control');
+        allUrls.addEventListener('click', function(e) {
+          chrome.send('extensionSettingsAllowOnAllUrls',
+                      [extension.id, String(e.target.checked)]);
+        });
+        allUrls.querySelector('input').checked = extension.allowAllUrls;
+        allUrls.hidden = false;
+      }
+
       // The 'allow file:// access' checkbox.
       if (extension.wantsFileAccess) {
         var fileAccess = node.querySelector('.file-access-control');

@@ -161,6 +161,9 @@ class ExtensionSettingsHandler
   // Callback for "allowFileAcces" message.
   void HandleAllowFileAccessMessage(const base::ListValue* args);
 
+  // Callback for "allowOnAllUrls" message.
+  void HandleAllowOnAllUrlsMessage(const base::ListValue* args);
+
   // Callback for "uninstall" message.
   void HandleUninstallMessage(const base::ListValue* args);
 

@@ -135,11 +135,6 @@ class PermissionsData {
   // network, etc.)
   static bool HasEffectiveAccessToAllHosts(const Extension* extension);
 
-  // Whether the extension has access to so many hosts that we should treat it
-  // as "all_hosts" for warning purposes.
-  // For example, '*://*.com/*'.
-  static bool ShouldWarnAllHosts(const Extension* extension);
-
   // Returns the full list of permission messages that the given |extension|
   // should display at install time.
   static PermissionMessages GetPermissionMessages(const Extension* extension);
@@ -183,7 +178,9 @@ class PermissionsData {
                                     std::string* error);
 
   // Returns true if the user should be alerted that the |extension| is running
-  // a script.
+  // a script. If |tab_id| and |url| are included, this also considers tab-
+  // specific permissions.
+  static bool RequiresActionForScriptExecution(const Extension* extension);
   static bool RequiresActionForScriptExecution(const Extension* extension,
                                                int tab_id,
                                                const GURL& url);
@@ -198,6 +195,11 @@ class PermissionsData {
   void FinalizePermissions(Extension* extension);
 
  private:
+  // Whether the extension has access to so many hosts that we should treat it
+  // as "all_hosts" for warning purposes.
+  // For example, '*://*.com/*'.
+  static bool ShouldWarnAllHosts(const Extension* extension);
+
   struct InitialPermissions;
   typedef std::map<int, scoped_refptr<const PermissionSet> > TabPermissionsMap;
 

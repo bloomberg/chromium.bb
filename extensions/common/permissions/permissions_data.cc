@@ -433,12 +433,6 @@ bool PermissionsData::HasEffectiveAccessToAllHosts(const Extension* extension) {
 }
 
 // static
-bool PermissionsData::ShouldWarnAllHosts(const Extension* extension) {
-  base::AutoLock auto_lock(extension->permissions_data()->runtime_lock_);
-  return GetActivePermissions(extension)->ShouldWarnAllHosts();
-}
-
-// static
 PermissionMessages PermissionsData::GetPermissionMessages(
     const Extension* extension) {
   base::AutoLock auto_lock(extension->permissions_data()->runtime_lock_);
@@ -580,6 +574,12 @@ bool PermissionsData::CanCaptureVisiblePage(const Extension* extension,
 
 // static
 bool PermissionsData::RequiresActionForScriptExecution(
+    const Extension* extension) {
+  return RequiresActionForScriptExecution(extension, -1, GURL());
+}
+
+// static
+bool PermissionsData::RequiresActionForScriptExecution(
     const Extension* extension,
     int tab_id,
     const GURL& url) {
@@ -651,6 +651,11 @@ void PermissionsData::FinalizePermissions(Extension* extension) {
 
   initial_required_permissions_.reset();
   initial_optional_permissions_.reset();
+}
+
+bool PermissionsData::ShouldWarnAllHosts(const Extension* extension) {
+  base::AutoLock auto_lock(extension->permissions_data()->runtime_lock_);
+  return PermissionsData::GetActivePermissions(extension)->ShouldWarnAllHosts();
 }
 
 }  // namespace extensions
