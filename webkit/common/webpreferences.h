@@ -16,6 +16,7 @@
 #include <vector>
 
 #include "base/strings/string16.h"
+#include "net/base/network_change_notifier.h"
 #include "url/gurl.h"
 #include "webkit/common/webkit_common_export.h"
 
@@ -92,6 +93,7 @@ struct WEBKIT_COMMON_EXPORT WebPreferences {
   bool caret_browsing_enabled;
   bool hyperlink_auditing_enabled;
   bool is_online;
+  net::NetworkChangeNotifier::ConnectionType connection_type;
   bool allow_universal_access_from_file_urls;
   bool allow_file_access_from_file_urls;
   bool webaudio_enabled;

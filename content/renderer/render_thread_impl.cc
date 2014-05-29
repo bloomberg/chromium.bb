@@ -84,6 +84,7 @@
 #include "content/renderer/media/video_capture_message_filter.h"
 #include "content/renderer/media/webrtc/peer_connection_dependency_factory.h"
 #include "content/renderer/media/webrtc_identity_service.h"
+#include "content/renderer/net_info_helper.h"
 #include "content/renderer/p2p/socket_dispatcher.h"
 #include "content/renderer/render_process_impl.h"
 #include "content/renderer/render_view_impl.h"
@@ -1358,11 +1359,15 @@ void RenderThreadImpl::OnPurgePluginListCache(bool reload_pages) {
   FOR_EACH_OBSERVER(RenderProcessObserver, observers_, PluginListChanged());
 }
 
-void RenderThreadImpl::OnNetworkStateChanged(bool online) {
+void RenderThreadImpl::OnNetworkStateChanged(
+    bool online,
+    net::NetworkChangeNotifier::ConnectionType type) {
   EnsureWebKitInitialized();
   WebNetworkStateNotifier::setOnLine(online);
-  FOR_EACH_OBSERVER(RenderProcessObserver, observers_,
-      NetworkStateChanged(online));
+  FOR_EACH_OBSERVER(
+      RenderProcessObserver, observers_, NetworkStateChanged(online));
+  WebNetworkStateNotifier::setWebConnectionType(
+      NetConnectionTypeToWebConnectionType(type));
 }
 
 void RenderThreadImpl::OnTempCrashWithData(const GURL& data) {

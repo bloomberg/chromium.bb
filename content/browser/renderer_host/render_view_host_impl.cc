@@ -461,6 +461,7 @@ WebPreferences RenderViewHostImpl::GetWebkitPrefs(const GURL& url) {
   }
 
   prefs.is_online = !net::NetworkChangeNotifier::IsOffline();
+  prefs.connection_type = net::NetworkChangeNotifier::GetConnectionType();
 
   prefs.gesture_tap_highlight_enabled = !command_line.HasSwitch(
       switches::kDisableGestureTapHighlight);

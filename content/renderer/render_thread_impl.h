@@ -20,6 +20,8 @@
 #include "content/common/content_export.h"
 #include "content/common/gpu/client/gpu_channel_host.h"
 #include "content/public/renderer/render_thread.h"
+#include "net/base/network_change_notifier.h"
+#include "third_party/WebKit/public/platform/WebConnectionType.h"
 #include "ui/gfx/native_widget_types.h"
 
 #if defined(OS_MACOSX)
@@ -88,6 +90,7 @@ class InputHandlerManager;
 class MediaStreamCenter;
 class PeerConnectionDependencyFactory;
 class MidiMessageFilter;
+class NetInfoDispatcher;
 class P2PSocketDispatcher;
 class PeerConnectionTracker;
 class RendererDemuxerAndroid;
@@ -429,7 +432,8 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
   void OnCreateNewView(const ViewMsg_New_Params& params);
   void OnTransferBitmap(const SkBitmap& bitmap, int resource_id);
   void OnPurgePluginListCache(bool reload_pages);
-  void OnNetworkStateChanged(bool online);
+  void OnNetworkStateChanged(bool online,
+                             net::NetworkChangeNotifier::ConnectionType type);
   void OnGetAccessibilityTree();
   void OnTempCrashWithData(const GURL& data);
   void OnUpdateTimezone();

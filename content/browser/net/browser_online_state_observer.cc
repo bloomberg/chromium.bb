@@ -19,10 +19,11 @@ BrowserOnlineStateObserver::~BrowserOnlineStateObserver() {
 
 void BrowserOnlineStateObserver::OnConnectionTypeChanged(
     net::NetworkChangeNotifier::ConnectionType type) {
+  bool is_online = !net::NetworkChangeNotifier::IsOffline();
   for (RenderProcessHost::iterator it(RenderProcessHost::AllHostsIterator());
        !it.IsAtEnd(); it.Advance()) {
-    it.GetCurrentValue()->Send(new ViewMsg_NetworkStateChanged(
-        type != net::NetworkChangeNotifier::CONNECTION_NONE));
+    it.GetCurrentValue()->Send(
+        new ViewMsg_NetworkStateChanged(is_online, type));
   }
 }
 

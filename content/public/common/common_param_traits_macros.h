@@ -15,6 +15,7 @@
 #include "content/public/common/ssl_status.h"
 #include "content/public/common/webplugininfo.h"
 #include "ipc/ipc_message_macros.h"
+#include "net/base/network_change_notifier.h"
 #include "net/base/request_priority.h"
 #include "third_party/WebKit/public/platform/WebPoint.h"
 #include "third_party/WebKit/public/platform/WebRect.h"
@@ -28,7 +29,8 @@
 #define IPC_MESSAGE_EXPORT CONTENT_EXPORT
 
 IPC_ENUM_TRAITS(content::PageTransition)  // Bitmask.
-
+IPC_ENUM_TRAITS_MAX_VALUE(net::NetworkChangeNotifier::ConnectionType,
+                          net::NetworkChangeNotifier::CONNECTION_LAST)
 IPC_ENUM_TRAITS_MAX_VALUE(content::ConsoleMessageLevel,
                           content::CONSOLE_MESSAGE_LEVEL_LAST)
 IPC_ENUM_TRAITS_MAX_VALUE(content::SecurityStyle,
@@ -122,6 +124,7 @@ IPC_STRUCT_TRAITS_BEGIN(WebPreferences)
   IPC_STRUCT_TRAITS_MEMBER(tabs_to_links)
   IPC_STRUCT_TRAITS_MEMBER(hyperlink_auditing_enabled)
   IPC_STRUCT_TRAITS_MEMBER(is_online)
+  IPC_STRUCT_TRAITS_MEMBER(connection_type)
   IPC_STRUCT_TRAITS_MEMBER(allow_universal_access_from_file_urls)
   IPC_STRUCT_TRAITS_MEMBER(allow_file_access_from_file_urls)
   IPC_STRUCT_TRAITS_MEMBER(webaudio_enabled)

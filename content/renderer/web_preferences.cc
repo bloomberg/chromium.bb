@@ -5,6 +5,8 @@
 #include "content/public/renderer/web_preferences.h"
 
 #include "base/strings/utf_string_conversions.h"
+#include "content/renderer/net_info_helper.h"
+#include "third_party/WebKit/public/platform/WebConnectionType.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/web/WebKit.h"
@@ -325,6 +327,8 @@ void ApplyWebPreferences(const WebPreferences& prefs, WebView* web_view) {
 #endif
 
   WebNetworkStateNotifier::setOnLine(prefs.is_online);
+  WebNetworkStateNotifier::setWebConnectionType(
+      NetConnectionTypeToWebConnectionType(prefs.connection_type));
   settings->setPinchVirtualViewportEnabled(
       prefs.pinch_virtual_viewport_enabled);
 

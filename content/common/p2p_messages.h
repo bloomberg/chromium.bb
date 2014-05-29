@@ -23,10 +23,6 @@ IPC_ENUM_TRAITS_MAX_VALUE(content::P2PSocketOption,
 IPC_ENUM_TRAITS_MIN_MAX_VALUE(talk_base::DiffServCodePoint,
                               talk_base::DSCP_NO_CHANGE,
                               talk_base::DSCP_CS7)
-IPC_ENUM_TRAITS_MIN_MAX_VALUE(net::NetworkChangeNotifier::ConnectionType,
-                              net::NetworkChangeNotifier::CONNECTION_UNKNOWN,
-                              net::NetworkChangeNotifier::CONNECTION_NONE)
-
 
 IPC_STRUCT_TRAITS_BEGIN(net::NetworkInterface)
   IPC_STRUCT_TRAITS_MEMBER(name)

@@ -323,6 +323,8 @@
       'renderer/mhtml_generator.h',
       'renderer/mouse_lock_dispatcher.cc',
       'renderer/mouse_lock_dispatcher.h',
+      'renderer/net_info_helper.cc',
+      'renderer/net_info_helper.h',      
       'renderer/notification_provider.cc',
       'renderer/notification_provider.h',
       'renderer/push_messaging_dispatcher.cc',

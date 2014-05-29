@@ -36,6 +36,7 @@
 #include "media/audio/audio_parameters.h"
 #include "media/base/channel_layout.h"
 #include "media/base/media_log_event.h"
+#include "net/base/network_change_notifier.h"
 #include "third_party/WebKit/public/platform/WebFloatPoint.h"
 #include "third_party/WebKit/public/platform/WebFloatRect.h"
 #include "third_party/WebKit/public/platform/WebScreenInfo.h"
@@ -841,10 +842,11 @@ IPC_MESSAGE_ROUTED0(ViewMsg_WorkerScriptLoadFailed)
 // This message is sent only if the worker successfully loaded the script.
 IPC_MESSAGE_ROUTED0(ViewMsg_WorkerConnected)
 
-// Tells the renderer that the network state has changed and that
-// window.navigator.onLine should be updated for all WebViews.
-IPC_MESSAGE_CONTROL1(ViewMsg_NetworkStateChanged,
-                     bool /* online */)
+// Tells the renderer that the network state has changed so that
+// navigator.onLine and navigator.connection can be updated.
+IPC_MESSAGE_CONTROL2(ViewMsg_NetworkStateChanged,
+                     bool /* is_online */,
+                     net::NetworkChangeNotifier::ConnectionType /* type */)
 
 // Reply to ViewHostMsg_OpenChannelToPpapiBroker
 // Tells the renderer that the channel to the broker has been created.

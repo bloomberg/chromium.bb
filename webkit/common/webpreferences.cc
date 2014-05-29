@@ -44,6 +44,7 @@ WebPreferences::WebPreferences()
       caret_browsing_enabled(false),
       hyperlink_auditing_enabled(true),
       is_online(true),
+      connection_type(net::NetworkChangeNotifier::CONNECTION_NONE),
       allow_universal_access_from_file_urls(false),
       allow_file_access_from_file_urls(false),
       webaudio_enabled(false),
