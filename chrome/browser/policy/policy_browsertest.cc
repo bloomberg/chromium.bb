@@ -700,7 +700,7 @@ class PolicyTest : public InProcessBrowserTest {
 
   void UninstallExtension(const std::string& id, bool expect_success) {
     content::WindowedNotificationObserver observer(
-        expect_success ? chrome::NOTIFICATION_EXTENSION_UNINSTALLED
+        expect_success ? chrome::NOTIFICATION_EXTENSION_UNINSTALLED_DEPRECATED
                        : chrome::NOTIFICATION_EXTENSION_UNINSTALL_NOT_ALLOWED,
         content::NotificationService::AllSources());
     extension_service()->UninstallExtension(id, false, NULL);

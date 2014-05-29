@@ -283,16 +283,17 @@ void AppLauncherHandler::Observe(int type,
       break;
     }
     case chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED:
-    case chrome::NOTIFICATION_EXTENSION_UNINSTALLED: {
+    case chrome::NOTIFICATION_EXTENSION_UNINSTALLED_DEPRECATED: {
       const Extension* extension = NULL;
       bool uninstalled = false;
-      if (type == chrome::NOTIFICATION_EXTENSION_UNINSTALLED) {
+      if (type == chrome::NOTIFICATION_EXTENSION_UNINSTALLED_DEPRECATED) {
         extension = content::Details<const Extension>(details).ptr();
         uninstalled = true;
       } else {  // NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED
         if (content::Details<UnloadedExtensionInfo>(details)->reason ==
             UnloadedExtensionInfo::REASON_UNINSTALL) {
-          // Uninstalls are tracked by NOTIFICATION_EXTENSION_UNINSTALLED.
+          // Uninstalls are tracked by
+          // NOTIFICATION_EXTENSION_UNINSTALLED_DEPRECATED.
           return;
         }
         extension = content::Details<extensions::UnloadedExtensionInfo>(
@@ -462,8 +463,9 @@ void AppLauncherHandler::HandleGetApps(const base::ListValue* args) {
                    content::Source<Profile>(profile));
     registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
         content::Source<Profile>(profile));
-    registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNINSTALLED,
-        content::Source<Profile>(profile));
+    registrar_.Add(this,
+                   chrome::NOTIFICATION_EXTENSION_UNINSTALLED_DEPRECATED,
+                   content::Source<Profile>(profile));
     registrar_.Add(this,
                    chrome::NOTIFICATION_EXTENSION_LAUNCHER_REORDERED,
                    content::Source<AppSorting>(

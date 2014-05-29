@@ -103,7 +103,7 @@ AlarmManager::AlarmManager(content::BrowserContext* context)
       extension_registry_observer_(this) {
   extension_registry_observer_.Add(ExtensionRegistry::Get(browser_context_));
   registrar_.Add(this,
-                 chrome::NOTIFICATION_EXTENSION_UNINSTALLED,
+                 chrome::NOTIFICATION_EXTENSION_UNINSTALLED_DEPRECATED,
                  content::Source<content::BrowserContext>(browser_context_));
 
   StateStore* storage = ExtensionSystem::Get(browser_context_)->state_store();
@@ -427,7 +427,7 @@ void AlarmManager::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  DCHECK_EQ(type, chrome::NOTIFICATION_EXTENSION_UNINSTALLED);
+  DCHECK_EQ(type, chrome::NOTIFICATION_EXTENSION_UNINSTALLED_DEPRECATED);
   const Extension* extension = content::Details<const Extension>(details).ptr();
   RemoveAllAlarms(extension->id(), base::Bind(RemoveAllOnUninstallCallback));
 }

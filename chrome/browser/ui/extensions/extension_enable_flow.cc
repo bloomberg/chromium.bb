@@ -116,7 +116,8 @@ void ExtensionEnableFlow::StartObserving() {
       extensions::ExtensionRegistry::Get(profile_));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOAD_ERROR,
                  content::Source<Profile>(profile_));
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNINSTALLED,
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_EXTENSION_UNINSTALLED_DEPRECATED,
                  content::Source<Profile>(profile_));
 }
 
@@ -133,7 +134,7 @@ void ExtensionEnableFlow::Observe(int type,
       delegate_->ExtensionEnableFlowAborted(false);
       break;
     }
-    case chrome::NOTIFICATION_EXTENSION_UNINSTALLED: {
+    case chrome::NOTIFICATION_EXTENSION_UNINSTALLED_DEPRECATED: {
       const Extension* extension =
           content::Details<const Extension>(details).ptr();
       if (extension->id() == extension_id_) {

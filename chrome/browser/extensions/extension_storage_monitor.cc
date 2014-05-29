@@ -182,7 +182,8 @@ ExtensionStorageMonitor::ExtensionStorageMonitor(
       observer_rate_(kStorageEventRateSec),
       context_(context),
       weak_ptr_factory_(this) {
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNINSTALLED,
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_EXTENSION_UNINSTALLED_DEPRECATED,
                  content::Source<content::BrowserContext>(context_));
   registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
                  content::Source<content::BrowserContext>(context_));
@@ -199,7 +200,7 @@ void ExtensionStorageMonitor::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   switch (type) {
-    case chrome::NOTIFICATION_EXTENSION_UNINSTALLED: {
+    case chrome::NOTIFICATION_EXTENSION_UNINSTALLED_DEPRECATED: {
       const Extension* extension =
           content::Details<const Extension>(details).ptr();
       RemoveNotificationForExtension(extension->id());

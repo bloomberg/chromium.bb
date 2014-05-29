@@ -197,7 +197,7 @@ void ErrorConsole::Enable() {
       content::NotificationService::AllBrowserContextsAndSources());
   notification_registrar_.Add(
       this,
-      chrome::NOTIFICATION_EXTENSION_UNINSTALLED,
+      chrome::NOTIFICATION_EXTENSION_UNINSTALLED_DEPRECATED,
       content::Source<Profile>(profile_));
   notification_registrar_.Add(
       this,
@@ -259,7 +259,7 @@ void ErrorConsole::Observe(int type,
         errors_.RemoveIncognitoErrors();
       break;
     }
-    case chrome::NOTIFICATION_EXTENSION_UNINSTALLED:
+    case chrome::NOTIFICATION_EXTENSION_UNINSTALLED_DEPRECATED:
       // No need to check the profile here, since we registered to only receive
       // notifications from our own.
       errors_.Remove(content::Details<Extension>(details).ptr()->id());

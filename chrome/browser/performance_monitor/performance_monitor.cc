@@ -238,8 +238,9 @@ void PerformanceMonitor::RegisterForNotifications() {
       content::NotificationService::AllSources());
   registrar_.Add(this, chrome::NOTIFICATION_CRX_INSTALLER_DONE,
       content::NotificationService::AllSources());
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNINSTALLED,
-      content::NotificationService::AllSources());
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_EXTENSION_UNINSTALLED_DEPRECATED,
+                 content::NotificationService::AllSources());
 
   // Crashes
   registrar_.Add(this, content::NOTIFICATION_RENDER_WIDGET_HOST_HANG,
@@ -592,7 +593,7 @@ void PerformanceMonitor::Observe(int type,
       }
       break;
     }
-    case chrome::NOTIFICATION_EXTENSION_UNINSTALLED: {
+    case chrome::NOTIFICATION_EXTENSION_UNINSTALLED_DEPRECATED: {
       AddExtensionEvent(EVENT_EXTENSION_UNINSTALL,
                         content::Details<Extension>(details).ptr());
       break;

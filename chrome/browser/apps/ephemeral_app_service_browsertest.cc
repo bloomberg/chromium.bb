@@ -84,7 +84,7 @@ IN_PROC_BROWSER_TEST_F(EphemeralAppServiceBrowserTest,
 
   // Perform garbage collection.
   content::WindowedNotificationObserver uninstall_signal(
-      chrome::NOTIFICATION_EXTENSION_UNINSTALLED,
+      chrome::NOTIFICATION_EXTENSION_UNINSTALLED_DEPRECATED,
       content::Source<Profile>(browser()->profile()));
   GarbageCollectEphemeralApps();
   uninstall_signal.Wait();

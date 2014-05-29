@@ -855,7 +855,7 @@ bool ManagementSetLaunchTypeFunction::RunSync() {
 ManagementEventRouter::ManagementEventRouter(Profile* profile)
     : profile_(profile) {
   int types[] = {chrome::NOTIFICATION_EXTENSION_INSTALLED_DEPRECATED,
-                 chrome::NOTIFICATION_EXTENSION_UNINSTALLED,
+                 chrome::NOTIFICATION_EXTENSION_UNINSTALLED_DEPRECATED,
                  chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
                  chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED};
 
@@ -885,7 +885,7 @@ void ManagementEventRouter::Observe(
       extension =
           content::Details<const InstalledExtensionInfo>(details)->extension;
       break;
-    case chrome::NOTIFICATION_EXTENSION_UNINSTALLED:
+    case chrome::NOTIFICATION_EXTENSION_UNINSTALLED_DEPRECATED:
       event_name = management::OnUninstalled::kEventName;
       extension = content::Details<const Extension>(details).ptr();
       break;

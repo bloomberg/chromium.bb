@@ -764,7 +764,7 @@ bool ExtensionService::UninstallExtension(
 
   // Notify interested parties that we've uninstalled this extension.
   content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_EXTENSION_UNINSTALLED,
+      chrome::NOTIFICATION_EXTENSION_UNINSTALLED_DEPRECATED,
       content::Source<Profile>(profile_),
       content::Details<const Extension>(extension.get()));
   ExtensionRegistry::Get(profile_)->TriggerOnUninstalled(extension.get());
@@ -1416,7 +1416,7 @@ void ExtensionService::RemoveComponentExtension(
   UnloadExtension(extension_id, UnloadedExtensionInfo::REASON_UNINSTALL);
   if (extension.get()) {
     content::NotificationService::current()->Notify(
-        chrome::NOTIFICATION_EXTENSION_UNINSTALLED,
+        chrome::NOTIFICATION_EXTENSION_UNINSTALLED_DEPRECATED,
         content::Source<Profile>(profile_),
         content::Details<const Extension>(extension.get()));
     ExtensionRegistry::Get(profile_)->TriggerOnUninstalled(extension.get());

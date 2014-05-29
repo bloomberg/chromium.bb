@@ -250,7 +250,7 @@ void EphemeralAppTestBase::EvictApp(const std::string& app_id) {
   // Uninstall the app, which is what happens when ephemeral apps get evicted
   // from the cache.
   content::WindowedNotificationObserver uninstalled_signal(
-      chrome::NOTIFICATION_EXTENSION_UNINSTALLED,
+      chrome::NOTIFICATION_EXTENSION_UNINSTALLED_DEPRECATED,
       content::Source<Profile>(profile()));
 
   ExtensionService* service =

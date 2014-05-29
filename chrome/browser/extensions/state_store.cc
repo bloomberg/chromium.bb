@@ -70,7 +70,8 @@ StateStore::StateStore(Profile* profile,
   registrar_.Add(this,
                  chrome::NOTIFICATION_EXTENSION_INSTALLED_DEPRECATED,
                  content::Source<Profile>(profile));
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNINSTALLED,
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_EXTENSION_UNINSTALLED_DEPRECATED,
                  content::Source<Profile>(profile));
 
   if (deferred_load) {
@@ -91,7 +92,8 @@ StateStore::StateStore(Profile* profile, scoped_ptr<ValueStore> value_store)
   registrar_.Add(this,
                  chrome::NOTIFICATION_EXTENSION_INSTALLED_DEPRECATED,
                  content::Source<Profile>(profile));
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNINSTALLED,
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_EXTENSION_UNINSTALLED_DEPRECATED,
                  content::Source<Profile>(profile));
 
   // This constructor is for testing. No need to delay Init.
@@ -140,7 +142,7 @@ void StateStore::Observe(int type,
           content::Details<const InstalledExtensionInfo>(details)->extension->
               id());
       break;
-    case chrome::NOTIFICATION_EXTENSION_UNINSTALLED:
+    case chrome::NOTIFICATION_EXTENSION_UNINSTALLED_DEPRECATED:
       RemoveKeysForExtension(
           content::Details<const Extension>(details)->id());
       break;

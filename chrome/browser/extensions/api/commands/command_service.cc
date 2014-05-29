@@ -151,7 +151,7 @@ CommandService::CommandService(content::BrowserContext* context)
                  chrome::NOTIFICATION_EXTENSION_INSTALLED_DEPRECATED,
                  content::Source<Profile>(profile_));
   registrar_.Add(this,
-                 chrome::NOTIFICATION_EXTENSION_UNINSTALLED,
+                 chrome::NOTIFICATION_EXTENSION_UNINSTALLED_DEPRECATED,
                  content::Source<Profile>(profile_));
 }
 
@@ -329,7 +329,7 @@ void CommandService::Observe(
       AssignInitialKeybindings(
           content::Details<const InstalledExtensionInfo>(details)->extension);
       break;
-    case chrome::NOTIFICATION_EXTENSION_UNINSTALLED:
+    case chrome::NOTIFICATION_EXTENSION_UNINSTALLED_DEPRECATED:
       RemoveKeybindingPrefs(
           content::Details<const Extension>(details)->id(),
           std::string());

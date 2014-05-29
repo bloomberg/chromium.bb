@@ -197,7 +197,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionContentSettingsApiTest, MAYBE_Standard) {
   // Uninstalling and installing the extension (without running the test that
   // calls the extension API) should clear the settings.
   content::WindowedNotificationObserver observer(
-      chrome::NOTIFICATION_EXTENSION_UNINSTALLED,
+      chrome::NOTIFICATION_EXTENSION_UNINSTALLED_DEPRECATED,
       content::NotificationService::AllSources());
   UninstallExtension(last_loaded_extension_id());
   observer.Wait();

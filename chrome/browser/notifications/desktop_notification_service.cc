@@ -422,7 +422,8 @@ DesktopNotificationService::DesktopNotificationService(
           base::Unretained(this),
           base::Unretained(prefs::kMessageCenterEnabledSyncNotifierIds),
           base::Unretained(&enabled_sync_notifier_ids_)));
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNINSTALLED,
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_EXTENSION_UNINSTALLED_DEPRECATED,
                  content::Source<Profile>(profile_));
 }
 
@@ -716,7 +717,7 @@ void DesktopNotificationService::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
 #if defined(ENABLE_EXTENSIONS)
-  DCHECK_EQ(chrome::NOTIFICATION_EXTENSION_UNINSTALLED, type);
+  DCHECK_EQ(chrome::NOTIFICATION_EXTENSION_UNINSTALLED_DEPRECATED, type);
 
   extensions::Extension* extension =
       content::Details<extensions::Extension>(details).ptr();

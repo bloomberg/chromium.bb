@@ -354,7 +354,8 @@ void BackgroundContentsService::StartObserving(Profile* profile) {
   // uninstalled/reloaded. We cannot do this from UNLOADED since a crashed
   // extension is unloaded immediately after the crash, not when user reloads or
   // uninstalls the extension.
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNINSTALLED,
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_EXTENSION_UNINSTALLED_DEPRECATED,
                  content::Source<Profile>(profile));
 }
 
@@ -500,7 +501,7 @@ void BackgroundContentsService::Observe(
       }
       break;
 
-    case chrome::NOTIFICATION_EXTENSION_UNINSTALLED: {
+    case chrome::NOTIFICATION_EXTENSION_UNINSTALLED_DEPRECATED: {
       // Close the crash notification balloon for the app/extension, if any.
       ScheduleCloseBalloon(
           content::Details<const Extension>(details).ptr()->id());
