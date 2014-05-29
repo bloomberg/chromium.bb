@@ -88,7 +88,8 @@ void ActivateDesktopHelper(AshExecutionStatus ash_execution_status) {
   // Actually launching the process needs to happen in the metro viewer,
   // otherwise it won't automatically transition to desktop.  So we have
   // to send an IPC to the viewer to do the ShellExecute.
-  HandleActivateDesktop(path, ash_execution_status == ASH_TERMINATE);
+  ChromeMetroViewerProcessHost::HandleActivateDesktop(
+      path, ash_execution_status == ASH_TERMINATE);
 }
 #endif
 

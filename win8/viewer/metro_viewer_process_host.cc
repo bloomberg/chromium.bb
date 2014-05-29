@@ -33,8 +33,12 @@ const int kViewerProcessConnectionTimeoutSecs = 60;
 
 namespace win8 {
 
+// static
+MetroViewerProcessHost* MetroViewerProcessHost::instance_ = NULL;
+
 MetroViewerProcessHost::InternalMessageFilter::InternalMessageFilter(
-    MetroViewerProcessHost* owner) : owner_(owner) {
+    MetroViewerProcessHost* owner)
+    : owner_(owner) {
 }
 
 void MetroViewerProcessHost::InternalMessageFilter::OnChannelConnected(
@@ -44,6 +48,8 @@ void MetroViewerProcessHost::InternalMessageFilter::OnChannelConnected(
 
 MetroViewerProcessHost::MetroViewerProcessHost(
     base::SingleThreadTaskRunner* ipc_task_runner) {
+  DCHECK(!instance_);
+  instance_ = this;
 
   channel_.reset(new IPC::ChannelProxy(
       kMetroViewerIPCChannelName,
@@ -53,8 +59,10 @@ MetroViewerProcessHost::MetroViewerProcessHost(
 }
 
 MetroViewerProcessHost::~MetroViewerProcessHost() {
-  if (!channel_)
+  if (!channel_) {
+    instance_ = NULL;
     return;
+  }
 
   base::ProcessId viewer_process_id = GetViewerProcessId();
   channel_->Close();
@@ -73,6 +81,7 @@ MetroViewerProcessHost::~MetroViewerProcessHost() {
     }
     channel_->RemoveFilter(message_filter_);
   }
+  instance_ = NULL;
 }
 
 base::ProcessId MetroViewerProcessHost::GetViewerProcessId() {
@@ -129,9 +138,17 @@ bool MetroViewerProcessHost::OnMessageReceived(
   DCHECK(CalledOnValidThread());
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(MetroViewerProcessHost, message)
-    IPC_MESSAGE_HANDLER(MetroViewerHostMsg_SetTargetSurface, OnSetTargetSurface)
+    IPC_MESSAGE_HANDLER(MetroViewerHostMsg_FileSaveAsDone,
+                        OnFileSaveAsDone)
+    IPC_MESSAGE_HANDLER(MetroViewerHostMsg_FileOpenDone,
+                        OnFileOpenDone)
+    IPC_MESSAGE_HANDLER(MetroViewerHostMsg_MultiFileOpenDone,
+                        OnMultiFileOpenDone)
     IPC_MESSAGE_HANDLER(MetroViewerHostMsg_OpenURL, OnOpenURL)
     IPC_MESSAGE_HANDLER(MetroViewerHostMsg_SearchRequest, OnHandleSearchRequest)
+    IPC_MESSAGE_HANDLER(MetroViewerHostMsg_SelectFolderDone,
+                        OnSelectFolderDone)
+    IPC_MESSAGE_HANDLER(MetroViewerHostMsg_SetTargetSurface, OnSetTargetSurface)
     IPC_MESSAGE_HANDLER(MetroViewerHostMsg_WindowSizeChanged,
                         OnWindowSizeChanged)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -140,9 +157,189 @@ bool MetroViewerProcessHost::OnMessageReceived(
       aura::RemoteWindowTreeHostWin::Instance()->OnMessageReceived(message);
 }
 
+// static
+void MetroViewerProcessHost::HandleActivateDesktop(
+    const base::FilePath& path,
+    bool ash_exit) {
+  if (instance_) {
+    instance_->Send(
+        new MetroViewerHostMsg_ActivateDesktop(path, ash_exit));
+  }
+}
+
+// static
+void MetroViewerProcessHost::HandleMetroExit() {
+  if (instance_)
+    instance_->Send(new MetroViewerHostMsg_MetroExit());
+}
+
+// static
+void MetroViewerProcessHost::HandleOpenFile(
+    const base::string16& title,
+    const base::FilePath& default_path,
+    const base::string16& filter,
+    const OpenFileCompletion& on_success,
+    const FileSelectionCanceled& on_failure) {
+  if (instance_) {
+    instance_->HandleOpenFileImpl(title, default_path, filter, on_success,
+                                  on_failure);
+  }
+}
+
+// static
+void MetroViewerProcessHost::HandleOpenMultipleFiles(
+    const base::string16& title,
+    const base::FilePath& default_path,
+    const base::string16& filter,
+    const OpenMultipleFilesCompletion& on_success,
+    const FileSelectionCanceled& on_failure) {
+  if (instance_) {
+    instance_->HandleOpenMultipleFilesImpl(title, default_path, filter,
+                                           on_success, on_failure);
+  }
+}
+
+// static
+void MetroViewerProcessHost::HandleSaveFile(
+    const base::string16& title,
+    const base::FilePath& default_path,
+    const base::string16& filter,
+    int filter_index,
+    const base::string16& default_extension,
+    const SaveFileCompletion& on_success,
+    const FileSelectionCanceled& on_failure) {
+  if (instance_) {
+    instance_->HandleSaveFileImpl(title, default_path, filter, filter_index,
+                                  default_extension, on_success, on_failure);
+  }
+}
+
+// static
+void MetroViewerProcessHost::HandleSelectFolder(
+    const base::string16& title,
+    const SelectFolderCompletion& on_success,
+    const FileSelectionCanceled& on_failure) {
+  if (instance_)
+    instance_->HandleSelectFolderImpl(title, on_success, on_failure);
+}
+
+void MetroViewerProcessHost::HandleOpenFileImpl(
+    const base::string16& title,
+    const base::FilePath& default_path,
+    const base::string16& filter,
+    const OpenFileCompletion& on_success,
+    const FileSelectionCanceled& on_failure) {
+  // Can only have one of these operations in flight.
+  DCHECK(file_open_completion_callback_.is_null());
+  DCHECK(failure_callback_.is_null());
+
+  file_open_completion_callback_ = on_success;
+  failure_callback_ = on_failure;
+
+  Send(new MetroViewerHostMsg_DisplayFileOpen(title, filter, default_path,
+                                              false));
+}
+
+void MetroViewerProcessHost::HandleOpenMultipleFilesImpl(
+    const base::string16& title,
+    const base::FilePath& default_path,
+    const base::string16& filter,
+    const OpenMultipleFilesCompletion& on_success,
+    const FileSelectionCanceled& on_failure) {
+  // Can only have one of these operations in flight.
+  DCHECK(multi_file_open_completion_callback_.is_null());
+  DCHECK(failure_callback_.is_null());
+  multi_file_open_completion_callback_ = on_success;
+  failure_callback_ = on_failure;
+
+  Send(new MetroViewerHostMsg_DisplayFileOpen(title, filter, default_path,
+                                              true));
+}
+
+void MetroViewerProcessHost::HandleSaveFileImpl(
+    const base::string16& title,
+    const base::FilePath& default_path,
+    const base::string16& filter,
+    int filter_index,
+    const base::string16& default_extension,
+    const SaveFileCompletion& on_success,
+    const FileSelectionCanceled& on_failure) {
+  MetroViewerHostMsg_SaveAsDialogParams params;
+  params.title = title;
+  params.default_extension = default_extension;
+  params.filter = filter;
+  params.filter_index = filter_index;
+  params.suggested_name = default_path;
+
+  // Can only have one of these operations in flight.
+  DCHECK(file_saveas_completion_callback_.is_null());
+  DCHECK(failure_callback_.is_null());
+  file_saveas_completion_callback_ = on_success;
+  failure_callback_ = on_failure;
+
+  Send(new MetroViewerHostMsg_DisplayFileSaveAs(params));
+}
+
+void MetroViewerProcessHost::HandleSelectFolderImpl(
+    const base::string16& title,
+    const SelectFolderCompletion& on_success,
+    const FileSelectionCanceled& on_failure) {
+  // Can only have one of these operations in flight.
+  DCHECK(select_folder_completion_callback_.is_null());
+  DCHECK(failure_callback_.is_null());
+  select_folder_completion_callback_ = on_success;
+  failure_callback_ = on_failure;
+
+  Send(new MetroViewerHostMsg_DisplaySelectFolder(title));
+}
+
 void MetroViewerProcessHost::NotifyChannelConnected() {
   if (channel_connected_event_)
     channel_connected_event_->Signal();
+}
+
+void MetroViewerProcessHost::OnFileSaveAsDone(bool success,
+                                              const base::FilePath& filename,
+                                              int filter_index) {
+  if (success)
+    file_saveas_completion_callback_.Run(filename, filter_index, NULL);
+  else
+    failure_callback_.Run(NULL);
+  file_saveas_completion_callback_.Reset();
+  failure_callback_.Reset();
+}
+
+
+void MetroViewerProcessHost::OnFileOpenDone(bool success,
+                                            const base::FilePath& filename) {
+  if (success)
+    file_open_completion_callback_.Run(base::FilePath(filename), 0, NULL);
+  else
+    failure_callback_.Run(NULL);
+  file_open_completion_callback_.Reset();
+  failure_callback_.Reset();
+}
+
+void MetroViewerProcessHost::OnMultiFileOpenDone(
+    bool success,
+    const std::vector<base::FilePath>& files) {
+  if (success)
+    multi_file_open_completion_callback_.Run(files, NULL);
+  else
+    failure_callback_.Run(NULL);
+  multi_file_open_completion_callback_.Reset();
+  failure_callback_.Reset();
+}
+
+void MetroViewerProcessHost::OnSelectFolderDone(
+    bool success,
+    const base::FilePath& folder) {
+  if (success)
+    select_folder_completion_callback_.Run(base::FilePath(folder), 0, NULL);
+  else
+    failure_callback_.Run(NULL);
+  select_folder_completion_callback_.Reset();
+  failure_callback_.Reset();
 }
 
 }  // namespace win8

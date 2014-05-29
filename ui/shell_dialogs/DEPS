@@ -4,4 +4,5 @@ include_rules = [
   "+ui/aura",
   "+ui/base",
   "+ui/gfx",
+  "+win8/viewer",
 ]

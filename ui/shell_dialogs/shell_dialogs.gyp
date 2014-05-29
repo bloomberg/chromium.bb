@@ -77,6 +77,13 @@
             ],
           }
         ],
+        ['OS=="win"',
+          {
+            'dependencies': [
+              '../../win8/win8.gyp:metro_viewer',
+            ],
+          }
+        ],
       ],
     },  # target_name: shell_dialogs
     {

@@ -26,13 +26,14 @@
 #include "base/win/shortcut.h"
 #include "base/win/windows_version.h"
 #include "grit/ui_strings.h"
-#include "ui/aura/remote_window_tree_host_win.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
+#include "ui/aura/window_tree_host.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/shell_dialogs/base_shell_dialog_win.h"
 #include "ui/shell_dialogs/shell_dialogs_delegate.h"
+#include "win8/viewer/metro_viewer_process_host.h"
 
 namespace {
 
@@ -548,7 +549,7 @@ void SelectFileDialogImpl::SelectFileImpl(
   if (GetShellDialogsDelegate() &&
       GetShellDialogsDelegate()->IsWindowInMetro(owning_window)) {
     if (type == SELECT_SAVEAS_FILE) {
-      aura::HandleSaveFile(
+      win8::MetroViewerProcessHost::HandleSaveFile(
           base::UTF16ToWide(title),
           default_path,
           GetFilterForFileTypes(file_types),
@@ -560,7 +561,7 @@ void SelectFileDialogImpl::SelectFileImpl(
                      base::Unretained(listener_)));
       return;
     } else if (type == SELECT_OPEN_FILE) {
-      aura::HandleOpenFile(
+      win8::MetroViewerProcessHost::HandleOpenFile(
           base::UTF16ToWide(title),
           default_path,
           GetFilterForFileTypes(file_types),
@@ -570,7 +571,7 @@ void SelectFileDialogImpl::SelectFileImpl(
                      base::Unretained(listener_)));
       return;
     } else if (type == SELECT_OPEN_MULTI_FILE) {
-      aura::HandleOpenMultipleFiles(
+      win8::MetroViewerProcessHost::HandleOpenMultipleFiles(
           base::UTF16ToWide(title),
           default_path,
           GetFilterForFileTypes(file_types),
@@ -587,7 +588,7 @@ void SelectFileDialogImpl::SelectFileImpl(
         title_string = l10n_util::GetStringUTF16(
             IDS_SELECT_UPLOAD_FOLDER_DIALOG_TITLE);
       }
-      aura::HandleSelectFolder(
+      win8::MetroViewerProcessHost::HandleSelectFolder(
           base::UTF16ToWide(title_string),
           base::Bind(&ui::SelectFileDialog::Listener::FileSelected,
                      base::Unretained(listener_)),

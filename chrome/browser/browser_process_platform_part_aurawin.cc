@@ -76,7 +76,7 @@ void BrowserProcessPlatformPart::Observe(
         chrome::ActivateDesktopHelper(chrome::ASH_TERMINATE);
       } else {
         // Metro -> Metro
-        aura::HandleMetroExit();
+        ChromeMetroViewerProcessHost::HandleMetroExit();
       }
     }
   }

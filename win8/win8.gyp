@@ -22,7 +22,7 @@
     },
     {
       'target_name': 'metro_viewer',
-      'type': 'static_library',
+      'type': '<(component)',
       'dependencies': [
         '../base/base.gyp:base',
         '../ipc/ipc.gyp:ipc',
@@ -33,6 +33,9 @@
       'sources': [
         'viewer/metro_viewer_process_host.cc',
         'viewer/metro_viewer_process_host.h',
+      ],
+      'defines': [
+        'METRO_VIEWER_IMPLEMENTATION',
       ],
     },
     {
