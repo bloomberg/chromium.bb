@@ -910,14 +910,14 @@ void LoginDisplayHostImpl::OnKeyboardBoundsChanging(
     if (GetOobeUI()) {
       GetOobeUI()->GetCoreOobeActor()->ShowControlBar(true);
       if (login::LoginScrollIntoViewEnabled())
-        GetOobeUI()->GetCoreOobeActor()->SetKeyboardState(false);
+        GetOobeUI()->GetCoreOobeActor()->SetKeyboardState(false, new_bounds);
     }
   } else if (!new_bounds.IsEmpty() && keyboard_bounds_.IsEmpty()) {
     // Keyboard has been shown.
     if (GetOobeUI()) {
       GetOobeUI()->GetCoreOobeActor()->ShowControlBar(false);
       if (login::LoginScrollIntoViewEnabled())
-        GetOobeUI()->GetCoreOobeActor()->SetKeyboardState(true);
+        GetOobeUI()->GetCoreOobeActor()->SetKeyboardState(true, new_bounds);
     }
   }
 

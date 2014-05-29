@@ -179,6 +179,18 @@ cr.define('cr.ui.login', function() {
     virtualKeyboardShown_: false,
 
     /**
+     * Virtual keyboard width.
+     * @type {number}
+     */
+    virtualKeyboardWidth_: 0,
+
+    /**
+     * Virtual keyboard height.
+     * @type {number}
+     */
+    virtualKeyboardHeight_: 0,
+
+    /**
      * Type of UI.
      * @type {string}
      */
@@ -244,6 +256,24 @@ cr.define('cr.ui.login', function() {
     },
 
     /**
+     * Sets the current size of the virtual keyboard.
+     * @param {number} width keyboard width
+     * @param {number} height keyboard height
+     */
+    setVirtualKeyboardSize: function(width, height) {
+      this.virtualKeyboardWidth_ = width;
+      this.virtualKeyboardHeight_ = height;
+
+      // Special case for screen lock. http://crbug.com/377904
+      // In case of virtual keyboard adjuct work area.
+      if (this.displayType == DISPLAY_TYPE.LOCK) {
+        var bottom = (height) ? height : $('login-header-bar').offsetHeight;
+        var clientArea = $('outer-container');
+        clientArea.style.bottom = cr.ui.toCssPx(bottom);
+      }
+    },
+
+    /**
      * Sets the current size of the client area (display size).
      * @param {number} width client area width
      * @param {number} height client area height
@@ -251,7 +281,7 @@ cr.define('cr.ui.login', function() {
     setClientAreaSize: function(width, height) {
       var clientArea = $('outer-container');
       var bottom = parseInt(window.getComputedStyle(clientArea).bottom);
-      clientArea.style.minHeight = (height - bottom) + 'px';
+      clientArea.style.minHeight = cr.ui.toCssPx(height - bottom);
     },
 
     /**

@@ -310,10 +310,11 @@ cr.define('cr.ui', function() {
   };
 
   /**
-   * Sets the current state of the virtual keyboard (shown/hidden).
+   * Sets the current state of the virtual keyboard (shown/hidden, size).
    */
-  Oobe.setKeyboardState = function(shown) {
+  Oobe.setKeyboardState = function(shown, width, height) {
     Oobe.getInstance().virtualKeyboardShown = shown;
+    Oobe.getInstance().setVirtualKeyboardSize(width, height);
   };
 
   /**

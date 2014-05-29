@@ -50,6 +50,14 @@ class OobeUI : public OobeDisplay,
         Screen current_screen, Screen new_screen) = 0;
   };
 
+  // List of known types of OobeUI. Type added as path in chrome://oobe url, for
+  // example chrome://oobe/user-adding.
+  static const char kOobeDisplay[];
+  static const char kLoginDisplay[];
+  static const char kLockDisplay[];
+  static const char kUserAddingDisplay[];
+  static const char kAppLaunchSplashDisplay[];
+
   // JS oobe/login screens names.
   static const char kScreenOobeHIDDetection[];
   static const char kScreenOobeNetwork[];
@@ -133,6 +141,8 @@ class OobeUI : public OobeDisplay,
   Screen current_screen() const { return current_screen_; }
 
   Screen previous_screen() const { return previous_screen_; }
+
+  const std::string& display_type() const { return display_type_; }
 
   const std::string& GetScreenName(Screen screen) const;
 

@@ -56,20 +56,12 @@ namespace chromeos {
 
 namespace {
 
-// List of known types of OobeUI. Type added as path in chrome://oobe url, for
-// example chrome://oobe/user-adding.
-const char kOobeDisplay[] = "oobe";
-const char kLoginDisplay[] = "login";
-const char kLockDisplay[] = "lock";
-const char kUserAddingDisplay[] = "user-adding";
-const char kAppLaunchSplashDisplay[] = "app-launch-splash";
-
 const char* kKnownDisplayTypes[] = {
-  kOobeDisplay,
-  kLoginDisplay,
-  kLockDisplay,
-  kUserAddingDisplay,
-  kAppLaunchSplashDisplay
+  OobeUI::kOobeDisplay,
+  OobeUI::kLoginDisplay,
+  OobeUI::kLockDisplay,
+  OobeUI::kUserAddingDisplay,
+  OobeUI::kAppLaunchSplashDisplay
 };
 
 const char kStringsJSPath[] = "strings.js";
@@ -98,7 +90,7 @@ content::WebUIDataSource* CreateOobeUIDataSource(
     source->AddResourcePath(kDemoUserLoginJSPath, IDR_DEMO_USER_LOGIN_JS);
     return source;
   }
-  if (display_type == kOobeDisplay) {
+  if (display_type == OobeUI::kOobeDisplay) {
     source->SetDefaultResource(IDR_OOBE_HTML);
     source->AddResourcePath(kOobeJSPath, IDR_OOBE_JS);
   } else {
@@ -124,12 +116,19 @@ std::string GetDisplayType(const GURL& url) {
                 kKnownDisplayTypes + arraysize(kKnownDisplayTypes),
                 path) == kKnownDisplayTypes + arraysize(kKnownDisplayTypes)) {
     LOG(ERROR) << "Unknown display type '" << path << "'. Setting default.";
-    return kLoginDisplay;
+    return OobeUI::kLoginDisplay;
   }
   return path;
 }
 
 }  // namespace
+
+// static
+const char OobeUI::kOobeDisplay[] = "oobe";
+const char OobeUI::kLoginDisplay[] = "login";
+const char OobeUI::kLockDisplay[] = "lock";
+const char OobeUI::kUserAddingDisplay[] = "user-adding";
+const char OobeUI::kAppLaunchSplashDisplay[] = "app-launch-splash";
 
 // static
 const char OobeUI::kScreenOobeHIDDetection[] = "hid-detection";

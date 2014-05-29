@@ -51,6 +51,11 @@ std::string CanonicalizeUserID(const std::string& user_id) {
   return gaia::CanonicalizeEmail(user_id);
 }
 
+bool LockScrollIntoViewEnabled() {
+  return !CommandLine::ForCurrentProcess()->HasSwitch(
+      chromeos::switches::kDisableLockScrollIntoView);
+}
+
 bool LoginScrollIntoViewEnabled() {
   return !CommandLine::ForCurrentProcess()->HasSwitch(
       chromeos::switches::kDisableLoginScrollIntoView);

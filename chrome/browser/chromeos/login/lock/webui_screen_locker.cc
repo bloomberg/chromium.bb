@@ -33,12 +33,26 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/gfx/screen.h"
+#include "ui/keyboard/keyboard_controller.h"
+#include "ui/keyboard/keyboard_util.h"
 #include "ui/views/controls/webview/webview.h"
 
 namespace {
 
 // URL which corresponds to the login WebUI.
 const char kLoginURL[] = "chrome://oobe/lock";
+
+// Disables virtual keyboard overscroll. Login UI will scroll user pods
+// into view on JS side when virtual keyboard is shown.
+void DisableKeyboardOverscroll() {
+  keyboard::SetKeyboardOverscrollOverride(
+      keyboard::KEYBOARD_OVERSCROLL_OVERRIDE_DISABLED);
+}
+
+void ResetKeyboardOverscrollOverride() {
+  keyboard::SetKeyboardOverscrollOverride(
+      keyboard::KEYBOARD_OVERSCROLL_OVERRIDE_NONE);
+}
 
 }  // namespace
 
@@ -52,10 +66,18 @@ WebUIScreenLocker::WebUIScreenLocker(ScreenLocker* screen_locker)
       lock_ready_(false),
       webui_ready_(false),
       network_state_helper_(new login::NetworkStateHelper),
+      is_observing_keyboard_(false),
       weak_factory_(this) {
   set_should_emit_login_prompt_visible(false);
   ash::Shell::GetInstance()->lock_state_controller()->AddObserver(this);
   DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(this);
+
+  if (keyboard::KeyboardController::GetInstance()) {
+    keyboard::KeyboardController::GetInstance()->AddObserver(this);
+    is_observing_keyboard_ = true;
+  }
+
+  ash::Shell::GetInstance()->delegate()->AddVirtualKeyboardStateObserver(this);
 }
 
 void WebUIScreenLocker::LockScreen() {
@@ -77,12 +99,15 @@ void WebUIScreenLocker::LockScreen() {
   login_display_->set_parent_window(GetNativeWindow());
   login_display_->Init(screen_locker()->users(), false, true, false);
 
-  static_cast<OobeUI*>(GetWebUI()->GetController())->ShowSigninScreen(
+  GetOobeUI()->ShowSigninScreen(
       LoginScreenContext(), login_display_.get(), login_display_.get());
 
   registrar_.Add(this,
                  chrome::NOTIFICATION_LOGIN_USER_IMAGE_CHANGED,
                  content::NotificationService::AllSources());
+
+  if (login::LockScrollIntoViewEnabled())
+    DisableKeyboardOverscroll();
 }
 
 void WebUIScreenLocker::ScreenLockReady() {
@@ -145,6 +170,17 @@ WebUIScreenLocker::~WebUIScreenLocker() {
     static_cast<OobeUI*>(GetWebUI()->GetController())->
         ResetSigninScreenHandlerDelegate();
   }
+
+  if (keyboard::KeyboardController::GetInstance() && is_observing_keyboard_) {
+    keyboard::KeyboardController::GetInstance()->RemoveObserver(this);
+    is_observing_keyboard_ = false;
+  }
+
+  ash::Shell::GetInstance()->delegate()->
+      RemoveVirtualKeyboardStateObserver(this);
+
+  if (login::LockScrollIntoViewEnabled())
+    ResetKeyboardOverscrollOverride();
 }
 
 void WebUIScreenLocker::OnLockWebUIReady() {
@@ -158,6 +194,10 @@ void WebUIScreenLocker::OnLockWebUIReady() {
 void WebUIScreenLocker::OnLockBackgroundDisplayed() {
   UMA_HISTOGRAM_TIMES("LockScreen.BackgroundReady",
                       base::TimeTicks::Now() - lock_time_);
+}
+
+OobeUI* WebUIScreenLocker::GetOobeUI() {
+  return static_cast<OobeUI*>(GetWebUI()->GetController());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -320,6 +360,47 @@ void WebUIScreenLocker::RenderProcessGone(base::TerminationStatus status) {
     LOG(ERROR) << "Renderer crash on lock screen";
     Signout();
   }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// ash::KeyboardStateObserver overrides.
+
+void WebUIScreenLocker::OnVirtualKeyboardStateChanged(bool activated) {
+  if (keyboard::KeyboardController::GetInstance()) {
+    if (activated) {
+      if (!is_observing_keyboard_) {
+        keyboard::KeyboardController::GetInstance()->AddObserver(this);
+        is_observing_keyboard_ = true;
+      }
+    } else {
+      keyboard::KeyboardController::GetInstance()->RemoveObserver(this);
+      is_observing_keyboard_ = false;
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// keyboard::KeyboardControllerObserver overrides.
+
+void WebUIScreenLocker::OnKeyboardBoundsChanging(
+    const gfx::Rect& new_bounds) {
+  if (new_bounds.IsEmpty() && !keyboard_bounds_.IsEmpty()) {
+    // Keyboard has been hidden.
+    if (GetOobeUI()) {
+      GetOobeUI()->GetCoreOobeActor()->ShowControlBar(true);
+      if (login::LockScrollIntoViewEnabled())
+        GetOobeUI()->GetCoreOobeActor()->SetKeyboardState(false, new_bounds);
+    }
+  } else if (!new_bounds.IsEmpty() && keyboard_bounds_.IsEmpty()) {
+    // Keyboard has been shown.
+    if (GetOobeUI()) {
+      GetOobeUI()->GetCoreOobeActor()->ShowControlBar(false);
+      if (login::LockScrollIntoViewEnabled())
+        GetOobeUI()->GetCoreOobeActor()->SetKeyboardState(true, new_bounds);
+    }
+  }
+
+  keyboard_bounds_ = new_bounds;
 }
 
 }  // namespace chromeos

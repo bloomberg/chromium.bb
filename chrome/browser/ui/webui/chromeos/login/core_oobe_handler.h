@@ -16,6 +16,10 @@ namespace base {
 class ListValue;
 }
 
+namespace gfx {
+class Rect;
+}
+
 namespace chromeos {
 
 class HelpAppLauncher;
@@ -76,7 +80,7 @@ class CoreOobeHandler : public BaseScreenHandler,
   virtual void ClearErrors() OVERRIDE;
   virtual void ReloadContent(const base::DictionaryValue& dictionary) OVERRIDE;
   virtual void ShowControlBar(bool show) OVERRIDE;
-  virtual void SetKeyboardState(bool shown) OVERRIDE;
+  virtual void SetKeyboardState(bool shown, const gfx::Rect& bounds) OVERRIDE;
   virtual void SetClientAreaSize(int width, int height) OVERRIDE;
   virtual void ShowDeviceResetScreen() OVERRIDE;
 
