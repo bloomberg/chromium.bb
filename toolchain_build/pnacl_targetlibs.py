@@ -477,6 +477,11 @@ def NativeLibs(host, arch):
         [BuildTargetNativeCmd('entry_linux.c', 'entry_linux.o', arch),
          BuildTargetNativeCmd('entry_linux_x86_32.S', 'entry_linux_asm.o',
                               arch)])
+  elif arch == 'arm-nonsfi':
+    arch_cmds.extend(
+        [BuildTargetNativeCmd('entry_linux.c', 'entry_linux.o', arch),
+         BuildTargetNativeCmd('entry_linux_arm.S', 'entry_linux_asm.o',
+                              arch)])
 
   libs = {
       Mangle('libs_support_native', arch): {

@@ -9,5 +9,10 @@ if not env.Bit('nonsfi_nacl'):
   Return()
 
 # Specifying the target arch is necessary for using inline assembly.
-env.Append(CCFLAGS=['--target=i686-nacl'])
+if env.Bit('target_x86_32'):
+  env.Append(CCFLAGS=['--target=i686-nacl'])
+elif env.Bit('target_arm'):
+  env.Append(CCFLAGS=['--target=arm-nacl', '-mfloat-abi=hard'])
+else:
+  raise Exception('Unsupported architecture')
 env.ComponentLibrary('libnacl_sys_private', ['linux_sys_private.c'])

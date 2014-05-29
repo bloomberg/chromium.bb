@@ -88,6 +88,65 @@ static inline uint32_t linux_syscall6(int syscall_number,
   return result;
 }
 
+#elif defined(__arm__)
+
+/*
+ * Registers used for system call parameters on ARM EABI:
+ *   r7 - system call number
+ *   r0 - argument 1 and return value
+ *   r1 - argument 2, preserved
+ *   r2 - argument 3, preserved
+ *   r3 - argument 4, preserved
+ *   r4 - argument 5, preserved
+ *   r5 - argument 6, preserved
+ */
+
+static inline uint32_t linux_syscall1(int syscall_number, uint32_t arg1) {
+  register uint32_t sysno __asm__("r7") = syscall_number;
+  register uint32_t a1 __asm__("r0") = arg1;
+  register uint32_t result __asm__("r0");
+  __asm__ __volatile__("svc #0\n"
+                       : "=r"(result)
+                       : "r"(sysno), "r"(a1)
+                       : "memory");
+  return result;
+}
+
+static inline uint32_t linux_syscall3(int syscall_number,
+                                      uint32_t arg1, uint32_t arg2,
+                                      uint32_t arg3) {
+  register uint32_t sysno __asm__("r7") = syscall_number;
+  register uint32_t a1 __asm__("r0") = arg1;
+  register uint32_t a2 __asm__("r1") = arg2;
+  register uint32_t a3 __asm__("r2") = arg3;
+  register uint32_t result __asm__("r0");
+  __asm__ __volatile__("svc #0\n"
+                       : "=r"(result)
+                       : "r"(sysno), "r"(a1), "r"(a2), "r"(a3)
+                       : "memory");
+  return result;
+}
+
+static inline uint32_t linux_syscall6(int syscall_number,
+                                      uint32_t arg1, uint32_t arg2,
+                                      uint32_t arg3, uint32_t arg4,
+                                      uint32_t arg5, uint32_t arg6) {
+  register uint32_t sysno __asm__("r7") = syscall_number;
+  register uint32_t a1 __asm__("r0") = arg1;
+  register uint32_t a2 __asm__("r1") = arg2;
+  register uint32_t a3 __asm__("r2") = arg3;
+  register uint32_t a4 __asm__("r3") = arg4;
+  register uint32_t a5 __asm__("r4") = arg5;
+  register uint32_t a6 __asm__("r5") = arg6;
+  register uint32_t result __asm__("r0");
+  __asm__ __volatile__("svc #0\n"
+                       : "=r"(result)
+                       : "r"(sysno),
+                         "r"(a1), "r"(a2), "r"(a3), "r"(a4), "r"(a5), "r"(a6)
+                       : "memory");
+  return result;
+}
+
 #else
 # error Unsupported architecture
 #endif

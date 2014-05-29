@@ -83,6 +83,7 @@ void __libnacl_irt_init(Elf32_auxv_t *auxv) {
 }
 
 int nacl_tls_init(void *thread_ptr) {
+#if defined(__i386__)
   struct linux_user_desc desc = {
     .entry_number = -1, /* Allocate new entry */
     .base_addr = (uintptr_t) thread_ptr,
@@ -104,6 +105,13 @@ int nacl_tls_init(void *thread_ptr) {
   int privilege_level = 3;
   int gs_segment_selector = (desc.entry_number << 3) + privilege_level;
   __asm__("mov %0, %%gs" : : "r"(gs_segment_selector));
+#elif defined(__arm__)
+  uint32_t result = linux_syscall1(__NR_ARM_set_tls, (uint32_t) thread_ptr);
+  if (result != 0)
+    __builtin_trap();
+#else
+# error Unsupported architecture
+#endif
   /*
    * Sanity check: Ensure that the thread pointer reads back correctly.
    * This checks that the set_thread_area() syscall worked and that the
@@ -116,6 +124,10 @@ int nacl_tls_init(void *thread_ptr) {
 
 void *nacl_tls_get(void) {
   void *result;
+#if defined(__i386__)
   __asm__("mov %%gs:0, %0" : "=r"(result));
+#elif defined(__arm__)
+  __asm__("mrc p15, 0, %0, c13, c0, 3" : "=r"(result));
+#endif
   return result;
 }

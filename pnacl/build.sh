@@ -2437,6 +2437,9 @@ libs-support-native() {
   if [ "$arch" = "x86-32-nonsfi" ]; then
     ${cc_cmd} -c entry_linux.c -o "${tmpdir}"/entry_linux.o
     ${cc_cmd} -c entry_linux_x86_32.S -o "${tmpdir}"/entry_linux_asm.o
+  elif [ "$arch" = "arm-nonsfi" ]; then
+    ${cc_cmd} -c entry_linux.c -o "${tmpdir}"/entry_linux.o
+    ${cc_cmd} -c entry_linux_arm.S -o "${tmpdir}"/entry_linux_asm.o
   fi
 
   # Some of the support code lives in third_party/ because it's based on code

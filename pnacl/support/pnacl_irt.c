@@ -42,6 +42,12 @@ static void *internal_read_tp(void) {
   __asm__("mov %%gs:0, %0" : "=r"(result));
   return result;
 }
+# elif defined(__native_client_nonsfi__) && defined(__arm__)
+static void *internal_read_tp(void) {
+  void *result;
+  __asm__("mrc p15, 0, %0, c13, c0, 3" : "=r"(result));
+  return result;
+}
 # else
 #  define internal_read_tp (void *(*)(void)) NACL_SYSCALL_ADDR(NACL_sys_tls_get)
 # endif

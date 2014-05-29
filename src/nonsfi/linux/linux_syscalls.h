@@ -16,6 +16,13 @@
 # define __NR_set_thread_area    243
 # define __NR_exit_group         252
 
+#elif defined(__arm__)
+
+# define __NR_write              4
+# define __NR_mmap2              192
+# define __NR_exit_group         248
+# define __NR_ARM_set_tls        0xf0005
+
 #else
 # error Unsupported architecture
 #endif
