@@ -82,6 +82,9 @@ class LaunchdInterceptionServer {
   base::mac::ScopedMachVM request_buffer_;
   base::mac::ScopedMachVM reply_buffer_;
 
+  // Whether or not ForwardMessage() was called during ReceiveMessage().
+  bool did_forward_message_;
+
   // The Mach port handed out in reply to denied look up requests. All denied
   // requests share the same port, though nothing reads messages from it.
   base::mac::ScopedMachReceiveRight sandbox_port_;

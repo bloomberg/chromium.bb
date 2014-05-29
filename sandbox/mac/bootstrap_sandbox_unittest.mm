@@ -266,4 +266,52 @@ MULTIPROCESS_TEST_MAIN(PolicySubstitutePort) {
   return 0;
 }
 
+TEST_F(BootstrapSandboxTest, ForwardMessageInProcess) {
+  mach_port_t task = mach_task_self();
+
+  mach_port_t port;
+  ASSERT_EQ(KERN_SUCCESS, mach_port_allocate(task, MACH_PORT_RIGHT_RECEIVE,
+      &port));
+  base::mac::ScopedMachReceiveRight scoped_port_recv(port);
+
+  mach_port_urefs_t send_rights = 0;
+  ASSERT_EQ(KERN_SUCCESS, mach_port_get_refs(task, port, MACH_PORT_RIGHT_SEND,
+      &send_rights));
+  EXPECT_EQ(0u, send_rights);
+
+  ASSERT_EQ(KERN_SUCCESS, mach_port_insert_right(task, port, port,
+      MACH_MSG_TYPE_MAKE_SEND));
+  base::mac::ScopedMachSendRight scoped_port_send(port);
+
+  send_rights = 0;
+  ASSERT_EQ(KERN_SUCCESS, mach_port_get_refs(task, port, MACH_PORT_RIGHT_SEND,
+      &send_rights));
+  EXPECT_EQ(1u, send_rights);
+
+  mach_port_t bp;
+  ASSERT_EQ(KERN_SUCCESS, task_get_bootstrap_port(task, &bp));
+  base::mac::ScopedMachSendRight scoped_bp(bp);
+
+  char service_name[] = "org.chromium.sandbox.test.ForwardMessageInProcess";
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+  kern_return_t kr = bootstrap_register(bp, service_name, port);
+#pragma GCC diagnostic pop
+  EXPECT_EQ(KERN_SUCCESS, kr);
+
+  send_rights = 0;
+  ASSERT_EQ(KERN_SUCCESS, mach_port_get_refs(task, port, MACH_PORT_RIGHT_SEND,
+      &send_rights));
+  EXPECT_EQ(1u, send_rights);
+
+  mach_port_t service_port;
+  EXPECT_EQ(KERN_SUCCESS, bootstrap_look_up(bp, service_name, &service_port));
+  base::mac::ScopedMachSendRight scoped_service_port(service_port);
+
+  send_rights = 0;
+  ASSERT_EQ(KERN_SUCCESS, mach_port_get_refs(task, port, MACH_PORT_RIGHT_SEND,
+      &send_rights));
+  EXPECT_EQ(2u, send_rights);
+}
+
 }  // namespace sandbox
