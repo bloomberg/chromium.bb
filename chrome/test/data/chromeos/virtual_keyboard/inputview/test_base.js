@@ -7,7 +7,6 @@
 var mockController;
 var mockTimer;
 var setComposition;
-var realSetTimeout;
 
 var DEFAULT_CONTEXT_ID = 1;
 
@@ -16,7 +15,6 @@ var DEFAULT_CONTEXT_ID = 1;
  * calls must set expectations for call signatures.
  */
 function setUp() {
-  realSetTimeout = window.setTimeout;
   mockController = new MockController();
   mockTimer = new MockTimer();
   mockTimer.install();
@@ -43,22 +41,6 @@ function setUp() {
 }
 
 /**
- * Runs the test once the keyboard is ready.
- * @param {function} testFn The test function to run.
- * @param {function} testDoneCallback Called on test completion.
- */
-function RunTest(testFn, testDoneCallback) {
-  if (window.isKeyboardReady()) {
-    testFn();
-    testDoneCallback();
-  } else {
-    realSetTimeout(function(){
-      RunTest(testFn, testDoneCallback);
-    }, 100);
-  }
-}
-
-/**
  * Verify that API calls match expectations.
  */
 function tearDown() {
@@ -82,43 +64,38 @@ function isActive(el) {
   /**
    * Map from keys to layout specific key ids. This only contains a small subset
    * of the keys which are used in testing. The ids are based on the XKB layouts
-   * in GoogleKeyboardInput-xkb.crx. Ids that start with a number are escaped
-   * so that document.querySelector returns the correct element.
+   * in GoogleKeyboardInput-xkb.crx.
    */
   var KEY_IDS = {
     'a' : {
-      'us' : '#\\31 01kbd-k-29',
-      'us.compact.qwerty' : '#compactkbd-k-key-11',
+      'us' : '101kbd-k-29',
+      'us.compact' : 'compactkbd-k-key-10',
     },
     'c' : {
-      'us' : '#\\31 01kbd-k-44',
-      'us.compact.qwerty' : '#compactkbd-k-key-24',
+      'us' : '101kbd-k-44',
+      'us.compact' : 'compactkbd-k-key-21',
 
     },
     'd' : {
-      'us' : '#\\31 01kbd-k-31',
-      'us.compact.qwerty' : '#compactkbd-k-key-13',
+      'us' : '101kbd-k-31',
+      'us.compact' : 'compactkbd-k-key-12',
 
     },
-    'e' : {
-      'us' : '#\\31 01kbd-k-43',
-      'us.compact.qwerty': '#compactkbd-k-key-2',
-    },
     'l' : {
-      'us' : '#\\31 01kbd-k-37',
-      'us.compact.qwerty' : '#compactkbd-k-key-19',
+      'us' : '101kbd-k-37',
+      'us.compact' : 'compactkbd-k-key-18',
 
     },
     'p' : {
-      'us' : '#\\31 01kbd-k-24',
-      'us.compact.qwerty' : '#compactkbd-k-key-9',
+      'us' : '101kbd-k-24',
+      'us.compact' : 'compactkbd-k-key-9',
     },
     'leftshift' : {
-      'us' : '#\\31 01kbd-k-41',
-      'us.compact.qwerty' : '#compactkbd-k-21',
+      'us' : '101kbd-k-41',
+      'us.compact' : 'compactkbd-k-21',
     },
     "capslock" : {
-      'us' : '#\\31 01kbd-k-28',
+      'us' : '101kbd-k-28',
     }
   };
 
@@ -147,35 +124,14 @@ function isActive(el) {
   }
 
   /**
-   * Returns the layout with the id provided. Periods in the id are replaced by
-   * hyphens.
-   * @param id {string} id The layout id.
-   * @return {object}
-   */
-
-  var getLayout_ = function(id) {
-    // Escape periods to hyphens.
-    var layoutId = id.replace(/\./g, '-');
-    var layout = document.querySelector('#' + layoutId);
-    assertTrue(!!layout, "Cannot find layout with id: " + layoutId);
-    return layout;
-  }
-
-  /**
    * Returns the key object corresponding to the character.
    * @return {string} char The character.
    */
   var getKey_ = function(char) {
     var layoutId = getLayoutId();
-    var layout = getLayout_(layoutId);
-
-    // All keys in the layout that are in the target keys position.
-    var candidates = layout.querySelectorAll(getKeyId_(layoutId, char));
-    assertTrue(candidates.length > 0, "Cannot find key: " + char);
-    var visible = Array.prototype.filter.call(candidates, isActive);
-    assertEquals(1, visible.length,
-        "Expect exactly one visible key for char: " + char);
-    return visible[0];
+    var key = document.getElementById(getKeyId_(layoutId, char));
+    assertTrue(!!key, "Key not present in layout: " + char);
+    return key;
   }
 
   exports.getKey = getKey_;
@@ -226,13 +182,8 @@ function mockMouseType(char) {
  * @param type {String} The type of the touch event.
  */
 function generateTouchEvent(target, type) {
-  // Parent Event class is used instead UIEvent does not allow mocking pageX and
-  // pageY of the event.
-  var e = document.createEvent('Event');
+  var e = document.createEvent('UIEvents');
   e.initEvent(type, true, true);
-  var rect = target.getBoundingClientRect();
-  e.pageX = rect.left;
-  e.pageY = rect.top;
   target.dispatchEvent(e);
 }
 

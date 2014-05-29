@@ -7,15 +7,12 @@
 /**
  * Tests typing in the lowercase keyset.
  */
-function testLowercaseKeysetAsync(testDoneCallback) {
-  var test = function() {
-    // Mouse events.
-    mockMouseType('l');
-    mockMouseType('p');
+function testLowercaseKeyset() {
+  // Mouse events.
+  mockMouseType('l');
+  mockMouseType('p');
 
-    // Touch events.
-    mockTouchType('l');
-    mockTouchType('p');
-  }
-  RunTest(test, testDoneCallback);
+  // Touch events.
+  mockTouchType('l');
+  mockTouchType('p');
 }

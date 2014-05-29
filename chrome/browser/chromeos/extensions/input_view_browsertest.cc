@@ -32,7 +32,7 @@ const base::FilePath::CharType kInputViewTestDir[] =
 const base::FilePath::CharType kBaseKeyboardTestFramework[] = "test_base.js";
 
 const char kDefaultLayout[] = "us";
-const char kCompactLayout[] = "us.compact.qwerty";
+const char kCompactLayout[] = "us.compact";
 
 struct InputViewConfig : public VirtualKeyboardBrowserTestConfig {
   explicit InputViewConfig(std::string id, std::string layout) {
