@@ -3,15 +3,15 @@
 // found in the LICENSE file.
 
 #include "stdafx.h"
-#include "win8/metro_driver/direct3d_helper.h"
-#include "win8/metro_driver/winrt_utils.h"
-
-#include "base/logging.h"
-#include "base/win/windows_version.h"
-
 #include <corewindow.h>
 #include <windows.applicationmodel.core.h>
 #include <windows.graphics.display.h>
+
+#include "win8/metro_driver/direct3d_helper.h"
+#include "base/logging.h"
+#include "base/win/windows_version.h"
+#include "ui/gfx/win/dpi.h"
+#include "win8/metro_driver/winrt_utils.h"
 
 namespace {
 
@@ -21,6 +21,10 @@ void CheckIfFailed(HRESULT hr) {
     DVLOG(0) << "Direct3D call failed, hr = " << hr;
 }
 
+// TODO(ananta)
+// This function does not return the correct value as the IDisplayProperties
+// interface does not work correctly in Windows 8 in metro mode. Needs
+// more investigation.
 float GetLogicalDpi() {
   mswr::ComPtr<wingfx::Display::IDisplayPropertiesStatics> display_properties;
   CheckIfFailed(winrt_utils::CreateActivationFactory(
@@ -32,9 +36,7 @@ float GetLogicalDpi() {
 }
 
 float ConvertDipsToPixels(float dips) {
-  static const float dips_per_inch = 96.f;
-  float logical_dpi = GetLogicalDpi();
-  return floor(dips * logical_dpi / dips_per_inch + 0.5f);
+  return floor(dips * gfx::GetDPIScale() + 0.5f);
 }
 
 }

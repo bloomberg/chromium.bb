@@ -74,6 +74,7 @@
             '../../sandbox/sandbox.gyp:sandbox',
             '../../ui/metro_viewer/metro_viewer.gyp:metro_viewer_messages',
             '../../ui/gfx/gfx.gyp:gfx',
+            '../../ui/gfx/gfx.gyp:gfx_geometry',
             '../../url/url.gyp:url_lib',
             'metro_driver_version_resources',
           ],
