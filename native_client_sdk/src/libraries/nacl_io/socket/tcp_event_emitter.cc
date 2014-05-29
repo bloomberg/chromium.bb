@@ -91,4 +91,12 @@ PP_Resource TcpEventEmitter::GetAcceptedSocket_Locked() {
   return rtn;
 }
 
+uint32_t TcpEventEmitter::BytesInOutputFIFO() {
+  return out_fifo()->ReadAvailable();
+}
+
+uint32_t TcpEventEmitter::SpaceInInputFIFO() {
+  return in_fifo()->WriteAvailable();
+}
+
 }  // namespace nacl_io

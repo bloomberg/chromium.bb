@@ -14,7 +14,6 @@
 #include "gtest/gtest.h"
 
 #include "nacl_io/fifo_char.h"
-#include "nacl_io/fifo_null.h"
 #include "nacl_io/socket/fifo_packet.h"
 #include "nacl_io/socket/packet.h"
 
@@ -27,15 +26,6 @@ const size_t kTestSize = 32;
 const size_t kHalfSize = kTestSize / 2;
 const size_t kQuarterSize = kTestSize / 4;
 };
-
-TEST(FIFONull, Basic) {
-  FIFONull fifo;
-  EXPECT_FALSE(fifo.IsFull());
-  EXPECT_FALSE(fifo.IsEmpty());
-
-  EXPECT_LT(0, fifo.ReadAvailable());
-  EXPECT_LT(0, fifo.WriteAvailable());
-}
 
 /**
  * Test writes that start a wrapped location.  We had

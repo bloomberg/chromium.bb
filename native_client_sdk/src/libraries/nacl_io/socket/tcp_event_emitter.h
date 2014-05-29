@@ -38,6 +38,9 @@ class TcpEventEmitter : public StreamEventEmitter {
   void UpdateStatus_Locked();
   void SetListening_Locked();
 
+  uint32_t BytesInOutputFIFO();
+  uint32_t SpaceInInputFIFO();
+
  protected:
   virtual FIFOChar* in_fifo() { return &in_fifo_; }
   virtual FIFOChar* out_fifo() { return &out_fifo_; }
