@@ -30,7 +30,7 @@
 #include "components/breakpad/app/breakpad_linux_impl.h"
 #include "content/public/browser/browser_thread.h"
 
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) && !defined(__LP64__)
 #include <sys/linux-syscalls.h>
 
 #define SYS_read __NR_read
