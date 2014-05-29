@@ -687,6 +687,11 @@ void ChromeResourceDispatcherHostDelegate::OnRequestRedirected(
   // management UI is built on top of it.
   signin::AppendMirrorRequestHeaderIfPossible(request, redirect_url, io_data,
       info->GetChildID(), info->GetRouteID());
+
+#if defined(ENABLE_CONFIGURATION_POLICY)
+  if (io_data->policy_header_helper())
+    io_data->policy_header_helper()->AddPolicyHeaders(request);
+#endif
 }
 
 // Notification that a request has completed.
