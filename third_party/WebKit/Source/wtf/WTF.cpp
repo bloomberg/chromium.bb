@@ -79,8 +79,8 @@ void Partitions::initialize()
     // Guard against two threads hitting here in parallel.
     spinLockLock(&lock);
     if (!s_initialized) {
-        s_initialized = true;
         m_bufferAllocator.init();
+        s_initialized = true;
     }
     spinLockUnlock(&lock);
 }
