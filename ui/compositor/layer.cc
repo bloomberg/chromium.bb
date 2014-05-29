@@ -465,9 +465,8 @@ void Layer::SwitchToLayer(scoped_refptr<cc::Layer> new_layer) {
   // TODO(piman): delegated_renderer_layer_ cleanup.
 
   cc_layer_->RemoveAllChildren();
-  if (parent_) {
-    DCHECK(parent_->cc_layer_);
-    parent_->cc_layer_->ReplaceChild(cc_layer_, new_layer);
+  if (cc_layer_->parent()) {
+    cc_layer_->parent()->ReplaceChild(cc_layer_, new_layer);
   }
   cc_layer_->SetLayerClient(NULL);
   cc_layer_->RemoveLayerAnimationEventObserver(this);

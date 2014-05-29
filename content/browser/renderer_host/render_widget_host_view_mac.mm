@@ -425,7 +425,7 @@ RenderWidgetHostImpl* RenderWidgetHostViewMac::GetHost() {
 
 void RenderWidgetHostViewMac::SchedulePaintInRect(
     const gfx::Rect& damage_rect_in_dip) {
-  [browser_compositor_view_ compositor]->ScheduleFullRedraw();
+  [browser_compositor_view_ compositor]->Draw();
 }
 
 bool RenderWidgetHostViewMac::IsVisible() {
@@ -1896,20 +1896,9 @@ void RenderWidgetHostViewMac::OnSwapCompositorFrame(
           [[BrowserCompositorViewMac alloc] initWithSuperview:cocoa_view_]);
       root_layer_.reset(new ui::Layer(ui::LAYER_TEXTURED));
       delegated_frame_host_.reset(new DelegatedFrameHost(this));
+      [browser_compositor_view_ compositor]->SetRootLayer(root_layer_.get());
     }
 
-    // TODO(ccameron): Having the root layer set while swapping the frame will
-    // result in frames not appearing. Fix this.
-    [browser_compositor_view_ compositor]->SetRootLayer(NULL);
-    delegated_frame_host_->SwapDelegatedFrame(
-        output_surface_id,
-        frame->delegated_frame_data.Pass(),
-        frame->metadata.device_scale_factor,
-        frame->metadata.latency_info);
-    [browser_compositor_view_ compositor]->SetRootLayer(root_layer_.get());
-
-    // Update the compositor and root layer size and scale factor to match
-    // the frame just received.
     float scale_factor = frame->metadata.device_scale_factor;
     gfx::Size dip_size = ToCeiledSize(frame->metadata.viewport_size);
     gfx::Size pixel_size = ConvertSizeToPixel(
@@ -1917,6 +1906,12 @@ void RenderWidgetHostViewMac::OnSwapCompositorFrame(
     [browser_compositor_view_ compositor]->SetScaleAndSize(
         scale_factor, pixel_size);
     root_layer_->SetBounds(gfx::Rect(dip_size));
+
+    delegated_frame_host_->SwapDelegatedFrame(
+        output_surface_id,
+        frame->delegated_frame_data.Pass(),
+        frame->metadata.device_scale_factor,
+        frame->metadata.latency_info);
   } else if (frame->software_frame_data) {
     if (!software_frame_manager_->SwapToNewFrame(
             output_surface_id,
