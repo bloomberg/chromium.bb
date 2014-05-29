@@ -3193,7 +3193,7 @@ TEST_F(SharedCryptoRsaOaepTest, ImportPublicJwkWithMismatchedAlgFails) {
                                  &public_key));
 }
 
-TEST_F(SharedCryptoRsaOaepTest, ImportPublicJwkWithMismatchedTypFails) {
+TEST_F(SharedCryptoRsaOaepTest, ImportPublicJwkWithMismatchedTypeFails) {
   if (!SupportsRsaOaep()) {
     LOG(WARNING) << "RSA-OAEP support not present; skipping.";
     return;
@@ -3470,8 +3470,8 @@ TEST_F(SharedCryptoRsaOaepTest, WrapUnwrapRawKey) {
       HexStringToBytes(kPrivateKeyPkcs8DerHex),
       import_algorithm,
       false,
-      blink::WebCryptoKeyUsageEncrypt | blink::WebCryptoKeyUsageDecrypt,
-      blink::WebCryptoKeyUsageWrapKey | blink::WebCryptoKeyUsageUnwrapKey,
+      blink::WebCryptoKeyUsageEncrypt | blink::WebCryptoKeyUsageWrapKey,
+      blink::WebCryptoKeyUsageDecrypt | blink::WebCryptoKeyUsageUnwrapKey,
       &public_key,
       &private_key));
 
@@ -3588,8 +3588,8 @@ TEST_F(SharedCryptoRsaOaepTest, WrapUnwrapJwkSymKey) {
       HexStringToBytes(kPrivateKey2048Pkcs8DerHex),
       import_algorithm,
       false,
-      blink::WebCryptoKeyUsageEncrypt | blink::WebCryptoKeyUsageDecrypt,
-      blink::WebCryptoKeyUsageWrapKey | blink::WebCryptoKeyUsageUnwrapKey,
+      blink::WebCryptoKeyUsageEncrypt | blink::WebCryptoKeyUsageWrapKey,
+      blink::WebCryptoKeyUsageDecrypt | blink::WebCryptoKeyUsageUnwrapKey,
       &public_key,
       &private_key));
 
