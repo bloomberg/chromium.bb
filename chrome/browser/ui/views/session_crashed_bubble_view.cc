@@ -232,6 +232,7 @@ void SessionCrashedBubbleView::Init() {
   text_label->SetLineHeight(20);
   text_label->SetEnabledColor(SK_ColorDKGRAY);
   text_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  text_label->SizeToFit(kWidthOfDescriptionText);
 
   // Restore button.
   restore_button_ = new views::LabelButton(
