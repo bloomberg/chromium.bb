@@ -172,6 +172,10 @@ class CONTENT_EXPORT ServiceWorkerDatabase {
   // Returns OK on success. Otherwise deletes nothing and returns an error.
   Status ClearPurgeableResourceIds(const std::set<int64>& ids);
 
+  // Moves |ids| from the uncommitted list to the purgeable list.
+  // Returns OK on success. Otherwise deletes nothing and returns an error.
+  Status PurgeUncommittedResourceIds(const std::set<int64>& ids);
+
   // Deletes all data for |origin|, namely, unique origin, registrations and
   // resource records. Resources are moved to the purgeable list. Returns OK if
   // they are successfully deleted or not found in the database. Otherwise,
@@ -233,6 +237,10 @@ class CONTENT_EXPORT ServiceWorkerDatabase {
   Status WriteResourceIds(
       const char* id_key_prefix,
       const std::set<int64>& ids);
+  Status WriteResourceIdsInBatch(
+      const char* id_key_prefix,
+      const std::set<int64>& ids,
+      leveldb::WriteBatch* batch);
 
   // Deletes resource ids for |id_key_prefix| from the database. Returns OK if
   // it's successfully deleted or not found in the database. Otherwise, returns
@@ -240,6 +248,10 @@ class CONTENT_EXPORT ServiceWorkerDatabase {
   Status DeleteResourceIds(
       const char* id_key_prefix,
       const std::set<int64>& ids);
+  Status DeleteResourceIdsInBatch(
+      const char* id_key_prefix,
+      const std::set<int64>& ids,
+      leveldb::WriteBatch* batch);
 
   // Reads the current schema version from the database. If the database hasn't
   // been written anything yet, sets |db_version| to 0 and returns OK.

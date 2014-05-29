@@ -95,7 +95,7 @@ ServiceWorkerVersion::ServiceWorkerVersion(
       registration_id_(kInvalidServiceWorkerVersionId),
       status_(NEW),
       context_(context),
-      script_cache_map_(this),
+      script_cache_map_(this, context),
       weak_factory_(this) {
   DCHECK(context_);
   DCHECK(registration);

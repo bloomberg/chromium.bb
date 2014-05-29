@@ -43,6 +43,7 @@ class ServiceWorkerVersion;
 // registration data.
 class CONTENT_EXPORT ServiceWorkerStorage {
  public:
+  typedef std::vector<ServiceWorkerDatabase::ResourceRecord> ResourceList;
   typedef base::Callback<void(ServiceWorkerStatusCode status)> StatusCallback;
   typedef base::Callback<void(ServiceWorkerStatusCode status,
                               const scoped_refptr<ServiceWorkerRegistration>&
@@ -108,6 +109,14 @@ class CONTENT_EXPORT ServiceWorkerStorage {
   scoped_ptr<ServiceWorkerResponseWriter> CreateResponseWriter(
       int64 response_id);
 
+  // Adds |id| to the set of resources ids that are in the disk
+  // cache but not yet stored with a registration.
+  void StoreUncommittedReponseId(int64 id);
+
+  // Removes |id| from uncommitted list, adds it to the
+  // purgeable list and purges it.
+  void DoomUncommittedResponse(int64 id);
+
   // Returns new IDs which are guaranteed to be unique in the storage.
   int64 NewRegistrationId();
   int64 NewVersionId();
@@ -117,7 +126,9 @@ class CONTENT_EXPORT ServiceWorkerStorage {
   void NotifyInstallingRegistration(
       ServiceWorkerRegistration* registration);
   void NotifyDoneInstallingRegistration(
-      ServiceWorkerRegistration* registration);
+      ServiceWorkerRegistration* registration,
+      ServiceWorkerVersion* version,
+      ServiceWorkerStatusCode status);
 
  private:
   friend class ServiceWorkerStorageTest;
@@ -135,7 +146,6 @@ class CONTENT_EXPORT ServiceWorkerStorage {
   };
 
   typedef std::vector<ServiceWorkerDatabase::RegistrationData> RegistrationList;
-  typedef std::vector<ServiceWorkerDatabase::ResourceRecord> ResourceList;
   typedef std::map<int64, scoped_refptr<ServiceWorkerRegistration> >
       RegistrationRefsById;
   typedef base::Callback<void(
@@ -213,6 +223,8 @@ class CONTENT_EXPORT ServiceWorkerStorage {
   void OnDiskCacheInitialized(int rv);
 
   void StartPurgingResources(const std::vector<int64>& ids);
+  void StartPurgingResources(const ResourceList& resources);
+  void ContinuePurgingResources();
   void PurgeResource(int64 id);
   void OnResourcePurged(int64 id, int rv);
 

@@ -361,8 +361,6 @@ void ServiceWorkerRegisterJob::Complete(ServiceWorkerStatusCode status) {
     if (registration() && registration()->pending_version()) {
       AssociatePendingVersionToDocuments(NULL);
       registration()->set_pending_version(NULL);
-      // TODO(michaeln): Take care of deleteting the version's
-      // script resources too.
     }
     if (registration() && !registration()->active_version()) {
       context_->storage()->DeleteRegistration(
@@ -374,8 +372,10 @@ void ServiceWorkerRegisterJob::Complete(ServiceWorkerStatusCode status) {
       ResolvePromise(status, NULL, NULL);
   }
   DCHECK(callbacks_.empty());
-  if (registration())
-    context_->storage()->NotifyDoneInstallingRegistration(registration());
+  if (registration()) {
+    context_->storage()->NotifyDoneInstallingRegistration(
+        registration(), pending_version(), status);
+  }
   context_->job_coordinator()->FinishJob(pattern_, this);
 }
 

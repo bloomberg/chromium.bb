@@ -496,7 +496,8 @@ TEST_F(ServiceWorkerStorageTest, InstallingRegistrationsAreFindable) {
   all_registrations.clear();
 
   // Notify storage of installation no longer happening.
-  storage()->NotifyDoneInstallingRegistration(live_registration);
+  storage()->NotifyDoneInstallingRegistration(
+      live_registration, NULL, SERVICE_WORKER_OK);
 
   // Once again, should not be findable.
   storage()->FindRegistrationForId(

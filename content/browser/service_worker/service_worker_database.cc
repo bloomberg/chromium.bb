@@ -595,6 +595,20 @@ ServiceWorkerDatabase::ClearPurgeableResourceIds(const std::set<int64>& ids) {
   return DeleteResourceIds(kPurgeableResIdKeyPrefix, ids);
 }
 
+ServiceWorkerDatabase::Status
+ServiceWorkerDatabase::PurgeUncommittedResourceIds(
+    const std::set<int64>& ids) {
+  leveldb::WriteBatch batch;
+  Status status = DeleteResourceIdsInBatch(
+      kUncommittedResIdKeyPrefix, ids, &batch);
+  if (status != STATUS_OK)
+    return status;
+  status = WriteResourceIdsInBatch(kPurgeableResIdKeyPrefix, ids, &batch);
+  if (status != STATUS_OK)
+    return status;
+  return WriteBatch(&batch);
+}
+
 ServiceWorkerDatabase::Status ServiceWorkerDatabase::DeleteAllDataForOrigin(
     const GURL& origin,
     std::vector<int64>* newly_purgeable_resources) {
@@ -847,6 +861,17 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::ReadResourceIds(
 ServiceWorkerDatabase::Status ServiceWorkerDatabase::WriteResourceIds(
     const char* id_key_prefix,
     const std::set<int64>& ids) {
+  leveldb::WriteBatch batch;
+  Status status = WriteResourceIdsInBatch(id_key_prefix, ids, &batch);
+  if (status != STATUS_OK)
+    return status;
+  return WriteBatch(&batch);
+}
+
+ServiceWorkerDatabase::Status ServiceWorkerDatabase::WriteResourceIdsInBatch(
+    const char* id_key_prefix,
+    const std::set<int64>& ids,
+    leveldb::WriteBatch* batch) {
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
   DCHECK(id_key_prefix);
 
@@ -856,19 +881,28 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::WriteResourceIds(
   if (ids.empty())
     return STATUS_OK;
 
-  leveldb::WriteBatch batch;
   for (std::set<int64>::const_iterator itr = ids.begin();
        itr != ids.end(); ++itr) {
     // Value should be empty.
-    batch.Put(CreateResourceIdKey(id_key_prefix, *itr), "");
+    batch->Put(CreateResourceIdKey(id_key_prefix, *itr), "");
   }
-
-  return WriteBatch(&batch);
+  return STATUS_OK;
 }
 
 ServiceWorkerDatabase::Status ServiceWorkerDatabase::DeleteResourceIds(
     const char* id_key_prefix,
     const std::set<int64>& ids) {
+  leveldb::WriteBatch batch;
+  Status status = DeleteResourceIdsInBatch(id_key_prefix, ids, &batch);
+  if (status != STATUS_OK)
+    return status;
+  return WriteBatch(&batch);
+}
+
+ServiceWorkerDatabase::Status ServiceWorkerDatabase::DeleteResourceIdsInBatch(
+    const char* id_key_prefix,
+    const std::set<int64>& ids,
+    leveldb::WriteBatch* batch) {
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
   DCHECK(id_key_prefix);
 
@@ -880,13 +914,11 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::DeleteResourceIds(
   if (ids.empty())
     return STATUS_OK;
 
-  leveldb::WriteBatch batch;
   for (std::set<int64>::const_iterator itr = ids.begin();
        itr != ids.end(); ++itr) {
-    batch.Delete(CreateResourceIdKey(id_key_prefix, *itr));
+    batch->Delete(CreateResourceIdKey(id_key_prefix, *itr));
   }
-
-  return WriteBatch(&batch);
+  return STATUS_OK;
 }
 
 ServiceWorkerDatabase::Status ServiceWorkerDatabase::ReadDatabaseVersion(

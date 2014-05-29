@@ -349,6 +349,27 @@ ServiceWorkerStorage::CreateResponseWriter(int64 response_id) {
       new ServiceWorkerResponseWriter(response_id, disk_cache()));
 }
 
+void ServiceWorkerStorage::StoreUncommittedReponseId(int64 id) {
+  DCHECK_NE(kInvalidServiceWorkerResponseId, id);
+  database_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(base::IgnoreResult(
+          &ServiceWorkerDatabase::WriteUncommittedResourceIds),
+          base::Unretained(database_.get()),
+          std::set<int64>(&id, &id + 1)));
+}
+
+void ServiceWorkerStorage::DoomUncommittedResponse(int64 id) {
+  DCHECK_NE(kInvalidServiceWorkerResponseId, id);
+  database_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(base::IgnoreResult(
+          &ServiceWorkerDatabase::PurgeUncommittedResourceIds),
+          base::Unretained(database_.get()),
+          std::set<int64>(&id, &id + 1)));
+  StartPurgingResources(std::vector<int64>(1, id));
+}
+
 int64 ServiceWorkerStorage::NewRegistrationId() {
   if (state_ == DISABLED)
     return kInvalidServiceWorkerRegistrationId;
@@ -376,8 +397,27 @@ void ServiceWorkerStorage::NotifyInstallingRegistration(
 }
 
 void ServiceWorkerStorage::NotifyDoneInstallingRegistration(
-      ServiceWorkerRegistration* registration) {
+      ServiceWorkerRegistration* registration,
+      ServiceWorkerVersion* version,
+      ServiceWorkerStatusCode status) {
   installing_registrations_.erase(registration->id());
+  if (status != SERVICE_WORKER_OK && version) {
+    ResourceList resources;
+    version->script_cache_map()->GetResources(&resources);
+
+    std::set<int64> ids;
+    for (size_t i = 0; i < resources.size(); ++i)
+      ids.insert(resources[i].resource_id);
+
+    database_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(base::IgnoreResult(
+            &ServiceWorkerDatabase::PurgeUncommittedResourceIds),
+            base::Unretained(database_.get()),
+            ids));
+
+    StartPurgingResources(resources);
+  }
 }
 
 base::FilePath ServiceWorkerStorage::GetDatabasePath() {
@@ -706,7 +746,17 @@ void ServiceWorkerStorage::StartPurgingResources(
     const std::vector<int64>& ids) {
   for (size_t i = 0; i < ids.size(); ++i)
     purgeable_reource_ids_.push_back(ids[i]);
+  ContinuePurgingResources();
+}
 
+void ServiceWorkerStorage::StartPurgingResources(
+    const ResourceList& resources) {
+  for (size_t i = 0; i < resources.size(); ++i)
+    purgeable_reource_ids_.push_back(resources[i].resource_id);
+  ContinuePurgingResources();
+}
+
+void ServiceWorkerStorage::ContinuePurgingResources() {
   if (purgeable_reource_ids_.empty() || is_purge_pending_)
     return;
 
@@ -740,8 +790,7 @@ void ServiceWorkerStorage::OnResourcePurged(int64 id, int rv) {
           base::Unretained(database_.get()),
           std::set<int64>(&id, &id + 1)));
 
-  // Continue purging the remaining resources.
-  StartPurgingResources(std::vector<int64>());
+  ContinuePurgingResources();
 }
 
 void ServiceWorkerStorage::ReadInitialDataFromDB(
