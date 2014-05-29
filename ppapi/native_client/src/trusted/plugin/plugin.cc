@@ -93,11 +93,10 @@ void Plugin::HistogramEnumerateSelLdrLoadStatus(NaClErrorCode error_code) {
 bool Plugin::LoadNaClModuleFromBackgroundThread(
     PP_FileHandle file_handle,
     NaClSubprocess* subprocess,
-    int32_t manifest_id,
     const SelLdrStartParams& params) {
   CHECK(!pp::Module::Get()->core()->IsMainThread());
   ServiceRuntime* service_runtime =
-      new ServiceRuntime(this, manifest_id, false, uses_nonsfi_mode_,
+      new ServiceRuntime(this, false, uses_nonsfi_mode_,
                          pp::BlockUntilComplete(), pp::BlockUntilComplete());
   subprocess->set_service_runtime(service_runtime);
   PLUGIN_PRINTF(("Plugin::LoadNaClModuleFromBackgroundThread "
@@ -188,7 +187,7 @@ void Plugin::LoadNaClModule(PP_NaClFileInfo file_info,
                            enable_crash_throttling);
   ErrorInfo error_info;
   ServiceRuntime* service_runtime =
-      new ServiceRuntime(this, manifest_id_, true, uses_nonsfi_mode,
+      new ServiceRuntime(this, true, uses_nonsfi_mode,
                          init_done_cb, crash_cb);
   main_subprocess_.set_service_runtime(service_runtime);
   PLUGIN_PRINTF(("Plugin::LoadNaClModule (service_runtime=%p)\n",
@@ -280,9 +279,8 @@ NaClSubprocess* Plugin::LoadHelperNaClModule(const nacl::string& helper_url,
 
   // Helper NaCl modules always use the PNaCl manifest, as there is no
   // corresponding NMF.
-  int32_t manifest_id = nacl_interface_->CreatePnaclManifest(pp_instance());
   if (!LoadNaClModuleFromBackgroundThread(file_handle, nacl_subprocess.get(),
-                                          manifest_id, params)) {
+                                          params)) {
     return NULL;
   }
   // We need not wait for the init_done callback.  We can block
@@ -331,7 +329,6 @@ Plugin::Plugin(PP_Instance pp_instance)
       uses_nonsfi_mode_(false),
       wrapper_factory_(NULL),
       time_of_last_progress_event_(0),
-      manifest_id_(-1),
       nacl_interface_(NULL),
       uma_interface_(this) {
   PLUGIN_PRINTF(("Plugin::Plugin (this=%p, pp_instance=%"
@@ -360,9 +357,6 @@ Plugin::~Plugin() {
   // Destroy the coordinator while the rest of the data is still there
   pnacl_coordinator_.reset(NULL);
 
-  // Clean up accounting for our instance inside the NaCl interface.
-  if (manifest_id_ != -1)
-    nacl_interface_->DestroyManifest(pp_instance(), manifest_id_);
   nacl_interface_->InstanceDestroyed(pp_instance());
 
   // ShutDownSubprocesses shuts down the main subprocess, which shuts
@@ -499,14 +493,14 @@ void Plugin::BitcodeDidTranslateContinuation(int32_t pp_error) {
 void Plugin::NaClManifestFileDidOpen(int32_t pp_error) {
   PLUGIN_PRINTF(("Plugin::NaClManifestFileDidOpen (pp_error=%"
                  NACL_PRId32 ")\n", pp_error));
-  if (pp_error != PP_OK || manifest_id_ == -1)
+  if (pp_error != PP_OK)
     return;
 
   PP_Var pp_program_url;
   PP_PNaClOptions pnacl_options = {PP_FALSE, PP_FALSE, 2};
   PP_Bool uses_nonsfi_mode;
-  if (nacl_interface_->GetManifestProgramURL(pp_instance(),
-          manifest_id_, &pp_program_url, &pnacl_options, &uses_nonsfi_mode)) {
+  if (nacl_interface_->GetManifestProgramURL(
+          pp_instance(), &pp_program_url, &pnacl_options, &uses_nonsfi_mode)) {
     program_url_ = pp::Var(pp::PASS_REF, pp_program_url).AsString();
     // TODO(teravest): Make ProcessNaClManifest take responsibility for more of
     // this function.
@@ -540,7 +534,6 @@ void Plugin::RequestNaClManifest(const nacl::string& url) {
       callback_factory_.NewCallback(&Plugin::NaClManifestFileDidOpen);
   nacl_interface_->RequestNaClManifest(pp_instance(),
                                        url.c_str(),
-                                       &manifest_id_,
                                        open_callback.pp_completion_callback());
 }
 

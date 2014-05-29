@@ -186,13 +186,11 @@ void OpenManifestEntryResource::MaybeRunCallback(int32_t pp_error) {
 PluginReverseInterface::PluginReverseInterface(
     nacl::WeakRefAnchor* anchor,
     Plugin* plugin,
-    int32_t manifest_id,
     ServiceRuntime* service_runtime,
     pp::CompletionCallback init_done_cb,
     pp::CompletionCallback crash_cb)
       : anchor_(anchor),
         plugin_(plugin),
-        manifest_id_(manifest_id),
         service_runtime_(service_runtime),
         shutting_down_(false),
         init_done_cb_(init_done_cb),
@@ -321,11 +319,12 @@ void PluginReverseInterface::OpenManifestEntry_MainThreadContinuation(
 
   PP_Var pp_mapped_url;
   PP_PNaClOptions pnacl_options = {PP_FALSE, PP_FALSE, 2};
-  if (!GetNaClInterface()->ManifestResolveKey(plugin_->pp_instance(),
-                                              manifest_id_,
-                                              p->url.c_str(),
-                                              &pp_mapped_url,
-                                              &pnacl_options)) {
+  if (!GetNaClInterface()->ManifestResolveKey(
+          plugin_->pp_instance(),
+          PP_FromBool(!service_runtime_->main_service_runtime()),
+          p->url.c_str(),
+          &pp_mapped_url,
+          &pnacl_options)) {
     NaClLog(4, "OpenManifestEntry_MainThreadContinuation: ResolveKey failed\n");
     // Failed, and error_info has the details on what happened.  Wake
     // up requesting thread -- we are done.
@@ -469,7 +468,6 @@ int64_t PluginReverseInterface::RequestQuotaForWrite(
 }
 
 ServiceRuntime::ServiceRuntime(Plugin* plugin,
-                               int32_t manifest_id,
                                bool main_service_runtime,
                                bool uses_nonsfi_mode,
                                pp::CompletionCallback init_done_cb,
@@ -479,9 +477,7 @@ ServiceRuntime::ServiceRuntime(Plugin* plugin,
       uses_nonsfi_mode_(uses_nonsfi_mode),
       reverse_service_(NULL),
       anchor_(new nacl::WeakRefAnchor()),
-      rev_interface_(new PluginReverseInterface(anchor_, plugin,
-                                                manifest_id,
-                                                this,
+      rev_interface_(new PluginReverseInterface(anchor_, plugin, this,
                                                 init_done_cb, crash_cb)),
       start_sel_ldr_done_(false) {
   NaClSrpcChannelInitialize(&command_channel_);

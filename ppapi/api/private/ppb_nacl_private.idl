@@ -368,7 +368,6 @@ interface PPB_NaCl_Private {
   /* Performs accounting for requesting the NaCl manifest at the given URL. */
   void RequestNaClManifest([in] PP_Instance instance,
                            [in] str_t manifest_url,
-                           [out] int32_t manifest_id,
                            [in] PP_CompletionCallback callback);
 
   PP_Var GetManifestBaseURL([in] PP_Instance instance);
@@ -385,19 +384,13 @@ interface PPB_NaCl_Private {
 
   PP_Bool DevInterfacesEnabled([in] PP_Instance instance);
 
-  int32_t CreatePnaclManifest([in] PP_Instance instance);
-
-  void DestroyManifest([in] PP_Instance instance,
-                       [in] int32_t manifest_id);
-
   PP_Bool GetManifestProgramURL([in] PP_Instance instance,
-                                [in] int32_t manifest_id,
                                 [out] PP_Var full_url,
                                 [out] PP_PNaClOptions pnacl_options,
                                 [out] PP_Bool uses_nonsfi_mode);
 
   PP_Bool ManifestResolveKey([in] PP_Instance instance,
-                             [in] int32_t manifest_id,
+                             [in] PP_Bool helper_process,
                              [in] str_t key,
                              [out] PP_Var full_url,
                              [out] PP_PNaClOptions pnacl_options);

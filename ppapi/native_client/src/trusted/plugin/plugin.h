@@ -176,7 +176,6 @@ class Plugin : public pp::Instance {
   // This will fully initialize the |subprocess| if the load was successful.
   bool LoadNaClModuleFromBackgroundThread(PP_FileHandle file_handle,
                                           NaClSubprocess* subprocess,
-                                          int32_t manifest_id,
                                           const SelLdrStartParams& params);
 
   // Start sel_ldr from the main thread, given the start params.
@@ -255,8 +254,6 @@ class Plugin : public pp::Instance {
 
   int64_t time_of_last_progress_event_;
   int exit_status_;
-
-  int32_t manifest_id_;
 
   PP_NaClFileInfo nexe_file_info_;
 

@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From private/ppb_nacl_private.idl modified Wed May 28 09:02:13 2014. */
+/* From private/ppb_nacl_private.idl modified Thu May 29 08:25:29 2014. */
 
 #ifndef PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
 #define PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
@@ -389,7 +389,6 @@ struct PPB_NaCl_Private_1_0 {
   /* Performs accounting for requesting the NaCl manifest at the given URL. */
   void (*RequestNaClManifest)(PP_Instance instance,
                               const char* manifest_url,
-                              int32_t* manifest_id,
                               struct PP_CompletionCallback callback);
   struct PP_Var (*GetManifestBaseURL)(PP_Instance instance);
   /* Processes the NaCl manifest once it's been retrieved.
@@ -400,15 +399,12 @@ struct PPB_NaCl_Private_1_0 {
   /* Returns the manifest url as passed as a plugin argument. */
   struct PP_Var (*GetManifestURLArgument)(PP_Instance instance);
   PP_Bool (*DevInterfacesEnabled)(PP_Instance instance);
-  int32_t (*CreatePnaclManifest)(PP_Instance instance);
-  void (*DestroyManifest)(PP_Instance instance, int32_t manifest_id);
   PP_Bool (*GetManifestProgramURL)(PP_Instance instance,
-                                   int32_t manifest_id,
                                    struct PP_Var* full_url,
                                    struct PP_PNaClOptions* pnacl_options,
                                    PP_Bool* uses_nonsfi_mode);
   PP_Bool (*ManifestResolveKey)(PP_Instance instance,
-                                int32_t manifest_id,
+                                PP_Bool helper_process,
                                 const char* key,
                                 struct PP_Var* full_url,
                                 struct PP_PNaClOptions* pnacl_options);
