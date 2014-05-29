@@ -1311,9 +1311,6 @@ crbug.com/376597 web-animations-api/player.html [ Pass Failure ]
 
 crbug.com/376306 fast/repaint/change-text-content-and-background-color.html [ NeedsRebaseline ]
 
-crbug.com/376534 http/tests/inspector/network/network-xhr-redirect-body.html [ Pass Failure ]
-crbug.com/376534 http/tests/inspector/network/network-xhr-redirect-method.html [ Pass Failure ]
-
 crbug.com/377013 [ Mac Debug ] fast/repaint/4776765.html [ Pass Failure ]
 
 crbug.com/239722 http/tests/websocket/connection-throttling.html [ Failure ]
