@@ -32,6 +32,8 @@ ui::GestureProvider::Config GetGestureProviderConfig() {
   // requested by renderer.
   ui::GestureProvider::Config config = ui::DefaultGestureProviderConfig();
   config.gesture_begin_end_types_enabled = false;
+  config.gesture_detector_config.swipe_enabled = false;
+  config.gesture_detector_config.two_finger_tap_enabled = false;
   return config;
 }
 
@@ -202,6 +204,11 @@ void TouchEmulator::OnGestureEvent(const ui::GestureEventData& gesture) {
       CreateWebGestureEventFromGestureEventData(gesture);
 
   switch (gesture_event.type) {
+    case WebInputEvent::Undefined:
+      NOTREACHED() << "Undefined WebInputEvent type";
+      // Bail without sending the junk event to the client.
+      return;
+
     case WebInputEvent::GestureScrollBegin:
       client_->ForwardGestureEvent(gesture_event);
       // PinchBegin must always follow ScrollBegin.
