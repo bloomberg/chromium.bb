@@ -71,7 +71,7 @@ class BrowserTabStripController : public TabStripController,
   virtual void CreateNewTab() OVERRIDE;
   virtual void CreateNewTabWithLocation(const base::string16& loc) OVERRIDE;
   virtual bool IsIncognito() OVERRIDE;
-  virtual void LayoutTypeMaybeChanged() OVERRIDE;
+  virtual void StackedLayoutMaybeChanged() OVERRIDE;
   virtual void OnStartedDraggingTabs() OVERRIDE;
   virtual void OnStoppedDraggingTabs() OVERRIDE;
   virtual void CheckFileSupported(const GURL& url) OVERRIDE;
@@ -137,8 +137,8 @@ class BrowserTabStripController : public TabStripController,
   // Adds a tab.
   void AddTab(content::WebContents* contents, int index, bool is_active);
 
-  // Resets the tabstrips layout type from prefs.
-  void UpdateLayoutType();
+  // Resets the tabstrips stacked layout (true or false) from prefs.
+  void UpdateStackedLayout();
 
   // Notifies the tabstrip whether |url| is supported once a MIME type request
   // has completed.

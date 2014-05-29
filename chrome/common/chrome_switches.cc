@@ -629,9 +629,6 @@ const char kEnableSpellingAutoCorrect[]     = "enable-spelling-auto-correct";
 const char kEnableSpellingFeedbackFieldTrial[] =
     "enable-spelling-feedback-field-trial";
 
-// Enables the stacked tabstrip.
-const char kEnableStackedTabStrip[]         = "enable-stacked-tab-strip";
-
 // Enables an experimental hosted app experience.
 const char kEnableStreamlinedHostedApps[]   = "enable-streamlined-hosted-apps";
 

@@ -728,7 +728,7 @@ extern const char kChromeOsReleaseChannel[];
 
 extern const char kPerformanceTracingEnabled[];
 
-extern const char kTabStripLayoutType[];
+extern const char kTabStripStackedLayout[];
 
 extern const char kRegisteredBackgroundContents[];
 

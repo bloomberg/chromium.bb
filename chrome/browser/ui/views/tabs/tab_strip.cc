@@ -511,7 +511,7 @@ TabStrip::TabStrip(TabStripController* controller)
       in_tab_close_(false),
       animation_container_(new gfx::AnimationContainer()),
       bounds_animator_(this),
-      layout_type_(TAB_STRIP_LAYOUT_SHRINK),
+      stacked_layout_(false),
       adjust_layout_(false),
       reset_to_shrink_on_exit_(false),
       mouse_move_count_(0),
@@ -547,10 +547,8 @@ void TabStrip::RemoveObserver(TabStripObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
-void TabStrip::SetLayoutType(TabStripLayoutType layout_type,
-                             bool adjust_layout) {
-  adjust_layout_ = adjust_layout;
-  if (layout_type == layout_type_)
+void TabStrip::SetStackedLayout(bool stacked_layout) {
+  if (stacked_layout == stacked_layout_)
     return;
 
   const int active_index = controller_->GetActiveIndex();
@@ -559,7 +557,7 @@ void TabStrip::SetLayoutType(TabStripLayoutType layout_type,
     active_center = ideal_bounds(active_index).x() +
         ideal_bounds(active_index).width() / 2;
   }
-  layout_type_ = layout_type;
+  stacked_layout_ = stacked_layout;
   SetResetToShrinkOnExit(false);
   SwapLayoutIfNecessary();
   // When transitioning to stacked try to keep the active tab centered.
@@ -1066,7 +1064,7 @@ Tab* TabStrip::GetTabAt(Tab* tab, const gfx::Point& tab_in_tab_coordinates) {
 
 void TabStrip::OnMouseEventInTab(views::View* source,
                                  const ui::MouseEvent& event) {
-  UpdateLayoutTypeFromMouseEvent(source, event);
+  UpdateStackedLayoutFromMouseEvent(source, event);
 }
 
 bool TabStrip::ShouldPaintTab(const Tab* tab, gfx::Rect* clip) {
@@ -1119,8 +1117,8 @@ void TabStrip::MouseMovedOutOfHost() {
   ResizeLayoutTabs();
   if (reset_to_shrink_on_exit_) {
     reset_to_shrink_on_exit_ = false;
-    SetLayoutType(TAB_STRIP_LAYOUT_SHRINK, true);
-    controller_->LayoutTypeMaybeChanged();
+    SetStackedLayout(false);
+    controller_->StackedLayoutMaybeChanged();
   }
 }
 
@@ -1150,8 +1148,7 @@ void TabStrip::PaintChildren(gfx::Canvas* canvas,
   // Since |touch_layout_| is created based on number of tabs and width we use
   // the ideal state to determine if we should paint stacked. This minimizes
   // painting changes as we switch between the two.
-  const bool stacking = (layout_type_ == TAB_STRIP_LAYOUT_STACKED) ||
-      IsStackingDraggedTabs();
+  const bool stacking = stacked_layout_ || IsStackingDraggedTabs();
 
   const chrome::HostDesktopType host_desktop_type =
       chrome::GetHostDesktopTypeForNativeView(GetWidget()->GetNativeView());
@@ -1450,7 +1447,7 @@ const views::View* TabStrip::GetViewByID(int view_id) const {
 }
 
 bool TabStrip::OnMousePressed(const ui::MouseEvent& event) {
-  UpdateLayoutTypeFromMouseEvent(this, event);
+  UpdateStackedLayoutFromMouseEvent(this, event);
   // We can't return true here, else clicking in an empty area won't drag the
   // window.
   return false;
@@ -1463,7 +1460,7 @@ bool TabStrip::OnMouseDragged(const ui::MouseEvent& event) {
 
 void TabStrip::OnMouseReleased(const ui::MouseEvent& event) {
   EndDrag(END_DRAG_COMPLETE);
-  UpdateLayoutTypeFromMouseEvent(this, event);
+  UpdateStackedLayoutFromMouseEvent(this, event);
 }
 
 void TabStrip::OnMouseCaptureLost() {
@@ -1471,7 +1468,7 @@ void TabStrip::OnMouseCaptureLost() {
 }
 
 void TabStrip::OnMouseMoved(const ui::MouseEvent& event) {
-  UpdateLayoutTypeFromMouseEvent(this, event);
+  UpdateStackedLayoutFromMouseEvent(this, event);
 }
 
 void TabStrip::OnMouseEntered(const ui::MouseEvent& event) {
@@ -1486,8 +1483,8 @@ void TabStrip::OnGestureEvent(ui::GestureEvent* event) {
     case ui::ET_GESTURE_END:
       EndDrag(END_DRAG_COMPLETE);
       if (adjust_layout_) {
-        SetLayoutType(TAB_STRIP_LAYOUT_STACKED, true);
-        controller_->LayoutTypeMaybeChanged();
+        SetStackedLayout(true);
+        controller_->StackedLayoutMaybeChanged();
       }
       break;
 
@@ -1537,7 +1534,7 @@ void TabStrip::OnGestureEvent(ui::GestureEvent* event) {
 
 void TabStrip::Init() {
   set_id(VIEW_ID_TAB_STRIP);
-  // So we get enter/exit on children to switch layout type.
+  // So we get enter/exit on children to switch stacked layout on and off.
   set_notify_enter_exit_on_child(true);
   newtab_button_bounds_.SetRect(0,
                                 0,
@@ -1986,20 +1983,20 @@ void TabStrip::PaintClosingTabs(gfx::Canvas* canvas,
   }
 }
 
-void TabStrip::UpdateLayoutTypeFromMouseEvent(views::View* source,
-                                              const ui::MouseEvent& event) {
-  if (!GetAdjustLayout())
+void TabStrip::UpdateStackedLayoutFromMouseEvent(views::View* source,
+                                                 const ui::MouseEvent& event) {
+  if (!adjust_layout_)
     return;
 
-  // The following code attempts to switch to TAB_STRIP_LAYOUT_SHRINK when the
-  // mouse exits the tabstrip (or the mouse is pressed on a stacked tab) and
-  // TAB_STRIP_LAYOUT_STACKED when a touch device is used. This is made
-  // problematic by windows generating mouse move events that do not clearly
-  // indicate the move is the result of a touch device. This assumes a real
-  // mouse is used if |kMouseMoveCountBeforeConsiderReal| mouse move events are
-  // received within the time window |kMouseMoveTimeMS|.  At the time we get a
-  // mouse press we know whether its from a touch device or not, but we don't
-  // layout then else everything shifts. Instead we wait for the release.
+  // The following code attempts to switch to shrink (not stacked) layout when
+  // the mouse exits the tabstrip (or the mouse is pressed on a stacked tab) and
+  // to stacked layout when a touch device is used. This is made problematic by
+  // windows generating mouse move events that do not clearly indicate the move
+  // is the result of a touch device. This assumes a real mouse is used if
+  // |kMouseMoveCountBeforeConsiderReal| mouse move events are received within
+  // the time window |kMouseMoveTimeMS|.  At the time we get a mouse press we
+  // know whether its from a touch device or not, but we don't layout then else
+  // everything shifts. Instead we wait for the release.
   //
   // TODO(sky): revisit this when touch events are really plumbed through.
 
@@ -2013,8 +2010,8 @@ void TabStrip::UpdateLayoutTypeFromMouseEvent(views::View* source,
         views::View::ConvertPointToTarget(source, this, &tab_strip_point);
         Tab* tab = FindTabForEvent(tab_strip_point);
         if (tab && touch_layout_->IsStacked(GetModelIndexOfTab(tab))) {
-          SetLayoutType(TAB_STRIP_LAYOUT_SHRINK, true);
-          controller_->LayoutTypeMaybeChanged();
+          SetStackedLayout(false);
+          controller_->StackedLayoutMaybeChanged();
         }
       }
       break;
@@ -2053,8 +2050,8 @@ void TabStrip::UpdateLayoutTypeFromMouseEvent(views::View* source,
       mouse_move_count_ = 0;
       last_mouse_move_time_ = base::TimeTicks();
       if ((event.flags() & ui::EF_FROM_TOUCH) == ui::EF_FROM_TOUCH) {
-        SetLayoutType(TAB_STRIP_LAYOUT_STACKED, true);
-        controller_->LayoutTypeMaybeChanged();
+        SetStackedLayout(true);
+        controller_->StackedLayoutMaybeChanged();
       }
       break;
     }
@@ -2612,7 +2609,7 @@ void TabStrip::SwapLayoutIfNecessary() {
 }
 
 bool TabStrip::NeedsTouchLayout() const {
-  if (layout_type_ == TAB_STRIP_LAYOUT_SHRINK)
+  if (!stacked_layout_)
     return false;
 
   int mini_tab_count = GetMiniTabCount();
@@ -2626,11 +2623,11 @@ bool TabStrip::NeedsTouchLayout() const {
 }
 
 void TabStrip::SetResetToShrinkOnExit(bool value) {
-  if (!GetAdjustLayout())
+  if (!adjust_layout_)
     return;
 
-  if (value && layout_type_ == TAB_STRIP_LAYOUT_SHRINK)
-    value = false;  // We're already at TAB_STRIP_LAYOUT_SHRINK.
+  if (value && !stacked_layout_)
+    value = false;  // We're already using shrink (not stacked) layout.
 
   if (value == reset_to_shrink_on_exit_)
     return;
@@ -2641,11 +2638,4 @@ void TabStrip::SetResetToShrinkOnExit(bool value) {
     AddMessageLoopObserver();
   else
     RemoveMessageLoopObserver();
-}
-
-bool TabStrip::GetAdjustLayout() const {
-  if (!adjust_layout_)
-    return false;
-  return chrome::GetHostDesktopTypeForNativeView(
-      GetWidget()->GetNativeView()) == chrome::HOST_DESKTOP_TYPE_ASH;
 }

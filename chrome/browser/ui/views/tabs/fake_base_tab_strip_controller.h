@@ -48,7 +48,7 @@ class FakeBaseTabStripController : public TabStripController {
   virtual void CreateNewTab() OVERRIDE;
   virtual void CreateNewTabWithLocation(const base::string16& loc) OVERRIDE;
   virtual bool IsIncognito() OVERRIDE;
-  virtual void LayoutTypeMaybeChanged() OVERRIDE;
+  virtual void StackedLayoutMaybeChanged() OVERRIDE;
   virtual void OnStartedDraggingTabs() OVERRIDE;
   virtual void OnStoppedDraggingTabs() OVERRIDE;
   virtual void CheckFileSupported(const GURL& url) OVERRIDE;

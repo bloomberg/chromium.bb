@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_BROWSER_VIEW_PREFS_H_
 
 class PrefRegistrySimple;
+class PrefService;
 
 namespace user_prefs {
 class PrefRegistrySyncable;
@@ -20,6 +21,10 @@ void RegisterBrowserViewLocalPrefs(PrefRegistrySimple* registry);
 // preferences may be synced, depending on the pref's |sync_status| parameter.
 void RegisterBrowserViewProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry);
+
+// Converts deprecated int tabstrip layout type into a boolean value indicating
+// stacked layout preference.
+void MigrateBrowserTabStripPrefs(PrefService* pref);
 
 }  // namespace chrome
 

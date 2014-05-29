@@ -909,13 +909,6 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE_AND_VALUE(switches::kAllowNaClSocketAPI, "*")
   },
   {
-    "stacked-tab-strip",
-    IDS_FLAGS_STACKED_TAB_STRIP_NAME,
-    IDS_FLAGS_STACKED_TAB_STRIP_DESCRIPTION,
-    kOsWin,
-    SINGLE_VALUE_TYPE(switches::kEnableStackedTabStrip)
-  },
-  {
     "force-device-scale-factor",
     IDS_FLAGS_FORCE_HIGH_DPI_NAME,
     IDS_FLAGS_FORCE_HIGH_DPI_DESCRIPTION,

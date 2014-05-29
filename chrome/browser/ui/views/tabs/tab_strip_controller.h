@@ -102,8 +102,8 @@ class TabStripController {
   // Returns true if the tab strip is in an incognito window.
   virtual bool IsIncognito() = 0;
 
-  // Invoked if the layout type might have changed.
-  virtual void LayoutTypeMaybeChanged() = 0;
+  // Invoked if the stacked layout (on or off) might have changed.
+  virtual void StackedLayoutMaybeChanged() = 0;
 
   // Notifies controller that the user started dragging this tabstrip's tabs.
   virtual void OnStartedDraggingTabs() = 0;

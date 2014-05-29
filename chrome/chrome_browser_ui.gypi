@@ -1409,9 +1409,6 @@
         'browser/ui/tabs/tab_menu_model.h',
         'browser/ui/tabs/tab_resources.cc',
         'browser/ui/tabs/tab_resources.h',
-        'browser/ui/tabs/tab_strip_layout_type.h',
-        'browser/ui/tabs/tab_strip_layout_type_prefs.cc',
-        'browser/ui/tabs/tab_strip_layout_type_prefs.h',
         'browser/ui/tabs/tab_strip_model.cc',
         'browser/ui/tabs/tab_strip_model.h',
         'browser/ui/tabs/tab_strip_model_delegate.h',
@@ -2743,11 +2740,6 @@
             }],
           ],
         }, { # else: use_aura==0
-          'sources!': [
-            'browser/ui/tabs/tab_strip_layout_type.h',
-            'browser/ui/tabs/tab_strip_layout_type_prefs.cc',
-            'browser/ui/tabs/tab_strip_layout_type_prefs.h',
-          ],
           'sources/': [
             ['exclude', '^browser/ui/views/frame/browser_desktop_window_tree_host.h'],
             ['exclude', '^browser/ui/views/frame/browser_desktop_window_tree_host_win.cc'],

@@ -252,7 +252,7 @@ TEST_F(TabStripTest, TabHitTestMaskWhenStacked) {
                                           gfx::Size(200, 20)));
 
   // Switch to stacked layout mode and force a layout to ensure tabs stack.
-  tab_strip_->SetLayoutType(TAB_STRIP_LAYOUT_STACKED, false);
+  tab_strip_->SetStackedLayout(true);
   tab_strip_->DoLayout();
 
 
@@ -378,7 +378,7 @@ TEST_F(TabStripTest, ClippedTabCloseButton) {
   ASSERT_TRUE(active_tab->IsActive());
 
   // Switch to stacked layout mode and force a layout to ensure tabs stack.
-  tab_strip_->SetLayoutType(TAB_STRIP_LAYOUT_STACKED, false);
+  tab_strip_->SetStackedLayout(true);
   tab_strip_->DoLayout();
 
 

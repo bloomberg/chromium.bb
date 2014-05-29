@@ -29,7 +29,6 @@
 #include "chrome/browser/ui/views/tabs/tab.h"
 #include "chrome/browser/ui/views/tabs/tab_renderer_data.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
@@ -59,25 +58,16 @@ TabRendererData::NetworkState TabContentsNetworkState(
   return TabRendererData::NETWORK_STATE_LOADING;
 }
 
-TabStripLayoutType DetermineTabStripLayout(
+bool DetermineTabStripLayoutStacked(
     PrefService* prefs,
     chrome::HostDesktopType host_desktop_type,
     bool* adjust_layout) {
   *adjust_layout = false;
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableStackedTabStrip)) {
-    return TAB_STRIP_LAYOUT_STACKED;
-  }
   // For ash, always allow entering stacked mode.
   if (host_desktop_type != chrome::HOST_DESKTOP_TYPE_ASH)
-    return TAB_STRIP_LAYOUT_SHRINK;
+    return false;
   *adjust_layout = true;
-  switch (prefs->GetInteger(prefs::kTabStripLayoutType)) {
-    case TAB_STRIP_LAYOUT_STACKED:
-      return TAB_STRIP_LAYOUT_STACKED;
-    default:
-      return TAB_STRIP_LAYOUT_SHRINK;
-  }
+  return prefs->GetBoolean(prefs::kTabStripStackedLayout);
 }
 
 // Get the MIME type of the file pointed to by the url, based on the file's
@@ -201,8 +191,8 @@ BrowserTabStripController::BrowserTabStripController(Browser* browser,
 
   local_pref_registrar_.Init(g_browser_process->local_state());
   local_pref_registrar_.Add(
-      prefs::kTabStripLayoutType,
-      base::Bind(&BrowserTabStripController::UpdateLayoutType,
+      prefs::kTabStripStackedLayout,
+      base::Bind(&BrowserTabStripController::UpdateStackedLayout,
                  base::Unretained(this)));
 }
 
@@ -219,7 +209,7 @@ BrowserTabStripController::~BrowserTabStripController() {
 void BrowserTabStripController::InitFromModel(TabStrip* tabstrip) {
   tabstrip_ = tabstrip;
 
-  UpdateLayoutType();
+  UpdateStackedLayout();
 
   // Walk the model, calling our insertion observer method for each item within
   // it.
@@ -390,17 +380,17 @@ bool BrowserTabStripController::IsIncognito() {
   return browser_->profile()->IsOffTheRecord();
 }
 
-void BrowserTabStripController::LayoutTypeMaybeChanged() {
+void BrowserTabStripController::StackedLayoutMaybeChanged() {
   bool adjust_layout = false;
-  TabStripLayoutType layout_type =
-      DetermineTabStripLayout(g_browser_process->local_state(),
-                              browser_->host_desktop_type(), &adjust_layout);
-  if (!adjust_layout || layout_type == tabstrip_->layout_type())
+  bool stacked_layout =
+      DetermineTabStripLayoutStacked(g_browser_process->local_state(),
+                                     browser_->host_desktop_type(),
+                                     &adjust_layout);
+  if (!adjust_layout || stacked_layout == tabstrip_->stacked_layout())
     return;
 
-  g_browser_process->local_state()->SetInteger(
-      prefs::kTabStripLayoutType,
-      static_cast<int>(tabstrip_->layout_type()));
+  g_browser_process->local_state()->SetBoolean(prefs::kTabStripStackedLayout,
+                                               tabstrip_->stacked_layout());
 }
 
 void BrowserTabStripController::OnStartedDraggingTabs() {
@@ -568,12 +558,14 @@ void BrowserTabStripController::AddTab(WebContents* contents,
   tabstrip_->AddTabAt(index, data, is_active);
 }
 
-void BrowserTabStripController::UpdateLayoutType() {
+void BrowserTabStripController::UpdateStackedLayout() {
   bool adjust_layout = false;
-  TabStripLayoutType layout_type =
-      DetermineTabStripLayout(g_browser_process->local_state(),
-                              browser_->host_desktop_type(), &adjust_layout);
-  tabstrip_->SetLayoutType(layout_type, adjust_layout);
+  bool stacked_layout =
+      DetermineTabStripLayoutStacked(g_browser_process->local_state(),
+                                     browser_->host_desktop_type(),
+                                     &adjust_layout);
+  tabstrip_->set_adjust_layout(adjust_layout);
+  tabstrip_->SetStackedLayout(stacked_layout);
 }
 
 void BrowserTabStripController::OnFindURLMimeTypeCompleted(

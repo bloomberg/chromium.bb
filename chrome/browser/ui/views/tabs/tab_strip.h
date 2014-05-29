@@ -10,7 +10,6 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/timer/timer.h"
-#include "chrome/browser/ui/tabs/tab_strip_layout_type.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
 #include "chrome/browser/ui/views/tabs/tab_controller.h"
 #include "ui/gfx/animation/animation_container.h"
@@ -64,11 +63,20 @@ class TabStrip : public views::View,
   void AddObserver(TabStripObserver* observer);
   void RemoveObserver(TabStripObserver* observer);
 
-  // Sets the layout type. If |adjust_layout| is true the layout type changes
-  // based on whether the user uses a mouse or touch device with the tabstrip.
-  // If |adjust_layout| is false the layout is fixed to |layout_type|.
-  void SetLayoutType(TabStripLayoutType layout_type, bool adjust_layout);
-  TabStripLayoutType layout_type() const { return layout_type_; }
+  // If |adjust_layout| is true the stacked layout changes based on whether the
+  // user uses a mouse or a touch device with the tabstrip.
+  void set_adjust_layout(bool adjust_layout) { adjust_layout_ = adjust_layout; }
+
+  // |stacked_layout_| defines what should happen when the tabs won't fit at
+  // their ideal size. When |stacked_layout_| is true the tabs are always sized
+  // to their ideal size and stacked on top of each other so that only a certain
+  // set of tabs are visible. This is used when the user uses a touch device.
+  // When |stacked_layout_| is false the tabs shrink to accommodate the
+  // available space. This is the default.
+  bool stacked_layout() const { return stacked_layout_; }
+
+  // Sets |stacked_layout_| and animates if necessary.
+  void SetStackedLayout(bool stacked_layout);
 
   // Returns the bounds of the new tab button.
   gfx::Rect GetNewTabButtonBounds();
@@ -415,9 +423,9 @@ class TabStrip : public views::View,
                         const views::CullSet& cull_set);
 
   // Invoked when a mouse event occurs over |source|. Potentially switches the
-  // layout type.
-  void UpdateLayoutTypeFromMouseEvent(views::View* source,
-                                      const ui::MouseEvent& event);
+  // |stacked_layout_|.
+  void UpdateStackedLayoutFromMouseEvent(views::View* source,
+                                         const ui::MouseEvent& event);
 
   // -- Tab Resize Layout -----------------------------------------------------
 
@@ -539,12 +547,9 @@ class TabStrip : public views::View,
   bool NeedsTouchLayout() const;
 
   // Sets the value of |reset_to_shrink_on_exit_|. If true |mouse_watcher_| is
-  // used to track when the mouse truly exits the tabstrip and the layout type
-  // is reset.
+  // used to track when the mouse truly exits the tabstrip and the stacked
+  // layout is reset.
   void SetResetToShrinkOnExit(bool value);
-
-  // Should the layout dynamically adjust?
-  bool GetAdjustLayout() const;
 
   // -- Member Variables ------------------------------------------------------
 
@@ -596,7 +601,7 @@ class TabStrip : public views::View,
   // MouseWatcher is used for two things:
   // . When a tab is closed to reset the layout.
   // . When a mouse is used and the layout dynamically adjusts and is currently
-  //   TAB_STRIP_LAYOUT_STACKED.
+  //   stacked (|stacked_layout_| is true).
   scoped_ptr<views::MouseWatcher> mouse_watcher_;
 
   // The controller for a drag initiated from a Tab. Valid for the lifetime of
@@ -608,16 +613,17 @@ class TabStrip : public views::View,
   // Size we last layed out at.
   gfx::Size last_layout_size_;
 
-  TabStripLayoutType layout_type_;
+  // See description above stacked_layout().
+  bool stacked_layout_;
 
-  // See description above SetLayoutType().
+  // Should the layout dynamically adjust?
   bool adjust_layout_;
 
   // Only used while in touch mode.
   scoped_ptr<StackedTabStripLayout> touch_layout_;
 
-  // If true the layout type is set to TAB_STRIP_LAYOUT_SHRINK when the mouse
-  // exits the tabstrip (as determined using MouseWatcher).
+  // If true the |stacked_layout_| is set to false when the mouse exits the
+  // tabstrip (as determined using MouseWatcher).
   bool reset_to_shrink_on_exit_;
 
   // Location of the mouse at the time of the last move.

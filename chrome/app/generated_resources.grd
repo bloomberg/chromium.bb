@@ -5369,12 +5369,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE" desc="The link for enabling a labs experiment.">
         Enable
       </message>
-      <message name="IDS_FLAGS_STACKED_TAB_STRIP_NAME" desc="Name of the 'Stacked Tabs' lab.">
-        Stacked Tabs
-      </message>
-      <message name="IDS_FLAGS_STACKED_TAB_STRIP_DESCRIPTION" desc="Description of the 'Stacked Tabs' lab.">
-        Tabs never shrink, instead they stack on top of each other when there is not enough space.
-      </message>
       <message name="IDS_FLAGS_ENABLE_NACL_NAME" desc="Name of the 'Enable Native Client' lab.">
         Native Client
       </message>

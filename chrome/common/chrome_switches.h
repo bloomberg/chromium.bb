@@ -183,7 +183,6 @@ extern const char kEnableSettingsWindow[];
 extern const char kEnableSpdy4[];
 extern const char kEnableSpellingAutoCorrect[];
 extern const char kEnableSpellingFeedbackFieldTrial[];
-extern const char kEnableStackedTabStrip[];
 extern const char kEnableStreamlinedHostedApps[];
 extern const char kEnableSuggestionsService[];
 extern const char kEnableSyncArticles[];

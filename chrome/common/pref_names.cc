@@ -60,7 +60,7 @@ const char kProfileIconVersion[] = "profile.icon_version";
 // first opened, and to true when closing. On startup if the value is false,
 // it means the profile didn't exit cleanly.
 // DEPRECATED: this is replaced by kSessionExitType and exists for backwards
-// compatability.
+// compatibility.
 const char kSessionExitedCleanly[] = "profile.exited_cleanly";
 
 // A string pref whose values is one of the values defined by
@@ -2102,8 +2102,9 @@ const char kChromeOsReleaseChannel[] = "cros.system.releaseChannel";
 const char kPerformanceTracingEnabled[] =
     "feedback.performance_tracing_enabled";
 
-// Value of the enums in TabStrip::LayoutType as an int.
-const char kTabStripLayoutType[] = "tab_strip_layout_type";
+// Boolean indicating whether tabstrip uses stacked layout (on touch devices).
+// Defaults to false.
+const char kTabStripStackedLayout[] = "tab-strip-stacked-layout";
 
 // Indicates that factory reset was requested from options page or reset screen.
 const char kFactoryResetRequested[] = "FactoryResetRequested";
@@ -2307,7 +2308,7 @@ const char kShelfAutoHideBehavior[] = "auto_hide_behavior";
 const char kShelfAutoHideBehaviorLocal[] = "auto_hide_behavior_local";
 // This value stores chrome icon's index in the launcher. This should be handled
 // separately with app shortcut's index because of ShelfModel's backward
-// compatability. If we add chrome icon index to |kPinnedLauncherApps|, its
+// compatibility. If we add chrome icon index to |kPinnedLauncherApps|, its
 // index is also stored in the |kPinnedLauncherApp| pref. It may causes
 // creating two chrome icons.
 const char kShelfChromeIconIndex[] = "shelf_chrome_icon_index";

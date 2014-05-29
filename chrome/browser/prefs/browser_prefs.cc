@@ -181,7 +181,6 @@
 
 #if defined(TOOLKIT_VIEWS)
 #include "chrome/browser/ui/browser_view_prefs.h"
-#include "chrome/browser/ui/tabs/tab_strip_layout_type_prefs.h"
 #endif
 
 #if defined(USE_ASH)
@@ -324,7 +323,6 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
 
 #if defined(TOOLKIT_VIEWS)
   RegisterBrowserViewLocalPrefs(registry);
-  RegisterTabStripLayoutTypePrefs(registry);
 #endif
 }
 
@@ -576,6 +574,10 @@ void MigrateBrowserPrefs(Profile* profile, PrefService* local_state) {
 
 #if defined(OS_CHROMEOS)
   chromeos::default_pinned_apps_field_trial::MigratePrefs(local_state);
+#endif
+
+#if defined(TOOLKIT_VIEWS)
+  MigrateBrowserTabStripPrefs(local_state);
 #endif
 }
 
