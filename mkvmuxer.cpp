@@ -858,19 +858,19 @@ bool VideoTrack::Write(IMkvWriter* writer) const {
     if (!WriteEbmlElement(writer, kMkvDisplayHeight, display_height_))
       return false;
   }
-  if (crop_left_ > 0){
+  if (crop_left_ > 0) {
     if (!WriteEbmlElement(writer, kMkvPixelCropLeft, crop_left_))
       return false;
   }
-  if (crop_right_ > 0){
+  if (crop_right_ > 0) {
     if (!WriteEbmlElement(writer, kMkvPixelCropRight, crop_right_))
       return false;
   }
-  if (crop_top_ > 0){
+  if (crop_top_ > 0) {
     if (!WriteEbmlElement(writer, kMkvPixelCropTop, crop_top_))
       return false;
   }
-  if (crop_bottom_ > 0){
+  if (crop_bottom_ > 0) {
     if (!WriteEbmlElement(writer, kMkvPixelCropBottom, crop_bottom_))
       return false;
   }
