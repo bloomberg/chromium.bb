@@ -726,8 +726,8 @@ Page* InspectorOverlay::overlayPage()
     v8::Handle<v8::Context> frameContext = toV8Context(isolate, frame.get(), DOMWrapperWorld::mainWorld());
     ASSERT(!frameContext.IsEmpty());
     v8::Context::Scope contextScope(frameContext);
-    v8::Handle<v8::Value> overlayHostObj = toV8(m_overlayHost.get(), v8::Handle<v8::Object>(), isolate);
     v8::Handle<v8::Object> global = frameContext->Global();
+    v8::Handle<v8::Value> overlayHostObj = toV8(m_overlayHost.get(), global, isolate);
     global->Set(v8::String::NewFromUtf8(isolate, "InspectorOverlayHost"), overlayHostObj);
 
 #if OS(WIN)
