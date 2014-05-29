@@ -51,7 +51,7 @@
 #endif
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/drive/file_system_util.h"
+#include "chrome/browser/chromeos/file_manager/filesystem_api_util.h"
 #endif
 
 using apps::SavedFileEntry;
@@ -681,12 +681,23 @@ void FileSystemChooseEntryFunction::FilesSelected(
     }
     content::WebContents* web_contents = app_window->web_contents();
 
+    DCHECK_EQ(paths.size(), 1u);
+#if defined(OS_CHROMEOS)
+    base::FilePath check_path =
+        file_manager::util::IsUnderNonNativeLocalPath(GetProfile(), paths[0])
+            ? paths[0]
+            : base::MakeAbsoluteFilePath(paths[0]);
+#else
+    base::FilePath check_path = base::MakeAbsoluteFilePath(paths[0]);
+#endif
+
     content::BrowserThread::PostTask(
         content::BrowserThread::FILE,
         FROM_HERE,
         base::Bind(
             &FileSystemChooseEntryFunction::ConfirmDirectoryAccessOnFileThread,
             this,
+            check_path,
             paths,
             web_contents));
     return;
@@ -701,17 +712,10 @@ void FileSystemChooseEntryFunction::FileSelectionCanceled() {
 }
 
 void FileSystemChooseEntryFunction::ConfirmDirectoryAccessOnFileThread(
+    const base::FilePath& check_path,
     const std::vector<base::FilePath>& paths,
     content::WebContents* web_contents) {
-  DCHECK_EQ(paths.size(), 1u);
-#if defined(OS_CHROMEOS)
-  const base::FilePath path =
-      drive::util::IsUnderDriveMountPoint(paths[0]) ? paths[0] :
-          base::MakeAbsoluteFilePath(paths[0]);
-#else
-  const base::FilePath path = base::MakeAbsoluteFilePath(paths[0]);
-#endif
-  if (path.empty()) {
+  if (check_path.empty()) {
     content::BrowserThread::PostTask(
         content::BrowserThread::UI,
         FROM_HERE,
@@ -723,7 +727,8 @@ void FileSystemChooseEntryFunction::ConfirmDirectoryAccessOnFileThread(
   for (size_t i = 0; i < arraysize(kGraylistedPaths); i++) {
     base::FilePath graylisted_path;
     if (PathService::Get(kGraylistedPaths[i], &graylisted_path) &&
-        (path == graylisted_path || path.IsParent(graylisted_path))) {
+        (check_path == graylisted_path ||
+         check_path.IsParent(graylisted_path))) {
       if (g_skip_directory_confirmation_for_test) {
         if (g_allow_directory_access_for_test) {
           break;

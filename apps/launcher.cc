@@ -38,9 +38,7 @@
 #include "url/gurl.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/drive/file_errors.h"
-#include "chrome/browser/chromeos/drive/file_system_interface.h"
-#include "chrome/browser/chromeos/drive/file_system_util.h"
+#include "chrome/browser/chromeos/file_manager/filesystem_api_util.h"
 #include "chrome/browser/chromeos/login/users/user_manager.h"
 #endif
 
@@ -162,8 +160,11 @@ class PlatformAppPathLauncher
 
   void OnFileValid() {
 #if defined(OS_CHROMEOS)
-    if (drive::util::IsUnderDriveMountPoint(file_path_)) {
-      PlatformAppPathLauncher::GetMimeTypeAndLaunchForDriveFile();
+    if (file_manager::util::IsUnderNonNativeLocalPath(profile_, file_path_)) {
+      file_manager::util::GetNonNativeLocalPathMimeType(
+          profile_,
+          file_path_,
+          base::Bind(&PlatformAppPathLauncher::OnGotMimeType, this));
       return;
     }
 #endif
@@ -212,37 +213,14 @@ class PlatformAppPathLauncher
   }
 
 #if defined(OS_CHROMEOS)
-  void GetMimeTypeAndLaunchForDriveFile() {
-    DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-    drive::FileSystemInterface* file_system =
-        drive::util::GetFileSystemByProfile(profile_);
-    if (!file_system) {
+  void OnGotMimeType(bool success, const std::string& mime_type) {
+    if (!success) {
       LaunchWithNoLaunchData();
       return;
     }
-
-    file_system->GetFile(
-        drive::util::ExtractDrivePath(file_path_),
-        base::Bind(&PlatformAppPathLauncher::OnGotDriveFile, this));
-  }
-
-  void OnGotDriveFile(drive::FileError error,
-                      const base::FilePath& file_path,
-                      scoped_ptr<drive::ResourceEntry> entry) {
-    DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-    if (error != drive::FILE_ERROR_OK ||
-        !entry || entry->file_specific_info().is_hosted_document()) {
-      LaunchWithNoLaunchData();
-      return;
-    }
-
-    const std::string& mime_type =
-        entry->file_specific_info().content_mime_type();
     LaunchWithMimeType(mime_type.empty() ? kFallbackMimeType : mime_type);
   }
-#endif  // defined(OS_CHROMEOS)
+#endif
 
   void LaunchWithNoLaunchData() {
     // This method is required as an entry point on the UI thread.
