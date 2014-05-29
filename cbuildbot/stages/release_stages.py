@@ -109,11 +109,20 @@ class PaygenStage(artifact_stages.ArchivingStage):
 
   def _HandleStageException(self, exc_info):
     """Override and don't set status to FAIL but FORGIVEN instead."""
-    exc_type = exc_info[0]
+    exc_type, exc_value, _exc_tb = exc_info
 
     # If Paygen fails to find anything needed in release.conf, treat it
     # as a warning, not a failure. This is common during new board bring up.
     if issubclass(exc_type, PaygenNoPaygenConfigForBoard):
+      return self._HandleExceptionAsWarning(exc_info)
+
+    # If the exception is a TestLabFailure that means we couldn't schedule the
+    # test. We don't fail the build for that. We do the CompoundFailure dance,
+    # because that's how we'll get failures from background processes returned
+    # to us.
+    if (issubclass(exc_type, cbuildbot_failures.TestLabFailure) or
+        (issubclass(exc_type, cbuildbot_failures.CompoundFailure) and
+         exc_value.MatchesFailureType(cbuildbot_failures.TestLabFailure))):
       return self._HandleExceptionAsWarning(exc_info)
 
     return super(PaygenStage, self)._HandleStageException(exc_info)
@@ -377,10 +386,3 @@ class PaygenStage(artifact_stages.ArchivingStage):
         # being processed (so the build is locked), or that it's been marked
         # to skip (probably done manually).
         cros_build_lib.Info('Paygen skipped because: %s', e)
-      except cbuildbot_failures.InfrastructureFailure as e:
-        # TODO(dgarrett): chromium:377208 We should generate a warning for the
-        # stage. That's current difficult, but should be easy after CL:200682
-        # lands.
-
-        # Tests were not correctly scheduled.
-        logging.warning('Failed to schedule Payload tests: %s', e)
