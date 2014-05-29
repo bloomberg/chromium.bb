@@ -73,3 +73,7 @@ sign-in button. */
   width: 35px;
   z-index: 1;
 }
+
+html[dir=rtl] .pod .locked-indicator {
+  right: 10px;
+}
