@@ -5,10 +5,11 @@
 #ifndef MOJO_PUBLIC_CPP_BINDINGS_LIB_BINDINGS_INTERNAL_H_
 #define MOJO_PUBLIC_CPP_BINDINGS_LIB_BINDINGS_INTERNAL_H_
 
+#include "mojo/public/cpp/bindings/lib/template_util.h"
 #include "mojo/public/cpp/system/core.h"
 
 namespace mojo {
-template <typename S> class InterfaceHandle;
+class String;
 
 namespace internal {
 template <typename T> class Array_Data;
@@ -62,101 +63,22 @@ T FetchAndReset(T* ptr) {
   return temp;
 }
 
-template <typename T>
-class WrapperHelper {
- public:
-  static const T Wrap(const typename T::Data* data) {
-    return T(typename T::Wrap(), const_cast<typename T::Data*>(data));
-  }
-  static typename T::Data* Unwrap(const T& object) {
-    return const_cast<typename T::Data*>(object.data_);
-  }
+template <typename H> struct IsHandle {
+  static const bool value = IsBaseOf<Handle, H>::value;
 };
 
-template <typename Data>
-inline const typename Data::Wrapper Wrap(const Data* data) {
-  return WrapperHelper<typename Data::Wrapper>::Wrap(data);
-}
+template <typename T, bool move_only = IsMoveOnlyType<T>::value>
+struct WrapperTraits;
 
-template <typename T>
-inline typename T::Data* Unwrap(const T& object) {
-  return WrapperHelper<T>::Unwrap(object);
-}
-
-template <typename T> struct TypeTraits {
-  static const bool kIsHandle = false;
-  static const bool kIsObject = true;
+template <typename T> struct WrapperTraits<T, false> {
+  typedef T DataType;
 };
-template <> struct TypeTraits<bool> {
-  static const bool kIsHandle = false;
-  static const bool kIsObject = false;
+template <typename H> struct WrapperTraits<ScopedHandleBase<H>, true> {
+  typedef H DataType;
 };
-template <> struct TypeTraits<char> {
-  static const bool kIsHandle = false;
-  static const bool kIsObject = false;
+template <typename S> struct WrapperTraits<S, true> {
+  typedef typename S::Data_* DataType;
 };
-template <> struct TypeTraits<int8_t> {
-  static const bool kIsHandle = false;
-  static const bool kIsObject = false;
-};
-template <> struct TypeTraits<int16_t> {
-  static const bool kIsHandle = false;
-  static const bool kIsObject = false;
-};
-template <> struct TypeTraits<int32_t> {
-  static const bool kIsHandle = false;
-  static const bool kIsObject = false;
-};
-template <> struct TypeTraits<int64_t> {
-  static const bool kIsHandle = false;
-  static const bool kIsObject = false;
-};
-template <> struct TypeTraits<uint8_t> {
-  static const bool kIsHandle = false;
-  static const bool kIsObject = false;
-};
-template <> struct TypeTraits<uint16_t> {
-  static const bool kIsHandle = false;
-  static const bool kIsObject = false;
-};
-template <> struct TypeTraits<uint32_t> {
-  static const bool kIsHandle = false;
-  static const bool kIsObject = false;
-};
-template <> struct TypeTraits<uint64_t> {
-  static const bool kIsHandle = false;
-  static const bool kIsObject = false;
-};
-template <> struct TypeTraits<float> {
-  static const bool kIsHandle = false;
-  static const bool kIsObject = false;
-};
-template <> struct TypeTraits<double> {
-  static const bool kIsHandle = false;
-  static const bool kIsObject = false;
-};
-template <> struct TypeTraits<Handle> {
-  static const bool kIsHandle = true;
-  static const bool kIsObject = false;
-};
-template <> struct TypeTraits<DataPipeConsumerHandle> {
-  static const bool kIsHandle = true;
-  static const bool kIsObject = false;
-};
-template <> struct TypeTraits<DataPipeProducerHandle> {
-  static const bool kIsHandle = true;
-  static const bool kIsObject = false;
-};
-template <> struct TypeTraits<MessagePipeHandle> {
-  static const bool kIsHandle = true;
-  static const bool kIsObject = false;
-};
-template <typename S> struct TypeTraits<InterfaceHandle<S> > {
-  static const bool kIsHandle = true;
-  static const bool kIsObject = false;
-};
-
-template <typename T> class ObjectTraits {};
 
 }  // namespace internal
 }  // namespace mojo

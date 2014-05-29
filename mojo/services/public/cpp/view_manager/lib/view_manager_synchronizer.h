@@ -69,18 +69,18 @@ class ViewManagerSynchronizer : public IViewManagerClient {
   virtual void OnViewManagerConnectionEstablished(
       TransportConnectionId connection_id,
       TransportChangeId next_server_change_id,
-      const mojo::Array<INode>& nodes) OVERRIDE;
+      mojo::Array<INodePtr> nodes) OVERRIDE;
   virtual void OnServerChangeIdAdvanced(
       uint32_t next_server_change_id) OVERRIDE;
   virtual void OnNodeBoundsChanged(uint32 node_id,
-                                   const Rect& old_bounds,
-                                   const Rect& new_bounds) OVERRIDE;
+                                   RectPtr old_bounds,
+                                   RectPtr new_bounds) OVERRIDE;
   virtual void OnNodeHierarchyChanged(
       uint32 node_id,
       uint32 new_parent_id,
       uint32 old_parent_id,
       TransportChangeId server_change_id,
-      const mojo::Array<INode>& nodes) OVERRIDE;
+      mojo::Array<INodePtr> nodes) OVERRIDE;
   virtual void OnNodeDeleted(TransportNodeId node_id,
                              TransportChangeId server_change_id) OVERRIDE;
   virtual void OnNodeViewReplaced(uint32_t node,

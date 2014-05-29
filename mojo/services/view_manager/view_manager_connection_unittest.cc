@@ -14,7 +14,6 @@
 #include "mojo/common/common_type_converters.h"
 #include "mojo/public/cpp/application/application.h"
 #include "mojo/public/cpp/application/connect.h"
-#include "mojo/public/cpp/bindings/allocation_scope.h"
 #include "mojo/public/cpp/environment/environment.h"
 #include "mojo/service_manager/service_manager.h"
 #include "mojo/services/public/cpp/geometry/geometry_type_converters.h"
@@ -27,21 +26,6 @@
 #include "ui/gfx/geometry/rect.h"
 
 namespace mojo {
-
-// TODO(sky): remove this when Darin is done with cleanup.
-template <typename T>
-class MOJO_COMMON_EXPORT TypeConverter<T, T> {
- public:
-  static T ConvertFrom(T input, Buffer* buf) {
-    return input;
-  }
-  static T ConvertTo(T input) {
-    return input;
-  }
-
-  MOJO_ALLOW_IMPLICIT_TYPE_CONVERSION();
-};
-
 namespace view_manager {
 namespace service {
 
@@ -51,13 +35,13 @@ base::RunLoop* current_run_loop = NULL;
 
 const char kTestServiceURL[] = "mojo:test_url";
 
-void INodesToTestNodes(const Array<INode>& data,
+void INodesToTestNodes(const Array<INodePtr>& data,
                        std::vector<TestNode>* test_nodes) {
   for (size_t i = 0; i < data.size(); ++i) {
     TestNode node;
-    node.parent_id = data[i].parent_id();
-    node.node_id = data[i].node_id();
-    node.view_id = data[i].view_id();
+    node.parent_id = data[i]->parent_id;
+    node.node_id = data[i]->node_id;
+    node.view_id = data[i]->view_id;
     test_nodes->push_back(node);
   }
 }
@@ -219,7 +203,7 @@ class BackgroundConnection : public TestChangeTracker::Delegate {
   }
 
   void GotNodeTreeOnBackgroundThread(std::vector<TestNode>* nodes,
-                                     const Array<INode>& results) {
+                                     Array<INodePtr> results) {
     INodesToTestNodes(results, nodes);
     main_loop_->PostTask(
         FROM_HERE,
@@ -326,27 +310,27 @@ class TestViewManagerClientConnection
   virtual void OnViewManagerConnectionEstablished(
       TransportConnectionId connection_id,
       TransportChangeId next_server_change_id,
-      const Array<INode>& nodes) OVERRIDE {
+      Array<INodePtr> nodes) OVERRIDE {
     tracker_.OnViewManagerConnectionEstablished(
-        connection_id, next_server_change_id, nodes);
+        connection_id, next_server_change_id, nodes.Pass());
   }
   virtual void OnServerChangeIdAdvanced(
       TransportChangeId next_server_change_id) OVERRIDE {
     tracker_.OnServerChangeIdAdvanced(next_server_change_id);
   }
   virtual void OnNodeBoundsChanged(TransportNodeId node_id,
-                                   const Rect& old_bounds,
-                                   const Rect& new_bounds) OVERRIDE {
-    tracker_.OnNodeBoundsChanged(node_id, old_bounds, new_bounds);
+                                   RectPtr old_bounds,
+                                   RectPtr new_bounds) OVERRIDE {
+    tracker_.OnNodeBoundsChanged(node_id, old_bounds.Pass(), new_bounds.Pass());
   }
   virtual void OnNodeHierarchyChanged(
       TransportNodeId node,
       TransportNodeId new_parent,
       TransportNodeId old_parent,
       TransportChangeId server_change_id,
-      const Array<INode>& nodes) OVERRIDE {
+      Array<INodePtr> nodes) OVERRIDE {
     tracker_.OnNodeHierarchyChanged(node, new_parent, old_parent,
-                                     server_change_id, nodes);
+                                     server_change_id, nodes.Pass());
   }
   virtual void OnNodeDeleted(TransportNodeId node,
                              TransportChangeId server_change_id) OVERRIDE {
@@ -417,7 +401,7 @@ void BooleanCallback(bool* result_cache, bool result) {
 // Callback that results in a vector of INodes. The INodes are converted to
 // TestNodes.
 void INodesCallback(std::vector<TestNode>* test_nodes,
-                    const Array<INode>& data) {
+                    Array<INodePtr> data) {
   INodesToTestNodes(data, test_nodes);
   current_run_loop->Quit();
 }
@@ -466,7 +450,7 @@ bool SetNodeBounds(IViewManager* view_manager,
                    TransportNodeId node_id,
                    const gfx::Rect& bounds) {
   bool result = false;
-  view_manager->SetNodeBounds(node_id, bounds,
+  view_manager->SetNodeBounds(node_id, Rect::From(bounds),
                               base::Bind(&BooleanCallback, &result));
   DoRunLoop();
   return result;
@@ -530,7 +514,6 @@ bool Connect(IViewManager* view_manager,
              const std::string& url,
              TransportNodeId id,
              TransportNodeId id2) {
-  AllocationScope scope;
   bool result = false;
   std::vector<TransportNodeId> node_ids;
   node_ids.push_back(id);
@@ -617,33 +600,33 @@ class ViewManagerClientImpl : public IViewManagerClient {
   virtual void OnViewManagerConnectionEstablished(
       TransportConnectionId connection_id,
       TransportChangeId next_server_change_id,
-      const Array<INode>& nodes) OVERRIDE {
+      mojo::Array<INodePtr> nodes) OVERRIDE {
     id_ = connection_id;
     next_server_change_id_ = next_server_change_id;
     initial_nodes_.clear();
     INodesToTestNodes(nodes, &initial_nodes_);
     tracker_.OnViewManagerConnectionEstablished(
-        connection_id, next_server_change_id, nodes);
+        connection_id, next_server_change_id, nodes.Pass());
   }
   virtual void OnServerChangeIdAdvanced(
       TransportChangeId next_server_change_id) OVERRIDE {
     tracker_.OnServerChangeIdAdvanced(next_server_change_id);
   }
   virtual void OnNodeBoundsChanged(TransportNodeId node_id,
-                                   const Rect& old_bounds,
-                                   const Rect& new_bounds) OVERRIDE {
-    tracker_.OnNodeBoundsChanged(node_id, old_bounds, new_bounds);
+                                   RectPtr old_bounds,
+                                   RectPtr new_bounds) OVERRIDE {
+    tracker_.OnNodeBoundsChanged(node_id, old_bounds.Pass(), new_bounds.Pass());
   }
   virtual void OnNodeHierarchyChanged(
       TransportNodeId node,
       TransportNodeId new_parent,
       TransportNodeId old_parent,
       TransportChangeId server_change_id,
-      const Array<INode>& nodes) OVERRIDE {
-    tracker_.OnNodeHierarchyChanged(node, new_parent, old_parent,
-                                    server_change_id, nodes);
+      mojo::Array<INodePtr> nodes) OVERRIDE {
     hierarchy_changed_nodes_.clear();
     INodesToTestNodes(nodes, &hierarchy_changed_nodes_);
+    tracker_.OnNodeHierarchyChanged(node, new_parent, old_parent,
+                                    server_change_id, nodes.Pass());
   }
   virtual void OnNodeDeleted(TransportNodeId node,
                              TransportChangeId server_change_id) OVERRIDE {
@@ -787,7 +770,6 @@ TEST_F(ViewManagerConnectionTest, AddRemoveNotify) {
 
   // Make 2 a child of 1.
   {
-    AllocationScope scope;
     ASSERT_TRUE(AddNode(view_manager_.get(),
                         CreateNodeId(client_.id(), 1),
                         CreateNodeId(client_.id(), 2),
@@ -803,7 +785,6 @@ TEST_F(ViewManagerConnectionTest, AddRemoveNotify) {
 
   // Remove 2 from its parent.
   {
-    AllocationScope scope;
     ASSERT_TRUE(RemoveNodeFromParent(view_manager_.get(),
                                      CreateNodeId(client_.id(), 2),
                                      2));
@@ -829,7 +810,6 @@ TEST_F(ViewManagerConnectionTest, AddNodeWithNoChange) {
 
   // Make 2 a child of 1.
   {
-    AllocationScope scope;
     ASSERT_TRUE(AddNode(view_manager_.get(),
                         CreateNodeId(client_.id(), 1),
                         CreateNodeId(client_.id(), 2),
@@ -845,7 +825,6 @@ TEST_F(ViewManagerConnectionTest, AddNodeWithNoChange) {
 
   // Try again, this should fail.
   {
-    AllocationScope scope;
     EXPECT_FALSE(AddNode(view_manager_.get(),
                          CreateNodeId(client_.id(), 1),
                          CreateNodeId(client_.id(), 2),
@@ -867,7 +846,6 @@ TEST_F(ViewManagerConnectionTest, AddAncestorFails) {
 
   // Make 2 a child of 1.
   {
-    AllocationScope scope;
     ASSERT_TRUE(AddNode(view_manager_.get(),
                         CreateNodeId(client_.id(), 1),
                         CreateNodeId(client_.id(), 2),
@@ -883,7 +861,6 @@ TEST_F(ViewManagerConnectionTest, AddAncestorFails) {
 
   // Try to make 1 a child of 2, this should fail since 1 is an ancestor of 2.
   {
-    AllocationScope scope;
     EXPECT_FALSE(AddNode(view_manager_.get(),
                          CreateNodeId(client_.id(), 2),
                          CreateNodeId(client_.id(), 1),
@@ -901,7 +878,6 @@ TEST_F(ViewManagerConnectionTest, AddWithInvalidServerId) {
 
   // Make 2 a child of 1. Supply an invalid change id, which should fail.
   {
-    AllocationScope scope;
     ASSERT_FALSE(AddNode(view_manager_.get(),
                          CreateNodeId(client_.id(), 1),
                          CreateNodeId(client_.id(), 2),
@@ -922,7 +898,6 @@ TEST_F(ViewManagerConnectionTest, AddToRoot) {
 
   // Make 3 a child of 21.
   {
-    AllocationScope scope;
     ASSERT_TRUE(AddNode(view_manager_.get(),
                         CreateNodeId(client_.id(), 21),
                         CreateNodeId(client_.id(), 3),
@@ -938,7 +913,6 @@ TEST_F(ViewManagerConnectionTest, AddToRoot) {
 
   // Make 21 a child of the root.
   {
-    AllocationScope scope;
     ASSERT_TRUE(AddNode(view_manager_.get(),
                         CreateNodeId(0, 1),
                         CreateNodeId(client_.id(), 21),
@@ -963,7 +937,6 @@ TEST_F(ViewManagerConnectionTest, NodeHierarchyChangedNodes) {
 
   // Make 11 a child of 1.
   {
-    AllocationScope scope;
     ASSERT_TRUE(AddNode(view_manager_.get(),
                         CreateNodeId(client_.id(), 1),
                         CreateNodeId(client_.id(), 11),
@@ -975,7 +948,6 @@ TEST_F(ViewManagerConnectionTest, NodeHierarchyChangedNodes) {
 
   // Make 1 a child of the root.
   {
-    AllocationScope scope;
     ASSERT_TRUE(AddNode(view_manager_.get(),
                         CreateNodeId(0, 1),
                         CreateNodeId(client_.id(), 1),
@@ -998,7 +970,6 @@ TEST_F(ViewManagerConnectionTest, NodeHierarchyChangedNodes) {
 
   // Remove 1 from the root.
   {
-    AllocationScope scope;
     ASSERT_TRUE(RemoveNodeFromParent(view_manager_.get(),
                                      CreateNodeId(client_.id(), 1),
                                      3));
@@ -1015,7 +986,6 @@ TEST_F(ViewManagerConnectionTest, NodeHierarchyChangedNodes) {
   // Create another node, 111, parent it to 11.
   ASSERT_TRUE(CreateNode(view_manager_.get(), 1, 111));
   {
-    AllocationScope scope;
     ASSERT_TRUE(AddNode(view_manager_.get(),
                         CreateNodeId(client_.id(), 11),
                         CreateNodeId(client_.id(), 111),
@@ -1063,7 +1033,6 @@ TEST_F(ViewManagerConnectionTest, NodeHierarchyChangedAddingKnownToUnknown) {
 
   // Set up the hierarchy.
   {
-    AllocationScope scope;
     ASSERT_TRUE(AddNode(view_manager_.get(),
                         CreateNodeId(0, 1),
                         CreateNodeId(client_.id(), 1),
@@ -1082,7 +1051,6 @@ TEST_F(ViewManagerConnectionTest, NodeHierarchyChangedAddingKnownToUnknown) {
 
   // Remove 11.
   {
-    AllocationScope scope;
     ASSERT_TRUE(RemoveNodeFromParent(view_manager_.get(),
                                      CreateNodeId(client_.id(), 11),
                                      4));
@@ -1100,7 +1068,6 @@ TEST_F(ViewManagerConnectionTest, NodeHierarchyChangedAddingKnownToUnknown) {
   // Add 11 to 21. As client2 knows about 11 it should receive the new
   // hierarchy.
   {
-    AllocationScope scope;
     ASSERT_TRUE(AddNode(view_manager_.get(),
                         CreateNodeId(client_.id(), 21),
                         CreateNodeId(client_.id(), 11),
@@ -1128,7 +1095,6 @@ TEST_F(ViewManagerConnectionTest, GetInitialNodesOnInit) {
 
   // Make 3 a child of 21.
   {
-    AllocationScope scope;
     ASSERT_TRUE(AddNode(view_manager_.get(),
                         CreateNodeId(client_.id(), 21),
                         CreateNodeId(client_.id(), 3),
@@ -1138,7 +1104,6 @@ TEST_F(ViewManagerConnectionTest, GetInitialNodesOnInit) {
 
   // Make 21 a child of the root.
   {
-    AllocationScope scope;
     ASSERT_TRUE(AddNode(view_manager_.get(),
                         CreateNodeId(0, 1),
                         CreateNodeId(client_.id(), 21),
@@ -1166,7 +1131,6 @@ TEST_F(ViewManagerConnectionTest, DeleteNode) {
 
   // Make 2 a child of 1.
   {
-    AllocationScope scope;
     ASSERT_TRUE(AddNode(view_manager_.get(),
                         CreateNodeId(client_.id(), 1),
                         CreateNodeId(client_.id(), 2),
@@ -1182,7 +1146,6 @@ TEST_F(ViewManagerConnectionTest, DeleteNode) {
 
   // Add 1 to the root
   {
-    AllocationScope scope;
     ASSERT_TRUE(AddNode(view_manager_.get(),
                         CreateNodeId(0, 1),
                         CreateNodeId(client_.id(), 1),
@@ -1200,7 +1163,6 @@ TEST_F(ViewManagerConnectionTest, DeleteNode) {
 
   // Delete 1.
   {
-    AllocationScope scope;
     ASSERT_TRUE(DeleteNode(view_manager_.get(), CreateNodeId(client_.id(), 1)));
     Changes changes(client_.GetAndClearChanges());
     ASSERT_TRUE(changes.empty());
@@ -1236,7 +1198,6 @@ TEST_F(ViewManagerConnectionTest, ReusedDeletedId) {
 
   // Make 1 a child of the root.
   {
-    AllocationScope scope;
     ASSERT_TRUE(AddNode(view_manager_.get(),
                         CreateNodeId(0, 1),
                         CreateNodeId(client_.id(), 1),
@@ -1255,7 +1216,6 @@ TEST_F(ViewManagerConnectionTest, ReusedDeletedId) {
 
   // Delete 1.
   {
-    AllocationScope scope;
     ASSERT_TRUE(DeleteNode(view_manager_.get(), CreateNodeId(client_.id(), 1)));
     EXPECT_TRUE(client_.GetAndClearChanges().empty());
 
@@ -1269,7 +1229,6 @@ TEST_F(ViewManagerConnectionTest, ReusedDeletedId) {
   // notification.
   ASSERT_TRUE(CreateNode(view_manager_.get(), 1, 1));
   {
-    AllocationScope scope;
     ASSERT_TRUE(AddNode(view_manager_.get(),
                         CreateNodeId(0, 1),
                         CreateNodeId(client_.id(), 1),
@@ -1471,7 +1430,6 @@ TEST_F(ViewManagerConnectionTest, GetNodeTree) {
 
   // Verifies GetNodeTree() on the root.
   {
-    AllocationScope scope;
     std::vector<TestNode> nodes;
     GetNodeTree(view_manager2_.get(), CreateNodeId(0, 1), &nodes);
     ASSERT_EQ(5u, nodes.size());
@@ -1484,7 +1442,6 @@ TEST_F(ViewManagerConnectionTest, GetNodeTree) {
 
   // Verifies GetNodeTree() on the node 1,1.
   {
-    AllocationScope scope;
     std::vector<TestNode> nodes;
     GetNodeTree(view_manager2_.get(), CreateNodeId(1, 1), &nodes);
     ASSERT_EQ(2u, nodes.size());
@@ -1501,7 +1458,6 @@ TEST_F(ViewManagerConnectionTest, SetNodeBounds) {
                       1));
   EstablishSecondConnection();
 
-  AllocationScope scope;
   ASSERT_TRUE(SetNodeBounds(view_manager_.get(),
                             CreateNodeId(1, 1),
                             gfx::Rect(0, 0, 100, 100)));
@@ -1657,7 +1613,6 @@ TEST_F(ViewManagerConnectionTest, CantRemoveNodesInOtherRoots) {
 
   // Verify nothing was actually removed.
   {
-    AllocationScope scope;
     std::vector<TestNode> nodes;
     GetNodeTree(view_manager_.get(), CreateNodeId(0, 1), &nodes);
     ASSERT_EQ(3u, nodes.size());
@@ -1712,7 +1667,6 @@ TEST_F(ViewManagerConnectionTest, CantGetNodeTreeOfOtherRoots) {
 
   ASSERT_NO_FATAL_FAILURE(EstablishBackgroundConnectionWithRoot1());
 
-  AllocationScope scope;
   std::vector<TestNode> nodes;
 
   // Should get nothing for the root.

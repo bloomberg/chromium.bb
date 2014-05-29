@@ -26,7 +26,7 @@ class CompositorHost : public cc::LayerTreeHostClient {
   explicit CompositorHost(ScopedMessagePipeHandle gl_pipe);
   virtual ~CompositorHost();
 
-  void SetSize(gfx::Size viewport_size);
+  void SetSize(const gfx::Size& viewport_size);
 
   // cc::LayerTreeHostClient implementation.
   virtual void WillBeginMainFrame(int frame_id) OVERRIDE;

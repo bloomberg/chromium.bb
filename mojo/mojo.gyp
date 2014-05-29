@@ -375,7 +375,6 @@
       ],
       'sources': [
         'environment/default_async_waiter.cc',
-        'environment/buffer_tls.cc',
         'environment/environment.cc',
       ],
       'include_dirs': [
@@ -399,8 +398,6 @@
       'sources': [
         'environment/default_async_waiter_impl.cc',
         'environment/default_async_waiter_impl.h',
-        'environment/buffer_tls_impl.cc',
-        'environment/buffer_tls_impl.h',
       ],
       'include_dirs': [
         '..',

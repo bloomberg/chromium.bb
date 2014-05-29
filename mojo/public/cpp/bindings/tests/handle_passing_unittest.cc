@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/public/cpp/bindings/allocation_scope.h"
 #include "mojo/public/cpp/environment/environment.h"
 #include "mojo/public/cpp/test_support/test_utils.h"
 #include "mojo/public/cpp/utility/run_loop.h"
@@ -22,18 +21,18 @@ class SampleFactoryImpl : public InterfaceImpl<sample::Factory> {
     delete this;
   }
 
-  virtual void DoStuff(const sample::Request& request,
+  virtual void DoStuff(sample::RequestPtr request,
                        ScopedMessagePipeHandle pipe) MOJO_OVERRIDE {
     std::string text1;
     if (pipe.is_valid())
       EXPECT_TRUE(ReadTextMessage(pipe.get(), &text1));
 
     std::string text2;
-    if (request.pipe().is_valid()) {
-      EXPECT_TRUE(ReadTextMessage(request.pipe().get(), &text2));
+    if (request->pipe.is_valid()) {
+      EXPECT_TRUE(ReadTextMessage(request->pipe.get(), &text2));
 
-      // Ensure that simply accessing request.pipe() does not close it.
-      EXPECT_TRUE(request.pipe().is_valid());
+      // Ensure that simply accessing request->pipe does not close it.
+      EXPECT_TRUE(request->pipe.is_valid());
     }
 
     ScopedMessagePipeHandle pipe0;
@@ -42,11 +41,10 @@ class SampleFactoryImpl : public InterfaceImpl<sample::Factory> {
       EXPECT_TRUE(WriteTextMessage(pipe1_.get(), text2));
     }
 
-    AllocationScope scope;
-    sample::Response::Builder response;
-    response.set_x(2);
-    response.set_pipe(pipe0.Pass());
-    client()->DidStuff(response.Finish(), text1);
+    sample::ResponsePtr response(sample::Response::New());
+    response->x = 2;
+    response->pipe = pipe0.Pass();
+    client()->DidStuff(response.Pass(), text1);
   }
 
   virtual void DoStuff2(ScopedDataPipeConsumerHandle pipe) MOJO_OVERRIDE {
@@ -64,8 +62,7 @@ class SampleFactoryImpl : public InterfaceImpl<sample::Factory> {
               ReadDataRaw(pipe.get(), data, &data_size,
                           MOJO_READ_DATA_FLAG_ALL_OR_NONE));
 
-    AllocationScope scope;
-    client()->DidStuff2(String(std::string(data)));
+    client()->DidStuff2(data);
   }
 
  private:
@@ -85,23 +82,23 @@ class SampleFactoryClientImpl : public sample::FactoryClient {
     return got_response_;
   }
 
-  virtual void DidStuff(const sample::Response& response,
+  virtual void DidStuff(sample::ResponsePtr response,
                         const String& text_reply) MOJO_OVERRIDE {
-    EXPECT_EQ(expected_text_reply_, text_reply.To<std::string>());
+    EXPECT_EQ(expected_text_reply_, text_reply);
 
-    if (response.pipe().is_valid()) {
+    if (response->pipe.is_valid()) {
       std::string text2;
-      EXPECT_TRUE(ReadTextMessage(response.pipe().get(), &text2));
+      EXPECT_TRUE(ReadTextMessage(response->pipe.get(), &text2));
 
-      // Ensure that simply accessing response.pipe() does not close it.
-      EXPECT_TRUE(response.pipe().is_valid());
+      // Ensure that simply accessing response.pipe does not close it.
+      EXPECT_TRUE(response->pipe.is_valid());
 
       EXPECT_EQ(std::string(kText2), text2);
 
       // Do some more tests of handle passing:
-      ScopedMessagePipeHandle p = response.pipe().Pass();
+      ScopedMessagePipeHandle p = response->pipe.Pass();
       EXPECT_TRUE(p.is_valid());
-      EXPECT_FALSE(response.pipe().is_valid());
+      EXPECT_FALSE(response->pipe.is_valid());
     }
 
     got_response_ = true;
@@ -109,7 +106,7 @@ class SampleFactoryClientImpl : public sample::FactoryClient {
 
   virtual void DidStuff2(const String& text_reply) MOJO_OVERRIDE {
     got_response_ = true;
-    EXPECT_EQ(expected_text_reply_, text_reply.To<std::string>());
+    EXPECT_EQ(expected_text_reply_, text_reply);
   }
 
  private:
@@ -153,13 +150,10 @@ TEST_F(HandlePassingTest, Basic) {
 
   EXPECT_TRUE(WriteTextMessage(pipe3.get(), kText2));
 
-  {
-    AllocationScope scope;
-    sample::Request::Builder request;
-    request.set_x(1);
-    request.set_pipe(pipe2.Pass());
-    factory->DoStuff(request.Finish(), pipe0.Pass());
-  }
+  sample::RequestPtr request(sample::Request::New());
+  request->x = 1;
+  request->pipe = pipe2.Pass();
+  factory->DoStuff(request.Pass(), pipe0.Pass());
 
   EXPECT_FALSE(factory_client.got_response());
 
@@ -175,12 +169,9 @@ TEST_F(HandlePassingTest, PassInvalid) {
   SampleFactoryClientImpl factory_client;
   factory.set_client(&factory_client);
 
-  {
-    AllocationScope scope;
-    sample::Request::Builder request;
-    request.set_x(1);
-    factory->DoStuff(request.Finish(), ScopedMessagePipeHandle().Pass());
-  }
+  sample::RequestPtr request(sample::Request::New());
+  request->x = 1;
+  factory->DoStuff(request.Pass(), ScopedMessagePipeHandle().Pass());
 
   EXPECT_FALSE(factory_client.got_response());
 
@@ -216,10 +207,7 @@ TEST_F(HandlePassingTest, DataPipe) {
             WriteDataRaw(producer_handle.get(), expected_text_reply.c_str(),
                          &data_size, MOJO_WRITE_DATA_FLAG_ALL_OR_NONE));
 
-  {
-    AllocationScope scope;
-    factory->DoStuff2(consumer_handle.Pass());
-  }
+  factory->DoStuff2(consumer_handle.Pass());
 
   EXPECT_FALSE(factory_client.got_response());
 
@@ -241,27 +229,34 @@ TEST_F(HandlePassingTest, PipesAreClosed) {
   MojoHandle handle1_value = extra_pipe.handle1.get().value();
 
   {
-    AllocationScope scope;
-
-    Array<MessagePipeHandle>::Builder pipes(2);
+    Array<ScopedMessagePipeHandle> pipes(2);
     pipes[0] = extra_pipe.handle0.Pass();
     pipes[1] = extra_pipe.handle1.Pass();
 
-    sample::Request::Builder request_builder;
-    request_builder.set_more_pipes(pipes.Finish());
+    sample::RequestPtr request(sample::Request::New());
+    request->more_pipes = pipes.Pass();
 
-    sample::Request request = request_builder.Finish();
-
-    factory->DoStuff(request, ScopedMessagePipeHandle());
-
-    // The handles should have been transferred to the underlying Message.
-    EXPECT_EQ(MOJO_HANDLE_INVALID, request.more_pipes()[0].get().value());
-    EXPECT_EQ(MOJO_HANDLE_INVALID, request.more_pipes()[1].get().value());
+    factory->DoStuff(request.Pass(), ScopedMessagePipeHandle());
   }
 
   // We expect the pipes to have been closed.
   EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT, MojoClose(handle0_value));
   EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT, MojoClose(handle1_value));
+}
+
+TEST_F(HandlePassingTest, IsHandle) {
+  // Validate that mojo::internal::IsHandle<> works as expected since this.
+  // template is key to ensuring that we don't leak handles.
+  EXPECT_TRUE(internal::IsHandle<Handle>::value);
+  EXPECT_TRUE(internal::IsHandle<MessagePipeHandle>::value);
+  EXPECT_TRUE(internal::IsHandle<DataPipeConsumerHandle>::value);
+  EXPECT_TRUE(internal::IsHandle<DataPipeProducerHandle>::value);
+  EXPECT_TRUE(internal::IsHandle<SharedBufferHandle>::value);
+
+  // Basic sanity checks...
+  EXPECT_FALSE(internal::IsHandle<int>::value);
+  EXPECT_FALSE(internal::IsHandle<sample::FactoryPtr>::value);
+  EXPECT_FALSE(internal::IsHandle<String>::value);
 }
 
 }  // namespace

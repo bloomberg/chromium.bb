@@ -16,7 +16,6 @@
 #include "mojo/aura/window_tree_host_mojo.h"
 #include "mojo/examples/launcher/launcher.mojom.h"
 #include "mojo/public/cpp/application/application.h"
-#include "mojo/public/cpp/bindings/allocation_scope.h"
 #include "mojo/public/cpp/gles2/gles2.h"
 #include "mojo/public/cpp/system/core.h"
 #include "mojo/public/interfaces/service_provider/service_provider.mojom.h"
@@ -221,8 +220,7 @@ class LauncherImpl : public InterfaceImpl<Launcher>,
 
   // Overridden from URLReceiver:
   virtual void OnURLEntered(const std::string& url_text) OVERRIDE {
-    AllocationScope scope;
-    client()->OnURLEntered(url_text);
+    client()->OnURLEntered(String::From(url_text));
   }
 
   void HostContextCreated() {

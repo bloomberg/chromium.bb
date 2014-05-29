@@ -24,7 +24,6 @@
 #include "content/test/data/web_ui_test_mojo_bindings.mojom.h"
 #include "grit/content_resources.h"
 #include "mojo/common/test/test_utils.h"
-#include "mojo/public/cpp/bindings/allocation_scope.h"
 #include "mojo/public/js/bindings/constants.h"
 
 namespace content {

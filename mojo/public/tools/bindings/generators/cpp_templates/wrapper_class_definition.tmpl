@@ -1,0 +1,21 @@
+{%- macro get_default(field) -%}
+{%-   if field.default -%}
+{{field.default|expression_to_text(module)}}
+{%-   endif -%}
+{%- endmacro -%}
+
+// static
+{{struct.name}}Ptr {{struct.name}}::New() {
+  {{struct.name}}Ptr rv;
+  mojo::internal::StructHelper<{{struct.name}}>::Initialize(&rv);
+  return rv.Pass();
+}
+
+{{struct.name}}::{{struct.name}}()
+{%-for field in struct.fields %}
+    {% if loop.first %}:{% else %} {% endif %} {{field.name}}({{get_default(field)}}){% if not loop.last %},{% endif %}
+{%- endfor %} {
+}
+
+{{struct.name}}::~{{struct.name}}() {
+}

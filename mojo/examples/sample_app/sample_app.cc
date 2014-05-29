@@ -7,7 +7,6 @@
 
 #include "mojo/examples/sample_app/gles2_client_impl.h"
 #include "mojo/public/cpp/application/application.h"
-#include "mojo/public/cpp/bindings/allocation_scope.h"
 #include "mojo/public/cpp/gles2/gles2.h"
 #include "mojo/public/cpp/system/core.h"
 #include "mojo/public/cpp/system/macros.h"
@@ -31,13 +30,12 @@ class SampleApp : public Application, public NativeViewportClient {
     ConnectTo("mojo:mojo_native_viewport_service", &viewport_);
     viewport_.set_client(this);
 
-    AllocationScope scope;
-    Rect::Builder rect;
-    rect.set_x(10);
-    rect.set_y(10);
-    rect.set_width(800);
-    rect.set_height(600);
-    viewport_->Create(rect.Finish());
+    RectPtr rect(Rect::New());
+    rect->x = 10;
+    rect->y = 10;
+    rect->width = 800;
+    rect->height = 600;
+    viewport_->Create(rect.Pass());
     viewport_->Show();
 
     MessagePipe gles2_pipe;
@@ -52,18 +50,19 @@ class SampleApp : public Application, public NativeViewportClient {
     RunLoop::current()->Quit();
   }
 
-  virtual void OnBoundsChanged(const Rect& bounds) MOJO_OVERRIDE {
-    AllocationScope scope;
-    Size::Builder size;
-    size.set_width(bounds.width());
-    size.set_height(bounds.height());
-    gles2_client_->SetSize(size.Finish());
+  virtual void OnBoundsChanged(RectPtr bounds) MOJO_OVERRIDE {
+    assert(bounds);
+    SizePtr size(Size::New());
+    size->width = bounds->width;
+    size->height = bounds->height;
+    gles2_client_->SetSize(*size);
   }
 
-  virtual void OnEvent(const Event& event,
+  virtual void OnEvent(EventPtr event,
                        const Callback<void()>& callback) MOJO_OVERRIDE {
-    if (!event.location().is_null())
-      gles2_client_->HandleInputEvent(event);
+    assert(event);
+    if (event->location)
+      gles2_client_->HandleInputEvent(*event);
     callback.Run();
   }
 

@@ -24,89 +24,84 @@
 #include "chrome/browser/search_engines/template_url.h"
 #include "content/public/browser/web_ui.h"
 #include "mojo/common/common_type_converters.h"
-#include "mojo/public/cpp/bindings/allocation_scope.h"
 
 namespace mojo {
 
 template <>
-class TypeConverter<mojo::Array<AutocompleteAdditionalInfo>,
+class TypeConverter<mojo::Array<AutocompleteAdditionalInfoPtr>,
                     AutocompleteMatch::AdditionalInfo> {
  public:
-  static mojo::Array<AutocompleteAdditionalInfo> ConvertFrom(
-      const AutocompleteMatch::AdditionalInfo& input,
-      Buffer* buf) {
-    mojo::Array<AutocompleteAdditionalInfo>::Builder array_builder(
-        input.size(), buf);
+  static mojo::Array<AutocompleteAdditionalInfoPtr> ConvertFrom(
+      const AutocompleteMatch::AdditionalInfo& input) {
+    mojo::Array<AutocompleteAdditionalInfoPtr> array(input.size());
     size_t index = 0;
     for (AutocompleteMatch::AdditionalInfo::const_iterator i = input.begin();
          i != input.end(); ++i, index++) {
-      AutocompleteAdditionalInfo::Builder item_builder(buf);
-      item_builder.set_key(i->first);
-      item_builder.set_value(i->second);
-      array_builder[index] = item_builder.Finish();
+      AutocompleteAdditionalInfoPtr item(AutocompleteAdditionalInfo::New());
+      item->key = i->first;
+      item->value = i->second;
+      array[index] = item.Pass();
     }
-    return array_builder.Finish();
+    return array.Pass();
   }
-
-  MOJO_ALLOW_IMPLICIT_TYPE_CONVERSION();
 };
 
 template <>
-class TypeConverter<AutocompleteMatchMojo, AutocompleteMatch> {
+class TypeConverter<AutocompleteMatchMojoPtr, AutocompleteMatch> {
  public:
-  static AutocompleteMatchMojo ConvertFrom(const AutocompleteMatch& input,
-                                           Buffer* buf) {
-    AutocompleteMatchMojo::Builder builder(buf);
+  static AutocompleteMatchMojoPtr ConvertFrom(const AutocompleteMatch& input) {
+    AutocompleteMatchMojoPtr result(AutocompleteMatchMojo::New());
     if (input.provider != NULL) {
-      builder.set_provider_name(input.provider->GetName());
-      builder.set_provider_done(input.provider->done());
+      result->provider_name = input.provider->GetName();
+      result->provider_done = input.provider->done();
     }
-    builder.set_relevance(input.relevance);
-    builder.set_deletable(input.deletable);
-    builder.set_fill_into_edit(input.fill_into_edit);
-    builder.set_inline_autocompletion(input.inline_autocompletion);
-    builder.set_destination_url(input.destination_url.spec());
-    builder.set_contents(input.contents);
+    result->relevance = input.relevance;
+    result->deletable = input.deletable;
+    result->fill_into_edit = mojo::String::From(input.fill_into_edit);
+    result->inline_autocompletion =
+        mojo::String::From(input.inline_autocompletion);
+    result->destination_url = input.destination_url.spec();
+    result->contents = mojo::String::From(input.contents);
     // At this time, we're not bothering to send along the long vector that
     // represent contents classification.  i.e., for each character, what
     // type of text it is.
-    builder.set_description(input.description);
+    result->description = mojo::String::From(input.description);
     // At this time, we're not bothering to send along the long vector that
     // represents description classification.  i.e., for each character, what
     // type of text it is.
-    builder.set_transition(input.transition);
-    builder.set_is_history_what_you_typed_match(
-        input.is_history_what_you_typed_match);
-    builder.set_allowed_to_be_default_match(input.allowed_to_be_default_match);
-    builder.set_type(AutocompleteMatchType::ToString(input.type));
-    if (input.associated_keyword.get() != NULL)
-      builder.set_associated_keyword(input.associated_keyword->keyword);
-    builder.set_keyword(input.keyword);
-    builder.set_starred(input.starred);
-    builder.set_duplicates(static_cast<int32>(input.duplicate_matches.size()));
-    builder.set_from_previous(input.from_previous);
+    result->transition = input.transition;
+    result->is_history_what_you_typed_match =
+        input.is_history_what_you_typed_match;
+    result->allowed_to_be_default_match = input.allowed_to_be_default_match;
+    result->type = AutocompleteMatchType::ToString(input.type);
+    if (input.associated_keyword.get() != NULL) {
+      result->associated_keyword =
+          mojo::String::From(input.associated_keyword->keyword);
+    }
+    result->keyword = mojo::String::From(input.keyword);
+    result->starred = input.starred;
+    result->duplicates = static_cast<int32>(input.duplicate_matches.size());
+    result->from_previous = input.from_previous;
 
-    builder.set_additional_info(input.additional_info);
-    return builder.Finish();
+    result->additional_info =
+        mojo::Array<AutocompleteAdditionalInfoPtr>::From(input.additional_info);
+    return result.Pass();
   }
-
-  MOJO_ALLOW_IMPLICIT_TYPE_CONVERSION();
 };
 
 template <>
-class TypeConverter<AutocompleteResultsForProviderMojo, AutocompleteProvider*> {
+class TypeConverter<AutocompleteResultsForProviderMojoPtr,
+                    AutocompleteProvider*> {
  public:
-  static AutocompleteResultsForProviderMojo ConvertFrom(
-      const AutocompleteProvider* input,
-      Buffer* buf) {
-    AutocompleteResultsForProviderMojo::Builder builder(buf);
-    builder.set_provider_name(input->GetName());
-    builder.set_results(
-        mojo::Array<AutocompleteMatchMojo>::From(input->matches()));
-    return builder.Finish();
+  static AutocompleteResultsForProviderMojoPtr ConvertFrom(
+      const AutocompleteProvider* input) {
+    AutocompleteResultsForProviderMojoPtr result(
+        AutocompleteResultsForProviderMojo::New());
+    result->provider_name = input->GetName();
+    result->results =
+        mojo::Array<AutocompleteMatchMojoPtr>::From(input->matches());
+    return result.Pass();
   }
-
-  MOJO_ALLOW_IMPLICIT_TYPE_CONVERSION();
 };
 
 }  // namespace mojo
@@ -119,32 +114,31 @@ OmniboxUIHandler::OmniboxUIHandler(Profile* profile)
 OmniboxUIHandler::~OmniboxUIHandler() {}
 
 void OmniboxUIHandler::OnResultChanged(bool default_match_changed) {
-  mojo::AllocationScope scope;
-  OmniboxResultMojo::Builder builder;
-  builder.set_done(controller_->done());
-  builder.set_time_since_omnibox_started_ms(
-      (base::Time::Now() - time_omnibox_started_).InMilliseconds());
+  OmniboxResultMojoPtr result(OmniboxResultMojo::New());
+  result->done = controller_->done();
+  result->time_since_omnibox_started_ms =
+      (base::Time::Now() - time_omnibox_started_).InMilliseconds();
   const base::string16 host = input_.text().substr(
       input_.parts().host.begin,
       input_.parts().host.len);
-  builder.set_host(host);
+  result->host = mojo::String::From(host);
   bool is_typed_host;
   if (!LookupIsTypedHost(host, &is_typed_host))
     is_typed_host = false;
-  builder.set_is_typed_host(is_typed_host);
+  result->is_typed_host = is_typed_host;
 
   {
     // Copy to an ACMatches to make conversion easier. Since this isn't
     // performance critical we don't worry about the cost here.
     ACMatches matches(controller_->result().begin(),
                       controller_->result().end());
-    builder.set_combined_results(
-        mojo::Array<AutocompleteMatchMojo>::From(matches));
+    result->combined_results =
+        mojo::Array<AutocompleteMatchMojoPtr>::From(matches);
   }
-  builder.set_results_by_provider(
-      mojo::Array<AutocompleteResultsForProviderMojo>::From(
-          *controller_->providers()));
-  client()->HandleNewAutocompleteResult(builder.Finish());
+  result->results_by_provider =
+      mojo::Array<AutocompleteResultsForProviderMojoPtr>::From(
+          *controller_->providers());
+  client()->HandleNewAutocompleteResult(result.Pass());
 }
 
 bool OmniboxUIHandler::LookupIsTypedHost(const base::string16& host,
@@ -174,7 +168,7 @@ void OmniboxUIHandler::StartOmniboxQuery(const mojo::String& input_string,
   ResetController();
   time_omnibox_started_ = base::Time::Now();
   input_ = AutocompleteInput(
-      input_string,
+      input_string.To<base::string16>(),
       cursor_position,
       base::string16(),  // user's desired tld (top-level domain)
       GURL(),

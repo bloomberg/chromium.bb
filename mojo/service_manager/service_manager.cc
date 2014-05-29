@@ -10,7 +10,6 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/stl_util.h"
-#include "mojo/public/cpp/bindings/allocation_scope.h"
 #include "mojo/service_manager/service_loader.h"
 
 namespace mojo {
@@ -31,16 +30,14 @@ class ServiceManager::ServiceFactory : public InterfaceImpl<ServiceProvider> {
   }
 
   void ConnectToClient(ScopedMessagePipeHandle handle) {
-    if (handle.is_valid()) {
-      AllocationScope scope;
+    if (handle.is_valid())
       client()->ConnectToService(url_.spec(), handle.Pass());
-    }
   }
 
   // ServiceProvider implementation:
   virtual void ConnectToService(const String& url,
                                 ScopedMessagePipeHandle client_pipe) OVERRIDE {
-    manager_->ConnectToService(GURL(url.To<std::string>()), client_pipe.Pass());
+    manager_->ConnectToService(GURL(url), client_pipe.Pass());
   }
 
   const GURL& url() const { return url_; }
@@ -70,7 +67,7 @@ class ServiceManager::TestAPI::TestServiceProviderConnection
   // ServiceProvider:
   virtual void ConnectToService(const String& url,
                                 ScopedMessagePipeHandle client_pipe) OVERRIDE {
-    manager_->ConnectToService(GURL(url.To<std::string>()), client_pipe.Pass());
+    manager_->ConnectToService(GURL(url), client_pipe.Pass());
   }
 
  private:

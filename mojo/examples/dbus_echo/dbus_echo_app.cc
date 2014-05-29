@@ -8,7 +8,6 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "mojo/public/cpp/application/application.h"
-#include "mojo/public/cpp/bindings/allocation_scope.h"
 #include "mojo/public/cpp/environment/environment.h"
 #include "mojo/public/cpp/system/core.h"
 #include "mojo/public/cpp/system/macros.h"
@@ -27,14 +26,14 @@ class DBusEchoApp : public Application {
     ConnectTo("dbus:org.chromium.EchoService/org/chromium/MojoImpl",
               &echo_service_);
 
-    AllocationScope scope;
-    echo_service_->Echo("who", base::Bind(&DBusEchoApp::OnEcho,
-                                          base::Unretained(this)));
+    echo_service_->Echo(
+        String::From("who"),
+        base::Bind(&DBusEchoApp::OnEcho, base::Unretained(this)));
   }
 
  private:
-  void OnEcho(const String& echoed) {
-    LOG(INFO) << "echo'd " << echoed.To<std::string>();
+  void OnEcho(String echoed) {
+    LOG(INFO) << "echo'd " << echoed;
   }
 
   EchoServicePtr echo_service_;

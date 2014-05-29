@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "mojo/public/cpp/bindings/lib/array_internal.h"
+#include "mojo/public/cpp/bindings/lib/template_util.h"
 #include "mojo/public/cpp/bindings/type_converter.h"
 
 namespace mojo {
@@ -19,145 +20,101 @@ namespace mojo {
 // Provides read-only access to array data.
 template <typename T>
 class Array {
+  MOJO_MOVE_ONLY_TYPE_FOR_CPP_03(Array, RValue)
  public:
-  typedef internal::ArrayTraits<T,
-                                internal::TypeTraits<T>::kIsObject,
-                                internal::TypeTraits<T>::kIsHandle> Traits_;
-  typedef typename Traits_::DataType Data;
-  typedef typename Traits_::ConstRef ConstRef;
+  typedef internal::ArrayTraits<T, internal::IsMoveOnlyType<T>::value>
+      Traits;
+  typedef typename Traits::ConstRefType ConstRefType;
+  typedef typename Traits::RefType RefType;
+  typedef typename Traits::StorageType StorageType;
 
-  Array() : data_(NULL) {
+  typedef internal::Array_Data<typename internal::WrapperTraits<T>::DataType>
+      Data_;
+
+  Array() : is_null_(true) {}
+  explicit Array(size_t size) : vec_(size), is_null_(false) {
+    Traits::Initialize(&vec_);
   }
+  ~Array() { Traits::Finalize(&vec_); }
 
-  template <typename U>
-  Array(const U& u, Buffer* buf = Buffer::current()) {
-    TypeConverter<Array<T>,U>::AssertAllowImplicitTypeConversion();
-    *this = TypeConverter<Array<T>,U>::ConvertFrom(u, buf);
-  }
-
-  template <typename U>
-  Array& operator=(const U& u) {
-    TypeConverter<Array<T>,U>::AssertAllowImplicitTypeConversion();
-    *this = TypeConverter<Array<T>,U>::ConvertFrom(u, Buffer::current());
+  Array(RValue other) : is_null_(true) { Take(other.object); }
+  Array& operator=(RValue other) {
+    Take(other.object);
     return *this;
   }
 
+  static Array New(size_t size) {
+    return Array(size).Pass();
+  }
+
   template <typename U>
-  operator U() const {
-    TypeConverter<Array<T>,U>::AssertAllowImplicitTypeConversion();
-    return To<U>();
+  static Array From(const U& other) {
+    return TypeConverter<Array, U>::ConvertFrom(other);
   }
 
   template <typename U>
   U To() const {
-    return TypeConverter<Array<T>,U>::ConvertTo(*this);
+    return TypeConverter<Array, U>::ConvertTo(*this);
   }
 
-  template <typename U>
-  static Array From(const U& u, Buffer* buf = Buffer::current()) {
-    return TypeConverter<Array<T>,U>::ConvertFrom(u, buf);
-  }
-
-  bool is_null() const { return !data_; }
-
-  size_t size() const { return data_->size(); }
-
-  ConstRef at(size_t offset) const {
-    return Traits_::ToConstRef(data_->at(offset));
-  }
-  ConstRef operator[](size_t offset) const { return at(offset); }
-
-  // Provides a way to initialize an array element-by-element.
-  class Builder {
-   public:
-    typedef typename Array<T>::Data Data;
-    typedef typename Array<T>::Traits_ Traits_;
-    typedef typename Traits_::Ref Ref;
-
-    explicit Builder(size_t num_elements, Buffer* buf = mojo::Buffer::current())
-        : data_(Data::New(num_elements, buf, Traits_::GetDestructor())) {
+  void reset() {
+    if (!vec_.empty()) {
+      Traits::Finalize(&vec_);
+      vec_.clear();
     }
-
-    size_t size() const { return data_->size(); }
-
-    Ref at(size_t offset) {
-      return Traits_::ToRef(data_->at(offset));
-    }
-    Ref operator[](size_t offset) { return at(offset); }
-
-    Array<T> Finish() {
-      Data* data = NULL;
-      std::swap(data, data_);
-      return internal::Wrap(data);
-    }
-
-   private:
-    Data* data_;
-    MOJO_DISALLOW_COPY_AND_ASSIGN(Builder);
-  };
-
- protected:
-  friend class internal::WrapperHelper<Array<T> >;
-
-  struct Wrap {};
-  Array(Wrap, const Data* data) : data_(data) {}
-
-  const Data* data_;
-};
-
-// UTF-8 encoded
-typedef Array<char> String;
-
-template <>
-class TypeConverter<String, std::string> {
- public:
-  static String ConvertFrom(const std::string& input, Buffer* buf);
-  static std::string ConvertTo(const String& input);
-
-  MOJO_ALLOW_IMPLICIT_TYPE_CONVERSION();
-};
-
-template <size_t N>
-class TypeConverter<String, char[N]> {
- public:
-  static String ConvertFrom(const char input[N], Buffer* buf) {
-    String::Builder result(N - 1, buf);
-    memcpy(&result[0], input, N - 1);
-    return result.Finish();
+    is_null_ = true;
   }
 
-  MOJO_ALLOW_IMPLICIT_TYPE_CONVERSION();
-};
+  bool is_null() const { return is_null_; }
 
-// Appease MSVC.
-template <size_t N>
-class TypeConverter<String, const char[N]> {
- public:
-  static String ConvertFrom(const char input[N], Buffer* buf) {
-    return TypeConverter<String, char[N]>::ConvertFrom(input, buf);
+  size_t size() const { return vec_.size(); }
+
+  ConstRefType at(size_t offset) const { return Traits::at(&vec_, offset); }
+  ConstRefType operator[](size_t offset) const { return at(offset); }
+
+  RefType at(size_t offset) { return Traits::at(&vec_, offset); }
+  RefType operator[](size_t offset) { return at(offset); }
+
+  const std::vector<StorageType>& storage() const {
+    return vec_;
+  }
+  operator const std::vector<StorageType>&() const {
+    return vec_;
   }
 
-  MOJO_ALLOW_IMPLICIT_TYPE_CONVERSION();
-};
+  void Swap(Array* other) {
+    std::swap(is_null_, other->is_null_);
+    vec_.swap(other->vec_);
+  }
+  void Swap(std::vector<StorageType>* other) {
+    is_null_ = false;
+    vec_.swap(*other);
+  }
 
-template <>
-class TypeConverter<String, const char*> {
+ private:
+  typedef std::vector<StorageType> Array::*Testable;
+
  public:
-  static String ConvertFrom(const char* input, Buffer* buf);
-  // NOTE: |ConvertTo| explicitly not implemented since String is not null
-  // terminated (and may have embedded null bytes).
+  operator Testable() const { return is_null_ ? 0 : &Array::vec_; }
 
-  MOJO_ALLOW_IMPLICIT_TYPE_CONVERSION();
+ private:
+  void Take(Array* other) {
+    reset();
+    Swap(other);
+  }
+
+  std::vector<StorageType> vec_;
+  bool is_null_;
 };
 
 template <typename T, typename E>
 class TypeConverter<Array<T>, std::vector<E> > {
  public:
-  static Array<T> ConvertFrom(const std::vector<E>& input, Buffer* buf) {
-    typename Array<T>::Builder result(input.size(), buf);
+  static Array<T> ConvertFrom(const std::vector<E>& input) {
+    Array<T> result(input.size());
     for (size_t i = 0; i < input.size(); ++i)
-      result[i] = TypeConverter<T, E>::ConvertFrom(input[i], buf);
-    return result.Finish();
+      result[i] = TypeConverter<T, E>::ConvertFrom(input[i]);
+    return result.Pass();
   }
   static std::vector<E> ConvertTo(const Array<T>& input) {
     std::vector<E> result;
@@ -168,8 +125,6 @@ class TypeConverter<Array<T>, std::vector<E> > {
     }
     return result;
   }
-
-  MOJO_INHERIT_IMPLICIT_TYPE_CONVERSION(T, E);
 };
 
 }  // namespace mojo

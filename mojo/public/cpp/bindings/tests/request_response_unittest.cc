@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/public/cpp/bindings/allocation_scope.h"
 #include "mojo/public/cpp/environment/environment.h"
 #include "mojo/public/cpp/test_support/test_utils.h"
 #include "mojo/public/cpp/utility/run_loop.h"
@@ -23,7 +22,6 @@ class ProviderImpl : public InterfaceImpl<sample::Provider> {
   virtual void EchoString(
       const String& a,
       const Callback<void(String)>& callback) MOJO_OVERRIDE {
-    AllocationScope scope;
     Callback<void(String)> callback_copy;
     // Make sure operator= is used.
     callback_copy = callback;
@@ -34,14 +32,12 @@ class ProviderImpl : public InterfaceImpl<sample::Provider> {
       const String& a,
       const String& b,
       const Callback<void(String, String)>& callback) MOJO_OVERRIDE {
-    AllocationScope scope;
     callback.Run(a, b);
   }
 
   virtual void EchoMessagePipeHandle(
       ScopedMessagePipeHandle a,
       const Callback<void(ScopedMessagePipeHandle)>& callback) MOJO_OVERRIDE {
-    AllocationScope scope;
     callback.Run(a.Pass());
   }
 
@@ -57,10 +53,10 @@ class StringRecorder {
   StringRecorder(std::string* buf) : buf_(buf) {
   }
   void Run(const String& a) const {
-    *buf_ = a.To<std::string>();
+    *buf_ = a;
   }
   void Run(const String& a, const String& b) const {
-    *buf_ = a.To<std::string>() + b.To<std::string>();
+    *buf_ = a.get() + b.get();
   }
  private:
   std::string* buf_;
@@ -108,10 +104,7 @@ TEST_F(RequestResponseTest, EchoString) {
   BindToProxy(new ProviderImpl(), &provider);
 
   std::string buf;
-  {
-    AllocationScope scope;
-    provider->EchoString("hello", StringRecorder(&buf));
-  }
+  provider->EchoString(String::From("hello"), StringRecorder(&buf));
 
   PumpMessages();
 
@@ -123,10 +116,8 @@ TEST_F(RequestResponseTest, EchoStrings) {
   BindToProxy(new ProviderImpl(), &provider);
 
   std::string buf;
-  {
-    AllocationScope scope;
-    provider->EchoStrings("hello", " world", StringRecorder(&buf));
-  }
+  provider->EchoStrings(
+      String::From("hello"), String::From(" world"), StringRecorder(&buf));
 
   PumpMessages();
 
@@ -138,11 +129,8 @@ TEST_F(RequestResponseTest, EchoMessagePipeHandle) {
   BindToProxy(new ProviderImpl(), &provider);
 
   MessagePipe pipe2;
-  {
-    AllocationScope scope;
-    provider->EchoMessagePipeHandle(pipe2.handle1.Pass(),
-                                    MessagePipeWriter("hello"));
-  }
+  provider->EchoMessagePipeHandle(pipe2.handle1.Pass(),
+                                  MessagePipeWriter("hello"));
 
   PumpMessages();
 
@@ -157,10 +145,7 @@ TEST_F(RequestResponseTest, EchoEnum) {
   BindToProxy(new ProviderImpl(), &provider);
 
   sample::Enum value;
-  {
-    AllocationScope scope;
-    provider->EchoEnum(sample::ENUM_VALUE, EnumRecorder(&value));
-  }
+  provider->EchoEnum(sample::ENUM_VALUE, EnumRecorder(&value));
 
   PumpMessages();
 

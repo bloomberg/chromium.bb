@@ -12,7 +12,6 @@
 #include "mojo/examples/pepper_container_app/plugin_module.h"
 #include "mojo/examples/pepper_container_app/type_converters.h"
 #include "mojo/public/cpp/application/application.h"
-#include "mojo/public/cpp/bindings/allocation_scope.h"
 #include "mojo/public/cpp/gles2/gles2.h"
 #include "mojo/public/cpp/system/core.h"
 #include "mojo/public/interfaces/service_provider/service_provider.mojom.h"
@@ -34,18 +33,16 @@ class PepperContainerApp: public Application,
 
   virtual ~PepperContainerApp() {}
 
-   virtual void Initialize() MOJO_OVERRIDE {
-    mojo::AllocationScope scope;
-
+  virtual void Initialize() MOJO_OVERRIDE {
     ConnectTo("mojo:mojo_native_viewport_service", &viewport_);
     viewport_.set_client(this);
 
-    Rect::Builder rect;
-    rect.set_x(10);
-    rect.set_y(10);
-    rect.set_width(800);
-    rect.set_height(600);
-    viewport_->Create(rect.Finish());
+    RectPtr rect(Rect::New());
+    rect->x = 10;
+    rect->y = 10;
+    rect->width = 800;
+    rect->height = 600;
+    viewport_->Create(rect.Pass());
     viewport_->Show();
   }
 
@@ -69,16 +66,16 @@ class PepperContainerApp: public Application,
     base::MessageLoop::current()->Quit();
   }
 
-  virtual void OnBoundsChanged(const Rect& bounds) OVERRIDE {
+  virtual void OnBoundsChanged(RectPtr bounds) OVERRIDE {
     ppapi::ProxyAutoLock lock;
 
     if (plugin_instance_)
-      plugin_instance_->DidChangeView(bounds);
+      plugin_instance_->DidChangeView(bounds.To<PP_Rect>());
   }
 
-  virtual void OnEvent(const Event& event,
+  virtual void OnEvent(EventPtr event,
                        const mojo::Callback<void()>& callback) OVERRIDE {
-    if (!event.location().is_null()) {
+    if (!event->location.is_null()) {
       ppapi::ProxyAutoLock lock;
 
       // TODO(yzshen): Handle events.

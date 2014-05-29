@@ -82,7 +82,7 @@ class CommandBufferClientImpl : public CommandBufferClient,
  private:
   // CommandBufferClient implementation:
   virtual void DidInitialize(bool success) OVERRIDE;
-  virtual void DidMakeProgress(const CommandBufferState& state) OVERRIDE;
+  virtual void DidMakeProgress(CommandBufferStatePtr state) OVERRIDE;
   virtual void DidDestroy() OVERRIDE;
   virtual void LostContext(int32_t lost_reason) OVERRIDE;
 

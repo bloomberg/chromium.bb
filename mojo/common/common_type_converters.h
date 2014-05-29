@@ -8,7 +8,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
 #include "mojo/common/mojo_common_export.h"
-#include "mojo/public/cpp/bindings/array.h"
+#include "mojo/public/cpp/bindings/string.h"
 #include "mojo/public/cpp/bindings/type_converter.h"
 
 namespace mojo {
@@ -16,19 +16,15 @@ namespace mojo {
 template <>
 class MOJO_COMMON_EXPORT TypeConverter<String, base::StringPiece> {
  public:
-  static String ConvertFrom(const base::StringPiece& input, Buffer* buf);
+  static String ConvertFrom(const base::StringPiece& input);
   static base::StringPiece ConvertTo(const String& input);
-
-  MOJO_ALLOW_IMPLICIT_TYPE_CONVERSION();
 };
 
 template <>
 class MOJO_COMMON_EXPORT TypeConverter<String, base::string16> {
  public:
-  static String ConvertFrom(const base::string16& input, Buffer* buf);
+  static String ConvertFrom(const base::string16& input);
   static base::string16 ConvertTo(const String& input);
-
-  MOJO_ALLOW_IMPLICIT_TYPE_CONVERSION();
 };
 
 }  // namespace mojo

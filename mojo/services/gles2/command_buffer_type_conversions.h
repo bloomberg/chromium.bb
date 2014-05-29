@@ -7,20 +7,19 @@
 
 #include "gpu/command_buffer/common/command_buffer.h"
 #include "mojo/public/cpp/bindings/type_converter.h"
+#include "mojo/services/gles2/command_buffer.mojom.h"
 
 namespace mojo {
 
 class CommandBufferState;
-class Buffer;
 
 template <>
-class TypeConverter<CommandBufferState, gpu::CommandBuffer::State> {
+class TypeConverter<CommandBufferStatePtr, gpu::CommandBuffer::State> {
  public:
-  static CommandBufferState ConvertFrom(const gpu::CommandBuffer::State& input,
-                                        Buffer* buffer);
-  static gpu::CommandBuffer::State ConvertTo(const CommandBufferState& input);
-
-  MOJO_ALLOW_IMPLICIT_TYPE_CONVERSION();
+  static CommandBufferStatePtr ConvertFrom(
+      const gpu::CommandBuffer::State& input);
+  static gpu::CommandBuffer::State ConvertTo(
+      const CommandBufferStatePtr& input);
 };
 
 }  // namespace mojo

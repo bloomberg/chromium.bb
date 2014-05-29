@@ -16,7 +16,6 @@
 #include "gpu/command_buffer/service/image_manager.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/memory_tracking.h"
-#include "mojo/public/cpp/bindings/allocation_scope.h"
 #include "mojo/services/gles2/command_buffer_type_conversions.h"
 #include "mojo/services/gles2/mojo_buffer_backing.h"
 #include "ui/gl/gl_context.h"
@@ -152,8 +151,8 @@ void CommandBufferImpl::Flush(int32_t put_offset) {
 
 void CommandBufferImpl::MakeProgress(int32_t last_get_offset) {
   // TODO(piman): handle out-of-order.
-  AllocationScope scope;
-  sync_client_->DidMakeProgress(command_buffer_->GetLastState());
+  sync_client_->DidMakeProgress(
+      CommandBufferState::From(command_buffer_->GetLastState()));
 }
 
 void CommandBufferImpl::RegisterTransferBuffer(

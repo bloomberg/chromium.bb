@@ -49,6 +49,9 @@ def IsHandleKind(kind):
 def IsInterfaceKind(kind):
   return isinstance(kind, mojom.Interface)
 
+def IsMoveOnlyKind(kind):
+  return IsObjectKind(kind) or IsHandleKind(kind)
+
 def StudlyCapsToCamel(studly):
   return studly[0].lower() + studly[1:]
 

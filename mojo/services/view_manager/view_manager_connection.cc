@@ -5,7 +5,6 @@
 #include "mojo/services/view_manager/view_manager_connection.h"
 
 #include "base/stl_util.h"
-#include "mojo/public/cpp/bindings/allocation_scope.h"
 #include "mojo/services/public/cpp/geometry/geometry_type_converters.h"
 #include "mojo/services/view_manager/node.h"
 #include "mojo/services/view_manager/root_node_manager.h"
@@ -106,8 +105,9 @@ void ViewManagerConnection::ProcessNodeBoundsChanged(
     return;
   TransportNodeId node_id = NodeIdToTransportId(node->id());
   if (known_nodes_.count(node_id) > 0) {
-    AllocationScope scope;
-    client()->OnNodeBoundsChanged(node_id, old_bounds, new_bounds);
+    client()->OnNodeBoundsChanged(node_id,
+                                  Rect::From(old_bounds),
+                                  Rect::From(new_bounds));
   }
 }
 
@@ -141,7 +141,6 @@ void ViewManagerConnection::ProcessNodeHierarchyChanged(
     }
     return;
   }
-  AllocationScope allocation_scope;
   const NodeId new_parent_id(new_parent ? new_parent->id() : NodeId());
   const NodeId old_parent_id(old_parent ? old_parent->id() : NodeId());
   DCHECK((node->id().connection_id == id_) ||
@@ -410,11 +409,10 @@ bool ViewManagerConnection::ShouldNotifyOnHierarchyChange(
   return known_nodes_.count(NodeIdToTransportId(node->id())) > 0;
 }
 
-Array<INode> ViewManagerConnection::NodesToINodes(
+Array<INodePtr> ViewManagerConnection::NodesToINodes(
     const std::vector<const Node*>& nodes) {
-  Array<INode>::Builder array_builder(nodes.size());
+  Array<INodePtr> array(nodes.size());
   for (size_t i = 0; i < nodes.size(); ++i) {
-    INode::Builder node_builder;
     const Node* node = nodes[i];
     DCHECK(known_nodes_.count(NodeIdToTransportId(node->id())) > 0);
     const Node* parent = node->GetParent();
@@ -422,15 +420,15 @@ Array<INode> ViewManagerConnection::NodesToINodes(
     // in roots), and should not be sent over.
     if (parent && known_nodes_.count(NodeIdToTransportId(parent->id())) == 0)
       parent = NULL;
-    node_builder.set_parent_id(NodeIdToTransportId(
-                                   parent ? parent->id() : NodeId()));
-    node_builder.set_node_id(NodeIdToTransportId(node->id()));
-    node_builder.set_view_id(ViewIdToTransportId(
-        node->view() ? node->view()->id() : ViewId()));
-    node_builder.set_bounds(node->bounds());
-    array_builder[i] = node_builder.Finish();
+    INodePtr inode(INode::New());
+    inode->parent_id = NodeIdToTransportId(parent ? parent->id() : NodeId());
+    inode->node_id = NodeIdToTransportId(node->id());
+    inode->view_id =
+        ViewIdToTransportId(node->view() ? node->view()->id() : ViewId());
+    inode->bounds = Rect::From(node->bounds());
+    array[i] = inode.Pass();
   }
-  return array_builder.Finish();
+  return array.Pass();
 }
 
 void ViewManagerConnection::CreateNode(
@@ -450,7 +448,6 @@ void ViewManagerConnection::CreateNode(
 void ViewManagerConnection::DeleteNode(
     TransportNodeId transport_node_id,
     const Callback<void(bool)>& callback) {
-  AllocationScope allocation_scope;
   const NodeId node_id(NodeIdFromTransportId(transport_node_id));
   bool did_delete = CanDeleteNode(node_id);
   if (did_delete) {
@@ -501,8 +498,7 @@ void ViewManagerConnection::RemoveNodeFromParent(
 
 void ViewManagerConnection::GetNodeTree(
     TransportNodeId node_id,
-    const Callback<void(Array<INode>)>& callback) {
-  AllocationScope allocation_scope;
+    const Callback<void(Array<INodePtr>)>& callback) {
   Node* node = GetNode(NodeIdFromTransportId(node_id));
   std::vector<const Node*> nodes;
   if (CanGetNodeTree(node)) {
@@ -573,7 +569,7 @@ void ViewManagerConnection::SetViewContents(
 
 void ViewManagerConnection::SetNodeBounds(
     TransportNodeId node_id,
-    const Rect& bounds,
+    RectPtr bounds,
     const Callback<void(bool)>& callback) {
   if (NodeIdFromTransportId(node_id).connection_id != id_) {
     callback.Run(false);
@@ -590,13 +586,14 @@ void ViewManagerConnection::SetNodeBounds(
       this, root_node_manager_,
       RootNodeManager::CHANGE_TYPE_DONT_ADVANCE_SERVER_CHANGE_ID, false);
   gfx::Rect old_bounds = node->window()->bounds();
-  node->window()->SetBounds(bounds);
-  root_node_manager_->ProcessNodeBoundsChanged(node, old_bounds, bounds);
+  node->window()->SetBounds(bounds.To<gfx::Rect>());
+  root_node_manager_->ProcessNodeBoundsChanged(
+      node, old_bounds, bounds.To<gfx::Rect>());
   callback.Run(true);
 }
 
 void ViewManagerConnection::Connect(const String& url,
-                                    const Array<uint32_t>& node_ids,
+                                    Array<uint32_t> node_ids,
                                     const Callback<void(bool)>& callback) {
   const bool success = CanConnect(node_ids);
   if (success)
@@ -631,7 +628,6 @@ void ViewManagerConnection::OnConnectionEstablished() {
       GetUnknownNodesFrom(GetNode(NodeIdFromTransportId(*i)), &to_send);
   }
 
-  AllocationScope allocation_scope;
   client()->OnViewManagerConnectionEstablished(
       id_,
       root_node_manager_->next_server_change_id(),

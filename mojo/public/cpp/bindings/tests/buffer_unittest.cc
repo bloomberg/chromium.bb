@@ -4,11 +4,8 @@
 
 #include <limits>
 
-#include "mojo/public/cpp/bindings/buffer.h"
 #include "mojo/public/cpp/bindings/lib/bindings_serialization.h"
 #include "mojo/public/cpp/bindings/lib/fixed_buffer.h"
-#include "mojo/public/cpp/bindings/lib/scratch_buffer.h"
-#include "mojo/public/cpp/environment/environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {
@@ -24,75 +21,8 @@ bool IsZero(void* p_buf, size_t size) {
   return true;
 }
 
-// Tests small and large allocations in ScratchBuffer.
-TEST(ScratchBufferTest, Basic) {
-  Environment env;
-
-  // Test that a small allocation is placed on the stack.
-  internal::ScratchBuffer buf;
-  void* small = buf.Allocate(10);
-  EXPECT_TRUE(small >= &buf && small < (&buf + sizeof(buf)));
-  EXPECT_TRUE(IsZero(small, 10));
-
-  // Large allocations won't be on the stack.
-  void* large = buf.Allocate(100*1024);
-  EXPECT_TRUE(IsZero(large, 100*1024));
-  EXPECT_FALSE(large >= &buf && large < (&buf + sizeof(buf)));
-
-  // But another small allocation should be back on the stack.
-  small = buf.Allocate(10);
-  EXPECT_TRUE(IsZero(small, 10));
-  EXPECT_TRUE(small >= &buf && small < (&buf + sizeof(buf)));
-
-  // And a request so large it will fail.
-  void* fail = buf.Allocate(std::numeric_limits<size_t>::max() - 1024u);
-  EXPECT_TRUE(!fail);
-
-  // And a request so large it will overflow and fail.
-  void* overflow = buf.Allocate(std::numeric_limits<size_t>::max() - 12u);
-  EXPECT_TRUE(!overflow);
-}
-
-TEST(ScratchBufferTest, Alignment) {
-  Environment env;
-
-  internal::ScratchBuffer buf;
-  // Test that small allocations on the stack are aligned properly.
-  void* small = buf.Allocate(1);
-  EXPECT_EQ(0, reinterpret_cast<ptrdiff_t>(small) % 8);
-  small = buf.Allocate(2);
-  EXPECT_EQ(0, reinterpret_cast<ptrdiff_t>(small) % 8);
-
-  // Test that large allocations on the heap are aligned properly.
-  void* large = buf.Allocate(10*1024);
-  EXPECT_EQ(0, reinterpret_cast<ptrdiff_t>(large) % 8);
-  large = buf.Allocate(100*1024);
-  EXPECT_EQ(0, reinterpret_cast<ptrdiff_t>(large) % 8);
-}
-
-// Tests that Buffer::current() returns the correct value.
-TEST(ScratchBufferTest, Stacked) {
-  Environment env;
-
-  EXPECT_FALSE(Buffer::current());
-
-  {
-    internal::ScratchBuffer a;
-    EXPECT_EQ(&a, Buffer::current());
-
-    {
-      internal::ScratchBuffer b;
-      EXPECT_EQ(&b, Buffer::current());
-    }
-  }
-
-  EXPECT_FALSE(Buffer::current());
-}
-
 // Tests that FixedBuffer allocates memory aligned to 8 byte boundaries.
 TEST(FixedBufferTest, Alignment) {
-  Environment env;
-
   internal::FixedBuffer buf(internal::Align(10) * 2);
   ASSERT_EQ(buf.size(), 16u * 2);
 
@@ -111,8 +41,6 @@ TEST(FixedBufferTest, Alignment) {
 
 // Tests that FixedBuffer::Leak passes ownership to the caller.
 TEST(FixedBufferTest, Leak) {
-  Environment env;
-
   void* ptr = NULL;
   void* buf_ptr = NULL;
   {
@@ -140,8 +68,6 @@ TEST(FixedBufferTest, Leak) {
 
 #ifdef NDEBUG
 TEST(FixedBufferTest, TooBig) {
-  Environment env;
-
   internal::FixedBuffer buf(24);
 
   // A little bit too large.

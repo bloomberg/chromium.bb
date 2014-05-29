@@ -17,7 +17,7 @@ namespace examples {
 namespace {
 
 float CalculateDragDistance(const gfx::PointF& start, const Point& end) {
-  return hypot(start.x() - end.x(), start.y() - end.y());
+  return hypot(start.x() - end.x, start.y() - end.y);
 }
 
 float GetRandomColor() {
@@ -41,7 +41,7 @@ GLES2ClientImpl::~GLES2ClientImpl() {
 }
 
 void GLES2ClientImpl::SetSize(const Size& size) {
-  size_ = gfx::Size(size.width(), size.height());
+  size_ = gfx::Size(size.width, size.height);
   if (size_.IsEmpty())
     return;
   cube_.Init(size_.width(), size_.height());
@@ -49,26 +49,26 @@ void GLES2ClientImpl::SetSize(const Size& size) {
 }
 
 void GLES2ClientImpl::HandleInputEvent(const Event& event) {
-  switch (event.action()) {
+  switch (event.action) {
   case ui::ET_MOUSE_PRESSED:
   case ui::ET_TOUCH_PRESSED:
     CancelAnimationFrames();
-    capture_point_.SetPoint(event.location().x(), event.location().y());
+    capture_point_.SetPoint(event.location->x, event.location->y);
     last_drag_point_ = capture_point_;
     drag_start_time_ = GetTimeTicksNow();
     break;
   case ui::ET_MOUSE_DRAGGED:
   case ui::ET_TOUCH_MOVED:
     if (!getting_animation_frames_) {
-      int direction = event.location().y() < last_drag_point_.y() ||
-          event.location().x() > last_drag_point_.x() ? 1 : -1;
+      int direction = event.location->y < last_drag_point_.y() ||
+          event.location->x > last_drag_point_.x() ? 1 : -1;
       cube_.set_direction(direction);
       cube_.UpdateForDragDistance(
-          CalculateDragDistance(last_drag_point_, event.location()));
+          CalculateDragDistance(last_drag_point_, *event.location));
       cube_.Draw();
       MojoGLES2SwapBuffers();
 
-      last_drag_point_.SetPoint(event.location().x(), event.location().y());
+      last_drag_point_.SetPoint(event.location->x, event.location->y);
     }
     break;
   case ui::ET_MOUSE_RELEASED:
@@ -76,7 +76,7 @@ void GLES2ClientImpl::HandleInputEvent(const Event& event) {
       MojoTimeTicks offset = GetTimeTicksNow() - drag_start_time_;
       float delta = static_cast<float>(offset) / 1000000.;
       cube_.SetFlingMultiplier(
-          CalculateDragDistance(capture_point_, event.location()),
+          CalculateDragDistance(capture_point_, *event.location),
           delta);
 
       cube_.set_color(GetRandomColor(), GetRandomColor(), GetRandomColor());

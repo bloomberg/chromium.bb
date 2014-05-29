@@ -13,6 +13,7 @@
 
 #include "mojo/public/cpp/bindings/lib/callback_internal.h"
 #include "mojo/public/cpp/bindings/lib/shared_ptr.h"
+#include "mojo/public/cpp/bindings/lib/template_util.h"
 
 namespace mojo {
 
@@ -78,7 +79,7 @@ class Callback<void(A1)> {
       typename internal::Callback_ParamTraits<A1>::ForwardType a1) const {
     if (sink_.get())
       sink_->Run(
-          internal::Callback_Forward(a1));
+          internal::Forward(a1));
   }
 
  private:
@@ -89,7 +90,7 @@ class Callback<void(A1)> {
         typename internal::Callback_ParamTraits<A1>::ForwardType a1) const
             MOJO_OVERRIDE {
       sink.Run(
-          internal::Callback_Forward(a1));
+          internal::Forward(a1));
     }
     Sink sink;
   };
@@ -122,8 +123,8 @@ class Callback<void(A1, A2)> {
       typename internal::Callback_ParamTraits<A2>::ForwardType a2) const {
     if (sink_.get())
       sink_->Run(
-          internal::Callback_Forward(a1),
-          internal::Callback_Forward(a2));
+          internal::Forward(a1),
+          internal::Forward(a2));
   }
 
  private:
@@ -135,8 +136,8 @@ class Callback<void(A1, A2)> {
         typename internal::Callback_ParamTraits<A2>::ForwardType a2) const
             MOJO_OVERRIDE {
       sink.Run(
-          internal::Callback_Forward(a1),
-          internal::Callback_Forward(a2));
+          internal::Forward(a1),
+          internal::Forward(a2));
     }
     Sink sink;
   };
@@ -171,9 +172,9 @@ class Callback<void(A1, A2, A3)> {
       typename internal::Callback_ParamTraits<A3>::ForwardType a3) const {
     if (sink_.get())
       sink_->Run(
-          internal::Callback_Forward(a1),
-          internal::Callback_Forward(a2),
-          internal::Callback_Forward(a3));
+          internal::Forward(a1),
+          internal::Forward(a2),
+          internal::Forward(a3));
   }
 
  private:
@@ -186,9 +187,9 @@ class Callback<void(A1, A2, A3)> {
         typename internal::Callback_ParamTraits<A3>::ForwardType a3) const
             MOJO_OVERRIDE {
       sink.Run(
-          internal::Callback_Forward(a1),
-          internal::Callback_Forward(a2),
-          internal::Callback_Forward(a3));
+          internal::Forward(a1),
+          internal::Forward(a2),
+          internal::Forward(a3));
     }
     Sink sink;
   };
@@ -225,10 +226,10 @@ class Callback<void(A1, A2, A3, A4)> {
       typename internal::Callback_ParamTraits<A4>::ForwardType a4) const {
     if (sink_.get())
       sink_->Run(
-          internal::Callback_Forward(a1),
-          internal::Callback_Forward(a2),
-          internal::Callback_Forward(a3),
-          internal::Callback_Forward(a4));
+          internal::Forward(a1),
+          internal::Forward(a2),
+          internal::Forward(a3),
+          internal::Forward(a4));
   }
 
  private:
@@ -242,10 +243,10 @@ class Callback<void(A1, A2, A3, A4)> {
         typename internal::Callback_ParamTraits<A4>::ForwardType a4) const
             MOJO_OVERRIDE {
       sink.Run(
-          internal::Callback_Forward(a1),
-          internal::Callback_Forward(a2),
-          internal::Callback_Forward(a3),
-          internal::Callback_Forward(a4));
+          internal::Forward(a1),
+          internal::Forward(a2),
+          internal::Forward(a3),
+          internal::Forward(a4));
     }
     Sink sink;
   };
@@ -284,11 +285,11 @@ class Callback<void(A1, A2, A3, A4, A5)> {
       typename internal::Callback_ParamTraits<A5>::ForwardType a5) const {
     if (sink_.get())
       sink_->Run(
-          internal::Callback_Forward(a1),
-          internal::Callback_Forward(a2),
-          internal::Callback_Forward(a3),
-          internal::Callback_Forward(a4),
-          internal::Callback_Forward(a5));
+          internal::Forward(a1),
+          internal::Forward(a2),
+          internal::Forward(a3),
+          internal::Forward(a4),
+          internal::Forward(a5));
   }
 
  private:
@@ -303,11 +304,11 @@ class Callback<void(A1, A2, A3, A4, A5)> {
         typename internal::Callback_ParamTraits<A5>::ForwardType a5) const
             MOJO_OVERRIDE {
       sink.Run(
-          internal::Callback_Forward(a1),
-          internal::Callback_Forward(a2),
-          internal::Callback_Forward(a3),
-          internal::Callback_Forward(a4),
-          internal::Callback_Forward(a5));
+          internal::Forward(a1),
+          internal::Forward(a2),
+          internal::Forward(a3),
+          internal::Forward(a4),
+          internal::Forward(a5));
     }
     Sink sink;
   };
@@ -349,12 +350,12 @@ class Callback<void(A1, A2, A3, A4, A5, A6)> {
       typename internal::Callback_ParamTraits<A6>::ForwardType a6) const {
     if (sink_.get())
       sink_->Run(
-          internal::Callback_Forward(a1),
-          internal::Callback_Forward(a2),
-          internal::Callback_Forward(a3),
-          internal::Callback_Forward(a4),
-          internal::Callback_Forward(a5),
-          internal::Callback_Forward(a6));
+          internal::Forward(a1),
+          internal::Forward(a2),
+          internal::Forward(a3),
+          internal::Forward(a4),
+          internal::Forward(a5),
+          internal::Forward(a6));
   }
 
  private:
@@ -370,12 +371,12 @@ class Callback<void(A1, A2, A3, A4, A5, A6)> {
         typename internal::Callback_ParamTraits<A6>::ForwardType a6) const
             MOJO_OVERRIDE {
       sink.Run(
-          internal::Callback_Forward(a1),
-          internal::Callback_Forward(a2),
-          internal::Callback_Forward(a3),
-          internal::Callback_Forward(a4),
-          internal::Callback_Forward(a5),
-          internal::Callback_Forward(a6));
+          internal::Forward(a1),
+          internal::Forward(a2),
+          internal::Forward(a3),
+          internal::Forward(a4),
+          internal::Forward(a5),
+          internal::Forward(a6));
     }
     Sink sink;
   };
@@ -419,13 +420,13 @@ class Callback<void(A1, A2, A3, A4, A5, A6, A7)> {
       typename internal::Callback_ParamTraits<A7>::ForwardType a7) const {
     if (sink_.get())
       sink_->Run(
-          internal::Callback_Forward(a1),
-          internal::Callback_Forward(a2),
-          internal::Callback_Forward(a3),
-          internal::Callback_Forward(a4),
-          internal::Callback_Forward(a5),
-          internal::Callback_Forward(a6),
-          internal::Callback_Forward(a7));
+          internal::Forward(a1),
+          internal::Forward(a2),
+          internal::Forward(a3),
+          internal::Forward(a4),
+          internal::Forward(a5),
+          internal::Forward(a6),
+          internal::Forward(a7));
   }
 
  private:
@@ -442,13 +443,13 @@ class Callback<void(A1, A2, A3, A4, A5, A6, A7)> {
         typename internal::Callback_ParamTraits<A7>::ForwardType a7) const
             MOJO_OVERRIDE {
       sink.Run(
-          internal::Callback_Forward(a1),
-          internal::Callback_Forward(a2),
-          internal::Callback_Forward(a3),
-          internal::Callback_Forward(a4),
-          internal::Callback_Forward(a5),
-          internal::Callback_Forward(a6),
-          internal::Callback_Forward(a7));
+          internal::Forward(a1),
+          internal::Forward(a2),
+          internal::Forward(a3),
+          internal::Forward(a4),
+          internal::Forward(a5),
+          internal::Forward(a6),
+          internal::Forward(a7));
     }
     Sink sink;
   };

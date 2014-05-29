@@ -7,7 +7,6 @@
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/time/time.h"
-#include "mojo/public/cpp/bindings/allocation_scope.h"
 #include "mojo/public/interfaces/service_provider/service_provider.mojom.h"
 #include "mojo/services/gles2/command_buffer_impl.h"
 #include "mojo/services/native_viewport/native_viewport.h"
@@ -41,12 +40,12 @@ class NativeViewportImpl
     native_viewport_.reset();
   }
 
-  virtual void Create(const Rect& bounds) OVERRIDE {
+  virtual void Create(RectPtr bounds) OVERRIDE {
     native_viewport_ =
         services::NativeViewport::Create(context_, this);
-    native_viewport_->Init(bounds);
+    native_viewport_->Init(bounds.To<gfx::Rect>());
     client()->OnCreated();
-    OnBoundsChanged(bounds);
+    OnBoundsChanged(bounds.To<gfx::Rect>());
   }
 
   virtual void Show() OVERRIDE {
@@ -63,9 +62,8 @@ class NativeViewportImpl
     native_viewport_->Close();
   }
 
-  virtual void SetBounds(const Rect& bounds) OVERRIDE {
-    AllocationScope scope;
-    native_viewport_->SetBounds(bounds);
+  virtual void SetBounds(RectPtr bounds) OVERRIDE {
+    native_viewport_->SetBounds(bounds.To<gfx::Rect>());
   }
 
   virtual void CreateGLES2Context(ScopedMessagePipeHandle client_handle)
@@ -117,38 +115,33 @@ class NativeViewportImpl
     if (waiting_for_event_ack_ && IsRateLimitedEventType(ui_event))
       return false;
 
-    AllocationScope scope;
-
-    Event::Builder event;
-    event.set_action(ui_event->type());
-    event.set_flags(ui_event->flags());
-    event.set_time_stamp(ui_event->time_stamp().ToInternalValue());
+    EventPtr event(Event::New());
+    event->action = ui_event->type();
+    event->flags = ui_event->flags();
+    event->time_stamp = ui_event->time_stamp().ToInternalValue();
 
     if (ui_event->IsMouseEvent() || ui_event->IsTouchEvent()) {
       ui::LocatedEvent* located_event =
           static_cast<ui::LocatedEvent*>(ui_event);
-      Point::Builder location;
-      location.set_x(located_event->location().x());
-      location.set_y(located_event->location().y());
-      event.set_location(location.Finish());
+      event->location = Point::New();
+      event->location->x = located_event->location().x();
+      event->location->y = located_event->location().y();
     }
 
     if (ui_event->IsTouchEvent()) {
       ui::TouchEvent* touch_event = static_cast<ui::TouchEvent*>(ui_event);
-      TouchData::Builder touch_data;
-      touch_data.set_pointer_id(touch_event->touch_id());
-      event.set_touch_data(touch_data.Finish());
+      event->touch_data = TouchData::New();
+      event->touch_data->pointer_id = touch_event->touch_id();
     } else if (ui_event->IsKeyEvent()) {
       ui::KeyEvent* key_event = static_cast<ui::KeyEvent*>(ui_event);
-      KeyData::Builder key_data;
-      key_data.set_key_code(key_event->key_code());
-      key_data.set_is_char(key_event->is_char());
-      event.set_key_data(key_data.Finish());
+      event->key_data = KeyData::New();
+      event->key_data->key_code = key_event->key_code();
+      event->key_data->is_char = key_event->is_char();
     }
 
-    client()->OnEvent(event.Finish(),
-                     base::Bind(&NativeViewportImpl::AckEvent,
-                                base::Unretained(this)));
+    client()->OnEvent(event.Pass(),
+                      base::Bind(&NativeViewportImpl::AckEvent,
+                                 base::Unretained(this)));
     waiting_for_event_ack_ = true;
     return false;
   }
@@ -161,8 +154,7 @@ class NativeViewportImpl
 
   virtual void OnBoundsChanged(const gfx::Rect& bounds) OVERRIDE {
     CreateCommandBufferIfNeeded();
-    AllocationScope scope;
-    client()->OnBoundsChanged(bounds);
+    client()->OnBoundsChanged(Rect::From(bounds));
   }
 
   virtual void OnDestroyed() OVERRIDE {

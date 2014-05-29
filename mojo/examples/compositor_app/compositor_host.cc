@@ -28,7 +28,7 @@ CompositorHost::CompositorHost(ScopedMessagePipeHandle gl_pipe)
 
 CompositorHost::~CompositorHost() {}
 
-void CompositorHost::SetSize(gfx::Size viewport_size) {
+void CompositorHost::SetSize(const gfx::Size& viewport_size) {
   tree_->SetViewportSize(viewport_size);
   tree_->SetLayerTreeHostClientReady();
 }

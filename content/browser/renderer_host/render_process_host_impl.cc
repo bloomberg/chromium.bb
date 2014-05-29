@@ -139,7 +139,6 @@
 #include "ipc/ipc_switches.h"
 #include "media/base/media_switches.h"
 #include "mojo/common/common_type_converters.h"
-#include "mojo/public/cpp/bindings/allocation_scope.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "ppapi/shared_impl/ppapi_switches.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -2074,9 +2073,8 @@ void RenderProcessHostImpl::ConnectTo(
   mojo_activation_required_ = true;
   MaybeActivateMojo();
 
-  mojo::AllocationScope scope;
-  mojo_application_host_->service_provider()->ConnectToService(service_name,
-                                                               handle.Pass());
+  mojo_application_host_->service_provider()->ConnectToService(
+      mojo::String::From(service_name), handle.Pass());
 }
 
 }  // namespace content

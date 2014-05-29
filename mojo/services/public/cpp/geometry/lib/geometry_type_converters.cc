@@ -7,47 +7,52 @@
 namespace mojo {
 
 // static
-Point TypeConverter<Point, gfx::Point>::ConvertFrom(const gfx::Point& input,
-                                                    Buffer* buf) {
-  Point::Builder point(buf);
-  point.set_x(input.x());
-  point.set_y(input.y());
-  return point.Finish();
+PointPtr TypeConverter<PointPtr, gfx::Point>::ConvertFrom(
+    const gfx::Point& input) {
+  PointPtr point(Point::New());
+  point->x = input.x();
+  point->y = input.y();
+  return point.Pass();
 }
 
 // static
-gfx::Point TypeConverter<Point, gfx::Point>::ConvertTo(const Point& input) {
-  return gfx::Point(input.x(), input.y());
+gfx::Point TypeConverter<PointPtr, gfx::Point>::ConvertTo(
+    const PointPtr& input) {
+  if (!input)
+    return gfx::Point();
+  return gfx::Point(input->x, input->y);
 }
 
 // static
-Size TypeConverter<Size, gfx::Size>::ConvertFrom(const gfx::Size& input,
-                                                 Buffer* buf) {
-  Size::Builder size(buf);
-  size.set_width(input.width());
-  size.set_height(input.height());
-  return size.Finish();
+SizePtr TypeConverter<SizePtr, gfx::Size>::ConvertFrom(const gfx::Size& input) {
+  SizePtr size(Size::New());
+  size->width = input.width();
+  size->height = input.height();
+  return size.Pass();
 }
 
 // static
-gfx::Size TypeConverter<Size, gfx::Size>::ConvertTo(const Size& input) {
-  return gfx::Size(input.width(), input.height());
+gfx::Size TypeConverter<SizePtr, gfx::Size>::ConvertTo(const SizePtr& input) {
+  if (!input)
+    return gfx::Size();
+  return gfx::Size(input->width, input->height);
 }
 
 // static
-Rect TypeConverter<Rect, gfx::Rect>::ConvertFrom(const gfx::Rect& input,
-                                                 Buffer* buf) {
-  Rect::Builder rect(buf);
-  rect.set_x(input.x());
-  rect.set_y(input.y());
-  rect.set_width(input.width());
-  rect.set_height(input.height());
-  return rect.Finish();
+RectPtr TypeConverter<RectPtr, gfx::Rect>::ConvertFrom(const gfx::Rect& input) {
+  RectPtr rect(Rect::New());
+  rect->x = input.x();
+  rect->y = input.y();
+  rect->width = input.width();
+  rect->height = input.height();
+  return rect.Pass();
 }
 
 // static
-gfx::Rect TypeConverter<Rect, gfx::Rect>::ConvertTo(const Rect& input) {
-  return gfx::Rect(input.x(), input.y(), input.width(), input.height());
+gfx::Rect TypeConverter<RectPtr, gfx::Rect>::ConvertTo(const RectPtr& input) {
+  if (!input)
+    return gfx::Rect();
+  return gfx::Rect(input->x, input->y, input->width, input->height);
 }
 
 }  // namespace mojo

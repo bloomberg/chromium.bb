@@ -8,7 +8,6 @@
 #include "base/macros.h"
 #include "mojo/examples/compositor_app/compositor_host.h"
 #include "mojo/public/cpp/application/application.h"
-#include "mojo/public/cpp/bindings/allocation_scope.h"
 #include "mojo/public/cpp/gles2/gles2.h"
 #include "mojo/public/cpp/system/core.h"
 #include "mojo/public/interfaces/service_provider/service_provider.mojom.h"
@@ -25,12 +24,10 @@ class SampleApp : public Application, public NativeViewportClient {
   virtual ~SampleApp() {}
 
   virtual void Initialize() OVERRIDE {
-    AllocationScope scope;
-
     ConnectTo("mojo:mojo_native_viewport_service", &viewport_);
     viewport_.set_client(this);
 
-    viewport_->Create(gfx::Rect(10, 10, 800, 600));
+    viewport_->Create(Rect::From(gfx::Rect(10, 10, 800, 600)));
     viewport_->Show();
 
     MessagePipe gles2_pipe;
@@ -45,15 +42,11 @@ class SampleApp : public Application, public NativeViewportClient {
     base::MessageLoop::current()->Quit();
   }
 
-  virtual void OnBoundsChanged(const Rect& bounds) OVERRIDE {
-    AllocationScope scope;
-    Size::Builder size;
-    size.set_width(bounds.width());
-    size.set_height(bounds.height());
-    host_->SetSize(size.Finish());
+  virtual void OnBoundsChanged(RectPtr bounds) OVERRIDE {
+    host_->SetSize(gfx::Size(bounds->width, bounds->height));
   }
 
-  virtual void OnEvent(const Event& event,
+  virtual void OnEvent(EventPtr event,
                        const mojo::Callback<void()>& callback) OVERRIDE {
     callback.Run();
   }

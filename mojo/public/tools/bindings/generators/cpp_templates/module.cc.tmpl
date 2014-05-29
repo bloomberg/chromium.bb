@@ -9,7 +9,9 @@
 
 #include "{{module.path}}.h"
 
+#include "mojo/public/cpp/bindings/lib/array_serialization.h"
 #include "mojo/public/cpp/bindings/lib/bindings_serialization.h"
+#include "mojo/public/cpp/bindings/lib/string_serialization.h"
 #include "mojo/public/cpp/bindings/lib/message_builder.h"
 
 {%- for namespace in namespaces_as_array %}
@@ -44,11 +46,6 @@ const uint32_t {{method_name}} = {{method.ordinal}};
 
 }  // namespace
 
-{#--- Struct destructors #}
-{%- for struct in structs %}
-{%-   include "struct_destructor.tmpl" %}
-{%- endfor %}
-
 {#--- Struct definitions #}
 {%  for struct in structs %}
 {%-   include "struct_definition.tmpl" %}
@@ -65,13 +62,19 @@ const {{constant.kind|cpp_pod_type}} {{struct.name}}::{{constant.name}} = {{cons
 
 {#--- Struct builder definitions #}
 {%- for struct in structs %}
-{%-   include "struct_builder_definition.tmpl" %}
+{%-   include "wrapper_class_definition.tmpl" %}
 {%- endfor %}
 
 {#--- Interface definitions #}
 {%- for interface in interfaces %}
 {%-   include "interface_definition.tmpl" %}
 {%- endfor %}
+
+{#--- Struct Serialization Helpers #}
+{%- for struct in structs %}
+{%-   include "struct_serialization_definition.tmpl" %}
+{%- endfor %}
+
 {%- for namespace in namespaces_as_array|reverse %}
 }  // namespace {{namespace}}
 {%- endfor %}

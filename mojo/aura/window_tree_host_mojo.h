@@ -53,8 +53,8 @@ class WindowTreeHostMojo : public aura::WindowTreeHost,
   // Overridden from NativeViewportClient:
   virtual void OnCreated() OVERRIDE;
   virtual void OnDestroyed() OVERRIDE;
-  virtual void OnBoundsChanged(const Rect& bounds) OVERRIDE;
-  virtual void OnEvent(const Event& event,
+  virtual void OnBoundsChanged(RectPtr bounds) OVERRIDE;
+  virtual void OnEvent(EventPtr event,
                        const mojo::Callback<void()>& callback) OVERRIDE;
 
   static ContextFactoryMojo* context_factory_;

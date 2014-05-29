@@ -9,7 +9,6 @@
 
 #include <vector>
 
-#include "mojo/public/cpp/bindings/allocation_scope.h"
 #include "mojo/public/interfaces/service_provider/service_provider.mojom.h"
 
 namespace mojo {

@@ -14,59 +14,59 @@
 namespace mojo {
 
 template <>
-class TypeConverter<Point, PP_Point> {
+class TypeConverter<PointPtr, PP_Point> {
  public:
-  static Point ConvertFrom(const PP_Point& input, Buffer* buf) {
-    Point::Builder point(buf);
-    point.set_x(input.x);
-    point.set_y(input.y);
-    return point.Finish();
+  static PointPtr ConvertFrom(const PP_Point& input) {
+    PointPtr point(Point::New());
+    point->x = input.x;
+    point->y = input.y;
+    return point.Pass();
   }
 
-  static PP_Point ConvertTo(const Point& input) {
-    return PP_MakePoint(static_cast<int32_t>(input.x()),
-                        static_cast<int32_t>(input.y()));
+  static PP_Point ConvertTo(const PointPtr& input) {
+    if (!input)
+      return PP_MakePoint(0, 0);
+    return PP_MakePoint(static_cast<int32_t>(input->x),
+                        static_cast<int32_t>(input->y));
   }
-
-  MOJO_ALLOW_IMPLICIT_TYPE_CONVERSION();
 };
 
 template <>
-class TypeConverter<Size, PP_Size> {
+class TypeConverter<SizePtr, PP_Size> {
  public:
-  static Size ConvertFrom(const PP_Size& input, Buffer* buf) {
-    Size::Builder size(buf);
-    size.set_width(input.width);
-    size.set_height(input.height);
-    return size.Finish();
+  static SizePtr ConvertFrom(const PP_Size& input) {
+    SizePtr size(Size::New());
+    size->width = input.width;
+    size->height = input.height;
+    return size.Pass();
   }
 
-  static PP_Size ConvertTo(const Size& input) {
-    return PP_MakeSize(static_cast<int32_t>(input.width()),
-                       static_cast<int32_t>(input.height()));
+  static PP_Size ConvertTo(const SizePtr& input) {
+    if (!input)
+      return PP_MakeSize(0, 0);
+    return PP_MakeSize(static_cast<int32_t>(input->width),
+                       static_cast<int32_t>(input->height));
   }
-
-  MOJO_ALLOW_IMPLICIT_TYPE_CONVERSION();
 };
 
 template <>
-class TypeConverter<Rect, PP_Rect> {
+class TypeConverter<RectPtr, PP_Rect> {
  public:
-  static Rect ConvertFrom(const PP_Rect& input, Buffer* buf) {
-    Rect::Builder rect(buf);
-    rect.set_x(input.point.x);
-    rect.set_y(input.point.y);
-    rect.set_width(input.size.width);
-    rect.set_height(input.size.height);
-    return rect.Finish();
+  static RectPtr ConvertFrom(const PP_Rect& input) {
+    RectPtr rect(Rect::New());
+    rect->x = input.point.x;
+    rect->y = input.point.y;
+    rect->width = input.size.width;
+    rect->height = input.size.height;
+    return rect.Pass();
   }
 
-  static PP_Rect ConvertTo(const Rect& input) {
-    return PP_MakeRectFromXYWH(input.x(), input.y(),
-                               input.width(), input.height());
+  static PP_Rect ConvertTo(const RectPtr& input) {
+    if (!input)
+      return PP_MakeRectFromXYWH(0, 0, 0, 0);
+    return PP_MakeRectFromXYWH(input->x, input->y,
+                               input->width, input->height);
   }
-
-  MOJO_ALLOW_IMPLICIT_TYPE_CONVERSION();
 };
 
 }  // namespace mojo

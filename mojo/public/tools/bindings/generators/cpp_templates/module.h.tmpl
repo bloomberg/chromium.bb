@@ -14,6 +14,8 @@
 #include "mojo/public/cpp/bindings/interface_ptr.h"
 #include "mojo/public/cpp/bindings/message_filter.h"
 #include "mojo/public/cpp/bindings/no_interface.h"
+#include "mojo/public/cpp/bindings/string.h"
+#include "mojo/public/cpp/bindings/struct_ptr.h"
 #include "{{module.path}}-internal.h"
 {%- for import in imports %}
 #include "{{import.module.path}}.h"
@@ -39,9 +41,31 @@ class {{interface.name}};
 typedef mojo::InterfacePtr<{{interface.name}}> {{interface.name}}Ptr;
 {%  endfor %}
 
-{#--- Structs #}
+{#--- Struct Forward Declarations -#}
 {%  for struct in structs %}
-{%    include "wrapper_class_declaration.tmpl" %}
+class {{struct.name}};
+{%    if struct|should_inline %}
+typedef mojo::InlinedStructPtr<{{struct.name}}> {{struct.name}}Ptr;
+{%    else %}
+typedef mojo::StructPtr<{{struct.name}}> {{struct.name}}Ptr;
+{%    endif %}
+{%  endfor %}
+
+{#--- NOTE: Non-inlined structs may have pointers to inlined structs, so we  #}
+{#---       need to fully define inlined structs ahead of the others.        #}
+
+{#--- Inlined structs #}
+{%  for struct in structs %}
+{%    if struct|should_inline %}
+{%      include "wrapper_class_declaration.tmpl" %}
+{%    endif %}
+{%- endfor %}
+
+{#--- Non-inlined structs #}
+{%  for struct in structs %}
+{%    if not struct|should_inline %}
+{%      include "wrapper_class_declaration.tmpl" %}
+{%    endif %}
 {%- endfor %}
 
 {#--- Interfaces -#}
@@ -69,19 +93,15 @@ typedef mojo::InterfacePtr<{{interface.name}}> {{interface.name}}Ptr;
 {%    include "interface_response_validator_declaration.tmpl" %}
 {%- endfor %}
 
+{#--- Struct Serialization Helpers -#}
+{%  if structs %}
+{%    for struct in structs %}
+{%      include "struct_serialization_declaration.tmpl" %}
+{%-   endfor %}
+{%- endif %}
+
 {%- for namespace in namespaces_as_array|reverse %}
 }  // namespace {{namespace}}
 {%- endfor %}
-
-{#--- Enum TypeTraits Specializations #}
-{%  if enums %}
-namespace mojo {
-namespace internal {
-{%    for enum in enums %}
-{%      include "enum_traits.tmpl" %}
-{%-   endfor %}
-}  // namespace internal
-}  // namespace mojo
-{%- endif %}
 
 #endif  // {{header_guard}}

@@ -195,14 +195,11 @@ class AppChildControllerImpl : public InterfaceImpl<AppChildController> {
   // |AppChildController| methods:
   virtual void StartApp(const String& app_path,
                         ScopedMessagePipeHandle service) OVERRIDE {
-    DVLOG(2) << "AppChildControllerImpl::StartApp("
-             << app_path.To<std::string>() << ", ...)";
+    DVLOG(2) << "AppChildControllerImpl::StartApp(" << app_path << ", ...)";
     DCHECK(thread_checker_.CalledOnValidThread());
 
-    // TODO(darin): Add TypeConverter for FilePath <-> mojo::String.
     unblocker_.Unblock(base::Bind(&AppChildControllerImpl::StartAppOnMainThread,
-                                  base::FilePath::FromUTF8Unsafe(
-                                      app_path.To<std::string>()),
+                                  base::FilePath::FromUTF8Unsafe(app_path),
                                   base::Passed(&service)));
   }
 

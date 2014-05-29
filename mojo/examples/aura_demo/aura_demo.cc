@@ -8,7 +8,6 @@
 #include "mojo/aura/screen_mojo.h"
 #include "mojo/aura/window_tree_host_mojo.h"
 #include "mojo/public/cpp/application/application.h"
-#include "mojo/public/cpp/bindings/allocation_scope.h"
 #include "mojo/public/cpp/gles2/gles2.h"
 #include "mojo/public/cpp/system/core.h"
 #include "mojo/public/interfaces/service_provider/service_provider.mojom.h"

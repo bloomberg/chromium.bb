@@ -5,7 +5,6 @@
 #ifndef MOJO_PUBLIC_CPP_APPLICATION_CONNECT_H_
 #define MOJO_PUBLIC_CPP_APPLICATION_CONNECT_H_
 
-#include "mojo/public/cpp/bindings/allocation_scope.h"
 #include "mojo/public/interfaces/service_provider/service_provider.mojom.h"
 
 namespace mojo {
@@ -16,8 +15,6 @@ inline void ConnectToService(ServiceProvider* service_provider,
                              InterfacePtr<Interface>* ptr) {
   MessagePipe pipe;
   ptr->Bind(pipe.handle0.Pass());
-
-  AllocationScope scope;
   service_provider->ConnectToService(url, pipe.handle1.Pass());
 }
 

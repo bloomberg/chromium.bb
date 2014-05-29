@@ -19,7 +19,6 @@
 #include "mojo/common/channel_init.h"
 #include "mojo/dbus/dbus_external_service.h"
 #include "mojo/embedder/platform_channel_pair.h"
-#include "mojo/public/cpp/bindings/allocation_scope.h"
 #include "mojo/shell/context.h"
 #include "mojo/shell/external_service.mojom.h"
 #include "mojo/shell/keep_alive.h"
@@ -105,7 +104,6 @@ class DBusServiceLoader::LoadContext {
   // Sends a ShellHandle over to the now-connected externally-running service,
   // using the Mojo ExternalService API.
   void ActivateService(dbus::Response* response) {
-    mojo::AllocationScope scope;
     external_service_->Activate(
         mojo::ScopedMessagePipeHandle(
             mojo::MessagePipeHandle(

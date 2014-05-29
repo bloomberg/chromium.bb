@@ -12,33 +12,30 @@ namespace mojo {
 
 // static
 String TypeConverter<String, base::StringPiece>::ConvertFrom(
-    const base::StringPiece& input,
-    Buffer* buf) {
-  if (input.empty())
-    return String();
-  String::Builder result(input.size(), buf);
-  memcpy(&result[0], input.data(), input.size());
-  return result.Finish();
+    const base::StringPiece& input) {
+  if (input.empty()) {
+    char c = 0;
+    return String(&c, 0);
+  }
+  return String(input.data(), input.size());
 }
 // static
 base::StringPiece TypeConverter<String, base::StringPiece>::ConvertTo(
     const String& input) {
-  return input.is_null() ? base::StringPiece() :
-                           base::StringPiece(&input[0], input.size());
+  return input.get();
 }
 
 // static
 String TypeConverter<String, base::string16>::ConvertFrom(
-    const base::string16& input,
-    Buffer* buf) {
+    const base::string16& input) {
   return TypeConverter<String, base::StringPiece>::ConvertFrom(
-      base::UTF16ToUTF8(input), buf);
+      base::UTF16ToUTF8(input));
 }
 // static
 base::string16 TypeConverter<String, base::string16>::ConvertTo(
     const String& input) {
-  return input.is_null() ? base::string16() :
-      base::UTF8ToUTF16(base::StringPiece(&input[0], input.size()));
+  return base::UTF8ToUTF16(TypeConverter<String, base::StringPiece>::ConvertTo(
+      input));
 }
 
 }  // namespace mojo

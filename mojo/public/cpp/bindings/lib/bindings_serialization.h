@@ -7,7 +7,6 @@
 
 #include <vector>
 
-#include "mojo/public/cpp/bindings/buffer.h"
 #include "mojo/public/cpp/bindings/message.h"
 
 namespace mojo {

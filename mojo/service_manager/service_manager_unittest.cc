@@ -4,8 +4,6 @@
 
 #include "base/message_loop/message_loop.h"
 #include "mojo/public/cpp/application/application.h"
-#include "mojo/public/cpp/application/application.h"
-#include "mojo/public/cpp/bindings/allocation_scope.h"
 #include "mojo/public/cpp/environment/environment.h"
 #include "mojo/public/interfaces/service_provider/service_provider.mojom.h"
 #include "mojo/service_manager/service_loader.h"
@@ -36,8 +34,8 @@ class TestServiceImpl : public InterfaceImpl<TestService> {
   }
 
   // TestService implementation:
-  virtual void Test(const mojo::String& test_string) OVERRIDE {
-    context_->last_test_string = test_string.To<std::string>();
+  virtual void Test(const String& test_string) OVERRIDE {
+    context_->last_test_string = test_string;
     client()->AckTest();
   }
 
@@ -61,7 +59,6 @@ class TestClientImpl : public TestClient {
   }
 
   void Test(std::string test_string) {
-    AllocationScope scope;
     quit_after_ack_ = true;
     service_->Test(test_string);
   }

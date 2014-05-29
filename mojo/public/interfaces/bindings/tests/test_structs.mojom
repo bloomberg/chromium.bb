@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 [JavaPackage="org.chromium.mojo.bindings.test.test_structs"]
-module test_structs {
+module mojo.test {
 
 struct Rect {
   int32 x;
@@ -15,6 +15,11 @@ struct Rect {
 struct NamedRegion {
   string name;
   Rect[] rects;
+};
+
+struct RectPair {
+  Rect first;
+  Rect second;
 };
 
 }

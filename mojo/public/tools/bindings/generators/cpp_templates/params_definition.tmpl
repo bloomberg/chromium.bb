@@ -2,23 +2,13 @@
 {%- set class_name = struct.name ~ "_Data" %}
 class {{class_name}} {
  public:
-  static {{class_name}}* New(mojo::Buffer* buf) {
+  static {{class_name}}* New(mojo::internal::Buffer* buf) {
     return new (buf->Allocate(sizeof({{class_name}})))
         {{class_name}}();
   }
 
-{#--- Setters -#}
-{{ struct_macros.setters(struct) }}
-
-{#--- Getters -#}
-{{ struct_macros.getters(struct) }}
-
-  void CloseHandles() {
-{%- for pf in struct.packed.packed_fields if pf.field.kind|is_object_kind %}
-    if ({{pf.field.name}}_.ptr)
-      {{pf.field.name}}_.ptr->CloseHandles();
-{%- endfor %}
-  }
+  mojo::internal::StructHeader header_;
+{{struct_macros.fields(struct)}}
 
   void EncodePointersAndHandles(std::vector<mojo::Handle>* handles) {
     {{ struct_macros.encodes(struct)|indent(4) }}
@@ -31,12 +21,9 @@ class {{class_name}} {
 
  private:
   {{class_name}}() {
-    _header_.num_bytes = sizeof(*this);
-    _header_.num_fields = {{struct.packed.packed_fields|length}};
+    header_.num_bytes = sizeof(*this);
+    header_.num_fields = {{struct.packed.packed_fields|length}};
   }
-
-  mojo::internal::StructHeader _header_;
-{{ struct_macros.fields(struct) }}
 };
 MOJO_COMPILE_ASSERT(sizeof({{class_name}}) == {{struct.packed|struct_size}},
                     bad_sizeof_{{class_name}});

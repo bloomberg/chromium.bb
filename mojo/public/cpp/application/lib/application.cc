@@ -58,7 +58,7 @@ void Application::ConnectToService(const mojo::String& url,
   // to dispatch to the right ServiceConnector. We need to figure out an
   // approach to registration to make this better.
   assert(1 == service_connectors_.size());
-  return service_connectors_.front()->ConnectToService(url.To<std::string>(),
+  return service_connectors_.front()->ConnectToService(url,
                                                        client_handle.Pass());
 }
 

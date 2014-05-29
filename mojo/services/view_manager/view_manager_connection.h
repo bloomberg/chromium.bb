@@ -136,7 +136,7 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerConnection
   // Converts an array of Nodes to INodes. This assumes all the nodes are valid
   // for the client. The parent of nodes the client is not allowed to see are
   // set to NULL (in the returned INodes).
-  Array<INode> NodesToINodes(const std::vector<const Node*>& nodes);
+  Array<INodePtr> NodesToINodes(const std::vector<const Node*>& nodes);
 
   // Overridden from IViewManager:
   virtual void CreateNode(TransportNodeId transport_node_id,
@@ -153,7 +153,7 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerConnection
       const Callback<void(bool)>& callback) OVERRIDE;
   virtual void GetNodeTree(
       TransportNodeId node_id,
-      const Callback<void(Array<INode>)>& callback) OVERRIDE;
+      const Callback<void(Array<INodePtr>)>& callback) OVERRIDE;
   virtual void CreateView(TransportViewId transport_view_id,
                           const Callback<void(bool)>& callback) OVERRIDE;
   virtual void DeleteView(TransportViewId transport_view_id,
@@ -166,10 +166,10 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerConnection
                                uint32_t buffer_size,
                                const Callback<void(bool)>& callback) OVERRIDE;
   virtual void SetNodeBounds(TransportNodeId node_id,
-                             const Rect& bounds,
+                             RectPtr bounds,
                              const Callback<void(bool)>& callback) OVERRIDE;
   virtual void Connect(const mojo::String& url,
-                       const mojo::Array<uint32_t>& node_ids,
+                       mojo::Array<uint32_t> node_ids,
                        const mojo::Callback<void(bool)>& callback) OVERRIDE;
 
   // Overridden from NodeDelegate:

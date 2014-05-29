@@ -27,9 +27,7 @@ FixedBuffer::~FixedBuffer() {
   free(ptr_);
 }
 
-void* FixedBuffer::Allocate(size_t delta, Destructor dtor) {
-  assert(!dtor);
-
+void* FixedBuffer::Allocate(size_t delta) {
   delta = internal::Align(delta);
 
   if (delta == 0 || delta > size_ - cursor_) {

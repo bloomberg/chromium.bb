@@ -16,6 +16,7 @@ $var MAX_ARITY = 7
 
 #include "mojo/public/cpp/bindings/lib/callback_internal.h"
 #include "mojo/public/cpp/bindings/lib/shared_ptr.h"
+#include "mojo/public/cpp/bindings/lib/template_util.h"
 
 namespace mojo {
 
@@ -52,7 +53,7 @@ class Callback<void($for ARG , [[A$(ARG)]])> {
     if (sink_.get())
       sink_->Run(
           $for ARG ,
-          [[internal::Callback_Forward(a$(ARG))]]);
+          [[internal::Forward(a$(ARG))]]);
   }
 
  private:
@@ -64,7 +65,7 @@ class Callback<void($for ARG , [[A$(ARG)]])> {
         [[typename internal::Callback_ParamTraits<A$(ARG)>::ForwardType a$(ARG)]]) const MOJO_OVERRIDE {
       sink.Run(
           $for ARG ,
-          [[internal::Callback_Forward(a$(ARG))]]);
+          [[internal::Forward(a$(ARG))]]);
     }
     Sink sink;
   };

@@ -4,7 +4,6 @@
 
 source_set("bindings") {
   sources = [
-    "allocation_scope.h",
     "array.h",
     "buffer.h",
     "callback.h",
@@ -13,16 +12,16 @@ source_set("bindings") {
     "message.h",
     "message_filter.h",
     "no_interface.h",
-    "passable.h",
+    "string.h",
+    "struct_ptr.h",
     "sync_dispatcher.h",
     "type_converter.h",
-    "lib/array.cc",
-    "lib/array_internal.h",
     "lib/array_internal.cc",
+    "lib/array_internal.h",
+    "lib/array_serialization.h",
     "lib/bindings_internal.h",
     "lib/bindings_serialization.cc",
     "lib/bindings_serialization.h",
-    "lib/buffer.cc",
     "lib/callback_internal.h",
     "lib/connector.cc",
     "lib/connector.h",
@@ -40,10 +39,11 @@ source_set("bindings") {
     "lib/no_interface.cc",
     "lib/router.cc",
     "lib/router.h",
-    "lib/scratch_buffer.cc",
-    "lib/scratch_buffer.h",
     "lib/shared_data.h",
     "lib/shared_ptr.h",
+    "lib/string_serialization.cc",
+    "lib/string_serialization.h",
     "lib/sync_dispatcher.cc",
+    "lib/template_util.h",
   ]
 }

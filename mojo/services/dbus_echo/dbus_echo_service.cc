@@ -25,7 +25,7 @@ class EchoServiceImpl : public mojo::InterfaceImpl<mojo::EchoService> {
   virtual void Echo(
       const mojo::String& in_to_echo,
       const mojo::Callback<void(mojo::String)>& callback) OVERRIDE {
-    DVLOG(1) << "Asked to echo " << in_to_echo.To<std::string>();
+    DVLOG(1) << "Asked to echo " << in_to_echo;
     callback.Run(in_to_echo);
   }
 };

@@ -11,21 +11,6 @@
 #include "mojo/services/public/cpp/view_manager/util.h"
 
 namespace mojo {
-
-// TODO(sky): remove this when Darin is done with cleanup.
-template <typename T>
-class MOJO_COMMON_EXPORT TypeConverter<T, T> {
- public:
-  static T ConvertFrom(T input, Buffer* buf) {
-    return input;
-  }
-  static T ConvertTo(T input) {
-    return input;
-  }
-
-  MOJO_ALLOW_IMPLICIT_TYPE_CONVERSION();
-};
-
 namespace view_manager {
 namespace service {
 
@@ -36,13 +21,13 @@ std::string NodeIdToString(TransportNodeId id) {
 
 namespace {
 
-void INodesToTestNodes(const Array<INode>& data,
+void INodesToTestNodes(const Array<INodePtr>& data,
                        std::vector<TestNode>* test_nodes) {
   for (size_t i = 0; i < data.size(); ++i) {
     TestNode node;
-    node.parent_id = data[i].parent_id();
-    node.node_id = data[i].node_id();
-    node.view_id = data[i].view_id();
+    node.parent_id = data[i]->parent_id;
+    node.node_id = data[i]->node_id;
+    node.view_id = data[i]->view_id;
     test_nodes->push_back(node);
   }
 }
@@ -138,7 +123,7 @@ TestChangeTracker::~TestChangeTracker() {
 void TestChangeTracker::OnViewManagerConnectionEstablished(
     TransportConnectionId connection_id,
     TransportChangeId next_server_change_id,
-    const Array<INode>& nodes) {
+    Array<INodePtr> nodes) {
   Change change;
   change.type = CHANGE_TYPE_CONNECTION_ESTABLISHED;
   change.connection_id = connection_id;
@@ -156,13 +141,13 @@ void TestChangeTracker::OnServerChangeIdAdvanced(
 }
 
 void TestChangeTracker::OnNodeBoundsChanged(TransportNodeId node_id,
-                                            const Rect& old_bounds,
-                                            const Rect& new_bounds) {
+                                            RectPtr old_bounds,
+                                            RectPtr new_bounds) {
   Change change;
   change.type = CHANGE_TYPE_NODE_BOUNDS_CHANGED;
   change.node_id = node_id;
-  change.bounds = old_bounds;
-  change.bounds2 = new_bounds;
+  change.bounds = old_bounds.To<gfx::Rect>();
+  change.bounds2 = new_bounds.To<gfx::Rect>();
   AddChange(change);
 }
 
@@ -171,7 +156,7 @@ void TestChangeTracker::OnNodeHierarchyChanged(
     TransportNodeId new_parent_id,
     TransportNodeId old_parent_id,
     TransportChangeId server_change_id,
-    const Array<INode>& nodes) {
+    Array<INodePtr> nodes) {
   Change change;
   change.type = CHANGE_TYPE_NODE_HIERARCHY_CHANGED;
   change.node_id = node_id;

@@ -2,18 +2,29 @@
 {%- set class_name = interface.name %}
 {%- set proxy_name = interface.name ~ "Proxy" %}
 
+{%- macro alloc_params(parameters) %}
+{%-   for param in parameters %}
+{%-     if param.kind|is_object_kind  %}
+{{param.kind|cpp_result_type}} p{{loop.index}};
+Deserialize_(params->{{param.name}}.ptr, &p{{loop.index}});
+{%      endif -%}
+{%-   endfor %}
+{%- endmacro %}
+
 {%- macro pass_params(parameters) %}
 {%-   for param in parameters %}
-{%-     if param.kind|is_object_kind -%}
-mojo::internal::Wrap(params->{{param.name}}())
+{%-     if param.kind|is_string_kind -%}
+p{{loop.index}}
+{%-     elif param.kind|is_object_kind -%}
+p{{loop.index}}.Pass()
 {%-     elif param.kind|is_interface_kind -%}
-mojo::MakeProxy<{{param.kind.name}}>(mojo::MakePassable(params->{{param.name}}()).Pass())
+mojo::MakeProxy<{{param.kind.name}}>(mojo::MakeScopedHandle(mojo::internal::FetchAndReset(&params->{{param.name}})))
 {%-     elif param.kind|is_handle_kind -%}
-mojo::MakePassable(params->{{param.name}}()).Pass()
+mojo::MakeScopedHandle(mojo::internal::FetchAndReset(&params->{{param.name}}))
 {%-     elif param.kind|is_enum_kind -%}
-static_cast<{{param.kind|cpp_wrapper_type}}>(params->{{param.name}}())
+static_cast<{{param.kind|cpp_wrapper_type}}>(params->{{param.name}})
 {%-     else -%}
-params->{{param.name}}()
+params->{{param.name}}
 {%-     endif -%}
 {%-     if not loop.last %}, {% endif %}
 {%-   endfor %}
@@ -25,8 +36,7 @@ params->{{param.name}}()
 {#--- Computes #}
 {%-   for param in parameters %}
 {%-     if param.kind|is_object_kind %}
-  if (!in_{{param.name}}.is_null())
-    payload_size += mojo::internal::Unwrap(in_{{param.name}})->ComputeSize();
+  payload_size += GetSerializedSize_(in_{{param.name}});
 {%-     endif %}
 {%-   endfor %}
 {%- endmacro %}
@@ -37,21 +47,19 @@ params->{{param.name}}()
 {#--- Sets #}
 {%   for param in parameters %}
 {%-     if param.kind|is_object_kind %}
-  if (!in_{{param.name}}.is_null())
-    params->set_{{param.name}}(
-        mojo::internal::Unwrap(in_{{param.name}})->Clone(builder.buffer()));
+  Serialize_(mojo::internal::Forward(in_{{param.name}}), builder.buffer(), &params->{{param.name}}.ptr);
 {%-     elif param.kind|is_interface_kind %}
   if (!in_{{param.name}}.get()) {
-    params->set_{{param.name}}(mojo::MessagePipeHandle());
+    params->{{param.name}} = mojo::MessagePipeHandle();
   } else {
     // Delegate handle.
-    params->set_{{param.name}}(
-        in_{{param.name}}.ResetAndReturnMessagePipe().release());
+    params->{{param.name}} =
+        in_{{param.name}}.ResetAndReturnMessagePipe().release();
   }
 {%-     elif param.kind|is_handle_kind %}
-  params->set_{{param.name}}(in_{{param.name}}.release());
+  params->{{param.name}} = in_{{param.name}}.release();
 {%-     else %}
-  params->set_{{param.name}}(in_{{param.name}});
+  params->{{param.name}} = in_{{param.name}};
 {%-     endif %}
 {%-   endfor %}
   mojo::Message message;
@@ -89,8 +97,8 @@ bool {{class_name}}_{{method.name}}_ForwardToCallback::Accept(
 
   if (!params->DecodePointersAndHandles(message))
     return false;
+  {{alloc_params(method.response_parameters)|indent(2)}}
   callback_.Run({{pass_params(method.response_parameters)}});
-  params->CloseHandles();
   return true;
 }
 {%-   endif %}
@@ -194,8 +202,8 @@ bool {{class_name}}Stub::Accept(mojo::Message* message) {
 
       if (!params->DecodePointersAndHandles(message))
         return false;
+      {{alloc_params(method.parameters)|indent(6)}}
       sink_->{{method.name}}({{pass_params(method.parameters)}});
-      params->CloseHandles();
       return true;
 {%-     else %}
       break;
@@ -224,9 +232,9 @@ bool {{class_name}}Stub::AcceptWithResponder(
           new {{class_name}}_{{method.name}}_ProxyToResponder(
               message->request_id(), responder);
       {{interface_macros.declare_callback(method)}} callback(runnable);
+      {{alloc_params(method.parameters)|indent(6)}}
       sink_->{{method.name}}(
 {%- if method.parameters -%}{{pass_params(method.parameters)}}, {% endif -%}callback);
-      params->CloseHandles();
       return true;
 {%-     else %}
       break;

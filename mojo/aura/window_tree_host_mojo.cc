@@ -6,7 +6,6 @@
 
 #include "mojo/aura/context_factory_mojo.h"
 #include "mojo/public/c/gles2/gles2.h"
-#include "mojo/public/cpp/bindings/allocation_scope.h"
 #include "mojo/services/public/cpp/geometry/geometry_type_converters.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
@@ -33,9 +32,7 @@ WindowTreeHostMojo::WindowTreeHostMojo(
       compositor_created_callback_(compositor_created_callback),
       bounds_(bounds) {
   native_viewport_.set_client(this);
-
-  AllocationScope scope;
-  native_viewport_->Create(bounds);
+  native_viewport_->Create(Rect::From(bounds));
 
   ScopedMessagePipeHandle gles2_handle, gles2_client_handle;
   CreateMessagePipe(&gles2_handle, &gles2_client_handle);
@@ -86,8 +83,7 @@ gfx::Rect WindowTreeHostMojo::GetBounds() const {
 }
 
 void WindowTreeHostMojo::SetBounds(const gfx::Rect& bounds) {
-  AllocationScope scope;
-  native_viewport_->SetBounds(bounds);
+  native_viewport_->SetBounds(Rect::From(bounds));
 }
 
 gfx::Point WindowTreeHostMojo::GetLocationOnNativeScreen() const {
@@ -138,8 +134,8 @@ void WindowTreeHostMojo::OnCreated() {
   compositor_created_callback_.Run();
 }
 
-void WindowTreeHostMojo::OnBoundsChanged(const Rect& bounds) {
-  bounds_ = bounds;
+void WindowTreeHostMojo::OnBoundsChanged(RectPtr bounds) {
+  bounds_ = bounds.To<gfx::Rect>();
   window()->SetBounds(gfx::Rect(bounds_.size()));
   OnHostResized(bounds_.size());
 }
@@ -148,27 +144,27 @@ void WindowTreeHostMojo::OnDestroyed() {
   base::MessageLoop::current()->Quit();
 }
 
-void WindowTreeHostMojo::OnEvent(const Event& event,
+void WindowTreeHostMojo::OnEvent(EventPtr event,
                                  const mojo::Callback<void()>& callback) {
-  switch (event.action()) {
+  switch (event->action) {
     case ui::ET_MOUSE_PRESSED:
     case ui::ET_MOUSE_DRAGGED:
     case ui::ET_MOUSE_RELEASED:
     case ui::ET_MOUSE_MOVED:
     case ui::ET_MOUSE_ENTERED:
     case ui::ET_MOUSE_EXITED: {
-      gfx::Point location(event.location().x(), event.location().y());
-      ui::MouseEvent ev(static_cast<ui::EventType>(event.action()), location,
-                        location, event.flags(), 0);
+      gfx::Point location(event->location->x, event->location->y);
+      ui::MouseEvent ev(static_cast<ui::EventType>(event->action), location,
+                        location, event->flags, 0);
       SendEventToProcessor(&ev);
       break;
     }
     case ui::ET_KEY_PRESSED:
     case ui::ET_KEY_RELEASED: {
       ui::KeyEvent ev(
-          static_cast<ui::EventType>(event.action()),
-          static_cast<ui::KeyboardCode>(event.key_data().key_code()),
-          event.flags(), event.key_data().is_char());
+          static_cast<ui::EventType>(event->action),
+          static_cast<ui::KeyboardCode>(event->key_data->key_code),
+          event->flags, event->key_data->is_char);
       SendEventToProcessor(&ev);
       break;
     }

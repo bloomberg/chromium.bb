@@ -3,28 +3,17 @@
 
 class {{class_name}} {
  public:
-  typedef {{struct.name}} Wrapper;
+  static {{class_name}}* New(mojo::internal::Buffer* buf);
 
-  static {{class_name}}* New(mojo::Buffer* buf, mojo::Buffer::Destructor dtor = NULL);
+  mojo::internal::StructHeader header_;
+{{struct_macros.fields(struct)}}
 
-{#--- Setters -#}
-{{ struct_macros.setters(struct) }}
-
-{#--- Getters -#}
-{{ struct_macros.getters(struct) }}
-
-  size_t ComputeSize() const;
-  {{class_name}}* Clone(mojo::Buffer* buf) const;
-  void CloseHandles();
   void EncodePointersAndHandles(std::vector<mojo::Handle>* handles);
   bool DecodePointersAndHandles(mojo::Message* message);
 
  private:
   {{class_name}}();
   ~{{class_name}}();  // NOT IMPLEMENTED
-
-  mojo::internal::StructHeader _header_;
-{{ struct_macros.fields(struct) }}
 };
 MOJO_COMPILE_ASSERT(sizeof({{class_name}}) == {{struct.packed|struct_size}},
                     bad_sizeof_{{class_name}});
