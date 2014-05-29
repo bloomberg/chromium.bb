@@ -410,6 +410,24 @@ test.util.sync.fakeMouseClick = function(
 };
 
 /**
+ * Simulates a fake mouse click (right button, single click) on the element
+ * specified by |targetQuery|.
+ *
+ * @param {Window} contentWindow Window to be tested.
+ * @param {string} targetQuery Query to specify the element.
+ * @param {string=} opt_iframeQuery Optional iframe selector.
+ * @return {boolean} True if the event is sent to the target, false
+ *     otherwise.
+ */
+test.util.sync.fakeMouseRightClick = function(
+    contentWindow, targetQuery, opt_iframeQuery) {
+  var contextMenuEvent = new MouseEvent('contextmenu', {bubbles: true});
+  var result = test.util.sync.sendEvent(
+      contentWindow, targetQuery, contextMenuEvent, opt_iframeQuery);
+  return result;
+};
+
+/**
  * Simulates a fake double click event (left button) to the element specified by
  * |targetQuery|.
  *

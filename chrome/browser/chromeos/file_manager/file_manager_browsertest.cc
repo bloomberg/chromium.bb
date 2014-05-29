@@ -860,6 +860,12 @@ INSTANTIATE_TEST_CASE_P(
                                     "traverseNavigationList")));
 
 INSTANTIATE_TEST_CASE_P(
+    FolderShortcuts,
+    FileManagerBrowserTest,
+    ::testing::Values(TestParameter(NOT_IN_GUEST_MODE,
+                                    "traverseFolderShortcuts")));
+
+INSTANTIATE_TEST_CASE_P(
     TabIndex,
     FileManagerBrowserTest,
     ::testing::Values(TestParameter(NOT_IN_GUEST_MODE, "searchBoxFocus")));
