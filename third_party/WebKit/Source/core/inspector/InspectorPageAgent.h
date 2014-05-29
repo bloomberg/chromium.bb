@@ -171,7 +171,7 @@ private:
     void updateViewMetricsFromState();
     void updateViewMetrics(bool enabled, int width, int height, double deviceScaleFactor, bool emulateViewport, bool fitWindow, double fontScaleFactor, bool textAutosizingEnabled);
     void updateTouchEventEmulationInPage(bool);
-    bool forceCompositingMode(ErrorString*);
+    bool compositingEnabled(ErrorString*);
 
     static bool dataContent(const char* data, unsigned size, const String& textEncodingName, bool withBase64Encode, String* result);
 

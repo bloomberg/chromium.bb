@@ -206,6 +206,9 @@ void WebPopupMenuImpl::layout()
 
 void WebPopupMenuImpl::enterForceCompositingMode(bool enter)
 {
+    // FIXME: Is this function really correct? The other overrides of this function
+    // just used to set forceCompositingMode before we removed that setting.
+    // crbug.com/378029
     if (m_isAcceleratedCompositingActive == enter)
         return;
 

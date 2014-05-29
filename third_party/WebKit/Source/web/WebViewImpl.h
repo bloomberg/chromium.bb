@@ -101,7 +101,6 @@ public:
     virtual void didExitFullScreen() OVERRIDE;
     virtual void animate(double) OVERRIDE;
     virtual void layout() OVERRIDE;
-    virtual void enterForceCompositingMode(bool enable) OVERRIDE;
     virtual void paint(WebCanvas*, const WebRect&) OVERRIDE;
 #if OS(ANDROID)
     virtual void paintCompositedDeprecated(WebCanvas*, const WebRect&) OVERRIDE;

@@ -758,7 +758,7 @@ void InspectorPageAgent::setShowPaintRects(ErrorString*, bool show)
 void InspectorPageAgent::setShowDebugBorders(ErrorString* errorString, bool show)
 {
     m_state->setBoolean(PageAgentState::pageAgentShowDebugBorders, show);
-    if (show && !forceCompositingMode(errorString))
+    if (show && !compositingEnabled(errorString))
         return;
     m_client->setShowDebugBorders(show);
 }
@@ -767,7 +767,7 @@ void InspectorPageAgent::setShowFPSCounter(ErrorString* errorString, bool show)
 {
     // FIXME: allow metrics override, fps counter and continuous painting at the same time: crbug.com/299837.
     m_state->setBoolean(PageAgentState::pageAgentShowFPSCounter, show);
-    if (show && !forceCompositingMode(errorString))
+    if (show && !compositingEnabled(errorString))
         return;
     m_client->setShowFPSCounter(show && !m_deviceMetricsOverridden);
 }
@@ -775,7 +775,7 @@ void InspectorPageAgent::setShowFPSCounter(ErrorString* errorString, bool show)
 void InspectorPageAgent::setContinuousPaintingEnabled(ErrorString* errorString, bool enabled)
 {
     m_state->setBoolean(PageAgentState::pageAgentContinuousPaintingEnabled, enabled);
-    if (enabled && !forceCompositingMode(errorString))
+    if (enabled && !compositingEnabled(errorString))
         return;
     m_client->setContinuousPaintingEnabled(enabled && !m_deviceMetricsOverridden);
 }
@@ -783,7 +783,7 @@ void InspectorPageAgent::setContinuousPaintingEnabled(ErrorString* errorString, 
 void InspectorPageAgent::setShowScrollBottleneckRects(ErrorString* errorString, bool show)
 {
     m_state->setBoolean(PageAgentState::pageAgentShowScrollBottleneckRects, show);
-    if (show && !forceCompositingMode(errorString))
+    if (show && !compositingEnabled(errorString))
         return;
     m_client->setShowScrollBottleneckRects(show);
 }
@@ -1251,20 +1251,13 @@ void InspectorPageAgent::applyEmulatedMedia(String* media)
         *media = emulatedMedia;
 }
 
-bool InspectorPageAgent::forceCompositingMode(ErrorString* errorString)
+bool InspectorPageAgent::compositingEnabled(ErrorString* errorString)
 {
-    Settings& settings = m_page->settings();
-    if (!settings.acceleratedCompositingEnabled()) {
+    if (!m_page->settings().acceleratedCompositingEnabled()) {
         if (errorString)
             *errorString = "Compositing mode is not supported";
         return false;
     }
-    if (settings.forceCompositingMode())
-        return true;
-    settings.setForceCompositingMode(true);
-    LocalFrame* mainFrame = m_page->mainFrame();
-    if (mainFrame)
-        mainFrame->view()->updateCompositingLayersAfterStyleChange();
     return true;
 }
 

@@ -297,23 +297,6 @@ void WebPagePopupImpl::animate(double)
     PageWidgetDelegate::animate(m_page.get(), monotonicallyIncreasingTime());
 }
 
-void WebPagePopupImpl::enterForceCompositingMode(bool enter)
-{
-    if (!m_page)
-        return;
-    if (m_page->settings().forceCompositingMode() == enter)
-        return;
-
-    TRACE_EVENT1("webkit", "WebPagePopupImpl::enterForceCompositingMode", "enter", enter);
-    m_page->settings().setForceCompositingMode(enter);
-    if (enter) {
-        LocalFrame* mainFrame = m_page->mainFrame();
-        if (!mainFrame)
-            return;
-        mainFrame->view()->updateCompositingLayersAfterStyleChange();
-    }
-}
-
 void WebPagePopupImpl::willCloseLayerTreeView()
 {
     setIsAcceleratedCompositingActive(false);

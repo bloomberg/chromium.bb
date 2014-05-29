@@ -1132,7 +1132,6 @@ TEST_F(WebViewTest, SelectionOnReadOnlyInput)
 
 static void configueCompositingWebView(WebSettings* settings)
 {
-    settings->setForceCompositingMode(true);
     settings->setAcceleratedCompositingEnabled(true);
     settings->setAcceleratedCompositingForFixedPositionEnabled(true);
     settings->setAcceleratedCompositingForOverflowScrollEnabled(true);

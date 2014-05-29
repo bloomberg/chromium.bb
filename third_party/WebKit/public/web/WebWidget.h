@@ -96,6 +96,7 @@ public:
 
     // Called to toggle the WebWidget in or out of force compositing mode. This
     // should be called before paint.
+    // FIXME: Remove this once WebPopuMenuImpl stops overriding it. crbug.com/378029
     virtual void enterForceCompositingMode(bool enter) { }
 
     // Called to paint the rectangular region within the WebWidget

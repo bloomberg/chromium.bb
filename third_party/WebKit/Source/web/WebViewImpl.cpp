@@ -1726,23 +1726,6 @@ void WebViewImpl::layout()
         m_linkHighlights[i]->updateGeometry();
 }
 
-void WebViewImpl::enterForceCompositingMode(bool enter)
-{
-    if (page()->settings().forceCompositingMode() == enter)
-        return;
-
-    TRACE_EVENT1("webkit", "WebViewImpl::enterForceCompositingMode", "enter", enter);
-    settingsImpl()->setForceCompositingMode(enter);
-    if (enter) {
-        if (!m_page)
-            return;
-        LocalFrame* mainFrame = m_page->mainFrame();
-        if (!mainFrame)
-            return;
-        mainFrame->view()->updateCompositingLayersAfterStyleChange();
-    }
-}
-
 void WebViewImpl::paint(WebCanvas* canvas, const WebRect& rect)
 {
     // This should only be used when compositing is not being used for this
@@ -3595,8 +3578,6 @@ void WebViewImpl::didChangeContentsSize()
 
 void WebViewImpl::deviceOrPageScaleFactorChanged()
 {
-    if (pageScaleFactor() && pageScaleFactor() != 1)
-        enterForceCompositingMode(true);
     m_pageScaleConstraintsSet.setNeedsReset(false);
     updateLayerTreeViewport();
 }
@@ -3819,11 +3800,6 @@ void WebViewImpl::setIsAcceleratedCompositingActive(bool active)
 
     if (!active) {
         m_isAcceleratedCompositingActive = false;
-        // We need to finish all GL rendering before sending didDeactivateCompositor() to prevent
-        // flickering when compositing turns off. This is only necessary if we're not in
-        // force-compositing-mode.
-        if (m_layerTreeView && !page()->settings().forceCompositingMode())
-            m_layerTreeView->finishAllRendering();
         m_client->didDeactivateCompositor();
         if (!m_layerTreeViewCommitsDeferred
             && blink::Platform::current()->isThreadedCompositingEnabled()) {
