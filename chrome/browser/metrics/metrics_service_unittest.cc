@@ -21,6 +21,10 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if defined(OS_CHROMEOS)
+#include "chromeos/login/login_state.h"
+#endif  // defined(OS_CHROMEOS)
+
 namespace {
 
 using metrics::MetricsLogManager;
@@ -65,6 +69,12 @@ class MetricsServiceTest : public testing::Test {
         GetLocalState(),
         base::Bind(&MetricsServiceTest::is_metrics_reporting_enabled,
                    base::Unretained(this)));
+#if defined(OS_CHROMEOS)
+    // TODO(blundell): Remove this code once MetricsService no longer creates
+    // ChromeOSMetricsProvider. Also remove the #include of login_state.h.
+    // (http://crbug.com/375776)
+    chromeos::LoginState::Initialize();
+#endif  // defined(OS_CHROMEOS)
   }
 
   virtual ~MetricsServiceTest() {

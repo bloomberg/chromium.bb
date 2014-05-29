@@ -75,6 +75,14 @@ void AddToPerfHistogram(GetPerfDataOutcome outcome) {
                             NUM_OUTCOMES);
 }
 
+// Returns true if a normal user is logged in. Returns false if logged in as an
+// guest or as a kiosk app.
+bool IsNormalUserLoggedIn() {
+  chromeos::LoginState* login_state = chromeos::LoginState::Get();
+  return (login_state->IsUserLoggedIn() && !login_state->IsGuestUser() &&
+          !login_state->IsKioskApp());
+}
+
 }  // namespace
 
 
@@ -110,14 +118,22 @@ class WindowedIncognitoObserver : public chrome::BrowserListObserver {
 };
 
 PerfProvider::PerfProvider()
-      : weak_factory_(this) {
-  size_t collection_interval_minutes = base::RandInt(
-      kPerfCommandStartIntervalLowerBoundMinutes,
-      kPerfCommandStartIntervalUpperBoundMinutes);
-  ScheduleCollection(base::TimeDelta::FromMinutes(collection_interval_minutes));
+      : login_observer_(this),
+        weak_factory_(this) {
+  // Register the login observer with LoginState.
+  chromeos::LoginState::Get()->AddObserver(&login_observer_);
+
+  // Check the login state. At the time of writing, this class is instantiated
+  // before login. A subsequent login would activate the profiling. However,
+  // that behavior may change in the future so that the user is already logged
+  // when this class is instantiated. By calling LoggedInStateChanged() here,
+  // PerfProvider will recognize that the system is already logged in.
+  login_observer_.LoggedInStateChanged();
 }
 
-PerfProvider::~PerfProvider() {}
+PerfProvider::~PerfProvider() {
+  chromeos::LoginState::Get()->RemoveObserver(&login_observer_);
+}
 
 bool PerfProvider::GetPerfData(std::vector<PerfDataProto>* perf_data) {
   DCHECK(CalledOnValidThread());
@@ -131,6 +147,28 @@ bool PerfProvider::GetPerfData(std::vector<PerfDataProto>* perf_data) {
 
   AddToPerfHistogram(SUCCESS);
   return true;
+}
+
+PerfProvider::LoginObserver::LoginObserver(PerfProvider* perf_provider)
+    : perf_provider_(perf_provider) {}
+
+void PerfProvider::LoginObserver::LoggedInStateChanged() {
+  if (IsNormalUserLoggedIn())
+    perf_provider_->Activate();
+  else
+    perf_provider_->Deactivate();
+}
+
+void PerfProvider::Activate() {
+  size_t collection_interval_minutes = base::RandInt(
+      kPerfCommandStartIntervalLowerBoundMinutes,
+      kPerfCommandStartIntervalUpperBoundMinutes);
+  ScheduleCollection(base::TimeDelta::FromMinutes(collection_interval_minutes));
+}
+
+void PerfProvider::Deactivate() {
+  // Stop the timer, but leave |cached_perf_data_| intact.
+  timer_.Stop();
 }
 
 void PerfProvider::ScheduleCollection(const base::TimeDelta& interval) {

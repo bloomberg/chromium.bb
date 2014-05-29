@@ -18,6 +18,7 @@
 #include "chromeos/dbus/fake_bluetooth_gatt_service_client.h"
 #include "chromeos/dbus/fake_bluetooth_input_client.h"
 #include "chromeos/dbus/fake_dbus_thread_manager.h"
+#include "chromeos/login/login_state.h"
 #include "components/metrics/proto/system_profile.pb.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
@@ -74,6 +75,9 @@ class ChromeOSMetricsProviderTest : public testing::Test {
         DBusThreadManager::Get()->GetBluetoothAdapterClient());
     fake_bluetooth_device_client_ = static_cast<FakeBluetoothDeviceClient*>(
         DBusThreadManager::Get()->GetBluetoothDeviceClient());
+
+    // Initialize the login state trackers.
+    chromeos::LoginState::Initialize();
   }
 
   virtual void TearDown() OVERRIDE { DBusThreadManager::Shutdown(); }

@@ -12,6 +12,7 @@
 #include "base/threading/non_thread_safe.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "chromeos/login/login_state.h"
 #include "components/metrics/proto/perf_data.pb.h"
 
 namespace metrics {
@@ -31,6 +32,30 @@ class PerfProvider : public base::NonThreadSafe {
   bool GetPerfData(std::vector<PerfDataProto>* perf_data);
 
  private:
+  // Class that listens for changes to the login state. When a normal user logs
+  // in, it updates PerfProvider to start collecting data.
+  class LoginObserver : public chromeos::LoginState::Observer {
+   public:
+    explicit LoginObserver(PerfProvider* perf_provider);
+
+    // Called when either the login state or the logged in user type changes.
+    // Activates |perf_provider_| to start collecting.
+    virtual void LoggedInStateChanged() OVERRIDE;
+
+   private:
+    // Points to a PerfProvider instance that can be turned on or off based on
+    // the login state.
+    PerfProvider* perf_provider_;
+  };
+
+  // Turns on perf collection. Resets the timer that's used to schedule
+  // collections.
+  void Activate();
+
+  // Turns off perf collection. Does not delete any data that was already
+  // collected and stored in |cached_perf_data_|.
+  void Deactivate();
+
   // Starts an internal timer to start collecting perf data. The timer is set to
   // trigger |interval| after this function call.
   void ScheduleCollection(const base::TimeDelta& interval);
@@ -55,6 +80,9 @@ class PerfProvider : public base::NonThreadSafe {
 
   // For scheduling collection of perf data.
   base::OneShotTimer<PerfProvider> timer_;
+
+  // For detecting when changes to the login state.
+  LoginObserver login_observer_;
 
   // To pass around the "this" pointer across threads safely.
   base::WeakPtrFactory<PerfProvider> weak_factory_;

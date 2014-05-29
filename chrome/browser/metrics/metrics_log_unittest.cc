@@ -36,6 +36,10 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
+#if defined(OS_CHROMEOS)
+#include "chromeos/login/login_state.h"
+#endif  // defined(OS_CHROMEOS)
+
 using base::TimeDelta;
 using metrics::ProfilerEventProto;
 using tracked_objects::ProcessDataSnapshot;
@@ -108,7 +112,15 @@ class TestMetricsLog : public MetricsLog {
 
 class MetricsLogTest : public testing::Test {
  public:
-  MetricsLogTest() { MetricsService::RegisterPrefs(prefs_.registry()); }
+  MetricsLogTest() {
+    MetricsService::RegisterPrefs(prefs_.registry());
+#if defined(OS_CHROMEOS)
+    // TODO(blundell): Remove this code once MetricsService no longer creates
+    // ChromeOSMetricsProvider. Also remove the #include of login_state.h
+    // (http://crbug.com/375776)
+    chromeos::LoginState::Initialize();
+#endif  // defined(OS_CHROMEOS)
+  }
 
  protected:
   // Check that the values in |system_values| correspond to the test data
