@@ -142,6 +142,7 @@ class ProfileImpl : public Profile {
   virtual base::FilePath last_selected_directory() OVERRIDE;
   virtual void set_last_selected_directory(const base::FilePath& path) OVERRIDE;
   virtual chrome_browser_net::Predictor* GetNetworkPredictor() OVERRIDE;
+  virtual DevToolsNetworkController* GetDevToolsNetworkController() OVERRIDE;
   virtual void ClearNetworkingHistorySince(
       base::Time time,
       const base::Closure& completion) OVERRIDE;

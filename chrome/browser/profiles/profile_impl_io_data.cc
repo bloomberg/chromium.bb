@@ -297,6 +297,12 @@ ProfileImplIOData::Handle::GetIsolatedMediaRequestContextGetter(
   return context;
 }
 
+DevToolsNetworkController*
+ProfileImplIOData::Handle::GetDevToolsNetworkController() const {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  return io_data_->network_controller();
+}
+
 void ProfileImplIOData::Handle::ClearNetworkingHistorySince(
     base::Time time,
     const base::Closure& completion) {
@@ -475,10 +481,8 @@ void ProfileImplIOData::InitializeInternal(
           lazy_params_->cache_max_size,
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::CACHE)
               .get());
-  net::HttpNetworkSession::Params network_session_params;
-  PopulateNetworkSessionParams(profile_params, &network_session_params);
-  net::HttpCache* main_cache = new net::HttpCache(
-      network_session_params, main_backend);
+  scoped_ptr<net::HttpCache> main_cache = CreateMainHttpFactory(
+      profile_params, main_backend);
   main_cache->InitializeInfiniteCache(lazy_params_->infinite_cache_path);
 
 #if defined(OS_ANDROID) || defined(OS_IOS)
@@ -495,8 +499,8 @@ void ProfileImplIOData::InitializeInternal(
         net::HttpCache::RECORD : net::HttpCache::PLAYBACK);
   }
 
-  main_http_factory_.reset(main_cache);
-  main_context->set_http_transaction_factory(main_cache);
+  main_http_factory_.reset(main_cache.release());
+  main_context->set_http_transaction_factory(main_http_factory_.get());
 
 #if !defined(DISABLE_FTP_SUPPORT)
   ftp_factory_.reset(
@@ -612,8 +616,8 @@ ChromeURLRequestContext* ProfileImplIOData::InitializeAppRequestContext(
   }
   net::HttpNetworkSession* main_network_session =
       main_http_factory_->GetSession();
-  net::HttpCache* app_http_cache =
-      new net::HttpCache(main_network_session, app_backend);
+  scoped_ptr<net::HttpCache> app_http_cache =
+      CreateHttpFactory(main_network_session, app_backend);
 
   scoped_refptr<net::CookieStore> cookie_store = NULL;
   if (partition_descriptor.in_memory) {
@@ -648,7 +652,8 @@ ChromeURLRequestContext* ProfileImplIOData::InitializeAppRequestContext(
   // Transfer ownership of the cookies and cache to AppRequestContext.
   context->SetCookieStore(cookie_store.get());
   context->SetHttpTransactionFactory(
-      scoped_ptr<net::HttpTransactionFactory>(app_http_cache));
+      scoped_ptr<net::HttpTransactionFactory>(
+          app_http_cache.PassAs<net::HttpTransactionFactory>()));
 
   scoped_ptr<net::URLRequestJobFactoryImpl> job_factory(
       new net::URLRequestJobFactoryImpl());
@@ -701,11 +706,12 @@ ProfileImplIOData::InitializeMediaRequestContext(
               .get());
   net::HttpNetworkSession* main_network_session =
       main_http_factory_->GetSession();
-  scoped_ptr<net::HttpTransactionFactory> media_http_cache(
-      new net::HttpCache(main_network_session, media_backend));
+  scoped_ptr<net::HttpCache> media_http_cache =
+      CreateHttpFactory(main_network_session, media_backend);
 
   // Transfer ownership of the cache to MediaRequestContext.
-  context->SetHttpTransactionFactory(media_http_cache.Pass());
+  context->SetHttpTransactionFactory(
+      media_http_cache.PassAs<net::HttpTransactionFactory>());
 
   // Note that we do not create a new URLRequestJobFactory because
   // the media context should behave exactly like its parent context

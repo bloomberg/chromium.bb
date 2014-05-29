@@ -1241,6 +1241,10 @@ chrome_browser_net::Predictor* ProfileImpl::GetNetworkPredictor() {
   return predictor_;
 }
 
+DevToolsNetworkController* ProfileImpl::GetDevToolsNetworkController() {
+  return io_data_.GetDevToolsNetworkController();
+}
+
 void ProfileImpl::ClearNetworkingHistorySince(
     base::Time time,
     const base::Closure& completion) {

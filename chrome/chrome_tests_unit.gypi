@@ -820,6 +820,7 @@
         'browser/diagnostics/diagnostics_model_unittest.cc',
         'browser/diagnostics/diagnostics_controller_unittest.cc',
         'browser/devtools/devtools_contents_resizing_strategy_unittest.cc',
+        'browser/devtools/devtools_network_controller_unittest.cc',
         'browser/download/all_download_item_notifier_unittest.cc',
         'browser/download/chrome_download_manager_delegate_unittest.cc',
         'browser/download/download_history_unittest.cc',

@@ -89,6 +89,9 @@ class ProfileImplIOData : public ProfileIOData {
             const base::FilePath& partition_path,
             bool in_memory) const;
 
+    // Returns the DevToolsNetworkController attached to ProfileIOData.
+    DevToolsNetworkController* GetDevToolsNetworkController() const;
+
     // Deletes all network related data since |time|. It deletes transport
     // security state since |time| and also deletes HttpServerProperties data.
     // Works asynchronously, however if the |completion| callback is non-null,

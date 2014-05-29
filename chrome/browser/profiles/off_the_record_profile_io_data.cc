@@ -143,6 +143,12 @@ OffTheRecordProfileIOData::Handle::CreateIsolatedAppRequestContextGetter(
   return context;
 }
 
+DevToolsNetworkController*
+OffTheRecordProfileIOData::Handle::GetDevToolsNetworkController() const {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  return io_data_->network_controller();
+}
+
 void OffTheRecordProfileIOData::Handle::LazyInitialize() const {
   if (initialized_)
     return;
@@ -219,13 +225,9 @@ void OffTheRecordProfileIOData::InitializeInternal(
 
   net::HttpCache::BackendFactory* main_backend =
       net::HttpCache::DefaultBackend::InMemory(0);
-  net::HttpNetworkSession::Params network_session_params;
-  PopulateNetworkSessionParams(profile_params, &network_session_params);
-  net::HttpCache* cache = new net::HttpCache(
-      network_session_params, main_backend);
+  main_http_factory_ = CreateMainHttpFactory(profile_params, main_backend);
 
-  main_http_factory_.reset(cache);
-  main_context->set_http_transaction_factory(cache);
+  main_context->set_http_transaction_factory(main_http_factory_.get());
 #if !defined(DISABLE_FTP_SUPPORT)
   ftp_factory_.reset(
       new net::FtpNetworkLayer(main_context->host_resolver()));
@@ -315,10 +317,11 @@ ChromeURLRequestContext* OffTheRecordProfileIOData::InitializeAppRequestContext(
       net::HttpCache::DefaultBackend::InMemory(0);
   net::HttpNetworkSession* main_network_session =
       main_http_factory_->GetSession();
-  scoped_ptr<net::HttpTransactionFactory> app_http_cache(
-      new net::HttpCache(main_network_session, app_backend));
+  scoped_ptr<net::HttpCache> app_http_cache =
+      CreateHttpFactory(main_network_session, app_backend);
 
-  context->SetHttpTransactionFactory(app_http_cache.Pass());
+  context->SetHttpTransactionFactory(
+      app_http_cache.PassAs<net::HttpTransactionFactory>());
 
   scoped_ptr<net::URLRequestJobFactoryImpl> job_factory(
       new net::URLRequestJobFactoryImpl());

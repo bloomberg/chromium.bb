@@ -63,6 +63,9 @@ class OffTheRecordProfileIOData : public ProfileIOData {
             content::ProtocolHandlerMap* protocol_handlers,
             content::ProtocolHandlerScopedVector protocol_interceptors) const;
 
+    // Returns the DevToolsNetworkController attached to ProfileIOData.
+    DevToolsNetworkController* GetDevToolsNetworkController() const;
+
    private:
     typedef std::map<StoragePartitionDescriptor,
                      scoped_refptr<ChromeURLRequestContextGetter>,

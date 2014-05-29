@@ -24,12 +24,14 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/resource_context.h"
 #include "net/cookies/cookie_monster.h"
+#include "net/http/http_cache.h"
 #include "net/http/http_network_session.h"
 #include "net/url_request/url_request_job_factory.h"
 
 class ChromeHttpUserAgentSettings;
 class ChromeNetworkDelegate;
 class CookieSettings;
+class DevToolsNetworkController;
 class HostContentSettingsMap;
 class ManagedModeURLFilter;
 class MediaDeviceIDSalt;
@@ -182,6 +184,10 @@ class ProfileIOData {
   }
 
   content::ResourceContext::SaltCallback GetMediaDeviceIDSalt() const;
+
+  DevToolsNetworkController* network_controller() const {
+    return network_controller_.get();
+  }
 
   net::TransportSecurityState* transport_security_state() const {
     return transport_security_state_.get();
@@ -361,11 +367,15 @@ class ProfileIOData {
   // URLRequests may be accessing.
   void DestroyResourceContext();
 
-  // Fills in fields of params using values from main_request_context_ and the
-  // IOThread associated with profile_params.
-  void PopulateNetworkSessionParams(
+  // Creates network session and main network transaction factory.
+  scoped_ptr<net::HttpCache> CreateMainHttpFactory(
       const ProfileParams* profile_params,
-      net::HttpNetworkSession::Params* params) const;
+      net::HttpCache::BackendFactory* main_backend) const;
+
+  // Creates network transaction factory.
+  scoped_ptr<net::HttpCache> CreateHttpFactory(
+      net::HttpNetworkSession* shared_session,
+      net::HttpCache::BackendFactory* backend) const;
 
   void SetCookieSettingsForTesting(CookieSettings* cookie_settings);
 
@@ -562,6 +572,8 @@ class ProfileIOData {
 #if defined(ENABLE_MANAGED_USERS)
   mutable scoped_refptr<const ManagedModeURLFilter> managed_mode_url_filter_;
 #endif
+
+  mutable scoped_ptr<DevToolsNetworkController> network_controller_;
 
   // TODO(jhawkins): Remove once crbug.com/102004 is fixed.
   bool initialized_on_UI_thread_;
