@@ -151,44 +151,107 @@ TEST_F(ServiceWorkerProviderHostTest,
   ASSERT_FALSE(version_->HasProcessToRun());
 }
 
-class ServiceWorkerRegisterJobAndProviderHostTest
-    : public ServiceWorkerProviderHostTest {
+class ServiceWorkerProviderHostPendingVersionTest : public testing::Test {
  protected:
-  ServiceWorkerRegisterJobAndProviderHostTest() {}
-  virtual ~ServiceWorkerRegisterJobAndProviderHostTest() {}
+  ServiceWorkerProviderHostPendingVersionTest()
+      : thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP),
+        next_provider_id_(1L) {}
+  virtual ~ServiceWorkerProviderHostPendingVersionTest() {}
 
   virtual void SetUp() OVERRIDE {
-    ServiceWorkerProviderHostTest::SetUp();
-    register_job_.reset(new ServiceWorkerRegisterJob(
-        context_->AsWeakPtr(), scope_, script_url_));
-    provider_host1_->set_document_url(GURL("http://www.example.com/foo"));
-    provider_host2_->set_document_url(GURL("http://www.example.com/bar"));
-    provider_host3_->set_document_url(GURL("http://www.example.ca/foo"));
+    context_.reset(
+        new ServiceWorkerContextCore(base::FilePath(),
+                                     base::MessageLoopProxy::current(),
+                                     base::MessageLoopProxy::current(),
+                                     NULL,
+                                     NULL,
+                                     NULL));
+
+    // Prepare provider hosts (for the same process).
+    provider_host1_ = CreateProviderHost(GURL("http://www.example.com/foo"));
+    provider_host2_ = CreateProviderHost(GURL("http://www.example.com/bar"));
+    provider_host3_ = CreateProviderHost(GURL("http://www.example.ca/foo"));
+  }
+
+  base::WeakPtr<ServiceWorkerProviderHost> CreateProviderHost(
+      const GURL& document_url) {
+    scoped_ptr<ServiceWorkerProviderHost> host(new ServiceWorkerProviderHost(
+        kRenderProcessId, next_provider_id_++, context_->AsWeakPtr(), NULL));
+    host->set_document_url(document_url);
+    base::WeakPtr<ServiceWorkerProviderHost> provider_host = host->AsWeakPtr();
+    context_->AddProviderHost(host.Pass());
+    return provider_host;
   }
 
   virtual void TearDown() OVERRIDE {
-    ServiceWorkerProviderHostTest::TearDown();
-    register_job_.reset();
+    context_.reset();
   }
 
-  scoped_ptr<ServiceWorkerRegisterJob> register_job_;
+  content::TestBrowserThreadBundle thread_bundle_;
+  scoped_ptr<ServiceWorkerContextCore> context_;
+  base::WeakPtr<ServiceWorkerProviderHost> provider_host1_;
+  base::WeakPtr<ServiceWorkerProviderHost> provider_host2_;
+  base::WeakPtr<ServiceWorkerProviderHost> provider_host3_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(ServiceWorkerRegisterJobAndProviderHostTest);
+  int64 next_provider_id_;
+
+  DISALLOW_COPY_AND_ASSIGN(ServiceWorkerProviderHostPendingVersionTest);
 };
 
-// Test for ServiceWorkerRegisterJob::AssociatePendingVersionToDocuments.
-TEST_F(ServiceWorkerRegisterJobAndProviderHostTest,
+TEST_F(ServiceWorkerProviderHostPendingVersionTest,
        AssociatePendingVersionToDocuments) {
-  register_job_->AssociatePendingVersionToDocuments(version_.get());
-  EXPECT_EQ(version_.get(), provider_host1_->pending_version());
-  EXPECT_EQ(version_.get(), provider_host2_->pending_version());
-  EXPECT_EQ(NULL, provider_host3_->pending_version());
+  const GURL scope("http://www.example.com/*");
+  const GURL script_url("http://www.example.com/service_worker.js");
 
-  register_job_->AssociatePendingVersionToDocuments(NULL);
+  scoped_refptr<ServiceWorkerRegistration> registration(
+      new ServiceWorkerRegistration(
+          scope, script_url, 1L, context_->AsWeakPtr()));
+  scoped_refptr<ServiceWorkerVersion> version(
+      new ServiceWorkerVersion(registration, 1L, context_->AsWeakPtr()));
+
+  ServiceWorkerRegisterJob::AssociatePendingVersionToDocuments(
+      context_->AsWeakPtr(), version.get());
+  EXPECT_EQ(version.get(), provider_host1_->pending_version());
+  EXPECT_EQ(version.get(), provider_host2_->pending_version());
+  EXPECT_EQ(NULL, provider_host3_->pending_version());
+}
+
+TEST_F(ServiceWorkerProviderHostPendingVersionTest,
+       DisassociatePendingVersionFromDocuments) {
+  const GURL scope1("http://www.example.com/*");
+  const GURL script_url1("http://www.example.com/service_worker.js");
+  scoped_refptr<ServiceWorkerRegistration> registration1(
+      new ServiceWorkerRegistration(
+          scope1, script_url1, 1L, context_->AsWeakPtr()));
+  scoped_refptr<ServiceWorkerVersion> version1(
+      new ServiceWorkerVersion(registration1, 1L, context_->AsWeakPtr()));
+
+  const GURL scope2("http://www.example.ca/*");
+  const GURL script_url2("http://www.example.ca/service_worker.js");
+  scoped_refptr<ServiceWorkerRegistration> registration2(
+      new ServiceWorkerRegistration(
+          scope2, script_url2, 2L, context_->AsWeakPtr()));
+  scoped_refptr<ServiceWorkerVersion> version2(
+      new ServiceWorkerVersion(registration2, 2L, context_->AsWeakPtr()));
+
+  ServiceWorkerRegisterJob::AssociatePendingVersionToDocuments(
+      context_->AsWeakPtr(), version1.get());
+  ServiceWorkerRegisterJob::AssociatePendingVersionToDocuments(
+      context_->AsWeakPtr(), version2.get());
+
+  // Host1 and host2 are associated with version1 as a pending version, whereas
+  // host3 is associated with version2.
+  EXPECT_EQ(version1.get(), provider_host1_->pending_version());
+  EXPECT_EQ(version1.get(), provider_host2_->pending_version());
+  EXPECT_EQ(version2.get(), provider_host3_->pending_version());
+
+  // Disassociate version1 from host1 and host2.
+  ServiceWorkerRegisterJob::DisassociatePendingVersionFromDocuments(
+      context_->AsWeakPtr(), version1->version_id());
   EXPECT_EQ(NULL, provider_host1_->pending_version());
   EXPECT_EQ(NULL, provider_host2_->pending_version());
-  EXPECT_EQ(NULL, provider_host3_->pending_version());
+  EXPECT_EQ(version2.get(), provider_host3_->pending_version());
 }
 
 }  // namespace content

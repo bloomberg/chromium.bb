@@ -57,8 +57,10 @@ class ServiceWorkerRegisterJob : public ServiceWorkerRegisterJobBase {
   virtual RegistrationJobType GetType() OVERRIDE;
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerRegisterJobAndProviderHostTest,
+  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerProviderHostPendingVersionTest,
                            AssociatePendingVersionToDocuments);
+  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerProviderHostPendingVersionTest,
+                           DisassociatePendingVersionFromDocuments);
 
   enum Phase {
      INITIAL,
@@ -104,8 +106,16 @@ class ServiceWorkerRegisterJob : public ServiceWorkerRegisterJobBase {
                       ServiceWorkerRegistration* registration,
                       ServiceWorkerVersion* version);
 
-  CONTENT_EXPORT void AssociatePendingVersionToDocuments(
+  // Associates a pending version to documents matched with a scope of the
+  // version.
+  CONTENT_EXPORT static void AssociatePendingVersionToDocuments(
+      base::WeakPtr<ServiceWorkerContextCore> context,
       ServiceWorkerVersion* version);
+
+  // Disassociates a pending version specified by |version_id| from documents.
+  CONTENT_EXPORT static void DisassociatePendingVersionFromDocuments(
+      base::WeakPtr<ServiceWorkerContextCore> context,
+      int64 version_id);
 
   // The ServiceWorkerContextCore object should always outlive this.
   base::WeakPtr<ServiceWorkerContextCore> context_;

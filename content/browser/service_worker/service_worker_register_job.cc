@@ -256,7 +256,7 @@ void ServiceWorkerRegisterJob::OnStartWorkerFinished(
   registration()->set_pending_version(pending_version());
   ResolvePromise(status, registration(), pending_version());
 
-  AssociatePendingVersionToDocuments(pending_version());
+  AssociatePendingVersionToDocuments(context_, pending_version());
 
   InstallAndContinue();
 }
@@ -325,8 +325,9 @@ void ServiceWorkerRegisterJob::ActivateAndContinue() {
 
   // "Set serviceWorkerRegistration.pendingWorker to null."
   // "Set serviceWorkerRegistration.activeWorker to activatingWorker."
+  DisassociatePendingVersionFromDocuments(
+      context_, pending_version()->version_id());
   registration()->set_pending_version(NULL);
-  AssociatePendingVersionToDocuments(NULL);
   DCHECK(!registration()->active_version());
   registration()->set_active_version(pending_version());
 
@@ -359,7 +360,8 @@ void ServiceWorkerRegisterJob::Complete(ServiceWorkerStatusCode status) {
   SetPhase(COMPLETE);
   if (status != SERVICE_WORKER_OK) {
     if (registration() && registration()->pending_version()) {
-      AssociatePendingVersionToDocuments(NULL);
+      DisassociatePendingVersionFromDocuments(
+          context_, registration()->pending_version()->version_id());
       registration()->set_pending_version(NULL);
     }
     if (registration() && !registration()->active_version()) {
@@ -396,19 +398,41 @@ void ServiceWorkerRegisterJob::ResolvePromise(
   callbacks_.clear();
 }
 
+// static
 void ServiceWorkerRegisterJob::AssociatePendingVersionToDocuments(
+    base::WeakPtr<ServiceWorkerContextCore> context,
     ServiceWorkerVersion* version) {
+  DCHECK(context);
+  DCHECK(version);
+
   // TODO(michaeln): This needs to respect the longest prefix wins
   // when it comes to finding a registration for a document url.
   // This should utilize storage->FindRegistrationForDocument().
   for (scoped_ptr<ServiceWorkerContextCore::ProviderHostIterator> it =
-           context_->GetProviderHostIterator();
+           context->GetProviderHostIterator();
        !it->IsAtEnd();
        it->Advance()) {
-    ServiceWorkerProviderHost* provider_host = it->GetProviderHost();
-    if (ServiceWorkerUtils::ScopeMatches(pattern_,
-                                         provider_host->document_url()))
-      provider_host->SetPendingVersion(version);
+    ServiceWorkerProviderHost* host = it->GetProviderHost();
+    if (ServiceWorkerUtils::ScopeMatches(version->scope(),
+                                         host->document_url()))
+      host->SetPendingVersion(version);
+  }
+}
+
+// static
+void ServiceWorkerRegisterJob::DisassociatePendingVersionFromDocuments(
+    base::WeakPtr<ServiceWorkerContextCore> context,
+    int64 version_id) {
+  DCHECK(context);
+  for (scoped_ptr<ServiceWorkerContextCore::ProviderHostIterator> it =
+           context->GetProviderHostIterator();
+       !it->IsAtEnd();
+       it->Advance()) {
+    ServiceWorkerProviderHost* host = it->GetProviderHost();
+    if (host->pending_version() &&
+        host->pending_version()->version_id() == version_id) {
+      host->SetPendingVersion(NULL);
+    }
   }
 }
 

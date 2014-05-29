@@ -98,6 +98,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
   int64 version_id() const { return version_id_; }
   int64 registration_id() const { return registration_id_; }
   const GURL& script_url() const { return script_url_; }
+  const GURL& scope() const { return scope_; }
   RunningStatus running_status() const {
     return static_cast<RunningStatus>(embedded_worker_->status());
   }
