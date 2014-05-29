@@ -38,6 +38,7 @@ class LayerTreeHostPerfTest : public LayerTreeTest {
                     base::TimeDelta::FromMilliseconds(kTimeLimitMillis),
                     kTimeCheckInterval),
         commit_timer_(0, base::TimeDelta(), 1),
+        animation_frame_(0),
         full_damage_each_frame_(false),
         animation_driven_drawing_(false),
         measure_commit_cost_(false) {
@@ -56,7 +57,9 @@ class LayerTreeHostPerfTest : public LayerTreeTest {
   virtual void Animate(base::TimeTicks monotonic_time) OVERRIDE {
     if (animation_driven_drawing_ && !TestEnded()) {
       layer_tree_host()->SetNeedsAnimate();
-      layer_tree_host()->SetNextCommitForcesRedraw();
+      // Simulate a transform animation on the root layer.
+      Layer* layer = layer_tree_host()->root_layer();
+      layer->SetPosition(gfx::PointF(0, animation_frame_++ % 2));
     }
   }
 
@@ -104,6 +107,7 @@ class LayerTreeHostPerfTest : public LayerTreeTest {
  protected:
   LapTimer draw_timer_;
   LapTimer commit_timer_;
+  int animation_frame_;
 
   std::string test_name_;
   FakeContentLayerClient fake_content_layer_client_;
