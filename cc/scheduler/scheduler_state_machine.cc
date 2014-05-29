@@ -383,6 +383,10 @@ bool SchedulerStateMachine::ShouldUpdateVisibleTiles() const {
   if (HasUpdatedVisibleTilesThisFrame())
     return false;
 
+  // We don't want to update visible tiles right after drawing.
+  if (HasRequestedSwapThisFrame())
+    return false;
+
   // There's no reason to check for tiles if we don't have an output surface.
   if (!HasInitializedOutputSurface())
     return false;

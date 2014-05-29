@@ -933,21 +933,31 @@ TEST(SchedulerTest, ShouldUpdateVisibleTiles) {
   client.Reset();
   client.SetSwapContainsIncompleteTile(true);
   client.task_runner().RunPendingTasks();  // Run posted deadline.
-  EXPECT_ACTION("ScheduledActionAnimate", client, 0, 3);
-  EXPECT_ACTION("ScheduledActionDrawAndSwapIfPossible", client, 1, 3);
-  EXPECT_ACTION("ScheduledActionUpdateVisibleTiles", client, 2, 3);
-  EXPECT_TRUE(scheduler->RedrawPending());
+  EXPECT_ACTION("ScheduledActionAnimate", client, 0, 2);
+  EXPECT_ACTION("ScheduledActionDrawAndSwapIfPossible", client, 1, 2);
+  EXPECT_FALSE(scheduler->RedrawPending());
 
   client.Reset();
   scheduler->BeginFrame(CreateBeginFrameArgsForTesting());
-  EXPECT_ACTION("WillBeginImplFrame", client, 0, 2);
-  EXPECT_ACTION("ScheduledActionAnimate", client, 1, 2);
+  EXPECT_SINGLE_ACTION("WillBeginImplFrame", client);
   EXPECT_TRUE(scheduler->BeginImplFrameDeadlinePending());
 
   client.Reset();
   client.task_runner().RunPendingTasks();  // Run posted deadline.
-  EXPECT_ACTION("ScheduledActionUpdateVisibleTiles", client, 0, 2);
-  EXPECT_ACTION("ScheduledActionDrawAndSwapIfPossible", client, 1, 2);
+  EXPECT_ACTION("ScheduledActionUpdateVisibleTiles", client, 0, 3);
+  EXPECT_ACTION("ScheduledActionAnimate", client, 1, 3);
+  EXPECT_ACTION("ScheduledActionDrawAndSwapIfPossible", client, 2, 3);
+
+  client.Reset();
+  scheduler->BeginFrame(CreateBeginFrameArgsForTesting());
+  EXPECT_SINGLE_ACTION("WillBeginImplFrame", client);
+  EXPECT_TRUE(scheduler->BeginImplFrameDeadlinePending());
+
+  // No more UpdateVisibleTiles().
+  client.Reset();
+  client.task_runner().RunPendingTasks();  // Run posted deadline.
+  EXPECT_SINGLE_ACTION("SetNeedsBeginFrame", client);
+  EXPECT_FALSE(client.needs_begin_frame());
 }
 
 TEST(SchedulerTest, TriggerBeginFrameDeadlineEarly) {
