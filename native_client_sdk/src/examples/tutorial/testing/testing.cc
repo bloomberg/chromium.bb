@@ -9,7 +9,7 @@ TEST(TestCase, SimpleTest) {
 }
 
 TEST(TestCase, AnotherTest) {
-  EXPECT_EQ(4, sizeof(void*));
+  EXPECT_EQ(1, sizeof(char));
 }
 
 #if defined(SEL_LDR)

@@ -99,6 +99,7 @@ include/win/sys/poll.h
 [linux]lib/${PLATFORM}_host/Debug/libppapi_cpp_private.a
 [linux]lib/${PLATFORM}_host/Debug/libppapi_gles2.a
 [linux]lib/${PLATFORM}_host/Debug/libppapi_simple.a
+[linux]lib/${PLATFORM}_host/Debug/libsdk_util.a
 [linux]lib/${PLATFORM}_host/Release/libgmock.a
 [linux]lib/${PLATFORM}_host/Release/libgtest.a
 [linux]lib/${PLATFORM}_host/Release/libjsoncpp.a
@@ -108,6 +109,7 @@ include/win/sys/poll.h
 [linux]lib/${PLATFORM}_host/Release/libppapi_cpp_private.a
 [linux]lib/${PLATFORM}_host/Release/libppapi_gles2.a
 [linux]lib/${PLATFORM}_host/Release/libppapi_simple.a
+[linux]lib/${PLATFORM}_host/Release/libsdk_util.a
 [win]lib/${PLATFORM}_x86_32_host/Debug/gmock.lib
 [win]lib/${PLATFORM}_x86_32_host/Debug/gtest.lib
 [win]lib/${PLATFORM}_x86_32_host/Debug/jsoncpp.lib

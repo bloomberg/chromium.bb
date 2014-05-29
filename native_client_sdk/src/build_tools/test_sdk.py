@@ -70,9 +70,10 @@ def StepRunSelLdrTests(pepperdir):
 
   tree = parse_dsc.LoadProjectTree(SDK_SRC_DIR, include=filters)
 
-  def RunTest(test, toolchain, arch, config):
-    args = ['TOOLCHAIN=%s' % toolchain, 'NACL_ARCH=%s' % arch]
-    args += ['SEL_LDR=1', 'run']
+  def RunTest(test, toolchain, config, arch=None):
+    args = ['run', 'STANDALONE=1', 'TOOLCHAIN=%s' % toolchain]
+    if arch is not None:
+      args.append('NACL_ARCH=%s' % arch)
     build_projects.BuildProjectsBranch(pepperdir, test, clean=False,
                                        deps=False, config=config,
                                        args=args)
@@ -93,10 +94,17 @@ def StepRunSelLdrTests(pepperdir):
       title = 'sel_ldr tests: %s' % os.path.basename(project['NAME'])
       location = os.path.join(root, project['NAME'])
       buildbot_common.BuildStep(title)
+
+      # On linux we can run the standalone tests natively using the host
+      # compiler.
+      if getos.GetPlatform() == 'linux':
+        for config in ('Debug', 'Release'):
+          RunTest(location, 'linux', config)
+
       for toolchain in ('newlib', 'glibc'):
         for arch in archs:
           for config in ('Debug', 'Release'):
-            RunTest(location, toolchain, arch, config)
+            RunTest(location, toolchain, config, arch)
 
 
 def StepRunBrowserTests(toolchains, experimental):
