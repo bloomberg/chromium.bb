@@ -432,6 +432,13 @@ crbug.com/378610 [ Win7 ] fast/text/multiglyph-characters.html [ Failure ]
 # Image tests that needs investigation or test changes.
 crbug.com/378610 [ Win7 ] fast/text/selection-rect-rounding.html [ Failure ]
 
+Bug(eae) [ Win ] fast/inline-block/002.html [ NeedsRebaseline ]
+Bug(eae) [ Win ] ietestcenter/css3/text/textshadow-005.htm [ NeedsRebaseline ]
+Bug(eae) [ Win ] ietestcenter/css3/text/textshadow-007.htm [ NeedsRebaseline ]
+Bug(eae) [ Win ] ietestcenter/css3/text/textshadow-008.htm [ NeedsRebaseline ]
+Bug(eae) virtual/gpu/compositedscrolling/overflow/overflow-positioning.html [ NeedsManualRebaseline ]
+Bug(eae) [ Win ] fast/forms/week-multiple-fields/week-multiple-fields-mouse-events.html [ NeedsRebaseline ]
+
 crbug.com/371725 http/tests/webfont/slow-loading.html [ Pass ImageOnlyFailure Timeout ]
 
 # Issues on the mac-antialiased fonts virtual test suite.
@@ -682,7 +689,7 @@ crbug.com/243599 [ Linux Win ] http/tests/xmlhttprequest/access-control-repeated
 
 crbug.com/310866 fast/workers/storage/use-same-database-in-page-and-workers.html [ Pass Timeout ]
 
-crbug.com/245630 virtual/gpu/compositedscrolling/overflow/overflow-positioning.html [ ImageOnlyFailure Pass ]
+#crbug.com/245630 virtual/gpu/compositedscrolling/overflow/overflow-positioning.html [ ImageOnlyFailure Pass ]
 
 crbug.com/248063 plugins/plugin-clip-subframe.html [ Pass Failure ]
 
@@ -1320,3 +1327,4 @@ crbug.com/308768 http/tests/security/XFrameOptions/x-frame-options-deny-meta-tag
 crbug.com/308768 http/tests/security/XFrameOptions/x-frame-options-deny-meta-tag.html [ Skip ]
 crbug.com/308768 http/tests/xmlhttprequest/xmlhttprequest-data-url.html [ Skip ]
 crbug.com/308768 inspector/network/network-status-non-http.html [ Skip ]
+
