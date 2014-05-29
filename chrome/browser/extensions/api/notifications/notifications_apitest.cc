@@ -12,6 +12,7 @@
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_utils.h"
+#include "extensions/browser/api/test/test_api.h"
 #include "extensions/common/features/feature.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/notification_list.h"
@@ -22,6 +23,57 @@ using extensions::Extension;
 namespace utils = extension_function_test_utils;
 
 namespace {
+
+// A class that waits for a |chrome.test.sendMessage| call, ignores the message,
+// and writes down the user gesture status of the message.
+class UserGestureCatcher : public content::NotificationObserver {
+ public:
+  UserGestureCatcher() : waiting_(false) {
+    registrar_.Add(this,
+                   chrome::NOTIFICATION_EXTENSION_TEST_MESSAGE,
+                   content::NotificationService::AllSources());
+  }
+
+  virtual ~UserGestureCatcher() {}
+
+  bool GetNextResult() {
+    if (results_.empty()) {
+      waiting_ = true;
+      content::RunMessageLoop();
+      waiting_ = false;
+    }
+
+    if (!results_.empty()) {
+      bool ret = results_.front();
+      results_.pop_front();
+      return ret;
+    }
+    NOTREACHED();
+    return false;
+  }
+
+ private:
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE {
+    results_.push_back(
+        static_cast<content::Source<extensions::TestSendMessageFunction> >(
+            source)
+            .ptr()
+            ->user_gesture());
+    if (waiting_)
+      base::MessageLoopForUI::current()->Quit();
+  }
+
+  content::NotificationRegistrar registrar_;
+
+  // A sequential list of user gesture notifications from the test extension(s).
+  std::deque<bool> results_;
+
+  // True if we're in a nested message loop waiting for results from
+  // the extension.
+  bool waiting_;
+};
 
 class NotificationsApiTest : public ExtensionApiTest {
  public:
@@ -793,5 +845,28 @@ IN_PROC_BROWSER_TEST_F(NotificationsApiTest, TestOnPermissionLevelChanged) {
         SetNotifierEnabled(notifier, true);
 
     EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(NotificationsApiTest, TestUserGesture) {
+  const extensions::Extension* extension =
+      LoadExtensionAndWait("notifications/api/user_gesture");
+  ASSERT_TRUE(extension) << message_;
+
+  const message_center::NotificationList::Notifications& notifications =
+      g_browser_process->message_center()->GetVisibleNotifications();
+  ASSERT_EQ(1u, notifications.size());
+  message_center::Notification* notification = *(notifications.begin());
+
+  {
+    UserGestureCatcher catcher;
+    notification->ButtonClick(0);
+    EXPECT_TRUE(catcher.GetNextResult());
+    notification->Click();
+    EXPECT_TRUE(catcher.GetNextResult());
+    notification->Close(true);
+    EXPECT_TRUE(catcher.GetNextResult());
+    notification->Close(false);
+    EXPECT_FALSE(catcher.GetNextResult());
   }
 }

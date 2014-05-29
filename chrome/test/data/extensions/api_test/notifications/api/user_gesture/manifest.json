@@ -1,0 +1,13 @@
+{
+  "name": "chrome.notifications",
+  "version": "0.1",
+  "description": "chrome.notifications API permissionLevelChanged",
+  "app": {
+    "background": {
+      "scripts": ["background.js"]
+    }
+  },
+  "permissions": [
+    "notifications"
+  ]
+}

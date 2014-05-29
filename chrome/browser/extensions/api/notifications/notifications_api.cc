@@ -145,14 +145,19 @@ class NotificationsApiDelegate : public NotificationDelegate {
   virtual void Error() OVERRIDE {}
 
   virtual void Close(bool by_user) OVERRIDE {
+    EventRouter::UserGestureState gesture =
+        by_user ? EventRouter::USER_GESTURE_ENABLED
+                : EventRouter::USER_GESTURE_NOT_ENABLED;
     scoped_ptr<base::ListValue> args(CreateBaseEventArgs());
     args->Append(new base::FundamentalValue(by_user));
-    SendEvent(notifications::OnClosed::kEventName, args.Pass());
+    SendEvent(notifications::OnClosed::kEventName, gesture, args.Pass());
   }
 
   virtual void Click() OVERRIDE {
     scoped_ptr<base::ListValue> args(CreateBaseEventArgs());
-    SendEvent(notifications::OnClicked::kEventName, args.Pass());
+    SendEvent(notifications::OnClicked::kEventName,
+              EventRouter::USER_GESTURE_ENABLED,
+              args.Pass());
   }
 
   virtual bool HasClickedListener() OVERRIDE {
@@ -163,7 +168,9 @@ class NotificationsApiDelegate : public NotificationDelegate {
   virtual void ButtonClick(int index) OVERRIDE {
     scoped_ptr<base::ListValue> args(CreateBaseEventArgs());
     args->Append(new base::FundamentalValue(index));
-    SendEvent(notifications::OnButtonClicked::kEventName, args.Pass());
+    SendEvent(notifications::OnButtonClicked::kEventName,
+              EventRouter::USER_GESTURE_ENABLED,
+              args.Pass());
   }
 
   virtual std::string id() const OVERRIDE {
@@ -194,8 +201,11 @@ class NotificationsApiDelegate : public NotificationDelegate {
  private:
   virtual ~NotificationsApiDelegate() {}
 
-  void SendEvent(const std::string& name, scoped_ptr<base::ListValue> args) {
+  void SendEvent(const std::string& name,
+                 EventRouter::UserGestureState user_gesture,
+                 scoped_ptr<base::ListValue> args) {
     scoped_ptr<Event> event(new Event(name, args.Pass()));
+    event->user_gesture = user_gesture;
     EventRouter::Get(profile_)->DispatchEventToExtension(extension_id_,
                                                          event.Pass());
   }
