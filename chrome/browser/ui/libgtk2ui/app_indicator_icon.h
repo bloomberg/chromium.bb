@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_UI_LIBGTK2UI_APP_INDICATOR_ICON_H_
 
 #include "base/files/file_path.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/libgtk2ui/gtk2_signal.h"
 #include "ui/views/linux_ui/status_icon_linux.h"
@@ -23,9 +22,7 @@ class MenuModel;
 }
 
 namespace libgtk2ui {
-class AppIndicatorIconMenu;
 
-// Status icon implementation which uses libappindicator.
 class AppIndicatorIcon : public views::StatusIconLinux {
  public:
   // The id uniquely identifies the new status icon from other chrome status
@@ -49,13 +46,18 @@ class AppIndicatorIcon : public views::StatusIconLinux {
   void SetImageFromFile(const base::FilePath& icon_file_path);
   void SetMenu();
 
-  // Sets a menu item at the top of the menu as a replacement for the status
-  // icon click action. Clicking on this menu item should simulate a status icon
-  // click by despatching a click event.
-  void UpdateClickActionReplacementMenuItem();
+  // Adds a menu item to the top of the existing gtk_menu as a replacement for
+  // the status icon click action or creates a new gtk menu with the menu item
+  // if a menu doesn't exist. Clicking on this menu item should simulate a
+  // status icon click by despatching a click event.
+  void CreateClickActionReplacement();
+  void DestroyMenu();
 
-  // Callback for when the status icon click replacement menu item is activated.
-  void OnClickActionReplacementMenuItemActivated();
+  // Callback for when the status icon click replacement menu item is clicked.
+  CHROMEGTK_CALLBACK_0(AppIndicatorIcon, void, OnClick);
+
+  // Callback for when a menu item is clicked.
+  CHROMEGTK_CALLBACK_0(AppIndicatorIcon, void, OnMenuItemActivated);
 
   std::string id_;
   std::string tool_tip_;
@@ -63,11 +65,12 @@ class AppIndicatorIcon : public views::StatusIconLinux {
   // Gtk status icon wrapper
   AppIndicator* icon_;
 
-  scoped_ptr<AppIndicatorIconMenu> menu_;
+  GtkWidget* gtk_menu_;
   ui::MenuModel* menu_model_;
 
   base::FilePath icon_file_path_;
   int icon_change_count_;
+  bool block_activation_;
 
   base::WeakPtrFactory<AppIndicatorIcon> weak_factory_;
 
