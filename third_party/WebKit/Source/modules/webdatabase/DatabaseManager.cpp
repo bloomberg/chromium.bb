@@ -49,12 +49,7 @@ namespace WebCore {
 
 DatabaseManager& DatabaseManager::manager()
 {
-    static DatabaseManager* dbManager = 0;
-    // FIXME: The following is vulnerable to a race between threads. Need to
-    // implement a thread safe on-first-use static initializer.
-    if (!dbManager)
-        dbManager = new DatabaseManager();
-
+    AtomicallyInitializedStatic(DatabaseManager*, dbManager = new DatabaseManager);
     return *dbManager;
 }
 
