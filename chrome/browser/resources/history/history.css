@@ -352,12 +352,10 @@ html[dir='rtl'] .site-domain {
 }
 
 <if expr="not is_android">
-.site-domain-wrapper:hover input[type='checkbox'],
-.site-domain-wrapper input[type='checkbox']:checked,
-.site-domain-wrapper input[type='checkbox']:focus,
-.entry-box:hover input[type='checkbox'],
-.entry-box input[type='checkbox']:checked,
-.entry-box input[type='checkbox']:focus {
+.site-domain-wrapper:hover input[type='checkbox']:not(:focus),
+.site-domain-wrapper input[type='checkbox']:not(:focus):checked,
+.entry-box:hover input[type='checkbox']:not(:focus),
+.entry-box input[type='checkbox']:not(:focus):checked {
   border-color: rgba(0, 0, 0, .5);
 }
 
