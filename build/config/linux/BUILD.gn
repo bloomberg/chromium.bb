@@ -73,6 +73,10 @@ config("xext") {
   libs = [ "Xext" ]
 }
 
+config("libcap") {
+  libs = [ "cap" ]
+}
+
 config("libresolv") {
   libs = [ "resolv" ]
 }

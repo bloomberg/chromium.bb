@@ -45,6 +45,7 @@ group("root") {
     "//mojo",
     "//net",
     "//ppapi:ppapi_c",
+    "//sandbox",
     #"//sdch",
     "//skia",
     "//sql",
