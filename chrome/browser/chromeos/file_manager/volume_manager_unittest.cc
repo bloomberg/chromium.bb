@@ -9,6 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/prefs/pref_service.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/file_manager/fake_disk_mount_manager.h"
 #include "chrome/browser/chromeos/file_manager/volume_manager_observer.h"
 #include "chrome/browser/chromeos/file_system_provider/fake_provided_file_system.h"
@@ -17,6 +18,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/dbus/fake_power_manager_client.h"
 #include "chromeos/disks/disk_mount_manager.h"
+#include "components/storage_monitor/storage_info.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/browser/extension_registry.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -852,6 +854,50 @@ TEST_F(VolumeManagerTest, HardUnplugged) {
   EXPECT_EQ(LoggingObserver::Event::DEVICE_REMOVED, observer.events()[1].type);
   EXPECT_FALSE(observer.events()[0].hard_unplugged);
   EXPECT_TRUE(observer.events()[1].hard_unplugged);
+}
+
+TEST_F(VolumeManagerTest, MTPPlugAndUnplug) {
+  LoggingObserver observer;
+  volume_manager()->AddObserver(&observer);
+
+  storage_monitor::StorageInfo info(
+      storage_monitor::StorageInfo::MakeDeviceId(
+          storage_monitor::StorageInfo::MTP_OR_PTP, "dummy-device-id"),
+      FILE_PATH_LITERAL("/dummy/device/location"),
+      base::UTF8ToUTF16("label"),
+      base::UTF8ToUTF16("vendor"),
+      base::UTF8ToUTF16("model"),
+      12345 /* size */);
+
+  storage_monitor::StorageInfo non_mtp_info(
+      storage_monitor::StorageInfo::MakeDeviceId(
+          storage_monitor::StorageInfo::IPHOTO, "dummy-device-id2"),
+      FILE_PATH_LITERAL("/dummy/device/location2"),
+      base::UTF8ToUTF16("label2"),
+      base::UTF8ToUTF16("vendor2"),
+      base::UTF8ToUTF16("model2"),
+      12345 /* size */);
+
+  // Attach
+  volume_manager()->OnRemovableStorageAttached(info);
+  ASSERT_EQ(1u, observer.events().size());
+  EXPECT_EQ(LoggingObserver::Event::VOLUME_MOUNTED, observer.events()[0].type);
+
+  VolumeInfo volume_info;
+  ASSERT_TRUE(volume_manager()->FindVolumeInfoById("mtp:model", &volume_info));
+  EXPECT_EQ(VOLUME_TYPE_MTP, volume_info.type);
+
+  // Non MTP events from storage monitor are ignored.
+  volume_manager()->OnRemovableStorageAttached(non_mtp_info);
+  EXPECT_EQ(1u, observer.events().size());
+
+  // Detach
+  volume_manager()->OnRemovableStorageDetached(info);
+  ASSERT_EQ(2u, observer.events().size());
+  EXPECT_EQ(LoggingObserver::Event::VOLUME_UNMOUNTED,
+            observer.events()[1].type);
+
+  EXPECT_FALSE(volume_manager()->FindVolumeInfoById("mtp:model", &volume_info));
 }
 
 }  // namespace file_manager
