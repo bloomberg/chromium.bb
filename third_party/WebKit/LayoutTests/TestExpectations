@@ -373,8 +373,11 @@ crbug.com/290411 [ XP Mac ] fast/text/sub-pixel/text-scaling-webfont.html [ Skip
 crbug.com/377696 printing/setPrinting.html [ Skip ]
 crbug.com/377696 printing/width-overflow.html [ Skip ]
 
-# Sutble text differences with DirectWrite
+# Subtle text differences with DirectWrite
 crbug.com/378610 [ Win7 ] fast/css/text-overflow-ellipsis-button.html [ ImageOnlyFailure ]
+
+# FIXME: Remove windows-directwrite test suite once we're sure the DW won't be reverted. Keep it but skip it for now.
+crbug.com/378610 [ Win7 ] virtual/windows-directwrite [ Skip ]
 
 # Broken tests with hard coded values that only work on one platform, lots of FAIL lines in expectations.
 crbug.com/378610 [ Win7 ] fast/dom/Element/getClientRects.html  [ Failure ]
@@ -946,12 +949,6 @@ crbug.com/164167 tables/mozilla/bugs/bug131020.html [ NeedsRebaseline ]
 crbug.com/164167 tables/mozilla/bugs/bug3309-1.html [ NeedsRebaseline ]
 crbug.com/164167 tables/mozilla/bugs/bug6304.html [ NeedsRebaseline ]
 crbug.com/164167 tables/mozilla/bugs/bug8381.html [ NeedsRebaseline ]
-crbug.com/164167 [ Win7 ] virtual/windows-directwrite/fast/text/international/bidi-LDB-2-CSS.html [ NeedsRebaseline ]
-crbug.com/164167 [ Win7 ] virtual/windows-directwrite/fast/text/international/bidi-LDB-2-formatting-characters.html [ NeedsRebaseline ]
-crbug.com/164167 [ Win7 ] virtual/windows-directwrite/fast/text/international/bidi-LDB-2-HTML.html [ NeedsRebaseline ]
-crbug.com/164167 [ Win7 ] virtual/windows-directwrite/fast/text/international/thai-line-breaks.html [ NeedsRebaseline ]
-crbug.com/164167 [ Win7 ] virtual/windows-directwrite/fast/text/softHyphen.html [ NeedsRebaseline ]
-crbug.com/164167 [ Win7 ] virtual/windows-directwrite/fast/text/sub-pixel/text-scaling-pixel.html [ NeedsRebaseline ]
 
 crbug.com/316349 inspector-protocol/page/enable-disable.html [ Failure Pass ]
 
@@ -1196,12 +1193,6 @@ crbug.com/362047 [ Mac Linux ] mhtml/mhtml_in_iframe.html [ Crash Pass ]
 crbug.com/320139 fast/repaint/block-layout-inline-children-replaced.html [ NeedsManualRebaseline ]
 #crbug.com/362050 [ Retina ] fast/repaint/block-layout-inline-children-replaced.html [ Failure ]
 crbug.com/362073 [ Mac Debug ] fast/dom/shadow/input-color-in-content.html [ Crash Pass ]
-
-# Very subtle alignment/clipping differences, tests likely need to be updated.
-crbug.com/356780 [ Win ] virtual/windows-directwrite/fast/text/international/complex-text-missing-glyph-fallback.html [ ImageOnlyFailure ]
-crbug.com/356780 [ Win ] virtual/windows-directwrite/fast/text/international/inline-block-with-mixed-direction-words.html [ ImageOnlyFailure ]
-crbug.com/356780 [ Win ] virtual/windows-directwrite/fast/text/international/rtl-space-in-ltr-element.html [ ImageOnlyFailure ]
-crbug.com/356780 [ Win ] virtual/windows-directwrite/fast/text/international/text-overflow-ellipsis-bidi.html [ ImageOnlyFailure ]
 
 crbug.com/363772 [ Linux Mac Win ] virtual/gpu/fast/hidpi/gradient-with-scaled-ancestor.html [ NeedsManualRebaseline ]
 crbug.com/365400 [ Mac ] compositing/images/direct-pdf-image.html [ Pass ImageOnlyFailure ]
