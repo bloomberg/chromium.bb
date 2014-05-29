@@ -284,6 +284,15 @@ def main(argv):
     print >> sys.stderr, hostname_stderr
     sys.exit(1)
 
+  # TODO(phajdan.jr): Remove hack for http://crbug.com/378779 .
+  if hostname_stdout == 'build1-a1.perf.chromium.org':
+    if os.path.exists('/b/build/slave/Android_Builder__dbg_378779'):
+      print '/b/build/slave/Android_Builder__dbg_378779 exists, skipping'
+    else:
+      print 'CLEANING UP CHECKOUT DIRECTORY HACK SEE http://crbug.com/378779'
+      shutil.move('/b/build/slave/Android_Builder__dbg_',
+                  '/b/build/slave/Android_Builder__dbg_378779')
+
   parser = GetRunBotOptParser()
   options, args = parser.parse_args(argv[1:])
   if args:
