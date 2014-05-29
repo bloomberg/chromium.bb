@@ -1279,7 +1279,6 @@ class TestFindSuspects(MoxBase):
     self.assertFalse(
         validation_pool.CalculateSuspects.OnlyLabFailures(messages, no_stat))
 
-
   def testOnlyInfraFailures(self):
     """Tests the OnlyInfraFailures function."""
     messages = self._GetMessages(infra_fail=2)

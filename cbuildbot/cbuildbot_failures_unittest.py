@@ -14,6 +14,58 @@ from chromite.cbuildbot import cbuildbot_failures as failures_lib
 from chromite.lib import cros_test_lib
 
 
+class CompoundFailureTest(cros_test_lib.TestCase):
+  """Test the CompoundFailure class."""
+
+  def _CreateExceptInfos(self, cls, message='', traceback='', num=1):
+    """A helper function to create a list of ExceptInfo objects."""
+    exc_infos = []
+    for _ in xrange(num):
+      exc_infos.extend(failures_lib.CreateExceptInfo(cls(message), traceback))
+
+    return exc_infos
+
+  def testHasEmptyList(self):
+    """Tests the HasEmptyList method."""
+    self.assertTrue(failures_lib.CompoundFailure().HasEmptyList())
+    exc_infos = self._CreateExceptInfos(KeyError)
+    self.assertFalse(
+        failures_lib.CompoundFailure(exc_infos=exc_infos).HasEmptyList())
+
+  def testHasAndatchesFailureType(self):
+    """Tests the HasFailureType and the MatchesFailureType methods."""
+    # Create a CompoundFailure instance with mixed types of exceptions.
+    exc_infos = self._CreateExceptInfos(KeyError)
+    exc_infos.extend(self._CreateExceptInfos(ValueError))
+    exc = failures_lib.CompoundFailure(exc_infos=exc_infos)
+    self.assertTrue(exc.HasFailureType(KeyError))
+    self.assertTrue(exc.HasFailureType(ValueError))
+    self.assertFalse(exc.MatchesFailureType(KeyError))
+    self.assertFalse(exc.MatchesFailureType(ValueError))
+
+    # Create a CompoundFailure instance with a single type of exceptions.
+    exc_infos = self._CreateExceptInfos(KeyError, num=5)
+    exc = failures_lib.CompoundFailure(exc_infos=exc_infos)
+    self.assertTrue(exc.HasFailureType(KeyError))
+    self.assertFalse(exc.HasFailureType(ValueError))
+    self.assertTrue(exc.MatchesFailureType(KeyError))
+    self.assertFalse(exc.MatchesFailureType(ValueError))
+
+  def testMessageContainsAllInfo(self):
+    """Tests that by default, all information is included in the message."""
+    exc_infos = self._CreateExceptInfos(KeyError, message='bar1',
+                                        traceback='foo1')
+    exc_infos.extend(self._CreateExceptInfos(ValueError, message='bar2',
+                                        traceback='foo2'))
+    exc = failures_lib.CompoundFailure(exc_infos=exc_infos)
+    self.assertTrue('bar1' in str(exc))
+    self.assertTrue('bar2' in str(exc))
+    self.assertTrue('foo1' in str(exc))
+    self.assertTrue('foo2' in str(exc))
+    self.assertTrue('KeyError' in str(exc))
+    self.assertTrue('ValueError' in str(exc))
+
+
 class SetFailureTypeTest(cros_test_lib.TestCase):
   """Test that the SetFailureType decorator works."""
   ERROR_MESSAGE = 'You failed!'

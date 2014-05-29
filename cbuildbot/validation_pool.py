@@ -1104,11 +1104,31 @@ class ValidationFailedMessage(object):
 
   def MatchesFailureType(self, cls):
     """Check if all of the tracebacks match the specified failure type."""
-    return all(isinstance(tb.exception, cls) for tb in self.tracebacks)
+    for tb in self.tracebacks:
+      if not isinstance(tb.exception, cls):
+        if (isinstance(tb.exception, failures_lib.CompoundFailure) and
+            tb.exception.MatchesFailureType(cls)):
+          # If the exception is a CompoundFailure instance and all its
+          # stored exceptions match |cls|, it meets the criteria.
+          continue
+        else:
+          return False
+
+    return True
 
   def HasFailureType(self, cls):
     """Check if any of the failures match the specified failure type."""
-    return any(isinstance(tb.exception, cls) for tb in self.tracebacks)
+    for tb in self.tracebacks:
+      if isinstance(tb.exception, cls):
+        return True
+
+      if (isinstance(tb.exception, failures_lib.CompoundFailure) and
+          tb.exception.HasFailureType(cls)):
+        # If the exception is a CompoundFailure instance and any of its
+        # stored exceptions match |cls|, it meets the criteria.
+        return True
+
+    return False
 
   def IsPackageBuildFailure(self):
     """Check if all of the failures are package build failures."""
@@ -1215,7 +1235,7 @@ class CalculateSuspects(object):
     return [x for x in changes if x.project == constants.CHROMITE_PROJECT]
 
   @classmethod
-  def _AllMatchFailureType(cls, messages, fail_type):
+  def _MatchesFailureType(cls, messages, fail_type):
     """Returns True if all failures are instances of |fail_type|.
 
     Args:
@@ -1245,7 +1265,7 @@ class CalculateSuspects(object):
     """
     # If any builder failed prematuely, lab failure was not the only cause.
     return (not no_stat and
-            cls._AllMatchFailureType(messages, failures_lib.TestLabFailure))
+            cls._MatchesFailureType(messages, failures_lib.TestLabFailure))
 
   @classmethod
   def OnlyInfraFailures(cls, messages, no_stat):
@@ -1261,7 +1281,7 @@ class CalculateSuspects(object):
       True if the build failed purely due to infrastructure failures.
     """
     return ((not messages and no_stat) or
-            cls._AllMatchFailureType(
+            cls._MatchesFailureType(
                 messages, failures_lib.InfrastructureFailure))
 
   @classmethod

@@ -83,6 +83,19 @@ class CompoundFailure(StepFailure):
     super(CompoundFailure, self).__init__(message=message,
                                           possibly_flaky=possibly_flaky)
 
+  def HasEmptyList(self):
+    """Returns True if self.exc_infos is empty."""
+    return not bool(self.exc_infos)
+
+  def HasFailureType(self, cls):
+    """Returns True if any of the failures matches |cls|."""
+    return any(issubclass(x.type, cls) for x in self.exc_infos)
+
+  def MatchesFailureType(self, cls):
+    """Returns True if all failures matches |cls|."""
+    return (not self.HasEmptyList() and
+            all(issubclass(x.type, cls) for x in self.exc_infos))
+
 
 class SetFailureType(object):
   """A wrapper to re-raise the exception as the pre-set type."""
