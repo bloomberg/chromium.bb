@@ -160,6 +160,7 @@
 #include "chrome/browser/chromeos/status/data_promo_notification.h"
 #include "chrome/browser/chromeos/system/automatic_reboot_manager.h"
 #include "chrome/browser/extensions/api/enterprise_platform_keys_private/enterprise_platform_keys_private_api.h"
+#include "chrome/browser/extensions/extension_assets_manager_chromeos.h"
 #include "chrome/browser/metrics/chromeos_metrics_provider.h"
 #include "chrome/browser/ui/webui/chromeos/charger_replacement_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/hid_detection_screen_handler.h"
@@ -304,6 +305,7 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   chromeos::WallpaperManager::RegisterPrefs(registry);
   chromeos::StartupUtils::RegisterPrefs(registry);
   chromeos::echo_offer::RegisterPrefs(registry);
+  extensions::ExtensionAssetsManagerChromeOS::RegisterPrefs(registry);
   policy::AutoEnrollmentClient::RegisterPrefs(registry);
   policy::BrowserPolicyConnectorChromeOS::RegisterPrefs(registry);
   policy::DeviceCloudPolicyManagerChromeOS::RegisterPrefs(registry);

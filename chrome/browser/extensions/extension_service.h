@@ -548,6 +548,13 @@ class ExtensionService
   // the actual profile objects to be destroyed.
   void OnProfileDestructionStarted();
 
+  // Called on file task runner thread to uninstall extension.
+  static void UninstallExtensionOnFileThread(
+      const std::string& id,
+      Profile* profile,
+      const base::FilePath& install_dir,
+      const base::FilePath& extension_path);
+
   // The normal profile associated with this ExtensionService.
   Profile* profile_;
 

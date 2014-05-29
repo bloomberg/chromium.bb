@@ -1339,19 +1339,6 @@ void ExtensionPrefs::UpdateManifest(const Extension* extension) {
   }
 }
 
-base::FilePath ExtensionPrefs::GetExtensionPath(
-    const std::string& extension_id) {
-  const base::DictionaryValue* dict = GetExtensionPref(extension_id);
-  if (!dict)
-    return base::FilePath();
-
-  std::string path;
-  if (!dict->GetString(kPrefPath, &path))
-    return base::FilePath();
-
-  return install_directory_.Append(base::FilePath::FromUTF8Unsafe(path));
-}
-
 scoped_ptr<ExtensionInfo> ExtensionPrefs::GetInstalledInfoHelper(
     const std::string& extension_id,
     const base::DictionaryValue* extension) const {
@@ -1366,9 +1353,15 @@ scoped_ptr<ExtensionInfo> ExtensionPrefs::GetInstalledInfoHelper(
   // Make path absolute. Unpacked extensions will already have absolute paths,
   // otherwise make it so.
   Manifest::Location location = static_cast<Manifest::Location>(location_value);
+#if !defined(OS_CHROMEOS)
   if (!Manifest::IsUnpackedLocation(location)) {
     DCHECK(location == Manifest::COMPONENT ||
            !base::FilePath(path).IsAbsolute());
+#else
+  // On Chrome OS some extensions can be installed to shared location and
+  // thus use absolute paths in prefs.
+  if (!base::FilePath(path).IsAbsolute()) {
+#endif  // !defined(OS_CHROMEOS)
     path = install_directory_.Append(path).value();
   }
 

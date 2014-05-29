@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/at_exit.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/download/download_crx_util.h"
 #include "chrome/browser/extensions/browser_action_test_util.h"
@@ -15,6 +16,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/test/browser_test_utils.h"
@@ -32,6 +34,8 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/users/fake_user_manager.h"
 #include "chrome/browser/chromeos/login/users/user_manager.h"
+#include "chrome/browser/extensions/extension_assets_manager_chromeos.h"
+#include "chromeos/chromeos_switches.h"
 #endif
 
 class SkBitmap;
@@ -494,5 +498,41 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, KioskOnlyTest) {
   EXPECT_TRUE(InstallExtension(crx_path, 1));
 #endif
 }
+
+#if defined(OS_CHROMEOS)
+IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, InstallToSharedLocation) {
+  base::ShadowingAtExitManager at_exit_manager;
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      chromeos::switches::kEnableExtensionAssetsSharing);
+  base::ScopedTempDir cache_dir;
+  ASSERT_TRUE(cache_dir.CreateUniqueTempDir());
+  ExtensionAssetsManagerChromeOS::SetSharedInstallDirForTesting(
+      cache_dir.path());
+
+  base::FilePath crx_path = test_data_dir_.AppendASCII("crx_installer/v1.crx");
+  const extensions::Extension* extension = InstallExtension(
+      crx_path, 1, extensions::Manifest::EXTERNAL_PREF);
+  base::FilePath extension_path = extension->path();
+  EXPECT_TRUE(cache_dir.path().IsParent(extension_path));
+  EXPECT_TRUE(base::PathExists(extension_path));
+
+  std::string extension_id = extension->id();
+  UninstallExtension(extension_id);
+  ExtensionService* service = extensions::ExtensionSystem::Get(
+      browser()->profile())->extension_service();
+  EXPECT_FALSE(service->GetExtensionById(extension_id, false));
+
+  // In the worst case you need to repeat this up to 3 times to make sure that
+  // all pending tasks we sent from UI thread to task runner and back to UI.
+  for (int i = 0; i < 3; i++) {
+    // Wait for background task completion that sends replay to UI thread.
+    content::BrowserThread::GetBlockingPool()->FlushForTesting();
+    // Wait for UI thread task completion.
+    base::RunLoop().RunUntilIdle();
+  }
+
+  EXPECT_FALSE(base::PathExists(extension_path));
+}
+#endif
 
 }  // namespace extensions

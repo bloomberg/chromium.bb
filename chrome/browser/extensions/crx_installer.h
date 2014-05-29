@@ -240,6 +240,10 @@ class CrxInstaller
   // notify the frontend.
   void CompleteInstall();
 
+  // Reloads extension on File thread and reports installation result back
+  // to UI thread.
+  void ReloadExtensionAfterInstall(const base::FilePath& version_dir);
+
   // Result reporting.
   void ReportFailureFromFileThread(const CrxInstallerError& error);
   void ReportFailureFromUIThread(const CrxInstallerError& error);

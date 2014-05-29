@@ -22,6 +22,7 @@
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/data_deleter.h"
+#include "chrome/browser/extensions/extension_assets_manager.h"
 #include "chrome/browser/extensions/extension_disabled_ui.h"
 #include "chrome/browser/extensions/extension_error_controller.h"
 #include "chrome/browser/extensions/extension_install_ui.h"
@@ -749,9 +750,11 @@ bool ExtensionService::UninstallExtension(
   if (!Manifest::IsUnpackedLocation(extension->location())) {
     if (!GetFileTaskRunner()->PostTask(
             FROM_HERE,
-            base::Bind(&extensions::file_util::UninstallExtension,
+            base::Bind(&ExtensionService::UninstallExtensionOnFileThread,
+                       extension->id(),
+                       profile_,
                        install_directory_,
-                       extension->id())))
+                       extension->path())))
       NOTREACHED();
   }
 
@@ -783,6 +786,17 @@ bool ExtensionService::UninstallExtension(
   UMA_HISTOGRAM_ENUMERATION("Extensions.ExtensionUninstalled", 1, 2);
 
   return true;
+}
+
+// static
+void ExtensionService::UninstallExtensionOnFileThread(
+    const std::string& id,
+    Profile* profile,
+    const base::FilePath& install_dir,
+    const base::FilePath& extension_path) {
+  extensions::ExtensionAssetsManager* assets_manager =
+      extensions::ExtensionAssetsManager::GetInstance();
+  assets_manager->UninstallExtension(id, profile, install_dir, extension_path);
 }
 
 bool ExtensionService::IsExtensionEnabled(

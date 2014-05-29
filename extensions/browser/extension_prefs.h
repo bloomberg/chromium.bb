@@ -283,9 +283,6 @@ class ExtensionPrefs : public ExtensionScopedPrefs, public KeyedService {
   // Called to change the extension's manifest when it's re-localized.
   void UpdateManifest(const Extension* extension);
 
-  // Returns extension path based on extension ID, or empty FilePath on error.
-  base::FilePath GetExtensionPath(const std::string& extension_id);
-
   // Returns base extensions install directory.
   const base::FilePath& install_directory() const { return install_directory_; }
 
