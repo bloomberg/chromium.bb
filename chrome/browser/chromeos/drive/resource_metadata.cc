@@ -56,6 +56,13 @@ FileError EntryCanUseName(ResourceMetadataStorage* storage,
   return FILE_ERROR_OK;
 }
 
+// Returns true when the ID is used by an immutable entry.
+bool IsImmutableEntry(const std::string& id) {
+  return id == util::kDriveGrandRootLocalId ||
+      id == util::kDriveOtherDirLocalId ||
+      id == util::kDriveTrashDirLocalId;
+}
+
 }  // namespace
 
 ResourceMetadata::ResourceMetadata(
@@ -267,9 +274,7 @@ FileError ResourceMetadata::RemoveEntry(const std::string& id) {
     return FILE_ERROR_NO_LOCAL_SPACE;
 
   // Disallow deletion of default entries.
-  if (id == util::kDriveGrandRootLocalId ||
-      id == util::kDriveOtherDirLocalId ||
-      id == util::kDriveTrashDirLocalId)
+  if (IsImmutableEntry(id))
     return FILE_ERROR_ACCESS_DENIED;
 
   ResourceEntry entry;
@@ -355,7 +360,7 @@ FileError ResourceMetadata::RefreshEntry(const ResourceEntry& entry) {
   if (error != FILE_ERROR_OK)
     return error;
 
-  if (old_entry.parent_local_id().empty() ||  // Reject root.
+  if (IsImmutableEntry(entry.local_id()) ||
       old_entry.file_info().is_directory() !=  // Reject incompatible input.
       entry.file_info().is_directory())
     return FILE_ERROR_INVALID_OPERATION;

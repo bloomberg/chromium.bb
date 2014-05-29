@@ -38,7 +38,7 @@ class ResourceMetadataStorage {
  public:
   // This should be incremented when incompatibility change is made to DB
   // format.
-  static const int kDBVersion = 12;
+  static const int kDBVersion = 13;
 
   // Object to iterate over entries stored in this storage.
   class Iterator {
@@ -63,47 +63,10 @@ class ResourceMetadataStorage {
     bool HasError() const;
 
    private:
-    // Gets the cache entry which corresponds to |entry_| if available.
-    bool GetCacheEntry(FileCacheEntry* cache_entry);
-
     ResourceEntry entry_;
     scoped_ptr<leveldb::Iterator> it_;
 
     DISALLOW_COPY_AND_ASSIGN(Iterator);
-  };
-
-  // Object to iterate over cache entries stored in this storage.
-  class CacheEntryIterator {
-   public:
-    explicit CacheEntryIterator(scoped_ptr<leveldb::Iterator> it);
-    ~CacheEntryIterator();
-
-    // Returns true if this iterator cannot advance any more and does not point
-    // to a valid entry. GetID(), GetValue() and Advance() should not be called
-    // in such cases.
-    bool IsAtEnd() const;
-
-    // Returns the ID of the entry currently pointed by this object.
-    const std::string& GetID() const;
-
-    // Returns the value of the entry currently pointed by this object.
-    const FileCacheEntry& GetValue() const;
-
-    // Advances to the next entry.
-    void Advance();
-
-    // Returns true if this object has encountered any error.
-    bool HasError() const;
-
-   private:
-    // Used to implement Advance().
-    void AdvanceInternal();
-
-    scoped_ptr<leveldb::Iterator> it_;
-    std::string id_;
-    FileCacheEntry entry_;
-
-    DISALLOW_COPY_AND_ASSIGN(CacheEntryIterator);
   };
 
   // Cache information recovered from trashed DB.
@@ -165,9 +128,6 @@ class ResourceMetadataStorage {
   // Returns the IDs of the parent's children.
   FileError GetChildren(const std::string& parent_id,
                         std::vector<std::string>* children);
-
-  // Gets a cache entry stored in this storage.
-  FileError GetCacheEntry(const std::string& id, FileCacheEntry* out_entry);
 
   // Returns the local ID associated with the given resource ID.
   FileError GetIdByResourceId(const std::string& resource_id,

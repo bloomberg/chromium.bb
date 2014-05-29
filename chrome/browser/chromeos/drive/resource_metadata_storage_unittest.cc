@@ -284,6 +284,7 @@ TEST_F(ResourceMetadataStorageTest, OpenExistingDB) {
 
 TEST_F(ResourceMetadataStorageTest, IncompatibleDB_M29) {
   const int64 kLargestChangestamp = 1234567890;
+  const std::string title = "title";
 
   // Construct M29 version DB.
   SetDBVersion(6);
@@ -295,6 +296,7 @@ TEST_F(ResourceMetadataStorageTest, IncompatibleDB_M29) {
   // Put a file entry and its cache entry.
   ResourceEntry entry;
   std::string serialized_entry;
+  entry.set_title(title);
   entry.set_resource_id("file:abcd");
   EXPECT_TRUE(entry.SerializeToString(&serialized_entry));
   batch.Put("file:abcd", serialized_entry);
@@ -323,12 +325,14 @@ TEST_F(ResourceMetadataStorageTest, IncompatibleDB_M29) {
   EXPECT_EQ(FILE_ERROR_OK,
             storage_->GetLargestChangestamp(&largest_changestamp));
   EXPECT_EQ(0, largest_changestamp);
-  EXPECT_EQ(FILE_ERROR_NOT_FOUND, storage_->GetEntry(id, &entry));
-  EXPECT_EQ(FILE_ERROR_OK, storage_->GetCacheEntry(id, &cache_entry));
+  EXPECT_EQ(FILE_ERROR_OK, storage_->GetEntry(id, &entry));
+  EXPECT_TRUE(entry.title().empty());
+  EXPECT_TRUE(entry.file_specific_info().has_cache_state());
 }
 
 TEST_F(ResourceMetadataStorageTest, IncompatibleDB_M32) {
   const int64 kLargestChangestamp = 1234567890;
+  const std::string title = "title";
   const std::string resource_id = "abcd";
   const std::string local_id = "local-abcd";
 
@@ -342,6 +346,8 @@ TEST_F(ResourceMetadataStorageTest, IncompatibleDB_M32) {
   // Put a file entry and its cache and id entry.
   ResourceEntry entry;
   std::string serialized_entry;
+  entry.set_title(title);
+  entry.set_local_id(local_id);
   entry.set_resource_id(resource_id);
   EXPECT_TRUE(entry.SerializeToString(&serialized_entry));
   batch.Put(local_id, serialized_entry);
@@ -370,8 +376,77 @@ TEST_F(ResourceMetadataStorageTest, IncompatibleDB_M32) {
   EXPECT_EQ(FILE_ERROR_OK,
             storage_->GetLargestChangestamp(&largest_changestamp));
   EXPECT_EQ(0, largest_changestamp);
-  EXPECT_EQ(FILE_ERROR_NOT_FOUND, storage_->GetEntry(id, &entry));
-  EXPECT_EQ(FILE_ERROR_OK, storage_->GetCacheEntry(id, &cache_entry));
+  EXPECT_EQ(FILE_ERROR_OK, storage_->GetEntry(id, &entry));
+  EXPECT_TRUE(entry.title().empty());
+  EXPECT_TRUE(entry.file_specific_info().has_cache_state());
+}
+
+TEST_F(ResourceMetadataStorageTest, IncompatibleDB_M33) {
+  const int64 kLargestChangestamp = 1234567890;
+  const std::string title = "title";
+  const std::string resource_id = "abcd";
+  const std::string local_id = "local-abcd";
+  const std::string md5 = "md5";
+  const std::string resource_id2 = "efgh";
+  const std::string local_id2 = "local-efgh";
+  const std::string md5_2 = "md5_2";
+
+  // Construct M33 version DB.
+  SetDBVersion(12);
+  EXPECT_EQ(FILE_ERROR_OK,
+            storage_->SetLargestChangestamp(kLargestChangestamp));
+
+  leveldb::WriteBatch batch;
+
+  // Put a file entry and its cache and id entry.
+  ResourceEntry entry;
+  std::string serialized_entry;
+  entry.set_title(title);
+  entry.set_local_id(local_id);
+  entry.set_resource_id(resource_id);
+  EXPECT_TRUE(entry.SerializeToString(&serialized_entry));
+  batch.Put(local_id, serialized_entry);
+
+  FileCacheEntry cache_entry;
+  cache_entry.set_md5(md5);
+  EXPECT_TRUE(cache_entry.SerializeToString(&serialized_entry));
+  batch.Put(local_id + '\0' + "CACHE", serialized_entry);
+
+  batch.Put('\0' + std::string("ID") + '\0' + resource_id, local_id);
+
+  // Put another cache entry which is not accompanied by a ResourceEntry.
+  cache_entry.set_md5(md5_2);
+  EXPECT_TRUE(cache_entry.SerializeToString(&serialized_entry));
+  batch.Put(local_id2 + '\0' + "CACHE", serialized_entry);
+  batch.Put('\0' + std::string("ID") + '\0' + resource_id2, local_id2);
+
+  EXPECT_TRUE(resource_map()->Write(leveldb::WriteOptions(), &batch).ok());
+
+  // Upgrade and reopen.
+  storage_.reset();
+  EXPECT_TRUE(ResourceMetadataStorage::UpgradeOldDB(
+      temp_dir_.path(), base::Bind(&util::CanonicalizeResourceId)));
+  storage_.reset(new ResourceMetadataStorage(
+      temp_dir_.path(), base::MessageLoopProxy::current().get()));
+  ASSERT_TRUE(storage_->Initialize());
+
+  // No data is lost.
+  int64 largest_changestamp = 0;
+  EXPECT_EQ(FILE_ERROR_OK,
+            storage_->GetLargestChangestamp(&largest_changestamp));
+  EXPECT_EQ(kLargestChangestamp, largest_changestamp);
+
+  std::string id;
+  EXPECT_EQ(FILE_ERROR_OK, storage_->GetIdByResourceId(resource_id, &id));
+  EXPECT_EQ(local_id, id);
+  EXPECT_EQ(FILE_ERROR_OK, storage_->GetEntry(id, &entry));
+  EXPECT_EQ(title, entry.title());
+  EXPECT_EQ(md5, entry.file_specific_info().cache_state().md5());
+
+  EXPECT_EQ(FILE_ERROR_OK, storage_->GetIdByResourceId(resource_id2, &id));
+  EXPECT_EQ(local_id2, id);
+  EXPECT_EQ(FILE_ERROR_OK, storage_->GetEntry(id, &entry));
+  EXPECT_EQ(md5_2, entry.file_specific_info().cache_state().md5());
 }
 
 TEST_F(ResourceMetadataStorageTest, IncompatibleDB_Unknown) {
@@ -415,14 +490,8 @@ TEST_F(ResourceMetadataStorageTest, DeleteUnusedIDEntries) {
   batch.Put("id1", serialized_entry);
   batch.Put('\0' + std::string("ID") + '\0' + "resource_id1", "id1");
 
-  // Put an ID entry with a corresponding FileCacheEntry.
-  FileCacheEntry cache_entry;
-  EXPECT_TRUE(cache_entry.SerializeToString(&serialized_entry));
-  batch.Put(std::string("id2") + '\0' + "CACHE", serialized_entry);
-  batch.Put('\0' + std::string("ID") + '\0' + "resource_id2", "id2");
-
   // Put an ID entry without any corresponding entries.
-  batch.Put('\0' + std::string("ID") + '\0' + "resource_id3", "id3");
+  batch.Put('\0' + std::string("ID") + '\0' + "resource_id2", "id3");
 
   EXPECT_TRUE(resource_map()->Write(leveldb::WriteOptions(), &batch).ok());
 
@@ -438,10 +507,8 @@ TEST_F(ResourceMetadataStorageTest, DeleteUnusedIDEntries) {
   std::string id;
   EXPECT_EQ(FILE_ERROR_OK, storage_->GetIdByResourceId("resource_id1", &id));
   EXPECT_EQ("id1", id);
-  EXPECT_EQ(FILE_ERROR_OK, storage_->GetIdByResourceId("resource_id2", &id));
-  EXPECT_EQ("id2", id);
   EXPECT_EQ(FILE_ERROR_NOT_FOUND,
-            storage_->GetIdByResourceId("resource_id3", &id));
+            storage_->GetIdByResourceId("resource_id2", &id));
 }
 
 TEST_F(ResourceMetadataStorageTest, WrongPath) {
