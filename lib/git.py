@@ -533,7 +533,6 @@ class ManifestCheckout(Manifest):
     manifest_include_dir = os.path.dirname(self.manifest_path)
     self.manifest_branch = self._GetManifestsBranch(self.root)
     self._content_merging = {}
-    self.configured_groups = self._GetManifestGroups(self.root)
     Manifest.__init__(self, self.manifest_path,
                       manifest_include_dir=manifest_include_dir)
 
@@ -651,25 +650,6 @@ class ManifestCheckout(Manifest):
   def _FinalizeProjectData(self, attrs):
     Manifest._FinalizeProjectData(self, attrs)
     attrs['local_path'] = os.path.join(self.root, attrs['path'])
-
-  @staticmethod
-  def _GetManifestGroups(root):
-    """Discern which manifest groups were enabled for this checkout."""
-    path = os.path.join(root, '.repo', 'manifests.git')
-    try:
-      result = RunGit(path, ['config', '--get', 'manifest.groups'])
-    except cros_build_lib.RunCommandError as e:
-      if e.result.returncode == 1:
-        # Value wasn't found, which is fine.
-        return frozenset(['default'])
-      # If exit code 2, multiple values matched (broken checkout).  Anything
-      # else, git internal error.
-      raise
-
-    result = result.output.replace(',', ' ').split()
-    if not result:
-      result = ['default']
-    return frozenset(result)
 
   @staticmethod
   def _GetManifestsBranch(root):

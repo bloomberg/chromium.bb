@@ -494,8 +494,6 @@ class TestApplyAgainstManifest(GitRepoPatchTestCase,
     # pylint: disable=E1101
     self.PatchObject(git.ManifestCheckout, '_GetManifestsBranch',
                      return_value=None)
-    self.PatchObject(git.ManifestCheckout, '_GetManifestGroups',
-                     return_value=None)
     manifest = git.ManifestCheckout(basedir)
 
     readme2.ApplyAgainstManifest(manifest)
