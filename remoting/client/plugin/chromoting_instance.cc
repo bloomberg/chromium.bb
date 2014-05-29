@@ -246,9 +246,12 @@ ChromotingInstance::ChromotingInstance(PP_Instance pp_instance)
   char random_seed[kRandomSeedSize];
   crypto::RandBytes(random_seed, sizeof(random_seed));
   talk_base::InitRandom(random_seed, sizeof(random_seed));
-#elif defined(USE_NSS)
+#else
+  // Libjingle's SSL implementation is not really used, but it has to be
+  // initialized for NSS builds to make sure that RNG is initialized in NSS,
+  // because libjingle uses it.
   talk_base::InitializeSSL();
-#endif  // defined(USE_NSS)
+#endif  // !defined(USE_OPENSSL)
 
   // Send hello message.
   scoped_ptr<base::DictionaryValue> data(new base::DictionaryValue());
