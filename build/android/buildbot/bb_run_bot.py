@@ -285,7 +285,8 @@ def main(argv):
     sys.exit(1)
 
   # TODO(phajdan.jr): Remove hack for http://crbug.com/378779 .
-  if hostname_stdout == 'build1-a1.perf.chromium.org':
+  if (hostname_stdout == 'build1-a1.perf.chromium.org' or
+      os.path.exists('/b/build/slave/Android_Builder__dbg_')):
     if os.path.exists('/b/build/slave/Android_Builder__dbg_378779'):
       print '/b/build/slave/Android_Builder__dbg_378779 exists, skipping'
     else:
