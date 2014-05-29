@@ -10,25 +10,25 @@
 #include "content/public/browser/notification_registrar.h"
 #include "url/gurl.h"
 
+namespace content {
+class WebContents;
+}
+
 class GoogleURLTrackerNavigationHelperImpl
     : public GoogleURLTrackerNavigationHelper,
       public content::NotificationObserver {
  public:
-  explicit GoogleURLTrackerNavigationHelperImpl();
+  GoogleURLTrackerNavigationHelperImpl(content::WebContents* web_contents,
+                                       GoogleURLTracker* tracker);
   virtual ~GoogleURLTrackerNavigationHelperImpl();
 
-  // GoogleURLTrackerNavigationHelper.
-  virtual void SetGoogleURLTracker(GoogleURLTracker* tracker) OVERRIDE;
+  // GoogleURLTrackerNavigationHelper:
   virtual void SetListeningForNavigationCommit(
-      const content::NavigationController* nav_controller,
       bool listen) OVERRIDE;
-  virtual bool IsListeningForNavigationCommit(
-      const content::NavigationController* nav_controller) OVERRIDE;
+  virtual bool IsListeningForNavigationCommit() OVERRIDE;
   virtual void SetListeningForTabDestruction(
-      const content::NavigationController* nav_controller,
       bool listen) OVERRIDE;
-  virtual bool IsListeningForTabDestruction(
-      const content::NavigationController* nav_controller) OVERRIDE;
+  virtual bool IsListeningForTabDestruction() OVERRIDE;
 
  private:
   // content::NotificationObserver:
@@ -36,13 +36,10 @@ class GoogleURLTrackerNavigationHelperImpl
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  // Returns a WebContents NavigationSource for the WebContents corresponding to
-  // the given NavigationController NotificationSource.
-  virtual content::NotificationSource GetWebContentsSource(
-      const content::NotificationSource& nav_controller_source);
-
-  GoogleURLTracker* tracker_;
+  content::WebContents* web_contents_;
   content::NotificationRegistrar registrar_;
+
+  DISALLOW_COPY_AND_ASSIGN(GoogleURLTrackerNavigationHelperImpl);
 };
 
 #endif  // CHROME_BROWSER_GOOGLE_GOOGLE_URL_TRACKER_NAVIGATION_HELPER_IMPL_H_

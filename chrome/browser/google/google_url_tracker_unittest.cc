@@ -137,73 +137,53 @@ bool TestGoogleURLTrackerClient::IsListeningForNavigationStart() {
   return observe_nav_start_;
 }
 
+
 // TestGoogleURLTrackerNavigationHelper ---------------------------------------
 
 class TestGoogleURLTrackerNavigationHelper
     : public GoogleURLTrackerNavigationHelper {
  public:
-  TestGoogleURLTrackerNavigationHelper();
+  explicit TestGoogleURLTrackerNavigationHelper(GoogleURLTracker* tracker);
   virtual ~TestGoogleURLTrackerNavigationHelper();
 
-  virtual void SetGoogleURLTracker(GoogleURLTracker* tracker) OVERRIDE;
-  virtual void SetListeningForNavigationCommit(
-      const content::NavigationController* nav_controller,
-      bool listen) OVERRIDE;
-  virtual bool IsListeningForNavigationCommit(
-      const content::NavigationController* nav_controller) OVERRIDE;
-  virtual void SetListeningForTabDestruction(
-      const content::NavigationController* nav_controller,
-      bool listen) OVERRIDE;
-  virtual bool IsListeningForTabDestruction(
-      const content::NavigationController* nav_controller) OVERRIDE;
+  virtual void SetListeningForNavigationCommit(bool listen) OVERRIDE;
+  virtual bool IsListeningForNavigationCommit() OVERRIDE;
+  virtual void SetListeningForTabDestruction(bool listen) OVERRIDE;
+  virtual bool IsListeningForTabDestruction() OVERRIDE;
 
  private:
-  GoogleURLTracker* tracker_;
-  std::set<const content::NavigationController*>
-      nav_controller_commit_listeners_;
-  std::set<const content::NavigationController*>
-      nav_controller_tab_close_listeners_;
+  bool listening_for_nav_commit_;
+  bool listening_for_tab_destruction_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestGoogleURLTrackerNavigationHelper);
 };
 
-TestGoogleURLTrackerNavigationHelper::TestGoogleURLTrackerNavigationHelper()
-    : tracker_(NULL) {
+TestGoogleURLTrackerNavigationHelper::TestGoogleURLTrackerNavigationHelper(
+    GoogleURLTracker* tracker)
+    : GoogleURLTrackerNavigationHelper(tracker),
+      listening_for_nav_commit_(false),
+      listening_for_tab_destruction_(false) {
 }
 
-TestGoogleURLTrackerNavigationHelper::
-    ~TestGoogleURLTrackerNavigationHelper() {
-}
-
-void TestGoogleURLTrackerNavigationHelper::SetGoogleURLTracker(
-    GoogleURLTracker* tracker) {
-  tracker_ = tracker;
+TestGoogleURLTrackerNavigationHelper::~TestGoogleURLTrackerNavigationHelper() {
 }
 
 void TestGoogleURLTrackerNavigationHelper::SetListeningForNavigationCommit(
-    const content::NavigationController* nav_controller,
     bool listen) {
-  if (listen)
-    nav_controller_commit_listeners_.insert(nav_controller);
-  else
-    nav_controller_commit_listeners_.erase(nav_controller);
+  listening_for_nav_commit_ = listen;
 }
 
-bool TestGoogleURLTrackerNavigationHelper::IsListeningForNavigationCommit(
-    const content::NavigationController* nav_controller) {
-  return nav_controller_commit_listeners_.count(nav_controller) > 0;
+bool TestGoogleURLTrackerNavigationHelper::IsListeningForNavigationCommit() {
+  return listening_for_nav_commit_;
 }
 
 void TestGoogleURLTrackerNavigationHelper::SetListeningForTabDestruction(
-    const content::NavigationController* nav_controller,
     bool listen) {
-  if (listen)
-    nav_controller_tab_close_listeners_.insert(nav_controller);
-  else
-    nav_controller_tab_close_listeners_.erase(nav_controller);
+  listening_for_tab_destruction_ = listen;
 }
 
-bool TestGoogleURLTrackerNavigationHelper::IsListeningForTabDestruction(
-    const content::NavigationController* nav_controller) {
-  return nav_controller_tab_close_listeners_.count(nav_controller) > 0;
+bool TestGoogleURLTrackerNavigationHelper::IsListeningForTabDestruction() {
+  return listening_for_tab_destruction_;
 }
 
 }  // namespace
@@ -260,6 +240,7 @@ class GoogleURLTrackerTest : public testing::Test {
   void CloseTab(intptr_t unique_id);
   GoogleURLTrackerMapEntry* GetMapEntry(intptr_t unique_id);
   GoogleURLTrackerInfoBarDelegate* GetInfoBarDelegate(intptr_t unique_id);
+  GoogleURLTrackerNavigationHelper* GetNavigationHelper(intptr_t unique_id);
   void ExpectDefaultURLs() const;
   void ExpectListeningForCommit(intptr_t unique_id, bool listening);
   bool listener_notified() const { return listener_.notified(); }
@@ -282,7 +263,6 @@ class GoogleURLTrackerTest : public testing::Test {
   scoped_ptr<net::NetworkChangeNotifier> network_change_notifier_;
   net::TestURLFetcherFactory fetcher_factory_;
   GoogleURLTrackerClient* client_;
-  GoogleURLTrackerNavigationHelper* nav_helper_;
   TestingProfile profile_;
   scoped_ptr<GoogleURLTracker> google_url_tracker_;
   TestCallbackListener listener_;
@@ -321,17 +301,12 @@ GoogleURLTrackerTest::~GoogleURLTrackerTest() {
 
 void GoogleURLTrackerTest::SetUp() {
   network_change_notifier_.reset(net::NetworkChangeNotifier::CreateMock());
-  // Ownership is passed to google_url_tracker_, but weak pointers are kept;
-  // this is safe since GoogleURLTracker keeps these objects for its lifetime.
+  // Ownership is passed to google_url_tracker_, but a weak pointer is kept;
+  // this is safe since GoogleURLTracker keeps the client for its lifetime.
   client_ = new TestGoogleURLTrackerClient();
-  nav_helper_ = new TestGoogleURLTrackerNavigationHelper();
   scoped_ptr<GoogleURLTrackerClient> client(client_);
-  scoped_ptr<GoogleURLTrackerNavigationHelper> nav_helper(nav_helper_);
-  google_url_tracker_.reset(
-      new GoogleURLTracker(&profile_,
-                           client.Pass(),
-                           nav_helper.Pass(),
-                           GoogleURLTracker::UNIT_TEST_MODE));
+  google_url_tracker_.reset(new GoogleURLTracker(
+      &profile_, client.Pass(), GoogleURLTracker::UNIT_TEST_MODE));
   google_url_tracker_->infobar_creator_ = base::Bind(
       &GoogleURLTrackerTest::CreateTestInfoBar, base::Unretained(this));
 }
@@ -339,6 +314,7 @@ void GoogleURLTrackerTest::SetUp() {
 void GoogleURLTrackerTest::TearDown() {
   while (!unique_ids_seen_.empty())
     CloseTab(*unique_ids_seen_.begin());
+  google_url_tracker_->Shutdown();
 }
 
 net::TestURLFetcher* GoogleURLTrackerTest::GetFetcher() {
@@ -395,8 +371,11 @@ void GoogleURLTrackerTest::SetNavigationPending(intptr_t unique_id,
   unique_ids_seen_.insert(unique_id);
   if (client_->IsListeningForNavigationStart()) {
     google_url_tracker_->OnNavigationPending(
-        reinterpret_cast<content::NavigationController*>(unique_id),
-        reinterpret_cast<InfoBarService*>(unique_id), unique_id);
+        scoped_ptr<GoogleURLTrackerNavigationHelper>(
+            new TestGoogleURLTrackerNavigationHelper(
+                google_url_tracker_.get())),
+        reinterpret_cast<InfoBarService*>(unique_id),
+        unique_id);
   }
 }
 
@@ -422,8 +401,8 @@ void GoogleURLTrackerTest::CommitNonSearch(intptr_t unique_id) {
 void GoogleURLTrackerTest::CommitSearch(intptr_t unique_id,
                                         const GURL& search_url) {
   DCHECK(search_url.is_valid());
-  if (nav_helper_->IsListeningForNavigationCommit(
-      reinterpret_cast<content::NavigationController*>(unique_id))) {
+  GoogleURLTrackerNavigationHelper* nav_helper = GetNavigationHelper(unique_id);
+  if (nav_helper && nav_helper->IsListeningForNavigationCommit()) {
     google_url_tracker_->OnNavigationCommitted(
         reinterpret_cast<InfoBarService*>(unique_id), search_url);
   }
@@ -431,10 +410,9 @@ void GoogleURLTrackerTest::CommitSearch(intptr_t unique_id,
 
 void GoogleURLTrackerTest::CloseTab(intptr_t unique_id) {
   unique_ids_seen_.erase(unique_id);
-  content::NavigationController* nav_controller =
-      reinterpret_cast<content::NavigationController*>(unique_id);
-  if (nav_helper_->IsListeningForTabDestruction(nav_controller)) {
-    google_url_tracker_->OnTabClosed(nav_controller);
+  GoogleURLTrackerNavigationHelper* nav_helper = GetNavigationHelper(unique_id);
+  if (nav_helper && nav_helper->IsListeningForTabDestruction()) {
+    google_url_tracker_->OnTabClosed(nav_helper);
   } else {
     // Closing a tab with an infobar showing would close the infobar.
     GoogleURLTrackerInfoBarDelegate* delegate = GetInfoBarDelegate(unique_id);
@@ -457,6 +435,12 @@ GoogleURLTrackerInfoBarDelegate* GoogleURLTrackerTest::GetInfoBarDelegate(
   return map_entry ? map_entry->infobar_delegate() : NULL;
 }
 
+GoogleURLTrackerNavigationHelper* GoogleURLTrackerTest::GetNavigationHelper(
+    intptr_t unique_id) {
+  GoogleURLTrackerMapEntry* map_entry = GetMapEntry(unique_id);
+  return map_entry ? map_entry->navigation_helper() : NULL;
+}
+
 void GoogleURLTrackerTest::ExpectDefaultURLs() const {
   EXPECT_EQ(GURL(GoogleURLTracker::kDefaultGoogleHomepage), google_url());
   EXPECT_EQ(GURL(), fetched_google_url());
@@ -466,8 +450,8 @@ void GoogleURLTrackerTest::ExpectListeningForCommit(intptr_t unique_id,
                                                     bool listening) {
   GoogleURLTrackerMapEntry* map_entry = GetMapEntry(unique_id);
   if (map_entry) {
-    EXPECT_EQ(listening, nav_helper_->IsListeningForNavigationCommit(
-        map_entry->navigation_controller()));
+    EXPECT_EQ(listening,
+              map_entry->navigation_helper()->IsListeningForNavigationCommit());
   } else {
     EXPECT_FALSE(listening);
   }
