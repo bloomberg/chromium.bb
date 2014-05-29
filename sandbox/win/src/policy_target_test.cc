@@ -243,6 +243,7 @@ TEST(PolicyTargetTest, DesktopPolicy) {
   PROCESS_INFORMATION temp_process_info = {};
   result = broker->SpawnTarget(prog_name, arguments.c_str(), policy,
                                &temp_process_info);
+  base::string16 desktop_name = policy->GetAlternateDesktop();
   policy->Release();
 
   EXPECT_EQ(SBOX_ALL_OK, result);
@@ -256,7 +257,6 @@ TEST(PolicyTargetTest, DesktopPolicy) {
   EXPECT_NE(::GetThreadDesktop(target.thread_id()),
             ::GetThreadDesktop(::GetCurrentThreadId()));
 
-  base::string16 desktop_name = policy->GetAlternateDesktop();
   HDESK desk = ::OpenDesktop(desktop_name.c_str(), 0, FALSE, DESKTOP_ENUMERATE);
   EXPECT_TRUE(NULL != desk);
   EXPECT_TRUE(::CloseDesktop(desk));
@@ -306,6 +306,7 @@ TEST(PolicyTargetTest, WinstaPolicy) {
   PROCESS_INFORMATION temp_process_info = {};
   result = broker->SpawnTarget(prog_name, arguments.c_str(), policy,
                                &temp_process_info);
+  base::string16 desktop_name = policy->GetAlternateDesktop();
   policy->Release();
 
   EXPECT_EQ(SBOX_ALL_OK, result);
@@ -319,7 +320,6 @@ TEST(PolicyTargetTest, WinstaPolicy) {
   EXPECT_NE(::GetThreadDesktop(target.thread_id()),
             ::GetThreadDesktop(::GetCurrentThreadId()));
 
-  base::string16 desktop_name = policy->GetAlternateDesktop();
   ASSERT_FALSE(desktop_name.empty());
 
   // Make sure there is a backslash, for the window station name.
