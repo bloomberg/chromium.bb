@@ -31,6 +31,9 @@ public interface AwContentsIoThreadClient {
     public boolean shouldBlockNetworkLoads();
 
     @CalledByNative
+    public boolean shouldAcceptThirdPartyCookies();
+
+    @CalledByNative
     public void onDownloadStart(String url, String userAgent,
         String contentDisposition, String mimeType, long contentLength);
 

@@ -291,6 +291,11 @@ public class AwContents {
         }
 
         @Override
+        public boolean shouldAcceptThirdPartyCookies() {
+            return mSettings.getAcceptThirdPartyCookies();
+        }
+
+        @Override
         public void onDownloadStart(String url, String userAgent,
                 String contentDisposition, String mimeType, long contentLength) {
             mContentsClient.getCallbackHelper().postOnDownloadStart(url, userAgent,

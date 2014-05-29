@@ -13,6 +13,7 @@ import static org.chromium.android_webview.test.util.CookieUtils.TestValueCallba
 
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwCookieManager;
+import org.chromium.android_webview.AwSettings;
 import org.chromium.android_webview.test.util.CookieUtils;
 import org.chromium.android_webview.test.util.JSUtils;
 import org.chromium.base.test.util.Feature;
@@ -372,8 +373,8 @@ public class CookieManagerTest extends AwTestBase {
             assertTrue(mCookieManager.acceptCookie());
 
             // When third party cookies are disabled...
-            mCookieManager.setAcceptThirdPartyCookie(false);
-            assertFalse(mCookieManager.acceptThirdPartyCookie());
+            mAwContents.getSettings().setAcceptThirdPartyCookies(false);
+            assertFalse(mAwContents.getSettings().getAcceptThirdPartyCookies());
 
             // ...we can't set third party cookies.
             // First on the third party server we create a url which tries to set a cookie.
@@ -385,8 +386,8 @@ public class CookieManagerTest extends AwTestBase {
             assertNull(mCookieManager.getCookie(cookieUrl));
 
             // When third party cookies are enabled...
-            mCookieManager.setAcceptThirdPartyCookie(true);
-            assertTrue(mCookieManager.acceptThirdPartyCookie());
+            mAwContents.getSettings().setAcceptThirdPartyCookies(true);
+            assertTrue(mAwContents.getSettings().getAcceptThirdPartyCookies());
 
             // ...we can set third party cookies.
             cookieUrl = toThirdPartyUrl(
@@ -438,37 +439,125 @@ public class CookieManagerTest extends AwTestBase {
         try {
             // This test again uses 127.0.0.1/localhost trick to simulate a third party.
             webServer = new TestWebServer(false);
+            ThirdPartyCookiesTestHelper thirdParty
+                    = new ThirdPartyCookiesTestHelper(webServer);
 
             mCookieManager.setAcceptCookie(true);
             assertTrue(mCookieManager.acceptCookie());
 
             // When third party cookies are disabled...
-            mCookieManager.setAcceptThirdPartyCookie(false);
-            assertFalse(mCookieManager.acceptThirdPartyCookie());
+            thirdParty.getSettings().setAcceptThirdPartyCookies(false);
+            assertFalse(thirdParty.getSettings().getAcceptThirdPartyCookies());
 
             // ...we can't set third party cookies.
-            // We create a script which tries to set a cookie on a third party.
-            String cookieUrl = toThirdPartyUrl(
-                    makeCookieScriptUrl(webServer, "/cookie_1.html", "test1", "value1"));
-            // Then we load it as an iframe.
-            String url = makeIframeUrl(webServer, "/content_1.html", cookieUrl);
-            loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(), url);
-            assertNull(mCookieManager.getCookie(cookieUrl));
+            thirdParty.assertThirdPartyIFrameCookieResult("1", false);
 
             // When third party cookies are enabled...
-            mCookieManager.setAcceptThirdPartyCookie(true);
-            assertTrue(mCookieManager.acceptThirdPartyCookie());
+            thirdParty.getSettings().setAcceptThirdPartyCookies(true);
+            assertTrue(thirdParty.getSettings().getAcceptThirdPartyCookies());
 
             // ...we can set third party cookies.
-            cookieUrl = toThirdPartyUrl(
-                    makeCookieScriptUrl(webServer, "/cookie_2.html", "test2", "value2"));
-            url = makeIframeUrl(webServer, "/content_2.html", cookieUrl);
-            loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(), url);
-            String cookie = mCookieManager.getCookie(cookieUrl);
-            assertNotNull(cookie);
-            validateCookies(cookie, "test2");
+            thirdParty.assertThirdPartyIFrameCookieResult("2", true);
         } finally {
             if (webServer != null) webServer.shutdown();
+        }
+    }
+
+    @MediumTest
+    @Feature({"AndroidWebView", "Privacy"})
+    public void testThirdPartyCookiesArePerWebview() throws Throwable {
+        TestWebServer webServer = null;
+        try {
+            webServer = new TestWebServer(false);
+            mCookieManager.setAcceptCookie(true);
+            mCookieManager.removeAllCookie();
+            assertTrue(mCookieManager.acceptCookie());
+            assertFalse(mCookieManager.hasCookies());
+
+            ThirdPartyCookiesTestHelper helperOne = new ThirdPartyCookiesTestHelper(webServer);
+            ThirdPartyCookiesTestHelper helperTwo = new ThirdPartyCookiesTestHelper(webServer);
+
+            helperOne.getSettings().setAcceptThirdPartyCookies(false);
+            helperTwo.getSettings().setAcceptThirdPartyCookies(false);
+            assertFalse(helperOne.getSettings().getAcceptThirdPartyCookies());
+            assertFalse(helperTwo.getSettings().getAcceptThirdPartyCookies());
+            helperOne.assertThirdPartyIFrameCookieResult("1", false);
+            helperTwo.assertThirdPartyIFrameCookieResult("2", false);
+
+            helperTwo.getSettings().setAcceptThirdPartyCookies(true);
+            assertFalse(helperOne.getSettings().getAcceptThirdPartyCookies());
+            assertTrue(helperTwo.getSettings().getAcceptThirdPartyCookies());
+            helperOne.assertThirdPartyIFrameCookieResult("3", false);
+            helperTwo.assertThirdPartyIFrameCookieResult("4", true);
+
+            helperOne.getSettings().setAcceptThirdPartyCookies(true);
+            assertTrue(helperOne.getSettings().getAcceptThirdPartyCookies());
+            assertTrue(helperTwo.getSettings().getAcceptThirdPartyCookies());
+            helperOne.assertThirdPartyIFrameCookieResult("5", true);
+            helperTwo.assertThirdPartyIFrameCookieResult("6", true);
+
+            helperTwo.getSettings().setAcceptThirdPartyCookies(false);
+            assertTrue(helperOne.getSettings().getAcceptThirdPartyCookies());
+            assertFalse(helperTwo.getSettings().getAcceptThirdPartyCookies());
+            helperOne.assertThirdPartyIFrameCookieResult("7", true);
+            helperTwo.assertThirdPartyIFrameCookieResult("8", false);
+        } finally {
+            if (webServer != null) webServer.shutdown();
+        }
+    }
+
+    class ThirdPartyCookiesTestHelper {
+        protected final AwContents mAwContents;
+        protected final TestAwContentsClient mContentsClient;
+        protected final TestWebServer mWebServer;
+
+        ThirdPartyCookiesTestHelper(TestWebServer webServer) throws Throwable {
+            mWebServer = webServer;
+            mContentsClient = new TestAwContentsClient();
+            final AwTestContainerView containerView =
+                createAwTestContainerViewOnMainSync(mContentsClient);
+            mAwContents = containerView.getAwContents();
+            mAwContents.getSettings().setJavaScriptEnabled(true);
+        }
+
+        AwContents getAwContents() {
+            return mAwContents;
+        }
+
+        AwSettings getSettings() {
+            return mAwContents.getSettings();
+        }
+
+        TestWebServer getWebServer() {
+            return mWebServer;
+        }
+
+        void assertThirdPartyIFrameCookieResult(String suffix, boolean expectedResult)
+                throws Throwable {
+            String key = "test" + suffix;
+            String value = "value" + suffix;
+            String iframePath = "/iframe_" + suffix + ".html";
+            String pagePath = "/content_" + suffix + ".html";
+
+            // We create a script which tries to set a cookie on a third party.
+            String cookieUrl = toThirdPartyUrl(
+                    makeCookieScriptUrl(getWebServer(), iframePath, key, value));
+
+            // Then we load it as an iframe.
+            String url = makeIframeUrl(getWebServer(), pagePath, cookieUrl);
+            loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(), url);
+
+            if (expectedResult) {
+                String cookie = mCookieManager.getCookie(cookieUrl);
+                assertNotNull(cookie);
+                validateCookies(cookie, key);
+            } else {
+                assertNull(mCookieManager.getCookie(cookieUrl));
+            }
+
+            // Clear the cookies.
+            clearCookies();
+            assertFalse(mCookieManager.hasCookies());
         }
     }
 
@@ -503,7 +592,7 @@ public class CookieManagerTest extends AwTestBase {
     /**
      * Makes a url look as if it comes from a different host.
      * @param  url the url to fake.
-     * @return  the resulting after faking.
+     * @return  the resulting url after faking.
      */
     private String toThirdPartyUrl(String url) {
         return url.replace("localhost", "127.0.0.1");

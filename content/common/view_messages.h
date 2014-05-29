@@ -1198,7 +1198,8 @@ IPC_SYNC_MESSAGE_CONTROL2_0(ViewHostMsg_DeleteCookie,
 
 // Used to check if cookies are enabled for the given URL. This may block
 // waiting for a previous SetCookie message to be processed.
-IPC_SYNC_MESSAGE_CONTROL2_1(ViewHostMsg_CookiesEnabled,
+IPC_SYNC_MESSAGE_CONTROL3_1(ViewHostMsg_CookiesEnabled,
+                            int /* render_frame_id */,
                             GURL /* url */,
                             GURL /* first_party_for_cookies */,
                             bool /* cookies_enabled */)

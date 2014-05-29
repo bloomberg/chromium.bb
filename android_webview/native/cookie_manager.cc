@@ -147,10 +147,8 @@ class CookieManager {
 
   scoped_refptr<net::CookieStore> GetCookieStore();
 
-  void SetAcceptCookie(bool accept);
-  bool AcceptCookie();
-  void SetAcceptThirdPartyCookie(bool accept);
-  bool AcceptThirdPartyCookie();
+  void SetShouldAcceptCookies(bool accept);
+  bool GetShouldAcceptCookies();
   void SetCookie(const GURL& host,
                  const std::string& cookie_value,
                  scoped_ptr<BoolCookieCallbackHolder> callback);
@@ -330,20 +328,12 @@ scoped_refptr<net::CookieStore> CookieManager::GetCookieStore() {
   return cookie_monster_;
 }
 
-void CookieManager::SetAcceptCookie(bool accept) {
-  AwCookieAccessPolicy::GetInstance()->SetGlobalAllowAccess(accept);
+void CookieManager::SetShouldAcceptCookies(bool accept) {
+  AwCookieAccessPolicy::GetInstance()->SetShouldAcceptCookies(accept);
 }
 
-bool CookieManager::AcceptCookie() {
-  return AwCookieAccessPolicy::GetInstance()->GetGlobalAllowAccess();
-}
-
-void CookieManager::SetAcceptThirdPartyCookie(bool accept) {
-  AwCookieAccessPolicy::GetInstance()->SetThirdPartyAllowAccess(accept);
-}
-
-bool CookieManager::AcceptThirdPartyCookie() {
-  return AwCookieAccessPolicy::GetInstance()->GetThirdPartyAllowAccess();
+bool CookieManager::GetShouldAcceptCookies() {
+  return AwCookieAccessPolicy::GetInstance()->GetShouldAcceptCookies();
 }
 
 void CookieManager::SetCookie(
@@ -529,22 +519,12 @@ void CookieManager::SetAcceptFileSchemeCookiesLocked(bool accept) {
 
 }  // namespace
 
-static void SetAcceptCookie(JNIEnv* env, jobject obj, jboolean accept) {
-  CookieManager::GetInstance()->SetAcceptCookie(accept);
+static void SetShouldAcceptCookies(JNIEnv* env, jobject obj, jboolean accept) {
+  CookieManager::GetInstance()->SetShouldAcceptCookies(accept);
 }
 
-static jboolean AcceptCookie(JNIEnv* env, jobject obj) {
-  return CookieManager::GetInstance()->AcceptCookie();
-}
-
-static void SetAcceptThirdPartyCookie(JNIEnv* env,
-                                      jobject obj,
-                                      jboolean accept) {
-  CookieManager::GetInstance()->SetAcceptThirdPartyCookie(accept);
-}
-
-static jboolean AcceptThirdPartyCookie(JNIEnv* env, jobject obj) {
-  return CookieManager::GetInstance()->AcceptThirdPartyCookie();
+static jboolean GetShouldAcceptCookies(JNIEnv* env, jobject obj) {
+  return CookieManager::GetInstance()->GetShouldAcceptCookies();
 }
 
 static void SetCookie(JNIEnv* env,

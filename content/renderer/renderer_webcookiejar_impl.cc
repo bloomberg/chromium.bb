@@ -71,7 +71,7 @@ bool RendererWebCookieJarImpl::cookiesEnabled(
     const WebURL& url, const WebURL& first_party_for_cookies) {
   bool cookies_enabled;
   sender_->Send(new ViewHostMsg_CookiesEnabled(
-      url, first_party_for_cookies, &cookies_enabled));
+      sender_->GetRoutingID(), url, first_party_for_cookies, &cookies_enabled));
   return cookies_enabled;
 }
 

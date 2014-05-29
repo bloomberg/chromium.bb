@@ -663,6 +663,7 @@ void RenderMessageFilter::OnDeleteCookie(const GURL& url,
 }
 
 void RenderMessageFilter::OnCookiesEnabled(
+    int render_frame_id,
     const GURL& url,
     const GURL& first_party_for_cookies,
     bool* cookies_enabled) {
@@ -671,7 +672,7 @@ void RenderMessageFilter::OnCookiesEnabled(
   // host.
   *cookies_enabled = GetContentClient()->browser()->AllowGetCookie(
       url, first_party_for_cookies, net::CookieList(), resource_context_,
-      render_process_id_, MSG_ROUTING_CONTROL);
+      render_process_id_, render_frame_id);
 }
 
 #if defined(OS_MACOSX)

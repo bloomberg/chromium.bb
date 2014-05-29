@@ -160,6 +160,9 @@ class AwContents : public FindHelper::Listener,
   void ClearMatches(JNIEnv* env, jobject obj);
   FindHelper* GetFindHelper();
 
+  // Per WebView Cookie Policy
+  bool AllowThirdPartyCookies();
+
   // FindHelper::Listener implementation.
   virtual void OnFindResultReceived(int active_ordinal,
                                     int match_count,

@@ -39,7 +39,7 @@ public final class AwCookieManager {
      * @param accept TRUE if accept cookie
      */
     public void setAcceptCookie(boolean accept) {
-        nativeSetAcceptCookie(accept);
+        nativeSetShouldAcceptCookies(accept);
     }
 
     /**
@@ -47,23 +47,7 @@ public final class AwCookieManager {
      * @return TRUE if accept cookie
      */
     public boolean acceptCookie() {
-        return nativeAcceptCookie();
-    }
-
-    /**
-     * Control whether third party cookies are enabled or disabled
-     * @param accept TRUE if accept third party cookies
-     */
-    public void setAcceptThirdPartyCookie(boolean accept) {
-        nativeSetAcceptThirdPartyCookie(accept);
-    }
-
-    /**
-     * Return whether third party cookies are enabled
-     * @return TRUE if accept third party cookies
-     */
-    public boolean acceptThirdPartyCookie() {
-        return nativeAcceptThirdPartyCookie();
+        return nativeGetShouldAcceptCookies();
     }
 
     /**
@@ -228,11 +212,8 @@ public final class AwCookieManager {
         }
     }
 
-    private native void nativeSetAcceptCookie(boolean accept);
-    private native boolean nativeAcceptCookie();
-
-    private native void nativeSetAcceptThirdPartyCookie(boolean accept);
-    private native boolean nativeAcceptThirdPartyCookie();
+    private native void nativeSetShouldAcceptCookies(boolean accept);
+    private native boolean nativeGetShouldAcceptCookies();
 
     private native void nativeSetCookie(String url, String value,
             CookieCallback<Boolean> callback);

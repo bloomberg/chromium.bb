@@ -84,6 +84,9 @@ class AwContentsIoThreadClient {
   // This method is called on the IO thread only.
   virtual bool ShouldBlockNetworkLoads() const = 0;
 
+  // Retrieve the AcceptThirdPartyCookies setting value of this AwContents.
+  virtual bool ShouldAcceptThirdPartyCookies() const = 0;
+
   // Called when ResourceDispathcerHost detects a download request.
   // The download is already cancelled when this is called, since
   // relevant for DownloadListener is already extracted.

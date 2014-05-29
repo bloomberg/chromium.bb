@@ -148,7 +148,8 @@ class RenderMessageFilter : public BrowserMessageFilter {
                        IPC::Message* reply_msg);
   void OnDeleteCookie(const GURL& url,
                       const std::string& cookieName);
-  void OnCookiesEnabled(const GURL& url,
+  void OnCookiesEnabled(int render_frame_id,
+                        const GURL& url,
                         const GURL& first_party_for_cookies,
                         bool* cookies_enabled);
 

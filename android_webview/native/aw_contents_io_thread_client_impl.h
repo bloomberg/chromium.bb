@@ -51,6 +51,7 @@ class AwContentsIoThreadClientImpl : public AwContentsIoThreadClient {
       const net::URLRequest* request) OVERRIDE;
   virtual bool ShouldBlockContentUrls() const OVERRIDE;
   virtual bool ShouldBlockFileUrls() const OVERRIDE;
+  virtual bool ShouldAcceptThirdPartyCookies() const OVERRIDE;
   virtual bool ShouldBlockNetworkLoads() const OVERRIDE;
   virtual void NewDownload(const GURL& url,
                            const std::string& user_agent,

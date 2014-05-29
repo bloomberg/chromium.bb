@@ -25,19 +25,20 @@ class GURL;
 namespace android_webview {
 
 // Manages the cookie access (both setting and getting) policy for WebView.
+// Currently we don't distinguish between sources (i.e. network vs. JavaScript)
+// or between reading vs. writing cookies.
 class AwCookieAccessPolicy {
  public:
   static AwCookieAccessPolicy* GetInstance();
 
-  // These manage the global access state shared across requests regardless of
-  // source (i.e. network or JavaScript).
-  bool GetGlobalAllowAccess();
-  void SetGlobalAllowAccess(bool allow);
+  // Can we read/write any cookies?
+  bool GetShouldAcceptCookies();
+  void SetShouldAcceptCookies(bool allow);
 
-  // These allow more fine grained control over requests depending on whether
-  // the cookie is third party or not.
-  bool GetThirdPartyAllowAccess();
-  void SetThirdPartyAllowAccess(bool allow);
+  // Can we read/write third party cookies?
+  bool GetShouldAcceptThirdPartyCookies(int render_process_id,
+                                        int render_frame_id);
+  bool GetShouldAcceptThirdPartyCookies(const net::URLRequest& request);
 
   // These are the functions called when operating over cookies from the
   // network. See NetworkDelegate for further descriptions.
@@ -68,20 +69,42 @@ class AwCookieAccessPolicy {
 
   AwCookieAccessPolicy();
   ~AwCookieAccessPolicy();
-  bool allow_access_;
-  bool allow_third_party_access_;
+  bool accept_cookies_;
   base::Lock lock_;
 
-  // We have two bits of state but only three different cases:
-  // If !GlobalAllowAccess then reject all cookies.
-  // If GlobalAllowAccess and !ThirdPartyAllowAccess then reject third party.
-  // If GlobalAllowAccess and ThirdPartyAllowAccess then allow all cookies.
-  net::StaticCookiePolicy::Type GetPolicy(void);
-
-  bool AllowGet(const GURL& url, const GURL& first_party);
-  bool AllowSet(const GURL& url, const GURL& first_party);
-
   DISALLOW_COPY_AND_ASSIGN(AwCookieAccessPolicy);
+};
+
+class AwStaticCookiePolicy {
+ public:
+  AwStaticCookiePolicy(bool allow_global_access,
+                       bool allow_third_party_access);
+
+  bool accept_cookies() const {
+    return accept_cookies_;
+  }
+
+  bool accept_third_party_cookies() const {
+    return accept_third_party_cookies_;
+  }
+
+  bool AllowGet(const GURL& url, const GURL& first_party) const;
+  bool AllowSet(const GURL& url, const GURL& first_party) const;
+
+ private:
+  const bool accept_cookies_;
+  const bool accept_third_party_cookies_;
+
+  // We have two bits of state but only three different cases:
+  // If !ShouldAcceptCookies
+  //    then reject all cookies.
+  // If ShouldAcceptCookies and !ShouldAcceptThirdPartyCookies
+  //    then reject third party.
+  // If ShouldAcceptCookies and ShouldAcceptThirdPartyCookies
+  //    then allow all cookies.
+  net::StaticCookiePolicy::Type GetPolicy() const;
+
+  DISALLOW_COPY_AND_ASSIGN(AwStaticCookiePolicy);
 };
 
 }  // namespace android_webview
