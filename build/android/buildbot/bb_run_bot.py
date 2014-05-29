@@ -273,6 +273,17 @@ def RunBotCommands(options, commands, env):
 
 
 def main(argv):
+  proc = subprocess.Popen(
+      ['/bin/hostname', '-f'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+  hostname_stdout, hostname_stderr = proc.communicate()
+  if proc.returncode == 0:
+    print 'Running on: ' + hostname_stdout
+  else:
+    print >> sys.stderr, 'WARNING: failed to run hostname'
+    print >> sys.stderr, hostname_stdout
+    print >> sys.stderr, hostname_stderr
+    sys.exit(1)
+
   parser = GetRunBotOptParser()
   options, args = parser.parse_args(argv[1:])
   if args:
