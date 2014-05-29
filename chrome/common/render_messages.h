@@ -592,6 +592,7 @@ IPC_MESSAGE_CONTROL1(ChromeViewHostMsg_ResourceTypeStats,
 // only when the renderer is prerendering.
 IPC_MESSAGE_ROUTED0(ChromeViewHostMsg_CancelPrerenderForPrinting)
 
+#if defined(ENABLE_EXTENSIONS)
 // Sent by the renderer to check if a URL has permission to trigger a clipboard
 // read/write operation from the DOM.
 IPC_SYNC_MESSAGE_CONTROL1_1(ChromeViewHostMsg_CanTriggerClipboardRead,
@@ -600,6 +601,7 @@ IPC_SYNC_MESSAGE_CONTROL1_1(ChromeViewHostMsg_CanTriggerClipboardRead,
 IPC_SYNC_MESSAGE_CONTROL1_1(ChromeViewHostMsg_CanTriggerClipboardWrite,
                             GURL /* origin */,
                             bool /* allowed */)
+#endif
 
 // Sent when the renderer was prevented from displaying insecure content in
 // a secure page by a security policy.  The page may appear incomplete.
@@ -736,6 +738,8 @@ IPC_MESSAGE_ROUTED4(ChromeViewHostMsg_DetailedConsoleMessageAdded,
                     extensions::StackTrace /* stack trace */,
                     int32 /* severity level */)
 
+#if defined(ENABLE_PLUGINS)
 // Sent by the renderer to check if crash reporting is enabled.
 IPC_SYNC_MESSAGE_CONTROL0_1(ChromeViewHostMsg_IsCrashReportingEnabled,
                             bool /* enabled */)
+#endif

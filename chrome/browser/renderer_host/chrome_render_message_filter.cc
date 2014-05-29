@@ -9,30 +9,37 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/metrics/histogram.h"
-#include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/cookie_settings.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
+#include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
+#include "chrome/browser/net/chrome_url_request_context.h"
+#include "chrome/browser/net/predictor.h"
+#include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/renderer_host/web_cache_manager.h"
+#include "chrome/common/extensions/api/i18n/default_locale_handler.h"
+#include "chrome/common/render_messages.h"
+#include "content/public/browser/notification_service.h"
+#include "content/public/browser/render_process_host.h"
+
+#if defined(ENABLE_EXTENSIONS)
+#include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/activity_log/activity_action_constants.h"
 #include "chrome/browser/extensions/activity_log/activity_actions.h"
 #include "chrome/browser/extensions/activity_log/activity_log.h"
 #include "chrome/browser/extensions/api/activity_log_private/activity_log_private_api.h"
 #include "chrome/browser/extensions/api/messaging/message_service.h"
-#include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
-#include "chrome/browser/net/chrome_url_request_context.h"
-#include "chrome/browser/net/predictor.h"
-#include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/task_manager/task_manager.h"
-#include "chrome/common/extensions/api/i18n/default_locale_handler.h"
-#include "chrome/common/render_messages.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/browser/render_process_host.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/file_util.h"
 #include "extensions/common/message_bundle.h"
+#endif
+
+#if defined(ENABLE_TASK_MANAGER)
+#include "chrome/browser/task_manager/task_manager.h"
+#endif
 
 #if defined(USE_TCMALLOC)
 #include "chrome/browser/browser_about_handler.h"
@@ -46,15 +53,17 @@ namespace {
 
 const uint32 kFilteredMessageClasses[] = {
   ChromeMsgStart,
+#if defined(ENABLE_EXTENSIONS)
   ExtensionMsgStart,
+#endif
 };
 
+#if defined(ENABLE_EXTENSIONS)
 // Logs an action to the extension activity log for the specified profile.  Can
 // be called from any thread.
 void AddActionToExtensionActivityLog(
     Profile* profile,
     scoped_refptr<extensions::Action> action) {
-#if defined(ENABLE_EXTENSIONS)
   // The ActivityLog can only be accessed from the main (UI) thread.  If we're
   // running on the wrong thread, re-dispatch from the main thread.
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
@@ -73,10 +82,10 @@ void AddActionToExtensionActivityLog(
         extensions::ActivityLog::GetInstance(profile);
     activity_log->LogAction(action);
   }
-#endif
 }
+#endif
 
-} // namespace
+}  // namespace
 
 ChromeRenderMessageFilter::ChromeRenderMessageFilter(
     int render_process_id,
@@ -89,8 +98,10 @@ ChromeRenderMessageFilter::ChromeRenderMessageFilter(
       off_the_record_(profile_->IsOffTheRecord()),
       predictor_(profile_->GetNetworkPredictor()),
       request_context_(request_context),
+#if defined(ENABLE_EXTENSIONS)
       extension_info_map_(
           extensions::ExtensionSystem::Get(profile)->info_map()),
+#endif
       cookie_settings_(CookieSettings::Factory::GetForProfile(profile)) {}
 
 ChromeRenderMessageFilter::~ChromeRenderMessageFilter() {
@@ -107,6 +118,7 @@ bool ChromeRenderMessageFilter::OnMessageReceived(const IPC::Message& message) {
                         OnUpdatedCacheStats)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_FPS, OnFPS)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_V8HeapStats, OnV8HeapStats)
+#if defined(ENABLE_EXTENSIONS)
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_OpenChannelToExtension,
                         OnOpenChannelToExtension)
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_OpenChannelToTab, OnOpenChannelToTab)
@@ -121,6 +133,7 @@ bool ChromeRenderMessageFilter::OnMessageReceived(const IPC::Message& message) {
                         OnAddDOMActionToExtensionActivityLog);
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_AddEventToActivityLog,
                         OnAddEventToExtensionActivityLog);
+#endif
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_AllowDatabase, OnAllowDatabase)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_AllowDOMStorage, OnAllowDOMStorage)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_RequestFileSystemAccessSync,
@@ -128,12 +141,16 @@ bool ChromeRenderMessageFilter::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_RequestFileSystemAccessAsync,
                         OnRequestFileSystemAccessAsync)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_AllowIndexedDB, OnAllowIndexedDB)
+#if defined(ENABLE_EXTENSIONS)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_CanTriggerClipboardRead,
                         OnCanTriggerClipboardRead)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_CanTriggerClipboardWrite,
                         OnCanTriggerClipboardWrite)
+#endif
+#if defined(ENABLE_PLUGINS)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_IsCrashReportingEnabled,
                         OnIsCrashReportingEnabled)
+#endif
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -144,7 +161,9 @@ void ChromeRenderMessageFilter::OverrideThreadForMessage(
     const IPC::Message& message, BrowserThread::ID* thread) {
   switch (message.type()) {
     case ChromeViewHostMsg_ResourceTypeStats::ID:
+#if defined(ENABLE_EXTENSIONS)
     case ExtensionHostMsg_CloseChannel::ID:
+#endif
     case ChromeViewHostMsg_UpdatedCacheStats::ID:
       *thread = BrowserThread::UI;
       break;
@@ -236,6 +255,7 @@ void ChromeRenderMessageFilter::OnV8HeapStats(int v8_memory_allocated,
       content::Details<const V8HeapStatsDetails>(&details));
 }
 
+#if defined(ENABLE_EXTENSIONS)
 void ChromeRenderMessageFilter::OnOpenChannelToExtension(
     int routing_id,
     const ExtensionMsg_ExternalConnectionInfo& info,
@@ -403,6 +423,7 @@ void ChromeRenderMessageFilter::OnAddEventToExtensionActivityLog(
   }
   AddActionToExtensionActivityLog(profile_, action);
 }
+#endif  // defined(ENABLE_EXTENSIONS)
 
 void ChromeRenderMessageFilter::OnAllowDatabase(
     int render_frame_id,
@@ -488,6 +509,7 @@ void ChromeRenderMessageFilter::OnAllowIndexedDB(int render_frame_id,
                  !*allowed));
 }
 
+#if defined(ENABLE_EXTENSIONS)
 void ChromeRenderMessageFilter::OnCanTriggerClipboardRead(
     const GURL& origin, bool* allowed) {
   *allowed = extension_info_map_->SecurityOriginHasAPIPermission(
@@ -502,7 +524,10 @@ void ChromeRenderMessageFilter::OnCanTriggerClipboardWrite(
       extension_info_map_->SecurityOriginHasAPIPermission(
           origin, render_process_id_, APIPermission::kClipboardWrite));
 }
+#endif
 
+#if defined(ENABLE_PLUGINS)
 void ChromeRenderMessageFilter::OnIsCrashReportingEnabled(bool* enabled) {
   *enabled = ChromeMetricsServiceAccessor::IsCrashReportingEnabled();
 }
+#endif

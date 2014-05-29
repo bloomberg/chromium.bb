@@ -405,18 +405,22 @@ bool ContentSettingsObserver::allowStorage(bool local) {
 
 bool ContentSettingsObserver::allowReadFromClipboard(bool default_value) {
   bool allowed = false;
+#if defined(ENABLE_EXTENSIONS)
   WebFrame* frame = render_frame()->GetWebFrame();
   // TODO(dcheng): Should we consider a toURL() method on WebSecurityOrigin?
   Send(new ChromeViewHostMsg_CanTriggerClipboardRead(
       GURL(frame->document().securityOrigin().toString()), &allowed));
+#endif
   return allowed;
 }
 
 bool ContentSettingsObserver::allowWriteToClipboard(bool default_value) {
   bool allowed = false;
+#if defined(ENABLE_EXTENSIONS)
   WebFrame* frame = render_frame()->GetWebFrame();
   Send(new ChromeViewHostMsg_CanTriggerClipboardWrite(
       GURL(frame->document().securityOrigin().toString()), &allowed));
+#endif
   return allowed;
 }
 

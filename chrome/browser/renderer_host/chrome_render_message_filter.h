@@ -74,6 +74,7 @@ class ChromeRenderMessageFilter : public content::BrowserMessageFilter {
   void OnFPS(int routing_id, float fps);
   void OnV8HeapStats(int v8_memory_allocated, int v8_memory_used);
 
+#if defined(ENABLE_EXTENSIONS)
   // TODO(jamescook): Move these functions into the extensions module. Ideally
   // this would be in extensions::ExtensionMessageFilter but that will require
   // resolving the MessageService and ActivityLog dependencies on src/chrome.
@@ -125,6 +126,7 @@ class ChromeRenderMessageFilter : public content::BrowserMessageFilter {
   void OnAddEventToExtensionActivityLog(
       const std::string& extension_id,
       const ExtensionHostMsg_APIActionOrEvent_Params& params);
+#endif  // defined(ENABLE_EXTENSIONS)
   void OnAllowDatabase(int render_frame_id,
                        const GURL& origin_url,
                        const GURL& top_origin_url,
@@ -141,7 +143,7 @@ class ChromeRenderMessageFilter : public content::BrowserMessageFilter {
                                      const GURL& top_origin_url,
                                      bool* allowed);
   void OnRequestFileSystemAccessAsync(int render_frame_id,
-                                      int  request_id,
+                                      int request_id,
                                       const GURL& origin_url,
                                       const GURL& top_origin_url);
   void OnAllowIndexedDB(int render_frame_id,
@@ -149,22 +151,30 @@ class ChromeRenderMessageFilter : public content::BrowserMessageFilter {
                         const GURL& top_origin_url,
                         const base::string16& name,
                         bool* allowed);
+#if defined(ENABLE_EXTENSIONS)
   void OnCanTriggerClipboardRead(const GURL& origin, bool* allowed);
   void OnCanTriggerClipboardWrite(const GURL& origin, bool* allowed);
+#endif
+#if defined(ENABLE_PLUGINS)
   void OnIsCrashReportingEnabled(bool* enabled);
+#endif
 
-  int render_process_id_;
+  const int render_process_id_;
 
   // The Profile associated with our renderer process.  This should only be
   // accessed on the UI thread!
   Profile* profile_;
   // Copied from the profile so that it can be read on the IO thread.
-  bool off_the_record_;
+  const bool off_the_record_;
   // The Predictor for the associated Profile. It is stored so that it can be
   // used on the IO thread.
   chrome_browser_net::Predictor* predictor_;
   scoped_refptr<net::URLRequestContextGetter> request_context_;
+
+#if defined(ENABLE_EXTENSIONS)
   scoped_refptr<extensions::InfoMap> extension_info_map_;
+#endif
+
   // Used to look up permissions at database creation time.
   scoped_refptr<CookieSettings> cookie_settings_;
 
