@@ -259,10 +259,14 @@ def print_stats(similarity, find_copies, args):
   else:
     similarity_options = ['-M%s' % similarity]
 
+  try:
+    stdout = sys.stdout.fileno()
+  except AttributeError:
+    stdout = None
   return subprocess2.call(
       ['git',
        'diff', '--no-ext-diff', '--stat'] + similarity_options + args,
-      env=env)
+      stdout=stdout, env=env)
 
 
 class Settings(object):
