@@ -402,6 +402,24 @@
         },
       ],
     }],
+    ['ozone_platform_gbm==1', {
+      'targets': [
+        {
+          'target_name': 'gbm',
+          'type': 'none',
+          'direct_dependent_settings': {
+            'cflags': [
+              '<!@(<(pkg-config) --cflags gbm)',
+            ],
+          },
+          'link_settings': {
+            'libraries': [
+              '<!@(<(pkg-config) --libs-only-l gbm)',
+            ],
+          },
+        },
+      ],
+    }],
   ],  # conditions
   'targets': [
     {

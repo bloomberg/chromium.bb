@@ -9,14 +9,15 @@
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
-#include "ui/ozone/platform/dri/dri_surface.h"
 #include "ui/ozone/platform/dri/dri_util.h"
 #include "ui/ozone/platform/dri/hardware_display_controller.h"
+#include "ui/ozone/platform/dri/scanout_surface.h"
 
 namespace ui {
 
-ScreenManager::ScreenManager(DriWrapper* dri)
-    : dri_(dri), last_added_widget_(0) {
+ScreenManager::ScreenManager(
+    DriWrapper* dri, ScanoutSurfaceGenerator* surface_generator)
+    : dri_(dri), surface_generator_(surface_generator), last_added_widget_(0) {
 }
 
 ScreenManager::~ScreenManager() {
@@ -51,8 +52,8 @@ bool ScreenManager::ConfigureDisplayController(uint32_t crtc,
   }
 
   // Create a surface suitable for the current controller.
-  scoped_ptr<DriSurface> surface(
-      CreateSurface(gfx::Size(mode.hdisplay, mode.vdisplay)));
+  scoped_ptr<ScanoutSurface> surface(
+      surface_generator_->Create(gfx::Size(mode.hdisplay, mode.vdisplay)));
 
   if (!surface->Initialize()) {
     LOG(ERROR) << "Failed to initialize surface";
@@ -129,10 +130,6 @@ void ScreenManager::ForceInitializationOfPrimaryDisplay() {
   ConfigureDisplayController(displays[0]->crtc()->crtc_id,
                              displays[0]->connector()->connector_id,
                              displays[0]->connector()->modes[0]);
-}
-
-DriSurface* ScreenManager::CreateSurface(const gfx::Size& size) {
-  return new DriSurface(dri_, size);
 }
 
 }  // namespace ui

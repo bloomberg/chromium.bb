@@ -12,6 +12,8 @@
     'platform/dri/test/mock_dri_surface.h',
     'platform/dri/test/mock_dri_wrapper.cc',
     'platform/dri/test/mock_dri_wrapper.h',
+    'platform/dri/test/mock_surface_generator.cc',
+    'platform/dri/test/mock_surface_generator.h',
   ],
   'conditions': [
     ['ozone_platform_dri == 1', {

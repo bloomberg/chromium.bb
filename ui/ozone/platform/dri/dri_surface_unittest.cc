@@ -61,7 +61,7 @@ TEST_F(DriSurfaceTest, SuccessfulInitialization) {
 
 TEST_F(DriSurfaceTest, CheckFBIDOnSwap) {
   EXPECT_TRUE(surface_->Initialize());
-  controller_->BindSurfaceToController(surface_.PassAs<ui::DriSurface>(),
+  controller_->BindSurfaceToController(surface_.PassAs<ui::ScanoutSurface>(),
                                        kDefaultMode);
 
   // Check that the framebuffer ID is correct.

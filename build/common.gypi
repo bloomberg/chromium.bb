@@ -1401,6 +1401,7 @@
     'ozone_platform_caca%': 0,
     'ozone_platform_dri%': 0,
     'ozone_platform_egltest%': 0,
+    'ozone_platform_gbm%': 0,
     'ozone_platform_ozonex%': 0,
     'ozone_platform_test%': 0,
 

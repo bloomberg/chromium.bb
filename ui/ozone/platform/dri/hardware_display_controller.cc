@@ -15,9 +15,10 @@
 #include "base/time/time.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/gfx/geometry/point.h"
+#include "ui/gfx/geometry/size.h"
 #include "ui/ozone/platform/dri/dri_buffer.h"
-#include "ui/ozone/platform/dri/dri_surface.h"
 #include "ui/ozone/platform/dri/dri_wrapper.h"
+#include "ui/ozone/platform/dri/scanout_surface.h"
 
 namespace ui {
 
@@ -28,7 +29,7 @@ namespace {
 // The old frontbuffer is no longer used by the hardware and can be used for
 // future draw operations.
 //
-// |device| will contain a reference to the |DriSurface| object which
+// |device| will contain a reference to the |ScanoutSurface| object which
 // the event belongs to.
 //
 // TODO(dnicoara) When we have a FD handler for the DRM calls in the message
@@ -63,7 +64,7 @@ HardwareDisplayController::~HardwareDisplayController() {
 
 bool
 HardwareDisplayController::BindSurfaceToController(
-    scoped_ptr<DriSurface> surface, drmModeModeInfo mode) {
+    scoped_ptr<ScanoutSurface> surface, drmModeModeInfo mode) {
   CHECK(surface);
 
   if (!drm_->SetCrtc(crtc_id_,
@@ -94,7 +95,6 @@ void HardwareDisplayController::Disable() {
 
 bool HardwareDisplayController::SchedulePageFlip() {
   CHECK(surface_);
-
   if (!drm_->PageFlip(crtc_id_,
                       surface_->GetFramebufferId(),
                       this)) {
@@ -127,11 +127,11 @@ void HardwareDisplayController::OnPageFlipEvent(unsigned int frame,
   surface_->SwapBuffers();
 }
 
-bool HardwareDisplayController::SetCursor(DriSurface* surface) {
+bool HardwareDisplayController::SetCursor(ScanoutSurface* surface) {
   bool ret = drm_->SetCursor(crtc_id_,
                          surface->GetHandle(),
-                         surface->size().width(),
-                         surface->size().height());
+                         surface->Size().width(),
+                         surface->Size().height());
   surface->SwapBuffers();
   return ret;
 }

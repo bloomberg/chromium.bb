@@ -18,6 +18,7 @@
 #include "ui/ozone/platform/dri/screen_manager.h"
 #include "ui/ozone/platform/dri/test/mock_dri_surface.h"
 #include "ui/ozone/platform/dri/test/mock_dri_wrapper.h"
+#include "ui/ozone/platform/dri/test/mock_surface_generator.h"
 
 namespace {
 
@@ -53,24 +54,16 @@ class MockDriSurfaceFactory : public ui::DriSurfaceFactory {
 
 class MockScreenManager : public ui::ScreenManager {
  public:
-  MockScreenManager(ui::DriWrapper* dri)
-      : ScreenManager(dri),
+  MockScreenManager(ui::DriWrapper* dri,
+                    ui::ScanoutSurfaceGenerator* surface_generator)
+      : ScreenManager(dri, surface_generator),
         dri_(dri) {}
   virtual ~MockScreenManager() {}
-
-  const std::vector<ui::MockDriSurface*>& get_surfaces() const {
-    return surfaces_;
-  }
 
   // Normally we'd use DRM to figure out the controller configuration. But we
   // can't use DRM in unit tests, so we just create a fake configuration.
   virtual void ForceInitializationOfPrimaryDisplay() OVERRIDE {
     ConfigureDisplayController(1, 2, kDefaultMode);
-  }
-  virtual ui::DriSurface* CreateSurface(const gfx::Size& size) OVERRIDE {
-    ui::MockDriSurface* surface = new ui::MockDriSurface(dri_, size);
-    surfaces_.push_back(surface);
-    return surface;
   }
 
  private:
@@ -91,6 +84,7 @@ class DriSurfaceFactoryTest : public testing::Test {
  protected:
   scoped_ptr<base::MessageLoop> message_loop_;
   scoped_ptr<ui::MockDriWrapper> dri_;
+  scoped_ptr<ui::MockSurfaceGenerator> surface_generator_;
   scoped_ptr<MockScreenManager> screen_manager_;
   scoped_ptr<MockDriSurfaceFactory> factory_;
 
@@ -101,7 +95,9 @@ class DriSurfaceFactoryTest : public testing::Test {
 void DriSurfaceFactoryTest::SetUp() {
   message_loop_.reset(new base::MessageLoopForUI);
   dri_.reset(new ui::MockDriWrapper(3));
-  screen_manager_.reset(new MockScreenManager(dri_.get()));
+  surface_generator_.reset(new ui::MockSurfaceGenerator(dri_.get()));
+  screen_manager_.reset(new MockScreenManager(dri_.get(),
+                                              surface_generator_.get()));
   factory_.reset(new MockDriSurfaceFactory(dri_.get(), screen_manager_.get()));
 }
 
@@ -147,7 +143,7 @@ TEST_F(DriSurfaceFactoryTest, CheckNativeSurfaceContents) {
       gfx::Rect(0, 0, kDefaultMode.hdisplay / 2, kDefaultMode.vdisplay / 2));
 
   const std::vector<ui::DriBuffer*>& bitmaps =
-      screen_manager_->get_surfaces()[0]->bitmaps();
+      surface_generator_->surfaces()[0]->bitmaps();
 
   SkBitmap image;
   bitmaps[1]->canvas()->readPixels(&image, 0, 0);

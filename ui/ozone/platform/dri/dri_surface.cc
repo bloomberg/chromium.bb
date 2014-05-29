@@ -66,6 +66,10 @@ void DriSurface::SwapBuffers() {
   front_buffer_ ^= 1;
 }
 
+gfx::Size DriSurface::Size() const {
+  return size_;
+}
+
 SkCanvas* DriSurface::GetDrawableForWidget() {
   CHECK(backbuffer());
   return backbuffer()->canvas();

@@ -59,7 +59,7 @@ class OZONE_EXPORT DriSurfaceFactory : public gfx::SurfaceFactoryOzone {
 
   void UnsetHardwareCursor(gfx::AcceleratedWidget window);
 
- private:
+ protected:
   // Draw the last set cursor & update the cursor plane.
   void ResetCursor(gfx::AcceleratedWidget w);
 

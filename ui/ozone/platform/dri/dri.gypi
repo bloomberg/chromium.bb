@@ -8,7 +8,7 @@
       'ozone_platform_dri',
     ],
     'internal_ozone_platforms': [
-      'dri'
+      'dri',
     ],
   },
   'targets': [
@@ -57,6 +57,7 @@
         'ozone_platform_dri.h',
         'screen_manager.cc',
         'screen_manager.h',
+        'scanout_surface.h',
       ],
     },
   ],

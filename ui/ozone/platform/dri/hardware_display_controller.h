@@ -22,7 +22,7 @@ class Point;
 
 namespace ui {
 
-class DriSurface;
+class ScanoutSurface;
 
 // The HDCOz will handle modesettings and scannout operations for hardware
 // devices.
@@ -91,7 +91,7 @@ class OZONE_EXPORT HardwareDisplayController
   ~HardwareDisplayController();
 
   // Associate the HDCO with a surface implementation and initialize it.
-  bool BindSurfaceToController(scoped_ptr<DriSurface> surface,
+  bool BindSurfaceToController(scoped_ptr<ScanoutSurface> surface,
                                drmModeModeInfo mode);
 
   void UnbindSurfaceFromController();
@@ -132,7 +132,7 @@ class OZONE_EXPORT HardwareDisplayController
                        unsigned int useconds);
 
   // Set the hardware cursor to show the contents of |surface|.
-  bool SetCursor(DriSurface* surface);
+  bool SetCursor(ScanoutSurface* surface);
 
   bool UnsetCursor();
 
@@ -142,7 +142,7 @@ class OZONE_EXPORT HardwareDisplayController
   const drmModeModeInfo& get_mode() const { return mode_; };
   uint32_t connector_id() const { return connector_id_; }
   uint32_t crtc_id() const { return crtc_id_; }
-  DriSurface* surface() const {
+  ScanoutSurface* surface() const {
     return surface_.get();
   };
 
@@ -163,7 +163,7 @@ class OZONE_EXPORT HardwareDisplayController
   // TODO(dnicoara) Need to store all the modes.
   drmModeModeInfo mode_;
 
-  scoped_ptr<DriSurface> surface_;
+  scoped_ptr<ScanoutSurface> surface_;
 
   uint64_t time_of_last_flip_;
 

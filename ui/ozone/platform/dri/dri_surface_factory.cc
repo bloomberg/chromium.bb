@@ -96,7 +96,8 @@ scoped_ptr<gfx::VSyncProvider> DriSurfaceAdapter::CreateVSyncProvider() {
 }
 
 void DriSurfaceAdapter::UpdateNativeSurface(const gfx::Rect& damage) {
-  SkCanvas* canvas = controller_->surface()->GetDrawableForWidget();
+  SkCanvas* canvas = static_cast<DriSurface*>(controller_->surface())
+      ->GetDrawableForWidget();
 
   // The DriSurface is double buffered, so the current back buffer is
   // missing the previous update. Expand damage region.
