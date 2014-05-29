@@ -88,6 +88,7 @@ def main(argv):
         continue
 
     print "Running %s...." % gtest,
+    sys.stdout.flush()
     try:
       subprocess.check_output(["./" + gtest], stderr=subprocess.STDOUT)
       print "Succeeded"
