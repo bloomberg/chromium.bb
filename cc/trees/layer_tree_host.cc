@@ -108,6 +108,7 @@ LayerTreeHost::LayerTreeHost(LayerTreeHostClient* client,
       max_page_scale_factor_(1.f),
       has_gpu_rasterization_trigger_(false),
       content_is_suitable_for_gpu_rasterization_(true),
+      gpu_rasterization_histogram_recorded_(false),
       background_color_(SK_ColorWHITE),
       has_transparent_background_(false),
       partial_texture_update_requests_(0),
@@ -349,6 +350,8 @@ void LayerTreeHost::FinishCommitOnImplThread(LayerTreeHostImpl* host_impl) {
   sync_tree->PassSwapPromises(&swap_promise_list_);
 
   host_impl->SetUseGpuRasterization(UseGpuRasterization());
+  RecordGpuRasterizationHistogram();
+
   host_impl->SetViewportSize(device_viewport_size_);
   host_impl->SetOverdrawBottomHeight(overdraw_bottom_height_);
   host_impl->SetDeviceScaleFactor(device_scale_factor_);
@@ -584,6 +587,7 @@ void LayerTreeHost::SetRootLayer(scoped_refptr<Layer> root_layer) {
   // Reset gpu rasterization flag.
   // This flag is sticky until a new tree comes along.
   content_is_suitable_for_gpu_rasterization_ = true;
+  gpu_rasterization_histogram_recorded_ = false;
 
   SetNeedsFullTreeSync();
 }
@@ -735,6 +739,31 @@ static Layer* FindFirstScrollableLayer(Layer* layer) {
   }
 
   return NULL;
+}
+
+void LayerTreeHost::RecordGpuRasterizationHistogram() {
+  // Gpu rasterization is only supported when impl-side painting is enabled.
+  if (gpu_rasterization_histogram_recorded_ || !settings_.impl_side_painting)
+    return;
+
+  // Record how widely gpu rasterization is enabled.
+  // This number takes device/gpu whitelisting/backlisting into account.
+  // Note that we do not consider the forced gpu rasterization mode, which is
+  // mostly used for debugging purposes.
+  UMA_HISTOGRAM_BOOLEAN("Renderer4.GpuRasterizationEnabled",
+                        settings_.gpu_rasterization_enabled);
+  if (settings_.gpu_rasterization_enabled) {
+    UMA_HISTOGRAM_BOOLEAN("Renderer4.GpuRasterizationTriggered",
+                          has_gpu_rasterization_trigger_);
+    UMA_HISTOGRAM_BOOLEAN("Renderer4.GpuRasterizationSuitableContent",
+                          content_is_suitable_for_gpu_rasterization_);
+    // Record how many pages actually get gpu rasterization when enabled.
+    UMA_HISTOGRAM_BOOLEAN("Renderer4.GpuRasterizationUsed",
+                          (has_gpu_rasterization_trigger_ &&
+                           content_is_suitable_for_gpu_rasterization_));
+  }
+
+  gpu_rasterization_histogram_recorded_ = true;
 }
 
 void LayerTreeHost::CalculateLCDTextMetricsCallback(Layer* layer) {

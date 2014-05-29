@@ -347,6 +347,7 @@ class CC_EXPORT LayerTreeHost {
   typedef std::list<UIResourceRequest> UIResourceRequestQueue;
   UIResourceRequestQueue ui_resource_request_queue_;
 
+  void RecordGpuRasterizationHistogram();
   void CalculateLCDTextMetricsCallback(Layer* layer);
 
   void NotifySwapPromiseMonitorsOfSetNeedsCommit();
@@ -392,6 +393,7 @@ class CC_EXPORT LayerTreeHost {
   bool trigger_idle_updates_;
   bool has_gpu_rasterization_trigger_;
   bool content_is_suitable_for_gpu_rasterization_;
+  bool gpu_rasterization_histogram_recorded_;
 
   SkColor background_color_;
   bool has_transparent_background_;
