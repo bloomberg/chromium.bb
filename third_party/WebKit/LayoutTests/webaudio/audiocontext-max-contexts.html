@@ -10,11 +10,8 @@ description("Check that the AudioContext constructor throws when the limit on ha
 
 function reachHardwareContextsLimit() {
     var context = [];
-    for (var i=0; i<10; ++i) {
+    for (var i=0; i<10; ++i)
         context[i] = new AudioContext();
-        // Trigger lazy initialization.
-        context[i].createBufferSource();
-    }
 }
 
 shouldThrow("reachHardwareContextsLimit()");

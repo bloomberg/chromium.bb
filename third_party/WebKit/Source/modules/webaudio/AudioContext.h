@@ -86,9 +86,6 @@ public:
     virtual void trace(Visitor*) OVERRIDE;
 
     bool isInitialized() const;
-    // The constructor of an AudioNode must call this to initialize the context.
-    void lazyInitialize();
-
     bool isOfflineContext() { return m_isOfflineContext; }
 
     // Document notification
@@ -243,6 +240,7 @@ protected:
 private:
     void constructCommon();
 
+    void initialize();
     void uninitialize();
 
     // ExecutionContext calls stop twice.

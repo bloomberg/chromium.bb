@@ -119,9 +119,9 @@ AudioContext::AudioContext(Document* document)
     , m_graphOwnerThread(UndefinedThreadIdentifier)
     , m_isOfflineContext(false)
 {
-    constructCommon();
-
     m_destinationNode = DefaultAudioDestinationNode::create(this);
+
+    constructCommon();
 }
 
 // Constructor for offline (non-realtime) rendering.
@@ -138,12 +138,12 @@ AudioContext::AudioContext(Document* document, unsigned numberOfChannels, size_t
     , m_graphOwnerThread(UndefinedThreadIdentifier)
     , m_isOfflineContext(true)
 {
-    constructCommon();
-
     // Create a new destination for offline rendering.
     m_renderTarget = AudioBuffer::create(numberOfChannels, numberOfFrames, sampleRate);
     if (m_renderTarget.get())
         m_destinationNode = OfflineAudioDestinationNode::create(this, m_renderTarget.get());
+
+    constructCommon();
 }
 
 void AudioContext::constructCommon()
@@ -153,6 +153,8 @@ void AudioContext::constructCommon()
     FFTFrame::initialize();
 
     m_listener = AudioListener::create();
+
+    initialize();
 }
 
 AudioContext::~AudioContext()
@@ -171,7 +173,7 @@ AudioContext::~AudioContext()
     ASSERT(!m_renderingAutomaticPullNodes.size());
 }
 
-void AudioContext::lazyInitialize()
+void AudioContext::initialize()
 {
     if (!m_isInitialized) {
         // Don't allow the context to initialize a second time after it's already been explicitly uninitialized.
