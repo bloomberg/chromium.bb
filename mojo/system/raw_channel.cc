@@ -194,7 +194,18 @@ bool RawChannel::Init(Delegate* delegate) {
     return false;
   }
 
-  return ScheduleRead() == IO_PENDING;
+  if (ScheduleRead() != IO_PENDING) {
+    // This will notify the delegate about the read failure. Although we're on
+    // the I/O thread, don't call it in the nested context.
+    message_loop_for_io_->PostTask(
+        FROM_HERE,
+        base::Bind(&RawChannel::OnReadCompleted, weak_ptr_factory_.GetWeakPtr(),
+                   false, 0));
+  }
+
+  // ScheduleRead() failure is treated as a read failure (by notifying the
+  // delegate), not as an init failure.
+  return true;
 }
 
 void RawChannel::Shutdown() {
