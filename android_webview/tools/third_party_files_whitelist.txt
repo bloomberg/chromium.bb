@@ -163,15 +163,9 @@ ui/base/dragdrop/os_exchange_data_provider_win.cc
 # up from webkit/.
 ui/events/keycodes/keyboard_codes_posix.h
 # String 'copyright' used in code.
-ui/file_manager/gallery/js/gallery_scripts.js
-# String 'copyright' used in code.
-ui/file_manager/file_manager/foreground/js/photo/gallery_scripts.js
-# String 'copyright' used in code.
 ui/file_manager/file_manager/foreground/js/main_scripts.js
 # String 'copyright' used in code.
 ui/file_manager/file_manager/foreground/js/media/mediaplayer_scripts.js
-# String 'copyright' used in code.
-ui/file_manager/file_manager/audio_player/js/audio_player_scripts.js
 # String 'copyright' used in code.
 ui/file_manager/video_player/js/video_player_scripts.js
 # This third-party code is taken from Mozilla, but is copyright Google and has
@@ -192,5 +186,3 @@ webkit/browser/appcache/manifest_parser.h
 # and (MPL, GPL v2 or LGPL v2) licenses. This third-party code is taken from
 # Mozilla, the license for which we already pick up from third_party/npapi/.
 webkit/child/multipart_response_delegate.h
-# False positive. This is a generated file which includes polymer code.
-chrome/browser/resources/pdf/index.js

@@ -180,10 +180,14 @@ def _CheckLicenseHeaders(excluded_dirs_list, whitelisted_files):
     print 'The following files are whitelisted unnecessarily. You must ' \
           'remove the following files from the whitelist.\n%s' % \
           '\n'.join(sorted(stale))
+  missing = [f for f in whitelisted_files if not os.path.exists(f)]
+  if missing:
+    print 'The following files are whitelisted, but do not exist.\n%s' % \
+        '\n'.join(sorted(missing))
 
   if unknown:
     return ScanResult.Errors
-  elif stale:
+  elif stale or missing:
     return ScanResult.Warnings
   else:
     return ScanResult.Ok
