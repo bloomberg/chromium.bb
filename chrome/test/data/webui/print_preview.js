@@ -265,34 +265,46 @@ TEST_F('PrintPreviewWebUITest',
   // Add PDF printer.
   this.initialSettings_.isDocumentModifiable_ = false;
   this.initialSettings_.systemDefaultDestinationId_ = 'Save as PDF';
-  this.localDestinationInfos_.push(
-      {printerName: 'Save as PDF', deviceName: 'Save as PDF'});
 
   var initialSettingsSetEvent =
       new Event(print_preview.NativeLayer.EventType.INITIAL_SETTINGS_SET);
   initialSettingsSetEvent.initialSettings = this.initialSettings_;
   this.nativeLayer_.dispatchEvent(initialSettingsSetEvent);
 
-  var localDestsSetEvent =
-      new Event(print_preview.NativeLayer.EventType.LOCAL_DESTINATIONS_SET);
-  localDestsSetEvent.destinationInfos = this.localDestinationInfos_;
-  this.nativeLayer_.dispatchEvent(localDestsSetEvent);
-
   var capsSetEvent =
       new Event(print_preview.NativeLayer.EventType.CAPABILITIES_SET);
   capsSetEvent.settingsInfo = {
-    'printerId': 'FooDevice',
-    'disableColorOption': false,
-    'setColorAsDefault': true,
-    'disableCopiesOption': true,
-    'disableLandscapeOption': true,
-    'printerDefaultDuplexValue': 0
+    printerId: 'Save as PDF',
+    capabilities: {
+      version: '1.0',
+      printer: {
+        page_orientation: {
+          option: [
+            {type: 'AUTO', is_default: true},
+            {type: 'PORTRAIT'},
+            {type: 'LANDSCAPE'}
+          ]
+        },
+        color: {
+          option: [
+            {type: 'STANDARD_COLOR', is_default: true}
+          ]
+        },
+        media_size: {
+          option: [
+            { name: 'NA_LETTER',
+              width_microns: 0,
+              height_microns: 0,
+              is_default: true
+            }
+          ]
+        }
+      }
+    }
   };
   this.nativeLayer_.dispatchEvent(capsSetEvent);
 
-  checkElementDisplayed(
-      $('other-options-settings').querySelector('.fit-to-page-container'),
-      false);
+  checkSectionVisible($('other-options-settings'), false);
 });
 
 // When the source is 'HTML', we always hide the fit to page option.

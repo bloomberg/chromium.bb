@@ -57,9 +57,20 @@ scoped_refptr<PrinterQuery> PrintQueriesQueue::CreatePrinterQuery() {
 }
 
 void PrintQueriesQueue::Shutdown() {
-  base::AutoLock lock(lock_);
-  queued_queries_.clear();
-  destination_ = NULL;
+  PrinterQueries queries_to_stop;
+  {
+    base::AutoLock lock(lock_);
+    queued_queries_.swap(queries_to_stop);
+    destination_ = NULL;
+  }
+  // Stop all pending queries, requests to generate print preview do not have
+  // corresponding PrintJob, so any pending preview requests are not covered
+  // by PrintJobManager::StopJobs and should be stopped explicitly.
+  for (PrinterQueries::iterator itr = queries_to_stop.begin();
+       itr != queries_to_stop.end(); ++itr) {
+    (*itr)->message_loop()->PostTask(
+        FROM_HERE, base::Bind(&PrinterQuery::StopWorker, *itr));
+  }
 }
 
 PrintJobManager::PrintJobManager() : is_shutdown_(false) {

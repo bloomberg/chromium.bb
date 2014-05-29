@@ -235,6 +235,16 @@ cr.define('print_preview', function() {
           this.duplexTicketItem_.isCapabilityAvailable() ||
           this.cssBackgroundTicketItem_.isCapabilityAvailable() ||
           this.selectionOnlyTicketItem_.isCapabilityAvailable()) {
+        setIsVisible(this.headerFooterContainer_,
+                     this.headerFooterTicketItem_.isCapabilityAvailable());
+        setIsVisible(this.fitToPageContainer_,
+                     this.fitToPageTicketItem_.isCapabilityAvailable());
+        setIsVisible(this.duplexContainer_,
+                     this.duplexTicketItem_.isCapabilityAvailable());
+        setIsVisible(this.cssBackgroundContainer_,
+                     this.cssBackgroundTicketItem_.isCapabilityAvailable());
+        setIsVisible(this.selectionOnlyContainer_,
+                     this.selectionOnlyTicketItem_.isCapabilityAvailable());
         fadeInOption(this.getElement());
       } else {
         fadeOutOption(this.getElement());
@@ -294,8 +304,6 @@ cr.define('print_preview', function() {
      * @private
      */
     onDuplexChange_: function() {
-      setIsVisible(this.duplexContainer_,
-                   this.duplexTicketItem_.isCapabilityAvailable());
       this.duplexCheckbox_.checked = this.duplexTicketItem_.getValue();
       this.updateContainerState_();
     },
@@ -306,8 +314,6 @@ cr.define('print_preview', function() {
      * @private
      */
     onFitToPageChange_: function() {
-      setIsVisible(this.fitToPageContainer_,
-                   this.fitToPageTicketItem_.isCapabilityAvailable());
       this.fitToPageCheckbox_.checked = this.fitToPageTicketItem_.getValue();
       this.updateContainerState_();
     },
@@ -318,8 +324,6 @@ cr.define('print_preview', function() {
      * @private
      */
     onCssBackgroundChange_: function() {
-      setIsVisible(this.cssBackgroundContainer_,
-                   this.cssBackgroundTicketItem_.isCapabilityAvailable());
       this.cssBackgroundCheckbox_.checked =
           this.cssBackgroundTicketItem_.getValue();
       this.updateContainerState_();
@@ -331,8 +335,6 @@ cr.define('print_preview', function() {
      * @private
      */
     onSelectionOnlyChange_: function() {
-      setIsVisible(this.selectionOnlyContainer_,
-                   this.selectionOnlyTicketItem_.isCapabilityAvailable());
       this.selectionOnlyCheckbox_.checked =
           this.selectionOnlyTicketItem_.getValue();
       this.updateContainerState_();
@@ -344,8 +346,6 @@ cr.define('print_preview', function() {
      * @private
      */
     onHeaderFooterChange_: function() {
-      setIsVisible(this.headerFooterContainer_,
-                   this.headerFooterTicketItem_.isCapabilityAvailable());
       this.headerFooterCheckbox_.checked =
           this.headerFooterTicketItem_.getValue();
       this.updateContainerState_();

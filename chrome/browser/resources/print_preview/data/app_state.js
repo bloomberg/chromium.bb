@@ -147,6 +147,7 @@ cr.define('print_preview', function() {
               systemDefaultDestinationId;
           this.state_[AppState.Field.SELECTED_DESTINATION_ORIGIN] =
               print_preview.Destination.Origin.LOCAL;
+          this.state_[AppState.Field.SELECTED_DESTINATION_ACCOUNT] = '';
         }
       }
     },

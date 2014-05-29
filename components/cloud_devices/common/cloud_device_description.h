@@ -31,6 +31,8 @@ class CloudDeviceDescription {
 
   std::string ToString() const;
 
+  const base::DictionaryValue& root() const { return *root_; }
+
   // Returns dictionary with capability/option.
   // Returns NULL if missing.
   const base::DictionaryValue* GetItem(const std::string& path) const;

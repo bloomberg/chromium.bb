@@ -194,32 +194,26 @@ cr.define('print_preview', function() {
   DestinationStore.PRIVET_SEARCH_DURATION_ = 2000;
 
   /**
-   * Creates a local PDF print destination.
-   * @return {!print_preview.Destination} Created print destination.
+   * Localizes printer capabilities.
+   * @param {!Object} capabilities Printer capabilities to localize.
+   * @return {!Object} Localized capabilities.
    * @private
    */
-  DestinationStore.createLocalPdfPrintDestination_ = function() {
-    var dest = new print_preview.Destination(
-        print_preview.Destination.GooglePromotedId.SAVE_AS_PDF,
-        print_preview.Destination.Type.LOCAL,
-        print_preview.Destination.Origin.LOCAL,
-        localStrings.getString('printToPDF'),
-        false /*isRecent*/,
-        print_preview.Destination.ConnectionStatus.ONLINE);
-    dest.capabilities = {
-      version: '1.0',
-      printer: {
-        page_orientation: {
-          option: [
-            {type: 'AUTO', is_default: true},
-            {type: 'PORTRAIT'},
-            {type: 'LANDSCAPE'}
-          ]
-        },
-        color: { option: [{type: 'STANDARD_COLOR', is_default: true}] }
+  DestinationStore.localizeCapabilities_ = function(capabilities) {
+    var mediaSize = capabilities.printer.media_size;
+    if (mediaSize) {
+      var mediaDisplayNames = {
+        'ISO_A4': 'A4',
+        'ISO_A3': 'A3',
+        'NA_LETTER': 'Letter',
+        'NA_LEGAL': 'Legal',
+        'NA_LEDGER': 'Tabloid'
+      };
+      for (var i = 0, media; media = mediaSize.option[i]; i++) {
+        media.custom_display_name = mediaDisplayNames[media.name] || media.name;
       }
-    };
-    return dest;
+    }
+    return capabilities;
   };
 
   DestinationStore.prototype = {
@@ -656,6 +650,21 @@ cr.define('print_preview', function() {
     },
 
     /**
+     * Creates a local PDF print destination.
+     * @return {!print_preview.Destination} Created print destination.
+     * @private
+     */
+    createLocalPdfPrintDestination_: function() {
+      return new print_preview.Destination(
+          print_preview.Destination.GooglePromotedId.SAVE_AS_PDF,
+          print_preview.Destination.Type.LOCAL,
+          print_preview.Destination.Origin.LOCAL,
+          localStrings.getString('printToPDF'),
+          false /*isRecent*/,
+          print_preview.Destination.ConnectionStatus.ONLINE);
+    },
+
+    /**
      * Resets the state of the destination store to its initial state.
      * @private
      */
@@ -665,8 +674,9 @@ cr.define('print_preview', function() {
       this.selectDestination(null);
       this.loadedCloudOrigins_ = {};
       this.hasLoadedAllLocalDestinations_ = false;
-      this.insertDestination_(
-          DestinationStore.createLocalPdfPrintDestination_());
+      // TODO(alekseys): Create PDF printer in the native code and send its
+      // capabilities back with other local printers.
+      this.insertDestination_(this.createLocalPdfPrintDestination_());
       this.resetAutoSelectTimeout_();
     },
 
@@ -723,23 +733,33 @@ cr.define('print_preview', function() {
           destinationId,
           '');
       var destination = this.destinationMap_[key];
-      var capabilities = print_preview.LocalCapabilitiesParser.parse(
-            event.settingsInfo);
-      if (destination) {
-        // In case there were multiple capabilities request for this local
-        // destination, just ignore the later ones.
-        if (destination.capabilities != null) {
-          return;
+      // Special case for PDF printer (until local printers capabilities are
+      // reported in CDD format too).
+      if (destinationId ==
+          print_preview.Destination.GooglePromotedId.SAVE_AS_PDF) {
+        if (destination) {
+          destination.capabilities = DestinationStore.localizeCapabilities_(
+              event.settingsInfo.capabilities);
         }
-        destination.capabilities = capabilities;
       } else {
-        // TODO(rltoscano): This makes the assumption that the "deviceName" is
-        // the same as "printerName". We should include the "printerName" in the
-        // response. See http://crbug.com/132831.
-        destination = print_preview.LocalDestinationParser.parse(
-            {deviceName: destinationId, printerName: destinationId});
-        destination.capabilities = capabilities;
-        this.insertDestination_(destination);
+        var capabilities = print_preview.LocalCapabilitiesParser.parse(
+            event.settingsInfo);
+        if (destination) {
+          // In case there were multiple capabilities request for this local
+          // destination, just ignore the later ones.
+          if (destination.capabilities != null) {
+            return;
+          }
+          destination.capabilities = capabilities;
+        } else {
+          // TODO(rltoscano): This makes the assumption that the "deviceName" is
+          // the same as "printerName". We should include the "printerName" in
+          // the response. See http://crbug.com/132831.
+          destination = print_preview.LocalDestinationParser.parse(
+              {deviceName: destinationId, printerName: destinationId});
+          destination.capabilities = capabilities;
+          this.insertDestination_(destination);
+        }
       }
       if (this.selectedDestination_ &&
           this.selectedDestination_.id == destinationId) {

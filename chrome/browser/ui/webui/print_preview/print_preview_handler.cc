@@ -6,6 +6,7 @@
 
 #include <ctype.h>
 
+#include <map>
 #include <string>
 
 #include "base/base64.h"
@@ -48,7 +49,9 @@
 #include "chrome/common/crash_keys.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/print_messages.h"
+#include "components/cloud_devices/common/cloud_device_description.h"
 #include "components/cloud_devices/common/cloud_devices_urls.h"
+#include "components/cloud_devices/common/printer_description.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/browser/signin_manager_base.h"
@@ -66,6 +69,7 @@
 #include "printing/metafile_impl.h"
 #include "printing/pdf_render_settings.h"
 #include "printing/print_settings.h"
+#include "printing/printing_context.h"
 #include "printing/units.h"
 #include "third_party/icu/source/i18n/unicode/ulocdata.h"
 
@@ -179,8 +183,12 @@ const char kHidePrintWithSystemDialogLink[] = "hidePrintWithSystemDialogLink";
 // Name of a dictionary field holding the state of selection for document.
 const char kDocumentHasSelection[] = "documentHasSelection";
 
+// Id of the predefined PDF printer.
+const char kLocalPdfPrinterId[] = "Save as PDF";
+
 // Additional printer capability setting keys.
 const char kPrinterId[] = "printerId";
+const char kPrinterCapabilities[] = "capabilities";
 const char kDisableColorOption[] = "disableColorOption";
 const char kSetDuplexAsDefault[] = "setDuplexAsDefault";
 const char kPrinterDefaultDuplexValue[] = "printerDefaultDuplexValue";
@@ -267,19 +275,85 @@ void PrintToPdfCallback(printing::Metafile* metafile,
   BrowserThread::DeleteSoon(BrowserThread::UI, FROM_HERE, metafile);
 }
 
-std::string GetDefaultPrinterOnFileThread(
-    scoped_refptr<printing::PrintBackend> print_backend) {
+std::string GetDefaultPrinterOnFileThread() {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+
+  scoped_refptr<printing::PrintBackend> print_backend(
+      printing::PrintBackend::CreateInstance(NULL));
 
   std::string default_printer = print_backend->GetDefaultPrinterName();
   VLOG(1) << "Default Printer: " << default_printer;
   return default_printer;
 }
 
-void EnumeratePrintersOnFileThread(
-    scoped_refptr<printing::PrintBackend> print_backend,
-    base::ListValue* printers) {
+gfx::Size GetDefaultPdfMediaSizeMicrons() {
+  scoped_ptr<printing::PrintingContext> printing_context(
+      printing::PrintingContext::Create(
+          g_browser_process->GetApplicationLocale()));
+  if (printing::PrintingContext::OK != printing_context->UsePdfSettings() ||
+      printing_context->settings().device_units_per_inch() <= 0) {
+    return gfx::Size();
+  }
+  gfx::Size pdf_media_size = printing_context->GetPdfPaperSizeDeviceUnits();
+  float deviceMicronsPerDeviceUnit =
+      (printing::kHundrethsMMPerInch * 10.0f) /
+      printing_context->settings().device_units_per_inch();
+  return gfx::Size(pdf_media_size.width() * deviceMicronsPerDeviceUnit,
+                   pdf_media_size.height() * deviceMicronsPerDeviceUnit);
+}
+
+typedef base::Callback<void(const base::DictionaryValue*)>
+    GetPdfCapabilitiesCallback;
+
+scoped_ptr<base::DictionaryValue> GetPdfCapabilitiesOnFileThread(
+    const std::string& locale) {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+
+  cloud_devices::CloudDeviceDescription description;
+  using namespace cloud_devices::printer;
+
+  OrientationCapability orientation;
+  orientation.AddOption(cloud_devices::printer::PORTRAIT);
+  orientation.AddOption(cloud_devices::printer::LANDSCAPE);
+  orientation.AddDefaultOption(AUTO_ORIENTATION, true);
+  orientation.SaveTo(&description);
+
+  ColorCapability color;
+  color.AddDefaultOption(Color(STANDARD_COLOR), true);
+  color.SaveTo(&description);
+
+  static const cloud_devices::printer::MediaType kPdfMedia[] = {
+    ISO_A4,
+    ISO_A3,
+    NA_LETTER,
+    NA_LEGAL,
+    NA_LEDGER
+  };
+  const gfx::Size default_media_size = GetDefaultPdfMediaSizeMicrons();
+  Media default_media(
+      "", default_media_size.width(), default_media_size.height());
+  if (!default_media.MatchBySize() ||
+      std::find(kPdfMedia,
+                kPdfMedia + arraysize(kPdfMedia),
+                default_media.type) == kPdfMedia + arraysize(kPdfMedia)) {
+    default_media = Media(locale == "en-US" ? NA_LETTER : ISO_A4);
+  }
+  MediaCapability media;
+  for (size_t i = 0; i < arraysize(kPdfMedia); ++i) {
+    Media media_option(kPdfMedia[i]);
+    media.AddDefaultOption(media_option,
+                           default_media.type == media_option.type);
+  }
+  media.SaveTo(&description);
+
+  return scoped_ptr<base::DictionaryValue>(description.root().DeepCopy());
+}
+
+void EnumeratePrintersOnFileThread(base::ListValue* printers) {
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+
+  scoped_refptr<printing::PrintBackend> print_backend(
+      printing::PrintBackend::CreateInstance(NULL));
 
   VLOG(1) << "Enumerate printers start";
   printing::PrinterList printer_list;
@@ -329,12 +403,27 @@ typedef base::Callback<void(const std::string&)>
     GetPrinterCapabilitiesFailureCallback;
 
 void GetPrinterCapabilitiesOnFileThread(
-    scoped_refptr<printing::PrintBackend> print_backend,
     const std::string& printer_name,
+    const std::string& locale,
     const GetPrinterCapabilitiesSuccessCallback& success_cb,
     const GetPrinterCapabilitiesFailureCallback& failure_cb) {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   DCHECK(!printer_name.empty());
+
+  // Special case for PDF printer.
+  if (printer_name == kLocalPdfPrinterId) {
+    scoped_ptr<base::DictionaryValue> printer_info(new base::DictionaryValue);
+    printer_info->SetString(kPrinterId, printer_name);
+    printer_info->Set(kPrinterCapabilities,
+                      GetPdfCapabilitiesOnFileThread(locale).release());
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(success_cb, base::Owned(printer_info.release())));
+    return;
+  }
+
+  scoped_refptr<printing::PrintBackend> print_backend(
+      printing::PrintBackend::CreateInstance(NULL));
 
   VLOG(1) << "Get printer capabilities start for " << printer_name;
   crash_keys::ScopedPrinterInfo crash_key(
@@ -367,7 +456,7 @@ void GetPrinterCapabilitiesOnFileThread(
 #endif
 
   // TODO(gene): Make new capabilities format for Print Preview
-  // that will suit semantic capabiltities better.
+  // that will suit semantic capabilities better.
   // Refactor pld API code below
   bool default_duplex = info.duplex_capable ?
       (info.duplex_default != printing::SIMPLEX) : false;
@@ -475,8 +564,7 @@ class PrintPreviewHandler::AccessTokenService
 };
 
 PrintPreviewHandler::PrintPreviewHandler()
-    : print_backend_(printing::PrintBackend::CreateInstance(NULL)),
-      regenerate_preview_request_count_(0),
+    : regenerate_preview_request_count_(0),
       manage_printers_dialog_request_count_(0),
       manage_cloud_printers_dialog_request_count_(0),
       reported_failed_preview_(false),
@@ -570,7 +658,7 @@ void PrintPreviewHandler::HandleGetPrinters(const base::ListValue* /*args*/) {
   base::ListValue* results = new base::ListValue;
   BrowserThread::PostTaskAndReply(
       BrowserThread::FILE, FROM_HERE,
-      base::Bind(&EnumeratePrintersOnFileThread, print_backend_,
+      base::Bind(&EnumeratePrintersOnFileThread,
                  base::Unretained(results)),
       base::Bind(&PrintPreviewHandler::SetupPrinterList,
                  weak_factory_.GetWeakPtr(),
@@ -886,10 +974,11 @@ void PrintPreviewHandler::HandleGetPrinterCapabilities(
   GetPrinterCapabilitiesFailureCallback failure_cb =
       base::Bind(&PrintPreviewHandler::SendFailedToGetPrinterCapabilities,
                  weak_factory_.GetWeakPtr());
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
-      base::Bind(&GetPrinterCapabilitiesOnFileThread,
-                 print_backend_, printer_name, success_cb, failure_cb));
+  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
+                          base::Bind(&GetPrinterCapabilitiesOnFileThread,
+                                     printer_name,
+                                     g_browser_process->GetApplicationLocale(),
+                                     success_cb, failure_cb));
 }
 
 void PrintPreviewHandler::OnSigninComplete() {
@@ -1041,7 +1130,7 @@ void PrintPreviewHandler::HandleGetInitialSettings(
   SendCloudPrintEnabled();
   BrowserThread::PostTaskAndReplyWithResult(
       BrowserThread::FILE, FROM_HERE,
-      base::Bind(&GetDefaultPrinterOnFileThread, print_backend_),
+      base::Bind(&GetDefaultPrinterOnFileThread),
       base::Bind(&PrintPreviewHandler::SendInitialSettings,
                  weak_factory_.GetWeakPtr()));
 }

@@ -48,6 +48,24 @@ PrintingContext::Result PrintingContext::OnError() {
   return abort_printing_ ? CANCEL : FAILED;
 }
 
+PrintingContext::Result PrintingContext::UsePdfSettings() {
+  scoped_ptr<base::DictionaryValue> pdf_settings(new base::DictionaryValue);
+  pdf_settings->SetBoolean(kSettingHeaderFooterEnabled, false);
+  pdf_settings->SetBoolean(kSettingShouldPrintBackgrounds, false);
+  pdf_settings->SetBoolean(kSettingShouldPrintSelectionOnly, false);
+  pdf_settings->SetInteger(kSettingMarginsType, printing::NO_MARGINS);
+  pdf_settings->SetBoolean(kSettingCollate, true);
+  pdf_settings->SetInteger(kSettingCopies, 1);
+  pdf_settings->SetInteger(kSettingColor, printing::COLOR);
+  pdf_settings->SetInteger(kSettingDuplexMode, printing::SIMPLEX);
+  pdf_settings->SetBoolean(kSettingLandscape, false);
+  pdf_settings->SetString(kSettingDeviceName, "");
+  pdf_settings->SetBoolean(kSettingPrintToPDF, true);
+  pdf_settings->SetBoolean(kSettingCloudPrintDialog, false);
+  pdf_settings->SetBoolean(kSettingPrintWithPrivet, false);
+  return UpdatePrintSettings(*pdf_settings, PageRanges());
+}
+
 PrintingContext::Result PrintingContext::UpdatePrintSettings(
     const base::DictionaryValue& job_settings,
     const PageRanges& ranges) {

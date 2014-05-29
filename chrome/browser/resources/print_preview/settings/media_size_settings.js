@@ -55,7 +55,7 @@ cr.define('print_preview', function() {
     updateSelect_: function() {
       var select = this.select_;
       if (!this.ticketItem_.isCapabilityAvailable()) {
-        select.innerHtml = '';
+        select.innerHTML = '';
         return;
       }
       // Should the select content be updated?
@@ -66,7 +66,7 @@ cr.define('print_preview', function() {
           });
       var indexToSelect = select.selectedIndex;
       if (!sameContent) {
-        select.innerHtml = '';
+        select.innerHTML = '';
         // TODO: Better heuristics for the display name and options grouping.
         this.ticketItem_.capability.option.forEach(function(option, index) {
           var selectOption = document.createElement('option');

@@ -287,6 +287,8 @@ enum MediaType {
 struct Media {
   Media();
 
+  explicit Media(MediaType type);
+
   Media(MediaType type, int32 width_um, int32 height_um);
 
   Media(const std::string& custom_display_name,

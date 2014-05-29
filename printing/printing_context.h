@@ -51,6 +51,9 @@ class PRINTING_EXPORT PrintingContext {
   // default device settings.
   virtual Result UseDefaultSettings() = 0;
 
+  // Updates the context with PDF printer settings.
+  Result UsePdfSettings();
+
   // Returns paper size to be used for PDF or Cloud Print in device units.
   virtual gfx::Size GetPdfPaperSizeDeviceUnits() = 0;
 

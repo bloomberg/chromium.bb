@@ -35,11 +35,6 @@ namespace gfx {
 class Size;
 }
 
-namespace printing {
-struct PageSizeMargins;
-class PrintBackend;
-}
-
 // The handler for Javascript messages related to the print preview dialog.
 class PrintPreviewHandler
     : public content::WebUIMessageHandler,
@@ -276,9 +271,6 @@ class PrintPreviewHandler
       bool has_local_printing,
       base::DictionaryValue* printer_value);
 #endif
-
-  // Pointer to current print system.
-  scoped_refptr<printing::PrintBackend> print_backend_;
 
   // The underlying dialog object.
   scoped_refptr<ui::SelectFileDialog> select_file_dialog_;
