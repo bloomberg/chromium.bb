@@ -86,7 +86,6 @@ class SYNC_EXPORT_PRIVATE SyncManagerImpl :
       ReportUnrecoverableErrorFunction
           report_unrecoverable_error_function,
       CancelationSignal* cancelation_signal) OVERRIDE;
-  virtual void ThrowUnrecoverableError() OVERRIDE;
   virtual ModelTypeSet InitialSyncEndedTypes() OVERRIDE;
   virtual ModelTypeSet GetTypesWithEmptyProgressMarkerToken(
       ModelTypeSet types) OVERRIDE;

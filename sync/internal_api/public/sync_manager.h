@@ -259,10 +259,6 @@ class SYNC_EXPORT SyncManager : public syncer::InvalidationHandler {
       ReportUnrecoverableErrorFunction report_unrecoverable_error_function,
       CancelationSignal* cancelation_signal) = 0;
 
-  // Throw an unrecoverable error from a transaction (mostly used for
-  // testing).
-  virtual void ThrowUnrecoverableError() = 0;
-
   virtual ModelTypeSet InitialSyncEndedTypes() = 0;
 
   // Returns those types within |types| that have an empty progress marker

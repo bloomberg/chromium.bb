@@ -1188,10 +1188,6 @@ const char kSyncShortInitialRetryOverride[] =
 // Overrides the default server used for profile sync.
 const char kSyncServiceURL[]                = "sync-url";
 
-// Makes the sync code to throw an unrecoverable error after initialization.
-// Useful for testing unrecoverable error scenarios.
-const char kSyncThrowUnrecoverableError[]   = "sync-throw-unrecoverable-error";
-
 // Enables deferring sync backend initialization until user initiated changes
 // occur.
 const char kSyncDisableDeferredStartup[]     = "sync-disable-deferred-startup";

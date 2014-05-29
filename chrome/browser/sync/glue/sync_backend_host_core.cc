@@ -10,7 +10,6 @@
 #include "chrome/browser/sync/glue/device_info.h"
 #include "chrome/browser/sync/glue/sync_backend_registrar.h"
 #include "chrome/browser/sync/glue/synced_device_tracker.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
 #include "sync/internal_api/public/events/protocol_event.h"
 #include "sync/internal_api/public/http_post_provider_factory.h"
@@ -422,23 +421,6 @@ void SyncBackendHostCore::DoInitialize(
                       options->unrecoverable_error_handler.Pass(),
                       options->report_unrecoverable_error_function,
                       &stop_syncing_signal_);
-
-  // |sync_manager_| may end up being NULL here in tests (in
-  // synchronous initialization mode).
-  //
-  // TODO(akalin): Fix this behavior (see http://crbug.com/140354).
-  if (sync_manager_) {
-    // Now check the command line to see if we need to simulate an
-    // unrecoverable error for testing purpose. Note the error is thrown
-    // only if the initialization succeeded. Also it makes sense to use this
-    // flag only when restarting the browser with an account already setup. If
-    // you use this before setting up the setup would not succeed as an error
-    // would be encountered.
-    if (CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kSyncThrowUnrecoverableError)) {
-      sync_manager_->ThrowUnrecoverableError();
-    }
-  }
 }
 
 void SyncBackendHostCore::DoUpdateCredentials(

@@ -109,10 +109,6 @@ void FakeSyncManager::Init(
                         true, initial_sync_ended_types_));
 }
 
-void FakeSyncManager::ThrowUnrecoverableError() {
-  NOTIMPLEMENTED();
-}
-
 ModelTypeSet FakeSyncManager::InitialSyncEndedTypes() {
   return initial_sync_ended_types_;
 }

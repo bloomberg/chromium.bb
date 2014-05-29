@@ -80,10 +80,6 @@ void SyncRollbackManagerBase::Init(
   NotifyInitializationSuccess();
 }
 
-void SyncRollbackManagerBase::ThrowUnrecoverableError() {
-  NOTREACHED();
-}
-
 ModelTypeSet SyncRollbackManagerBase::InitialSyncEndedTypes() {
   return share_.directory->InitialSyncEndedTypes();
 }

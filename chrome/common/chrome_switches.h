@@ -324,7 +324,6 @@ extern const char kSuggestionNtpGaussianFilter[];
 extern const char kSuggestionNtpLinearFilter[];
 extern const char kSyncShortInitialRetryOverride[];
 extern const char kSyncServiceURL[];
-extern const char kSyncThrowUnrecoverableError[];
 extern const char kSyncDisableDeferredStartup[];
 extern const char kSyncDeferredStartupTimeoutSeconds[];
 extern const char kSyncEnableGetUpdateAvoidance[];

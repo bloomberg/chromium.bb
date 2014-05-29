@@ -97,7 +97,6 @@ class FakeSyncManager : public SyncManager {
       scoped_ptr<UnrecoverableErrorHandler> unrecoverable_error_handler,
       ReportUnrecoverableErrorFunction report_unrecoverable_error_function,
       CancelationSignal* cancelation_signal) OVERRIDE;
-  virtual void ThrowUnrecoverableError() OVERRIDE;
   virtual ModelTypeSet InitialSyncEndedTypes() OVERRIDE;
   virtual ModelTypeSet GetTypesWithEmptyProgressMarkerToken(
       ModelTypeSet types) OVERRIDE;
