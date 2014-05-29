@@ -346,7 +346,6 @@ TEST_P(QuicHttpStreamTest, GetRequest) {
                                           net_log_, callback_.callback()));
   EXPECT_EQ(OK, stream_->SendRequest(headers_, &response_,
                                      callback_.callback()));
-  EXPECT_EQ(&response_, stream_->GetResponseInfo());
 
   // Ack the request.
   ProcessPacket(ConstructAckPacket(1, 0, 0));
@@ -384,7 +383,6 @@ TEST_P(QuicHttpStreamTest, GetRequestLargeResponse) {
                                           net_log_, callback_.callback()));
   EXPECT_EQ(OK, stream_->SendRequest(headers_, &response_,
                                      callback_.callback()));
-  EXPECT_EQ(&response_, stream_->GetResponseInfo());
 
   // Ack the request.
   ProcessPacket(ConstructAckPacket(1, 0, 0));
@@ -438,7 +436,6 @@ TEST_P(QuicHttpStreamTest, SendPostRequest) {
                                           net_log_, callback_.callback()));
   EXPECT_EQ(OK, stream_->SendRequest(headers_, &response_,
                                      callback_.callback()));
-  EXPECT_EQ(&response_, stream_->GetResponseInfo());
 
   // Ack both packets in the request.
   ProcessPacket(ConstructAckPacket(1, 0, 0));
@@ -487,7 +484,6 @@ TEST_P(QuicHttpStreamTest, SendChunkedPostRequest) {
                                           net_log_, callback_.callback()));
   ASSERT_EQ(ERR_IO_PENDING, stream_->SendRequest(headers_, &response_,
                                                  callback_.callback()));
-  EXPECT_EQ(&response_, stream_->GetResponseInfo());
 
   upload_data_stream.AppendChunk(kUploadData, chunk_size, true);
 
@@ -532,7 +528,6 @@ TEST_P(QuicHttpStreamTest, DestroyedEarly) {
                                           net_log_, callback_.callback()));
   EXPECT_EQ(OK, stream_->SendRequest(headers_, &response_,
                                      callback_.callback()));
-  EXPECT_EQ(&response_, stream_->GetResponseInfo());
 
   // Ack the request.
   ProcessPacket(ConstructAckPacket(1, 0, 0));
@@ -569,7 +564,6 @@ TEST_P(QuicHttpStreamTest, Priority) {
 
   EXPECT_EQ(OK, stream_->SendRequest(headers_, &response_,
                                      callback_.callback()));
-  EXPECT_EQ(&response_, stream_->GetResponseInfo());
 
   // Check that priority has now dropped back to MEDIUM.
   DCHECK_EQ(MEDIUM, ConvertQuicPriorityToRequestPriority(

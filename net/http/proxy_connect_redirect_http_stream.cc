@@ -43,12 +43,6 @@ int ProxyConnectRedirectHttpStream::ReadResponseHeaders(
   return OK;
 }
 
-const HttpResponseInfo*
-ProxyConnectRedirectHttpStream::GetResponseInfo() const {
-  NOTREACHED();
-  return NULL;
-}
-
 int ProxyConnectRedirectHttpStream::ReadResponseBody(
     IOBuffer* buf,
     int buf_len,

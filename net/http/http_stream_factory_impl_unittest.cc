@@ -73,9 +73,6 @@ class MockWebSocketHandshakeStream : public WebSocketHandshakeStreamBase {
   virtual int ReadResponseHeaders(const CompletionCallback& callback) OVERRIDE {
     return ERR_IO_PENDING;
   }
-  virtual const HttpResponseInfo* GetResponseInfo() const OVERRIDE {
-    return NULL;
-  }
   virtual int ReadResponseBody(IOBuffer* buf,
                                int buf_len,
                                const CompletionCallback& callback) OVERRIDE {

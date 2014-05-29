@@ -48,20 +48,29 @@ class NET_EXPORT_PRIVATE HttpStreamBase {
   // ERR_IO_PENDING is returned if the operation could not be completed
   // synchronously, in which case the result will be passed to the callback
   // when available. Returns OK on success.
-  // |response| must outlive the HttpStreamBase.
+  //
+  // The callback will only be invoked once the first full set of headers have
+  // been received, at which point |response| will have been populated with that
+  // set of headers, and is safe to read, until/unless ReadResponseHeaders is
+  // called.
+  //
+  // |response| must remain valid until all sets of headers has been read, or
+  // the HttpStreamBase is destroyed. There's typically only one set of
+  // headers, except in the case of 1xx responses (See ReadResponseHeaders).
   virtual int SendRequest(const HttpRequestHeaders& request_headers,
                           HttpResponseInfo* response,
                           const CompletionCallback& callback) = 0;
 
-  // Reads from the underlying socket until the response headers have been
-  // completely received. ERR_IO_PENDING is returned if the operation could
-  // not be completed synchronously, in which case the result will be passed
-  // to the callback when available. Returns OK on success.  The response
-  // headers are available in the HttpResponseInfo returned by GetResponseInfo
+  // Reads from the underlying socket until the next set of response headers
+  // have been completely received.  This may only be called on 1xx responses
+  // after SendRequest has completed successfully, to read the next set of
+  // headers.
+  //
+  // ERR_IO_PENDING is returned if the operation could not be completed
+  // synchronously, in which case the result will be passed to the callback when
+  // available. Returns OK on success. The response headers are available in
+  // the HttpResponseInfo passed in to original call to SendRequest.
   virtual int ReadResponseHeaders(const CompletionCallback& callback) = 0;
-
-  // Provides access to HttpResponseInfo (owned by HttpStream).
-  virtual const HttpResponseInfo* GetResponseInfo() const = 0;
 
   // Reads response body data, up to |buf_len| bytes. |buf_len| should be a
   // reasonable size (<2MB). The number of bytes read is returned, or an

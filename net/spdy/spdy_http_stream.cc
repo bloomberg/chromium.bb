@@ -89,10 +89,6 @@ int SpdyHttpStream::InitializeStream(const HttpRequestInfo* request_info,
   return rv;
 }
 
-const HttpResponseInfo* SpdyHttpStream::GetResponseInfo() const {
-  return response_info_;
-}
-
 UploadProgress SpdyHttpStream::GetUploadProgress() const {
   if (!request_info_ || !HasUploadData())
     return UploadProgress();

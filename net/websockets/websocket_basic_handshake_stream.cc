@@ -425,10 +425,6 @@ int WebSocketBasicHandshakeStream::ReadResponseHeaders(
   return ValidateResponse(rv);
 }
 
-const HttpResponseInfo* WebSocketBasicHandshakeStream::GetResponseInfo() const {
-  return parser()->GetResponseInfo();
-}
-
 int WebSocketBasicHandshakeStream::ReadResponseBody(
     IOBuffer* buf,
     int buf_len,

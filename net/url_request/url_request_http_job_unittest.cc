@@ -213,10 +213,6 @@ class FakeWebSocketHandshakeStream : public WebSocketHandshakeStreamBase {
     return ERR_IO_PENDING;
   }
 
-  virtual const HttpResponseInfo* GetResponseInfo() const OVERRIDE {
-    return NULL;
-  }
-
   virtual int ReadResponseBody(IOBuffer* buf,
                                int buf_len,
                                const CompletionCallback& callback) OVERRIDE {

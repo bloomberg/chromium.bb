@@ -63,8 +63,6 @@ class NET_EXPORT_PRIVATE HttpStreamParser {
   // zero, but position will not be.
   UploadProgress GetUploadProgress() const;
 
-  HttpResponseInfo* GetResponseInfo();
-
   bool IsResponseBodyComplete() const;
 
   bool CanFindEndOfResponse() const;
@@ -200,7 +198,10 @@ class NET_EXPORT_PRIVATE HttpStreamParser {
   // value may be bigger than final.
   int64 received_bytes_;
 
-  // The parsed response headers.  Owned by the caller.
+  // The parsed response headers.  Owned by the caller of SendRequest.  This
+  // cannot be safely accessed after reading the final set of headers, as the
+  // caller of SendRequest may have been destroyed - this happens in the case an
+  // HttpResponseBodyDrainer is used.
   HttpResponseInfo* response_;
 
   // Indicates the content length.  If this value is less than zero

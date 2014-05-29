@@ -964,10 +964,6 @@ UploadProgress HttpStreamParser::GetUploadProgress() const {
                         request_->upload_data_stream->size());
 }
 
-HttpResponseInfo* HttpStreamParser::GetResponseInfo() {
-  return response_;
-}
-
 bool HttpStreamParser::IsResponseBodyComplete() const {
   if (chunked_decoder_.get())
     return chunked_decoder_->reached_eof();

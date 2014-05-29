@@ -45,7 +45,6 @@ class NET_EXPORT_PRIVATE WebSocketBasicHandshakeStream
                           HttpResponseInfo* response,
                           const CompletionCallback& callback) OVERRIDE;
   virtual int ReadResponseHeaders(const CompletionCallback& callback) OVERRIDE;
-  virtual const HttpResponseInfo* GetResponseInfo() const OVERRIDE;
   virtual int ReadResponseBody(IOBuffer* buf,
                                int buf_len,
                                const CompletionCallback& callback) OVERRIDE;

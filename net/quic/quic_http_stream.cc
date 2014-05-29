@@ -166,10 +166,6 @@ int QuicHttpStream::ReadResponseHeaders(const CompletionCallback& callback) {
   return ERR_IO_PENDING;
 }
 
-const HttpResponseInfo* QuicHttpStream::GetResponseInfo() const {
-  return response_info_;
-}
-
 int QuicHttpStream::ReadResponseBody(
     IOBuffer* buf, int buf_len, const CompletionCallback& callback) {
   CHECK(buf);

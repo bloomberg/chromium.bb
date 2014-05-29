@@ -93,9 +93,6 @@ class MockHttpStream : public HttpStream {
   virtual int ReadResponseHeaders(const CompletionCallback& callback) OVERRIDE {
     return ERR_UNEXPECTED;
   }
-  virtual const HttpResponseInfo* GetResponseInfo() const OVERRIDE {
-    return NULL;
-  }
 
   virtual bool CanFindEndOfResponse() const OVERRIDE { return true; }
   virtual bool IsConnectionReused() const OVERRIDE { return false; }

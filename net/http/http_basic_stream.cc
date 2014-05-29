@@ -42,10 +42,6 @@ int HttpBasicStream::ReadResponseHeaders(const CompletionCallback& callback) {
   return parser()->ReadResponseHeaders(callback);
 }
 
-const HttpResponseInfo* HttpBasicStream::GetResponseInfo() const {
-  return parser()->GetResponseInfo();
-}
-
 int HttpBasicStream::ReadResponseBody(IOBuffer* buf,
                                       int buf_len,
                                       const CompletionCallback& callback) {

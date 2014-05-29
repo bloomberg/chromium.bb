@@ -12098,11 +12098,6 @@ class FakeStream : public HttpStreamBase,
     return ERR_UNEXPECTED;
   }
 
-  virtual const HttpResponseInfo* GetResponseInfo() const OVERRIDE {
-    ADD_FAILURE();
-    return NULL;
-  }
-
   virtual int ReadResponseBody(IOBuffer* buf, int buf_len,
                                const CompletionCallback& callback) OVERRIDE {
     ADD_FAILURE();
