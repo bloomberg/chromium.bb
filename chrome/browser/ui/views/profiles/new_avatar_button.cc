@@ -56,6 +56,14 @@ base::string16 GetElidedText(const base::string16& original_text) {
       gfx::ELIDE_AT_END);
 }
 
+base::string16 GetButtonText(Profile* profile) {
+  base::string16 name = GetElidedText(
+      profiles::GetAvatarNameForProfile(profile));
+  if (profile->IsManaged())
+    name = l10n_util::GetStringFUTF16(IDS_MANAGED_USER_NEW_AVATAR_LABEL, name);
+  return name;
+}
+
 }  // namespace
 
 NewAvatarButton::NewAvatarButton(
@@ -63,7 +71,7 @@ NewAvatarButton::NewAvatarButton(
     const base::string16& profile_name,
     AvatarButtonStyle button_style,
     Browser* browser)
-    : MenuButton(listener, GetElidedText(profile_name), NULL, true),
+    : MenuButton(listener, GetButtonText(browser->profile()), NULL, true),
       browser_(browser) {
   set_animate_on_state_change(false);
   set_icon_placement(ICON_ON_RIGHT);
@@ -174,8 +182,7 @@ void NewAvatarButton::OnErrorChanged() {
 
 void NewAvatarButton::UpdateAvatarButtonAndRelayoutParent() {
   // We want the button to resize if the new text is shorter.
-  SetText(GetElidedText(
-      profiles::GetAvatarNameForProfile(browser_->profile())));
+  SetText(GetButtonText(browser_->profile()));
   ClearMaxTextSize();
 
   // Because the width of the button might have changed, the parent browser

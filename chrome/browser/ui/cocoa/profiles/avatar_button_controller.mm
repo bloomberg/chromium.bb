@@ -27,7 +27,7 @@ const CGFloat kButtonPadding = 12;
 const CGFloat kButtonDefaultPadding = 5;
 const CGFloat kButtonHeight = 27;
 const CGFloat kButtonTitleImageSpacing = 10;
-const CGFloat kMaxButtonWidth = 120;
+const CGFloat kMaxButtonContentWidth = 100;
 
 const ui::NinePartImageIds kNormalBorderImageIds =
     IMAGE_GRID(IDR_AVATAR_MAC_BUTTON_NORMAL);
@@ -109,6 +109,7 @@ NSImage* GetImageFromResourceID(int resourceId) {
 @end
 
 @interface AvatarButtonController (Private)
+- (base::string16)getElidedAvatarName;
 - (void)updateAvatarButtonAndLayoutParent:(BOOL)layoutParent;
 - (void)dealloc;
 - (void)themeDidChangeNotification:(NSNotification*)aNotification;
@@ -177,6 +178,16 @@ NSImage* GetImageFromResourceID(int resourceId) {
   }
 }
 
+- (base::string16)getElidedAvatarName {
+  base::string16 avatarName =
+      profiles::GetAvatarNameForProfile(browser_->profile());
+  int maxTextWidth = kMaxButtonContentWidth - [[button_ image] size].width;
+  return gfx::ElideText(avatarName,
+                        gfx::FontList(gfx::Font([button_ font])),
+                        maxTextWidth,
+                        gfx::ELIDE_AT_END);
+}
+
 - (void)updateAvatarButtonAndLayoutParent:(BOOL)layoutParent {
   // The button text has a black foreground and a white drop shadow for regular
   // windows, and a light text with a dark drop shadow for guest windows
@@ -198,13 +209,20 @@ NSImage* GetImageFromResourceID(int resourceId) {
     [shadow setShadowColor:[NSColor colorWithCalibratedWhite:1.0 alpha:0.4]];
   }
 
+  base::string16 profileName = [self getElidedAvatarName];
+  NSString* buttonTitle = nil;
+  if (browser_->profile()->IsManaged()) {
+    // Add the "supervised" label after eliding the profile name, so the label
+    // will not get elided, but will instead enlarge the button.
+    buttonTitle = l10n_util::GetNSStringF(IDS_MANAGED_USER_NEW_AVATAR_LABEL,
+                                          profileName);
+  } else {
+    buttonTitle = base::SysUTF16ToNSString(profileName);
+  }
+
   base::scoped_nsobject<NSMutableParagraphStyle> paragraphStyle(
       [[NSMutableParagraphStyle alloc] init]);
-  [paragraphStyle setLineBreakMode:NSLineBreakByTruncatingTail];
   [paragraphStyle setAlignment:NSLeftTextAlignment];
-
-  NSString* buttonTitle = base::SysUTF16ToNSString(
-      profiles::GetAvatarNameForProfile(browser_->profile()));
 
   base::scoped_nsobject<NSAttributedString> attributedTitle(
       [[NSAttributedString alloc]
@@ -214,10 +232,6 @@ NSImage* GetImageFromResourceID(int resourceId) {
                             NSParagraphStyleAttributeName : paragraphStyle }]);
   [button_ setAttributedTitle:attributedTitle];
   [button_ sizeToFit];
-
-  // Truncate the title if needed.
-  if (NSWidth([button_ bounds]) > kMaxButtonWidth)
-    [button_ setFrameSize:NSMakeSize(kMaxButtonWidth, kButtonHeight)];
 
   if (layoutParent) {
     // Because the width of the button might have changed, the parent browser
