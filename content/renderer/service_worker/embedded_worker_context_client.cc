@@ -247,7 +247,6 @@ void EmbeddedWorkerContextClient::didHandleFetchEvent(
     int request_id,
     const blink::WebServiceWorkerResponse& web_response) {
   DCHECK(script_context_);
-#ifdef NEW_SERVICE_WORKER_RESPONSE_INTERFACE
   std::map<std::string, std::string> headers;
   const blink::WebVector<blink::WebString>& header_keys =
       web_response.getHeaderKeys();
@@ -259,13 +258,6 @@ void EmbeddedWorkerContextClient::didHandleFetchEvent(
   ServiceWorkerResponse response(web_response.status(),
                                  web_response.statusText().utf8(),
                                  headers);
-#else
-  // TODO(kinuko): Cleanup this once blink side patch is rolled.
-  ServiceWorkerResponse response(web_response.statusCode(),
-                                 web_response.statusText().utf8(),
-                                 web_response.method().utf8(),
-                                 std::map<std::string, std::string>());
-#endif
   script_context_->DidHandleFetchEvent(
       request_id, SERVICE_WORKER_FETCH_EVENT_RESULT_RESPONSE, response);
 }

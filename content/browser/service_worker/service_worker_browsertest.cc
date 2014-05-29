@@ -463,10 +463,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
                     SERVICE_WORKER_ERROR_INSTALL_WORKER_FAILED);
 }
 
-// TODO(kinuko): Re-enable this test once blink-side patch is rolled for
-// http://crbug.com/376733
-IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
-                       DISABLED_FetchEvent_Response) {
+IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest, FetchEvent_Response) {
   ServiceWorkerFetchEventResult result;
   ServiceWorkerResponse response;
   FetchTestHelper("/service_worker/fetch_event.js", &result, &response);
@@ -513,10 +510,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
   ASSERT_EQ(SERVICE_WORKER_ERROR_ABORT, status);
 }
 
-// TODO(kinuko): Re-enable this test once blink-side patch is rolled for
-// http://crbug.com/376733
-IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
-                       DISABLED_SyncEventHandled) {
+IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest, SyncEventHandled) {
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   command_line->AppendSwitch(switches::kEnableServiceWorkerSync);
 

@@ -129,7 +129,7 @@ void EmbeddedWorkerTestHelper::OnFetchEvent(
       new ServiceWorkerHostMsg_FetchEventFinished(
           embedded_worker_id, request_id,
           SERVICE_WORKER_FETCH_EVENT_RESULT_RESPONSE,
-          ServiceWorkerResponse(200, "OK", "GET",
+          ServiceWorkerResponse(200, "OK",
                                 std::map<std::string, std::string>())));
 }
 
