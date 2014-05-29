@@ -247,11 +247,11 @@ class FuzzerClientListener : public SimpleListener {
 MULTIPROCESS_IPC_TEST_CLIENT_MAIN(FuzzServerClient) {
   base::MessageLoopForIO main_message_loop;
   FuzzerServerListener listener;
-  IPC::Channel channel(IPCTestBase::GetChannelName("FuzzServerClient"),
-                       IPC::Channel::MODE_CLIENT,
-                       &listener);
-  CHECK(channel.Connect());
-  listener.Init(&channel);
+  scoped_ptr<IPC::Channel> channel(IPC::Channel::CreateClient(
+      IPCTestBase::GetChannelName("FuzzServerClient"),
+      &listener));
+  CHECK(channel->Connect());
+  listener.Init(channel.get());
   base::MessageLoop::current()->Run();
   return 0;
 }

@@ -69,9 +69,7 @@ void IPCTestBase::CreateChannelFromChannelHandle(
     IPC::Listener* listener) {
   CHECK(!channel_.get());
   CHECK(!channel_proxy_.get());
-  channel_.reset(new IPC::Channel(channel_handle,
-                                  IPC::Channel::MODE_SERVER,
-                                  listener));
+  channel_ = IPC::Channel::CreateServer(channel_handle, listener);
 }
 
 void IPCTestBase::CreateChannelProxy(

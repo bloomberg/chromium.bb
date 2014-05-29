@@ -428,11 +428,11 @@ TEST_F(IPCChannelBadMessageTest, BadMessage) {
 MULTIPROCESS_IPC_TEST_CLIENT_MAIN(ChannelProxyClient) {
   base::MessageLoopForIO main_message_loop;
   ChannelReflectorListener listener;
-  IPC::Channel channel(IPCTestBase::GetChannelName("ChannelProxyClient"),
-                       IPC::Channel::MODE_CLIENT,
-                       &listener);
-  CHECK(channel.Connect());
-  listener.Init(&channel);
+  scoped_ptr<IPC::Channel> channel(IPC::Channel::CreateClient(
+      IPCTestBase::GetChannelName("ChannelProxyClient"),
+      &listener));
+  CHECK(channel->Connect());
+  listener.Init(channel.get());
 
   base::MessageLoop::current()->Run();
   return 0;
