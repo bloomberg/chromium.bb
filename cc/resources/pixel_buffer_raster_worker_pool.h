@@ -10,6 +10,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
+#include "cc/base/delayed_unique_notifier.h"
 #include "cc/resources/raster_worker_pool.h"
 #include "cc/resources/rasterizer.h"
 
@@ -78,8 +79,6 @@ class CC_EXPORT PixelBufferRasterWorkerPool : public RasterWorkerPool,
   void OnRasterRequiredForActivationFinished();
   void FlushUploads();
   void CheckForCompletedUploads();
-  void ScheduleCheckForCompletedRasterTasks();
-  void OnCheckForCompletedRasterTasks();
   void CheckForCompletedRasterTasks();
   void ScheduleMoreTasks();
   unsigned PendingRasterTaskCount() const;
@@ -110,13 +109,13 @@ class CC_EXPORT PixelBufferRasterWorkerPool : public RasterWorkerPool,
   size_t bytes_pending_upload_;
   size_t max_bytes_pending_upload_;
   bool has_performed_uploads_since_last_flush_;
-  base::TimeTicks check_for_completed_raster_tasks_time_;
-  bool check_for_completed_raster_tasks_pending_;
 
   bool should_notify_client_if_no_tasks_are_pending_;
   bool should_notify_client_if_no_tasks_required_for_activation_are_pending_;
   bool raster_finished_task_pending_;
   bool raster_required_for_activation_finished_task_pending_;
+
+  DelayedUniqueNotifier check_for_completed_raster_task_notifier_;
 
   base::WeakPtrFactory<PixelBufferRasterWorkerPool>
       raster_finished_weak_ptr_factory_;
@@ -128,8 +127,6 @@ class CC_EXPORT PixelBufferRasterWorkerPool : public RasterWorkerPool,
   // completed tasks.
   TaskGraph graph_;
   Task::Vector completed_tasks_;
-
-  base::WeakPtrFactory<PixelBufferRasterWorkerPool> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PixelBufferRasterWorkerPool);
 };

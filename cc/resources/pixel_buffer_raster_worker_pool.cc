@@ -51,17 +51,21 @@ PixelBufferRasterWorkerPool::PixelBufferRasterWorkerPool(
       bytes_pending_upload_(0u),
       max_bytes_pending_upload_(max_transfer_buffer_usage_bytes),
       has_performed_uploads_since_last_flush_(false),
-      check_for_completed_raster_tasks_pending_(false),
       should_notify_client_if_no_tasks_are_pending_(false),
       should_notify_client_if_no_tasks_required_for_activation_are_pending_(
           false),
       raster_finished_task_pending_(false),
       raster_required_for_activation_finished_task_pending_(false),
-      raster_finished_weak_ptr_factory_(this),
-      weak_ptr_factory_(this) {}
+      check_for_completed_raster_task_notifier_(
+          task_runner,
+          base::Bind(&PixelBufferRasterWorkerPool::CheckForCompletedRasterTasks,
+                     base::Unretained(this)),
+          base::TimeDelta::FromMilliseconds(
+              kCheckForCompletedRasterTasksDelayMs)),
+      raster_finished_weak_ptr_factory_(this) {
+}
 
 PixelBufferRasterWorkerPool::~PixelBufferRasterWorkerPool() {
-  DCHECK(!check_for_completed_raster_tasks_pending_);
   DCHECK_EQ(0u, raster_task_states_.size());
   DCHECK_EQ(0u, raster_tasks_with_pending_upload_.size());
   DCHECK_EQ(0u, completed_raster_tasks_.size());
@@ -87,7 +91,7 @@ void PixelBufferRasterWorkerPool::Shutdown() {
   CheckForCompletedRasterizerTasks();
   CheckForCompletedUploads();
 
-  check_for_completed_raster_tasks_pending_ = false;
+  check_for_completed_raster_task_notifier_.Cancel();
 
   for (RasterTaskState::Vector::iterator it = raster_task_states_.begin();
        it != raster_task_states_.end();
@@ -208,10 +212,8 @@ void PixelBufferRasterWorkerPool::ScheduleTasks(RasterTaskQueue* queue) {
   // Schedule new tasks.
   ScheduleMoreTasks();
 
-  // Cancel any pending check for completed raster tasks and schedule
-  // another check.
-  check_for_completed_raster_tasks_time_ = base::TimeTicks();
-  ScheduleCheckForCompletedRasterTasks();
+  // Reschedule check for completed raster tasks.
+  check_for_completed_raster_task_notifier_.Schedule();
 
   TRACE_EVENT_ASYNC_STEP_INTO1(
       "cc",
@@ -418,53 +420,14 @@ void PixelBufferRasterWorkerPool::CheckForCompletedUploads() {
   }
 }
 
-void PixelBufferRasterWorkerPool::ScheduleCheckForCompletedRasterTasks() {
-  base::TimeDelta delay =
-      base::TimeDelta::FromMilliseconds(kCheckForCompletedRasterTasksDelayMs);
-  if (check_for_completed_raster_tasks_time_.is_null())
-    check_for_completed_raster_tasks_time_ = base::TimeTicks::Now() + delay;
-
-  if (check_for_completed_raster_tasks_pending_)
-    return;
-
-  task_runner_->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&PixelBufferRasterWorkerPool::OnCheckForCompletedRasterTasks,
-                 weak_ptr_factory_.GetWeakPtr()),
-      delay);
-  check_for_completed_raster_tasks_pending_ = true;
-}
-
-void PixelBufferRasterWorkerPool::OnCheckForCompletedRasterTasks() {
-  if (check_for_completed_raster_tasks_time_.is_null()) {
-    check_for_completed_raster_tasks_pending_ = false;
-    return;
-  }
-
-  base::TimeDelta delay =
-      check_for_completed_raster_tasks_time_ - base::TimeTicks::Now();
-
-  // Post another delayed task if it is not yet time to check for completed
-  // raster tasks.
-  if (delay > base::TimeDelta()) {
-    task_runner_->PostDelayedTask(
-        FROM_HERE,
-        base::Bind(&PixelBufferRasterWorkerPool::OnCheckForCompletedRasterTasks,
-                   weak_ptr_factory_.GetWeakPtr()),
-        delay);
-    return;
-  }
-
-  check_for_completed_raster_tasks_pending_ = false;
-  CheckForCompletedRasterTasks();
-}
-
 void PixelBufferRasterWorkerPool::CheckForCompletedRasterTasks() {
   TRACE_EVENT0("cc",
                "PixelBufferRasterWorkerPool::CheckForCompletedRasterTasks");
 
+  // Since this function can be called directly, cancel any pending checks.
+  check_for_completed_raster_task_notifier_.Cancel();
+
   DCHECK(should_notify_client_if_no_tasks_are_pending_);
-  check_for_completed_raster_tasks_time_ = base::TimeTicks();
 
   CheckForCompletedRasterizerTasks();
   CheckForCompletedUploads();
@@ -501,7 +464,7 @@ void PixelBufferRasterWorkerPool::CheckForCompletedRasterTasks() {
   // Schedule another check for completed raster tasks while there are
   // pending raster tasks or pending uploads.
   if (HasPendingTasks())
-    ScheduleCheckForCompletedRasterTasks();
+    check_for_completed_raster_task_notifier_.Schedule();
 
   // Generate client notifications.
   if (will_notify_client_that_no_tasks_required_for_activation_are_pending) {
