@@ -1120,7 +1120,7 @@ void Textfield::ExecuteCommand(int command_id, int event_flags) {
   bool rtl = GetTextDirection() == base::i18n::RIGHT_TO_LEFT;
   gfx::VisualCursorDirection begin = rtl ? gfx::CURSOR_RIGHT : gfx::CURSOR_LEFT;
   gfx::VisualCursorDirection end = rtl ? gfx::CURSOR_LEFT : gfx::CURSOR_RIGHT;
-  gfx::Range selection_range = GetSelectedRange();
+  gfx::SelectionModel selection_model = GetSelectionModel();
 
   OnBeforeUserAction();
   switch (command_id) {
@@ -1208,7 +1208,7 @@ void Textfield::ExecuteCommand(int command_id, int event_flags) {
       break;
   }
 
-  cursor_changed |= GetSelectedRange() != selection_range;
+  cursor_changed |= GetSelectionModel() != selection_model;
   if (cursor_changed)
     UpdateSelectionClipboard();
   UpdateAfterChange(text_changed, cursor_changed);
