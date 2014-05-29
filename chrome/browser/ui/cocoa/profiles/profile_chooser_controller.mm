@@ -691,6 +691,10 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 - (NSView*)createCurrentProfileLinksForItem:(const AvatarMenu::Item&)item
                                        rect:(NSRect)rect;
 
+// Creates the disclaimer text for supervised users, telling them that the
+// manager can view their history etc.
+- (NSView*)createSupervisedUserDisclaimerView;
+
 // Creates a main profile card for the guest user.
 - (NSView*)createGuestProfileView;
 
@@ -1009,6 +1013,21 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
     yOffset = NSMaxY([accountsSeparator frame]);
   }
 
+  // For supervised users, add the disclaimer text.
+  if (browser_->profile()->IsManaged()) {
+    yOffset += kSmallVerticalSpacing;
+    NSView* disclaimerContainer = [self createSupervisedUserDisclaimerView];
+    [disclaimerContainer setFrameOrigin:NSMakePoint(0, yOffset)];
+    [container addSubview:disclaimerContainer];
+    yOffset = NSMaxY([disclaimerContainer frame]);
+    yOffset += kSmallVerticalSpacing;
+
+    NSBox* separator =
+        [self separatorWithFrame:NSMakeRect(0, yOffset, kFixedMenuWidth, 0)];
+    [container addSubview:separator];
+    yOffset = NSMaxY([separator frame]);
+  }
+
   // Active profile card.
   if (currentProfileView) {
     yOffset += kVerticalSpacing;
@@ -1313,6 +1332,27 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 
   [container addSubview:link];
   [container setFrameSize:rect.size];
+  return container.autorelease();
+}
+
+- (NSView*)createSupervisedUserDisclaimerView {
+  base::scoped_nsobject<NSView> container(
+      [[NSView alloc] initWithFrame:NSZeroRect]);
+
+  int yOffset = 0;
+  int availableTextWidth = kFixedMenuWidth - 2 * kHorizontalSpacing;
+
+  NSTextField* disclaimer = BuildLabel(
+      base::SysUTF16ToNSString(avatarMenu_->GetManagedUserInformation()),
+      NSMakePoint(kHorizontalSpacing, yOffset),
+      nil /* background_color */,
+      nil /* text_color */);
+  [disclaimer setFrameSize:NSMakeSize(availableTextWidth, 0)];
+  [GTMUILocalizerAndLayoutTweaker sizeToFitFixedWidthTextField:disclaimer];
+  yOffset = NSMaxY([disclaimer frame]);
+
+  [container addSubview:disclaimer];
+  [container setFrameSize:NSMakeSize(kFixedMenuWidth, yOffset)];
   return container.autorelease();
 }
 
