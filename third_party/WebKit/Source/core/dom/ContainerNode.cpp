@@ -618,11 +618,11 @@ void ContainerNode::appendChild(PassRefPtr<Node> newChild, ExceptionState& excep
         if (child.parentNode())
             break;
 
-        treeScope().adoptIfNeeded(child);
-
-        // Append child to the end of the list
         {
             NoEventDispatchAssertion assertNoEventDispatch;
+            ScriptForbiddenScope forbidScript;
+
+            treeScope().adoptIfNeeded(child);
             appendChildToContainer(child, *this);
         }
 
