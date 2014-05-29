@@ -351,13 +351,13 @@ TEST(ParseCapabilities, ExcludeSwitches) {
   ASSERT_TRUE(switches.find("switch2") != switches.end());
 }
 
-TEST(ParseCapabilities, UseExistingBrowser) {
+TEST(ParseCapabilities, UseRemoteBrowser) {
   Capabilities capabilities;
   base::DictionaryValue caps;
   caps.SetString("chromeOptions.debuggerAddress", "abc:123");
   Status status = capabilities.Parse(caps);
   ASSERT_TRUE(status.IsOk());
-  ASSERT_TRUE(capabilities.IsExistingBrowser());
+  ASSERT_TRUE(capabilities.IsRemoteBrowser());
   ASSERT_EQ("abc", capabilities.debugger_address.host());
   ASSERT_EQ(123, capabilities.debugger_address.port());
 }

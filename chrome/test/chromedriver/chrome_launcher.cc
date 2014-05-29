@@ -29,8 +29,8 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/test/chromedriver/chrome/chrome_android_impl.h"
 #include "chrome/test/chromedriver/chrome/chrome_desktop_impl.h"
-#include "chrome/test/chromedriver/chrome/chrome_existing_impl.h"
 #include "chrome/test/chromedriver/chrome/chrome_finder.h"
+#include "chrome/test/chromedriver/chrome/chrome_remote_impl.h"
 #include "chrome/test/chromedriver/chrome/device_manager.h"
 #include "chrome/test/chromedriver/chrome/devtools_http_client.h"
 #include "chrome/test/chromedriver/chrome/embedded_automation_extension.h"
@@ -189,7 +189,7 @@ Status WaitForDevToolsAndCheckVersion(
   return Status(kUnknownError, "unable to discover open pages");
 }
 
-Status LaunchExistingChromeSession(
+Status LaunchRemoteChromeSession(
     URLRequestContextGetter* context_getter,
     const SyncWebSocketFactory& socket_factory,
     const Capabilities& capabilities,
@@ -205,8 +205,8 @@ Status LaunchExistingChromeSession(
                       capabilities.debugger_address.ToString(),
                   status);
   }
-  chrome->reset(new ChromeExistingImpl(devtools_client.Pass(),
-                                       devtools_event_listeners));
+  chrome->reset(new ChromeRemoteImpl(devtools_client.Pass(),
+                                     devtools_event_listeners));
   return Status(kOk);
 }
 
@@ -409,8 +409,8 @@ Status LaunchChrome(
     const Capabilities& capabilities,
     ScopedVector<DevToolsEventListener>& devtools_event_listeners,
     scoped_ptr<Chrome>* chrome) {
-  if (capabilities.IsExistingBrowser()) {
-    return LaunchExistingChromeSession(
+  if (capabilities.IsRemoteBrowser()) {
+    return LaunchRemoteChromeSession(
         context_getter, socket_factory,
         capabilities, devtools_event_listeners, chrome);
   }

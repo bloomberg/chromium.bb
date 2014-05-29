@@ -64,8 +64,8 @@ struct Capabilities {
   Capabilities();
   ~Capabilities();
 
-  // Return true if existing host:port session is to be used.
-  bool IsExistingBrowser() const;
+  // Return true if remote host:port session is to be used.
+  bool IsRemoteBrowser() const;
 
   // Return true if android package is specified.
   bool IsAndroid() const;

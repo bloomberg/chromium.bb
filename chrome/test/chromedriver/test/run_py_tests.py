@@ -110,7 +110,7 @@ _ANDROID_NEGATIVE_FILTER['chrome'] = (
         'ChromeDriverTest.testWindowSize',
         'ChromeDriverTest.testWindowMaximize',
         'ChromeLogPathCapabilityTest.testChromeLogPath',
-        'ExistingBrowserTest.*',
+        'RemoteBrowserTest.*',
         # Don't enable perf testing on Android yet.
         'PerfTest.testSessionStartTime',
         'PerfTest.testSessionStopTime',
@@ -899,13 +899,13 @@ class SessionHandlingTest(ChromeDriverBaseTest):
     driver.Quit()
 
 
-class ExistingBrowserTest(ChromeDriverBaseTest):
-  """Tests for ChromeDriver existing browser capability."""
+class RemoteBrowserTest(ChromeDriverBaseTest):
+  """Tests for ChromeDriver remote browser capability."""
   def setUp(self):
     self.assertTrue(_CHROME_BINARY is not None,
                     'must supply a chrome binary arg')
 
-  def testConnectToExistingBrowser(self):
+  def testConnectToRemoteBrowser(self):
     port = self.FindFreePort()
     temp_dir = util.MakeTempDir()
     process = subprocess.Popen([_CHROME_BINARY,

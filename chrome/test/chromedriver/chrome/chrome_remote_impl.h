@@ -1,9 +1,9 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_TEST_CHROMEDRIVER_CHROME_CHROME_EXISTING_IMPL_H_
-#define CHROME_TEST_CHROMEDRIVER_CHROME_CHROME_EXISTING_IMPL_H_
+#ifndef CHROME_TEST_CHROMEDRIVER_CHROME_CHROME_REMOTE_IMPL_H_
+#define CHROME_TEST_CHROMEDRIVER_CHROME_CHROME_REMOTE_IMPL_H_
 
 #include <string>
 
@@ -13,12 +13,12 @@
 
 class DevToolsHttpClient;
 
-class ChromeExistingImpl : public ChromeImpl {
+class ChromeRemoteImpl : public ChromeImpl {
  public:
-  ChromeExistingImpl(
+  ChromeRemoteImpl(
       scoped_ptr<DevToolsHttpClient> client,
       ScopedVector<DevToolsEventListener>& devtools_event_listeners);
-  virtual ~ChromeExistingImpl();
+  virtual ~ChromeRemoteImpl();
 
   // Overridden from Chrome.
   virtual std::string GetOperatingSystemName() OVERRIDE;
@@ -27,4 +27,4 @@ class ChromeExistingImpl : public ChromeImpl {
   virtual Status QuitImpl() OVERRIDE;
 };
 
-#endif  // CHROME_TEST_CHROMEDRIVER_CHROME_CHROME_EXISTING_IMPL_H_
+#endif  // CHROME_TEST_CHROMEDRIVER_CHROME_CHROME_REMOTE_IMPL_H_

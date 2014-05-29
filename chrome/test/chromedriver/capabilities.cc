@@ -262,7 +262,7 @@ Status ParseExcludeSwitches(const base::Value& option,
   return Status(kOk);
 }
 
-Status ParseUseExistingBrowser(const base::Value& option,
+Status ParseUseRemoteBrowser(const base::Value& option,
                                Capabilities* capabilities) {
   std::string server_addr;
   if (!option.GetAsString(&server_addr))
@@ -310,7 +310,7 @@ Status ParseChromeOptions(
     return Status(kUnknownError, "must be a dictionary");
 
   bool is_android = chrome_options->HasKey("androidPackage");
-  bool is_existing = chrome_options->HasKey("debuggerAddress");
+  bool is_remote = chrome_options->HasKey("debuggerAddress");
 
   std::map<std::string, Parser> parser_map;
   // Ignore 'args', 'binary' and 'extensions' capabilities by default, since the
@@ -331,8 +331,8 @@ Status ParseChromeOptions(
         base::Bind(&ParseBoolean, &capabilities->android_use_running_app);
     parser_map["args"] = base::Bind(&ParseSwitches);
     parser_map["loadAsync"] = base::Bind(&IgnoreDeprecatedOption, "loadAsync");
-  } else if (is_existing) {
-    parser_map["debuggerAddress"] = base::Bind(&ParseUseExistingBrowser);
+  } else if (is_remote) {
+    parser_map["debuggerAddress"] = base::Bind(&ParseUseRemoteBrowser);
   } else {
     parser_map["args"] = base::Bind(&ParseSwitches);
     parser_map["binary"] = base::Bind(&ParseFilePath, &capabilities->binary);
@@ -484,7 +484,7 @@ bool Capabilities::IsAndroid() const {
   return !android_package.empty();
 }
 
-bool Capabilities::IsExistingBrowser() const {
+bool Capabilities::IsRemoteBrowser() const {
   return debugger_address.IsValid();
 }
 
