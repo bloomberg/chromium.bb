@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <limits>
+
 #include "skia/ext/paint_simplifier.h"
 #include "third_party/skia/include/core/SkPaint.h"
 
@@ -25,6 +27,12 @@ bool PaintSimplifier::filter(SkPaint* paint, Type type) {
   }
   paint->setSubpixelText(false);
   paint->setLCDRenderText(false);
+
+  // Reduce filter level to medium or less. Note that reducing the filter to
+  // less than medium can have a negative effect on performance as the filtered
+  // image is not cached in this case.
+  paint->setFilterLevel(
+      std::min(paint->getFilterLevel(), SkPaint::kMedium_FilterLevel));
 
   paint->setMaskFilter(NULL);
 
