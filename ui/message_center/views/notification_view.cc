@@ -37,6 +37,7 @@
 #include "ui/views/controls/progress_bar.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
+#include "ui/views/native_cursor.h"
 #include "ui/views/painter.h"
 #include "ui/views/widget/widget.h"
 
@@ -466,7 +467,7 @@ gfx::NativeCursor NotificationView::GetCursor(const ui::MouseEvent& event) {
   if (!clickable_ || !controller_->HasClickedListener(notification_id()))
     return views::View::GetCursor(event);
 
-  return ui::kCursorHand;
+  return views::GetNativeHandCursor();
 }
 
 void NotificationView::UpdateWithNotification(

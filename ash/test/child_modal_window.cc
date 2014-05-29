@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/views/test/child_modal_window.h"
+#include "ash/test/child_modal_window.h"
 
 #include "base/strings/utf_string_conversions.h"
 #include "ui/aura/window.h"
@@ -15,7 +15,9 @@
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/wm/core/window_modality_controller.h"
 
-namespace views {
+using views::Widget;
+
+namespace ash {
 namespace test {
 
 namespace {
@@ -53,7 +55,7 @@ void CreateChildModalParent(gfx::NativeView context) {
 }
 
 
-class ChildModalWindow : public WidgetDelegateView {
+class ChildModalWindow : public views::WidgetDelegateView {
  public:
   ChildModalWindow();
   virtual ~ChildModalWindow();
@@ -73,7 +75,7 @@ class ChildModalWindow : public WidgetDelegateView {
 };
 
 ChildModalWindow::ChildModalWindow() {
-  Textfield* textfield = new Textfield;
+  views::Textfield* textfield = new views::Textfield;
   AddChildView(textfield);
   textfield->SetBounds(
       kChildTextfieldLeft, kChildTextfieldTop,
@@ -91,7 +93,7 @@ gfx::Size ChildModalWindow::GetPreferredSize() const {
   return gfx::Size(kChildWindowWidth, kChildWindowHeight);
 }
 
-View* ChildModalWindow::GetContentsView() {
+views::View* ChildModalWindow::GetContentsView() {
   return this;
 }
 
@@ -108,11 +110,11 @@ ui::ModalType ChildModalWindow::GetModalType() const {
 }
 
 ChildModalParent::ChildModalParent(gfx::NativeView context)
-    : button_(new LabelButton(this,
-                              base::ASCIIToUTF16(
-                                  "Show/Hide Child Modal Window"))),
-      textfield_(new Textfield),
-      host_(new NativeViewHost),
+    : button_(new views::LabelButton(this,
+                                     base::ASCIIToUTF16(
+                                         "Show/Hide Child Modal Window"))),
+      textfield_(new views::Textfield),
+      host_(new views::NativeViewHost),
       modal_parent_(NULL),
       child_(NULL) {
   Widget* widget = new Widget;
@@ -120,7 +122,7 @@ ChildModalParent::ChildModalParent(gfx::NativeView context)
   params.context = context;
   widget->Init(params);
   widget->GetRootView()->set_background(
-      Background::CreateSolidBackground(kModalParentColor));
+      views::Background::CreateSolidBackground(kModalParentColor));
   modal_parent_ = widget->GetNativeView();
   widget->GetNativeView()->SetName("ModalParent");
   AddChildView(button_);
@@ -156,7 +158,7 @@ Widget* ChildModalParent::CreateChild() {
   return child;
 }
 
-View* ChildModalParent::GetContentsView() {
+views::View* ChildModalParent::GetContentsView() {
   return this;
 }
 
@@ -195,7 +197,7 @@ void ChildModalParent::ViewHierarchyChanged(
   }
 }
 
-void ChildModalParent::ButtonPressed(Button* sender,
+void ChildModalParent::ButtonPressed(views::Button* sender,
                                      const ui::Event& event) {
   if (sender == button_) {
     if (!child_)
@@ -215,4 +217,4 @@ void ChildModalParent::OnWidgetDestroying(Widget* widget) {
 }
 
 }  // namespace test
-}  // namespace views
+}  // namespace ash

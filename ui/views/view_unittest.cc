@@ -1487,7 +1487,7 @@ bool TestView::AcceleratorPressed(const ui::Accelerator& accelerator) {
 
 // TODO: these tests were initially commented out when getting aura to
 // run. Figure out if still valuable and either nuke or fix.
-#if defined(false)
+#if 0
 TEST_F(ViewTest, ActivateAccelerator) {
   // Register a keyboard accelerator before the view is added to a window.
   ui::Accelerator return_accelerator(ui::VKEY_RETURN, ui::EF_NONE);
@@ -1692,7 +1692,7 @@ TEST_F(ViewTest, DISABLED_RerouteMouseWheelTest) {
   window1->CloseNow();
   window2->CloseNow();
 }
-#endif  // false
+#endif  // 0
 
 ////////////////////////////////////////////////////////////////////////////////
 // Native view hierachy

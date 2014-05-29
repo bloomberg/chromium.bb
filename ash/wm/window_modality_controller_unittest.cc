@@ -6,6 +6,7 @@
 
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/test/child_modal_window.h"
 #include "ash/wm/window_util.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/test/event_generator.h"
@@ -15,7 +16,6 @@
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/views/test/capture_tracking_view.h"
-#include "ui/views/test/child_modal_window.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/window_util.h"
 
@@ -392,8 +392,8 @@ TEST_F(WindowModalityControllerTest, TouchEvent) {
 //   |child| window.
 // - Focus should follow the active window.
 TEST_F(WindowModalityControllerTest, ChildModal) {
-  views::test::ChildModalParent* delegate =
-      new views::test::ChildModalParent(CurrentContext());
+  test::ChildModalParent* delegate =
+      new test::ChildModalParent(CurrentContext());
   views::Widget* widget = views::Widget::CreateWindowWithContextAndBounds(
       delegate, CurrentContext(), gfx::Rect(0, 0, 400, 400));
   widget->Show();
@@ -452,8 +452,8 @@ TEST_F(WindowModalityControllerTest, ChildModal) {
 // Same as |ChildModal| test, but using |EventGenerator| rather than bypassing
 // it by calling |ActivateWindow|.
 TEST_F(WindowModalityControllerTest, ChildModalEventGenerator) {
-  views::test::ChildModalParent* delegate =
-      new views::test::ChildModalParent(CurrentContext());
+  test::ChildModalParent* delegate =
+      new test::ChildModalParent(CurrentContext());
   views::Widget* widget = views::Widget::CreateWindowWithContextAndBounds(
       delegate, CurrentContext(), gfx::Rect(0, 0, 400, 400));
   widget->Show();

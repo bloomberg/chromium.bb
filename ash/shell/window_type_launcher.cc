@@ -16,6 +16,7 @@
 #include "ash/shell_window_ids.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/web_notification/web_notification_tray.h"
+#include "ash/test/child_modal_window.h"
 #include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
@@ -31,7 +32,6 @@
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/examples/examples_window_with_content.h"
 #include "ui/views/layout/grid_layout.h"
-#include "ui/views/test/child_modal_window.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/shadow_types.h"
 
@@ -323,7 +323,7 @@ void WindowTypeLauncher::ButtonPressed(views::Button* sender,
     ModalWindow::OpenModalWindow(GetWidget()->GetNativeView(),
                                  ui::MODAL_TYPE_WINDOW);
   } else if (sender == child_modal_button_) {
-    views::test::CreateChildModalParent(
+    ash::test::CreateChildModalParent(
         GetWidget()->GetNativeView()->GetRootWindow());
   } else if (sender == transient_button_) {
     NonModalTransient::OpenNonModalTransient(GetWidget()->GetNativeView());

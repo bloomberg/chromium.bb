@@ -599,16 +599,15 @@
         'corewm/tooltip_controller_test_helper.h',
         'test/capture_tracking_view.cc',
         'test/capture_tracking_view.h',
-        'test/child_modal_window.cc',
-        'test/child_modal_window.h',
         'test/desktop_test_views_delegate.cc',
         'test/desktop_test_views_delegate.h',
         'test/menu_runner_test_api.cc',
         'test/menu_runner_test_api.h',
         'test/test_views.cc',
         'test/test_views.h',
-        'test/test_views_delegate.cc',
         'test/test_views_delegate.h',
+        'test/test_views_delegate_aura.cc',
+        'test/test_views_delegate_mac.mm',
         'test/test_widget_observer.cc',
         'test/test_widget_observer.h',
         'test/ui_controls_factory_desktop_aurax11.cc',
@@ -654,6 +653,7 @@
         '../compositor/compositor.gyp:compositor',
         '../compositor/compositor.gyp:compositor_test_support',
         '../events/events.gyp:events',
+        '../events/events.gyp:events_base',
         '../gfx/gfx.gyp:gfx',
         '../gfx/gfx.gyp:gfx_geometry',
         '../resources/ui_resources.gyp:ui_resources',
@@ -795,6 +795,21 @@
           'dependencies': [
             '../events/platform/x11/x11_events_platform.gyp:x11_events_platform',
           ],
+        }],
+        ['OS=="mac"', {
+          # views_unittests not yet compiling on Mac. http://crbug.com/378134
+          'sources!': [
+            'bubble/bubble_window_targeter_unittest.cc',
+            'controls/button/custom_button_unittest.cc',
+            'controls/button/menu_button_unittest.cc',
+            'controls/native/native_view_host_unittest.cc',
+            'controls/menu/menu_controller_unittest.cc',
+            'ime/input_method_bridge_unittest.cc',
+            'focus/focus_manager_unittest.cc',
+            'widget/window_reorderer_unittest.cc',
+            'widget/widget_unittest.cc',
+            'view_unittest.cc',
+          ]
         }],
       ],
     },  # target_name: views_unittests
