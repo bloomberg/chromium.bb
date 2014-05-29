@@ -77,6 +77,7 @@ EXTRA_ENV = {
 
   # Standard Library Directories
   'SEARCH_DIRS_BUILTIN': '${USE_STDLIB ? ' +
+                         '  ${BASE_USR}/local/lib/ ' +
                          '  ${BASE_USR}/lib/ ' +
                          '  ${BASE_SDK}/lib/ ' +
                          '  ${BASE_LIB}/ ' +
