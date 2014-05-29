@@ -167,6 +167,8 @@ ui/file_manager/file_manager/foreground/js/main_scripts.js
 # String 'copyright' used in code.
 ui/file_manager/file_manager/foreground/js/media/mediaplayer_scripts.js
 # String 'copyright' used in code.
+ui/file_manager/gallery/js/gallery_scripts.js
+# String 'copyright' used in code.
 ui/file_manager/video_player/js/video_player_scripts.js
 # This third-party code is taken from Mozilla, but is copyright Google and has
 # been re-licensed under the Chromium license.
