@@ -333,14 +333,19 @@ class USBImager(object):
   def Run(self):
     """Image the removable device."""
     devices = self.ListAllRemovableDevices()
-    # If user has specified a device, check if it is removable.
-    if (self.device and
-        self.device not in [self.DeviceNameToPath(x) for x in devices]):
-      msg = '%s is not a removable device.' % self.device
-      if not (self.yes or cros_build_lib.BooleanPrompt(
-          default=False, prolog=msg)):
-        cros_build_lib.Die('You can specify usb:// to choose from a list of '
-                           'removable devices.')
+
+    if self.device:
+      # If user specified a device path, check if it exists.
+      if not os.path.exists(self.device):
+        cros_build_lib.Die('Device path %s does not exist.' % self.device)
+
+      # Then check if it is removable.
+      if self.device not in [self.DeviceNameToPath(x) for x in devices]:
+        msg = '%s is not a removable device.' % self.device
+        if not (self.yes or cros_build_lib.BooleanPrompt(
+            default=False, prolog=msg)):
+          cros_build_lib.Die('You can specify usb:// to choose from a list of '
+                             'removable devices.')
     target = None
     if self.device:
       # Get device name from path (e.g. sdc in /dev/sdc).
@@ -364,6 +369,9 @@ class FileImager(USBImager):
 
   def Run(self):
     """Copy the image to the path specified by self.device."""
+    if not os.path.exists(self.device):
+      cros_build_lib.Die('Path %s does not exist.' % self.device)
+
     image_path = self._GetImagePath()
     if os.path.isdir(self.device):
       logging.info('Copying to %s',
@@ -856,6 +864,8 @@ Examples:
   cros flash 192.168.1.7 xbuddy://remote/x86-mario/latest-canary
   cros flash 192.168.1.7 xbuddy://remote/x86-mario-paladin/R32-4830.0.0-rc1
   cros flash usb:// xbuddy://remote/trybot-x86-mario-paladin/R32-5189.0.0-b100
+  cros flash usb:///dev/sde xbuddy://peppy/latest
+  cros flash file:///~/images xbuddy://peppy/latest
 
   For more information and known problems/fixes, please see:
   http://dev.chromium.org/chromium-os/build/cros-flash
@@ -986,17 +996,18 @@ Examples:
         # Perform device update.
         updater.Run()
       elif self.run_mode == self.USB_MODE:
-        logging.info('Preparing to image the removable device %s',
-                     self.options.device)
-        imager = USBImager(self.usb_dev,
+        path = osutils.ExpandPath(self.usb_dev) if self.usb_dev else ''
+        logging.info('Preparing to image the removable device %s', path)
+        imager = USBImager(path,
                            self.options.board,
                            self.options.image,
                            debug=self.options.debug,
                            yes=self.options.yes)
         imager.Run()
       elif self.run_mode == self.FILE_MODE:
-        logging.info('Preparing to copy image to %s', self.copy_path)
-        imager = FileImager(self.copy_path,
+        path = osutils.ExpandPath(self.copy_path) if self.copy_path else ''
+        logging.info('Preparing to copy image to %s', path)
+        imager = FileImager(path,
                             self.options.board,
                             self.options.image,
                             debug=self.options.debug,

@@ -225,6 +225,7 @@ class ImagingRunThroughTest(cros_test_lib.MockTempDirTestCase,
     self.PatchObject(dev_server_wrapper, 'DevServerWrapper')
     self.PatchObject(cros_flash, 'TranslateImagePath',
                      return_value='taco-paladin/R36/chromiumos_test_image.bin')
+    self.PatchObject(os.path, 'exists', return_value=True)
 
   def testLocalImagePath(self):
     """Tests that imaging methods are called correctly."""
