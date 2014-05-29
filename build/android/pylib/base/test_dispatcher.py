@@ -75,22 +75,22 @@ class _TestCollection(object):
     self._lock = threading.Lock()
     self._tests = []
     self._tests_in_progress = 0
-    # Used to signal that an item is avaliable or all items have been handled.
-    self._item_avaliable_or_all_done = threading.Event()
+    # Used to signal that an item is available or all items have been handled.
+    self._item_available_or_all_done = threading.Event()
     for t in tests:
       self.add(t)
 
   def _pop(self):
     """Pop a test from the collection.
 
-    Waits until a test is avaliable or all tests have been handled.
+    Waits until a test is available or all tests have been handled.
 
     Returns:
       A test or None if all tests have been handled.
     """
     while True:
-      # Wait for a test to be avaliable or all tests to have been handled.
-      self._item_avaliable_or_all_done.wait()
+      # Wait for a test to be available or all tests to have been handled.
+      self._item_available_or_all_done.wait()
       with self._lock:
         # Check which of the two conditions triggered the signal.
         if self._tests_in_progress == 0:
@@ -98,8 +98,8 @@ class _TestCollection(object):
         try:
           return self._tests.pop(0)
         except IndexError:
-          # Another thread beat us to the avaliable test, wait again.
-          self._item_avaliable_or_all_done.clear()
+          # Another thread beat us to the available test, wait again.
+          self._item_available_or_all_done.clear()
 
   def add(self, test):
     """Add an test to the collection.
@@ -109,7 +109,7 @@ class _TestCollection(object):
     """
     with self._lock:
       self._tests.append(test)
-      self._item_avaliable_or_all_done.set()
+      self._item_available_or_all_done.set()
       self._tests_in_progress += 1
 
   def test_completed(self):
@@ -118,7 +118,7 @@ class _TestCollection(object):
       self._tests_in_progress -= 1
       if self._tests_in_progress == 0:
         # All tests have been handled, signal all waiting threads.
-        self._item_avaliable_or_all_done.set()
+        self._item_available_or_all_done.set()
 
   def __iter__(self):
     """Iterate through tests in the collection until all have been handled."""
@@ -131,6 +131,11 @@ class _TestCollection(object):
   def __len__(self):
     """Return the number of tests currently in the collection."""
     return len(self._tests)
+
+  def test_names(self):
+    """Return a list of the names of the tests currently in the collection."""
+    with self._lock:
+      return list(t.test for t in self._tests)
 
 
 def _RunTestsFromQueue(runner, test_collection, out_results, watcher,
@@ -269,9 +274,12 @@ def _RunAllTests(runners, test_collection_factory, num_retries, timeout=None,
     logging.error(e)
     exit_code = constants.WARNING_EXIT_CODE
 
-  assert all([len(tc) == 0 for tc in test_collections]), (
-      'Some tests were not run, all devices are likely offline (ran %d tests)' %
-      len(run_results.GetAll()))
+  if not all((len(tc) == 0 for tc in test_collections)):
+    logging.error('Only ran %d tests (all devices are likely offline).' %
+                  len(results))
+    for tc in test_collections:
+      run_results.AddResults(base_test_result.BaseTestResult(
+          t, base_test_result.ResultType.UNKNOWN) for t in tc.test_names())
 
   for r in results:
     run_results.AddTestRunResults(r)
@@ -376,3 +384,5 @@ def RunTests(tests, runner_factory, devices, shard=True,
             #                 for the above are switched or wrapped.
             android_commands.errors.DeviceUnresponsiveError) as e:
       logging.warning('Device unresponsive during TearDown: [%s]', e)
+    except Exception as e:
+      logging.error('Unexpected exception caught during TearDown: %s' % str(e))
