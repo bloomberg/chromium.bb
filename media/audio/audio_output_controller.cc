@@ -23,10 +23,6 @@ namespace media {
 static const int kPowerMeasurementTimeConstantMillis = 10;
 #endif
 
-// Polling-related constants.
-const int AudioOutputController::kPollNumAttempts = 3;
-const int AudioOutputController::kPollPauseInMilliseconds = 3;
-
 AudioOutputController::AudioOutputController(
     AudioManager* audio_manager,
     EventHandler* handler,

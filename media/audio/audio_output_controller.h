@@ -182,10 +182,6 @@ class MEDIA_EXPORT AudioOutputController
   virtual ~AudioOutputController();
 
  private:
-  // We are polling sync reader if data became available.
-  static const int kPollNumAttempts;
-  static const int kPollPauseInMilliseconds;
-
   AudioOutputController(AudioManager* audio_manager, EventHandler* handler,
                         const AudioParameters& params,
                         const std::string& output_device_id,
