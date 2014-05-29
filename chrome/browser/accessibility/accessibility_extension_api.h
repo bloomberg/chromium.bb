@@ -77,6 +77,7 @@ class ExtensionAccessibilityEventRouter {
   void OnWindowOpened(const AccessibilityWindowInfo* details);
   void OnControlFocused(const AccessibilityControlInfo* details);
   void OnControlAction(const AccessibilityControlInfo* details);
+  void OnControlHover(const AccessibilityControlInfo* details);
   void OnTextChanged(const AccessibilityControlInfo* details);
   void OnMenuOpened(const AccessibilityMenuInfo* details);
   void OnMenuClosed(const AccessibilityMenuInfo* details);

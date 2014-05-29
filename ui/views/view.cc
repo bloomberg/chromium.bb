@@ -1055,6 +1055,8 @@ void View::OnMouseEvent(ui::MouseEvent* event) {
       break;
 
     case ui::ET_MOUSE_ENTERED:
+      if (event->flags() & ui::EF_TOUCH_ACCESSIBILITY)
+        NotifyAccessibilityEvent(ui::AX_EVENT_HOVER, true);
       OnMouseEntered(*event);
       break;
 

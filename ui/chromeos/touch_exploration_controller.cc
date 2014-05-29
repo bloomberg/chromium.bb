@@ -147,11 +147,12 @@ scoped_ptr<ui::Event> TouchExplorationController::CreateMouseMoveEvent(
     const gfx::PointF& location,
     int flags) {
   return scoped_ptr<ui::Event>(
-      new ui::MouseEvent(ui::ET_MOUSE_MOVED,
-                         location,
-                         location,
-                         flags | ui::EF_IS_SYNTHESIZED | ui::EF_FROM_TOUCH,
-                         0));
+      new ui::MouseEvent(
+          ui::ET_MOUSE_MOVED,
+          location,
+          location,
+          flags | ui::EF_IS_SYNTHESIZED | ui::EF_TOUCH_ACCESSIBILITY,
+          0));
 }
 
 void TouchExplorationController::EnterTouchToMouseMode() {

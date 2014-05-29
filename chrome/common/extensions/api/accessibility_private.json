@@ -280,6 +280,18 @@
         ]
       },
       {
+        "name": "onControlHover",
+        "type": "function",
+        "description": "Fired when a control is hovered over with the mouse, or hit with accessible touch exploration.",
+        "parameters": [
+          {
+            "$ref": "AccessibilityObject",
+            "name": "control",
+            "description": "Details of the control that was hovered over."
+          }
+        ]
+      },
+      {
         "name": "onTextChanged",
         "type": "function",
         "description": "Fired when text changes in an editable text control.",

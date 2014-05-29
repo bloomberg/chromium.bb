@@ -189,7 +189,7 @@ TEST_F(TouchExplorationTest, OneFingerTouch) {
       CONFIRM_EVENTS_ARE_MOUSE_AND_EQUAL(*it, &mouse_move);
     if (num_mouse_moves != 2) {
       EXPECT_TRUE((*it)->flags() & ui::EF_IS_SYNTHESIZED);
-      EXPECT_TRUE((*it)->flags() & ui::EF_FROM_TOUCH);
+      EXPECT_TRUE((*it)->flags() & ui::EF_TOUCH_ACCESSIBILITY);
     }
     num_mouse_moves++;
   }

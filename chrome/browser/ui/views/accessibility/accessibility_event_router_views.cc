@@ -216,6 +216,11 @@ void AccessibilityEventRouterViews::DispatchAccessibilityEvent(
     SendTreeItemNotification(view, type, profile);
     break;
   default:
+    // Hover events can fire on literally any view, so it's safe to
+    // ignore ones we don't care about.
+    if (type == ui::AX_EVENT_HOVER)
+      break;
+
     // If this is encountered, please file a bug with the role that wasn't
     // caught so we can add accessibility extension API support.
     NOTREACHED();
