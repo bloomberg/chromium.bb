@@ -503,7 +503,7 @@ static void ReserveBottomPages(size_t pagesize) {
        */
     } else {
       fail("ReserveBottomPages", "NULL pointer guard page ",
-           "errno", my_errno, NULL, 0);
+           "errno", my_errno, "address", (int) page_addr);
     }
   }
 }
