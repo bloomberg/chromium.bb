@@ -395,6 +395,8 @@ TEST_F(JSPipeNodeTest, JSPipeInputBuffer) {
   ASSERT_EQ(1, iface->messages.size());
   PP_Var message_var = iface->messages[0];
   VerifyPipeMessage(message_var, "jspipe1", "ack", NULL, 0, 5);
+
+  free(message);
 }
 
 // Returns:

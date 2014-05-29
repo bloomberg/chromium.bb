@@ -69,12 +69,13 @@ class FakeURLLoaderResource : public FakeResource {
     EXPECT_TRUE(manager != NULL);
     if (response != 0)
       manager->Release(response);
+    delete server;
   }
 
   static const char* classname() { return "FakeURLLoaderResource"; }
 
   FakeResourceManager* manager;  // Weak reference.
-  FakeURLLoaderServer* server;   // Weak reference.
+  FakeURLLoaderServer* server;
   FakeURLLoaderEntity* entity;   // Weak reference.
   PP_Resource response;
   off_t read_offset;

@@ -160,6 +160,7 @@ TEST_F(HostResolverTest, Getaddrinfo_Passive_Any) {
   // ai_family in the hints, so we should get muplitple
   // results back for the different families.
   struct addrinfo* ai = NULL;
+  struct addrinfo* ai_orig = NULL;
   struct sockaddr_in* in;
   struct sockaddr_in6* in6;
   struct addrinfo hints;
@@ -172,6 +173,7 @@ TEST_F(HostResolverTest, Getaddrinfo_Passive_Any) {
   hints.ai_flags = AI_PASSIVE;
   hints.ai_socktype = SOCK_DGRAM;
   ASSERT_EQ(0, ki_getaddrinfo(NULL, "22", &hints, &ai));
+  ai_orig = ai;
   ASSERT_NE(NULL_INFO, ai);
   int count = 0;
   bool got_v4 = false;
@@ -206,6 +208,8 @@ TEST_F(HostResolverTest, Getaddrinfo_Passive_Any) {
   ASSERT_EQ(2, count);
   ASSERT_TRUE(got_v4);
   ASSERT_TRUE(got_v6);
+
+  ki_freeaddrinfo(ai_orig);
 }
 
 TEST_F(FakeHostResolverTest, Getaddrinfo_Lookup) {

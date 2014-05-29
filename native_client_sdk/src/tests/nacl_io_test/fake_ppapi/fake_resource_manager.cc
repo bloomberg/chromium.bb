@@ -84,6 +84,7 @@ void FakeResourceManager::Release(PP_Resource handle) {
     lock.Unlock();
 
     resource->Destroy();
+    delete resource;
   }
 }
 
