@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_FIRST_RUN_DIALOG_H_
 #define CHROME_BROWSER_UI_VIEWS_FIRST_RUN_DIALOG_H_
 
+#include "base/callback.h"
 #include "ui/views/controls/link_listener.h"
 #include "ui/views/window/dialog_delegate.h"
 
@@ -41,6 +42,7 @@ class FirstRunDialog : public views::DialogDelegateView,
   Profile* profile_;
   views::Checkbox* make_default_;
   views::Checkbox* report_crashes_;
+  base::Closure quit_runloop_;
 
   DISALLOW_COPY_AND_ASSIGN(FirstRunDialog);
 };

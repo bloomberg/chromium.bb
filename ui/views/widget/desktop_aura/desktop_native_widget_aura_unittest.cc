@@ -189,8 +189,8 @@ TEST_F(DesktopNativeWidgetAuraTest, DontAccessContentWindowDuringDestruction) {
 }
 
 void QuitNestedLoopAndCloseWidget(scoped_ptr<Widget> widget,
-                                  aura::client::DispatcherClient* client) {
-  client->QuitNestedMessageLoop();
+                                  base::Closure* quit_runloop) {
+  quit_runloop->Run();
 }
 
 // Verifies that a widget can be destroyed when running a nested message-loop.
@@ -211,9 +211,13 @@ TEST_F(DesktopNativeWidgetAuraTest, WidgetCanBeDestroyedFromNestedLoop) {
   // Post a task that terminates the nested loop and destroyes the widget. This
   // task will be executed from the nested loop initiated with the call to
   // |RunWithDispatcher()| below.
+  aura::client::DispatcherRunLoop run_loop(client, NULL);
+  base::Closure quit_runloop = run_loop.QuitClosure();
   message_loop()->PostTask(FROM_HERE,
-      base::Bind(&QuitNestedLoopAndCloseWidget, base::Passed(&widget), client));
-  client->RunWithDispatcher(NULL);
+                           base::Bind(&QuitNestedLoopAndCloseWidget,
+                                      base::Passed(&widget),
+                                      base::Unretained(&quit_runloop)));
+  run_loop.Run();
 }
 
 }  // namespace views

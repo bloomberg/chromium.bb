@@ -180,7 +180,9 @@ TEST_F(NestedAcceleratorTest, AssociatedWindowAboveLockScreen) {
   scoped_ptr<ui::ScopedEventDispatcher> override_dispatcher =
       ui::PlatformEventSource::GetInstance()->OverrideDispatcher(
           &inner_dispatcher);
-  aura::client::GetDispatcherClient(root_window())->RunWithDispatcher(NULL);
+  aura::client::DispatcherRunLoop run_loop(
+      aura::client::GetDispatcherClient(root_window()), NULL);
+  run_loop.Run();
   EXPECT_EQ(1, inner_dispatcher.num_key_events_dispatched());
 }
 
@@ -199,7 +201,9 @@ TEST_F(NestedAcceleratorTest, AcceleratorsHandled) {
   scoped_ptr<ui::ScopedEventDispatcher> override_dispatcher =
       ui::PlatformEventSource::GetInstance()->OverrideDispatcher(
           &inner_dispatcher);
-  aura::client::GetDispatcherClient(root_window())->RunWithDispatcher(NULL);
+  aura::client::DispatcherRunLoop run_loop(
+      aura::client::GetDispatcherClient(root_window()), NULL);
+  run_loop.Run();
   EXPECT_EQ(0, inner_dispatcher.num_key_events_dispatched());
   EXPECT_EQ(1, target.accelerator_pressed_count());
 }

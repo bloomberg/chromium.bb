@@ -5,6 +5,8 @@
 #ifndef UI_WM_PUBLIC_DISPATCHER_CLIENT_H_
 #define UI_WM_PUBLIC_DISPATCHER_CLIENT_H_
 
+#include "base/callback.h"
+#include "base/macros.h"
 #include "base/message_loop/message_pump_dispatcher.h"
 #include "ui/aura/aura_export.h"
 
@@ -12,12 +14,39 @@ namespace aura {
 class Window;
 namespace client {
 
+class DispatcherClient;
+
+// A base::RunLoop like object for running a nested message-loop with a
+// specified DispatcherClient and a MessagePumpDispatcher.
+class AURA_EXPORT DispatcherRunLoop {
+ public:
+  DispatcherRunLoop(DispatcherClient* client,
+                    base::MessagePumpDispatcher* dispatcher);
+  ~DispatcherRunLoop();
+
+  void Run();
+  base::Closure QuitClosure();
+  void Quit();
+
+ private:
+  base::Closure run_closure_;
+  base::Closure quit_closure_;
+
+  DISALLOW_COPY_AND_ASSIGN(DispatcherRunLoop);
+};
+
 // An interface implemented by an object which handles nested dispatchers.
 class AURA_EXPORT DispatcherClient {
  public:
-  virtual void RunWithDispatcher(base::MessagePumpDispatcher* dispatcher) = 0;
+  virtual ~DispatcherClient() {}
 
-  virtual void QuitNestedMessageLoop() = 0;
+ protected:
+  friend class DispatcherRunLoop;
+
+  virtual void PrepareNestedLoopClosures(
+      base::MessagePumpDispatcher* dispatcher,
+      base::Closure* run_closure,
+      base::Closure* quit_closure) = 0;
 };
 
 AURA_EXPORT void SetDispatcherClient(Window* root_window,

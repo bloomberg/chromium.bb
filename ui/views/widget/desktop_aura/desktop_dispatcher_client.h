@@ -7,7 +7,6 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
-#include "base/memory/weak_ptr.h"
 #include "ui/views/views_export.h"
 #include "ui/wm/public/dispatcher_client.h"
 
@@ -20,17 +19,12 @@ class VIEWS_EXPORT DesktopDispatcherClient
   DesktopDispatcherClient();
   virtual ~DesktopDispatcherClient();
 
-  virtual void RunWithDispatcher(
-      base::MessagePumpDispatcher* dispatcher) OVERRIDE;
-  virtual void QuitNestedMessageLoop() OVERRIDE;
+  virtual void PrepareNestedLoopClosures(
+      base::MessagePumpDispatcher* dispatcher,
+      base::Closure* run_closure,
+      base::Closure* quit_closure) OVERRIDE;
 
  private:
-  base::Closure quit_closure_;
-
-  // Used to keep track of whether the client has been destroyed while the
-  // nested loop was running.
-  base::WeakPtrFactory<DesktopDispatcherClient> weak_ptr_factory_;
-
   DISALLOW_COPY_AND_ASSIGN(DesktopDispatcherClient);
 };
 

@@ -5,9 +5,14 @@
 #ifndef UI_VIEWS_CONTROLS_MENU_MENU_MESSAGE_LOOP_AURA_H_
 #define UI_VIEWS_CONTROLS_MENU_MENU_MESSAGE_LOOP_AURA_H_
 
+#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/views/controls/menu/menu_message_loop.h"
+
+namespace base {
+class MessagePumpDispatcher;
+}
 
 namespace ui {
 class ScopedEventDispatcher;
@@ -37,6 +42,7 @@ class MenuMessageLoopAura : public MenuMessageLoop {
   Widget* owner_;
 
   scoped_ptr<ui::ScopedEventDispatcher> nested_dispatcher_;
+  base::Closure message_loop_quit_;
 
   DISALLOW_COPY_AND_ASSIGN(MenuMessageLoopAura);
 };

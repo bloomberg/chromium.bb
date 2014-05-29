@@ -66,7 +66,9 @@ bool FirstRunDialog::Show(Profile* profile) {
     aura::Window* anchor = dialog->GetWidget()->GetNativeWindow();
     aura::client::DispatcherClient* client =
         aura::client::GetDispatcherClient(anchor->GetRootWindow());
-    client->RunWithDispatcher(NULL);
+    aura::client::DispatcherRunLoop run_loop(client, NULL);
+    dialog->quit_runloop_ = run_loop.QuitClosure();
+    run_loop.Run();
     dialog_shown = true;
   }
 #endif  // defined(GOOGLE_CHROME_BUILD)
@@ -103,10 +105,8 @@ FirstRunDialog::~FirstRunDialog() {
 }
 
 void FirstRunDialog::Done() {
-  aura::Window* window = GetWidget()->GetNativeView();
-  aura::client::DispatcherClient* client =
-      aura::client::GetDispatcherClient(window->GetRootWindow());
-  client->QuitNestedMessageLoop();
+  CHECK(!quit_runloop_.is_null());
+  quit_runloop_.Run();
 }
 
 views::View* FirstRunDialog::CreateExtraView() {

@@ -34,9 +34,10 @@ class SimpleMessageBoxViews : public views::DialogDelegate {
                         MessageBoxType type,
                         const base::string16& yes_text,
                         const base::string16& no_text,
-                        bool is_system_modal,
-                        MessageBoxResult* result);
+                        bool is_system_modal);
   virtual ~SimpleMessageBoxViews();
+
+  MessageBoxResult RunDialogAndGetResult();
 
   // Overridden from views::DialogDelegate:
   virtual int GetDialogButtons() const OVERRIDE;
@@ -65,6 +66,7 @@ class SimpleMessageBoxViews : public views::DialogDelegate {
   MessageBoxResult* result_;
   bool is_system_modal_;
   views::MessageBoxView* message_box_view_;
+  base::Closure quit_runloop_;
 
   DISALLOW_COPY_AND_ASSIGN(SimpleMessageBoxViews);
 };
@@ -77,17 +79,15 @@ SimpleMessageBoxViews::SimpleMessageBoxViews(const base::string16& title,
                                              MessageBoxType type,
                                              const base::string16& yes_text,
                                              const base::string16& no_text,
-                                             bool is_system_modal,
-                                             MessageBoxResult* result)
+                                             bool is_system_modal)
     : window_title_(title),
       type_(type),
       yes_text_(yes_text),
       no_text_(no_text),
-      result_(result),
+      result_(NULL),
       is_system_modal_(is_system_modal),
       message_box_view_(new views::MessageBoxView(
           views::MessageBoxView::InitParams(message))) {
-  CHECK(result_);
   if (yes_text_.empty()) {
     if (type_ == MESSAGE_BOX_TYPE_QUESTION)
       yes_text_ =
@@ -108,6 +108,19 @@ SimpleMessageBoxViews::SimpleMessageBoxViews(const base::string16& title,
 }
 
 SimpleMessageBoxViews::~SimpleMessageBoxViews() {
+}
+
+MessageBoxResult SimpleMessageBoxViews::RunDialogAndGetResult() {
+  MessageBoxResult result = MESSAGE_BOX_RESULT_NO;
+  result_ = &result;
+  // Use the widget's window itself so that the message loop exists when the
+  // dialog is closed by some other means than |Cancel| or |Accept|.
+  aura::Window* anchor = GetWidget()->GetNativeWindow();
+  aura::client::DispatcherRunLoop run_loop(
+      aura::client::GetDispatcherClient(anchor->GetRootWindow()), NULL);
+  quit_runloop_ = run_loop.QuitClosure();
+  run_loop.Run();
+  return result;
 }
 
 int SimpleMessageBoxViews::GetDialogButtons() const {
@@ -166,10 +179,8 @@ const views::Widget* SimpleMessageBoxViews::GetWidget() const {
 // SimpleMessageBoxViews, private:
 
 void SimpleMessageBoxViews::Done() {
-  aura::Window* window = GetWidget()->GetNativeView();
-  aura::client::DispatcherClient* client =
-      aura::client::GetDispatcherClient(window->GetRootWindow());
-  client->QuitNestedMessageLoop();
+  CHECK(!quit_runloop_.is_null());
+  quit_runloop_.Run();
 }
 
 #if defined(OS_WIN)
@@ -217,26 +228,19 @@ MessageBoxResult ShowMessageBoxImpl(gfx::NativeWindow parent,
   }
 #endif
 
-  MessageBoxResult result = MESSAGE_BOX_RESULT_NO;
-  SimpleMessageBoxViews* dialog = new SimpleMessageBoxViews(
-      title,
-      message,
-      type,
-      yes_text,
-      no_text,
-      parent == NULL,  // is_system_modal
-      &result);
+  SimpleMessageBoxViews* dialog =
+      new SimpleMessageBoxViews(title,
+                                message,
+                                type,
+                                yes_text,
+                                no_text,
+                                parent == NULL  // is_system_modal
+                                );
   CreateBrowserModalDialogViews(dialog, parent)->Show();
 
-  // Use the widget's window itself so that the message loop exists when the
-  // dialog is closed by some other means than |Cancel| or |Accept|.
-  aura::Window* anchor = dialog->GetWidget()->GetNativeWindow();
-  aura::client::DispatcherClient* client =
-      aura::client::GetDispatcherClient(anchor->GetRootWindow());
-  client->RunWithDispatcher(NULL);
-  // NOTE: |dialog| will have been deleted by the time control returns here.
-
-  return result;
+  // NOTE: |dialog| may have been deleted by the time |RunDialogAndGetResult()|
+  // returns.
+  return dialog->RunDialogAndGetResult();
 }
 
 }  // namespace

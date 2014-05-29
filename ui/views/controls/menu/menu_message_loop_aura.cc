@@ -130,6 +130,12 @@ void MenuMessageLoopAura::Run(MenuController* controller,
   // |owner_| may be NULL.
   owner_ = owner;
   aura::Window* root = GetOwnerRootWindow(owner_);
+  // It is possible for the same MenuMessageLoopAura to start a nested
+  // message-loop while it is already running a nested loop. So make sure the
+  // quit-closure gets reset to the outer loop's quit-closure once the innermost
+  // loop terminates.
+  base::AutoReset<base::Closure> reset_quit_closure(&message_loop_quit_,
+                                                    base::Closure());
 
 #if defined(OS_WIN)
   internal::MenuMessagePumpDispatcher nested_dispatcher(controller);
@@ -137,12 +143,15 @@ void MenuMessageLoopAura::Run(MenuController* controller,
     scoped_ptr<ActivationChangeObserverImpl> observer;
     if (!nested_menu)
       observer.reset(new ActivationChangeObserverImpl(controller, root));
-    aura::client::GetDispatcherClient(root)
-        ->RunWithDispatcher(&nested_dispatcher);
+    aura::client::DispatcherRunLoop run_loop(
+        aura::client::GetDispatcherClient(root), &nested_dispatcher);
+    message_loop_quit_ = run_loop.QuitClosure();
+    run_loop.Run();
   } else {
     base::MessageLoopForUI* loop = base::MessageLoopForUI::current();
     base::MessageLoop::ScopedNestableTaskAllower allow(loop);
     base::RunLoop run_loop(&nested_dispatcher);
+    message_loop_quit_ = run_loop.QuitClosure();
     run_loop.Run();
   }
 #else
@@ -158,11 +167,15 @@ void MenuMessageLoopAura::Run(MenuController* controller,
     scoped_ptr<ActivationChangeObserverImpl> observer;
     if (!nested_menu)
       observer.reset(new ActivationChangeObserverImpl(controller, root));
-    aura::client::GetDispatcherClient(root)->RunWithDispatcher(NULL);
+    aura::client::DispatcherRunLoop run_loop(
+        aura::client::GetDispatcherClient(root), NULL);
+    message_loop_quit_ = run_loop.QuitClosure();
+    run_loop.Run();
   } else {
     base::MessageLoopForUI* loop = base::MessageLoopForUI::current();
     base::MessageLoop::ScopedNestableTaskAllower allow(loop);
     base::RunLoop run_loop;
+    message_loop_quit_ = run_loop.QuitClosure();
     run_loop.Run();
   }
   nested_dispatcher_ = old_dispatcher.Pass();
@@ -176,14 +189,8 @@ bool MenuMessageLoopAura::ShouldQuitNow() const {
 }
 
 void MenuMessageLoopAura::QuitNow() {
-  if (owner_) {
-    // It's safe to invoke QuitNestedMessageLoop() multiple times, it only
-    // effects the current loop.
-    aura::Window* root = owner_->GetNativeWindow()->GetRootWindow();
-    aura::client::GetDispatcherClient(root)->QuitNestedMessageLoop();
-  } else {
-    base::MessageLoop::current()->QuitNow();
-  }
+  CHECK(!message_loop_quit_.is_null());
+  message_loop_quit_.Run();
   // Restore the previous dispatcher.
   nested_dispatcher_.reset();
 }

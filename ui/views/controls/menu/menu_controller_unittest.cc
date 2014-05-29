@@ -74,22 +74,29 @@ class TestDispatcherClient : public aura::client::DispatcherClient {
   }
 
   // aura::client::DispatcherClient:
-  virtual void RunWithDispatcher(
-      base::MessagePumpDispatcher* dispatcher) OVERRIDE {
+  virtual void PrepareNestedLoopClosures(
+      base::MessagePumpDispatcher* dispatcher,
+      base::Closure* run_closure,
+      base::Closure* quit_closure) OVERRIDE {
+    scoped_ptr<base::RunLoop> run_loop(new base::RunLoop());
+    *quit_closure = run_loop->QuitClosure();
+    *run_closure = base::Bind(&TestDispatcherClient::RunNestedDispatcher,
+                              base::Unretained(this),
+                              base::Passed(&run_loop),
+                              dispatcher);
+  }
+
+ private:
+  void RunNestedDispatcher(scoped_ptr<base::RunLoop> run_loop,
+                           base::MessagePumpDispatcher* dispatcher) {
     base::AutoReset<base::MessagePumpDispatcher*> reset_dispatcher(&dispatcher_,
                                                                    dispatcher);
     base::MessageLoopForUI* loop = base::MessageLoopForUI::current();
     base::MessageLoop::ScopedNestableTaskAllower allow(loop);
-    base::RunLoop run_loop;
-    quit_callback_ = run_loop.QuitClosure();
-    run_loop.Run();
+    run_loop->Run();
   }
 
-  virtual void QuitNestedMessageLoop() OVERRIDE { quit_callback_.Run(); }
-
- private:
   base::MessagePumpDispatcher* dispatcher_;
-  base::Closure quit_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(TestDispatcherClient);
 };

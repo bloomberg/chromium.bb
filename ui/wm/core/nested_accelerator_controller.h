@@ -26,12 +26,16 @@ class WM_EXPORT NestedAcceleratorController
   virtual ~NestedAcceleratorController();
 
   // aura::client::DispatcherClient:
-  virtual void RunWithDispatcher(
-      base::MessagePumpDispatcher* dispatcher) OVERRIDE;
-  virtual void QuitNestedMessageLoop() OVERRIDE;
+  virtual void PrepareNestedLoopClosures(
+      base::MessagePumpDispatcher* dispatcher,
+      base::Closure* run_closure,
+      base::Closure* quit_closure) OVERRIDE;
 
  private:
-  base::Closure quit_closure_;
+  void RunNestedMessageLoop(scoped_ptr<base::RunLoop> run_loop,
+                            scoped_ptr<NestedAcceleratorDispatcher> dispatcher);
+  void QuitNestedMessageLoop(const base::Closure& quit_runloop);
+
   scoped_ptr<NestedAcceleratorDispatcher> accelerator_dispatcher_;
   scoped_ptr<NestedAcceleratorDelegate> dispatcher_delegate_;
 
