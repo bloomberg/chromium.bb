@@ -167,6 +167,7 @@ extern const char kEnableQueryExtraction[];
 extern const char kEnablePrintPreviewRegisterPromos[];
 extern const char kEnablePrivetStorage[];
 extern const char kEnableProfiling[];
+extern const char kEnableProminentURLAppFlow[];
 extern const char kEnableQuic[];
 extern const char kEnableQuicHttps[];
 extern const char kEnableQuicPacing[];
