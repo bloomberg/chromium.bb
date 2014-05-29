@@ -297,7 +297,7 @@ void GpuChannelManager::OnLoseAllContexts() {
 gfx::GLSurface* GpuChannelManager::GetDefaultOffscreenSurface() {
   if (!default_offscreen_surface_.get()) {
     default_offscreen_surface_ =
-        gfx::GLSurface::CreateOffscreenGLSurface(gfx::Size());
+        gfx::GLSurface::CreateOffscreenGLSurface(gfx::Size(1, 1));
   }
   return default_offscreen_surface_.get();
 }

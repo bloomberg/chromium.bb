@@ -14,10 +14,6 @@ namespace gfx {
 GLSurfaceOSMesa::GLSurfaceOSMesa(unsigned format, const gfx::Size& size)
     : format_(format),
       size_(size) {
-  // Implementations of OSMesa surface do not support having a 0 size. In such
-  // cases use a (1, 1) surface.
-  if (size_.GetArea() == 0)
-    size_.SetSize(1, 1);
 }
 
 bool GLSurfaceOSMesa::Initialize() {
