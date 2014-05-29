@@ -38,9 +38,6 @@ const char kAshDefaultWallpaperIsOem[] = "ash-default-wallpaper-is-oem";
 const char kAshDefaultWallpaperLarge[] = "ash-default-wallpaper-large";
 const char kAshDefaultWallpaperSmall[] = "ash-default-wallpaper-small";
 
-// Disable ability to dock windows at the desktop edge.
-const char kAshDisableDockedWindows[] = "ash-disable-docked-windows";
-
 // Disable the Touch Exploration Mode. Touch Exploration Mode will no longer be
 // turned on automatically when spoken feedback is enabled when this flag is
 // set.
@@ -110,10 +107,6 @@ const char kAuraLegacyPowerButton[] = "aura-legacy-power-button";
 const char kForceAshToDesktop[] = "ash-force-desktop";
 
 #endif
-
-bool UseDockedWindows() {
-  return !CommandLine::ForCurrentProcess()->HasSwitch(kAshDisableDockedWindows);
-}
 
 }  // namespace switches
 }  // namespace ash

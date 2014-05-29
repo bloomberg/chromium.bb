@@ -22,7 +22,6 @@
 #include "chrome/browser/ui/views/tabs/tab.h"
 #include "chrome/browser/ui/views/tabs/tab_drag_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -42,7 +41,6 @@
 #endif
 
 #if defined(USE_ASH)
-#include "ash/ash_switches.h"
 #include "ash/display/display_controller.h"
 #include "ash/display/display_manager.h"
 #include "ash/shell.h"
@@ -353,15 +351,6 @@ class DetachToBrowserTabDragControllerTest
  public:
   DetachToBrowserTabDragControllerTest() {}
 
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
-#if defined(USE_ASH) && !defined(OS_WIN)  // TODO(win_ash)
-    if (!docked_windows_enabled()) {
-      CommandLine::ForCurrentProcess()->AppendSwitch(
-          ash::switches::kAshDisableDockedWindows);
-    }
-#endif
-  }
-
   virtual void SetUpOnMainThread() OVERRIDE {
 #if defined(USE_ASH) && !defined(OS_WIN)  // TODO(win_ash)
     event_generator_.reset(new aura::test::EventGenerator(
@@ -372,10 +361,6 @@ class DetachToBrowserTabDragControllerTest
   InputSource input_source() const {
     return strstr(GetParam(), "mouse") ?
         INPUT_SOURCE_MOUSE : INPUT_SOURCE_TOUCH;
-  }
-
-  bool docked_windows_enabled() const {
-    return (strstr(GetParam(), "docked") != NULL);
   }
 
   // Set root window from a point in screen coordinates
@@ -2198,22 +2183,12 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTestTouch,
   ASSERT_TRUE(ReleaseInput2());
 }
 
-// Subclass of DetachToBrowserTabDragControllerTest that runs tests with
-// docked windows enabled and disabled.
-class DetachToDockedTabDragControllerTest
-    : public DetachToBrowserTabDragControllerTest {
- public:
-  DetachToDockedTabDragControllerTest() {}
-  virtual ~DetachToDockedTabDragControllerTest() {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(DetachToDockedTabDragControllerTest);
-};
+#if defined(OS_CHROMEOS)
 
 namespace {
 
 void DetachToDockedWindowNextStep(
-    DetachToDockedTabDragControllerTest* test,
+    DetachToBrowserTabDragControllerTest* test,
     const gfx::Point& target_point,
     int iteration) {
   ASSERT_EQ(2u, test->native_browser_list->size());
@@ -2244,15 +2219,8 @@ void DetachToDockedWindowNextStep(
   DetachToDockedWindowFromMaximizedWindow
 #endif
 // Drags from browser to separate window, docks that window and releases mouse.
-IN_PROC_BROWSER_TEST_P(DetachToDockedTabDragControllerTest,
+IN_PROC_BROWSER_TEST_F(DetachToBrowserTabDragControllerTest,
                        MAYBE_DetachToDockedWindowFromMaximizedWindow) {
-  // TODO(sky,sad): Disabled as it fails due to resize locks with a real
-  // compositor. crbug.com/331924
-  if (docked_windows_enabled()) {
-    VLOG(1) << "Test is DISABLED for docked windows.";
-    return;
-  }
-
   // Maximize the initial browser window.
   browser()->window()->Maximize();
   ASSERT_TRUE(browser()->window()->IsMaximized());
@@ -2304,17 +2272,12 @@ IN_PROC_BROWSER_TEST_P(DetachToDockedTabDragControllerTest,
       ash::wm::GetWindowState(new_browser->window()->GetNativeWindow());
   // The new window should not be maximized because it gets docked or snapped.
   EXPECT_FALSE(new_browser->window()->IsMaximized());
-  if (docked_windows_enabled()) {
-    // The new window should be docked and not snapped if docking is allowed.
-    EXPECT_TRUE(window_state->IsDocked());
-    EXPECT_FALSE(window_state->IsSnapped());
-  } else {
-    // The new window should be snapped and not docked if docking is disabled.
-    EXPECT_FALSE(window_state->IsDocked());
-    EXPECT_TRUE(window_state->IsSnapped());
-  }
+  // The new window should be docked and not snapped.
+  EXPECT_TRUE(window_state->IsDocked());
+  EXPECT_FALSE(window_state->IsSnapped());
 }
 
+#endif  // OS_CHROMEOS
 
 #endif
 
@@ -2329,12 +2292,9 @@ INSTANTIATE_TEST_CASE_P(TabDragging,
                         DetachToBrowserTabDragControllerTest,
                         ::testing::Values("mouse", "touch"));
 INSTANTIATE_TEST_CASE_P(TabDragging,
-                        DetachToDockedTabDragControllerTest,
-                        ::testing::Values("mouse", "mouse docked"));
-INSTANTIATE_TEST_CASE_P(TabDragging,
                         DetachToBrowserTabDragControllerTestTouch,
-                        ::testing::Values("touch", "touch docked"));
-#elif defined(USE_ASH) && !defined(OS_LINUX) // TODO(linux_ash)
+                        ::testing::Values("touch"));
+#elif defined(USE_ASH) && !defined(OS_LINUX)  // TODO(linux_ash)
 INSTANTIATE_TEST_CASE_P(TabDragging,
                         DetachToBrowserTabDragControllerTest,
                         ::testing::Values("mouse"));

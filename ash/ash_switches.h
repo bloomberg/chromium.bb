@@ -24,7 +24,6 @@ ASH_EXPORT extern const char kAshDebugShortcuts[];
 ASH_EXPORT extern const char kAshDefaultWallpaperIsOem[];
 ASH_EXPORT extern const char kAshDefaultWallpaperLarge[];
 ASH_EXPORT extern const char kAshDefaultWallpaperSmall[];
-ASH_EXPORT extern const char kAshDisableDockedWindows[];
 ASH_EXPORT extern const char kAshDisableTouchExplorationMode[];
 #if defined(OS_CHROMEOS)
 ASH_EXPORT extern const char kAshEnableMagnifierKeyScroller[];
@@ -47,9 +46,6 @@ ASH_EXPORT extern const char kForceAshToDesktop[];
 
 // Returns true if items can be dragged off the shelf to unpin.
 ASH_EXPORT bool UseDragOffShelf();
-
-// Returns true if docked windows feature is enabled.
-ASH_EXPORT bool UseDockedWindows();
 
 #if defined(OS_CHROMEOS)
 // Returns true if a notification should appear when a low-power USB charger

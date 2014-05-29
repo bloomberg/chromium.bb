@@ -4,8 +4,6 @@
 
 #include "ash/wm/workspace/workspace_window_resizer.h"
 
-#include "ash/ash_constants.h"
-#include "ash/ash_switches.h"
 #include "ash/display/display_manager.h"
 #include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
@@ -1477,10 +1475,7 @@ TEST_F(WorkspaceWindowResizerTest, PhantomSnapMaxSize) {
     scoped_ptr<WindowResizer> resizer(CreateResizerForTest(
         window_.get(), gfx::Point(), HTCAPTION));
     resizer->Drag(CalculateDragPoint(*resizer, 801, 0), 0);
-    if (switches::UseDockedWindows())
-      EXPECT_TRUE(snap_phantom_window_controller());
-    else
-      EXPECT_FALSE(snap_phantom_window_controller());
+    EXPECT_TRUE(snap_phantom_window_controller());
     resizer->RevertDrag();
   }
   {

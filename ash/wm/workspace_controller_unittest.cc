@@ -6,7 +6,6 @@
 
 #include <map>
 
-#include "ash/ash_switches.h"
 #include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
 #include "ash/shelf/shelf_layout_manager.h"
@@ -21,7 +20,6 @@
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace/workspace_window_resizer.h"
-#include "base/command_line.h"
 #include "base/strings/string_number_conversions.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/test/event_generator.h"
@@ -1375,23 +1373,10 @@ namespace {
 
 // Subclass of WorkspaceControllerTest that runs tests with docked windows
 // enabled and disabled.
-class WorkspaceControllerTestDragging
-    : public WorkspaceControllerTest,
-      public testing::WithParamInterface<bool> {
+class WorkspaceControllerTestDragging : public WorkspaceControllerTest {
  public:
   WorkspaceControllerTestDragging() {}
   virtual ~WorkspaceControllerTestDragging() {}
-
-  // testing::Test:
-  virtual void SetUp() OVERRIDE {
-    WorkspaceControllerTest::SetUp();
-    if (!docked_windows_enabled()) {
-      CommandLine::ForCurrentProcess()->AppendSwitch(
-          ash::switches::kAshDisableDockedWindows);
-    }
-  }
-
-  bool docked_windows_enabled() const { return GetParam(); }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WorkspaceControllerTestDragging);
@@ -1401,7 +1386,7 @@ class WorkspaceControllerTestDragging
 
 // Verifies that when dragging a window over the shelf overlap is detected
 // during and after the drag.
-TEST_P(WorkspaceControllerTestDragging, DragWindowOverlapShelf) {
+TEST_F(WorkspaceControllerTestDragging, DragWindowOverlapShelf) {
   aura::test::TestWindowDelegate delegate;
   delegate.set_window_component(HTCAPTION);
   scoped_ptr<Window> w1(aura::test::CreateTestWindowWithDelegate(
@@ -1431,7 +1416,7 @@ TEST_P(WorkspaceControllerTestDragging, DragWindowOverlapShelf) {
 
 // Verifies that when dragging a window autohidden shelf stays hidden during
 // and after the drag.
-TEST_P(WorkspaceControllerTestDragging, DragWindowKeepsShelfAutohidden) {
+TEST_F(WorkspaceControllerTestDragging, DragWindowKeepsShelfAutohidden) {
   aura::test::TestWindowDelegate delegate;
   delegate.set_window_component(HTCAPTION);
   scoped_ptr<Window> w1(aura::test::CreateTestWindowWithDelegate(
@@ -1454,9 +1439,6 @@ TEST_P(WorkspaceControllerTestDragging, DragWindowKeepsShelfAutohidden) {
   generator.ReleaseLeftButton();
   EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->auto_hide_state());
 }
-
-INSTANTIATE_TEST_CASE_P(DockedOrNot, WorkspaceControllerTestDragging,
-                        ::testing::Bool());
 
 // Verifies that events are targeted properly just outside the window edges.
 TEST_F(WorkspaceControllerTest, WindowEdgeHitTest) {
@@ -1586,8 +1568,6 @@ TEST_F(WorkspaceControllerTest, WindowEdgeTouchHitTestPanel) {
 
 // Verifies events targeting just outside the window edges for docked windows.
 TEST_F(WorkspaceControllerTest, WindowEdgeHitTestDocked) {
-  if (!switches::UseDockedWindows())
-    return;
   aura::test::TestWindowDelegate delegate;
   // Make window smaller than the minimum docked area so that the window edges
   // are exposed.

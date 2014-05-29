@@ -4,7 +4,6 @@
 
 #include "ash/wm/dock/docked_window_layout_manager.h"
 
-#include "ash/ash_switches.h"
 #include "ash/screen_util.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_constants.h"
@@ -592,8 +591,6 @@ DockedAlignment DockedWindowLayoutManager::CalculateAlignment() const {
 bool DockedWindowLayoutManager::CanDockWindow(
     aura::Window* window,
     DockedAlignment desired_alignment) {
-  if (!switches::UseDockedWindows())
-    return false;
   // Don't allow interactive docking of windows with transient parents such as
   // modal browser dialogs. Prevent docking of panels attached to shelf during
   // the drag.

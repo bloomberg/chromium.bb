@@ -9,7 +9,6 @@
 #include <utility>
 #include <vector>
 
-#include "ash/ash_switches.h"
 #include "ash/display/display_controller.h"
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/root_window_controller.h"
@@ -95,7 +94,7 @@ scoped_ptr<WindowResizer> CreateWindowResizer(
   window_resizer = DragWindowResizer::Create(window_resizer, window_state);
   if (window->type() == ui::wm::WINDOW_TYPE_PANEL)
     window_resizer = PanelWindowResizer::Create(window_resizer, window_state);
-  if (switches::UseDockedWindows() && window_resizer && window->parent() &&
+  if (window_resizer && window->parent() &&
       !::wm::GetTransientParent(window) &&
       (window->parent()->id() == kShellWindowId_DefaultContainer ||
        window->parent()->id() == kShellWindowId_DockedContainer ||

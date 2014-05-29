@@ -4,7 +4,6 @@
 
 #include "ash/shelf/shelf_window_watcher.h"
 
-#include "ash/ash_switches.h"
 #include "ash/display/display_controller.h"
 #include "ash/shelf/shelf_constants.h"
 #include "ash/shelf/shelf_item_delegate_manager.h"
@@ -86,9 +85,7 @@ void ShelfWindowWatcher::RemovedWindowObserver::OnWindowParentChanged(
   // We don't need to check |parent| is default container because this observer
   // is already removed from |window| when |window| is re-parented to default
   // container.
-  if (switches::UseDockedWindows() &&
-      IsDragging(window) &&
-      parent->id() == kShellWindowId_DockedContainer)
+  if (IsDragging(window) && parent->id() == kShellWindowId_DockedContainer)
     return;
 
   // When |window| is re-parented to other containers or |window| is re-parented
