@@ -145,6 +145,7 @@ class ExtensionFunction
   //   * RespondNow(OneArgument(42))
   //   * RespondNow(ArgumentList(my_result.ToValue()))
   //   * RespondNow(Error("Warp core breach"))
+  //   * RespondNow(Error("Warp core breach on *", GetURL()))
   //   * RespondLater(), then later,
   //     * Respond(NoArguments())
   //     * ... etc.
@@ -264,6 +265,18 @@ class ExtensionFunction
   ResponseValue ArgumentList(scoped_ptr<base::ListValue> results);
   // Error. chrome.runtime.lastError.message will be set to |error|.
   ResponseValue Error(const std::string& error);
+  // Error with formatting. Args are processed using
+  // ErrorUtils::FormatErrorMessage, that is, each occurence of * is replaced
+  // by the corresponding |s*|:
+  // Error("Error in *: *", "foo", "bar") <--> // Error("Error in foo: bar").
+  ResponseValue Error(const std::string& format, const std::string& s1);
+  ResponseValue Error(const std::string& format,
+                      const std::string& s1,
+                      const std::string& s2);
+  ResponseValue Error(const std::string& format,
+                      const std::string& s1,
+                      const std::string& s2,
+                      const std::string& s3);
   // Bad message. A ResponseValue equivalent to EXTENSION_FUNCTION_VALIDATE().
   ResponseValue BadMessage();
 

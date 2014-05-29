@@ -13,12 +13,14 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "extensions/browser/extension_function_dispatcher.h"
 #include "extensions/browser/extension_message_filter.h"
+#include "extensions/common/error_utils.h"
 #include "extensions/common/extension_api.h"
 #include "extensions/common/extension_messages.h"
 
 using content::BrowserThread;
 using content::RenderViewHost;
 using content::WebContents;
+using extensions::ErrorUtils;
 using extensions::ExtensionAPI;
 using extensions::Feature;
 
@@ -253,6 +255,30 @@ ExtensionFunction::ResponseValue ExtensionFunction::ArgumentList(
 ExtensionFunction::ResponseValue ExtensionFunction::Error(
     const std::string& error) {
   return ResponseValue(new ErrorResponseValue(this, error));
+}
+
+ExtensionFunction::ResponseValue ExtensionFunction::Error(
+    const std::string& format,
+    const std::string& s1) {
+  return ResponseValue(
+      new ErrorResponseValue(this, ErrorUtils::FormatErrorMessage(format, s1)));
+}
+
+ExtensionFunction::ResponseValue ExtensionFunction::Error(
+    const std::string& format,
+    const std::string& s1,
+    const std::string& s2) {
+  return ResponseValue(new ErrorResponseValue(
+      this, ErrorUtils::FormatErrorMessage(format, s1, s2)));
+}
+
+ExtensionFunction::ResponseValue ExtensionFunction::Error(
+    const std::string& format,
+    const std::string& s1,
+    const std::string& s2,
+    const std::string& s3) {
+  return ResponseValue(new ErrorResponseValue(
+      this, ErrorUtils::FormatErrorMessage(format, s1, s2, s3)));
 }
 
 ExtensionFunction::ResponseValue ExtensionFunction::BadMessage() {
