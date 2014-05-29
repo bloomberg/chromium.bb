@@ -349,6 +349,7 @@ AppInfoPermissionsTab::AppInfoPermissionsTab(
   const std::vector<base::string16> retained_file_permission_messages =
       GetRetainedFilePermissionMessages();
 
+  layout->AddPaddingRow(1, views::kButtonVEdgeMargin);
   if (required_permission_messages.empty() &&
       optional_permission_messages.empty() &&
       retained_file_permission_messages.empty()) {
