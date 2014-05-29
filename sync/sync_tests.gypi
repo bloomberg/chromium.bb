@@ -571,29 +571,6 @@
   'conditions': [
     ['OS != "ios"', {
       'targets': [
-        {
-          'target_name': 'sync_tools_helper',
-          'type': 'static_library',
-          'defines': [
-            'SYNC_IMPLEMENTATION',
-          ],
-          'include_dirs': [
-            '..',
-          ],
-          'dependencies': [
-            '../base/base.gyp:base',
-            'sync',
-          ],
-          'export_dependent_settings': [
-            '../base/base.gyp:base',
-            'sync',
-          ],
-          'sources': [
-            'tools/null_invalidation_state_tracker.cc',
-            'tools/null_invalidation_state_tracker.h',
-          ],
-        },
-
         # A tool that can be used to launch a python sync server instance.
         {
           'target_name': 'run_sync_testserver',
@@ -607,47 +584,6 @@
           ],
           'sources': [
             'tools/testserver/run_sync_testserver.cc',
-          ],
-        },
-
-        # A tool to listen to sync notifications and print them out.
-        {
-          'target_name': 'sync_listen_notifications',
-          'type': 'executable',
-          'defines': [
-            'SYNC_TEST',
-          ],
-          'dependencies': [
-            '../base/base.gyp:base',
-            '../jingle/jingle.gyp:notifier',
-            '../net/net.gyp:net',
-            '../net/net.gyp:net_test_support',
-            'sync',
-            'sync_tools_helper',
-          ],
-          'sources': [
-            'tools/sync_listen_notifications.cc',
-          ],
-        },
-
-        # A standalone command-line sync client.
-        {
-          'target_name': 'sync_client',
-          'type': 'executable',
-          'defines': [
-            'SYNC_TEST',
-          ],
-          'dependencies': [
-            '../base/base.gyp:base',
-            '../jingle/jingle.gyp:notifier',
-            '../net/net.gyp:net',
-            '../net/net.gyp:net_test_support',
-            'sync',
-            'sync_tools_helper',
-            'test_support_sync_core'
-          ],
-          'sources': [
-            'tools/sync_client.cc',
           ],
         },
       ],

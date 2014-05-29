@@ -86,6 +86,7 @@
             '../ppapi/tools/ppapi_tools.gyp:*',
             '../printing/printing.gyp:*',
             '../skia/skia.gyp:*',
+            '../sync/tools/sync_tools.gyp:*',
             '../third_party/WebKit/public/all.gyp:*',
             '../third_party/cacheinvalidation/cacheinvalidation.gyp:*',
             '../third_party/codesighs/codesighs.gyp:*',
