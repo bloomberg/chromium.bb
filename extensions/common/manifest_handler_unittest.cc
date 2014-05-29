@@ -161,7 +161,7 @@ class ManifestHandlerTest : public testing::Test {
       return keys_;
     }
 
- protected:
+   protected:
     bool return_value_;
     bool always_validate_;
     std::vector<std::string> keys_;

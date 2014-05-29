@@ -57,7 +57,7 @@ int ExtensionIconSet::GetIconSizeFromPath(const std::string& path) const {
   if (path.empty())
     return 0;
 
-  DCHECK(path[0] != '/') <<
+  DCHECK_NE(path[0], '/') <<
       "ExtensionIconSet stores icon paths without leading slash.";
 
   for (IconMap::const_iterator iter = map_.begin(); iter != map_.end();

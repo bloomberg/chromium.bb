@@ -243,8 +243,8 @@ void ManifestHandlerRegistry::SortManifestHandlers() {
 
   // If there are any leftover unsorted handlers, they must have had
   // circular dependencies.
-  CHECK(unsorted_handlers.size() == 0) << "Extension manifest handlers have "
-                                       << "circular dependencies!";
+  CHECK_EQ(unsorted_handlers.size(), std::set<ManifestHandler*>::size_type(0))
+      << "Extension manifest handlers have circular dependencies!";
 }
 
 }  // namespace extensions
