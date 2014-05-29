@@ -30,9 +30,6 @@ namespace {
 // a tile is of solid color.
 const bool kUseColorEstimator = true;
 
-// Minimum width/height of a pile that would require analysis for tiles.
-const int kMinDimensionsForAnalysis = 256;
-
 class DisableLCDTextFilter : public SkDrawFilter {
  public:
   // SkDrawFilter interface.
@@ -1108,24 +1105,6 @@ scoped_refptr<RasterTask> TileManager::CreateRasterTask(Tile* tile) {
     existing_pixel_refs[id] = decode_task;
   }
 
-  // We analyze picture before rasterization to detect solid-color tiles.
-  // If the tile is detected as such there is no need to raster or upload.
-  // It is drawn directly as a solid-color quad saving raster and upload cost.
-  // The analysis step is however expensive and is not justified when doing
-  // gpu rasterization where there is no upload.
-  //
-  // Additionally, we do not want to do the analysis if the layer that produced
-  // this tile is narrow, since more likely than not the tile would not be
-  // solid. We use the picture pile size as a proxy for layer size, since it
-  // represents the recorded (and thus rasterizable) content.
-  // Note that this last optimization is a heuristic that ensures that we don't
-  // spend too much time analyzing tiles on a multitude of small layers, as it
-  // is likely that these layers have some non-solid content.
-  gfx::Size pile_size = tile->picture_pile()->tiling_rect().size();
-  bool analyze_picture = !tile->use_gpu_rasterization() &&
-                         std::min(pile_size.width(), pile_size.height()) >=
-                             kMinDimensionsForAnalysis;
-
   return make_scoped_refptr(
       new RasterTaskImpl(const_resource,
                          tile->picture_pile(),
@@ -1136,7 +1115,7 @@ scoped_refptr<RasterTask> TileManager::CreateRasterTask(Tile* tile) {
                          tile->layer_id(),
                          static_cast<const void*>(tile),
                          tile->source_frame_number(),
-                         analyze_picture,
+                         tile->use_picture_analysis(),
                          rendering_stats_instrumentation_,
                          base::Bind(&TileManager::OnRasterTaskCompleted,
                                     base::Unretained(this),

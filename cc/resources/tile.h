@@ -20,10 +20,7 @@ namespace cc {
 
 class CC_EXPORT Tile : public RefCountedManaged<Tile> {
  public:
-  enum TileRasterFlags {
-    USE_LCD_TEXT = 1 << 0,
-    USE_GPU_RASTERIZATION = 1 << 1
-  };
+  enum TileRasterFlags { USE_LCD_TEXT = 1 << 0, USE_PICTURE_ANALYSIS = 1 << 1 };
 
   typedef uint64 Id;
 
@@ -80,15 +77,8 @@ class CC_EXPORT Tile : public RefCountedManaged<Tile> {
     return !!(flags_ & USE_LCD_TEXT);
   }
 
-  void set_use_gpu_rasterization(bool use_gpu_rasterization) {
-    if (use_gpu_rasterization)
-      flags_ |= USE_GPU_RASTERIZATION;
-    else
-      flags_ &= ~USE_GPU_RASTERIZATION;
-  }
-
-  bool use_gpu_rasterization() const {
-    return !!(flags_ & USE_GPU_RASTERIZATION);
+  bool use_picture_analysis() const {
+    return !!(flags_ & USE_PICTURE_ANALYSIS);
   }
 
   bool NeedsRasterForMode(RasterMode mode) const {

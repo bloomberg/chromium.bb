@@ -72,7 +72,7 @@ scoped_ptr<base::Value> Tile::AsValue() const {
   res->Set("pending_priority", priority_[PENDING_TREE].AsValue().release());
   res->Set("managed_state", managed_state_.AsValue().release());
   res->SetBoolean("can_use_lcd_text", can_use_lcd_text());
-  res->SetBoolean("use_gpu_rasterization", use_gpu_rasterization());
+  res->SetBoolean("use_picture_analysis", use_picture_analysis());
   return res.PassAs<base::Value>();
 }
 
