@@ -225,9 +225,7 @@
         '..'
       ],
       'sources': [
-        'public/cpp/bindings/allocation_scope.h',
         'public/cpp/bindings/array.h',
-        'public/cpp/bindings/buffer.h',
         'public/cpp/bindings/callback.h',
         'public/cpp/bindings/error_handler.h',
         'public/cpp/bindings/interface_impl.h',
@@ -244,6 +242,7 @@
         'public/cpp/bindings/lib/bindings_internal.h',
         'public/cpp/bindings/lib/bindings_serialization.cc',
         'public/cpp/bindings/lib/bindings_serialization.h',
+        'public/cpp/bindings/lib/buffer.h',
         'public/cpp/bindings/lib/callback_internal.h',
         'public/cpp/bindings/lib/connector.cc',
         'public/cpp/bindings/lib/connector.h',
