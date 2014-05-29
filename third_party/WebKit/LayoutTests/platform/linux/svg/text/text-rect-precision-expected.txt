@@ -1,0 +1,6 @@
+PASS Width of text element is the sum of the width of all characters.
+PASS successfullyParsed is true
+
+TEST COMPLETE
+Sphinx of black quartz, judge my vow.
+.

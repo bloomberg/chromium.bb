@@ -9,4 +9,4 @@ PASS text is concatenatedInlineText
 PASS successfullyParsed is true
 
 TEST COMPLETE
-six seven eight nine ten 
+six seven eight nine ten

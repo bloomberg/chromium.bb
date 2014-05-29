@@ -23,10 +23,10 @@
 Frame: '-->'
 --------
 (GraphicsLayer
-  (bounds 285.00 193.00)
+  (bounds 285.00 192.00)
   (children 1
     (GraphicsLayer
-      (bounds 285.00 193.00)
+      (bounds 285.00 192.00)
       (drawsContent 1)
       (children 1
         (GraphicsLayer

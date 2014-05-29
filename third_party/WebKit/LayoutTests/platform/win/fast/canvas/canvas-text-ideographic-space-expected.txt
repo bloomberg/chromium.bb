@@ -1,0 +1,6 @@
+FAIL spanWidth == canvasWidth should be true. Was false.
+PASS successfullyParsed is true
+
+TEST COMPLETE
+a　b　c
+
