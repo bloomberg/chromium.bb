@@ -10,9 +10,9 @@
 #include "base/memory/scoped_vector.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "base/test/test_simple_task_runner.h"
 #include "base/time/time.h"
 #include "cc/test/begin_frame_args_test.h"
+#include "cc/test/ordered_simple_task_runner.h"
 #include "cc/test/scheduler_test_common.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -58,7 +58,7 @@ class FakeSchedulerClient : public SchedulerClient {
   }
 
   Scheduler* CreateScheduler(const SchedulerSettings& settings) {
-    task_runner_ = new base::TestSimpleTaskRunner;
+    task_runner_ = new OrderedSimpleTaskRunner;
     scheduler_ = Scheduler::Create(this, settings, 0, task_runner_);
     return scheduler_.get();
   }
@@ -77,7 +77,7 @@ class FakeSchedulerClient : public SchedulerClient {
     return posted_begin_impl_frame_deadline_;
   }
 
-  base::TestSimpleTaskRunner& task_runner() { return *task_runner_; }
+  OrderedSimpleTaskRunner& task_runner() { return *task_runner_; }
 
   int ActionIndex(const char* action) const {
     for (size_t i = 0; i < actions_.size(); i++)
@@ -202,7 +202,7 @@ class FakeSchedulerClient : public SchedulerClient {
   std::vector<const char*> actions_;
   ScopedVector<base::Value> states_;
   scoped_ptr<Scheduler> scheduler_;
-  scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
+  scoped_refptr<OrderedSimpleTaskRunner> task_runner_;
 };
 
 void InitializeOutputSurfaceAndFirstCommit(Scheduler* scheduler,

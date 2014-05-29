@@ -66,7 +66,7 @@ class TestSimpleTaskRunner : public SingleThreadTaskRunner {
 
   // Runs each current pending task in order and clears the queue.
   // Any tasks posted by the tasks are not run.
-  void RunPendingTasks();
+  virtual void RunPendingTasks();
 
   // Runs pending tasks until the queue is empty.
   void RunUntilIdle();
@@ -74,10 +74,10 @@ class TestSimpleTaskRunner : public SingleThreadTaskRunner {
  protected:
   virtual ~TestSimpleTaskRunner();
 
- private:
-  ThreadChecker thread_checker_;
   std::deque<TestPendingTask> pending_tasks_;
+  ThreadChecker thread_checker_;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(TestSimpleTaskRunner);
 };
 
