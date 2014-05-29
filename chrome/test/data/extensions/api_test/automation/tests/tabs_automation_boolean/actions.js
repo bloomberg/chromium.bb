@@ -17,4 +17,4 @@ var allTests = [
   }
 ];
 
-chrome.test.runTests(allTests);
+setUpAndRunTests(allTests)

@@ -74,7 +74,7 @@ IN_PROC_BROWSER_TEST_F(AutomationApiTest, TestRendererAccessibilityEnabled) {
   ASSERT_FALSE(rwh->IsTreeOnlyAccessibilityModeForTesting());
 
   base::FilePath extension_path =
-      test_data_dir_.AppendASCII("automation/basic");
+      test_data_dir_.AppendASCII("automation/tests/basic");
   ExtensionTestMessageListener got_tree(kGotTree, false /* no reply */);
   LoadExtension(extension_path);
   ASSERT_TRUE(got_tree.WaitUntilSatisfied());
@@ -93,27 +93,41 @@ IN_PROC_BROWSER_TEST_F(AutomationApiTest, SanityCheck) {
 }
 
 IN_PROC_BROWSER_TEST_F(AutomationApiTest, Events) {
-  LoadPage();
+  StartEmbeddedTestServer();
   ASSERT_TRUE(RunExtensionSubtest("automation/tests/tabs", "events.html"))
       << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(AutomationApiTest, Actions) {
-  LoadPage();
+  StartEmbeddedTestServer();
   ASSERT_TRUE(RunExtensionSubtest("automation/tests/tabs", "actions.html"))
       << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(AutomationApiTest, Location) {
-  LoadPage();
+  StartEmbeddedTestServer();
   ASSERT_TRUE(RunExtensionSubtest("automation/tests/tabs", "location.html"))
       << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(AutomationApiTest, TabsEmptyInteractActions) {
-  LoadPage();
+IN_PROC_BROWSER_TEST_F(AutomationApiTest, TabsAutomationBooleanPermissions) {
+  StartEmbeddedTestServer();
   ASSERT_TRUE(RunExtensionSubtest(
-          "automation/tests/tabs_empty_interact", "actions.html"))
+          "automation/tests/tabs_automation_boolean", "permissions.html"))
+      << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(AutomationApiTest, TabsAutomationBooleanActions) {
+  StartEmbeddedTestServer();
+  ASSERT_TRUE(RunExtensionSubtest(
+          "automation/tests/tabs_automation_boolean", "actions.html"))
+      << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(AutomationApiTest, TabsAutomationHostsPermissions) {
+  StartEmbeddedTestServer();
+  ASSERT_TRUE(RunExtensionSubtest(
+          "automation/tests/tabs_automation_hosts", "permissions.html"))
       << message_;
 }
 

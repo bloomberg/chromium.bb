@@ -1,5 +1,5 @@
 {
-  "name": "chrome.automation.sanityCheck",
+  "name": "chrome.automation.tabsAutomationBoolean",
   "version": "0.1",
   "manifest_version": 2,
   "description": "Tests for the Automation API.",

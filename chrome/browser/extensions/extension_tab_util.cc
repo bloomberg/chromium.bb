@@ -287,7 +287,7 @@ int ExtensionTabUtil::GetWindowIdOfTabStripModel(
   return -1;
 }
 
-int ExtensionTabUtil::GetTabId(WebContents* web_contents) {
+int ExtensionTabUtil::GetTabId(const WebContents* web_contents) {
   return SessionID::IdForTab(web_contents);
 }
 

@@ -41,6 +41,10 @@ automation.registerCustomHook(function(bindingsAPI) {
     // accessibility event occurs which causes the tree to be populated), the
     // callback can be called.
     automationInternal.enableCurrentTab(function(pid, rid) {
+      if (lastError.hasError(chrome)) {
+        callback();
+        return;
+      }
       var id = createAutomationTreeID(pid, rid);
       var targetTree = idToAutomationTree[id];
       if (!targetTree) {

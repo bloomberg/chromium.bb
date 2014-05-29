@@ -8,6 +8,7 @@
 
 #include "chrome/browser/extensions/api/automation_internal/automation_action_adapter.h"
 #include "chrome/browser/extensions/api/automation_internal/automation_util.h"
+#include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/extensions/api/automation_internal.h"
@@ -18,6 +19,8 @@
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/common/error_utils.h"
+#include "extensions/common/permissions/permissions_data.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/ui/ash/accessibility/automation_manager_ash.h"
@@ -32,9 +35,32 @@ DEFINE_WEB_CONTENTS_USER_DATA_KEY(extensions::AutomationWebContentsObserver);
 namespace {
 const int kDesktopProcessID = 0;
 const int kDesktopRoutingID = 0;
+
+const char kCannotRequestAutomationOnPage[] =
+    "Cannot request automation tree on url \"*\". "
+    "Extension manifest must request permission to access this host.";
 }  // namespace
 
 namespace extensions {
+
+bool CanRequestAutomation(const Extension* extension,
+                          const AutomationInfo* automation_info,
+                          const content::WebContents* contents) {
+  if (automation_info->desktop)
+    return true;
+
+  const GURL& url = contents->GetURL();
+  // TODO(aboxhall): check for webstore URL
+  if (automation_info->matches.MatchesURL(url))
+    return true;
+
+  int tab_id = ExtensionTabUtil::GetTabId(contents);
+  content::RenderProcessHost* process = contents->GetRenderProcessHost();
+  int process_id = process ? process->GetID() : -1;
+  std::string unused_error;
+  return PermissionsData::CanExecuteScriptOnPage(
+      extension, url, url, tab_id, NULL, process_id, &unused_error);
+}
 
 // Helper class that receives accessibility data from |WebContents|.
 class AutomationWebContentsObserver
@@ -101,6 +127,9 @@ class RenderWidgetHostActionAdapter : public AutomationActionAdapter {
 // run at some point).
 ExtensionFunction::ResponseAction
 AutomationInternalEnableCurrentTabFunction::Run() {
+  const AutomationInfo* automation_info = AutomationInfo::Get(GetExtension());
+  EXTENSION_FUNCTION_VALIDATE(automation_info);
+
   Browser* current_browser = GetCurrentBrowser();
   TabStripModel* tab_strip = current_browser->tab_strip_model();
   content::WebContents* contents =
@@ -111,6 +140,11 @@ AutomationInternalEnableCurrentTabFunction::Run() {
       contents->GetRenderWidgetHostView()->GetRenderWidgetHost();
   if (!rwh)
     return RespondNow(Error("Could not enable accessibility for active tab"));
+
+  if (!CanRequestAutomation(GetExtension(), automation_info, contents)) {
+    return RespondNow(Error(ErrorUtils::FormatErrorMessage(
+        kCannotRequestAutomationOnPage, contents->GetURL().spec())));
+  }
   AutomationWebContentsObserver::CreateForWebContents(contents);
   rwh->EnableTreeOnlyAccessibilityMode();
   return RespondNow(
@@ -143,7 +177,15 @@ AutomationInternalPerformActionFunction::Run() {
 
   if (!rwh)
     return RespondNow(Error("Ignoring action on destroyed node"));
-
+  if (rwh->IsRenderView()) {
+    const content::RenderViewHost* rvh = content::RenderViewHost::From(rwh);
+    const content::WebContents* contents =
+        content::WebContents::FromRenderViewHost(rvh);
+    if (!CanRequestAutomation(GetExtension(), automation_info, contents)) {
+      return RespondNow(Error(ErrorUtils::FormatErrorMessage(
+          kCannotRequestAutomationOnPage, contents->GetURL().spec())));
+    }
+  }
   RenderWidgetHostActionAdapter adapter(rwh);
   return RouteActionToAdapter(params.get(), &adapter);
 }
