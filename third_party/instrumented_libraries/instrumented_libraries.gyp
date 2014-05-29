@@ -91,6 +91,7 @@
         '<(_sanitizer_type)-libpci3',
         '<(_sanitizer_type)-libdbusmenu-glib4',
         '<(_sanitizer_type)-liboverlay-scrollbar-0.2-0',
+        '<(_sanitizer_type)-libgconf-2-4',
       ],
       'conditions': [
         ['asan==1', {
@@ -491,6 +492,18 @@
       'library_name': 'liboverlay-scrollbar-0.2-0',
       'extra_configure_flags': [
           '--with-gtk=2',
+      ],
+      'dependencies=': [],
+      'includes': ['standard_instrumented_library_target.gypi'],
+    },
+    {
+      'library_name': 'libgconf-2-4',
+      'extra_configure_flags': [
+          # From debian/rules. (Even though --with-gtk=3.0 doesn't make sense.)
+          '--with-gtk=3.0',
+          '--disable-orbit',
+          # See above.
+          '--disable-introspection',
       ],
       'dependencies=': [],
       'includes': ['standard_instrumented_library_target.gypi'],
