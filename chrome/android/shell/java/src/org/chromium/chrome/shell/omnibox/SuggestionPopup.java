@@ -115,6 +115,7 @@ public class SuggestionPopup implements OnSuggestionsReceivedListener, TextWatch
 
     @Override
     public void afterTextChanged(final Editable editableText) {
+        if (!mUrlField.hasFocus()) return;
         if (!mHasStartedNewOmniboxEditSession) {
             mAutocomplete.resetSession();
             mHasStartedNewOmniboxEditSession = true;
