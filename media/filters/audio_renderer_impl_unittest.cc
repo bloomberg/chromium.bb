@@ -922,19 +922,24 @@ TEST_F(AudioRendererImplTest, TimeUpdatesOnFirstBuffer) {
   EXPECT_EQ(kNoTimestamp(), last_time_update());
 
   // Preroll() should be buffered some data, consume half of it now.
-  const int kFramesToConsume = frames_buffered() / 2;
-  EXPECT_TRUE(ConsumeBufferedData(kFramesToConsume, NULL));
+  int frames_to_consume = frames_buffered() / 2;
+  EXPECT_TRUE(ConsumeBufferedData(frames_to_consume, NULL));
   WaitForPendingRead();
 
   // ConsumeBufferedData() uses an audio delay of zero, so ensure we received
   // a time update that's equal to |kFramesToConsume| from above.
   timestamp_helper.SetBaseTimestamp(base::TimeDelta());
-  timestamp_helper.AddFrames(kFramesToConsume);
+  timestamp_helper.AddFrames(frames_to_consume);
   EXPECT_EQ(timestamp_helper.GetTimestamp(), last_time_update());
 
-  // The next time update should match the remaining frames_buffered().
-  timestamp_helper.AddFrames(frames_buffered());
-  EXPECT_TRUE(ConsumeBufferedData(frames_buffered(), NULL));
+  // The next time update should match the remaining frames_buffered(), but only
+  // after running the message loop.
+  frames_to_consume = frames_buffered();
+  EXPECT_TRUE(ConsumeBufferedData(frames_to_consume, NULL));
+  EXPECT_EQ(timestamp_helper.GetTimestamp(), last_time_update());
+
+  base::RunLoop().RunUntilIdle();
+  timestamp_helper.AddFrames(frames_to_consume);
   EXPECT_EQ(timestamp_helper.GetTimestamp(), last_time_update());
 }
 

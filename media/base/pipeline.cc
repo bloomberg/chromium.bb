@@ -293,8 +293,8 @@ void Pipeline::SetError(PipelineStatus error) {
 }
 
 void Pipeline::OnAudioTimeUpdate(TimeDelta time, TimeDelta max_time) {
+  DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK_LE(time.InMicroseconds(), max_time.InMicroseconds());
-  DCHECK(IsRunning());
   base::AutoLock auto_lock(lock_);
 
   if (clock_state_ == CLOCK_WAITING_FOR_AUDIO_TIME_UPDATE &&
@@ -302,8 +302,6 @@ void Pipeline::OnAudioTimeUpdate(TimeDelta time, TimeDelta max_time) {
     return;
   }
 
-  // TODO(scherkus): |state_| should only be accessed on pipeline thread, see
-  // http://crbug.com/137973
   if (state_ == kSeeking)
     return;
 
@@ -312,17 +310,15 @@ void Pipeline::OnAudioTimeUpdate(TimeDelta time, TimeDelta max_time) {
 }
 
 void Pipeline::OnVideoTimeUpdate(TimeDelta max_time) {
-  DCHECK(IsRunning());
-  base::AutoLock auto_lock(lock_);
+  DCHECK(task_runner_->BelongsToCurrentThread());
 
   if (audio_renderer_)
     return;
 
-  // TODO(scherkus): |state_| should only be accessed on pipeline thread, see
-  // http://crbug.com/137973
   if (state_ == kSeeking)
     return;
 
+  base::AutoLock auto_lock(lock_);
   DCHECK_NE(clock_state_, CLOCK_WAITING_FOR_AUDIO_TIME_UPDATE);
   clock_->SetMaxTime(max_time);
 }

@@ -671,7 +671,7 @@ int AudioRendererImpl::Render(AudioBus* audio_bus,
   }
 
   if (!time_cb.is_null())
-    time_cb.Run();
+    task_runner_->PostTask(FROM_HERE, time_cb);
 
   if (!underflow_cb.is_null())
     underflow_cb.Run();
