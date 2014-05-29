@@ -325,3 +325,38 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementApiTest, MAYBE_LaunchTabApp) {
   ASSERT_TRUE(app_browser->is_app());
 #endif
 }
+
+IN_PROC_BROWSER_TEST_F(ExtensionManagementApiTest, LaunchType) {
+  LoadExtensions();
+  base::FilePath basedir = test_data_dir_.AppendASCII("management");
+  LoadNamedExtension(basedir, "packaged_app");
+
+  ASSERT_TRUE(RunExtensionSubtest("management/test", "launchType.html"));
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionManagementApiTest, LaunchTypeNotInStable) {
+  LoadExtensions();
+
+  extensions::ScopedCurrentChannel channel(
+      chrome::VersionInfo::CHANNEL_STABLE);
+  ASSERT_TRUE(RunExtensionSubtest("management/test",
+                                  "launchTypeNotInStable.html"));
+}
+
+class ExtensionManagementApiStreamlinedAppsTest
+    : public ExtensionManagementApiTest {
+ public:
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+    ExtensionManagementApiTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitch(switches::kEnableStreamlinedHostedApps);
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(ExtensionManagementApiStreamlinedAppsTest, LaunchType) {
+  LoadExtensions();
+  base::FilePath basedir = test_data_dir_.AppendASCII("management");
+  LoadNamedExtension(basedir, "packaged_app");
+
+  ASSERT_TRUE(RunExtensionSubtest("management/test",
+                                  "launchType.html?streamlined-hosted-apps"));
+}

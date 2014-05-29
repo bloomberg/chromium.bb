@@ -27,6 +27,8 @@ extern const char kGestureNeededForCreateAppShortcutError[];
 extern const char kNoBrowserToCreateShortcut[];
 extern const char kCreateOnlyPackagedAppShortcutMac[];
 extern const char kCreateShortcutCanceledError[];
+extern const char kGestureNeededForSetLaunchTypeError[];
+extern const char kLaunchTypeNotAvailableError[];
 
 
 }  // namespace extension_management_api_constants

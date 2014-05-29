@@ -33,5 +33,9 @@ const char kCreateOnlyPackagedAppShortcutMac[] =
     "Shortcuts can only be created for new-style packaged apps on Mac.";
 const char kCreateShortcutCanceledError[] =
     "App shortcuts creation canceled by user.";
+const char kGestureNeededForSetLaunchTypeError[] =
+    "chrome.management.setLaunchType requires a user gesture.";
+const char kLaunchTypeNotAvailableError[] =
+    "The launch type is not available for this app.";
 
 }  // namespace extension_management_api_constants

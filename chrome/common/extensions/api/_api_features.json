@@ -537,6 +537,11 @@
     "channel": "dev",
     "contexts": ["blessed_extension"]
   },
+  "management.setLaunchType": {
+    "dependencies": ["permission:management"],
+    "channel": "dev",
+    "contexts": ["blessed_extension"]
+  },
   // This is not a real API, only here for documentation purposes.
   // See http://crbug.com/275944 for background.
   "manifestTypes": {

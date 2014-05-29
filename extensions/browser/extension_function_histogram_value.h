@@ -842,6 +842,7 @@ enum HistogramValue {
   ENTERPRISE_PLATFORMKEYS_REMOVECERTIFICATE,
   FILEBROWSERPRIVATE_OPENINSPECTOR,
   STREAMSPRIVATE_ABORT,
+  MANAGEMENT_SETLAUNCHTYPE,
   // Last entry: Add new entries above and ensure to update
   // tools/metrics/histograms/histograms/histograms.xml.
   ENUM_BOUNDARY

@@ -189,6 +189,17 @@ class ManagementCreateAppShortcutFunction : public AsyncManagementFunction {
   virtual bool RunAsync() OVERRIDE;
 };
 
+class ManagementSetLaunchTypeFunction : public ManagementFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("management.setLaunchType",
+      MANAGEMENT_SETLAUNCHTYPE);
+
+ protected:
+  virtual ~ManagementSetLaunchTypeFunction() {}
+
+  virtual bool RunSync() OVERRIDE;
+};
+
 class ManagementEventRouter : public content::NotificationObserver {
  public:
   explicit ManagementEventRouter(Profile* profile);

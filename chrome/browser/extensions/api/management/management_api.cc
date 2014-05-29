@@ -31,9 +31,11 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_utility_messages.h"
 #include "chrome/common/extensions/api/management.h"
 #include "chrome/common/extensions/extension_constants.h"
+#include "chrome/common/extensions/features/feature_channel.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/common/extensions/manifest_url_handler.h"
 #include "content/public/browser/notification_details.h"
@@ -93,6 +95,28 @@ std::vector<std::string> CreateWarningsList(const Extension* extension) {
   }
 
   return warnings_list;
+}
+
+std::vector<management::LaunchType> GetAvailableLaunchTypes(
+    const Extension& extension) {
+  std::vector<management::LaunchType> launch_type_list;
+  if (extension.is_platform_app()) {
+    launch_type_list.push_back(management::LAUNCH_TYPE_OPEN_AS_WINDOW);
+    return launch_type_list;
+  }
+
+  launch_type_list.push_back(management::LAUNCH_TYPE_OPEN_AS_REGULAR_TAB);
+
+#if !defined(OS_MACOSX)
+  launch_type_list.push_back(management::LAUNCH_TYPE_OPEN_AS_WINDOW);
+#endif
+
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableStreamlinedHostedApps)) {
+    launch_type_list.push_back(management::LAUNCH_TYPE_OPEN_AS_PINNED_TAB);
+    launch_type_list.push_back(management::LAUNCH_TYPE_OPEN_FULL_SCREEN);
+  }
+  return launch_type_list;
 }
 
 scoped_ptr<management::ExtensionInfo> CreateExtensionInfo(
@@ -210,6 +234,39 @@ scoped_ptr<management::ExtensionInfo> CreateExtensionInfo(
     case Manifest::EXTERNAL_COMPONENT:
       info->install_type = management::ExtensionInfo::INSTALL_TYPE_OTHER;
       break;
+  }
+
+  info->launch_type = management::LAUNCH_TYPE_NONE;
+  if (GetCurrentChannel() <= chrome::VersionInfo::CHANNEL_DEV &&
+      extension.is_app()) {
+    LaunchType launch_type;
+    if (extension.is_platform_app()) {
+      launch_type = LAUNCH_TYPE_WINDOW;
+    } else {
+      launch_type =
+          GetLaunchType(ExtensionPrefs::Get(service->profile()), &extension);
+    }
+
+    switch (launch_type) {
+      case LAUNCH_TYPE_PINNED:
+        info->launch_type = management::LAUNCH_TYPE_OPEN_AS_PINNED_TAB;
+        break;
+      case LAUNCH_TYPE_REGULAR:
+        info->launch_type = management::LAUNCH_TYPE_OPEN_AS_REGULAR_TAB;
+        break;
+      case LAUNCH_TYPE_FULLSCREEN:
+        info->launch_type = management::LAUNCH_TYPE_OPEN_FULL_SCREEN;
+        break;
+      case LAUNCH_TYPE_WINDOW:
+        info->launch_type = management::LAUNCH_TYPE_OPEN_AS_WINDOW;
+        break;
+      case LAUNCH_TYPE_INVALID:
+      case NUM_LAUNCH_TYPES:
+        NOTREACHED();
+    }
+
+    info->available_launch_types.reset(new std::vector<management::LaunchType>(
+        GetAvailableLaunchTypes(extension)));
   }
 
   return info.Pass();
@@ -737,6 +794,61 @@ bool ManagementCreateAppShortcutFunction::RunAsync() {
   }
 
   // Response is sent async in OnCloseShortcutPrompt().
+  return true;
+}
+
+bool ManagementSetLaunchTypeFunction::RunSync() {
+  if (!user_gesture()) {
+    error_ = keys::kGestureNeededForSetLaunchTypeError;
+    return false;
+  }
+
+  scoped_ptr<management::SetLaunchType::Params> params(
+      management::SetLaunchType::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+  const Extension* extension = service()->GetExtensionById(params->id, true);
+  if (!extension) {
+    error_ =
+        ErrorUtils::FormatErrorMessage(keys::kNoExtensionError, params->id);
+    return false;
+  }
+
+  if (!extension->is_app()) {
+    error_ = ErrorUtils::FormatErrorMessage(keys::kNotAnAppError, params->id);
+    return false;
+  }
+
+  std::vector<management::LaunchType> available_launch_types =
+      GetAvailableLaunchTypes(*extension);
+
+  management::LaunchType app_launch_type = params->launch_type;
+  if (std::find(available_launch_types.begin(),
+                available_launch_types.end(),
+                app_launch_type) == available_launch_types.end()) {
+    error_ = keys::kLaunchTypeNotAvailableError;
+    return false;
+  }
+
+  LaunchType launch_type = LAUNCH_TYPE_DEFAULT;
+  switch (app_launch_type) {
+    case management::LAUNCH_TYPE_OPEN_AS_PINNED_TAB:
+      launch_type = LAUNCH_TYPE_PINNED;
+      break;
+    case management::LAUNCH_TYPE_OPEN_AS_REGULAR_TAB:
+      launch_type = LAUNCH_TYPE_REGULAR;
+      break;
+    case management::LAUNCH_TYPE_OPEN_FULL_SCREEN:
+      launch_type = LAUNCH_TYPE_FULLSCREEN;
+      break;
+    case management::LAUNCH_TYPE_OPEN_AS_WINDOW:
+      launch_type = LAUNCH_TYPE_WINDOW;
+      break;
+    case management::LAUNCH_TYPE_NONE:
+      NOTREACHED();
+  }
+
+  SetLaunchType(service(), params->id, launch_type);
+
   return true;
 }
 

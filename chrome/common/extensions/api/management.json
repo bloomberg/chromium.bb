@@ -17,6 +17,12 @@
         }
       },
       {
+        "id": "LaunchType",
+        "type": "string",
+        "enum": ["OPEN_AS_REGULAR_TAB", "OPEN_AS_PINNED_TAB", "OPEN_AS_WINDOW", "OPEN_FULL_SCREEN"],
+        "description": "These are all possible app launch types. Note: This enum is only available to Chrome users on the dev channel."
+      },
+      {
         "id": "ExtensionInfo",
         "description": "Information about an installed extension, app, or theme.",
         "type": "object",
@@ -114,6 +120,19 @@
             "description": "How the extension was installed. One of<br><var>admin</var>: The extension was installed because of an administrative policy,<br><var>development</var>: The extension was loaded unpacked in developer mode,<br><var>normal</var>: The extension was installed normally via a .crx file,<br><var>sideload</var>: The extension was installed by other software on the machine,<br><var>other</var>: The extension was installed by other means.",
             "type": "string",
             "enum": ["admin", "development", "normal", "sideload", "other"]
+          },
+          "launchType": {
+            "description": "The app launch type (only present for apps). Note: This property is only available to Chrome users on the dev channel.",
+            "$ref": "LaunchType",
+            "optional": true
+          },
+          "availableLaunchTypes": {
+            "description": "The currently available launch types (only present for apps). Note: This property is only available to Chrome users on the dev channel.",
+            "type": "array",
+            "optional": true,
+            "items": {
+              "$ref": "LaunchType"
+            }
           }
         }
       }
@@ -311,7 +330,29 @@
             "name": "callback",
             "type": "function",
             "optional": true,
-            "parameters":  []
+            "parameters": []
+          }
+        ]
+      },
+      {
+        "name": "setLaunchType",
+        "description": "Set the launch type of an app. Note: This function is only available to Chrome users on the dev channel.",
+        "parameters": [
+          {
+            "name": "id",
+            "type": "string",
+            "description": "This should be the id from an app item of $(ref:management.ExtensionInfo)."
+          },
+          {
+            "name": "launchType",
+            "$ref": "LaunchType",
+            "description": "The target launch type. Always check and make sure this launch type is in $(ref:ExtensionInfo.availableLaunchTypes), because the available launch types vary on different platforms and configurations."
+          },
+          {
+            "name": "callback",
+            "type": "function",
+            "optional": true,
+            "parameters": []
           }
         ]
       }
