@@ -325,7 +325,8 @@ void RenderWidgetFullscreenPepper::DidChangeCursor(
 void RenderWidgetFullscreenPepper::SetLayer(blink::WebLayer* layer) {
   layer_ = layer;
   if (!layer_) {
-    compositor_->clearRootLayer();
+    if (compositor_)
+      compositor_->clearRootLayer();
     return;
   }
   if (!layerTreeView())
