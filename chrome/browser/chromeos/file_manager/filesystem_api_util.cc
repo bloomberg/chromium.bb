@@ -10,7 +10,13 @@
 #include "chrome/browser/chromeos/drive/file_errors.h"
 #include "chrome/browser/chromeos/drive/file_system_interface.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
+#include "chrome/browser/chromeos/file_manager/app_id.h"
+#include "chrome/browser/chromeos/file_manager/fileapi_util.h"
+#include "chrome/browser/extensions/extension_util.h"
+#include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/storage_partition.h"
+#include "webkit/browser/fileapi/file_system_context.h"
 
 namespace file_manager {
 namespace util {
@@ -53,8 +59,31 @@ bool IsUnderNonNativeLocalPath(Profile* profile,
                         const base::FilePath& path) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  // TODO(kinaba): support other types of volumes besides Drive.
-  return drive::util::IsUnderDriveMountPoint(path);
+  GURL url;
+  if (!util::ConvertAbsoluteFilePathToFileSystemUrl(
+           profile, path, kFileManagerAppId, &url)) {
+    return false;
+  }
+
+  content::StoragePartition* partition =
+      content::BrowserContext::GetStoragePartitionForSite(
+          profile,
+          extensions::util::GetSiteForExtensionId(kFileManagerAppId, profile));
+  fileapi::FileSystemContext* context = partition->GetFileSystemContext();
+
+  fileapi::FileSystemURL filesystem_url = context->CrackURL(url);
+  if (!filesystem_url.is_valid())
+    return false;
+
+  switch (filesystem_url.type()) {
+    case fileapi::kFileSystemTypeNativeLocal:
+    case fileapi::kFileSystemTypeRestrictedNativeLocal:
+      return false;
+    default:
+      // The path indeed corresponds to a mount point not associated with a
+      // native local path.
+      return true;
+  }
 }
 
 void GetNonNativeLocalPathMimeType(
@@ -62,8 +91,18 @@ void GetNonNativeLocalPathMimeType(
     const base::FilePath& path,
     const base::Callback<void(bool, const std::string&)>& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK(IsUnderNonNativeLocalPath(profile, path));
 
-  // TODO(kinaba): support other types of volumes besides Drive.
+  if (!drive::util::IsUnderDriveMountPoint(path)) {
+    // Non-drive mount point does not have mime types as metadata. Just return
+    // success with empty mime type value.
+    content::BrowserThread::PostTask(
+        content::BrowserThread::UI,
+        FROM_HERE,
+        base::Bind(callback, true /* success */, std::string()));
+    return;
+  }
+
   drive::FileSystemInterface* file_system =
       drive::util::GetFileSystemByProfile(profile);
   if (!file_system) {
