@@ -143,6 +143,28 @@ TEST_F('AutofillEditAddressWebUITest', 'testLoadAddressComponents', function() {
   expectEquals(2, $('autofill-edit-address-fields').children.length);
 });
 
+TEST_F('AutofillEditAddressWebUITest', 'testFieldValuesSaved', function() {
+  assertEquals(this.browsePreload, document.location.href);
+
+  AutofillEditAddressOverlay.loadAddressComponents({
+    languageCode: 'en',
+    components: [[{field: 'city'}]]
+  });
+  getField('city').value = 'New York';
+
+  AutofillEditAddressOverlay.loadAddressComponents({
+    languageCode: 'en',
+    components: [[{field: 'state'}]]
+  });
+  assertEquals(null, getField('city'));
+
+  AutofillEditAddressOverlay.loadAddressComponents({
+    languageCode: 'en',
+    components: [[{field: 'city'}]]
+  });
+  assertEquals('New York', getField('city').value);
+});
+
 /**
  * Class to test the autofill edit address overlay asynchronously.
  * @extends {testing.Test}

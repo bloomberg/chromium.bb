@@ -35,6 +35,16 @@ cr.define('options', function() {
     languageCode_: '',
 
     /**
+     * The saved field values for the address. For example, if the user changes
+     * from United States to Switzerland, then the State field will be hidden
+     * and its value will be stored here. If the user changes back to United
+     * States, then the State field will be restored to its previous value, as
+     * stored in this object.
+     * @type {Object}
+     */
+    savedFieldValues_: {},
+
+    /**
      * Initializes the page.
      */
     initializePage: function() {
@@ -143,6 +153,7 @@ cr.define('options', function() {
       this.inputFieldChanged_();
       this.guid_ = '';
       this.languageCode_ = '';
+      this.savedInputFields_ = {};
       OptionsPage.closeOverlay();
     },
 
@@ -339,8 +350,12 @@ cr.define('options', function() {
      */
     loadAddressComponents_: function(input) {
       var inputFields = this.getInputFields_();
+      for (var fieldName in inputFields) {
+        if (inputFields.hasOwnProperty(fieldName))
+          this.savedFieldValues_[fieldName] = inputFields[fieldName];
+      }
       this.rebuildInputFields_(input.components);
-      this.setInputFields_(inputFields);
+      this.setInputFields_(this.savedFieldValues_);
       this.inputFieldChanged_();
       this.connectInputEvents_();
       this.languageCode_ = input.languageCode;
