@@ -642,16 +642,17 @@ void ContainerNode::parserAppendChild(PassRefPtr<Node> newChild)
         document().adoptNode(newChild.get(), ASSERT_NO_EXCEPTION);
 
     Node* last = m_lastChild;
+
     {
         NoEventDispatchAssertion assertNoEventDispatch;
+        ScriptForbiddenScope forbidScript;
+
+        treeScope().adoptIfNeeded(*newChild);
         // FIXME: This method should take a PassRefPtr.
         appendChildToContainer(*newChild, *this);
-        treeScope().adoptIfNeeded(*newChild);
+        newChild->updateAncestorConnectedSubframeCountForInsertion();
+        ChildListMutationScope(*this).childAdded(*newChild);
     }
-
-    newChild->updateAncestorConnectedSubframeCountForInsertion();
-
-    ChildListMutationScope(*this).childAdded(*newChild);
 
     childrenChanged(true, last, 0, 1);
     notifyNodeInserted(*newChild);
