@@ -1,0 +1,379 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//build/config/features.gni")
+import("//build/config/ui.gni")
+import("//content/browser/browser.gni")
+
+source_set("browser") {
+  # Only targets in the content tree can depend directly on this target.
+  visibility = [ "//content/*" ]
+
+  sources = rebase_path(content_browser_gypi_values.private_browser_sources,
+                        ".", "//content")
+
+  # TODO(GYP) these generated files are listed as sources in content_browser.
+  # This is a bit suspicious. The GN grit template will make a source set
+  # containing the generated code so it should be sufficient to just depend
+  # on the grit rule. But maybe some of these will need to be added?
+  #
+  # Need this annoying rebase_path call to match what happened with the sources.
+  sources -= rebase_path([
+    "$root_gen_dir/webkit/grit/devtools_resources.h",
+    "$root_gen_dir/webkit/grit/devtools_resources_map.cc",
+    "$root_gen_dir/webkit/grit/devtools_resources_map.h",
+    "$root_gen_dir/content/browser/tracing/grit/tracing_resources.h",
+    "$root_gen_dir/ui/ui_resources/grit/webui_resources_map.cc",
+    "$root_gen_dir/content/browser/devtools/devtools_protocol_constants.cc",
+    "$root_gen_dir/content/browser/devtools/devtools_protocol_constants.h",
+  ], ".")
+
+  configs += [ "//content:content_implementation" ]
+
+  deps = [
+    "//base",
+    "//crypto",
+    "//net",
+    "//skia",
+    "//sql",
+    "//third_party/re2",
+    "//third_party/WebKit/public:blink_headers",
+    "//third_party/zlib",
+    "//third_party/zlib:zip",
+    "//ui/accessibility",
+    "//ui/accessibility:ax_gen",
+    "//ui/base:ui_base",
+    "//ui/events",
+    "//ui/events:gesture_detection",
+    "//ui/gfx",
+    "//ui/gfx/geometry",
+    "//ui/resources",
+    # TODO(GYP)
+    #"//ui/snapshot",
+    #'../google_apis/google_apis.gyp:google_apis',
+    #'browser/service_worker/service_worker_proto.gyp:database_proto',
+    #'browser/speech/proto/speech_proto.gyp:speech_proto',
+    #'browser/devtools/devtools_resources.gyp:devtools_resources',
+    #'content_common_mojo_bindings',
+    #'../cc/cc.gyp:cc',
+    #'../mojo/mojo.gyp:mojo_cpp_bindings',
+    #'../mojo/mojo.gyp:mojo_js_bindings',
+    #'../mojo/mojo.gyp:mojo_service_provider_bindings',
+    #'../net/net.gyp:http_server',
+    #'../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
+    #'../ui/surface/surface.gyp:surface',
+    #'../webkit/common/webkit_common.gyp:webkit_common',
+    #'../webkit/storage_browser.gyp:webkit_storage_browser',
+    #'../webkit/storage_common.gyp:webkit_storage_common',
+    #'../webkit/webkit_resources.gyp:webkit_resources',
+    #'../webkit/webkit_resources.gyp:webkit_strings',
+    #'../third_party/angle/src/build_angle.gyp:commit_id',
+  ]
+
+  if (toolkit_views) {
+    deps += [ "//ui/events" ]
+  }
+
+  if (is_win) {
+    sources += [
+      "power_profiles/power_data_provider_ia_win.cc",
+      "power_profiles/power_data_provider_ia_win.h",
+    ]
+    deps += [ "//third_party/power_gadget" ]
+  } else {
+    sources += [ "power_profiler/power_data_provider_dummy.cc" ]
+  }
+
+  if (!is_win && !is_mac && (!is_linux || !use_udev)) {
+    sources += [ "browser/gamepad/gamepad_platform_data_fetcher.cc" ]
+  }
+
+  if (is_ios) {
+    # TODO(GYP) lots of inclusions and exclusions for iOS.
+  }
+
+  if (enable_printing != 0) {
+    #TODO(GYP)
+    #deps += [ "//printing" ]
+  }
+
+# TODO(GYP)
+#   ['OS!="ios" and chrome_multiple_dll!=1', {
+#     'dependencies': [
+#       '../third_party/WebKit/public/blink.gyp:blink',
+#     ],
+#   }],
+#   ['OS!="mac" and OS!="ios"', {
+#     'dependencies': [
+#       '../sandbox/sandbox.gyp:sandbox',
+#     ],
+#   }],
+#   ['OS!="android" and OS!="ios"', {
+#     'dependencies': [
+#       'browser/tracing/tracing_resources.gyp:tracing_resources',
+#     ],
+#   }],
+#   ['OS!="ios"', {
+#     'dependencies': [
+#       '../third_party/libyuv/libyuv.gyp:libyuv',
+#     ],
+#   }],
+#   ['enable_webrtc==1', {
+#     'dependencies': [
+#       '../jingle/jingle.gyp:jingle_glue',
+#     ],
+#     'sources': [
+#       'browser/renderer_host/media/peer_connection_tracker_host.cc',
+#       'browser/renderer_host/media/peer_connection_tracker_host.h',
+#       'browser/renderer_host/media/webrtc_identity_service_host.cc',
+#       'browser/renderer_host/media/webrtc_identity_service_host.h',
+#       'browser/renderer_host/p2p/socket_host.cc',
+#       'browser/renderer_host/p2p/socket_host.h',
+#       'browser/renderer_host/p2p/socket_host_tcp.cc',
+#       'browser/renderer_host/p2p/socket_host_tcp.h',
+#       'browser/renderer_host/p2p/socket_host_tcp_server.cc',
+#       'browser/renderer_host/p2p/socket_host_tcp_server.h',
+#       'browser/renderer_host/p2p/socket_host_throttler.cc',
+#       'browser/renderer_host/p2p/socket_host_throttler.h',
+#       'browser/renderer_host/p2p/socket_host_udp.cc',
+#       'browser/renderer_host/p2p/socket_host_udp.h',
+#       'browser/renderer_host/p2p/socket_dispatcher_host.cc',
+#       'browser/renderer_host/p2p/socket_dispatcher_host.h',
+#     ],
+#   }],
+#   ['enable_webrtc==1 and OS=="linux"', {
+#     'dependencies': [
+#       '../third_party/libjingle/libjingle.gyp:libjingle_webrtc',
+#     ],
+#   }],
+#   ['enable_webrtc==1 and (OS=="linux" or OS=="mac" or OS=="win")', {
+#     'sources': [
+#       'browser/media/capture/desktop_capture_device.cc',
+#       'browser/media/capture/desktop_capture_device.h',
+#       'browser/media/capture/desktop_capture_device_aura.cc',
+#       'browser/media/capture/desktop_capture_device_aura.h',
+#       'browser/media/capture/desktop_capture_device_uma_types.cc',
+#       'browser/media/capture/desktop_capture_device_uma_types.h',
+#     ],
+#     'dependencies': [
+#       '../third_party/webrtc/modules/modules.gyp:desktop_capture',
+#     ],
+#     'defines': [
+#       'ENABLE_SCREEN_CAPTURE=1',
+#     ],
+#   }],
+#   ['OS=="win"', {
+#     'dependencies': [
+#       # For accessibility
+#       '../third_party/iaccessible2/iaccessible2.gyp:iaccessible2',
+#       '../third_party/isimpledom/isimpledom.gyp:isimpledom',
+#     ],
+#     'sources/': [
+#       ['exclude', '^browser/device_sensors/data_fetcher_shared_memory_default.cc$'],
+#     ],
+#     'defines': [
+#       # This prevents the inclusion of atlhost.h which paired
+#       # with the windows 8 sdk it does the wrong thing.
+#       '__ATLHOST_H__',
+#     ],
+#     'link_settings': {
+#       'libraries': [
+#         '-lcomctl32.lib',
+#         '-ldinput8.lib',
+#         '-ldwmapi.lib',
+#         '-ldxguid.lib',
+#         '-lsensorsapi.lib',
+#         '-lportabledeviceguids.lib',
+#       ],
+#       'msvs_settings': {
+#         'VCLinkerTool': {
+#           'DelayLoadDLLs': [
+#             'dinput8.dll',
+#             'user32.dll',
+#             'dwmapi.dll',
+#           ],
+#         },
+#       },
+#     },
+#   }],
+#   ['OS=="linux"', {
+#     'dependencies': [
+#       '../sandbox/sandbox.gyp:libc_urandom_override',
+#     ],
+#   }],
+#   ['use_udev == 1', {
+#     'dependencies': [
+#       '../build/linux/system.gyp:udev',
+#     ],
+#   }, {
+#     'sources!': [
+#       'browser/device_monitor_udev.cc',
+#       'browser/device_monitor_udev.h',
+#       'browser/gamepad/gamepad_platform_data_fetcher_linux.cc',
+#       'browser/udev_linux.cc',
+#       'browser/udev_linux.h',
+#     ],
+#   }],
+#   ['OS=="linux" and use_aura==1', {
+#     'dependencies': [
+#       '../build/linux/system.gyp:fontconfig',
+#     ],
+#   }],
+#   ['use_x11==1', {
+#     'dependencies': [
+#       '../build/linux/system.gyp:x11',
+#     ],
+#   }],
+#   ['use_pango==1', {
+#     'dependencies': [
+#       '../build/linux/system.gyp:pangocairo',
+#     ],
+#     'sources!': [
+#       'browser/renderer_host/pepper/pepper_truetype_font_list_ozone.cc',
+#     ],
+#   }],
+#   ['OS=="android"', {
+#     'dependencies': [
+#       '../media/media.gyp:media',
+#       'content.gyp:content_jni_headers',
+#     ],
+#     'link_settings': {
+#       'libraries': [
+#         '-ljnigraphics',
+#       ],
+#     },
+#     'sources/': [
+#       ['exclude', '^browser/battery_status/battery_status_manager_default.cc$'],
+#       ['exclude', '^browser/device_sensors/data_fetcher_shared_memory_default.cc$'],
+#       ['exclude', '^browser/geolocation/network_location_provider\\.(cc|h)$'],
+#       ['exclude', '^browser/geolocation/network_location_request\\.(cc|h)$'],
+#       ['exclude', '^browser/tracing/tracing_ui'],
+#       ['exclude', '^browser/speech/'],
+#       ['include', '^browser/speech/speech_recognition_dispatcher_host\\.(cc|h)$'],
+#       ['include', '^browser/speech/speech_recognition_manager_impl\\.(cc|h)$'],
+#       ['include', '^browser/speech/speech_recognizer\\.h$'],
+#       ['include', '^browser/speech/speech_recognizer_impl_android\\.(cc|h)$'],
+#     ],
+#     'sources!': [
+#       'browser/browser_ipc_logging.cc',
+#       'browser/font_list_async.cc',
+#       'browser/geolocation/device_data_provider.cc',
+#       'browser/geolocation/empty_device_data_provider.cc',
+#       'browser/geolocation/wifi_data_provider_common.cc',
+#       'browser/renderer_host/native_web_keyboard_event.cc',
+#     ]
+#   }, {  # OS!="android"
+#     'sources/': [
+#       ['exclude', '^browser/renderer_host/java/'],
+#       ['exclude', '^browser/speech/speech_recognizer_impl_android\\.(cc|h)'],
+#     ],
+#   }],
+#   ['OS=="mac"', {
+#     'sources/': [
+#       ['exclude', '^browser/device_sensors/data_fetcher_shared_memory_default.cc$'],
+#     ],
+#     'sources!': [
+#       'browser/geolocation/empty_wifi_data_provider.cc',
+#     ],
+#     'dependencies': [
+#       '../third_party/mozilla/mozilla.gyp:mozilla',
+#       '../third_party/sudden_motion_sensor/sudden_motion_sensor.gyp:sudden_motion_sensor',
+#     ],
+#     'link_settings': {
+#       'libraries': [
+#         '$(SDKROOT)/usr/lib/libbsm.dylib',
+#       ],
+#     },
+#   }],
+#   ['chromeos==1', {
+#     'dependencies': [
+#       '../build/linux/system.gyp:dbus',
+#       '../chromeos/chromeos.gyp:power_manager_proto',
+#     ],
+#     'sources!': [
+#       'browser/geolocation/wifi_data_provider_linux.cc',
+#       'browser/power_save_blocker_ozone.cc',
+#       'browser/power_save_blocker_x11.cc',
+#     ],
+#   }],
+#   ['os_bsd==1', {
+#     'sources/': [
+#       ['exclude', '^browser/gamepad/gamepad_platform_data_fetcher_linux\\.cc$'],
+#     ],
+#   }],
+#   ['use_aura==1', {
+#     'dependencies': [
+#       '../ui/aura/aura.gyp:aura',
+#       '../ui/strings/ui_strings.gyp:ui_strings',
+#     ],
+#   }, {
+#     'sources/': [
+#       ['exclude', '^browser/renderer_host/render_widget_host_view_aura.cc'],
+#       ['exclude', '^browser/renderer_host/render_widget_host_view_aura.h'],
+#       ['exclude', '^browser/web_contents/touch_editable_impl_aura.cc'],
+#       ['exclude', '^browser/web_contents/touch_editable_impl_aura.h'],
+#       ['exclude', '^browser/renderer_host/ui_events_helper.cc'],
+#       ['exclude', '^browser/renderer_host/ui_events_helper.h'],
+#       ['exclude', '^browser/context_factory.cc'],
+#       ['exclude', '^public/browser/context_factory.h'],
+#     ],
+#   }],
+#   ['use_aura==1 or OS=="mac"', {
+#     'dependencies': [
+#       '../ui/compositor/compositor.gyp:compositor',
+#     ],
+#   }, {
+#     'sources/': [
+#       ['exclude', '^browser/compositor/'],
+#     ]
+#   }],
+#   ['enable_plugins==1', {
+#     'dependencies': [
+#       '../ppapi/ppapi_internal.gyp:ppapi_ipc',
+#       '../ppapi/ppapi_internal.gyp:ppapi_shared',
+#     ],
+#   }, {  # enable_plugins==0
+#     'sources!': [
+#       'browser/pepper_flash_settings_helper_impl.cc',
+#       'browser/pepper_flash_settings_helper_impl.h',
+#       'browser/plugin_data_remover_impl.cc',
+#       'browser/plugin_data_remover_impl.h',
+#       'browser/plugin_loader_posix.cc',
+#       'browser/plugin_loader_posix.h',
+#       'browser/plugin_process_host.cc',
+#       'browser/plugin_process_host.h',
+#       'browser/plugin_service_impl.cc',
+#       'browser/plugin_service_impl.h',
+#       'browser/ppapi_plugin_process_host.cc',
+#       'public/browser/plugin_service.h',
+#     ],
+#     'sources/': [
+#       ['exclude', '^browser/renderer_host/pepper/'],
+#     ],
+#   }],
+#   ['input_speech==1', {
+#     'dependencies': [
+#       '../third_party/flac/flac.gyp:libflac',
+#       '../third_party/speex/speex.gyp:libspeex',
+#     ],
+#   }],
+#   ['OS == "win"', {
+#     'sources!': [
+#       'browser/geolocation/empty_wifi_data_provider.cc',
+#     ],
+#   }],
+#   ['OS == "linux" and use_dbus==1', {
+#     'sources!': [
+#       'browser/geolocation/empty_wifi_data_provider.cc',
+#     ],
+#     'dependencies': [
+#       '../build/linux/system.gyp:dbus',
+#       '../dbus/dbus.gyp:dbus',
+#     ],
+#   }, {  # OS != "linux" or use_dbus==0
+#     'sources!': [
+#       'browser/geolocation/wifi_data_provider_linux.cc',
+#     ],
+#   }],
+}

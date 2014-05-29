@@ -15,15 +15,6 @@ grit("resources") {
 
 # Stubs ------------------------------------------------------------------------
 
-# TODO(brettw) remove this and add a proper dependency on blink once that
-# target has been converted to GN. This config sets up the include directories
-# so content can compile in the meantime.
-#
-# This corresponds to third_party/WebKit/public/blink_headers.gyp:blink_headers
-config("blink_headers_stub_config") {
-  include_dirs = [ "//third_party/WebKit" ]
-}
-
 # TODO(brettw) remove this and add a proper dependency on libjingle once that
 # target has been converted to GN. This config sets up the include directories
 # so content can compile in the meantime.

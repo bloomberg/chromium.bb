@@ -14,7 +14,6 @@ source_set("renderer") {
                         ".", "//content")
 
   configs += [
-    "//content:blink_headers_stub_config",
     "//content:content_implementation",
     "//content:libjingle_stub_config",
     "//content:v8_stub_config",
@@ -36,6 +35,7 @@ source_set("renderer") {
     "//skia",
     "//third_party/icu",
     "//third_party/npapi",
+    "//third_party/WebKit/public:blink_headers",
     "//ui/accessibility",
     "//ui/events:dom4_keycode_converter",
     "//ui/native_theme",
