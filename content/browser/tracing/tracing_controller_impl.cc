@@ -333,6 +333,25 @@ void TracingControllerImpl::OnDisableRecordingDone(
   pending_disable_recording_ack_count_ = trace_message_filters_.size() + 1;
   pending_disable_recording_filters_ = trace_message_filters_;
 
+#if defined(OS_CHROMEOS) || defined(OS_WIN)
+  if (is_system_tracing_) {
+    // Disable system tracing.
+    is_system_tracing_ = false;
+    ++pending_disable_recording_ack_count_;
+
+#if defined(OS_CHROMEOS)
+    chromeos::DBusThreadManager::Get()->GetDebugDaemonClient()->
+      RequestStopSystemTracing(
+          base::Bind(&TracingControllerImpl::OnEndSystemTracingAcked,
+                     base::Unretained(this)));
+#elif defined(OS_WIN)
+    EtwSystemEventConsumer::GetInstance()->StopSystemTracing(
+        base::Bind(&TracingControllerImpl::OnEndSystemTracingAcked,
+                   base::Unretained(this)));
+#endif
+  }
+#endif  // defined(OS_CHROMEOS) || defined(OS_WIN)
+
   // Handle special case of zero child processes by immediately flushing the
   // trace log. Once the flush has completed the caller will be notified that
   // tracing has ended.
@@ -681,37 +700,6 @@ void TracingControllerImpl::OnDisableRecordingComplete() {
   // received.
   is_recording_ = false;
 
-#if defined(OS_CHROMEOS)
-  if (is_system_tracing_) {
-    // Disable system tracing.
-    is_system_tracing_ = false;
-
-    // Disable system tracing now that the local trace has shutdown.
-    // This must be done last because we potentially need to push event
-    // records into the system event log for synchronizing system event
-    // timestamps with chrome event timestamps--and since the system event
-    // log is a ring-buffer (on linux) adding them at the end is the only
-    // way we're confident we'll have them in the final result.
-    chromeos::DBusThreadManager::Get()->GetDebugDaemonClient()->
-      RequestStopSystemTracing(
-          base::Bind(&TracingControllerImpl::OnEndSystemTracingAcked,
-                     base::Unretained(this)));
-    return;
-  }
-#elif defined(OS_WIN)
-  if (is_system_tracing_) {
-    // Disable system tracing.
-    is_system_tracing_ = false;
-
-
-    // Stop kernel tracing and flush events.
-    EtwSystemEventConsumer::GetInstance()->StopSystemTracing(
-        base::Bind(&TracingControllerImpl::OnEndSystemTracingAcked,
-                   base::Unretained(this)));
-    return;
-  }
-#endif
-
   // Trigger callback if one is set.
   if (!pending_get_categories_done_callback_.is_null()) {
     pending_get_categories_done_callback_.Run(known_category_groups_);
@@ -745,7 +733,8 @@ void TracingControllerImpl::OnEndSystemTracingAcked(
     result_file_->WriteSystemTrace(events_str_ptr);
 
   DCHECK(!is_system_tracing_);
-  OnDisableRecordingComplete();
+  std::vector<std::string> category_groups;
+  OnDisableRecordingAcked(NULL, category_groups);
 }
 #endif
 
