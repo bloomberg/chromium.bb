@@ -10,7 +10,6 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/synchronization/lock.h"
 #include "mojo/embedder/scoped_platform_handle.h"
 #include "mojo/system/system_impl_export.h"
 
@@ -37,10 +36,13 @@ class RawSharedBufferMapping;
 class MOJO_SYSTEM_IMPL_EXPORT RawSharedBuffer
     : public base::RefCountedThreadSafe<RawSharedBuffer> {
  public:
-
   // Creates a shared buffer of size |num_bytes| bytes (initially zero-filled).
   // |num_bytes| must be nonzero. Returns null on failure.
   static RawSharedBuffer* Create(size_t num_bytes);
+
+  static RawSharedBuffer* CreateFromPlatformHandle(
+      size_t num_bytes,
+      embedder::ScopedPlatformHandle platform_handle);
 
   // Maps (some) of the shared buffer into memory; [|offset|, |offset + length|]
   // must be contained in [0, |num_bytes|], and |length| must be at least 1.
@@ -54,6 +56,15 @@ class MOJO_SYSTEM_IMPL_EXPORT RawSharedBuffer
   // preflighted using |IsValidMap()|).
   scoped_ptr<RawSharedBufferMapping> MapNoCheck(size_t offset, size_t length);
 
+  // Duplicates the underlying platform handle and passes it to the caller.
+  embedder::ScopedPlatformHandle DuplicatePlatformHandle();
+
+  // Passes the underlying platform handle to the caller. This should only be
+  // called if there's a unique reference to this object (owned by the caller).
+  // After calling this, this object should no longer be used, but should only
+  // be disposed of.
+  embedder::ScopedPlatformHandle PassPlatformHandle();
+
   size_t num_bytes() const { return num_bytes_; }
 
  private:
@@ -62,18 +73,24 @@ class MOJO_SYSTEM_IMPL_EXPORT RawSharedBuffer
   explicit RawSharedBuffer(size_t num_bytes);
   ~RawSharedBuffer();
 
-  // This is called by |Create()| before this object is given to anyone (hence
-  // it doesn't need to take |lock_|).
-  bool InitNoLock();
+  // Implemented in raw_shared_buffer_{posix,win}.cc:
 
-  // The platform-dependent part of |Map()|; doesn't check arguments. Called
-  // under |lock_|.
-  scoped_ptr<RawSharedBufferMapping> MapImplNoLock(size_t offset,
-                                                   size_t length);
+  // This is called by |Create()| before this object is given to anyone.
+  bool Init();
+
+  // This is like |Init()|, but for |CreateFromPlatformHandle()|. (Note: It
+  // should verify that |platform_handle| is an appropriate handle for the
+  // claimed |num_bytes_|.)
+  bool InitFromPlatformHandle(embedder::ScopedPlatformHandle platform_handle);
+
+  // The platform-dependent part of |Map()|; doesn't check arguments.
+  scoped_ptr<RawSharedBufferMapping> MapImpl(size_t offset, size_t length);
 
   const size_t num_bytes_;
 
-  base::Lock lock_;  // Protects |handle_|.
+  // This is set in |Init()|/|InitFromPlatformHandle()| and never modified
+  // (except by |PassPlatformHandle()|; see the comments above its declaration),
+  // hence does not need to be protected by a lock.
   embedder::ScopedPlatformHandle handle_;
 
   DISALLOW_COPY_AND_ASSIGN(RawSharedBuffer);

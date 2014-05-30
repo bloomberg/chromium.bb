@@ -8,6 +8,7 @@
 #include "mojo/system/constants.h"
 #include "mojo/system/message_pipe_dispatcher.h"
 #include "mojo/system/platform_handle_dispatcher.h"
+#include "mojo/system/shared_buffer_dispatcher.h"
 
 namespace mojo {
 namespace system {
@@ -78,11 +79,14 @@ scoped_refptr<Dispatcher> Dispatcher::TransportDataAccess::Deserialize(
           MessagePipeDispatcher::Deserialize(channel, source, size));
     case kTypeDataPipeProducer:
     case kTypeDataPipeConsumer:
-    case kTypeSharedBuffer:
       // TODO(vtl): Implement.
       LOG(WARNING) << "Deserialization of dispatcher type " << type
                    << " not supported";
       return scoped_refptr<Dispatcher>();
+    case kTypeSharedBuffer:
+      return scoped_refptr<Dispatcher>(
+          SharedBufferDispatcher::Deserialize(channel, source, size,
+                                              platform_handles));
     case kTypePlatformHandle:
       return scoped_refptr<Dispatcher>(
           PlatformHandleDispatcher::Deserialize(channel, source, size,

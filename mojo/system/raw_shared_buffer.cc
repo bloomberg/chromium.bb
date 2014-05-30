@@ -5,6 +5,7 @@
 #include "mojo/system/raw_shared_buffer.h"
 
 #include "base/logging.h"
+#include "mojo/embedder/platform_handle_utils.h"
 
 namespace mojo {
 namespace system {
@@ -14,9 +15,28 @@ RawSharedBuffer* RawSharedBuffer::Create(size_t num_bytes) {
   DCHECK_GT(num_bytes, 0u);
 
   RawSharedBuffer* rv = new RawSharedBuffer(num_bytes);
-  // No need to take the lock since we haven't given the object to anyone yet.
-  if (!rv->InitNoLock())
+  if (!rv->Init()) {
+    // We can't just delete it directly, due to the "in destructor" (debug)
+    // check.
+    scoped_refptr<RawSharedBuffer> deleter(rv);
     return NULL;
+  }
+
+  return rv;
+}
+
+RawSharedBuffer* RawSharedBuffer::CreateFromPlatformHandle(
+    size_t num_bytes,
+    embedder::ScopedPlatformHandle platform_handle) {
+  DCHECK_GT(num_bytes, 0u);
+
+  RawSharedBuffer* rv = new RawSharedBuffer(num_bytes);
+  if (!rv->InitFromPlatformHandle(platform_handle.Pass())) {
+    // We can't just delete it directly, due to the "in destructor" (debug)
+    // check.
+    scoped_refptr<RawSharedBuffer> deleter(rv);
+    return NULL;
+  }
 
   return rv;
 }
@@ -44,9 +64,16 @@ bool RawSharedBuffer::IsValidMap(size_t offset, size_t length) {
 scoped_ptr<RawSharedBufferMapping> RawSharedBuffer::MapNoCheck(size_t offset,
                                                                size_t length) {
   DCHECK(IsValidMap(offset, length));
+  return MapImpl(offset, length);
+}
 
-  base::AutoLock locker(lock_);
-  return MapImplNoLock(offset, length);
+embedder::ScopedPlatformHandle RawSharedBuffer::DuplicatePlatformHandle() {
+  return embedder::DuplicatePlatformHandle(handle_.get());
+}
+
+embedder::ScopedPlatformHandle RawSharedBuffer::PassPlatformHandle() {
+  DCHECK(HasOneRef());
+  return handle_.Pass();
 }
 
 RawSharedBuffer::RawSharedBuffer(size_t num_bytes) : num_bytes_(num_bytes) {

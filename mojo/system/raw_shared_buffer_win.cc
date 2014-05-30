@@ -18,7 +18,7 @@ namespace system {
 
 // RawSharedBuffer -------------------------------------------------------------
 
-bool RawSharedBuffer::InitNoLock() {
+bool RawSharedBuffer::Init() {
   DCHECK(!handle_.is_valid());
 
   // TODO(vtl): Currently, we only support mapping up to 2^32-1 bytes.
@@ -44,11 +44,17 @@ bool RawSharedBuffer::InitNoLock() {
   return true;
 }
 
-scoped_ptr<RawSharedBufferMapping> RawSharedBuffer::MapImplNoLock(
-    size_t offset,
-    size_t length) {
-  lock_.AssertAcquired();
+bool RawSharedBuffer::InitFromPlatformHandle(
+    embedder::ScopedPlatformHandle platform_handle) {
+  DCHECK(!handle_.is_valid());
 
+  // TODO(vtl): Implement.
+  NOTIMPLEMENTED();
+  return false;
+}
+
+scoped_ptr<RawSharedBufferMapping> RawSharedBuffer::MapImpl(size_t offset,
+                                                            size_t length) {
   size_t offset_rounding = offset % base::SysInfo::VMAllocationGranularity();
   size_t real_offset = offset - offset_rounding;
   size_t real_length = length + offset_rounding;

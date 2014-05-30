@@ -28,6 +28,7 @@
 #include "mojo/system/platform_handle_dispatcher.h"
 #include "mojo/system/proxy_message_pipe_endpoint.h"
 #include "mojo/system/raw_channel.h"
+#include "mojo/system/shared_buffer_dispatcher.h"
 #include "mojo/system/test_utils.h"
 #include "mojo/system/waiter.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -560,6 +561,127 @@ TEST_F(RemoteMessagePipeTest, HandlePassing) {
   EXPECT_EQ(MOJO_RESULT_OK, dispatcher->Close());
   // Note that |local_mp|'s port 0 belong to |dispatcher|, which was closed.
   local_mp->Close(1);
+}
+
+#if defined(OS_POSIX)
+#define MAYBE_SharedBufferPassing SharedBufferPassing
+#else
+// Not yet implemented (on Windows).
+#define MAYBE_SharedBufferPassing DISABLED_SharedBufferPassing
+#endif
+TEST_F(RemoteMessagePipeTest, MAYBE_SharedBufferPassing) {
+  static const char kHello[] = "hello";
+  Waiter waiter;
+
+  scoped_refptr<MessagePipe> mp0(new MessagePipe(
+      scoped_ptr<MessagePipeEndpoint>(new LocalMessagePipeEndpoint()),
+      scoped_ptr<MessagePipeEndpoint>(new ProxyMessagePipeEndpoint())));
+  scoped_refptr<MessagePipe> mp1(new MessagePipe(
+      scoped_ptr<MessagePipeEndpoint>(new ProxyMessagePipeEndpoint()),
+      scoped_ptr<MessagePipeEndpoint>(new LocalMessagePipeEndpoint())));
+  ConnectMessagePipes(mp0, mp1);
+
+  // We'll try to pass this dispatcher.
+  scoped_refptr<SharedBufferDispatcher> dispatcher;
+  MojoCreateSharedBufferOptions validated_options = {};
+  EXPECT_EQ(MOJO_RESULT_OK,
+            SharedBufferDispatcher::ValidateOptions(NULL, &validated_options));
+  EXPECT_EQ(MOJO_RESULT_OK,
+            SharedBufferDispatcher::Create(validated_options, 100,
+                                           &dispatcher));
+  ASSERT_TRUE(dispatcher);
+
+  // Make a mapping.
+  scoped_ptr<RawSharedBufferMapping> mapping0;
+  EXPECT_EQ(MOJO_RESULT_OK,
+            dispatcher->MapBuffer(0, 100, MOJO_MAP_BUFFER_FLAG_NONE,
+                                  &mapping0));
+  ASSERT_TRUE(mapping0);
+  ASSERT_TRUE(mapping0->base());
+  ASSERT_EQ(100u, mapping0->length());
+  static_cast<char*>(mapping0->base())[0] = 'A';
+  static_cast<char*>(mapping0->base())[50] = 'B';
+  static_cast<char*>(mapping0->base())[99] = 'C';
+
+  // Prepare to wait on MP 1, port 1. (Add the waiter now. Otherwise, if we do
+  // it later, it might already be readable.)
+  waiter.Init();
+  EXPECT_EQ(MOJO_RESULT_OK,
+            mp1->AddWaiter(1, &waiter, MOJO_WAIT_FLAG_READABLE, 123));
+
+  // Write to MP 0, port 0.
+  {
+    DispatcherTransport
+        transport(test::DispatcherTryStartTransport(dispatcher.get()));
+    EXPECT_TRUE(transport.is_valid());
+
+    std::vector<DispatcherTransport> transports;
+    transports.push_back(transport);
+    EXPECT_EQ(MOJO_RESULT_OK,
+              mp0->WriteMessage(0, kHello, sizeof(kHello), &transports,
+                                MOJO_WRITE_MESSAGE_FLAG_NONE));
+    transport.End();
+
+    // |dispatcher| should have been closed. This is |DCHECK()|ed when the
+    // |dispatcher| is destroyed.
+    EXPECT_TRUE(dispatcher->HasOneRef());
+    dispatcher = NULL;
+  }
+
+  // Wait.
+  EXPECT_EQ(123, waiter.Wait(MOJO_DEADLINE_INDEFINITE));
+  mp1->RemoveWaiter(1, &waiter);
+
+  // Read from MP 1, port 1.
+  char read_buffer[100] = { 0 };
+  uint32_t read_buffer_size = static_cast<uint32_t>(sizeof(read_buffer));
+  DispatcherVector read_dispatchers;
+  uint32_t read_num_dispatchers = 10;  // Maximum to get.
+  EXPECT_EQ(MOJO_RESULT_OK,
+            mp1->ReadMessage(1, read_buffer, &read_buffer_size,
+                             &read_dispatchers, &read_num_dispatchers,
+                             MOJO_READ_MESSAGE_FLAG_NONE));
+  EXPECT_EQ(sizeof(kHello), static_cast<size_t>(read_buffer_size));
+  EXPECT_STREQ(kHello, read_buffer);
+  EXPECT_EQ(1u, read_dispatchers.size());
+  EXPECT_EQ(1u, read_num_dispatchers);
+  ASSERT_TRUE(read_dispatchers[0]);
+  EXPECT_TRUE(read_dispatchers[0]->HasOneRef());
+
+  EXPECT_EQ(Dispatcher::kTypeSharedBuffer, read_dispatchers[0]->GetType());
+  dispatcher =
+      static_cast<SharedBufferDispatcher*>(read_dispatchers[0].get());
+
+  // Make another mapping.
+  scoped_ptr<RawSharedBufferMapping> mapping1;
+  EXPECT_EQ(MOJO_RESULT_OK,
+            dispatcher->MapBuffer(0, 100, MOJO_MAP_BUFFER_FLAG_NONE,
+                                  &mapping1));
+  ASSERT_TRUE(mapping1);
+  ASSERT_TRUE(mapping1->base());
+  ASSERT_EQ(100u, mapping1->length());
+  EXPECT_NE(mapping1->base(), mapping0->base());
+  EXPECT_EQ('A', static_cast<char*>(mapping1->base())[0]);
+  EXPECT_EQ('B', static_cast<char*>(mapping1->base())[50]);
+  EXPECT_EQ('C', static_cast<char*>(mapping1->base())[99]);
+
+  // Write stuff either way.
+  static_cast<char*>(mapping1->base())[1] = 'x';
+  EXPECT_EQ('x', static_cast<char*>(mapping0->base())[1]);
+  static_cast<char*>(mapping0->base())[2] = 'y';
+  EXPECT_EQ('y', static_cast<char*>(mapping1->base())[2]);
+
+  // Kill the first mapping; the second should still be valid.
+  mapping0.reset();
+  EXPECT_EQ('A', static_cast<char*>(mapping1->base())[0]);
+
+  // Close everything that belongs to us.
+  mp0->Close(0);
+  mp1->Close(1);
+  EXPECT_EQ(MOJO_RESULT_OK, dispatcher->Close());
+
+  // The second mapping should still be good.
+  EXPECT_EQ('x', static_cast<char*>(mapping1->base())[1]);
 }
 
 #if defined(OS_POSIX)

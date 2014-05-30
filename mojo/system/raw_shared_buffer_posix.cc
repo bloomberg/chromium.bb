@@ -7,6 +7,7 @@
 #include <stdint.h>
 #include <stdio.h>  // For |fileno()|.
 #include <sys/mman.h>  // For |mmap()|/|munmap()|.
+#include <sys/stat.h>
 #include <sys/types.h>  // For |off_t|.
 #include <unistd.h>
 
@@ -32,7 +33,7 @@ namespace system {
 
 // RawSharedBuffer -------------------------------------------------------------
 
-bool RawSharedBuffer::InitNoLock() {
+bool RawSharedBuffer::Init() {
   DCHECK(!handle_.is_valid());
 
   base::ThreadRestrictions::ScopedAllowIO allow_io;
@@ -82,11 +83,40 @@ bool RawSharedBuffer::InitNoLock() {
   return true;
 }
 
-scoped_ptr<RawSharedBufferMapping> RawSharedBuffer::MapImplNoLock(
-    size_t offset,
-    size_t length) {
-  lock_.AssertAcquired();
+bool RawSharedBuffer::InitFromPlatformHandle(
+    embedder::ScopedPlatformHandle platform_handle) {
+  DCHECK(!handle_.is_valid());
 
+  if (static_cast<uint64_t>(num_bytes_) >
+          static_cast<uint64_t>(std::numeric_limits<off_t>::max())) {
+    return false;
+  }
+
+  struct stat sb = {};
+  // Note: |fstat()| isn't interruptible.
+  if (fstat(platform_handle.get().fd, &sb) != 0) {
+    PLOG(ERROR) << "fstat";
+    return false;
+  }
+
+  if (!S_ISREG(sb.st_mode)) {
+    LOG(ERROR) << "Platform handle not to a regular file";
+    return false;
+  }
+
+  if (sb.st_size != static_cast<off_t>(num_bytes_)) {
+    LOG(ERROR) << "Shared memory file has the wrong size";
+    return false;
+  }
+
+  // TODO(vtl): More checks?
+
+  handle_ = platform_handle.Pass();
+  return true;
+}
+
+scoped_ptr<RawSharedBufferMapping> RawSharedBuffer::MapImpl(size_t offset,
+                                                            size_t length) {
   size_t offset_rounding = offset % base::SysInfo::VMAllocationGranularity();
   size_t real_offset = offset - offset_rounding;
   size_t real_length = length + offset_rounding;

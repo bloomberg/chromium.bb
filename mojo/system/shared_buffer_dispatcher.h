@@ -35,6 +35,14 @@ class MOJO_SYSTEM_IMPL_EXPORT SharedBufferDispatcher : public SimpleDispatcher {
   // |Dispatcher| public methods:
   virtual Type GetType() const OVERRIDE;
 
+  // The "opposite" of |SerializeAndClose()|. (Typically this is called by
+  // |Dispatcher::Deserialize()|.)
+  static scoped_refptr<SharedBufferDispatcher> Deserialize(
+      Channel* channel,
+      const void* source,
+      size_t size,
+      embedder::PlatformHandleVector* platform_handles);
+
  private:
   explicit SharedBufferDispatcher(
       scoped_refptr<RawSharedBuffer> shared_buffer_);
@@ -52,6 +60,14 @@ class MOJO_SYSTEM_IMPL_EXPORT SharedBufferDispatcher : public SimpleDispatcher {
       uint64_t num_bytes,
       MojoMapBufferFlags flags,
       scoped_ptr<RawSharedBufferMapping>* mapping) OVERRIDE;
+  virtual void StartSerializeImplNoLock(Channel* channel,
+                                        size_t* max_size,
+                                        size_t* max_platform_handles) OVERRIDE;
+  virtual bool EndSerializeAndCloseImplNoLock(
+      Channel* channel,
+      void* destination,
+      size_t* actual_size,
+      embedder::PlatformHandleVector* platform_handles) OVERRIDE;
 
   // |SimpleDispatcher| methods:
   virtual MojoWaitFlags SatisfiedFlagsNoLock() const OVERRIDE;
