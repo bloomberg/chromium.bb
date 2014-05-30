@@ -6,7 +6,7 @@
   'targets': [
     {
       'target_name': 'libelf',
-      'toolsets': ['target'],
+      'toolsets': ['host'],
       'type': 'static_library',
       'defines': [
         '_GNU_SOURCE',
