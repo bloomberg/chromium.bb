@@ -12,6 +12,7 @@
 #include "content/browser/service_worker/service_worker_utils.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "net/url_request/url_request.h"
+#include "webkit/browser/blob/blob_storage_context.h"
 
 namespace content {
 
@@ -52,6 +53,7 @@ bool IsSchemeAndMethodSupported(const net::URLRequest* request) {
 void ServiceWorkerRequestHandler::InitializeHandler(
     net::URLRequest* request,
     ServiceWorkerContextWrapper* context_wrapper,
+    webkit_blob::BlobStorageContext* blob_storage_context,
     int process_id,
     int provider_id,
     ResourceType::Type resource_type) {
@@ -71,7 +73,8 @@ void ServiceWorkerRequestHandler::InitializeHandler(
     return;
 
   scoped_ptr<ServiceWorkerRequestHandler> handler(
-      provider_host->CreateRequestHandler(resource_type));
+      provider_host->CreateRequestHandler(resource_type,
+                                          blob_storage_context->AsWeakPtr()));
   if (!handler)
     return;
 
@@ -96,9 +99,11 @@ ServiceWorkerRequestHandler::~ServiceWorkerRequestHandler() {
 ServiceWorkerRequestHandler::ServiceWorkerRequestHandler(
     base::WeakPtr<ServiceWorkerContextCore> context,
     base::WeakPtr<ServiceWorkerProviderHost> provider_host,
+    base::WeakPtr<webkit_blob::BlobStorageContext> blob_storage_context,
     ResourceType::Type resource_type)
     : context_(context),
       provider_host_(provider_host),
+      blob_storage_context_(blob_storage_context),
       resource_type_(resource_type) {
 }
 

@@ -127,10 +127,12 @@ void EmbeddedWorkerTestHelper::OnFetchEvent(
     const ServiceWorkerFetchRequest& request) {
   SimulateSend(
       new ServiceWorkerHostMsg_FetchEventFinished(
-          embedded_worker_id, request_id,
+          embedded_worker_id,
+          request_id,
           SERVICE_WORKER_FETCH_EVENT_RESULT_RESPONSE,
           ServiceWorkerResponse(200, "OK",
-                                std::map<std::string, std::string>())));
+                                std::map<std::string, std::string>(),
+                                std::string())));
 }
 
 void EmbeddedWorkerTestHelper::SimulateWorkerStarted(

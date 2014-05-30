@@ -17,8 +17,12 @@ namespace content {
 ServiceWorkerControlleeRequestHandler::ServiceWorkerControlleeRequestHandler(
     base::WeakPtr<ServiceWorkerContextCore> context,
     base::WeakPtr<ServiceWorkerProviderHost> provider_host,
+    base::WeakPtr<webkit_blob::BlobStorageContext> blob_storage_context,
     ResourceType::Type resource_type)
-    : ServiceWorkerRequestHandler(context, provider_host, resource_type),
+    : ServiceWorkerRequestHandler(context,
+                                  provider_host,
+                                  blob_storage_context,
+                                  resource_type),
       weak_factory_(this) {
 }
 
@@ -52,8 +56,8 @@ net::URLRequestJob* ServiceWorkerControlleeRequestHandler::MaybeCreateJob(
   // It's for original request (A) or redirect case (B-a or B-b).
   DCHECK(!job_.get() || job_->ShouldForwardToServiceWorker());
 
-  job_ = new ServiceWorkerURLRequestJob(request, network_delegate,
-                                        provider_host_);
+  job_ = new ServiceWorkerURLRequestJob(
+      request, network_delegate, provider_host_, blob_storage_context_);
   if (ServiceWorkerUtils::IsMainResourceType(resource_type_))
     PrepareForMainResource(request->url());
   else

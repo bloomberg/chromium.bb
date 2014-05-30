@@ -104,17 +104,18 @@ bool ServiceWorkerProviderHost::SetHostedVersionId(int64 version_id) {
 
 scoped_ptr<ServiceWorkerRequestHandler>
 ServiceWorkerProviderHost::CreateRequestHandler(
-    ResourceType::Type resource_type) {
+    ResourceType::Type resource_type,
+    base::WeakPtr<webkit_blob::BlobStorageContext> blob_storage_context) {
   if (IsHostToRunningServiceWorker()) {
     return scoped_ptr<ServiceWorkerRequestHandler>(
         new ServiceWorkerContextRequestHandler(
-            context_, AsWeakPtr(), resource_type));
+            context_, AsWeakPtr(), blob_storage_context, resource_type));
   }
   if (ServiceWorkerUtils::IsMainResourceType(resource_type) ||
       active_version()) {
     return scoped_ptr<ServiceWorkerRequestHandler>(
         new ServiceWorkerControlleeRequestHandler(
-            context_, AsWeakPtr(), resource_type));
+            context_, AsWeakPtr(), blob_storage_context, resource_type));
   }
   return scoped_ptr<ServiceWorkerRequestHandler>();
 }

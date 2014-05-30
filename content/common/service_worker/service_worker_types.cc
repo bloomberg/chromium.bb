@@ -24,10 +24,13 @@ ServiceWorkerResponse::ServiceWorkerResponse() : status_code(0) {}
 ServiceWorkerResponse::ServiceWorkerResponse(
     int status_code,
     const std::string& status_text,
-    const std::map<std::string, std::string>& headers)
+    const std::map<std::string, std::string>& headers,
+    const std::string& blob_uuid)
     : status_code(status_code),
       status_text(status_text),
-      headers(headers) {}
+      headers(headers),
+      blob_uuid(blob_uuid) {
+}
 
 ServiceWorkerResponse::~ServiceWorkerResponse() {}
 

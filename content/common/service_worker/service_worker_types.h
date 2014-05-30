@@ -61,12 +61,14 @@ struct CONTENT_EXPORT ServiceWorkerResponse {
   ServiceWorkerResponse();
   ServiceWorkerResponse(int status_code,
                         const std::string& status_text,
-                        const std::map<std::string, std::string>& headers);
+                        const std::map<std::string, std::string>& headers,
+                        const std::string& blob_uuid);
   ~ServiceWorkerResponse();
 
   int status_code;
   std::string status_text;
   std::map<std::string, std::string> headers;
+  std::string blob_uuid;
 };
 
 // Represents initialization info for a WebServiceWorker object.

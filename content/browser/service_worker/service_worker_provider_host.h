@@ -17,6 +17,10 @@ namespace IPC {
 class Sender;
 }
 
+namespace webkit_blob {
+class BlobStorageContext;
+}
+
 namespace content {
 
 class ServiceWorkerContextCore;
@@ -82,7 +86,8 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // Returns a handler for a request, the handler may return NULL if
   // the request doesn't require special handling.
   scoped_ptr<ServiceWorkerRequestHandler> CreateRequestHandler(
-      ResourceType::Type resource_type);
+      ResourceType::Type resource_type,
+      base::WeakPtr<webkit_blob::BlobStorageContext> blob_storage_context);
 
   // Dispatches message event to the document.
   void PostMessage(const base::string16& message,

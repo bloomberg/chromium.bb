@@ -310,6 +310,13 @@ bool IsValidatedSCT(
   return sct_status.status == net::ct::SCT_STATUS_OK;
 }
 
+webkit_blob::BlobStorageContext* GetBlobStorageContext(
+    ResourceMessageFilter* filter) {
+  if (!filter->blob_storage_context())
+    return NULL;
+  return filter->blob_storage_context()->context();
+}
+
 }  // namespace
 
 // static
@@ -1050,12 +1057,9 @@ void ResourceDispatcherHostImpl::BeginRequest(
 
   // Resolve elements from request_body and prepare upload data.
   if (request_data.request_body.get()) {
-    webkit_blob::BlobStorageContext* blob_context = NULL;
-    if (filter_->blob_storage_context())
-      blob_context = filter_->blob_storage_context()->context();
     new_request->set_upload(UploadDataStreamBuilder::Build(
         request_data.request_body.get(),
-        blob_context,
+        GetBlobStorageContext(filter_),
         filter_->file_system_context(),
         BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE)
             .get()));
@@ -1104,6 +1108,7 @@ void ResourceDispatcherHostImpl::BeginRequest(
   ServiceWorkerRequestHandler::InitializeHandler(
       new_request.get(),
       filter_->service_worker_context(),
+      GetBlobStorageContext(filter_),
       child_id,
       request_data.service_worker_provider_id,
       request_data.resource_type);

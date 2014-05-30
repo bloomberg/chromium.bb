@@ -450,6 +450,8 @@
         'browser/fileapi/local_file_util_unittest.cc',
         'browser/fileapi/mock_file_change_observer.cc',
         'browser/fileapi/mock_file_change_observer.h',
+        'browser/fileapi/mock_url_request_delegate.cc',
+        'browser/fileapi/mock_url_request_delegate.h',
         'browser/fileapi/native_file_util_unittest.cc',
         'browser/fileapi/obfuscated_file_util_unittest.cc',
         'browser/fileapi/plugin_private_file_system_backend_unittest.cc',

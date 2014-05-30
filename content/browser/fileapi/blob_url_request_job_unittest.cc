@@ -12,9 +12,9 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/run_loop.h"
 #include "base/time/time.h"
+#include "content/browser/fileapi/mock_url_request_delegate.h"
 #include "content/public/test/async_file_test_helper.h"
 #include "content/public/test/test_file_system_context.h"
-#include "net/base/io_buffer.h"
 #include "net/base/request_priority.h"
 #include "net/http/http_byte_range.h"
 #include "net/http/http_request_headers.h"
@@ -54,70 +54,6 @@ const fileapi::FileSystemType kFileSystemType =
 
 class BlobURLRequestJobTest : public testing::Test {
  public:
-
-  // Test Harness -------------------------------------------------------------
-  // TODO(jianli): share this test harness with AppCacheURLRequestJobTest
-
-  class MockURLRequestDelegate : public net::URLRequest::Delegate {
-   public:
-    MockURLRequestDelegate()
-        : received_data_(new net::IOBuffer(kBufferSize)) {}
-
-    virtual void OnResponseStarted(net::URLRequest* request) OVERRIDE {
-      if (request->status().is_success()) {
-        EXPECT_TRUE(request->response_headers());
-        ReadSome(request);
-      } else {
-        RequestComplete();
-      }
-    }
-
-    virtual void OnReadCompleted(net::URLRequest* request,
-                                 int bytes_read) OVERRIDE {
-       if (bytes_read > 0)
-         ReceiveData(request, bytes_read);
-       else
-         RequestComplete();
-    }
-
-    const std::string& response_data() const { return response_data_; }
-
-   private:
-    void ReadSome(net::URLRequest* request) {
-      if (!request->is_pending()) {
-        RequestComplete();
-        return;
-      }
-
-      int bytes_read = 0;
-      if (!request->Read(received_data_.get(), kBufferSize, &bytes_read)) {
-        if (!request->status().is_io_pending()) {
-          RequestComplete();
-        }
-        return;
-      }
-
-      ReceiveData(request, bytes_read);
-    }
-
-    void ReceiveData(net::URLRequest* request, int bytes_read) {
-      if (bytes_read) {
-        response_data_.append(received_data_->data(),
-                              static_cast<size_t>(bytes_read));
-        ReadSome(request);
-      } else {
-        RequestComplete();
-      }
-    }
-
-    void RequestComplete() {
-      base::MessageLoop::current()->Quit();
-    }
-
-    scoped_refptr<net::IOBuffer> received_data_;
-    std::string response_data_;
-  };
-
   // A simple ProtocolHandler implementation to create BlobURLRequestJob.
   class MockProtocolHandler :
       public net::URLRequestJobFactory::ProtocolHandler {

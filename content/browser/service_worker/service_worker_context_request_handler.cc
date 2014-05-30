@@ -17,8 +17,12 @@ namespace content {
 ServiceWorkerContextRequestHandler::ServiceWorkerContextRequestHandler(
     base::WeakPtr<ServiceWorkerContextCore> context,
     base::WeakPtr<ServiceWorkerProviderHost> provider_host,
+    base::WeakPtr<webkit_blob::BlobStorageContext> blob_storage_context,
     ResourceType::Type resource_type)
-    : ServiceWorkerRequestHandler(context, provider_host, resource_type),
+    : ServiceWorkerRequestHandler(context,
+                                  provider_host,
+                                  blob_storage_context,
+                                  resource_type),
       version_(provider_host_->running_hosted_version()) {
   DCHECK(provider_host_->IsHostToRunningServiceWorker());
 }

@@ -12,17 +12,22 @@
 #include "net/http/http_response_headers.h"
 #include "net/http/http_response_info.h"
 #include "net/http/http_util.h"
+#include "webkit/browser/blob/blob_data_handle.h"
+#include "webkit/browser/blob/blob_storage_context.h"
+#include "webkit/browser/blob/blob_url_request_job_factory.h"
 
 namespace content {
 
 ServiceWorkerURLRequestJob::ServiceWorkerURLRequestJob(
     net::URLRequest* request,
     net::NetworkDelegate* network_delegate,
-    base::WeakPtr<ServiceWorkerProviderHost> provider_host)
+    base::WeakPtr<ServiceWorkerProviderHost> provider_host,
+    base::WeakPtr<webkit_blob::BlobStorageContext> blob_storage_context)
     : net::URLRequestJob(request, network_delegate),
       provider_host_(provider_host),
       response_type_(NOT_DETERMINED),
       is_started_(false),
+      blob_storage_context_(blob_storage_context),
       weak_factory_(this) {
 }
 
@@ -46,6 +51,7 @@ void ServiceWorkerURLRequestJob::Start() {
 void ServiceWorkerURLRequestJob::Kill() {
   net::URLRequestJob::Kill();
   fetch_dispatcher_.reset();
+  blob_request_.reset();
   weak_factory_.InvalidateWeakPtrs();
 }
 
@@ -94,13 +100,64 @@ void ServiceWorkerURLRequestJob::SetExtraRequestHeaders(
 
 bool ServiceWorkerURLRequestJob::ReadRawData(
     net::IOBuffer* buf, int buf_size, int *bytes_read) {
-  // TODO(kinuko): Implement this.
-  // If the response returned from ServiceWorker had an
-  // identifier to on-disk data (e.g. blob or cache entry) we'll need to
-  // pull the body from disk.
-  NOTIMPLEMENTED();
-  *bytes_read = 0;
-  return true;
+  if (!blob_request_) {
+    *bytes_read = 0;
+    return true;
+  }
+
+  blob_request_->Read(buf, buf_size, bytes_read);
+  net::URLRequestStatus status = blob_request_->status();
+  SetStatus(status);
+  if (status.is_io_pending())
+    return false;
+  return status.is_success();
+}
+
+void ServiceWorkerURLRequestJob::OnReceivedRedirect(net::URLRequest* request,
+                                                    const GURL& new_url,
+                                                    bool* defer_redirect) {
+  NOTREACHED();
+}
+
+void ServiceWorkerURLRequestJob::OnAuthRequired(
+    net::URLRequest* request,
+    net::AuthChallengeInfo* auth_info) {
+  NOTREACHED();
+}
+
+void ServiceWorkerURLRequestJob::OnCertificateRequested(
+    net::URLRequest* request,
+    net::SSLCertRequestInfo* cert_request_info) {
+  NOTREACHED();
+}
+
+void ServiceWorkerURLRequestJob::OnSSLCertificateError(
+    net::URLRequest* request,
+    const net::SSLInfo& ssl_info,
+    bool fatal) {
+  NOTREACHED();
+}
+
+void ServiceWorkerURLRequestJob::OnBeforeNetworkStart(net::URLRequest* request,
+                                                      bool* defer) {
+  NOTREACHED();
+}
+
+void ServiceWorkerURLRequestJob::OnResponseStarted(net::URLRequest* request) {
+  // TODO(falken): Add Content-Length, Content-Type if they were not provided in
+  // the ServiceWorkerResponse.
+  CommitResponseHeader();
+}
+
+void ServiceWorkerURLRequestJob::OnReadCompleted(net::URLRequest* request,
+                                                 int bytes_read) {
+  if (!request->status().is_success()) {
+    NotifyDone(request->status());
+    return;
+  }
+  NotifyReadComplete(bytes_read);
+  if (bytes_read == 0)
+    NotifyDone(request->status());
 }
 
 const net::HttpResponseInfo* ServiceWorkerURLRequestJob::http_info() const {
@@ -183,36 +240,64 @@ void ServiceWorkerURLRequestJob::DidDispatchFetchEvent(
     return;
   }
 
-  // We should have response now.
+  // We should have a response now.
   DCHECK_EQ(SERVICE_WORKER_FETCH_EVENT_RESULT_RESPONSE, fetch_result);
 
-  CreateResponseHeader(response);
-  NotifyHeadersComplete();
+  // Set up a request for reading the blob.
+  if (!response.blob_uuid.empty() && blob_storage_context_) {
+    scoped_ptr<webkit_blob::BlobDataHandle> blob_data_handle =
+        blob_storage_context_->GetBlobDataFromUUID(response.blob_uuid);
+    if (!blob_data_handle) {
+      // The renderer gave us a bad blob UUID.
+      DeliverErrorResponse();
+      return;
+    }
+    blob_request_ = webkit_blob::BlobProtocolHandler::CreateBlobRequest(
+        blob_data_handle.Pass(), request()->context(), this);
+    blob_request_->Start();
+  }
+
+  CreateResponseHeader(
+      response.status_code, response.status_text, response.headers);
+  if (!blob_request_)
+    CommitResponseHeader();
 }
 
 void ServiceWorkerURLRequestJob::CreateResponseHeader(
-    const ServiceWorkerResponse& response) {
+    int status_code,
+    const std::string& status_text,
+    const std::map<std::string, std::string>& headers) {
   // TODO(kinuko): If the response has an identifier to on-disk cache entry,
   // pull response header from the disk.
-  std::string status_line(base::StringPrintf("HTTP/1.1 %d %s",
-                                             response.status_code,
-                                             response.status_text.c_str()));
+  std::string status_line(
+      base::StringPrintf("HTTP/1.1 %d %s", status_code, status_text.c_str()));
   status_line.push_back('\0');
-  scoped_refptr<net::HttpResponseHeaders> headers(
-      new net::HttpResponseHeaders(status_line));
-  for (std::map<std::string, std::string>::const_iterator it =
-           response.headers.begin();
-       it != response.headers.end(); ++it) {
+  http_response_headers_ = new net::HttpResponseHeaders(status_line);
+  for (std::map<std::string, std::string>::const_iterator it = headers.begin();
+       it != headers.end();
+       ++it) {
     std::string header;
     header.reserve(it->first.size() + 2 + it->second.size());
     header.append(it->first);
     header.append(": ");
     header.append(it->second);
-    headers->AddHeader(header);
+    http_response_headers_->AddHeader(header);
   }
+}
 
+void ServiceWorkerURLRequestJob::CommitResponseHeader() {
   http_response_info_.reset(new net::HttpResponseInfo());
-  http_response_info_->headers = headers;
+  http_response_info_->headers.swap(http_response_headers_);
+  NotifyHeadersComplete();
+}
+
+void ServiceWorkerURLRequestJob::DeliverErrorResponse() {
+  // TODO(falken): Print an error to the console of the ServiceWorker and of
+  // the requesting page.
+  CreateResponseHeader(500,
+                       "Service Worker Response Error",
+                       std::map<std::string, std::string>());
+  CommitResponseHeader();
 }
 
 }  // namespace content

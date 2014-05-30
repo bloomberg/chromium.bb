@@ -18,6 +18,10 @@ class NetworkDelegate;
 class URLRequest;
 }
 
+namespace webkit_blob {
+class BlobStorageContext;
+}
+
 namespace content {
 
 class ServiceWorkerContextCore;
@@ -38,6 +42,7 @@ class CONTENT_EXPORT ServiceWorkerRequestHandler
   static void InitializeHandler(
       net::URLRequest* request,
       ServiceWorkerContextWrapper* context_wrapper,
+      webkit_blob::BlobStorageContext* blob_storage_context,
       int process_id,
       int provider_id,
       ResourceType::Type resource_type);
@@ -62,10 +67,12 @@ class CONTENT_EXPORT ServiceWorkerRequestHandler
   ServiceWorkerRequestHandler(
       base::WeakPtr<ServiceWorkerContextCore> context,
       base::WeakPtr<ServiceWorkerProviderHost> provider_host,
+      base::WeakPtr<webkit_blob::BlobStorageContext> blob_storage_context,
       ResourceType::Type resource_type);
 
   base::WeakPtr<ServiceWorkerContextCore> context_;
   base::WeakPtr<ServiceWorkerProviderHost> provider_host_;
+  base::WeakPtr<webkit_blob::BlobStorageContext> blob_storage_context_;
   ResourceType::Type resource_type_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerRequestHandler);

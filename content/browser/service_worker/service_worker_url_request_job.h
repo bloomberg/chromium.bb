@@ -10,7 +10,12 @@
 #include "content/common/service_worker/service_worker_status_code.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "net/http/http_byte_range.h"
+#include "net/url_request/url_request.h"
 #include "net/url_request/url_request_job.h"
+
+namespace webkit_blob {
+class BlobStorageContext;
+}
 
 namespace content {
 
@@ -19,12 +24,14 @@ class ServiceWorkerFetchDispatcher;
 class ServiceWorkerProviderHost;
 
 class CONTENT_EXPORT ServiceWorkerURLRequestJob
-    : public net::URLRequestJob {
+    : public net::URLRequestJob,
+      public net::URLRequest::Delegate {
  public:
   ServiceWorkerURLRequestJob(
       net::URLRequest* request,
       net::NetworkDelegate* network_delegate,
-      base::WeakPtr<ServiceWorkerProviderHost> provider_host);
+      base::WeakPtr<ServiceWorkerProviderHost> provider_host,
+      base::WeakPtr<webkit_blob::BlobStorageContext> blob_storage_context);
 
   // Sets the response type.
   void FallbackToNetwork();
@@ -51,6 +58,25 @@ class CONTENT_EXPORT ServiceWorkerURLRequestJob
                            int buf_size,
                            int *bytes_read) OVERRIDE;
 
+  // net::URLRequest::Delegate overrides that read the blob from the
+  // ServiceWorkerFetchResponse.
+  virtual void OnReceivedRedirect(net::URLRequest* request,
+                                  const GURL& new_url,
+                                  bool* defer_redirect) OVERRIDE;
+  virtual void OnAuthRequired(net::URLRequest* request,
+                              net::AuthChallengeInfo* auth_info) OVERRIDE;
+  virtual void OnCertificateRequested(
+      net::URLRequest* request,
+      net::SSLCertRequestInfo* cert_request_info) OVERRIDE;
+  virtual void OnSSLCertificateError(net::URLRequest* request,
+                                     const net::SSLInfo& ssl_info,
+                                     bool fatal) OVERRIDE;
+  virtual void OnBeforeNetworkStart(net::URLRequest* request,
+                                    bool* defer) OVERRIDE;
+  virtual void OnResponseStarted(net::URLRequest* request) OVERRIDE;
+  virtual void OnReadCompleted(net::URLRequest* request,
+                               int bytes_read) OVERRIDE;
+
   const net::HttpResponseInfo* http_info() const;
 
  protected:
@@ -73,7 +99,17 @@ class CONTENT_EXPORT ServiceWorkerURLRequestJob
                              ServiceWorkerFetchEventResult fetch_result,
                              const ServiceWorkerResponse& response);
 
-  void CreateResponseHeader(const ServiceWorkerResponse& response);
+  // Populates |http_response_headers_|.
+  void CreateResponseHeader(int status_code,
+                            const std::string& status_text,
+                            const std::map<std::string, std::string>& headers);
+
+  // Creates |http_response_info_| using |http_response_headers_| and calls
+  // NotifyHeadersComplete.
+  void CommitResponseHeader();
+
+  // Creates and commits a response header indicating error.
+  void DeliverErrorResponse();
 
   base::WeakPtr<ServiceWorkerProviderHost> provider_host_;
 
@@ -83,9 +119,13 @@ class CONTENT_EXPORT ServiceWorkerURLRequestJob
   net::HttpByteRange byte_range_;
   scoped_ptr<net::HttpResponseInfo> range_response_info_;
   scoped_ptr<net::HttpResponseInfo> http_response_info_;
+  // Headers that have not yet been committed to |http_response_info_|.
+  scoped_refptr<net::HttpResponseHeaders> http_response_headers_;
 
   // Used when response type is FORWARD_TO_SERVICE_WORKER.
   scoped_ptr<ServiceWorkerFetchDispatcher> fetch_dispatcher_;
+  base::WeakPtr<webkit_blob::BlobStorageContext> blob_storage_context_;
+  scoped_ptr<net::URLRequest> blob_request_;
 
   base::WeakPtrFactory<ServiceWorkerURLRequestJob> weak_factory_;
 
