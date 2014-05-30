@@ -951,6 +951,7 @@
       'websockets/WebSocketExtensionDispatcherTest.cpp',
       'websockets/WebSocketExtensionParserTest.cpp',
       'websockets/WebSocketPerMessageDeflateTest.cpp',
+      'websockets/WebSocketTest.cpp',
     ],
   },
 }

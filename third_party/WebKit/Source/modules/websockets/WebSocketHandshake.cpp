@@ -533,7 +533,7 @@ bool WebSocketHandshake::checkResponseHeaders()
             return false;
         }
         Vector<String> result;
-        m_clientProtocol.split(String(WebSocket::subProtocolSeperator()), result);
+        m_clientProtocol.split(String(WebSocket::subprotocolSeperator()), result);
         if (!result.contains(serverWebSocketProtocol)) {
             m_failureReason = formatHandshakeFailureReason("'Sec-WebSocket-Protocol' header value '" + serverWebSocketProtocol + "' in response does not match any of sent values");
             return false;

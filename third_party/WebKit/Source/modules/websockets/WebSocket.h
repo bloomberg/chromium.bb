@@ -51,11 +51,11 @@ namespace WebCore {
 class Blob;
 class ExceptionState;
 
-class WebSocket FINAL : public RefCountedWillBeRefCountedGarbageCollected<WebSocket>, public ScriptWrappable, public EventTargetWithInlineData, public ActiveDOMObject, public WebSocketChannelClient {
+class WebSocket : public RefCountedWillBeRefCountedGarbageCollected<WebSocket>, public ScriptWrappable, public EventTargetWithInlineData, public ActiveDOMObject, public WebSocketChannelClient {
     REFCOUNTED_EVENT_TARGET(WebSocket);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(WebSocket);
 public:
-    static const char* subProtocolSeperator();
+    static const char* subprotocolSeperator();
     // WebSocket instances must be used with a wrapper since this class's
     // lifetime management is designed assuming the V8 holds a ref on it while
     // hasPendingActivity() returns true.
@@ -126,6 +126,11 @@ public:
 
     virtual void trace(Visitor*) OVERRIDE;
 
+    static bool isValidSubprotocolString(const String&);
+
+protected:
+    explicit WebSocket(ExecutionContext*);
+
 private:
     // FIXME: This should inherit WebCore::EventQueue.
     class EventQueue FINAL : public RefCountedWillBeGarbageCollectedFinalized<EventQueue> {
@@ -177,7 +182,12 @@ private:
         WebSocketSendTypeMax,
     };
 
-    explicit WebSocket(ExecutionContext*);
+    // This function is virtual for unittests.
+    // FIXME: Move WebSocketChannel::create here.
+    virtual PassRefPtrWillBeRawPtr<WebSocketChannel> createChannel(ExecutionContext* context, WebSocketChannelClient* client)
+    {
+        return WebSocketChannel::create(context, client);
+    }
 
     // Adds a console message with JSMessageSource and ErrorMessageLevel.
     void logError(const String& message);

@@ -61,8 +61,6 @@
 #include "wtf/text/StringBuilder.h"
 #include "wtf/text/WTFString.h"
 
-using namespace std;
-
 namespace WebCore {
 
 WebSocket::EventQueue::EventQueue(EventTarget* target)
@@ -172,7 +170,7 @@ static inline bool isValidSubprotocolCharacter(UChar character)
     return character >= minimumProtocolCharacter && character <= maximumProtocolCharacter && isNotSeparator;
 }
 
-static bool isValidSubprotocolString(const String& protocol)
+bool WebSocket::isValidSubprotocolString(const String& protocol)
 {
     if (protocol.isEmpty())
         return false;
@@ -210,8 +208,8 @@ static String joinStrings(const Vector<String>& strings, const char* separator)
 
 static unsigned long saturateAdd(unsigned long a, unsigned long b)
 {
-    if (numeric_limits<unsigned long>::max() - a < b)
-        return numeric_limits<unsigned long>::max();
+    if (std::numeric_limits<unsigned long>::max() - a < b)
+        return std::numeric_limits<unsigned long>::max();
     return a + b;
 }
 
@@ -220,7 +218,7 @@ static void setInvalidStateErrorForSendMethod(ExceptionState& exceptionState)
     exceptionState.throwDOMException(InvalidStateError, "Still in CONNECTING state.");
 }
 
-const char* WebSocket::subProtocolSeperator()
+const char* WebSocket::subprotocolSeperator()
 {
     return ", ";
 }
@@ -318,7 +316,7 @@ void WebSocket::connect(const String& url, const Vector<String>& protocols, Exce
         return;
     }
 
-    m_channel = WebSocketChannel::create(executionContext(), this);
+    m_channel = createChannel(executionContext(), this);
 
     for (size_t i = 0; i < protocols.size(); ++i) {
         if (!isValidSubprotocolString(protocols[i])) {
@@ -340,7 +338,7 @@ void WebSocket::connect(const String& url, const Vector<String>& protocols, Exce
 
     String protocolString;
     if (!protocols.isEmpty())
-        protocolString = joinStrings(protocols, subProtocolSeperator());
+        protocolString = joinStrings(protocols, subprotocolSeperator());
 
     if (!m_channel->connect(m_url, protocolString)) {
         m_state = CLOSED;
