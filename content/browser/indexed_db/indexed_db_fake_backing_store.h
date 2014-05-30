@@ -44,10 +44,6 @@ class IndexedDBFakeBackingStore : public IndexedDBBackingStore {
                                             const IndexedDBKeyPath&,
                                             bool auto_increment) OVERRIDE;
 
-  virtual leveldb::Status DeleteObjectStore(Transaction* transaction,
-                                            int64 database_id,
-                                            int64 object_store_id) OVERRIDE;
-
   virtual leveldb::Status PutRecord(
       IndexedDBBackingStore::Transaction* transaction,
       int64 database_id,

@@ -27,7 +27,6 @@
 #include "content/common/indexed_db/indexed_db_key_path.h"
 #include "content/common/indexed_db/indexed_db_key_range.h"
 #include "third_party/WebKit/public/platform/WebIDBDatabaseException.h"
-#include "third_party/leveldatabase/env_chromium.h"
 #include "webkit/browser/blob/blob_data_handle.h"
 
 using base::ASCIIToUTF16;
@@ -301,7 +300,7 @@ void IndexedDBDatabase::CreateObjectStore(int64 transaction_id,
         ASCIIToUTF16("Internal error creating object store '") +
             object_store_metadata.name + ASCIIToUTF16("'."));
     transaction->Abort(error);
-    if (leveldb_env::IsCorruption(s))
+    if (s.IsCorruption())
       factory_->HandleBackingStoreCorruption(backing_store_->origin_url(),
                                              error);
     return;
@@ -425,7 +424,7 @@ void IndexedDBDatabase::DeleteIndexOperation(
     IndexedDBDatabaseError error(blink::WebIDBDatabaseExceptionUnknownError,
                                  error_string);
     transaction->Abort(error);
-    if (leveldb_env::IsCorruption(s))
+    if (s.IsCorruption())
       factory_->HandleBackingStoreCorruption(backing_store_->origin_url(),
                                              error);
     return;
@@ -558,7 +557,7 @@ void IndexedDBDatabase::GetOperation(
       DLOG(ERROR) << "Unable to open cursor operation: " << s.ToString();
       IndexedDBDatabaseError error(blink::WebIDBDatabaseExceptionUnknownError,
                                    "Internal error deleting data in range");
-      if (leveldb_env::IsCorruption(s)) {
+      if (s.IsCorruption()) {
         factory_->HandleBackingStoreCorruption(backing_store_->origin_url(),
                                                error);
       }
@@ -586,7 +585,7 @@ void IndexedDBDatabase::GetOperation(
                                    "Internal error in GetRecord.");
       callbacks->OnError(error);
 
-      if (leveldb_env::IsCorruption(s))
+      if (s.IsCorruption())
         factory_->HandleBackingStoreCorruption(backing_store_->origin_url(),
                                                error);
       return;
@@ -619,7 +618,7 @@ void IndexedDBDatabase::GetOperation(
     IndexedDBDatabaseError error(blink::WebIDBDatabaseExceptionUnknownError,
                                  "Internal error in GetPrimaryKeyViaIndex.");
     callbacks->OnError(error);
-    if (leveldb_env::IsCorruption(s))
+    if (s.IsCorruption())
       factory_->HandleBackingStoreCorruption(backing_store_->origin_url(),
                                              error);
     return;
@@ -645,7 +644,7 @@ void IndexedDBDatabase::GetOperation(
     IndexedDBDatabaseError error(blink::WebIDBDatabaseExceptionUnknownError,
                                  "Internal error in GetRecord.");
     callbacks->OnError(error);
-    if (leveldb_env::IsCorruption(s))
+    if (s.IsCorruption())
       factory_->HandleBackingStoreCorruption(backing_store_->origin_url(),
                                              error);
     return;
@@ -791,7 +790,7 @@ void IndexedDBDatabase::PutOperation(scoped_ptr<PutOperationParams> params,
       IndexedDBDatabaseError error(blink::WebIDBDatabaseExceptionUnknownError,
                                    "Internal error checking key existence.");
       params->callbacks->OnError(error);
-      if (leveldb_env::IsCorruption(s))
+      if (s.IsCorruption())
         factory_->HandleBackingStoreCorruption(backing_store_->origin_url(),
                                                error);
       return;
@@ -844,7 +843,7 @@ void IndexedDBDatabase::PutOperation(scoped_ptr<PutOperationParams> params,
         blink::WebIDBDatabaseExceptionUnknownError,
         "Internal error: backing store error performing put/add.");
     params->callbacks->OnError(error);
-    if (leveldb_env::IsCorruption(s))
+    if (s.IsCorruption())
       factory_->HandleBackingStoreCorruption(backing_store_->origin_url(),
                                              error);
     return;
@@ -872,7 +871,7 @@ void IndexedDBDatabase::PutOperation(scoped_ptr<PutOperationParams> params,
       IndexedDBDatabaseError error(blink::WebIDBDatabaseExceptionUnknownError,
                                    "Internal error updating key generator.");
       params->callbacks->OnError(error);
-      if (leveldb_env::IsCorruption(s))
+      if (s.IsCorruption())
         factory_->HandleBackingStoreCorruption(backing_store_->origin_url(),
                                                error);
       return;
@@ -907,7 +906,7 @@ void IndexedDBDatabase::SetIndexKeys(int64 transaction_id,
     IndexedDBDatabaseError error(blink::WebIDBDatabaseExceptionUnknownError,
                                  "Internal error setting index keys.");
     transaction->Abort(error);
-    if (leveldb_env::IsCorruption(s))
+    if (s.IsCorruption())
       factory_->HandleBackingStoreCorruption(backing_store_->origin_url(),
                                              error);
     return;
@@ -1086,7 +1085,7 @@ void IndexedDBDatabase::OpenCursorOperation(
     DLOG(ERROR) << "Unable to open cursor operation: " << s.ToString();
     IndexedDBDatabaseError error(blink::WebIDBDatabaseExceptionUnknownError,
                                  "Internal error opening cursor operation");
-    if (leveldb_env::IsCorruption(s)) {
+    if (s.IsCorruption()) {
       factory_->HandleBackingStoreCorruption(backing_store_->origin_url(),
                                              error);
     }
@@ -1161,7 +1160,7 @@ void IndexedDBDatabase::CountOperation(
     DLOG(ERROR) << "Unable perform count operation: " << s.ToString();
     IndexedDBDatabaseError error(blink::WebIDBDatabaseExceptionUnknownError,
                                  "Internal error performing count operation");
-    if (leveldb_env::IsCorruption(s)) {
+    if (s.IsCorruption()) {
       factory_->HandleBackingStoreCorruption(backing_store_->origin_url(),
                                              error);
     }
@@ -1236,7 +1235,7 @@ void IndexedDBDatabase::DeleteRangeOperation(
     IndexedDBDatabaseError error(blink::WebIDBDatabaseExceptionUnknownError,
                                  ASCIIToUTF16("Internal error deleting range"));
     transaction->Abort(error);
-    if (leveldb_env::IsCorruption(s)) {
+    if (s.IsCorruption()) {
       factory_->HandleBackingStoreCorruption(backing_store_->origin_url(),
                                              error);
     }
@@ -1273,7 +1272,7 @@ void IndexedDBDatabase::ClearOperation(
     IndexedDBDatabaseError error(blink::WebIDBDatabaseExceptionUnknownError,
                                  "Internal error clearing object store");
     callbacks->OnError(error);
-    if (leveldb_env::IsCorruption(s)) {
+    if (s.IsCorruption()) {
       factory_->HandleBackingStoreCorruption(backing_store_->origin_url(),
                                              error);
     }
@@ -1300,7 +1299,7 @@ void IndexedDBDatabase::DeleteObjectStoreOperation(
     IndexedDBDatabaseError error(blink::WebIDBDatabaseExceptionUnknownError,
                                  error_string);
     transaction->Abort(error);
-    if (leveldb_env::IsCorruption(s))
+    if (s.IsCorruption())
       factory_->HandleBackingStoreCorruption(backing_store_->origin_url(),
                                              error);
     return;
