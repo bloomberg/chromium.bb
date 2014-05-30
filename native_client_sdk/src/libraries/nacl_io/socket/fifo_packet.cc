@@ -13,21 +13,26 @@
 
 namespace nacl_io {
 
-FIFOPacket::FIFOPacket(size_t size) : max_bytes_(size), cur_bytes_(0) {}
+FIFOPacket::FIFOPacket(size_t size) : max_bytes_(size), cur_bytes_(0) {
+}
 
 FIFOPacket::~FIFOPacket() {
   while (!IsEmpty())
     delete ReadPacket();
 }
 
-bool FIFOPacket::IsEmpty() { return packets_.empty(); }
+bool FIFOPacket::IsEmpty() {
+  return packets_.empty();
+}
 
 bool FIFOPacket::Resize(size_t len) {
   max_bytes_ = len;
   return true;
 }
 
-size_t FIFOPacket::ReadAvailable() { return cur_bytes_; }
+size_t FIFOPacket::ReadAvailable() {
+  return cur_bytes_;
+}
 
 size_t FIFOPacket::WriteAvailable() {
   if (cur_bytes_ > max_bytes_)
@@ -36,7 +41,9 @@ size_t FIFOPacket::WriteAvailable() {
   return max_bytes_ - cur_bytes_;
 }
 
-bool FIFOPacket::IsFull() { return cur_bytes_ >= max_bytes_; }
+bool FIFOPacket::IsFull() {
+  return cur_bytes_ >= max_bytes_;
+}
 
 Packet* FIFOPacket::PeekPacket() {
   if (packets_.empty())

@@ -50,7 +50,7 @@ void nacl_stat_to_stat(const nacl_abi_stat* nacl_buf, struct stat* buf) {
   buf->st_uid = nacl_buf->nacl_abi_st_uid;
   buf->st_gid = nacl_buf->nacl_abi_st_gid;
   buf->st_rdev = nacl_buf->nacl_abi_st_rdev;
-  buf->st_size = nacl_buf->nacl_abi_st_size ;
+  buf->st_size = nacl_buf->nacl_abi_st_size;
   buf->st_blksize = nacl_buf->nacl_abi_st_blksize;
   buf->st_blocks = nacl_buf->nacl_abi_st_blocks;
   buf->st_atime = nacl_buf->nacl_abi_st_atime;
@@ -102,49 +102,45 @@ EXTERN_C_BEGIN
 #define WRAP(name) __nacl_irt_##name##_wrap
 
 // Declare REAL function pointer.
-#define DECLARE_REAL_PTR(name) \
-  typeof(__nacl_irt_##name) REAL(name);
+#define DECLARE_REAL_PTR(name) typeof(__nacl_irt_##name) REAL(name);
 
 // Assign the REAL function pointer.
-#define ASSIGN_REAL_PTR(name) \
-  REAL(name) = __nacl_irt_##name;
+#define ASSIGN_REAL_PTR(name) REAL(name) = __nacl_irt_##name;
 
 // Switch IRT's pointer to the REAL pointer
-#define USE_REAL(name) \
-  __nacl_irt_##name = (typeof(__nacl_irt_##name)) REAL(name)
+#define USE_REAL(name) __nacl_irt_##name = (typeof(__nacl_irt_##name))REAL(name)
 
 // Switch IRT's pointer to the WRAP function
-#define USE_WRAP(name) \
-  __nacl_irt_##name = (typeof(__nacl_irt_##name)) WRAP(name)
+#define USE_WRAP(name) __nacl_irt_##name = (typeof(__nacl_irt_##name))WRAP(name)
 
 #define EXPAND_SYMBOL_LIST_OPERATION(OP) \
-  OP(chdir); \
-  OP(close); \
-  OP(dup); \
-  OP(dup2);  \
-  OP(exit); \
-  OP(fchdir); \
-  OP(fchmod); \
-  OP(fdatasync); \
-  OP(fstat); \
-  OP(fsync); \
-  OP(getcwd); \
-  OP(getdents); \
-  OP(isatty); \
-  OP(lstat); \
-  OP(mkdir); \
-  OP(mmap); \
-  OP(munmap); \
-  OP(open); \
-  OP(open_resource); \
-  OP(poll); \
-  OP(read); \
-  OP(readlink); \
-  OP(rmdir); \
-  OP(seek); \
-  OP(stat); \
-  OP(truncate); \
-  OP(write); \
+  OP(chdir);                             \
+  OP(close);                             \
+  OP(dup);                               \
+  OP(dup2);                              \
+  OP(exit);                              \
+  OP(fchdir);                            \
+  OP(fchmod);                            \
+  OP(fdatasync);                         \
+  OP(fstat);                             \
+  OP(fsync);                             \
+  OP(getcwd);                            \
+  OP(getdents);                          \
+  OP(isatty);                            \
+  OP(lstat);                             \
+  OP(mkdir);                             \
+  OP(mmap);                              \
+  OP(munmap);                            \
+  OP(open);                              \
+  OP(open_resource);                     \
+  OP(poll);                              \
+  OP(read);                              \
+  OP(readlink);                          \
+  OP(rmdir);                             \
+  OP(seek);                              \
+  OP(stat);                              \
+  OP(truncate);                          \
+  OP(write);
 
 EXPAND_SYMBOL_LIST_OPERATION(DECLARE_REAL_PTR);
 
@@ -181,7 +177,7 @@ int WRAP(fdatasync)(int fd) NOTHROW {
   ERRNO_RTN(ki_fdatasync(fd));
 }
 
-int WRAP(fstat)(int fd, struct nacl_abi_stat *nacl_buf) {
+int WRAP(fstat)(int fd, struct nacl_abi_stat* nacl_buf) {
   struct stat buf;
   memset(&buf, 0, sizeof(struct stat));
   int res = ki_fstat(fd, &buf);
@@ -199,7 +195,7 @@ int WRAP(getcwd)(char* buf, size_t size) {
   return 0;
 }
 
-int WRAP(getdents)(int fd, dirent* nacl_buf, size_t nacl_count, size_t *nread) {
+int WRAP(getdents)(int fd, dirent* nacl_buf, size_t nacl_count, size_t* nread) {
   int nacl_offset = 0;
   // "buf" contains dirent(s); "nacl_buf" contains nacl_abi_dirent(s).
   // nacl_abi_dirent(s) are smaller than dirent(s), so nacl_count bytes buffer
@@ -234,7 +230,7 @@ int WRAP(isatty)(int fd, int* result) {
   return 0;
 }
 
-int WRAP(lstat)(const char *path, struct nacl_abi_stat* nacl_buf) {
+int WRAP(lstat)(const char* path, struct nacl_abi_stat* nacl_buf) {
   struct stat buf;
   memset(&buf, 0, sizeof(struct stat));
   int res = ki_lstat(path, &buf);
@@ -247,7 +243,11 @@ int WRAP(mkdir)(const char* pathname, mode_t mode) {
   ERRNO_RTN(ki_mkdir(pathname, mode));
 }
 
-int WRAP(mmap)(void** addr, size_t length, int prot, int flags, int fd,
+int WRAP(mmap)(void** addr,
+               size_t length,
+               int prot,
+               int flags,
+               int fd,
                int64_t offset) {
   if (flags & MAP_ANONYMOUS)
     return REAL(mmap)(addr, length, prot, flags, fd, offset);
@@ -274,13 +274,12 @@ int WRAP(open_resource)(const char* file, int* fd) {
   ERRNO_RTN(*fd);
 }
 
-int WRAP(poll)(struct pollfd *fds, nfds_t nfds, int timeout, int* count) {
+int WRAP(poll)(struct pollfd* fds, nfds_t nfds, int timeout, int* count) {
   *count = ki_poll(fds, nfds, timeout);
   ERRNO_RTN(*count);
-
 }
 
-int WRAP(read)(int fd, void *buf, size_t count, size_t *nread) {
+int WRAP(read)(int fd, void* buf, size_t count, size_t* nread) {
   ssize_t signed_nread = ki_read(fd, buf, count);
   *nread = static_cast<size_t>(signed_nread);
   ERRNO_RTN(signed_nread);
@@ -301,13 +300,17 @@ int WRAP(seek)(int fd, off64_t offset, int whence, int64_t* new_offset) {
   ERRNO_RTN(*new_offset);
 }
 
-int WRAP(select)(int nfds, fd_set* readfds, fd_set* writefds,
-                 fd_set* exceptfds, struct timeval* timeout, int* count) {
+int WRAP(select)(int nfds,
+                 fd_set* readfds,
+                 fd_set* writefds,
+                 fd_set* exceptfds,
+                 struct timeval* timeout,
+                 int* count) {
   *count = ki_select(nfds, readfds, writefds, exceptfds, timeout);
   ERRNO_RTN(*count);
 }
 
-int WRAP(stat)(const char *pathname, struct nacl_abi_stat *nacl_buf) {
+int WRAP(stat)(const char* pathname, struct nacl_abi_stat* nacl_buf) {
   struct stat buf;
   memset(&buf, 0, sizeof(struct stat));
   int res = ki_stat(pathname, &buf);
@@ -316,7 +319,7 @@ int WRAP(stat)(const char *pathname, struct nacl_abi_stat *nacl_buf) {
   return 0;
 }
 
-int WRAP(truncate)(const char *name, int64_t len) {
+int WRAP(truncate)(const char* name, int64_t len) {
   ERRNO_RTN(ki_truncate(name, len));
 }
 
@@ -335,7 +338,7 @@ static void assign_real_pointers() {
 }
 
 #define CHECK_REAL(func) \
-  if (!REAL(func)) \
+  if (!REAL(func))       \
     assign_real_pointers();
 
 // "real" functions, i.e. the unwrapped original functions.
@@ -368,7 +371,7 @@ int _real_fstat(int fd, struct stat* buf) {
   struct nacl_abi_stat st;
   CHECK_REAL(fstat);
 
-  int err = REAL(fstat)(fd, (struct stat*) &st);
+  int err = REAL(fstat)(fd, (struct stat*)&st);
   if (err) {
     errno = err;
     return -1;
@@ -401,8 +404,8 @@ int _real_getdents(int fd, void* buf, size_t count, size_t* nread) {
     d->d_ino = nacl_d->nacl_abi_d_ino;
     d->d_off = nacl_d->nacl_abi_d_off;
     d->d_reclen = nacl_d->nacl_abi_d_reclen + d_name_shift;
-    size_t d_name_len = nacl_d->nacl_abi_d_reclen -
-        offsetof(nacl_abi_dirent, nacl_abi_d_name);
+    size_t d_name_len =
+        nacl_d->nacl_abi_d_reclen - offsetof(nacl_abi_dirent, nacl_abi_d_name);
     memcpy(d->d_name, nacl_d->nacl_abi_d_name, d_name_len);
 
     offset += d->d_reclen;
@@ -430,7 +433,7 @@ int _real_lstat(const char* path, struct stat* buf) {
   struct nacl_abi_stat st;
   CHECK_REAL(fstat);
 
-  int err = REAL(lstat)(path, (struct stat*) &st);
+  int err = REAL(lstat)(path, (struct stat*)&st);
   if (err) {
     errno = err;
     return -1;
@@ -440,13 +443,16 @@ int _real_lstat(const char* path, struct stat* buf) {
   return 0;
 }
 
-
 int _real_mkdir(const char* pathname, mode_t mode) {
   CHECK_REAL(mkdir);
   return REAL(mkdir)(pathname, mode);
 }
 
-int _real_mmap(void** addr, size_t length, int prot, int flags, int fd,
+int _real_mmap(void** addr,
+               size_t length,
+               int prot,
+               int flags,
+               int fd,
                int64_t offset) {
   CHECK_REAL(mmap);
   return REAL(mmap)(addr, length, prot, flags, fd, offset);
@@ -467,12 +473,12 @@ int _real_open_resource(const char* file, int* fd) {
   return REAL(open_resource)(file, fd);
 }
 
-int _real_read(int fd, void *buf, size_t count, size_t *nread) {
+int _real_read(int fd, void* buf, size_t count, size_t* nread) {
   CHECK_REAL(read);
   return REAL(read)(fd, buf, count, nread);
 }
 
-int _real_readlink(const char *path, char* buf, size_t count, size_t* nread) {
+int _real_readlink(const char* path, char* buf, size_t count, size_t* nread) {
   CHECK_REAL(readlink);
   return REAL(readlink)(path, buf, count, nread);
 }
@@ -487,7 +493,7 @@ int _real_truncate(const char* pathname, int64_t len) {
   return REAL(truncate)(pathname, len);
 }
 
-int _real_write(int fd, const void *buf, size_t count, size_t *nwrote) {
+int _real_write(int fd, const void* buf, size_t count, size_t* nwrote) {
   CHECK_REAL(write);
   return REAL(write)(fd, buf, count, nwrote);
 }

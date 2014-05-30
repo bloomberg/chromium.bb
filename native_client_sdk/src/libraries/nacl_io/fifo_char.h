@@ -40,7 +40,7 @@ class FIFOChar : public FIFOInterface {
   // written.
   size_t Write(const void* buf, size_t len);
 
-private:
+ private:
   char* buffer_;
   size_t size_;   // Size of the FIFO
   size_t avail_;  // How much data is currently available

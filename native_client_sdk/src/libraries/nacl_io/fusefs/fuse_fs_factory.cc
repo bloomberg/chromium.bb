@@ -8,7 +8,8 @@
 
 namespace nacl_io {
 
-FuseFsFactory::FuseFsFactory(fuse_operations* fuse_ops) : fuse_ops_(fuse_ops) {}
+FuseFsFactory::FuseFsFactory(fuse_operations* fuse_ops) : fuse_ops_(fuse_ops) {
+}
 
 Error FuseFsFactory::CreateFilesystem(const FsInitArgs& args,
                                       ScopedFilesystem* out_fs) {

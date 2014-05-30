@@ -61,13 +61,12 @@ namespace nacl_io {
 // 2. Add the necessary pepper header to the top of this file.
 // 3. Compile and cross your fingers!
 
-
 // Forward declare interface classes.
 #include "nacl_io/pepper/undef_macros.h"
 #include "nacl_io/pepper/define_empty_macros.h"
 #undef BEGIN_INTERFACE
 #define BEGIN_INTERFACE(BaseClass, PPInterface, InterfaceString) \
-    class BaseClass;
+  class BaseClass;
 #include "nacl_io/pepper/all_interfaces.h"
 
 int PPErrorToErrno(int32_t err);
@@ -92,7 +91,7 @@ class PepperInterface {
 #include "nacl_io/pepper/define_empty_macros.h"
 #undef BEGIN_INTERFACE
 #define BEGIN_INTERFACE(BaseClass, PPInterface, InterfaceString) \
-    virtual BaseClass* Get##BaseClass() = 0;
+  virtual BaseClass* Get##BaseClass() = 0;
 #include "nacl_io/pepper/all_interfaces.h"
 };
 

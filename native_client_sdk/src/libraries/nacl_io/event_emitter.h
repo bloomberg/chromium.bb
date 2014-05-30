@@ -23,7 +23,6 @@ namespace nacl_io {
 class EventEmitter;
 class EventListener;
 
-
 typedef sdk_util::ScopedRef<EventEmitter> ScopedEventEmitter;
 typedef std::map<EventListener*, uint32_t> EventListenerMap_t;
 
@@ -77,6 +76,5 @@ class EventEmitter : public sdk_util::RefObject {
 };
 
 }  // namespace nacl_io
-
 
 #endif  // LIBRARIES_NACL_IO_EVENT_EMITTER_H_

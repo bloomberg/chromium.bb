@@ -20,7 +20,8 @@ Error PipeEventEmitter::Read_Locked(char* data, size_t len, int* out_bytes) {
   return 0;
 }
 
-Error PipeEventEmitter::Write_Locked(const char* data, size_t len,
+Error PipeEventEmitter::Write_Locked(const char* data,
+                                     size_t len,
                                      int* out_bytes) {
   *out_bytes = fifo_.Write(data, len);
 

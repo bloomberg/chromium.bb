@@ -31,7 +31,7 @@ struct pollfd {
   uint16_t revents;
 };
 
-int poll(struct pollfd *__fds, nfds_t __nfds, int __timeout);
+int poll(struct pollfd* __fds, nfds_t __nfds, int __timeout);
 
 EXTERN_C_END
 

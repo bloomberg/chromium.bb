@@ -35,16 +35,15 @@ EXTERN_C_BEGIN
   typeof(__libnacl_irt_##group.name) REAL(name);
 
 // Assign the REAL function pointer.
-#define ASSIGN_REAL_PTR(group, name) \
-  REAL(name) = __libnacl_irt_##group.name;
+#define ASSIGN_REAL_PTR(group, name) REAL(name) = __libnacl_irt_##group.name;
 
 // Switch IRT's pointer to the REAL pointer
 #define USE_REAL(group, name) \
-  __libnacl_irt_##group.name = (typeof(REAL(name))) REAL(name); \
+  __libnacl_irt_##group.name = (typeof(REAL(name)))REAL(name);
 
 // Switch the IRT's pointer to the WRAP function
 #define USE_WRAP(group, name) \
-  __libnacl_irt_##group.name = (typeof(REAL(name))) WRAP(name); \
+  __libnacl_irt_##group.name = (typeof(REAL(name)))WRAP(name);
 
 extern void __libnacl_irt_dev_filename_init(void);
 
@@ -56,38 +55,38 @@ extern struct nacl_irt_memory __libnacl_irt_memory;
 
 // Create function pointers to the REAL implementation
 #define EXPAND_SYMBOL_LIST_OPERATION(OP) \
-  OP(basic, exit); \
-  OP(fdio, close); \
-  OP(fdio, dup); \
-  OP(fdio, dup2); \
-  OP(fdio, read); \
-  OP(fdio, write); \
-  OP(fdio, seek); \
-  OP(fdio, fstat); \
-  OP(fdio, getdents); \
-  OP(dev_fdio, fchdir); \
-  OP(dev_fdio, fchmod); \
-  OP(dev_fdio, fsync); \
-  OP(dev_fdio, fdatasync); \
-  OP(dev_fdio, ftruncate); \
-  OP(dev_fdio, isatty); \
-  OP(dev_filename, open); \
-  OP(dev_filename, stat); \
-  OP(dev_filename, mkdir); \
-  OP(dev_filename, rmdir); \
-  OP(dev_filename, chdir); \
-  OP(dev_filename, getcwd); \
-  OP(dev_filename, unlink); \
-  OP(dev_filename, truncate); \
-  OP(dev_filename, lstat); \
-  OP(dev_filename, link); \
-  OP(dev_filename, rename); \
-  OP(dev_filename, symlink); \
-  OP(dev_filename, chmod); \
-  OP(dev_filename, access); \
-  OP(dev_filename, readlink); \
-  OP(dev_filename, utimes); \
-  OP(memory, mmap); \
+  OP(basic, exit);                       \
+  OP(fdio, close);                       \
+  OP(fdio, dup);                         \
+  OP(fdio, dup2);                        \
+  OP(fdio, read);                        \
+  OP(fdio, write);                       \
+  OP(fdio, seek);                        \
+  OP(fdio, fstat);                       \
+  OP(fdio, getdents);                    \
+  OP(dev_fdio, fchdir);                  \
+  OP(dev_fdio, fchmod);                  \
+  OP(dev_fdio, fsync);                   \
+  OP(dev_fdio, fdatasync);               \
+  OP(dev_fdio, ftruncate);               \
+  OP(dev_fdio, isatty);                  \
+  OP(dev_filename, open);                \
+  OP(dev_filename, stat);                \
+  OP(dev_filename, mkdir);               \
+  OP(dev_filename, rmdir);               \
+  OP(dev_filename, chdir);               \
+  OP(dev_filename, getcwd);              \
+  OP(dev_filename, unlink);              \
+  OP(dev_filename, truncate);            \
+  OP(dev_filename, lstat);               \
+  OP(dev_filename, link);                \
+  OP(dev_filename, rename);              \
+  OP(dev_filename, symlink);             \
+  OP(dev_filename, chmod);               \
+  OP(dev_filename, access);              \
+  OP(dev_filename, readlink);            \
+  OP(dev_filename, utimes);              \
+  OP(memory, mmap);                      \
   OP(memory, munmap);
 
 EXPAND_SYMBOL_LIST_OPERATION(DECLARE_REAL_PTR);
@@ -164,7 +163,11 @@ int WRAP(isatty)(int fd, int* result) {
   return 0;
 }
 
-int WRAP(mmap)(void** addr, size_t length, int prot, int flags, int fd,
+int WRAP(mmap)(void** addr,
+               size_t length,
+               int prot,
+               int flags,
+               int fd,
                off_t offset) {
   if (flags & MAP_ANONYMOUS)
     return REAL(mmap)(addr, length, prot, flags, fd, offset);
@@ -240,8 +243,10 @@ int WRAP(access)(const char* pathname, int amode) {
   ERRNO_RTN(ki_access(pathname, amode));
 }
 
-int WRAP(readlink)(const char* pathname, char *buf,
-                   size_t count, size_t *nread) {
+int WRAP(readlink)(const char* pathname,
+                   char* buf,
+                   size_t count,
+                   size_t* nread) {
   int rtn = ki_readlink(pathname, buf, count);
   RTN_ERRNO_IF(rtn < 0);
   *nread = rtn;
@@ -262,7 +267,7 @@ static void assign_real_pointers() {
 }
 
 #define CHECK_REAL(func) \
-  if (!REAL(func)) \
+  if (!REAL(func))       \
     assign_real_pointers();
 
 // "real" functions, i.e. the unwrapped original functions.
@@ -301,7 +306,11 @@ int _real_mkdir(const char* pathname, mode_t mode) {
   return ENOSYS;
 }
 
-int _real_mmap(void** addr, size_t length, int prot, int flags, int fd,
+int _real_mmap(void** addr,
+               size_t length,
+               int prot,
+               int flags,
+               int fd,
                off_t offset) {
   CHECK_REAL(mmap);
   return REAL(mmap)(addr, length, prot, flags, fd, offset);

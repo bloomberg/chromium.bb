@@ -102,10 +102,9 @@ PP_Instance RealPepperInterface::GetInstance() {
 #include "nacl_io/pepper/define_empty_macros.h"
 #undef BEGIN_INTERFACE
 #define BEGIN_INTERFACE(BaseClass, PPInterface, InterfaceString) \
-    BaseClass* RealPepperInterface::Get##BaseClass() { \
-      return BaseClass##interface_; \
-    }
+  BaseClass* RealPepperInterface::Get##BaseClass() {             \
+    return BaseClass##interface_;                                \
+  }
 #include "nacl_io/pepper/all_interfaces.h"
 
 }  // namespace nacl_io
-

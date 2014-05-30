@@ -152,7 +152,9 @@ void HttpFsNode::SetCachedSize(off_t size) {
   stat_.st_size = size;
 }
 
-Error HttpFsNode::FSync() { return EACCES; }
+Error HttpFsNode::FSync() {
+  return EACCES;
+}
 
 Error HttpFsNode::GetDents(size_t offs,
                            struct dirent* pdir,
@@ -187,7 +189,9 @@ Error HttpFsNode::Read(const HandleAttr& attr,
   return DownloadPartial(attr, buf, count, out_bytes);
 }
 
-Error HttpFsNode::FTruncate(off_t size) { return EACCES; }
+Error HttpFsNode::FTruncate(off_t size) {
+  return EACCES;
+}
 
 Error HttpFsNode::Write(const HandleAttr& attr,
                         const void* buf,
@@ -219,9 +223,12 @@ HttpFsNode::HttpFsNode(Filesystem* filesystem,
     : Node(filesystem),
       url_(url),
       cache_content_(cache_content),
-      has_cached_size_(false) {}
+      has_cached_size_(false) {
+}
 
-void HttpFsNode::SetMode(int mode) { stat_.st_mode = mode; }
+void HttpFsNode::SetMode(int mode) {
+  stat_.st_mode = mode;
+}
 
 Error HttpFsNode::GetStat_Locked(struct stat* stat) {
   // Assume we need to 'HEAD' if we do not know the size, otherwise, assume

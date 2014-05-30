@@ -19,11 +19,11 @@ int _real_close(int fd) {
   return ENOSYS;
 }
 
-int _real_fstat(int fd, struct stat *buf) {
+int _real_fstat(int fd, struct stat* buf) {
   return 0;
 }
 
-int _real_getdents(int fd, void* nacl_buf, size_t nacl_count, size_t *nread) {
+int _real_getdents(int fd, void* nacl_buf, size_t nacl_count, size_t* nread) {
   return ENOSYS;
 }
 
@@ -35,7 +35,11 @@ int _real_mkdir(const char* pathname, mode_t mode) {
   return ENOSYS;
 }
 
-int _real_mmap(void** addr, size_t length, int prot, int flags, int fd,
+int _real_mmap(void** addr,
+               size_t length,
+               int prot,
+               int flags,
+               int fd,
                off_t offset) {
   return ENOSYS;
 }
@@ -52,7 +56,7 @@ int _real_open_resource(const char* file, int* fd) {
   return ENOSYS;
 }
 
-int _real_read(int fd, void *buf, size_t count, size_t *nread) {
+int _real_read(int fd, void* buf, size_t count, size_t* nread) {
   *nread = count;
   return 0;
 }
@@ -61,7 +65,7 @@ int _real_rmdir(const char* pathname) {
   return ENOSYS;
 }
 
-int _real_write(int fd, const void *buf, size_t count, size_t *nwrote) {
+int _real_write(int fd, const void* buf, size_t count, size_t* nwrote) {
   int rtn = write(fd, buf, count);
   if (rtn < 0)
     return -1;

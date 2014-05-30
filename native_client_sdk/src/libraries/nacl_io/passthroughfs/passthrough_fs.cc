@@ -122,13 +122,15 @@ class PassthroughFsNode : public Node {
   int real_fd_;
 };
 
-PassthroughFs::PassthroughFs() {}
+PassthroughFs::PassthroughFs() {
+}
 
 Error PassthroughFs::Init(const FsInitArgs& args) {
   return Filesystem::Init(args);
 }
 
-void PassthroughFs::Destroy() {}
+void PassthroughFs::Destroy() {
+}
 
 Error PassthroughFs::Access(const Path& path, int a_mode) {
   // There is no underlying 'access' syscall in NaCl. It just returns ENOSYS.

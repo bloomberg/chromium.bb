@@ -19,7 +19,7 @@ struct utsname {
 
 __BEGIN_DECLS
 
-int uname(struct utsname *buf);
+int uname(struct utsname* buf);
 
 __END_DECLS
 

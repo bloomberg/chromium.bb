@@ -34,7 +34,7 @@ class PepperInterfaceDummy : public PepperInterface {
 #include "nacl_io/pepper/define_empty_macros.h"
 #undef BEGIN_INTERFACE
 #define BEGIN_INTERFACE(BaseClass, PPInterface, InterfaceString) \
-    virtual BaseClass* Get##BaseClass() { return NULL; }
+  virtual BaseClass* Get##BaseClass() { return NULL; }
 #include "nacl_io/pepper/all_interfaces.h"
 };
 

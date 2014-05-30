@@ -18,7 +18,8 @@ bool operator<(const ScopedEventEmitter& src_a,
   return src_a.get() < src_b.get();
 }
 
-EventEmitter::EventEmitter() : event_status_(0) {}
+EventEmitter::EventEmitter() : event_status_(0) {
+}
 
 void EventEmitter::RegisterListener(EventListener* listener, uint32_t events) {
   AUTO_LOCK(emitter_lock_);

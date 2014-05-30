@@ -21,7 +21,7 @@
 #include "nacl_io/pepper_interface.h"
 #include "sdk_util/auto_lock.h"
 
-#define CHECK_LFLAG(TERMIOS, FLAG) (TERMIOS.c_lflag & FLAG)
+#define CHECK_LFLAG(TERMIOS, FLAG) (TERMIOS.c_lflag& FLAG)
 
 #define IS_ECHO CHECK_LFLAG(termios_, ECHO)
 #define IS_ECHOE CHECK_LFLAG(termios_, ECHOE)
@@ -76,7 +76,9 @@ void TtyNode::InitTermios() {
   termios_.c_cc[VEOL2] = 0;
 }
 
-EventEmitter* TtyNode::GetEventEmitter() { return emitter_.get(); }
+EventEmitter* TtyNode::GetEventEmitter() {
+  return emitter_.get();
+}
 
 Error TtyNode::Write(const HandleAttr& attr,
                      const void* buf,

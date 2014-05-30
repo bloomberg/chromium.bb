@@ -200,7 +200,8 @@ HttpFs::HttpFs()
     : allow_cors_(false),
       allow_credentials_(false),
       cache_stat_(true),
-      cache_content_(true) {}
+      cache_content_(true) {
+}
 
 Error HttpFs::Init(const FsInitArgs& args) {
   Error error = Filesystem::Init(args);
@@ -248,7 +249,8 @@ Error HttpFs::Init(const FsInitArgs& args) {
   return 0;
 }
 
-void HttpFs::Destroy() {}
+void HttpFs::Destroy() {
+}
 
 Error HttpFs::FindOrCreateDir(const Path& path, ScopedNode* out_node) {
   out_node->reset(NULL);

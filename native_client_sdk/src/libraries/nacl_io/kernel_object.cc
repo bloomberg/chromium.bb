@@ -24,7 +24,9 @@
 
 namespace nacl_io {
 
-KernelObject::KernelObject() { cwd_ = "/"; }
+KernelObject::KernelObject() {
+  cwd_ = "/";
+}
 
 KernelObject::~KernelObject() {};
 
@@ -183,8 +185,9 @@ Error KernelObject::AcquireHandle(int fd, ScopedKernelHandle* out_handle) {
   return 0;
 }
 
-Error KernelObject::AcquireHandleAndPath(int fd, ScopedKernelHandle* out_handle,
-                                         std::string* out_path){
+Error KernelObject::AcquireHandleAndPath(int fd,
+                                         ScopedKernelHandle* out_handle,
+                                         std::string* out_path) {
   out_handle->reset(NULL);
 
   AUTO_LOCK(handle_lock_);
@@ -223,7 +226,8 @@ int KernelObject::AllocateFD(const ScopedKernelHandle& handle,
   return id;
 }
 
-void KernelObject::FreeAndReassignFD(int fd, const ScopedKernelHandle& handle,
+void KernelObject::FreeAndReassignFD(int fd,
+                                     const ScopedKernelHandle& handle,
                                      const std::string& path) {
   if (NULL == handle) {
     FreeFD(fd);

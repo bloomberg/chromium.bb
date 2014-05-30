@@ -56,7 +56,6 @@ struct tioc_nacl_input_string {
   const char* buffer;
 };
 
-
 typedef ssize_t (*tioc_nacl_output_handler_t)(const char* buf,
                                               size_t count,
                                               void* user_data);

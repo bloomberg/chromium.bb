@@ -78,7 +78,6 @@ struct EventRequest {
   uint32_t events;
 };
 
-
 class EventListener;
 class EventListenerGroup;
 class EventListenerSingle;
@@ -103,7 +102,6 @@ class EventListener {
   pthread_cond_t signal_cond_;
   DISALLOW_COPY_AND_ASSIGN(EventListener);
 };
-
 
 // EventListenerLock
 //
@@ -130,13 +128,12 @@ class EventListenerLock : public EventListener {
   //   EINTR if the wait was interrupted.
   Error WaitOnEvent(uint32_t events, int ms_max);
 
-private:
+ private:
   EventEmitter* emitter_;
   sdk_util::AutoLock* lock_;
   uint32_t events_;
   DISALLOW_COPY_AND_ASSIGN(EventListenerLock);
 };
-
 
 class EventListenerPoll : public EventListener {
  public:

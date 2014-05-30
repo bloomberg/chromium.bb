@@ -58,8 +58,7 @@ void CreateAddrInfo(const addrinfo* hints,
       break;
     }
     case AF_INET: {
-      sockaddr_in* in =
-          static_cast<sockaddr_in*>(malloc(sizeof(sockaddr_in)));
+      sockaddr_in* in = static_cast<sockaddr_in*>(malloc(sizeof(sockaddr_in)));
       *in = *(sockaddr_in*)addr;
       ai->ai_family = AF_INET;
       ai->ai_addr = reinterpret_cast<sockaddr*>(in);
@@ -206,7 +205,7 @@ struct hostent* HostResolver::gethostbyname(const char* name) {
   return &hostent_;
 }
 
-void HostResolver::freeaddrinfo(struct addrinfo *res) {
+void HostResolver::freeaddrinfo(struct addrinfo* res) {
   while (res) {
     struct addrinfo* cur = res;
     res = res->ai_next;
@@ -216,7 +215,8 @@ void HostResolver::freeaddrinfo(struct addrinfo *res) {
   }
 }
 
-int HostResolver::getaddrinfo(const char* node, const char* service,
+int HostResolver::getaddrinfo(const char* node,
+                              const char* service,
                               const struct addrinfo* hints_in,
                               struct addrinfo** result) {
   *result = NULL;
@@ -343,7 +343,7 @@ int HostResolver::getaddrinfo(const char* node, const char* service,
       // TODO(sbc): investigate this issue with PPAPI team.
       if (len > 0) {
         // Copy and NULL-terminate the UTF8 string var.
-        canon_name = static_cast<char*>(malloc(len+1));
+        canon_name = static_cast<char*>(malloc(len + 1));
         strncpy(canon_name, tmp, len);
         canon_name[len] = '\0';
       }
@@ -381,8 +381,7 @@ int HostResolver::getaddrinfo(const char* node, const char* service,
           assert(false);
           break;
         }
-        memcpy(&addr_in6.sin6_addr.s6_addr, pp_addr.addr,
-               sizeof(in6_addr));
+        memcpy(&addr_in6.sin6_addr.s6_addr, pp_addr.addr, sizeof(in6_addr));
         sockaddr = (struct sockaddr*)&addr_in6;
         break;
       }
@@ -409,13 +408,13 @@ void HostResolver::hostent_cleanup() {
     free(hostent_.h_name);
   }
   if (NULL != hostent_.h_aliases) {
-    for (int i = 0;  NULL != hostent_.h_aliases[i]; i++) {
+    for (int i = 0; NULL != hostent_.h_aliases[i]; i++) {
       free(hostent_.h_aliases[i]);
     }
     free(hostent_.h_aliases);
   }
   if (NULL != hostent_.h_addr_list) {
-    for (int i = 0;  NULL != hostent_.h_addr_list[i]; i++) {
+    for (int i = 0; NULL != hostent_.h_addr_list[i]; i++) {
       free(hostent_.h_addr_list[i]);
     }
     free(hostent_.h_addr_list);

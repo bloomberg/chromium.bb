@@ -120,23 +120,22 @@ struct termios {
   speed_t c_ospeed;
 };
 
-
 #include <sys/cdefs.h>
 
 __BEGIN_DECLS
 
-speed_t cfgetispeed(const struct termios *termios_p);
-speed_t cfgetospeed(const struct termios *termios_p);
-int cfsetispeed(struct termios *termios_p, speed_t speed);
-int cfsetospeed(struct termios *termios_p, speed_t speed);
-int cfsetspeed(struct termios *termios_p, speed_t speed);
+speed_t cfgetispeed(const struct termios* termios_p);
+speed_t cfgetospeed(const struct termios* termios_p);
+int cfsetispeed(struct termios* termios_p, speed_t speed);
+int cfsetospeed(struct termios* termios_p, speed_t speed);
+int cfsetspeed(struct termios* termios_p, speed_t speed);
 
 int tcdrain(int fd);
 int tcflow(int fd, int action);
 int tcflush(int fd, int queue_selector);
-int tcgetattr(int fd, struct termios *termios_p);
+int tcgetattr(int fd, struct termios* termios_p);
 int tcsendbreak(int fd, int duration);
-int tcsetattr(int fd, int optional_actions, const struct termios *termios_p);
+int tcsetattr(int fd, int optional_actions, const struct termios* termios_p);
 
 __END_DECLS
 

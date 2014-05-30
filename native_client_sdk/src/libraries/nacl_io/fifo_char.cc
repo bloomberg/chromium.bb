@@ -12,10 +12,7 @@
 namespace nacl_io {
 
 FIFOChar::FIFOChar(size_t size)
-    : buffer_(NULL),
-      size_(size),
-      avail_(0),
-      tail_(0) {
+    : buffer_(NULL), size_(size), avail_(0), tail_(0) {
   if (size)
     buffer_ = new char[size];
 }

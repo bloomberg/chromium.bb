@@ -11,16 +11,16 @@
 #include <algorithm>
 
 #define TRACE(format, ...) \
-    LOG_TRACE("jspipe[%s]: " format, name_.c_str(), ##__VA_ARGS__)
+  LOG_TRACE("jspipe[%s]: " format, name_.c_str(), ##__VA_ARGS__)
 #define ERROR(format, ...) \
-    LOG_ERROR("jspipe[%s]: " format, name_.c_str(), ##__VA_ARGS__)
+  LOG_ERROR("jspipe[%s]: " format, name_.c_str(), ##__VA_ARGS__)
 
 #include "nacl_io/log.h"
 #include "nacl_io/osinttypes.h"
 #include "nacl_io/pepper_interface.h"
 
 namespace {
-const size_t kMaxPostMessageSize = 64*1024;
+const size_t kMaxPostMessageSize = 64 * 1024;
 const char* kDictKeyPipe = "pipe";
 const char* kDictKeyOperation = "operation";
 const char* kDictKeyPayload = "payload";
@@ -31,23 +31,23 @@ const char* kOperationNameWrite = "write";
 namespace nacl_io {
 
 JSPipeEventEmitter::JSPipeEventEmitter(PepperInterface* ppapi, size_t size)
-  : input_fifo_(size),
-    post_message_buffer_size_(size),
-    bytes_sent_(0),
-    bytes_acked_(0),
-    bytes_read_(0),
-    ppapi_(ppapi),
-    messaging_iface_(NULL),
-    var_iface_(NULL),
-    array_iface_(NULL),
-    buffer_iface_(NULL),
-    dict_iface_(NULL),
-    pipe_name_var_(PP_MakeUndefined()),
-    pipe_key_(PP_MakeUndefined()),
-    operation_key_(PP_MakeUndefined()),
-    payload_key_(PP_MakeUndefined()),
-    write_var_(PP_MakeUndefined()),
-    ack_var_(PP_MakeUndefined()) {
+    : input_fifo_(size),
+      post_message_buffer_size_(size),
+      bytes_sent_(0),
+      bytes_acked_(0),
+      bytes_read_(0),
+      ppapi_(ppapi),
+      messaging_iface_(NULL),
+      var_iface_(NULL),
+      array_iface_(NULL),
+      buffer_iface_(NULL),
+      dict_iface_(NULL),
+      pipe_name_var_(PP_MakeUndefined()),
+      pipe_key_(PP_MakeUndefined()),
+      operation_key_(PP_MakeUndefined()),
+      payload_key_(PP_MakeUndefined()),
+      write_var_(PP_MakeUndefined()),
+      ack_var_(PP_MakeUndefined()) {
   UpdateStatus_Locked();
   if (ppapi == NULL) {
     TRACE("missing PPAPI provider");
@@ -111,7 +111,7 @@ Error JSPipeEventEmitter::Read_Locked(char* data, size_t len, int* out_bytes) {
 }
 
 Error JSPipeEventEmitter::SendWriteMessage(const void* buf, size_t count) {
-  TRACE("SendWriteMessage [%"PRIuS"] total=%"PRIuS, count, bytes_sent_);
+  TRACE("SendWriteMessage [%" PRIuS "] total=%" PRIuS, count, bytes_sent_);
   if (!var_iface_ || !buffer_iface_)
     return EIO;
 
@@ -143,8 +143,7 @@ Error JSPipeEventEmitter::SetName(const char* name) {
   return 0;
 }
 
-Error JSPipeEventEmitter::SendMessageToJS(PP_Var operation,
-                                          PP_Var payload) {
+Error JSPipeEventEmitter::SendMessageToJS(PP_Var operation, PP_Var payload) {
   if (!ppapi_ || !messaging_iface_ || !var_iface_ || !dict_iface_)
     return EIO;
 
@@ -165,7 +164,7 @@ Error JSPipeEventEmitter::SendMessageToJS(PP_Var operation,
 }
 
 Error JSPipeEventEmitter::SendAckMessage(size_t byte_count) {
-  TRACE("SendAckMessage %"PRIuS, byte_count);
+  TRACE("SendAckMessage %" PRIuS, byte_count);
   PP_Var payload;
   payload.type = PP_VARTYPE_INT32;
   payload.value.as_int = (int32_t)byte_count;
@@ -181,7 +180,7 @@ size_t JSPipeEventEmitter::HandleJSWrite(const char* data, size_t len) {
 
 void JSPipeEventEmitter::HandleJSAck(size_t byte_count) {
   if (byte_count > bytes_sent_) {
-    ERROR("HandleAck unexpected byte count: %"PRIuS, byte_count);
+    ERROR("HandleAck unexpected byte count: %" PRIuS, byte_count);
     return;
   }
 
@@ -281,7 +280,8 @@ Error JSPipeEventEmitter::HandleJSMessage(struct PP_Var message) {
   return err;
 }
 
-Error JSPipeEventEmitter::Write_Locked(const char* data, size_t len,
+Error JSPipeEventEmitter::Write_Locked(const char* data,
+                                       size_t len,
                                        int* out_bytes) {
   if (GetOSpace() == 0) {
     *out_bytes = 0;

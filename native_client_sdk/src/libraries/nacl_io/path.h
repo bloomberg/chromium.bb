@@ -53,7 +53,8 @@ class Path {
   // Collapse the string list removing extraneous '.', '..' path components
   static StringArray_t Normalize(const StringArray_t& paths);
   static std::string Join(const StringArray_t& paths);
-  static std::string Range(const StringArray_t& paths, size_t start,
+  static std::string Range(const StringArray_t& paths,
+                           size_t start,
                            size_t end);
   static StringArray_t Split(const std::string& paths);
   // Operator versions

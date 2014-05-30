@@ -227,7 +227,9 @@ Error Html5FsNode::Write(const HandleAttr& attr,
   return 0;
 }
 
-int Html5FsNode::GetType() { return fileio_resource_ ? S_IFREG : S_IFDIR; }
+int Html5FsNode::GetType() {
+  return fileio_resource_ ? S_IFREG : S_IFDIR;
+}
 
 Error Html5FsNode::GetSize(off_t* out_size) {
   *out_size = 0;
@@ -247,14 +249,19 @@ Error Html5FsNode::GetSize(off_t* out_size) {
   return 0;
 }
 
-bool Html5FsNode::IsaDir() { return !fileio_resource_; }
+bool Html5FsNode::IsaDir() {
+  return !fileio_resource_;
+}
 
-bool Html5FsNode::IsaFile() { return fileio_resource_; }
+bool Html5FsNode::IsaFile() {
+  return fileio_resource_;
+}
 
 Html5FsNode::Html5FsNode(Filesystem* filesystem, PP_Resource fileref_resource)
     : Node(filesystem),
       fileref_resource_(fileref_resource),
-      fileio_resource_(0) {}
+      fileio_resource_(0) {
+}
 
 Error Html5FsNode::Init(int open_flags) {
   Error error = Node::Init(open_flags);

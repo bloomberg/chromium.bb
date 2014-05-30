@@ -44,7 +44,9 @@ class JSPipeNode : public Node {
  public:
   explicit JSPipeNode(Filesystem* filesystem);
 
-  virtual void Destroy() { LOG_TRACE("JSPipeNode: Destroy"); };
+  virtual void Destroy() {
+    LOG_TRACE("JSPipeNode: Destroy");
+  }
 
   virtual JSPipeEventEmitter* GetEventEmitter();
 

@@ -29,7 +29,8 @@ struct FillDirInfo {
 
 }  // namespace
 
-FuseFs::FuseFs() : fuse_ops_(NULL), fuse_user_data_(NULL) {}
+FuseFs::FuseFs() : fuse_ops_(NULL), fuse_user_data_(NULL) {
+}
 
 Error FuseFs::Init(const FsInitArgs& args) {
   Error error = Filesystem::Init(args);
@@ -204,7 +205,8 @@ FuseFsNode::FuseFsNode(Filesystem* filesystem,
                        struct fuse_operations* fuse_ops,
                        struct fuse_file_info& info,
                        const std::string& path)
-    : Node(filesystem), fuse_ops_(fuse_ops), info_(info), path_(path) {}
+    : Node(filesystem), fuse_ops_(fuse_ops), info_(info), path_(path) {
+}
 
 bool FuseFsNode::CanOpen(int open_flags) {
   struct stat statbuf;
@@ -271,7 +273,8 @@ FileFuseFsNode::FileFuseFsNode(Filesystem* filesystem,
                                struct fuse_operations* fuse_ops,
                                struct fuse_file_info& info,
                                const std::string& path)
-    : FuseFsNode(filesystem, fuse_ops, info, path) {}
+    : FuseFsNode(filesystem, fuse_ops, info, path) {
+}
 
 void FileFuseFsNode::Destroy() {
   if (!fuse_ops_->release)
@@ -347,7 +350,8 @@ DirFuseFsNode::DirFuseFsNode(Filesystem* filesystem,
                              struct fuse_operations* fuse_ops,
                              struct fuse_file_info& info,
                              const std::string& path)
-    : FuseFsNode(filesystem, fuse_ops, info, path) {}
+    : FuseFsNode(filesystem, fuse_ops, info, path) {
+}
 
 void DirFuseFsNode::Destroy() {
   if (!fuse_ops_->releasedir)

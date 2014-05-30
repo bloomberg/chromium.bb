@@ -160,7 +160,9 @@ void UdpNode::Destroy() {
   SocketNode::Destroy();
 }
 
-UdpEventEmitter* UdpNode::GetEventEmitter() { return emitter_.get(); }
+UdpEventEmitter* UdpNode::GetEventEmitter() {
+  return emitter_.get();
+}
 
 Error UdpNode::Init(int open_flags) {
   Error err = SocketNode::Init(open_flags);

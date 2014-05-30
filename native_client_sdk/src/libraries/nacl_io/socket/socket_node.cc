@@ -215,7 +215,9 @@ Error SocketNode::Connect(const HandleAttr& attr,
   return EOPNOTSUPP;
 }
 
-Error SocketNode::Listen(int backlog) { return EOPNOTSUPP; }
+Error SocketNode::Listen(int backlog) {
+  return EOPNOTSUPP;
+}
 
 Error SocketNode::GetSockOpt(int lvl,
                              int optname,
@@ -442,7 +444,9 @@ void SocketNode::SetError_Locked(int pp_error_num) {
   last_errno_ = PPErrorToErrno(pp_error_num);
 }
 
-Error SocketNode::Shutdown(int how) { return EOPNOTSUPP; }
+Error SocketNode::Shutdown(int how) {
+  return EOPNOTSUPP;
+}
 
 Error SocketNode::GetPeerName(struct sockaddr* addr, socklen_t* len) {
   if (NULL == addr || NULL == len)

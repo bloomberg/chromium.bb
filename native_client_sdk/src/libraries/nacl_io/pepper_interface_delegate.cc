@@ -16,7 +16,8 @@ PepperInterfaceDelegate::PepperInterfaceDelegate(PP_Instance instance)
 #include "nacl_io/pepper/all_interfaces.h"
 }
 
-PepperInterfaceDelegate::~PepperInterfaceDelegate() {}
+PepperInterfaceDelegate::~PepperInterfaceDelegate() {
+}
 
 PP_Instance PepperInterfaceDelegate::GetInstance() {
   return instance_;

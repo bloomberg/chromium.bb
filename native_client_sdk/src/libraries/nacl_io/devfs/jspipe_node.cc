@@ -17,15 +17,15 @@
 #define ERROR(format, ...) LOG_TRACE("jspipe: " format, ##__VA_ARGS__)
 
 namespace {
-const size_t kPostMessageBufferSize = 512*1024;
+const size_t kPostMessageBufferSize = 512 * 1024;
 }
 
 namespace nacl_io {
 
 JSPipeNode::JSPipeNode(Filesystem* filesystem)
-  : Node(filesystem),
-    pipe_(new JSPipeEventEmitter(filesystem_->ppapi(), kPostMessageBufferSize))
-{
+    : Node(filesystem),
+      pipe_(new JSPipeEventEmitter(filesystem_->ppapi(),
+                                   kPostMessageBufferSize)) {
 }
 
 JSPipeEventEmitter* JSPipeNode::GetEventEmitter() {

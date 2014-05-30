@@ -39,9 +39,12 @@ Node::Node(Filesystem* filesystem) : filesystem_(filesystem) {
     stat_.st_ino = 1;
 }
 
-Node::~Node() {}
+Node::~Node() {
+}
 
-Error Node::Init(int open_flags) { return 0; }
+Error Node::Init(int open_flags) {
+  return 0;
+}
 
 void Node::Destroy() {
   if (filesystem_) {
@@ -49,7 +52,9 @@ void Node::Destroy() {
   }
 }
 
-EventEmitter* Node::GetEventEmitter() { return NULL; }
+EventEmitter* Node::GetEventEmitter() {
+  return NULL;
+}
 
 uint32_t Node::GetEventStatus() {
   if (GetEventEmitter())
@@ -71,9 +76,13 @@ bool Node::CanOpen(int open_flags) {
   return false;
 }
 
-Error Node::FSync() { return 0; }
+Error Node::FSync() {
+  return 0;
+}
 
-Error Node::FTruncate(off_t length) { return EINVAL; }
+Error Node::FTruncate(off_t length) {
+  return EINVAL;
+}
 
 Error Node::GetDents(size_t offs,
                      struct dirent* pdir,
@@ -97,7 +106,9 @@ Error Node::Ioctl(int request, ...) {
   return rtn;
 }
 
-Error Node::VIoctl(int request, va_list args) { return EINVAL; }
+Error Node::VIoctl(int request, va_list args) {
+  return EINVAL;
+}
 
 Error Node::Read(const HandleAttr& attr,
                  void* buf,
@@ -153,24 +164,34 @@ Error Node::MMap(void* addr,
   return 0;
 }
 
-Error Node::Tcflush(int queue_selector) { return EINVAL; }
+Error Node::Tcflush(int queue_selector) {
+  return EINVAL;
+}
 
-Error Node::Tcgetattr(struct termios* termios_p) { return EINVAL; }
+Error Node::Tcgetattr(struct termios* termios_p) {
+  return EINVAL;
+}
 
 Error Node::Tcsetattr(int optional_actions, const struct termios* termios_p) {
   return EINVAL;
 }
 
-int Node::GetLinks() { return stat_.st_nlink; }
+int Node::GetLinks() {
+  return stat_.st_nlink;
+}
 
-int Node::GetMode() { return stat_.st_mode & ~S_IFMT; }
+int Node::GetMode() {
+  return stat_.st_mode & ~S_IFMT;
+}
 
 Error Node::GetSize(off_t* out_size) {
   *out_size = stat_.st_size;
   return 0;
 }
 
-int Node::GetType() { return stat_.st_mode & S_IFMT; }
+int Node::GetType() {
+  return stat_.st_mode & S_IFMT;
+}
 
 void Node::SetType(int type) {
   assert((type & ~S_IFMT) == 0);
@@ -178,11 +199,17 @@ void Node::SetType(int type) {
   stat_.st_mode |= type;
 }
 
-bool Node::IsaDir() { return (stat_.st_mode & S_IFDIR) != 0; }
+bool Node::IsaDir() {
+  return (stat_.st_mode & S_IFDIR) != 0;
+}
 
-bool Node::IsaFile() { return (stat_.st_mode & S_IFREG) != 0; }
+bool Node::IsaFile() {
+  return (stat_.st_mode & S_IFREG) != 0;
+}
 
-bool Node::IsaSock() { return (stat_.st_mode & S_IFSOCK) != 0; }
+bool Node::IsaSock() {
+  return (stat_.st_mode & S_IFSOCK) != 0;
+}
 
 Error Node::Isatty() {
   return ENOTTY;
@@ -192,17 +219,25 @@ Error Node::AddChild(const std::string& name, const ScopedNode& node) {
   return ENOTDIR;
 }
 
-Error Node::RemoveChild(const std::string& name) { return ENOTDIR; }
+Error Node::RemoveChild(const std::string& name) {
+  return ENOTDIR;
+}
 
 Error Node::FindChild(const std::string& name, ScopedNode* out_node) {
   out_node->reset(NULL);
   return ENOTDIR;
 }
 
-int Node::ChildCount() { return 0; }
+int Node::ChildCount() {
+  return 0;
+}
 
-void Node::Link() { stat_.st_nlink++; }
+void Node::Link() {
+  stat_.st_nlink++;
+}
 
-void Node::Unlink() { stat_.st_nlink--; }
+void Node::Unlink() {
+  stat_.st_nlink--;
+}
 
 }  // namespace nacl_io

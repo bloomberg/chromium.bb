@@ -17,10 +17,12 @@
 namespace nacl_io {
 
 // It is only legal to construct a handle while the kernel lock is held.
-KernelHandle::KernelHandle() : filesystem_(NULL), node_(NULL) {}
+KernelHandle::KernelHandle() : filesystem_(NULL), node_(NULL) {
+}
 
 KernelHandle::KernelHandle(const ScopedFilesystem& fs, const ScopedNode& node)
-    : filesystem_(fs), node_(node) {}
+    : filesystem_(fs), node_(node) {
+}
 
 KernelHandle::~KernelHandle() {
   // Force release order for cases where filesystem_ is not ref'd by mounting.
@@ -153,7 +155,8 @@ Error KernelHandle::VFcntl(int request, int* result, va_list args) {
   return ENOSYS;
 }
 
-Error KernelHandle::Accept(PP_Resource* new_sock, struct sockaddr* addr,
+Error KernelHandle::Accept(PP_Resource* new_sock,
+                           struct sockaddr* addr,
                            socklen_t* len) {
   SocketNode* sock = socket_node();
   if (!sock)
@@ -200,10 +203,7 @@ Error KernelHandle::RecvFrom(void* buf,
                         out_len);
 }
 
-Error KernelHandle::Send(const void* buf,
-                         size_t len,
-                         int flags,
-                         int* out_len) {
+Error KernelHandle::Send(const void* buf, size_t len, int flags, int* out_len) {
   SocketNode* sock = socket_node();
   if (!sock)
     return ENOTSOCK;

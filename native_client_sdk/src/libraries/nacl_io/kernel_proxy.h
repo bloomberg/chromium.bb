@@ -76,12 +76,12 @@ class KernelProxy : protected KernelObject {
   virtual int chdir(const char* path);
   virtual char* getcwd(char* buf, size_t size);
   virtual char* getwd(char* buf);
-  virtual int mount(const char *source,
-                    const char *target,
-                    const char *filesystemtype,
+  virtual int mount(const char* source,
+                    const char* target,
+                    const char* filesystemtype,
                     unsigned long mountflags,
-                    const void *data);
-  virtual int umount(const char *path);
+                    const void* data);
+  virtual int umount(const char* path);
 
   // Stub system calls that don't do anything (yet), handled by KernelProxy.
   virtual int chown(const char* path, uid_t owner, gid_t group);
@@ -94,22 +94,22 @@ class KernelProxy : protected KernelObject {
   // calls the corresponding filesystem's GetNode() method. The corresponding
   // method will be called. If the node cannot be found, errno is set and -1 is
   // returned.
-  virtual int chmod(const char *path, mode_t mode);
-  virtual int mkdir(const char *path, mode_t mode);
-  virtual int rmdir(const char *path);
-  virtual int stat(const char *path, struct stat *buf);
+  virtual int chmod(const char* path, mode_t mode);
+  virtual int mkdir(const char* path, mode_t mode);
+  virtual int rmdir(const char* path);
+  virtual int stat(const char* path, struct stat* buf);
 
   // System calls that take a file descriptor as an argument:
   // The kernel proxy will determine to which filesystem the file
   // descriptor's corresponding file handle belongs.  The
   // associated filesystem's function will be called.
-  virtual ssize_t read(int fd, void *buf, size_t nbyte);
-  virtual ssize_t write(int fd, const void *buf, size_t nbyte);
+  virtual ssize_t read(int fd, void* buf, size_t nbyte);
+  virtual ssize_t write(int fd, const void* buf, size_t nbyte);
 
   virtual int fchmod(int fd, int prot);
   virtual int fcntl(int fd, int request, va_list args);
-  virtual int fstat(int fd, struct stat *buf);
-  virtual int getdents(int fd, void *buf, unsigned int count);
+  virtual int fstat(int fd, struct stat* buf);
+  virtual int getdents(int fd, void* buf, unsigned int count);
   virtual int fchdir(int fd);
   virtual int ftruncate(int fd, off_t length);
   virtual int fsync(int fd);
@@ -132,8 +132,8 @@ class KernelProxy : protected KernelObject {
   virtual int rename(const char* path, const char* newpath);
   // access() uses the Filesystem's Stat().
   virtual int access(const char* path, int amode);
-  virtual int readlink(const char *path, char *buf, size_t count);
-  virtual int utimes(const char *filename, const struct timeval times[2]);
+  virtual int readlink(const char* path, char* buf, size_t count);
+  virtual int utimes(const char* filename, const struct timeval times[2]);
 
   virtual int link(const char* oldpath, const char* newpath);
   virtual int symlink(const char* oldpath, const char* newpath);
@@ -147,26 +147,32 @@ class KernelProxy : protected KernelObject {
   virtual int munmap(void* addr, size_t length);
   virtual int tcflush(int fd, int queue_selector);
   virtual int tcgetattr(int fd, struct termios* termios_p);
-  virtual int tcsetattr(int fd, int optional_actions,
-                           const struct termios *termios_p);
+  virtual int tcsetattr(int fd,
+                        int optional_actions,
+                        const struct termios* termios_p);
 
   virtual int kill(pid_t pid, int sig);
-  virtual int sigaction(int signum, const struct sigaction* action,
+  virtual int sigaction(int signum,
+                        const struct sigaction* action,
                         struct sigaction* oaction);
 
 #ifdef PROVIDES_SOCKET_API
-  virtual int select(int nfds, fd_set* readfds, fd_set* writefds,
-                    fd_set* exceptfds, struct timeval* timeout);
+  virtual int select(int nfds,
+                     fd_set* readfds,
+                     fd_set* writefds,
+                     fd_set* exceptfds,
+                     struct timeval* timeout);
 
-  virtual int poll(struct pollfd *fds, nfds_t nfds, int timeout);
+  virtual int poll(struct pollfd* fds, nfds_t nfds, int timeout);
 
   // Socket support functions
   virtual int accept(int fd, struct sockaddr* addr, socklen_t* len);
   virtual int bind(int fd, const struct sockaddr* addr, socklen_t len);
   virtual int connect(int fd, const struct sockaddr* addr, socklen_t len);
   virtual struct hostent* gethostbyname(const char* name);
-  virtual void freeaddrinfo(struct addrinfo *res);
-  virtual int getaddrinfo(const char* node, const char* service,
+  virtual void freeaddrinfo(struct addrinfo* res);
+  virtual int getaddrinfo(const char* node,
+                          const char* service,
                           const struct addrinfo* hints,
                           struct addrinfo** res);
   virtual int getpeername(int fd, struct sockaddr* addr, socklen_t* len);
@@ -177,10 +183,7 @@ class KernelProxy : protected KernelObject {
                          void* optval,
                          socklen_t* len);
   virtual int listen(int fd, int backlog);
-  virtual ssize_t recv(int fd,
-                       void* buf,
-                       size_t len,
-                       int flags);
+  virtual ssize_t recv(int fd, void* buf, size_t len, int flags);
   virtual ssize_t recvfrom(int fd,
                            void* buf,
                            size_t len,
@@ -223,7 +226,7 @@ class KernelProxy : protected KernelObject {
   sdk_util::ScopedRef<DevFs> dev_fs_;
   int dev_;
   PepperInterface* ppapi_;
-  static KernelProxy *s_instance_;
+  static KernelProxy* s_instance_;
   struct sigaction sigwinch_handler_;
   nacl_io_exit_handler_t exit_handler_;
   void* exit_handler_user_data_;

@@ -159,7 +159,9 @@ Error RealNode::Write(const HandleAttr& attr,
   return 0;
 }
 
-Error RealNode::GetStat(struct stat* stat) { return _real_fstat(fd_, stat); }
+Error RealNode::GetStat(struct stat* stat) {
+  return _real_fstat(fd_, stat);
+}
 
 Error NullNode::Read(const HandleAttr& attr,
                      void* buf,
@@ -178,7 +180,8 @@ Error NullNode::Write(const HandleAttr& attr,
 }
 
 ConsoleNode::ConsoleNode(Filesystem* filesystem, PP_LogLevel level)
-    : CharNode(filesystem), level_(level) {}
+    : CharNode(filesystem), level_(level) {
+}
 
 Error ConsoleNode::Write(const HandleAttr& attr,
                          const void* buf,
@@ -317,15 +320,25 @@ Error DevFs::Open(const Path& path, int open_flags, ScopedNode* out_node) {
   return error;
 }
 
-Error DevFs::Unlink(const Path& path) { return EPERM; }
+Error DevFs::Unlink(const Path& path) {
+  return EPERM;
+}
 
-Error DevFs::Mkdir(const Path& path, int permissions) { return EPERM; }
+Error DevFs::Mkdir(const Path& path, int permissions) {
+  return EPERM;
+}
 
-Error DevFs::Rmdir(const Path& path) { return EPERM; }
+Error DevFs::Rmdir(const Path& path) {
+  return EPERM;
+}
 
-Error DevFs::Remove(const Path& path) { return EPERM; }
+Error DevFs::Remove(const Path& path) {
+  return EPERM;
+}
 
-Error DevFs::Rename(const Path& path, const Path& newpath) { return EPERM; }
+Error DevFs::Rename(const Path& path, const Path& newpath) {
+  return EPERM;
+}
 
 Error DevFs::CreateFsNode(Filesystem* other_fs) {
   int dev = other_fs->dev();
@@ -342,8 +355,8 @@ Error DevFs::DestroyFsNode(Filesystem* other_fs) {
   return fs_dir_->RemoveChild(path);
 }
 
-
-DevFs::DevFs() {}
+DevFs::DevFs() {
+}
 
 #define INITIALIZE_DEV_NODE(path, klass)   \
   new_node = ScopedNode(new klass(this));  \

@@ -119,7 +119,10 @@ struct fuse_operations {
   // Called by read(). Note that FUSE specifies that all reads will fill the
   // entire requested buffer. If this function returns less than that, the
   // remainder of the buffer is zeroed.
-  int (*read)(const char* path, char* buf, size_t count, off_t,
+  int (*read)(const char* path,
+              char* buf,
+              size_t count,
+              off_t,
               struct fuse_file_info*);
   // Called by getdents(), which is called by the more standard function
   // readdir().
@@ -167,7 +170,10 @@ struct fuse_operations {
   //     return 0;
   //   }
   //
-  int (*readdir)(const char* path, void* buf, fuse_fill_dir_t filldir, off_t,
+  int (*readdir)(const char* path,
+                 void* buf,
+                 fuse_fill_dir_t filldir,
+                 off_t,
                  struct fuse_file_info*);
   // Called when the last reference to this node is released. This is only
   // called for regular files. For directories, fuse_operations.releasedir is
@@ -187,7 +193,10 @@ struct fuse_operations {
   int (*unlink)(const char* path);
   // Called by write(). Note that FUSE specifies that a write should always
   // return the full count, unless an error occurs.
-  int (*write)(const char* path, const char* buf, size_t count, off_t,
+  int (*write)(const char* path,
+               const char* buf,
+               size_t count,
+               off_t,
                struct fuse_file_info*);
 
   // The following functions are not currently called by the nacl_io
@@ -200,22 +209,33 @@ struct fuse_operations {
   int (*flush)(const char*, struct fuse_file_info*);
   int (*fsyncdir)(const char*, int, struct fuse_file_info*);
   int (*getxattr)(const char*, const char*, char*, size_t);
-  int (*ioctl)(const char*, int cmd, void* arg, struct fuse_file_info*,
-               unsigned int flags, void* data);
+  int (*ioctl)(const char*,
+               int cmd,
+               void* arg,
+               struct fuse_file_info*,
+               unsigned int flags,
+               void* data);
   int (*link)(const char*, const char*);
   int (*listxattr)(const char*, char*, size_t);
   int (*lock)(const char*, struct fuse_file_info*, int cmd, struct flock*);
-  int (*poll)(const char*, struct fuse_file_info*, struct fuse_pollhandle* ph,
+  int (*poll)(const char*,
+              struct fuse_file_info*,
+              struct fuse_pollhandle* ph,
               unsigned* reventsp);
-  int (*read_buf)(const char*, struct fuse_bufvec** bufp, size_t size,
-                  off_t off, struct fuse_file_info*);
+  int (*read_buf)(const char*,
+                  struct fuse_bufvec** bufp,
+                  size_t size,
+                  off_t off,
+                  struct fuse_file_info*);
   int (*readlink)(const char*, char*, size_t);
   int (*removexattr)(const char*, const char*);
   int (*setxattr)(const char*, const char*, const char*, size_t, int);
   int (*statfs)(const char*, struct statvfs*);
   int (*symlink)(const char*, const char*);
   int (*utimens)(const char*, const struct timespec tv[2]);
-  int (*write_buf)(const char*, struct fuse_bufvec* buf, off_t off,
+  int (*write_buf)(const char*,
+                   struct fuse_bufvec* buf,
+                   off_t off,
                    struct fuse_file_info*);
 };
 

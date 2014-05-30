@@ -17,10 +17,12 @@ void PepperInterface::ReleaseResource(PP_Resource resource) {
 }
 
 ScopedResource::ScopedResource(PepperInterface* ppapi)
-    : ppapi_(ppapi), resource_(0) {}
+    : ppapi_(ppapi), resource_(0) {
+}
 
 ScopedResource::ScopedResource(PepperInterface* ppapi, PP_Resource resource)
-    : ppapi_(ppapi), resource_(resource) {}
+    : ppapi_(ppapi), resource_(resource) {
+}
 
 ScopedResource::~ScopedResource() {
   if (resource_)

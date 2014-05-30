@@ -25,11 +25,10 @@ struct termios {
   speed_t c_ospeed;
 };
 
-
 EXTERN_C_BEGIN
 
-int tcgetattr(int fd,struct termios *termios_p);
-int tcsetattr(int fd,int optional_actions,const struct termios *termios_p);
+int tcgetattr(int fd, struct termios* termios_p);
+int tcsetattr(int fd, int optional_actions, const struct termios* termios_p);
 
 EXTERN_C_END
 

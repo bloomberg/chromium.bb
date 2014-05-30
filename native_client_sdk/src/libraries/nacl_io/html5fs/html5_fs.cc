@@ -55,7 +55,9 @@ Error Html5Fs::Open(const Path& path, int open_flags, ScopedNode* out_node) {
   return 0;
 }
 
-Error Html5Fs::Unlink(const Path& path) { return Remove(path); }
+Error Html5Fs::Unlink(const Path& path) {
+  return Remove(path);
+}
 
 Error Html5Fs::Mkdir(const Path& path, int permissions) {
   Error error = BlockUntilFilesystemOpen();
@@ -82,7 +84,9 @@ Error Html5Fs::Mkdir(const Path& path, int permissions) {
   return 0;
 }
 
-Error Html5Fs::Rmdir(const Path& path) { return Remove(path); }
+Error Html5Fs::Rmdir(const Path& path) {
+  return Remove(path);
+}
 
 Error Html5Fs::Remove(const Path& path) {
   Error error = BlockUntilFilesystemOpen();
@@ -123,9 +127,10 @@ Error Html5Fs::Rename(const Path& path, const Path& newpath) {
   if (!new_fileref_resource.pp_resource())
     return ENOENT;
 
-  int32_t result = ppapi()->GetFileRefInterface()->Rename(
-      fileref_resource.pp_resource(), new_fileref_resource.pp_resource(),
-      PP_BlockUntilComplete());
+  int32_t result =
+      ppapi()->GetFileRefInterface()->Rename(fileref_resource.pp_resource(),
+                                             new_fileref_resource.pp_resource(),
+                                             PP_BlockUntilComplete());
   if (result != PP_OK)
     return PPErrorToErrno(result);
 
@@ -135,7 +140,8 @@ Error Html5Fs::Rename(const Path& path, const Path& newpath) {
 Html5Fs::Html5Fs()
     : filesystem_resource_(0),
       filesystem_open_has_result_(false),
-      filesystem_open_error_(0) {}
+      filesystem_open_error_(0) {
+}
 
 Error Html5Fs::Init(const FsInitArgs& args) {
   Error error = Filesystem::Init(args);

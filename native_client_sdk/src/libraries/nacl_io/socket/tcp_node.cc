@@ -307,7 +307,9 @@ Error TcpNode::Init(int open_flags) {
   return 0;
 }
 
-EventEmitter* TcpNode::GetEventEmitter() { return emitter_.get(); }
+EventEmitter* TcpNode::GetEventEmitter() {
+  return emitter_.get();
+}
 
 void TcpNode::SetError_Locked(int pp_error_num) {
   SocketNode::SetError_Locked(pp_error_num);

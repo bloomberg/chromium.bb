@@ -13,7 +13,8 @@
 
 namespace nacl_io {
 
-StreamEventEmitter::StreamEventEmitter() : stream_(NULL) {}
+StreamEventEmitter::StreamEventEmitter() : stream_(NULL) {
+}
 
 void StreamEventEmitter::AttachStream(StreamNode* stream) {
   AUTO_LOCK(GetLock());

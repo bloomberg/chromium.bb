@@ -21,7 +21,8 @@
 
 namespace nacl_io {
 
-MemFs::MemFs() : root_(NULL) {}
+MemFs::MemFs() : root_(NULL) {
+}
 
 Error MemFs::Init(const FsInitArgs& args) {
   Error error = Filesystem::Init(args);

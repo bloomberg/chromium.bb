@@ -18,7 +18,8 @@ TcpEventEmitter::TcpEventEmitter(size_t rsize, size_t wsize)
       out_fifo_(wsize),
       error_(false),
       listening_(false),
-      accepted_socket_(0) {}
+      accepted_socket_(0) {
+}
 
 uint32_t TcpEventEmitter::ReadIn_Locked(char* data, uint32_t len) {
   uint32_t count = in_fifo_.Read(data, len);
@@ -72,7 +73,9 @@ void TcpEventEmitter::ConnectDone_Locked() {
   UpdateStatus_Locked();
 }
 
-bool TcpEventEmitter::GetError_Locked() { return error_; }
+bool TcpEventEmitter::GetError_Locked() {
+  return error_;
+}
 
 void TcpEventEmitter::SetError_Locked() {
   error_ = true;

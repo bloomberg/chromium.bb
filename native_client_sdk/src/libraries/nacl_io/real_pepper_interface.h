@@ -17,7 +17,7 @@ namespace nacl_io {
 #include "nacl_io/pepper/define_empty_macros.h"
 #undef BEGIN_INTERFACE
 #define BEGIN_INTERFACE(BaseClass, PPInterface, InterfaceString) \
-    class Real##BaseClass;
+  class Real##BaseClass;
 #include "nacl_io/pepper/all_interfaces.h"
 
 class RealPepperInterface : public PepperInterface {
@@ -32,7 +32,7 @@ class RealPepperInterface : public PepperInterface {
 #include "nacl_io/pepper/define_empty_macros.h"
 #undef BEGIN_INTERFACE
 #define BEGIN_INTERFACE(BaseClass, PPInterface, InterfaceString) \
-    virtual BaseClass* Get##BaseClass();
+  virtual BaseClass* Get##BaseClass();
 #include "nacl_io/pepper/all_interfaces.h"
 
  private:
@@ -43,7 +43,7 @@ class RealPepperInterface : public PepperInterface {
 #include "nacl_io/pepper/define_empty_macros.h"
 #undef BEGIN_INTERFACE
 #define BEGIN_INTERFACE(BaseClass, PPInterface, InterfaceString) \
-    Real##BaseClass* BaseClass##interface_;
+  Real##BaseClass* BaseClass##interface_;
 #include "nacl_io/pepper/all_interfaces.h"
 };
 

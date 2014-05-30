@@ -10,11 +10,11 @@
 #include <pthread.h>
 
 #ifndef CLOCK_REALTIME
-#define CLOCK_REALTIME (clockid_t) 1
+#define CLOCK_REALTIME (clockid_t)1
 #endif
 
-int clock_gettime(clockid_t clock_id, struct timespec *tp);
-int clock_settime(clockid_t clock_id, const struct timespec *tp);
+int clock_gettime(clockid_t clock_id, struct timespec* tp);
+int clock_settime(clockid_t clock_id, const struct timespec* tp);
 
 #else
 
@@ -23,4 +23,3 @@ int clock_settime(clockid_t clock_id, const struct timespec *tp);
 #endif
 
 #endif  // LIBRARIES_NACL_IO_OSUNISTD_H_
-

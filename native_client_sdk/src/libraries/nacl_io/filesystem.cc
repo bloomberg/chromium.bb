@@ -21,9 +21,11 @@
 
 namespace nacl_io {
 
-Filesystem::Filesystem() : dev_(0) {}
+Filesystem::Filesystem() : dev_(0) {
+}
 
-Filesystem::~Filesystem() {}
+Filesystem::~Filesystem() {
+}
 
 Error Filesystem::Init(const FsInitArgs& args) {
   dev_ = args.dev;
@@ -31,7 +33,8 @@ Error Filesystem::Init(const FsInitArgs& args) {
   return 0;
 }
 
-void Filesystem::Destroy() {}
+void Filesystem::Destroy() {
+}
 
 Error Filesystem::OpenResource(const Path& path, ScopedNode* out_node) {
   out_node->reset(NULL);

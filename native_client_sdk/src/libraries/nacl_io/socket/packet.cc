@@ -11,7 +11,8 @@
 namespace nacl_io {
 
 Packet::Packet(PepperInterface* ppapi)
-    : ppapi_(ppapi), addr_(0), buffer_(NULL), len_(0) {}
+    : ppapi_(ppapi), addr_(0), buffer_(NULL), len_(0) {
+}
 
 Packet::~Packet() {
   if ((NULL != ppapi_) && addr_)

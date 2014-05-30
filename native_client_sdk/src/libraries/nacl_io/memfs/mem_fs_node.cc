@@ -27,7 +27,8 @@ MemFsNode::MemFsNode(Filesystem* filesystem) : Node(filesystem) {
   SetType(S_IFREG);
 }
 
-MemFsNode::~MemFsNode() {}
+MemFsNode::~MemFsNode() {
+}
 
 Error MemFsNode::Read(const HandleAttr& attr,
                       void* buf,

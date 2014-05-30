@@ -54,8 +54,8 @@ int ki_init(void* kp) {
 }
 
 int ki_init_ppapi(void* kp,
-                   PP_Instance instance,
-                   PPB_GetInterface get_browser_interface) {
+                  PP_Instance instance,
+                  PPB_GetInterface get_browser_interface) {
   assert(!s_state.kp);
   if (s_state.kp != NULL)
     return 1;
@@ -163,7 +163,7 @@ int ki_dup2(int oldfd, int newfd) {
   return s_state.kp->dup2(oldfd, newfd);
 }
 
-int ki_chmod(const char *path, mode_t mode) {
+int ki_chmod(const char* path, mode_t mode) {
   ON_NOSYS_RETURN(-1);
   return s_state.kp->chmod(path, mode);
 }
@@ -178,33 +178,36 @@ int ki_fchmod(int fd, mode_t mode) {
   return s_state.kp->fchmod(fd, mode);
 }
 
-int ki_stat(const char *path, struct stat *buf) {
+int ki_stat(const char* path, struct stat* buf) {
   ON_NOSYS_RETURN(-1);
   return s_state.kp->stat(path, buf);
 }
 
-int ki_mkdir(const char *path, mode_t mode) {
+int ki_mkdir(const char* path, mode_t mode) {
   ON_NOSYS_RETURN(-1);
   return s_state.kp->mkdir(path, mode);
 }
 
-int ki_rmdir(const char *path) {
+int ki_rmdir(const char* path) {
   ON_NOSYS_RETURN(-1);
   return s_state.kp->rmdir(path);
 }
 
-int ki_mount(const char *source, const char *target, const char *filesystemtype,
-             unsigned long mountflags, const void *data) {
+int ki_mount(const char* source,
+             const char* target,
+             const char* filesystemtype,
+             unsigned long mountflags,
+             const void* data) {
   ON_NOSYS_RETURN(-1);
   return s_state.kp->mount(source, target, filesystemtype, mountflags, data);
 }
 
-int ki_umount(const char *path) {
+int ki_umount(const char* path) {
   ON_NOSYS_RETURN(-1);
   return s_state.kp->umount(path);
 }
 
-int ki_open(const char *path, int oflag) {
+int ki_open(const char* path, int oflag) {
   ON_NOSYS_RETURN(-1);
   return s_state.kp->open(path, oflag);
 }
@@ -214,22 +217,22 @@ int ki_pipe(int pipefds[2]) {
   return s_state.kp->pipe(pipefds);
 }
 
-ssize_t ki_read(int fd, void *buf, size_t nbyte) {
+ssize_t ki_read(int fd, void* buf, size_t nbyte) {
   ON_NOSYS_RETURN(-1);
   return s_state.kp->read(fd, buf, nbyte);
 }
 
-ssize_t ki_write(int fd, const void *buf, size_t nbyte) {
+ssize_t ki_write(int fd, const void* buf, size_t nbyte) {
   ON_NOSYS_RETURN(-1);
   return s_state.kp->write(fd, buf, nbyte);
 }
 
-int ki_fstat(int fd, struct stat *buf){
+int ki_fstat(int fd, struct stat* buf) {
   ON_NOSYS_RETURN(-1);
   return s_state.kp->fstat(fd, buf);
 }
 
-int ki_getdents(int fd, void *buf, unsigned int count) {
+int ki_getdents(int fd, void* buf, unsigned int count) {
   ON_NOSYS_RETURN(-1);
   return s_state.kp->getdents(fd, buf, count);
 }
@@ -304,17 +307,21 @@ int ki_access(const char* path, int amode) {
   return s_state.kp->access(path, amode);
 }
 
-int ki_readlink(const char *path, char *buf, size_t count) {
+int ki_readlink(const char* path, char* buf, size_t count) {
   ON_NOSYS_RETURN(-1);
   return s_state.kp->readlink(path, buf, count);
 }
 
-int ki_utimes(const char *path, const struct timeval times[2]) {
+int ki_utimes(const char* path, const struct timeval times[2]) {
   ON_NOSYS_RETURN(-1);
   return s_state.kp->utimes(path, times);
 }
 
-void* ki_mmap(void* addr, size_t length, int prot, int flags, int fd,
+void* ki_mmap(void* addr,
+              size_t length,
+              int prot,
+              int flags,
+              int fd,
               off_t offset) {
   ON_NOSYS_RETURN(MAP_FAILED);
   return s_state.kp->mmap(addr, length, prot, flags, fd, offset);
@@ -326,7 +333,8 @@ int ki_munmap(void* addr, size_t length) {
 }
 
 int ki_open_resource(const char* file) {
-  ON_NOSYS_RETURN(-1);  return s_state.kp->open_resource(file);
+  ON_NOSYS_RETURN(-1);
+  return s_state.kp->open_resource(file);
 }
 
 int ki_fcntl(int d, int request, va_list args) {
@@ -359,12 +367,15 @@ int ki_utime(const char* filename, const struct utimbuf* times) {
   return s_state.kp->utime(filename, times);
 }
 
-int ki_poll(struct pollfd *fds, nfds_t nfds, int timeout) {
+int ki_poll(struct pollfd* fds, nfds_t nfds, int timeout) {
   return s_state.kp->poll(fds, nfds, timeout);
 }
 
-int ki_select(int nfds, fd_set* readfds, fd_set* writefds,
-              fd_set* exceptfds, struct timeval* timeout) {
+int ki_select(int nfds,
+              fd_set* readfds,
+              fd_set* writefds,
+              fd_set* exceptfds,
+              struct timeval* timeout) {
   return s_state.kp->select(nfds, readfds, writefds, exceptfds, timeout);
 }
 
@@ -378,8 +389,9 @@ int ki_tcgetattr(int fd, struct termios* termios_p) {
   return s_state.kp->tcgetattr(fd, termios_p);
 }
 
-int ki_tcsetattr(int fd, int optional_actions,
-                 const struct termios *termios_p) {
+int ki_tcsetattr(int fd,
+                 int optional_actions,
+                 const struct termios* termios_p) {
   ON_NOSYS_RETURN(-1);
   return s_state.kp->tcsetattr(fd, optional_actions, termios_p);
 }
@@ -394,7 +406,8 @@ int ki_killpg(pid_t pid, int sig) {
   return -1;
 }
 
-int ki_sigaction(int signum, const struct sigaction* action,
+int ki_sigaction(int signum,
+                 const struct sigaction* action,
                  struct sigaction* oaction) {
   ON_NOSYS_RETURN(-1);
   return s_state.kp->sigaction(signum, action, oaction);
@@ -455,14 +468,15 @@ struct hostent* ki_gethostbyname(const char* name) {
   return s_state.kp->gethostbyname(name);
 }
 
-int ki_getaddrinfo(const char *node, const char *service,
-                const struct addrinfo *hints,
-                struct addrinfo **res) {
+int ki_getaddrinfo(const char* node,
+                   const char* service,
+                   const struct addrinfo* hints,
+                   struct addrinfo** res) {
   ON_NOSYS_RETURN(EAI_SYSTEM);
   return s_state.kp->getaddrinfo(node, service, hints, res);
 }
 
-void ki_freeaddrinfo(struct addrinfo *res) {
+void ki_freeaddrinfo(struct addrinfo* res) {
   s_state.kp->freeaddrinfo(res);
 }
 
@@ -491,8 +505,12 @@ ssize_t ki_recv(int fd, void* buf, size_t len, int flags) {
   return s_state.kp->recv(fd, buf, len, flags);
 }
 
-ssize_t ki_recvfrom(int fd, void* buf, size_t len, int flags,
-                 struct sockaddr* addr, socklen_t* addrlen) {
+ssize_t ki_recvfrom(int fd,
+                    void* buf,
+                    size_t len,
+                    int flags,
+                    struct sockaddr* addr,
+                    socklen_t* addrlen) {
   ON_NOSYS_RETURN(-1);
   return s_state.kp->recvfrom(fd, buf, len, flags, addr, addrlen);
 }
@@ -507,8 +525,12 @@ ssize_t ki_send(int fd, const void* buf, size_t len, int flags) {
   return s_state.kp->send(fd, buf, len, flags);
 }
 
-ssize_t ki_sendto(int fd, const void* buf, size_t len, int flags,
-               const struct sockaddr* addr, socklen_t addrlen) {
+ssize_t ki_sendto(int fd,
+                  const void* buf,
+                  size_t len,
+                  int flags,
+                  const struct sockaddr* addr,
+                  socklen_t addrlen) {
   ON_NOSYS_RETURN(-1);
   return s_state.kp->sendto(fd, buf, len, flags, addr, addrlen);
 }
@@ -518,7 +540,10 @@ ssize_t ki_sendmsg(int fd, const struct msghdr* msg, int flags) {
   return s_state.kp->sendmsg(fd, msg, flags);
 }
 
-int ki_setsockopt(int fd, int lvl, int optname, const void* optval,
+int ki_setsockopt(int fd,
+                  int lvl,
+                  int optname,
+                  const void* optval,
                   socklen_t len) {
   ON_NOSYS_RETURN(-1);
   return s_state.kp->setsockopt(fd, lvl, optname, optval, len);

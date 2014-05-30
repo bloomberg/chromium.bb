@@ -43,7 +43,9 @@ Error DirNode::Read(const HandleAttr& attr,
   return EISDIR;
 }
 
-Error DirNode::FTruncate(off_t size) { return EISDIR; }
+Error DirNode::FTruncate(off_t size) {
+  return EISDIR;
+}
 
 Error DirNode::Write(const HandleAttr& attr,
                      const void* buf,

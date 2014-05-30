@@ -12,11 +12,9 @@ void nacl_io_init() {
   ki_init(NULL);
 }
 
-void nacl_io_init_ppapi(PP_Instance instance,
-                        PPB_GetInterface get_interface) {
+void nacl_io_init_ppapi(PP_Instance instance, PPB_GetInterface get_interface) {
   ki_init_ppapi(NULL, instance, get_interface);
 }
-
 
 int nacl_io_register_fs_type(const char* fs_type, fuse_operations* fuse_ops) {
   return ki_get_proxy()->RegisterFsType(fs_type, fuse_ops);
@@ -27,6 +25,6 @@ int nacl_io_unregister_fs_type(const char* fs_type) {
 }
 
 int nacl_io_register_exit_handler(nacl_io_exit_handler_t exit_handler,
-                                   void* user_data) {
+                                  void* user_data) {
   return ki_get_proxy()->RegisterExitHandler(exit_handler, user_data);
 }

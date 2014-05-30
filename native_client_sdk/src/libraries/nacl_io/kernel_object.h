@@ -33,7 +33,7 @@ class KernelObject {
     Descriptor_t() : flags(0) {}
     explicit Descriptor_t(const ScopedKernelHandle& h,
                           const std::string& open_path)
-      : handle(h), flags(0), path(open_path) {}
+        : handle(h), flags(0), path(open_path) {}
 
     ScopedKernelHandle handle;
     int flags;
@@ -74,17 +74,19 @@ class KernelObject {
   // Convert from FD to KernelHandle, and acquire the handle.
   // Assumes |out_handle| is non-NULL.
   Error AcquireHandle(int fd, ScopedKernelHandle* out_handle);
-  Error AcquireHandleAndPath(int fd, ScopedKernelHandle *out_handle,
+  Error AcquireHandleAndPath(int fd,
+                             ScopedKernelHandle* out_handle,
                              std::string* out_path);
 
   // Allocate a new fd and assign the handle to it, while
   // ref counting the handle and associated filesystem.
   // Assumes |handle| is non-NULL;
   int AllocateFD(const ScopedKernelHandle& handle,
-                 const std::string& path=std::string());
+                 const std::string& path = std::string());
 
   // Assumes |handle| is non-NULL;
-  void FreeAndReassignFD(int fd, const ScopedKernelHandle& handle,
+  void FreeAndReassignFD(int fd,
+                         const ScopedKernelHandle& handle,
                          const std::string& path);
   void FreeFD(int fd);
 

@@ -50,7 +50,7 @@ class PepperInterfaceDelegate : public PepperInterface {
 #include "nacl_io/pepper/define_empty_macros.h"
 #undef BEGIN_INTERFACE
 #define BEGIN_INTERFACE(BaseClass, PPInterface, InterfaceString) \
-    virtual BaseClass* Get##BaseClass();
+  virtual BaseClass* Get##BaseClass();
 #include "nacl_io/pepper/all_interfaces.h"
 
 // Interface delegate setters.
@@ -63,7 +63,7 @@ class PepperInterfaceDelegate : public PepperInterface {
 #include "nacl_io/pepper/define_empty_macros.h"
 #undef BEGIN_INTERFACE
 #define BEGIN_INTERFACE(BaseClass, PPInterface, InterfaceString) \
-    void Set##BaseClass##Delegate(BaseClass* delegate);
+  void Set##BaseClass##Delegate(BaseClass* delegate);
 #include "nacl_io/pepper/all_interfaces.h"
 
  private:
@@ -73,7 +73,7 @@ class PepperInterfaceDelegate : public PepperInterface {
 #include "nacl_io/pepper/define_empty_macros.h"
 #undef BEGIN_INTERFACE
 #define BEGIN_INTERFACE(BaseClass, PPInterface, InterfaceString) \
-    BaseClass* BaseClass##delegate_;
+  BaseClass* BaseClass##delegate_;
 #include "nacl_io/pepper/all_interfaces.h"
 };
 

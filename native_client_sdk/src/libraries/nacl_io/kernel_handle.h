@@ -40,7 +40,6 @@ struct HandleAttr {
 // KernelHandle can only be referenced when the KernelProxy lock is held.
 class KernelHandle : public sdk_util::RefObject {
  public:
-
   KernelHandle();
   KernelHandle(const ScopedFilesystem& fs, const ScopedNode& node);
   ~KernelHandle();
