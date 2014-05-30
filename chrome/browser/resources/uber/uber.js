@@ -101,24 +101,22 @@ cr.define('uber', function() {
    * @param {Event} e The history event.
    */
   function onPopHistoryState(e) {
-    if (e.state && e.state.pageId) {
-      var params = resolvePageInfo();
-      assert(params.id === e.state.pageId);
+    // Use the URL to determine which page to route to.
+    var params = resolvePageInfo();
 
-      // If the page isn't the current page, load it fresh. Even if the page is
-      // already loaded, it may have state not reflected in the URL, such as the
-      // history page's "Remove selected items" overlay. http://crbug.com/377386
-      if (getRequiredElement(params.id) !== getSelectedIframe())
-        showPage(params.id, HISTORY_STATE_OPTION.NONE, params.path);
+    // If the page isn't the current page, load it fresh. Even if the page is
+    // already loaded, it may have state not reflected in the URL, such as the
+    // history page's "Remove selected items" overlay. http://crbug.com/377386
+    if (getRequiredElement(params.id) !== getSelectedIframe())
+      showPage(params.id, HISTORY_STATE_OPTION.NONE, params.path);
 
-      // Either way, send the state down to it.
-      //
-      // Note: This assumes that the state and path parameters for every page
-      // under this origin are compatible. All of the downstream pages which
-      // navigate use pushState and replaceState.
-      invokeMethodOnPage(e.state.pageId, 'popState',
-                         {state: e.state.pageState, path: params.path});
-    }
+    // Either way, send the state down to it.
+    //
+    // Note: This assumes that the state and path parameters for every page
+    // under this origin are compatible. All of the downstream pages which
+    // navigate use pushState and replaceState.
+    invokeMethodOnPage(params.id, 'popState',
+                       {state: e.state, path: params.path});
   }
 
   /**
@@ -239,9 +237,7 @@ cr.define('uber', function() {
     assert(histFunc, 'invalid historyOption given ' + historyOption);
 
     var pageId = getSelectedIframe().id;
-    var args = [{pageId: pageId, pageState: state},
-                '',
-                '/' + pageId + '/' + (path || '')];
+    var args = [state, '', '/' + pageId + '/' + (path || '')];
     histFunc.apply(window.history, args);
   }
 
