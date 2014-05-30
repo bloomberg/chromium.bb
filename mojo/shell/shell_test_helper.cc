@@ -48,8 +48,8 @@ class ShellTestHelper::TestServiceProvider : public ServiceProvider {
   // ServiceProvider:
   virtual void ConnectToService(
       const mojo::String& url,
-      ScopedMessagePipeHandle client_handle) OVERRIDE {
-  }
+      const mojo::String& name,
+      ScopedMessagePipeHandle client_handle) OVERRIDE {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestServiceProvider);

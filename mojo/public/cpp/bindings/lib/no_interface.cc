@@ -6,6 +6,8 @@
 
 namespace mojo {
 
+const char* NoInterface::Name_ = "mojo::NoInterface";
+
 bool NoInterfaceStub::Accept(Message* message) {
   return false;
 }

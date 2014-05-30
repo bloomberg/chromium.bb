@@ -8,7 +8,7 @@ module mojo {
 interface ServiceProvider {
   // Loads url. mojo:{service} will result in the user of the value of the
   // --origin flag to the shell being used.
-  ConnectToService(string url, handle<message_pipe> client_handle);
+  ConnectToService(string url, string name, handle<message_pipe> client_handle);
 };
 
 }

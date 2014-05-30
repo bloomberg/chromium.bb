@@ -422,6 +422,7 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
   // mojo::ServiceProvider implementation:
   virtual void ConnectToService(
       const mojo::String& service_name,
+      const mojo::String& name,
       mojo::ScopedMessagePipeHandle message_pipe) OVERRIDE;
 
   void Init();

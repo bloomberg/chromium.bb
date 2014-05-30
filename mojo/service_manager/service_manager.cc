@@ -29,15 +29,17 @@ class ServiceManager::ServiceFactory : public InterfaceImpl<ServiceProvider> {
   virtual ~ServiceFactory() {
   }
 
-  void ConnectToClient(ScopedMessagePipeHandle handle) {
+  void ConnectToClient(const std::string& name,
+                       ScopedMessagePipeHandle handle) {
     if (handle.is_valid())
-      client()->ConnectToService(url_.spec(), handle.Pass());
+      client()->ConnectToService(url_.spec(), name, handle.Pass());
   }
 
   // ServiceProvider implementation:
   virtual void ConnectToService(const String& url,
+                                const String& name,
                                 ScopedMessagePipeHandle client_pipe) OVERRIDE {
-    manager_->ConnectToService(GURL(url), client_pipe.Pass());
+    manager_->ConnectToService(GURL(url), name, client_pipe.Pass());
   }
 
   const GURL& url() const { return url_; }
@@ -66,8 +68,9 @@ class ServiceManager::TestAPI::TestServiceProviderConnection
 
   // ServiceProvider:
   virtual void ConnectToService(const String& url,
+                                const String& name,
                                 ScopedMessagePipeHandle client_pipe) OVERRIDE {
-    manager_->ConnectToService(GURL(url), client_pipe.Pass());
+    manager_->ConnectToService(GURL(url), name, client_pipe.Pass());
   }
 
  private:
@@ -119,6 +122,7 @@ ServiceManager* ServiceManager::GetInstance() {
 }
 
 void ServiceManager::ConnectToService(const GURL& url,
+                                      const std::string& name,
                                       ScopedMessagePipeHandle client_handle) {
   URLToServiceFactoryMap::const_iterator service_it =
       url_to_service_factory_.find(url);
@@ -136,9 +140,9 @@ void ServiceManager::ConnectToService(const GURL& url,
   }
   if (interceptor_) {
     service_factory->ConnectToClient(
-        interceptor_->OnConnectToClient(url, client_handle.Pass()));
+        name, interceptor_->OnConnectToClient(url, client_handle.Pass()));
   } else {
-    service_factory->ConnectToClient(client_handle.Pass());
+    service_factory->ConnectToClient(name, client_handle.Pass());
   }
 }
 

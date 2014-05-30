@@ -354,7 +354,8 @@ void ChildThread::OnChannelError() {
 }
 
 void ChildThread::ConnectToService(
-    const mojo::String& service_name,
+    const mojo::String& url,
+    const mojo::String& name,
     mojo::ScopedMessagePipeHandle message_pipe) {
   // By default, we don't expect incoming connections.
   NOTREACHED();

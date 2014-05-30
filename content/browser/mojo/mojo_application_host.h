@@ -50,6 +50,7 @@ class MojoApplicationHost {
     // mojo::ServiceProvider methods:
     virtual void ConnectToService(
         const mojo::String& url,
+        const mojo::String& name,
         mojo::ScopedMessagePipeHandle handle) OVERRIDE;
   };
 

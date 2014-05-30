@@ -62,6 +62,7 @@ bool MojoApplicationHost::Activate(IPC::Sender* sender,
 
 void MojoApplicationHost::ServiceProviderImpl::ConnectToService(
     const mojo::String& url,
+    const mojo::String& name,
     mojo::ScopedMessagePipeHandle handle) {
   // TODO(darin): Provide something meaningful here.
 }

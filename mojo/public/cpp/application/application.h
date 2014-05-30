@@ -78,12 +78,14 @@ class Application : public internal::ServiceConnectorBase::Owner {
 
   template <typename Impl, typename Context>
   void AddService(Context* context) {
-    AddServiceConnector(new internal::ServiceConnector<Impl, Context>(context));
+    AddServiceConnector(
+        new internal::ServiceConnector<Impl, Context>(Impl::Name_, context));
   }
 
   template <typename Impl>
   void AddService() {
-    AddServiceConnector(new internal::ServiceConnector<Impl, void>(NULL));
+    AddServiceConnector(
+        new internal::ServiceConnector<Impl, void>(Impl::Name_, NULL));
   }
 
   template <typename Interface>
@@ -100,6 +102,7 @@ class Application : public internal::ServiceConnectorBase::Owner {
   // Override this to dispatch to correct service when there's more than one.
   // TODO(davemoore): Augment this with name registration.
   virtual void ConnectToService(const mojo::String& url,
+                                const mojo::String& name,
                                 ScopedMessagePipeHandle client_handle)
       MOJO_OVERRIDE;
 
@@ -116,8 +119,9 @@ class Application : public internal::ServiceConnectorBase::Owner {
   virtual void RemoveServiceConnector(
       internal::ServiceConnectorBase* service_connector) MOJO_OVERRIDE;
 
-  typedef std::vector<internal::ServiceConnectorBase*> ServiceConnectorList;
-  ServiceConnectorList service_connectors_;
+  typedef std::map<std::string, internal::ServiceConnectorBase*>
+      NameToServiceConnectorMap;
+  NameToServiceConnectorMap name_to_service_connector_;
 };
 
 }  // namespace mojo

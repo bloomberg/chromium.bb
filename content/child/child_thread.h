@@ -170,9 +170,10 @@ class CONTENT_EXPORT ChildThread
   virtual void OnChannelConnected(int32 peer_pid) OVERRIDE;
   virtual void OnChannelError() OVERRIDE;
 
-  // mojo::ShellClient implementation:
+  // mojo::ServiceProvider implementation:
   virtual void ConnectToService(
-      const mojo::String& service_name,
+      const mojo::String& url,
+      const mojo::String& name,
       mojo::ScopedMessagePipeHandle message_pipe) OVERRIDE;
 
  private:

@@ -1182,6 +1182,7 @@ scoped_ptr<gfx::GpuMemoryBuffer> RenderThreadImpl::AllocateGpuMemoryBuffer(
 
 void RenderThreadImpl::ConnectToService(
     const mojo::String& service_name,
+    const mojo::String& name,
     mojo::ScopedMessagePipeHandle message_pipe) {
   // TODO(darin): Invent some kind of registration system to use here.
   if (service_name.To<base::StringPiece>() == kRendererService_WebUISetup) {

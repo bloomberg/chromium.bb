@@ -21,6 +21,7 @@ class NoInterfaceStub;
 
 class NoInterface {
  public:
+  static const char* Name_;
   typedef NoInterfaceProxy Proxy_;
   typedef NoInterfaceStub Stub_;
   typedef PassThroughFilter RequestValidator_;

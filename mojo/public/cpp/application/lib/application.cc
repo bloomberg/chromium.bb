@@ -18,31 +18,30 @@ Application::Application(MojoHandle service_provider_handle)
               MessagePipeHandle(service_provider_handle)).Pass()) {}
 
 Application::~Application() {
-  for (ServiceConnectorList::iterator it = service_connectors_.begin();
-       it != service_connectors_.end(); ++it) {
-    delete *it;
+  for (NameToServiceConnectorMap::iterator i =
+           name_to_service_connector_.begin();
+       i != name_to_service_connector_.end(); ++i) {
+    delete i->second;
   }
+  name_to_service_connector_.clear();
 }
 
 void Application::Initialize() {}
 
 void Application::AddServiceConnector(
     internal::ServiceConnectorBase* service_connector) {
-  service_connectors_.push_back(service_connector);
+  name_to_service_connector_[service_connector->name()] = service_connector;
   set_service_connector_owner(service_connector, this);
 }
 
 void Application::RemoveServiceConnector(
     internal::ServiceConnectorBase* service_connector) {
-  for (ServiceConnectorList::iterator it = service_connectors_.begin();
-       it != service_connectors_.end(); ++it) {
-    if (*it == service_connector) {
-      service_connectors_.erase(it);
-      delete service_connector;
-      break;
-    }
-  }
-  if (service_connectors_.empty())
+  NameToServiceConnectorMap::iterator it =
+      name_to_service_connector_.find(service_connector->name());
+  assert(it != name_to_service_connector_.end());
+  delete it->second;
+  name_to_service_connector_.erase(it);
+  if (name_to_service_connector_.empty())
     service_provider_.reset();
 }
 
@@ -53,13 +52,12 @@ void Application::BindServiceProvider(
 }
 
 void Application::ConnectToService(const mojo::String& url,
+                                   const mojo::String& name,
                                    ScopedMessagePipeHandle client_handle) {
-  // TODO(davemoore): This method must be overridden by an Application subclass
-  // to dispatch to the right ServiceConnector. We need to figure out an
-  // approach to registration to make this better.
-  assert(1 == service_connectors_.size());
-  return service_connectors_.front()->ConnectToService(url,
-                                                       client_handle.Pass());
+  internal::ServiceConnectorBase* service_connector =
+      name_to_service_connector_[name];
+  return service_connector->ConnectToService(
+      url, name, client_handle.Pass());
 }
 
 }  // namespace mojo

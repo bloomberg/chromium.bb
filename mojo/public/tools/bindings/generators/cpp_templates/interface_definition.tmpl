@@ -1,6 +1,7 @@
 {%- import "interface_macros.tmpl" as interface_macros %}
 {%- set class_name = interface.name %}
 {%- set proxy_name = interface.name ~ "Proxy" %}
+{%- set namespace_as_string = "%s"|format(namespace|replace(".","::")) %}
 
 {%- macro alloc_params(parameters) %}
 {%-   for param in parameters %}
@@ -72,7 +73,7 @@ params->{{param.name}}
 {%- endmacro %}
 
 {#--- Begin #}
-
+const char* {{class_name}}::Name_ = "{{namespace_as_string}}::{{class_name}}";
 {#--- Constants #}
 {%  for constant in interface.constants %}
 const {{constant.kind|cpp_pod_type}} {{interface.name}}::{{constant.name}} = {{constant.value|expression_to_text(module)}};

@@ -2072,7 +2072,9 @@ void RenderProcessHostImpl::ConnectTo(
   MaybeActivateMojo();
 
   mojo_application_host_->service_provider()->ConnectToService(
-      mojo::String::From(service_name), handle.Pass());
+      mojo::String::From(service_name),
+      std::string(),
+      handle.Pass());
 }
 
 }  // namespace content

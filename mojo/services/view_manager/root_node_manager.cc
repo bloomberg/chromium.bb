@@ -167,7 +167,8 @@ ViewManagerConnection* RootNodeManager::ConnectImpl(
     const String& url,
     const Array<TransportNodeId>& node_ids) {
   MessagePipe pipe;
-  service_provider_->ConnectToService(url, pipe.handle1.Pass());
+  service_provider_->ConnectToService(
+      url, ViewManagerConnection::Client::Name_, pipe.handle1.Pass());
   ViewManagerConnection* connection = new ViewManagerConnection(this);
   connection->SetRoots(node_ids);
   BindToPipe(connection, pipe.handle0.Pass());

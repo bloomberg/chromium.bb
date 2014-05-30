@@ -108,7 +108,6 @@ class TestServiceLoader : public ServiceLoader {
     }
   }
 
-
   scoped_ptr<Application> test_app_;
   TestContext* context_;
   int num_loads_;
@@ -165,7 +164,8 @@ class ServiceManagerTest : public testing::Test {
     service_manager_->set_default_loader(
         scoped_ptr<ServiceLoader>(default_loader));
 
-    service_manager_->ConnectToService(test_url, pipe.handle1.Pass());
+    service_manager_->ConnectToService(
+        test_url, TestService::Name_, pipe.handle1.Pass());
   }
 
   virtual void TearDown() OVERRIDE {
@@ -240,21 +240,24 @@ TEST_F(ServiceManagerTest, SetLoaders) {
 
   // test::test1 should go to url_loader.
   MessagePipe pipe1;
-  sm.ConnectToService(GURL("test:test1"), pipe1.handle0.Pass());
+  sm.ConnectToService(
+      GURL("test:test1"), TestService::Name_, pipe1.handle0.Pass());
   EXPECT_EQ(1, url_loader->num_loads());
   EXPECT_EQ(0, scheme_loader->num_loads());
   EXPECT_EQ(0, default_loader->num_loads());
 
   // test::test2 should go to scheme loader.
   MessagePipe pipe2;
-  sm.ConnectToService(GURL("test:test2"), pipe2.handle0.Pass());
+  sm.ConnectToService(
+      GURL("test:test2"), TestService::Name_, pipe2.handle0.Pass());
   EXPECT_EQ(1, url_loader->num_loads());
   EXPECT_EQ(1, scheme_loader->num_loads());
   EXPECT_EQ(0, default_loader->num_loads());
 
   // http::test1 should go to default loader.
   MessagePipe pipe3;
-  sm.ConnectToService(GURL("http:test1"), pipe3.handle0.Pass());
+  sm.ConnectToService(
+      GURL("http:test1"), TestService::Name_, pipe3.handle0.Pass());
   EXPECT_EQ(1, url_loader->num_loads());
   EXPECT_EQ(1, scheme_loader->num_loads());
   EXPECT_EQ(1, default_loader->num_loads());
@@ -269,7 +272,7 @@ TEST_F(ServiceManagerTest, Interceptor) {
 
   std::string url("test:test3");
   MessagePipe pipe1;
-  sm.ConnectToService(GURL(url), pipe1.handle0.Pass());
+  sm.ConnectToService(GURL(url), TestService::Name_, pipe1.handle0.Pass());
   EXPECT_EQ(1, interceptor.call_count());
   EXPECT_EQ(url, interceptor.url_spec());
   EXPECT_EQ(1, default_loader->num_loads());
