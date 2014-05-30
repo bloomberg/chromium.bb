@@ -793,7 +793,8 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   virtual void OnWindowUpdate(SpdyStreamId stream_id,
                               uint32 delta_window_size) OVERRIDE;
   virtual void OnPushPromise(SpdyStreamId stream_id,
-                             SpdyStreamId promised_stream_id) OVERRIDE;
+                             SpdyStreamId promised_stream_id,
+                             const SpdyHeaderBlock& headers) OVERRIDE;
   virtual void OnSynStream(SpdyStreamId stream_id,
                            SpdyStreamId associated_stream_id,
                            SpdyPriority priority,

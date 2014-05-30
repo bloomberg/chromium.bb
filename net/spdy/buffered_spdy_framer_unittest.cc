@@ -20,7 +20,9 @@ class TestBufferedSpdyVisitor : public BufferedSpdyFramerVisitorInterface {
         syn_frame_count_(0),
         syn_reply_frame_count_(0),
         headers_frame_count_(0),
-        header_stream_id_(-1) {
+        push_promise_frame_count_(0),
+        header_stream_id_(-1),
+        promised_stream_id_(-1) {
   }
 
   virtual void OnError(SpdyFramer::SpdyError error_code) OVERRIDE {
@@ -111,8 +113,18 @@ class TestBufferedSpdyVisitor : public BufferedSpdyFramerVisitorInterface {
   void OnPing(const SpdyFrame& frame) {}
   virtual void OnWindowUpdate(SpdyStreamId stream_id,
                               uint32 delta_window_size) OVERRIDE {}
+
   virtual void OnPushPromise(SpdyStreamId stream_id,
-                             SpdyStreamId promised_stream_id) OVERRIDE {}
+                             SpdyStreamId promised_stream_id,
+                             const SpdyHeaderBlock& headers) OVERRIDE {
+    header_stream_id_ = stream_id;
+    EXPECT_NE(header_stream_id_, SpdyFramer::kInvalidStream);
+    push_promise_frame_count_++;
+    promised_stream_id_ = promised_stream_id;
+    EXPECT_NE(promised_stream_id_, SpdyFramer::kInvalidStream);
+    headers_ = headers;
+  }
+
   void OnCredential(const SpdyFrame& frame) {}
 
   // Convenience function which runs a framer simulation with particular input.
@@ -143,11 +155,14 @@ class TestBufferedSpdyVisitor : public BufferedSpdyFramerVisitorInterface {
   int syn_frame_count_;
   int syn_reply_frame_count_;
   int headers_frame_count_;
+  int push_promise_frame_count_;
 
   // Header block streaming state:
   SpdyStreamId header_stream_id_;
+  SpdyStreamId promised_stream_id_;
 
-  // Headers from OnSyn, OnSynReply and OnHeaders for verification.
+  // Headers from OnSyn, OnSynReply, OnHeaders and OnPushPromise for
+  // verification.
   SpdyHeaderBlock headers_;
 };
 
@@ -231,6 +246,7 @@ TEST_P(BufferedSpdyFramerTest, ReadSynStreamHeaderBlock) {
   EXPECT_EQ(1, visitor.syn_frame_count_);
   EXPECT_EQ(0, visitor.syn_reply_frame_count_);
   EXPECT_EQ(0, visitor.headers_frame_count_);
+  EXPECT_EQ(0, visitor.push_promise_frame_count_);
   EXPECT_TRUE(CompareHeaderBlocks(&headers, &visitor.headers_));
 }
 
@@ -251,6 +267,7 @@ TEST_P(BufferedSpdyFramerTest, ReadSynReplyHeaderBlock) {
       control_frame.get()->size());
   EXPECT_EQ(0, visitor.error_count_);
   EXPECT_EQ(0, visitor.syn_frame_count_);
+  EXPECT_EQ(0, visitor.push_promise_frame_count_);
   if(spdy_version() < SPDY4) {
     EXPECT_EQ(1, visitor.syn_reply_frame_count_);
     EXPECT_EQ(0, visitor.headers_frame_count_);
@@ -280,7 +297,33 @@ TEST_P(BufferedSpdyFramerTest, ReadHeadersHeaderBlock) {
   EXPECT_EQ(0, visitor.syn_frame_count_);
   EXPECT_EQ(0, visitor.syn_reply_frame_count_);
   EXPECT_EQ(1, visitor.headers_frame_count_);
+  EXPECT_EQ(0, visitor.push_promise_frame_count_);
   EXPECT_TRUE(CompareHeaderBlocks(&headers, &visitor.headers_));
+}
+
+TEST_P(BufferedSpdyFramerTest, ReadPushPromiseHeaderBlock) {
+  if (spdy_version() < SPDY4)
+    return;
+  SpdyHeaderBlock headers;
+  headers["alpha"] = "beta";
+  headers["gamma"] = "delta";
+  BufferedSpdyFramer framer(spdy_version(), true);
+  scoped_ptr<SpdyFrame> control_frame(
+      framer.CreatePushPromise(1, 2, &headers));
+  EXPECT_TRUE(control_frame.get() != NULL);
+
+  TestBufferedSpdyVisitor visitor(spdy_version());
+  visitor.SimulateInFramer(
+      reinterpret_cast<unsigned char*>(control_frame.get()->data()),
+      control_frame.get()->size());
+  EXPECT_EQ(0, visitor.error_count_);
+  EXPECT_EQ(0, visitor.syn_frame_count_);
+  EXPECT_EQ(0, visitor.syn_reply_frame_count_);
+  EXPECT_EQ(0, visitor.headers_frame_count_);
+  EXPECT_EQ(1, visitor.push_promise_frame_count_);
+  EXPECT_TRUE(CompareHeaderBlocks(&headers, &visitor.headers_));
+  EXPECT_EQ(1u, visitor.header_stream_id_);
+  EXPECT_EQ(2u, visitor.promised_stream_id_);
 }
 
 }  // namespace net

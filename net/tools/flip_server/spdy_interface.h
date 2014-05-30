@@ -127,7 +127,8 @@ class SpdySM : public BufferedSpdyFramerVisitorInterface, public SMInterface {
 
   // Called when a PUSH_PROMISE frame has been parsed.
   virtual void OnPushPromise(SpdyStreamId stream_id,
-                             SpdyStreamId promised_stream_id) OVERRIDE {}
+                             SpdyStreamId promised_stream_id,
+                             const SpdyHeaderBlock& headers) OVERRIDE {}
 
  public:
   virtual size_t ProcessReadInput(const char* data, size_t len) OVERRIDE;

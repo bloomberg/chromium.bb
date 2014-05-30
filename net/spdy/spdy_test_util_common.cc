@@ -245,7 +245,8 @@ class PriorityGetter : public BufferedSpdyFramerVisitorInterface {
   virtual void OnWindowUpdate(SpdyStreamId stream_id,
                               uint32 delta_window_size) OVERRIDE {}
   virtual void OnPushPromise(SpdyStreamId stream_id,
-                             SpdyStreamId promised_stream_id) OVERRIDE {}
+                             SpdyStreamId promised_stream_id,
+                             const SpdyHeaderBlock& headers) OVERRIDE {}
 
  private:
   SpdyPriority priority_;

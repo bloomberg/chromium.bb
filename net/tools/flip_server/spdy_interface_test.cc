@@ -64,7 +64,8 @@ class SpdyFramerVisitor : public BufferedSpdyFramerVisitorInterface {
   MOCK_METHOD2(OnRstStream, void(SpdyStreamId, SpdyRstStreamStatus));
   MOCK_METHOD2(OnGoAway, void(SpdyStreamId, SpdyGoAwayStatus));
   MOCK_METHOD2(OnWindowUpdate, void(SpdyStreamId, uint32));
-  MOCK_METHOD2(OnPushPromise, void(SpdyStreamId, SpdyStreamId));
+  MOCK_METHOD3(OnPushPromise,
+               void(SpdyStreamId, SpdyStreamId, const SpdyHeaderBlock&));
 };
 
 class FakeSMConnection : public SMConnection {

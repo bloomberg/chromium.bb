@@ -139,6 +139,12 @@ bool BufferedSpdyFramer::OnControlFrameHeaderData(SpdyStreamId stream_id,
                             control_frame_fields_->fin,
                             headers);
         break;
+      case PUSH_PROMISE:
+        DCHECK_LT(SPDY3, protocol_version());
+        visitor_->OnPushPromise(control_frame_fields_->stream_id,
+                                control_frame_fields_->promised_stream_id,
+                                headers);
+        break;
       default:
         DCHECK(false) << "Unexpect control frame type: "
                       << control_frame_fields_->type;
@@ -214,8 +220,15 @@ void BufferedSpdyFramer::OnWindowUpdate(SpdyStreamId stream_id,
 void BufferedSpdyFramer::OnPushPromise(SpdyStreamId stream_id,
                                        SpdyStreamId promised_stream_id,
                                        bool end) {
-  // TODO(jgraettinger): Deliver headers, similar to OnHeaders.
-  visitor_->OnPushPromise(stream_id, promised_stream_id);
+  DCHECK_LT(SPDY3, protocol_version());
+  frames_received_++;
+  DCHECK(!control_frame_fields_.get());
+  control_frame_fields_.reset(new ControlFrameFields());
+  control_frame_fields_->type = PUSH_PROMISE;
+  control_frame_fields_->stream_id = stream_id;
+  control_frame_fields_->promised_stream_id = promised_stream_id;
+
+  InitHeaderStreaming(stream_id);
 }
 
 void BufferedSpdyFramer::OnContinuation(SpdyStreamId stream_id, bool end) {
@@ -351,6 +364,16 @@ SpdyFrame* BufferedSpdyFramer::CreateDataFrame(SpdyStreamId stream_id,
                      base::StringPiece(data, len));
   data_ir.set_fin((flags & DATA_FLAG_FIN) != 0);
   return spdy_framer_.SerializeData(data_ir);
+}
+
+// TODO(jgraettinger): Eliminate uses of this method (prefer SpdyPushPromiseIR).
+SpdyFrame* BufferedSpdyFramer::CreatePushPromise(
+    SpdyStreamId stream_id,
+    SpdyStreamId promised_stream_id,
+    const SpdyHeaderBlock* headers) {
+  SpdyPushPromiseIR push_promise_ir(stream_id, promised_stream_id);
+  push_promise_ir.set_name_value_block(*headers);
+  return spdy_framer_.SerializePushPromise(push_promise_ir);
 }
 
 SpdyPriority BufferedSpdyFramer::GetHighestPriority() const {

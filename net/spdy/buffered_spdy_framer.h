@@ -100,7 +100,8 @@ class NET_EXPORT_PRIVATE BufferedSpdyFramerVisitorInterface {
 
   // Called when a PUSH_PROMISE frame has been parsed.
   virtual void OnPushPromise(SpdyStreamId stream_id,
-                             SpdyStreamId promised_stream_id) = 0;
+                             SpdyStreamId promised_stream_id,
+                             const SpdyHeaderBlock& headers) = 0;
 
  protected:
   virtual ~BufferedSpdyFramerVisitorInterface() {}
@@ -196,6 +197,9 @@ class NET_EXPORT_PRIVATE BufferedSpdyFramer
                              const char* data,
                              uint32 len,
                              SpdyDataFlags flags);
+  SpdyFrame* CreatePushPromise(SpdyStreamId stream_id,
+                               SpdyStreamId promised_stream_id,
+                               const SpdyHeaderBlock* headers);
 
   // Serialize a frame of unknown type.
   SpdySerializedFrame* SerializeFrame(const SpdyFrameIR& frame) {
@@ -252,6 +256,7 @@ class NET_EXPORT_PRIVATE BufferedSpdyFramer
     SpdyFrameType type;
     SpdyStreamId stream_id;
     SpdyStreamId associated_stream_id;
+    SpdyStreamId promised_stream_id;
     SpdyPriority priority;
     uint8 credential_slot;
     bool fin;
