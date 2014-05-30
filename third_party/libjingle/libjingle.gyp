@@ -588,13 +588,15 @@
           'sources': [
             '<(libjingle_source)/talk/media/webrtc/webrtcvideoengine.cc',
             '<(libjingle_source)/talk/media/webrtc/webrtcvideoengine.h',
+            '<(libjingle_source)/talk/media/webrtc/webrtcvideoengine2.cc',
+            '<(libjingle_source)/talk/media/webrtc/webrtcvideoengine2.h',
             '<(libjingle_source)/talk/media/webrtc/webrtcvoiceengine.cc',
             '<(libjingle_source)/talk/media/webrtc/webrtcvoiceengine.h',
           ],
           'dependencies': [
             '<(DEPTH)/third_party/webrtc/system_wrappers/source/system_wrappers.gyp:system_wrappers',
-            '<(DEPTH)/third_party/webrtc/video_engine/video_engine.gyp:video_engine_core',
             '<(DEPTH)/third_party/webrtc/voice_engine/voice_engine.gyp:voice_engine',
+            '<(DEPTH)/third_party/webrtc/webrtc.gyp:webrtc',
             '<@(libjingle_peerconnection_additional_deps)',
             'libjingle_webrtc_common',
           ],
