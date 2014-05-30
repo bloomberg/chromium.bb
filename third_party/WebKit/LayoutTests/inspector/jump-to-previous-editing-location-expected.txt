@@ -51,6 +51,7 @@ Running: testCrossFileJump
 <Rolled over> line: 11 column: 1 [workspace-test.js]
 
 Running: testCloseCrossFile
+executed SimpleHistoryManager.filterOut; activeEntryIndex = 7
 <Close active tab> line: 9 column: 4 [example-fileset-for-test.js]
 <Rolled back> line: 9 column: 0 [example-fileset-for-test.js]
 <Rolled over> line: 9 column: 4 [example-fileset-for-test.js]
@@ -69,65 +70,25 @@ entries count: 8 active entry index: 7
  entry[1] = {line: 7, column: 26}
  entry[0] = {line: 2, column: 0}
 === ===
-SimpleHistoryManager.active size: 8 active: 7
-SimpleHistoryManager.push size: 9 active: 8
 <Mouse click (10, 7)> line: 10 column: 7 [example-fileset-for-test.js]
-SimpleHistoryManager.active size: 9 active: 8
-SimpleHistoryManager.push size: 10 active: 9
 <Mouse click (11, 7)> line: 11 column: 7 [example-fileset-for-test.js]
-SimpleHistoryManager.active size: 10 active: 9
-SimpleHistoryManager.push size: 11 active: 10
 <Mouse click (12, 7)> line: 12 column: 7 [example-fileset-for-test.js]
-SimpleHistoryManager.active size: 11 active: 10
-SimpleHistoryManager.push size: 12 active: 11
 <Mouse click (13, 7)> line: 13 column: 7 [example-fileset-for-test.js]
-SimpleHistoryManager.active size: 12 active: 11
-SimpleHistoryManager.push size: 13 active: 12
 <Mouse click (14, 7)> line: 14 column: 7 [example-fileset-for-test.js]
-SimpleHistoryManager.active size: 13 active: 12
-SimpleHistoryManager.push size: 14 active: 13
 <Mouse click (15, 7)> line: 15 column: 7 [example-fileset-for-test.js]
-SimpleHistoryManager.active size: 14 active: 13
-SimpleHistoryManager.push size: 15 active: 14
 <Mouse click (16, 7)> line: 16 column: 7 [example-fileset-for-test.js]
-SimpleHistoryManager.active size: 15 active: 14
-SimpleHistoryManager.push size: 16 active: 15
 <Mouse click (17, 7)> line: 17 column: 7 [example-fileset-for-test.js]
-SimpleHistoryManager.active size: 16 active: 15
-SimpleHistoryManager.push size: 17 active: 16
 <Mouse click (18, 7)> line: 18 column: 7 [example-fileset-for-test.js]
-SimpleHistoryManager.active size: 17 active: 16
-SimpleHistoryManager.push size: 18 active: 17
 <Mouse click (19, 7)> line: 19 column: 7 [example-fileset-for-test.js]
-SimpleHistoryManager.active size: 18 active: 17
-SimpleHistoryManager.push size: 19 active: 18
 <Mouse click (20, 7)> line: 20 column: 7 [example-fileset-for-test.js]
-SimpleHistoryManager.active size: 19 active: 18
-SimpleHistoryManager.push size: 20 active: 19
 <Mouse click (21, 7)> line: 21 column: 7 [example-fileset-for-test.js]
-SimpleHistoryManager.active size: 20 active: 19
-SimpleHistoryManager.push size: 20 active: 19
 <Mouse click (22, 7)> line: 22 column: 7 [example-fileset-for-test.js]
-SimpleHistoryManager.active size: 20 active: 19
-SimpleHistoryManager.push size: 20 active: 19
 <Mouse click (23, 7)> line: 23 column: 7 [example-fileset-for-test.js]
-SimpleHistoryManager.active size: 20 active: 19
-SimpleHistoryManager.push size: 20 active: 19
 <Mouse click (24, 7)> line: 24 column: 7 [example-fileset-for-test.js]
-SimpleHistoryManager.active size: 20 active: 19
-SimpleHistoryManager.push size: 20 active: 19
 <Mouse click (25, 7)> line: 25 column: 7 [example-fileset-for-test.js]
-SimpleHistoryManager.active size: 20 active: 19
-SimpleHistoryManager.push size: 20 active: 19
 <Mouse click (26, 7)> line: 26 column: 7 [example-fileset-for-test.js]
-SimpleHistoryManager.active size: 20 active: 19
-SimpleHistoryManager.push size: 20 active: 19
 <Mouse click (27, 7)> line: 27 column: 7 [example-fileset-for-test.js]
-SimpleHistoryManager.active size: 20 active: 19
-SimpleHistoryManager.push size: 20 active: 19
 <Mouse click (28, 7)> line: 28 column: 7 [example-fileset-for-test.js]
-SimpleHistoryManager.active size: 20 active: 19
-SimpleHistoryManager.push size: 20 active: 19
 <Mouse click (29, 7)> line: 29 column: 7 [example-fileset-for-test.js]
 === SimpleHistoryManager state after filling history stack ===
 entries count: 20 active entry index: 19
@@ -152,10 +113,6 @@ entries count: 20 active entry index: 19
  entry[1] = {line: 11, column: 7}
  entry[0] = {line: 10, column: 7}
 === ===
-SimpleHistoryManager.active size: 20 active: 19
-SimpleHistoryManager.active size: 20 active: 19
-SimpleHistoryManager.push size: 20 active: 19
-SimpleHistoryManager.rollback size: 20 active: 18
 First rollback result: true
 === SimpleHistoryManager state after first rollback ===
 entries count: 20 active entry index: 18
