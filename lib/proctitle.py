@@ -10,7 +10,7 @@ import os
 
 # Import the relevant funcs into our namespace for callers.
 try:
-  # pylint: disable=W0611
+  # pylint: disable=W0611, F0401
   from setproctitle import getproctitle, setproctitle
 except ImportError:
   # Module not available -> can't do anything.

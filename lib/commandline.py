@@ -132,6 +132,8 @@ def ParseDate(value):
 
 def NormalizeUri(value):
   """Normalize a local path or URI."""
+  # Pylint is confused about result of urlparse.
+  # pylint: disable=E1101
   o = urlparse.urlparse(value)
   if o.scheme == 'file':
     # Trim off the file:// prefix.
