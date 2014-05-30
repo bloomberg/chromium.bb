@@ -6297,7 +6297,6 @@
    fun:_ZN3WTF10fastMallocEm
    fun:_ZN3WTF10RefCountedIN7WebCore11ScriptStateEEnwEm
    fun:_ZN7WebCore11ScriptState6createEN2v86HandleINS1_7ContextEEEN3WTF10PassRefPtrINS_15DOMWrapperWorldEEE
-   fun:_ZN7WebCore22WorkerScriptController25initializeContextIfNeededEv
    ...
    fun:_ZN7WebCore12WorkerThread12workerThreadEv
    fun:_ZN7WebCore12WorkerThread17workerThreadStartEPv
