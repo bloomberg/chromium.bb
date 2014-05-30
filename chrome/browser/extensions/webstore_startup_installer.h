@@ -5,12 +5,7 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_WEBSTORE_STARTUP_INSTALLER_H_
 #define CHROME_BROWSER_EXTENSIONS_WEBSTORE_STARTUP_INSTALLER_H_
 
-#include "url/gurl.h"
-#include "webstore_standalone_installer.h"
-
-namespace content {
-class WebContents;
-}
+#include "chrome/browser/extensions/webstore_install_with_prompt.h"
 
 namespace extensions {
 
@@ -21,15 +16,12 @@ namespace extensions {
 //
 // Clients will be notified of success or failure via the |callback| argument
 // passed into the constructor.
-class WebstoreStartupInstaller
-    : public WebstoreStandaloneInstaller {
+class WebstoreStartupInstaller : public WebstoreInstallWithPrompt {
  public:
-  typedef WebstoreStandaloneInstaller::Callback Callback;
-
   WebstoreStartupInstaller(const std::string& webstore_item_id,
-                         Profile* profile,
-                         bool show_prompt,
-                         const Callback& callback);
+                           Profile* profile,
+                           bool show_prompt,
+                           const Callback& callback);
 
  protected:
   friend class base::RefCountedThreadSafe<WebstoreStartupInstaller>;
@@ -37,28 +29,12 @@ class WebstoreStartupInstaller
 
   virtual ~WebstoreStartupInstaller();
 
-  // Implementations WebstoreStandaloneInstaller Template Method's hooks.
-  virtual bool CheckRequestorAlive() const OVERRIDE;
-  virtual const GURL& GetRequestorURL() const OVERRIDE;
-  virtual bool ShouldShowPostInstallUI() const OVERRIDE;
-  virtual bool ShouldShowAppInstalledBubble() const OVERRIDE;
-  virtual content::WebContents* GetWebContents() const OVERRIDE;
+  // Implementations of WebstoreStandaloneInstaller Template Method's hooks.
   virtual scoped_ptr<ExtensionInstallPrompt::Prompt>
       CreateInstallPrompt() const OVERRIDE;
-  virtual scoped_ptr<ExtensionInstallPrompt> CreateInstallUI() OVERRIDE;
-  virtual bool CheckInlineInstallPermitted(
-      const base::DictionaryValue& webstore_data,
-      std::string* error) const OVERRIDE;
-  virtual bool CheckRequestorPermitted(
-      const base::DictionaryValue& webstore_data,
-      std::string* error) const OVERRIDE;
 
  private:
   bool show_prompt_;
-  GURL dummy_requestor_url_;
-
-  // A non-visible WebContents used to download data from the webstore.
-  scoped_ptr<content::WebContents> dummy_web_contents_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(WebstoreStartupInstaller);
 };

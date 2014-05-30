@@ -5207,11 +5207,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </if>
 
       <!-- Packaged Apps -->
-      <if expr="is_win">
-        <message name="IDS_APP_INSTALL_TITLE" desc="Caption for installing an ephemeral app">
-          Install app
-        </message>
-      </if>
+      <message name="IDS_APP_INSTALL_TITLE" desc="Caption for installing an ephemeral app">
+        Install app
+      </message>
 
       <!-- Components -->
       <message name="IDS_COMPONENTS_TITLE" desc="Title for the chrome://components page.">

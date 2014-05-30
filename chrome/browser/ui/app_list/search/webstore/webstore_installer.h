@@ -5,19 +5,14 @@
 #ifndef CHROME_BROWSER_UI_APP_LIST_SEARCH_WEBSTORE_WEBSTORE_INSTALLER_H_
 #define CHROME_BROWSER_UI_APP_LIST_SEARCH_WEBSTORE_WEBSTORE_INSTALLER_H_
 
-#include <string>
-
-#include "base/basictypes.h"
-#include "chrome/browser/extensions/webstore_startup_installer.h"
-#include "content/public/browser/page_navigator.h"
+#include "chrome/browser/extensions/webstore_install_with_prompt.h"
 
 class Profile;
 
 namespace app_list {
 
 // WebstoreInstaller handles install for web store search results.
-class WebstoreInstaller : public extensions::WebstoreStartupInstaller,
-                          public content::PageNavigator {
+class WebstoreInstaller : public extensions::WebstoreInstallWithPrompt {
  public:
   typedef WebstoreStandaloneInstaller::Callback Callback;
 
@@ -28,18 +23,7 @@ class WebstoreInstaller : public extensions::WebstoreStartupInstaller,
 
  private:
   friend class base::RefCountedThreadSafe<WebstoreInstaller>;
-
   virtual ~WebstoreInstaller();
-
-  // extensions::WebstoreStartupInstaller overrides:
-  virtual scoped_ptr<ExtensionInstallPrompt> CreateInstallUI() OVERRIDE;
-
-  // content::PageNavigator overrides:
-  virtual content::WebContents* OpenURL(
-      const content::OpenURLParams& params) OVERRIDE;
-
-  Profile* profile_;
-  gfx::NativeWindow parent_window_;
 
   DISALLOW_COPY_AND_ASSIGN(WebstoreInstaller);
 };

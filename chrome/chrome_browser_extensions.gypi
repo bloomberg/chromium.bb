@@ -925,6 +925,8 @@
         'browser/extensions/webstore_inline_installer_factory.h',
         'browser/extensions/webstore_install_helper.cc',
         'browser/extensions/webstore_install_helper.h',
+        'browser/extensions/webstore_install_with_prompt.cc',
+        'browser/extensions/webstore_install_with_prompt.h',
         'browser/extensions/webstore_installer.cc',
         'browser/extensions/webstore_installer.h',
         'browser/extensions/webstore_standalone_installer.cc',

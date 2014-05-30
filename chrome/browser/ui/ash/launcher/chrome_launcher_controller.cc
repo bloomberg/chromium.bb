@@ -71,6 +71,7 @@
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/browser/extension_util.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_resource.h"
 #include "extensions/common/manifest_handlers/icons_handler.h"
@@ -577,6 +578,34 @@ bool ChromeLauncherController::IsPinnable(ash::ShelfID id) const {
            type == ash::TYPE_PLATFORM_APP ||
            type == ash::TYPE_WINDOWED_APP) &&
           CanPin());
+}
+
+void ChromeLauncherController::Install(ash::ShelfID id) {
+  if (!HasItemController(id))
+    return;
+
+  std::string app_id = GetAppIDForShelfID(id);
+  if (extensions::util::IsExtensionInstalledPermanently(app_id, profile_))
+    return;
+
+  LauncherItemController* controller = id_to_item_controller_map_[id];
+  if (controller->type() == LauncherItemController::TYPE_APP) {
+    AppWindowLauncherItemController* app_window_controller =
+        static_cast<AppWindowLauncherItemController*>(controller);
+    app_window_controller->InstallApp();
+  }
+}
+
+bool ChromeLauncherController::CanInstall(ash::ShelfID id) {
+  int index = model_->ItemIndexByID(id);
+  if (index == -1)
+    return false;
+
+  ash::ShelfItemType type = model_->items()[index].type;
+  if (type != ash::TYPE_PLATFORM_APP)
+    return false;
+
+  return extensions::util::IsEphemeralApp(GetAppIDForShelfID(id), profile_);
 }
 
 void ChromeLauncherController::LockV1AppWithID(

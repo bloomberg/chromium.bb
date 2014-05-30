@@ -57,6 +57,7 @@ class LauncherContextMenu : public ui::SimpleMenuModel,
   virtual base::string16 GetLabelForCommandId(int command_id) const OVERRIDE;
   virtual bool IsCommandIdChecked(int command_id) const OVERRIDE;
   virtual bool IsCommandIdEnabled(int command_id) const OVERRIDE;
+  virtual bool IsCommandIdVisible(int command_id) const OVERRIDE;
   virtual bool GetAcceleratorForCommandId(
       int command_id,
       ui::Accelerator* accelerator) OVERRIDE;
@@ -77,6 +78,7 @@ class LauncherContextMenu : public ui::SimpleMenuModel,
     MENU_OPEN_NEW,
     MENU_CLOSE,
     MENU_PIN,
+    MENU_INSTALL,
     LAUNCH_TYPE_PINNED_TAB,
     LAUNCH_TYPE_REGULAR_TAB,
     LAUNCH_TYPE_FULLSCREEN,
