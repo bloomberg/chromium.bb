@@ -49,7 +49,7 @@ WebRTCInternals::WebRTCInternals()
     // the platform default path will be used in the file dialog (with no
     // default file name). See SelectFileDialog::SelectFile. On Android where
     // there's no dialog we'll fail to open the file.
-    LOG(WARNING) << "Could not get the download directory.";
+    VLOG(1) << "Could not get the download directory.";
   } else {
     aec_dump_file_path_ =
         aec_dump_file_path_.Append(FILE_PATH_LITERAL("audio.aecdump"));
