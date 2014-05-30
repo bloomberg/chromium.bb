@@ -29,6 +29,12 @@ _TEST_FILESYSTEM = {
           'whitelist': ['im not here']
         }
       ],
+      'inheritsFromDifferentDependencyName': {
+        'dependencies': ['manifest:inheritsPlatformAndChannelFromDependency']
+      },
+      'inheritsPlatformAndChannelFromDependency': {
+        'dependencies': ['manifest:inheritsPlatformAndChannelFromDependency']
+      },
       'omnibox': {
         'dependencies': ['manifest:omnibox'],
         'contexts': ['blessed_extension']
@@ -48,6 +54,13 @@ _TEST_FILESYSTEM = {
         'contexts': [
             'blessed_extension', 'unblessed_extension', 'content_script']
       },
+      'overridesPlatformAndChannelFromDependency': {
+        'channel': 'beta',
+        'dependencies': [
+          'permission:overridesPlatformAndChannelFromDependency'
+        ],
+        'extension_types': ['platform_app']
+      },
       'windows': {
         'dependencies': ['api:tabs'],
         'contexts': ['blessed_extension']
@@ -63,6 +76,10 @@ _TEST_FILESYSTEM = {
       'background': {
         'channel': 'stable',
         'extension_types': ['extension', 'legacy_packaged_app', 'hosted_app']
+      },
+      'inheritsPlatformAndChannelFromDependency': {
+        'channel': 'dev',
+        'extension_types': ['extension']
       },
       'manifest_version': {
         'channel': 'stable',
@@ -87,6 +104,10 @@ _TEST_FILESYSTEM = {
         'channel': 'dev',
         'extension_types': ['platform_app']
       },
+      'overridesPlatformAndChannelFromDependency': {
+        'channel': 'stable',
+        'extension_types': ['extension']
+      },
       'power': {
         'channel': 'stable',
         'extension_types': [
@@ -94,7 +115,7 @@ _TEST_FILESYSTEM = {
         ]
       },
       'syncFileSystem': {
-        'channel': 'stable',
+        'channel': 'beta',
         'extension_types': ['platform_app']
       },
       'tabs': {
@@ -149,6 +170,11 @@ class FeaturesBundleTest(unittest.TestCase):
         'platforms': ['extensions'],
         'documentation': 'background_pages.html'
       },
+      'inheritsPlatformAndChannelFromDependency': {
+        'channel': 'dev',
+        'name': 'inheritsPlatformAndChannelFromDependency',
+        'platforms': ['extensions']
+      },
       'manifest_version': {
         'name': 'manifest_version',
         'channel': 'stable',
@@ -191,6 +217,11 @@ class FeaturesBundleTest(unittest.TestCase):
         'name': 'fakeUnsupportedFeature',
         'platforms': []
       },
+      'overridesPlatformAndChannelFromDependency': {
+        'name': 'overridesPlatformAndChannelFromDependency',
+        'channel': 'stable',
+        'platforms': ['extensions']
+      },
       'power': {
         'name': 'power',
         'channel': 'stable',
@@ -198,7 +229,7 @@ class FeaturesBundleTest(unittest.TestCase):
       },
       'syncFileSystem': {
         'name': 'syncFileSystem',
-        'channel': 'stable',
+        'channel': 'beta',
         'platforms': ['apps'],
         'partial': 'permissions/sync_file_system.html'
       },
@@ -225,25 +256,49 @@ class FeaturesBundleTest(unittest.TestCase):
         'channel': 'stable',
         'platforms': ['extensions']
       },
+      'inheritsFromDifferentDependencyName': {
+        'channel': 'dev',
+        'name': 'inheritsFromDifferentDependencyName',
+        'dependencies': ['manifest:inheritsPlatformAndChannelFromDependency'],
+        'platforms': ['extensions']
+      },
+      'inheritsPlatformAndChannelFromDependency': {
+        'channel': 'dev',
+        'name': 'inheritsPlatformAndChannelFromDependency',
+        'dependencies': ['manifest:inheritsPlatformAndChannelFromDependency'],
+        'platforms': ['extensions']
+      },
       'omnibox': {
+        'channel': 'stable',
         'name': 'omnibox',
         'platforms': ['extensions'],
         'contexts': ['blessed_extension'],
         'dependencies': ['manifest:omnibox']
       },
+      'overridesPlatformAndChannelFromDependency': {
+        'channel': 'beta',
+        'name': 'overridesPlatformAndChannelFromDependency',
+        'dependencies': [
+          'permission:overridesPlatformAndChannelFromDependency'
+        ],
+        'platforms': ['apps']
+      },
       'syncFileSystem': {
+        'channel': 'beta',
         'name': 'syncFileSystem',
         'platforms': ['apps'],
         'contexts': ['blessed_extension'],
         'dependencies': ['permission:syncFileSystem']
       },
       'tabs': {
+        'channel': 'stable',
         'name': 'tabs',
         'channel': 'stable',
         'platforms': ['extensions'],
         'contexts': ['blessed_extension'],
       },
       'test': {
+        'channel': 'stable',
         'name': 'test',
         'channel': 'stable',
         'platforms': ['apps', 'extensions'],
@@ -251,6 +306,7 @@ class FeaturesBundleTest(unittest.TestCase):
             'blessed_extension', 'unblessed_extension', 'content_script'],
       },
       'windows': {
+        'channel': 'stable',
         'name': 'windows',
         'platforms': ['extensions'],
         'contexts': ['blessed_extension'],
