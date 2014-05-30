@@ -4,7 +4,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Unittests for manifest_version. Needs to be run inside of chroot for mox."""
+"""Unittests for manifest_version. Needs to be run inside of chroot."""
 
 import os
 import sys
@@ -17,6 +17,7 @@ if __name__ == '__main__':
 from chromite.cbuildbot import manifest_version
 from chromite.cbuildbot import repository
 from chromite.cbuildbot import validation_pool
+from chromite.lib import cros_build_lib_unittest
 from chromite.lib import git
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
@@ -148,7 +149,8 @@ class VersionInfoTest(cros_test_lib.MoxTempDirTestCase):
     self.assertEqual(new_info.chrome_branch, '30')
 
 
-class BuildSpecsManagerTest(cros_test_lib.MoxTempDirTestCase):
+class BuildSpecsManagerTest(cros_test_lib.MoxTempDirTestCase,
+                            cros_test_lib.MockTestCase):
   """Tests for the BuildSpecs manager."""
 
   def setUp(self):
@@ -157,7 +159,7 @@ class BuildSpecsManagerTest(cros_test_lib.MoxTempDirTestCase):
     self.manifest_repo = 'ssh://manifest/repo'
     self.version_file = 'version-file.sh'
     self.branch = 'master'
-    self.build_names = ['x86-generic']
+    self.build_names = ['x86-generic-paladin']
     self.incr_type = 'branch'
 
     repo = repository.RepoRepository(
@@ -167,7 +169,7 @@ class BuildSpecsManagerTest(cros_test_lib.MoxTempDirTestCase):
       branch=self.branch, dry_run=True)
 
     # Change default to something we clean up.
-    self.tmpmandir = os.path.join(self.tempdir, "man")
+    self.tmpmandir = os.path.join(self.tempdir, 'man')
     osutils.SafeMakedirs(self.tmpmandir)
     self.manager.manifest_dir = self.tmpmandir
 
@@ -255,10 +257,21 @@ class BuildSpecsManagerTest(cros_test_lib.MoxTempDirTestCase):
     self.mox.VerifyAll()
     self.assertEqual(FAKE_VERSION_STRING_NEXT, version)
 
-  def NotestGetNextBuildSpec(self):
-    """Meta test.  Re-enable if you want to use it to do a big test."""
-    print self.manager.GetNextBuildSpec(retries=0)
-    print self.manager.UpdateStatus('pass')
+  def testGetNextBuildSpec(self):
+    """End-to-end test of updating the manifest."""
+    my_info = manifest_version.VersionInfo('1.2.3', chrome_branch='4')
+    self.PatchObject(manifest_version.BuildSpecsManager,
+                     'GetCurrentVersionInfo', return_value=my_info)
+    self.PatchObject(repository.RepoRepository, 'Sync')
+    self.PatchObject(repository.RepoRepository, 'ExportManifest',
+                     return_value='<manifest />')
+    rc = self.StartPatcher(cros_build_lib_unittest.RunCommandMock())
+    rc.SetDefaultCmdResult()
+
+    self.mox.ReplayAll()
+    self.manager.GetNextBuildSpec(retries=0)
+    self.manager.UpdateStatus('pass')
+    self.mox.VerifyAll()
 
   def testUnpickleBuildStatus(self):
     """Tests that _UnpickleBuildStatus returns the correct values."""

@@ -14,7 +14,7 @@ import re
 import shutil
 import tempfile
 
-from chromite.cbuildbot import constants, repository
+from chromite.cbuildbot import cbuildbot_metadata, constants, repository
 from chromite.lib import cros_build_lib
 from chromite.lib import git
 from chromite.lib import gs
@@ -756,21 +756,18 @@ class BuildSpecsManager(object):
         raise GenerateBuildSpecException('Builder already inflight')
       raise GenerateBuildSpecException(e)
 
-  def _SetFailed(self):
-    """Marks the buildspec as failed by creating a symlink in fail dir."""
-    filename = '%s.xml' % self.current_version
-    src_file = os.path.join(self.all_specs_dir, filename)
-    for fail_dir in self.fail_dirs:
-      dest_file = os.path.join(fail_dir, filename)
-      logging.debug('Setting build to failed  %s: %s', src_file, dest_file)
-      CreateSymlink(src_file, dest_file)
-
-  def _SetPassed(self):
+  def _SetPassSymlinks(self):
     """Marks the buildspec as passed by creating a symlink in passed dir."""
+    local_builder_status = cbuildbot_metadata.LocalBuilderStatus.Get()
     src_file = '%s.xml' % os.path.join(self.all_specs_dir, self.current_version)
-    for pass_dir in self.pass_dirs:
+    for i, build_name in enumerate(self.build_names):
+      status = local_builder_status.GetBuilderStatus(build_name)
+      if status == constants.FINAL_STATUS_PASSED:
+        pass_dir = self.pass_dirs[i]
+      else:
+        pass_dir = self.fail_dirs[i]
       dest_file = '%s.xml' % os.path.join(pass_dir, self.current_version)
-      logging.debug('Setting build to passed  %s: %s', src_file, dest_file)
+      logging.debug('Build %s: %s -> %s', status, src_file, dest_file)
       CreateSymlink(src_file, dest_file)
 
   def PushSpecChanges(self, commit_message):
@@ -798,10 +795,8 @@ class BuildSpecsManager(object):
                           '%s' % (BuilderStatus.GetCompletedStatus(success),
                                   self.current_version,
                                   self.build_names[0]))
-        if success:
-          self._SetPassed()
-        else:
-          self._SetFailed()
+
+        self._SetPassSymlinks()
 
         self.PushSpecChanges(commit_message)
       except cros_build_lib.RunCommandError as e:
