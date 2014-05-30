@@ -362,17 +362,22 @@
       # See https://sites.google.com/a/chromium.org/dev/developers/testing/leaksanitizer
       'lsan%': 0,
 
-      # Enable building with TSAN (Clang's -fsanitize=thread option).
+      # Enable building with TSan (Clang's -fsanitize=thread option).
       # -fsanitize=thread only works with clang, but tsan=1 implies clang=1
       # See http://clang.llvm.org/docs/ThreadSanitizer.html
       'tsan%': 0,
       'tsan_blacklist%': '<(PRODUCT_DIR)/../../tools/valgrind/tsan_v2/ignores.txt',
 
-      # Enable building with MSAN (Clang's -fsanitize=memory option).
+      # Enable building with MSan (Clang's -fsanitize=memory option).
       # MemorySanitizer only works with clang, but msan=1 implies clang=1
       # See http://clang.llvm.org/docs/MemorySanitizer.html
       'msan%': 0,
       'msan_blacklist%': '<(PRODUCT_DIR)/../../tools/msan/blacklist.txt',
+
+      # Enable building with UBSan (Clang's -fsanitize=undefined option).
+      # -fsanitize=undefined only works with clang, but ubsan=1 implies clang=1
+      # See http://clang.llvm.org/docs/UsersManual.html
+      'ubsan%': 0,
 
       # Use the dynamic libraries instrumented by one of the sanitizers
       # instead of the standard system libraries.
@@ -1042,6 +1047,7 @@
     'msan_blacklist%': '<(msan_blacklist)',
     'tsan%': '<(tsan)',
     'tsan_blacklist%': '<(tsan_blacklist)',
+    'ubsan%': '<(ubsan)',
     'use_instrumented_libraries%': '<(use_instrumented_libraries)',
     'use_custom_libcxx%': '<(use_custom_libcxx)',
     'clang_type_profiler%': '<(clang_type_profiler)',
@@ -1429,7 +1435,7 @@
           # compiler_version works with clang.
           # TODO(glider): set clang to 1 earlier for ASan and TSan builds so
           # that it takes effect here.
-          ['clang==0 and asan==0 and lsan==0 and tsan==0 and msan==0', {
+          ['clang==0 and asan==0 and lsan==0 and tsan==0 and msan==0 and ubsan==0', {
             'binutils_version%': '<!pymod_do_main(compiler_version target assembler)',
           }],
           # On Android we know the binutils version in the toolchain.
@@ -2017,6 +2023,9 @@
       ['asan==1', {
         'clang%': 1,
         'use_allocator%': 'none',
+      }],
+      ['ubsan==1', {
+        'clang%': 1,
       }],
       ['asan==1 and OS=="mac"', {
         # TODO(glider): we do not strip ASan binaries until the dynamic ASan
@@ -3773,7 +3782,7 @@
           }],
           # Common options for AddressSanitizer, LeakSanitizer,
           # ThreadSanitizer and MemorySanitizer.
-          ['asan==1 or lsan==1 or tsan==1 or msan==1', {
+          ['asan==1 or lsan==1 or tsan==1 or msan==1 or ubsan==1', {
             'target_conditions': [
               ['_toolset=="target"', {
                 'cflags': [
@@ -3783,6 +3792,12 @@
                 'cflags!': [
                   '-fomit-frame-pointer',
                 ],
+              }],
+            ],
+          }],
+          ['asan==1 or lsan==1 or tsan==1 or msan==1', {
+            'target_conditions': [
+              ['_toolset=="target"', {
                 'ldflags!': [
                   # Functions interposed by the sanitizers can make ld think
                   # that some libraries aren't needed when they actually are,
@@ -3819,6 +3834,23 @@
               ['OS=="mac"', {
                 'cflags': [
                   '-mllvm -asan-globals=0',  # http://crbug.com/352073
+                ],
+              }],
+            ],
+          }],
+          ['ubsan==1', {
+            'target_conditions': [
+              ['_toolset=="target"', {
+                'cflags': [
+                  '-fsanitize=undefined',
+                  # -fsanitize=vptr is incompatible with -fno-rtti.
+                  '-fno-sanitize=vptr',
+                  '-w',  # http://crbug.com/162783
+                ],
+                'ldflags': [
+                  '-fsanitize=undefined',
+                  # -fsanitize=vptr is incompatible with -fno-rtti.
+                  '-fno-sanitize=vptr',
                 ],
               }],
             ],
