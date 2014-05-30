@@ -661,9 +661,9 @@ RangeHistoryWebUITest.prototype = {
 };
 
 /**
- * Disabled due to timeout on Mac http://crbug.com/377338
+ * Disabled due to timeout on Mac and ChromeOS http://crbug.com/377338
  */
-GEN('#if defined(OS_MACOSX)');
+GEN('#if defined(OS_MACOSX) || defined(OS_CHROMEOS)');
 GEN('#define MAYBE_allView DISABLED_allView');
 GEN('#else');
 GEN('#define MAYBE_allView allView');
