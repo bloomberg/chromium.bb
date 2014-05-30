@@ -11,9 +11,13 @@
 
 namespace WebCore {
 
+class HTMLImportChild;
+
 class HTMLImportTreeRoot : public HTMLImport {
 public:
     static PassOwnPtr<HTMLImportTreeRoot> create(Document*);
+
+    virtual ~HTMLImportTreeRoot();
 
     // HTMLImport
     virtual Document* document() const OVERRIDE;
@@ -23,6 +27,9 @@ public:
 
     void scheduleRecalcState();
 
+    HTMLImportChild* add(PassOwnPtr<HTMLImportChild>);
+    HTMLImportChild* find(const KURL&) const;
+
 private:
     explicit HTMLImportTreeRoot(Document*);
 
@@ -30,6 +37,10 @@ private:
 
     Document* m_document;
     Timer<HTMLImportTreeRoot> m_recalcTimer;
+
+    // List of import which has been loaded or being loaded.
+    typedef Vector<OwnPtr<HTMLImportChild> > ImportList;
+    ImportList m_imports;
 };
 
 DEFINE_TYPE_CASTS(HTMLImportTreeRoot, HTMLImport, import, import->isRoot(), import.isRoot());

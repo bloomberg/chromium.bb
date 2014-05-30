@@ -56,7 +56,7 @@ class KURL;
 // * The HTMLImportTreeRoot is owned HTMLImportsController, which is owned by the master
 //   document as a DocumentSupplement.
 //
-// * The non-root nodes are HTMLImportChild. They are also owned by HTMLImportsController.
+// * The non-root nodes are HTMLImportChild. They are all owned by HTMLImporTreeRoot.
 //   LinkStyle is wired into HTMLImportChild by implementing HTMLImportChildClient interface
 //
 // * Both HTMLImportTreeRoot and HTMLImportChild are derived from HTMLImport superclass
@@ -66,6 +66,8 @@ class KURL;
 // HTMLImportsController also owns all loaders in the tree and manages their lifetime through it.
 // One assumption is that the tree is append-only and nodes are never inserted in the middle of the tree nor removed.
 //
+// Full diagram is here:
+// https://docs.google.com/drawings/d/1jFQrO0IupWrlykTNzQ3Nv2SdiBiSz4UE9-V3-vDgBb0/
 //
 // # Import Sharing and HTMLImportLoader
 //

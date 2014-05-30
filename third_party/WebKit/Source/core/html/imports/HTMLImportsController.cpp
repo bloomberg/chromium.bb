@@ -62,9 +62,7 @@ HTMLImportsController::~HTMLImportsController()
 
 void HTMLImportsController::clear()
 {
-    for (size_t i = 0; i < m_imports.size(); ++i)
-        m_imports[i]->importDestroyed();
-    m_imports.clear();
+    m_root.clear();
 
     for (size_t i = 0; i < m_loaders.size(); ++i)
         m_loaders[i]->importDestroyed();
@@ -94,8 +92,7 @@ HTMLImportChild* HTMLImportsController::createChild(const KURL& url, HTMLImportL
     child->setClient(client);
     parent->appendImport(child.get());
     loader->addImport(child.get());
-    m_imports.append(child.release());
-    return m_imports.last().get();
+    return root()->add(child.release());
 }
 
 HTMLImportChild* HTMLImportsController::load(HTMLImport* parent, HTMLImportChildClient* client, FetchRequest request)
@@ -103,7 +100,7 @@ HTMLImportChild* HTMLImportsController::load(HTMLImport* parent, HTMLImportChild
     ASSERT(!request.url().isEmpty() && request.url().isValid());
     ASSERT(parent == root() || toHTMLImportChild(parent)->loader()->isFirstImport(toHTMLImportChild(parent)));
 
-    if (HTMLImportChild* childToShareWith = findLinkFor(request.url())) {
+    if (HTMLImportChild* childToShareWith = root()->find(request.url())) {
         HTMLImportLoader* loader = childToShareWith->loader();
         ASSERT(loader);
         HTMLImportChild* child = createChild(request.url(), loader, parent, client);
@@ -132,17 +129,6 @@ HTMLImportChild* HTMLImportsController::load(HTMLImport* parent, HTMLImportChild
 void HTMLImportsController::showSecurityErrorMessage(const String& message)
 {
     m_master->addConsoleMessage(JSMessageSource, ErrorMessageLevel, message);
-}
-
-HTMLImportChild* HTMLImportsController::findLinkFor(const KURL& url) const
-{
-    for (size_t i = 0; i < m_imports.size(); ++i) {
-        HTMLImportChild* candidate = m_imports[i].get();
-        if (equalIgnoringFragmentIdentifier(candidate->url(), url) && candidate->loader())
-            return candidate;
-    }
-
-    return 0;
 }
 
 SecurityOrigin* HTMLImportsController::securityOrigin() const

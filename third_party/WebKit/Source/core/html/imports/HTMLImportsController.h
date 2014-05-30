@@ -73,14 +73,11 @@ public:
     LocalFrame* frame() const;
     Document* master() const { return m_master; }
 
-
     HTMLImportLoader* createLoader();
 
     size_t loaderCount() const { return m_loaders.size(); }
     HTMLImportLoader* loaderAt(size_t i) const { return m_loaders[i].get(); }
     HTMLImportLoader* loaderFor(const Document&) const;
-
-    HTMLImportChild* findLinkFor(const KURL&) const;
 
 private:
     HTMLImportChild* createChild(const KURL&, HTMLImportLoader*, HTMLImport* parent, HTMLImportChildClient*);
@@ -89,10 +86,6 @@ private:
     Document* m_master;
 
     OwnPtr<HTMLImportTreeRoot> m_root;
-
-    // List of import which has been loaded or being loaded.
-    typedef Vector<OwnPtr<HTMLImportChild> > ImportList;
-    ImportList m_imports;
 
     typedef Vector<OwnPtr<HTMLImportLoader> > LoaderList;
     LoaderList m_loaders;
