@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "base/time/time.h"
+#include "mojo/public/c/system/macros.h"
 #include "mojo/system/constants.h"
 #include "mojo/system/data_pipe.h"
 #include "mojo/system/data_pipe_consumer_dispatcher.h"
@@ -126,9 +127,9 @@ MojoResult Core::WaitMany(const MojoHandle* handles,
                           const MojoWaitFlags* flags,
                           uint32_t num_handles,
                           MojoDeadline deadline) {
-  if (!VerifyUserPointer<MojoHandle>(handles, num_handles))
+  if (!VerifyUserPointerWithCount<MojoHandle>(handles, num_handles))
     return MOJO_RESULT_INVALID_ARGUMENT;
-  if (!VerifyUserPointer<MojoWaitFlags>(flags, num_handles))
+  if (!VerifyUserPointerWithCount<MojoWaitFlags>(flags, num_handles))
     return MOJO_RESULT_INVALID_ARGUMENT;
   if (num_handles < 1)
     return MOJO_RESULT_INVALID_ARGUMENT;
@@ -139,9 +140,9 @@ MojoResult Core::WaitMany(const MojoHandle* handles,
 
 MojoResult Core::CreateMessagePipe(MojoHandle* message_pipe_handle0,
                                    MojoHandle* message_pipe_handle1) {
-  if (!VerifyUserPointer<MojoHandle>(message_pipe_handle0, 1))
+  if (!VerifyUserPointer<MojoHandle>(message_pipe_handle0))
     return MOJO_RESULT_INVALID_ARGUMENT;
-  if (!VerifyUserPointer<MojoHandle>(message_pipe_handle1, 1))
+  if (!VerifyUserPointer<MojoHandle>(message_pipe_handle1))
     return MOJO_RESULT_INVALID_ARGUMENT;
 
   scoped_refptr<MessagePipeDispatcher> dispatcher0(new MessagePipeDispatcher());
@@ -198,7 +199,7 @@ MojoResult Core::WriteMessage(MojoHandle message_pipe_handle,
   // validity, even for dispatchers that don't support |WriteMessage()| and will
   // simply return failure unconditionally. It also breaks the usual
   // left-to-right verification order of arguments.)
-  if (!VerifyUserPointer<MojoHandle>(handles, num_handles))
+  if (!VerifyUserPointerWithCount<MojoHandle>(handles, num_handles))
     return MOJO_RESULT_INVALID_ARGUMENT;
   if (num_handles > kMaxMessageNumHandles)
     return MOJO_RESULT_RESOURCE_EXHAUSTED;
@@ -251,9 +252,9 @@ MojoResult Core::ReadMessage(MojoHandle message_pipe_handle,
     return MOJO_RESULT_INVALID_ARGUMENT;
 
   if (num_handles) {
-    if (!VerifyUserPointer<uint32_t>(num_handles, 1))
+    if (!VerifyUserPointer<uint32_t>(num_handles))
       return MOJO_RESULT_INVALID_ARGUMENT;
-    if (!VerifyUserPointer<MojoHandle>(handles, *num_handles))
+    if (!VerifyUserPointerWithCount<MojoHandle>(handles, *num_handles))
       return MOJO_RESULT_INVALID_ARGUMENT;
   }
 
@@ -294,15 +295,16 @@ MojoResult Core::CreateDataPipe(const MojoCreateDataPipeOptions* options,
                                 MojoHandle* data_pipe_consumer_handle) {
   if (options) {
     // The |struct_size| field must be valid to read.
-    if (!VerifyUserPointer<uint32_t>(&options->struct_size, 1))
+    if (!VerifyUserPointer<uint32_t>(&options->struct_size))
       return MOJO_RESULT_INVALID_ARGUMENT;
     // And then |options| must point to at least |options->struct_size| bytes.
-    if (!VerifyUserPointer<void>(options, options->struct_size))
+    if (!VerifyUserPointerWithSize<MOJO_ALIGNOF(int64_t)>(options,
+                                                          options->struct_size))
       return MOJO_RESULT_INVALID_ARGUMENT;
   }
-  if (!VerifyUserPointer<MojoHandle>(data_pipe_producer_handle, 1))
+  if (!VerifyUserPointer<MojoHandle>(data_pipe_producer_handle))
     return MOJO_RESULT_INVALID_ARGUMENT;
-  if (!VerifyUserPointer<MojoHandle>(data_pipe_consumer_handle, 1))
+  if (!VerifyUserPointer<MojoHandle>(data_pipe_consumer_handle))
     return MOJO_RESULT_INVALID_ARGUMENT;
 
   MojoCreateDataPipeOptions validated_options = { 0 };
@@ -413,13 +415,14 @@ MojoResult Core::CreateSharedBuffer(
     MojoHandle* shared_buffer_handle) {
   if (options) {
     // The |struct_size| field must be valid to read.
-    if (!VerifyUserPointer<uint32_t>(&options->struct_size, 1))
+    if (!VerifyUserPointer<uint32_t>(&options->struct_size))
       return MOJO_RESULT_INVALID_ARGUMENT;
     // And then |options| must point to at least |options->struct_size| bytes.
-    if (!VerifyUserPointer<void>(options, options->struct_size))
+    if (!VerifyUserPointerWithSize<MOJO_ALIGNOF(int64_t)>(options,
+                                                          options->struct_size))
       return MOJO_RESULT_INVALID_ARGUMENT;
   }
-  if (!VerifyUserPointer<MojoHandle>(shared_buffer_handle, 1))
+  if (!VerifyUserPointer<MojoHandle>(shared_buffer_handle))
     return MOJO_RESULT_INVALID_ARGUMENT;
 
   MojoCreateSharedBufferOptions validated_options = { 0 };
@@ -456,7 +459,7 @@ MojoResult Core::DuplicateBufferHandle(
     return MOJO_RESULT_INVALID_ARGUMENT;
 
   // Don't verify |options| here; that's the dispatcher's job.
-  if (!VerifyUserPointer<MojoHandle>(new_buffer_handle, 1))
+  if (!VerifyUserPointer<MojoHandle>(new_buffer_handle))
     return MOJO_RESULT_INVALID_ARGUMENT;
 
   scoped_refptr<Dispatcher> new_dispatcher;
@@ -485,7 +488,7 @@ MojoResult Core::MapBuffer(MojoHandle buffer_handle,
   if (!dispatcher)
     return MOJO_RESULT_INVALID_ARGUMENT;
 
-  if (!VerifyUserPointer<void*>(buffer, 1))
+  if (!VerifyUserPointerWithCount<void*>(buffer, 1))
     return MOJO_RESULT_INVALID_ARGUMENT;
 
   scoped_ptr<RawSharedBufferMapping> mapping;

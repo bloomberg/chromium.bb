@@ -56,9 +56,9 @@ MojoResult DataPipeProducerDispatcher::WriteDataImplNoLock(
     MojoWriteDataFlags flags) {
   lock().AssertAcquired();
 
-  if (!VerifyUserPointer<uint32_t>(num_bytes, 1))
+  if (!VerifyUserPointer<uint32_t>(num_bytes))
     return MOJO_RESULT_INVALID_ARGUMENT;
-  if (!VerifyUserPointer<void>(elements, *num_bytes))
+  if (!VerifyUserPointerWithSize<1>(elements, *num_bytes))
     return MOJO_RESULT_INVALID_ARGUMENT;
 
   return data_pipe_->ProducerWriteData(
@@ -71,9 +71,9 @@ MojoResult DataPipeProducerDispatcher::BeginWriteDataImplNoLock(
     MojoWriteDataFlags flags) {
   lock().AssertAcquired();
 
-  if (!VerifyUserPointer<void*>(buffer, 1))
+  if (!VerifyUserPointerWithCount<void*>(buffer, 1))
     return MOJO_RESULT_INVALID_ARGUMENT;
-  if (!VerifyUserPointer<uint32_t>(buffer_num_bytes, 1))
+  if (!VerifyUserPointer<uint32_t>(buffer_num_bytes))
     return MOJO_RESULT_INVALID_ARGUMENT;
 
   return data_pipe_->ProducerBeginWriteData(

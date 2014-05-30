@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "mojo/public/c/system/macros.h"
 #include "mojo/system/constants.h"
 #include "mojo/system/memory.h"
 #include "mojo/system/raw_shared_buffer.h"
@@ -149,10 +150,11 @@ MojoResult SharedBufferDispatcher::DuplicateBufferHandleImplNoLock(
   lock().AssertAcquired();
   if (options) {
     // The |struct_size| field must be valid to read.
-    if (!VerifyUserPointer<uint32_t>(&options->struct_size, 1))
+    if (!VerifyUserPointer<uint32_t>(&options->struct_size))
       return MOJO_RESULT_INVALID_ARGUMENT;
     // And then |options| must point to at least |options->struct_size| bytes.
-    if (!VerifyUserPointer<void>(options, options->struct_size))
+    if (!VerifyUserPointerWithSize<MOJO_ALIGNOF(int64_t)>(options,
+                                                          options->struct_size))
       return MOJO_RESULT_INVALID_ARGUMENT;
 
     if (options->struct_size < sizeof(*options))

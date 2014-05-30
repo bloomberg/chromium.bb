@@ -243,6 +243,7 @@
         'system/data_pipe_unittest.cc',
         'system/dispatcher_unittest.cc',
         'system/local_data_pipe_unittest.cc',
+        'system/memory_unittest.cc',
         'system/message_pipe_dispatcher_unittest.cc',
         'system/message_pipe_unittest.cc',
         'system/multiprocess_message_pipe_unittest.cc',
