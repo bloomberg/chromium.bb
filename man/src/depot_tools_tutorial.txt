@@ -156,7 +156,7 @@ TL;DR
 [white]**$ gclient sync**
 
 [white]**$** # Make a new change and upload it for review
-[white]**$ git new-branch branchname**
+[white]**$ git new-branch <branch_name>**
 [white]**$** # repeat: [edit, git add, git commit]
 [white]**$ git cl upload**
 
@@ -188,7 +188,8 @@ directory:
 [white]**src/**       # Top-level Chromium source checkout.
 ----
 
-If you are on linux, then you'll need to run:
+If you are on linux and fetching the code for the first time, then you'll need
+to run:
 
 [subs="specialcharacters,quotes"]
 ----
@@ -203,7 +204,8 @@ And finally:
 ----
 
 This will pull all dependencies of the Chromium src checkout. You will need
-to run this any time you update the main src checkout.
+to run this any time you update the main src checkout, including when you
+switch branches.
 
 
 CREATING / UPLOADING A CL
@@ -212,7 +214,7 @@ NOTE: The remainder of the tutorial assumes that your current working directory
 is the `src/` folder mentioned in <<_getting_the_code,Getting the code>>.
 
 Each CL corresponds exactly with a single branch in git. Any time you want to
-begin a new CL, just:
+begin a new CL:
 
 [subs="specialcharacters,quotes"]
 ----
@@ -220,8 +222,8 @@ begin a new CL, just:
 ----
 
 This will create and checkout a new branch named `branch_name` which will track
-the default upstream (which is `origin/master`). See linkgit:git-new-branch[1]
-for more features, such as the ability to track 'LKGR'.
+the default upstream branch (`origin/master`). See
+linkgit:git-new-branch[1] for more features.
 
 Commit as many changes as you like to this branch. When you want to upload it
 for review, run:
@@ -231,9 +233,9 @@ for review, run:
 [white]**$ git cl upload**
 ----
 
-This will take the diff of your branch against its upstream (`origin/master`),
-and will post it to the link:https://codereview.chromium.org[Chromium code
-review site].
+This will take the diff of your branch against its upstream branch (in that
+case origin/master), and will post it to the
+link:https://codereview.chromium.org[Chromium code review site].
 
 
 UPDATING THE CODE
@@ -286,7 +288,7 @@ MANAGING MULTIPLE CLS
 ---------------------
 Sometimes you want to work on more than one CL at once (say, you have a CL
 posted for review and want to work on something else). For each CL that you
-want to work on, just use `git new-branch <branchname>`.
+want to work on, just use `git new-branch <branch_name>`.
 
 Once you start to have more than one CL at a time, it can be easy to lose your
 bearings. Fortunately, 'depot_tools' has two tools to help you out:
@@ -329,7 +331,7 @@ linkgit:git-map[1]::
   doc for the full details.
 
 linkgit:git-map-branches[1]::
-  This tool just shows you which branches you have in your repo, and thier
+  This tool just shows you which branches you have in your repo, and their
   upstream relationship to each other (as well as which branch you have checked
   out at the moment).
 

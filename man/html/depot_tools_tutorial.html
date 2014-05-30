@@ -988,7 +988,7 @@ commands:</p></div>
 <strong><span class="white">$ gclient sync</span></strong>
 
 <strong><span class="white">$</span></strong> # Make a new change and upload it for review
-<strong><span class="white">$ git new-branch branchname</span></strong>
+<strong><span class="white">$ git new-branch &lt;branch_name&gt;</span></strong>
 <strong><span class="white">$</span></strong> # repeat: [edit, git add, git commit]
 <strong><span class="white">$ git cl upload</span></strong>
 
@@ -1017,7 +1017,8 @@ directory:</p></div>
 <pre><code><strong><span class="white">.gclient</span></strong>   # A configuration file for you source checkout
 <strong><span class="white">src/</span></strong>       # Top-level Chromium source checkout.</code></pre>
 </div></div>
-<div class="paragraph"><p>If you are on linux, then you&#8217;ll need to run:</p></div>
+<div class="paragraph"><p>If you are on linux and fetching the code for the first time, then you&#8217;ll need
+to run:</p></div>
 <div class="listingblock">
 <div class="content">
 <pre><code><strong><span class="white">$ cd src &amp;&amp; ./build/install-build-deps.sh</span></strong></code></pre>
@@ -1028,7 +1029,8 @@ directory:</p></div>
 <pre><code><strong><span class="white">$ gclient sync</span></strong></code></pre>
 </div></div>
 <div class="paragraph"><p>This will pull all dependencies of the Chromium src checkout. You will need
-to run this any time you update the main src checkout.</p></div>
+to run this any time you update the main src checkout, including when you
+switch branches.</p></div>
 </div>
 </div>
 <div class="sect1">
@@ -1044,23 +1046,23 @@ is the <code>src/</code> folder mentioned in <a href="#_getting_the_code">Gettin
 </tr></table>
 </div>
 <div class="paragraph"><p>Each CL corresponds exactly with a single branch in git. Any time you want to
-begin a new CL, just:</p></div>
+begin a new CL:</p></div>
 <div class="listingblock">
 <div class="content">
 <pre><code><strong><span class="white">$ git new-branch &lt;branch_name&gt;</span></strong></code></pre>
 </div></div>
 <div class="paragraph"><p>This will create and checkout a new branch named <code>branch_name</code> which will track
-the default upstream (which is <code>origin/master</code>). See <a href="git-new-branch.html">git-new-branch(1)</a>
-for more features, such as the ability to track <em>LKGR</em>.</p></div>
+the default upstream branch (<code>origin/master</code>). See
+<a href="git-new-branch.html">git-new-branch(1)</a> for more features.</p></div>
 <div class="paragraph"><p>Commit as many changes as you like to this branch. When you want to upload it
 for review, run:</p></div>
 <div class="listingblock">
 <div class="content">
 <pre><code><strong><span class="white">$ git cl upload</span></strong></code></pre>
 </div></div>
-<div class="paragraph"><p>This will take the diff of your branch against its upstream (<code>origin/master</code>),
-and will post it to the <a href="https://codereview.chromium.org">Chromium code
-review site</a>.</p></div>
+<div class="paragraph"><p>This will take the diff of your branch against its upstream branch (in that
+case origin/master), and will post it to the
+<a href="https://codereview.chromium.org">Chromium code review site</a>.</p></div>
 </div>
 </div>
 <div class="sect1">
@@ -1115,7 +1117,7 @@ automatically run <code>gclient sync</code> to update your dependencies.</td>
 <div class="sectionbody">
 <div class="paragraph"><p>Sometimes you want to work on more than one CL at once (say, you have a CL
 posted for review and want to work on something else). For each CL that you
-want to work on, just use <code>git new-branch &lt;branchname&gt;</code>.</p></div>
+want to work on, just use <code>git new-branch &lt;branch_name&gt;</code>.</p></div>
 <div class="paragraph"><p>Once you start to have more than one CL at a time, it can be easy to lose your
 bearings. Fortunately, <em>depot_tools</em> has two tools to help you out:</p></div>
 <div class="listingblock">
@@ -1164,7 +1166,7 @@ bearings. Fortunately, <em>depot_tools</em> has two tools to help you out:</p></
 </dt>
 <dd>
 <p>
-  This tool just shows you which branches you have in your repo, and thier
+  This tool just shows you which branches you have in your repo, and their
   upstream relationship to each other (as well as which branch you have checked
   out at the moment).
 </p>
@@ -1236,9 +1238,9 @@ updating, and committing multiple CLs.</p></div>
 </code></pre></div></div><p><div class="paragraph"> Let's fix something!</p></div><div class="listingblock"><div class="content"><pre><code><span style="font-weight: bold; color: #ffffff">$ git new-branch fix_typo</span>
 <span style="font-weight: bold; color: #ffffff">$ echo -e '/Banana\ns/Banana/Kuun\nwq' | ed build/whitespace_file.txt</span>
 1503
+1501
 It was a Domo-Banana.
 It was a Domo-Kuun.
-1501
 <span style="font-weight: bold; color: #ffffff">$ git commit -am 'Fix terrible typo.'</span>
 [fix_typo 615ffa7] Fix terrible typo.
  1 file changed, 1 insertion(+), 1 deletion(-)
@@ -1252,10 +1254,10 @@ It was a Domo-Kuun.
 * <span style="font-weight: bold; color: #e42e16">2250f53	</span><span style="color: #19c518"></span> <span style="color: #e7e71c">2014-04-10</span> ~ ozone: evdev: Filter devices by path
 * <span style="font-weight: bold; color: #e42e16">33a7a74	</span><span style="color: #19c518"></span> <span style="color: #e7e71c">2014-04-10</span> ~ Always output seccomp error messages to stderr
 <span style="font-weight: bold; color: #ffffff">$ git status</span>
-On branch fix_typo
-Your branch is ahead of 'origin/master' by 1 commit.
-  (use "git push" to publish your local commits)
-
+# On branch fix_typo
+# Your branch is ahead of 'origin/master' by 1 commit.
+#   (use "git push" to publish your local commits)
+#
 nothing to commit, working directory clean
 <span style="font-weight: bold; color: #ffffff">$ git cl upload -r domo@chromium.org --send-mail</span>
 ... truncated output ...
@@ -1271,15 +1273,15 @@ overhead, barely disturbing the thick cigarette smoke. No doubt was left about
 when the fan was last cleaned.
 EOF
 <span style="font-weight: bold; color: #ffffff">$ git status</span>
-On branch chap2
-Your branch is up-to-date with 'origin/master'.
-
-Changes not staged for commit:
-  (use "git add &lt;file&gt;..." to update what will be committed)
-  (use "git checkout -- &lt;file&gt;..." to discard changes in working directory)
-
-	<span style="color: #e42e16">modified:   build/whitespace_file.txt</span>
-
+# On branch chap2
+# Your branch is up-to-date with 'origin/master'.
+#
+# Changes not staged for commit:
+#   (use "git add &lt;file&gt;..." to update what will be committed)
+#   (use "git checkout -- &lt;file&gt;..." to discard changes in working directory)
+#
+#	<span style="color: #e42e16">modified:   build/whitespace_file.txt</span>
+#
 no changes added to commit (use "git add" and/or "git commit -a")
 </code></pre></div></div><p><div class="paragraph"> Someone on the code review pointed out that our typo-fix has a typo :( We're still working on 'chap2' but we really want to land 'fix_typo', so let's switch over and fix it.</p></div><div class="listingblock"><div class="content"><pre><code><span style="font-weight: bold; color: #ffffff">$ git freeze</span>
 <span style="font-weight: bold; color: #ffffff">$ git checkout fix_typo</span>
@@ -1288,9 +1290,9 @@ Your branch is ahead of 'origin/master' by 1 commit.
   (use "git push" to publish your local commits)
 <span style="font-weight: bold; color: #ffffff">$ echo -e '/Kuun\ns/Kuun/Kun\nwq' | ed build/whitespace_file.txt</span>
 1501
+1500
 It was a Domo-Kuun.
 It was a Domo-Kun.
-1500
 <span style="font-weight: bold; color: #ffffff">$ git upstream-diff --wordwise</span>
 <span style="font-weight: bold">diff --git a/build/whitespace_file.txt b/build/whitespace_file.txt</span>
 <span style="font-weight: bold">index 3eba355..57cdcee 100644</span>
@@ -1579,7 +1581,7 @@ from <a href="https://chromium.googlesource.com/chromium/tools/depot_tools.git">
 <div id="footnotes"><hr /></div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2014-04-28 13:55:43 PDT
+Last updated 2014-05-09 17:43:43 PDT
 </div>
 </div>
 </body>

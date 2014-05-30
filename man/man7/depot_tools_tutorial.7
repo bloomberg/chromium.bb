@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: depot_tools_tutorial
 .\"    Author: [FIXME: author] [see http://docbook.sf.net/el/author]
-.\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
-.\"      Date: 04/28/2014
+.\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
+.\"      Date: 05/09/2014
 .\"    Manual: Chromium depot_tools Manual
-.\"    Source: depot_tools 32af7d9
+.\"    Source: depot_tools 54dac93
 .\"  Language: English
 .\"
-.TH "DEPOT_TOOLS_TUTORIAL" "7" "04/28/2014" "depot_tools 32af7d9" "Chromium depot_tools Manual"
+.TH "DEPOT_TOOLS_TUTORIAL" "7" "05/09/2014" "depot_tools 54dac93" "Chromium depot_tools Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -41,6 +41,7 @@ The Chromium \fBdepot_tools\fR(7) suite contains many git workflow\-enhancing to
 .sp -1
 .IP \(bu 2.3
 .\}
+
 Setting up
 .RE
 .sp
@@ -52,6 +53,7 @@ Setting up
 .sp -1
 .IP \(bu 2.3
 .\}
+
 Getting the code
 .RE
 .sp
@@ -63,6 +65,7 @@ Getting the code
 .sp -1
 .IP \(bu 2.3
 .\}
+
 TL;DR
 .RE
 .sp
@@ -74,6 +77,7 @@ TL;DR
 .sp -1
 .IP \(bu 2.3
 .\}
+
 Creating / Uploading a CL
 .RE
 .sp
@@ -85,6 +89,7 @@ Creating / Uploading a CL
 .sp -1
 .IP \(bu 2.3
 .\}
+
 Updating the code
 .RE
 .sp
@@ -96,6 +101,7 @@ Updating the code
 .sp -1
 .IP \(bu 2.3
 .\}
+
 Managing multiple CLs
 .RE
 .sp
@@ -107,6 +113,7 @@ Managing multiple CLs
 .sp -1
 .IP \(bu 2.3
 .\}
+
 Managing dependent CLs
 .RE
 .sp
@@ -118,6 +125,7 @@ Managing dependent CLs
 .sp -1
 .IP \(bu 2.3
 .\}
+
 Example Walkthrough
 .RE
 .sp
@@ -150,6 +158,7 @@ This tutorial assumes basic familiarity with git terminology and concepts\&. If 
 .sp -1
 .IP \(bu 2.3
 .\}
+
 \m[blue]\fBThink like (a) Git\fR\m[]\&\s-2\u[1]\d\s+2
 \- A lighthearted overview of git\&. If you\(cqre sorta\-familiar with git, but not
 \fIcomfortable\fR
@@ -164,6 +173,7 @@ with it, then give this a look\&.
 .sp -1
 .IP \(bu 2.3
 .\}
+
 \m[blue]\fBGit Immersion Tutorial\fR\m[]\&\s-2\u[2]\d\s+2
 \- An in\-depth git tutorial\&.
 .RE
@@ -176,6 +186,7 @@ with it, then give this a look\&.
 .sp -1
 .IP \(bu 2.3
 .\}
+
 \m[blue]\fBpcottle\(cqs Visual Git Branching\fR\m[]\&\s-2\u[3]\d\s+2
 \- An excellent interactive/graphical demo on how git handles commits, branches, and shows the operations git performs on them\&.
 .RE
@@ -188,6 +199,7 @@ with it, then give this a look\&.
 .sp -1
 .IP \(bu 2.3
 .\}
+
 \m[blue]\fBPro Git book\fR\m[]\&\s-2\u[4]\d\s+2
 \- \(lqThe\(rq book for learning git from basics to advanced concepts\&. A bit dry, but very through\&.
 .RE
@@ -267,7 +279,7 @@ If you have never used git before, you\(cqll need to set some global git configu
 \fB$ gclient sync\fR
 
 \fB$\fR # Make a new change and upload it for review
-\fB$ git new\-branch branchname\fR
+\fB$ git new\-branch <branch_name>\fR
 \fB$\fR # repeat: [edit, git add, git commit]
 \fB$ git cl upload\fR
 
@@ -312,7 +324,7 @@ When the fetch tool completes you should have the following in your working dire
 .\}
 .sp
 .sp
-If you are on linux, then you\(cqll need to run:
+If you are on linux and fetching the code for the first time, then you\(cqll need to run:
 .sp
 .if n \{\
 .RS 4
@@ -338,7 +350,7 @@ And finally:
 .\}
 .sp
 .sp
-This will pull all dependencies of the Chromium src checkout\&. You will need to run this any time you update the main src checkout\&.
+This will pull all dependencies of the Chromium src checkout\&. You will need to run this any time you update the main src checkout, including when you switch branches\&.
 .SH "CREATING / UPLOADING A CL"
 .if n \{\
 .sp
@@ -357,7 +369,7 @@ The remainder of the tutorial assumes that your current working directory is the
 .sp .5v
 .RE
 .sp
-Each CL corresponds exactly with a single branch in git\&. Any time you want to begin a new CL, just:
+Each CL corresponds exactly with a single branch in git\&. Any time you want to begin a new CL:
 .sp
 .if n \{\
 .RS 4
@@ -370,7 +382,7 @@ Each CL corresponds exactly with a single branch in git\&. Any time you want to 
 .\}
 .sp
 .sp
-This will create and checkout a new branch named branch_name which will track the default upstream (which is origin/master)\&. See \fBgit-new-branch\fR(1) for more features, such as the ability to track \fILKGR\fR\&.
+This will create and checkout a new branch named branch_name which will track the default upstream branch (origin/master)\&. See \fBgit-new-branch\fR(1) for more features\&.
 .sp
 Commit as many changes as you like to this branch\&. When you want to upload it for review, run:
 .sp
@@ -385,7 +397,7 @@ Commit as many changes as you like to this branch\&. When you want to upload it 
 .\}
 .sp
 .sp
-This will take the diff of your branch against its upstream (origin/master), and will post it to the \m[blue]\fBChromium code review site\fR\m[]\&\s-2\u[5]\d\s+2\&.
+This will take the diff of your branch against its upstream branch (in that case origin/master), and will post it to the \m[blue]\fBChromium code review site\fR\m[]\&\s-2\u[5]\d\s+2\&.
 .SH "UPDATING THE CODE"
 .sp
 Inevitably, you\(cqll want to pull in changes from the main Chromium repo\&. This is pretty easy with \fIdepot_tools\fR:
@@ -426,7 +438,7 @@ Running git rebase\-update will update all your branches, but it will not automa
 .RE
 .SH "MANAGING MULTIPLE CLS"
 .sp
-Sometimes you want to work on more than one CL at once (say, you have a CL posted for review and want to work on something else)\&. For each CL that you want to work on, just use git new\-branch <branchname>\&.
+Sometimes you want to work on more than one CL at once (say, you have a CL posted for review and want to work on something else)\&. For each CL that you want to work on, just use git new\-branch <branch_name>\&.
 .sp
 Once you start to have more than one CL at a time, it can be easy to lose your bearings\&. Fortunately, \fIdepot_tools\fR has two tools to help you out:
 .sp
@@ -473,7 +485,6 @@ origin/master
 .RE
 .\}
 .sp
-
 .PP
 \fBgit-map\fR(1)
 .RS 4
@@ -482,7 +493,7 @@ This tool shows you the history of all of your branches in a pseudo\-graphical f
 .PP
 \fBgit-map-branches\fR(1)
 .RS 4
-This tool just shows you which branches you have in your repo, and thier upstream relationship to each other (as well as which branch you have checked out at the moment)\&.
+This tool just shows you which branches you have in your repo, and their upstream relationship to each other (as well as which branch you have checked out at the moment)\&.
 .RE
 .sp
 Additionally, sometimes you need to switch between branches, but you\(cqve got work in progress\&. You could use \fBgit-stash\fR(1), but that can be tricky to manage because you need to remember which branches you stashed what changes on\&. Helpfully \fIdepot_tools\fR includes two tools which can greatly assist in case:
@@ -567,9 +578,9 @@ Let\*(Aqs fix something!
 \fB$ git new\-branch fix_typo\fR
 \fB$ echo \-e \*(Aq/Banana\ens/Banana/Kuun\enwq\*(Aq | ed build/whitespace_file\&.txt\fR
 1503
+1501
 It was a Domo\-Banana\&.
 It was a Domo\-Kuun\&.
-1501
 \fB$ git commit \-am \*(AqFix terrible typo\&.\*(Aq\fR
 [fix_typo 615ffa7] Fix terrible typo\&.
  1 file changed, 1 insertion(+), 1 deletion(\-)
@@ -583,10 +594,10 @@ It was a Domo\-Kuun\&.
 * \fB2250f53	\fR 2014\-04\-10 ~ ozone: evdev: Filter devices by path
 * \fB33a7a74	\fR 2014\-04\-10 ~ Always output seccomp error messages to stderr
 \fB$ git status\fR
-On branch fix_typo
-Your branch is ahead of \*(Aqorigin/master\*(Aq by 1 commit\&.
-  (use "git push" to publish your local commits)
-
+# On branch fix_typo
+# Your branch is ahead of \*(Aqorigin/master\*(Aq by 1 commit\&.
+#   (use "git push" to publish your local commits)
+#
 nothing to commit, working directory clean
 \fB$ git cl upload \-r domo@chromium\&.org \-\-send\-mail\fR
 \&.\&.\&. truncated output \&.\&.\&.
@@ -613,15 +624,15 @@ overhead, barely disturbing the thick cigarette smoke\&. No doubt was left about
 when the fan was last cleaned\&.
 EOF
 \fB$ git status\fR
-On branch chap2
-Your branch is up\-to\-date with \*(Aqorigin/master\*(Aq\&.
-
-Changes not staged for commit:
-  (use "git add <file>\&.\&.\&." to update what will be committed)
-  (use "git checkout \-\- <file>\&.\&.\&." to discard changes in working directory)
-
-	modified:   build/whitespace_file\&.txt
-
+# On branch chap2
+# Your branch is up\-to\-date with \*(Aqorigin/master\*(Aq\&.
+#
+# Changes not staged for commit:
+#   (use "git add <file>\&.\&.\&." to update what will be committed)
+#   (use "git checkout \-\- <file>\&.\&.\&." to discard changes in working directory)
+#
+#	modified:   build/whitespace_file\&.txt
+#
 no changes added to commit (use "git add" and/or "git commit \-a")
 .fi
 .if n \{\
@@ -641,9 +652,9 @@ Your branch is ahead of \*(Aqorigin/master\*(Aq by 1 commit\&.
   (use "git push" to publish your local commits)
 \fB$ echo \-e \*(Aq/Kuun\ens/Kuun/Kun\enwq\*(Aq | ed build/whitespace_file\&.txt\fR
 1501
+1500
 It was a Domo\-Kuun\&.
 It was a Domo\-Kun\&.
-1500
 \fB$ git upstream\-diff \-\-wordwise\fR
 \fBdiff \-\-git a/build/whitespace_file\&.txt b/build/whitespace_file\&.txt\fR
 \fBindex 3eba355\&.\&.57cdcee 100644\fR
