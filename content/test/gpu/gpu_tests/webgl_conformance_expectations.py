@@ -177,6 +177,8 @@ class WebGLConformanceExpectations(test_expectations.TestExpectations):
         ['chromeos', ('intel', 0xa011)], bug=375554)
     self.Fail('conformance/ogles/GL/atan/atan_001_to_008.html',
         ['chromeos', ('intel', 0xa011)], bug=375554)
+    self.Fail('conformance/ogles/GL/build/build_009_to_016.html',
+        ['chromeos', ('intel', 0xa011)], bug=378938)
     self.Fail('conformance/ogles/GL/control_flow/control_flow_001_to_008.html',
         ['chromeos', ('intel', 0xa011)], bug=375554)
     self.Fail('conformance/ogles/GL/cos/cos_001_to_006.html',
