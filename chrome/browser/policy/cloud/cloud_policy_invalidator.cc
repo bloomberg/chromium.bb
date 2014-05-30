@@ -5,13 +5,11 @@
 #include "chrome/browser/policy/cloud/cloud_policy_invalidator.h"
 
 #include "base/bind.h"
-#include "base/command_line.h"
 #include "base/hash.h"
 #include "base/location.h"
 #include "base/metrics/histogram.h"
 #include "base/rand_util.h"
 #include "base/sequenced_task_runner.h"
-#include "base/strings/string_number_conversions.h"
 #include "base/time/clock.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -19,14 +17,13 @@
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
 #include "components/policy/core/common/cloud/cloud_policy_refresh_scheduler.h"
 #include "components/policy/core/common/cloud/enterprise_metrics.h"
-#include "components/policy/core/common/policy_switches.h"
 #include "policy/policy_constants.h"
 #include "sync/notifier/object_id_invalidation_map.h"
 
 namespace policy {
 
 const int CloudPolicyInvalidator::kMissingPayloadDelay = 5;
-const int CloudPolicyInvalidator::kMaxFetchDelayDefault = 120000;
+const int CloudPolicyInvalidator::kMaxFetchDelayDefault = 10000;
 const int CloudPolicyInvalidator::kMaxFetchDelayMin = 1000;
 const int CloudPolicyInvalidator::kMaxFetchDelayMax = 300000;
 const int CloudPolicyInvalidator::kInvalidationGracePeriod = 10;
@@ -292,15 +289,6 @@ void CloudPolicyInvalidator::UpdateMaxFetchDelay(const PolicyMap& policy_map) {
   const base::Value* delay_policy_value =
       policy_map.GetValue(key::kMaxInvalidationFetchDelay);
   if (delay_policy_value && delay_policy_value->GetAsInteger(&delay)) {
-    set_max_fetch_delay(delay);
-    return;
-  }
-
-  // Try reading the delay from the command line switch.
-  std::string delay_string =
-      CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          switches::kCloudPolicyInvalidationDelay);
-  if (base::StringToInt(delay_string, &delay)) {
     set_max_fetch_delay(delay);
     return;
   }

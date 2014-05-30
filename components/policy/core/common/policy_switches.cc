@@ -7,12 +7,6 @@
 namespace policy {
 namespace switches {
 
-// The maximum amount of delay in ms between receiving a cloud policy
-// invalidation and fetching the policy. A random delay up to this value is used
-// to prevent Chrome clients from overwhelming the cloud policy server when a
-// policy which affects many users is changed.
-const char kCloudPolicyInvalidationDelay[]  = "cloud-policy-invalidation-delay";
-
 // Specifies the URL at which to fetch configuration policy from the device
 // management backend.
 const char kDeviceManagementUrl[]           = "device-management-url";
