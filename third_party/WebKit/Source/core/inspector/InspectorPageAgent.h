@@ -146,8 +146,6 @@ public:
     virtual void clearFrontend() OVERRIDE;
     virtual void restore() OVERRIDE;
 
-    void webViewResized(const IntSize&);
-
     // Cross-agents API
     Page* page() { return m_page; }
     LocalFrame* mainFrame();

@@ -121,7 +121,6 @@ public:
     void hide();
     void paint(GraphicsContext&);
     void drawOutline(GraphicsContext*, const LayoutRect&, const Color&);
-    void resize(const IntSize&);
     bool handleGestureEvent(const PlatformGestureEvent&);
     bool handleMouseEvent(const PlatformMouseEvent&);
     bool handleTouchEvent(const PlatformTouchEvent&);
@@ -159,7 +158,7 @@ private:
     void drawViewSize();
 
     Page* overlayPage();
-    void reset(const IntSize& viewportSize, const IntSize& frameViewFullSize, int scrollX, int scrollY);
+    void reset(const IntSize& viewportSize, int scrollX, int scrollY);
     void evaluateInOverlay(const String& method, const String& argument);
     void evaluateInOverlay(const String& method, PassRefPtr<JSONValue> argument);
     void onTimer(Timer<InspectorOverlay>*);
@@ -176,7 +175,6 @@ private:
     OwnPtr<EmptyChromeClient> m_overlayChromeClient;
     RefPtr<InspectorOverlayHost> m_overlayHost;
     HighlightConfig m_quadHighlightConfig;
-    IntSize m_size;
     bool m_drawViewSize;
     bool m_drawViewSizeWithGrid;
     bool m_omitTooltip;

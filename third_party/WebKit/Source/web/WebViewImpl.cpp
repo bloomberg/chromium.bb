@@ -1612,10 +1612,6 @@ void WebViewImpl::resize(const WebSize& newSize)
         updatePageDefinedViewportConstraints(mainFrameImpl()->frame()->document()->viewportDescription());
         updateMainFrameLayoutSize();
 
-        WebDevToolsAgentPrivate* agentPrivate = devToolsAgentPrivate();
-        if (agentPrivate)
-            agentPrivate->webViewResized(newSize);
-
         // If the virtual viewport pinch mode is enabled, the main frame will be resized
         // after layout so it can be sized to the contentsSize.
         if (!pinchVirtualViewportEnabled() && mainFrameImpl()->frameView())
@@ -3315,10 +3311,11 @@ void WebViewImpl::inspectElementAt(const WebPoint& point)
         HitTestRequest::HitTestRequestType hitType = HitTestRequest::Move | HitTestRequest::ReadOnly | HitTestRequest::AllowChildFrameContent;
         HitTestRequest request(hitType);
 
-        FrameView* frameView = m_page->mainFrame()->view();
-        IntPoint transformedPoint(point);
-        transformedPoint = transformedPoint - frameView->inputEventsOffsetForEmulation();
-        transformedPoint.scale(1 / frameView->inputEventsScaleFactor(), 1 / frameView->inputEventsScaleFactor());
+        WebMouseEvent dummyEvent;
+        dummyEvent.type = WebInputEvent::MouseDown;
+        dummyEvent.x = point.x;
+        dummyEvent.y = point.y;
+        IntPoint transformedPoint = PlatformMouseEventBuilder(m_page->mainFrame()->view(), dummyEvent).position();
         HitTestResult result(m_page->mainFrame()->view()->windowToContents(transformedPoint));
         m_page->mainFrame()->contentRenderer()->hitTest(request, result);
         Node* node = result.innerNode();

@@ -232,7 +232,6 @@ void WebDevToolsAgentImpl::attach()
         return;
 
     inspectorController()->connectFrontend(this);
-    inspectorController()->webViewResized(m_webViewImpl->size());
     blink::Platform::current()->currentThread()->addTaskObserver(this);
     m_attached = true;
 }
@@ -296,12 +295,6 @@ void WebDevToolsAgentImpl::didCreateScriptContext(WebLocalFrameImpl* webframe, i
         return;
     if (WebCore::LocalFrame* frame = webframe->frame())
         frame->script().setContextDebugId(m_hostId);
-}
-
-void WebDevToolsAgentImpl::webViewResized(const WebSize& size)
-{
-    if (InspectorController* ic = inspectorController())
-        ic->webViewResized(IntSize());
 }
 
 bool WebDevToolsAgentImpl::handleInputEvent(WebCore::Page* page, const WebInputEvent& inputEvent)

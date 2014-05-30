@@ -369,7 +369,7 @@ function drawViewSize(drawViewSizeWithGrid)
     case "linux": context.font = "14px dejavu sans mono"; break;
     }
 
-    var frameWidth = frameViewFullSize.width || canvasWidth;
+    var frameWidth = canvasWidth;
     var textWidth = context.measureText(text).width;
     context.fillStyle = gridBackgroundColor;
     context.fillRect(frameWidth - textWidth - 12, drawGridBoolean ? 15 : 0, frameWidth, 25);
@@ -383,7 +383,6 @@ function drawViewSize(drawViewSizeWithGrid)
 function reset(resetData)
 {
     window.viewportSize = resetData.viewportSize;
-    window.frameViewFullSize = resetData.frameViewFullSize;
     window.deviceScaleFactor = resetData.deviceScaleFactor;
     window.pageZoomFactor = resetData.pageZoomFactor;
     window.pageScaleFactor = resetData.pageScaleFactor;

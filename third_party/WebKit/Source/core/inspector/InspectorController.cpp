@@ -277,12 +277,6 @@ void InspectorController::setLayerTreeId(int id)
     m_tracingAgent->setLayerTreeId(id);
 }
 
-void InspectorController::webViewResized(const IntSize& size)
-{
-    if (InspectorPageAgent* pageAgent = m_instrumentingAgents->inspectorPageAgent())
-        pageAgent->webViewResized(size);
-}
-
 bool InspectorController::isUnderTest()
 {
     return m_isUnderTest;

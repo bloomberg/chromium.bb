@@ -81,7 +81,6 @@ public:
 
     // WebDevToolsAgentPrivate implementation.
     virtual void didCreateScriptContext(WebLocalFrameImpl*, int worldId) OVERRIDE;
-    virtual void webViewResized(const WebSize&) OVERRIDE;
     virtual bool handleInputEvent(WebCore::Page*, const WebInputEvent&) OVERRIDE;
 
     // WebDevToolsAgent implementation.

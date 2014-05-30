@@ -51,9 +51,6 @@ public:
     // in this context should be done here.
     virtual void didCreateScriptContext(WebLocalFrameImpl*, int worldId) = 0;
 
-    // WebViewImpl has been resized.
-    virtual void webViewResized(const WebSize&) = 0;
-
     // DevTools may handle input event from WebViewImpl.
     virtual bool handleInputEvent(WebCore::Page*, const WebInputEvent&) = 0;
 };

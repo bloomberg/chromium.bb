@@ -335,12 +335,6 @@ void InspectorOverlay::drawOutline(GraphicsContext* context, const LayoutRect& r
     drawOutlinedQuad(context, outlineRect, Color(), color);
 }
 
-void InspectorOverlay::resize(const IntSize& size)
-{
-    m_size = size;
-    update();
-}
-
 void InspectorOverlay::setPausedInDebuggerMessage(const String* message)
 {
     m_pausedInDebuggerMessage = message ? *message : String();
@@ -395,7 +389,7 @@ bool InspectorOverlay::isEmpty()
 {
     if (m_activeProfilerCount)
         return true;
-    bool hasAlwaysVisibleElements = m_highlightNode || m_eventTargetNode || m_highlightQuad || !m_size.isEmpty() || m_drawViewSize;
+    bool hasAlwaysVisibleElements = m_highlightNode || m_eventTargetNode || m_highlightQuad  || m_drawViewSize;
     bool hasInvisibleInInspectModeElements = !m_pausedInDebuggerMessage.isNull();
     return !(hasAlwaysVisibleElements || (hasInvisibleInInspectModeElements && !m_inspectModeEnabled));
 }
@@ -410,16 +404,14 @@ void InspectorOverlay::update()
     FrameView* view = m_page->mainFrame()->view();
     if (!view)
         return;
-    IntRect viewRect = view->visibleContentRect();
 
     // Include scrollbars to avoid masking them by the gutter.
-    IntSize frameViewFullSize = view->visibleContentRect(IncludeScrollbars).size();
-    IntSize size = m_size.isEmpty() ? frameViewFullSize : m_size;
-    size.scale(m_page->pageScaleFactor());
+    IntSize size = view->unscaledVisibleContentSize(IncludeScrollbars);
     overlayPage()->mainFrame()->view()->resize(size);
 
     // Clear canvas and paint things.
-    reset(size, m_size.isEmpty() ? IntSize() : frameViewFullSize, viewRect.x(), viewRect.y());
+    IntRect viewRect = view->visibleContentRect();
+    reset(size, viewRect.x(), viewRect.y());
 
     drawNodeHighlight();
     drawQuadHighlight();
@@ -442,7 +434,6 @@ void InspectorOverlay::hide()
     m_eventTargetNode.clear();
     m_highlightQuad.clear();
     m_pausedInDebuggerMessage = String();
-    m_size = IntSize();
     m_drawViewSize = false;
     m_drawViewSizeWithGrid = false;
     update();
@@ -741,13 +732,12 @@ Page* InspectorOverlay::overlayPage()
     return m_overlayPage.get();
 }
 
-void InspectorOverlay::reset(const IntSize& viewportSize, const IntSize& frameViewFullSize, int scrollX, int scrollY)
+void InspectorOverlay::reset(const IntSize& viewportSize, int scrollX, int scrollY)
 {
     RefPtr<JSONObject> resetData = JSONObject::create();
-    resetData->setNumber("pageScaleFactor", m_page->pageScaleFactor());
+    resetData->setNumber("pageScaleFactor", m_page->settings().pinchVirtualViewportEnabled() ? 1 : m_page->pageScaleFactor());
     resetData->setNumber("deviceScaleFactor", m_page->deviceScaleFactor());
     resetData->setObject("viewportSize", buildObjectForSize(viewportSize));
-    resetData->setObject("frameViewFullSize", buildObjectForSize(frameViewFullSize));
     resetData->setNumber("pageZoomFactor", m_page->mainFrame()->pageZoomFactor());
     resetData->setNumber("scrollX", scrollX);
     resetData->setNumber("scrollY", scrollY);

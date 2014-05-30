@@ -95,7 +95,6 @@ public:
     void reuseFrontend(InspectorFrontendChannel*, const String& inspectorStateCookie);
     void setProcessId(long);
     void setLayerTreeId(int);
-    void webViewResized(const IntSize&);
 
     void inspect(Node*);
     void drawHighlight(GraphicsContext&) const;
