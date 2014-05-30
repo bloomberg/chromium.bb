@@ -28,6 +28,10 @@ const char kWriteFile_Help[] =
     "  If data is a list, the list will be written one-item-per-line with no\n"
     "  quoting or brackets.\n"
     "\n"
+    "  If the file exists and the contents are identical to that being\n"
+    "  written, the file will not be updated. This will prevent unnecessary\n"
+    "  rebuilds of targets that depend on this file.\n"
+    "\n"
     "  TODO(brettw) we probably need an optional third argument to control\n"
     "  list formatting.\n"
     "\n"
@@ -68,18 +72,25 @@ Value RunWriteFile(Scope* scope,
   } else {
     contents << args[1].ToString(false);
   }
-
-  // Write file, creating the directory if necessary.
+  const std::string& new_contents = contents.str();
   base::FilePath file_path =
       scope->settings()->build_settings()->GetFullPath(source_file);
-  const std::string& contents_string = contents.str();
+
+  // Make sure we're not replacing the same contents.
+  std::string existing_contents;
+  if (base::ReadFileToString(file_path, &existing_contents) &&
+      existing_contents == new_contents)
+    return Value();  // Nothing to do.
+
+  // Write file, creating the directory if necessary.
   if (!base::CreateDirectory(file_path.DirName())) {
     *err = Err(function->function(), "Unable to create directory.",
                "I was using \"" + FilePathToUTF8(file_path.DirName()) + "\".");
     return Value();
   }
-  int int_size = static_cast<int>(contents_string.size());
-  if (base::WriteFile(file_path, contents_string.c_str(), int_size)
+
+  int int_size = static_cast<int>(new_contents.size());
+  if (base::WriteFile(file_path, new_contents.c_str(), int_size)
       != int_size) {
     *err = Err(function->function(), "Unable to write file.",
                "I was writing \"" + FilePathToUTF8(file_path) + "\".");
