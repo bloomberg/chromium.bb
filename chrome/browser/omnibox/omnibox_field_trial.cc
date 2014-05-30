@@ -398,7 +398,7 @@ int OmniboxFieldTrial::HQPBookmarkValue() {
       GetVariationParamValue(kBundledExperimentFieldTrialName,
                              kHQPBookmarkValueRule);
   if (bookmark_value_str.empty())
-    return 1;
+    return 10;
   // This is a best-effort conversion; we trust the hand-crafted parameters
   // downloaded from the server to be perfect.  There's no need for handle
   // errors smartly.
