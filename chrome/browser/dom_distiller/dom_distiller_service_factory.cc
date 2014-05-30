@@ -62,9 +62,15 @@ KeyedService* DomDistillerServiceFactory::BuildServiceInstanceFor(
       new DistillerPageWebContentsFactory(profile));
   scoped_ptr<DistillerURLFetcherFactory> distiller_url_fetcher_factory(
       new DistillerURLFetcherFactory(profile->GetRequestContext()));
+
+  dom_distiller::proto::DomDistillerOptions options;
+  if (VLOG_IS_ON(1)) {
+    options.set_debug_level(
+        logging::GetVlogLevelHelper(FROM_HERE.file_name(),
+                                    ::strlen(FROM_HERE.file_name())));
+  }
   scoped_ptr<DistillerFactory> distiller_factory(
-      new DistillerFactoryImpl(distiller_url_fetcher_factory.Pass(),
-                               dom_distiller::proto::DomDistillerOptions()));
+      new DistillerFactoryImpl(distiller_url_fetcher_factory.Pass(), options));
 
   DomDistillerContextKeyedService* service =
       new DomDistillerContextKeyedService(
