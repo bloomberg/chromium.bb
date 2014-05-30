@@ -20,6 +20,7 @@ GoogleURLTrackerNavigationHelperImpl::GoogleURLTrackerNavigationHelperImpl(
 }
 
 GoogleURLTrackerNavigationHelperImpl::~GoogleURLTrackerNavigationHelperImpl() {
+  web_contents_ = NULL;
 }
 
 void GoogleURLTrackerNavigationHelperImpl::SetListeningForNavigationCommit(
@@ -65,6 +66,16 @@ bool GoogleURLTrackerNavigationHelperImpl::IsListeningForTabDestruction() {
       this,
       content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
       content::Source<content::WebContents>(web_contents_));
+}
+
+void GoogleURLTrackerNavigationHelperImpl::OpenURL(
+    GURL url,
+    WindowOpenDisposition disposition,
+    bool user_clicked_on_link) {
+  content::PageTransition transition_type = user_clicked_on_link ?
+      content::PAGE_TRANSITION_LINK : content::PAGE_TRANSITION_GENERATED;
+  web_contents_->OpenURL(content::OpenURLParams(
+      url, content::Referrer(), disposition, transition_type, false));
 }
 
 void GoogleURLTrackerNavigationHelperImpl::Observe(

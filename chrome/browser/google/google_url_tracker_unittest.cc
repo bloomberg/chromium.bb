@@ -32,20 +32,21 @@ namespace {
 
 class TestInfoBarDelegate : public GoogleURLTrackerInfoBarDelegate {
  public:
-  // Creates a test infobar and delegate and returns the infobar.  Unlike the
-  // parent class, this does not add the infobar to |infobar_service|, since
-  // that "pointer" is really just a magic number.  Thus there is no
-  // InfoBarService ownership of the returned object; and since the caller
-  // doesn't own the returned object, we rely on |test_harness| cleaning this up
-  // eventually in GoogleURLTrackerTest::OnInfoBarClosed() to avoid leaks.
-  static infobars::InfoBar* Create(GoogleURLTrackerTest* test_harness,
-                                   InfoBarService* infobar_service,
-                                   GoogleURLTracker* google_url_tracker,
-                                   const GURL& search_url);
+   // Creates a test infobar and delegate and returns the infobar.  Unlike the
+   // parent class, this does not add the infobar to |infobar_manager|, since
+   // that "pointer" is really just a magic number.  Thus there is no
+   // InfoBarManager ownership of the returned object; and since the caller
+   // doesn't own the returned object, we rely on |test_harness| cleaning this
+   // up eventually in GoogleURLTrackerTest::OnInfoBarClosed() to avoid leaks.
+   static infobars::InfoBar* Create(
+      GoogleURLTrackerTest* test_harness,
+      infobars::InfoBarManager* infobar_manager,
+      GoogleURLTracker* google_url_tracker,
+      const GURL& search_url);
 
  private:
   TestInfoBarDelegate(GoogleURLTrackerTest* test_harness,
-                      InfoBarService* infobar_service,
+                      infobars::InfoBarManager* infobar_manager,
                       GoogleURLTracker* google_url_tracker,
                       const GURL& search_url);
   virtual ~TestInfoBarDelegate();
@@ -55,7 +56,7 @@ class TestInfoBarDelegate : public GoogleURLTrackerInfoBarDelegate {
   virtual void Close(bool redo_search) OVERRIDE;
 
   GoogleURLTrackerTest* test_harness_;
-  InfoBarService* infobar_service_;
+  infobars::InfoBarManager* infobar_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(TestInfoBarDelegate);
 };
@@ -150,6 +151,9 @@ class TestGoogleURLTrackerNavigationHelper
   virtual bool IsListeningForNavigationCommit() OVERRIDE;
   virtual void SetListeningForTabDestruction(bool listen) OVERRIDE;
   virtual bool IsListeningForTabDestruction() OVERRIDE;
+  virtual void OpenURL(GURL url,
+                       WindowOpenDisposition disposition,
+                       bool user_clicked_on_link) OVERRIDE;
 
  private:
   bool listening_for_nav_commit_;
@@ -186,6 +190,12 @@ bool TestGoogleURLTrackerNavigationHelper::IsListeningForTabDestruction() {
   return listening_for_tab_destruction_;
 }
 
+void TestGoogleURLTrackerNavigationHelper::OpenURL(
+    GURL url,
+    WindowOpenDisposition disposition,
+    bool user_clicked_on_link) {
+}
+
 }  // namespace
 
 
@@ -194,7 +204,8 @@ bool TestGoogleURLTrackerNavigationHelper::IsListeningForTabDestruction() {
 // Ths class exercises GoogleURLTracker.  In order to avoid instantiating more
 // of the Chrome infrastructure than necessary, the GoogleURLTracker functions
 // are carefully written so that many of the functions which take
-// NavigationController* or InfoBarService* do not actually dereference the
+// NavigationController* or infobars::InfoBarManager* do not actually
+// dereference the
 // objects, merely use them for comparisons and lookups, e.g. in |entry_map_|.
 // This then allows the test code here to not create any of these objects, and
 // instead supply "pointers" that are actually reinterpret_cast<>()ed magic
@@ -210,7 +221,7 @@ class GoogleURLTrackerTest : public testing::Test {
  public:
   // Called by TestInfoBarDelegate::Close().
   void OnInfoBarClosed(scoped_ptr<infobars::InfoBar> infobar,
-                       InfoBarService* infobar_service);
+                       infobars::InfoBarManager* infobar_manager);
 
  protected:
   GoogleURLTrackerTest();
@@ -247,13 +258,14 @@ class GoogleURLTrackerTest : public testing::Test {
   void clear_listener_notified() { listener_.clear_notified(); }
 
  private:
-  // Since |infobar_service| is really a magic number rather than an actual
+  // Since |infobar_manager| is really a magic number rather than an actual
   // object, we don't add the created infobar to it.  Instead we will simulate
   // any helper<->infobar interaction necessary.  The returned object will be
   // cleaned up in OnInfoBarClosed().
-  infobars::InfoBar* CreateTestInfoBar(InfoBarService* infobar_service,
-                                       GoogleURLTracker* google_url_tracker,
-                                       const GURL& search_url);
+  infobars::InfoBar* CreateTestInfoBar(
+      infobars::InfoBarManager* infobar_manager,
+      GoogleURLTracker* google_url_tracker,
+      const GURL& search_url);
 
   // These are required by the TestURLFetchers GoogleURLTracker will create (see
   // test_url_fetcher_factory.h).
@@ -273,17 +285,19 @@ class GoogleURLTrackerTest : public testing::Test {
 
 void GoogleURLTrackerTest::OnInfoBarClosed(
     scoped_ptr<infobars::InfoBar> infobar,
-    InfoBarService* infobar_service) {
-  // First, simulate the InfoBarService firing INFOBAR_REMOVED.
+    infobars::InfoBarManager* infobar_manager) {
+  // First, simulate the InfoBarManager firing INFOBAR_REMOVED.
+  // TODO(droger): Replace this flow with a call to the observer method once
+  // the map entry is observing InfoBarManager. crbug.com/373243
   infobars::InfoBar::RemovedDetails removed_details(infobar.get(), false);
   GoogleURLTracker::EntryMap::const_iterator i =
-      google_url_tracker_->entry_map_.find(infobar_service);
+      google_url_tracker_->entry_map_.find(infobar_manager);
   ASSERT_FALSE(i == google_url_tracker_->entry_map_.end());
   GoogleURLTrackerMapEntry* map_entry = i->second;
   ASSERT_EQ(infobar->delegate(), map_entry->infobar_delegate());
   map_entry->Observe(
       chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REMOVED,
-      content::Source<InfoBarService>(infobar_service),
+      content::Source<infobars::InfoBarManager>(infobar_manager),
       content::Details<infobars::InfoBar::RemovedDetails>(&removed_details));
 
   // Second, simulate the infobar container closing the infobar in response.
@@ -374,7 +388,7 @@ void GoogleURLTrackerTest::SetNavigationPending(intptr_t unique_id,
         scoped_ptr<GoogleURLTrackerNavigationHelper>(
             new TestGoogleURLTrackerNavigationHelper(
                 google_url_tracker_.get())),
-        reinterpret_cast<InfoBarService*>(unique_id),
+        reinterpret_cast<infobars::InfoBarManager*>(unique_id),
         unique_id);
   }
 }
@@ -404,7 +418,7 @@ void GoogleURLTrackerTest::CommitSearch(intptr_t unique_id,
   GoogleURLTrackerNavigationHelper* nav_helper = GetNavigationHelper(unique_id);
   if (nav_helper && nav_helper->IsListeningForNavigationCommit()) {
     google_url_tracker_->OnNavigationCommitted(
-        reinterpret_cast<InfoBarService*>(unique_id), search_url);
+        reinterpret_cast<infobars::InfoBarManager*>(unique_id), search_url);
   }
 }
 
@@ -425,7 +439,7 @@ GoogleURLTrackerMapEntry* GoogleURLTrackerTest::GetMapEntry(
     intptr_t unique_id) {
   GoogleURLTracker::EntryMap::const_iterator i =
       google_url_tracker_->entry_map_.find(
-          reinterpret_cast<InfoBarService*>(unique_id));
+          reinterpret_cast<infobars::InfoBarManager*>(unique_id));
   return (i == google_url_tracker_->entry_map_.end()) ? NULL : i->second;
 }
 
@@ -458,11 +472,11 @@ void GoogleURLTrackerTest::ExpectListeningForCommit(intptr_t unique_id,
 }
 
 infobars::InfoBar* GoogleURLTrackerTest::CreateTestInfoBar(
-    InfoBarService* infobar_service,
+    infobars::InfoBarManager* infobar_manager,
     GoogleURLTracker* google_url_tracker,
     const GURL& search_url) {
-  return TestInfoBarDelegate::Create(this, infobar_service, google_url_tracker,
-                                     search_url);
+  return TestInfoBarDelegate::Create(
+      this, infobar_manager, google_url_tracker, search_url);
 }
 
 
@@ -473,22 +487,26 @@ namespace {
 // static
 infobars::InfoBar* TestInfoBarDelegate::Create(
     GoogleURLTrackerTest* test_harness,
-    InfoBarService* infobar_service,
+    infobars::InfoBarManager* infobar_manager,
     GoogleURLTracker* google_url_tracker,
     const GURL& search_url) {
   return ConfirmInfoBarDelegate::CreateInfoBar(
       scoped_ptr<ConfirmInfoBarDelegate>(new TestInfoBarDelegate(
-          test_harness, infobar_service, google_url_tracker,
+          test_harness,
+          infobar_manager,
+          google_url_tracker,
           search_url))).release();
 }
 
-TestInfoBarDelegate::TestInfoBarDelegate(GoogleURLTrackerTest* test_harness,
-                                         InfoBarService* infobar_service,
-                                         GoogleURLTracker* google_url_tracker,
-                                         const GURL& search_url)
-  : GoogleURLTrackerInfoBarDelegate(google_url_tracker, search_url),
-    test_harness_(test_harness),
-    infobar_service_(infobar_service) {
+TestInfoBarDelegate::TestInfoBarDelegate(
+    GoogleURLTrackerTest* test_harness,
+    infobars::InfoBarManager* infobar_manager,
+    GoogleURLTracker* google_url_tracker,
+    const GURL& search_url)
+    : GoogleURLTrackerInfoBarDelegate(google_url_tracker,
+                                      search_url),
+      test_harness_(test_harness),
+      infobar_manager_(infobar_manager) {
 }
 
 TestInfoBarDelegate::~TestInfoBarDelegate() {
@@ -501,7 +519,7 @@ void TestInfoBarDelegate::Update(const GURL& search_url) {
 
 void TestInfoBarDelegate::Close(bool redo_search) {
   test_harness_->OnInfoBarClosed(scoped_ptr<infobars::InfoBar>(infobar()),
-                                 infobar_service_);
+                                 infobar_manager_);
   // WARNING: At this point |this| has been deleted!
 }
 

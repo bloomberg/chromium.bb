@@ -5,12 +5,10 @@
 #include "chrome/browser/google/google_url_tracker_infobar_delegate.h"
 
 #include "chrome/browser/google/google_url_tracker.h"
+#include "chrome/browser/google/google_url_tracker_navigation_helper.h"
 #include "chrome/browser/google/google_util.h"
-#include "chrome/browser/infobars/infobar_service.h"
 #include "components/infobars/core/infobar.h"
-#include "content/public/browser/navigation_entry.h"
-#include "content/public/browser/page_navigator.h"
-#include "content/public/browser/web_contents.h"
+#include "components/infobars/core/infobar_manager.h"
 #include "grit/generated_resources.h"
 #include "net/base/net_util.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -18,10 +16,10 @@
 
 // static
 infobars::InfoBar* GoogleURLTrackerInfoBarDelegate::Create(
-    InfoBarService* infobar_service,
+    infobars::InfoBarManager* infobar_manager,
     GoogleURLTracker* google_url_tracker,
     const GURL& search_url) {
-  return infobar_service->AddInfoBar(ConfirmInfoBarDelegate::CreateInfoBar(
+  return infobar_manager->AddInfoBar(ConfirmInfoBarDelegate::CreateInfoBar(
       scoped_ptr<ConfirmInfoBarDelegate>(new GoogleURLTrackerInfoBarDelegate(
           google_url_tracker, search_url))));
 }
@@ -58,16 +56,15 @@ void GoogleURLTrackerInfoBarDelegate::Close(bool redo_search) {
     new_search_url = search_url_.ReplaceComponents(replacements);
   }
 
-  content::WebContents* contents =
-      InfoBarService::WebContentsFromInfoBar(infobar());
+  // Take ownership of |navigation_helper_| in order to ensure that it stays
+  // alive for the duration of this method.
+  scoped_ptr<GoogleURLTrackerNavigationHelper> navigation_helper =
+      navigation_helper_.Pass();
   infobar()->RemoveSelf();
   // WARNING: |this| may be deleted at this point!  Do not access any members!
 
-  if (new_search_url.is_valid()) {
-    contents->OpenURL(content::OpenURLParams(
-        new_search_url, content::Referrer(), CURRENT_TAB,
-        content::PAGE_TRANSITION_GENERATED, false));
-  }
+  if (new_search_url.is_valid())
+    navigation_helper->OpenURL(new_search_url, CURRENT_TAB, false);
 }
 
 GoogleURLTrackerInfoBarDelegate::GoogleURLTrackerInfoBarDelegate(
@@ -107,14 +104,12 @@ base::string16 GoogleURLTrackerInfoBarDelegate::GetLinkText() const {
 
 bool GoogleURLTrackerInfoBarDelegate::LinkClicked(
     WindowOpenDisposition disposition) {
-  InfoBarService::WebContentsFromInfoBar(infobar())->OpenURL(
-      content::OpenURLParams(
-          google_util::AppendGoogleLocaleParam(GURL(
-              "https://www.google.com/support/chrome/bin/answer.py?"
-              "answer=1618699")),
-          content::Referrer(),
-          (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition,
-          content::PAGE_TRANSITION_LINK, false));
+  navigation_helper_->OpenURL(
+      google_util::AppendGoogleLocaleParam(GURL(
+          "https://www.google.com/support/chrome/bin/answer.py?"
+          "answer=1618699")),
+      (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition,
+      true);
   return false;
 }
 

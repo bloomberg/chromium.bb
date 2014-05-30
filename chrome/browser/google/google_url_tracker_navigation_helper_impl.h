@@ -29,6 +29,9 @@ class GoogleURLTrackerNavigationHelperImpl
   virtual void SetListeningForTabDestruction(
       bool listen) OVERRIDE;
   virtual bool IsListeningForTabDestruction() OVERRIDE;
+  virtual void OpenURL(GURL url,
+                       WindowOpenDisposition disposition,
+                       bool user_clicked_on_link) OVERRIDE;
 
  private:
   // content::NotificationObserver:

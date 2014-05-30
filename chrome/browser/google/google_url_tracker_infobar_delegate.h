@@ -9,21 +9,36 @@
 #include "url/gurl.h"
 
 class GoogleURLTracker;
-class InfoBarService;
+class GoogleURLTrackerNavigationHelper;
+
+namespace infobars {
+class InfoBarManager;
+}
 
 // This infobar is shown by the GoogleURLTracker when the Google base URL has
 // changed.
 class GoogleURLTrackerInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
   // Creates a Google URL tracker infobar and delegate and adds the infobar to
-  // |infobar_service|.  Returns the infobar if it was successfully added.
-  static infobars::InfoBar* Create(InfoBarService* infobar_service,
-                                   GoogleURLTracker* google_url_tracker,
-                                   const GURL& search_url);
+  // |infobar_manager|.  Returns the infobar if it was successfully added.
+  static infobars::InfoBar* Create(
+      infobars::InfoBarManager* infobar_manager,
+      GoogleURLTracker* google_url_tracker,
+      const GURL& search_url);
 
   // ConfirmInfoBarDelegate:
   virtual bool Accept() OVERRIDE;
   virtual bool Cancel() OVERRIDE;
+
+  GoogleURLTrackerNavigationHelper* navigation_helper() {
+    return navigation_helper_weak_ptr_;
+  }
+
+  void set_navigation_helper(
+      scoped_ptr<GoogleURLTrackerNavigationHelper> navigation_helper) {
+    navigation_helper_ = navigation_helper.Pass();
+    navigation_helper_weak_ptr_ = navigation_helper_.get();
+  }
 
   // Other than set_pending_id(), these accessors are only used by test code.
   const GURL& search_url() const { return search_url_; }
@@ -36,8 +51,9 @@ class GoogleURLTrackerInfoBarDelegate : public ConfirmInfoBarDelegate {
   virtual void Close(bool redo_search);
 
  protected:
-  GoogleURLTrackerInfoBarDelegate(GoogleURLTracker* google_url_tracker,
-                                  const GURL& search_url);
+  GoogleURLTrackerInfoBarDelegate(
+      GoogleURLTracker* google_url_tracker,
+      const GURL& search_url);
   virtual ~GoogleURLTrackerInfoBarDelegate();
 
  private:
@@ -50,6 +66,14 @@ class GoogleURLTrackerInfoBarDelegate : public ConfirmInfoBarDelegate {
       const NavigationDetails& details) const OVERRIDE;
 
   GoogleURLTracker* google_url_tracker_;
+  scoped_ptr<GoogleURLTrackerNavigationHelper> navigation_helper_;
+
+  // During Close(), this object gives up ownership of |navigation_helper_|,
+  // which then outlives this object. Sometimes after this point, other classes
+  // still attempt to call navigation_helper() to access the (still-valid)
+  // instance. The NavigationHelper instance is stored as a weak pointer in
+  // addition to a strong pointer to facilitate this case.
+  GoogleURLTrackerNavigationHelper* navigation_helper_weak_ptr_;
   GURL search_url_;
   int pending_id_;
 

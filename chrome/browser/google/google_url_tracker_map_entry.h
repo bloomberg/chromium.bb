@@ -6,19 +6,22 @@
 #define CHROME_BROWSER_GOOGLE_GOOGLE_URL_TRACKER_MAP_ENTRY_H_
 
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/google/google_url_tracker_infobar_delegate.h"
 #include "chrome/browser/google/google_url_tracker_navigation_helper.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
 class GoogleURLTracker;
-class GoogleURLTrackerInfoBarDelegate;
-class InfoBarService;
+
+namespace infobars {
+class InfoBarManager;
+}
 
 class GoogleURLTrackerMapEntry : public content::NotificationObserver {
  public:
   GoogleURLTrackerMapEntry(
       GoogleURLTracker* google_url_tracker,
-      InfoBarService* infobar_service,
+      infobars::InfoBarManager* infobar_manager,
       scoped_ptr<GoogleURLTrackerNavigationHelper> navigation_helper);
   virtual ~GoogleURLTrackerMapEntry();
 
@@ -29,7 +32,10 @@ class GoogleURLTrackerMapEntry : public content::NotificationObserver {
   void SetInfoBarDelegate(GoogleURLTrackerInfoBarDelegate* infobar_delegate);
 
   GoogleURLTrackerNavigationHelper* navigation_helper() {
-    return navigation_helper_.get();
+    // This object gives ownership of |navigation_helper_| to the infobar
+    // delegate in SetInfoBarDelegate().
+    return has_infobar_delegate() ?
+        infobar_delegate_->navigation_helper() : navigation_helper_.get();
   }
 
   void Close(bool redo_search);
@@ -44,7 +50,7 @@ class GoogleURLTrackerMapEntry : public content::NotificationObserver {
 
   content::NotificationRegistrar registrar_;
   GoogleURLTracker* const google_url_tracker_;
-  const InfoBarService* const infobar_service_;
+  const infobars::InfoBarManager* const infobar_manager_;
   GoogleURLTrackerInfoBarDelegate* infobar_delegate_;
   scoped_ptr<GoogleURLTrackerNavigationHelper> navigation_helper_;
 

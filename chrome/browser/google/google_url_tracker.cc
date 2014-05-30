@@ -13,14 +13,12 @@
 #include "chrome/browser/google/google_url_tracker_infobar_delegate.h"
 #include "chrome/browser/google/google_url_tracker_navigation_helper.h"
 #include "chrome/browser/google/google_util.h"
-#include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "components/google/core/browser/google_url_tracker_client.h"
 #include "components/infobars/core/infobar.h"
-#include "content/public/browser/navigation_controller.h"
-#include "content/public/browser/navigation_entry.h"
+#include "components/infobars/core/infobar_manager.h"
 #include "content/public/browser/notification_service.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_util.h"
@@ -206,11 +204,11 @@ void GoogleURLTracker::Shutdown() {
   net::NetworkChangeNotifier::RemoveIPAddressObserver(this);
 }
 
-void GoogleURLTracker::DeleteMapEntryForService(
-    const InfoBarService* infobar_service) {
-  // WARNING: |infobar_service| may point to a deleted object.  Do not
+void GoogleURLTracker::DeleteMapEntryForManager(
+    const infobars::InfoBarManager* infobar_manager) {
+  // WARNING: |infobar_manager| may point to a deleted object.  Do not
   // dereference it!  See OnTabClosed().
-  EntryMap::iterator i(entry_map_.find(infobar_service));
+  EntryMap::iterator i(entry_map_.find(infobar_manager));
   DCHECK(i != entry_map_.end());
   GoogleURLTrackerMapEntry* map_entry = i->second;
 
@@ -277,11 +275,11 @@ void GoogleURLTracker::SearchCommitted() {
 
 void GoogleURLTracker::OnNavigationPending(
     scoped_ptr<GoogleURLTrackerNavigationHelper> nav_helper,
-    InfoBarService* infobar_service,
+    infobars::InfoBarManager* infobar_manager,
     int pending_id) {
   GoogleURLTrackerMapEntry* map_entry = NULL;
 
-  EntryMap::iterator i(entry_map_.find(infobar_service));
+  EntryMap::iterator i(entry_map_.find(infobar_manager));
   if (i != entry_map_.end())
     map_entry = i->second;
 
@@ -295,9 +293,9 @@ void GoogleURLTracker::OnNavigationPending(
       // infobar and the infobar's owner will handle tearing it down when the
       // tab is destroyed.
       map_entry = new GoogleURLTrackerMapEntry(
-          this, infobar_service, nav_helper.Pass());
+          this, infobar_manager, nav_helper.Pass());
       map_entry->navigation_helper()->SetListeningForTabDestruction(true);
-      entry_map_.insert(std::make_pair(infobar_service, map_entry));
+      entry_map_.insert(std::make_pair(infobar_manager, map_entry));
     } else if (map_entry->infobar_delegate()) {
       // This is a new search on a tab where we already have an infobar.
       map_entry->infobar_delegate()->set_pending_id(pending_id);
@@ -334,9 +332,10 @@ void GoogleURLTracker::OnNavigationPending(
   }
 }
 
-void GoogleURLTracker::OnNavigationCommitted(InfoBarService* infobar_service,
-                                             const GURL& search_url) {
-  EntryMap::iterator i(entry_map_.find(infobar_service));
+void GoogleURLTracker::OnNavigationCommitted(
+    infobars::InfoBarManager* infobar_manager,
+    const GURL& search_url) {
+  EntryMap::iterator i(entry_map_.find(infobar_manager));
   DCHECK(i != entry_map_.end());
   GoogleURLTrackerMapEntry* map_entry = i->second;
   DCHECK(search_url.is_valid());
@@ -345,8 +344,8 @@ void GoogleURLTracker::OnNavigationCommitted(InfoBarService* infobar_service,
   if (map_entry->has_infobar_delegate()) {
     map_entry->infobar_delegate()->Update(search_url);
   } else {
-    infobars::InfoBar* infobar =
-        infobar_creator_.Run(infobar_service, this, search_url);
+    infobars::InfoBar* infobar = infobar_creator_.Run(
+        infobar_manager, this, search_url);
     if (infobar) {
       map_entry->SetInfoBarDelegate(
           static_cast<GoogleURLTrackerInfoBarDelegate*>(infobar->delegate()));
@@ -358,11 +357,11 @@ void GoogleURLTracker::OnNavigationCommitted(InfoBarService* infobar_service,
 
 void GoogleURLTracker::OnTabClosed(
     GoogleURLTrackerNavigationHelper* nav_helper) {
-  // Because InfoBarService tears itself down on tab destruction, it's possible
-  // to get a non-NULL InfoBarService pointer here, depending on which order
+  // Because InfoBarManager tears itself down on tab destruction, it's possible
+  // to get a non-NULL InfoBarManager pointer here, depending on which order
   // notifications fired in.  Likewise, the pointer in |entry_map_| (and in its
-  // associated MapEntry) may point to deleted memory.  Therefore, if we were to
-  // access the InfoBarService* we have for this tab, we'd need to ensure we
+  // associated MapEntry) may point to deleted memory.  Therefore, if we were
+  // to access the InfoBarManager* we have for this tab, we'd need to ensure we
   // just looked at the raw pointer value, and never dereferenced it.  This
   // function doesn't need to do even that, but others in the call chain from
   // here might (and have comments pointing back here).

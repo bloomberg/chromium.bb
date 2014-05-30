@@ -104,25 +104,26 @@ class GoogleURLTracker : public net::URLFetcherDelegate,
   const GURL& fetched_google_url() const { return fetched_google_url_; }
 
   // No one but GoogleURLTrackerMapEntry should call this.
-  void DeleteMapEntryForService(const InfoBarService* infobar_service);
+  void DeleteMapEntryForManager(
+      const infobars::InfoBarManager* infobar_manager);
 
   // Called by the client after SearchCommitted() registers listeners, to
   // indicate that we've received the "load now pending" notification.
   // |nav_helper| is the GoogleURLTrackerNavigationHelper associated with this
-  // navigation; |infobar_service| is the InfoBarService of the associated tab;
+  // navigation; |infobar_manager| is the InfoBarManager of the associated tab;
   // and |pending_id| is the unique ID of the newly pending NavigationEntry.
   // If there is already a visible GoogleURLTracker infobar for this tab, this
   // function resets its associated pending entry ID to the new ID.  Otherwise
   // this function creates a map entry for the associated tab.
   virtual void OnNavigationPending(
       scoped_ptr<GoogleURLTrackerNavigationHelper> nav_helper,
-      InfoBarService* infobar_service,
+      infobars::InfoBarManager* infobar_manager,
       int pending_id);
 
   // Called by the navigation observer once a load we're watching commits.
-  // |infobar_service| is the same as for OnNavigationPending();
+  // |infobar_manager| is the same as for OnNavigationPending();
   // |search_url| is guaranteed to be valid.
-  virtual void OnNavigationCommitted(InfoBarService* infobar_service,
+  virtual void OnNavigationCommitted(infobars::InfoBarManager* infobar_manager,
                                      const GURL& search_url);
 
   // Called by the navigation observer when a tab closes.
@@ -134,7 +135,8 @@ class GoogleURLTracker : public net::URLFetcherDelegate,
  private:
   friend class GoogleURLTrackerTest;
 
-  typedef std::map<const InfoBarService*, GoogleURLTrackerMapEntry*> EntryMap;
+  typedef std::map<const infobars::InfoBarManager*, GoogleURLTrackerMapEntry*>
+      EntryMap;
 
   // net::URLFetcherDelegate:
   virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
@@ -186,12 +188,12 @@ class GoogleURLTracker : public net::URLFetcherDelegate,
 
   scoped_ptr<GoogleURLTrackerClient> client_;
 
-  // Creates an infobar and adds it to the provided InfoBarService.  Returns the
-  // infobar on success or NULL on failure.  The caller does not own the
-  // returned object, the InfoBarService does.
-  base::Callback<
-      infobars::InfoBar*(InfoBarService*, GoogleURLTracker*, const GURL&)>
-      infobar_creator_;
+  // Creates an infobar and adds it to the provided InfoBarManager.  Returns
+  // the infobar on success or NULL on failure.  The caller does not own the
+  // returned object, the InfoBarManager does.
+  base::Callback<infobars::InfoBar*(infobars::InfoBarManager*,
+                                    GoogleURLTracker*,
+                                    const GURL&)> infobar_creator_;
 
   GURL google_url_;
   GURL fetched_google_url_;

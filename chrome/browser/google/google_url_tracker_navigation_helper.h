@@ -6,11 +6,14 @@
 #define CHROME_BROWSER_GOOGLE_GOOGLE_URL_TRACKER_NAVIGATION_HELPER_H_
 
 #include "base/macros.h"
+#include "ui/base/window_open_disposition.h"
 
 class GoogleURLTracker;
+class GURL;
 
-// A helper class for GoogleURLTracker that abstracts the details of listening
-// for various navigation events.
+// Interface via which GoogleURLTracker communicates with its driver.
+// TODO(blundell): Rename this class to GoogleURLTrackerDriver.
+// crbug.com/373221
 class GoogleURLTrackerNavigationHelper {
  public:
   explicit GoogleURLTrackerNavigationHelper(
@@ -33,6 +36,11 @@ class GoogleURLTrackerNavigationHelper {
   // Returns whether or not this object is currently listening for tab
   // destruction.
   virtual bool IsListeningForTabDestruction() = 0;
+
+  // Opens |url| with the given window disposition.
+  virtual void OpenURL(GURL url,
+                       WindowOpenDisposition disposition,
+                       bool user_clicked_on_link) = 0;
 
  protected:
   GoogleURLTracker* google_url_tracker() { return google_url_tracker_; }
