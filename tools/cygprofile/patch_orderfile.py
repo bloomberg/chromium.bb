@@ -39,7 +39,6 @@ while nm_index < len(nmlines):
     nm_index = nm_index + 1
 
 def binary_search (addr, start, end):
-  # print "addr: " + str(addr) + " start: " + str(start) + " end: " + str(end)
   if start >= end or start == end - 1:
     (nm_addr, size) = uniqueAddrs[start]
     if not (addr >= nm_addr and addr < nm_addr + size):
@@ -51,7 +50,6 @@ def binary_search (addr, start, end):
   else:
     halfway = start + ((end - start) / 2)
     (nm_addr, size) = uniqueAddrs[halfway]
-    # print "nm_addr: " + str(nm_addr) + " halfway: " + str(halfway)
     if (addr >= nm_addr and addr < nm_addr + size):
       return (addressMap[nm_addr], size)
     elif (addr < nm_addr):
@@ -107,11 +105,13 @@ sys.stderr.write ("symbols found: " + str(symbols_found) + "\n")
 sys.stderr.write ("number of addresses: " + str(len(addresses)) + "\n")
 total_size = 0
 for addr in addresses:
-  # if (count % 500 == 0):
-  #    print "current count: " + str(count)
   (functions, size) = binary_search (addr, 0, len(uniqueAddrs))
   total_size = total_size + size
+  prefixes = ['.text.', '.text.startup.', '.text.hot.', '.text.unlikely.']
   for function in functions:
-    print ".text." + function
-  print ""
+    for prefix in prefixes:
+      print prefix + function
+
+# The following is needed otherwise Gold only applies a partial sort.
+print '.text.*'
 sys.stderr.write ("total_size: " + str(total_size) + "\n")
