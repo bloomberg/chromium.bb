@@ -67,7 +67,7 @@
     // Introduced in DOM Level 3:
     [TreatReturnedNullStringAs=Null] readonly attribute DOMString baseURI;
 
-    [TreatReturnedNullStringAs=Null, TreatNullAs=NullString, CustomElementCallbacks] attribute DOMString textContent;
+    [TreatReturnedNullStringAs=Null, TreatNullAs=NullString, TreatUndefinedAs=NullString, CustomElementCallbacks] attribute DOMString textContent;
 
     [MeasureAs=NodeIsSameNode] boolean isSameNode([Default=Undefined] optional Node other); // Removed in DOM4.
     boolean isEqualNode(Node other);
