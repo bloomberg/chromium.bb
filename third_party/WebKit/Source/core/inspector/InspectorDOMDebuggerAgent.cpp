@@ -85,6 +85,7 @@ InspectorDOMDebuggerAgent::InspectorDOMDebuggerAgent(InspectorDOMAgent* domAgent
     , m_pauseInNextEventListener(false)
 {
     m_debuggerAgent->setListener(this);
+    m_domAgent->setListener(this);
 }
 
 InspectorDOMDebuggerAgent::~InspectorDOMDebuggerAgent()
@@ -96,10 +97,22 @@ InspectorDOMDebuggerAgent::~InspectorDOMDebuggerAgent()
 // Browser debugger agent enabled only when JS debugger is enabled.
 void InspectorDOMDebuggerAgent::debuggerWasEnabled()
 {
-    m_instrumentingAgents->setInspectorDOMDebuggerAgent(this);
+    if (m_domAgent->enabled() && m_debuggerAgent->enabled())
+        m_instrumentingAgents->setInspectorDOMDebuggerAgent(this);
 }
 
 void InspectorDOMDebuggerAgent::debuggerWasDisabled()
+{
+    disable();
+}
+
+void InspectorDOMDebuggerAgent::domAgentWasEnabled()
+{
+    if (m_domAgent->enabled() && m_debuggerAgent->enabled())
+        m_instrumentingAgents->setInspectorDOMDebuggerAgent(this);
+}
+
+void InspectorDOMDebuggerAgent::domAgentWasDisabled()
 {
     disable();
 }

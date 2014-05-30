@@ -154,6 +154,16 @@ public:
 
     static void getEventListeners(EventTarget*, Vector<EventListenerInfo>& listenersArray, bool includeAncestors);
 
+    class Listener {
+    public:
+        virtual ~Listener() { }
+        virtual void domAgentWasEnabled() = 0;
+        virtual void domAgentWasDisabled() = 0;
+    };
+    void setListener(Listener* listener) { m_listener = listener; }
+
+    bool enabled() const;
+
     // Methods called from the InspectorInstrumentation.
     void setDocument(Document*);
     void releaseDanglingNodes();
@@ -207,7 +217,6 @@ private:
 
     InspectorDOMAgent(InspectorPageAgent*, InjectedScriptManager*, InspectorOverlay*);
 
-    bool enabled() const;
     void setSearchingForNode(ErrorString*, SearchMode, JSONObject* highlightConfig);
     PassOwnPtr<HighlightConfig> highlightConfigFromInspectorObject(ErrorString*, JSONObject* highlightInspectorObject);
 
@@ -266,6 +275,7 @@ private:
     OwnPtr<InspectorHistory> m_history;
     OwnPtr<DOMEditor> m_domEditor;
     bool m_suppressAttributeModifiedEvent;
+    Listener* m_listener;
 };
 
 

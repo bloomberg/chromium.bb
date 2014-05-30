@@ -169,6 +169,8 @@ public:
     };
     void setListener(Listener* listener) { m_listener = listener; }
 
+    bool enabled();
+
     virtual ScriptDebugServer& scriptDebugServer() = 0;
 
     void setBreakpoint(const String& scriptId, int lineNumber, int columnNumber, BreakpointSource, const String& condition = String());
@@ -198,8 +200,6 @@ private:
 
     void cancelPauseOnNextStatement();
     void addMessageToConsole(MessageSource, MessageType);
-
-    bool enabled();
 
     PassRefPtr<TypeBuilder::Array<TypeBuilder::Debugger::CallFrame> > currentCallFrames();
     PassRefPtr<TypeBuilder::Debugger::StackTrace> currentAsyncStackTrace();

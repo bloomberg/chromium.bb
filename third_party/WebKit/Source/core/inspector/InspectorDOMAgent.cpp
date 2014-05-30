@@ -235,6 +235,7 @@ InspectorDOMAgent::InspectorDOMAgent(InspectorPageAgent* pageAgent, InjectedScri
     , m_lastNodeId(1)
     , m_searchingForNode(NotSearching)
     , m_suppressAttributeModifiedEvent(false)
+    , m_listener(0)
 {
 }
 
@@ -486,6 +487,8 @@ void InspectorDOMAgent::enable(ErrorString*)
     if (enabled())
         return;
     m_state->setBoolean(DOMAgentState::domAgentEnabled, true);
+    if (m_listener)
+        m_listener->domAgentWasEnabled();
 }
 
 bool InspectorDOMAgent::enabled() const
@@ -499,6 +502,8 @@ void InspectorDOMAgent::disable(ErrorString*)
         return;
     m_state->setBoolean(DOMAgentState::domAgentEnabled, false);
     reset();
+    if (m_listener)
+        m_listener->domAgentWasDisabled();
 }
 
 void InspectorDOMAgent::getDocument(ErrorString* errorString, RefPtr<TypeBuilder::DOM::Node>& root)

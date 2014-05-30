@@ -33,6 +33,7 @@
 
 
 #include "core/inspector/InspectorBaseAgent.h"
+#include "core/inspector/InspectorDOMAgent.h"
 #include "core/inspector/InspectorDebuggerAgent.h"
 #include "wtf/HashMap.h"
 #include "wtf/PassOwnPtr.h"
@@ -53,7 +54,11 @@ class Node;
 
 typedef String ErrorString;
 
-class InspectorDOMDebuggerAgent FINAL : public InspectorBaseAgent<InspectorDOMDebuggerAgent>, public InspectorDebuggerAgent::Listener, public InspectorBackendDispatcher::DOMDebuggerCommandHandler {
+class InspectorDOMDebuggerAgent FINAL :
+    public InspectorBaseAgent<InspectorDOMDebuggerAgent>,
+    public InspectorDebuggerAgent::Listener,
+    public InspectorDOMAgent::Listener,
+    public InspectorBackendDispatcher::DOMDebuggerCommandHandler {
     WTF_MAKE_NONCOPYABLE(InspectorDOMDebuggerAgent);
 public:
     static PassOwnPtr<InspectorDOMDebuggerAgent> create(InspectorDOMAgent*, InspectorDebuggerAgent*);
@@ -100,6 +105,10 @@ private:
 
     void pauseOnNativeEventIfNeeded(PassRefPtr<JSONObject> eventData, bool synchronous);
     PassRefPtr<JSONObject> preparePauseOnNativeEventData(bool isDOMEvent, const String& eventName);
+
+    // InspectorDOMAgent::Listener implementation.
+    virtual void domAgentWasEnabled() OVERRIDE;
+    virtual void domAgentWasDisabled() OVERRIDE;
 
     // InspectorDebuggerAgent::Listener implementation.
     virtual void debuggerWasEnabled() OVERRIDE;
