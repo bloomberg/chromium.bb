@@ -394,8 +394,10 @@ TileManager::TileManager(
       rendering_stats_instrumentation_(rendering_stats_instrumentation),
       did_initialize_visible_tile_(false),
       did_check_for_completed_tasks_since_last_schedule_tasks_(true),
-      check_if_ready_to_activate_pending_(false),
-      weak_ptr_factory_(this) {
+      ready_to_activate_check_notifier_(
+          task_runner_,
+          base::Bind(&TileManager::CheckIfReadyToActivate,
+                     base::Unretained(this))) {
   rasterizer_->SetClient(this);
 }
 
@@ -534,7 +536,7 @@ void TileManager::DidFinishRunningTasks() {
   }
 
   DCHECK(IsReadyToActivate());
-  ScheduleCheckIfReadyToActivate();
+  ready_to_activate_check_notifier_.Schedule();
 }
 
 void TileManager::DidFinishRunningTasksRequiredForActivation() {
@@ -546,7 +548,7 @@ void TileManager::DidFinishRunningTasksRequiredForActivation() {
   if (!all_tiles_required_for_activation_have_memory_)
     return;
 
-  ScheduleCheckIfReadyToActivate();
+  ready_to_activate_check_notifier_.Schedule();
 }
 
 void TileManager::GetTilesWithAssignedBins(PrioritizedTileSet* tiles) {
@@ -1634,21 +1636,8 @@ bool TileManager::IsReadyToActivate() const {
   return true;
 }
 
-void TileManager::ScheduleCheckIfReadyToActivate() {
-  if (check_if_ready_to_activate_pending_)
-    return;
-
-  task_runner_->PostTask(FROM_HERE,
-                         base::Bind(&TileManager::CheckIfReadyToActivate,
-                                    weak_ptr_factory_.GetWeakPtr()));
-  check_if_ready_to_activate_pending_ = true;
-}
-
 void TileManager::CheckIfReadyToActivate() {
   TRACE_EVENT0("cc", "TileManager::CheckIfReadyToActivate");
-
-  DCHECK(check_if_ready_to_activate_pending_);
-  check_if_ready_to_activate_pending_ = false;
 
   rasterizer_->CheckForCompletedTasks();
   did_check_for_completed_tasks_since_last_schedule_tasks_ = true;

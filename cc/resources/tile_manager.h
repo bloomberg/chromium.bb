@@ -15,6 +15,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "cc/base/ref_counted_managed.h"
+#include "cc/base/unique_notifier.h"
 #include "cc/debug/rendering_stats_instrumentation.h"
 #include "cc/layers/picture_layer_impl.h"
 #include "cc/resources/managed_tile_state.h"
@@ -292,7 +293,6 @@ class CC_EXPORT TileManager : public RasterizerClient,
   void CleanUpLayers();
 
   bool IsReadyToActivate() const;
-  void ScheduleCheckIfReadyToActivate();
   void CheckIfReadyToActivate();
 
   TileManagerClient* client_;
@@ -345,9 +345,7 @@ class CC_EXPORT TileManager : public RasterizerClient,
 
   std::vector<PictureLayerImpl*> layers_;
 
-  bool check_if_ready_to_activate_pending_;
-
-  base::WeakPtrFactory<TileManager> weak_ptr_factory_;
+  UniqueNotifier ready_to_activate_check_notifier_;
 
   DISALLOW_COPY_AND_ASSIGN(TileManager);
 };
