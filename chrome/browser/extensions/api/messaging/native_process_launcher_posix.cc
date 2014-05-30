@@ -11,6 +11,7 @@
 #include "base/path_service.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/process/launch.h"
+#include "build/build_config.h"
 #include "chrome/common/chrome_paths.h"
 
 namespace extensions {
@@ -74,6 +75,12 @@ bool NativeProcessLauncher::LaunchNativeProcess(
 
   base::LaunchOptions options;
   options.fds_to_remap = &fd_map;
+
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+  // Don't use no_new_privs mode, e.g. in case the host needs to use sudo.
+  options.allow_new_privs = true;
+#endif
+
   if (!base::LaunchProcess(command_line, options, process_handle)) {
     LOG(ERROR) << "Error launching process";
     return false;
