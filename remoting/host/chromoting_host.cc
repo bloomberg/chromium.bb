@@ -141,6 +141,10 @@ void ChromotingHost::RemoveStatusObserver(HostStatusObserver* observer) {
   status_observers_.RemoveObserver(observer);
 }
 
+void ChromotingHost::AddExtension(scoped_ptr<HostExtension> extension) {
+  extensions_.push_back(extension.release());
+}
+
 void ChromotingHost::RejectAuthenticatingClient() {
   DCHECK(authenticating_client_);
   reject_authenticating_client_ = true;
@@ -228,6 +232,19 @@ void ChromotingHost::OnSessionChannelsConnected(ClientSession* client) {
   // Notify observers.
   FOR_EACH_OBSERVER(HostStatusObserver, status_observers_,
                     OnClientConnected(client->client_jid()));
+}
+
+void ChromotingHost::OnSessionClientCapabilities(ClientSession* client) {
+  DCHECK(CalledOnValidThread());
+
+  // Create extension sessions from each registered extension for this client.
+  for (HostExtensionList::iterator extension = extensions_.begin();
+       extension != extensions_.end(); ++extension) {
+    scoped_ptr<HostExtensionSession> extension_session =
+        (*extension)->CreateExtensionSession(client);
+    if (extension_session)
+      client->AddExtensionSession(extension_session.Pass());
+  }
 }
 
 void ChromotingHost::OnSessionAuthenticationFailed(ClientSession* client) {
@@ -320,6 +337,13 @@ void ChromotingHost::OnIncomingSession(
       desktop_environment_factory_,
       max_session_duration_,
       pairing_registry_);
+
+  // Registers capabilities provided by host extensions.
+  for (HostExtensionList::iterator extension = extensions_.begin();
+       extension != extensions_.end(); ++extension) {
+    client->AddHostCapabilities((*extension)->GetCapabilities());
+  }
+
   clients_.push_back(client);
 }
 
