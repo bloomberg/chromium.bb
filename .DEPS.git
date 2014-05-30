@@ -337,7 +337,7 @@ deps_os = {
     'win':
     {
         'src/chrome/tools/test/reference_build/chrome_win':
-            Var('git_url') + '/chromium/reference_builds/chrome_win.git@126d11ec7462975e6f073214929fca0f3c54756e',
+            Var('git_url') + '/chromium/reference_builds/chrome_win.git@57da26d38da00176d3cebf52b5abc1c127880a31',
         'src/third_party/bison':
             Var('git_url') + '/chromium/deps/bison.git@083c9a45e4affdd5464ee2b224c2df649c6e26c3',
         'src/third_party/cygwin':
