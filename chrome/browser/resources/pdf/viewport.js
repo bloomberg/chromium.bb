@@ -54,6 +54,14 @@ Viewport.FittingType = {
 };
 
 /**
+ * The increment to scroll a page by in pixels when up/down/left/right arrow
+ * keys are pressed. Usually we just let the browser handle scrolling on the
+ * window when these keys are pressed but in certain cases we need to simulate
+ * these events.
+ */
+Viewport.SCROLL_INCREMENT = 40;
+
+/**
  * Predefined zoom factors to be used when zooming in/out. These are in
  * ascending order.
  */

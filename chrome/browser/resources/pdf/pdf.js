@@ -107,96 +107,124 @@ function PDFViewer() {
     this.plugin_.setAttribute('full-frame', '');
   document.body.appendChild(this.plugin_);
 
-  this.setupEventListeners_();
+  // Setup the button event listeners.
+  $('fit-to-width-button').addEventListener('click',
+      this.viewport_.fitToWidth.bind(this.viewport_));
+  $('fit-to-page-button').addEventListener('click',
+      this.viewport_.fitToPage.bind(this.viewport_));
+  $('zoom-in-button').addEventListener('click',
+      this.viewport_.zoomIn.bind(this.viewport_));
+  $('zoom-out-button').addEventListener('click',
+      this.viewport_.zoomOut.bind(this.viewport_));
+  $('save-button-link').href = this.streamDetails.originalUrl;
+  $('print-button').addEventListener('click', this.print_.bind(this));
+
+  // Setup the keyboard event listener.
+  document.onkeydown = this.handleKeyEvent_.bind(this);
 }
 
 PDFViewer.prototype = {
   /**
    * @private
-   * Sets up event listeners for key shortcuts and also the UI buttons.
+   * Handle key events. These may come from the user directly or via the
+   * scripting API.
+   * @param {KeyboardEvent} e the event to handle.
    */
-  setupEventListeners_: function() {
-    // Setup the button event listeners.
-    $('fit-to-width-button').addEventListener('click',
-        this.viewport_.fitToWidth.bind(this.viewport_));
-    $('fit-to-page-button').addEventListener('click',
-        this.viewport_.fitToPage.bind(this.viewport_));
-    $('zoom-in-button').addEventListener('click',
-        this.viewport_.zoomIn.bind(this.viewport_));
-    $('zoom-out-button').addEventListener('click',
-        this.viewport_.zoomOut.bind(this.viewport_));
-    $('save-button-link').href = this.streamDetails.originalUrl;
-    $('print-button').addEventListener('click', this.print_.bind(this));
+  handleKeyEvent_: function(e) {
+    var position = this.viewport_.position;
+    // Certain scroll events may be sent from outside of the extension.
+    var fromScriptingAPI = e.type == 'scriptingKeypress';
 
-    // Setup keyboard event listeners.
-    document.onkeydown = function(e) {
-      switch (e.keyCode) {
-        case 37:  // Left arrow key.
-          // Go to the previous page if there are no horizontal scrollbars.
-          if (!this.viewport_.documentHasScrollbars().x) {
-            this.viewport_.goToPage(this.viewport_.getMostVisiblePage() - 1);
-            // Since we do the movement of the page.
-            e.preventDefault();
-          }
-          return;
-        case 33:  // Page up key.
-          // Go to the previous page if we are fit-to-page.
-          if (this.viewport_.fittingType == Viewport.FittingType.FIT_TO_PAGE) {
-            this.viewport_.goToPage(this.viewport_.getMostVisiblePage() - 1);
-            // Since we do the movement of the page.
-            e.preventDefault();
-          }
-          return;
-        case 39:  // Right arrow key.
-          // Go to the next page if there are no horizontal scrollbars.
-          if (!this.viewport_.documentHasScrollbars().x) {
-            this.viewport_.goToPage(this.viewport_.getMostVisiblePage() + 1);
-            // Since we do the movement of the page.
-            e.preventDefault();
-          }
-          return;
-        case 34:  // Page down key.
-          // Go to the next page if we are fit-to-page.
-          if (this.viewport_.fittingType == Viewport.FittingType.FIT_TO_PAGE) {
-            this.viewport_.goToPage(this.viewport_.getMostVisiblePage() + 1);
-            // Since we do the movement of the page.
-            e.preventDefault();
-          }
-          return;
-        case 187:  // +/= key.
-        case 107:  // Numpad + key.
-          if (e.ctrlKey || e.metaKey) {
-            this.viewport_.zoomIn();
-            // Since we do the zooming of the page.
-            e.preventDefault();
-          }
-          return;
-        case 189:  // -/_ key.
-        case 109:  // Numpad - key.
-          if (e.ctrlKey || e.metaKey) {
-            this.viewport_.zoomOut();
-            // Since we do the zooming of the page.
-            e.preventDefault();
-          }
-          return;
-        case 83:  // s key.
-          if (e.ctrlKey || e.metaKey) {
-            // Simulate a click on the button so that the <a download ...>
-            // attribute is used.
-            $('save-button-link').click();
-            // Since we do the saving of the page.
-            e.preventDefault();
-          }
-          return;
-        case 80:  // p key.
-          if (e.ctrlKey || e.metaKey) {
-            this.print_();
-            // Since we do the printing of the page.
-            e.preventDefault();
-          }
-          return;
-      }
-    }.bind(this);
+    switch (e.keyCode) {
+      case 33:  // Page up key.
+        // Go to the previous page if we are fit-to-page.
+        if (this.viewport_.fittingType == Viewport.FittingType.FIT_TO_PAGE) {
+          this.viewport_.goToPage(this.viewport_.getMostVisiblePage() - 1);
+          // Since we do the movement of the page.
+          e.preventDefault();
+        } else if (fromScriptingAPI) {
+          position.y -= this.viewport.size.height;
+          this.viewport.position = position;
+        }
+        return;
+      case 34:  // Page down key.
+        // Go to the next page if we are fit-to-page.
+        if (this.viewport_.fittingType == Viewport.FittingType.FIT_TO_PAGE) {
+          this.viewport_.goToPage(this.viewport_.getMostVisiblePage() + 1);
+          // Since we do the movement of the page.
+          e.preventDefault();
+        } else if (fromScriptingAPI) {
+          position.y += this.viewport.size.height;
+          this.viewport.position = position;
+        }
+        return;
+      case 37:  // Left arrow key.
+        // Go to the previous page if there are no horizontal scrollbars.
+        if (!this.viewport_.documentHasScrollbars().x) {
+          this.viewport_.goToPage(this.viewport_.getMostVisiblePage() - 1);
+          // Since we do the movement of the page.
+          e.preventDefault();
+        } else if (fromScriptingAPI) {
+          position.x -= Viewport.SCROLL_INCREMENT;
+          this.viewport.position = position;
+        }
+        return;
+      case 38:  // Up arrow key.
+        if (fromScriptingAPI) {
+          position.y -= Viewport.SCROLL_INCREMENT;
+          this.viewport.position = position;
+        }
+        return;
+      case 39:  // Right arrow key.
+        // Go to the next page if there are no horizontal scrollbars.
+        if (!this.viewport_.documentHasScrollbars().x) {
+          this.viewport_.goToPage(this.viewport_.getMostVisiblePage() + 1);
+          // Since we do the movement of the page.
+          e.preventDefault();
+        } else if (fromScriptingAPI) {
+          position.x += Viewport.SCROLL_INCREMENT;
+          this.viewport.position = position;
+        }
+        return;
+      case 40:  // Down arrow key.
+        if (fromScriptingAPI) {
+          position.y += Viewport.SCROLL_INCREMENT;
+          this.viewport.position = position;
+        }
+        return;
+      case 187:  // +/= key.
+      case 107:  // Numpad + key.
+        if (e.ctrlKey || e.metaKey) {
+          this.viewport_.zoomIn();
+          // Since we do the zooming of the page.
+          e.preventDefault();
+        }
+        return;
+      case 189:  // -/_ key.
+      case 109:  // Numpad - key.
+        if (e.ctrlKey || e.metaKey) {
+          this.viewport_.zoomOut();
+          // Since we do the zooming of the page.
+          e.preventDefault();
+        }
+        return;
+      case 83:  // s key.
+        if (e.ctrlKey || e.metaKey) {
+          // Simulate a click on the button so that the <a download ...>
+          // attribute is used.
+          $('save-button-link').click();
+          // Since we do the saving of the page.
+          e.preventDefault();
+        }
+        return;
+      case 80:  // p key.
+        if (e.ctrlKey || e.metaKey) {
+          this.print_();
+          // Since we do the printing of the page.
+          e.preventDefault();
+        }
+        return;
+    }
   },
 
   /**
@@ -391,6 +419,10 @@ PDFViewer.prototype = {
    */
   handleScriptingMessage_: function(message) {
     switch (message.data.type.toString()) {
+      case 'getAccessibilityJSON':
+      case 'loadPreviewPage':
+        this.plugin_.postMessage(message.data);
+        break;
       case 'resetPrintPreviewMode':
         if (!this.inPrintPreviewMode_) {
           this.inPrintPreviewMode_ = true;
@@ -421,9 +453,11 @@ PDFViewer.prototype = {
                       message.data.pageNumbers.length : 0)
         });
         break;
-      case 'loadPreviewPage':
-      case 'getAccessibilityJSON':
-        this.plugin_.postMessage(message.data);
+      case 'sendKeyEvent':
+        var e = document.createEvent('Event');
+        e.initEvent('scriptingKeypress');
+        e.keyCode = message.data.keyCode;
+        this.handleKeyEvent_(e);
         break;
     }
 

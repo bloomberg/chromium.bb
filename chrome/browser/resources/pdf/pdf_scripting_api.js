@@ -149,8 +149,10 @@ PDFScriptingAPI.prototype = {
    * @param {number} keyCode the key code to send to the extension.
    */
   sendKeyEvent: function(keyCode) {
-    // TODO(raymes): Figure out a way to do this. It's only used to do scrolling
-    // the viewport, so probably just expose viewport controls instead.
+    this.sendMessage_({
+      type: 'sendKeyEvent',
+      keyCode: keyCode
+    });
   },
 };
 
