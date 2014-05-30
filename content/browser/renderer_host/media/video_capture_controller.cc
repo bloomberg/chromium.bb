@@ -131,6 +131,7 @@ class VideoCaptureController::VideoCaptureDeviceClient
       const scoped_refptr<media::VideoFrame>& frame,
       base::TimeTicks timestamp) OVERRIDE;
   virtual void OnError(const std::string& reason) OVERRIDE;
+  virtual void OnLog(const std::string& message) OVERRIDE;
 
  private:
   scoped_refptr<Buffer> DoReserveOutputBuffer(media::VideoFrame::Format format,
@@ -485,6 +486,11 @@ void VideoCaptureController::VideoCaptureDeviceClient::OnError(
   BrowserThread::PostTask(BrowserThread::IO,
       FROM_HERE,
       base::Bind(&VideoCaptureController::DoErrorOnIOThread, controller_));
+}
+
+void VideoCaptureController::VideoCaptureDeviceClient::OnLog(
+    const std::string& message) {
+  MediaStreamManager::SendMessageToNativeLog("Video capture: " + message);
 }
 
 scoped_refptr<media::VideoCaptureDevice::Client::Buffer>

@@ -52,6 +52,7 @@ class VideoCaptureDeviceMac : public VideoCaptureDevice {
 
  private:
   void SetErrorState(const std::string& reason);
+  void LogMessage(const std::string& message);
   bool UpdateCaptureResolution();
 
   // Flag indicating the internal state.

@@ -378,6 +378,10 @@ void VideoCaptureDeviceMac::AllocateAndStart(
     GetBestMatchSupportedResolution(&width, &height);
 
   client_ = client.Pass();
+  if (device_name_.capture_api_type() == Name::AVFOUNDATION)
+    LogMessage("Using AVFoundation for device: " + device_name_.name());
+  else
+    LogMessage("Using QTKit for device: " + device_name_.name());
   NSString* deviceId =
       [NSString stringWithUTF8String:device_name_.id().c_str()];
 
@@ -558,6 +562,12 @@ void VideoCaptureDeviceMac::SetErrorState(const std::string& reason) {
   DLOG(ERROR) << reason;
   state_ = kError;
   client_->OnError(reason);
+}
+
+void VideoCaptureDeviceMac::LogMessage(const std::string& message) {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  if (client_)
+    client_->OnLog(message);
 }
 
 bool VideoCaptureDeviceMac::UpdateCaptureResolution() {

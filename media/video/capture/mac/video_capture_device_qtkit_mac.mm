@@ -78,25 +78,31 @@
       return NO;
     }
 
+    // TODO(mcasas): Consider using [QTCaptureDevice deviceWithUniqueID] instead
+    // of explicitly forcing reenumeration of devices.
     NSArray *captureDevices =
         [QTCaptureDevice inputDevicesWithMediaType:QTMediaTypeVideo];
     NSArray *captureDevicesNames =
         [captureDevices valueForKey:@"uniqueID"];
     NSUInteger index = [captureDevicesNames indexOfObject:deviceId];
     if (index == NSNotFound) {
-      DLOG(ERROR) << "Video capture device not found.";
+      [self sendErrorString:[NSString
+        stringWithUTF8String:"Video capture device not found."]];
       return NO;
     }
     QTCaptureDevice *device = [captureDevices objectAtIndex:index];
     if ([[device attributeForKey:QTCaptureDeviceSuspendedAttribute]
             boolValue]) {
-      DLOG(ERROR) << "Cannot open suspended video capture device.";
+      [self sendErrorString:[NSString
+        stringWithUTF8String:"Cannot open suspended video capture device."]];
       return NO;
     }
     NSError *error;
     if (![device open:&error]) {
-      DLOG(ERROR) << "Could not open video capture device."
-                  << [[error localizedDescription] UTF8String];
+      [self sendErrorString:[NSString
+          stringWithFormat:@"Could not open video capture device (%@): %@",
+                           [error localizedDescription],
+                           [error localizedFailureReason]]];
       return NO;
     }
     captureDeviceInput_ = [[QTCaptureDeviceInput alloc] initWithDevice:device];
@@ -106,8 +112,10 @@
         [[[QTCaptureDecompressedVideoOutput alloc] init] autorelease];
     [captureDecompressedOutput setDelegate:self];
     if (![captureSession_ addOutput:captureDecompressedOutput error:&error]) {
-      DLOG(ERROR) << "Could not connect video capture output."
-                  << [[error localizedDescription] UTF8String];
+      [self sendErrorString:[NSString
+          stringWithFormat:@"Could not connect video capture output (%@): %@",
+                           [error localizedDescription],
+                           [error localizedFailureReason]]];
       return NO;
     }
 
@@ -126,7 +134,8 @@
   } else {
     // Remove the previously set capture device.
     if (!captureDeviceInput_) {
-      DLOG(ERROR) << "No video capture device set.";
+      [self sendErrorString:[NSString
+          stringWithUTF8String:"No video capture device set, on removal."]];
       return YES;
     }
     if ([[captureSession_ inputs] count] > 0) {
@@ -139,15 +148,14 @@
       id output = [[captureSession_ outputs] objectAtIndex:0];
       [output setDelegate:nil];
 
-      // TODO(shess): QTKit achieves thread safety by posting messages
-      // to the main thread.  As part of -addOutput:, it posts a
-      // message to the main thread which in turn posts a notification
-      // which will run in a future spin after the original method
-      // returns.  -removeOutput: can post a main-thread message in
-      // between while holding a lock which the notification handler
-      // will need.  Posting either -addOutput: or -removeOutput: to
-      // the main thread should fix it, remove is likely safer.
-      // http://crbug.com/152757
+      // TODO(shess): QTKit achieves thread safety by posting messages to the
+      // main thread.  As part of -addOutput:, it posts a message to the main
+      // thread which in turn posts a notification which will run in a future
+      // spin after the original method returns.  -removeOutput: can post a
+      // main-thread message in between while holding a lock which the
+      // notification handler  will need.  Posting either -addOutput: or
+      // -removeOutput: to the main thread should fix it, remove is likely
+      // safer. http://crbug.com/152757
       [captureSession_ performSelectorOnMainThread:@selector(removeOutput:)
                                         withObject:output
                                      waitUntilDone:YES];
@@ -162,15 +170,17 @@
 
 - (BOOL)setCaptureHeight:(int)height width:(int)width frameRate:(int)frameRate {
   if (!captureDeviceInput_) {
-    DLOG(ERROR) << "No video capture device set.";
+    [self sendErrorString:[NSString
+        stringWithUTF8String:"No video capture device set."]];
     return NO;
   }
   if ([[captureSession_ outputs] count] != 1) {
-    DLOG(ERROR) << "Video capture capabilities already set.";
+    [self sendErrorString:[NSString
+        stringWithUTF8String:"Video capture capabilities already set."]];
     return NO;
   }
   if (frameRate <= 0) {
-    DLOG(ERROR) << "Wrong frame rate.";
+    [self sendErrorString:[NSString stringWithUTF8String: "Wrong frame rate."]];
     return NO;
   }
 
@@ -196,14 +206,18 @@
 - (BOOL)startCapture {
   if ([[captureSession_ outputs] count] == 0) {
     // Capture properties not set.
-    DLOG(ERROR) << "Video capture device not initialized.";
+    [self sendErrorString:[NSString
+        stringWithUTF8String:"Video capture device not initialized."]];
     return NO;
   }
   if ([[captureSession_ inputs] count] == 0) {
     NSError *error;
     if (![captureSession_ addInput:captureDeviceInput_ error:&error]) {
-      DLOG(ERROR) << "Could not connect video capture device."
-                  << [[error localizedDescription] UTF8String];
+      [self sendErrorString:[NSString
+          stringWithFormat:@"Could not connect video capture device (%@): %@",
+                           [error localizedDescription],
+                           [error localizedFailureReason]]];
+
       return NO;
     }
     NSNotificationCenter * notificationCenter =
@@ -309,12 +323,18 @@
 - (void)handleNotification:(NSNotification*)errorNotification {
   NSError * error = (NSError*)[[errorNotification userInfo]
       objectForKey:QTCaptureSessionErrorKey];
-  NSString* str_error =
-      [NSString stringWithFormat:@"%@: %@",
-                                 [error localizedDescription],
-                                 [error localizedFailureReason]];
+  [self sendErrorString:[NSString
+      stringWithFormat:@"%@: %@",
+                       [error localizedDescription],
+                       [error localizedFailureReason]]];
+}
 
-  frameReceiver_->ReceiveError([str_error UTF8String]);
+- (void)sendErrorString:(NSString*)error {
+  DLOG(ERROR) << [error UTF8String];
+  [lock_ lock];
+  if (frameReceiver_)
+    frameReceiver_->ReceiveError([error UTF8String]);
+  [lock_ unlock];
 }
 
 @end
