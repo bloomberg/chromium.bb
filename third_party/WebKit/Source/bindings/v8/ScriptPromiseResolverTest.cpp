@@ -64,9 +64,9 @@ private:
 class ScriptPromiseResolverTest : public testing::Test {
 public:
     ScriptPromiseResolverTest()
-        : m_scope(V8TestingScope::create(v8::Isolate::GetCurrent()))
+        : m_scope(v8::Isolate::GetCurrent())
     {
-        m_resolver = ScriptPromiseResolver::create(m_scope->scriptState());
+        m_resolver = ScriptPromiseResolver::create(m_scope.scriptState());
     }
 
     virtual ~ScriptPromiseResolverTest()
@@ -75,11 +75,11 @@ public:
         isolate()->RunMicrotasks();
     }
 
-    v8::Isolate* isolate() { return m_scope->isolate(); }
+    v8::Isolate* isolate() { return m_scope.isolate(); }
 
 protected:
     RefPtr<ScriptPromiseResolver> m_resolver;
-    OwnPtr<V8TestingScope> m_scope;
+    V8TestingScope m_scope;
 };
 
 TEST_F(ScriptPromiseResolverTest, initialState)

@@ -50,17 +50,17 @@ namespace {
 class IDBTransactionTest : public testing::Test {
 public:
     IDBTransactionTest()
-        : m_scope(V8TestingScope::create(v8::Isolate::GetCurrent()))
+        : m_scope(v8::Isolate::GetCurrent())
     {
-        m_scope->scriptState()->setExecutionContext(Document::create());
+        m_scope.scriptState()->setExecutionContext(Document::create());
     }
 
-    v8::Isolate* isolate() const { return m_scope->isolate(); }
-    ScriptState* scriptState() const { return m_scope->scriptState(); }
-    ExecutionContext* executionContext() { return m_scope->scriptState()->executionContext(); }
+    v8::Isolate* isolate() const { return m_scope.isolate(); }
+    ScriptState* scriptState() const { return m_scope.scriptState(); }
+    ExecutionContext* executionContext() { return m_scope.scriptState()->executionContext(); }
 
 private:
-    OwnPtr<V8TestingScope> m_scope;
+    V8TestingScope m_scope;
 };
 
 class FakeWebIDBDatabase FINAL : public blink::WebIDBDatabase {

@@ -745,11 +745,6 @@ PassRefPtr<JSONValue> v8ToJSONValue(v8::Isolate* isolate, v8::Handle<v8::Value> 
     return nullptr;
 }
 
-PassOwnPtr<V8TestingScope> V8TestingScope::create(v8::Isolate* isolate)
-{
-    return adoptPtr(new V8TestingScope(isolate));
-}
-
 V8TestingScope::V8TestingScope(v8::Isolate* isolate)
     : m_handleScope(isolate)
     , m_contextScope(v8::Context::New(isolate))

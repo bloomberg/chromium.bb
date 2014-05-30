@@ -70,24 +70,24 @@ private:
 class ScriptPromiseTest : public testing::Test {
 public:
     ScriptPromiseTest()
-        : m_scope(V8TestingScope::create(v8::Isolate::GetCurrent()))
+        : m_scope(v8::Isolate::GetCurrent())
     {
     }
 
     ~ScriptPromiseTest()
     {
         // FIXME: We put this statement here to clear an exception from the isolate.
-        createClosure(callback, v8::Undefined(m_scope->isolate()), m_scope->isolate());
+        createClosure(callback, v8::Undefined(m_scope.isolate()), m_scope.isolate());
 
         // Execute all pending microtasks
         isolate()->RunMicrotasks();
     }
 
-    ScriptState* scriptState() const { return m_scope->scriptState(); }
-    v8::Isolate* isolate() const { return m_scope->isolate(); }
+    ScriptState* scriptState() const { return m_scope.scriptState(); }
+    v8::Isolate* isolate() const { return m_scope.isolate(); }
 
 protected:
-    OwnPtr<V8TestingScope> m_scope;
+    V8TestingScope m_scope;
 };
 
 TEST_F(ScriptPromiseTest, constructFromNonPromise)
