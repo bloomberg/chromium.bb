@@ -78,10 +78,7 @@ static void collectChildrenAndRemoveFromOldParent(Node& node, NodeVector& nodes,
 #if !ENABLE(OILPAN)
 void ContainerNode::removeDetachedChildren()
 {
-    if (connectedSubframeCount()) {
-        for (Node* child = firstChild(); child; child = child->nextSibling())
-            child->updateAncestorConnectedSubframeCountForRemoval();
-    }
+    ASSERT(!connectedSubframeCount());
     ASSERT(needsAttach());
     removeDetachedChildrenInContainer<Node, ContainerNode>(*this);
 }
