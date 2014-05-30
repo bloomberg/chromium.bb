@@ -269,7 +269,7 @@ bool AddFirewallRulesCallback(bool system_level,
                               bool remove_on_rollback,
                               const CallbackWorkItem& work_item) {
   // There is no work to do on rollback if this is not a new install.
-  if (work_item.IsRollback() || !remove_on_rollback)
+  if (work_item.IsRollback() && !remove_on_rollback)
     return true;
 
   scoped_ptr<FirewallManager> manager =
