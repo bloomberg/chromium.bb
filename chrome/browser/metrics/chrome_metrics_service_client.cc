@@ -18,6 +18,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/memory_details.h"
+#include "chrome/browser/metrics/extensions_metrics_provider.h"
 #include "chrome/browser/metrics/metrics_service.h"
 #include "chrome/browser/ui/browser_otr_state.h"
 #include "chrome/common/chrome_constants.h"
@@ -25,12 +26,17 @@
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/crash_keys.h"
 #include "chrome/common/render_messages.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/histogram_fetcher.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
 
 #if !defined(OS_ANDROID)
 #include "chrome/browser/service_process/service_process_control.h"
+#endif
+
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/metrics/chromeos_metrics_provider.h"
 #endif
 
 #if defined(OS_WIN)
@@ -86,7 +92,9 @@ class MetricsMemoryDetails : public MemoryDetails {
 
 ChromeMetricsServiceClient::ChromeMetricsServiceClient(
     metrics::MetricsStateManager* state_manager)
-    : waiting_for_collect_final_metrics_step_(false),
+    : metrics_state_manager_(state_manager),
+      chromeos_metrics_provider_(NULL),
+      waiting_for_collect_final_metrics_step_(false),
       num_async_histogram_fetches_in_progress_(0),
       weak_ptr_factory_(this) {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -110,9 +118,27 @@ scoped_ptr<ChromeMetricsServiceClient> ChromeMetricsServiceClient::Create(
   // receives pointers to fully constructed objects.
   scoped_ptr<ChromeMetricsServiceClient> client(
       new ChromeMetricsServiceClient(state_manager));
-  client->metrics_service_.reset(
-      new MetricsService(state_manager, client.get(), local_state));
+  client->Initialize();
+
   return client.Pass();
+}
+
+void ChromeMetricsServiceClient::Initialize() {
+  metrics_service_.reset(new MetricsService(
+      metrics_state_manager_, this, g_browser_process->local_state()));
+
+  // Register metrics providers.
+  metrics_service_->RegisterMetricsProvider(
+      scoped_ptr<metrics::MetricsProvider>(
+          new ExtensionsMetricsProvider(metrics_state_manager_)));
+
+#if defined(OS_CHROMEOS)
+  ChromeOSMetricsProvider* chromeos_metrics_provider =
+      new ChromeOSMetricsProvider;
+  chromeos_metrics_provider_ = chromeos_metrics_provider;
+  metrics_service_->RegisterMetricsProvider(
+      scoped_ptr<metrics::MetricsProvider>(chromeos_metrics_provider));
+#endif
 }
 
 void ChromeMetricsServiceClient::SetClientID(const std::string& client_id) {
@@ -311,8 +337,13 @@ void ChromeMetricsServiceClient::Observe(
 
 void ChromeMetricsServiceClient::StartGatheringMetrics(
     const base::Closure& done_callback) {
-  // TODO(blundell): Move metrics gathering tasks from MetricsService to here.
+// TODO(blundell): Move all metrics gathering tasks from MetricsService to
+// here.
+#if defined(OS_CHROMEOS)
+  chromeos_metrics_provider_->InitTaskGetHardwareClass(done_callback);
+#else
   done_callback.Run();
+#endif
 }
 
 #if defined(OS_WIN)

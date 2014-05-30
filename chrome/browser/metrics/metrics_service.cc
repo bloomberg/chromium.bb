@@ -208,12 +208,6 @@
 #include "chrome/browser/metrics/plugin_metrics_provider.h"
 #endif
 
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/settings/cros_settings.h"
-#include "chrome/browser/metrics/chromeos_metrics_provider.h"
-#include "chromeos/system/statistics_provider.h"
-#endif
-
 #if defined(OS_WIN)
 #include "chrome/browser/metrics/google_update_metrics_provider_win.h"
 #endif
@@ -224,7 +218,6 @@
 #endif
 
 using base::Time;
-using content::BrowserThread;
 using metrics::MetricsLogManager;
 
 namespace {
@@ -417,10 +410,6 @@ MetricsService::MetricsService(metrics::MetricsStateManager* state_manager,
       plugin_metrics_provider_));
 #endif
 
-#if defined(OS_CHROMEOS)
-  RegisterMetricsProvider(
-      scoped_ptr<metrics::MetricsProvider>(new ChromeOSMetricsProvider));
-#endif
 }
 
 MetricsService::~MetricsService() {
@@ -698,27 +687,8 @@ void MetricsService::InitializeMetricsState() {
   ScheduleNextStateSave();
 }
 
-// static
-void MetricsService::InitTaskGetHardwareClass(
-    base::WeakPtr<MetricsService> self,
-    base::MessageLoopProxy* target_loop) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-
-  std::string hardware_class;
-#if defined(OS_CHROMEOS)
-  chromeos::system::StatisticsProvider::GetInstance()->GetMachineStatistic(
-      "hardware_class", &hardware_class);
-#endif  // OS_CHROMEOS
-
-  target_loop->PostTask(FROM_HERE,
-      base::Bind(&MetricsService::OnInitTaskGotHardwareClass,
-          self, hardware_class));
-}
-
-void MetricsService::OnInitTaskGotHardwareClass(
-    const std::string& hardware_class) {
+void MetricsService::OnInitTaskGotHardwareClass() {
   DCHECK_EQ(INIT_TASK_SCHEDULED, state_);
-  hardware_class_ = hardware_class;
 
   const base::Closure got_plugin_info_callback =
       base::Bind(&MetricsService::OnInitTaskGotPluginInfo,
@@ -856,23 +826,21 @@ void MetricsService::OpenNewLog() {
     // We only need to schedule that run once.
     state_ = INIT_TASK_SCHEDULED;
 
-    // TODO(blundell): Change the callback to be
-    // FinishedReceivingProfilerData() when the initial metrics gathering is
-    // moved to ChromeMetricsServiceClient.
-    client_->StartGatheringMetrics(base::Bind(&base::DoNothing));
-
-    // Schedules a task on the file thread for execution of slower
-    // initialization steps (such as plugin list generation) necessary
-    // for sending the initial log.  This avoids blocking the main UI
-    // thread.
-    BrowserThread::PostDelayedTask(
-        BrowserThread::FILE,
+    content::BrowserThread::PostDelayedTask(
+        content::BrowserThread::UI,
         FROM_HERE,
-        base::Bind(&MetricsService::InitTaskGetHardwareClass,
-            self_ptr_factory_.GetWeakPtr(),
-            base::MessageLoop::current()->message_loop_proxy()),
+        base::Bind(&MetricsService::StartGatheringMetrics,
+                   self_ptr_factory_.GetWeakPtr()),
         base::TimeDelta::FromSeconds(kInitializationDelaySeconds));
   }
+}
+
+void MetricsService::StartGatheringMetrics() {
+  // TODO(blundell): Move all initial metrics gathering to
+  // ChromeMetricsServiceClient.
+  client_->StartGatheringMetrics(
+      base::Bind(&MetricsService::OnInitTaskGotHardwareClass,
+                 self_ptr_factory_.GetWeakPtr()));
 }
 
 void MetricsService::CloseCurrentLog() {
@@ -887,9 +855,6 @@ void MetricsService::CloseCurrentLog() {
     log_manager_.DiscardCurrentLog();
     OpenNewLog();  // Start trivial log to hold our histograms.
   }
-
-  // Adds to ongoing logs.
-  log_manager_.current_log()->set_hardware_class(hardware_class_);
 
   // Put incremental data (histogram deltas, and realtime stats deltas) at the
   // end of all log transmissions (initial log handles this separately).
@@ -1112,7 +1077,6 @@ void MetricsService::PrepareInitialStabilityLog() {
 
 void MetricsService::PrepareInitialMetricsLog() {
   DCHECK(state_ == INIT_TASK_DONE || state_ == SENDING_INITIAL_STABILITY_LOG);
-  initial_metrics_log_->set_hardware_class(hardware_class_);
 
   std::vector<variations::ActiveGroupId> synthetic_trials;
   GetCurrentSyntheticFieldTrials(&synthetic_trials);

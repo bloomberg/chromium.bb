@@ -75,11 +75,6 @@ class MetricsLogBase {
            uma_proto_.user_action_event_size();
   }
 
-  void set_hardware_class(const std::string& hardware_class) {
-    uma_proto_.mutable_system_profile()->mutable_hardware()->set_hardware_class(
-        hardware_class);
-  }
-
   LogType log_type() const { return log_type_; }
 
  protected:

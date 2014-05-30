@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_METRICS_CHROMEOS_METRICS_PROVIDER_H_
 #define CHROME_BROWSER_METRICS_CHROMEOS_METRICS_PROVIDER_H_
 
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/metrics/perf_provider_chromeos.h"
 #include "components/metrics/metrics_provider.h"
 
@@ -30,6 +31,10 @@ class ChromeOSMetricsProvider : public metrics::MetricsProvider {
   // Records a crash.
   static void LogCrash(const std::string& crash_type);
 
+  // Loads hardware class information. When this task is complete, |callback|
+  // is run.
+  void InitTaskGetHardwareClass(const base::Closure& callback);
+
   // metrics::MetricsProvider:
   virtual void OnDidCreateMetricsLog() OVERRIDE;
   virtual void ProvideSystemProfileMetrics(
@@ -40,6 +45,9 @@ class ChromeOSMetricsProvider : public metrics::MetricsProvider {
       metrics::ChromeUserMetricsExtension* uma_proto) OVERRIDE;
 
  private:
+  // Called on the FILE thread to load hardware class information.
+  void InitTaskGetHardwareClassOnFileThread();
+
   // Update the number of users logged into a multi-profile session.
   // If the number of users change while the log is open, the call invalidates
   // the user count value.
@@ -65,6 +73,12 @@ class ChromeOSMetricsProvider : public metrics::MetricsProvider {
   // valid value only if |registered_user_count_at_log_initialization_| is
   // true.
   uint64 user_count_at_log_initialization_;
+
+  // Hardware class (e.g., hardware qualification ID). This class identifies
+  // the configured system components such as CPU, WiFi adapter, etc.
+  std::string hardware_class_;
+
+  base::WeakPtrFactory<ChromeOSMetricsProvider> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeOSMetricsProvider);
 };

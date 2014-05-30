@@ -258,14 +258,11 @@ class MetricsService
 
   typedef std::vector<SyntheticTrialGroup> SyntheticTrialGroups;
 
-  // First part of the init task. Called on the FILE thread to load hardware
-  // class information.
-  static void InitTaskGetHardwareClass(base::WeakPtr<MetricsService> self,
-                                       base::MessageLoopProxy* target_loop);
+  // Calls into the client to start metrics gathering.
+  void StartGatheringMetrics();
 
-  // Callback from InitTaskGetHardwareClass() that continues the init task by
-  // loading plugin information.
-  void OnInitTaskGotHardwareClass(const std::string& hardware_class);
+  // Callback that continues the init task by loading plugin information.
+  void OnInitTaskGotHardwareClass();
 
   // Called after the Plugin init task has been completed that continues the
   // init task by launching a task to gather Google Update statistics.
@@ -442,12 +439,6 @@ class MetricsService
 
   // Whether the initial stability log has been recorded during startup.
   bool has_initial_stability_log_;
-
-  // Chrome OS hardware class (e.g., hardware qualification ID). This
-  // class identifies the configured system components such as CPU,
-  // WiFi adapter, etc.  For non Chrome OS hosts, this will be an
-  // empty string.
-  std::string hardware_class_;
 
 #if defined(ENABLE_PLUGINS)
   PluginMetricsProvider* plugin_metrics_provider_;

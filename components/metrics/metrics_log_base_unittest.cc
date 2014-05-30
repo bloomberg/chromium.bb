@@ -42,7 +42,6 @@ TEST(MetricsLogBaseTest, LogType) {
 TEST(MetricsLogBaseTest, EmptyRecord) {
   MetricsLogBase log("totally bogus client ID", 137,
                      MetricsLogBase::ONGOING_LOG, "bogus version");
-  log.set_hardware_class("sample-class");
   log.CloseLog();
 
   std::string encoded;
@@ -59,8 +58,6 @@ TEST(MetricsLogBaseTest, EmptyRecord) {
   expected.mutable_system_profile()->set_build_timestamp(
       parsed.system_profile().build_timestamp());
   expected.mutable_system_profile()->set_app_version("bogus version");
-  expected.mutable_system_profile()->mutable_hardware()->set_hardware_class(
-      "sample-class");
 
   EXPECT_EQ(expected.SerializeAsString(), encoded);
 }

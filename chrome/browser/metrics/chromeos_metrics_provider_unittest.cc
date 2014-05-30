@@ -77,7 +77,8 @@ class ChromeOSMetricsProviderTest : public testing::Test {
         DBusThreadManager::Get()->GetBluetoothDeviceClient());
 
     // Initialize the login state trackers.
-    chromeos::LoginState::Initialize();
+    if (!chromeos::LoginState::IsInitialized())
+      chromeos::LoginState::Initialize();
   }
 
   virtual void TearDown() OVERRIDE { DBusThreadManager::Shutdown(); }

@@ -17,6 +17,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
+class ChromeOSMetricsProvider;
 class MetricsService;
 
 namespace metrics {
@@ -54,6 +55,9 @@ class ChromeMetricsServiceClient : public metrics::MetricsServiceClient,
   explicit ChromeMetricsServiceClient(
       metrics::MetricsStateManager* state_manager);
 
+  // Completes the two-phase initialization of ChromeMetricsServiceClient.
+  void Initialize();
+
   // Callbacks for various stages of final log info collection. Do not call
   // these directly.
   void OnMemoryDetailCollectionDone();
@@ -81,10 +85,17 @@ class ChromeMetricsServiceClient : public metrics::MetricsServiceClient,
 
   base::ThreadChecker thread_checker_;
 
+  // Weak pointer to the MetricsStateManager.
+  metrics::MetricsStateManager* metrics_state_manager_;
+
   // The MetricsService that |this| is a client of.
   scoped_ptr<MetricsService> metrics_service_;
 
   content::NotificationRegistrar registrar_;
+
+  // On ChromeOS, holds a weak pointer to the ChromeOSMetricsProvider instance
+  // that has been registered with MetricsService. On other platforms, is NULL.
+  ChromeOSMetricsProvider* chromeos_metrics_provider_;
 
   NetworkStatsUploader network_stats_uploader_;
 

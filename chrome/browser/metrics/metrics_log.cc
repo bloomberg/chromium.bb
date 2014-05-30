@@ -336,6 +336,10 @@ void MetricsLog::RecordEnvironment(
   system_profile->set_application_locale(client_->GetApplicationLocale());
 
   SystemProfileProto::Hardware* hardware = system_profile->mutable_hardware();
+
+  // By default, the hardware class is empty (i.e., unknown).
+  hardware->set_hardware_class(std::string());
+
   hardware->set_cpu_architecture(base::SysInfo::OperatingSystemArchitecture());
   hardware->set_system_ram_mb(base::SysInfo::AmountOfPhysicalMemoryMB());
 #if defined(OS_WIN)
