@@ -89,8 +89,9 @@ bool WARN_UNUSED_RESULT IsDisplayingNetError(Browser* browser,
                                              net::Error error_code) {
   // Get the error as a string, and remove the leading "net::", which is not
   // included on error pages.
-  std::string error_string = net::ErrorToString(error_code);
-  base::RemoveChars(error_string, "net:", &error_string);
+  std::string error_string(net::ErrorToString(error_code));
+  DCHECK(StartsWithASCII(error_string, "net::", true));
+  error_string.erase(0, 5);
 
   return IsDisplayingText(browser, error_string);
 }

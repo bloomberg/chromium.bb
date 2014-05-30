@@ -133,7 +133,7 @@ AutocompleteInput::Type AutocompleteInput::Parse(
   if (first_non_white == base::string16::npos)
     return INVALID;  // All whitespace.
 
-  if (text.at(first_non_white) == L'?') {
+  if (text[first_non_white] == L'?') {
     // If the first non-whitespace character is a '?', we magically treat this
     // as a query.
     return FORCED_QUERY;

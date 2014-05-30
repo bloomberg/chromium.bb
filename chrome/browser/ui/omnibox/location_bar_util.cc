@@ -6,6 +6,7 @@
 
 #include "base/i18n/rtl.h"
 #include "base/strings/string_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_action.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
@@ -18,16 +19,10 @@ namespace location_bar_util {
 
 base::string16 CalculateMinString(const base::string16& description) {
   // Chop at the first '.' or whitespace.
-  const size_t dot_index = description.find('.');
-  const size_t ws_index = description.find_first_of(base::kWhitespaceUTF16);
-  size_t chop_index = std::min(dot_index, ws_index);
-  base::string16 min_string;
-  if (chop_index == base::string16::npos) {
-    // No dot or whitespace, truncate to at most 3 chars.
-    min_string = gfx::TruncateString(description, 3);
-  } else {
-    min_string = description.substr(0, chop_index);
-  }
+  const size_t chop_index = description.find_first_of(
+      base::kWhitespaceUTF16 + base::ASCIIToUTF16("."));
+  base::string16 min_string((chop_index == base::string16::npos) ?
+      gfx::TruncateString(description, 3) : description.substr(0, chop_index));
   base::i18n::AdjustStringForLocaleDirection(&min_string);
   return min_string;
 }

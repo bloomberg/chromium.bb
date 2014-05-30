@@ -157,10 +157,9 @@ void CheckNoBackupData(const sql::Connection& connection,
 }
 
 std::string RemoveQuotes(const std::string& has_quotes) {
-  // SQLite quotes: http://www.sqlite.org/lang_keywords.html
-  static const char kQuotes[] = "\"[]`";
   std::string no_quotes;
-  base::RemoveChars(has_quotes, kQuotes, &no_quotes);
+  // SQLite quotes: http://www.sqlite.org/lang_keywords.html
+  base::RemoveChars(has_quotes, "\"[]`", &no_quotes);
   return no_quotes;
 }
 

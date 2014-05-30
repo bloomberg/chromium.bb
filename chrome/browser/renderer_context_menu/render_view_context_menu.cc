@@ -372,8 +372,8 @@ void AddCustomItemsToMenu(const std::vector<content::MenuItem>& items,
 
 // Helper function to escape "&" as "&&".
 void EscapeAmpersands(base::string16* text) {
-  const base::char16 ampersand[] = {'&', 0};
-  base::ReplaceChars(*text, ampersand, base::ASCIIToUTF16("&&"), text);
+  base::ReplaceChars(*text, base::ASCIIToUTF16("&"), base::ASCIIToUTF16("&&"),
+                     text);
 }
 
 }  // namespace

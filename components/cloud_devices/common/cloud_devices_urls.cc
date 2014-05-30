@@ -33,6 +33,7 @@ namespace {
 const char kCloudPrintURL[] = "https://www.google.com/cloudprint";
 
 const char kCloudDevicesUrl[] = "https://www.googleapis.com/clouddevices/v1";
+
 }
 
 // Returns the root service URL for the cloud print service.  The default is to
@@ -50,7 +51,7 @@ GURL GetCloudPrintURL() {
 GURL GetCloudPrintRelativeURL(const std::string& relative_path) {
   GURL url = GetCloudPrintURL();
   std::string path;
-  const char kURLPathSeparator[] = "/";
+  static const char kURLPathSeparator[] = "/";
   base::TrimString(url.path(), kURLPathSeparator, &path);
   std::string trimmed_path;
   base::TrimString(relative_path, kURLPathSeparator, &trimmed_path);

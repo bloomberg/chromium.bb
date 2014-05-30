@@ -48,21 +48,6 @@ namespace util {
 
 namespace {
 
-const base::FilePath::CharType kSpecialMountPointRoot[] =
-    FILE_PATH_LITERAL("/special");
-
-const char kDriveMountPointNameBase[] = "drive";
-
-const base::FilePath::CharType kDriveMyDriveRootPath[] =
-    FILE_PATH_LITERAL("drive/root");
-
-const base::FilePath::CharType kFileCacheVersionDir[] =
-    FILE_PATH_LITERAL("v1");
-
-const char kSlash[] = "/";
-const char kDot = '.';
-const char kEscapedChars[] = "_";
-
 std::string ReadStringFromGDocFile(const base::FilePath& file_path,
                                    const std::string& key) {
   const int64 kMaxGDocSize = 4096;
@@ -123,12 +108,15 @@ const base::FilePath& GetDriveGrandRootPath() {
 
 const base::FilePath& GetDriveMyDriveRootPath() {
   CR_DEFINE_STATIC_LOCAL(base::FilePath, drive_root_path,
-      (kDriveMyDriveRootPath));
+                         (FILE_PATH_LITERAL("drive/root")));
   return drive_root_path;
 }
 
 base::FilePath GetDriveMountPointPathForUserIdHash(
     const std::string user_id_hash) {
+  static const base::FilePath::CharType kSpecialMountPointRoot[] =
+      FILE_PATH_LITERAL("/special");
+  static const char kDriveMountPointNameBase[] = "drive";
   return base::FilePath(kSpecialMountPointRoot).AppendASCII(
       net::EscapePath(kDriveMountPointNameBase +
                       (user_id_hash.empty() ? "" : "-" + user_id_hash)));
@@ -267,6 +255,8 @@ base::FilePath GetCacheRootPath(Profile* profile) {
   chrome::GetUserCacheDirectory(profile->GetPath(), &cache_base_path);
   base::FilePath cache_root_path =
       cache_base_path.Append(chromeos::kDriveCacheDirname);
+  static const base::FilePath::CharType kFileCacheVersionDir[] =
+      FILE_PATH_LITERAL("v1");
   return cache_root_path.Append(kFileCacheVersionDir);
 }
 
@@ -304,9 +294,9 @@ std::string NormalizeFileName(const std::string& input) {
   std::string output;
   if (!base::ConvertToUtf8AndNormalize(input, base::kCodepageUTF8, &output))
     output = input;
-  base::ReplaceChars(output, kSlash, std::string(kEscapedChars), &output);
-  if (!output.empty() && output.find_first_not_of(kDot, 0) == std::string::npos)
-    output = kEscapedChars;
+  base::ReplaceChars(output, "/", "_", &output);
+  if (!output.empty() && output.find_first_not_of('.', 0) == std::string::npos)
+    output = "_";
   return output;
 }
 

@@ -42,11 +42,6 @@
 #include "chrome/installer/util/util_constants.h"
 #include "chrome/installer/util/work_item_list.h"
 
-using base::ASCIIToUTF16;
-using base::UTF16ToUTF8;
-using installer::InstallerState;
-using installer::InstallationState;
-using installer::Product;
 
 namespace {
 
@@ -78,13 +73,13 @@ void LogShortcutOperation(ShellUtil::ShortcutLocation location,
       break;
     case ShellUtil::SHORTCUT_LOCATION_START_MENU_CHROME_DIR:
       message.append("Start menu/" +
-                     UTF16ToUTF8(dist->GetStartMenuShortcutSubfolder(
+                     base::UTF16ToUTF8(dist->GetStartMenuShortcutSubfolder(
                                      BrowserDistribution::SUBFOLDER_CHROME)) +
                       " ");
       break;
     case ShellUtil::SHORTCUT_LOCATION_START_MENU_CHROME_APPS_DIR:
       message.append("Start menu/" +
-                     UTF16ToUTF8(dist->GetStartMenuShortcutSubfolder(
+                     base::UTF16ToUTF8(dist->GetStartMenuShortcutSubfolder(
                                      BrowserDistribution::SUBFOLDER_APPS)) +
                      " ");
       break;
@@ -94,15 +89,15 @@ void LogShortcutOperation(ShellUtil::ShortcutLocation location,
 
   message.push_back('"');
   if (properties.has_shortcut_name())
-    message.append(UTF16ToUTF8(properties.shortcut_name));
+    message.append(base::UTF16ToUTF8(properties.shortcut_name));
   else
-    message.append(UTF16ToUTF8(dist->GetDisplayName()));
+    message.append(base::UTF16ToUTF8(dist->GetDisplayName()));
   message.push_back('"');
 
   message.append(" shortcut to ");
-  message.append(UTF16ToUTF8(properties.target.value()));
+  message.append(base::UTF16ToUTF8(properties.target.value()));
   if (properties.has_arguments())
-    message.append(UTF16ToUTF8(properties.arguments));
+    message.append(base::UTF16ToUTF8(properties.arguments));
 
   if (properties.pin_to_taskbar &&
       base::win::GetVersion() >= base::win::VERSION_WIN7) {
@@ -146,8 +141,9 @@ void AddChromeToMediaPlayerList() {
 // Copy master_preferences file provided to installer, in the same folder
 // as chrome.exe so Chrome first run can find it. This function will be called
 // only on the first install of Chrome.
-void CopyPreferenceFileForFirstRun(const InstallerState& installer_state,
-                                   const base::FilePath& prefs_source_path) {
+void CopyPreferenceFileForFirstRun(
+    const installer::InstallerState& installer_state,
+    const base::FilePath& prefs_source_path) {
   base::FilePath prefs_dest_path(installer_state.target_path().AppendASCII(
       installer::kDefaultMasterPrefs));
   if (!base::CopyFile(prefs_source_path, prefs_dest_path)) {
@@ -177,8 +173,8 @@ void CopyPreferenceFileForFirstRun(const InstallerState& installer_state,
 // (typical new install), the function creates package during install
 // and removes the whole directory during rollback.
 installer::InstallStatus InstallNewVersion(
-    const InstallationState& original_state,
-    const InstallerState& installer_state,
+    const installer::InstallationState& original_state,
+    const installer::InstallerState& installer_state,
     const base::FilePath& setup_path,
     const base::FilePath& archive_path,
     const base::FilePath& src_path,
@@ -256,7 +252,7 @@ installer::InstallStatus InstallNewVersion(
 // Launch shortcut. Both of these were created prior to Chrome 24; in Chrome 24,
 // the uninstall shortcut was removed and the Default user Quick Launch shortcut
 // was replaced by per-user shortcuts created via Active Setup.
-void CleanupLegacyShortcuts(const InstallerState& installer_state,
+void CleanupLegacyShortcuts(const installer::InstallerState& installer_state,
                             BrowserDistribution* dist,
                             const base::FilePath& chrome_exe) {
   ShellUtil::ShellChange shortcut_level = installer_state.system_install() ?
@@ -278,8 +274,8 @@ void CleanupLegacyShortcuts(const InstallerState& installer_state,
 // Returns the appropriate shortcut operations for App Launcher,
 // based on state of installation and master_preferences.
 installer::InstallShortcutOperation GetAppLauncherShortcutOperation(
-    const InstallationState& original_state,
-    const InstallerState& installer_state) {
+    const installer::InstallationState& original_state,
+    const installer::InstallerState& installer_state) {
   const installer::ProductState* original_app_host_state =
       original_state.GetProductState(installer_state.system_install(),
                                      BrowserDistribution::CHROME_APP_HOST);
@@ -297,15 +293,18 @@ installer::InstallShortcutOperation GetAppLauncherShortcutOperation(
 namespace installer {
 
 void EscapeXmlAttributeValueInSingleQuotes(base::string16* att_value) {
-  base::ReplaceChars(*att_value, L"&", L"&amp;", att_value);
-  base::ReplaceChars(*att_value, L"'", L"&apos;", att_value);
-  base::ReplaceChars(*att_value, L"<", L"&lt;", att_value);
+  base::ReplaceChars(*att_value, base::ASCIIToUTF16("&"),
+                     base::ASCIIToUTF16("&amp;"), att_value);
+  base::ReplaceChars(*att_value, base::ASCIIToUTF16("'"),
+                     base::ASCIIToUTF16("&apos;"), att_value);
+  base::ReplaceChars(*att_value, base::ASCIIToUTF16("<"),
+                     base::ASCIIToUTF16("&lt;"), att_value);
 }
 
 bool CreateVisualElementsManifest(const base::FilePath& src_path,
                                   const Version& version) {
   // Construct the relative path to the versioned VisualElements directory.
-  base::string16 elements_dir(ASCIIToUTF16(version.GetString()));
+  base::string16 elements_dir(base::ASCIIToUTF16(version.GetString()));
   elements_dir.push_back(base::FilePath::kSeparators[0]);
   elements_dir.append(installer::kVisualElements);
 
@@ -333,7 +332,8 @@ bool CreateVisualElementsManifest(const base::FilePath& src_path,
         "  </VisualElements>\r\n"
         "</Application>";
 
-    const base::string16 manifest_template(ASCIIToUTF16(kManifestTemplate));
+    const base::string16 manifest_template(
+        base::ASCIIToUTF16(kManifestTemplate));
 
     BrowserDistribution* dist = BrowserDistribution::GetSpecificDistribution(
         BrowserDistribution::CHROME_BROWSER);
@@ -347,7 +347,7 @@ bool CreateVisualElementsManifest(const base::FilePath& src_path,
         manifest_template.c_str(), display_name.c_str(), elements_dir.c_str()));
 
     // Write the manifest to |src_path|.
-    const std::string manifest(UTF16ToUTF8(manifest16));
+    const std::string manifest(base::UTF16ToUTF8(manifest16));
     int size = base::checked_cast<int>(manifest.size());
     if (base::WriteFile(
         src_path.Append(installer::kVisualElementsManifest),
@@ -365,7 +365,7 @@ bool CreateVisualElementsManifest(const base::FilePath& src_path,
 
 void CreateOrUpdateShortcuts(
     const base::FilePath& target,
-    const Product& product,
+    const installer::Product& product,
     const MasterPreferences& prefs,
     InstallShortcutLevel install_level,
     InstallShortcutOperation install_operation) {
@@ -469,8 +469,8 @@ void CreateOrUpdateShortcuts(
       start_menu_properties, shortcut_operation);
 }
 
-void RegisterChromeOnMachine(const InstallerState& installer_state,
-                             const Product& product,
+void RegisterChromeOnMachine(const installer::InstallerState& installer_state,
+                             const installer::Product& product,
                              bool make_chrome_default) {
   DCHECK(product.is_chrome());
 
@@ -496,8 +496,8 @@ void RegisterChromeOnMachine(const InstallerState& installer_state,
 }
 
 InstallStatus InstallOrUpdateProduct(
-    const InstallationState& original_state,
-    const InstallerState& installer_state,
+    const installer::InstallationState& original_state,
+    const installer::InstallerState& installer_state,
     const base::FilePath& setup_path,
     const base::FilePath& archive_path,
     const base::FilePath& install_temp_path,
@@ -542,7 +542,7 @@ InstallStatus InstallOrUpdateProduct(
 
     installer_state.UpdateStage(installer::CREATING_SHORTCUTS);
 
-    const Product* app_launcher_product =
+    const installer::Product* app_launcher_product =
         installer_state.FindProduct(BrowserDistribution::CHROME_APP_HOST);
     // Creates shortcuts for App Launcher.
     if (app_launcher_product) {
@@ -558,7 +558,7 @@ InstallStatus InstallOrUpdateProduct(
                               CURRENT_USER, app_launcher_shortcut_operation);
     }
 
-    const Product* chrome_product =
+    const installer::Product* chrome_product =
         installer_state.FindProduct(BrowserDistribution::CHROME_BROWSER);
     // Creates shortcuts for Chrome.
     if (chrome_product) {
@@ -623,7 +623,7 @@ InstallStatus InstallOrUpdateProduct(
             &auto_launch_chrome);
         if (auto_launch_chrome) {
           auto_launch_util::EnableForegroundStartAtLogin(
-              ASCIIToUTF16(chrome::kInitialProfile),
+              base::ASCIIToUTF16(chrome::kInitialProfile),
               installer_state.target_path());
         }
       }
@@ -640,8 +640,8 @@ InstallStatus InstallOrUpdateProduct(
   return result;
 }
 
-void HandleOsUpgradeForBrowser(const InstallerState& installer_state,
-                               const Product& chrome) {
+void HandleOsUpgradeForBrowser(const installer::InstallerState& installer_state,
+                               const installer::Product& chrome) {
   DCHECK(chrome.is_chrome());
   // Upon upgrading to Windows 8, we need to fix Chrome shortcuts and register
   // Chrome, so that Metro Chrome would work if Chrome is the default browser.
@@ -669,7 +669,7 @@ void HandleOsUpgradeForBrowser(const InstallerState& installer_state,
 // in install_worker.cc needs to be increased for Active Setup to invoke this
 // again for all users of this install.
 void HandleActiveSetupForBrowser(const base::FilePath& installation_root,
-                                 const Product& chrome,
+                                 const installer::Product& chrome,
                                  bool force) {
   DCHECK(chrome.is_chrome());
   // Only create shortcuts on Active Setup if the first run sentinel is not

@@ -66,8 +66,7 @@ std::string TranslateQuery(const std::string& original_query) {
   // In order to handle non-ascii white spaces correctly, convert to UTF16.
   base::string16 query = base::UTF8ToUTF16(original_query);
   const base::string16 kDelimiter(
-      base::kWhitespaceUTF16 +
-      base::string16(1, static_cast<base::char16>('"')));
+      base::kWhitespaceUTF16 + base::ASCIIToUTF16("\""));
 
   std::string result;
   for (size_t index = query.find_first_not_of(base::kWhitespaceUTF16);

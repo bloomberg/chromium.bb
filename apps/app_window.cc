@@ -538,22 +538,21 @@ gfx::Rect AppWindow::GetClientBounds() const {
 }
 
 base::string16 AppWindow::GetTitle() const {
-  base::string16 title;
   const extensions::Extension* extension = GetExtension();
   if (!extension)
-    return title;
+    return base::string16();
 
   // WebContents::GetTitle() will return the page's URL if there's no <title>
   // specified. However, we'd prefer to show the name of the extension in that
   // case, so we directly inspect the NavigationEntry's title.
+  base::string16 title;
   if (!web_contents() || !web_contents()->GetController().GetActiveEntry() ||
       web_contents()->GetController().GetActiveEntry()->GetTitle().empty()) {
     title = base::UTF8ToUTF16(extension->name());
   } else {
     title = web_contents()->GetTitle();
   }
-  const base::char16 kBadChars[] = {'\n', 0};
-  base::RemoveChars(title, kBadChars, &title);
+  base::RemoveChars(title, base::ASCIIToUTF16("\n"), &title);
   return title;
 }
 

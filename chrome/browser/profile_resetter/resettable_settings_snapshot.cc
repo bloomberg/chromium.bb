@@ -200,7 +200,7 @@ std::string SerializeSettingsReport(const ResettableSettingsSnapshot& snapshot,
          i != shortcuts.end(); ++i) {
       base::string16 arguments;
       // Replace "\"" to simplify server-side analysis.
-      base::ReplaceChars(i->second, base::ASCIIToUTF16("\"").c_str(),
+      base::ReplaceChars(i->second, base::ASCIIToUTF16("\""),
                          base::ASCIIToUTF16("\'"), &arguments);
       list->AppendString(arguments);
     }

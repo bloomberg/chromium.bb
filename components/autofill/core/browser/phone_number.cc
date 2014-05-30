@@ -17,12 +17,6 @@
 namespace autofill {
 namespace {
 
-const base::char16 kPhoneNumberSeparators[] = { ' ', '.', '(', ')', '-', 0 };
-
-void StripPunctuation(base::string16* number) {
-  base::RemoveChars(*number, kPhoneNumberSeparators, number);
-}
-
 // Returns the region code for this phone number, which is an ISO 3166 2-letter
 // country code.  The returned value is based on the |profile|; if the |profile|
 // does not have a country code associated with it, falls back to the country
@@ -150,7 +144,7 @@ void PhoneNumber::GetMatchingTypes(const base::string16& text,
                                    const std::string& app_locale,
                                    ServerFieldTypeSet* matching_types) const {
   base::string16 stripped_text = text;
-  StripPunctuation(&stripped_text);
+  base::RemoveChars(stripped_text, base::ASCIIToUTF16(" .()-"), &stripped_text);
   FormGroup::GetMatchingTypes(stripped_text, app_locale, matching_types);
 
   // For US numbers, also compare to the three-digit prefix and the four-digit

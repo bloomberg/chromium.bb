@@ -297,7 +297,7 @@ class RegistryEntry {
     entries->push_back(new RegistryEntry(
         chrome_html_prog_id, dist->GetBrowserProgIdDesc()));
     entries->push_back(new RegistryEntry(
-        chrome_html_prog_id, ShellUtil::kRegUrlProtocol, L""));
+        chrome_html_prog_id, ShellUtil::kRegUrlProtocol, base::string16()));
     entries->push_back(new RegistryEntry(
         chrome_html_prog_id + ShellUtil::kRegDefaultIcon, icon_path));
     entries->push_back(new RegistryEntry(
@@ -474,7 +474,7 @@ class RegistryEntry {
     // so IE, explorer and other apps will route it to our handler.
     // <root hkey>\Software\Classes\<protocol>\URL Protocol
     entries->push_back(new RegistryEntry(url_key,
-        ShellUtil::kRegUrlProtocol, L""));
+        ShellUtil::kRegUrlProtocol, base::string16()));
 
     // <root hkey>\Software\Classes\<protocol>\DefaultIcon
     base::string16 icon_key = url_key + ShellUtil::kRegDefaultIcon;
@@ -486,7 +486,7 @@ class RegistryEntry {
 
     // <root hkey>\Software\Classes\<protocol>\shell\open\ddeexec
     base::string16 dde_key = url_key + L"\\shell\\open\\ddeexec";
-    entries->push_back(new RegistryEntry(dde_key, L""));
+    entries->push_back(new RegistryEntry(dde_key, base::string16()));
 
     // <root hkey>\Software\Classes\<protocol>\shell\@
     base::string16 protocol_shell_key = url_key + ShellUtil::kRegShellPath;
@@ -1759,7 +1759,8 @@ base::string16 ShellUtil::BuildAppModelId(
     }
   }
   // No spaces are allowed in the AppUserModelId according to MSDN.
-  base::ReplaceChars(app_id, L" ", L"_", &app_id);
+  base::ReplaceChars(app_id, base::ASCIIToUTF16(" "), base::ASCIIToUTF16("_"),
+                     &app_id);
   return app_id;
 }
 
@@ -2057,8 +2058,8 @@ bool ShellUtil::RegisterChromeBrowser(BrowserDistribution* dist,
     result = (AddRegistryEntries(root, progid_and_appreg_entries) &&
               AddRegistryEntries(root, shell_entries));
   } else if (elevate_if_not_admin &&
-             base::win::GetVersion() >= base::win::VERSION_VISTA &&
-             ElevateAndRegisterChrome(dist, chrome_exe, suffix, L"")) {
+      base::win::GetVersion() >= base::win::VERSION_VISTA &&
+      ElevateAndRegisterChrome(dist, chrome_exe, suffix, base::string16())) {
     // If the user is not an admin and OS is between Vista and Windows 7
     // inclusively, try to elevate and register. This is only intended for
     // user-level installs as system-level installs should always be run with

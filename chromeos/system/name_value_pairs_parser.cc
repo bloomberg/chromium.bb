@@ -19,9 +19,6 @@ namespace system {
 
 namespace {
 
-const char kQuoteChars[] = "\"";
-const char kTrimChars[] = "\" ";
-
 bool GetToolOutput(int argc, const char* argv[], std::string& output) {
   DCHECK_GE(argc, 1);
 
@@ -72,7 +69,7 @@ bool NameValuePairsParser::ParseNameValuePairsWithComments(
   bool all_valid = true;
   // Set up the pair tokenizer.
   base::StringTokenizer pair_toks(in_string, delim);
-  pair_toks.set_quote_chars(kQuoteChars);
+  pair_toks.set_quote_chars("\"");
   // Process token pairs.
   while (pair_toks.GetNext()) {
     std::string pair(pair_toks.token());
@@ -90,6 +87,7 @@ bool NameValuePairsParser::ParseNameValuePairsWithComments(
           value_size = comment_pos - eq_pos - 1;
       }
 
+      static const char kTrimChars[] = "\" ";
       std::string key;
       std::string value;
       base::TrimString(pair.substr(0, eq_pos), kTrimChars, &key);
