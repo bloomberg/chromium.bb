@@ -6368,6 +6368,17 @@
    fun:_ZN7content19MojoApplicationHost4InitEv
 }
 {
+   bug_367809_d
+   Memcheck:Leak
+   fun:_Znw*
+   ...
+   fun:_ZN7content21RenderProcessHostImpl4InitEv
+   ...
+   fun:_ZN7content5Shell7LoadURLERK4GURL
+   fun:_ZN7content20WebKitTestController20PrepareForLayoutTestERK4GURLRKN4base8FilePathEbRKSs
+   fun:_ZN12_GLOBAL__N_110RunOneTestERKSsPbRK10scoped_ptrIN7content17BrowserMainRunnerEN4base14DefaultDeleterIS5_EEE
+}
+{
    bug_369843
    Memcheck:Leak
    fun:_Znw*
