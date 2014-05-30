@@ -22,6 +22,7 @@ class BitmapData : public base::RefCountedThreadSafe<BitmapData> {
   base::ProcessHandle process_handle;
   base::SharedMemoryHandle memory_handle;
   scoped_ptr<base::SharedMemory> memory;
+  scoped_ptr<uint8[]> pixels;
   size_t buffer_size;
 
  private:
@@ -46,9 +47,23 @@ HostSharedBitmapManager* HostSharedBitmapManager::current() {
 
 scoped_ptr<cc::SharedBitmap> HostSharedBitmapManager::AllocateSharedBitmap(
     const gfx::Size& size) {
+  base::AutoLock lock(lock_);
+  size_t bitmap_size;
+  if (!cc::SharedBitmap::SizeInBytes(size, &bitmap_size))
+    return scoped_ptr<cc::SharedBitmap>();
+
+  scoped_refptr<BitmapData> data(
+      new BitmapData(base::GetCurrentProcessHandle(),
+                     base::SharedMemory::NULLHandle(),
+                     bitmap_size));
   // Bitmaps allocated in host don't need to be shared to other processes, so
   // allocate them with new instead.
-  return scoped_ptr<cc::SharedBitmap>();
+  data->pixels = scoped_ptr<uint8[]>(new uint8[bitmap_size]);
+
+  cc::SharedBitmapId id = cc::SharedBitmap::GenerateId();
+  handle_map_[id] = data;
+  return make_scoped_ptr(new cc::SharedBitmap(
+      data->pixels.get(), id, base::Bind(&FreeSharedMemory, data)));
 }
 
 scoped_ptr<cc::SharedBitmap> HostSharedBitmapManager::GetSharedBitmapFromId(
@@ -66,6 +81,10 @@ scoped_ptr<cc::SharedBitmap> HostSharedBitmapManager::GetSharedBitmapFromId(
       bitmap_size > data->buffer_size)
     return scoped_ptr<cc::SharedBitmap>();
 
+  if (data->pixels) {
+    return make_scoped_ptr(new cc::SharedBitmap(
+        data->pixels.get(), id, base::Bind(&FreeSharedMemory, it->second)));
+  }
   if (!data->memory->memory()) {
     TRACE_EVENT0("renderer_host",
                  "HostSharedBitmapManager::GetSharedBitmapFromId");

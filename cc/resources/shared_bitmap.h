@@ -23,6 +23,10 @@ class CC_EXPORT SharedBitmap {
                const SharedBitmapId& id,
                const base::Callback<void(SharedBitmap* bitmap)>& free_callback);
 
+  SharedBitmap(uint8* pixels,
+               const SharedBitmapId& id,
+               const base::Callback<void(SharedBitmap* bitmap)>& free_callback);
+
   ~SharedBitmap();
 
   bool operator<(const SharedBitmap& right) const {
@@ -33,7 +37,7 @@ class CC_EXPORT SharedBitmap {
     return id_ < right.id_;
   }
 
-  uint8* pixels() { return static_cast<uint8*>(memory_->memory()); }
+  uint8* pixels() { return pixels_; }
 
   base::SharedMemory* memory() { return memory_; }
 
@@ -54,6 +58,7 @@ class CC_EXPORT SharedBitmap {
 
  private:
   base::SharedMemory* memory_;
+  uint8* pixels_;
   SharedBitmapId id_;
   base::Callback<void(SharedBitmap* bitmap)> free_callback_;
 
