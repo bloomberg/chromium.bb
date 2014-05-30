@@ -11,6 +11,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/cocoa/browser_window_utils.h"
 #import "chrome/browser/ui/cocoa/chrome_event_processing_window.h"
+#import "chrome/browser/ui/cocoa/custom_frame_view.h"
 #include "chrome/browser/ui/cocoa/extensions/extension_keybinding_registry_cocoa.h"
 #include "chrome/browser/ui/cocoa/extensions/extension_view_mac.h"
 #import "chrome/browser/ui/cocoa/nsview_additions.h"
@@ -223,9 +224,6 @@ std::vector<gfx::Rect> CalculateNonDraggableRegions(
 @end
 
 @interface ShellCustomFrameNSWindow : ShellNSWindow
-
-- (void)drawCustomFrameRect:(NSRect)rect forView:(NSView*)view;
-
 @end
 
 @implementation ShellCustomFrameNSWindow
@@ -248,11 +246,12 @@ std::vector<gfx::Rect> CalculateNonDraggableRegions(
 
 @end
 
-@interface ShellFramelessNSWindow : ShellCustomFrameNSWindow
-
+@interface ShellFramelessNSWindow : ShellNSWindow
 @end
 
 @implementation ShellFramelessNSWindow
+
+- (void)drawCustomFrameRect:(NSRect)rect forView:(NSView*)view {}
 
 + (NSRect)frameRectForContentRect:(NSRect)contentRect
                         styleMask:(NSUInteger)mask {
@@ -373,14 +372,10 @@ NativeAppWindowCocoa::NativeAppWindowCocoa(
 
 NSUInteger NativeAppWindowCocoa::GetWindowStyleMask() const {
   NSUInteger style_mask = NSTitledWindowMask | NSClosableWindowMask |
-                          NSMiniaturizableWindowMask;
+                          NSMiniaturizableWindowMask |
+                          NSTexturedBackgroundWindowMask;
   if (shows_resize_controls_)
     style_mask |= NSResizableWindowMask;
-  if (!has_frame_ ||
-      !CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAppsUseNativeFrame)) {
-    style_mask |= NSTexturedBackgroundWindowMask;
-  }
   return style_mask;
 }
 

@@ -168,9 +168,7 @@ class NativeAppWindowCocoa : public apps::NativeAppWindow,
   content::WebContents* WebContents() const;
 
   // Returns the WindowStyleMask based on the type of window frame.
-  // Specifically, this includes NSResizableWindowMask if the window is
-  // resizable, and does not include NSTexturedBackgroundWindowMask when a
-  // native frame is used.
+  // This includes NSResizableWindowMask if the window is resizable.
   NSUInteger GetWindowStyleMask() const;
 
   void InstallView();
