@@ -92,6 +92,8 @@ class PnaclTranslateThread {
   bool llc_subprocess_active_;
   bool ld_subprocess_active_;
 
+  bool subprocesses_aborted_;
+
   // Condition variable to synchronize communication with the SRPC thread.
   // SRPC thread waits on this condvar if data_buffers_ is empty (meaning
   // there is no bitcode to send to the translator), and the main thread
