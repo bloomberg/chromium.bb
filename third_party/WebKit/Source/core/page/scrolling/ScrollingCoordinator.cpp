@@ -159,8 +159,9 @@ void ScrollingCoordinator::updateAfterCompositingChange()
     if (WebLayer* scrollingWebLayer = frameView ? toWebLayer(frameView->layerForScrolling()) : 0) {
         scrollingWebLayer->setBounds(frameView->contentsSize());
         // If there is a fullscreen element, set the scroll clip layer to 0 so main frame won't scroll.
-        Element* fullscreenElement = FullscreenElementStack::fullscreenElementFrom(*(m_page->mainFrame()->document()));
-        if (fullscreenElement)
+        Document* mainFrameDocument = m_page->mainFrame()->document();
+        Element* fullscreenElement = FullscreenElementStack::fullscreenElementFrom(*mainFrameDocument);
+        if (fullscreenElement && fullscreenElement != mainFrameDocument->documentElement())
             scrollingWebLayer->setScrollClipLayer(0);
         else
             scrollingWebLayer->setScrollClipLayer(toWebLayer(frameView->layerForContainer()));

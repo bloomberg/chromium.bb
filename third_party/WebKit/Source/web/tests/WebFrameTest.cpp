@@ -5351,6 +5351,30 @@ TEST_F(WebFrameTest, FullscreenLayerNonScrollable)
     ASSERT_TRUE(webScrollLayer->scrollable());
 }
 
+TEST_F(WebFrameTest, FullscreenMainFrameScrollable)
+{
+    FakeCompositingWebViewClient client;
+    registerMockedHttpURLLoad("fullscreen_div.html");
+    FrameTestHelpers::WebViewHelper webViewHelper;
+    int viewportWidth = 640;
+    int viewportHeight = 480;
+    WebViewImpl* webViewImpl = webViewHelper.initializeAndLoad(m_baseURL + "fullscreen_div.html", true, 0, &client, &configueCompositingWebView);
+    webViewImpl->resize(WebSize(viewportWidth, viewportHeight));
+    webViewImpl->layout();
+
+    Document* document = toWebLocalFrameImpl(webViewImpl->mainFrame())->frame()->document();
+    WebCore::UserGestureIndicator gesture(WebCore::DefinitelyProcessingUserGesture);
+    document->documentElement()->webkitRequestFullscreen();
+    webViewImpl->willEnterFullScreen();
+    webViewImpl->didEnterFullScreen();
+    webViewImpl->layout();
+
+    // Verify that the main frame is still scrollable.
+    ASSERT_TRUE(WebCore::FullscreenElementStack::isFullScreen(*document));
+    WebLayer* webScrollLayer = webViewImpl->compositor()->scrollLayer()->platformLayer();
+    ASSERT_TRUE(webScrollLayer->scrollable());
+}
+
 TEST_F(WebFrameTest, RenderBlockPercentHeightDescendants)
 {
     registerMockedHttpURLLoad("percent-height-descendants.html");
