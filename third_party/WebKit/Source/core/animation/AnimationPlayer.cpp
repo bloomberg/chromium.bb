@@ -298,6 +298,7 @@ bool AnimationPlayer::hasPendingActivity() const
 
 void AnimationPlayer::stop()
 {
+    m_finished = true;
     m_pendingFinishedEvent = nullptr;
 }
 

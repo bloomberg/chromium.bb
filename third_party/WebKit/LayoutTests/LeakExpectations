@@ -38,8 +38,6 @@ crbug.com/327574 permissionclient/image-permissions.html [ Leak ]
 crbug.com/327574 http/tests/permissionclient/image-permissions.html [ Leak ]
 crbug.com/327574 fast/loader/data-images-with-images-disabled.html [ Leak ]
 
-crbug.com/379032 web-animations-api/player-finish-sample-only.html [ Leak ]
-
 # -----------------------------------------------------------------
 # Untriaged but known leaks which may be false positives.
 # -----------------------------------------------------------------
