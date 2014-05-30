@@ -1037,7 +1037,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kDisableDistanceFieldText,
     switches::kDisableFastTextAutosizing,
     switches::kDisableFileSystem,
-    switches::kDisableFiltersOverIPC,
     switches::kDisableGpuCompositing,
     switches::kDisableGpuVsync,
     switches::kDisableLowResTiling,

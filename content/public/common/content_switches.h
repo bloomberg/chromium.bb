@@ -52,7 +52,6 @@ CONTENT_EXPORT extern const char kDisableEmbeddedSharedWorker[];
 CONTENT_EXPORT extern const char kDisableExperimentalWebGL[];
 CONTENT_EXPORT extern const char kDisableFastTextAutosizing[];
 CONTENT_EXPORT extern const char kDisableFileSystem[];
-CONTENT_EXPORT extern const char kDisableFiltersOverIPC[];
 CONTENT_EXPORT extern const char kDisableFlash3d[];
 CONTENT_EXPORT extern const char kDisableFlashStage3d[];
 CONTENT_EXPORT extern const char kDisableGestureTapHighlight[];

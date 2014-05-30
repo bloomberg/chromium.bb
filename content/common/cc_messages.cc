@@ -4,7 +4,6 @@
 
 #include "content/common/cc_messages.h"
 
-#include "base/command_line.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/output/filter_operations.h"
 #include "content/public/common/common_param_traits.h"
@@ -216,8 +215,7 @@ void ParamTraits<cc::FilterOperations>::Log(
 void ParamTraits<skia::RefPtr<SkImageFilter> >::Write(
     Message* m, const param_type& p) {
   SkImageFilter* filter = p.get();
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  if (filter && !command_line.HasSwitch(switches::kDisableFiltersOverIPC)) {
+  if (filter) {
     skia::RefPtr<SkData> data =
         skia::AdoptRef(SkValidatingSerializeFlattenable(filter));
     m->WriteData(static_cast<const char*>(data->data()), data->size());
@@ -232,9 +230,7 @@ bool ParamTraits<skia::RefPtr<SkImageFilter> >::Read(
   int length = 0;
   if (!m->ReadData(iter, &data, &length))
     return false;
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  if ((length > 0) &&
-      !command_line.HasSwitch(switches::kDisableFiltersOverIPC)) {
+  if (length > 0) {
     SkFlattenable* flattenable = SkValidatingDeserializeFlattenable(
         data, length, SkImageFilter::GetFlattenableType());
     *r = skia::AdoptRef(static_cast<SkImageFilter*>(flattenable));
