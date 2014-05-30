@@ -73,7 +73,8 @@ class MetricsServiceTest : public testing::Test {
     // TODO(blundell): Remove this code once MetricsService no longer creates
     // ChromeOSMetricsProvider. Also remove the #include of login_state.h.
     // (http://crbug.com/375776)
-    chromeos::LoginState::Initialize();
+    if (!chromeos::LoginState::IsInitialized())
+      chromeos::LoginState::Initialize();
 #endif  // defined(OS_CHROMEOS)
   }
 
