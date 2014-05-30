@@ -1295,6 +1295,9 @@
                 'test/ppapi/ppapi_test.cc',
                 'test/ppapi/ppapi_test.h',
               ],
+              'dependencies!': [
+                '../ppapi/ppapi_internal.gyp:ppapi_tests',
+              ]
             }],
             ['input_speech==0', {
               'sources/': [
