@@ -47,7 +47,7 @@ DecodingImageGenerator::~DecodingImageGenerator()
 {
 }
 
-SkData* DecodingImageGenerator::refEncodedData()
+SkData* DecodingImageGenerator::onRefEncodedData()
 {
     // FIXME: If the image has been clipped or scaled, do not return the original
     // encoded data, since on playback it will not be known how the clipping/scaling
@@ -55,19 +55,18 @@ SkData* DecodingImageGenerator::refEncodedData()
     RefPtr<SharedBuffer> buffer = nullptr;
     bool allDataReceived = false;
     m_frameGenerator->copyData(&buffer, &allDataReceived);
-    if (buffer && allDataReceived) {
+    if (buffer && allDataReceived)
         return SkData::NewWithCopy(buffer->data(), buffer->size());
-    }
     return 0;
 }
 
-bool DecodingImageGenerator::getInfo(SkImageInfo* info)
+bool DecodingImageGenerator::onGetInfo(SkImageInfo* info)
 {
     *info = m_imageInfo;
     return true;
 }
 
-bool DecodingImageGenerator::getPixels(const SkImageInfo& info, void* pixels, size_t rowBytes)
+bool DecodingImageGenerator::onGetPixels(const SkImageInfo& info, void* pixels, size_t rowBytes, SkPMColor ctable[], int* ctableCount)
 {
     TRACE_EVENT1("webkit", "DecodingImageGenerator::getPixels", "index", static_cast<int>(m_frameIndex));
 
