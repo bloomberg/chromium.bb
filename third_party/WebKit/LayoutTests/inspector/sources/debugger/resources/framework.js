@@ -66,3 +66,47 @@ Framework.doSomeAsyncChainCalls = function(callback)
     });
     Framework.schedule(func2);
 }
+
+Framework.appendChild = function(parent, child)
+{
+    parent.appendChild(child);
+}
+
+Framework.sendXHR = function(url)
+{
+    var request = new XMLHttpRequest();
+    request.open("GET", url, true);
+    request.send();
+}
+
+Framework.addEventListener = function(element, eventType, listener, capture)
+{
+    function Framework_eventListener()
+    {
+        if (listener)
+            listener();
+    }
+
+    function Framework_remover()
+    {
+        element.removeEventListener(eventType, Framework_eventListener, capture);
+    }
+
+    element.addEventListener(eventType, Framework_eventListener, capture);
+    return Framework_remover;
+}
+
+Framework.bind = function(func, thisObject, var_args)
+{
+    var args = Array.prototype.slice.call(arguments, 2);
+
+    function Framework_bound(var_args)
+    {
+        return func.apply(thisObject, args.concat(Array.prototype.slice.call(arguments)));
+    }
+    Framework_bound.toString = function()
+    {
+        return "Framework_bound: " + func;
+    };
+    return Framework_bound;
+}

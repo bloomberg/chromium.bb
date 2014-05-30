@@ -100,7 +100,7 @@ function test()
                 InspectorTest.addResult("Set 'Subtree Modified' DOM breakpoint on rootElement.");
                 InspectorTest.evaluateInPageWithTimeout("appendElement('rootElement', 'childElement')");
                 InspectorTest.addResult("Append childElement to rootElement.");
-                waitUntilPausedAndDumpStack(next);
+                InspectorTest.waitUntilPausedAndDumpStackAndResume(next);
             }
         },
 
@@ -109,7 +109,7 @@ function test()
             InspectorTest.addResult("Test that 'Subtree Modified' breakpoint is hit when appending a grandchild.");
             InspectorTest.evaluateInPageWithTimeout("appendElement('childElement', 'grandchildElement')");
             InspectorTest.addResult("Append grandchildElement to childElement.");
-            waitUntilPausedAndDumpStack(next);
+            InspectorTest.waitUntilPausedAndDumpStackAndResume(next);
         },
 
         function testRemoveChild(next)
@@ -117,7 +117,7 @@ function test()
             InspectorTest.addResult("Test that 'Subtree Modified' breakpoint is hit when removing a child.");
             InspectorTest.evaluateInPageWithTimeout("removeElement('grandchildElement')");
             InspectorTest.addResult("Remove grandchildElement.");
-            waitUntilPausedAndDumpStack(next);
+            InspectorTest.waitUntilPausedAndDumpStackAndResume(next);
         },
 
         function testInnerHTML(next)
@@ -125,7 +125,7 @@ function test()
             InspectorTest.addResult("Test that 'Subtree Modified' breakpoint is hit exactly once when setting innerHTML.");
             InspectorTest.evaluateInPageWithTimeout("setInnerHTML('childElement', '<br><br>')");
             InspectorTest.addResult("Set childElement.innerHTML.");
-            waitUntilPausedAndDumpStack(step2);
+            InspectorTest.waitUntilPausedAndDumpStackAndResume(step2);
 
             function step2()
             {
@@ -149,7 +149,7 @@ function test()
             InspectorTest.addResult("Set 'Attribute Modified' DOM breakpoint on rootElement.");
             InspectorTest.evaluateInPageWithTimeout("modifyAttribute('rootElement', 'data-test', 'foo')");
             InspectorTest.addResult("Modify rootElement data-test attribute.");
-            waitUntilPausedAndDumpStack(step2);
+            InspectorTest.waitUntilPausedAndDumpStackAndResume(step2);
 
             function step2(callFrames)
             {
@@ -165,7 +165,7 @@ function test()
             InspectorTest.addResult("Set 'Attribute Modified' DOM breakpoint on rootElement.");
             InspectorTest.evaluateInPageWithTimeout("modifyAttrNode('rootElement', 'data-test', 'bar')");
             InspectorTest.addResult("Modify rootElement data-test attribute.");
-            waitUntilPausedAndDumpStack(step2);
+            InspectorTest.waitUntilPausedAndDumpStackAndResume(step2);
 
             function step2(callFrames)
             {
@@ -181,7 +181,7 @@ function test()
             InspectorTest.addResult("Set 'Attribute Modified' DOM breakpoint on rootElement.");
             InspectorTest.evaluateInPageWithTimeout("setAttrNode('rootElement', 'data-foo', 'bar')");
             InspectorTest.addResult("Modify rootElement data-foo attribute.");
-            waitUntilPausedAndDumpStack(step2);
+            InspectorTest.waitUntilPausedAndDumpStackAndResume(step2);
 
             function step2(callFrames)
             {
@@ -197,7 +197,7 @@ function test()
             InspectorTest.addResult("Set 'Attribute Modified' DOM breakpoint on rootElement.");
             InspectorTest.evaluateInPageWithTimeout("modifyStyleAttribute('rootElement', 'color', 'green')");
             InspectorTest.addResult("Modify rootElement style.color attribute.");
-            waitUntilPausedAndDumpStack(step2);
+            InspectorTest.waitUntilPausedAndDumpStackAndResume(step2);
 
             function step2(callFrames)
             {
@@ -217,7 +217,7 @@ function test()
                 InspectorTest.addResult("Set 'Node Removed' DOM breakpoint on elementToRemove.");
                 InspectorTest.evaluateInPageWithTimeout("removeElement('elementToRemove')");
                 InspectorTest.addResult("Remove elementToRemove.");
-                waitUntilPausedAndDumpStack(next);
+                InspectorTest.waitUntilPausedAndDumpStackAndResume(next);
             }
         },
 
@@ -243,7 +243,7 @@ function test()
             {
                 InspectorTest.evaluateInPageWithTimeout("appendElement('rootElement', 'childElement')");
                 InspectorTest.addResult("Append childElement to rootElement.");
-                waitUntilPausedAndDumpStack(next);
+                InspectorTest.waitUntilPausedAndDumpStackAndResume(next);
             }
         },
 
@@ -259,7 +259,7 @@ function test()
                 InspectorTest.addResult("Set 'Subtree Modified' DOM breakpoint on author shadow root.");
                 InspectorTest.evaluateInPageWithTimeout("appendElementToAuthorShadowRoot('childElement')");
                 InspectorTest.addResult("Append childElement to author shadow root.");
-                waitUntilPausedAndDumpStack(next);
+                InspectorTest.waitUntilPausedAndDumpStackAndResume(next);
             }
         },
 
@@ -287,49 +287,11 @@ function test()
             {
                 InspectorTest.evaluateInPageWithTimeout("appendElementToAuthorShadowTree('outerElement', 'childElement')");
                 InspectorTest.addResult("Append childElement to outerElement.");
-                waitUntilPausedAndDumpStack(next);
+                InspectorTest.waitUntilPausedAndDumpStackAndResume(next);
             }
         }
 
     ]);
-
-    function waitUntilPausedAndDumpStack(callback)
-    {
-        InspectorTest.waitUntilPaused(paused);
-        InspectorTest.addSniffer(WebInspector.CallStackSidebarPane.prototype, "setStatus", setStatus);
-
-        var caption;
-        var callFrames;
-
-        function setStatus(status)
-        {
-            if (typeof status === "string")
-                caption = status;
-            else
-                caption = status.textContent;
-            if (callFrames)
-                step1();
-        }
-
-        function paused(frames)
-        {
-            callFrames = frames;
-            if (typeof caption === "string")
-                step1();
-        }
-
-        function step1()
-        {
-            InspectorTest.captureStackTrace(callFrames);
-            InspectorTest.addResult(caption);
-            InspectorTest.runAfterPendingDispatches(step2);
-        }
-
-        function step2()
-        {
-            InspectorTest.resumeExecution(InspectorTest.safeWrap(callback));
-        }
-    }
 }
 
 </script>

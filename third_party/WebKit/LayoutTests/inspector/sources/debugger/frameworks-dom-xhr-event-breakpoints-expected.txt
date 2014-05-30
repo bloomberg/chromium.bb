@@ -1,0 +1,29 @@
+Tests framework black-boxing on DOM, XHR and Event breakpoints.
+
+
+Debugger was enabled.
+
+Running: testDOMBreakpoint
+Call stack:
+  * 0) Framework.appendChild (framework.js:72)
+    1) appendElement (frameworks-dom-xhr-event-breakpoints.html:14)
+    2)  (:1)
+Paused on a "Subtree Modified" breakpoint set on div#rootElement, because a new child was added to that node.
+
+Running: testXHRBreakpoint
+Call stack:
+  * 0) Framework.sendXHR (framework.js:79)
+    1) sendXHR (frameworks-dom-xhr-event-breakpoints.html:19)
+    2)  (:1)
+Paused on a XMLHttpRequest.
+
+Running: testEventListenerBreakpoint
+Call stack:
+    0) testElementClicked (frameworks-dom-xhr-event-breakpoints.html:26)
+  * 1) Framework_bound (framework.js:105)
+  * 2) Framework_eventListener (framework.js:87)
+    3) addListenerAndClick (frameworks-dom-xhr-event-breakpoints.html:31)
+    4)  (:1)
+Paused on a "click" Event Listener.
+Debugger was disabled.
+

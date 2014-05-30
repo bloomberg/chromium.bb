@@ -1,0 +1,85 @@
+<html>
+<head>
+<script src="../../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../../http/tests/inspector/elements-test.js"></script>
+<script src="../../../http/tests/inspector/debugger-test.js"></script>
+<script src="resources/framework.js"></script>
+<script>
+
+function appendElement(parentId, childId)
+{
+    var child = document.createElement("div");
+    child.id = childId;
+    var parent = document.getElementById(parentId);
+    Framework.appendChild(parent, child);
+}
+
+function sendXHR(url)
+{
+    Framework.sendXHR(url);
+}
+
+function addListenerAndClick()
+{
+    function testElementClicked()
+    {
+        return 0;
+    }
+
+    var button = document.getElementById("test");
+    Framework.addEventListener(button, "click", Framework.bind(testElementClicked, null), true);
+    button.click();
+}
+
+function test()
+{
+    var frameworkRegexString = "/framework\\.js$";
+    WebInspector.experimentsSettings.frameworksDebuggingSupport.enableForTest();
+    WebInspector.settings.skipStackFramesSwitch.set(true);
+    WebInspector.settings.skipStackFramesPattern.set(frameworkRegexString);
+
+    InspectorTest.setQuiet(true);
+
+    InspectorTest.runDebuggerTestSuite([
+        function testDOMBreakpoint(next)
+        {
+            InspectorTest.nodeWithId("rootElement", step1);
+
+            function step1(node)
+            {
+                var pane = WebInspector.domBreakpointsSidebarPane;
+                pane._setBreakpoint(node, pane._breakpointTypes.SubtreeModified, true);
+                InspectorTest.evaluateInPageWithTimeout("appendElement('rootElement', 'childElement')");
+                InspectorTest.waitUntilPausedAndDumpStackAndResume(next);
+            }
+        },
+
+        function testXHRBreakpoint(next)
+        {
+            var pane = WebInspector.panels.sources.sidebarPanes.xhrBreakpoints;
+            pane._setBreakpoint("foo", true);
+            InspectorTest.evaluateInPageWithTimeout("sendXHR('/foo?a=b')");
+            InspectorTest.waitUntilPausedAndDumpStackAndResume(next);
+        },
+
+        function testEventListenerBreakpoint(next)
+        {
+            var pane = WebInspector.panels.sources.sidebarPanes.eventListenerBreakpoints;
+            pane._setBreakpoint("listener:click");
+            InspectorTest.evaluateInPageWithTimeout("addListenerAndClick()");
+            InspectorTest.waitUntilPausedAndDumpStackAndResume(next);
+        }
+    ]);
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests framework black-boxing on DOM, XHR and Event breakpoints.
+</p>
+<div id="rootElement"></div>
+<input type=button id="test"></input>
+</body>
+</html>

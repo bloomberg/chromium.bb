@@ -54,23 +54,9 @@ function test()
 
     function didPause(callFrames, reason, breakpointIds, asyncStackTrace)
     {
-        InspectorTest.captureStackTrace(callFrames, asyncStackTrace);
-
-        InspectorTest.addResult("\nVisible call stack:");
-
-        var callStackPane = WebInspector.panels.sources.sidebarPanes.callstack;
-        var placards = callStackPane.placards;
-        var lastPlacard = null;
-        for (var i = 0, index = 0; i < placards.length; ++i) {
-            var placard = placards[i];
-            if (placard.isHidden())
-                continue;
-            if (lastPlacard && placard._asyncPlacard !== lastPlacard._asyncPlacard)
-                InspectorTest.addResult("    [" + placard._asyncPlacard.title + "]");
-            InspectorTest.addResult("    " + (++index) + ") " + placard.title + " (" + placard.subtitle + ")");
-            lastPlacard = placard;
-        }
-
+        InspectorTest.captureStackTrace(callFrames, asyncStackTrace, { "dropFrameworkCallFrames": false });
+        InspectorTest.addResult("\nPrinting visible call stack:");
+        InspectorTest.captureStackTrace(callFrames, asyncStackTrace, { "dropFrameworkCallFrames": true });
         InspectorTest.completeDebuggerTest();
     }
 }

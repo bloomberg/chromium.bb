@@ -152,6 +152,46 @@ InspectorTest.resumeExecution = function(callback)
     InspectorTest.waitUntilResumed(callback);
 };
 
+InspectorTest.waitUntilPausedAndDumpStackAndResume = function(callback, options)
+{
+    InspectorTest.waitUntilPaused(paused);
+    InspectorTest.addSniffer(WebInspector.CallStackSidebarPane.prototype, "setStatus", setStatus);
+
+    var caption;
+    var callFrames;
+    var asyncStackTrace;
+
+    function setStatus(status)
+    {
+        if (typeof status === "string")
+            caption = status;
+        else
+            caption = status.textContent;
+        if (callFrames)
+            step1();
+    }
+
+    function paused(frames, reason, breakpointIds, async)
+    {
+        callFrames = frames;
+        asyncStackTrace = async;
+        if (typeof caption === "string")
+            step1();
+    }
+
+    function step1()
+    {
+        InspectorTest.captureStackTrace(callFrames, asyncStackTrace, options);
+        InspectorTest.addResult(caption);
+        InspectorTest.runAfterPendingDispatches(step2);
+    }
+
+    function step2()
+    {
+        InspectorTest.resumeExecution(InspectorTest.safeWrap(callback));
+    }
+};
+
 InspectorTest.captureStackTrace = function(callFrames, asyncStackTrace, options)
 {
     InspectorTest.addResult(InspectorTest.captureStackTraceIntoString(callFrames, asyncStackTrace, options));
@@ -164,9 +204,13 @@ InspectorTest.captureStackTraceIntoString = function(callFrames, asyncStackTrace
 
     function printCallFrames(callFrames)
     {
+        var printed = 0;
         for (var i = 0; i < callFrames.length; i++) {
             var frame = callFrames[i];
             var script = WebInspector.debuggerModel.scriptForId(frame.location().scriptId);
+            var isFramework = script.isFramework();
+            if (options.dropFrameworkCallFrames && isFramework)
+                continue;
             var url;
             var lineNumber;
             if (script) {
@@ -176,11 +220,12 @@ InspectorTest.captureStackTraceIntoString = function(callFrames, asyncStackTrace
                 url = "(internal script)";
                 lineNumber = "(line number)";
             }
-            var s = "    " + i + ") " + frame.functionName + " (" + url + (options.dropLineNumbers ? "" : ":" + lineNumber) + ")";
+            var s = (isFramework ? "  * " : "    ") + (printed++) + ") " + frame.functionName + " (" + url + (options.dropLineNumbers ? "" : ":" + lineNumber) + ")";
             results.push(s);
             if (options.printReturnValue && frame.returnValue())
                 results.push("       <return>: " + frame.returnValue().description);
         }
+        return printed;
     }
 
     results.push("Call stack:");
@@ -188,7 +233,9 @@ InspectorTest.captureStackTraceIntoString = function(callFrames, asyncStackTrace
 
     while (asyncStackTrace) {
         results.push("    [" + (asyncStackTrace.description || "Async Call") + "]");
-        printCallFrames(WebInspector.DebuggerModel.CallFrame.fromPayloadArray(WebInspector.targetManager.activeTarget(), asyncStackTrace.callFrames));
+        var printed = printCallFrames(WebInspector.DebuggerModel.CallFrame.fromPayloadArray(WebInspector.targetManager.activeTarget(), asyncStackTrace.callFrames));
+        if (!printed)
+            results.pop();
         if (asyncStackTrace.callFrames.peekLast().functionName === "testFunction")
             break;
         asyncStackTrace = asyncStackTrace.asyncStackTrace;

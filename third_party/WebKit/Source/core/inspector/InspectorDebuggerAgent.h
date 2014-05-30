@@ -195,7 +195,6 @@ protected:
 
 private:
     SkipPauseRequest shouldSkipExceptionPause();
-    SkipPauseRequest shouldSkipBreakpointPause();
     SkipPauseRequest shouldSkipStepPause();
 
     void cancelPauseOnNextStatement();
@@ -236,6 +235,7 @@ private:
     InspectorFrontend::Debugger::Reason::Enum m_breakReason;
     RefPtr<JSONObject> m_breakAuxData;
     bool m_javaScriptPauseScheduled;
+    bool m_debuggerStepScheduled;
     Listener* m_listener;
 
     int m_skipStepInCount;
