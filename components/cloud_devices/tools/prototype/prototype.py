@@ -39,9 +39,9 @@ _API_CLIENT_FILE = 'config.json'
 _API_DISCOVERY_FILE = 'discovery.json'
 _DEVICE_STATE_FILE = 'device_state.json'
 
-_DEVICE_SETUP_SSID = "GCDPrototype.camera.privet"
-_DEVICE_NAME = "GCD Prototype"
-_DEVICE_TYPE = "camera"
+_DEVICE_SETUP_SSID = 'GCDPrototype.camera.privet'
+_DEVICE_NAME = 'GCD Prototype'
+_DEVICE_TYPE = 'camera'
 _DEVICE_PORT = 8080
 
 DEVICE_DRAFT = {
@@ -388,6 +388,7 @@ class MDnsWrapper(object):
     self.run_command()
 
   def get_command(self):
+    """Return the command to run mDNS daemon."""
     cmd = [
         'avahi-publish',
         '-s', '--subtype=_%s._sub._privet._tcp' % _DEVICE_TYPE,
@@ -490,11 +491,11 @@ class CloudDevice(object):
         'oauthClientId': self.oauth_client_id
     }
 
-    self.gcd.registrationTickets().patch(registration_ticke_id=token,
+    self.gcd.registrationTickets().patch(registrationTicketId=token,
                                          body=resource).execute()
 
     final_ticket = self.gcd.registrationTickets().finalize(
-        registration_ticke_id=token).execute()
+        registrationTicketId=token).execute()
 
     authorization_code = final_ticket['robotAccountAuthorizationCode']
     flow = OAuth2WebServerFlow(self.oauth_client_id, self.oauth_secret,
@@ -599,25 +600,6 @@ def post_provisioning(f):
   return inner
 
 
-def extract_encryption_params(f):
-  """Extracts privet encription header and pass as parameter into function."""
-  def inner(self, request, response_func, *args):
-    """Extracts privet encription header."""
-    try:
-      client_id = request.headers['X-Privet-Client-ID']
-      if 'X-Privet-Encrypted' in request.headers:
-        encrypted = (request.headers['X-Privet-Encrypted'].lower() == 'true')
-      else:
-        encrypted = False
-    except (KeyError, TypeError):
-      print 'Missing client parameters in headers'
-      response_func(400, {'error': 'missing_client_parameters'})
-      return True
-
-    return f(self, request, response_func, client_id, encrypted, *args)
-  return inner
-
-
 class WebRequestHandler(WifiHandler.Delegate, CloudDevice.Delegate):
   """Handles HTTP requests."""
 
@@ -647,8 +629,8 @@ class WebRequestHandler(WifiHandler.Delegate, CloudDevice.Delegate):
   class DummySession(object):
     """Handles sessions."""
 
-    def __init__(self, client_id):
-      self.client_id = client_id
+    def __init__(self, session_id):
+      self.session_id = session_id
       self.key = None
 
     def do_step(self, step, package):
@@ -663,11 +645,41 @@ class WebRequestHandler(WifiHandler.Delegate, CloudDevice.Delegate):
     def encrypt(self, plain_data):
       return self.key + json.dumps(plain_data)
 
-    def get_client_id(self):
-      return self.client_id
+    def get_session_id(self):
+      return self.session_id
 
     def get_stype(self):
       return 'dummy'
+
+    def get_status(self):
+      return 'complete'
+
+  class EmptySession(object):
+    """Handles sessions."""
+
+    def __init__(self, session_id):
+      self.session_id = session_id
+      self.key = None
+
+    def do_step(self, step, package):
+      if step != 0 or package != '':
+        raise self.InvalidStepError()
+      return ''
+
+    def decrypt(self, cyphertext):
+      return json.loads(cyphertext)
+
+    def encrypt(self, plain_data):
+      return json.dumps(plain_data)
+
+    def get_session_id(self):
+      return self.session_id
+
+    def get_stype(self):
+      return 'empty'
+
+    def get_status(self):
+      return 'complete'
 
   def __init__(self, ioloop, state):
     if os.path.exists('on_real_device'):
@@ -694,7 +706,7 @@ class WebRequestHandler(WifiHandler.Delegate, CloudDevice.Delegate):
         '/deprecated/wifi/switch': self.do_wifi_switch,
         '/privet/v2/session/handshake': self.do_session_handshake,
         '/privet/v2/session/cancel': self.do_session_cancel,
-        '/privet/v2/session/api': self.do_session_api,
+        '/privet/v2/session/call': self.do_session_call,
         '/privet/v2/setup/start':
             self.get_insecure_api_handler(self.do_secure_setup_start),
         '/privet/v2/setup/cancel':
@@ -706,7 +718,8 @@ class WebRequestHandler(WifiHandler.Delegate, CloudDevice.Delegate):
     self.current_session = None
     self.session_cancel_callback = None
     self.session_handlers = {
-        'dummy': self.DummySession
+        'dummy': self.DummySession,
+        'empty': self.EmptySession
     }
 
     self.secure_handlers = {
@@ -732,24 +745,24 @@ class WebRequestHandler(WifiHandler.Delegate, CloudDevice.Delegate):
 
   @get_only
   def do_ping(self, unused_request, response_func):
-    response_func(200, '{ "pong": true }')
+    response_func(200, {'pong': True})
     return True
 
   @get_only
-  def do_public_info(self, request, unused_response_func):
+  def do_public_info(self, unused_request, response_func):
     info = dict(self.get_common_info().items() + {
         'stype': self.session_handlers.keys()}.items())
-    self.real_send_response(request, 200, info)
+    response_func(200, info)
 
   @post_provisioning
   @get_only
-  def do_info(self, request, unused_response_func):
+  def do_info(self, unused_request, response_func):
     specific_info = {
         'x-privet-token': 'sample',
         'api': sorted(self.handlers.keys())
     }
     info = dict(self.get_common_info().items() + specific_info.items())
-    self.real_send_response(request, 200, info)
+    response_func(200, info)
     return True
 
   @post_only
@@ -762,7 +775,7 @@ class WebRequestHandler(WifiHandler.Delegate, CloudDevice.Delegate):
       passw = data['passw']
     except KeyError:
       print 'Malformed content: ' + repr(data)
-      self.real_send_response(request, 400, {'error': 'invalid_params'})
+      response_func(400, {'error': 'invalidParams'})
       traceback.print_exc()
       return True
 
@@ -771,107 +784,116 @@ class WebRequestHandler(WifiHandler.Delegate, CloudDevice.Delegate):
     # TODO(noamsml): Return to normal wifi after timeout (cancelable)
     return True
 
-  @extract_encryption_params
   @post_only
-  @wifi_provisioning
-  def do_session_handshake(self, request, unused_response_func, client_id,
-                           unused_encrypted):
+  def do_session_handshake(self, request, response_func):
     """Handles /privet/v2/session/handshake requests."""
+
     data = json.loads(request.body)
     try:
-      stype = data['stype']
+      stype = data['keyExchangeType']
       step = data['step']
       package = base64.b64decode(data['package'])
+      session_id = data['sessionID']
     except (KeyError, TypeError):
       traceback.print_exc()
       print 'Malformed content: ' + repr(data)
-      self.real_send_response(request, 400, {'error': 'invalid_params'})
+      response_func(400, {'error': 'invalidParams'})
       return True
 
     if self.current_session:
-      if client_id != self.current_session.get_client_id():
-        self.real_send_response(request, 500, {'error': 'in_session'})
+      if session_id != self.current_session.get_session_id():
+        response_func(400, {'error': 'maxSessionsExceeded'})
         return True
       if stype != self.current_session.get_stype():
-        self.real_send_response(request, 500, {'error': 'invalid_stype'})
+        response_func(400, {'error': 'unsupportedKeyExchangeType'})
         return True
     else:
       if stype not in self.session_handlers:
-        self.real_send_response(request, 500, {'error': 'invalid_stype'})
+        response_func(400, {'error': 'unsupportedKeyExchangeType'})
         return True
-      self.current_session = self.session_handlers[stype](client_id)
+      self.current_session = self.session_handlers[stype](session_id)
 
     try:
       output_package = self.current_session.do_step(step, package)
     except self.InvalidStepError:
-      self.real_send_response(request, 500, {'error': 'invalid_step'})
+      response_func(400, {'error': 'invalidStep'})
       return True
     except self.InvalidPackageError:
-      self.real_send_response(request, 500, {'error': 'invalid_step'})
+      response_func(400, {'error': 'invalidPackage'})
       return True
 
     return_obj = {
-        'stype': stype,
+        'status': self.current_session.get_status(),
         'step': step,
-        'package': base64.b64encode(output_package)
+        'package': base64.b64encode(output_package),
+        'sessionID': session_id
     }
-    self.real_send_response(request, 200, return_obj)
+    response_func(200, return_obj)
     self.post_session_cancel()
     return True
 
-  @extract_encryption_params
   @post_only
-  @wifi_provisioning
-  def do_session_cancel(self, request, unused_response_func, client_id,
-                        unused_encrypted):
-    if client_id == self.current_session.client_id:
+  def do_session_cancel(self, request, response_func):
+    """Handles /privet/v2/session/cancel requests."""
+    data = json.loads(request.body)
+    try:
+      session_id = data['sessionID']
+    except KeyError:
+      response_func(400, {'error': 'invalidParams'})
+      return True
+
+    if self.current_session and session_id == self.current_session.session_id:
       self.current_session = None
       if self.session_cancel_callback:
         self.session_cancel_callback.cancel()
+      response_func(200, {'status': 'cancelled', 'sessionID': session_id})
     else:
-      self.real_send_response(request, 400, {'error': 'invalid_client_id'})
+      response_func(400, {'error': 'unknownSession'})
     return True
 
-  @extract_encryption_params
   @post_only
-  @wifi_provisioning
-  def do_session_api(self, request, response_func, client_id, encrypted):
-    """Handles /privet/v2/session/api requests."""
-    if not encrypted:
-      response_func(400, {'error': 'encryption_required'})
+  def do_session_call(self, request, response_func):
+    """Handles /privet/v2/session/call requests."""
+    try:
+      session_id = request.headers['X-Privet-SessionID']
+    except KeyError:
+      response_func(400, {'error': 'unknownSession'})
       return True
 
-    if not self.current_session or client_id != self.current_session.client_id:
-      response_func(405, {'error': 'invalid_client_id'})
+    if (not self.current_session or
+        session_id != self.current_session.session_id):
+      response_func(400, {'error': 'unknownSession'})
       return True
 
     try:
       decrypted = self.current_session.decrypt(request.body)
     except self.EncryptionError:
-      response_func(415, {'error': 'decryption_failed'})
+      response_func(400, {'error': 'encryptionError'})
       return True
 
     def encrypted_response_func(code, data):
       if 'error' in data:
-        self.encrypted_send_response(request, code, data)
+        self.encrypted_send_response(request, code, dict(data.items() + {
+            'api': decrypted['api']
+        }.items()))
       else:
         self.encrypted_send_response(request, code, {
             'api': decrypted['api'],
-            'response': data
+            'output': data
         })
 
-    if ('api' not in decrypted or 'request' not in decrypted or
-        type(decrypted['request']) != dict):
+    if ('api' not in decrypted or 'input' not in decrypted or
+        type(decrypted['input']) != dict):
       print 'Invalid params in API stage'
-      encrypted_response_func(400, {'error': 'invalid_params'})
+      encrypted_response_func(200, {'error': 'invalidParams'})
       return True
 
     if decrypted['api'] in self.secure_handlers:
       self.secure_handlers[decrypted['api']](request,
                                              encrypted_response_func,
-                                             decrypted['request'])
+                                             decrypted['input'])
     else:
-      encrypted_response_func(400, {'error': 'unknown_api'})
+      encrypted_response_func(200, {'error': 'unknownApi'})
 
     self.post_session_cancel()
     return True
@@ -925,16 +947,20 @@ class WebRequestHandler(WifiHandler.Delegate, CloudDevice.Delegate):
         token = params['registration']['ticketID']
     except KeyError:
       print 'Invalid params in bootstrap stage'
-      response_func(400, {'error': 'invalid_params'})
+      response_func(400, {'error': 'invalidParams'})
       return
 
-    if has_wifi:
-      self.wifi_handler.switch_to_wifi(ssid, passw, token)
-    elif token:
-      self.cloud_device.register(token)
-    else:
-      response_func(400, {'error': 'invalid_params'})
-      return
+    try:
+      if has_wifi:
+        self.wifi_handler.switch_to_wifi(ssid, passw, token)
+      elif token:
+        self.cloud_device.register(token)
+      else:
+        response_func(400, {'error': 'invalidParams'})
+        return
+    except HttpError:
+      pass  # TODO(noamsml): store error message in this case
+
     self.do_secure_status(unused_request, response_func, params)
 
   def do_secure_setup_cancel(self, request, response_func, params):
@@ -945,23 +971,27 @@ class WebRequestHandler(WifiHandler.Delegate, CloudDevice.Delegate):
       self.real_send_response(request, code, data)
 
     handled = False
+    print '[INFO] %s %s' % (request.method, request.path)
     if request.path in self.handlers:
       handled = self.handlers[request.path](request, response_func)
 
     if not handled:
-      self.real_send_response(request, 404, {'error': 'Not found'})
+      self.real_send_response(request, 404, {'error': 'notFound'})
 
   def encrypted_send_response(self, request, code, data):
-    self.real_send_response(request, code,
-                            self.current_session.encrypt(data))
+    self.raw_send_response(request, code,
+                           self.current_session.encrypt(data))
 
   def real_send_response(self, request, code, data):
     data = json.dumps(data, sort_keys=True, indent=2, separators=(',', ': '))
+    data += '\n'
+    self.raw_send_response(request, code, data)
+
+  def raw_send_response(self, request, code, data):
     request.write('HTTP/1.1 %d Maybe OK\n' % code)
     request.write('Content-Type: application/json\n')
-    request.write('Content-Length: %d\n' % len(data))
-    write_data = '\n%s' % data
-    request.write(str(write_data))
+    request.write('Content-Length: %s\n\n' % len(data))
+    request.write(data)
     request.finish()
 
   def device_state(self):
