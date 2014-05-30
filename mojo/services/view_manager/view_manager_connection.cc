@@ -34,7 +34,8 @@ void GetDescendants(const Node* node, std::vector<const Node*>* nodes) {
 
 ViewManagerConnection::ViewManagerConnection(RootNodeManager* root_node_manager)
     : root_node_manager_(root_node_manager),
-      id_(0) {
+      id_(root_node_manager_->GetAndAdvanceNextConnectionId()),
+      delete_on_connection_error_(false) {
 }
 
 ViewManagerConnection::~ViewManagerConnection() {
@@ -87,7 +88,7 @@ const View* ViewManagerConnection::GetView(const ViewId& id) const {
 }
 
 void ViewManagerConnection::SetRoots(const Array<TransportNodeId>& node_ids) {
-  DCHECK_EQ(0, id_);  // Only valid before connection established.
+  DCHECK(roots_.empty());
   NodeIdSet roots;
   for (size_t i = 0; i < node_ids.size(); ++i) {
     DCHECK(GetNode(NodeIdFromTransportId(node_ids[i])));
@@ -198,8 +199,8 @@ void ViewManagerConnection::ProcessViewDeleted(const ViewId& view,
 }
 
 void ViewManagerConnection::OnConnectionError() {
-  // TODO(sky): figure out if need to cleanup here if this
-  // ViewManagerConnection is the result of a Connect().
+  if (delete_on_connection_error_)
+    delete this;
 }
 
 bool ViewManagerConnection::CanRemoveNodeFromParent(const Node* node) const {
@@ -614,10 +615,6 @@ void ViewManagerConnection::OnNodeViewReplaced(const Node* node,
 }
 
 void ViewManagerConnection::OnConnectionEstablished() {
-  DCHECK_EQ(0, id_);  // Should only get OnConnectionEstablished() once.
-
-  id_ = root_node_manager_->GetAndAdvanceNextConnectionId();
-
   root_node_manager_->AddConnection(this);
 
   std::vector<const Node*> to_send;

@@ -13,6 +13,14 @@ struct INode {
   mojo.Rect bounds;
 };
 
+// IViewManagerInit is responsible for launching the client that controls the
+// root node. mojo::view_manager returns an instance of this. All other
+// connections are established by the client this creates.
+interface IViewManagerInit {
+  // Connects to |url| creating a connection that has the roots |nodes|.
+  Connect(string url) => (bool success);
+};
+
 // Functions that mutate the hierarchy take a change id. This is an ever
 // increasing integer used to identify the change. Every hierarchy change
 // increases this value. The server only accepts changes where the supplied

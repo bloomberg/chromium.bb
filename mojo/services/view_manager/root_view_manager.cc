@@ -8,8 +8,8 @@
 #include "mojo/aura/screen_mojo.h"
 #include "mojo/aura/window_tree_host_mojo.h"
 #include "mojo/public/cpp/application/connect.h"
-#include "mojo/public/interfaces/service_provider/service_provider.mojom.h"
 #include "mojo/services/view_manager/root_node_manager.h"
+#include "mojo/services/view_manager/root_view_manager_delegate.h"
 #include "ui/aura/client/default_capture_client.h"
 #include "ui/aura/client/window_tree_client.h"
 #include "ui/aura/window.h"
@@ -48,8 +48,9 @@ class WindowTreeClientImpl : public aura::client::WindowTreeClient {
 };
 
 RootViewManager::RootViewManager(ServiceProvider* service_provider,
-                                 RootNodeManager* root_node)
-    : service_provider_(service_provider),
+                                 RootNodeManager* root_node,
+                                 RootViewManagerDelegate* delegate)
+    : delegate_(delegate),
       root_node_manager_(root_node),
       in_setup_(false) {
   screen_.reset(ScreenMojo::Create());
@@ -84,6 +85,8 @@ void RootViewManager::OnCompositorCreated() {
       new WindowTreeClientImpl(window_tree_host_->window()));
 
   window_tree_host_->Show();
+
+  delegate_->OnRootViewManagerWindowTreeHostCreated();
 }
 
 }  // namespace service

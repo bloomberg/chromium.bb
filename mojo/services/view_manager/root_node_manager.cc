@@ -33,15 +33,17 @@ RootNodeManager::Context::Context() {
 }
 
 RootNodeManager::Context::~Context() {
+  aura::Env::DeleteInstance();
 }
 
-RootNodeManager::RootNodeManager(ServiceProvider* service_provider)
+RootNodeManager::RootNodeManager(ServiceProvider* service_provider,
+                                 RootViewManagerDelegate* view_manager_delegate)
     : service_provider_(service_provider),
       next_connection_id_(1),
       next_server_change_id_(1),
       change_source_(kRootConnection),
       is_processing_delete_node_(false),
-      root_view_manager_(service_provider, this),
+      root_view_manager_(service_provider, this, view_manager_delegate),
       root_(this, RootNodeId()) {
 }
 
@@ -68,14 +70,16 @@ void RootNodeManager::RemoveConnection(ViewManagerConnection* connection) {
   connections_created_by_connect_.erase(connection);
 }
 
+void RootNodeManager::InitialConnect(const std::string& url) {
+  CHECK(connection_map_.empty());
+  Array<TransportNodeId> roots(0);
+  ConnectImpl(String::From(url), roots);
+}
+
 void RootNodeManager::Connect(const String& url,
                               const Array<TransportNodeId>& node_ids) {
-  MessagePipe pipe;
-  service_provider_->ConnectToService(url, pipe.handle1.Pass());
-  ViewManagerConnection* connection = new ViewManagerConnection(this);
-  connection->SetRoots(node_ids);
-  BindToPipe(connection, pipe.handle0.Pass());
-  connections_created_by_connect_.insert(connection);
+  CHECK_GT(node_ids.size(), 0u);
+  ConnectImpl(url, node_ids)->set_delete_on_connection_error();
 }
 
 ViewManagerConnection* RootNodeManager::GetConnection(
@@ -157,6 +161,18 @@ void RootNodeManager::FinishChange(ChangeType change_type) {
   is_processing_delete_node_ = false;
   if (change_type == CHANGE_TYPE_ADVANCE_SERVER_CHANGE_ID)
     next_server_change_id_++;
+}
+
+ViewManagerConnection* RootNodeManager::ConnectImpl(
+    const String& url,
+    const Array<TransportNodeId>& node_ids) {
+  MessagePipe pipe;
+  service_provider_->ConnectToService(url, pipe.handle1.Pass());
+  ViewManagerConnection* connection = new ViewManagerConnection(this);
+  connection->SetRoots(node_ids);
+  BindToPipe(connection, pipe.handle0.Pass());
+  connections_created_by_connect_.insert(connection);
+  return connection;
 }
 
 void RootNodeManager::OnNodeHierarchyChanged(const Node* node,

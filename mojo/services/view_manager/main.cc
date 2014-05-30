@@ -3,8 +3,7 @@
 // found in the LICENSE file.
 
 #include "mojo/public/cpp/application/application.h"
-#include "mojo/services/view_manager/root_node_manager.h"
-#include "mojo/services/view_manager/view_manager_connection.h"
+#include "mojo/services/view_manager/view_manager_init_connection.h"
 
 namespace mojo {
 namespace view_manager {
@@ -16,21 +15,21 @@ class ViewManagerApp : public Application {
   virtual ~ViewManagerApp() {}
 
   virtual void Initialize() MOJO_OVERRIDE {
-    root_node_manager_.reset(new RootNodeManager(service_provider()));
-    AddService<ViewManagerConnection>(root_node_manager_.get());
+    // TODO(sky): this needs some sort of authentication as well as making sure
+    // we only ever have one active at a time.
+    AddService<ViewManagerInitConnection>(service_provider());
   }
 
  private:
-  scoped_ptr<RootNodeManager> root_node_manager_;
   DISALLOW_COPY_AND_ASSIGN(ViewManagerApp);
 };
 
-}
-}
+}  // namespace service
+}  // namespace view_manager
 
 // static
 Application* Application::Create() {
   return new mojo::view_manager::service::ViewManagerApp();
 }
 
-}
+}  // namespace mojo

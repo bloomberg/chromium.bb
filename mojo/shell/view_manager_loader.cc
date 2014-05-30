@@ -5,8 +5,7 @@
 #include "mojo/shell/view_manager_loader.h"
 
 #include "mojo/public/cpp/application/application.h"
-#include "mojo/services/view_manager/root_node_manager.h"
-#include "mojo/services/view_manager/view_manager_connection.h"
+#include "mojo/services/view_manager/view_manager_init_connection.h"
 
 namespace mojo {
 namespace shell {
@@ -21,13 +20,11 @@ void ViewManagerLoader::LoadService(
     ServiceManager* manager,
     const GURL& url,
     ScopedMessagePipeHandle service_provider_handle) {
+  // TODO(sky): this needs some sort of authentication as well as making sure
+  // we only ever have one active at a time.
   scoped_ptr<Application> app(new Application(service_provider_handle.Pass()));
-  if (!root_node_manager_.get()) {
-    root_node_manager_.reset(
-        new view_manager::service::RootNodeManager(app->service_provider()));
-  }
-  app->AddService<view_manager::service::ViewManagerConnection>(
-      root_node_manager_.get());
+  app->AddService<view_manager::service::ViewManagerInitConnection>(
+      app->service_provider());
   apps_.push_back(app.release());
 }
 

@@ -31,12 +31,14 @@ namespace view_manager {
 namespace service {
 
 class RootNodeManager;
+class RootViewManagerDelegate;
 
 // RootViewManager binds the root node to an actual display.
 class MOJO_VIEW_MANAGER_EXPORT RootViewManager {
  public:
   RootViewManager(ServiceProvider* service_provider,
-                  RootNodeManager* root_node);
+                  RootNodeManager* root_node,
+                  RootViewManagerDelegate* delegate);
   virtual ~RootViewManager();
 
   // See description above field for details.
@@ -45,7 +47,8 @@ class MOJO_VIEW_MANAGER_EXPORT RootViewManager {
  private:
   void OnCompositorCreated();
 
-  ServiceProvider* service_provider_;
+  RootViewManagerDelegate* delegate_;
+
   RootNodeManager* root_node_manager_;
 
   GLES2Initializer gles_initializer_;

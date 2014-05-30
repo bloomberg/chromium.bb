@@ -10,11 +10,6 @@
 #include "mojo/service_manager/service_loader.h"
 
 namespace mojo {
-namespace view_manager {
-namespace service {
-class RootNodeManager;
-}
-}
 
 class Application;
 
@@ -35,7 +30,6 @@ class ViewManagerLoader : public ServiceLoader {
   virtual void OnServiceError(ServiceManager* manager,
                               const GURL& url) OVERRIDE;
 
-  scoped_ptr<view_manager::service::RootNodeManager> root_node_manager_;
   ScopedVector<Application> apps_;
 
   DISALLOW_COPY_AND_ASSIGN(ViewManagerLoader);

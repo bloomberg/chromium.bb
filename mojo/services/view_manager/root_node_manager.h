@@ -23,6 +23,7 @@ class ServiceProvider;
 namespace view_manager {
 namespace service {
 
+class RootViewManagerDelegate;
 class View;
 class ViewManagerConnection;
 
@@ -54,7 +55,8 @@ class MOJO_VIEW_MANAGER_EXPORT RootNodeManager : public NodeDelegate {
     DISALLOW_COPY_AND_ASSIGN(ScopedChange);
   };
 
-  explicit RootNodeManager(ServiceProvider* service_provider);
+  RootNodeManager(ServiceProvider* service_provider,
+                  RootViewManagerDelegate* view_manager_delegate);
   virtual ~RootNodeManager();
 
   // Returns the id for the next ViewManagerConnection.
@@ -67,6 +69,12 @@ class MOJO_VIEW_MANAGER_EXPORT RootNodeManager : public NodeDelegate {
   void AddConnection(ViewManagerConnection* connection);
   void RemoveConnection(ViewManagerConnection* connection);
 
+  // Establishes the initial client. Similar to Connect(), but the resulting
+  // client is allowed to do anything.
+  void InitialConnect(const std::string& url);
+
+  // See description of IViewManager::Connect() for details. This assumes
+  // |node_ids| has been validated.
   void Connect(const String& url, const Array<TransportNodeId>& node_ids);
 
   // Returns the connection by id.
@@ -122,6 +130,10 @@ class MOJO_VIEW_MANAGER_EXPORT RootNodeManager : public NodeDelegate {
   bool IsChangeSource(TransportConnectionId connection_id) const {
     return connection_id == change_source_;
   }
+
+  // Implementation of the two connect variants.
+  ViewManagerConnection* ConnectImpl(const String& url,
+                                     const Array<TransportNodeId>& node_ids);
 
   // Overridden from NodeDelegate:
   virtual void OnNodeHierarchyChanged(const Node* node,

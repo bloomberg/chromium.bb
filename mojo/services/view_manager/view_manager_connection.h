@@ -43,6 +43,10 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerConnection
   explicit ViewManagerConnection(RootNodeManager* root_node_manager);
   virtual ~ViewManagerConnection();
 
+  // Used to mark this connection as originating from a call to
+  // IViewManager::Connect(). When set OnConnectionError() deletes |this|.
+  void set_delete_on_connection_error() { delete_on_connection_error_ = true; }
+
   TransportConnectionId id() const { return id_; }
 
   // Returns the Node with the specified id.
@@ -185,9 +189,8 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerConnection
 
   RootNodeManager* root_node_manager_;
 
-  // Id of this connection as assigned by RootNodeManager. Assigned in
-  // OnConnectionEstablished().
-  TransportConnectionId id_;
+  // Id of this connection as assigned by RootNodeManager.
+  const TransportConnectionId id_;
 
   NodeMap node_map_;
 
@@ -203,6 +206,9 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerConnection
   // value and all the nodes are deleted (by another connection), then an
   // invalid node is added here to ensure this connection is still constrained.
   NodeIdSet roots_;
+
+  // See description above setter.
+  bool delete_on_connection_error_;
 
   DISALLOW_COPY_AND_ASSIGN(ViewManagerConnection);
 };
