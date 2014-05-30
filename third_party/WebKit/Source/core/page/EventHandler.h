@@ -252,8 +252,6 @@ private:
 
     void invalidateClick();
 
-    Node* nodeUnderMouse() const;
-
     void updateMouseEventTargetNode(Node*, const PlatformMouseEvent&, bool fireMouseOverOut);
 
     MouseEventWithHitTestResults prepareMouseEvent(const HitTestRequest&, const PlatformMouseEvent&);
