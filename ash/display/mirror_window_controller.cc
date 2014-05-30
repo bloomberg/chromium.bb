@@ -23,6 +23,7 @@
 #include "ash/shell.h"
 #include "base/strings/stringprintf.h"
 #include "ui/aura/client/capture_client.h"
+#include "ui/aura/env.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_tree_host.h"
@@ -109,7 +110,7 @@ void MirrorWindowController::UpdateWindow(const DisplayInfo& display_info) {
     host->window()->AddChild(mirror_window);
     mirror_window->SetBounds(host->window()->bounds());
     mirror_window->Show();
-    reflector_ = ui::ContextFactory::GetInstance()->CreateReflector(
+    reflector_ = aura::Env::GetInstance()->context_factory()->CreateReflector(
         Shell::GetPrimaryRootWindow()->GetHost()->compositor(),
         mirror_window->layer());
   } else {
@@ -140,7 +141,7 @@ void MirrorWindowController::UpdateWindow() {
 void MirrorWindowController::Close() {
   if (ash_host_.get()) {
     aura::WindowTreeHost* host = ash_host_->AsWindowTreeHost();
-    ui::ContextFactory::GetInstance()->RemoveReflector(reflector_);
+    aura::Env::GetInstance()->context_factory()->RemoveReflector(reflector_);
     reflector_ = NULL;
     NoneCaptureClient* capture_client = static_cast<NoneCaptureClient*>(
         aura::client::GetCaptureClient(host->window()));

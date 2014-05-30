@@ -40,12 +40,10 @@ WindowTreeHostMojo::WindowTreeHostMojo(
 
   // The ContextFactory must exist before any Compositors are created.
   if (context_factory_) {
-    ui::ContextFactory::SetInstance(NULL);
     delete context_factory_;
     context_factory_ = NULL;
   }
   context_factory_ = new ContextFactoryMojo(pipe.handle1.Pass());
-  ui::ContextFactory::SetInstance(context_factory_);
   aura::Env::GetInstance()->set_context_factory(context_factory_);
   CHECK(context_factory_) << "No GL bindings.";
 }

@@ -123,7 +123,6 @@ int DemoMain() {
   // The ContextFactory must exist before any Compositors are created.
   scoped_ptr<ui::InProcessContextFactory> context_factory(
       new ui::InProcessContextFactory());
-  ui::ContextFactory::SetInstance(context_factory.get());
 
   // Create the message-loop here before creating the root window.
   base::MessageLoopForUI message_loop;
