@@ -125,7 +125,7 @@ FloatPoint RenderGeometryMap::mapToContainer(const FloatPoint& p, const RenderLa
         // therefore not necessarily expected to be correct here. This is ok,
         // because they will be recomputed if the layer becomes visible.
         if (!layer || !layer->subtreeIsInvisible()) {
-            FloatPoint rendererMappedResult = lastRenderer->localToAbsolute(p, m_mapCoordinatesFlags);
+            FloatPoint rendererMappedResult = lastRenderer->localToContainerPoint(p, container, m_mapCoordinatesFlags);
 
             ASSERT(roundedIntPoint(rendererMappedResult) == roundedIntPoint(result));
         }
