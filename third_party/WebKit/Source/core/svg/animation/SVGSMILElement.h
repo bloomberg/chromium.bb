@@ -186,8 +186,8 @@ private:
         String name() const { return m_name; }
         SMILTime offset() const { return m_offset; }
         int repeat() const { return m_repeat; }
-        Element* syncBase() const { return m_syncBase.get(); }
-        void setSyncBase(Element* element) { m_syncBase = element; }
+        SVGSMILElement* syncBase() const { return m_syncBase.get(); }
+        void setSyncBase(SVGSMILElement* element) { m_syncBase = element; }
         ConditionEventListener* eventListener() const { return m_eventListener.get(); }
         void setEventListener(PassRefPtr<ConditionEventListener>);
 
@@ -198,7 +198,7 @@ private:
         String m_name;
         SMILTime m_offset;
         int m_repeat;
-        RefPtrWillBeMember<Element> m_syncBase;
+        RefPtrWillBeMember<SVGSMILElement> m_syncBase;
         RefPtr<ConditionEventListener> m_eventListener;
     };
     bool parseCondition(const String&, BeginOrEnd beginOrEnd);

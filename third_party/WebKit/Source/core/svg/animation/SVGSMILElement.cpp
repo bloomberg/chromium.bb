@@ -205,7 +205,6 @@ SVGSMILElement::~SVGSMILElement()
     smilRepeatEventSender().cancelEvent(this);
     smilRepeatNEventSender().cancelEvent(this);
 #if !ENABLE(OILPAN)
-    // FIXME: Oilpan: Clear |m_syncBaseDependents| using weak processing.
     clearConditions();
 
     if (m_timeContainer && m_targetElement && hasValidAttributeName())
@@ -602,12 +601,14 @@ void SVGSMILElement::connectSyncBaseConditions()
         Condition* condition = m_conditions[n].get();
         if (condition->type() == Condition::Syncbase) {
             ASSERT(!condition->baseID().isEmpty());
-            condition->setSyncBase(treeScope().getElementById(AtomicString(condition->baseID())));
-            if (!condition->syncBase() || !isSVGSMILElement(*condition->syncBase())) {
+            Element* element = treeScope().getElementById(AtomicString(condition->baseID()));
+            if (!element || !isSVGSMILElement(*element)) {
                 condition->setSyncBase(0);
                 continue;
             }
-            toSVGSMILElement(condition->syncBase())->addSyncBaseDependent(this);
+            SVGSMILElement* svgSMILElement = toSVGSMILElement(element);
+            condition->setSyncBase(svgSMILElement);
+            svgSMILElement->addSyncBaseDependent(this);
         }
     }
 }
@@ -621,7 +622,7 @@ void SVGSMILElement::disconnectSyncBaseConditions()
         Condition* condition = m_conditions[n].get();
         if (condition->type() == Condition::Syncbase) {
             if (condition->syncBase())
-                toSVGSMILElement(condition->syncBase())->removeSyncBaseDependent(this);
+                condition->syncBase()->removeSyncBaseDependent(this);
             condition->setSyncBase(0);
         }
     }
@@ -1246,8 +1247,8 @@ bool SVGSMILElement::progress(SMILTime elapsed, SVGSMILElement* resultElement, b
 void SVGSMILElement::notifyDependentsIntervalChanged()
 {
     ASSERT(m_intervalBegin.isFinite());
-    DEFINE_STATIC_LOCAL(HashSet<SVGSMILElement*>, loopBreaker, ());
-    if (!loopBreaker.add(this).isNewEntry)
+    DEFINE_STATIC_LOCAL(OwnPtrWillBePersistent<WillBeHeapHashSet<RawPtrWillBeMember<SVGSMILElement> > >, loopBreaker, (adoptPtrWillBeNoop(new WillBeHeapHashSet<RawPtrWillBeMember<SVGSMILElement> >())));
+    if (!loopBreaker->add(this).isNewEntry)
         return;
 
     TimeDependentSet::iterator end = m_syncBaseDependents.end();
@@ -1256,7 +1257,7 @@ void SVGSMILElement::notifyDependentsIntervalChanged()
         dependent->createInstanceTimesFromSyncbase(this);
     }
 
-    loopBreaker.remove(this);
+    loopBreaker->remove(this);
 }
 
 void SVGSMILElement::createInstanceTimesFromSyncbase(SVGSMILElement* syncBase)
