@@ -39,8 +39,8 @@ namespace WebCore {
         const IntPoint& screenLocation() const { return m_screenLocation; }
         int clientX() const { return m_clientLocation.x(); }
         int clientY() const { return m_clientLocation.y(); }
-        int webkitMovementX() const { return m_movementDelta.x(); }
-        int webkitMovementY() const { return m_movementDelta.y(); }
+        int movementX() const { return m_movementDelta.x(); }
+        int movementY() const { return m_movementDelta.y(); }
         const LayoutPoint& clientLocation() const { return m_clientLocation; }
         virtual int layerX() OVERRIDE FINAL;
         virtual int layerY() OVERRIDE FINAL;

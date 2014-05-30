@@ -542,8 +542,8 @@ WebMouseEventBuilder::WebMouseEventBuilder(const Widget* widget, const WebCore::
         }
     } else
         button = WebMouseEvent::ButtonNone;
-    movementX = event.webkitMovementX();
-    movementY = event.webkitMovementY();
+    movementX = event.movementX();
+    movementY = event.movementY();
     clickCount = event.detail();
 }
 
