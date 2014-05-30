@@ -410,13 +410,16 @@ void MediaStreamDevicesController::Accept(bool update_content_setting) {
                                           &devices);
         }
 
-        // Tag this navigation entry with the granted permissions.
-        // This avoids repeated prompts for requests accessed via http.
-        content::NavigationEntry* navigation_entry =
-            web_contents_->GetController().GetVisibleEntry();
-        if (navigation_entry) {
-          SetMediaPermissionsForNavigationEntry(
-              navigation_entry, request_, audio_allowed, video_allowed);
+        // For pages accessed via http (not https), tag this navigation entry
+        // with the granted permissions.  This avoids repeated prompts for
+        // device access.
+        if (!IsSchemeSecure()) {
+          content::NavigationEntry* navigation_entry =
+              web_contents_->GetController().GetVisibleEntry();
+          if (navigation_entry) {
+            SetMediaPermissionsForNavigationEntry(
+                navigation_entry, request_, audio_allowed, video_allowed);
+          }
         }
         break;
       }
