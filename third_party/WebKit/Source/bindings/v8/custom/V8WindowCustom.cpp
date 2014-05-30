@@ -187,7 +187,7 @@ void V8Window::frameElementAttributeGetterCustom(const v8::PropertyCallbackInfo<
 
     // The wrapper for an <iframe> should get its prototype from the context of the frame it's in, rather than its own frame.
     // So, use its containing document as the creation context when wrapping.
-    v8::Handle<v8::Value> creationContext = toV8(&impl->frameElement()->document(), v8::Handle<v8::Object>(), info.GetIsolate());
+    v8::Handle<v8::Value> creationContext = toV8(&impl->frameElement()->document(), info.Holder(), info.GetIsolate());
     RELEASE_ASSERT(!creationContext.IsEmpty());
     v8::Handle<v8::Value> wrapper = toV8(impl->frameElement(), v8::Handle<v8::Object>::Cast(creationContext), info.GetIsolate());
     v8SetReturnValue(info, wrapper);

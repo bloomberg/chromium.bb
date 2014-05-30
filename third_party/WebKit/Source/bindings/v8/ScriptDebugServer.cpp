@@ -347,7 +347,7 @@ ScriptValue ScriptDebugServer::currentCallFramesInner(ScopeInfoDetails scopeDeta
         return ScriptValue();
 
     v8::Context::Scope contextScope(pausedContext);
-    return ScriptValue(ScriptState::from(pausedContext), toV8(currentCallFrame.release(), v8::Handle<v8::Object>(), pausedContext->GetIsolate()));
+    return ScriptValue(ScriptState::from(pausedContext), toV8(currentCallFrame.release(), pausedContext->Global(), pausedContext->GetIsolate()));
 }
 
 ScriptValue ScriptDebugServer::currentCallFrames()

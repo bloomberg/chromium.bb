@@ -338,7 +338,7 @@ void V8WindowShell::updateDocumentProperty()
 
     ScriptState::Scope scope(m_scriptState.get());
     v8::Handle<v8::Context> context = m_scriptState->context();
-    v8::Handle<v8::Value> documentWrapper = toV8(m_frame->document(), v8::Handle<v8::Object>(), context->GetIsolate());
+    v8::Handle<v8::Value> documentWrapper = toV8(m_frame->document(), context->Global(), context->GetIsolate());
     ASSERT(documentWrapper == m_document.newLocal(m_isolate) || m_document.isEmpty());
     if (m_document.isEmpty())
         updateDocumentWrapper(v8::Handle<v8::Object>::Cast(documentWrapper));
