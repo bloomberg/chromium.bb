@@ -31,7 +31,7 @@
 
 namespace WebCore {
 
-SetNodeAttributeCommand::SetNodeAttributeCommand(PassRefPtr<Element> element,
+SetNodeAttributeCommand::SetNodeAttributeCommand(PassRefPtrWillBeRawPtr<Element> element,
         const QualifiedName& attribute, const AtomicString& value)
     : SimpleEditCommand(element->document())
     , m_element(element)
@@ -51,6 +51,12 @@ void SetNodeAttributeCommand::doUnapply()
 {
     m_element->setAttribute(m_attribute, m_oldValue);
     m_oldValue = nullAtom;
+}
+
+void SetNodeAttributeCommand::trace(Visitor* visitor)
+{
+    visitor->trace(m_element);
+    SimpleEditCommand::trace(visitor);
 }
 
 } // namespace WebCore

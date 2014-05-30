@@ -32,7 +32,7 @@
 
 namespace WebCore {
 
-RemoveNodeCommand::RemoveNodeCommand(PassRefPtr<Node> node, ShouldAssumeContentIsAlwaysEditable shouldAssumeContentIsAlwaysEditable)
+RemoveNodeCommand::RemoveNodeCommand(PassRefPtrWillBeRawPtr<Node> node, ShouldAssumeContentIsAlwaysEditable shouldAssumeContentIsAlwaysEditable)
     : SimpleEditCommand(node->document())
     , m_node(node)
     , m_shouldAssumeContentIsAlwaysEditable(shouldAssumeContentIsAlwaysEditable)
@@ -57,12 +57,20 @@ void RemoveNodeCommand::doApply()
 
 void RemoveNodeCommand::doUnapply()
 {
-    RefPtr<ContainerNode> parent = m_parent.release();
-    RefPtr<Node> refChild = m_refChild.release();
+    RefPtrWillBeRawPtr<ContainerNode> parent = m_parent.release();
+    RefPtrWillBeRawPtr<Node> refChild = m_refChild.release();
     if (!parent || !parent->rendererIsEditable())
         return;
 
     parent->insertBefore(m_node.get(), refChild.get(), IGNORE_EXCEPTION);
+}
+
+void RemoveNodeCommand::trace(Visitor* visitor)
+{
+    visitor->trace(m_node);
+    visitor->trace(m_parent);
+    visitor->trace(m_refChild);
+    SimpleEditCommand::trace(visitor);
 }
 
 }

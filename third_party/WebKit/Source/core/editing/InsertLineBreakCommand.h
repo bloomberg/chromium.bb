@@ -32,9 +32,9 @@ namespace WebCore {
 
 class InsertLineBreakCommand FINAL : public CompositeEditCommand {
 public:
-    static PassRefPtr<InsertLineBreakCommand> create(Document& document)
+    static PassRefPtrWillBeRawPtr<InsertLineBreakCommand> create(Document& document)
     {
-        return adoptRef(new InsertLineBreakCommand(document));
+        return adoptRefWillBeNoop(new InsertLineBreakCommand(document));
     }
 
 private:

@@ -36,7 +36,7 @@ String XMLSerializer::serializeToString(Node* node, ExceptionState& exceptionSta
         return String();
     }
 
-    MarkupAccumulator accumulator(0, DoNotResolveURLs, 0, ForcedXML);
+    MarkupAccumulator accumulator(0, DoNotResolveURLs, nullptr, ForcedXML);
     return accumulator.serializeNodes(*node, IncludeNode);
 }
 

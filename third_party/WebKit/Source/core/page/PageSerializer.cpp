@@ -101,7 +101,7 @@ static const QualifiedName& frameOwnerURLAttributeName(const HTMLFrameOwnerEleme
 
 class SerializerMarkupAccumulator FINAL : public MarkupAccumulator {
 public:
-    SerializerMarkupAccumulator(PageSerializer*, const Document&, Vector<Node*>*);
+    SerializerMarkupAccumulator(PageSerializer*, const Document&, WillBeHeapVector<RawPtrWillBeMember<Node> >*);
     virtual ~SerializerMarkupAccumulator();
 
 protected:
@@ -115,8 +115,8 @@ private:
     const Document& m_document;
 };
 
-SerializerMarkupAccumulator::SerializerMarkupAccumulator(PageSerializer* serializer, const Document& document, Vector<Node*>* nodes)
-    : MarkupAccumulator(nodes, ResolveAllURLs)
+SerializerMarkupAccumulator::SerializerMarkupAccumulator(PageSerializer* serializer, const Document& document, WillBeHeapVector<RawPtrWillBeMember<Node> >* nodes)
+    : MarkupAccumulator(nodes, ResolveAllURLs, nullptr)
     , m_serializer(serializer)
     , m_document(document)
 {
@@ -208,14 +208,14 @@ void PageSerializer::serializeFrame(LocalFrame* frame)
         return;
     }
 
-    Vector<Node*> serializedNodes;
+    WillBeHeapVector<RawPtrWillBeMember<Node> > serializedNodes;
     SerializerMarkupAccumulator accumulator(this, document, &serializedNodes);
     String text = accumulator.serializeNodes(document, IncludeNode);
     CString frameHTML = textEncoding.normalizeAndEncode(text, WTF::EntitiesForUnencodables);
     m_resources->append(SerializedResource(url, document.suggestedMIMEType(), SharedBuffer::create(frameHTML.data(), frameHTML.length())));
     m_resourceURLs.add(url);
 
-    for (Vector<Node*>::iterator iter = serializedNodes.begin(); iter != serializedNodes.end(); ++iter) {
+    for (WillBeHeapVector<RawPtrWillBeMember<Node> >::iterator iter = serializedNodes.begin(); iter != serializedNodes.end(); ++iter) {
         ASSERT(*iter);
         Node& node = **iter;
         if (!node.isElementNode())

@@ -26,9 +26,20 @@ class VisibleSelectionTest : public ::testing::Test {
 protected:
     virtual void SetUp() OVERRIDE;
 
+    // Oilpan: wrapper object needed to be able to trace VisibleSelection.
+    class VisibleSelectionWrapper : public NoBaseWillBeGarbageCollectedFinalized<VisibleSelectionWrapper> {
+    public:
+        void trace(Visitor* visitor)
+        {
+            visitor->trace(m_selection);
+        }
+
+        VisibleSelection m_selection;
+    };
+
     Document& document() const { return m_dummyPageHolder->document(); }
     Text* textNode() const { return m_textNode.get(); }
-    VisibleSelection& selection() { return m_selection; }
+    VisibleSelection& selection() { return m_wrap->m_selection; }
 
     // Helper function to set the VisibleSelection base/extent.
     void setSelection(int base) { setSelection(base, base); }
@@ -36,20 +47,21 @@ protected:
     // Helper function to set the VisibleSelection base/extent.
     void setSelection(int base, int extend)
     {
-        m_selection.setBase(Position(textNode(), base));
-        m_selection.setExtent(Position(textNode(), extend));
+        m_wrap->m_selection.setBase(Position(textNode(), base));
+        m_wrap->m_selection.setExtent(Position(textNode(), extend));
     }
 
 private:
     OwnPtr<DummyPageHolder> m_dummyPageHolder;
-    RefPtr<Text> m_textNode;
-    VisibleSelection m_selection;
+    RefPtrWillBePersistent<Text> m_textNode;
+    OwnPtrWillBePersistent<VisibleSelectionWrapper> m_wrap;
 };
 
 void WebCore::VisibleSelectionTest::SetUp()
 {
     m_dummyPageHolder = DummyPageHolder::create(IntSize(800, 600));
     m_textNode = document().createTextNode(LOREM_IPSUM);
+    m_wrap = adoptPtrWillBeNoop(new VisibleSelectionWrapper());
     document().body()->appendChild(m_textNode.get());
 }
 

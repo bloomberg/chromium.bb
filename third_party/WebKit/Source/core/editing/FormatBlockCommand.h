@@ -40,9 +40,9 @@ class VisiblePosition;
 
 class FormatBlockCommand FINAL : public ApplyBlockElementCommand {
 public:
-    static PassRefPtr<FormatBlockCommand> create(Document& document, const QualifiedName& tagName)
+    static PassRefPtrWillBeRawPtr<FormatBlockCommand> create(Document& document, const QualifiedName& tagName)
     {
-        return adoptRef(new FormatBlockCommand(document, tagName));
+        return adoptRefWillBeNoop(new FormatBlockCommand(document, tagName));
     }
 
     virtual bool preservesTypingStyle() const OVERRIDE { return true; }
@@ -54,7 +54,7 @@ private:
     FormatBlockCommand(Document&, const QualifiedName& tagName);
 
     virtual void formatSelection(const VisiblePosition& startOfSelection, const VisiblePosition& endOfSelection) OVERRIDE;
-    virtual void formatRange(const Position& start, const Position& end, const Position& endOfSelection, RefPtr<Element>&) OVERRIDE;
+    virtual void formatRange(const Position& start, const Position& end, const Position& endOfSelection, RefPtrWillBeRawPtr<Element>&) OVERRIDE;
     virtual EditAction editingAction() const OVERRIDE { return EditActionFormatBlock; }
 
     bool m_didApply;

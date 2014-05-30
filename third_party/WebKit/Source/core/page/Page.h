@@ -241,7 +241,7 @@ private:
     PageAnimator m_animator;
     const OwnPtr<AutoscrollController> m_autoscrollController;
     const OwnPtr<Chrome> m_chrome;
-    const OwnPtr<DragCaretController> m_dragCaretController;
+    const OwnPtrWillBeMember<DragCaretController> m_dragCaretController;
     const OwnPtrWillBeMember<DragController> m_dragController;
     const OwnPtr<FocusController> m_focusController;
     const OwnPtr<ContextMenuController> m_contextMenuController;

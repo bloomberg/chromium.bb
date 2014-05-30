@@ -60,7 +60,13 @@ void SplitTextNodeContainingElementCommand::doApply()
         parent = toElement(firstChild);
     }
 
-    splitElement(parent, m_text);
+    splitElement(parent, m_text.get());
+}
+
+void SplitTextNodeContainingElementCommand::trace(Visitor* visitor)
+{
+    visitor->trace(m_text);
+    CompositeEditCommand::trace(visitor);
 }
 
 }

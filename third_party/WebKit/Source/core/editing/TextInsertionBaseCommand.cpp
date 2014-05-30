@@ -40,7 +40,7 @@ TextInsertionBaseCommand::TextInsertionBaseCommand(Document& document)
 {
 }
 
-void TextInsertionBaseCommand::applyTextInsertionCommand(LocalFrame* frame, PassRefPtr<TextInsertionBaseCommand> command, const VisibleSelection& selectionForInsertion, const VisibleSelection& endingSelection)
+void TextInsertionBaseCommand::applyTextInsertionCommand(LocalFrame* frame, PassRefPtrWillBeRawPtr<TextInsertionBaseCommand> command, const VisibleSelection& selectionForInsertion, const VisibleSelection& endingSelection)
 {
     bool changeSelection = selectionForInsertion != endingSelection;
     if (changeSelection) {

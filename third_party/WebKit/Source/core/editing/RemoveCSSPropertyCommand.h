@@ -35,19 +35,21 @@ class Element;
 
 class RemoveCSSPropertyCommand FINAL : public SimpleEditCommand {
 public:
-    static PassRefPtr<RemoveCSSPropertyCommand> create(Document& document, PassRefPtr<Element> element, CSSPropertyID property)
+    static PassRefPtrWillBeRawPtr<RemoveCSSPropertyCommand> create(Document& document, PassRefPtrWillBeRawPtr<Element> element, CSSPropertyID property)
     {
-        return adoptRef(new RemoveCSSPropertyCommand(document, element, property));
+        return adoptRefWillBeNoop(new RemoveCSSPropertyCommand(document, element, property));
     }
 
+    virtual void trace(Visitor*) OVERRIDE;
+
 private:
-    RemoveCSSPropertyCommand(Document&, PassRefPtr<Element>, CSSPropertyID);
+    RemoveCSSPropertyCommand(Document&, PassRefPtrWillBeRawPtr<Element>, CSSPropertyID);
     virtual ~RemoveCSSPropertyCommand();
 
     virtual void doApply() OVERRIDE;
     virtual void doUnapply() OVERRIDE;
 
-    RefPtr<Element> m_element;
+    RefPtrWillBeMember<Element> m_element;
     CSSPropertyID m_property;
     String m_oldValue;
     bool m_important;

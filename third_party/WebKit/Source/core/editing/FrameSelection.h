@@ -34,6 +34,7 @@
 #include "platform/Timer.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/geometry/LayoutRect.h"
+#include "platform/heap/Handle.h"
 #include "wtf/Noncopyable.h"
 
 namespace WebCore {
@@ -56,10 +57,17 @@ enum RevealExtentOption {
     DoNotRevealExtent
 };
 
-class FrameSelection FINAL : public VisibleSelection::ChangeObserver, private CaretBase {
+class FrameSelection FINAL : public NoBaseWillBeGarbageCollectedFinalized<FrameSelection>, public VisibleSelection::ChangeObserver, private CaretBase {
     WTF_MAKE_NONCOPYABLE(FrameSelection);
-    WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(FrameSelection);
 public:
+    static PassOwnPtrWillBeRawPtr<FrameSelection> create(LocalFrame* frame = 0)
+    {
+        return adoptPtrWillBeNoop(new FrameSelection(frame));
+    }
+    virtual ~FrameSelection();
+
     enum EAlteration { AlterationMove, AlterationExtend };
     enum CursorAlignOnScroll { AlignCursorOnScrollIfNeeded,
                                AlignCursorOnScrollAlways };
@@ -76,9 +84,6 @@ public:
     {
         return static_cast<EUserTriggered>(options & UserTriggered);
     }
-
-    explicit FrameSelection(LocalFrame* = 0);
-    virtual ~FrameSelection();
 
     Element* rootEditableElement() const { return m_selection.rootEditableElement(); }
     Element* rootEditableElementOrDocumentElement() const;
@@ -187,7 +192,7 @@ public:
     void notifyRendererOfSelectionChange(EUserTriggered);
 
     EditingStyle* typingStyle() const;
-    void setTypingStyle(PassRefPtr<EditingStyle>);
+    void setTypingStyle(PassRefPtrWillBeRawPtr<EditingStyle>);
     void clearTypingStyle();
 
     String selectedText() const;
@@ -205,7 +210,11 @@ public:
     // VisibleSelection::ChangeObserver interface.
     virtual void didChangeVisibleSelection() OVERRIDE;
 
+    virtual void trace(Visitor*) OVERRIDE;
+
 private:
+    explicit FrameSelection(LocalFrame*);
+
     enum EPositionType { START, END, BASE, EXTENT };
 
     void respondToNodeModification(Node&, bool baseRemoved, bool extentRemoved, bool startRemoved, bool endRemoved);
@@ -258,11 +267,11 @@ private:
     // The range specified by the user, which may not be visually canonicalized (hence "logical").
     // This will be invalidated if the underlying VisibleSelection changes. If that happens, this variable will
     // become null, in which case logical positions == visible positions.
-    RefPtrWillBePersistent<Range> m_logicalRange;
+    RefPtrWillBeMember<Range> m_logicalRange;
 
-    RefPtr<Node> m_previousCaretNode; // The last node which painted the caret. Retained for clearing the old caret when it moves.
+    RefPtrWillBeMember<Node> m_previousCaretNode; // The last node which painted the caret. Retained for clearing the old caret when it moves.
 
-    RefPtr<EditingStyle> m_typingStyle;
+    RefPtrWillBeMember<EditingStyle> m_typingStyle;
 
     Timer<FrameSelection> m_caretBlinkTimer;
     // The painted bounds of the caret in absolute coordinates
@@ -284,7 +293,7 @@ inline void FrameSelection::clearTypingStyle()
     m_typingStyle.clear();
 }
 
-inline void FrameSelection::setTypingStyle(PassRefPtr<EditingStyle> style)
+inline void FrameSelection::setTypingStyle(PassRefPtrWillBeRawPtr<EditingStyle> style)
 {
     m_typingStyle = style;
 }

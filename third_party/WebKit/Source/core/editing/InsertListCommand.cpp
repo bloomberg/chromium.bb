@@ -279,8 +279,8 @@ void InsertListCommand::unlistifyParagraph(const VisiblePosition& originalStart,
     }
     // When removing a list, we must always create a placeholder to act as a point of insertion
     // for the list content being removed.
-    RefPtr<Element> placeholder = createBreakElement(document());
-    RefPtr<Element> nodeToInsert = placeholder;
+    RefPtrWillBeRawPtr<Element> placeholder = createBreakElement(document());
+    RefPtrWillBeRawPtr<Element> nodeToInsert = placeholder;
     // If the content of the list item will be moved into another list, put it in a list item
     // so that we don't create an orphaned list child.
     if (enclosingList(listNode)) {
@@ -362,7 +362,7 @@ PassRefPtrWillBeRawPtr<HTMLElement> InsertListCommand::listifyParagraph(const Vi
             // Inserting the list into an empty paragraph that isn't held open
             // by a br or a '\n', will invalidate start and end.  Insert
             // a placeholder and then recompute start and end.
-            RefPtr<Node> placeholder = insertBlockPlaceholder(start.deepEquivalent());
+            RefPtrWillBeRawPtr<Node> placeholder = insertBlockPlaceholder(start.deepEquivalent());
             start = VisiblePosition(positionBeforeNode(placeholder.get()));
             end = start;
         }
@@ -400,6 +400,12 @@ PassRefPtrWillBeRawPtr<HTMLElement> InsertListCommand::listifyParagraph(const Vi
         mergeIdenticalElements(previousList, nextList);
 
     return listElement;
+}
+
+void InsertListCommand::trace(Visitor* visitor)
+{
+    visitor->trace(m_listElement);
+    CompositeEditCommand::trace(visitor);
 }
 
 }

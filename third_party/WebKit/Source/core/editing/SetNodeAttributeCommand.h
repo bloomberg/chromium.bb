@@ -33,18 +33,20 @@ namespace WebCore {
 
 class SetNodeAttributeCommand FINAL : public SimpleEditCommand {
 public:
-    static PassRefPtr<SetNodeAttributeCommand> create(PassRefPtr<Element> element, const QualifiedName& attribute, const AtomicString& value)
+    static PassRefPtrWillBeRawPtr<SetNodeAttributeCommand> create(PassRefPtrWillBeRawPtr<Element> element, const QualifiedName& attribute, const AtomicString& value)
     {
-        return adoptRef(new SetNodeAttributeCommand(element, attribute, value));
+        return adoptRefWillBeNoop(new SetNodeAttributeCommand(element, attribute, value));
     }
 
+    virtual void trace(Visitor*) OVERRIDE;
+
 private:
-    SetNodeAttributeCommand(PassRefPtr<Element>, const QualifiedName& attribute, const AtomicString& value);
+    SetNodeAttributeCommand(PassRefPtrWillBeRawPtr<Element>, const QualifiedName& attribute, const AtomicString& value);
 
     virtual void doApply() OVERRIDE;
     virtual void doUnapply() OVERRIDE;
 
-    RefPtr<Element> m_element;
+    RefPtrWillBeMember<Element> m_element;
     QualifiedName m_attribute;
     AtomicString m_value;
     AtomicString m_oldValue;

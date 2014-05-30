@@ -31,6 +31,7 @@
 #ifndef UndoStack_h
 #define UndoStack_h
 
+#include "platform/heap/Handle.h"
 #include "wtf/Deque.h"
 #include "wtf/Forward.h"
 
@@ -45,8 +46,8 @@ public:
 
     ~UndoStack();
 
-    void registerUndoStep(PassRefPtr<UndoStep>);
-    void registerRedoStep(PassRefPtr<UndoStep>);
+    void registerUndoStep(PassRefPtrWillBeRawPtr<UndoStep>);
+    void registerRedoStep(PassRefPtrWillBeRawPtr<UndoStep>);
     void didUnloadFrame(const LocalFrame&);
     bool canUndo() const;
     bool canRedo() const;
@@ -56,12 +57,14 @@ public:
 private:
     UndoStack();
 
-    bool m_inRedo;
+    typedef WillBeHeapDeque<RefPtrWillBeMember<UndoStep> > UndoStepStack;
+    typedef WillBePersistentHeapDeque<RefPtrWillBeMember<UndoStep> > WillBePersistentUndoStepStack;
 
-    typedef Deque<RefPtr<UndoStep> > UndoStepStack;
-    void filterOutUndoSteps(UndoStepStack&, const LocalFrame&);
-    UndoStepStack m_undoStack;
-    UndoStepStack m_redoStack;
+    void filterOutUndoSteps(WillBePersistentUndoStepStack&, const LocalFrame&);
+
+    bool m_inRedo;
+    WillBePersistentUndoStepStack m_undoStack;
+    WillBePersistentUndoStepStack m_redoStack;
 };
 
 } // namespace WebCore

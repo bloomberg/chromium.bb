@@ -117,7 +117,7 @@ enum DynamicRestyleFlags {
 // for a Node Vector that is used to store child Nodes of a given Node.
 // FIXME: Optimize the value.
 const int initialNodeVectorSize = 11;
-typedef Vector<RefPtr<Node>, initialNodeVectorSize> NodeVector;
+typedef WillBeHeapVector<RefPtrWillBeMember<Node>, initialNodeVectorSize> NodeVector;
 
 class ContainerNode : public Node {
 public:

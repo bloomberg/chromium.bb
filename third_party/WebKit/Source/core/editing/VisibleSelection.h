@@ -39,6 +39,7 @@ const EAffinity SEL_DEFAULT_AFFINITY = DOWNSTREAM;
 enum SelectionDirection { DirectionForward, DirectionBackward, DirectionRight, DirectionLeft };
 
 class VisibleSelection {
+    DISALLOW_ALLOCATION();
 public:
     VisibleSelection();
 
@@ -116,17 +117,20 @@ public:
     // or end is moved to a different position.
     //
     // Objects implementing |ChangeObserver| interface must outlive the VisibleSelection object.
-    class ChangeObserver {
+    class ChangeObserver : public WillBeGarbageCollectedMixin {
         WTF_MAKE_NONCOPYABLE(ChangeObserver);
     public:
         ChangeObserver();
         virtual ~ChangeObserver();
         virtual void didChangeVisibleSelection() = 0;
+        virtual void trace(Visitor*) { }
     };
 
     void setChangeObserver(ChangeObserver&);
     void clearChangeObserver();
     void didChange(); // Fire the change observer, if any.
+
+    void trace(Visitor*);
 
 #ifndef NDEBUG
     void debugPosition() const;
@@ -156,7 +160,9 @@ private:
 
     EAffinity m_affinity;           // the upstream/downstream affinity of the caret
 
-    ChangeObserver* m_changeObserver;
+    // Oilpan: this reference has a lifetime that is at least as long
+    // as this object.
+    RawPtrWillBeMember<ChangeObserver> m_changeObserver;
 
     // these are cached, can be recalculated by validate()
     SelectionType m_selectionType; // None, Caret, Range

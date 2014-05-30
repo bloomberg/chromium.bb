@@ -32,20 +32,22 @@ namespace WebCore {
 
 class RemoveNodeCommand FINAL : public SimpleEditCommand {
 public:
-    static PassRefPtr<RemoveNodeCommand> create(PassRefPtr<Node> node, ShouldAssumeContentIsAlwaysEditable shouldAssumeContentIsAlwaysEditable)
+    static PassRefPtrWillBeRawPtr<RemoveNodeCommand> create(PassRefPtrWillBeRawPtr<Node> node, ShouldAssumeContentIsAlwaysEditable shouldAssumeContentIsAlwaysEditable)
     {
-        return adoptRef(new RemoveNodeCommand(node, shouldAssumeContentIsAlwaysEditable));
+        return adoptRefWillBeNoop(new RemoveNodeCommand(node, shouldAssumeContentIsAlwaysEditable));
     }
 
+    virtual void trace(Visitor*) OVERRIDE;
+
 private:
-    explicit RemoveNodeCommand(PassRefPtr<Node>, ShouldAssumeContentIsAlwaysEditable);
+    explicit RemoveNodeCommand(PassRefPtrWillBeRawPtr<Node>, ShouldAssumeContentIsAlwaysEditable);
 
     virtual void doApply() OVERRIDE;
     virtual void doUnapply() OVERRIDE;
 
-    RefPtr<Node> m_node;
-    RefPtr<ContainerNode> m_parent;
-    RefPtr<Node> m_refChild;
+    RefPtrWillBeMember<Node> m_node;
+    RefPtrWillBeMember<ContainerNode> m_parent;
+    RefPtrWillBeMember<Node> m_refChild;
     ShouldAssumeContentIsAlwaysEditable m_shouldAssumeContentIsAlwaysEditable;
 };
 

@@ -78,14 +78,14 @@ public:
     void setCompositionType(TextCompositionType type) { m_compositionType = type; }
 
 private:
-    static PassRefPtr<TypingCommand> create(Document& document, ETypingCommand command, const String& text = "", Options options = 0, TextGranularity granularity = CharacterGranularity)
+    static PassRefPtrWillBeRawPtr<TypingCommand> create(Document& document, ETypingCommand command, const String& text = "", Options options = 0, TextGranularity granularity = CharacterGranularity)
     {
-        return adoptRef(new TypingCommand(document, command, text, options, granularity, TextCompositionNone));
+        return adoptRefWillBeNoop(new TypingCommand(document, command, text, options, granularity, TextCompositionNone));
     }
 
-    static PassRefPtr<TypingCommand> create(Document& document, ETypingCommand command, const String& text, Options options, TextCompositionType compositionType)
+    static PassRefPtrWillBeRawPtr<TypingCommand> create(Document& document, ETypingCommand command, const String& text, Options options, TextCompositionType compositionType)
     {
-        return adoptRef(new TypingCommand(document, command, text, options, CharacterGranularity, compositionType));
+        return adoptRefWillBeNoop(new TypingCommand(document, command, text, options, CharacterGranularity, compositionType));
     }
 
     TypingCommand(Document&, ETypingCommand, const String& text, Options, TextGranularity, TextCompositionType);
@@ -94,7 +94,7 @@ private:
     bool isOpenForMoreTyping() const { return m_openForMoreTyping; }
     void closeTyping() { m_openForMoreTyping = false; }
 
-    static PassRefPtr<TypingCommand> lastTypingCommandIfStillOpenForTyping(LocalFrame*);
+    static PassRefPtrWillBeRawPtr<TypingCommand> lastTypingCommandIfStillOpenForTyping(LocalFrame*);
 
     virtual void doApply() OVERRIDE;
     virtual EditAction editingAction() const OVERRIDE;

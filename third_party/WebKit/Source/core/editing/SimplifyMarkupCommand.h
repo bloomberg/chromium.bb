@@ -32,19 +32,21 @@ namespace WebCore {
 
 class SimplifyMarkupCommand FINAL : public CompositeEditCommand {
 public:
-    static PassRefPtr<SimplifyMarkupCommand> create(Document& document, Node* firstNode, Node* nodeAfterLast)
+    static PassRefPtrWillBeRawPtr<SimplifyMarkupCommand> create(Document& document, Node* firstNode, Node* nodeAfterLast)
     {
-        return adoptRef(new SimplifyMarkupCommand(document, firstNode, nodeAfterLast));
+        return adoptRefWillBeNoop(new SimplifyMarkupCommand(document, firstNode, nodeAfterLast));
     }
+
+    virtual void trace(Visitor*) OVERRIDE;
 
 private:
     SimplifyMarkupCommand(Document&, Node* firstNode, Node* nodeAfterLast);
 
     virtual void doApply() OVERRIDE;
-    int pruneSubsequentAncestorsToRemove(Vector<RefPtr<Node> >& nodesToRemove, size_t startNodeIndex);
+    int pruneSubsequentAncestorsToRemove(WillBeHeapVector<RefPtrWillBeMember<Node> >& nodesToRemove, size_t startNodeIndex);
 
-    RefPtr<Node> m_firstNode;
-    RefPtr<Node> m_nodeAfterLast;
+    RefPtrWillBeMember<Node> m_firstNode;
+    RefPtrWillBeMember<Node> m_nodeAfterLast;
 };
 
 } // namespace WebCore

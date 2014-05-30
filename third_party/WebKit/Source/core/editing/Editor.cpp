@@ -650,7 +650,7 @@ TriState Editor::selectionHasStyle(CSSPropertyID propertyID, const String& value
 
 String Editor::selectionStartCSSPropertyValue(CSSPropertyID propertyID)
 {
-    RefPtr<EditingStyle> selectionStyle = EditingStyle::styleAtSelectionStart(m_frame.selection().selection(),
+    RefPtrWillBeRawPtr<EditingStyle> selectionStyle = EditingStyle::styleAtSelectionStart(m_frame.selection().selection(),
         propertyID == CSSPropertyBackgroundColor);
     if (!selectionStyle || !selectionStyle->style())
         return String();
@@ -672,7 +672,7 @@ void Editor::outdent()
     IndentOutdentCommand::create(*m_frame.document(), IndentOutdentCommand::Outdent)->apply();
 }
 
-static void dispatchEditableContentChangedEvents(PassRefPtr<Element> startRoot, PassRefPtr<Element> endRoot)
+static void dispatchEditableContentChangedEvents(PassRefPtrWillBeRawPtr<Element> startRoot, PassRefPtrWillBeRawPtr<Element> endRoot)
 {
     if (startRoot)
         startRoot->dispatchEvent(Event::create(EventTypeNames::webkitEditableContentChanged), IGNORE_EXCEPTION);
@@ -680,7 +680,7 @@ static void dispatchEditableContentChangedEvents(PassRefPtr<Element> startRoot, 
         endRoot->dispatchEvent(Event::create(EventTypeNames::webkitEditableContentChanged), IGNORE_EXCEPTION);
 }
 
-void Editor::appliedEditing(PassRefPtr<CompositeEditCommand> cmd)
+void Editor::appliedEditing(PassRefPtrWillBeRawPtr<CompositeEditCommand> cmd)
 {
     EventQueueScope scope;
     m_frame.document()->updateLayout();
@@ -710,7 +710,7 @@ void Editor::appliedEditing(PassRefPtr<CompositeEditCommand> cmd)
     respondToChangedContents(newSelection);
 }
 
-void Editor::unappliedEditing(PassRefPtr<EditCommandComposition> cmd)
+void Editor::unappliedEditing(PassRefPtrWillBeRawPtr<EditCommandComposition> cmd)
 {
     EventQueueScope scope;
     m_frame.document()->updateLayout();
@@ -726,7 +726,7 @@ void Editor::unappliedEditing(PassRefPtr<EditCommandComposition> cmd)
     respondToChangedContents(newSelection);
 }
 
-void Editor::reappliedEditing(PassRefPtr<EditCommandComposition> cmd)
+void Editor::reappliedEditing(PassRefPtrWillBeRawPtr<EditCommandComposition> cmd)
 {
     EventQueueScope scope;
     m_frame.document()->updateLayout();
@@ -742,9 +742,9 @@ void Editor::reappliedEditing(PassRefPtr<EditCommandComposition> cmd)
     respondToChangedContents(newSelection);
 }
 
-PassOwnPtr<Editor> Editor::create(LocalFrame& frame)
+PassOwnPtrWillBeRawPtr<Editor> Editor::create(LocalFrame& frame)
 {
-    return adoptPtr(new Editor(frame));
+    return adoptPtrWillBeNoop(new Editor(frame));
 }
 
 Editor::Editor(LocalFrame& frame)
@@ -793,7 +793,7 @@ bool Editor::insertTextWithoutSendingTextEvent(const String& text, bool selectIn
     selection = selectionForCommand(triggeringEvent);
     if (selection.isContentEditable()) {
         if (Node* selectionStart = selection.start().deprecatedNode()) {
-            RefPtr<Document> document(selectionStart->document());
+            RefPtrWillBeRawPtr<Document> document(selectionStart->document());
 
             // Insert the text
             TypingCommand::Options options = 0;
@@ -1083,7 +1083,7 @@ void Editor::computeAndSetTypingStyle(StylePropertySet* style, EditAction editin
     }
 
     // Calculate the current typing style.
-    RefPtr<EditingStyle> typingStyle;
+    RefPtrWillBeRawPtr<EditingStyle> typingStyle = nullptr;
     if (m_frame.selection().typingStyle()) {
         typingStyle = m_frame.selection().typingStyle()->copy();
         typingStyle->overrideWithStyle(style);
@@ -1094,7 +1094,7 @@ void Editor::computeAndSetTypingStyle(StylePropertySet* style, EditAction editin
     typingStyle->prepareToApplyAt(m_frame.selection().selection().visibleStart().deepEquivalent(), EditingStyle::PreserveWritingDirection);
 
     // Handle block styles, substracting these from the typing style.
-    RefPtr<EditingStyle> blockStyle = typingStyle->extractAndRemoveBlockProperties();
+    RefPtrWillBeRawPtr<EditingStyle> blockStyle = typingStyle->extractAndRemoveBlockProperties();
     if (!blockStyle->isEmpty()) {
         ASSERT(m_frame.document());
         ApplyStyleCommand::create(*m_frame.document(), blockStyle.get(), editingAction)->apply();
@@ -1233,6 +1233,12 @@ void Editor::toggleOverwriteModeEnabled()
 {
     m_overwriteModeEnabled = !m_overwriteModeEnabled;
     frame().selection().setShouldShowBlockCursor(m_overwriteModeEnabled);
+}
+
+void Editor::trace(Visitor* visitor)
+{
+    visitor->trace(m_lastEditCommand);
+    visitor->trace(m_mark);
 }
 
 } // namespace WebCore

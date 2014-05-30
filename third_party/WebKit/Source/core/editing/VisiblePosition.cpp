@@ -790,6 +790,11 @@ bool isLastVisiblePositionInNode(const VisiblePosition &visiblePosition, const N
     return next.isNull() || !next.deepEquivalent().deprecatedNode()->isDescendantOf(node);
 }
 
+void VisiblePosition::trace(Visitor* visitor)
+{
+    visitor->trace(m_deepPosition);
+}
+
 }  // namespace WebCore
 
 #ifndef NDEBUG

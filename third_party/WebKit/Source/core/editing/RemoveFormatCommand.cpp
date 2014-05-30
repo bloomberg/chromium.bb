@@ -87,7 +87,7 @@ void RemoveFormatCommand::doApply()
     // Get the default style for this editable root, it's the style that we'll give the
     // content that we're operating on.
     Node* root = frame->selection().rootEditableElement();
-    RefPtr<EditingStyle> defaultStyle = EditingStyle::create(root);
+    RefPtrWillBeRawPtr<EditingStyle> defaultStyle = EditingStyle::create(root);
 
     // We want to remove everything but transparent background.
     // FIXME: We shouldn't access style().

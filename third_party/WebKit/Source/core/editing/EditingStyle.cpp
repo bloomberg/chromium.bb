@@ -578,9 +578,9 @@ void EditingStyle::clear()
     m_fontSizeDelta = NoFontDelta;
 }
 
-PassRefPtr<EditingStyle> EditingStyle::copy() const
+PassRefPtrWillBeRawPtr<EditingStyle> EditingStyle::copy() const
 {
-    RefPtr<EditingStyle> copy = EditingStyle::create();
+    RefPtrWillBeRawPtr<EditingStyle> copy = EditingStyle::create();
     if (m_mutableStyle)
         copy->m_mutableStyle = m_mutableStyle->mutableCopy();
     copy->m_shouldUseFixedDefaultFontSize = m_shouldUseFixedDefaultFontSize;
@@ -588,9 +588,9 @@ PassRefPtr<EditingStyle> EditingStyle::copy() const
     return copy;
 }
 
-PassRefPtr<EditingStyle> EditingStyle::extractAndRemoveBlockProperties()
+PassRefPtrWillBeRawPtr<EditingStyle> EditingStyle::extractAndRemoveBlockProperties()
 {
-    RefPtr<EditingStyle> blockProperties = EditingStyle::create();
+    RefPtrWillBeRawPtr<EditingStyle> blockProperties = EditingStyle::create();
     if (!m_mutableStyle)
         return blockProperties;
 
@@ -600,9 +600,9 @@ PassRefPtr<EditingStyle> EditingStyle::extractAndRemoveBlockProperties()
     return blockProperties;
 }
 
-PassRefPtr<EditingStyle> EditingStyle::extractAndRemoveTextDirection()
+PassRefPtrWillBeRawPtr<EditingStyle> EditingStyle::extractAndRemoveTextDirection()
 {
-    RefPtr<EditingStyle> textDirection = EditingStyle::create();
+    RefPtrWillBeRawPtr<EditingStyle> textDirection = EditingStyle::create();
     textDirection->m_mutableStyle = MutableStylePropertySet::create();
     textDirection->m_mutableStyle->setProperty(CSSPropertyUnicodeBidi, CSSValueEmbed, m_mutableStyle->propertyIsImportant(CSSPropertyUnicodeBidi));
     textDirection->m_mutableStyle->setProperty(CSSPropertyDirection, m_mutableStyle->getPropertyValue(CSSPropertyDirection),
@@ -944,7 +944,7 @@ void EditingStyle::prepareToApplyAt(const Position& position, ShouldPreserveWrit
     // ReplaceSelectionCommand::handleStyleSpans() requires that this function only removes the editing style.
     // If this function was modified in the future to delete all redundant properties, then add a boolean value to indicate
     // which one of editingStyleAtPosition or computedStyle is called.
-    RefPtr<EditingStyle> editingStyleAtPosition = EditingStyle::create(position, EditingPropertiesInEffect);
+    RefPtrWillBeRawPtr<EditingStyle> editingStyleAtPosition = EditingStyle::create(position, EditingPropertiesInEffect);
     StylePropertySet* styleAtPosition = editingStyleAtPosition->m_mutableStyle.get();
 
     RefPtrWillBeRawPtr<CSSValue> unicodeBidi = nullptr;
@@ -977,7 +977,7 @@ void EditingStyle::mergeTypingStyle(Document* document)
 {
     ASSERT(document);
 
-    RefPtr<EditingStyle> typingStyle = document->frame()->selection().typingStyle();
+    RefPtrWillBeRawPtr<EditingStyle> typingStyle = document->frame()->selection().typingStyle();
     if (!typingStyle || typingStyle == this)
         return;
 
@@ -1029,7 +1029,7 @@ static PassRefPtrWillBeRawPtr<MutableStylePropertySet> extractEditingProperties(
 
 void EditingStyle::mergeInlineAndImplicitStyleOfElement(Element* element, CSSPropertyOverrideMode mode, PropertiesToInclude propertiesToInclude)
 {
-    RefPtr<EditingStyle> styleFromRules = EditingStyle::create();
+    RefPtrWillBeRawPtr<EditingStyle> styleFromRules = EditingStyle::create();
     styleFromRules->mergeStyleFromRulesForSerialization(element);
     styleFromRules->m_mutableStyle = extractEditingProperties(styleFromRules->m_mutableStyle.get(), propertiesToInclude);
     mergeStyle(styleFromRules->m_mutableStyle.get(), mode);
@@ -1051,9 +1051,9 @@ void EditingStyle::mergeInlineAndImplicitStyleOfElement(Element* element, CSSPro
     }
 }
 
-PassRefPtr<EditingStyle> EditingStyle::wrappingStyleForSerialization(Node* context, bool shouldAnnotate)
+PassRefPtrWillBeRawPtr<EditingStyle> EditingStyle::wrappingStyleForSerialization(Node* context, bool shouldAnnotate)
 {
-    RefPtr<EditingStyle> wrappingStyle;
+    RefPtrWillBeRawPtr<EditingStyle> wrappingStyle = nullptr;
     if (shouldAnnotate) {
         wrappingStyle = EditingStyle::create(context, EditingStyle::EditingPropertiesInEffect);
 
@@ -1203,7 +1203,7 @@ void EditingStyle::removeStyleFromRulesAndContext(Element* element, Node* contex
         m_mutableStyle = getPropertiesNotIn(m_mutableStyle.get(), styleFromMatchedRules->ensureCSSStyleDeclaration());
 
     // 2. Remove style present in context and not overriden by matched rules.
-    RefPtr<EditingStyle> computedStyle = EditingStyle::create(context, EditingPropertiesInEffect);
+    RefPtrWillBeRawPtr<EditingStyle> computedStyle = EditingStyle::create(context, EditingPropertiesInEffect);
     if (computedStyle->m_mutableStyle) {
         if (!computedStyle->m_mutableStyle->getPropertyCSSValue(CSSPropertyBackgroundColor))
             computedStyle->m_mutableStyle->setProperty(CSSPropertyBackgroundColor, CSSValueTransparent);
@@ -1249,7 +1249,7 @@ int EditingStyle::legacyFontSize(Document* document) const
         m_shouldUseFixedDefaultFontSize, AlwaysUseLegacyFontSize);
 }
 
-PassRefPtr<EditingStyle> EditingStyle::styleAtSelectionStart(const VisibleSelection& selection, bool shouldUseBackgroundColorInEffect)
+PassRefPtrWillBeRawPtr<EditingStyle> EditingStyle::styleAtSelectionStart(const VisibleSelection& selection, bool shouldUseBackgroundColorInEffect)
 {
     if (selection.isNone())
         return nullptr;
@@ -1268,7 +1268,7 @@ PassRefPtr<EditingStyle> EditingStyle::styleAtSelectionStart(const VisibleSelect
     if (!element)
         return nullptr;
 
-    RefPtr<EditingStyle> style = EditingStyle::create(element, EditingStyle::AllProperties);
+    RefPtrWillBeRawPtr<EditingStyle> style = EditingStyle::create(element, EditingStyle::AllProperties);
     style->mergeTypingStyle(&element->document());
 
     // If background color is transparent, traverse parent nodes until we hit a different value or document root
@@ -1367,6 +1367,11 @@ WritingDirection EditingStyle::textDirectionForSelection(const VisibleSelection&
     }
     hasNestedOrMultipleEmbeddings = false;
     return foundDirection;
+}
+
+void EditingStyle::trace(Visitor* visitor)
+{
+    visitor->trace(m_mutableStyle);
 }
 
 static void reconcileTextDecorationProperties(MutableStylePropertySet* style)

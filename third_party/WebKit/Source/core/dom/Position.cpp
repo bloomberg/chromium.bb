@@ -79,7 +79,7 @@ static Node* previousRenderedEditable(Node* node)
     return 0;
 }
 
-Position::Position(PassRefPtr<Node> anchorNode, LegacyEditingOffset offset)
+Position::Position(PassRefPtrWillBeRawPtr<Node> anchorNode, LegacyEditingOffset offset)
     : m_anchorNode(anchorNode)
     , m_offset(offset.value())
     , m_anchorType(anchorTypeForLegacyEditingPosition(m_anchorNode.get(), m_offset))
@@ -88,7 +88,7 @@ Position::Position(PassRefPtr<Node> anchorNode, LegacyEditingOffset offset)
     ASSERT(!m_anchorNode || !m_anchorNode->isPseudoElement());
 }
 
-Position::Position(PassRefPtr<Node> anchorNode, AnchorType anchorType)
+Position::Position(PassRefPtrWillBeRawPtr<Node> anchorNode, AnchorType anchorType)
     : m_anchorNode(anchorNode)
     , m_offset(0)
     , m_anchorType(anchorType)
@@ -101,7 +101,7 @@ Position::Position(PassRefPtr<Node> anchorNode, AnchorType anchorType)
         && (m_anchorNode->isTextNode() || editingIgnoresContent(m_anchorNode.get()))));
 }
 
-Position::Position(PassRefPtr<Node> anchorNode, int offset, AnchorType anchorType)
+Position::Position(PassRefPtrWillBeRawPtr<Node> anchorNode, int offset, AnchorType anchorType)
     : m_anchorNode(anchorNode)
     , m_offset(offset)
     , m_anchorType(anchorType)
@@ -121,7 +121,7 @@ Position::Position(PassRefPtrWillBeRawPtr<Text> textNode, unsigned offset)
     ASSERT(m_anchorNode);
 }
 
-void Position::moveToPosition(PassRefPtr<Node> node, int offset)
+void Position::moveToPosition(PassRefPtrWillBeRawPtr<Node> node, int offset)
 {
     ASSERT(!editingIgnoresContent(node.get()));
     ASSERT(anchorType() == PositionIsOffsetInAnchor || m_isLegacyEditingPosition);
@@ -1286,6 +1286,10 @@ TextDirection Position::primaryDirection() const
     return primaryDirection;
 }
 
+void Position::trace(Visitor* visitor)
+{
+    visitor->trace(m_anchorNode);
+}
 
 void Position::debugPosition(const char* msg) const
 {

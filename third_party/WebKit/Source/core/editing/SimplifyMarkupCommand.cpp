@@ -42,7 +42,7 @@ SimplifyMarkupCommand::SimplifyMarkupCommand(Document& document, Node* firstNode
 void SimplifyMarkupCommand::doApply()
 {
     Node* rootNode = m_firstNode->parentNode();
-    Vector<RefPtr<Node> > nodesToRemove;
+    WillBeHeapVector<RefPtrWillBeMember<Node> > nodesToRemove;
 
     // Walk through the inserted nodes, to see if there are elements that could be removed
     // without affecting the style. The goal is to produce leaner markup even when starting
@@ -98,7 +98,7 @@ void SimplifyMarkupCommand::doApply()
     }
 }
 
-int SimplifyMarkupCommand::pruneSubsequentAncestorsToRemove(Vector<RefPtr<Node> >& nodesToRemove, size_t startNodeIndex)
+int SimplifyMarkupCommand::pruneSubsequentAncestorsToRemove(WillBeHeapVector<RefPtrWillBeMember<Node> >& nodesToRemove, size_t startNodeIndex)
 {
     size_t pastLastNodeToRemove = startNodeIndex + 1;
     for (; pastLastNodeToRemove < nodesToRemove.size(); ++pastLastNodeToRemove) {
@@ -108,7 +108,7 @@ int SimplifyMarkupCommand::pruneSubsequentAncestorsToRemove(Vector<RefPtr<Node> 
     }
 
     Node* highestAncestorToRemove = nodesToRemove[pastLastNodeToRemove - 1].get();
-    RefPtr<ContainerNode> parent = highestAncestorToRemove->parentNode();
+    RefPtrWillBeRawPtr<ContainerNode> parent = highestAncestorToRemove->parentNode();
     if (!parent) // Parent has already been removed.
         return -1;
 
@@ -120,6 +120,13 @@ int SimplifyMarkupCommand::pruneSubsequentAncestorsToRemove(Vector<RefPtr<Node> 
     removeNode(highestAncestorToRemove, AssumeContentIsAlwaysEditable);
 
     return pastLastNodeToRemove - startNodeIndex - 1;
+}
+
+void SimplifyMarkupCommand::trace(Visitor* visitor)
+{
+    visitor->trace(m_firstNode);
+    visitor->trace(m_nodeAfterLast);
+    CompositeEditCommand::trace(visitor);
 }
 
 } // namespace WebCore

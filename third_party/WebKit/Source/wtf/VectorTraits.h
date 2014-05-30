@@ -108,6 +108,15 @@ namespace WTF { \
     }; \
 }
 
+#define WTF_ALLOW_INIT_WITH_MEM_FUNCTIONS(ClassName) \
+namespace WTF { \
+    template<> \
+    struct VectorTraits<ClassName> : VectorTraitsBase<ClassName> \
+    { \
+        static const bool canInitializeWithMemset = true; \
+    }; \
+}
+
 using WTF::VectorTraits;
 using WTF::SimpleClassVectorTraits;
 

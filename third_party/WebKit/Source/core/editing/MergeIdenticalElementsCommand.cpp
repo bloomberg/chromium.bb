@@ -32,7 +32,7 @@
 
 namespace WebCore {
 
-MergeIdenticalElementsCommand::MergeIdenticalElementsCommand(PassRefPtr<Element> first, PassRefPtr<Element> second)
+MergeIdenticalElementsCommand::MergeIdenticalElementsCommand(PassRefPtrWillBeRawPtr<Element> first, PassRefPtrWillBeRawPtr<Element> second)
     : SimpleEditCommand(first->document())
     , m_element1(first)
     , m_element2(second)
@@ -84,6 +84,14 @@ void MergeIdenticalElementsCommand::doUnapply()
     size_t size = children.size();
     for (size_t i = 0; i < size; ++i)
         m_element1->appendChild(children[i].release(), exceptionState);
+}
+
+void MergeIdenticalElementsCommand::trace(Visitor* visitor)
+{
+    visitor->trace(m_element1);
+    visitor->trace(m_element2);
+    visitor->trace(m_atChild);
+    SimpleEditCommand::trace(visitor);
 }
 
 } // namespace WebCore

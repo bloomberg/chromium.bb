@@ -32,20 +32,22 @@ namespace WebCore {
 
 class MergeIdenticalElementsCommand FINAL : public SimpleEditCommand {
 public:
-    static PassRefPtr<MergeIdenticalElementsCommand> create(PassRefPtr<Element> element1, PassRefPtr<Element> element2)
+    static PassRefPtrWillBeRawPtr<MergeIdenticalElementsCommand> create(PassRefPtrWillBeRawPtr<Element> element1, PassRefPtrWillBeRawPtr<Element> element2)
     {
-        return adoptRef(new MergeIdenticalElementsCommand(element1, element2));
+        return adoptRefWillBeNoop(new MergeIdenticalElementsCommand(element1, element2));
     }
 
+    virtual void trace(Visitor*) OVERRIDE;
+
 private:
-    MergeIdenticalElementsCommand(PassRefPtr<Element>, PassRefPtr<Element>);
+    MergeIdenticalElementsCommand(PassRefPtrWillBeRawPtr<Element>, PassRefPtrWillBeRawPtr<Element>);
 
     virtual void doApply() OVERRIDE;
     virtual void doUnapply() OVERRIDE;
 
-    RefPtr<Element> m_element1;
-    RefPtr<Element> m_element2;
-    RefPtr<Node> m_atChild;
+    RefPtrWillBeMember<Element> m_element1;
+    RefPtrWillBeMember<Element> m_element2;
+    RefPtrWillBeMember<Node> m_atChild;
 };
 
 } // namespace WebCore

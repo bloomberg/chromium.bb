@@ -34,10 +34,12 @@ class Text;
 
 class InsertIntoTextNodeCommand FINAL : public SimpleEditCommand {
 public:
-    static PassRefPtr<InsertIntoTextNodeCommand> create(PassRefPtrWillBeRawPtr<Text> node, unsigned offset, const String& text)
+    static PassRefPtrWillBeRawPtr<InsertIntoTextNodeCommand> create(PassRefPtrWillBeRawPtr<Text> node, unsigned offset, const String& text)
     {
-        return adoptRef(new InsertIntoTextNodeCommand(node, offset, text));
+        return adoptRefWillBeNoop(new InsertIntoTextNodeCommand(node, offset, text));
     }
+
+    virtual void trace(Visitor*) OVERRIDE;
 
 private:
     InsertIntoTextNodeCommand(PassRefPtrWillBeRawPtr<Text> node, unsigned offset, const String& text);
@@ -45,7 +47,7 @@ private:
     virtual void doApply() OVERRIDE;
     virtual void doUnapply() OVERRIDE;
 
-    RefPtrWillBePersistent<Text> m_node;
+    RefPtrWillBeMember<Text> m_node;
     unsigned m_offset;
     String m_text;
 };

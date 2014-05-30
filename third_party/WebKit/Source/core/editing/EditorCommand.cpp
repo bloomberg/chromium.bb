@@ -135,7 +135,7 @@ static bool executeApplyStyle(LocalFrame& frame, EditorCommandSource source, Edi
 //        until https://bugs.webkit.org/show_bug.cgi?id=27818 is resolved.
 static bool executeToggleStyleInList(LocalFrame& frame, EditorCommandSource source, EditAction action, CSSPropertyID propertyID, CSSValue* value)
 {
-    RefPtr<EditingStyle> selectionStyle = EditingStyle::styleAtSelectionStart(frame.selection().selection());
+    RefPtrWillBeRawPtr<EditingStyle> selectionStyle = EditingStyle::styleAtSelectionStart(frame.selection().selection());
     if (!selectionStyle || !selectionStyle->style())
         return false;
 
@@ -169,7 +169,7 @@ static bool executeToggleStyle(LocalFrame& frame, EditorCommandSource source, Ed
     else
         styleIsPresent = frame.editor().selectionHasStyle(propertyID, onValue) == TrueTriState;
 
-    RefPtr<EditingStyle> style = EditingStyle::create(propertyID, styleIsPresent ? offValue : onValue);
+    RefPtrWillBeRawPtr<EditingStyle> style = EditingStyle::create(propertyID, styleIsPresent ? offValue : onValue);
     return applyCommandToFrame(frame, source, action, style->style());
 }
 
@@ -198,7 +198,7 @@ static bool executeInsertFragment(LocalFrame& frame, PassRefPtrWillBeRawPtr<Docu
     return true;
 }
 
-static bool executeInsertNode(LocalFrame& frame, PassRefPtr<Node> content)
+static bool executeInsertNode(LocalFrame& frame, PassRefPtrWillBeRawPtr<Node> content)
 {
     ASSERT(frame.document());
     RefPtrWillBeRawPtr<DocumentFragment> fragment = DocumentFragment::create(*frame.document());
@@ -443,7 +443,7 @@ static bool executeFormatBlock(LocalFrame& frame, Event*, EditorCommandSource, c
     QualifiedName qualifiedTagName(prefix, localName, xhtmlNamespaceURI);
 
     ASSERT(frame.document());
-    RefPtr<FormatBlockCommand> command = FormatBlockCommand::create(*frame.document(), qualifiedTagName);
+    RefPtrWillBeRawPtr<FormatBlockCommand> command = FormatBlockCommand::create(*frame.document(), qualifiedTagName);
     command->apply();
     return command->didApply();
 }

@@ -32,7 +32,7 @@
 
 namespace WebCore {
 
-WrapContentsInDummySpanCommand::WrapContentsInDummySpanCommand(PassRefPtr<Element> element)
+WrapContentsInDummySpanCommand::WrapContentsInDummySpanCommand(PassRefPtrWillBeRawPtr<Element> element)
     : SimpleEditCommand(element->document())
     , m_element(element)
 {
@@ -85,6 +85,13 @@ void WrapContentsInDummySpanCommand::doReapply()
         return;
 
     executeApply();
+}
+
+void WrapContentsInDummySpanCommand::trace(Visitor* visitor)
+{
+    visitor->trace(m_element);
+    visitor->trace(m_dummySpan);
+    SimpleEditCommand::trace(visitor);
 }
 
 } // namespace WebCore

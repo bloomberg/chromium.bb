@@ -31,7 +31,7 @@
 
 namespace WebCore {
 
-RemoveNodePreservingChildrenCommand::RemoveNodePreservingChildrenCommand(PassRefPtr<Node> node, ShouldAssumeContentIsAlwaysEditable shouldAssumeContentIsAlwaysEditable)
+RemoveNodePreservingChildrenCommand::RemoveNodePreservingChildrenCommand(PassRefPtrWillBeRawPtr<Node> node, ShouldAssumeContentIsAlwaysEditable shouldAssumeContentIsAlwaysEditable)
     : CompositeEditCommand(node->document())
     , m_node(node)
     , m_shouldAssumeContentIsAlwaysEditable(shouldAssumeContentIsAlwaysEditable)
@@ -41,17 +41,23 @@ RemoveNodePreservingChildrenCommand::RemoveNodePreservingChildrenCommand(PassRef
 
 void RemoveNodePreservingChildrenCommand::doApply()
 {
-    Vector<RefPtr<Node> > children;
+    WillBeHeapVector<RefPtrWillBeMember<Node> > children;
     for (Node* child = m_node->firstChild(); child; child = child->nextSibling())
         children.append(child);
 
     size_t size = children.size();
     for (size_t i = 0; i < size; ++i) {
-        RefPtr<Node> child = children[i].release();
+        RefPtrWillBeRawPtr<Node> child = children[i].release();
         removeNode(child, m_shouldAssumeContentIsAlwaysEditable);
         insertNodeBefore(child.release(), m_node, m_shouldAssumeContentIsAlwaysEditable);
     }
     removeNode(m_node, m_shouldAssumeContentIsAlwaysEditable);
+}
+
+void RemoveNodePreservingChildrenCommand::trace(Visitor* visitor)
+{
+    visitor->trace(m_node);
+    CompositeEditCommand::trace(visitor);
 }
 
 }

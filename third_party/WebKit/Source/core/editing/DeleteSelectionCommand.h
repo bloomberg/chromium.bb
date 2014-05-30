@@ -34,14 +34,16 @@ class EditingStyle;
 
 class DeleteSelectionCommand FINAL : public CompositeEditCommand {
 public:
-    static PassRefPtr<DeleteSelectionCommand> create(Document& document, bool smartDelete = false, bool mergeBlocksAfterDelete = true, bool expandForSpecialElements = false, bool sanitizeMarkup = true)
+    static PassRefPtrWillBeRawPtr<DeleteSelectionCommand> create(Document& document, bool smartDelete = false, bool mergeBlocksAfterDelete = true, bool expandForSpecialElements = false, bool sanitizeMarkup = true)
     {
-        return adoptRef(new DeleteSelectionCommand(document, smartDelete, mergeBlocksAfterDelete, expandForSpecialElements, sanitizeMarkup));
+        return adoptRefWillBeNoop(new DeleteSelectionCommand(document, smartDelete, mergeBlocksAfterDelete, expandForSpecialElements, sanitizeMarkup));
     }
-    static PassRefPtr<DeleteSelectionCommand> create(const VisibleSelection& selection, bool smartDelete = false, bool mergeBlocksAfterDelete = true, bool expandForSpecialElements = false, bool sanitizeMarkup = true)
+    static PassRefPtrWillBeRawPtr<DeleteSelectionCommand> create(const VisibleSelection& selection, bool smartDelete = false, bool mergeBlocksAfterDelete = true, bool expandForSpecialElements = false, bool sanitizeMarkup = true)
     {
-        return adoptRef(new DeleteSelectionCommand(selection, smartDelete, mergeBlocksAfterDelete, expandForSpecialElements, sanitizeMarkup));
+        return adoptRefWillBeNoop(new DeleteSelectionCommand(selection, smartDelete, mergeBlocksAfterDelete, expandForSpecialElements, sanitizeMarkup));
     }
+
+    virtual void trace(Visitor*) OVERRIDE;
 
 private:
     DeleteSelectionCommand(Document&, bool smartDelete, bool mergeBlocksAfterDelete, bool expandForSpecialElements, bool santizeMarkup);
@@ -64,7 +66,7 @@ private:
     void calculateTypingStyleAfterDelete();
     void clearTransientState();
     void makeStylingElementsDirectChildrenOfEditableRootToPreventStyleLoss();
-    virtual void removeNode(PassRefPtr<Node>, ShouldAssumeContentIsAlwaysEditable = DoNotAssumeContentIsAlwaysEditable) OVERRIDE;
+    virtual void removeNode(PassRefPtrWillBeRawPtr<Node>, ShouldAssumeContentIsAlwaysEditable = DoNotAssumeContentIsAlwaysEditable) OVERRIDE;
     virtual void deleteTextFromNode(PassRefPtrWillBeRawPtr<Text>, unsigned, unsigned) OVERRIDE;
     void removeRedundantBlocks();
 
@@ -86,15 +88,15 @@ private:
     Position m_endingPosition;
     Position m_leadingWhitespace;
     Position m_trailingWhitespace;
-    RefPtr<Node> m_startBlock;
-    RefPtr<Node> m_endBlock;
-    RefPtr<EditingStyle> m_typingStyle;
-    RefPtr<EditingStyle> m_deleteIntoBlockquoteStyle;
-    RefPtr<Node> m_startRoot;
-    RefPtr<Node> m_endRoot;
-    RefPtr<Node> m_startTableRow;
-    RefPtr<Node> m_endTableRow;
-    RefPtr<Node> m_temporaryPlaceholder;
+    RefPtrWillBeMember<Node> m_startBlock;
+    RefPtrWillBeMember<Node> m_endBlock;
+    RefPtrWillBeMember<EditingStyle> m_typingStyle;
+    RefPtrWillBeMember<EditingStyle> m_deleteIntoBlockquoteStyle;
+    RefPtrWillBeMember<Node> m_startRoot;
+    RefPtrWillBeMember<Node> m_endRoot;
+    RefPtrWillBeMember<Node> m_startTableRow;
+    RefPtrWillBeMember<Node> m_endTableRow;
+    RefPtrWillBeMember<Node> m_temporaryPlaceholder;
 };
 
 } // namespace WebCore

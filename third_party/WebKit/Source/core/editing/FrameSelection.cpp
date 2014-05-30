@@ -107,7 +107,11 @@ FrameSelection::FrameSelection(LocalFrame* frame)
 
 FrameSelection::~FrameSelection()
 {
+#if !ENABLE(OILPAN)
+    // Oilpan: No need to clear out VisibleSelection observer;
+    // it is finalized as a part object of FrameSelection.
     stopObservingVisibleSelectionChangeIfNecessary();
+#endif
 }
 
 Element* FrameSelection::rootEditableElementOrDocumentElement() const
@@ -934,11 +938,11 @@ static bool isBoundary(TextGranularity granularity)
 bool FrameSelection::modify(EAlteration alter, SelectionDirection direction, TextGranularity granularity, EUserTriggered userTriggered)
 {
     if (userTriggered == UserTriggered) {
-        FrameSelection trialFrameSelection;
-        trialFrameSelection.setSelection(m_selection);
-        trialFrameSelection.modify(alter, direction, granularity, NotUserTriggered);
+        OwnPtrWillBeRawPtr<FrameSelection> trialFrameSelection = FrameSelection::create();
+        trialFrameSelection->setSelection(m_selection);
+        trialFrameSelection->modify(alter, direction, granularity, NotUserTriggered);
 
-        if (trialFrameSelection.selection().isRange() && m_selection.isCaret() && !dispatchSelectStart())
+        if (trialFrameSelection->selection().isRange() && m_selection.isCaret() && !dispatchSelectStart())
             return false;
     }
 
@@ -1048,9 +1052,9 @@ bool FrameSelection::modify(EAlteration alter, unsigned verticalDistance, Vertic
         return false;
 
     if (userTriggered == UserTriggered) {
-        FrameSelection trialFrameSelection;
-        trialFrameSelection.setSelection(m_selection);
-        trialFrameSelection.modify(alter, verticalDistance, direction, NotUserTriggered);
+        OwnPtrWillBeRawPtr<FrameSelection> trialFrameSelection = FrameSelection::create();
+        trialFrameSelection->setSelection(m_selection);
+        trialFrameSelection->modify(alter, verticalDistance, direction, NotUserTriggered);
     }
 
     willBeModified(alter, direction == DirectionUp ? DirectionBackward : DirectionForward);
@@ -1370,7 +1374,7 @@ void FrameSelection::selectAll()
         }
     }
 
-    RefPtr<Node> root = nullptr;
+    RefPtrWillBeRawPtr<Node> root = nullptr;
     Node* selectStartTarget = 0;
     if (isContentEditable()) {
         root = highestEditableRoot(m_selection.start());
@@ -1448,7 +1452,7 @@ void FrameSelection::focusedOrActiveStateChanged()
 {
     bool activeAndFocused = isFocusedAndActive();
 
-    RefPtr<Document> document = m_frame->document();
+    RefPtrWillBeRawPtr<Document> document = m_frame->document();
     document->updateRenderTreeIfNeeded();
 
     // Because RenderObject::selectionBackgroundColor() and
@@ -1862,6 +1866,16 @@ void FrameSelection::showTreeForThis() const
 }
 
 #endif
+
+void FrameSelection::trace(Visitor* visitor)
+{
+    visitor->trace(m_selection);
+    visitor->trace(m_originalBase);
+    visitor->trace(m_logicalRange);
+    visitor->trace(m_previousCaretNode);
+    visitor->trace(m_typingStyle);
+    VisibleSelection::ChangeObserver::trace(visitor);
+}
 
 }
 

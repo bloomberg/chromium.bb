@@ -50,7 +50,7 @@ public:
 
     PassRefPtrWillBeRawPtr<Range> checkingRange() const { return m_checkingRange; }
     PassRefPtrWillBeRawPtr<Range> paragraphRange() const { return m_paragraphRange; }
-    PassRefPtr<Element> rootEditableElement() const { return m_rootEditableElement; }
+    PassRefPtrWillBeRawPtr<Element> rootEditableElement() const { return m_rootEditableElement; }
 
     void setCheckerAndSequence(SpellCheckRequester*, int sequence);
     void requesterDestroyed();
@@ -67,7 +67,7 @@ private:
     SpellCheckRequester* m_requester;
     RefPtrWillBePersistent<Range> m_checkingRange;
     RefPtrWillBePersistent<Range> m_paragraphRange;
-    RefPtr<Element> m_rootEditableElement;
+    RefPtrWillBePersistent<Element> m_rootEditableElement;
     TextCheckingRequestData m_requestData;
     int m_requestNumber;
 };

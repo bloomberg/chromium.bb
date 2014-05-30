@@ -34,7 +34,7 @@
 
 namespace WebCore {
 
-SplitElementCommand::SplitElementCommand(PassRefPtr<Element> element, PassRefPtr<Node> atChild)
+SplitElementCommand::SplitElementCommand(PassRefPtrWillBeRawPtr<Element> element, PassRefPtrWillBeRawPtr<Node> atChild)
     : SimpleEditCommand(element->document())
     , m_element2(element)
     , m_atChild(atChild)
@@ -106,6 +106,14 @@ void SplitElementCommand::doReapply()
         return;
 
     executeApply();
+}
+
+void SplitElementCommand::trace(Visitor* visitor)
+{
+    visitor->trace(m_element1);
+    visitor->trace(m_element2);
+    visitor->trace(m_atChild);
+    SimpleEditCommand::trace(visitor);
 }
 
 } // namespace WebCore

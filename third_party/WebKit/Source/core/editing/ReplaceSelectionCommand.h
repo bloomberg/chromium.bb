@@ -47,10 +47,12 @@ public:
 
     typedef unsigned CommandOptions;
 
-    static PassRefPtr<ReplaceSelectionCommand> create(Document& document, PassRefPtrWillBeRawPtr<DocumentFragment> fragment, CommandOptions options, EditAction action = EditActionPaste)
+    static PassRefPtrWillBeRawPtr<ReplaceSelectionCommand> create(Document& document, PassRefPtrWillBeRawPtr<DocumentFragment> fragment, CommandOptions options, EditAction action = EditActionPaste)
     {
-        return adoptRef(new ReplaceSelectionCommand(document, fragment, options, action));
+        return adoptRefWillBeNoop(new ReplaceSelectionCommand(document, fragment, options, action));
     }
+
+    virtual void trace(Visitor*) OVERRIDE;
 
 private:
     ReplaceSelectionCommand(Document&, PassRefPtrWillBeRawPtr<DocumentFragment>, CommandOptions, EditAction);
@@ -59,6 +61,7 @@ private:
     virtual EditAction editingAction() const OVERRIDE;
 
     class InsertedNodes {
+        STACK_ALLOCATED();
     public:
         void respondToNodeInsertion(Node&);
         void willRemoveNodePreservingChildren(Node&);
@@ -70,8 +73,8 @@ private:
         Node* pastLastLeaf() const { return m_lastNodeInserted ? NodeTraversal::next(m_lastNodeInserted->lastDescendantOrSelf()) : 0; }
 
     private:
-        RefPtr<Node> m_firstNodeInserted;
-        RefPtr<Node> m_lastNodeInserted;
+        RefPtrWillBeMember<Node> m_firstNodeInserted;
+        RefPtrWillBeMember<Node> m_lastNodeInserted;
     };
 
     Node* insertAsListItems(PassRefPtrWillBeRawPtr<HTMLElement> listElement, Node* insertionNode, const Position&, InsertedNodes&);
@@ -89,7 +92,7 @@ private:
 
     void removeRedundantStylesAndKeepStyleSpanInline(InsertedNodes&);
     void makeInsertedContentRoundTrippableWithHTMLTreeBuilder(const InsertedNodes&);
-    void moveNodeOutOfAncestor(PassRefPtr<Node>, PassRefPtr<Node> ancestor);
+    void moveNodeOutOfAncestor(PassRefPtrWillBeRawPtr<Node>, PassRefPtrWillBeRawPtr<Node> ancestor);
     void handleStyleSpans(InsertedNodes&);
 
     VisiblePosition positionAtStartOfInsertedContent() const;
@@ -104,11 +107,11 @@ private:
 
     Position m_startOfInsertedContent;
     Position m_endOfInsertedContent;
-    RefPtr<EditingStyle> m_insertionStyle;
+    RefPtrWillBeMember<EditingStyle> m_insertionStyle;
     bool m_selectReplacement;
     bool m_smartReplace;
     bool m_matchStyle;
-    RefPtrWillBePersistent<DocumentFragment> m_documentFragment;
+    RefPtrWillBeMember<DocumentFragment> m_documentFragment;
     bool m_preventNesting;
     bool m_movingParagraph;
     EditAction m_editAction;

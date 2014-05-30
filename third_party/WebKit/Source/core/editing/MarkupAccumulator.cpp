@@ -96,7 +96,7 @@ void MarkupAccumulator::appendCharactersReplacingEntities(StringBuilder& result,
         appendCharactersReplacingEntitiesInternal(result, source.characters16() + offset, length, entityMaps, WTF_ARRAY_LENGTH(entityMaps), entityMask);
 }
 
-MarkupAccumulator::MarkupAccumulator(Vector<Node*>* nodes, EAbsoluteURLs resolveUrlsMethod, const Range* range, SerializationType serializationType)
+MarkupAccumulator::MarkupAccumulator(WillBeHeapVector<RawPtrWillBeMember<Node> >* nodes, EAbsoluteURLs resolveUrlsMethod, const Range* range, SerializationType serializationType)
     : m_nodes(nodes)
     , m_range(range)
     , m_resolveURLsMethod(resolveUrlsMethod)

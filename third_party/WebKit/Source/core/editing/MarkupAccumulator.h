@@ -64,9 +64,9 @@ enum SerializationType {
 
 class MarkupAccumulator {
     WTF_MAKE_NONCOPYABLE(MarkupAccumulator);
-
+    STACK_ALLOCATED();
 public:
-    MarkupAccumulator(Vector<Node*>*, EAbsoluteURLs, const Range* = 0, SerializationType = AsOwnerDocument);
+    MarkupAccumulator(WillBeHeapVector<RawPtrWillBeMember<Node> >*, EAbsoluteURLs, const Range* = 0, SerializationType = AsOwnerDocument);
     virtual ~MarkupAccumulator();
 
     String serializeNodes(Node& targetNode, EChildrenOnly, Vector<QualifiedName>* tagNamesToSkip = 0);
@@ -103,8 +103,8 @@ protected:
     bool elementCannotHaveEndTag(const Node&);
     void appendEndMarkup(StringBuilder&, const Node&);
 
-    Vector<Node*>* const m_nodes;
-    const Range* const m_range;
+    RawPtrWillBeMember<WillBeHeapVector<RawPtrWillBeMember<Node> > > const m_nodes;
+    RawPtrWillBeMember<const Range> const m_range;
 
 private:
     String resolveURLIfNeeded(const Element&, const String&) const;

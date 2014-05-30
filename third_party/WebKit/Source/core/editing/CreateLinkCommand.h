@@ -32,9 +32,9 @@ namespace WebCore {
 
 class CreateLinkCommand FINAL : public CompositeEditCommand {
 public:
-    static PassRefPtr<CreateLinkCommand> create(Document& document, const String& linkURL)
+    static PassRefPtrWillBeRawPtr<CreateLinkCommand> create(Document& document, const String& linkURL)
     {
-        return adoptRef(new CreateLinkCommand(document, linkURL));
+        return adoptRefWillBeNoop(new CreateLinkCommand(document, linkURL));
     }
 
 private:

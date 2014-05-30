@@ -34,9 +34,9 @@ namespace WebCore {
 class IndentOutdentCommand FINAL : public ApplyBlockElementCommand {
 public:
     enum EIndentType { Indent, Outdent };
-    static PassRefPtr<IndentOutdentCommand> create(Document& document, EIndentType type)
+    static PassRefPtrWillBeRawPtr<IndentOutdentCommand> create(Document& document, EIndentType type)
     {
-        return adoptRef(new IndentOutdentCommand(document, type));
+        return adoptRefWillBeNoop(new IndentOutdentCommand(document, type));
     }
 
     virtual bool preservesTypingStyle() const OVERRIDE { return true; }
@@ -49,10 +49,10 @@ private:
     void outdentRegion(const VisiblePosition&, const VisiblePosition&);
     void outdentParagraph();
     bool tryIndentingAsListItem(const Position&, const Position&);
-    void indentIntoBlockquote(const Position&, const Position&, RefPtr<Element>&);
+    void indentIntoBlockquote(const Position&, const Position&, RefPtrWillBeRawPtr<Element>&);
 
     virtual void formatSelection(const VisiblePosition& startOfSelection, const VisiblePosition& endOfSelection) OVERRIDE;
-    virtual void formatRange(const Position& start, const Position& end, const Position& endOfSelection, RefPtr<Element>& blockquoteForNextIndent) OVERRIDE;
+    virtual void formatRange(const Position& start, const Position& end, const Position& endOfSelection, RefPtrWillBeRawPtr<Element>& blockquoteForNextIndent) OVERRIDE;
 
     EIndentType m_typeOfAction;
 };

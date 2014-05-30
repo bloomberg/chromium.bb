@@ -32,15 +32,17 @@
 #define UndoStep_h
 
 #include "core/editing/EditAction.h"
+#include "platform/heap/Handle.h"
 #include "wtf/RefCounted.h"
 
 namespace WebCore {
 
 class LocalFrame;
 
-class UndoStep : public RefCounted<UndoStep> {
+class UndoStep : public RefCountedWillBeGarbageCollectedFinalized<UndoStep> {
 public:
     virtual ~UndoStep() { }
+    virtual void trace(Visitor*) { }
 
     virtual bool belongsTo(const LocalFrame&) const = 0;
     virtual void unapply() = 0;

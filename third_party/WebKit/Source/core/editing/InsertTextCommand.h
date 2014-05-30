@@ -37,10 +37,10 @@ public:
         RebalanceAllWhitespaces
     };
 
-    static PassRefPtr<InsertTextCommand> create(Document& document, const String& text, bool selectInsertedText = false,
+    static PassRefPtrWillBeRawPtr<InsertTextCommand> create(Document& document, const String& text, bool selectInsertedText = false,
         RebalanceType rebalanceType = RebalanceLeadingAndTrailingWhitespaces)
     {
-        return adoptRef(new InsertTextCommand(document, text, selectInsertedText, rebalanceType));
+        return adoptRefWillBeNoop(new InsertTextCommand(document, text, selectInsertedText, rebalanceType));
     }
 
 private:

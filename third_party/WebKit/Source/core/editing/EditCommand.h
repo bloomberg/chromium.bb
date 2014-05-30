@@ -28,6 +28,7 @@
 
 #include "core/editing/EditAction.h"
 #include "core/editing/VisibleSelection.h"
+#include "platform/heap/Handle.h"
 
 #ifndef NDEBUG
 #include "wtf/HashSet.h"
@@ -39,7 +40,7 @@ class CompositeEditCommand;
 class Document;
 class Element;
 
-class EditCommand : public RefCounted<EditCommand> {
+class EditCommand : public RefCountedWillBeGarbageCollectedFinalized<EditCommand> {
 public:
     virtual ~EditCommand();
 
@@ -56,6 +57,8 @@ public:
 
     virtual void doApply() = 0;
 
+    virtual void trace(Visitor*);
+
 protected:
     explicit EditCommand(Document&);
     EditCommand(Document*, const VisibleSelection&, const VisibleSelection&);
@@ -68,10 +71,10 @@ protected:
     void setEndingSelection(const VisiblePosition&);
 
 private:
-    RefPtr<Document> m_document;
+    RefPtrWillBeMember<Document> m_document;
     VisibleSelection m_startingSelection;
     VisibleSelection m_endingSelection;
-    CompositeEditCommand* m_parent;
+    RawPtrWillBeMember<CompositeEditCommand> m_parent;
 };
 
 enum ShouldAssumeContentIsAlwaysEditable {

@@ -51,7 +51,7 @@ ReplaceNodeWithSpanCommand::ReplaceNodeWithSpanCommand(PassRefPtrWillBeRawPtr<HT
 static void swapInNodePreservingAttributesAndChildren(HTMLElement* newNode, HTMLElement& nodeToReplace)
 {
     ASSERT(nodeToReplace.inDocument());
-    RefPtr<ContainerNode> parentNode = nodeToReplace.parentNode();
+    RefPtrWillBeRawPtr<ContainerNode> parentNode = nodeToReplace.parentNode();
     parentNode->insertBefore(newNode, &nodeToReplace);
 
     NodeVector children;
@@ -79,6 +79,13 @@ void ReplaceNodeWithSpanCommand::doUnapply()
     if (!m_spanElement->inDocument())
         return;
     swapInNodePreservingAttributesAndChildren(m_elementToReplace.get(), *m_spanElement);
+}
+
+void ReplaceNodeWithSpanCommand::trace(Visitor* visitor)
+{
+    visitor->trace(m_elementToReplace);
+    visitor->trace(m_spanElement);
+    SimpleEditCommand::trace(visitor);
 }
 
 } // namespace WebCore

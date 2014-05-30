@@ -40,7 +40,7 @@ class RenderView;
 
 class CaretBase {
     WTF_MAKE_NONCOPYABLE(CaretBase);
-    WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 protected:
     enum CaretVisibility { Visible, Hidden };
     explicit CaretBase(CaretVisibility = Hidden);
@@ -71,11 +71,11 @@ private:
     CaretVisibility m_caretVisibility;
 };
 
-class DragCaretController : private CaretBase {
+class DragCaretController FINAL : public NoBaseWillBeGarbageCollected<DragCaretController>, private CaretBase {
     WTF_MAKE_NONCOPYABLE(DragCaretController);
-    WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
-    static PassOwnPtr<DragCaretController> create();
+    static PassOwnPtrWillBeRawPtr<DragCaretController> create();
 
     RenderObject* caretRenderer() const;
     void paintDragCaret(LocalFrame*, GraphicsContext*, const LayoutPoint&, const LayoutRect& clipRect) const;
@@ -89,6 +89,8 @@ public:
     void clear() { setCaretPosition(VisiblePosition()); }
 
     void nodeWillBeRemoved(Node&);
+
+    void trace(Visitor*);
 
 private:
     DragCaretController();

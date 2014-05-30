@@ -95,7 +95,7 @@ inline LocalFrame::LocalFrame(FrameLoaderClient* client, FrameHost* host, HTMLFr
     , m_script(adoptPtr(new ScriptController(this)))
     , m_editor(Editor::create(*this))
     , m_spellChecker(SpellChecker::create(*this))
-    , m_selection(adoptPtr(new FrameSelection(this)))
+    , m_selection(FrameSelection::create(this))
     , m_eventHandler(adoptPtr(new EventHandler(this)))
     , m_console(FrameConsole::create(*this))
     , m_inputMethodController(InputMethodController::create(*this))

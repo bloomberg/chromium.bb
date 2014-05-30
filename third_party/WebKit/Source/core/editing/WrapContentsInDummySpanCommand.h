@@ -34,21 +34,23 @@ class HTMLElement;
 
 class WrapContentsInDummySpanCommand FINAL : public SimpleEditCommand {
 public:
-    static PassRefPtr<WrapContentsInDummySpanCommand> create(PassRefPtr<Element> element)
+    static PassRefPtrWillBeRawPtr<WrapContentsInDummySpanCommand> create(PassRefPtrWillBeRawPtr<Element> element)
     {
-        return adoptRef(new WrapContentsInDummySpanCommand(element));
+        return adoptRefWillBeNoop(new WrapContentsInDummySpanCommand(element));
     }
 
+    virtual void trace(Visitor*) OVERRIDE;
+
 private:
-    explicit WrapContentsInDummySpanCommand(PassRefPtr<Element>);
+    explicit WrapContentsInDummySpanCommand(PassRefPtrWillBeRawPtr<Element>);
 
     virtual void doApply() OVERRIDE;
     virtual void doUnapply() OVERRIDE;
     virtual void doReapply() OVERRIDE;
     void executeApply();
 
-    RefPtr<Element> m_element;
-    RefPtrWillBePersistent<HTMLElement> m_dummySpan;
+    RefPtrWillBeMember<Element> m_element;
+    RefPtrWillBeMember<HTMLElement> m_dummySpan;
 };
 
 } // namespace WebCore

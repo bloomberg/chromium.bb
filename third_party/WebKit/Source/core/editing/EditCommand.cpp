@@ -36,7 +36,7 @@ namespace WebCore {
 
 EditCommand::EditCommand(Document& document)
     : m_document(&document)
-    , m_parent(0)
+    , m_parent(nullptr)
 {
     ASSERT(m_document);
     ASSERT(m_document->frame());
@@ -46,7 +46,7 @@ EditCommand::EditCommand(Document& document)
 
 EditCommand::EditCommand(Document* document, const VisibleSelection& startingSelection, const VisibleSelection& endingSelection)
     : m_document(document)
-    , m_parent(0)
+    , m_parent(nullptr)
 {
     ASSERT(m_document);
     ASSERT(m_document->frame());
@@ -118,6 +118,14 @@ void EditCommand::setParent(CompositeEditCommand* parent)
 void SimpleEditCommand::doReapply()
 {
     doApply();
+}
+
+void EditCommand::trace(Visitor* visitor)
+{
+    visitor->trace(m_document);
+    visitor->trace(m_startingSelection);
+    visitor->trace(m_endingSelection);
+    visitor->trace(m_parent);
 }
 
 } // namespace WebCore

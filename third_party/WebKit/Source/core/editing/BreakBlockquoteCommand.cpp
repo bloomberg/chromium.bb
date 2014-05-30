@@ -71,7 +71,7 @@ void BreakBlockquoteCommand::doApply()
     if (!topBlockquote || !topBlockquote->parentNode() || !topBlockquote->isElementNode())
         return;
 
-    RefPtr<Element> breakNode = createBreakElement(document());
+    RefPtrWillBeRawPtr<Element> breakNode = createBreakElement(document());
 
     bool isLastVisPosInNode = isLastVisiblePositionInNode(visiblePos, topBlockquote);
 
@@ -128,21 +128,21 @@ void BreakBlockquoteCommand::doApply()
     }
 
     // Build up list of ancestors in between the start node and the top blockquote.
-    Vector<RefPtr<Element> > ancestors;
+    WillBeHeapVector<RefPtrWillBeMember<Element> > ancestors;
     for (Element* node = startNode->parentElement(); node && node != topBlockquote; node = node->parentElement())
         ancestors.append(node);
 
     // Insert a clone of the top blockquote after the break.
-    RefPtr<Element> clonedBlockquote = toElement(topBlockquote)->cloneElementWithoutChildren();
+    RefPtrWillBeRawPtr<Element> clonedBlockquote = toElement(topBlockquote)->cloneElementWithoutChildren();
     insertNodeAfter(clonedBlockquote.get(), breakNode.get());
 
     // Clone startNode's ancestors into the cloned blockquote.
     // On exiting this loop, clonedAncestor is the lowest ancestor
     // that was cloned (i.e. the clone of either ancestors.last()
     // or clonedBlockquote if ancestors is empty).
-    RefPtr<Element> clonedAncestor = clonedBlockquote;
+    RefPtrWillBeRawPtr<Element> clonedAncestor = clonedBlockquote;
     for (size_t i = ancestors.size(); i != 0; --i) {
-        RefPtr<Element> clonedChild = ancestors[i - 1]->cloneElementWithoutChildren();
+        RefPtrWillBeRawPtr<Element> clonedChild = ancestors[i - 1]->cloneElementWithoutChildren();
         // Preserve list item numbering in cloned lists.
         if (isHTMLOListElement(*clonedChild)) {
             Node* listChildNode = i > 1 ? ancestors[i - 2].get() : startNode;
@@ -165,8 +165,8 @@ void BreakBlockquoteCommand::doApply()
         // Throughout this loop, clonedParent is the clone of ancestor's parent.
         // This is so we can clone ancestor's siblings and place the clones
         // into the clone corresponding to the ancestor's parent.
-        RefPtr<Element> ancestor;
-        RefPtr<Element> clonedParent;
+        RefPtrWillBeRawPtr<Element> ancestor = nullptr;
+        RefPtrWillBeRawPtr<Element> clonedParent = nullptr;
         for (ancestor = ancestors.first(), clonedParent = clonedAncestor->parentElement();
              ancestor && ancestor != topBlockquote;
              ancestor = ancestor->parentElement(), clonedParent = clonedParent->parentElement())

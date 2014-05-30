@@ -119,7 +119,7 @@ bool InsertParagraphSeparatorCommand::shouldUseDefaultParagraphElement(Node* enc
            enclosingBlock->hasTagName(h5Tag);
 }
 
-void InsertParagraphSeparatorCommand::getAncestorsInsideBlock(const Node* insertionNode, Element* outerBlock, Vector<RefPtr<Element> >& ancestors)
+void InsertParagraphSeparatorCommand::getAncestorsInsideBlock(const Node* insertionNode, Element* outerBlock, WillBeHeapVector<RefPtrWillBeMember<Element> >& ancestors)
 {
     ancestors.clear();
 
@@ -130,12 +130,12 @@ void InsertParagraphSeparatorCommand::getAncestorsInsideBlock(const Node* insert
     }
 }
 
-PassRefPtr<Element> InsertParagraphSeparatorCommand::cloneHierarchyUnderNewBlock(const Vector<RefPtr<Element> >& ancestors, PassRefPtr<Element> blockToInsert)
+PassRefPtrWillBeRawPtr<Element> InsertParagraphSeparatorCommand::cloneHierarchyUnderNewBlock(const WillBeHeapVector<RefPtrWillBeMember<Element> >& ancestors, PassRefPtrWillBeRawPtr<Element> blockToInsert)
 {
     // Make clones of ancestors in between the start node and the start block.
-    RefPtr<Element> parent = blockToInsert;
+    RefPtrWillBeRawPtr<Element> parent = blockToInsert;
     for (size_t i = ancestors.size(); i != 0; --i) {
-        RefPtr<Element> child = ancestors[i - 1]->cloneElementWithoutChildren();
+        RefPtrWillBeRawPtr<Element> child = ancestors[i - 1]->cloneElementWithoutChildren();
         // It should always be okay to remove id from the cloned elements, since the originals are not deleted.
         child->removeAttribute(idAttr);
         appendNode(child, parent);
@@ -163,9 +163,9 @@ void InsertParagraphSeparatorCommand::doApply()
     }
 
     // FIXME: The parentAnchoredEquivalent conversion needs to be moved into enclosingBlock.
-    RefPtr<Element> startBlock = enclosingBlock(insertionPosition.parentAnchoredEquivalent().containerNode());
+    RefPtrWillBeRawPtr<Element> startBlock = enclosingBlock(insertionPosition.parentAnchoredEquivalent().containerNode());
     Node* listChildNode = enclosingListChild(insertionPosition.parentAnchoredEquivalent().containerNode());
-    RefPtr<Element> listChild = listChildNode && listChildNode->isHTMLElement() ? toHTMLElement(listChildNode) : 0;
+    RefPtrWillBeRawPtr<Element> listChild = listChildNode && listChildNode->isHTMLElement() ? toHTMLElement(listChildNode) : 0;
     Position canonicalPos = VisiblePosition(insertionPosition).deepEquivalent();
     if (!startBlock
         || !startBlock->nonShadowBoundaryParentNode()
@@ -201,7 +201,7 @@ void InsertParagraphSeparatorCommand::doApply()
     bool nestNewBlock = false;
 
     // Create block to be inserted.
-    RefPtr<Element> blockToInsert;
+    RefPtrWillBeRawPtr<Element> blockToInsert = nullptr;
     if (startBlock->isRootEditableElement()) {
         blockToInsert = createDefaultParagraphElement(document());
         nestNewBlock = true;
@@ -219,7 +219,7 @@ void InsertParagraphSeparatorCommand::doApply()
             if (isFirstInBlock && !lineBreakExistsAtVisiblePosition(visiblePos)) {
                 // The block is empty.  Create an empty block to
                 // represent the paragraph that we're leaving.
-                RefPtr<Element> extraBlock = createDefaultParagraphElement(document());
+                RefPtrWillBeRawPtr<Element> extraBlock = createDefaultParagraphElement(document());
                 appendNode(extraBlock, startBlock);
                 appendBlockPlaceholder(extraBlock);
             }
@@ -233,7 +233,7 @@ void InsertParagraphSeparatorCommand::doApply()
             }
 
             if (listChild && listChild != startBlock) {
-                RefPtr<Element> listChildToInsert = listChild->cloneElementWithoutChildren();
+                RefPtrWillBeRawPtr<Element> listChildToInsert = listChild->cloneElementWithoutChildren();
                 appendNode(blockToInsert, listChildToInsert.get());
                 insertNodeAfter(listChildToInsert.get(), listChild);
             } else {
@@ -248,9 +248,9 @@ void InsertParagraphSeparatorCommand::doApply()
 
         // Recreate the same structure in the new paragraph.
 
-        Vector<RefPtr<Element> > ancestors;
+        WillBeHeapVector<RefPtrWillBeMember<Element> > ancestors;
         getAncestorsInsideBlock(positionOutsideTabSpan(insertionPosition).deprecatedNode(), startBlock.get(), ancestors);
-        RefPtr<Element> parent = cloneHierarchyUnderNewBlock(ancestors, blockToInsert);
+        RefPtrWillBeRawPtr<Element> parent = cloneHierarchyUnderNewBlock(ancestors, blockToInsert);
 
         appendBlockPlaceholder(parent);
 
@@ -268,7 +268,7 @@ void InsertParagraphSeparatorCommand::doApply()
 
         if (isFirstInBlock && !nestNewBlock) {
             if (listChild && listChild != startBlock) {
-                RefPtr<Element> listChildToInsert = listChild->cloneElementWithoutChildren();
+                RefPtrWillBeRawPtr<Element> listChildToInsert = listChild->cloneElementWithoutChildren();
                 appendNode(blockToInsert, listChildToInsert.get());
                 insertNodeBefore(listChildToInsert.get(), listChild);
             } else {
@@ -293,7 +293,7 @@ void InsertParagraphSeparatorCommand::doApply()
 
         // Recreate the same structure in the new paragraph.
 
-        Vector<RefPtr<Element> > ancestors;
+        WillBeHeapVector<RefPtrWillBeMember<Element> > ancestors;
         getAncestorsInsideBlock(positionAvoidingSpecialElementBoundary(positionOutsideTabSpan(insertionPosition)).deprecatedNode(), startBlock.get(), ancestors);
 
         appendBlockPlaceholder(cloneHierarchyUnderNewBlock(ancestors, blockToInsert));
@@ -311,7 +311,7 @@ void InsertParagraphSeparatorCommand::doApply()
     // it if visiblePos is at the start of a paragraph so that the
     // content will move down a line.
     if (isStartOfParagraph(visiblePos)) {
-        RefPtr<Element> br = createBreakElement(document());
+        RefPtrWillBeRawPtr<Element> br = createBreakElement(document());
         insertNodeAt(br.get(), insertionPosition);
         insertionPosition = positionInParentAfterNode(*br);
         // If the insertion point is a break element, there is nothing else
@@ -372,7 +372,7 @@ void InsertParagraphSeparatorCommand::doApply()
     if (nestNewBlock) {
         appendNode(blockToInsert.get(), startBlock);
     } else if (listChild && listChild != startBlock) {
-        RefPtr<Element> listChildToInsert = listChild->cloneElementWithoutChildren();
+        RefPtrWillBeRawPtr<Element> listChildToInsert = listChild->cloneElementWithoutChildren();
         appendNode(blockToInsert.get(), listChildToInsert.get());
         insertNodeAfter(listChildToInsert.get(), listChild);
     } else {
@@ -424,5 +424,12 @@ void InsertParagraphSeparatorCommand::doApply()
     setEndingSelection(VisibleSelection(firstPositionInNode(blockToInsert.get()), DOWNSTREAM, endingSelection().isDirectional()));
     applyStyleAfterInsertion(startBlock.get());
 }
+
+void InsertParagraphSeparatorCommand::trace(Visitor *visitor)
+{
+    visitor->trace(m_style);
+    CompositeEditCommand::trace(visitor);
+}
+
 
 } // namespace WebCore

@@ -32,22 +32,24 @@ namespace WebCore {
 
 class SplitElementCommand FINAL : public SimpleEditCommand {
 public:
-    static PassRefPtr<SplitElementCommand> create(PassRefPtr<Element> element, PassRefPtr<Node> splitPointChild)
+    static PassRefPtrWillBeRawPtr<SplitElementCommand> create(PassRefPtrWillBeRawPtr<Element> element, PassRefPtrWillBeRawPtr<Node> splitPointChild)
     {
-        return adoptRef(new SplitElementCommand(element, splitPointChild));
+        return adoptRefWillBeNoop(new SplitElementCommand(element, splitPointChild));
     }
 
+    virtual void trace(Visitor*) OVERRIDE;
+
 private:
-    SplitElementCommand(PassRefPtr<Element>, PassRefPtr<Node> splitPointChild);
+    SplitElementCommand(PassRefPtrWillBeRawPtr<Element>, PassRefPtrWillBeRawPtr<Node> splitPointChild);
 
     virtual void doApply() OVERRIDE;
     virtual void doUnapply() OVERRIDE;
     virtual void doReapply() OVERRIDE;
     void executeApply();
 
-    RefPtr<Element> m_element1;
-    RefPtr<Element> m_element2;
-    RefPtr<Node> m_atChild;
+    RefPtrWillBeMember<Element> m_element1;
+    RefPtrWillBeMember<Element> m_element2;
+    RefPtrWillBeMember<Node> m_atChild;
 };
 
 } // namespace WebCore

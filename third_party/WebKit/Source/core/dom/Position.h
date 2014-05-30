@@ -51,6 +51,7 @@ enum PositionMoveType {
 };
 
 class Position {
+    DISALLOW_ALLOCATION();
 public:
     enum AnchorType {
         PositionIsOffsetInAnchor,
@@ -75,19 +76,19 @@ public:
     private:
         explicit LegacyEditingOffset(int offset) : m_offset(offset) { }
 
-        friend Position createLegacyEditingPosition(PassRefPtr<Node>, int offset);
+        friend Position createLegacyEditingPosition(PassRefPtrWillBeRawPtr<Node>, int offset);
 
         int m_offset;
     };
-    Position(PassRefPtr<Node> anchorNode, LegacyEditingOffset);
+    Position(PassRefPtrWillBeRawPtr<Node> anchorNode, LegacyEditingOffset);
 
     // For creating before/after positions:
-    Position(PassRefPtr<Node> anchorNode, AnchorType);
+    Position(PassRefPtrWillBeRawPtr<Node> anchorNode, AnchorType);
     Position(PassRefPtrWillBeRawPtr<Text> textNode, unsigned offset);
 
     // For creating offset positions:
     // FIXME: This constructor should eventually go away. See bug 63040.
-    Position(PassRefPtr<Node> anchorNode, int offset, AnchorType);
+    Position(PassRefPtrWillBeRawPtr<Node> anchorNode, int offset, AnchorType);
 
     AnchorType anchorType() const { return static_cast<AnchorType>(m_anchorType); }
 
@@ -137,7 +138,7 @@ public:
 
     // These should only be used for PositionIsOffsetInAnchor positions, unless
     // the position is a legacy editing position.
-    void moveToPosition(PassRefPtr<Node> anchorNode, int offset);
+    void moveToPosition(PassRefPtrWillBeRawPtr<Node> anchorNode, int offset);
     void moveToOffset(int offset);
 
     bool isNull() const { return !m_anchorNode; }
@@ -203,6 +204,8 @@ public:
     void showTreeForThis() const;
 #endif
 
+    void trace(Visitor*);
+
 private:
     int offsetForPositionAfterAnchor() const;
 
@@ -212,7 +215,7 @@ private:
 
     static AnchorType anchorTypeForLegacyEditingPosition(Node* anchorNode, int offset);
 
-    RefPtr<Node> m_anchorNode;
+    RefPtrWillBeMember<Node> m_anchorNode;
     // m_offset can be the offset inside m_anchorNode, or if editingIgnoresContent(m_anchorNode)
     // returns true, then other places in editing will treat m_offset == 0 as "before the anchor"
     // and m_offset > 0 as "after the anchor node".  See parentAnchoredEquivalent for more info.
@@ -221,7 +224,7 @@ private:
     bool m_isLegacyEditingPosition : 1;
 };
 
-inline Position createLegacyEditingPosition(PassRefPtr<Node> node, int offset)
+inline Position createLegacyEditingPosition(PassRefPtrWillBeRawPtr<Node> node, int offset)
 {
     return Position(node, Position::LegacyEditingOffset(offset));
 }
@@ -316,6 +319,7 @@ inline bool offsetIsBeforeLastNodeOffset(int offset, Node* anchorNode)
 }
 
 class PositionWithAffinity {
+    DISALLOW_ALLOCATION();
 public:
     PositionWithAffinity()
         : m_affinity(DOWNSTREAM)
@@ -330,6 +334,11 @@ public:
 
     EAffinity affinity() const { return m_affinity; }
     const Position& position() const { return m_position; }
+
+    void trace(Visitor* visitor)
+    {
+        visitor->trace(m_position);
+    }
 
 private:
     Position m_position;

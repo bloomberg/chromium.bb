@@ -59,7 +59,7 @@ void FormatBlockCommand::formatSelection(const VisiblePosition& startOfSelection
     m_didApply = true;
 }
 
-void FormatBlockCommand::formatRange(const Position& start, const Position& end, const Position& endOfSelection, RefPtr<Element>& blockNode)
+void FormatBlockCommand::formatRange(const Position& start, const Position& end, const Position& endOfSelection, RefPtrWillBeRawPtr<Element>& blockNode)
 {
     Element* refNode = enclosingBlockFlowElement(VisiblePosition(end));
     Element* root = editableRootForPosition(start);
@@ -68,8 +68,8 @@ void FormatBlockCommand::formatRange(const Position& start, const Position& end,
         return;
 
     Node* nodeToSplitTo = enclosingBlockToSplitTreeTo(start.deprecatedNode());
-    RefPtr<Node> outerBlock = (start.deprecatedNode() == nodeToSplitTo) ? start.deprecatedNode() : splitTreeToNode(start.deprecatedNode(), nodeToSplitTo);
-    RefPtr<Node> nodeAfterInsertionPosition = outerBlock;
+    RefPtrWillBeRawPtr<Node> outerBlock = (start.deprecatedNode() == nodeToSplitTo) ? start.deprecatedNode() : splitTreeToNode(start.deprecatedNode(), nodeToSplitTo).get();
+    RefPtrWillBeRawPtr<Node> nodeAfterInsertionPosition = outerBlock;
     RefPtrWillBeRawPtr<Range> range = Range::create(document(), start, endOfSelection);
 
     if (isElementForFormatBlock(refNode->tagQName()) && VisiblePosition(start) == startOfBlock(VisiblePosition(start))
