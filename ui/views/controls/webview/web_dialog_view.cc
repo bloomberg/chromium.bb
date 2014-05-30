@@ -18,7 +18,7 @@
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/views/controls/webview/webview.h"
 #include "ui/views/layout/fill_layout.h"
-#include "ui/views/widget/native_widget_aura.h"
+#include "ui/views/widget/native_widget_private.h"
 #include "ui/views/widget/root_view.h"
 #include "ui/views/widget/widget.h"
 #include "ui/web_dialogs/web_dialog_delegate.h"
@@ -280,14 +280,8 @@ void WebDialogView::HandleKeyboardEvent(content::WebContents* source,
                                         const NativeWebKeyboardEvent& event) {
   if (!event.os_event)
     return;
-  ui::KeyEvent aura_event(event.os_event->native_event(), false);
-  ui::EventHandler* event_handler =
-      GetWidget()->native_widget()->GetEventHandler();
 
-  DCHECK(event_handler);
-  if (event_handler)
-    event_handler->OnKeyEvent(&aura_event);
-
+  GetWidget()->native_widget_private()->RepostNativeEvent(event.os_event);
 }
 
 void WebDialogView::CloseContents(WebContents* source) {

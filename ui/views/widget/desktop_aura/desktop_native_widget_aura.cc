@@ -932,6 +932,10 @@ void DesktopNativeWidgetAura::OnRootViewLayout() const {
     desktop_window_tree_host_->OnRootViewLayout();
 }
 
+void DesktopNativeWidgetAura::RepostNativeEvent(gfx::NativeEvent native_event) {
+  OnEvent(native_event);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // DesktopNativeWidgetAura, aura::WindowDelegate implementation:
 
@@ -1178,11 +1182,7 @@ void DesktopNativeWidgetAura::OnHostMoved(const aura::WindowTreeHost* host,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// DesktopNativeWidgetAura, NativeWidget implementation:
-
-ui::EventHandler* DesktopNativeWidgetAura::GetEventHandler() {
-  return this;
-}
+// DesktopNativeWidgetAura, private:
 
 void DesktopNativeWidgetAura::InstallInputMethodEventFilter() {
   DCHECK(!input_method_event_filter_.get());

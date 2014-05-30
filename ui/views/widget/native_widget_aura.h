@@ -132,6 +132,7 @@ class VIEWS_EXPORT NativeWidgetAura
   virtual void SetVisibilityChangedAnimationsEnabled(bool value) OVERRIDE;
   virtual ui::NativeTheme* GetNativeTheme() const OVERRIDE;
   virtual void OnRootViewLayout() const OVERRIDE;
+  virtual void RepostNativeEvent(gfx::NativeEvent native_event) OVERRIDE;
 
   // Overridden from views::InputMethodDelegate:
   virtual void DispatchKeyEventPostIME(const ui::KeyEvent& key) OVERRIDE;
@@ -178,9 +179,6 @@ class VIEWS_EXPORT NativeWidgetAura
   virtual int OnDragUpdated(const ui::DropTargetEvent& event) OVERRIDE;
   virtual void OnDragExited() OVERRIDE;
   virtual int OnPerformDrop(const ui::DropTargetEvent& event) OVERRIDE;
-
-  // Overridden from NativeWidget:
-  virtual ui::EventHandler* GetEventHandler() OVERRIDE;
 
  protected:
   virtual ~NativeWidgetAura();

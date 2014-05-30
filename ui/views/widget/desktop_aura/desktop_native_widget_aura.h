@@ -89,9 +89,6 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
     return host_.get();
   }
 
-  // Overridden from NativeWidget:
-  virtual ui::EventHandler* GetEventHandler() OVERRIDE;
-
   // Ensures that the correct window is activated/deactivated based on whether
   // we are being activated/deactivated.
   void HandleActivationChanged(bool active);
@@ -181,6 +178,7 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
   virtual void SetVisibilityChangedAnimationsEnabled(bool value) OVERRIDE;
   virtual ui::NativeTheme* GetNativeTheme() const OVERRIDE;
   virtual void OnRootViewLayout() const OVERRIDE;
+  virtual void RepostNativeEvent(gfx::NativeEvent native_event) OVERRIDE;
 
   // Overridden from aura::WindowDelegate:
   virtual gfx::Size GetMinimumSize() const OVERRIDE;

@@ -355,11 +355,8 @@ void NativeWidgetMac::OnRootViewLayout() const {
   NOTIMPLEMENTED();
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// NativeWidgetMac, NativeWidget implementation:
-
-ui::EventHandler* NativeWidgetMac::GetEventHandler() {
-  return NULL;
+void NativeWidgetMac::RepostNativeEvent(gfx::NativeEvent native_event) {
+  NOTIMPLEMENTED();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

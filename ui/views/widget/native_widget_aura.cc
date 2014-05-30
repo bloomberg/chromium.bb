@@ -691,6 +691,10 @@ ui::NativeTheme* NativeWidgetAura::GetNativeTheme() const {
 void NativeWidgetAura::OnRootViewLayout() const {
 }
 
+void NativeWidgetAura::RepostNativeEvent(gfx::NativeEvent native_event) {
+  OnEvent(native_event);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // NativeWidgetAura, views::InputMethodDelegate implementation:
 
@@ -946,13 +950,6 @@ int NativeWidgetAura::OnPerformDrop(const ui::DropTargetEvent& event) {
   DCHECK(drop_helper_.get() != NULL);
   return drop_helper_->OnDrop(event.data(), event.location(),
       last_drop_operation_);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// NativeWidgetAura, NativeWidget implementation:
-
-ui::EventHandler* NativeWidgetAura::GetEventHandler() {
-  return this;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
