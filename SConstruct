@@ -2453,13 +2453,16 @@ def MakeUnixLikeEnv(platform=None):
         '-fvisibility=hidden',
         '-fstack-protector',
         ] + werror_flags,
-    CXXFLAGS=['-std=c++98'],
     # NOTE: pthread is only neeeded for libppNaClPlugin.so and on arm
     LIBS = ['pthread'],
     CPPDEFINES = [['__STDC_LIMIT_MACROS', '1'],
                   ['__STDC_FORMAT_MACROS', '1'],
                   ],
   )
+  # Android's stlport uses __STRICT_ANSI__ to exclude "long long".
+  # This breaks basically all C++ code that uses stlport.
+  if not unix_like_env.Bit('android'):
+    unix_like_env.Prepend(CXXFLAGS=['-std=c++98'])
 
   if not unix_like_env.Bit('clang'):
     unix_like_env.Append(CCFLAGS=['--param', 'ssp-buffer-size=4'])
@@ -2579,6 +2582,7 @@ def SetUpLinuxEnvArm(env):
   env.Append(LIBS=['dl'])
 
 def SetUpAndroidEnv(env):
+  env.FilterOut(CPPDEFINES=[['_LARGEFILE64_SOURCE', '1']])
   env.FilterOut(CPPDEFINES=[['NACL_ANDROID', '0']])
   env.Prepend(CPPDEFINES=[['NACL_ANDROID', '1']])
   android_ndk_root = os.path.join('${SOURCE_ROOT}', 'src', 'third_party',
@@ -2618,7 +2622,6 @@ def SetUpAndroidEnv(env):
   android_stlport_include = os.path.join(android_stlport_root, 'stlport')
   android_stlport_libs_dir = os.path.join(android_stlport_root, 'libs',
                                           android_app_abi)
-  env.FilterOut(CCFLAGS=['-Werror', '-Wundef'])
   android_ndk_libgcc_path = os.path.join(android_toolchain, '..', 'lib', 'gcc',
                                          android_ndk_target_prefix,
                                          android_ndk_version)
@@ -2648,13 +2651,14 @@ def SetUpAndroidEnv(env):
                     'c',
                     'dl',
                     'm',
-                    os.path.join(android_ndk_lib, 'crtend_android.o'),
                     ],
               )
+  # SHLINKFLAGS should not inherit options from LINKFLAGS.
+  env.FilterOut(SHLINKFLAGS=['$LINKFLAGS'])
   env.Append(CCFLAGS=['--sysroot=' + android_ndk_sysroot,
                       '-isystem=' + os.path.join(android_ndk_sysroot, 'usr',
                                                  'include'),
-                      '-I<(android_stlport_include)',
+                      '-I%s' % android_stlport_include,
                       '-ffunction-sections',
                       '-g',
                       '-fstack-protector',
@@ -2678,6 +2682,17 @@ def SetUpAndroidEnv(env):
                         # crtbegin_dynamic.o should be the last item in ldflags.
                         os.path.join(android_ndk_lib, 'crtbegin_dynamic.o'),
                         ],
+             LINKCOM=' $ANDROID_EXTRA_LIBS',
+             ANDROID_EXTRA_LIBS=os.path.join(android_ndk_lib,
+                                             'crtend_android.o'),
+             SHLINKFLAGS=['--sysroot=' + android_ndk_sysroot,
+                          '-nostdlib',
+                          # crtbegin_so.o should be the last item in ldflags.
+                          os.path.join(android_ndk_lib, 'crtbegin_so.o'),
+                          ],
+             SHLINKCOM=' $ANDROID_EXTRA_SHLIBS',
+             ANDROID_EXTRA_SHLIBS=os.path.join(android_ndk_lib,
+                                               'crtend_so.o'),
              )
   return env
 
