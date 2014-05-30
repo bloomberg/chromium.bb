@@ -157,9 +157,7 @@ BrowserProcessImpl::BrowserProcessImpl(
       module_ref_count_(0),
       did_start_(false),
       download_status_updater_(new DownloadStatusUpdater),
-      local_state_task_runner_(local_state_task_runner),
-      network_time_tracker_(new NetworkTimeTracker(
-          scoped_ptr<base::TickClock>(new base::DefaultTickClock()))) {
+      local_state_task_runner_(local_state_task_runner) {
   g_browser_process = this;
   platform_part_.reset(new BrowserProcessPlatformPart());
 
@@ -636,6 +634,11 @@ WebRtcLogUploader* BrowserProcessImpl::webrtc_log_uploader() {
 #endif
 
 NetworkTimeTracker* BrowserProcessImpl::network_time_tracker() {
+  if (!network_time_tracker_) {
+    network_time_tracker_.reset(new NetworkTimeTracker(
+        scoped_ptr<base::TickClock>(new base::DefaultTickClock()),
+        local_state()));
+  }
   return network_time_tracker_.get();
 }
 

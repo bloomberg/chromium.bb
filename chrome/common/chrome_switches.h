@@ -154,7 +154,6 @@ extern const char kEnableLinkableEphemeralApps[];
 extern const char kEnableManagedStorage[];
 extern const char kEnableNaCl[];
 extern const char kEnableNetBenchmarking[];
-extern const char kEnableNetworkTime[];
 extern const char kEnableNpnHttpOnly[];
 extern const char kEnableOfflineAutoReload[];
 extern const char kEnableOfflineLoadStaleCache[];

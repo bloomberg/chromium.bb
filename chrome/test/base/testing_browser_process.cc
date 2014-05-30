@@ -68,8 +68,6 @@ TestingBrowserProcess::TestingBrowserProcess()
     : notification_service_(content::NotificationService::Create()),
       module_ref_count_(0),
       app_locale_("en"),
-      network_time_tracker_(new NetworkTimeTracker(
-          scoped_ptr<base::TickClock>(new base::DefaultTickClock))),
       local_state_(NULL),
       io_thread_(NULL),
       system_request_context_(NULL),
@@ -365,6 +363,12 @@ WebRtcLogUploader* TestingBrowserProcess::webrtc_log_uploader() {
 #endif
 
 NetworkTimeTracker* TestingBrowserProcess::network_time_tracker() {
+  if (!network_time_tracker_) {
+    DCHECK(local_state_);
+    network_time_tracker_.reset(new NetworkTimeTracker(
+        scoped_ptr<base::TickClock>(new base::DefaultTickClock()),
+        local_state_));
+  }
   return network_time_tracker_.get();
 }
 
@@ -384,6 +388,7 @@ void TestingBrowserProcess::SetLocalState(PrefService* local_state) {
     // (assumedly as part of exiting the test and freeing TestingBrowserProcess)
     // any components owned by TestingBrowserProcess that depend on local_state
     // are also freed.
+    network_time_tracker_.reset();
 #if !defined(OS_IOS)
     notification_ui_manager_.reset();
 #endif

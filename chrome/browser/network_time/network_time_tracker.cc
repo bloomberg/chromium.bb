@@ -7,8 +7,11 @@
 #include "base/basictypes.h"
 #include "base/i18n/time_formatting.h"
 #include "base/logging.h"
+#include "base/prefs/pref_registry_simple.h"
+#include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/tick_clock.h"
+#include "chrome/common/pref_names.h"
 
 namespace {
 
@@ -24,34 +27,39 @@ const int kNumTimeMeasurements = 5;
 
 }  // namespace
 
-NetworkTimeTracker::TimeMapping::TimeMapping(base::Time local_time,
-                                             base::Time network_time)
-    : local_time(local_time),
-      network_time(network_time) {}
+// static
+void NetworkTimeTracker::RegisterPrefs(PrefRegistrySimple* registry) {
+  registry->RegisterDictionaryPref(prefs::kNetworkTimeMapping,
+                                   new base::DictionaryValue());
+}
 
-NetworkTimeTracker::NetworkTimeTracker(scoped_ptr<base::TickClock> tick_clock)
+NetworkTimeTracker::NetworkTimeTracker(scoped_ptr<base::TickClock> tick_clock,
+                                       PrefService* pref_service)
     : tick_clock_(tick_clock.Pass()),
+      pref_service_(pref_service),
       received_network_time_(false) {
+  const base::DictionaryValue* time_mapping =
+      pref_service_->GetDictionary(prefs::kNetworkTimeMapping);
+  double local_time_js = 0;
+  double network_time_js = 0;
+  if (time_mapping->GetDouble("local", &local_time_js) &&
+      time_mapping->GetDouble("network", &network_time_js)) {
+    base::Time local_time_saved = base::Time::FromJsTime(local_time_js);
+    base::Time local_time_now = base::Time::Now();
+    if (local_time_saved > local_time_now ||
+        local_time_now - local_time_saved > base::TimeDelta::FromDays(7)) {
+      // Drop saved mapping if clock skew has changed or the data is too old.
+      pref_service_->ClearPref(prefs::kNetworkTimeMapping);
+    } else {
+      network_time_ = base::Time::FromJsTime(network_time_js) +
+          (local_time_now - local_time_saved);
+      network_time_ticks_ = base::TimeTicks::Now();
+    }
+  }
 }
 
 NetworkTimeTracker::~NetworkTimeTracker() {
   DCHECK(thread_checker_.CalledOnValidThread());
-}
-
-void NetworkTimeTracker::InitFromSavedTime(const TimeMapping& saved) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  if (!network_time_.is_null() || saved.local_time.is_null() ||
-      saved.network_time.is_null())
-    return;
-
-  base::Time local_time_now = base::Time::Now();
-  if (local_time_now < saved.local_time) {
-    DLOG(WARNING) << "Can't initialize because clock skew has changed.";
-    return;
-  }
-
-  network_time_ = saved.network_time + (local_time_now - saved.local_time);
-  network_time_ticks_ = base::TimeTicks::Now();
 }
 
 void NetworkTimeTracker::UpdateNetworkTime(base::Time network_time,
@@ -85,6 +93,17 @@ void NetworkTimeTracker::UpdateNetworkTime(base::Time network_time,
       base::TimeDelta::FromMilliseconds(kTicksResolutionMs);
 
   received_network_time_ = true;
+
+  base::Time network_time_now;
+  if (GetNetworkTime(base::TimeTicks::Now(), &network_time_now, NULL)) {
+    // Update time mapping if tracker received time update from server, i.e.
+    // mapping is accurate.
+    base::Time local_now = base::Time::Now();
+    base::DictionaryValue time_mapping;
+    time_mapping.SetDouble("local", local_now.ToJsTime());
+    time_mapping.SetDouble("network", network_time_now.ToJsTime());
+    pref_service_->Set(prefs::kNetworkTimeMapping, time_mapping);
+  }
 }
 
 bool NetworkTimeTracker::GetNetworkTime(base::TimeTicks time_ticks,

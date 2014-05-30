@@ -525,9 +525,6 @@ const char kEnableNaCl[]                    = "enable-nacl";
 // Enables the network-related benchmarking extensions.
 const char kEnableNetBenchmarking[]         = "enable-net-benchmarking";
 
-// Enables |NetworkTimeService| to convert local time to network time.
-const char kEnableNetworkTime[]             = "enable-network-time";
-
 // Enables NPN with HTTP. It means NPN is enabled but SPDY won't be used.
 // HTTP is still used for all requests.
 const char kEnableNpnHttpOnly[]             = "enable-npn-http";

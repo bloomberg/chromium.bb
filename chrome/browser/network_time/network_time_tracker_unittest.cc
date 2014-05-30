@@ -7,6 +7,7 @@
 #include <math.h>
 
 #include "base/compiler_specific.h"
+#include "base/prefs/testing_pref_service.h"
 #include "base/time/tick_clock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -41,11 +42,16 @@ class TestTickClock : public base::TickClock {
 
 class NetworkTimeTrackerTest : public testing::Test {
  public:
-  NetworkTimeTrackerTest()
-      : now_(base::Time::NowFromSystemTime()),
-        network_time_tracker_(new NetworkTimeTracker(
-            scoped_ptr<base::TickClock>(new TestTickClock(&ticks_now_)))) {}
   virtual ~NetworkTimeTrackerTest() {}
+
+  virtual void SetUp() OVERRIDE {
+    NetworkTimeTracker::RegisterPrefs(pref_service_.registry());
+
+    now_ = base::Time::NowFromSystemTime();
+    network_time_tracker_.reset(new NetworkTimeTracker(
+        scoped_ptr<base::TickClock>(new TestTickClock(&ticks_now_)),
+        &pref_service_));
+  }
 
   base::Time Now() const {
     return now_ + (ticks_now_ - base::TimeTicks());
@@ -97,6 +103,8 @@ class NetworkTimeTrackerTest : public testing::Test {
   // for details.
   base::Time now_;
   base::TimeTicks ticks_now_;
+
+  TestingPrefServiceSimple pref_service_;
 
   // The network time tracker being tested.
   scoped_ptr<NetworkTimeTracker> network_time_tracker_;

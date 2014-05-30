@@ -9,6 +9,9 @@
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 
+class PrefRegistrySimple;
+class PrefService;
+
 namespace base {
 class TickClock;
 }
@@ -17,18 +20,11 @@ class TickClock;
 // for a corresponding local time. This class is not thread safe.
 class NetworkTimeTracker {
  public:
-  explicit NetworkTimeTracker(scoped_ptr<base::TickClock> tick_clock);
+  static void RegisterPrefs(PrefRegistrySimple* registry);
+
+  NetworkTimeTracker(scoped_ptr<base::TickClock> tick_clock,
+                     PrefService* pref_service);
   ~NetworkTimeTracker();
-
-  struct TimeMapping {
-    TimeMapping(base::Time local_time, base::Time network_time);
-    base::Time local_time;
-    base::Time network_time;
-  };
-
-  // Initializes from saved times to be able to compute network time before
-  // receiving accurate time from HTTP response.
-  void InitFromSavedTime(const TimeMapping& saved);
 
   // Returns the network time corresponding to |time_ticks| if network time
   // is available. Returns false if no network time is available yet. Can also
@@ -53,6 +49,8 @@ class NetworkTimeTracker {
  private:
   // For querying current time ticks.
   scoped_ptr<base::TickClock> tick_clock_;
+
+  PrefService* pref_service_;
 
   // Network time based on last call to UpdateNetworkTime().
   base::Time network_time_;

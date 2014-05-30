@@ -45,7 +45,7 @@
 #include "chrome/browser/net/predictor.h"
 #include "chrome/browser/net/pref_proxy_config_tracker_impl.h"
 #include "chrome/browser/net/ssl_config_service_manager.h"
-#include "chrome/browser/network_time/network_time_service.h"
+#include "chrome/browser/network_time/network_time_tracker.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/notifications/message_center_notification_manager.h"
 #include "chrome/browser/pepper_flash_settings_manager.h"
@@ -234,6 +234,7 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   IOThread::RegisterPrefs(registry);
   KeywordEditorController::RegisterPrefs(registry);
   MetricsService::RegisterPrefs(registry);
+  NetworkTimeTracker::RegisterPrefs(registry);
   PrefProxyConfigTrackerImpl::RegisterPrefs(registry);
   ProfileInfoCache::RegisterPrefs(registry);
   profiles::RegisterPrefs(registry);
@@ -355,7 +356,6 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   MediaDeviceIDSalt::RegisterProfilePrefs(registry);
   MediaStreamDevicesController::RegisterProfilePrefs(registry);
   NetPrefObserver::RegisterProfilePrefs(registry);
-  NetworkTimeService::RegisterProfilePrefs(registry);
 
   password_manager::PasswordManager::RegisterProfilePrefs(registry);
   PrefProxyConfigTrackerImpl::RegisterProfilePrefs(registry);
