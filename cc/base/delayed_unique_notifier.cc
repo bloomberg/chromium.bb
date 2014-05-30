@@ -43,6 +43,10 @@ void DelayedUniqueNotifier::Cancel() {
   next_notification_time_ = base::TimeTicks();
 }
 
+bool DelayedUniqueNotifier::HasPendingNotification() const {
+  return notification_pending_ && !next_notification_time_.is_null();
+}
+
 base::TimeTicks DelayedUniqueNotifier::Now() const {
   return base::TimeTicks::Now();
 }

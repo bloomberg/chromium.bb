@@ -192,7 +192,7 @@ TEST_F(DelayedUniqueNotifierTest, RescheduleDelay) {
   EXPECT_EQ(1, NotificationCount());
 }
 
-TEST_F(DelayedUniqueNotifierTest, Cancel) {
+TEST_F(DelayedUniqueNotifierTest, CancelAndHasPendingNotification) {
   base::TimeDelta delay = base::TimeDelta::FromInternalValue(20);
   TestNotifier notifier(
       task_runner_,
@@ -206,9 +206,11 @@ TEST_F(DelayedUniqueNotifierTest, Cancel) {
       notifier.Now() + base::TimeDelta::FromInternalValue(10);
   notifier.SetNow(schedule_time);
   notifier.Schedule();
+  EXPECT_TRUE(notifier.HasPendingNotification());
 
   // Cancel the run.
   notifier.Cancel();
+  EXPECT_FALSE(notifier.HasPendingNotification());
 
   std::deque<base::TestPendingTask> tasks = TakePendingTasks();
 
@@ -218,11 +220,13 @@ TEST_F(DelayedUniqueNotifierTest, Cancel) {
   // Time to run, but a canceled task!
   tasks[0].task.Run();
   EXPECT_EQ(0, NotificationCount());
+  EXPECT_FALSE(notifier.HasPendingNotification());
 
   tasks = TakePendingTasks();
   EXPECT_EQ(0u, tasks.size());
 
   notifier.Schedule();
+  EXPECT_TRUE(notifier.HasPendingNotification());
   tasks = TakePendingTasks();
 
   ASSERT_EQ(1u, tasks.size());
@@ -231,14 +235,18 @@ TEST_F(DelayedUniqueNotifierTest, Cancel) {
   // Advance the time.
   notifier.SetNow(notifier.Now() + delay);
 
-  // This should run since it wasn't scheduled.
+  // This should run since it wasn't canceled.
   tasks[0].task.Run();
   EXPECT_EQ(1, NotificationCount());
+  EXPECT_FALSE(notifier.HasPendingNotification());
 
-  for (int i = 0; i < 10; ++i)
+  for (int i = 0; i < 10; ++i) {
     notifier.Schedule();
+    EXPECT_TRUE(notifier.HasPendingNotification());
+    notifier.Cancel();
+    EXPECT_FALSE(notifier.HasPendingNotification());
+  }
 
-  notifier.Cancel();
   tasks = TakePendingTasks();
 
   ASSERT_EQ(1u, tasks.size());
@@ -251,6 +259,7 @@ TEST_F(DelayedUniqueNotifierTest, Cancel) {
 
   tasks = TakePendingTasks();
   EXPECT_EQ(0u, tasks.size());
+  EXPECT_FALSE(notifier.HasPendingNotification());
 }
 
 }  // namespace

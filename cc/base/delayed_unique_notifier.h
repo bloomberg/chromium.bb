@@ -37,6 +37,9 @@ class CC_EXPORT DelayedUniqueNotifier {
   // Cancel any previously scheduled runs.
   void Cancel();
 
+  // Returns true if a notification is currently scheduled to run.
+  bool HasPendingNotification() const;
+
  protected:
   // Virtual for testing.
   virtual base::TimeTicks Now() const;
