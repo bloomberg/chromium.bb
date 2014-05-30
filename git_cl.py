@@ -1417,6 +1417,9 @@ def CMDlint(parser, args):
     cl = Changelist()
     change = cl.GetChange(cl.GetCommonAncestorWithUpstream(), None)
     files = [f.LocalPath() for f in change.AffectedFiles()]
+    if not files:
+      print "Cannot lint an empty CL"
+      return 1
 
     # Process cpplints arguments if any.
     command = args + files
