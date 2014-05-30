@@ -2,6 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// Declares a delegate that interacts with the rest of the browser on behalf of
+// the AutomaticProfileResetter.
+//
+// The reason for this separation is to facilitate unit testing. Factoring out
+// the implementation for each interaction step (encapsulated by one method of
+// the delegate) allows it to be tested independently in itself. It also becomes
+// easier to verify that the state machine inside AutomaticProfileResetter works
+// correctly: by mocking out the interaction methods in the delegate, we can, in
+// effect, mock out the entire rest of the browser, allowing us to easily
+// simulate scenarios that are interesting for testing the state machine.
+//
+// The delegate is normally instantiated by AutomaticProfileResetter internally,
+// while a mock implementation can be injected during unit tests.
+
 #ifndef CHROME_BROWSER_PROFILE_RESETTER_AUTOMATIC_PROFILE_RESETTER_DELEGATE_H_
 #define CHROME_BROWSER_PROFILE_RESETTER_AUTOMATIC_PROFILE_RESETTER_DELEGATE_H_
 
@@ -28,7 +42,6 @@ class ListValue;
 
 // Defines the interface for the delegate that will interact with the rest of
 // the browser on behalf of the AutomaticProfileResetter.
-// The primary reason for this separation is to facilitate unit testing.
 class AutomaticProfileResetterDelegate {
  public:
   virtual ~AutomaticProfileResetterDelegate() {}
@@ -174,16 +187,29 @@ class AutomaticProfileResetterDelegateImpl
       const base::Closure& user_callback,
       scoped_ptr<ResettableSettingsSnapshot> old_settings_snapshot);
 
+  // The profile that this delegate operates on.
   Profile* profile_;
+
+  // Shortcuts to |profile_| keyed services, to reduce boilerplate. These may be
+  // NULL in unit tests that do not initialize the respective service(s).
   GlobalErrorService* global_error_service_;
   TemplateURLService* template_url_service_;
 
+  // Helper to asynchronously download the default settings for the current
+  // distribution channel (identified by brand code). Instantiated on-demand.
   scoped_ptr<BrandcodeConfigFetcher> brandcoded_config_fetcher_;
+
+  // Once |brandcoded_defaults_fetched_event_| has fired, this will contain the
+  // brandcoded default settings, or empty settings for a non-branded build.
   scoped_ptr<BrandcodedDefaultSettings> brandcoded_defaults_;
 
+  // Overwritten to avoid resetting aspects that will not work in unit tests.
   const ProfileResetter::ResettableFlags resettable_aspects_;
+
+  // The profile resetter to perform the actual reset. Instantiated on-demand.
   scoped_ptr<ProfileResetter> profile_resetter_;
 
+  // Manages registrations/unregistrations for notifications.
   content::NotificationRegistrar registrar_;
 
   // The list of modules found. Even when |modules_have_been_enumerated_event_|
