@@ -118,12 +118,8 @@ PassRefPtr<ScriptCallStack> createScriptCallStackForConsole(ScriptState* scriptS
     return createScriptCallStack(stackSize);
 }
 
-PassRefPtr<ScriptArguments> createScriptArguments(const v8::FunctionCallbackInfo<v8::Value>& v8arguments, unsigned skipArgumentCount)
+PassRefPtr<ScriptArguments> createScriptArguments(ScriptState* scriptState, const v8::FunctionCallbackInfo<v8::Value>& v8arguments, unsigned skipArgumentCount)
 {
-    v8::Isolate* isolate = v8arguments.GetIsolate();
-    v8::HandleScope scope(isolate);
-    ScriptState* scriptState = ScriptState::current(isolate);
-
     Vector<ScriptValue> arguments;
     for (int i = skipArgumentCount; i < v8arguments.Length(); ++i)
         arguments.append(ScriptValue(scriptState, v8arguments[i]));

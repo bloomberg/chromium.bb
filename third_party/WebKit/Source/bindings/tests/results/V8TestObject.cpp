@@ -7714,7 +7714,7 @@ static void callWithScriptStateScriptArgumentsVoidMethodMethod(const v8::Functio
 {
     TestObject* impl = V8TestObject::toNative(info.Holder());
     ScriptState* scriptState = ScriptState::current(info.GetIsolate());
-    RefPtr<ScriptArguments> scriptArguments(createScriptArguments(info, 0));
+    RefPtr<ScriptArguments> scriptArguments(createScriptArguments(scriptState, info, 0));
     impl->callWithScriptStateScriptArgumentsVoidMethod(scriptState, scriptArguments.release());
 }
 
@@ -7734,14 +7734,14 @@ static void callWithScriptStateScriptArgumentsVoidMethodOptionalBooleanArgMethod
         V8RethrowTryCatchScope rethrow(block);
         if (UNLIKELY(info.Length() <= 0)) {
             ScriptState* scriptState = ScriptState::current(info.GetIsolate());
-            RefPtr<ScriptArguments> scriptArguments(createScriptArguments(info, 1));
+            RefPtr<ScriptArguments> scriptArguments(createScriptArguments(scriptState, info, 1));
             impl->callWithScriptStateScriptArgumentsVoidMethodOptionalBooleanArg(scriptState, scriptArguments.release());
             return;
         }
         TONATIVE_VOID_INTERNAL(optionalBooleanArg, info[0]->BooleanValue());
     }
     ScriptState* scriptState = ScriptState::current(info.GetIsolate());
-    RefPtr<ScriptArguments> scriptArguments(createScriptArguments(info, 1));
+    RefPtr<ScriptArguments> scriptArguments(createScriptArguments(scriptState, info, 1));
     impl->callWithScriptStateScriptArgumentsVoidMethodOptionalBooleanArg(scriptState, scriptArguments.release(), optionalBooleanArg);
 }
 

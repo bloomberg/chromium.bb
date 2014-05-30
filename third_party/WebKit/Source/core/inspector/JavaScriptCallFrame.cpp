@@ -167,7 +167,7 @@ v8::Handle<v8::Object> JavaScriptCallFrame::innerCallFrame()
     return m_callFrame.newLocal(m_isolate);
 }
 
-ScriptValue JavaScriptCallFrame::setVariableValue(int scopeNumber, const String& variableName, const ScriptValue& newValue)
+ScriptValue JavaScriptCallFrame::setVariableValue(ScriptState* scriptState, int scopeNumber, const String& variableName, const ScriptValue& newValue)
 {
     v8::Handle<v8::Object> callFrame = m_callFrame.newLocal(m_isolate);
     v8::Handle<v8::Function> setVariableValueFunction = v8::Handle<v8::Function>::Cast(callFrame->Get(v8AtomicString(m_isolate, "setVariableValue")));
@@ -176,7 +176,7 @@ ScriptValue JavaScriptCallFrame::setVariableValue(int scopeNumber, const String&
         v8String(m_isolate, variableName),
         newValue.v8Value()
     };
-    return ScriptValue(ScriptState::current(m_isolate), setVariableValueFunction->Call(callFrame, WTF_ARRAY_LENGTH(argv), argv));
+    return ScriptValue(scriptState, setVariableValueFunction->Call(callFrame, WTF_ARRAY_LENGTH(argv), argv));
 }
 
 } // namespace WebCore

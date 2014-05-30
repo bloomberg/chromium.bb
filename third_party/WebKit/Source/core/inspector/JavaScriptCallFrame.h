@@ -33,6 +33,7 @@
 
 
 #include "bindings/v8/ScopedPersistent.h"
+#include "bindings/v8/ScriptState.h"
 #include "bindings/v8/ScriptWrappable.h"
 #include <v8-debug.h>
 #include "wtf/RefCounted.h"
@@ -66,7 +67,7 @@ public:
 
     v8::Handle<v8::Value> evaluate(const String& expression);
     v8::Handle<v8::Value> restart();
-    ScriptValue setVariableValue(int scopeNumber, const String& variableName, const ScriptValue& newValue);
+    ScriptValue setVariableValue(ScriptState*, int scopeNumber, const String& variableName, const ScriptValue& newValue);
     v8::Handle<v8::Object> innerCallFrame();
 
 private:
