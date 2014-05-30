@@ -38,17 +38,23 @@ private:
         RecursionData()
             : m_invalidateCustomPseudo(false)
             , m_wholeSubtreeInvalid(false)
+            , m_treeBoundaryCrossing(false)
         { }
+
         void pushInvalidationSet(const DescendantInvalidationSet&);
         bool matchesCurrentInvalidationSets(Element&);
         bool hasInvalidationSets() const { return m_invalidationSets.size(); }
+
         bool wholeSubtreeInvalid() const { return m_wholeSubtreeInvalid; }
         void setWholeSubtreeInvalid() { m_wholeSubtreeInvalid = true; }
+
+        bool treeBoundaryCrossing() const { return m_treeBoundaryCrossing; }
 
         typedef Vector<const DescendantInvalidationSet*, 16> InvalidationSets;
         InvalidationSets m_invalidationSets;
         bool m_invalidateCustomPseudo;
         bool m_wholeSubtreeInvalid;
+        bool m_treeBoundaryCrossing;
     };
 
     class RecursionCheckpoint {
@@ -57,6 +63,7 @@ private:
             : m_prevInvalidationSetsSize(data->m_invalidationSets.size())
             , m_prevInvalidateCustomPseudo(data->m_invalidateCustomPseudo)
             , m_prevWholeSubtreeInvalid(data->m_wholeSubtreeInvalid)
+            , m_treeBoundaryCrossing(data->m_treeBoundaryCrossing)
             , m_data(data)
         { }
         ~RecursionCheckpoint()
@@ -64,12 +71,14 @@ private:
             m_data->m_invalidationSets.remove(m_prevInvalidationSetsSize, m_data->m_invalidationSets.size() - m_prevInvalidationSetsSize);
             m_data->m_invalidateCustomPseudo = m_prevInvalidateCustomPseudo;
             m_data->m_wholeSubtreeInvalid = m_prevWholeSubtreeInvalid;
+            m_data->m_treeBoundaryCrossing = m_treeBoundaryCrossing;
         }
 
     private:
         int m_prevInvalidationSetsSize;
         bool m_prevInvalidateCustomPseudo;
         bool m_prevWholeSubtreeInvalid;
+        bool m_treeBoundaryCrossing;
         RecursionData* m_data;
     };
 

@@ -64,6 +64,9 @@ public:
     void setWholeSubtreeInvalid();
     bool wholeSubtreeInvalid() const { return m_allDescendantsMightBeInvalid; }
 
+    void setTreeBoundaryCrossing() { m_treeBoundaryCrossing = true; }
+    bool treeBoundaryCrossing() const { return m_treeBoundaryCrossing; }
+
     void setCustomPseudoInvalid() { m_customPseudoInvalid = true; }
     bool customPseudoInvalid() const { return m_customPseudoInvalid; }
 
@@ -79,17 +82,20 @@ private:
     WillBeHeapHashSet<AtomicString>& ensureTagNameSet();
     WillBeHeapHashSet<AtomicString>& ensureAttributeSet();
 
-    // If true, all descendants might be invalidated, so a full subtree recalc is required.
-    bool m_allDescendantsMightBeInvalid;
-
-    // If true, all descendants which are custom pseudo elements must be invalidated.
-    bool m_customPseudoInvalid;
-
     // FIXME: optimize this if it becomes a memory issue.
     OwnPtrWillBeMember<WillBeHeapHashSet<AtomicString> > m_classes;
     OwnPtrWillBeMember<WillBeHeapHashSet<AtomicString> > m_ids;
     OwnPtrWillBeMember<WillBeHeapHashSet<AtomicString> > m_tagNames;
     OwnPtrWillBeMember<WillBeHeapHashSet<AtomicString> > m_attributes;
+
+    // If true, all descendants might be invalidated, so a full subtree recalc is required.
+    unsigned m_allDescendantsMightBeInvalid : 1;
+
+    // If true, all descendants which are custom pseudo elements must be invalidated.
+    unsigned m_customPseudoInvalid : 1;
+
+    // If true, the invalidation must traverse into ShadowRoots with this set.
+    unsigned m_treeBoundaryCrossing : 1;
 };
 
 } // namespace WebCore

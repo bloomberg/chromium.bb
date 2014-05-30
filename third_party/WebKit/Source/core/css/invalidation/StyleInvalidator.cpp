@@ -71,6 +71,8 @@ StyleInvalidator::~StyleInvalidator()
 void StyleInvalidator::RecursionData::pushInvalidationSet(const DescendantInvalidationSet& invalidationSet)
 {
     ASSERT(!m_wholeSubtreeInvalid);
+    if (invalidationSet.treeBoundaryCrossing())
+        m_treeBoundaryCrossing = true;
     if (invalidationSet.wholeSubtreeInvalid()) {
         m_wholeSubtreeInvalid = true;
         return;
@@ -115,14 +117,16 @@ bool StyleInvalidator::invalidateChildren(Element& element)
 {
     bool someChildrenNeedStyleRecalc = false;
     for (ShadowRoot* root = element.youngestShadowRoot(); root; root = root->olderShadowRoot()) {
-        for (Element* child = ElementTraversal::firstWithin(*root); child; child = ElementTraversal::nextSibling(*child)) {
+        if (!m_recursionData.treeBoundaryCrossing() && !root->childNeedsStyleInvalidation() && !root->needsStyleInvalidation())
+            continue;
+        for (Element* child = ElementTraversal::firstChild(*root); child; child = ElementTraversal::nextSibling(*child)) {
             bool childRecalced = invalidate(*child);
             someChildrenNeedStyleRecalc = someChildrenNeedStyleRecalc || childRecalced;
         }
         root->clearChildNeedsStyleInvalidation();
         root->clearNeedsStyleInvalidation();
     }
-    for (Element* child = ElementTraversal::firstWithin(element); child; child = ElementTraversal::nextSibling(*child)) {
+    for (Element* child = ElementTraversal::firstChild(element); child; child = ElementTraversal::nextSibling(*child)) {
         bool childRecalced = invalidate(*child);
         someChildrenNeedStyleRecalc = someChildrenNeedStyleRecalc || childRecalced;
     }

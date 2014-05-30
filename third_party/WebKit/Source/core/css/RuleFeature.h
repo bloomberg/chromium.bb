@@ -148,17 +148,23 @@ private:
     InvalidationSetMode updateInvalidationSets(const CSSSelector&);
 
     struct InvalidationSetFeatures {
-        InvalidationSetFeatures() : customPseudoElement(false) { }
+        InvalidationSetFeatures()
+            : customPseudoElement(false)
+            , treeBoundaryCrossing(false)
+            , wholeSubtree(false)
+        { }
         Vector<AtomicString> classes;
         Vector<AtomicString> attributes;
         AtomicString id;
         AtomicString tagName;
         bool customPseudoElement;
+        bool treeBoundaryCrossing;
+        bool wholeSubtree;
     };
 
     static void extractInvalidationSetFeature(const CSSSelector&, InvalidationSetFeatures&);
     const CSSSelector* extractInvalidationSetFeatures(const CSSSelector&, InvalidationSetFeatures&);
-    void addFeaturesToInvalidationSets(const CSSSelector&, const InvalidationSetFeatures&, bool wholeSubtree);
+    void addFeaturesToInvalidationSets(const CSSSelector&, InvalidationSetFeatures&);
 
     void addClassToInvalidationSet(const AtomicString& className, Element&);
 

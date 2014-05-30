@@ -207,41 +207,50 @@ RuleFeatureSet::InvalidationSetMode RuleFeatureSet::updateInvalidationSets(const
         return mode;
 
     InvalidationSetFeatures features;
-    const CSSSelector* current = extractInvalidationSetFeatures(selector, features);
-    if (current) {
-        bool wholeSubtree = current->relation() == CSSSelector::DirectAdjacent || current->relation() == CSSSelector::IndirectAdjacent;
-        current = current->tagHistory();
-        if (current)
-            addFeaturesToInvalidationSets(*current, features, wholeSubtree);
-    }
+    if (const CSSSelector* current = extractInvalidationSetFeatures(selector, features))
+        addFeaturesToInvalidationSets(*current, features);
     return AddFeatures;
 }
 
 const CSSSelector* RuleFeatureSet::extractInvalidationSetFeatures(const CSSSelector& selector, InvalidationSetFeatures& features)
 {
-    const CSSSelector* lastSelector = &selector;
-    for (; lastSelector; lastSelector = lastSelector->tagHistory()) {
-        extractInvalidationSetFeature(*lastSelector, features);
+    for (const CSSSelector* current = &selector; current; current = current->tagHistory()) {
+        extractInvalidationSetFeature(*current, features);
         // Initialize the entry in the invalidation set map, if supported.
-        invalidationSetForSelector(*lastSelector);
-        if (lastSelector->pseudoType() == CSSSelector::PseudoHost || lastSelector->pseudoType() == CSSSelector::PseudoAny) {
-            if (const CSSSelectorList* selectorList = lastSelector->selectorList()) {
+        invalidationSetForSelector(*current);
+        if (current->pseudoType() == CSSSelector::PseudoHost || current->pseudoType() == CSSSelector::PseudoAny) {
+            if (const CSSSelectorList* selectorList = current->selectorList()) {
                 for (const CSSSelector* selector = selectorList->first(); selector; selector = CSSSelectorList::next(*selector))
                     extractInvalidationSetFeatures(*selector, features);
             }
         }
 
-        if (lastSelector->relation() != CSSSelector::SubSelector)
+        switch (current->relation()) {
+        case CSSSelector::SubSelector:
             break;
+        case CSSSelector::ShadowPseudo:
+        case CSSSelector::ShadowDeep:
+            features.treeBoundaryCrossing = true;
+            return current->tagHistory();
+        case CSSSelector::DirectAdjacent:
+        case CSSSelector::IndirectAdjacent:
+            features.wholeSubtree = true;
+            return current->tagHistory();
+        case CSSSelector::Descendant:
+        case CSSSelector::Child:
+            return current->tagHistory();
+        }
     }
-    return lastSelector;
+    return 0;
 }
 
-void RuleFeatureSet::addFeaturesToInvalidationSets(const CSSSelector& selector, const InvalidationSetFeatures& features, bool wholeSubtree)
+void RuleFeatureSet::addFeaturesToInvalidationSets(const CSSSelector& selector, InvalidationSetFeatures& features)
 {
     for (const CSSSelector* current = &selector; current; current = current->tagHistory()) {
         if (DescendantInvalidationSet* invalidationSet = invalidationSetForSelector(*current)) {
-            if (wholeSubtree) {
+            if (features.treeBoundaryCrossing)
+                invalidationSet->setTreeBoundaryCrossing();
+            if (features.wholeSubtree) {
                 invalidationSet->setWholeSubtreeInvalid();
             } else {
                 if (!features.id.isEmpty())
@@ -256,27 +265,28 @@ void RuleFeatureSet::addFeaturesToInvalidationSets(const CSSSelector& selector, 
                     invalidationSet->setCustomPseudoInvalid();
             }
         } else if (current->pseudoType() == CSSSelector::PseudoHost || current->pseudoType() == CSSSelector::PseudoAny) {
+            if (current->pseudoType() == CSSSelector::PseudoHost)
+                features.treeBoundaryCrossing = true;
             if (const CSSSelectorList* selectorList = current->selectorList()) {
                 for (const CSSSelector* selector = selectorList->first(); selector; selector = CSSSelectorList::next(*selector))
-                    addFeaturesToInvalidationSets(*selector, features, wholeSubtree);
+                    addFeaturesToInvalidationSets(*selector, features);
             }
         }
         switch (current->relation()) {
-        case CSSSelector::Descendant:
-        case CSSSelector::Child:
+        case CSSSelector::SubSelector:
+            break;
         case CSSSelector::ShadowPseudo:
         case CSSSelector::ShadowDeep:
-            wholeSubtree = false;
+            features.treeBoundaryCrossing = true;
+            features.wholeSubtree = false;
+            break;
+        case CSSSelector::Descendant:
+        case CSSSelector::Child:
+            features.wholeSubtree = false;
             break;
         case CSSSelector::DirectAdjacent:
         case CSSSelector::IndirectAdjacent:
-            wholeSubtree = true;
-            break;
-        case CSSSelector::SubSelector:
-            break;
-        default:
-            // All combinators should be handled above.
-            ASSERT_NOT_REACHED();
+            features.wholeSubtree = true;
             break;
         }
     }

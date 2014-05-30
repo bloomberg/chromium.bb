@@ -39,6 +39,7 @@ namespace WebCore {
 DescendantInvalidationSet::DescendantInvalidationSet()
     : m_allDescendantsMightBeInvalid(false)
     , m_customPseudoInvalid(false)
+    , m_treeBoundaryCrossing(false)
 {
 }
 
@@ -84,6 +85,9 @@ void DescendantInvalidationSet::combine(const DescendantInvalidationSet& other)
 
     if (other.customPseudoInvalid())
         setCustomPseudoInvalid();
+
+    if (other.treeBoundaryCrossing())
+        setTreeBoundaryCrossing();
 
     if (other.m_classes) {
         WillBeHeapHashSet<AtomicString>::const_iterator end = other.m_classes->end();
@@ -172,6 +176,7 @@ void DescendantInvalidationSet::setWholeSubtreeInvalid()
         return;
 
     m_allDescendantsMightBeInvalid = true;
+    m_treeBoundaryCrossing = false;
     m_classes = nullptr;
     m_ids = nullptr;
     m_tagNames = nullptr;
