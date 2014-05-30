@@ -572,21 +572,6 @@ var ENTRIES = {
       null, SharedOption.NONE, 'Jan 1, 2000 1:00 AM',
       'C', '--', 'Folder'),
 
-  directoryD: new TestEntryInfo(
-      EntryType.DIRECTORY, null, 'D',
-      null, SharedOption.NONE, 'Jan 1, 2000 1:00 AM',
-      'D', '--', 'Folder'),
-
-  directoryE: new TestEntryInfo(
-      EntryType.DIRECTORY, null, 'D/E',
-      null, SharedOption.NONE, 'Jan 1, 2000 1:00 AM',
-      'E', '--', 'Folder'),
-
-  directoryF: new TestEntryInfo(
-      EntryType.DIRECTORY, null, 'D/E/F',
-      null, SharedOption.NONE, 'Jan 1, 2000 1:00 AM',
-      'F', '--', 'Folder'),
-
   zipArchive: new TestEntryInfo(
       EntryType.FILE, 'archive.zip', 'archive.zip',
       'application/x-zip', SharedOption.NONE, 'Jan 1, 2014 1:00 AM',
