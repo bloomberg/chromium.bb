@@ -1077,7 +1077,9 @@ InjectedScript.RemoteObject = function(object, objectGroupName, forceValueType, 
     var subtype = injectedScript._subtype(object);
     if (subtype)
         this.subtype = subtype;
-    this.className = InjectedScriptHost.internalConstructorName(object);
+    var className = InjectedScriptHost.internalConstructorName(object);
+    if (className)
+        this.className = className;
     this.description = injectedScript._describe(object);
 
     if (generatePreview && (this.type === "object" || injectedScript._isHTMLAllCollection(object)))
