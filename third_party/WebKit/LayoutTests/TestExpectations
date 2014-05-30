@@ -87,7 +87,6 @@ crbug.com/371916 [ Debug ] http/tests/security/contentSecurityPolicy/xsl-allowed
 # Pixel tests for RTL iframe scrollbar is erroneous. Cannot observe on actual browser.
 crbug.com/338794 crbug.com/192172 compositing/rtl/rtl-iframe-absolute-overflow.html [ Pass Failure ]
 crbug.com/338794 compositing/rtl/rtl-iframe-absolute-overflow-scrolled.html [ Pass Failure ]
-crbug.com/338794 compositing/rtl/rtl-iframe-fixed-overflow.html [ Pass Failure ]
 crbug.com/338794 crbug.com/192172 compositing/rtl/rtl-iframe-fixed-overflow-scrolled.html [ Pass Failure ]
 crbug.com/338794 virtual/softwarecompositing/rtl/rtl-iframe-absolute-overflow-scrolled.html [ Pass Failure ]
 crbug.com/338794 crbug.com/192172 virtual/softwarecompositing/rtl/rtl-iframe-fixed-overflow.html [ Pass Failure ]
@@ -5828,3 +5827,10 @@ Bug(eae) [ XP ] virtual/threaded/compositing/visibility/visibility-image-layers-
 Bug(eae) [ XP ] virtual/threaded/compositing/visibility/visibility-image-layers.html [ NeedsManualRebaseline ]
 Bug(eae) [ Win ] virtual/threaded/transitions/move-after-transition.html [ NeedsManualRebaseline ]
 Bug(eae) [ XP ] virtual/threaded/transitions/svg-text-shadow-transition.html [ NeedsManualRebaseline ]
+
+# Following test case needs to be rebased after https://codereview.chromium.org/276573010.
+crbug.com/372502 fast/text/shaping/same-script-different-lang.html [ NeedsRebaseline ]
+crbug.com/372502 virtual/windows-directwrite/fast/text/shaping/same-script-different-lang.html [ NeedsRebaseline ]
+crbug.com/372502 compositing/rtl/rtl-iframe-fixed-overflow.html [ NeedsRebaseline ]
+crbug.com/372502 virtual/mac-antialiasedtext/fast/text/shaping/same-script-different-lang.html [ NeedsRebaseline ]
+

@@ -39,6 +39,7 @@ namespace WebCore {
 struct SameSizeAsFontDescription {
     FontFamily familyList;
     RefPtr<FontFeatureSettings> m_featureSettings;
+    String locale;
     float sizes[4];
     // FXIME: Make them fit into one word.
     uint32_t bitfields;

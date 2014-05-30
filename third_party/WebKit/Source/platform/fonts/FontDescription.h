@@ -54,7 +54,8 @@ public:
     enum LigaturesState { NormalLigaturesState, DisabledLigaturesState, EnabledLigaturesState };
 
     FontDescription()
-        : m_specifiedSize(0)
+        : m_locale("en")
+        , m_specifiedSize(0)
         , m_computedSize(0)
         , m_letterSpacing(0)
         , m_wordSpacing(0)
@@ -111,6 +112,7 @@ public:
     FontSmoothingMode fontSmoothing() const { return static_cast<FontSmoothingMode>(m_fontSmoothing); }
     TextRenderingMode textRendering() const { return static_cast<TextRenderingMode>(m_textRendering); }
     UScriptCode script() const { return static_cast<UScriptCode>(m_script); }
+    const String& locale() const { return m_locale; }
     bool isSyntheticBold() const { return m_syntheticBold; }
     bool isSyntheticItalic() const { return m_syntheticItalic; }
     bool useSubpixelPositioning() const { return m_subpixelTextPosition; }
@@ -148,6 +150,7 @@ public:
     void setNonCJKGlyphOrientation(NonCJKGlyphOrientation orientation) { m_nonCJKGlyphOrientation = orientation; }
     void setWidthVariant(FontWidthVariant widthVariant) { m_widthVariant = widthVariant; }
     void setScript(UScriptCode s) { m_script = s; }
+    void setLocale(const String& locale) { m_locale = locale; }
     void setSyntheticBold(bool syntheticBold) { m_syntheticBold = syntheticBold; }
     void setSyntheticItalic(bool syntheticItalic) { m_syntheticItalic = syntheticItalic; }
     void setFeatureSettings(PassRefPtr<FontFeatureSettings> settings) { m_featureSettings = settings; }
@@ -166,6 +169,7 @@ public:
 private:
     FontFamily m_familyList; // The list of font families to be used.
     RefPtr<FontFeatureSettings> m_featureSettings;
+    String m_locale;
 
     void updateTypesettingFeatures() const;
 

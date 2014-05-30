@@ -31,6 +31,7 @@
 #include "core/frame/Settings.h"
 #include "core/rendering/RenderTheme.h"
 #include "core/rendering/RenderView.h"
+#include "platform/fonts/FontDescription.h"
 #include "platform/text/LocaleToScriptMapping.h"
 
 namespace WebCore {
@@ -457,6 +458,7 @@ void FontBuilder::setScript(const String& locale)
 {
     FontDescriptionChangeScope scope(this);
 
+    scope.fontDescription().setLocale(locale);
     scope.fontDescription().setScript(localeToScriptCodeForFontSelection(locale));
 }
 
