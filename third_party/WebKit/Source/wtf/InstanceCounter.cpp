@@ -37,7 +37,10 @@ namespace WTF {
 
 #if ENABLE(INSTANCE_COUNTER) || ENABLE(GC_TRACING)
 
-#if COMPILER(GCC)
+#if COMPILER(CLANG)
+const size_t extractNameFunctionPrefixLength = sizeof("const char *WTF::extractNameFunction() [T = ") - 1;
+const size_t extractNameFunctionPostfixLength = 1;
+#elif COMPILER(GCC)
 const size_t extractNameFunctionPrefixLength = sizeof("const char* WTF::extractNameFunction() [with T = ") - 1;
 const size_t extractNameFunctionPostfixLength = 1;
 #else
@@ -48,7 +51,7 @@ const size_t extractNameFunctionPostfixLength = 1;
 // The result of extractNameFunction<T>() is given as |funcName|. |extractTypeNameFromFunctionName| then extracts a typename string from |funcName|.
 String extractTypeNameFromFunctionName(const char* funcName)
 {
-#if COMPILER(GCC)
+#if COMPILER(CLANG) || COMPILER(GCC)
     size_t funcNameLength = strlen(funcName);
     ASSERT(funcNameLength > extractNameFunctionPrefixLength + 1);
 

@@ -1314,6 +1314,7 @@ public:
             return;
         header->mark();
 #if ENABLE(GC_TRACING)
+        MutexLocker locker(objectGraphMutex());
         String className(classOf(objectPointer));
         {
             LiveObjectMap::AddResult result = currentlyLive().add(className, LiveObjectSet());
@@ -1467,6 +1468,12 @@ public:
     static void dumpPathToObjectOnNextGC(void* p)
     {
         objectsToFindPath().add(reinterpret_cast<uintptr_t>(p));
+    }
+
+    static Mutex& objectGraphMutex()
+    {
+        AtomicallyInitializedStatic(Mutex&, mutex = *new Mutex);
+        return mutex;
     }
 
     static LiveObjectMap& previouslyLive()
