@@ -19,6 +19,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "ui/ozone/common/chromeos/native_display_delegate_ozone.h"
+#include "ui/ozone/common/chromeos/touchscreen_device_manager_ozone.h"
 #endif
 
 namespace ui {
@@ -69,6 +70,11 @@ class OzonePlatformGbm : public OzonePlatform {
   virtual scoped_ptr<NativeDisplayDelegate> CreateNativeDisplayDelegate()
       OVERRIDE {
     return scoped_ptr<NativeDisplayDelegate>(new NativeDisplayDelegateOzone());
+  }
+  virtual scoped_ptr<TouchscreenDeviceManager>
+      CreateTouchscreenDeviceManager() OVERRIDE {
+    return scoped_ptr<TouchscreenDeviceManager>(
+        new TouchscreenDeviceManagerOzone());
   }
 #endif
   virtual void InitializeUI() OVERRIDE {
