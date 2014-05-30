@@ -11,6 +11,10 @@
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "extensions/browser/extensions_browser_client.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/extensions/extension_garbage_collector_chromeos.h"
+#endif
+
 namespace extensions {
 
 // static
@@ -40,7 +44,11 @@ ExtensionGarbageCollectorFactory::~ExtensionGarbageCollectorFactory() {}
 // static
 KeyedService* ExtensionGarbageCollectorFactory::BuildInstanceFor(
     content::BrowserContext* context) {
+#if defined(OS_CHROMEOS)
+  return new ExtensionGarbageCollectorChromeOS(context);
+#else
   return new ExtensionGarbageCollector(context);
+#endif
 }
 
 KeyedService* ExtensionGarbageCollectorFactory::BuildServiceInstanceFor(
