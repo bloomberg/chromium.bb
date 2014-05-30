@@ -200,9 +200,9 @@ class AudioDecoder::Pcm16Impl : public AudioDecoder::ImplBase {
 
 AudioDecoder::AudioDecoder(
     const scoped_refptr<CastEnvironment>& cast_environment,
-    const AudioReceiverConfig& audio_config)
+    const FrameReceiverConfig& audio_config)
     : cast_environment_(cast_environment) {
-  switch (audio_config.codec) {
+  switch (audio_config.codec.audio) {
     case transport::kOpus:
       impl_ = new OpusImpl(cast_environment,
                            audio_config.channels,

@@ -15,6 +15,7 @@
 #include "media/cast/logging/simple_event_subscriber.h"
 #include "media/cast/rtcp/test_rtcp_packet_builder.h"
 #include "media/cast/test/fake_single_thread_task_runner.h"
+#include "media/cast/test/utility/default_config.h"
 #include "media/cast/transport/pacing/mock_paced_packet_sender.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -66,14 +67,11 @@ class AudioReceiverTest : public ::testing::Test {
  protected:
   AudioReceiverTest() {
     // Configure the audio receiver to use PCM16.
-    audio_config_.rtp_payload_type = 127;
+    audio_config_ = GetDefaultAudioReceiverConfig();
+    audio_config_.rtp_max_delay_ms = kPlayoutDelayMillis;
     audio_config_.frequency = 16000;
     audio_config_.channels = 1;
-    audio_config_.codec = transport::kPcm16;
-    audio_config_.use_external_decoder = true;
-    audio_config_.feedback_ssrc = 1234;
-    audio_config_.incoming_ssrc = 5678;
-    audio_config_.rtp_max_delay_ms = kPlayoutDelayMillis;
+    audio_config_.codec.audio = transport::kPcm16;
     testing_clock_ = new base::SimpleTestTickClock();
     testing_clock_->Advance(base::TimeTicks::Now() - base::TimeTicks());
     start_time_ = testing_clock_->NowTicks();
@@ -121,7 +119,7 @@ class AudioReceiverTest : public ::testing::Test {
     receiver_->IncomingPacket(rtcp_packet.GetPacket().Pass());
   }
 
-  AudioReceiverConfig audio_config_;
+  FrameReceiverConfig audio_config_;
   std::vector<uint8> payload_;
   RtpCastHeader rtp_header_;
   base::SimpleTestTickClock* testing_clock_;  // Owned by CastEnvironment.
@@ -180,9 +178,10 @@ TEST_F(AudioReceiverTest, ReceivesFramesSkippingWhenAppropriate) {
   EXPECT_CALL(mock_transport_, SendRtcpPacket(_, _))
       .WillRepeatedly(testing::Return(true));
 
-  const uint32 rtp_advance_per_frame = audio_config_.frequency / 100;
+  const uint32 rtp_advance_per_frame =
+      audio_config_.frequency / audio_config_.max_frame_rate;
   const base::TimeDelta time_advance_per_frame =
-      base::TimeDelta::FromMilliseconds(10);
+      base::TimeDelta::FromSeconds(1) / audio_config_.max_frame_rate;
 
   FeedLipSyncInfoIntoReceiver();
   task_runner_->RunTasks();

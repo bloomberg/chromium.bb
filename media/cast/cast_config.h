@@ -27,6 +27,8 @@ enum RtcpMode {
   kRtcpReducedSize,  // Reduced-size RTCP mode is described by RFC 5506.
 };
 
+// TODO(miu): Merge AudioSenderConfig and VideoSenderConfig and make their
+// naming/documentation consistent with FrameReceiverConfig.
 struct AudioSenderConfig {
   AudioSenderConfig();
 
@@ -74,53 +76,68 @@ struct VideoSenderConfig {
   int number_of_encode_threads;
 };
 
-struct AudioReceiverConfig {
-  AudioReceiverConfig();
+// TODO(miu): Naming and minor type changes are badly needed in a later CL.
+struct FrameReceiverConfig {
+  FrameReceiverConfig();
+  ~FrameReceiverConfig();
 
-  uint32 feedback_ssrc;
-  uint32 incoming_ssrc;
+  // The receiver's SSRC identifier.
+  uint32 feedback_ssrc;  // TODO(miu): Rename to receiver_ssrc for clarity.
 
+  // The sender's SSRC identifier.
+  uint32 incoming_ssrc;  // TODO(miu): Rename to sender_ssrc for clarity.
+
+  // Mean interval (in milliseconds) between RTCP reports.
+  // TODO(miu): Remove this since it's never not kDefaultRtcpIntervalMs.
   int rtcp_interval;
+
+  // CNAME representing this receiver.
+  // TODO(miu): Remove this since it should be derived elsewhere (probably in
+  // the transport layer).
   std::string rtcp_c_name;
+
+  // Determines amount of detail in RTCP reports.
+  // TODO(miu): Remove this since it's never anything but kRtcpReducedSize.
   RtcpMode rtcp_mode;
 
-  // The time the receiver is prepared to wait for retransmissions.
-  int rtp_max_delay_ms;
+  // The total amount of time between a frame's capture/recording on the sender
+  // and its playback on the receiver (i.e., shown to a user).  This is fixed as
+  // a value large enough to give the system sufficient time to encode,
+  // transmit/retransmit, receive, decode, and render; given its run-time
+  // environment (sender/receiver hardware performance, network conditions,
+  // etc.).
+  int rtp_max_delay_ms;  // TODO(miu): Change to TimeDelta target_playout_delay.
+
+  // RTP payload type enum: Specifies the type/encoding of frame data.
   int rtp_payload_type;
 
-  bool use_external_decoder;
-  int frequency;
+  // RTP timebase: The number of RTP units advanced per one second.  For audio,
+  // this is the sampling rate.  For video, by convention, this is 90 kHz.
+  int frequency;  // TODO(miu): Rename to rtp_timebase for clarity.
+
+  // Number of channels.  For audio, this is normally 2.  For video, this must
+  // be 1 as Cast does not have support for stereoscopic video.
   int channels;
-  transport::AudioCodec codec;
 
-  std::string aes_key;      // Binary string of size kAesKeySize.
-  std::string aes_iv_mask;  // Binary string of size kAesKeySize.
-};
+  // The target frame rate.  For audio, this is normally 100 (i.e., frames have
+  // a duration of 10ms each).  For video, this is normally 30, but any frame
+  // rate is supported.
+  int max_frame_rate;  // TODO(miu): Rename to target_frame_rate.
 
-struct VideoReceiverConfig {
-  VideoReceiverConfig();
+  // Codec used for the compression of signal data.
+  // TODO(miu): Merge the AudioCodec and VideoCodec enums into one so this union
+  // is not necessary.
+  union MergedCodecPlaceholder {
+    transport::AudioCodec audio;
+    transport::VideoCodec video;
+    MergedCodecPlaceholder() : audio(transport::kUnknownAudioCodec) {}
+  } codec;
 
-  uint32 feedback_ssrc;
-  uint32 incoming_ssrc;
-
-  int rtcp_interval;
-  std::string rtcp_c_name;
-  RtcpMode rtcp_mode;
-
-  // The time the receiver is prepared to wait for retransmissions.
-  int rtp_max_delay_ms;
-  int rtp_payload_type;
-
-  bool use_external_decoder;
-  int max_frame_rate;
-
-  // Some HW decoders can not run faster than the frame rate, preventing it
-  // from catching up after a glitch.
-  bool decoder_faster_than_max_frame_rate;
-  transport::VideoCodec codec;
-
-  std::string aes_key;      // Binary string of size kAesKeySize.
-  std::string aes_iv_mask;  // Binary string of size kAesKeySize.
+  // The AES crypto key and initialization vector.  Each of these strings
+  // contains the data in binary form, of size kAesKeySize.  If they are empty
+  // strings, crypto is not being used.
+  std::string aes_key;
+  std::string aes_iv_mask;
 };
 
 // import from media::cast::transport

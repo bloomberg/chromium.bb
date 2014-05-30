@@ -86,7 +86,7 @@ std::string GetIpAddress(const std::string display_text) {
   return ip_address;
 }
 
-void GetSsrcs(AudioReceiverConfig* audio_config) {
+void GetAudioSsrcs(FrameReceiverConfig* audio_config) {
   test::InputBuilder input_tx(
       "Choose audio sender SSRC.", DEFAULT_AUDIO_FEEDBACK_SSRC, 1, INT_MAX);
   audio_config->feedback_ssrc = input_tx.GetIntInput();
@@ -96,7 +96,7 @@ void GetSsrcs(AudioReceiverConfig* audio_config) {
   audio_config->incoming_ssrc = input_rx.GetIntInput();
 }
 
-void GetSsrcs(VideoReceiverConfig* video_config) {
+void GetVideoSsrcs(FrameReceiverConfig* video_config) {
   test::InputBuilder input_tx(
       "Choose video sender SSRC.", DEFAULT_VIDEO_FEEDBACK_SSRC, 1, INT_MAX);
   video_config->feedback_ssrc = input_tx.GetIntInput();
@@ -119,7 +119,7 @@ void GetWindowSize(int* width, int* height) {
 }
 #endif  // OS_LINUX
 
-void GetPayloadtype(AudioReceiverConfig* audio_config) {
+void GetAudioPayloadtype(FrameReceiverConfig* audio_config) {
   test::InputBuilder input("Choose audio receiver payload type.",
                            DEFAULT_AUDIO_PAYLOAD_TYPE,
                            96,
@@ -127,15 +127,15 @@ void GetPayloadtype(AudioReceiverConfig* audio_config) {
   audio_config->rtp_payload_type = input.GetIntInput();
 }
 
-AudioReceiverConfig GetAudioReceiverConfig() {
-  AudioReceiverConfig audio_config = GetDefaultAudioReceiverConfig();
-  GetSsrcs(&audio_config);
-  GetPayloadtype(&audio_config);
+FrameReceiverConfig GetAudioReceiverConfig() {
+  FrameReceiverConfig audio_config = GetDefaultAudioReceiverConfig();
+  GetAudioSsrcs(&audio_config);
+  GetAudioPayloadtype(&audio_config);
   audio_config.rtp_max_delay_ms = 300;
   return audio_config;
 }
 
-void GetPayloadtype(VideoReceiverConfig* video_config) {
+void GetVideoPayloadtype(FrameReceiverConfig* video_config) {
   test::InputBuilder input("Choose video receiver payload type.",
                            DEFAULT_VIDEO_PAYLOAD_TYPE,
                            96,
@@ -143,15 +143,15 @@ void GetPayloadtype(VideoReceiverConfig* video_config) {
   video_config->rtp_payload_type = input.GetIntInput();
 }
 
-VideoReceiverConfig GetVideoReceiverConfig() {
-  VideoReceiverConfig video_config = GetDefaultVideoReceiverConfig();
-  GetSsrcs(&video_config);
-  GetPayloadtype(&video_config);
+FrameReceiverConfig GetVideoReceiverConfig() {
+  FrameReceiverConfig video_config = GetDefaultVideoReceiverConfig();
+  GetVideoSsrcs(&video_config);
+  GetVideoPayloadtype(&video_config);
   video_config.rtp_max_delay_ms = 300;
   return video_config;
 }
 
-AudioParameters ToAudioParameters(const AudioReceiverConfig& config) {
+AudioParameters ToAudioParameters(const FrameReceiverConfig& config) {
   const int samples_in_10ms = config.frequency / 100;
   return AudioParameters(AudioParameters::AUDIO_PCM_LOW_LATENCY,
                          GuessChannelLayout(config.channels),
@@ -182,8 +182,8 @@ class NaivePlayer : public InProcessReceiver,
   NaivePlayer(const scoped_refptr<CastEnvironment>& cast_environment,
               const net::IPEndPoint& local_end_point,
               const net::IPEndPoint& remote_end_point,
-              const AudioReceiverConfig& audio_config,
-              const VideoReceiverConfig& video_config,
+              const FrameReceiverConfig& audio_config,
+              const FrameReceiverConfig& video_config,
               int window_width,
               int window_height)
       : InProcessReceiver(cast_environment,
@@ -553,9 +553,9 @@ int main(int argc, char** argv) {
       media::AudioManager::Create(&fake_audio_log_factory_));
   CHECK(media::AudioManager::Get());
 
-  media::cast::AudioReceiverConfig audio_config =
+  media::cast::FrameReceiverConfig audio_config =
       media::cast::GetAudioReceiverConfig();
-  media::cast::VideoReceiverConfig video_config =
+  media::cast::FrameReceiverConfig video_config =
       media::cast::GetVideoReceiverConfig();
 
   // Determine local and remote endpoints.

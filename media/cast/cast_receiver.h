@@ -70,8 +70,8 @@ class CastReceiver {
  public:
   static scoped_ptr<CastReceiver> Create(
       scoped_refptr<CastEnvironment> cast_environment,
-      const AudioReceiverConfig& audio_config,
-      const VideoReceiverConfig& video_config,
+      const FrameReceiverConfig& audio_config,
+      const FrameReceiverConfig& video_config,
       transport::PacketSender* const packet_sender);
 
   // All received RTP and RTCP packets for the call should be sent to this

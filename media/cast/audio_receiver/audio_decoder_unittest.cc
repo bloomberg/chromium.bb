@@ -11,6 +11,7 @@
 #include "media/cast/audio_receiver/audio_decoder.h"
 #include "media/cast/cast_config.h"
 #include "media/cast/test/utility/audio_utility.h"
+#include "media/cast/test/utility/default_config.h"
 #include "media/cast/test/utility/standalone_cast_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/opus/src/include/opus.h"
@@ -37,11 +38,10 @@ class AudioDecoderTest : public ::testing::TestWithParam<TestScenario> {
 
  protected:
   virtual void SetUp() OVERRIDE {
-    AudioReceiverConfig decoder_config;
-    decoder_config.use_external_decoder = false;
+    FrameReceiverConfig decoder_config = GetDefaultAudioReceiverConfig();
     decoder_config.frequency = GetParam().sampling_rate;
     decoder_config.channels = GetParam().num_channels;
-    decoder_config.codec = GetParam().codec;
+    decoder_config.codec.audio = GetParam().codec;
     audio_decoder_.reset(new AudioDecoder(cast_environment_, decoder_config));
     CHECK_EQ(STATUS_AUDIO_INITIALIZED, audio_decoder_->InitializationResult());
 

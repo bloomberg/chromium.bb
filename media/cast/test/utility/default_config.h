@@ -10,15 +10,15 @@
 namespace media {
 namespace cast {
 
-// Returns an AudioReceiverConfig initialized to "good-to-go" values.  This
+// Returns a FrameReceiverConfig initialized to "good-to-go" values.  This
 // specifies 48 kHz, 2-channel Opus-coded audio, with standard ssrc's, payload
 // type, and a dummy name.
-AudioReceiverConfig GetDefaultAudioReceiverConfig();
+FrameReceiverConfig GetDefaultAudioReceiverConfig();
 
-// Returns a VideoReceiverConfig initialized to "good-to-go" values.  This
+// Returns a FrameReceiverConfig initialized to "good-to-go" values.  This
 // specifies VP8-coded video, with standard ssrc's, payload type, and a dummy
 // name.
-VideoReceiverConfig GetDefaultVideoReceiverConfig();
+FrameReceiverConfig GetDefaultVideoReceiverConfig();
 
 // Returns a callback that does nothing.
 CreateVideoEncodeAcceleratorCallback

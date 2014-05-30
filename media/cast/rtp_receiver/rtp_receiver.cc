@@ -14,8 +14,8 @@ namespace media {
 namespace cast {
 
 RtpReceiver::RtpReceiver(base::TickClock* clock,
-                         const AudioReceiverConfig* audio_config,
-                         const VideoReceiverConfig* video_config) :
+                         const FrameReceiverConfig* audio_config,
+                         const FrameReceiverConfig* video_config) :
     packet_parser_(audio_config ? audio_config->incoming_ssrc :
                    (video_config ? video_config->incoming_ssrc : 0),
                    audio_config ? audio_config->rtp_payload_type :

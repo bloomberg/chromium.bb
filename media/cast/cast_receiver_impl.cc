@@ -73,8 +73,8 @@ class LocalFrameReceiver : public FrameReceiver {
 
 scoped_ptr<CastReceiver> CastReceiver::Create(
     scoped_refptr<CastEnvironment> cast_environment,
-    const AudioReceiverConfig& audio_config,
-    const VideoReceiverConfig& video_config,
+    const FrameReceiverConfig& audio_config,
+    const FrameReceiverConfig& video_config,
     transport::PacketSender* const packet_sender) {
   return scoped_ptr<CastReceiver>(new CastReceiverImpl(
       cast_environment, audio_config, video_config, packet_sender));
@@ -82,8 +82,8 @@ scoped_ptr<CastReceiver> CastReceiver::Create(
 
 CastReceiverImpl::CastReceiverImpl(
     scoped_refptr<CastEnvironment> cast_environment,
-    const AudioReceiverConfig& audio_config,
-    const VideoReceiverConfig& video_config,
+    const FrameReceiverConfig& audio_config,
+    const FrameReceiverConfig& video_config,
     transport::PacketSender* const packet_sender)
     : pacer_(cast_environment->Clock(),
              cast_environment->Logging(),

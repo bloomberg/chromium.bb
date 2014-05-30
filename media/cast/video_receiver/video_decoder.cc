@@ -209,9 +209,9 @@ class VideoDecoder::FakeImpl : public VideoDecoder::ImplBase {
 
 VideoDecoder::VideoDecoder(
     const scoped_refptr<CastEnvironment>& cast_environment,
-    const VideoReceiverConfig& video_config)
+    const FrameReceiverConfig& video_config)
     : cast_environment_(cast_environment) {
-  switch (video_config.codec) {
+  switch (video_config.codec.video) {
 #ifndef OFFICIAL_BUILD
     case transport::kFakeSoftwareVideo:
       impl_ = new FakeImpl(cast_environment);

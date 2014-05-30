@@ -14,6 +14,7 @@
 #include "media/cast/logging/simple_event_subscriber.h"
 #include "media/cast/rtcp/test_rtcp_packet_builder.h"
 #include "media/cast/test/fake_single_thread_task_runner.h"
+#include "media/cast/test/utility/default_config.h"
 #include "media/cast/transport/pacing/mock_paced_packet_sender.h"
 #include "media/cast/video_receiver/video_receiver.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -65,14 +66,12 @@ class FakeVideoClient {
 class VideoReceiverTest : public ::testing::Test {
  protected:
   VideoReceiverTest() {
+    config_ = GetDefaultVideoReceiverConfig();
     config_.rtp_max_delay_ms = kPlayoutDelayMillis;
-    config_.use_external_decoder = false;
     // Note: Frame rate must divide 1000 without remainder so the test code
     // doesn't have to account for rounding errors.
     config_.max_frame_rate = 25;
-    config_.codec = transport::kVp8;  // Frame skipping not allowed.
-    config_.feedback_ssrc = 1234;
-    config_.incoming_ssrc = 5678;
+    config_.codec.video = transport::kVp8;  // Frame skipping not allowed.
     testing_clock_ = new base::SimpleTestTickClock();
     testing_clock_->Advance(base::TimeTicks::Now() - base::TimeTicks());
     start_time_ = testing_clock_->NowTicks();
@@ -121,7 +120,7 @@ class VideoReceiverTest : public ::testing::Test {
     receiver_->IncomingPacket(rtcp_packet.GetPacket().Pass());
   }
 
-  VideoReceiverConfig config_;
+  FrameReceiverConfig config_;
   std::vector<uint8> payload_;
   RtpCastHeader rtp_header_;
   base::SimpleTestTickClock* testing_clock_;  // Owned by CastEnvironment.
@@ -181,7 +180,8 @@ TEST_F(VideoReceiverTest, ReceivesFramesRefusingToSkipAny) {
   EXPECT_CALL(mock_transport_, SendRtcpPacket(_, _))
       .WillRepeatedly(testing::Return(true));
 
-  const uint32 rtp_advance_per_frame = kVideoFrequency / config_.max_frame_rate;
+  const uint32 rtp_advance_per_frame =
+      config_.frequency / config_.max_frame_rate;
   const base::TimeDelta time_advance_per_frame =
       base::TimeDelta::FromSeconds(1) / config_.max_frame_rate;
 

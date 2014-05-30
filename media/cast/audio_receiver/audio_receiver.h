@@ -56,7 +56,7 @@ class AudioReceiver : public RtpReceiver,
                       public base::SupportsWeakPtr<AudioReceiver> {
  public:
   AudioReceiver(scoped_refptr<CastEnvironment> cast_environment,
-                const AudioReceiverConfig& audio_config,
+                const FrameReceiverConfig& audio_config,
                 transport::PacedPacketSender* const packet_sender);
 
   virtual ~AudioReceiver();
@@ -156,6 +156,9 @@ class AudioReceiver : public RtpReceiver,
   // environment (sender/receiver hardware performance, network conditions,
   // etc.).
   const base::TimeDelta target_playout_delay_;
+
+  // Hack: This is used in logic that determines whether to skip frames.
+  const base::TimeDelta expected_frame_duration_;
 
   // Set to false initially, then set to true after scheduling the periodic
   // sending of reports back to the sender.  Reports are first scheduled just

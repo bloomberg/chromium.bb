@@ -28,11 +28,11 @@ class VideoDecoder {
                               bool is_continuous)> DecodeFrameCallback;
 
   VideoDecoder(const scoped_refptr<CastEnvironment>& cast_environment,
-               const VideoReceiverConfig& video_config);
+               const FrameReceiverConfig& video_config);
   virtual ~VideoDecoder();
 
   // Returns STATUS_VIDEO_INITIALIZED if the decoder was successfully
-  // constructed from the given VideoReceiverConfig.  If this method returns any
+  // constructed from the given FrameReceiverConfig.  If this method returns any
   // other value, calls to DecodeFrame() will not succeed.
   CastInitializationStatus InitializationResult() const;
 

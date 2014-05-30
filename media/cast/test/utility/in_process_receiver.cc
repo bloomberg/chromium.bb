@@ -24,8 +24,8 @@ InProcessReceiver::InProcessReceiver(
     const scoped_refptr<CastEnvironment>& cast_environment,
     const net::IPEndPoint& local_end_point,
     const net::IPEndPoint& remote_end_point,
-    const AudioReceiverConfig& audio_config,
-    const VideoReceiverConfig& video_config)
+    const FrameReceiverConfig& audio_config,
+    const FrameReceiverConfig& video_config)
     : cast_environment_(cast_environment),
       local_end_point_(local_end_point),
       remote_end_point_(remote_end_point),

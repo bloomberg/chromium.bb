@@ -14,29 +14,30 @@
 
 namespace {
 const int kMinSchedulingDelayMs = 1;
-// TODO(miu): This should go in AudioReceiverConfig.
-const int kTypicalAudioFrameDurationMs = 10;
 }  // namespace
 
 namespace media {
 namespace cast {
 
 AudioReceiver::AudioReceiver(scoped_refptr<CastEnvironment> cast_environment,
-                             const AudioReceiverConfig& audio_config,
+                             const FrameReceiverConfig& audio_config,
                              transport::PacedPacketSender* const packet_sender)
     : RtpReceiver(cast_environment->Clock(), &audio_config, NULL),
       cast_environment_(cast_environment),
       event_subscriber_(kReceiverRtcpEventHistorySize, AUDIO_EVENT),
-      codec_(audio_config.codec),
+      codec_(audio_config.codec.audio),
       frequency_(audio_config.frequency),
       target_playout_delay_(
           base::TimeDelta::FromMilliseconds(audio_config.rtp_max_delay_ms)),
+      expected_frame_duration_(
+          base::TimeDelta::FromSeconds(1) / audio_config.max_frame_rate),
       reports_are_scheduled_(false),
       framer_(cast_environment->Clock(),
               this,
               audio_config.incoming_ssrc,
               true,
-              audio_config.rtp_max_delay_ms / kTypicalAudioFrameDurationMs),
+              audio_config.rtp_max_delay_ms * audio_config.max_frame_rate /
+                  1000),
       rtcp_(cast_environment,
             NULL,
             NULL,
@@ -51,8 +52,9 @@ AudioReceiver::AudioReceiver(scoped_refptr<CastEnvironment> cast_environment,
       is_waiting_for_consecutive_frame_(false),
       lip_sync_drift_(ClockDriftSmoother::GetDefaultTimeConstant()),
       weak_factory_(this) {
-  if (!audio_config.use_external_decoder)
-    audio_decoder_.reset(new AudioDecoder(cast_environment, audio_config));
+  DCHECK_GT(audio_config.rtp_max_delay_ms, 0);
+  DCHECK_GT(audio_config.max_frame_rate, 0);
+  audio_decoder_.reset(new AudioDecoder(cast_environment, audio_config));
   decryptor_.Initialize(audio_config.aes_key, audio_config.aes_iv_mask);
   rtcp_.SetTargetDelay(target_playout_delay_);
   cast_environment_->Logging()->AddRawEventSubscriber(&event_subscriber_);
@@ -219,7 +221,7 @@ void AudioReceiver::EmitAvailableEncodedFrames() {
     if (!is_consecutively_next_frame) {
       // TODO(miu): Also account for expected decode time here?
       const base::TimeTicks earliest_possible_end_time_of_missing_frame =
-          now + base::TimeDelta::FromMilliseconds(kTypicalAudioFrameDurationMs);
+          now + expected_frame_duration_;
       if (earliest_possible_end_time_of_missing_frame < playout_time) {
         VLOG(1) << "Wait for next consecutive frame instead of skipping.";
         if (!is_waiting_for_consecutive_frame_) {

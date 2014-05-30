@@ -27,11 +27,11 @@ class AudioDecoder {
                               bool is_continuous)> DecodeFrameCallback;
 
   AudioDecoder(const scoped_refptr<CastEnvironment>& cast_environment,
-               const AudioReceiverConfig& audio_config);
+               const FrameReceiverConfig& audio_config);
   virtual ~AudioDecoder();
 
   // Returns STATUS_AUDIO_INITIALIZED if the decoder was successfully
-  // constructed from the given AudioReceiverConfig.  If this method returns any
+  // constructed from the given FrameReceiverConfig.  If this method returns any
   // other value, calls to DecodeFrame() will not succeed.
   CastInitializationStatus InitializationResult() const;
 

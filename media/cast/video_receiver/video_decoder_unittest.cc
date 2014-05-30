@@ -10,6 +10,7 @@
 #include "base/synchronization/lock.h"
 #include "base/time/time.h"
 #include "media/cast/cast_config.h"
+#include "media/cast/test/utility/default_config.h"
 #include "media/cast/test/utility/standalone_cast_environment.h"
 #include "media/cast/test/utility/video_utility.h"
 #include "media/cast/video_receiver/video_decoder.h"
@@ -47,9 +48,8 @@ class VideoDecoderTest
 
  protected:
   virtual void SetUp() OVERRIDE {
-    VideoReceiverConfig decoder_config;
-    decoder_config.use_external_decoder = false;
-    decoder_config.codec = GetParam();
+    FrameReceiverConfig decoder_config = GetDefaultVideoReceiverConfig();
+    decoder_config.codec.video = GetParam();
     video_decoder_.reset(new VideoDecoder(cast_environment_, decoder_config));
     CHECK_EQ(STATUS_VIDEO_INITIALIZED, video_decoder_->InitializationResult());
 

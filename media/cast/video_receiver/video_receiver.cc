@@ -23,12 +23,12 @@ namespace media {
 namespace cast {
 
 VideoReceiver::VideoReceiver(scoped_refptr<CastEnvironment> cast_environment,
-                             const VideoReceiverConfig& video_config,
+                             const FrameReceiverConfig& video_config,
                              transport::PacedPacketSender* const packet_sender)
     : RtpReceiver(cast_environment->Clock(), NULL, &video_config),
       cast_environment_(cast_environment),
       event_subscriber_(kReceiverRtcpEventHistorySize, VIDEO_EVENT),
-      codec_(video_config.codec),
+      codec_(video_config.codec.video),
       target_playout_delay_(
           base::TimeDelta::FromMilliseconds(video_config.rtp_max_delay_ms)),
       expected_frame_duration_(
@@ -37,7 +37,7 @@ VideoReceiver::VideoReceiver(scoped_refptr<CastEnvironment> cast_environment,
       framer_(cast_environment->Clock(),
               this,
               video_config.incoming_ssrc,
-              video_config.decoder_faster_than_max_frame_rate,
+              true,
               video_config.rtp_max_delay_ms * video_config.max_frame_rate /
                   1000),
       rtcp_(cast_environment_,
@@ -56,9 +56,7 @@ VideoReceiver::VideoReceiver(scoped_refptr<CastEnvironment> cast_environment,
       weak_factory_(this) {
   DCHECK_GT(video_config.rtp_max_delay_ms, 0);
   DCHECK_GT(video_config.max_frame_rate, 0);
-  if (!video_config.use_external_decoder) {
-    video_decoder_.reset(new VideoDecoder(cast_environment, video_config));
-  }
+  video_decoder_.reset(new VideoDecoder(cast_environment, video_config));
   decryptor_.Initialize(video_config.aes_key, video_config.aes_iv_mask);
   rtcp_.SetTargetDelay(target_playout_delay_);
   cast_environment_->Logging()->AddRawEventSubscriber(&event_subscriber_);

@@ -46,15 +46,15 @@ class InProcessReceiver {
   InProcessReceiver(const scoped_refptr<CastEnvironment>& cast_environment,
                     const net::IPEndPoint& local_end_point,
                     const net::IPEndPoint& remote_end_point,
-                    const AudioReceiverConfig& audio_config,
-                    const VideoReceiverConfig& video_config);
+                    const FrameReceiverConfig& audio_config,
+                    const FrameReceiverConfig& video_config);
 
   virtual ~InProcessReceiver();
 
   // Convenience accessors.
   scoped_refptr<CastEnvironment> cast_env() const { return cast_environment_; }
-  const AudioReceiverConfig& audio_config() const { return audio_config_; }
-  const VideoReceiverConfig& video_config() const { return video_config_; }
+  const FrameReceiverConfig& audio_config() const { return audio_config_; }
+  const FrameReceiverConfig& video_config() const { return video_config_; }
 
   // Begin delivering any received audio/video frames to the OnXXXFrame()
   // methods.
@@ -105,8 +105,8 @@ class InProcessReceiver {
   const scoped_refptr<CastEnvironment> cast_environment_;
   const net::IPEndPoint local_end_point_;
   const net::IPEndPoint remote_end_point_;
-  const AudioReceiverConfig audio_config_;
-  const VideoReceiverConfig video_config_;
+  const FrameReceiverConfig audio_config_;
+  const FrameReceiverConfig video_config_;
 
   scoped_ptr<transport::UdpTransport> transport_;
   scoped_ptr<CastReceiver> cast_receiver_;

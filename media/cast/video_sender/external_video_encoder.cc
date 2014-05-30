@@ -108,6 +108,9 @@ class LocalVideoEncodeAcceleratorClient
       case transport::kFakeSoftwareVideo:
         NOTREACHED() << "Fake software video encoder cannot be external";
         break;
+      case transport::kUnknownVideoCodec:
+        NOTREACHED() << "Video codec not specified";
+        break;
     }
     codec_ = video_config.codec;
     max_frame_rate_ = video_config.max_frame_rate;

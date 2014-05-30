@@ -22,8 +22,8 @@ namespace cast {
 class RtpReceiver {
  public:
   RtpReceiver(base::TickClock* clock,
-              const AudioReceiverConfig* audio_config,
-              const VideoReceiverConfig* video_config);
+              const FrameReceiverConfig* audio_config,
+              const FrameReceiverConfig* video_config);
   virtual ~RtpReceiver();
 
   static uint32 GetSsrcOfSender(const uint8* rtcp_buffer, size_t length);

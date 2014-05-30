@@ -58,7 +58,7 @@ class VideoReceiver : public RtpReceiver,
                       public base::SupportsWeakPtr<VideoReceiver> {
  public:
   VideoReceiver(scoped_refptr<CastEnvironment> cast_environment,
-                const VideoReceiverConfig& video_config,
+                const FrameReceiverConfig& video_config,
                 transport::PacedPacketSender* const packet_sender);
 
   virtual ~VideoReceiver();
@@ -142,7 +142,7 @@ class VideoReceiver : public RtpReceiver,
   // Processes raw audio events to be sent over to the cast sender via RTCP.
   ReceiverRtcpEventSubscriber event_subscriber_;
 
-  // Configured audio codec.
+  // Configured video codec.
   const transport::VideoCodec codec_;
 
   // The total amount of time between a frame's capture/recording on the sender

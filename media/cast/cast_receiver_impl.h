@@ -22,8 +22,8 @@ namespace cast {
 class CastReceiverImpl : public CastReceiver {
  public:
   CastReceiverImpl(scoped_refptr<CastEnvironment> cast_environment,
-                   const AudioReceiverConfig& audio_config,
-                   const VideoReceiverConfig& video_config,
+                   const FrameReceiverConfig& audio_config,
+                   const FrameReceiverConfig& video_config,
                    transport::PacketSender* const packet_sender);
 
   virtual ~CastReceiverImpl();
