@@ -674,7 +674,8 @@ const Experiment kExperiments[] = {
     IDS_FLAGS_ENABLE_CONTEXTUAL_SEARCH,
     IDS_FLAGS_ENABLE_CONTEXTUAL_SEARCH_DESCRIPTION,
     kOsAndroid,
-    SINGLE_VALUE_TYPE(switches::kEnableContextualSearch)
+    ENABLE_DISABLE_VALUE_TYPE(switches::kEnableContextualSearch,
+                              switches::kDisableContextualSearch)
   },
 #endif
   {

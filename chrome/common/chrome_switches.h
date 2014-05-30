@@ -351,6 +351,7 @@ extern const char kPluginsMetadataServerURL[];
 
 #if defined(OS_ANDROID)
 extern const char kDisableCast[];
+extern const char kDisableContextualSearch[];
 extern const char kDisableNewNTP[];
 extern const char kDisableZeroSuggest[];
 extern const char kEnableAccessibilityTabSwitcher[];
