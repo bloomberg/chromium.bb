@@ -6,7 +6,7 @@ window.outputRepaintRects = true;
 function runRepaintTest()
 {
     if (!window.testRunner || !window.internals) {
-        setTimeout(repaintTest, 100);
+        setTimeout(repaintTest, 500);
         return;
     }
 
