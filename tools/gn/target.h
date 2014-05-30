@@ -198,8 +198,10 @@ class Target : public Item {
   bool external_;
 
   // Static libraries and source sets from transitive deps. These things need
-  // to be linked only with the end target (executable, shared library). These
-  // do not get pushed beyond shared library boundaries.
+  // to be linked only with the end target (executable, shared library). Source
+  // sets do not get pushed beyond static library boundaries, and neither
+  // source sets nor static libraries get pushed beyond sahred library
+  // boundaries.
   std::set<const Target*> inherited_libraries_;
 
   // These libs and dirs are inherited from statically linked deps and all
