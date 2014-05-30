@@ -801,9 +801,10 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindRestarts_Issue1155639) {
   EXPECT_EQ(1, ordinal);
 }
 
-// Disable the test for win and mac as it started being flaky, see
+// Disable the test for win, mac and ChromeOS as it started being flaky, see
 // http://crbug/367701.
-#if defined(OS_MACOSX) && !defined(OS_IOS) || defined(OS_WIN)
+#if defined(OS_MACOSX) && !defined(OS_IOS) || defined(OS_WIN) || \
+    defined(OS_CHROMEOS)
 #define MAYBE_FindRestarts_Issue70505 DISABLED_FindRestarts_Issue70505
 #else
 #define MAYBE_FindRestarts_Issue70505 FindRestarts_Issue70505
