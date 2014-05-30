@@ -16,6 +16,7 @@
 #include "base/prefs/pref_service_factory.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
 #include "components/data_reduction_proxy/browser/data_reduction_proxy_config_service.h"
+#include "components/data_reduction_proxy/browser/data_reduction_proxy_params.h"
 #include "components/data_reduction_proxy/browser/data_reduction_proxy_prefs.h"
 #include "components/data_reduction_proxy/browser/data_reduction_proxy_settings.h"
 #include "components/user_prefs/user_prefs.h"
@@ -94,21 +95,23 @@ void AwBrowserContext::SetDataReductionProxyEnabled(bool enabled) {
 
 void AwBrowserContext::PreMainMessageLoopRun() {
   cookie_store_ = CreateCookieStore(this);
-  DataReductionProxySettings::SetAllowed(true);
-  DataReductionProxySettings::SetPromoAllowed(false);
+#if defined(SPDY_PROXY_AUTH_ORIGIN)
   data_reduction_proxy_settings_.reset(
-      new DataReductionProxySettings());
-  data_reduction_proxy_settings_->set_fallback_allowed(false);
+      new DataReductionProxySettings(
+          new data_reduction_proxy::DataReductionProxyParams(
+              data_reduction_proxy::DataReductionProxyParams::kAllowed)));
+#endif
 
   url_request_context_getter_ =
       new AwURLRequestContextGetter(GetPath(), cookie_store_.get());
 
-  scoped_ptr<data_reduction_proxy::DataReductionProxyConfigurator>
-      configurator(new data_reduction_proxy::DataReductionProxyConfigTracker(
-          url_request_context_getter_->proxy_config_service(),
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO)));
-  data_reduction_proxy_settings_->SetProxyConfigurator(configurator.Pass());
-
+  if (data_reduction_proxy_settings_.get()) {
+    scoped_ptr<data_reduction_proxy::DataReductionProxyConfigurator>
+        configurator(new data_reduction_proxy::DataReductionProxyConfigTracker(
+            url_request_context_getter_->proxy_config_service(),
+            BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO)));
+    data_reduction_proxy_settings_->SetProxyConfigurator(configurator.Pass());
+  }
   visitedlink_master_.reset(
       new visitedlink::VisitedLinkMaster(this, this, false));
   visitedlink_master_->Init();
@@ -183,13 +186,15 @@ void AwBrowserContext::CreateUserPrefServiceIfNecessary() {
 
   user_prefs::UserPrefs::Set(this, user_pref_service_.get());
 
-  data_reduction_proxy_settings_->InitDataReductionProxySettings(
-      user_pref_service_.get(),
-      user_pref_service_.get(),
-      GetRequestContext());
+  if (data_reduction_proxy_settings_.get()) {
+    data_reduction_proxy_settings_->InitDataReductionProxySettings(
+        user_pref_service_.get(),
+        user_pref_service_.get(),
+        GetRequestContext());
 
-  data_reduction_proxy_settings_->SetDataReductionProxyEnabled(
-      data_reduction_proxy_enabled_);
+    data_reduction_proxy_settings_->SetDataReductionProxyEnabled(
+        data_reduction_proxy_enabled_);
+  }
 }
 
 base::FilePath AwBrowserContext::GetPath() const {

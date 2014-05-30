@@ -200,11 +200,14 @@ void AwURLRequestContextGetter::InitializeURLRequestContext() {
       AwContentBrowserClient::GetAcceptLangsImpl()));
   ApplyCmdlineOverridesToURLRequestContextBuilder(&builder);
 
-
+#if defined(SPDY_PROXY_AUTH_ORIGIN)
+  data_reduction_proxy::DataReductionProxyParams drp_params(
+      data_reduction_proxy::DataReductionProxyParams::kAllowed);
   builder.add_http_auth_handler_factory(
       data_reduction_proxy::HttpAuthHandlerDataReductionProxy::Scheme(),
       new data_reduction_proxy::HttpAuthHandlerDataReductionProxy::Factory(
-          DataReductionProxySettings::GetDataReductionProxies()));
+          drp_params.GetAllowedProxies()));
+#endif
 
   url_request_context_.reset(builder.Build());
   // TODO(mnaganov): Fix URLRequestContextBuilder to use proper threads.
@@ -222,18 +225,21 @@ void AwURLRequestContextGetter::InitializeURLRequestContext() {
           20 * 1024 * 1024,  // 20M
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::CACHE)));
 
+#if defined(SPDY_PROXY_AUTH_ORIGIN)
   AwBrowserContext* browser_context = AwBrowserContext::GetDefault();
   DCHECK(browser_context);
   DataReductionProxySettings* drp_settings =
       browser_context->GetDataReductionProxySettings();
-  DCHECK(drp_settings);
-  std::string drp_key = drp_settings->key();
-  // Only precache credentials if a key is available at URLRequestContext
-  // initialization.
-  if (!drp_key.empty()) {
-  DataReductionProxySettings::InitDataReductionProxySession(
-      main_cache->GetSession(), drp_settings->key());
+  if (drp_settings) {
+    std::string drp_key = drp_settings->params()->key();
+    // Only precache credentials if a key is available at URLRequestContext
+    // initialization.
+    if (!drp_key.empty()) {
+    DataReductionProxySettings::InitDataReductionProxySession(
+        main_cache->GetSession(), &drp_params);
+    }
   }
+#endif
 
   main_http_factory_.reset(main_cache);
   url_request_context_->set_http_transaction_factory(main_cache);

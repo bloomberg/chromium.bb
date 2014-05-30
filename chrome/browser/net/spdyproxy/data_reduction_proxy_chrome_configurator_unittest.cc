@@ -48,19 +48,35 @@ TEST_F(DataReductionProxyConfigTest, TestUnrestricted) {
   config_->Enable(false,
                   false,
                   "https://www.foo.com:443/",
-                 "http://www.bar.com:80/");
+                  "http://www.bar.com:80/",
+                  "");
   CheckProxyConfig(
       "fixed_servers",
       "http=https://www.foo.com:443,http://www.bar.com:80,direct://;",
       "");
 }
+
+TEST_F(DataReductionProxyConfigTest, TestUnrestrictedSSL) {
+  config_->Enable(false,
+                  false,
+                  "https://www.foo.com:443/",
+                  "http://www.bar.com:80/",
+                  "http://www.ssl.com:80/");
+  CheckProxyConfig(
+      "fixed_servers",
+      "http=https://www.foo.com:443,http://www.bar.com:80,direct://;"
+      "https=http://www.ssl.com:80,direct://;",
+      "");
+}
+
 TEST_F(DataReductionProxyConfigTest, TestUnrestrictedWithBypassRule) {
   config_->AddHostPatternToBypass("<local>");
   config_->AddHostPatternToBypass("*.goo.com");
   config_->Enable(false,
                   false,
                   "https://www.foo.com:443/",
-                 "http://www.bar.com:80/");
+                  "http://www.bar.com:80/",
+                  "");
   CheckProxyConfig(
       "fixed_servers",
       "http=https://www.foo.com:443,http://www.bar.com:80,direct://;",
@@ -68,10 +84,7 @@ TEST_F(DataReductionProxyConfigTest, TestUnrestrictedWithBypassRule) {
 }
 
 TEST_F(DataReductionProxyConfigTest, TestUnrestrictedWithoutFallback) {
-  config_->Enable(false,
-                  false,
-                  "https://www.foo.com:443/",
-                  "");
+  config_->Enable(false, false, "https://www.foo.com:443/", "", "");
   CheckProxyConfig("fixed_servers",
                    "http=https://www.foo.com:443,direct://;",
                    "");
@@ -81,7 +94,8 @@ TEST_F(DataReductionProxyConfigTest, TestRestricted) {
   config_->Enable(true,
                   false,
                   "https://www.foo.com:443/",
-                 "http://www.bar.com:80/");
+                  "http://www.bar.com:80/",
+                  "");
   CheckProxyConfig("fixed_servers",
                    "http=http://www.bar.com:80,direct://;",
                    "");
@@ -91,7 +105,8 @@ TEST_F(DataReductionProxyConfigTest, TestFallbackRestricted) {
   config_->Enable(false,
                   true,
                   "https://www.foo.com:443/",
-                 "http://www.bar.com:80/");
+                  "http://www.bar.com:80/",
+                  "");
   CheckProxyConfig("fixed_servers",
                    "http=https://www.foo.com:443,direct://;",
                    "");
@@ -101,7 +116,8 @@ TEST_F(DataReductionProxyConfigTest, TestBothRestricted) {
   config_->Enable(true,
                   true,
                   "https://www.foo.com:443/",
-                 "http://www.bar.com:80/");
+                  "http://www.bar.com:80/",
+                  "");
   CheckProxyConfig("system", "", "");
 }
 

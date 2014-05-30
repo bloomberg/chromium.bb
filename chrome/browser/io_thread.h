@@ -16,6 +16,7 @@
 #include "base/prefs/pref_member.h"
 #include "base/time/time.h"
 #include "chrome/browser/net/ssl_config_service_manager.h"
+#include "components/data_reduction_proxy/browser/data_reduction_proxy_params.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/browser_thread_delegate.h"
 #include "net/base/network_change_notifier.h"
@@ -181,6 +182,8 @@ class IOThread : public content::BrowserThreadDelegate {
     // main frame load fails with a DNS error in order to provide more useful
     // information to the renderer so it can show a more specific error page.
     scoped_ptr<chrome_browser_net::DnsProbeService> dns_probe_service;
+    scoped_ptr<data_reduction_proxy::DataReductionProxyParams>
+        data_reduction_proxy_params;
   };
 
   // |net_log| must either outlive the IOThread or be NULL.
@@ -348,7 +351,6 @@ class IOThread : public content::BrowserThreadDelegate {
   std::string auth_server_whitelist_;
   std::string auth_delegate_whitelist_;
   std::string gssapi_library_name_;
-  std::vector<GURL> spdyproxy_auth_origins_;
 
   // This is an instance of the default SSLConfigServiceManager for the current
   // platform and it gets SSL preferences from local_state object.

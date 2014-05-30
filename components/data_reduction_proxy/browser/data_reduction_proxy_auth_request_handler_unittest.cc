@@ -5,9 +5,11 @@
 
 #include "components/data_reduction_proxy/browser/data_reduction_proxy_auth_request_handler.h"
 
+#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
+#include "components/data_reduction_proxy/browser/data_reduction_proxy_settings_test_utils.h"
 #include "net/base/auth.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -30,8 +32,9 @@ class TestDataReductionProxyAuthRequestHandler
     : public DataReductionProxyAuthRequestHandler {
  public:
   TestDataReductionProxyAuthRequestHandler(int time_step_ms,
-                                           int64 initial_time_ms)
-      : DataReductionProxyAuthRequestHandler(NULL),
+                                           int64 initial_time_ms,
+                                           DataReductionProxySettings* settings)
+      : DataReductionProxyAuthRequestHandler(settings),
         time_step_ms_(time_step_ms),
         now_(base::TimeTicks() +
              base::TimeDelta::FromMilliseconds(initial_time_ms)) {}
@@ -63,6 +66,16 @@ class TestDataReductionProxyAuthRequestHandler
 
 class DataReductionProxyAuthRequestHandlerTest : public testing::Test {
  public:
+
+  virtual void SetUp() OVERRIDE {
+    DataReductionProxySettingsTestBase::AddTestProxyToCommandLine();
+    settings_.reset(
+        new MockDataReductionProxySettings<DataReductionProxySettings>(
+            DataReductionProxyParams::kAllowed |
+            DataReductionProxyParams::kFallbackAllowed |
+            DataReductionProxyParams::kPromoAllowed));
+  }
+
   // Checks that |PROCEED| was returned with expected user and password.
   void ExpectProceed(
       DataReductionProxyAuthRequestHandler::TryHandleResult result,
@@ -97,6 +110,8 @@ class DataReductionProxyAuthRequestHandlerTest : public testing::Test {
     EXPECT_EQ(base::string16(), user);
     EXPECT_EQ(base::string16(), password);
   }
+
+  scoped_ptr<DataReductionProxySettings> settings_;
 };
 
 TEST_F(DataReductionProxyAuthRequestHandlerTest,
@@ -107,7 +122,8 @@ TEST_F(DataReductionProxyAuthRequestHandlerTest,
   scoped_refptr<net::AuthChallengeInfo> auth_info(new net::AuthChallengeInfo);
   auth_info->realm =  kTestRealm;
   auth_info->challenger = net::HostPortPair::FromString(kTestChallenger);
-  TestDataReductionProxyAuthRequestHandler handler(499, 3600001);
+  TestDataReductionProxyAuthRequestHandler handler(
+      499, 3600001, settings_.get());
   base::string16 user, password;
   DataReductionProxyAuthRequestHandler::TryHandleResult result =
       handler.TryHandleAuthentication(auth_info.get(), &user, &password);
@@ -138,7 +154,8 @@ TEST_F(DataReductionProxyAuthRequestHandlerTest, Ignore) {
   scoped_refptr<net::AuthChallengeInfo> auth_info(new net::AuthChallengeInfo);
   auth_info->realm =  kInvalidTestRealm;
   auth_info->challenger = net::HostPortPair::FromString(kTestChallenger);
-  TestDataReductionProxyAuthRequestHandler handler(100, 3600001);
+  TestDataReductionProxyAuthRequestHandler handler(
+      100, 3600001, settings_.get());
   base::string16 user, password;
   DataReductionProxyAuthRequestHandler::TryHandleResult result =
       handler.TryHandleAuthentication(auth_info.get(), &user, &password);

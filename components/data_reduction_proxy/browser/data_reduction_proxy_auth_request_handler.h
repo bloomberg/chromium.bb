@@ -8,6 +8,8 @@
 #include "base/gtest_prod_util.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
+#include "components/data_reduction_proxy/browser/data_reduction_proxy_settings.h"
+
 
 namespace net {
 class AuthChallengeInfo;

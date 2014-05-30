@@ -18,12 +18,14 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_configurator.h"
+#include "chrome/browser/net/spdyproxy/data_reduction_proxy_settings_factory_android.h"
 #include "chrome/browser/prefs/proxy_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "components/data_reduction_proxy/browser/data_reduction_proxy_configurator.h"
+#include "components/data_reduction_proxy/browser/data_reduction_proxy_params.h"
 #include "components/data_reduction_proxy/browser/data_reduction_proxy_settings.h"
 #include "jni/DataReductionProxySettings_jni.h"
 #include "net/base/auth.h"
@@ -39,6 +41,7 @@ using base::android::ConvertJavaStringToUTF8;
 using base::android::ConvertUTF16ToJavaString;
 using base::android::ConvertUTF8ToJavaString;
 using base::android::ScopedJavaLocalRef;
+using data_reduction_proxy::DataReductionProxyParams;
 using data_reduction_proxy::DataReductionProxySettings;
 
 namespace {
@@ -55,33 +58,20 @@ enum {
   NUM_SPDY_PROXY_AUTH_STATE
 };
 
-const char kEnabled[] = "Enabled";
-
 }  // namespace
 
 DataReductionProxySettingsAndroid::DataReductionProxySettingsAndroid(
-    JNIEnv* env, jobject obj) : DataReductionProxySettings() {
-#if defined(SPDY_PROXY_AUTH_VALUE)
-  set_key(SPDY_PROXY_AUTH_VALUE);
-#endif
-  SetAllowed(IsIncludedInFieldTrialOrFlags());
-  SetPromoAllowed(base::FieldTrialList::FindFullName(
-      "DataCompressionProxyPromoVisibility") == kEnabled);
-}
-
-DataReductionProxySettingsAndroid::DataReductionProxySettingsAndroid() {
-#if defined(SPDY_PROXY_AUTH_VALUE)
-  set_key(SPDY_PROXY_AUTH_VALUE);
-#endif
+    data_reduction_proxy::DataReductionProxyParams* params)
+    : DataReductionProxySettings(params) {
 }
 
 DataReductionProxySettingsAndroid::~DataReductionProxySettingsAndroid() {
 }
 
 void DataReductionProxySettingsAndroid::InitDataReductionProxySettings(
-    JNIEnv* env,
-    jobject obj) {
-  PrefService* prefs = ProfileManager::GetActiveUserProfile()->GetPrefs();
+    Profile* profile) {
+  DCHECK(profile);
+  PrefService* prefs = profile->GetPrefs();
 
   scoped_ptr<data_reduction_proxy::DataReductionProxyConfigurator>
       configurator(new DataReductionProxyChromeConfigurator(prefs));
@@ -90,33 +80,34 @@ void DataReductionProxySettingsAndroid::InitDataReductionProxySettings(
       prefs,
       g_browser_process->local_state(),
       ProfileManager::GetActiveUserProfile()->GetRequestContext());
+  DataReductionProxySettings::SetDataReductionProxyAlternativeEnabled(
+      DataReductionProxyParams::IsIncludedInAlternativeFieldTrial());
 }
 
 void DataReductionProxySettingsAndroid::BypassHostPattern(
     JNIEnv* env, jobject obj, jstring pattern) {
-  config()->AddHostPatternToBypass(
+  configurator()->AddHostPatternToBypass(
       ConvertJavaStringToUTF8(env, pattern));
 }
 void DataReductionProxySettingsAndroid::BypassURLPattern(
     JNIEnv* env, jobject obj, jstring pattern) {
-  config()->AddURLPatternToBypass(ConvertJavaStringToUTF8(env, pattern));
+  configurator()->AddURLPatternToBypass(ConvertJavaStringToUTF8(env, pattern));
 }
 
 jboolean DataReductionProxySettingsAndroid::IsDataReductionProxyAllowed(
     JNIEnv* env, jobject obj) {
-  return DataReductionProxySettings::IsDataReductionProxyAllowed();
+  return params()->allowed();
 }
 
 jboolean DataReductionProxySettingsAndroid::IsDataReductionProxyPromoAllowed(
     JNIEnv* env, jobject obj) {
-  return DataReductionProxySettings::IsDataReductionProxyPromoAllowed();
+  return params()->promo_allowed();
 }
 
 ScopedJavaLocalRef<jstring>
 DataReductionProxySettingsAndroid::GetDataReductionProxyOrigin(
     JNIEnv* env, jobject obj) {
-  return ConvertUTF8ToJavaString(
-      env, DataReductionProxySettings::GetDataReductionProxyOrigin());
+  return ConvertUTF8ToJavaString(env, params()->origin().spec());
 }
 
 jboolean DataReductionProxySettingsAndroid::IsDataReductionProxyEnabled(
@@ -210,26 +201,38 @@ void DataReductionProxySettingsAndroid::AddDefaultProxyBypassRules() {
    DataReductionProxySettings::AddDefaultProxyBypassRules();
   // Chrome cannot authenticate with the data reduction proxy when fetching URLs
   // from the settings menu.
-  config()->AddURLPatternToBypass("http://www.google.com/policies/privacy*");
+  configurator()->AddURLPatternToBypass(
+      "http://www.google.com/policies/privacy*");
 }
 
-void DataReductionProxySettingsAndroid::SetProxyConfigs(bool enabled,
-                                                        bool restricted,
-                                                        bool at_startup) {
+void DataReductionProxySettingsAndroid::SetProxyConfigs(
+    bool enabled,
+    bool alternative_enabled,
+    bool restricted,
+    bool at_startup) {
   // Sanity check: If there's no fallback proxy, we can't do a restricted mode.
-  std::string fallback = GetDataReductionProxyFallback();
+  std::string fallback = params()->fallback_origin().spec();
   if (fallback.empty() && enabled && restricted)
       enabled = false;
 
   LogProxyState(enabled, restricted, at_startup);
 
   if (enabled) {
-    config()->Enable(restricted,
-                     !fallback_allowed(),
-                     DataReductionProxySettings::GetDataReductionProxyOrigin(),
-                     GetDataReductionProxyFallback());
+    if (alternative_enabled) {
+      configurator()->Enable(restricted,
+                       !params()->fallback_allowed(),
+                       params()->alt_origin().spec(),
+                       params()->alt_fallback_origin().spec(),
+                       params()->ssl_origin().spec());
+    } else {
+        configurator()->Enable(restricted,
+                         !params()->fallback_allowed(),
+                         params()->origin().spec(),
+                         params()->fallback_origin().spec(),
+                         std::string());
+    }
   } else {
-    config()->Disable();
+    configurator()->Disable();
   }
 }
 
@@ -256,6 +259,7 @@ DataReductionProxySettingsAndroid::GetDailyContentLengths(
 // Used by generated jni code.
 static jlong Init(JNIEnv* env, jobject obj) {
   DataReductionProxySettingsAndroid* settings =
-      new DataReductionProxySettingsAndroid(env, obj);
+      DataReductionProxySettingsFactoryAndroid::GetForBrowserContext(
+          ProfileManager::GetActiveUserProfile());
   return reinterpret_cast<intptr_t>(settings);
 }

@@ -23,10 +23,12 @@ class DataReductionProxyConfigurator {
   // |primary_origin| may not be used. If |fallback_restricted|, the
   // |fallback_origin| may not be used. If both are restricted, then the
   // proxy configuration will be the same as when |Disable()| is called.
+  // If |ssl_origin| is non-empty, it will be used used for HTTPS traffic.
   virtual void Enable(bool primary_restricted,
                       bool fallback_restricted,
                       const std::string& primary_origin,
-                      const std::string& fallback_origin) = 0;
+                      const std::string& fallback_origin,
+                      const std::string& ssl_origin) = 0;
 
   // Disable the data reduction proxy.
   virtual void Disable() = 0;
