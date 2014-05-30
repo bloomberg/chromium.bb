@@ -19,7 +19,6 @@
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
-#include "extensions/common/error_utils.h"
 #include "extensions/common/permissions/permissions_data.h"
 
 #if defined(OS_CHROMEOS)
@@ -142,8 +141,8 @@ AutomationInternalEnableCurrentTabFunction::Run() {
     return RespondNow(Error("Could not enable accessibility for active tab"));
 
   if (!CanRequestAutomation(GetExtension(), automation_info, contents)) {
-    return RespondNow(Error(ErrorUtils::FormatErrorMessage(
-        kCannotRequestAutomationOnPage, contents->GetURL().spec())));
+    return RespondNow(
+        Error(kCannotRequestAutomationOnPage, contents->GetURL().spec()));
   }
   AutomationWebContentsObserver::CreateForWebContents(contents);
   rwh->EnableTreeOnlyAccessibilityMode();
@@ -182,8 +181,8 @@ AutomationInternalPerformActionFunction::Run() {
     const content::WebContents* contents =
         content::WebContents::FromRenderViewHost(rvh);
     if (!CanRequestAutomation(GetExtension(), automation_info, contents)) {
-      return RespondNow(Error(ErrorUtils::FormatErrorMessage(
-          kCannotRequestAutomationOnPage, contents->GetURL().spec())));
+      return RespondNow(
+          Error(kCannotRequestAutomationOnPage, contents->GetURL().spec()));
     }
   }
   RenderWidgetHostActionAdapter adapter(rwh);
