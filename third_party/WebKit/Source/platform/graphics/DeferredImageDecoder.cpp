@@ -36,16 +36,12 @@ namespace WebCore {
 
 namespace {
 
-// URI label for a lazily decoded SkPixelRef.
-const char labelLazyDecoded[] = "lazy";
-
 // URI label for SkDiscardablePixelRef.
 const char labelDiscardable[] = "discardable";
 
 } // namespace
 
 bool DeferredImageDecoder::s_enabled = false;
-bool DeferredImageDecoder::s_skiaDiscardableMemoryEnabled = false;
 
 DeferredImageDecoder::DeferredImageDecoder(PassOwnPtr<ImageDecoder> actualDecoder)
     : m_allDataReceived(false)
@@ -77,21 +73,14 @@ bool DeferredImageDecoder::isLazyDecoded(const SkBitmap& bitmap)
 {
     return bitmap.pixelRef()
         && bitmap.pixelRef()->getURI()
-        && (!memcmp(bitmap.pixelRef()->getURI(), labelLazyDecoded, sizeof(labelLazyDecoded))
-            || !memcmp(bitmap.pixelRef()->getURI(), labelDiscardable, sizeof(labelDiscardable)));
+        && !memcmp(bitmap.pixelRef()->getURI(), labelDiscardable, sizeof(labelDiscardable));
 }
 
 void DeferredImageDecoder::setEnabled(bool enabled)
 {
     s_enabled = enabled;
-#if !OS(ANDROID)
-    // FIXME: This code is temporary to enable discardable memory for
-    // non-Android platforms. In the future all platforms will be
-    // the same and we can remove this code.
-    s_skiaDiscardableMemoryEnabled = enabled;
     if (enabled)
         ImageDecodingStore::setImageCachingEnabled(false);
-#endif
 }
 
 bool DeferredImageDecoder::enabled()
@@ -273,18 +262,8 @@ void DeferredImageDecoder::prepareLazyDecodedFrames()
     }
 }
 
-// Creates either a SkBitmap backed by SkDiscardablePixelRef or a SkBitmap using the
-// legacy LazyDecodingPixelRef.
-SkBitmap DeferredImageDecoder::createBitmap(size_t index)
-{
-    // This code is temporary until the transition to SkDiscardablePixelRef is complete.
-    if (s_skiaDiscardableMemoryEnabled)
-        return createSkiaDiscardableBitmap(index);
-    return createLazyDecodingBitmap(index);
-}
-
 // Creates a SkBitmap that is backed by SkDiscardablePixelRef.
-SkBitmap DeferredImageDecoder::createSkiaDiscardableBitmap(size_t index)
+SkBitmap DeferredImageDecoder::createBitmap(size_t index)
 {
     IntSize decodedSize = m_actualDecoder->decodedSize();
     ASSERT(decodedSize.width() > 0);
@@ -293,7 +272,11 @@ SkBitmap DeferredImageDecoder::createSkiaDiscardableBitmap(size_t index)
     SkImageInfo info;
     info.fWidth = decodedSize.width();
     info.fHeight = decodedSize.height();
+#if SK_B32_SHIFT // Little-endian RGBA pixels. (Android)
+    info.fColorType = kRGBA_8888_SkColorType;
+#else
     info.fColorType = kBGRA_8888_SkColorType;
+#endif
     info.fAlphaType = kPremul_SkAlphaType;
 
     SkBitmap bitmap;
@@ -302,34 +285,6 @@ SkBitmap DeferredImageDecoder::createSkiaDiscardableBitmap(size_t index)
     ASSERT_UNUSED(installed, installed);
     bitmap.pixelRef()->setURI(labelDiscardable);
     generator->setGenerationId(bitmap.getGenerationID());
-    return bitmap;
-}
-
-SkBitmap DeferredImageDecoder::createLazyDecodingBitmap(size_t index)
-{
-    IntSize decodedSize = m_actualDecoder->decodedSize();
-    ASSERT(decodedSize.width() > 0);
-    ASSERT(decodedSize.height() > 0);
-
-    SkImageInfo info;
-    info.fWidth = decodedSize.width();
-    info.fHeight = decodedSize.height();
-    info.fColorType = kPMColor_SkColorType;
-    info.fAlphaType = kPremul_SkAlphaType;
-
-    // Creates a lazily decoded SkPixelRef that references the entire image without scaling.
-    SkBitmap bitmap;
-    bitmap.setConfig(info);
-    bitmap.setPixelRef(new LazyDecodingPixelRef(info, m_frameGenerator, index))->unref();
-
-    // Use the URI to identify this as a lazily decoded SkPixelRef of type LazyDecodingPixelRef.
-    // FIXME: It would be more useful to give the actual image URI.
-    bitmap.pixelRef()->setURI(labelLazyDecoded);
-
-    // Inform the bitmap that we will never change the pixels. This is a performance hint
-    // subsystems that may try to cache this bitmap (e.g. pictures, pipes, gpu, pdf, etc.)
-    bitmap.setImmutable();
-
     return bitmap;
 }
 
