@@ -75,6 +75,7 @@ int GetDragSelectionDelay() {
   return 100;
 }
 
+// Get the default command for a given key |event| and selection state.
 int GetCommandForKeyEvent(const ui::KeyEvent& event, bool has_selection) {
   if (event.type() != ui::ET_KEY_PRESSED || event.IsUnicodeKeyCode())
     return kNoCommand;
@@ -147,6 +148,7 @@ int GetCommandForKeyEvent(const ui::KeyEvent& event, bool has_selection) {
 }
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+// Convert a custom text edit |command| to the equivalent views command ID.
 int GetViewsCommand(const ui::TextEditCommandAuraLinux& command, bool rtl) {
   const bool select = command.extend_selection();
   switch (command.command_id()) {
@@ -600,19 +602,15 @@ void Textfield::OnMouseReleased(const ui::MouseEvent& event) {
 
 bool Textfield::OnKeyPressed(const ui::KeyEvent& event) {
   bool handled = controller_ && controller_->HandleKeyEvent(this, event);
-  if (handled)
-    return true;
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
   ui::TextEditKeyBindingsDelegateAuraLinux* delegate =
       ui::GetTextEditKeyBindingsDelegate();
   std::vector<ui::TextEditCommandAuraLinux> commands;
-  if (delegate) {
-    if (!delegate->MatchEvent(event, &commands))
-      return false;
+  if (!handled && delegate && delegate->MatchEvent(event, &commands)) {
     const bool rtl = GetTextDirection() == base::i18n::RIGHT_TO_LEFT;
     for (size_t i = 0; i < commands.size(); ++i) {
-      int command = GetViewsCommand(commands[i], rtl);
+      const int command = GetViewsCommand(commands[i], rtl);
       if (IsCommandIdEnabled(command)) {
         ExecuteCommand(command);
         handled = true;
@@ -623,11 +621,11 @@ bool Textfield::OnKeyPressed(const ui::KeyEvent& event) {
 #endif
 
   const int command = GetCommandForKeyEvent(event, HasSelection());
-  if (IsCommandIdEnabled(command)) {
+  if (!handled && IsCommandIdEnabled(command)) {
     ExecuteCommand(command);
-    return true;
+    handled = true;
   }
-  return false;
+  return handled;
 }
 
 ui::TextInputClient* Textfield::GetTextInputClient() {
