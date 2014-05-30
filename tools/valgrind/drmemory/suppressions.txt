@@ -553,3 +553,11 @@ system call NtCreate*
 *!base::Thread::Run
 *!content::BrowserThreadImpl::CacheThreadRun
 *!content::BrowserThreadImpl::Run
+
+UNADDRESSABLE ACCESS
+name=http://crbug.com/379204
+...
+*!WTF::PlatformCondition::timedWait
+*!WTF::ThreadCondition::timedWait
+*!WTF::MessageQueue<>::waitForMessageWithTimeout
+*!WebCore::WorkerRunLoop::run
