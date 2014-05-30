@@ -12,6 +12,7 @@
 #include "ppapi/c/pp_graphics_3d.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/proxy/interface_proxy.h"
+#include "ppapi/proxy/ppapi_proxy_export.h"
 #include "ppapi/proxy/proxy_completion_callback_factory.h"
 #include "ppapi/shared_impl/ppb_graphics_3d_shared.h"
 #include "ppapi/shared_impl/resource.h"
@@ -26,7 +27,7 @@ namespace proxy {
 class SerializedHandle;
 class PpapiCommandBufferProxy;
 
-class Graphics3D : public PPB_Graphics3D_Shared {
+class PPAPI_PROXY_EXPORT Graphics3D : public PPB_Graphics3D_Shared {
  public:
   explicit Graphics3D(const HostResource& resource);
   virtual ~Graphics3D();

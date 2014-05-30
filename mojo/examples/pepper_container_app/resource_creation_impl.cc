@@ -290,6 +290,11 @@ PP_Resource ResourceCreationImpl::CreateUDPSocketPrivate(
   return 0;
 }
 
+PP_Resource ResourceCreationImpl::CreateVideoDecoder(PP_Instance instance) {
+  NOTIMPLEMENTED();
+  return 0;
+}
+
 PP_Resource ResourceCreationImpl::CreateVideoDestination(
     PP_Instance instance) {
   NOTIMPLEMENTED();

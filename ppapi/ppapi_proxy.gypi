@@ -226,6 +226,8 @@
           'proxy/var_serialization_rules.h',
           'proxy/video_capture_resource.cc',
           'proxy/video_capture_resource.h',
+          'proxy/video_decoder_resource.cc',
+          'proxy/video_decoder_resource.h',
           'proxy/video_destination_resource.cc',
           'proxy/video_destination_resource.h',
           'proxy/video_frame_resource.cc',

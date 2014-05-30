@@ -160,6 +160,7 @@ class ResourceCreationAPI {
   virtual PP_Resource CreateTCPSocketPrivate(PP_Instance instace) = 0;
   virtual PP_Resource CreateUDPSocket(PP_Instance instace) = 0;
   virtual PP_Resource CreateUDPSocketPrivate(PP_Instance instace) = 0;
+  virtual PP_Resource CreateVideoDecoder(PP_Instance instance) = 0;
   virtual PP_Resource CreateVideoDestination(PP_Instance instance) = 0;
   virtual PP_Resource CreateVideoSource(PP_Instance instance) = 0;
   virtual PP_Resource CreateWebSocket(PP_Instance instance) = 0;

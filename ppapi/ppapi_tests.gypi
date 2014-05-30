@@ -175,6 +175,7 @@
         'proxy/raw_var_data_unittest.cc',
         'proxy/serialized_var_unittest.cc',
         'proxy/talk_resource_unittest.cc',
+        'proxy/video_decoder_resource_unittest.cc',
         'proxy/websocket_resource_unittest.cc',
         'shared_impl/media_stream_buffer_manager_unittest.cc',
         'shared_impl/media_stream_video_track_shared_unittest.cc',
@@ -450,8 +451,7 @@
         'lib/gl/include',
       ],
       'sources': [
-        # TODO(bbudge) Change to new example when implementation lands.
-        'examples/video_decode/video_decode_dev.cc',
+        'examples/video_decode/video_decode.cc',
         'examples/video_decode/testdata.h',
       ],
       # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.

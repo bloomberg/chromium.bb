@@ -9,5 +9,6 @@
 
 // Interfaces go here.
 PROXIED_IFACE(PPB_FILEMAPPING_INTERFACE_0_1, PPB_FileMapping_0_1)
+PROXIED_IFACE(PPB_VIDEODECODER_INTERFACE_0_1, PPB_VideoDecoder_0_1)
 
 #include "ppapi/thunk/interfaces_postamble.h"

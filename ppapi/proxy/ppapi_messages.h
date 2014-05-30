@@ -15,6 +15,7 @@
 #include "base/sync_socket.h"
 #include "base/values.h"
 #include "gpu/command_buffer/common/command_buffer.h"
+#include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/ipc/gpu_command_buffer_traits.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_message_macros.h"
@@ -26,6 +27,7 @@
 #include "ppapi/c/dev/ppb_url_util_dev.h"
 #include "ppapi/c/dev/ppp_printing_dev.h"
 #include "ppapi/c/pp_bool.h"
+#include "ppapi/c/pp_codecs.h"
 #include "ppapi/c/pp_file_info.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_module.h"
@@ -121,6 +123,7 @@ IPC_ENUM_TRAITS_MAX_VALUE(PP_UDPSocket_Option,
 IPC_ENUM_TRAITS(PP_VideoDecodeError_Dev)
 IPC_ENUM_TRAITS(PP_VideoDecoder_Profile)
 IPC_ENUM_TRAITS_MAX_VALUE(PP_VideoFrame_Format, PP_VIDEOFRAME_FORMAT_LAST)
+IPC_ENUM_TRAITS_MAX_VALUE(PP_VideoProfile, PP_VIDEOPROFILE_MAX)
 
 IPC_STRUCT_TRAITS_BEGIN(PP_Point)
   IPC_STRUCT_TRAITS_MEMBER(x)
@@ -1813,6 +1816,47 @@ IPC_MESSAGE_CONTROL0(PpapiHostMsg_OutputProtection_QueryStatus)
 IPC_MESSAGE_CONTROL2(PpapiPluginMsg_OutputProtection_QueryStatusReply,
                      uint32_t /* link_mask */,
                      uint32_t /* protection_mask */)
+
+// VideoDecoder ------------------------------------------------------
+
+IPC_MESSAGE_CONTROL0(PpapiHostMsg_VideoDecoder_Create)
+IPC_MESSAGE_CONTROL3(PpapiHostMsg_VideoDecoder_Initialize,
+                     ppapi::HostResource /* graphics_context */,
+                     PP_VideoProfile /* profile */,
+                     bool /* allow_software_fallback */)
+IPC_MESSAGE_CONTROL0(PpapiPluginMsg_VideoDecoder_InitializeReply)
+IPC_MESSAGE_CONTROL2(PpapiHostMsg_VideoDecoder_GetShm,
+                     uint32_t /* shm_id */,
+                     uint32_t /* shm_size */)
+// On success, a shm handle is passed in the ReplyParams struct.
+IPC_MESSAGE_CONTROL1(PpapiPluginMsg_VideoDecoder_GetShmReply,
+                     uint32_t /* shm_size */)
+IPC_MESSAGE_CONTROL3(PpapiHostMsg_VideoDecoder_Decode,
+                     uint32_t /* shm_id */,
+                     uint32_t /* size */,
+                     int32_t /* decode_id */)
+IPC_MESSAGE_CONTROL1(PpapiPluginMsg_VideoDecoder_DecodeReply,
+                     uint32_t /* shm_id */)
+IPC_MESSAGE_CONTROL3(PpapiPluginMsg_VideoDecoder_RequestTextures,
+                     uint32_t /* num_textures */,
+                     PP_Size /* size */,
+                     uint32_t /* texture_target */)
+IPC_MESSAGE_CONTROL2(PpapiHostMsg_VideoDecoder_AssignTextures,
+                     PP_Size /* size */,
+                     std::vector<uint32_t> /* texture_ids */)
+IPC_MESSAGE_CONTROL2(PpapiPluginMsg_VideoDecoder_PictureReady,
+                     int32_t /* decode_id */,
+                     uint32_t /* texture_id */)
+IPC_MESSAGE_CONTROL1(PpapiHostMsg_VideoDecoder_RecyclePicture,
+                     uint32_t /* texture_id */)
+IPC_MESSAGE_CONTROL1(PpapiPluginMsg_VideoDecoder_DismissPicture,
+                     uint32_t /* texture_id */)
+IPC_MESSAGE_CONTROL0(PpapiHostMsg_VideoDecoder_Flush)
+IPC_MESSAGE_CONTROL0(PpapiPluginMsg_VideoDecoder_FlushReply)
+IPC_MESSAGE_CONTROL0(PpapiHostMsg_VideoDecoder_Reset)
+IPC_MESSAGE_CONTROL0(PpapiPluginMsg_VideoDecoder_ResetReply)
+IPC_MESSAGE_CONTROL1(PpapiPluginMsg_VideoDecoder_NotifyError,
+                     int32_t /* error */)
 
 #if !defined(OS_NACL) && !defined(NACL_WIN64)
 

@@ -47,6 +47,7 @@
 #include "ppapi/proxy/url_request_info_resource.h"
 #include "ppapi/proxy/url_response_info_resource.h"
 #include "ppapi/proxy/video_capture_resource.h"
+#include "ppapi/proxy/video_decoder_resource.h"
 #include "ppapi/proxy/video_destination_resource.h"
 #include "ppapi/proxy/video_source_resource.h"
 #include "ppapi/proxy/websocket_resource.h"
@@ -367,6 +368,10 @@ PP_Resource ResourceCreationProxy::CreateUDPSocketPrivate(
     PP_Instance instance) {
   return (new UDPSocketPrivateResource(
       GetConnection(), instance))->GetReference();
+}
+
+PP_Resource ResourceCreationProxy::CreateVideoDecoder(PP_Instance instance) {
+  return (new VideoDecoderResource(GetConnection(), instance))->GetReference();
 }
 
 PP_Resource ResourceCreationProxy::CreateVideoDestination(

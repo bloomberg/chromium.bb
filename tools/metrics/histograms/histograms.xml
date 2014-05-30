@@ -40466,6 +40466,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="1260990020" label="PPB_Ext_Socket(Dev);0.2"/>
   <int value="1262240942" label="PPB_FileIO;1.1"/>
   <int value="1272679676" label="PPB_TCPSocket_Private;0.5"/>
+  <int value="1296231808" label="PPB_VideoDecoder;0.1"/>
   <int value="1316246754" label="PPB_KeyboardInputEvent;1.0"/>
   <int value="1316320941" label="PPB_Graphics2D(Dev);0.1"/>
   <int value="1321620067" label="PPB_Instance;1.0"/>

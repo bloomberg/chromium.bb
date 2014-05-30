@@ -295,7 +295,11 @@ PP_Resource ResourceCreationImpl::CreateUDPSocketPrivate(PP_Instance instance) {
 }
 
 PP_Resource ResourceCreationImpl::CreateVideoCapture(PP_Instance instance) {
-  return 0;  // VideoCapture is not supported in process now.
+  return 0;  // Not supported in-process.
+}
+
+PP_Resource ResourceCreationImpl::CreateVideoDecoder(PP_Instance instance) {
+  return 0;  // Not supported in-process.
 }
 
 PP_Resource ResourceCreationImpl::CreateVideoDecoderDev(

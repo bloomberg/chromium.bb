@@ -272,6 +272,7 @@
           'thunk/ppb_video_decoder_api.h',
           'thunk/ppb_video_decoder_dev_api.h',
           'thunk/ppb_video_decoder_dev_thunk.cc',
+          'thunk/ppb_video_decoder_thunk.cc',
           'thunk/ppb_video_destination_private_api.h',
           'thunk/ppb_video_destination_private_thunk.cc',
           'thunk/ppb_video_frame_api.h',

@@ -516,6 +516,8 @@
       'renderer/pepper/pepper_url_loader_host.h',
       'renderer/pepper/pepper_video_capture_host.cc',
       'renderer/pepper/pepper_video_capture_host.h',
+      'renderer/pepper/pepper_video_decoder_host.cc',
+      'renderer/pepper/pepper_video_decoder_host.h',
       'renderer/pepper/pepper_webplugin_impl.cc',
       'renderer/pepper/pepper_webplugin_impl.h',
       'renderer/pepper/pepper_websocket_host.cc',
