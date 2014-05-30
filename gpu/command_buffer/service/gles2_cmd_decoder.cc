@@ -1463,7 +1463,7 @@ class GLES2DecoderImpl : public GLES2Decoder,
   // simulated.
   bool SimulateAttrib0(
       const char* function_name, GLuint max_vertex_accessed, bool* simulated);
-  void RestoreStateForAttrib(GLuint attrib);
+  void RestoreStateForAttrib(GLuint attrib, bool restore_array_binding);
 
   // If an image is bound to texture, this will call Will/DidUseTexImage
   // if needed.
@@ -6238,21 +6238,23 @@ bool GLES2DecoderImpl::SimulateAttrib0(
   return true;
 }
 
-void GLES2DecoderImpl::RestoreStateForAttrib(GLuint attrib_index) {
+void GLES2DecoderImpl::RestoreStateForAttrib(
+    GLuint attrib_index, bool restore_array_binding) {
   const VertexAttrib* attrib =
       state_.vertex_attrib_manager->GetVertexAttrib(attrib_index);
-  const void* ptr = reinterpret_cast<const void*>(attrib->offset());
-  Buffer* buffer = attrib->buffer();
-  glBindBuffer(GL_ARRAY_BUFFER, buffer ? buffer->service_id() : 0);
-  glVertexAttribPointer(
-      attrib_index, attrib->size(), attrib->type(), attrib->normalized(),
-      attrib->gl_stride(), ptr);
+  if (restore_array_binding) {
+    const void* ptr = reinterpret_cast<const void*>(attrib->offset());
+    Buffer* buffer = attrib->buffer();
+    glBindBuffer(GL_ARRAY_BUFFER, buffer ? buffer->service_id() : 0);
+    glVertexAttribPointer(
+        attrib_index, attrib->size(), attrib->type(), attrib->normalized(),
+        attrib->gl_stride(), ptr);
+  }
   if (attrib->divisor())
     glVertexAttribDivisorANGLE(attrib_index, attrib->divisor());
   glBindBuffer(
-      GL_ARRAY_BUFFER,
-      state_.bound_array_buffer.get() ? state_.bound_array_buffer->service_id()
-                                      : 0);
+      GL_ARRAY_BUFFER, state_.bound_array_buffer.get() ?
+          state_.bound_array_buffer->service_id() : 0);
 
   // Never touch vertex attribute 0's state (in particular, never
   // disable it) when running on desktop GL because it will never be
@@ -6456,7 +6458,11 @@ error::Error GLES2DecoderImpl::DoDrawArrays(
       }
     }
     if (simulated_attrib_0) {
-      RestoreStateForAttrib(0);
+      // We don't have to restore attrib 0 generic data at the end of this
+      // function even if it is simulated. This is because we will simulate
+      // it in each draw call, and attrib 0 generic data queries use cached
+      // values instead of passing down to the underlying driver.
+      RestoreStateForAttrib(0, false);
     }
   }
   return error::kNoError;
@@ -6592,7 +6598,11 @@ error::Error GLES2DecoderImpl::DoDrawElements(
       }
     }
     if (simulated_attrib_0) {
-      RestoreStateForAttrib(0);
+      // We don't have to restore attrib 0 generic data at the end of this
+      // function even if it is simulated. This is because we will simulate
+      // it in each draw call, and attrib 0 generic data queries use cached
+      // values instead of passing down to the underlying driver.
+      RestoreStateForAttrib(0, false);
     }
   }
   return error::kNoError;
@@ -9716,7 +9726,7 @@ void GLES2DecoderImpl::DoBindVertexArrayOES(GLuint client_id) {
 void GLES2DecoderImpl::EmulateVertexArrayState() {
   // Setup the Vertex attribute state
   for (uint32 vv = 0; vv < group_->max_vertex_attribs(); ++vv) {
-    RestoreStateForAttrib(vv);
+    RestoreStateForAttrib(vv, true);
   }
 
   // Setup the element buffer

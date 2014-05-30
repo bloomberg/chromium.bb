@@ -27,6 +27,8 @@ using ::gfx::MockGLInterface;
 using ::testing::_;
 using ::testing::DoAll;
 using ::testing::InSequence;
+using ::testing::Invoke;
+using ::testing::InvokeWithoutArgs;
 using ::testing::MatcherCast;
 using ::testing::Pointee;
 using ::testing::Return;
@@ -35,6 +37,7 @@ using ::testing::SetArgPointee;
 using ::testing::SetArgumentPointee;
 using ::testing::StrEq;
 using ::testing::StrictMock;
+using ::testing::WithArg;
 
 namespace {
 
@@ -152,6 +155,8 @@ void GLES2DecoderTestBase::InitDecoderWithCommandLine(
 
   gl_.reset(new StrictMock<MockGLInterface>());
   ::gfx::MockGLInterface::SetGLInterface(gl_.get());
+
+  SetupMockGLBehaviors();
 
   // Only create stream texture manager if extension is requested.
   std::vector<std::string> list;
@@ -1533,12 +1538,6 @@ void GLES2DecoderTestBase::AddExpectationsForSimulatedAttrib0WithError(
     EXPECT_CALL(*gl_, VertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, NULL))
         .Times(1)
         .RetiresOnSaturation();
-    EXPECT_CALL(*gl_, BindBuffer(GL_ARRAY_BUFFER, 0))
-        .Times(1)
-        .RetiresOnSaturation();
-    EXPECT_CALL(*gl_, VertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, NULL))
-        .Times(1)
-        .RetiresOnSaturation();
     EXPECT_CALL(*gl_, BindBuffer(GL_ARRAY_BUFFER, buffer_id))
         .Times(1)
         .RetiresOnSaturation();
@@ -1549,6 +1548,21 @@ void GLES2DecoderTestBase::AddExpectationsForSimulatedAttrib0(
     GLsizei num_vertices, GLuint buffer_id) {
   AddExpectationsForSimulatedAttrib0WithError(
       num_vertices, buffer_id, GL_NO_ERROR);
+}
+
+void GLES2DecoderTestBase::SetupMockGLBehaviors() {
+  ON_CALL(*gl_, BindVertexArrayOES(_))
+      .WillByDefault(Invoke(
+          &gl_states_,
+          &GLES2DecoderTestBase::MockGLStates::OnBindVertexArrayOES));
+  ON_CALL(*gl_, BindBuffer(GL_ARRAY_BUFFER, _))
+      .WillByDefault(WithArg<1>(Invoke(
+          &gl_states_,
+          &GLES2DecoderTestBase::MockGLStates::OnBindArrayBuffer)));
+  ON_CALL(*gl_, VertexAttribPointer(_, _, _, _, _, NULL))
+      .WillByDefault(InvokeWithoutArgs(
+          &gl_states_,
+          &GLES2DecoderTestBase::MockGLStates::OnVertexAttribNullPointer));
 }
 
 GLES2DecoderWithShaderTestBase::MockCommandBufferEngine::
