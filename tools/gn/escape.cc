@@ -8,6 +8,24 @@
 
 namespace {
 
+// A "1" in this lookup table means that char is valid in the shell.
+const char kShellValid[0x80] = {
+// 00-1f: all are invalid
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+// ' ' !  "  #  $  %  &  '  (  )  *  +  ,  -  .  /
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1,
+//  0  1  2  3  4  5  6  7  8  9  :  ;  <  =  >  ?
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 0, 0,
+//  @  A  B  C  D  E  F  G  H  I  J  K  L  M  N  O
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+//  P  Q  R  S  T  U  V  W  X  Y  Z  [  \  ]  ^  _
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1,
+//  `  a  b  c  d  e  f  g  h  i  j  k  l  m  n  o
+    0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+//  p  q  r  s  t  u  v  w  x  y  z  {  |  }  ~
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 0 };
+
 template<typename DestString>
 void EscapeStringToString(const base::StringPiece& str,
                           const EscapeOptions& options,
@@ -17,14 +35,12 @@ void EscapeStringToString(const base::StringPiece& str,
 
   for (size_t i = 0; i < str.size(); i++) {
     if (str[i] == '$' && (options.mode & ESCAPE_NINJA)) {
-      // Escape dollars signs since ninja treats these specially.
+      // Escape dollars signs since ninja treats these specially. If we're also
+      // escaping for the shell, we need to backslash-escape that again.
+      if (options.mode & ESCAPE_SHELL)
+        dest->push_back('\\');
       dest->push_back('$');
       dest->push_back('$');
-    } else if (str[i] == '"' && (options.mode & ESCAPE_SHELL)) {
-      // Escape quotes with backslashes for the command-line (Ninja doesn't
-      // care).
-      dest->push_back('\\');
-      dest->push_back('"');
     } else if (str[i] == ' ') {
       if (options.mode & ESCAPE_NINJA) {
         // For Ninja just escape spaces with $.
@@ -61,6 +77,12 @@ void EscapeStringToString(const base::StringPiece& str,
     } else if (str[i] == ':' && (options.mode & ESCAPE_NINJA)) {
       dest->push_back('$');
       dest->push_back(':');
+    } else if ((options.mode & ESCAPE_SHELL) &&
+               (static_cast<unsigned>(str[i]) >= 0x80 ||
+                !kShellValid[static_cast<int>(str[i])])) {
+      // All other invalid shell chars get backslash-escaped.
+      dest->push_back('\\');
+      dest->push_back(str[i]);
     } else {
       dest->push_back(str[i]);
     }

@@ -19,10 +19,24 @@ TEST(Escape, Shell) {
 #if defined(OS_WIN)
   // Windows shell doesn't escape backslashes, but it does backslash-escape
   // quotes.
-  EXPECT_EQ("\"asdf: \\\"$\\bar\"", result);
+  EXPECT_EQ("\"asdf: \\\"\\$\\bar\"", result);
 #else
-  EXPECT_EQ("\"asdf: \\\"$\\\\bar\"", result);
+  EXPECT_EQ("\"asdf: \\\"\\$\\\\bar\"", result);
 #endif
+
+  // Some more generic shell chars.
+  result = EscapeString("a_;<*b", opts, NULL);
+  EXPECT_EQ("a_\\;\\<\\*b", result);
+}
+
+TEST(Escape, NinjaShell) {
+  EscapeOptions opts;
+  opts.mode = ESCAPE_NINJA_SHELL;
+
+  // When escaping for Ninja and the shell, we would escape a $, then escape
+  // the backslash again.
+  std::string result = EscapeString("a$b", opts, NULL);
+  EXPECT_EQ("a\\$$b", result);
 }
 
 TEST(Escape, UsedQuotes) {
