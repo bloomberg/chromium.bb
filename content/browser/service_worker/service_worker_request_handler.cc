@@ -12,6 +12,7 @@
 #include "content/browser/service_worker/service_worker_utils.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "net/url_request/url_request.h"
+#include "net/url_request/url_request_interceptor.h"
 #include "webkit/browser/blob/blob_storage_context.h"
 
 namespace content {
@@ -21,11 +22,11 @@ namespace {
 int kUserDataKey;  // Key value is not important.
 
 class ServiceWorkerRequestInterceptor
-    : public net::URLRequestJobFactory::ProtocolHandler {
+    : public net::URLRequestInterceptor {
  public:
   ServiceWorkerRequestInterceptor() {}
   virtual ~ServiceWorkerRequestInterceptor() {}
-  virtual net::URLRequestJob* MaybeCreateJob(
+  virtual net::URLRequestJob* MaybeInterceptRequest(
       net::URLRequest* request,
       net::NetworkDelegate* network_delegate) const OVERRIDE {
     ServiceWorkerRequestHandler* handler =
@@ -87,9 +88,9 @@ ServiceWorkerRequestHandler* ServiceWorkerRequestHandler::GetHandler(
       request->GetUserData(&kUserDataKey));
 }
 
-scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+scoped_ptr<net::URLRequestInterceptor>
 ServiceWorkerRequestHandler::CreateInterceptor() {
-  return make_scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>(
+  return scoped_ptr<net::URLRequestInterceptor>(
       new ServiceWorkerRequestInterceptor);
 }
 

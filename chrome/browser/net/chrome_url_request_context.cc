@@ -39,23 +39,24 @@ namespace {
 // Factory that creates the main ChromeURLRequestContext.
 class FactoryForMain : public ChromeURLRequestContextFactory {
  public:
-  FactoryForMain(const ProfileIOData* profile_io_data,
-                 content::ProtocolHandlerMap* protocol_handlers,
-                 content::ProtocolHandlerScopedVector protocol_interceptors)
+  FactoryForMain(
+      const ProfileIOData* profile_io_data,
+      content::ProtocolHandlerMap* protocol_handlers,
+      content::URLRequestInterceptorScopedVector request_interceptors)
       : profile_io_data_(profile_io_data),
-        protocol_interceptors_(protocol_interceptors.Pass()) {
+        request_interceptors_(request_interceptors.Pass()) {
     std::swap(protocol_handlers_, *protocol_handlers);
   }
 
   virtual ChromeURLRequestContext* Create() OVERRIDE {
-    profile_io_data_->Init(&protocol_handlers_, protocol_interceptors_.Pass());
+    profile_io_data_->Init(&protocol_handlers_, request_interceptors_.Pass());
     return profile_io_data_->GetMainRequestContext();
   }
 
  private:
   const ProfileIOData* const profile_io_data_;
   content::ProtocolHandlerMap protocol_handlers_;
-  content::ProtocolHandlerScopedVector protocol_interceptors_;
+  content::URLRequestInterceptorScopedVector request_interceptors_;
 };
 
 // Factory that creates the ChromeURLRequestContext for extensions.
@@ -82,12 +83,12 @@ class FactoryForIsolatedApp : public ChromeURLRequestContextFactory {
       scoped_ptr<ProtocolHandlerRegistry::JobInterceptorFactory>
           protocol_handler_interceptor,
       content::ProtocolHandlerMap* protocol_handlers,
-      content::ProtocolHandlerScopedVector protocol_interceptors)
+      content::URLRequestInterceptorScopedVector request_interceptors)
       : profile_io_data_(profile_io_data),
         partition_descriptor_(partition_descriptor),
         main_request_context_getter_(main_context),
         protocol_handler_interceptor_(protocol_handler_interceptor.Pass()),
-        protocol_interceptors_(protocol_interceptors.Pass()) {
+        request_interceptors_(request_interceptors.Pass()) {
     std::swap(protocol_handlers_, *protocol_handlers);
   }
 
@@ -102,7 +103,7 @@ class FactoryForIsolatedApp : public ChromeURLRequestContextFactory {
         partition_descriptor_,
         protocol_handler_interceptor_.Pass(),
         &protocol_handlers_,
-        protocol_interceptors_.Pass());
+        request_interceptors_.Pass());
   }
 
  private:
@@ -113,7 +114,7 @@ class FactoryForIsolatedApp : public ChromeURLRequestContextFactory {
   scoped_ptr<ProtocolHandlerRegistry::JobInterceptorFactory>
       protocol_handler_interceptor_;
   content::ProtocolHandlerMap protocol_handlers_;
-  content::ProtocolHandlerScopedVector protocol_interceptors_;
+  content::URLRequestInterceptorScopedVector request_interceptors_;
 };
 
 // Factory that creates the media ChromeURLRequestContext for a given isolated
@@ -202,9 +203,9 @@ ChromeURLRequestContextGetter* ChromeURLRequestContextGetter::Create(
     Profile* profile,
     const ProfileIOData* profile_io_data,
     content::ProtocolHandlerMap* protocol_handlers,
-    content::ProtocolHandlerScopedVector protocol_interceptors) {
+    content::URLRequestInterceptorScopedVector request_interceptors) {
   return new ChromeURLRequestContextGetter(new FactoryForMain(
-      profile_io_data, protocol_handlers, protocol_interceptors.Pass()));
+      profile_io_data, protocol_handlers, request_interceptors.Pass()));
 }
 
 // static
@@ -232,7 +233,7 @@ ChromeURLRequestContextGetter::CreateForIsolatedApp(
     scoped_ptr<ProtocolHandlerRegistry::JobInterceptorFactory>
         protocol_handler_interceptor,
     content::ProtocolHandlerMap* protocol_handlers,
-    content::ProtocolHandlerScopedVector protocol_interceptors) {
+    content::URLRequestInterceptorScopedVector request_interceptors) {
   ChromeURLRequestContextGetter* main_context =
       static_cast<ChromeURLRequestContextGetter*>(profile->GetRequestContext());
   return new ChromeURLRequestContextGetter(
@@ -241,7 +242,7 @@ ChromeURLRequestContextGetter::CreateForIsolatedApp(
                                 main_context,
                                 protocol_handler_interceptor.Pass(),
                                 protocol_handlers,
-                                protocol_interceptors.Pass()));
+                                request_interceptors.Pass()));
 }
 
 // static

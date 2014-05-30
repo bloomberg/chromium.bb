@@ -16,6 +16,7 @@
 namespace net {
 class NetworkDelegate;
 class URLRequest;
+class URLRequestInterceptor;
 }
 
 namespace webkit_blob {
@@ -53,8 +54,7 @@ class CONTENT_EXPORT ServiceWorkerRequestHandler
       net::URLRequest* request);
 
   // Creates a protocol interceptor for ServiceWorker.
-  static scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
-      CreateInterceptor();
+  static scoped_ptr<net::URLRequestInterceptor> CreateInterceptor();
 
   virtual ~ServiceWorkerRequestHandler();
 

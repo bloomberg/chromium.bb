@@ -211,7 +211,7 @@ class TestingProfile : public Profile {
   virtual net::URLRequestContextGetter* GetRequestContext() OVERRIDE;
   virtual net::URLRequestContextGetter* CreateRequestContext(
       content::ProtocolHandlerMap* protocol_handlers,
-      content::ProtocolHandlerScopedVector protocol_interceptors) OVERRIDE;
+      content::URLRequestInterceptorScopedVector request_interceptors) OVERRIDE;
   virtual net::URLRequestContextGetter* GetRequestContextForRenderProcess(
       int renderer_child_id) OVERRIDE;
   virtual content::ResourceContext* GetResourceContext() OVERRIDE;
@@ -300,7 +300,7 @@ class TestingProfile : public Profile {
       const base::FilePath& partition_path,
       bool in_memory,
       content::ProtocolHandlerMap* protocol_handlers,
-      content::ProtocolHandlerScopedVector protocol_interceptors) OVERRIDE;
+      content::URLRequestInterceptorScopedVector request_interceptors) OVERRIDE;
   virtual net::SSLConfigService* GetSSLConfigService() OVERRIDE;
   virtual HostContentSettingsMap* GetHostContentSettingsMap() OVERRIDE;
   void set_last_session_exited_cleanly(bool value) {

@@ -53,7 +53,7 @@ AwRequestInterceptor::QueryForInterceptedRequestData(
   return io_thread_client->ShouldInterceptRequest(location, request).Pass();
 }
 
-net::URLRequestJob* AwRequestInterceptor::MaybeCreateJob(
+net::URLRequestJob* AwRequestInterceptor::MaybeInterceptRequest(
     net::URLRequest* request,
     net::NetworkDelegate* network_delegate) const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));

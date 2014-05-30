@@ -36,13 +36,13 @@ class ShellContentBrowserClient : public ContentBrowserClient {
   virtual net::URLRequestContextGetter* CreateRequestContext(
       BrowserContext* browser_context,
       ProtocolHandlerMap* protocol_handlers,
-      ProtocolHandlerScopedVector protocol_interceptors) OVERRIDE;
+      URLRequestInterceptorScopedVector request_interceptors) OVERRIDE;
   virtual net::URLRequestContextGetter* CreateRequestContextForStoragePartition(
       BrowserContext* browser_context,
       const base::FilePath& partition_path,
       bool in_memory,
       ProtocolHandlerMap* protocol_handlers,
-      ProtocolHandlerScopedVector protocol_interceptors) OVERRIDE;
+      URLRequestInterceptorScopedVector request_interceptors) OVERRIDE;
   virtual bool IsHandledURL(const GURL& url) OVERRIDE;
   virtual void AppendExtraCommandLineSwitches(base::CommandLine* command_line,
                                               int child_process_id) OVERRIDE;
@@ -66,7 +66,7 @@ class ShellContentBrowserClient : public ContentBrowserClient {
   virtual void GetAdditionalMappedFilesForChildProcess(
       const base::CommandLine& command_line,
       int child_process_id,
-      std::vector<content::FileDescriptorInfo>* mappings) OVERRIDE;
+      std::vector<FileDescriptorInfo>* mappings) OVERRIDE;
 #endif
 #if defined(OS_WIN)
   virtual void PreSpawnRenderer(sandbox::TargetPolicy* policy,

@@ -79,7 +79,7 @@ bool ShellContentBrowserClient::ShouldUseProcessPerSite(
 net::URLRequestContextGetter* ShellContentBrowserClient::CreateRequestContext(
     content::BrowserContext* content_browser_context,
     content::ProtocolHandlerMap* protocol_handlers,
-    content::ProtocolHandlerScopedVector protocol_interceptors) {
+    content::URLRequestInterceptorScopedVector request_interceptors) {
   // Handle only chrome-extension:// requests. app_shell does not support
   // chrome-extension-resource:// requests (it does not store shared extension
   // data in its installation directory).
@@ -91,7 +91,7 @@ net::URLRequestContextGetter* ShellContentBrowserClient::CreateRequestContext(
                                                      extension_info_map));
   // Let content::ShellBrowserContext handle the rest of the setup.
   return browser_main_parts_->browser_context()->CreateRequestContext(
-      protocol_handlers, protocol_interceptors.Pass());
+      protocol_handlers, request_interceptors.Pass());
 }
 
 bool ShellContentBrowserClient::IsHandledURL(const GURL& url) {

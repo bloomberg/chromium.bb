@@ -6,19 +6,18 @@
 
 #include "android_webview/browser/net/aw_url_request_job_factory.h"
 #include "android_webview/native/android_protocol_handler.h"
-#include "base/logging.h"
+#include "net/url_request/url_request_interceptor.h"
 
 namespace android_webview {
-class AwURLRequestJobFactory;
 
-scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
-CreateAndroidAssetFileProtocolHandler() {
-  return CreateAssetFileProtocolHandler();
+scoped_ptr<net::URLRequestInterceptor>
+CreateAndroidAssetFileRequestInterceptor() {
+  return CreateAssetFileRequestInterceptor();
 }
 
-scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
-CreateAndroidContentProtocolHandler() {
-  return CreateContentSchemeProtocolHandler();
+scoped_ptr<net::URLRequestInterceptor>
+CreateAndroidContentRequestInterceptor() {
+  return CreateContentSchemeRequestInterceptor();
 }
 
 }  // namespace android_webview

@@ -97,8 +97,9 @@ class ProfileIOData {
   // Initializes the ProfileIOData object and primes the RequestContext
   // generation. Must be called prior to any of the Get*() methods other than
   // GetResouceContext or GetMetricsEnabledStateOnIOThread.
-  void Init(content::ProtocolHandlerMap* protocol_handlers,
-            content::ProtocolHandlerScopedVector protocol_interceptors) const;
+  void Init(
+      content::ProtocolHandlerMap* protocol_handlers,
+      content::URLRequestInterceptorScopedVector request_interceptors) const;
 
   ChromeURLRequestContext* GetMainRequestContext() const;
   ChromeURLRequestContext* GetMediaRequestContext() const;
@@ -109,7 +110,7 @@ class ProfileIOData {
       scoped_ptr<ProtocolHandlerRegistry::JobInterceptorFactory>
           protocol_handler_interceptor,
       content::ProtocolHandlerMap* protocol_handlers,
-      content::ProtocolHandlerScopedVector protocol_interceptors) const;
+      content::URLRequestInterceptorScopedVector request_interceptors) const;
   ChromeURLRequestContext* GetIsolatedMediaRequestContext(
       ChromeURLRequestContext* app_context,
       const StoragePartitionDescriptor& partition_descriptor) const;
@@ -315,7 +316,7 @@ class ProfileIOData {
 
   scoped_ptr<net::URLRequestJobFactory> SetUpJobFactoryDefaults(
       scoped_ptr<net::URLRequestJobFactoryImpl> job_factory,
-      content::ProtocolHandlerScopedVector protocol_interceptors,
+      content::URLRequestInterceptorScopedVector request_interceptors,
       scoped_ptr<ProtocolHandlerRegistry::JobInterceptorFactory>
           protocol_handler_interceptor,
       net::NetworkDelegate* network_delegate,
@@ -418,7 +419,8 @@ class ProfileIOData {
   virtual void InitializeInternal(
       ProfileParams* profile_params,
       content::ProtocolHandlerMap* protocol_handlers,
-      content::ProtocolHandlerScopedVector protocol_interceptors) const = 0;
+      content::URLRequestInterceptorScopedVector
+          request_interceptors) const = 0;
 
   // Initializes the RequestContext for extensions.
   virtual void InitializeExtensionsRequestContext(
@@ -431,7 +433,8 @@ class ProfileIOData {
       scoped_ptr<ProtocolHandlerRegistry::JobInterceptorFactory>
           protocol_handler_interceptor,
       content::ProtocolHandlerMap* protocol_handlers,
-      content::ProtocolHandlerScopedVector protocol_interceptors) const = 0;
+      content::URLRequestInterceptorScopedVector
+          request_interceptors) const = 0;
 
   // Does an on-demand initialization of a media RequestContext for the given
   // isolated app.
@@ -449,7 +452,8 @@ class ProfileIOData {
       scoped_ptr<ProtocolHandlerRegistry::JobInterceptorFactory>
           protocol_handler_interceptor,
       content::ProtocolHandlerMap* protocol_handlers,
-      content::ProtocolHandlerScopedVector protocol_interceptors) const = 0;
+      content::URLRequestInterceptorScopedVector
+          request_interceptors) const = 0;
   virtual ChromeURLRequestContext*
       AcquireIsolatedMediaRequestContext(
           ChromeURLRequestContext* app_context,

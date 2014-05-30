@@ -6,7 +6,7 @@
 #define ANDROID_WEBVIEW_BROWSER_AW_REQUEST_INTERCEPTOR_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "net/url_request/url_request_job_factory.h"
+#include "net/url_request/url_request_interceptor.h"
 
 class GURL;
 
@@ -24,13 +24,13 @@ class InterceptedRequestData;
 // This class allows the Java-side embedder to substitute the default
 // URLRequest of a given request for an alternative job that will read data
 // from a Java stream.
-class AwRequestInterceptor : public net::URLRequestJobFactory::ProtocolHandler {
+class AwRequestInterceptor : public net::URLRequestInterceptor {
  public:
   AwRequestInterceptor();
   virtual ~AwRequestInterceptor();
 
-  // net::URLRequestJobFactory::ProtocolHandler override -----------------------
-  virtual net::URLRequestJob* MaybeCreateJob(
+  // net::URLRequestInterceptor override --------------------------------------
+  virtual net::URLRequestJob* MaybeInterceptRequest(
       net::URLRequest* request,
       net::NetworkDelegate* network_delegate) const OVERRIDE;
 

@@ -7,10 +7,10 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "net/url_request/url_request_job_factory.h"
 
 namespace net {
 class CookieStore;
+class URLRequestInterceptor;
 }  // namespace net
 
 namespace android_webview {
@@ -21,12 +21,12 @@ scoped_refptr<net::CookieStore> CreateCookieStore(
     AwBrowserContext* browser_context);
 
 // Called lazily when the job factory is being constructed.
-scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
-    CreateAndroidAssetFileProtocolHandler();
+scoped_ptr<net::URLRequestInterceptor>
+    CreateAndroidAssetFileRequestInterceptor();
 
 // Called lazily when the job factory is being constructed.
-scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
-    CreateAndroidContentProtocolHandler();
+scoped_ptr<net::URLRequestInterceptor>
+    CreateAndroidContentRequestInterceptor();
 
 }  // namespace android_webview
 

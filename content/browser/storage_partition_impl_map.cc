@@ -413,8 +413,8 @@ StoragePartitionImpl* StoragePartitionImplMap::Get(
           CreateDevToolsProtocolHandler(browser_context_->GetResourceContext(),
                                         browser_context_->IsOffTheRecord()));
 
-  ProtocolHandlerScopedVector protocol_interceptors;
-  protocol_interceptors.push_back(
+  URLRequestInterceptorScopedVector request_interceptors;
+  request_interceptors.push_back(
       ServiceWorkerRequestHandler::CreateInterceptor().release());
 
   // These calls must happen after StoragePartitionImpl::Create().
@@ -423,7 +423,7 @@ StoragePartitionImpl* StoragePartitionImplMap::Get(
         GetContentClient()->browser()->CreateRequestContext(
             browser_context_,
             &protocol_handlers,
-            protocol_interceptors.Pass()));
+            request_interceptors.Pass()));
   } else {
     partition->SetURLRequestContext(
         GetContentClient()->browser()->CreateRequestContextForStoragePartition(
@@ -431,7 +431,7 @@ StoragePartitionImpl* StoragePartitionImplMap::Get(
             partition->GetPath(),
             in_memory,
             &protocol_handlers,
-            protocol_interceptors.Pass()));
+            request_interceptors.Pass()));
   }
   partition->SetMediaURLRequestContext(
       partition_domain.empty() ?

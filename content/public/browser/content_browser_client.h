@@ -21,6 +21,7 @@
 #include "content/public/common/window_container_type.h"
 #include "net/base/mime_util.h"
 #include "net/cookies/canonical_cookie.h"
+#include "net/url_request/url_request_interceptor.h"
 #include "net/url_request/url_request_job_factory.h"
 #include "third_party/WebKit/public/web/WebNotificationPresenter.h"
 #include "ui/base/window_open_disposition.h"
@@ -112,9 +113,9 @@ typedef std::map<
   std::string, linked_ptr<net::URLRequestJobFactory::ProtocolHandler> >
     ProtocolHandlerMap;
 
-// A scoped vector of protocol handlers.
-typedef ScopedVector<net::URLRequestJobFactory::ProtocolHandler>
-    ProtocolHandlerScopedVector;
+// A scoped vector of protocol interceptors.
+typedef ScopedVector<net::URLRequestInterceptor>
+    URLRequestInterceptorScopedVector;
 
 // Embedder API (or SPI) for participating in browser logic, to be implemented
 // by the client of the content browser. See ChromeContentBrowserClient for the
@@ -205,7 +206,7 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual net::URLRequestContextGetter* CreateRequestContext(
       BrowserContext* browser_context,
       ProtocolHandlerMap* protocol_handlers,
-      ProtocolHandlerScopedVector protocol_interceptors);
+      URLRequestInterceptorScopedVector request_interceptors);
 
   // Creates the net::URLRequestContextGetter for a StoragePartition. Should
   // only be called once per partition_path per ContentBrowserClient object.
@@ -215,7 +216,7 @@ class CONTENT_EXPORT ContentBrowserClient {
       const base::FilePath& partition_path,
       bool in_memory,
       ProtocolHandlerMap* protocol_handlers,
-      ProtocolHandlerScopedVector protocol_interceptors);
+      URLRequestInterceptorScopedVector request_interceptors);
 
   // Returns whether a specified URL is handled by the embedder's internal
   // protocol handlers.
@@ -368,7 +369,7 @@ class CONTENT_EXPORT ContentBrowserClient {
   // Allow the embedder to specify a string version of the storage partition
   // config with a site.
   virtual std::string GetStoragePartitionIdForSite(
-      content::BrowserContext* browser_context,
+      BrowserContext* browser_context,
       const GURL& site);
 
   // Allows the embedder to provide a validation check for |partition_id|s.
@@ -393,7 +394,7 @@ class CONTENT_EXPORT ContentBrowserClient {
   // |in_memory| values. When a partition is not to be persisted, the
   // |in_memory| value must be set to true.
   virtual void GetStoragePartitionConfigForSite(
-      content::BrowserContext* browser_context,
+      BrowserContext* browser_context,
       const GURL& site,
       bool can_be_default,
       std::string* partition_domain,
@@ -478,12 +479,12 @@ class CONTENT_EXPORT ContentBrowserClient {
                                const GURL& source_origin,
                                WindowContainerType container_type,
                                const GURL& target_url,
-                               const content::Referrer& referrer,
+                               const Referrer& referrer,
                                WindowOpenDisposition disposition,
                                const blink::WebWindowFeatures& features,
                                bool user_gesture,
                                bool opener_suppressed,
-                               content::ResourceContext* context,
+                               ResourceContext* context,
                                int render_process_id,
                                int opener_id,
                                bool* no_javascript_access);
@@ -548,7 +549,7 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual void DidCreatePpapiPlugin(BrowserPpapiHost* browser_host) {}
 
   // Gets the host for an external out-of-process plugin.
-  virtual content::BrowserPpapiHost* GetExternalBrowserPpapiHost(
+  virtual BrowserPpapiHost* GetExternalBrowserPpapiHost(
       int plugin_child_id);
 
   // Returns true if the socket operation specified by |params| is allowed from
@@ -625,7 +626,7 @@ class CONTENT_EXPORT ContentBrowserClient {
   // Returns true if plugin referred to by the url can use
   // pp::FileIO::RequestOSFileHandle.
   virtual bool IsPluginAllowedToCallRequestOSFileHandle(
-      content::BrowserContext* browser_context,
+      BrowserContext* browser_context,
       const GURL& url);
 
   // Returns true if dev channel APIs are available for plugins.

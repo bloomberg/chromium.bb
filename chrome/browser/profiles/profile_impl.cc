@@ -922,10 +922,10 @@ PrefService* ProfileImpl::GetOffTheRecordPrefs() {
 
 net::URLRequestContextGetter* ProfileImpl::CreateRequestContext(
     content::ProtocolHandlerMap* protocol_handlers,
-    content::ProtocolHandlerScopedVector protocol_interceptors) {
+    content::URLRequestInterceptorScopedVector request_interceptors) {
   return io_data_.CreateMainRequestContextGetter(
       protocol_handlers,
-      protocol_interceptors.Pass(),
+      request_interceptors.Pass(),
       g_browser_process->local_state(),
       g_browser_process->io_thread()).get();
 }
@@ -1038,12 +1038,12 @@ ProfileImpl::CreateRequestContextForStoragePartition(
     const base::FilePath& partition_path,
     bool in_memory,
     content::ProtocolHandlerMap* protocol_handlers,
-    content::ProtocolHandlerScopedVector protocol_interceptors) {
+    content::URLRequestInterceptorScopedVector request_interceptors) {
   return io_data_.CreateIsolatedAppRequestContextGetter(
       partition_path,
       in_memory,
       protocol_handlers,
-      protocol_interceptors.Pass()).get();
+      request_interceptors.Pass()).get();
 }
 
 net::SSLConfigService* ProfileImpl::GetSSLConfigService() {

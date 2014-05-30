@@ -29,11 +29,11 @@ net::URLRequestContextGetter*
 ViewsContentBrowserClient::CreateRequestContext(
     content::BrowserContext* content_browser_context,
     content::ProtocolHandlerMap* protocol_handlers,
-    content::ProtocolHandlerScopedVector protocol_interceptors) {
+    content::URLRequestInterceptorScopedVector request_interceptors) {
   content::ShellBrowserContext* shell_context =
       views_content_main_parts_->browser_context();
   return shell_context->CreateRequestContext(protocol_handlers,
-                                             protocol_interceptors.Pass());
+                                             request_interceptors.Pass());
 }
 
 }  // namespace ui

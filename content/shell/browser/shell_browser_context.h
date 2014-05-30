@@ -77,12 +77,12 @@ class ShellBrowserContext : public BrowserContext {
 
   net::URLRequestContextGetter* CreateRequestContext(
       ProtocolHandlerMap* protocol_handlers,
-      ProtocolHandlerScopedVector protocol_interceptors);
+      URLRequestInterceptorScopedVector request_interceptors);
   net::URLRequestContextGetter* CreateRequestContextForStoragePartition(
       const base::FilePath& partition_path,
       bool in_memory,
       ProtocolHandlerMap* protocol_handlers,
-      ProtocolHandlerScopedVector protocol_interceptors);
+      URLRequestInterceptorScopedVector request_interceptors);
 
  private:
   class ShellResourceContext;

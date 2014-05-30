@@ -34,9 +34,10 @@
 #include "net/socket/next_proto.h"
 #include "net/url_request/data_protocol_handler.h"
 #include "net/url_request/file_protocol_handler.h"
-#include "net/url_request/protocol_intercept_job_factory.h"
 #include "net/url_request/url_request_context_builder.h"
 #include "net/url_request/url_request_context.h"
+#include "net/url_request/url_request_intercepting_job_factory.h"
+#include "net/url_request/url_request_interceptor.h"
 
 using content::BrowserThread;
 using data_reduction_proxy::DataReductionProxySettings;
@@ -131,36 +132,36 @@ scoped_ptr<net::URLRequestJobFactory> CreateJobFactory(
   protocol_handlers->clear();
 
   // Create a chain of URLRequestJobFactories. The handlers will be invoked
-  // in the order in which they appear in the protocol_handlers vector.
-  typedef std::vector<net::URLRequestJobFactory::ProtocolHandler*>
-      ProtocolHandlerVector;
-  ProtocolHandlerVector protocol_interceptors;
+  // in the order in which they appear in the |request_interceptors| vector.
+  typedef std::vector<net::URLRequestInterceptor*>
+      URLRequestInterceptorVector;
+  URLRequestInterceptorVector request_interceptors;
 
   // Note that even though the content:// scheme handler is created here,
   // it cannot be used by child processes until access to it is granted via
   // ChildProcessSecurityPolicy::GrantScheme(). This is done in
   // AwContentBrowserClient.
-  protocol_interceptors.push_back(
-      CreateAndroidContentProtocolHandler().release());
-  protocol_interceptors.push_back(
-      CreateAndroidAssetFileProtocolHandler().release());
+  request_interceptors.push_back(
+      CreateAndroidContentRequestInterceptor().release());
+  request_interceptors.push_back(
+      CreateAndroidAssetFileRequestInterceptor().release());
   // The AwRequestInterceptor must come after the content and asset file job
   // factories. This for WebViewClassic compatibility where it was not
   // possible to intercept resource loads to resolvable content:// and
   // file:// URIs.
   // This logical dependency is also the reason why the Content
-  // ProtocolHandler has to be added as a ProtocolInterceptJobFactory rather
-  // than via SetProtocolHandler.
-  protocol_interceptors.push_back(new AwRequestInterceptor());
+  // URLRequestInterceptor has to be added as an interceptor rather than as a
+  // ProtocolHandler.
+  request_interceptors.push_back(new AwRequestInterceptor());
 
   // The chain of responsibility will execute the handlers in reverse to the
   // order in which the elements of the chain are created.
   scoped_ptr<net::URLRequestJobFactory> job_factory(aw_job_factory.Pass());
-  for (ProtocolHandlerVector::reverse_iterator
-           i = protocol_interceptors.rbegin();
-       i != protocol_interceptors.rend();
+  for (URLRequestInterceptorVector::reverse_iterator
+           i = request_interceptors.rbegin();
+       i != request_interceptors.rend();
        ++i) {
-    job_factory.reset(new net::ProtocolInterceptJobFactory(
+    job_factory.reset(new net::URLRequestInterceptingJobFactory(
         job_factory.Pass(), make_scoped_ptr(*i)));
   }
 

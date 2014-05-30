@@ -1069,10 +1069,10 @@ net::URLRequestContextGetter*
 ChromeContentBrowserClient::CreateRequestContext(
     content::BrowserContext* browser_context,
     content::ProtocolHandlerMap* protocol_handlers,
-    content::ProtocolHandlerScopedVector protocol_interceptors) {
+    content::URLRequestInterceptorScopedVector request_interceptors) {
   Profile* profile = Profile::FromBrowserContext(browser_context);
   return profile->CreateRequestContext(protocol_handlers,
-                                       protocol_interceptors.Pass());
+                                       request_interceptors.Pass());
 }
 
 net::URLRequestContextGetter*
@@ -1081,13 +1081,13 @@ ChromeContentBrowserClient::CreateRequestContextForStoragePartition(
     const base::FilePath& partition_path,
     bool in_memory,
     content::ProtocolHandlerMap* protocol_handlers,
-    content::ProtocolHandlerScopedVector protocol_interceptors) {
+    content::URLRequestInterceptorScopedVector request_interceptors) {
   Profile* profile = Profile::FromBrowserContext(browser_context);
   return profile->CreateRequestContextForStoragePartition(
       partition_path,
       in_memory,
       protocol_handlers,
-      protocol_interceptors.Pass());
+      request_interceptors.Pass());
 }
 
 bool ChromeContentBrowserClient::IsHandledURL(const GURL& url) {

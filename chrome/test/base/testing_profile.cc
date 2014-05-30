@@ -719,7 +719,7 @@ net::URLRequestContextGetter* TestingProfile::GetRequestContext() {
 
 net::URLRequestContextGetter* TestingProfile::CreateRequestContext(
     content::ProtocolHandlerMap* protocol_handlers,
-    content::ProtocolHandlerScopedVector protocol_interceptors) {
+    content::URLRequestInterceptorScopedVector request_interceptors) {
   return new net::TestURLRequestContextGetter(
             BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
 }
@@ -798,7 +798,7 @@ TestingProfile::CreateRequestContextForStoragePartition(
     const base::FilePath& partition_path,
     bool in_memory,
     content::ProtocolHandlerMap* protocol_handlers,
-    content::ProtocolHandlerScopedVector protocol_interceptors) {
+    content::URLRequestInterceptorScopedVector request_interceptors) {
   // We don't test storage partitions here yet, so returning the same dummy
   // context is sufficient for now.
   return GetRequestContext();

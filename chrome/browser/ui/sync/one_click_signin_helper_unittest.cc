@@ -113,7 +113,7 @@ class TestProfileIOData : public ProfileIOData {
   virtual void InitializeInternal(
       ProfileParams* profile_params,
       content::ProtocolHandlerMap* protocol_handlers,
-      content::ProtocolHandlerScopedVector protocol_interceptors)
+      content::URLRequestInterceptorScopedVector request_interceptors)
       const OVERRIDE {
     NOTREACHED();
   }
@@ -127,7 +127,7 @@ class TestProfileIOData : public ProfileIOData {
       scoped_ptr<ProtocolHandlerRegistry::JobInterceptorFactory>
           protocol_handler_interceptor,
       content::ProtocolHandlerMap* protocol_handlers,
-      content::ProtocolHandlerScopedVector protocol_interceptors)
+      content::URLRequestInterceptorScopedVector request_interceptors)
       const OVERRIDE {
     NOTREACHED();
     return NULL;
@@ -149,7 +149,7 @@ class TestProfileIOData : public ProfileIOData {
       scoped_ptr<ProtocolHandlerRegistry::JobInterceptorFactory>
           protocol_handler_interceptor,
       content::ProtocolHandlerMap* protocol_handlers,
-      content::ProtocolHandlerScopedVector protocol_interceptors)
+      content::URLRequestInterceptorScopedVector request_interceptors)
       const OVERRIDE {
     NOTREACHED();
     return NULL;

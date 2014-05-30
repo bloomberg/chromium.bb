@@ -33,7 +33,7 @@ bool ContentBrowserClient::ShouldUseProcessPerSite(
 net::URLRequestContextGetter* ContentBrowserClient::CreateRequestContext(
     BrowserContext* browser_context,
     ProtocolHandlerMap* protocol_handlers,
-    ProtocolHandlerScopedVector protocol_interceptors) {
+    URLRequestInterceptorScopedVector request_interceptors) {
   return NULL;
 }
 
@@ -43,7 +43,7 @@ ContentBrowserClient::CreateRequestContextForStoragePartition(
     const base::FilePath& partition_path,
     bool in_memory,
     ProtocolHandlerMap* protocol_handlers,
-    ProtocolHandlerScopedVector protocol_interceptors) {
+    URLRequestInterceptorScopedVector request_interceptors) {
   return NULL;
 }
 
@@ -217,12 +217,12 @@ bool ContentBrowserClient::CanCreateWindow(
     const GURL& source_origin,
     WindowContainerType container_type,
     const GURL& target_url,
-    const content::Referrer& referrer,
+    const Referrer& referrer,
     WindowOpenDisposition disposition,
     const blink::WebWindowFeatures& features,
     bool user_gesture,
     bool opener_suppressed,
-    content::ResourceContext* context,
+    ResourceContext* context,
     int render_process_id,
     int opener_id,
     bool* no_javascript_access) {
@@ -297,7 +297,7 @@ const wchar_t* ContentBrowserClient::GetResourceDllName() {
 #endif
 
 bool ContentBrowserClient::IsPluginAllowedToCallRequestOSFileHandle(
-    content::BrowserContext* browser_context,
+    BrowserContext* browser_context,
     const GURL& url) {
   return false;
 }

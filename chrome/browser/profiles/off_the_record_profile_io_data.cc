@@ -34,7 +34,6 @@
 #include "net/http/http_server_properties_impl.h"
 #include "net/ssl/default_server_bound_cert_store.h"
 #include "net/ssl/server_bound_cert_service.h"
-#include "net/url_request/protocol_intercept_job_factory.h"
 #include "net/url_request/url_request_job_factory_impl.h"
 #include "webkit/browser/database/database_tracker.h"
 
@@ -72,7 +71,7 @@ OffTheRecordProfileIOData::Handle::GetResourceContextNoInit() const {
 scoped_refptr<ChromeURLRequestContextGetter>
 OffTheRecordProfileIOData::Handle::CreateMainRequestContextGetter(
     content::ProtocolHandlerMap* protocol_handlers,
-    content::ProtocolHandlerScopedVector protocol_interceptors) const {
+    content::URLRequestInterceptorScopedVector request_interceptors) const {
   // TODO(oshima): Re-enable when ChromeOS only accesses the profile on the UI
   // thread.
 #if !defined(OS_CHROMEOS)
@@ -81,7 +80,7 @@ OffTheRecordProfileIOData::Handle::CreateMainRequestContextGetter(
   LazyInitialize();
   DCHECK(!main_request_context_getter_.get());
   main_request_context_getter_ = ChromeURLRequestContextGetter::Create(
-      profile_, io_data_, protocol_handlers, protocol_interceptors.Pass());
+      profile_, io_data_, protocol_handlers, request_interceptors.Pass());
   return main_request_context_getter_;
 }
 
@@ -117,7 +116,7 @@ OffTheRecordProfileIOData::Handle::CreateIsolatedAppRequestContextGetter(
     const base::FilePath& partition_path,
     bool in_memory,
     content::ProtocolHandlerMap* protocol_handlers,
-    content::ProtocolHandlerScopedVector protocol_interceptors) const {
+    content::URLRequestInterceptorScopedVector request_interceptors) const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!partition_path.empty());
   LazyInitialize();
@@ -137,7 +136,7 @@ OffTheRecordProfileIOData::Handle::CreateIsolatedAppRequestContextGetter(
           descriptor,
           protocol_handler_interceptor.Pass(),
           protocol_handlers,
-          protocol_interceptors.Pass());
+          request_interceptors.Pass());
   app_request_context_getter_map_[descriptor] = context;
 
   return context;
@@ -170,7 +169,7 @@ OffTheRecordProfileIOData::~OffTheRecordProfileIOData() {
 void OffTheRecordProfileIOData::InitializeInternal(
     ProfileParams* profile_params,
     content::ProtocolHandlerMap* protocol_handlers,
-    content::ProtocolHandlerScopedVector protocol_interceptors) const {
+    content::URLRequestInterceptorScopedVector request_interceptors) const {
   ChromeURLRequestContext* main_context = main_request_context();
 
   IOThread* const io_thread = profile_params->io_thread;
@@ -237,7 +236,7 @@ void OffTheRecordProfileIOData::InitializeInternal(
   InstallProtocolHandlers(main_job_factory.get(), protocol_handlers);
   main_job_factory_ = SetUpJobFactoryDefaults(
       main_job_factory.Pass(),
-      protocol_interceptors.Pass(),
+      request_interceptors.Pass(),
       profile_params->protocol_handler_interceptor.Pass(),
       network_delegate(),
       ftp_factory_.get());
@@ -285,7 +284,7 @@ void OffTheRecordProfileIOData::
   // SetUpJobFactoryDefaults() to get this effect.
   extensions_job_factory_ = SetUpJobFactoryDefaults(
       extensions_job_factory.Pass(),
-      content::ProtocolHandlerScopedVector(),
+      content::URLRequestInterceptorScopedVector(),
       scoped_ptr<ProtocolHandlerRegistry::JobInterceptorFactory>(),
       NULL,
       ftp_factory_.get());
@@ -298,7 +297,7 @@ ChromeURLRequestContext* OffTheRecordProfileIOData::InitializeAppRequestContext(
     scoped_ptr<ProtocolHandlerRegistry::JobInterceptorFactory>
         protocol_handler_interceptor,
     content::ProtocolHandlerMap* protocol_handlers,
-    content::ProtocolHandlerScopedVector protocol_interceptors) const {
+    content::URLRequestInterceptorScopedVector request_interceptors) const {
   AppRequestContext* context = new AppRequestContext();
 
   // Copy most state from the main context.
@@ -325,7 +324,7 @@ ChromeURLRequestContext* OffTheRecordProfileIOData::InitializeAppRequestContext(
   InstallProtocolHandlers(job_factory.get(), protocol_handlers);
   scoped_ptr<net::URLRequestJobFactory> top_job_factory;
   top_job_factory = SetUpJobFactoryDefaults(job_factory.Pass(),
-                                            protocol_interceptors.Pass(),
+                                            request_interceptors.Pass(),
                                             protocol_handler_interceptor.Pass(),
                                             network_delegate(),
                                             ftp_factory_.get());
@@ -354,14 +353,14 @@ OffTheRecordProfileIOData::AcquireIsolatedAppRequestContext(
     scoped_ptr<ProtocolHandlerRegistry::JobInterceptorFactory>
         protocol_handler_interceptor,
     content::ProtocolHandlerMap* protocol_handlers,
-    content::ProtocolHandlerScopedVector protocol_interceptors) const {
+    content::URLRequestInterceptorScopedVector request_interceptors) const {
   // We create per-app contexts on demand, unlike the others above.
   ChromeURLRequestContext* app_request_context =
       InitializeAppRequestContext(main_context,
                                   partition_descriptor,
                                   protocol_handler_interceptor.Pass(),
                                   protocol_handlers,
-                                  protocol_interceptors.Pass());
+                                  request_interceptors.Pass());
   DCHECK(app_request_context);
   return app_request_context;
 }
