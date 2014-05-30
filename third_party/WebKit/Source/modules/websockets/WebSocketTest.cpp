@@ -102,8 +102,8 @@ public:
         : m_pageHolder(DummyPageHolder::create())
         , m_websocket(WebSocketWithMockChannel::create(&m_pageHolder->document()))
         , m_channel(m_websocket->channel())
-        , m_executionScope(V8TestingScope::create(v8::Isolate::GetCurrent()))
-        , m_exceptionState(ExceptionState::ConstructionContext, "property", "interface", m_executionScope->scriptState()->context()->Global(), m_executionScope->isolate())
+        , m_executionScope(v8::Isolate::GetCurrent())
+        , m_exceptionState(ExceptionState::ConstructionContext, "property", "interface", m_executionScope.scriptState()->context()->Global(), m_executionScope.isolate())
     {
     }
 
@@ -123,7 +123,7 @@ public:
     OwnPtr<DummyPageHolder> m_pageHolder;
     RefPtrWillBePersistent<WebSocketWithMockChannel> m_websocket;
     RefPtrWillBePersistent<MockWebSocketChannel> m_channel;
-    OwnPtr<V8TestingScope> m_executionScope;
+    V8TestingScope m_executionScope;
     ExceptionState m_exceptionState;
 };
 
