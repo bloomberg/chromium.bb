@@ -439,21 +439,26 @@ bool ResourceFetcher::checkInsecureContent(Resource::Type type, const KURL& url,
             break;
         }
     }
+    // FIXME: We need a way to access the top-level frame's mixedContentChecker when that frame
+    // is in a different process from the current frame. Until that is done, we fail loading
+    // mixed content in remote frames.
+    if (frame() && !frame()->tree().top()->isLocalFrame())
+        return false;
     if (treatment == TreatAsActiveContent) {
         if (LocalFrame* f = frame()) {
             if (!f->loader().mixedContentChecker()->canRunInsecureContent(m_document->securityOrigin(), url))
                 return false;
-            LocalFrame* top = f->tree().top();
-            if (top != f && !top->loader().mixedContentChecker()->canRunInsecureContent(top->document()->securityOrigin(), url))
+            Frame* top = f->tree().top();
+            if (top != f && !toLocalFrame(top)->loader().mixedContentChecker()->canRunInsecureContent(toLocalFrame(top)->document()->securityOrigin(), url))
                 return false;
         }
     } else if (treatment == TreatAsPassiveContent) {
         if (LocalFrame* f = frame()) {
-            LocalFrame* top = f->tree().top();
-            if (!top->loader().mixedContentChecker()->canDisplayInsecureContent(top->document()->securityOrigin(), url))
+            Frame* top = f->tree().top();
+            if (!toLocalFrame(top)->loader().mixedContentChecker()->canDisplayInsecureContent(toLocalFrame(top)->document()->securityOrigin(), url))
                 return false;
-            if (type == Resource::Font && MixedContentChecker::isMixedContent(top->document()->securityOrigin(), url))
-                UseCounter::count(top->document(), UseCounter::MixedContentFont);
+            if (type == Resource::Font && MixedContentChecker::isMixedContent(toLocalFrame(top)->document()->securityOrigin(), url))
+                UseCounter::count(toLocalFrame(top)->document(), UseCounter::MixedContentFont);
         }
     } else {
         ASSERT(treatment == TreatAsAlwaysAllowedContent);
@@ -771,8 +776,9 @@ ResourceRequestCachePolicy ResourceFetcher::resourceRequestCachePolicy(const Res
             return ReturnCacheDataElseLoad;
         if (isReload || frameLoadType == FrameLoadTypeSame || request.isConditional() || request.httpMethod() == "POST")
             return ReloadIgnoringCacheData;
-        if (LocalFrame* parent = frame()->tree().parent())
-            return parent->document()->fetcher()->resourceRequestCachePolicy(request, type);
+        Frame* parent = frame()->tree().parent();
+        if (parent && parent->isLocalFrame())
+            return toLocalFrame(parent)->document()->fetcher()->resourceRequestCachePolicy(request, type);
         return UseProtocolCachePolicy;
     }
 

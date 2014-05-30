@@ -92,8 +92,9 @@ bool CSPDirectiveList::checkAncestors(SourceListDirective* directive, LocalFrame
     if (!frame || !directive)
         return true;
 
-    for (LocalFrame* current = frame->tree().parent(); current; current = current->tree().parent()) {
-        if (!directive->allows(current->document()->url()))
+    for (Frame* current = frame->tree().parent(); current; current = current->tree().parent()) {
+        // FIXME: To make this work for out-of-process iframes, we need to propagate URL information of ancestor frames across processes.
+        if (!current->isLocalFrame() || !directive->allows(toLocalFrame(current)->document()->url()))
             return false;
     }
     return true;

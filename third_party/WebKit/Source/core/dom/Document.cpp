@@ -311,7 +311,7 @@ static bool acceptsEditingFocus(const Element& element)
     return element.document().frame() && element.rootEditableElement();
 }
 
-static bool canAccessAncestor(const SecurityOrigin& activeSecurityOrigin, LocalFrame* targetFrame)
+static bool canAccessAncestor(const SecurityOrigin& activeSecurityOrigin, Frame* targetFrame)
 {
     // targetFrame can be 0 when we're trying to navigate a top-level frame
     // that has a 0 opener.
@@ -319,8 +319,13 @@ static bool canAccessAncestor(const SecurityOrigin& activeSecurityOrigin, LocalF
         return false;
 
     const bool isLocalActiveOrigin = activeSecurityOrigin.isLocal();
-    for (LocalFrame* ancestorFrame = targetFrame; ancestorFrame; ancestorFrame = ancestorFrame->tree().parent()) {
-        Document* ancestorDocument = ancestorFrame->document();
+    for (Frame* ancestorFrame = targetFrame; ancestorFrame; ancestorFrame = ancestorFrame->tree().parent()) {
+        // FIXME: SecurityOrigins need to be refactored to work with out-of-process iframes.
+        // For now we prevent navigation between cross-process frames.
+        if (!ancestorFrame->isLocalFrame())
+            return false;
+
+        Document* ancestorDocument = toLocalFrame(ancestorFrame)->document();
         // FIXME: Should be an ASSERT? Frames should alway have documents.
         if (!ancestorDocument)
             return true;
@@ -2923,7 +2928,7 @@ void Document::disableEval(const String& errorMessage)
     frame()->script().disableEval(errorMessage);
 }
 
-bool Document::canNavigate(LocalFrame* targetFrame)
+bool Document::canNavigate(Frame* targetFrame)
 {
     if (!m_frame)
         return false;
@@ -2934,7 +2939,7 @@ bool Document::canNavigate(LocalFrame* targetFrame)
     if (!targetFrame)
         return true;
 
-    // LocalFrame-busting is generally allowed, but blocked for sandboxed frames lacking the 'allow-top-navigation' flag.
+    // Frame-busting is generally allowed, but blocked for sandboxed frames lacking the 'allow-top-navigation' flag.
     if (!isSandboxed(SandboxTopNavigation) && targetFrame == m_frame->tree().top())
         return true;
 
@@ -2946,7 +2951,7 @@ bool Document::canNavigate(LocalFrame* targetFrame)
         if (isSandboxed(SandboxTopNavigation) && targetFrame == m_frame->tree().top())
             reason = "The frame attempting navigation of the top-level window is sandboxed, but the 'allow-top-navigation' flag is not set.";
 
-        printNavigationErrorMessage(*targetFrame, url(), reason);
+        printNavigationErrorMessage(*toLocalFrameTemporary(targetFrame), url(), reason);
         return false;
     }
 
@@ -2978,23 +2983,27 @@ bool Document::canNavigate(LocalFrame* targetFrame)
         if (targetFrame == m_frame->loader().opener())
             return true;
 
-        if (canAccessAncestor(origin, targetFrame->loader().opener()))
+        // FIXME: We don't have access to RemoteFrame's opener yet.
+        if (targetFrame->isLocalFrame() && canAccessAncestor(origin, toLocalFrame(targetFrame)->loader().opener()))
             return true;
     }
 
-    printNavigationErrorMessage(*targetFrame, url(), "The frame attempting navigation is neither same-origin with the target, nor is it the target's parent or opener.");
+    printNavigationErrorMessage(*toLocalFrameTemporary(targetFrame), url(), "The frame attempting navigation is neither same-origin with the target, nor is it the target's parent or opener.");
     return false;
 }
 
 LocalFrame* Document::findUnsafeParentScrollPropagationBoundary()
 {
     LocalFrame* currentFrame = m_frame;
-    LocalFrame* ancestorFrame = currentFrame->tree().parent();
+    Frame* ancestorFrame = currentFrame->tree().parent();
 
     while (ancestorFrame) {
-        if (!ancestorFrame->document()->securityOrigin()->canAccess(securityOrigin()))
+        // FIXME: We don't yet have access to a RemoteFrame's security origin.
+        if (!ancestorFrame->isLocalFrame())
             return currentFrame;
-        currentFrame = ancestorFrame;
+        if (!toLocalFrame(ancestorFrame)->document()->securityOrigin()->canAccess(securityOrigin()))
+            return currentFrame;
+        currentFrame = toLocalFrame(ancestorFrame);
         ancestorFrame = ancestorFrame->tree().parent();
     }
     return 0;
@@ -3234,6 +3243,7 @@ String Document::outgoingReferrer()
     Document* referrerDocument = this;
     if (LocalFrame* frame = m_frame) {
         while (frame->document()->isSrcdocDocument()) {
+            // Srcdoc documents must be local within the containing frame.
             frame = frame->tree().parent();
             // Srcdoc documents cannot be top-level documents, by definition,
             // because they need to be contained in iframes with the srcdoc.
@@ -4835,7 +4845,7 @@ void Document::initSecurityContext(const DocumentInit& initializer)
 
 void Document::initContentSecurityPolicy(const ContentSecurityPolicyResponseHeaders& headers)
 {
-    if (m_frame && m_frame->tree().parent() && (shouldInheritSecurityOriginFromOwner(m_url) || isPluginDocument()))
+    if (m_frame && m_frame->tree().parent() && m_frame->tree().parent()->isLocalFrame() && (shouldInheritSecurityOriginFromOwner(m_url) || isPluginDocument()))
         contentSecurityPolicy()->copyStateFrom(m_frame->tree().parent()->document()->contentSecurityPolicy());
     contentSecurityPolicy()->didReceiveHeaders(headers);
 }

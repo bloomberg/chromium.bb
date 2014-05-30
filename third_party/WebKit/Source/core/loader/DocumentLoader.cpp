@@ -375,8 +375,9 @@ void DocumentLoader::willSendRequest(ResourceRequest& newRequest, const Resource
 
     // If this is a sub-frame, check for mixed content blocking against the top frame.
     if (m_frame->tree().parent()) {
-        LocalFrame* top = m_frame->tree().top();
-        if (!top->loader().mixedContentChecker()->canRunInsecureContent(top->document()->securityOrigin(), newRequest.url())) {
+        // FIXME: This does not yet work with out-of-process iframes.
+        Frame* top = m_frame->tree().top();
+        if (top->isLocalFrame() && !toLocalFrame(top)->loader().mixedContentChecker()->canRunInsecureContent(toLocalFrame(top)->document()->securityOrigin(), newRequest.url())) {
             cancelMainResourceLoad(ResourceError::cancelledError(newRequest.url()));
             return;
         }

@@ -102,7 +102,7 @@ class FloatQuad;
 class FloatRect;
 class FontFaceSet;
 class FormController;
-class LocalFrame;
+class Frame;
 class FrameHost;
 class FrameView;
 class HTMLAllCollection;
@@ -129,6 +129,7 @@ class LayoutPoint;
 class LayoutRect;
 class LiveNodeListBase;
 class Locale;
+class LocalFrame;
 class Location;
 class MainThreadTaskRunner;
 class MediaQueryList;
@@ -578,7 +579,7 @@ public:
     virtual String userAgent(const KURL&) const OVERRIDE FINAL;
     virtual void disableEval(const String& errorMessage) OVERRIDE FINAL;
 
-    bool canNavigate(LocalFrame* targetFrame);
+    bool canNavigate(Frame* targetFrame);
     LocalFrame* findUnsafeParentScrollPropagationBoundary();
 
     CSSStyleSheet& elementSheet();

@@ -1330,7 +1330,7 @@ bool FrameLoader::shouldInterruptLoadForXFrameOptions(const String& content, con
 {
     UseCounter::count(m_frame->domWindow()->document(), UseCounter::XFrameOptions);
 
-    LocalFrame* topFrame = m_frame->tree().top();
+    Frame* topFrame = m_frame->tree().top();
     if (m_frame == topFrame)
         return false;
 
@@ -1340,10 +1340,11 @@ bool FrameLoader::shouldInterruptLoadForXFrameOptions(const String& content, con
     case XFrameOptionsSameOrigin: {
         UseCounter::count(m_frame->domWindow()->document(), UseCounter::XFrameOptionsSameOrigin);
         RefPtr<SecurityOrigin> origin = SecurityOrigin::create(url);
-        if (!origin->isSameSchemeHostPort(topFrame->document()->securityOrigin()))
+        // Out-of-process ancestors are always a different origin.
+        if (!topFrame->isLocalFrame() || !origin->isSameSchemeHostPort(toLocalFrame(topFrame)->document()->securityOrigin()))
             return true;
-        for (LocalFrame* frame = m_frame->tree().parent(); frame; frame = frame->tree().parent()) {
-            if (!origin->isSameSchemeHostPort(frame->document()->securityOrigin())) {
+        for (Frame* frame = m_frame->tree().parent(); frame; frame = frame->tree().parent()) {
+            if (!frame->isLocalFrame() || !origin->isSameSchemeHostPort(toLocalFrame(frame)->document()->securityOrigin())) {
                 UseCounter::count(m_frame->domWindow()->document(), UseCounter::XFrameOptionsSameOriginWithBadAncestorChain);
                 break;
             }
@@ -1438,8 +1439,10 @@ void FrameLoader::dispatchDidClearWindowObjectInMainWorld()
 SandboxFlags FrameLoader::effectiveSandboxFlags() const
 {
     SandboxFlags flags = m_forcedSandboxFlags;
-    if (LocalFrame* parentFrame = m_frame->tree().parent())
-        flags |= parentFrame->document()->sandboxFlags();
+    // FIXME: We need a way to propagate sandbox flags to out-of-process frames.
+    Frame* parentFrame = m_frame->tree().parent();
+    if (parentFrame && parentFrame->isLocalFrame())
+        flags |= toLocalFrame(parentFrame)->document()->sandboxFlags();
     if (FrameOwner* frameOwner = m_frame->ownerElement())
         flags |= frameOwner->sandboxFlags();
     return flags;

@@ -120,8 +120,11 @@ PassRefPtrWillBeRawPtr<DOMStringList> Location::ancestorOrigins() const
     RefPtrWillBeRawPtr<DOMStringList> origins = DOMStringList::create();
     if (!m_frame)
         return origins.release();
-    for (LocalFrame* frame = m_frame->tree().parent(); frame; frame = frame->tree().parent())
-        origins->append(frame->document()->securityOrigin()->toString());
+    // FIXME: We do not yet have access to remote frame's origin.
+    for (Frame* frame = m_frame->tree().parent(); frame; frame = frame->tree().parent()) {
+        if (frame->isLocalFrame())
+            origins->append(toLocalFrame(frame)->document()->securityOrigin()->toString());
+    }
     return origins.release();
 }
 
