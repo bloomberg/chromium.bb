@@ -177,20 +177,6 @@ function test()
 
         function testHistoryDepth(next)
         {
-            function dumpSimpleHistoryManagerState(title)
-            {
-                var simpleHistoryManager = historyManager._historyManager;
-                var entries = simpleHistoryManager._entries;
-                InspectorTest.addResult("=== SimpleHistoryManager state " + title + " ===");
-                InspectorTest.addResult("entries count: " + entries.length);
-                for (var i = entries.length - 1; i >= 0; --i) {
-                    var position = entries[i]._positionHandle.resolve();
-                    var positionText = position ? "{line: " + position.lineNumber + ", column: " + position.columnNumber + "}" : position + "";
-                    var positionMarker = simpleHistoryManager._activeEntryIndex === i ? ">" : " ";
-                    InspectorTest.addResult(positionMarker + "entry[" + i + "] = " + positionText);
-                }
-                InspectorTest.addResult("=== ===");
-            }
             var lines = [];
             var columns = [];
             const jumpsAmount = WebInspector.EditingLocationHistoryManager.HistoryDepth;
@@ -199,17 +185,8 @@ function test()
                 columns.push(7);
             }
             var editor = panel.visibleView.textEditor;
-            //FIXME(lushnikov): here and below excessive dumping to figure out a reason for
-            // unreproducible bot failures.
-            dumpSimpleHistoryManagerState("before filling history stack");
             clickAndDump(editor, lines, columns);
-            dumpSimpleHistoryManagerState("after filling history stack");
-
-            InspectorTest.addResult("First rollback result: " + historyManager._historyManager.rollback());
-            dumpSimpleHistoryManagerState("after first rollback");
-            dumpSelection(editor, "Rolled back");
-
-            for (var i = 0; i < jumpsAmount - 1; ++i) {
+            for (var i = 0; i < jumpsAmount; ++i) {
                 rollback();
                 dumpSelection(editor, "Rolled back");
             }

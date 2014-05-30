@@ -58,17 +58,6 @@ Running: testCloseCrossFile
 <Rolled over> line: 9 column: 4 [example-fileset-for-test.js]
 
 Running: testHistoryDepth
-=== SimpleHistoryManager state before filling history stack ===
-entries count: 8
->entry[7] = {line: 9, column: 4}
- entry[6] = null
- entry[5] = {line: 9, column: 0}
- entry[4] = null
- entry[3] = null
- entry[2] = null
- entry[1] = {line: 7, column: 26}
- entry[0] = {line: 2, column: 0}
-=== ===
 <Mouse click (10, 7)> line: 10 column: 7 [example-fileset-for-test.js]
 <Mouse click (11, 7)> line: 11 column: 7 [example-fileset-for-test.js]
 <Mouse click (12, 7)> line: 12 column: 7 [example-fileset-for-test.js]
@@ -89,53 +78,6 @@ entries count: 8
 <Mouse click (27, 7)> line: 27 column: 7 [example-fileset-for-test.js]
 <Mouse click (28, 7)> line: 28 column: 7 [example-fileset-for-test.js]
 <Mouse click (29, 7)> line: 29 column: 7 [example-fileset-for-test.js]
-=== SimpleHistoryManager state after filling history stack ===
-entries count: 20
->entry[19] = {line: 29, column: 7}
- entry[18] = {line: 28, column: 7}
- entry[17] = {line: 27, column: 7}
- entry[16] = {line: 26, column: 7}
- entry[15] = {line: 25, column: 7}
- entry[14] = {line: 24, column: 7}
- entry[13] = {line: 23, column: 7}
- entry[12] = {line: 22, column: 7}
- entry[11] = {line: 21, column: 7}
- entry[10] = {line: 20, column: 7}
- entry[9] = {line: 19, column: 7}
- entry[8] = {line: 18, column: 7}
- entry[7] = {line: 17, column: 7}
- entry[6] = {line: 16, column: 7}
- entry[5] = {line: 15, column: 7}
- entry[4] = {line: 14, column: 7}
- entry[3] = {line: 13, column: 7}
- entry[2] = {line: 12, column: 7}
- entry[1] = {line: 11, column: 7}
- entry[0] = {line: 10, column: 7}
-=== ===
-First rollback result: true
-=== SimpleHistoryManager state after first rollback ===
-entries count: 20
- entry[19] = {line: 29, column: 7}
->entry[18] = {line: 28, column: 7}
- entry[17] = {line: 27, column: 7}
- entry[16] = {line: 26, column: 7}
- entry[15] = {line: 25, column: 7}
- entry[14] = {line: 24, column: 7}
- entry[13] = {line: 23, column: 7}
- entry[12] = {line: 22, column: 7}
- entry[11] = {line: 21, column: 7}
- entry[10] = {line: 20, column: 7}
- entry[9] = {line: 19, column: 7}
- entry[8] = {line: 18, column: 7}
- entry[7] = {line: 17, column: 7}
- entry[6] = {line: 16, column: 7}
- entry[5] = {line: 15, column: 7}
- entry[4] = {line: 14, column: 7}
- entry[3] = {line: 13, column: 7}
- entry[2] = {line: 12, column: 7}
- entry[1] = {line: 11, column: 7}
- entry[0] = {line: 10, column: 7}
-=== ===
 <Rolled back> line: 28 column: 7 [example-fileset-for-test.js]
 <Rolled back> line: 27 column: 7 [example-fileset-for-test.js]
 <Rolled back> line: 26 column: 7 [example-fileset-for-test.js]
