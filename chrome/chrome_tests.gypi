@@ -904,6 +904,7 @@
         'browser/chrome_main_browsertest.cc',
         'browser/chrome_plugin_browsertest.cc',
         'browser/chrome_security_exploit_browsertest.cc',
+        'browser/chrome_service_worker_browsertest.cc',
         'browser/chrome_switches_browsertest.cc',
         'browser/chromeos/accessibility/accessibility_manager_browsertest.cc',
         'browser/chromeos/accessibility/magnification_manager_browsertest.cc',

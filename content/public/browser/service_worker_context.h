@@ -49,6 +49,11 @@ class ServiceWorkerContext {
 
   // TODO(jyasskin): Provide a way to SendMessage to a Scope.
 
+  // Synchronously releases all of the RenderProcessHosts that have Service
+  // Workers running inside them, and prevents any new Service Worker instances
+  // from starting up.
+  virtual void Terminate() = 0;
+
  protected:
   ServiceWorkerContext() {}
   virtual ~ServiceWorkerContext() {}

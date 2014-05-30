@@ -62,6 +62,7 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
   virtual void UnregisterServiceWorker(const GURL& pattern,
                                        const ResultCallback& continuation)
       OVERRIDE;
+  virtual void Terminate() OVERRIDE;
 
   void AddObserver(ServiceWorkerContextObserver* observer);
   void RemoveObserver(ServiceWorkerContextObserver* observer);

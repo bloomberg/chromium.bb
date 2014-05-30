@@ -117,6 +117,11 @@ void ServiceWorkerContextWrapper::UnregisterServiceWorker(
       base::Bind(&FinishUnregistrationOnIO, continuation));
 }
 
+void ServiceWorkerContextWrapper::Terminate() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  process_manager_->Shutdown();
+}
+
 void ServiceWorkerContextWrapper::AddObserver(
     ServiceWorkerContextObserver* observer) {
   observer_list_->AddObserver(observer);

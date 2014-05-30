@@ -38,7 +38,8 @@ ServiceWorkerRegisterJob::ServiceWorkerRegisterJob(
       weak_factory_(this) {}
 
 ServiceWorkerRegisterJob::~ServiceWorkerRegisterJob() {
-  DCHECK(phase_ == INITIAL || phase_ == COMPLETE);
+  DCHECK(!context_ || phase_ == INITIAL || phase_ == COMPLETE)
+      << "Jobs should only be interrupted during shutdown.";
 }
 
 void ServiceWorkerRegisterJob::AddCallback(const RegistrationCallback& callback,

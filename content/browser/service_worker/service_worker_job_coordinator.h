@@ -55,6 +55,10 @@ class CONTENT_EXPORT ServiceWorkerJobCoordinator {
 
     bool empty() { return jobs_.empty(); }
 
+    // Marks that the browser is shutting down, so jobs may be destroyed before
+    // finishing.
+    void ClearForShutdown();
+
    private:
     std::deque<ServiceWorkerRegisterJobBase*> jobs_;
   };

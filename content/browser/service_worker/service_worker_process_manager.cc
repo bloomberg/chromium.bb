@@ -51,6 +51,14 @@ ServiceWorkerProcessManager::~ServiceWorkerProcessManager() {
 
 void ServiceWorkerProcessManager::Shutdown() {
   browser_context_ = NULL;
+  for (std::map<int, ProcessInfo>::const_iterator it = instance_info_.begin();
+       it != instance_info_.end();
+       ++it) {
+    RenderProcessHost* rph = RenderProcessHost::FromID(it->second.process_id);
+    DCHECK(rph);
+    static_cast<RenderProcessHostImpl*>(rph)->DecrementWorkerRefCount();
+  }
+  instance_info_.clear();
 }
 
 void ServiceWorkerProcessManager::AllocateWorkerProcess(
@@ -145,6 +153,11 @@ void ServiceWorkerProcessManager::ReleaseWorkerProcess(int embedded_worker_id) {
   if (process_id_for_test_ != -1) {
     // Unittests don't increment or decrement the worker refcount of a
     // RenderProcessHost.
+    return;
+  }
+  if (browser_context_ == NULL) {
+    // Shutdown already released all instances.
+    DCHECK(instance_info_.empty());
     return;
   }
   std::map<int, ProcessInfo>::iterator info =

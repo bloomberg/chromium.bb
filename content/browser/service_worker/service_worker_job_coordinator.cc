@@ -41,12 +41,23 @@ void ServiceWorkerJobCoordinator::JobQueue::Pop(
     jobs_.front()->Start();
 }
 
+void ServiceWorkerJobCoordinator::JobQueue::ClearForShutdown() {
+  STLDeleteElements(&jobs_);
+}
+
 ServiceWorkerJobCoordinator::ServiceWorkerJobCoordinator(
     base::WeakPtr<ServiceWorkerContextCore> context)
     : context_(context) {
 }
 
 ServiceWorkerJobCoordinator::~ServiceWorkerJobCoordinator() {
+  if (!context_) {
+    for (RegistrationJobMap::iterator it = jobs_.begin(); it != jobs_.end();
+         ++it) {
+      it->second.ClearForShutdown();
+    }
+    jobs_.clear();
+  }
   DCHECK(jobs_.empty()) << "Destroying ServiceWorkerJobCoordinator with "
                         << jobs_.size() << " job queues";
 }
