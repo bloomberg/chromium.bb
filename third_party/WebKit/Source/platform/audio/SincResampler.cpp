@@ -33,9 +33,10 @@
 #include "platform/audio/SincResampler.h"
 
 #include "platform/audio/AudioBus.h"
+#include "wtf/CPU.h"
 #include "wtf/MathExtras.h"
 
-#ifdef __SSE2__
+#if CPU(X86) || CPU(X86_64)
 #include <emmintrin.h>
 #endif
 
@@ -262,7 +263,7 @@ void SincResampler::process(AudioSourceProvider* sourceProvider, float* destinat
             {
                 float input;
 
-#ifdef __SSE2__
+#if CPU(X86) || CPU(X86_64)
                 // If the sourceP address is not 16-byte aligned, the first several frames (at most three) should be processed seperately.
                 while ((reinterpret_cast<uintptr_t>(inputP) & 0x0F) && n) {
                     CONVOLVE_ONE_SAMPLE
