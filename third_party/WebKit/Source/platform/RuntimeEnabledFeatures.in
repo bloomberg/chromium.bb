@@ -75,7 +75,7 @@ LocalStorage status=stable
 Manifest status=test
 Media status=stable
 MediaController depends_on=Media, status=experimental
-MediaQueryParser status=test
+MediaQueryParser status=stable
 MediaSource status=stable
 MediaSourceExperimental depends_on=MediaSource, status=experimental
 MediaStream status=stable
