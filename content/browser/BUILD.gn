@@ -43,7 +43,7 @@ source_set("browser") {
     "//third_party/zlib:zip",
     "//ui/accessibility",
     "//ui/accessibility:ax_gen",
-    "//ui/base:ui_base",
+    "//ui/base",
     "//ui/events",
     "//ui/events:gesture_detection",
     "//ui/gfx",

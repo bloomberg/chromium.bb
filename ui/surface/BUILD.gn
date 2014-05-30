@@ -21,7 +21,7 @@ component("surface") {
     "//base",
     "//base/third_party/dynamic_annotations",
     "//skia",
-    "//ui/base:ui_base",
+    "//ui/base",
     "//ui/gfx/geometry",
     "//ui/gl",
   ]

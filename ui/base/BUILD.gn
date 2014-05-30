@@ -9,7 +9,8 @@ if (is_android) {
   import("//build/config/android/rules.gni")
 }
 
-component("ui_base") {
+component("base") {
+  output_name = "ui_base"
   sources = [
     "accelerators/accelerator.cc",
     "accelerators/accelerator.h",

@@ -31,7 +31,7 @@ component("ozone") {
     ":generate_ozone_platform_list",
     "//base",
     "//skia",
-    "//ui/base:ui_base",
+    "//ui/base",
     "//ui/events",
     "//ui/gfx",
     "//ui/gfx/geometry",

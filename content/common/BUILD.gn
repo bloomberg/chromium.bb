@@ -33,7 +33,7 @@ source_set("common") {
     "//skia",
     "//third_party/icu",
     "//ui/accessibility",
-    "//ui/base:ui_base",
+    "//ui/base",
     "//ui/gfx",
     "//ui/gfx/geometry",
     "//url",

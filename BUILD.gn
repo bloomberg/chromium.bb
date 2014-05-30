@@ -74,12 +74,13 @@ group("root") {
     "//third_party:jpeg",
     "//tools/gn",
     "//ui/accessibility",
-    "//ui/base:ui_base",
+    "//ui/base",
     "//ui/events",
     "//ui/gfx",
     "//ui/gl",
     "//ui/native_theme",
     "//ui/resources",
+    "//ui/snapshot",
     "//ui/strings",
     "//ui/surface",
     "//url",
@@ -113,6 +114,7 @@ group("root") {
       # generators (ui/gl/gl.gyp:surface_jni_headers).
       "//ui/gl",
       "//gpu",
+      "//ui/snapshot",
       "//ui/surface",
     ]
   }
