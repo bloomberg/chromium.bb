@@ -51,7 +51,6 @@ Running: testCrossFileJump
 <Rolled over> line: 11 column: 1 [workspace-test.js]
 
 Running: testCloseCrossFile
-executed SimpleHistoryManager.filterOut; activeEntryIndex = 7
 <Close active tab> line: 9 column: 4 [example-fileset-for-test.js]
 <Rolled back> line: 9 column: 0 [example-fileset-for-test.js]
 <Rolled over> line: 9 column: 4 [example-fileset-for-test.js]
@@ -60,7 +59,7 @@ executed SimpleHistoryManager.filterOut; activeEntryIndex = 7
 
 Running: testHistoryDepth
 === SimpleHistoryManager state before filling history stack ===
-entries count: 8 active entry index: 7
+entries count: 8
 >entry[7] = {line: 9, column: 4}
  entry[6] = null
  entry[5] = {line: 9, column: 0}
@@ -91,7 +90,7 @@ entries count: 8 active entry index: 7
 <Mouse click (28, 7)> line: 28 column: 7 [example-fileset-for-test.js]
 <Mouse click (29, 7)> line: 29 column: 7 [example-fileset-for-test.js]
 === SimpleHistoryManager state after filling history stack ===
-entries count: 20 active entry index: 19
+entries count: 20
 >entry[19] = {line: 29, column: 7}
  entry[18] = {line: 28, column: 7}
  entry[17] = {line: 27, column: 7}
@@ -115,7 +114,7 @@ entries count: 20 active entry index: 19
 === ===
 First rollback result: true
 === SimpleHistoryManager state after first rollback ===
-entries count: 20 active entry index: 18
+entries count: 20
  entry[19] = {line: 29, column: 7}
 >entry[18] = {line: 28, column: 7}
  entry[17] = {line: 27, column: 7}
