@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <vector>
 
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 
 namespace remoting {
@@ -27,16 +28,9 @@ std::string IntersectCapabilities(const std::string& client_capabilities,
   Tokenize(host_capabilities, " ", &host_caps);
   std::sort(host_caps.begin(), host_caps.end());
 
-  std::vector<std::string> result(std::min(client_caps.size(),
-                                           host_caps.size()));
-  std::vector<std::string>::iterator end =
-      std::set_intersection(client_caps.begin(),
-                            client_caps.end(),
-                            host_caps.begin(),
-                            host_caps.end(),
-                            result.begin());
-  if (end != result.end())
-    result.erase(end, result.end());
+  std::vector<std::string> result =
+      base::STLSetIntersection<std::vector<std::string> >(
+          client_caps, host_caps);
 
   return JoinString(result, " ");
 }
