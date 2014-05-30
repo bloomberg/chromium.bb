@@ -42,8 +42,8 @@
 
 #include "base/basictypes.h"
 #include "base/cpu.h"
+#include "base/lazy_instance.h"
 #include "base/logging.h"
-#include "base/memory/singleton.h"
 #include "base/synchronization/lock.h"
 
 using base::Time;
@@ -358,8 +358,14 @@ bool IsBuggyAthlon(const base::CPU& cpu) {
 // retrieve and more reliable.
 class HighResNowSingleton {
  public:
-  static HighResNowSingleton* GetInstance() {
-    return Singleton<HighResNowSingleton>::get();
+  HighResNowSingleton()
+    : ticks_per_second_(0),
+      skew_(0) {
+    InitializeClock();
+
+    base::CPU cpu;
+    if (IsBuggyAthlon(cpu))
+      DisableHighResClock();
   }
 
   bool IsUsingHighResClock() {
@@ -399,16 +405,6 @@ class HighResNowSingleton {
   }
 
  private:
-  HighResNowSingleton()
-    : ticks_per_second_(0),
-      skew_(0) {
-    InitializeClock();
-
-    base::CPU cpu;
-    if (IsBuggyAthlon(cpu))
-      DisableHighResClock();
-  }
-
   // Synchronize the QPC clock with GetSystemTimeAsFileTime.
   void InitializeClock() {
     LARGE_INTEGER ticks_per_sec = {0};
@@ -433,12 +429,17 @@ class HighResNowSingleton {
 
   int64 ticks_per_second_;  // 0 indicates QPF failed and we're broken.
   int64 skew_;  // Skew between lo-res and hi-res clocks (for debugging).
-
-  friend struct DefaultSingletonTraits<HighResNowSingleton>;
 };
 
+static base::LazyInstance<HighResNowSingleton>::Leaky
+    leaky_high_res_now_singleton = LAZY_INSTANCE_INITIALIZER;
+
+HighResNowSingleton* GetHighResNowSingleton() {
+  return leaky_high_res_now_singleton.Pointer();
+}
+
 TimeDelta HighResNowWrapper() {
-  return HighResNowSingleton::GetInstance()->Now();
+  return GetHighResNowSingleton()->Now();
 }
 
 typedef TimeDelta (*NowFunction)(void);
@@ -485,7 +486,7 @@ TimeTicks TimeTicks::Now() {
 
 // static
 TimeTicks TimeTicks::HighResNow() {
-  return TimeTicks() + HighResNowSingleton::GetInstance()->Now();
+  return TimeTicks() + HighResNowWrapper();
 }
 
 // static
@@ -506,18 +507,17 @@ TimeTicks TimeTicks::NowFromSystemTraceTime() {
 
 // static
 int64 TimeTicks::GetQPCDriftMicroseconds() {
-  return HighResNowSingleton::GetInstance()->GetQPCDriftMicroseconds();
+  return GetHighResNowSingleton()->GetQPCDriftMicroseconds();
 }
 
 // static
 TimeTicks TimeTicks::FromQPCValue(LONGLONG qpc_value) {
-  return TimeTicks(
-      HighResNowSingleton::GetInstance()->QPCValueToMicroseconds(qpc_value));
+  return TimeTicks(GetHighResNowSingleton()->QPCValueToMicroseconds(qpc_value));
 }
 
 // static
 bool TimeTicks::IsHighResClockWorking() {
-  return HighResNowSingleton::GetInstance()->IsUsingHighResClock();
+  return GetHighResNowSingleton()->IsUsingHighResClock();
 }
 
 TimeTicks TimeTicks::UnprotectedNow() {
@@ -532,6 +532,5 @@ TimeTicks TimeTicks::UnprotectedNow() {
 
 // static
 TimeDelta TimeDelta::FromQPCValue(LONGLONG qpc_value) {
-  return TimeDelta(
-      HighResNowSingleton::GetInstance()->QPCValueToMicroseconds(qpc_value));
+  return TimeDelta(GetHighResNowSingleton()->QPCValueToMicroseconds(qpc_value));
 }
