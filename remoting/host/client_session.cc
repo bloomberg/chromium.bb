@@ -18,7 +18,6 @@
 #include "remoting/host/audio_capturer.h"
 #include "remoting/host/audio_scheduler.h"
 #include "remoting/host/desktop_environment.h"
-#include "remoting/host/host_extension_session.h"
 #include "remoting/host/input_injector.h"
 #include "remoting/host/screen_controls.h"
 #include "remoting/host/screen_resolution.h"
@@ -99,25 +98,6 @@ ClientSession::~ClientSession() {
   connection_.reset();
 }
 
-void ClientSession::AddExtensionSession(
-    scoped_ptr<HostExtensionSession> extension_session) {
-  DCHECK(CalledOnValidThread());
-
-  extension_sessions_.push_back(extension_session.release());
-}
-
-void ClientSession::AddHostCapabilities(const std::string& capabilities) {
-  DCHECK(CalledOnValidThread());
-
-  if (capabilities.empty())
-    return;
-
-  if (!host_capabilities_.empty())
-    host_capabilities_.append(" ");
-
-  host_capabilities_.append(capabilities);
-}
-
 void ClientSession::NotifyClientResolution(
     const protocol::ClientResolution& resolution) {
   DCHECK(CalledOnValidThread());
@@ -188,7 +168,6 @@ void ClientSession::SetCapabilities(
     *client_capabilities_ = capabilities.capabilities();
 
   VLOG(1) << "Client capabilities: " << *client_capabilities_;
-  event_handler_->OnSessionClientCapabilities(this);
 
   // Calculate the set of capabilities enabled by both client and host and
   // pass it to the desktop environment if it is available.
@@ -225,13 +204,6 @@ void ClientSession::DeliverClientMessage(
         HOST_LOG << "gnubby auth is not enabled";
       }
       return;
-    } else {
-      for(HostExtensionSessionList::iterator it = extension_sessions_.begin();
-          it != extension_sessions_.end(); ++it) {
-        // Extension returns |true| to indicate that the message was handled.
-        if ((*it)->OnExtensionMessage(this, message))
-          return;
-      }
     }
   }
   HOST_LOG << "Unexpected message received: "
@@ -281,7 +253,7 @@ void ClientSession::OnConnectionAuthenticated(
     return;
   }
 
-  AddHostCapabilities(desktop_environment_->GetCapabilities());
+  host_capabilities_ = desktop_environment_->GetCapabilities();
 
   // Ignore protocol::Capabilities messages from the client if it does not
   // support any capabilities.
@@ -289,8 +261,6 @@ void ClientSession::OnConnectionAuthenticated(
     VLOG(1) << "The client does not support any capabilities.";
 
     client_capabilities_ = make_scoped_ptr(new std::string());
-    event_handler_->OnSessionClientCapabilities(this);
-
     desktop_environment_->SetCapabilities(*client_capabilities_);
   }
 

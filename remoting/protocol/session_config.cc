@@ -49,7 +49,7 @@ bool SessionConfig::SupportsCapabilities() const {
 SessionConfig SessionConfig::ForTest() {
   SessionConfig result;
   result.set_control_config(ChannelConfig(ChannelConfig::TRANSPORT_MUX_STREAM,
-                                          kControlStreamVersion,
+                                          kControlStreamVersionNoCapabilities,
                                           ChannelConfig::CODEC_UNDEFINED));
   result.set_event_config(ChannelConfig(ChannelConfig::TRANSPORT_MUX_STREAM,
                                         kDefaultStreamVersion,

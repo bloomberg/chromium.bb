@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner_helpers.h"
 #include "base/threading/non_thread_safe.h"
@@ -16,8 +15,6 @@
 #include "base/timer/timer.h"
 #include "remoting/host/client_session_control.h"
 #include "remoting/host/gnubby_auth_handler.h"
-#include "remoting/host/host_extension.h"
-#include "remoting/host/host_extension_session.h"
 #include "remoting/host/mouse_clamping_filter.h"
 #include "remoting/host/remote_input_filter.h"
 #include "remoting/protocol/clipboard_echo_filter.h"
@@ -67,9 +64,6 @@ class ClientSession
     // Called after we've finished connecting all channels.
     virtual void OnSessionChannelsConnected(ClientSession* client) = 0;
 
-    // Called after client has reported capabilities.
-    virtual void OnSessionClientCapabilities(ClientSession* client) = 0;
-
     // Called after authentication has failed. Must not tear down this
     // object. OnSessionClosed() is notified after this handler
     // returns.
@@ -108,13 +102,6 @@ class ClientSession
       const base::TimeDelta& max_duration,
       scoped_refptr<protocol::PairingRegistry> pairing_registry);
   virtual ~ClientSession();
-
-  // Adds an extension to client to handle extension messages.
-  void AddExtensionSession(scoped_ptr<HostExtensionSession> extension_session);
-
-  // Adds extended capabilities to advertise to the client, e.g. those
-  // implemented by |DesktopEnvironment| or |HostExtension|s.
-  void AddHostCapabilities(const std::string& capability);
 
   // protocol::HostStub interface.
   virtual void NotifyClientResolution(
@@ -161,13 +148,7 @@ class ClientSession
 
   bool is_authenticated() { return auth_input_filter_.enabled();  }
 
-  const std::string* client_capabilities() const {
-    return client_capabilities_.get();
-  }
-
  private:
-  typedef ScopedVector<HostExtensionSession> HostExtensionSessionList;
-
   // Creates a proxy for sending clipboard events to the client.
   scoped_ptr<protocol::ClipboardStub> CreateClipboardProxy();
 
@@ -262,9 +243,6 @@ class ClientSession
 
   // Used to proxy gnubby auth traffic.
   scoped_ptr<GnubbyAuthHandler> gnubby_auth_handler_;
-
-  // Host extension sessions, used to handle extension messages.
-  HostExtensionSessionList extension_sessions_;
 
   DISALLOW_COPY_AND_ASSIGN(ClientSession);
 };

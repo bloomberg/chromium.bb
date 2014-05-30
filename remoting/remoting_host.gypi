@@ -119,8 +119,6 @@
             'host/disconnect_window_win.cc',
             'host/dns_blackhole_checker.cc',
             'host/dns_blackhole_checker.h',
-            'host/extension.h',
-            'host/extension_session.h',
             'host/gnubby_auth_handler_posix.cc',
             'host/gnubby_auth_handler_posix.h',
             'host/gnubby_auth_handler_win.cc',
