@@ -56,6 +56,7 @@ public:
 
     virtual void setFrontend(InspectorFrontend*) OVERRIDE;
     virtual void clearFrontend() OVERRIDE;
+    virtual void restore() OVERRIDE;
 
     // Called from the front-end.
     virtual void enable(ErrorString*) OVERRIDE;

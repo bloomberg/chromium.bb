@@ -89,6 +89,12 @@ void InspectorDOMStorageAgent::clearFrontend()
     disable(0);
 }
 
+void InspectorDOMStorageAgent::restore()
+{
+    if (isEnabled())
+        enable(0);
+}
+
 bool InspectorDOMStorageAgent::isEnabled() const
 {
     return m_state->getBoolean(DOMStorageAgentState::domStorageAgentEnabled);
