@@ -108,6 +108,10 @@ class LocalRtcpTransport : public transport::PacedPacketSender {
     return false;
   }
 
+  virtual void CancelSendingPacket(
+      const transport::PacketKey& packet_key) OVERRIDE {
+  }
+
  private:
   bool drop_packets_;
   bool short_delay_;

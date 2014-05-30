@@ -43,6 +43,7 @@ class PacedPacketSender {
   virtual bool SendPackets(const SendPacketVector& packets) = 0;
   virtual bool ResendPackets(const SendPacketVector& packets) = 0;
   virtual bool SendRtcpPacket(uint32 ssrc, PacketRef packet) = 0;
+  virtual void CancelSendingPacket(const PacketKey& packet_key) = 0;
 
   virtual ~PacedPacketSender() {}
 
@@ -73,6 +74,7 @@ class PacedSender : public PacedPacketSender,
   virtual bool SendPackets(const SendPacketVector& packets) OVERRIDE;
   virtual bool ResendPackets(const SendPacketVector& packets) OVERRIDE;
   virtual bool SendRtcpPacket(uint32 ssrc, PacketRef packet) OVERRIDE;
+  virtual void CancelSendingPacket(const PacketKey& packet_key) OVERRIDE;
 
  private:
   // Actually sends the packets to the transport.

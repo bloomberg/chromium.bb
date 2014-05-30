@@ -104,6 +104,10 @@ bool PacedSender::SendRtcpPacket(uint32 ssrc, PacketRef packet) {
   return true;
 }
 
+void PacedSender::CancelSendingPacket(const PacketKey& packet_key) {
+  packet_list_.erase(packet_key);
+}
+
 PacketRef PacedSender::GetNextPacket(PacketType* packet_type) {
   std::map<PacketKey, std::pair<PacketType, PacketRef> >::iterator i;
   i = packet_list_.begin();

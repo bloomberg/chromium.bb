@@ -70,51 +70,32 @@ void RtpSender::ResendPackets(
        ++it) {
     SendPacketVector packets_to_resend;
     uint8 frame_id = it->first;
-    const PacketIdSet& packets_set = it->second;
+    // Set of packets that the receiver wants us to re-send.
+    // If empty, we need to re-send all packets for this frame.
+    const PacketIdSet& missing_packet_set = it->second;
     bool success = false;
 
-    if (packets_set.empty()) {
-      VLOG(3) << "Missing all packets in frame " << static_cast<int>(frame_id);
+    for (uint16 packet_id = 0; ; packet_id++) {
+      // Get packet from storage.
+      success = storage_->GetPacket(frame_id, packet_id, &packets_to_resend);
 
-      uint16 packet_id = 0;
-      do {
-        // Get packet from storage.
-        success = storage_->GetPacket(frame_id, packet_id, &packets_to_resend);
+      // Check that we got at least one packet.
+      DCHECK(packet_id != 0 || success)
+          << "Failed to resend frame " << static_cast<int>(frame_id);
 
-        // Check that we got at least one packet.
-        DCHECK(packet_id != 0 || success)
-            << "Failed to resend frame " << static_cast<int>(frame_id);
+      if (!success) break;
 
+      if (!missing_packet_set.empty() &&
+          missing_packet_set.find(packet_id) == missing_packet_set.end()) {
+        transport_->CancelSendingPacket(packets_to_resend.back().first);
+        packets_to_resend.pop_back();
+      } else {
         // Resend packet to the network.
-        if (success) {
-          VLOG(3) << "Resend " << static_cast<int>(frame_id) << ":"
-                  << packet_id;
-          // Set a unique incremental sequence number for every packet.
-          PacketRef packet = packets_to_resend.back().second;
-          UpdateSequenceNumber(&packet->data);
-          // Set the size as correspond to each frame.
-          ++packet_id;
-        }
-      } while (success);
-    } else {
-      // Iterate over all of the packets in the frame.
-      for (PacketIdSet::const_iterator set_it = packets_set.begin();
-           set_it != packets_set.end();
-           ++set_it) {
-        uint16 packet_id = *set_it;
-        success = storage_->GetPacket(frame_id, packet_id, &packets_to_resend);
-
-        // Check that we got at least one packet.
-        DCHECK(set_it != packets_set.begin() || success)
-            << "Failed to resend frame " << frame_id;
-
-        // Resend packet to the network.
-        if (success) {
-          VLOG(3) << "Resend " << static_cast<int>(frame_id) << ":"
-                  << packet_id;
-          PacketRef packet = packets_to_resend.back().second;
-          UpdateSequenceNumber(&packet->data);
-        }
+        VLOG(3) << "Resend " << static_cast<int>(frame_id) << ":"
+                << packet_id;
+        // Set a unique incremental sequence number for every packet.
+        PacketRef packet = packets_to_resend.back().second;
+        UpdateSequenceNumber(&packet->data);
       }
     }
     transport_->ResendPackets(packets_to_resend);

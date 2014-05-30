@@ -63,6 +63,10 @@ class TestRtcpTransport : public transport::PacedPacketSender {
     return false;
   }
 
+  virtual void CancelSendingPacket(
+      const transport::PacketKey& packet_key) OVERRIDE {
+  }
+
   void SetExpectedRtcpPacket(scoped_ptr<Packet> packet) {
     expected_packet_.swap(*packet);
   }
