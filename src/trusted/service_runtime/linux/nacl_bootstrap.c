@@ -496,7 +496,7 @@ static void ReserveBottomPages(size_t pagesize) {
       break;
     } else if (MAP_FAILED == (void *) mmap_rval &&
                (EPERM == my_errno || EACCES == my_errno ||
-                (EINVAL == my_errno && 0 == page_addr))) {
+                EINVAL == my_errno)) {
       /*
        * Normal; this is an invalid page for this process and
        * doesn't need to be protected. Continue with next page.
