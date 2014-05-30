@@ -121,7 +121,7 @@ private:
     bool hasFixedPositionStep() const { return m_fixedStepsCount; }
 
 #ifndef NDEBUG
-    void dumpSteps();
+    void dumpSteps() const;
 #endif
 
 #if !ASSERT_DISABLED

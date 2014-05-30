@@ -137,7 +137,7 @@ FloatPoint RenderGeometryMap::mapToContainer(const FloatPoint& p, const RenderLa
 
 #ifndef NDEBUG
 // Handy function to call from gdb while debugging mismatched point/rect errors.
-void RenderGeometryMap::dumpSteps()
+void RenderGeometryMap::dumpSteps() const
 {
     fprintf(stderr, "RenderGeometryMap::dumpSteps accumulatedOffset=%d,%d\n", m_accumulatedOffset.width().toInt(), m_accumulatedOffset.height().toInt());
     for (int i = m_mapping.size() - 1; i >= 0; --i) {
