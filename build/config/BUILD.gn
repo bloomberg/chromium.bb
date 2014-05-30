@@ -47,11 +47,6 @@ config("feature_flags") {
       "V8_DEPRECATION_WARNINGS",  # Don't use deprecated V8 APIs anywhere.
       # Temporary suppression until Blink code can be removed.
       "BLINK_SCALE_FILTERS_AT_RECORD_TIME",
-
-      # Enable a new Gamepad interface.
-      # TODO(cdumez): This is temporary and should go away once the chromium
-      # and blink interfaces are in sync, http://crbug.com/344556.
-      "ENABLE_NEW_GAMEPAD_API=1",
   ]
 
   if (cld_version > 0) {
