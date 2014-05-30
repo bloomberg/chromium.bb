@@ -2802,7 +2802,18 @@ bool RenderBlock::nodeAtPoint(const HitTestRequest& request, HitTestResult& resu
     // If we have clipping, then we can't have any spillout.
     bool useOverflowClip = hasOverflowClip() && !hasSelfPaintingLayer();
     bool useClip = (hasControlClip() || useOverflowClip);
-    bool checkChildren = !useClip || (hasControlClip() ? locationInContainer.intersects(controlClipRect(adjustedLocation)) : locationInContainer.intersects(overflowClipRect(adjustedLocation, IncludeOverlayScrollbarSize)));
+    bool checkChildren = !useClip;
+    if (!checkChildren) {
+        if (hasControlClip()) {
+            checkChildren = locationInContainer.intersects(controlClipRect(adjustedLocation));
+        } else {
+            LayoutRect clipRect = overflowClipRect(adjustedLocation, IncludeOverlayScrollbarSize);
+            if (style()->hasBorderRadius())
+                checkChildren = locationInContainer.intersects(style()->getRoundedBorderFor(clipRect));
+            else
+                checkChildren = locationInContainer.intersects(clipRect);
+        }
+    }
     if (checkChildren) {
         // Hit test descendants first.
         LayoutSize scrolledOffset(localOffset);
@@ -2824,7 +2835,7 @@ bool RenderBlock::nodeAtPoint(const HitTestRequest& request, HitTestResult& resu
     }
 
     // Check if the point is outside radii.
-    if (!isRenderView() && style()->hasBorderRadius()) {
+    if (style()->hasBorderRadius()) {
         LayoutRect borderRect = borderBoxRect();
         borderRect.moveBy(adjustedLocation);
         RoundedRect border = style()->getRoundedBorderFor(borderRect);
