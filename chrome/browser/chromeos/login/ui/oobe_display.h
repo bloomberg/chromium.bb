@@ -29,6 +29,7 @@ class UserImageScreenActor;
 class ViewScreenDelegate;
 class WizardScreen;
 class WrongHWIDScreenActor;
+class AutoEnrollmentCheckScreenActor;
 class LocallyManagedUserCreationScreenHandler;
 
 // Interface which is used by WizardController to do actual OOBE screens
@@ -54,6 +55,7 @@ class OobeDisplay {
     SCREEN_CREATE_MANAGED_USER_FLOW,
     SCREEN_TERMS_OF_SERVICE,
     SCREEN_WRONG_HWID,
+    SCREEN_AUTO_ENROLLMENT_CHECK,
     SCREEN_APP_LAUNCH_SPLASH,
     SCREEN_CONFIRM_PASSWORD,
     SCREEN_FATAL_ERROR,
@@ -82,6 +84,8 @@ class OobeDisplay {
   virtual UserImageScreenActor* GetUserImageScreenActor() = 0;
   virtual ErrorScreenActor* GetErrorScreenActor() = 0;
   virtual WrongHWIDScreenActor* GetWrongHWIDScreenActor() = 0;
+  virtual AutoEnrollmentCheckScreenActor*
+      GetAutoEnrollmentCheckScreenActor() = 0;
   virtual HIDDetectionScreenActor* GetHIDDetectionScreenActor() = 0;
   virtual LocallyManagedUserCreationScreenHandler*
       GetLocallyManagedUserCreationScreenActor() = 0;

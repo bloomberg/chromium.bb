@@ -76,6 +76,7 @@ class OobeUI : public OobeDisplay,
   static const char kScreenManagedUserCreationFlow[];
   static const char kScreenTermsOfService[];
   static const char kScreenWrongHWID[];
+  static const char kScreenAutoEnrollmentCheck[];
   static const char kScreenAppLaunchSplash[];
   static const char kScreenConfirmPassword[];
   static const char kScreenFatalError[];
@@ -100,6 +101,8 @@ class OobeUI : public OobeDisplay,
   virtual UserImageScreenActor* GetUserImageScreenActor() OVERRIDE;
   virtual ErrorScreenActor* GetErrorScreenActor() OVERRIDE;
   virtual WrongHWIDScreenActor* GetWrongHWIDScreenActor() OVERRIDE;
+  virtual AutoEnrollmentCheckScreenActor*
+      GetAutoEnrollmentCheckScreenActor() OVERRIDE;
   virtual LocallyManagedUserCreationScreenHandler*
       GetLocallyManagedUserCreationScreenActor() OVERRIDE;
   virtual AppLaunchSplashScreenActor*
@@ -183,6 +186,7 @@ class OobeUI : public OobeDisplay,
   KioskAutolaunchScreenActor* autolaunch_screen_actor_;
   KioskEnableScreenActor* kiosk_enable_screen_actor_;
   WrongHWIDScreenActor* wrong_hwid_screen_actor_;
+  AutoEnrollmentCheckScreenActor* auto_enrollment_check_screen_actor_;
   LocallyManagedUserCreationScreenHandler*
       locally_managed_user_creation_screen_actor_;
   AppLaunchSplashScreenActor* app_launch_splash_screen_actor_;

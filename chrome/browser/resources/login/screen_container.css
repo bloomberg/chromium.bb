@@ -68,6 +68,7 @@ html[not(screen=lock)] #outer-container {
 #oobe.managed-user-creation #inner-container,
 #oobe.password-changed #inner-container,
 #oobe.terms-of-service #inner-container,
+#oobe.auto-enrollment-check #inner-container,
 #oobe.wrong-hwid #inner-container,
 #oobe.confirm-password #inner-container,
 #oobe.fatal-error #inner-container {

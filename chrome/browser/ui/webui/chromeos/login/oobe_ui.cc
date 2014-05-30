@@ -12,6 +12,7 @@
 #include "chrome/browser/browser_about_handler.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_settings.h"
+#include "chrome/browser/chromeos/login/enrollment/auto_enrollment_check_screen_actor.h"
 #include "chrome/browser/chromeos/login/enrollment/enrollment_screen_actor.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host_impl.h"
@@ -21,6 +22,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/about_ui.h"
 #include "chrome/browser/ui/webui/chromeos/login/app_launch_splash_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/auto_enrollment_check_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/enrollment_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/error_screen_handler.h"
@@ -149,6 +151,8 @@ const char OobeUI::kScreenManagedUserCreationFlow[]
                                              = "managed-user-creation";
 const char OobeUI::kScreenTermsOfService[]   = "terms-of-service";
 const char OobeUI::kScreenWrongHWID[]        = "wrong-hwid";
+const char OobeUI::kScreenAutoEnrollmentCheck[]
+                                             = "auto-enrollment-check";
 const char OobeUI::kScreenHIDDetection[]     = "hid-detection";
 const char OobeUI::kScreenAppLaunchSplash[]  = "app-launch-splash";
 const char OobeUI::kScreenConfirmPassword[]  = "confirm-password";
@@ -166,6 +170,7 @@ OobeUI::OobeUI(content::WebUI* web_ui, const GURL& url)
       autolaunch_screen_actor_(NULL),
       kiosk_enable_screen_actor_(NULL),
       wrong_hwid_screen_actor_(NULL),
+      auto_enrollment_check_screen_actor_(NULL),
       locally_managed_user_creation_screen_actor_(NULL),
       error_screen_handler_(NULL),
       signin_screen_handler_(NULL),
@@ -228,6 +233,11 @@ OobeUI::OobeUI(content::WebUI* web_ui, const GURL& url)
       new WrongHWIDScreenHandler();
   wrong_hwid_screen_actor_ = wrong_hwid_screen_handler;
   AddScreenHandler(wrong_hwid_screen_handler);
+
+  AutoEnrollmentCheckScreenHandler* auto_enrollment_check_screen_handler =
+      new AutoEnrollmentCheckScreenHandler();
+  auto_enrollment_check_screen_actor_ = auto_enrollment_check_screen_handler;
+  AddScreenHandler(auto_enrollment_check_screen_handler);
 
   HIDDetectionScreenHandler* hid_detection_screen_handler =
       new HIDDetectionScreenHandler();
@@ -348,6 +358,10 @@ WrongHWIDScreenActor* OobeUI::GetWrongHWIDScreenActor() {
   return wrong_hwid_screen_actor_;
 }
 
+AutoEnrollmentCheckScreenActor* OobeUI::GetAutoEnrollmentCheckScreenActor() {
+  return auto_enrollment_check_screen_actor_;
+}
+
 HIDDetectionScreenActor* OobeUI::GetHIDDetectionScreenActor() {
   return hid_detection_screen_actor_;
 }
@@ -421,6 +435,7 @@ void OobeUI::InitializeScreenMaps() {
       kScreenManagedUserCreationFlow;
   screen_names_[SCREEN_TERMS_OF_SERVICE] = kScreenTermsOfService;
   screen_names_[SCREEN_WRONG_HWID] = kScreenWrongHWID;
+  screen_names_[SCREEN_AUTO_ENROLLMENT_CHECK] = kScreenAutoEnrollmentCheck;
   screen_names_[SCREEN_APP_LAUNCH_SPLASH] = kScreenAppLaunchSplash;
   screen_names_[SCREEN_CONFIRM_PASSWORD] = kScreenConfirmPassword;
   screen_names_[SCREEN_FATAL_ERROR] = kScreenFatalError;

@@ -14,6 +14,7 @@
 /** @const */ var SCREEN_OOBE_RESET = 'reset';
 /** @const */ var SCREEN_OOBE_ENROLLMENT = 'oauth-enrollment';
 /** @const */ var SCREEN_OOBE_KIOSK_ENABLE = 'kiosk-enable';
+/** @const */ var SCREEN_OOBE_AUTO_ENROLLMENT_CHECK = 'auto-enrollment-check';
 /** @const */ var SCREEN_GAIA_SIGNIN = 'gaia-signin';
 /** @const */ var SCREEN_ACCOUNT_PICKER = 'account-picker';
 /** @const */ var SCREEN_USER_IMAGE_PICKER = 'user-image';
@@ -97,7 +98,8 @@ cr.define('cr.ui.login', function() {
    */
   var SCREEN_GROUPS = [[SCREEN_OOBE_NETWORK,
                         SCREEN_OOBE_EULA,
-                        SCREEN_OOBE_UPDATE]
+                        SCREEN_OOBE_UPDATE,
+                        SCREEN_OOBE_AUTO_ENROLLMENT_CHECK]
                       ];
   /**
    * Group of screens (screen IDs) where factory-reset screen invocation is
@@ -110,6 +112,7 @@ cr.define('cr.ui.login', function() {
     SCREEN_OOBE_EULA,
     SCREEN_OOBE_UPDATE,
     SCREEN_OOBE_ENROLLMENT,
+    SCREEN_OOBE_AUTO_ENROLLMENT_CHECK,
     SCREEN_GAIA_SIGNIN,
     SCREEN_ACCOUNT_PICKER,
     SCREEN_KIOSK_ENABLE,

@@ -12,6 +12,7 @@
 <include src="oobe_screen_network.js"></include>
 <include src="oobe_screen_hid_detection.js"></include>
 <include src="oobe_screen_update.js"></include>
+<include src="oobe_screen_auto_enrollment_check.js"></include>
 
 cr.define('cr.ui.Oobe', function() {
   return {
@@ -68,6 +69,7 @@ cr.define('cr.ui.Oobe', function() {
       login.NetworkScreen.register();
       login.EulaScreen.register();
       login.UpdateScreen.register();
+      login.AutoEnrollmentCheckScreen.register();
       login.ResetScreen.register();
       login.AutolaunchScreen.register();
       login.KioskEnableScreen.register();

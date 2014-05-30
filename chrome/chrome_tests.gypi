@@ -949,6 +949,8 @@
         'browser/chromeos/login/crash_restore_browsertest.cc',
         'browser/chromeos/login/demo_mode/demo_app_launcher_browsertest.cc',
         'browser/chromeos/login/enrollment/enrollment_screen_browsertest.cc',
+        'browser/chromeos/login/enrollment/mock_auto_enrollment_check_screen.cc',
+        'browser/chromeos/login/enrollment/mock_auto_enrollment_check_screen.h',
         'browser/chromeos/login/enrollment/mock_enrollment_screen.cc',
         'browser/chromeos/login/enrollment/mock_enrollment_screen.h',
         'browser/chromeos/login/existing_user_controller_browsertest.cc',
