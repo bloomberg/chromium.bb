@@ -11,8 +11,9 @@
 #include <stdio.h>
 #include <string.h>
 
-#include <string>
 #include <sstream>
+#include <string>
+#include <vector>
 
 #include "native_client/src/untrusted/irt/irt.h"
 #include "native_client/src/untrusted/nacl/nacl_irt.h"
@@ -20,30 +21,30 @@
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/var.h"
+#include "ppapi/cpp/var_array.h"
 #include "ppapi/native_client/src/shared/ppapi_proxy/ppruntime.h"
 
-std::string str;
 
-void load_manifest(TYPE_nacl_irt_query *query_func) {
+std::vector<std::string> result;
+
+std::string LoadManifestSuccess(TYPE_nacl_irt_query *query_func) {
   struct nacl_irt_resource_open nacl_irt_resource_open;
   if (sizeof(nacl_irt_resource_open) !=
       (*query_func)(
           NACL_IRT_RESOURCE_OPEN_v0_1,
           &nacl_irt_resource_open,
           sizeof(nacl_irt_resource_open))) {
-    str = "irt manifest api not found";
-    return;
+    return "irt manifest api not found";
   }
   int desc;
   int error;
   error = nacl_irt_resource_open.open_resource("test_file", &desc);
   if (0 != error) {
-    str = "Can't open file";
     printf("Can't open file, error=%d", error);
-    return;
+    return "Can't open file";
   }
 
-  str = "File Contents:\n";
+  std::string str;
 
   char buffer[4096];
   int len;
@@ -80,8 +81,63 @@ void load_manifest(TYPE_nacl_irt_query *query_func) {
     buffer[len] = 0;
     str += buffer;
   }
-  printf("file loaded: %s\n", str.c_str());
-  return;
+
+  if (str != "Test File Content") {
+    printf("Wrong file content: \"%s\"\n", str.c_str());
+    return "Wrong file content: " + str;
+  }
+
+  return "Pass";
+}
+
+std::string LoadManifestNonExistentEntry(
+    TYPE_nacl_irt_query *query_func) {
+  struct nacl_irt_resource_open nacl_irt_resource_open;
+  if (sizeof(nacl_irt_resource_open) !=
+      (*query_func)(
+          NACL_IRT_RESOURCE_OPEN_v0_1,
+          &nacl_irt_resource_open,
+          sizeof(nacl_irt_resource_open))) {
+    return "irt manifest api not found";
+  }
+
+  int desc;
+  int error = nacl_irt_resource_open.open_resource("non_existent_entry", &desc);
+
+  // We expect ENOENT here, as it does not exist.
+  if (error != ENOENT) {
+    printf("Unexpected error code: %d\n", error);
+    char buf[80];
+    snprintf(buf, sizeof(buf), "open_resource() result: %d", error);
+    return std::string(buf);
+  }
+
+  return "Pass";
+}
+
+std::string LoadManifestNonExistentFile(
+    TYPE_nacl_irt_query *query_func) {
+  struct nacl_irt_resource_open nacl_irt_resource_open;
+  if (sizeof(nacl_irt_resource_open) !=
+      (*query_func)(
+          NACL_IRT_RESOURCE_OPEN_v0_1,
+          &nacl_irt_resource_open,
+          sizeof(nacl_irt_resource_open))) {
+    return "irt manifest api not found";
+  }
+
+  int desc;
+  int error = nacl_irt_resource_open.open_resource("dummy_test_file", &desc);
+
+  // We expect ENOENT here, as it does not exist.
+  if (error != ENOENT) {
+    printf("Unexpected error code: %d\n", error);
+    char buf[80];
+    snprintf(buf, sizeof(buf), "open_resource() result: %d", error);
+    return std::string(buf);
+  }
+
+  return "Pass";
 }
 
 class TestInstance : public pp::Instance {
@@ -95,7 +151,10 @@ class TestInstance : public pp::Instance {
     if (var_message.AsString() != "hello") {
       return;
     }
-    pp::Var reply = pp::Var(str);
+    pp::VarArray reply = pp::VarArray();
+    for (size_t i = 0; i < result.size(); ++i) {
+      reply.Set(i, pp::Var(result[i]));
+    }
     PostMessage(reply);
   }
 };
@@ -117,7 +176,8 @@ Module* CreateModule() {
 }
 
 int main() {
-  load_manifest(&__nacl_irt_query);
+  result.push_back(LoadManifestSuccess(&__nacl_irt_query));
+  result.push_back(LoadManifestNonExistentEntry(&__nacl_irt_query));
+  result.push_back(LoadManifestNonExistentFile(&__nacl_irt_query));
   return PpapiPluginMain();
 }
-

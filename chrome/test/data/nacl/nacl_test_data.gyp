@@ -644,6 +644,9 @@
         'create_nmf_args_portable': [
           '-xtest_file:test_file.txt',
           '-xnmf says hello world:test_file.txt',
+          # There is no dummy_test_file.txt file intentionally. This is just for
+          # a test case where there is a manifest entry, but no actual file.
+          '-xdummy_test_file:dummy_test_file.txt',
         ],
         'test_files': [
           'manifest_file/irt_manifest_file_test.html',
