@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import "../gles2/command_buffer.mojom"
 import "../public/interfaces/geometry/geometry.mojom"
 import "../public/interfaces/input_events/input_events.mojom"
 
@@ -14,7 +15,7 @@ interface NativeViewport {
   Hide();
   Close();
   SetBounds(Rect bounds);
-  CreateGLES2Context(handle<message_pipe> gles2_client);
+  CreateGLES2Context(CommandBuffer& gles2_client);
 };
 
 interface NativeViewportClient {

@@ -110,6 +110,7 @@
       ],
       'dependencies': [
         'mojo_geometry_bindings',
+        'mojo_gles2_bindings',
         'mojo_input_events_bindings',
         'mojo_cpp_bindings',
       ],

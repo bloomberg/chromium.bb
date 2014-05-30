@@ -66,16 +66,13 @@ class NativeViewportImpl
     native_viewport_->SetBounds(bounds.To<gfx::Rect>());
   }
 
-  virtual void CreateGLES2Context(ScopedMessagePipeHandle client_handle)
-      OVERRIDE {
-    if (command_buffer_.get() || command_buffer_handle_.is_valid()) {
+  virtual void CreateGLES2Context(
+      InterfaceRequest<CommandBuffer> command_buffer_request) OVERRIDE {
+    if (command_buffer_.get() || command_buffer_request_.is_pending()) {
       LOG(ERROR) << "Can't create multiple contexts on a NativeViewport";
       return;
     }
-
-    // TODO(darin): CreateGLES2Context should accept a |CommandBufferPtr*|.
-    command_buffer_handle_ = client_handle.Pass();
-
+    command_buffer_request_ = command_buffer_request.Pass();
     CreateCommandBufferIfNeeded();
   }
 
@@ -84,7 +81,7 @@ class NativeViewportImpl
   }
 
   void CreateCommandBufferIfNeeded() {
-    if (!command_buffer_handle_.is_valid())
+    if (!command_buffer_request_.is_pending())
       return;
     DCHECK(!command_buffer_.get());
     if (widget_ == gfx::kNullAcceleratedWidget)
@@ -93,8 +90,8 @@ class NativeViewportImpl
     if (size.IsEmpty())
       return;
     command_buffer_.reset(
-        BindToPipe(new CommandBufferImpl(widget_, native_viewport_->GetSize()),
-                   command_buffer_handle_.Pass()));
+        new CommandBufferImpl(widget_, native_viewport_->GetSize()));
+    BindToRequest(command_buffer_.get(), &command_buffer_request_);
   }
 
   virtual bool OnEvent(ui::Event* ui_event) OVERRIDE {
@@ -167,7 +164,7 @@ class NativeViewportImpl
   shell::Context* context_;
   gfx::AcceleratedWidget widget_;
   scoped_ptr<services::NativeViewport> native_viewport_;
-  ScopedMessagePipeHandle command_buffer_handle_;
+  InterfaceRequest<CommandBuffer> command_buffer_request_;
   scoped_ptr<CommandBufferImpl> command_buffer_;
   bool waiting_for_event_ack_;
 };

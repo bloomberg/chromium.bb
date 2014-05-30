@@ -33,6 +33,8 @@ def _MapKind(kind):
                   'handle<shared_buffer>': 'h:s'}
   if kind.endswith('[]'):
     return 'a:' + _MapKind(kind[0:len(kind)-2])
+  if kind.endswith('&'):
+    return 'r:' + _MapKind(kind[0:len(kind)-1])
   if kind in map_to_kind:
     return map_to_kind[kind]
   return 'x:' + kind

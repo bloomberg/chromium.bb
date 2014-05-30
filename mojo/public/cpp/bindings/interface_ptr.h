@@ -24,10 +24,11 @@ class InterfacePtr {
   InterfacePtr() {}
 
   InterfacePtr(RValue other) {
-    other.object->internal_state_.Swap(&internal_state_);
+    internal_state_.Swap(&other.object->internal_state_);
   }
   InterfacePtr& operator=(RValue other) {
-    other.object->internal_state_.Swap(&internal_state_);
+    reset();
+    internal_state_.Swap(&other.object->internal_state_);
     return *this;
   }
 
@@ -37,7 +38,7 @@ class InterfacePtr {
     return internal_state_.instance();
   }
   Interface* operator->() const { return get(); }
-  Interface* operator*() const { return get(); }
+  Interface& operator*() const { return *get(); }
 
   void reset() {
     State doomed;
@@ -84,11 +85,11 @@ class InterfacePtr {
   // Returns the underlying message pipe handle (if any) and resets the
   // InterfacePtr<..> to its uninitialized state. This method is helpful if you
   // need to move a proxy to another thread. See related notes for Bind.
-  ScopedMessagePipeHandle ResetAndReturnMessagePipe() {
+  ScopedMessagePipeHandle PassMessagePipe() {
     State state;
     internal_state_.Swap(&state);
     return state.router() ?
-        state.router()->ReleaseMessagePipe() : ScopedMessagePipeHandle();
+        state.router()->PassMessagePipe() : ScopedMessagePipeHandle();
   }
 
   // DO NOT USE. Exposed only for internal use and for testing.

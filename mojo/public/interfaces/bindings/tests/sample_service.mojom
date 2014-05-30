@@ -94,6 +94,7 @@ interface Service {
   };
   const uint8 kFavoriteBaz = 1;
   Frobinate@0(Foo foo@0, BazOptions baz@1, Port port@2);
+  GetPort@1(Port& port @0);
 };
 
 interface ServiceClient {

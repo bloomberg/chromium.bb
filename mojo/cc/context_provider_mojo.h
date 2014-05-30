@@ -13,7 +13,7 @@ namespace mojo {
 
 class ContextProviderMojo : public cc::ContextProvider {
  public:
-  explicit ContextProviderMojo(ScopedMessagePipeHandle gl_pipe);
+  explicit ContextProviderMojo(ScopedMessagePipeHandle command_buffer_handle);
 
   // cc::ContextProvider implementation.
   virtual bool BindToCurrentThread() OVERRIDE;
@@ -42,7 +42,7 @@ class ContextProviderMojo : public cc::ContextProvider {
   void ContextLost();
 
   cc::ContextProvider::Capabilities capabilities_;
-  ScopedMessagePipeHandle gl_pipe_;
+  ScopedMessagePipeHandle command_buffer_handle_;
   MojoGLES2Context context_;
 };
 

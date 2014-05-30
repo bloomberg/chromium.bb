@@ -51,13 +51,12 @@ CommandBufferClientImpl::CommandBufferClientImpl(
     MojoAsyncWaiter* async_waiter,
     ScopedMessagePipeHandle command_buffer_handle)
     : delegate_(delegate),
-      command_buffer_(MakeProxy<mojo::CommandBuffer>(
-          command_buffer_handle.Pass(), async_waiter)),
       shared_state_(NULL),
       last_put_offset_(-1),
       next_transfer_buffer_id_(0),
       initialize_result_(false),
       async_waiter_(async_waiter) {
+  command_buffer_.Bind(command_buffer_handle.Pass(), async_waiter);
   command_buffer_.set_error_handler(this);
   command_buffer_.set_client(this);
 }

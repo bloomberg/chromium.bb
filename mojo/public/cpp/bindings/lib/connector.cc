@@ -38,7 +38,7 @@ void Connector::CloseMessagePipe() {
   Close(message_pipe_.Pass());
 }
 
-ScopedMessagePipeHandle Connector::ReleaseMessagePipe() {
+ScopedMessagePipeHandle Connector::PassMessagePipe() {
   if (async_wait_id_) {
     waiter_->CancelWait(waiter_, async_wait_id_);
     async_wait_id_ = 0;

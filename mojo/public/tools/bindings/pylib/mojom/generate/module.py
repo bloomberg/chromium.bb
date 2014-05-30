@@ -122,6 +122,15 @@ class Array(Kind):
       Kind.__init__(self)
 
 
+class InterfaceRequest(Kind):
+  def __init__(self, kind=None):
+    self.kind = kind
+    if kind != None:
+      Kind.__init__(self, 'r:' + kind.spec)
+    else:
+      Kind.__init__(self)
+
+
 class Parameter(object):
   def __init__(self, name=None, kind=None, ordinal=None, default=None):
     self.name = name
@@ -155,6 +164,7 @@ class Interface(Kind):
   def __init__(self, name=None, client=None, module=None):
     self.module = module
     self.name = name
+    self.imported_from = None
     if name != None:
       spec = 'x:' + name
     else:

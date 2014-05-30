@@ -187,7 +187,8 @@ class Parser(object):
 
   def p_typename(self, p):
     """typename : basictypename
-                | array"""
+                | array
+                | interfacerequest"""
     p[0] = p[1]
 
   def p_basictypename(self, p):
@@ -215,6 +216,10 @@ class Parser(object):
   def p_array(self, p):
     """array : typename LBRACKET RBRACKET"""
     p[0] = p[1] + "[]"
+
+  def p_interfacerequest(self, p):
+    """interfacerequest : identifier AMP"""
+    p[0] = p[1] + "&"
 
   def p_ordinal(self, p):
     """ordinal : ORDINAL

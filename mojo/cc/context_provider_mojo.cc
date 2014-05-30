@@ -8,13 +8,17 @@
 
 namespace mojo {
 
-ContextProviderMojo::ContextProviderMojo(ScopedMessagePipeHandle gl_pipe)
-    : gl_pipe_(gl_pipe.Pass()) {}
+ContextProviderMojo::ContextProviderMojo(
+    ScopedMessagePipeHandle command_buffer_handle)
+    : command_buffer_handle_(command_buffer_handle.Pass()) {}
 
 bool ContextProviderMojo::BindToCurrentThread() {
-  DCHECK(gl_pipe_.is_valid());
+  DCHECK(command_buffer_handle_.is_valid());
   context_ = MojoGLES2CreateContext(
-      gl_pipe_.release().value(), &ContextLostThunk, NULL, this);
+      command_buffer_handle_.release().value(),
+      &ContextLostThunk,
+      NULL,
+      this);
   return !!context_;
 }
 

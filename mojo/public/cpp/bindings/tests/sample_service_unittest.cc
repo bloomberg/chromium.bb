@@ -275,6 +275,10 @@ class ServiceImpl : public Service {
       Print(depth, "port", port.get());
     }
   }
+
+  virtual void GetPort(mojo::InterfaceRequest<Port> port_request)
+      MOJO_OVERRIDE {
+  }
 };
 
 class ServiceProxyImpl : public ServiceProxy {

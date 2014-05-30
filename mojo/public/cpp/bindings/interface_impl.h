@@ -5,6 +5,7 @@
 #ifndef MOJO_PUBLIC_CPP_BINDINGS_INTERFACE_IMPL_H_
 #define MOJO_PUBLIC_CPP_BINDINGS_INTERFACE_IMPL_H_
 
+#include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/lib/interface_impl_internal.h"
 #include "mojo/public/cpp/system/macros.h"
 
@@ -79,6 +80,24 @@ Impl* BindToProxy(Impl* instance,
                   MojoAsyncWaiter* waiter = GetDefaultAsyncWaiter()) {
   instance->internal_state()->BindProxy(ptr, waiter);
   return instance;
+}
+
+// Takes an instance of an InterfaceImpl<..> subclass and binds it to the given
+// InterfaceRequest<..>. The instance is returned for convenience in member
+// initializer lists, etc. If the pipe is closed, the instance's
+// OnConnectionError method will be called.
+//
+// The instance is also bound to the current thread. Its methods will only be
+// called on the current thread, and if the current thread exits, then it will
+// also be deleted, and along with it, its end point of the pipe will be closed.
+//
+// Before returning, the instance will receive a SetClient call, providing it
+// with a proxy to the client on the other end of the pipe.
+template <typename Impl, typename Interface>
+Impl* BindToRequest(Impl* instance,
+                    InterfaceRequest<Interface>* request,
+                    MojoAsyncWaiter* waiter = GetDefaultAsyncWaiter()) {
+  return BindToPipe(instance, request->PassMessagePipe(), waiter);
 }
 
 }  // namespace mojo

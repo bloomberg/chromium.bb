@@ -39,7 +39,8 @@ def JavaScriptDefaultValue(field):
     return "null"
   if isinstance(field.kind, mojom.Array):
     return "[]"
-  if isinstance(field.kind, mojom.Interface):
+  if isinstance(field.kind, mojom.Interface) or \
+     isinstance(field.kind, mojom.InterfaceRequest):
     return _kind_to_javascript_default_value[mojom.MSGPIPE]
   if isinstance(field.kind, mojom.Enum):
     return "0"
@@ -83,7 +84,8 @@ def CodecType(kind):
     return "new codec.PointerTo(%s)" % CodecType(kind.name)
   if isinstance(kind, mojom.Array):
     return "new codec.ArrayOf(%s)" % CodecType(kind.kind)
-  if isinstance(kind, mojom.Interface):
+  if isinstance(kind, mojom.Interface) or \
+     isinstance(kind, mojom.InterfaceRequest):
     return CodecType(mojom.MSGPIPE)
   if isinstance(kind, mojom.Enum):
     return _kind_to_codec_type[mojom.INT32]
@@ -97,7 +99,8 @@ def JavaScriptDecodeSnippet(kind):
     return "decodeStructPointer(%s)" % CodecType(kind.name)
   if isinstance(kind, mojom.Array):
     return "decodeArrayPointer(%s)" % CodecType(kind.kind)
-  if isinstance(kind, mojom.Interface):
+  if isinstance(kind, mojom.Interface) or \
+     isinstance(kind, mojom.InterfaceRequest):
     return JavaScriptDecodeSnippet(mojom.MSGPIPE)
   if isinstance(kind, mojom.Enum):
     return JavaScriptDecodeSnippet(mojom.INT32)
@@ -110,7 +113,8 @@ def JavaScriptEncodeSnippet(kind):
     return "encodeStructPointer(%s, " % CodecType(kind.name)
   if isinstance(kind, mojom.Array):
     return "encodeArrayPointer(%s, " % CodecType(kind.kind)
-  if isinstance(kind, mojom.Interface):
+  if isinstance(kind, mojom.Interface) or \
+     isinstance(kind, mojom.InterfaceRequest):
     return JavaScriptEncodeSnippet(mojom.MSGPIPE)
   if isinstance(kind, mojom.Enum):
     return JavaScriptEncodeSnippet(mojom.INT32)

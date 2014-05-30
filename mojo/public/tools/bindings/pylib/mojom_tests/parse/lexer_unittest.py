@@ -143,6 +143,8 @@ class LexerTest(unittest.TestCase):
                       _MakeLexToken("LSHIFT", "<<"))
     self.assertEquals(self._SingleTokenForInput(">>"),
                       _MakeLexToken("RSHIFT", ">>"))
+    self.assertEquals(self._SingleTokenForInput("&"),
+                      _MakeLexToken("AMP", "&"))
     self.assertEquals(self._SingleTokenForInput("="),
                       _MakeLexToken("EQUALS", "="))
     self.assertEquals(self._SingleTokenForInput("=>"),

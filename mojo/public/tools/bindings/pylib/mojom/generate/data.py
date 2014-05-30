@@ -87,6 +87,9 @@ def KindFromData(kinds, data, scope):
   if data.startswith('a:'):
     kind = mojom.Array()
     kind.kind = KindFromData(kinds, data[2:], scope)
+  elif data.startswith('r:'):
+    kind = mojom.InterfaceRequest()
+    kind.kind = KindFromData(kinds, data[2:], scope)
   else:
     kind = mojom.Kind()
   kind.spec = data
@@ -94,8 +97,8 @@ def KindFromData(kinds, data, scope):
   return kind
 
 def KindFromImport(original_kind, imported_from):
-  """Used with 'import module' - clones the kind imported from the
-  given module's namespace. Only used with Structs and Enums."""
+  """Used with 'import module' - clones the kind imported from the given
+  module's namespace. Only used with Structs, Interfaces and Enums."""
   kind = copy.deepcopy(original_kind)
   kind.imported_from = imported_from
   return kind
@@ -110,7 +113,7 @@ def ImportFromData(module, data):
 
   # Copy the struct kinds from our imports into the current module.
   for kind in import_module.kinds.itervalues():
-    if (isinstance(kind, (mojom.Struct, mojom.Enum)) and
+    if (isinstance(kind, (mojom.Struct, mojom.Enum, mojom.Interface)) and
         kind.imported_from is None):
       kind = KindFromImport(kind, import_item)
       module.kinds[kind.spec] = kind

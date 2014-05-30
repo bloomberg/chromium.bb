@@ -48,8 +48,8 @@ class Router : public MessageReceiverWithResponder {
     connector_.CloseMessagePipe();
   }
 
-  ScopedMessagePipeHandle ReleaseMessagePipe() {
-    return connector_.ReleaseMessagePipe();
+  ScopedMessagePipeHandle PassMessagePipe() {
+    return connector_.PassMessagePipe();
   }
 
   // MessageReceiver implementation:

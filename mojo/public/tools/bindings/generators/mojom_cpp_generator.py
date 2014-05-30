@@ -49,7 +49,8 @@ def GetCppType(kind):
     return "%s_Data*" % GetNameForKind(kind, internal=True)
   if isinstance(kind, mojom.Array):
     return "mojo::internal::Array_Data<%s>*" % GetCppType(kind.kind)
-  if isinstance(kind, mojom.Interface):
+  if isinstance(kind, mojom.Interface) or \
+     isinstance(kind, mojom.InterfaceRequest):
     return "mojo::MessagePipeHandle"
   if isinstance(kind, mojom.Enum):
     return "int32_t"
@@ -71,6 +72,8 @@ def GetCppArrayArgWrapperType(kind):
     return "mojo::Array<%s> " % GetCppArrayArgWrapperType(kind.kind)
   if isinstance(kind, mojom.Interface):
     raise Exception("Arrays of interfaces not yet supported!")
+  if isinstance(kind, mojom.InterfaceRequest):
+    raise Exception("Arrays of interface requests not yet supported!")
   if kind.spec == 's':
     return "mojo::String"
   if kind.spec == 'h':
@@ -94,6 +97,8 @@ def GetCppResultWrapperType(kind):
     return "mojo::Array<%s>" % GetCppArrayArgWrapperType(kind.kind)
   if isinstance(kind, mojom.Interface):
     return "%sPtr" % kind.name
+  if isinstance(kind, mojom.InterfaceRequest):
+    return "mojo::InterfaceRequest<%s>" % kind.kind.name
   if kind.spec == 's':
     return "mojo::String"
   if kind.spec == 'h':
@@ -117,6 +122,8 @@ def GetCppWrapperType(kind):
     return "mojo::Array<%s>" % GetCppArrayArgWrapperType(kind.kind)
   if isinstance(kind, mojom.Interface):
     return "mojo::ScopedMessagePipeHandle"
+  if isinstance(kind, mojom.InterfaceRequest):
+    raise Exception("InterfaceRequest fields not supported!")
   if kind.spec == 's':
     return "mojo::String"
   if kind.spec == 'h':
@@ -138,6 +145,8 @@ def GetCppConstWrapperType(kind):
     return "mojo::Array<%s>" % GetCppArrayArgWrapperType(kind.kind)
   if isinstance(kind, mojom.Interface):
     return "%sPtr" % kind.name
+  if isinstance(kind, mojom.InterfaceRequest):
+    return "mojo::InterfaceRequest<%s>" % kind.kind.name
   if isinstance(kind, mojom.Enum):
     return GetNameForKind(kind)
   if kind.spec == 's':
@@ -162,7 +171,8 @@ def GetCppFieldType(kind):
         GetNameForKind(kind, internal=True))
   if isinstance(kind, mojom.Array):
     return "mojo::internal::ArrayPointer<%s>" % GetCppType(kind.kind)
-  if isinstance(kind, mojom.Interface):
+  if isinstance(kind, mojom.Interface) or \
+     isinstance(kind, mojom.InterfaceRequest):
     return "mojo::MessagePipeHandle"
   if isinstance(kind, mojom.Enum):
     return GetNameForKind(kind)
@@ -229,6 +239,7 @@ class Generator(generator.Generator):
     "is_move_only_kind": generator.IsMoveOnlyKind,
     "is_handle_kind": generator.IsHandleKind,
     "is_interface_kind": generator.IsInterfaceKind,
+    "is_interface_request_kind": generator.IsInterfaceRequestKind,
     "is_object_kind": generator.IsObjectKind,
     "is_string_kind": generator.IsStringKind,
     "is_array_kind": lambda kind: isinstance(kind, mojom.Array),

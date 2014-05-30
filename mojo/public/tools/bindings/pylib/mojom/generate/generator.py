@@ -44,10 +44,15 @@ def IsObjectKind(kind):
   return isinstance(kind, (mojom.Struct, mojom.Array)) or IsStringKind(kind)
 
 def IsHandleKind(kind):
-  return kind.spec.startswith('h') or isinstance(kind, mojom.Interface)
+  return kind.spec.startswith('h') or \
+         isinstance(kind, mojom.Interface) or \
+         isinstance(kind, mojom.InterfaceRequest)
 
 def IsInterfaceKind(kind):
   return isinstance(kind, mojom.Interface)
+
+def IsInterfaceRequestKind(kind):
+  return isinstance(kind, mojom.InterfaceRequest)
 
 def IsMoveOnlyKind(kind):
   return IsObjectKind(kind) or IsHandleKind(kind)

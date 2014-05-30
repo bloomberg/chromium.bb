@@ -38,9 +38,9 @@ class SampleApp : public Application, public NativeViewportClient {
     viewport_->Create(rect.Pass());
     viewport_->Show();
 
-    MessagePipe gles2_pipe;
-    viewport_->CreateGLES2Context(gles2_pipe.handle0.Pass());
-    gles2_client_.reset(new GLES2ClientImpl(gles2_pipe.handle1.Pass()));
+    CommandBufferPtr command_buffer;
+    viewport_->CreateGLES2Context(Get(&command_buffer));
+    gles2_client_.reset(new GLES2ClientImpl(command_buffer.Pass()));
   }
 
   virtual void OnCreated() MOJO_OVERRIDE {

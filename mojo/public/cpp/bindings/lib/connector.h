@@ -59,7 +59,7 @@ class Connector : public MessageReceiver {
 
   // Releases the pipe, not triggering the error state. Connector is put into
   // a quiescent state.
-  ScopedMessagePipeHandle ReleaseMessagePipe();
+  ScopedMessagePipeHandle PassMessagePipe();
 
   // MessageReceiver implementation:
   virtual bool Accept(Message* message) MOJO_OVERRIDE;

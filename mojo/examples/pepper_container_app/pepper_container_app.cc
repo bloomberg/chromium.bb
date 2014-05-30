@@ -85,9 +85,9 @@ class PepperContainerApp: public Application,
 
   // MojoPpapiGlobals::Delegate implementation.
   virtual ScopedMessagePipeHandle CreateGLES2Context() OVERRIDE {
-    MessagePipe gles2_pipe;
-    viewport_->CreateGLES2Context(gles2_pipe.handle1.Pass());
-    return gles2_pipe.handle0.Pass();
+    CommandBufferPtr command_buffer;
+    viewport_->CreateGLES2Context(Get(&command_buffer));
+    return command_buffer.PassMessagePipe();
   }
 
  private:

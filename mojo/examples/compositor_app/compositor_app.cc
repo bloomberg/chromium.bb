@@ -30,9 +30,10 @@ class SampleApp : public Application, public NativeViewportClient {
     viewport_->Create(Rect::From(gfx::Rect(10, 10, 800, 600)));
     viewport_->Show();
 
-    MessagePipe gles2_pipe;
-    viewport_->CreateGLES2Context(gles2_pipe.handle0.Pass());
-    host_.reset(new CompositorHost(gles2_pipe.handle1.Pass()));
+    MessagePipe pipe;
+    viewport_->CreateGLES2Context(
+        MakeRequest<CommandBuffer>(pipe.handle0.Pass()));
+    host_.reset(new CompositorHost(pipe.handle1.Pass()));
   }
 
   virtual void OnCreated() OVERRIDE {

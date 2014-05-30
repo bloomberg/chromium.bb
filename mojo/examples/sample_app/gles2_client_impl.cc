@@ -26,10 +26,10 @@ float GetRandomColor() {
 
 }
 
-GLES2ClientImpl::GLES2ClientImpl(ScopedMessagePipeHandle pipe)
+GLES2ClientImpl::GLES2ClientImpl(CommandBufferPtr command_buffer)
     : getting_animation_frames_(false) {
   context_ = MojoGLES2CreateContext(
-      pipe.release().value(),
+      command_buffer.PassMessagePipe().release().value(),
       &ContextLostThunk,
       &DrawAnimationFrameThunk,
       this);

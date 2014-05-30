@@ -19,10 +19,16 @@ struct Response {
   handle<message_pipe> pipe;
 };
 
+interface Object {
+  SetName(string name);
+  GetName() => (string name);
+};
+
 [Client=FactoryClient]
 interface Factory {
   DoStuff(Request request, handle<message_pipe> pipe);
   DoStuff2(handle<data_pipe_consumer> pipe);
+  CreateObject(Object& obj);
 };
 
 interface FactoryClient {

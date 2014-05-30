@@ -15,6 +15,36 @@ namespace {
 const char kText1[] = "hello";
 const char kText2[] = "world";
 
+class StringRecorder {
+ public:
+  explicit StringRecorder(std::string* buf) : buf_(buf) {
+  }
+  void Run(const String& a) const {
+    *buf_ = a.To<std::string>();
+  }
+ private:
+  std::string* buf_;
+};
+
+class SampleObjectImpl : public InterfaceImpl<sample::Object> {
+ public:
+  virtual void OnConnectionError() MOJO_OVERRIDE {
+    delete this;
+  }
+
+  virtual void SetName(const mojo::String& name) MOJO_OVERRIDE {
+    name_ = name;
+  }
+
+  virtual void GetName(const mojo::Callback<void(mojo::String)>& callback)
+      MOJO_OVERRIDE {
+    callback.Run(name_);
+  }
+
+ private:
+  std::string name_;
+};
+
 class SampleFactoryImpl : public InterfaceImpl<sample::Factory> {
  public:
   virtual void OnConnectionError() MOJO_OVERRIDE {
@@ -63,6 +93,12 @@ class SampleFactoryImpl : public InterfaceImpl<sample::Factory> {
                           MOJO_READ_DATA_FLAG_ALL_OR_NONE));
 
     client()->DidStuff2(data);
+  }
+
+  virtual void CreateObject(InterfaceRequest<sample::Object> object_request)
+      MOJO_OVERRIDE {
+    EXPECT_TRUE(object_request.is_pending());
+    BindToRequest(new SampleObjectImpl(), &object_request);
   }
 
  private:
@@ -257,6 +293,37 @@ TEST_F(HandlePassingTest, IsHandle) {
   EXPECT_FALSE(internal::IsHandle<int>::value);
   EXPECT_FALSE(internal::IsHandle<sample::FactoryPtr>::value);
   EXPECT_FALSE(internal::IsHandle<String>::value);
+}
+
+TEST_F(HandlePassingTest, CreateObject) {
+  sample::FactoryPtr factory;
+  BindToProxy(new SampleFactoryImpl(), &factory);
+
+  sample::ObjectPtr object1;
+  EXPECT_FALSE(object1.get());
+
+  InterfaceRequest<sample::Object> object1_request = Get(&object1);
+  EXPECT_TRUE(object1_request.is_pending());
+  factory->CreateObject(object1_request.Pass());
+  EXPECT_FALSE(object1_request.is_pending());  // We've passed the request.
+
+  ASSERT_TRUE(object1.get());
+  object1->SetName("object1");
+
+  sample::ObjectPtr object2;
+  factory->CreateObject(Get(&object2));
+  object2->SetName("object2");
+
+  std::string name1;
+  object1->GetName(StringRecorder(&name1));
+
+  std::string name2;
+  object2->GetName(StringRecorder(&name2));
+
+  PumpMessages();  // Yield for results.
+
+  EXPECT_EQ(std::string("object1"), name1);
+  EXPECT_EQ(std::string("object2"), name2);
 }
 
 }  // namespace

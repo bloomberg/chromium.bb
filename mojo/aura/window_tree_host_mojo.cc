@@ -34,8 +34,9 @@ WindowTreeHostMojo::WindowTreeHostMojo(
   native_viewport_.set_client(this);
   native_viewport_->Create(Rect::From(bounds));
 
-  ScopedMessagePipeHandle gles2_handle, gles2_client_handle;
-  CreateMessagePipe(&gles2_handle, &gles2_client_handle);
+  MessagePipe pipe;
+  native_viewport_->CreateGLES2Context(
+      MakeRequest<CommandBuffer>(pipe.handle0.Pass()));
 
   // The ContextFactory must exist before any Compositors are created.
   if (context_factory_) {
@@ -43,12 +44,10 @@ WindowTreeHostMojo::WindowTreeHostMojo(
     delete context_factory_;
     context_factory_ = NULL;
   }
-  context_factory_ = new ContextFactoryMojo(gles2_handle.Pass());
+  context_factory_ = new ContextFactoryMojo(pipe.handle1.Pass());
   ui::ContextFactory::SetInstance(context_factory_);
   aura::Env::GetInstance()->set_context_factory(context_factory_);
   CHECK(context_factory_) << "No GL bindings.";
-
-  native_viewport_->CreateGLES2Context(gles2_client_handle.Pass());
 }
 
 WindowTreeHostMojo::~WindowTreeHostMojo() {

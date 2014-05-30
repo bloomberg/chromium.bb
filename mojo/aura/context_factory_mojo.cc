@@ -16,8 +16,9 @@
 
 namespace mojo {
 
-ContextFactoryMojo::ContextFactoryMojo(ScopedMessagePipeHandle gles2_handle)
-    : gles2_handle_(gles2_handle.Pass()) {
+ContextFactoryMojo::ContextFactoryMojo(
+    ScopedMessagePipeHandle command_buffer_handle)
+    : command_buffer_handle_(command_buffer_handle.Pass()) {
 }
 
 ContextFactoryMojo::~ContextFactoryMojo() {
@@ -25,8 +26,9 @@ ContextFactoryMojo::~ContextFactoryMojo() {
 
 scoped_ptr<cc::OutputSurface> ContextFactoryMojo::CreateOutputSurface(
     ui::Compositor* compositor, bool software_fallback) {
-  return make_scoped_ptr(new cc::OutputSurface(
-                             new ContextProviderMojo(gles2_handle_.Pass())));
+  return make_scoped_ptr(
+      new cc::OutputSurface(
+          new ContextProviderMojo(command_buffer_handle_.Pass())));
 }
 
 scoped_refptr<ui::Reflector> ContextFactoryMojo::CreateReflector(

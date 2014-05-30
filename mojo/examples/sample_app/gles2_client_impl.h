@@ -16,7 +16,7 @@ namespace examples {
 
 class GLES2ClientImpl {
  public:
-  explicit GLES2ClientImpl(ScopedMessagePipeHandle pipe);
+  explicit GLES2ClientImpl(CommandBufferPtr command_buffer);
   virtual ~GLES2ClientImpl();
 
   void SetSize(const Size& size);

@@ -50,7 +50,7 @@ class ProviderImpl : public InterfaceImpl<sample::Provider> {
 
 class StringRecorder {
  public:
-  StringRecorder(std::string* buf) : buf_(buf) {
+  explicit StringRecorder(std::string* buf) : buf_(buf) {
   }
   void Run(const String& a) const {
     *buf_ = a;
@@ -64,7 +64,7 @@ class StringRecorder {
 
 class EnumRecorder {
  public:
-  EnumRecorder(sample::Enum* value) : value_(value) {
+  explicit EnumRecorder(sample::Enum* value) : value_(value) {
   }
   void Run(sample::Enum a) const {
     *value_ = a;

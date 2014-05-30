@@ -230,6 +230,7 @@
         'public/cpp/bindings/error_handler.h',
         'public/cpp/bindings/interface_impl.h',
         'public/cpp/bindings/interface_ptr.h',
+        'public/cpp/bindings/interface_request.h',
         'public/cpp/bindings/message.h',
         'public/cpp/bindings/message_filter.h',
         'public/cpp/bindings/no_interface.h',

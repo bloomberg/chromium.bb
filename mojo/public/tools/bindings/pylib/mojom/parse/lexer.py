@@ -89,6 +89,7 @@ class Lexer(object):
     # Operators
     'PLUS', 'MINUS', 'TIMES', 'DIVIDE', 'MOD',
     'OR', 'AND', 'NOT', 'XOR', 'LSHIFT', 'RSHIFT',
+    'AMP',
 
     # Assignment
     'EQUALS',
@@ -183,6 +184,7 @@ class Lexer(object):
   t_XOR               = r'\^'
   t_LSHIFT            = r'<<'
   t_RSHIFT            = r'>>'
+  t_AMP               = r'&'
 
   # =
   t_EQUALS            = r'='
