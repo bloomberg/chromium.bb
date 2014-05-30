@@ -109,7 +109,7 @@ FloatPoint RenderGeometryMap::mapToContainer(const FloatPoint& p, const RenderLa
     FloatPoint result;
 
     if (!hasFixedPositionStep() && !hasTransformStep() && !hasNonUniformStep() && (!container || (m_mapping.size() && container == m_mapping[0].m_renderer)))
-        result = p + roundedIntSize(m_accumulatedOffset);
+        result = p + m_accumulatedOffset;
     else {
         TransformState transformState(TransformState::ApplyTransformDirection, p);
         mapToContainer(transformState, container);
