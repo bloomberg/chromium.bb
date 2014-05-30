@@ -13,8 +13,6 @@
 
 namespace content {
 
-int ProxyMediaKeys::next_cdm_id_ = RendererCdmManager::kInvalidCdmId + 1;
-
 scoped_ptr<ProxyMediaKeys> ProxyMediaKeys::Create(
     const std::string& key_system,
     const GURL& security_origin,
@@ -38,6 +36,7 @@ scoped_ptr<ProxyMediaKeys> ProxyMediaKeys::Create(
 
 ProxyMediaKeys::~ProxyMediaKeys() {
   manager_->DestroyCdm(cdm_id_);
+  manager_->UnregisterMediaKeys(cdm_id_);
 }
 
 bool ProxyMediaKeys::CreateSession(uint32 session_id,
@@ -123,12 +122,12 @@ ProxyMediaKeys::ProxyMediaKeys(
     const media::SessionClosedCB& session_closed_cb,
     const media::SessionErrorCB& session_error_cb)
     : manager_(manager),
-      cdm_id_(next_cdm_id_++),
       session_created_cb_(session_created_cb),
       session_message_cb_(session_message_cb),
       session_ready_cb_(session_ready_cb),
       session_closed_cb_(session_closed_cb),
       session_error_cb_(session_error_cb) {
+  cdm_id_ = manager->RegisterMediaKeys(this);
 }
 
 void ProxyMediaKeys::InitializeCdm(const std::string& key_system,

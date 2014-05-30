@@ -17,7 +17,8 @@ const size_t kMaxWebSessionIdLength = 512;
 const size_t kMaxSessionMessageLength = 10240;  // 10 KB
 
 RendererCdmManager::RendererCdmManager(RenderFrame* render_frame)
-    : RenderFrameObserver(render_frame) {
+    : RenderFrameObserver(render_frame),
+      next_cdm_id_(kInvalidCdmId + 1) {
 }
 
 RendererCdmManager::~RendererCdmManager() {}
@@ -39,8 +40,7 @@ void RendererCdmManager::InitializeCdm(int cdm_id,
                                        ProxyMediaKeys* media_keys,
                                        const std::string& key_system,
                                        const GURL& security_origin) {
-  DCHECK_NE(cdm_id, kInvalidCdmId);
-  RegisterMediaKeys(cdm_id, media_keys);
+  DCHECK(GetMediaKeys(cdm_id)) << "|cdm_id| not registered.";
   Send(new CdmHostMsg_InitializeCdm(
       routing_id(), cdm_id, key_system, security_origin));
 }
@@ -70,7 +70,6 @@ void RendererCdmManager::ReleaseSession(int cdm_id, uint32 session_id) {
 
 void RendererCdmManager::DestroyCdm(int cdm_id) {
   DCHECK(GetMediaKeys(cdm_id)) << "|cdm_id| not registered.";
-  proxy_media_keys_map_.erase(cdm_id);
   Send(new CdmHostMsg_DestroyCdm(routing_id(), cdm_id));
 }
 
@@ -122,10 +121,17 @@ void RendererCdmManager::OnSessionError(int cdm_id,
     media_keys->OnSessionError(session_id, error_code, system_code);
 }
 
-void RendererCdmManager::RegisterMediaKeys(int cdm_id,
-                                           ProxyMediaKeys* media_keys) {
+int RendererCdmManager::RegisterMediaKeys(ProxyMediaKeys* media_keys) {
+  int cdm_id = next_cdm_id_++;
+  DCHECK_NE(cdm_id, kInvalidCdmId);
   DCHECK(!ContainsKey(proxy_media_keys_map_, cdm_id));
   proxy_media_keys_map_[cdm_id] = media_keys;
+  return cdm_id;
+}
+
+void RendererCdmManager::UnregisterMediaKeys(int cdm_id) {
+  DCHECK(ContainsKey(proxy_media_keys_map_, cdm_id));
+  proxy_media_keys_map_.erase(cdm_id);
 }
 
 ProxyMediaKeys* RendererCdmManager::GetMediaKeys(int cdm_id) {

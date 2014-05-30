@@ -50,10 +50,13 @@ class RendererCdmManager : public RenderFrameObserver {
   void ReleaseSession(int cdm_id, uint32 session_id);
   void DestroyCdm(int cdm_id);
 
- private:
-  // Registers a ProxyMediaKeys object.
-  void RegisterMediaKeys(int cdm_id, ProxyMediaKeys* media_keys);
+  // Registers a ProxyMediaKeys object. Returns allocated CDM ID.
+  int RegisterMediaKeys(ProxyMediaKeys* media_keys);
 
+  // Unregisters a ProxyMediaKeys object identified by |cdm_id|.
+  void UnregisterMediaKeys(int cdm_id);
+
+ private:
   // Gets the pointer to ProxyMediaKeys given the |cdm_id|.
   ProxyMediaKeys* GetMediaKeys(int cdm_id);
 
@@ -71,6 +74,10 @@ class RendererCdmManager : public RenderFrameObserver {
                       uint32 session_id,
                       media::MediaKeys::KeyError error_code,
                       uint32 system_code);
+
+  // CDM ID should be unique per renderer frame.
+  // TODO(xhwang): Use uint32 to prevent undefined overflow behavior.
+  int next_cdm_id_;
 
   // CDM ID to ProxyMediaKeys mapping.
   std::map<int, ProxyMediaKeys*> proxy_media_keys_map_;

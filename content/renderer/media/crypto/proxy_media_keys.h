@@ -65,13 +65,9 @@ class ProxyMediaKeys : public media::MediaKeys {
   void InitializeCdm(const std::string& key_system,
                      const GURL& security_origin);
 
-  // CDM ID should be unique per renderer frame.
-  // TODO(xhwang): Use uint32 to prevent undefined overflow behavior.
-  // TODO(xhwang): Let the |manager_| generate CDM IDs.
-  static int next_cdm_id_;
-
   RendererCdmManager* manager_;
   int cdm_id_;
+
   media::SessionCreatedCB session_created_cb_;
   media::SessionMessageCB session_message_cb_;
   media::SessionReadyCB session_ready_cb_;
