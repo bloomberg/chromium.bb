@@ -15,10 +15,7 @@
 #include "base/scoped_observer.h"
 #include "base/timer/timer.h"
 #include "chrome/common/extensions/api/alarms.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
-#include "extensions/browser/extension_function.h"
 #include "extensions/browser/extension_registry_observer.h"
 
 namespace base {
@@ -56,7 +53,6 @@ struct Alarm {
 // Manages the currently pending alarms for every extension in a profile.
 // There is one manager per virtual Profile.
 class AlarmManager : public BrowserContextKeyedAPI,
-                     public content::NotificationObserver,
                      public ExtensionRegistryObserver,
                      public base::SupportsWeakPtr<AlarmManager> {
  public:
@@ -204,14 +200,11 @@ class AlarmManager : public BrowserContextKeyedAPI,
   // alarm data has been synced from the storage.
   void RunWhenReady(const std::string& extension_id, const ReadyAction& action);
 
-  // NotificationObserver:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
-
-  // Overridden from extensions::ExtensionRegistryObserver.
+  // ExtensionRegistryObserver implementation.
   virtual void OnExtensionLoaded(content::BrowserContext* browser_context,
                                  const Extension* extension) OVERRIDE;
+  virtual void OnExtensionUninstalled(content::BrowserContext* browser_context,
+                                      const Extension* extension) OVERRIDE;
 
   // BrowserContextKeyedAPI implementation.
   static const char* service_name() {
@@ -221,7 +214,6 @@ class AlarmManager : public BrowserContextKeyedAPI,
 
   content::BrowserContext* const browser_context_;
   scoped_ptr<base::Clock> clock_;
-  content::NotificationRegistrar registrar_;
   scoped_ptr<Delegate> delegate_;
 
   // Listen to extension load notifications.

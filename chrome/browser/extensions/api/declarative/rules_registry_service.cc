@@ -48,9 +48,6 @@ RulesRegistryService::RulesRegistryService(content::BrowserContext* context)
       profile_(Profile::FromBrowserContext(context)) {
   if (profile_) {
     extension_registry_observer_.Add(ExtensionRegistry::Get(profile_));
-    registrar_.Add(this,
-                   chrome::NOTIFICATION_EXTENSION_UNINSTALLED_DEPRECATED,
-                   content::Source<Profile>(profile_->GetOriginalProfile()));
     registrar_.Add(
         this, content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
         content::NotificationService::AllBrowserContextsAndSources());
@@ -216,28 +213,22 @@ void RulesRegistryService::OnExtensionUnloaded(
   NotifyRegistriesHelper(&RulesRegistry::OnExtensionUnloaded, extension->id());
 }
 
+void RulesRegistryService::OnExtensionUninstalled(
+    content::BrowserContext* browser_context,
+    const Extension* extension) {
+  NotifyRegistriesHelper(&RulesRegistry::OnExtensionUninstalled,
+                         extension->id());
+}
+
 void RulesRegistryService::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  switch (type) {
-    case chrome::NOTIFICATION_EXTENSION_UNINSTALLED_DEPRECATED: {
-      const Extension* extension =
-          content::Details<const Extension>(details).ptr();
-      NotifyRegistriesHelper(&RulesRegistry::OnExtensionUninstalled,
-                             extension->id());
-      break;
-    }
-    case content::NOTIFICATION_RENDERER_PROCESS_TERMINATED: {
-      content::RenderProcessHost* process =
-          content::Source<content::RenderProcessHost>(source).ptr();
-      RemoveWebViewRulesRegistries(process->GetID());
-      break;
-    }
-    default:
-      NOTREACHED();
-      break;
-  }
+  DCHECK_EQ(content::NOTIFICATION_RENDERER_PROCESS_TERMINATED, type);
+
+  content::RenderProcessHost* process =
+      content::Source<content::RenderProcessHost>(source).ptr();
+  RemoveWebViewRulesRegistries(process->GetID());
 }
 
 }  // namespace extensions

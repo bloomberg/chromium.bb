@@ -10,7 +10,7 @@
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/chrome_notification_types.h"
+#include "base/scoped_observer.h"
 #include "chrome/browser/extensions/api/storage/policy_value_store.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/policy/profile_policy_connector_factory.h"
@@ -23,13 +23,10 @@
 #include "components/policy/core/common/schema_map.h"
 #include "components/policy/core/common/schema_registry.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
-#include "content/public/browser/notification_source.h"
 #include "extensions/browser/api/storage/settings_storage_factory.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/browser/extension_registry_observer.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/value_store/value_store_change.h"
 #include "extensions/common/api/storage.h"
@@ -44,6 +41,7 @@ using content::BrowserContext;
 using content::BrowserThread;
 
 namespace extensions {
+class ExtensionRegistry;
 
 namespace storage = core_api::storage;
 
@@ -67,17 +65,22 @@ const char kLegacyBrowserSupportExtensionId[] =
 // to fetch cloud policy for those extensions, and allows its providers to
 // selectively load only extension policy that has users.
 class ManagedValueStoreCache::ExtensionTracker
-    : public content::NotificationObserver {
+    : public ExtensionRegistryObserver {
  public:
   explicit ExtensionTracker(Profile* profile);
   virtual ~ExtensionTracker() {}
 
-  // NotificationObserver implementation:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
-
  private:
+  // ExtensionRegistryObserver implementation.
+  virtual void OnExtensionWillBeInstalled(
+      content::BrowserContext* browser_context,
+      const Extension* extension,
+      bool is_update,
+      bool from_ephemeral,
+      const std::string& old_name) OVERRIDE;
+  virtual void OnExtensionUninstalled(content::BrowserContext* browser_context,
+                                      const Extension* extension) OVERRIDE;
+
   // Handler for the signal from ExtensionSystem::ready().
   void OnExtensionsReady();
 
@@ -93,7 +96,8 @@ class ManagedValueStoreCache::ExtensionTracker
   void Register(const policy::ComponentMap* components);
 
   Profile* profile_;
-  content::NotificationRegistrar registrar_;
+  ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
+      extension_registry_observer_;
   policy::SchemaRegistry* schema_registry_;
   base::WeakPtrFactory<ExtensionTracker> weak_factory_;
 
@@ -102,16 +106,11 @@ class ManagedValueStoreCache::ExtensionTracker
 
 ManagedValueStoreCache::ExtensionTracker::ExtensionTracker(Profile* profile)
     : profile_(profile),
+      extension_registry_observer_(this),
       schema_registry_(
           policy::SchemaRegistryServiceFactory::GetForContext(profile)),
       weak_factory_(this) {
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_EXTENSION_INSTALLED_DEPRECATED,
-                 content::Source<Profile>(profile_));
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_EXTENSION_UNINSTALLED_DEPRECATED,
-                 content::Source<Profile>(profile_));
-
+  extension_registry_observer_.Add(ExtensionRegistry::Get(profile_));
   // Load schemas when the extension system is ready. It might be ready now.
   ExtensionSystem::Get(profile_)->ready().Post(
       FROM_HERE,
@@ -119,37 +118,31 @@ ManagedValueStoreCache::ExtensionTracker::ExtensionTracker(Profile* profile)
                  weak_factory_.GetWeakPtr()));
 }
 
-void ManagedValueStoreCache::ExtensionTracker::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
+void ManagedValueStoreCache::ExtensionTracker::OnExtensionWillBeInstalled(
+    content::BrowserContext* browser_context,
+    const Extension* extension,
+    bool is_update,
+    bool from_ephemeral,
+    const std::string& old_name) {
   // Some extensions are installed on the first run before the ExtensionSystem
   // becomes ready. Wait until all of them are ready before registering the
   // schemas of managed extensions, so that the policy loaders are reloaded at
   // most once.
   if (!ExtensionSystem::Get(profile_)->ready().is_signaled())
     return;
+  scoped_ptr<ExtensionSet> added(new ExtensionSet);
+  added->Insert(extension);
+  LoadSchemas(added.Pass());
+}
 
-  switch (type) {
-    case chrome::NOTIFICATION_EXTENSION_INSTALLED_DEPRECATED: {
-      scoped_ptr<ExtensionSet> added(new ExtensionSet);
-      added->Insert(
-          content::Details<InstalledExtensionInfo>(details)->extension);
-      LoadSchemas(added.Pass());
-      break;
-    }
-    case chrome::NOTIFICATION_EXTENSION_UNINSTALLED_DEPRECATED: {
-      const Extension* removed =
-          content::Details<const Extension>(details).ptr();
-      if (removed && UsesManagedStorage(removed)) {
-        schema_registry_->UnregisterComponent(policy::PolicyNamespace(
-            policy::POLICY_DOMAIN_EXTENSIONS, removed->id()));
-      }
-      break;
-    }
-    default:
-      NOTREACHED();
-      return;
+void ManagedValueStoreCache::ExtensionTracker::OnExtensionUninstalled(
+    content::BrowserContext* browser_context,
+    const Extension* extension) {
+  if (!ExtensionSystem::Get(profile_)->ready().is_signaled())
+    return;
+  if (extension && UsesManagedStorage(extension)) {
+    schema_registry_->UnregisterComponent(policy::PolicyNamespace(
+        policy::POLICY_DOMAIN_EXTENSIONS, extension->id()));
   }
 }
 

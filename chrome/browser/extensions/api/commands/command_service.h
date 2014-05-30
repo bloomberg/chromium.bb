@@ -8,12 +8,10 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/scoped_observer.h"
 #include "chrome/common/extensions/command.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
-#include "content/public/browser/notification_source.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
+#include "extensions/browser/extension_registry_observer.h"
 #include "extensions/common/extension.h"
 
 class Profile;
@@ -35,12 +33,13 @@ class PrefRegistrySyncable;
 }
 
 namespace extensions {
+class ExtensionRegistry;
 
 // This service keeps track of preferences related to extension commands
 // (assigning initial keybindings on install and removing them on deletion
 // and answers questions related to which commands are active.
 class CommandService : public BrowserContextKeyedAPI,
-                       public content::NotificationObserver {
+                       public ExtensionRegistryObserver {
  public:
   // An enum specifying whether to fetch all extension commands or only active
   // ones.
@@ -80,12 +79,11 @@ class CommandService : public BrowserContextKeyedAPI,
 
   // Returns true if |extension| is permitted to and does remove the bookmark
   // shortcut key.
-  static bool RemovesBookmarkShortcut(const extensions::Extension* extension);
+  static bool RemovesBookmarkShortcut(const Extension* extension);
 
   // Returns true if |extension| is permitted to and does remove the bookmark
   // open pages shortcut key.
-  static bool RemovesBookmarkOpenPagesShortcut(
-      const extensions::Extension* extension);
+  static bool RemovesBookmarkOpenPagesShortcut(const Extension* extension);
 
   // Gets the command (if any) for the browser action of an extension given
   // its |extension_id|. The function consults the master list to see if
@@ -95,7 +93,7 @@ class CommandService : public BrowserContextKeyedAPI,
   // NULL) contains whether |command| is active.
   bool GetBrowserActionCommand(const std::string& extension_id,
                                QueryType type,
-                               extensions::Command* command,
+                               Command* command,
                                bool* active) const;
 
   // Gets the command (if any) for the page action of an extension given
@@ -106,7 +104,7 @@ class CommandService : public BrowserContextKeyedAPI,
   // NULL) contains whether |command| is active.
   bool GetPageActionCommand(const std::string& extension_id,
                             QueryType type,
-                            extensions::Command* command,
+                            Command* command,
                             bool* active) const;
 
   // Gets the active named commands (if any) for the extension with
@@ -117,7 +115,7 @@ class CommandService : public BrowserContextKeyedAPI,
   bool GetNamedCommands(const std::string& extension_id,
                         QueryType type,
                         CommandScope scope,
-                        extensions::CommandMap* command_map) const;
+                        CommandMap* command_map) const;
 
   // Records a keybinding |accelerator| as active for an extension with id
   // |extension_id| and command with the name |command_name|. If
@@ -164,17 +162,12 @@ class CommandService : public BrowserContextKeyedAPI,
   // its type if non-NULL.
   bool GetBoundExtensionCommand(const std::string& extension_id,
                                 const ui::Accelerator& accelerator,
-                                extensions::Command* command,
+                                Command* command,
                                 ExtensionCommandType* command_type) const;
 
   // Returns true if |extension| is permitted to and does override the bookmark
   // shortcut key.
-  bool OverridesBookmarkShortcut(const extensions::Extension* extension) const;
-
-  // Overridden from content::NotificationObserver.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+  bool OverridesBookmarkShortcut(const Extension* extension) const;
 
  private:
   friend class BrowserContextKeyedAPIFactory<CommandService>;
@@ -185,24 +178,34 @@ class CommandService : public BrowserContextKeyedAPI,
   }
   static const bool kServiceRedirectedInIncognito = true;
 
+  // ExtensionRegistryObserver.
+  virtual void OnExtensionWillBeInstalled(
+      content::BrowserContext* browser_context,
+      const Extension* extension,
+      bool is_update,
+      bool from_ephemeral,
+      const std::string& old_name) OVERRIDE;
+  virtual void OnExtensionUninstalled(content::BrowserContext* browser_context,
+                                      const Extension* extension) OVERRIDE;
+
   // Assigns initial keybinding for a given |extension|'s page action, browser
   // action and named commands. In each case, if the suggested keybinding is
   // free, it will be taken by this extension. If not, that keybinding request
   // is ignored. |user_pref| is the PrefService used to record the new
   // keybinding assignment.
-  void AssignInitialKeybindings(const extensions::Extension* extension);
+  void AssignInitialKeybindings(const Extension* extension);
 
   bool GetExtensionActionCommand(const std::string& extension_id,
                                  QueryType query_type,
-                                 extensions::Command* command,
+                                 Command* command,
                                  bool* active,
                                  ExtensionCommandType action_type) const;
 
-  // The content notification registrar for listening to extension events.
-  content::NotificationRegistrar registrar_;
-
   // A weak pointer to the profile we are associated with. Not owned by us.
   Profile* profile_;
+
+  ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
+      extension_registry_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(CommandService);
 };

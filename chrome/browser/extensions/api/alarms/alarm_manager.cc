@@ -13,11 +13,9 @@
 #include "base/time/time.h"
 #include "base/value_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/state_store.h"
 #include "chrome/common/extensions/api/alarms.h"
-#include "content/public/browser/notification_service.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
@@ -91,7 +89,6 @@ scoped_ptr<base::ListValue> AlarmsToValue(const std::vector<Alarm>& alarms) {
   return list.Pass();
 }
 
-
 }  // namespace
 
 // AlarmManager
@@ -102,9 +99,6 @@ AlarmManager::AlarmManager(content::BrowserContext* context)
       delegate_(new DefaultAlarmDelegate(context)),
       extension_registry_observer_(this) {
   extension_registry_observer_.Add(ExtensionRegistry::Get(browser_context_));
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_EXTENSION_UNINSTALLED_DEPRECATED,
-                 content::Source<content::BrowserContext>(browser_context_));
 
   StateStore* storage = ExtensionSystem::Get(browser_context_)->state_store();
   if (storage)
@@ -423,12 +417,9 @@ void AlarmManager::OnExtensionLoaded(content::BrowserContext* browser_context,
   }
 }
 
-void AlarmManager::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  DCHECK_EQ(type, chrome::NOTIFICATION_EXTENSION_UNINSTALLED_DEPRECATED);
-  const Extension* extension = content::Details<const Extension>(details).ptr();
+void AlarmManager::OnExtensionUninstalled(
+    content::BrowserContext* browser_context,
+    const Extension* extension) {
   RemoveAllAlarms(extension->id(), base::Bind(RemoveAllOnUninstallCallback));
 }
 
