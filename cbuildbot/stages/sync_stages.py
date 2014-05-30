@@ -763,7 +763,7 @@ class PreCQLauncherStage(SyncStage):
   # The number of minutes we allow before considering an in-flight
   # job failed. If this window isn't hit in a given launcher run, the window
   # will start again from scratch in the next run.
-  INFLIGHT_DELAY = 90
+  INFLIGHT_DELAY = 120
 
   # The maximum number of patches we will allow in a given trybot run. This is
   # needed because our trybot infrastructure can only handle so many patches at
