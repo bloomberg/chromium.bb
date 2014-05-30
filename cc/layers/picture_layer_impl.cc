@@ -862,26 +862,28 @@ void PictureLayerImpl::MarkVisibleResourcesAsRequired() const {
   const PictureLayerTiling* twin_high_res = NULL;
   const PictureLayerTiling* twin_low_res = NULL;
 
-  // As a simplification, only allow activating to skip twin tiles that the
-  // active layer is also missing when both this layer and its twin have 2
-  // tilings (high and low).  This avoids having to iterate/track coverage of
-  // non-ideal tilings during the last draw call on the active layer.
-  if (high_res && low_res && tilings_->num_tilings() == 2 &&
-      twin_layer_ && twin_layer_->tilings_->num_tilings() == 2) {
-    twin_low_res = GetTwinTiling(low_res);
-    if (twin_low_res)
-      twin_high_res = GetTwinTiling(high_res);
-  }
-  // If this layer and its twin have different bounds or transforms, then don't
-  // compare them and only allow activating to high res tiles, since tiles on
-  // each layer will occupy different areas of the screen.
-  if (!twin_high_res || !twin_low_res ||
-      twin_layer_->layer_tree_impl()->RequiresHighResToDraw() ||
-      bounds() != twin_layer_->bounds() ||
-      draw_properties().screen_space_transform !=
-          twin_layer_->draw_properties().screen_space_transform) {
-    twin_high_res = NULL;
-    twin_low_res = NULL;
+  if (twin_layer_) {
+    // As a simplification, only allow activating to skip twin tiles that the
+    // active layer is also missing when both this layer and its twin have
+    // "simple" sets of tilings: only 2 tilings (high and low) or only 1 high
+    // res tiling. This avoids having to iterate/track coverage of non-ideal
+    // tilings during the last draw call on the active layer.
+    if (tilings_->num_tilings() <= 2 &&
+        twin_layer_->tilings_->num_tilings() <= tilings_->num_tilings()) {
+      twin_low_res = low_res ? GetTwinTiling(low_res) : NULL;
+      twin_high_res = high_res ? GetTwinTiling(high_res) : NULL;
+    }
+
+    // If this layer and its twin have different transforms, then don't compare
+    // them and only allow activating to high res tiles, since tiles on each
+    // layer will be in different places on screen.
+    if (twin_layer_->layer_tree_impl()->RequiresHighResToDraw() ||
+        bounds() != twin_layer_->bounds() ||
+        draw_properties().screen_space_transform !=
+            twin_layer_->draw_properties().screen_space_transform) {
+      twin_high_res = NULL;
+      twin_low_res = NULL;
+    }
   }
 
   // As a second pass, mark as required any visible high res tiles not filled in
@@ -891,9 +893,11 @@ void PictureLayerImpl::MarkVisibleResourcesAsRequired() const {
     // As an optional third pass, if a high res tile was skipped because its
     // twin was also missing, then fall back to mark low res tiles as required
     // in case the active twin is substituting those for missing high res
-    // content.
-    MarkVisibleTilesAsRequired(
-        low_res, twin_low_res, contents_scale_x(), rect, missing_region);
+    // content. Only suitable, when low res is enabled.
+    if (low_res) {
+      MarkVisibleTilesAsRequired(
+          low_res, twin_low_res, contents_scale_x(), rect, missing_region);
+    }
   }
 }
 
