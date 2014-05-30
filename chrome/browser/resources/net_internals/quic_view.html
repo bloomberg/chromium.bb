@@ -37,7 +37,7 @@
               <td jscontent="!!secure"></td>
               <td jscontent="version"></td>
               <td jscontent="peer_address"></td>
-              <td jscontent="connection_id"></td>
+              <td><a jsvalues=".href: '#events&q=type:QUIC_SESSION%20' + connection_id" jscontent="connection_id"></a></td>
               <td jscontent="open_streams"></td>
               <td jscontent="$this.active_streams && $this.active_streams.length > 0 ? $this.active_streams.join(', ') : 'None'"></td>
               <td jscontent="total_streams"></td>
