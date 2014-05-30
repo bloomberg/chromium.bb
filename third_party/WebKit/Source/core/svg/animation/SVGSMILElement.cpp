@@ -1247,6 +1247,9 @@ bool SVGSMILElement::progress(SMILTime elapsed, SVGSMILElement* resultElement, b
 void SVGSMILElement::notifyDependentsIntervalChanged()
 {
     ASSERT(m_intervalBegin.isFinite());
+    // |loopBreaker| is used to avoid infinite recursions which may be caused from:
+    // |notifyDependentsIntervalChanged| -> |createInstanceTimesFromSyncbase| -> |add{Begin,End}Time| -> |{begin,end}TimeChanged| -> |notifyDependentsIntervalChanged|
+    // |loopBreaker| is defined as a Persistent<HeapHashSet<Member<SVGSMILElement> > >. This won't cause leaks because it is guaranteed to be empty after the root |notifyDependentsIntervalChanged| has exited.
     DEFINE_STATIC_LOCAL(OwnPtrWillBePersistent<WillBeHeapHashSet<RawPtrWillBeMember<SVGSMILElement> > >, loopBreaker, (adoptPtrWillBeNoop(new WillBeHeapHashSet<RawPtrWillBeMember<SVGSMILElement> >())));
     if (!loopBreaker->add(this).isNewEntry)
         return;
