@@ -140,7 +140,7 @@ void ResetScreenHandler::ChooseAndApplyShowScenario() {
 
 void ResetScreenHandler::OnRollbackFlagFileCheckDone(
     scoped_ptr<bool> file_exists) {
-  if (!file_exists && !CommandLine::ForCurrentProcess()->HasSwitch(
+  if (!(*file_exists) && !CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableRollbackOption)) {
     rollback_available_ = false;
     ShowWithParams();
