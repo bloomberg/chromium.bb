@@ -7,28 +7,37 @@
 
 #include <string>
 
+#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_piece.h"
 #include "net/base/net_export.h"
 
 namespace net {
 
-// ChannelIDSigner is an abstract interface that implements signing by
-// ChannelID keys.
-class NET_EXPORT_PRIVATE ChannelIDSigner {
+// ChannelIDKey is an interface that supports signing with and serializing a
+// ChannelID key.
+class NET_EXPORT_PRIVATE ChannelIDKey {
  public:
-  virtual ~ChannelIDSigner() { }
+  virtual ~ChannelIDKey() { }
 
-  // Sign signs |signed_data| using the ChannelID key for |hostname| and puts
-  // the serialized public key into |out_key| and the signature into
-  // |out_signature|. It returns true on success.
-  virtual bool Sign(const std::string& hostname,
-                    base::StringPiece signed_data,
-                    std::string* out_key,
+  // Sign signs |signed_data| using the ChannelID private key and puts the
+  // signature into |out_signature|. It returns true on success.
+  virtual bool Sign(base::StringPiece signed_data,
                     std::string* out_signature) = 0;
 
-  // GetKeyForHostname returns the ChannelID key that |ChannelIDSigner| will use
-  // for the given hostname.
-  virtual std::string GetKeyForHostname(const std::string& hostname) = 0;
+  // SerializeKey returns the serialized ChannelID public key.
+  virtual std::string SerializeKey() = 0;
+};
+
+// ChannelIDSource is an abstract interface by which a QUIC client can obtain
+// a ChannelIDKey for a given hostname.
+class NET_EXPORT_PRIVATE ChannelIDSource {
+ public:
+  virtual ~ChannelIDSource() {}
+
+  // GetChannelIDKey looks up the ChannelIDKey for |hostname|. On success it
+  // returns true and stores the ChannelIDKey in |*channel_id|.
+  virtual bool GetChannelIDKey(const std::string& hostname,
+                               scoped_ptr<ChannelIDKey>* channel_id_key) = 0;
 };
 
 // ChannelIDVerifier verifies ChannelID signatures.

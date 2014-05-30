@@ -220,16 +220,18 @@ TEST(ChannelIDTest, VerifyKnownAnswerTest) {
 }
 
 TEST(ChannelIDTest, SignAndVerify) {
-  scoped_ptr<ChannelIDSigner> signer(
-      CryptoTestUtils::ChannelIDSignerForTesting());
+  scoped_ptr<ChannelIDSource> source(
+      CryptoTestUtils::ChannelIDSourceForTesting());
 
   const string signed_data = "signed data";
   const string hostname = "foo.example.com";
-  string key, signature;
-  ASSERT_TRUE(signer->Sign(hostname, signed_data, &key, &signature));
+  scoped_ptr<ChannelIDKey> channel_id_key;
+  ASSERT_TRUE(source->GetChannelIDKey(hostname, &channel_id_key));
 
-  EXPECT_EQ(key, signer->GetKeyForHostname(hostname));
+  string signature;
+  ASSERT_TRUE(channel_id_key->Sign(signed_data, &signature));
 
+  string key = channel_id_key->SerializeKey();
   EXPECT_TRUE(ChannelIDVerifier::Verify(key, signed_data, signature));
 
   EXPECT_FALSE(ChannelIDVerifier::Verify("a" + key, signed_data, signature));

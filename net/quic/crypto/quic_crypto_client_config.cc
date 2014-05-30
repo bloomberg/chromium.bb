@@ -444,7 +444,7 @@ QuicErrorCode QuicCryptoClientConfig::FillClientHello(
   out->SetStringPiece(kPUBS, out_params->client_key_exchange->public_value());
 
   bool do_channel_id = false;
-  if (channel_id_signer_.get()) {
+  if (channel_id_source_.get()) {
     const QuicTag* their_proof_demands;
     size_t num_their_proof_demands;
     if (scfg->GetTaglist(kPDMD, &their_proof_demands,
@@ -478,9 +478,15 @@ QuicErrorCode QuicCryptoClientConfig::FillClientHello(
                       client_hello_serialized.length());
     hkdf_input.append(cached->server_config());
 
-    string key, signature;
-    if (!channel_id_signer_->Sign(server_id.host(), hkdf_input,
-                                  &key, &signature)) {
+    scoped_ptr<ChannelIDKey> channel_id_key;
+    if (!channel_id_source_->GetChannelIDKey(server_id.host(),
+                                             &channel_id_key)) {
+      *error_details = "Channel ID lookup failed";
+      return QUIC_INVALID_CHANNEL_ID_SIGNATURE;
+    }
+    string key = channel_id_key->SerializeKey();
+    string signature;
+    if (!channel_id_key->Sign(hkdf_input, &signature)) {
       *error_details = "Channel ID signature failed";
       return QUIC_INVALID_CHANNEL_ID_SIGNATURE;
     }
@@ -683,12 +689,12 @@ void QuicCryptoClientConfig::SetProofVerifier(ProofVerifier* verifier) {
   proof_verifier_.reset(verifier);
 }
 
-ChannelIDSigner* QuicCryptoClientConfig::channel_id_signer() const {
-  return channel_id_signer_.get();
+ChannelIDSource* QuicCryptoClientConfig::channel_id_source() const {
+  return channel_id_source_.get();
 }
 
-void QuicCryptoClientConfig::SetChannelIDSigner(ChannelIDSigner* signer) {
-  channel_id_signer_.reset(signer);
+void QuicCryptoClientConfig::SetChannelIDSource(ChannelIDSource* source) {
+  channel_id_source_.reset(source);
 }
 
 void QuicCryptoClientConfig::InitializeFrom(

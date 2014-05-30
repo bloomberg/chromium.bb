@@ -20,31 +20,18 @@ namespace net {
 
 namespace test {
 
-// TODO(rtenneti): Implement NSS support ChannelIDSigner. Convert Sign() to be
-// asynchronous using completion callback. After porting TestChannelIDSigner,
-// implement real ChannelIDSigner.
-class TestChannelIDSigner : public ChannelIDSigner {
+// TODO(rtenneti): Convert Sign() to be asynchronous using a completion
+// callback.
+class TestChannelIDKey : public ChannelIDKey {
  public:
-  virtual ~TestChannelIDSigner() {
-    STLDeleteValues(&hostname_to_key_);
-  }
+  explicit TestChannelIDKey(crypto::ECPrivateKey* ecdsa_keypair)
+      : ecdsa_keypair_(ecdsa_keypair) {}
+  virtual ~TestChannelIDKey() {}
 
-  // ChannelIDSigner implementation.
+  // ChannelIDKey implementation.
 
-  virtual bool Sign(const string& hostname,
-                    StringPiece signed_data,
-                    string* out_key,
+  virtual bool Sign(StringPiece signed_data,
                     string* out_signature) OVERRIDE {
-    crypto::ECPrivateKey* ecdsa_keypair = HostnameToKey(hostname);
-    if (!ecdsa_keypair) {
-      return false;
-    }
-
-    *out_key = SerializeKey(ecdsa_keypair->public_key());
-    if (out_key->empty()) {
-      return false;
-    }
-
     unsigned char hash_buf[SHA256_LENGTH];
     SECItem hash_item = { siBuffer, hash_buf, sizeof(hash_buf) };
 
@@ -77,19 +64,48 @@ class TestChannelIDSigner : public ChannelIDSigner {
         kSignatureLength
     };
 
-    if (PK11_Sign(ecdsa_keypair->key(), &sig_item, &hash_item) != SECSuccess) {
+    if (PK11_Sign(ecdsa_keypair_->key(), &sig_item, &hash_item) != SECSuccess) {
       return false;
     }
     *out_signature = signature;
     return true;
   }
 
-  virtual string GetKeyForHostname(const string& hostname) OVERRIDE {
-    crypto::ECPrivateKey* ecdsa_keypair = HostnameToKey(hostname);
-    if (!ecdsa_keypair) {
+  virtual string SerializeKey() OVERRIDE {
+    static const unsigned int kExpectedKeyLength = 65;
+
+    const SECKEYPublicKey* public_key = ecdsa_keypair_->public_key();
+    // public_key->u.ec.publicValue is an ANSI X9.62 public key which, for
+    // a P-256 key, is 0x04 (meaning uncompressed) followed by the x and y field
+    // elements as 32-byte, big-endian numbers.
+
+    const unsigned char* const data = public_key->u.ec.publicValue.data;
+    const unsigned int len = public_key->u.ec.publicValue.len;
+    if (len != kExpectedKeyLength || data[0] != 0x04) {
       return "";
     }
-    return SerializeKey(ecdsa_keypair->public_key());
+
+    string key(reinterpret_cast<const char*>(data + 1), kExpectedKeyLength - 1);
+    return key;
+  }
+
+ private:
+  crypto::ECPrivateKey* ecdsa_keypair_;
+};
+
+class TestChannelIDSource : public ChannelIDSource {
+ public:
+  virtual ~TestChannelIDSource() {
+    STLDeleteValues(&hostname_to_key_);
+  }
+
+  // ChannelIDSource implementation.
+
+  virtual bool GetChannelIDKey(
+      const string& hostname,
+      scoped_ptr<ChannelIDKey>* channel_id_key) OVERRIDE {
+    channel_id_key->reset(new TestChannelIDKey(HostnameToKey(hostname)));
+    return true;
   }
 
  private:
@@ -109,28 +125,13 @@ class TestChannelIDSigner : public ChannelIDSigner {
     return keypair;
   }
 
-  static string SerializeKey(const SECKEYPublicKey* public_key) {
-    // public_key->u.ec.publicValue is an ANSI X9.62 public key which, for
-    // a P-256 key, is 0x04 (meaning uncompressed) followed by the x and y field
-    // elements as 32-byte, big-endian numbers.
-    static const unsigned int kExpectedKeyLength = 65;
-
-    const unsigned char* const data = public_key->u.ec.publicValue.data;
-    const unsigned int len = public_key->u.ec.publicValue.len;
-    if (len != kExpectedKeyLength || data[0] != 0x04) {
-      return "";
-    }
-
-    string key(reinterpret_cast<const char*>(data + 1), kExpectedKeyLength - 1);
-    return key;
-  }
 
   HostnameToKeyMap hostname_to_key_;
 };
 
 // static
-ChannelIDSigner* CryptoTestUtils::ChannelIDSignerForTesting() {
-  return new TestChannelIDSigner();
+ChannelIDSource* CryptoTestUtils::ChannelIDSourceForTesting() {
+  return new TestChannelIDSource();
 }
 
 }  // namespace test

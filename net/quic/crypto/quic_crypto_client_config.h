@@ -18,7 +18,7 @@
 
 namespace net {
 
-class ChannelIDSigner;
+class ChannelIDSource;
 class CryptoHandshakeMessage;
 class ProofVerifier;
 class ProofVerifyDetails;
@@ -214,12 +214,13 @@ class NET_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
   // the server.
   void SetProofVerifier(ProofVerifier* verifier);
 
-  ChannelIDSigner* channel_id_signer() const;
+  ChannelIDSource* channel_id_source() const;
 
-  // SetChannelIDSigner sets a ChannelIDSigner that will be called when the
-  // server supports channel IDs to sign a message proving possession of the
-  // given ChannelID. This object takes ownership of |signer|.
-  void SetChannelIDSigner(ChannelIDSigner* signer);
+  // SetChannelIDSource sets a ChannelIDSource that will be called, when the
+  // server supports channel IDs, to obtain a channel ID for signing a message
+  // proving possession of the channel ID. This object takes ownership of
+  // |source|.
+  void SetChannelIDSource(ChannelIDSource* source);
 
   // Initialize the CachedState from |canonical_crypto_config| for the
   // |canonical_server_id| as the initial CachedState for |server_id|. We will
@@ -268,7 +269,7 @@ class NET_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
   std::vector<std::string> canoncial_suffixes_;
 
   scoped_ptr<ProofVerifier> proof_verifier_;
-  scoped_ptr<ChannelIDSigner> channel_id_signer_;
+  scoped_ptr<ChannelIDSource> channel_id_source_;
 
   // True if ECDSA should be disabled.
   bool disable_ecdsa_;

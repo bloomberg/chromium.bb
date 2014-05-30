@@ -30,31 +30,22 @@ namespace net {
 
 namespace test {
 
-class TestChannelIDSigner : public ChannelIDSigner {
+class TestChannelIDKey : public ChannelIDKey {
  public:
-  virtual ~TestChannelIDSigner() { }
+  explicit TestChannelIDKey(EVP_PKEY* ecdsa_key) : ecdsa_key_(ecdsa_key) {}
+  virtual ~TestChannelIDKey() { }
 
-  // ChannelIDSigner implementation.
+  // ChannelIDKey implementation.
 
-  virtual bool Sign(const string& hostname,
-                    StringPiece signed_data,
-                    string* out_key,
+  virtual bool Sign(StringPiece signed_data,
                     string* out_signature) OVERRIDE {
-    crypto::ScopedOpenSSL<EVP_PKEY, EVP_PKEY_free> ecdsa_key(
-        HostnameToKey(hostname));
-
-    *out_key = SerializeKey(ecdsa_key.get());
-    if (out_key->empty()) {
-      return false;
-    }
-
     EVP_MD_CTX md_ctx;
     EVP_MD_CTX_init(&md_ctx);
     crypto::ScopedOpenSSL<EVP_MD_CTX, EvpMdCtxCleanUp>
         md_ctx_cleanup(&md_ctx);
 
     if (EVP_DigestSignInit(&md_ctx, NULL, EVP_sha256(), NULL,
-                           ecdsa_key.get()) != 1) {
+                           ecdsa_key_.get()) != 1) {
       return false;
     }
 
@@ -94,10 +85,39 @@ class TestChannelIDSigner : public ChannelIDSigner {
     return true;
   }
 
-  virtual string GetKeyForHostname(const string& hostname) OVERRIDE {
-    crypto::ScopedOpenSSL<EVP_PKEY, EVP_PKEY_free> ecdsa_key(
-        HostnameToKey(hostname));
-    return SerializeKey(ecdsa_key.get());
+  virtual string SerializeKey() OVERRIDE {
+    // i2d_PublicKey will produce an ANSI X9.62 public key which, for a P-256
+    // key, is 0x04 (meaning uncompressed) followed by the x and y field
+    // elements as 32-byte, big-endian numbers.
+    static const int kExpectedKeyLength = 65;
+
+    int len = i2d_PublicKey(ecdsa_key_.get(), NULL);
+    if (len != kExpectedKeyLength) {
+      return "";
+    }
+
+    uint8 buf[kExpectedKeyLength];
+    uint8* derp = buf;
+    i2d_PublicKey(ecdsa_key_.get(), &derp);
+
+    return string(reinterpret_cast<char*>(buf + 1), kExpectedKeyLength - 1);
+  }
+
+ private:
+  crypto::ScopedOpenSSL<EVP_PKEY, EVP_PKEY_free> ecdsa_key_;
+};
+
+class TestChannelIDSource : public ChannelIDSource {
+ public:
+  virtual ~TestChannelIDSource() {}
+
+  // ChannelIDSource implementation.
+
+  virtual bool GetChannelIDKey(
+      const string& hostname,
+      scoped_ptr<ChannelIDKey>* channel_id_key) OVERRIDE {
+    channel_id_key->reset(new TestChannelIDKey(HostnameToKey(hostname)));
+    return true;
   }
 
  private:
@@ -143,29 +163,11 @@ class TestChannelIDSigner : public ChannelIDSigner {
 
     return pkey.release();
   }
-
-  static string SerializeKey(EVP_PKEY* key) {
-    // i2d_PublicKey will produce an ANSI X9.62 public key which, for a P-256
-    // key, is 0x04 (meaning uncompressed) followed by the x and y field
-    // elements as 32-byte, big-endian numbers.
-    static const int kExpectedKeyLength = 65;
-
-    int len = i2d_PublicKey(key, NULL);
-    if (len != kExpectedKeyLength) {
-      return "";
-    }
-
-    uint8 buf[kExpectedKeyLength];
-    uint8* derp = buf;
-    i2d_PublicKey(key, &derp);
-
-    return string(reinterpret_cast<char*>(buf + 1), kExpectedKeyLength - 1);
-  }
 };
 
 // static
-ChannelIDSigner* CryptoTestUtils::ChannelIDSignerForTesting() {
-  return new TestChannelIDSigner();
+ChannelIDSource* CryptoTestUtils::ChannelIDSourceForTesting() {
+  return new TestChannelIDSource();
 }
 
 }  // namespace test

@@ -152,11 +152,12 @@ class QuicClient : public EpollCallbackInterface,
     crypto_config_.SetProofVerifier(verifier);
   }
 
-  // SetChannelIDSigner sets a ChannelIDSigner that will be called when the
-  // server supports channel IDs to sign a message proving possession of the
-  // given ChannelID. This object takes ownership of |signer|.
-  void SetChannelIDSigner(ChannelIDSigner* signer) {
-    crypto_config_.SetChannelIDSigner(signer);
+  // SetChannelIDSource sets a ChannelIDSource that will be called, when the
+  // server supports channel IDs, to obtain a channel ID for signing a message
+  // proving possession of the channel ID. This object takes ownership of
+  // |source|.
+  void SetChannelIDSource(ChannelIDSource* source) {
+    crypto_config_.SetChannelIDSource(source);
   }
 
   void SetSupportedVersions(const QuicVersionVector& versions) {

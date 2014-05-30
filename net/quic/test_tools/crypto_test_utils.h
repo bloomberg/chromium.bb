@@ -19,7 +19,7 @@
 
 namespace net {
 
-class ChannelIDSigner;
+class ChannelIDSource;
 class CommonCertSets;
 class ProofSource;
 class ProofVerifier;
@@ -48,8 +48,7 @@ class CryptoTestUtils {
     bool dont_verify_certs;
 
     // If channel_id_enabled is true then the client will attempt to send a
-    // ChannelID. The key will be the same as is returned by
-    // ChannelIDSigner's |GetKeyForHostname|.
+    // ChannelID.
     bool channel_id_enabled;
   };
 
@@ -133,9 +132,9 @@ class CryptoTestUtils {
   static CryptoHandshakeMessage BuildMessage(const char* message_tag,
                                              va_list ap);
 
-  // ChannelIDSignerForTesting returns a ChannelIDSigner that generates keys
-  // deterministically based on the hostname given in the Sign call.
-  static ChannelIDSigner* ChannelIDSignerForTesting();
+  // ChannelIDSourceForTesting returns a ChannelIDSource that generates keys
+  // deterministically based on the hostname given in the GetChannelID call.
+  static ChannelIDSource* ChannelIDSourceForTesting();
 
  private:
   static void CompareClientAndServerKeys(QuicCryptoClientStream* client,
