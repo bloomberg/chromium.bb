@@ -807,10 +807,9 @@ void RenderProcessHostImpl::CreateMessageFilters() {
   }
 
 #if defined(ENABLE_WEBRTC)
-  p2p_socket_dispatcher_host_ = new P2PSocketDispatcherHost(
+  AddFilter(new P2PSocketDispatcherHost(
       resource_context,
-      browser_context->GetRequestContextForRenderProcess(GetID()));
-  AddFilter(p2p_socket_dispatcher_host_);
+      browser_context->GetRequestContextForRenderProcess(GetID())));
 #endif
 
   AddFilter(new TraceMessageFilter());
@@ -1508,30 +1507,6 @@ void RenderProcessHostImpl::DisableAecDump() {
 void RenderProcessHostImpl::SetWebRtcLogMessageCallback(
     base::Callback<void(const std::string&)> callback) {
   webrtc_log_message_callback_ = callback;
-}
-
-RenderProcessHostImpl::WebRtcStopRtpDumpCallback
-RenderProcessHostImpl::StartRtpDump(
-    bool incoming,
-    bool outgoing,
-    const WebRtcRtpPacketCallback& packet_callback) {
-  if (!p2p_socket_dispatcher_host_)
-    return WebRtcStopRtpDumpCallback();
-
-  BrowserThread::PostTask(BrowserThread::IO,
-                          FROM_HERE,
-                          base::Bind(&P2PSocketDispatcherHost::StartRtpDump,
-                                     p2p_socket_dispatcher_host_,
-                                     incoming,
-                                     outgoing,
-                                     packet_callback));
-
-  if (stop_rtp_dump_callback_.is_null()) {
-    stop_rtp_dump_callback_ =
-        base::Bind(&P2PSocketDispatcherHost::StopRtpDumpOnUIThread,
-                   p2p_socket_dispatcher_host_);
-  }
-  return stop_rtp_dump_callback_;
 }
 #endif
 
