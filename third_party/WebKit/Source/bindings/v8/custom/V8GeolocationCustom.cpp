@@ -82,15 +82,10 @@ static PassRefPtrWillBeRawPtr<PositionOptions> createPositionOptions(v8::Local<v
             succeeded = false;
             return nullptr;
         }
-        double timeoutDouble = timeoutNumber->Value();
-        // If the value is positive infinity, there's nothing to do.
-        if (!(std::isinf(timeoutDouble) && timeoutDouble > 0)) {
-            if (timeoutDouble <= 0) {
-                options->setTimeout(0);
-            } else {
-                options->setTimeout(toUInt32(timeoutValue, Clamp, exceptionState));
-            }
-        }
+        if (timeoutNumber->Value() <= 0)
+            options->setTimeout(0);
+        else
+            options->setTimeout(toUInt32(timeoutValue, Clamp, exceptionState));
     }
 
     v8::Local<v8::Value> maximumAgeValue = object->Get(v8AtomicString(isolate, "maximumAge"));
@@ -104,17 +99,10 @@ static PassRefPtrWillBeRawPtr<PositionOptions> createPositionOptions(v8::Local<v
             succeeded = false;
             return nullptr;
         }
-        double maximumAgeDouble = maximumAgeNumber->Value();
-        if (std::isinf(maximumAgeDouble) && maximumAgeDouble > 0) {
-            // If the value is positive infinity, clear maximumAge.
-            options->clearMaximumAge();
-        } else {
-            if (maximumAgeDouble <= 0) {
-                options->setMaximumAge(0);
-            } else {
-                options->setMaximumAge(toUInt32(maximumAgeValue, Clamp, exceptionState));
-            }
-        }
+        if (maximumAgeNumber->Value() <= 0)
+            options->setMaximumAge(0);
+        else
+            options->setMaximumAge(toUInt32(maximumAgeValue, Clamp, exceptionState));
     }
 
     return options.release();

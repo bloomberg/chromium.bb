@@ -28,6 +28,7 @@
 
 #include "platform/heap/Handle.h"
 #include "wtf/RefCounted.h"
+#include <limits.h>
 
 namespace WebCore {
 
@@ -38,43 +39,36 @@ public:
 
     bool enableHighAccuracy() const { return m_highAccuracy; }
     void setEnableHighAccuracy(bool enable) { m_highAccuracy = enable; }
-    bool hasTimeout() const { return m_hasTimeout; }
     unsigned timeout() const
     {
-        ASSERT(hasTimeout());
         return m_timeout;
     }
     void setTimeout(unsigned timeout)
     {
-        m_hasTimeout = true;
         m_timeout = timeout;
     }
-    bool hasMaximumAge() const { return m_hasMaximumAge; }
     unsigned maximumAge() const
     {
-        ASSERT(hasMaximumAge());
         return m_maximumAge;
     }
-    void clearMaximumAge() { m_hasMaximumAge = false; }
     void setMaximumAge(unsigned age)
     {
-        m_hasMaximumAge = true;
         m_maximumAge = age;
     }
 
 private:
     PositionOptions()
         : m_highAccuracy(false)
-        , m_hasTimeout(false)
+        , m_maximumAge(0)
+        , m_timeout(std::numeric_limits<unsigned>::max())
+
     {
         setMaximumAge(0);
     }
 
     bool m_highAccuracy;
-    bool m_hasTimeout;
-    unsigned m_timeout;
-    bool m_hasMaximumAge;
-    unsigned m_maximumAge;
+    int m_maximumAge;
+    int m_timeout;
 };
 
 } // namespace WebCore

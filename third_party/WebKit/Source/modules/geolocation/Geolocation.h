@@ -117,17 +117,13 @@ private:
         void runSuccessCallback(Geoposition*);
         void runErrorCallback(PositionError*);
 
-        // Starts the timer if a timeout was specified on the options.
-        void startTimerIfNeeded();
-
+        void startTimer();
         void stopTimer();
 
         // Runs the error callback if there is a fatal error. Otherwise, if a
         // cached position must be used, registers itself for receiving one.
         // Otherwise, the notifier has expired, and its error callback is run.
         void timerFired(Timer<GeoNotifier>*);
-
-        bool hasZeroTimeout() const;
 
     private:
         GeoNotifier(Geolocation*, PassOwnPtr<PositionCallback>, PassOwnPtr<PositionErrorCallback>, PassRefPtrWillBeRawPtr<PositionOptions>);
