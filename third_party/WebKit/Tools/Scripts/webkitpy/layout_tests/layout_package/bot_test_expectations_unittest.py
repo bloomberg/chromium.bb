@@ -42,7 +42,7 @@ class BotTestExpectationsTest(unittest.TestCase):
 
     def _assert_is_flaky(self, results_string, should_be_flaky):
         results_json = self._results_json_from_test_data({})
-        expectations = bot_test_expectations.BotTestExpectations(results_json)
+        expectations = bot_test_expectations.BotTestExpectations(results_json, set('test'))
         length_encoded = self._results_from_string(results_string)['results']
         num_actual_results = len(expectations._flaky_types_in_results(length_encoded, only_ignore_very_flaky=True))
         if should_be_flaky:
@@ -80,12 +80,12 @@ class BotTestExpectationsTest(unittest.TestCase):
 
     def _assert_expectations(self, test_data, expectations_string, only_ignore_very_flaky):
         results_json = self._results_json_from_test_data(test_data)
-        expectations = bot_test_expectations.BotTestExpectations(results_json)
+        expectations = bot_test_expectations.BotTestExpectations(results_json, set('test'))
         self.assertEqual(expectations.flakes_by_path(only_ignore_very_flaky), expectations_string)
 
     def _assert_unexpected_results(self, test_data, expectations_string):
         results_json = self._results_json_from_test_data(test_data)
-        expectations = bot_test_expectations.BotTestExpectations(results_json)
+        expectations = bot_test_expectations.BotTestExpectations(results_json, set('test'))
         self.assertEqual(expectations.unexpected_results_by_path(), expectations_string)
 
     def test_basic(self):

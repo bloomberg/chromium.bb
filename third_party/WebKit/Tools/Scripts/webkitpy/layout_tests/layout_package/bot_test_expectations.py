@@ -135,16 +135,21 @@ class BotTestExpectations(object):
     # FIXME: Get this from the json instead of hard-coding it.
     RESULT_TYPES_TO_IGNORE = ['N', 'X', 'Y']
 
-    def __init__(self, results_json):
+    # specifiers arg is used in unittests to avoid the static dependency on builders.
+    def __init__(self, results_json, specifiers=None):
         self.results_json = results_json
+        self.specifiers = specifiers or set(builders.specifiers_for_builder(results_json.builder_name))
 
     def _line_from_test_and_flaky_types_and_bug_urls(self, test_path, flaky_types, bug_urls):
         line = TestExpectationLine()
         line.original_string = test_path
         line.name = test_path
         line.filename = test_path
-        line.specifiers = bug_urls if bug_urls else ""
+        line.path = test_path  # FIXME: Should this be normpath?
+        line.matching_tests = [test_path]
+        line.bugs = bug_urls if bug_urls else ["Bug(gardener)"]
         line.expectations = sorted(map(self.results_json.expectation_for_type, flaky_types))
+        line.specifiers = self.specifiers
         return line
 
     def flakes_by_path(self, only_ignore_very_flaky):
@@ -203,11 +208,11 @@ class BotTestExpectations(object):
             unexpected_results_by_path[test_path] = sorted(map(exp_to_string, expectations))
         return unexpected_results_by_path
 
-    def expectation_lines(self):
+    def expectation_lines(self, only_ignore_very_flaky=False):
         lines = []
         for test_path, entry in self.results_json.walk_results():
             results_array = entry[self.results_json.RESULTS_KEY]
-            flaky_types = self._flaky_types_in_results(results_array, False)
+            flaky_types = self._flaky_types_in_results(results_array, only_ignore_very_flaky)
             if len(flaky_types) > 1:
                 bug_urls = entry.get(self.results_json.BUGS_KEY)
                 line = self._line_from_test_and_flaky_types_and_bug_urls(test_path, flaky_types, bug_urls)

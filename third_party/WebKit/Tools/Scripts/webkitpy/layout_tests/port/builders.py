@@ -37,23 +37,24 @@ from webkitpy.common.memoized import memoized
 #      This is useful when we don't have bots that cover particular configurations; so, e.g., you might
 #      support mac-mountainlion but not have a mac-mountainlion bot yet, so you'd want to put the mac-lion
 #      results into platform/mac temporarily.
+# * specifiers -- TestExpectation specifiers for that config. Valid values are found in
+#      TestExpectationsParser._configuration_tokens_list
 
 _exact_matches = {
-    "WebKit XP": {"port_name": "win-xp"},
-    "WebKit Win7": {"port_name": "win-win7"},
-    "WebKit Win7 (dbg)": {"port_name": "win-win7"},
-    "WebKit Linux": {"port_name": "linux-x86_64"},
-    "WebKit Linux 32": {"port_name": "linux-x86"},
-    "WebKit Linux (dbg)": {"port_name": "linux-x86_64"},
-    "WebKit Linux ASAN": {"port_name": "linux-x86_64"},
-    "WebKit Mac10.6": {"port_name": "mac-snowleopard"},
-    "WebKit Mac10.6 (dbg)": {"port_name": "mac-snowleopard"},
-    "WebKit Mac10.7": {"port_name": "mac-lion"},
-    "WebKit Mac10.7 (dbg)": {"port_name": "mac-lion"},
-    "WebKit Mac10.8": {"port_name": "mac-mountainlion"},
-    "WebKit Mac10.8 (retina)": {"port_name": "mac-retina"},
-    "WebKit Mac10.9": {"port_name": "mac-mavericks"},
-    "WebKit Android (Nexus4)": {"port_name": "android"},
+    "WebKit XP": {"port_name": "win-xp", "specifiers": ['XP', 'Release']},
+    "WebKit Win7": {"port_name": "win-win7", "specifiers": ['Win7', 'Release']},
+    "WebKit Win7 (dbg)": {"port_name": "win-win7", "specifiers": ['Win7', 'Debug']},
+    "WebKit Linux": {"port_name": "linux-x86_64", "specifiers": ['Linux', 'Release']},
+    "WebKit Linux 32": {"port_name": "linux-x86", "specifiers": ['Linux', 'Release']},
+    "WebKit Linux (dbg)": {"port_name": "linux-x86_64", "specifiers": ['Linux', 'Debug']},
+    "WebKit Mac10.6": {"port_name": "mac-snowleopard", "specifiers": ['SnowLeopard', 'Release']},
+    "WebKit Mac10.6 (dbg)": {"port_name": "mac-snowleopard", "specifiers": ['SnowLeopard', 'Debug']},
+    "WebKit Mac10.7": {"port_name": "mac-lion", "specifiers": ['Lion', 'Release']},
+    "WebKit Mac10.7 (dbg)": {"port_name": "mac-lion", "specifiers": ['Lion', 'Debug']},
+    "WebKit Mac10.8": {"port_name": "mac-mountainlion", "specifiers": ['MountainLion', 'Release']},
+    "WebKit Mac10.8 (retina)": {"port_name": "mac-retina", "specifiers": ['Retina', 'Release']},
+    "WebKit Mac10.9": {"port_name": "mac-mavericks", "specifiers": ['Mavericks', 'Release']},
+    "WebKit Android (Nexus4)": {"port_name": "android", "specifiers": ['Android', 'Release']},
 }
 
 
@@ -93,6 +94,10 @@ def rebaseline_override_dir(builder_name):
 
 def port_name_for_builder_name(builder_name):
     return _exact_matches[builder_name]["port_name"]
+
+
+def specifiers_for_builder(builder_name):
+    return _exact_matches[builder_name]["specifiers"]
 
 
 def builder_name_for_port_name(target_port_name):

@@ -26,18 +26,57 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+import optparse
 from webkitpy.tool.multicommandtool import AbstractDeclarativeCommand
 from webkitpy.layout_tests.layout_package.bot_test_expectations import BotTestExpectationsFactory
 from webkitpy.layout_tests.models.test_expectations import TestExpectationParser, TestExpectationsModel, TestExpectations
 
 
 class FlakyTests(AbstractDeclarativeCommand):
-    name = "flaky-tests"
-    help_text = "Generate FlakyTests file from the flakiness dashboard"
+    name = "update-flaky-tests"
+    help_text = "Update FlakyTests file from the flakiness dashboard"
     show_in_main_help = True
+
+    def __init__(self):
+        options = [
+            optparse.make_option('--upload', action='store_true',
+                help='upload the changed FlakyTest file for review'),
+        ]
+        AbstractDeclarativeCommand.__init__(self, options=options)
 
     def execute(self, options, args, tool):
         port = tool.port_factory.get()
-        full_port_name = port.determine_full_port_name(tool, options, port.port_name)
-        expectations = BotTestExpectationsFactory().expectations_for_port(full_port_name)
-        print TestExpectations.list_to_string(expectations.expectation_lines())
+        model = TestExpectationsModel()
+        for port_name in tool.port_factory.all_port_names():
+            expectations = BotTestExpectationsFactory().expectations_for_port(port_name)
+            for line in expectations.expectation_lines(only_ignore_very_flaky=True):
+                model.add_expectation_line(line)
+        # FIXME: We need an official API to get all the test names or all test lines.
+        lines = model._test_to_expectation_line.values()
+        lines.sort(key=lambda line: line.path)
+        # Skip any tests which are mentioned in the dashboard but not in our checkout:
+        fs = tool.filesystem
+        lines = filter(lambda line: fs.exists(fs.join(port.layout_tests_dir(), line.path)), lines)
+        flaky_tests_path = fs.join(port.layout_tests_dir(), 'FlakyTests')
+        # Note: This includes all flaky tests from the dashboard, even ones mentioned
+        # in existing TestExpectations. We could certainly load existing TestExpecations
+        # and filter accordingly, or update existing TestExpectations instead of FlakyTests.
+        with open(flaky_tests_path, 'w') as flake_file:
+            flake_file.write(TestExpectations.list_to_string(lines))
+
+        if not options.upload:
+            return 0
+
+        files = tool.scm().changed_files()
+        flaky_tests_path = 'LayoutTests/FlakyTests'
+        if flaky_tests_path not in files:
+            print "%s is not changed, not uploading." % flaky_tests_path
+            return 0
+
+        commit_message = "Update FlakyTests"
+        git_cmd = ['git', 'commit', '-m', commit_message, flaky_tests_path]
+        tool.executive.run_command(git_cmd)
+
+        git_cmd = ['git', 'cl', 'upload', '--use-commit-queue', '--send-mail']
+        tool.executive.run_command(git_cmd)
+        # If there are changes to git, upload.

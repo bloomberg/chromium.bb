@@ -402,7 +402,7 @@ class TestExpectationLine(object):
             and self.is_skipped_outside_expectations_file == other.is_skipped_outside_expectations_file)
 
     def is_invalid(self):
-        return self.warnings and self.warnings != [TestExpectationParser.MISSING_BUG_WARNING]
+        return bool(self.warnings and self.warnings != [TestExpectationParser.MISSING_BUG_WARNING])
 
     def is_flaky(self):
         return len(self.parsed_expectations) > 1
