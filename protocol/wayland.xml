@@ -977,6 +977,14 @@
       cursor images for pointers, drag icons, etc.
     </description>
 
+    <enum name="error">
+      <description summary="wl_surface error values">
+        These errors can be emitted in response to wl_surface requests.
+      </description>
+      <entry name="invalid_scale" value="0" summary="buffer scale value is invalid"/>
+      <entry name="invalid_transform" value="1" summary="buffer transform value is invalid"/>
+    </enum>
+
     <request name="destroy" type="destructor">
       <description summary="delete surface">
 	Deletes the surface and invalidates its object ID.
@@ -1229,6 +1237,10 @@
 	Note that if the transform value includes 90 or 270 degree rotation,
 	the width of the buffer will become the surface height and the height
 	of the buffer will become the surface width.
+
+	If transform is not one of the values from the
+	wl_output.transform enum the invalid_transform protocol error
+	is raised.
       </description>
       <arg name="transform" type="int"/>
     </request>
@@ -1257,6 +1269,9 @@
 	Note that if the scale is larger than 1, then you have to attach
 	a buffer that is larger (by a factor of scale in each dimension)
 	than the desired surface size.
+
+	If scale is not positive the invalid_scale protocol error is
+	raised.
       </description>
       <arg name="scale" type="int"/>
     </request>
