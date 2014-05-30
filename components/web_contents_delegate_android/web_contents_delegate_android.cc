@@ -13,8 +13,10 @@
 #include "components/web_contents_delegate_android/validation_message_bubble_android.h"
 #include "content/public/browser/android/content_view_core.h"
 #include "content/public/browser/color_chooser.h"
+#include "content/public/browser/global_request_id.h"
 #include "content/public/browser/invalidate_type.h"
 #include "content/public/browser/native_web_keyboard_event.h"
+#include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
@@ -67,8 +69,6 @@ WebContents* WebContentsDelegateAndroid::OpenURLFromTab(
     const content::OpenURLParams& params) {
   const GURL& url = params.url;
   WindowOpenDisposition disposition = params.disposition;
-  content::PageTransition transition(
-      PageTransitionFromInt(params.transition));
 
   if (!source || (disposition != CURRENT_TAB &&
                   disposition != NEW_FOREGROUND_TAB &&
@@ -105,12 +105,37 @@ WebContents* WebContentsDelegateAndroid::OpenURLFromTab(
                                                java_url.obj(),
                                                extra_headers.obj(),
                                                post_data.obj(),
-                                               disposition);
+                                               disposition,
+                                               params.is_renderer_initiated);
     return NULL;
   }
 
-  source->GetController().LoadURL(url, params.referrer, transition,
-                                  std::string());
+  // content::OpenURLParams -> content::NavigationController::LoadURLParams
+  content::NavigationController::LoadURLParams load_params(url);
+  load_params.referrer = params.referrer;
+  load_params.frame_tree_node_id = params.frame_tree_node_id;
+  load_params.redirect_chain = params.redirect_chain;
+  load_params.transition_type = params.transition;
+  load_params.extra_headers = params.extra_headers;
+  load_params.should_replace_current_entry =
+      params.should_replace_current_entry;
+  load_params.is_renderer_initiated = params.is_renderer_initiated;
+
+  if (params.transferred_global_request_id != content::GlobalRequestID()) {
+    load_params.transferred_global_request_id =
+        params.transferred_global_request_id;
+  }
+
+  // Only allows the browser-initiated navigation to use POST.
+  if (params.uses_post && !params.is_renderer_initiated) {
+    load_params.load_type =
+        content::NavigationController::LOAD_TYPE_BROWSER_INITIATED_HTTP_POST;
+    load_params.browser_initiated_post_data =
+        params.browser_initiated_post_data;
+  }
+
+  source->GetController().LoadURLWithParams(load_params);
+
   return source;
 }
 

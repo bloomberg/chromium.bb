@@ -47,6 +47,7 @@ public class LoadUrlParams {
     String mBaseUrlForDataUrl;
     String mVirtualUrlForDataUrl;
     boolean mCanLoadLocalResources;
+    boolean mIsRendererInitiated;
 
     /**
      * Creates an instance with default page transition type.
@@ -357,6 +358,20 @@ public class LoadUrlParams {
 
     public int getLoadUrlType() {
         return mLoadUrlType;
+    }
+
+    /**
+     * @param rendererInitiated Whether or not this load was initiated from a renderer.
+     */
+    public void setIsRendererInitiated(boolean rendererInitiated) {
+        mIsRendererInitiated = rendererInitiated;
+    }
+
+    /**
+     * @return Whether or not this load was initiated from a renderer or not.
+     */
+    public boolean getIsRendererInitiated() {
+        return mIsRendererInitiated;
     }
 
     public boolean isBaseUrlDataScheme() {

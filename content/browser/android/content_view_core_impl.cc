@@ -848,7 +848,8 @@ void ContentViewCoreImpl::LoadUrl(
     jbyteArray post_data,
     jstring base_url_for_data_url,
     jstring virtual_url_for_data_url,
-    jboolean can_load_local_resources) {
+    jboolean can_load_local_resources,
+    jboolean is_renderer_initiated) {
   DCHECK(url);
   NavigationController::LoadURLParams params(
       GURL(ConvertJavaStringToUTF8(env, url)));
@@ -886,6 +887,8 @@ void ContentViewCoreImpl::LoadUrl(
         GURL(ConvertJavaStringToUTF8(env, j_referrer_url)),
         static_cast<blink::WebReferrerPolicy>(referrer_policy));
   }
+
+  params.is_renderer_initiated = is_renderer_initiated;
 
   LoadUrl(params);
 }

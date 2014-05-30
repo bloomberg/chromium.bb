@@ -110,7 +110,8 @@ class AwWebContentsDelegateAdapter extends AwWebContentsDelegate {
     }
 
     @Override
-    public void openNewTab(String url, String extraHeaders, byte[] postData, int disposition) {
+    public void openNewTab(String url, String extraHeaders, byte[] postData, int disposition,
+            boolean isRendererInitiated) {
         // This is only called in chrome layers.
         assert false;
     }
