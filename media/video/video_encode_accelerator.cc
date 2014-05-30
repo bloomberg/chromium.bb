@@ -9,3 +9,14 @@ namespace media {
 VideoEncodeAccelerator::~VideoEncodeAccelerator() {}
 
 }  // namespace media
+
+namespace base {
+
+void DefaultDeleter<media::VideoEncodeAccelerator>::operator()(
+    void* video_encode_accelerator) const {
+  static_cast<media::VideoEncodeAccelerator*>(video_encode_accelerator)->
+      Destroy();
+}
+
+}  // namespace base
+

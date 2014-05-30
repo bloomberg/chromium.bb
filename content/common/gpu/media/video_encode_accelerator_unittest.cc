@@ -584,7 +584,7 @@ void VEAClient::DestroyEncoder() {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (!has_encoder())
     return;
-  encoder_.release()->Destroy();
+  encoder_.reset();
 }
 
 double VEAClient::frames_per_second() {

@@ -279,8 +279,7 @@ void RTCVideoEncoder::Impl::RequestEncodingParametersChange(uint32 bitrate,
 void RTCVideoEncoder::Impl::Destroy() {
   DVLOG(3) << "Impl::Destroy()";
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (video_encoder_)
-    video_encoder_.release()->Destroy();
+  video_encoder_.reset();
 }
 
 void RTCVideoEncoder::Impl::RequireBitstreamBuffers(
@@ -400,8 +399,7 @@ void RTCVideoEncoder::Impl::NotifyError(
       retval = WEBRTC_VIDEO_CODEC_ERROR;
   }
 
-  if (video_encoder_)
-    video_encoder_.release()->Destroy();
+  video_encoder_.reset();
 
   if (async_waiter_) {
     SignalAsyncWaiter(retval);

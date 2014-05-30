@@ -8,8 +8,8 @@ namespace content {
 
 VideoDecodeAcceleratorImpl::VideoDecodeAcceleratorImpl() {}
 
-VideoDecodeAcceleratorImpl::~VideoDecodeAcceleratorImpl() {}
-
 bool VideoDecodeAcceleratorImpl::CanDecodeOnIOThread() { return false; }
+
+VideoDecodeAcceleratorImpl::~VideoDecodeAcceleratorImpl() {}
 
 }  // namespace content

@@ -773,7 +773,7 @@ void GLRenderingVDAClient::DeleteDecoder() {
   if (decoder_deleted())
     return;
   weak_decoder_factory_.reset();
-  decoder_.release()->Destroy();
+  decoder_.reset();
   STLClearObject(&encoded_data_);
   for (std::set<int>::iterator it = outstanding_texture_ids_.begin();
        it != outstanding_texture_ids_.end(); ++it) {

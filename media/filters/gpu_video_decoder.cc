@@ -220,8 +220,7 @@ void GpuVideoDecoder::DestroyPictureBuffers(PictureBufferMap* buffers) {
 void GpuVideoDecoder::DestroyVDA() {
   DCheckGpuVideoAcceleratorFactoriesTaskRunnerIsCurrent();
 
-  if (vda_)
-    vda_.release()->Destroy();
+  vda_.reset();
 
   // Not destroying PictureBuffers in |picture_buffers_at_display_| yet, since
   // their textures may still be in use by the user of this GpuVideoDecoder.

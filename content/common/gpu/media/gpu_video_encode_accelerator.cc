@@ -150,9 +150,6 @@ void GpuVideoEncodeAccelerator::OnWillDestroyStub() {
   stub_->channel()->RemoveRoute(host_route_id_);
   stub_->RemoveDestructionObserver(this);
 
-  if (encoder_)
-    encoder_.release()->Destroy();
-
   delete this;
 }
 

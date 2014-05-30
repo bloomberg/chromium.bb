@@ -22,8 +22,6 @@ class VideoFrame;
 // Video encoder interface.
 class MEDIA_EXPORT VideoEncodeAccelerator {
  public:
-  virtual ~VideoEncodeAccelerator();
-
   // Specification of an encoding profile supported by an encoder.
   struct SupportedProfile {
     VideoCodecProfile profile;
@@ -143,8 +141,28 @@ class MEDIA_EXPORT VideoEncodeAccelerator {
   // this method returns no more callbacks will be made on the client.  Deletes
   // |this| unconditionally, so make sure to drop all pointers to it!
   virtual void Destroy() = 0;
+
+ protected:
+  // Do not delete directly; use Destroy() or own it with a scoped_ptr, which
+  // will Destroy() it properly by default.
+  virtual ~VideoEncodeAccelerator();
 };
 
 }  // namespace media
+
+namespace base {
+
+template <class T>
+struct DefaultDeleter;
+
+// Specialize DefaultDeleter so that scoped_ptr<VideoEncodeAccelerator> always
+// uses "Destroy()" instead of trying to use the destructor.
+template <>
+struct MEDIA_EXPORT DefaultDeleter<media::VideoEncodeAccelerator> {
+ public:
+  void operator()(void* video_encode_accelerator) const;
+};
+
+}  // namespace base
 
 #endif  // MEDIA_VIDEO_VIDEO_ENCODE_ACCELERATOR_H_

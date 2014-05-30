@@ -224,8 +224,7 @@ int32_t PPB_VideoDecoder_Impl::Reset(scoped_refptr<TrackedCallback> callback) {
 void PPB_VideoDecoder_Impl::Destroy() {
   FlushCommandBuffer();
 
-  if (decoder_)
-    decoder_.release()->Destroy();
+  decoder_.reset();
   ppp_videodecoder_ = NULL;
 
   ::ppapi::PPB_VideoDecoder_Shared::Destroy();
