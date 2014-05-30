@@ -48,6 +48,8 @@ class ServiceWorkerInternalsUI
   void RemoveObserverFromStoragePartition(StoragePartition* partition);
 
   // Called from Javascript.
+  void GetOptions(const base::ListValue* args);
+  void SetOption(const base::ListValue* args);
   void GetAllRegistrations(const base::ListValue* args);
   void CallServiceWorkerVersionMethod(ServiceWorkerVersionMethod method,
                                       const base::ListValue* args);

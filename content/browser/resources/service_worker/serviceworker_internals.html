@@ -99,9 +99,18 @@
                 <div transclude="serviceworker-version-template"></div>
             </div>
         </div>
+        <div id="serviceworker-options-template">
+            <div>
+                <span>
+                    <input type="checkbox" class="debug_on_start" jsvalues=".checked:$this.debug_on_start">
+                </span>
+                <span>Opens the DevTools window for ServiceWorker on start for debugging.</span>
+            </div>
+        </div>
     </div>
-    <h1>ServiceWorker registrations</h1>
+    <h1>ServiceWorker</h1>
     <div class="content">
+        <div id="serviceworker-options"></div>
         <div id="serviceworker-list"></div>
     </div>
     <script src="chrome://resources/js/util.js"></script>

@@ -50,16 +50,26 @@ class CONTENT_EXPORT EmbeddedWorkerDevToolsManager {
   DevToolsAgentHost* GetDevToolsAgentHostForServiceWorker(
       const ServiceWorkerIdentifier& service_worker_id);
 
-  // Returns true when the worker must be paused on start.
+  // Returns true when the worker must be paused on start because a DevTool
+  // window for the same former SharedWorkerInstance is still opened.
   bool SharedWorkerCreated(int worker_process_id,
                            int worker_route_id,
                            const SharedWorkerInstance& instance);
-  // Returns true when the worker must be paused on start.
+  // Returns true when the worker must be paused on start because a DevTool
+  // window for the same former ServiceWorkerIdentifier is still opened or
+  // debug-on-start is enabled in chrome://serviceworker-internals.
   bool ServiceWorkerCreated(int worker_process_id,
                             int worker_route_id,
                             const ServiceWorkerIdentifier& service_worker_id);
   void WorkerContextStarted(int worker_process_id, int worker_route_id);
   void WorkerDestroyed(int worker_process_id, int worker_route_id);
+
+  void set_debug_service_worker_on_start(bool debug_on_start) {
+    debug_service_worker_on_start_ = debug_on_start;
+  }
+  bool debug_service_worker_on_start() const {
+    return debug_service_worker_on_start_;
+  }
 
  private:
   friend struct DefaultSingletonTraits<EmbeddedWorkerDevToolsManager>;
@@ -71,7 +81,8 @@ class CONTENT_EXPORT EmbeddedWorkerDevToolsManager {
     WORKER_UNINSPECTED,
     WORKER_INSPECTED,
     WORKER_TERMINATED,
-    WORKER_PAUSED,
+    WORKER_PAUSED_FOR_DEBUG_ON_START,
+    WORKER_PAUSED_FOR_REATTACH,
   };
 
   class WorkerInfo {
@@ -116,6 +127,8 @@ class CONTENT_EXPORT EmbeddedWorkerDevToolsManager {
   void ResetForTesting();
 
   WorkerInfoMap workers_;
+
+  bool debug_service_worker_on_start_;
 
   DISALLOW_COPY_AND_ASSIGN(EmbeddedWorkerDevToolsManager);
 };

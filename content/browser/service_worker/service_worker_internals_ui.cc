@@ -379,6 +379,13 @@ ServiceWorkerInternalsUI::ServiceWorkerInternalsUI(WebUI* web_ui)
   WebUIDataSource::Add(browser_context, source);
 
   web_ui->RegisterMessageCallback(
+      "GetOptions",
+      base::Bind(&ServiceWorkerInternalsUI::GetOptions,
+                 base::Unretained(this)));
+  web_ui->RegisterMessageCallback(
+      "SetOption",
+      base::Bind(&ServiceWorkerInternalsUI::SetOption, base::Unretained(this)));
+  web_ui->RegisterMessageCallback(
       "getAllRegistrations",
       base::Bind(&ServiceWorkerInternalsUI::GetAllRegistrations,
                  base::Unretained(this)));
@@ -415,6 +422,25 @@ ServiceWorkerInternalsUI::~ServiceWorkerInternalsUI() {
       base::Bind(&ServiceWorkerInternalsUI::RemoveObserverFromStoragePartition,
                  base::Unretained(this));
   BrowserContext::ForEachStoragePartition(browser_context, remove_observer_cb);
+}
+
+void ServiceWorkerInternalsUI::GetOptions(const ListValue* args) {
+  DictionaryValue options;
+  options.SetBoolean("debug_on_start",
+                     EmbeddedWorkerDevToolsManager::GetInstance()
+                         ->debug_service_worker_on_start());
+  web_ui()->CallJavascriptFunction("serviceworker.onOptions", options);
+}
+
+void ServiceWorkerInternalsUI::SetOption(const ListValue* args) {
+  std::string option_name;
+  bool option_boolean;
+  if (!args->GetString(0, &option_name) || option_name != "debug_on_start" ||
+      !args->GetBoolean(1, &option_boolean)) {
+    return;
+  }
+  EmbeddedWorkerDevToolsManager::GetInstance()
+      ->set_debug_service_worker_on_start(option_boolean);
 }
 
 void ServiceWorkerInternalsUI::GetAllRegistrations(const ListValue* args) {

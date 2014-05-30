@@ -230,7 +230,8 @@ TEST_F(EmbeddedWorkerDevToolsManagerTest, AttachTest) {
   CheckWorkerState(2, 1, EmbeddedWorkerDevToolsManager::WORKER_TERMINATED);
   manager_->SharedWorkerCreated(2, 3, instance1);
   CheckWorkerNotExist(2, 1);
-  CheckWorkerState(2, 3, EmbeddedWorkerDevToolsManager::WORKER_PAUSED);
+  CheckWorkerState(
+      2, 3, EmbeddedWorkerDevToolsManager::WORKER_PAUSED_FOR_REATTACH);
   EXPECT_EQ(agent_host1.get(), manager_->GetDevToolsAgentHostForWorker(2, 3));
   manager_->WorkerContextStarted(2, 3);
   CheckWorkerState(2, 3, EmbeddedWorkerDevToolsManager::WORKER_INSPECTED);
@@ -243,7 +244,8 @@ TEST_F(EmbeddedWorkerDevToolsManagerTest, AttachTest) {
   CheckWorkerState(2, 2, EmbeddedWorkerDevToolsManager::WORKER_TERMINATED);
   manager_->SharedWorkerCreated(2, 4, instance2);
   CheckWorkerNotExist(2, 2);
-  CheckWorkerState(2, 4, EmbeddedWorkerDevToolsManager::WORKER_PAUSED);
+  CheckWorkerState(
+      2, 4, EmbeddedWorkerDevToolsManager::WORKER_PAUSED_FOR_REATTACH);
   EXPECT_EQ(agent_host2.get(), manager_->GetDevToolsAgentHostForWorker(2, 4));
   manager_->WorkerDestroyed(2, 4);
   CheckWorkerNotExist(2, 4);
@@ -252,7 +254,8 @@ TEST_F(EmbeddedWorkerDevToolsManagerTest, AttachTest) {
   // Re-created -> ClientHostClosing -> Destroyed
   manager_->SharedWorkerCreated(2, 5, instance2);
   CheckWorkerNotExist(2, 2);
-  CheckWorkerState(2, 5, EmbeddedWorkerDevToolsManager::WORKER_PAUSED);
+  CheckWorkerState(
+      2, 5, EmbeddedWorkerDevToolsManager::WORKER_PAUSED_FOR_REATTACH);
   EXPECT_EQ(agent_host2.get(), manager_->GetDevToolsAgentHostForWorker(2, 5));
   ClientHostClosing(client_host2.get());
   CheckWorkerCount(1);

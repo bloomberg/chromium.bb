@@ -21,7 +21,31 @@ cr.define('serviceworker', function() {
   }
 
   function update() {
-    chrome.send('getAllRegistrations');
+      chrome.send('GetOptions');
+      chrome.send('getAllRegistrations');
+  }
+
+  function onOptions(options) {
+    var template;
+    var container = $('serviceworker-options');
+    if (container.childNodes) {
+      template = container.childNodes[0];
+    }
+    if (!template) {
+      template = jstGetTemplate('serviceworker-options-template');
+      container.appendChild(template);
+    }
+    jstProcess(new JsEvalContext(options), template);
+    var inputs = container.querySelectorAll('input[type=\'checkbox\']');
+    for (var i = 0; i < inputs.length; ++i) {
+      if (!inputs[i].hasClickEvent) {
+        inputs[i].addEventListener('click', (function(event) {
+          chrome.send('SetOption',
+                      [event.target.className, event.target.checked]);
+        }).bind(this), false);
+        inputs[i].hasClickEvent = true;
+      }
+    }
   }
 
   function progressNodeFor(link) {
@@ -264,6 +288,7 @@ cr.define('serviceworker', function() {
 
   return {
     initialize: initialize,
+    onOptions: onOptions,
     onOperationComplete: onOperationComplete,
     onPartitionData: onPartitionData,
     onWorkerStarted: onWorkerStarted,
