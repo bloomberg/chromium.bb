@@ -63,15 +63,22 @@ struct JwkToWebCryptoUsage {
   const blink::WebCryptoKeyUsage webcrypto_usage;
 };
 
+// Keep this ordered according to the definition
+// order of WebCrypto's "recognized key usage
+// values".
+//
+// This is not required for spec compliance,
+// however it makes the ordering of key_ops match
+// that of WebCrypto's Key.usages.
 const JwkToWebCryptoUsage kJwkWebCryptoUsageMap[] = {
     {"encrypt", blink::WebCryptoKeyUsageEncrypt},
     {"decrypt", blink::WebCryptoKeyUsageDecrypt},
+    {"sign", blink::WebCryptoKeyUsageSign},
+    {"verify", blink::WebCryptoKeyUsageVerify},
     {"deriveKey", blink::WebCryptoKeyUsageDeriveKey},
     {"deriveBits", blink::WebCryptoKeyUsageDeriveBits},
-    {"sign", blink::WebCryptoKeyUsageSign},
-    {"unwrapKey", blink::WebCryptoKeyUsageUnwrapKey},
-    {"verify", blink::WebCryptoKeyUsageVerify},
-    {"wrapKey", blink::WebCryptoKeyUsageWrapKey}};
+    {"wrapKey", blink::WebCryptoKeyUsageWrapKey},
+    {"unwrapKey", blink::WebCryptoKeyUsageUnwrapKey}};
 
 // Modifies the input usage_mask by according to the key_op value.
 bool JwkKeyOpToWebCryptoUsage(const std::string& key_op,
