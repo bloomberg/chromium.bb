@@ -72,18 +72,24 @@ template("gcc_toolchain") {
       deps = "gcc"
     }
     tool("alink") {
-      command = "rm -f \$out && $ar rcs \$out \$in"
+      command = "rm -f \$out && $ar rcs \$out @\$rspfile"
       description = "AR \$out"
+      rspfile = "\$out.rsp"
+      rspfile_content = "\$in"
     }
     tool("solink") {
-      command = "if [ ! -e \$lib -o ! -e \${lib}.TOC ]; then $ld -shared \$ldflags -o \$lib -Wl,-soname=\$soname -Wl,--whole-archive \$in \$solibs -Wl,--no-whole-archive \$libs && { readelf -d \${lib} | grep SONAME ; nm -gD -f p \${lib} | cut -f1-2 -d' '; } > \${lib}.TOC; else $ld -shared \$ldflags -o \$lib -Wl,-soname=\$soname -Wl,--whole-archive \$in \$solibs -Wl,--no-whole-archive $libs_section_prefix \$libs $libs_section_postfix && { readelf -d \${lib} | grep SONAME ; nm -gD -f p \${lib} | cut -f1-2 -d' '; } > \${lib}.tmp && if ! cmp -s \${lib}.tmp \${lib}.TOC; then mv \${lib}.tmp \${lib}.TOC ; fi; fi"
+      command = "if [ ! -e \$lib -o ! -e \${lib}.TOC ]; then $ld -shared \$ldflags -o \$lib -Wl,-soname=\$soname @\$rspfile && { readelf -d \${lib} | grep SONAME ; nm -gD -f p \${lib} | cut -f1-2 -d' '; } > \${lib}.TOC; else $ld -shared \$ldflags -o \$lib -Wl,-soname=\$soname -Wl,--whole-archive \$in \$solibs -Wl,--no-whole-archive $libs_section_prefix \$libs $libs_section_postfix && { readelf -d \${lib} | grep SONAME ; nm -gD -f p \${lib} | cut -f1-2 -d' '; } > \${lib}.tmp && if ! cmp -s \${lib}.tmp \${lib}.TOC; then mv \${lib}.tmp \${lib}.TOC ; fi; fi"
       description = "SOLINK \$lib"
+      rspfile = "\$out.rsp"
+      rspfile_content = "-Wl,--whole-archive \$in \$solibs -Wl,--no-whole-archive \$libs"
       #pool = "link_pool"
       restat = "1"
     }
     tool("link") {
-      command = "$ld \$ldflags -o \$out -Wl,--start-group \$in \$solibs -Wl,--end-group $libs_section_prefix \$libs $libs_section_postfix"
+      command = "$ld \$ldflags -o \$out -Wl,--start-group @\$rspfile \$solibs -Wl,--end-group $libs_section_prefix \$libs $libs_section_postfix"
       description = "LINK \$out"
+      rspfile = "\$out.rsp"
+      rspfile_content = "\$in"
       #pool = "link_pool"
     }
     tool("stamp") {

@@ -80,18 +80,24 @@ template("mac_clang_toolchain") {
       deps = "gcc"
     }
     tool("alink") {
-      command = "rm -f \$out && ./gyp-mac-tool filter-libtool libtool \$libtool_flags -static -o \$out \$in \$postbuilds"
-      description = "LIBTOOL-STATIC \$out, POSTBUILDS"
+      command = "rm -f \$out && ./gyp-mac-tool filter-libtool libtool \$libtool_flags -static -o \$out @\$rspfile \$postbuilds"
+      description = "LIBTOOL-STATIC \$out"
+      rspfile = "\$out.rsp"
+      rspfile_content = "\$in"
     }
     tool("solink") {
-      command = "if [ ! -e \$lib -o ! -e \${lib}.TOC ] || otool -l \$lib | grep -q LC_REEXPORT_DYLIB ; then $ld -shared \$ldflags -o \$lib \$in \$solibs \$libs \$postbuilds && { otool -l \$lib | grep LC_ID_DYLIB -A 5; nm -gP \$lib | cut -f1-2 -d' ' | grep -v U\$\$; true; } > \${lib}.TOC; else $ld -shared \$ldflags -o \$lib \$in \$solibs \$libs \$postbuilds && { otool -l \$lib | grep LC_ID_DYLIB -A 5; nm -gP \$lib | cut -f1-2 -d' ' | grep -v U\$\$; true; } > \${lib}.tmp && if ! cmp -s \${lib}.tmp \${lib}.TOC; then mv \${lib}.tmp \${lib}.TOC ; fi; fi"
-      description = "SOLINK \$lib, POSTBUILDS"
+      command = "if [ ! -e \$lib -o ! -e \${lib}.TOC ] || otool -l \$lib | grep -q LC_REEXPORT_DYLIB ; then $ld -shared \$ldflags -o \$lib @\$rspfile \$solibs \$libs \$postbuilds && { otool -l \$lib | grep LC_ID_DYLIB -A 5; nm -gP \$lib | cut -f1-2 -d' ' | grep -v U\$\$; true; } > \${lib}.TOC; else $ld -shared \$ldflags -o \$lib \$in \$solibs \$libs \$postbuilds && { otool -l \$lib | grep LC_ID_DYLIB -A 5; nm -gP \$lib | cut -f1-2 -d' ' | grep -v U\$\$; true; } > \${lib}.tmp && if ! cmp -s \${lib}.tmp \${lib}.TOC; then mv \${lib}.tmp \${lib}.TOC ; fi; fi"
+      description = "SOLINK \$lib"
+      rspfile = "\$out.rsp"
+      rspfile_content = "\$in"
       #pool = "link_pool"
       restat = "1"
     }
     tool("link") {
-      command = "$ld \$ldflags -o \$out \$in \$solibs \$libs \$postbuilds"
-      description = "LINK \$out, POSTBUILDS"
+      command = "$ld \$ldflags -o \$out @\$rspfile \$solibs \$libs \$postbuilds"
+      description = "LINK \$out"
+      rspfile = "\$out.rsp"
+      rspfile_content = "\$in"
       #pool = "link_pool"
     }
     #tool("infoplist") {
