@@ -3,6 +3,8 @@ include_rules = [
   "+athena/screen/public",
   "+athena/wm/public",
   "+ui/aura",
+  "+ui/compositor",
+  "+ui/gl",
   "+ui/wm/core",
 ]
 
@@ -11,6 +13,9 @@ specific_include_rules = {
     "+apps/shell/app",
     "+apps/shell/browser",
     "+content/public/app",
+  ],
+  "athena_shell\.cc": [
+    "+athena/test",
   ],
 # TODO(oshima): Remove this.
   "placeholder\.*": [
