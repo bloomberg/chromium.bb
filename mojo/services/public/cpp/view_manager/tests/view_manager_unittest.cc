@@ -624,7 +624,7 @@ TEST_F(ViewManagerTest, SetBoundsSecurity) {
 // Verifies that a node can only be destroyed by the connection that created it.
 TEST_F(ViewManagerTest, DestroySecurity) {
   ViewTreeNode* node1 = CreateNodeInParent(view_manager_1()->tree());
-  WaitForTreeSizeToMatch(view_manager_2()->tree(), 3);
+  WaitForTreeSizeToMatch(view_manager_2()->tree(), 2);
 
   ViewTreeNode* node1_2 = view_manager_2()->GetNodeById(node1->id());
   NodeTracker tracker2(node1_2);
