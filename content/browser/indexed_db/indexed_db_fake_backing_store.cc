@@ -70,6 +70,13 @@ leveldb::Status IndexedDBFakeBackingStore::CreateObjectStore(
   return leveldb::Status::OK();
 }
 
+leveldb::Status IndexedDBFakeBackingStore::DeleteObjectStore(
+    Transaction* transaction,
+    int64 database_id,
+    int64 object_store_id) {
+  return leveldb::Status::OK();
+}
+
 leveldb::Status IndexedDBFakeBackingStore::PutRecord(
     IndexedDBBackingStore::Transaction* transaction,
     int64 database_id,
