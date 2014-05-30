@@ -56,13 +56,14 @@ invalid_schemes.forEach(function (scheme) {
     try {
         window.navigator.registerProtocolHandler(scheme, 'invalid scheme uri=%s', 'title');
     } catch (e) {
-        succeeded = true;
+        succeeded = 'SyntaxError' == e.name;
+        errorMessage = e.message;
     }
 
     if (succeeded)
         debug('Pass: Invalid scheme "' + scheme + '" falied.');
     else
-        debug('Fail: Invalid scheme "' + scheme + '" allowed.');
+        debug('Fail: Invalid scheme "' + scheme + '" allowed. Threw exception: "' + errorMessage + '".');
 });
 
 var invalid_urls = ["", "%S"];

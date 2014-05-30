@@ -32,15 +32,16 @@ var invalid_schemes = ['mailto:', 'ssh:/', 'magnet:+', 'tel:sip'];
 invalid_schemes.forEach(function (scheme) {
     var succeeded = false;
     try {
-        window.navigator.registerProtocolHandler(scheme, 'invalid scheme uri=%s', 'title');
+        window.navigator.isProtocolHandlerRegistered(scheme, 'invalid scheme uri=%s');
     } catch (e) {
-        succeeded = true;
+        succeeded = 'SyntaxError' == e.name;
+        errorMessage = e.message;
     }
 
     if (succeeded)
         debug('PASS Invalid scheme "' + scheme + '" falied.');
     else
-        debug('FAIL Invalid scheme "' + scheme + '" allowed.');
+        debug('FAIL Invalid scheme "' + scheme + '" allowed. Threw exception: "' + errorMessage + '".');
 });
 
 // FIXME: Need to check if this function can return 'registered' and 'declined' states as well.

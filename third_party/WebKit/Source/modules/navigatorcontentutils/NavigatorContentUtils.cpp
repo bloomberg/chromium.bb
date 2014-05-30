@@ -113,6 +113,13 @@ static bool verifyProtocolHandlerScheme(const String& scheme, const String& meth
         return false;
     }
 
+    // The specification requires that schemes don't contain colons.
+    size_t index = scheme.find(':');
+    if (index != kNotFound) {
+        exceptionState.throwDOMException(SyntaxError, "The scheme '" + scheme + "' contains colon.");
+        return false;
+    }
+
     if (isProtocolWhitelisted(scheme))
         return true;
     exceptionState.throwSecurityError("The scheme '" + scheme + "' doesn't belong to the protocol whitelist. Please prefix non-whitelisted schemes with the string 'web+'.");

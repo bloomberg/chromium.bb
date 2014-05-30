@@ -53,15 +53,16 @@ var invalid_schemes = ['mailto:', 'ssh:/', 'magnet:+', 'tel:sip'];
 invalid_schemes.forEach(function (scheme) {
     var succeeded = false;
     try {
-        window.navigator.registerProtocolHandler(scheme, 'invalid scheme uri=%s', 'title');
+        window.navigator.unregisterProtocolHandler(scheme, 'invalid scheme uri=%s', 'title');
     } catch (e) {
-        succeeded = true;
+        succeeded = 'SyntaxError' == e.name;
+        errorMessage = e.message;
     }
 
     if (succeeded)
         debug('Pass: Invalid scheme "' + scheme + '" falied.');
     else
-        debug('Fail: Invalid scheme "' + scheme + '" allowed.');
+        debug('Fail: Invalid scheme "' + scheme + '" allowed. Threw exception: "' + errorMessage + '".');
 });
 
 var invalid_urls = ["", "%S"];
