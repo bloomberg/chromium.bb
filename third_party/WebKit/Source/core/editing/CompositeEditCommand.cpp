@@ -934,9 +934,8 @@ PassRefPtrWillBeRawPtr<Node> CompositeEditCommand::moveParagraphContentsToNewBlo
                 return nullptr;
             }
         } else if (enclosingBlock(upstreamEnd.deprecatedNode()) != upstreamStart.deprecatedNode()) {
-            // The visibleEnd.  It must be an ancestor of the paragraph start.
+            // It should be an ancestor of the paragraph start.
             // We can bail as we have a full block to work with.
-            ASSERT(upstreamStart.deprecatedNode()->isDescendantOf(enclosingBlock(upstreamEnd.deprecatedNode())));
             return nullptr;
         } else if (isEndOfEditableOrNonEditableContent(visibleEnd)) {
             // At the end of the editable region. We can bail here as well.
