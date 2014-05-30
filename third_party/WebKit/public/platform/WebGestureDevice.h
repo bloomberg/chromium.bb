@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012 Google Inc. All rights reserved.
+ * Copyright (C) 2014 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -23,37 +23,16 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebActiveWheelFlingParameters_h
-#define WebActiveWheelFlingParameters_h
-
-#include "../platform/WebCommon.h"
-#include "../platform/WebFloatPoint.h"
-#include "../platform/WebGestureDevice.h"
-#include "../platform/WebPoint.h"
-#include "../platform/WebSize.h"
-#include "WebInputEvent.h"
+#ifndef WebGestureDevice_h
+#define WebGestureDevice_h
 
 namespace blink {
 
-struct WebActiveWheelFlingParameters {
-    WebFloatPoint delta;
-    WebPoint point;
-    WebPoint globalPoint;
-    int modifiers;
-    // TODO(rjkroege): Restore typing once chromium side lands
-    // (http://crbug.com/343327)
-    int sourceDevice;
-    WebSize cumulativeScroll;
-    double startTime;
-
-    WebActiveWheelFlingParameters()
-        : modifiers(0)
-        , sourceDevice(WebGestureDeviceTouchpad)
-        , startTime(0)
-    {
-    }
+enum WebGestureDevice {
+    WebGestureDeviceTouchpad,
+    WebGestureDeviceTouchscreen,
 };
 
-}
+} // namespace blink
 
-#endif
+#endif // WebGestureDevice_h

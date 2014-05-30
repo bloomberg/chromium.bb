@@ -40,6 +40,7 @@
 #include "WebData.h"
 #include "WebGamepadListener.h"
 #include "WebGamepads.h"
+#include "WebGestureDevice.h"
 #include "WebGraphicsContext3D.h"
 #include "WebLocalizedString.h"
 #include "WebLockOrientationCallback.h"
@@ -595,6 +596,15 @@ public:
     // with |velocity| and already scrolled |cumulativeScroll| pixels.
     virtual WebGestureCurve* createFlingAnimationCurve(int deviceSource, const WebFloatPoint& velocity, const WebSize& cumulativeScroll) { return 0; }
 
+    // TODO(rjkroege): Remove at end of http://crbug.com/343327
+    virtual WebGestureCurve* createFlingAnimationCurve(
+        WebGestureDevice deviceSource,
+        const WebFloatPoint& velocity,
+        const WebSize& cumulativeScroll)
+    {
+        return createFlingAnimationCurve(
+            (int)deviceSource, velocity, cumulativeScroll);
+    }
 
     // WebRTC ----------------------------------------------------------
 

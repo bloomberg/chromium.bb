@@ -32,6 +32,7 @@
 #define WebInputEvent_h
 
 #include "../platform/WebCommon.h"
+#include "../platform/WebGestureDevice.h"
 #include "../platform/WebRect.h"
 #include "WebTouchPoint.h"
 
@@ -417,7 +418,9 @@ public:
     int y;
     int globalX;
     int globalY;
-    SourceDevice sourceDevice;
+    // TODO(rjkroege): Restore typing once chromium side lands
+    // (http://crbug.com/343327)
+    int sourceDevice;
 
     union {
         // Tap information must be set for GestureTap, GestureTapUnconfirmed,

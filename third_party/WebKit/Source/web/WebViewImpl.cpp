@@ -583,7 +583,7 @@ bool WebViewImpl::handleMouseWheel(LocalFrame& mainFrame, const WebMouseWheelEve
 
 bool WebViewImpl::scrollBy(const WebFloatSize& delta, const WebFloatSize& velocity)
 {
-    if (m_flingSourceDevice == WebGestureEvent::Touchpad) {
+    if (m_flingSourceDevice == WebGestureDeviceTouchpad) {
         WebMouseWheelEvent syntheticWheel;
         const float tickDivisor = WebCore::WheelEvent::TickMultiplier;
 
@@ -611,7 +611,7 @@ bool WebViewImpl::scrollBy(const WebFloatSize& delta, const WebFloatSize& veloci
         syntheticGestureEvent.globalX = m_globalPositionOnFlingStart.x;
         syntheticGestureEvent.globalY = m_globalPositionOnFlingStart.y;
         syntheticGestureEvent.modifiers = m_flingModifier;
-        syntheticGestureEvent.sourceDevice = WebGestureEvent::Touchscreen;
+        syntheticGestureEvent.sourceDevice = WebGestureDeviceTouchscreen;
 
         if (m_page && m_page->mainFrame() && m_page->mainFrame()->view())
             return handleGestureEvent(syntheticGestureEvent);
