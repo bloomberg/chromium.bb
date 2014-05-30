@@ -268,14 +268,15 @@ void ImageLoader::updateFromElement(LoadType loadType)
     if (!m_failedLoadURL.isEmpty() && attr == m_failedLoadURL)
         return;
 
+    // If we have a pending task, we have to clear it -- either we're
+    // now loading immediately, or we need to reset the task's state.
+    if (m_pendingTask) {
+        m_pendingTask->clearLoader();
+        m_pendingTask.clear();
+    }
+
     KURL url = imageURL();
     if (!attr.isNull() && !url.isNull()) {
-        // If we have a pending task, we have to clear it -- either we're
-        // now loading immediately, or we need to reset the task's state.
-        if (m_pendingTask) {
-            m_pendingTask->clearLoader();
-            m_pendingTask.clear();
-        }
         bool loadImmediately = shouldLoadImmediately(url) || (loadType == ForceLoadImmediately);
         if (loadImmediately) {
             doUpdateFromElement(false);
