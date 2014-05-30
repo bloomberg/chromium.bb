@@ -54,6 +54,10 @@
 #include "ui/ozone/ozone_switches.h"
 #endif
 
+#if defined(USE_X11) && !defined(OS_CHROMEOS)
+#include "ui/gfx/x/x11_switches.h"
+#endif
+
 namespace content {
 
 bool GpuProcessHost::gpu_enabled_ = true;
@@ -953,6 +957,9 @@ bool GpuProcessHost::LaunchGpuProcess(const std::string& channel_id) {
 #endif
 #if defined(USE_OZONE)
     switches::kOzonePlatform,
+#endif
+#if defined(USE_X11) && !defined(OS_CHROMEOS)
+    switches::kX11Display,
 #endif
   };
   cmd_line->CopySwitchesFrom(browser_command_line, kSwitchNames,

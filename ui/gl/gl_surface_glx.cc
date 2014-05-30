@@ -348,7 +348,7 @@ bool GLSurfaceGLX::InitializeOneOff() {
       HasGLXExtension("GLX_SGI_video_sync");
 
   if (!g_glx_get_msc_rate_oml_supported && g_glx_sgi_video_sync_supported)
-    SGIVideoSyncProviderThreadShim::display_ = XOpenDisplay(NULL);
+    SGIVideoSyncProviderThreadShim::display_ = gfx::OpenNewXDisplay();
 
   initialized = true;
   return true;

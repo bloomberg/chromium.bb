@@ -437,6 +437,8 @@ if (use_x11) {
       "x/x11_connection.h",
       "x/x11_error_tracker.cc",
       "x/x11_error_tracker.h",
+      "x/x11_switches.cc",
+      "x/x11_switches.h",
       "x/x11_types.cc",
       "x/x11_types.h",
     ]

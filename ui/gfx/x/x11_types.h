@@ -20,6 +20,9 @@ namespace gfx {
 // chrome codebase to get the display from window.
 GFX_EXPORT XDisplay* GetXDisplay();
 
+// This opens a new X11 XDisplay*, taking command line arguments into account.
+GFX_EXPORT XDisplay* OpenNewXDisplay();
+
 // Return the number of bits-per-pixel for a pixmap of the given depth
 GFX_EXPORT int BitsPerPixelForPixmapDepth(XDisplay* display, int depth);
 

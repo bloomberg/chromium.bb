@@ -6,15 +6,27 @@
 
 #include <X11/Xlib.h>
 
+#include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
+#include "ui/gfx/x/x11_switches.h"
 
 namespace gfx {
 
 XDisplay* GetXDisplay() {
   static XDisplay* display = NULL;
   if (!display)
-    display = XOpenDisplay(NULL);
+    display = OpenNewXDisplay();
   return display;
+}
+
+XDisplay* OpenNewXDisplay() {
+#if defined(OS_CHROMEOS)
+  return XOpenDisplay(NULL);
+#else
+  std::string display_str = base::CommandLine::ForCurrentProcess()->
+                            GetSwitchValueASCII(switches::kX11Display);
+  return XOpenDisplay(display_str.empty() ? NULL : display_str.c_str());
+#endif
 }
 
 void PutARGBImage(XDisplay* display,
