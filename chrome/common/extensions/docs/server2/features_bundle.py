@@ -98,11 +98,10 @@ class FeaturesBundle(object):
         compiled_fs_factory,
         _GetFeaturePaths(_PERMISSION_FEATURES,
                          posixpath.join(JSON_TEMPLATES, 'permissions.json')))
-    # Namespace the object store by the file system ID because this class is
-    # used by the availability finder cross-channel.
-    # TODO(kalman): Configure this at the ObjectStore level.
+    self._identity = file_system.GetIdentity()
     self._object_store = object_store_creator.Create(
-        _FeaturesCache, category=file_system.GetIdentity())
+        _FeaturesCache,
+        category=self._identity)
 
   def GetPermissionFeatures(self):
     return self._permission_cache.GetFeatures()
@@ -132,3 +131,6 @@ class FeaturesBundle(object):
       self._object_store.Set('api_features', api_features)
       return api_features
     return Future(callback=resolve)
+
+  def GetIdentity(self):
+    return self._identity

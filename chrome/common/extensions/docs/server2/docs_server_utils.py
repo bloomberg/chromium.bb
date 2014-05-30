@@ -23,10 +23,15 @@ def SanitizeAPIName(name):
     filename = 'experimental_' + filename.replace('experimental_', '')
   return filename
 
-def StringIdentity(string):
+def StringIdentity(first, *more):
   '''Creates a small hash of a string.
   '''
-  return b64encode(sha1(string).digest())[:8]
+  def encode(string):
+    return b64encode(sha1(string).digest())
+  identity = encode(first)
+  for m in more:
+    identity = encode(identity + m)
+  return identity[:8]
 
 def MarkLast(dicts):
   '''Adds a property 'last' == True to the last element in a list of dicts.

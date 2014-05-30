@@ -262,3 +262,6 @@ class CompiledFileSystem(object):
 
   def FileExists(self, path):
     return self._file_system.Exists(path)
+
+  def GetIdentity(self):
+    return self._file_system.GetIdentity()

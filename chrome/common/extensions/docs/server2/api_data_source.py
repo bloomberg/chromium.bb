@@ -8,6 +8,7 @@ import os
 import posixpath
 
 from data_source import DataSource
+from docs_server_utils import StringIdentity
 from environment import IsPreviewServer
 from extensions_paths import JSON_TEMPLATES, PRIVATE_TEMPLATES
 from file_system import FileNotFoundError
@@ -478,7 +479,12 @@ class APIDataSource(DataSource):
     self._api_models = server_instance.api_models
     self._features_bundle = server_instance.features_bundle
     self._model_cache = server_instance.object_store_creator.Create(
-        APIDataSource)
+        APIDataSource,
+        # Update the models when any of templates, APIs, or Features change.
+        category=StringIdentity(self._json_cache.GetIdentity(),
+                                self._template_cache.GetIdentity(),
+                                self._api_models.GetIdentity(),
+                                self._features_bundle.GetIdentity()))
 
     # This caches the result of _LoadEventByName.
     self._event_byname = None

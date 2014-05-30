@@ -6,7 +6,7 @@ from data_source import DataSource
 from future import Future
 from operator import itemgetter
 
-import docs_server_utils as utils
+from docs_server_utils import MarkLast, StringIdentity
 
 class APIListDataSource(DataSource):
   """ This class creates a list of chrome.* APIs and chrome.experimental.* APIs
@@ -25,9 +25,12 @@ class APIListDataSource(DataSource):
   """
   def __init__(self, server_instance, _):
     self._features_bundle = server_instance.features_bundle
-    self._object_store = server_instance.object_store_creator.Create(
-        APIListDataSource)
     self._api_models = server_instance.api_models
+    self._object_store = server_instance.object_store_creator.Create(
+        # Update the model when the API or Features model updates.
+        APIListDataSource,
+        category=StringIdentity(self._features_bundle.GetIdentity(),
+                                self._api_models.GetIdentity()))
     self._api_categorizer = server_instance.api_categorizer
     self._availability_finder = server_instance.availability_finder
 
@@ -71,14 +74,14 @@ class APIListDataSource(DataSource):
 
       for channel, apis_by_channel in platform_dict['chrome'].iteritems():
         apis_by_channel.sort(key=itemgetter('name'))
-        utils.MarkLast(apis_by_channel)
+        MarkLast(apis_by_channel)
         platform_dict['chrome'][channel] = apis_by_channel
 
       for key, apis in (('all', all_apis),
                         ('private', private_apis),
                         ('experimental', experimental_apis)):
         apis.sort(key=itemgetter('name'))
-        utils.MarkLast(apis)
+        MarkLast(apis)
         platform_dict[key] = apis
 
       return platform_dict

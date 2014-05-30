@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 from compiled_file_system import CompiledFileSystem
+from docs_server_utils import StringIdentity
 from file_system import FileNotFoundError
 from future import Future
 
@@ -29,16 +30,20 @@ class ChainedCompiledFileSystem(object):
       self._object_store = object_store
 
     def Create(self, file_system, populate_function, cls, category=None):
-      return ChainedCompiledFileSystem(tuple(
-          CompiledFileSystem.Factory(self._object_store).Create(
-              fs, populate_function, cls, category=category)
-          for fs in [file_system] + self._file_system_chain))
+      return ChainedCompiledFileSystem(
+          # Chain of CompiledFileSystem instances.
+          tuple(CompiledFileSystem.Factory(self._object_store).Create(
+                    fs, populate_function, cls, category=category)
+                for fs in [file_system] + self._file_system_chain),
+          # Identity, as computed by all file systems.
+          StringIdentity(*(fs.GetIdentity() for fs in self._file_system_chain)))
 
-  def __init__(self, compiled_fs_chain):
+  def __init__(self, compiled_fs_chain, identity):
     '''|compiled_fs_chain| is a list of tuples (compiled_fs, file_system).
     '''
     assert len(compiled_fs_chain) > 0
     self._compiled_fs_chain = compiled_fs_chain
+    self._identity = identity
 
   def GetFromFile(self, path):
     return self._GetImpl(
@@ -83,3 +88,6 @@ class ChainedCompiledFileSystem(object):
       return read_futures[0][0].Get()
 
     return Future(callback=resolve)
+
+  def GetIdentity(self):
+    return self._identity

@@ -27,6 +27,7 @@ class APIModels(object):
 
   def __init__(self, features_bundle, compiled_fs_factory, file_system):
     self._features_bundle = features_bundle
+    self._identity = file_system.GetIdentity()
     self._model_cache = compiled_fs_factory.Create(
         file_system, _CreateAPIModel, APIModels)
 
@@ -97,3 +98,6 @@ class APIModels(object):
         continue
       if model:
         yield name, model
+
+  def GetIdentity(self):
+    return self._identity
