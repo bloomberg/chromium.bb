@@ -999,15 +999,21 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     this.table_.list.addEventListener('focus', fileListFocusBound);
     this.grid_.addEventListener('focus', fileListFocusBound);
 
-    var dragStartBound = this.onDragStart_.bind(this);
-    this.table_.list.addEventListener('dragstart', dragStartBound);
-    this.grid_.addEventListener('dragstart', dragStartBound);
-
+    var draggingBound = this.onDragging_.bind(this);
     var dragEndBound = this.onDragEnd_.bind(this);
+
+    // Listen to drag events to hide preview panel while user is dragging files.
+    // Files.app prevents default actions in 'dragstart' in some situations,
+    // so we listen to 'drag' to know the list is actually being dragged.
+    this.table_.list.addEventListener('drag', draggingBound);
+    this.grid_.addEventListener('drag', draggingBound);
     this.table_.list.addEventListener('dragend', dragEndBound);
     this.grid_.addEventListener('dragend', dragEndBound);
-    // This event is published by DragSelector because drag end event is not
-    // published at the end of drag selection.
+
+    // Listen to dragselection events to hide preview panel while the user is
+    // selecting files by drag operation.
+    this.table_.list.addEventListener('dragselectionstart', draggingBound);
+    this.grid_.addEventListener('dragselectionstart', draggingBound);
     this.table_.list.addEventListener('dragselectionend', dragEndBound);
     this.grid_.addEventListener('dragselectionend', dragEndBound);
 
@@ -1403,10 +1409,11 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
   };
 
   /**
-   * Invoked when the drag is started on the list or the grid.
+   * Invoked while the drag is being performed on the list or the grid.
+   * Note: this method may be called multiple times before onDragEnd_().
    * @private
    */
-  FileManager.prototype.onDragStart_ = function() {
+  FileManager.prototype.onDragging_ = function() {
     // On open file dialog, the preview panel is always shown.
     if (DialogType.isOpenDialog(this.dialogType))
       return;
