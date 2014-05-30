@@ -44,8 +44,8 @@ layer at (166,0) size 634x600
           RenderInline {SPAN} at (0,0) size 37x80
             RenderCombineText {#text} at (5,0) size 37x80
               text run at (5,0) width 80: "Times"
-          RenderText {#text} at (5,80) size 37x83
-            text run at (5,80) width 83: "=\x{897F}\x{66A6}"
+          RenderText {#text} at (5,79) size 37x84
+            text run at (5,79) width 83: "=\x{897F}\x{66A6}"
           RenderInline {SPAN} at (0,0) size 37x65
             RenderCombineText {#text} at (5,162) size 37x65
               text run at (5,162) width 64: "2010"
