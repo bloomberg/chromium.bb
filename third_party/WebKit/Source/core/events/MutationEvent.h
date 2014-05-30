@@ -44,13 +44,14 @@ namespace WebCore {
             return adoptRefWillBeNoop(new MutationEvent);
         }
 
-        static PassRefPtrWillBeRawPtr<MutationEvent> create(const AtomicString& type, bool canBubble, PassRefPtr<Node> relatedNode = nullptr,
+        static PassRefPtrWillBeRawPtr<MutationEvent> create(
+            const AtomicString& type, bool canBubble, PassRefPtrWillBeRawPtr<Node> relatedNode = nullptr,
             const String& prevValue = String(), const String& newValue = String(), const String& attrName = String(), unsigned short attrChange = 0)
         {
             return adoptRefWillBeNoop(new MutationEvent(type, canBubble, false, relatedNode, prevValue, newValue, attrName, attrChange));
         }
 
-        void initMutationEvent(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtr<Node> relatedNode,
+        void initMutationEvent(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtrWillBeRawPtr<Node> relatedNode,
                                const String& prevValue, const String& newValue,
                                const String& attrName, unsigned short attrChange);
 
@@ -66,11 +67,11 @@ namespace WebCore {
 
     private:
         MutationEvent();
-        MutationEvent(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtr<Node> relatedNode,
+        MutationEvent(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtrWillBeRawPtr<Node> relatedNode,
                       const String& prevValue, const String& newValue,
                       const String& attrName, unsigned short attrChange);
 
-        RefPtr<Node> m_relatedNode;
+        RefPtrWillBeMember<Node> m_relatedNode;
         String m_prevValue;
         String m_newValue;
         String m_attrName;

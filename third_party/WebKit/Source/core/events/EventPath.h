@@ -95,7 +95,7 @@ private:
     static void checkReachability(TreeScope&, TouchList&);
 #endif
 
-    Vector<NodeEventContext, 64> m_nodeEventContexts;
+    WillBeHeapVector<NodeEventContext, 64> m_nodeEventContexts;
     Node* m_node;
     RawPtrWillBeMember<Event> m_event;
     Vector<RefPtr<TreeScopeEventContext> > m_treeScopeEventContexts;

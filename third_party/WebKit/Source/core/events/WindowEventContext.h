@@ -40,7 +40,7 @@ class NodeEventContext;
 
 class WindowEventContext {
 public:
-    WindowEventContext(Event*, PassRefPtr<Node>, const NodeEventContext*);
+    WindowEventContext(Event*, PassRefPtrWillBeRawPtr<Node>, const NodeEventContext*);
 
     DOMWindow* window() const;
     EventTarget* target() const;

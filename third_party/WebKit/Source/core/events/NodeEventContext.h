@@ -39,10 +39,12 @@ class NodeList;
 class TouchEventContext;
 
 class NodeEventContext {
+    ALLOW_ONLY_INLINE_ALLOCATION();
 public:
     // FIXME: Use ContainerNode instead of Node.
-    NodeEventContext(PassRefPtr<Node>, PassRefPtr<EventTarget> currentTarget);
+    NodeEventContext(PassRefPtrWillBeRawPtr<Node>, PassRefPtr<EventTarget> currentTarget);
     ~NodeEventContext();
+    void trace(Visitor*);
 
     Node* node() const { return m_node.get(); }
 
@@ -57,7 +59,7 @@ public:
     void handleLocalEvents(Event*) const;
 
 private:
-    RefPtr<Node> m_node;
+    RefPtrWillBeMember<Node> m_node;
     RefPtr<EventTarget> m_currentTarget;
     RefPtr<TreeScopeEventContext> m_treeScopeEventContext;
 };

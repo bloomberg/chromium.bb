@@ -61,7 +61,7 @@ public:
         bool ctrlKey, bool altKey, bool shiftKey, bool metaKey, unsigned short button,
         PassRefPtr<EventTarget> relatedTarget, PassRefPtrWillBeRawPtr<Clipboard>, bool isSimulated = false);
 
-    static PassRefPtrWillBeRawPtr<MouseEvent> create(const AtomicString& eventType, PassRefPtrWillBeRawPtr<AbstractView>, const PlatformMouseEvent&, int detail, PassRefPtr<Node> relatedTarget);
+    static PassRefPtrWillBeRawPtr<MouseEvent> create(const AtomicString& eventType, PassRefPtrWillBeRawPtr<AbstractView>, const PlatformMouseEvent&, int detail, PassRefPtrWillBeRawPtr<Node> relatedTarget);
 
     static PassRefPtrWillBeRawPtr<MouseEvent> create(const AtomicString& eventType, const MouseEventInit&);
 
