@@ -97,7 +97,7 @@ void V8Document::createEventMethodCustom(const v8::FunctionCallbackInfo<v8::Valu
     Document* impl = V8Document::toNative(info.Holder());
     V8StringResource<> eventType;
     {
-        TOSTRING_VOID_INTERNAL_NOTRYCATCH(eventType, info[0]);
+        TOSTRING_VOID_INTERNAL(eventType, info[0]);
     }
     RefPtrWillBeRawPtr<Event> result = createEventModules(eventType, exceptionState);
     if (exceptionState.hadException()) {

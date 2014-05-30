@@ -939,6 +939,30 @@ private:
 void GetDevToolsFunctionInfo(v8::Handle<v8::Function>, v8::Isolate*, int& scriptId, String& resourceName, int& lineNumber);
 PassRefPtr<TraceEvent::ConvertableToTraceFormat> devToolsTraceEventData(ExecutionContext*, v8::Handle<v8::Function>, v8::Isolate*);
 
+class V8RethrowTryCatchScope FINAL {
+public:
+    explicit V8RethrowTryCatchScope(v8::TryCatch& block) : m_block(block) { }
+    ~V8RethrowTryCatchScope()
+    {
+        // ReThrow() is a no-op if no exception has been caught, so always call.
+        m_block.ReThrow();
+    }
+
+private:
+    v8::TryCatch& m_block;
+};
+
+class V8ResetTryCatchScope FINAL {
+public:
+    explicit V8ResetTryCatchScope(v8::TryCatch& block) : m_block(block) { }
+    ~V8ResetTryCatchScope()
+    {
+        m_block.Reset();
+    }
+
+private:
+    v8::TryCatch& m_block;
+};
 
 } // namespace WebCore
 

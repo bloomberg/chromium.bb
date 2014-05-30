@@ -443,7 +443,7 @@ def v8_value_to_cpp_value_array_or_sequence(array_or_sequence_type, v8_value, in
     return expression
 
 
-def v8_value_to_local_cpp_value(idl_type, extended_attributes, v8_value, variable_name, index=None, declare_variable=True, method_has_try_catch=False):
+def v8_value_to_local_cpp_value(idl_type, extended_attributes, v8_value, variable_name, index=None, declare_variable=True):
     """Returns an expression that converts a V8 value to a C++ value and stores it as a local value."""
     this_cpp_type = idl_type.cpp_type_args(extended_attributes=extended_attributes, used_as_argument=True)
 
@@ -466,15 +466,6 @@ def v8_value_to_local_cpp_value(idl_type, extended_attributes, v8_value, variabl
         args.insert(0, this_cpp_type)
     else:
         suffix += '_INTERNAL'
-
-    # The TOSTRING_VOID_INTERNAL macro comes in two flavors; use the right one
-    # depending on whether the containing method has a v8::TryCatch local
-    # (named 'block') declared or not. If there is such a local, use the block
-    # for avoiding declaring another one for performance and propagate the
-    # exception.
-    if (macro == 'TOSTRING_VOID' and not declare_variable and
-       not method_has_try_catch):
-        suffix += '_NOTRYCATCH'
 
     return '%s(%s)' % (macro + suffix, ', '.join(args))
 

@@ -47,17 +47,16 @@ namespace WebCore {
     }
 
 #define TONATIVE_VOID_INTERNAL(var, value) \
-    var = (value);                        \
-    if (UNLIKELY(block.HasCaught())) {    \
-        block.ReThrow();                  \
-        return;                           \
-    }
+    var = (value);                         \
+    if (UNLIKELY(block.HasCaught()))       \
+        return;
 
-#define TONATIVE_VOID(type, var, value)    \
-    type var;                              \
-    {                                      \
-        v8::TryCatch block;                \
-        TONATIVE_VOID_INTERNAL(var, value); \
+#define TONATIVE_VOID(type, var, value)        \
+    type var;                                  \
+    {                                          \
+        v8::TryCatch block;                    \
+        V8RethrowTryCatchScope rethrow(block); \
+        TONATIVE_VOID_INTERNAL(var, value);    \
     }
 
 #define TONATIVE_DEFAULT(type, var, value, retVal) \
@@ -106,15 +105,7 @@ namespace WebCore {
 
 #define TOSTRING_VOID_INTERNAL(var, value) \
     var = (value);                         \
-    if (UNLIKELY(!var.prepare())) {        \
-        block.ReThrow();                   \
-        return;                            \
-    }
-
-// There are no v8::TryCatch declared outside.
-#define TOSTRING_VOID_INTERNAL_NOTRYCATCH(var, value) \
-    var = (value);                                    \
-    if (UNLIKELY(!var.prepare()))                     \
+    if (UNLIKELY(!var.prepare()))          \
         return;
 
 #define TOSTRING_DEFAULT(type, var, value, retVal) \

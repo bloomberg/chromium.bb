@@ -100,7 +100,7 @@ def generate_method(interface, method):
 
     return {
         'activity_logging_world_list': v8_utilities.activity_logging_world_list(method),  # [ActivityLogging]
-        'arguments': [generate_argument(interface, method, argument, index, arguments_need_try_catch)
+        'arguments': [generate_argument(interface, method, argument, index)
                       for index, argument in enumerate(arguments)],
         'arguments_need_try_catch': arguments_need_try_catch,
         'conditional_string': v8_utilities.conditional_string(method),
@@ -157,7 +157,7 @@ def generate_method(interface, method):
     }
 
 
-def generate_argument(interface, method, argument, index, method_has_try_catch):
+def generate_argument(interface, method, argument, index):
     extended_attributes = argument.extended_attributes
     idl_type = argument.idl_type
     this_cpp_value = cpp_value(interface, method, index)
@@ -195,7 +195,7 @@ def generate_argument(interface, method, argument, index, method_has_try_catch):
         'name': argument.name,
         'v8_set_return_value_for_main_world': v8_set_return_value(interface.name, method, this_cpp_value, for_main_world=True),
         'v8_set_return_value': v8_set_return_value(interface.name, method, this_cpp_value),
-        'v8_value_to_local_cpp_value': v8_value_to_local_cpp_value(argument, index, method_has_try_catch),
+        'v8_value_to_local_cpp_value': v8_value_to_local_cpp_value(argument, index),
     }
 
 
@@ -279,7 +279,7 @@ def v8_value_to_local_cpp_variadic_value(argument, index):
     return '%s(%s)' % (macro, ', '.join(macro_args))
 
 
-def v8_value_to_local_cpp_value(argument, index, method_has_try_catch):
+def v8_value_to_local_cpp_value(argument, index):
     extended_attributes = argument.extended_attributes
     idl_type = argument.idl_type
     name = argument.name
@@ -292,8 +292,7 @@ def v8_value_to_local_cpp_value(argument, index, method_has_try_catch):
     else:
         v8_value = 'info[%s]' % index
     return idl_type.v8_value_to_local_cpp_value(extended_attributes, v8_value,
-                                                name, index=index, declare_variable=False,
-                                                method_has_try_catch=method_has_try_catch)
+                                                name, index=index, declare_variable=False)
 
 
 ################################################################################

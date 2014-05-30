@@ -103,6 +103,7 @@ static void voidMethodArrayOfLongsArgMethod(const v8::FunctionCallbackInfo<v8::V
     Vector<int> arrayOfLongsArg;
     {
         v8::TryCatch block;
+        V8RethrowTryCatchScope rethrow(block);
         if (UNLIKELY(info.Length() <= 0)) {
             impl->voidMethodArrayOfLongsArg();
             return;
@@ -130,6 +131,7 @@ static void voidMethodFloatArgStringArgMethod(const v8::FunctionCallbackInfo<v8:
     V8StringResource<> stringArg;
     {
         v8::TryCatch block;
+        V8RethrowTryCatchScope rethrow(block);
         TONATIVE_VOID_INTERNAL(floatArg, static_cast<float>(info[0]->NumberValue()));
         TOSTRING_VOID_INTERNAL(stringArg, info[1]);
     }
@@ -178,6 +180,7 @@ static void uLongLongMethodTestInterfaceEmptyTypeSequenceArgMethod(const v8::Fun
     Vector<RefPtr<TestInterfaceEmpty> > testInterfaceEmptyTypeSequenceArg;
     {
         v8::TryCatch block;
+        V8RethrowTryCatchScope rethrow(block);
         TONATIVE_VOID_INTERNAL(testInterfaceEmptyTypeSequenceArg, (toRefPtrNativeArray<TestInterfaceEmpty, V8TestInterfaceEmpty>(info[0], 1, info.GetIsolate())));
     }
     v8SetReturnValue(info, static_cast<double>(impl->uLongLongMethodTestInterfaceEmptyTypeSequenceArg(testInterfaceEmptyTypeSequenceArg)));
@@ -226,6 +229,7 @@ static void arrayOfStringsMethodArrayOfStringsArgMethod(const v8::FunctionCallba
     Vector<String> arrayOfStringsArg;
     {
         v8::TryCatch block;
+        V8RethrowTryCatchScope rethrow(block);
         TONATIVE_VOID_INTERNAL(arrayOfStringsArg, toNativeArray<String>(info[0], 1, info.GetIsolate()));
     }
     v8SetReturnValue(info, v8Array(impl->arrayOfStringsMethodArrayOfStringsArg(arrayOfStringsArg), info.Holder(), info.GetIsolate()));
@@ -248,6 +252,7 @@ static void stringArrayMethodStringArrayArgMethod(const v8::FunctionCallbackInfo
     Vector<String> stringArrayArg;
     {
         v8::TryCatch block;
+        V8RethrowTryCatchScope rethrow(block);
         TONATIVE_VOID_INTERNAL(stringArrayArg, toNativeArray<String>(info[0], 1, info.GetIsolate()));
     }
     v8SetReturnValue(info, v8Array(impl->stringArrayMethodStringArrayArg(stringArrayArg), info.Holder(), info.GetIsolate()));
@@ -269,7 +274,7 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
     }
     V8StringResource<> stringArg;
     {
-        TOSTRING_VOID_INTERNAL_NOTRYCATCH(stringArg, info[0]);
+        TOSTRING_VOID_INTERNAL(stringArg, info[0]);
     }
     RefPtr<TestTypedefs> impl = TestTypedefs::create(stringArg);
 

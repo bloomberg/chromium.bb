@@ -73,7 +73,7 @@ static void V8TestInterfaceNamedConstructor2ConstructorCallback(const v8::Functi
     }
     V8StringResource<> stringArg;
     {
-        TOSTRING_VOID_INTERNAL_NOTRYCATCH(stringArg, info[0]);
+        TOSTRING_VOID_INTERNAL(stringArg, info[0]);
     }
     RefPtr<TestInterfaceNamedConstructor2> impl = TestInterfaceNamedConstructor2::createForJSConstructor(*document, stringArg);
 

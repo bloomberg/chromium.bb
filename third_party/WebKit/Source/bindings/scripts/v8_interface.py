@@ -755,7 +755,7 @@ def generate_constructor(interface, constructor):
 
     return {
         'argument_list': constructor_argument_list(interface, constructor),
-        'arguments': [v8_methods.generate_argument(interface, constructor, argument, index, arguments_need_try_catch)
+        'arguments': [v8_methods.generate_argument(interface, constructor, argument, index)
                       for index, argument in enumerate(constructor.arguments)],
         'arguments_need_try_catch': arguments_need_try_catch,
         'cpp_type': cpp_template_type(

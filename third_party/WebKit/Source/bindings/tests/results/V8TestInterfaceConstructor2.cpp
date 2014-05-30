@@ -50,7 +50,7 @@ static void constructor1(const v8::FunctionCallbackInfo<v8::Value>& info)
     v8::Isolate* isolate = info.GetIsolate();
     V8StringResource<> stringArg;
     {
-        TOSTRING_VOID_INTERNAL_NOTRYCATCH(stringArg, info[0]);
+        TOSTRING_VOID_INTERNAL(stringArg, info[0]);
     }
     RefPtr<TestInterfaceConstructor2> impl = TestInterfaceConstructor2::create(stringArg);
 
@@ -65,10 +65,10 @@ static void constructor2(const v8::FunctionCallbackInfo<v8::Value>& info)
     Dictionary dictionaryArg;
     {
         v8::TryCatch block;
+        V8RethrowTryCatchScope rethrow(block);
         TONATIVE_VOID_INTERNAL(dictionaryArg, Dictionary(info[0], info.GetIsolate()));
         if (!dictionaryArg.isUndefinedOrNull() && !dictionaryArg.isObject()) {
             throwTypeError(ExceptionMessages::failedToConstruct("TestInterfaceConstructor2", "parameter 1 ('dictionaryArg') is not an object."), info.GetIsolate());
-            block.ReThrow();
             return;
         }
     }
@@ -91,6 +91,7 @@ static void constructor3(const v8::FunctionCallbackInfo<v8::Value>& info)
     V8StringResource<> optionalStringArg;
     {
         v8::TryCatch block;
+        V8RethrowTryCatchScope rethrow(block);
         TONATIVE_VOID_INTERNAL(testInterfaceEmptyArg, V8TestInterfaceEmpty::toNativeWithTypeCheck(info.GetIsolate(), info[0]));
         TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(longArg, toInt32(info[1], exceptionState), exceptionState);
         TOSTRING_VOID_INTERNAL(defaultUndefinedOptionalStringArg, info[2]);
@@ -99,7 +100,6 @@ static void constructor3(const v8::FunctionCallbackInfo<v8::Value>& info)
         if (!defaultUndefinedOptionalDictionaryArg.isUndefinedOrNull() && !defaultUndefinedOptionalDictionaryArg.isObject()) {
             exceptionState.throwTypeError("parameter 5 ('defaultUndefinedOptionalDictionaryArg') is not an object.");
             exceptionState.throwIfNeeded();
-            block.ReThrow();
             return;
         }
         if (UNLIKELY(info.Length() <= 5)) {

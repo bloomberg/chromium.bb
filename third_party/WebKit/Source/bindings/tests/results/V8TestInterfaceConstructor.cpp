@@ -75,6 +75,7 @@ static void constructor2(const v8::FunctionCallbackInfo<v8::Value>& info)
     TestInterfaceEmpty* optionalTestInterfaceEmptyArg;
     {
         v8::TryCatch block;
+        V8RethrowTryCatchScope rethrow(block);
         TONATIVE_VOID_INTERNAL(doubleArg, static_cast<double>(info[0]->NumberValue()));
         TOSTRING_VOID_INTERNAL(stringArg, info[1]);
         TONATIVE_VOID_INTERNAL(testInterfaceEmptyArg, V8TestInterfaceEmpty::toNativeWithTypeCheck(info.GetIsolate(), info[2]));
@@ -82,7 +83,6 @@ static void constructor2(const v8::FunctionCallbackInfo<v8::Value>& info)
         if (!dictionaryArg.isUndefinedOrNull() && !dictionaryArg.isObject()) {
             exceptionState.throwTypeError("parameter 4 ('dictionaryArg') is not an object.");
             exceptionState.throwIfNeeded();
-            block.ReThrow();
             return;
         }
         TONATIVE_VOID_INTERNAL(sequenceStringArg, toNativeArray<String>(info[4], 5, info.GetIsolate()));
@@ -91,7 +91,6 @@ static void constructor2(const v8::FunctionCallbackInfo<v8::Value>& info)
         if (!optionalDictionaryArg.isUndefinedOrNull() && !optionalDictionaryArg.isObject()) {
             exceptionState.throwTypeError("parameter 7 ('optionalDictionaryArg') is not an object.");
             exceptionState.throwIfNeeded();
-            block.ReThrow();
             return;
         }
         TONATIVE_VOID_INTERNAL(optionalTestInterfaceEmptyArg, V8TestInterfaceEmpty::toNativeWithTypeCheck(info.GetIsolate(), info[7]));

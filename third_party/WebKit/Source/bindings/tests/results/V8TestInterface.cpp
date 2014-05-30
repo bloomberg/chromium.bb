@@ -803,9 +803,9 @@ static void voidMethodTestInterfaceEmptyArgMethod(const v8::FunctionCallbackInfo
     TestInterfaceEmpty* testInterfaceEmptyArg;
     {
         v8::TryCatch block;
+        V8RethrowTryCatchScope rethrow(block);
         if (info.Length() > 0 && !V8TestInterfaceEmpty::hasInstance(info[0], info.GetIsolate())) {
             throwTypeError(ExceptionMessages::failedToExecute("voidMethodTestInterfaceEmptyArg", "TestInterface", "parameter 1 is not of type 'TestInterfaceEmpty'."), info.GetIsolate());
-            block.ReThrow();
             return;
         }
         TONATIVE_VOID_INTERNAL(testInterfaceEmptyArg, V8TestInterfaceEmpty::toNativeWithTypeCheck(info.GetIsolate(), info[0]));
@@ -831,16 +831,15 @@ static void voidMethodDoubleArgFloatArgMethod(const v8::FunctionCallbackInfo<v8:
     float floatArg;
     {
         v8::TryCatch block;
+        V8RethrowTryCatchScope rethrow(block);
         TONATIVE_VOID_INTERNAL(doubleArg, static_cast<double>(info[0]->NumberValue()));
         if (!std::isfinite(doubleArg)) {
             throwTypeError(ExceptionMessages::failedToExecute("voidMethodDoubleArgFloatArg", "TestInterface", "double parameter 1 is non-finite."), info.GetIsolate());
-            block.ReThrow();
             return;
         }
         TONATIVE_VOID_INTERNAL(floatArg, static_cast<float>(info[1]->NumberValue()));
         if (!std::isfinite(floatArg)) {
             throwTypeError(ExceptionMessages::failedToExecute("voidMethodDoubleArgFloatArg", "TestInterface", "float parameter 2 is non-finite."), info.GetIsolate());
-            block.ReThrow();
             return;
         }
     }
@@ -865,6 +864,7 @@ static void voidMethodUnrestrictedDoubleArgUnrestrictedFloatArgMethod(const v8::
     float unrestrictedFloatArg;
     {
         v8::TryCatch block;
+        V8RethrowTryCatchScope rethrow(block);
         TONATIVE_VOID_INTERNAL(unrestrictedDoubleArg, static_cast<double>(info[0]->NumberValue()));
         TONATIVE_VOID_INTERNAL(unrestrictedFloatArg, static_cast<float>(info[1]->NumberValue()));
     }
@@ -929,11 +929,11 @@ static void implementsComplexMethodMethod(const v8::FunctionCallbackInfo<v8::Val
     TestInterfaceEmpty* testInterfaceEmptyArg;
     {
         v8::TryCatch block;
+        V8RethrowTryCatchScope rethrow(block);
         TOSTRING_VOID_INTERNAL(strArg, info[0]);
         if (info.Length() > 1 && !V8TestInterfaceEmpty::hasInstance(info[1], info.GetIsolate())) {
             exceptionState.throwTypeError("parameter 2 is not of type 'TestInterfaceEmpty'.");
             exceptionState.throwIfNeeded();
-            block.ReThrow();
             return;
         }
         TONATIVE_VOID_INTERNAL(testInterfaceEmptyArg, V8TestInterfaceEmpty::toNativeWithTypeCheck(info.GetIsolate(), info[1]));
@@ -1056,6 +1056,7 @@ static void partialVoidMethodLongArgMethod(const v8::FunctionCallbackInfo<v8::Va
     int longArg;
     {
         v8::TryCatch block;
+        V8RethrowTryCatchScope rethrow(block);
         TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(longArg, toInt32(info[0], exceptionState), exceptionState);
     }
     TestPartialInterface::partialVoidMethodLongArg(*impl, longArg);
@@ -1105,6 +1106,7 @@ static void partialVoidMethodPartialCallbackTypeArgMethod(const v8::FunctionCall
     ScriptValue partialCallbackTypeArg;
     {
         v8::TryCatch block;
+        V8RethrowTryCatchScope rethrow(block);
         TONATIVE_VOID_INTERNAL(partialCallbackTypeArg, ScriptValue(ScriptState::current(info.GetIsolate()), info[0]));
     }
     TestPartialInterface::partialVoidMethodPartialCallbackTypeArg(*impl, partialCallbackTypeArg);

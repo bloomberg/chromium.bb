@@ -252,6 +252,7 @@ static void perWorldBindingsTestInterfaceEmptyMethodOptionalBooleanArgMethod(con
     bool optionalBooleanArgument;
     {
         v8::TryCatch block;
+        V8RethrowTryCatchScope rethrow(block);
         if (UNLIKELY(info.Length() <= 0)) {
             v8SetReturnValueFast(info, WTF::getPtr(impl->perWorldBindingsTestInterfaceEmptyMethodOptionalBooleanArg()), impl);
             return;
@@ -274,6 +275,7 @@ static void perWorldBindingsTestInterfaceEmptyMethodOptionalBooleanArgMethodForM
     bool optionalBooleanArgument;
     {
         v8::TryCatch block;
+        V8RethrowTryCatchScope rethrow(block);
         if (UNLIKELY(info.Length() <= 0)) {
             v8SetReturnValueForMainWorld(info, WTF::getPtr(impl->perWorldBindingsTestInterfaceEmptyMethodOptionalBooleanArg()));
             return;
