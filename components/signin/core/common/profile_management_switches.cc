@@ -12,41 +12,83 @@ namespace {
 
 const char kNewProfileManagementFieldTrialName[] = "NewProfileManagement";
 
-bool CheckProfileManagementFlag(std::string command_switch, bool active_state) {
-  // Individiual flag settings take precedence.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(command_switch)) {
-    return true;
-  }
+// Different state of new profile management/identity consistency.  The code
+// below assumes the order of the values in this enum.  That is, new profile
+// management is included in consistent identity.
+enum State {
+  STATE_NONE,
+  STATE_NEW_PROFILE_MANAGEMENT,
+  STATE_ACCOUNT_CONSISTENCY
+};
 
-  // --new-profile-management flag always affects all switches.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-        switches::kNewProfileManagement)) {
-    return active_state;
-  }
-
-  // NewProfileManagement experiment acts like above flag.
+State GetProcessState() {
+  // Get the full name of the field trial so that the underlying mechanism
+  // is properly initialize.
   std::string trial_type =
       base::FieldTrialList::FindFullName(kNewProfileManagementFieldTrialName);
-  if (!trial_type.empty()) {
-    if (trial_type == "Enabled")
-      return active_state;
-    if (trial_type == "Disabled")
-      return !active_state;
+
+  // Find the state of both command line args.
+  bool is_new_profile_management =
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kNewProfileManagement);
+  bool is_consistent_identity =
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableAccountConsistency);
+
+  State state = STATE_NONE;
+
+  // If both command line args are set, disable the field trial completely
+  // since the assigned group is undefined.  Otherwise use the state of the
+  // command line flag specified.  If neither command line arg is specified,
+  // see if the group was set from the server.
+  if (is_new_profile_management && is_consistent_identity) {
+    base::FieldTrial* field_trial =
+        base::FieldTrialList::Find(kNewProfileManagementFieldTrialName);
+    if (field_trial)
+      field_trial->Disable();
+
+    return STATE_ACCOUNT_CONSISTENCY;
+  } else if (is_new_profile_management) {
+    return STATE_NEW_PROFILE_MANAGEMENT;
+  } else if (is_consistent_identity) {
+    return STATE_ACCOUNT_CONSISTENCY;
   }
 
-  return false;
+  if (state == STATE_NONE && !trial_type.empty()) {
+    if (trial_type == "Enabled") {
+      state = STATE_NEW_PROFILE_MANAGEMENT;
+    } else if (trial_type == "AccountConsistency") {
+      state = STATE_ACCOUNT_CONSISTENCY;
+    }
+  }
+
+  return state;
+}
+
+bool CheckFlag(std::string command_switch, State min_state) {
+  // Individiual flag settings take precedence.
+  if (CommandLine::ForCurrentProcess()->HasSwitch(command_switch))
+    return true;
+
+  return GetProcessState() >= min_state;
 }
 
 }  // namespace
 
 namespace switches {
 
+bool IsEnableAccountConsistency() {
+  return GetProcessState() >= STATE_ACCOUNT_CONSISTENCY;
+}
+
 bool IsEnableWebBasedSignin() {
-  return CheckProfileManagementFlag(switches::kEnableWebBasedSignin, false);
+  return CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableWebBasedSignin) && !IsNewProfileManagement();
 }
 
 bool IsExtensionsMultiAccount() {
-  return CheckProfileManagementFlag(switches::kExtensionsMultiAccount, true);
+  return CheckFlag(switches::kExtensionsMultiAccount,
+                   STATE_NEW_PROFILE_MANAGEMENT);
 }
 
 bool IsFastUserSwitching() {
@@ -58,7 +100,8 @@ bool IsFastUserSwitching() {
 }
 
 bool IsGoogleProfileInfo() {
-  return CheckProfileManagementFlag(switches::kGoogleProfileInfo, true);
+  return CheckFlag(switches::kGoogleProfileInfo,
+                   STATE_NEW_PROFILE_MANAGEMENT);
 }
 
 bool IsNewAvatarMenu() {
@@ -68,7 +111,7 @@ bool IsNewAvatarMenu() {
 }
 
 bool IsNewProfileManagement() {
-  return CheckProfileManagementFlag(switches::kNewProfileManagement, true);
+  return GetProcessState() >= STATE_NEW_PROFILE_MANAGEMENT;
 }
 
 bool IsNewProfileManagementPreviewEnabled() {

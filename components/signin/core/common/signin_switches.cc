@@ -10,6 +10,9 @@ namespace switches {
 // expiration of credentials during testing.
 const char kClearTokenService[] = "clear-token-service";
 
+// Enables consistent identity features.
+const char kEnableAccountConsistency[] = "enable-account-consistency";
+
 // Enables the pure web-based flow for sign in on first run/NTP/wrench menu/
 // settings page.
 const char kEnableWebBasedSignin[] = "enable-web-based-signin";

@@ -11,6 +11,9 @@
 
 namespace switches {
 
+// Checks whether account consistency is enabled.
+bool IsEnableAccountConsistency();
+
 // Enables the web-based sign in flow on Chrome desktop.
 bool IsEnableWebBasedSignin();
 

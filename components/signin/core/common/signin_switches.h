@@ -7,9 +7,14 @@
 
 namespace switches {
 
+// These switches should not be queried from CommandLine::HasSwitch() directly.
+// Always go through the helper functions in profile_management_switches.h
+// to properly take into account the state of field trials.
+
 // All switches in alphabetical order. The switches should be documented
 // alongside the definition of their values in the .cc file.
 extern const char kClearTokenService[];
+extern const char kEnableAccountConsistency[];
 extern const char kEnableWebBasedSignin[];
 extern const char kExtensionsMultiAccount[];
 extern const char kFastUserSwitching[];

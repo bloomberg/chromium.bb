@@ -13420,8 +13420,14 @@ Do you accept?
     <message name="IDS_FLAGS_ENABLE_NEW_PROFILE_MANAGEMENT_NAME" desc="Title for the flag to enable the new profile management.">
       Enable new profile management system
     </message>
-    <message name="IDS_FLAGS_ENABLE_NEW_PROFILE_MANAGEMENT_DESCRIPTION" desc="Description for the flag to enable the new profile management">
-      Enables the new profile management system, including profile sign-out and the new avatar menu UI.
+    <message name="IDS_FLAGS_ENABLE_NEW_PROFILE_MANAGEMENT_DESCRIPTION" desc="Description for the flag to enable the new profile management.">
+      Enables the new profile management system, including profile lock and the new avatar menu UI.
+    </message>
+    <message name="IDS_FLAGS_ENABLE_ACCOUNT_CONSISTENCY_NAME" desc="Title for the flag to enable the account consistency between browser and cookie jar.">
+      Enable identity consistency between browser and cookie jar
+    </message>
+    <message name="IDS_FLAGS_ENABLE_ACCOUNT_CONSISTENCY_DESCRIPTION" desc="Description for the flag to enable the account consistency between browser and cookie jar.">
+      When enabled, the browser manages signing in and out of Google accounts.
     </message>
     <message name="IDS_FLAGS_ENABLE_FAST_USER_SWITCHING_NAME" desc="Title for the flag to enable fast user switching.">
       Enable fast user switching in the avatar menu
