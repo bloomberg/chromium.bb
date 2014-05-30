@@ -6298,8 +6298,7 @@
    fun:_ZN3WTF10RefCountedIN7WebCore11ScriptStateEEnwEm
    fun:_ZN7WebCore11ScriptState6createEN2v86HandleINS1_7ContextEEEN3WTF10PassRefPtrINS_15DOMWrapperWorldEEE
    fun:_ZN7WebCore22WorkerScriptController25initializeContextIfNeededEv
-   fun:_ZN7WebCore22WorkerScriptController8evaluateERKN3WTF6StringES4_RKNS1_12TextPositionEPNS_31WorkerGlobalScopeExecutionStateE
-   fun:_ZN7WebCore22WorkerScriptController8evaluateERKNS_16ScriptSourceCodeEPN3WTF6RefPtrINS_10ErrorEventEEE
+   ...
    fun:_ZN7WebCore12WorkerThread12workerThreadEv
    fun:_ZN7WebCore12WorkerThread17workerThreadStartEPv
    fun:_ZN3WTFL16threadEntryPointEPv
