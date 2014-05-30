@@ -5,12 +5,15 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_ASSETS_MANAGER_CHROMEOS_H_
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_ASSETS_MANAGER_CHROMEOS_H_
 
+#include <map>
+
 #include "chrome/browser/extensions/extension_assets_manager.h"
 
 template <typename T> struct DefaultSingletonTraits;
 class PrefRegistrySimple;
 
 namespace base {
+class DictionaryValue;
 class SequencedTaskRunner;
 }
 
@@ -22,8 +25,14 @@ class ExtensionAssetsManagerChromeOS : public ExtensionAssetsManager {
  public:
   static ExtensionAssetsManagerChromeOS* GetInstance();
 
-  // Path to shared extensions install dir.
-  static const char kSharedExtensionsDir[];
+  // A dictionary that maps shared extension IDs to version/paths/users.
+  static const char kSharedExtensions[];
+
+  // Name of path attribute in shared extensions map.
+  static const char kSharedExtensionPath[];
+
+  // Name of users attribute (list of user emails) in shared extensions map.
+  static const char kSharedExtensionUsers[];
 
   // Register shared assets related preferences.
   static void RegisterPrefs(PrefRegistrySimple* registry);
@@ -40,6 +49,16 @@ class ExtensionAssetsManagerChromeOS : public ExtensionAssetsManager {
       const base::FilePath& local_install_dir,
       const base::FilePath& extension_root) OVERRIDE;
 
+  // Return shared install dir.
+  static base::FilePath GetSharedInstallDir();
+
+  // Cleans up shared extensions list in preferences and returns list of
+  // extension IDs and version paths that are in use in |live_extension_paths|.
+  // Files on disk are not removed. Must be called on UI thread.
+  // Returns |false| in case of errors.
+  static bool CleanUpSharedExtensions(
+      std::multimap<std::string, base::FilePath>* live_extension_paths);
+
   static void SetSharedInstallDirForTesting(const base::FilePath& install_dir);
 
  private:
@@ -51,9 +70,6 @@ class ExtensionAssetsManagerChromeOS : public ExtensionAssetsManager {
   // Should be called on UI thread to get associated file task runner for
   // the profile.
   static base::SequencedTaskRunner* GetFileTaskRunner(Profile* profile);
-
-  // Return shared install dir.
-  static base::FilePath GetSharedInstallDir();
 
   // Return |true| if |extension| can be installed in a shared place for all
   // users on the device.
@@ -96,6 +112,12 @@ class ExtensionAssetsManagerChromeOS : public ExtensionAssetsManager {
 
   // Called on task runner thread to remove shared version.
   static void DeleteSharedVersion(const base::FilePath& shared_version_dir);
+
+  // Clean shared extension with given |id|.
+  static bool CleanUpExtension(
+      const std::string& id,
+      base::DictionaryValue* extension_info,
+      std::multimap<std::string, base::FilePath>* live_extension_paths);
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionAssetsManagerChromeOS);
 };
