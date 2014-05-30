@@ -392,7 +392,7 @@ void Scrollbar::mouseMoved(const PlatformMouseEvent& evt)
     if (m_pressedPart == ThumbPart) {
         if (theme()->shouldSnapBackToDragOrigin(this, evt)) {
             if (m_scrollableArea)
-                m_scrollableArea->scrollToOffsetWithoutAnimation(m_orientation, m_dragOrigin);
+                m_scrollableArea->scrollToOffsetWithoutAnimation(m_orientation, m_dragOrigin + m_scrollableArea->minimumScrollPosition(m_orientation));
         } else {
             moveThumb(m_orientation == HorizontalScrollbar ?
                       convertFromContainingWindow(evt.position()).x() :
