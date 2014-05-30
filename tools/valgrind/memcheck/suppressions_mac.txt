@@ -112,14 +112,7 @@
    bug_257276_b
    Memcheck:Leak
    fun:malloc_zone_malloc
-   fun:_CFRuntimeCreateInstance
-   fun:CFNumberCreate
-   fun:get_colorspace
-   fun:initImagePng
-   fun:_CGImagePluginInitPNG
-   fun:makeImagePlus
-   fun:CGImageSourceCreateImageAtIndex
-   fun:CGImageCreateWithPNGDataProvider
+   ...
    fun:setCursorFromBundle
    fun:CoreCursorSet
    fun:-[NSCursor set]
