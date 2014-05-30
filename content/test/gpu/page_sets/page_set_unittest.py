@@ -7,7 +7,7 @@ import os
 from telemetry.core import discover
 from telemetry.page import page_set as page_set_module
 from telemetry.page import page_set_archive_info
-from telemetry.test_util import page_set_smoke_test
+from telemetry.unittest import page_set_smoke_test
 
 
 class PageSetUnitTest(page_set_smoke_test.PageSetSmokeTest):

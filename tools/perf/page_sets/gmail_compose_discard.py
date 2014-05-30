@@ -71,7 +71,6 @@ class GmailComposeDiscardPageSet(page_set_module.PageSet):
   def __init__(self):
     super(GmailComposeDiscardPageSet, self).__init__(
       credentials_path='data/credentials.json',
-      user_agent_type='desktop',
-      archive_data_file='data/gmail_compose_discard.json')
+      user_agent_type='desktop')
 
     self.AddPage(GmailComposeDiscardPage(self))

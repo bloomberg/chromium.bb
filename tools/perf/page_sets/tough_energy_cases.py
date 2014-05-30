@@ -12,7 +12,6 @@ class ToughEnergyCasesPage(page_module.Page):
   def __init__(self, url, page_set):
     super(ToughEnergyCasesPage, self).__init__(url=url, page_set=page_set)
     self.credentials_path = 'data/credentials.json'
-    self.archive_data_file = 'data/tough_energy_cases.json'
 
 
 class GmailPage(ToughEnergyCasesPage):
@@ -42,8 +41,7 @@ class ToughEnergyCasesPageSet(page_set_module.PageSet):
 
   def __init__(self):
     super(ToughEnergyCasesPageSet, self).__init__(
-      credentials_path='data/credentials.json',
-      archive_data_file='data/tough_energy_cases.json')
+      credentials_path='data/credentials.json')
 
     # Why: Above the fold animated gif running in the background
     self.AddPage(ToughEnergyCasesPage(

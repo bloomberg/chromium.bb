@@ -26,9 +26,7 @@ class Alexa1To10000PageSet(PageSet):
   def __init__(self):
     super(Alexa1To10000PageSet, self).__init__(
         make_javascript_deterministic=True,
-        user_agent_type='desktop',
-        # pylint: disable=C0301
-        archive_data_file='/home/default/storage/webpages_archive/10k/alexa1-10000.json')
+        user_agent_type='desktop')
 
     urls_list = [
       # Why: #1 in Alexa global
