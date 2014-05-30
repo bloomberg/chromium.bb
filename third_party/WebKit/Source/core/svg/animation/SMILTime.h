@@ -80,6 +80,14 @@ private:
     Origin m_origin;
 };
 
+struct SMILInterval {
+    SMILInterval() { }
+    SMILInterval(const SMILTime& begin, const SMILTime& end) : begin(begin), end(end) { }
+
+    SMILTime begin;
+    SMILTime end;
+};
+
 inline bool operator==(const SMILTime& a, const SMILTime& b) { return a.isFinite() && a.value() == b.value(); }
 inline bool operator!(const SMILTime& a) { return !a.isFinite() || !a.value(); }
 inline bool operator!=(const SMILTime& a, const SMILTime& b) { return !operator==(a, b); }
@@ -93,6 +101,13 @@ SMILTime operator+(const SMILTime&, const SMILTime&);
 SMILTime operator-(const SMILTime&, const SMILTime&);
 // So multiplying times does not make too much sense but SMIL defines it for duration * repeatCount
 SMILTime operator*(const SMILTime&, const SMILTime&);
+
+inline bool operator!=(const SMILInterval& a, const SMILInterval& b)
+{
+    // Compare the "raw" values since the operator!= for SMILTime always return
+    // true for non-finite times.
+    return a.begin.value() != b.begin.value() || a.end.value() != b.end.value();
+}
 
 }
 

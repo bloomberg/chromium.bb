@@ -935,14 +935,13 @@ void SVGSMILElement::resolveInterval(bool first, SMILTime& beginResult, SMILTime
 
 void SVGSMILElement::resolveFirstInterval()
 {
-    SMILTime begin;
-    SMILTime end;
-    resolveInterval(true, begin, end);
-    ASSERT(!begin.isIndefinite());
+    SMILInterval firstInterval;
+    resolveInterval(true, firstInterval.begin, firstInterval.end);
+    ASSERT(!firstInterval.begin.isIndefinite());
 
-    if (!begin.isUnresolved() && (begin != m_intervalBegin || end != m_intervalEnd)) {
-        m_intervalBegin = begin;
-        m_intervalEnd = end;
+    if (!firstInterval.begin.isUnresolved() && firstInterval != SMILInterval(m_intervalBegin, m_intervalEnd)) {
+        m_intervalBegin = firstInterval.begin;
+        m_intervalEnd = firstInterval.end;
         notifyDependentsIntervalChanged();
         m_nextProgressTime = min(m_nextProgressTime, m_intervalBegin);
 
