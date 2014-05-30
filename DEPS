@@ -39,7 +39,7 @@ vars = {
   # to update other nacl_*_revision's.
   "nacl_tools_revision": "13077",  # native_client/DEPS: tools_rev
   "google_toolbox_for_mac_revision": "662",
-  "libaddressinput_revision": "176",
+  "libaddressinput_revision": "258",
   "libphonenumber_revision": "621",
   "libvpx_revision": "269083",
   "lss_revision": "26",
