@@ -527,8 +527,7 @@ SpdySession::SpdySession(
 
 SpdySession::~SpdySession() {
   CHECK(!in_io_loop_);
-  DCHECK(!pool_);
-  DcheckClosed();
+  DcheckDraining();
 
   // TODO(akalin): Check connection->is_initialized() instead. This
   // requires re-working CreateFakeSpdySession(), though.
@@ -602,7 +601,7 @@ void SpdySession::InitializeWithSocket(
       NetLog::TYPE_SPDY_SESSION_INITIALIZED,
       connection_->socket()->NetLog().source().ToEventParametersCallback());
 
-  DCHECK_NE(availability_state_, STATE_CLOSED);
+  DCHECK_EQ(availability_state_, STATE_AVAILABLE);
   connection_->AddHigherLayeredPool(this);
   if (enable_sending_initial_data_)
     SendInitialData();
@@ -619,7 +618,7 @@ bool SpdySession::VerifyDomainAuthentication(const std::string& domain) {
   if (!verify_domain_authentication_)
     return true;
 
-  if (availability_state_ == STATE_CLOSED)
+  if (availability_state_ == STATE_DRAINING)
     return false;
 
   SSLInfo ssl_info;
@@ -645,8 +644,7 @@ int SpdySession::GetPushStream(
 
   stream->reset();
 
-  // TODO(akalin): Add unit test exercising this code path.
-  if (availability_state_ == STATE_CLOSED)
+  if (availability_state_ == STATE_DRAINING)
     return ERR_CONNECTION_CLOSED;
 
   Error err = TryAccessStream(url);
@@ -666,17 +664,16 @@ int SpdySession::GetPushStream(
 // another being closed due to received data.
 
 Error SpdySession::TryAccessStream(const GURL& url) {
-  DCHECK_NE(availability_state_, STATE_CLOSED);
+  CHECK_NE(availability_state_, STATE_DRAINING);
 
   if (is_secure_ && certificate_error_code_ != OK &&
       (url.SchemeIs("https") || url.SchemeIs("wss"))) {
     RecordProtocolErrorHistogram(
         PROTOCOL_ERROR_REQUEST_FOR_SECURE_CONTENT_OVER_INSECURE_SESSION);
-    CloseSessionResult result = DoCloseSession(
+    DoDrainSession(
         static_cast<Error>(certificate_error_code_),
         "Tried to get SPDY stream for secure content over an unauthenticated "
         "session.");
-    DCHECK_EQ(result, SESSION_CLOSED_AND_REMOVED);
     return ERR_SPDY_PROTOCOL_ERROR;
   }
   return OK;
@@ -690,8 +687,7 @@ int SpdySession::TryCreateStream(
   if (availability_state_ == STATE_GOING_AWAY)
     return ERR_FAILED;
 
-  // TODO(akalin): Add unit test exercising this code path.
-  if (availability_state_ == STATE_CLOSED)
+  if (availability_state_ == STATE_DRAINING)
     return ERR_CONNECTION_CLOSED;
 
   Error err = TryAccessStream(request->url());
@@ -721,8 +717,7 @@ int SpdySession::CreateStream(const SpdyStreamRequest& request,
   if (availability_state_ == STATE_GOING_AWAY)
     return ERR_FAILED;
 
-  // TODO(akalin): Add unit test exercising this code path.
-  if (availability_state_ == STATE_CLOSED)
+  if (availability_state_ == STATE_DRAINING)
     return ERR_CONNECTION_CLOSED;
 
   Error err = TryAccessStream(request.url());
@@ -738,10 +733,9 @@ int SpdySession::CreateStream(const SpdyStreamRequest& request,
     UMA_HISTOGRAM_BOOLEAN("Net.SpdySession.CreateStreamWithSocketConnected",
                           connection_->socket()->IsConnected());
     if (!connection_->socket()->IsConnected()) {
-      CloseSessionResult result = DoCloseSession(
+      DoDrainSession(
           ERR_CONNECTION_CLOSED,
           "Tried to create SPDY stream for a closed socket connection.");
-      DCHECK_EQ(result, SESSION_CLOSED_AND_REMOVED);
       return ERR_CONNECTION_CLOSED;
     }
   }
@@ -882,17 +876,12 @@ base::WeakPtr<SpdySession> SpdySession::GetWeakPtr() {
 
 bool SpdySession::CloseOneIdleConnection() {
   CHECK(!in_io_loop_);
-  DCHECK_NE(availability_state_, STATE_CLOSED);
   DCHECK(pool_);
-  if (!active_streams_.empty())
-    return false;
-  CloseSessionResult result =
-      DoCloseSession(ERR_CONNECTION_CLOSED, "Closing one idle connection.");
-  if (result != SESSION_CLOSED_AND_REMOVED) {
-    NOTREACHED();
-    return false;
+  if (active_streams_.empty()) {
+    DoDrainSession(ERR_CONNECTION_CLOSED, "Closing idle connection.");
   }
-  return true;
+  // Return false as the socket wasn't immediately closed.
+  return false;
 }
 
 void SpdySession::EnqueueStreamWrite(
@@ -945,8 +934,7 @@ scoped_ptr<SpdyBuffer> SpdySession::CreateDataBuffer(SpdyStreamId stream_id,
                                                      IOBuffer* data,
                                                      int len,
                                                      SpdyDataFlags flags) {
-  if (availability_state_ == STATE_CLOSED) {
-    NOTREACHED();
+  if (availability_state_ == STATE_DRAINING) {
     return scoped_ptr<SpdyBuffer>();
   }
 
@@ -1135,22 +1123,13 @@ void SpdySession::CloseActiveStreamIterator(ActiveStreamMap::iterator it,
   if (owned_stream->type() == SPDY_PUSH_STREAM)
     unclaimed_pushed_streams_.erase(owned_stream->url());
 
-  base::WeakPtr<SpdySession> weak_this = GetWeakPtr();
-
   DeleteStream(owned_stream.Pass(), status);
-
-  if (!weak_this)
-    return;
-
-  if (availability_state_ == STATE_CLOSED)
-    return;
+  MaybeFinishGoingAway();
 
   // If there are no active streams and the socket pool is stalled, close the
   // session to free up a socket slot.
   if (active_streams_.empty() && connection_->IsPoolStalled()) {
-    CloseSessionResult result =
-        DoCloseSession(ERR_CONNECTION_CLOSED, "Closing idle connection.");
-    CHECK_NE(result, SESSION_ALREADY_CLOSED);
+    DoDrainSession(ERR_CONNECTION_CLOSED, "Closing idle connection.");
   }
 }
 
@@ -1195,31 +1174,21 @@ void SpdySession::EnqueueResetStreamFrame(SpdyStreamId stream_id,
 
 void SpdySession::PumpReadLoop(ReadState expected_read_state, int result) {
   CHECK(!in_io_loop_);
-  CHECK_NE(availability_state_, STATE_CLOSED);
-  CHECK_EQ(read_state_, expected_read_state);
-
-  result = DoReadLoop(expected_read_state, result);
-
-  if (availability_state_ == STATE_CLOSED) {
-    CHECK_EQ(result, error_on_close_);
-    CHECK_LT(error_on_close_, ERR_IO_PENDING);
-    RemoveFromPool();
+  if (availability_state_ == STATE_DRAINING) {
     return;
   }
-
-  CHECK(result == OK || result == ERR_IO_PENDING);
+  ignore_result(DoReadLoop(expected_read_state, result));
 }
 
 int SpdySession::DoReadLoop(ReadState expected_read_state, int result) {
   CHECK(!in_io_loop_);
-  CHECK_NE(availability_state_, STATE_CLOSED);
   CHECK_EQ(read_state_, expected_read_state);
 
   in_io_loop_ = true;
 
   int bytes_read_without_yielding = 0;
 
-  // Loop until the session is closed, the read becomes blocked, or
+  // Loop until the session is draining, the read becomes blocked, or
   // the read limit is exceeded.
   while (true) {
     switch (read_state_) {
@@ -1237,11 +1206,8 @@ int SpdySession::DoReadLoop(ReadState expected_read_state, int result) {
         break;
     }
 
-    if (availability_state_ == STATE_CLOSED) {
-      CHECK_EQ(result, error_on_close_);
-      CHECK_LT(result, ERR_IO_PENDING);
+    if (availability_state_ == STATE_DRAINING)
       break;
-    }
 
     if (result == ERR_IO_PENDING)
       break;
@@ -1265,7 +1231,6 @@ int SpdySession::DoReadLoop(ReadState expected_read_state, int result) {
 
 int SpdySession::DoRead() {
   CHECK(in_io_loop_);
-  CHECK_NE(availability_state_, STATE_CLOSED);
 
   CHECK(connection_);
   CHECK(connection_->socket());
@@ -1279,7 +1244,6 @@ int SpdySession::DoRead() {
 
 int SpdySession::DoReadComplete(int result) {
   CHECK(in_io_loop_);
-  DCHECK_NE(availability_state_, STATE_CLOSED);
 
   // Parse a frame.  For now this code requires that the frame fit into our
   // buffer (kReadBufferSize).
@@ -1288,20 +1252,13 @@ int SpdySession::DoReadComplete(int result) {
   if (result == 0) {
     UMA_HISTOGRAM_CUSTOM_COUNTS("Net.SpdySession.BytesRead.EOF",
                                 total_bytes_received_, 1, 100000000, 50);
-    CloseSessionResult close_session_result =
-        DoCloseSession(ERR_CONNECTION_CLOSED, "Connection closed");
-    DCHECK_EQ(close_session_result, SESSION_CLOSED_BUT_NOT_REMOVED);
-    DCHECK_EQ(availability_state_, STATE_CLOSED);
-    DCHECK_EQ(error_on_close_, ERR_CONNECTION_CLOSED);
+    DoDrainSession(ERR_CONNECTION_CLOSED, "Connection closed");
+
     return ERR_CONNECTION_CLOSED;
   }
 
   if (result < 0) {
-    CloseSessionResult close_session_result =
-        DoCloseSession(static_cast<Error>(result), "result is < 0.");
-    DCHECK_EQ(close_session_result, SESSION_CLOSED_BUT_NOT_REMOVED);
-    DCHECK_EQ(availability_state_, STATE_CLOSED);
-    DCHECK_EQ(error_on_close_, result);
+    DoDrainSession(static_cast<Error>(result), "result is < 0.");
     return result;
   }
   CHECK_LE(result, kReadBufferSize);
@@ -1316,9 +1273,8 @@ int SpdySession::DoReadComplete(int result) {
     result -= bytes_processed;
     data += bytes_processed;
 
-    if (availability_state_ == STATE_CLOSED) {
-      DCHECK_LT(error_on_close_, ERR_IO_PENDING);
-      return error_on_close_;
+    if (availability_state_ == STATE_DRAINING) {
+      return ERR_CONNECTION_CLOSED;
     }
 
     DCHECK_EQ(buffered_spdy_framer_->error_code(), SpdyFramer::SPDY_NO_ERROR);
@@ -1330,24 +1286,19 @@ int SpdySession::DoReadComplete(int result) {
 
 void SpdySession::PumpWriteLoop(WriteState expected_write_state, int result) {
   CHECK(!in_io_loop_);
-  DCHECK_NE(availability_state_, STATE_CLOSED);
   DCHECK_EQ(write_state_, expected_write_state);
 
-  result = DoWriteLoop(expected_write_state, result);
+  DoWriteLoop(expected_write_state, result);
 
-  if (availability_state_ == STATE_CLOSED) {
-    DCHECK_EQ(result, error_on_close_);
-    DCHECK_LT(error_on_close_, ERR_IO_PENDING);
-    RemoveFromPool();
+  if (availability_state_ == STATE_DRAINING && !in_flight_write_ &&
+      write_queue_.IsEmpty()) {
+    pool_->RemoveUnavailableSession(GetWeakPtr());  // Destroys |this|.
     return;
   }
-
-  DCHECK(result == OK || result == ERR_IO_PENDING);
 }
 
 int SpdySession::DoWriteLoop(WriteState expected_write_state, int result) {
   CHECK(!in_io_loop_);
-  DCHECK_NE(availability_state_, STATE_CLOSED);
   DCHECK_NE(write_state_, WRITE_STATE_IDLE);
   DCHECK_EQ(write_state_, expected_write_state);
 
@@ -1369,12 +1320,6 @@ int SpdySession::DoWriteLoop(WriteState expected_write_state, int result) {
         break;
     }
 
-    if (availability_state_ == STATE_CLOSED) {
-      DCHECK_EQ(result, error_on_close_);
-      DCHECK_LT(result, ERR_IO_PENDING);
-      break;
-    }
-
     if (write_state_ == WRITE_STATE_IDLE) {
       DCHECK_EQ(result, ERR_IO_PENDING);
       break;
@@ -1392,7 +1337,6 @@ int SpdySession::DoWriteLoop(WriteState expected_write_state, int result) {
 
 int SpdySession::DoWrite() {
   CHECK(in_io_loop_);
-  DCHECK_NE(availability_state_, STATE_CLOSED);
 
   DCHECK(buffered_spdy_framer_);
   if (in_flight_write_) {
@@ -1456,7 +1400,6 @@ int SpdySession::DoWrite() {
 
 int SpdySession::DoWriteComplete(int result) {
   CHECK(in_io_loop_);
-  DCHECK_NE(availability_state_, STATE_CLOSED);
   DCHECK_NE(result, ERR_IO_PENDING);
   DCHECK_GT(in_flight_write_->GetRemainingSize(), 0u);
 
@@ -1468,12 +1411,9 @@ int SpdySession::DoWriteComplete(int result) {
     in_flight_write_frame_type_ = DATA;
     in_flight_write_frame_size_ = 0;
     in_flight_write_stream_.reset();
-    CloseSessionResult close_session_result =
-        DoCloseSession(static_cast<Error>(result), "Write error");
-    DCHECK_EQ(close_session_result, SESSION_CLOSED_BUT_NOT_REMOVED);
-    DCHECK_EQ(availability_state_, STATE_CLOSED);
-    DCHECK_EQ(error_on_close_, result);
-    return result;
+    write_state_ = WRITE_STATE_DO_WRITE;
+    DoDrainSession(static_cast<Error>(result), "Write error");
+    return OK;
   }
 
   // It should not be possible to have written more bytes than our
@@ -1517,13 +1457,11 @@ void SpdySession::DcheckGoingAway() const {
 #endif
 }
 
-void SpdySession::DcheckClosed() const {
+void SpdySession::DcheckDraining() const {
   DcheckGoingAway();
-  DCHECK_EQ(availability_state_, STATE_CLOSED);
-  DCHECK_LT(error_on_close_, ERR_IO_PENDING);
+  DCHECK_EQ(availability_state_, STATE_DRAINING);
   DCHECK(active_streams_.empty());
   DCHECK(unclaimed_pushed_streams_.empty());
-  DCHECK(write_queue_.IsEmpty());
 }
 
 void SpdySession::StartGoingAway(SpdyStreamId last_good_stream_id,
@@ -1573,21 +1511,21 @@ void SpdySession::StartGoingAway(SpdyStreamId last_good_stream_id,
 }
 
 void SpdySession::MaybeFinishGoingAway() {
-  DcheckGoingAway();
-  if (active_streams_.empty() && availability_state_ != STATE_CLOSED) {
-    CloseSessionResult result =
-        DoCloseSession(ERR_CONNECTION_CLOSED, "Finished going away");
-    CHECK_NE(result, SESSION_ALREADY_CLOSED);
+  if (active_streams_.empty() && availability_state_ == STATE_GOING_AWAY) {
+    DoDrainSession(OK, "Finished going away");
   }
 }
 
-SpdySession::CloseSessionResult SpdySession::DoCloseSession(
-    Error err,
-    const std::string& description) {
-  CHECK_LT(err, ERR_IO_PENDING);
+void SpdySession::DoDrainSession(Error err, const std::string& description) {
+  if (availability_state_ == STATE_DRAINING) {
+    return;
+  }
+  MakeUnavailable();
 
-  if (availability_state_ == STATE_CLOSED)
-    return SESSION_ALREADY_CLOSED;
+  // TODO(jgraettinger): If draining with an |err|, enqueue a GOAWAY frame here.
+
+  availability_state_ = STATE_DRAINING;
+  error_on_close_ = err;
 
   net_log_.AddEvent(
       NetLog::TYPE_SPDY_SESSION_CLOSE,
@@ -1597,32 +1535,9 @@ SpdySession::CloseSessionResult SpdySession::DoCloseSession(
   UMA_HISTOGRAM_CUSTOM_COUNTS("Net.SpdySession.BytesRead.OtherErrors",
                               total_bytes_received_, 1, 100000000, 50);
 
-  CHECK(pool_);
-  if (availability_state_ != STATE_GOING_AWAY)
-    pool_->MakeSessionUnavailable(GetWeakPtr());
-
-  availability_state_ = STATE_CLOSED;
-  error_on_close_ = err;
-
   StartGoingAway(0, err);
-  write_queue_.Clear();
-
-  DcheckClosed();
-
-  if (in_io_loop_)
-    return SESSION_CLOSED_BUT_NOT_REMOVED;
-
-  RemoveFromPool();
-  return SESSION_CLOSED_AND_REMOVED;
-}
-
-void SpdySession::RemoveFromPool() {
-  DcheckClosed();
-  CHECK(pool_);
-
-  SpdySessionPool* pool = pool_;
-  pool_ = NULL;
-  pool->RemoveUnavailableSession(GetWeakPtr());
+  DcheckDraining();
+  MaybePostWriteLoop();
 }
 
 void SpdySession::LogAbandonedStream(SpdyStream* stream, Error status) {
@@ -1661,15 +1576,13 @@ SpdyStreamId SpdySession::GetNewStreamId() {
 
 void SpdySession::CloseSessionOnError(Error err,
                                       const std::string& description) {
-  // We may be called from anywhere, so we can't expect a particular
-  // return value.
-  ignore_result(DoCloseSession(err, description));
+  DoDrainSession(err, description);
 }
 
 void SpdySession::MakeUnavailable() {
-  if (availability_state_ < STATE_GOING_AWAY) {
+  CHECK_NE(availability_state_, STATE_DRAINING);
+  if (availability_state_ == STATE_AVAILABLE) {
     availability_state_ = STATE_GOING_AWAY;
-    DCHECK(pool_);
     pool_->MakeSessionUnavailable(GetWeakPtr());
   }
 }
@@ -1778,14 +1691,16 @@ void SpdySession::EnqueueWrite(RequestPriority priority,
                                SpdyFrameType frame_type,
                                scoped_ptr<SpdyBufferProducer> producer,
                                const base::WeakPtr<SpdyStream>& stream) {
-  if (availability_state_ == STATE_CLOSED)
+  if (availability_state_ == STATE_DRAINING)
     return;
 
-  bool was_idle = write_queue_.IsEmpty();
   write_queue_.Enqueue(priority, frame_type, producer.Pass(), stream);
+  MaybePostWriteLoop();
+}
+
+void SpdySession::MaybePostWriteLoop() {
   if (write_state_ == WRITE_STATE_IDLE) {
-    DCHECK(was_idle);
-    DCHECK(!in_flight_write_);
+    CHECK(!in_flight_write_);
     write_state_ = WRITE_STATE_DO_WRITE;
     base::MessageLoop::current()->PostTask(
         FROM_HERE,
@@ -1829,26 +1744,10 @@ void SpdySession::DeleteStream(scoped_ptr<SpdyStream> stream, int status) {
   }
 
   write_queue_.RemovePendingWritesForStream(stream->GetWeakPtr());
-
-  // |stream->OnClose()| may end up closing |this|, so detect that.
-  base::WeakPtr<SpdySession> weak_this = GetWeakPtr();
-
   stream->OnClose(status);
 
-  if (!weak_this)
-    return;
-
-  switch (availability_state_) {
-    case STATE_AVAILABLE:
-      ProcessPendingStreamRequests();
-      break;
-    case STATE_GOING_AWAY:
-      DcheckGoingAway();
-      MaybeFinishGoingAway();
-      break;
-    case STATE_CLOSED:
-      // Do nothing.
-      break;
+  if (availability_state_ == STATE_AVAILABLE) {
+    ProcessPendingStreamRequests();
   }
 }
 
@@ -1892,23 +1791,15 @@ bool SpdySession::GetSSLCertRequestInfo(
 void SpdySession::OnError(SpdyFramer::SpdyError error_code) {
   CHECK(in_io_loop_);
 
-  if (availability_state_ == STATE_CLOSED)
-    return;
-
   RecordProtocolErrorHistogram(MapFramerErrorToProtocolError(error_code));
   std::string description = base::StringPrintf(
       "SPDY_ERROR error_code: %d.", error_code);
-  CloseSessionResult result =
-      DoCloseSession(ERR_SPDY_PROTOCOL_ERROR, description);
-  DCHECK_EQ(result, SESSION_CLOSED_BUT_NOT_REMOVED);
+  DoDrainSession(ERR_SPDY_PROTOCOL_ERROR, description);
 }
 
 void SpdySession::OnStreamError(SpdyStreamId stream_id,
                                 const std::string& description) {
   CHECK(in_io_loop_);
-
-  if (availability_state_ == STATE_CLOSED)
-    return;
 
   ActiveStreamMap::iterator it = active_streams_.find(stream_id);
   if (it == active_streams_.end()) {
@@ -1926,9 +1817,6 @@ void SpdySession::OnDataFrameHeader(SpdyStreamId stream_id,
                                     size_t length,
                                     bool fin) {
   CHECK(in_io_loop_);
-
-  if (availability_state_ == STATE_CLOSED)
-    return;
 
   ActiveStreamMap::iterator it = active_streams_.find(stream_id);
 
@@ -1949,9 +1837,6 @@ void SpdySession::OnStreamFrameData(SpdyStreamId stream_id,
                                     size_t len,
                                     bool fin) {
   CHECK(in_io_loop_);
-
-  if (availability_state_ == STATE_CLOSED)
-    return;
 
   if (data == NULL && len != 0) {
     // This is notification of consumed data padding.
@@ -2012,9 +1897,6 @@ void SpdySession::OnStreamFrameData(SpdyStreamId stream_id,
 void SpdySession::OnSettings(bool clear_persisted) {
   CHECK(in_io_loop_);
 
-  if (availability_state_ == STATE_CLOSED)
-    return;
-
   if (clear_persisted)
     http_server_properties_->ClearSpdySettings(host_port_pair());
 
@@ -2041,9 +1923,6 @@ void SpdySession::OnSetting(SpdySettingsIds id,
                             uint8 flags,
                             uint32 value) {
   CHECK(in_io_loop_);
-
-  if (availability_state_ == STATE_CLOSED)
-    return;
 
   HandleSetting(id, value);
   http_server_properties_->SetSpdySetting(
@@ -2111,9 +1990,6 @@ void SpdySession::OnSynStream(SpdyStreamId stream_id,
                               bool unidirectional,
                               const SpdyHeaderBlock& headers) {
   CHECK(in_io_loop_);
-
-  if (availability_state_ == STATE_CLOSED)
-    return;
 
   base::Time response_time = base::Time::Now();
   base::TimeTicks recv_first_byte_time = time_func_();
@@ -2300,9 +2176,6 @@ void SpdySession::OnSynReply(SpdyStreamId stream_id,
                              const SpdyHeaderBlock& headers) {
   CHECK(in_io_loop_);
 
-  if (availability_state_ == STATE_CLOSED)
-    return;
-
   base::Time response_time = base::Time::Now();
   base::TimeTicks recv_first_byte_time = time_func_();
 
@@ -2349,9 +2222,6 @@ void SpdySession::OnHeaders(SpdyStreamId stream_id,
                             bool fin,
                             const SpdyHeaderBlock& headers) {
   CHECK(in_io_loop_);
-
-  if (availability_state_ == STATE_CLOSED)
-    return;
 
   if (net_log().IsLogging()) {
     net_log().AddEvent(
@@ -2400,9 +2270,6 @@ void SpdySession::OnRstStream(SpdyStreamId stream_id,
                               SpdyRstStreamStatus status) {
   CHECK(in_io_loop_);
 
-  if (availability_state_ == STATE_CLOSED)
-    return;
-
   std::string description;
   net_log().AddEvent(
       NetLog::TYPE_SPDY_SESSION_RST_STREAM,
@@ -2438,9 +2305,6 @@ void SpdySession::OnGoAway(SpdyStreamId last_accepted_stream_id,
                            SpdyGoAwayStatus status) {
   CHECK(in_io_loop_);
 
-  if (availability_state_ == STATE_CLOSED)
-    return;
-
   net_log_.AddEvent(NetLog::TYPE_SPDY_SESSION_GOAWAY,
       base::Bind(&NetLogSpdyGoAwayCallback,
                  last_accepted_stream_id,
@@ -2459,9 +2323,6 @@ void SpdySession::OnGoAway(SpdyStreamId last_accepted_stream_id,
 void SpdySession::OnPing(SpdyPingId unique_id, bool is_ack) {
   CHECK(in_io_loop_);
 
-  if (availability_state_ == STATE_CLOSED)
-    return;
-
   net_log_.AddEvent(
       NetLog::TYPE_SPDY_SESSION_PING,
       base::Bind(&NetLogSpdyPingCallback, unique_id, is_ack, "received"));
@@ -2476,9 +2337,7 @@ void SpdySession::OnPing(SpdyPingId unique_id, bool is_ack) {
   --pings_in_flight_;
   if (pings_in_flight_ < 0) {
     RecordProtocolErrorHistogram(PROTOCOL_ERROR_UNEXPECTED_PING);
-    CloseSessionResult result =
-        DoCloseSession(ERR_SPDY_PROTOCOL_ERROR, "pings_in_flight_ is < 0.");
-    DCHECK_EQ(result, SESSION_CLOSED_BUT_NOT_REMOVED);
+    DoDrainSession(ERR_SPDY_PROTOCOL_ERROR, "pings_in_flight_ is < 0.");
     pings_in_flight_ = 0;
     return;
   }
@@ -2494,9 +2353,6 @@ void SpdySession::OnPing(SpdyPingId unique_id, bool is_ack) {
 void SpdySession::OnWindowUpdate(SpdyStreamId stream_id,
                                  uint32 delta_window_size) {
   CHECK(in_io_loop_);
-
-  if (availability_state_ == STATE_CLOSED)
-    return;
 
   DCHECK_LE(delta_window_size, static_cast<uint32>(kint32max));
   net_log_.AddEvent(
@@ -2515,11 +2371,10 @@ void SpdySession::OnWindowUpdate(SpdyStreamId stream_id,
 
     if (delta_window_size < 1u) {
       RecordProtocolErrorHistogram(PROTOCOL_ERROR_INVALID_WINDOW_UPDATE_SIZE);
-      CloseSessionResult result = DoCloseSession(
+      DoDrainSession(
           ERR_SPDY_PROTOCOL_ERROR,
           "Received WINDOW_UPDATE with an invalid delta_window_size " +
-          base::UintToString(delta_window_size));
-      DCHECK_EQ(result, SESSION_CLOSED_BUT_NOT_REMOVED);
+              base::UintToString(delta_window_size));
       return;
     }
 
@@ -2576,7 +2431,6 @@ void SpdySession::SendStreamWindowUpdate(SpdyStreamId stream_id,
 
 void SpdySession::SendInitialData() {
   DCHECK(enable_sending_initial_data_);
-  DCHECK_NE(availability_state_, STATE_CLOSED);
 
   if (send_connection_header_prefix_) {
     DCHECK_EQ(protocol_, kProtoSPDY4);
@@ -2642,8 +2496,6 @@ void SpdySession::SendInitialData() {
 
 
 void SpdySession::SendSettings(const SettingsMap& settings) {
-  DCHECK_NE(availability_state_, STATE_CLOSED);
-
   net_log_.AddEvent(
       NetLog::TYPE_SPDY_SESSION_SEND_SETTINGS,
       base::Bind(&NetLogSpdySendSettingsCallback, &settings));
@@ -2772,7 +2624,6 @@ void SpdySession::PlanToCheckPingStatus() {
 
 void SpdySession::CheckPingStatus(base::TimeTicks last_check_time) {
   CHECK(!in_io_loop_);
-  DCHECK_NE(availability_state_, STATE_CLOSED);
 
   // Check if we got a response back for all PINGs we had sent.
   if (pings_in_flight_ == 0) {
@@ -2788,9 +2639,7 @@ void SpdySession::CheckPingStatus(base::TimeTicks last_check_time) {
   if (delay.InMilliseconds() < 0 || last_activity_time_ < last_check_time) {
     // Track all failed PING messages in a separate bucket.
     RecordPingRTTHistogram(base::TimeDelta::Max());
-    CloseSessionResult result =
-        DoCloseSession(ERR_SPDY_PING_FAILED, "Failed ping.");
-    DCHECK_EQ(result, SESSION_CLOSED_AND_REMOVED);
+    DoDrainSession(ERR_SPDY_PING_FAILED, "Failed ping.");
     return;
   }
 
@@ -2923,9 +2772,6 @@ void SpdySession::OnWriteBufferConsumed(
   // We can be called with |in_io_loop_| set if a write SpdyBuffer is
   // deleted (e.g., a stream is closed due to incoming data).
 
-  if (availability_state_ == STATE_CLOSED)
-    return;
-
   DCHECK_EQ(flow_control_state_, FLOW_CONTROL_STREAM_AND_SESSION);
 
   if (consume_source == SpdyBuffer::DISCARD) {
@@ -2945,7 +2791,6 @@ void SpdySession::IncreaseSendWindowSize(int32 delta_window_size) {
   // We can be called with |in_io_loop_| set if a SpdyBuffer is
   // deleted (e.g., a stream is closed due to incoming data).
 
-  DCHECK_NE(availability_state_, STATE_CLOSED);
   DCHECK_EQ(flow_control_state_, FLOW_CONTROL_STREAM_AND_SESSION);
   DCHECK_GE(delta_window_size, 1);
 
@@ -2953,13 +2798,12 @@ void SpdySession::IncreaseSendWindowSize(int32 delta_window_size) {
   int32 max_delta_window_size = kint32max - session_send_window_size_;
   if (delta_window_size > max_delta_window_size) {
     RecordProtocolErrorHistogram(PROTOCOL_ERROR_INVALID_WINDOW_UPDATE_SIZE);
-    CloseSessionResult result = DoCloseSession(
+    DoDrainSession(
         ERR_SPDY_PROTOCOL_ERROR,
         "Received WINDOW_UPDATE [delta: " +
-        base::IntToString(delta_window_size) +
-        "] for session overflows session_send_window_size_ [current: " +
-        base::IntToString(session_send_window_size_) + "]");
-    DCHECK_NE(result, SESSION_ALREADY_CLOSED);
+            base::IntToString(delta_window_size) +
+            "] for session overflows session_send_window_size_ [current: " +
+            base::IntToString(session_send_window_size_) + "]");
     return;
   }
 
@@ -2975,7 +2819,6 @@ void SpdySession::IncreaseSendWindowSize(int32 delta_window_size) {
 }
 
 void SpdySession::DecreaseSendWindowSize(int32 delta_window_size) {
-  DCHECK_NE(availability_state_, STATE_CLOSED);
   DCHECK_EQ(flow_control_state_, FLOW_CONTROL_STREAM_AND_SESSION);
 
   // We only call this method when sending a frame. Therefore,
@@ -3001,9 +2844,6 @@ void SpdySession::OnReadBufferConsumed(
   // We can be called with |in_io_loop_| set if a read SpdyBuffer is
   // deleted (e.g., discarded by a SpdyReadQueue).
 
-  if (availability_state_ == STATE_CLOSED)
-    return;
-
   DCHECK_EQ(flow_control_state_, FLOW_CONTROL_STREAM_AND_SESSION);
   DCHECK_GE(consume_size, 1u);
   DCHECK_LE(consume_size, static_cast<size_t>(kint32max));
@@ -3012,7 +2852,6 @@ void SpdySession::OnReadBufferConsumed(
 }
 
 void SpdySession::IncreaseRecvWindowSize(int32 delta_window_size) {
-  DCHECK_NE(availability_state_, STATE_CLOSED);
   DCHECK_EQ(flow_control_state_, FLOW_CONTROL_STREAM_AND_SESSION);
   DCHECK_GE(session_unacked_recv_window_bytes_, 0);
   DCHECK_GE(session_recv_window_size_, session_unacked_recv_window_bytes_);
@@ -3045,12 +2884,11 @@ void SpdySession::DecreaseRecvWindowSize(int32 delta_window_size) {
   // negative. If we do, the receive window isn't being respected.
   if (delta_window_size > session_recv_window_size_) {
     RecordProtocolErrorHistogram(PROTOCOL_ERROR_RECEIVE_WINDOW_VIOLATION);
-    CloseSessionResult result = DoCloseSession(
+    DoDrainSession(
         ERR_SPDY_PROTOCOL_ERROR,
         "delta_window_size is " + base::IntToString(delta_window_size) +
             " in DecreaseRecvWindowSize, which is larger than the receive " +
             "window size of " + base::IntToString(session_recv_window_size_));
-    DCHECK_EQ(result, SESSION_CLOSED_BUT_NOT_REMOVED);
     return;
   }
 
@@ -3077,7 +2915,7 @@ void SpdySession::ResumeSendStalledStreams() {
   // have to worry about streams being closed, as well as ourselves
   // being closed.
 
-  while (availability_state_ != STATE_CLOSED && !IsSendStalled()) {
+  while (!IsSendStalled()) {
     size_t old_size = 0;
 #if DCHECK_IS_ON
     old_size = GetTotalSize(stream_send_unstall_queue_);

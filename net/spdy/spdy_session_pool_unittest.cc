@@ -138,7 +138,7 @@ TEST_P(SpdySessionPoolTest, CloseCurrentSessions) {
 TEST_P(SpdySessionPoolTest, CloseCurrentIdleSessions) {
   MockConnect connect_data(SYNCHRONOUS, OK);
   MockRead reads[] = {
-    MockRead(ASYNC, 0, 0)  // EOF
+      MockRead(SYNCHRONOUS, ERR_IO_PENDING)  // Stall forever.
   };
 
   session_deps_.host_resolver->set_synchronous_mode(true);
@@ -195,20 +195,20 @@ TEST_P(SpdySessionPoolTest, CloseCurrentIdleSessions) {
 
   // All sessions are active and not closed
   EXPECT_TRUE(session1->is_active());
-  EXPECT_FALSE(session1->IsClosed());
+  EXPECT_TRUE(session1->IsAvailable());
   EXPECT_TRUE(session2->is_active());
-  EXPECT_FALSE(session2->IsClosed());
+  EXPECT_TRUE(session2->IsAvailable());
   EXPECT_TRUE(session3->is_active());
-  EXPECT_FALSE(session3->IsClosed());
+  EXPECT_TRUE(session3->IsAvailable());
 
   // Should not do anything, all are active
   spdy_session_pool_->CloseCurrentIdleSessions();
   EXPECT_TRUE(session1->is_active());
-  EXPECT_FALSE(session1->IsClosed());
+  EXPECT_TRUE(session1->IsAvailable());
   EXPECT_TRUE(session2->is_active());
-  EXPECT_FALSE(session2->IsClosed());
+  EXPECT_TRUE(session2->IsAvailable());
   EXPECT_TRUE(session3->is_active());
-  EXPECT_FALSE(session3->IsClosed());
+  EXPECT_TRUE(session3->IsAvailable());
 
   // Make sessions 1 and 3 inactive, but keep them open.
   // Session 2 still open and active
@@ -217,32 +217,40 @@ TEST_P(SpdySessionPoolTest, CloseCurrentIdleSessions) {
   session3->CloseCreatedStream(spdy_stream3, OK);
   EXPECT_EQ(NULL, spdy_stream3.get());
   EXPECT_FALSE(session1->is_active());
-  EXPECT_FALSE(session1->IsClosed());
+  EXPECT_TRUE(session1->IsAvailable());
   EXPECT_TRUE(session2->is_active());
-  EXPECT_FALSE(session2->IsClosed());
+  EXPECT_TRUE(session2->IsAvailable());
   EXPECT_FALSE(session3->is_active());
-  EXPECT_FALSE(session3->IsClosed());
+  EXPECT_TRUE(session3->IsAvailable());
 
   // Should close session 1 and 3, 2 should be left open
   spdy_session_pool_->CloseCurrentIdleSessions();
+  base::MessageLoop::current()->RunUntilIdle();
+
   EXPECT_TRUE(session1 == NULL);
   EXPECT_TRUE(session2->is_active());
-  EXPECT_FALSE(session2->IsClosed());
+  EXPECT_TRUE(session2->IsAvailable());
   EXPECT_TRUE(session3 == NULL);
 
   // Should not do anything
   spdy_session_pool_->CloseCurrentIdleSessions();
+  base::MessageLoop::current()->RunUntilIdle();
+
   EXPECT_TRUE(session2->is_active());
-  EXPECT_FALSE(session2->IsClosed());
+  EXPECT_TRUE(session2->IsAvailable());
 
   // Make 2 not active
   session2->CloseCreatedStream(spdy_stream2, OK);
+  base::MessageLoop::current()->RunUntilIdle();
+
   EXPECT_EQ(NULL, spdy_stream2.get());
   EXPECT_FALSE(session2->is_active());
-  EXPECT_FALSE(session2->IsClosed());
+  EXPECT_TRUE(session2->IsAvailable());
 
   // This should close session 2
   spdy_session_pool_->CloseCurrentIdleSessions();
+  base::MessageLoop::current()->RunUntilIdle();
+
   EXPECT_TRUE(session2 == NULL);
 }
 
@@ -420,8 +428,9 @@ void SpdySessionPoolTest::RunIPPoolingTest(
   switch (close_sessions_type) {
     case SPDY_POOL_CLOSE_SESSIONS_MANUALLY:
       session->CloseSessionOnError(ERR_ABORTED, std::string());
-      EXPECT_TRUE(session == NULL);
       session2->CloseSessionOnError(ERR_ABORTED, std::string());
+      base::MessageLoop::current()->RunUntilIdle();
+      EXPECT_TRUE(session == NULL);
       EXPECT_TRUE(session2 == NULL);
       break;
     case SPDY_POOL_CLOSE_CURRENT_SESSIONS:
@@ -449,27 +458,30 @@ void SpdySessionPoolTest::RunIPPoolingTest(
 
       // Check spdy_session and spdy_session1 are not closed.
       EXPECT_FALSE(session->is_active());
-      EXPECT_FALSE(session->IsClosed());
+      EXPECT_TRUE(session->IsAvailable());
       EXPECT_FALSE(session1->is_active());
-      EXPECT_FALSE(session1->IsClosed());
+      EXPECT_TRUE(session1->IsAvailable());
       EXPECT_TRUE(session2->is_active());
-      EXPECT_FALSE(session2->IsClosed());
+      EXPECT_TRUE(session2->IsAvailable());
 
       // Test that calling CloseIdleSessions, does not cause a crash.
       // http://crbug.com/181400
       spdy_session_pool_->CloseCurrentIdleSessions();
+      base::MessageLoop::current()->RunUntilIdle();
 
       // Verify spdy_session and spdy_session1 are closed.
       EXPECT_TRUE(session == NULL);
       EXPECT_TRUE(session1 == NULL);
       EXPECT_TRUE(session2->is_active());
-      EXPECT_FALSE(session2->IsClosed());
+      EXPECT_TRUE(session2->IsAvailable());
 
       spdy_stream2->Cancel();
       EXPECT_EQ(NULL, spdy_stream.get());
       EXPECT_EQ(NULL, spdy_stream1.get());
       EXPECT_EQ(NULL, spdy_stream2.get());
+
       session2->CloseSessionOnError(ERR_ABORTED, std::string());
+      base::MessageLoop::current()->RunUntilIdle();
       EXPECT_TRUE(session2 == NULL);
       break;
   }
