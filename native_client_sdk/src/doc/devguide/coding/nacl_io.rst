@@ -80,7 +80,7 @@ Follow these steps to build and run the demo:
 
 * Open a terminal in the demo directory::
 
-    $ cd $NACL_SDK_ROOT/examples/demo/nacl_io
+    $ cd $NACL_SDK_ROOT/examples/demo/nacl_io_demo
 
 * run the demo::
 
@@ -216,7 +216,7 @@ Reference information
 =====================
 
 The example discussed here is included in the SDK in the directory
-``examples/demo/nacl_io``.
+``examples/demo/nacl_io_demo``.
 
 The nacl_io library is included in the SDK toolchain and is not a part of the
 Pepper API. For reference information related to the nacl_io interface see

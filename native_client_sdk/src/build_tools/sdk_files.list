@@ -29,7 +29,7 @@ examples/demo/life/*
 examples/demo/life_simd/*
 [win]examples/demo/make.bat
 examples/demo/Makefile
-examples/demo/nacl_io/*
+examples/demo/nacl_io_demo/*
 examples/demo/pi_generator/*
 examples/demo/voronoi/*
 examples/favicon.ico

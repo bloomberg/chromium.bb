@@ -589,7 +589,7 @@ libnacl_io.a
   mounted a file system, it can use standard C library file operations:
   ``fopen``, ``fread``, ``fwrite``, ``fseek``, and ``fclose``.
   For more detail, see the header ``include/nacl_io/nacl_io.h``.
-  For an example of how to use nacl_io, see ``examples/demo/nacl_io``.
+  For an example of how to use nacl_io, see ``examples/demo/nacl_io_demo``.
 
 libppapi_simple.a
   Provides a familiar C programming environment by letting a module have a

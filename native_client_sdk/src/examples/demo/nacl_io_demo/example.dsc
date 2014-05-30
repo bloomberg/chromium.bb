@@ -2,7 +2,7 @@
   'TOOLS': ['newlib', 'glibc', 'pnacl', 'bionic'],
   'TARGETS': [
     {
-      'NAME' : 'nacl_io',
+      'NAME' : 'nacl_io_demo',
       'TYPE' : 'main',
       'SOURCES' : [
         'handlers.c',
@@ -20,7 +20,7 @@
     'example.js'
   ],
   'DEST': 'examples/demo',
-  'NAME': 'nacl_io',
+  'NAME': 'nacl_io_demo',
   'TITLE': 'NaCl IO Demo',
   'GROUP': 'Demo',
   'PERMISSIONS': [
