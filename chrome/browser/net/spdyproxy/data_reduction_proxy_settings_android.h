@@ -14,31 +14,24 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_member.h"
 #include "components/data_reduction_proxy/browser/data_reduction_proxy_settings.h"
-#include "components/keyed_service/core/keyed_service.h"
+
 
 using base::android::ScopedJavaLocalRef;
 
-class Profile;
-
-namespace data_reduction_proxy {
-class DataReductionProxyParams;
-}
 
 // Central point for configuring the data reduction proxy on Android.
 // This object lives on the UI thread and all of its methods are expected to
 // be called from there.
 class DataReductionProxySettingsAndroid
-    : public data_reduction_proxy::DataReductionProxySettings,
-      public KeyedService {
+    : public data_reduction_proxy::DataReductionProxySettings {
  public:
-  // Factory constructor.
-  DataReductionProxySettingsAndroid(
-      data_reduction_proxy::DataReductionProxyParams* params);
-
+  DataReductionProxySettingsAndroid(JNIEnv* env, jobject obj);
+  // Parameter-free constructor for C++ unit tests.
+  DataReductionProxySettingsAndroid();
 
   virtual ~DataReductionProxySettingsAndroid();
 
-  void InitDataReductionProxySettings(Profile* profile);
+  void InitDataReductionProxySettings(JNIEnv* env, jobject obj);
 
   void BypassHostPattern(JNIEnv* env, jobject obj, jstring pattern);
   // Add a URL pattern to bypass the proxy. Wildcards
@@ -89,10 +82,8 @@ class DataReductionProxySettingsAndroid
 
   // Configures the proxy settings by generating a data URL containing a PAC
   // file.
-  virtual void SetProxyConfigs(bool enabled,
-                               bool alt_enabled,
-                               bool restricted,
-                               bool at_startup) OVERRIDE;
+  virtual void SetProxyConfigs(
+      bool enabled, bool restricted, bool at_startup) OVERRIDE;
 
  private:
   friend class DataReductionProxySettingsAndroidTest;

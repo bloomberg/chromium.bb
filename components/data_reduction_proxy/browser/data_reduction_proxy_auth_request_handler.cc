@@ -35,7 +35,6 @@ DataReductionProxyAuthRequestHandler::auth_token_invalidation_timestamp_ = 0;
 
 DataReductionProxyAuthRequestHandler::DataReductionProxyAuthRequestHandler(
     DataReductionProxySettings* settings) : settings_(settings) {
-  DCHECK(settings);
 }
 
 DataReductionProxyAuthRequestHandler::~DataReductionProxyAuthRequestHandler() {
@@ -105,7 +104,7 @@ DataReductionProxyAuthRequestHandler::TryHandleAuthentication(
 
 bool DataReductionProxyAuthRequestHandler::IsAcceptableAuthChallenge(
     net::AuthChallengeInfo* auth_info) {
-  return settings_->IsAcceptableAuthChallenge(auth_info);
+  return DataReductionProxySettings::IsAcceptableAuthChallenge(auth_info);
 }
 
 base::string16 DataReductionProxyAuthRequestHandler::GetTokenForAuthChallenge(

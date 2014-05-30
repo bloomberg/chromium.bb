@@ -130,8 +130,7 @@ void DataReductionProxyConfigTracker::Enable(
     bool primary_restricted,
     bool fallback_restricted,
     const std::string& primary_origin,
-    const std::string& fallback_origin,
-    const std::string& ssl_origin) {
+    const std::string& fallback_origin) {
 
   std::vector<std::string> proxies;
   if (!primary_restricted) {
@@ -152,14 +151,9 @@ void DataReductionProxyConfigTracker::Enable(
     return;
   }
 
-  std::string trimmed_ssl;
-  base::TrimString(ssl_origin, "/", &trimmed_ssl);
-
-  std::string server = "http=" + JoinString(proxies, ",") + ",direct://;"
-      + (ssl_origin.empty() ? "" : ("https=" + ssl_origin + ",direct://;"));
-
   net::ProxyConfig config;
-  config.proxy_rules().ParseFromString(server);
+  config.proxy_rules().ParseFromString(
+      "http=" + JoinString(proxies, ",") + ",direct://;");
   config.proxy_rules().bypass_rules.ParseFromString(
       JoinString(bypass_rules_, ", "));
   UpdateProxyConfigOnIOThread(true, config);

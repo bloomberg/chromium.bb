@@ -22,8 +22,7 @@ class DataReductionProxyChromeConfigurator
   virtual void Enable(bool primary_restricted,
                       bool fallback_restricted,
                       const std::string& primary_origin,
-                      const std::string& fallback_origin,
-                      const std::string& ssl_origin) OVERRIDE;
+                      const std::string& fallback_origin) OVERRIDE;
   virtual void Disable() OVERRIDE;
 
   // Add a host pattern to bypass. This should follow the same syntax used

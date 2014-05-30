@@ -95,7 +95,6 @@
 #endif
 
 #if defined(OS_ANDROID) || defined(OS_IOS)
-#include "components/data_reduction_proxy/browser/data_reduction_proxy_params.h"
 #include "components/data_reduction_proxy/browser/data_reduction_proxy_settings.h"
 #endif
 
@@ -107,7 +106,6 @@
 using content::BrowserThread;
 
 #if defined(OS_ANDROID) || defined(OS_IOS)
-using data_reduction_proxy::DataReductionProxyParams;
 using data_reduction_proxy::DataReductionProxySettings;
 #endif
 
@@ -597,17 +595,10 @@ void IOThread::InitAsync() {
 #endif
   globals_->ssl_config_service = GetSSLConfigService();
 #if defined(OS_ANDROID) || defined(OS_IOS)
-#if defined(SPDY_PROXY_AUTH_ORIGIN)
-  int drp_flags = DataReductionProxyParams::kFallbackAllowed;
-  if (DataReductionProxyParams::IsIncludedInFieldTrial())
-    drp_flags |= DataReductionProxyParams::kAllowed;
-  if (DataReductionProxyParams::IsIncludedInAlternativeFieldTrial())
-    drp_flags |= DataReductionProxyParams::kAlternativeAllowed;
-  if (DataReductionProxyParams::IsIncludedInPromoFieldTrial())
-    drp_flags |= DataReductionProxyParams::kPromoAllowed;
-  globals_->data_reduction_proxy_params.reset(
-      new DataReductionProxyParams(drp_flags));
-#endif  // defined(SPDY_PROXY_AUTH_ORIGIN)
+  if (DataReductionProxySettings::IsIncludedInFieldTrialOrFlags()) {
+    spdyproxy_auth_origins_ =
+        DataReductionProxySettings::GetDataReductionProxies();
+  }
 #endif  // defined(OS_ANDROID) || defined(OS_IOS)
   globals_->http_auth_handler_factory.reset(CreateDefaultAuthHandlerFactory(
       globals_->host_resolver.get()));
@@ -910,15 +901,11 @@ net::HttpAuthHandlerFactory* IOThread::CreateDefaultAuthHandlerFactory(
           resolver, gssapi_library_name_, negotiate_disable_cname_lookup_,
           negotiate_enable_port_));
 
-  if (globals_->data_reduction_proxy_params.get()) {
-    std::vector<GURL> data_reduction_proxies =
-        globals_->data_reduction_proxy_params->GetAllowedProxies();
-    if (!data_reduction_proxies.empty()) {
-      registry_factory->RegisterSchemeFactory(
-          "spdyproxy",
-          new data_reduction_proxy::HttpAuthHandlerDataReductionProxy::Factory(
-              data_reduction_proxies));
-    }
+  if (!spdyproxy_auth_origins_.empty()) {
+    registry_factory->RegisterSchemeFactory(
+        "spdyproxy",
+        new data_reduction_proxy::HttpAuthHandlerDataReductionProxy::Factory(
+            spdyproxy_auth_origins_));
   }
 
   return registry_factory.release();

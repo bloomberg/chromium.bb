@@ -98,8 +98,7 @@ class DataReductionProxyConfigTracker : public DataReductionProxyConfigurator {
   virtual void Enable(bool primary_restricted,
                       bool fallback_restricted,
                       const std::string& primary_origin,
-                      const std::string& fallback_origin,
-                      const std::string& ssl_origin) OVERRIDE;
+                      const std::string& fallback_origin) OVERRIDE;
   virtual void Disable() OVERRIDE;
   virtual void AddHostPatternToBypass(const std::string& pattern) OVERRIDE;
   virtual void AddURLPatternToBypass(const std::string& pattern) OVERRIDE;

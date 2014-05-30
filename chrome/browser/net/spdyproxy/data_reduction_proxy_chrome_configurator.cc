@@ -18,12 +18,10 @@ DataReductionProxyChromeConfigurator::DataReductionProxyChromeConfigurator(
 DataReductionProxyChromeConfigurator::~DataReductionProxyChromeConfigurator() {
 }
 
-void DataReductionProxyChromeConfigurator::Enable(
-    bool primary_restricted,
-    bool fallback_restricted,
-    const std::string& primary_origin,
-    const std::string& fallback_origin,
-    const std::string& ssl_origin) {
+void DataReductionProxyChromeConfigurator::Enable(bool primary_restricted,
+                                                  bool fallback_restricted,
+                                      const std::string& primary_origin,
+                                      const std::string& fallback_origin) {
   DCHECK(prefs_);
   DictionaryPrefUpdate update(prefs_, prefs::kProxy);
   base::DictionaryValue* dict = update.Get();
@@ -51,13 +49,7 @@ void DataReductionProxyChromeConfigurator::Enable(
     return;
   }
 
-  std::string trimmed_ssl;
-  base::TrimString(ssl_origin, "/", &trimmed_ssl);
-
-  std::string server = "http=" + JoinString(proxies, ",") + ",direct://;"
-      + (ssl_origin.empty() ? "" : ("https=" + trimmed_ssl + ",direct://;"));
-
-  dict->SetString("server", server);
+  dict->SetString("server", "http=" + JoinString(proxies, ",") + ",direct://;");
   dict->SetString("mode", ProxyModeToString(ProxyPrefs::MODE_FIXED_SERVERS));
   dict->SetString("bypass_list", JoinString(bypass_rules_, ", "));
 }

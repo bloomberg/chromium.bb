@@ -484,9 +484,8 @@ void ProfileImplIOData::InitializeInternal(
 #if defined(OS_ANDROID) || defined(OS_IOS)
 #if defined(SPDY_PROXY_AUTH_VALUE)
   data_reduction_proxy::DataReductionProxySettings::
-      InitDataReductionProxySession(
-          main_cache->GetSession(),
-          io_thread_globals->data_reduction_proxy_params.get());
+      InitDataReductionProxySession(main_cache->GetSession(),
+                                    SPDY_PROXY_AUTH_VALUE);
 #endif
 #endif
 

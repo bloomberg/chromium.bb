@@ -1330,8 +1330,6 @@
         'browser/net/spdyproxy/data_reduction_proxy_chrome_configurator.h',
         'browser/net/spdyproxy/data_reduction_proxy_settings_android.cc',
         'browser/net/spdyproxy/data_reduction_proxy_settings_android.h',
-        'browser/net/spdyproxy/data_reduction_proxy_settings_factory_android.cc',
-        'browser/net/spdyproxy/data_reduction_proxy_settings_factory_android.h',
         'browser/net/spdyproxy/data_reduction_proxy_settings_ios.cc',
         'browser/net/spdyproxy/data_reduction_proxy_settings_ios.h',
         'browser/net/spdyproxy/proxy_advisor.cc',

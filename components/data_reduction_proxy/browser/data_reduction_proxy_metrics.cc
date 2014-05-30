@@ -301,14 +301,8 @@ class DailyDataSavingUpdate {
 // the request is bypassed by more than one proxy, delay_seconds returns
 // shortest delay.
 bool IsBypassRequest(const net::URLRequest* request, int64* delay_seconds) {
-  // TODO(bengr): Add support for other data reduction proxy configurations.
-#if defined(SPDY_PROXY_AUTH_ORIGIN)
-  DataReductionProxyParams params(
-      DataReductionProxyParams::kAllowed |
-      DataReductionProxyParams::kFallbackAllowed |
-      DataReductionProxyParams::kPromoAllowed);
-  DataReductionProxyParams::DataReductionProxyList proxies =
-      params.GetAllowedProxies();
+  DataReductionProxySettings::DataReductionProxyList proxies =
+      DataReductionProxySettings::GetDataReductionProxies();
   if (proxies.size() == 0)
     return false;
 
@@ -341,9 +335,6 @@ bool IsBypassRequest(const net::URLRequest* request, int64* delay_seconds) {
   if (delay_seconds != NULL)
     *delay_seconds = shortest_delay;
   return true;
-#else
-  return false;
-#endif
 }
 
 }  // namespace

@@ -19,7 +19,7 @@ using testing::Return;
 namespace {
 
 const char kDataReductionProxy[] = "https://foo.com:443/";
-const char kDataReductionProxyFallback[] = "http://bar.com:80/";
+const char kDataReductionProxyFallback[] = "http://bar.com:80";
 const char kDataReductionProxyKey[] = "12345";
 
 const char kProbeURLWithOKResponse[] = "http://ok.org/";
@@ -49,44 +49,20 @@ ProbeURLFetchResult FetchResult(bool enabled, bool success) {
   return FAILED_PROXY_ALREADY_DISABLED;
 }
 
-TestDataReductionProxyConfig::TestDataReductionProxyConfig()
-    : enabled_(false),
-      restricted_(false),
-      fallback_restricted_(false) {}
-
 void TestDataReductionProxyConfig::Enable(
     bool restricted,
     bool fallback_restricted,
     const std::string& primary_origin,
-    const std::string& fallback_origin,
-    const std::string& ssl_origin) {
+    const std::string& fallback_origin) {
   enabled_ = true;
   restricted_ = restricted;
   fallback_restricted_ = fallback_restricted;
-  origin_ = primary_origin;
-  fallback_origin_ = fallback_origin;
-  ssl_origin_ = ssl_origin;
 }
 
 void TestDataReductionProxyConfig::Disable() {
   enabled_ = false;
   restricted_ = false;
   fallback_restricted_ = false;
-  origin_ = "";
-  fallback_origin_ = "";
-  ssl_origin_ = "";
-}
-
-// static
-void DataReductionProxySettingsTestBase::AddTestProxyToCommandLine() {
-  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kDataReductionProxy, kDataReductionProxy);
-  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kDataReductionProxyFallback, kDataReductionProxyFallback);
-  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kDataReductionProxyKey, kDataReductionProxyKey);
-  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kDataReductionProxyProbeURL, kProbeURLWithOKResponse);
 }
 
 DataReductionProxySettingsTestBase::DataReductionProxySettingsTestBase()
@@ -96,11 +72,18 @@ DataReductionProxySettingsTestBase::DataReductionProxySettingsTestBase()
 DataReductionProxySettingsTestBase::~DataReductionProxySettingsTestBase() {}
 
 void DataReductionProxySettingsTestBase::AddProxyToCommandLine() {
-  AddTestProxyToCommandLine();
+  DataReductionProxySettings::SetAllowed(true);
+  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kDataReductionProxy, kDataReductionProxy);
+  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kDataReductionProxyFallback, kDataReductionProxyFallback);
+  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kDataReductionProxyKey, kDataReductionProxyKey);
 }
 
 // testing::Test implementation:
 void DataReductionProxySettingsTestBase::SetUp() {
+  DataReductionProxySettings::SetAllowed(true);
   PrefRegistrySimple* registry = pref_service_.registry();
   registry->RegisterListPref(prefs::kDailyHttpOriginalContentLength);
   registry->RegisterListPref(prefs::kDailyHttpReceivedContentLength);
@@ -108,11 +91,9 @@ void DataReductionProxySettingsTestBase::SetUp() {
                               0L);
   registry->RegisterDictionaryPref(kProxy);
   registry->RegisterBooleanPref(prefs::kDataReductionProxyEnabled, false);
-  registry->RegisterBooleanPref(prefs::kDataReductionProxyAltEnabled, false);
   registry->RegisterBooleanPref(prefs::kDataReductionProxyWasEnabledBefore,
                                 false);
-  AddProxyToCommandLine();
-  ResetSettings(true, true, false, true);
+  ResetSettings();
 
   ListPrefUpdate original_update(&pref_service_,
                                  prefs::kDailyHttpOriginalContentLength);
@@ -130,21 +111,9 @@ void DataReductionProxySettingsTestBase::SetUp() {
 }
 
 template <class C>
-void DataReductionProxySettingsTestBase::ResetSettings(bool allowed,
-                                                       bool fallback_allowed,
-                                                       bool alt_allowed,
-                                                       bool promo_allowed) {
-  int flags = 0;
-  if (allowed)
-    flags |= DataReductionProxyParams::kAllowed;
-  if (fallback_allowed)
-    flags |= DataReductionProxyParams::kFallbackAllowed;
-  if (alt_allowed)
-    flags |= DataReductionProxyParams::kAlternativeAllowed;
-  if (promo_allowed)
-    flags |= DataReductionProxyParams::kPromoAllowed;
+void DataReductionProxySettingsTestBase::ResetSettings() {
   MockDataReductionProxySettings<C>* settings =
-      new MockDataReductionProxySettings<C>(flags);
+      new MockDataReductionProxySettings<C>();
   EXPECT_CALL(*settings, GetOriginalProfilePrefs())
       .Times(AnyNumber())
       .WillRepeatedly(Return(&pref_service_));
@@ -154,13 +123,12 @@ void DataReductionProxySettingsTestBase::ResetSettings(bool allowed,
   EXPECT_CALL(*settings, GetURLFetcher()).Times(0);
   EXPECT_CALL(*settings, LogProxyState(_, _, _)).Times(0);
   settings_.reset(settings);
-  settings_->configurator_.reset(new TestDataReductionProxyConfig());
+  settings_->config_.reset(new TestDataReductionProxyConfig());
 }
 
 // Explicitly generate required instantiations.
 template void
-DataReductionProxySettingsTestBase::ResetSettings<DataReductionProxySettings>(
-    bool allowed, bool fallback_allowed, bool alt_allowed, bool promo_allowed);
+DataReductionProxySettingsTestBase::ResetSettings<DataReductionProxySettings>();
 
 template <class C>
 void DataReductionProxySettingsTestBase::SetProbeResult(
@@ -202,8 +170,7 @@ void DataReductionProxySettingsTestBase::CheckProxyConfigs(
     bool expected_restricted,
     bool expected_fallback_restricted) {
   TestDataReductionProxyConfig* config =
-      static_cast<TestDataReductionProxyConfig*>(
-          settings_->configurator_.get());
+      static_cast<TestDataReductionProxyConfig*>(settings_->config_.get());
   ASSERT_EQ(expected_restricted, config->restricted_);
   ASSERT_EQ(expected_fallback_restricted, config->fallback_restricted_);
   ASSERT_EQ(expected_enabled, config->enabled_);
@@ -275,6 +242,7 @@ void DataReductionProxySettingsTestBase::CheckOnPrefChange(
 
 void DataReductionProxySettingsTestBase::CheckInitDataReductionProxy(
     bool enabled_at_startup) {
+  AddProxyToCommandLine();
   base::MessageLoopForUI loop;
   SetProbeResult(kProbeURLWithOKResponse,
                  "OK",

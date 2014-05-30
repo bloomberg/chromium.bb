@@ -16,7 +16,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/data_reduction_proxy/browser/data_reduction_proxy_configurator.h"
-#include "components/data_reduction_proxy/browser/data_reduction_proxy_params.h"
 #include "components/data_reduction_proxy/common/data_reduction_proxy_pref_names.h"
 #include "components/data_reduction_proxy/common/data_reduction_proxy_switches.h"
 #include "crypto/random.h"
@@ -34,7 +33,7 @@
 #include "net/url_request/url_request_status.h"
 #include "url/gurl.h"
 
-
+using base::FieldTrialList;
 using base::StringPrintf;
 
 namespace {
@@ -45,6 +44,8 @@ const char kUMAProxyStartupStateHistogram[] =
 
 // Key of the UMA DataReductionProxy.ProbeURL histogram.
 const char kUMAProxyProbeURL[] = "DataReductionProxy.ProbeURL";
+
+const char kEnabled[] = "Enabled";
 
 // TODO(marq): Factor this string out into a constant here and in
 //             http_auth_handler_spdyproxy.
@@ -66,19 +67,51 @@ int64 GetInt64PrefValue(const base::ListValue& list_value, size_t index) {
 
 namespace data_reduction_proxy {
 
-DataReductionProxySettings::DataReductionProxySettings(
-    DataReductionProxyParams* params)
+bool DataReductionProxySettings::allowed_;
+bool DataReductionProxySettings::promo_allowed_;
+
+// static
+bool DataReductionProxySettings::IsProxyOriginSetOnCommandLine() {
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  return command_line.HasSwitch(
+      data_reduction_proxy::switches::kDataReductionProxy);
+}
+
+// static
+bool DataReductionProxySettings::IsProxyKeySetOnCommandLine() {
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  return command_line.HasSwitch(
+      data_reduction_proxy::switches::kEnableDataReductionProxy);
+}
+
+// static
+bool DataReductionProxySettings::IsIncludedInFieldTrialOrFlags() {
+  return (base::FieldTrialList::FindFullName(
+              "DataCompressionProxyRollout") == kEnabled ||
+          IsProxyOriginSetOnCommandLine());
+}
+
+// static
+void DataReductionProxySettings::SetAllowed(bool allowed) {
+  allowed_ = allowed;
+}
+
+// static
+void DataReductionProxySettings::SetPromoAllowed(bool promo_allowed) {
+  promo_allowed_ = promo_allowed;
+}
+
+DataReductionProxySettings::DataReductionProxySettings()
     : restricted_by_carrier_(false),
       enabled_by_user_(false),
       prefs_(NULL),
       local_state_prefs_(NULL),
-      url_request_context_getter_(NULL) {
-  DCHECK(params);
-  params_.reset(params);
+      url_request_context_getter_(NULL),
+      fallback_allowed_(true) {
 }
 
 DataReductionProxySettings::~DataReductionProxySettings() {
-  if (params_->allowed())
+  if (IsDataReductionProxyAllowed())
     spdy_proxy_auth_enabled_.Destroy();
 }
 
@@ -89,12 +122,6 @@ void DataReductionProxySettings::InitPrefMembers() {
       GetOriginalProfilePrefs(),
       base::Bind(&DataReductionProxySettings::OnProxyEnabledPrefChange,
                  base::Unretained(this)));
-  data_reduction_proxy_alternative_enabled_.Init(
-      prefs::kDataReductionProxyAltEnabled,
-      GetOriginalProfilePrefs(),
-      base::Bind(
-          &DataReductionProxySettings::OnProxyAlternativeEnabledPrefChange,
-          base::Unretained(this)));
 }
 
 void DataReductionProxySettings::InitDataReductionProxySettings(
@@ -112,7 +139,7 @@ void DataReductionProxySettings::InitDataReductionProxySettings(
   RecordDataReductionInit();
 
   // Disable the proxy if it is not allowed to be used.
-  if (!params_->allowed())
+  if (!IsDataReductionProxyAllowed())
     return;
 
   AddDefaultProxyBypassRules();
@@ -126,52 +153,49 @@ void DataReductionProxySettings::InitDataReductionProxySettings(
     PrefService* prefs,
     PrefService* local_state_prefs,
     net::URLRequestContextGetter* url_request_context_getter,
-    scoped_ptr<DataReductionProxyConfigurator> configurator) {
+    scoped_ptr<DataReductionProxyConfigurator> config) {
   InitDataReductionProxySettings(prefs,
                                  local_state_prefs,
                                  url_request_context_getter);
-  SetProxyConfigurator(configurator.Pass());
+  SetProxyConfigurator(config.Pass());
 }
 
 void DataReductionProxySettings::SetProxyConfigurator(
     scoped_ptr<DataReductionProxyConfigurator> configurator) {
   DCHECK(configurator);
-  configurator_ = configurator.Pass();
+  config_ = configurator.Pass();
 }
 
 // static
 void DataReductionProxySettings::InitDataReductionProxySession(
     net::HttpNetworkSession* session,
-    const DataReductionProxyParams* params) {
-// This is a no-op unless the authentication parameters are compiled in.
-// (even though values for them may be specified on the command line).
-// Authentication will still work if the command line parameters are used,
-// however there will be a round-trip overhead for each challenge/response
-// (typically once per session).
-// TODO(bengr):Pass a configuration struct into DataReductionProxyConfigurator's
-// constructor. The struct would carry everything in the preprocessor flags.
+    const std::string& key) {
+  // This is a no-op unless the key is set. (even though values for them may be
+  // specified on the command line). Authentication will still work if the
+  // command line parameters are used, however there will be a round-trip
+  // overhead for each challenge/response (typically once per session).
+  // TODO(bengr):Pass a configuration struct into
+  // DataReductionProxyConfigurator's constructor.
+  if (key.empty())
+    return;
   DCHECK(session);
   net::HttpAuthCache* auth_cache = session->http_auth_cache();
   DCHECK(auth_cache);
-  InitDataReductionAuthentication(auth_cache, params);
+  InitDataReductionAuthentication(auth_cache, key);
 }
 
 // static
 void DataReductionProxySettings::InitDataReductionAuthentication(
     net::HttpAuthCache* auth_cache,
-    const DataReductionProxyParams* params) {
+    const std::string& key) {
   DCHECK(auth_cache);
-  DCHECK(params);
   int64 timestamp =
       (base::Time::Now() - base::Time::UnixEpoch()).InMilliseconds() / 1000;
 
-  DataReductionProxyParams::DataReductionProxyList proxies =
-      params->GetAllowedProxies();
-  for (DataReductionProxyParams::DataReductionProxyList::iterator it =
-           proxies.begin();
-       it != proxies.end(); ++it) {
+  DataReductionProxyList proxies = GetDataReductionProxies();
+  for (DataReductionProxyList::iterator it = proxies.begin();
+      it != proxies.end(); ++it) {
     GURL auth_origin = (*it).GetOrigin();
-
     int32 rand[3];
     crypto::RandBytes(rand, 3 * sizeof(rand[0]));
 
@@ -186,7 +210,7 @@ void DataReductionProxySettings::InitDataReductionAuthentication(
         rand[0],
         rand[1],
         rand[2]);
-    base::string16 password = AuthHashForSalt(timestamp, params->key());
+    base::string16 password = AuthHashForSalt(timestamp, key);
 
     DVLOG(1) << "origin: [" << auth_origin << "] realm: [" << realm
         << "] challenge: [" << challenge << "] password: [" << password << "]";
@@ -203,6 +227,65 @@ void DataReductionProxySettings::InitDataReductionAuthentication(
   }
 }
 
+// TODO(bengr): Use a configuration struct to carry field trial state as well.
+// static
+bool DataReductionProxySettings::IsDataReductionProxyAllowed() {
+  return allowed_;
+}
+
+// static
+bool DataReductionProxySettings::IsDataReductionProxyPromoAllowed() {
+  return IsProxyOriginSetOnCommandLine() ||
+      (IsDataReductionProxyAllowed() && promo_allowed_);
+}
+
+// static
+bool DataReductionProxySettings::IsPreconnectHintingAllowed() {
+  if (!IsDataReductionProxyAllowed())
+    return false;
+  return FieldTrialList::FindFullName("DataCompressionProxyPreconnectHints") ==
+      kEnabled;
+}
+
+// static
+std::string DataReductionProxySettings::GetDataReductionProxyOrigin() {
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  if (command_line.HasSwitch(switches::kDataReductionProxyDev))
+    return command_line.GetSwitchValueASCII(switches::kDataReductionProxyDev);
+  if (command_line.HasSwitch(switches::kDataReductionProxy))
+    return command_line.GetSwitchValueASCII(switches::kDataReductionProxy);
+#if defined(DATA_REDUCTION_DEV_HOST)
+  if (FieldTrialList::FindFullName("DataCompressionProxyDevRollout") ==
+      kEnabled) {
+    return DATA_REDUCTION_DEV_HOST;
+  }
+#endif
+#if defined(SPDY_PROXY_AUTH_ORIGIN)
+  return SPDY_PROXY_AUTH_ORIGIN;
+#else
+  return std::string();
+#endif
+}
+
+// static
+std::string DataReductionProxySettings::GetDataReductionProxyFallback() {
+  // Regardless of what else is defined, only return a value if the main proxy
+  // origin is defined.
+  if (GetDataReductionProxyOrigin().empty())
+    return std::string();
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  if (command_line.HasSwitch(switches::kDataReductionProxyFallback)) {
+    return command_line.GetSwitchValueASCII(
+        switches::kDataReductionProxyFallback);
+  }
+#if defined(DATA_REDUCTION_FALLBACK_HOST)
+  return DATA_REDUCTION_FALLBACK_HOST;
+#else
+  return std::string();
+#endif
+}
+
+// static
 bool DataReductionProxySettings::IsAcceptableAuthChallenge(
     net::AuthChallengeInfo* auth_info) {
   // Challenge realm must start with the authentication realm name.
@@ -212,10 +295,8 @@ bool DataReductionProxySettings::IsAcceptableAuthChallenge(
     return false;
 
   // The challenger must be one of the configured proxies.
-  DataReductionProxyParams::DataReductionProxyList proxies =
-      params_->GetAllowedProxies();
-  for (DataReductionProxyParams::DataReductionProxyList::iterator it =
-       proxies.begin();
+  DataReductionProxyList proxies = GetDataReductionProxies();
+  for (DataReductionProxyList::iterator it = proxies.begin();
        it != proxies.end(); ++it) {
     net::HostPortPair origin_host = net::HostPortPair::FromURL(*it);
     if (origin_host.Equals(auth_info->challenger))
@@ -231,7 +312,7 @@ base::string16 DataReductionProxySettings::GetTokenForAuthChallenge(
     std::string realm_suffix =
         auth_info->realm.substr(strlen(kAuthenticationRealmName));
     if (base::StringToInt64(realm_suffix, &salt)) {
-      return AuthHashForSalt(salt, params_->key());
+      return AuthHashForSalt(salt, key_);
     } else {
       DVLOG(1) << "Unable to parse realm name " << auth_info->realm
                << "into an int for salting.";
@@ -244,38 +325,41 @@ base::string16 DataReductionProxySettings::GetTokenForAuthChallenge(
 
 bool DataReductionProxySettings::IsDataReductionProxyEnabled() {
   return spdy_proxy_auth_enabled_.GetValue() ||
-      DataReductionProxyParams::IsKeySetOnCommandLine();
-}
-
-bool DataReductionProxySettings::IsDataReductionProxyAlternativeEnabled() {
-  return data_reduction_proxy_alternative_enabled_.GetValue();
+      IsProxyKeySetOnCommandLine();
 }
 
 bool DataReductionProxySettings::IsDataReductionProxyManaged() {
   return spdy_proxy_auth_enabled_.IsManaged();
 }
 
+// static
+DataReductionProxySettings::DataReductionProxyList
+DataReductionProxySettings::GetDataReductionProxies() {
+  DataReductionProxyList proxies;
+  std::string proxy = GetDataReductionProxyOrigin();
+  std::string fallback = GetDataReductionProxyFallback();
+
+  if (!proxy.empty())
+    proxies.push_back(GURL(proxy));
+
+  if (!fallback.empty()) {
+    // Sanity check: fallback isn't the only proxy.
+    DCHECK(!proxies.empty());
+    proxies.push_back(GURL(fallback));
+  }
+
+  return proxies;
+}
+
 void DataReductionProxySettings::SetDataReductionProxyEnabled(bool enabled) {
   DCHECK(thread_checker_.CalledOnValidThread());
   // Prevent configuring the proxy when it is not allowed to be used.
-  if (!params_->allowed())
+  if (!IsDataReductionProxyAllowed())
     return;
 
   if (spdy_proxy_auth_enabled_.GetValue() != enabled) {
     spdy_proxy_auth_enabled_.SetValue(enabled);
     OnProxyEnabledPrefChange();
-  }
-}
-
-void DataReductionProxySettings::SetDataReductionProxyAlternativeEnabled(
-    bool enabled) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  // Prevent configuring the proxy when it is not allowed to be used.
-  if (!params_->alternative_allowed())
-    return;
-  if (data_reduction_proxy_alternative_enabled_.GetValue() != enabled) {
-    data_reduction_proxy_alternative_enabled_.SetValue(enabled);
-    OnProxyAlternativeEnabledPrefChange();
   }
 }
 
@@ -323,7 +407,6 @@ void DataReductionProxySettings::OnURLFetchComplete(
         // The current network doesn't block the canary, so don't restrict the
         // proxy configurations.
         SetProxyConfigs(true /* enabled */,
-                        IsDataReductionProxyAlternativeEnabled(),
                         false /* restricted */,
                         false /* at_startup */);
         RecordProbeURLFetchResult(SUCCEEDED_PROXY_ENABLED);
@@ -340,7 +423,6 @@ void DataReductionProxySettings::OnURLFetchComplete(
     if (!restricted_by_carrier_) {
       // Restrict the proxy.
       SetProxyConfigs(true /* enabled */,
-                      IsDataReductionProxyAlternativeEnabled(),
                       true /* restricted */,
                       false /* at_startup */);
       RecordProbeURLFetchResult(FAILED_PROXY_DISABLED);
@@ -351,28 +433,33 @@ void DataReductionProxySettings::OnURLFetchComplete(
   restricted_by_carrier_ = true;
 }
 
-PrefService* DataReductionProxySettings::GetOriginalProfilePrefs() {
+void DataReductionProxySettings::OnIPAddressChanged() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  return prefs_;
+  if (enabled_by_user_) {
+    DCHECK(IsDataReductionProxyAllowed());
+    ProbeWhetherDataReductionProxyIsAvailable();
+  }
 }
 
-PrefService* DataReductionProxySettings::GetLocalStatePrefs() {
+void DataReductionProxySettings::OnProxyEnabledPrefChange() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  return local_state_prefs_;
+  if (!DataReductionProxySettings::IsDataReductionProxyAllowed())
+    return;
+  MaybeActivateDataReductionProxy(false);
 }
 
 void DataReductionProxySettings::AddDefaultProxyBypassRules() {
   // localhost
-  configurator_->AddHostPatternToBypass("<local>");
+  config_->AddHostPatternToBypass("<local>");
   // RFC1918 private addresses.
-  configurator_->AddHostPatternToBypass("10.0.0.0/8");
-  configurator_->AddHostPatternToBypass("172.16.0.0/12");
-  configurator_->AddHostPatternToBypass("192.168.0.0/16");
+  config_->AddHostPatternToBypass("10.0.0.0/8");
+  config_->AddHostPatternToBypass("172.16.0.0/12");
+  config_->AddHostPatternToBypass("192.168.0.0/16");
   // RFC4193 private addresses.
-  configurator_->AddHostPatternToBypass("fc00::/7");
+  config_->AddHostPatternToBypass("fc00::/7");
   // IPV6 probe addresses.
-  configurator_->AddHostPatternToBypass("*-ds.metric.gstatic.com");
-  configurator_->AddHostPatternToBypass("*-v4.metric.gstatic.com");
+  config_->AddHostPatternToBypass("*-ds.metric.gstatic.com");
+  config_->AddHostPatternToBypass("*-v4.metric.gstatic.com");
 }
 
 void DataReductionProxySettings::LogProxyState(
@@ -393,26 +480,14 @@ void DataReductionProxySettings::LogProxyState(
                << " " << (at_startup ? kAtStartup : kByUser);
 }
 
-void DataReductionProxySettings::OnIPAddressChanged() {
+PrefService* DataReductionProxySettings::GetOriginalProfilePrefs() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (enabled_by_user_) {
-    DCHECK(params_->allowed());
-    ProbeWhetherDataReductionProxyIsAvailable();
-  }
+  return prefs_;
 }
 
-void DataReductionProxySettings::OnProxyEnabledPrefChange() {
+PrefService* DataReductionProxySettings::GetLocalStatePrefs() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (!params_->allowed())
-    return;
-  MaybeActivateDataReductionProxy(false);
-}
-
-void DataReductionProxySettings::OnProxyAlternativeEnabledPrefChange() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  if (!params_->alternative_allowed())
-    return;
-  MaybeActivateDataReductionProxy(false);
+  return local_state_prefs_;
 }
 
 void DataReductionProxySettings::ResetDataReductionStatistics() {
@@ -442,42 +517,34 @@ void DataReductionProxySettings::MaybeActivateDataReductionProxy(
     ResetDataReductionStatistics();
   }
 
-  // Configure use of the data reduction proxy if it is enabled.
-  enabled_by_user_= IsDataReductionProxyEnabled();
-  SetProxyConfigs(enabled_by_user_,
-                  IsDataReductionProxyAlternativeEnabled(),
-                  restricted_by_carrier_,
-                  at_startup);
+  std::string proxy = GetDataReductionProxyOrigin();
+  // Configure use of the data reduction proxy if it is enabled and the proxy
+  // origin is non-empty.
+  enabled_by_user_= IsDataReductionProxyEnabled() && !proxy.empty();
+  SetProxyConfigs(enabled_by_user_, restricted_by_carrier_, at_startup);
 
   // Check if the proxy has been restricted explicitly by the carrier.
   if (enabled_by_user_)
     ProbeWhetherDataReductionProxyIsAvailable();
 }
 
-void DataReductionProxySettings::SetProxyConfigs(bool enabled,
-                                                 bool alternative_enabled,
-                                                 bool restricted,
-                                                 bool at_startup) {
+void DataReductionProxySettings::SetProxyConfigs(
+    bool enabled, bool restricted, bool at_startup) {
   DCHECK(thread_checker_.CalledOnValidThread());
+  // If |restricted| is true and there is no defined fallback proxy.
+  // treat this as a disable.
+  std::string fallback = GetDataReductionProxyFallback();
+  if (fallback.empty() && enabled && restricted)
+      enabled = false;
+
   LogProxyState(enabled, restricted, at_startup);
-  // The alternative is only configured if the standard configuration is
-  // is enabled.
   if (enabled) {
-    if (alternative_enabled) {
-      configurator_->Enable(restricted,
-                            !params_->fallback_allowed(),
-                            params_->alt_origin().spec(),
-                            params_->alt_fallback_origin().spec(),
-                            params_->ssl_origin().spec());
-    } else {
-      configurator_->Enable(restricted,
-                            !params_->fallback_allowed(),
-                            params_->origin().spec(),
-                            params_->fallback_origin().spec(),
-                            std::string());
-    }
+    config_->Enable(restricted,
+                    !fallback_allowed_,
+                    GetDataReductionProxyOrigin(),
+                    fallback);
   } else {
-    configurator_->Disable();
+    config_->Disable();
   }
 }
 
@@ -485,7 +552,7 @@ void DataReductionProxySettings::SetProxyConfigs(bool enabled,
 void DataReductionProxySettings::RecordDataReductionInit() {
   DCHECK(thread_checker_.CalledOnValidThread());
   ProxyStartupState state = PROXY_NOT_AVAILABLE;
-  if (params_->allowed()) {
+  if (IsDataReductionProxyAllowed()) {
     if (IsDataReductionProxyEnabled())
       state = PROXY_ENABLED;
     else
@@ -508,11 +575,6 @@ void DataReductionProxySettings::RecordStartupState(ProxyStartupState state) {
                             PROXY_STARTUP_STATE_COUNT);
 }
 
-void DataReductionProxySettings::ResetParamsForTest(
-    DataReductionProxyParams* params) {
-  params_.reset(params);
-}
-
 DataReductionProxySettings::ContentLengthList
 DataReductionProxySettings::GetDailyContentLengths(const char* pref_name) {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -524,7 +586,7 @@ DataReductionProxySettings::GetDailyContentLengths(const char* pref_name) {
     }
   }
   return content_lengths;
-}
+ }
 
 void DataReductionProxySettings::GetContentLengths(
     unsigned int days,
@@ -568,21 +630,55 @@ void DataReductionProxySettings::GetContentLengths(
       local_state->GetInt64(prefs::kDailyHttpContentLengthLastUpdateDate);
 }
 
+std::string DataReductionProxySettings::GetProxyCheckURL() {
+  if (!IsDataReductionProxyAllowed())
+    return std::string();
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  if (command_line.HasSwitch(switches::kDataReductionProxyProbeURL)) {
+    return command_line.GetSwitchValueASCII(
+        switches::kDataReductionProxyProbeURL);
+  }
+#if defined(DATA_REDUCTION_PROXY_PROBE_URL)
+  return DATA_REDUCTION_PROXY_PROBE_URL;
+#else
+  return std::string();
+#endif
+}
+
 // static
 base::string16 DataReductionProxySettings::AuthHashForSalt(
     int64 salt,
     const std::string& key) {
+  std::string active_key;
+
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  if (command_line.HasSwitch(switches::kDataReductionProxy)) {
+    // If an origin is provided via a switch, then only consider the value
+    // that is provided by a switch. Do not use the preprocessor constant.
+    // Don't expose |key_| to a proxy passed in via the command line.
+    if (!command_line.HasSwitch(switches::kDataReductionProxyKey))
+      return base::string16();
+    active_key = command_line.GetSwitchValueASCII(
+        switches::kDataReductionProxyKey);
+  } else {
+    active_key = key;
+  }
+  DCHECK(!active_key.empty());
+
   std::string salted_key =
       base::StringPrintf("%lld%s%lld",
                          static_cast<long long>(salt),
-                         key.c_str(),
+                         active_key.c_str(),
                          static_cast<long long>(salt));
   return base::UTF8ToUTF16(base::MD5String(salted_key));
 }
 
 net::URLFetcher* DataReductionProxySettings::GetURLFetcher() {
   DCHECK(url_request_context_getter_);
-  net::URLFetcher* fetcher = net::URLFetcher::Create(params_->probe_url(),
+  std::string url = GetProxyCheckURL();
+  if (url.empty())
+    return NULL;
+  net::URLFetcher* fetcher = net::URLFetcher::Create(GURL(url),
                                                      net::URLFetcher::GET,
                                                      this);
   fetcher->SetLoadFlags(net::LOAD_DISABLE_CACHE | net::LOAD_BYPASS_PROXY);

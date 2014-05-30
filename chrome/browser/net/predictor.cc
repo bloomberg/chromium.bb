@@ -337,8 +337,8 @@ void Predictor::InitNetworkPredictor(PrefService* user_prefs,
   // Until then, we may create a proxy advisor when the proxy feature itself
   // isn't available, and the advisor instance will never send advisory
   // requests, which is slightly wasteful but not harmful.
-  if (data_reduction_proxy::DataReductionProxyParams::
-      IsIncludedInPreconnectHintingFieldTrial()) {
+  if (data_reduction_proxy::DataReductionProxySettings::
+          IsPreconnectHintingAllowed()) {
     proxy_advisor_.reset(new ProxyAdvisor(user_prefs, getter));
   }
 #endif
