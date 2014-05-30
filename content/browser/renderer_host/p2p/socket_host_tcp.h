@@ -29,7 +29,7 @@ namespace content {
 class CONTENT_EXPORT P2PSocketHostTcpBase : public P2PSocketHost {
  public:
   P2PSocketHostTcpBase(IPC::Sender* message_sender,
-                       int id,
+                       int socket_id,
                        P2PSocketType type,
                        net::URLRequestContextGetter* url_context);
   virtual ~P2PSocketHostTcpBase();
@@ -101,7 +101,7 @@ class CONTENT_EXPORT P2PSocketHostTcpBase : public P2PSocketHost {
 class CONTENT_EXPORT P2PSocketHostTcp : public P2PSocketHostTcpBase {
  public:
   P2PSocketHostTcp(IPC::Sender* message_sender,
-                   int id,
+                   int socket_id,
                    P2PSocketType type,
                    net::URLRequestContextGetter* url_context);
   virtual ~P2PSocketHostTcp();
@@ -122,7 +122,7 @@ class CONTENT_EXPORT P2PSocketHostTcp : public P2PSocketHostTcpBase {
 class CONTENT_EXPORT P2PSocketHostStunTcp : public P2PSocketHostTcpBase {
  public:
   P2PSocketHostStunTcp(IPC::Sender* message_sender,
-                       int id,
+                       int socket_id,
                        P2PSocketType type,
                        net::URLRequestContextGetter* url_context);
 

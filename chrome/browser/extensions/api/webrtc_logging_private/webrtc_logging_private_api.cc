@@ -279,6 +279,16 @@ bool WebrtcLoggingPrivateStartRtpDumpFunction::RunAsync() {
   scoped_ptr<StartRtpDump::Params> params(StartRtpDump::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
+  if (!params->incoming && !params->outgoing) {
+    StartRtpDumpCallback(false, "Either incoming or outgoing must be true.");
+    return true;
+  }
+
+  RtpDumpType type =
+      (params->incoming && params->outgoing)
+          ? RTP_DUMP_BOTH
+          : (params->incoming ? RTP_DUMP_INCOMING : RTP_DUMP_OUTGOING);
+
   content::RenderProcessHost* host =
       RphFromTabIdAndSecurityOrigin(params->tab_id, params->security_origin);
   if (!host)
@@ -290,14 +300,20 @@ bool WebrtcLoggingPrivateStartRtpDumpFunction::RunAsync() {
   WebRtcLoggingHandlerHost::GenericDoneCallback callback = base::Bind(
       &WebrtcLoggingPrivateStartRtpDumpFunction::StartRtpDumpCallback, this);
 
+  // This call cannot fail.
+  content::RenderProcessHost::WebRtcStopRtpDumpCallback stop_callback =
+      host->StartRtpDump(params->incoming,
+                         params->outgoing,
+                         base::Bind(&WebRtcLoggingHandlerHost::OnRtpPacket,
+                                    webrtc_logging_handler_host));
+
   BrowserThread::PostTask(BrowserThread::IO,
                           FROM_HERE,
                           base::Bind(&WebRtcLoggingHandlerHost::StartRtpDump,
                                      webrtc_logging_handler_host,
-                                     params->incoming,
-                                     params->outgoing,
-                                     callback));
-
+                                     type,
+                                     callback,
+                                     stop_callback));
   return true;
 }
 
@@ -320,6 +336,16 @@ bool WebrtcLoggingPrivateStopRtpDumpFunction::RunAsync() {
   scoped_ptr<StopRtpDump::Params> params(StopRtpDump::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
+  if (!params->incoming && !params->outgoing) {
+    StopRtpDumpCallback(false, "Either incoming or outgoing must be true.");
+    return true;
+  }
+
+  RtpDumpType type =
+      (params->incoming && params->outgoing)
+          ? RTP_DUMP_BOTH
+          : (params->incoming ? RTP_DUMP_INCOMING : RTP_DUMP_OUTGOING);
+
   content::RenderProcessHost* host =
       RphFromTabIdAndSecurityOrigin(params->tab_id, params->security_origin);
   if (!host)
@@ -335,10 +361,8 @@ bool WebrtcLoggingPrivateStopRtpDumpFunction::RunAsync() {
                           FROM_HERE,
                           base::Bind(&WebRtcLoggingHandlerHost::StopRtpDump,
                                      webrtc_logging_handler_host,
-                                     params->incoming,
-                                     params->outgoing,
+                                     type,
                                      callback));
-
   return true;
 }
 

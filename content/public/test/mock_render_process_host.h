@@ -77,6 +77,10 @@ class MockRenderProcessHost : public RenderProcessHost {
   virtual void DisableAecDump() OVERRIDE;
   virtual void SetWebRtcLogMessageCallback(
       base::Callback<void(const std::string&)> callback) OVERRIDE;
+  virtual WebRtcStopRtpDumpCallback StartRtpDump(
+      bool incoming,
+      bool outgoing,
+      const WebRtcRtpPacketCallback& packet_callback) OVERRIDE;
 #endif
   virtual void ResumeDeferredNavigation(const GlobalRequestID& request_id)
       OVERRIDE;

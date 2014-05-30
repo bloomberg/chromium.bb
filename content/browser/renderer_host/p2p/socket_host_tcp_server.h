@@ -28,7 +28,8 @@ class CONTENT_EXPORT P2PSocketHostTcpServer : public P2PSocketHost {
  public:
   typedef std::map<net::IPEndPoint, net::StreamSocket*> AcceptedSocketsMap;
 
-  P2PSocketHostTcpServer(IPC::Sender* message_sender, int id,
+  P2PSocketHostTcpServer(IPC::Sender* message_sender,
+                         int socket_id,
                          P2PSocketType client_type);
   virtual ~P2PSocketHostTcpServer();
 

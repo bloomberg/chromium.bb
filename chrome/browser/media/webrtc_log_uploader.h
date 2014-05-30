@@ -34,6 +34,8 @@ struct WebRtcLogUploadDoneData {
   ~WebRtcLogUploadDoneData();
 
   base::FilePath log_path;
+  base::FilePath incoming_rtp_dump;
+  base::FilePath outgoing_rtp_dump;
   WebRtcLoggingHandlerHost::UploadDoneCallback callback;
   scoped_refptr<WebRtcLoggingHandlerHost> host;
   std::string local_log_id;
@@ -99,11 +101,9 @@ class WebRtcLogUploader : public net::URLFetcherDelegate {
   // to RFC 2046.
   void SetupMultipart(std::string* post_data,
                       const std::vector<uint8>& compressed_log,
+                      const base::FilePath& incoming_rtp_dump,
+                      const base::FilePath& outgoing_rtp_dump,
                       const std::map<std::string, std::string>& meta_data);
-
-  // Adds |compressed_log| to |post_data|.
-  void AddLogData(std::string* post_data,
-                  const std::vector<uint8>& compressed_log);
 
   void CompressLog(std::vector<uint8>* compressed_log,
                    uint8* input,

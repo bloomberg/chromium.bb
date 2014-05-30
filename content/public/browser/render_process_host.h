@@ -207,6 +207,21 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   // process associated with this RenderProcessHost.
   virtual void SetWebRtcLogMessageCallback(
       base::Callback<void(const std::string&)> callback) = 0;
+
+  typedef base::Callback<void(const uint8* packet_header,
+                              size_t header_length,
+                              size_t packet_length,
+                              bool incoming)> WebRtcRtpPacketCallback;
+
+  typedef base::Callback<void(bool incoming, bool outgoing)>
+      WebRtcStopRtpDumpCallback;
+
+  // Starts passing RTP packets to |packet_callback| and returns the callback
+  // used to stop dumping.
+  virtual WebRtcStopRtpDumpCallback StartRtpDump(
+      bool incoming,
+      bool outgoing,
+      const WebRtcRtpPacketCallback& packet_callback) = 0;
 #endif
 
   // Tells the ResourceDispatcherHost to resume a deferred navigation without

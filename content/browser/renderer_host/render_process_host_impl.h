@@ -39,6 +39,9 @@ class BrowserDemuxerAndroid;
 class GpuMessageFilter;
 class MessagePortMessageFilter;
 class MojoApplicationHost;
+#if defined(ENABLE_WEBRTC)
+class P2PSocketDispatcherHost;
+#endif
 class PeerConnectionTrackerHost;
 class RendererMainThread;
 class RenderProcessHostMojoImpl;
@@ -126,6 +129,10 @@ class CONTENT_EXPORT RenderProcessHostImpl
   virtual void DisableAecDump() OVERRIDE;
   virtual void SetWebRtcLogMessageCallback(
       base::Callback<void(const std::string&)> callback) OVERRIDE;
+  virtual WebRtcStopRtpDumpCallback StartRtpDump(
+      bool incoming,
+      bool outgoing,
+      const WebRtcRtpPacketCallback& packet_callback) OVERRIDE;
 #endif
   virtual void ResumeDeferredNavigation(const GlobalRequestID& request_id)
       OVERRIDE;
@@ -413,6 +420,10 @@ class CONTENT_EXPORT RenderProcessHostImpl
 
 #if defined(ENABLE_WEBRTC)
   base::Callback<void(const std::string&)> webrtc_log_message_callback_;
+
+  scoped_refptr<P2PSocketDispatcherHost> p2p_socket_dispatcher_host_;
+
+  WebRtcStopRtpDumpCallback stop_rtp_dump_callback_;
 #endif
 
   // Message filter and dispatcher for screen orientation.

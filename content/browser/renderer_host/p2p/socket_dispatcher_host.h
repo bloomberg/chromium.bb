@@ -14,6 +14,7 @@
 #include "content/common/p2p_socket_type.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/render_process_host.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/network_change_notifier.h"
 
@@ -44,6 +45,15 @@ class P2PSocketDispatcherHost
 
   // net::NetworkChangeNotifier::IPAddressObserver interface.
   virtual void OnIPAddressChanged() OVERRIDE;
+
+  // Starts the RTP packet header dumping. Must be called on the IO thread.
+  void StartRtpDump(
+      bool incoming,
+      bool outgoing,
+      const RenderProcessHost::WebRtcRtpPacketCallback& packet_callback);
+
+  // Stops the RTP packet header dumping. Must be Called on the UI thread.
+  void StopRtpDumpOnUIThread(bool incoming, bool outgoing);
 
  protected:
   virtual ~P2PSocketDispatcherHost();
@@ -85,6 +95,8 @@ class P2PSocketDispatcherHost
   void OnAddressResolved(DnsRequest* request,
                          const net::IPAddressList& addresses);
 
+  void StopRtpDumpOnIOThread(bool incoming, bool outgoing);
+
   content::ResourceContext* resource_context_;
   scoped_refptr<net::URLRequestContextGetter> url_context_;
 
@@ -94,6 +106,10 @@ class P2PSocketDispatcherHost
 
   std::set<DnsRequest*> dns_requests_;
   P2PMessageThrottler throttler_;
+
+  bool dump_incoming_rtp_packet_;
+  bool dump_outgoing_rtp_packet_;
+  RenderProcessHost::WebRtcRtpPacketCallback packet_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(P2PSocketDispatcherHost);
 };

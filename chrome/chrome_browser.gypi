@@ -1102,6 +1102,10 @@
         'browser/media/webrtc_log_util.h',
         'browser/media/webrtc_logging_handler_host.cc',
         'browser/media/webrtc_logging_handler_host.h',
+        'browser/media/webrtc_rtp_dump_handler.cc',
+        'browser/media/webrtc_rtp_dump_handler.h',
+        'browser/media/webrtc_rtp_dump_writer.cc',
+        'browser/media/webrtc_rtp_dump_writer.h',
         'browser/media_galleries/fileapi/av_scanning_file_validator.cc',
         'browser/media_galleries/fileapi/av_scanning_file_validator.h',
         'browser/media_galleries/fileapi/device_media_async_file_util.cc',
@@ -3476,6 +3480,10 @@
             'browser/media/webrtc_log_util.h',
             'browser/media/webrtc_logging_handler_host.cc',
             'browser/media/webrtc_logging_handler_host.h',
+            'browser/media/webrtc_rtp_dump_handler.cc',
+            'browser/media/webrtc_rtp_dump_handler.h',
+            'browser/media/webrtc_rtp_dump_writer.cc',
+            'browser/media/webrtc_rtp_dump_writer.h',
           ]
         }],
         ['enable_service_discovery==1', {

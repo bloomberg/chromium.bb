@@ -75,9 +75,11 @@ chrome.runtime.onMessageExternal.addListener(
               sender.tab.id, origin, doSendResponse);
           return true;
         } else if (method == 'logging.stopAndUpload') {
-          chrome.webrtcLoggingPrivate.stop(sender.tab.id, origin, function() {
-            chrome.webrtcLoggingPrivate.upload(
-                sender.tab.id, origin, doSendResponse);
+          stopAllRtpDump(sender.tab.id, origin, function() {
+            chrome.webrtcLoggingPrivate.stop(sender.tab.id, origin, function() {
+              chrome.webrtcLoggingPrivate.upload(
+                  sender.tab.id, origin, doSendResponse);
+            });
           });
           return true;
         } else if (method == 'logging.discard') {
@@ -114,6 +116,18 @@ chrome.runtime.onMessageExternal.addListener(
           chrome.runtime.getPlatformInfo(function(obj) {
             doSendResponse(obj.nacl_arch);
           });
+          return true;
+        } else if (method == 'logging.startRtpDump') {
+          var incoming = message['incoming'] || false;
+          var outgoing = message['outgoing'] || false;
+          chrome.webrtcLoggingPrivate.startRtpDump(
+              sender.tab.id, origin, incoming, outgoing, doSendResponse);
+          return true;
+        } else if (method == 'logging.stopRtpDump') {
+          var incoming = message['incoming'] || false;
+          var outgoing = message['outgoing'] || false;
+          chrome.webrtcLoggingPrivate.stopRtpDump(
+              sender.tab.id, origin, incoming, outgoing, doSendResponse);
           return true;
         }
         throw new Error('Unknown method: ' + method);
@@ -206,6 +220,17 @@ function onProcessCpu(port) {
   port.onDisconnect.addListener(function() {
     chrome.processes.onUpdated.removeListener(processListener);
   });
+}
+
+function stopAllRtpDump(tabId, origin, callback) {
+  // Stops incoming and outgoing separately, otherwise stopRtpDump will fail if
+  // either type of dump has not been started.
+  chrome.webrtcLoggingPrivate.stopRtpDump(
+      tabId, origin, true, false,
+      function() {
+        chrome.webrtcLoggingPrivate.stopRtpDump(
+            tabId, origin, false, true, callback);
+      });
 }
 
 chrome.runtime.onConnectExternal.addListener(function(port) {

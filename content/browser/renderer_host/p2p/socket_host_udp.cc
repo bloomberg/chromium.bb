@@ -66,12 +66,12 @@ P2PSocketHostUdp::PendingPacket::~PendingPacket() {
 }
 
 P2PSocketHostUdp::P2PSocketHostUdp(IPC::Sender* message_sender,
-                                   int id,
+                                   int socket_id,
                                    P2PMessageThrottler* throttler)
-    : P2PSocketHost(message_sender, id),
-      socket_(new net::UDPServerSocket(
-          GetContentClient()->browser()->GetNetLog(),
-          net::NetLog::Source())),
+    : P2PSocketHost(message_sender, socket_id),
+      socket_(
+          new net::UDPServerSocket(GetContentClient()->browser()->GetNetLog(),
+                                   net::NetLog::Source())),
       send_pending_(false),
       last_dscp_(net::DSCP_CS0),
       throttler_(throttler) {
@@ -173,6 +173,9 @@ void P2PSocketHostUdp::HandleReadResult(int result) {
 
     message_sender_->Send(new P2PMsg_OnDataReceived(
         id_, recv_address_, data, base::TimeTicks::Now()));
+
+    if (dump_incoming_rtp_packet_)
+      DumpRtpPacket(&data[0], data.size(), true);
   } else if (result < 0 && !IsTransientError(result)) {
     LOG(ERROR) << "Error when reading from UDP socket: " << result;
     OnError();
@@ -261,6 +264,9 @@ void P2PSocketHostUdp::DoSend(const PendingPacket& packet) {
   } else {
     HandleSendResult(packet.id, result);
   }
+
+  if (dump_outgoing_rtp_packet_)
+    DumpRtpPacket(packet.data->data(), packet.size, false);
 }
 
 void P2PSocketHostUdp::OnSend(uint64 packet_id, int result) {
