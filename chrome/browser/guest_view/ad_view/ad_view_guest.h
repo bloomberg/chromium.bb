@@ -7,17 +7,14 @@
 
 #include "base/values.h"
 #include "chrome/browser/guest_view/guest_view.h"
-#include "content/public/browser/web_contents_observer.h"
 
-// An AdViewGuest is a WebContentsObserver on the guest WebContents of a
-// <adview> tag. It provides the browser-side implementation of the <adview>
-// API and manages the lifetime of <adview> extension events. AdViewGuest is
-// created on attachment. When a guest WebContents is associated with
-// a particular embedder WebContents, we call this "attachment".
+// An AdViewGuest provides the browser-side implementation of the <adview> API
+// and manages the dispatch of <adview> extension events. AdViewGuest is created
+// on attachment. When a guest WebContents is associated with a particular
+// embedder WebContents, we call this "attachment".
 // TODO(fsamuel): There might be an opportunity here to refactor and reuse code
 // between AdViewGuest and WebViewGuest.
-class AdViewGuest : public GuestView<AdViewGuest>,
-                    public content::WebContentsObserver {
+class AdViewGuest : public GuestView<AdViewGuest> {
  public:
   AdViewGuest(int guest_instance_id,
               content::WebContents* guest_web_contents,

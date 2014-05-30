@@ -49,6 +49,7 @@ class GuestView : public GuestViewBase {
       : GuestViewBase(guest_instance_id,
                       guest_web_contents,
                       embedder_extension_id) {}
+  virtual ~GuestView() {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(GuestView);

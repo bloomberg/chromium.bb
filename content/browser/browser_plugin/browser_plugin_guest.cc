@@ -43,10 +43,6 @@ namespace content {
 // static
 BrowserPluginHostFactory* BrowserPluginGuest::factory_ = NULL;
 
-namespace {
-
-}  // namespace
-
 class BrowserPluginGuest::EmbedderWebContentsObserver
     : public WebContentsObserver {
  public:
@@ -58,11 +54,7 @@ class BrowserPluginGuest::EmbedderWebContentsObserver
   virtual ~EmbedderWebContentsObserver() {
   }
 
-  // WebContentsObserver:
-  virtual void WebContentsDestroyed() OVERRIDE {
-    browser_plugin_guest_->EmbedderDestroyed();
-  }
-
+  // WebContentsObserver implementation.
   virtual void WasShown() OVERRIDE {
     browser_plugin_guest_->EmbedderVisibilityChanged(true);
   }
@@ -99,13 +91,15 @@ BrowserPluginGuest::BrowserPluginGuest(
       last_text_input_type_(ui::TEXT_INPUT_TYPE_NONE),
       last_input_mode_(ui::TEXT_INPUT_MODE_DEFAULT),
       last_can_compose_inline_(true),
+      delegate_(NULL),
       weak_ptr_factory_(this) {
   DCHECK(web_contents);
 }
 
-void BrowserPluginGuest::WillDestroy(WebContents* web_contents) {
-  DCHECK_EQ(web_contents, GetWebContents());
+void BrowserPluginGuest::WillDestroy() {
   is_in_destruction_ = true;
+  embedder_web_contents_ = NULL;
+  delegate_ = NULL;
 }
 
 base::WeakPtr<BrowserPluginGuest> BrowserPluginGuest::AsWeakPtr() {
@@ -117,13 +111,6 @@ bool BrowserPluginGuest::LockMouse(bool allowed) {
     return false;
 
   return embedder_web_contents()->GotResponseToLockMouseRequest(allowed);
-}
-
-void BrowserPluginGuest::EmbedderDestroyed() {
-  embedder_web_contents_ = NULL;
-  if (delegate_)
-    delegate_->EmbedderDestroyed();
-  Destroy();
 }
 
 void BrowserPluginGuest::Destroy() {
@@ -301,7 +288,7 @@ BrowserPluginGuest* BrowserPluginGuest::Create(
     delegate->RegisterDestructionCallback(
         base::Bind(&BrowserPluginGuest::WillDestroy,
                    base::Unretained(guest)));
-    guest->SetDelegate(delegate);
+    guest->set_delegate(delegate);
   }
   return guest;
 }
@@ -405,11 +392,6 @@ void BrowserPluginGuest::EndSystemDrag() {
   RenderViewHostImpl* guest_rvh = static_cast<RenderViewHostImpl*>(
       GetWebContents()->GetRenderViewHost());
   guest_rvh->DragSourceSystemDragEnded();
-}
-
-void BrowserPluginGuest::SetDelegate(BrowserPluginGuestDelegate* delegate) {
-  DCHECK(!delegate_);
-  delegate_.reset(delegate);
 }
 
 void BrowserPluginGuest::SendQueuedMessages() {

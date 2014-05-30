@@ -178,7 +178,6 @@ WebViewGuest::WebViewGuest(int guest_instance_id,
    :  GuestView<WebViewGuest>(guest_instance_id,
                               guest_web_contents,
                               embedder_extension_id),
-      WebContentsObserver(guest_web_contents),
       script_executor_(new extensions::ScriptExecutor(guest_web_contents,
                                                       &script_observers_)),
       pending_context_menu_request_id_(0),
@@ -335,24 +334,22 @@ void WebViewGuest::Attach(WebContents* embedder_web_contents,
   AddWebViewToExtensionRendererState();
 }
 
-bool WebViewGuest::HandleContextMenu(
-    const content::ContextMenuParams& params) {
-  ContextMenuDelegate* menu_delegate =
-      ContextMenuDelegate::FromWebContents(guest_web_contents());
-  DCHECK(menu_delegate);
-
-  pending_menu_ = menu_delegate->BuildMenu(guest_web_contents(), params);
-
-  // Pass it to embedder.
-  int request_id = ++pending_context_menu_request_id_;
-  scoped_ptr<base::DictionaryValue> args(new base::DictionaryValue());
-  scoped_ptr<base::ListValue> items =
-      MenuModelToValue(pending_menu_->menu_model());
-  args->Set(webview::kContextMenuItems, items.release());
-  args->SetInteger(webview::kRequestId, request_id);
-  DispatchEvent(new GuestViewBase::Event(webview::kEventContextMenu,
-                                         args.Pass()));
-  return true;
+void WebViewGuest::EmbedderDestroyed() {
+  // TODO(fsamuel): WebRequest event listeners for <webview> should survive
+  // reparenting of a <webview> within a single embedder. Right now, we keep
+  // around the browser state for the listener for the lifetime of the embedder.
+  // Ideally, the lifetime of the listeners should match the lifetime of the
+  // <webview> DOM node. Once http://crbug.com/156219 is resolved we can move
+  // the call to RemoveWebViewEventListenersOnIOThread back to
+  // WebViewGuest::WebContentsDestroyed.
+  content::BrowserThread::PostTask(
+      content::BrowserThread::IO,
+      FROM_HERE,
+      base::Bind(
+          &RemoveWebViewEventListenersOnIOThread,
+          browser_context(), embedder_extension_id(),
+          embedder_render_process_id(),
+          view_instance_id()));
 }
 
 bool WebViewGuest::AddMessageToConsole(WebContents* source,
@@ -402,24 +399,6 @@ void WebViewGuest::DidAttach() {
   }
 }
 
-void WebViewGuest::EmbedderDestroyed() {
-  // TODO(fsamuel): WebRequest event listeners for <webview> should survive
-  // reparenting of a <webview> within a single embedder. Right now, we keep
-  // around the browser state for the listener for the lifetime of the embedder.
-  // Ideally, the lifetime of the listeners should match the lifetime of the
-  // <webview> DOM node. Once http://crbug.com/156219 is resolved we can move
-  // the call to RemoveWebViewEventListenersOnIOThread back to
-  // WebViewGuest::WebContentsDestroyed.
-  content::BrowserThread::PostTask(
-      content::BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(
-          &RemoveWebViewEventListenersOnIOThread,
-          browser_context(), embedder_extension_id(),
-          embedder_render_process_id(),
-          view_instance_id()));
-}
-
 void WebViewGuest::FindReply(WebContents* source,
                              int request_id,
                              int number_of_matches,
@@ -428,6 +407,26 @@ void WebViewGuest::FindReply(WebContents* source,
                              bool final_update) {
   find_helper_.FindReply(request_id, number_of_matches, selection_rect,
                          active_match_ordinal, final_update);
+}
+
+bool WebViewGuest::HandleContextMenu(
+    const content::ContextMenuParams& params) {
+  ContextMenuDelegate* menu_delegate =
+      ContextMenuDelegate::FromWebContents(guest_web_contents());
+  DCHECK(menu_delegate);
+
+  pending_menu_ = menu_delegate->BuildMenu(guest_web_contents(), params);
+
+  // Pass it to embedder.
+  int request_id = ++pending_context_menu_request_id_;
+  scoped_ptr<base::DictionaryValue> args(new base::DictionaryValue());
+  scoped_ptr<base::ListValue> items =
+      MenuModelToValue(pending_menu_->menu_model());
+  args->Set(webview::kContextMenuItems, items.release());
+  args->SetInteger(webview::kRequestId, request_id);
+  DispatchEvent(new GuestViewBase::Event(webview::kEventContextMenu,
+                                         args.Pass()));
+  return true;
 }
 
 void WebViewGuest::HandleKeyboardEvent(
@@ -884,6 +883,7 @@ void WebViewGuest::WebContentsDestroyed() {
       embedder_extension_id(), view_instance_id()));
 
   RemoveWebViewFromExtensionRendererState(web_contents());
+  GuestViewBase::WebContentsDestroyed();
 }
 
 void WebViewGuest::UserAgentOverrideSet(const std::string& user_agent) {

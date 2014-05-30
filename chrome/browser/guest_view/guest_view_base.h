@@ -12,6 +12,7 @@
 #include "content/public/browser/browser_plugin_guest_delegate.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
+#include "content/public/browser/web_contents_observer.h"
 
 struct RendererContentSettingRules;
 
@@ -20,7 +21,8 @@ struct RendererContentSettingRules;
 // WebContents and an embedder WebContents. It receives events issued from
 // the guest and relays them to the embedder.
 class GuestViewBase : public content::BrowserPluginGuestDelegate,
-                      public content::WebContentsDelegate {
+                      public content::WebContentsDelegate,
+                      public content::WebContentsObserver {
  public:
   class Event {
    public:
@@ -74,6 +76,11 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
 
   virtual const char* GetViewType() const = 0;
 
+  // This method can be overridden by subclasses. It indicates that this guest's
+  // embedder has been destroyed and the guest will be destroyed shortly. This
+  // method gives derived classes the opportunity to perform some cleanup.
+  virtual void EmbedderDestroyed() {}
+
   bool IsViewType(const char* const view_type) const {
     return !strcmp(GetViewType(), view_type);
   }
@@ -89,7 +96,7 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
 
   // Returns the guest WebContents.
   content::WebContents* guest_web_contents() const {
-    return guest_web_contents_;
+    return web_contents();
   }
 
   // Returns the extra parameters associated with this GuestView passed
@@ -127,6 +134,9 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
 
   void SetOpener(GuestViewBase* opener);
 
+  // WebContentsObserver implementation.
+  virtual void WebContentsDestroyed() OVERRIDE;
+
   // WebContentsDelegate implementation.
   virtual bool ShouldFocusPageAfterCrash() OVERRIDE;
   virtual bool PreHandleGestureEvent(
@@ -147,9 +157,10 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
   void DispatchEvent(Event* event);
 
  private:
+  class EmbedderWebContentsObserver;
+
   void SendQueuedEvents();
 
-  content::WebContents* const guest_web_contents_;
   content::WebContents* embedder_web_contents_;
   const std::string embedder_extension_id_;
   int embedder_render_process_id_;
@@ -175,6 +186,8 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
   // the API to use, and view-specific parameters. These parameters
   // are passed along to new guests that are created from this guest.
   scoped_ptr<base::DictionaryValue> extra_params_;
+
+  scoped_ptr<EmbedderWebContentsObserver> embedder_web_contents_observer_;
 
   // This is used to ensure pending tasks will not fire after this object is
   // destroyed.

@@ -11,12 +11,41 @@
 
 namespace content {
 
+// This observer ensures that the TestBrowserPluginGuestDelegate destroys itself
+// when its embedder goes away.
+class TestBrowserPluginGuestDelegate::EmbedderWebContentsObserver :
+    public WebContentsObserver {
+ public:
+  explicit EmbedderWebContentsObserver(TestBrowserPluginGuestDelegate* guest)
+      : WebContentsObserver(guest->GetEmbedderWebContents()),
+        guest_(guest) {
+  }
+
+  virtual ~EmbedderWebContentsObserver() {
+  }
+
+  // WebContentsObserver implementation.
+  virtual void WebContentsDestroyed() OVERRIDE {
+    guest_->Destroy();
+  }
+
+ private:
+  TestBrowserPluginGuestDelegate* guest_;
+
+  DISALLOW_COPY_AND_ASSIGN(EmbedderWebContentsObserver);
+};
+
 TestBrowserPluginGuestDelegate::TestBrowserPluginGuestDelegate(
     BrowserPluginGuest* guest) :
+    WebContentsObserver(guest->GetWebContents()),
     guest_(guest) {
 }
 
 TestBrowserPluginGuestDelegate::~TestBrowserPluginGuestDelegate() {
+}
+
+WebContents* TestBrowserPluginGuestDelegate::GetEmbedderWebContents() const {
+  return guest_->embedder_web_contents();
 }
 
 void TestBrowserPluginGuestDelegate::LoadURLWithParams(
@@ -31,9 +60,19 @@ void TestBrowserPluginGuestDelegate::LoadURLWithParams(
   web_contents->GetController().LoadURLWithParams(load_url_params);
 }
 
+void TestBrowserPluginGuestDelegate::WebContentsDestroyed() {
+  delete this;
+}
+
+void TestBrowserPluginGuestDelegate::DidAttach() {
+  embedder_web_contents_observer_.reset(
+      new EmbedderWebContentsObserver(this));
+
+}
+
 void TestBrowserPluginGuestDelegate::Destroy() {
   if (!destruction_callback_.is_null())
-    destruction_callback_.Run(guest_->GetWebContents());
+    destruction_callback_.Run();
   delete guest_->GetWebContents();
 }
 

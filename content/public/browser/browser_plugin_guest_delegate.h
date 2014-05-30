@@ -26,9 +26,6 @@ class CONTENT_EXPORT BrowserPluginGuestDelegate {
   // Notification that the embedder has completed attachment.
   virtual void DidAttach() {}
 
-  // Informs the delegate that the embedder has been destroyed.
-  virtual void EmbedderDestroyed() {}
-
   // Requests setting the zoom level to the provided |zoom_level|.
   virtual void SetZoom(double zoom_factor) {}
 
@@ -54,7 +51,7 @@ class CONTENT_EXPORT BrowserPluginGuestDelegate {
 
   // Registers a |callback| with the delegate that the delegate would call when
   // it is about to be destroyed.
-  typedef base::Callback<void(WebContents*)> DestructionCallback;
+  typedef base::Callback<void()> DestructionCallback;
   virtual void RegisterDestructionCallback(
       const DestructionCallback& callback) {}
 };

@@ -108,7 +108,7 @@ WebContents* TestGuestManager::CreateGuest(
   WebContentsImpl* guest_web_contents = static_cast<WebContentsImpl*>(
       WebContents::Create(create_params));
   BrowserPluginGuest* guest = guest_web_contents->GetBrowserPluginGuest();
-  guest_web_contents->GetBrowserPluginGuest()->SetDelegate(
+  guest_web_contents->GetBrowserPluginGuest()->set_delegate(
       new TestBrowserPluginGuestDelegate(guest));
   AddGuest(instance_id, guest_web_contents);
   return guest_web_contents;

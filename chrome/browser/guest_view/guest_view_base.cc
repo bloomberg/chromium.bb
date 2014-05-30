@@ -40,10 +40,35 @@ scoped_ptr<base::DictionaryValue> GuestViewBase::Event::GetArguments() {
   return args_.Pass();
 }
 
+// This observer ensures that the GuestViewBase destroys itself when its
+// embedder goes away.
+class GuestViewBase::EmbedderWebContentsObserver : public WebContentsObserver {
+ public:
+  explicit EmbedderWebContentsObserver(GuestViewBase* guest)
+      : WebContentsObserver(guest->embedder_web_contents()),
+        guest_(guest) {
+  }
+
+  virtual ~EmbedderWebContentsObserver() {
+  }
+
+  // WebContentsObserver implementation.
+  virtual void WebContentsDestroyed() OVERRIDE {
+    guest_->embedder_web_contents_ = NULL;
+    guest_->EmbedderDestroyed();
+    guest_->Destroy();
+  }
+
+ private:
+  GuestViewBase* guest_;
+
+  DISALLOW_COPY_AND_ASSIGN(EmbedderWebContentsObserver);
+};
+
 GuestViewBase::GuestViewBase(int guest_instance_id,
                              WebContents* guest_web_contents,
                              const std::string& embedder_extension_id)
-    : guest_web_contents_(guest_web_contents),
+    : WebContentsObserver(guest_web_contents),
       embedder_web_contents_(NULL),
       embedder_extension_id_(embedder_extension_id),
       embedder_render_process_id_(0),
@@ -155,6 +180,8 @@ base::WeakPtr<GuestViewBase> GuestViewBase::AsWeakPtr() {
 void GuestViewBase::Attach(content::WebContents* embedder_web_contents,
                            const base::DictionaryValue& args) {
   embedder_web_contents_ = embedder_web_contents;
+  embedder_web_contents_observer_.reset(
+      new EmbedderWebContentsObserver(this));
   embedder_render_process_id_ =
       embedder_web_contents->GetRenderProcessHost()->GetID();
   args.GetInteger(guestview::kParameterInstanceId, &view_instance_id_);
@@ -178,7 +205,7 @@ void GuestViewBase::Attach(content::WebContents* embedder_web_contents,
 
 void GuestViewBase::Destroy() {
   if (!destruction_callback_.is_null())
-    destruction_callback_.Run(guest_web_contents());
+    destruction_callback_.Run();
   delete guest_web_contents();
 }
 
@@ -194,6 +221,10 @@ void GuestViewBase::SetOpener(GuestViewBase* guest) {
 void GuestViewBase::RegisterDestructionCallback(
     const DestructionCallback& callback) {
   destruction_callback_ = callback;
+}
+
+void GuestViewBase::WebContentsDestroyed() {
+  delete this;
 }
 
 bool GuestViewBase::ShouldFocusPageAfterCrash() {

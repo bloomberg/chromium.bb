@@ -17,8 +17,7 @@ AdViewGuest::AdViewGuest(int guest_instance_id,
                          const std::string& extension_id)
     : GuestView<AdViewGuest>(guest_instance_id,
                              guest_web_contents,
-                             extension_id),
-      WebContentsObserver(guest_web_contents) {
+                             extension_id) {
 }
 
 // static
