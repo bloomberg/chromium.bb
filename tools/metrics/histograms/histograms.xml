@@ -23611,7 +23611,10 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SBClientPhishing.InitPrivateNetworksFailed">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <obsolete>
+    Deprecated in Chrome 37, which now uses //net's internal matching.
+  </obsolete>
+  <owner>mattm@chromium.org</owner>
   <summary>
     The number of times that the phishing detection service could not be
     initialized due to an error parsing the private IP networks.  This would

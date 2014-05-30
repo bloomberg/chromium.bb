@@ -259,10 +259,6 @@ class ClientSideDetectionService : public net::URLFetcherDelegate,
   // trims off the old elements.
   int GetNumReports(std::queue<base::Time>* report_times);
 
-  // Initializes the |private_networks_| vector with the network blocks
-  // that we consider non-public IP addresses.  Returns true on success.
-  bool InitializePrivateNetworks();
-
   // Send the model to the given renderer.
   void SendModelToProcess(content::RenderProcessHost* process);
 
@@ -326,9 +322,6 @@ class ClientSideDetectionService : public net::URLFetcherDelegate,
 
   // The context we use to issue network requests.
   scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
-
-  // The network blocks that we consider private IP address ranges.
-  std::vector<AddressRange> private_networks_;
 
   // Map of bad subnets which are copied from the client model and put into
   // this map to speed up lookups.

@@ -30,6 +30,7 @@
 #include "google_apis/google_api_keys.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
+#include "net/base/net_util.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/url_fetcher.h"
@@ -117,13 +118,7 @@ ClientSideDetectionService::~ClientSideDetectionService() {
 ClientSideDetectionService* ClientSideDetectionService::Create(
     net::URLRequestContextGetter* request_context_getter) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  scoped_ptr<ClientSideDetectionService> service(
-      new ClientSideDetectionService(request_context_getter));
-  if (!service->InitializePrivateNetworks()) {
-    UMA_HISTOGRAM_COUNTS("SBClientPhishing.InitPrivateNetworksFailed", 1);
-    return NULL;
-  }
-  return service.release();
+  return new ClientSideDetectionService(request_context_getter);
 }
 
 void ClientSideDetectionService::SetEnabledAndRefreshState(bool enabled) {
@@ -196,14 +191,7 @@ bool ClientSideDetectionService::IsPrivateIPAddress(
     return true;
   }
 
-  for (std::vector<AddressRange>::const_iterator it =
-           private_networks_.begin();
-       it != private_networks_.end(); ++it) {
-    if (net::IPNumberMatchesPrefix(ip_number, it->first, it->second)) {
-      return true;
-    }
-  }
-  return false;
+  return net::IsIPAddressReserved(ip_number);
 }
 
 void ClientSideDetectionService::OnURLFetchComplete(
@@ -592,32 +580,6 @@ int ClientSideDetectionService::GetNumReports(
 
   // Return the number of elements that are above the cutoff.
   return report_times->size();
-}
-
-bool ClientSideDetectionService::InitializePrivateNetworks() {
-  static const char* const kPrivateNetworks[] = {
-    "10.0.0.0/8",
-    "127.0.0.0/8",
-    "172.16.0.0/12",
-    "192.168.0.0/16",
-    // IPv6 address ranges
-    "fc00::/7",
-    "fec0::/10",
-    "::1/128",
-  };
-
-  for (size_t i = 0; i < arraysize(kPrivateNetworks); ++i) {
-    net::IPAddressNumber ip_number;
-    size_t prefix_length;
-    if (net::ParseCIDRBlock(kPrivateNetworks[i], &ip_number, &prefix_length)) {
-      private_networks_.push_back(std::make_pair(ip_number, prefix_length));
-    } else {
-      DLOG(FATAL) << "Unable to parse IP address range: "
-                  << kPrivateNetworks[i];
-      return false;
-    }
-  }
-  return true;
 }
 
 // static
