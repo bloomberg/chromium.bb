@@ -69,7 +69,7 @@ TEST_F(InMemoryURLIndexTypesTest, StaticFunctions) {
   string_vec = String16VectorFromString16(string_c, false, &actual_starts_c);
   ASSERT_EQ(8U, string_vec.size());
   // Note that we stop collecting words and word starts at kMaxSignificantChars.
-  size_t expected_starts_c[] = {1, 7, 16, 22, 32, 43};
+  size_t expected_starts_c[] = {1, 7, 16, 22, 32, 43, 52, 55};
   EXPECT_TRUE(IntArraysEqual(expected_starts_c, arraysize(expected_starts_c),
                              actual_starts_c));
 

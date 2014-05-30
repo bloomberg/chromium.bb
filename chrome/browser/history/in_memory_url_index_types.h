@@ -17,7 +17,7 @@ namespace history {
 
 // The maximum number of characters to consider from an URL and page title
 // while matching user-typed terms.
-const size_t kMaxSignificantChars = 50;
+const size_t kMaxSignificantChars = 200;
 
 // Matches within URL and Title Strings ----------------------------------------
 
