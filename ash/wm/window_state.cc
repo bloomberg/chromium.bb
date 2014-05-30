@@ -99,6 +99,10 @@ WindowState::WindowState(aura::Window* window)
 }
 
 WindowState::~WindowState() {
+  // WindowState is registered as an owned property of |window_|, and window
+  // unregisters all of its observers in its d'tor before destroying its
+  // properties. As a result, window_->RemoveObserver() doesn't need to (and
+  // shouldn't) be called here.
 }
 
 bool WindowState::HasDelegate() const {
