@@ -97,6 +97,7 @@ class NavigateOnCommitObserver : public WebContentsObserver {
       const LoadCommittedDetails& load_details) OVERRIDE {
     if (!done_) {
       done_ = true;
+      shell_->Stop();
       shell_->LoadURL(url_);
     }
   }
@@ -212,6 +213,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
 IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
                        MAYBE_DidStopLoadingDetailsWithPending) {
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  GURL url("data:text/html,<div>test</div>");
 
   // Listen for the first load to stop.
   LoadStopNotificationObserver load_observer(
@@ -221,10 +223,10 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   // is started.
   NavigateOnCommitObserver commit_observer(
       shell(), embedded_test_server()->GetURL("/title2.html"));
-  NavigateToURL(shell(), embedded_test_server()->GetURL("/title1.html"));
+  NavigateToURL(shell(), url);
   load_observer.Wait();
 
-  EXPECT_EQ("/title1.html", load_observer.url_.path());
+  EXPECT_EQ(url, load_observer.url_);
   EXPECT_EQ(0, load_observer.session_index_);
   EXPECT_EQ(&shell()->web_contents()->GetController(),
             load_observer.controller_);
