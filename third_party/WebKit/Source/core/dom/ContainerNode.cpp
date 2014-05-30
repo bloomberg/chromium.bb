@@ -665,7 +665,7 @@ void ContainerNode::notifyNodeInserted(Node& root)
 
     InspectorInstrumentation::didInsertDOMNode(&root);
 
-    RefPtr<Node> protectDocument(root.document());
+    RefPtr<Node> protect(this);
     RefPtr<Node> protectNode(root);
 
     NodeVector postInsertionNotificationTargets;

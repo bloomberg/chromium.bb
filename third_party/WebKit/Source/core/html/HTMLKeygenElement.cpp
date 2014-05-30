@@ -46,7 +46,13 @@ HTMLKeygenElement::HTMLKeygenElement(Document& document, HTMLFormElement* form)
     : HTMLFormControlElementWithState(keygenTag, document, form)
 {
     ScriptWrappable::init(this);
-    ensureUserAgentShadowRoot();
+}
+
+PassRefPtrWillBeRawPtr<HTMLKeygenElement> HTMLKeygenElement::create(Document& document, HTMLFormElement* form)
+{
+    RefPtrWillBeRawPtr<HTMLKeygenElement> keygen = adoptRefWillBeRefCountedGarbageCollected(new HTMLKeygenElement(document, form));
+    keygen->ensureUserAgentShadowRoot();
+    return keygen.release();
 }
 
 void HTMLKeygenElement::didAddUserAgentShadowRoot(ShadowRoot& root)

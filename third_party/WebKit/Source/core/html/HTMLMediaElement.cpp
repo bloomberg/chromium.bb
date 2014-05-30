@@ -300,9 +300,6 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tagName, Document& docum
     if (document.settings() && document.settings()->mediaPlaybackRequiresUserGesture())
         m_userGestureRequiredForPlay = true;
 
-    // We must always have a ShadowRoot so children like <source> will not render
-    // as they never have an insertion point.
-    ensureUserAgentShadowRoot();
     setHasCustomStyleCallbacks();
     addElementToDocumentMap(this, &document);
 }

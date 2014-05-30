@@ -27,6 +27,7 @@
 #include "core/html/HTMLAudioElement.h"
 
 #include "HTMLNames.h"
+#include "core/dom/shadow/ShadowRoot.h"
 
 namespace WebCore {
 
@@ -40,14 +41,16 @@ HTMLAudioElement::HTMLAudioElement(Document& document)
 
 PassRefPtrWillBeRawPtr<HTMLAudioElement> HTMLAudioElement::create(Document& document)
 {
-    RefPtrWillBeRawPtr<HTMLAudioElement> audioElement(adoptRefWillBeRefCountedGarbageCollected(new HTMLAudioElement(document)));
-    audioElement->suspendIfNeeded();
-    return audioElement.release();
+    RefPtrWillBeRawPtr<HTMLAudioElement> audio = adoptRefWillBeRefCountedGarbageCollected(new HTMLAudioElement(document));
+    audio->ensureUserAgentShadowRoot();
+    audio->suspendIfNeeded();
+    return audio.release();
 }
 
 PassRefPtrWillBeRawPtr<HTMLAudioElement> HTMLAudioElement::createForJSConstructor(Document& document, const AtomicString& src)
 {
     RefPtrWillBeRawPtr<HTMLAudioElement> audio = adoptRefWillBeRefCountedGarbageCollected(new HTMLAudioElement(document));
+    audio->ensureUserAgentShadowRoot();
     audio->setPreload(AtomicString("auto", AtomicString::ConstructFromLiteral));
     if (!src.isNull())
         audio->setSrc(src);

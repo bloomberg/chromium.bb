@@ -32,10 +32,11 @@
 #include "core/dom/Attribute.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/dom/shadow/ShadowRoot.h"
+#include "core/frame/Settings.h"
 #include "core/html/HTMLImageLoader.h"
 #include "core/html/canvas/CanvasRenderingContext.h"
 #include "core/html/parser/HTMLParserIdioms.h"
-#include "core/frame/Settings.h"
 #include "core/rendering/RenderImage.h"
 #include "core/rendering/RenderVideo.h"
 #include "platform/UserGestureIndicator.h"
@@ -54,9 +55,10 @@ inline HTMLVideoElement::HTMLVideoElement(Document& document)
 
 PassRefPtrWillBeRawPtr<HTMLVideoElement> HTMLVideoElement::create(Document& document)
 {
-    RefPtrWillBeRawPtr<HTMLVideoElement> videoElement(adoptRefWillBeRefCountedGarbageCollected(new HTMLVideoElement(document)));
-    videoElement->suspendIfNeeded();
-    return videoElement.release();
+    RefPtrWillBeRawPtr<HTMLVideoElement> video = adoptRefWillBeRefCountedGarbageCollected(new HTMLVideoElement(document));
+    video->ensureUserAgentShadowRoot();
+    video->suspendIfNeeded();
+    return video.release();
 }
 
 bool HTMLVideoElement::rendererIsNeeded(const RenderStyle& style)
