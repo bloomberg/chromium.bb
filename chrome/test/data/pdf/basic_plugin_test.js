@@ -10,10 +10,9 @@ var tests = [
    * Test that the page is sized to the size of the document.
    */
   function testPageSize() {
-    // Verify that the initial zoom is less than or equal to 100%.
-    chrome.test.assertTrue(viewer.viewport.zoom <= 1);
+    // Verify that the initial zoom is 100%.
+    chrome.test.assertEq(1, viewer.viewport.zoom);
 
-    viewer.viewport.zoom = 1;
     var sizer = document.getElementById('sizer');
     chrome.test.assertEq(826, sizer.offsetWidth);
     chrome.test.assertEq(1066, sizer.offsetHeight);
@@ -36,21 +35,14 @@ var tests = [
       var dict = JSON.parse(json);
       chrome.test.assertEq(612, dict.width);
       chrome.test.assertEq(792, dict.height);
-      if (dict.textBox[0] && dict.textBox[1]) {
-        chrome.test.assertEq(1.0, dict.textBox[0].fontSize);
-        chrome.test.assertEq('text', dict.textBox[0].textNodes[0].type);
-        chrome.test.assertEq('this is some text',
-                             dict.textBox[0].textNodes[0].text);
-        chrome.test.assertEq(1.0, dict.textBox[1].fontSize);
-        chrome.test.assertEq('text', dict.textBox[1].textNodes[0].type);
-        chrome.test.assertEq('some more text',
-                             dict.textBox[1].textNodes[0].text);
-      } else {
-        // TODO(raymes): Investigate the flakiness that's occuring with
-        // returning accessibility information in this test: crbug.com/378091.
-        console.error(
-            'Expected text boxes of accessibility data to be returned');
-      }
+      chrome.test.assertEq(1.0, dict.textBox[0].fontSize);
+      chrome.test.assertEq('text', dict.textBox[0].textNodes[0].type);
+      chrome.test.assertEq('this is some text',
+                           dict.textBox[0].textNodes[0].text);
+      chrome.test.assertEq(1.0, dict.textBox[1].fontSize);
+      chrome.test.assertEq('text', dict.textBox[1].textNodes[0].type);
+      chrome.test.assertEq('some more text',
+                           dict.textBox[1].textNodes[0].text);
     }), 0);
   }
 ];

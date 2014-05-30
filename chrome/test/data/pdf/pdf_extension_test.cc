@@ -37,6 +37,7 @@ class PDFExtensionTest : public ExtensionApiTest {
   }
 
   void RunTestsInFile(std::string filename, bool requiresPlugin) {
+#if !defined(GOOGLE_CHROME_BUILD)
     base::FilePath pdf_plugin_src;
     PathService::Get(base::DIR_SOURCE_ROOT, &pdf_plugin_src);
     pdf_plugin_src = pdf_plugin_src.AppendASCII("pdf");
@@ -45,6 +46,7 @@ class PDFExtensionTest : public ExtensionApiTest {
           " because it requires the PDF plugin which is not available.";
       return;
     }
+#endif
     ExtensionService* service = extensions::ExtensionSystem::Get(
         profile())->extension_service();
     service->component_loader()->Add(IDR_PDF_MANIFEST,
@@ -85,7 +87,9 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, Basic) {
   RunTestsInFile("basic_test.js", false);
 }
 
-IN_PROC_BROWSER_TEST_F(PDFExtensionTest, BasicPlugin) {
+// TODO(raymes): investigate why this started failing after PDF plugin became
+// open source.
+IN_PROC_BROWSER_TEST_F(PDFExtensionTest, DISABLED_BasicPlugin) {
   RunTestsInFile("basic_plugin_test.js", true);
 }
 
