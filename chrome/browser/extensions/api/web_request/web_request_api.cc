@@ -33,6 +33,7 @@
 #include "chrome/browser/extensions/extension_renderer_state.h"
 #include "chrome/browser/extensions/extension_warning_service.h"
 #include "chrome/browser/extensions/extension_warning_set.h"
+#include "chrome/browser/guest_view/web_view/web_view_constants.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/extensions/api/web_request.h"
@@ -161,6 +162,29 @@ bool IsRequestFromExtension(const net::URLRequest* request,
     return false;
 
   return extension_info_map->process_map().Contains(info->GetChildID());
+}
+
+void ExtractRequestRoutingInfo(net::URLRequest* request,
+                               int* render_process_host_id,
+                               int* routing_id) {
+  if (!request->GetUserData(NULL))
+    return;
+  const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request);
+  *render_process_host_id = info->GetChildID();
+  *routing_id = info->GetRouteID();
+}
+
+// Given a |request|, this function determines whether it originated from
+// a <webview> guest process or not. If it is from a <webview> guest process,
+// then |web_view_info| is returned with information about the instance ID
+// that uniquely identifies the <webview> and its embedder.
+bool GetWebViewInfo(net::URLRequest* request,
+                    ExtensionRendererState::WebViewInfo* web_view_info) {
+  int render_process_host_id = -1;
+  int routing_id = -1;
+  ExtractRequestRoutingInfo(request, &render_process_host_id, &routing_id);
+  return ExtensionRendererState::GetInstance()->
+      GetWebViewInfo(render_process_host_id, routing_id, web_view_info);
 }
 
 void ExtractRequestInfoDetails(net::URLRequest* request,
@@ -363,12 +387,19 @@ void RemoveEventListenerOnUI(
   event_router->RemoveEventListener(event_name, process, extension_id);
 }
 
-// Sends an event to subscribers of chrome.declarativeWebRequest.onMessage.
+// Sends an event to subscribers of chrome.declarativeWebRequest.onMessage or
+// to subscribers of webview.onMessage if the action is being operated upon
+// a <webview> guest renderer.
 // |extension_id| identifies the extension that sends and receives the event.
+// |is_web_view_guest| indicates whether the action is for a <webview>.
+// |web_view_info| is a struct containing information about the <webview>
+// embedder.
 // |event_argument| is passed to the event listener.
 void SendOnMessageEventOnUI(
     void* profile_id,
     const std::string& extension_id,
+    bool is_web_view_guest,
+    const ExtensionRendererState::WebViewInfo& web_view_info,
     scoped_ptr<base::DictionaryValue> event_argument) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
@@ -381,10 +412,18 @@ void SendOnMessageEventOnUI(
 
   extensions::EventRouter* event_router = extensions::EventRouter::Get(profile);
 
+  extensions::EventFilteringInfo event_filtering_info;
+  // The instance ID uniquely identifies a <webview> instance within an embedder
+  // process. We use a filter here so that only event listeners for a particular
+  // <webview> will fire.
+  if (is_web_view_guest)
+    event_filtering_info.SetInstanceID(web_view_info.instance_id);
+
   scoped_ptr<extensions::Event> event(new extensions::Event(
-      declarative_keys::kOnMessage, event_args.Pass(), profile,
-      GURL(), extensions::EventRouter::USER_GESTURE_UNKNOWN,
-      extensions::EventFilteringInfo()));
+      is_web_view_guest ? webview::kEventMessage : declarative_keys::kOnMessage,
+      event_args.Pass(), profile, GURL(),
+      extensions::EventRouter::USER_GESTURE_UNKNOWN,
+      event_filtering_info));
   event_router->DispatchEventToExtension(extension_id, event.Pass());
 }
 
@@ -1240,7 +1279,6 @@ bool ExtensionWebRequestEventRouter::AddEventListener(
     int embedder_process_id,
     int webview_instance_id,
     base::WeakPtr<IPC::Sender> ipc_sender) {
-
   if (!IsWebRequestEvent(event_name))
     return false;
 
@@ -1419,10 +1457,10 @@ void ExtensionWebRequestEventRouter::GetMatchingListenersImpl(
     std::vector<const ExtensionWebRequestEventRouter::EventListener*>*
         matching_listeners) {
   std::string web_request_event_name(event_name);
-  ExtensionRendererState::WebViewInfo webview_info;
-  bool is_guest = ExtensionRendererState::GetInstance()->
-      GetWebViewInfo(render_process_host_id, routing_id, &webview_info);
-  if (is_guest)
+  ExtensionRendererState::WebViewInfo web_view_info;
+  bool is_web_view_guest = ExtensionRendererState::GetInstance()->
+      GetWebViewInfo(render_process_host_id, routing_id, &web_view_info);
+  if (is_web_view_guest)
     web_request_event_name.replace(0, sizeof(kWebRequest) - 1, kWebView);
 
   std::set<EventListener>& listeners =
@@ -1435,9 +1473,9 @@ void ExtensionWebRequestEventRouter::GetMatchingListenersImpl(
       continue;
     }
 
-    if (is_guest &&
-        (it->embedder_process_id != webview_info.embedder_process_id ||
-         it->webview_instance_id != webview_info.instance_id))
+    if (is_web_view_guest &&
+        (it->embedder_process_id != web_view_info.embedder_process_id ||
+         it->webview_instance_id != web_view_info.instance_id))
       continue;
 
     if (!it->filter.urls.is_empty() && !it->filter.urls.MatchesURL(url))
@@ -1451,7 +1489,7 @@ void ExtensionWebRequestEventRouter::GetMatchingListenersImpl(
                   resource_type) == it->filter.types.end())
       continue;
 
-    if (!is_guest && !WebRequestPermissions::CanExtensionAccessURL(
+    if (!is_web_view_guest && !WebRequestPermissions::CanExtensionAccessURL(
             extension_info_map, it->extension_id, url, crosses_incognito,
             WebRequestPermissions::REQUIRE_HOST_PERMISSION))
       continue;
@@ -1793,6 +1831,9 @@ void ExtensionWebRequestEventRouter::SendMessages(
          message != messages.end(); ++message) {
       scoped_ptr<base::DictionaryValue> argument(new base::DictionaryValue);
       ExtractRequestInfo(blocked_request.request, argument.get());
+      ExtensionRendererState::WebViewInfo web_view_info;
+      bool is_web_view_guest = GetWebViewInfo(blocked_request.request,
+                                              &web_view_info);
       argument->SetString(keys::kMessageKey, *message);
       argument->SetString(keys::kStageKey,
                           GetRequestStageAsString(blocked_request.event));
@@ -1803,6 +1844,8 @@ void ExtensionWebRequestEventRouter::SendMessages(
           base::Bind(&SendOnMessageEventOnUI,
                      profile,
                      (*delta)->extension_id,
+                     is_web_view_guest,
+                     web_view_info,
                      base::Passed(&argument)));
     }
   }
@@ -1917,29 +1960,13 @@ bool ExtensionWebRequestEventRouter::ProcessDeclarativeRules(
     net::URLRequest* request,
     extensions::RequestStage request_stage,
     const net::HttpResponseHeaders* original_response_headers) {
-  bool is_main_frame = false;
-  int64 frame_id = -1;
-  bool parent_is_main_frame = false;
-  int64 parent_frame_id = -1;
-  int tab_id = -1;
-  int window_id = -1;
-  int render_process_host_id = -1;
-  int routing_id = -1;
-  ResourceType::Type resource_type = ResourceType::LAST_TYPE;
-
-  ExtractRequestInfoDetails(request, &is_main_frame, &frame_id,
-                            &parent_is_main_frame, &parent_frame_id,
-                            &tab_id, &window_id, &render_process_host_id,
-                            &routing_id, &resource_type);
-  ExtensionRendererState::WebViewInfo webview_info;
-  bool is_guest = ExtensionRendererState::GetInstance()->
-      GetWebViewInfo(render_process_host_id, routing_id, &webview_info);
+  ExtensionRendererState::WebViewInfo web_view_info;
+  bool is_web_view_guest = GetWebViewInfo(request, &web_view_info);
 
   RulesRegistryService::WebViewKey webview_key(
-      is_guest ? webview_info.embedder_process_id : 0,
-      is_guest ? webview_info.instance_id : 0);
+      is_web_view_guest ? web_view_info.embedder_process_id : 0,
+      is_web_view_guest ? web_view_info.instance_id : 0);
   RulesRegistryKey rules_key(profile, webview_key);
-
   // If this check fails, check that the active stages are up-to-date in
   // browser/extensions/api/declarative_webrequest/request_stage.h .
   DCHECK(request_stage & extensions::kActiveStages);
@@ -2183,11 +2210,11 @@ bool WebRequestInternalAddEventListenerFunction::RunSync() {
       extension_info_map()->extensions().GetByID(extension_id());
   std::string extension_name = extension ? extension->name() : extension_id();
 
-  bool is_guest = webview_instance_id != 0;
+  bool is_web_view_guest = webview_instance_id != 0;
   // We check automatically whether the extension has the 'webRequest'
   // permission. For blocking calls we require the additional permission
   // 'webRequestBlocking'.
-  if ((!is_guest && extra_info_spec &
+  if ((!is_web_view_guest && extra_info_spec &
           (ExtensionWebRequestEventRouter::ExtraInfoSpec::BLOCKING |
            ExtensionWebRequestEventRouter::ExtraInfoSpec::ASYNC_BLOCKING)) &&
        !extension->HasAPIPermission(
@@ -2202,7 +2229,8 @@ bool WebRequestInternalAddEventListenerFunction::RunSync() {
   // http://www.example.com/bar/*.
   // For this reason we do only a coarse check here to warn the extension
   // developer if he does something obviously wrong.
-  if (!is_guest && extensions::PermissionsData::GetEffectiveHostPermissions(
+  if (!is_web_view_guest &&
+      extensions::PermissionsData::GetEffectiveHostPermissions(
           extension).is_empty()) {
     error_ = keys::kHostPermissionsRequired;
     return false;

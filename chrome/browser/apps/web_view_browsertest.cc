@@ -1003,8 +1003,15 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestContentLoadEvent) {
 
 // http://crbug.com/326330
 IN_PROC_BROWSER_TEST_F(WebViewTest,
-                       DISABLED_Shim_TestDeclarativeWebRequestAPI) {
+                       Shim_TestDeclarativeWebRequestAPI) {
   TestHelper("testDeclarativeWebRequestAPI",
+             "web_view/shim",
+             NEEDS_TEST_SERVER);
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewTest,
+                       Shim_TestDeclarativeWebRequestAPISendMessage) {
+  TestHelper("testDeclarativeWebRequestAPISendMessage",
              "web_view/shim",
              NEEDS_TEST_SERVER);
 }

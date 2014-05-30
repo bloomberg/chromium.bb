@@ -984,8 +984,32 @@ function testDeclarativeWebRequestAPI() {
     webview.request.onRequest.removeRules();
     webview.reload();
   });
-  webview.addEventListener('loadcommit', function(e) {
+  webview.addEventListener('loadstop', function(e) {
     embedder.test.assertEq(2, step);
+    embedder.test.succeed();
+  });
+  webview.src = embedder.emptyGuestURL;
+  document.body.appendChild(webview);
+}
+
+function testDeclarativeWebRequestAPISendMessage() {
+  var webview = new WebView();
+  window.console.log(embedder.emptyGuestURL);
+  var rule = {
+    conditions: [
+      new chrome.webViewRequest.RequestMatcher(
+        {
+          url: { urlContains: 'guest' }
+        }
+      )
+    ],
+    actions: [
+      new chrome.webViewRequest.SendMessageToExtension({ message: 'bleep' })
+    ]
+  };
+  webview.request.onRequest.addRules([rule]);
+  webview.request.onMessage.addListener(function(e) {
+    embedder.test.assertEq('bleep', e.message);
     embedder.test.succeed();
   });
   webview.src = embedder.emptyGuestURL;
@@ -1679,6 +1703,8 @@ embedder.test.testList = {
   'testNewWindowNoReferrerLink': testNewWindowNoReferrerLink,
   'testContentLoadEvent': testContentLoadEvent,
   'testDeclarativeWebRequestAPI': testDeclarativeWebRequestAPI,
+  'testDeclarativeWebRequestAPISendMessage':
+      testDeclarativeWebRequestAPISendMessage,
   'testWebRequestAPI': testWebRequestAPI,
   'testWebRequestAPIGoogleProperty': testWebRequestAPIGoogleProperty,
   'testWebRequestListenerSurvivesReparenting':

@@ -7,6 +7,9 @@
 
 #include "chrome/browser/guest_view/guest_view_base.h"
 
+// A GuestView is the templated base class for out-of-process frames in the
+// chrome layer. GuestView is templated on its derived type to allow for type-
+// safe access. See GuestViewBase for more information.
 template <typename T>
 class GuestView : public GuestViewBase {
  public:

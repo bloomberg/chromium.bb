@@ -24,6 +24,7 @@ extern const char kEventLoadProgress[];
 extern const char kEventLoadRedirect[];
 extern const char kEventLoadStart[];
 extern const char kEventLoadStop[];
+extern const char kEventMessage[];
 extern const char kEventNewWindow[];
 extern const char kEventPermissionRequest[];
 extern const char kEventResponsive[];

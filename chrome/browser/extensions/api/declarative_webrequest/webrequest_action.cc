@@ -18,6 +18,8 @@
 #include "chrome/browser/extensions/api/web_request/web_request_api_constants.h"
 #include "chrome/browser/extensions/api/web_request/web_request_api_helpers.h"
 #include "chrome/browser/extensions/api/web_request/web_request_permissions.h"
+#include "chrome/browser/extensions/extension_renderer_state.h"
+#include "content/public/browser/resource_request_info.h"
 #include "content/public/common/url_constants.h"
 #include "extensions/browser/info_map.h"
 #include "extensions/common/error_utils.h"
@@ -25,6 +27,8 @@
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/url_request/url_request.h"
 #include "third_party/re2/re2/re2.h"
+
+using content::ResourceRequestInfo;
 
 namespace extensions {
 
@@ -481,6 +485,16 @@ bool WebRequestAction::HasPermission(const InfoMap* extension_info_map,
   if (!extension_info_map)
     return true;
 
+  const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request);
+  int process_id = info ? info->GetChildID() : 0;
+  int route_id = info ? info->GetRouteID() : 0;
+  ExtensionRendererState::WebViewInfo webview_info;
+  // The embedder can always access all hosts from within a <webview>.
+  // The same is not true of extensions.
+  if (ExtensionRendererState::GetInstance()->GetWebViewInfo(
+          process_id, route_id, &webview_info)) {
+    return true;
+  }
   WebRequestPermissions::HostPermissionsCheck permission_check =
       WebRequestPermissions::REQUIRE_ALL_URLS;
   switch (host_permissions_strategy()) {

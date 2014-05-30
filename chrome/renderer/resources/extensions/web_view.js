@@ -981,6 +981,28 @@ WebViewInternal.prototype.handlePermissionEvent =
   }
 };
 
+var WebRequestMessageEvent = CreateEvent('webview.onMessage');
+
+function DeclarativeWebRequestEvent(opt_eventName,
+                                    opt_argSchemas,
+                                    opt_eventOptions,
+                                    opt_webViewInstanceId) {
+  var subEventName = opt_eventName + '/' + IdGenerator.GetNextId();
+  EventBindings.Event.call(this, subEventName, opt_argSchemas, opt_eventOptions,
+      opt_webViewInstanceId);
+
+  var self = this;
+  // TODO(lazyboy): When do we dispose this listener?
+  WebRequestMessageEvent.addListener(function() {
+    // Re-dispatch to subEvent's listeners.
+    $Function.apply(self.dispatch, self, $Array.slice(arguments));
+  }, {instanceId: opt_webViewInstanceId || 0});
+}
+
+DeclarativeWebRequestEvent.prototype = {
+  __proto__: EventBindings.Event.prototype
+};
+
 /**
  * @private
  */
@@ -1001,12 +1023,36 @@ WebViewInternal.prototype.setupWebRequestEvents = function() {
     };
   };
 
+  var createDeclarativeWebRequestEvent = function(webRequestEvent) {
+    return function() {
+      if (!self[webRequestEvent.name]) {
+        // The onMessage event gets a special event type because we want
+        // the listener to fire only for messages targeted for this particular
+        // <webview>.
+        var EventClass = webRequestEvent.name === 'onMessage' ?
+            DeclarativeWebRequestEvent : EventBindings.Event;
+        self[webRequestEvent.name] =
+            new EventClass(
+                'webview.' + webRequestEvent.name,
+                webRequestEvent.parameters,
+                webRequestEvent.options,
+                self.viewInstanceId);
+      }
+      return self[webRequestEvent.name];
+    };
+  };
+
   for (var i = 0; i < DeclarativeWebRequestSchema.events.length; ++i) {
     var eventSchema = DeclarativeWebRequestSchema.events[i];
-    var webRequestEvent = createWebRequestEvent(eventSchema);
-    this.maybeAttachWebRequestEventToObject(request,
-                                            eventSchema.name,
-                                            webRequestEvent);
+    var webRequestEvent = createDeclarativeWebRequestEvent(eventSchema);
+    Object.defineProperty(
+        request,
+        eventSchema.name,
+        {
+          get: webRequestEvent,
+          enumerable: true
+        }
+    );
   }
 
   // Populate the WebRequest events from the API definition.
@@ -1020,9 +1066,6 @@ WebViewInternal.prototype.setupWebRequestEvents = function() {
           enumerable: true
         }
     );
-    this.maybeAttachWebRequestEventToObject(this.webviewNode,
-                                            WebRequestSchema.events[i].name,
-                                            webRequestEvent);
   }
   Object.defineProperty(
       this.webviewNode,
@@ -1216,12 +1259,6 @@ window.addEventListener('readystatechange', function listener(event) {
  * @private
  */
 WebViewInternal.prototype.maybeGetExperimentalEvents = function() {};
-
-/**
- * Implemented when the experimental API is available.
- * @private
- */
-WebViewInternal.prototype.maybeAttachWebRequestEventToObject = function() {};
 
 /**
  * Implemented when the experimental API is available.

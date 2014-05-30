@@ -21,6 +21,7 @@ const char kEventLoadProgress[] = "webview.onLoadProgress";
 const char kEventLoadRedirect[] = "webview.onLoadRedirect";
 const char kEventLoadStart[] = "webview.onLoadStart";
 const char kEventLoadStop[] = "webview.onLoadStop";
+const char kEventMessage[] = "webview.onMessage";
 const char kEventNewWindow[] = "webview.onNewWindow";
 const char kEventPermissionRequest[] = "webview.onPermissionRequest";
 const char kEventResponsive[] = "webview.onResponsive";

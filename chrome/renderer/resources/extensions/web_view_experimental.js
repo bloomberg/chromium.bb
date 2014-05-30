@@ -122,21 +122,6 @@ var WebViewContextMenus = utils.expose(
     'WebViewContextMenus', WebViewContextMenusImpl,
     { functions: ['create', 'remove', 'removeAll', 'update'] });
 
-/**
- * @private
- */
-WebViewInternal.prototype.maybeAttachWebRequestEventToObject =
-    function(obj, eventName, webRequestEvent) {
-  Object.defineProperty(
-      obj,
-      eventName,
-      {
-        get: webRequestEvent,
-        enumerable: true
-      }
-  );
-};
-
 /** @private */
 WebViewInternal.prototype.maybeHandleContextMenu = function(e, webViewEvent) {
   var requestId = e.requestId;
