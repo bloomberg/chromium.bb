@@ -96,6 +96,14 @@ bool TypedUrlModelAssociator::FixupURLAndGetVisits(
   // This is a workaround for http://crbug.com/84258.
   if (visits->empty()) {
     DVLOG(1) << "Found empty visits for URL: " << url->url();
+
+    if (url->last_visit().is_null()) {
+      // If modified URL is bookmarked, history backend treats it as modified
+      // even if all its visits are deleted. Return false to stop further
+      // processing because sync expects valid visit time for modified entry.
+      return false;
+    }
+
     history::VisitRow visit(
         url->id(), url->last_visit(), 0, content::PAGE_TRANSITION_TYPED, 0);
     visits->push_back(visit);
