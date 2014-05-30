@@ -25,7 +25,7 @@ static void {{method.name}}{{method.overload_index}}Method{{world_suffix}}(const
     {% if interface_name == 'EventTarget' %}
     if (DOMWindow* window = impl->toDOMWindow()) {
         if (!BindingSecurity::shouldAllowAccessToFrame(info.GetIsolate(), window->frame(), exceptionState)) {
-            {{throw_from_exception_state(method)}};
+            {{throw_from_exception_state(method) | indent(12)}}
             return;
         }
         if (!window->document())
@@ -33,14 +33,14 @@ static void {{method.name}}{{method.overload_index}}Method{{world_suffix}}(const
     }
     {% elif method.is_check_security_for_frame %}
     if (!BindingSecurity::shouldAllowAccessToFrame(info.GetIsolate(), impl->frame(), exceptionState)) {
-        {{throw_from_exception_state(method)}};
+        {{throw_from_exception_state(method) | indent(8)}}
         return;
     }
     {% endif %}
     {% if method.is_check_security_for_node %}
     if (!BindingSecurity::shouldAllowAccessToNode(info.GetIsolate(), impl->{{method.name}}(exceptionState), exceptionState)) {
         v8SetReturnValueNull(info);
-        {{throw_from_exception_state(method)}};
+        {{throw_from_exception_state(method) | indent(8)}}
         return;
     }
     {% endif %}
@@ -117,9 +117,9 @@ OwnPtr<{{argument.idl_type}}> {{argument.name}}
    Optional Dictionary arguments default to empty dictionary. #}
 if (UNLIKELY(info.Length() <= {{argument.index}})) {
     {% if world_suffix %}
-    {{cpp_method_call(method, argument.v8_set_return_value_for_main_world, argument.cpp_value) | indent}}
+    {{cpp_method_call(method, argument.v8_set_return_value_for_main_world, argument.cpp_value, method.arguments_need_try_catch) | indent}}
     {% else %}
-    {{cpp_method_call(method, argument.v8_set_return_value, argument.cpp_value) | indent}}
+    {{cpp_method_call(method, argument.v8_set_return_value, argument.cpp_value, method.arguments_need_try_catch) | indent}}
     {% endif %}
     {% if argument.has_event_listener_argument %}
     {{hidden_dependency_action(method.name) | indent}}
@@ -178,7 +178,7 @@ if (!std::isnan({{argument.name}}NativeValue))
 {% elif argument.idl_type == 'SerializedScriptValue' %}
 {{argument.name}} = SerializedScriptValue::create(info[{{argument.index}}], 0, 0, exceptionState, info.GetIsolate());
 if (exceptionState.hadException()) {
-    {{throw_from_exception_state(method)}};
+    {{throw_from_exception_state(method) | indent}}
     return;
 }
 {% elif argument.is_variadic_wrapper_type %}
@@ -228,7 +228,7 @@ if (!{{argument.name}}.isUndefinedOrNull() && !{{argument.name}}.isObject()) {
 
 
 {######################################}
-{% macro cpp_method_call(method, v8_set_return_value, cpp_value) %}
+{% macro cpp_method_call(method, v8_set_return_value, cpp_value, has_try_catch) %}
 {# Local variables #}
 {% if method.is_call_with_script_state %}
 ScriptState* scriptState = ScriptState::current(info.GetIsolate());
@@ -251,7 +251,7 @@ RefPtr<ScriptArguments> scriptArguments(createScriptArguments(info, {{method.num
 {# Post-call #}
 {% if method.is_raises_exception %}
 if (exceptionState.hadException()) {
-    {{throw_from_exception_state(method)}};
+    {{throw_from_exception_state(method, has_try_catch) | indent}}
     return;
 }
 {% endif %}
@@ -289,22 +289,27 @@ v8SetReturnValueNull(info);
 {% macro throw_type_error(method, error_message) %}
 {% if method.has_exception_state %}
 exceptionState.throwTypeError({{error_message}});
-{{throw_from_exception_state(method)}};
-{% elif method.is_constructor %}
+{{throw_from_exception_state(method, method.arguments_need_try_catch)}}
+{%- else %}{# method.has_exception_state #}
+{% if method.is_constructor %}
 throwTypeError(ExceptionMessages::failedToConstruct("{{interface_name}}", {{error_message}}), info.GetIsolate());
 {% else %}{# method.has_exception_state #}
 throwTypeError(ExceptionMessages::failedToExecute("{{method.name}}", "{{interface_name}}", {{error_message}}), info.GetIsolate());
 {% endif %}
 {% if method.arguments_need_try_catch %}
 block.ReThrow();
-{%- endif %}{# method.has_exception_state #}
+{% endif %}
+{% endif %}{# method.has_exception_state #}
 {% endmacro %}
 
 
 {######################################}
 {# FIXME: return a rejected Promise if method.idl_type == 'Promise' #}
-{% macro throw_from_exception_state(method) %}
-exceptionState.throwIfNeeded()
+{% macro throw_from_exception_state(method, has_try_catch) %}
+exceptionState.throwIfNeeded();
+{% if has_try_catch %}
+block.ReThrow();
+{%- endif %}
 {%- endmacro %}
 
 

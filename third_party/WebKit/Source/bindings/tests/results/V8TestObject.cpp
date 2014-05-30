@@ -8432,6 +8432,7 @@ static void raisesExceptionVoidMethodOptionalLongArgMethod(const v8::FunctionCal
             impl->raisesExceptionVoidMethodOptionalLongArg(exceptionState);
             if (exceptionState.hadException()) {
                 exceptionState.throwIfNeeded();
+                block.ReThrow();
                 return;
             }
             return;
