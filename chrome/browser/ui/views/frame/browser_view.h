@@ -656,10 +656,6 @@ class BrowserView : public BrowserWindow,
   // Handled by ContentsLayoutManager.
   views::View* contents_container_;
 
-  // Docked devtools window instance. NULL when current tab is not inspected
-  // or is inspected with undocked version of DevToolsWindow.
-  DevToolsWindow* devtools_window_;
-
   // Tracks and stores the last focused view which is not the
   // devtools_web_view_ or any of its children. Used to restore focus once
   // the devtools_web_view_ is hidden.

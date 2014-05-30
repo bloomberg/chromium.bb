@@ -272,11 +272,10 @@ class FullscreenObserver : public WebContentsObserver {
       rvh->Blur();
       return;
     }
-    DevToolsWindow* devtoolsWindow =
-        DevToolsWindow::GetDockedInstanceForInspectedTab([self webContents]);
-    if (devtoolsWindow) {
-      content::RenderViewHost* devtoolsView =
-          devtoolsWindow->web_contents()->GetRenderViewHost();
+    WebContents* devtools = DevToolsWindow::GetInTabWebContents(
+        [self webContents], NULL);
+    if (devtools) {
+      content::RenderViewHost* devtoolsView = devtools->GetRenderViewHost();
       if (devtoolsView && devtoolsView->GetView() &&
           devtoolsView->GetView()->HasFocus()) {
         devtoolsView->Blur();

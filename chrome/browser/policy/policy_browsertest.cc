@@ -1370,7 +1370,8 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DeveloperToolsDisabled) {
                POLICY_SCOPE_USER, base::Value::CreateBooleanValue(true), NULL);
   content::WindowedNotificationObserver close_observer(
       content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
-      content::Source<content::WebContents>(devtools_window->web_contents()));
+      content::Source<content::WebContents>(
+          devtools_window->web_contents_for_test()));
   UpdateProviderPolicy(policies);
   // wait for devtools close
   close_observer.Wait();

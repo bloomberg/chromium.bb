@@ -395,7 +395,6 @@ BrowserView::BrowserView()
       infobar_container_(NULL),
       contents_web_view_(NULL),
       contents_container_(NULL),
-      devtools_window_(NULL),
       initialized_(false),
       in_process_fullscreen_(false),
 #if defined(OS_WIN)
@@ -2099,18 +2098,11 @@ bool BrowserView::MaybeShowInfoBar(WebContents* contents) {
 
 void BrowserView::UpdateDevToolsForContents(
     WebContents* web_contents, bool update_devtools_web_contents) {
-  DevToolsWindow* new_devtools_window = web_contents ?
-      DevToolsWindow::GetDockedInstanceForInspectedTab(web_contents) : NULL;
+  DevToolsContentsResizingStrategy strategy;
+  WebContents* devtools = DevToolsWindow::GetInTabWebContents(
+      web_contents, &strategy);
 
-  // Replace devtools WebContents.
-  WebContents* new_contents = new_devtools_window ?
-      new_devtools_window->web_contents() : NULL;
-  if (devtools_web_view_->web_contents() != new_contents &&
-      update_devtools_web_contents) {
-    devtools_web_view_->SetWebContents(new_contents);
-  }
-
-  if (!devtools_window_ && new_devtools_window &&
+  if (!devtools_web_view_->web_contents() && devtools &&
       !devtools_focus_tracker_.get()) {
     // Install devtools focus tracker when dev tools window is shown for the
     // first time.
@@ -2120,18 +2112,21 @@ void BrowserView::UpdateDevToolsForContents(
   }
 
   // Restore focus to the last focused view when hiding devtools window.
-  if (devtools_window_ && !new_devtools_window &&
+  if (devtools_web_view_->web_contents() && !devtools &&
       devtools_focus_tracker_.get()) {
     devtools_focus_tracker_->FocusLastFocusedExternalView();
     devtools_focus_tracker_.reset();
   }
 
-  devtools_window_ = new_devtools_window;
-  if (devtools_window_) {
-    devtools_web_view_->SetPreferredSize(devtools_window_->GetMinimumSize());
+  // Replace devtools WebContents.
+  if (devtools_web_view_->web_contents() != devtools &&
+      update_devtools_web_contents) {
+    devtools_web_view_->SetWebContents(devtools);
+  }
+
+  if (devtools) {
     devtools_web_view_->SetVisible(true);
-    GetContentsLayoutManager()->SetContentsResizingStrategy(
-        devtools_window_->GetContentsResizingStrategy());
+    GetContentsLayoutManager()->SetContentsResizingStrategy(strategy);
   } else {
     devtools_web_view_->SetVisible(false);
     GetContentsLayoutManager()->SetContentsResizingStrategy(
@@ -2499,12 +2494,9 @@ void BrowserView::DoCutCopyPaste(void (WebContents::*method)(),
   if (DoCutCopyPasteForWebContents(contents, method))
     return;
 
-  DevToolsWindow* devtools_window =
-      DevToolsWindow::GetDockedInstanceForInspectedTab(contents);
-  if (devtools_window &&
-      DoCutCopyPasteForWebContents(devtools_window->web_contents(), method)) {
+  WebContents* devtools = DevToolsWindow::GetInTabWebContents(contents, NULL);
+  if (devtools && DoCutCopyPasteForWebContents(devtools, method))
     return;
-  }
 
   views::FocusManager* focus_manager = GetFocusManager();
   views::View* focused = focus_manager->GetFocusedView();

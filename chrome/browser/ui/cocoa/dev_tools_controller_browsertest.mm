@@ -32,17 +32,17 @@ class DevToolsControllerTest : public InProcessBrowserTest {
 IN_PROC_BROWSER_TEST_F(DevToolsControllerTest, AllowOverlappingViews) {
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  DevToolsWindow* dev_tools =
-      DevToolsWindow::GetDockedInstanceForInspectedTab(web_contents);
+  content::WebContents* dev_tools =
+      DevToolsWindow::GetInTabWebContents(web_contents, NULL);
 
   // Without the find bar.
-  EXPECT_TRUE(dev_tools->web_contents()->GetAllowOverlappingViews());
+  EXPECT_TRUE(dev_tools->GetAllowOverlappingViews());
 
   // With the find bar.
   browser()->GetFindBarController()->find_bar()->Show(false);
-  EXPECT_TRUE(dev_tools->web_contents()->GetAllowOverlappingViews());
+  EXPECT_TRUE(dev_tools->GetAllowOverlappingViews());
 
   // Without the find bar.
   browser()->GetFindBarController()->find_bar()->Hide(false);
-  EXPECT_TRUE(dev_tools->web_contents()->GetAllowOverlappingViews());
+  EXPECT_TRUE(dev_tools->GetAllowOverlappingViews());
 }

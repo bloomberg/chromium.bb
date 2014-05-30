@@ -651,11 +651,10 @@ enum {
   if (WebContents* contents =
           browser_->tab_strip_model()->GetActiveWebContents()) {
 
-    DevToolsWindow* devtoolsWindow =
-        DevToolsWindow::GetDockedInstanceForInspectedTab(contents);
-    if (devtoolsWindow) {
-      RenderWidgetHostView* devtoolsView =
-          devtoolsWindow->web_contents()->GetRenderWidgetHostView();
+    WebContents* devtools = DevToolsWindow::GetInTabWebContents(
+        contents, NULL);
+    if (devtools) {
+      RenderWidgetHostView* devtoolsView = devtools->GetRenderWidgetHostView();
       if (devtoolsView && devtoolsView->HasFocus()) {
         devtoolsView->SetActive(true);
         return;
@@ -681,11 +680,10 @@ enum {
   if (WebContents* contents =
           browser_->tab_strip_model()->GetActiveWebContents()) {
 
-    DevToolsWindow* devtoolsWindow =
-        DevToolsWindow::GetDockedInstanceForInspectedTab(contents);
-    if (devtoolsWindow) {
-      RenderWidgetHostView* devtoolsView =
-          devtoolsWindow->web_contents()->GetRenderWidgetHostView();
+    WebContents* devtools = DevToolsWindow::GetInTabWebContents(
+        contents, NULL);
+    if (devtools) {
+      RenderWidgetHostView* devtoolsView = devtools->GetRenderWidgetHostView();
       if (devtoolsView && devtoolsView->HasFocus()) {
         devtoolsView->SetActive(false);
         return;

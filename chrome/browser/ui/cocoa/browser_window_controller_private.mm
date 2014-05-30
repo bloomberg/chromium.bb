@@ -1000,12 +1000,9 @@ willPositionSheet:(NSWindow*)sheet
   allowOverlappingViews = YES;
   contents->SetAllowOverlappingViews(allowOverlappingViews);
 
-  DevToolsWindow* devToolsWindow =
-      DevToolsWindow::GetDockedInstanceForInspectedTab(contents);
-  if (devToolsWindow) {
-    devToolsWindow->web_contents()->
-        SetAllowOverlappingViews(allowOverlappingViews);
-  }
+  WebContents* devTools = DevToolsWindow::GetInTabWebContents(contents, NULL);
+  if (devTools)
+    devTools->SetAllowOverlappingViews(allowOverlappingViews);
 }
 
 - (void)updateInfoBarTipVisibility {

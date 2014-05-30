@@ -147,10 +147,10 @@ bool TabContentsInformation::CheckOwnership(
 void TabContentsInformation::GetAll(const NewWebContentsCallback& callback) {
   for (TabContentsIterator iterator; !iterator.done(); iterator.Next()) {
     callback.Run(*iterator);
-    DevToolsWindow* docked =
-        DevToolsWindow::GetDockedInstanceForInspectedTab(*iterator);
-    if (docked)
-      callback.Run(docked->web_contents());
+    WebContents* devtools =
+        DevToolsWindow::GetInTabWebContents(*iterator, NULL);
+    if (devtools)
+      callback.Run(devtools);
   }
 
   // Because a WebContents* may start its life as a prerender, and later be
