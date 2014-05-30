@@ -1027,7 +1027,7 @@ LayoutRect RenderInline::clippedOverflowRectForRepaint(const RenderLayerModelObj
     if (cb->hasOverflowClip())
         cb->applyCachedClipAndScrollOffsetForRepaint(repaintRect);
 
-    cb->computeRectForRepaint(repaintContainer, repaintRect);
+    cb->mapRectToRepaintBacking(repaintContainer, repaintRect);
 
     if (outlineSize) {
         for (RenderObject* curr = firstChild(); curr; curr = curr->nextSibling()) {
@@ -1052,7 +1052,7 @@ LayoutRect RenderInline::rectWithOutlineForRepaint(const RenderLayerModelObject*
     return r;
 }
 
-void RenderInline::computeRectForRepaint(const RenderLayerModelObject* repaintContainer, LayoutRect& rect, bool fixed) const
+void RenderInline::mapRectToRepaintBacking(const RenderLayerModelObject* repaintContainer, LayoutRect& rect, bool fixed) const
 {
     if (RenderView* v = view()) {
         // LayoutState is only valid for root-relative repainting
@@ -1112,7 +1112,7 @@ void RenderInline::computeRectForRepaint(const RenderLayerModelObject* repaintCo
         return;
     }
 
-    o->computeRectForRepaint(repaintContainer, rect, fixed);
+    o->mapRectToRepaintBacking(repaintContainer, rect, fixed);
 }
 
 LayoutSize RenderInline::offsetFromContainer(const RenderObject* container, const LayoutPoint& point, bool* offsetDependsOnPoint) const

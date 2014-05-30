@@ -1620,7 +1620,7 @@ LayoutRect RenderText::selectionRectForRepaint(const RenderLayerModelObject* rep
     }
 
     if (clipToVisibleContent)
-        computeRectForRepaint(repaintContainer, rect);
+        mapRectToRepaintBacking(repaintContainer, rect);
     else {
         if (cb->hasColumns())
             cb->adjustRectForColumns(rect);

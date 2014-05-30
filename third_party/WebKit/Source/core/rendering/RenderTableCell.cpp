@@ -368,11 +368,11 @@ LayoutRect RenderTableCell::clippedOverflowRectForRepaint(const RenderLayerModel
             r.move(v->layoutDelta());
         }
     }
-    computeRectForRepaint(repaintContainer, r);
+    mapRectToRepaintBacking(repaintContainer, r);
     return r;
 }
 
-void RenderTableCell::computeRectForRepaint(const RenderLayerModelObject* repaintContainer, LayoutRect& r, bool fixed) const
+void RenderTableCell::mapRectToRepaintBacking(const RenderLayerModelObject* repaintContainer, LayoutRect& r, bool fixed) const
 {
     if (repaintContainer == this)
         return;
@@ -380,7 +380,7 @@ void RenderTableCell::computeRectForRepaint(const RenderLayerModelObject* repain
     RenderView* v = view();
     if ((!v || !v->canUseLayoutStateForContainer(repaintContainer)) && parent())
         r.moveBy(-parentBox()->location()); // Rows are in the same coordinate space, so don't add their offset in.
-    RenderBlockFlow::computeRectForRepaint(repaintContainer, r, fixed);
+    RenderBlockFlow::mapRectToRepaintBacking(repaintContainer, r, fixed);
 }
 
 LayoutUnit RenderTableCell::cellBaselinePosition() const

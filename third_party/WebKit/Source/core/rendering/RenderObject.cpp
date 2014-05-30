@@ -1411,12 +1411,7 @@ static PassRefPtr<JSONValue> jsonObjectForRepaintInfo(const IntRect& rect, const
     return object.release();
 }
 
-LayoutRect RenderObject::computeRepaintRect() const
-{
-    return computeRepaintRectInternal(containerForRepaint());
-}
-
-LayoutRect RenderObject::computeRepaintRectInternal(const RenderLayerModelObject* repaintContainer) const
+LayoutRect RenderObject::computeRepaintRect(const RenderLayerModelObject* repaintContainer) const
 {
     return clippedOverflowRectForRepaint(repaintContainer);
 }
@@ -1485,7 +1480,15 @@ void RenderObject::repaint() const
     // Until those states are fully fledged, I'll just disable the ASSERTS.
     DisableCompositingQueryAsserts disabler;
     const RenderLayerModelObject* repaintContainer = containerForRepaint();
-    repaintUsingContainer(repaintContainer, pixelSnappedIntRect(computeRepaintRectInternal(repaintContainer)), InvalidationRepaint);
+    LayoutRect repaintRect = boundsRectForRepaint(repaintContainer);
+    repaintUsingContainer(repaintContainer, pixelSnappedIntRect(repaintRect), InvalidationRepaint);
+}
+
+LayoutRect RenderObject::boundsRectForRepaint(const RenderLayerModelObject* repaintContainer) const
+{
+    if (hasLayer())
+        return toRenderLayerModelObject(this)->layer()->computeRepaintRect(repaintContainer);
+    return computeRepaintRect(repaintContainer);
 }
 
 void RenderObject::repaintRectangle(const LayoutRect& r) const
@@ -1505,7 +1508,10 @@ void RenderObject::repaintRectangle(const LayoutRect& r) const
     }
 
     const RenderLayerModelObject* repaintContainer = containerForRepaint();
-    computeRectForRepaint(repaintContainer, dirtyRect);
+    if (hasLayer())
+        toRenderLayerModelObject(this)->layer()->mapRectToRepaintBacking(repaintContainer, dirtyRect);
+    else
+        mapRectToRepaintBacking(repaintContainer, dirtyRect);
     repaintUsingContainer(repaintContainer, pixelSnappedIntRect(dirtyRect), InvalidationRepaintRectangle);
 }
 
@@ -1746,7 +1752,7 @@ LayoutRect RenderObject::clippedOverflowRectForRepaint(const RenderLayerModelObj
     return LayoutRect();
 }
 
-void RenderObject::computeRectForRepaint(const RenderLayerModelObject* repaintContainer, LayoutRect& rect, bool fixed) const
+void RenderObject::mapRectToRepaintBacking(const RenderLayerModelObject* repaintContainer, LayoutRect& rect, bool fixed) const
 {
     if (repaintContainer == this)
         return;
@@ -1765,7 +1771,7 @@ void RenderObject::computeRectForRepaint(const RenderLayerModelObject* repaintCo
                 return;
         }
 
-        o->computeRectForRepaint(repaintContainer, rect, fixed);
+        o->mapRectToRepaintBacking(repaintContainer, rect, fixed);
     }
 }
 

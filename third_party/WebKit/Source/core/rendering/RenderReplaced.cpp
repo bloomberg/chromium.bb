@@ -547,7 +547,7 @@ LayoutRect RenderReplaced::selectionRectForRepaint(const RenderLayerModelObject*
 
     LayoutRect rect = localSelectionRect();
     if (clipToVisibleContent)
-        computeRectForRepaint(repaintContainer, rect);
+        mapRectToRepaintBacking(repaintContainer, rect);
     else
         rect = localToContainerQuad(FloatRect(rect), repaintContainer).enclosingBoundingBox();
 
@@ -625,7 +625,7 @@ LayoutRect RenderReplaced::clippedOverflowRectForRepaint(const RenderLayerModelO
         r.move(v->layoutDelta());
     }
 
-    computeRectForRepaint(repaintContainer, r);
+    mapRectToRepaintBacking(repaintContainer, r);
     return r;
 }
 

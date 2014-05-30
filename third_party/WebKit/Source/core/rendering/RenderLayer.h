@@ -351,6 +351,12 @@ public:
     RenderLayer* scrollParent() const;
     RenderLayer* clipParent() const;
 
+    // Adjusts the given rect to the coordinate space of the repaint container's GraphicsLayer backing.
+    void mapRectToRepaintBacking(const RenderLayerModelObject* repaintContainer, LayoutRect&) const;
+
+    // Computes the bounding repaint rect for this layer, in the coordinate space of the repaint container's GraphicsLayer backing.
+    LayoutRect computeRepaintRect(const RenderLayerModelObject* repaintContainer) const;
+
     bool needsCompositingLayersRebuiltForClip(const RenderStyle* oldStyle, const RenderStyle* newStyle) const;
     bool needsCompositingLayersRebuiltForOverflow(const RenderStyle* oldStyle, const RenderStyle* newStyle) const;
     bool needsCompositingLayersRebuiltForFilters(const RenderStyle* oldStyle, const RenderStyle* newStyle) const;

@@ -806,9 +806,16 @@ public:
     const RenderLayerModelObject* adjustCompositedContainerForSpecialAncestors(const RenderLayerModelObject* repaintContainer) const;
     bool isRepaintContainer() const;
 
-    // Returns the repaint rect for this RenderObject in the coordinate space of the composited layer that this RenderObject paints into, or the RenderView if not
-    // composited.
-    LayoutRect computeRepaintRect() const;
+    LayoutRect computeRepaintRect()
+    {
+        return computeRepaintRect(containerForRepaint());
+    }
+
+    // Returns the repaint rect for this RenderObject in the coordinate space of the paint backing (typically a GraphicsLayer) for |repaintContainer|.
+    LayoutRect computeRepaintRect(const RenderLayerModelObject* repaintContainer) const;
+
+    // Returns the rect bounds needed to repaint this object, in the coordinate space of the rendering backing of |repaintContainer|
+    LayoutRect boundsRectForRepaint(const RenderLayerModelObject* repaintContainer) const;
 
     // Actually do the repaint of rect r for this object which has been computed in the coordinate space
     // of repaintContainer. If repaintContainer is 0, repaint via the view.
@@ -846,7 +853,7 @@ public:
 
     // Given a rect in the object's coordinate space, compute a rect suitable for repainting
     // that rect in the coordinate space of repaintContainer.
-    virtual void computeRectForRepaint(const RenderLayerModelObject* repaintContainer, LayoutRect&, bool fixed = false) const;
+    virtual void mapRectToRepaintBacking(const RenderLayerModelObject* repaintContainer, LayoutRect&, bool fixed = false) const;
     virtual void computeFloatRectForRepaint(const RenderLayerModelObject* repaintContainer, FloatRect& repaintRect, bool fixed = false) const;
 
     // Return the offset to the column in which the specified point (in flow-thread coordinates)
@@ -1077,8 +1084,6 @@ protected:
     virtual void computeSelfHitTestRects(Vector<LayoutRect>&, const LayoutPoint& layerOffset) const { };
 
 private:
-    LayoutRect computeRepaintRectInternal(const RenderLayerModelObject* repaintContainer) const;
-
     RenderBlock* containerForFixedPosition(const RenderLayerModelObject* repaintContainer = 0, bool* repaintContainerSkipped = 0) const;
 
     RenderFlowThread* locateFlowThreadContainingBlock() const;

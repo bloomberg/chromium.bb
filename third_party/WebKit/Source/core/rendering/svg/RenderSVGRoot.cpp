@@ -384,7 +384,7 @@ LayoutRect RenderSVGRoot::clippedOverflowRectForRepaint(const RenderLayerModelOb
 
     // Compute the repaint rect in the parent coordinate space.
     LayoutRect rect = enclosingIntRect(repaintRect);
-    RenderReplaced::computeRectForRepaint(repaintContainer, rect);
+    RenderReplaced::mapRectToRepaintBacking(repaintContainer, rect);
     return rect;
 }
 
@@ -399,7 +399,7 @@ void RenderSVGRoot::computeFloatRectForRepaint(const RenderLayerModelObject* rep
         repaintRect.intersect(pixelSnappedBorderBoxRect());
 
     LayoutRect rect = enclosingIntRect(repaintRect);
-    RenderReplaced::computeRectForRepaint(repaintContainer, rect, fixed);
+    RenderReplaced::mapRectToRepaintBacking(repaintContainer, rect, fixed);
     repaintRect = rect;
 }
 

@@ -1838,7 +1838,7 @@ LayoutRect RenderListMarker::selectionRectForRepaint(const RenderLayerModelObjec
     LayoutRect rect(0, root.selectionTop() - y(), width(), root.selectionHeight());
 
     if (clipToVisibleContent)
-        computeRectForRepaint(repaintContainer, rect);
+        mapRectToRepaintBacking(repaintContainer, rect);
     else
         rect = localToContainerQuad(FloatRect(rect), repaintContainer).enclosingBoundingBox();
 

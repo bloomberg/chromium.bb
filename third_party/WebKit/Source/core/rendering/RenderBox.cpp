@@ -1582,7 +1582,7 @@ void RenderBox::repaintTreeAfterLayout(const RenderLayerModelObject& repaintCont
 
     const LayoutRect oldRepaintRect = previousRepaintRect();
     const LayoutPoint oldPositionFromRepaintContainer = previousPositionFromRepaintContainer();
-    setPreviousRepaintRect(clippedOverflowRectForRepaint(&newRepaintContainer));
+    setPreviousRepaintRect(boundsRectForRepaint(&newRepaintContainer));
     setPreviousPositionFromRepaintContainer(positionFromRepaintContainer(&newRepaintContainer));
 
     // If we are set to do a full repaint that means the RenderView will be
@@ -2011,11 +2011,11 @@ LayoutRect RenderBox::clippedOverflowRectForRepaint(const RenderLayerModelObject
         r.move(v->layoutDelta());
     }
 
-    computeRectForRepaint(repaintContainer, r);
+    mapRectToRepaintBacking(repaintContainer, r);
     return r;
 }
 
-void RenderBox::computeRectForRepaint(const RenderLayerModelObject* repaintContainer, LayoutRect& rect, bool fixed) const
+void RenderBox::mapRectToRepaintBacking(const RenderLayerModelObject* repaintContainer, LayoutRect& rect, bool fixed) const
 {
     // The rect we compute at each step is shifted by our x/y offset in the parent container's coordinate space.
     // Only when we cross a writing mode boundary will we have to possibly flipForWritingMode (to convert into a more appropriate
@@ -2112,7 +2112,7 @@ void RenderBox::computeRectForRepaint(const RenderLayerModelObject* repaintConta
         return;
     }
 
-    o->computeRectForRepaint(repaintContainer, rect, fixed);
+    o->mapRectToRepaintBacking(repaintContainer, rect, fixed);
 }
 
 void RenderBox::repaintDuringLayoutIfMoved(const LayoutRect& oldRect)

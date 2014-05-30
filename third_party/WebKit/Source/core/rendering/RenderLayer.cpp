@@ -709,6 +709,48 @@ void RenderLayer::updatePagination()
     }
 }
 
+void RenderLayer::mapRectToRepaintBacking(const RenderLayerModelObject* repaintContainer, LayoutRect& rect) const
+{
+    if (!repaintContainer->groupedMapping()) {
+        m_renderer->mapRectToRepaintBacking(repaintContainer, rect);
+        return;
+    }
+
+    ASSERT(enclosingTransformedAncestor());
+    ASSERT(enclosingTransformedAncestor()->renderer());
+
+    // FIXME: this defensive code should not have to exist. None of these pointers should ever be 0. See crbug.com/370410.
+    RenderLayerModelObject* transformedAncestor = 0;
+    if (RenderLayer* ancestor = repaintContainer->layer()->enclosingTransformedAncestor())
+        transformedAncestor = ancestor->renderer();
+    if (!transformedAncestor)
+        return;
+
+    // If the transformedAncestor is actually the RenderView, we might get
+    // confused and think that we can use LayoutState. Ideally, we'd made
+    // LayoutState work for all composited layers as well, but until then
+    // we need to disable LayoutState for squashed layers.
+    LayoutStateDisabler layoutStateDisabler(*transformedAncestor);
+
+    // This code adjusts the repaint rectangle to be in the space of the transformed ancestor of the grouped (i.e. squashed)
+    // layer. This is because all layers that squash together need to repaint w.r.t. a single container that is
+    // an ancestor of all of them, in order to properly take into account any local transforms etc.
+    // FIXME: remove this special-case code that works around the repainting code structure.
+    m_renderer->mapRectToRepaintBacking(transformedAncestor, rect);
+    rect.moveBy(-repaintContainer->groupedMapping()->squashingOffsetFromTransformedAncestor());
+
+    return;
+}
+
+LayoutRect RenderLayer::computeRepaintRect(const RenderLayerModelObject* repaintContainer) const
+{
+    if (!repaintContainer->groupedMapping())
+        return m_renderer->computeRepaintRect(repaintContainer);
+    LayoutRect rect = renderer()->clippedOverflowRectForRepaint(repaintContainer);
+    repaintContainer->layer()->mapRectToRepaintBacking(repaintContainer, rect);
+    return rect;
+}
+
 void RenderLayer::setHasVisibleContent()
 {
     if (m_hasVisibleContent && !m_visibleContentStatusDirty) {

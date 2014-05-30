@@ -159,7 +159,7 @@ void RenderSVGForeignObject::layout()
     repainter.repaintAfterLayout();
 }
 
-void RenderSVGForeignObject::computeRectForRepaint(const RenderLayerModelObject* repaintContainer,
+void RenderSVGForeignObject::mapRectToRepaintBacking(const RenderLayerModelObject* repaintContainer,
     LayoutRect& rect, bool fixed) const
 {
     FloatRect r(rect);

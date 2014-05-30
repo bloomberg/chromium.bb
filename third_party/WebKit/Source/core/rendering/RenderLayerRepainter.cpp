@@ -206,38 +206,12 @@ void RenderLayerRepainter::setBackingNeedsRepaintInRect(const LayoutRect& r)
             view->repaintViewRectangle(absRect);
         return;
     }
-    if (m_renderer.compositingState() == PaintsIntoGroupedBacking) {
-        LayoutRect updatedRect(r);
-
-        ASSERT(m_renderer.layer());
-        ASSERT(m_renderer.layer()->enclosingTransformedAncestor());
-        ASSERT(m_renderer.layer()->enclosingTransformedAncestor()->renderer());
-
-        // FIXME: this defensive code should not have to exist. None of these pointers should ever be 0. See crbug.com/370410.
-        RenderLayerModelObject* transformedAncestor = 0;
-        if (RenderLayer* ancestor = m_renderer.layer()->enclosingTransformedAncestor())
-            transformedAncestor = ancestor->renderer();
-        if (!transformedAncestor)
-            return;
-
-        // If the transformedAncestor is actually the RenderView, we might get
-        // confused and think that we can use LayoutState. Ideally, we'd made
-        // LayoutState work for all composited layers as well, but until then
-        // we need to disable LayoutState for squashed layers.
-        LayoutStateDisabler layoutStateDisabler(*transformedAncestor);
-
-        // This code adjusts the repaint rectangle to be in the space of the transformed ancestor of the grouped (i.e. squashed)
-        // layer. This is because all layers that squash together need to repaint w.r.t. a single container that is
-        // an ancestor of all of them, in order to properly take into account any local transforms etc.
-        // FIXME: remove this special-case code that works around the repainting code structure.
-        m_renderer.computeRectForRepaint(transformedAncestor, updatedRect);
-        updatedRect.moveBy(-m_renderer.layer()->groupedMapping()->squashingOffsetFromTransformedAncestor());
-
-        IntRect repaintRect = pixelSnappedIntRect(updatedRect);
+    IntRect repaintRect = pixelSnappedIntRect(r);
+    // FIXME: generalize accessors to backing GraphicsLayers so that this code is squashing-agnostic.
+    if (m_renderer.groupedMapping()) {
         if (GraphicsLayer* squashingLayer = m_renderer.groupedMapping()->squashingLayer())
             squashingLayer->setNeedsDisplayInRect(repaintRect);
     } else {
-        IntRect repaintRect = pixelSnappedIntRect(r);
         m_renderer.compositedLayerMapping()->setContentsNeedDisplayInRect(repaintRect);
     }
 }
@@ -246,7 +220,6 @@ void RenderLayerRepainter::setFilterBackendNeedsRepaintingInRect(const LayoutRec
 {
     if (rect.isEmpty())
         return;
-
     LayoutRect rectForRepaint = rect;
     m_renderer.style()->filterOutsets().expandRect(rectForRepaint);
 

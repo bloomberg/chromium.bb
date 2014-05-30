@@ -444,7 +444,7 @@ void RenderFrameSet::layout()
     const RenderLayerModelObject* repaintContainer = 0;
     if (doFullRepaint) {
         repaintContainer = containerForRepaint();
-        oldBounds = clippedOverflowRectForRepaint(repaintContainer);
+        oldBounds = boundsRectForRepaint(repaintContainer);
     }
 
     if (!parent()->isFrameSet() && !document().printing()) {
@@ -474,7 +474,7 @@ void RenderFrameSet::layout()
 
     if (doFullRepaint) {
         repaintUsingContainer(repaintContainer, pixelSnappedIntRect(oldBounds), InvalidationSelfLayout);
-        LayoutRect newBounds = clippedOverflowRectForRepaint(repaintContainer);
+        LayoutRect newBounds = boundsRectForRepaint(repaintContainer);
         if (newBounds != oldBounds)
             repaintUsingContainer(repaintContainer, pixelSnappedIntRect(newBounds), InvalidationSelfLayout);
     }
