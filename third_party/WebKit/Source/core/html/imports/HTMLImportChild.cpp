@@ -38,6 +38,7 @@
 #include "core/dom/custom/CustomElementMicrotaskQueue.h"
 #include "core/html/imports/HTMLImportChildClient.h"
 #include "core/html/imports/HTMLImportLoader.h"
+#include "core/html/imports/HTMLImportTreeRoot.h"
 #include "core/html/imports/HTMLImportsController.h"
 
 namespace WebCore {
@@ -124,7 +125,7 @@ Document* HTMLImportChild::document() const
 
 void HTMLImportChild::stateWillChange()
 {
-    toHTMLImportsController(root())->scheduleRecalcState();
+    toHTMLImportTreeRoot(root())->scheduleRecalcState();
 }
 
 void HTMLImportChild::stateDidChange()

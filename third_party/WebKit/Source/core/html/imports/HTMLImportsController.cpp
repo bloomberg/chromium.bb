@@ -32,12 +32,12 @@
 #include "core/html/imports/HTMLImportsController.h"
 
 #include "core/dom/Document.h"
-#include "core/dom/StyleEngine.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/imports/HTMLImportChild.h"
 #include "core/html/imports/HTMLImportChildClient.h"
 #include "core/html/imports/HTMLImportLoader.h"
+#include "core/html/imports/HTMLImportTreeRoot.h"
 
 namespace WebCore {
 
@@ -50,11 +50,9 @@ void HTMLImportsController::provideTo(Document& master)
 }
 
 HTMLImportsController::HTMLImportsController(Document& master)
-    : HTMLImport(HTMLImport::Sync)
-    , m_master(&master)
-    , m_recalcTimer(this, &HTMLImportsController::recalcTimerFired)
+    : m_master(&master)
+    , m_root(HTMLImportTreeRoot::create(&master))
 {
-    recalcTreeState(this); // This recomputes initial state.
 }
 
 HTMLImportsController::~HTMLImportsController()
@@ -76,7 +74,7 @@ void HTMLImportsController::clear()
         m_master->setImportsController(0);
     m_master = 0;
 
-    m_recalcTimer.stop();
+    m_root.clear();
 }
 
 static bool makesCycle(HTMLImport* parent, const KURL& url)
@@ -103,7 +101,7 @@ HTMLImportChild* HTMLImportsController::createChild(const KURL& url, HTMLImportL
 HTMLImportChild* HTMLImportsController::load(HTMLImport* parent, HTMLImportChildClient* client, FetchRequest request)
 {
     ASSERT(!request.url().isEmpty() && request.url().isValid());
-    ASSERT(parent == this || toHTMLImportChild(parent)->loader()->isFirstImport(toHTMLImportChild(parent)));
+    ASSERT(parent == root() || toHTMLImportChild(parent)->loader()->isFirstImport(toHTMLImportChild(parent)));
 
     if (HTMLImportChild* childToShareWith = findLinkFor(request.url())) {
         HTMLImportLoader* loader = childToShareWith->loader();
@@ -162,17 +160,12 @@ LocalFrame* HTMLImportsController::frame() const
     return m_master->frame();
 }
 
-Document* HTMLImportsController::document() const
-{
-    return m_master;
-}
-
 bool HTMLImportsController::shouldBlockScriptExecution(const Document& document) const
 {
     ASSERT(document.importsController() == this);
     if (HTMLImportLoader* loader = loaderFor(document))
         return loader->shouldBlockScriptExecution();
-    return state().shouldBlockScriptExecution();
+    return root()->state().shouldBlockScriptExecution();
 }
 
 void HTMLImportsController::wasDetachedFrom(const Document& document)
@@ -180,43 +173,6 @@ void HTMLImportsController::wasDetachedFrom(const Document& document)
     ASSERT(document.importsController() == this);
     if (m_master == &document)
         clear();
-}
-
-bool HTMLImportsController::isDone() const
-{
-    return !m_master->parsing() && m_master->styleEngine()->haveStylesheetsLoaded();
-}
-
-void HTMLImportsController::stateWillChange()
-{
-    scheduleRecalcState();
-}
-
-void HTMLImportsController::stateDidChange()
-{
-    HTMLImport::stateDidChange();
-
-    if (!state().isReady())
-        return;
-    if (LocalFrame* frame = m_master->frame())
-        frame->loader().checkCompleted();
-}
-
-void HTMLImportsController::scheduleRecalcState()
-{
-    if (m_recalcTimer.isActive() || !m_master)
-        return;
-    m_recalcTimer.startOneShot(0, FROM_HERE);
-}
-
-void HTMLImportsController::recalcTimerFired(Timer<HTMLImportsController>*)
-{
-    ASSERT(m_master);
-
-    do {
-        m_recalcTimer.stop();
-        HTMLImport::recalcTreeState(this);
-    } while (m_recalcTimer.isActive());
 }
 
 HTMLImportLoader* HTMLImportsController::createLoader()

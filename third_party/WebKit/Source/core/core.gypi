@@ -2685,6 +2685,8 @@
             'html/imports/HTMLImportState.h',
             'html/imports/HTMLImportStateResolver.cpp',
             'html/imports/HTMLImportStateResolver.h',
+            'html/imports/HTMLImportTreeRoot.cpp',
+            'html/imports/HTMLImportTreeRoot.h',
             'html/imports/HTMLImportsController.cpp',
             'html/imports/HTMLImportsController.h',
             'html/imports/LinkImport.cpp',

@@ -51,24 +51,20 @@ class KURL;
 //
 // HTML Imports form a tree:
 //
-// * The root of the tree is HTMLImportsController, which is owned by the master
+// * The root of the tree is HTMLImportTreeRoot.
+//
+// * The HTMLImportTreeRoot is owned HTMLImportsController, which is owned by the master
 //   document as a DocumentSupplement.
 //
-// * The non-root nodes are HTMLImportChild, which is owned by LinkStyle, that is owned by HTMLLinkElement.
+// * The non-root nodes are HTMLImportChild. They are also owned by HTMLImportsController.
 //   LinkStyle is wired into HTMLImportChild by implementing HTMLImportChildClient interface
 //
-// * Both HTMLImportsController and HTMLImportChild are derived from HTMLImport superclass
+// * Both HTMLImportTreeRoot and HTMLImportChild are derived from HTMLImport superclass
 //   that models the tree data structure using WTF::TreeNode and provides a set of
 //   virtual functions.
 //
 // HTMLImportsController also owns all loaders in the tree and manages their lifetime through it.
 // One assumption is that the tree is append-only and nodes are never inserted in the middle of the tree nor removed.
-//
-//
-//    HTMLImport <|- HTMLImportsController <- Document
-//                   *
-//                   |
-//               <|- HTMLImportChild <- LinkStyle <- HTMLLinkElement
 //
 //
 // # Import Sharing and HTMLImportLoader
@@ -94,7 +90,7 @@ class KURL;
 //   In such case, the preceding import should be loaded and following ones should be de-duped.
 //
 
-// The superclass of HTMLImportsController and HTMLImportChild
+// The superclass of HTMLImportTreeRoot and HTMLImportChild
 // This represents the import tree data structure.
 class HTMLImport : public TreeNode<HTMLImport> {
 public:
@@ -105,6 +101,7 @@ public:
 
     virtual ~HTMLImport() { }
 
+    // FIXME: Consider returning HTMLImportTreeRoot.
     HTMLImport* root();
     bool precedes(HTMLImport*);
     bool isRoot() const { return !isChild(); }
