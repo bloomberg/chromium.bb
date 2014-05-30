@@ -105,7 +105,8 @@ class HistoryBackendMock : public HistoryBackend {
 
 class HistoryServiceMock : public HistoryService {
  public:
-  explicit HistoryServiceMock(Profile* profile) : HistoryService(profile) {}
+  explicit HistoryServiceMock(history::HistoryClient* client, Profile* profile)
+      : HistoryService(client, profile) {}
   MOCK_METHOD2(ScheduleDBTask, void(history::HistoryDBTask*,
                                     CancelableRequestConsumerBase*));
   MOCK_METHOD0(Shutdown, void());
@@ -119,7 +120,7 @@ class HistoryServiceMock : public HistoryService {
 };
 
 KeyedService* BuildHistoryService(content::BrowserContext* profile) {
-  return new HistoryServiceMock(static_cast<Profile*>(profile));
+  return new HistoryServiceMock(NULL, static_cast<Profile*>(profile));
 }
 
 class TestTypedUrlModelAssociator : public TypedUrlModelAssociator {

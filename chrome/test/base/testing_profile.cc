@@ -426,7 +426,7 @@ void TestingProfile::CreateFaviconService() {
 }
 
 static KeyedService* BuildHistoryService(content::BrowserContext* profile) {
-  return new HistoryService(static_cast<Profile*>(profile));
+  return new HistoryService(NULL, static_cast<Profile*>(profile));
 }
 
 bool TestingProfile::CreateHistoryService(bool delete_file, bool no_db) {

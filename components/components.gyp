@@ -24,6 +24,7 @@
     'favicon.gypi',
     'favicon_base.gypi',
     'google.gypi',
+    'history.gypi',
     'infobars.gypi',
     'json_schema.gypi',
     'keyed_service.gypi',

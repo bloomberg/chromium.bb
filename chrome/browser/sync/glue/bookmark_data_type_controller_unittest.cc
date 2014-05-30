@@ -51,7 +51,8 @@ namespace {
 
 class HistoryMock : public HistoryService {
  public:
-  explicit HistoryMock(Profile* profile) : HistoryService(profile) {}
+  explicit HistoryMock(history::HistoryClient* client, Profile* profile)
+      : HistoryService(client, profile) {}
   MOCK_METHOD0(BackendLoaded, bool(void));
 
  protected:
@@ -81,7 +82,7 @@ KeyedService* BuildBookmarkModelWithoutLoading(
 }
 
 KeyedService* BuildHistoryService(content::BrowserContext* profile) {
-  return new HistoryMock(static_cast<Profile*>(profile));
+  return new HistoryMock(NULL, static_cast<Profile*>(profile));
 }
 
 }  // namespace

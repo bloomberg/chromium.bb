@@ -41,6 +41,7 @@
 #if defined(OS_ANDROID)
 class AndroidHistoryProviderService;
 #endif
+
 class BookmarkService;
 class GURL;
 class HistoryURLProvider;
@@ -62,6 +63,7 @@ class VisitedLinkMaster;
 namespace history {
 
 class HistoryBackend;
+class HistoryClient;
 class HistoryDatabase;
 class HistoryDBTask;
 class HistoryQueryTest;
@@ -91,8 +93,9 @@ class HistoryService : public CancelableRequestProvider,
   // Miscellaneous commonly-used types.
   typedef std::vector<PageUsageData*> PageUsageDataList;
 
-  // Must call Init after construction.
-  explicit HistoryService(Profile* profile);
+  // Must call Init after construction. The |history::HistoryClient| object
+  // must be valid for the whole lifetime of |HistoryService|.
+  explicit HistoryService(history::HistoryClient* client, Profile* profile);
   // The empty constructor is provided only for testing.
   HistoryService();
 
@@ -562,6 +565,9 @@ class HistoryService : public CancelableRequestProvider,
   // history. We filter out some URLs such as JavaScript.
   static bool CanAddURL(const GURL& url);
 
+  // Returns the HistoryClient.
+  history::HistoryClient* history_client() { return history_client_; }
+
   base::WeakPtr<HistoryService> AsWeakPtr();
 
   // syncer::SyncableService implementation.
@@ -1018,6 +1024,10 @@ class HistoryService : public CancelableRequestProvider,
   // on the background thread.
   // TODO(mrossetti): Consider changing ownership. See http://crbug.com/138321
   scoped_ptr<history::InMemoryHistoryBackend> in_memory_backend_;
+
+  // The history client, may be null when testing. The object should otherwise
+  // outlive |HistoryService|.
+  history::HistoryClient* history_client_;
 
   // The profile, may be null when testing.
   Profile* profile_;

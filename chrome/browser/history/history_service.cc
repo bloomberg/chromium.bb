@@ -57,6 +57,7 @@
 #include "chrome/common/thumbnail_score.h"
 #include "chrome/common/url_constants.h"
 #include "components/bookmarks/browser/bookmark_model.h"
+#include "components/history/core/browser/history_client.h"
 #include "components/visitedlink/browser/visitedlink_master.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_item.h"
@@ -192,15 +193,17 @@ class HistoryService::BackendDelegate : public HistoryBackend::Delegate {
 HistoryService::HistoryService()
     : weak_ptr_factory_(this),
       thread_(new base::Thread(kHistoryThreadName)),
+      history_client_(NULL),
       profile_(NULL),
       backend_loaded_(false),
       bookmark_service_(NULL),
       no_db_(false) {
 }
 
-HistoryService::HistoryService(Profile* profile)
+HistoryService::HistoryService(history::HistoryClient* client, Profile* profile)
     : weak_ptr_factory_(this),
       thread_(new base::Thread(kHistoryThreadName)),
+      history_client_(client),
       profile_(profile),
       visitedlink_master_(new visitedlink::VisitedLinkMaster(
           profile, this, true)),
