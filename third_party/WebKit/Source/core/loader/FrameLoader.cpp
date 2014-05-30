@@ -562,6 +562,8 @@ void FrameLoader::loadInSameDocument(const KURL& url, PassRefPtr<SerializedScrip
         if (m_provisionalDocumentLoader)
             m_provisionalDocumentLoader->detachFromFrame();
         m_provisionalDocumentLoader = nullptr;
+        if (!m_frame->host())
+            return;
     }
     saveScrollState();
 
