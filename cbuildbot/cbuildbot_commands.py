@@ -927,6 +927,7 @@ def GenerateStackTraces(buildroot, board, test_results_dir,
   return stack_trace_filenames
 
 
+@failures_lib.SetFailureType(failures_lib.BuilderFailure)
 def ArchiveFile(file_to_archive, archive_dir):
   """Archives the specified file.
 
@@ -1380,6 +1381,7 @@ def UpdateUploadedList(last_uploaded, archive_path, upload_urls,
                      update_list=False)
 
 
+@failures_lib.SetFailureType(failures_lib.GSUploadFailure)
 def UploadArchivedFile(archive_path, upload_urls, filename, debug,
                        update_list=False, timeout=2 * 60 * 60, acl=None):
   """Upload the specified file from the archive dir to Google Storage.

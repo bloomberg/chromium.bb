@@ -705,11 +705,14 @@ class ArchivingStageMixin(object):
           urls.append('/'.join([url, bot_id, self.version]))
     return urls
 
+  @failures_lib.SetFailureType(failures_lib.InfrastructureFailure)
   def UploadArtifact(self, path, archive=True, strict=True):
     """Upload generated artifact to Google Storage.
 
     Args:
-      path: Path of local file to upload to Google Storage.
+      path: Path of local file to upload to Google Storage
+        if |archive| is True. Otherwise, this is the name of the file
+        in self.archive_path.
       archive: Whether to automatically copy files to the archive dir.
       strict: Whether to treat upload errors as fatal.
     """
@@ -721,14 +724,18 @@ class ArchivingStageMixin(object):
       commands.UploadArchivedFile(
           self.archive_path, upload_urls, filename, self._run.debug,
           update_list=True, acl=self.acl)
-    except (gs.GSContextException, timeout_util.TimeoutError):
+    except failures_lib.GSUploadFailure as e:
       cros_build_lib.PrintBuildbotStepText('Upload failed')
-      if strict:
+      if e.HasFatalFailure(
+          whitelist=[gs.GSContextException, timeout_util.TimeoutError]):
         raise
+      elif strict:
+        raise
+      else:
+        # Treat gsutil flake as a warning if it's the only problem.
+        self._HandleExceptionAsWarning(sys.exc_info())
 
-      # Treat gsutil flake as a warning if it's the only problem.
-      self._HandleExceptionAsWarning(sys.exc_info())
-
+  @failures_lib.SetFailureType(failures_lib.InfrastructureFailure)
   def UploadMetadata(self, upload_queue=None, filename=None):
     """Create and upload JSON file of the builder run's metadata.
 

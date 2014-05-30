@@ -32,7 +32,7 @@ class CompoundFailureTest(cros_test_lib.TestCase):
     self.assertFalse(
         failures_lib.CompoundFailure(exc_infos=exc_infos).HasEmptyList())
 
-  def testHasAndatchesFailureType(self):
+  def testHasAndMatchesFailureType(self):
     """Tests the HasFailureType and the MatchesFailureType methods."""
     # Create a CompoundFailure instance with mixed types of exceptions.
     exc_infos = self._CreateExceptInfos(KeyError)
@@ -50,6 +50,18 @@ class CompoundFailureTest(cros_test_lib.TestCase):
     self.assertFalse(exc.HasFailureType(ValueError))
     self.assertTrue(exc.MatchesFailureType(KeyError))
     self.assertFalse(exc.MatchesFailureType(ValueError))
+
+  def testHasFatalFailure(self):
+    """Tests the HasFatalFailure method."""
+    exc_infos = self._CreateExceptInfos(KeyError)
+    exc_infos.extend(self._CreateExceptInfos(ValueError))
+    exc = failures_lib.CompoundFailure(exc_infos=exc_infos)
+    self.assertTrue(exc.HasFatalFailure())
+    self.assertTrue(exc.HasFatalFailure(whitelist=[KeyError]))
+    self.assertFalse(exc.HasFatalFailure(whitelist=[KeyError, ValueError]))
+
+    exc = failures_lib.CompoundFailure()
+    self.assertFalse(exc.HasFatalFailure())
 
   def testMessageContainsAllInfo(self):
     """Tests that by default, all information is included in the message."""

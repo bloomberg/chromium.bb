@@ -96,6 +96,24 @@ class CompoundFailure(StepFailure):
     return (not self.HasEmptyList() and
             all(issubclass(x.type, cls) for x in self.exc_infos))
 
+  def HasFatalFailure(self, whitelist=None):
+    """Determine if there are non-whitlisted failures.
+
+    Args:
+      whitelist: A list of whitelisted exception types.
+
+    Returns:
+      Returns True if any failure is not in |whitelist|.
+    """
+    if not whitelist:
+      return not self.HasEmptyList()
+
+    for ex in self.exc_infos:
+      if all(not issubclass(ex.type, cls) for cls in whitelist):
+        return True
+
+    return False
+
 
 class SetFailureType(object):
   """A wrapper to re-raise the exception as the pre-set type."""
