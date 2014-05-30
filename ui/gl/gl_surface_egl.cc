@@ -489,6 +489,10 @@ void NativeViewGLSurfaceEGL::SetHandle(EGLSurface surface) {
 PbufferGLSurfaceEGL::PbufferGLSurfaceEGL(const gfx::Size& size)
     : size_(size),
       surface_(NULL) {
+  // Some implementations of Pbuffer do not support having a 0 size. For such
+  // cases use a (1, 1) surface.
+  if (size_.GetArea() == 0)
+    size_.SetSize(1, 1);
 }
 
 bool PbufferGLSurfaceEGL::Initialize() {
@@ -497,12 +501,6 @@ bool PbufferGLSurfaceEGL::Initialize() {
   EGLDisplay display = GetDisplay();
   if (!display) {
     LOG(ERROR) << "Trying to create surface with invalid display.";
-    return false;
-  }
-
-  if (size_.GetArea() == 0) {
-    LOG(ERROR) << "Error: surface has zero area "
-               << size_.width() << " x " << size_.height();
     return false;
   }
 

@@ -582,6 +582,10 @@ PbufferGLSurfaceGLX::PbufferGLSurfaceGLX(const gfx::Size& size)
   : size_(size),
     config_(NULL),
     pbuffer_(0) {
+  // Some implementations of Pbuffer do not support having a 0 size. For such
+  // cases use a (1, 1) surface.
+  if (size_.GetArea() == 0)
+    size_.SetSize(1, 1);
 }
 
 bool PbufferGLSurfaceGLX::Initialize() {
