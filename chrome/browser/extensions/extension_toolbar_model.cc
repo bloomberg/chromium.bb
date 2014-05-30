@@ -375,15 +375,21 @@ void ExtensionToolbarModel::Populate(const ExtensionIdList& positions,
       unsorted.push_back(make_scoped_refptr(extension));
   }
 
-  // Erase current icons.
-  for (size_t i = 0; i < toolbar_items_.size(); i++) {
+  size_t items_count = toolbar_items_.size();
+  for (size_t i = 0; i < items_count; i++) {
+    const Extension* extension = toolbar_items_.back();
+    // By popping the extension here (before calling BrowserActionRemoved),
+    // we will not shrink visible count by one after BrowserActionRemoved
+    // calls SetVisibleCount.
+    toolbar_items_.pop_back();
     FOR_EACH_OBSERVER(
-        Observer, observers_, BrowserActionRemoved(toolbar_items_[i].get()));
+        Observer, observers_, BrowserActionRemoved(extension));
   }
-  toolbar_items_.clear();
+  DCHECK(toolbar_items_.empty());
 
   // Merge the lists.
   toolbar_items_.reserve(sorted.size() + unsorted.size());
+
   for (ExtensionList::const_iterator iter = sorted.begin();
        iter != sorted.end(); ++iter) {
     // It's possible for the extension order to contain items that aren't
@@ -392,11 +398,22 @@ void ExtensionToolbarModel::Populate(const ExtensionIdList& positions,
     // syncing NPAPI-containing extensions, so if one of those is not actually
     // synced, we'll get a NULL in the list.  This sort of case can also happen
     // if some error prevents an extension from loading.
-    if (iter->get() != NULL)
+    if (iter->get() != NULL) {
       toolbar_items_.push_back(*iter);
+      FOR_EACH_OBSERVER(
+          Observer, observers_, BrowserActionAdded(
+              *iter, toolbar_items_.size() - 1));
+    }
   }
-  toolbar_items_.insert(toolbar_items_.end(), unsorted.begin(),
-                        unsorted.end());
+  for (ExtensionList::const_iterator iter = unsorted.begin();
+       iter != unsorted.end(); ++iter) {
+    if (iter->get() != NULL) {
+      toolbar_items_.push_back(*iter);
+      FOR_EACH_OBSERVER(
+          Observer, observers_, BrowserActionAdded(
+              *iter, toolbar_items_.size() - 1));
+    }
+  }
 
   UMA_HISTOGRAM_COUNTS_100(
       "ExtensionToolbarModel.BrowserActionsPermanentlyHidden", hidden);
@@ -411,12 +428,6 @@ void ExtensionToolbarModel::Populate(const ExtensionIdList& positions,
                              visible_icon_count_ == -1 ?
                                  base::HistogramBase::kSampleType_MAX :
                                  visible_icon_count_);
-  }
-
-  // Inform observers.
-  for (size_t i = 0; i < toolbar_items_.size(); i++) {
-    FOR_EACH_OBSERVER(
-        Observer, observers_, BrowserActionAdded(toolbar_items_[i].get(), i));
   }
 }
 

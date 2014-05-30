@@ -584,4 +584,26 @@ IN_PROC_BROWSER_TEST_F(ExtensionToolbarModelTest, HighlightModeAdd) {
   EXPECT_EQ(id_c, ExtensionAt(2)->id());
 }
 
+IN_PROC_BROWSER_TEST_F(ExtensionToolbarModelTest, SizeAfterPrefChange) {
+  // Load two extensions with browser action.
+  base::FilePath extension_a_path(test_data_dir_.AppendASCII("api_test")
+                                                .AppendASCII("browser_action")
+                                                .AppendASCII("basics"));
+  ASSERT_TRUE(LoadExtension(extension_a_path));
+  base::FilePath extension_b_path(test_data_dir_.AppendASCII("api_test")
+                                                .AppendASCII("browser_action")
+                                                .AppendASCII("popup"));
+  ASSERT_TRUE(LoadExtension(extension_b_path));
+  std::string id_a = ExtensionAt(0)->id();
+  std::string id_b = ExtensionAt(1)->id();
+
+  // Should be at max size (-1).
+  EXPECT_EQ(-1, model_->GetVisibleIconCount());
+
+  model_->OnExtensionToolbarPrefChange();
+
+  // Should still be at max size.
+  EXPECT_EQ(-1, model_->GetVisibleIconCount());
+}
+
 }  // namespace extensions
