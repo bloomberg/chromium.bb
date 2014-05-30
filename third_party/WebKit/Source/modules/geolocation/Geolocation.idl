@@ -28,13 +28,13 @@
     WillBeGarbageCollected,
     NoInterfaceObject,
 ] interface Geolocation {
-    // FIXME: should be: PositionOptions options (need PositionOptions.idl)
-    [RaisesException, Custom, PerWorldBindings, LogActivity] void getCurrentPosition(PositionCallback successCallback,
+    // FIXME: should be: PositionOptions options: need PositionOptions.idl and dictionary http:/crbug.com/321462
+    [Custom, PerWorldBindings, LogActivity] void getCurrentPosition(PositionCallback successCallback,
                                      optional PositionErrorCallback errorCallback,
                                      optional object options);
 
-    // FIXME: should be: PositionOptions options (need PositionOptions.idl)
-    [RaisesException, Custom, PerWorldBindings, LogActivity] long watchPosition(PositionCallback successCallback,
+    // FIXME: should be: PositionOptions options: need PositionOptions.idl and dictionary http:/crbug.com/321462
+    [Custom, PerWorldBindings, LogActivity] long watchPosition(PositionCallback successCallback,
                                 optional PositionErrorCallback errorCallback,
                                 optional object options);
 
