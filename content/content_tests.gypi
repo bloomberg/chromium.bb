@@ -1169,11 +1169,6 @@
             'test/webui_resource_browsertest.cc',
           ],
           'conditions': [
-            ['chromeos==0', {
-              'sources!': [
-                'browser/web_contents/touch_editable_impl_aura_browsertest.cc',
-              ],
-            }],
             ['OS=="win"', {
               'resource_include_dirs': [
                 '<(SHARED_INTERMEDIATE_DIR)/webkit',

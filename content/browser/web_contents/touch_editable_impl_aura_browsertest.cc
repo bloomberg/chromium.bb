@@ -167,13 +167,13 @@ IN_PROC_BROWSER_TEST_F(TouchEditableImplAuraTest,
 
   // Check if selection handles are showing.
   EXPECT_TRUE(GetTouchSelectionController(touch_editable));
-  EXPECT_STREQ("Some text we can select", selection.c_str());
+  EXPECT_EQ("Some text we can select", selection);
 
   // Lets move the handles a bit to modify the selection
   touch_editable->Reset();
   generator.GestureScrollSequence(
-      gfx::Point(10, 47),
-      gfx::Point(30, 47),
+      gfx::Point(bounds.x() + 10, bounds.y() + 47),
+      gfx::Point(bounds.x() + 30, bounds.y() + 47),
       base::TimeDelta::FromMilliseconds(20),
       5);
   touch_editable->WaitForSelectionChangeCallback();
@@ -221,7 +221,7 @@ IN_PROC_BROWSER_TEST_F(TouchEditableImplAuraTest,
       content::ExecuteScriptAndGetValue(main_frame, "get_selection()");
   std::string selection;
   value->GetAsString(&selection);
-  EXPECT_STREQ("Some", selection.c_str());
+  EXPECT_EQ("Some", selection);
 
   // Start scrolling. Handles should get hidden.
   ui::GestureEvent scroll_begin(ui::ET_GESTURE_SCROLL_BEGIN,
@@ -282,7 +282,7 @@ IN_PROC_BROWSER_TEST_F(TouchEditableImplAuraTest,
       content::ExecuteScriptAndGetValue(main_frame, "get_selection()");
   std::string selection;
   value->GetAsString(&selection);
-  EXPECT_STREQ("Some", selection.c_str());
+  EXPECT_EQ("Some", selection);
 }
 
 IN_PROC_BROWSER_TEST_F(TouchEditableImplAuraTest,
@@ -318,7 +318,13 @@ IN_PROC_BROWSER_TEST_F(TouchEditableImplAuraTest,
       content::ExecuteScriptAndGetValue(main_frame, "get_selection()");
   std::string selection;
   value->GetAsString(&selection);
-  EXPECT_STREQ("Some", selection.c_str());
+#if defined(OS_WIN)
+  // In Windows, the default behavior is to select the whitespace after the word
+  // when the word is selected.
+  EXPECT_EQ("Some ", selection);
+#else
+  EXPECT_EQ("Some", selection);
+#endif  // defined (OS_WIN)
 }
 
 IN_PROC_BROWSER_TEST_F(TouchEditableImplAuraTest,
@@ -361,8 +367,8 @@ IN_PROC_BROWSER_TEST_F(TouchEditableImplAuraTest,
 
   // Move the cursor handle.
   generator.GestureScrollSequence(
-      gfx::Point(50, 59),
-      gfx::Point(10, 59),
+      gfx::Point(bounds.x() + 50, bounds.y() + 59),
+      gfx::Point(bounds.x() + 10, bounds.y() + 59),
       base::TimeDelta::FromMilliseconds(20),
       1);
   touch_editable->WaitForSelectionChangeCallback();

@@ -732,11 +732,7 @@
         'window/dialog_delegate_unittest.cc',
       ],
       'conditions': [
-        ['chromeos==0', {
-          'sources!': [
-            'touchui/touch_selection_controller_impl_unittest.cc',
-          ],
-        }, { # use_chromeos==1
+        ['chromeos==1', {
           'sources/': [
             ['exclude', 'ime/input_method_bridge_unittest.cc'],
             ['exclude', 'widget/desktop_aura'],

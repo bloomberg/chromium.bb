@@ -255,20 +255,31 @@ void TouchEditableImplAura::ConvertPointToScreen(gfx::Point* point) {
   if (!rwhva_)
     return;
   aura::Window* window = rwhva_->GetNativeView();
+  aura::Window* root = window->GetRootWindow();
+
+  // First convert the point to root window coordinates, then if there is a
+  // screen position client, convert it to screen coordinates.
+  aura::Window::ConvertPointToTarget(window, root, point);
   aura::client::ScreenPositionClient* screen_position_client =
-      aura::client::GetScreenPositionClient(window->GetRootWindow());
+      aura::client::GetScreenPositionClient(root);
   if (screen_position_client)
-    screen_position_client->ConvertPointToScreen(window, point);
+    screen_position_client->ConvertPointToScreen(root, point);
 }
 
 void TouchEditableImplAura::ConvertPointFromScreen(gfx::Point* point) {
   if (!rwhva_)
     return;
   aura::Window* window = rwhva_->GetNativeView();
+  aura::Window* root = window->GetRootWindow();
+
+  // If there is a screen position client, convert the point from screen to root
+  // window and then to client coordinates. Otherwise, suppose the point is in
+  // root window coordinates and convert it to client coordinates.
   aura::client::ScreenPositionClient* screen_position_client =
-      aura::client::GetScreenPositionClient(window->GetRootWindow());
+      aura::client::GetScreenPositionClient(root);
   if (screen_position_client)
-    screen_position_client->ConvertPointFromScreen(window, point);
+    screen_position_client->ConvertPointFromScreen(root, point);
+  aura::Window::ConvertPointToTarget(root, window, point);
 }
 
 bool TouchEditableImplAura::DrawsHandles() {
