@@ -59,6 +59,10 @@
     "improvement_direction": "up",
     "why": "Higher frequencies are faster."
   },
+  "janks": {
+    "improvement_direction": "down",
+    "why": "Fewer janks is better."
+  },
   "kb": {
     "improvement_direction": "down",
     "why": "Synonym for KB, used in memory and io metrics."
