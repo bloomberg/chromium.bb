@@ -6682,12 +6682,7 @@ long Cluster::ParseBlockGroup(long long payload_size, long long& pos,
       return E_FILE_FORMAT_INVALID;
 
     if (id == 0x35A2) {  // DiscardPadding
-      result = GetUIntLength(pReader, pos, len);
-
-      if (result < 0)  // error
-        return static_cast<long>(result);
-
-      status = UnserializeInt(pReader, pos, len, discard_padding);
+      status = UnserializeInt(pReader, pos, size, discard_padding);
 
       if (status < 0)  // error
         return status;
