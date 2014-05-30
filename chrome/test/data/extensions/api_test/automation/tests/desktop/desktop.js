@@ -5,8 +5,8 @@
 var allTests = [
   function testGetDesktop() {
     chrome.automation.getDesktop(function(tree) {
-      assertEq('desktop', tree.root.role);
-      assertEq('window', tree.root.firstChild().role);
+      assertEq(RoleType.desktop, tree.root.role);
+      assertEq(RoleType.window, tree.root.firstChild().role);
       chrome.test.succeed();
     });
   },

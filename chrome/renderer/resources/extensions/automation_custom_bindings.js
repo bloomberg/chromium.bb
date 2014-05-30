@@ -10,7 +10,10 @@ var automationInternal =
     require('binding').Binding.create('automationInternal').generate();
 var eventBindings = require('event_bindings');
 var Event = eventBindings.Event;
+var forEach = require('utils').forEach;
 var lastError = require('lastError');
+var schema =
+    requireNative('automationInternal').GetSchemaAdditions();
 
 // TODO(aboxhall): Look into using WeakMap
 var idToAutomationTree = {};
@@ -116,3 +119,10 @@ automationInternal.onAccessibilityEvent.addListener(function(data) {
 });
 
 exports.binding = automation.generate();
+
+// Add additional accessibility bindings not specified in the automation IDL.
+// Accessibility and automation share some APIs (see
+// ui/accessibility/ax_enums.idl).
+forEach(schema, function(k, v) {
+  exports.binding[k] = v;
+});

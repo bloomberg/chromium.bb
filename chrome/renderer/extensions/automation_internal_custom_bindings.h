@@ -20,7 +20,13 @@ class AutomationInternalCustomBindings : public ObjectBackedNativeHandler {
   virtual ~AutomationInternalCustomBindings();
 
  private:
+  // Returns whether this extension has the "interact" permission set (either
+  // explicitly or implicitly after manifest parsing).
   void IsInteractPermitted(const v8::FunctionCallbackInfo<v8::Value>& args);
+
+  // Returns an object with bindings that will be added to the
+  // chrome.automation namespace.
+  void GetSchemaAdditions(const v8::FunctionCallbackInfo<v8::Value>& args);
 
   DISALLOW_COPY_AND_ASSIGN(AutomationInternalCustomBindings);
 };

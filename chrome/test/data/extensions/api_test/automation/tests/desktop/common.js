@@ -5,6 +5,11 @@
 var assertEq = chrome.test.assertEq;
 var assertFalse = chrome.test.assertFalse;
 var assertTrue = chrome.test.assertTrue;
+
+var EventType = chrome.automation.EventType;
+var RoleType = chrome.automation.RoleType;
+var StateType = chrome.automation.StateType;
+
 var tree = null;
 
 function findAutomationNode(root, condition) {

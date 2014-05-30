@@ -5,7 +5,7 @@
 var allTests = [
   function testSimpleAction() {
     var okButton = tree.root.firstChild().firstChild();
-    okButton.addEventListener('focus', function() {
+    okButton.addEventListener(EventType.focus, function() {
       chrome.test.succeed();
     }, true);
     okButton.focus();

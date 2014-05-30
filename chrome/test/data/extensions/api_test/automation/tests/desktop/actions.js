@@ -9,7 +9,7 @@ var allTests = [
           return node.role == 'textField';
         });
     assertTrue(!!firstTextField);
-    firstTextField.addEventListener('focus', function(e) {
+    firstTextField.addEventListener(EventType.focus, function(e) {
       chrome.test.succeed();
     }, true);
     firstTextField.doDefault();
@@ -21,7 +21,7 @@ var allTests = [
           return node.role == 'button' && node.state.focusable;
         });
     assertTrue(!!firstFocusableNode);
-    firstFocusableNode.addEventListener('focus', function(e) {
+    firstFocusableNode.addEventListener(EventType.focus, function(e) {
       chrome.test.succeed();
     }, true);
     firstFocusableNode.focus();
