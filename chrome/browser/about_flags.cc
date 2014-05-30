@@ -1512,14 +1512,14 @@ const Experiment kExperiments[] = {
     "enable-ephemeral-apps",
     IDS_FLAGS_ENABLE_EPHEMERAL_APPS_NAME,
     IDS_FLAGS_ENABLE_EPHEMERAL_APPS_DESCRIPTION,
-    kOsWin | kOsLinux | kOsCrOS,
+    kOsAll,
     SINGLE_VALUE_TYPE(switches::kEnableEphemeralApps)
   },
   {
     "enable-linkable-ephemeral-apps",
     IDS_FLAGS_ENABLE_LINKABLE_EPHEMERAL_APPS_NAME,
     IDS_FLAGS_ENABLE_LINKABLE_EPHEMERAL_APPS_DESCRIPTION,
-    kOsWin | kOsLinux | kOsCrOS,
+    kOsAll,
     SINGLE_VALUE_TYPE(switches::kEnableLinkableEphemeralApps)
   },
   {
