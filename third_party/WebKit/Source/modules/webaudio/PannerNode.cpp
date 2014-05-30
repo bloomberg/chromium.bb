@@ -385,13 +385,7 @@ void PannerNode::calculateAzimuthElevation(double* outAzimuth, double* outElevat
     FloatPoint3D listenerPosition = listener()->position();
     FloatPoint3D sourceListener = m_position - listenerPosition;
 
-    if (sourceListener.isZero()) {
-        // degenerate case if source and listener are at the same point
-        *outAzimuth = 0.0;
-        *outElevation = 0.0;
-        return;
-    }
-
+    // normalize() does nothing if the length of |sourceListener| is zero.
     sourceListener.normalize();
 
     // Align axes
@@ -461,24 +455,30 @@ double PannerNode::calculateDopplerRate()
 
             double sourceListenerMagnitude = sourceToListener.length();
 
-            double listenerProjection = sourceToListener.dot(listenerVelocity) / sourceListenerMagnitude;
-            double sourceProjection = sourceToListener.dot(sourceVelocity) / sourceListenerMagnitude;
+            if (!sourceListenerMagnitude) {
+                // Source and listener are at the same position. Skip the computation of the doppler
+                // shift, and just return the cached value.
+                dopplerShift = m_cachedDopplerRate;
+            } else {
+                double listenerProjection = sourceToListener.dot(listenerVelocity) / sourceListenerMagnitude;
+                double sourceProjection = sourceToListener.dot(sourceVelocity) / sourceListenerMagnitude;
 
-            listenerProjection = -listenerProjection;
-            sourceProjection = -sourceProjection;
+                listenerProjection = -listenerProjection;
+                sourceProjection = -sourceProjection;
 
-            double scaledSpeedOfSound = speedOfSound / dopplerFactor;
-            listenerProjection = min(listenerProjection, scaledSpeedOfSound);
-            sourceProjection = min(sourceProjection, scaledSpeedOfSound);
+                double scaledSpeedOfSound = speedOfSound / dopplerFactor;
+                listenerProjection = min(listenerProjection, scaledSpeedOfSound);
+                sourceProjection = min(sourceProjection, scaledSpeedOfSound);
 
-            dopplerShift = ((speedOfSound - dopplerFactor * listenerProjection) / (speedOfSound - dopplerFactor * sourceProjection));
-            fixNANs(dopplerShift); // avoid illegal values
+                dopplerShift = ((speedOfSound - dopplerFactor * listenerProjection) / (speedOfSound - dopplerFactor * sourceProjection));
+                fixNANs(dopplerShift); // avoid illegal values
 
-            // Limit the pitch shifting to 4 octaves up and 3 octaves down.
-            if (dopplerShift > 16.0)
-                dopplerShift = 16.0;
-            else if (dopplerShift < 0.125)
-                dopplerShift = 0.125;
+                // Limit the pitch shifting to 4 octaves up and 3 octaves down.
+                if (dopplerShift > 16.0)
+                    dopplerShift = 16.0;
+                else if (dopplerShift < 0.125)
+                    dopplerShift = 0.125;
+            }
         }
     }
 
