@@ -77,6 +77,7 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerConnection
                                const View* new_view,
                                const View* old_view,
                                bool originated_change);
+  void ProcessViewInputEvent(const View* view, const ui::Event* event);
   void ProcessNodeDeleted(const NodeId& node,
                           TransportChangeId server_change_id,
                           bool originated_change);
@@ -179,6 +180,8 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerConnection
   virtual void OnNodeViewReplaced(const Node* node,
                                   const View* new_view,
                                   const View* old_view) OVERRIDE;
+  virtual void OnViewInputEvent(const View* view,
+                                const ui::Event* event) OVERRIDE;
 
   // InterfaceImp overrides:
   virtual void OnConnectionEstablished() MOJO_OVERRIDE;

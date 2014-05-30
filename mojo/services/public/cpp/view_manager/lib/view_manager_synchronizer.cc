@@ -12,6 +12,7 @@
 #include "mojo/services/public/cpp/view_manager/lib/view_private.h"
 #include "mojo/services/public/cpp/view_manager/lib/view_tree_node_private.h"
 #include "mojo/services/public/cpp/view_manager/util.h"
+#include "mojo/services/public/cpp/view_manager/view_observer.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/codec/png_codec.h"
 
@@ -602,6 +603,20 @@ void ViewManagerSynchronizer::OnViewDeleted(uint32_t view_id) {
   if (view)
     ViewPrivate(view).LocalDestroy();
 }
+
+void ViewManagerSynchronizer::OnViewInputEvent(
+    uint32_t view_id,
+    EventPtr event,
+    const Callback<void()>& ack_callback) {
+  View* view = view_manager_->GetViewById(view_id);
+  if (view) {
+    FOR_EACH_OBSERVER(ViewObserver,
+                      *ViewPrivate(view).observers(),
+                      OnViewInputEvent(view, event.Pass()));
+  }
+  ack_callback.Run();
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////
 // ViewManagerSynchronizer, private:

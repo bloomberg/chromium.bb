@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 import "../geometry/geometry.mojom"
+import "../input_events/input_events.mojom"
 
 module mojo.view_manager {
 
@@ -139,6 +140,9 @@ interface IViewManagerClient {
 
   // Invoked when a view is deleted.
   OnViewDeleted(uint32 view);
+
+  // Invoked when an event is targeted at the specified view.
+  OnViewInputEvent(uint32 view, mojo.Event event) => ();
 };
 
 }

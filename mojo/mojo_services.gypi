@@ -12,6 +12,28 @@
       ],
       'dependencies': [
         'mojo_cpp_bindings',
+        'mojo_geometry_bindings',
+      ],
+    },
+    {
+      'target_name': 'mojo_input_events_lib',
+      'type': '<(component)',
+      'defines': [
+        'MOJO_INPUT_EVENTS_IMPLEMENTATION',
+      ],
+      'dependencies': [
+        '../base/base.gyp:base',
+        '../ui/events/events.gyp:events',
+        '../ui/gfx/gfx.gyp:gfx_geometry',
+        'mojo_environment_chromium',
+        'mojo_input_events_bindings',
+        'mojo_geometry_bindings',
+        'mojo_geometry_lib',
+        'mojo_system_impl',
+      ],
+      'sources': [
+        'services/public/cpp/input_events/lib/input_events_type_converters.cc',
+        'services/public/cpp/input_events/input_events_type_converters.h',
       ],
     },
     {
@@ -130,6 +152,7 @@
         'mojo_geometry_bindings',
         'mojo_geometry_lib',
         'mojo_gles2_service',
+        'mojo_input_events_lib',
         'mojo_native_viewport_bindings',
         'mojo_system_impl',
       ],
@@ -179,6 +202,7 @@
       'dependencies': [
         'mojo_cpp_bindings',
         'mojo_geometry_bindings',
+        'mojo_input_events_bindings',
       ],
     },
     {
@@ -261,15 +285,18 @@
             '../base/base.gyp:base',
             '../skia/skia.gyp:skia',
             '../ui/aura/aura.gyp:aura',
+            '../ui/aura/aura.gyp:aura_test_support',
             '../ui/base/ui_base.gyp:ui_base',
             '../ui/gfx/gfx.gyp:gfx',
             '../ui/gfx/gfx.gyp:gfx_geometry',
+            '../ui/wm/wm.gyp:wm',
             'mojo_aura_support',
             'mojo_common_lib',
             'mojo_environment_chromium',
             'mojo_geometry_bindings',
             'mojo_geometry_lib',
             'mojo_gles2',
+            'mojo_input_events_lib',
             'mojo_launcher_bindings',
             'mojo_main_chromium',
             'mojo_native_viewport_bindings',
