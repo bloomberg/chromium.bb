@@ -41,7 +41,6 @@ const char kJsApiEnableScreenMagnifier[] = "enableScreenMagnifier";
 const char kJsApiEnableLargeCursor[] = "enableLargeCursor";
 const char kJsApiEnableSpokenFeedback[] = "enableSpokenFeedback";
 const char kJsApiScreenStateInitialize[] = "screenStateInitialize";
-const char kJsApiSkipUpdateEnrollAfterEula[] = "skipUpdateEnrollAfterEula";
 const char kJsApiScreenAssetsLoaded[] = "screenAssetsLoaded";
 const char kJsApiHeaderBarVisible[] = "headerBarVisible";
 
@@ -116,8 +115,6 @@ void CoreOobeHandler::Initialize() {
 void CoreOobeHandler::RegisterMessages() {
   AddCallback(kJsApiScreenStateInitialize,
               &CoreOobeHandler::HandleInitialized);
-  AddCallback(kJsApiSkipUpdateEnrollAfterEula,
-              &CoreOobeHandler::HandleSkipUpdateEnrollAfterEula);
   AddCallback("updateCurrentScreen",
               &CoreOobeHandler::HandleUpdateCurrentScreen);
   AddCallback(kJsApiEnableHighContrast,
@@ -228,13 +225,6 @@ void CoreOobeHandler::SetClientAreaSize(int width, int height) {
 
 void CoreOobeHandler::HandleInitialized() {
   oobe_ui_->InitializeHandlers();
-}
-
-void CoreOobeHandler::HandleSkipUpdateEnrollAfterEula() {
-  WizardController* controller = WizardController::default_controller();
-  DCHECK(controller);
-  if (controller)
-    controller->SkipUpdateEnrollAfterEula();
 }
 
 void CoreOobeHandler::HandleUpdateCurrentScreen(const std::string& screen) {

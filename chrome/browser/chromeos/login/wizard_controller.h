@@ -112,9 +112,6 @@ class WizardController : public ScreenObserver {
   // Called right after the browser session has started.
   void OnSessionStart();
 
-  // Skip update, go straight to enrollment after EULA is accepted.
-  void SkipUpdateEnrollAfterEula();
-
   // TODO(antrim) : temporary hack. Should be removed once screen system is
   // reworked at hackaton.
   void EnableUserImageScreenReturnToPreviousHack();
@@ -351,10 +348,6 @@ class WizardController : public ScreenObserver {
   // State of Usage stat/error reporting checkbox on EULA screen
   // during wizard lifetime.
   bool usage_statistics_reporting_;
-
-  // If true then update check is cancelled and enrollment is started after
-  // EULA is accepted.
-  bool skip_update_enroll_after_eula_;
 
   // Time when the EULA was accepted. Used to measure the duration from the EULA
   // acceptance until the Sign-In screen is displayed.

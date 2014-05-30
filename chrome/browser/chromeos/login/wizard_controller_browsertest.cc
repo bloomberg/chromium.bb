@@ -550,39 +550,6 @@ IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest, ControlFlowErrorUpdate) {
   EXPECT_FALSE(ExistingUserController::current_controller() == NULL);
 }
 
-IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest, ControlFlowSkipUpdateEnroll) {
-  EXPECT_EQ(WizardController::default_controller()->GetNetworkScreen(),
-            WizardController::default_controller()->current_screen());
-  EXPECT_CALL(*mock_update_screen_, StartNetworkCheck()).Times(0);
-  EXPECT_CALL(*mock_eula_screen_, Show()).Times(1);
-  EXPECT_CALL(*mock_update_screen_, Show()).Times(0);
-  EXPECT_CALL(*mock_network_screen_, Hide()).Times(1);
-  OnExit(ScreenObserver::NETWORK_CONNECTED);
-
-  EXPECT_EQ(WizardController::default_controller()->GetEulaScreen(),
-            WizardController::default_controller()->current_screen());
-  EXPECT_CALL(*mock_eula_screen_, Hide()).Times(1);
-  EXPECT_CALL(*mock_update_screen_, StartNetworkCheck()).Times(0);
-  EXPECT_CALL(*mock_update_screen_, Show()).Times(0);
-  WizardController::default_controller()->SkipUpdateEnrollAfterEula();
-  EXPECT_CALL(*mock_enrollment_screen_->actor(),
-              SetParameters(mock_enrollment_screen_,
-                            EnrollmentScreenActor::ENROLLMENT_MODE_MANUAL,
-                            ""))
-      .Times(1);
-  EXPECT_CALL(*mock_enrollment_screen_, Show()).Times(1);
-  EXPECT_CALL(*mock_enrollment_screen_, Hide()).Times(0);
-  OnExit(ScreenObserver::EULA_ACCEPTED);
-  content::RunAllPendingInMessageLoop();
-
-  EXPECT_EQ(WizardController::default_controller()->GetEnrollmentScreen(),
-            WizardController::default_controller()->current_screen());
-  EXPECT_TRUE(ExistingUserController::current_controller() == NULL);
-  EXPECT_EQ("ethernet,wifi,cellular",
-            NetworkHandler::Get()->network_state_handler()
-            ->GetCheckPortalListForTest());
-}
-
 IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest, ControlFlowEulaDeclined) {
   EXPECT_EQ(WizardController::default_controller()->GetNetworkScreen(),
             WizardController::default_controller()->current_screen());
