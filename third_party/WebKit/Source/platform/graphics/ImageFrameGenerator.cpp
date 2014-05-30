@@ -52,14 +52,14 @@ public:
 
     virtual bool allocPixelRef(SkBitmap* dst, SkColorTable* ctable) OVERRIDE
     {
-        SkImageInfo info;
-        if (!dst->asImageInfo(&info))
+        const SkImageInfo& info = dst->info();
+        if (kUnknown_SkColorType == info.colorType())
             return false;
 
         if (info != m_info || m_rowBytes != dst->rowBytes())
             return false;
 
-        if (!dst->installPixels(m_info, m_pixels, m_rowBytes, 0, 0))
+        if (!dst->installPixels(m_info, m_pixels, m_rowBytes))
             return false;
         dst->lockPixels();
         return true;

@@ -51,10 +51,9 @@ public:
     class Allocator : public SkBitmap::Allocator {
     public:
         virtual bool allocPixelRef(SkBitmap* dst, SkColorTable* ct) SK_OVERRIDE {
-            SkImageInfo info;
-            if (!dst->asImageInfo(&info)) {
+            const SkImageInfo& info = dst->info();
+            if (kUnknown_SkColorType == info.colorType())
                 return false;
-            }
             SkAutoTUnref<SkPixelRef> pr(new MockDiscardablePixelRef(info, dst->rowBytes()));
             dst->setPixelRef(pr);
             return true;

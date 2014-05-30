@@ -48,8 +48,8 @@ bool DiscardablePixelRefAllocator::allocPixelRef(SkBitmap* dst, SkColorTable* ct
     if (size < 0 || !sk_64_isS32(size))
         return false;
 
-    SkImageInfo info;
-    if (!dst->asImageInfo(&info))
+    const SkImageInfo& info = dst->info();
+    if (kUnknown_SkColorType == info.colorType())
         return false;
 
     SkAutoTUnref<DiscardablePixelRef> pixelRef(new DiscardablePixelRef(info, dst->rowBytes(), adoptPtr(new SkMutex())));
