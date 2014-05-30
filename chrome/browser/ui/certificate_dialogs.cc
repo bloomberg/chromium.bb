@@ -16,8 +16,10 @@
 #include "chrome/common/net/x509_certificate_model.h"
 #include "content/public/browser/browser_thread.h"
 #include "grit/generated_resources.h"
+#include "net/base/filename_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
+#include "url/gurl.h"
 
 using content::BrowserThread;
 using content::WebContents;
@@ -84,10 +86,14 @@ Exporter::Exporter(WebContents* web_contents,
 
   // TODO(mattm): should this default to some directory?
   // Maybe SavePackage::GetSaveDirPreference? (Except that it's private.)
-  base::FilePath suggested_path("certificate");
   std::string cert_title = x509_certificate_model::GetTitle(cert);
-  if (!cert_title.empty())
-    suggested_path = base::FilePath(cert_title);
+  base::FilePath suggested_path =
+      net::GenerateFileName(GURL::EmptyGURL(),  // url
+                            std::string(),      // content_disposition
+                            std::string(),      // referrer_charset
+                            cert_title,         // suggested_name
+                            std::string(),      // mime_type
+                            "certificate");     // default_name
 
   ShowCertSelectFileDialog(select_file_dialog_.get(),
                            ui::SelectFileDialog::SELECT_SAVEAS_FILE,
