@@ -704,14 +704,14 @@ class WebRequestHandler(WifiHandler.Delegate, CloudDevice.Delegate):
         '/internal/ping': self.do_ping,
         '/privet/info': self.do_info,
         '/deprecated/wifi/switch': self.do_wifi_switch,
-        '/privet/v2/session/handshake': self.do_session_handshake,
-        '/privet/v2/session/cancel': self.do_session_cancel,
-        '/privet/v2/session/call': self.do_session_call,
-        '/privet/v2/setup/start':
+        '/privet/v3/session/handshake': self.do_session_handshake,
+        '/privet/v3/session/cancel': self.do_session_cancel,
+        '/privet/v3/session/call': self.do_session_call,
+        '/privet/v3/setup/start':
             self.get_insecure_api_handler(self.do_secure_setup_start),
-        '/privet/v2/setup/cancel':
+        '/privet/v3/setup/cancel':
             self.get_insecure_api_handler(self.do_secure_setup_cancel),
-        '/privet/v2/setup/status':
+        '/privet/v3/setup/status':
             self.get_insecure_api_handler(self.do_secure_status),
     }
 
@@ -723,9 +723,9 @@ class WebRequestHandler(WifiHandler.Delegate, CloudDevice.Delegate):
     }
 
     self.secure_handlers = {
-        '/privet/v2/setup/start': self.do_secure_setup_start,
-        '/privet/v2/setup/cancel': self.do_secure_setup_cancel,
-        '/privet/v2/setup/status': self.do_secure_status
+        '/privet/v3/setup/start': self.do_secure_setup_start,
+        '/privet/v3/setup/cancel': self.do_secure_setup_cancel,
+        '/privet/v3/setup/status': self.do_secure_status
     }
 
   @staticmethod
@@ -786,7 +786,7 @@ class WebRequestHandler(WifiHandler.Delegate, CloudDevice.Delegate):
 
   @post_only
   def do_session_handshake(self, request, response_func):
-    """Handles /privet/v2/session/handshake requests."""
+    """Handles /privet/v3/session/handshake requests."""
 
     data = json.loads(request.body)
     try:
@@ -834,7 +834,7 @@ class WebRequestHandler(WifiHandler.Delegate, CloudDevice.Delegate):
 
   @post_only
   def do_session_cancel(self, request, response_func):
-    """Handles /privet/v2/session/cancel requests."""
+    """Handles /privet/v3/session/cancel requests."""
     data = json.loads(request.body)
     try:
       session_id = data['sessionID']
@@ -853,7 +853,7 @@ class WebRequestHandler(WifiHandler.Delegate, CloudDevice.Delegate):
 
   @post_only
   def do_session_call(self, request, response_func):
-    """Handles /privet/v2/session/call requests."""
+    """Handles /privet/v3/session/call requests."""
     try:
       session_id = request.headers['X-Privet-SessionID']
     except KeyError:
@@ -910,7 +910,7 @@ class WebRequestHandler(WifiHandler.Delegate, CloudDevice.Delegate):
     return True
 
   def do_secure_status(self, unused_request, response_func, unused_params):
-    """Handles /privet/v2/setup/status requests."""
+    """Handles /privet/v3/setup/status requests."""
     setup = {
         'registration': {
             'required': True
@@ -933,7 +933,7 @@ class WebRequestHandler(WifiHandler.Delegate, CloudDevice.Delegate):
     response_func(200, setup)
 
   def do_secure_setup_start(self, unused_request, response_func, params):
-    """Handles /privet/v2/setup/start requests."""
+    """Handles /privet/v3/setup/start requests."""
     has_wifi = False
     token = None
 
