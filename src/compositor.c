@@ -2138,6 +2138,16 @@ surface_set_buffer_transform(struct wl_client *client,
 {
 	struct weston_surface *surface = wl_resource_get_user_data(resource);
 
+	/* if wl_output.transform grows more members this will need to be updated. */
+	if (transform < 0 ||
+	    transform > WL_OUTPUT_TRANSFORM_FLIPPED_270) {
+		wl_resource_post_error(resource,
+			WL_SURFACE_ERROR_INVALID_TRANSFORM,
+			"buffer transform must be a valid transform "
+			"('%d' specified)", transform);
+		return;
+	}
+
 	surface->pending.buffer_viewport.buffer.transform = transform;
 }
 
@@ -2147,6 +2157,14 @@ surface_set_buffer_scale(struct wl_client *client,
 			 int32_t scale)
 {
 	struct weston_surface *surface = wl_resource_get_user_data(resource);
+
+	if (scale < 1) {
+		wl_resource_post_error(resource,
+			WL_SURFACE_ERROR_INVALID_SCALE,
+			"buffer scale must be at least one "
+			"('%d' specified)", scale);
+		return;
+	}
 
 	surface->pending.buffer_viewport.buffer.scale = scale;
 }
