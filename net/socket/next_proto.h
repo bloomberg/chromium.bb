@@ -39,6 +39,10 @@ typedef std::vector<NextProto> NextProtoVector;
 
 NET_EXPORT NextProtoVector NextProtosHttpOnly();
 
+// Default values, which are subject to change over time.  Currently just
+// SPDY 3 and 3.1.
+NET_EXPORT NextProtoVector NextProtosDefaults();
+
 // All of these also enable QUIC.
 NET_EXPORT NextProtoVector NextProtosSpdy3();
 NET_EXPORT NextProtoVector NextProtosSpdy31();

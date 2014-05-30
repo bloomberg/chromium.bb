@@ -12,6 +12,14 @@ NextProtoVector NextProtosHttpOnly() {
   return next_protos;
 }
 
+NextProtoVector NextProtosDefaults() {
+  NextProtoVector next_protos;
+  next_protos.push_back(kProtoHTTP11);
+  next_protos.push_back(kProtoSPDY3);
+  next_protos.push_back(kProtoSPDY31);
+  return next_protos;
+}
+
 NextProtoVector NextProtosSpdy3() {
   NextProtoVector next_protos;
   next_protos.push_back(kProtoHTTP11);
