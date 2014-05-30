@@ -1000,6 +1000,11 @@
             '../third_party/libc++/libc++.gyp:libcxx_proxy',
           ],
         }],
+        ['tsan==1', {
+          'sources': [
+            'debug/tsan_suppressions.cc',
+          ],
+        }],
       ],
       'cflags!': [
         '-fsanitize=address',
