@@ -945,7 +945,7 @@ void ChromeContentBrowserClient::RenderProcessWillLaunch(
   SendExtensionWebRequestStatusToHost(host);
 
   RendererContentSettingRules rules;
-  if (host->IsGuest()) {
+  if (host->IsIsolatedGuest()) {
     GuestViewBase::GetDefaultContentSettingRules(&rules,
                                                  profile->IsOffTheRecord());
   } else {

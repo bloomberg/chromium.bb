@@ -493,7 +493,7 @@ void UserScriptMaster::StartLoad() {
 void UserScriptMaster::SendUpdate(content::RenderProcessHost* process,
                                   base::SharedMemory* shared_memory) {
   // Don't allow injection of content scripts into <webview>.
-  if (process->IsGuest())
+  if (process->IsIsolatedGuest())
     return;
 
   Profile* profile = Profile::FromBrowserContext(process->GetBrowserContext());

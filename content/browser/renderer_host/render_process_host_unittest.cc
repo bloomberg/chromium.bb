@@ -15,7 +15,7 @@ TEST_F(RenderProcessHostUnitTest, GuestsAreNotSuitableHosts) {
   GURL test_url("http://foo.com");
 
   MockRenderProcessHost guest_host(browser_context());
-  guest_host.SetIsGuest(true);
+  guest_host.set_is_isolated_guest(true);
 
   EXPECT_FALSE(RenderProcessHostImpl::IsSuitableHost(
       &guest_host, browser_context(), test_url));

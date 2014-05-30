@@ -23,42 +23,6 @@ using content::BrowserContext;
 using content::SiteInstance;
 using content::WebContents;
 
-// A WebContents does not immediately have a RenderProcessHost. It acquires one
-// on initial navigation. This observer exists until that initial navigation in
-// order to grab the ID if tis RenderProcessHost so that it can register it as
-// a guest.
-class GuestWebContentsObserver
-    : public content::WebContentsObserver {
- public:
-  explicit GuestWebContentsObserver(WebContents* guest_web_contents)
-      : WebContentsObserver(guest_web_contents) {
-  }
-
-  virtual ~GuestWebContentsObserver() {
-  }
-
-  // WebContentsObserver:
-  virtual void DidStartProvisionalLoadForFrame(
-      int64 frame_id,
-      int64 parent_frame_id,
-      bool is_main_frame,
-      const GURL& validated_url,
-      bool is_error_page,
-      bool is_iframe_srcdoc,
-      content::RenderViewHost* render_view_host) OVERRIDE {
-    GuestViewManager::FromBrowserContext(web_contents()->GetBrowserContext())->
-        AddRenderProcessHostID(web_contents()->GetRenderProcessHost()->GetID());
-    delete this;
-  }
-
-  virtual void WebContentsDestroyed() OVERRIDE {
-    delete this;
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(GuestWebContentsObserver);
-};
-
 GuestViewManager::GuestViewManager(content::BrowserContext* context)
     : current_instance_id_(0), last_instance_id_removed_(0), context_(context) {
 }
@@ -193,16 +157,12 @@ void GuestViewManager::AddGuest(int guest_instance_id,
   CHECK(!ContainsKey(guest_web_contents_by_instance_id_, guest_instance_id));
   CHECK(CanUseGuestInstanceID(guest_instance_id));
   guest_web_contents_by_instance_id_[guest_instance_id] = guest_web_contents;
-  // This will add the RenderProcessHost ID when we get one.
-  new GuestWebContentsObserver(guest_web_contents);
 }
 
 void GuestViewManager::RemoveGuest(int guest_instance_id) {
   GuestInstanceMap::iterator it =
       guest_web_contents_by_instance_id_.find(guest_instance_id);
   DCHECK(it != guest_web_contents_by_instance_id_.end());
-  render_process_host_id_multiset_.erase(
-      it->second->GetRenderProcessHost()->GetID());
   guest_web_contents_by_instance_id_.erase(it);
 
   // All the instance IDs that lie within [0, last_instance_id_removed_]
@@ -227,10 +187,6 @@ void GuestViewManager::RemoveGuest(int guest_instance_id) {
   } else {
     removed_instance_ids_.insert(guest_instance_id);
   }
-}
-
-void GuestViewManager::AddRenderProcessHostID(int render_process_host_id) {
-  render_process_host_id_multiset_.insert(render_process_host_id);
 }
 
 content::WebContents* GuestViewManager::GetGuestByInstanceID(

@@ -65,8 +65,6 @@ class GuestViewManager : public content::BrowserPluginGuestManager,
 
   void RemoveGuest(int guest_instance_id);
 
-  void AddRenderProcessHostID(int render_process_host_id);
-
   content::SiteInstance* GetGuestSiteInstance(
       const GURL& guest_site);
 
@@ -89,9 +87,6 @@ class GuestViewManager : public content::BrowserPluginGuestManager,
 
   static bool CanEmbedderAccessGuest(int embedder_render_process_id,
                                      GuestViewBase* guest);
-
-  // Counts RenderProcessHost IDs of GuestViewBases.
-  std::multiset<int> render_process_host_id_multiset_;
 
   // Contains guests' WebContents, mapping from their instance ids.
   typedef std::map<int, content::WebContents*> GuestInstanceMap;

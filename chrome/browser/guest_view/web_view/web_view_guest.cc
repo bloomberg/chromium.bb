@@ -33,6 +33,7 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/resource_request_details.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/storage_partition.h"
@@ -902,6 +903,8 @@ void WebViewGuest::UserAgentOverrideSet(const std::string& user_agent) {
 }
 
 void WebViewGuest::RenderViewReady() {
+  // The guest RenderView should always live in an isolated guest process.
+  CHECK(guest_web_contents()->GetRenderProcessHost()->IsIsolatedGuest());
   Send(new ChromeViewMsg_SetName(guest_web_contents()->GetRoutingID(), name_));
 }
 

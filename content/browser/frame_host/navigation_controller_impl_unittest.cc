@@ -1218,7 +1218,7 @@ TEST_F(NavigationControllerTest, ReloadWithGuest) {
   NavigationEntryImpl* entry1 =
       NavigationEntryImpl::FromNavigationEntry(controller.GetVisibleEntry());
   reinterpret_cast<MockRenderProcessHost*>(
-      entry1->site_instance()->GetProcess())->SetIsGuest(true);
+      entry1->site_instance()->GetProcess())->set_is_isolated_guest(true);
 
   // And reload.
   controller.Reload(true);

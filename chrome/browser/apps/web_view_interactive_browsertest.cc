@@ -220,7 +220,8 @@ class WebViewInteractiveTest
     ASSERT_TRUE(guest_connected_listener.WaitUntilSatisfied());
     content::Source<content::NavigationController> source =
         guest_observer.source();
-    EXPECT_TRUE(source->GetWebContents()->GetRenderProcessHost()->IsGuest());
+    EXPECT_TRUE(source->GetWebContents()->GetRenderProcessHost()->
+        IsIsolatedGuest());
 
     guest_web_contents_ = source->GetWebContents();
     embedder_web_contents_ =
