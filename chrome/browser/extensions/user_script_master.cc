@@ -389,8 +389,11 @@ void UserScriptMaster::NewScriptsAvailable(
     for (content::RenderProcessHost::iterator i(
             content::RenderProcessHost::AllHostsIterator());
          !i.IsAtEnd(); i.Advance()) {
-      SendUpdate(i.GetCurrentValue(), shared_memory_.get());
+      SendUpdate(i.GetCurrentValue(),
+                 shared_memory_.get(),
+                 changed_extensions_);
     }
+    changed_extensions_.clear();
 
     content::NotificationService::current()->Notify(
         chrome::NOTIFICATION_USER_SCRIPTS_UPDATED,
@@ -421,6 +424,7 @@ void UserScriptMaster::OnExtensionLoaded(
     user_scripts_.back().set_incognito_enabled(incognito_enabled);
   }
   if (extensions_service_ready_) {
+    changed_extensions_.insert(extension->id());
     if (script_reloader_.get()) {
       pending_load_ = true;
     } else {
@@ -443,6 +447,7 @@ void UserScriptMaster::OnExtensionUnloaded(
       new_user_scripts.push_back(*iter);
   }
   user_scripts_ = new_user_scripts;
+  changed_extensions_.insert(extension->id());
   if (script_reloader_.get()) {
     pending_load_ = true;
   } else {
@@ -466,8 +471,11 @@ void UserScriptMaster::Observe(int type,
           process->GetBrowserContext());
       if (!profile_->IsSameProfile(profile))
         return;
-      if (ScriptsReady())
-        SendUpdate(process, GetSharedMemory());
+      if (ScriptsReady()) {
+        SendUpdate(process,
+                   GetSharedMemory(),
+                   std::set<std::string>());  // Include all extensions.
+      }
       break;
     }
     default:
@@ -490,8 +498,10 @@ void UserScriptMaster::StartLoad() {
   script_reloader_->StartLoad(user_scripts_, extensions_info_);
 }
 
-void UserScriptMaster::SendUpdate(content::RenderProcessHost* process,
-                                  base::SharedMemory* shared_memory) {
+void UserScriptMaster::SendUpdate(
+    content::RenderProcessHost* process,
+    base::SharedMemory* shared_memory,
+    const std::set<std::string>& changed_extensions) {
   // Don't allow injection of content scripts into <webview>.
   if (process->IsIsolatedGuest())
     return;
@@ -511,8 +521,10 @@ void UserScriptMaster::SendUpdate(content::RenderProcessHost* process,
   if (!shared_memory->ShareToProcess(handle, &handle_for_process))
     return;  // This can legitimately fail if the renderer asserts at startup.
 
-  if (base::SharedMemory::IsHandleValid(handle_for_process))
-    process->Send(new ExtensionMsg_UpdateUserScripts(handle_for_process));
+  if (base::SharedMemory::IsHandleValid(handle_for_process)) {
+    process->Send(new ExtensionMsg_UpdateUserScripts(handle_for_process,
+                                                     changed_extensions));
+  }
 }
 
 }  // namespace extensions
