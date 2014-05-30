@@ -85,4 +85,48 @@ void File::Initialize(const FilePath& name, uint32 flags) {
 }
 #endif
 
+std::string File::ErrorToString(Error error) {
+  switch (error) {
+    case FILE_OK:
+      return "FILE_OK";
+    case FILE_ERROR_FAILED:
+      return "FILE_ERROR_FAILED";
+    case FILE_ERROR_IN_USE:
+      return "FILE_ERROR_IN_USE";
+    case FILE_ERROR_EXISTS:
+      return "FILE_ERROR_EXISTS";
+    case FILE_ERROR_NOT_FOUND:
+      return "FILE_ERROR_NOT_FOUND";
+    case FILE_ERROR_ACCESS_DENIED:
+      return "FILE_ERROR_ACCESS_DENIED";
+    case FILE_ERROR_TOO_MANY_OPENED:
+      return "FILE_ERROR_TOO_MANY_OPENED";
+    case FILE_ERROR_NO_MEMORY:
+      return "FILE_ERROR_NO_MEMORY";
+    case FILE_ERROR_NO_SPACE:
+      return "FILE_ERROR_NO_SPACE";
+    case FILE_ERROR_NOT_A_DIRECTORY:
+      return "FILE_ERROR_NOT_A_DIRECTORY";
+    case FILE_ERROR_INVALID_OPERATION:
+      return "FILE_ERROR_INVALID_OPERATION";
+    case FILE_ERROR_SECURITY:
+      return "FILE_ERROR_SECURITY";
+    case FILE_ERROR_ABORT:
+      return "FILE_ERROR_ABORT";
+    case FILE_ERROR_NOT_A_FILE:
+      return "FILE_ERROR_NOT_A_FILE";
+    case FILE_ERROR_NOT_EMPTY:
+      return "FILE_ERROR_NOT_EMPTY";
+    case FILE_ERROR_INVALID_URL:
+      return "FILE_ERROR_INVALID_URL";
+    case FILE_ERROR_IO:
+      return "FILE_ERROR_IO";
+    case FILE_ERROR_MAX:
+      break;
+  }
+
+  NOTREACHED();
+  return "";
+}
+
 }  // namespace base

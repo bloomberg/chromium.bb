@@ -14,6 +14,8 @@
 #include <sys/stat.h>
 #endif
 
+#include <string>
+
 #include "base/base_export.h"
 #include "base/basictypes.h"
 #include "base/files/scoped_file.h"
@@ -288,6 +290,9 @@ class BASE_EXPORT File {
 #elif defined(OS_POSIX)
   static Error OSErrorToFileError(int saved_errno);
 #endif
+
+  // Converts an error value to a human-readable form. Used for logging.
+  static std::string ErrorToString(Error error);
 
  private:
   void SetPlatformFile(PlatformFile file);
