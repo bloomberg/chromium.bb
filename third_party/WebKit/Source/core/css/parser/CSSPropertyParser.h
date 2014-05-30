@@ -42,7 +42,6 @@
 namespace WebCore {
 
 // FIXME: Many of these may not be used.
-class AnimationParseContext;
 class CSSArrayFunctionValue;
 class CSSBorderImageSliceValue;
 class CSSPrimitiveValue;
@@ -136,12 +135,13 @@ private:
     PassRefPtrWillBeRawPtr<CSSValue> parseAnimationIterationCount();
     PassRefPtrWillBeRawPtr<CSSValue> parseAnimationName();
     PassRefPtrWillBeRawPtr<CSSValue> parseAnimationPlayState();
-    PassRefPtrWillBeRawPtr<CSSValue> parseAnimationProperty(AnimationParseContext&);
+    PassRefPtrWillBeRawPtr<CSSValue> parseAnimationProperty();
     PassRefPtrWillBeRawPtr<CSSValue> parseAnimationTimingFunction();
 
     bool parseWebkitTransformOriginShorthand(RefPtrWillBeRawPtr<CSSValue>&, RefPtrWillBeRawPtr<CSSValue>&, RefPtrWillBeRawPtr<CSSValue>&);
     bool parseCubicBezierTimingFunctionValue(CSSParserValueList*& args, double& result);
-    bool parseAnimationProperty(CSSPropertyID, RefPtrWillBeRawPtr<CSSValue>&, AnimationParseContext&);
+    PassRefPtrWillBeRawPtr<CSSValue> parseAnimationProperty(CSSPropertyID);
+    PassRefPtrWillBeRawPtr<CSSValueList> parseAnimationPropertyList(CSSPropertyID);
     bool parseTransitionShorthand(CSSPropertyID, bool important);
     bool parseAnimationShorthand(CSSPropertyID, bool important);
 

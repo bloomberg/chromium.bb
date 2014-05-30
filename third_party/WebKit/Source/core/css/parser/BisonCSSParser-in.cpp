@@ -921,7 +921,13 @@ PassRefPtrWillBeRawPtr<CSSValue> BisonCSSParser::parseAnimationTimingFunctionVal
     if (!parseValue(style.get(), CSSPropertyTransitionTimingFunction, string, false, HTMLStandardMode, 0))
         return nullptr;
 
-    return style->getPropertyCSSValue(CSSPropertyTransitionTimingFunction);
+    RefPtrWillBeRawPtr<CSSValue> value = style->getPropertyCSSValue(CSSPropertyTransitionTimingFunction);
+    if (!value || value->isInitialValue() || value->isInheritedValue())
+        return nullptr;
+    CSSValueList* valueList = toCSSValueList(value.get());
+    if (valueList->length() > 1)
+        return nullptr;
+    return valueList->item(0);
 }
 
 bool BisonCSSParser::parseValue(MutableStylePropertySet* declaration, CSSPropertyID propertyID, const String& string, bool important, const Document& document)

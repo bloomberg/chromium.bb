@@ -99,12 +99,8 @@ namespace WebCore {
 {
     CSS{{animation}}Data& data = state.style()->access{{animation}}s();
     data.{{vector}}.clear();
-    if (value->isValueList()) {
-        for (CSSValueListIterator i = value; i.hasMore(); i.advance())
-            data.{{vector}}.append(state.styleMap().mapAnimation{{attribute}}(i.value()));
-    } else {
-        data.{{vector}}.append(state.styleMap().mapAnimation{{attribute}}(value));
-    }
+    for (CSSValueListIterator i = value; i.hasMore(); i.advance())
+        data.{{vector}}.append(state.styleMap().mapAnimation{{attribute}}(i.value()));
 }
 {% endmacro %}
 {{apply_animation('CSSPropertyWebkitAnimationDelay', 'Delay', 'Animation')}}

@@ -89,9 +89,7 @@ void TimingInput::setPlaybackDirection(Timing& timing, const String& direction)
 
 void TimingInput::setTimingFunction(Timing& timing, const String& timingFunctionString)
 {
-    RefPtrWillBeRawPtr<CSSValue> timingFunctionValue = BisonCSSParser::parseAnimationTimingFunctionValue(timingFunctionString);
-
-    if (timingFunctionValue && !timingFunctionValue->isInitialValue())
+    if (RefPtrWillBeRawPtr<CSSValue> timingFunctionValue = BisonCSSParser::parseAnimationTimingFunctionValue(timingFunctionString))
         timing.timingFunction = CSSToStyleMap::mapAnimationTimingFunction(timingFunctionValue.get(), true);
     else
         timing.timingFunction = Timing::defaults().timingFunction;

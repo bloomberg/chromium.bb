@@ -123,39 +123,6 @@ static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> createPrimitiveValuePair(PassRe
     return cssValuePool().createValue(Pair::create(first, second, identicalValuesPolicy));
 }
 
-class AnimationParseContext {
-public:
-    AnimationParseContext()
-        : m_animationPropertyKeywordAllowed(true)
-        , m_firstAnimationCommitted(false)
-    {
-    }
-
-    void commitFirstAnimation()
-    {
-        m_firstAnimationCommitted = true;
-    }
-
-    bool hasCommittedFirstAnimation() const
-    {
-        return m_firstAnimationCommitted;
-    }
-
-    void commitAnimationPropertyKeyword()
-    {
-        m_animationPropertyKeywordAllowed = false;
-    }
-
-    bool animationPropertyKeywordAllowed() const
-    {
-        return m_animationPropertyKeywordAllowed;
-    }
-
-private:
-    bool m_animationPropertyKeywordAllowed;
-    bool m_firstAnimationCommitted;
-};
-
 CSSPropertyParser::CSSPropertyParser(OwnPtr<CSSParserValueList>& valueList,
     const CSSParserContext& context, bool inViewport, bool savedImportant,
     WillBeHeapVector<CSSProperty, 256>& parsedProperties,
@@ -1214,9 +1181,7 @@ bool CSSPropertyParser::parseValue(CSSPropertyID propId, bool important)
     case CSSPropertyWebkitTransitionDuration:
     case CSSPropertyWebkitTransitionTimingFunction:
     case CSSPropertyWebkitTransitionProperty: {
-        RefPtrWillBeRawPtr<CSSValue> val = nullptr;
-        AnimationParseContext context;
-        if (parseAnimationProperty(propId, val, context)) {
+        if (RefPtrWillBeRawPtr<CSSValueList> val = parseAnimationPropertyList(propId)) {
             addPropertyWithPrefixingVariant(propId, val.release(), important);
             return true;
         }
@@ -1840,21 +1805,19 @@ bool CSSPropertyParser::parseFillShorthand(CSSPropertyID propId, const CSSProper
     return true;
 }
 
-void CSSPropertyParser::addAnimationValue(RefPtrWillBeRawPtr<CSSValue>& lval, PassRefPtrWillBeRawPtr<CSSValue> rval)
+static bool isValidTransitionPropertyList(CSSValueList* value)
 {
-    if (lval) {
-        if (lval->isValueList())
-            toCSSValueList(lval.get())->append(rval);
-        else {
-            PassRefPtrWillBeRawPtr<CSSValue> oldVal(lval.release());
-            PassRefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createCommaSeparated();
-            list->append(oldVal);
-            list->append(rval);
-            lval = list;
-        }
+    if (value->length() < 2)
+        return true;
+    for (CSSValueListIterator i = value; i.hasMore(); i.advance()) {
+        // FIXME: Shorthand parsing shouldn't add initial to the list since it won't round-trip
+        if (i.value()->isInitialValue())
+            continue;
+        CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(i.value());
+        if (primitiveValue->isValueID() && primitiveValue->getValueID() == CSSValueNone)
+            return false;
     }
-    else
-        lval = rval;
+    return true;
 }
 
 bool CSSPropertyParser::parseAnimationShorthand(CSSPropertyID propId, bool important)
@@ -1871,38 +1834,32 @@ bool CSSPropertyParser::parseAnimationShorthand(CSSPropertyID propId, bool impor
     ShorthandScope scope(this, propId);
 
     bool parsedProperty[numProperties] = { false };
-    AnimationParseContext context;
-    RefPtrWillBeRawPtr<CSSValue> values[numProperties];
-#if ENABLE(OILPAN)
-    // Zero initialize the array of raw pointers.
-    memset(&values, 0, sizeof(values));
-#endif
+    RefPtrWillBeRawPtr<CSSValueList> values[numProperties];
+    for (size_t i = 0; i < numProperties; ++i)
+        values[i] = CSSValueList::createCommaSeparated();
 
-    unsigned i;
     while (m_valueList->current()) {
         CSSParserValue* val = m_valueList->current();
         if (val->unit == CSSParserValue::Operator && val->iValue == ',') {
-            // We hit the end.  Fill in all remaining values with the initial value.
+            // We hit the end. Fill in all remaining values with the initial value.
             m_valueList->next();
-            for (i = 0; i < numProperties; ++i) {
+            for (size_t i = 0; i < numProperties; ++i) {
                 if (!parsedProperty[i])
-                    addAnimationValue(values[i], cssValuePool().createImplicitInitialValue());
+                    values[i]->append(cssValuePool().createImplicitInitialValue());
                 parsedProperty[i] = false;
             }
             if (!m_valueList->current())
                 break;
-            context.commitFirstAnimation();
         }
 
         bool found = false;
-        for (i = 0; i < numProperties; ++i) {
-            if (!parsedProperty[i]) {
-                RefPtrWillBeRawPtr<CSSValue> val = nullptr;
-                if (parseAnimationProperty(animationProperties.properties()[i], val, context)) {
-                    parsedProperty[i] = found = true;
-                    addAnimationValue(values[i], val.release());
-                    break;
-                }
+        for (size_t i = 0; i < numProperties; ++i) {
+            if (parsedProperty[i])
+                continue;
+            if (RefPtrWillBeRawPtr<CSSValue> val = parseAnimationProperty(animationProperties.properties()[i])) {
+                parsedProperty[i] = found = true;
+                values[i]->append(val.release());
+                break;
             }
         }
 
@@ -1912,10 +1869,10 @@ bool CSSPropertyParser::parseAnimationShorthand(CSSPropertyID propId, bool impor
             return false;
     }
 
-    for (i = 0; i < numProperties; ++i) {
+    for (size_t i = 0; i < numProperties; ++i) {
         // If we didn't find the property, set an intial value.
         if (!parsedProperty[i])
-            addAnimationValue(values[i], cssValuePool().createImplicitInitialValue());
+            values[i]->append(cssValuePool().createImplicitInitialValue());
 
         if (RuntimeEnabledFeatures::cssAnimationUnprefixedEnabled())
             addPropertyWithPrefixingVariant(animationProperties.properties()[i], values[i].release(), important);
@@ -1935,41 +1892,32 @@ bool CSSPropertyParser::parseTransitionShorthand(CSSPropertyID propId, bool impo
     ShorthandScope scope(this, propId);
 
     bool parsedProperty[numProperties] = { false };
-    AnimationParseContext context;
-    RefPtrWillBeRawPtr<CSSValue> values[numProperties];
-#if ENABLE(OILPAN)
-    // Zero initialize the array of raw pointers.
-    memset(&values, 0, sizeof(values));
-#endif
+    RefPtrWillBeRawPtr<CSSValueList> values[numProperties];
+    for (size_t i = 0; i < numProperties; ++i)
+        values[i] = CSSValueList::createCommaSeparated();
 
-    unsigned i;
     while (m_valueList->current()) {
         CSSParserValue* val = m_valueList->current();
         if (val->unit == CSSParserValue::Operator && val->iValue == ',') {
             // We hit the end. Fill in all remaining values with the initial value.
             m_valueList->next();
-            for (i = 0; i < numProperties; ++i) {
+            for (size_t i = 0; i < numProperties; ++i) {
                 if (!parsedProperty[i])
-                    addAnimationValue(values[i], cssValuePool().createImplicitInitialValue());
+                    values[i]->append(cssValuePool().createImplicitInitialValue());
                 parsedProperty[i] = false;
             }
             if (!m_valueList->current())
                 break;
-            context.commitFirstAnimation();
         }
 
         bool found = false;
-        for (i = 0; !found && i < numProperties; ++i) {
-            if (!parsedProperty[i]) {
-                RefPtrWillBeRawPtr<CSSValue> val = nullptr;
-                if (parseAnimationProperty(shorthand.properties()[i], val, context)) {
-                    parsedProperty[i] = found = true;
-                    addAnimationValue(values[i], val.release());
-                }
-
-                // There are more values to process but 'none' or 'all' were already defined as the animation property, the declaration becomes invalid.
-                if (!context.animationPropertyKeywordAllowed() && context.hasCommittedFirstAnimation())
-                    return false;
+        for (size_t i = 0; i < numProperties; ++i) {
+            if (parsedProperty[i])
+                continue;
+            if (RefPtrWillBeRawPtr<CSSValue> val = parseAnimationProperty(shorthand.properties()[i])) {
+                parsedProperty[i] = found = true;
+                values[i]->append(val.release());
+                break;
             }
         }
 
@@ -1979,15 +1927,16 @@ bool CSSPropertyParser::parseTransitionShorthand(CSSPropertyID propId, bool impo
             return false;
     }
 
-    // Fill in any remaining properties with the initial value.
-    for (i = 0; i < numProperties; ++i) {
-        if (!parsedProperty[i])
-            addAnimationValue(values[i], cssValuePool().createImplicitInitialValue());
-    }
+    ASSERT(shorthand.properties()[0] == CSSPropertyTransitionProperty || shorthand.properties()[0] == CSSPropertyWebkitTransitionProperty);
+    if (!isValidTransitionPropertyList(values[0].get()))
+        return false;
 
-    // Now add all of the properties we found.
-    for (i = 0; i < numProperties; i++)
+    // Fill in any remaining properties with the initial value and add
+    for (size_t i = 0; i < numProperties; ++i) {
+        if (!parsedProperty[i])
+            values[i]->append(cssValuePool().createImplicitInitialValue());
         addPropertyWithPrefixingVariant(shorthand.properties()[i], values[i].release(), important);
+    }
 
     return true;
 }
@@ -3112,7 +3061,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseAnimationPlayState()
     return nullptr;
 }
 
-PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseAnimationProperty(AnimationParseContext& context)
+PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseAnimationProperty()
 {
     CSSParserValue* value = m_valueList->current();
     if (value->unit != CSSPrimitiveValue::CSS_IDENT)
@@ -3122,10 +3071,8 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseAnimationProperty(Anima
         return cssValuePool().createIdentifierValue(result);
     if (equalIgnoringCase(value, "all"))
         return cssValuePool().createIdentifierValue(CSSValueAll);
-    if (equalIgnoringCase(value, "none")) {
-        context.commitAnimationPropertyKeyword();
+    if (equalIgnoringCase(value, "none"))
         return cssValuePool().createIdentifierValue(CSSValueNone);
-    }
     return nullptr;
 }
 
@@ -3245,123 +3192,81 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseAnimationTimingFunction
     return nullptr;
 }
 
-bool CSSPropertyParser::parseAnimationProperty(CSSPropertyID propId, RefPtrWillBeRawPtr<CSSValue>& result, AnimationParseContext& context)
+PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseAnimationProperty(CSSPropertyID propId)
 {
-    RefPtrWillBeRawPtr<CSSValueList> values = nullptr;
-    CSSParserValue* val;
     RefPtrWillBeRawPtr<CSSValue> value = nullptr;
-    bool allowComma = false;
+    switch (propId) {
+    case CSSPropertyAnimationDelay:
+    case CSSPropertyWebkitAnimationDelay:
+    case CSSPropertyTransitionDelay:
+    case CSSPropertyWebkitTransitionDelay:
+        value = parseAnimationDelay();
+        break;
+    case CSSPropertyAnimationDirection:
+    case CSSPropertyWebkitAnimationDirection:
+        value = parseAnimationDirection();
+        break;
+    case CSSPropertyAnimationDuration:
+    case CSSPropertyWebkitAnimationDuration:
+    case CSSPropertyTransitionDuration:
+    case CSSPropertyWebkitTransitionDuration:
+        value = parseAnimationDuration();
+        break;
+    case CSSPropertyAnimationFillMode:
+    case CSSPropertyWebkitAnimationFillMode:
+        value = parseAnimationFillMode();
+        break;
+    case CSSPropertyAnimationIterationCount:
+    case CSSPropertyWebkitAnimationIterationCount:
+        value = parseAnimationIterationCount();
+        break;
+    case CSSPropertyAnimationName:
+    case CSSPropertyWebkitAnimationName:
+        value = parseAnimationName();
+        break;
+    case CSSPropertyAnimationPlayState:
+    case CSSPropertyWebkitAnimationPlayState:
+        value = parseAnimationPlayState();
+        break;
+    case CSSPropertyTransitionProperty:
+    case CSSPropertyWebkitTransitionProperty:
+        value = parseAnimationProperty();
+        break;
+    case CSSPropertyAnimationTimingFunction:
+    case CSSPropertyWebkitAnimationTimingFunction:
+    case CSSPropertyTransitionTimingFunction:
+    case CSSPropertyWebkitTransitionTimingFunction:
+        value = parseAnimationTimingFunction();
+        break;
+    default:
+        ASSERT_NOT_REACHED();
+        return nullptr;
+    }
 
-    result = nullptr;
+    if (value)
+        m_valueList->next();
+    return value.release();
+}
 
-    while ((val = m_valueList->current())) {
-        RefPtrWillBeRawPtr<CSSValue> currValue = nullptr;
-        if (allowComma) {
-            if (!isComma(val))
-                return false;
+PassRefPtrWillBeRawPtr<CSSValueList> CSSPropertyParser::parseAnimationPropertyList(CSSPropertyID propId)
+{
+    RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createCommaSeparated();
+    while (m_valueList->current()) {
+        RefPtrWillBeRawPtr<CSSValue> value = parseAnimationProperty(propId);
+        if (!value)
+            return nullptr;
+        list->append(value.release());
+        if (CSSParserValue* parserValue = m_valueList->current()) {
+            if (!isComma(parserValue))
+                return nullptr;
             m_valueList->next();
-            allowComma = false;
+            ASSERT(m_valueList->current());
         }
-        else {
-            switch (propId) {
-                case CSSPropertyAnimationDelay:
-                case CSSPropertyWebkitAnimationDelay:
-                case CSSPropertyTransitionDelay:
-                case CSSPropertyWebkitTransitionDelay:
-                    currValue = parseAnimationDelay();
-                    if (currValue)
-                        m_valueList->next();
-                    break;
-                case CSSPropertyAnimationDirection:
-                case CSSPropertyWebkitAnimationDirection:
-                    currValue = parseAnimationDirection();
-                    if (currValue)
-                        m_valueList->next();
-                    break;
-                case CSSPropertyAnimationDuration:
-                case CSSPropertyWebkitAnimationDuration:
-                case CSSPropertyTransitionDuration:
-                case CSSPropertyWebkitTransitionDuration:
-                    currValue = parseAnimationDuration();
-                    if (currValue)
-                        m_valueList->next();
-                    break;
-                case CSSPropertyAnimationFillMode:
-                case CSSPropertyWebkitAnimationFillMode:
-                    currValue = parseAnimationFillMode();
-                    if (currValue)
-                        m_valueList->next();
-                    break;
-                case CSSPropertyAnimationIterationCount:
-                case CSSPropertyWebkitAnimationIterationCount:
-                    currValue = parseAnimationIterationCount();
-                    if (currValue)
-                        m_valueList->next();
-                    break;
-                case CSSPropertyAnimationName:
-                case CSSPropertyWebkitAnimationName:
-                    currValue = parseAnimationName();
-                    if (currValue)
-                        m_valueList->next();
-                    break;
-                case CSSPropertyAnimationPlayState:
-                case CSSPropertyWebkitAnimationPlayState:
-                    currValue = parseAnimationPlayState();
-                    if (currValue)
-                        m_valueList->next();
-                    break;
-                case CSSPropertyTransitionProperty:
-                case CSSPropertyWebkitTransitionProperty:
-                    currValue = parseAnimationProperty(context);
-                    if (value && !context.animationPropertyKeywordAllowed())
-                        return false;
-                    if (currValue)
-                        m_valueList->next();
-                    break;
-                case CSSPropertyAnimationTimingFunction:
-                case CSSPropertyWebkitAnimationTimingFunction:
-                case CSSPropertyTransitionTimingFunction:
-                case CSSPropertyWebkitTransitionTimingFunction:
-                    currValue = parseAnimationTimingFunction();
-                    if (currValue)
-                        m_valueList->next();
-                    break;
-                default:
-                    ASSERT_NOT_REACHED();
-                    return false;
-            }
-
-            if (!currValue)
-                return false;
-
-            if (value && !values) {
-                values = CSSValueList::createCommaSeparated();
-                values->append(value.release());
-            }
-
-            if (values)
-                values->append(currValue.release());
-            else
-                value = currValue.release();
-
-            allowComma = true;
-        }
-
-        // When parsing the 'transition' shorthand property, we let it handle building up the lists for all
-        // properties.
-        if (inShorthand())
-            break;
     }
-
-    if (values && values->length()) {
-        result = values.release();
-        return true;
-    }
-    if (value) {
-        result = value.release();
-        return true;
-    }
-    return false;
+    if ((propId == CSSPropertyTransitionProperty || propId == CSSPropertyWebkitTransitionProperty) && !isValidTransitionPropertyList(list.get()))
+        return nullptr;
+    ASSERT(list->length());
+    return list.release();
 }
 
 static inline bool isCSSWideKeyword(CSSParserValue& value)
