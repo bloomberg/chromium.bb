@@ -5,6 +5,7 @@
 {
   'targets': [
     {
+      # GN version: //webkit:resources
       'target_name': 'webkit_resources',
       'type': 'none',
       'variables': {
@@ -32,6 +33,7 @@
       },
     },
     {
+      # GN version: //webkit:strings
       'target_name': 'webkit_strings',
       'type': 'none',
       'variables': {

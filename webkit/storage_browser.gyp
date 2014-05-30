@@ -8,6 +8,7 @@
   },
   'targets': [
     {
+      # GN version: //webkit/browser:storage
       'target_name': 'webkit_storage_browser',
       'type': '<(component)',
       'variables': { 'enable_wexit_time_destructors': 1, },
@@ -226,6 +227,7 @@
       ],
     },
     {
+      # GN version: //webkit/browser:dump_file_system
       'target_name': 'dump_file_system',
       'type': 'executable',
       'sources': [
