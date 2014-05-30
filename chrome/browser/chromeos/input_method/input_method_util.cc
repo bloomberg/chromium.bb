@@ -874,26 +874,32 @@ void InputMethodUtil::ReloadInternalMaps() {
   language_code_to_ids_.clear();
   id_to_language_code_.clear();
   id_to_descriptor_.clear();
-  xkb_id_to_descriptor_.clear();
 
   for (size_t i = 0; i < supported_input_methods_->size(); ++i) {
-    const InputMethodDescriptor& input_method =
-        supported_input_methods_->at(i);
+    const InputMethodDescriptor& input_method = supported_input_methods_->at(i);
+    const std::string input_method_id =
+        extension_ime_util::GetInputMethodIDByKeyboardLayout(input_method.id());
     const std::vector<std::string>& language_codes =
         input_method.language_codes();
+
+    // |input_method_id| may be different than input_method.id().
+    id_to_descriptor_.insert(
+        std::make_pair(input_method_id,
+                       InputMethodDescriptor(input_method_id,
+                                             input_method.name(),
+                                             input_method.indicator(),
+                                             input_method.keyboard_layouts(),
+                                             input_method.language_codes(),
+                                             input_method.is_login_keyboard(),
+                                             input_method.options_page_url(),
+                                             input_method.input_view_url())));
+
     for (size_t i = 0; i < language_codes.size(); ++i) {
       language_code_to_ids_.insert(
-          std::make_pair(language_codes[i], input_method.id()));
+          std::make_pair(language_codes[i], input_method_id));
       // Remember the pairs.
       id_to_language_code_.insert(
-          std::make_pair(input_method.id(), language_codes[i]));
-    }
-    id_to_descriptor_.insert(
-        std::make_pair(input_method.id(), input_method));
-    if (IsKeyboardLayout(input_method.id())) {
-      xkb_id_to_descriptor_.insert(
-          std::make_pair(input_method.GetPreferredKeyboardLayout(),
-                         input_method));
+          std::make_pair(input_method_id, language_codes[i]));
     }
   }
 }

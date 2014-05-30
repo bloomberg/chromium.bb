@@ -184,15 +184,12 @@ class InputMethodUtil {
   // Map from input method ID to associated input method descriptor.
   typedef std::map<
     std::string, InputMethodDescriptor> InputMethodIdToDescriptorMap;
-  // Map from XKB layout ID to associated input method descriptor.
-  typedef std::map<std::string, InputMethodDescriptor> XkbIdToDescriptorMap;
   // Map from component extention IME id to associated input method descriptor.
   typedef std::map<std::string, InputMethodDescriptor> ComponentExtIMEMap;
 
   LanguageCodeToIdsMap language_code_to_ids_;
   std::map<std::string, std::string> id_to_language_code_;
   InputMethodIdToDescriptorMap id_to_descriptor_;
-  XkbIdToDescriptorMap xkb_id_to_descriptor_;
   std::map<std::string, std::string> xkb_layout_to_indicator_;
 
   typedef base::hash_map<std::string, int> HashType;
