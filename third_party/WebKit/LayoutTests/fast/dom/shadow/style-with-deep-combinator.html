@@ -172,27 +172,6 @@ borderColorShouldBe('host//target', 'rgb(0, 0, 0)');
 
 cleanUp();
 
-// .foo /deep/ span, .foo is an ancestor of some shadow host which has span in its hosting shadow tree, should match.
-sandbox.appendChild(
-    createDOM('div', {'id': 'host'},
-        createShadowRoot(
-            createDOM('style', {},
-                document.createTextNode('.foo /deep/ span { border: 1px solid green; }')),
-            createDOM('span', {},
-                document.createTextNode('some text'))),
-        createShadowRoot(
-            createDOM('shadow', {}),
-            createDOM('div', {'class': 'foo'},
-                createDOM('div', {'id': 'host2'},
-                    createShadowRoot(
-                        createDOM('span', {'id': 'target'},
-                            document.createTextNode('green border'))))))));
-
-borderColorShouldBe('host//host2/target', 'rgb(0, 128, 0)');
-
-cleanUp();
-
-
 // :host div /deep/ div should match.
 
 sandbox.appendChild(
@@ -333,25 +312,6 @@ borderColorShouldBe('host/host2/host3/target', 'rgb(0, 0, 0)');
 
 cleanUp();
 
-// div /deep/ span in a sibling shadow tree can match.
-sandbox.appendChild(
-    createDOM('div', {'id': 'host'},
-        createShadowRoot(
-            createDOM('style', {},
-                document.createTextNode('div /deep/ span { border: 1px solid green; }')),
-            createDOM('span', {},
-                document.createTextNode('some text'))),
-        createShadowRoot(
-            createDOM('shadow', {}),
-            createDOM('div', {'id': 'host2'},
-                createShadowRoot(
-                    createDOM('span', {'id': 'target'},
-                        document.createTextNode('green border')))))));
-
-borderColorShouldBe('host//host2/target', 'rgb(0, 128, 0)');
-
-cleanUp();
-
 // :host /deep/ * should not match desendant nodes of div#host.
 sandbox.appendChild(
     createDOM('div', {'id': 'host'},
@@ -422,4 +382,3 @@ cleanUp();
 
 </script>
 </html>
-

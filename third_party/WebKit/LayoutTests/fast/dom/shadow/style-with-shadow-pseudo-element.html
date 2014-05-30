@@ -204,26 +204,6 @@ borderColorShouldBe('host//target', 'rgb(0, 0, 0)');
 
 cleanUp();
 
-
-// div::shadow span can match [div -- sr -- span] in its sibling shadow tree.
-sandbox.appendChild(
-    createDOM('div', {'id': 'host'},
-        createShadowRoot(
-            createDOM('style', {},
-                document.createTextNode('div::shadow span { border: 1px solid green; }')),
-            createDOM('span', {},
-                document.createTextNode('some text'))),
-        createShadowRoot(
-            createDOM('shadow', {}),
-            createDOM('div', {'id': 'host2'},
-                createShadowRoot(
-                    createDOM('span', {'id': 'target'},
-                        document.createTextNode('green border')))))));
-
-borderColorShouldBe('host//host2/target', 'rgb(0, 128, 0)');
-
-cleanUp();
-
 // :host div::shadow div should match.
 sandbox.appendChild(
     createDOM('div', {'id': 'host'},
@@ -306,24 +286,6 @@ borderColorShouldBe('host/host2/target', 'rgb(0, 0, 0)');
 
 cleanUp();
 
-// div::shadow span in an insert shadow tree cannot match any element in active shadow tree.
-sandbox.appendChild(
-    createDOM('div', {'id': 'host'},
-        createShadowRoot(
-            createDOM('style', {},
-                document.createTextNode('div::shadow span { border: 1px solid green; }')),
-            createDOM('span', {},
-                document.createTextNode('some text'))),
-        createShadowRoot(
-            createDOM('div', {'id': 'host2'},
-                createShadowRoot(
-                    createDOM('span', {'id': 'target'},
-                        document.createTextNode('green border')))))));
-
-borderColorShouldBe('host//host2/target', 'rgb(0, 128, 0)');
-
-cleanUp();
-
 sandbox.appendChild(
     createDOM('div', {'id': 'host'},
         createShadowRoot(
@@ -345,4 +307,3 @@ cleanUp();
 
 </script>
 </html>
-

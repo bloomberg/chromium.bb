@@ -19,13 +19,11 @@ PASS borderColorOf(getNodeInTreeOfTrees("host/target")) is "rgb(0, 128, 0)"
 PASS borderColorOf(getNodeInTreeOfTrees("host/target")) is "rgb(0, 128, 0)"
 PASS borderColorOf(getNodeInTreeOfTrees("host//target")) is "rgb(0, 128, 0)"
 PASS borderColorOf(getNodeInTreeOfTrees("host//target")) is "rgb(0, 0, 0)"
-PASS borderColorOf(getNodeInTreeOfTrees("host//host2/target")) is "rgb(0, 128, 0)"
 PASS borderColorOf(getNodeInTreeOfTrees("host/host2/target")) is "rgb(0, 128, 0)"
 PASS borderColorOf(getNodeInTreeOfTrees("host/target")) is "rgb(0, 0, 0)"
 PASS borderColorOf(getNodeInTreeOfTrees("host/host2/target")) is "rgb(0, 0, 0)"
 PASS borderColorOf(getNodeInTreeOfTrees("host/host2/target")) is "rgb(0, 128, 0)"
 PASS borderColorOf(getNodeInTreeOfTrees("host/host2/target")) is "rgb(0, 0, 0)"
-PASS borderColorOf(getNodeInTreeOfTrees("host//host2/target")) is "rgb(0, 128, 0)"
 PASS borderColorOf(getNodeInTreeOfTrees("host/x-bar-host/x-zot-host/x-zot-target")) is not "rgb(255, 0, 0)"
 PASS successfullyParsed is true
 
