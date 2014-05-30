@@ -8,7 +8,7 @@
 #include <string>
 
 #include "ash/accelerators/accelerator_controller.h"
-#include "ash/accelerators/accelerator_filter.h"
+#include "ash/accelerators/accelerator_delegate.h"
 #include "ash/accelerators/focus_manager_factory.h"
 #include "ash/accelerators/nested_accelerator_delegate.h"
 #include "ash/accelerometer/accelerometer_controller.h"
@@ -105,6 +105,7 @@
 #include "ui/views/focus/focus_manager_factory.h"
 #include "ui/views/widget/native_widget_aura.h"
 #include "ui/views/widget/widget.h"
+#include "ui/wm/core/accelerator_filter.h"
 #include "ui/wm/core/compound_event_filter.h"
 #include "ui/wm/core/focus_controller.h"
 #include "ui/wm/core/input_method_event_filter.h"
@@ -922,7 +923,8 @@ void Shell::Init(const ShellInitParams& init_params) {
       root_window->GetHost()->GetAcceleratedWidget()));
   AddPreTargetHandler(input_method_filter_.get());
 
-  accelerator_filter_.reset(new AcceleratorFilter);
+  accelerator_filter_.reset(new ::wm::AcceleratorFilter(
+      scoped_ptr< ::wm::AcceleratorDelegate>(new AcceleratorDelegate).Pass()));
   AddPreTargetHandler(accelerator_filter_.get());
 
   event_transformation_handler_.reset(new EventTransformationHandler);

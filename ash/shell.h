@@ -62,6 +62,7 @@ class TooltipController;
 }
 
 namespace wm {
+class AcceleratorFilter;
 class CompoundEventFilter;
 class InputMethodEventFilter;
 class NestedAcceleratorController;
@@ -75,7 +76,6 @@ namespace ash {
 
 class AcceleratorController;
 class AccelerometerController;
-class AcceleratorFilter;
 class AccessibilityDelegate;
 class AppListController;
 class AshNativeCursorManager;
@@ -693,7 +693,7 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   scoped_ptr<SystemGestureEventFilter> system_gesture_filter_;
 
   // An event filter that pre-handles global accelerators.
-  scoped_ptr<AcceleratorFilter> accelerator_filter_;
+  scoped_ptr< ::wm::AcceleratorFilter> accelerator_filter_;
 
   // An event filter that pre-handles all key events to send them to an IME.
   scoped_ptr< ::wm::InputMethodEventFilter> input_method_filter_;

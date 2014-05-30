@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/accelerators/accelerator_filter.h"
+#include "ui/wm/core/accelerator_filter.h"
 
 #include "ash/accelerators/accelerator_controller.h"
+#include "ash/accelerators/accelerator_delegate.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/test/ash_test_base.h"
@@ -86,7 +87,8 @@ TEST_F(AcceleratorFilterTest, TestCapsLockMask) {
 // Tests if special hardware keys like brightness and volume are consumed as
 // expected by the shell.
 TEST_F(AcceleratorFilterTest, CanConsumeSystemKeys) {
-  AcceleratorFilter filter;
+  ::wm::AcceleratorFilter filter(
+      scoped_ptr< ::wm::AcceleratorDelegate>(new AcceleratorDelegate).Pass());
 
   // Normal keys are not consumed.
   ui::KeyEvent press_a(ui::ET_KEY_PRESSED, ui::VKEY_A, ui::EF_NONE, false);
