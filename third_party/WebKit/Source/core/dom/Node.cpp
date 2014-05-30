@@ -117,7 +117,11 @@ void Node::operator delete(void* ptr)
 #endif
 
 #if DUMP_NODE_STATISTICS
-static HashSet<Node*> liveNodeSet;
+static HashSet<Node*>& liveNodeSet()
+{
+    DEFINE_STATIC_LOCAL(HashSet<Node*>, s_liveNodeSet, ());
+    return s_liveNodeSet;
+}
 #endif
 
 void Node::dumpStatistics()
@@ -139,12 +143,11 @@ void Node::dumpStatistics()
     HashMap<String, size_t> perTagCount;
 
     size_t attributes = 0;
-    size_t attributesWithAttr = 0;
     size_t elementsWithAttributeStorage = 0;
     size_t elementsWithRareData = 0;
     size_t elementsWithNamedNodeMap = 0;
 
-    for (HashSet<Node*>::iterator it = liveNodeSet.begin(); it != liveNodeSet.end(); ++it) {
+    for (HashSet<Node*>::iterator it = liveNodeSet().begin(); it != liveNodeSet().end(); ++it) {
         Node* node = *it;
 
         if (node->hasRareData()) {
@@ -166,14 +169,9 @@ void Node::dumpStatistics()
                 if (!result.isNewEntry)
                     result.storedValue->value++;
 
-                if (ElementData* elementData = element->elementData()) {
+                if (const ElementData* elementData = element->elementData()) {
                     attributes += elementData->length();
                     ++elementsWithAttributeStorage;
-                    for (unsigned i = 0; i < elementData->length(); ++i) {
-                        Attribute* attr = elementData->attributeItem(i);
-                        if (attr->attr())
-                            ++attributesWithAttr;
-                    }
                 }
                 break;
             }
@@ -215,7 +213,7 @@ void Node::dumpStatistics()
         }
     }
 
-    printf("Number of Nodes: %d\n\n", liveNodeSet.size());
+    printf("Number of Nodes: %d\n\n", liveNodeSet().size());
     printf("Number of Nodes with RareData: %zu\n\n", nodesWithRareData);
 
     printf("NodeType distribution:\n");
@@ -236,7 +234,6 @@ void Node::dumpStatistics()
 
     printf("Attributes:\n");
     printf("  Number of Attributes (non-Node and Node): %zu [%zu]\n", attributes, sizeof(Attribute));
-    printf("  Number of Attributes with an Attr: %zu\n", attributesWithAttr);
     printf("  Number of Elements with attribute storage: %zu [%zu]\n", elementsWithAttributeStorage, sizeof(ElementData));
     printf("  Number of Elements with RareData: %zu\n", elementsWithRareData);
     printf("  Number of Elements with NamedNodeMap: %zu [%zu]\n", elementsWithNamedNodeMap, sizeof(NamedNodeMap));
@@ -252,7 +249,7 @@ void Node::trackForDebugging()
 #endif
 
 #if DUMP_NODE_STATISTICS
-    liveNodeSet.add(this);
+    liveNodeSet().add(this);
 #endif
 }
 
@@ -263,7 +260,7 @@ Node::~Node()
 #endif
 
 #if DUMP_NODE_STATISTICS
-    liveNodeSet.remove(this);
+    liveNodeSet().remove(this);
 #endif
 
 #if !ENABLE(OILPAN)
