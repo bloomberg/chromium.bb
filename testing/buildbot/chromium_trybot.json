@@ -72,7 +72,7 @@
     },
     {
       "test": "mojo_view_manager_unittests",
-      "platforms": ["linux"]
+      "platforms": ["linux", "win"]
     },
     {
       "test": "sandbox_linux_unittests",
