@@ -501,12 +501,7 @@ void WizardController::SkipToLoginForTesting(
   VLOG(1) << "SkipToLoginForTesting.";
   StartupUtils::MarkEulaAccepted();
   PerformPostEulaActions();
-  PerformOOBECompletedActions();
-  if (ShouldAutoStartEnrollment()) {
-    ShowEnrollmentScreen();
-  } else {
-    ShowLoginScreen(context);
-  }
+  OnOOBECompleted();
 }
 
 void WizardController::AddObserver(Observer* observer) {
