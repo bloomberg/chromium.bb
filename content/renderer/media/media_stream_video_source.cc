@@ -49,11 +49,6 @@ namespace {
 // are unknown.
 const char kGooglePrefix[] = "goog";
 
-// MediaStreamVideoSource supports cropping of video frames but only up to
-// kMaxCropFactor. Ie - if a constraint is set to maxHeight 360, an original
-// input frame height of max 360 * kMaxCropFactor pixels is accepted.
-const int kMaxCropFactor = 2;
-
 // Returns true if |constraint| has mandatory constraints.
 bool HasMandatoryConstraints(const blink::WebMediaConstraints& constraints) {
   blink::WebVector<blink::WebMediaConstraint> mandatory_constraints;
@@ -171,11 +166,11 @@ bool UpdateFormatForConstraint(
   if (constraint_name == MediaStreamVideoSource::kMinWidth) {
     return (value <= format->frame_size.width());
   } else if (constraint_name == MediaStreamVideoSource::kMaxWidth) {
-    return (value * kMaxCropFactor >= format->frame_size.width());
+    return value > 0;
   } else if (constraint_name == MediaStreamVideoSource::kMinHeight) {
     return (value <= format->frame_size.height());
   } else if (constraint_name == MediaStreamVideoSource::kMaxHeight) {
-     return (value * kMaxCropFactor >= format->frame_size.height());
+     return value > 0;
   } else if (constraint_name == MediaStreamVideoSource::kMinFrameRate) {
     return (value <= format->frame_rate);
   } else if (constraint_name == MediaStreamVideoSource::kMaxFrameRate) {
