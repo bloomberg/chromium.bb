@@ -32,6 +32,8 @@ struct URLVisitedDetails : public HistoryDetails {
   // C, then redirects[0]=B and redirects[1]=A.  If there are no redirects,
   // this will be an empty vector.
   history::RedirectList redirects;
+
+  base::Time visit_time;
 };
 
 // Details for NOTIFICATION_HISTORY_TYPED_URLS_MODIFIED.
