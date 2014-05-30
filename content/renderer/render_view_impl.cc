@@ -1885,21 +1885,6 @@ bool RenderViewImpl::isPointerLocked() {
       webwidget_mouse_lock_target_.get());
 }
 
-void RenderViewImpl::didActivateCompositor() {
-#if !defined(OS_MACOSX)  // many events are unhandled - http://crbug.com/138003
-  RenderThreadImpl* render_thread = RenderThreadImpl::current();
-  // render_thread may be NULL in tests.
-  InputHandlerManager* input_handler_manager =
-      render_thread ? render_thread->input_handler_manager() : NULL;
-  if (input_handler_manager) {
-     input_handler_manager->AddInputHandler(
-        routing_id_,
-        compositor_->GetInputHandler(),
-        AsWeakPtr());
-  }
-#endif
-}
-
 void RenderViewImpl::didHandleGestureEvent(
     const WebGestureEvent& event,
     bool event_cancelled) {
@@ -1918,9 +1903,21 @@ void RenderViewImpl::didHandleGestureEvent(
 void RenderViewImpl::initializeLayerTreeView() {
   RenderWidget::initializeLayerTreeView();
   RenderWidgetCompositor* rwc = compositor();
-  if (!rwc || !webview() || !webview()->devToolsAgent())
+  if (!rwc)
     return;
-  webview()->devToolsAgent()->setLayerTreeId(rwc->GetLayerTreeId());
+  if (webview() && webview()->devToolsAgent())
+    webview()->devToolsAgent()->setLayerTreeId(rwc->GetLayerTreeId());
+
+#if !defined(OS_MACOSX)  // many events are unhandled - http://crbug.com/138003
+  RenderThreadImpl* render_thread = RenderThreadImpl::current();
+  // render_thread may be NULL in tests.
+  InputHandlerManager* input_handler_manager =
+      render_thread ? render_thread->input_handler_manager() : NULL;
+  if (input_handler_manager) {
+    input_handler_manager->AddInputHandler(
+        routing_id_, rwc->GetInputHandler(), AsWeakPtr());
+  }
+#endif
 }
 
 // blink::WebFrameClient -----------------------------------------------------
