@@ -86,6 +86,7 @@ TEST(DriveBackendCallbackHelperTest, RunOnOtherThreadTest) {
   EXPECT_TRUE(called);
 
   thread.Stop();
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST(DriveBackendCallbackHelperTest, PassNullFunctionTest) {

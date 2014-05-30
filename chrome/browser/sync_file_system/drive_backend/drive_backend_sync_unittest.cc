@@ -131,6 +131,7 @@ class DriveBackendSyncTest : public testing::Test,
     fake_drive_service_helper_.reset();
     remote_sync_service_.reset();
 
+    content::BrowserThread::GetBlockingPool()->FlushForTesting();
     base::RunLoop().RunUntilIdle();
     RevokeSyncableFileSystem();
   }
