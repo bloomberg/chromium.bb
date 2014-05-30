@@ -54,7 +54,6 @@ private:
     BLINK_EXPORT void reset();
 
     WebPrivateOwnPtr<WebGeolocationPermissionRequestManagerPrivate> m_private;
-    int m_lastId;
 };
 
 }

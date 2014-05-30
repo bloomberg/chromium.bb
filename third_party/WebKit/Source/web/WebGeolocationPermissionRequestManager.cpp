@@ -46,7 +46,8 @@ int WebGeolocationPermissionRequestManager::add(const blink::WebGeolocationPermi
 {
     Geolocation* geolocation = permissionRequest.geolocation();
     ASSERT(!m_private->m_geolocationIdMap.contains(geolocation));
-    int id = ++m_lastId;
+    static int lastId;
+    int id = ++lastId;
     m_private->m_geolocationIdMap.add(geolocation, id);
     m_private->m_idGeolocationMap.add(id, geolocation);
     return id;
@@ -78,7 +79,6 @@ bool WebGeolocationPermissionRequestManager::remove(int id, blink::WebGeolocatio
 
 void WebGeolocationPermissionRequestManager::init()
 {
-    m_lastId = 0;
     m_private.reset(new WebGeolocationPermissionRequestManagerPrivate);
 }
 
