@@ -57,9 +57,11 @@ _WEBRTC_ISOLATE_FILE_PATHS = {
       'system_wrappers/source/system_wrappers_unittests.isolate',
     'test_support_unittests': 'test/test_support_unittests.isolate',
     'tools_unittests': 'tools/tools_unittests.isolate',
+    'video_engine_tests': 'video_engine_tests.isolate',
     'video_engine_core_unittests':
       'video_engine/video_engine_core_unittests.isolate',
     'voice_engine_unittests': 'voice_engine/voice_engine_unittests.isolate',
+    'webrtc_perf_tests': 'webrtc_perf_tests.isolate',
 }
 
 # Append the WebRTC tests with the full path from Chromium's src/ root.
