@@ -1,39 +1,38 @@
-<!DOCTYPE HTML>
-<html>
-<!-- Test that svg bounding boxes are valid for a zero-width or zero-height ellipse -->
-    <head>
-        <script type="text/javascript">
-            function checkBoundingBoxHasZeroValue() {
-                if (window.testRunner)
-                    window.testRunner.dumpAsText();
-                var ellipse1 = document.getElementById('ellipse1').getBBox();
-                var ellipse2 = document.getElementById('ellipse2').getBBox();
-                var ellipse3 = document.getElementById('ellipse3').getBBox();
-                var ellipse4 = document.getElementById('ellipse4').getBBox();
-                var results = "FAIL";
-                if (ellipse1.height == 100 &&
-                    ellipse1.width  == 0 &&
-                    ellipse2.height == 0 &&
-                    ellipse2.width  == 100 &&
-                    ellipse3.height == 100 &&
-                    ellipse3.width  == 0 &&
-                    ellipse4.height == 0 &&
-                    ellipse4.width  == 100)
-                    results = "PASS";
-                document.body.innerHTML = results + ", bounding boxes sizes are (" +
-                    ellipse1.width + ", " + ellipse1.height + "), (" +
-                    ellipse2.width + ", " + ellipse2.height + "), (" +
-                    ellipse3.width + ", " + ellipse3.height + ") and (" +
-                    ellipse4.width + ", " + ellipse4.height + ")";
-            }
-        </script>
-    </head>
-    <body onload="checkBoundingBoxHasZeroValue()">
-        <svg>
-            <ellipse id="ellipse1" cx="50" cy="100" rx="0"  ry="50"/>
-            <ellipse id="ellipse2" cx="50" cy="100" rx="50" ry="0"/>
-            <ellipse id="ellipse3" vector-effect="non-scaling-stroke" cx="50" cy="100" rx="0"  ry="50"/>
-            <ellipse id="ellipse4" vector-effect="non-scaling-stroke" cx="50" cy="100" rx="50" ry="0"/>
-        </svg>
-    <body>
-</html>
+<!DOCTYPE html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<title>SVG bounding boxes are valid for a zero-rx or zero-ry ellipse</title>
+<svg height="0">
+  <ellipse cx="50" cy="100" rx="0"  ry="50"/>
+  <ellipse cx="50" cy="100" rx="50" ry="0"/>
+  <ellipse vector-effect="non-scaling-stroke" cx="50" cy="100" rx="0"  ry="50"/>
+  <ellipse vector-effect="non-scaling-stroke" cx="50" cy="100" rx="50" ry="0"/>
+</svg>
+<script>
+BBox = function(x,y,w,h) {
+  this.x = x;
+  this.y = y;
+  this.width = w;
+  this.height = h;
+};
+BBox.prototype.toString = function() {
+  return this.x + "," + this.y + "," + this.width + "," + this.height;
+};
+// The order of expected sizes should equal the document order of the rects.
+var expectedBoxes = [
+  new BBox(50, 50, 0, 100),
+  new BBox(0, 100, 100, 0),
+  new BBox(50, 50, 0, 100),
+  new BBox(0, 100, 100, 0),
+];
+var ellipses = document.getElementsByTagName('ellipse');
+for (var i = 0, length = ellipses.length; i < length; ++i) {
+     var ellipseBBox = ellipses[i].getBBox();
+     test(function() {
+         assert_equals(ellipseBBox.x, expectedBoxes[i].x);
+         assert_equals(ellipseBBox.y, expectedBoxes[i].y);
+         assert_equals(ellipseBBox.width, expectedBoxes[i].width);
+         assert_equals(ellipseBBox.height, expectedBoxes[i].height);
+     }, 'Bounding box size ' + expectedBoxes[i]);
+}
+</script>

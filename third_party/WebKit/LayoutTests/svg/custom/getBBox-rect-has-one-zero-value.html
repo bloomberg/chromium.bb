@@ -1,41 +1,70 @@
-<!DOCTYPE HTML>
-<html>
-<!-- Test that svg bounding boxes are valid for a zero-width or zero-height rect -->
-    <head>
-        <script type="text/javascript">
-            function checkBoundingBoxHasZeroValue() {
-                if (window.testRunner)
-                    window.testRunner.dumpAsText();
-                var rectBox1 = document.getElementById('rect1').getBBox();
-		var rectBox2 = document.getElementById('rect2').getBBox();
-		var rectBox3 = document.getElementById('rect3').getBBox();
-		var rectBox4 = document.getElementById('rect4').getBBox();
-                var results = "FAIL";
-                if (rectBox1.height == 100 && rectBox1.width == 0 &&
-                    rectBox2.height == 0   && rectBox2.width == 100 &&
-                    rectBox3.height == 100 && rectBox3.width == 0 &&
-                    rectBox4.height == 0   && rectBox4.width == 100)
-                    results = "PASS";
-                document.body.innerHTML = results + ", bounding box sizes are (" +
-                    rectBox1.width + ", " + rectBox1.height + "), (" +
-                    rectBox2.width + ", " + rectBox2.height + "), (" +
-                    rectBox3.width + ", " + rectBox3.height + ") and (" +
-                    rectBox4.width + ", " + rectBox4.height + ")";
-            }
-        </script>
-    </head>
-    <body onload="checkBoundingBoxHasZeroValue()">
-        <svg>
-            <rect id="rect1" height="100" width="0"/>
-        </svg>
-	<svg>
-            <rect id="rect2" height="0" width="100"/>
-	</svg>
-	<svg>
-            <rect id="rect3" vector-effect="non-scaling-stroke" height="100" width="0"/>
-	</svg>
-	<svg>
-            <rect id="rect4" vector-effect="non-scaling-stroke" height="0" width="100"/>
-	</svg>
-    <body>
-</html>
+<!DOCTYPE html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<title>SVG bounding boxes are valid for a zero-width or zero-height rect</title>
+<svg height="0">
+  <rect height="100" width="0"/>
+  <rect height="0" width="100"/>
+  <rect vector-effect="non-scaling-stroke" height="100" width="0"/>
+  <rect vector-effect="non-scaling-stroke" height="0" width="100"/>
+  <rect rx="10" vector-effect="non-scaling-stroke" height="100" width="0"/>
+  <rect rx="10" vector-effect="non-scaling-stroke" height="0" width="100"/>
+  <rect ry="10" vector-effect="non-scaling-stroke" height="100" width="0"/>
+  <rect ry="10" vector-effect="non-scaling-stroke" height="0" width="100"/>
+  <rect rx="10" ry="10" vector-effect="non-scaling-stroke" height="100" width="0"/>
+  <rect rx="10" ry="10" vector-effect="non-scaling-stroke" height="0" width="100"/>
+  <rect x="100" y="200" height="100" width="0"/>
+  <rect x="100" y="200" height="0" width="100"/>
+  <rect x="100" y="200" vector-effect="non-scaling-stroke" height="100" width="0"/>
+  <rect x="100" y="200" vector-effect="non-scaling-stroke" height="0" width="100"/>
+  <rect x="100" y="200" rx="10" vector-effect="non-scaling-stroke" height="100" width="0"/>
+  <rect x="100" y="200" rx="10" vector-effect="non-scaling-stroke" height="0" width="100"/>
+  <rect x="100" y="200" ry="10" vector-effect="non-scaling-stroke" height="100" width="0"/>
+  <rect x="100" y="200" ry="10" vector-effect="non-scaling-stroke" height="0" width="100"/>
+  <rect x="100" y="200" rx="10" ry="10" vector-effect="non-scaling-stroke" height="100" width="0"/>
+  <rect x="100" y="200" rx="10" ry="10" vector-effect="non-scaling-stroke" height="0" width="100"/>
+</svg>
+<script>
+BBox = function(x,y,w,h) {
+  this.x = x;
+  this.y = y;
+  this.width = w;
+  this.height = h;
+};
+BBox.prototype.toString = function() {
+  return this.x + "," + this.y + "," + this.width + "," + this.height;
+};
+// The order of expected sizes should equal the document order of the rects.
+var expectedBoxes = [
+  new BBox(0, 0, 0, 100),
+  new BBox(0, 0, 100, 0),
+  new BBox(0, 0, 0, 100),
+  new BBox(0, 0, 100, 0),
+  new BBox(0, 0, 0, 100),
+  new BBox(0, 0, 100, 0),
+  new BBox(0, 0, 0, 100),
+  new BBox(0, 0, 100, 0),
+  new BBox(0, 0, 0, 100),
+  new BBox(0, 0, 100, 0),
+  new BBox(100, 200, 0, 100),
+  new BBox(100, 200, 100, 0),
+  new BBox(100, 200, 0, 100),
+  new BBox(100, 200, 100, 0),
+  new BBox(100, 200, 0, 100),
+  new BBox(100, 200, 100, 0),
+  new BBox(100, 200, 0, 100),
+  new BBox(100, 200, 100, 0),
+  new BBox(100, 200, 0, 100),
+  new BBox(100, 200, 100, 0),
+];
+var rects = document.getElementsByTagName('rect');
+for (var i = 0, length = rects.length; i < length; ++i) {
+     var rectBBox = rects[i].getBBox();
+     test(function() {
+         assert_equals(rectBBox.x, expectedBoxes[i].x);
+         assert_equals(rectBBox.y, expectedBoxes[i].y);
+         assert_equals(rectBBox.width, expectedBoxes[i].width);
+         assert_equals(rectBBox.height, expectedBoxes[i].height);
+     }, 'Bounding box size ' + expectedBoxes[i]);
+}
+</script>
