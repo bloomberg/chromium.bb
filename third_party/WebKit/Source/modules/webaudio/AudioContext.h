@@ -85,7 +85,7 @@ public:
 
     virtual void trace(Visitor*) OVERRIDE;
 
-    bool isInitialized() const;
+    bool isInitialized() const { return m_isInitialized; }
     bool isOfflineContext() { return m_isOfflineContext; }
 
     // Document notification
@@ -170,9 +170,6 @@ public:
     ThreadIdentifier audioThread() const { return m_audioThread; }
     bool isAudioThread() const;
 
-    // Returns true only after the audio thread has been started and then shutdown.
-    bool isAudioThreadFinished() { return m_isAudioThreadFinished; }
-
     // mustReleaseLock is set to true if we acquired the lock in this method call and caller must unlock(), false if it was previously acquired.
     void lock(bool& mustReleaseLock);
 
@@ -238,8 +235,6 @@ protected:
     static bool isSampleRateRangeGood(float sampleRate);
 
 private:
-    void constructCommon();
-
     void initialize();
     void uninitialize();
 
@@ -255,7 +250,6 @@ private:
 
     // Set to true when the destination node has been initialized and is ready to process data.
     bool m_isInitialized;
-    bool m_isAudioThreadFinished;
 
     // The context itself keeps a reference to all source nodes.  The source nodes, then reference all nodes they're connected to.
     // In turn, these nodes reference all nodes they're connected to.  All nodes are ultimately connected to the AudioDestinationNode.
