@@ -77,7 +77,8 @@ class ASH_EXPORT ShelfView : public views::View,
   void SchedulePaintForAllButtons();
 
   // Returns the ideal bounds of the specified item, or an empty rect if id
-  // isn't know.
+  // isn't know. If the item is in an overflow shelf, the overflow icon location
+  // will be returned.
   gfx::Rect GetIdealBoundsOfItemIcon(ShelfID id);
 
   // Repositions the icon for the specified item by the midpoint of the window.

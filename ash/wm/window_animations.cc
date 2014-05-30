@@ -462,13 +462,12 @@ gfx::Rect GetMinimizeAnimationTargetBoundsInScreen(aura::Window* window) {
     return item_rect;
 
   // If both the icon width and height are 0, then there is no icon in the
-  // launcher for |window| or the icon is hidden in the overflow menu. If the
-  // launcher is auto hidden, one of the height or width will be 0 but the
-  // position in the launcher and the major dimension are still reported
-  // correctly and the window can be animated to the launcher item's light
-  // bar.
+  // launcher for |window|. If the launcher is auto hidden, one of the height or
+  // width will be 0 but the position in the launcher and the major dimension
+  // are still reported correctly and the window can be animated to the launcher
+  // item's light bar.
+  ShelfLayoutManager* layout_manager = ShelfLayoutManager::ForShelf(window);
   if (item_rect.width() != 0 || item_rect.height() != 0) {
-    ShelfLayoutManager* layout_manager = ShelfLayoutManager::ForShelf(window);
     if (layout_manager->visibility_state() == SHELF_AUTO_HIDE) {
       gfx::Rect shelf_bounds = shelf->shelf_widget()->GetWindowBoundsInScreen();
       switch (layout_manager->GetAlignment()) {
@@ -489,11 +488,24 @@ gfx::Rect GetMinimizeAnimationTargetBoundsInScreen(aura::Window* window) {
     }
   }
 
-  // Assume the shelf is overflowed, zoom off to the bottom right of the
-  // work area.
+  // Coming here, there is no visible icon of that shelf item and we zoom back
+  // to the location of the application launcher (which is fixed as first item
+  // of the shelf).
   gfx::Rect work_area =
       Shell::GetScreen()->GetDisplayNearestWindow(window).work_area();
-  return gfx::Rect(work_area.right(), work_area.bottom(), 0, 0);
+  int ltr_adjusted_x = base::i18n::IsRTL() ? work_area.right() : work_area.x();
+  switch (layout_manager->GetAlignment()) {
+    case SHELF_ALIGNMENT_BOTTOM:
+      return gfx::Rect(ltr_adjusted_x, work_area.bottom(), 0, 0);
+    case SHELF_ALIGNMENT_TOP:
+      return gfx::Rect(ltr_adjusted_x, work_area.y(), 0, 0);
+    case SHELF_ALIGNMENT_LEFT:
+      return gfx::Rect(work_area.x(), work_area.y(), 0, 0);
+    case SHELF_ALIGNMENT_RIGHT:
+      return gfx::Rect(work_area.right(), work_area.y(), 0, 0);
+  }
+  NOTREACHED();
+  return gfx::Rect();
 }
 
 }  // namespace ash

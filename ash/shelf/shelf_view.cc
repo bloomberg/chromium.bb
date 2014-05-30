@@ -454,9 +454,16 @@ void ShelfView::SchedulePaintForAllButtons() {
 
 gfx::Rect ShelfView::GetIdealBoundsOfItemIcon(ShelfID id) {
   int index = model_->ItemIndexByID(id);
-  if (index == -1 || (index > last_visible_index_ &&
-                      index < model_->FirstPanelIndex()))
+  if (index == -1)
     return gfx::Rect();
+  // Map all items from overflow area to the overflow button. Note that the
+  // section between last_index_hidden_ and model_->FirstPanelIndex() is the
+  // list of invisible panel items. However, these items are currently nowhere
+  // represented and get dropped instead - see (crbug.com/378907). As such there
+  // is no way to address them or place them. We therefore move them over the
+  // overflow button.
+  if (index > last_visible_index_ && index < model_->FirstPanelIndex())
+    index = last_visible_index_ + 1;
   const gfx::Rect& ideal_bounds(view_model_->ideal_bounds(index));
   DCHECK_NE(TYPE_APP_LIST, model_->items()[index].type);
   ShelfButton* button = static_cast<ShelfButton*>(view_model_->view_at(index));
@@ -775,7 +782,7 @@ void ShelfView::CalculateIdealBounds(IdealBounds* bounds) const {
     --last_visible_index_;
   for (int i = 0; i < view_model_->view_size(); ++i) {
     bool visible = i <= last_visible_index_ || i > last_hidden_index_;
-    // To receive drag event continously from |drag_view_| during the dragging
+    // To receive drag event continuously from |drag_view_| during the dragging
     // off from the shelf, don't make |drag_view_| invisible. It will be
     // eventually invisible and removed from the |view_model_| by
     // FinalizeRipOffDrag().

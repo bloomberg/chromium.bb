@@ -638,6 +638,33 @@ TEST_P(ShelfViewTextDirectionTest, IdealBoundsOfItemIcon) {
   EXPECT_EQ(item_bounds.y(), ideal_bounds.y());
 }
 
+// Check that items in the overflow area are returning the overflow button as
+// ideal bounds.
+TEST_F(ShelfViewTest, OverflowButtonBounds) {
+  ShelfID first_id = AddPlatformApp();
+  ShelfID overflow_id = AddPlatformApp();
+  int items_added = 0;
+  while (!test_api_->IsOverflowButtonVisible()) {
+    // Added button is visible after animation while in this loop.
+    EXPECT_TRUE(GetButtonByID(overflow_id)->visible());
+    overflow_id = AddPlatformApp();
+    ++items_added;
+    ASSERT_LT(items_added, 10000);
+  }
+  ShelfID last_id = AddPlatformApp();
+
+  gfx::Rect first_bounds = shelf_view_->GetIdealBoundsOfItemIcon(first_id);
+  gfx::Rect overflow_bounds =
+      shelf_view_->GetIdealBoundsOfItemIcon(overflow_id);
+  gfx::Rect last_bounds = shelf_view_->GetIdealBoundsOfItemIcon(last_id);
+
+  // Check that all items have the same size and that the overflow items are
+  // identical whereas the first one does not match either of them.
+  EXPECT_EQ(first_bounds.size().ToString(), last_bounds.size().ToString());
+  EXPECT_NE(first_bounds.ToString(), last_bounds.ToString());
+  EXPECT_EQ(overflow_bounds.ToString(), last_bounds.ToString());
+}
+
 // Checks that shelf view contents are considered in the correct drag group.
 TEST_F(ShelfViewTest, EnforceDragType) {
   EXPECT_TRUE(test_api_->SameDragType(TYPE_PLATFORM_APP, TYPE_PLATFORM_APP));
