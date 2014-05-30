@@ -728,6 +728,8 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   virtual void ConvertEventToTarget(ui::EventTarget* target,
                                     ui::LocatedEvent* event) OVERRIDE;
 
+  const ui::EventTargeter* GetEventTargeter() const;
+
   // Overridden from ui::EventHandler:
   virtual void OnKeyEvent(ui::KeyEvent* event) OVERRIDE;
   virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE;

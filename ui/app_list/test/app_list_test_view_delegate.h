@@ -44,6 +44,10 @@ class AppListTestViewDelegate : public AppListViewDelegate {
   // one already.
   void SetSignedIn(bool signed_in);
 
+  // Returns the value of |toggle_speech_recognition_count_| and then
+  // resets this value to 0.
+  int GetToggleSpeechRecognitionCountAndReset();
+
   // AppListViewDelegate overrides:
   virtual bool ForceNativeDesktop() const OVERRIDE;
   virtual void SetProfileByPath(const base::FilePath& profile_path) OVERRIDE {}
@@ -70,7 +74,7 @@ class AppListTestViewDelegate : public AppListViewDelegate {
   virtual void OpenSettings() OVERRIDE {}
   virtual void OpenHelp() OVERRIDE {}
   virtual void OpenFeedback() OVERRIDE {}
-  virtual void ToggleSpeechRecognition() OVERRIDE {}
+  virtual void ToggleSpeechRecognition() OVERRIDE;
   virtual void ShowForProfileByPath(
       const base::FilePath& profile_path) OVERRIDE {}
   virtual content::WebContents* GetStartPageContents() OVERRIDE;
@@ -88,6 +92,7 @@ class AppListTestViewDelegate : public AppListViewDelegate {
 
  private:
   int dismiss_count_;
+  int toggle_speech_recognition_count_;
   int open_search_result_count_;
   std::map<size_t, int> open_search_result_counts_;
   Users users_;

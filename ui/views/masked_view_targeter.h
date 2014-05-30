@@ -23,11 +23,11 @@ class VIEWS_EXPORT MaskedViewTargeter : public ViewTargeter {
   explicit MaskedViewTargeter(View* masked_view);
   virtual ~MaskedViewTargeter();
 
- protected:
   // Sets the hit-test mask for |view| in |mask| (in |view|'s local
   // coordinate system). Returns whether a valid mask has been set in |mask|.
-  virtual bool GetHitTestMask(View* view, gfx::Path* mask) const = 0;
+  virtual bool GetHitTestMask(const View* view, gfx::Path* mask) const = 0;
 
+ protected:
   // ui::EventTargeter:
   virtual bool EventLocationInsideBounds(
       ui::EventTarget* target,

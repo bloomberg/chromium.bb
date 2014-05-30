@@ -5,6 +5,7 @@
 #ifndef UI_APP_LIST_VIEWS_SPEECH_VIEW_H_
 #define UI_APP_LIST_VIEWS_SPEECH_VIEW_H_
 
+#include "ui/app_list/app_list_export.h"
 #include "ui/app_list/speech_ui_model_observer.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/view.h"
@@ -22,9 +23,9 @@ class AppListViewDelegate;
 class SpeechCardView;
 
 // SpeechView provides the card-like UI for the search-by-speech.
-class SpeechView : public views::View,
-                   public views::ButtonListener,
-                   public SpeechUIModelObserver {
+class APP_LIST_EXPORT SpeechView : public views::View,
+                                   public views::ButtonListener,
+                                   public SpeechUIModelObserver {
  public:
   explicit SpeechView(AppListViewDelegate* delegate);
   virtual ~SpeechView();
@@ -35,6 +36,8 @@ class SpeechView : public views::View,
   // Overridden from views::View:
   virtual void Layout() OVERRIDE;
   virtual gfx::Size GetPreferredSize() const OVERRIDE;
+
+  views::ImageButton* mic_button() { return mic_button_; }
 
  private:
   int GetIndicatorRadius(uint8 level);

@@ -52,6 +52,7 @@ class TestSigninDelegate : public SigninDelegate {
 
 AppListTestViewDelegate::AppListTestViewDelegate()
     : dismiss_count_(0),
+      toggle_speech_recognition_count_(0),
       open_search_result_count_(0),
       test_signin_delegate_(new TestSigninDelegate),
       model_(new AppListTestModel),
@@ -65,6 +66,12 @@ void AppListTestViewDelegate::SetSignedIn(bool signed_in) {
   FOR_EACH_OBSERVER(AppListViewDelegateObserver,
                     observers_,
                     OnProfilesChanged());
+}
+
+int AppListTestViewDelegate::GetToggleSpeechRecognitionCountAndReset() {
+  int count = toggle_speech_recognition_count_;
+  toggle_speech_recognition_count_ = 0;
+  return count;
 }
 
 bool AppListTestViewDelegate::ForceNativeDesktop() const {
@@ -112,6 +119,10 @@ void AppListTestViewDelegate::AutoLaunchCanceled() {
 
 void AppListTestViewDelegate::Dismiss() {
   ++dismiss_count_;
+}
+
+void AppListTestViewDelegate::ToggleSpeechRecognition() {
+  ++toggle_speech_recognition_count_;
 }
 
 gfx::ImageSkia AppListTestViewDelegate::GetWindowIcon() {

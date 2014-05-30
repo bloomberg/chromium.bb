@@ -231,6 +231,7 @@
         'views/folder_header_view_unittest.cc',
         'views/search_box_view_unittest.cc',
         'views/search_result_list_view_unittest.cc',
+        'views/speech_view_unittest.cc',
         'views/test/apps_grid_view_test_api.cc',
         'views/test/apps_grid_view_test_api.h',
       ],

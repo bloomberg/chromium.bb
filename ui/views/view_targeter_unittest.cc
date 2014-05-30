@@ -21,7 +21,8 @@ class TestMaskedViewTargeter : public MaskedViewTargeter {
   virtual ~TestMaskedViewTargeter() {}
 
  private:
-  virtual bool GetHitTestMask(View* view, gfx::Path* mask) const OVERRIDE {
+  virtual bool GetHitTestMask(const View* view,
+                              gfx::Path* mask) const OVERRIDE {
     SkScalar w = SkIntToScalar(view->width());
     SkScalar h = SkIntToScalar(view->height());
 

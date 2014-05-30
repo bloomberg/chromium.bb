@@ -1117,6 +1117,10 @@ ui::EventTargeter* View::GetEventTargeter() {
   return targeter_.get();
 }
 
+const ui::EventTargeter* View::GetEventTargeter() const {
+  return targeter_.get();
+}
+
 void View::ConvertEventToTarget(ui::EventTarget* target,
                                 ui::LocatedEvent* event) {
   event->ConvertLocationToTarget(this, static_cast<View*>(target));
