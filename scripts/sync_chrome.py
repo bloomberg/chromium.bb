@@ -24,9 +24,6 @@ def GetParser():
 
   parser.add_argument('--internal', help='Sync internal version of Chrome',
                       action='store_true', default=False)
-  # TODO(build): Delete this once all the calls disappear.
-  parser.add_argument('--pdf', help='Sync PDF source code',
-                      action='store_true', default=False)
   parser.add_argument('--reset', help='Revert local changes',
                       action='store_true', default=False)
   parser.add_argument('--gclient', help=commandline.argparse.SUPPRESS,
