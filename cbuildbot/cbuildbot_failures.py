@@ -112,9 +112,9 @@ class SetFailureType(object):
 
   def __call__(self, functor):
     """Returns a wrapped function."""
-    def wrapped_functor(*args):
+    def wrapped_functor(*args, **kwargs):
       try:
-        functor(*args)
+        return functor(*args, **kwargs)
       except Exception:
         # Get the information about the original exception.
         exc_type, exc_value, _ = sys.exc_info()

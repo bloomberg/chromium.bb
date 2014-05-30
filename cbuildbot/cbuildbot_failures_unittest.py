@@ -155,6 +155,21 @@ class SetFailureTypeTest(cros_test_lib.TestCase):
     f = self._GetFunction(self.TacoNotTasty, self.NoGuacamole)
     self.assertRaises(self.NoGuacamole, f)
 
+  def testPassArgsToWrappedFunctor(self):
+    """Tests that we can pass arguments to the functor."""
+    @failures_lib.SetFailureType(self.TacoNotTasty)
+    def f(arg):
+      return arg
+
+    @failures_lib.SetFailureType(self.TacoNotTasty)
+    def g(kwarg=''):
+      return kwarg
+
+    # Test passing arguments.
+    self.assertEqual(f('foo'), 'foo')
+    # Test passing keyword arguments.
+    self.assertEqual(g(kwarg='bar'), 'bar')
+
 
 class ExceptInfoTest(cros_test_lib.TestCase):
   """Tests the namedtuple class ExceptInfo."""
