@@ -87,9 +87,6 @@ class ViewManagerSynchronizer : public IViewManagerClient {
                                   uint32_t new_view_id,
                                   uint32_t old_view_id) OVERRIDE;
   virtual void OnViewDeleted(uint32_t view_id) OVERRIDE;
-  virtual void OnViewInputEvent(uint32_t view,
-                                EventPtr event,
-                                const Callback<void()>& callback) OVERRIDE;
 
   // Sync the client model with the service by enumerating the pending
   // transaction queue and applying them in order.

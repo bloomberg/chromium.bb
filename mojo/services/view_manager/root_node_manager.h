@@ -95,7 +95,6 @@ class MOJO_VIEW_MANAGER_EXPORT RootNodeManager : public NodeDelegate {
   void ProcessNodeViewReplaced(const Node* node,
                                const View* new_view_id,
                                const View* old_view_id);
-  void ProcessViewInputEvent(const View* view, const ui::Event* event);
   void ProcessNodeDeleted(const NodeId& node);
   void ProcessViewDeleted(const ViewId& view);
 
@@ -131,8 +130,6 @@ class MOJO_VIEW_MANAGER_EXPORT RootNodeManager : public NodeDelegate {
   virtual void OnNodeViewReplaced(const Node* node,
                                   const View* new_view,
                                   const View* old_view) OVERRIDE;
-  virtual void OnViewInputEvent(const View* view,
-                                const ui::Event* event) OVERRIDE;
 
   Context context_;
 

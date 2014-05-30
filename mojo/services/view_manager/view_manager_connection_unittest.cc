@@ -344,10 +344,6 @@ class TestViewManagerClientConnection
                                   TransportViewId old_view_id) OVERRIDE {
     tracker_.OnNodeViewReplaced(node, new_view_id, old_view_id);
   }
-  virtual void OnViewInputEvent(uint32_t view,
-                                EventPtr event,
-                                const Callback<void()>& callback) OVERRIDE {
-  }
 
  private:
   TestChangeTracker tracker_;
@@ -643,10 +639,6 @@ class ViewManagerClientImpl : public IViewManagerClient {
                                   TransportViewId new_view_id,
                                   TransportViewId old_view_id) OVERRIDE {
     tracker_.OnNodeViewReplaced(node, new_view_id, old_view_id);
-  }
-  virtual void OnViewInputEvent(uint32_t view,
-                                EventPtr event,
-                                const Callback<void()>& callback) OVERRIDE {
   }
 
   TransportConnectionId id_;

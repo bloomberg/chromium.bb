@@ -172,11 +172,6 @@ bool Node::HasHitTestMask() const {
 void Node::GetHitTestMask(gfx::Path* mask) const {
 }
 
-void Node::OnEvent(ui::Event* event) {
-  if (view_)
-    delegate_->OnViewInputEvent(view_, event);
-}
-
 }  // namespace service
 }  // namespace view_manager
 }  // namespace mojo

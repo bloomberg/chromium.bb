@@ -86,9 +86,6 @@ class MOJO_VIEW_MANAGER_EXPORT Node
   virtual bool HasHitTestMask() const OVERRIDE;
   virtual void GetHitTestMask(gfx::Path* mask) const OVERRIDE;
 
-  // ui::EventHandler overrides:
-  virtual void OnEvent(ui::Event* event) OVERRIDE;
-
   NodeDelegate* delegate_;
   const NodeId id_;
 

@@ -9,8 +9,6 @@
 
 #include "base/basictypes.h"
 
-#include "mojo/services/public/interfaces/input_events/input_events.mojom.h"
-
 namespace mojo {
 namespace view_manager {
 
@@ -24,8 +22,6 @@ class ViewObserver {
   };
 
   virtual void OnViewDestroy(View* view, DispositionChangePhase phase) {}
-
-  virtual void OnViewInputEvent(View* view, EventPtr event) {}
 
  protected:
   virtual ~ViewObserver() {}

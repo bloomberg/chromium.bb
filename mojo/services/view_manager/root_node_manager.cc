@@ -127,14 +127,6 @@ void RootNodeManager::ProcessNodeViewReplaced(const Node* node,
   }
 }
 
-void RootNodeManager::ProcessViewInputEvent(const View* view,
-                                            const ui::Event* event) {
-  for (ConnectionMap::iterator i = connection_map_.begin();
-       i != connection_map_.end(); ++i) {
-    i->second->ProcessViewInputEvent(view, event);
-  }
-}
-
 void RootNodeManager::ProcessNodeDeleted(const NodeId& node) {
   for (ConnectionMap::iterator i = connection_map_.begin();
        i != connection_map_.end(); ++i) {
@@ -178,11 +170,6 @@ void RootNodeManager::OnNodeViewReplaced(const Node* node,
                                          const View* new_view,
                                          const View* old_view) {
   ProcessNodeViewReplaced(node, new_view, old_view);
-}
-
-void RootNodeManager::OnViewInputEvent(const View* view,
-                                       const ui::Event* event) {
-  ProcessViewInputEvent(view, event);
 }
 
 }  // namespace service

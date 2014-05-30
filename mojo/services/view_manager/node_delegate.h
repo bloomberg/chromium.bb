@@ -7,10 +7,6 @@
 
 #include "mojo/services/view_manager/view_manager_export.h"
 
-namespace ui {
-class Event;
-}
-
 namespace mojo {
 namespace view_manager {
 namespace service {
@@ -29,10 +25,6 @@ class MOJO_VIEW_MANAGER_EXPORT NodeDelegate {
   virtual void OnNodeViewReplaced(const Node* node,
                                   const View* new_view,
                                   const View* old_view) = 0;
-
-  // Invoked when an input event is received by the View at this node.
-  virtual void OnViewInputEvent(const View* view,
-                                const ui::Event* event) = 0;
 
  protected:
   virtual ~NodeDelegate() {}
