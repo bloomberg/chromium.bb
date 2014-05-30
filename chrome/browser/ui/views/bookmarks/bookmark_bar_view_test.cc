@@ -34,6 +34,9 @@
 #include "content/public/browser/page_navigator.h"
 #include "content/public/test/test_browser_thread.h"
 #include "grit/generated_resources.h"
+#include "ui/aura/env.h"
+#include "ui/aura/env_observer.h"
+#include "ui/aura/window.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/test/ui_controls.h"
 #include "ui/events/keycodes/keyboard_codes.h"
@@ -51,6 +54,140 @@ using content::PageNavigator;
 using content::WebContents;
 
 namespace {
+
+// Waits for a views::Widget dialog to show up.
+class DialogWaiter : public aura::EnvObserver,
+                     public views::WidgetObserver {
+ public:
+  DialogWaiter()
+      : dialog_created_(false),
+        dialog_(NULL) {
+    aura::Env::GetInstance()->AddObserver(this);
+  }
+
+  virtual ~DialogWaiter() {
+    aura::Env::GetInstance()->RemoveObserver(this);
+  }
+
+  views::Widget* WaitForDialog() {
+    if (dialog_created_)
+      return dialog_;
+    base::MessageLoopForUI* loop = base::MessageLoopForUI::current();
+    base::MessageLoopForUI::ScopedNestableTaskAllower allow_nested(loop);
+    base::RunLoop run_loop;
+    quit_closure_ = run_loop.QuitClosure();
+    run_loop.Run();
+    return dialog_;
+  }
+
+ private:
+  // aura::EnvObserver:
+  virtual void OnWindowInitialized(aura::Window* window) OVERRIDE {
+    if (dialog_)
+      return;
+    views::Widget* widget = views::Widget::GetWidgetForNativeView(window);
+    if (!widget || !widget->IsDialogBox())
+      return;
+    dialog_ = widget;
+    dialog_->AddObserver(this);
+  }
+
+  // views::WidgetObserver:
+  virtual void OnWidgetVisibilityChanged(views::Widget* widget,
+                                         bool visible) OVERRIDE {
+    CHECK_EQ(dialog_, widget);
+    if (visible) {
+      dialog_created_ = true;
+      dialog_->RemoveObserver(this);
+      if (!quit_closure_.is_null())
+        quit_closure_.Run();
+    }
+  }
+
+  bool dialog_created_;
+  views::Widget* dialog_;
+  base::Closure quit_closure_;
+
+  DISALLOW_COPY_AND_ASSIGN(DialogWaiter);
+};
+
+// Waits for a dialog to terminate.
+class DialogCloseWaiter : public views::WidgetObserver {
+ public:
+  explicit DialogCloseWaiter(views::Widget* dialog)
+      : dialog_closed_(false) {
+    dialog->AddObserver(this);
+  }
+
+  virtual ~DialogCloseWaiter() {
+    // It is not necessary to remove |this| from the dialog's observer, since
+    // the dialog is destroyed before this waiter.
+  }
+
+  void WaitForDialogClose() {
+    if (dialog_closed_)
+      return;
+    base::MessageLoopForUI* loop = base::MessageLoopForUI::current();
+    base::MessageLoopForUI::ScopedNestableTaskAllower allow_nested(loop);
+    base::RunLoop run_loop;
+    quit_closure_ = run_loop.QuitClosure();
+    run_loop.Run();
+  }
+
+ private:
+  // views::WidgetObserver:
+  virtual void OnWidgetDestroyed(views::Widget* widget) OVERRIDE {
+    dialog_closed_ = true;
+    if (!quit_closure_.is_null())
+      quit_closure_.Run();
+  }
+
+  bool dialog_closed_;
+  base::Closure quit_closure_;
+
+  DISALLOW_COPY_AND_ASSIGN(DialogCloseWaiter);
+};
+
+// Waits for a views::Widget to receive a Tab key.
+class TabKeyWaiter : public ui::EventHandler {
+ public:
+  explicit TabKeyWaiter(views::Widget* widget)
+      : widget_(widget),
+        received_tab_(false) {
+    widget_->GetNativeView()->AddPreTargetHandler(this);
+  }
+
+  virtual ~TabKeyWaiter() {
+    widget_->GetNativeView()->RemovePreTargetHandler(this);
+  }
+
+  void WaitForTab() {
+    if (received_tab_)
+      return;
+    base::MessageLoopForUI* loop = base::MessageLoopForUI::current();
+    base::MessageLoopForUI::ScopedNestableTaskAllower allow_nested(loop);
+    base::RunLoop run_loop;
+    quit_closure_ = run_loop.QuitClosure();
+    run_loop.Run();
+  }
+
+ private:
+  // ui::EventHandler:
+  virtual void OnKeyEvent(ui::KeyEvent* event) OVERRIDE {
+    if (event->type() == ui::ET_KEY_RELEASED &&
+        event->key_code() == ui::VKEY_TAB) {
+      received_tab_ = true;
+      if (!quit_closure_.is_null())
+        quit_closure_.Run();
+    }
+  }
+
+  views::Widget* widget_;
+  bool received_tab_;
+  base::Closure quit_closure_;
+
+  DISALLOW_COPY_AND_ASSIGN(TabKeyWaiter);
+};
 
 void MoveMouseAndPress(const gfx::Point& screen_pos,
                        ui_controls::MouseButton button,
@@ -184,9 +321,11 @@ class BookmarkBarViewEventTestBase : public ViewEventTestBase {
     profile_.reset();
 
     // Run the message loop to ensure we delete allTasks and fully shut down.
-    base::MessageLoop::current()->PostTask(FROM_HERE,
-                                           base::MessageLoop::QuitClosure());
-    base::MessageLoop::current()->Run();
+    base::MessageLoopForUI* loop = base::MessageLoopForUI::current();
+    base::MessageLoopForUI::ScopedNestableTaskAllower allow_nested(loop);
+    base::RunLoop run_loop;
+    loop->PostTask(FROM_HERE, run_loop.QuitClosure());
+    run_loop.Run();
 
     ViewEventTestBase::TearDown();
     BookmarkBarView::DisableAnimationsForTesting(false);
@@ -1147,43 +1286,47 @@ class BookmarkBarViewTest12 : public BookmarkBarViewEventTestBase {
     views::MenuItemView* child_menu =
         menu->GetSubmenu()->GetMenuItemAt(0);
     ASSERT_TRUE(child_menu != NULL);
-    ui_test_utils::MoveMouseToCenterAndPress(child_menu, ui_controls::LEFT,
-        ui_controls::DOWN | ui_controls::UP, base::Closure());
 
-    // Delay until we send tab, otherwise the message box doesn't appear
-    // correctly.
-    base::MessageLoop::current()->PostDelayedTask(
-        FROM_HERE,
-        CreateEventTask(this, &BookmarkBarViewTest12::Step4),
-        base::TimeDelta::FromSeconds(1));
+    // Click and wait until the dialog box appears.
+    scoped_ptr<DialogWaiter> dialog_waiter(new DialogWaiter());
+    ui_test_utils::MoveMouseToCenterAndPress(
+        child_menu,
+        ui_controls::LEFT,
+        ui_controls::DOWN | ui_controls::UP,
+        base::Bind(
+            &BookmarkBarViewTest12::Step4, this, base::Passed(&dialog_waiter)));
   }
 
-  void Step4() {
-    // Press tab to give focus to the cancel button.
+  void Step4(scoped_ptr<DialogWaiter> waiter) {
+    views::Widget* dialog = waiter->WaitForDialog();
+    waiter.reset();
+
+    // Press tab to give focus to the cancel button. Wait until the widget
+    // receives the tab key.
+    TabKeyWaiter tab_waiter(dialog);
     ui_controls::SendKeyPress(
         window_->GetNativeWindow(), ui::VKEY_TAB, false, false, false, false);
+    tab_waiter.WaitForTab();
 
     // For some reason return isn't processed correctly unless we delay.
     base::MessageLoop::current()->PostDelayedTask(
         FROM_HERE,
-        CreateEventTask(this, &BookmarkBarViewTest12::Step5),
+        base::Bind(
+            &BookmarkBarViewTest12::Step5, this, base::Unretained(dialog)),
         base::TimeDelta::FromSeconds(1));
   }
 
-  void Step5() {
+  void Step5(views::Widget* dialog) {
+    DialogCloseWaiter waiter(dialog);
     // And press enter so that the cancel button is selected.
-    ui_controls::SendKeyPressNotifyWhenDone(
-        window_->GetNativeWindow(), ui::VKEY_RETURN, false, false, false, false,
-        CreateEventTask(this, &BookmarkBarViewTest12::Step6));
-  }
-
-  void Step6() {
-    // Do a delayed task to give the dialog time to exit.
-    base::MessageLoop::current()->PostTask(
-        FROM_HERE, CreateEventTask(this, &BookmarkBarViewTest12::Step7));
-  }
-
-  void Step7() {
+    ui_controls::SendKeyPressNotifyWhenDone(window_->GetNativeWindow(),
+                                            ui::VKEY_RETURN,
+                                            false,
+                                            false,
+                                            false,
+                                            false,
+                                            base::Closure());
+    waiter.WaitForDialogClose();
     Done();
   }
 };
