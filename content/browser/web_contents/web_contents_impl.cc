@@ -343,7 +343,6 @@ WebContentsImpl::WebContentsImpl(
       closed_by_user_gesture_(false),
       minimum_zoom_percent_(static_cast<int>(kMinimumZoomFactor * 100)),
       maximum_zoom_percent_(static_cast<int>(kMaximumZoomFactor * 100)),
-      temporary_zoom_settings_(false),
       totalPinchGestureAmount_(0),
       currentPinchZoomStepDelta_(0),
       render_view_message_source_(NULL),
@@ -2162,35 +2161,13 @@ bool WebContentsImpl::GetClosedByUserGesture() const {
   return closed_by_user_gesture_;
 }
 
-double WebContentsImpl::GetZoomLevel() const {
-  HostZoomMapImpl* zoom_map = static_cast<HostZoomMapImpl*>(
-      HostZoomMap::GetForBrowserContext(GetBrowserContext()));
-  if (!zoom_map)
-    return 0;
-
-  double zoom_level;
-  if (temporary_zoom_settings_) {
-    zoom_level = zoom_map->GetTemporaryZoomLevel(
-        GetRenderProcessHost()->GetID(), GetRenderViewHost()->GetRoutingID());
-  } else {
-    GURL url;
-    NavigationEntry* entry = GetController().GetLastCommittedEntry();
-    // Since zoom map is updated using rewritten URL, use rewritten URL
-    // to get the zoom level.
-    url = entry ? entry->GetURL() : GURL::EmptyGURL();
-    zoom_level = zoom_map->GetZoomLevelForHostAndScheme(url.scheme(),
-        net::GetHostOrSpecFromURL(url));
-  }
-  return zoom_level;
-}
-
 int WebContentsImpl::GetZoomPercent(bool* enable_increment,
                                     bool* enable_decrement) const {
   *enable_decrement = *enable_increment = false;
   // Calculate the zoom percent from the factor. Round up to the nearest whole
   // number.
   int percent = static_cast<int>(
-      ZoomLevelToZoomFactor(GetZoomLevel()) * 100 + 0.5);
+      ZoomLevelToZoomFactor(HostZoomMap::GetZoomLevel(this)) * 100 + 0.5);
   *enable_decrement = percent > minimum_zoom_percent_;
   *enable_increment = percent < maximum_zoom_percent_;
   return percent;
@@ -2277,13 +2254,6 @@ int WebContentsImpl::DownloadImage(const GURL& url,
 
 bool WebContentsImpl::IsSubframe() const {
   return is_subframe_;
-}
-
-void WebContentsImpl::SetZoomLevel(double level) {
-  Send(new ViewMsg_SetZoomLevel(GetRoutingID(), level));
-  BrowserPluginEmbedder* embedder = GetBrowserPluginEmbedder();
-  if (embedder)
-    embedder->SetZoomLevel(level);
 }
 
 void WebContentsImpl::Find(int request_id,
@@ -2715,11 +2685,9 @@ void WebContentsImpl::OnGoToEntryAtOffset(int offset) {
 }
 
 void WebContentsImpl::OnUpdateZoomLimits(int minimum_percent,
-                                         int maximum_percent,
-                                         bool remember) {
+                                         int maximum_percent) {
   minimum_zoom_percent_ = minimum_percent;
   maximum_zoom_percent_ = maximum_percent;
-  temporary_zoom_settings_ = !remember;
 }
 
 void WebContentsImpl::OnEnumerateDirectory(int request_id,

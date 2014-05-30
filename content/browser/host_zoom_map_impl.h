@@ -19,6 +19,8 @@
 
 namespace content {
 
+class WebContentsImpl;
+
 // HostZoomMap needs to be deleted on the UI thread because it listens
 // to notifications on there (and holds a NotificationRegistrar).
 class CONTENT_EXPORT HostZoomMapImpl : public NON_EXPORTED_BASE(HostZoomMap),
@@ -46,6 +48,35 @@ class CONTENT_EXPORT HostZoomMapImpl : public NON_EXPORTED_BASE(HostZoomMap),
   virtual scoped_ptr<Subscription> AddZoomLevelChangedCallback(
       const ZoomLevelChangedCallback& callback) OVERRIDE;
 
+  // Returns the current zoom level for the specified WebContents. This may
+  // be a temporary zoom level, depending on UsesTemporaryZoomLevel().
+  double GetZoomLevelForWebContents(
+      const WebContentsImpl& web_contents_impl) const;
+
+  // Sets the zoom level for this WebContents. If this WebContents is using
+  // a temporary zoom level, then level is only applied to this WebContents.
+  // Otherwise, the level will be applied on a host level.
+  void SetZoomLevelForWebContents(const WebContentsImpl& web_contents_impl,
+                                  double level);
+
+  // Sets the zoom level for the specified view. The level may be set for only
+  // this view, or for the host, depending on UsesTemporaryZoomLevel().
+  void SetZoomLevelForView(int render_process_id,
+                           int render_view_id,
+                           double level,
+                           const std::string& host);
+
+  // Returns whether the view manages its zoom level independently of other tabs
+  // displaying content from the same host.
+  bool UsesTemporaryZoomLevel(int render_process_id, int render_view_id) const;
+
+  // Sets whether the view manages its zoom level independently of other tabs
+  // displaying content from the same host, based on whether
+  // |uses_temporary_zoom_level| is true.
+  void SetUsesTemporaryZoomLevel(int render_process_id,
+                                 int render_view_id,
+                                 bool uses_temporary_zoom_level);
+
   // Returns the temporary zoom level that's only valid for the lifetime of
   // the given WebContents (i.e. isn't saved and doesn't affect other
   // WebContentses) if it exists, the default zoom level otherwise.
@@ -68,10 +99,22 @@ class CONTENT_EXPORT HostZoomMapImpl : public NON_EXPORTED_BASE(HostZoomMap),
                        const NotificationDetails& details) OVERRIDE;
 
  private:
-  double GetZoomLevelForHost(const std::string& host) const;
-
   typedef std::map<std::string, double> HostZoomLevels;
   typedef std::map<std::string, HostZoomLevels> SchemeHostZoomLevels;
+
+  struct TemporaryZoomLevel {
+    TemporaryZoomLevel(int process_id, int view_id, double level);
+    TemporaryZoomLevel(int process_id, int view_id);
+    bool operator==(const TemporaryZoomLevel& other) const;
+
+    int render_process_id;
+    int render_view_id;
+    double zoom_level;
+  };
+
+  typedef std::vector<TemporaryZoomLevel> TemporaryZoomLevels;
+
+  double GetZoomLevelForHost(const std::string& host) const;
 
   // Callbacks called when zoom level changes.
   base::CallbackList<void(const ZoomLevelChange&)>
@@ -82,15 +125,9 @@ class CONTENT_EXPORT HostZoomMapImpl : public NON_EXPORTED_BASE(HostZoomMap),
   SchemeHostZoomLevels scheme_host_zoom_levels_;
   double default_zoom_level_;
 
-  struct TemporaryZoomLevel {
-    int render_process_id;
-    int render_view_id;
-    double zoom_level;
-  };
-
   // Don't expect more than a couple of tabs that are using a temporary zoom
   // level, so vector is fine for now.
-  std::vector<TemporaryZoomLevel> temporary_zoom_levels_;
+  TemporaryZoomLevels temporary_zoom_levels_;
 
   // Used around accesses to |host_zoom_levels_|, |default_zoom_level_| and
   // |temporary_zoom_levels_| to guarantee thread safety.

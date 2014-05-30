@@ -280,7 +280,6 @@ class CONTENT_EXPORT WebContentsImpl
   virtual void UserGestureDone() OVERRIDE;
   virtual void SetClosedByUserGesture(bool value) OVERRIDE;
   virtual bool GetClosedByUserGesture() const OVERRIDE;
-  virtual double GetZoomLevel() const OVERRIDE;
   virtual int GetZoomPercent(bool* enable_increment,
                              bool* enable_decrement) const OVERRIDE;
   virtual void ViewSource() OVERRIDE;
@@ -301,7 +300,6 @@ class CONTENT_EXPORT WebContentsImpl
   virtual void Find(int request_id,
                     const base::string16& search_text,
                     const blink::WebFindOptions& options) OVERRIDE;
-  virtual void SetZoomLevel(double level) OVERRIDE;
   virtual void StopFinding(StopFindAction action) OVERRIDE;
   virtual void InsertCSS(const std::string& css) OVERRIDE;
 #if defined(OS_ANDROID)
@@ -713,8 +711,7 @@ class CONTENT_EXPORT WebContentsImpl
   void OnDidChangeLoadProgress(double load_progress);
   void OnGoToEntryAtOffset(int offset);
   void OnUpdateZoomLimits(int minimum_percent,
-                          int maximum_percent,
-                          bool remember);
+                          int maximum_percent);
   void OnEnumerateDirectory(int request_id, const base::FilePath& path);
 
   void OnRegisterProtocolHandler(const std::string& protocol,
@@ -1050,10 +1047,6 @@ class CONTENT_EXPORT WebContentsImpl
   // Minimum/maximum zoom percent.
   int minimum_zoom_percent_;
   int maximum_zoom_percent_;
-  // If true, the default zoom limits have been overriden for this tab, in which
-  // case we don't want saved settings to apply to it and we don't want to
-  // remember it.
-  bool temporary_zoom_settings_;
 
   // The raw accumulated zoom value and the actual zoom increments made for an
   // an in-progress pinch gesture.

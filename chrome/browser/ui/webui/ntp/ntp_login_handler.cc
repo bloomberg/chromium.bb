@@ -32,6 +32,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "components/signin/core/browser/signin_manager.h"
+#include "content/public/browser/host_zoom_map.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
@@ -156,7 +157,8 @@ void NTPLoginHandler::HandleShowSyncLoginUI(const base::ListValue* args) {
     success = args->GetDouble(3, &height);
     DCHECK(success);
 
-    double zoom = content::ZoomLevelToZoomFactor(web_contents->GetZoomLevel());
+    double zoom = content::ZoomLevelToZoomFactor(
+        content::HostZoomMap::GetZoomLevel(web_contents));
     gfx::Rect rect(x * zoom, y * zoom, width * zoom, height * zoom);
 
     browser->window()->ShowAvatarBubble(web_ui()->GetWebContents(), rect);

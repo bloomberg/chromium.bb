@@ -1072,7 +1072,6 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_Find, OnFind)
     IPC_MESSAGE_HANDLER(ViewMsg_StopFinding, OnStopFinding)
     IPC_MESSAGE_HANDLER(ViewMsg_Zoom, OnZoom)
-    IPC_MESSAGE_HANDLER(ViewMsg_SetZoomLevel, OnSetZoomLevel)
     IPC_MESSAGE_HANDLER(ViewMsg_SetZoomLevelForLoadingURL,
                         OnSetZoomLevelForLoadingURL)
     IPC_MESSAGE_HANDLER(ViewMsg_SetPageEncoding, OnSetPageEncoding)
@@ -2649,12 +2648,6 @@ void RenderViewImpl::OnZoom(PageZoom zoom) {
   zoomLevelChanged();
 }
 
-void RenderViewImpl::OnSetZoomLevel(double zoom_level) {
-  webview()->hidePopups();
-  webview()->setZoomLevel(zoom_level);
-  zoomLevelChanged();
-}
-
 void RenderViewImpl::OnSetZoomLevelForLoadingURL(const GURL& url,
                                                  double zoom_level) {
 #if !defined(OS_ANDROID)
@@ -3654,22 +3647,16 @@ blink::WebSpeechRecognizer* RenderViewImpl::speechRecognizer() {
 
 void RenderViewImpl::zoomLimitsChanged(double minimum_level,
                                        double maximum_level) {
-  // For now, don't remember plugin zoom values.  We don't want to mix them with
-  // normal web content (i.e. a fixed layout plugin would usually want them
-  // different).
-  bool remember = !webview()->mainFrame()->document().isPluginDocument();
-
   int minimum_percent = static_cast<int>(
       ZoomLevelToZoomFactor(minimum_level) * 100);
   int maximum_percent = static_cast<int>(
       ZoomLevelToZoomFactor(maximum_level) * 100);
 
   Send(new ViewHostMsg_UpdateZoomLimits(
-      routing_id_, minimum_percent, maximum_percent, remember));
+      routing_id_, minimum_percent, maximum_percent));
 }
 
 void RenderViewImpl::zoomLevelChanged() {
-  bool remember = !webview()->mainFrame()->document().isPluginDocument();
   double zoom_level = webview()->zoomLevel();
 
   FOR_EACH_OBSERVER(RenderViewObserver, observers_, ZoomLevelChanged());
@@ -3680,7 +3667,7 @@ void RenderViewImpl::zoomLevelChanged() {
     // Tell the browser which url got zoomed so it can update the menu and the
     // saved values if necessary
     Send(new ViewHostMsg_DidZoomURL(
-        routing_id_, zoom_level, remember,
+        routing_id_, zoom_level,
         GURL(webview()->mainFrame()->document().url())));
   }
 }

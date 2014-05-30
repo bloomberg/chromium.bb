@@ -495,9 +495,6 @@ class WebContents : public PageNavigator,
   virtual void SetClosedByUserGesture(bool value) = 0;
   virtual bool GetClosedByUserGesture() const = 0;
 
-  // Gets the zoom level for this tab.
-  virtual double GetZoomLevel() const = 0;
-
   // Gets the zoom percent for this tab.
   virtual int GetZoomPercent(bool* enable_increment,
                              bool* enable_decrement) const = 0;
@@ -564,10 +561,6 @@ class WebContents : public PageNavigator,
   // TODO: this doesn't really belong here. With site isolation, this should be
   // removed since we can then embed iframes in different processes.
   virtual bool IsSubframe() const = 0;
-
-  // Sets the zoom level for the current page and all BrowserPluginGuests
-  // within the page.
-  virtual void SetZoomLevel(double level) = 0;
 
   // Finds text on a page.
   virtual void Find(int request_id,

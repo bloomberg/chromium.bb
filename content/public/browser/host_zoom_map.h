@@ -18,6 +18,7 @@ namespace content {
 
 class BrowserContext;
 class ResourceContext;
+class WebContents;
 
 // Maps hostnames to custom zoom levels.  Written on the UI thread and read on
 // any thread.  One instance per browser context. Must be created on the UI
@@ -53,6 +54,15 @@ class HostZoomMap {
 
   CONTENT_EXPORT static HostZoomMap* GetForBrowserContext(
       BrowserContext* browser_context);
+
+  // Returns the current zoom level for the specified WebContents. May be
+  // temporary or host-specific.
+  CONTENT_EXPORT static double GetZoomLevel(const WebContents* web_contents);
+
+  // Sets the current zoom level for the specified WebContents. The level may
+  // be temporary or host-specific depending on the particular WebContents.
+  CONTENT_EXPORT static void SetZoomLevel(const WebContents* web_contents,
+                                          double level);
 
   // Copy the zoom levels from the given map. Can only be called on the UI
   // thread.

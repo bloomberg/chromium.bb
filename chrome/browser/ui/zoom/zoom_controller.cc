@@ -44,14 +44,15 @@ ZoomController::ZoomController(content::WebContents* web_contents)
 ZoomController::~ZoomController() {}
 
 bool ZoomController::IsAtDefaultZoom() const {
-  return content::ZoomValuesEqual(web_contents()->GetZoomLevel(),
-                                  default_zoom_level_.GetValue());
+  return content::ZoomValuesEqual(
+      content::HostZoomMap::GetZoomLevel(web_contents()),
+      default_zoom_level_.GetValue());
 }
 
 int ZoomController::GetResourceForZoomLevel() const {
   if (IsAtDefaultZoom())
     return IDR_ZOOM_NORMAL;
-  double zoom = web_contents()->GetZoomLevel();
+  double zoom = content::HostZoomMap::GetZoomLevel(web_contents());
   return zoom > default_zoom_level_.GetValue() ? IDR_ZOOM_PLUS : IDR_ZOOM_MINUS;
 }
 

@@ -2044,9 +2044,14 @@ void RenderFrameImpl::didCreateDocumentElement(blink::WebLocalFrame* frame) {
   if (url.is_valid() && url.spec() != kAboutBlankURL) {
     // TODO(nasko): Check if webview()->mainFrame() is the same as the
     // frame->tree()->top().
-    if (frame == render_view_->webview()->mainFrame()) {
+    blink::WebFrame* main_frame = render_view_->webview()->mainFrame();
+    if (frame == main_frame) {
+      // For now, don't remember plugin zoom values.  We don't want to mix them
+      // with normal web content (i.e. a fixed layout plugin would usually want
+      // them different).
       render_view_->Send(new ViewHostMsg_DocumentAvailableInMainFrame(
-          render_view_->GetRoutingID()));
+          render_view_->GetRoutingID(),
+          main_frame->document().isPluginDocument()));
     }
   }
 

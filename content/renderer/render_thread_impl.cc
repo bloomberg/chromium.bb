@@ -198,6 +198,7 @@ class RenderViewZoomer : public RenderViewVisitor {
     // Empty scheme works as wildcard that matches any scheme,
     if ((net::GetHostOrSpecFromURL(url) == host_) &&
         (scheme_.empty() || scheme_ == url.scheme())) {
+      webview->hidePopups();
       webview->setZoomLevel(zoom_level_);
     }
     return true;

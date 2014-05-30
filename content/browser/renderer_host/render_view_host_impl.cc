@@ -1178,8 +1178,14 @@ void RenderViewHostImpl::OnRequestMove(const gfx::Rect& pos) {
   Send(new ViewMsg_Move_ACK(GetRoutingID()));
 }
 
-void RenderViewHostImpl::OnDocumentAvailableInMainFrame() {
+void RenderViewHostImpl::OnDocumentAvailableInMainFrame(
+    bool uses_temporary_zoom_level) {
   delegate_->DocumentAvailableInMainFrame(this);
+
+  HostZoomMapImpl* host_zoom_map = static_cast<HostZoomMapImpl*>(
+      HostZoomMap::GetForBrowserContext(GetProcess()->GetBrowserContext()));
+  host_zoom_map->SetUsesTemporaryZoomLevel(
+      GetProcess()->GetID(), GetRoutingID(), uses_temporary_zoom_level);
 }
 
 void RenderViewHostImpl::OnToggleFullscreen(bool enter_fullscreen) {
@@ -1579,17 +1585,14 @@ void RenderViewHostImpl::OnAccessibilityLocationChanges(
 }
 
 void RenderViewHostImpl::OnDidZoomURL(double zoom_level,
-                                      bool remember,
                                       const GURL& url) {
   HostZoomMapImpl* host_zoom_map = static_cast<HostZoomMapImpl*>(
       HostZoomMap::GetForBrowserContext(GetProcess()->GetBrowserContext()));
-  if (remember) {
-    host_zoom_map->
-        SetZoomLevelForHost(net::GetHostOrSpecFromURL(url), zoom_level);
-  } else {
-    host_zoom_map->SetTemporaryZoomLevel(
-        GetProcess()->GetID(), GetRoutingID(), zoom_level);
-  }
+
+  host_zoom_map->SetZoomLevelForView(GetProcess()->GetID(),
+                                     GetRoutingID(),
+                                     zoom_level,
+                                     net::GetHostOrSpecFromURL(url));
 }
 
 void RenderViewHostImpl::OnRunFileChooser(const FileChooserParams& params) {

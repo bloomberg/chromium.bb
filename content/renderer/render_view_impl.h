@@ -746,7 +746,6 @@ class CONTENT_EXPORT RenderViewImpl
   void OnSetPageEncoding(const std::string& encoding_name);
   void OnSetRendererPrefs(const RendererPreferences& renderer_prefs);
   void OnSetWebUIProperty(const std::string& name, const std::string& value);
-  void OnSetZoomLevel(double zoom_level);
   void OnSetZoomLevelForLoadingURL(const GURL& url, double zoom_level);
   void OnStop();
   void OnStopFinding(StopFindAction action);

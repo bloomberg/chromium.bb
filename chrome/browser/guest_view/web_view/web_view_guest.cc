@@ -26,6 +26,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/geolocation_permission_context.h"
+#include "content/public/browser/host_zoom_map.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_details.h"
@@ -570,7 +571,7 @@ void WebViewGuest::Observe(int type,
 
 void WebViewGuest::SetZoom(double zoom_factor) {
   double zoom_level = content::ZoomFactorToZoomLevel(zoom_factor);
-  guest_web_contents()->SetZoomLevel(zoom_level);
+  content::HostZoomMap::SetZoomLevel(guest_web_contents(), zoom_level);
 
   scoped_ptr<base::DictionaryValue> args(new base::DictionaryValue());
   args->SetDouble(webview::kOldZoomFactor, current_zoom_factor_);
@@ -805,7 +806,7 @@ void WebViewGuest::DidCommitProvisionalLoadForFrame(
 
   // Update the current zoom factor for the new page.
   current_zoom_factor_ = content::ZoomLevelToZoomFactor(
-      guest_web_contents()->GetZoomLevel());
+      content::HostZoomMap::GetZoomLevel(guest_web_contents()));
 
   if (is_main_frame) {
     chromevox_injected_ = false;

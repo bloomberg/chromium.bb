@@ -670,12 +670,6 @@ IPC_MESSAGE_ROUTED0(ViewMsg_DisownOpener)
 IPC_MESSAGE_ROUTED1(ViewMsg_Zoom,
                     content::PageZoom /* function */)
 
-// Set the zoom level for the current main frame.  If the level actually
-// changes, a ViewHostMsg_DidZoomURL message will be sent back to the browser
-// telling it what url got zoomed and what its current zoom level is.
-IPC_MESSAGE_ROUTED1(ViewMsg_SetZoomLevel,
-                    double /* zoom_level */)
-
 // Set the zoom level for a particular url that the renderer is in the
 // process of loading.  This will be stored, to be used if the load commits
 // and ignored otherwise.
@@ -1126,7 +1120,8 @@ IPC_MESSAGE_ROUTED2(ViewHostMsg_UpdateTargetURL,
 // Sent when the document element is available for the top-level frame.  This
 // happens after the page starts loading, but before all resources are
 // finished.
-IPC_MESSAGE_ROUTED0(ViewHostMsg_DocumentAvailableInMainFrame)
+IPC_MESSAGE_ROUTED1(ViewHostMsg_DocumentAvailableInMainFrame,
+                    bool /* uses_temporary_zoom_level */)
 
 // Sent when the renderer loads a resource from its memory cache.
 // The security info is non empty if the resource was originally loaded over
@@ -1436,22 +1431,20 @@ IPC_MESSAGE_ROUTED1(ViewHostMsg_TextInputStateChanged,
 IPC_MESSAGE_ROUTED0(ViewHostMsg_ImeCancelComposition)
 
 // Sent when the renderer changes the zoom level for a particular url, so the
-// browser can update its records.  If remember is true, then url is used to
-// update the zoom level for all pages in that site.  Otherwise, the render
-// view's id is used so that only the menu is updated.
-IPC_MESSAGE_ROUTED3(ViewHostMsg_DidZoomURL,
+// browser can update its records.  If the view is a plugin doc, then url is
+// used to update the zoom level for all pages in that site.  Otherwise, the
+// render view's id is used so that only the menu is updated.
+IPC_MESSAGE_ROUTED2(ViewHostMsg_DidZoomURL,
                     double /* zoom_level */,
-                    bool /* remember */,
                     GURL /* url */)
 
 // Updates the minimum/maximum allowed zoom percent for this tab from the
 // default values.  If |remember| is true, then the zoom setting is applied to
 // other pages in the site and is saved, otherwise it only applies to this
 // tab.
-IPC_MESSAGE_ROUTED3(ViewHostMsg_UpdateZoomLimits,
+IPC_MESSAGE_ROUTED2(ViewHostMsg_UpdateZoomLimits,
                     int /* minimum_percent */,
-                    int /* maximum_percent */,
-                    bool /* remember */)
+                    int /* maximum_percent */)
 
 // Notify the browser that this render process can or can't be suddenly
 // terminated.
