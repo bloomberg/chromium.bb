@@ -26,7 +26,6 @@ class DevToolsProtocol {
     base::DictionaryValue* params() { return params_.get(); }
 
    protected:
-    // Takes ownership of |params|.
     Message(const std::string& method, base::DictionaryValue* params);
 
     std::string method_;
@@ -38,7 +37,6 @@ class DevToolsProtocol {
 
   class Command : public Message {
    public:
-    // Takes ownership of |params|.
     Command(int id, const std::string& method, base::DictionaryValue* params);
     virtual ~Command();
 

@@ -129,7 +129,7 @@ DevToolsProtocol::Command* DevToolsProtocol::ParseCommand(
 
   base::DictionaryValue* params = NULL;
   command_dict->GetDictionary(kParamsParam, &params);
-  return new Command(id, method, params ? params->DeepCopy() : NULL);
+  return new Command(id, method, params);
 }
 
 // static
