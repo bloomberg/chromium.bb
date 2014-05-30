@@ -29,6 +29,7 @@
 #include "core/fetch/ResourceClient.h"
 #include "core/fetch/ResourceOwner.h"
 #include "core/fetch/ScriptResource.h"
+#include "platform/heap/Handle.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
 #include "wtf/text/TextPosition.h"
@@ -43,7 +44,8 @@ class ScriptResource;
 // A ResourcePtr alone does not prevent the underlying Resource
 // from purging its data buffer. This class holds a dummy client open for its
 // lifetime in order to guarantee that the data buffer will not be purged.
-class PendingScript : public ResourceOwner<ScriptResource> {
+class PendingScript FINAL : public ResourceOwner<ScriptResource> {
+    ALLOW_ONLY_INLINE_ALLOCATION();
 public:
     PendingScript()
         : m_watchingForLoad(false)
@@ -90,15 +92,17 @@ public:
 
     Element* element() const { return m_element.get(); }
     void setElement(Element* element) { m_element = element; }
-    PassRefPtr<Element> releaseElementAndClear();
+    PassRefPtrWillBeRawPtr<Element> releaseElementAndClear();
 
     void setScriptResource(ScriptResource*);
 
     virtual void notifyFinished(Resource*);
 
+    void trace(Visitor*);
+
 private:
     bool m_watchingForLoad;
-    RefPtr<Element> m_element;
+    RefPtrWillBeMember<Element> m_element;
     TextPosition m_startingPosition; // Only used for inline script tags.
 };
 

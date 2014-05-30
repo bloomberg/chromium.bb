@@ -61,7 +61,7 @@ void HTMLImageLoader::notifyFinished(Resource*)
 {
     ImageResource* cachedImage = image();
 
-    RefPtr<Element> element = this->element();
+    RefPtrWillBeRawPtr<Element> element = this->element();
     ImageLoader::notifyFinished(cachedImage);
 
     bool loadError = cachedImage->errorOccurred() || cachedImage->response().httpStatusCode() >= 400;

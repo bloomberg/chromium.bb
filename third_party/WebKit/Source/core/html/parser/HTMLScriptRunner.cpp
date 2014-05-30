@@ -54,7 +54,23 @@ HTMLScriptRunner::HTMLScriptRunner(Document* document, HTMLScriptRunnerHost* hos
 
 HTMLScriptRunner::~HTMLScriptRunner()
 {
-    // FIXME: Should we be passed a "done loading/parsing" callback sooner than destruction?
+#if ENABLE(OILPAN)
+    // If the document is destructed without having explicitly
+    // detached the parser (and this script runner object), perform
+    // detach steps now. This will happen if the Document, the parser
+    // and this script runner object are swept out in the same GC.
+    detach();
+#else
+    // Verify that detach() has been called.
+    ASSERT(!m_document);
+#endif
+}
+
+void HTMLScriptRunner::detach()
+{
+    if (!m_document)
+        return;
+
     if (m_parserBlockingScript.resource() && m_parserBlockingScript.watchingForLoad())
         stopWatchingForLoad(m_parserBlockingScript);
 
@@ -63,11 +79,7 @@ HTMLScriptRunner::~HTMLScriptRunner()
         if (pendingScript.resource() && pendingScript.watchingForLoad())
             stopWatchingForLoad(pendingScript);
     }
-}
-
-void HTMLScriptRunner::detach()
-{
-    m_document = 0;
+    m_document = nullptr;
 }
 
 static KURL documentURLForScriptExecution(Document* document)
@@ -142,7 +154,7 @@ void HTMLScriptRunner::executePendingScriptAndDispatchEvent(PendingScript& pendi
     }
 
     // Clear the pending script before possible rentrancy from executeScript()
-    RefPtr<Element> element = pendingScript.releaseElementAndClear();
+    RefPtrWillBeRawPtr<Element> element = pendingScript.releaseElementAndClear();
     if (ScriptLoader* scriptLoader = toScriptLoaderIfPossible(element.get())) {
         NestingLevelIncrementer nestingLevelIncrementer(m_scriptNestingLevel);
         IgnoreDestructiveWriteCountIncrementer ignoreDestructiveWriteCountIncrementer(m_document);
@@ -160,21 +172,30 @@ void HTMLScriptRunner::executePendingScriptAndDispatchEvent(PendingScript& pendi
 void HTMLScriptRunner::watchForLoad(PendingScript& pendingScript)
 {
     ASSERT(!pendingScript.watchingForLoad());
-    m_host->watchForLoad(pendingScript.resource());
+    ASSERT(!pendingScript.resource()->isLoaded());
+    // addClient() will call notifyFinished() if the load is complete.
+    // Callers do not expect to be re-entered from this call, so they
+    // should not become a client of an already-loaded Resource.
+    pendingScript.resource()->addClient(this);
     pendingScript.setWatchingForLoad(true);
 }
 
 void HTMLScriptRunner::stopWatchingForLoad(PendingScript& pendingScript)
 {
     ASSERT(pendingScript.watchingForLoad());
-    m_host->stopWatchingForLoad(pendingScript.resource());
+    pendingScript.resource()->removeClient(this);
     pendingScript.setWatchingForLoad(false);
+}
+
+void HTMLScriptRunner::notifyFinished(Resource* cachedResource)
+{
+    m_host->notifyScriptLoaded(cachedResource);
 }
 
 // Implements the steps for 'An end tag whose tag name is "script"'
 // http://whatwg.org/html#scriptEndTag
 // Script handling lives outside the tree builder to keep each class simple.
-void HTMLScriptRunner::execute(PassRefPtr<Element> scriptElement, const TextPosition& scriptStartPosition)
+void HTMLScriptRunner::execute(PassRefPtrWillBeRawPtr<Element> scriptElement, const TextPosition& scriptStartPosition)
 {
     ASSERT(scriptElement);
     // FIXME: If scripting is disabled, always just return.
@@ -326,6 +347,14 @@ void HTMLScriptRunner::runScript(Element* script, const TextPosition& scriptStar
             requestParsingBlockingScript(script);
         }
     }
+}
+
+void HTMLScriptRunner::trace(Visitor* visitor)
+{
+    visitor->trace(m_document);
+    visitor->trace(m_host);
+    visitor->trace(m_parserBlockingScript);
+    visitor->trace(m_scriptsToExecuteAfterParsing);
 }
 
 }

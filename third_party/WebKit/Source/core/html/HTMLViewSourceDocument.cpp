@@ -175,7 +175,7 @@ void HTMLViewSourceDocument::processCharacterToken(const String& source, HTMLTok
     addText(source, "");
 }
 
-PassRefPtr<Element> HTMLViewSourceDocument::addSpanWithClassName(const AtomicString& className)
+PassRefPtrWillBeRawPtr<Element> HTMLViewSourceDocument::addSpanWithClassName(const AtomicString& className)
 {
     if (m_current == m_tbody) {
         addLine(className);
@@ -267,7 +267,7 @@ int HTMLViewSourceDocument::addRange(const String& source, int start, int end, c
     return end;
 }
 
-PassRefPtr<Element> HTMLViewSourceDocument::addBase(const AtomicString& href)
+PassRefPtrWillBeRawPtr<Element> HTMLViewSourceDocument::addBase(const AtomicString& href)
 {
     RefPtrWillBeRawPtr<HTMLBaseElement> base = HTMLBaseElement::create(*this);
     base->setAttribute(hrefAttr, href);
@@ -275,7 +275,7 @@ PassRefPtr<Element> HTMLViewSourceDocument::addBase(const AtomicString& href)
     return base.release();
 }
 
-PassRefPtr<Element> HTMLViewSourceDocument::addLink(const AtomicString& url, bool isAnchor)
+PassRefPtrWillBeRawPtr<Element> HTMLViewSourceDocument::addLink(const AtomicString& url, bool isAnchor)
 {
     if (m_current == m_tbody)
         addLine("webkit-html-tag");

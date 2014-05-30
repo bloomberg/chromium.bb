@@ -30,20 +30,16 @@
 
 namespace WebCore {
 
-class Resource;
-class Element;
 class HTMLInputStream;
-class ScriptSourceCode;
+class Resource;
+class Visitor;
 
-class HTMLScriptRunnerHost {
+class HTMLScriptRunnerHost : public WillBeGarbageCollectedMixin {
 public:
     virtual ~HTMLScriptRunnerHost() { }
+    virtual void trace(Visitor*) { }
 
-    // Implementors should call cachedResource->addClient() here or soon after.
-    virtual void watchForLoad(Resource*) = 0;
-    // Implementors must call cachedResource->removeClient() immediately.
-    virtual void stopWatchingForLoad(Resource*) = 0;
-
+    virtual void notifyScriptLoaded(Resource*) = 0;
     virtual HTMLInputStream& inputStream() = 0;
 
     virtual bool hasPreloadScanner() const = 0;

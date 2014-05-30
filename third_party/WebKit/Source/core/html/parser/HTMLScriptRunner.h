@@ -27,6 +27,8 @@
 #define HTMLScriptRunner_h
 
 #include "core/dom/PendingScript.h"
+#include "core/fetch/ResourceClient.h"
+#include "platform/heap/Handle.h"
 #include "wtf/Deque.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/text/TextPosition.h"
@@ -41,19 +43,19 @@ class LocalFrame;
 class HTMLScriptRunnerHost;
 class ScriptSourceCode;
 
-class HTMLScriptRunner {
-    WTF_MAKE_NONCOPYABLE(HTMLScriptRunner); WTF_MAKE_FAST_ALLOCATED;
+class HTMLScriptRunner FINAL : public NoBaseWillBeGarbageCollectedFinalized<HTMLScriptRunner>, private ResourceClient {
+    WTF_MAKE_NONCOPYABLE(HTMLScriptRunner); WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
-    static PassOwnPtr<HTMLScriptRunner> create(Document* document, HTMLScriptRunnerHost* host)
+    static PassOwnPtrWillBeRawPtr<HTMLScriptRunner> create(Document* document, HTMLScriptRunnerHost* host)
     {
-        return adoptPtr(new HTMLScriptRunner(document, host));
+        return adoptPtrWillBeNoop(new HTMLScriptRunner(document, host));
     }
     ~HTMLScriptRunner();
 
     void detach();
 
     // Processes the passed in script and any pending scripts if possible.
-    void execute(PassRefPtr<Element> scriptToProcess, const TextPosition& scriptStartPosition);
+    void execute(PassRefPtrWillBeRawPtr<Element> scriptToProcess, const TextPosition& scriptStartPosition);
 
     void executeScriptsWaitingForLoad(Resource*);
     bool hasScriptsWaitingForResources() const { return m_hasScriptsWaitingForResources; }
@@ -62,6 +64,11 @@ public:
 
     bool hasParserBlockingScript() const;
     bool isExecutingScript() const { return !!m_scriptNestingLevel; }
+
+    // ResourceClient
+    virtual void notifyFinished(Resource*) OVERRIDE;
+
+    void trace(Visitor*);
 
 private:
     HTMLScriptRunner(Document*, HTMLScriptRunnerHost*);
@@ -89,8 +96,8 @@ private:
     bool isPendingScriptReady(const PendingScript&);
     ScriptSourceCode sourceFromPendingScript(const PendingScript&, bool& errorOccurred) const;
 
-    Document* m_document;
-    HTMLScriptRunnerHost* m_host;
+    RawPtrWillBeMember<Document> m_document;
+    RawPtrWillBeMember<HTMLScriptRunnerHost> m_host;
     PendingScript m_parserBlockingScript;
     Deque<PendingScript> m_scriptsToExecuteAfterParsing; // http://www.whatwg.org/specs/web-apps/current-work/#list-of-scripts-that-will-execute-when-the-document-has-finished-parsing
     unsigned m_scriptNestingLevel;

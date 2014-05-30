@@ -31,6 +31,7 @@
 #include "core/dom/PendingScript.h"
 #include "core/dom/ScriptLoader.h"
 #include "core/fetch/ScriptResource.h"
+#include "platform/heap/Handle.h"
 
 namespace WebCore {
 
@@ -43,12 +44,6 @@ ScriptRunner::ScriptRunner(Document* document)
 
 ScriptRunner::~ScriptRunner()
 {
-    for (size_t i = 0; i < m_scriptsToExecuteSoon.size(); ++i)
-        m_document->decrementLoadEventDelayCount();
-    for (size_t i = 0; i < m_scriptsToExecuteInOrder.size(); ++i)
-        m_document->decrementLoadEventDelayCount();
-    for (size_t i = 0; i < m_pendingAsyncScripts.size(); ++i)
-        m_document->decrementLoadEventDelayCount();
 }
 
 void ScriptRunner::queueScriptForExecution(ScriptLoader* scriptLoader, ResourcePtr<ScriptResource> resource, ExecutionType executionType)
@@ -118,7 +113,7 @@ void ScriptRunner::timerFired(Timer<ScriptRunner>* timer)
 {
     ASSERT_UNUSED(timer, timer == &m_timer);
 
-    RefPtr<Document> protect(m_document);
+    RefPtrWillBeRawPtr<Document> protect(m_document.get());
 
     Vector<PendingScript> scripts;
     scripts.swap(m_scriptsToExecuteSoon);
@@ -132,10 +127,18 @@ void ScriptRunner::timerFired(Timer<ScriptRunner>* timer)
     size_t size = scripts.size();
     for (size_t i = 0; i < size; ++i) {
         ScriptResource* resource = scripts[i].resource();
-        RefPtr<Element> element = scripts[i].releaseElementAndClear();
+        RefPtrWillBeRawPtr<Element> element = scripts[i].releaseElementAndClear();
         toScriptLoaderIfPossible(element.get())->execute(resource);
         m_document->decrementLoadEventDelayCount();
     }
+}
+
+void ScriptRunner::trace(Visitor* visitor)
+{
+    visitor->trace(m_document);
+    visitor->trace(m_scriptsToExecuteInOrder);
+    visitor->trace(m_scriptsToExecuteSoon);
+    visitor->trace(m_pendingAsyncScripts);
 }
 
 }

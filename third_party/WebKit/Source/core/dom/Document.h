@@ -1285,7 +1285,7 @@ private:
 
     double m_startTime;
 
-    OwnPtr<ScriptRunner> m_scriptRunner;
+    OwnPtrWillBeMember<ScriptRunner> m_scriptRunner;
 
     WillBeHeapVector<RefPtrWillBeMember<HTMLScriptElement> > m_currentScriptStack;
 

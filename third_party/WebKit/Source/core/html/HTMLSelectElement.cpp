@@ -486,7 +486,7 @@ void HTMLSelectElement::setLength(unsigned newLen, ExceptionState& exceptionStat
 
         // Removing children fires mutation events, which might mutate the DOM further, so we first copy out a list
         // of elements that we intend to remove then attempt to remove them one at a time.
-        Vector<RefPtr<Element> > itemsToRemove;
+        WillBeHeapVector<RefPtrWillBeMember<Element> > itemsToRemove;
         size_t optionIndex = 0;
         for (size_t i = 0; i < items.size(); ++i) {
             Element* item = items[i];

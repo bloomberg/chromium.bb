@@ -541,7 +541,6 @@ Document::~Document()
 
     if (m_templateDocument)
         m_templateDocument->m_templateDocumentHost = nullptr; // balanced in ensureTemplateDocument().
-#endif
 
     m_scriptRunner.clear();
 
@@ -549,7 +548,6 @@ Document::~Document()
     // not notify the inspector instrumentation that the event listeners are
     // gone. The Document and all the nodes in the document are gone, so maybe
     // that is OK?
-#if !ENABLE(OILPAN)
     removeAllEventListenersRecursively();
 
     // Currently we believe that Document can never outlive the parser.
@@ -5774,6 +5772,7 @@ void Document::trace(Visitor* visitor)
     visitor->trace(m_titleElement);
     visitor->trace(m_markers);
     visitor->trace(m_currentScriptStack);
+    visitor->trace(m_scriptRunner);
     visitor->trace(m_transformSourceDocument);
     visitor->trace(m_listsInvalidatedAtDocument);
 #if ENABLE(OILPAN)

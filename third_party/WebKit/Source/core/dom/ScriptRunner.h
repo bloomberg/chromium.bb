@@ -28,6 +28,7 @@
 
 #include "core/fetch/ResourcePtr.h"
 #include "platform/Timer.h"
+#include "platform/heap/Handle.h"
 #include "wtf/HashMap.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/PassOwnPtr.h"
@@ -40,10 +41,13 @@ class Document;
 class PendingScript;
 class ScriptLoader;
 
-class ScriptRunner {
-    WTF_MAKE_NONCOPYABLE(ScriptRunner); WTF_MAKE_FAST_ALLOCATED;
+class ScriptRunner FINAL : public NoBaseWillBeGarbageCollectedFinalized<ScriptRunner> {
+    WTF_MAKE_NONCOPYABLE(ScriptRunner); WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
-    static PassOwnPtr<ScriptRunner> create(Document* document) { return adoptPtr(new ScriptRunner(document)); }
+    static PassOwnPtrWillBeRawPtr<ScriptRunner> create(Document* document)
+    {
+        return adoptPtrWillBeNoop(new ScriptRunner(document));
+    }
     ~ScriptRunner();
 
     enum ExecutionType { ASYNC_EXECUTION, IN_ORDER_EXECUTION };
@@ -54,12 +58,16 @@ public:
     void notifyScriptReady(ScriptLoader*, ExecutionType);
     void notifyScriptLoadError(ScriptLoader*, ExecutionType);
 
+    void trace(Visitor*);
+
 private:
     explicit ScriptRunner(Document*);
 
     void timerFired(Timer<ScriptRunner>*);
 
-    Document* m_document;
+    RawPtrWillBeMember<Document> m_document;
+    // FIXME: Oilpan: consider using heap vectors and hash map here;
+    // PendingScript does have a (trivial) destructor, however.
     Vector<PendingScript> m_scriptsToExecuteInOrder;
     Vector<PendingScript> m_scriptsToExecuteSoon; // http://www.whatwg.org/specs/web-apps/current-work/#set-of-scripts-that-will-execute-as-soon-as-possible
     HashMap<ScriptLoader*, PendingScript> m_pendingAsyncScripts;

@@ -35,7 +35,7 @@ PendingScript::~PendingScript()
 {
 }
 
-PassRefPtr<Element> PendingScript::releaseElementAndClear()
+PassRefPtrWillBeRawPtr<Element> PendingScript::releaseElementAndClear()
 {
     setScriptResource(0);
     m_watchingForLoad = false;
@@ -50,6 +50,11 @@ void PendingScript::setScriptResource(ScriptResource* resource)
 
 void PendingScript::notifyFinished(Resource*)
 {
+}
+
+void PendingScript::trace(Visitor* visitor)
+{
+    visitor->trace(m_element);
 }
 
 }

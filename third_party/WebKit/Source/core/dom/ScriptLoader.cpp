@@ -296,8 +296,8 @@ void ScriptLoader::executeScript(const ScriptSourceCode& sourceCode)
     if (sourceCode.isEmpty())
         return;
 
-    RefPtr<Document> elementDocument(m_element->document());
-    RefPtr<Document> contextDocument = elementDocument->contextDocument().get();
+    RefPtrWillBeRawPtr<Document> elementDocument(m_element->document());
+    RefPtrWillBeRawPtr<Document> contextDocument = elementDocument->contextDocument().get();
     if (!contextDocument)
         return;
 
@@ -367,8 +367,8 @@ void ScriptLoader::notifyFinished(Resource* resource)
 {
     ASSERT(!m_willBeParserExecuted);
 
-    RefPtr<Document> elementDocument(m_element->document());
-    RefPtr<Document> contextDocument = elementDocument->contextDocument().get();
+    RefPtrWillBeRawPtr<Document> elementDocument(m_element->document());
+    RefPtrWillBeRawPtr<Document> contextDocument = elementDocument->contextDocument().get();
     if (!contextDocument)
         return;
 

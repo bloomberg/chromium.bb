@@ -87,7 +87,7 @@ void HTMLTableSectionElement::deleteRow(int index, ExceptionState& exceptionStat
     if (index == -1)
         index = numRows - 1;
     if (index >= 0 && index < numRows) {
-        RefPtr<Element> row = children->item(index);
+        RefPtrWillBeRawPtr<Element> row = children->item(index);
         HTMLElement::removeChild(row.get(), exceptionState);
     } else {
         exceptionState.throwDOMException(IndexSizeError, "The provided index (" + String::number(index) + " is outside the range [-1, " + String::number(numRows) + "].");
