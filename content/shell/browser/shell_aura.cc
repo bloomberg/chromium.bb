@@ -51,9 +51,9 @@ void Shell::PlatformSetContents() {
   CHECK(platform_);
   aura::Window* content = web_contents_->GetNativeView();
   aura::Window* parent = platform_->host()->window();
-  if (parent->Contains(content))
-    return;
-  parent->AddChild(content);
+  if (!parent->Contains(content))
+    parent->AddChild(content);
+
   content->Show();
 }
 
