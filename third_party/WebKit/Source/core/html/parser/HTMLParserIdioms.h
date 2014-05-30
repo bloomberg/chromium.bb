@@ -36,11 +36,6 @@ class TextEncoding;
 
 namespace WebCore {
 
-// Space characters as defined by the HTML specification.
-bool isHTMLSpace(UChar);
-bool isHTMLLineBreak(UChar);
-bool isNotHTMLSpace(UChar);
-
 // Strip leading and trailing whitespace as defined by the HTML specification.
 String stripLeadingAndTrailingHTMLSpaces(const String&);
 template<size_t inlineCapacity>
@@ -69,8 +64,7 @@ typedef Vector<pair<String, String> > HTMLAttributeList;
 // The returned encoding might not be valid.
 WTF::TextEncoding encodingFromMetaAttributes(const HTMLAttributeList&);
 
-// Inline implementations of some of the functions declared above.
-
+// Space characters as defined by the HTML specification.
 template<typename CharType>
 inline bool isHTMLSpace(CharType character)
 {
@@ -88,9 +82,15 @@ inline bool isHTMLSpace(CharType character)
 }
 
 template<typename CharType>
+inline bool isComma(CharType character)
+{
+    return character == ',';
+}
+
+template<typename CharType>
 inline bool isHTMLSpaceOrComma(CharType character)
 {
-    return isHTMLSpace<CharType>(character) || character == ',';
+    return isComma(character) || isHTMLSpace(character);
 }
 
 inline bool isHTMLLineBreak(UChar character)

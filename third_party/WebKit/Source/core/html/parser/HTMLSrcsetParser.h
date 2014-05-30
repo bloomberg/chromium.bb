@@ -36,20 +36,33 @@
 
 namespace WebCore {
 
-struct DescriptorParsingResult {
-    float scaleFactor;
-    int resourceWidth;
+enum { UninitializedDescriptor = -1 };
 
+class DescriptorParsingResult {
+public:
     DescriptorParsingResult()
+        : m_density(UninitializedDescriptor)
+        , m_resourceWidth(UninitializedDescriptor)
+        , m_resourceHeight(UninitializedDescriptor)
     {
-        scaleFactor = -1.0;
-        resourceWidth = -1;
     }
 
-    bool foundDescriptor() const
-    {
-        return (scaleFactor >= 0 || resourceWidth >= 0);
-    }
+    bool hasDensity() const { return m_density >= 0; }
+    bool hasWidth() const { return m_resourceWidth >= 0; }
+    bool hasHeight() const { return m_resourceHeight >= 0; }
+
+    float density() const { ASSERT(hasDensity()); return m_density; }
+    unsigned resourceWidth() const { ASSERT(hasWidth()); return m_resourceWidth; }
+    unsigned resourceHeight() const { ASSERT(hasHeight()); return m_resourceHeight; }
+
+    void setResourceWidth(int width) { ASSERT(width >= 0); m_resourceWidth = (unsigned)width; }
+    void setResourceHeight(int height) { ASSERT(height >= 0); m_resourceHeight = (unsigned)height; }
+    void setDensity(float densityToSet) { ASSERT(densityToSet >= 0); m_density = densityToSet; }
+
+private:
+    float m_density;
+    int m_resourceWidth;
+    int m_resourceHeight;
 };
 
 class ImageCandidate {
@@ -60,14 +73,14 @@ public:
     };
 
     ImageCandidate()
-        : m_scaleFactor(1.0)
+        : m_density(1.0)
     {
     }
 
     ImageCandidate(const String& source, unsigned start, unsigned length, const DescriptorParsingResult& result, OriginAttribute originAttribute)
         : m_string(source.createView(start, length))
-        , m_scaleFactor(result.scaleFactor)
-        , m_resourceWidth(result.resourceWidth)
+        , m_density(result.hasDensity()?result.density():UninitializedDescriptor)
+        , m_resourceWidth(result.hasWidth()?result.resourceWidth():UninitializedDescriptor)
         , m_originAttribute(originAttribute)
     {
     }
@@ -82,14 +95,14 @@ public:
         return AtomicString(m_string.toString());
     }
 
-    void setScaleFactor(float factor)
+    void setDensity(float factor)
     {
-        m_scaleFactor = factor;
+        m_density = factor;
     }
 
-    float scaleFactor() const
+    float density() const
     {
-        return m_scaleFactor;
+        return m_density;
     }
 
     int resourceWidth() const
@@ -109,7 +122,7 @@ public:
 
 private:
     StringView m_string;
-    float m_scaleFactor;
+    float m_density;
     int m_resourceWidth;
     OriginAttribute m_originAttribute;
 };

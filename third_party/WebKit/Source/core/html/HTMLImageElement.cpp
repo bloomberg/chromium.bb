@@ -180,10 +180,10 @@ void HTMLImageElement::setBestFitURLAndDPRFromImageCandidate(const ImageCandidat
 {
     m_bestFitImageURL = candidate.url();
     m_currentSrc = AtomicString(document().completeURL(imageSourceURL()).string());
-    float candidateScaleFactor = candidate.scaleFactor();
+    float candidateDensity = candidate.density();
     // FIXME: Make this ">0" part match the spec, once it settles.
-    if (candidateScaleFactor > 0)
-        m_imageDevicePixelRatio = 1 / candidateScaleFactor;
+    if (candidateDensity > 0)
+        m_imageDevicePixelRatio = 1 / candidateDensity;
     if (renderer() && renderer()->isImage())
         toRenderImage(renderer())->setImageDevicePixelRatio(m_imageDevicePixelRatio);
 }
