@@ -308,7 +308,7 @@ static NEVER_INLINE void partitionFull()
     IMMEDIATE_CRASH();
 }
 
-static ALWAYS_INLINE void* partitionAllocPartitionPages(PartitionRootBase* root, size_t numPartitionPages)
+static ALWAYS_INLINE void* partitionAllocPartitionPages(PartitionRootBase* root, int flags, size_t numPartitionPages)
 {
     ASSERT(!(reinterpret_cast<uintptr_t>(root->nextPartitionPage) % kPartitionPageSize));
     ASSERT(!(reinterpret_cast<uintptr_t>(root->nextPartitionPageEnd) % kPartitionPageSize));
@@ -329,9 +329,11 @@ static ALWAYS_INLINE void* partitionAllocPartitionPages(PartitionRootBase* root,
         partitionFull();
     char* requestedAddress = root->nextSuperPage;
     char* superPage = reinterpret_cast<char*>(allocPages(requestedAddress, kSuperPageSize, kSuperPageSize));
-    // TODO: handle allocation failure here with PartitionAllocReturnNull.
-    if (!superPage)
+    if (UNLIKELY(!superPage)) {
+        if (flags & PartitionAllocReturnNull)
+            return 0;
         partitionOutOfMemory();
+    }
     root->nextSuperPage = superPage + kSuperPageSize;
     char* ret = superPage + kPartitionPageSize;
     root->nextPartitionPage = ret + totalSize;
@@ -677,7 +679,11 @@ void* partitionAllocSlowPath(PartitionRootBase* root, int flags, size_t size, Pa
     } else {
         // Third. If we get here, we need a brand new page.
         size_t numPartitionPages = partitionBucketPartitionPages(bucket);
-        void* rawNewPage = partitionAllocPartitionPages(root, numPartitionPages);
+        void* rawNewPage = partitionAllocPartitionPages(root, flags, numPartitionPages);
+        if (UNLIKELY(!rawNewPage)) {
+            ASSERT(returnNull);
+            return 0;
+        }
         // Skip the alignment check because it depends on page->bucket, which is not yet set.
         newPage = partitionPointerToPageNoAlignmentCheck(rawNewPage);
     }
