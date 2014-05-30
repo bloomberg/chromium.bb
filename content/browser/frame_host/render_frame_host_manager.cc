@@ -964,7 +964,6 @@ int RenderFrameHostManager::CreateRenderFrame(
     RenderViewHostImpl* render_view_host =
         new_render_frame_host->render_view_host();
     int proxy_routing_id = MSG_ROUTING_NONE;
-    frame_to_announce = new_render_frame_host.get();
 
     // Prevent the process from exiting while we're trying to navigate in it.
     // Otherwise, if the new RFH is swapped out already, store it.
@@ -988,6 +987,7 @@ int RenderFrameHostManager::CreateRenderFrame(
       CancelPending();
     }
     routing_id = render_view_host->GetRoutingID();
+    frame_to_announce = new_render_frame_host.get();
   }
 
   // Use this as our new pending RFH if it isn't swapped out.
