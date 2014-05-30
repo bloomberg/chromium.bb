@@ -47,7 +47,7 @@
 using content::BrowserThread;
 
 namespace {
-static const int64 kDownloadRequestTimeoutMs = 3000;
+static const int64 kDownloadRequestTimeoutMs = 7000;
 }  // namespace
 
 namespace safe_browsing {
