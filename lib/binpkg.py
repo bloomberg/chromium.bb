@@ -18,6 +18,7 @@ import urllib2
 
 from chromite.lib import cros_build_lib
 from chromite.lib import gs
+from chromite.lib import parallel
 
 
 TWO_WEEKS = 60 * 60 * 24 * 7 * 2
@@ -347,3 +348,46 @@ def GrabLocalPackageIndex(package_path):
   pkgindex.Read(packages_file)
   packages_file.close()
   return pkgindex
+
+
+def _DownloadURLs(urls, dest_dir):
+  """Copy URLs into the specified |dest_dir|.
+
+  Args:
+    urls: List of URLs to fetch.
+    dest_dir: Destination directory.
+  """
+  gs_ctx = gs.GSContext()
+  cmd = ['cp'] + urls + [dest_dir]
+  gs_ctx.DoCommand(cmd, parallel=len(urls) > 1)
+
+
+def FetchTarballs(binhost_urls, pkgdir):
+  """Prefetch the specified |binhost_urls| to the specified |pkgdir|.
+
+  This function fetches the tarballs from the specified list of binhost
+  URLs to disk. It does not populate the Packages file -- we leave that
+  to Portage.
+
+  Args:
+    binhost_urls: List of binhost URLs to fetch.
+    pkgdir: Location to store the fetched packages.
+  """
+  categories = {}
+  for binhost_url in binhost_urls:
+    pkgindex = GrabRemotePackageIndex(binhost_url)
+    base_uri = pkgindex.header['URI']
+    for pkg in pkgindex.packages:
+      cpv = pkg['CPV']
+      path = pkg.get('PATH', '%s.tbz2' % cpv)
+      uri = '/'.join([base_uri, path])
+      category = cpv.partition('/')[0]
+      fetches = categories.setdefault(category, {})
+      fetches[cpv] = uri
+
+  with parallel.BackgroundTaskRunner(_DownloadURLs) as queue:
+    for category, urls in categories.iteritems():
+      category_dir = os.path.join(pkgdir, category)
+      if not os.path.exists(category_dir):
+        os.makedirs(category_dir)
+      queue.put((urls.values(), category_dir))
