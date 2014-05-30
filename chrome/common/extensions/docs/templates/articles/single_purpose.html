@@ -203,10 +203,29 @@ by disabling the extension.
 <p>
 All Chrome settings changed by an extension will be reverted
 when that extension is disabled.
-All other settings will remain unchanged.
+All other settings
+(for example, those changed directly by a Windows binary)
+will remain unchanged.
 </p>
 
-<h2 id="eleven">11.) Is this new policy Windows-only?</h2>
+<h2 id="eleven">11.) Will users’ existing homepage, search provider or
+startup pages be affected by the introduction of the Settings Override API?</h2>
+
+<p>
+No.
+A user’s existing homepage, search provider or startup settings will
+remain unchanged by the introduction of Settings Override API.
+Following the launch of the Settings Override API,
+only extensions can programmatically change these settings and
+only through the Settings Override API.
+But all changes to a user’s homepage, search provider or
+startup pages made prior to the launch of the Settings Override API,
+including any that may have been made by Windows binaries,
+will remain unchanged until the user manually updates those settings or
+installs an extension that uses the Settings Override API to change them. 
+</p>
+
+<h2 id="twelve">12.) Is this new policy Windows-only?</h2>
 
 <p>
 The <a href="https://developer.chrome.com/extensions/hosting_changes">requirement</a>
@@ -217,7 +236,7 @@ only on Chrome for Windows.
 However, the single-purpose policy will apply to all Chrome extensions.
 </p>
 
-<h2 id="twelve">12.) Does this policy apply to Chrome apps too?</h2>
+<h2 id="thirteen">13.) Does this policy apply to Chrome apps too?</h2>
 
 <p>
 At this time, Chrome apps (as distinguished from extensions)
@@ -226,7 +245,7 @@ or to have a single purpose.
 Chrome apps are currently not capable of changing Chrome settings.
 </p>
 
-<h2 id="thirteen">13.) Can I bundle ad injection with some other type of functionality?</h2>
+<h2 id="fourteen">14.) Can I bundle ad injection with some other type of functionality?</h2>
 
 <p>
 No.
@@ -242,7 +261,7 @@ You also might want to explore the other monetization options described
 <a href="https://developer.chrome.com/webstore/money">here</a>.
 </p>
 
-<h2 id="fourteen">14.) Are toolbars permitted under this policy?</h2>
+<h2 id="fifteen">15.) Are toolbars permitted under this policy?</h2>
 
 <p>
 It depends on what the toolbar does.
@@ -260,7 +279,7 @@ which was designed to solve this very problem.
 It's a better user experience, with no performance or security downsides.
 </p>
 
-<h2 id="fifteen">15.) What will happen to non-compliant extensions
+<h2 id="sixteen">16.) What will happen to non-compliant extensions
 that were already installed by users?</h2>
 
 <p>
@@ -271,16 +290,15 @@ that is hosted in the Chrome Web Store.
 If the user is not updated to a compliant extension
 that is hosted in the Chrome Web Store,
 then the extension will be automatically disabled.
-When Chrome disables a non-compliant extension,
-it will not revert browser settings made at the same time as installing
-that extension prior to the launch of the Settings Override API.
-Only settings changed by an extension using the Settings Override API
+As noted above,
+any settings or behaviours controlled by the extension,
+including any settings controlled by the Settings Override API,
 will be reverted when the extension is disabled. 
 You can find more information
 <a href="http://blog.chromium.org/2014/02/make-sure-to-get-your-extension-in.html">here</a>.
 </p>
 
-<h2 id="sixteen">16.) If my extension is rejected from the Chrome Web Store
+<h2 id="seventeen">17.) If my extension is rejected from the Chrome Web Store
 because it doesn’t comply with the single purpose policy,
 what will happen after the requirement to host extensions
 in the Chrome Web Store comes into effect?</h2>
@@ -294,7 +312,7 @@ your extension must be hosted in the Chrome Web Store or
 it will be automatically disabled from the users’ browsers. 
 </p>
 
-<h2 id="seventeen">17.) If my extension gets flagged for review under the single purpose policy,
+<h2 id="eighteen">18.) If my extension gets flagged for review under the single purpose policy,
 what will happen?</h2>
 
 <p>
@@ -312,7 +330,7 @@ with your extension ID if you’d like feedback.
 We’ll try to respond within a week.
 </p>
 
-<h2 id="eighteen">18.) I need help. Who should I contact?</h2>
+<h2 id="nineteen">19.) I need help. Who should I contact?</h2>
 
 <p>
 You can email
