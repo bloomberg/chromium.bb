@@ -36,6 +36,18 @@ void UnittestOnlyBenchmark::DidUpdateLayers(LayerTreeHost* host) {
   NotifyDone(scoped_ptr<base::Value>());
 }
 
+bool UnittestOnlyBenchmark::ProcessMessage(scoped_ptr<base::Value> value) {
+  base::DictionaryValue* message = NULL;
+  value->GetAsDictionary(&message);
+  bool can_handle;
+  if (message->HasKey("can_handle")) {
+    message->GetBoolean("can_handle", &can_handle);
+    if (can_handle)
+      return true;
+  }
+  return false;
+}
+
 void UnittestOnlyBenchmark::RecordImplResults(scoped_ptr<base::Value> results) {
   NotifyDone(results.Pass());
 }

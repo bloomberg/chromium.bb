@@ -28,17 +28,22 @@ class CC_EXPORT MicroBenchmarkController {
 
   void DidUpdateLayers();
 
-  bool ScheduleRun(const std::string& micro_benchmark_name,
-                   scoped_ptr<base::Value> value,
-                   const MicroBenchmark::DoneCallback& callback);
+  // Returns the id of the benchmark on success, 0 otherwise.
+  int ScheduleRun(const std::string& micro_benchmark_name,
+                  scoped_ptr<base::Value> value,
+                  const MicroBenchmark::DoneCallback& callback);
+  // Returns true if the message was successfully delivered and handled.
+  bool SendMessage(int id, scoped_ptr<base::Value> value);
 
   void ScheduleImplBenchmarks(LayerTreeHostImpl* host_impl);
 
  private:
   void CleanUpFinishedBenchmarks();
+  int GetNextIdAndIncrement();
 
   LayerTreeHost* host_;
   ScopedPtrVector<MicroBenchmark> benchmarks_;
+  static int next_id_;
   scoped_refptr<base::MessageLoopProxy> main_controller_message_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(MicroBenchmarkController);

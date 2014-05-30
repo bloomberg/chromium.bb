@@ -275,9 +275,12 @@ class CC_EXPORT LayerTreeHost {
   bool UsingSharedMemoryResources();
   int id() const { return id_; }
 
-  bool ScheduleMicroBenchmark(const std::string& benchmark_name,
-                              scoped_ptr<base::Value> value,
-                              const MicroBenchmark::DoneCallback& callback);
+  // Returns the id of the benchmark on success, 0 otherwise.
+  int ScheduleMicroBenchmark(const std::string& benchmark_name,
+                             scoped_ptr<base::Value> value,
+                             const MicroBenchmark::DoneCallback& callback);
+  // Returns true if the message was successfully delivered and handled.
+  bool SendMessageToMicroBenchmark(int id, scoped_ptr<base::Value> value);
 
   // When a SwapPromiseMonitor is created on the main thread, it calls
   // InsertSwapPromiseMonitor() to register itself with LayerTreeHost.

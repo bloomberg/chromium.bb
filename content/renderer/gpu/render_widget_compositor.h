@@ -70,10 +70,11 @@ class RenderWidgetCompositor : public blink::WebLayerTreeView,
   int GetLayerTreeId() const;
   void NotifyInputThrottledUntilCommit();
   const cc::Layer* GetRootLayer() const;
-  bool ScheduleMicroBenchmark(
+  int ScheduleMicroBenchmark(
       const std::string& name,
       scoped_ptr<base::Value> value,
       const base::Callback<void(scoped_ptr<base::Value>)>& callback);
+  bool SendMessageToMicroBenchmark(int id, scoped_ptr<base::Value> value);
 
   // WebLayerTreeView implementation.
   virtual void setSurfaceReady();

@@ -29,9 +29,13 @@ class CC_EXPORT MicroBenchmark {
 
   bool IsDone() const;
   virtual void DidUpdateLayers(LayerTreeHost* host);
+  int id() const { return id_; }
+  void set_id(int id) { id_ = id; }
 
   virtual void RunOnLayer(Layer* layer);
   virtual void RunOnLayer(PictureLayer* layer);
+
+  virtual bool ProcessMessage(scoped_ptr<base::Value> value);
 
   bool ProcessedForBenchmarkImpl() const;
   scoped_ptr<MicroBenchmarkImpl> GetBenchmarkImpl(
@@ -47,6 +51,7 @@ class CC_EXPORT MicroBenchmark {
   DoneCallback callback_;
   bool is_done_;
   bool processed_for_benchmark_impl_;
+  int id_;
 };
 
 }  // namespace cc

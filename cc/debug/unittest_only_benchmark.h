@@ -17,6 +17,7 @@ class CC_EXPORT UnittestOnlyBenchmark : public MicroBenchmark {
   virtual ~UnittestOnlyBenchmark();
 
   virtual void DidUpdateLayers(LayerTreeHost* host) OVERRIDE;
+  virtual bool ProcessMessage(scoped_ptr<base::Value> value) OVERRIDE;
 
  protected:
   virtual scoped_ptr<MicroBenchmarkImpl> CreateBenchmarkImpl(
@@ -32,4 +33,3 @@ class CC_EXPORT UnittestOnlyBenchmark : public MicroBenchmark {
 }  // namespace cc
 
 #endif  // CC_DEBUG_UNITTEST_ONLY_BENCHMARK_H_
-

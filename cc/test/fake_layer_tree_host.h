@@ -37,6 +37,7 @@ class FakeLayerTreeHost : public LayerTreeHost {
   LayerTreeImpl* active_tree() { return host_impl_.active_tree(); }
 
   using LayerTreeHost::ScheduleMicroBenchmark;
+  using LayerTreeHost::SendMessageToMicroBenchmark;
   using LayerTreeHost::SetOutputSurfaceLostForTesting;
   using LayerTreeHost::InitializeSingleThreaded;
   using LayerTreeHost::InitializeForTesting;

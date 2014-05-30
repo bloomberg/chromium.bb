@@ -16,7 +16,9 @@ namespace cc {
 MicroBenchmark::MicroBenchmark(const DoneCallback& callback)
     : callback_(callback),
       is_done_(false),
-      processed_for_benchmark_impl_(false) {}
+      processed_for_benchmark_impl_(false),
+      id_(0) {
+}
 
 MicroBenchmark::~MicroBenchmark() {}
 
@@ -34,6 +36,10 @@ void MicroBenchmark::NotifyDone(scoped_ptr<base::Value> result) {
 void MicroBenchmark::RunOnLayer(Layer* layer) {}
 
 void MicroBenchmark::RunOnLayer(PictureLayer* layer) {}
+
+bool MicroBenchmark::ProcessMessage(scoped_ptr<base::Value> value) {
+  return false;
+}
 
 bool MicroBenchmark::ProcessedForBenchmarkImpl() const {
   return processed_for_benchmark_impl_;

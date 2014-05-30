@@ -413,11 +413,17 @@ const cc::Layer* RenderWidgetCompositor::GetRootLayer() const {
   return layer_tree_host_->root_layer();
 }
 
-bool RenderWidgetCompositor::ScheduleMicroBenchmark(
+int RenderWidgetCompositor::ScheduleMicroBenchmark(
     const std::string& name,
     scoped_ptr<base::Value> value,
     const base::Callback<void(scoped_ptr<base::Value>)>& callback) {
   return layer_tree_host_->ScheduleMicroBenchmark(name, value.Pass(), callback);
+}
+
+bool RenderWidgetCompositor::SendMessageToMicroBenchmark(
+    int id,
+    scoped_ptr<base::Value> value) {
+  return layer_tree_host_->SendMessageToMicroBenchmark(id, value.Pass());
 }
 
 void RenderWidgetCompositor::Initialize(cc::LayerTreeSettings settings) {

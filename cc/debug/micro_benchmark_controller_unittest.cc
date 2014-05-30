@@ -49,26 +49,26 @@ void IncrementCallCount(int* count, scoped_ptr<base::Value> value) {
 }
 
 TEST_F(MicroBenchmarkControllerTest, ScheduleFail) {
-  bool result = layer_tree_host_->ScheduleMicroBenchmark(
+  int id = layer_tree_host_->ScheduleMicroBenchmark(
       "non_existant_benchmark", scoped_ptr<base::Value>(), base::Bind(&Noop));
-  EXPECT_FALSE(result);
+  EXPECT_EQ(id, 0);
 }
 
 TEST_F(MicroBenchmarkControllerTest, CommitScheduled) {
   EXPECT_FALSE(layer_tree_host_->needs_commit());
-  bool result = layer_tree_host_->ScheduleMicroBenchmark(
+  int id = layer_tree_host_->ScheduleMicroBenchmark(
       "unittest_only_benchmark", scoped_ptr<base::Value>(), base::Bind(&Noop));
-  EXPECT_TRUE(result);
+  EXPECT_GT(id, 0);
   EXPECT_TRUE(layer_tree_host_->needs_commit());
 }
 
 TEST_F(MicroBenchmarkControllerTest, BenchmarkRan) {
   int run_count = 0;
-  bool result = layer_tree_host_->ScheduleMicroBenchmark(
+  int id = layer_tree_host_->ScheduleMicroBenchmark(
       "unittest_only_benchmark",
       scoped_ptr<base::Value>(),
       base::Bind(&IncrementCallCount, base::Unretained(&run_count)));
-  EXPECT_TRUE(result);
+  EXPECT_GT(id, 0);
 
   scoped_ptr<ResourceUpdateQueue> queue(new ResourceUpdateQueue);
   layer_tree_host_->SetOutputSurfaceLostForTesting(false);
@@ -79,16 +79,16 @@ TEST_F(MicroBenchmarkControllerTest, BenchmarkRan) {
 
 TEST_F(MicroBenchmarkControllerTest, MultipleBenchmarkRan) {
   int run_count = 0;
-  bool result = layer_tree_host_->ScheduleMicroBenchmark(
+  int id = layer_tree_host_->ScheduleMicroBenchmark(
       "unittest_only_benchmark",
       scoped_ptr<base::Value>(),
       base::Bind(&IncrementCallCount, base::Unretained(&run_count)));
-  EXPECT_TRUE(result);
-  result = layer_tree_host_->ScheduleMicroBenchmark(
+  EXPECT_GT(id, 0);
+  id = layer_tree_host_->ScheduleMicroBenchmark(
       "unittest_only_benchmark",
       scoped_ptr<base::Value>(),
       base::Bind(&IncrementCallCount, base::Unretained(&run_count)));
-  EXPECT_TRUE(result);
+  EXPECT_GT(id, 0);
 
   scoped_ptr<ResourceUpdateQueue> queue(new ResourceUpdateQueue);
   layer_tree_host_->SetOutputSurfaceLostForTesting(false);
@@ -96,16 +96,16 @@ TEST_F(MicroBenchmarkControllerTest, MultipleBenchmarkRan) {
 
   EXPECT_EQ(2, run_count);
 
-  result = layer_tree_host_->ScheduleMicroBenchmark(
+  id = layer_tree_host_->ScheduleMicroBenchmark(
       "unittest_only_benchmark",
       scoped_ptr<base::Value>(),
       base::Bind(&IncrementCallCount, base::Unretained(&run_count)));
-  EXPECT_TRUE(result);
-  result = layer_tree_host_->ScheduleMicroBenchmark(
+  EXPECT_GT(id, 0);
+  id = layer_tree_host_->ScheduleMicroBenchmark(
       "unittest_only_benchmark",
       scoped_ptr<base::Value>(),
       base::Bind(&IncrementCallCount, base::Unretained(&run_count)));
-  EXPECT_TRUE(result);
+  EXPECT_GT(id, 0);
 
   layer_tree_host_->UpdateLayers(queue.get());
   EXPECT_EQ(4, run_count);
@@ -120,11 +120,11 @@ TEST_F(MicroBenchmarkControllerTest, BenchmarkImplRan) {
   settings->SetBoolean("run_benchmark_impl", true);
 
   // Schedule a main thread benchmark.
-  bool result = layer_tree_host_->ScheduleMicroBenchmark(
+  int id = layer_tree_host_->ScheduleMicroBenchmark(
       "unittest_only_benchmark",
       settings.PassAs<base::Value>(),
       base::Bind(&IncrementCallCount, base::Unretained(&run_count)));
-  EXPECT_TRUE(result);
+  EXPECT_GT(id, 0);
 
   // Schedule impl benchmarks. In production code, this is run in commit.
   layer_tree_host_->GetMicroBenchmarkController()->ScheduleImplBenchmarks(
@@ -137,6 +137,37 @@ TEST_F(MicroBenchmarkControllerTest, BenchmarkImplRan) {
   base::MessageLoop::current()->RunUntilIdle();
 
   EXPECT_EQ(1, run_count);
+}
+
+TEST_F(MicroBenchmarkControllerTest, SendMessage) {
+  // Send valid message to invalid benchmark (id = 0)
+  scoped_ptr<base::DictionaryValue> message(new base::DictionaryValue);
+  message->SetBoolean("can_handle", true);
+  bool message_handled = layer_tree_host_->SendMessageToMicroBenchmark(
+      0, message.PassAs<base::Value>());
+  EXPECT_FALSE(message_handled);
+
+  // Schedule a benchmark
+  int run_count = 0;
+  int id = layer_tree_host_->ScheduleMicroBenchmark(
+      "unittest_only_benchmark",
+      scoped_ptr<base::Value>(),
+      base::Bind(&IncrementCallCount, base::Unretained(&run_count)));
+  EXPECT_GT(id, 0);
+
+  // Send valid message to valid benchmark
+  message = scoped_ptr<base::DictionaryValue>(new base::DictionaryValue);
+  message->SetBoolean("can_handle", true);
+  message_handled = layer_tree_host_->SendMessageToMicroBenchmark(
+      id, message.PassAs<base::Value>());
+  EXPECT_TRUE(message_handled);
+
+  // Send invalid message to valid benchmark
+  message = scoped_ptr<base::DictionaryValue>(new base::DictionaryValue);
+  message->SetBoolean("can_handle", false);
+  message_handled = layer_tree_host_->SendMessageToMicroBenchmark(
+      id, message.PassAs<base::Value>());
+  EXPECT_FALSE(message_handled);
 }
 
 }  // namespace

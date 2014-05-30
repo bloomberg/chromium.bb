@@ -1246,12 +1246,17 @@ void LayerTreeHost::RegisterViewportLayers(
   outer_viewport_scroll_layer_ = outer_viewport_scroll_layer;
 }
 
-bool LayerTreeHost::ScheduleMicroBenchmark(
+int LayerTreeHost::ScheduleMicroBenchmark(
     const std::string& benchmark_name,
     scoped_ptr<base::Value> value,
     const MicroBenchmark::DoneCallback& callback) {
   return micro_benchmark_controller_.ScheduleRun(
       benchmark_name, value.Pass(), callback);
+}
+
+bool LayerTreeHost::SendMessageToMicroBenchmark(int id,
+                                                scoped_ptr<base::Value> value) {
+  return micro_benchmark_controller_.SendMessage(id, value.Pass());
 }
 
 void LayerTreeHost::InsertSwapPromiseMonitor(SwapPromiseMonitor* monitor) {
