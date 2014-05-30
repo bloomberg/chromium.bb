@@ -457,7 +457,7 @@ int ConnectionFactoryImpl::ReconsiderProxyAfterError(int error) {
   }
 
   int status = network_session_->proxy_service()->ReconsiderProxyAfterError(
-      GetCurrentEndpoint(), &proxy_info_,
+      GetCurrentEndpoint(), error, &proxy_info_,
       base::Bind(&ConnectionFactoryImpl::OnProxyResolveDone,
                  weak_ptr_factory_.GetWeakPtr()),
       &pac_request_,

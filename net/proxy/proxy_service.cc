@@ -47,6 +47,7 @@
 
 #if defined(SPDY_PROXY_AUTH_ORIGIN)
 #include "base/metrics/histogram.h"
+#include "base/metrics/sparse_histogram.h"
 #endif
 
 using base::TimeDelta;
@@ -1168,6 +1169,7 @@ void ProxyService::OnInitProxyResolverComplete(int result) {
 }
 
 int ProxyService::ReconsiderProxyAfterError(const GURL& url,
+                                            int net_error,
                                             ProxyInfo* result,
                                             const CompletionCallback& callback,
                                             PacRequest** pac_request,
@@ -1191,9 +1193,13 @@ int ProxyService::ReconsiderProxyAfterError(const GURL& url,
   if (result->proxy_server().isDataReductionProxy()) {
     RecordDataReductionProxyBypassInfo(
         true, result->proxy_server(), ERROR_BYPASS);
+    RecordDataReductionProxyBypassOnNetworkError(
+        true, result->proxy_server(), net_error);
   } else if (result->proxy_server().isDataReductionProxyFallback()) {
     RecordDataReductionProxyBypassInfo(
         false, result->proxy_server(), ERROR_BYPASS);
+    RecordDataReductionProxyBypassOnNetworkError(
+        false, result->proxy_server(), net_error);
   }
 #endif
 
@@ -1439,6 +1445,25 @@ void ProxyService::RecordDataReductionProxyBypassInfo(
                               bypass_type, BYPASS_EVENT_TYPE_MAX);
   }
 }
+
+void ProxyService::RecordDataReductionProxyBypassOnNetworkError(
+    bool is_primary,
+    const ProxyServer& proxy_server,
+    int net_error) {
+  // Only record UMA if the proxy isn't already on the retry list.
+  if (proxy_retry_info_.find(proxy_server.ToURI()) != proxy_retry_info_.end())
+    return;
+
+  if (is_primary) {
+    UMA_HISTOGRAM_SPARSE_SLOWLY(
+        "DataReductionProxy.BypassOnNetworkErrorPrimary",
+        std::abs(net_error));
+    return;
+  }
+  UMA_HISTOGRAM_SPARSE_SLOWLY(
+      "DataReductionProxy.BypassOnNetworkErrorFallback",
+      std::abs(net_error));
+}
 #endif  // defined(SPDY_PROXY_AUTH_ORIGIN)
 
 void ProxyService::OnProxyConfigChanged(
@@ -1581,13 +1606,14 @@ int SyncProxyServiceHelper::ResolveProxy(const GURL& url,
 }
 
 int SyncProxyServiceHelper::ReconsiderProxyAfterError(
-    const GURL& url, ProxyInfo* proxy_info, const BoundNetLog& net_log) {
+    const GURL& url, int net_error, ProxyInfo* proxy_info,
+    const BoundNetLog& net_log) {
   DCHECK(io_message_loop_ != base::MessageLoop::current());
 
   io_message_loop_->PostTask(
       FROM_HERE,
       base::Bind(&SyncProxyServiceHelper::StartAsyncReconsider, this, url,
-                 net_log));
+                 net_error, net_log));
 
   event_.Wait();
 
@@ -1609,9 +1635,10 @@ void SyncProxyServiceHelper::StartAsyncResolve(const GURL& url,
 }
 
 void SyncProxyServiceHelper::StartAsyncReconsider(const GURL& url,
+                                                  int net_error,
                                                   const BoundNetLog& net_log) {
   result_ = proxy_service_->ReconsiderProxyAfterError(
-      url, &proxy_info_, callback_, NULL, net_log);
+      url, net_error, &proxy_info_, callback_, NULL, net_log);
   if (result_ != net::ERR_IO_PENDING) {
     OnCompletion(result_);
   }

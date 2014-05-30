@@ -1317,7 +1317,8 @@ int HttpStreamFactoryImpl::Job::ReconsiderProxyAfterError(int error) {
   }
 
   int rv = session_->proxy_service()->ReconsiderProxyAfterError(
-      request_info_.url, &proxy_info_, io_callback_, &pac_request_, net_log_);
+      request_info_.url, error, &proxy_info_, io_callback_, &pac_request_,
+      net_log_);
   if (rv == OK || rv == ERR_IO_PENDING) {
     // If the error was during connection setup, there is no socket to
     // disconnect.

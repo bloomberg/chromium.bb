@@ -132,8 +132,10 @@ class NET_EXPORT ProxyService : public NetworkChangeNotifier::IPAddressObserver,
   // This method is called after a failure to connect or resolve a host name.
   // It gives the proxy service an opportunity to reconsider the proxy to use.
   // The |results| parameter contains the results returned by an earlier call
-  // to ResolveProxy.  The semantics of this call are otherwise similar to
-  // ResolveProxy.
+  // to ResolveProxy.  The |net_error| parameter contains the network error
+  // code associated with the failure. See "net/base/net_error_list.h" for a
+  // list of possible values. The semantics of this call are otherwise
+  // similar to ResolveProxy.
   //
   // NULL can be passed for |pac_request| if the caller will not need to
   // cancel the request.
@@ -142,6 +144,7 @@ class NET_EXPORT ProxyService : public NetworkChangeNotifier::IPAddressObserver,
   //
   // Profiling information for the request is saved to |net_log| if non-NULL.
   int ReconsiderProxyAfterError(const GURL& url,
+                                int net_error,
                                 ProxyInfo* results,
                                 const CompletionCallback& callback,
                                 PacRequest** pac_request,
@@ -286,6 +289,9 @@ class NET_EXPORT ProxyService : public NetworkChangeNotifier::IPAddressObserver,
     // Bypass the proxy because responses appear not to be coming via it.
     MISSING_VIA_HEADER,
 
+    // Bypass the proxy because the proxy, not the origin, sent a 4xx response.
+    PROXY_4XX_BYPASS,
+
     // This must always be last.
     BYPASS_EVENT_TYPE_MAX
   };
@@ -296,6 +302,13 @@ class NET_EXPORT ProxyService : public NetworkChangeNotifier::IPAddressObserver,
       bool is_primary,
       const ProxyServer& proxy_server,
       DataReductionProxyBypassEventType bypass_type) const;
+
+  // Records a net error code that resulted in bypassing the data reduction
+  // proxy (|is_primary| is true) or the data reduction proxy fallback.
+  void RecordDataReductionProxyBypassOnNetworkError(
+      bool is_primary,
+      const ProxyServer& proxy_server,
+      int net_error);
 #endif
 
  private:
@@ -458,6 +471,7 @@ class NET_EXPORT SyncProxyServiceHelper
                    ProxyInfo* proxy_info,
                    const BoundNetLog& net_log);
   int ReconsiderProxyAfterError(const GURL& url,
+                                int net_error,
                                 ProxyInfo* proxy_info,
                                 const BoundNetLog& net_log);
 
@@ -467,7 +481,9 @@ class NET_EXPORT SyncProxyServiceHelper
   virtual ~SyncProxyServiceHelper();
 
   void StartAsyncResolve(const GURL& url, const BoundNetLog& net_log);
-  void StartAsyncReconsider(const GURL& url, const BoundNetLog& net_log);
+  void StartAsyncReconsider(const GURL& url,
+                            int net_error,
+                            const BoundNetLog& net_log);
 
   void OnCompletion(int result);
 

@@ -1504,6 +1504,13 @@ HttpResponseHeaders::GetDataReductionProxyBypassEventType(
     // response is to minimize information transfer, a sender in general
     // should not generate representation metadata other than Cache-Control,
     // Content-Location, Date, ETag, Expires, and Vary.
+
+    // The proxy Via header might also not be present in a 4xx response.
+    // Separate this case from other responses that are missing the header.
+    if (response_code() >= HTTP_BAD_REQUEST &&
+        response_code() < HTTP_INTERNAL_SERVER_ERROR) {
+      return ProxyService::PROXY_4XX_BYPASS;
+    }
     return ProxyService::MISSING_VIA_HEADER;
   }
   // There is no bypass event.

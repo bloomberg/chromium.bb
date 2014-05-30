@@ -2853,6 +2853,26 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="DataReductionProxy.BypassOnNetworkErrorFallback"
+    enum="NetErrorCodes">
+  <owner>bengr@chromium.org</owner>
+  <summary>
+    Positive net error code that caused the fallback data reduction proxy to be
+    bypassed and put on the proxy retry list. Called after a failure to connect
+    or resolve a host name.
+  </summary>
+</histogram>
+
+<histogram name="DataReductionProxy.BypassOnNetworkErrorPrimary"
+    enum="NetErrorCodes">
+  <owner>bengr@chromium.org</owner>
+  <summary>
+    Positive net error code that caused the primary data reduction proxy to be
+    bypassed and put on the proxy retry list. Called after a failure to connect
+    or resolve a host name.
+  </summary>
+</histogram>
+
 <histogram name="DataReductionProxy.ProbeURL"
     enum="DataReductionProxyProbeURLFetchResult">
   <owner>bengr@chromium.org</owner>
@@ -32988,6 +33008,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="2" label="Bypass due to internal server error"/>
   <int value="3" label="Bypass due to other error"/>
   <int value="4" label="Bypass due to missing via header"/>
+  <int value="5" label="Bypass due to 4xx response"/>
 </enum>
 
 <enum name="DataReductionProxyProbeURLFetchResult" type="int">
