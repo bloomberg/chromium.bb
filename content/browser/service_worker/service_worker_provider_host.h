@@ -59,9 +59,9 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   }
 
   // The service worker version that corresponds with
-  // navigate.serviceWorker.pending for our document.
-  ServiceWorkerVersion* pending_version() const {
-    return pending_version_.get();
+  // navigate.serviceWorker.waiting for our document.
+  ServiceWorkerVersion* waiting_version() const {
+    return waiting_version_.get();
   }
 
   // The running version, if any, that this provider is providing resource
@@ -73,11 +73,11 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   void set_document_url(const GURL& url) { document_url_ = url; }
   const GURL& document_url() const { return document_url_; }
 
-  // Associate |version| to this provider as its '.active' or '.pending'
+  // Associate |version| to this provider as its '.active' or '.waiting'
   // version.
   // Giving NULL to this method will unset the corresponding field.
   void SetActiveVersion(ServiceWorkerVersion* version);
-  void SetPendingVersion(ServiceWorkerVersion* version);
+  void SetWaitingVersion(ServiceWorkerVersion* version);
 
   // Returns false if the version is not in the expected STARTING in our
   // our process state. That would be indicative of a bad IPC message.
@@ -98,7 +98,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   const int provider_id_;
   GURL document_url_;
   scoped_refptr<ServiceWorkerVersion> active_version_;
-  scoped_refptr<ServiceWorkerVersion> pending_version_;
+  scoped_refptr<ServiceWorkerVersion> waiting_version_;
   scoped_refptr<ServiceWorkerVersion> running_hosted_version_;
   base::WeakPtr<ServiceWorkerContextCore> context_;
   ServiceWorkerDispatcherHost* dispatcher_host_;

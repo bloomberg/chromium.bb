@@ -81,7 +81,7 @@ void ServiceWorkerControlleeRequestHandler::PrepareForMainResource(
   // The corresponding provider_host may already have associate version in
   // redirect case, unassociate it now.
   provider_host_->SetActiveVersion(NULL);
-  provider_host_->SetPendingVersion(NULL);
+  provider_host_->SetWaitingVersion(NULL);
   provider_host_->set_document_url(url);
   context_->storage()->FindRegistrationForDocument(
       url,
@@ -99,12 +99,12 @@ ServiceWorkerControlleeRequestHandler::DidLookupRegistrationForMainResource(
     job_->FallbackToNetwork();
     return;
   }
-  // TODO(michaeln): should SetPendingVersion() even if no active version so
+  // TODO(michaeln): should SetWaitingVersion() even if no active version so
   // so the versions in the pipeline (.installing, .waiting) show up in the
   // attribute values.
   DCHECK(registration);
   provider_host_->SetActiveVersion(registration->active_version());
-  provider_host_->SetPendingVersion(registration->pending_version());
+  provider_host_->SetWaitingVersion(registration->waiting_version());
   job_->ForwardToServiceWorker();
 }
 

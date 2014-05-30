@@ -63,9 +63,9 @@ TEST_F(ServiceWorkerRegistrationTest, ActivatePending) {
 
   scoped_refptr<ServiceWorkerVersion> version_2 =
       new ServiceWorkerVersion(registration, version_2_id, context_ptr_);
-  registration->set_pending_version(version_2);
+  registration->set_waiting_version(version_2);
 
-  registration->ActivatePendingVersion();
+  registration->ActivateWaitingVersion();
   DCHECK_EQ(version_2, registration->active_version());
   DCHECK(version_1->HasOneRef());
   version_1 = NULL;

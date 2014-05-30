@@ -343,12 +343,12 @@ void ServiceWorkerVersion::RemoveControllee(
   // NoControllees for versions that have been deleted.
 }
 
-void ServiceWorkerVersion::AddPendingControllee(
+void ServiceWorkerVersion::AddWaitingControllee(
     ServiceWorkerProviderHost* provider_host) {
   AddProcessToWorker(provider_host->process_id());
 }
 
-void ServiceWorkerVersion::RemovePendingControllee(
+void ServiceWorkerVersion::RemoveWaitingControllee(
     ServiceWorkerProviderHost* provider_host) {
   RemoveProcessFromWorker(provider_host->process_id());
 }

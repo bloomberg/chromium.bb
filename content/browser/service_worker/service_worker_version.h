@@ -187,8 +187,8 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // Adds and removes |provider_host| as a controllee of this ServiceWorker.
   void AddControllee(ServiceWorkerProviderHost* provider_host);
   void RemoveControllee(ServiceWorkerProviderHost* provider_host);
-  void AddPendingControllee(ServiceWorkerProviderHost* provider_host);
-  void RemovePendingControllee(ServiceWorkerProviderHost* provider_host);
+  void AddWaitingControllee(ServiceWorkerProviderHost* provider_host);
+  void RemoveWaitingControllee(ServiceWorkerProviderHost* provider_host);
 
   // Returns if it has controllee.
   bool HasControllee() const { return !controllee_map_.empty(); }

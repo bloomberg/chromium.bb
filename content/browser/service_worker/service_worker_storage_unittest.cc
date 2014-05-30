@@ -231,7 +231,7 @@ TEST_F(ServiceWorkerStorageTest, StoreFindUpdateDeleteRegistration) {
       new ServiceWorkerVersion(
           live_registration, kVersionId, context_ptr_);
   live_version->SetStatus(ServiceWorkerVersion::INSTALLED);
-  live_registration->set_pending_version(live_version);
+  live_registration->set_waiting_version(live_version);
   storage()->StoreRegistration(live_registration, live_version,
                                MakeStatusCallback(&was_called, &result));
   EXPECT_FALSE(was_called);  // always async
@@ -292,7 +292,7 @@ TEST_F(ServiceWorkerStorageTest, StoreFindUpdateDeleteRegistration) {
   EXPECT_EQ(kRegistrationId, found_registration->id());
   EXPECT_TRUE(found_registration->HasOneRef());
   EXPECT_EQ(live_version,
-            found_registration->pending_version());
+            found_registration->waiting_version());
   was_called = false;
   found_registration = NULL;
 
@@ -311,15 +311,15 @@ TEST_F(ServiceWorkerStorageTest, StoreFindUpdateDeleteRegistration) {
   EXPECT_EQ(kRegistrationId, found_registration->id());
   EXPECT_TRUE(found_registration->HasOneRef());
   EXPECT_FALSE(found_registration->active_version());
-  ASSERT_TRUE(found_registration->pending_version());
+  ASSERT_TRUE(found_registration->waiting_version());
   EXPECT_EQ(ServiceWorkerVersion::INSTALLED,
-            found_registration->pending_version()->status());
+            found_registration->waiting_version()->status());
   was_called = false;
 
   // Update to active.
   scoped_refptr<ServiceWorkerVersion> temp_version =
-      found_registration->pending_version();
-  found_registration->set_pending_version(NULL);
+      found_registration->waiting_version();
+  found_registration->set_waiting_version(NULL);
   temp_version->SetStatus(ServiceWorkerVersion::ACTIVE);
   found_registration->set_active_version(temp_version);
   temp_version = NULL;
@@ -358,7 +358,7 @@ TEST_F(ServiceWorkerStorageTest, StoreFindUpdateDeleteRegistration) {
   ASSERT_TRUE(found_registration);
   EXPECT_EQ(kRegistrationId, found_registration->id());
   EXPECT_TRUE(found_registration->HasOneRef());
-  EXPECT_FALSE(found_registration->pending_version());
+  EXPECT_FALSE(found_registration->waiting_version());
   ASSERT_TRUE(found_registration->active_version());
   EXPECT_EQ(ServiceWorkerVersion::ACTIVE,
             found_registration->active_version()->status());
@@ -419,7 +419,7 @@ TEST_F(ServiceWorkerStorageTest, InstallingRegistrationsAreFindable) {
       new ServiceWorkerVersion(
           live_registration, kVersionId, context_ptr_);
   live_version->SetStatus(ServiceWorkerVersion::INSTALLING);
-  live_registration->set_pending_version(live_version);
+  live_registration->set_waiting_version(live_version);
 
   // Should not be findable, including by GetAllRegistrations.
   storage()->FindRegistrationForId(
@@ -558,7 +558,7 @@ TEST_F(ServiceWorkerStorageTest, ResourceIdsAreStoredAndPurged) {
   resources.push_back(ResourceRecord(kResourceId2, kImport));
   scoped_refptr<ServiceWorkerRegistration> registration =
       storage()->GetOrCreateRegistration(data, resources);
-  registration->pending_version()->SetStatus(ServiceWorkerVersion::NEW);
+  registration->waiting_version()->SetStatus(ServiceWorkerVersion::NEW);
 
   // Add the resources ids to the uncommitted list.
   std::set<int64> resource_ids;
@@ -577,7 +577,7 @@ TEST_F(ServiceWorkerStorageTest, ResourceIdsAreStoredAndPurged) {
   // of the uncommitted list.
   bool was_called = false;
   ServiceWorkerStatusCode result = SERVICE_WORKER_ERROR_FAILED;
-  storage()->StoreRegistration(registration, registration->pending_version(),
+  storage()->StoreRegistration(registration, registration->waiting_version(),
                                MakeStatusCallback(&was_called, &result));
   base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(was_called);

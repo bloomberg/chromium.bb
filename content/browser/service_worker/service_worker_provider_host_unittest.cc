@@ -114,49 +114,49 @@ TEST_F(ServiceWorkerProviderHostTest,
   ASSERT_FALSE(version_->HasProcessToRun());
 }
 
-TEST_F(ServiceWorkerProviderHostTest, SetPendingVersion_ProcessStatus) {
+TEST_F(ServiceWorkerProviderHostTest, SetWaitingVersion_ProcessStatus) {
   ASSERT_FALSE(version_->HasProcessToRun());
 
-  // Associating version_ to a provider_host's pending version will internally
+  // Associating version_ to a provider_host's waiting version will internally
   // add the provider_host's process ref to the version.
-  provider_host1_->SetPendingVersion(version_);
+  provider_host1_->SetWaitingVersion(version_);
   ASSERT_TRUE(version_->HasProcessToRun());
 
   // Re-associating the same version and provider_host should just work too.
-  provider_host1_->SetPendingVersion(version_);
+  provider_host1_->SetWaitingVersion(version_);
   ASSERT_TRUE(version_->HasProcessToRun());
 
-  // Resetting the provider_host's pending version should remove process refs
+  // Resetting the provider_host's waiting version should remove process refs
   // from the version.
-  provider_host1_->SetPendingVersion(NULL);
+  provider_host1_->SetWaitingVersion(NULL);
   ASSERT_FALSE(version_->HasProcessToRun());
 }
 
 TEST_F(ServiceWorkerProviderHostTest,
-       SetPendingVersion_MultipleHostsForSameProcess) {
+       SetWaitingVersion_MultipleHostsForSameProcess) {
   ASSERT_FALSE(version_->HasProcessToRun());
 
   // Associating version_ to two providers as active version.
-  provider_host1_->SetPendingVersion(version_);
-  provider_host2_->SetPendingVersion(version_);
+  provider_host1_->SetWaitingVersion(version_);
+  provider_host2_->SetWaitingVersion(version_);
   ASSERT_TRUE(version_->HasProcessToRun());
 
   // Disassociating one provider_host shouldn't remove all process refs
   // from the version yet.
-  provider_host1_->SetPendingVersion(NULL);
+  provider_host1_->SetWaitingVersion(NULL);
   ASSERT_TRUE(version_->HasProcessToRun());
 
   // Disassociating the other provider_host will remove all process refs.
-  provider_host2_->SetPendingVersion(NULL);
+  provider_host2_->SetWaitingVersion(NULL);
   ASSERT_FALSE(version_->HasProcessToRun());
 }
 
-class ServiceWorkerProviderHostPendingVersionTest : public testing::Test {
+class ServiceWorkerProviderHostWaitingVersionTest : public testing::Test {
  protected:
-  ServiceWorkerProviderHostPendingVersionTest()
+  ServiceWorkerProviderHostWaitingVersionTest()
       : thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP),
         next_provider_id_(1L) {}
-  virtual ~ServiceWorkerProviderHostPendingVersionTest() {}
+  virtual ~ServiceWorkerProviderHostWaitingVersionTest() {}
 
   virtual void SetUp() OVERRIDE {
     context_.reset(
@@ -196,11 +196,11 @@ class ServiceWorkerProviderHostPendingVersionTest : public testing::Test {
  private:
   int64 next_provider_id_;
 
-  DISALLOW_COPY_AND_ASSIGN(ServiceWorkerProviderHostPendingVersionTest);
+  DISALLOW_COPY_AND_ASSIGN(ServiceWorkerProviderHostWaitingVersionTest);
 };
 
-TEST_F(ServiceWorkerProviderHostPendingVersionTest,
-       AssociatePendingVersionToDocuments) {
+TEST_F(ServiceWorkerProviderHostWaitingVersionTest,
+       AssociateWaitingVersionToDocuments) {
   const GURL scope("http://www.example.com/*");
   const GURL script_url("http://www.example.com/service_worker.js");
 
@@ -210,15 +210,15 @@ TEST_F(ServiceWorkerProviderHostPendingVersionTest,
   scoped_refptr<ServiceWorkerVersion> version(
       new ServiceWorkerVersion(registration, 1L, context_->AsWeakPtr()));
 
-  ServiceWorkerRegisterJob::AssociatePendingVersionToDocuments(
+  ServiceWorkerRegisterJob::AssociateWaitingVersionToDocuments(
       context_->AsWeakPtr(), version.get());
-  EXPECT_EQ(version.get(), provider_host1_->pending_version());
-  EXPECT_EQ(version.get(), provider_host2_->pending_version());
-  EXPECT_EQ(NULL, provider_host3_->pending_version());
+  EXPECT_EQ(version.get(), provider_host1_->waiting_version());
+  EXPECT_EQ(version.get(), provider_host2_->waiting_version());
+  EXPECT_EQ(NULL, provider_host3_->waiting_version());
 }
 
-TEST_F(ServiceWorkerProviderHostPendingVersionTest,
-       DisassociatePendingVersionFromDocuments) {
+TEST_F(ServiceWorkerProviderHostWaitingVersionTest,
+       DisassociateWaitingVersionFromDocuments) {
   const GURL scope1("http://www.example.com/*");
   const GURL script_url1("http://www.example.com/service_worker.js");
   scoped_refptr<ServiceWorkerRegistration> registration1(
@@ -235,23 +235,23 @@ TEST_F(ServiceWorkerProviderHostPendingVersionTest,
   scoped_refptr<ServiceWorkerVersion> version2(
       new ServiceWorkerVersion(registration2, 2L, context_->AsWeakPtr()));
 
-  ServiceWorkerRegisterJob::AssociatePendingVersionToDocuments(
+  ServiceWorkerRegisterJob::AssociateWaitingVersionToDocuments(
       context_->AsWeakPtr(), version1.get());
-  ServiceWorkerRegisterJob::AssociatePendingVersionToDocuments(
+  ServiceWorkerRegisterJob::AssociateWaitingVersionToDocuments(
       context_->AsWeakPtr(), version2.get());
 
-  // Host1 and host2 are associated with version1 as a pending version, whereas
+  // Host1 and host2 are associated with version1 as a waiting version, whereas
   // host3 is associated with version2.
-  EXPECT_EQ(version1.get(), provider_host1_->pending_version());
-  EXPECT_EQ(version1.get(), provider_host2_->pending_version());
-  EXPECT_EQ(version2.get(), provider_host3_->pending_version());
+  EXPECT_EQ(version1.get(), provider_host1_->waiting_version());
+  EXPECT_EQ(version1.get(), provider_host2_->waiting_version());
+  EXPECT_EQ(version2.get(), provider_host3_->waiting_version());
 
   // Disassociate version1 from host1 and host2.
-  ServiceWorkerRegisterJob::DisassociatePendingVersionFromDocuments(
+  ServiceWorkerRegisterJob::DisassociateWaitingVersionFromDocuments(
       context_->AsWeakPtr(), version1->version_id());
-  EXPECT_EQ(NULL, provider_host1_->pending_version());
-  EXPECT_EQ(NULL, provider_host2_->pending_version());
-  EXPECT_EQ(version2.get(), provider_host3_->pending_version());
+  EXPECT_EQ(NULL, provider_host1_->waiting_version());
+  EXPECT_EQ(NULL, provider_host2_->waiting_version());
+  EXPECT_EQ(version2.get(), provider_host3_->waiting_version());
 }
 
 }  // namespace content

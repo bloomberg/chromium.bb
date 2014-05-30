@@ -38,22 +38,22 @@ ServiceWorkerRegistrationInfo ServiceWorkerRegistration::GetInfo() {
       pattern(),
       registration_id_,
       active_version_ ? active_version_->GetInfo() : ServiceWorkerVersionInfo(),
-      pending_version_ ? pending_version_->GetInfo()
+      waiting_version_ ? waiting_version_->GetInfo()
                        : ServiceWorkerVersionInfo());
 }
 
 ServiceWorkerVersion* ServiceWorkerRegistration::GetNewestVersion() {
   if (active_version())
     return active_version();
-  return pending_version();
+  return waiting_version();
 }
 
-void ServiceWorkerRegistration::ActivatePendingVersion() {
+void ServiceWorkerRegistration::ActivateWaitingVersion() {
   active_version_->SetStatus(ServiceWorkerVersion::DEACTIVATED);
-  active_version_ = pending_version_;
+  active_version_ = waiting_version_;
   // TODO(kinuko): This should be set to ACTIVATING until activation finishes.
   active_version_->SetStatus(ServiceWorkerVersion::ACTIVE);
-  pending_version_ = NULL;
+  waiting_version_ = NULL;
 }
 
 }  // namespace content

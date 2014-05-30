@@ -31,7 +31,7 @@ class ServiceWorkerVersion;
 //
 // This class also manages the state of the upgrade process, which
 // includes managing which ServiceWorkerVersion is "active" vs "in
-// waiting" (or "pending")
+// waiting".
 class CONTENT_EXPORT ServiceWorkerRegistration
     : NON_EXPORTED_BASE(public base::RefCounted<ServiceWorkerRegistration>) {
  public:
@@ -49,9 +49,9 @@ class CONTENT_EXPORT ServiceWorkerRegistration
     return active_version_.get();
   }
 
-  ServiceWorkerVersion* pending_version() const {
+  ServiceWorkerVersion* waiting_version() const {
     DCHECK(!is_shutdown_);
-    return pending_version_.get();
+    return waiting_version_.get();
   }
 
   void set_active_version(ServiceWorkerVersion* version) {
@@ -59,20 +59,20 @@ class CONTENT_EXPORT ServiceWorkerRegistration
     active_version_ = version;
   }
 
-  void set_pending_version(ServiceWorkerVersion* version) {
+  void set_waiting_version(ServiceWorkerVersion* version) {
     DCHECK(!is_shutdown_);
-    pending_version_ = version;
+    waiting_version_ = version;
   }
 
   ServiceWorkerRegistrationInfo GetInfo();
 
   // Returns the active version, if it is not null; otherwise, returns the
-  // pending version.
+  // waiting version.
   ServiceWorkerVersion* GetNewestVersion();
 
   // The final synchronous switchover after all events have been
   // fired, and the old "active version" is being shut down.
-  void ActivatePendingVersion();
+  void ActivateWaitingVersion();
 
  private:
   ~ServiceWorkerRegistration();
@@ -83,7 +83,7 @@ class CONTENT_EXPORT ServiceWorkerRegistration
   const int64 registration_id_;
 
   scoped_refptr<ServiceWorkerVersion> active_version_;
-  scoped_refptr<ServiceWorkerVersion> pending_version_;
+  scoped_refptr<ServiceWorkerVersion> waiting_version_;
 
   bool is_shutdown_;
   base::WeakPtr<ServiceWorkerContextCore> context_;
