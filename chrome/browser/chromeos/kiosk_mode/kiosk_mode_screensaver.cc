@@ -18,7 +18,7 @@
 #include "chrome/browser/chromeos/policy/app_pack_updater.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chrome/browser/extensions/extension_garbage_collector_chromeos.h"
+#include "chrome/browser/extensions/extension_garbage_collector.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/sandboxed_unpacker.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
@@ -32,7 +32,7 @@
 #include "ui/wm/core/user_activity_detector.h"
 
 using extensions::Extension;
-using extensions::ExtensionGarbageCollectorChromeOS;
+using extensions::ExtensionGarbageCollector;
 using extensions::SandboxedUnpacker;
 
 namespace chromeos {
@@ -47,11 +47,11 @@ ExtensionService* GetDefaultExtensionService() {
       default_profile)->extension_service();
 }
 
-ExtensionGarbageCollectorChromeOS* GetDefaultExtensionGarbageCollector() {
+ExtensionGarbageCollector* GetDefaultExtensionGarbageCollector() {
   Profile* default_profile = ProfileHelper::GetSigninProfile();
   if (!default_profile)
     return NULL;
-  return ExtensionGarbageCollectorChromeOS::Get(default_profile);
+  return ExtensionGarbageCollector::Get(default_profile);
 }
 
 typedef base::Callback<void(
@@ -116,7 +116,7 @@ void ScreensaverUnpackerClient::LoadScreensaverExtension(
 
   // TODO(rkc): This is a HACK, please remove this method from extension
   // service once this code is deprecated. See crbug.com/280363
-  ExtensionGarbageCollectorChromeOS* gc = GetDefaultExtensionGarbageCollector();
+  ExtensionGarbageCollector* gc = GetDefaultExtensionGarbageCollector();
   if (gc)
     gc->disable_garbage_collection();
 
@@ -184,8 +184,7 @@ KioskModeScreensaver::~KioskModeScreensaver() {
   if (!extension_base_path_.empty()) {
     // TODO(rkc): This is a HACK, please remove this method from extension
     // service once this code is deprecated. See crbug.com/280363
-    ExtensionGarbageCollectorChromeOS* gc =
-        GetDefaultExtensionGarbageCollector();
+    ExtensionGarbageCollector* gc = GetDefaultExtensionGarbageCollector();
     if (gc)
       gc->enable_garbage_collection();
 

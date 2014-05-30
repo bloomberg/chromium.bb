@@ -153,11 +153,6 @@ bool FakeUserManager::IsKnownUser(const std::string& email) const {
 }
 
 const User* FakeUserManager::FindUser(const std::string& email) const {
-  const UserList& users = GetUsers();
-  for (UserList::const_iterator it = users.begin(); it != users.end(); ++it) {
-    if ((*it)->email() == email)
-      return *it;
-  }
   return NULL;
 }
 

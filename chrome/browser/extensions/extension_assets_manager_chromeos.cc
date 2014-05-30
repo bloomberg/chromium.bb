@@ -16,12 +16,10 @@
 #include "base/sequenced_task_runner.h"
 #include "base/sys_info.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chromeos/chromeos_switches.h"
 #include "content/public/browser/browser_thread.h"
-#include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/file_util.h"
@@ -32,8 +30,14 @@ using content::BrowserThread;
 namespace extensions {
 namespace {
 
-// Path to shared extensions install dir.
-const char kSharedExtensionsDir[] = "/var/cache/shared_extensions";
+// A dictionary that maps shared extension IDs to version/paths/users.
+const char kSharedExtensions[] = "SharedExtensions";
+
+// Name of path attribute in shared extensions map.
+const char kSharedExtensionPath[] = "path";
+
+// Name of users attribute (list of user emails) in shared extensions map.
+const char kSharedExtensionUsers[] = "users";
 
 // Shared install dir overrider for tests only.
 static const base::FilePath* g_shared_install_dir_override = NULL;
@@ -109,12 +113,9 @@ class ExtensionAssetsManagerHelper {
 
 }  // namespace
 
-const char ExtensionAssetsManagerChromeOS::kSharedExtensions[] =
-    "SharedExtensions";
-
-const char ExtensionAssetsManagerChromeOS::kSharedExtensionPath[] = "path";
-
-const char ExtensionAssetsManagerChromeOS::kSharedExtensionUsers[] = "users";
+// Path to shared extensions install dir.
+const char ExtensionAssetsManagerChromeOS::kSharedExtensionsDir[] =
+    "/var/cache/shared_extensions";
 
 ExtensionAssetsManagerChromeOS::ExtensionAssetsManagerChromeOS() { }
 
@@ -182,49 +183,6 @@ void ExtensionAssetsManagerChromeOS::UninstallExtension(
 }
 
 // static
-base::FilePath ExtensionAssetsManagerChromeOS::GetSharedInstallDir() {
-  if (g_shared_install_dir_override)
-    return *g_shared_install_dir_override;
-  else
-    return base::FilePath(kSharedExtensionsDir);
-}
-
-// static
-bool ExtensionAssetsManagerChromeOS::CleanUpSharedExtensions(
-    std::multimap<std::string, base::FilePath>* live_extension_paths) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  PrefService* local_state = g_browser_process->local_state();
-  // It happens in many unit tests.
-  if (!local_state)
-    return false;
-
-  DictionaryPrefUpdate shared_extensions(local_state, kSharedExtensions);
-  std::vector<std::string> extensions;
-  extensions.reserve(shared_extensions->size());
-  for (base::DictionaryValue::Iterator it(*shared_extensions);
-       !it.IsAtEnd(); it.Advance()) {
-    extensions.push_back(it.key());
-  }
-
-  for (std::vector<std::string>::iterator it = extensions.begin();
-       it != extensions.end(); it++) {
-    base::DictionaryValue* extension_info = NULL;
-    if (!shared_extensions->GetDictionary(*it, &extension_info)) {
-      NOTREACHED();
-      return false;
-    }
-    if (!CleanUpExtension(*it, extension_info, live_extension_paths)) {
-      return false;
-    }
-    if (!extension_info->size())
-      shared_extensions->RemoveWithoutPathExpansion(*it, NULL);
-  }
-
-  return true;
-}
-
-// static
 void ExtensionAssetsManagerChromeOS::SetSharedInstallDirForTesting(
     const base::FilePath& install_dir) {
   DCHECK(!g_shared_install_dir_override);
@@ -238,6 +196,14 @@ base::SequencedTaskRunner* ExtensionAssetsManagerChromeOS::GetFileTaskRunner(
   ExtensionService* extension_service =
       ExtensionSystem::Get(profile)->extension_service();
   return extension_service->GetFileTaskRunner();
+}
+
+// static
+base::FilePath ExtensionAssetsManagerChromeOS::GetSharedInstallDir() {
+  if (g_shared_install_dir_override)
+    return *g_shared_install_dir_override;
+  else
+    return base::FilePath(kSharedExtensionsDir);
 }
 
 // static
@@ -264,28 +230,6 @@ void ExtensionAssetsManagerChromeOS::CheckSharedExtension(
     InstallExtensionCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  const std::string& user_id = profile->GetProfileName();
-  chromeos::UserManager* user_manager = chromeos::UserManager::Get();
-  if (!user_manager) {
-    NOTREACHED();
-    return;
-  }
-
-  if (user_manager->IsUserNonCryptohomeDataEphemeral(user_id) ||
-      !user_manager->IsLoggedInAsRegularUser()) {
-    // Don't cache anything in shared location for ephemeral user or special
-    // user types.
-    ExtensionAssetsManagerChromeOS::GetFileTaskRunner(profile)->PostTask(
-        FROM_HERE,
-        base::Bind(&ExtensionAssetsManagerChromeOS::InstallLocalExtension,
-                   id,
-                   version,
-                   unpacked_extension_root,
-                   local_install_dir,
-                   callback));
-    return;
-  }
-
   PrefService* local_state = g_browser_process->local_state();
   DictionaryPrefUpdate shared_extensions(local_state, kSharedExtensions);
   base::DictionaryValue* extension_info = NULL;
@@ -298,18 +242,19 @@ void ExtensionAssetsManagerChromeOS::CheckSharedExtension(
       version_info->GetString(kSharedExtensionPath, &shared_path) &&
       version_info->GetList(kSharedExtensionUsers, &users)) {
     // This extension version already in shared location.
+    const std::string& user_name = profile->GetProfileName();
     size_t users_size = users->GetSize();
     bool user_found = false;
     for (size_t i = 0; i < users_size; i++) {
       std::string temp;
-      if (users->GetString(i, &temp) && temp == user_id) {
+      if (users->GetString(i, &temp) && temp == user_name) {
         // Re-installation for the same user.
         user_found = true;
         break;
       }
     }
     if (!user_found)
-      users->AppendString(user_id);
+      users->AppendString(user_name);
 
     // unpacked_extension_root will be deleted by CrxInstaller.
     ExtensionAssetsManagerChromeOS::GetFileTaskRunner(profile)->PostTask(
@@ -461,12 +406,9 @@ void ExtensionAssetsManagerChromeOS::MarkSharedExtensionUnused(
       extension_info->RemoveWithoutPathExpansion(*it, NULL);
     }
   }
-  if (!extension_info->size()) {
-    shared_extensions->RemoveWithoutPathExpansion(id, NULL);
-    // Don't remove extension dir in shared location. It will be removed by GC
-    // when it is safe to do so, and this avoids a race condition between
-    // concurrent uninstall by one user and install by another.
-  }
+  // Don't remove extension dir in shared location. It will be removed by GC
+  // when it is safe to do so, and this avoids a race condition between
+  // concurrent uninstall by one user and install by another.
 }
 
 // static
@@ -474,85 +416,6 @@ void ExtensionAssetsManagerChromeOS::DeleteSharedVersion(
     const base::FilePath& shared_version_dir) {
   CHECK(GetSharedInstallDir().IsParent(shared_version_dir));
   base::DeleteFile(shared_version_dir, true);  // recursive.
-}
-
-// static
-bool ExtensionAssetsManagerChromeOS::CleanUpExtension(
-    const std::string& id,
-    base::DictionaryValue* extension_info,
-    std::multimap<std::string, base::FilePath>* live_extension_paths) {
-  chromeos::UserManager* user_manager = chromeos::UserManager::Get();
-  if (!user_manager) {
-    NOTREACHED();
-    return false;
-  }
-
-  std::vector<std::string> versions;
-  versions.reserve(extension_info->size());
-  for (base::DictionaryValue::Iterator it(*extension_info);
-       !it.IsAtEnd(); it.Advance()) {
-    versions.push_back(it.key());
-  }
-
-  for (std::vector<std::string>::const_iterator it = versions.begin();
-       it != versions.end(); it++) {
-    base::DictionaryValue* version_info = NULL;
-    base::ListValue* users = NULL;
-    std::string shared_path;
-    if (!extension_info->GetDictionaryWithoutPathExpansion(*it,
-                                                           &version_info) ||
-        !version_info->GetList(kSharedExtensionUsers, &users) ||
-        !version_info->GetString(kSharedExtensionPath, &shared_path)) {
-      NOTREACHED();
-      return false;
-    }
-
-    size_t num_users = users->GetSize();
-    for (size_t i = 0; i < num_users; i++) {
-      std::string user_id;
-      if (!users->GetString(i, &user_id)) {
-        NOTREACHED();
-        return false;
-      }
-      const chromeos::User* user = user_manager->FindUser(user_id);
-      bool not_used = false;
-      if (!user) {
-        not_used = true;
-      } else if (user->is_logged_in()) {
-        // For logged in user also check that this path is actually used as
-        // installed extension or as delayed install.
-        Profile* profile = user_manager->GetProfileByUser(user);
-        ExtensionPrefs* extension_prefs = ExtensionPrefs::Get(profile);
-        if (!extension_prefs || extension_prefs->pref_service()->ReadOnly())
-          return false;
-
-        scoped_ptr<ExtensionInfo> info =
-            extension_prefs->GetInstalledExtensionInfo(id);
-        if (!info || info->extension_path != base::FilePath(shared_path)) {
-          info = extension_prefs->GetDelayedInstallInfo(id);
-          if (!info || info->extension_path != base::FilePath(shared_path)) {
-            not_used = true;
-          }
-        }
-      }
-
-      if (not_used) {
-        users->Remove(i, NULL);
-
-        i--;
-        num_users--;
-      }
-    }
-
-    if (num_users) {
-      live_extension_paths->insert(
-          std::make_pair(id, base::FilePath(shared_path)));
-    } else {
-      extension_info->RemoveWithoutPathExpansion(*it, NULL);
-    }
-  }
-
-  return true;
 }
 
 }  // namespace extensions

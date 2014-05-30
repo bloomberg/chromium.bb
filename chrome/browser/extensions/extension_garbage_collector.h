@@ -31,6 +31,12 @@ class ExtensionGarbageCollector : public KeyedService, public InstallObserver {
 
   static ExtensionGarbageCollector* Get(content::BrowserContext* context);
 
+#if defined(OS_CHROMEOS)
+  // Enable or disable garbage collection. See |disable_garbage_collection_|.
+  void disable_garbage_collection() { disable_garbage_collection_ = true; }
+  void enable_garbage_collection() { disable_garbage_collection_ = false; }
+#endif
+
   // Manually trigger GarbageCollectExtensions() for testing.
   void GarbageCollectExtensionsForTest();
 
@@ -42,7 +48,7 @@ class ExtensionGarbageCollector : public KeyedService, public InstallObserver {
   virtual void OnFinishCrxInstall(const std::string& extension_id,
                                   bool success) OVERRIDE;
 
- protected:
+ private:
   // Cleans up the extension install directory. It can end up with garbage in it
   // if extensions can't initially be removed when they are uninstalled (eg if a
   // file is in use).
@@ -50,19 +56,23 @@ class ExtensionGarbageCollector : public KeyedService, public InstallObserver {
   // found in the ExtensionPrefs.
   // The "Temp" directory that is used during extension installation will get
   // removed iff there are no pending installations.
-  virtual void GarbageCollectExtensions();
+  void GarbageCollectExtensions();
 
   // Garbage collects apps/extensions isolated storage if it is uninstalled.
   // There is an exception for ephemeral apps because they can outlive their
   // cache lifetimes.
   void GarbageCollectIsolatedStorageIfNeeded();
 
-  static void GarbageCollectExtensionsOnFileThread(
-      const base::FilePath& install_directory,
-      const std::multimap<std::string, base::FilePath>& extension_paths);
-
   // The BrowserContext associated with the GarbageCollector.
   content::BrowserContext* context_;
+
+#if defined(OS_CHROMEOS)
+  // TODO(rkc): HACK alert - this is only in place to allow the
+  // kiosk_mode_screensaver to prevent its extension from getting garbage
+  // collected. Remove this once KioskModeScreensaver is removed.
+  // See crbug.com/280363
+  bool disable_garbage_collection_;
+#endif
 
   // The number of currently ongoing CRX installations. This is used to prevent
   // garbage collection from running while a CRX is being installed.
