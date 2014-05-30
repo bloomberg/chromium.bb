@@ -525,8 +525,11 @@ public:
     };
     bool hasBoxDecorations() const { return m_bitfields.boxDecorationState() != NoBoxDecorations; }
     bool backgroundIsKnownToBeObscured();
-    bool borderImageIsLoadedAndCanBeRendered() const;
-    bool mustRepaintBackgroundOrBorder() const;
+    bool canRenderBorderImage() const;
+    bool mustRepaintBackgroundOrBorderOnWidthChange() const;
+    bool mustRepaintBackgroundOrBorderOnHeightChange() const;
+    bool mustRepaintFillLayersOnWidthChange(const FillLayer&) const;
+    bool mustRepaintFillLayersOnHeightChange(const FillLayer&) const;
     bool hasBackground() const { return style()->hasBackground(); }
     bool hasEntirelyFixedBackground() const;
 

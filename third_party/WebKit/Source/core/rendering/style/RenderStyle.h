@@ -405,8 +405,6 @@ public:
 
     bool hasBackgroundImage() const { return m_background->background().hasImage(); }
     bool hasFixedBackgroundImage() const { return m_background->background().hasFixedImage(); }
-    bool backgroundImageNeedsFullRepaintOnContainerWidthChange() const { return m_background->background().needsFullRepaintOnContainerWidthChange(); }
-    bool backgroundImageNeedsFullRepaintOnContainerHeightChange() const { return m_background->background().needsFullRepaintOnContainerHeightChange(); }
 
     bool hasEntirelyFixedBackground() const;
 

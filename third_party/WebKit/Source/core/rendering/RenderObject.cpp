@@ -838,29 +838,43 @@ RenderObject* RenderObject::clippingContainer() const
     return 0;
 }
 
-static bool mustRepaintFillLayers(const RenderObject& renderer, const FillLayer* layer)
+bool RenderObject::canRenderBorderImage() const
+{
+    ASSERT(style()->hasBorder());
+
+    StyleImage* borderImage = style()->borderImage().image();
+    return borderImage && borderImage->canRender(*this, style()->effectiveZoom()) && borderImage->isLoaded();
+}
+
+bool RenderObject::mustRepaintFillLayersOnWidthChange(const FillLayer& layer) const
 {
     // Nobody will use multiple layers without wanting fancy positioning.
-    if (layer->next())
+    if (layer.next())
         return true;
 
     // Make sure we have a valid image.
-    StyleImage* img = layer->image();
-    if (!img || !img->canRender(renderer, renderer.style()->effectiveZoom()))
+    StyleImage* img = layer.image();
+    if (!img || !img->canRender(*this, style()->effectiveZoom()))
         return false;
 
-    if (!layer->xPosition().isZero() || !layer->yPosition().isZero())
+    if (layer.repeatX() != RepeatFill && layer.repeatX() != NoRepeatFill)
         return true;
 
-    EFillSizeType sizeType = layer->sizeType();
+    if (layer.xPosition().isPercent() && !layer.xPosition().isZero())
+        return true;
+
+    if (layer.backgroundXOrigin() != LeftEdge)
+        return true;
+
+    EFillSizeType sizeType = layer.sizeType();
 
     if (sizeType == Contain || sizeType == Cover)
         return true;
 
     if (sizeType == SizeLength) {
-        if (layer->sizeLength().width().isPercent() || layer->sizeLength().height().isPercent())
+        if (layer.sizeLength().width().isPercent() && !layer.sizeLength().width().isZero())
             return true;
-        if (img->isGeneratedImage() && (layer->sizeLength().width().isAuto() || layer->sizeLength().height().isAuto()))
+        if (img->isGeneratedImage() && layer.sizeLength().width().isAuto())
             return true;
     } else if (img->usesImageContainerSize()) {
         return true;
@@ -869,28 +883,76 @@ static bool mustRepaintFillLayers(const RenderObject& renderer, const FillLayer*
     return false;
 }
 
-bool RenderObject::borderImageIsLoadedAndCanBeRendered() const
+bool RenderObject::mustRepaintFillLayersOnHeightChange(const FillLayer& layer) const
 {
-    ASSERT(style()->hasBorder());
+    // Nobody will use multiple layers without wanting fancy positioning.
+    if (layer.next())
+        return true;
 
-    StyleImage* borderImage = style()->borderImage().image();
-    return borderImage && borderImage->canRender(*this, style()->effectiveZoom()) && borderImage->isLoaded();
+    // Make sure we have a valid image.
+    StyleImage* img = layer.image();
+    if (!img || !img->canRender(*this, style()->effectiveZoom()))
+        return false;
+
+    if (layer.repeatY() != RepeatFill && layer.repeatY() != NoRepeatFill)
+        return true;
+
+    if (layer.yPosition().isPercent() && !layer.yPosition().isZero())
+        return true;
+
+    if (layer.backgroundYOrigin() != TopEdge)
+        return true;
+
+    EFillSizeType sizeType = layer.sizeType();
+
+    if (sizeType == Contain || sizeType == Cover)
+        return true;
+
+    if (sizeType == SizeLength) {
+        if (layer.sizeLength().height().isPercent() && !layer.sizeLength().height().isZero())
+            return true;
+        if (img->isGeneratedImage() && layer.sizeLength().height().isAuto())
+            return true;
+    } else if (img->usesImageContainerSize()) {
+        return true;
+    }
+
+    return false;
 }
 
-bool RenderObject::mustRepaintBackgroundOrBorder() const
+bool RenderObject::mustRepaintBackgroundOrBorderOnWidthChange() const
 {
-    if (hasMask() && mustRepaintFillLayers(*this, style()->maskLayers()))
+    if (hasMask() && mustRepaintFillLayersOnWidthChange(*style()->maskLayers()))
         return true;
 
     // If we don't have a background/border/mask, then nothing to do.
     if (!hasBoxDecorations())
         return false;
 
-    if (mustRepaintFillLayers(*this, style()->backgroundLayers()))
+    if (mustRepaintFillLayersOnWidthChange(*style()->backgroundLayers()))
+        return true;
+
+    // Our fill layers are ok. Let's check border.
+    if (style()->hasBorder() && canRenderBorderImage())
+        return true;
+
+    return false;
+}
+
+bool RenderObject::mustRepaintBackgroundOrBorderOnHeightChange() const
+{
+    if (hasMask() && mustRepaintFillLayersOnHeightChange(*style()->maskLayers()))
+        return true;
+
+    // If we don't have a background/border/mask, then nothing to do.
+    if (!hasBoxDecorations())
+        return false;
+
+    if (mustRepaintFillLayersOnHeightChange(*style()->backgroundLayers()))
         return true;
 
     // Our fill layers are ok.  Let's check border.
-    if (style()->hasBorder() && borderImageIsLoadedAndCanBeRendered())
+    if (style()->hasBorder() && canRenderBorderImage())
         return true;
 
     return false;
@@ -1617,8 +1679,12 @@ bool RenderObject::repaintAfterLayoutIfNeeded(const RenderLayerModelObject* repa
     if (invalidationReason == InvalidationIncremental && oldBounds == newBounds)
         return false;
 
-    if (invalidationReason == InvalidationIncremental && mustRepaintBackgroundOrBorder())
-        invalidationReason = InvalidationBoundsChangeWithBackground;
+    if (invalidationReason == InvalidationIncremental) {
+        if (oldBounds.width() != newBounds.width() && mustRepaintBackgroundOrBorderOnWidthChange())
+            invalidationReason = InvalidationBoundsChangeWithBackground;
+        else if (oldBounds.height() != newBounds.height() && mustRepaintBackgroundOrBorderOnHeightChange())
+            invalidationReason = InvalidationBoundsChangeWithBackground;
+    }
 
     // If we shifted, we don't know the exact reason so we are conservative and trigger a full invalidation. Shifting could
     // be caused by some layout property (left / top) or some in-flow renderer inserted / removed before us in the tree.

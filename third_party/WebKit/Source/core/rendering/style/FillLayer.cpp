@@ -355,50 +355,6 @@ bool FillLayer::imagesAreLoaded() const
     return true;
 }
 
-bool FillLayer::needsFullRepaintOnContainerWidthChange() const
-{
-    if (m_image) {
-        if (m_repeatX != RepeatFill && m_repeatX != NoRepeatFill)
-            return true;
-        if (m_xPosition.isPercent() && !m_xPosition.isZero())
-            return true;
-        if (m_backgroundXOrigin != LeftEdge)
-            return true;
-        if (m_sizeType != SizeLength && m_sizeType != SizeNone)
-            return true;
-        if (m_sizeType == SizeLength) {
-            if (m_sizeLength.width().isPercent() && !m_sizeLength.width().isZero())
-                return true;
-            if (m_sizeLength.width().isAuto() && m_sizeLength.height().isPercent() && !m_sizeLength.height().isZero())
-                return true;
-        }
-    }
-
-    return m_next && m_next->needsFullRepaintOnContainerWidthChange();
-}
-
-bool FillLayer::needsFullRepaintOnContainerHeightChange() const
-{
-    if (m_image) {
-        if (m_repeatY != RepeatFill && m_repeatY != NoRepeatFill)
-            return true;
-        if (m_yPosition.isPercent() && !m_yPosition.isZero())
-            return true;
-        if (m_backgroundYOrigin != TopEdge)
-            return true;
-        if (m_sizeType != SizeLength && m_sizeType != SizeNone)
-            return true;
-        if (m_sizeType == SizeLength) {
-            if (m_sizeLength.height().isPercent() && !m_sizeLength.height().isZero())
-                return true;
-            if (m_sizeLength.height().isAuto() && m_sizeLength.width().isPercent() && !m_sizeLength.width().isZero())
-                return true;
-        }
-    }
-
-    return m_next && m_next->needsFullRepaintOnContainerHeightChange();
-}
-
 bool FillLayer::hasOpaqueImage(const RenderObject* renderer) const
 {
     if (!m_image)

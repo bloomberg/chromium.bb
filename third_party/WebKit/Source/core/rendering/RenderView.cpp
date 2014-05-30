@@ -201,7 +201,7 @@ bool RenderView::shouldDoFullRepaintForNextLayout() const
 
     if (height() != viewHeight()) {
         if (RenderObject* backgroundRenderer = this->backgroundRenderer()) {
-            if (backgroundRenderer->style()->backgroundImageNeedsFullRepaintOnContainerHeightChange())
+            if (backgroundRenderer->mustRepaintFillLayersOnHeightChange(*backgroundRenderer->style()->backgroundLayers()))
                 return true;
         }
     }
