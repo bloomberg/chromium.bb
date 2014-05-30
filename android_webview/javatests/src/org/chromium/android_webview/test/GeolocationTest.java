@@ -66,7 +66,6 @@ public class GeolocationTest extends AwTestBase {
     @Override
     public void tearDown() throws Exception {
         mMockLocationProvider.stopUpdates();
-        GeolocationPermissions.getInstance().clearAll();
         super.tearDown();
     }
 
