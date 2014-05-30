@@ -28,6 +28,10 @@ message ClientResolution {
 message VideoControl {
   // Enables the video channel if true, pauses if false.
   optional bool enable = 1;
+
+  // Controls whether lossless encode and color translation are requested.
+  optional bool lossless_encode = 2;
+  optional bool lossless_color = 3;
 }
 
 message AudioControl {

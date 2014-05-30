@@ -5,6 +5,7 @@
 #include "remoting/codec/video_encoder_vpx.h"
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/sys_info.h"
 #include "remoting/base/util.h"
@@ -23,6 +24,9 @@ extern "C" {
 namespace remoting {
 
 namespace {
+
+// Name of command-line flag to enable VP9 to use I444 by default.
+const char kEnableI444SwitchName[] = "enable-i444";
 
 // Number of bytes in an RGBx pixel.
 const int kBytesPerRgbPixel = 4;
@@ -97,7 +101,9 @@ ScopedVpxCodec CreateVP8Codec(const webrtc::DesktopSize& size) {
   return codec.Pass();
 }
 
-ScopedVpxCodec CreateVP9Codec(bool use_i444, const webrtc::DesktopSize& size) {
+ScopedVpxCodec CreateVP9Codec(const webrtc::DesktopSize& size,
+                              bool lossless_color,
+                              bool lossless_encode) {
   ScopedVpxCodec codec(new vpx_codec_ctx_t);
 
   // Configure the encoder.
@@ -111,11 +117,18 @@ ScopedVpxCodec CreateVP9Codec(bool use_i444, const webrtc::DesktopSize& size) {
   SetCommonCodecParameters(size, &config);
 
   // Configure VP9 for I420 or I444 source frames.
-  config.g_profile = use_i444 ? kVp9I444ProfileNumber : kVp9I420ProfileNumber;
+  config.g_profile =
+      lossless_color ? kVp9I444ProfileNumber : kVp9I420ProfileNumber;
 
-  // Disable quantization entirely, putting the encoder in "lossless" mode.
-  config.rc_min_quantizer = 0;
-  config.rc_max_quantizer = 0;
+  if (lossless_encode) {
+    // Disable quantization entirely, putting the encoder in "lossless" mode.
+    config.rc_min_quantizer = 0;
+    config.rc_max_quantizer = 0;
+  } else {
+    // Lossy encode using the same settings as for VP8.
+    config.rc_min_quantizer = 20;
+    config.rc_max_quantizer = 30;
+  }
 
   if (vpx_codec_enc_init(codec.get(), algo, &config, 0))
     return ScopedVpxCodec();
@@ -202,26 +215,29 @@ void CreateImage(bool use_i444,
 
 // static
 scoped_ptr<VideoEncoderVpx> VideoEncoderVpx::CreateForVP8() {
-  return scoped_ptr<VideoEncoderVpx>(
-      new VideoEncoderVpx(base::Bind(&CreateVP8Codec),
-                          base::Bind(&CreateImage, false)));
+  return scoped_ptr<VideoEncoderVpx>(new VideoEncoderVpx(false));
 }
 
 // static
-scoped_ptr<VideoEncoderVpx> VideoEncoderVpx::CreateForVP9I420() {
-  return scoped_ptr<VideoEncoderVpx>(
-      new VideoEncoderVpx(base::Bind(&CreateVP9Codec, false),
-                          base::Bind(&CreateImage, false)));
-}
-
-// static
-scoped_ptr<VideoEncoderVpx> VideoEncoderVpx::CreateForVP9I444() {
-  return scoped_ptr<VideoEncoderVpx>(
-      new VideoEncoderVpx(base::Bind(&CreateVP9Codec, true),
-                          base::Bind(&CreateImage, true)));
+scoped_ptr<VideoEncoderVpx> VideoEncoderVpx::CreateForVP9() {
+  return scoped_ptr<VideoEncoderVpx>(new VideoEncoderVpx(true));
 }
 
 VideoEncoderVpx::~VideoEncoderVpx() {}
+
+void VideoEncoderVpx::SetLosslessEncode(bool want_lossless) {
+  if (use_vp9_ && (want_lossless != lossless_encode_)) {
+    lossless_encode_ = want_lossless;
+    codec_.reset(); // Force encoder re-initialization.
+  }
+}
+
+void VideoEncoderVpx::SetLosslessColor(bool want_lossless) {
+  if (use_vp9_ && (want_lossless != lossless_color_)) {
+    lossless_color_ = want_lossless;
+    codec_.reset(); // Force encoder re-initialization.
+  }
+}
 
 scoped_ptr<VideoPacket> VideoEncoderVpx::Encode(
     const webrtc::DesktopFrame& frame) {
@@ -312,19 +328,31 @@ scoped_ptr<VideoPacket> VideoEncoderVpx::Encode(
   return packet.Pass();
 }
 
-VideoEncoderVpx::VideoEncoderVpx(const CreateCodecCallback& create_codec,
-                                 const CreateImageCallback& create_image)
-    : create_codec_(create_codec),
-      create_image_(create_image),
+VideoEncoderVpx::VideoEncoderVpx(bool use_vp9)
+    : use_vp9_(use_vp9),
+      lossless_encode_(false),
+      lossless_color_(false),
       active_map_width_(0),
       active_map_height_(0) {
+  if (use_vp9_) {
+    // Use lossless encoding mode by default.
+    SetLosslessEncode(true);
+
+    // Use I444 colour space, by default, if specified on the command-line.
+    if (CommandLine::ForCurrentProcess()->HasSwitch(kEnableI444SwitchName)) {
+      SetLosslessColor(true);
+    }
+  }
 }
 
 bool VideoEncoderVpx::Initialize(const webrtc::DesktopSize& size) {
+  DCHECK(use_vp9_ || !lossless_color_);
+  DCHECK(use_vp9_ || !lossless_encode_);
+
   codec_.reset();
 
   // (Re)Create the VPX image structure and pixel buffer.
-  create_image_.Run(size, &image_, &image_buffer_);
+  CreateImage(lossless_color_, size, &image_, &image_buffer_);
 
   // Initialize active map.
   active_map_width_ = (image_->w + kMacroBlockSize - 1) / kMacroBlockSize;
@@ -332,7 +360,11 @@ bool VideoEncoderVpx::Initialize(const webrtc::DesktopSize& size) {
   active_map_.reset(new uint8[active_map_width_ * active_map_height_]);
 
   // (Re)Initialize the codec.
-  codec_ = create_codec_.Run(size);
+  if (use_vp9_) {
+    codec_ = CreateVP9Codec(size, lossless_color_, lossless_encode_);
+  } else {
+    codec_ = CreateVP8Codec(size);
+  }
 
   return codec_;
 }

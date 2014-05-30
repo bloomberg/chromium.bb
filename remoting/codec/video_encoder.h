@@ -21,6 +21,10 @@ class VideoEncoder {
  public:
   virtual ~VideoEncoder() {}
 
+  // Request that the encoder provide lossless encoding, or color, if possible.
+  virtual void SetLosslessEncode(bool want_lossless) {}
+  virtual void SetLosslessColor(bool want_lossless) {}
+
   // Encode an image stored in |frame|.
   virtual scoped_ptr<VideoPacket> Encode(const webrtc::DesktopFrame& frame) = 0;
 };

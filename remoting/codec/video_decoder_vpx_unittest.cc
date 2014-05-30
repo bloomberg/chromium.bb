@@ -45,7 +45,7 @@ class VideoDecoderVp8Test : public VideoDecoderVpxTest {
 class VideoDecoderVp9Test : public VideoDecoderVpxTest {
  protected:
   VideoDecoderVp9Test() {
-    encoder_ = VideoEncoderVpx::CreateForVP9I420();
+    encoder_ = VideoEncoderVpx::CreateForVP9();
     decoder_ = VideoDecoderVpx::CreateForVP9();
   }
 };

@@ -23,25 +23,18 @@ class VideoEncoderVpx : public VideoEncoder {
  public:
   // Create encoder for the specified protocol.
   static scoped_ptr<VideoEncoderVpx> CreateForVP8();
-  static scoped_ptr<VideoEncoderVpx> CreateForVP9I420();
-  static scoped_ptr<VideoEncoderVpx> CreateForVP9I444();
+  static scoped_ptr<VideoEncoderVpx> CreateForVP9();
 
   virtual ~VideoEncoderVpx();
 
   // VideoEncoder interface.
+  virtual void SetLosslessEncode(bool want_lossless) OVERRIDE;
+  virtual void SetLosslessColor(bool want_lossless) OVERRIDE;
   virtual scoped_ptr<VideoPacket> Encode(
       const webrtc::DesktopFrame& frame) OVERRIDE;
 
  private:
-  typedef base::Callback<ScopedVpxCodec(const webrtc::DesktopSize&)>
-      CreateCodecCallback;
-  typedef base::Callback<void(const webrtc::DesktopSize&,
-                              scoped_ptr<vpx_image_t>* out_image,
-                              scoped_ptr<uint8[]>* out_image_buffer)>
-      CreateImageCallback;
-
-  VideoEncoderVpx(const CreateCodecCallback& create_codec,
-                  const CreateImageCallback& create_image);
+  explicit VideoEncoderVpx(bool use_vp9);
 
   // Initializes the codec for frames of |size|. Returns true if successful.
   bool Initialize(const webrtc::DesktopSize& size);
@@ -55,8 +48,13 @@ class VideoEncoderVpx : public VideoEncoder {
   // given to the encoder to speed up encoding.
   void PrepareActiveMap(const webrtc::DesktopRegion& updated_region);
 
-  CreateCodecCallback create_codec_;
-  CreateImageCallback create_image_;
+  // True if the encoder should generate VP9, false for VP8.
+  bool use_vp9_;
+
+  // Options controlling VP9 encode quantization and color space.
+  // These are always off (false) for VP8.
+  bool lossless_encode_;
+  bool lossless_color_;
 
   ScopedVpxCodec codec_;
   base::TimeTicks timestamp_base_;

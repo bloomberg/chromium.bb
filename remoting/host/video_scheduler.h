@@ -112,6 +112,11 @@ class VideoScheduler : public base::RefCountedThreadSafe<VideoScheduler>,
   // Sequence numbers are used for performance measurements.
   void UpdateSequenceNumber(int64 sequence_number);
 
+  // Sets whether the video encoder should be requested to encode losslessly,
+  // or to use a lossless color space (typically requiring higher bandwidth).
+  void SetLosslessEncode(bool want_lossless);
+  void SetLosslessColor(bool want_lossless);
+
  private:
   friend class base::RefCountedThreadSafe<VideoScheduler>;
   virtual ~VideoScheduler();
@@ -197,7 +202,7 @@ class VideoScheduler : public base::RefCountedThreadSafe<VideoScheduler>,
   // True if capture of video frames is paused.
   bool is_paused_;
 
-  // This is a number updated by client to trace performance.
+  // Number updated by the caller to trace performance.
   int64 sequence_number_;
 
   // An object to schedule capturing.

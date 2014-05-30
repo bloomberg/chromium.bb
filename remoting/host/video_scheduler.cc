@@ -165,6 +165,30 @@ void VideoScheduler::UpdateSequenceNumber(int64 sequence_number) {
   sequence_number_ = sequence_number;
 }
 
+void VideoScheduler::SetLosslessEncode(bool want_lossless) {
+  if (!encode_task_runner_->BelongsToCurrentThread()) {
+    DCHECK(network_task_runner_->BelongsToCurrentThread());
+    encode_task_runner_->PostTask(
+        FROM_HERE, base::Bind(&VideoScheduler::SetLosslessEncode,
+                              this, want_lossless));
+    return;
+  }
+
+  encoder_->SetLosslessEncode(want_lossless);
+}
+
+void VideoScheduler::SetLosslessColor(bool want_lossless) {
+  if (!encode_task_runner_->BelongsToCurrentThread()) {
+    DCHECK(network_task_runner_->BelongsToCurrentThread());
+    encode_task_runner_->PostTask(
+        FROM_HERE, base::Bind(&VideoScheduler::SetLosslessColor,
+                              this, want_lossless));
+    return;
+  }
+
+  encoder_->SetLosslessColor(want_lossless);
+}
+
 // Private methods -----------------------------------------------------------
 
 VideoScheduler::~VideoScheduler() {

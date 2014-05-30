@@ -133,6 +133,16 @@ void ClientSession::ControlVideo(const protocol::VideoControl& video_control) {
             << video_control.enable() << ")";
     video_scheduler_->Pause(!video_control.enable());
   }
+  if (video_control.has_lossless_encode()) {
+    VLOG(1) << "Received VideoControl (lossless_encode="
+            << video_control.lossless_encode() << ")";
+    video_scheduler_->SetLosslessEncode(video_control.lossless_encode());
+  }
+  if (video_control.has_lossless_color()) {
+    VLOG(1) << "Received VideoControl (lossless_color="
+            << video_control.lossless_color() << ")";
+    video_scheduler_->SetLosslessColor(video_control.lossless_color());
+  }
 }
 
 void ClientSession::ControlAudio(const protocol::AudioControl& audio_control) {
@@ -450,7 +460,7 @@ scoped_ptr<VideoEncoder> ClientSession::CreateVideoEncoder(
   if (video_config.codec == protocol::ChannelConfig::CODEC_VP8) {
     return remoting::VideoEncoderVpx::CreateForVP8().PassAs<VideoEncoder>();
   } else if (video_config.codec == protocol::ChannelConfig::CODEC_VP9) {
-    return remoting::VideoEncoderVpx::CreateForVP9I420().PassAs<VideoEncoder>();
+    return remoting::VideoEncoderVpx::CreateForVP9().PassAs<VideoEncoder>();
   }
 
   NOTREACHED();
