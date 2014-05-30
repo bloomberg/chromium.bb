@@ -65,6 +65,9 @@ public:
     // Relinquishes the storage lock, if one exists.
     void getStorageUpdates();
 
+    // NavigatorLanguage
+    virtual Vector<String> languages() OVERRIDE;
+
     virtual void trace(Visitor*);
 
 private:

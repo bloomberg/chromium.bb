@@ -535,11 +535,13 @@ void Page::acceptLanguagesChanged()
 {
     Vector< RefPtr<LocalFrame> > frames;
 
+    // Even though we don't fire an event from here, the DOMWindow's will fire
+    // an event so we keep the frames alive until we are done.
     for (LocalFrame* frame = mainFrame(); frame; frame = frame->tree().traverseNext())
         frames.append(frame);
 
     for (unsigned i = 0; i < frames.size(); ++i)
-        frames[i]->domWindow()->dispatchEvent(Event::create(EventTypeNames::languagechange));
+        frames[i]->domWindow()->acceptLanguagesChanged();
 }
 
 PageLifecycleNotifier& Page::lifecycleNotifier()

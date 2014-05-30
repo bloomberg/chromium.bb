@@ -363,6 +363,14 @@ void DOMWindow::clearEventQueue()
     m_eventQueue.clear();
 }
 
+void DOMWindow::acceptLanguagesChanged()
+{
+    if (m_navigator)
+        m_navigator->setLanguagesChanged();
+
+    dispatchEvent(Event::create(EventTypeNames::languagechange));
+}
+
 PassRefPtrWillBeRawPtr<Document> DOMWindow::createDocument(const String& mimeType, const DocumentInit& init, bool forceXHTML)
 {
     RefPtrWillBeRawPtr<Document> document = nullptr;

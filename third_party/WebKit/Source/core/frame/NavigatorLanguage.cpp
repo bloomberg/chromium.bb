@@ -9,10 +9,29 @@
 
 namespace WebCore {
 
+NavigatorLanguage::NavigatorLanguage()
+    : m_languagesChanged(true)
+{
+}
+
 AtomicString NavigatorLanguage::language(bool& isNull)
 {
     isNull = false;
     return defaultLanguage();
+}
+
+bool NavigatorLanguage::hasLanguagesChanged()
+{
+    if (!m_languagesChanged)
+        return false;
+
+    m_languagesChanged = false;
+    return true;
+}
+
+void NavigatorLanguage::setLanguagesChanged()
+{
+    m_languagesChanged = true;
 }
 
 } // namespace WebCore

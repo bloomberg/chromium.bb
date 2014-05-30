@@ -6,6 +6,5 @@
     NoInterfaceObject,
 ] interface NavigatorLanguage {
     readonly attribute DOMString? language;
-    // TODO(mlamouri), implement this as part of bug 365123.
-    // readonly attribute DOMString[] languages;
+    [CachedAttribute=hasLanguagesChanged] readonly attribute DOMString[] languages;
 };

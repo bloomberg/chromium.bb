@@ -12,6 +12,7 @@ navigator.getStorageUpdates() is OK
 navigator.isProtocolHandlerRegistered() threw err TypeError: Failed to execute 'isProtocolHandlerRegistered' on 'Navigator': 2 arguments required, but only 0 present.
 navigator.javaEnabled() is OK
 navigator.language is OK
+navigator.languages is OK
 navigator.maxTouchPoints is OK
 navigator.mimeTypes is OK
 navigator.onLine is OK
@@ -44,6 +45,7 @@ navigator.getStorageUpdates() is OK
 navigator.isProtocolHandlerRegistered() threw err TypeError: Failed to execute 'isProtocolHandlerRegistered' on 'Navigator': 2 arguments required, but only 0 present.
 navigator.javaEnabled() is OK
 navigator.language is OK
+navigator.languages is OK
 navigator.maxTouchPoints is OK
 navigator.mimeTypes is OK
 navigator.onLine is OK

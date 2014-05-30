@@ -326,6 +326,8 @@ enum PageshowEventPersistence {
         // FIXME: This shouldn't be public once DOMWindow becomes ExecutionContext.
         void clearEventQueue();
 
+        void acceptLanguagesChanged();
+
         virtual void trace(Visitor*) OVERRIDE;
 
     protected:
