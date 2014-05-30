@@ -723,7 +723,7 @@ unsigned RenderStyle::computeChangedContextSensitiveProperties(const RenderStyle
     return changedContextSensitiveProperties;
 }
 
-void RenderStyle::setClip(Length top, Length right, Length bottom, Length left)
+void RenderStyle::setClip(const Length& top, const Length& right, const Length& bottom, const Length& left)
 {
     StyleVisualData* data = visual.access();
     data->clip.m_top = top;
@@ -1194,7 +1194,8 @@ Length RenderStyle::lineHeight() const
 
     return lh;
 }
-void RenderStyle::setLineHeight(Length specifiedLineHeight) { SET_VAR(inherited, line_height, specifiedLineHeight); }
+
+void RenderStyle::setLineHeight(const Length& specifiedLineHeight) { SET_VAR(inherited, line_height, specifiedLineHeight); }
 
 int RenderStyle::computedLineHeight() const
 {
@@ -1597,7 +1598,7 @@ unsigned short RenderStyle::borderEndWidth() const
     return isLeftToRightDirection() ? borderBottomWidth() : borderTopWidth();
 }
 
-void RenderStyle::setMarginStart(Length margin)
+void RenderStyle::setMarginStart(const Length& margin)
 {
     if (isHorizontalWritingMode()) {
         if (isLeftToRightDirection())
@@ -1612,7 +1613,7 @@ void RenderStyle::setMarginStart(Length margin)
     }
 }
 
-void RenderStyle::setMarginEnd(Length margin)
+void RenderStyle::setMarginEnd(const Length& margin)
 {
     if (isHorizontalWritingMode()) {
         if (isLeftToRightDirection())
@@ -1659,7 +1660,7 @@ void RenderStyle::setBorderImageSource(PassRefPtr<StyleImage> image)
     surround.access()->border.m_image.setImage(image);
 }
 
-void RenderStyle::setBorderImageSlices(LengthBox slices)
+void RenderStyle::setBorderImageSlices(const LengthBox& slices)
 {
     if (surround->border.m_image.imageSlices() == slices)
         return;

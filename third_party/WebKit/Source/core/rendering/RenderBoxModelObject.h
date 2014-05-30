@@ -308,7 +308,7 @@ public:
     IntSize calculateImageIntrinsicDimensions(StyleImage*, const IntSize& scaledPositioningAreaSize, ScaleByEffectiveZoomOrNot) const;
 
 private:
-    LayoutUnit computedCSSPadding(Length) const;
+    LayoutUnit computedCSSPadding(const Length&) const;
     virtual bool isBoxModelObject() const OVERRIDE FINAL { return true; }
 
     virtual LayoutRect frameRectForStickyPositioning() const = 0;

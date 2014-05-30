@@ -2283,7 +2283,7 @@ LayoutUnit RenderBox::fillAvailableMeasure(LayoutUnit availableLogicalWidth, Lay
     return availableLogicalWidth - marginStart - marginEnd;
 }
 
-LayoutUnit RenderBox::computeIntrinsicLogicalWidthUsing(Length logicalWidthLength, LayoutUnit availableLogicalWidth, LayoutUnit borderAndPadding) const
+LayoutUnit RenderBox::computeIntrinsicLogicalWidthUsing(const Length& logicalWidthLength, LayoutUnit availableLogicalWidth, LayoutUnit borderAndPadding) const
 {
     if (logicalWidthLength.type() == FillAvailable)
         return fillAvailableMeasure(availableLogicalWidth);
@@ -2308,7 +2308,7 @@ LayoutUnit RenderBox::computeIntrinsicLogicalWidthUsing(Length logicalWidthLengt
     return 0;
 }
 
-LayoutUnit RenderBox::computeLogicalWidthUsing(SizeType widthType, Length logicalWidth, LayoutUnit availableLogicalWidth, const RenderBlock* cb) const
+LayoutUnit RenderBox::computeLogicalWidthUsing(SizeType widthType, const Length& logicalWidth, LayoutUnit availableLogicalWidth, const RenderBlock* cb) const
 {
     if (!logicalWidth.isIntrinsicOrAuto()) {
         // FIXME: If the containing block flow is perpendicular to our direction we need to use the available logical height instead.
@@ -2637,7 +2637,7 @@ LayoutUnit RenderBox::computeContentLogicalHeight(const Length& height, LayoutUn
     return std::max<LayoutUnit>(0, adjustContentBoxLogicalHeightForBoxSizing(heightIncludingScrollbar) - scrollbarLogicalHeight());
 }
 
-LayoutUnit RenderBox::computeIntrinsicLogicalContentHeightUsing(Length logicalHeightLength, LayoutUnit intrinsicContentHeight, LayoutUnit borderAndPadding) const
+LayoutUnit RenderBox::computeIntrinsicLogicalContentHeightUsing(const Length& logicalHeightLength, LayoutUnit intrinsicContentHeight, LayoutUnit borderAndPadding) const
 {
     // FIXME(cbiesinger): The css-sizing spec is considering changing what min-content/max-content should resolve to.
     // If that happens, this code will have to change.
@@ -2787,7 +2787,7 @@ LayoutUnit RenderBox::computeReplacedLogicalWidthRespectingMinMaxWidth(LayoutUni
     return max(minLogicalWidth, min(logicalWidth, maxLogicalWidth));
 }
 
-LayoutUnit RenderBox::computeReplacedLogicalWidthUsing(Length logicalWidth) const
+LayoutUnit RenderBox::computeReplacedLogicalWidthUsing(const Length& logicalWidth) const
 {
     switch (logicalWidth.type()) {
         case Fixed:
@@ -2842,7 +2842,7 @@ LayoutUnit RenderBox::computeReplacedLogicalHeightRespectingMinMaxHeight(LayoutU
     return max(minLogicalHeight, min(logicalHeight, maxLogicalHeight));
 }
 
-LayoutUnit RenderBox::computeReplacedLogicalHeightUsing(Length logicalHeight) const
+LayoutUnit RenderBox::computeReplacedLogicalHeightUsing(const Length& logicalHeight) const
 {
     switch (logicalHeight.type()) {
         case Fixed:
@@ -3245,8 +3245,8 @@ void RenderBox::shrinkToFitWidth(const LayoutUnit availableSpace, const LayoutUn
 
 void RenderBox::computePositionedLogicalWidthUsing(Length logicalWidth, const RenderBoxModelObject* containerBlock, TextDirection containerDirection,
                                                    LayoutUnit containerLogicalWidth, LayoutUnit bordersPlusPadding,
-                                                   Length logicalLeft, Length logicalRight, Length marginLogicalLeft, Length marginLogicalRight,
-                                                   LogicalExtentComputedValues& computedValues) const
+                                                   const Length& logicalLeft, const Length& logicalRight, const Length& marginLogicalLeft,
+                                                   const Length& marginLogicalRight, LogicalExtentComputedValues& computedValues) const
 {
     if (logicalWidth.isIntrinsic())
         logicalWidth = Length(computeIntrinsicLogicalWidthUsing(logicalWidth, containerLogicalWidth, bordersPlusPadding) - bordersPlusPadding, Fixed);
@@ -3557,8 +3557,8 @@ static void computeLogicalTopPositionedOffset(LayoutUnit& logicalTopPos, const R
 
 void RenderBox::computePositionedLogicalHeightUsing(Length logicalHeightLength, const RenderBoxModelObject* containerBlock,
                                                     LayoutUnit containerLogicalHeight, LayoutUnit bordersPlusPadding, LayoutUnit logicalHeight,
-                                                    Length logicalTop, Length logicalBottom, Length marginBefore, Length marginAfter,
-                                                    LogicalExtentComputedValues& computedValues) const
+                                                    const Length& logicalTop, const Length& logicalBottom, const Length& marginBefore,
+                                                    const Length& marginAfter, LogicalExtentComputedValues& computedValues) const
 {
     // 'top' and 'bottom' cannot both be 'auto' because 'top would of been
     // converted to the static position in computePositionedLogicalHeight()

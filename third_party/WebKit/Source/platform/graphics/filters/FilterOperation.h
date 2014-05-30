@@ -235,12 +235,12 @@ DEFINE_TYPE_CASTS(BasicComponentTransferFilterOperation, FilterOperation, op, is
 
 class PLATFORM_EXPORT BlurFilterOperation : public FilterOperation {
 public:
-    static PassRefPtr<BlurFilterOperation> create(Length stdDeviation)
+    static PassRefPtr<BlurFilterOperation> create(const Length& stdDeviation)
     {
         return adoptRef(new BlurFilterOperation(stdDeviation));
     }
 
-    Length stdDeviation() const { return m_stdDeviation; }
+    const Length& stdDeviation() const { return m_stdDeviation; }
 
     virtual bool affectsOpacity() const OVERRIDE { return true; }
     virtual bool movesPixels() const OVERRIDE { return true; }
@@ -256,7 +256,7 @@ private:
         return m_stdDeviation == other->m_stdDeviation;
     }
 
-    BlurFilterOperation(Length stdDeviation)
+    BlurFilterOperation(const Length& stdDeviation)
         : FilterOperation(BLUR)
         , m_stdDeviation(stdDeviation)
     {

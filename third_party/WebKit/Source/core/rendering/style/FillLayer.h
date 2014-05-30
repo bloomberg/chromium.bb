@@ -40,7 +40,7 @@ struct FillSize {
     {
     }
 
-    FillSize(EFillSizeType t, LengthSize l)
+    FillSize(EFillSizeType t, const LengthSize& l)
         : type(t)
         , size(l)
     {
@@ -101,8 +101,8 @@ public:
     bool isMaskSourceTypeSet() const { return m_maskSourceTypeSet; }
 
     void setImage(PassRefPtr<StyleImage> i) { m_image = i; m_imageSet = true; }
-    void setXPosition(Length position) { m_xPosition = position; m_xPosSet = true; m_backgroundXOriginSet = false; m_backgroundXOrigin = LeftEdge; }
-    void setYPosition(Length position) { m_yPosition = position; m_yPosSet = true; m_backgroundYOriginSet = false; m_backgroundYOrigin = TopEdge; }
+    void setXPosition(const Length& position) { m_xPosition = position; m_xPosSet = true; m_backgroundXOriginSet = false; m_backgroundXOrigin = LeftEdge; }
+    void setYPosition(const Length& position) { m_yPosition = position; m_yPosSet = true; m_backgroundYOriginSet = false; m_backgroundYOrigin = TopEdge; }
     void setBackgroundXOrigin(BackgroundEdgeOrigin origin) { m_backgroundXOrigin = origin; m_backgroundXOriginSet = true; }
     void setBackgroundYOrigin(BackgroundEdgeOrigin origin) { m_backgroundYOrigin = origin; m_backgroundYOriginSet = true; }
     void setAttachment(EFillAttachment attachment) { m_attachment = attachment; m_attachmentSet = true; }
@@ -113,7 +113,7 @@ public:
     void setComposite(CompositeOperator c) { m_composite = c; m_compositeSet = true; }
     void setBlendMode(blink::WebBlendMode b) { m_blendMode = b; m_blendModeSet = true; }
     void setSizeType(EFillSizeType b) { m_sizeType = b; }
-    void setSizeLength(LengthSize l) { m_sizeLength = l; }
+    void setSizeLength(const LengthSize& l) { m_sizeLength = l; }
     void setSize(FillSize f) { m_sizeType = f.type; m_sizeLength = f.size; }
     void setMaskSourceType(EMaskSourceType m) { m_maskSourceType = m; m_maskSourceTypeSet = true; }
 

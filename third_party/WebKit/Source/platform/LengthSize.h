@@ -31,7 +31,7 @@ public:
     {
     }
 
-    LengthSize(Length width, Length height)
+    LengthSize(const Length& width, const Length& height)
         : m_width(width)
         , m_height(height)
     {
@@ -42,11 +42,11 @@ public:
         return m_width == o.m_width && m_height == o.m_height;
     }
 
-    void setWidth(Length width) { m_width = width; }
-    Length width() const { return m_width; }
+    void setWidth(const Length& width) { m_width = width; }
+    const Length& width() const { return m_width; }
 
-    void setHeight(Length height) { m_height = height; }
-    Length height() const { return m_height; }
+    void setHeight(const Length& height) { m_height = height; }
+    const Length& height() const { return m_height; }
 
 private:
     Length m_width;

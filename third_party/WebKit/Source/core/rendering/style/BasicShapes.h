@@ -88,7 +88,7 @@ public:
         updateComputedLength();
     }
 
-    BasicShapeCenterCoordinate(Direction direction, Length length)
+    BasicShapeCenterCoordinate(Direction direction, const Length& length)
         : m_direction(direction)
         , m_length(length)
     {
@@ -129,7 +129,7 @@ public:
         FarthestSide
     };
     BasicShapeRadius() : m_value(Undefined), m_type(ClosestSide) { }
-    explicit BasicShapeRadius(Length v) : m_value(v), m_type(Value) { }
+    explicit BasicShapeRadius(const Length& v) : m_value(v), m_type(Value) { }
     explicit BasicShapeRadius(Type t) : m_value(Undefined), m_type(t) { }
     BasicShapeRadius(const BasicShapeRadius& other) : m_value(other.value()), m_type(other.type()) { }
     bool operator==(const BasicShapeRadius& other) const { return m_type == other.m_type && m_value == other.m_value; }
@@ -225,7 +225,7 @@ public:
     Length getYAt(unsigned i) const { return m_values.at(2 * i + 1); }
 
     void setWindRule(WindRule windRule) { m_windRule = windRule; }
-    void appendPoint(Length x, Length y) { m_values.append(x); m_values.append(y); }
+    void appendPoint(const Length& x, const Length& y) { m_values.append(x); m_values.append(y); }
 
     virtual void path(Path&, const FloatRect&) OVERRIDE;
     virtual PassRefPtr<BasicShape> blend(const BasicShape*, double) const OVERRIDE;
@@ -259,15 +259,15 @@ public:
     const LengthSize& bottomRightRadius() const { return m_bottomRightRadius; }
     const LengthSize& bottomLeftRadius() const { return m_bottomLeftRadius; }
 
-    void setTop(Length top) { m_top = top; }
-    void setRight(Length right) { m_right = right; }
-    void setBottom(Length bottom) { m_bottom = bottom; }
-    void setLeft(Length left) { m_left = left; }
+    void setTop(const Length& top) { m_top = top; }
+    void setRight(const Length& right) { m_right = right; }
+    void setBottom(const Length& bottom) { m_bottom = bottom; }
+    void setLeft(const Length& left) { m_left = left; }
 
-    void setTopLeftRadius(LengthSize radius) { m_topLeftRadius = radius; }
-    void setTopRightRadius(LengthSize radius) { m_topRightRadius = radius; }
-    void setBottomRightRadius(LengthSize radius) { m_bottomRightRadius = radius; }
-    void setBottomLeftRadius(LengthSize radius) { m_bottomLeftRadius = radius; }
+    void setTopLeftRadius(const LengthSize& radius) { m_topLeftRadius = radius; }
+    void setTopRightRadius(const LengthSize& radius) { m_topRightRadius = radius; }
+    void setBottomRightRadius(const LengthSize& radius) { m_bottomRightRadius = radius; }
+    void setBottomLeftRadius(const LengthSize& radius) { m_bottomLeftRadius = radius; }
 
     virtual void path(Path&, const FloatRect&) OVERRIDE;
     virtual PassRefPtr<BasicShape> blend(const BasicShape*, double) const OVERRIDE;

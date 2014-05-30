@@ -53,7 +53,7 @@ public:
     {
     }
 
-    LengthBox(Length t, Length r, Length b, Length l)
+    LengthBox(const Length& t, const Length& r, const Length& b, const Length& l)
         : m_left(l)
         , m_right(r)
         , m_top(t)

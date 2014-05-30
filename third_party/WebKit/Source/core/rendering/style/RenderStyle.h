@@ -977,15 +977,15 @@ public:
     void setPosition(EPosition v) { noninherited_flags._position = v; }
     void setFloating(EFloat v) { noninherited_flags._floating = v; }
 
-    void setLeft(Length v) { SET_VAR(surround, offset.m_left, v); }
-    void setRight(Length v) { SET_VAR(surround, offset.m_right, v); }
-    void setTop(Length v) { SET_VAR(surround, offset.m_top, v); }
-    void setBottom(Length v) { SET_VAR(surround, offset.m_bottom, v); }
+    void setLeft(const Length& v) { SET_VAR(surround, offset.m_left, v); }
+    void setRight(const Length& v) { SET_VAR(surround, offset.m_right, v); }
+    void setTop(const Length& v) { SET_VAR(surround, offset.m_top, v); }
+    void setBottom(const Length& v) { SET_VAR(surround, offset.m_bottom, v); }
 
-    void setWidth(Length v) { SET_VAR(m_box, m_width, v); }
-    void setHeight(Length v) { SET_VAR(m_box, m_height, v); }
+    void setWidth(const Length& v) { SET_VAR(m_box, m_width, v); }
+    void setHeight(const Length& v) { SET_VAR(m_box, m_height, v); }
 
-    void setLogicalWidth(Length v)
+    void setLogicalWidth(const Length& v)
     {
         if (isHorizontalWritingMode()) {
             SET_VAR(m_box, m_width, v);
@@ -994,7 +994,7 @@ public:
         }
     }
 
-    void setLogicalHeight(Length v)
+    void setLogicalHeight(const Length& v)
     {
         if (isHorizontalWritingMode()) {
             SET_VAR(m_box, m_height, v);
@@ -1003,10 +1003,10 @@ public:
         }
     }
 
-    void setMinWidth(Length v) { SET_VAR(m_box, m_minWidth, v); }
-    void setMaxWidth(Length v) { SET_VAR(m_box, m_maxWidth, v); }
-    void setMinHeight(Length v) { SET_VAR(m_box, m_minHeight, v); }
-    void setMaxHeight(Length v) { SET_VAR(m_box, m_maxHeight, v); }
+    void setMinWidth(const Length& v) { SET_VAR(m_box, m_minWidth, v); }
+    void setMaxWidth(const Length& v) { SET_VAR(m_box, m_maxWidth, v); }
+    void setMinHeight(const Length& v) { SET_VAR(m_box, m_minHeight, v); }
+    void setMaxHeight(const Length& v) { SET_VAR(m_box, m_maxHeight, v); }
 
     DraggableRegionMode getDraggableRegionMode() const { return rareNonInheritedData->m_draggableRegionMode; }
     void setDraggableRegionMode(DraggableRegionMode v) { SET_VAR(rareNonInheritedData, m_draggableRegionMode, v); }
@@ -1025,23 +1025,23 @@ public:
 
     void setBackgroundColor(const StyleColor& v) { SET_VAR(m_background, m_color, v); }
 
-    void setBackgroundXPosition(Length length) { SET_VAR(m_background, m_background.m_xPosition, length); }
-    void setBackgroundYPosition(Length length) { SET_VAR(m_background, m_background.m_yPosition, length); }
+    void setBackgroundXPosition(const Length& length) { SET_VAR(m_background, m_background.m_xPosition, length); }
+    void setBackgroundYPosition(const Length& length) { SET_VAR(m_background, m_background.m_yPosition, length); }
     void setBackgroundSize(EFillSizeType b) { SET_VAR(m_background, m_background.m_sizeType, b); }
-    void setBackgroundSizeLength(LengthSize s) { SET_VAR(m_background, m_background.m_sizeLength, s); }
+    void setBackgroundSizeLength(const LengthSize& s) { SET_VAR(m_background, m_background.m_sizeLength, s); }
 
     void setBorderImage(const NinePieceImage& b) { SET_VAR(surround, border.m_image, b); }
     void setBorderImageSource(PassRefPtr<StyleImage>);
-    void setBorderImageSlices(LengthBox);
+    void setBorderImageSlices(const LengthBox&);
     void setBorderImageWidth(const BorderImageLengthBox&);
     void setBorderImageOutset(const BorderImageLengthBox&);
 
-    void setBorderTopLeftRadius(LengthSize s) { SET_VAR(surround, border.m_topLeft, s); }
-    void setBorderTopRightRadius(LengthSize s) { SET_VAR(surround, border.m_topRight, s); }
-    void setBorderBottomLeftRadius(LengthSize s) { SET_VAR(surround, border.m_bottomLeft, s); }
-    void setBorderBottomRightRadius(LengthSize s) { SET_VAR(surround, border.m_bottomRight, s); }
+    void setBorderTopLeftRadius(const LengthSize& s) { SET_VAR(surround, border.m_topLeft, s); }
+    void setBorderTopRightRadius(const LengthSize& s) { SET_VAR(surround, border.m_topRight, s); }
+    void setBorderBottomLeftRadius(const LengthSize& s) { SET_VAR(surround, border.m_bottomLeft, s); }
+    void setBorderBottomRightRadius(const LengthSize& s) { SET_VAR(surround, border.m_bottomRight, s); }
 
-    void setBorderRadius(LengthSize s)
+    void setBorderRadius(const LengthSize& s)
     {
         setBorderTopLeftRadius(s);
         setBorderTopRightRadius(s);
@@ -1081,15 +1081,15 @@ public:
     void setOverflowY(EOverflow v) { noninherited_flags._overflowY = v; }
     void setVisibility(EVisibility v) { inherited_flags._visibility = v; }
     void setVerticalAlign(EVerticalAlign v) { noninherited_flags._vertical_align = v; }
-    void setVerticalAlignLength(Length length) { setVerticalAlign(LENGTH); SET_VAR(m_box, m_verticalAlign, length); }
+    void setVerticalAlignLength(const Length& length) { setVerticalAlign(LENGTH); SET_VAR(m_box, m_verticalAlign, length); }
 
     void setHasClip(bool b = true) { SET_VAR(visual, hasClip, b); }
-    void setClipLeft(Length v) { SET_VAR(visual, clip.m_left, v); }
-    void setClipRight(Length v) { SET_VAR(visual, clip.m_right, v); }
-    void setClipTop(Length v) { SET_VAR(visual, clip.m_top, v); }
-    void setClipBottom(Length v) { SET_VAR(visual, clip.m_bottom, v); }
-    void setClip(Length top, Length right, Length bottom, Length left);
-    void setClip(LengthBox box) { SET_VAR(visual, clip, box); }
+    void setClipLeft(const Length& v) { SET_VAR(visual, clip.m_left, v); }
+    void setClipRight(const Length& v) { SET_VAR(visual, clip.m_right, v); }
+    void setClipTop(const Length& v) { SET_VAR(visual, clip.m_top, v); }
+    void setClipBottom(const Length& v) { SET_VAR(visual, clip.m_bottom, v); }
+    void setClip(const Length& top, const Length& right, const Length& bottom, const Length& left);
+    void setClip(const LengthBox& box) { SET_VAR(visual, clip, box); }
 
     void setUnicodeBidi(EUnicodeBidi b) { noninherited_flags._unicodeBidi = b; }
 
@@ -1108,7 +1108,7 @@ public:
     }
 
     void setColor(const Color&);
-    void setTextIndent(Length v) { SET_VAR(rareInheritedData, indent, v); }
+    void setTextIndent(const Length& v) { SET_VAR(rareInheritedData, indent, v); }
     void setTextIndentLine(TextIndentLine v) { SET_VAR(rareInheritedData, m_textIndentLine, v); }
     void setTextIndentType(TextIndentType v) { SET_VAR(rareInheritedData, m_textIndentType, v); }
     void setTextAlign(ETextAlign v) { inherited_flags._text_align = v; }
@@ -1121,7 +1121,7 @@ public:
     void setTextUnderlinePosition(TextUnderlinePosition v) { SET_VAR(rareInheritedData, m_textUnderlinePosition, v); }
     void setTextDecorationStyle(TextDecorationStyle v) { SET_VAR(rareNonInheritedData, m_textDecorationStyle, v); }
     void setDirection(TextDirection v) { inherited_flags._direction = v; }
-    void setLineHeight(Length specifiedLineHeight);
+    void setLineHeight(const Length& specifiedLineHeight);
     bool setZoom(float);
     void setZoomWithoutReturnValue(float f) { setZoom(f); }
     bool setEffectiveZoom(float);
@@ -1160,7 +1160,7 @@ public:
 
     void setMaskBoxImage(const NinePieceImage& b) { SET_VAR(rareNonInheritedData, m_maskBoxImage, b); }
     void setMaskBoxImageSource(PassRefPtr<StyleImage> v) { rareNonInheritedData.access()->m_maskBoxImage.setImage(v); }
-    void setMaskBoxImageSlices(LengthBox slices)
+    void setMaskBoxImageSlices(const LengthBox& slices)
     {
         rareNonInheritedData.access()->m_maskBoxImage.setImageSlices(slices);
     }
@@ -1176,9 +1176,9 @@ public:
     {
         rareNonInheritedData.access()->m_maskBoxImage.setOutset(outset);
     }
-    void setMaskXPosition(Length length) { SET_VAR(rareNonInheritedData, m_mask.m_xPosition, length); }
-    void setMaskYPosition(Length length) { SET_VAR(rareNonInheritedData, m_mask.m_yPosition, length); }
-    void setMaskSize(LengthSize s) { SET_VAR(rareNonInheritedData, m_mask.m_sizeLength, s); }
+    void setMaskXPosition(const Length& length) { SET_VAR(rareNonInheritedData, m_mask.m_xPosition, length); }
+    void setMaskYPosition(const Length& length) { SET_VAR(rareNonInheritedData, m_mask.m_yPosition, length); }
+    void setMaskSize(const LengthSize& s) { SET_VAR(rareNonInheritedData, m_mask.m_sizeLength, s); }
 
     void setBorderCollapse(EBorderCollapse collapse) { inherited_flags._border_collapse = collapse; }
     void setHorizontalBorderSpacing(short);
@@ -1195,19 +1195,19 @@ public:
     void setListStylePosition(EListStylePosition v) { inherited_flags._list_style_position = v; }
 
     void resetMargin() { SET_VAR(surround, margin, LengthBox(Fixed)); }
-    void setMarginTop(Length v) { SET_VAR(surround, margin.m_top, v); }
-    void setMarginBottom(Length v) { SET_VAR(surround, margin.m_bottom, v); }
-    void setMarginLeft(Length v) { SET_VAR(surround, margin.m_left, v); }
-    void setMarginRight(Length v) { SET_VAR(surround, margin.m_right, v); }
-    void setMarginStart(Length);
-    void setMarginEnd(Length);
+    void setMarginTop(const Length& v) { SET_VAR(surround, margin.m_top, v); }
+    void setMarginBottom(const Length& v) { SET_VAR(surround, margin.m_bottom, v); }
+    void setMarginLeft(const Length& v) { SET_VAR(surround, margin.m_left, v); }
+    void setMarginRight(const Length& v) { SET_VAR(surround, margin.m_right, v); }
+    void setMarginStart(const Length&);
+    void setMarginEnd(const Length&);
 
     void resetPadding() { SET_VAR(surround, padding, LengthBox(Auto)); }
     void setPaddingBox(const LengthBox& b) { SET_VAR(surround, padding, b); }
-    void setPaddingTop(Length v) { SET_VAR(surround, padding.m_top, v); }
-    void setPaddingBottom(Length v) { SET_VAR(surround, padding.m_bottom, v); }
-    void setPaddingLeft(Length v) { SET_VAR(surround, padding.m_left, v); }
-    void setPaddingRight(Length v) { SET_VAR(surround, padding.m_right, v); }
+    void setPaddingTop(const Length& v) { SET_VAR(surround, padding.m_top, v); }
+    void setPaddingBottom(const Length& v) { SET_VAR(surround, padding.m_bottom, v); }
+    void setPaddingLeft(const Length& v) { SET_VAR(surround, padding.m_left, v); }
+    void setPaddingRight(const Length& v) { SET_VAR(surround, padding.m_right, v); }
 
     void setCursor(ECursor c) { inherited_flags._cursor_style = c; }
     void addCursor(PassRefPtr<StyleImage>, const IntPoint& hotSpot = IntPoint());
@@ -1259,7 +1259,7 @@ public:
     void setBoxSizing(EBoxSizing s) { SET_VAR(m_box, m_boxSizing, s); }
     void setFlexGrow(float f) { SET_VAR(rareNonInheritedData.access()->m_flexibleBox, m_flexGrow, f); }
     void setFlexShrink(float f) { SET_VAR(rareNonInheritedData.access()->m_flexibleBox, m_flexShrink, f); }
-    void setFlexBasis(Length length) { SET_VAR(rareNonInheritedData.access()->m_flexibleBox, m_flexBasis, length); }
+    void setFlexBasis(const Length& length) { SET_VAR(rareNonInheritedData.access()->m_flexibleBox, m_flexBasis, length); }
     // We restrict the smallest value to int min + 2 because we use int min and int min + 1 as special values in a hash set.
     void setOrder(int o) { SET_VAR(rareNonInheritedData, m_order, max(std::numeric_limits<int>::min() + 2, o)); }
     void addCallbackSelector(const String& selector);
@@ -1291,7 +1291,7 @@ public:
     void setGridRowStart(const GridPosition& rowStartPosition) { SET_VAR(rareNonInheritedData.access()->m_gridItem, m_gridRowStart, rowStartPosition); }
     void setGridRowEnd(const GridPosition& rowEndPosition) { SET_VAR(rareNonInheritedData.access()->m_gridItem, m_gridRowEnd, rowEndPosition); }
 
-    void setMarqueeIncrement(Length f) { SET_VAR(rareNonInheritedData.access()->m_marquee, increment, f); }
+    void setMarqueeIncrement(const Length& f) { SET_VAR(rareNonInheritedData.access()->m_marquee, increment, f); }
     void setMarqueeSpeed(int f) { SET_VAR(rareNonInheritedData.access()->m_marquee, speed, f); }
     void setMarqueeDirection(EMarqueeDirection d) { SET_VAR(rareNonInheritedData.access()->m_marquee, direction, d); }
     void setMarqueeBehavior(EMarqueeBehavior b) { SET_VAR(rareNonInheritedData.access()->m_marquee, behavior, b); }
@@ -1329,8 +1329,8 @@ public:
     void setColumnBreakAfter(EPageBreak p) { SET_VAR(rareNonInheritedData.access()->m_multiCol, m_breakAfter, p); }
     void inheritColumnPropertiesFrom(RenderStyle* parent) { rareNonInheritedData.access()->m_multiCol = parent->rareNonInheritedData->m_multiCol; }
     void setTransform(const TransformOperations& ops) { SET_VAR(rareNonInheritedData.access()->m_transform, m_operations, ops); }
-    void setTransformOriginX(Length l) { SET_VAR(rareNonInheritedData.access()->m_transform, m_x, l); }
-    void setTransformOriginY(Length l) { SET_VAR(rareNonInheritedData.access()->m_transform, m_y, l); }
+    void setTransformOriginX(const Length& l) { SET_VAR(rareNonInheritedData.access()->m_transform, m_x, l); }
+    void setTransformOriginY(const Length& l) { SET_VAR(rareNonInheritedData.access()->m_transform, m_y, l); }
     void setTransformOriginZ(float f) { SET_VAR(rareNonInheritedData.access()->m_transform, m_z, f); }
     void setSpeak(ESpeak s) { SET_VAR(rareInheritedData, speak, s); }
     void setTextCombine(TextCombine v) { SET_VAR(rareNonInheritedData, m_textCombine, v); }
@@ -1372,9 +1372,9 @@ public:
     void setTransformStyle3D(ETransformStyle3D b) { SET_VAR(rareNonInheritedData, m_transformStyle3D, b); }
     void setBackfaceVisibility(EBackfaceVisibility b) { SET_VAR(rareNonInheritedData, m_backfaceVisibility, b); }
     void setPerspective(float p) { SET_VAR(rareNonInheritedData, m_perspective, p); }
-    void setPerspectiveOriginX(Length l) { SET_VAR(rareNonInheritedData, m_perspectiveOriginX, l); }
-    void setPerspectiveOriginY(Length l) { SET_VAR(rareNonInheritedData, m_perspectiveOriginY, l); }
-    void setPageSize(LengthSize s) { SET_VAR(rareNonInheritedData, m_pageSize, s); }
+    void setPerspectiveOriginX(const Length& l) { SET_VAR(rareNonInheritedData, m_perspectiveOriginX, l); }
+    void setPerspectiveOriginY(const Length& l) { SET_VAR(rareNonInheritedData, m_perspectiveOriginY, l); }
+    void setPageSize(const LengthSize& s) { SET_VAR(rareNonInheritedData, m_pageSize, s); }
     void setPageSizeType(PageSizeType t) { SET_VAR(rareNonInheritedData, m_pageSizeType, t); }
     void resetPageSizeType() { SET_VAR(rareNonInheritedData, m_pageSizeType, PAGE_SIZE_AUTO); }
 
@@ -1455,7 +1455,7 @@ public:
     static ClipPathOperation* initialClipPath() { return 0; }
 
     const Length& shapeMargin() const { return rareNonInheritedData->m_shapeMargin; }
-    void setShapeMargin(Length shapeMargin) { SET_VAR(rareNonInheritedData, m_shapeMargin, shapeMargin); }
+    void setShapeMargin(const Length& shapeMargin) { SET_VAR(rareNonInheritedData, m_shapeMargin, shapeMargin); }
     static Length initialShapeMargin() { return Length(0, Fixed); }
 
     float shapeImageThreshold() const { return rareNonInheritedData->m_shapeImageThreshold; }
