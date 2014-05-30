@@ -202,5 +202,13 @@
       "mojo_system_unittests",
       "nacl_loader_unittests"
     ]
+  },
+  "Linux ARM Cross-Compile": {
+    "compile_targets": [
+      "browser_tests_run"
+    ],
+    "gtest_tests": [
+      "browser_tests"
+    ]
   }
 }
