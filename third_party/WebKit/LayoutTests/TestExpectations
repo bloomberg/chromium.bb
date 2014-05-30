@@ -678,8 +678,8 @@ crbug.com/243782 fullscreen/full-screen-remove-ancestor.html [ Pass Timeout ]
 crbug.com/246077 fullscreen/full-screen-render-inline.html [ ImageOnlyFailure ]
 crbug.com/318210 svg/text/text-style-recalc-crash.html [ Pass Timeout ]
 
-crbug.com/376441 [ Mac ] virtual/softwarecompositing/lots-of-img-layers-with-opacity.html [ Crash Timeout ]
-crbug.com/376441 [ Mac ] virtual/softwarecompositing/lots-of-img-layers.html [ Crash Timeout ]
+crbug.com/376441 [ Mac ] virtual/softwarecompositing/lots-of-img-layers-with-opacity.html [ NeedsRebaseline ]
+crbug.com/376441 [ Mac ] virtual/softwarecompositing/lots-of-img-layers.html [ NeedsRebaseline ]
 
 # Seems to be hit by the try jobs only.
 crbug.com/243599 [ Linux Win ] http/tests/xmlhttprequest/access-control-repeated-failed-preflight-crash.html [ Crash Pass Timeout ]
