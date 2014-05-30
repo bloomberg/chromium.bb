@@ -945,7 +945,7 @@ PassRefPtrWillBeRawPtr<Node> Document::importNode(Node* importedNode, bool deep,
     case TEXT_NODE:
         return createTextNode(importedNode->nodeValue());
     case CDATA_SECTION_NODE:
-        return createCDATASection(importedNode->nodeValue(), exceptionState);
+        return CDATASection::create(*this, importedNode->nodeValue());
     case PROCESSING_INSTRUCTION_NODE:
         return createProcessingInstruction(importedNode->nodeName(), importedNode->nodeValue(), exceptionState);
     case COMMENT_NODE:
