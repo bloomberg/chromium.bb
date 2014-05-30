@@ -66,8 +66,13 @@ pushd ${NACLPORTS_DIR}
 gclient sync -r ${NACLPORTS_REV}
 popd
 
+
 Banner Building lua
 pushd ${NACLPORTS_DIR}/src
+# Do a 'clean' first, since previous lua build from the naclports bundle
+# building might be installed in the toolchain, and that one is built
+# without readline support.
+make TOOLCHAIN=pnacl clean
 make TOOLCHAIN=pnacl lua-ppapi
 popd
 
