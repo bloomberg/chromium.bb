@@ -254,12 +254,12 @@ MULTIPROCESS_IPC_TEST_CLIENT_MAIN(GenericClient) {
   GenericChannelListener listener;
 
   // Set up IPC channel.
-  IPC::Channel channel(IPCTestBase::GetChannelName("GenericClient"),
-                       IPC::Channel::MODE_CLIENT,
-                       &listener);
-  CHECK(channel.Connect());
-  listener.Init(&channel);
-  Send(&channel, "hello from child");
+  scoped_ptr<IPC::Channel> channel(IPC::Channel::CreateClient(
+      IPCTestBase::GetChannelName("GenericClient"),
+      &listener));
+  CHECK(channel->Connect());
+  listener.Init(channel.get());
+  Send(channel.get(), "hello from child");
 
   base::MessageLoop::current()->Run();
   return 0;

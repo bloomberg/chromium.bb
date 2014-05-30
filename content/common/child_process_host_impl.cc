@@ -164,8 +164,7 @@ void ChildProcessHostImpl::ForceShutdown() {
 
 std::string ChildProcessHostImpl::CreateChannel() {
   channel_id_ = IPC::Channel::GenerateVerifiedChannelID(std::string());
-  channel_.reset(new IPC::Channel(
-      channel_id_, IPC::Channel::MODE_SERVER, this));
+  channel_ = IPC::Channel::CreateServer(channel_id_, this);
   if (!channel_->Connect())
     return std::string();
 

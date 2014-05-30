@@ -60,7 +60,7 @@ class MockPluginProcessHostClient : public PluginProcessHost::Client,
     ASSERT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
     ASSERT_TRUE(set_plugin_info_called_);
     ASSERT_TRUE(!channel_);
-    channel_ = new IPC::Channel(handle, IPC::Channel::MODE_CLIENT, this);
+    channel_ = IPC::Channel::CreateClient(handle, this).release();
     ASSERT_TRUE(channel_->Connect());
   }
 

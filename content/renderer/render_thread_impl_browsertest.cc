@@ -57,8 +57,9 @@ TEST_F(RenderThreadImplBrowserTest,
   std::string channel_id = IPC::Channel::GenerateVerifiedChannelID(
       std::string());
   DummyListener dummy_listener;
-  IPC::Channel channel(channel_id, IPC::Channel::MODE_SERVER, &dummy_listener);
-  ASSERT_TRUE(channel.Connect());
+  scoped_ptr<IPC::Channel> channel(
+      IPC::Channel::CreateServer(channel_id, &dummy_listener));
+  ASSERT_TRUE(channel->Connect());
 
   scoped_ptr<MockRenderProcess> mock_process(new MockRenderProcess);
   // Owned by mock_process.

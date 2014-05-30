@@ -91,8 +91,8 @@ void ServiceListener::Connect() {
                    SECURITY_SQOS_PRESENT | SECURITY_IDENTIFICATION |
                    FILE_FLAG_OVERLAPPED, NULL));
   if (handle.IsValid()) {
-    channel_.reset(new IPC::Channel(IPC::ChannelHandle(handle),
-                                    IPC::Channel::MODE_CLIENT, this));
+    channel_ = IPC::Channel::CreateClient(IPC::ChannelHandle(handle),
+                                          this);
     channel_->Connect();
   } else {
     ipc_thread_->message_loop()->PostDelayedTask(

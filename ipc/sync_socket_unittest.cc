@@ -108,11 +108,11 @@ class SyncSocketServerListener : public IPC::Listener {
 MULTIPROCESS_IPC_TEST_CLIENT_MAIN(SyncSocketServerClient) {
   base::MessageLoopForIO main_message_loop;
   SyncSocketServerListener listener;
-  IPC::Channel channel(IPCTestBase::GetChannelName("SyncSocketServerClient"),
-                       IPC::Channel::MODE_CLIENT,
-                       &listener);
-  EXPECT_TRUE(channel.Connect());
-  listener.Init(&channel);
+  scoped_ptr<IPC::Channel> channel(IPC::Channel::CreateClient(
+      IPCTestBase::GetChannelName("SyncSocketServerClient"),
+      &listener));
+  EXPECT_TRUE(channel->Connect());
+  listener.Init(channel.get());
   base::MessageLoop::current()->Run();
   return 0;
 }

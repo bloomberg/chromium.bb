@@ -55,21 +55,15 @@ class IPC_EXPORT Channel : public Sender {
   };
 
   // Some Standard Modes
+  // TODO(morrita): These are under deprecation work. You should use Create*()
+  // functions instead.
   enum Mode {
     MODE_NONE = MODE_NO_FLAG,
     MODE_SERVER = MODE_SERVER_FLAG,
     MODE_CLIENT = MODE_CLIENT_FLAG,
-    // Channels on Windows are named by default and accessible from other
-    // processes. On POSIX channels are anonymous by default and not accessible
-    // from other processes. Named channels work via named unix domain sockets.
-    // On Windows MODE_NAMED_SERVER is equivalent to MODE_SERVER and
-    // MODE_NAMED_CLIENT is equivalent to MODE_CLIENT.
     MODE_NAMED_SERVER = MODE_SERVER_FLAG | MODE_NAMED_FLAG,
     MODE_NAMED_CLIENT = MODE_CLIENT_FLAG | MODE_NAMED_FLAG,
 #if defined(OS_POSIX)
-    // An "open" named server accepts connections from ANY client.
-    // The caller must then implement their own access-control based on the
-    // client process' user Id.
     MODE_OPEN_NAMED_SERVER = MODE_OPEN_ACCESS_FLAG | MODE_SERVER_FLAG |
                              MODE_NAMED_FLAG
 #endif
@@ -106,15 +100,47 @@ class IPC_EXPORT Channel : public Sender {
   // the file descriptor in the channel handle is != -1, the channel takes
   // ownership of the file descriptor and will close it appropriately, otherwise
   // it will create a new descriptor internally.
-  // |mode| specifies whether this Channel is to operate in server mode or
-  // client mode.  In server mode, the Channel is responsible for setting up the
-  // IPC object, whereas in client mode, the Channel merely connects to the
-  // already established IPC object.
   // |listener| receives a callback on the current thread for each newly
   // received message.
   //
-  Channel(const IPC::ChannelHandle &channel_handle, Mode mode,
-          Listener* listener);
+  // There are four type of modes how channels operate:
+  //
+  // - Server and named server: In these modes, the Channel is
+  //   responsible for settingb up the IPC object
+  // - An "open" named server: It accepts connections from ANY client.
+  //   The caller must then implement their own access-control based on the
+  //   client process' user Id.
+  // - Client and named client: In these mode, the Channel merely
+  //   connects to the already established IPC object.
+  //
+  // Each mode has its own Create*() API to create the Channel object.
+  //
+  // TODO(morrita): Replace CreateByModeForProxy() with one of above Create*().
+  //
+  static scoped_ptr<Channel> CreateByModeForProxy(
+      const IPC::ChannelHandle &channel_handle, Mode mode,Listener* listener);
+  static scoped_ptr<Channel> CreateClient(
+      const IPC::ChannelHandle &channel_handle, Listener* listener);
+
+  // Channels on Windows are named by default and accessible from other
+  // processes. On POSIX channels are anonymous by default and not accessible
+  // from other processes. Named channels work via named unix domain sockets.
+  // On Windows MODE_NAMED_SERVER is equivalent to MODE_SERVER and
+  // MODE_NAMED_CLIENT is equivalent to MODE_CLIENT.
+  static scoped_ptr<Channel> CreateNamedServer(
+      const IPC::ChannelHandle &channel_handle, Listener* listener);
+  static scoped_ptr<Channel> CreateNamedClient(
+      const IPC::ChannelHandle &channel_handle, Listener* listener);
+#if defined(OS_POSIX)
+  // An "open" named server accepts connections from ANY client.
+  // The caller must then implement their own access-control based on the
+  // client process' user Id.
+  static scoped_ptr<Channel> CreateOpenNamedServer(
+      const IPC::ChannelHandle &channel_handle, Listener* listener);
+#endif
+  static scoped_ptr<Channel> CreateServer(
+      const IPC::ChannelHandle &channel_handle, Listener* listener);
+
 
   virtual ~Channel();
 
@@ -220,6 +246,9 @@ class IPC_EXPORT Channel : public Sender {
   Channel() : channel_impl_(0) { }
 
  private:
+  Channel(const IPC::ChannelHandle &channel_handle, Mode mode,
+          Listener* listener);
+
   // PIMPL to which all channel calls are delegated.
   class ChannelImpl;
   ChannelImpl *channel_impl_;
