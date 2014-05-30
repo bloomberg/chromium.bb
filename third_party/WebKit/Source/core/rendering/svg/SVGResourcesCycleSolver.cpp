@@ -47,101 +47,83 @@ SVGResourcesCycleSolver::~SVGResourcesCycleSolver()
 {
 }
 
-bool SVGResourcesCycleSolver::resourceContainsCycles(RenderObject* renderer) const
-{
-    ASSERT(renderer);
+struct ActiveFrame {
+    typedef SVGResourcesCycleSolver::ResourceSet ResourceSet;
 
-    // First (first loop iteration) operate on the resources of the given
-    // renderer.
-    // <marker id="a"> <path marker-start="url(#b)"/> ...
-    // <marker id="b" marker-start="url(#a)"/>
-    // Then operate on the child resources of the given renderer.
-    // <marker id="a"> <path marker-start="url(#b)"/> ...
-    // <marker id="b"> <path marker-start="url(#a)"/> ...
-    for (RenderObject* child = renderer; child; child = child->nextInPreOrder(renderer)) {
-        SVGResources* childResources = SVGResourcesCache::cachedResourcesForRenderObject(child);
-        if (!childResources)
-            continue;
-
-        // A child of the given 'resource' contains resources.
-        HashSet<RenderSVGResourceContainer*> childSet;
-        childResources->buildSetOfResources(childSet);
-
-        // Walk all child resources and check whether they reference any resource contained in the resources set.
-        HashSet<RenderSVGResourceContainer*>::iterator end = childSet.end();
-        for (HashSet<RenderSVGResourceContainer*>::iterator it = childSet.begin(); it != end; ++it) {
-            if (m_allResources.contains(*it))
-                return true;
-        }
+    ActiveFrame(ResourceSet& activeSet, RenderSVGResourceContainer* resource)
+        : m_activeSet(activeSet)
+        , m_resource(resource)
+    {
+        m_activeSet.add(m_resource);
     }
+    ~ActiveFrame()
+    {
+        m_activeSet.remove(m_resource);
+    }
+
+    ResourceSet& m_activeSet;
+    RenderSVGResourceContainer* m_resource;
+};
+
+bool SVGResourcesCycleSolver::resourceContainsCycles(RenderSVGResourceContainer* resource)
+{
+    // If we've traversed this sub-graph before and no cycles were observed, then
+    // reuse that result.
+    if (m_dagCache.contains(resource))
+        return false;
+
+    ActiveFrame frame(m_activeResources, resource);
+
+    RenderObject* node = resource;
+    while (node) {
+        // Skip subtrees which are themselves resources. (They will be
+        // processed - if needed - when they are actually referenced.)
+        if (node != resource && node->isSVGResourceContainer()) {
+            node = node->nextInPreOrderAfterChildren(resource);
+            continue;
+        }
+        if (SVGResources* nodeResources = SVGResourcesCache::cachedResourcesForRenderObject(node)) {
+            // Fetch all the resources referenced by |node|.
+            ResourceSet nodeSet;
+            nodeResources->buildSetOfResources(nodeSet);
+
+            // Iterate resources referenced by |node|.
+            ResourceSet::iterator end = nodeSet.end();
+            for (ResourceSet::iterator it = nodeSet.begin(); it != end; ++it) {
+                if (m_activeResources.contains(*it) || resourceContainsCycles(*it))
+                    return true;
+            }
+        }
+        node = node->nextInPreOrder(resource);
+    }
+
+    // No cycles found in (or from) this resource. Add it to the "DAG cache".
+    m_dagCache.add(resource);
     return false;
 }
 
 void SVGResourcesCycleSolver::resolveCycles()
 {
-    ASSERT(m_allResources.isEmpty());
+    ASSERT(m_activeResources.isEmpty());
 
-#if DEBUG_CYCLE_DETECTION > 0
-    fprintf(stderr, "\nBefore cycle detection:\n");
-    m_resources->dump(m_renderer);
-#endif
-
-    // Stash all resources into a HashSet for the ease of traversing.
-    HashSet<RenderSVGResourceContainer*> localResources;
-    m_resources->buildSetOfResources(localResources);
-    ASSERT(!localResources.isEmpty());
-
-    // Add all parent resource containers to the HashSet.
-    HashSet<RenderSVGResourceContainer*> parentResources;
-    RenderObject* parent = m_renderer->parent();
-    while (parent) {
-        if (parent->isSVGResourceContainer())
-            parentResources.add(toRenderSVGResourceContainer(parent));
-        parent = parent->parent();
-    }
-
-#if DEBUG_CYCLE_DETECTION > 0
-    fprintf(stderr, "\nDetecting wheter any resources references any of following objects:\n");
-    {
-        fprintf(stderr, "Local resources:\n");
-        HashSet<RenderSVGResourceContainer*>::iterator end = localResources.end();
-        for (HashSet<RenderSVGResourceContainer*>::iterator it = localResources.begin(); it != end; ++it)
-            fprintf(stderr, "|> %s: object=%p (node=%p)\n", (*it)->renderName(), *it, (*it)->node());
-
-        fprintf(stderr, "Parent resources:\n");
-        end = parentResources.end();
-        for (HashSet<RenderSVGResourceContainer*>::iterator it = parentResources.begin(); it != end; ++it)
-            fprintf(stderr, "|> %s: object=%p (node=%p)\n", (*it)->renderName(), *it, (*it)->node());
-    }
-#endif
-
-    // Build combined set of local and parent resources.
-    m_allResources = localResources;
-    HashSet<RenderSVGResourceContainer*>::iterator end = parentResources.end();
-    for (HashSet<RenderSVGResourceContainer*>::iterator it = parentResources.begin(); it != end; ++it)
-        m_allResources.add(*it);
-
-    // If we're a resource, add ourselves to the HashSet.
+    // If the starting RenderObject is a resource container itself, then add it
+    // to the active set (to break direct self-references.)
     if (m_renderer->isSVGResourceContainer())
-        m_allResources.add(toRenderSVGResourceContainer(m_renderer));
+        m_activeResources.add(toRenderSVGResourceContainer(m_renderer));
 
-    ASSERT(!m_allResources.isEmpty());
+    ResourceSet localResources;
+    m_resources->buildSetOfResources(localResources);
 
-    // The job of this function is to determine wheter any of the 'resources' associated with the given 'renderer'
-    // references us (or wheter any of its kids references us) -> that's a cycle, we need to find and break it.
-    end = localResources.end();
-    for (HashSet<RenderSVGResourceContainer*>::iterator it = localResources.begin(); it != end; ++it) {
-        RenderSVGResourceContainer* resource = *it;
-        if (parentResources.contains(resource) || resourceContainsCycles(resource))
-            breakCycle(resource);
+    // This performs a depth-first search for a back-edge in all the
+    // (potentially disjoint) graphs formed by the resources referenced by
+    // |m_renderer|.
+    ResourceSet::iterator end = localResources.end();
+    for (ResourceSet::iterator it = localResources.begin(); it != end; ++it) {
+        if (m_activeResources.contains(*it) || resourceContainsCycles(*it))
+            breakCycle(*it);
     }
 
-#if DEBUG_CYCLE_DETECTION > 0
-    fprintf(stderr, "\nAfter cycle detection:\n");
-    m_resources->dump(m_renderer);
-#endif
-
-    m_allResources.clear();
+    m_activeResources.clear();
 }
 
 void SVGResourcesCycleSolver::breakCycle(RenderSVGResourceContainer* resourceLeadingToCycle)

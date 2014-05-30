@@ -37,13 +37,17 @@ public:
 
     void resolveCycles();
 
+    typedef HashSet<RenderSVGResourceContainer*> ResourceSet;
+
 private:
-    bool resourceContainsCycles(RenderObject*) const;
+    bool resourceContainsCycles(RenderSVGResourceContainer*);
     void breakCycle(RenderSVGResourceContainer*);
 
     RenderObject* m_renderer;
     SVGResources* m_resources;
-    HashSet<RenderSVGResourceContainer*> m_allResources;
+
+    ResourceSet m_activeResources;
+    ResourceSet m_dagCache;
 };
 
 }
