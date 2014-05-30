@@ -901,6 +901,10 @@ void WebViewImpl::getSelectionRootBounds(WebRect& bounds) const
 
 void WebViewImpl::acceptLanguagesChanged()
 {
+    if (!page())
+        return;
+
+    page()->acceptLanguagesChanged();
 }
 
 bool WebViewImpl::handleKeyEvent(const WebKeyboardEvent& event)

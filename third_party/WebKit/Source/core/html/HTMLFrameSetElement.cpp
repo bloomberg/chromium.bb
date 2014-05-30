@@ -145,6 +145,8 @@ void HTMLFrameSetElement::parseAttribute(const QualifiedName& name, const Atomic
         document().setWindowAttributeEventListener(EventTypeNames::offline, createAttributeEventListener(document().frame(), name, value));
     else if (name == onpopstateAttr)
         document().setWindowAttributeEventListener(EventTypeNames::popstate, createAttributeEventListener(document().frame(), name, value));
+    else if (name == onlanguagechangeAttr)
+        document().setWindowAttributeEventListener(EventTypeNames::languagechange, createAttributeEventListener(document().frame(), name, value));
     else
         HTMLElement::parseAttribute(name, value);
 }

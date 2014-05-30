@@ -103,6 +103,7 @@ invalid
 keydown
 keypress
 keyup
+languagechange
 levelchange
 load
 loadeddata

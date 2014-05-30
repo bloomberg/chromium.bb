@@ -531,6 +531,17 @@ void Page::didCommitLoad(LocalFrame* frame)
     }
 }
 
+void Page::acceptLanguagesChanged()
+{
+    Vector< RefPtr<LocalFrame> > frames;
+
+    for (LocalFrame* frame = mainFrame(); frame; frame = frame->tree().traverseNext())
+        frames.append(frame);
+
+    for (unsigned i = 0; i < frames.size(); ++i)
+        frames[i]->domWindow()->dispatchEvent(Event::create(EventTypeNames::languagechange));
+}
+
 PageLifecycleNotifier& Page::lifecycleNotifier()
 {
     return static_cast<PageLifecycleNotifier&>(LifecycleContext<Page>::lifecycleNotifier());

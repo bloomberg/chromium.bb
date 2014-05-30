@@ -99,6 +99,7 @@ PASS childWindow.oninvalid is null
 PASS childWindow.onkeydown is null
 PASS childWindow.onkeypress is null
 PASS childWindow.onkeyup is null
+PASS childWindow.onlanguagechange is null
 PASS childWindow.onload is null
 PASS childWindow.onloadeddata is null
 PASS childWindow.onloadedmetadata is null

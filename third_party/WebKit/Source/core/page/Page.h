@@ -213,6 +213,8 @@ public:
 
     void didCommitLoad(LocalFrame*);
 
+    void acceptLanguagesChanged();
+
     static void networkStateChanged(bool online);
     PassOwnPtr<LifecycleNotifier<Page> > createLifecycleNotifier();
 

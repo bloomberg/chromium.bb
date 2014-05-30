@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<body>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script>
+
+test(function() {
+    assert_true('language' in window.navigator);
+    assert_false('languages' in window.navigator);
+    assert_true('onlanguagechange' in window);
+}, "Test that NavigatorLanguage API is present in window");
+
+test(function() {
+    var received = false;
+    window.onlanguagechange = function() {
+      received = true;
+    }
+
+    window.testRunner.setAcceptLanguages('klingon');
+    assert_true(received);
+}, "Test that the languagechange event fires on window.onlanguagechange");
+
+test(function() {
+    var received = false;
+    window.addEventListener('languagechange', function() {
+        received = true;
+    });
+
+    window.testRunner.setAcceptLanguages('klingon-FR');
+    assert_true(received);
+}, "Test that the languagechange event fires on window.addEventListener('languagechange')");
+
+test(function() {
+    window.received = false; // We need a global variable here.
+    document.body.setAttribute('onlanguagechange', 'window.received = true;');
+
+    window.testRunner.setAcceptLanguages('klingon-US');
+    assert_true(window.received);
+}, "Test that the languagechange event fires on body onlanguagechange attribute");
+
+test(function() {
+    window.received = 0; // We need a global variable here.
+    var fromWindowHandler = false;
+    document.body.setAttribute('onlanguagechange', 'window.received++;');
+    window.onlanguagechange = function() {
+        received++;
+        fromWindowHandler = true;
+    }
+
+    window.testRunner.setAcceptLanguages('klingon');
+    assert_equals(window.received, 1);
+    assert_true(fromWindowHandler);
+
+    window.received = 0;
+    fromWindowHandler = false;
+    window.onlanguagechange = function() {
+        received++;
+        fromWindowHandler = true;
+    }
+    document.body.setAttribute('onlanguagechange', 'window.received++;');
+
+    window.testRunner.setAcceptLanguages('klingon-FR');
+    assert_equals(window.received, 1);
+    assert_false(fromWindowHandler);
+}, "Test that the languagechange event fires on body onlanguagechange attribute XOR window.onlanguagechange");
+
+test(function() {
+    var eventsCount = 0;
+    window.onlanguagechange = function() {
+        eventsCount++;
+    }
+
+    window.testRunner.setAcceptLanguages('klingon-US');
+    window.testRunner.setAcceptLanguages('klingon-US');
+
+    assert_equals(eventsCount, 1);
+}, "Test that changing the language to the same value doesn't fire an event.")
+
+test(function() {
+    window.addEventListener('languagechange', function(e) {
+        assert_false(e.cancelable);
+        assert_false(e.bubbles);
+    });
+
+    window.testRunner.setAcceptLanguages('klingon');
+}, "Test properties of the fired event.");
+
+</script>
+</body>
+</html>

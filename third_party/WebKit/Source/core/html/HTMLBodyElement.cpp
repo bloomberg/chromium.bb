@@ -148,6 +148,8 @@ void HTMLBodyElement::parseAttribute(const QualifiedName& name, const AtomicStri
         document().setWindowAttributeEventListener(EventTypeNames::online, createAttributeEventListener(document().frame(), name, value));
     else if (name == onofflineAttr)
         document().setWindowAttributeEventListener(EventTypeNames::offline, createAttributeEventListener(document().frame(), name, value));
+    else if (name == onlanguagechangeAttr)
+        document().setWindowAttributeEventListener(EventTypeNames::languagechange, createAttributeEventListener(document().frame(), name, value));
     else
         HTMLElement::parseAttribute(name, value);
 }

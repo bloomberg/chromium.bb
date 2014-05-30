@@ -99,6 +99,7 @@ PASS oldChildWindow.oninvalid is newChildWindow.oninvalid
 PASS oldChildWindow.onkeydown is newChildWindow.onkeydown
 PASS oldChildWindow.onkeypress is newChildWindow.onkeypress
 PASS oldChildWindow.onkeyup is newChildWindow.onkeyup
+PASS oldChildWindow.onlanguagechange is newChildWindow.onlanguagechange
 PASS oldChildWindow.onload is newChildWindow.onload
 PASS oldChildWindow.onloadeddata is newChildWindow.onloadeddata
 PASS oldChildWindow.onloadedmetadata is newChildWindow.onloadedmetadata

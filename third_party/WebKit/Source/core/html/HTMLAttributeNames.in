@@ -211,6 +211,7 @@ oninvalid
 onkeydown
 onkeypress
 onkeyup
+onlanguagechange
 onload
 onloadeddata
 onloadedmetadata
