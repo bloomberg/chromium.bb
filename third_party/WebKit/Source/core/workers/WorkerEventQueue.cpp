@@ -33,9 +33,9 @@
 
 namespace WebCore {
 
-PassOwnPtr<WorkerEventQueue> WorkerEventQueue::create(ExecutionContext* context)
+PassOwnPtrWillBeRawPtr<WorkerEventQueue> WorkerEventQueue::create(ExecutionContext* context)
 {
-    return adoptPtr(new WorkerEventQueue(context));
+    return adoptPtrWillBeNoop(new WorkerEventQueue(context));
 }
 
 WorkerEventQueue::WorkerEventQueue(ExecutionContext* context)
@@ -46,7 +46,12 @@ WorkerEventQueue::WorkerEventQueue(ExecutionContext* context)
 
 WorkerEventQueue::~WorkerEventQueue()
 {
-    close();
+    ASSERT(m_eventTaskMap.isEmpty());
+}
+
+void WorkerEventQueue::trace(Visitor* visitor)
+{
+    visitor->trace(m_eventTaskMap);
 }
 
 class WorkerEventQueue::EventDispatcherTask : public ExecutionContextTask {

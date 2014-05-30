@@ -209,6 +209,7 @@ void WorkerGlobalScope::dispose()
 {
     ASSERT(thread()->isCurrentThread());
 
+    m_eventQueue->close();
     clearScript();
     clearInspector();
     setClient(0);
@@ -325,6 +326,7 @@ void WorkerGlobalScope::trace(Visitor* visitor)
     visitor->trace(m_console);
     visitor->trace(m_location);
     visitor->trace(m_navigator);
+    visitor->trace(m_eventQueue);
     visitor->trace(m_workerClients);
     WillBeHeapSupplementable<WorkerGlobalScope>::trace(visitor);
     ExecutionContext::trace(visitor);

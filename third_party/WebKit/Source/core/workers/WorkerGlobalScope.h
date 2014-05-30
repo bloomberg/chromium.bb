@@ -173,7 +173,7 @@ namespace WebCore {
         OwnPtr<WorkerInspectorController> m_workerInspectorController;
         bool m_closing;
 
-        OwnPtr<WorkerEventQueue> m_eventQueue;
+        OwnPtrWillBeMember<WorkerEventQueue> m_eventQueue;
 
         OwnPtrWillBeMember<WorkerClients> m_workerClients;
 
