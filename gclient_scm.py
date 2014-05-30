@@ -331,7 +331,9 @@ class GitWrapper(SCMWrapper):
       # Override the revision number.
       revision = str(options.revision)
     if revision == 'unmanaged':
-      revision = None
+      # Check again for a revision in case an initial ref was specified
+      # in the url, for example bla.git@refs/heads/custombranch
+      revision = deps_revision
       managed = False
     if not revision:
       revision = default_rev
@@ -819,12 +821,10 @@ class GitWrapper(SCMWrapper):
       if os.listdir(tmp_dir):
         self.Print('_____ removing non-empty tmp dir %s' % tmp_dir)
       gclient_utils.rmtree(tmp_dir)
-    if revision.startswith('refs/heads/'):
-      self._Run(
-          ['checkout', '--quiet', revision.replace('refs/heads/', '')], options)
-    else:
+    self._Run(['checkout', '--quiet', revision.replace('refs/heads/', '')],
+              options)
+    if self._GetCurrentBranch() is None:
       # Squelch git's very verbose detached HEAD warning and use our own
-      self._Run(['checkout', '--quiet', revision], options)
       self.Print(
         ('Checked out %s to a detached HEAD. Before making any commits\n'
          'in this repo, you should use \'git checkout <branch>\' to switch to\n'
