@@ -47,6 +47,7 @@ static const unsigned bufferSize = 100 * 1024 * 1024;
 
 SocketStreamHandleInternal::SocketStreamHandleInternal(SocketStreamHandle* handle)
     : m_handle(handle)
+    , m_socket(adoptPtr(blink::Platform::current()->createSocketStreamHandle()))
     , m_maxPendingSendAllowed(0)
     , m_pendingAmountSent(0)
 {
@@ -59,12 +60,9 @@ SocketStreamHandleInternal::~SocketStreamHandleInternal()
 
 void SocketStreamHandleInternal::connect(const KURL& url)
 {
-    m_socket = adoptPtr(blink::Platform::current()->createSocketStreamHandle());
     WTF_LOG(Network, "SocketStreamHandleInternal %p connect()", this);
+
     ASSERT(m_socket);
-    ASSERT(m_handle);
-    if (m_handle->m_client)
-        m_handle->m_client->willOpenSocketStream(m_handle);
     m_socket->connect(url, this);
 }
 
@@ -163,13 +161,16 @@ void SocketStreamHandleInternal::didFail(blink::WebSocketStreamHandle* socketHan
 
 // SocketStreamHandle ----------------------------------------------------------
 
-SocketStreamHandle::SocketStreamHandle(const KURL& url, SocketStreamHandleClient* client)
-    : m_url(url)
-    , m_client(client)
+SocketStreamHandle::SocketStreamHandle(SocketStreamHandleClient* client)
+    : m_client(client)
     , m_state(Connecting)
 {
     m_internal = SocketStreamHandleInternal::create(this);
-    m_internal->connect(m_url);
+}
+
+void SocketStreamHandle::connect(const KURL& url)
+{
+    m_internal->connect(url);
 }
 
 SocketStreamHandle::~SocketStreamHandle()

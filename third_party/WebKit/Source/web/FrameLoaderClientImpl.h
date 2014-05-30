@@ -142,6 +142,7 @@ public:
     virtual void didChangeName(const String&) OVERRIDE;
 
     virtual void dispatchWillOpenSocketStream(WebCore::SocketStreamHandle*) OVERRIDE;
+    virtual void dispatchWillOpenWebSocket(blink::WebSocketHandle*) OVERRIDE;
 
     virtual void dispatchWillStartUsingPeerConnectionHandler(blink::WebRTCPeerConnectionHandler*) OVERRIDE;
 

@@ -113,7 +113,14 @@ bool MainThreadWebSocketChannel::connect(const KURL& url, const String& protocol
         InspectorInstrumentation::didCreateWebSocket(m_document, m_identifier, url, protocol);
     }
     ref();
-    m_handle = SocketStreamHandle::create(m_handshake->url(), this);
+
+    m_handle = SocketStreamHandle::create(this);
+    ASSERT(m_handle);
+    if (m_document->frame()) {
+        m_document->frame()->loader().client()->dispatchWillOpenSocketStream(m_handle.get());
+    }
+    m_handle->connect(m_handshake->url());
+
     return true;
 }
 
@@ -268,14 +275,6 @@ void MainThreadWebSocketChannel::resume()
     m_suspended = false;
     if ((!m_buffer.isEmpty() || (m_state == ChannelClosed)) && m_client && !m_resumeTimer.isActive())
         m_resumeTimer.startOneShot(0, FROM_HERE);
-}
-
-void MainThreadWebSocketChannel::willOpenSocketStream(SocketStreamHandle* handle)
-{
-    WTF_LOG(Network, "MainThreadWebSocketChannel %p willOpenSocketStream()", this);
-    ASSERT(handle);
-    if (m_document->frame())
-        m_document->frame()->loader().client()->dispatchWillOpenSocketStream(handle);
 }
 
 void MainThreadWebSocketChannel::didOpenSocketStream(SocketStreamHandle* handle)

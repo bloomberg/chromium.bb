@@ -47,11 +47,12 @@ class PLATFORM_EXPORT SocketStreamHandle : public RefCounted<SocketStreamHandle>
 public:
     enum SocketStreamState { Connecting, Open, Closing, Closed };
 
-    static PassRefPtr<SocketStreamHandle> create(const KURL& url, SocketStreamHandleClient* client) { return adoptRef(new SocketStreamHandle(url, client)); }
+    static PassRefPtr<SocketStreamHandle> create(SocketStreamHandleClient* client) { return adoptRef(new SocketStreamHandle(client)); }
 
     virtual ~SocketStreamHandle();
     SocketStreamState state() const;
 
+    void connect(const KURL&);
     bool send(const char* data, int length);
     void close(); // Disconnect after all data in buffer are sent.
     void disconnect();
@@ -61,14 +62,13 @@ public:
     void setClient(SocketStreamHandleClient*);
 
 private:
-    SocketStreamHandle(const KURL&, SocketStreamHandleClient*);
+    SocketStreamHandle(SocketStreamHandleClient*);
 
     bool sendPendingData();
 
     int sendInternal(const char* data, int length);
     void closeInternal();
 
-    KURL m_url;
     SocketStreamHandleClient* m_client;
     StreamBuffer<char, 1024 * 1024> m_buffer;
     SocketStreamState m_state;
