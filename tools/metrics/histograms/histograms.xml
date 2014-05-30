@@ -41447,6 +41447,8 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="58" label="INVALID_BLOCKED_DATA"/>
   <int value="59" label="FLOW_CONTROL_ERROR"/>
   <int value="60" label="INVALID_STOP_WAITING_DATA"/>
+  <int value="61" label="UNENCRYPTED_STREAM_DATA"/>
+  <int value="62" label="CONNECTION_IP_POOLED"/>
 </enum>
 
 <enum name="QuicHandshakeFailureReason" type="int">
