@@ -152,7 +152,7 @@ login.createScreen('ResetScreen', 'reset', function() {
 
     updateViewOnRollbackCall: function() {
       this.classList.add('revert-promise');
-      this.announceAccessibleMessage_(
+      announceAccessibleMessage(
           loadTimeData.getString('resetRevertSpinnerMessage'));
     }
   };
