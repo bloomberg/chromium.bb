@@ -1057,6 +1057,12 @@ void NavigationControllerImpl::RendererDidNavigateToNewPage(
   new_entry->SetOriginalRequestURL(params.original_request_url);
   new_entry->SetIsOverridingUserAgent(params.is_overriding_user_agent);
 
+  // history.pushState() is classified as a navigation to a new page, but
+  // sets was_within_same_page to true. In this case, we already have the
+  // title available, so set it immediately.
+  if (params.was_within_same_page)
+    new_entry->SetTitle(GetLastCommittedEntry()->GetTitle());
+
   DCHECK(!params.history_list_was_cleared || !replace_entry);
   // The browser requested to clear the session history when it initiated the
   // navigation. Now we know that the renderer has updated its state accordingly

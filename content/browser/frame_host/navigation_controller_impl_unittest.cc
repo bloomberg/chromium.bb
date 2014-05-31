@@ -4175,6 +4175,30 @@ TEST_F(NavigationControllerTest, MAYBE_PurgeScreenshot) {
   }
 }
 
+TEST_F(NavigationControllerTest, PushStateUpdatesTitle) {
+
+  // Navigate
+  test_rvh()->SendNavigate(1, GURL("http://foo"));
+
+  // Set title
+  base::string16 title(base::ASCIIToUTF16("Title"));
+  controller().GetLastCommittedEntry()->SetTitle(title);
+
+  // history.pushState() is called.
+  FrameHostMsg_DidCommitProvisionalLoad_Params params;
+  GURL url("http://foo#foo");
+  params.page_id = 2;
+  params.url = url;
+  params.page_state = PageState::CreateFromURL(url);
+  params.was_within_same_page = true;
+  test_rvh()->SendNavigateWithParams(&params);
+
+  // The title should immediately be visible on the new NavigationEntry.
+  base::string16 new_title =
+      controller().GetLastCommittedEntry()->GetTitleForDisplay(std::string());
+  EXPECT_EQ(title, new_title);
+}
+
 // Test that the navigation controller clears its session history when a
 // navigation commits with the clear history list flag set.
 TEST_F(NavigationControllerTest, ClearHistoryList) {
