@@ -26,6 +26,10 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_status.h"
 
+#if defined(OS_ANDROID)
+#include "net/base/network_change_notifier.h"
+#endif
+
 using base::Time;
 using base::TimeDelta;
 
@@ -197,8 +201,19 @@ void SafeBrowsingProtocolManager::GetFullHash(
 
 void SafeBrowsingProtocolManager::GetNextUpdate() {
   DCHECK(CalledOnValidThread());
-  if (!request_.get() && request_type_ == NO_REQUEST)
-    IssueUpdateRequest();
+  if (request_.get() || request_type_ != NO_REQUEST)
+    return;
+
+#if defined(OS_ANDROID)
+  net::NetworkChangeNotifier::ConnectionType type =
+    net::NetworkChangeNotifier::GetConnectionType();
+  if (type != net::NetworkChangeNotifier::CONNECTION_WIFI) {
+    ScheduleNextUpdate(false /* no back off */);
+    return;
+  }
+#endif
+
+  IssueUpdateRequest();
 }
 
 // net::URLFetcherDelegate implementation ----------------------------------
