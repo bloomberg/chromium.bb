@@ -11,7 +11,7 @@ from telemetry.page import page_test
 
 class RasterizeAndRecordMicro(page_measurement.PageMeasurement):
   def __init__(self):
-    super(RasterizeAndRecordMicro, self).__init__('', True)
+    super(RasterizeAndRecordMicro, self).__init__('')
     self._chrome_branch_number = None
 
   @classmethod
