@@ -153,3 +153,9 @@ interface PPP_SomeWrap {
   [version=2.0]
   void foo2([in] int32_t a);
 };
+
+[no_interface_string]
+interface PPP_NoIFString {
+  int32_t Dummy([in] some_struct a);
+};
+
