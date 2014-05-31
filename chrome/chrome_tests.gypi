@@ -2043,6 +2043,11 @@
             ['exclude', '^test/remoting'],
           ],
         }],
+        ['use_x11==1', {
+          'dependencies': [
+            '../tools/xdisplaycheck/xdisplaycheck.gyp:xdisplaycheck',
+          ],
+        }],
       ],  # conditions
     },  # target browser_tests
     {
