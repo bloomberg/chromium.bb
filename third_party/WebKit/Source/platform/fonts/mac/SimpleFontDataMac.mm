@@ -31,6 +31,8 @@
 #import <ApplicationServices/ApplicationServices.h>
 #import <float.h>
 #import <unicode/uchar.h>
+#import "RuntimeEnabledFeatures.h"
+#import "platform/LayoutTestSupport.h"
 #import "platform/SharedBuffer.h"
 #import "platform/fonts/Font.h"
 #import "platform/fonts/FontCache.h"
@@ -104,6 +106,14 @@ static NSString *webFallbackFontFamily(void)
 {
     DEFINE_STATIC_LOCAL(RetainPtr<NSString>, webFallbackFontFamily, ([[NSFont systemFontOfSize:16.0f] familyName]));
     return webFallbackFontFamily.get();
+}
+
+static bool useHinting()
+{
+    // Enable hinting when subpixel font scaling is disabled or
+    // when running the set of standard non-subpixel layout tests,
+    // otherwise use subpixel glyph positioning.
+    return (isRunningLayoutTest() && !isFontAntialiasingEnabledForTest()) || !RuntimeEnabledFeatures::subpixelFontScalingEnabled();
 }
 
 const SimpleFontData* SimpleFontData::getCompositeFontReferenceFontData(NSFont *key) const
@@ -315,9 +325,8 @@ PassRefPtr<SimpleFontData> SimpleFontData::platformCreateScaledFontData(const Fo
     float size = m_platformData.size() * scaleFactor;
     FontPlatformData scaledFontData([[NSFontManager sharedFontManager] convertFont:m_platformData.font() toSize:size], size, false, false, m_platformData.orientation());
 
-    // Until we replace AppKit API (NSFontManager etc.), we always want to disable hinting,
-    // so we use the printerFont here.
-    scaledFontData.setFont([scaledFontData.font() printerFont]);
+    // AppKit forgets about hinting property when scaling, so we have to remind it.
+    scaledFontData.setFont(useHinting() ? [scaledFontData.font() screenFont] : [scaledFontData.font() printerFont]);
 
     if (scaledFontData.font()) {
         NSFontManager *fontManager = [NSFontManager sharedFontManager];

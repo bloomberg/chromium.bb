@@ -31,6 +31,7 @@
 #import "platform/fonts/FontCache.h"
 
 #import <AppKit/AppKit.h>
+#import "RuntimeEnabledFeatures.h"
 #import "platform/LayoutTestSupport.h"
 #import "platform/fonts/FontDescription.h"
 #import "platform/fonts/FontPlatformData.h"
@@ -63,6 +64,14 @@ static void fontCacheRegisteredFontsChangedNotificationCallback(CFNotificationCe
     ASSERT_UNUSED(observer, observer == FontCache::fontCache());
     ASSERT_UNUSED(name, CFEqual(name, kCTFontManagerRegisteredFontsChangedNotification));
     invalidateFontCache(0);
+}
+
+static bool useHinting()
+{
+    // Enable hinting when subpixel font scaling is disabled or
+    // when running the set of standard non-subpixel layout tests,
+    // otherwise use subpixel glyph positioning.
+    return (isRunningLayoutTest() && !isFontAntialiasingEnabledForTest()) || !RuntimeEnabledFeatures::subpixelFontScalingEnabled();
 }
 
 void FontCache::platformInit()
@@ -161,10 +170,7 @@ PassRefPtr<SimpleFontData> FontCache::platformFallbackForCharacter(const FontDes
         }
     }
 
-    // Enable hinting, which is equivalent to using the screen font,
-    // only when running the set of standard non-subpixel layout tests,
-    // otherwise use subpixel glyph positioning.
-    substituteFont = !isRunningLayoutTest() || isFontAntialiasingEnabledForTest() ? [substituteFont printerFont] : [substituteFont screenFont];
+    substituteFont = useHinting() ? [substituteFont screenFont] : [substituteFont printerFont];
 
     substituteFontTraits = [fontManager traitsOfFont:substituteFont];
     substituteFontWeight = [fontManager weightOfFont:substituteFont];
@@ -211,10 +217,7 @@ FontPlatformData* FontCache::createFontPlatformData(const FontDescription& fontD
         actualTraits = [fontManager traitsOfFont:nsFont];
     NSInteger actualWeight = [fontManager weightOfFont:nsFont];
 
-    // Enable hinting, which is equivalent to using the screen font,
-    // only when running the set of standard non-subpixel layout tests,
-    // otherwise use subpixel glyph positioning.
-    NSFont *platformFont = !isRunningLayoutTest() || isFontAntialiasingEnabledForTest() ? [nsFont printerFont] : [nsFont screenFont];
+    NSFont *platformFont = useHinting() ? [nsFont screenFont] : [nsFont printerFont];
     bool syntheticBold = (isAppKitFontWeightBold(weight) && !isAppKitFontWeightBold(actualWeight)) || fontDescription.isSyntheticBold();
     bool syntheticOblique = ((traits & NSFontItalicTrait) && !(actualTraits & NSFontItalicTrait)) || fontDescription.isSyntheticItalic();
 
