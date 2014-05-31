@@ -40,10 +40,11 @@ void ExternalComponentLoader::StartLoading() {
                       extension_urls::GetWebstoreUpdateUrl().spec());
   }
 
-  UpdateBookmarksExperimentState(profile_->GetPrefs(),
-                                 g_browser_process->local_state(),
-                                 IsUserSignedin(profile_),
-                                 kBookmarksExperimentEnabledFromSyncUnknown);
+  UpdateBookmarksExperimentState(
+      profile_->GetPrefs(),
+      g_browser_process->local_state(),
+      IsUserSignedin(profile_),
+      BOOKMARKS_EXPERIMENT_ENABLED_FROM_SYNC_UNKNOWN);
   std::string ext_id;
   if (GetBookmarksExperimentExtensionID(profile_->GetPrefs(), &ext_id) &&
       !ext_id.empty()) {

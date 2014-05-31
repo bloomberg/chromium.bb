@@ -42,11 +42,11 @@ bool GetBookmarksExperimentExtensionID(const PrefService* user_prefs,
   BookmarksExperimentState bookmarks_experiment_state =
       static_cast<BookmarksExperimentState>(user_prefs->GetInteger(
           sync_driver::prefs::kEnhancedBookmarksExperimentEnabled));
-  if (bookmarks_experiment_state == kBookmarksExperimentEnabledFromFinch) {
+  if (bookmarks_experiment_state == BOOKMARKS_EXPERIMENT_ENABLED_FROM_FINCH) {
     *extension_id = GetEnhancedBookmarksExtensionIdFromFinch();
     return !extension_id->empty();
   }
-  if (bookmarks_experiment_state == kBookmarksExperimentEnabled) {
+  if (bookmarks_experiment_state == BOOKMARKS_EXPERIMENT_ENABLED) {
     *extension_id = user_prefs->GetString(
         sync_driver::prefs::kEnhancedBookmarksExtensionId);
     return !extension_id->empty();
@@ -71,8 +71,9 @@ void UpdateBookmarksExperimentState(
           sync_driver::prefs::kEnhancedBookmarksExperimentEnabled));
   // If user signed out, clear possible previous state.
   if (!user_signed_in) {
-    bookmarks_experiment_state_before = kNoBookmarksExperiment;
-    ForceFinchBookmarkExperimentIfNeeded(flags_storage, kNoBookmarksExperiment);
+    bookmarks_experiment_state_before = BOOKMARKS_EXPERIMENT_NONE;
+    ForceFinchBookmarkExperimentIfNeeded(flags_storage,
+        BOOKMARKS_EXPERIMENT_NONE);
   }
 
   // kEnhancedBookmarksExperiment flag could have values "", "1" and "0".
@@ -81,48 +82,52 @@ void UpdateBookmarksExperimentState(
                      switches::kEnhancedBookmarksExperiment) == "0";
 
   BookmarksExperimentState bookmarks_experiment_new_state =
-      kNoBookmarksExperiment;
+      BOOKMARKS_EXPERIMENT_NONE;
 
   if (IsEnhancedBookmarksExperimentEnabledFromFinch() && !user_signed_in) {
     if (opt_out) {
       // Experiment enabled but user opted out.
-      bookmarks_experiment_new_state = kBookmarksExperimentOptOutFromFinch;
+      bookmarks_experiment_new_state = BOOKMARKS_EXPERIMENT_OPT_OUT_FROM_FINCH;
     } else {
       // Experiment enabled.
-      bookmarks_experiment_new_state = kBookmarksExperimentEnabledFromFinch;
+      bookmarks_experiment_new_state = BOOKMARKS_EXPERIMENT_ENABLED_FROM_FINCH;
     }
-  } else if (experiment_enabled_from_sync == kBookmarksExperimentEnabled) {
+  } else if (experiment_enabled_from_sync == BOOKMARKS_EXPERIMENT_ENABLED) {
     // Experiment enabled from Chrome sync.
     if (opt_out) {
       // Experiment enabled but user opted out.
-      bookmarks_experiment_new_state = kBookmarksExperimentEnabledUserOptOut;
+      bookmarks_experiment_new_state =
+          BOOKMARKS_EXPERIMENT_ENABLED_USER_OPT_OUT;
     } else {
       // Experiment enabled.
-      bookmarks_experiment_new_state = kBookmarksExperimentEnabled;
+      bookmarks_experiment_new_state = BOOKMARKS_EXPERIMENT_ENABLED;
     }
-  } else if (experiment_enabled_from_sync == kNoBookmarksExperiment) {
+  } else if (experiment_enabled_from_sync == BOOKMARKS_EXPERIMENT_NONE) {
     // Experiment is not enabled from Chrome sync.
-    bookmarks_experiment_new_state = kNoBookmarksExperiment;
-  } else if (bookmarks_experiment_state_before == kBookmarksExperimentEnabled) {
+    bookmarks_experiment_new_state = BOOKMARKS_EXPERIMENT_NONE;
+  } else if (bookmarks_experiment_state_before ==
+             BOOKMARKS_EXPERIMENT_ENABLED) {
     if (opt_out) {
       // Experiment enabled but user opted out.
-      bookmarks_experiment_new_state = kBookmarksExperimentEnabledUserOptOut;
+      bookmarks_experiment_new_state =
+          BOOKMARKS_EXPERIMENT_ENABLED_USER_OPT_OUT;
     } else {
-      bookmarks_experiment_new_state = kBookmarksExperimentEnabled;
+      bookmarks_experiment_new_state = BOOKMARKS_EXPERIMENT_ENABLED;
     }
   } else if (bookmarks_experiment_state_before ==
-             kBookmarksExperimentEnabledUserOptOut) {
+             BOOKMARKS_EXPERIMENT_ENABLED_USER_OPT_OUT) {
     if (opt_out) {
-      bookmarks_experiment_new_state = kBookmarksExperimentEnabledUserOptOut;
+      bookmarks_experiment_new_state =
+          BOOKMARKS_EXPERIMENT_ENABLED_USER_OPT_OUT;
     } else {
       // User opted in again.
-      bookmarks_experiment_new_state = kBookmarksExperimentEnabled;
+      bookmarks_experiment_new_state = BOOKMARKS_EXPERIMENT_ENABLED;
     }
   }
 
   UMA_HISTOGRAM_ENUMERATION("EnhancedBookmarks.SyncExperimentState",
                             bookmarks_experiment_new_state,
-                            kBookmarksExperimentEnumSize);
+                            BOOKMARKS_EXPERIMENT_ENUM_SIZE);
   user_prefs->SetInteger(
       sync_driver::prefs::kEnhancedBookmarksExperimentEnabled,
       bookmarks_experiment_new_state);
@@ -140,18 +145,18 @@ void ForceFinchBookmarkExperimentIfNeeded(
   if (!experiments_list)
     return;
   size_t index;
-  if (bookmarks_experiment_state == kNoBookmarksExperiment) {
+  if (bookmarks_experiment_state == BOOKMARKS_EXPERIMENT_NONE) {
     experiments_list->Remove(
         base::StringValue(switches::kManualEnhancedBookmarks), &index);
     experiments_list->Remove(
         base::StringValue(switches::kManualEnhancedBookmarksOptout), &index);
-  } else if (bookmarks_experiment_state == kBookmarksExperimentEnabled) {
+  } else if (bookmarks_experiment_state == BOOKMARKS_EXPERIMENT_ENABLED) {
     experiments_list->Remove(
         base::StringValue(switches::kManualEnhancedBookmarksOptout), &index);
     experiments_list->AppendIfNotPresent(
         new base::StringValue(switches::kManualEnhancedBookmarks));
   } else if (bookmarks_experiment_state ==
-                 kBookmarksExperimentEnabledUserOptOut) {
+                 BOOKMARKS_EXPERIMENT_ENABLED_USER_OPT_OUT) {
     experiments_list->Remove(
         base::StringValue(switches::kManualEnhancedBookmarks), &index);
     experiments_list->AppendIfNotPresent(

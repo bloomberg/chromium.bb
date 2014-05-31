@@ -1104,8 +1104,8 @@ void ProfileSyncService::OnExperimentsChanged(
   }
   UpdateBookmarksExperimentState(
       profile_->GetPrefs(), g_browser_process->local_state(), true,
-      experiments.enhanced_bookmarks_enabled ? kBookmarksExperimentEnabled :
-                                               kNoBookmarksExperiment);
+      experiments.enhanced_bookmarks_enabled ? BOOKMARKS_EXPERIMENT_ENABLED :
+                                               BOOKMARKS_EXPERIMENT_NONE);
 
   // If this is a first time sync for a client, this will be called before
   // OnBackendInitialized() to ensure the new datatypes are available at sync
