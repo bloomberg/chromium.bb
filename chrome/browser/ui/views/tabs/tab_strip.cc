@@ -47,6 +47,7 @@
 #include "ui/gfx/screen.h"
 #include "ui/gfx/size.h"
 #include "ui/views/controls/image_view.h"
+#include "ui/views/masked_view_targeter.h"
 #include "ui/views/mouse_watcher_view_host.h"
 #include "ui/views/rect_based_targeting_utils.h"
 #include "ui/views/view_model_utils.h"
@@ -266,25 +267,13 @@ bool NewTabButton::HasHitTestMask() const {
   return !tab_strip_->SizeTabButtonToTopOfTabStrip();
 }
 
+// TODO(tdanderson): Move the implementation into View::HitTestRect() and
+//                   delete this function. See crbug.com/377527.
 void NewTabButton::GetHitTestMask(HitTestSource source, gfx::Path* path) const {
-  DCHECK(path);
-
-  SkScalar w = SkIntToScalar(width());
-  SkScalar v_offset = SkIntToScalar(kNewTabButtonVerticalOffset);
-
-  // These values are defined by the shape of the new tab image. Should that
-  // image ever change, these values will need to be updated. They're so
-  // custom it's not really worth defining constants for.
-  // These values are correct for regular and USE_ASH versions of the image.
-  path->moveTo(0, v_offset + 1);
-  path->lineTo(w - 7, v_offset + 1);
-  path->lineTo(w - 4, v_offset + 4);
-  path->lineTo(w, v_offset + 16);
-  path->lineTo(w - 1, v_offset + 17);
-  path->lineTo(7, v_offset + 17);
-  path->lineTo(4, v_offset + 13);
-  path->lineTo(0, v_offset + 1);
-  path->close();
+  const ui::EventTargeter* targeter = GetEventTargeter();
+  DCHECK(targeter);
+  static_cast<const views::MaskedViewTargeter*>(targeter)
+      ->GetHitTestMask(this, path);
 }
 
 #if defined(OS_WIN)
@@ -427,6 +416,43 @@ gfx::ImageSkia NewTabButton::GetImageForScale(float scale) const {
       GetImageForState(views::CustomButton::STATE_HOVERED, scale),
       hover_animation_->GetCurrentValue());
 }
+
+// Used to define the custom hit-test region of the new tab button
+// for the purposes of event targeting.
+class NewTabButtonTargeter : public views::MaskedViewTargeter {
+ public:
+  explicit NewTabButtonTargeter(views::View* new_tab_button)
+      : views::MaskedViewTargeter(new_tab_button) {}
+  virtual ~NewTabButtonTargeter() {}
+
+ private:
+  // views::MaskedViewTargeter:
+  virtual bool GetHitTestMask(const views::View* view,
+                              gfx::Path* mask) const OVERRIDE {
+    DCHECK(mask);
+
+    SkScalar w = SkIntToScalar(view->width());
+    SkScalar v_offset = SkIntToScalar(kNewTabButtonVerticalOffset);
+
+    // These values are defined by the shape of the new tab image. Should that
+    // image ever change, these values will need to be updated. They're so
+    // custom it's not really worth defining constants for.
+    // These values are correct for regular and USE_ASH versions of the image.
+    mask->moveTo(0, v_offset + 1);
+    mask->lineTo(w - 7, v_offset + 1);
+    mask->lineTo(w - 4, v_offset + 4);
+    mask->lineTo(w, v_offset + 16);
+    mask->lineTo(w - 1, v_offset + 17);
+    mask->lineTo(7, v_offset + 17);
+    mask->lineTo(4, v_offset + 13);
+    mask->lineTo(0, v_offset + 1);
+    mask->close();
+
+    return true;
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(NewTabButtonTargeter);
+};
 
 ///////////////////////////////////////////////////////////////////////////////
 // TabStrip::RemoveTabDelegate
@@ -1549,6 +1575,9 @@ void TabStrip::Init() {
   newtab_button_->SetImageAlignment(views::ImageButton::ALIGN_LEFT,
                                     views::ImageButton::ALIGN_BOTTOM);
   AddChildView(newtab_button_);
+  newtab_button_->SetEventTargeter(
+      scoped_ptr<ui::EventTargeter>(new NewTabButtonTargeter(newtab_button_)));
+
   if (drop_indicator_width == 0) {
     // Direction doesn't matter, both images are the same size.
     gfx::ImageSkia* drop_image = GetDropArrowImage(true);
