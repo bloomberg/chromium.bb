@@ -302,9 +302,19 @@ class MEDIA_EXPORT SourceBufferStream {
 
   Type GetType() const;
 
+  // See GetNextBuffer() for additional details.  This method handles splice
+  // frame processing.
+  Status HandleNextBufferWithSplice(
+      scoped_refptr<StreamParserBuffer>* out_buffer);
+
+  // See GetNextBuffer() for additional details.  This method handles preroll
+  // frame processing.
+  Status HandleNextBufferWithPreroll(
+      scoped_refptr<StreamParserBuffer>* out_buffer);
+
   // See GetNextBuffer() for additional details.  The internal method hands out
-  // buffers from the |track_buffer_| and |selected_range_| without additional
-  // processing for splice frame buffers; which is handled by GetNextBuffer().
+  // single buffers from the |track_buffer_| and |selected_range_| without
+  // additional processing for splice frame or preroll buffers.
   Status GetNextBufferInternal(scoped_refptr<StreamParserBuffer>* out_buffer);
 
   // Called by PrepareRangesForNextAppend() before pruning overlapped buffers to
@@ -312,6 +322,10 @@ class MEDIA_EXPORT SourceBufferStream {
   // a splice frame is generated, the first buffer in |new_buffers| will have
   // its timestamps, duration, and fade out preroll updated.
   void GenerateSpliceFrame(const BufferQueue& new_buffers);
+
+  // If |out_buffer| has splice buffers or preroll, sets |pending_buffer_|
+  // appropriately and returns true.  Otherwise returns false.
+  bool SetPendingBuffer(scoped_refptr<StreamParserBuffer>* out_buffer);
 
   // Callback used to report error strings that can help the web developer
   // figure out what is wrong with the content.
@@ -389,17 +403,17 @@ class MEDIA_EXPORT SourceBufferStream {
   // GetCurrentXXXDecoderConfig() has been called.
   bool config_change_pending_;
 
-  // Used by GetNextBuffer() when a buffer with fade out is returned from
-  // GetNextBufferInternal().  Will be set to the returned buffer and will be
-  // destroyed after the splice_buffers() section has been exhausted.
-  scoped_refptr<StreamParserBuffer> splice_buffer_;
+  // Used by HandleNextBufferWithSplice() or HandleNextBufferWithPreroll() when
+  // a splice frame buffer or buffer with preroll is returned from
+  // GetNextBufferInternal().
+  scoped_refptr<StreamParserBuffer> pending_buffer_;
 
   // Indicates which of the splice buffers in |splice_buffer_| should be
   // handled out next.
   size_t splice_buffers_index_;
 
-  // Indicates that all pre splice buffers have been handed out.
-  bool pre_splice_complete_;
+  // Indicates that all buffers before |pending_buffer_| have been handed out.
+  bool pending_buffers_complete_;
 
   // Indicates that splice frame generation is enabled.
   const bool splice_frames_enabled_;

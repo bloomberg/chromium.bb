@@ -88,4 +88,9 @@ std::string DecoderBuffer::AsHumanReadableString() {
   return s.str();
 }
 
+void DecoderBuffer::set_timestamp(base::TimeDelta timestamp) {
+  DCHECK(!end_of_stream());
+  timestamp_ = timestamp;
+}
+
 }  // namespace media

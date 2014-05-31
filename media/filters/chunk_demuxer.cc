@@ -567,6 +567,8 @@ bool SourceState::OnNewConfigs(
         DVLOG(1) << "Failed to add audio track to frame processor.";
         return false;
       }
+    } else {
+      frame_processor_->clear_audio_preroll_buffer();
     }
 
     success &= audio_->UpdateAudioConfig(audio_config, log_cb_);

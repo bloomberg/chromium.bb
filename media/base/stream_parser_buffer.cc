@@ -67,8 +67,10 @@ base::TimeDelta StreamParserBuffer::GetDecodeTimestamp() const {
   return decode_timestamp_;
 }
 
-void StreamParserBuffer::SetDecodeTimestamp(const base::TimeDelta& timestamp) {
+void StreamParserBuffer::SetDecodeTimestamp(base::TimeDelta timestamp) {
   decode_timestamp_ = timestamp;
+  if (preroll_buffer_)
+    preroll_buffer_->SetDecodeTimestamp(timestamp);
 }
 
 StreamParserBuffer::StreamParserBuffer(const uint8* data, int data_size,
@@ -97,6 +99,8 @@ int StreamParserBuffer::GetConfigId() const {
 
 void StreamParserBuffer::SetConfigId(int config_id) {
   config_id_ = config_id;
+  if (preroll_buffer_)
+    preroll_buffer_->SetConfigId(config_id);
 }
 
 void StreamParserBuffer::ConvertToSpliceBuffer(
@@ -117,6 +121,12 @@ void StreamParserBuffer::ConvertToSpliceBuffer(
   // TODO(dalecurtis): We should also clear |data| and |side_data|, but since
   // that implies EOS care must be taken to ensure there are no clients relying
   // on that behavior.
+
+  // Move over any preroll from this buffer.
+  if (preroll_buffer_) {
+    DCHECK(!overlapping_buffer->preroll_buffer_);
+    overlapping_buffer->preroll_buffer_.swap(preroll_buffer_);
+  }
 
   // Rewrite |this| buffer as a splice buffer.
   SetDecodeTimestamp(first_splice_buffer->GetDecodeTimestamp());
@@ -141,12 +151,41 @@ void StreamParserBuffer::ConvertToSpliceBuffer(
        ++it) {
     const scoped_refptr<StreamParserBuffer>& buffer = *it;
     DCHECK(!buffer->end_of_stream());
+    DCHECK(!buffer->preroll_buffer());
     DCHECK(buffer->splice_buffers().empty());
     splice_buffers_.push_back(CopyBuffer(*buffer));
     splice_buffers_.back()->set_splice_timestamp(splice_timestamp());
   }
 
   splice_buffers_.push_back(overlapping_buffer);
+}
+
+void StreamParserBuffer::SetPrerollBuffer(
+    const scoped_refptr<StreamParserBuffer>& preroll_buffer) {
+  DCHECK(!preroll_buffer_);
+  DCHECK(!end_of_stream());
+  DCHECK(!preroll_buffer->end_of_stream());
+  DCHECK(!preroll_buffer->preroll_buffer_);
+  DCHECK(preroll_buffer->splice_timestamp() == kNoTimestamp());
+  DCHECK(preroll_buffer->splice_buffers().empty());
+  DCHECK(preroll_buffer->timestamp() <= timestamp());
+  DCHECK(preroll_buffer->discard_padding() == DecoderBuffer::DiscardPadding());
+  DCHECK_EQ(preroll_buffer->type(), type());
+  DCHECK_EQ(preroll_buffer->track_id(), track_id());
+
+  preroll_buffer_ = preroll_buffer;
+  preroll_buffer_->set_timestamp(timestamp());
+  preroll_buffer_->SetDecodeTimestamp(GetDecodeTimestamp());
+
+  // Mark the entire buffer for discard.
+  preroll_buffer_->set_discard_padding(
+      std::make_pair(kInfiniteDuration(), base::TimeDelta()));
+}
+
+void StreamParserBuffer::set_timestamp(base::TimeDelta timestamp) {
+  DecoderBuffer::set_timestamp(timestamp);
+  if (preroll_buffer_)
+    preroll_buffer_->set_timestamp(timestamp);
 }
 
 }  // namespace media

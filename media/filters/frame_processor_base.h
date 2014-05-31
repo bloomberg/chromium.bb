@@ -154,6 +154,11 @@ class MEDIA_EXPORT FrameProcessorBase {
   // http://www.w3.org/TR/media-source/#sourcebuffer-reset-parser-state
   void Reset();
 
+  // Resets the preroll buffer used for partial append window trimming of audio
+  // buffers.  Must be called if the audio config is changed between calls to
+  // ProcessFrames().
+  void clear_audio_preroll_buffer() { audio_preroll_buffer_ = NULL; }
+
  protected:
   typedef std::map<StreamParser::TrackId, MseTrackBuffer*> TrackBufferMap;
 
@@ -166,6 +171,24 @@ class MEDIA_EXPORT FrameProcessorBase {
   // Signals all track buffers' streams that a new media segment is starting
   // with timestamp |segment_timestamp|.
   void NotifyNewMediaSegmentStarting(base::TimeDelta segment_timestamp);
+
+  // Handles partial append window trimming of |buffer|.  Returns true if the
+  // given |buffer| can be partially trimmed or have preroll added; otherwise,
+  // returns false.
+  //
+  // If |buffer| overlaps |append_window_start|, the portion of |buffer| before
+  // |append_window_start| will be marked for post-decode discard.  Further, if
+  // |audio_preroll_buffer_| exists and abuts |buffer|, it will be set as
+  // preroll on |buffer| and |audio_preroll_buffer_| will be cleared.  If the
+  // preroll buffer does not abut |buffer|, it will be discarded, but not used.
+  //
+  // If |buffer| lies entirely before |append_window_start|, and thus would
+  // normally be discarded, |audio_preroll_buffer_| will be set to |buffer| and
+  // the method will return false.
+  bool HandlePartialAppendWindowTrimming(
+      base::TimeDelta append_window_start,
+      base::TimeDelta append_window_end,
+      const scoped_refptr<StreamParserBuffer>& buffer);
 
   // The AppendMode of the associated SourceBuffer.
   // See SetSequenceMode() for interpretation of |sequence_mode_|.
@@ -183,6 +206,13 @@ class MEDIA_EXPORT FrameProcessorBase {
   // short-term plumbing of SetGroupStartTimestampIfInSequenceMode() until
   // LegacyFrameProcessor is removed.
   base::TimeDelta group_start_timestamp_;
+
+ private:
+  // The last audio buffer seen by the frame processor that was removed because
+  // it was entirely before the start of the append window.
+  scoped_refptr<StreamParserBuffer> audio_preroll_buffer_;
+
+  DISALLOW_COPY_AND_ASSIGN(FrameProcessorBase);
 };
 
 }  // namespace media

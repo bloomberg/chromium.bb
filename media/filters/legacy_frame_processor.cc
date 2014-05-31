@@ -166,63 +166,59 @@ void LegacyFrameProcessor::FilterWithAppendWindow(
   // (i.e., next keyframe) if a buffer gets dropped.
   for (StreamParser::BufferQueue::const_iterator itr = buffers.begin();
        itr != buffers.end(); ++itr) {
+    const scoped_refptr<StreamParserBuffer>& buffer = *itr;
+
     // Filter out buffers that are outside the append window. Anytime
     // a buffer gets dropped we need to set |*needs_keyframe| to true
     // because we can only resume decoding at keyframes.
-    base::TimeDelta presentation_timestamp = (*itr)->timestamp();
+    base::TimeDelta presentation_timestamp = buffer->timestamp();
 
     // TODO(acolwell): Change |frame_end_timestamp| value to always be
     // |presentation_timestamp + (*itr)->duration()|, like the spec
     // requires, once frame durations are actually present in all buffers.
     // See http://crbug.com/351166.
     base::TimeDelta frame_end_timestamp = presentation_timestamp;
-    base::TimeDelta frame_duration = (*itr)->duration();
+    base::TimeDelta frame_duration = buffer->duration();
     if (frame_duration > base::TimeDelta()) {
       DCHECK(frame_duration != kNoTimestamp());
       frame_end_timestamp += frame_duration;
+
+      if (track->stream()->supports_partial_append_window_trimming() &&
+          HandlePartialAppendWindowTrimming(append_window_start,
+                                            append_window_end,
+                                            buffer)) {
+        // If |buffer| was shortened a discontinuity may exist, so treat the
+        // next frames appended as if they were the beginning of a new media
+        // segment.
+        if (buffer->timestamp() != presentation_timestamp)
+          *new_media_segment = true;
+
+        // |buffer| has been partially trimmed or had preroll added.
+        presentation_timestamp = buffer->timestamp();
+        frame_duration = buffer->duration();
+
+        // The end timestamp of the frame should be unchanged.
+        DCHECK(frame_end_timestamp == presentation_timestamp + frame_duration);
+      }
     }
 
     if (presentation_timestamp < append_window_start ||
         frame_end_timestamp > append_window_end) {
-      // See if a partial discard can be done around |append_window_start|.
-      if (track->stream()->supports_partial_append_window_trimming() &&
-          presentation_timestamp < append_window_start &&
-          frame_end_timestamp > append_window_start &&
-          frame_end_timestamp <= append_window_end) {
-        DCHECK((*itr)->IsKeyframe());
-        DVLOG(1) << "Truncating buffer which overlaps append window start."
-                 << " presentation_timestamp "
-                 << presentation_timestamp.InSecondsF()
-                 << " append_window_start " << append_window_start.InSecondsF();
-
-        // Adjust the timestamp of this buffer forward to |append_window_start|,
-        // while decreasing the duration appropriately.
-        const scoped_refptr<StreamParserBuffer>& buffer = *itr;
-        buffer->set_discard_padding(std::make_pair(
-            append_window_start - presentation_timestamp, base::TimeDelta()));
-        buffer->set_timestamp(append_window_start);
-        buffer->SetDecodeTimestamp(append_window_start);
-        buffer->set_duration(frame_end_timestamp - append_window_start);
-
-        // TODO(dalecurtis): This could also be done with |append_window_end|,
-        // but is not necessary since splice frames cover the overlap there.
-      } else {
-        track->set_needs_random_access_point(true);
-        DVLOG(1) << "Dropping buffer outside append window."
-                 << " presentation_timestamp "
-                 << presentation_timestamp.InSecondsF();
-        // This triggers a discontinuity so we need to treat the next frames
-        // appended within the append window as if they were the beginning of a
-        // new segment.
-        *new_media_segment = true;
-        continue;
-      }
+      track->set_needs_random_access_point(true);
+      DVLOG(1) << "Dropping buffer outside append window."
+               << " presentation_timestamp "
+               << presentation_timestamp.InSecondsF();
+      // This triggers a discontinuity so we need to treat the next frames
+      // appended within the append window as if they were the beginning of a
+      // new segment.
+      *new_media_segment = true;
+      continue;
     }
 
     // If the track needs a keyframe, then filter out buffers until we
     // encounter the next keyframe.
     if (track->needs_random_access_point()) {
-      if (!(*itr)->IsKeyframe()) {
+      if (!buffer->IsKeyframe()) {
         DVLOG(1) << "Dropping non-keyframe. presentation_timestamp "
                  << presentation_timestamp.InSecondsF();
         continue;
@@ -231,7 +227,7 @@ void LegacyFrameProcessor::FilterWithAppendWindow(
       track->set_needs_random_access_point(false);
     }
 
-    filtered_buffers->push_back(*itr);
+    filtered_buffers->push_back(buffer);
   }
 }
 

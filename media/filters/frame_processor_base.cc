@@ -97,4 +97,70 @@ void FrameProcessorBase::NotifyNewMediaSegmentStarting(
   }
 }
 
+bool FrameProcessorBase::HandlePartialAppendWindowTrimming(
+    base::TimeDelta append_window_start,
+    base::TimeDelta append_window_end,
+    const scoped_refptr<StreamParserBuffer>& buffer) {
+  DCHECK(buffer->duration() > base::TimeDelta());
+  DCHECK_EQ(DemuxerStream::AUDIO, buffer->type());
+
+  const base::TimeDelta frame_end_timestamp =
+      buffer->timestamp() + buffer->duration();
+
+  // Ignore any buffers which start after |append_window_start| or end after
+  // |append_window_end|.  For simplicity, even those that start before
+  // |append_window_start|.
+  if (buffer->timestamp() > append_window_start ||
+      frame_end_timestamp > append_window_end) {
+    // TODO(dalecurtis): Partial append window trimming could also be done
+    // around |append_window_end|, but is not necessary since splice frames
+    // cover overlaps there.
+    return false;
+  }
+
+  // If the buffer is entirely before |append_window_start|, save it as preroll
+  // for the first buffer which overlaps |append_window_start|.
+  if (buffer->timestamp() < append_window_start &&
+      frame_end_timestamp <= append_window_start) {
+    audio_preroll_buffer_ = buffer;
+    return false;
+  }
+
+  // See if a partial discard can be done around |append_window_start|.
+  DCHECK(buffer->timestamp() <= append_window_start);
+  DCHECK(buffer->IsKeyframe());
+  DVLOG(1) << "Truncating buffer which overlaps append window start."
+           << " presentation_timestamp " << buffer->timestamp().InSecondsF()
+           << " append_window_start " << append_window_start.InSecondsF();
+
+  // If this isn't the first buffer discarded by the append window, try to use
+  // the last buffer discarded for preroll.  This ensures that the partially
+  // trimmed buffer can be correctly decoded.
+  if (audio_preroll_buffer_) {
+    if (audio_preroll_buffer_->timestamp() +
+            audio_preroll_buffer_->duration() ==
+        buffer->timestamp()) {
+      buffer->SetPrerollBuffer(audio_preroll_buffer_);
+    } else {
+      // TODO(dalecurtis): Add a MEDIA_LOG() for when this is dropped unused.
+    }
+    audio_preroll_buffer_ = NULL;
+  }
+
+  // Decrease the duration appropriately.  We only need to shorten the buffer if
+  // it overlaps |append_window_start|.
+  if (buffer->timestamp() < append_window_start) {
+    buffer->set_discard_padding(std::make_pair(
+        append_window_start - buffer->timestamp(), base::TimeDelta()));
+    buffer->set_duration(frame_end_timestamp - append_window_start);
+  }
+
+  // Adjust the timestamp of this buffer forward to |append_window_start|.  The
+  // timestamps are always set, even if |buffer|'s timestamp is already set to
+  // |append_window_start|, to ensure the preroll buffer is setup correctly.
+  buffer->set_timestamp(append_window_start);
+  buffer->SetDecodeTimestamp(append_window_start);
+  return true;
+}
+
 }  // namespace media

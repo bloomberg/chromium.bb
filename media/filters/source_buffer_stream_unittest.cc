@@ -290,8 +290,32 @@ class SourceBufferStreamTest : public testing::Test {
         break;
 
       ss << buffer->GetDecodeTimestamp().InMilliseconds();
-      if (buffer->IsKeyframe())
+
+      // Handle preroll buffers.
+      if (EndsWith(timestamps[i], "P", true)) {
+        ASSERT_TRUE(buffer->IsKeyframe());
+        scoped_refptr<StreamParserBuffer> preroll_buffer;
+        preroll_buffer.swap(buffer);
+
+        // When a preroll buffer is encountered we should be able to request one
+        // more buffer.  The first buffer should match the timestamp and config
+        // of the second buffer, except that its discard_padding() should be its
+        // duration.
+        ASSERT_EQ(SourceBufferStream::kSuccess,
+                  stream_->GetNextBuffer(&buffer));
+        ASSERT_EQ(buffer->GetConfigId(), preroll_buffer->GetConfigId());
+        ASSERT_EQ(buffer->track_id(), preroll_buffer->track_id());
+        ASSERT_EQ(buffer->timestamp(), preroll_buffer->timestamp());
+        ASSERT_EQ(buffer->GetDecodeTimestamp(),
+                  preroll_buffer->GetDecodeTimestamp());
+        ASSERT_EQ(kInfiniteDuration(), preroll_buffer->discard_padding().first);
+        ASSERT_EQ(base::TimeDelta(), preroll_buffer->discard_padding().second);
+        ASSERT_TRUE(buffer->IsKeyframe());
+
+        ss << "P";
+      } else if (buffer->IsKeyframe()) {
         ss << "K";
+      }
 
       // Until the last splice frame is seen, indicated by a matching timestamp,
       // all buffers must have the same splice_timestamp().
@@ -419,6 +443,7 @@ class SourceBufferStreamTest : public testing::Test {
     BufferQueue buffers;
     for (size_t i = 0; i < timestamps.size(); i++) {
       bool is_keyframe = false;
+      bool has_preroll = false;
       bool last_splice_frame = false;
       // Handle splice frame starts.
       if (StartsWithASCII(timestamps[i], "S(", true)) {
@@ -446,6 +471,13 @@ class SourceBufferStreamTest : public testing::Test {
         // Remove the "K" off of the token.
         timestamps[i] = timestamps[i].substr(0, timestamps[i].length() - 1);
       }
+      // Handle preroll buffers.
+      if (EndsWith(timestamps[i], "P", true)) {
+        is_keyframe = true;
+        has_preroll = true;
+        // Remove the "P" off of the token.
+        timestamps[i] = timestamps[i].substr(0, timestamps[i].length() - 1);
+      }
 
       int time_in_ms;
       CHECK(base::StringToInt(timestamps[i], &time_in_ms));
@@ -460,6 +492,16 @@ class SourceBufferStreamTest : public testing::Test {
       if (accurate_durations_)
         buffer->set_duration(frame_duration_);
       buffer->SetDecodeTimestamp(timestamp);
+
+      // Simulate preroll buffers by just generating another buffer and sticking
+      // it as the preroll.
+      if (has_preroll) {
+        scoped_refptr<StreamParserBuffer> preroll_buffer =
+            StreamParserBuffer::CopyFrom(
+                &kDataA, kDataSize, is_keyframe, DemuxerStream::AUDIO, 0);
+        preroll_buffer->set_duration(frame_duration_);
+        buffer->SetPrerollBuffer(preroll_buffer);
+      }
 
       if (splice_frame) {
         if (!pre_splice_buffers.empty()) {
@@ -3746,6 +3788,22 @@ TEST_F(SourceBufferStreamTest, Audio_SpliceFrame_NoTinySplices) {
   NewSegmentAppend("1K");
   CheckExpectedRangesByTimestamp("{ [0,3) }");
   CheckExpectedBuffers("0K 1K");
+  CheckNoNextBuffer();
+}
+
+TEST_F(SourceBufferStreamTest, Audio_SpliceFrame_Preroll) {
+  SetAudioStream();
+  Seek(0);
+  NewSegmentAppend("0K 2K 4K 6K 8K 10K 12K");
+  NewSegmentAppend("11P 13K 15K 17K");
+  CheckExpectedBuffers("0K 2K 4K 6K 8K 10K 12K C 11P 13K 15K 17K");
+  CheckNoNextBuffer();
+}
+
+TEST_F(SourceBufferStreamTest, Audio_PrerollFrame) {
+  Seek(0);
+  NewSegmentAppend("0K 3P 6K");
+  CheckExpectedBuffers("0K 3P 6K");
   CheckNoNextBuffer();
 }
 

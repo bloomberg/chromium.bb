@@ -66,17 +66,16 @@ class MEDIA_EXPORT DecoderBuffer
     return timestamp_;
   }
 
-  void set_timestamp(const base::TimeDelta& timestamp) {
-    DCHECK(!end_of_stream());
-    timestamp_ = timestamp;
-  }
+  // TODO(dalecurtis): This should be renamed at some point, but to avoid a yak
+  // shave keep as a virtual with hacker_style() for now.
+  virtual void set_timestamp(base::TimeDelta timestamp);
 
   base::TimeDelta duration() const {
     DCHECK(!end_of_stream());
     return duration_;
   }
 
-  void set_duration(const base::TimeDelta& duration) {
+  void set_duration(base::TimeDelta duration) {
     DCHECK(!end_of_stream());
     duration_ = duration;
   }

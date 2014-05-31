@@ -359,7 +359,7 @@ SourceBufferStream::SourceBufferStream(const AudioDecoderConfig& audio_config,
       memory_limit_(kDefaultAudioMemoryLimit),
       config_change_pending_(false),
       splice_buffers_index_(0),
-      pre_splice_complete_(false),
+      pending_buffers_complete_(false),
       splice_frames_enabled_(splice_frames_enabled) {
   DCHECK(audio_config.IsValidConfig());
   audio_configs_.push_back(audio_config);
@@ -385,7 +385,7 @@ SourceBufferStream::SourceBufferStream(const VideoDecoderConfig& video_config,
       memory_limit_(kDefaultVideoMemoryLimit),
       config_change_pending_(false),
       splice_buffers_index_(0),
-      pre_splice_complete_(false),
+      pending_buffers_complete_(false),
       splice_frames_enabled_(splice_frames_enabled) {
   DCHECK(video_config.IsValidConfig());
   video_configs_.push_back(video_config);
@@ -412,7 +412,7 @@ SourceBufferStream::SourceBufferStream(const TextTrackConfig& text_config,
       memory_limit_(kDefaultAudioMemoryLimit),
       config_change_pending_(false),
       splice_buffers_index_(0),
-      pre_splice_complete_(false),
+      pending_buffers_complete_(false),
       splice_frames_enabled_(splice_frames_enabled) {}
 
 SourceBufferStream::~SourceBufferStream() {
@@ -693,8 +693,8 @@ void SourceBufferStream::ResetSeekState() {
   config_change_pending_ = false;
   last_output_buffer_timestamp_ = kNoTimestamp();
   splice_buffers_index_ = 0;
-  splice_buffer_ = NULL;
-  pre_splice_complete_ = false;
+  pending_buffer_ = NULL;
+  pending_buffers_complete_ = false;
 }
 
 bool SourceBufferStream::ShouldSeekToStartOfBuffered(
@@ -1135,23 +1135,22 @@ void SourceBufferStream::OnSetDuration(base::TimeDelta duration) {
 
 SourceBufferStream::Status SourceBufferStream::GetNextBuffer(
     scoped_refptr<StreamParserBuffer>* out_buffer) {
-  if (!splice_buffer_) {
+  if (!pending_buffer_) {
     const SourceBufferStream::Status status = GetNextBufferInternal(out_buffer);
-
-    // Just return if GetNextBufferInternal() failed or there's no fade out
-    // preroll, there's nothing else to do.
-    if (status != SourceBufferStream::kSuccess ||
-        (*out_buffer)->splice_buffers().empty()) {
+    if (status != SourceBufferStream::kSuccess || !SetPendingBuffer(out_buffer))
       return status;
-    }
-
-    // Fall through into splice buffer processing.
-    splice_buffers_index_ = 0;
-    splice_buffer_.swap(*out_buffer);
   }
 
-  DCHECK(splice_buffer_);
-  const BufferQueue& splice_buffers = splice_buffer_->splice_buffers();
+  if (!pending_buffer_->splice_buffers().empty())
+    return HandleNextBufferWithSplice(out_buffer);
+
+  DCHECK(pending_buffer_->preroll_buffer());
+  return HandleNextBufferWithPreroll(out_buffer);
+}
+
+SourceBufferStream::Status SourceBufferStream::HandleNextBufferWithSplice(
+    scoped_refptr<StreamParserBuffer>* out_buffer) {
+  const BufferQueue& splice_buffers = pending_buffer_->splice_buffers();
   const size_t last_splice_buffer_index = splice_buffers.size() - 1;
 
   // Are there any splice buffers left to hand out?  The last buffer should be
@@ -1166,17 +1165,20 @@ SourceBufferStream::Status SourceBufferStream::GetNextBuffer(
     }
 
     // Every pre splice buffer must have the same splice_timestamp().
-    DCHECK(splice_buffer_->splice_timestamp() ==
+    DCHECK(pending_buffer_->splice_timestamp() ==
            splice_buffers[splice_buffers_index_]->splice_timestamp());
+
+    // No pre splice buffers should have preroll.
+    DCHECK(!splice_buffers[splice_buffers_index_]->preroll_buffer());
 
     *out_buffer = splice_buffers[splice_buffers_index_++];
     return SourceBufferStream::kSuccess;
   }
 
   // Did we hand out the last pre-splice buffer on the previous call?
-  if (!pre_splice_complete_) {
+  if (!pending_buffers_complete_) {
     DCHECK_EQ(splice_buffers_index_, last_splice_buffer_index);
-    pre_splice_complete_ = true;
+    pending_buffers_complete_ = true;
     config_change_pending_ = true;
     DVLOG(1) << "Config change (forced for fade in of splice frame).";
     return SourceBufferStream::kConfigChange;
@@ -1186,13 +1188,32 @@ SourceBufferStream::Status SourceBufferStream::GetNextBuffer(
   // so hand out the final buffer for fade in.  Because a config change is
   // always issued prior to handing out this buffer, any changes in config id
   // have been inherently handled.
-  DCHECK(pre_splice_complete_);
+  DCHECK(pending_buffers_complete_);
   DCHECK_EQ(splice_buffers_index_, splice_buffers.size() - 1);
   DCHECK(splice_buffers.back()->splice_timestamp() == kNoTimestamp());
   *out_buffer = splice_buffers.back();
-  splice_buffer_ = NULL;
-  splice_buffers_index_ = 0;
-  pre_splice_complete_ = false;
+  pending_buffer_ = NULL;
+
+  // If the last splice buffer has preroll, hand off to the preroll handler.
+  return SetPendingBuffer(out_buffer) ? HandleNextBufferWithPreroll(out_buffer)
+                                      : SourceBufferStream::kSuccess;
+}
+
+SourceBufferStream::Status SourceBufferStream::HandleNextBufferWithPreroll(
+    scoped_refptr<StreamParserBuffer>* out_buffer) {
+  // Any config change should have already been handled.
+  DCHECK_EQ(current_config_index_, pending_buffer_->GetConfigId());
+
+  // Check if the preroll buffer has already been handed out.
+  if (!pending_buffers_complete_) {
+    pending_buffers_complete_ = true;
+    *out_buffer = pending_buffer_->preroll_buffer();
+    return SourceBufferStream::kSuccess;
+  }
+
+  // Preroll complete, hand out the final buffer.
+  *out_buffer = pending_buffer_;
+  pending_buffer_ = NULL;
   return SourceBufferStream::kSuccess;
 }
 
@@ -1428,9 +1449,9 @@ bool SourceBufferStream::UpdateVideoConfig(const VideoDecoderConfig& config) {
 void SourceBufferStream::CompleteConfigChange() {
   config_change_pending_ = false;
 
-  if (splice_buffer_) {
+  if (pending_buffer_) {
     current_config_index_ =
-        GetConfigId(splice_buffer_, splice_buffers_index_);
+        GetConfigId(pending_buffer_, splice_buffers_index_);
     return;
   }
 
@@ -1637,13 +1658,19 @@ void SourceBufferStream::GenerateSpliceFrame(const BufferQueue& new_buffers) {
   if (pre_splice_buffers.front()->timestamp() >= splice_timestamp)
     return;
 
-  // If any |pre_splice_buffers| are already splices, do not generate a splice.
+  // If any |pre_splice_buffers| are already splices or preroll, do not generate
+  // a splice.
   for (size_t i = 0; i < pre_splice_buffers.size(); ++i) {
     const BufferQueue& original_splice_buffers =
         pre_splice_buffers[i]->splice_buffers();
     if (!original_splice_buffers.empty()) {
       DVLOG(1) << "Can't generate splice: overlapped buffers contain a "
                   "pre-existing splice.";
+      return;
+    }
+
+    if (pre_splice_buffers[i]->preroll_buffer()) {
+      DVLOG(1) << "Can't generate splice: overlapped buffers contain preroll.";
       return;
     }
   }
@@ -2195,6 +2222,24 @@ bool SourceBufferRange::GetBuffersInRange(base::TimeDelta start,
     buffers->push_back(buffer);
   }
   return previous_size < buffers->size();
+}
+
+bool SourceBufferStream::SetPendingBuffer(
+    scoped_refptr<StreamParserBuffer>* out_buffer) {
+  DCHECK(*out_buffer);
+  DCHECK(!pending_buffer_);
+
+  const bool have_splice_buffers = !(*out_buffer)->splice_buffers().empty();
+  const bool have_preroll_buffer = !!(*out_buffer)->preroll_buffer();
+
+  if (!have_splice_buffers && !have_preroll_buffer)
+    return false;
+
+  DCHECK_NE(have_splice_buffers, have_preroll_buffer);
+  splice_buffers_index_ = 0;
+  pending_buffer_.swap(*out_buffer);
+  pending_buffers_complete_ = false;
+  return true;
 }
 
 }  // namespace media

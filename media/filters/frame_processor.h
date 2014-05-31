@@ -35,7 +35,7 @@ class MEDIA_EXPORT FrameProcessor : public FrameProcessorBase {
  private:
   // Helper that processes one frame with the coded frame processing algorithm.
   // Returns false on error or true on success.
-  bool ProcessFrame(scoped_refptr<StreamParserBuffer> frame,
+  bool ProcessFrame(const scoped_refptr<StreamParserBuffer>& frame,
                     base::TimeDelta append_window_start,
                     base::TimeDelta append_window_end,
                     base::TimeDelta* timestamp_offset,
