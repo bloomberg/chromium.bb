@@ -33,6 +33,7 @@ group("root") {
     "//components/translate:translate_core_browser",
     "//components/translate:translate_core_common",
     "//components/url_matcher",
+    #"//content/public/browser",  # Exists but doesn't build yet.
     "//content/public/common",
     "//content/public/renderer",
     "//crypto",

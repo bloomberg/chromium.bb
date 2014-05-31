@@ -33,6 +33,9 @@ source_set("browser") {
 
   deps = [
     "//base",
+    "//cc",
+    "//content:resources",
+    "//content/browser/devtools:resources",
     "//crypto",
     "//google_apis",
     "//net",
@@ -52,6 +55,7 @@ source_set("browser") {
     "//ui/gfx",
     "//ui/gfx/geometry",
     "//ui/resources",
+    "//ui/snapshot",
     "//ui/surface",
     "//webkit:resources",
     "//webkit:strings",
@@ -59,12 +63,10 @@ source_set("browser") {
     "//webkit/common",
     "//webkit/common:storage",
     # TODO(GYP)
-    #"//ui/snapshot",
     #'browser/service_worker/service_worker_proto.gyp:database_proto',
     #'browser/speech/proto/speech_proto.gyp:speech_proto',
     #'browser/devtools/devtools_resources.gyp:devtools_resources',
     #'content_common_mojo_bindings',
-    #'../cc/cc.gyp:cc',
     #'../mojo/mojo.gyp:mojo_cpp_bindings',
     #'../mojo/mojo.gyp:mojo_js_bindings',
     #'../mojo/mojo.gyp:mojo_service_provider_bindings',
