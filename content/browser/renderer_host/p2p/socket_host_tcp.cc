@@ -45,9 +45,11 @@ bool IsPseudoTlsClientSocket(content::P2PSocketType type) {
 namespace content {
 
 P2PSocketHostTcpBase::P2PSocketHostTcpBase(
-    IPC::Sender* message_sender, int id,
-    P2PSocketType type, net::URLRequestContextGetter* url_context)
-    : P2PSocketHost(message_sender, id),
+    IPC::Sender* message_sender,
+    int socket_id,
+    P2PSocketType type,
+    net::URLRequestContextGetter* url_context)
+    : P2PSocketHost(message_sender, socket_id),
       write_pending_(false),
       connected_(false),
       type_(type),
@@ -287,6 +289,9 @@ void P2PSocketHostTcpBase::OnPacket(const std::vector<char>& data) {
 
   message_sender_->Send(new P2PMsg_OnDataReceived(
       id_, remote_address_.ip_address, data, base::TimeTicks::Now()));
+
+  if (dump_incoming_rtp_packet_)
+    DumpRtpPacket(&data[0], data.size(), true);
 }
 
 // Note: dscp is not actually used on TCP sockets as this point,
@@ -423,10 +428,11 @@ bool P2PSocketHostTcpBase::SetOption(P2PSocketOption option, int value) {
   }
 }
 
-P2PSocketHostTcp::P2PSocketHostTcp(
-    IPC::Sender* message_sender, int id,
-    P2PSocketType type, net::URLRequestContextGetter* url_context)
-    : P2PSocketHostTcpBase(message_sender, id, type, url_context) {
+P2PSocketHostTcp::P2PSocketHostTcp(IPC::Sender* message_sender,
+                                   int socket_id,
+                                   P2PSocketType type,
+                                   net::URLRequestContextGetter* url_context)
+    : P2PSocketHostTcpBase(message_sender, socket_id, type, url_context) {
   DCHECK(type == P2P_SOCKET_TCP_CLIENT ||
          type == P2P_SOCKET_SSLTCP_CLIENT ||
          type == P2P_SOCKET_TLS_CLIENT);
@@ -469,9 +475,11 @@ void P2PSocketHostTcp::DoSend(const net::IPEndPoint& to,
 
 // P2PSocketHostStunTcp
 P2PSocketHostStunTcp::P2PSocketHostStunTcp(
-    IPC::Sender* message_sender, int id,
-    P2PSocketType type, net::URLRequestContextGetter* url_context)
-    : P2PSocketHostTcpBase(message_sender, id, type, url_context) {
+    IPC::Sender* message_sender,
+    int socket_id,
+    P2PSocketType type,
+    net::URLRequestContextGetter* url_context)
+    : P2PSocketHostTcpBase(message_sender, socket_id, type, url_context) {
   DCHECK(type == P2P_SOCKET_STUN_TCP_CLIENT ||
          type == P2P_SOCKET_STUN_SSLTCP_CLIENT ||
          type == P2P_SOCKET_STUN_TLS_CLIENT);
@@ -539,6 +547,9 @@ void P2PSocketHostStunTcp::DoSend(const net::IPEndPoint& to,
     memcpy(buffer->data() + data.size(), padding, pad_bytes);
   }
   WriteOrQueue(buffer);
+
+  if (dump_outgoing_rtp_packet_)
+    DumpRtpPacket(buffer->data(), data.size(), false);
 }
 
 int P2PSocketHostStunTcp::GetExpectedPacketSize(

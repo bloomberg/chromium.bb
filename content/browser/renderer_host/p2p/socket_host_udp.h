@@ -26,7 +26,8 @@ class P2PMessageThrottler;
 
 class CONTENT_EXPORT P2PSocketHostUdp : public P2PSocketHost {
  public:
-  P2PSocketHostUdp(IPC::Sender* message_sender, int id,
+  P2PSocketHostUdp(IPC::Sender* message_sender,
+                   int socket_id,
                    P2PMessageThrottler* throttler);
   virtual ~P2PSocketHostUdp();
 

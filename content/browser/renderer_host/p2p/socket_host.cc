@@ -8,6 +8,8 @@
 #include "content/browser/renderer_host/p2p/socket_host_tcp.h"
 #include "content/browser/renderer_host/p2p/socket_host_tcp_server.h"
 #include "content/browser/renderer_host/p2p/socket_host_udp.h"
+#include "content/browser/renderer_host/render_process_host_impl.h"
+#include "content/public/browser/browser_thread.h"
 #include "crypto/hmac.h"
 #include "third_party/libjingle/source/talk/base/asyncpacketsocket.h"
 #include "third_party/libjingle/source/talk/base/byteorder.h"
@@ -55,7 +57,10 @@ bool IsRtpPacket(const char* data, int len) {
 }
 
 // Verifies rtp header and message length.
-bool ValidateRtpHeader(char* rtp, int length) {
+bool ValidateRtpHeader(const char* rtp, int length, size_t* header_length) {
+  if (header_length)
+    *header_length = 0;
+
   int cc_count = rtp[0] & 0x0F;
   int rtp_hdr_len_without_extn = kMinRtpHdrLen + 4 * cc_count;
   if (rtp_hdr_len_without_extn > length) {
@@ -65,6 +70,9 @@ bool ValidateRtpHeader(char* rtp, int length) {
   // If extension bit is not set, we are done with header processing, as input
   // length is verified above.
   if (!(rtp[0] & 0x10)) {
+    if (header_length)
+      *header_length = rtp_hdr_len_without_extn;
+
     return true;
   }
 
@@ -78,6 +86,9 @@ bool ValidateRtpHeader(char* rtp, int length) {
   if (rtp_hdr_len_without_extn + kRtpExtnHdrLen + extn_length > length) {
     return false;
   }
+
+  if (header_length)
+    *header_length = rtp_hdr_len_without_extn + kRtpExtnHdrLen + extn_length;
   return true;
 }
 
@@ -206,8 +217,10 @@ bool ApplyPacketOptions(char* data, int length,
   return true;
 }
 
-bool GetRtpPacketStartPositionAndLength(
-    char* packet, int length, int* rtp_start_pos, int* rtp_packet_length) {
+bool GetRtpPacketStartPositionAndLength(const char* packet,
+                                        int length,
+                                        int* rtp_start_pos,
+                                        int* rtp_packet_length) {
   int rtp_begin, rtp_length;
   if (IsTurnChannelData(packet)) {
     // Turn Channel Message header format.
@@ -243,7 +256,7 @@ bool GetRtpPacketStartPositionAndLength(
     // First skip mandatory stun header which is of 20 bytes.
     rtp_begin = P2PSocketHost::kStunHeaderSize;
     // Loop through STUN attributes until we find STUN DATA attribute.
-    char* start = packet + rtp_begin;
+    const char* start = packet + rtp_begin;
     bool data_attr_present = false;
     while ((packet + rtp_begin) - start < stun_msg_len) {
       // Keep reading STUN attributes until we hit DATA attribute.
@@ -303,7 +316,7 @@ bool GetRtpPacketStartPositionAndLength(
   // Making sure we have a valid RTP packet at the end.
   if (!(rtp_length < kMinRtpHdrLen) &&
       IsRtpPacket(packet + rtp_begin, rtp_length) &&
-      ValidateRtpHeader(packet + rtp_begin, rtp_length)) {
+      ValidateRtpHeader(packet + rtp_begin, rtp_length, NULL)) {
     *rtp_start_pos = rtp_begin;
     *rtp_packet_length = rtp_length;
     return true;
@@ -389,11 +402,13 @@ bool UpdateRtpAbsSendTimeExtn(char* rtp, int length,
 
 }  // packet_processing_helpers
 
-P2PSocketHost::P2PSocketHost(IPC::Sender* message_sender,
-                             int id)
+P2PSocketHost::P2PSocketHost(IPC::Sender* message_sender, int socket_id)
     : message_sender_(message_sender),
-      id_(id),
-      state_(STATE_UNINITIALIZED) {
+      id_(socket_id),
+      state_(STATE_UNINITIALIZED),
+      dump_incoming_rtp_packet_(false),
+      dump_outgoing_rtp_packet_(false),
+      weak_ptr_factory_(this) {
 }
 
 P2PSocketHost::~P2PSocketHost() { }
@@ -446,34 +461,125 @@ bool P2PSocketHost::IsRequestOrResponse(StunMessageType type) {
 }
 
 // static
-P2PSocketHost* P2PSocketHost::Create(
-    IPC::Sender* message_sender, int id, P2PSocketType type,
-    net::URLRequestContextGetter* url_context,
-    P2PMessageThrottler* throttler) {
+P2PSocketHost* P2PSocketHost::Create(IPC::Sender* message_sender,
+                                     int socket_id,
+                                     P2PSocketType type,
+                                     net::URLRequestContextGetter* url_context,
+                                     P2PMessageThrottler* throttler) {
   switch (type) {
     case P2P_SOCKET_UDP:
-      return new P2PSocketHostUdp(message_sender, id, throttler);
+      return new P2PSocketHostUdp(message_sender, socket_id, throttler);
     case P2P_SOCKET_TCP_SERVER:
       return new P2PSocketHostTcpServer(
-          message_sender, id, P2P_SOCKET_TCP_CLIENT);
+          message_sender, socket_id, P2P_SOCKET_TCP_CLIENT);
 
     case P2P_SOCKET_STUN_TCP_SERVER:
       return new P2PSocketHostTcpServer(
-          message_sender, id, P2P_SOCKET_STUN_TCP_CLIENT);
+          message_sender, socket_id, P2P_SOCKET_STUN_TCP_CLIENT);
 
     case P2P_SOCKET_TCP_CLIENT:
     case P2P_SOCKET_SSLTCP_CLIENT:
     case P2P_SOCKET_TLS_CLIENT:
-      return new P2PSocketHostTcp(message_sender, id, type, url_context);
+      return new P2PSocketHostTcp(message_sender, socket_id, type, url_context);
 
     case P2P_SOCKET_STUN_TCP_CLIENT:
     case P2P_SOCKET_STUN_SSLTCP_CLIENT:
     case P2P_SOCKET_STUN_TLS_CLIENT:
-      return new P2PSocketHostStunTcp(message_sender, id, type, url_context);
+      return new P2PSocketHostStunTcp(
+          message_sender, socket_id, type, url_context);
   }
 
   NOTREACHED();
   return NULL;
+}
+
+void P2PSocketHost::StartRtpDump(
+    bool incoming,
+    bool outgoing,
+    const RenderProcessHost::WebRtcRtpPacketCallback& packet_callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK(!packet_callback.is_null());
+  DCHECK(incoming || outgoing);
+
+  if (incoming)
+    dump_incoming_rtp_packet_ = true;
+
+  if (outgoing)
+    dump_outgoing_rtp_packet_ = true;
+
+  packet_dump_callback_ = packet_callback;
+}
+
+void P2PSocketHost::StopRtpDump(bool incoming, bool outgoing) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK(incoming || outgoing);
+
+  if (incoming)
+    dump_incoming_rtp_packet_ = false;
+
+  if (outgoing)
+    dump_outgoing_rtp_packet_ = false;
+
+  if (!dump_incoming_rtp_packet_ && !dump_outgoing_rtp_packet_)
+    packet_dump_callback_.Reset();
+}
+
+void P2PSocketHost::DumpRtpPacket(const char* packet,
+                                  size_t length,
+                                  bool incoming) {
+  if (IsDtlsPacket(packet, length) || IsRtcpPacket(packet))
+    return;
+
+  int rtp_packet_pos = 0;
+  int rtp_packet_length = length;
+  if (!packet_processing_helpers::GetRtpPacketStartPositionAndLength(
+          packet, length, &rtp_packet_pos, &rtp_packet_length))
+    return;
+
+  packet += rtp_packet_pos;
+
+  size_t header_length = 0;
+  bool valid = ValidateRtpHeader(packet, rtp_packet_length, &header_length);
+  if (!valid) {
+    DCHECK(false);
+    return;
+  }
+
+  scoped_ptr<uint8[]> header_buffer(new uint8[header_length]);
+  memcpy(header_buffer.get(), packet, header_length);
+
+  // Posts to the IO thread as the data members should be accessed on the IO
+  // thread only.
+  BrowserThread::PostTask(BrowserThread::IO,
+                          FROM_HERE,
+                          base::Bind(&P2PSocketHost::DumpRtpPacketOnIOThread,
+                                     weak_ptr_factory_.GetWeakPtr(),
+                                     Passed(&header_buffer),
+                                     header_length,
+                                     rtp_packet_length,
+                                     incoming));
+}
+
+void P2PSocketHost::DumpRtpPacketOnIOThread(scoped_ptr<uint8[]> packet_header,
+                                            size_t header_length,
+                                            size_t packet_length,
+                                            bool incoming) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+  if ((incoming && !dump_incoming_rtp_packet_) ||
+      (!incoming && !dump_outgoing_rtp_packet_) ||
+      packet_dump_callback_.is_null()) {
+    return;
+  }
+
+  // |packet_dump_callback_| must be called on the UI thread.
+  BrowserThread::PostTask(BrowserThread::UI,
+                          FROM_HERE,
+                          base::Bind(packet_dump_callback_,
+                                     packet_header.get(),
+                                     header_length,
+                                     packet_length,
+                                     incoming));
 }
 
 }  // namespace content

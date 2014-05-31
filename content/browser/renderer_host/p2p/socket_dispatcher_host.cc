@@ -99,7 +99,9 @@ P2PSocketDispatcherHost::P2PSocketDispatcherHost(
     : BrowserMessageFilter(P2PMsgStart),
       resource_context_(resource_context),
       url_context_(url_context),
-      monitoring_networks_(false) {
+      monitoring_networks_(false),
+      dump_incoming_rtp_packet_(false),
+      dump_outgoing_rtp_packet_(false) {
 }
 
 void P2PSocketDispatcherHost::OnChannelClosing() {
@@ -144,6 +146,38 @@ void P2PSocketDispatcherHost::OnIPAddressChanged() {
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE, base::Bind(
           &P2PSocketDispatcherHost::DoGetNetworkList, this));
+}
+
+void P2PSocketDispatcherHost::StartRtpDump(
+    bool incoming,
+    bool outgoing,
+    const RenderProcessHost::WebRtcRtpPacketCallback& packet_callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+  if ((!dump_incoming_rtp_packet_ && incoming) ||
+      (!dump_outgoing_rtp_packet_ && outgoing)) {
+    if (incoming)
+      dump_incoming_rtp_packet_ = true;
+
+    if (outgoing)
+      dump_outgoing_rtp_packet_ = true;
+
+    packet_callback_ = packet_callback;
+    for (SocketsMap::iterator it = sockets_.begin(); it != sockets_.end(); ++it)
+      it->second->StartRtpDump(incoming, outgoing, packet_callback);
+  }
+}
+
+void P2PSocketDispatcherHost::StopRtpDumpOnUIThread(bool incoming,
+                                                    bool outgoing) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  BrowserThread::PostTask(
+      BrowserThread::IO,
+      FROM_HERE,
+      base::Bind(&P2PSocketDispatcherHost::StopRtpDumpOnIOThread,
+                 this,
+                 incoming,
+                 outgoing));
 }
 
 P2PSocketDispatcherHost::~P2PSocketDispatcherHost() {
@@ -207,6 +241,12 @@ void P2PSocketDispatcherHost::OnCreateSocket(
 
   if (socket->Init(local_address, remote_address)) {
     sockets_[socket_id] = socket.release();
+
+    if (dump_incoming_rtp_packet_ || dump_outgoing_rtp_packet_) {
+      sockets_[socket_id]->StartRtpDump(dump_incoming_rtp_packet_,
+                                        dump_outgoing_rtp_packet_,
+                                        packet_callback_);
+    }
   }
 }
 
@@ -292,6 +332,24 @@ void P2PSocketDispatcherHost::OnAddressResolved(
 
   dns_requests_.erase(request);
   delete request;
+}
+
+void P2PSocketDispatcherHost::StopRtpDumpOnIOThread(bool incoming,
+                                                    bool outgoing) {
+  if ((dump_incoming_rtp_packet_ && incoming) ||
+      (dump_outgoing_rtp_packet_ && outgoing)) {
+    if (incoming)
+      dump_incoming_rtp_packet_ = false;
+
+    if (outgoing)
+      dump_outgoing_rtp_packet_ = false;
+
+    if (!dump_incoming_rtp_packet_ && !dump_outgoing_rtp_packet_)
+      packet_callback_.Reset();
+
+    for (SocketsMap::iterator it = sockets_.begin(); it != sockets_.end(); ++it)
+      it->second->StopRtpDump(incoming, outgoing);
+  }
 }
 
 }  // namespace content

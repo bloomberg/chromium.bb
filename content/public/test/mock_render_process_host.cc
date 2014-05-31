@@ -237,6 +237,14 @@ void MockRenderProcessHost::DisableAecDump() {
 void MockRenderProcessHost::SetWebRtcLogMessageCallback(
     base::Callback<void(const std::string&)> callback) {
 }
+
+RenderProcessHost::WebRtcStopRtpDumpCallback
+MockRenderProcessHost::StartRtpDump(
+    bool incoming,
+    bool outgoing,
+    const WebRtcRtpPacketCallback& packet_callback) {
+  return WebRtcStopRtpDumpCallback();
+}
 #endif
 
 void MockRenderProcessHost::ResumeDeferredNavigation(

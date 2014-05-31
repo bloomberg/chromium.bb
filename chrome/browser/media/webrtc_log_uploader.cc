@@ -36,6 +36,36 @@ const char kMultipartBoundary[] =
 
 const int kHttpResponseOk = 200;
 
+// Adds the header section for a gzip file to the multipart |post_data|.
+void AddMultipartFileContentHeader(std::string* post_data,
+                                   const std::string& content_name) {
+  post_data->append("--");
+  post_data->append(kMultipartBoundary);
+  post_data->append("\r\nContent-Disposition: form-data; name=\"");
+  post_data->append(content_name);
+  post_data->append("\"; filename=\"");
+  post_data->append(content_name + ".gz");
+  post_data->append("\"\r\nContent-Type: application/gzip\r\n\r\n");
+}
+
+// Adds |compressed_log| to |post_data|.
+void AddLogData(std::string* post_data,
+                const std::vector<uint8>& compressed_log) {
+  AddMultipartFileContentHeader(post_data, "webrtc_log");
+  post_data->append(reinterpret_cast<const char*>(&compressed_log[0]),
+                    compressed_log.size());
+  post_data->append("\r\n");
+}
+
+// Adds the RTP dump data to |post_data|.
+void AddRtpDumpData(std::string* post_data,
+                    const std::string& name,
+                    const std::string& dump_data) {
+  AddMultipartFileContentHeader(post_data, name);
+  post_data->append(dump_data.data(), dump_data.size());
+  post_data->append("\r\n");
+}
+
 }  // namespace
 
 WebRtcLogUploadDoneData::WebRtcLogUploadDoneData() {}
@@ -69,6 +99,7 @@ void WebRtcLogUploader::OnURLFetchComplete(
     if (response_code == kHttpResponseOk &&
         source->GetResponseAsString(&report_id) &&
         !it->second.log_path.empty()) {
+      // TODO(jiayl): Add the RTP dump records to chrome://webrtc-logs.
       base::FilePath log_list_path =
           WebRtcLogList::GetWebRtcLogListFileForDirectory(it->second.log_path);
       content::BrowserThread::PostTask(
@@ -139,7 +170,11 @@ void WebRtcLogUploader::LoggingStoppedDoUpload(
   upload_done_data_with_log_id.local_log_id = local_log_id;
 
   scoped_ptr<std::string> post_data(new std::string());
-  SetupMultipart(post_data.get(), compressed_log, meta_data);
+  SetupMultipart(post_data.get(),
+                 compressed_log,
+                 upload_done_data.incoming_rtp_dump,
+                 upload_done_data.outgoing_rtp_dump,
+                 meta_data);
 
   // If a test has set the test string pointer, write to it and skip uploading.
   // Still fire the upload callback so that we can run an extension API test
@@ -181,6 +216,8 @@ void WebRtcLogUploader::StartShutdown() {
 void WebRtcLogUploader::SetupMultipart(
     std::string* post_data,
     const std::vector<uint8>& compressed_log,
+    const base::FilePath& incoming_rtp_dump,
+    const base::FilePath& outgoing_rtp_dump,
     const std::map<std::string, std::string>& meta_data) {
 #if defined(OS_WIN)
   const char product[] = "Chrome";
@@ -217,20 +254,20 @@ void WebRtcLogUploader::SetupMultipart(
   }
 
   AddLogData(post_data, compressed_log);
-  net::AddMultipartFinalDelimiterForUpload(kMultipartBoundary, post_data);
-}
 
-void WebRtcLogUploader::AddLogData(std::string* post_data,
-                                   const std::vector<uint8>& compressed_log) {
-  post_data->append("--");
-  post_data->append(kMultipartBoundary);
-  post_data->append("\r\n");
-  post_data->append("Content-Disposition: form-data; name=\"webrtc_log\"");
-  post_data->append("; filename=\"webrtc_log.gz\"\r\n");
-  post_data->append("Content-Type: application/gzip\r\n\r\n");
-  post_data->append(reinterpret_cast<const char*>(&compressed_log[0]),
-                    compressed_log.size());
-  post_data->append("\r\n");
+  // Add the rtp dumps if they exist.
+  base::FilePath rtp_dumps[2] = {incoming_rtp_dump, outgoing_rtp_dump};
+  static const char* kRtpDumpNames[2] = {"rtpdump_recv", "rtpdump_send"};
+
+  for (size_t i = 0; i < 2; ++i) {
+    if (!rtp_dumps[i].empty() && base::PathExists(rtp_dumps[i])) {
+      std::string dump_data;
+      if (base::ReadFileToString(rtp_dumps[i], &dump_data))
+        AddRtpDumpData(post_data, kRtpDumpNames[i], dump_data);
+    }
+  }
+
+  net::AddMultipartFinalDelimiterForUpload(kMultipartBoundary, post_data);
 }
 
 void WebRtcLogUploader::CompressLog(std::vector<uint8>* compressed_log,

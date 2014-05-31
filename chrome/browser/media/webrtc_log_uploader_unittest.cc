@@ -7,6 +7,7 @@
 #include "base/file_util.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -128,6 +129,34 @@ class WebRtcLogUploaderTest : public testing::Test {
     return lines[lines.size() - 1];
   }
 
+  void VerifyRtpDumpInMultipart(const std::string& post_data,
+                                const std::string& dump_name,
+                                const std::string& dump_content) {
+    std::vector<std::string> lines;
+    base::SplitStringUsingSubstr(post_data, "\r\n", &lines);
+
+    std::string name_line = "Content-Disposition: form-data; name=\"";
+    name_line.append(dump_name);
+    name_line.append("\"");
+    name_line.append("; filename=\"");
+    name_line.append(dump_name);
+    name_line.append(".gz\"");
+
+    size_t i = 0;
+    for (; i < lines.size(); ++i) {
+      if (lines[i] == name_line)
+        break;
+    }
+
+    // The RTP dump takes 4 lines: content-disposition, content-type, empty
+    // line, dump content.
+    EXPECT_LT(i, lines.size() - 3);
+
+    EXPECT_EQ("Content-Type: application/gzip", lines[i + 1]);
+    EXPECT_EQ("", lines[i + 2]);
+    EXPECT_EQ(dump_content, lines[i + 3]);
+  }
+
   base::FilePath test_list_path_;
 };
 
@@ -136,13 +165,12 @@ TEST_F(WebRtcLogUploaderTest, AddLocallyStoredLogInfoToUploadListFile) {
   // since that's the normal use case, hence the delete.
   ASSERT_TRUE(base::CreateTemporaryFile(&test_list_path_));
   EXPECT_TRUE(base::DeleteFile(test_list_path_, false));
-  scoped_ptr<WebRtcLogUploader> webrtc_log_uploader_(
-      new WebRtcLogUploader());
+  scoped_ptr<WebRtcLogUploader> webrtc_log_uploader(new WebRtcLogUploader());
 
-  webrtc_log_uploader_->AddLocallyStoredLogInfoToUploadListFile(test_list_path_,
-                                                                kTestLocalId);
-  webrtc_log_uploader_->AddLocallyStoredLogInfoToUploadListFile(test_list_path_,
-                                                                kTestLocalId);
+  webrtc_log_uploader->AddLocallyStoredLogInfoToUploadListFile(test_list_path_,
+                                                               kTestLocalId);
+  webrtc_log_uploader->AddLocallyStoredLogInfoToUploadListFile(test_list_path_,
+                                                               kTestLocalId);
   ASSERT_TRUE(VerifyNumberOfLines(2));
   ASSERT_TRUE(VerifyLastLineHasLocalIdOnly());
 
@@ -151,8 +179,8 @@ TEST_F(WebRtcLogUploaderTest, AddLocallyStoredLogInfoToUploadListFile) {
   ASSERT_TRUE(VerifyNumberOfLines(expected_line_limit));
   ASSERT_TRUE(VerifyLastLineHasAllInfo());
 
-  webrtc_log_uploader_->AddLocallyStoredLogInfoToUploadListFile(test_list_path_,
-                                                                kTestLocalId);
+  webrtc_log_uploader->AddLocallyStoredLogInfoToUploadListFile(test_list_path_,
+                                                               kTestLocalId);
   ASSERT_TRUE(VerifyNumberOfLines(expected_line_limit));
   ASSERT_TRUE(VerifyLastLineHasLocalIdOnly());
 
@@ -160,12 +188,12 @@ TEST_F(WebRtcLogUploaderTest, AddLocallyStoredLogInfoToUploadListFile) {
   ASSERT_TRUE(VerifyNumberOfLines(60));
   ASSERT_TRUE(VerifyLastLineHasAllInfo());
 
-  webrtc_log_uploader_->AddLocallyStoredLogInfoToUploadListFile(test_list_path_,
-                                                                kTestLocalId);
+  webrtc_log_uploader->AddLocallyStoredLogInfoToUploadListFile(test_list_path_,
+                                                               kTestLocalId);
   ASSERT_TRUE(VerifyNumberOfLines(expected_line_limit));
   ASSERT_TRUE(VerifyLastLineHasLocalIdOnly());
 
-  webrtc_log_uploader_->StartShutdown();
+  webrtc_log_uploader->StartShutdown();
 }
 
 TEST_F(WebRtcLogUploaderTest, AddUploadedLogInfoToUploadListFile) {
@@ -173,23 +201,67 @@ TEST_F(WebRtcLogUploaderTest, AddUploadedLogInfoToUploadListFile) {
   // since that's the normal use case, hence the delete.
   ASSERT_TRUE(base::CreateTemporaryFile(&test_list_path_));
   EXPECT_TRUE(base::DeleteFile(test_list_path_, false));
-  scoped_ptr<WebRtcLogUploader> webrtc_log_uploader_(new WebRtcLogUploader());
+  scoped_ptr<WebRtcLogUploader> webrtc_log_uploader(new WebRtcLogUploader());
 
-  webrtc_log_uploader_->AddLocallyStoredLogInfoToUploadListFile(test_list_path_,
-                                                                kTestLocalId);
+  webrtc_log_uploader->AddLocallyStoredLogInfoToUploadListFile(test_list_path_,
+                                                               kTestLocalId);
   ASSERT_TRUE(VerifyNumberOfLines(1));
   ASSERT_TRUE(VerifyLastLineHasLocalIdOnly());
 
-  webrtc_log_uploader_->AddUploadedLogInfoToUploadListFile(
+  webrtc_log_uploader->AddUploadedLogInfoToUploadListFile(
       test_list_path_, kTestLocalId, kTestReportId);
   ASSERT_TRUE(VerifyNumberOfLines(1));
   ASSERT_TRUE(VerifyLastLineHasAllInfo());
 
   // Use a local ID that should not be found in the list.
-  webrtc_log_uploader_->AddUploadedLogInfoToUploadListFile(
+  webrtc_log_uploader->AddUploadedLogInfoToUploadListFile(
       test_list_path_, "dummy id", kTestReportId);
   ASSERT_TRUE(VerifyNumberOfLines(2));
   ASSERT_TRUE(VerifyLastLineHasUploadTimeAndIdOnly());
 
-  webrtc_log_uploader_->StartShutdown();
+  webrtc_log_uploader->StartShutdown();
+}
+
+TEST_F(WebRtcLogUploaderTest, AddRtpDumpsToPostedData) {
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+
+  scoped_ptr<WebRtcLogUploader> webrtc_log_uploader(new WebRtcLogUploader());
+
+  std::string post_data;
+  webrtc_log_uploader->OverrideUploadWithBufferForTesting(&post_data);
+
+  // Create the fake dump files.
+  const base::FilePath incoming_dump = temp_dir.path().AppendASCII("recv");
+  const base::FilePath outgoing_dump = temp_dir.path().AppendASCII("send");
+  const std::string incoming_dump_content = "dummy incoming";
+  const std::string outgoing_dump_content = "dummy outgoing";
+
+  base::WriteFile(incoming_dump,
+                  &incoming_dump_content[0],
+                  incoming_dump_content.size());
+  base::WriteFile(outgoing_dump,
+                  &outgoing_dump_content[0],
+                  outgoing_dump_content.size());
+
+  WebRtcLogUploadDoneData upload_done_data;
+  upload_done_data.log_path = temp_dir.path().AppendASCII("log");
+
+  upload_done_data.incoming_rtp_dump = incoming_dump;
+  upload_done_data.outgoing_rtp_dump = outgoing_dump;
+
+  const size_t log_length = 100;
+  scoped_ptr<unsigned char[]> log(new unsigned char[log_length]);
+  memset(log.get(), 0, log_length);
+
+  webrtc_log_uploader->LoggingStoppedDoUpload(
+      log.Pass(),
+      log_length,
+      std::map<std::string, std::string>(),
+      upload_done_data);
+
+  VerifyRtpDumpInMultipart(post_data, "rtpdump_recv", incoming_dump_content);
+  VerifyRtpDumpInMultipart(post_data, "rtpdump_send", outgoing_dump_content);
+
+  webrtc_log_uploader->StartShutdown();
 }

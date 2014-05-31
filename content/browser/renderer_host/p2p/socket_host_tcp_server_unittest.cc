@@ -91,8 +91,8 @@ class P2PSocketHostTcpServerTest : public testing::Test {
  protected:
   virtual void SetUp() OVERRIDE {
     socket_ = new FakeServerSocket();
-    socket_host_.reset(new P2PSocketHostTcpServer(
-        &sender_, 0, P2P_SOCKET_TCP_CLIENT));
+    socket_host_.reset(
+        new P2PSocketHostTcpServer(&sender_, 0, P2P_SOCKET_TCP_CLIENT));
     socket_host_->socket_.reset(socket_);
 
     EXPECT_CALL(sender_, Send(
