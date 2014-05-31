@@ -7,10 +7,11 @@
 <script src="../../resources/js-test.js"></script>
 <script>
     addEventListener("load", function() {
-        shouldBeTrue('document.getElementById("foo").clientWidth==200');
-        shouldBeTrue('document.getElementById("foo2").clientWidth==400');
-        shouldBeTrue('document.getElementById("foo3").clientWidth==100');
-        shouldBeTrue('document.getElementById("foo4").clientWidth==200');
+        shouldBe('document.getElementById("foo").clientWidth', '200');
+        shouldBe('document.getElementById("foo2").clientWidth', '400');
+        shouldBe('document.getElementById("foo3").clientWidth', '100');
+        shouldBe('document.getElementById("foo4").clientWidth', '200');
+        shouldBe('document.getElementById("foo5").clientWidth', '200');
     }, false);
 </script>
 </head>
@@ -25,6 +26,8 @@
     <br>
     <img id="foo3" srcset="resources/srcset.svg 2x">
     <br>
-    <img id="foo4" src="resources/srcset.svg">
+    <img id="foo4" srcset="resources/blue-100-px-square.png 0.5x">
+    <br>
+    <img id="foo5" src="resources/srcset.svg">
 </body>
 </html>
