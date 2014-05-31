@@ -183,8 +183,7 @@ GaiaAuthFetcher::GaiaAuthFetcher(GaiaAuthConsumer* consumer,
       list_accounts_gurl_(GaiaUrls::GetInstance()->list_accounts_url()),
       client_login_to_oauth2_gurl_(
           GaiaUrls::GetInstance()->client_login_to_oauth2_url()),
-      fetch_pending_(false),
-      fetch_code_only_(false) {}
+      fetch_pending_(false) {}
 
 GaiaAuthFetcher::~GaiaAuthFetcher() {}
 
@@ -544,13 +543,6 @@ void GaiaAuthFetcher::StartRevokeOAuth2Token(const std::string& auth_token) {
   fetcher_->Start();
 }
 
-void GaiaAuthFetcher::StartCookieForOAuthCodeExchange(
-    const std::string& session_index) {
-  // Same as the first step of StartCookieForOAuthLoginTokenExchange;
-  StartCookieForOAuthLoginTokenExchange(session_index);
-  fetch_code_only_ = true;
-}
-
 void GaiaAuthFetcher::StartCookieForOAuthLoginTokenExchange(
     const std::string& session_index) {
   DCHECK(!fetch_pending_) << "Tried to fetch two things at once!";
@@ -572,7 +564,6 @@ void GaiaAuthFetcher::StartCookieForOAuthLoginTokenExchange(
                                    net::LOAD_NORMAL,
                                    this));
   fetch_pending_ = true;
-  fetch_code_only_ = false;
   fetcher_->Start();
 }
 
@@ -764,16 +755,10 @@ void GaiaAuthFetcher::OnClientLoginToOAuth2Fetched(
   if (status.is_success() && response_code == net::HTTP_OK) {
     std::string auth_code;
     ParseClientLoginToOAuth2Response(cookies, &auth_code);
-    if (fetch_code_only_)
-      consumer_->OnClientOAuthCodeSuccess(auth_code);
-    else
-      StartAuthCodeForOAuth2TokenExchange(auth_code);
+    StartAuthCodeForOAuth2TokenExchange(auth_code);
   } else {
     GoogleServiceAuthError auth_error(GenerateAuthError(data, status));
-    if (fetch_code_only_)
-      consumer_->OnClientOAuthCodeFailure(auth_error);
-    else
-      consumer_->OnClientOAuthFailure(auth_error);
+    consumer_->OnClientOAuthFailure(auth_error);
   }
 }
 
