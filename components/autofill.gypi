@@ -183,6 +183,7 @@
         'autofill/core/browser/phone_number.h',
         'autofill/core/browser/phone_number_i18n.cc',
         'autofill/core/browser/phone_number_i18n.h',
+        'autofill/core/browser/popup_item_ids.h',
         'autofill/core/browser/state_names.cc',
         'autofill/core/browser/state_names.h',
         'autofill/core/browser/validation.cc',

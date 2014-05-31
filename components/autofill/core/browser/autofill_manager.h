@@ -84,6 +84,19 @@ class AutofillManager : public AutofillDownloadManager::Observer {
 
   void ShowAutofillSettings();
 
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+  // Whether the field represented by |fieldData| should show an entry to prompt
+  // the user to give Chrome access to the user's address book.
+  bool ShouldShowAccessAddressBookSuggestion(const FormData& data,
+                                             const FormFieldData& field_data);
+
+  // If Chrome has not prompted for access to the user's address book, the
+  // method prompts the user for permission and blocks the process. Otherwise,
+  // this method has no effect. The return value reflects whether the user was
+  // prompted with a modal dialog.
+  bool AccessAddressBook();
+#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
+
   // Called from our external delegate so they cannot be private.
   virtual void FillOrPreviewForm(AutofillDriver::RendererFormDataAction action,
                                  int query_id,

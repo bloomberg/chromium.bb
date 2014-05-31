@@ -21,8 +21,10 @@
 #include "components/autofill/core/browser/autofill_country.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/autofill_type.h"
+#include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/browser/phone_number.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
+#include "components/autofill/core/common/form_data.h"
 #include "grit/components_strings.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
@@ -30,6 +32,33 @@ namespace autofill {
 namespace {
 
 const char kAddressBookOrigin[] = "OS X Address Book";
+
+// Whether Chrome has prompted the user for permission to access the user's
+// address book.
+bool HasPromptedForAccessToAddressBook(PrefService* pref_service) {
+  return pref_service->GetBoolean(prefs::kAutofillAuxiliaryProfilesQueried);
+}
+
+ABAddressBook* GetAddressBook(PrefService* pref_service) {
+  bool first_access = !HasPromptedForAccessToAddressBook(pref_service);
+
+  // +[ABAddressBook sharedAddressBook] throws an exception internally in
+  // circumstances that aren't clear. The exceptions are only observed in crash
+  // reports, so it is unknown whether they would be caught by AppKit and nil
+  // returned, or if they would take down the app. In either case, avoid
+  // crashing. http://crbug.com/129022
+  ABAddressBook* addressBook = base::mac::RunBlockIgnoringExceptions(
+      ^{ return [ABAddressBook sharedAddressBook]; });
+  UMA_HISTOGRAM_BOOLEAN("Autofill.AddressBookAvailable", addressBook != nil);
+
+  if (first_access) {
+    UMA_HISTOGRAM_BOOLEAN("Autofill.AddressBookAvailableOnFirstAttempt",
+                          addressBook != nil);
+  }
+
+  pref_service->SetBoolean(prefs::kAutofillAuxiliaryProfilesQueried, true);
+  return addressBook;
+}
 
 // This implementation makes use of the Address Book API.  Profiles are
 // generated that correspond to addresses in the "me" card that reside in the
@@ -81,20 +110,13 @@ void AuxiliaryProfilesImpl::GetAddressBookMeCard(const std::string& app_locale,
                                                  PrefService* pref_service) {
   profiles_.clear();
 
-  // +[ABAddressBook sharedAddressBook] throws an exception internally in
-  // circumstances that aren't clear. The exceptions are only observed in crash
-  // reports, so it is unknown whether they would be caught by AppKit and nil
-  // returned, or if they would take down the app. In either case, avoid
-  // crashing. http://crbug.com/129022
-  ABAddressBook* addressBook = base::mac::RunBlockIgnoringExceptions(^{
-      return [ABAddressBook sharedAddressBook];
-  });
-  UMA_HISTOGRAM_BOOLEAN("Autofill.AddressBookAvailable", addressBook != nil);
-  if (!pref_service->GetBoolean(prefs::kAutofillAuxiliaryProfilesQueried)) {
-    pref_service->SetBoolean(prefs::kAutofillAuxiliaryProfilesQueried, true);
-    UMA_HISTOGRAM_BOOLEAN("Autofill.AddressBookAvailableOnFirstAttempt",
-                          addressBook != nil);
-  }
+  // Chrome has not yet requested address book permissions. Attempting to do so
+  // presents a blocking modal dialog, which is undesirable. Instead, just show
+  // no results.
+  if (!HasPromptedForAccessToAddressBook(pref_service))
+    return;
+
+  ABAddressBook* addressBook = GetAddressBook(pref_service);
 
   ABPerson* me = [addressBook me];
   if (!me)
@@ -279,6 +301,45 @@ void AuxiliaryProfilesImpl::GetAddressBookPhoneNumbers(
 void PersonalDataManager::LoadAuxiliaryProfiles() const {
   AuxiliaryProfilesImpl impl(&auxiliary_profiles_);
   impl.GetAddressBookMeCard(app_locale_, pref_service_);
+}
+
+bool PersonalDataManager::AccessAddressBook() {
+  if (!pref_service_->GetBoolean(prefs::kAutofillAuxiliaryProfilesEnabled))
+    return false;
+
+  if (HasPromptedForAccessToAddressBook(pref_service_))
+    return false;
+
+  // Request permissions.
+  GetAddressBook(pref_service_);
+  return true;
+}
+
+bool PersonalDataManager::ShouldShowAccessAddressBookSuggestion(
+    AutofillType type) {
+  if (!pref_service_->GetBoolean(prefs::kAutofillAuxiliaryProfilesEnabled))
+    return false;
+
+  if (HasPromptedForAccessToAddressBook(pref_service_))
+    return false;
+
+  switch (type.group()) {
+    case ADDRESS_BILLING:
+    case ADDRESS_HOME:
+    case EMAIL:
+    case NAME:
+    case NAME_BILLING:
+    case PHONE_BILLING:
+    case PHONE_HOME:
+      return true;
+    case NO_GROUP:
+    case COMPANY:
+    case CREDIT_CARD:
+    case PASSWORD_FIELD:
+      return false;
+  }
+
+  return false;
 }
 
 }  // namespace autofill

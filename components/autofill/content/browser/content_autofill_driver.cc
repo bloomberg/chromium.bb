@@ -108,6 +108,13 @@ void ContentAutofillDriver::SendFormDataToRenderer(
   }
 }
 
+void ContentAutofillDriver::PingRenderer() {
+  if (!RendererIsAvailable())
+    return;
+  content::RenderViewHost* host = web_contents()->GetRenderViewHost();
+  host->Send(new AutofillMsg_Ping(host->GetRoutingID()));
+}
+
 void ContentAutofillDriver::SendAutofillTypePredictionsToRenderer(
     const std::vector<FormStructure*>& forms) {
   if (!CommandLine::ForCurrentProcess()->HasSwitch(
@@ -181,6 +188,9 @@ bool ContentAutofillDriver::OnMessageReceived(const IPC::Message& message) {
   IPC_MESSAGE_FORWARD(AutofillHostMsg_DidPreviewAutofillFormData,
                       autofill_manager_.get(),
                       AutofillManager::OnDidPreviewAutofillFormData)
+  IPC_MESSAGE_FORWARD(AutofillHostMsg_PingAck,
+                      &autofill_external_delegate_,
+                      AutofillExternalDelegate::OnPingAck)
   IPC_MESSAGE_FORWARD(AutofillHostMsg_DidFillAutofillFormData,
                       autofill_manager_.get(),
                       AutofillManager::OnDidFillAutofillFormData)

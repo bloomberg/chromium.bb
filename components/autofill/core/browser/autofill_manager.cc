@@ -240,6 +240,28 @@ void AutofillManager::ShowAutofillSettings() {
   manager_delegate_->ShowAutofillSettings();
 }
 
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+bool AutofillManager::ShouldShowAccessAddressBookSuggestion(
+    const FormData& form,
+    const FormFieldData& field) {
+  if (!personal_data_)
+    return false;
+  FormStructure* form_structure = NULL;
+  AutofillField* autofill_field = NULL;
+  if (!GetCachedFormAndField(form, field, &form_structure, &autofill_field))
+    return false;
+
+  return personal_data_->ShouldShowAccessAddressBookSuggestion(
+      autofill_field->Type());
+}
+
+bool AutofillManager::AccessAddressBook() {
+  if (!personal_data_)
+    return false;
+  return personal_data_->AccessAddressBook();
+}
+#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
+
 bool AutofillManager::OnFormSubmitted(const FormData& form,
                                       const TimeTicks& timestamp) {
   if (!IsValidFormData(form))

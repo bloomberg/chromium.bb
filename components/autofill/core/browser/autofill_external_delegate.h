@@ -80,6 +80,9 @@ class AutofillExternalDelegate
   // values or settings.
   void Reset();
 
+  // The renderer sent an IPC acknowledging an earlier ping IPC.
+  void OnPingAck();
+
  protected:
   base::WeakPtr<AutofillExternalDelegate> GetWeakPtr();
 
@@ -110,6 +113,11 @@ class AutofillExternalDelegate
                             std::vector<base::string16>* labels,
                             std::vector<base::string16>* icons,
                             std::vector<int>* unique_ids);
+
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+  // Pings the renderer.
+  void PingRenderer();
+#endif
 
   AutofillManager* manager_;  // weak.
 

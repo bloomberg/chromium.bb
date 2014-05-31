@@ -97,6 +97,7 @@ class AutofillAgent : public content::RenderViewObserver,
   void OnFieldTypePredictionsAvailable(
       const std::vector<FormDataPredictions>& forms);
   void OnFillForm(int query_id, const FormData& form);
+  void OnPing();
   void OnPreviewForm(int query_id, const FormData& form);
 
   // For external Autofill selection.

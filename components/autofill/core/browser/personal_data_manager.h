@@ -200,6 +200,18 @@ class PersonalDataManager : public KeyedService,
   // will only update when Chrome is restarted.
   virtual const std::string& GetDefaultCountryCodeForNewAddress() const;
 
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+  // If Chrome has not prompted for access to the user's address book, the
+  // method prompts the user for permission and blocks the process. Otherwise,
+  // this method has no effect. The return value reflects whether the user was
+  // prompted with a modal dialog.
+  bool AccessAddressBook();
+
+  // Whether an autofill suggestion should be displayed to prompt the user to
+  // grant Chrome access to the user's address book.
+  bool ShouldShowAccessAddressBookSuggestion(AutofillType type);
+#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
+
  protected:
   // Only PersonalDataManagerFactory and certain tests can create instances of
   // PersonalDataManager.
