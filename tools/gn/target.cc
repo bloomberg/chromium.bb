@@ -177,13 +177,8 @@ void Target::PullDependentTargetInfo(std::set<const Config*>* unique_configs) {
         dep->output_type() != EXECUTABLE) {
       const std::set<const Target*> inherited = dep->inherited_libraries();
       for (std::set<const Target*>::const_iterator i = inherited.begin();
-           i != inherited.end(); ++i) {
-        // Don't copy source sets across static library boundaries. The static
-        // library will include all the files from the source set.
-        if (!(dep->output_type() == STATIC_LIBRARY &&
-              (*i)->output_type() == SOURCE_SET))
-          inherited_libraries_.insert(*i);
-      }
+           i != inherited.end(); ++i)
+        inherited_libraries_.insert(*i);
 
       // Inherited library settings.
       all_lib_dirs_.append(dep->all_lib_dirs());

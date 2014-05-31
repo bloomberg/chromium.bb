@@ -94,6 +94,42 @@ TEST(NinjaBinaryTargetWriter, SourceSet) {
 #endif
     EXPECT_EQ(expected_win, out_str);
   }
+
+  // A static library that depends on the source set (should not link it).
+  Target stlib_target(setup.settings(), Label(SourceDir("//foo/"), "stlib"));
+  stlib_target.set_output_type(Target::STATIC_LIBRARY);
+  stlib_target.deps().push_back(LabelTargetPair(&target));
+  stlib_target.OnResolved();
+
+  {
+    std::ostringstream out;
+    NinjaBinaryTargetWriter writer(&stlib_target, setup.toolchain(), out);
+    writer.Run();
+
+    // TODO(brettw) I think we'll need to worry about backslashes here
+    // depending if we're on actual Windows or Linux pretending to be Windows.
+    const char expected_win[] =
+        "defines =\n"
+        "includes =\n"
+        "cflags =\n"
+        "cflags_c =\n"
+        "cflags_cc =\n"
+        "cflags_objc =\n"
+        "cflags_objcc =\n"
+        "\n"
+        "\n"
+        "manifests = obj/foo/stlib.intermediate.manifest\n"
+        "ldflags = /MANIFEST /ManifestFile:obj/foo/stlib.intermediate.manifest\n"
+        "libs =\n"
+        // There are no sources so there are no params to alink.
+        "build obj/foo/stlib.lib: alink\n\n";
+    std::string out_str = out.str();
+#if defined(OS_WIN)
+    std::replace(out_str.begin(), out_str.end(), '\\', '/');
+#endif
+    EXPECT_EQ(expected_win, out_str);
+  }
+
 }
 
 TEST(NinjaBinaryTargetWriter, ProductExtension) {

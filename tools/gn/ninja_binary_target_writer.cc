@@ -426,14 +426,19 @@ void NinjaBinaryTargetWriter::ClassifyDependency(
        target_->output_type() == Target::SHARED_LIBRARY);
 
   if (dep->output_type() == Target::SOURCE_SET) {
-    if (target_->output_type() == Target::SOURCE_SET) {
-      // When a source set depends on another source set, add it as a data
-      // dependency so if the user says "ninja second_source_set" it will
-      // also compile the first (what you would expect) even though we'll
-      // never do anything with the first one's files.
-      non_linkable_deps->push_back(dep);
-    } else {
-      // Linking in a source set, copy its object files.
+    // Source sets have their object files linked into final targets (shared
+    // libraries and executables). Intermediate static libraries and other
+    // source sets just forward the dependency, otherwise the files in the
+    // source set can easily get linked more than once which will cause
+    // multiple definition errors.
+    //
+    // In the future, we may need a way to specify a "complete" static library
+    // for cases where you want a static library that includes all source sets
+    // (like if you're shipping that to customers to link against).
+    if (target_->output_type() != Target::SOURCE_SET &&
+        target_->output_type() != Target::STATIC_LIBRARY) {
+      // Linking in a source set to an executable or shared library, copy its
+      // object files.
       for (size_t i = 0; i < dep->sources().size(); i++) {
         SourceFileType input_file_type = GetSourceFileType(dep->sources()[i]);
         if (input_file_type != SOURCE_UNKNOWN &&

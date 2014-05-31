@@ -225,15 +225,14 @@ TEST_F(TargetTest, InheritLibs) {
   EXPECT_EQ(1u, c_inherited.size());
   EXPECT_TRUE(c_inherited.find(&d) != c_inherited.end());
 
-  // B should have C in its inherited libs, but not D (the static library will
-  // include the source sets's code).
+  // B should have C and D in its inherited libs.
   const std::set<const Target*>& b_inherited = b.inherited_libraries();
-  EXPECT_EQ(1u, b_inherited.size());
+  EXPECT_EQ(2u, b_inherited.size());
   EXPECT_TRUE(b_inherited.find(&c) != b_inherited.end());
+  EXPECT_TRUE(b_inherited.find(&d) != b_inherited.end());
 
   // A should have B in its inherited libs, but not any others (the shared
-  // library will include the static library, which will include the source
-  // set).
+  // library will include the static library and source set).
   const std::set<const Target*>& a_inherited = a.inherited_libraries();
   EXPECT_EQ(1u, a_inherited.size());
   EXPECT_TRUE(a_inherited.find(&b) != a_inherited.end());
