@@ -34,10 +34,6 @@ class MEDIA_EXPORT SincResampler {
     kKernelStorageSize = kKernelSize * (kKernelOffsetCount + 1),
   };
 
-  // Selects runtime specific CPU features like SSE.  Must be called before
-  // using SincResampler.
-  static void InitializeCPUSpecificFeatures();
-
   // Callback type for providing more data into the resampler.  Expects |frames|
   // of data to be rendered into |destination|; zero padded if not enough frames
   // are available to satisfy the request.

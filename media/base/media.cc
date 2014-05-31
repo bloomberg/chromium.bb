@@ -9,8 +9,6 @@
 #include "base/path_service.h"
 #include "base/synchronization/lock.h"
 #include "build/build_config.h"
-#include "media/base/sinc_resampler.h"
-#include "media/base/vector_math.h"
 #include "media/base/yuv_convert.h"
 
 namespace media {
@@ -44,9 +42,6 @@ class MediaInitializer {
       : initialized_(false),
         tried_initialize_(false) {
     // Perform initialization of libraries which require runtime CPU detection.
-    // TODO(dalecurtis): Add initialization of YUV, SincResampler.
-    vector_math::Initialize();
-    SincResampler::InitializeCPUSpecificFeatures();
     InitializeCPUSpecificYUVConversions();
   }
 

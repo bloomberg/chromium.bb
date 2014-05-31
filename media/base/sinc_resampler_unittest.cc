@@ -9,7 +9,6 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/cpu.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -121,10 +120,6 @@ TEST(SincResamplerTest, DISABLED_SetRatioBench) {
 static const double kKernelInterpolationFactor = 0.5;
 
 TEST(SincResamplerTest, Convolve) {
-#if defined(ARCH_CPU_X86_FAMILY)
-  ASSERT_TRUE(base::CPU().has_sse());
-#endif
-
   // Initialize a dummy resampler.
   MockSource mock_source;
   SincResampler resampler(

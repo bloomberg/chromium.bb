@@ -922,7 +922,6 @@
           'dependencies': [
             'media_asm',
             'media_mmx',
-            'media_sse',
             'media_sse2',
           ],
           'sources': [
@@ -1338,11 +1337,6 @@
             'USE_NEON'
           ],
         }],
-        ['target_arch=="ia32" or target_arch=="x64"', {
-          'dependencies': [
-            'shared_memory_support_sse'
-          ],
-        }],
       ],
     },
   ],
@@ -1452,22 +1446,6 @@
           ],
         },
         {
-          'target_name': 'media_sse',
-          'type': 'static_library',
-          'cflags': [
-            '-msse',
-          ],
-          'defines': [
-            'MEDIA_IMPLEMENTATION',
-          ],
-          'include_dirs': [
-            '..',
-          ],
-          'sources': [
-            'base/simd/sinc_resampler_sse.cc',
-          ],
-        },
-        {
           'target_name': 'media_sse2',
           'type': 'static_library',
           'cflags': [
@@ -1483,22 +1461,6 @@
             'base/simd/convert_rgb_to_yuv_sse2.cc',
             'base/simd/convert_rgb_to_yuv_ssse3.cc',
             'base/simd/filter_yuv_sse2.cc',
-          ],
-        },
-        {
-          'target_name': 'shared_memory_support_sse',
-          'type': 'static_library',
-          'cflags': [
-            '-msse',
-          ],
-          'defines': [
-            'MEDIA_IMPLEMENTATION',
-          ],
-          'include_dirs': [
-            '..',
-          ],
-          'sources': [
-            'base/simd/vector_math_sse.cc',
           ],
         },
       ], # targets

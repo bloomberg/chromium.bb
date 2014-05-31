@@ -4,7 +4,6 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/cpu.h"
 #include "base/time/time.h"
 #include "media/base/sinc_resampler.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -61,9 +60,6 @@ TEST(SincResamplerPerfTest, Convolve) {
       &resampler, SincResampler::Convolve_C, true, "unoptimized_aligned");
 
 #if defined(CONVOLVE_FUNC)
-#if defined(ARCH_CPU_X86_FAMILY)
-  ASSERT_TRUE(base::CPU().has_sse());
-#endif
   RunConvolveBenchmark(
       &resampler, SincResampler::CONVOLVE_FUNC, true, "optimized_aligned");
   RunConvolveBenchmark(

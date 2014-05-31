@@ -81,11 +81,16 @@
 #include <cmath>
 #include <limits>
 
-#include "base/cpu.h"
 #include "base/logging.h"
 
-#if defined(ARCH_CPU_ARM_FAMILY) && defined(USE_NEON)
+#if defined(ARCH_CPU_X86_FAMILY)
+#include <xmmintrin.h>
+#define CONVOLVE_FUNC Convolve_SSE
+#elif defined(ARCH_CPU_ARM_FAMILY) && defined(USE_NEON)
 #include <arm_neon.h>
+#define CONVOLVE_FUNC Convolve_NEON
+#else
+#define CONVOLVE_FUNC Convolve_C
 #endif
 
 namespace media {
@@ -105,36 +110,6 @@ static double SincScaleFactor(double io_ratio) {
 
   return sinc_scale_factor;
 }
-
-// If we know the minimum architecture at compile time, avoid CPU detection.
-// Force NaCl code to use C routines since (at present) nothing there uses these
-// methods and plumbing the -msse built library is non-trivial.
-#if defined(ARCH_CPU_X86_FAMILY) && !defined(OS_NACL)
-#if defined(__SSE__)
-#define CONVOLVE_FUNC Convolve_SSE
-void SincResampler::InitializeCPUSpecificFeatures() {}
-#else
-// X86 CPU detection required.  Functions will be set by
-// InitializeCPUSpecificFeatures().
-// TODO(dalecurtis): Once Chrome moves to an SSE baseline this can be removed.
-#define CONVOLVE_FUNC g_convolve_proc_
-
-typedef float (*ConvolveProc)(const float*, const float*, const float*, double);
-static ConvolveProc g_convolve_proc_ = NULL;
-
-void SincResampler::InitializeCPUSpecificFeatures() {
-  CHECK(!g_convolve_proc_);
-  g_convolve_proc_ = base::CPU().has_sse() ? Convolve_SSE : Convolve_C;
-}
-#endif
-#elif defined(ARCH_CPU_ARM_FAMILY) && defined(USE_NEON)
-#define CONVOLVE_FUNC Convolve_NEON
-void SincResampler::InitializeCPUSpecificFeatures() {}
-#else
-// Unknown architecture.
-#define CONVOLVE_FUNC Convolve_C
-void SincResampler::InitializeCPUSpecificFeatures() {}
-#endif
 
 SincResampler::SincResampler(double io_sample_rate_ratio,
                              int request_frames,
@@ -321,8 +296,6 @@ void SincResampler::Resample(int frames, float* destination) {
   }
 }
 
-#undef CONVOLVE_FUNC
-
 int SincResampler::ChunkSize() const {
   return block_size_ / io_sample_rate_ratio_;
 }
@@ -354,7 +327,44 @@ float SincResampler::Convolve_C(const float* input_ptr, const float* k1,
       + kernel_interpolation_factor * sum2;
 }
 
-#if defined(ARCH_CPU_ARM_FAMILY) && defined(USE_NEON)
+#if defined(ARCH_CPU_X86_FAMILY)
+float SincResampler::Convolve_SSE(const float* input_ptr, const float* k1,
+                                  const float* k2,
+                                  double kernel_interpolation_factor) {
+  __m128 m_input;
+  __m128 m_sums1 = _mm_setzero_ps();
+  __m128 m_sums2 = _mm_setzero_ps();
+
+  // Based on |input_ptr| alignment, we need to use loadu or load.  Unrolling
+  // these loops hurt performance in local testing.
+  if (reinterpret_cast<uintptr_t>(input_ptr) & 0x0F) {
+    for (int i = 0; i < kKernelSize; i += 4) {
+      m_input = _mm_loadu_ps(input_ptr + i);
+      m_sums1 = _mm_add_ps(m_sums1, _mm_mul_ps(m_input, _mm_load_ps(k1 + i)));
+      m_sums2 = _mm_add_ps(m_sums2, _mm_mul_ps(m_input, _mm_load_ps(k2 + i)));
+    }
+  } else {
+    for (int i = 0; i < kKernelSize; i += 4) {
+      m_input = _mm_load_ps(input_ptr + i);
+      m_sums1 = _mm_add_ps(m_sums1, _mm_mul_ps(m_input, _mm_load_ps(k1 + i)));
+      m_sums2 = _mm_add_ps(m_sums2, _mm_mul_ps(m_input, _mm_load_ps(k2 + i)));
+    }
+  }
+
+  // Linearly interpolate the two "convolutions".
+  m_sums1 = _mm_mul_ps(m_sums1, _mm_set_ps1(1.0 - kernel_interpolation_factor));
+  m_sums2 = _mm_mul_ps(m_sums2, _mm_set_ps1(kernel_interpolation_factor));
+  m_sums1 = _mm_add_ps(m_sums1, m_sums2);
+
+  // Sum components together.
+  float result;
+  m_sums2 = _mm_add_ps(_mm_movehl_ps(m_sums1, m_sums1), m_sums1);
+  _mm_store_ss(&result, _mm_add_ss(m_sums2, _mm_shuffle_ps(
+      m_sums2, m_sums2, 1)));
+
+  return result;
+}
+#elif defined(ARCH_CPU_ARM_FAMILY) && defined(USE_NEON)
 float SincResampler::Convolve_NEON(const float* input_ptr, const float* k1,
                                    const float* k2,
                                    double kernel_interpolation_factor) {

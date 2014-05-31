@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/cpu.h"
 #include "base/memory/aligned_memory.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
@@ -80,11 +79,15 @@ class VectorMathPerfTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(VectorMathPerfTest);
 };
 
-// Define platform independent function name for FMAC* perf tests.
+// Define platform dependent function names for SIMD optimized methods.
 #if defined(ARCH_CPU_X86_FAMILY)
 #define FMAC_FUNC FMAC_SSE
+#define FMUL_FUNC FMUL_SSE
+#define EWMAAndMaxPower_FUNC EWMAAndMaxPower_SSE
 #elif defined(ARCH_CPU_ARM_FAMILY) && defined(USE_NEON)
 #define FMAC_FUNC FMAC_NEON
+#define FMUL_FUNC FMUL_NEON
+#define EWMAAndMaxPower_FUNC EWMAAndMaxPower_NEON
 #endif
 
 // Benchmark for each optimized vector_math::FMAC() method.
@@ -93,9 +96,6 @@ TEST_F(VectorMathPerfTest, FMAC) {
   RunBenchmark(
       vector_math::FMAC_C, true, "vector_math_fmac", "unoptimized");
 #if defined(FMAC_FUNC)
-#if defined(ARCH_CPU_X86_FAMILY)
-  ASSERT_TRUE(base::CPU().has_sse());
-#endif
   // Benchmark FMAC_FUNC() with unaligned size.
   ASSERT_NE((kVectorSize - 1) % (vector_math::kRequiredAlignment /
                                  sizeof(float)), 0U);
@@ -109,24 +109,12 @@ TEST_F(VectorMathPerfTest, FMAC) {
 #endif
 }
 
-#undef FMAC_FUNC
-
-// Define platform independent function name for FMULBenchmark* tests.
-#if defined(ARCH_CPU_X86_FAMILY)
-#define FMUL_FUNC FMUL_SSE
-#elif defined(ARCH_CPU_ARM_FAMILY) && defined(USE_NEON)
-#define FMUL_FUNC FMUL_NEON
-#endif
-
 // Benchmark for each optimized vector_math::FMUL() method.
 TEST_F(VectorMathPerfTest, FMUL) {
   // Benchmark FMUL_C().
   RunBenchmark(
       vector_math::FMUL_C, true, "vector_math_fmul", "unoptimized");
 #if defined(FMUL_FUNC)
-#if defined(ARCH_CPU_X86_FAMILY)
-  ASSERT_TRUE(base::CPU().has_sse());
-#endif
   // Benchmark FMUL_FUNC() with unaligned size.
   ASSERT_NE((kVectorSize - 1) % (vector_math::kRequiredAlignment /
                                  sizeof(float)), 0U);
@@ -140,14 +128,6 @@ TEST_F(VectorMathPerfTest, FMUL) {
 #endif
 }
 
-#undef FMUL_FUNC
-
-#if defined(ARCH_CPU_X86_FAMILY)
-#define EWMAAndMaxPower_FUNC EWMAAndMaxPower_SSE
-#elif defined(ARCH_CPU_ARM_FAMILY) && defined(USE_NEON)
-#define EWMAAndMaxPower_FUNC EWMAAndMaxPower_NEON
-#endif
-
 // Benchmark for each optimized vector_math::EWMAAndMaxPower() method.
 TEST_F(VectorMathPerfTest, EWMAAndMaxPower) {
   // Benchmark EWMAAndMaxPower_C().
@@ -156,9 +136,6 @@ TEST_F(VectorMathPerfTest, EWMAAndMaxPower) {
                "vector_math_ewma_and_max_power",
                "unoptimized");
 #if defined(EWMAAndMaxPower_FUNC)
-#if defined(ARCH_CPU_X86_FAMILY)
-  ASSERT_TRUE(base::CPU().has_sse());
-#endif
   // Benchmark EWMAAndMaxPower_FUNC() with unaligned size.
   ASSERT_NE((kVectorSize - 1) % (vector_math::kRequiredAlignment /
                                  sizeof(float)), 0U);
@@ -175,7 +152,5 @@ TEST_F(VectorMathPerfTest, EWMAAndMaxPower) {
                "optimized_aligned");
 #endif
 }
-
-#undef EWMAAndMaxPower_FUNC
 
 } // namespace media

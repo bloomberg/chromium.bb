@@ -6,7 +6,6 @@
 #define _USE_MATH_DEFINES
 #include <cmath>
 
-#include "base/cpu.h"
 #include "base/memory/aligned_memory.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_number_conversions.h"
@@ -76,7 +75,6 @@ TEST_F(VectorMathTest, FMAC) {
 
 #if defined(ARCH_CPU_X86_FAMILY)
   {
-    ASSERT_TRUE(base::CPU().has_sse());
     SCOPED_TRACE("FMAC_SSE");
     FillTestVectors(kInputFillValue, kOutputFillValue);
     vector_math::FMAC_SSE(
@@ -118,7 +116,6 @@ TEST_F(VectorMathTest, FMUL) {
 
 #if defined(ARCH_CPU_X86_FAMILY)
   {
-    ASSERT_TRUE(base::CPU().has_sse());
     SCOPED_TRACE("FMUL_SSE");
     FillTestVectors(kInputFillValue, kOutputFillValue);
     vector_math::FMUL_SSE(
@@ -227,7 +224,6 @@ class EWMATestScenario {
 
 #if defined(ARCH_CPU_X86_FAMILY)
     {
-      ASSERT_TRUE(base::CPU().has_sse());
       SCOPED_TRACE("EWMAAndMaxPower_SSE");
       const std::pair<float, float>& result = vector_math::EWMAAndMaxPower_SSE(
           initial_value_, data_.get(), data_len_, smoothing_factor_);
