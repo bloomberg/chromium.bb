@@ -24,26 +24,10 @@
 
 namespace {
 
-// Default time in seconds between invocations of perf.
-// This period is roughly 6.5 hours.
-// This is chosen to be relatively prime with the number of seconds in:
-// - one minute (60)
-// - one hour (3600)
-// - one day (86400)
-const size_t kPerfCommandIntervalDefaultSeconds = 23093;
-
-// The first collection interval is different from the interval above. This is
-// because we want to collect the first profile quickly after Chrome is started.
-// If this period is too long, the user will log off and Chrome will be killed
-// before it is triggered. The following 2 variables determine the upper and
-// lower bound on the interval.
-// The reason we do not always want to collect the initial profile after a fixed
-// period is to not over-represent task X in the profile where task X always
-// runs at a fixed period after start-up. By selecting a period randomly between
-// a lower and upper bound, we will hopefully collect a more fair profile.
-const size_t kPerfCommandStartIntervalLowerBoundMinutes = 10;
-
-const size_t kPerfCommandStartIntervalUpperBoundMinutes = 20;
+// Partition time since login into successive intervals of this size. In each
+// interval, pick a random time to collect a profile.
+// This interval is twenty-four hours.
+const size_t kPerfProfilingIntervalMs = 24 * 60 * 60 * 1000;
 
 // Default time in seconds perf is run for.
 const size_t kPerfCommandDurationDefaultSeconds = 2;
@@ -119,6 +103,7 @@ class WindowedIncognitoObserver : public chrome::BrowserListObserver {
 
 PerfProvider::PerfProvider()
       : login_observer_(this),
+        next_profiling_interval_start_(base::TimeTicks::Now()),
         weak_factory_(this) {
   // Register the login observer with LoginState.
   chromeos::LoginState::Get()->AddObserver(&login_observer_);
@@ -135,14 +120,15 @@ PerfProvider::~PerfProvider() {
   chromeos::LoginState::Get()->RemoveObserver(&login_observer_);
 }
 
-bool PerfProvider::GetPerfData(std::vector<PerfDataProto>* perf_data) {
+bool PerfProvider::GetSampledProfiles(
+    std::vector<SampledProfile>* sampled_profiles) {
   DCHECK(CalledOnValidThread());
   if (cached_perf_data_.empty()) {
     AddToPerfHistogram(NOT_READY_TO_UPLOAD);
     return false;
   }
 
-  perf_data->swap(cached_perf_data_);
+  sampled_profiles->swap(cached_perf_data_);
   cached_perf_data_.clear();
 
   AddToPerfHistogram(SUCCESS);
@@ -154,16 +140,14 @@ PerfProvider::LoginObserver::LoginObserver(PerfProvider* perf_provider)
 
 void PerfProvider::LoginObserver::LoggedInStateChanged() {
   if (IsNormalUserLoggedIn())
-    perf_provider_->Activate();
+    perf_provider_->OnUserLoggedIn();
   else
     perf_provider_->Deactivate();
 }
 
-void PerfProvider::Activate() {
-  size_t collection_interval_minutes = base::RandInt(
-      kPerfCommandStartIntervalLowerBoundMinutes,
-      kPerfCommandStartIntervalUpperBoundMinutes);
-  ScheduleCollection(base::TimeDelta::FromMinutes(collection_interval_minutes));
+void PerfProvider::OnUserLoggedIn() {
+  login_time_ = base::TimeTicks::Now();
+  ScheduleCollection();
 }
 
 void PerfProvider::Deactivate() {
@@ -171,16 +155,33 @@ void PerfProvider::Deactivate() {
   timer_.Stop();
 }
 
-void PerfProvider::ScheduleCollection(const base::TimeDelta& interval) {
+void PerfProvider::ScheduleCollection() {
   DCHECK(CalledOnValidThread());
   if (timer_.IsRunning())
     return;
 
-  timer_.Start(FROM_HERE, interval, this,
-               &PerfProvider::CollectIfNecessaryAndReschedule);
+  // Pick a random time in the current interval.
+  base::TimeTicks scheduled_time =
+      next_profiling_interval_start_ +
+      base::TimeDelta::FromMilliseconds(
+          base::RandGenerator(kPerfProfilingIntervalMs));
+
+  // If the scheduled time has already passed in the time it took to make the
+  // above calculations, trigger the collection event immediately.
+  base::TimeTicks now = base::TimeTicks::Now();
+  if (scheduled_time < now)
+    scheduled_time = now;
+
+  timer_.Start(FROM_HERE, scheduled_time - now, this,
+               &PerfProvider::DoPeriodicCollection);
+
+  // Update the profiling interval tracker to the start of the next interval.
+  next_profiling_interval_start_ +=
+      base::TimeDelta::FromMilliseconds(kPerfProfilingIntervalMs);
 }
 
-void PerfProvider::CollectIfNecessary() {
+void PerfProvider::CollectIfNecessary(
+    SampledProfile::TriggerEvent trigger_event) {
   DCHECK(CalledOnValidThread());
 
   // Do not collect further data if we've already collected a substantial amount
@@ -213,17 +214,18 @@ void PerfProvider::CollectIfNecessary() {
   client->GetPerfData(collection_duration.InSeconds(),
                       base::Bind(&PerfProvider::ParseProtoIfValid,
                                  weak_factory_.GetWeakPtr(),
-                                 base::Passed(&incognito_observer)));
+                                 base::Passed(&incognito_observer),
+                                 trigger_event));
 }
 
-void PerfProvider::CollectIfNecessaryAndReschedule() {
-  CollectIfNecessary();
-  ScheduleCollection(
-      base::TimeDelta::FromSeconds(kPerfCommandIntervalDefaultSeconds));
+void PerfProvider::DoPeriodicCollection() {
+  CollectIfNecessary(SampledProfile::PERIODIC_COLLECTION);
+  ScheduleCollection();
 }
 
 void PerfProvider::ParseProtoIfValid(
     scoped_ptr<WindowedIncognitoObserver> incognito_observer,
+    SampledProfile::TriggerEvent trigger_event,
     const std::vector<uint8>& data) {
   DCHECK(CalledOnValidThread());
 
@@ -238,10 +240,19 @@ void PerfProvider::ParseProtoIfValid(
     return;
   }
 
-  // Append a new PerfDataProto to the |cached_perf_data_| vector and swap in
-  // the contents.
+  // Populate a profile collection protobuf with the collected perf data and
+  // extra metadata.
   cached_perf_data_.resize(cached_perf_data_.size() + 1);
-  cached_perf_data_.back().Swap(&perf_data_proto);
+  SampledProfile& collection_data = cached_perf_data_.back();
+  collection_data.set_trigger_event(trigger_event);
+  collection_data.set_ms_after_boot(
+      perf_data_proto.timestamp_sec() * base::Time::kMillisecondsPerSecond);
+
+  DCHECK(!login_time_.is_null());
+  collection_data.
+      set_ms_after_login((base::TimeTicks::Now() - login_time_)
+          .InMilliseconds());
+  *collection_data.mutable_perf_data() = perf_data_proto;
 }
 
 }  // namespace metrics

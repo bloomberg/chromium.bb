@@ -27,7 +27,7 @@
 #endif  // defined(USE_X11)
 
 using metrics::ChromeUserMetricsExtension;
-using metrics::PerfDataProto;
+using metrics::SampledProfile;
 using metrics::SystemProfileProto;
 typedef SystemProfileProto::Hardware::Bluetooth::PairedDevice PairedDevice;
 
@@ -195,12 +195,12 @@ void ChromeOSMetricsProvider::ProvideStabilityMetrics(
 
 void ChromeOSMetricsProvider::ProvideGeneralMetrics(
     metrics::ChromeUserMetricsExtension* uma_proto) {
-  std::vector<PerfDataProto> perf_data;
-  if (perf_provider_.GetPerfData(&perf_data)) {
-    for (std::vector<PerfDataProto>::iterator iter = perf_data.begin();
-         iter != perf_data.end();
+  std::vector<SampledProfile> sampled_profiles;
+  if (perf_provider_.GetSampledProfiles(&sampled_profiles)) {
+    for (std::vector<SampledProfile>::iterator iter = sampled_profiles.begin();
+         iter != sampled_profiles.end();
          ++iter) {
-      uma_proto->add_perf_data()->Swap(&(*iter));
+      uma_proto->add_sampled_profile()->Swap(&(*iter));
     }
   }
 }
