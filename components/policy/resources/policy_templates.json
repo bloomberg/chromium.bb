@@ -6467,7 +6467,9 @@
       Note: Starting with <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>
       28, policies are loaded directly from the Group Policy API on
       Windows. Policies manually written to the registry will be ignored. See
-      http://crbug.com/259236 for details.'''
+      http://crbug.com/259236 for details.
+
+      Starting with <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> 35, policies are read directly from the registry if the workstation is joined to an Active Directory domain; otherwise the policies are read from GPO.'''
     },
     'doc_back_to_top': {
       'desc': '''Text of a link in the generated policy documentation, that takes the user to the top of the page''',
