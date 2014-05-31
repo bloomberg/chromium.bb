@@ -113,8 +113,9 @@ def using_blacklist(item):
   this list. This is simply an optimization.
   """
   IGNORED = (
-    '.a', '.cc', '.css', '.def', '.h', '.html', '.js', '.json', '.manifest',
-    '.o', '.obj', '.pak', '.png', '.pdb', '.strings', '.txt',
+    '.a', '.cc', '.css', '.def', '.frag', '.h', '.html', '.js', '.json',
+    '.manifest', '.o', '.obj', '.pak', '.png', '.pdb', '.strings', '.test',
+    '.txt', '.vert',
   )
   # ninja files use native path format.
   ext = os.path.splitext(item)[1]
@@ -138,31 +139,26 @@ def raw_build_to_deps(item):
   return filter(using_blacklist, item.split(' ')[1:])
 
 
-def recurse(target, build_steps, rules_seen):
-  """Recursively returns all the interesting dependencies for root_item."""
-  out = []
+def collect_deps(target, build_steps, dependencies_added, rules_seen):
+  """Recursively adds all the interesting dependencies for |target|
+  into |dependencies_added|.
+  """
   if rules_seen is None:
     rules_seen = set()
   if target in rules_seen:
     # TODO(maruel): Figure out how it happens.
     logging.warning('Circular dependency for %s!', target)
-    return []
+    return
   rules_seen.add(target)
   try:
     dependencies = raw_build_to_deps(build_steps[target])
   except KeyError:
     logging.info('Failed to find a build step to generate: %s', target)
-    return []
-  logging.debug('recurse(%s) -> %s', target, dependencies)
+    return
+  logging.debug('collect_deps(%s) -> %s', target, dependencies)
   for dependency in dependencies:
-    out.append(dependency)
-    dependency_raw_dependencies = build_steps.get(dependency)
-    if dependency_raw_dependencies:
-      for i in raw_build_to_deps(dependency_raw_dependencies):
-        out.extend(recurse(i, build_steps, rules_seen))
-    else:
-      logging.info('Failed to find a build step to generate: %s', dependency)
-  return out
+    dependencies_added.add(dependency)
+    collect_deps(dependency, build_steps, dependencies_added, rules_seen)
 
 
 def post_process_deps(build_dir, dependencies):
@@ -219,7 +215,9 @@ def create_wrapper(args, isolate_index, isolated_index):
   # complain to maruel@.
   target = isolate[:-len('.isolate')] + '_run'
   build_steps = load_ninja(build_dir)
-  binary_deps = post_process_deps(build_dir, recurse(target, build_steps, None))
+  binary_deps = set()
+  collect_deps(target, build_steps, binary_deps, None)
+  binary_deps = post_process_deps(build_dir, binary_deps)
   logging.debug(
       'Binary dependencies:%s', ''.join('\n  ' + i for i in binary_deps))
 
