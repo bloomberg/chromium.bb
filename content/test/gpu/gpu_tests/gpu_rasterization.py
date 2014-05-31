@@ -49,7 +49,7 @@ class _GpuRasterizationValidator(cloud_storage_test_base.ValidatorBase):
 
     device_pixel_ratio = tab.EvaluateJavaScript('window.devicePixelRatio')
     if hasattr(page, 'test_rect'):
-      test_rect = [x * device_pixel_ratio for x in page.test_rect]
+      test_rect = [int(x * device_pixel_ratio) for x in page.test_rect]
       screenshot = screenshot.Crop(
           test_rect[0], test_rect[1],
           test_rect[2], test_rect[3])
