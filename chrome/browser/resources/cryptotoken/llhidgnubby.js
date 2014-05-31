@@ -40,6 +40,8 @@ llHidGnubby.NAMESPACE = 'hid';
 llHidGnubby.prototype.destroy = function() {
   if (!this.dev) return;  // Already dead.
 
+  this.gnubbies_.removeOpenDevice(
+      {namespace: llHidGnubby.NAMESPACE, device: this.id});
   this.closing = true;
 
   console.log(UTIL_fmt('llHidGnubby.destroy()'));
@@ -68,15 +70,9 @@ llHidGnubby.prototype.destroy = function() {
   var dev = this.dev;
   this.dev = null;
 
-  var self = this;
-
-  function onClosed() {
+  chrome.hid.disconnect(dev.connectionId, function() {
     console.log(UTIL_fmt('Device ' + dev.handle + ' closed'));
-    self.gnubbies_.removeOpenDevice(
-        {namespace: llHidGnubby.NAMESPACE, device: self.id});
-  }
-
-  chrome.hid.disconnect(dev.connectionId, onClosed);
+  });
 };
 
 /**
@@ -101,17 +97,6 @@ llHidGnubby.prototype.publishFrame_ = function(f) {
     }
   }
   if (changes) this.clients = remaining;
-};
-
-/**
- * @return {boolean} whether this device is open and ready to use.
- * @private
- */
-llHidGnubby.prototype.readyToUse_ = function() {
-  if (this.closing) return false;
-  if (!this.dev) return false;
-
-  return true;
 };
 
 /**
@@ -299,7 +284,7 @@ llHidGnubby.prototype.updateLock_ = function(cid, cmd, arg) {
  * If queue was empty, initiate the write.
  * @param {number} cid The client's channel ID.
  * @param {number} cmd The command to send.
- * @param {ArrayBuffer} data Command arguments
+ * @param {ArrayBuffer|Uint8Array} data Command arguments
  */
 llHidGnubby.prototype.queueCommand = function(cid, cmd, data) {
   if (!this.dev) return;

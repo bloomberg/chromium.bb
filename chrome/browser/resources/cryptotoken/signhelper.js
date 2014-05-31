@@ -37,12 +37,10 @@ function SignHelperFactory() {}
  *     interested in the result of a sign request.
  * @param {function(number, boolean)} errorCb Called when a sign request fails
  *     with an error code and whether any gnubbies were found.
- * @param {function(SignHelperChallenge, string)} successCb Called with the
- *     signature produced by a successful sign request.
- * @param {(function(number, boolean)|undefined)} opt_progressCb Called with
- *     progress updates to the sign request.
+ * @param {function(SignHelperChallenge, string, string=)} successCb Called with
+ *     the signature produced by a successful sign request.
  * @param {string=} opt_logMsgUrl A URL to post log messages to.
  * @return {SignHelper} The newly created helper.
  */
 SignHelperFactory.prototype.createHelper =
-    function(timer, errorCb, successCb, opt_progressCb, opt_logMsgUrl) {};
+    function(timer, errorCb, successCb, opt_logMsgUrl) {};

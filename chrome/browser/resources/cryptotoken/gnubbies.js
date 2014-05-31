@@ -189,7 +189,6 @@ Gnubbies.prototype.inactivityTimeout_ = function() {
       console.warn(namespace + ' device ' + deviceId +
           ' still open after inactivity, closing');
       this.openDevs_[namespace][deviceId].destroy();
-      this.removeOpenDevice({namespace: namespace, device: deviceId});
     }
   }
 };
@@ -210,7 +209,7 @@ Gnubbies.prototype.addClient = function(which, who, cb) {
     if (gnubby.closing) {
       // Device is closing or already closed.
       self.removeClient(gnubby, who);
-      if (cb) { cb(-llGnubby.GONE); }
+      if (cb) { cb(-llGnubby.NODEVICE); }
     } else {
       gnubby.registerClient(who);
       if (cb) { cb(-llGnubby.OK, gnubby); }
@@ -275,7 +274,7 @@ Gnubbies.prototype.addClient = function(which, who, cb) {
     if (!this.pendingOpens_.hasOwnProperty(which.namespace)) {
       this.pendingOpens_[which.namespace] = {};
     }
-    if (this.pendingOpens_[which.namespace].hasOwnProperty(which)) {
+    if (this.pendingOpens_[which.namespace].hasOwnProperty(which.device)) {
       this.pendingOpens_[which.namespace][which.device].push(opener);
     } else {
       this.pendingOpens_[which.namespace][which.device] = [opener];

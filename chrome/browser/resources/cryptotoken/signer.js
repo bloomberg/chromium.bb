@@ -15,16 +15,14 @@ var signRequestQueue = new OriginKeyedRequestQueue();
  * @param {!SignHelperFactory} factory Factory to create a sign helper.
  * @param {MessageSender} sender The sender of the message.
  * @param {Object} request The web page's sign request.
- * @param {boolean} enforceAppIdValid Whether to enforce that the app id in the
- *     request matches the sender's origin.
  * @param {Function} sendResponse Called back with the result of the sign.
  * @param {boolean} toleratesMultipleResponses Whether the sendResponse
  *     callback can be called more than once, e.g. for progress updates.
  * @return {Closeable} Request handler that should be closed when the browser
  *     message channel is closed.
  */
-function handleSignRequest(factory, sender, request, enforceAppIdValid,
-    sendResponse, toleratesMultipleResponses) {
+function handleSignRequest(factory, sender, request, sendResponse,
+    toleratesMultipleResponses) {
   var sentResponse = false;
   function sendResponseOnce(r) {
     if (queuedSignRequest) {
@@ -62,19 +60,6 @@ function handleSignRequest(factory, sender, request, enforceAppIdValid,
     sendResponseOnce(response);
   }
 
-  function sendNotification(code) {
-    console.log(UTIL_fmt('notification, code=' + code));
-    // Can the callback handle progress updates? If so, send one.
-    if (toleratesMultipleResponses) {
-      var response = formatWebPageResponse(
-          GnubbyMsgTypes.SIGN_WEB_NOTIFICATION, code);
-      if (request['requestId']) {
-        response['requestId'] = request['requestId'];
-      }
-      sendResponse(response);
-    }
-  }
-
   var origin = getOriginFromUrl(/** @type {string} */ (sender.url));
   if (!origin) {
     sendErrorResponse(GnubbyCodeTypes.BAD_REQUEST);
@@ -103,8 +88,8 @@ function handleSignRequest(factory, sender, request, enforceAppIdValid,
   // Queue sign requests from the same origin, to protect against simultaneous
   // sign-out on many tabs resulting in repeated sign-in requests.
   var queuedSignRequest = new QueuedSignRequest(signData, factory, timer,
-      nonNullOrigin, enforceAppIdValid, sendErrorResponse, sendSuccessResponse,
-      sendNotification, sender.tlsChannelId, logMsgUrl);
+      nonNullOrigin, sendErrorResponse, sendSuccessResponse,
+      sender.tlsChannelId, logMsgUrl);
   var requestToken = signRequestQueue.queueRequest(firstAppId, nonNullOrigin,
       queuedSignRequest.begin.bind(queuedSignRequest), timer);
   queuedSignRequest.setToken(requestToken);
@@ -133,17 +118,15 @@ function isValidSignRequest(request) {
  * @param {!SignHelperFactory} factory Factory for SignHelper instances
  * @param {Countdown} timer Timeout timer
  * @param {string} origin Signature origin
- * @param {boolean} enforceAppIdValid If to enforce appId validity
  * @param {function(number)} errorCb Error callback
  * @param {function(SignChallenge, string, string)} successCb Success callback
- * @param {(function(number)|undefined)} opt_progressCb Progress callback
  * @param {string|undefined} opt_tlsChannelId TLS Channel Id
  * @param {string|undefined} opt_logMsgUrl Url to post log messages to
  * @constructor
  * @implements {Closeable}
  */
-function QueuedSignRequest(signData, factory, timer, origin, enforceAppIdValid,
-    errorCb, successCb, opt_progressCb, opt_tlsChannelId, opt_logMsgUrl) {
+function QueuedSignRequest(signData, factory, timer, origin, errorCb, successCb,
+    opt_tlsChannelId, opt_logMsgUrl) {
   /** @private {!SignData} */
   this.signData_ = signData;
   /** @private {!SignHelperFactory} */
@@ -152,14 +135,10 @@ function QueuedSignRequest(signData, factory, timer, origin, enforceAppIdValid,
   this.timer_ = timer;
   /** @private {string} */
   this.origin_ = origin;
-  /** @private {boolean} */
-  this.enforceAppIdValid_ = enforceAppIdValid;
   /** @private {function(number)} */
   this.errorCb_ = errorCb;
   /** @private {function(SignChallenge, string, string)} */
   this.successCb_ = successCb;
-  /** @private {(function(number)|undefined)} */
-  this.progressCb_ = opt_progressCb;
   /** @private {string|undefined} */
   this.tlsChannelId_ = opt_tlsChannelId;
   /** @private {string|undefined} */
@@ -198,8 +177,7 @@ QueuedSignRequest.prototype.begin = function(token) {
   this.begun_ = true;
   this.setToken(token);
   this.signer_ = new Signer(this.factory_, this.timer_, this.origin_,
-      this.enforceAppIdValid_, this.signerFailed_.bind(this),
-      this.signerSucceeded_.bind(this), this.progressCb_,
+      this.signerFailed_.bind(this), this.signerSucceeded_.bind(this),
       this.tlsChannelId_, this.logMsgUrl_);
   if (!this.signer_.setChallenges(this.signData_)) {
     token.complete();
@@ -235,32 +213,24 @@ QueuedSignRequest.prototype.signerSucceeded_ =
  * @param {!SignHelperFactory} helperFactory Factory to create a sign helper.
  * @param {Countdown} timer Timer for sign request.
  * @param {string} origin The origin making the request.
- * @param {boolean} enforceAppIdValid Whether to enforce that the appId in the
- *     request matches the sender's origin.
  * @param {function(number)} errorCb Called when the sign operation fails.
  * @param {function(SignChallenge, string, string)} successCb Called when the
  *     sign operation succeeds.
- * @param {(function(number)|undefined)} opt_progressCb Called with progress
- *     updates to the sign request.
  * @param {string=} opt_tlsChannelId the TLS channel ID, if any, of the origin
  *     making the request.
  * @param {string=} opt_logMsgUrl The url to post log messages to.
  * @constructor
  */
-function Signer(helperFactory, timer, origin, enforceAppIdValid,
-    errorCb, successCb, opt_progressCb, opt_tlsChannelId, opt_logMsgUrl) {
+function Signer(helperFactory, timer, origin, errorCb, successCb,
+    opt_tlsChannelId, opt_logMsgUrl) {
   /** @private {Countdown} */
   this.timer_ = timer;
   /** @private {string} */
   this.origin_ = origin;
-  /** @private {boolean} */
-  this.enforceAppIdValid_ = enforceAppIdValid;
   /** @private {function(number)} */
   this.errorCb_ = errorCb;
   /** @private {function(SignChallenge, string, string)} */
   this.successCb_ = successCb;
-  /** @private {(function(number)|undefined)} */
-  this.progressCb_ = opt_progressCb;
   /** @private {string|undefined} */
   this.tlsChannelId_ = opt_tlsChannelId;
   /** @private {string|undefined} */
@@ -287,7 +257,7 @@ function Signer(helperFactory, timer, origin, enforceAppIdValid,
   /** @private {SignHelper} */
   this.helper_ = helperFactory.createHelper(
       timer, this.helperError_.bind(this), this.helperSuccess_.bind(this),
-          this.helperProgress_.bind(this), this.logMsgUrl_);
+          this.logMsgUrl_);
 }
 
 /**
@@ -321,15 +291,8 @@ Signer.prototype.setChallenges = function(signData) {
   /** @private {boolean} */
   this.challengesSet_ = true;
 
-  // If app id enforcing isn't in effect, go ahead and start the helper with
-  // all of the incoming challenges.
-  var success = true;
-  if (!this.enforceAppIdValid_) {
-    success = this.addChallenges(signData, true /* finalChallenges */);
-  }
-
   this.checkAppIds_();
-  return success;
+  return true;
 };
 
 /**
@@ -405,12 +368,8 @@ Signer.prototype.checkAppIds_ = function() {
       // Trivially allowed.
       this.fetchedAppIds_++;
       this.validAppIds_++;
-      // Only add challenges if in enforcing mode, i.e. they weren't added
-      // earlier.
-      if (this.enforceAppIdValid_) {
-        this.addChallenges(requests,
-            this.fetchedAppIds_ == this.orderedRequests_.length);
-      }
+      this.addChallenges(requests,
+          this.fetchedAppIds_ == this.orderedRequests_.length);
     } else {
       var start = new Date();
       fetchAllowedOriginsForAppId(appId, this.allowHttp_,
@@ -449,23 +408,18 @@ Signer.prototype.fetchedAllowedOriginsForAppId_ = function(appId, start,
   var finalChallenges = (this.fetchedAppIds_ == this.orderedRequests_.length);
   if (isValidAppIdForOrigin(appId, this.origin_, allowedOrigins)) {
     this.validAppIds_++;
-    // Only add challenges if in enforcing mode, i.e. they weren't added
-    // earlier.
-    if (this.enforceAppIdValid_) {
-      this.addChallenges(challenges, finalChallenges);
-    }
+    this.addChallenges(challenges, finalChallenges);
   } else {
     logInvalidOriginForAppId(this.origin_, appId, this.logMsgUrl_);
-    // If in enforcing mode and this is the final request, sign the valid
-    // challenges.
-    if (this.enforceAppIdValid_ && finalChallenges) {
+    // If this is the final request, sign the valid challenges.
+    if (finalChallenges) {
       if (!this.helper_.doSign(this.pendingChallenges_)) {
         this.notifyError_(GnubbyCodeTypes.BAD_REQUEST);
         return;
       }
     }
   }
-  if (this.enforceAppIdValid_ && finalChallenges && !this.validAppIds_) {
+  if (finalChallenges && !this.validAppIds_) {
     // If all app ids are invalid, notify the caller, otherwise implicitly
     // allow the helper to report whether any of the valid challenges succeeded.
     this.notifyError_(GnubbyCodeTypes.BAD_APP_ID);
@@ -514,25 +468,6 @@ Signer.prototype.notifySuccess_ = function(challenge, info, browserData) {
   this.close();
   this.done_ = true;
   this.successCb_(challenge, info, browserData);
-};
-
-/**
- * Notifies the caller of progress with the error code.
- * @param {number} code Status code
- * @private
- */
-Signer.prototype.notifyProgress_ = function(code) {
-  if (this.done_)
-    return;
-  if (code != this.lastProgressUpdate_) {
-    this.lastProgressUpdate_ = code;
-    // If there is no progress callback, treat it like an error and clean up.
-    if (this.progressCb_) {
-      this.progressCb_(code);
-    } else {
-      this.notifyError_(code);
-    }
-  }
 };
 
 /**
@@ -586,11 +521,17 @@ Signer.prototype.helperError_ = function(code, anyGnubbies) {
  * Called by helper upon success.
  * @param {SignHelperChallenge} challenge The challenge that was signed.
  * @param {string} info The sign result.
+ * @param {string=} opt_source The source, if any, if the signature.
  * @private
  */
-Signer.prototype.helperSuccess_ = function(challenge, info) {
+Signer.prototype.helperSuccess_ = function(challenge, info, opt_source) {
   // Got a good reply, kill timer.
   this.clearTimeout_();
+
+  if (this.logMsgUrl_ && opt_source) {
+    var logMsg = 'signed&source=' + opt_source;
+    logMessage(logMsg, this.logMsgUrl_);
+  }
 
   var key = challenge['keyHandle'] + challenge['challengeHash'];
   var browserData = this.browserData_[key];
@@ -598,19 +539,6 @@ Signer.prototype.helperSuccess_ = function(challenge, info) {
   // server-provided challenge contains additional fields it relies on.
   var serverChallenge = this.serverChallenges_[key];
   this.notifySuccess_(serverChallenge, info, browserData);
-};
-
-/**
- * Called by helper to notify progress.
- * @param {number} code Status code
- * @param {boolean} anyGnubbies If any gnubbies were found
- * @private
- */
-Signer.prototype.helperProgress_ = function(code, anyGnubbies) {
-  var reportedError = Signer.mapError_(code, anyGnubbies);
-  console.log(UTIL_fmt('helper notified ' + code.toString(16) +
-      ', returning ' + reportedError));
-  this.notifyProgress_(reportedError);
 };
 
 /**

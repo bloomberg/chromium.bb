@@ -31,15 +31,14 @@ var ENROLL_HELPER_FACTORY = new UsbEnrollHelperFactory(GNUBBY_FACTORY);
  */
 function handleWebPageRequest(toleratesMultipleResponses, request, sender,
     sendResponse) {
-  var enforceAppIdValid = true;
   switch (request.type) {
     case GnubbyMsgTypes.ENROLL_WEB_REQUEST:
       return handleEnrollRequest(ENROLL_HELPER_FACTORY, sender, request,
-          enforceAppIdValid, sendResponse, toleratesMultipleResponses);
+          sendResponse, toleratesMultipleResponses);
 
     case GnubbyMsgTypes.SIGN_WEB_REQUEST:
       return handleSignRequest(SIGN_HELPER_FACTORY, sender, request,
-          enforceAppIdValid, sendResponse, toleratesMultipleResponses);
+          sendResponse, toleratesMultipleResponses);
 
     default:
       var response = formatWebPageResponse(

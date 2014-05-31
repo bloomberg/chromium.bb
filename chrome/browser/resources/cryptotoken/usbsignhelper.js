@@ -15,23 +15,20 @@ var CORRUPT_sign = false;
  *     interested in the result of a sign request.
  * @param {function(number, boolean)} errorCb Called when a sign request fails
  *     with an error code and whether any gnubbies were found.
- * @param {function(SignHelperChallenge, string)} successCb Called with the
- *     signature produced by a successful sign request.
- * @param {(function(number, boolean)|undefined)} opt_progressCb Called with
- *     progress updates to the sign request.
+ * @param {function(SignHelperChallenge, string, string=)} successCb Called with
+ *     the signature produced by a successful sign request.
  * @param {string=} opt_logMsgUrl A URL to post log messages to.
  * @constructor
  * @implements {SignHelper}
  */
-function UsbSignHelper(factory, timer, errorCb, successCb, opt_progressCb,
-    opt_logMsgUrl) {
+function UsbSignHelper(factory, timer, errorCb, successCb, opt_logMsgUrl) {
   /** @private {!GnubbyFactory} */
   this.factory_ = factory;
   /** @private {Countdown} */
   this.timer_ = timer;
   /** @private {function(number, boolean)} */
   this.errorCb_ = errorCb;
-  /** @private {function(SignHelperChallenge, string)} */
+  /** @private {function(SignHelperChallenge, string, string=)} */
   this.successCb_ = successCb;
   /** @private {string|undefined} */
   this.logMsgUrl_ = opt_logMsgUrl;
@@ -189,7 +186,8 @@ UsbSignHelper.prototype.notifySuccess_ = function(gnubby, challenge, info) {
   encodedChallenge['appIdHash'] = B64_encode(challenge['appIdHash']);
   encodedChallenge['keyHandle'] = B64_encode(challenge['keyHandle']);
   this.successCb_(
-      /** @type {SignHelperChallenge} */ (encodedChallenge), B64_encode(info));
+      /** @type {SignHelperChallenge} */ (encodedChallenge), B64_encode(info),
+      'USB');
 };
 
 /**
@@ -329,15 +327,13 @@ function UsbSignHelperFactory(gnubbyFactory) {
  *     with an error code and whether any gnubbies were found.
  * @param {function(SignHelperChallenge, string)} successCb Called with the
  *     signature produced by a successful sign request.
- * @param {(function(number, boolean)|undefined)} opt_progressCb Called with
- *     progress updates to the sign request.
  * @param {string=} opt_logMsgUrl A URL to post log messages to.
  * @return {UsbSignHelper} the newly created helper.
  */
 UsbSignHelperFactory.prototype.createHelper =
-    function(timer, errorCb, successCb, opt_progressCb, opt_logMsgUrl) {
+    function(timer, errorCb, successCb, opt_logMsgUrl) {
   var helper =
       new UsbSignHelper(this.gnubbyFactory_, timer, errorCb, successCb,
-          opt_progressCb, opt_logMsgUrl);
+          opt_logMsgUrl);
   return helper;
 };

@@ -44,7 +44,7 @@ usbGnubby.setGnubbies = function(gnubbies) {
 usbGnubby.prototype.enumerate = function(cb) {
   if (!cb) cb = usbGnubby.defaultCallback;
   if (this.closed) {
-    cb(-llGnubby.GONE);
+    cb(-llGnubby.NODEVICE);
     return;
   }
   if (!usbGnubby.gnubbies_) {
@@ -58,14 +58,15 @@ usbGnubby.prototype.enumerate = function(cb) {
 /**
  * Opens the gnubby with the given index, or the first found gnubby if no
  * index is specified.
- * @param {llGnubbyDeviceId|undefined} opt_which The device to open.
+ * @param {llGnubbyDeviceId} which The device to open. If null, the first
+ *     gnubby found is opened.
  * @param {function(number)|undefined} opt_cb Called with result of opening the
  *     gnubby.
  */
-usbGnubby.prototype.open = function(opt_which, opt_cb) {
+usbGnubby.prototype.open = function(which, opt_cb) {
   var cb = opt_cb ? opt_cb : usbGnubby.defaultCallback;
   if (this.closed) {
-    cb(-llGnubby.GONE);
+    cb(-llGnubby.NODEVICE);
     return;
   }
   this.closingWhenIdle = false;
@@ -78,30 +79,42 @@ usbGnubby.prototype.open = function(opt_which, opt_cb) {
   }
 
   var self = this;
-  function addSelfAsClient(which) {
+
+  function setCid(which) {
     self.cid &= 0x00ffffff;
     self.cid |= ((which.device + 1) << 24);  // For debugging.
+  }
 
+  var enumerateRetriesRemaining = 3;
+  function enumerated(rc, devs) {
+    if (!devs.length)
+      rc = -llGnubby.NODEVICE;
+    if (rc) {
+      cb(rc);
+      return;
+    }
+    which = devs[0];
+    setCid(which);
     usbGnubby.gnubbies_.addClient(which, self, function(rc, device) {
+      if (rc == -llGnubby.NODEVICE && enumerateRetriesRemaining-- > 0) {
+        // We were trying to open the first device, but now it's not there?
+        // Do over.
+        usbGnubby.gnubbies_.enumerate(enumerated);
+        return;
+      }
       self.dev = device;
       cb(rc);
     });
   }
 
-  if (!usbGnubby.gnubbies_) {
-    cb(-llGnubby.NODEVICE);
-    return;
-  }
-  if (opt_which) {
-    addSelfAsClient(opt_which);
-  } else {
-    usbGnubby.gnubbies_.enumerate(function(rc, devs) {
-      if (rc || !devs.length) {
-        cb(-llGnubby.NODEVICE);
-        return;
-      }
-      addSelfAsClient(devs[0]);
+  if (which) {
+    setCid(which);
+    usbGnubby.gnubbies_.addClient(which, self, function(rc, device) {
+      self.dev = device;
+      cb(rc);
     });
+  } else {
+    usbGnubby.gnubbies_.enumerate(enumerated);
   }
 };
 
@@ -217,7 +230,7 @@ usbGnubby.prototype.readFrame_ = function() {
  */
 usbGnubby.prototype.read_ = function(cmd, timeout, cb) {
   if (this.closed) { cb(-llGnubby.GONE); return; }
-  if (!this.dev) { cb(-llGnubby.NODEVICE); return; }
+  if (!this.dev) { cb(-llGnubby.GONE); return; }
 
   var tid = null;  // timeout timer id.
   var callback = cb;
@@ -436,7 +449,7 @@ usbGnubby.prototype.exchange_ = function(cmd, data, timeout, cb) {
 
 /** Default callback for commands. Simply logs to console.
  * @param {number} rc Result status code
- * @param {*} data Result data
+ * @param {(ArrayBuffer|Uint8Array|Array.<number>|null)} data Result data
  */
 usbGnubby.defaultCallback = function(rc, data) {
   var msg = 'defaultCallback(' + rc;

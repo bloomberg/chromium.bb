@@ -46,6 +46,8 @@ llUsbGnubby.NAMESPACE = 'usb';
 llUsbGnubby.prototype.destroy = function() {
   if (!this.dev) return;  // Already dead.
 
+  this.gnubbies_.removeOpenDevice(
+      {namespace: llUsbGnubby.NAMESPACE, device: this.id});
   this.closing = true;
 
   console.log(UTIL_fmt('llUsbGnubby.destroy()'));
@@ -74,18 +76,11 @@ llUsbGnubby.prototype.destroy = function() {
   var dev = this.dev;
   this.dev = null;
 
-  var self = this;
-
-  function onClosed() {
-    console.log(UTIL_fmt('Device ' + dev.handle + ' closed'));
-    self.gnubbies_.removeOpenDevice(
-        {namespace: llUsbGnubby.NAMESPACE, device: self.id});
-  }
-
-  // Release first.
   chrome.usb.releaseInterface(dev, 0, function() {
     console.log(UTIL_fmt('Device ' + dev.handle + ' released'));
-    chrome.usb.closeDevice(dev, onClosed);
+    chrome.usb.closeDevice(dev, function() {
+      console.log(UTIL_fmt('Device ' + dev.handle + ' closed'));
+    });
   });
 };
 
@@ -343,7 +338,7 @@ llUsbGnubby.prototype.updateLock_ = function(cid, cmd, arg) {
  * If queue was empty, initiate the write.
  * @param {number} cid The client's channel ID.
  * @param {number} cmd The command to send.
- * @param {ArrayBuffer} data Command argument data
+ * @param {ArrayBuffer|Uint8Array} data Command argument data
  */
 llUsbGnubby.prototype.queueCommand = function(cid, cmd, data) {
   if (!this.dev) return;

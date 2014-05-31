@@ -13,16 +13,14 @@
  * @param {!EnrollHelperFactory} factory Factory to create an enroll helper.
  * @param {MessageSender} sender The sender of the message.
  * @param {Object} request The web page's enroll request.
- * @param {boolean} enforceAppIdValid Whether to enforce that the appId in the
- *     request matches the sender's origin.
  * @param {Function} sendResponse Called back with the result of the enroll.
  * @param {boolean} toleratesMultipleResponses Whether the sendResponse
  *     callback can be called more than once, e.g. for progress updates.
  * @return {Closeable} A handler object to be closed when the browser channel
  *     closes.
  */
-function handleEnrollRequest(factory, sender, request, enforceAppIdValid,
-    sendResponse, toleratesMultipleResponses) {
+function handleEnrollRequest(factory, sender, request, sendResponse,
+    toleratesMultipleResponses) {
   var sentResponse = false;
   function sendResponseOnce(r) {
     if (enroller) {
@@ -119,7 +117,7 @@ function handleEnrollRequest(factory, sender, request, enforceAppIdValid,
   var timer = new CountdownTimer(timeoutMillis);
   var enroller = new Enroller(factory, timer, origin, sendErrorResponse,
       sendSuccessResponse, sendNotification, sender.tlsChannelId, logMsgUrl);
-  enroller.doEnroll(enrollChallenges, signData, enforceAppIdValid);
+  enroller.doEnroll(enrollChallenges, signData);
   return /** @type {Closeable} */ (enroller);
 }
 
@@ -232,30 +230,18 @@ Enroller.DEFAULT_TIMEOUT_MILLIS = 30 * 1000;
  * @param {Array.<Object>} enrollChallenges A set of enroll challenges
  * @param {Array.<Object>} signChallenges A set of sign challenges for existing
  *     enrollments for this user and appId
- * @param {boolean} enforceAppIdValid Whether to enforce that appId is valid
  */
-Enroller.prototype.doEnroll =
-    function(enrollChallenges, signChallenges, enforceAppIdValid) {
+Enroller.prototype.doEnroll = function(enrollChallenges, signChallenges) {
   this.setEnrollChallenges_(enrollChallenges);
   this.setSignChallenges_(signChallenges);
 
-  if (!enforceAppIdValid) {
-    // If not enforcing app id validity, begin enrolling right away.
-    this.helper_.doEnroll(this.encodedEnrollChallenges_,
-        this.encodedSignChallenges_);
-  }
-  // Whether or not enforcing app id validity, begin fetching/checking the
-  // app ids.
+  // Begin fetching/checking the app ids.
   var enrollAppIds = [];
   for (var i = 0; i < enrollChallenges.length; i++) {
     enrollAppIds.push(enrollChallenges[i]['appId']);
   }
   var self = this;
   this.checkAppIds_(enrollAppIds, signChallenges, function(result) {
-    if (!enforceAppIdValid) {
-      // Nothing to do, move along.
-      return;
-    }
     if (result) {
       self.helper_.doEnroll(self.encodedEnrollChallenges_,
           self.encodedSignChallenges_);

@@ -105,6 +105,6 @@ llGnubby.prototype.hasClient = function(who) {};
  * If queue was empty, initiate the write.
  * @param {number} cid The client's channel ID.
  * @param {number} cmd The command to send.
- * @param {ArrayBuffer} data Command data
+ * @param {ArrayBuffer|Uint8Array} data Command data
  */
 llGnubby.prototype.queueCommand = function(cid, cmd, data) {};
