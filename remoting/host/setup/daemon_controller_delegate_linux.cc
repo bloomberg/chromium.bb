@@ -26,6 +26,7 @@
 #include "base/strings/string_util.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "net/base/net_util.h"
 #include "remoting/host/host_config.h"
 #include "remoting/host/json_host_config.h"
@@ -101,6 +102,11 @@ bool RunHostScriptWithTimeout(
   fds_to_remap.push_back(std::pair<int, int>(STDERR_FILENO, STDOUT_FILENO));
   base::LaunchOptions options;
   options.fds_to_remap = &fds_to_remap;
+
+#if !defined(OS_CHROMEOS)
+  options.allow_new_privs = true;
+#endif
+
   if (!base::LaunchProcess(command_line, options, &process_handle)) {
     LOG(ERROR) << "Failed to run command: "
                << command_line.GetCommandLineString();
