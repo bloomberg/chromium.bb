@@ -1352,17 +1352,7 @@ void RenderInline::addFocusRingRects(Vector<IntRect>& rects, const LayoutPoint& 
     AbsoluteRectsGeneratorContext context(rects, additionalOffset);
     generateLineBoxRects(context);
 
-    for (RenderObject* curr = firstChild(); curr; curr = curr->nextSibling()) {
-        if (!curr->isText() && !curr->isListMarker()) {
-            FloatPoint pos(additionalOffset);
-            // FIXME: This doesn't work correctly with transforms.
-            if (curr->hasLayer())
-                pos = curr->localToContainerPoint(FloatPoint(), paintContainer);
-            else if (curr->isBox())
-                pos.move(toRenderBox(curr)->locationOffset());
-            curr->addFocusRingRects(rects, flooredIntPoint(pos), paintContainer);
-        }
-    }
+    addChildFocusRingRects(rects, additionalOffset, paintContainer);
 
     if (continuation()) {
         // If the continuation doesn't paint into the same container, let its repaint container handle it.

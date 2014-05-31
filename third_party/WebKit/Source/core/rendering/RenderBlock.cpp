@@ -4545,18 +4545,7 @@ void RenderBlock::addFocusRingRects(Vector<IntRect>& rects, const LayoutPoint& a
                 rects.append(pixelSnappedIntRect(rect));
         }
 
-        for (RenderObject* curr = firstChild(); curr; curr = curr->nextSibling()) {
-            if (!curr->isText() && !curr->isListMarker() && curr->isBox()) {
-                RenderBox* box = toRenderBox(curr);
-                FloatPoint pos;
-                // FIXME: This doesn't work correctly with transforms.
-                if (box->layer())
-                    pos = curr->localToContainerPoint(FloatPoint(), paintContainer);
-                else
-                    pos = FloatPoint((additionalOffset.x() + box->x()).toFloat(), (additionalOffset.y() + box->y()).toFloat()); // FIXME: Snap offsets? crbug.com/350474
-                box->addFocusRingRects(rects, flooredLayoutPoint(pos), paintContainer);
-            }
-        }
+        addChildFocusRingRects(rects, additionalOffset, paintContainer);
     }
 
     if (inlineElementContinuation())

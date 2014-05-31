@@ -1310,6 +1310,32 @@ void RenderObject::paintOutline(PaintInfo& paintInfo, const LayoutRect& paintRec
         graphicsContext->endLayer();
 }
 
+void RenderObject::addChildFocusRingRects(Vector<IntRect>& rects, const LayoutPoint& additionalOffset, const RenderLayerModelObject* paintContainer)
+{
+    for (RenderObject* current = slowFirstChild(); current; current = current->nextSibling()) {
+        if (current->isText() || current->isListMarker())
+            continue;
+
+        if (current->isBox()) {
+            RenderBox* box = toRenderBox(current);
+            if (box->hasLayer()) {
+                Vector<IntRect> layerFocusRingRects;
+                box->addFocusRingRects(layerFocusRingRects, LayoutPoint(), box);
+                for (size_t i = 0; i < layerFocusRingRects.size(); ++i) {
+                    FloatQuad quadInBox = box->localToContainerQuad(FloatRect(layerFocusRingRects[i]), paintContainer);
+                    rects.append(pixelSnappedIntRect(LayoutRect(quadInBox.boundingBox())));
+                }
+            } else {
+                FloatPoint pos(additionalOffset);
+                pos.move(box->locationOffset()); // FIXME: Snap offsets? crbug.com/350474
+                box->addFocusRingRects(rects, flooredIntPoint(pos), paintContainer);
+            }
+        } else {
+            current->addFocusRingRects(rects, additionalOffset, paintContainer);
+        }
+    }
+}
+
 // FIXME: In repaint-after-layout, we should be able to change the logic to remove the need for this function. See crbug.com/368416.
 LayoutPoint RenderObject::positionFromRepaintContainer(const RenderLayerModelObject* repaintContainer) const
 {
@@ -1357,18 +1383,11 @@ IntRect RenderObject::absoluteBoundingBoxRectIgnoringTransforms() const
 void RenderObject::absoluteFocusRingQuads(Vector<FloatQuad>& quads)
 {
     Vector<IntRect> rects;
-    // FIXME: addFocusRingRects() needs to be passed this transform-unaware
-    // localToAbsolute() offset here because RenderInline::addFocusRingRects()
-    // implicitly assumes that. This doesn't work correctly with transformed
-    // descendants.
-    FloatPoint absolutePoint = localToAbsolute();
-    addFocusRingRects(rects, flooredLayoutPoint(absolutePoint));
+    const RenderLayerModelObject* container = containerForRepaint();
+    addFocusRingRects(rects, LayoutPoint(localToContainerPoint(FloatPoint(), container)), container);
     size_t count = rects.size();
-    for (size_t i = 0; i < count; ++i) {
-        IntRect rect = rects[i];
-        rect.move(-absolutePoint.x(), -absolutePoint.y());
-        quads.append(localToAbsoluteQuad(FloatQuad(rect)));
-    }
+    for (size_t i = 0; i < count; ++i)
+        quads.append(container->localToAbsoluteQuad(FloatQuad(rects[i])));
 }
 
 FloatRect RenderObject::absoluteBoundingBoxRectForRange(const Range* range)
