@@ -247,7 +247,8 @@ CompositorImpl::CompositorImpl(CompositorClient* client,
       needs_animate_(false),
       will_composite_immediately_(false),
       composite_on_vsync_trigger_(DO_NOT_COMPOSITE),
-      pending_swapbuffers_(0U) {
+      pending_swapbuffers_(0U),
+      weak_factory_(this) {
   DCHECK(client);
   DCHECK(root_window);
   ImageTransportFactoryAndroid::AddObserver(this);
@@ -322,6 +323,18 @@ void CompositorImpl::PostComposite(CompositingTrigger trigger) {
 }
 
 void CompositorImpl::Composite(CompositingTrigger trigger) {
+  BrowserGpuChannelHostFactory* factory =
+      BrowserGpuChannelHostFactory::instance();
+  if (!factory->GetGpuChannel() || factory->GetGpuChannel()->IsLost()) {
+    CauseForGpuLaunch cause =
+        CAUSE_FOR_GPU_LAUNCH_WEBGRAPHICSCONTEXT3DCOMMANDBUFFERIMPL_INITIALIZE;
+    factory->EstablishGpuChannel(
+        cause,
+        base::Bind(&CompositorImpl::OnGpuChannelEstablished,
+                   weak_factory_.GetWeakPtr()));
+    return;
+  }
+
   DCHECK(host_);
   DCHECK(trigger == COMPOSITE_IMMEDIATELY || trigger == COMPOSITE_EVENTUALLY);
   DCHECK(needs_composite_);
@@ -364,6 +377,10 @@ void CompositorImpl::Composite(CompositingTrigger trigger) {
 
   // Need to track vsync to avoid compositing more than once per frame.
   root_window_->RequestVSyncUpdate();
+}
+
+void CompositorImpl::OnGpuChannelEstablished() {
+  ScheduleComposite();
 }
 
 void CompositorImpl::SetRootLayer(scoped_refptr<cc::Layer> root_layer) {
@@ -549,16 +566,10 @@ void CompositorImpl::DeleteUIResource(cc::UIResourceId resource_id) {
 
 static scoped_ptr<WebGraphicsContext3DCommandBufferImpl>
 CreateGpuProcessViewContext(
+    const scoped_refptr<GpuChannelHost>& gpu_channel_host,
     const blink::WebGraphicsContext3D::Attributes attributes,
     int surface_id) {
-  BrowserGpuChannelHostFactory* factory =
-      BrowserGpuChannelHostFactory::instance();
-  CauseForGpuLaunch cause =
-      CAUSE_FOR_GPU_LAUNCH_WEBGRAPHICSCONTEXT3DCOMMANDBUFFERIMPL_INITIALIZE;
-  scoped_refptr<GpuChannelHost> gpu_channel_host(
-      factory->EstablishGpuChannelSync(cause));
-  if (!gpu_channel_host)
-    return scoped_ptr<WebGraphicsContext3DCommandBufferImpl>();
+  DCHECK(gpu_channel_host);
 
   GURL url("chrome://gpu/Compositor::createContext3D");
   static const size_t kBytesPerPixel = 4;
@@ -597,13 +608,20 @@ scoped_ptr<cc::OutputSurface> CompositorImpl::CreateOutputSurface(
   blink::WebGraphicsContext3D::Attributes attrs;
   attrs.shareResources = true;
   attrs.noAutomaticFlushes = true;
+  pending_swapbuffers_ = 0;
 
   DCHECK(window_);
   DCHECK(surface_id_);
 
-  scoped_refptr<ContextProviderCommandBuffer> context_provider =
-      ContextProviderCommandBuffer::Create(
-          CreateGpuProcessViewContext(attrs, surface_id_), "BrowserCompositor");
+  scoped_refptr<ContextProviderCommandBuffer> context_provider;
+  BrowserGpuChannelHostFactory* factory =
+      BrowserGpuChannelHostFactory::instance();
+  scoped_refptr<GpuChannelHost> gpu_channel_host = factory->GetGpuChannel();
+  if (gpu_channel_host && !gpu_channel_host->IsLost()) {
+    context_provider = ContextProviderCommandBuffer::Create(
+        CreateGpuProcessViewContext(gpu_channel_host, attrs, surface_id_),
+        "BrowserCompositor");
+  }
   if (!context_provider.get()) {
     LOG(ERROR) << "Failed to create 3D context for compositor.";
     return scoped_ptr<cc::OutputSurface>();
@@ -657,10 +675,10 @@ void CompositorImpl::DidCompleteSwapBuffers() {
 
 void CompositorImpl::DidAbortSwapBuffers() {
   TRACE_EVENT0("compositor", "CompositorImpl::DidAbortSwapBuffers");
-  DCHECK_GT(pending_swapbuffers_, 0U);
-  if (pending_swapbuffers_-- == kMaxSwapBuffers && needs_composite_)
-    PostComposite(COMPOSITE_IMMEDIATELY);
-  client_->OnSwapBuffersCompleted(pending_swapbuffers_);
+  // This really gets called only once from
+  // SingleThreadProxy::DidLoseOutputSurfaceOnImplThread() when the
+  // context was lost.
+  client_->OnSwapBuffersCompleted(0);
 }
 
 void CompositorImpl::DidCommit() {

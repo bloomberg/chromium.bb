@@ -10,6 +10,7 @@
 #include "base/compiler_specific.h"
 #include "base/containers/scoped_ptr_hash_map.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "cc/resources/ui_resource_client.h"
 #include "cc/trees/layer_tree_host_client.h"
 #include "cc/trees/layer_tree_host_single_thread_client.h"
@@ -135,6 +136,7 @@ class CONTENT_EXPORT CompositorImpl
   cc::UIResourceId GenerateUIResourceFromUIResourceBitmap(
       const cc::UIResourceBitmap& bitmap,
       bool is_transient);
+  void OnGpuChannelEstablished();
 
   scoped_refptr<cc::Layer> root_layer_;
   scoped_ptr<cc::LayerTreeHost> host_;
@@ -183,6 +185,8 @@ class CONTENT_EXPORT CompositorImpl
 
   base::TimeDelta vsync_period_;
   base::TimeTicks last_vsync_;
+
+  base::WeakPtrFactory<CompositorImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(CompositorImpl);
 };
