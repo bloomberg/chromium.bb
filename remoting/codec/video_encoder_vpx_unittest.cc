@@ -113,35 +113,35 @@ TEST(VideoEncoderVpxTest, TestVp8VideoEncoderIgnoreLossy) {
 
 // Test that calling Encode with a differently-sized media::ScreenCaptureData
 // does not leak memory.
-TEST(VideoEncoderVp8Test, TestSizeChangeNoLeak) {
-  int height = 1000;
-  int width = 1000;
+TEST(VideoEncoderVpxTest, TestSizeChangeNoLeak) {
+  webrtc::DesktopSize frame_size(1000, 1000);
 
   scoped_ptr<VideoEncoderVpx> encoder(VideoEncoderVpx::CreateForVP8());
 
-  scoped_ptr<webrtc::DesktopFrame> frame(
-      new webrtc::BasicDesktopFrame(webrtc::DesktopSize(width, height)));
-
+  // Create first frame & encode it.
+  scoped_ptr<webrtc::DesktopFrame> frame(CreateTestFrame(frame_size));
+  frame->mutable_updated_region()->SetRect(
+      webrtc::DesktopRect::MakeSize(frame_size));
   scoped_ptr<VideoPacket> packet = encoder->Encode(*frame);
   EXPECT_TRUE(packet);
 
-  height /= 2;
-  frame.reset(
-      new webrtc::BasicDesktopFrame(webrtc::DesktopSize(width, height)));
+  // Halve the size of the frame, and updated region, and encode again.
+  frame_size.set(frame_size.width(), frame_size.height() / 2);
+  frame = CreateTestFrame(frame_size);
+  frame->mutable_updated_region()->SetRect(
+      webrtc::DesktopRect::MakeSize(frame_size));
   packet = encoder->Encode(*frame);
   EXPECT_TRUE(packet);
 }
 
 // Test that the DPI information is correctly propagated from the
 // media::ScreenCaptureData to the VideoPacket.
-TEST(VideoEncoderVp8Test, TestDpiPropagation) {
-  int height = 32;
-  int width = 32;
+TEST(VideoEncoderVpxTest, TestDpiPropagation) {
+  webrtc::DesktopSize frame_size(32, 32);
 
   scoped_ptr<VideoEncoderVpx> encoder(VideoEncoderVpx::CreateForVP8());
 
-  scoped_ptr<webrtc::DesktopFrame> frame(
-      new webrtc::BasicDesktopFrame(webrtc::DesktopSize(width, height)));
+  scoped_ptr<webrtc::DesktopFrame> frame(CreateTestFrame(frame_size));
   frame->set_dpi(webrtc::DesktopVector(96, 97));
   scoped_ptr<VideoPacket> packet = encoder->Encode(*frame);
   EXPECT_EQ(packet->format().x_dpi(), 96);
