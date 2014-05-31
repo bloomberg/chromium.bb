@@ -479,6 +479,16 @@ def RunGPUTests(options):
           '--browser=android-content-shell', 'webgl_conformance',
           '--webgl-conformance-version=1.0.1'])
 
+  bb_annotations.PrintNamedStep('gpu_rasterization_tests')
+  RunCmd(['content/test/gpu/run_gpu_test.py',
+          'gpu_rasterization',
+          '--browser',
+          'android-content-shell',
+          '--build-revision',
+          str(revision),
+          '--test-machine-name',
+          EscapeBuilderName(builder_name)])
+
 
 def GetTestStepCmds():
   return [
