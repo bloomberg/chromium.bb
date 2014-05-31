@@ -1529,20 +1529,12 @@ PassRefPtr<StringImpl> StringImpl::replace(UChar oldC, UChar newC)
 {
     if (oldC == newC)
         return this;
-    unsigned i;
-    for (i = 0; i != m_length; ++i) {
-        UChar c = is8Bit() ? characters8()[i] : characters16()[i];
-        if (c == oldC)
-            break;
-    }
-    if (i == m_length)
+
+    if (find(oldC) == kNotFound)
         return this;
 
+    unsigned i;
     if (is8Bit()) {
-        if (oldC > 0xff)
-            // Looking for a 16 bit char in an 8 bit string, we're done.
-            return this;
-
         if (newC <= 0xff) {
             LChar* data;
             LChar oldChar = static_cast<LChar>(oldC);
