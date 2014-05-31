@@ -48,7 +48,7 @@ InlineIterator BreakingContext::handleEndOfLine()
     // Sanity check our midpoints.
     m_lineMidpointState.checkMidpoints(m_lineBreak);
 
-    m_trailingObjects.updateMidpointsForTrailingBoxes(m_lineMidpointState, m_lineBreak, TrailingObjects::CollapseFirstSpace);
+    m_trailingObjects.updateMidpointsForTrailingObjects(m_lineMidpointState, m_lineBreak, TrailingObjects::CollapseFirstSpace);
 
     // We might have made lineBreak an iterator that points past the end
     // of the object. Do this adjustment to make it point to the start
