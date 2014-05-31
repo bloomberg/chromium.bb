@@ -84,29 +84,35 @@ PrefService* GetPrefsForWindow(const views::Widget* window) {
 }
 
 #if defined(OS_WIN)
-bool MonitorHasTopmostAutohideTaskbarForEdge(UINT edge, const RECT& rect) {
-  APPBARDATA taskbar_data = { sizeof(APPBARDATA), NULL, 0, edge, rect };
+bool MonitorHasTopmostAutohideTaskbarForEdge(UINT edge, HMONITOR monitor) {
+  APPBARDATA taskbar_data = { sizeof(APPBARDATA), NULL, 0, edge };
+  // MSDN documents an ABM_GETAUTOHIDEBAREX, which supposedly takes a monitor
+  // rect and returns autohide bars on that monitor.  This sounds like a good
+  // idea for multi-monitor systems.  Unfortunately, it appears to not work at
+  // least some of the time (erroneously returning NULL) and there's almost no
+  // online documentation or other sample code using it that suggests ways to
+  // address this problem.  So we just use ABM_GETAUTOHIDEBAR and hope the user
+  // only cares about autohide bars on the monitor with the primary taskbar.
+  //
   // NOTE: This call spins a nested message loop.
-  HWND taskbar = reinterpret_cast<HWND>(SHAppBarMessage(ABM_GETAUTOHIDEBAREX,
+  HWND taskbar = reinterpret_cast<HWND>(SHAppBarMessage(ABM_GETAUTOHIDEBAR,
                                                         &taskbar_data));
   return ::IsWindow(taskbar) &&
+      (MonitorFromWindow(taskbar, MONITOR_DEFAULTTONULL) == monitor) &&
       (GetWindowLong(taskbar, GWL_EXSTYLE) & WS_EX_TOPMOST);
 }
 
 int GetAppbarAutohideEdgesOnWorkerThread(HMONITOR monitor) {
   DCHECK(monitor);
 
-  MONITORINFO mi = { sizeof(MONITORINFO) };
-  GetMonitorInfo(monitor, &mi);
-
   int edges = 0;
-  if (MonitorHasTopmostAutohideTaskbarForEdge(ABE_LEFT, mi.rcMonitor))
+  if (MonitorHasTopmostAutohideTaskbarForEdge(ABE_LEFT, monitor))
     edges |= views::ViewsDelegate::EDGE_LEFT;
-  if (MonitorHasTopmostAutohideTaskbarForEdge(ABE_TOP, mi.rcMonitor))
+  if (MonitorHasTopmostAutohideTaskbarForEdge(ABE_TOP, monitor))
     edges |= views::ViewsDelegate::EDGE_TOP;
-  if (MonitorHasTopmostAutohideTaskbarForEdge(ABE_RIGHT, mi.rcMonitor))
+  if (MonitorHasTopmostAutohideTaskbarForEdge(ABE_RIGHT, monitor))
     edges |= views::ViewsDelegate::EDGE_RIGHT;
-  if (MonitorHasTopmostAutohideTaskbarForEdge(ABE_BOTTOM, mi.rcMonitor))
+  if (MonitorHasTopmostAutohideTaskbarForEdge(ABE_BOTTOM, monitor))
     edges |= views::ViewsDelegate::EDGE_BOTTOM;
   return edges;
 }
