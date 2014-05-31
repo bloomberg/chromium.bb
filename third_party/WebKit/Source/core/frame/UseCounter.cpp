@@ -730,6 +730,9 @@ String UseCounter::deprecationMessage(Feature feature)
     case HTMLHeadElementProfile:
         return "'HTMLHeadElement.profile' is deprecated. The reflected attribute has no effect.";
 
+    case ElementSetPrefix:
+        return "Setting 'Element.prefix' is deprecated, as it is read-only per DOM (http://dom.spec.whatwg.org/#element).";
+
     // Features that aren't deprecated don't have a deprecation message.
     default:
         return String();

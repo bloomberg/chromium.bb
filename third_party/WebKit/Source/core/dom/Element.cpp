@@ -1201,7 +1201,7 @@ String Element::nodeName() const
 
 void Element::setPrefix(const AtomicString& prefix, ExceptionState& exceptionState)
 {
-    UseCounter::count(document(), UseCounter::ElementSetPrefix);
+    UseCounter::countDeprecation(document(), UseCounter::ElementSetPrefix);
 
     if (!prefix.isEmpty() && !Document::isValidName(prefix)) {
         exceptionState.throwDOMException(InvalidCharacterError, "The prefix '" + prefix + "' is not a valid name.");
