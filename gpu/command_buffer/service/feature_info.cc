@@ -802,8 +802,10 @@ void FeatureInfo::InitializeFeatures() {
   }
   egl_khr_fence_sync = gfx::g_driver_egl.ext.b_EGL_KHR_fence_sync;
 #endif
+  if (workarounds_.disable_arb_sync)
+    gfx::g_driver_gl.ext.b_GL_ARB_sync = false;
   bool ui_gl_fence_works = is_es3 || extensions.Contains("GL_NV_fence") ||
-                           extensions.Contains("GL_ARB_sync") ||
+                           gfx::g_driver_gl.ext.b_GL_ARB_sync ||
                            egl_khr_fence_sync;
   UMA_HISTOGRAM_BOOLEAN("GPU.FenceSupport", ui_gl_fence_works);
 

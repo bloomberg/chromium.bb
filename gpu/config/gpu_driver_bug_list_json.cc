@@ -1058,6 +1058,32 @@ LONG_STRING_CONST(
       "features": [
         "disable_egl_khr_fence_sync"
       ]
+    },
+    {
+      "id": 79,
+      "cr_bugs": [371530],
+      "description": "Testing ARB sync fences is broken with some NVIDIA drivers on MacOSX",
+      "os": {
+        "type": "macosx"
+      },
+      "vendor_id": "0x10de",
+      "device_id": ["0x0fd5", "0x0fe9", "0x08a3"],
+      "features": [
+        "disable_arb_sync"
+      ]
+    },
+    {
+      "id": 80,
+      "cr_bugs": [371530],
+      "description": "Testing ARB sync fences is broken with some Intel drivers on MacOSX",
+      "os": {
+        "type": "macosx"
+      },
+      "vendor_id": "0x8086",
+      "device_id": ["0x0d26", "0x0166", "0x0a2e", "0x0a26"],
+      "features": [
+        "disable_arb_sync"
+      ]
     }
   ]
 }
