@@ -54,8 +54,8 @@ void SetDataReductionProxyKey(JNIEnv* env, jclass, jstring key) {
   DCHECK(browser_context);
   DataReductionProxySettings* drp_settings =
       browser_context->GetDataReductionProxySettings();
-  DCHECK(drp_settings);
-  drp_settings->set_key(ConvertJavaStringToUTF8(env, key));
+  if (drp_settings)
+    drp_settings->params()->set_key(ConvertJavaStringToUTF8(env, key));
 }
 
 // static

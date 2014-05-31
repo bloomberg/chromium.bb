@@ -16,6 +16,10 @@ void RegisterSyncableProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
       false,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterBooleanPref(
+      data_reduction_proxy::prefs::kDataReductionProxyAltEnabled,
+      false,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterBooleanPref(
       data_reduction_proxy::prefs::kDataReductionProxyWasEnabledBefore,
       false,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);

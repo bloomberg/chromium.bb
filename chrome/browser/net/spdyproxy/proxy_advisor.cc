@@ -11,6 +11,7 @@
 #include "base/stl_util.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "components/data_reduction_proxy/browser/data_reduction_proxy_params.h"
 #include "components/data_reduction_proxy/browser/data_reduction_proxy_settings.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/load_flags.h"
@@ -20,6 +21,8 @@
 #include "net/proxy/proxy_service.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
+
+// TODO(marq): Remove this class because it is not being used.
 
 // Ensure data reduction features are available.
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
@@ -119,8 +122,12 @@ void ProxyAdvisor::Advise(
   std::string motivation_name(MotivationName(motivation, is_preconnect));
   std::string header_value = motivation_name + " " + url.spec();
   net::URLRequestContext* context = context_getter_->GetURLRequestContext();
+  data_reduction_proxy::DataReductionProxyParams params(
+      data_reduction_proxy::DataReductionProxyParams::kAllowed |
+      data_reduction_proxy::DataReductionProxyParams::kFallbackAllowed |
+      data_reduction_proxy::DataReductionProxyParams::kPromoAllowed);
   std::string endpoint =
-      DataReductionProxySettings::GetDataReductionProxyOrigin() + "preconnect";
+      params.origin().spec() + "preconnect";
   scoped_ptr<net::URLRequest> request = context->CreateRequest(
       GURL(endpoint), net::DEFAULT_PRIORITY, this, NULL);
   request->set_method("HEAD");

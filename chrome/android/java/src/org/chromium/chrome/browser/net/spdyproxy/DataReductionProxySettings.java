@@ -10,8 +10,15 @@ import org.chromium.base.ThreadUtils;
 import java.text.NumberFormat;
 import java.util.Locale;
 
+/**
+ * Entry point to manage all data reduction proxy configuration details.
+ */
 public class DataReductionProxySettings {
 
+    /**
+     * Data structure to hold the original content length before data reduction and the received
+     * content length after data reduction.
+     */
     public static class ContentLengths {
         private final long mOriginal;
         private final long mReceived;
@@ -37,6 +44,9 @@ public class DataReductionProxySettings {
 
     private static DataReductionProxySettings sSettings;
 
+    /**
+     * Returns a singleton instance of the settings object.
+     */
     public static DataReductionProxySettings getInstance() {
         ThreadUtils.assertOnUiThread();
         if (sSettings == null) {
@@ -52,14 +62,6 @@ public class DataReductionProxySettings {
         // DataReductionProxySettings is a singleton that lives forever and there's no clean
         // shutdown of Chrome on Android
         mNativeDataReductionProxySettings = nativeInit();
-        initDataReductionProxySettings();
-    }
-
-    /**
-     * Initializes the data reduction proxy at Chrome startup.
-     */
-    public void initDataReductionProxySettings() {
-        nativeInitDataReductionProxySettings(mNativeDataReductionProxySettings);
     }
 
     /**
@@ -191,8 +193,6 @@ public class DataReductionProxySettings {
     }
 
     private native long nativeInit();
-    private native void nativeInitDataReductionProxySettings(
-            long nativeDataReductionProxySettingsAndroid);
     private native void nativeBypassHostPattern(
             long nativeDataReductionProxySettingsAndroid, String pattern);
     private native void nativeBypassURLPattern(

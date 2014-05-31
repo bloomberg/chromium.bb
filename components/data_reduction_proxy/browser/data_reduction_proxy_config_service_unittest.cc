@@ -207,7 +207,8 @@ TEST_F(DataReductionProxyConfigServiceTest, TrackerEnable) {
   tracker.Enable(false,
                  false,
                  "https://foo.com:443",
-                 "http://bar.com:80");
+                 "http://bar.com:80",
+                 "");
   task_runner_->RunUntilIdle();
   Mock::VerifyAndClearExpectations(&observer);
 
@@ -231,7 +232,8 @@ TEST_F(DataReductionProxyConfigServiceTest, TrackerEnableRestricted) {
   tracker.Enable(true,
                  false,
                  "https://foo.com:443",
-                 "http://bar.com:80");
+                 "http://bar.com:80",
+                 "");
   task_runner_->RunUntilIdle();
   Mock::VerifyAndClearExpectations(&observer);
 
