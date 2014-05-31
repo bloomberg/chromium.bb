@@ -65,7 +65,7 @@ class BaselineOptimizerTest(unittest.TestCase):
         host.filesystem.write_binary_file('/mock-checkout/third_party/WebKit/LayoutTests/platform/win/another/test-expected.txt', 'result A')
         host.filesystem.write_binary_file('/mock-checkout/third_party/WebKit/LayoutTests/platform/mac/another/test-expected.txt', 'result A')
         host.filesystem.write_binary_file('/mock-checkout/third_party/WebKit/LayoutTests/another/test-expected.txt', 'result B')
-        baseline_optimizer = BaselineOptimizer(host, host.port_factory.all_port_names())
+        baseline_optimizer = BaselineOptimizer(host, host.port_factory.all_port_names(), skip_scm_commands=False)
         baseline_optimizer._move_baselines('another/test-expected.txt', {
             '/mock-checkout/third_party/WebKit/LayoutTests/platform/win': 'aaa',
             '/mock-checkout/third_party/WebKit/LayoutTests/platform/mac': 'aaa',
@@ -75,7 +75,32 @@ class BaselineOptimizerTest(unittest.TestCase):
         })
         self.assertEqual(host.filesystem.read_binary_file('/mock-checkout/third_party/WebKit/LayoutTests/another/test-expected.txt'), 'result A')
 
-    def _assertOptimization(self, results_by_directory, expected_new_results_by_directory, baseline_dirname=''):
+    def test_move_baselines_skip_scm_commands(self):
+        host = MockHost(scm=ExcludingMockSCM(['/mock-checkout/third_party/WebKit/LayoutTests/platform/mac/another/test-expected.txt']))
+        host.filesystem.write_binary_file('/mock-checkout/third_party/WebKit/LayoutTests/platform/win/another/test-expected.txt', 'result A')
+        host.filesystem.write_binary_file('/mock-checkout/third_party/WebKit/LayoutTests/platform/mac/another/test-expected.txt', 'result A')
+        host.filesystem.write_binary_file('/mock-checkout/third_party/WebKit/LayoutTests/another/test-expected.txt', 'result B')
+        baseline_optimizer = BaselineOptimizer(host, host.port_factory.all_port_names(), skip_scm_commands=True)
+        baseline_optimizer._move_baselines('another/test-expected.txt', {
+            '/mock-checkout/third_party/WebKit/LayoutTests/platform/win': 'aaa',
+            '/mock-checkout/third_party/WebKit/LayoutTests/platform/mac': 'aaa',
+            '/mock-checkout/third_party/WebKit/LayoutTests': 'bbb',
+        }, {
+            '/mock-checkout/third_party/WebKit/LayoutTests/platform/linux': 'bbb',
+            '/mock-checkout/third_party/WebKit/LayoutTests': 'aaa',
+        })
+        self.assertEqual(host.filesystem.read_binary_file('/mock-checkout/third_party/WebKit/LayoutTests/another/test-expected.txt'), 'result A')
+
+        self.assertEqual(baseline_optimizer._files_to_delete, [
+            '/mock-checkout/third_party/WebKit/LayoutTests/platform/win/another/test-expected.txt',
+        ])
+
+        self.assertEqual(baseline_optimizer._files_to_add, [
+            '/mock-checkout/third_party/WebKit/LayoutTests/another/test-expected.txt',
+            '/mock-checkout/third_party/WebKit/LayoutTests/platform/linux/another/test-expected.txt',
+        ])
+
+    def _assertOptimization(self, results_by_directory, expected_new_results_by_directory, baseline_dirname='', expected_files_to_delete=None):
         host = MockHost()
         fs = host.filesystem
         webkit_base = WebKitFinder(fs).webkit_base()
@@ -85,13 +110,13 @@ class BaselineOptimizerTest(unittest.TestCase):
             path = fs.join(webkit_base, 'LayoutTests', dirname, baseline_name)
             fs.write_binary_file(path, contents)
 
-        baseline_optimizer = BaselineOptimizer(host, host.port_factory.all_port_names())
+        baseline_optimizer = BaselineOptimizer(host, host.port_factory.all_port_names(), skip_scm_commands=expected_files_to_delete is not None)
         self.assertTrue(baseline_optimizer.optimize(fs.join(baseline_dirname, baseline_name)))
 
         for dirname, contents in expected_new_results_by_directory.items():
             path = fs.join(webkit_base, 'LayoutTests', dirname, baseline_name)
             if contents is None:
-                self.assertFalse(fs.exists(path))
+                self.assertTrue(not fs.exists(path) or path in baseline_optimizer._files_to_delete)
             else:
                 self.assertEqual(fs.read_binary_file(path), contents)
 
@@ -99,7 +124,10 @@ class BaselineOptimizerTest(unittest.TestCase):
         for dirname in results_by_directory:
             path = fs.join(webkit_base, 'LayoutTests', dirname, baseline_name)
             if not dirname in expected_new_results_by_directory:
-                self.assertFalse(fs.exists(path))
+                self.assertTrue(not fs.exists(path) or path in baseline_optimizer._files_to_delete)
+
+        if expected_files_to_delete:
+            self.assertEqual(baseline_optimizer._files_to_delete, expected_files_to_delete)
 
     def test_linux_redundant_with_win(self):
         self._assertOptimization({
@@ -208,6 +236,22 @@ class BaselineOptimizerTest(unittest.TestCase):
             'virtual/softwarecompositing': None,
             'compositing': '2',
         }, baseline_dirname='virtual/softwarecompositing')
+
+    def test_virtual_root_redundant_with_ancestors_skip_scm_commands(self):
+        self._assertOptimization({
+            'virtual/softwarecompositing': '2',
+            'platform/mac/compositing': '2',
+            'platform/win/compositing': '2',
+        }, {
+            'virtual/softwarecompositing': None,
+            'compositing': '2',
+        },
+        baseline_dirname='virtual/softwarecompositing',
+        expected_files_to_delete=[
+            '/mock-checkout/third_party/WebKit/LayoutTests/virtual/softwarecompositing/mock-baseline-expected.txt',
+            '/mock-checkout/third_party/WebKit/LayoutTests/platform/mac/compositing/mock-baseline-expected.txt',
+            '/mock-checkout/third_party/WebKit/LayoutTests/platform/win/compositing/mock-baseline-expected.txt',
+        ])
 
     def test_virtual_root_not_redundant_with_ancestors(self):
         self._assertOptimization({

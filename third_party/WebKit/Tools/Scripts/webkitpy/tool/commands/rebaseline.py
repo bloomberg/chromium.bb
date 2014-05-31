@@ -72,6 +72,13 @@ class AbstractRebaseliningCommand(AbstractDeclarativeCommand):
     def __init__(self, options=None):
         super(AbstractRebaseliningCommand, self).__init__(options=options)
         self._baseline_suffix_list = BASELINE_SUFFIX_LIST
+        self._scm_changes = {'add': [], 'delete': [], 'remove-lines': []}
+
+    def _add_to_scm_later(self, path):
+        self._scm_changes['add'].append(path)
+
+    def _delete_from_scm_later(self, path):
+        self._scm_changes['delete'].append(path)
 
 
 class BaseInternalRebaselineCommand(AbstractRebaseliningCommand):
@@ -82,10 +89,6 @@ class BaseInternalRebaselineCommand(AbstractRebaseliningCommand):
             optparse.make_option("--builder", help="Builder to pull new baselines from"),
             optparse.make_option("--test", help="Test to rebaseline"),
             ])
-        self._scm_changes = {'add': [], 'remove-lines': []}
-
-    def _add_to_scm(self, path):
-        self._scm_changes['add'].append(path)
 
     def _baseline_directory(self, builder_name):
         port = self._tool.port_factory.get_from_builder_name(builder_name)
@@ -168,7 +171,7 @@ class CopyExistingBaselinesInternal(BaseInternalRebaselineCommand):
             self._tool.filesystem.maybe_make_directory(self._tool.filesystem.dirname(new_baseline))
             self._tool.filesystem.copyfile(old_baseline, new_baseline)
             if not self._tool.scm().exists(new_baseline):
-                self._add_to_scm(new_baseline)
+                self._add_to_scm_later(new_baseline)
 
     def execute(self, options, args, tool):
         for suffix in options.suffixes.split(','):
@@ -192,7 +195,7 @@ class RebaselineTest(BaseInternalRebaselineCommand):
         filesystem.maybe_make_directory(filesystem.dirname(target_baseline))
         filesystem.write_binary_file(target_baseline, data)
         if not self._tool.scm().exists(target_baseline):
-            self._add_to_scm(target_baseline)
+            self._add_to_scm_later(target_baseline)
 
     def _rebaseline_test(self, builder_name, test_name, suffix, results_url):
         baseline_directory = self._baseline_directory(builder_name)
@@ -231,13 +234,18 @@ class OptimizeBaselines(AbstractRebaseliningCommand):
     argument_names = "TEST_NAMES"
 
     def __init__(self):
-        super(OptimizeBaselines, self).__init__(options=[self.suffixes_option] + self.platform_options)
+        super(OptimizeBaselines, self).__init__(options=[
+            self.suffixes_option,
+            optparse.make_option('--no-modify-scm', action='store_true', default=False, help='Dump SCM commands as JSON instead of '),
+            ] + self.platform_options)
 
     def _optimize_baseline(self, optimizer, test_name):
         for suffix in self._baseline_suffix_list:
             baseline_name = _baseline_name(self._tool.filesystem, test_name, suffix)
-            if not optimizer.optimize(baseline_name):
+            succeeded, files_to_delete, files_to_add = optimizer.optimize(baseline_name)
+            if not succeeded:
                 print "Heuristics failed to optimize %s" % baseline_name
+            return files_to_delete, files_to_add
 
     def execute(self, options, args, tool):
         self._baseline_suffix_list = options.suffixes.split(',')
@@ -246,11 +254,17 @@ class OptimizeBaselines(AbstractRebaseliningCommand):
             print "No port names match '%s'" % options.platform
             return
 
-        optimizer = BaselineOptimizer(tool, port_names)
+        optimizer = BaselineOptimizer(tool, port_names, skip_scm_commands=options.no_modify_scm)
         port = tool.port_factory.get(port_names[0])
         for test_name in port.tests(args):
             _log.info("Optimizing %s" % test_name)
-            self._optimize_baseline(optimizer, test_name)
+            files_to_delete, files_to_add = self._optimize_baseline(optimizer, test_name)
+            for path in files_to_delete:
+                self._delete_from_scm_later(path)
+            for path in files_to_add:
+                self._add_to_scm_later(path)
+
+        print json.dumps(self._scm_changes)
 
 
 class AnalyzeBaselines(AbstractRebaseliningCommand):
@@ -288,7 +302,7 @@ class AnalyzeBaselines(AbstractRebaseliningCommand):
             print "No port names match '%s'" % options.platform
             return
 
-        self._baseline_optimizer = self._optimizer_class(tool, port_names)
+        self._baseline_optimizer = self._optimizer_class(tool, port_names, skip_scm_commands=False)
         self._port = tool.port_factory.get(port_names[0])
         for test_name in self._port.tests(args):
             self._analyze_baseline(options, test_name)
@@ -373,8 +387,9 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
                     rebaseline_commands.append(tuple([[path_to_webkit_patch, 'rebaseline-test-internal'] + cmd_line, cwd]))
         return copy_baseline_commands, rebaseline_commands
 
-    def _files_to_add(self, command_results):
+    def _serial_commands(self, command_results):
         files_to_add = set()
+        files_to_delete = set()
         lines_to_remove = {}
         for output in [result[1].split('\n') for result in command_results]:
             file_added = False
@@ -384,6 +399,8 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
                         parsed_line = json.loads(line)
                         if 'add' in parsed_line:
                             files_to_add.update(parsed_line['add'])
+                        if 'delete' in parsed_line:
+                            files_to_delete.update(parsed_line['delete'])
                         if 'remove-lines' in parsed_line:
                             for line_to_remove in parsed_line['remove-lines']:
                                 test = line_to_remove['test']
@@ -398,16 +415,24 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
             if not file_added:
                 _log.debug('Could not add file based off output "%s"' % output)
 
-        return list(files_to_add), lines_to_remove
+        return list(files_to_add), list(files_to_delete), lines_to_remove
 
     def _optimize_baselines(self, test_prefix_list, verbose=False):
-        # We don't run this in parallel because modifying the SCM in parallel is unreliable.
+        optimize_commands = []
         for test in test_prefix_list:
             all_suffixes = set()
             for builder in self._builders_to_fetch_from(test_prefix_list[test]):
                 all_suffixes.update(self._suffixes_for_actual_failures(test, builder, test_prefix_list[test][builder]))
+
             # FIXME: We should propagate the platform options as well.
-            self._run_webkit_patch(['optimize-baselines', '--suffixes', ','.join(all_suffixes), test], verbose)
+            cmd_line = ['--no-modify-scm', '--suffixes', ','.join(all_suffixes), test]
+            if verbose:
+                cmd_line.append('--verbose')
+
+            path_to_webkit_patch = self._tool.path()
+            cwd = self._tool.scm().checkout_root
+            optimize_commands.append(tuple([[path_to_webkit_patch, 'optimize-baselines'] + cmd_line, cwd]))
+        return optimize_commands
 
     def _update_expectations_files(self, lines_to_remove):
         # FIXME: This routine is way too expensive. We're creating N ports and N TestExpectations
@@ -451,9 +476,11 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
             if line:
                 print >> sys.stderr, line  # FIXME: Figure out how to log properly.
 
-        files_to_add, lines_to_remove = self._files_to_add(command_results)
+        files_to_add, files_to_delete, lines_to_remove = self._serial_commands(command_results)
+        if files_to_delete:
+            self._tool.scm().delete_list(files_to_delete)
         if files_to_add:
-            self._tool.scm().add_list(list(files_to_add))
+            self._tool.scm().add_list(files_to_add)
         if lines_to_remove:
             self._update_expectations_files(lines_to_remove)
 
@@ -468,9 +495,8 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
             self._run_in_parallel_and_update_scm(copy_baseline_commands)
         if rebaseline_commands:
             self._run_in_parallel_and_update_scm(rebaseline_commands)
-
         if options.optimize:
-            self._optimize_baselines(test_prefix_list, options.verbose)
+            self._run_in_parallel_and_update_scm(self._optimize_baselines(test_prefix_list, options.verbose))
 
     def _suffixes_for_actual_failures(self, test, builder_name, existing_suffixes):
         actual_results = self.builder_data()[builder_name].actual_results(test)
