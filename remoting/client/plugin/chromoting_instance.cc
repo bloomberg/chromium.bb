@@ -182,7 +182,8 @@ logging::LogMessageHandlerFunction g_logging_old_handler = NULL;
 const char ChromotingInstance::kApiFeatures[] =
     "highQualityScaling injectKeyEvent sendClipboardItem remapKey trapKey "
     "notifyClientResolution pauseVideo pauseAudio asyncPin thirdPartyAuth "
-    "pinlessAuth extensionMessage allowMouseLock mediaSourceRendering";
+    "pinlessAuth extensionMessage allowMouseLock mediaSourceRendering "
+    "videoControl";
 
 const char ChromotingInstance::kRequestedCapabilities[] = "";
 const char ChromotingInstance::kSupportedCapabilities[] = "desktopShape";
@@ -350,6 +351,8 @@ void ChromotingInstance::HandleMessage(const pp::Var& message) {
     HandleNotifyClientResolution(*data);
   } else if (method == "pauseVideo") {
     HandlePauseVideo(*data);
+  } else if (method == "videoControl") {
+    HandleVideoControl(*data);
   } else if (method == "pauseAudio") {
     HandlePauseAudio(*data);
   } else if (method == "useAsyncPinDialog") {
@@ -874,16 +877,30 @@ void ChromotingInstance::HandleNotifyClientResolution(
 }
 
 void ChromotingInstance::HandlePauseVideo(const base::DictionaryValue& data) {
-  bool pause = false;
-  if (!data.GetBoolean("pause", &pause)) {
+  if (!data.HasKey("pause")) {
     LOG(ERROR) << "Invalid pauseVideo.";
     return;
+  }
+  HandleVideoControl(data);
+}
+
+void ChromotingInstance::HandleVideoControl(const base::DictionaryValue& data) {
+  protocol::VideoControl video_control;
+  bool pause_video = false;
+  if (data.GetBoolean("pause", &pause_video)) {
+    video_control.set_enable(!pause_video);
+  }
+  bool lossless_encode = false;
+  if (data.GetBoolean("losslessEncode", &lossless_encode)) {
+    video_control.set_lossless_encode(lossless_encode);
+  }
+  bool lossless_color = false;
+  if (data.GetBoolean("losslessColor", &lossless_color)) {
+    video_control.set_lossless_color(lossless_color);
   }
   if (!IsConnected()) {
     return;
   }
-  protocol::VideoControl video_control;
-  video_control.set_enable(!pause);
   host_connection_->host_stub()->ControlVideo(video_control);
 }
 

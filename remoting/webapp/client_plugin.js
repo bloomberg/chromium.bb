@@ -104,7 +104,8 @@ remoting.ClientPlugin.Feature = {
   TRAP_KEY: 'trapKey',
   PINLESS_AUTH: 'pinlessAuth',
   EXTENSION_MESSAGE: 'extensionMessage',
-  MEDIA_SOURCE_RENDERING: 'mediaSourceRendering'
+  MEDIA_SOURCE_RENDERING: 'mediaSourceRendering',
+  VIDEO_CONTROL: 'videoControl'
 };
 
 /**
@@ -548,11 +549,13 @@ remoting.ClientPlugin.prototype.notifyClientResolution =
  */
 remoting.ClientPlugin.prototype.pauseVideo =
     function(pause) {
-  if (!this.hasFeature(remoting.ClientPlugin.Feature.PAUSE_VIDEO)) {
-    return;
+  if (this.hasFeature(remoting.ClientPlugin.Feature.VIDEO_CONTROL)) {
+    this.plugin.postMessage(JSON.stringify(
+        { method: 'videoControl', data: { pause: pause }}));
+  } else if (this.hasFeature(remoting.ClientPlugin.Feature.PAUSE_VIDEO)) {
+    this.plugin.postMessage(JSON.stringify(
+        { method: 'pauseVideo', data: { pause: pause }}));
   }
-  this.plugin.postMessage(JSON.stringify(
-      { method: 'pauseVideo', data: { pause: pause }}));
 };
 
 /**
@@ -567,6 +570,34 @@ remoting.ClientPlugin.prototype.pauseAudio =
   }
   this.plugin.postMessage(JSON.stringify(
       { method: 'pauseAudio', data: { pause: pause }}));
+};
+
+/**
+ * Requests that the host configure the video codec for lossless encode.
+ *
+ * @param {boolean} wantLossless True to request lossless encoding.
+ */
+remoting.ClientPlugin.prototype.setLosslessEncode =
+    function(wantLossless) {
+  if (!this.hasFeature(remoting.ClientPlugin.Feature.VIDEO_CONTROL)) {
+    return;
+  }
+  this.plugin.postMessage(JSON.stringify(
+      { method: 'videoControl', data: { losslessEncode: wantLossless }}));
+};
+
+/**
+ * Requests that the host configure the video codec for lossless color.
+ *
+ * @param {boolean} wantLossless True to request lossless color.
+ */
+remoting.ClientPlugin.prototype.setLosslessColor =
+    function(wantLossless) {
+  if (!this.hasFeature(remoting.ClientPlugin.Feature.VIDEO_CONTROL)) {
+    return;
+  }
+  this.plugin.postMessage(JSON.stringify(
+      { method: 'videoControl', data: { losslessColor: wantLossless }}));
 };
 
 /**
