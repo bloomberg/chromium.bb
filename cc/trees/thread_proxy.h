@@ -12,6 +12,7 @@
 #include "base/time/time.h"
 #include "cc/animation/animation_events.h"
 #include "cc/base/completion_event.h"
+#include "cc/base/delayed_unique_notifier.h"
 #include "cc/resources/resource_update_controller.h"
 #include "cc/scheduler/scheduler.h"
 #include "cc/trees/layer_tree_host_impl.h"
@@ -134,8 +135,7 @@ class CC_EXPORT ThreadProxy : public Proxy,
     // ticked. If this happens, we need to animate again.
     bool did_commit_after_animating;
 
-    base::TimeTicks smoothness_takes_priority_expiration_time;
-    bool renew_tree_priority_pending;
+    DelayedUniqueNotifier smoothness_priority_expiration_notifier;
 
     ProxyTimingHistory timing_history;
 
@@ -275,7 +275,6 @@ class CC_EXPORT ThreadProxy : public Proxy,
   void SchedulerAsValueOnImplThreadForTesting(SchedulerStateRequest* request);
   void AsValueOnImplThread(CompletionEvent* completion,
                            base::DictionaryValue* state) const;
-  void RenewTreePriorityOnImplThread();
   void SetSwapUsedIncompleteTileOnImplThread(bool used_incomplete_tile);
   void MainThreadHasStoppedFlingingOnImplThread();
   void SetInputThrottledUntilCommitOnImplThread(bool is_throttled);

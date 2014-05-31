@@ -116,7 +116,11 @@ ThreadProxy::CompositorThreadOnly::CompositorThreadOnly(ThreadProxy* proxy,
       input_throttled_until_commit(false),
       animations_frozen_until_next_draw(false),
       did_commit_after_animating(false),
-      renew_tree_priority_pending(false),
+      smoothness_priority_expiration_notifier(
+          proxy->ImplThreadTaskRunner(),
+          base::Bind(&ThreadProxy::RenewTreePriority, base::Unretained(proxy)),
+          base::TimeDelta::FromMilliseconds(
+              kSmoothnessTakesPriorityExpirationDelay * 1000)),
       weak_factory(proxy) {
 }
 
@@ -1401,20 +1405,15 @@ void ThreadProxy::RenewTreePriority() {
       (impl().layer_tree_host_impl->IsCurrentlyScrolling() &&
        !impl().layer_tree_host_impl->scroll_affects_scroll_handler());
 
-  base::TimeTicks now = impl().layer_tree_host_impl->CurrentFrameTimeTicks();
-
-  // Update expiration time if smoothness currently takes priority.
-  if (smoothness_takes_priority) {
-    impl().smoothness_takes_priority_expiration_time =
-        now + base::TimeDelta::FromMilliseconds(
-                  kSmoothnessTakesPriorityExpirationDelay * 1000);
-  }
+  // Schedule expiration if smoothness currently takes priority.
+  if (smoothness_takes_priority)
+    impl().smoothness_priority_expiration_notifier.Schedule();
 
   // We use the same priority for both trees by default.
   TreePriority priority = SAME_PRIORITY_FOR_BOTH_TREES;
 
-  // Smoothness takes priority if expiration time is in the future.
-  if (impl().smoothness_takes_priority_expiration_time > now)
+  // Smoothness takes priority if we have an expiration for it scheduled.
+  if (impl().smoothness_priority_expiration_notifier.HasPendingNotification())
     priority = SMOOTHNESS_TAKES_PRIORITY;
 
   // New content always takes priority when the active tree has
@@ -1442,31 +1441,6 @@ void ThreadProxy::RenewTreePriority() {
         .layer_tree_host_impl->output_surface()
         ->UpdateSmoothnessTakesPriority(priority == SMOOTHNESS_TAKES_PRIORITY);
   }
-
-  base::TimeDelta delay =
-      impl().smoothness_takes_priority_expiration_time - now;
-
-  // Need to make sure a delayed task is posted when we have smoothness
-  // takes priority expiration time in the future.
-  if (delay <= base::TimeDelta())
-    return;
-  if (impl().renew_tree_priority_pending)
-    return;
-
-  Proxy::ImplThreadTaskRunner()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&ThreadProxy::RenewTreePriorityOnImplThread,
-                 impl_thread_weak_ptr_),
-      delay);
-
-  impl().renew_tree_priority_pending = true;
-}
-
-void ThreadProxy::RenewTreePriorityOnImplThread() {
-  DCHECK(impl().renew_tree_priority_pending);
-  impl().renew_tree_priority_pending = false;
-
-  RenewTreePriority();
 }
 
 void ThreadProxy::PostDelayedScrollbarFadeOnImplThread(
