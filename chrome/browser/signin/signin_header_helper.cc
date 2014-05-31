@@ -39,8 +39,8 @@ signin::GAIAServiceType GetGAIAServiceTypeFromHeader(
     const std::string& header_value) {
   if (header_value == "SIGNOUT")
     return signin::GAIA_SERVICE_TYPE_SIGNOUT;
-  else if (header_value == "SIGNOUTOPTIONS_INCOGNITO")
-    return signin::GAIA_SERVICE_TYPE_SIGNOUTOPTIONS_INCOGNITO;
+  else if (header_value == "INCOGNITO")
+    return signin::GAIA_SERVICE_TYPE_INCOGNITO;
   else if (header_value == "ADDSESSION")
     return signin::GAIA_SERVICE_TYPE_ADDSESSION;
   else if (header_value == "REAUTH")
@@ -69,7 +69,7 @@ void ProcessMirrorHeaderUIThread(
 #if !defined(OS_ANDROID)
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
   if (browser) {
-    if (service_type == signin::GAIA_SERVICE_TYPE_SIGNOUTOPTIONS_INCOGNITO) {
+    if (service_type == signin::GAIA_SERVICE_TYPE_INCOGNITO) {
       chrome::NewIncognitoWindow(browser);
     } else {
       browser->window()->ShowAvatarBubbleFromAvatarButton(
@@ -78,7 +78,7 @@ void ProcessMirrorHeaderUIThread(
     }
   }
 #else  // defined(OS_ANDROID)
-  if (service_type == signin::GAIA_SERVICE_TYPE_SIGNOUTOPTIONS_INCOGNITO) {
+  if (service_type == signin::GAIA_SERVICE_TYPE_INCOGNITO) {
     web_contents->OpenURL(content::OpenURLParams(
         GURL(chrome::kChromeUINativeNewTabURL), content::Referrer(),
         OFF_THE_RECORD, content::PAGE_TRANSITION_AUTO_TOPLEVEL, false));

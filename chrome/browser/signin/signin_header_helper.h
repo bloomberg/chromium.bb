@@ -33,7 +33,7 @@ enum ProfileMode {
 enum GAIAServiceType {
   GAIA_SERVICE_TYPE_NONE = 0,                 // No GAIA response header.
   GAIA_SERVICE_TYPE_SIGNOUT,                  // Logout all existing sessions.
-  GAIA_SERVICE_TYPE_SIGNOUTOPTIONS_INCOGNITO, // Open an incognito tab.
+  GAIA_SERVICE_TYPE_INCOGNITO,                // Open an incognito tab.
   GAIA_SERVICE_TYPE_ADDSESSION,               // Add a secondary account.
   GAIA_SERVICE_TYPE_REAUTH,                   // Re-authenticate an account.
   GAIA_SERVICE_TYPE_DEFAULT,                  // All other cases.

@@ -311,8 +311,8 @@ void ProfileMetrics::LogProfileDesktopMenu(
       UMA_HISTOGRAM_ENUMERATION("Profile.DesktopMenu.GAIASignout", metric,
                                 NUM_PROFILE_DESKTOP_MENU_METRICS);
       break;
-    case signin::GAIA_SERVICE_TYPE_SIGNOUTOPTIONS_INCOGNITO:
-      UMA_HISTOGRAM_ENUMERATION("Profile.DesktopMenu.GAIASignoutIncognito",
+    case signin::GAIA_SERVICE_TYPE_INCOGNITO:
+      UMA_HISTOGRAM_ENUMERATION("Profile.DesktopMenu.GAIAIncognito",
                                 metric, NUM_PROFILE_DESKTOP_MENU_METRICS);
       break;
     case signin::GAIA_SERVICE_TYPE_ADDSESSION:

@@ -46797,9 +46797,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <suffix name="NonGAIA" label="Interaction was not initiated from GAIA"/>
   <suffix name="GAIASignout"
       label="GAIA-initiated interaction indicating a service type of Signout"/>
-  <suffix name="GAIASignoutIncognito"
-      label="GAIA-initiated interaction indicating a service type of Signout
-             and go Incogntio"/>
+  <suffix name="GAIAIncognito"
+      label="GAIA-initiated interaction indicating a service type of
+             Incogntio"/>
   <suffix name="GAIAAddSession"
       label="GAIA-initiated interaction indicating a service type of Add a
              Session"/>
