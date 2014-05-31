@@ -53,15 +53,15 @@ public:
     {
         return adoptRefWillBeNoop(new MessageEvent);
     }
-    static PassRefPtrWillBeRawPtr<MessageEvent> create(PassOwnPtr<MessagePortArray> ports, const String& origin = String(), const String& lastEventId = String(), PassRefPtr<EventTarget> source = nullptr)
+    static PassRefPtrWillBeRawPtr<MessageEvent> create(PassOwnPtr<MessagePortArray> ports, const String& origin = String(), const String& lastEventId = String(), PassRefPtrWillBeRawPtr<EventTarget> source = nullptr)
     {
         return adoptRefWillBeNoop(new MessageEvent(origin, lastEventId, source, ports));
     }
-    static PassRefPtrWillBeRawPtr<MessageEvent> create(PassOwnPtr<MessagePortArray> ports, PassRefPtr<SerializedScriptValue> data, const String& origin = String(), const String& lastEventId = String(), PassRefPtr<EventTarget> source = nullptr)
+    static PassRefPtrWillBeRawPtr<MessageEvent> create(PassOwnPtr<MessagePortArray> ports, PassRefPtr<SerializedScriptValue> data, const String& origin = String(), const String& lastEventId = String(), PassRefPtrWillBeRawPtr<EventTarget> source = nullptr)
     {
         return adoptRefWillBeNoop(new MessageEvent(data, origin, lastEventId, source, ports));
     }
-    static PassRefPtrWillBeRawPtr<MessageEvent> create(PassOwnPtr<MessagePortChannelArray> channels, PassRefPtr<SerializedScriptValue> data, const String& origin = String(), const String& lastEventId = String(), PassRefPtr<EventTarget> source = nullptr)
+    static PassRefPtrWillBeRawPtr<MessageEvent> create(PassOwnPtr<MessagePortChannelArray> channels, PassRefPtr<SerializedScriptValue> data, const String& origin = String(), const String& lastEventId = String(), PassRefPtrWillBeRawPtr<EventTarget> source = nullptr)
     {
         return adoptRefWillBeNoop(new MessageEvent(data, origin, lastEventId, source, channels));
     }
@@ -118,13 +118,13 @@ public:
 private:
     MessageEvent();
     MessageEvent(const AtomicString&, const MessageEventInit&);
-    MessageEvent(const String& origin, const String& lastEventId, PassRefPtr<EventTarget> source, PassOwnPtr<MessagePortArray>);
-    MessageEvent(PassRefPtr<SerializedScriptValue> data, const String& origin, const String& lastEventId, PassRefPtr<EventTarget> source, PassOwnPtr<MessagePortArray>);
-    MessageEvent(PassRefPtr<SerializedScriptValue> data, const String& origin, const String& lastEventId, PassRefPtr<EventTarget> source, PassOwnPtr<MessagePortChannelArray>);
+    MessageEvent(const String& origin, const String& lastEventId, PassRefPtrWillBeRawPtr<EventTarget> source, PassOwnPtr<MessagePortArray>);
+    MessageEvent(PassRefPtr<SerializedScriptValue> data, const String& origin, const String& lastEventId, PassRefPtrWillBeRawPtr<EventTarget> source, PassOwnPtr<MessagePortArray>);
+    MessageEvent(PassRefPtr<SerializedScriptValue> data, const String& origin, const String& lastEventId, PassRefPtrWillBeRawPtr<EventTarget> source, PassOwnPtr<MessagePortChannelArray>);
 
-    explicit MessageEvent(const String& data, const String& origin);
-    explicit MessageEvent(PassRefPtrWillBeRawPtr<Blob> data, const String& origin);
-    explicit MessageEvent(PassRefPtr<ArrayBuffer> data, const String& origin);
+    MessageEvent(const String& data, const String& origin);
+    MessageEvent(PassRefPtrWillBeRawPtr<Blob> data, const String& origin);
+    MessageEvent(PassRefPtr<ArrayBuffer> data, const String& origin);
 
     DataType m_dataType;
     RefPtr<SerializedScriptValue> m_dataAsSerializedScriptValue;
@@ -133,7 +133,7 @@ private:
     RefPtr<ArrayBuffer> m_dataAsArrayBuffer;
     String m_origin;
     String m_lastEventId;
-    RefPtr<EventTarget> m_source;
+    RefPtrWillBeMember<EventTarget> m_source;
     // m_ports are the MessagePorts in an engtangled state, and m_channels are
     // the MessageChannels in a disentangled state. Only one of them can be
     // non-empty at a time. entangleMessagePorts() moves between the states.

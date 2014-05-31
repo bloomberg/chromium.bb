@@ -64,7 +64,7 @@ class MessagePort FINAL : public RefCountedWillBeRefCountedGarbageCollected<Mess
     REFCOUNTED_EVENT_TARGET(MessagePort);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(MessagePort);
 public:
-    static PassRefPtr<MessagePort> create(ExecutionContext&);
+    static PassRefPtrWillBeRawPtr<MessagePort> create(ExecutionContext&);
     virtual ~MessagePort();
 
     void postMessage(PassRefPtr<SerializedScriptValue> message, const MessagePortArray*, ExceptionState&);

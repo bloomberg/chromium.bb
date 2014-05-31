@@ -204,7 +204,7 @@ private:
 
     unsigned short m_eventPhase;
     EventTarget* m_currentTarget;
-    RefPtr<EventTarget> m_target;
+    RefPtrWillBeMember<EventTarget> m_target;
     DOMTimeStamp m_createTime;
     RefPtrWillBeMember<Event> m_underlyingEvent;
     OwnPtrWillBeMember<EventPath> m_eventPath;

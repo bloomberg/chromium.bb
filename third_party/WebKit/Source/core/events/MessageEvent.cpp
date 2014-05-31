@@ -60,7 +60,7 @@ MessageEvent::MessageEvent(const AtomicString& type, const MessageEventInit& ini
     ASSERT(isValidSource(m_source.get()));
 }
 
-MessageEvent::MessageEvent(const String& origin, const String& lastEventId, PassRefPtr<EventTarget> source, PassOwnPtr<MessagePortArray> ports)
+MessageEvent::MessageEvent(const String& origin, const String& lastEventId, PassRefPtrWillBeRawPtr<EventTarget> source, PassOwnPtr<MessagePortArray> ports)
     : Event(EventTypeNames::message, false, false)
     , m_dataType(DataTypeScriptValue)
     , m_origin(origin)
@@ -72,7 +72,7 @@ MessageEvent::MessageEvent(const String& origin, const String& lastEventId, Pass
     ASSERT(isValidSource(m_source.get()));
 }
 
-MessageEvent::MessageEvent(PassRefPtr<SerializedScriptValue> data, const String& origin, const String& lastEventId, PassRefPtr<EventTarget> source, PassOwnPtr<MessagePortArray> ports)
+MessageEvent::MessageEvent(PassRefPtr<SerializedScriptValue> data, const String& origin, const String& lastEventId, PassRefPtrWillBeRawPtr<EventTarget> source, PassOwnPtr<MessagePortArray> ports)
     : Event(EventTypeNames::message, false, false)
     , m_dataType(DataTypeSerializedScriptValue)
     , m_dataAsSerializedScriptValue(data)
@@ -87,7 +87,7 @@ MessageEvent::MessageEvent(PassRefPtr<SerializedScriptValue> data, const String&
     ASSERT(isValidSource(m_source.get()));
 }
 
-MessageEvent::MessageEvent(PassRefPtr<SerializedScriptValue> data, const String& origin, const String& lastEventId, PassRefPtr<EventTarget> source, PassOwnPtr<MessagePortChannelArray> channels)
+MessageEvent::MessageEvent(PassRefPtr<SerializedScriptValue> data, const String& origin, const String& lastEventId, PassRefPtrWillBeRawPtr<EventTarget> source, PassOwnPtr<MessagePortChannelArray> channels)
     : Event(EventTypeNames::message, false, false)
     , m_dataType(DataTypeSerializedScriptValue)
     , m_dataAsSerializedScriptValue(data)
@@ -187,6 +187,7 @@ void MessageEvent::entangleMessagePorts(ExecutionContext* context)
 void MessageEvent::trace(Visitor* visitor)
 {
     visitor->trace(m_dataAsBlob);
+    visitor->trace(m_source);
     Event::trace(visitor);
 }
 

@@ -235,6 +235,7 @@ PassRefPtrWillBeRawPtr<NodeList> Event::path() const
 
 void Event::trace(Visitor* visitor)
 {
+    visitor->trace(m_target);
     visitor->trace(m_underlyingEvent);
     visitor->trace(m_eventPath);
 }
