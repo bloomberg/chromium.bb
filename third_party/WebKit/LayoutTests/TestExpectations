@@ -3676,9 +3676,3 @@ Bug(eae) [ XP ] virtual/threaded/compositing/visibility/visibility-image-layers.
 Bug(eae) [ Win ] virtual/threaded/transitions/move-after-transition.html [ NeedsManualRebaseline ]
 Bug(eae) [ XP ] virtual/threaded/transitions/svg-text-shadow-transition.html [ NeedsManualRebaseline ]
 
-# Following test case needs to be rebased after https://codereview.chromium.org/276573010.
-crbug.com/372502 fast/text/shaping/same-script-different-lang.html [ NeedsRebaseline ]
-crbug.com/372502 virtual/windows-directwrite/fast/text/shaping/same-script-different-lang.html [ NeedsRebaseline ]
-crbug.com/372502 compositing/rtl/rtl-iframe-fixed-overflow.html [ NeedsRebaseline ]
-crbug.com/372502 virtual/mac-antialiasedtext/fast/text/shaping/same-script-different-lang.html [ NeedsRebaseline ]
-
