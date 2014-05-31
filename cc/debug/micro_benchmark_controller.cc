@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/values.h"
+#include "cc/debug/invalidation_benchmark.h"
 #include "cc/debug/picture_record_benchmark.h"
 #include "cc/debug/rasterize_and_record_benchmark.h"
 #include "cc/debug/unittest_only_benchmark.h"
@@ -26,7 +27,10 @@ scoped_ptr<MicroBenchmark> CreateBenchmark(
     const std::string& name,
     scoped_ptr<base::Value> value,
     const MicroBenchmark::DoneCallback& callback) {
-  if (name == "picture_record_benchmark") {
+  if (name == "invalidation_benchmark") {
+    return scoped_ptr<MicroBenchmark>(
+        new InvalidationBenchmark(value.Pass(), callback));
+  } else if (name == "picture_record_benchmark") {
     return scoped_ptr<MicroBenchmark>(
         new PictureRecordBenchmark(value.Pass(), callback));
   } else if (name == "rasterize_and_record_benchmark") {

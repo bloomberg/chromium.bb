@@ -102,6 +102,8 @@
         'debug/frame_rate_counter.cc',
         'debug/frame_rate_counter.h',
         'debug/frame_viewer_instrumentation.h',
+        'debug/invalidation_benchmark.cc',
+        'debug/invalidation_benchmark.h',
         'debug/lap_timer.cc',
         'debug/lap_timer.h',
         'debug/layer_tree_debug_state.cc',
