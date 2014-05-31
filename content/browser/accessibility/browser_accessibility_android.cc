@@ -268,29 +268,12 @@ base::string16 BrowserAccessibilityAndroid::GetText() const {
     return base::string16();
   }
 
-  // See comment in browser_accessibility_win.cc for details.
-  // The difference here is that we can only expose one accessible
-  // name on Android, not 2 or 3 like on Windows or Mac.
-  //
-  // The basic rule is: prefer description (aria-labelledby or aria-label),
-  // then help (title), then name (inner text), then value (control value).
-  // However, if title_elem_id is set, that means there's a label element
-  // supplying the name and then name takes precedence over help.
-  // TODO(dmazzoni): clean this up by providing more granular labels in
-  // Blink, making the platform-specific mapping to accessible text simpler.
   base::string16 description = GetString16Attribute(ui::AX_ATTR_DESCRIPTION);
-  base::string16 help = GetString16Attribute(ui::AX_ATTR_HELP);
-  int title_elem_id = GetIntAttribute(
-      ui::AX_ATTR_TITLE_UI_ELEMENT);
   base::string16 text;
-  if (!description.empty())
+  if (!name().empty())
+    text = base::UTF8ToUTF16(name());
+  else if (!description.empty())
     text = description;
-  else if (title_elem_id && !name().empty())
-    text = base::UTF8ToUTF16(name());
-  else if (!help.empty())
-    text = help;
-  else if (!name().empty())
-    text = base::UTF8ToUTF16(name());
   else if (!value().empty())
     text = base::UTF8ToUTF16(value());
 
