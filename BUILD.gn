@@ -92,6 +92,7 @@ group("root") {
 
   if (is_linux) {
     deps += [
+      "//third_party/fontconfig",
       "//third_party/freetype2",
     ]
   }
