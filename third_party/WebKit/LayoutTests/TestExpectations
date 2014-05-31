@@ -1035,8 +1035,6 @@ crbug.com/374936 [ Mac ] svg/dynamic-updates/SVGImageElement-dom-width-attr.html
 crbug.com/374936 [ Mac ] svg/dynamic-updates/SVGImageElement-svgdom-height-prop.html [ ImageOnlyFailure Pass ]
 crbug.com/374936 [ Mac ] svg/dynamic-updates/SVGImageElement-svgdom-width-prop.html [ ImageOnlyFailure Pass ]
 
-crbug.com/314704 fast/forms/select/menulist-appearance-basic.html [ NeedsRebaseline ]
-
 crbug.com/313438 svg/custom/relative-sized-use-on-symbol.xhtml [ NeedsManualRebaseline ]
 crbug.com/313438 svg/custom/relative-sized-use-without-attributes-on-symbol.xhtml [ NeedsManualRebaseline ]
 
