@@ -49,6 +49,8 @@ FAIL childWindow.navigator.battery.onchargingchange should be null. Threw except
 FAIL childWindow.navigator.battery.onchargingtimechange should be null. Threw exception TypeError: Cannot read property 'onchargingtimechange' of null
 FAIL childWindow.navigator.battery.ondischargingtimechange should be null. Threw exception TypeError: Cannot read property 'ondischargingtimechange' of null
 FAIL childWindow.navigator.battery.onlevelchange should be null. Threw exception TypeError: Cannot read property 'onlevelchange' of null
+FAIL childWindow.navigator.connection.ontypechange should be null. Threw exception TypeError: Cannot read property 'ontypechange' of null
+FAIL childWindow.navigator.connection.type should be other. Threw exception TypeError: Cannot read property 'type' of null
 PASS childWindow.navigator.cookieEnabled is false
 PASS childWindow.navigator.doNotTrack is null
 PASS childWindow.navigator.language is window.navigator.language

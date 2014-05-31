@@ -82,6 +82,7 @@ MediaStream status=stable
 MemoryInfoInWorkers status=experimental
 NavigationTransitions status=experimental
 NavigatorContentUtils
+NetworkInformation status=experimental
 Notifications status=stable
 ObjectFitPosition status=stable
 OrientationEvent

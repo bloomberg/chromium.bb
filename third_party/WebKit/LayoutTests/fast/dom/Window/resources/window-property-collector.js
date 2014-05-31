@@ -64,6 +64,7 @@ function emitExpectedResult(path, expected)
     case "navigator.product":
     case "navigator.productSub":
     case "navigator.vendor":
+    case "navigator.connection.type":
         expected = "window." + propertyPath;
         break;
     case "screen.orientation":

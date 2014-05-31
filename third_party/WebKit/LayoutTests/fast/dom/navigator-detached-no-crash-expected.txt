@@ -5,6 +5,7 @@ navigator.appCodeName is OK
 navigator.appName is OK
 navigator.appVersion is OK
 navigator.battery is OK
+navigator.connection is OK
 navigator.cookieEnabled is OK
 navigator.doNotTrack is OK
 navigator.getGamepads() is OK
@@ -38,6 +39,7 @@ navigator.appCodeName is OK
 navigator.appName is OK
 navigator.appVersion is OK
 navigator.battery is OK
+navigator.connection is OK
 navigator.cookieEnabled is OK
 navigator.doNotTrack is OK
 navigator.getGamepads() is OK

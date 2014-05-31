@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<head>
+<script src="../resources/js-test.js"></script>
+<script src="resources/netinfo_common.js"></script>
+</head>
+<body>
+<script>
+
+description("Tests that it's okay to unregister the event listener while handling the event.");
+
+shouldBe('typeof window.internals.observeGC', '"function"',
+'this test requires window.internals');
+
+var otherHandler = function(e) {
+    if (connection.type != initialType)
+        testFailed("The connection type did not revert.");
+    finishJSTest();
+};
+
+var handler = function(e) {
+    if (connection.type != newConnectionType)
+        testFailed("The connection type did not change.");
+    connection.removeEventListener('typechange', handler);
+    connection.addEventListener('typechange', otherHandler);
+    internals.setNetworkConnectionInfo(initialType);
+};
+
+connection.addEventListener('typechange', handler);
+internals.setNetworkConnectionInfo(newConnectionType);
+
+</script>
+</body>
+</html>

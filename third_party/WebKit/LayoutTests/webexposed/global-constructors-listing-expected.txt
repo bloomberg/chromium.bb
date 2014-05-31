@@ -229,6 +229,7 @@ MutationObserver
 MutationRecord
 NamedNodeMap
 Navigator
+NetworkInformation
 Node
 NodeFilter
 NodeIterator

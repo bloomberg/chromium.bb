@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<head>
+<script src="../resources/js-test.js"></script>
+<script src="resources/netinfo_common.js"></script>
+</head>
+<body>
+<script>
+description('Tests the basic operation of NetInfo.');
+
+shouldBe('typeof window.internals.observeGC', '"function"',
+'this test requires window.internals');
+
+shouldBeDefined("navigator.connection");
+shouldBeDefined("navigator.connection.type");
+
+connection.addEventListener('typechange', function(e) {
+    shouldBe("typeof connection.type", '"string"');
+    if (connection.type != newConnectionType)
+        testFailed("The connection type did not change.");
+    finishJSTest();
+});
+
+internals.setNetworkConnectionInfo(newConnectionType);
+
+</script>
+</body>
+</html>

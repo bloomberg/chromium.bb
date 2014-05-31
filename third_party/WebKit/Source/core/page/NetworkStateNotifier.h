@@ -69,8 +69,10 @@ public:
 
     void setWebConnectionType(blink::WebConnectionType);
 
-    // Must be called on the context's thread. An added observer must be
-    // removed before its ExecutionContext is deleted.
+    // Must be called on the context's thread. An added observer must be removed
+    // before its ExecutionContext is deleted. It's possible for an observer to
+    // be called twice for the same event if it is first removed and then added
+    // during notification.
     void addObserver(NetworkStateObserver*, ExecutionContext*);
     void removeObserver(NetworkStateObserver*, ExecutionContext*);
 

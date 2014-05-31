@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<head>
+<script src="../resources/js-test.js"></script>
+<script src="resources/netinfo_common.js"></script>
+</head>
+<body>
+<script>
+
+description('Tests that unused listeners are collected.');
+
+shouldBe('typeof window.internals.observeGC', '"function"',
+'this test requires window.internals');
+
+var callback = function(e) {
+	testFailed("Should not get here.");
+};
+
+// Add a listener.
+var callbackObserver = internals.observeGC(callback);
+connection.addEventListener('typechange', callback);
+gc();
+shouldBeFalse('callbackObserver.wasCollected');
+
+// Remove the listener and its callback reference.
+connection.removeEventListener('typechange', callback);
+callback = null;
+gc();
+shouldBeTrue('callbackObserver.wasCollected');
+finishJSTest();
+
+</script>
+</body>
+</html>

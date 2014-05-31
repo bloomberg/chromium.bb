@@ -49,6 +49,8 @@ PASS oldChildWindow.navigator.battery.onchargingchange is newChildWindow.navigat
 PASS oldChildWindow.navigator.battery.onchargingtimechange is newChildWindow.navigator.battery.onchargingtimechange
 PASS oldChildWindow.navigator.battery.ondischargingtimechange is newChildWindow.navigator.battery.ondischargingtimechange
 PASS oldChildWindow.navigator.battery.onlevelchange is newChildWindow.navigator.battery.onlevelchange
+PASS oldChildWindow.navigator.connection.ontypechange is newChildWindow.navigator.connection.ontypechange
+PASS oldChildWindow.navigator.connection.type is newChildWindow.navigator.connection.type
 PASS oldChildWindow.navigator.cookieEnabled is newChildWindow.navigator.cookieEnabled
 PASS oldChildWindow.navigator.doNotTrack is newChildWindow.navigator.doNotTrack
 PASS oldChildWindow.navigator.language is newChildWindow.navigator.language

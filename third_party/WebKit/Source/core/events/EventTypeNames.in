@@ -191,6 +191,7 @@ touchend
 touchmove
 touchstart
 transitionend
+typechange
 unload
 unmute
 update

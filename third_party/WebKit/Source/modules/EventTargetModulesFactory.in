@@ -16,6 +16,7 @@ modules/mediastream/MediaStreamTrack
 modules/mediastream/RTCDTMFSender
 modules/mediastream/RTCDataChannel
 modules/mediastream/RTCPeerConnection
+modules/netinfo/NetworkInformation
 modules/notifications/Notification
 modules/serviceworkers/ServiceWorker
 modules/serviceworkers/ServiceWorkerGlobalScope

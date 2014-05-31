@@ -69,7 +69,6 @@ void NetworkStateNotifier::setWebConnectionType(blink::WebConnectionType type)
 void NetworkStateNotifier::setWebConnectionTypeImpl(blink::WebConnectionType type)
 {
     ASSERT(isMainThread());
-    ASSERT(!m_testUpdatesOnly);
 
     MutexLocker locker(m_mutex);
     if (m_type == type)
