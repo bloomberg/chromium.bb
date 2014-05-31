@@ -143,7 +143,7 @@ arm_list="libc6-dev-armhf-cross
           g++-arm-linux-gnueabihf"
 
 # Packages to build standalone NaCl and all its toolchains.
-nacl_list="g++-mingw-w64-i686 libtinfo-dev:i386"
+nacl_list="g++-mingw-w64-i686 libtinfo-dev libtinfo-dev:i386"
 
 # Some package names have changed over time
 if package_exists ttf-mscorefonts-installer; then
