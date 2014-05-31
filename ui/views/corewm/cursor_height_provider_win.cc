@@ -5,6 +5,7 @@
 #include "ui/views/corewm/cursor_height_provider_win.h"
 
 #include <windows.h>
+#include <algorithm>
 #include <map>
 
 #include "base/basictypes.h"
@@ -105,7 +106,9 @@ int CalculateCursorHeight(HCURSOR cursor_handle) {
     return kDefaultHeight;
 
   const int cursor_height = GetSystemMetrics(SM_CYCURSOR);
-  int i = bitmap_info.bmiHeader.biHeight - cursor_height;
+  // Crash data seems to indicate cursor_height may be bigger than the bitmap.
+  int i = std::max(0, static_cast<int>(bitmap_info.bmiHeader.biHeight) -
+                   cursor_height);
   for (; i < bitmap_info.bmiHeader.biHeight; ++i) {
     if (!IsRowTransparent(data, row_size, last_byte_mask, i)) {
       i--;
