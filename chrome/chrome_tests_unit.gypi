@@ -1091,7 +1091,6 @@
         'browser/media_galleries/win/mtp_device_object_enumerator_unittest.cc',
         'browser/metrics/chrome_metrics_service_accessor_unittest.cc',
         'browser/metrics/cloned_install_detector_unittest.cc',
-        'browser/metrics/compression_utils_unittest.cc',
         'browser/metrics/extensions_metrics_provider_unittest.cc',
         'browser/metrics/gpu_metrics_provider_unittest.cc',
         'browser/metrics/metrics_log_unittest.cc',

@@ -5,6 +5,7 @@
 #include "components/metrics/test_metrics_service_client.h"
 
 #include "base/callback.h"
+#include "components/metrics/metrics_log_uploader.h"
 
 namespace metrics {
 
@@ -53,6 +54,13 @@ void TestMetricsServiceClient::StartGatheringMetrics(
 void TestMetricsServiceClient::CollectFinalMetrics(
     const base::Closure& done_callback) {
   done_callback.Run();
+}
+
+scoped_ptr<MetricsLogUploader> TestMetricsServiceClient::CreateUploader(
+    const std::string& server_url,
+    const std::string& mime_type,
+    const base::Callback<void(int)>& on_upload_complete) {
+  return scoped_ptr<MetricsLogUploader>();
 }
 
 }  // namespace metrics

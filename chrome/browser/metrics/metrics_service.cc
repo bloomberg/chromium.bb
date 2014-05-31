@@ -185,7 +185,6 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/metrics/chrome_stability_metrics_provider.h"
-#include "chrome/browser/metrics/compression_utils.h"
 #include "chrome/browser/metrics/gpu_metrics_provider.h"
 #include "chrome/browser/metrics/metrics_log.h"
 #include "chrome/browser/metrics/metrics_state_manager.h"
@@ -196,12 +195,11 @@
 #include "chrome/common/variations/variations_util.h"
 #include "components/metrics/metrics_log_base.h"
 #include "components/metrics/metrics_log_manager.h"
+#include "components/metrics/metrics_log_uploader.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/metrics/metrics_reporting_scheduler.h"
 #include "components/metrics/metrics_service_client.h"
 #include "components/variations/entropy_provider.h"
-#include "net/base/load_flags.h"
-#include "net/url_request/url_fetcher.h"
 
 #if defined(ENABLE_PLUGINS)
 // TODO(asvitkine): Move this out of MetricsService.
@@ -270,12 +268,12 @@ enum ResponseStatus {
 
 ResponseStatus ResponseCodeToStatus(int response_code) {
   switch (response_code) {
+    case -1:
+      return NO_RESPONSE;
     case 200:
       return SUCCESS;
     case 400:
       return BAD_REQUEST;
-    case net::URLFetcher::RESPONSE_CODE_INVALID:
-      return NO_RESPONSE;
     default:
       return UNKNOWN_FAILURE;
   }
@@ -371,11 +369,11 @@ MetricsService::MetricsService(metrics::MetricsStateManager* state_manager,
       test_mode_active_(false),
       state_(INITIALIZED),
       has_initial_stability_log_(false),
+      log_upload_in_progress_(false),
       idle_since_last_transmission_(false),
       session_id_(-1),
       self_ptr_factory_(this),
-      state_saver_factory_(this),
-      waiting_for_asynchronous_reporting_step_(false) {
+      state_saver_factory_(this) {
   DCHECK(IsSingleThreaded());
   DCHECK(state_manager_);
   DCHECK(client_);
@@ -885,7 +883,7 @@ void MetricsService::PushPendingLogsToPersistentStorage() {
   if (log_manager_.has_staged_log()) {
     // We may race here, and send second copy of the log later.
     metrics::PersistedLogs::StoreType store_type;
-    if (current_fetch_.get())
+    if (log_upload_in_progress_)
       store_type = metrics::PersistedLogs::PROVISIONAL_STORE;
     else
       store_type = metrics::PersistedLogs::NORMAL_STORE;
@@ -960,11 +958,11 @@ void MetricsService::StartScheduledUpload() {
 }
 
 void MetricsService::OnFinalLogInfoCollectionDone() {
-  // If somehow there is a fetch in progress, we return and hope things work
-  // out. The scheduler isn't informed since if this happens, the scheduler
+  // If somehow there is a log upload in progress, we return and hope things
+  // work out. The scheduler isn't informed since if this happens, the scheduler
   // will get a response from the upload.
-  DCHECK(!current_fetch_.get());
-  if (current_fetch_.get())
+  DCHECK(!log_upload_in_progress_);
+  if (log_upload_in_progress_)
     return;
 
   // Abort if metrics were turned off during the final info gathering.
@@ -1111,78 +1109,39 @@ void MetricsService::PrepareInitialMetricsLog() {
 
 void MetricsService::SendStagedLog() {
   DCHECK(log_manager_.has_staged_log());
+  if (!log_manager_.has_staged_log())
+    return;
 
-  PrepareFetchWithStagedLog();
+  DCHECK(!log_upload_in_progress_);
+  log_upload_in_progress_ = true;
 
-  bool upload_created = (current_fetch_.get() != NULL);
-  UMA_HISTOGRAM_BOOLEAN("UMA.UploadCreation", upload_created);
-  if (!upload_created) {
-    // Compression failed, and log discarded :-/.
+  if (!log_uploader_) {
+    log_uploader_ = client_->CreateUploader(
+        kServerUrl, kMimeType,
+        base::Bind(&MetricsService::OnLogUploadComplete,
+                   self_ptr_factory_.GetWeakPtr()));
+  }
+
+  const std::string hash =
+      base::HexEncode(log_manager_.staged_log_hash().data(),
+                      log_manager_.staged_log_hash().size());
+  bool success = log_uploader_->UploadLog(log_manager_.staged_log(), hash);
+  UMA_HISTOGRAM_BOOLEAN("UMA.UploadCreation", success);
+  if (!success) {
     // Skip this upload and hope things work out next time.
     log_manager_.DiscardStagedLog();
     scheduler_->UploadCancelled();
+    log_upload_in_progress_ = false;
     return;
   }
-
-  DCHECK(!waiting_for_asynchronous_reporting_step_);
-  waiting_for_asynchronous_reporting_step_ = true;
-
-  current_fetch_->Start();
 
   HandleIdleSinceLastTransmission(true);
 }
 
-void MetricsService::PrepareFetchWithStagedLog() {
-  DCHECK(log_manager_.has_staged_log());
 
-  // Prepare the protobuf version.
-  DCHECK(!current_fetch_.get());
-  if (log_manager_.has_staged_log()) {
-    current_fetch_.reset(net::URLFetcher::Create(
-        GURL(kServerUrl), net::URLFetcher::POST, this));
-    current_fetch_->SetRequestContext(
-        g_browser_process->system_request_context());
-
-    std::string log_text = log_manager_.staged_log();
-    std::string compressed_log_text;
-    bool compression_successful = chrome::GzipCompress(log_text,
-                                                       &compressed_log_text);
-    DCHECK(compression_successful);
-    if (compression_successful) {
-      current_fetch_->SetUploadData(kMimeType, compressed_log_text);
-      // Tell the server that we're uploading gzipped protobufs.
-      current_fetch_->SetExtraRequestHeaders("content-encoding: gzip");
-      const std::string hash =
-          base::HexEncode(log_manager_.staged_log_hash().data(),
-                          log_manager_.staged_log_hash().size());
-      DCHECK(!hash.empty());
-      current_fetch_->AddExtraRequestHeader("X-Chrome-UMA-Log-SHA1: " + hash);
-      UMA_HISTOGRAM_PERCENTAGE(
-          "UMA.ProtoCompressionRatio",
-          100 * compressed_log_text.size() / log_text.size());
-      UMA_HISTOGRAM_CUSTOM_COUNTS(
-          "UMA.ProtoGzippedKBSaved",
-          (log_text.size() - compressed_log_text.size()) / 1024,
-          1, 2000, 50);
-    }
-
-    // We already drop cookies server-side, but we might as well strip them out
-    // client-side as well.
-    current_fetch_->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES |
-                                 net::LOAD_DO_NOT_SEND_COOKIES);
-  }
-}
-
-void MetricsService::OnURLFetchComplete(const net::URLFetcher* source) {
-  DCHECK(waiting_for_asynchronous_reporting_step_);
-
-  // We're not allowed to re-use the existing |URLFetcher|s, so free them here.
-  // Note however that |source| is aliased to the fetcher, so we should be
-  // careful not to delete it too early.
-  DCHECK_EQ(current_fetch_.get(), source);
-  scoped_ptr<net::URLFetcher> s(current_fetch_.Pass());
-
-  int response_code = source->GetResponseCode();
+void MetricsService::OnLogUploadComplete(int response_code) {
+  DCHECK(log_upload_in_progress_);
+  log_upload_in_progress_ = false;
 
   // Log a histogram to track response success vs. failure rates.
   UMA_HISTOGRAM_ENUMERATION("UMA.UploadResponseStatus.Protobuf",
@@ -1209,8 +1168,6 @@ void MetricsService::OnURLFetchComplete(const net::URLFetcher* source) {
 
   if (upload_succeeded || discard_log)
     log_manager_.DiscardStagedLog();
-
-  waiting_for_asynchronous_reporting_step_ = false;
 
   if (!log_manager_.has_staged_log()) {
     switch (state_) {

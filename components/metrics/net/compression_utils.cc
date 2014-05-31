@@ -1,8 +1,8 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/metrics/compression_utils.h"
+#include "components/metrics/net/compression_utils.h"
 
 #include <vector>
 
@@ -62,31 +62,35 @@ int GzipCompressHelper(Bytef* dest,
 
     err = deflate(&stream, Z_FINISH);
     if (err != Z_STREAM_END) {
-        deflateEnd(&stream);
-        return err == Z_OK ? Z_BUF_ERROR : err;
+      deflateEnd(&stream);
+      return err == Z_OK ? Z_BUF_ERROR : err;
     }
     *dest_length = stream.total_out;
 
     err = deflateEnd(&stream);
     return err;
 }
+
 }  // namespace
 
-namespace chrome {
+namespace metrics {
 
 bool GzipCompress(const std::string& input, std::string* output) {
+  const uLongf input_size = static_cast<uLongf>(input.size());
   std::vector<Bytef> compressed_data(kGzipZlibHeaderDifferenceBytes +
-                                     compressBound(input.size()));
+                                     compressBound(input_size));
 
-  uLongf compressed_size = compressed_data.size();
+  uLongf compressed_size = static_cast<uLongf>(compressed_data.size());
   if (GzipCompressHelper(&compressed_data.front(),
                          &compressed_size,
                          bit_cast<const Bytef*>(input.data()),
-                         input.size()) != Z_OK)
+                         input_size) != Z_OK) {
     return false;
+  }
 
   compressed_data.resize(compressed_size);
   output->assign(compressed_data.begin(), compressed_data.end());
   return true;
 }
-}  // namespace chrome
+
+}  // namespace metrics

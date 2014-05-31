@@ -4,6 +4,8 @@
 
 #include "chrome/browser/metrics/chrome_metrics_service_client.h"
 
+#include <vector>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
@@ -26,6 +28,7 @@
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/crash_keys.h"
 #include "chrome/common/render_messages.h"
+#include "components/metrics/net/net_metrics_log_uploader.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/histogram_fetcher.h"
 #include "content/public/browser/notification_service.h"
@@ -182,6 +185,17 @@ void ChromeMetricsServiceClient::OnLogUploadComplete() {
   network_stats_uploader_.CollectAndReportNetworkStats();
 }
 
+void ChromeMetricsServiceClient::StartGatheringMetrics(
+    const base::Closure& done_callback) {
+// TODO(blundell): Move all metrics gathering tasks from MetricsService to
+// here.
+#if defined(OS_CHROMEOS)
+  chromeos_metrics_provider_->InitTaskGetHardwareClass(done_callback);
+#else
+  done_callback.Run();
+#endif
+}
+
 void ChromeMetricsServiceClient::CollectFinalMetrics(
     const base::Closure& done_callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -210,6 +224,17 @@ void ChromeMetricsServiceClient::CollectFinalMetrics(
        !i.IsAtEnd(); i.Advance()) {
     i.GetCurrentValue()->Send(new ChromeViewMsg_GetCacheResourceStats());
   }
+}
+
+scoped_ptr<metrics::MetricsLogUploader>
+ChromeMetricsServiceClient::CreateUploader(
+    const std::string& server_url,
+    const std::string& mime_type,
+    const base::Callback<void(int)>& on_upload_complete) {
+  return scoped_ptr<metrics::MetricsLogUploader>(
+      new metrics::NetMetricsLogUploader(
+          g_browser_process->system_request_context(), server_url, mime_type,
+          on_upload_complete));
 }
 
 void ChromeMetricsServiceClient::OnMemoryDetailCollectionDone() {
@@ -333,17 +358,6 @@ void ChromeMetricsServiceClient::Observe(
     default:
       NOTREACHED();
   }
-}
-
-void ChromeMetricsServiceClient::StartGatheringMetrics(
-    const base::Closure& done_callback) {
-// TODO(blundell): Move all metrics gathering tasks from MetricsService to
-// here.
-#if defined(OS_CHROMEOS)
-  chromeos_metrics_provider_->InitTaskGetHardwareClass(done_callback);
-#else
-  done_callback.Run();
-#endif
 }
 
 #if defined(OS_WIN)

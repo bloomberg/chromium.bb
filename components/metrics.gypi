@@ -25,6 +25,8 @@
         'metrics/metrics_hashes.h',
         'metrics/metrics_log_base.cc',
         'metrics/metrics_log_base.h',
+        'metrics/metrics_log_uploader.cc',
+        'metrics/metrics_log_uploader.h',
         'metrics/metrics_log_manager.cc',
         'metrics/metrics_log_manager.h',
         'metrics/metrics_pref_names.cc',
@@ -48,6 +50,24 @@
             'metrics/machine_id_provider_stub.cc',
           ],
         }],
+      ],
+    },
+    {
+      'target_name': 'metrics_net',
+      'type': 'static_library',
+      'include_dirs': [
+        '..',
+      ],
+      'dependencies': [
+        '../net/net.gyp:net',
+        '../third_party/zlib/zlib.gyp:zlib',
+        'metrics',
+      ],
+      'sources': [
+        'metrics/net/compression_utils.cc',
+        'metrics/net/compression_utils.h',
+        'metrics/net/net_metrics_log_uploader.cc',
+        'metrics/net/net_metrics_log_uploader.h',
       ],
     },
     {

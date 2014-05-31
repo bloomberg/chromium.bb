@@ -1,6 +1,8 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
+#include "components/metrics/net/compression_utils.h"
 
 #include <string>
 
@@ -8,9 +10,9 @@
 #include "base/basictypes.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
-#include "chrome/browser/metrics/compression_utils.h"
-#include "chrome/common/chrome_paths.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+namespace metrics {
 
 namespace {
 
@@ -35,14 +37,16 @@ const uint8 kCompressedData[] =
 #pragma warning( default: 4309 )
 #endif
 
+}  // namespace
+
 TEST(CompressionUtilsTest, GzipCompression) {
   std::string data(reinterpret_cast<const char*>(kData), arraysize(kData));
   std::string compressed_data;
-  EXPECT_TRUE(chrome::GzipCompress(data, &compressed_data));
+  EXPECT_TRUE(GzipCompress(data, &compressed_data));
   std::string golden_compressed_data(
       reinterpret_cast<const char*>(kCompressedData),
       arraysize(kCompressedData));
   EXPECT_EQ(golden_compressed_data, compressed_data);
 }
 
-}  // namespace
+}  // namespace metrics

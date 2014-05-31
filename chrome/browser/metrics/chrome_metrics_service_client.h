@@ -48,6 +48,10 @@ class ChromeMetricsServiceClient : public metrics::MetricsServiceClient,
       const base::Closure& done_callback) OVERRIDE;
   virtual void CollectFinalMetrics(const base::Closure& done_callback)
       OVERRIDE;
+  virtual scoped_ptr<metrics::MetricsLogUploader> CreateUploader(
+      const std::string& server_url,
+      const std::string& mime_type,
+      const base::Callback<void(int)>& on_upload_complete) OVERRIDE;
 
   MetricsService* metrics_service() { return metrics_service_.get(); }
 

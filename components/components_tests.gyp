@@ -111,6 +111,7 @@
             'metrics/metrics_log_base_unittest.cc',
             'metrics/metrics_log_manager_unittest.cc',
             'metrics/metrics_reporting_scheduler_unittest.cc',
+            'metrics/net/compression_utils_unittest.cc',
             'metrics/persisted_logs_unittest.cc',
             'navigation_interception/intercept_navigation_resource_throttle_unittest.cc',
             'os_crypt/ie7_password_win_unittest.cc',
@@ -262,6 +263,10 @@
 
             # Dependencies of language_usage_metrics
             'components.gyp:language_usage_metrics',
+
+            # Dependencies of metrics
+            'components.gyp:metrics',
+            'components.gyp:metrics_net',
 
             # Dependencies of os_crypt
             'components.gyp:os_crypt',
