@@ -1300,13 +1300,6 @@ void RenderWidgetHostViewAndroid::OnDetachCompositor() {
   RunAckCallbacks();
 }
 
-void RenderWidgetHostViewAndroid::OnWillDestroyWindow() {
-  // crbug.com/324341
-  // WindowAndroid and Compositor should outlive all WebContents.
-  NOTREACHED();
-  observing_root_window_ = false;
-}
-
 void RenderWidgetHostViewAndroid::OnVSync(base::TimeTicks frame_time,
                                           base::TimeDelta vsync_period) {
   TRACE_EVENT0("cc", "RenderWidgetHostViewAndroid::OnVSync");

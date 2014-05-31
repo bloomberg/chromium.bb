@@ -37,8 +37,6 @@ bool WindowAndroid::RegisterWindowAndroid(JNIEnv* env) {
 
 WindowAndroid::~WindowAndroid() {
   DCHECK(!compositor_);
-  FOR_EACH_OBSERVER(
-      WindowAndroidObserver, observer_list_, OnWillDestroyWindow());
 }
 
 void WindowAndroid::OnCompositingDidCommit() {
