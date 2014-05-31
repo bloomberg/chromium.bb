@@ -1174,6 +1174,9 @@ void NavigationControllerImpl::RendererDidNavigateInPage(
   if (existing_entry->update_virtual_url_with_url())
     UpdateVirtualURLToURL(existing_entry, params.url);
 
+  existing_entry->SetHasPostData(params.is_post);
+  existing_entry->SetPostID(params.post_id);
+
   // This replaces the existing entry since the page ID didn't change.
   *did_replace_entry = true;
 

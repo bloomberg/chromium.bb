@@ -235,10 +235,15 @@ SiteInstance* GetSiteInstanceFromEntry(NavigationEntry* entry) {
 class TestWebContentsDelegate : public WebContentsDelegate {
  public:
   explicit TestWebContentsDelegate() :
-      navigation_state_change_count_(0) {}
+      navigation_state_change_count_(0),
+      repost_form_warning_count_(0) {}
 
   int navigation_state_change_count() {
     return navigation_state_change_count_;
+  }
+
+  int repost_form_warning_count() {
+    return repost_form_warning_count_;
   }
 
   // Keep track of whether the tab has notified us of a navigation state change.
@@ -247,9 +252,16 @@ class TestWebContentsDelegate : public WebContentsDelegate {
     navigation_state_change_count_++;
   }
 
+  virtual void ShowRepostFormWarningDialog(WebContents* source) OVERRIDE {
+    repost_form_warning_count_++;
+  }
+
  private:
   // The number of times NavigationStateChanged has been called.
   int navigation_state_change_count_;
+
+  // The number of times ShowRepostFormWarningDialog() was called.
+  int repost_form_warning_count_;
 };
 
 // -----------------------------------------------------------------------------
@@ -4246,6 +4258,42 @@ TEST_F(NavigationControllerTest, ClearHistoryList) {
   EXPECT_FALSE(controller.CanGoBack());
   EXPECT_FALSE(controller.CanGoForward());
   EXPECT_EQ(url4, controller.GetVisibleEntry()->GetURL());
+}
+
+TEST_F(NavigationControllerTest, PostThenReplaceStateThenReload) {
+  scoped_ptr<TestWebContentsDelegate> delegate(new TestWebContentsDelegate());
+  EXPECT_FALSE(contents()->GetDelegate());
+  contents()->SetDelegate(delegate.get());
+
+  // Submit a form.
+  GURL url("http://foo");
+  FrameHostMsg_DidCommitProvisionalLoad_Params params;
+  params.page_id = 1;
+  params.url = url;
+  params.transition = PAGE_TRANSITION_FORM_SUBMIT;
+  params.gesture = NavigationGestureUser;
+  params.page_state = PageState::CreateFromURL(url);
+  params.was_within_same_page = false;
+  params.is_post = true;
+  params.post_id = 2;
+  test_rvh()->SendNavigateWithParams(&params);
+
+  // history.replaceState() is called.
+  GURL replace_url("http://foo#foo");
+  params.page_id = 1;
+  params.url = replace_url;
+  params.transition = PAGE_TRANSITION_LINK;
+  params.gesture = NavigationGestureUser;
+  params.page_state = PageState::CreateFromURL(replace_url);
+  params.was_within_same_page = true;
+  params.is_post = false;
+  params.post_id = -1;
+  test_rvh()->SendNavigateWithParams(&params);
+
+  // Now reload. replaceState overrides the POST, so we should not show a
+  // repost warning dialog.
+  controller_impl().Reload(true);
+  EXPECT_EQ(0, delegate->repost_form_warning_count());
 }
 
 }  // namespace content
