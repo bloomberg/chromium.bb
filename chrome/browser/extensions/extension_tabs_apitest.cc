@@ -19,13 +19,6 @@
 #include "ui/aura/window_tree_host.h"
 #endif
 
-// Window resizes are not completed by the time the callback happens,
-// so these tests fail on linux/gtk. http://crbug.com/72369
-#if defined(OS_LINUX) && !defined(USE_AURA)
-#define MAYBE_UpdateWindowResize DISABLED_UpdateWindowResize
-#define MAYBE_UpdateWindowShowState DISABLED_UpdateWindowShowState
-#else
-
 #if defined(USE_AURA) || defined(OS_MACOSX)
 // Maximizing/fullscreen popup window doesn't work on aura's managed mode.
 // See bug crbug.com/116305.
@@ -34,9 +27,6 @@
 #else
 #define MAYBE_UpdateWindowShowState UpdateWindowShowState
 #endif  // defined(USE_AURA) || defined(OS_MACOSX)
-
-#define MAYBE_UpdateWindowResize UpdateWindowResize
-#endif  // defined(OS_LINUX) && !defined(USE_AURA)
 
 // http://crbug.com/145639
 #if defined(OS_LINUX) || defined(OS_WIN)
@@ -222,8 +212,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, TabsNoPermissions) {
   ASSERT_TRUE(RunExtensionTest("tabs/no_permissions")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest,
-                       MAYBE_UpdateWindowResize) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, UpdateWindowResize) {
   ASSERT_TRUE(RunExtensionTest("window_update/resize")) << message_;
 }
 
