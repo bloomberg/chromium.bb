@@ -400,6 +400,8 @@ TEST_F(IndexedDBDatabaseOperationTest, CreatePutDelete) {
   // This will execute the Put then Delete.
   RunPostedTasks();
   EXPECT_EQ(0ULL, db_->metadata().object_stores.size());
+
+  transaction_->Commit(); // Cleans up the object hierarchy.
 }
 
 }  // namespace content
