@@ -32,12 +32,12 @@ struct AXNodeData;
 namespace extensions {
 
 // Implementation of the chrome.automation API.
-class AutomationInternalEnableCurrentTabFunction
+class AutomationInternalEnableTabFunction
     : public ChromeUIThreadExtensionFunction {
-  DECLARE_EXTENSION_FUNCTION("automationInternal.enableCurrentTab",
-                             AUTOMATIONINTERNAL_ENABLECURRENTTAB)
+  DECLARE_EXTENSION_FUNCTION("automationInternal.enableTab",
+                             AUTOMATIONINTERNAL_ENABLETAB)
  protected:
-  virtual ~AutomationInternalEnableCurrentTabFunction() {}
+  virtual ~AutomationInternalEnableTabFunction() {}
 
   virtual ExtensionFunction::ResponseAction Run() OVERRIDE;
 };

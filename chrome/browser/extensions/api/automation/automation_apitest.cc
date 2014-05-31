@@ -92,6 +92,12 @@ IN_PROC_BROWSER_TEST_F(AutomationApiTest, SanityCheck) {
       << message_;
 }
 
+IN_PROC_BROWSER_TEST_F(AutomationApiTest, GetTreeByTabId) {
+  StartEmbeddedTestServer();
+  ASSERT_TRUE(RunExtensionSubtest("automation/tests/tabs", "tab_id.html"))
+      << message_;
+}
+
 IN_PROC_BROWSER_TEST_F(AutomationApiTest, Events) {
   StartEmbeddedTestServer();
   ASSERT_TRUE(RunExtensionSubtest("automation/tests/tabs", "events.html"))

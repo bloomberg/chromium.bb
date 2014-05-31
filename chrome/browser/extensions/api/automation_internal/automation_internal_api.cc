@@ -6,8 +6,10 @@
 
 #include <vector>
 
+#include "base/strings/string_number_conversions.h"
 #include "chrome/browser/extensions/api/automation_internal/automation_action_adapter.h"
 #include "chrome/browser/extensions/api/automation_internal/automation_util.h"
+#include "chrome/browser/extensions/api/tabs/tabs_constants.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -120,21 +122,32 @@ class RenderWidgetHostActionAdapter : public AutomationActionAdapter {
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostActionAdapter);
 };
 
-// TODO(aboxhall/dtseng): ensure that the initial data is sent down for the tab
-// if this doesn't turn accessibility on for the first time (e.g. if a
-// RendererAccessibility object existed already because a screenreader has been
-// run at some point).
 ExtensionFunction::ResponseAction
-AutomationInternalEnableCurrentTabFunction::Run() {
+AutomationInternalEnableTabFunction::Run() {
   const AutomationInfo* automation_info = AutomationInfo::Get(GetExtension());
   EXTENSION_FUNCTION_VALIDATE(automation_info);
 
-  Browser* current_browser = GetCurrentBrowser();
-  TabStripModel* tab_strip = current_browser->tab_strip_model();
-  content::WebContents* contents =
-      tab_strip->GetWebContentsAt(tab_strip->active_index());
-  if (!contents)
-    return RespondNow(Error("No active tab"));
+  using api::automation_internal::EnableTab::Params;
+  scoped_ptr<Params> params(Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+  content::WebContents* contents = NULL;
+  if (params->tab_id.get()) {
+    int tab_id = *params->tab_id;
+    if (!ExtensionTabUtil::GetTabById(tab_id,
+                                      GetProfile(),
+                                      include_incognito(),
+                                      NULL, /* browser out param*/
+                                      NULL, /* tab_strip out param */
+                                      &contents,
+                                      NULL /* tab_index out param */)) {
+      return RespondNow(
+          Error(tabs_constants::kTabNotFoundError, base::IntToString(tab_id)));
+    }
+  } else {
+    contents = GetCurrentBrowser()->tab_strip_model()->GetActiveWebContents();
+    if (!contents)
+      return RespondNow(Error("No active tab"));
+  }
   content::RenderWidgetHost* rwh =
       contents->GetRenderWidgetHostView()->GetRenderWidgetHost();
   if (!rwh)
@@ -147,9 +160,9 @@ AutomationInternalEnableCurrentTabFunction::Run() {
   AutomationWebContentsObserver::CreateForWebContents(contents);
   rwh->EnableTreeOnlyAccessibilityMode();
   return RespondNow(
-      ArgumentList(api::automation_internal::EnableCurrentTab::Results::Create(
+      ArgumentList(api::automation_internal::EnableTab::Results::Create(
           rwh->GetProcess()->GetID(), rwh->GetRoutingID())));
-}
+  }
 
 ExtensionFunction::ResponseAction
 AutomationInternalPerformActionFunction::Run() {

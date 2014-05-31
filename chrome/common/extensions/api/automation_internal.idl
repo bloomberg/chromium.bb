@@ -83,9 +83,10 @@ namespace automationInternal {
   callback EnableDesktopCallback = void();
 
   interface Functions {
-    // Enable automation of the active tab and retrieves its routing id for use
-    // in future updates.
-    static void enableCurrentTab(EnableTabCallback callback);
+    // Enable automation of the tab with the given id, or the active tab if no
+    // tab id is given, and retrieves its process and routing ids for use in
+    // future updates.
+    static void enableTab(optional long tabId, EnableTabCallback callback);
 
     // Enables desktop automation.
     static void enableDesktop(EnableDesktopCallback callback);

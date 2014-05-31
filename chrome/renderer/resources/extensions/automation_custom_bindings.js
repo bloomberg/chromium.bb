@@ -35,15 +35,15 @@ automation.registerCustomHook(function(bindingsAPI) {
   var apiFunctions = bindingsAPI.apiFunctions;
 
   // TODO(aboxhall, dtseng): Make this return the speced AutomationRootNode obj.
-  apiFunctions.setHandleRequest('getTree', function(callback) {
-    // enableCurrentTab() ensures the renderer for the current tab has
+  apiFunctions.setHandleRequest('getTree', function getTree(tabId, callback) {
+    // enableTab() ensures the renderer for the active or specified tab has
     // accessibility enabled, and fetches its process and routing ids to use as
-    // a key in the idToAutomationTree map. The callback to enableCurrentTab is
+    // a key in the idToAutomationTree map. The callback to enableActiveTab is
     // bound to the callback passed in to getTree(), so that once the tree is
     // available (either due to having been cached earlier, or after an
     // accessibility event occurs which causes the tree to be populated), the
     // callback can be called.
-    automationInternal.enableCurrentTab(function(pid, rid) {
+    automationInternal.enableTab(tabId, function onEnable(pid, rid) {
       if (lastError.hasError(chrome)) {
         callback();
         return;

@@ -35061,7 +35061,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="696" label="WEBVIEW_CONTEXTMENUSUPDATE"/>
   <int value="697" label="WEBVIEW_CONTEXTMENUSREMOVE"/>
   <int value="698" label="WEBVIEW_CONTEXTMENUSREMOVEALL"/>
-  <int value="699" label="AUTOMATIONINTERNAL_ENABLECURRENTTAB"/>
+  <int value="699" label="AUTOMATIONINTERNAL_ENABLETAB"/>
   <int value="700" label="APP_CURRENTWINDOWINTERNAL_SETSIZECONSTRAINTS"/>
   <int value="701" label="BLUETOOTH_GETDEVICE"/>
   <int value="702" label="GCM_UNREGISTER"/>

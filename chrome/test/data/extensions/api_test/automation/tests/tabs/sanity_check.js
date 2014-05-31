@@ -20,13 +20,12 @@ var allTests = [
       tree.root.state);
     var children = tree.root.children();
     assertEq(1, children.length);
-
     var body = children[0];
     assertEq('body', body.attributes.htmlTag);
 
     RemoveUntestedStates(body.state);
     assertEq({enabled: true, readOnly: true},
-             body.state);
+               body.state);
 
     var contentChildren = body.children();
     assertEq(3, contentChildren.length);
