@@ -252,7 +252,9 @@ IN_PROC_BROWSER_TEST_F(ChromeRenderProcessHostTest, ProcessPerTab) {
 
 // We don't change process priorities on Mac or Posix because the user lacks the
 // permission to raise a process' priority even after lowering it.
-#if defined(OS_WIN) || defined(OS_LINUX)
+// TODO(dalecurtis): Reenable this on Windows after figuring out how to reliably
+// wait for the renderer process to process IPC messages.
+#if defined(OS_LINUX)
 IN_PROC_BROWSER_TEST_F(ChromeRenderProcessHostTest, Backgrounding) {
   if (!base::Process::CanBackgroundProcesses()) {
     LOG(ERROR) << "Can't background processes";

@@ -194,6 +194,9 @@ class CONTENT_EXPORT ChildThread
   void OnSetProfilerStatus(tracked_objects::ThreadData::Status status);
   void OnGetChildProfilerData(int sequence_number);
   void OnDumpHandles();
+#if defined(OS_WIN)
+  void OnProcessBackgrounded(bool background);
+#endif
 #ifdef IPC_MESSAGE_LOG_ENABLED
   void OnSetIPCLoggingEnabled(bool enable);
 #endif

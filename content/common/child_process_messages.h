@@ -111,6 +111,12 @@ IPC_MESSAGE_CONTROL1(ChildProcessMsg_GetChildHistogramData,
 // Sent to child processes to dump their handle table.
 IPC_MESSAGE_CONTROL0(ChildProcessMsg_DumpHandles)
 
+#if defined(OS_WIN)
+// Sent to child processes to tell them to enter or leave background mode.
+IPC_MESSAGE_CONTROL1(ChildProcessMsg_SetProcessBackgrounded,
+                     bool /* background */)
+#endif
+
 #if defined(USE_TCMALLOC)
 // Sent to child process to request tcmalloc stats.
 IPC_MESSAGE_CONTROL0(ChildProcessMsg_GetTcmallocStats)

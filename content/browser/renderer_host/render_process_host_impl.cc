@@ -1973,9 +1973,16 @@ void RenderProcessHostImpl::SetBackgrounded(bool backgrounded) {
   // is to not invoke the SetPriorityClass API if the dll is loaded.
   if (GetModuleHandle(L"cbstext.dll"))
     return;
-#endif  // OS_WIN
 
+  // Windows Vista+ has a fancy process backgrounding mode that can only be set
+  // from within the process.  So notify the child process of background state.
+  Send(new ChildProcessMsg_SetProcessBackgrounded(backgrounded));
+#else
+
+  // Backgrounding may require elevated privileges not available to renderer
+  // processes, so control backgrounding from the process host.
   child_process_launcher_->SetProcessBackgrounded(backgrounded);
+#endif  // OS_WIN
 }
 
 void RenderProcessHostImpl::OnProcessLaunched() {
@@ -1992,7 +1999,7 @@ void RenderProcessHostImpl::OnProcessLaunched() {
       return;
     }
 
-    child_process_launcher_->SetProcessBackgrounded(backgrounded_);
+    SetBackgrounded(backgrounded_);
   }
 
   // NOTE: This needs to be before sending queued messages because

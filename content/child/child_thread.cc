@@ -441,6 +441,10 @@ bool ChildThread::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(ChildProcessMsg_GetChildProfilerData,
                         OnGetChildProfilerData)
     IPC_MESSAGE_HANDLER(ChildProcessMsg_DumpHandles, OnDumpHandles)
+#if defined(OS_WIN)
+    IPC_MESSAGE_HANDLER(ChildProcessMsg_SetProcessBackgrounded,
+                        OnProcessBackgrounded)
+#endif
 #if defined(USE_TCMALLOC)
     IPC_MESSAGE_HANDLER(ChildProcessMsg_GetTcmallocStats, OnGetTcmallocStats)
 #endif
@@ -548,5 +552,11 @@ void ChildThread::EnsureConnected() {
   VLOG(0) << "ChildThread::EnsureConnected()";
   base::KillProcess(base::GetCurrentProcessHandle(), 0, false);
 }
+
+#if defined(OS_WIN)
+void ChildThread::OnProcessBackgrounded(bool background) {
+  base::Process::Current().SetProcessBackgrounded(background);
+}
+#endif
 
 }  // namespace content
