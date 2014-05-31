@@ -262,9 +262,9 @@ void DrawBezel(id<ConstrainedWindowButtonDrawableCell>cell,
   NSSize leftSize = [leftCell_ cellSize];
   NSSize rightSize = [rightCell_ cellSize];
   NSSize size = NSMakeSize(
-      std::max(leftSize.width + rightSize.width,
-               constrained_window_button::kButtonMinWidth),
-      std::max(leftSize.height, rightSize.height));
+      std::ceil(std::max(leftSize.width + rightSize.width,
+                         constrained_window_button::kButtonMinWidth)),
+      std::ceil(std::max(leftSize.height, rightSize.height)));
   [self setFrameSize:size];
 }
 
