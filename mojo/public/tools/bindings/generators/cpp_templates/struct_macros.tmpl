@@ -1,3 +1,37 @@
+{%- macro validate(struct, class_name) %}
+  if (!data)
+    return true;
+
+  if (!ValidateStructHeader(
+          data, sizeof({{class_name}}),
+          {{struct.packed.packed_fields|length}}, bounds_checker)) {
+    return false;
+  }
+
+  const {{class_name}}* MOJO_ALLOW_UNUSED object =
+      static_cast<const {{class_name}}*>(data);
+
+{%-   for packed_field in struct.packed.packed_fields
+          if packed_field.field.kind|is_object_kind %}
+{%-     set wrapper_type = packed_field.field.kind|cpp_wrapper_type %}
+{%-     set name = packed_field.field.name %}
+  if (!mojo::internal::ValidateEncodedPointer(&object->{{name}}.offset) ||
+      !{{wrapper_type}}::Data_::Validate(
+          mojo::internal::DecodePointerRaw(&object->{{name}}.offset),
+          bounds_checker)) {
+    return false;
+  }
+{%-   endfor %}
+{%-   for packed_field in struct.packed.packed_fields
+          if packed_field.field.kind|is_handle_kind %}
+{%-     set name = packed_field.field.name %}
+  if (!bounds_checker->ClaimHandle(object->{{name}}))
+    return false;
+{%-   endfor %}
+
+  return true;
+{%- endmacro %}
+
 {%- macro field_line(field) %}
 {%-   set type = field.kind|cpp_field_type %}
 {%-   set name = field.name -%}

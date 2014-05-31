@@ -9,8 +9,6 @@
 
 #include <algorithm>
 
-#include "mojo/public/cpp/bindings/lib/message_header_validator.h"
-
 namespace mojo {
 
 Message::Message()
@@ -74,10 +72,8 @@ MojoResult ReadAndDispatchMessage(MessagePipeHandle handle,
                                 &message.mutable_handles()->front()),
                       &num_handles,
                       MOJO_READ_MESSAGE_FLAG_NONE);
-  if (receiver && rv == MOJO_RESULT_OK) {
-    *receiver_result =
-        internal::MessageHeaderValidator(receiver).Accept(&message);
-  }
+  if (receiver && rv == MOJO_RESULT_OK)
+    *receiver_result = receiver->Accept(&message);
 
   return rv;
 }

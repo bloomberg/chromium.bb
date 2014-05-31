@@ -132,6 +132,7 @@
       ],
       'sources': [
         'public/cpp/bindings/tests/array_unittest.cc',
+        'public/cpp/bindings/tests/bounds_checker_unittest.cc',
         'public/cpp/bindings/tests/buffer_unittest.cc',
         'public/cpp/bindings/tests/connector_unittest.cc',
         'public/cpp/bindings/tests/handle_passing_unittest.cc',
@@ -243,6 +244,8 @@
         'public/cpp/bindings/lib/bindings_internal.h',
         'public/cpp/bindings/lib/bindings_serialization.cc',
         'public/cpp/bindings/lib/bindings_serialization.h',
+        'public/cpp/bindings/lib/bounds_checker.cc',
+        'public/cpp/bindings/lib/bounds_checker.h',
         'public/cpp/bindings/lib/buffer.h',
         'public/cpp/bindings/lib/callback_internal.h',
         'public/cpp/bindings/lib/connector.cc',

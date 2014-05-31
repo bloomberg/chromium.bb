@@ -5,6 +5,9 @@ class {{class_name}} {
  public:
   static {{class_name}}* New(mojo::internal::Buffer* buf);
 
+  static bool Validate(const void* data,
+                       mojo::internal::BoundsChecker* bounds_checker);
+
   mojo::internal::StructHeader header_;
 {{struct_macros.fields(struct)}}
 

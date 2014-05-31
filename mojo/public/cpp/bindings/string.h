@@ -9,6 +9,7 @@
 
 #include <string>
 
+#include "mojo/public/cpp/bindings/lib/array_internal.h"
 #include "mojo/public/cpp/bindings/type_converter.h"
 #include "mojo/public/cpp/system/macros.h"
 
@@ -16,6 +17,8 @@ namespace mojo {
 
 class String {
  public:
+  typedef internal::String_Data Data_;
+
   String() : is_null_(true) {}
   String(const std::string& str) : value_(str), is_null_(false) {}
   String(const char* chars) : is_null_(!chars) {

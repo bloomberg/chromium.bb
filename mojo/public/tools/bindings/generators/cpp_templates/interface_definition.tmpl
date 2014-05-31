@@ -258,7 +258,32 @@ bool {{class_name}}Stub::AcceptWithResponder(
 }
 
 bool {{class_name}}RequestValidator::Accept(mojo::Message* message) {
-  // TODO(yzshen): implement validation logic.
+{%- if interface.methods %}
+  switch (message->header()->name) {
+{%-   for method in interface.methods %}
+    case internal::k{{class_name}}_{{method.name}}_Name: {
+{%-     if method.response_parameters != None %}
+      if (!message->has_flag(mojo::internal::kMessageExpectsResponse))
+        break;
+{%-     else %}
+      if (message->has_flag(mojo::internal::kMessageExpectsResponse) ||
+          message->has_flag(mojo::internal::kMessageIsResponse)) {
+        break;
+      }
+{%-     endif %}
+      mojo::internal::BoundsChecker bounds_checker(
+          message->payload(), message->payload_num_bytes(),
+          message->handles()->size());
+      if (!internal::{{class_name}}_{{method.name}}_Params_Data::Validate(
+              message->payload(), &bounds_checker)) {
+        return false;
+      }
+      break;
+    }
+{%-   endfor %}
+  }
+{%- endif %}
+
   return sink_->Accept(message);
 }
 
@@ -269,7 +294,25 @@ bool {{class_name}}RequestValidator::Accept(mojo::Message* message) {
 }
 
 bool {{class_name}}ResponseValidator::Accept(mojo::Message* message) {
-  // TODO(yzshen): implement validation logic.
+{%- if interface.methods %}
+  switch (message->header()->name) {
+{%-   for method in interface.methods if method.response_parameters != None %}
+    case internal::k{{class_name}}_{{method.name}}_Name: {
+      if (!message->has_flag(mojo::internal::kMessageIsResponse))
+        break;
+      mojo::internal::BoundsChecker bounds_checker(
+          message->payload(), message->payload_num_bytes(),
+          message->handles()->size());
+      if (!internal::{{class_name}}_{{method.name}}_ResponseParams_Data::Validate(
+              message->payload(), &bounds_checker)) {
+        return false;
+      }
+      break;
+    }
+{%-   endfor %}
+  }
+{%- endif %}
+
   return sink_->Accept(message);
 }
 {%- endif -%}

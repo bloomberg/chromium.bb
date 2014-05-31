@@ -7,15 +7,17 @@
 #include <assert.h>
 
 #include "mojo/public/cpp/bindings/lib/bindings_internal.h"
+#include "mojo/public/cpp/bindings/lib/bounds_checker.h"
 
 namespace mojo {
 namespace internal {
 
 namespace {
 
+const size_t kAlignment = 8;
+
 template<typename T>
 T AlignImpl(T t) {
-  const size_t kAlignment = 8;
   return t + (kAlignment - (t % kAlignment)) % kAlignment;
 }
 
@@ -27,6 +29,10 @@ size_t Align(size_t size) {
 
 char* AlignPointer(char* ptr) {
   return reinterpret_cast<char*>(AlignImpl(reinterpret_cast<uintptr_t>(ptr)));
+}
+
+bool IsAligned(const void* ptr) {
+  return !(reinterpret_cast<uintptr_t>(ptr) % kAlignment);
 }
 
 void EncodePointer(const void* ptr, uint64_t* offset) {
@@ -48,6 +54,12 @@ const void* DecodePointerRaw(const uint64_t* offset) {
   return reinterpret_cast<const char*>(offset) + *offset;
 }
 
+bool ValidateEncodedPointer(const uint64_t* offset) {
+  // Cast to uintptr_t so overflow behavior is well defined.
+  return reinterpret_cast<uintptr_t>(offset) + *offset >=
+      reinterpret_cast<uintptr_t>(offset);
+}
+
 bool ValidatePointer(const void* ptr, const Message& message) {
   const uint8_t* data = static_cast<const uint8_t*>(ptr);
   if (reinterpret_cast<uintptr_t>(data) % 8 != 0)
@@ -64,14 +76,12 @@ void EncodeHandle(Handle* handle, std::vector<Handle>* handles) {
     handles->push_back(*handle);
     handle->set_value(static_cast<MojoHandle>(handles->size() - 1));
   } else {
-    // Encode -1 to mean the invalid handle.
-    handle->set_value(static_cast<MojoHandle>(-1));
+    handle->set_value(kEncodedInvalidHandleValue);
   }
 }
 
 bool DecodeHandle(Handle* handle, std::vector<Handle>* handles) {
-  // Decode -1 to mean the invalid handle.
-  if (handle->value() == static_cast<MojoHandle>(-1)) {
+  if (handle->value() == kEncodedInvalidHandleValue) {
     *handle = Handle();
     return true;
   }
@@ -79,6 +89,29 @@ bool DecodeHandle(Handle* handle, std::vector<Handle>* handles) {
     return false;
   // Just leave holes in the vector so we don't screw up other indices.
   *handle = FetchAndReset(&handles->at(handle->value()));
+  return true;
+}
+
+bool ValidateStructHeader(const void* data,
+                          uint32_t min_num_bytes,
+                          uint32_t min_num_fields,
+                          BoundsChecker* bounds_checker) {
+  if (!IsAligned(data))
+    return false;
+  if (!bounds_checker->IsValidRange(data, sizeof(StructHeader)))
+    return false;
+
+  const StructHeader* header = static_cast<const StructHeader*>(data);
+
+  // TODO(yzshen): Currently our binding code cannot handle structs of smaller
+  // size or with fewer fields than the version that it sees. That needs to be
+  // changed in order to provide backward compatibility.
+  if (header->num_bytes < min_num_bytes || header->num_fields < min_num_fields)
+    return false;
+
+  if (!bounds_checker->ClaimMemory(data, header->num_bytes))
+    return false;
+
   return true;
 }
 

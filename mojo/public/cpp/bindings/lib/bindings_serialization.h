@@ -12,8 +12,16 @@
 namespace mojo {
 namespace internal {
 
+class BoundsChecker;
+
+// Please note that this is a different value than |mojo::kInvalidHandleValue|,
+// which is the "decoded" invalid handle.
+const MojoHandle kEncodedInvalidHandleValue = static_cast<MojoHandle>(-1);
+
 size_t Align(size_t size);
 char* AlignPointer(char* ptr);
+
+bool IsAligned(const void* ptr);
 
 // Pointers are encoded as relative offsets. The offsets are relative to the
 // address of where the offset value is stored, such that the pointer may be
@@ -30,6 +38,10 @@ template <typename T>
 inline void DecodePointer(const uint64_t* offset, T** ptr) {
   *ptr = reinterpret_cast<T*>(const_cast<void*>(DecodePointerRaw(offset)));
 }
+
+// Checks whether decoding the pointer will overflow and produce a pointer
+// smaller than |offset|.
+bool ValidateEncodedPointer(const uint64_t* offset);
 
 // Check that the given pointer references memory contained within the message.
 bool ValidatePointer(const void* ptr, const Message& message);
@@ -49,6 +61,8 @@ inline void Encode(T* obj, std::vector<Handle>* handles) {
   EncodePointer(obj->ptr, &obj->offset);
 }
 
+// TODO(yzshen): Remove all redundant validation during decoding. And make
+// Decode*() functions/methods return void.
 template <typename T>
 inline bool Decode(T* obj, Message* message) {
   DecodePointer(&obj->offset, &obj->ptr);
@@ -60,6 +74,13 @@ inline bool Decode(T* obj, Message* message) {
   }
   return true;
 }
+
+// If returns true, this function also claims the memory range of the size
+// specified in the struct header, starting from |data|.
+bool ValidateStructHeader(const void* data,
+                          uint32_t min_num_bytes,
+                          uint32_t min_num_fields,
+                          BoundsChecker* bounds_checker);
 
 }  // namespace internal
 }  // namespace mojo

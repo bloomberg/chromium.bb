@@ -15,6 +15,12 @@
 #include "{{import.module.path}}-internal.h"
 {%- endfor %}
 
+namespace mojo {
+namespace internal {
+class BoundsChecker;
+}
+}
+
 {%- for namespace in namespaces_as_array %}
 namespace {{namespace}} {
 {%- endfor %}

@@ -63,6 +63,10 @@ class Message {
   uint8_t* mutable_payload() {
     return reinterpret_cast<uint8_t*>(data_) + data_->header.num_bytes;
   }
+  uint32_t payload_num_bytes() const {
+    assert(data_num_bytes_ >= data_->header.num_bytes);
+    return data_num_bytes_ - data_->header.num_bytes;
+  }
 
   // Access the handles.
   const std::vector<Handle>* handles() const { return &handles_; }
