@@ -11,6 +11,7 @@
 #include <winnt.h>
 
 #include <algorithm>
+#include <map>
 #include <vector>
 
 #include "base/base_switches.h"
@@ -45,8 +46,54 @@
 
 namespace breakpad {
 
-std::vector<google_breakpad::CustomInfoEntry>* g_custom_entries = NULL;
-bool g_deferred_crash_uploads = false;
+// Manages the breakpad key/value pair stash, there may only be one instance
+// of this class per process at one time.
+class CrashKeysWin {
+ public:
+  CrashKeysWin();
+  ~CrashKeysWin();
+
+  // May only be called once.
+  google_breakpad::CustomClientInfo*
+     GetCustomInfo(const std::wstring& exe_path, const std::wstring& type);
+
+  void SetCrashKeyValue(const std::wstring& key, const std::wstring& value);
+  void ClearCrashKeyValue(const std::wstring& key);
+
+  static CrashKeysWin* keeper() { return keeper_; }
+
+ private:
+  // One-time initialization of private key/value pairs.
+  void SetPluginPath(const std::wstring& path);
+  void SetBreakpadDumpPath();
+
+  // Must not be resized after GetCustomInfo is invoked.
+  std::vector<google_breakpad::CustomInfoEntry> custom_entries_;
+
+  typedef std::map<std::wstring, google_breakpad::CustomInfoEntry*>
+      DynamicEntriesMap;
+  base::Lock lock_;
+  // Keeps track of the next index for a new dynamic entry.
+  size_t dynamic_keys_offset_;  // Under lock_.
+  // Maintains key->entry information for dynamic key/value entries
+  // in custom_entries_.
+  DynamicEntriesMap dynamic_entries_;  // Under lock_.
+
+  // Stores the sole instance of this class allowed per process.
+  static CrashKeysWin* keeper_;
+};
+
+CrashKeysWin* CrashKeysWin::keeper_;
+
+CrashKeysWin::CrashKeysWin() : dynamic_keys_offset_(0) {
+  DCHECK_EQ(static_cast<CrashKeysWin*>(NULL), keeper_);
+  keeper_ = this;
+}
+
+CrashKeysWin::~CrashKeysWin() {
+  DCHECK_EQ(this, keeper_);
+  keeper_ = NULL;
+}
 
 namespace {
 
@@ -87,13 +134,6 @@ typedef NTSTATUS (WINAPI* NtTerminateProcessPtr)(HANDLE ProcessHandle,
                                                  NTSTATUS ExitStatus);
 char* g_real_terminate_process_stub = NULL;
 
-base::Lock* g_dynamic_entries_lock = NULL;
-// Under *g_dynamic_entries_lock.
-size_t g_dynamic_keys_offset = 0;
-typedef std::map<std::wstring, google_breakpad::CustomInfoEntry*>
-    DynamicEntriesMap;
-// Under *g_dynamic_entries_lock.
-DynamicEntriesMap* g_dynamic_entries = NULL;
 
 // Allow for 256 dynamic entries in addition to the fixed set of entries
 // set up in this file.
@@ -101,6 +141,8 @@ const size_t kMaxDynamicEntries = 256;
 
 // Maximum length for plugin path to include in plugin crash reports.
 const size_t kMaxPluginPathLength = 256;
+
+}  // namespace
 
 // Dumps the current process memory.
 extern "C" void __declspec(dllexport) __cdecl DumpProcess() {
@@ -115,6 +157,8 @@ extern "C" void __declspec(dllexport) __cdecl DumpProcessWithoutCrash() {
     g_dumphandler_no_crash->WriteMinidump();
   }
 }
+
+namespace {
 
 // We need to prevent ICF from folding DumpForHangDebuggingThread() and
 // DumpProcessWithoutCrashThread() together, since that makes them
@@ -142,6 +186,8 @@ DWORD WINAPI DumpForHangDebuggingThread(void*) {
 MSVC_POP_WARNING()
 MSVC_ENABLE_OPTIMIZE()
 
+}  // namespace
+
 // Injects a thread into a remote process to dump state when there is no crash.
 extern "C" HANDLE __declspec(dllexport) __cdecl
 InjectDumpProcessWithoutCrash(HANDLE process) {
@@ -156,9 +202,7 @@ InjectDumpForHangDebugging(HANDLE process) {
 }
 
 // Appends the plugin path to |g_custom_entries|.
-void SetPluginPath(const std::wstring& path) {
-  DCHECK(g_custom_entries);
-
+void CrashKeysWin::SetPluginPath(const std::wstring& path) {
   if (path.size() > kMaxPluginPathLength) {
     // If the path is too long, truncate from the start rather than the end,
     // since we want to be able to recover the DLL name.
@@ -176,7 +220,7 @@ void SetPluginPath(const std::wstring& path) {
   for (chunk_start = 0; chunk_start < path.size(); chunk_index++) {
     size_t chunk_length = std::min(kChunkSize, path.size() - chunk_start);
 
-    g_custom_entries->push_back(google_breakpad::CustomInfoEntry(
+    custom_entries_.push_back(google_breakpad::CustomInfoEntry(
         base::StringPrintf(L"plugin-path-chunk-%i", chunk_index + 1).c_str(),
         path.substr(chunk_start, chunk_length).c_str()));
 
@@ -185,12 +229,11 @@ void SetPluginPath(const std::wstring& path) {
 }
 
 // Appends the breakpad dump path to |g_custom_entries|.
-void SetBreakpadDumpPath() {
-  DCHECK(g_custom_entries);
+void CrashKeysWin::SetBreakpadDumpPath() {
   base::FilePath crash_dumps_dir_path;
   if (GetBreakpadClient()->GetAlternativeCrashDumpLocation(
           &crash_dumps_dir_path)) {
-    g_custom_entries->push_back(google_breakpad::CustomInfoEntry(
+    custom_entries_.push_back(google_breakpad::CustomInfoEntry(
         L"breakpad-dump-location", crash_dumps_dir_path.value().c_str()));
   }
 }
@@ -226,8 +269,9 @@ std::wstring GetProfileType() {
 
 // Returns the custom info structure based on the dll in parameter and the
 // process type.
-google_breakpad::CustomClientInfo* GetCustomInfo(const std::wstring& exe_path,
-                                                 const std::wstring& type) {
+google_breakpad::CustomClientInfo*
+CrashKeysWin::GetCustomInfo(const std::wstring& exe_path,
+                                  const std::wstring& type) {
   base::string16 version, product;
   base::string16 special_build;
   base::string16 channel_name;
@@ -239,33 +283,26 @@ google_breakpad::CustomClientInfo* GetCustomInfo(const std::wstring& exe_path,
       &channel_name);
 
   // We only expect this method to be called once per process.
-  DCHECK(!g_custom_entries);
-  g_custom_entries = new std::vector<google_breakpad::CustomInfoEntry>;
-
-  // Common g_custom_entries.
-  g_custom_entries->push_back(
+  // Common enties
+  custom_entries_.push_back(
       google_breakpad::CustomInfoEntry(L"ver",
                                        base::UTF16ToWide(version).c_str()));
-  g_custom_entries->push_back(
+  custom_entries_.push_back(
       google_breakpad::CustomInfoEntry(L"prod",
                                        base::UTF16ToWide(product).c_str()));
-  g_custom_entries->push_back(
+  custom_entries_.push_back(
       google_breakpad::CustomInfoEntry(L"plat", L"Win32"));
-  g_custom_entries->push_back(
+  custom_entries_.push_back(
       google_breakpad::CustomInfoEntry(L"ptype", type.c_str()));
-  g_custom_entries->push_back(google_breakpad::CustomInfoEntry(
+  custom_entries_.push_back(google_breakpad::CustomInfoEntry(
       L"pid", base::StringPrintf(L"%d", ::GetCurrentProcessId()).c_str()));
-  g_custom_entries->push_back(google_breakpad::CustomInfoEntry(
+  custom_entries_.push_back(google_breakpad::CustomInfoEntry(
       L"channel", base::UTF16ToWide(channel_name).c_str()));
-  g_custom_entries->push_back(google_breakpad::CustomInfoEntry(
+  custom_entries_.push_back(google_breakpad::CustomInfoEntry(
       L"profile-type", GetProfileType().c_str()));
 
-  if (g_deferred_crash_uploads)
-    g_custom_entries->push_back(
-        google_breakpad::CustomInfoEntry(L"deferred-upload", L"true"));
-
   if (!special_build.empty())
-    g_custom_entries->push_back(google_breakpad::CustomInfoEntry(
+    custom_entries_.push_back(google_breakpad::CustomInfoEntry(
         L"special", base::UTF16ToWide(special_build).c_str()));
 
   if (type == L"plugin" || type == L"ppapi") {
@@ -288,24 +325,23 @@ google_breakpad::CustomClientInfo* GetCustomInfo(const std::wstring& exe_path,
 
   // Create space for dynamic ad-hoc keys. The names and values are set using
   // the API defined in base/debug/crash_logging.h.
-  g_dynamic_keys_offset = g_custom_entries->size();
+  dynamic_keys_offset_ = custom_entries_.size();
   for (size_t i = 0; i < kMaxDynamicEntries; ++i) {
     // The names will be mutated as they are set. Un-numbered since these are
     // merely placeholders. The name cannot be empty because Breakpad's
     // HTTPUpload will interpret that as an invalid parameter.
-    g_custom_entries->push_back(
+    custom_entries_.push_back(
         google_breakpad::CustomInfoEntry(L"unspecified-crash-key", L""));
   }
 
-  g_dynamic_entries_lock = new base::Lock;
-  g_dynamic_entries = new DynamicEntriesMap;
-
   static google_breakpad::CustomClientInfo custom_client_info;
-  custom_client_info.entries = &g_custom_entries->front();
-  custom_client_info.count = g_custom_entries->size();
+  custom_client_info.entries = &custom_entries_.front();
+  custom_client_info.count = custom_entries_.size();
 
   return &custom_client_info;
 }
+
+namespace {
 
 // This callback is used when we want to get a dump without crashing the
 // process.
@@ -396,15 +432,10 @@ long WINAPI ServiceExceptionFilter(EXCEPTION_POINTERS* info) {
   return EXCEPTION_EXECUTE_HANDLER;
 }
 
-// NOTE: This function is used by SyzyASAN to annotate crash reports. If you
-// change the name or signature of this function you will break SyzyASAN
-// instrumented releases of Chrome. Please contact syzygy-team@chromium.org
-// before doing so!
-extern "C" void __declspec(dllexport) __cdecl SetCrashKeyValueImpl(
-    const wchar_t* key, const wchar_t* value) {
-  if (!g_dynamic_entries)
-    return;
+}  // namespace
 
+void CrashKeysWin::SetCrashKeyValue(
+    const std::wstring& key, const std::wstring& value) {
   // CustomInfoEntry limits the length of key and value. If they exceed
   // their maximum length the underlying string handling functions raise
   // an exception and prematurely trigger a crash. Truncate here.
@@ -416,16 +447,15 @@ extern "C" void __declspec(dllexport) __cdecl SetCrashKeyValueImpl(
   // If we already have a value for this key, update it; otherwise, insert
   // the new value if we have not exhausted the pre-allocated slots for dynamic
   // entries.
-  DCHECK(g_dynamic_entries_lock);
-  base::AutoLock lock(*g_dynamic_entries_lock);
+  base::AutoLock lock(lock_);
 
-  DynamicEntriesMap::iterator it = g_dynamic_entries->find(safe_key);
+  DynamicEntriesMap::iterator it = dynamic_entries_.find(safe_key);
   google_breakpad::CustomInfoEntry* entry = NULL;
-  if (it == g_dynamic_entries->end()) {
-    if (g_dynamic_entries->size() >= kMaxDynamicEntries)
+  if (it == dynamic_entries_.end()) {
+    if (dynamic_entries_.size() >= kMaxDynamicEntries)
       return;
-    entry = &(*g_custom_entries)[g_dynamic_keys_offset++];
-    g_dynamic_entries->insert(std::make_pair(safe_key, entry));
+    entry = &custom_entries_[dynamic_keys_offset_++];
+    dynamic_entries_.insert(std::make_pair(safe_key, entry));
   } else {
     entry = it->second;
   }
@@ -433,23 +463,42 @@ extern "C" void __declspec(dllexport) __cdecl SetCrashKeyValueImpl(
   entry->set(safe_key.data(), safe_value.data());
 }
 
-extern "C" void __declspec(dllexport) __cdecl ClearCrashKeyValueImpl(
-    const wchar_t* key) {
-  if (!g_dynamic_entries)
+// NOTE: This function is used by SyzyASAN to annotate crash reports. If you
+// change the name or signature of this function you will break SyzyASAN
+// instrumented releases of Chrome. Please contact syzygy-team@chromium.org
+// before doing so!
+extern "C" void __declspec(dllexport) __cdecl SetCrashKeyValueImpl(
+    const wchar_t* key, const wchar_t* value) {
+  CrashKeysWin* keeper = CrashKeysWin::keeper();
+  if (!keeper)
     return;
 
-  DCHECK(g_dynamic_entries_lock);
-  base::AutoLock lock(*g_dynamic_entries_lock);
+  // TODO(siggi): This doesn't look quite right - there's NULL deref potential
+  //    here, and an implicit std::wstring conversion. Fixme.
+  keeper->SetCrashKeyValue(key, value);
+}
+
+void CrashKeysWin::ClearCrashKeyValue(const std::wstring& key) {
+  base::AutoLock lock(lock_);
 
   std::wstring key_string(key);
-  DynamicEntriesMap::iterator it = g_dynamic_entries->find(key_string);
-  if (it == g_dynamic_entries->end())
+  DynamicEntriesMap::iterator it = dynamic_entries_.find(key_string);
+  if (it == dynamic_entries_.end())
     return;
 
   it->second->set_value(NULL);
 }
 
-}  // namespace
+extern "C" void __declspec(dllexport) __cdecl ClearCrashKeyValueImpl(
+    const wchar_t* key) {
+  CrashKeysWin* keeper = CrashKeysWin::keeper();
+  if (!keeper)
+    return;
+
+  // TODO(siggi): This doesn't look quite right - there's NULL deref potential
+  //    here, and an implicit std::wstring conversion. Fixme.
+  keeper->ClearCrashKeyValue(key);
+}
 
 static bool WrapMessageBoxWithSEH(const wchar_t* text, const wchar_t* caption,
                                   UINT flags, bool* exit_now) {
@@ -660,8 +709,11 @@ void InitCrashReporter(const std::string& process_type_switch) {
   bool is_per_user_install =
       GetBreakpadClient()->GetIsPerUserInstall(base::FilePath(exe_path));
 
+  // This is intentionally leaked.
+  CrashKeysWin* keeper = new CrashKeysWin();
+
   google_breakpad::CustomClientInfo* custom_info =
-      GetCustomInfo(exe_path, process_type);
+      keeper->GetCustomInfo(exe_path, process_type);
 
   google_breakpad::ExceptionHandler::MinidumpCallback callback = NULL;
   LPTOP_LEVEL_EXCEPTION_FILTER default_filter = NULL;
