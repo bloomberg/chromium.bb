@@ -56,7 +56,7 @@ class OverscrollNavigationOverlayTest : public RenderViewHostImplTestHarness {
     // Performs BACK navigation, sets image from layer_delegate_ on
     // image_delegate_.
     GetOverlay()->OnWindowSlideCompleting();
-    GetOverlay()->OnWindowSlideCompleted();
+    GetOverlay()->OnWindowSlideCompleted(scoped_ptr<ui::Layer>());
   }
 
  protected:
@@ -121,9 +121,6 @@ TEST_F(OverscrollNavigationOverlayTest, FirstVisuallyNonEmptyPaint_NoImage) {
   ReceivePaintUpdate();
   EXPECT_TRUE(GetOverlay()->received_paint_update_);
   EXPECT_FALSE(GetOverlay()->loading_complete_);
-
-  EXPECT_TRUE(GetOverlay()->received_paint_update_);
-  EXPECT_FALSE(GetOverlay()->loading_complete_);
   // The paint update will hide the overlay.
   EXPECT_FALSE(GetOverlay()->web_contents());
 }
@@ -138,28 +135,14 @@ TEST_F(OverscrollNavigationOverlayTest, FirstVisuallyNonEmptyPaint_WithImage) {
   EXPECT_FALSE(GetOverlay()->web_contents());
 }
 
-TEST_F(OverscrollNavigationOverlayTest, PaintUpdateWithoutNonEmptyPaint) {
+TEST_F(OverscrollNavigationOverlayTest, LoadUpdateWithoutNonEmptyPaint) {
   GetOverlay()->image_delegate_->SetImage(CreateDummyScreenshot());
   process()->sink().ClearMessages();
 
-  // The page load is complete, but the overlay should still be visible, because
-  // there hasn't been any paint update.
-  // This should also send a repaint request to the renderer, so that the
-  // renderer repaints the contents.
   contents()->TestSetIsLoading(false);
-  EXPECT_FALSE(GetOverlay()->received_paint_update_);
   EXPECT_TRUE(GetOverlay()->loading_complete_);
-  EXPECT_TRUE(GetOverlay()->web_contents());
-  EXPECT_TRUE(process()->sink().GetFirstMessageMatching(ViewMsg_Repaint::ID));
-
-  // Receive a repaint ack update. This should hide the overlay.
-  ViewHostMsg_UpdateRect_Params params;
-  memset(&params, 0, sizeof(params));
-  params.view_size = gfx::Size(10, 10);
-  params.flags = ViewHostMsg_UpdateRect_Flags::IS_REPAINT_ACK;
-  ViewHostMsg_UpdateRect rect(test_rvh()->GetRoutingID(), params);
-  RenderViewHostTester::TestOnMessageReceived(test_rvh(), rect);
-  EXPECT_TRUE(GetOverlay()->received_paint_update_);
+  EXPECT_FALSE(GetOverlay()->received_paint_update_);
+  // The page load should hide the overlay.
   EXPECT_FALSE(GetOverlay()->web_contents());
 }
 
@@ -189,9 +172,6 @@ TEST_F(OverscrollNavigationOverlayTest, MultiNavigation_PaintUpdate) {
 TEST_F(OverscrollNavigationOverlayTest, MultiNavigation_LoadingUpdate) {
   GetOverlay()->image_delegate_->SetImage(CreateDummyScreenshot());
 
-  contents()->TestSetIsLoading(false);
-  EXPECT_TRUE(GetOverlay()->loading_complete_);
-
   PerformBackNavigationViaSliderCallbacks();
   // No screenshot was set on NavEntry at offset -1.
   EXPECT_FALSE(GetOverlay()->image_delegate_->has_image());
@@ -199,7 +179,7 @@ TEST_F(OverscrollNavigationOverlayTest, MultiNavigation_LoadingUpdate) {
   EXPECT_FALSE(GetOverlay()->loading_complete_);
 
   // Load updates until the navigation is committed represent updates for the
-  //  previous page, so they shouldn't affect the flag.
+  // previous page, so they shouldn't affect the flag.
   contents()->TestSetIsLoading(true);
   contents()->TestSetIsLoading(false);
   EXPECT_FALSE(GetOverlay()->loading_complete_);
@@ -211,8 +191,6 @@ TEST_F(OverscrollNavigationOverlayTest, MultiNavigation_LoadingUpdate) {
   // should now be updated.
   EXPECT_TRUE(GetOverlay()->loading_complete_);
 
-  EXPECT_TRUE(GetOverlay()->web_contents());
-  ReceivePaintUpdate();
   EXPECT_FALSE(GetOverlay()->web_contents());
 }
 

@@ -227,8 +227,7 @@ void WindowSlider::SlideAnimationCompleted(
     scoped_ptr<ui::Layer> layer, scoped_ptr<ShadowLayerDelegate> shadow) {
   active_animator_ = NULL;
   shadow.reset();
-  layer.reset();
-  delegate_->OnWindowSlideCompleted();
+  delegate_->OnWindowSlideCompleted(layer.Pass());
 }
 
 void WindowSlider::ResetSlideAnimationCompleted(

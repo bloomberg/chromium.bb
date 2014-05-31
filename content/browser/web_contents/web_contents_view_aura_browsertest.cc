@@ -17,12 +17,14 @@
 #include "content/browser/frame_host/navigation_entry_screenshot_manager.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/browser/web_contents/web_contents_view.h"
+#include "content/common/view_messages.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
+#include "content/public/test/test_renderer_host.h"
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "ui/aura/test/event_generator.h"
@@ -159,9 +161,6 @@ class WebContentsViewAuraTest : public ContentBrowserTest {
         static_cast<WebContentsImpl*>(shell()->web_contents());
     NavigationController& controller = web_contents->GetController();
     RenderFrameHost* main_frame = web_contents->GetMainFrame();
-    WebContentsViewAura* view_aura = static_cast<WebContentsViewAura*>(
-        web_contents->GetView());
-    view_aura->SetupOverlayWindowForTesting();
 
     EXPECT_FALSE(controller.CanGoBack());
     EXPECT_FALSE(controller.CanGoForward());
@@ -627,9 +626,6 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
       static_cast<WebContentsImpl*>(shell()->web_contents());
   NavigationController& controller = web_contents->GetController();
   RenderFrameHost* main_frame = web_contents->GetMainFrame();
-  WebContentsViewAura* view_aura = static_cast<WebContentsViewAura*>(
-      web_contents->GetView());
-  view_aura->SetupOverlayWindowForTesting();
   ExecuteSyncJSFunction(main_frame, "install_touch_handler()");
 
   // Navigate twice, then navigate back in history once.

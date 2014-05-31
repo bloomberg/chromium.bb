@@ -48,8 +48,6 @@ class WebContentsViewAura
   WebContentsViewAura(WebContentsImpl* web_contents,
                       WebContentsViewDelegate* delegate);
 
-  CONTENT_EXPORT void SetupOverlayWindowForTesting();
-
   CONTENT_EXPORT void SetTouchEditableForTest(
       TouchEditableImplAura* touch_editable);
 

@@ -738,11 +738,6 @@ WebContentsViewAura::~WebContentsViewAura() {
   window_.reset();
 }
 
-void WebContentsViewAura::SetupOverlayWindowForTesting() {
-  if (navigation_overlay_)
-    navigation_overlay_->SetupForTesting();
-}
-
 void WebContentsViewAura::SetTouchEditableForTest(
     TouchEditableImplAura* touch_editable) {
   touch_editable_.reset(touch_editable);

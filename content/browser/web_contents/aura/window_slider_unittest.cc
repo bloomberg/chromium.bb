@@ -141,7 +141,7 @@ class WindowSliderDelegateTest : public WindowSlider::Delegate {
     return CreateLayerForTest();
   }
 
-  virtual void OnWindowSlideCompleted() OVERRIDE {
+  virtual void OnWindowSlideCompleted(scoped_ptr<ui::Layer> layer) OVERRIDE {
     slide_completed_ = true;
   }
 
@@ -198,8 +198,8 @@ class WindowSliderDeleteOwnerOnComplete : public WindowSliderDelegateTest {
 
  private:
   // Overridden from WindowSlider::Delegate:
-  virtual void OnWindowSlideCompleted() OVERRIDE {
-    WindowSliderDelegateTest::OnWindowSlideCompleted();
+  virtual void OnWindowSlideCompleted(scoped_ptr<ui::Layer> layer) OVERRIDE {
+    WindowSliderDelegateTest::OnWindowSlideCompleted(layer.Pass());
     delete owner_;
   }
 

@@ -48,9 +48,6 @@ class CONTENT_EXPORT OverscrollNavigationOverlay
   void SetOverlayWindow(scoped_ptr<aura::Window> window,
                         ImageWindowDelegate* delegate);
 
-  // Sets up the overlay for tests.
-  void SetupForTesting();
-
  private:
   friend class OverscrollNavigationOverlayTest;
   FRIEND_TEST_ALL_PREFIXES(OverscrollNavigationOverlayTest,
@@ -58,7 +55,7 @@ class CONTENT_EXPORT OverscrollNavigationOverlay
   FRIEND_TEST_ALL_PREFIXES(OverscrollNavigationOverlayTest,
                            FirstVisuallyNonEmptyPaint_WithImage);
   FRIEND_TEST_ALL_PREFIXES(OverscrollNavigationOverlayTest,
-                           PaintUpdateWithoutNonEmptyPaint);
+                           LoadUpdateWithoutNonEmptyPaint);
   FRIEND_TEST_ALL_PREFIXES(OverscrollNavigationOverlayTest,
                            MultiNavigation_LoadingUpdate);
   FRIEND_TEST_ALL_PREFIXES(OverscrollNavigationOverlayTest,
@@ -70,31 +67,26 @@ class CONTENT_EXPORT OverscrollNavigationOverlay
     SLIDE_FRONT
   };
 
-  // Stop observing the page and start the final overlay fade-out animation
-  // if the page-load has completed and the page has been painted, and a
-  // window-slide isn't in progress.
+  // Stop observing the page and start the final overlay fade-out animation if
+  // a window-slide isn't in progress and either the page has been painted or
+  // the page-load has completed.
   void StopObservingIfDone();
 
   // Creates a layer to be used for window-slide. |offset| is the offset of the
   // NavigationEntry for the screenshot image to display.
   ui::Layer* CreateSlideLayer(int offset);
 
-  // IPC message callbacks.
-  void OnUpdateRect(const ViewHostMsg_UpdateRect_Params& params);
-
   // Overridden from WindowSlider::Delegate:
   virtual ui::Layer* CreateBackLayer() OVERRIDE;
   virtual ui::Layer* CreateFrontLayer() OVERRIDE;
   virtual void OnWindowSlideCompleting() OVERRIDE;
-  virtual void OnWindowSlideCompleted() OVERRIDE;
+  virtual void OnWindowSlideCompleted(scoped_ptr<ui::Layer> layer) OVERRIDE;
   virtual void OnWindowSlideAborted() OVERRIDE;
   virtual void OnWindowSliderDestroyed() OVERRIDE;
 
   // Overridden from WebContentsObserver:
-  virtual void DocumentOnLoadCompletedInMainFrame() OVERRIDE;
   virtual void DidFirstVisuallyNonEmptyPaint() OVERRIDE;
   virtual void DidStopLoading(RenderViewHost* host) OVERRIDE;
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
   // The WebContents which is being navigated.
   WebContentsImpl* web_contents_;
@@ -118,16 +110,15 @@ class CONTENT_EXPORT OverscrollNavigationOverlay
   // being reloaded.
   scoped_ptr<WindowSlider> window_slider_;
 
+  // Layer to be used for the final overlay fadeout animation when the overlay
+  // is being dismissed.
+  scoped_ptr<ui::Layer> overlay_dismiss_layer_;
+
   // The direction of the in-progress slide (if any).
   SlideDirection slide_direction_;
 
   // The LayerDelegate used for the back/front layers during a slide.
   scoped_ptr<ImageLayerDelegate> layer_delegate_;
-
-  // During tests, the aura windows don't get any paint updates. So the overlay
-  // container keeps waiting for a paint update it never receives, causing a
-  // timeout. So during tests, disable the wait for paint updates.
-  bool need_paint_update_;
 
   DISALLOW_COPY_AND_ASSIGN(OverscrollNavigationOverlay);
 };

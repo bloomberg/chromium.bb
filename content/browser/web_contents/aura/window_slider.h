@@ -46,15 +46,16 @@ class CONTENT_EXPORT WindowSlider : public ui::EventHandler,
     // Called when the slide is about to be complete. The delegate can take
     // action with the assumption that slide will complete soon (within the
     // duration of the final transition animation effect).
-    // This callback is always preceeded by CreateBackLayerAndSetAsTarget() or
-    // by CreateFrontLayerAndSetAsTarget() callback, and is guaranteed to be
-    // followed by the OnWindowSlideCompleted() callback.
+    // This callback is always preceeded by CreateBackLayer() or by
+    // CreateFrontLayer() callback, and is guaranteed to be followed by the
+    // OnWindowSlideCompleted() callback.
     virtual void OnWindowSlideCompleting() = 0;
 
     // Called when the window slide completes. Note that at the end the
     // window-layer may have been transformed. The callback here should reset
-    // the transform if necessary.
-    virtual void OnWindowSlideCompleted() = 0;
+    // the transform if necessary. |layer| is the slider's layer (previously
+    // created via CreateBackLayer() or CreateFrontLayer()).
+    virtual void OnWindowSlideCompleted(scoped_ptr<ui::Layer> layer) = 0;
 
     // Called when the slider is destroyed.
     virtual void OnWindowSliderDestroyed() = 0;
