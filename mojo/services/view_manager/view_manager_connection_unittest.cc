@@ -33,21 +33,7 @@ namespace service {
 
 namespace {
 
-// TODO(sky): clean this up. Should be moved to the single place its used.
-base::RunLoop* current_run_loop = NULL;
-
 const char kTestServiceURL[] = "mojo:test_url";
-
-void INodesToTestNodes(const Array<INodePtr>& data,
-                       std::vector<TestNode>* test_nodes) {
-  for (size_t i = 0; i < data.size(); ++i) {
-    TestNode node;
-    node.parent_id = data[i]->parent_id;
-    node.node_id = data[i]->node_id;
-    node.view_id = data[i]->view_id;
-    test_nodes->push_back(node);
-  }
-}
 
 // ViewManagerProxy is a proxy to an IViewManager. It handles invoking
 // IViewManager functions on the right thread in a synchronous manner (each
@@ -485,24 +471,6 @@ class ConnectServiceLoader : public ServiceLoader {
   DISALLOW_COPY_AND_ASSIGN(ConnectServiceLoader);
 };
 
-// Sets |current_run_loop| and runs it. It is expected that someone else quits
-// the loop.
-void DoRunLoop() {
-  DCHECK(!current_run_loop);
-
-  base::RunLoop run_loop;
-  current_run_loop = &run_loop;
-  current_run_loop->Run();
-  current_run_loop = NULL;
-}
-
-// Boolean callback. Sets |result_cache| to the value of |result| and quits
-// the run loop.
-void BooleanCallback(bool* result_cache, bool result) {
-  *result_cache = result;
-  current_run_loop->Quit();
-}
-
 // Creates an id used for transport from the specified parameters.
 TransportNodeId BuildNodeId(TransportConnectionId connection_id,
                             TransportConnectionSpecificNodeId node_id) {
@@ -515,13 +483,25 @@ TransportViewId BuildViewId(TransportConnectionId connection_id,
   return (connection_id << 16) | view_id;
 }
 
+// Callback from ViewManagerInitConnect(). |result| is the result of the
+// Connect() call and |run_loop| the nested RunLoop.
+void ViewManagerInitConnectCallback(bool* result_cache,
+                                    base::RunLoop* run_loop,
+                                    bool result) {
+  *result_cache = result;
+  run_loop->Quit();
+}
+
 // Resposible for establishing  connection to the viewmanager. Blocks until get
 // back result.
 bool ViewManagerInitConnect(IViewManagerInit* view_manager_init,
                             const std::string& url) {
   bool result = false;
-  view_manager_init->Connect(url, base::Bind(&BooleanCallback, &result));
-  DoRunLoop();
+  base::RunLoop run_loop;
+  view_manager_init->Connect(url,
+                             base::Bind(&ViewManagerInitConnectCallback,
+                                        &result, &run_loop));
+  run_loop.Run();
   return result;
 }
 

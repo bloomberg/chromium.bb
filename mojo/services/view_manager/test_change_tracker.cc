@@ -21,17 +21,6 @@ std::string NodeIdToString(TransportNodeId id) {
 
 namespace {
 
-void INodesToTestNodes(const Array<INodePtr>& data,
-                       std::vector<TestNode>* test_nodes) {
-  for (size_t i = 0; i < data.size(); ++i) {
-    TestNode node;
-    node.parent_id = data[i]->parent_id;
-    node.node_id = data[i]->node_id;
-    node.view_id = data[i]->view_id;
-    test_nodes->push_back(node);
-  }
-}
-
 std::string RectToString(const gfx::Rect& rect) {
   return base::StringPrintf("%d,%d %dx%d", rect.x(), rect.y(), rect.width(),
                             rect.height());
@@ -98,6 +87,17 @@ std::string ChangeNodeDescription(const std::vector<Change>& changes) {
   for (size_t i = 0; i < changes[0].nodes.size(); ++i)
     node_strings[i] = "[" + changes[0].nodes[i].ToString() + "]";
   return JoinString(node_strings, ',');
+}
+
+void INodesToTestNodes(const Array<INodePtr>& data,
+                       std::vector<TestNode>* test_nodes) {
+  for (size_t i = 0; i < data.size(); ++i) {
+    TestNode node;
+    node.parent_id = data[i]->parent_id;
+    node.node_id = data[i]->node_id;
+    node.view_id = data[i]->view_id;
+    test_nodes->push_back(node);
+  }
 }
 
 Change::Change()

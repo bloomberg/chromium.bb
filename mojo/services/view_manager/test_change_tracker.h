@@ -63,6 +63,10 @@ std::vector<std::string> ChangesToDescription1(
 // if change.size() != 1.
 std::string ChangeNodeDescription(const std::vector<Change>& changes);
 
+// Converts INodes to TestNodes.
+void INodesToTestNodes(const Array<INodePtr>& data,
+                       std::vector<TestNode>* test_nodes);
+
 // TestChangeTracker is used to record IViewManagerClient functions. It notifies
 // a delegate any time a change is added.
 class TestChangeTracker {
