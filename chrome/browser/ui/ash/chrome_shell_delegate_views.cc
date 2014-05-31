@@ -38,6 +38,10 @@
 #include "chrome/browser/ui/ash/system_tray_delegate_win.h"
 #endif
 
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+#include "chrome/browser/ui/ash/system_tray_delegate_linux.h"
+#endif
+
 namespace {
 
 class NewWindowDelegateImpl : public ChromeNewWindowDelegate {
@@ -184,6 +188,8 @@ ash::SessionStateDelegate* ChromeShellDelegate::CreateSessionStateDelegate() {
 ash::SystemTrayDelegate* ChromeShellDelegate::CreateSystemTrayDelegate() {
 #if defined(OS_WIN)
   return CreateWindowsSystemTrayDelegate();
+#elif defined(OS_LINUX) && !defined(OS_CHROMEOS)
+  return CreateLinuxSystemTrayDelegate();
 #else
   return new ash::DefaultSystemTrayDelegate;
 #endif

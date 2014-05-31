@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/ash/system_tray_delegate_win.h"
+#include "chrome/browser/ui/ash/system_tray_delegate_linux.h"
 
 #include <string>
 
@@ -12,26 +12,25 @@
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/volume_control_delegate.h"
-#include "base/logging.h"
 #include "base/time/time.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/host_desktop.h"
+#include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "chrome/browser/upgrade_detector.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_service.h"
-
 #include "grit/locale_settings.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace {
 
-class SystemTrayDelegateWin : public ash::SystemTrayDelegate,
-                              public content::NotificationObserver {
+class SystemTrayDelegateLinux : public ash::SystemTrayDelegate,
+                                public content::NotificationObserver {
  public:
-  SystemTrayDelegateWin()
+  SystemTrayDelegateLinux()
       : clock_type_(base::GetHourClockType()) {
     // Register notifications on construction so that events such as
     // PROFILE_CREATED do not get missed if they happen before Initialize().
@@ -41,7 +40,7 @@ class SystemTrayDelegateWin : public ash::SystemTrayDelegate,
                     content::NotificationService::AllSources());
   }
 
-  virtual ~SystemTrayDelegateWin() {
+  virtual ~SystemTrayDelegateLinux() {
     registrar_.reset();
   }
 
@@ -116,6 +115,9 @@ class SystemTrayDelegateWin : public ash::SystemTrayDelegate,
   }
 
   virtual void ShowChromeSlow() OVERRIDE {
+    chrome::ScopedTabbedBrowserDisplayer displayer(
+        ProfileManager::GetPrimaryUserProfile(), chrome::HOST_DESKTOP_TYPE_ASH);
+    chrome::ShowSlow(displayer.browser());
   }
 
   virtual bool ShouldShowDisplayNotification() OVERRIDE {
@@ -343,12 +345,12 @@ class SystemTrayDelegateWin : public ash::SystemTrayDelegate,
   scoped_ptr<content::NotificationRegistrar> registrar_;
   base::HourClockType clock_type_;
 
-  DISALLOW_COPY_AND_ASSIGN(SystemTrayDelegateWin);
+  DISALLOW_COPY_AND_ASSIGN(SystemTrayDelegateLinux);
 };
 
 }  // namespace
 
 
-ash::SystemTrayDelegate* CreateWindowsSystemTrayDelegate() {
-  return new SystemTrayDelegateWin();
+ash::SystemTrayDelegate* CreateLinuxSystemTrayDelegate() {
+  return new SystemTrayDelegateLinux();
 }
