@@ -359,7 +359,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, SearchReusesInstantTab) {
       chrome::NOTIFICATION_INSTANT_TAB_SUPPORT_DETERMINED,
       content::NotificationService::AllSources());
   SetOmniboxText("flowers");
-  PressEnterAndWaitForNavigation();
+  PressEnterAndWaitForFrameLoad();
   observer.Wait();
 
   // Just did a regular search.
@@ -407,7 +407,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest,
       chrome::NOTIFICATION_INSTANT_TAB_SUPPORT_DETERMINED,
       content::NotificationService::AllSources());
   SetOmniboxText("flowers");
-  PressEnterAndWaitForNavigation();
+  PressEnterAndWaitForFrameLoad();
   observer_1.Wait();
 
   // Just did a regular search.
@@ -962,7 +962,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, Referrer) {
 
   // Type a query and press enter to get results.
   SetOmniboxText("query");
-  PressEnterAndWaitForNavigation();
+  PressEnterAndWaitForFrameLoad();
 
   // Simulate going to a result.
   content::WebContents* contents =

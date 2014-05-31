@@ -118,6 +118,14 @@ void InstantTestBase::PressEnterAndWaitForNavigation() {
   nav_observer.Wait();
 }
 
+void InstantTestBase::PressEnterAndWaitForFrameLoad() {
+  content::WindowedNotificationObserver nav_observer(
+      content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
+      content::NotificationService::AllSources());
+  browser_->window()->GetLocationBar()->AcceptInput();
+  nav_observer.Wait();
+}
+
 bool InstantTestBase::GetBoolFromJS(content::WebContents* contents,
                                     const std::string& script,
                                     bool* result) {

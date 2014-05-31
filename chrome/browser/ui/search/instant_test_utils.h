@@ -71,6 +71,7 @@ class InstantTestBase {
   void SetOmniboxText(const std::string& text);
 
   void PressEnterAndWaitForNavigation();
+  void PressEnterAndWaitForFrameLoad();
 
   bool GetBoolFromJS(content::WebContents* contents,
                      const std::string& script,
