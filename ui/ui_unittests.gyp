@@ -73,7 +73,6 @@
       ],
       'includes': [
         'display/display_unittests.gypi',
-        'ozone/ozone_unittests.gypi',
       ],
       'include_dirs': [
         '../',

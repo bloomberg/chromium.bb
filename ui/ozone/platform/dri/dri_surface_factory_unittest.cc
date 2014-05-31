@@ -9,6 +9,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "third_party/skia/include/core/SkImageInfo.h"
 #include "ui/gfx/ozone/surface_factory_ozone.h"
 #include "ui/gfx/ozone/surface_ozone_canvas.h"
 #include "ui/ozone/platform/dri/dri_buffer.h"
@@ -171,7 +172,7 @@ TEST_F(DriSurfaceFactoryTest, SetCursorImage) {
 
   SkBitmap image;
   SkImageInfo info = SkImageInfo::Make(
-      6, 4, kPMColor_SkColorType, kPremul_SkAlphaType);
+      6, 4, kN32_SkColorType, kPremul_SkAlphaType);
   image.allocPixels(info);
   image.eraseColor(SK_ColorWHITE);
 

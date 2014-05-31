@@ -7,6 +7,9 @@
     'internal_ozone_platform_deps': [
       'ozone_platform_dri',
     ],
+    'internal_ozone_platform_unittest_deps': [
+      'ozone_platform_dri_unittests',
+    ],
     'internal_ozone_platforms': [
       'dri',
     ],
@@ -26,6 +29,7 @@
         '../events/ozone/events_ozone.gyp:events_ozone_evdev',
         '../gfx/gfx.gyp:gfx',
         '../gfx/gfx.gyp:gfx_geometry',
+        '../gfx/ozone/gfx_ozone.gyp:gfx_ozone',
       ],
       'defines': [
         'OZONE_IMPLEMENTATION',
@@ -59,6 +63,36 @@
         'screen_manager.h',
         'scanout_surface.h',
       ],
+    },
+    {
+      'target_name': 'ozone_platform_dri_unittests',
+      'type': 'none',
+      'dependencies': [
+        '../../build/linux/system.gyp:dridrm',
+        '../../skia/skia.gyp:skia',
+        '../gfx/gfx.gyp:gfx_geometry',
+        '../gfx/ozone/gfx_ozone.gyp:gfx_ozone',
+      ],
+      'export_dependent_settings': [
+        '../../build/linux/system.gyp:dridrm',
+        '../../skia/skia.gyp:skia',
+        '../gfx/gfx.gyp:gfx_geometry',
+        '../gfx/ozone/gfx_ozone.gyp:gfx_ozone',
+      ],
+      'direct_dependent_settings': {
+        'sources': [
+          'dri_surface_factory_unittest.cc',
+          'dri_surface_unittest.cc',
+          'hardware_display_controller_unittest.cc',
+          'screen_manager_unittest.cc',
+          'test/mock_dri_surface.cc',
+          'test/mock_dri_surface.h',
+          'test/mock_dri_wrapper.cc',
+          'test/mock_dri_wrapper.h',
+          'test/mock_surface_generator.cc',
+          'test/mock_surface_generator.h',
+        ],
+      },
     },
   ],
 }

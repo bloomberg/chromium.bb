@@ -1182,6 +1182,9 @@
               ],
             }],
             ['use_ozone==1', {
+              'dependencies': [
+                '../ui/ozone/ozone.gyp:*',
+              ],
               'dependencies!': [
                 '../chrome/chrome.gyp:interactive_ui_tests',  # crbug.com/362166
               ],

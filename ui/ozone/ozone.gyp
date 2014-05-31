@@ -8,8 +8,10 @@
     'external_ozone_platforms': [],
     'external_ozone_platform_files': [],
     'external_ozone_platform_deps': [],
+    'external_ozone_platform_unittest_deps': [],
     'internal_ozone_platforms': [],
     'internal_ozone_platform_deps': [],
+    'internal_ozone_platform_unittest_deps': [],
   },
   'targets': [
     {
@@ -84,6 +86,21 @@
           ],
         }],
       ]
+    },
+    {
+      'target_name': 'ozone_unittests',
+      'type': '<(gtest_target_type)',
+      'sources': [
+        'run_all_unittests.cc',
+      ],
+      'dependencies': [
+        'ozone',
+        '../../base/base.gyp:base',
+        '../../base/base.gyp:test_support_base',
+        '../../testing/gtest.gyp:gtest',
+        '<@(external_ozone_platform_unittest_deps)',
+        '<@(internal_ozone_platform_unittest_deps)',
+      ],
     },
   ],
   'conditions': [

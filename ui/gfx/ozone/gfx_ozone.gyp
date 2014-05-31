@@ -15,6 +15,7 @@
     'dependencies': [
       '../../../base/base.gyp:base',
       '../../../skia/skia.gyp:skia',
+      '../gfx.gyp:gfx',
       '../gfx.gyp:gfx_geometry',
     ],
     'sources': [
