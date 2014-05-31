@@ -289,12 +289,6 @@ char kTSanDefaultSuppressions[] =
 "deadlock:media::AudioOutputDispatcherImpl::StopStream\n"
 "deadlock:media::AudioStreamHandler::AudioStreamContainer::OnMoreData\n"
 
-// http://crbug.com/374151
-"deadlock:media::FakeAudioConsumer::Worker::DoRead\n"
-
-// http://crbug.com/377420
-"deadlock:media::AudioRendererMixerInput::Play\n"
-
 // End of suppressions.
 ;  // Please keep this semicolon.
 

@@ -828,26 +828,6 @@
   fun:_vsnprintf_helper
 }
 {
-  bug_137973_a
-  ThreadSanitizer:Race
-  fun:media::Pipeline::OnVideoTimeUpdate
-  fun:base::internal::RunnableAdapter::Run
-}
-{
-  bug_137973_b
-  ThreadSanitizer:Race
-  fun:media::Pipeline::SetState
-  fun:media::Pipeline::StopTask
-  fun:base::internal::RunnableAdapter::Run
-}
-{
-  bug_137973_c
-  ThreadSanitizer:Race
-  fun:media::Pipeline::SetState
-  fun:media::Pipeline::SeekTask
-  fun:base::internal::RunnableAdapter::Run
-}
-{
   bug_144894
   ThreadSanitizer:Race
   fun:av_parser_close
