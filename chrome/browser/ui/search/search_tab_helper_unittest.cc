@@ -103,7 +103,7 @@ TEST_F(SearchTabHelperTest, DetermineIfPageSupportsInstant_Local) {
   SearchTabHelper* search_tab_helper =
       SearchTabHelper::FromWebContents(web_contents());
   ASSERT_NE(static_cast<SearchTabHelper*>(NULL), search_tab_helper);
-  search_tab_helper->ipc_router().set_delegate(mock_delegate());
+  search_tab_helper->ipc_router().set_delegate_for_testing(mock_delegate());
   search_tab_helper->DetermineIfPageSupportsInstant();
 }
 
@@ -115,14 +115,14 @@ TEST_F(SearchTabHelperTest, DetermineIfPageSupportsInstant_NonLocal) {
   SearchTabHelper* search_tab_helper =
       SearchTabHelper::FromWebContents(web_contents());
   ASSERT_NE(static_cast<SearchTabHelper*>(NULL), search_tab_helper);
-  search_tab_helper->ipc_router().set_delegate(mock_delegate());
+  search_tab_helper->ipc_router().set_delegate_for_testing(mock_delegate());
   search_tab_helper->DetermineIfPageSupportsInstant();
   ASSERT_TRUE(MessageWasSent(ChromeViewMsg_DetermineIfPageSupportsInstant::ID));
 
   scoped_ptr<IPC::Message> response(
       new ChromeViewHostMsg_InstantSupportDetermined(
           web_contents()->GetRoutingID(),
-          web_contents()->GetController().GetVisibleEntry()->GetPageID(),
+          search_tab_helper->ipc_router().page_seq_no_for_testing(),
           true));
   search_tab_helper->ipc_router().OnMessageReceived(*response);
 }
@@ -138,7 +138,7 @@ TEST_F(SearchTabHelperTest, PageURLDoesntBelongToInstantRenderer) {
   SearchTabHelper* search_tab_helper =
       SearchTabHelper::FromWebContents(web_contents());
   ASSERT_NE(static_cast<SearchTabHelper*>(NULL), search_tab_helper);
-  search_tab_helper->ipc_router().set_delegate(mock_delegate());
+  search_tab_helper->ipc_router().set_delegate_for_testing(mock_delegate());
   search_tab_helper->DetermineIfPageSupportsInstant();
   ASSERT_FALSE(MessageWasSent(
       ChromeViewMsg_DetermineIfPageSupportsInstant::ID));

@@ -6,6 +6,7 @@
 
 #include "chrome/browser/search/search.h"
 #include "chrome/common/render_messages.h"
+#include "content/public/browser/navigation_details.h"
 #include "content/public/browser/web_contents.h"
 
 namespace {
@@ -31,6 +32,7 @@ SearchIPCRouter::SearchIPCRouter(content::WebContents* web_contents,
     : WebContentsObserver(web_contents),
       delegate_(delegate),
       policy_(policy.Pass()),
+      commit_counter_(0),
       is_active_tab_(false) {
   DCHECK(web_contents);
   DCHECK(delegate);
@@ -38,6 +40,11 @@ SearchIPCRouter::SearchIPCRouter(content::WebContents* web_contents,
 }
 
 SearchIPCRouter::~SearchIPCRouter() {}
+
+void SearchIPCRouter::OnNavigationEntryCommitted() {
+  ++commit_counter_;
+  Send(new ChromeViewMsg_SetPageSequenceNumber(routing_id(), commit_counter_));
+}
 
 void SearchIPCRouter::DetermineIfPageSupportsInstant() {
   Send(new ChromeViewMsg_DetermineIfPageSupportsInstant(routing_id()));
@@ -172,18 +179,18 @@ bool SearchIPCRouter::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
-void SearchIPCRouter::OnInstantSupportDetermined(int page_id,
+void SearchIPCRouter::OnInstantSupportDetermined(int page_seq_no,
                                                  bool instant_support) const {
-  if (!web_contents()->IsActiveEntry(page_id))
+  if (page_seq_no != commit_counter_)
     return;
 
   delegate_->OnInstantSupportDetermined(instant_support);
 }
 
 void SearchIPCRouter::OnVoiceSearchSupportDetermined(
-    int page_id,
+    int page_seq_no,
     bool supports_voice_search) const {
-  if (!web_contents()->IsActiveEntry(page_id))
+  if (page_seq_no != commit_counter_)
     return;
 
   delegate_->OnInstantSupportDetermined(true);
@@ -193,9 +200,9 @@ void SearchIPCRouter::OnVoiceSearchSupportDetermined(
   delegate_->OnSetVoiceSearchSupport(supports_voice_search);
 }
 
-void SearchIPCRouter::OnFocusOmnibox(int page_id,
+void SearchIPCRouter::OnFocusOmnibox(int page_seq_no,
                                      OmniboxFocusState state) const {
-  if (!web_contents()->IsActiveEntry(page_id))
+  if (page_seq_no != commit_counter_)
     return;
 
   delegate_->OnInstantSupportDetermined(true);
@@ -206,11 +213,11 @@ void SearchIPCRouter::OnFocusOmnibox(int page_id,
 }
 
 void SearchIPCRouter::OnSearchBoxNavigate(
-    int page_id,
+    int page_seq_no,
     const GURL& url,
     WindowOpenDisposition disposition,
     bool is_most_visited_item_url) const {
-  if (!web_contents()->IsActiveEntry(page_id))
+  if (page_seq_no != commit_counter_)
     return;
 
   delegate_->OnInstantSupportDetermined(true);
@@ -220,9 +227,9 @@ void SearchIPCRouter::OnSearchBoxNavigate(
   delegate_->NavigateToURL(url, disposition, is_most_visited_item_url);
 }
 
-void SearchIPCRouter::OnDeleteMostVisitedItem(int page_id,
+void SearchIPCRouter::OnDeleteMostVisitedItem(int page_seq_no,
                                               const GURL& url) const {
-  if (!web_contents()->IsActiveEntry(page_id))
+  if (page_seq_no != commit_counter_)
     return;
 
   delegate_->OnInstantSupportDetermined(true);
@@ -232,9 +239,9 @@ void SearchIPCRouter::OnDeleteMostVisitedItem(int page_id,
   delegate_->OnDeleteMostVisitedItem(url);
 }
 
-void SearchIPCRouter::OnUndoMostVisitedDeletion(int page_id,
+void SearchIPCRouter::OnUndoMostVisitedDeletion(int page_seq_no,
                                                 const GURL& url) const {
-  if (!web_contents()->IsActiveEntry(page_id))
+  if (page_seq_no != commit_counter_)
     return;
 
   delegate_->OnInstantSupportDetermined(true);
@@ -244,8 +251,8 @@ void SearchIPCRouter::OnUndoMostVisitedDeletion(int page_id,
   delegate_->OnUndoMostVisitedDeletion(url);
 }
 
-void SearchIPCRouter::OnUndoAllMostVisitedDeletions(int page_id) const {
-  if (!web_contents()->IsActiveEntry(page_id))
+void SearchIPCRouter::OnUndoAllMostVisitedDeletions(int page_seq_no) const {
+  if (page_seq_no != commit_counter_)
     return;
 
   delegate_->OnInstantSupportDetermined(true);
@@ -255,8 +262,9 @@ void SearchIPCRouter::OnUndoAllMostVisitedDeletions(int page_id) const {
   delegate_->OnUndoAllMostVisitedDeletions();
 }
 
-void SearchIPCRouter::OnLogEvent(int page_id, NTPLoggingEventType event) const {
-  if (!web_contents()->IsActiveEntry(page_id))
+void SearchIPCRouter::OnLogEvent(int page_seq_no,
+                                 NTPLoggingEventType event) const {
+  if (page_seq_no != commit_counter_)
     return;
 
   delegate_->OnInstantSupportDetermined(true);
@@ -267,8 +275,8 @@ void SearchIPCRouter::OnLogEvent(int page_id, NTPLoggingEventType event) const {
 }
 
 void SearchIPCRouter::OnLogMostVisitedImpression(
-    int page_id, int position, const base::string16& provider) const {
-  if (!web_contents()->IsActiveEntry(page_id) || !IsProviderValid(provider))
+    int page_seq_no, int position, const base::string16& provider) const {
+  if (page_seq_no != commit_counter_ || !IsProviderValid(provider))
     return;
 
   delegate_->OnInstantSupportDetermined(true);
@@ -280,8 +288,8 @@ void SearchIPCRouter::OnLogMostVisitedImpression(
 }
 
 void SearchIPCRouter::OnLogMostVisitedNavigation(
-    int page_id, int position, const base::string16& provider) const {
-  if (!web_contents()->IsActiveEntry(page_id) || !IsProviderValid(provider))
+    int page_seq_no, int position, const base::string16& provider) const {
+  if (page_seq_no != commit_counter_ || !IsProviderValid(provider))
     return;
 
   delegate_->OnInstantSupportDetermined(true);
@@ -292,9 +300,9 @@ void SearchIPCRouter::OnLogMostVisitedNavigation(
   delegate_->OnLogMostVisitedNavigation(position, provider);
 }
 
-void SearchIPCRouter::OnPasteAndOpenDropDown(int page_id,
+void SearchIPCRouter::OnPasteAndOpenDropDown(int page_seq_no,
                                              const base::string16& text) const {
-  if (!web_contents()->IsActiveEntry(page_id))
+  if (page_seq_no != commit_counter_)
     return;
 
   delegate_->OnInstantSupportDetermined(true);
@@ -305,9 +313,9 @@ void SearchIPCRouter::OnPasteAndOpenDropDown(int page_id,
 }
 
 void SearchIPCRouter::OnChromeIdentityCheck(
-    int page_id,
+    int page_seq_no,
     const base::string16& identity) const {
-  if (!web_contents()->IsActiveEntry(page_id))
+  if (page_seq_no != commit_counter_)
     return;
 
   delegate_->OnInstantSupportDetermined(true);
@@ -317,12 +325,12 @@ void SearchIPCRouter::OnChromeIdentityCheck(
   delegate_->OnChromeIdentityCheck(identity);
 }
 
-void SearchIPCRouter::set_delegate(Delegate* delegate) {
+void SearchIPCRouter::set_delegate_for_testing(Delegate* delegate) {
   DCHECK(delegate);
   delegate_ = delegate;
 }
 
-void SearchIPCRouter::set_policy(scoped_ptr<Policy> policy) {
+void SearchIPCRouter::set_policy_for_testing(scoped_ptr<Policy> policy) {
   DCHECK(policy.get());
   policy_.reset(policy.release());
 }

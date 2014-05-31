@@ -268,8 +268,6 @@ class CONTENT_EXPORT WebContentsImpl
       const base::FilePath& file,
       const base::Callback<void(int64)>& callback)
           OVERRIDE;
-  virtual bool IsActiveEntry(int32 page_id) OVERRIDE;
-
   virtual const std::string& GetContentsMimeType() const OVERRIDE;
   virtual bool WillNotifyDisconnection() const OVERRIDE;
   virtual void SetOverrideEncoding(const std::string& encoding) OVERRIDE;

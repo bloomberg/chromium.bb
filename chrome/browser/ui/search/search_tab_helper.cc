@@ -359,6 +359,9 @@ void SearchTabHelper::NavigationEntryCommitted(
   model_.SetVoiceSearchSupported(false);
   chrome::SetInstantSupportStateInNavigationEntry(model_.instant_support(),
                                                   entry);
+
+  if (InInstantProcess(profile(), web_contents_))
+    ipc_router_.OnNavigationEntryCommitted();
 }
 
 void SearchTabHelper::OnInstantSupportDetermined(bool supports_instant) {

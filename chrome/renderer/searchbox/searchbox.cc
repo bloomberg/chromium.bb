@@ -143,6 +143,7 @@ bool GetRestrictedIDFromThumbnailUrl(int render_view_id,
 SearchBox::SearchBox(content::RenderView* render_view)
     : content::RenderViewObserver(render_view),
       content::RenderViewObserverTracker<SearchBox>(render_view),
+    page_seq_no_(0),
     app_launcher_enabled_(false),
     is_focused_(false),
     is_input_in_progress_(false),
@@ -158,32 +159,31 @@ SearchBox::~SearchBox() {
 
 void SearchBox::LogEvent(NTPLoggingEventType event) {
   render_view()->Send(new ChromeViewHostMsg_LogEvent(
-      render_view()->GetRoutingID(), render_view()->GetPageId(), event));
+      render_view()->GetRoutingID(), page_seq_no_, event));
 }
 
 void SearchBox::LogMostVisitedImpression(int position,
                                          const base::string16& provider) {
   render_view()->Send(new ChromeViewHostMsg_LogMostVisitedImpression(
-      render_view()->GetRoutingID(), render_view()->GetPageId(), position,
-      provider));
+      render_view()->GetRoutingID(), page_seq_no_, position, provider));
 }
 
 void SearchBox::LogMostVisitedNavigation(int position,
                                          const base::string16& provider) {
   render_view()->Send(new ChromeViewHostMsg_LogMostVisitedNavigation(
-      render_view()->GetRoutingID(), render_view()->GetPageId(), position,
-      provider));
+      render_view()->GetRoutingID(), page_seq_no_, position, provider));
 }
 
 void SearchBox::CheckIsUserSignedInToChromeAs(const base::string16& identity) {
   render_view()->Send(new ChromeViewHostMsg_ChromeIdentityCheck(
-      render_view()->GetRoutingID(), render_view()->GetPageId(), identity));
+      render_view()->GetRoutingID(), page_seq_no_, identity));
 }
 
 void SearchBox::DeleteMostVisitedItem(
     InstantRestrictedID most_visited_item_id) {
   render_view()->Send(new ChromeViewHostMsg_SearchBoxDeleteMostVisitedItem(
-      render_view()->GetRoutingID(), render_view()->GetPageId(),
+      render_view()->GetRoutingID(),
+      page_seq_no_,
       GetURLForMostVisitedItem(most_visited_item_id)));
 }
 
@@ -241,56 +241,55 @@ const ThemeBackgroundInfo& SearchBox::GetThemeBackgroundInfo() {
 
 void SearchBox::Focus() {
   render_view()->Send(new ChromeViewHostMsg_FocusOmnibox(
-      render_view()->GetRoutingID(), render_view()->GetPageId(),
-      OMNIBOX_FOCUS_VISIBLE));
+      render_view()->GetRoutingID(), page_seq_no_, OMNIBOX_FOCUS_VISIBLE));
 }
 
 void SearchBox::NavigateToURL(const GURL& url,
                               WindowOpenDisposition disposition,
                               bool is_most_visited_item_url) {
   render_view()->Send(new ChromeViewHostMsg_SearchBoxNavigate(
-      render_view()->GetRoutingID(), render_view()->GetPageId(), url,
+      render_view()->GetRoutingID(), page_seq_no_, url,
       disposition, is_most_visited_item_url));
 }
 
 void SearchBox::Paste(const base::string16& text) {
   render_view()->Send(new ChromeViewHostMsg_PasteAndOpenDropdown(
-      render_view()->GetRoutingID(), render_view()->GetPageId(), text));
+      render_view()->GetRoutingID(), page_seq_no_, text));
 }
 
 void SearchBox::SetVoiceSearchSupported(bool supported) {
   render_view()->Send(new ChromeViewHostMsg_SetVoiceSearchSupported(
-      render_view()->GetRoutingID(), render_view()->GetPageId(), supported));
+      render_view()->GetRoutingID(), page_seq_no_, supported));
 }
 
 void SearchBox::StartCapturingKeyStrokes() {
   render_view()->Send(new ChromeViewHostMsg_FocusOmnibox(
-      render_view()->GetRoutingID(), render_view()->GetPageId(),
-      OMNIBOX_FOCUS_INVISIBLE));
+      render_view()->GetRoutingID(), page_seq_no_, OMNIBOX_FOCUS_INVISIBLE));
 }
 
 void SearchBox::StopCapturingKeyStrokes() {
   render_view()->Send(new ChromeViewHostMsg_FocusOmnibox(
-      render_view()->GetRoutingID(), render_view()->GetPageId(),
-      OMNIBOX_FOCUS_NONE));
+      render_view()->GetRoutingID(), page_seq_no_, OMNIBOX_FOCUS_NONE));
 }
 
 void SearchBox::UndoAllMostVisitedDeletions() {
   render_view()->Send(
       new ChromeViewHostMsg_SearchBoxUndoAllMostVisitedDeletions(
-      render_view()->GetRoutingID(), render_view()->GetPageId()));
+          page_seq_no_, render_view()->GetRoutingID()));
 }
 
 void SearchBox::UndoMostVisitedDeletion(
     InstantRestrictedID most_visited_item_id) {
   render_view()->Send(new ChromeViewHostMsg_SearchBoxUndoMostVisitedDeletion(
-      render_view()->GetRoutingID(), render_view()->GetPageId(),
+      render_view()->GetRoutingID(), page_seq_no_,
       GetURLForMostVisitedItem(most_visited_item_id)));
 }
 
 bool SearchBox::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(SearchBox, message)
+    IPC_MESSAGE_HANDLER(ChromeViewMsg_SetPageSequenceNumber,
+                        OnSetPageSequenceNumber)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_ChromeIdentityCheckResult,
                         OnChromeIdentityCheckResult)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_DetermineIfPageSupportsInstant,
@@ -317,6 +316,10 @@ bool SearchBox::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
+void SearchBox::OnSetPageSequenceNumber(int page_seq_no) {
+  page_seq_no_ = page_seq_no;
+}
+
 void SearchBox::OnChromeIdentityCheckResult(const base::string16& identity,
                                             bool identity_match) {
   if (render_view()->GetWebView() && render_view()->GetWebView()->mainFrame()) {
@@ -331,7 +334,7 @@ void SearchBox::OnDetermineIfPageSupportsInstant() {
         render_view()->GetWebView()->mainFrame());
     DVLOG(1) << render_view() << " PageSupportsInstant: " << result;
     render_view()->Send(new ChromeViewHostMsg_InstantSupportDetermined(
-        render_view()->GetRoutingID(), render_view()->GetPageId(), result));
+        render_view()->GetRoutingID(), page_seq_no_, result));
   }
 }
 

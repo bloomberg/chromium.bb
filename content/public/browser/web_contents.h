@@ -175,7 +175,7 @@ class WebContents : public PageNavigator,
   virtual const GURL& GetVisibleURL() const = 0;
 
   // Gets the last committed URL. It represents the current page that is
-  // displayed in  this WebContents. It represents the current security
+  // displayed in this WebContents. It represents the current security
   // context.
   virtual const GURL& GetLastCommittedURL() const = 0;
 
@@ -451,9 +451,6 @@ class WebContents : public PageNavigator,
       const base::FilePath& file,
       const base::Callback<void(
           int64 /* size of the file */)>& callback) = 0;
-
-  // Returns true if the active NavigationEntry's page_id equals page_id.
-  virtual bool IsActiveEntry(int32 page_id) = 0;
 
   // Returns the contents MIME type after a navigation.
   virtual const std::string& GetContentsMimeType() const = 0;

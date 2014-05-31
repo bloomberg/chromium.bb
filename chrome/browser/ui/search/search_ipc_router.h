@@ -114,6 +114,9 @@ class SearchIPCRouter : public content::WebContentsObserver {
                   scoped_ptr<Policy> policy);
   virtual ~SearchIPCRouter();
 
+  // Tells the SearchIPCRouter that a new page in an Instant process committed.
+  void OnNavigationEntryCommitted();
+
   // Tells the renderer to determine if the page supports the Instant API, which
   // results in a call to OnInstantSupportDetermined() when the reply is
   // received.
@@ -179,7 +182,7 @@ class SearchIPCRouter : public content::WebContentsObserver {
   // Overridden from contents::WebContentsObserver:
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
-  void OnInstantSupportDetermined(int page_id, bool supports_instant) const;
+  void OnInstantSupportDetermined(int page_seq_no, bool supports_instant) const;
   void OnVoiceSearchSupportDetermined(int page_id,
                                       bool supports_voice_search) const;
   void OnFocusOmnibox(int page_id, OmniboxFocusState state) const;
@@ -187,30 +190,39 @@ class SearchIPCRouter : public content::WebContentsObserver {
                            const GURL& url,
                            WindowOpenDisposition disposition,
                            bool is_most_visited_item_url) const;
-  void OnDeleteMostVisitedItem(int page_id, const GURL& url) const;
-  void OnUndoMostVisitedDeletion(int page_id, const GURL& url) const;
-  void OnUndoAllMostVisitedDeletions(int page_id) const;
-  void OnLogEvent(int page_id, NTPLoggingEventType event) const;
-  void OnLogMostVisitedImpression(int page_id,
+  void OnDeleteMostVisitedItem(int page_seq_no, const GURL& url) const;
+  void OnUndoMostVisitedDeletion(int page_seq_no, const GURL& url) const;
+  void OnUndoAllMostVisitedDeletions(int page_seq_no) const;
+  void OnLogEvent(int page_seq_no, NTPLoggingEventType event) const;
+  void OnLogMostVisitedImpression(int page_seq_no,
                                   int position,
                                   const base::string16& provider) const;
-  void OnLogMostVisitedNavigation(int page_id,
+  void OnLogMostVisitedNavigation(int page_seq_no,
                                   int position,
                                   const base::string16& provider) const;
-  void OnPasteAndOpenDropDown(int page_id, const base::string16& text) const;
-  void OnChromeIdentityCheck(int page_id, const base::string16& identity) const;
+  void OnPasteAndOpenDropDown(int page_seq_no,
+                              const base::string16& text) const;
+  void OnChromeIdentityCheck(int page_seq_no,
+                             const base::string16& identity) const;
 
   // Used by unit tests to set a fake delegate.
-  void set_delegate(Delegate* delegate);
+  void set_delegate_for_testing(Delegate* delegate);
 
   // Used by unit tests.
-  void set_policy(scoped_ptr<Policy> policy);
+  void set_policy_for_testing(scoped_ptr<Policy> policy);
 
   // Used by unit tests.
-  Policy* policy() const { return policy_.get(); }
+  Policy* policy_for_testing() const { return policy_.get(); }
+
+  // Used by unit tests.
+  int page_seq_no_for_testing() const { return commit_counter_; }
 
   Delegate* delegate_;
   scoped_ptr<Policy> policy_;
+
+  // Holds the number of main frame commits executed in this tab. Used by the
+  // SearchIPCRouter to ensure that delayed IPC replies are ignored.
+  int commit_counter_;
 
   // Set to true, when the tab corresponding to |this| instance is active.
   bool is_active_tab_;
