@@ -108,13 +108,14 @@ void RenderLayerRepainter::clearRepaintRects()
 void RenderLayerRepainter::computeRepaintRects()
 {
     const RenderLayerModelObject* repaintContainer = m_renderer.containerForRepaint();
+    LayoutRect repaintRect = m_renderer.boundsRectForRepaint(repaintContainer);
     if (RuntimeEnabledFeatures::repaintAfterLayoutEnabled()) {
         // FIXME: We want RenderLayerRepainter to go away when
         // repaint-after-layout is on by default so we need to figure out how to
         // handle this update.
-        m_renderer.setPreviousRepaintRect(m_renderer.computeRepaintRect());
+        m_renderer.setPreviousRepaintRect(repaintRect);
     } else {
-        m_repaintRect = m_renderer.computeRepaintRect();
+        m_repaintRect = repaintRect;
         m_offset = m_renderer.positionFromRepaintContainer(repaintContainer);
     }
 }

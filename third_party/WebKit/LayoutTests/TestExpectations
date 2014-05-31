@@ -62,6 +62,9 @@ crbug.com/245611 [ Linux ] fast/hidpi/video-controls-in-hidpi.html [ ImageOnlyFa
 
 crbug.com/304953 fast/css/font-face-download-error.html [ Pass Timeout ]
 
+crbug.com/370664 compositing/squashing/invalidations-with-large-negative-margin.html [ NeedsRebaseline ]
+crbug.com/370664 virtual/softwarecompositing/squashing/invalidations-with-large-negative-margin.html [ NeedsRebaseline ]
+
 # This batch were marked as NeedsRebaseline for crbug.com/133097 but are flaky:
 crbug.com/310679 [ Mac ] compositing/fixed-body-background-positioned.html [ Failure Pass ]
 crbug.com/310679 [ Mac ] compositing/rubberbanding/transform-overhang-e.html [ ImageOnlyFailure Pass ]

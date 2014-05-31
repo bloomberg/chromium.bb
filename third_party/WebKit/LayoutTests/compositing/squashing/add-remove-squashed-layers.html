@@ -120,7 +120,7 @@ div:hover {
             return;
 
         // Case 1
-        document.getElementById('Case1').textContent = window.internals.layerTreeAsText(document, internals.LAYER_TREE_INCLUDES_REPAINT_RECTS);
+        document.getElementById('Case1').textContent = window.internals.layerTreeAsText(document);
 
         // Case 2
         window.internals.startTrackingRepaints(document);

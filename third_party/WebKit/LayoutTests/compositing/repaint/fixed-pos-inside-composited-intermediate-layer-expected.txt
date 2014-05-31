@@ -6,7 +6,7 @@
       (contentsOpaque 1)
       (drawsContent 1)
       (repaint rects
-        (rect 25.00 25.00 50.00 150.00)
+        (rect 45.00 45.00 50.00 150.00)
       )
       (children 1
         (GraphicsLayer

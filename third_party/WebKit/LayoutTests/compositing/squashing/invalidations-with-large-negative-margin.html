@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<div style="height:200px;width:600px;overflow:scroll">
+  <div style="position:relative">
+    <div style="height:400px;margin-bottom:-400px;position:relative">
+      <div id="chip" style="width:50px;height:50px;position:absolute;background:lightblue;margin:0"></div>
+    </div>
+  </div>
+</div>
+
+<div id="testResults" style="display:none">
+  <pre id="output"></pre>
+</div>
+<script>
+// Test that moving a div in this situation generates the correct repaint invalidaitons before and after
+// the move.
+if (window.testRunner) {
+    testRunner.dumpAsText();
+    testRunner.waitUntilDone();
+    window.internals.settings.setLayerSquashingEnabled(true);
+}
+setTimeout(function() {
+    if (window.internals)
+        window.internals.startTrackingRepaints(document);
+
+    document.getElementById('chip').style.left = "400px";
+    var data = window.internals.layerTreeAsText(document, internals.LAYER_TREE_INCLUDES_REPAINT_RECTS);
+    window.internals.stopTrackingRepaints(document);
+
+    document.getElementById('output').textContent = data;
+
+    document.getElementById('testResults').style.display = "block";
+
+    if (window.testRunner)
+        testRunner.notifyDone();
+}, 400);
+</script>
