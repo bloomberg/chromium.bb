@@ -6,8 +6,7 @@
 -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="?android:attr/listPreferredItemHeightSmall"
-    android:background="?android:attr/selectableItemBackground" >
+    android:layout_height="?android:attr/listPreferredItemHeightSmall">
 
     <Button
         android:id="@+id/title"
@@ -15,7 +14,7 @@
         android:layout_height="?android:attr/listPreferredItemHeightSmall"
         android:layout_gravity="start"
         android:layout_weight="1"
-        android:background="?android:attr/selectableItemBackground"
+        android:background="?android:attr/listChoiceBackgroundIndicator"
         android:gravity="center_vertical"
         android:paddingEnd="9dp"
         android:paddingStart="9dp"
@@ -32,7 +31,7 @@
         android:id="@+id/button"
         android:layout_width="48dp"
         android:layout_height="48dp"
-        android:background="?android:attr/selectableItemBackground"
+        android:background="?android:attr/listChoiceBackgroundIndicator"
         android:padding="10dp"
         android:scaleType="fitCenter" />
 

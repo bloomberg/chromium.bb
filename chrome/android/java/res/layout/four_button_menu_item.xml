@@ -15,7 +15,7 @@
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:layout_weight="1"
-        android:background="?android:attr/selectableItemBackground"
+        android:background="?android:attr/listChoiceBackgroundIndicator"
         android:scaleType="center" />
 
     <View
@@ -28,7 +28,7 @@
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:layout_weight="1"
-        android:background="?android:attr/selectableItemBackground"
+        android:background="?android:attr/listChoiceBackgroundIndicator"
         android:scaleType="center" />
 
     <View
@@ -41,7 +41,7 @@
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:layout_weight="1"
-        android:background="?android:attr/selectableItemBackground"
+        android:background="?android:attr/listChoiceBackgroundIndicator"
         android:scaleType="center" />
     
     <View
@@ -54,7 +54,7 @@
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:layout_weight="1"
-        android:background="?android:attr/selectableItemBackground"
+        android:background="?android:attr/listChoiceBackgroundIndicator"
         android:scaleType="center" />
 
 </LinearLayout>
