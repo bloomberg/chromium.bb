@@ -20,6 +20,24 @@
 
 namespace chrome_variations {
 
+namespace {
+
+const char* kSuffixesToSetHeadersFor[] = {
+  ".android.com",
+  ".doubleclick.com",
+  ".doubleclick.net",
+  ".ggpht.com",
+  ".googleadservices.com",
+  ".googleapis.com",
+  ".googlesyndication.com",
+  ".googleusercontent.com",
+  ".googlevideo.com",
+  ".gstatic.com",
+  ".ytimg.com",
+};
+
+}  // namespace
+
 VariationsHttpHeaderProvider* VariationsHttpHeaderProvider::GetInstance() {
   return Singleton<VariationsHttpHeaderProvider>::get();
 }
@@ -229,10 +247,9 @@ bool VariationsHttpHeaderProvider::ShouldAppendHeaders(const GURL& url) {
   // Some domains don't have international TLD extensions, so testing for them
   // is very straight forward.
   const std::string host = url.host();
-  if (EndsWith(host, ".doubleclick.net", false) ||
-      EndsWith(host, ".googlesyndication.com", false) ||
-      LowerCaseEqualsASCII(host, "www.googleadservices.com")) {
-    return true;
+  for (size_t i = 0; i < arraysize(kSuffixesToSetHeadersFor); ++i) {
+    if (EndsWith(host, kSuffixesToSetHeadersFor[i], false))
+      return true;
   }
 
   // The below mirrors logic in IsGoogleDomainUrl(), but for youtube.<TLD>.
