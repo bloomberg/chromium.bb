@@ -55,6 +55,8 @@ AudioSender::AudioSender(scoped_refptr<CastEnvironment> cast_environment,
   transport_config.rtp.max_outstanding_frames =
       audio_config.rtp_config.max_delay_ms / 100 + 1;
   transport_sender_->InitializeAudio(transport_config);
+
+  memset(frame_id_to_rtp_timestamp_, 0, sizeof(frame_id_to_rtp_timestamp_));
 }
 
 AudioSender::~AudioSender() {}
@@ -88,6 +90,8 @@ void AudioSender::SendEncodedAudioFrame(
     SendRtcpReport(is_last_aggressive_report);
   }
 
+  frame_id_to_rtp_timestamp_[audio_frame->frame_id & 0xff] =
+      audio_frame->rtp_timestamp;
   transport_sender_->InsertCodedAudioFrame(*audio_frame);
 }
 
@@ -152,8 +156,12 @@ void AudioSender::OnReceivedCastFeedback(const RtcpCastMessage& cast_feedback) {
   if (!cast_feedback.missing_frames_and_packets_.empty()) {
     ResendPackets(cast_feedback.missing_frames_and_packets_);
   }
-  VLOG(2) << "Received audio ACK "
-          << static_cast<int>(cast_feedback.ack_frame_id_);
+  uint32 acked_frame_id = static_cast<uint32>(cast_feedback.ack_frame_id_);
+  VLOG(2) << "Received audio ACK: " << acked_frame_id;
+  cast_environment_->Logging()->InsertFrameEvent(
+        cast_environment_->Clock()->NowTicks(),
+        FRAME_ACK_RECEIVED, AUDIO_EVENT,
+        frame_id_to_rtp_timestamp_[acked_frame_id & 0xff], acked_frame_id);
 }
 
 }  // namespace cast

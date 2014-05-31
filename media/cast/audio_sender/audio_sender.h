@@ -66,6 +66,10 @@ class AudioSender : public RtcpSenderFeedback,
   int num_aggressive_rtcp_reports_sent_;
   CastInitializationStatus cast_initialization_cb_;
 
+  // Used to map the lower 8 bits of the frame id to a RTP timestamp. This is
+  // good enough as we only use it for logging.
+  RtpTimestamp frame_id_to_rtp_timestamp_[256];
+
   // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<AudioSender> weak_factory_;
 

@@ -1332,7 +1332,10 @@ TEST_F(End2EndTest, AudioLogging) {
         map_it->second.counter[FRAME_DECODED];
 
     EXPECT_GT(map_it->second.counter[FRAME_ACK_SENT], 0);
+    EXPECT_GT(map_it->second.counter[FRAME_ACK_RECEIVED], 0);
     expected_event_count_for_frame += map_it->second.counter[FRAME_ACK_SENT];
+    expected_event_count_for_frame +=
+        map_it->second.counter[FRAME_ACK_RECEIVED];
 
     // Verify that there were no other events logged with respect to this frame.
     // (i.e. Total event count = expected event count)
