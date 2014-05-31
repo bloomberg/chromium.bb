@@ -22,7 +22,7 @@ def SmokeTestGenerator(benchmark):
   # In general you should @test.Disabled individual benchmarks that fail,
   # instead of this entire smoke test suite.
   # TODO(achuith): Multiple tests failing on CrOS. crbug.com/351114
-  @test.Disabled('android', 'chromeos')
+  @test.Disabled('chromeos')
   def BenchmarkSmokeTest(self):
     # Only measure a single page so that this test cycles reasonably quickly.
     benchmark.options['pageset_repeat'] = 1
