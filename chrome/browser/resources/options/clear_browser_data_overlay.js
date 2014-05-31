@@ -34,7 +34,18 @@ cr.define('options', function() {
      * @type {boolean}
      * @private
      */
-    isClearingInProgress_: true,
+    isClearingInProgress_: false,
+
+    /**
+     * Whether or not the WebUI handler has completed initialization.
+     *
+     * Unless this becomes true, it must be assumed that the above flags might
+     * not contain the authoritative values.
+     *
+     * @type {boolean}
+     * @private
+     */
+    isInitializationComplete_: false,
 
     /**
      * Initialize the page.
@@ -43,7 +54,7 @@ cr.define('options', function() {
       // Call base class implementation to starts preference initialization.
       OptionsPage.prototype.initializePage.call(this);
 
-      var f = this.updateCommitButtonState_.bind(this);
+      var f = this.updateStateOfControls_.bind(this);
       var types = ['browser.clear_data.browsing_history',
                    'browser.clear_data.download_history',
                    'browser.clear_data.cache',
@@ -62,12 +73,6 @@ cr.define('options', function() {
         checkboxes[i].onclick = f;
       }
 
-      // At this point, assume that we are currently in the process of clearing
-      // data, so as to prevent the controls from being hazardously enabled for
-      // a very short time before ClearBrowserDataOverlay.setClearing() is
-      // called by the native side with the authoritative state.
-      this.setClearing(true);
-
       this.createStuffRemainsFooter_();
 
       $('clear-browser-data-dismiss').onclick = function(event) {
@@ -78,8 +83,15 @@ cr.define('options', function() {
         chrome.send('performClearBrowserData');
       };
 
-      var show = loadTimeData.getBoolean('showDeleteBrowsingHistoryCheckboxes');
-      this.showDeleteHistoryCheckboxes_(show);
+      // For managed profiles, hide the checkboxes controlling whether or not
+      // browsing and download history should be cleared. Note that this is
+      // different than just disabling them as a result of enterprise policies.
+      if (!loadTimeData.getBoolean('showDeleteBrowsingHistoryCheckboxes')) {
+        $('delete-browsing-history-container').hidden = true;
+        $('delete-download-history-container').hidden = true;
+      }
+
+      this.updateStateOfControls_();
     },
 
     /**
@@ -133,14 +145,75 @@ cr.define('options', function() {
     },
 
     /**
-     * Sets the enabled state of the checkboxes and buttons based on whether or
-     * not we are in the process of clearing data.
-     * @param {boolean} clearing Whether the browsing history is currently
-     *     being cleared.
+     * Sets whether or not we are in the process of clearing data.
+     * @param {boolean} clearing Whether the browsing data is currently being
+     *     cleared.
+     * @private
      */
-    setClearing: function(clearing) {
-      $('delete-browsing-history-checkbox').disabled = clearing;
-      $('delete-download-history-checkbox').disabled = clearing;
+    setClearing_: function(clearing) {
+      this.isClearingInProgress_ = clearing;
+      this.updateStateOfControls_();
+    },
+
+    /**
+     * Sets whether deleting history and downloads is disallowed by enterprise
+     * policies. This is called on initialization and in response to a change in
+     * the corresponding preference.
+     * @param {boolean} allowed Whether to allow deleting history and downloads.
+     * @private
+     */
+    setAllowDeletingHistory_: function(allowed) {
+      this.allowDeletingHistory_ = allowed;
+      this.updateStateOfControls_();
+    },
+
+    /**
+     * Called by the WebUI handler to signal that it has finished calling all
+     * initialization methods.
+     * @private
+     */
+    markInitializationComplete_: function() {
+      this.isInitializationComplete_ = true;
+      this.updateStateOfControls_();
+    },
+
+    /**
+     * Updates the enabled/disabled/hidden status of all controls on the dialog.
+     * @private
+     */
+    updateStateOfControls_: function() {
+      // The commit button is enabled if at least one data type selected to be
+      // cleared, and if we are not already in the process of clearing.
+      // To prevent the commit button from being hazardously enabled for a very
+      // short time before setClearing() is called the first time by the native
+      // side, also disable the button if |isInitializationComplete_| is false.
+      var enabled = false;
+      if (this.isInitializationComplete_ && !this.isClearingInProgress_) {
+        var checkboxes = document.querySelectorAll(
+            '#cbd-content-area input[type=checkbox]');
+        for (var i = 0; i < checkboxes.length; i++) {
+          if (checkboxes[i].checked) {
+            enabled = true;
+            break;
+          }
+        }
+      }
+      $('clear-browser-data-commit').disabled = !enabled;
+
+      // The checkboxes for clearing history/downloads are enabled unless they
+      // are disallowed by policies, or we are in the process of clearing data.
+      // To prevent flickering, these, and the rest of the controls can safely
+      // be enabled for a short time before the first call to setClearing().
+      var enabled = this.allowDeletingHistory_ && !this.isClearingInProgress_;
+      $('delete-browsing-history-checkbox').disabled = !enabled;
+      $('delete-download-history-checkbox').disabled = !enabled;
+      if (!this.allowDeletingHistory_) {
+        $('delete-browsing-history-checkbox').checked = false;
+        $('delete-download-history-checkbox').checked = false;
+      }
+
+      // Enable everything else unless we are in the process of clearing.
+      var clearing = this.isClearingInProgress_;
       $('delete-cache-checkbox').disabled = clearing;
       $('delete-cookies-checkbox').disabled = clearing;
       $('delete-passwords-checkbox').disabled = clearing;
@@ -150,68 +223,22 @@ cr.define('options', function() {
       $('clear-browser-data-time-period').disabled = clearing;
       $('cbd-throbber').style.visibility = clearing ? 'visible' : 'hidden';
       $('clear-browser-data-dismiss').disabled = clearing;
-
-      // The enabled state of the commit button is further based on whether or
-      // not any of the check boxes are checked.
-      this.isClearingInProgress_ = clearing;
-      this.updateCommitButtonState_();
-    },
-
-    /**
-     * Sets the enabled state of the commit button.
-     */
-    updateCommitButtonState_: function() {
-      var checkboxes = document.querySelectorAll(
-          '#cbd-content-area input[type=checkbox]');
-      var isChecked = false;
-      for (var i = 0; i < checkboxes.length; i++) {
-        if (checkboxes[i].checked) {
-          isChecked = true;
-          break;
-        }
-      }
-      $('clear-browser-data-commit').disabled =
-          !isChecked || this.isClearingInProgress_;
-    },
-
-    setAllowDeletingHistory: function(allowed) {
-      this.allowDeletingHistory_ = allowed;
-    },
-
-    showDeleteHistoryCheckboxes_: function(show) {
-      if (!show) {
-        $('delete-browsing-history-container').hidden = true;
-        $('delete-download-history-container').hidden = true;
-      }
-    },
-
-    /** @override */
-    didShowPage: function() {
-      var allowed = ClearBrowserDataOverlay.getInstance().allowDeletingHistory_;
-      ClearBrowserDataOverlay.updateHistoryCheckboxes(allowed);
-    },
+    }
   };
 
   //
   // Chrome callbacks
   //
-  /**
-   * Updates the disabled status of the browsing-history and downloads
-   * checkboxes, also unchecking them if they are disabled. This is called in
-   * response to a change in the corresponding preference.
-   */
-  ClearBrowserDataOverlay.updateHistoryCheckboxes = function(allowed) {
-    $('delete-browsing-history-checkbox').disabled = !allowed;
-    $('delete-download-history-checkbox').disabled = !allowed;
-    if (!allowed) {
-      $('delete-browsing-history-checkbox').checked = false;
-      $('delete-download-history-checkbox').checked = false;
-    }
-    ClearBrowserDataOverlay.getInstance().setAllowDeletingHistory(allowed);
+  ClearBrowserDataOverlay.setAllowDeletingHistory = function(allowed) {
+    ClearBrowserDataOverlay.getInstance().setAllowDeletingHistory_(allowed);
   };
 
   ClearBrowserDataOverlay.setClearing = function(clearing) {
-    ClearBrowserDataOverlay.getInstance().setClearing(clearing);
+    ClearBrowserDataOverlay.getInstance().setClearing_(clearing);
+  };
+
+  ClearBrowserDataOverlay.markInitializationComplete = function() {
+    ClearBrowserDataOverlay.getInstance().markInitializationComplete_();
   };
 
   ClearBrowserDataOverlay.setBannerVisibility = function(args) {
@@ -224,6 +251,7 @@ cr.define('options', function() {
     // actually worked. Otherwise the dialog just vanishes instantly in most
     // cases.
     window.setTimeout(function() {
+      ClearBrowserDataOverlay.setClearing(false);
       ClearBrowserDataOverlay.dismiss();
     }, 200);
   };
@@ -232,7 +260,6 @@ cr.define('options', function() {
     var topmostVisiblePage = OptionsPage.getTopmostVisiblePage();
     if (topmostVisiblePage && topmostVisiblePage.name == 'clearBrowserData')
       OptionsPage.closeOverlay();
-    this.setClearing(false);
   };
 
   // Export

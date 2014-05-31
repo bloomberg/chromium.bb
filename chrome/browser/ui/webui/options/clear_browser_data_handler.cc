@@ -55,10 +55,12 @@ void ClearBrowserDataHandler::InitializeHandler() {
 void ClearBrowserDataHandler::InitializePage() {
   UpdateInfoBannerVisibility();
   OnBrowsingHistoryPrefChanged();
-
   bool removal_in_progress = !!remover_;
   web_ui()->CallJavascriptFunction("ClearBrowserDataOverlay.setClearing",
                                    base::FundamentalValue(removal_in_progress));
+
+  web_ui()->CallJavascriptFunction(
+      "ClearBrowserDataOverlay.markInitializationComplete");
 }
 
 void ClearBrowserDataHandler::UpdateInfoBannerVisibility() {
@@ -216,7 +218,7 @@ void ClearBrowserDataHandler::OnBrowsingDataRemoverDone() {
 
 void ClearBrowserDataHandler::OnBrowsingHistoryPrefChanged() {
   web_ui()->CallJavascriptFunction(
-      "ClearBrowserDataOverlay.updateHistoryCheckboxes",
+      "ClearBrowserDataOverlay.setAllowDeletingHistory",
       base::FundamentalValue(*allow_deleting_browser_history_));
 }
 

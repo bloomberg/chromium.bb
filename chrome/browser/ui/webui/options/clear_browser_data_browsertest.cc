@@ -2,7 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/prefs/pref_service.h"
 #include "chrome/browser/browsing_data/browsing_data_remover_test_util.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/webui/options/options_ui_browsertest.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
@@ -26,6 +29,16 @@ class ClearBrowserDataBrowserTest : public OptionsUIBrowserTest {
     return element_enabled;
   }
 
+  bool IsElementInFocus(const std::string& selector) {
+    bool element_in_focus = false;
+    EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
+        GetSettingsFrame(),
+        "window.domAutomationController.send(document.querySelector('" +
+            selector + "') == document.activeElement);",
+        &element_in_focus));
+    return element_in_focus;
+  }
+
  private:
   void GetElementEnabledState(
       const std::string& selector,
@@ -40,12 +53,15 @@ class ClearBrowserDataBrowserTest : public OptionsUIBrowserTest {
 
 IN_PROC_BROWSER_TEST_F(ClearBrowserDataBrowserTest,
                        CommitButtonDisabledWhileDeletionInProgress) {
+  const char kTimePeriodSelectorId[] = "#clear-browser-data-time-period";
   const char kCommitButtonId[] = "#clear-browser-data-commit";
   BrowsingDataRemoverCompletionInhibitor completion_inhibitor;
 
   // Navigate to the Clear Browsing Data dialog to ensure that the commit button
   // is initially enabled, usable, and gets disabled after having been pressed.
+  // Furthermore, verify that the time period combo-box gets the initial focus.
   NavigateToSettingsSubpage(chrome::kClearBrowserDataSubPage);
+  EXPECT_TRUE(IsElementInFocus(kTimePeriodSelectorId));
   ASSERT_NO_FATAL_FAILURE(ClickElement(kCommitButtonId));
   EXPECT_FALSE(IsElementEnabled(kCommitButtonId));
 
@@ -61,6 +77,37 @@ IN_PROC_BROWSER_TEST_F(ClearBrowserDataBrowserTest,
   // However, the button should be enabled again once the process has finished.
   NavigateToSettingsSubpage(chrome::kClearBrowserDataSubPage);
   EXPECT_TRUE(IsElementEnabled(kCommitButtonId));
+}
+
+IN_PROC_BROWSER_TEST_F(ClearBrowserDataBrowserTest,
+                       CommitButtonDisabledWhenNoDataTypesSelected) {
+  const char kCommitButtonId[] = "#clear-browser-data-commit";
+  const char* kDataTypes[] = {"browser.clear_data.browsing_history",
+                              "browser.clear_data.download_history",
+                              "browser.clear_data.cache",
+                              "browser.clear_data.cookies",
+                              "browser.clear_data.passwords",
+                              "browser.clear_data.form_data",
+                              "browser.clear_data.hosted_apps_data",
+                              "browser.clear_data.content_licenses"};
+
+  PrefService* prefs = browser()->profile()->GetPrefs();
+  for (size_t i = 0; i < arraysize(kDataTypes); ++i) {
+    prefs->SetBoolean(kDataTypes[i], false);
+  }
+
+  // Navigate to the Clear Browsing Data dialog to ensure that the commit button
+  // is disabled if clearing is not requested for any of the data types.
+  NavigateToSettingsSubpage(chrome::kClearBrowserDataSubPage);
+  EXPECT_FALSE(IsElementEnabled(kCommitButtonId));
+
+  // However, expect the commit button to be re-enabled if any of the data types
+  // gets selected to be cleared.
+  for (size_t i = 0; i < arraysize(kDataTypes); ++i) {
+    prefs->SetBoolean(kDataTypes[i], true);
+    EXPECT_TRUE(IsElementEnabled(kCommitButtonId));
+    prefs->SetBoolean(kDataTypes[i], false);
+  }
 }
 
 }  // namespace options
