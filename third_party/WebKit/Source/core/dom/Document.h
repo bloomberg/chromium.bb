@@ -95,6 +95,7 @@ class DocumentType;
 class Element;
 class ElementDataCache;
 class Event;
+class EventFactoryBase;
 class EventListener;
 class ExceptionState;
 class FastTextAutosizer;
@@ -694,6 +695,7 @@ public:
     void setWindowAttributeEventListener(const AtomicString& eventType, PassRefPtr<EventListener>);
     EventListener* getWindowAttributeEventListener(const AtomicString& eventType);
 
+    static void registerEventFactory(EventFactoryBase*);
     static PassRefPtrWillBeRawPtr<Event> createEvent(const String& eventType, ExceptionState&);
 
     // keep track of what types of event listeners are registered, so we don't
@@ -1181,6 +1183,9 @@ private:
     void didRemoveTouchEventHandler(Node*, bool clearAll);
 
     bool haveStylesheetsLoaded() const;
+
+    typedef HashSet<EventFactoryBase*> EventFactorySet;
+    static EventFactorySet& eventFactories();
 
     DocumentLifecycle m_lifecycle;
 

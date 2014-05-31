@@ -15,6 +15,7 @@ class ExceptionState;
 
 class ModulesInitializer : public CoreInitializer {
 public:
+    virtual void registerEventFactory() OVERRIDE;
     virtual void initEventNames() OVERRIDE;
     virtual void initEventTargetNames() OVERRIDE;
 };

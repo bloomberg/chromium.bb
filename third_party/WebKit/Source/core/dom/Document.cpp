@@ -3922,12 +3922,26 @@ void Document::enqueueResizeEvent()
     ensureScriptedAnimationController().enqueuePerFrameEvent(event.release());
 }
 
+Document::EventFactorySet& Document::eventFactories()
+{
+    DEFINE_STATIC_LOCAL(EventFactorySet, s_eventFactory, ());
+    return s_eventFactory;
+}
+
+void Document::registerEventFactory(EventFactoryBase* eventFactory)
+{
+    ASSERT(!eventFactories().contains(eventFactory));
+    eventFactories().add(eventFactory);
+}
+
 PassRefPtrWillBeRawPtr<Event> Document::createEvent(const String& eventType, ExceptionState& exceptionState)
 {
-    RefPtrWillBeRawPtr<Event> event = EventFactory::create(eventType);
-    if (event)
-        return event.release();
-
+    RefPtrWillBeRawPtr<Event> event = nullptr;
+    for (EventFactorySet::const_iterator it = eventFactories().begin(); it != eventFactories().end(); ++it) {
+        event = (*it)->create(eventType);
+        if (event)
+            return event.release();
+    }
     exceptionState.throwDOMException(NotSupportedError, "The provided event type ('" + eventType + "') is invalid.");
     return nullptr;
 }

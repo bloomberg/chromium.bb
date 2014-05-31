@@ -38,6 +38,8 @@ public:
     CoreInitializer() : m_isInited(false) { }
     // Should be called by clients before trying to create Frames.
     void init();
+
+    virtual void registerEventFactory();
     virtual void initEventNames();
     virtual void initEventTargetNames();
 

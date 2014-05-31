@@ -25,13 +25,10 @@ void ModulesInitializer::initEventTargetNames()
     EventTargetNames::initModules();
 }
 
-PassRefPtrWillBeRawPtr<Event> createEventModules(const String& eventType, ExceptionState& exceptionState)
+void ModulesInitializer::registerEventFactory()
 {
-    RefPtrWillBeRawPtr<Event> event = EventModulesFactory::create(eventType);
-    if (event)
-        return event.release();
-
-    return Document::createEvent(eventType, exceptionState);
+    CoreInitializer::registerEventFactory();
+    Document::registerEventFactory(new EventModulesFactory());
 }
 
 } // namespace WebCore

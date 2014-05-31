@@ -33,7 +33,6 @@
 
 #include "bindings/core/v8/V8CanvasRenderingContext2D.h"
 #include "bindings/core/v8/V8DOMImplementation.h"
-#include "bindings/core/v8/V8Event.h"
 #include "bindings/core/v8/V8Node.h"
 #include "bindings/core/v8/V8Touch.h"
 #include "bindings/core/v8/V8TouchList.h"
@@ -55,7 +54,6 @@
 #include "core/xml/DocumentXPathEvaluator.h"
 #include "core/xml/XPathNSResolver.h"
 #include "core/xml/XPathResult.h"
-#include "modules/InitModules.h"
 #include "wtf/RefPtr.h"
 
 namespace WebCore {
@@ -83,28 +81,6 @@ void V8Document::evaluateMethodCustom(const v8::FunctionCallbackInfo<v8::Value>&
         return;
 
     v8SetReturnValueFast(info, result.release(), document.get());
-}
-
-// Customize createEvent so it can call createEventModules in modules.
-// FIXME: Use method registration approach instead. http://crbug.com/358074
-void V8Document::createEventMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "createEvent", "Document", info.Holder(), info.GetIsolate());
-    if (UNLIKELY(info.Length() < 1)) {
-        throwMinimumArityTypeError(exceptionState, 1, info.Length());
-        return;
-    }
-    Document* impl = V8Document::toNative(info.Holder());
-    V8StringResource<> eventType;
-    {
-        TOSTRING_VOID_INTERNAL(eventType, info[0]);
-    }
-    RefPtrWillBeRawPtr<Event> result = createEventModules(eventType, exceptionState);
-    if (exceptionState.hadException()) {
-        exceptionState.throwIfNeeded();
-        return;
-    }
-    v8SetReturnValueFast(info, WTF::getPtr(result.release()), impl);
 }
 
 } // namespace WebCore

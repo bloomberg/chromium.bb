@@ -63,9 +63,7 @@ typedef (CanvasRenderingContext2D or WebGLRenderingContext) RenderingContext;
 
     // DOM Level 2 Events (DocumentEvents interface)
 
-    // Customize createEvent so it can call createEventModules in modules.
-    // FIXME: Use method registration approach instead. http://crbug.com/358074
-    [Custom, RaisesException] Event createEvent(DOMString eventType);
+    [RaisesException] Event createEvent(DOMString eventType);
 
     // DOM Level 2 Traversal and Range (DocumentRange interface)
 

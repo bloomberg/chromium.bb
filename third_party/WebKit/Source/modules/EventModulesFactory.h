@@ -5,6 +5,7 @@
 #ifndef EventModulesFactory_h
 #define EventModulesFactory_h
 
+#include "core/events/EventFactory.h"
 #include "platform/heap/Handle.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/text/AtomicString.h"
@@ -13,9 +14,9 @@ namespace WebCore {
 
 class Event;
 
-class EventModulesFactory {
+class EventModulesFactory : public EventFactoryBase {
 public:
-    static PassRefPtrWillBeRawPtr<Event> create(const String& eventType);
+    virtual PassRefPtrWillBeRawPtr<Event> create(const String& eventType) OVERRIDE;
 };
 
 }

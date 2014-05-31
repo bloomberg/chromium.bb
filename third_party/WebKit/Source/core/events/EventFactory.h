@@ -34,9 +34,14 @@ namespace WebCore {
 
 class Event;
 
-class EventFactory {
+class EventFactoryBase {
 public:
-    static PassRefPtrWillBeRawPtr<Event> create(const String& eventType);
+    virtual PassRefPtrWillBeRawPtr<Event> create(const String& eventType) = 0;
+};
+
+class EventFactory : public EventFactoryBase {
+public:
+    virtual PassRefPtrWillBeRawPtr<Event> create(const String& eventType) OVERRIDE;
 };
 
 }

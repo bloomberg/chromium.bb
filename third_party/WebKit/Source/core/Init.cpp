@@ -46,6 +46,8 @@
 #include "XLinkNames.h"
 #include "XMLNSNames.h"
 #include "XMLNames.h"
+#include "core/dom/Document.h"
+#include "core/events/EventFactory.h"
 #include "core/html/parser/HTMLParserThread.h"
 #include "platform/EventTracer.h"
 #include "platform/Partitions.h"
@@ -63,6 +65,16 @@ void CoreInitializer::initEventNames()
 void CoreInitializer::initEventTargetNames()
 {
     EventTargetNames::init();
+}
+
+void CoreInitializer::registerEventFactory()
+{
+    static bool isRegistered = false;
+    if (isRegistered)
+        return;
+    isRegistered = true;
+
+    Document::registerEventFactory(new EventFactory());
 }
 
 void CoreInitializer::init()
@@ -95,6 +107,8 @@ void CoreInitializer::init()
     QualifiedName::init();
     Partitions::init();
     EventTracer::initialize();
+
+    registerEventFactory();
 
     // Ensure that the main thread's thread-local data is initialized before
     // starting any worker threads.
