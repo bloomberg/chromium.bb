@@ -72,6 +72,7 @@
         'window_event_dispatcher.h',
         'window_delegate.h',
         'window_layer_type.h',
+        'window_observer.cc',
         'window_observer.h',
         'window_targeter.cc',
         'window_targeter.h',
