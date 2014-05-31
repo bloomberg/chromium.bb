@@ -1080,7 +1080,7 @@ LONG_STRING_CONST(
         "type": "macosx"
       },
       "vendor_id": "0x8086",
-      "device_id": ["0x0d26", "0x0166", "0x0a2e", "0x0a26"],
+      "device_id": ["0x0d26", "0x0166", "0x0a2e", "0x0a26", "0x0116"],
       "features": [
         "disable_arb_sync"
       ]
