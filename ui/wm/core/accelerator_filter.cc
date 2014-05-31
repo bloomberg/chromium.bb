@@ -52,10 +52,10 @@ AcceleratorFilter::~AcceleratorFilter() {
 
 void AcceleratorFilter::OnKeyEvent(ui::KeyEvent* event) {
   const ui::EventType type = event->type();
-  if (type != ui::ET_KEY_PRESSED && type != ui::ET_KEY_RELEASED)
+  if ((type != ui::ET_KEY_PRESSED && type != ui::ET_KEY_RELEASED) ||
+      event->is_char()) {
     return;
-  if (event->is_char())
-    return;
+  }
 
   ui::Accelerator accelerator(event->key_code(),
                               event->flags() & kModifierFlagMask);
@@ -63,22 +63,11 @@ void AcceleratorFilter::OnKeyEvent(ui::KeyEvent* event) {
 
   delegate_->PreProcessAccelerator(accelerator);
 
-  // Handle special hardware keys like brightness and volume. However, some
-  // windows can override this behavior (e.g. Chrome v1 apps by default and
-  // Chrome v2 apps with permission) by setting a window property.
-  if (IsSystemKey(event->key_code()) &&
-      !delegate_->CanConsumeSystemKeys(*event)) {
-    delegate_->ProcessAccelerator(accelerator);
-    // These keys are always consumed regardless of whether they trigger an
-    // accelerator to prevent windows from seeing unexpected key up events.
-    event->StopPropagation();
-    return;
-  }
+  AcceleratorDelegate::KeyType key_type =
+      IsSystemKey(event->key_code()) ? AcceleratorDelegate::KEY_TYPE_SYSTEM
+                                     : AcceleratorDelegate::KEY_TYPE_OTHER;
 
-  if (!delegate_->ShouldProcessAcceleratorNow(*event, accelerator))
-    return;
-
-  if (delegate_->ProcessAccelerator(accelerator))
+  if (delegate_->ProcessAccelerator(*event, accelerator, key_type))
     event->StopPropagation();
 }
 

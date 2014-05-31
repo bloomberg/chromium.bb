@@ -20,13 +20,18 @@ class ASH_EXPORT AcceleratorDelegate
   // wm::AcceleratorDelegate:
   virtual void PreProcessAccelerator(
       const ui::Accelerator& accelerator) OVERRIDE;
-  virtual bool CanConsumeSystemKeys(const ui::KeyEvent& event) OVERRIDE;
-  virtual bool ShouldProcessAcceleratorNow(
-      const ui::KeyEvent& key_event,
-      const ui::Accelerator& accelerator) OVERRIDE;
-  virtual bool ProcessAccelerator(const ui::Accelerator& accelerator) OVERRIDE;
+  virtual bool ProcessAccelerator(const ui::KeyEvent& event,
+                                  const ui::Accelerator& accelerator,
+                                  KeyType key_type) OVERRIDE;
 
  private:
+  // Returns true if the window should be allowed a chance to handle
+  // system keys.
+  bool CanConsumeSystemKeys(const ui::KeyEvent& event);
+
+  bool ShouldProcessAcceleratorNow(const ui::KeyEvent& event,
+                                   const ui::Accelerator& accelerator);
+
   DISALLOW_COPY_AND_ASSIGN(AcceleratorDelegate);
 };
 

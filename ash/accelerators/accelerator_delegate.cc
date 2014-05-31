@@ -27,6 +27,24 @@ void AcceleratorDelegate::PreProcessAccelerator(
       accelerator);
 }
 
+bool AcceleratorDelegate::ProcessAccelerator(const ui::KeyEvent& key_event,
+                                             const ui::Accelerator& accelerator,
+                                             KeyType key_type) {
+  // Special hardware keys like brightness and volume are handled in
+  // special way. However, some windows can override this behavior
+  // (e.g. Chrome v1 apps by default and Chrome v2 apps with
+  // permission) by setting a window property.
+  if (key_type == KEY_TYPE_SYSTEM && !CanConsumeSystemKeys(key_event)) {
+    // System keys are always consumed regardless of whether they trigger an
+    // accelerator to prevent windows from seeing unexpected key up events.
+    Shell::GetInstance()->accelerator_controller()->Process(accelerator);
+    return true;
+  }
+  if (!ShouldProcessAcceleratorNow(key_event, accelerator))
+    return false;
+  return Shell::GetInstance()->accelerator_controller()->Process(accelerator);
+}
+
 // Uses the top level window so if the target is a web contents window the
 // containing parent window will be checked for the property.
 bool AcceleratorDelegate::CanConsumeSystemKeys(const ui::KeyEvent& event) {
@@ -53,7 +71,9 @@ bool AcceleratorDelegate::ShouldProcessAcceleratorNow(
 
   // A full screen window should be able to handle all key events including the
   // reserved ones.
-  if (wm::GetWindowState(target)->IsFullscreen()) {
+  aura::Window* top_level = ::wm::GetToplevelWindow(target);
+
+  if (top_level && wm::GetWindowState(top_level)->IsFullscreen()) {
     // TODO(yusukes): On Chrome OS, only browser and flash windows can be full
     // screen. Launching an app in "open full-screen" mode is not supported yet.
     // That makes the IsWindowFullscreen() check above almost meaningless
@@ -69,11 +89,6 @@ bool AcceleratorDelegate::ShouldProcessAcceleratorNow(
   // such as Alt+Tab now.
   return Shell::GetInstance()->accelerator_controller()->IsReservedAccelerator(
       accelerator);
-}
-
-bool AcceleratorDelegate::ProcessAccelerator(
-    const ui::Accelerator& accelerator) {
-  return Shell::GetInstance()->accelerator_controller()->Process(accelerator);
 }
 
 }  // namespace ash
