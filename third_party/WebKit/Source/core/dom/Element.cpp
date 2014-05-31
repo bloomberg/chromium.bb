@@ -1366,6 +1366,9 @@ void Element::removedFrom(ContainerNode* insertionPoint)
     document().removeFromTopLayer(this);
 
     clearElementFlag(IsInCanvasSubtree);
+
+    if (hasRareData())
+        elementRareData()->clearRestyleFlags();
 }
 
 void Element::attach(const AttachContext& context)
@@ -1377,7 +1380,6 @@ void Element::attach(const AttachContext& context)
     if (hasRareData() && styleChangeType() == NeedsReattachStyleChange) {
         ElementRareData* data = elementRareData();
         data->clearComputedStyle();
-        data->clearRestyleFlags();
         // Only clear the style state if we're not going to reuse the style from recalcStyle.
         if (!context.resolvedStyle)
             data->resetStyleState();
@@ -1423,7 +1425,6 @@ void Element::detach(const AttachContext& context)
         if (!document().inStyleRecalc()) {
             data->resetStyleState();
             data->clearComputedStyle();
-            data->clearRestyleFlags();
         }
 
         if (ActiveAnimations* activeAnimations = data->activeAnimations()) {
