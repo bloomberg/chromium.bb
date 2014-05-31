@@ -89,6 +89,8 @@
       'public/common/referrer.h',
       'public/common/renderer_preferences.cc',
       'public/common/renderer_preferences.h',
+      'public/common/resource_devtools_info.cc',
+      'public/common/resource_devtools_info.h',
       'public/common/resource_response.h',
       'public/common/resource_response_info.cc',
       'public/common/resource_response_info.h',

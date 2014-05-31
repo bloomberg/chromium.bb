@@ -12,11 +12,11 @@
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
 #include "content/common/content_export.h"
+#include "content/public/common/resource_devtools_info.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/load_timing_info.h"
 #include "net/http/http_response_info.h"
 #include "url/gurl.h"
-#include "webkit/common/resource_devtools_info.h"
 
 namespace content {
 
@@ -67,7 +67,7 @@ struct ResourceResponseInfo {
   // Actual request and response headers, as obtained from the network stack.
   // Only present if request had LOAD_REPORT_RAW_HEADERS in load_flags, and
   // requesting renderer had CanReadRowCookies permission.
-  scoped_refptr<webkit_glue::ResourceDevToolsInfo> devtools_info;
+  scoped_refptr<ResourceDevToolsInfo> devtools_info;
 
   // The path to a file that will contain the response body.  It may only
   // contain a portion of the response body at the time that the ResponseInfo

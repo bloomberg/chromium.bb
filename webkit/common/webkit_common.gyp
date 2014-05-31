@@ -41,8 +41,6 @@
       'sources': [
         'data_element.cc',
         'data_element.h',
-        'resource_devtools_info.cc',
-        'resource_devtools_info.h',
         'resource_type.cc',
         'resource_type.h',
         'webkit_common_export.h',

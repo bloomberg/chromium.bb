@@ -24,7 +24,7 @@ namespace net {
 struct LoadTimingInfo;
 }
 
-namespace webkit_glue {
+namespace content {
 struct ResourceDevToolsInfo;
 }
 
@@ -47,8 +47,8 @@ struct CONTENT_EXPORT ParamTraits<webkit_common::DataElement> {
 };
 
 template <>
-struct ParamTraits<scoped_refptr<webkit_glue::ResourceDevToolsInfo> > {
-  typedef scoped_refptr<webkit_glue::ResourceDevToolsInfo> param_type;
+struct ParamTraits<scoped_refptr<content::ResourceDevToolsInfo> > {
+  typedef scoped_refptr<content::ResourceDevToolsInfo> param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, PickleIterator* iter, param_type* r);
   static void Log(const param_type& p, std::string* l);

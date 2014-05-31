@@ -7,8 +7,8 @@
 
 #include "base/containers/hash_tables.h"
 #include "base/memory/ref_counted.h"
+#include "content/public/common/resource_devtools_info.h"
 #include "net/base/net_log.h"
-#include "webkit/common/resource_devtools_info.h"
 
 namespace net {
 class URLRequest;
@@ -25,7 +25,7 @@ struct ResourceResponse;
 // IO Thread, it must also reside on the IO Thread.  Only OnAddEntry can be
 // called from other threads.
 class DevToolsNetLogObserver : public net::NetLog::ThreadSafeObserver {
-  typedef webkit_glue::ResourceDevToolsInfo ResourceInfo;
+  typedef ResourceDevToolsInfo ResourceInfo;
 
  public:
   // net::NetLog::ThreadSafeObserver implementation:

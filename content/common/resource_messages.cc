@@ -134,7 +134,7 @@ void ParamTraits<webkit_common::DataElement>::Log(
   l->append("<webkit_common::DataElement>");
 }
 
-void ParamTraits<scoped_refptr<webkit_glue::ResourceDevToolsInfo> >::Write(
+void ParamTraits<scoped_refptr<content::ResourceDevToolsInfo> >::Write(
     Message* m, const param_type& p) {
   WriteParam(m, p.get() != NULL);
   if (p.get()) {
@@ -147,14 +147,14 @@ void ParamTraits<scoped_refptr<webkit_glue::ResourceDevToolsInfo> >::Write(
   }
 }
 
-bool ParamTraits<scoped_refptr<webkit_glue::ResourceDevToolsInfo> >::Read(
+bool ParamTraits<scoped_refptr<content::ResourceDevToolsInfo> >::Read(
     const Message* m, PickleIterator* iter, param_type* r) {
   bool has_object;
   if (!ReadParam(m, iter, &has_object))
     return false;
   if (!has_object)
     return true;
-  *r = new webkit_glue::ResourceDevToolsInfo();
+  *r = new content::ResourceDevToolsInfo();
   return
       ReadParam(m, iter, &(*r)->http_status_code) &&
       ReadParam(m, iter, &(*r)->http_status_text) &&
@@ -164,7 +164,7 @@ bool ParamTraits<scoped_refptr<webkit_glue::ResourceDevToolsInfo> >::Read(
       ReadParam(m, iter, &(*r)->response_headers_text);
 }
 
-void ParamTraits<scoped_refptr<webkit_glue::ResourceDevToolsInfo> >::Log(
+void ParamTraits<scoped_refptr<content::ResourceDevToolsInfo> >::Log(
     const param_type& p, std::string* l) {
   l->append("(");
   if (p.get()) {
