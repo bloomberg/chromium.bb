@@ -4,7 +4,7 @@
 
 #include "chrome/browser/extensions/api/bluetooth_socket/bluetooth_socket_api.h"
 
-#include "chrome/browser/extensions/api/bluetooth/bluetooth_api_socket.h"
+#include "chrome/browser/extensions/api/bluetooth_socket/bluetooth_api_socket.h"
 #include "chrome/browser/extensions/api/bluetooth_socket/bluetooth_socket_event_dispatcher.h"
 #include "chrome/common/extensions/api/bluetooth/bluetooth_manifest_data.h"
 #include "content/public/browser/browser_context.h"

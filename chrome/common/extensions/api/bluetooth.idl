@@ -31,6 +31,10 @@ namespace bluetooth {
     boolean discovering;
   };
 
+  // Callback from the <code>getAdapterState</code> method.
+  // |adapterInfo| : Object containing the adapter information.
+  callback AdapterStateCallback = void(AdapterState adapterInfo);
+
   // Information about the state of a known Bluetooth device.
   dictionary Device {
     // The address of the device, in the format 'XX:XX:XX:XX:XX:XX'.
@@ -86,148 +90,19 @@ namespace bluetooth {
     DOMString[]? uuids;
   };
 
-  // Information about a Bluetooth profile.
-  dictionary Profile {
-    // Unique profile identifier, e.g. 00001401-0000-1000-8000-00805F9B23FB
-    DOMString uuid;
+  // Callback from the <code>getDevice</code> method.
+  // |deviceInfo| : Object containing the device information.
+  callback GetDeviceCallback = void(Device deviceInfo);
 
-    // Human-readable name of the Profile, e.g. "Health Device"
-    DOMString? name;
+  // Callback from the <code>getDevices</code> method.
+  // |deviceInfos| : Array of object containing device information.
+  callback GetDevicesCallback = void(Device[] deviceInfos);
 
-    // The RFCOMM channel id, used when the profile is to be exported to remote
-    // devices.
-    long? channel;
+  // Callback from the <code>startDiscovery</code> method.
+  callback StartDiscoveryCallback = void();
 
-    // The LS2CAP PSM number, used when the profile is to be exported to remote
-    // devices.
-    long? psm;
-
-    // Specifies whether pairing (and encryption) is required to be able to
-    // connect.
-    boolean? requireAuthentication;
-
-    // Specifies whether user authorization is required to be able to connect.
-    boolean? requireAuthorization;
-
-    // Specifies whether this profile will be automatically connected if any
-    // other profile of device also exporting this profile connects to the host.
-    boolean? autoConnect;
-
-    // Specifies the implemented version of the profile.
-    long? version;
-
-    // Specifies the profile-specific bit field of features the implementation
-    // supports.
-    long? features;
-  };
-
-  // The socket properties specified in the $ref:update function. Each property
-  // is optional. If a property value is not specified, the existing value if
-  // preserved when calling $ref:update.
-  dictionary SocketProperties {
-    // Flag indicating whether the socket is left open when the event page of
-    // the application is unloaded (see <a
-    // href="http://developer.chrome.com/apps/app_lifecycle.html">Manage App
-    // Lifecycle</a>). The default value is <code>false.</code> When the
-    // application is loaded, any sockets previously opened with persistent=true
-    // can be fetched with $ref:getSockets.
-    boolean? persistent;
-
-    // An application-defined string associated with the socket.
-    DOMString? name;
-
-    // The size of the buffer used to receive data. The default value is 4096.
-    long? bufferSize;
-  };
-
-  dictionary Socket {
-    // The socket identifier.
-    long id;
-
-    // The remote Bluetooth device associated with this socket.
-    Device device;
-
-    // The remote Bluetooth uuid associated with this socket.
-    DOMString uuid;
-
-    // Flag indicating whether the socket is left open when the application is
-    // suspended (see <code>SocketProperties.persistent</code>).
-    boolean persistent;
-
-    // Application-defined string associated with the socket.
-    DOMString? name;
-
-    // The size of the buffer used to receive data. If no buffer size has been
-    // specified explictly, the field is not provided.
-    long? bufferSize;
-
-    // Flag indicating whether a connected socket blocks its peer from sending
-    // more data (see <code>setPaused</code>).
-    boolean paused;
-  };
-
-  callback AdapterStateCallback = void(AdapterState result);
-  callback AddressCallback = void(DOMString result);
-  callback BooleanCallback = void(boolean result);
-  callback DataCallback = void(optional ArrayBuffer result);
-  callback DeviceCallback = void(Device result);
-  callback DevicesCallback = void(Device[] result);
-  callback NameCallback = void(DOMString result);
-  callback ResultCallback = void();
-  callback SizeCallback = void(long result);
-  callback SocketCallback = void(Socket result);
-
-  // Options for the connect function.
-  dictionary ConnectOptions {
-    // The connection is made to |device|.
-    Device device;
-
-    // The connection is made to |profile|.
-    Profile profile;
-  };
-
-  // Options for the disconnect function.
-  dictionary DisconnectOptions {
-    // The socket identifier.
-    long socketId;
-  };
-
-  // Callback from the <code>getSocket</code> method.
-  // |socket| : Object containing the socket information.
-  callback GetSocketCallback = void (Socket socket);
-
-  // Callback from the <code>getSockets</code> method.
-  // |sockets| : Array of object containing socket information.
-  callback GetSocketsCallback = void (Socket[] sockets);
-
-  // Data from an <code>onReceive</code> event.
-  dictionary ReceiveInfo {
-    // The socket identifier.
-    long socketId;
-
-    // The data received, with a maximum size of <code>bufferSize</code>.
-    ArrayBuffer data;
-  };
-
-  enum ReceiveError {
-    // The connection was disconnected.
-    disconnected,
-
-    // A system error occurred and the connection may be unrecoverable.
-    system_error
-  };
-
-  // Data from an <code>onReceiveError</code> event.
-  dictionary ReceiveErrorInfo {
-    // The socket identifier.
-    long socketId;
-
-     // The error message.
-    DOMString errorMessage;
-
-    // An error code indicating what went wrong.
-    ReceiveError error;
-  };
+  // Callback from the <code>stopDiscovery</code> method.
+  callback StopDiscoveryCallback = void();
 
   // These functions all report failures via chrome.runtime.lastError.
   interface Functions {
@@ -236,72 +111,15 @@ namespace bluetooth {
     //              state.
     static void getAdapterState(AdapterStateCallback callback);
 
-    // Get a list of Bluetooth devices known to the system, including paired
-    // and recently discovered devices.
-    // |callback| : Called when the search is completed.
-    static void getDevices(DevicesCallback callback);
-
     // Get information about a Bluetooth device known to the system.
     // |deviceAddress| : Address of device to get.
     // |callback| : Called with the Device object describing the device.
-    static void getDevice(DOMString deviceAddress, DeviceCallback callback);
+    static void getDevice(DOMString deviceAddress, GetDeviceCallback callback);
 
-    // Registers the JavaScript application as an implementation for the given
-    // Profile; if a channel or PSM is specified, the profile will be exported
-    // in the host's SDP and GATT tables and advertised to other devices.
-    static void addProfile(Profile profile, ResultCallback callback);
-
-    // Unregisters the JavaScript application as an implementation for the given
-    // Profile; only the uuid field of the Profile object is used.
-    static void removeProfile(Profile profile, ResultCallback callback);
-
-    // Connect to a service on a device.
-    // |options|  : The options for the connection.
-    // |callback| : Called to indicate success or failure.
-    static void connect(ConnectOptions options,
-                        ResultCallback callback);
-
-    // Closes a Bluetooth connection.
-    // |options|  : The options for this function.
-    // |callback| : Called to indicate success or failure.
-    static void disconnect(DisconnectOptions options,
-                           optional ResultCallback callback);
-
-    // Sends data to a Bluetooth connection.
-    // |socketId| : The socket identifier.
-    // |data| : The data to send.
-    // |callback| : Called with the number of bytes sent.
-    static void send(long socketId,
-                     ArrayBuffer data,
-                     optional SizeCallback callback);
-
-    // Updates the socket properties.
-    // |socketId| : The socket identifier.
-    // |properties| : The properties to update.
-    // |callback| : Called when the properties are updated.
-    static void updateSocket(long socketId,
-                             SocketProperties properties,
-                             optional ResultCallback callback);
-
-    // Enables or disables the application from receiving messages from its
-    // peer. The default value is <code>false</code>. Pausing a socket is
-    // typically used by an application to throttle data sent by its peer. When
-    // a socket is paused, no $ref:onReceive event is raised. When a socket is
-    // connected and un-paused, $ref:onReceive events are raised again when
-    // messages are received.
-    static void setSocketPaused(long socketId,
-                                boolean paused,
-                                optional ResultCallback callback);
-
-    // Retrieves the state of the given socket.
-    // |socketId| : The socket identifier.
-    // |callback| : Called when the socket state is available.
-    static void getSocket(long socketId,
-                          GetSocketCallback callback);
-
-    // Retrieves the list of currently opened sockets owned by the application.
-    // |callback| : Called when the list of sockets is available.
-    static void getSockets(GetSocketsCallback callback);
+    // Get a list of Bluetooth devices known to the system, including paired
+    // and recently discovered devices.
+    // |callback| : Called when the search is completed.
+    static void getDevices(GetDevicesCallback callback);
 
     // Start discovery. Newly discovered devices will be returned via the
     // onDeviceAdded event. Previously discovered devices already known to
@@ -312,13 +130,11 @@ namespace bluetooth {
     // startDiscovery.  Discovery can be resource intensive: stopDiscovery
     // should be called as soon as possible.
     // |callback| : Called to indicate success or failure.
-    static void startDiscovery(
-        optional ResultCallback callback);
+    static void startDiscovery(optional StartDiscoveryCallback callback);
 
     // Stop discovery.
     // |callback| : Called to indicate success or failure.
-    static void stopDiscovery(
-        optional ResultCallback callback);
+    static void stopDiscovery(optional StopDiscoveryCallback callback);
   };
 
   interface Events {
@@ -336,20 +152,5 @@ namespace bluetooth {
     // out of range for long enough to be considered unavailable again, and
     // when a paired device is removed.
     static void onDeviceRemoved(Device device);
-
-    // Fired when a connection has been made for a registered profile.
-    // |socket| : The socket for the connection.
-    static void onConnection(Socket socket);
-
-    // Event raised when data has been received for a given socket.
-    // |info| : The event data.
-    static void onReceive(ReceiveInfo info);
-
-    // Event raised when a network error occured while the runtime was waiting
-    // for data on the socket. Once this event is raised, the socket is set to
-    // <code>paused</code> and no more <code>onReceive</code> events are raised
-    // for this socket.
-    // |info| : The event data.
-    static void onReceiveError(ReceiveErrorInfo info);
   };
 };

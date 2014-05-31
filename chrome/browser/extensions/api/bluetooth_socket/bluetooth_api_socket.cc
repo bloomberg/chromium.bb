@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/bluetooth/bluetooth_api_socket.h"
+#include "chrome/browser/extensions/api/bluetooth_socket/bluetooth_api_socket.h"
 
 #include "device/bluetooth/bluetooth_socket.h"
 #include "net/base/io_buffer.h"

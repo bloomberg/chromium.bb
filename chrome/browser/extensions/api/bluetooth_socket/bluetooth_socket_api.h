@@ -10,7 +10,7 @@
 #include "base/containers/hash_tables.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/extensions/api/bluetooth/bluetooth_api_socket.h"
+#include "chrome/browser/extensions/api/bluetooth_socket/bluetooth_api_socket.h"
 #include "chrome/common/extensions/api/bluetooth_socket.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "extensions/browser/api/api_resource_manager.h"

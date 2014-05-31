@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_BLUETOOTH_SOCKET_BLUETOOTH_SOCKET_EVENT_DISPATCHER_H_
 #define CHROME_BROWSER_EXTENSIONS_API_BLUETOOTH_SOCKET_BLUETOOTH_SOCKET_EVENT_DISPATCHER_H_
 
-#include "chrome/browser/extensions/api/bluetooth/bluetooth_api_socket.h"
+#include "chrome/browser/extensions/api/bluetooth_socket/bluetooth_api_socket.h"
 #include "extensions/browser/api/api_resource_manager.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 

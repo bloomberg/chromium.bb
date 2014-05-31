@@ -19,19 +19,15 @@
 #include "device/bluetooth/test/mock_bluetooth_adapter.h"
 #include "device/bluetooth/test/mock_bluetooth_device.h"
 #include "device/bluetooth/test/mock_bluetooth_discovery_session.h"
-#include "device/bluetooth/test/mock_bluetooth_profile.h"
-#include "device/bluetooth/test/mock_bluetooth_socket.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 using device::BluetoothAdapter;
 using device::BluetoothDevice;
 using device::BluetoothDiscoverySession;
-using device::BluetoothProfile;
 using device::BluetoothUUID;
 using device::MockBluetoothAdapter;
 using device::MockBluetoothDevice;
 using device::MockBluetoothDiscoverySession;
-using device::MockBluetoothProfile;
 using extensions::Extension;
 
 namespace utils = extension_function_test_utils;
@@ -50,8 +46,6 @@ class BluetoothApiTest : public ExtensionApiTest {
     ExtensionApiTest::SetUpOnMainThread();
     empty_extension_ = utils::CreateEmptyExtension();
     SetUpMockAdapter();
-    profile1_.reset(new testing::NiceMock<MockBluetoothProfile>());
-    profile2_.reset(new testing::NiceMock<MockBluetoothProfile>());
   }
 
   virtual void CleanUpOnMainThread() OVERRIDE {
@@ -98,8 +92,6 @@ class BluetoothApiTest : public ExtensionApiTest {
   scoped_ptr<testing::NiceMock<MockBluetoothDevice> > device1_;
   scoped_ptr<testing::NiceMock<MockBluetoothDevice> > device2_;
   scoped_ptr<testing::NiceMock<MockBluetoothDevice> > device3_;
-  scoped_ptr<testing::NiceMock<MockBluetoothProfile> > profile1_;
-  scoped_ptr<testing::NiceMock<MockBluetoothProfile> > profile2_;
 
   extensions::BluetoothEventRouter* event_router() {
     return bluetooth_api()->event_router();
@@ -113,98 +105,12 @@ class BluetoothApiTest : public ExtensionApiTest {
   scoped_refptr<Extension> empty_extension_;
 };
 
-class TestBluetoothAddProfileFunction
-    : public api::BluetoothAddProfileFunction {
- public:
-  explicit TestBluetoothAddProfileFunction(BluetoothProfile* profile)
-      : BluetoothAddProfileFunction(), profile_(profile) {
-  }
-
- protected:
-  virtual ~TestBluetoothAddProfileFunction() {
-  }
-
-  // BluetoothAddProfileFunction override.
-  virtual void RegisterProfile(
-      const device::BluetoothProfile::Options& options,
-      const device::BluetoothProfile::ProfileCallback& callback) OVERRIDE {
-    callback.Run(profile_);
-  }
-
- private:
-  // TestBluetoothAddProfileFunction does not own |profile_|.
-  BluetoothProfile* profile_;
-};
-
 static void StopDiscoverySessionCallback(const base::Closure& callback,
                                          const base::Closure& error_callback) {
   callback.Run();
 }
 
 }  // namespace
-
-IN_PROC_BROWSER_TEST_F(BluetoothApiTest, Profiles) {
-  // Run in context of an extension that has permissions for the profiles
-  // we intend to register.
-  scoped_refptr<const Extension> extension(
-      LoadExtension(test_data_dir_.AppendASCII("bluetooth/profiles")));
-  ASSERT_TRUE(extension.get());
-
-  EXPECT_CALL(*profile1_, SetConnectionCallback(testing::_));
-  scoped_refptr<TestBluetoothAddProfileFunction> add_profile_function;
-  add_profile_function = new TestBluetoothAddProfileFunction(profile1_.get());
-  add_profile_function->set_extension(extension.get());
-  add_profile_function->set_has_callback(true);
-  std::string error(utils::RunFunctionAndReturnError(
-      add_profile_function.get(), "[{\"uuid\": \"1234\"}]", browser()));
-  ASSERT_TRUE(error.empty());
-
-  // Registering the profile for the same uuid again will throw an error.
-  add_profile_function = new TestBluetoothAddProfileFunction(profile2_.get());
-  add_profile_function->set_extension(extension.get());
-  add_profile_function->set_has_callback(true);
-  error = utils::RunFunctionAndReturnError(
-      add_profile_function.get(), "[{\"uuid\": \"1234\"}]", browser());
-  ASSERT_FALSE(error.empty());
-
-  add_profile_function = new TestBluetoothAddProfileFunction(profile2_.get());
-  add_profile_function->set_extension(extension.get());
-  add_profile_function->set_has_callback(true);
-  error = utils::RunFunctionAndReturnError(
-      add_profile_function.get(), "[{\"uuid\": \"5678\"}]", browser());
-  ASSERT_TRUE(error.empty());
-
-  scoped_refptr<api::BluetoothRemoveProfileFunction> remove_profile_function;
-  remove_profile_function = new api::BluetoothRemoveProfileFunction();
-  remove_profile_function->set_extension(extension.get());
-  remove_profile_function->set_has_callback(true);
-  error = utils::RunFunctionAndReturnError(
-      remove_profile_function.get(), "[{\"uuid\": \"1234\"}]", browser());
-  ASSERT_TRUE(error.empty());
-
-  remove_profile_function = new api::BluetoothRemoveProfileFunction();
-  remove_profile_function->set_extension(extension.get());
-  remove_profile_function->set_has_callback(true);
-  error = utils::RunFunctionAndReturnError(
-      remove_profile_function.get(), "[{\"uuid\": \"5678\"}]", browser());
-  ASSERT_TRUE(error.empty());
-
-  // Removing the same profile again will throw an error.
-  remove_profile_function = new api::BluetoothRemoveProfileFunction();
-  remove_profile_function->set_extension(extension.get());
-  remove_profile_function->set_has_callback(true);
-  error = utils::RunFunctionAndReturnError(
-      remove_profile_function.get(), "[{\"uuid\": \"5678\"}]", browser());
-  ASSERT_FALSE(error.empty());
-
-  // Registering a profile we don't have permission for will throw an error.
-  add_profile_function = new TestBluetoothAddProfileFunction(profile1_.get());
-  add_profile_function->set_extension(extension.get());
-  add_profile_function->set_has_callback(true);
-  error = utils::RunFunctionAndReturnError(
-      add_profile_function.get(), "[{\"uuid\": \"9999\"}]", browser());
-  ASSERT_FALSE(error.empty());
-}
 
 IN_PROC_BROWSER_TEST_F(BluetoothApiTest, GetAdapterState) {
   EXPECT_CALL(*mock_adapter_, GetAddress())
@@ -447,37 +353,6 @@ IN_PROC_BROWSER_TEST_F(BluetoothApiTest, OnAdapterStateChanged) {
   listener.Reply("go");
 
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
-}
-
-IN_PROC_BROWSER_TEST_F(BluetoothApiTest, OnConnection) {
-  ResultCatcher catcher;
-  catcher.RestrictToProfile(browser()->profile());
-
-  // Load and wait for setup
-  ExtensionTestMessageListener listener("ready", true);
-  scoped_refptr<const Extension> extension(
-      LoadExtension(test_data_dir_.AppendASCII("bluetooth/on_connection")));
-  ASSERT_TRUE(extension.get());
-  EXPECT_TRUE(listener.WaitUntilSatisfied());
-
-  scoped_refptr<device::MockBluetoothSocket> socket =
-      new device::MockBluetoothSocket();
-
-  EXPECT_CALL(*mock_adapter_, GetDevice(device1_->GetAddress()))
-      .WillOnce(testing::Return(device1_.get()));
-
-  event_router()->AddProfile(
-      BluetoothUUID("1234"), extension->id(), profile1_.get());
-  bluetooth_api()->DispatchConnectionEvent(
-      extension->id(), BluetoothUUID("1234"), device1_.get(), socket);
-  // Connection events are dispatched using a couple of PostTask to the UI
-  // thread. Waiting until idle ensures the event is dispatched to the
-  // receiver(s).
-  base::RunLoop().RunUntilIdle();
-
-  listener.Reply("go");
-  EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
-  event_router()->RemoveProfile(BluetoothUUID("1234"));
 }
 
 IN_PROC_BROWSER_TEST_F(BluetoothApiTest, GetDevices) {

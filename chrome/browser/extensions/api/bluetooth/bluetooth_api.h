@@ -9,15 +9,9 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/extensions/api/bluetooth/bluetooth_api_socket.h"
 #include "chrome/browser/extensions/api/bluetooth/bluetooth_extension_function.h"
 #include "chrome/common/extensions/api/bluetooth.h"
 #include "device/bluetooth/bluetooth_device.h"
-#include "device/bluetooth/bluetooth_profile.h"
-#include "device/bluetooth/bluetooth_socket.h"
-#include "device/bluetooth/bluetooth_uuid.h"
-#include "extensions/browser/api/api_resource_manager.h"
-#include "extensions/browser/api/async_api_function.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_function.h"
@@ -30,10 +24,6 @@ namespace device {
 class BluetoothAdapter;
 }
 
-namespace net {
-class IOBuffer;
-}
-
 namespace extensions {
 
 class BluetoothEventRouter;
@@ -44,21 +34,6 @@ class BluetoothEventRouter;
 class BluetoothAPI : public BrowserContextKeyedAPI,
                      public EventRouter::Observer {
  public:
-  typedef ApiResourceManager<BluetoothApiSocket>::ApiResourceData SocketData;
-
-  struct ConnectionParams {
-    ConnectionParams();
-    ~ConnectionParams();
-
-    content::BrowserThread::ID thread_id;
-    void* browser_context_id;
-    std::string extension_id;
-    std::string device_address;
-    device::BluetoothUUID uuid;
-    scoped_refptr<device::BluetoothSocket> socket;
-    scoped_refptr<SocketData> socket_data;
-  };
-
   // Convenience method to get the BluetoothAPI for a browser context.
   static BluetoothAPI* Get(content::BrowserContext* context);
 
@@ -68,7 +43,6 @@ class BluetoothAPI : public BrowserContextKeyedAPI,
   virtual ~BluetoothAPI();
 
   BluetoothEventRouter* event_router();
-  scoped_refptr<SocketData> socket_data();
 
   // KeyedService implementation.
   virtual void Shutdown() OVERRIDE;
@@ -77,21 +51,7 @@ class BluetoothAPI : public BrowserContextKeyedAPI,
   virtual void OnListenerAdded(const EventListenerInfo& details) OVERRIDE;
   virtual void OnListenerRemoved(const EventListenerInfo& details) OVERRIDE;
 
-  // Dispatch an event that takes a connection socket as a parameter to the
-  // extension that registered the profile that the socket has connected to.
-  void DispatchConnectionEvent(const std::string& extension_id,
-                               const device::BluetoothUUID& profile_uuid,
-                               const device::BluetoothDevice* device,
-                               scoped_refptr<device::BluetoothSocket> socket);
-
  private:
-  static void RegisterSocket(const ConnectionParams& params);
-  static void RegisterSocketUI(const ConnectionParams& params, int socket_id);
-  static void RegisterSocketWithAdapterUI(
-      const ConnectionParams& params,
-      int socket_id,
-      scoped_refptr<device::BluetoothAdapter> adapter);
-
   // BrowserContextKeyedAPI implementation.
   friend class BrowserContextKeyedAPIFactory<BluetoothAPI>;
   static const char* service_name() { return "BluetoothAPI"; }
@@ -102,7 +62,6 @@ class BluetoothAPI : public BrowserContextKeyedAPI,
 
   // Created lazily on first access.
   scoped_ptr<BluetoothEventRouter> event_router_;
-  scoped_refptr<SocketData> socket_data_;
 };
 
 namespace api {
@@ -139,120 +98,6 @@ class BluetoothGetDeviceFunction : public BluetoothExtensionFunction {
 
  protected:
   virtual ~BluetoothGetDeviceFunction();
-};
-
-class BluetoothAddProfileFunction : public AsyncExtensionFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION("bluetooth.addProfile", BLUETOOTH_ADDPROFILE)
-
-  BluetoothAddProfileFunction();
-
- protected:
-  virtual ~BluetoothAddProfileFunction();
-  virtual bool RunAsync() OVERRIDE;
-
-  virtual void RegisterProfile(
-      const device::BluetoothProfile::Options& options,
-      const device::BluetoothProfile::ProfileCallback& callback);
-
- private:
-  void OnProfileRegistered(device::BluetoothProfile* bluetooth_profile);
-
-  device::BluetoothUUID uuid_;
-};
-
-class BluetoothRemoveProfileFunction : public SyncExtensionFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION("bluetooth.removeProfile",
-                             BLUETOOTH_REMOVEPROFILE)
-
- protected:
-  virtual ~BluetoothRemoveProfileFunction();
-  virtual bool RunSync() OVERRIDE;
-};
-
-class BluetoothConnectFunction : public BluetoothExtensionFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION("bluetooth.connect", BLUETOOTH_CONNECT)
-
- protected:
-  virtual ~BluetoothConnectFunction();
-
-  // BluetoothExtensionFunction:
-  virtual bool DoWork(scoped_refptr<device::BluetoothAdapter> adapter) OVERRIDE;
-
- private:
-  void OnConnectedCallback(scoped_refptr<device::BluetoothAdapter> adapter,
-                           const std::string& device_address);
-  void OnMonitorStartedCallback();
-  void OnErrorCallback(const std::string& error);
-};
-
-class BluetoothDisconnectFunction : public AsyncExtensionFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION("bluetooth.disconnect", BLUETOOTH_DISCONNECT)
-
- protected:
-  virtual ~BluetoothDisconnectFunction() {}
-
-  // AsyncExtensionFunction:
-  virtual bool RunAsync() OVERRIDE;
-};
-
-class BluetoothSendFunction : public AsyncExtensionFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION("bluetooth.send", BLUETOOTH_WRITE)
-
- protected:
-  virtual ~BluetoothSendFunction() {}
-
-  // AsyncExtensionFunction:
-  virtual bool RunAsync() OVERRIDE;
-};
-
-class BluetoothUpdateSocketFunction : public AsyncExtensionFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION("bluetooth.updateSocket", BLUETOOTH_UPDATE_SOCKET)
-
- protected:
-  virtual ~BluetoothUpdateSocketFunction() {}
-
-  // AsyncExtensionFunction:
-  virtual bool RunAsync() OVERRIDE;
-};
-
-class BluetoothSetSocketPausedFunction : public AsyncExtensionFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION("bluetooth.setSocketPaused",
-                             BLUETOOTH_SET_SOCKET_PAUSED)
-
- protected:
-  virtual ~BluetoothSetSocketPausedFunction() {}
-
-  // AsyncExtensionFunction:
-  virtual bool RunAsync() OVERRIDE;
-};
-
-class BluetoothGetSocketFunction : public AsyncExtensionFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION("bluetooth.getSocket", BLUETOOTH_GET_SOCKET)
-
- protected:
-  virtual ~BluetoothGetSocketFunction() {}
-
-  // AsyncExtensionFunction:
-  virtual bool RunAsync() OVERRIDE;
-};
-
-class BluetoothGetSocketsFunction : public AsyncExtensionFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION("bluetooth.getSockets", BLUETOOTH_GET_SOCKETS)
-
- protected:
-  virtual ~BluetoothGetSocketsFunction() {}
-
-  // AsyncExtensionFunction:
-  virtual bool RunAsync() OVERRIDE;
 };
 
 class BluetoothStartDiscoveryFunction : public BluetoothExtensionFunction {
