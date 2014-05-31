@@ -100,9 +100,6 @@ const char kAppModeAuthCode[]               = "app-mode-auth-code";
 // Value of OAuth2 refresh token for --force-app-mode.
 const char kAppModeOAuth2Token[]            = "app-mode-oauth-token";
 
-// Experimental native frame support for packaged apps.
-const char kAppsUseNativeFrame[]            = "apps-use-native-frame";
-
 // Enables overriding the path for the default authentication extension.
 const char kAuthExtensionPath[]             = "auth-ext-path";
 
