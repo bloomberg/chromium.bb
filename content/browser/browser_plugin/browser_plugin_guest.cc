@@ -410,20 +410,6 @@ void BrowserPluginGuest::DidCommitProvisionalLoadForFrame(
   RecordAction(base::UserMetricsAction("BrowserPlugin.Guest.DidNavigate"));
 }
 
-void BrowserPluginGuest::DidStopLoading(RenderViewHost* render_view_host) {
-  bool enable_dragdrop = delegate_ && delegate_->IsDragAndDropEnabled();
-  if (!enable_dragdrop) {
-    // Initiating a drag from inside a guest is currently not supported without
-    // the kEnableBrowserPluginDragDrop flag on a linux platform. So inject some
-    // JS to disable it. http://crbug.com/161112
-    const char script[] = "window.addEventListener('dragstart', function() { "
-                          "  window.event.preventDefault(); "
-                          "});";
-    render_view_host->GetMainFrame()->ExecuteJavaScript(
-        base::ASCIIToUTF16(script));
-  }
-}
-
 void BrowserPluginGuest::RenderViewReady() {
   RenderViewHost* rvh = GetWebContents()->GetRenderViewHost();
   // TODO(fsamuel): Investigate whether it's possible to update state earlier

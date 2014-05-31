@@ -5,13 +5,16 @@
 #include "chrome/browser/guest_view/guest_view_base.h"
 
 #include "base/lazy_instance.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/guest_view/ad_view/ad_view_guest.h"
 #include "chrome/browser/guest_view/guest_view_constants.h"
 #include "chrome/browser/guest_view/guest_view_manager.h"
 #include "chrome/browser/guest_view/web_view/web_view_guest.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/content_settings.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
 #include "extensions/browser/event_router.h"
@@ -177,6 +180,10 @@ base::WeakPtr<GuestViewBase> GuestViewBase::AsWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
 }
 
+bool GuestViewBase::IsDragAndDropEnabled() const {
+  return false;
+}
+
 void GuestViewBase::Attach(content::WebContents* embedder_web_contents,
                            const base::DictionaryValue& args) {
   embedder_web_contents_ = embedder_web_contents;
@@ -221,6 +228,17 @@ void GuestViewBase::SetOpener(GuestViewBase* guest) {
 void GuestViewBase::RegisterDestructionCallback(
     const DestructionCallback& callback) {
   destruction_callback_ = callback;
+}
+
+void GuestViewBase::DidStopLoading(content::RenderViewHost* render_view_host) {
+  if (!IsDragAndDropEnabled()) {
+    const char script[] = "window.addEventListener('dragstart', function() { "
+                          "  window.event.preventDefault(); "
+                          "});";
+    render_view_host->GetMainFrame()->ExecuteJavaScript(
+        base::ASCIIToUTF16(script));
+  }
+  DidStopLoading();
 }
 
 void GuestViewBase::WebContentsDestroyed() {

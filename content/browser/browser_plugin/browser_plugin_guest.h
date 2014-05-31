@@ -154,7 +154,6 @@ class CONTENT_EXPORT BrowserPluginGuest : public WebContentsObserver {
       const GURL& url,
       PageTransition transition_type,
       RenderViewHost* render_view_host) OVERRIDE;
-  virtual void DidStopLoading(RenderViewHost* render_view_host) OVERRIDE;
 
   virtual void RenderViewReady() OVERRIDE;
   virtual void RenderProcessGone(base::TerminationStatus status) OVERRIDE;

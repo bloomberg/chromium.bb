@@ -69,7 +69,9 @@ class WebViewGuest : public GuestView<WebViewGuest>,
   // GuestViewBase implementation.
   virtual void Attach(content::WebContents* embedder_web_contents,
                       const base::DictionaryValue& args) OVERRIDE;
+  virtual void DidStopLoading() OVERRIDE;
   virtual void EmbedderDestroyed() OVERRIDE;
+  virtual bool IsDragAndDropEnabled() const OVERRIDE;
 
   // WebContentsDelegate implementation.
   virtual bool AddMessageToConsole(content::WebContents* source,
@@ -127,7 +129,6 @@ class WebViewGuest : public GuestView<WebViewGuest>,
 
   // BrowserPluginGuestDelegate implementation.
   virtual void DidAttach() OVERRIDE;
-  virtual bool IsDragAndDropEnabled() OVERRIDE;
   virtual void SizeChanged(const gfx::Size& old_size, const gfx::Size& new_size)
       OVERRIDE;
   virtual void RequestPointerLockPermission(
@@ -293,8 +294,6 @@ class WebViewGuest : public GuestView<WebViewGuest>,
       content::RenderViewHost* render_view_host) OVERRIDE;
   virtual void DocumentLoadedInFrame(
       int64 frame_id,
-      content::RenderViewHost* render_view_host) OVERRIDE;
-  virtual void DidStopLoading(
       content::RenderViewHost* render_view_host) OVERRIDE;
   virtual bool OnMessageReceived(
       const IPC::Message& message,

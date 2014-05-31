@@ -335,6 +335,11 @@ void WebViewGuest::Attach(WebContents* embedder_web_contents,
   AddWebViewToExtensionRendererState();
 }
 
+void WebViewGuest::DidStopLoading() {
+  scoped_ptr<base::DictionaryValue> args(new base::DictionaryValue());
+  DispatchEvent(new GuestViewBase::Event(webview::kEventLoadStop, args.Pass()));
+}
+
 void WebViewGuest::EmbedderDestroyed() {
   // TODO(fsamuel): WebRequest event listeners for <webview> should survive
   // reparenting of a <webview> within a single embedder. Right now, we keep
@@ -351,6 +356,10 @@ void WebViewGuest::EmbedderDestroyed() {
           browser_context(), embedder_extension_id(),
           embedder_render_process_id(),
           view_instance_id()));
+}
+
+bool WebViewGuest::IsDragAndDropEnabled() const {
+  return true;
 }
 
 bool WebViewGuest::AddMessageToConsole(WebContents* source,
@@ -447,10 +456,6 @@ void WebViewGuest::HandleKeyboardEvent(
   // See http://crbug.com/229882.
   embedder_web_contents()->GetDelegate()->HandleKeyboardEvent(
       web_contents(), event);
-}
-
-bool WebViewGuest::IsDragAndDropEnabled() {
-  return true;
 }
 
 void WebViewGuest::LoadProgressChanged(content::WebContents* source,
@@ -836,11 +841,6 @@ void WebViewGuest::DocumentLoadedInFrame(
     content::RenderViewHost* render_view_host) {
   if (frame_id == main_frame_id_)
     InjectChromeVoxIfNeeded(render_view_host);
-}
-
-void WebViewGuest::DidStopLoading(content::RenderViewHost* render_view_host) {
-  scoped_ptr<base::DictionaryValue> args(new base::DictionaryValue());
-  DispatchEvent(new GuestViewBase::Event(webview::kEventLoadStop, args.Pass()));
 }
 
 bool WebViewGuest::OnMessageReceived(const IPC::Message& message,

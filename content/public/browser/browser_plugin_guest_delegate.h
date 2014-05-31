@@ -26,8 +26,6 @@ class CONTENT_EXPORT BrowserPluginGuestDelegate {
   // Notification that the embedder has completed attachment.
   virtual void DidAttach() {}
 
-  virtual bool IsDragAndDropEnabled();
-
   // Notifies that the content size of the guest has changed in autosize mode.
   virtual void SizeChanged(const gfx::Size& old_size,
                            const gfx::Size& new_size) {}

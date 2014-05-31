@@ -76,10 +76,19 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
 
   virtual const char* GetViewType() const = 0;
 
+  // This method can be overriden by subclasses. This method is called when
+  // the initial set of frames within the page have completed loading.
+  virtual void DidStopLoading() {}
+
   // This method can be overridden by subclasses. It indicates that this guest's
   // embedder has been destroyed and the guest will be destroyed shortly. This
   // method gives derived classes the opportunity to perform some cleanup.
   virtual void EmbedderDestroyed() {}
+
+  // This method queries whether drag-and-drop is enabled for this particular
+  // view. By default, drag-and-drop is disabled. Derived classes can override
+  // this behavior to enable drag-and-drop.
+  virtual bool IsDragAndDropEnabled() const;
 
   bool IsViewType(const char* const view_type) const {
     return !strcmp(GetViewType(), view_type);
@@ -135,6 +144,8 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
   void SetOpener(GuestViewBase* opener);
 
   // WebContentsObserver implementation.
+  virtual void DidStopLoading(
+      content::RenderViewHost* render_view_host) OVERRIDE FINAL;
   virtual void WebContentsDestroyed() OVERRIDE;
 
   // WebContentsDelegate implementation.
