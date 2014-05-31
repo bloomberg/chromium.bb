@@ -283,13 +283,19 @@ void AudioRendererImpl::Initialize(DemuxerStream* stream,
   } else {
     // TODO(rileya): Support hardware config changes
     const AudioParameters& hw_params = hardware_config_->GetOutputConfig();
-    audio_parameters_.Reset(hw_params.format(),
-                            hw_params.channel_layout(),
-                            hw_params.channels(),
-                            hw_params.input_channels(),
-                            hw_params.sample_rate(),
-                            hw_params.bits_per_sample(),
-                            hardware_config_->GetHighLatencyBufferSize());
+    audio_parameters_.Reset(
+        hw_params.format(),
+        // Always use the source's channel layout and channel count to avoid
+        // premature downmixing (http://crbug.com/379288), platform specific
+        // issues around channel layouts (http://crbug.com/266674), and
+        // unnecessary upmixing overhead.
+        stream->audio_decoder_config().channel_layout(),
+        ChannelLayoutToChannelCount(
+            stream->audio_decoder_config().channel_layout()),
+        hw_params.input_channels(),
+        hw_params.sample_rate(),
+        hw_params.bits_per_sample(),
+        hardware_config_->GetHighLatencyBufferSize());
   }
 
   audio_clock_.reset(new AudioClock(audio_parameters_.sample_rate()));

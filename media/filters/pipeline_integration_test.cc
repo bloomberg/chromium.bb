@@ -963,9 +963,8 @@ TEST_P(PipelineIntegrationTest, MediaSource_MP3) {
 
   EXPECT_TRUE(WaitUntilOnEnded());
 
-  // Verify that codec delay was stripped, if it wasn't the hash would be:
-  // "5.16,1.25,7.78,4.29,8.98,2.76,"
-  EXPECT_EQ("5.81,2.71,8.97,4.32,7.83,1.12,", GetAudioHash());
+  // Verify that codec delay was stripped.
+  EXPECT_EQ("1.01,2.71,4.18,4.32,3.04,1.12,", GetAudioHash());
 }
 
 TEST_P(PipelineIntegrationTest, MediaSource_MP3_TimestampOffset) {
