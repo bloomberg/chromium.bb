@@ -55,6 +55,10 @@ class PPAPITestBase : public ContentBrowserTest {
   GURL GetTestFileUrl(const std::string& test_case);
   virtual void RunTest(const std::string& test_case);
 
+  // Run the test and reload. This can test for clean shutdown, including
+  // leaked instance object vars.
+  virtual void RunTestAndReload(const std::string& test_case);
+
  protected:
   // Runs the test for a tab given the tab that's already navigated to the
   // given URL.

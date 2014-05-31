@@ -172,13 +172,6 @@ void PPAPITestBase::RunTest(const std::string& test_case) {
   RunTestURL(url);
 }
 
-void PPAPITestBase::RunTestAndReload(const std::string& test_case) {
-  GURL url = GetTestFileUrl(test_case);
-  RunTestURL(url);
-  // If that passed, we simply run the test again, which navigates again.
-  RunTestURL(url);
-}
-
 void PPAPITestBase::RunTestViaHTTP(const std::string& test_case) {
   base::FilePath document_root;
   ASSERT_TRUE(ui_test_utils::GetRelativeBuildDirectory(&document_root));
@@ -357,12 +350,6 @@ void PPAPINaClTest::SetUpOnMainThread() {
 void PPAPINaClTest::RunTest(const std::string& test_case) {
 #if !defined(DISABLE_NACL)
   PPAPITestBase::RunTest(test_case);
-#endif
-}
-
-void PPAPINaClTest::RunTestAndReload(const std::string& test_case) {
-#if !defined(DISABLE_NACL)
-  PPAPITestBase::RunTestAndReload(test_case);
 #endif
 }
 

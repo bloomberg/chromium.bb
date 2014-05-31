@@ -73,6 +73,13 @@ void PPAPITestBase::RunTest(const std::string& test_case) {
   RunTestURL(url);
 }
 
+void PPAPITestBase::RunTestAndReload(const std::string& test_case) {
+  GURL url = GetTestFileUrl(test_case);
+  RunTestURL(url);
+  // If that passed, we simply run the test again, which navigates again.
+  RunTestURL(url);
+}
+
 void PPAPITestBase::RunTestURL(const GURL& test_url) {
   // See comment above TestingInstance in ppapi/test/testing_instance.h.
   // Basically it sends messages using the DOM automation controller. The

@@ -49,9 +49,6 @@ class PPAPITestBase : public InProcessBrowserTest {
   // Returns the URL to load for file: tests.
   GURL GetTestFileUrl(const std::string& test_case);
   virtual void RunTest(const std::string& test_case);
-  // Run the test and reload. This can test for clean shutdown, including leaked
-  // instance object vars.
-  virtual void RunTestAndReload(const std::string& test_case);
   virtual void RunTestViaHTTP(const std::string& test_case);
   virtual void RunTestWithSSLServer(const std::string& test_case);
   virtual void RunTestWithWebSocketServer(const std::string& test_case);
@@ -131,7 +128,6 @@ class PPAPINaClTest : public PPAPITestBase {
   virtual void SetUpOnMainThread() OVERRIDE;
   // PPAPITestBase overrides.
   virtual void RunTest(const std::string& test_case) OVERRIDE;
-  virtual void RunTestAndReload(const std::string& test_case) OVERRIDE;
   virtual void RunTestViaHTTP(const std::string& test_case) OVERRIDE;
   virtual void RunTestWithSSLServer(const std::string& test_case) OVERRIDE;
   virtual void RunTestWithWebSocketServer(
