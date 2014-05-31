@@ -834,16 +834,34 @@ void QuicStreamFactory::ProcessGoingAwaySession(
   UMA_HISTOGRAM_COUNTS("Net.QuicHandshakeNotConfirmedNumPacketsReceived",
                        stats.packets_received);
 
-  if (session_was_active) {
-    // TODO(rch):  In the special case where the session has received no
-    // packets from the peer, we should consider blacklisting this
-    // differently so that we still race TCP but we don't consider the
-    // session connected until the handshake has been confirmed.
-    HistogramBrokenAlternateProtocolLocation(
-        BROKEN_ALTERNATE_PROTOCOL_LOCATION_QUIC_STREAM_FACTORY);
-    http_server_properties_->SetBrokenAlternateProtocol(
-        server_id.host_port_pair());
-  }
+  if (!session_was_active)
+    return;
+
+  // TODO(rch):  In the special case where the session has received no
+  // packets from the peer, we should consider blacklisting this
+  // differently so that we still race TCP but we don't consider the
+  // session connected until the handshake has been confirmed.
+  HistogramBrokenAlternateProtocolLocation(
+      BROKEN_ALTERNATE_PROTOCOL_LOCATION_QUIC_STREAM_FACTORY);
+  const HostPortPair& server = server_id.host_port_pair();
+  PortAlternateProtocolPair alternate =
+      http_server_properties_->GetAlternateProtocol(server);
+  DCHECK_EQ(QUIC, alternate.protocol);
+
+  // Since the session was active, there's no longer an
+  // HttpStreamFactoryImpl::Job running which can mark it broken, unless the
+  // TCP job also fails. So to avoid not using QUIC when we otherwise could,
+  // we mark it as broken, and then immediately re-enable it. This leaves
+  // QUIC as "recently broken" which means that 0-RTT will be disabled but
+  // we'll still race.
+  http_server_properties_->SetBrokenAlternateProtocol(server);
+  http_server_properties_->ClearAlternateProtocol(server);
+  http_server_properties_->SetAlternateProtocol(
+      server, alternate.port, alternate.protocol);
+  DCHECK_EQ(QUIC,
+            http_server_properties_->GetAlternateProtocol(server).protocol);
+  DCHECK(http_server_properties_->WasAlternateProtocolRecentlyBroken(
+      server));
 }
 
 }  // namespace net

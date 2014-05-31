@@ -831,6 +831,11 @@ TEST_P(QuicNetworkTransactionTest, FailedZeroRttBrokenAlternateProtocol) {
 
   AddHangingNonAlternateProtocolSocketData();
 
+  // Second Alternate-protocol job which will race with the TCP job.
+  StaticSocketDataProvider quic_data2(quic_reads, arraysize(quic_reads),
+                                      NULL, 0);
+  socket_factory_.AddSocketDataProvider(&quic_data2);
+
   // Final job that will proceed when the QUIC job fails.
   MockRead http_reads[] = {
     MockRead("HTTP/1.1 200 OK\r\n\r\n"),

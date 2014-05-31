@@ -290,12 +290,11 @@ void HttpServerPropertiesImpl::SetBrokenAlternateProtocol(
   AlternateProtocolMap::iterator it = alternate_protocol_map_.Get(server);
   if (it != alternate_protocol_map_.end()) {
     it->second.protocol = ALTERNATE_PROTOCOL_BROKEN;
-    return;
+  } else {
+    PortAlternateProtocolPair alternate;
+    alternate.protocol = ALTERNATE_PROTOCOL_BROKEN;
+    alternate_protocol_map_.Put(server, alternate);
   }
-  PortAlternateProtocolPair alternate;
-  alternate.protocol = ALTERNATE_PROTOCOL_BROKEN;
-  alternate_protocol_map_.Put(server, alternate);
-
   int count = ++broken_alternate_protocol_map_[server];
   base::TimeDelta delay =
       base::TimeDelta::FromSeconds(kBrokenAlternateProtocolDelaySecs);
