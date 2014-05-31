@@ -84,7 +84,12 @@ function createNewFolder(windowId, path, initialEntrySet) {
                         expectedEntryRows,
                         {ignoreLastModifiedTime: true});
   }).then(function() {
-    // Ensure that only the created directory is selected.
+    // Wait until the new created folder is selected.
+    return waitForElement(
+        windowId,
+        'div.detail-table > list > li[selected]#' + newFoloderListItemId);
+  }).then(function() {
+    // Ensure that the created directory is the only one selected directory.
     return callRemoteTestUtil(
         'queryAllElements',
         windowId,
