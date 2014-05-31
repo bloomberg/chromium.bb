@@ -270,6 +270,18 @@ class OmniboxFieldTrial {
   static bool BookmarksIndexURLsValue();
 
   // ---------------------------------------------------------
+  // For the DisableInlining experiment that's part of the bundled omnibox
+  // field trial.
+
+  // Returns true if AutocompleteResult should prevent any suggestion with
+  // a non-empty |inline_autocomplete| from being the default match.  In
+  // other words, prevent an inline autocompletion from appearing as the
+  // top suggestion / within the omnibox itself, reordering matches as
+  // necessary to make this true.  Returns false if the experiment isn't
+  // active.
+  static bool DisableInlining();
+
+  // ---------------------------------------------------------
   // Exposed publicly for the sake of unittests.
   static const char kBundledExperimentFieldTrialName[];
   // Rule names used by the bundled experiment.
@@ -283,6 +295,7 @@ class OmniboxFieldTrial {
   static const char kZeroSuggestRule[];
   static const char kZeroSuggestVariantRule[];
   static const char kBookmarksIndexURLsRule[];
+  static const char kDisableInliningRule[];
 
   // Parameter names used by the HUP new scoring experiments.
   static const char kHUPNewScoringEnabledParam[];

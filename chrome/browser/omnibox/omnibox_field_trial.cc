@@ -425,6 +425,12 @@ bool OmniboxFieldTrial::BookmarksIndexURLsValue() {
       kBookmarksIndexURLsRule) == "true";
 }
 
+bool OmniboxFieldTrial::DisableInlining() {
+  return chrome_variations::GetVariationParamValue(
+      kBundledExperimentFieldTrialName,
+      kDisableInliningRule) == "true";
+}
+
 const char OmniboxFieldTrial::kBundledExperimentFieldTrialName[] =
     "OmniboxBundledExperimentV1";
 const char OmniboxFieldTrial::kShortcutsScoringMaxRelevanceRule[] =
@@ -439,6 +445,7 @@ const char OmniboxFieldTrial::kHQPAllowMatchInSchemeRule[] =
 const char OmniboxFieldTrial::kZeroSuggestRule[] = "ZeroSuggest";
 const char OmniboxFieldTrial::kZeroSuggestVariantRule[] = "ZeroSuggestVariant";
 const char OmniboxFieldTrial::kBookmarksIndexURLsRule[] = "BookmarksIndexURLs";
+const char OmniboxFieldTrial::kDisableInliningRule[] = "DisableInlining";
 
 const char OmniboxFieldTrial::kHUPNewScoringEnabledParam[] =
     "HUPExperimentalScoringEnabled";

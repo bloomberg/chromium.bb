@@ -17357,6 +17357,16 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Omnibox.HasLegalDefaultMatchWithoutCompletion" enum="Boolean">
+  <owner>mpearson@chromium.org</owner>
+  <summary>
+    Whether there was at least one legal default match without an
+    |inline_autocompletion|.  Recorded every time
+    AutocompleteResult::SortAndCull() is called, which could happen multiple
+    times on each keystroke.
+  </summary>
+</histogram>
+
 <histogram name="Omnibox.Paste" units="count">
   <owner>mpearson@chromium.org</owner>
   <summary>
