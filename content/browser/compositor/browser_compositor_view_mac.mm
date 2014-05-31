@@ -9,6 +9,7 @@
 #include "content/browser/renderer_host/compositing_iosurface_context_mac.h"
 #include "content/browser/renderer_host/compositing_iosurface_mac.h"
 #include "content/browser/renderer_host/software_layer_mac.h"
+#include "content/public/browser/context_factory.h"
 #include "ui/base/cocoa/animation_utils.h"
 #include "ui/gl/scoped_cgl.h"
 
@@ -44,7 +45,7 @@
     [self setLayer:background_layer_];
     [self setWantsLayer:YES];
 
-    compositor_.reset(new ui::Compositor(self));
+    compositor_.reset(new ui::Compositor(self, content::GetContextFactory()));
     [view addSubview:self];
   }
   return self;
