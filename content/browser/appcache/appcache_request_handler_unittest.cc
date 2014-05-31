@@ -20,6 +20,7 @@
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_error_job.h"
+#include "net/url_request/url_request_job_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/browser/appcache/appcache.h"
 #include "webkit/browser/appcache/appcache_backend_impl.h"
@@ -128,48 +129,60 @@ class AppCacheRequestHandlerTest : public testing::Test {
     net::HttpResponseInfo response_info_;
   };
 
+  class MockURLRequestJobFactory : public net::URLRequestJobFactory {
+   public:
+    MockURLRequestJobFactory() : job_(NULL) {
+    }
+
+    virtual ~MockURLRequestJobFactory() {
+      DCHECK(!job_);
+    }
+
+    void SetJob(net::URLRequestJob* job) {
+      job_ = job;
+    }
+
+    virtual net::URLRequestJob* MaybeCreateJobWithProtocolHandler(
+        const std::string& scheme,
+        net::URLRequest* request,
+        net::NetworkDelegate* network_delegate) const OVERRIDE {
+      if (job_) {
+        net::URLRequestJob* temp = job_;
+        job_ = NULL;
+        return temp;
+      } else {
+        // Some of these tests trigger UpdateJobs which start URLRequests.
+        // We short circuit those be returning error jobs.
+        return new net::URLRequestErrorJob(request,
+                                           network_delegate,
+                                           net::ERR_INTERNET_DISCONNECTED);
+      }
+    }
+
+    virtual bool IsHandledProtocol(const std::string& scheme) const OVERRIDE {
+      return scheme == "http";
+    };
+
+    virtual bool IsHandledURL(const GURL& url) const OVERRIDE {
+      return url.SchemeIs("http");
+    }
+
+    virtual bool IsSafeRedirectTarget(const GURL& location) const OVERRIDE {
+      return false;
+    }
+
+   private:
+    mutable net::URLRequestJob* job_;
+  };
+
   class MockURLRequest : public net::URLRequest {
    public:
     MockURLRequest(const GURL& url, net::URLRequestContext* context)
         : net::URLRequest(url, net::DEFAULT_PRIORITY, NULL, context) {}
 
-    void SimulateResponseCode(int http_response_code) {
-      mock_factory_job_ = new MockURLRequestJob(
-          this, context()->network_delegate(), http_response_code);
-      Start();
-      DCHECK(!mock_factory_job_);
-      // All our simulation needs  to satisfy are the following two DCHECKs
-      DCHECK(status().is_success());
-      DCHECK_EQ(http_response_code, GetResponseCode());
-    }
-
-    void SimulateResponseInfo(const net::HttpResponseInfo& info) {
-      mock_factory_job_ =
-          new MockURLRequestJob(this, context()->network_delegate(), info);
-      set_delegate(&delegate_);  // needed to get the info back out
-      Start();
-      DCHECK(!mock_factory_job_);
-    }
 
     MockURLRequestDelegate delegate_;
   };
-
-  static net::URLRequestJob* MockHttpJobFactory(
-      net::URLRequest* request,
-      net::NetworkDelegate* network_delegate,
-      const std::string& scheme) {
-    if (mock_factory_job_) {
-      net::URLRequestJob* temp = mock_factory_job_;
-      mock_factory_job_ = NULL;
-      return temp;
-    } else {
-      // Some of these tests trigger UpdateJobs which start URLRequests.
-      // We short circuit those be returning error jobs.
-      return new net::URLRequestErrorJob(request,
-                                         network_delegate,
-                                         net::ERR_INTERNET_DISCONNECTED);
-    }
-  }
 
   static void SetUpTestCase() {
     io_thread_.reset(new base::Thread("AppCacheRequestHandlerTest Thread"));
@@ -183,7 +196,7 @@ class AppCacheRequestHandlerTest : public testing::Test {
 
   // Test harness --------------------------------------------------
 
-  AppCacheRequestHandlerTest() : host_(NULL), orig_http_factory_(NULL) {}
+  AppCacheRequestHandlerTest() : host_(NULL) {}
 
   template <class Method>
   void RunTestOnIOThread(Method method) {
@@ -197,8 +210,6 @@ class AppCacheRequestHandlerTest : public testing::Test {
 
   void SetUpTest() {
     DCHECK(base::MessageLoop::current() == io_thread_->message_loop());
-    orig_http_factory_ = net::URLRequest::Deprecated::RegisterProtocolFactory(
-        "http", MockHttpJobFactory);
     mock_service_.reset(new MockAppCacheService);
     mock_service_->set_request_context(&empty_context_);
     mock_policy_.reset(new MockAppCachePolicy);
@@ -210,14 +221,12 @@ class AppCacheRequestHandlerTest : public testing::Test {
     const int kHostId = 1;
     backend_impl_->RegisterHost(kHostId);
     host_ = backend_impl_->GetHost(kHostId);
+    job_factory_.reset(new MockURLRequestJobFactory());
+    empty_context_.set_job_factory(job_factory_.get());
   }
 
   void TearDownTest() {
     DCHECK(base::MessageLoop::current() == io_thread_->message_loop());
-    DCHECK(!mock_factory_job_);
-    net::URLRequest::Deprecated::RegisterProtocolFactory(
-        "http", orig_http_factory_);
-    orig_http_factory_ = NULL;
     job_ = NULL;
     handler_.reset();
     request_.reset();
@@ -225,6 +234,7 @@ class AppCacheRequestHandlerTest : public testing::Test {
     mock_frontend_.reset();
     mock_service_.reset();
     mock_policy_.reset();
+    job_factory_.reset();
     host_ = NULL;
   }
 
@@ -379,6 +389,27 @@ class AppCacheRequestHandlerTest : public testing::Test {
     ScheduleNextTask();
   }
 
+  void SimulateResponseCode(int response_code) {
+    job_factory_->SetJob(
+        new MockURLRequestJob(
+            request_.get(),
+            request_->context()->network_delegate(),
+            response_code));
+    request_->Start();
+    // All our simulation needs  to satisfy are the following two DCHECKs
+    DCHECK(request_->status().is_success());
+    DCHECK_EQ(response_code, request_->GetResponseCode());
+  }
+
+  void SimulateResponseInfo(const net::HttpResponseInfo& info) {
+    job_factory_->SetJob(
+        new MockURLRequestJob(
+            request_.get(),
+            request_->context()->network_delegate(), info));
+    request_->set_delegate(&request_->delegate_);
+    request_->Start();
+  }
+
   void Verify_MainResource_Fallback() {
     EXPECT_FALSE(job_->is_waiting());
     EXPECT_TRUE(job_->is_delivering_network_response());
@@ -391,7 +422,7 @@ class AppCacheRequestHandlerTest : public testing::Test {
     EXPECT_FALSE(job_.get());
 
     // Simulate an http error of the real network job.
-    request_->SimulateResponseCode(500);
+    SimulateResponseCode(500);
 
     job_ = handler_->MaybeLoadFallbackForResponse(
         request_.get(), request_->context()->network_delegate());
@@ -460,7 +491,7 @@ class AppCacheRequestHandlerTest : public testing::Test {
     net::HttpResponseInfo info;
     info.headers = new net::HttpResponseHeaders(
         std::string(kOverrideHeaders, arraysize(kOverrideHeaders)));
-    request_->SimulateResponseInfo(info);
+    SimulateResponseInfo(info);
 
     job_ = handler_->MaybeLoadFallbackForResponse(
         request_.get(), request_->context()->network_delegate());
@@ -635,7 +666,7 @@ class AppCacheRequestHandlerTest : public testing::Test {
         GURL("http://blah/redirect"));
     EXPECT_FALSE(fallback_job);
 
-    request_->SimulateResponseCode(200);
+    SimulateResponseCode(200);
     fallback_job = handler_->MaybeLoadFallbackForResponse(
         request_.get(), request_->context()->network_delegate());
     EXPECT_FALSE(fallback_job);
@@ -772,7 +803,7 @@ class AppCacheRequestHandlerTest : public testing::Test {
     EXPECT_TRUE(job_->is_waiting());
     EXPECT_FALSE(job_->has_been_started());
 
-    mock_factory_job_ = job_.get();
+    job_factory_->SetJob(job_);
     request_->Start();
     EXPECT_TRUE(job_->has_been_started());
 
@@ -895,18 +926,16 @@ class AppCacheRequestHandlerTest : public testing::Test {
   scoped_ptr<MockAppCachePolicy> mock_policy_;
   AppCacheHost* host_;
   net::URLRequestContext empty_context_;
+  scoped_ptr<MockURLRequestJobFactory> job_factory_;
   scoped_ptr<MockURLRequest> request_;
   scoped_ptr<AppCacheRequestHandler> handler_;
   scoped_refptr<AppCacheURLRequestJob> job_;
-  net::URLRequest::ProtocolFactory* orig_http_factory_;
 
   static scoped_ptr<base::Thread> io_thread_;
-  static net::URLRequestJob* mock_factory_job_;
 };
 
 // static
 scoped_ptr<base::Thread> AppCacheRequestHandlerTest::io_thread_;
-net::URLRequestJob* AppCacheRequestHandlerTest::mock_factory_job_ = NULL;
 
 TEST_F(AppCacheRequestHandlerTest, MainResource_Miss) {
   RunTestOnIOThread(&AppCacheRequestHandlerTest::MainResource_Miss);
