@@ -7,7 +7,7 @@
 
 #include <vector>
 
-#include "mojo/public/cpp/bindings/message.h"
+#include "mojo/public/cpp/system/core.h"
 
 namespace mojo {
 namespace internal {
@@ -32,8 +32,10 @@ bool IsAligned(const void* ptr);
 // A null pointer is encoded as an offset value of 0.
 //
 void EncodePointer(const void* ptr, uint64_t* offset);
+// Note: This function doesn't validate the encoded pointer value.
 const void* DecodePointerRaw(const uint64_t* offset);
 
+// Note: This function doesn't validate the encoded pointer value.
 template <typename T>
 inline void DecodePointer(const uint64_t* offset, T** ptr) {
   *ptr = reinterpret_cast<T*>(const_cast<void*>(DecodePointerRaw(offset)));
@@ -43,13 +45,11 @@ inline void DecodePointer(const uint64_t* offset, T** ptr) {
 // smaller than |offset|.
 bool ValidateEncodedPointer(const uint64_t* offset);
 
-// Check that the given pointer references memory contained within the message.
-bool ValidatePointer(const void* ptr, const Message& message);
-
 // Handles are encoded as indices into a vector of handles. These functions
 // manipulate the value of |handle|, mapping it to and from an index.
 void EncodeHandle(Handle* handle, std::vector<Handle>* handles);
-bool DecodeHandle(Handle* handle, std::vector<Handle>* handles);
+// Note: This function doesn't validate the encoded handle value.
+void DecodeHandle(Handle* handle, std::vector<Handle>* handles);
 
 // The following 2 functions are used to encode/decode all objects (structs and
 // arrays) in a consistent manner.
@@ -61,18 +61,12 @@ inline void Encode(T* obj, std::vector<Handle>* handles) {
   EncodePointer(obj->ptr, &obj->offset);
 }
 
-// TODO(yzshen): Remove all redundant validation during decoding. And make
-// Decode*() functions/methods return void.
+// Note: This function doesn't validate the encoded pointer and handle values.
 template <typename T>
-inline bool Decode(T* obj, Message* message) {
+inline void Decode(T* obj, std::vector<Handle>* handles) {
   DecodePointer(&obj->offset, &obj->ptr);
-  if (obj->ptr) {
-    if (!ValidatePointer(obj->ptr, *message))
-      return false;
-    if (!obj->ptr->DecodePointersAndHandles(message))
-      return false;
-  }
-  return true;
+  if (obj->ptr)
+    obj->ptr->DecodePointersAndHandles(handles);
 }
 
 // If returns true, this function also claims the memory range of the size

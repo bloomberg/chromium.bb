@@ -19,9 +19,8 @@ class {{class_name}} {
     {{ struct_macros.encodes(struct)|indent(4) }}
   }
 
-  bool DecodePointersAndHandles(mojo::Message* message) {
+  void DecodePointersAndHandles(std::vector<mojo::Handle>* handles) {
     {{ struct_macros.decodes(struct)|indent(4) }}
-    return true;
   }
 
  private:

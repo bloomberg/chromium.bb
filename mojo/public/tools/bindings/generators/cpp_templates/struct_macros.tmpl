@@ -78,12 +78,9 @@ mojo::internal::EncodeHandle(&{{pf.field.name}}, handles);
 
 {%- macro decodes(struct) -%}
 {%-   for pf in struct.packed.packed_fields if pf.field.kind|is_object_kind -%}
-if (!mojo::internal::Decode(&{{pf.field.name}}, message))
-  return false;
+mojo::internal::Decode(&{{pf.field.name}}, handles);
 {%    endfor %}
 {%-   for pf in struct.packed.packed_fields if pf.field.kind|is_handle_kind -%}
-if (!mojo::internal::DecodeHandle(&{{pf.field.name}},
-                                  message->mutable_handles()))
-  return false;
+mojo::internal::DecodeHandle(&{{pf.field.name}}, handles);
 {%    endfor %}
 {%- endmacro -%}

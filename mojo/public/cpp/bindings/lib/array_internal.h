@@ -106,10 +106,9 @@ struct ArraySerializationHelper<T, false> {
                                        std::vector<Handle>* handles) {
   }
 
-  static bool DecodePointersAndHandles(const ArrayHeader* header,
+  static void DecodePointersAndHandles(const ArrayHeader* header,
                                        ElementType* elements,
-                                       Message* message) {
-    return true;
+                                       std::vector<Handle>* handles) {
   }
 
   static bool ValidateElements(const ArrayHeader* header,
@@ -127,9 +126,9 @@ struct ArraySerializationHelper<Handle, true> {
                                        ElementType* elements,
                                        std::vector<Handle>* handles);
 
-  static bool DecodePointersAndHandles(const ArrayHeader* header,
+  static void DecodePointersAndHandles(const ArrayHeader* header,
                                        ElementType* elements,
-                                       Message* message);
+                                       std::vector<Handle>* handles);
 
   static bool ValidateElements(const ArrayHeader* header,
                                const ElementType* elements,
@@ -147,11 +146,11 @@ struct ArraySerializationHelper<H, true> {
         header, elements, handles);
   }
 
-  static bool DecodePointersAndHandles(const ArrayHeader* header,
+  static void DecodePointersAndHandles(const ArrayHeader* header,
                                        ElementType* elements,
-                                       Message* message) {
-    return ArraySerializationHelper<Handle, true>::DecodePointersAndHandles(
-        header, elements, message);
+                                       std::vector<Handle>* handles) {
+    ArraySerializationHelper<Handle, true>::DecodePointersAndHandles(
+        header, elements, handles);
   }
 
   static bool ValidateElements(const ArrayHeader* header,
@@ -173,14 +172,11 @@ struct ArraySerializationHelper<P*, false> {
       Encode(&elements[i], handles);
   }
 
-  static bool DecodePointersAndHandles(const ArrayHeader* header,
+  static void DecodePointersAndHandles(const ArrayHeader* header,
                                        ElementType* elements,
-                                       Message* message) {
-    for (uint32_t i = 0; i < header->num_elements; ++i) {
-      if (!Decode(&elements[i], message))
-        return false;
-    }
-    return true;
+                                       std::vector<Handle>* handles) {
+    for (uint32_t i = 0; i < header->num_elements; ++i)
+      Decode(&elements[i], handles);
   }
 
   static bool ValidateElements(const ArrayHeader* header,
@@ -258,8 +254,8 @@ class Array_Data {
     Helper::EncodePointersAndHandles(&header_, storage(), handles);
   }
 
-  bool DecodePointersAndHandles(Message* message) {
-    return Helper::DecodePointersAndHandles(&header_, storage(), message);
+  void DecodePointersAndHandles(std::vector<Handle>* handles) {
+    Helper::DecodePointersAndHandles(&header_, storage(), handles);
   }
 
  private:

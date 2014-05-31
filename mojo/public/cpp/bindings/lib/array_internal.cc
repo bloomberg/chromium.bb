@@ -44,15 +44,12 @@ void ArraySerializationHelper<Handle, true>::EncodePointersAndHandles(
 }
 
 // static
-bool ArraySerializationHelper<Handle, true>::DecodePointersAndHandles(
+void ArraySerializationHelper<Handle, true>::DecodePointersAndHandles(
     const ArrayHeader* header,
     ElementType* elements,
-    Message* message) {
-  for (uint32_t i = 0; i < header->num_elements; ++i) {
-    if (!DecodeHandle(&elements[i], message->mutable_handles()))
-      return false;
-  }
-  return true;
+    std::vector<Handle>* handles) {
+  for (uint32_t i = 0; i < header->num_elements; ++i)
+    DecodeHandle(&elements[i], handles);
 }
 
 // static

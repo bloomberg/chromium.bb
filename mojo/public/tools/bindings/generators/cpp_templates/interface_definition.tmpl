@@ -100,8 +100,7 @@ bool {{class_name}}_{{method.name}}_ForwardToCallback::Accept(
       reinterpret_cast<internal::{{class_name}}_{{method.name}}_ResponseParams_Data*>(
           message->mutable_payload());
 
-  if (!params->DecodePointersAndHandles(message))
-    return false;
+  params->DecodePointersAndHandles(message->mutable_handles());
   {{alloc_params(method.response_parameters)|indent(2)}}
   callback_.Run({{pass_params(method.response_parameters)}});
   return true;
@@ -205,8 +204,7 @@ bool {{class_name}}Stub::Accept(mojo::Message* message) {
           reinterpret_cast<internal::{{class_name}}_{{method.name}}_Params_Data*>(
               message->mutable_payload());
 
-      if (!params->DecodePointersAndHandles(message))
-        return false;
+      params->DecodePointersAndHandles(message->mutable_handles());
       {{alloc_params(method.parameters)|indent(6)}}
       sink_->{{method.name}}({{pass_params(method.parameters)}});
       return true;
@@ -231,8 +229,7 @@ bool {{class_name}}Stub::AcceptWithResponder(
           reinterpret_cast<internal::{{class_name}}_{{method.name}}_Params_Data*>(
               message->mutable_payload());
 
-      if (!params->DecodePointersAndHandles(message))
-        return false;
+      params->DecodePointersAndHandles(message->mutable_handles());
       {{interface_macros.declare_callback(method)}}::Runnable* runnable =
           new {{class_name}}_{{method.name}}_ProxyToResponder(
               message->request_id(), responder);

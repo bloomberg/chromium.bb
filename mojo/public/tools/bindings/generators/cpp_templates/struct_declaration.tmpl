@@ -12,7 +12,7 @@ class {{class_name}} {
 {{struct_macros.fields(struct)}}
 
   void EncodePointersAndHandles(std::vector<mojo::Handle>* handles);
-  bool DecodePointersAndHandles(mojo::Message* message);
+  void DecodePointersAndHandles(std::vector<mojo::Handle>* handles);
 
  private:
   {{class_name}}();

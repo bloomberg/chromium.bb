@@ -22,7 +22,7 @@ void {{class_name}}::EncodePointersAndHandles(
   {{ struct_macros.encodes(struct)|indent(2) }}
 }
 
-bool {{class_name}}::DecodePointersAndHandles(mojo::Message* message) {
+void {{class_name}}::DecodePointersAndHandles(
+    std::vector<mojo::Handle>* handles) {
   {{ struct_macros.decodes(struct)|indent(2) }}
-  return true;
 }
