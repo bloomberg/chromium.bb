@@ -39,6 +39,7 @@
 
 #include <map>
 
+#include "base/atomic_ref_count.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -83,6 +84,10 @@ class CONTENT_EXPORT AudioRendererHost : public BrowserMessageFilter {
   virtual void OnChannelClosing() OVERRIDE;
   virtual void OnDestruct() const OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+
+  // Returns true if any streams managed by this host are actively playing.  Can
+  // be called from any thread.
+  bool HasActiveAudio();
 
  private:
   friend class AudioRendererHostTest;
@@ -164,6 +169,9 @@ class CONTENT_EXPORT AudioRendererHost : public BrowserMessageFilter {
 
   // A map of stream IDs to audio sources.
   AudioEntryMap audio_entries_;
+
+  // The number of streams in the playing state.
+  base::AtomicRefCount num_playing_streams_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioRendererHost);
 };

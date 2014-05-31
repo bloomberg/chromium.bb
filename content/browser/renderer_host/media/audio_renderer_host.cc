@@ -61,6 +61,9 @@ class AudioRendererHost::AudioEntry
     return reader_.get();
   }
 
+  bool playing() const { return playing_; }
+  void set_playing(bool playing) { playing_ = playing; }
+
  private:
   // media::AudioOutputController::EventHandler implementation.
   virtual void OnCreated() OVERRIDE;
@@ -85,6 +88,8 @@ class AudioRendererHost::AudioEntry
 
   // The AudioOutputController that manages the audio stream.
   const scoped_refptr<media::AudioOutputController> controller_;
+
+  bool playing_;
 };
 
 AudioRendererHost::AudioEntry::AudioEntry(
@@ -106,7 +111,8 @@ AudioRendererHost::AudioEntry::AudioEntry(
                                                        this,
                                                        params,
                                                        output_device_id,
-                                                       reader_.get())) {
+                                                       reader_.get())),
+      playing_(false) {
   DCHECK(controller_.get());
 }
 
@@ -127,7 +133,8 @@ AudioRendererHost::AudioRendererHost(
       mirroring_manager_(mirroring_manager),
       audio_log_(media_internals->CreateAudioLog(
           media::AudioLogFactory::AUDIO_OUTPUT_CONTROLLER)),
-      media_stream_manager_(media_stream_manager) {
+      media_stream_manager_(media_stream_manager),
+      num_playing_streams_(0) {
   DCHECK(audio_manager_);
   DCHECK(media_stream_manager_);
 }
@@ -275,10 +282,18 @@ void AudioRendererHost::DoNotifyStreamStateChanged(int stream_id,
           entry->stream_id(),
           base::Bind(&media::AudioOutputController::ReadCurrentPowerAndClip,
                      entry->controller()));
+      if (!entry->playing()) {
+        entry->set_playing(true);
+        base::AtomicRefCountInc(&num_playing_streams_);
+      }
     } else {
       media_observer->OnAudioStreamStopped(render_process_id_,
                                            entry->render_frame_id(),
                                            entry->stream_id());
+      if (entry->playing()) {
+        entry->set_playing(false);
+        base::AtomicRefCountDec(&num_playing_streams_);
+      }
     }
   }
 }
@@ -458,6 +473,8 @@ void AudioRendererHost::DeleteEntry(scoped_ptr<AudioEntry> entry) {
     media_observer->OnAudioStreamStopped(render_process_id_,
                                          entry->render_frame_id(),
                                          entry->stream_id());
+    if (entry->playing())
+      base::AtomicRefCountDec(&num_playing_streams_);
   }
 }
 
@@ -481,6 +498,10 @@ AudioRendererHost::AudioEntry* AudioRendererHost::LookupById(int stream_id) {
 
   AudioEntryMap::const_iterator i = audio_entries_.find(stream_id);
   return i != audio_entries_.end() ? i->second : NULL;
+}
+
+bool AudioRendererHost::HasActiveAudio() {
+  return !base::AtomicRefCountIsZero(&num_playing_streams_);
 }
 
 }  // namespace content

@@ -1960,6 +1960,10 @@ void RenderProcessHostImpl::SetBackgrounded(bool backgrounded) {
   if (!child_process_launcher_.get() || child_process_launcher_->IsStarting())
     return;
 
+  // Don't background processes which have active audio streams.
+  if (backgrounded_ && audio_renderer_host_->HasActiveAudio())
+    return;
+
 #if defined(OS_WIN)
   // The cbstext.dll loads as a global GetMessage hook in the browser process
   // and intercepts/unintercepts the kernel32 API SetPriorityClass in a
