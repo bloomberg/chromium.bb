@@ -79,8 +79,7 @@ bool DocumentLoader::Init(const pp::URLLoader& loader,
       !EndsWith(type, "/x-pdf", false) &&
       !EndsWith(type, "/*", false) &&
       !EndsWith(type, "/acrobat", false) &&
-      !EndsWith(type, "/unknown", false) &&
-      !StartsWithASCII(url, "blob:", false)) {
+      !EndsWith(type, "/unknown", false)) {
     return false;
   }
   if (StartsWithASCII(disposition, "attachment", false)) {

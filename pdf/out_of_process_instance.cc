@@ -316,6 +316,12 @@ bool OutOfProcessInstance::Init(uint32_t argc,
       headers = argv[i];
   }
 
+  // TODO(raymes): This is a hack to ensure that if no headers are passed in
+  // then we get the right MIME type. When the in process plugin is removed we
+  // can fix the document loader properly and remove this hack.
+  if (!headers || strcmp(headers, "") == 0)
+    headers = "content-type: application/pdf";
+
   if (!original_url)
     return false;
 
