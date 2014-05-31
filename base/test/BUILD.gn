@@ -128,7 +128,7 @@ config("perf_test_config") {
   defines = [ "PERF_TEST" ]
 }
 
-static_library("test_support_perf") {
+source_set("test_support_perf") {
   sources = [
     "run_all_perftests.cc",
   ]

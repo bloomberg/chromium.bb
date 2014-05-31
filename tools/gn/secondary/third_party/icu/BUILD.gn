@@ -24,7 +24,7 @@ config("icu_config") {
 
 # Config used only by ICU code.
 config("icu_code") {
-  if (component_mode == "static_library") {
+  if (component_mode != "shared_library") {
     defines = [ "U_STATIC_IMPLEMENTATION" ]
   }
 
@@ -426,7 +426,7 @@ if (is_win) {
     outputs = [ "$root_out_dir/icudt.dll" ]
   }
 } else {
-  static_library("icudata") {
+  source_set("icudata") {
     sources = [
       # These are hand-generated, but will do for now.  The linux version is an
       # identical copy of the (mac) icudt46l_dat.S file, modulo removal of the

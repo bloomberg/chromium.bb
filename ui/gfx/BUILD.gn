@@ -156,12 +156,6 @@ component("gfx") {
     "range/range.h",
     "range/range_mac.mm",
     "range/range_win.cc",
-    "render_text.cc",
-    "render_text.h",
-    "render_text_mac.cc",
-    "render_text_mac.h",
-    "render_text_win.cc",
-    "render_text_win.h",
     "scoped_canvas.h",
     "scoped_cg_context_save_gstate_mac.h",
     "scoped_ns_graphics_context_save_gstate_mac.h",
@@ -199,7 +193,6 @@ component("gfx") {
     "text_utils.h",
     "text_utils_android.cc",
     "text_utils_ios.mm",
-    "text_utils_skia.cc",
     "transform.cc",
     "transform.h",
     "transform_util.cc",
@@ -228,6 +221,7 @@ component("gfx") {
     "//base:base_static",
     "//base/third_party/dynamic_annotations",
     "//skia",
+    "//third_party/harfbuzz-ng",
     "//third_party/icu:icui18n",
     "//third_party/icu:icuuc",
     "//third_party/libpng",
@@ -235,6 +229,30 @@ component("gfx") {
     "//ui/gfx/geometry",
   ]
 
+  # Text rendering conditions (complicated so separated out).
+  if (is_android || is_ios) {
+    # We don't support RenderText on these platforms.
+  } else {
+    # These text rendering files are supported everywhere text rendering is.
+    sources += [
+      "render_text.cc",
+      "render_text.h",
+      "render_text_harfbuzz.cc",
+      "render_text_harfbuzz.h",
+      "text_utils_skia.cc",
+    ]
+    # These are the "native" rendering routines, only one should apply.
+    if (is_win) {
+      sources += [ "render_text_win.cc" ]
+    } else if (is_mac) {
+      sources += [ "render_text_mac.cc" ]
+    } else if (use_pango) {
+      sources += [ "render_text_pango.cc" ]
+    } else if (use_ozone) {
+      sources += [ "render_text_ozone.cc" ]
+    }
+  }
+  
   # iOS.
   if (is_ios) {
     sources -= [
@@ -272,14 +290,6 @@ component("gfx") {
     ]
   }
 
-  if (is_android || is_ios) {
-    sources -= [
-      "render_text.cc",
-      "render_text.h",
-      "text_utils_skia.cc",
-    ]
-  }
-
   # Windows.
   if (is_win) {
     cflags = [
@@ -305,7 +315,6 @@ component("gfx") {
   if (use_ozone) {
     sources += [
       "platform_font_ozone.cc",
-      "render_text_ozone.cc",
       "ozone/impl/file_surface_factory.cc",
       "ozone/impl/file_surface_factory.h",
       "ozone/surface_factory_ozone.cc",
@@ -338,6 +347,7 @@ component("gfx") {
       "nine_image_painter.cc",
       "nine_image_painter.h",
       "path_aura.cc",
+      "screen_aura.cc",
     ]
   }
 
@@ -357,8 +367,6 @@ component("gfx") {
       "pango_util.h",
       "platform_font_pango.cc",
       "platform_font_pango.h",
-      "render_text_pango.cc",
-      "render_text_pango.h",
     ]
     configs += [ "//build/config/linux:pangocairo" ]
   }

@@ -5,8 +5,7 @@
 source_ids = "//third_party/usb_ids/usb.ids"
 generated_ids = "$target_gen_dir/usb_ids_gen.cc"
 
-static_library("usb") {
-  output_name = "device_usb"
+source_set("usb") {
   sources = [
     "usb_ids.cc",
     "usb_ids.h",

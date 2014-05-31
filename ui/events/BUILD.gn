@@ -22,6 +22,8 @@ component("events_base") {
     "events_base_export.h",
     "gesture_event_details.cc",
     "gesture_event_details.h",
+    "gestures/gesture_configuration.cc",
+    "gestures/gesture_configuration.h",
     "keycodes/keyboard_code_conversion.cc",
     "keycodes/keyboard_code_conversion.h",
     "keycodes/keyboard_code_conversion_android.cc",
@@ -66,6 +68,7 @@ component("events") {
   deps = [
     ":dom4_keycode_converter",
     ":events_base",
+    ":gesture_detection",
     "//skia",
     "//ui/gfx",
     "//ui/gfx/geometry",
@@ -96,13 +99,12 @@ component("events") {
     "event_utils.h",
     "events_export.h",
     "events_stub.cc",
-    "gestures/gesture_configuration.cc",
-    "gestures/gesture_configuration.h",
     "gestures/gesture_point.cc",
     "gestures/gesture_point.h",
     "gestures/gesture_recognizer.h",
     "gestures/gesture_recognizer_impl.cc",
     "gestures/gesture_recognizer_impl.h",
+    "gestures/gesture_recognizer_impl_mac.cc",
     "gestures/gesture_sequence.cc",
     "gestures/gesture_sequence.h",
     "gestures/gesture_types.h",
@@ -168,6 +170,15 @@ component("events") {
     ]
   }
 
+  if (use_aura) {
+    sources += [
+      "gestures/gesture_provider_aura.cc",
+      "gestures/gesture_provider_aura.h",
+      "gestures/motion_event_aura.cc",
+      "gestures/motion_event_aura.h",
+    ]
+  }
+
   if (is_win || use_x11 || use_ozone) {
     sources -= [ "events_stub.cc" ]
   }
@@ -209,10 +220,6 @@ component("gesture_detection") {
   ]
 
   defines = [ "GESTURE_DETECTION_IMPLEMENTATION" ]
-
-  if (use_aura) {
-    deps += [ ":events" ]
-  }
 
   if (is_android) {
     sources += [ "gesture_detection/gesture_config_helper_android.cc" ]

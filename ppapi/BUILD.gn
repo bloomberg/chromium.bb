@@ -68,7 +68,7 @@ source_set("ppapi_gles2") {
   ]
 }
 
-# TODO(GYP) bug 377890, re-enable this when it links.
+# TODO(brettw) argument list is too long. Need to add response files.
 #shared_library("ppapi_tests") {
 #  sources = gypi_values.test_common_source_files +
 #            gypi_values.test_trusted_source_files
