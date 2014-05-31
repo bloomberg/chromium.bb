@@ -17,6 +17,7 @@ import pickle
 import sys
 import tempfile
 import time
+import unittest
 
 import constants
 sys.path.insert(0, constants.SOURCE_ROOT)
@@ -45,6 +46,9 @@ import mock
 
 _GetNumber = iter(itertools.count()).next
 
+# Some tests require the kernel, and fail with buildtools only repo.
+KERNEL_AVAILABLE = os.path.exists(os.path.join(
+    constants.SOURCE_ROOT, 'src', 'third_party', 'kernel'))
 
 def GetTestJson(change_id=None):
   """Get usable fake Gerrit patch json data
@@ -1188,12 +1192,14 @@ class TestFindSuspects(MoxBase):
         patches, [message], lab_fail=lab_fail, infra_fail=infra_fail)
     self.assertEquals(set(suspects), results)
 
+  @unittest.skipIf(not KERNEL_AVAILABLE, 'Full checkout is required.')
   def testFailSameProject(self):
     """Patches to the package that failed should be marked as failing."""
     suspects = [self.kernel_patch]
     patches = suspects + [self.power_manager_patch, self.secret_patch]
     self._AssertSuspects(patches, suspects, [self.kernel_pkg])
 
+  @unittest.skipIf(not KERNEL_AVAILABLE, 'Full checkout is required.')
   def testFailSameProjectPlusOverlay(self):
     """Patches to the overlay should be marked as failing."""
     suspects = [self.overlay_patch, self.kernel_patch]
