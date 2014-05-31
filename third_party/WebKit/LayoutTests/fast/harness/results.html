@@ -425,7 +425,7 @@ function shouldUseTracLinks()
     return !globalState().results.layout_tests_dir || !location.toString().indexOf('file://') == 0;
 }
 
-function testLink(test)
+function testLinkTarget(test)
 {
     var target;
     if (shouldUseTracLinks()) {
@@ -436,6 +436,12 @@ function testLink(test)
         target += '#l1';
     } else
         target = globalState().results.layout_tests_dir + '/' + test;
+    return target;
+}
+
+function testLink(test)
+{
+    var target = testLinkTarget(test);
     return '<a class=test-link href="' + target + '">' + test + '</a><span class=flag onclick="unflag(this)"> \u2691</span>';
 }
 
@@ -522,7 +528,7 @@ function toggleImages()
     }
 }
 
-function textResultLinks(prefix)
+function textResultLinks(test, prefix, hasRepaintOverlay)
 {
     var html = resultLink(prefix, '-expected.txt', 'expected') +
         resultLink(prefix, '-actual.txt', 'actual') +
@@ -533,6 +539,9 @@ function textResultLinks(prefix)
 
     if (globalState().results.has_wdiff)
         html += resultLink(prefix, '-wdiff.html', 'wdiff');
+
+    if (hasRepaintOverlay)
+        html += resultLink(prefix, '-overlay.html?' + encodeURIComponent(testLinkTarget(test)), 'overlay');
 
     return html;
 }
@@ -585,7 +594,7 @@ function tableRow(testObject)
         if (testObject.is_testharness_test) {
             row += resultLink(testPrefix, '-actual.txt', 'actual');
         } else {
-            row += textResultLinks(testPrefix);
+            row += textResultLinks(testObject.name, testPrefix, testObject.has_repaint_overlay);
         }
     }
     
@@ -700,7 +709,7 @@ function testList(tests, header, tableId)
             html += resultLink(stripExtension(test), '-leak-log.txt', 'leak log');
         else if (tableId == 'timeout-tests-table') {
             // FIXME: only include timeout actual/diff results here if we actually spit out results for timeout tests.
-            html += textResultLinks(stripExtension(test));
+            html += textResultLinks(test, stripExtension(test), testObject.has_repaint_overlay);
         }
         
         html += '</td></tr></tbody>';

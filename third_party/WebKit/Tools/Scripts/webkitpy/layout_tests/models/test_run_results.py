@@ -267,6 +267,9 @@ def summarize_results(port_obj, expectations, initial_results, retry_results, en
             if retry_result:
                 test_dict.update(_interpret_test_failures(retry_result.failures))
 
+        if (result.has_repaint_overlay):
+            test_dict['has_repaint_overlay'] = True
+
         # Store test hierarchically by directory. e.g.
         # foo/bar/baz.html: test_dict
         # foo/bar/baz1.html: test_dict

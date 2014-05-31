@@ -31,6 +31,7 @@ import logging
 import re
 import time
 
+from webkitpy.layout_tests.controllers import repaint_overlay
 from webkitpy.layout_tests.controllers import test_result_writer
 from webkitpy.layout_tests.port.driver import DeviceFailure, DriverInput, DriverOutput
 from webkitpy.layout_tests.models import test_expectations
@@ -249,7 +250,8 @@ class SingleTestRunner(object):
             if self._should_run_pixel_test:
                 failures.extend(self._compare_image(expected_driver_output, driver_output))
         return TestResult(self._test_name, failures, driver_output.test_time, driver_output.has_stderr(),
-                          pid=driver_output.pid)
+                          pid=driver_output.pid,
+                          has_repaint_overlay=repaint_overlay.result_contains_repaint_rects(expected_driver_output.text))
 
     def _compare_testharness_test(self, driver_output, expected_driver_output):
         if expected_driver_output.image or expected_driver_output.audio or expected_driver_output.text:

@@ -799,6 +799,13 @@ function runTests()
         assertTrue(document.querySelector('#flaky-tests-table td:nth-child(3) a').getAttribute('href') == 'retries/foo/bar-image-diffs.html');
     });
 
+    results = mockResults();
+    results.tests['foo'] = mockExpectation('PASS', 'TEXT');
+    results.tests['foo'].has_repaint_overlay = true;
+    runTest(results, function() {
+        assertTrue(document.querySelector('tbody td:nth-child(2)').textContent.indexOf('overlay') != -1);
+    })
+
     document.body.innerHTML = '<pre>' + g_log.join('\n') + '</pre>';
 }
 
