@@ -152,6 +152,11 @@
             'WINVER=0x0502',
             '_WIN32_WINNT=0x0502',
           ],
+          'defines!': [
+            # Remove Chrome's WINVER defines to avoid redefinition warnings.
+            'WINVER=0x0602',
+            '_WIN32_WINNT=0x0602',
+          ],
           'cflags!': [ '/W3', '/WX' ],
           'cflags': [ '/w' ],
           # TODO(ldixon) : Remove this disabling of warnings by pushing a
