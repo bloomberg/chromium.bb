@@ -18,11 +18,13 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/result_codes.h"
+#include "content/public/common/url_constants.h"
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/browser/process_map.h"
+#include "extensions/common/constants.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/notification_list.h"
 
@@ -528,9 +530,10 @@ IN_PROC_BROWSER_TEST_F(MAYBE_ExtensionCrashRecoveryTest,
 
   // Open a tab extension.
   chrome::NewTab(browser());
-  ui_test_utils::NavigateToURL(
-      browser(),
-      GURL("chrome-extension://" + first_extension_id_ + "/background.html"));
+  ui_test_utils::NavigateToURL(browser(),
+                               GURL(std::string(extensions::kExtensionScheme) +
+                                   content::kStandardSchemeSeparator +
+                                   first_extension_id_ + "/background.html"));
 
   const int tabs_before = tab_strip->count();
   CrashExtension(first_extension_id_);

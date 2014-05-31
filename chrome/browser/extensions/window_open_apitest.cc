@@ -21,10 +21,12 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/result_codes.h"
+#include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/process_manager.h"
+#include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/switches.h"
 #include "net/dns/mock_host_resolver.h"
@@ -451,8 +453,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, WindowOpenExtension) {
   ASSERT_TRUE(LoadExtension(
       test_data_dir_.AppendASCII("uitest").AppendASCII("window_open")));
 
-  GURL start_url(std::string("chrome-extension://") +
-      last_loaded_extension_id() + "/test.html");
+  GURL start_url(std::string(extensions::kExtensionScheme) +
+                     content::kStandardSchemeSeparator +
+                     last_loaded_extension_id() + "/test.html");
   ui_test_utils::NavigateToURL(browser(), start_url);
   WebContents* newtab = NULL;
   ASSERT_NO_FATAL_FAILURE(
@@ -471,8 +474,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, WindowOpenInvalidExtension) {
   ASSERT_TRUE(LoadExtension(
       test_data_dir_.AppendASCII("uitest").AppendASCII("window_open")));
 
-  GURL start_url(std::string("chrome-extension://") +
-      last_loaded_extension_id() + "/test.html");
+  GURL start_url(std::string(extensions::kExtensionScheme) +
+                     content::kStandardSchemeSeparator +
+                     last_loaded_extension_id() + "/test.html");
   ui_test_utils::NavigateToURL(browser(), start_url);
   ASSERT_NO_FATAL_FAILURE(
       OpenWindow(browser()->tab_strip_model()->GetActiveWebContents(),
@@ -494,8 +498,11 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, WindowOpenNoPrivileges) {
   WebContents* newtab = NULL;
   ASSERT_NO_FATAL_FAILURE(
       OpenWindow(browser()->tab_strip_model()->GetActiveWebContents(),
-      GURL(std::string("chrome-extension://") + last_loaded_extension_id() +
-          "/newtab.html"), false, &newtab));
+                 GURL(std::string(extensions::kExtensionScheme) +
+                     content::kStandardSchemeSeparator +
+                     last_loaded_extension_id() + "/newtab.html"),
+                 false,
+                 &newtab));
 
   // Extension API should succeed.
   bool result = false;

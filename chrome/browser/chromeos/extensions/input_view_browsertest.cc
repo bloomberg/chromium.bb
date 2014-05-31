@@ -16,6 +16,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
@@ -39,7 +40,9 @@ struct InputViewConfig : public VirtualKeyboardBrowserTestConfig {
     base_framework_ = kBaseKeyboardTestFramework;
     extension_id_ = id;
     test_dir_ = kInputViewTestDir;
-    url_ = "chrome-extension://" + id + "/inputview.html?id=" + layout;
+    url_ = std::string(extensions::kExtensionScheme) +
+        content::kStandardSchemeSeparator + id + "/inputview.html?id=" +
+        layout;
   }
 };
 

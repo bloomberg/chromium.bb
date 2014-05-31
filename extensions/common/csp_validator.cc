@@ -9,6 +9,8 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/string_util.h"
+#include "content/public/common/url_constants.h"
+#include "extensions/common/constants.h"
 
 namespace extensions {
 
@@ -71,7 +73,10 @@ bool HasOnlySecureTokens(base::StringTokenizer& tokenizer,
         StartsWithASCII(source, "http://localhost:", false) ||
         StartsWithASCII(source, "https://", true) ||
         StartsWithASCII(source, "chrome://", true) ||
-        StartsWithASCII(source, "chrome-extension://", true) ||
+        StartsWithASCII(source,
+                        std::string(extensions::kExtensionScheme) +
+                            content::kStandardSchemeSeparator,
+                        true) ||
         StartsWithASCII(source, "chrome-extension-resource:", true)) {
       continue;
     }
