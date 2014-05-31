@@ -69,6 +69,7 @@ void BuiltinProvider::Start(const AutocompleteInput& input,
       (input.type() == AutocompleteInput::QUERY))
     return;
 
+  const size_t kAboutSchemeLength = strlen(content::kAboutScheme);
   const base::string16 kAbout = base::ASCIIToUTF16(content::kAboutScheme) +
       base::ASCIIToUTF16(content::kStandardSchemeSeparator);
   const base::string16 kChrome = base::ASCIIToUTF16(content::kChromeUIScheme) +
@@ -83,7 +84,6 @@ void BuiltinProvider::Start(const AutocompleteInput& input,
     ACMatchClassifications styles;
     // Highlight the input portion matching "chrome://"; or if the user has
     // input "about:" (with optional slashes), highlight the whole "chrome://".
-    const size_t kAboutSchemeLength = strlen(content::kAboutScheme);
     bool highlight = starting_chrome || text.length() > kAboutSchemeLength;
     styles.push_back(ACMatchClassification(0, highlight ? kMatch : kUrl));
     size_t offset = starting_chrome ? text.length() : kChrome.length();
@@ -105,6 +105,23 @@ void BuiltinProvider::Start(const AutocompleteInput& input,
     // extensions to chrome: URLs.
     if (url.SchemeIs(content::kChromeUIScheme) && url.has_host() &&
         !url.has_query() && !url.has_ref()) {
+      // Suggest about:blank for substrings, taking URL fixup into account.
+      // Chrome does not support trailing slashes or paths for about:blank.
+      const base::string16 blank_host = base::ASCIIToUTF16("blank");
+      const base::string16 host = base::UTF8ToUTF16(url.host());
+      if (StartsWith(text, base::ASCIIToUTF16(content::kAboutScheme), false) &&
+          StartsWith(blank_host, host, false) && (url.path().length() <= 1) &&
+          !EndsWith(text, base::ASCIIToUTF16("/"), false)) {
+        ACMatchClassifications styles;
+        styles.push_back(ACMatchClassification(0, kMatch));
+        base::string16 match = base::ASCIIToUTF16(content::kAboutBlankURL);
+        // Measure the length of the matching host after the "about:" scheme.
+        const size_t corrected_length = kAboutSchemeLength + 1 + host.length();
+        if (blank_host.length() > host.length())
+          styles.push_back(ACMatchClassification(corrected_length, kUrl));
+        AddMatch(match, match.substr(corrected_length), styles);
+      }
+
       // Include the path for sub-pages (e.g. "chrome://settings/browser").
       base::string16 host_and_path = base::UTF8ToUTF16(url.host() + url.path());
       base::TrimString(host_and_path, base::ASCIIToUTF16("/"), &host_and_path);

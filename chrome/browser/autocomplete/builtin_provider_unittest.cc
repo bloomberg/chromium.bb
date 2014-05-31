@@ -4,13 +4,13 @@
 
 #include "chrome/browser/autocomplete/builtin_provider.h"
 
-#include "base/message_loop/message_loop.h"
+#include "base/format_macros.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_input.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/autocomplete/autocomplete_provider.h"
 #include "chrome/common/url_constants.h"
-#include "chrome/test/base/testing_browser_process.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -18,60 +18,45 @@ using base::ASCIIToUTF16;
 
 class BuiltinProviderTest : public testing::Test {
  protected:
-  template<class ResultType>
-  struct test_data {
+  struct TestData {
     const base::string16 input;
     const size_t num_results;
-    const ResultType output[3];
+    const GURL output[3];
   };
 
-  BuiltinProviderTest() : builtin_provider_(NULL) {}
+  BuiltinProviderTest() : provider_(NULL) {}
   virtual ~BuiltinProviderTest() {}
 
-  virtual void SetUp();
-  virtual void TearDown();
+  virtual void SetUp() OVERRIDE { provider_ = new BuiltinProvider(NULL, NULL); }
+  virtual void TearDown() OVERRIDE { provider_ = NULL; }
 
-  template<class ResultType>
-  void RunTest(test_data<ResultType>* builtin_cases,
-               int num_cases,
-               ResultType AutocompleteMatch::* member);
-
- protected:
-  scoped_refptr<BuiltinProvider> builtin_provider_;
-};
-
-void BuiltinProviderTest::SetUp() {
-  builtin_provider_ = new BuiltinProvider(NULL, NULL);
-}
-
-void BuiltinProviderTest::TearDown() {
-  builtin_provider_ = NULL;
-}
-
-template<class ResultType>
-void BuiltinProviderTest::RunTest(test_data<ResultType>* builtin_cases,
-                                  int num_cases,
-                                  ResultType AutocompleteMatch::* member) {
-  ACMatches matches;
-  for (int i = 0; i < num_cases; ++i) {
-    AutocompleteInput input(builtin_cases[i].input, base::string16::npos,
-                            base::string16(), GURL(),
-                            AutocompleteInput::INVALID_SPEC, true,
-                            false, true, true);
-    builtin_provider_->Start(input, false);
-    EXPECT_TRUE(builtin_provider_->done());
-    matches = builtin_provider_->matches();
-    EXPECT_EQ(builtin_cases[i].num_results, matches.size()) <<
-                ASCIIToUTF16("Input was: ") << builtin_cases[i].input;
-    if (matches.size() == builtin_cases[i].num_results) {
-      for (size_t j = 0; j < builtin_cases[i].num_results; ++j) {
-        EXPECT_EQ(builtin_cases[i].output[j], matches[j].*member) <<
-                ASCIIToUTF16("Input was: ") << builtin_cases[i].input;
-        EXPECT_FALSE(matches[j].allowed_to_be_default_match);
+  void RunTest(const TestData cases[], size_t num_cases) {
+    ACMatches matches;
+    for (size_t i = 0; i < num_cases; ++i) {
+      SCOPED_TRACE(base::StringPrintf(
+          "case %" PRIuS ": %s", i, base::UTF16ToUTF8(cases[i].input).c_str()));
+      const AutocompleteInput input(cases[i].input, base::string16::npos,
+                                    base::string16(), GURL(),
+                                    AutocompleteInput::INVALID_SPEC,
+                                    true, false, true, true);
+      provider_->Start(input, false);
+      EXPECT_TRUE(provider_->done());
+      matches = provider_->matches();
+      EXPECT_EQ(cases[i].num_results, matches.size());
+      if (matches.size() == cases[i].num_results) {
+        for (size_t j = 0; j < cases[i].num_results; ++j) {
+          EXPECT_EQ(cases[i].output[j], matches[j].destination_url);
+          EXPECT_FALSE(matches[j].allowed_to_be_default_match);
+        }
       }
     }
   }
-}
+
+ private:
+  scoped_refptr<BuiltinProvider> provider_;
+
+  DISALLOW_COPY_AND_ASSIGN(BuiltinProviderTest);
+};
 
 #if !defined(OS_ANDROID)
 TEST_F(BuiltinProviderTest, TypingScheme) {
@@ -87,7 +72,7 @@ TEST_F(BuiltinProviderTest, TypingScheme) {
   const GURL kURL2 = GURL(chrome::kChromeUISettingsURL);
   const GURL kURL3 = GURL(chrome::kChromeUIVersionURL);
 
-  test_data<GURL> typing_scheme_cases[] = {
+  TestData typing_scheme_cases[] = {
     // Typing an unrelated scheme should give nothing.
     {ASCIIToUTF16("h"),        0, {}},
     {ASCIIToUTF16("http"),     0, {}},
@@ -118,8 +103,7 @@ TEST_F(BuiltinProviderTest, TypingScheme) {
     {ASCIIToUTF16("ChRoMe://"), 3, {kURL1, kURL2, kURL3}},
   };
 
-  RunTest<GURL>(typing_scheme_cases, arraysize(typing_scheme_cases),
-                &AutocompleteMatch::destination_url);
+  RunTest(typing_scheme_cases, arraysize(typing_scheme_cases));
 }
 #else // Android uses a subset of the URLs
 TEST_F(BuiltinProviderTest, TypingScheme) {
@@ -134,7 +118,7 @@ TEST_F(BuiltinProviderTest, TypingScheme) {
   const GURL kURL1 = GURL(chrome::kChromeUIChromeURLsURL);
   const GURL kURL2 = GURL(chrome::kChromeUIVersionURL);
 
-  test_data<GURL> typing_scheme_cases[] = {
+  TestData typing_scheme_cases[] = {
     // Typing an unrelated scheme should give nothing.
     {ASCIIToUTF16("h"),        0, {}},
     {ASCIIToUTF16("http"),     0, {}},
@@ -165,13 +149,12 @@ TEST_F(BuiltinProviderTest, TypingScheme) {
     {ASCIIToUTF16("ChRoMe://"), 2, {kURL1, kURL2}},
   };
 
-  RunTest<GURL>(typing_scheme_cases, arraysize(typing_scheme_cases),
-                &AutocompleteMatch::destination_url);
+  RunTest(typing_scheme_cases, arraysize(typing_scheme_cases));
 }
 #endif
 
 TEST_F(BuiltinProviderTest, NonChromeURLs) {
-  test_data<GURL> non_chrome_url_cases[] = {
+  TestData non_chrome_url_cases[] = {
     // Typing an unrelated scheme should give nothing.
     {ASCIIToUTF16("g@rb@g3"),                      0, {}},
     {ASCIIToUTF16("www.google.com"),               0, {}},
@@ -185,8 +168,7 @@ TEST_F(BuiltinProviderTest, NonChromeURLs) {
     {ASCIIToUTF16("scheme://host/path?query#ref"), 0, {}},
   };
 
-  RunTest<GURL>(non_chrome_url_cases, arraysize(non_chrome_url_cases),
-                &AutocompleteMatch::destination_url);
+  RunTest(non_chrome_url_cases, arraysize(non_chrome_url_cases));
 }
 
 TEST_F(BuiltinProviderTest, ChromeURLs) {
@@ -209,7 +191,7 @@ TEST_F(BuiltinProviderTest, ChromeURLs) {
   const GURL kURLM2 = GURL(kChrome + kSeparator3 + kHostM2);
   const GURL kURLM3 = GURL(kChrome + kSeparator3 + kHostM3);
 
-  test_data<GURL> chrome_url_cases[] = {
+  TestData chrome_url_cases[] = {
     // Typing an about URL with an unknown host should give nothing.
     {kAbout + kSeparator1 + ASCIIToUTF16("host"), 0, {}},
     {kAbout + kSeparator2 + ASCIIToUTF16("host"), 0, {}},
@@ -239,8 +221,62 @@ TEST_F(BuiltinProviderTest, ChromeURLs) {
     {kChrome + kSeparator2 + kHostM3,              1, {kURLM3}},
   };
 
-  RunTest<GURL>(chrome_url_cases, arraysize(chrome_url_cases),
-                &AutocompleteMatch::destination_url);
+  RunTest(chrome_url_cases, arraysize(chrome_url_cases));
+}
+
+TEST_F(BuiltinProviderTest, AboutBlank) {
+  const base::string16 kAbout = ASCIIToUTF16(content::kAboutScheme);
+  const base::string16 kChrome = ASCIIToUTF16(content::kChromeUIScheme);
+  const base::string16 kAboutBlank = ASCIIToUTF16(content::kAboutBlankURL);
+  const base::string16 kBlank = ASCIIToUTF16("blank");
+  const base::string16 kSeparator1 =
+      ASCIIToUTF16(content::kStandardSchemeSeparator);
+  const base::string16 kSeparator2 = ASCIIToUTF16(":///");
+  const base::string16 kSeparator3 = ASCIIToUTF16(";///");
+
+  const GURL kURLBlob = GURL(kChrome + kSeparator1 +
+                             ASCIIToUTF16(content::kChromeUIBlobInternalsHost));
+  const GURL kURLBlank = GURL(kAboutBlank);
+
+  TestData about_blank_cases[] = {
+    // Typing an about:blank prefix should yield about:blank, among other URLs.
+    {kAboutBlank.substr(0, 8), 2, {kURLBlank, kURLBlob}},
+    {kAboutBlank.substr(0, 9), 1, {kURLBlank}},
+
+    // Using any separator that is supported by fixup should yield about:blank.
+    // For now, BuiltinProvider does not suggest url-what-you-typed matches for
+    // for about:blank; check "about:blan" and "about;blan" substrings instead.
+    {kAbout + kSeparator2.substr(0, 1) + kBlank.substr(0, 4), 1, {kURLBlank}},
+    {kAbout + kSeparator2.substr(0, 2) + kBlank,              1, {kURLBlank}},
+    {kAbout + kSeparator2.substr(0, 3) + kBlank,              1, {kURLBlank}},
+    {kAbout + kSeparator2 + kBlank,                           1, {kURLBlank}},
+    {kAbout + kSeparator3.substr(0, 1) + kBlank.substr(0, 4), 1, {kURLBlank}},
+    {kAbout + kSeparator3.substr(0, 2) + kBlank,              1, {kURLBlank}},
+    {kAbout + kSeparator3.substr(0, 3) + kBlank,              1, {kURLBlank}},
+    {kAbout + kSeparator3 + kBlank,                           1, {kURLBlank}},
+
+    // Using the chrome scheme should not yield about:blank.
+    {kChrome + kSeparator1.substr(0, 1) + kBlank, 0, {}},
+    {kChrome + kSeparator1.substr(0, 2) + kBlank, 0, {}},
+    {kChrome + kSeparator1.substr(0, 3) + kBlank, 0, {}},
+    {kChrome + kSeparator1 + kBlank,              0, {}},
+
+    // Adding trailing text should not yield about:blank.
+    {kAboutBlank + ASCIIToUTF16("/"),  0, {}},
+    {kAboutBlank + ASCIIToUTF16("/p"), 0, {}},
+    {kAboutBlank + ASCIIToUTF16("x"),  0, {}},
+    {kAboutBlank + ASCIIToUTF16("?q"), 0, {}},
+    {kAboutBlank + ASCIIToUTF16("#r"), 0, {}},
+
+    // Interrupting "blank" with conflicting text should not yield about:blank.
+    {kAboutBlank.substr(0, 9) + ASCIIToUTF16("/"),  0, {}},
+    {kAboutBlank.substr(0, 9) + ASCIIToUTF16("/p"), 0, {}},
+    {kAboutBlank.substr(0, 9) + ASCIIToUTF16("x"),  0, {}},
+    {kAboutBlank.substr(0, 9) + ASCIIToUTF16("?q"), 0, {}},
+    {kAboutBlank.substr(0, 9) + ASCIIToUTF16("#r"), 0, {}},
+  };
+
+  RunTest(about_blank_cases, arraysize(about_blank_cases));
 }
 
 #if !defined(OS_ANDROID)
@@ -259,7 +295,7 @@ TEST_F(BuiltinProviderTest, ChromeSettingsSubpages) {
   const GURL kURL1 = GURL(kSettings + kPage1);
   const GURL kURL2 = GURL(kSettings + kPage2);
 
-  test_data<GURL> settings_subpage_cases[] = {
+  TestData settings_subpage_cases[] = {
     // Typing the settings path should show settings and the first two subpages.
     {kSettings, 3, {GURL(kSettings), kDefaultURL1, kDefaultURL2}},
 
@@ -271,7 +307,6 @@ TEST_F(BuiltinProviderTest, ChromeSettingsSubpages) {
     {kSettings + kPage2,                                1, {kURL2}},
   };
 
-  RunTest<GURL>(settings_subpage_cases, arraysize(settings_subpage_cases),
-                &AutocompleteMatch::destination_url);
+  RunTest(settings_subpage_cases, arraysize(settings_subpage_cases));
 }
 #endif

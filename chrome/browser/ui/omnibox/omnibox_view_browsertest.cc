@@ -1402,10 +1402,11 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, UndoRedo) {
   EXPECT_EQ(old_text.size(), start);
   EXPECT_EQ(old_text.size(), end);
 
-  // Delete two characters.
+  // Delete three characters; "about:bl" should not trigger inline autocomplete.
   ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_BACK, 0));
   ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_BACK, 0));
-  EXPECT_EQ(old_text.substr(0, old_text.size() - 2), omnibox_view->GetText());
+  ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_BACK, 0));
+  EXPECT_EQ(old_text.substr(0, old_text.size() - 3), omnibox_view->GetText());
 
   // Undo delete.
   ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_Z, ui::EF_CONTROL_DOWN));
@@ -1414,7 +1415,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, UndoRedo) {
   // Redo delete.
   ASSERT_NO_FATAL_FAILURE(
       SendKey(ui::VKEY_Z, ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN));
-  EXPECT_EQ(old_text.substr(0, old_text.size() - 2), omnibox_view->GetText());
+  EXPECT_EQ(old_text.substr(0, old_text.size() - 3), omnibox_view->GetText());
 
   // Delete everything.
   omnibox_view->SelectAll(true);
@@ -1423,16 +1424,14 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, UndoRedo) {
 
   // Undo delete everything.
   ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_Z, ui::EF_CONTROL_DOWN));
-  EXPECT_EQ(old_text.substr(0, old_text.size() - 2), omnibox_view->GetText());
+  EXPECT_EQ(old_text.substr(0, old_text.size() - 3), omnibox_view->GetText());
 
   // Undo delete two characters.
   ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_Z, ui::EF_CONTROL_DOWN));
   EXPECT_EQ(old_text, omnibox_view->GetText());
 }
 
-// See http://crosbug.com/10306
-IN_PROC_BROWSER_TEST_F(OmniboxViewTest,
-                       BackspaceDeleteHalfWidthKatakana) {
+IN_PROC_BROWSER_TEST_F(OmniboxViewTest, BackspaceDeleteHalfWidthKatakana) {
   OmniboxView* omnibox_view = NULL;
   ASSERT_NO_FATAL_FAILURE(GetOmniboxView(&omnibox_view));
   // Insert text: ﾀﾞ
@@ -1500,10 +1499,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, Paste) {
   ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_V, kCtrlOrCmdMask));
   ASSERT_NO_FATAL_FAILURE(WaitForAutocompleteControllerDone());
   EXPECT_EQ(ASCIIToUTF16(kSearchText), omnibox_view->GetText());
-  // This fails on GTK, see http://crbug.com/131179
-#if !defined(TOOLKIT_GTK)
   EXPECT_TRUE(popup_model->IsOpen());
-#endif
   omnibox_view->CloseOmniboxPopup();
   EXPECT_FALSE(popup_model->IsOpen());
 
