@@ -216,11 +216,10 @@ component("base") {
     "ui_base_export.h",
     "view_prop.cc",
     "view_prop.h",
-    # TODO(tfarina): Uncomment these when http://crbug.com/367591 is fixed.
     "webui/jstemplate_builder.cc",
     "webui/jstemplate_builder.h",
-    #"webui/web_ui_util.cc",
-    #"webui/web_ui_util.h",
+    "webui/web_ui_util.cc",
+    "webui/web_ui_util.h",
     "win/accessibility_ids_win.h",
     "win/accessibility_misc_utils.cc",
     "win/accessibility_misc_utils.h",

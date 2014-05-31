@@ -12,6 +12,28 @@
 #     # You can also put deps here if the grit source depends on generated
 #     # files.
 #   }
+import ("//build/config/ui.gni")
+
+grit_defines = []
+
+if (is_chromeos) {
+  grit_defines += [
+    "-D", "chromeos",
+    "-D", "scale_factors=2x"
+  ]
+}
+
+if (is_desktop_linux) {
+  grit_defines += [ "-D", "desktop_linux" ]
+}
+
+if (is_android) {
+  grit_defines += [
+    "-t", "android",
+    "-E", "ANDROID_JAVA_TAGGED_ONLY=true",
+  ]
+}
+
 template("grit") {
   assert(defined(invoker.source),
          "\"source\" must be defined for the grit template $target_name")
@@ -70,12 +92,11 @@ template("grit") {
     source_prereqs = grit_inputs
     outputs = grit_outputs
 
-    # TODO(brettw) grit_defines.
     args = [
       "-i", source_path, "build",
       "-f", resource_ids,
       "-o", output_dir,
-    ] + grit_flags
+    ] + grit_defines + grit_flags
 
     visibility = target_visibility
   }
