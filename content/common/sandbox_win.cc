@@ -358,10 +358,7 @@ bool AddPolicyForSandboxedProcess(sandbox::TargetPolicy* policy) {
   // Prevents the renderers from manipulating low-integrity processes.
   policy->SetDelayedIntegrityLevel(sandbox::INTEGRITY_LEVEL_UNTRUSTED);
 
-  bool use_winsta = !CommandLine::ForCurrentProcess()->HasSwitch(
-                        switches::kDisableAltWinstation);
-
-  if (sandbox::SBOX_ALL_OK !=  policy->SetAlternateDesktop(use_winsta)) {
+  if (sandbox::SBOX_ALL_OK !=  policy->SetAlternateDesktop(true)) {
     DLOG(WARNING) << "Failed to apply desktop security to the renderer";
   }
 

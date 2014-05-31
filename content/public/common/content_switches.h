@@ -37,7 +37,6 @@ CONTENT_EXPORT extern const char kDisableAcceleratedFixedRootBackground[];
 CONTENT_EXPORT extern const char kDisableAcceleratedOverflowScroll[];
 CONTENT_EXPORT extern const char kDisableLayerSquashing[];
 CONTENT_EXPORT extern const char kDisableAcceleratedVideoDecode[];
-CONTENT_EXPORT extern const char kDisableAltWinstation[];
 CONTENT_EXPORT extern const char kDisableApplicationCache[];
 extern const char kDisableBackingStoreLimit[];
 CONTENT_EXPORT extern const char kDisableCompositingForFixedPosition[];

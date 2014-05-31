@@ -98,9 +98,6 @@ const char kDisableLayerSquashing[] =
 const char kDisableAcceleratedVideoDecode[] =
     "disable-accelerated-video-decode";
 
-// Disables the alternate window station for the renderer.
-const char kDisableAltWinstation[]          = "disable-winsta";
-
 // Disable the ApplicationCache.
 const char kDisableApplicationCache[]       = "disable-application-cache";
 

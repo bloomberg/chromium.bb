@@ -25,11 +25,9 @@ bool InitializeSandbox(sandbox::SandboxInterfaceInfo* sandbox_info) {
     // process to swap its window station. During this time all the UI will be
     // broken. This has to run before threads and windows are created.
     if (!command_line.HasSwitch(switches::kNoSandbox)) {
-      bool use_winsta = !command_line.HasSwitch(
-          switches::kDisableAltWinstation);
       // Precreate the desktop and window station used by the renderers.
       sandbox::TargetPolicy* policy = broker_services->CreatePolicy();
-      sandbox::ResultCode result = policy->CreateAlternateDesktop(use_winsta);
+      sandbox::ResultCode result = policy->CreateAlternateDesktop(true);
       CHECK(sandbox::SBOX_ERROR_FAILED_TO_SWITCH_BACK_WINSTATION != result);
       policy->Release();
     }
