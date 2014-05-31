@@ -150,7 +150,7 @@ MojoResult MessagePipeDispatcher::WriteMessageImplNoLock(
 
   lock().AssertAcquired();
 
-  if (!VerifyUserPointerWithSize<1>(bytes, num_bytes))
+  if (!VerifyUserPointer<void>(bytes, num_bytes))
     return MOJO_RESULT_INVALID_ARGUMENT;
   if (num_bytes > kMaxMessageNumBytes)
     return MOJO_RESULT_RESOURCE_EXHAUSTED;
@@ -168,9 +168,9 @@ MojoResult MessagePipeDispatcher::ReadMessageImplNoLock(
   lock().AssertAcquired();
 
   if (num_bytes) {
-    if (!VerifyUserPointer<uint32_t>(num_bytes))
+    if (!VerifyUserPointer<uint32_t>(num_bytes, 1))
       return MOJO_RESULT_INVALID_ARGUMENT;
-    if (!VerifyUserPointerWithSize<1>(bytes, *num_bytes))
+    if (!VerifyUserPointer<void>(bytes, *num_bytes))
       return MOJO_RESULT_INVALID_ARGUMENT;
   }
 

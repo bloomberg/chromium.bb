@@ -54,7 +54,7 @@ class MockDispatcher : public Dispatcher {
     info_->IncrementWriteMessageCallCount();
     lock().AssertAcquired();
 
-    if (!VerifyUserPointerWithSize<1>(bytes, num_bytes))
+    if (!VerifyUserPointer<void>(bytes, num_bytes))
       return MOJO_RESULT_INVALID_ARGUMENT;
     if (num_bytes > kMaxMessageNumBytes)
       return MOJO_RESULT_RESOURCE_EXHAUSTED;
@@ -74,7 +74,7 @@ class MockDispatcher : public Dispatcher {
     info_->IncrementReadMessageCallCount();
     lock().AssertAcquired();
 
-    if (num_bytes && !VerifyUserPointerWithSize<1>(bytes, *num_bytes))
+    if (num_bytes && !VerifyUserPointer<void>(bytes, *num_bytes))
       return MOJO_RESULT_INVALID_ARGUMENT;
 
     return MOJO_RESULT_OK;

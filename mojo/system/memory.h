@@ -7,47 +7,38 @@
 
 #include <stddef.h>
 
-#include "mojo/public/c/system/macros.h"
 #include "mojo/system/system_impl_export.h"
 
 namespace mojo {
 namespace system {
 
-namespace internal {
+// This is just forward-declared, with the definition and explicit
+// instantiations in the .cc file. This is used by |VerifyUserPointer<T>()|
+// below, and you should use that instead.
+template <size_t size>
+bool MOJO_SYSTEM_IMPL_EXPORT VerifyUserPointerForSize(const void* pointer,
+                                                      size_t count);
 
-template <size_t size, size_t alignment>
-bool MOJO_SYSTEM_IMPL_EXPORT VerifyUserPointerHelper(const void* pointer);
-
-template <size_t size, size_t alignment>
-bool MOJO_SYSTEM_IMPL_EXPORT VerifyUserPointerWithCountHelper(
-    const void* pointer,
-    size_t count);
-
-}  // namespace internal
-
-// Verify (insofar as possible/necessary) that a |T| can be read from the user
-// |pointer|.
+// Verify that |count * sizeof(T)| bytes can be read from the user |pointer|
+// insofar as possible/necessary (note: this is done carefully since |count *
+// sizeof(T)| may overflow a |size_t|. |count| may be zero. If |T| is |void|,
+// then the size of each element is taken to be a single byte.
+//
+// For example, if running in kernel mode, this should be a full verification
+// that the given memory is owned and readable by the user process. In user
+// mode, if crashes are acceptable, this may do nothing at all (and always
+// return true).
 template <typename T>
-bool VerifyUserPointer(const T* pointer) {
-  return internal::VerifyUserPointerHelper<sizeof(T), MOJO_ALIGNOF(T)>(pointer);
+bool VerifyUserPointer(const T* pointer, size_t count) {
+  return VerifyUserPointerForSize<sizeof(T)>(pointer, count);
 }
 
-// Verify (insofar as possible/necessary) that |count| |T|s can be read from the
-// user |pointer|; |count| may be zero. (This is done carefully since |count *
-// sizeof(T)| may overflow a |size_t|.)
-template <typename T>
-bool VerifyUserPointerWithCount(const T* pointer, size_t count) {
-  return internal::VerifyUserPointerWithCountHelper<sizeof(T),
-                                                    MOJO_ALIGNOF(T)>(pointer,
-                                                                     count);
+// Special-case |T| equals |void| so that the size is in bytes, as indicated
+// above.
+template <>
+inline bool VerifyUserPointer<void>(const void* pointer, size_t count) {
+  return VerifyUserPointerForSize<1>(pointer, count);
 }
-
-// Verify that |size| bytes (which may be zero) can be read from the user
-// |pointer|, and that |pointer| has the specified |alignment| (if |size| is
-// nonzero).
-template <size_t alignment>
-bool MOJO_SYSTEM_IMPL_EXPORT VerifyUserPointerWithSize(const void* pointer,
-                                                       size_t size);
 
 }  // namespace system
 }  // namespace mojo
