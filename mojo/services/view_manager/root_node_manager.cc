@@ -19,12 +19,14 @@ RootNodeManager::ScopedChange::ScopedChange(
     RootNodeManager::ChangeType change_type,
     bool is_delete_node)
     : root_(root),
-      change_type_(change_type) {
-  root_->PrepareForChange(connection, is_delete_node);
+      connection_id_(connection->id()),
+      change_type_(change_type),
+      is_delete_node_(is_delete_node) {
+  root_->PrepareForChange(this);
 }
 
 RootNodeManager::ScopedChange::~ScopedChange() {
-  root_->FinishChange(change_type_);
+  root_->FinishChange();
 }
 
 RootNodeManager::Context::Context() {
@@ -41,10 +43,9 @@ RootNodeManager::RootNodeManager(ServiceProvider* service_provider,
     : service_provider_(service_provider),
       next_connection_id_(1),
       next_server_change_id_(1),
-      change_source_(kRootConnection),
-      is_processing_delete_node_(false),
       root_view_manager_(service_provider, this, view_manager_delegate),
-      root_(this, RootNodeId()) {
+      root_(this, RootNodeId()),
+      current_change_(NULL) {
 }
 
 RootNodeManager::~RootNodeManager() {
@@ -100,6 +101,16 @@ View* RootNodeManager::GetView(const ViewId& id) {
   return i == connection_map_.end() ? NULL : i->second->GetView(id);
 }
 
+void RootNodeManager::OnConnectionMessagedClient(TransportConnectionId id) {
+  if (current_change_)
+    current_change_->MarkConnectionAsMessaged(id);
+}
+
+bool RootNodeManager::DidConnectionMessageClient(
+    TransportConnectionId id) const {
+  return current_change_ && current_change_->DidMessageConnection(id);
+}
+
 void RootNodeManager::ProcessNodeBoundsChanged(const Node* node,
                                                const gfx::Rect& old_bounds,
                                                const gfx::Rect& new_bounds) {
@@ -146,21 +157,18 @@ void RootNodeManager::ProcessViewDeleted(const ViewId& view) {
   }
 }
 
-void RootNodeManager::PrepareForChange(ViewManagerConnection* connection,
-                                       bool is_delete_node) {
+void RootNodeManager::PrepareForChange(ScopedChange* change) {
   // Should only ever have one change in flight.
-  DCHECK_EQ(kRootConnection, change_source_);
-  change_source_ = connection->id();
-  is_processing_delete_node_ = is_delete_node;
+  CHECK(!current_change_);
+  current_change_ = change;
 }
 
-void RootNodeManager::FinishChange(ChangeType change_type) {
+void RootNodeManager::FinishChange() {
   // PrepareForChange/FinishChange should be balanced.
-  DCHECK_NE(kRootConnection, change_source_);
-  change_source_ = 0;
-  is_processing_delete_node_ = false;
-  if (change_type == CHANGE_TYPE_ADVANCE_SERVER_CHANGE_ID)
+  CHECK(current_change_);
+  if (current_change_->change_type() == CHANGE_TYPE_ADVANCE_SERVER_CHANGE_ID)
     next_server_change_id_++;
+  current_change_ = NULL;
 }
 
 ViewManagerConnection* RootNodeManager::ConnectImpl(

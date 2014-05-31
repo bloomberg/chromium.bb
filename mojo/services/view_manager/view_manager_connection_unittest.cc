@@ -900,12 +900,10 @@ TEST_F(ViewManagerConnectionTest, DeleteNode) {
     ASSERT_TRUE(connection_->DeleteNode(BuildNodeId(1, 2)));
     EXPECT_TRUE(connection_->changes().empty());
 
-    // TODO(sky): fix this, client should not get ServerChangeIdAdvanced.
-    connection2_->DoRunLoopUntilChangesCount(2);
+    connection2_->DoRunLoopUntilChangesCount(1);
     const Changes changes(ChangesToDescription1(connection2_->changes()));
-    ASSERT_EQ(2u, changes.size());
+    ASSERT_EQ(1u, changes.size());
     EXPECT_EQ("NodeDeleted change_id=2 node=1,2", changes[0]);
-    EXPECT_EQ("ServerChangeIdAdvanced 3", changes[1]);
   }
 }
 
@@ -945,12 +943,10 @@ TEST_F(ViewManagerConnectionTest, ReuseDeletedNodeId) {
   {
     ASSERT_TRUE(connection_->DeleteNode(BuildNodeId(1, 2)));
 
-    // TODO(sky): fix this, shouldn't get ServerChangeIdAdvanced.
-    connection2_->DoRunLoopUntilChangesCount(2);
+    connection2_->DoRunLoopUntilChangesCount(1);
     const Changes changes(ChangesToDescription1(connection2_->changes()));
-    ASSERT_EQ(2u, changes.size());
+    ASSERT_EQ(1u, changes.size());
     EXPECT_EQ("NodeDeleted change_id=2 node=1,2", changes[0]);
-    EXPECT_EQ("ServerChangeIdAdvanced 3", changes[1]);
   }
 
   // Create 2 again, and add it back to 1. Should get the same notification.
@@ -1047,12 +1043,10 @@ TEST_F(ViewManagerConnectionTest, DeleteNodeWithView) {
   {
     ASSERT_TRUE(connection_->DeleteNode(BuildNodeId(1, 3)));
 
-    // TODO(sky): shouldn't get ServerChangeIdAdvanced here.
-    connection2_->DoRunLoopUntilChangesCount(2);
+    connection2_->DoRunLoopUntilChangesCount(1);
     const Changes changes(ChangesToDescription1(connection2_->changes()));
-    ASSERT_EQ(2u, changes.size());
+    ASSERT_EQ(1u, changes.size());
     EXPECT_EQ("NodeDeleted change_id=3 node=1,3", changes[0]);
-    EXPECT_EQ("ServerChangeIdAdvanced 4", changes[1]);
   }
 }
 

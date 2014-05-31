@@ -127,6 +127,7 @@ void ViewManagerConnection::ProcessNodeHierarchyChanged(
       RemoveFromKnown(node);
       client()->OnNodeDeleted(NodeIdToTransportId(node->id()),
                               server_change_id);
+      root_node_manager_->OnConnectionMessagedClient(id_);
       return;
     }
   }
@@ -185,9 +186,12 @@ void ViewManagerConnection::ProcessNodeDeleted(
 
   if (in_known) {
     client()->OnNodeDeleted(NodeIdToTransportId(node), server_change_id);
-  } else if (root_node_manager_->IsProcessingChange()) {
+    root_node_manager_->OnConnectionMessagedClient(id_);
+  } else if (root_node_manager_->IsProcessingChange() &&
+             !root_node_manager_->DidConnectionMessageClient(id_)) {
     client()->OnServerChangeIdAdvanced(
         root_node_manager_->next_server_change_id() + 1);
+    root_node_manager_->OnConnectionMessagedClient(id_);
   }
 }
 
