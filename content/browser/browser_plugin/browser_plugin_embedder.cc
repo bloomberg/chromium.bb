@@ -86,23 +86,6 @@ void BrowserPluginEmbedder::DidSendScreenRects() {
               base::Unretained(this)));
 }
 
-bool BrowserPluginEmbedder::SetZoomLevelCallback(
-    double level, WebContents* guest_web_contents) {
-  double zoom_factor = content::ZoomLevelToZoomFactor(level);
-  static_cast<WebContentsImpl*>(guest_web_contents)->GetBrowserPluginGuest()->
-      SetZoom(zoom_factor);
-  // Not handled => Iterate over all guests.
-  return false;
-}
-
-void BrowserPluginEmbedder::SetZoomLevel(double level) {
-  GetBrowserPluginGuestManager()->ForEachGuest(
-      GetWebContents(), base::Bind(
-          &BrowserPluginEmbedder::SetZoomLevelCallback,
-          base::Unretained(this),
-          level));
-}
-
 bool BrowserPluginEmbedder::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(BrowserPluginEmbedder, message)

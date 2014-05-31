@@ -56,9 +56,6 @@ class CONTENT_EXPORT BrowserPluginEmbedder : public WebContentsObserver {
     factory_ = factory;
   }
 
-  // Sets the zoom level for all guests within this embedder.
-  void SetZoomLevel(double level);
-
   // WebContentsObserver implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 

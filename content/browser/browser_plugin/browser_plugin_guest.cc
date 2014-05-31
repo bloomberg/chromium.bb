@@ -342,11 +342,6 @@ void BrowserPluginGuest::EmbedderVisibilityChanged(bool visible) {
   UpdateVisibility();
 }
 
-void BrowserPluginGuest::SetZoom(double zoom_factor) {
-  if (delegate_)
-    delegate_->SetZoom(zoom_factor);
-}
-
 void BrowserPluginGuest::PointerLockPermissionResponse(bool allow) {
   SendMessageToEmbedder(
       new BrowserPluginMsg_SetMouseLock(instance_id(), allow));

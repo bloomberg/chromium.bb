@@ -569,19 +569,6 @@ void WebViewGuest::Observe(int type,
   }
 }
 
-void WebViewGuest::SetZoom(double zoom_factor) {
-  double zoom_level = content::ZoomFactorToZoomLevel(zoom_factor);
-  content::HostZoomMap::SetZoomLevel(guest_web_contents(), zoom_level);
-
-  scoped_ptr<base::DictionaryValue> args(new base::DictionaryValue());
-  args->SetDouble(webview::kOldZoomFactor, current_zoom_factor_);
-  args->SetDouble(webview::kNewZoomFactor, zoom_factor);
-  DispatchEvent(
-      new GuestViewBase::Event(webview::kEventZoomChange, args.Pass()));
-
-  current_zoom_factor_ = zoom_factor;
-}
-
 double WebViewGuest::GetZoom() {
   return current_zoom_factor_;
 }
@@ -1266,6 +1253,19 @@ void WebViewGuest::SetName(const std::string& name) {
   name_ = name;
 
   Send(new ChromeViewMsg_SetName(routing_id(), name_));
+}
+
+void WebViewGuest::SetZoom(double zoom_factor) {
+  double zoom_level = content::ZoomFactorToZoomLevel(zoom_factor);
+  content::HostZoomMap::SetZoomLevel(guest_web_contents(), zoom_level);
+
+  scoped_ptr<base::DictionaryValue> args(new base::DictionaryValue());
+  args->SetDouble(webview::kOldZoomFactor, current_zoom_factor_);
+  args->SetDouble(webview::kNewZoomFactor, zoom_factor);
+  DispatchEvent(
+      new GuestViewBase::Event(webview::kEventZoomChange, args.Pass()));
+
+  current_zoom_factor_ = zoom_factor;
 }
 
 void WebViewGuest::Destroy() {

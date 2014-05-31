@@ -26,9 +26,6 @@ class CONTENT_EXPORT BrowserPluginGuestDelegate {
   // Notification that the embedder has completed attachment.
   virtual void DidAttach() {}
 
-  // Requests setting the zoom level to the provided |zoom_level|.
-  virtual void SetZoom(double zoom_factor) {}
-
   virtual bool IsDragAndDropEnabled();
 
   // Notifies that the content size of the guest has changed in autosize mode.

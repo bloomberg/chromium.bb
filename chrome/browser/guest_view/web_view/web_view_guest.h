@@ -63,6 +63,9 @@ class WebViewGuest : public GuestView<WebViewGuest>,
   // Sets the frame name of the guest.
   void SetName(const std::string& name);
 
+  // Set the zoom factor.
+  void SetZoom(double zoom_factor);
+
   // GuestViewBase implementation.
   virtual void Attach(content::WebContents* embedder_web_contents,
                       const base::DictionaryValue& args) OVERRIDE;
@@ -138,9 +141,6 @@ class WebViewGuest : public GuestView<WebViewGuest>,
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
-
-  // Set the zoom factor.
-  virtual void SetZoom(double zoom_factor) OVERRIDE;
 
   // Returns the current zoom factor.
   double GetZoom();

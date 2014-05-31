@@ -210,8 +210,6 @@ class CONTENT_EXPORT BrowserPluginGuest : public WebContentsObserver {
     BrowserPluginGuest::factory_ = factory;
   }
 
-  void SetZoom(double zoom_factor);
-
   void PointerLockPermissionResponse(bool allow);
 
  private:
