@@ -1,13 +1,13 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SYNC_GLUE_SHARED_CHANGE_PROCESSOR_REF_H_
-#define CHROME_BROWSER_SYNC_GLUE_SHARED_CHANGE_PROCESSOR_REF_H_
+#ifndef COMPONENTS_SYNC_DRIVER_SHARED_CHANGE_PROCESSOR_H_REF_H_
+#define COMPONENTS_SYNC_DRIVER_SHARED_CHANGE_PROCESSOR_H_REF_H_
 
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
-#include "chrome/browser/sync/glue/shared_change_processor.h"
+#include "components/sync_driver/shared_change_processor.h"
 #include "sync/api/sync_change_processor.h"
 #include "sync/api/sync_error_factory.h"
 
@@ -47,4 +47,4 @@ class SharedChangeProcessorRef : public syncer::SyncChangeProcessor,
 
 }  // namespace browser_sync
 
-#endif  // CHROME_BROWSER_SYNC_GLUE_SHARED_CHANGE_PROCESSOR_REF_H_
+#endif  // COMPONENTS_SYNC_DRIVER_SHARED_CHANGE_PROCESSOR_H_REF_H_

@@ -11,8 +11,8 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/sync/glue/shared_change_processor.h"
 #include "components/sync_driver/data_type_controller.h"
+#include "components/sync_driver/shared_change_processor.h"
 
 class Profile;
 class ProfileSyncService;

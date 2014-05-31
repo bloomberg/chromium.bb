@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SYNC_GLUE_SHARED_CHANGE_PROCESSOR_H_
-#define CHROME_BROWSER_SYNC_GLUE_SHARED_CHANGE_PROCESSOR_H_
+#ifndef COMPONENTS_SYNC_DRIVER_SHARED_CHANGE_PROCESSOR_H_
+#define COMPONENTS_SYNC_DRIVER_SHARED_CHANGE_PROCESSOR_H_
 
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
@@ -17,8 +17,6 @@
 #include "sync/api/sync_error_factory.h"
 #include "sync/api/sync_merge_result.h"
 #include "sync/internal_api/public/engine/model_safe_worker.h"
-
-class ProfileSyncService;
 
 namespace syncer {
 class SyncableService;
@@ -67,7 +65,7 @@ class SharedChangeProcessor
       syncer::UserShare* user_share,
       DataTypeErrorHandler* error_handler,
       syncer::ModelType type,
-    const base::WeakPtr<syncer::SyncMergeResult>& merge_result);
+      const base::WeakPtr<syncer::SyncMergeResult>& merge_result);
 
   // Disconnects from the generic change processor. May be called from any
   // thread. After this, all attempts to interact with the change processor by
@@ -141,4 +139,4 @@ class SharedChangeProcessor
 
 }  // namespace browser_sync
 
-#endif  // CHROME_BROWSER_SYNC_GLUE_SHARED_CHANGE_PROCESSOR_H_
+#endif  // COMPONENTS_SYNC_DRIVER_SHARED_CHANGE_PROCESSOR_H_
