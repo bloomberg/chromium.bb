@@ -26,6 +26,10 @@
         'athena_main.cc',
         'placeholder.cc',
         'placeholder.h',
+        'placeholder_content.cc',
+        'placeholder_content.h',
+        'web_activity.cc',
+        'web_activity.h',
       ],
     },
     {
@@ -44,6 +48,8 @@
       ],
       'sources': [
         'athena_shell.cc',
+        'sample_activity.cc',
+        'sample_activity.h',
       ],
     }
   ],  # targets

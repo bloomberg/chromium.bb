@@ -4,6 +4,7 @@
 
 #include "athena/main/athena_launcher.h"
 
+#include "athena/activity/public/activity_manager.h"
 #include "athena/home/public/home_card.h"
 #include "athena/main/placeholder.h"
 #include "athena/screen/public/screen_manager.h"
@@ -40,11 +41,13 @@ void StartAthena(aura::Window* root_window) {
   athena::ScreenManager::Create(root_window);
   athena::WindowManager::Create();
   athena::HomeCard::Create();
+  athena::ActivityManager::Create();
 
   SetupBackgroundImage();
 }
 
 void ShutdownAthena() {
+  athena::ActivityManager::Shutdown();
   athena::HomeCard::Shutdown();
   athena::WindowManager::Shutdown();
   athena::ScreenManager::Shutdown();

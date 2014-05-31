@@ -7,6 +7,7 @@
 #include "apps/shell/browser/shell_desktop_controller.h"
 #include "athena/main/athena_launcher.h"
 #include "athena/main/placeholder.h"
+#include "athena/main/placeholder_content.h"
 #include "content/public/app/content_main.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/wm/core/visibility_controller.h"
@@ -22,6 +23,7 @@ class AthenaBrowserMainDelegate : public apps::ShellBrowserMainDelegate {
                             ->GetWindowTreeHost()
                             ->window());
     CreateTestWindows();
+    CreateTestPages(context);
   }
 
   virtual void Shutdown() OVERRIDE { athena::ShutdownAthena(); }
