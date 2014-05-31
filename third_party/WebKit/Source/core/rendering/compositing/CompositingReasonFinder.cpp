@@ -100,19 +100,21 @@ CompositingReasons CompositingReasonFinder::styleDeterminedReasons(RenderObject*
 {
     CompositingReasons directReasons = CompositingReasonNone;
 
+    RenderStyle* style = renderer->style();
+
     if (requiresCompositingForTransform(renderer))
         directReasons |= CompositingReason3DTransform;
-
-    if (requiresCompositingForBackfaceVisibilityHidden(renderer))
-        directReasons |= CompositingReasonBackfaceVisibilityHidden;
-
-    if (requiresCompositingForAnimation(renderer))
-        directReasons |= CompositingReasonActiveAnimation;
 
     if (requiresCompositingForFilters(renderer))
         directReasons |= CompositingReasonFilters;
 
-    if (requiresCompositingForWillChangeCompositingHint(renderer))
+    if (style->backfaceVisibility() == BackfaceVisibilityHidden)
+        directReasons |= CompositingReasonBackfaceVisibilityHidden;
+
+    if (style->shouldCompositeForCurrentAnimations())
+        directReasons |= CompositingReasonActiveAnimation;
+
+    if (style->hasWillChangeCompositingHint())
         directReasons |= CompositingReasonWillChangeCompositingHint;
 
     ASSERT(!(directReasons & ~CompositingReasonComboAllStyleDeterminedReasons));
@@ -126,11 +128,6 @@ bool CompositingReasonFinder::requiresCompositingForTransform(RenderObject* rend
     return renderer->hasTransform() && renderer->style()->transform().has3DOperation();
 }
 
-bool CompositingReasonFinder::requiresCompositingForBackfaceVisibilityHidden(RenderObject* renderer) const
-{
-    return renderer->style()->backfaceVisibility() == BackfaceVisibilityHidden;
-}
-
 bool CompositingReasonFinder::requiresCompositingForFilters(RenderObject* renderer) const
 {
     if (!(m_compositingTriggers & FilterTrigger))
@@ -139,26 +136,21 @@ bool CompositingReasonFinder::requiresCompositingForFilters(RenderObject* render
     return renderer->hasFilter();
 }
 
-bool CompositingReasonFinder::requiresCompositingForWillChangeCompositingHint(const RenderObject* renderer) const
-{
-    return renderer->style()->hasWillChangeCompositingHint();
-}
-
 CompositingReasons CompositingReasonFinder::nonStyleDeterminedDirectReasons(const RenderLayer* layer, bool* needToRecomputeCompositingRequirements) const
 {
     CompositingReasons directReasons = CompositingReasonNone;
     RenderObject* renderer = layer->renderer();
 
     if (hasOverflowScrollTrigger()) {
-        if (requiresCompositingForOutOfFlowClipping(layer))
+        if (layer->isUnclippedDescendant())
             directReasons |= CompositingReasonOutOfFlowClipping;
 
-        if (requiresCompositingForOverflowScrollingParent(layer))
+        if (layer->scrollParent())
             directReasons |= CompositingReasonOverflowScrollingParent;
-    }
 
-    if (requiresCompositingForOverflowScrolling(layer))
-        directReasons |= CompositingReasonOverflowScrollingTouch;
+        if (layer->needsCompositedScrolling())
+            directReasons |= CompositingReasonOverflowScrollingTouch;
+    }
 
     if (requiresCompositingForPositionSticky(renderer, layer))
         directReasons |= CompositingReasonPositionSticky;
@@ -170,28 +162,6 @@ CompositingReasons CompositingReasonFinder::nonStyleDeterminedDirectReasons(cons
 
     ASSERT(!(directReasons & CompositingReasonComboAllStyleDeterminedReasons));
     return directReasons;
-}
-
-bool CompositingReasonFinder::requiresCompositingForAnimation(RenderObject* renderer) const
-{
-    return renderer->style()->shouldCompositeForCurrentAnimations();
-}
-
-bool CompositingReasonFinder::requiresCompositingForOutOfFlowClipping(const RenderLayer* layer) const
-{
-    return layer->isUnclippedDescendant();
-}
-
-bool CompositingReasonFinder::requiresCompositingForOverflowScrollingParent(const RenderLayer* layer) const
-{
-    if (!hasOverflowScrollTrigger())
-        return false;
-    return layer->scrollParent();
-}
-
-bool CompositingReasonFinder::requiresCompositingForOverflowScrolling(const RenderLayer* layer) const
-{
-    return layer->needsCompositedScrolling();
 }
 
 bool CompositingReasonFinder::requiresCompositingForPosition(RenderObject* renderer, const RenderLayer* layer, RenderLayer::ViewportConstrainedNotCompositedReason* viewportConstrainedNotCompositedReason, bool* needToRecomputeCompositingRequirements) const

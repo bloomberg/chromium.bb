@@ -35,16 +35,10 @@ private:
 
     CompositingReasons nonStyleDeterminedDirectReasons(const RenderLayer*, bool* needToRecomputeCompositingRequirements) const;
 
-    bool requiresCompositingForAnimation(RenderObject*) const;
     bool requiresCompositingForTransform(RenderObject*) const;
-    bool requiresCompositingForBackfaceVisibilityHidden(RenderObject*) const;
     bool requiresCompositingForFilters(RenderObject*) const;
-    bool requiresCompositingForOverflowScrollingParent(const RenderLayer*) const;
-    bool requiresCompositingForOutOfFlowClipping(const RenderLayer*) const;
-    bool requiresCompositingForOverflowScrolling(const RenderLayer*) const;
     bool requiresCompositingForPositionSticky(RenderObject*, const RenderLayer*) const;
     bool requiresCompositingForPositionFixed(RenderObject*, const RenderLayer*, RenderLayer::ViewportConstrainedNotCompositedReason*, bool* needToRecomputeCompositingRequirements) const;
-    bool requiresCompositingForWillChangeCompositingHint(const RenderObject*) const;
 
     RenderView& m_renderView;
     CompositingTriggerFlags m_compositingTriggers;
