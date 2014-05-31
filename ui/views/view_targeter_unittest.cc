@@ -38,6 +38,31 @@ class TestMaskedViewTargeter : public MaskedViewTargeter {
   DISALLOW_COPY_AND_ASSIGN(TestMaskedViewTargeter);
 };
 
+// A derived class of View used for testing purposes.
+class TestingView : public View {
+ public:
+  TestingView() : can_process_events_within_subtree_(true) {}
+  virtual ~TestingView() {}
+
+  // Reset all test state.
+  void Reset() { can_process_events_within_subtree_ = true; }
+
+  void set_can_process_events_within_subtree(bool can_process) {
+    can_process_events_within_subtree_ = can_process;
+  }
+
+  // View:
+  virtual bool CanProcessEventsWithinSubtree() const OVERRIDE {
+    return can_process_events_within_subtree_;
+  }
+
+ private:
+  // Value to return from CanProcessEventsWithinSubtree().
+  bool can_process_events_within_subtree_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestingView);
+};
+
 namespace test {
 
 typedef ViewsTestBase ViewTargeterTest;
@@ -216,6 +241,78 @@ TEST_F(ViewTargeterTest, SubtreeShouldBeExploredForEvent) {
 
   // TODO(tdanderson): Move the hit-testing unit tests out of view_unittest
   // and into here. See crbug.com/355425.
+}
+
+// Tests that FindTargetForEvent() returns the correct target when some
+// views in the view tree return false when CanProcessEventsWithinSubtree()
+// is called on them.
+TEST_F(ViewTargeterTest, CanProcessEventsWithinSubtree) {
+  Widget widget;
+  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
+  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  params.bounds = gfx::Rect(0, 0, 650, 650);
+  widget.Init(params);
+
+  ui::EventTargeter* targeter = new ViewTargeter();
+  internal::RootView* root_view =
+      static_cast<internal::RootView*>(widget.GetRootView());
+  root_view->SetEventTargeter(make_scoped_ptr(targeter));
+
+  // The coordinates used for SetBounds() are in the parent coordinate space.
+  TestingView v1, v2, v3;
+  v1.SetBounds(0, 0, 300, 300);
+  v2.SetBounds(100, 100, 100, 100);
+  v3.SetBounds(0, 0, 10, 10);
+  root_view->AddChildView(&v1);
+  v1.AddChildView(&v2);
+  v2.AddChildView(&v3);
+
+  // Note that the coordinates used below are in the coordinate space of
+  // the root view.
+
+  // Define |scroll| to be (105, 105) (in the coordinate space of the root
+  // view). This is located within all of |v1|, |v2|, and |v3|.
+  gfx::Point scroll_point(105, 105);
+  ui::ScrollEvent scroll(
+      ui::ET_SCROLL, scroll_point, ui::EventTimeForNow(), 0, 0, 3, 0, 3, 2);
+
+  // If CanProcessEventsWithinSubtree() returns true for each view,
+  // |scroll| should be targeted at the deepest view in the hierarchy,
+  // which is |v3|.
+  ui::EventTarget* current_target =
+      targeter->FindTargetForEvent(root_view, &scroll);
+  EXPECT_EQ(&v3, current_target);
+
+  // If CanProcessEventsWithinSubtree() returns |false| when called
+  // on |v3|, then |v3| cannot be the target of |scroll| (this should
+  // instead be |v2|). Note we need to reset the location of |scroll|
+  // because it may have been mutated by the previous call to
+  // FindTargetForEvent().
+  scroll.set_location(scroll_point);
+  v3.set_can_process_events_within_subtree(false);
+  current_target = targeter->FindTargetForEvent(root_view, &scroll);
+  EXPECT_EQ(&v2, current_target);
+
+  // If CanProcessEventsWithinSubtree() returns |false| when called
+  // on |v2|, then neither |v2| nor |v3| can be the target of |scroll|
+  // (this should instead be |v1|).
+  scroll.set_location(scroll_point);
+  v3.Reset();
+  v2.set_can_process_events_within_subtree(false);
+  current_target = targeter->FindTargetForEvent(root_view, &scroll);
+  EXPECT_EQ(&v1, current_target);
+
+  // If CanProcessEventsWithinSubtree() returns |false| when called
+  // on |v1|, then none of |v1|, |v2| or |v3| can be the target of |scroll|
+  // (this should instead be the root view itself).
+  scroll.set_location(scroll_point);
+  v2.Reset();
+  v1.set_can_process_events_within_subtree(false);
+  current_target = targeter->FindTargetForEvent(root_view, &scroll);
+  EXPECT_EQ(root_view, current_target);
+
+  // TODO(tdanderson): We should also test that targeting works correctly
+  //                   with gestures. See crbug.com/375822.
 }
 
 // Tests that FindTargetForEvent() returns the correct target when some

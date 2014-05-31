@@ -203,7 +203,11 @@ typedef ViewsTestBase ViewTest;
 // A derived class for testing purpose.
 class TestView : public View {
  public:
-  TestView() : View(), delete_on_pressed_(false), native_theme_(NULL) {}
+  TestView()
+      : View(),
+        delete_on_pressed_(false),
+        native_theme_(NULL),
+        can_process_events_within_subtree_(true) {}
   virtual ~TestView() {}
 
   // Reset all test state
@@ -217,6 +221,7 @@ class TestView : public View {
     last_gesture_event_was_handled_ = false;
     last_clip_.setEmpty();
     accelerator_count_map_.clear();
+    can_process_events_within_subtree_ = true;
   }
 
   // Exposed as public for testing.
@@ -229,6 +234,14 @@ class TestView : public View {
   }
 
   bool focusable() const { return View::focusable(); }
+
+  void set_can_process_events_within_subtree(bool can_process) {
+    can_process_events_within_subtree_ = can_process;
+  }
+
+  virtual bool CanProcessEventsWithinSubtree() const OVERRIDE {
+    return can_process_events_within_subtree_;
+  }
 
   virtual void OnBoundsChanged(const gfx::Rect& previous_bounds) OVERRIDE;
   virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE;
@@ -273,6 +286,9 @@ class TestView : public View {
 
   // Native theme.
   const ui::NativeTheme* native_theme_;
+
+  // Value to return from CanProcessEventsWithinSubtree().
+  bool can_process_events_within_subtree_;
 };
 
 // A view subclass that consumes all Gesture events for testing purposes.
@@ -1210,6 +1226,153 @@ TEST_F(ViewTest, GetEventHandlerForRect) {
   result_view = NULL;
 
   widget->CloseNow();
+}
+
+// Tests that GetEventHandlerForRect() and GetTooltipHandlerForPoint() behave
+// as expected when different views in the view hierarchy return false
+// when CanProcessEventsWithinSubtree() is called.
+TEST_F(ViewTest, CanProcessEventsWithinSubtree) {
+  Widget* widget = new Widget;
+  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
+  widget->Init(params);
+  View* root_view = widget->GetRootView();
+  root_view->SetBoundsRect(gfx::Rect(0, 0, 500, 500));
+
+  // Have this hierarchy of views (the coords here are in the coordinate
+  // space of the root view):
+  // v (0, 0, 100, 100)
+  //  - v_child (0, 0, 20, 30)
+  //    - v_grandchild (5, 5, 5, 15)
+
+  TestView* v = new TestView;
+  v->SetBounds(0, 0, 100, 100);
+  root_view->AddChildView(v);
+  v->set_notify_enter_exit_on_child(true);
+
+  TestView* v_child = new TestView;
+  v_child->SetBounds(0, 0, 20, 30);
+  v->AddChildView(v_child);
+
+  TestView* v_grandchild = new TestView;
+  v_grandchild->SetBounds(5, 5, 5, 15);
+  v_child->AddChildView(v_grandchild);
+
+  v->Reset();
+  v_child->Reset();
+  v_grandchild->Reset();
+
+  // Define rects and points within the views in the hierarchy.
+  gfx::Rect rect_in_v_grandchild(7, 7, 3, 3);
+  gfx::Point point_in_v_grandchild(rect_in_v_grandchild.origin());
+  gfx::Rect rect_in_v_child(12, 3, 5, 5);
+  gfx::Point point_in_v_child(rect_in_v_child.origin());
+  gfx::Rect rect_in_v(50, 50, 25, 30);
+  gfx::Point point_in_v(rect_in_v.origin());
+
+  // When all three views return true when CanProcessEventsWithinSubtree()
+  // is called, targeting should behave as expected.
+
+  View* result_view = root_view->GetEventHandlerForRect(rect_in_v_grandchild);
+  EXPECT_EQ(v_grandchild, result_view);
+  result_view = NULL;
+  result_view = root_view->GetTooltipHandlerForPoint(point_in_v_grandchild);
+  EXPECT_EQ(v_grandchild, result_view);
+  result_view = NULL;
+
+  result_view = root_view->GetEventHandlerForRect(rect_in_v_child);
+  EXPECT_EQ(v_child, result_view);
+  result_view = NULL;
+  result_view = root_view->GetTooltipHandlerForPoint(point_in_v_child);
+  EXPECT_EQ(v_child, result_view);
+  result_view = NULL;
+
+  result_view = root_view->GetEventHandlerForRect(rect_in_v);
+  EXPECT_EQ(v, result_view);
+  result_view = NULL;
+  result_view = root_view->GetTooltipHandlerForPoint(point_in_v);
+  EXPECT_EQ(v, result_view);
+  result_view = NULL;
+
+  // When |v_grandchild| returns false when CanProcessEventsWithinSubtree()
+  // is called, then |v_grandchild| cannot be returned as a target.
+
+  v_grandchild->set_can_process_events_within_subtree(false);
+
+  result_view = root_view->GetEventHandlerForRect(rect_in_v_grandchild);
+  EXPECT_EQ(v_child, result_view);
+  result_view = NULL;
+  result_view = root_view->GetTooltipHandlerForPoint(point_in_v_grandchild);
+  EXPECT_EQ(v_child, result_view);
+  result_view = NULL;
+
+  result_view = root_view->GetEventHandlerForRect(rect_in_v_child);
+  EXPECT_EQ(v_child, result_view);
+  result_view = NULL;
+  result_view = root_view->GetTooltipHandlerForPoint(point_in_v_child);
+  EXPECT_EQ(v_child, result_view);
+  result_view = NULL;
+
+  result_view = root_view->GetEventHandlerForRect(rect_in_v);
+  EXPECT_EQ(v, result_view);
+  result_view = NULL;
+  result_view = root_view->GetTooltipHandlerForPoint(point_in_v);
+  EXPECT_EQ(v, result_view);
+  result_view = NULL;
+
+  // When |v_child| returns false when CanProcessEventsWithinSubtree()
+  // is called, then neither |v_child| nor |v_grandchild| can be returned
+  // as a target (|v| should be returned as the target for each case).
+
+  v_grandchild->Reset();
+  v_child->set_can_process_events_within_subtree(false);
+
+  result_view = root_view->GetEventHandlerForRect(rect_in_v_grandchild);
+  EXPECT_EQ(v, result_view);
+  result_view = NULL;
+  result_view = root_view->GetTooltipHandlerForPoint(point_in_v_grandchild);
+  EXPECT_EQ(v, result_view);
+  result_view = NULL;
+
+  result_view = root_view->GetEventHandlerForRect(rect_in_v_child);
+  EXPECT_EQ(v, result_view);
+  result_view = NULL;
+  result_view = root_view->GetTooltipHandlerForPoint(point_in_v_child);
+  EXPECT_EQ(v, result_view);
+  result_view = NULL;
+
+  result_view = root_view->GetEventHandlerForRect(rect_in_v);
+  EXPECT_EQ(v, result_view);
+  result_view = NULL;
+  result_view = root_view->GetTooltipHandlerForPoint(point_in_v);
+  EXPECT_EQ(v, result_view);
+  result_view = NULL;
+
+  // When |v| returns false when CanProcessEventsWithinSubtree()
+  // is called, then none of |v|, |v_child|, and |v_grandchild| can be returned
+  // as a target (|root_view| should be returned as the target for each case).
+
+  v_child->Reset();
+  v->set_can_process_events_within_subtree(false);
+
+  result_view = root_view->GetEventHandlerForRect(rect_in_v_grandchild);
+  EXPECT_EQ(root_view, result_view);
+  result_view = NULL;
+  result_view = root_view->GetTooltipHandlerForPoint(point_in_v_grandchild);
+  EXPECT_EQ(root_view, result_view);
+  result_view = NULL;
+
+  result_view = root_view->GetEventHandlerForRect(rect_in_v_child);
+  EXPECT_EQ(root_view, result_view);
+  result_view = NULL;
+  result_view = root_view->GetTooltipHandlerForPoint(point_in_v_child);
+  EXPECT_EQ(root_view, result_view);
+  result_view = NULL;
+
+  result_view = root_view->GetEventHandlerForRect(rect_in_v);
+  EXPECT_EQ(root_view, result_view);
+  result_view = NULL;
+  result_view = root_view->GetTooltipHandlerForPoint(point_in_v);
+  EXPECT_EQ(root_view, result_view);
 }
 
 TEST_F(ViewTest, NotifyEnterExitOnChild) {

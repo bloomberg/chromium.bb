@@ -48,6 +48,10 @@ bool ViewTargeter::SubtreeCanAcceptEvent(
   views::View* view = static_cast<views::View*>(target);
   if (!view->visible())
     return false;
+
+  if (!view->CanProcessEventsWithinSubtree())
+    return false;
+
   return true;
 }
 
