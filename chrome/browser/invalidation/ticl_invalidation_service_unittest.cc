@@ -9,6 +9,7 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/invalidation/gcm_invalidation_bridge.h"
 #include "chrome/browser/invalidation/invalidation_service_test_template.h"
+#include "components/gcm_driver/fake_gcm_driver.h"
 #include "components/gcm_driver/gcm_driver.h"
 #include "google_apis/gaia/fake_identity_provider.h"
 #include "google_apis/gaia/fake_oauth2_token_service.h"
@@ -35,15 +36,6 @@ class FakeTiclSettingsProvider : public TiclSettingsProvider {
   DISALLOW_COPY_AND_ASSIGN(FakeTiclSettingsProvider);
 };
 
-class FakeGCMDriver : public gcm::GCMDriver {
- public:
-  FakeGCMDriver();
-  virtual ~FakeGCMDriver();
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(FakeGCMDriver);
-};
-
 FakeTiclSettingsProvider::FakeTiclSettingsProvider() {
 }
 
@@ -52,12 +44,6 @@ FakeTiclSettingsProvider::~FakeTiclSettingsProvider() {
 
 bool FakeTiclSettingsProvider::UseGCMChannel() const {
   return false;
-}
-
-FakeGCMDriver::FakeGCMDriver() {
-}
-
-FakeGCMDriver::~FakeGCMDriver() {
 }
 
 }  // namespace
@@ -76,7 +62,7 @@ class TiclInvalidationServiceTestDelegate {
   }
 
   void CreateUninitializedInvalidationService() {
-    gcm_driver_.reset(new FakeGCMDriver());
+    gcm_driver_.reset(new gcm::FakeGCMDriver());
     invalidation_service_.reset(new TiclInvalidationService(
         scoped_ptr<IdentityProvider>(new FakeIdentityProvider(&token_service_)),
         scoped_ptr<TiclSettingsProvider>(new FakeTiclSettingsProvider),

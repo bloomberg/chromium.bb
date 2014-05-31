@@ -28,6 +28,8 @@
         'gcm_driver/gcm_driver.h',
         'gcm_driver/gcm_driver_android.cc',
         'gcm_driver/gcm_driver_android.h',
+        'gcm_driver/gcm_driver_desktop.cc',
+        'gcm_driver/gcm_driver_desktop.h',
         'gcm_driver/system_encryptor.cc',
         'gcm_driver/system_encryptor.h',
       ],
@@ -35,6 +37,10 @@
         ['OS == "android"', {
           'dependencies': [
             'gcm_driver_jni_headers',
+          ],
+          'sources!': [
+            'gcm_driver/gcm_driver_desktop.cc',
+            'gcm_driver/gcm_driver_desktop.h',
           ],
         }],
       ],
@@ -57,6 +63,8 @@
         'gcm_driver/fake_gcm_client.h',
         'gcm_driver/fake_gcm_client_factory.cc',
         'gcm_driver/fake_gcm_client_factory.h',
+        'gcm_driver/fake_gcm_driver.cc',
+        'gcm_driver/fake_gcm_driver.h',
       ],
     },    
   ],

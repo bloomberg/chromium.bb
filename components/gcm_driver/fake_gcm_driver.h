@@ -2,10 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_GCM_DRIVER_GCM_DRIVER_ANDROID_H
-#define COMPONENTS_GCM_DRIVER_GCM_DRIVER_ANDROID_H
-
-#include <jni.h>
+#ifndef COMPONENTS_GCM_DRIVER_FAKE_GCM_DRIVER_H_
+#define COMPONENTS_GCM_DRIVER_FAKE_GCM_DRIVER_H_
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
@@ -13,11 +11,16 @@
 
 namespace gcm {
 
-// GCMDriver implementation for Android.
-class GCMDriverAndroid : public GCMDriver {
+class FakeGCMDriver : public GCMDriver {
  public:
-  GCMDriverAndroid();
-  virtual ~GCMDriverAndroid();
+  FakeGCMDriver();
+  virtual ~FakeGCMDriver();
+
+  // GCMDriver overrides:
+  virtual void Shutdown() OVERRIDE;
+  virtual void AddAppHandler(const std::string& app_id,
+                             GCMAppHandler* handler) OVERRIDE;
+  virtual void RemoveAppHandler(const std::string& app_id) OVERRIDE;
 
   // GCMDriver implementation:
   virtual void Enable() OVERRIDE;
@@ -40,13 +43,10 @@ class GCMDriverAndroid : public GCMDriver {
                                bool recording) OVERRIDE;
   virtual std::string SignedInUserName() const OVERRIDE;
 
-  // Register JNI methods.
-  static bool RegisterBindings(JNIEnv* env);
-
  private:
-  DISALLOW_COPY_AND_ASSIGN(GCMDriverAndroid);
+  DISALLOW_COPY_AND_ASSIGN(FakeGCMDriver);
 };
 
 }  // namespace gcm
 
-#endif  // COMPONENTS_GCM_DRIVER_GCM_DRIVER_ANDROID_H
+#endif  // COMPONENTS_GCM_DRIVER_FAKE_GCM_DRIVER_H_

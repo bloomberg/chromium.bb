@@ -9,22 +9,20 @@
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/gcm_driver/fake_gcm_client_factory.h"
+#include "components/gcm_driver/fake_gcm_driver.h"
+#include "components/gcm_driver/gcm_driver.h"
 #include "content/public/browser/browser_context.h"
 
 namespace gcm {
 
 namespace {
 
-class FakeGCMDriver : public GCMDriver {
+class CustomFakeGCMDriver : public FakeGCMDriver {
  public:
-  explicit FakeGCMDriver(FakeGCMProfileService* service);
-  virtual ~FakeGCMDriver();
+  explicit CustomFakeGCMDriver(FakeGCMProfileService* service);
+  virtual ~CustomFakeGCMDriver();
 
-  // GCMDriver overrides.
-  virtual void Shutdown() OVERRIDE;
-  virtual void AddAppHandler(const std::string& app_id,
-                             GCMAppHandler* handler) OVERRIDE;
-  virtual void RemoveAppHandler(const std::string& app_id) OVERRIDE;
+  // GCMDriver overrides:
   virtual void Register(const std::string& app_id,
                         const std::vector<std::string>& sender_ids,
                         const RegisterCallback& callback) OVERRIDE;
@@ -38,27 +36,17 @@ class FakeGCMDriver : public GCMDriver {
  private:
   FakeGCMProfileService* service_;
 
-  DISALLOW_COPY_AND_ASSIGN(FakeGCMDriver);
+  DISALLOW_COPY_AND_ASSIGN(CustomFakeGCMDriver);
 };
 
-FakeGCMDriver::FakeGCMDriver(FakeGCMProfileService* service)
+CustomFakeGCMDriver::CustomFakeGCMDriver(FakeGCMProfileService* service)
     : service_(service) {
 }
 
-FakeGCMDriver::~FakeGCMDriver() {
+CustomFakeGCMDriver::~CustomFakeGCMDriver() {
 }
 
-void FakeGCMDriver::Shutdown() {
-}
-
-void FakeGCMDriver::AddAppHandler(const std::string& app_id,
-                                  GCMAppHandler* handler) {
-}
-
-void FakeGCMDriver::RemoveAppHandler(const std::string& app_id) {
-}
-
-void FakeGCMDriver::Register(const std::string& app_id,
+void CustomFakeGCMDriver::Register(const std::string& app_id,
                              const std::vector<std::string>& sender_ids,
                              const RegisterCallback& callback) {
   base::MessageLoop::current()->PostTask(
@@ -70,7 +58,7 @@ void FakeGCMDriver::Register(const std::string& app_id,
                  callback));
 }
 
-void FakeGCMDriver::Unregister(const std::string& app_id,
+void CustomFakeGCMDriver::Unregister(const std::string& app_id,
                                const UnregisterCallback& callback) {
   base::MessageLoop::current()->PostTask(
       FROM_HERE, base::Bind(
@@ -80,7 +68,7 @@ void FakeGCMDriver::Unregister(const std::string& app_id,
           callback));
 }
 
-void FakeGCMDriver::Send(const std::string& app_id,
+void CustomFakeGCMDriver::Send(const std::string& app_id,
                          const std::string& receiver_id,
                          const GCMClient::OutgoingMessage& message,
                          const SendCallback& callback) {
@@ -100,7 +88,7 @@ void FakeGCMDriver::Send(const std::string& app_id,
 KeyedService* FakeGCMProfileService::Build(content::BrowserContext* context) {
   Profile* profile = static_cast<Profile*>(context);
   FakeGCMProfileService* service = new FakeGCMProfileService(profile);
-  service->SetDriverForTesting(new FakeGCMDriver(service));
+  service->SetDriverForTesting(new CustomFakeGCMDriver(service));
   return service;
 }
 

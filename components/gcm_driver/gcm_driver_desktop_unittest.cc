@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/gcm_driver/gcm_driver.h"
+#include "components/gcm_driver/gcm_driver_desktop.h"
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -190,7 +190,8 @@ void GCMDriverTest::CreateDriver(
     FakeGCMClient::StartMode gcm_client_start_mode) {
   scoped_refptr<net::URLRequestContextGetter> request_context =
       new net::TestURLRequestContextGetter(io_thread_.message_loop_proxy());
-  driver_.reset(new GCMDriver(
+  // TODO(johnme): Need equivalent test coverage of GCMDriverAndroid.
+  driver_.reset(new GCMDriverDesktop(
       scoped_ptr<GCMClientFactory>(new FakeGCMClientFactory(
           gcm_client_start_mode,
           base::MessageLoopProxy::current(),

@@ -2583,6 +2583,10 @@
 
             # URL elider is not used on android.
            'browser/ui/tests/elide_url_unittest.cc',
+
+            # GCMDriverAndroid is not yet implemented.
+            'browser/extensions/extension_gcm_app_handler_unittest.cc',
+            'browser/services/gcm/gcm_profile_service_unittest.cc',
           ],
           'sources/': [
             ['exclude', '^browser/captive_portal/'],
