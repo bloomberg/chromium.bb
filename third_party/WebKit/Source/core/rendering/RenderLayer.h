@@ -212,13 +212,10 @@ public:
     void setHasOutOfFlowPositionedDescendant(bool hasDescendant) { m_hasOutOfFlowPositionedDescendant = hasDescendant; }
     void setHasOutOfFlowPositionedDescendantDirty(bool dirty) { m_hasOutOfFlowPositionedDescendantDirty = dirty; }
 
-
-    bool hasUnclippedDescendant() const { return m_hasUnclippedDescendant; }
-    void setHasUnclippedDescendant(bool hasDescendant) { m_hasUnclippedDescendant = hasDescendant; }
-    void updateHasUnclippedDescendant();
+    void updateIsUnclippedDescendant();
     bool isUnclippedDescendant() const { return m_isUnclippedDescendant; }
 
-    // Will ensure that hasUnclippedDescendant and hasNonCompositiedChild are up to date.
+    // Will ensure that hasNonCompositiedChild are up to date.
     void updateScrollingStateAfterCompositingChange();
     bool hasVisibleNonLayerContent() const { return m_hasVisibleNonLayerContent; }
     bool hasNonCompositedChild() const { ASSERT(isAllowedToQueryCompositingState()); return m_hasNonCompositedChild; }
@@ -642,12 +639,6 @@ private:
 
     unsigned m_hasOutOfFlowPositionedDescendant : 1;
     unsigned m_hasOutOfFlowPositionedDescendantDirty : 1;
-
-    // This is true if we have an out-of-flow positioned descendant whose
-    // containing block is our ancestor. If this is the case, the descendant
-    // may fall outside of our clip preventing things like opting into
-    // composited scrolling (which causes clipping of all descendants).
-    unsigned m_hasUnclippedDescendant : 1;
 
     unsigned m_isUnclippedDescendant : 1;
 

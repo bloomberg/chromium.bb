@@ -240,7 +240,7 @@ void RenderLayerCompositor::updateCompositingRequirementsState()
         return;
 
     for (HashSet<RenderLayer*>::iterator it = m_outOfFlowPositionedLayers.begin(); it != m_outOfFlowPositionedLayers.end(); ++it)
-        (*it)->updateHasUnclippedDescendant();
+        (*it)->updateIsUnclippedDescendant();
 }
 
 static RenderVideo* findFullscreenVideoRenderer(Document& document)

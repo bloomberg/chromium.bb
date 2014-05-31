@@ -111,7 +111,6 @@ RenderLayer::RenderLayer(RenderLayerModelObject* renderer, LayerType type)
     , m_hasSelfPaintingLayerDescendantDirty(false)
     , m_hasOutOfFlowPositionedDescendant(false)
     , m_hasOutOfFlowPositionedDescendantDirty(true)
-    , m_hasUnclippedDescendant(false)
     , m_isUnclippedDescendant(false)
     , m_isRootLayer(renderer->isRenderView())
     , m_usedTransparency(false)
@@ -368,10 +367,6 @@ void RenderLayer::dirtyAncestorChainHasOutOfFlowPositionedDescendantStatus()
 {
     for (RenderLayer* layer = this; layer; layer = layer->parent()) {
         layer->setHasOutOfFlowPositionedDescendantDirty(true);
-
-        // We may or may not have an unclipped descendant. If we do, we'll reset
-        // this to true the next time composited scrolling state is updated.
-        layer->setHasUnclippedDescendant(false);
 
         // If we have reached an out of flow positioned layer, we know our parent should have an out-of-flow positioned descendant.
         // In this case, there is no need to dirty our ancestors further.
@@ -807,9 +802,9 @@ void RenderLayer::setAncestorChainHasVisibleDescendant()
     }
 }
 
-void RenderLayer::updateHasUnclippedDescendant()
+void RenderLayer::updateIsUnclippedDescendant()
 {
-    TRACE_EVENT0("blink_rendering", "RenderLayer::updateHasUnclippedDescendant");
+    TRACE_EVENT0("blink_rendering", "RenderLayer::updateIsUnclippedDescendant");
     ASSERT(renderer()->isOutOfFlowPositioned());
     if (!m_hasVisibleContent && !m_hasVisibleDescendant)
         return;
@@ -818,8 +813,9 @@ void RenderLayer::updateHasUnclippedDescendant()
     if (!frameView)
         return;
 
-    const RenderObject* containingBlock = renderer()->containingBlock();
     setIsUnclippedDescendant(false);
+
+    const RenderObject* containingBlock = renderer()->containingBlock();
     for (RenderLayer* ancestor = parent(); ancestor && ancestor->renderer() != containingBlock; ancestor = ancestor->parent()) {
         // TODO(vollick): This isn't quite right. Whenever ancestor is composited and clips
         // overflow, we're technically unclipped. However, this will currently cause a huge
@@ -828,9 +824,10 @@ void RenderLayer::updateHasUnclippedDescendant()
         // compositor, we will be able to relax this restriction without it being prohibitively
         // expensive (currently, we have to do a lot of work in the compositor to honor a
         // clip child/parent relationship).
-        if (ancestor->scrollsOverflow())
+        if (ancestor->scrollsOverflow()) {
             setIsUnclippedDescendant(true);
-        ancestor->setHasUnclippedDescendant(true);
+            return;
+        }
     }
 }
 
@@ -3748,12 +3745,6 @@ void RenderLayer::updateOutOfFlowPositioned(const RenderStyle* oldStyle)
     bool isOutOfFlowPositioned = renderer()->isOutOfFlowPositioned();
     if (!wasOutOfFlowPositioned && !isOutOfFlowPositioned)
         return;
-
-    // Even if the layer remains out-of-flow, a change to this property
-    // will likely change its containing block. We must clear these bits
-    // so that they can be set properly by the RenderLayerCompositor.
-    for (RenderLayer* ancestor = parent(); ancestor; ancestor = ancestor->parent())
-        ancestor->setHasUnclippedDescendant(false);
 
     // Ensures that we reset the above bits correctly.
     compositor()->setNeedsUpdateCompositingRequirementsState();
