@@ -56,8 +56,7 @@ cr.define('print_preview.ticket_items', function() {
 
     /** @override */
     isCapabilityAvailable: function() {
-      // TODO(alekseys): Turn it on when the feature is ready (crbug/239879).
-      return false && !!this.capability;
+      return !!this.capability;
     },
 
     /** @override */
