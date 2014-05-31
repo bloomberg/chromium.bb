@@ -97,31 +97,34 @@ static bool checkShapeImageOrigin(Document& document, const StyleImage& styleIma
     return false;
 }
 
-static void getShapeImageAndRect(const ShapeValue& shapeValue, const RenderBox& renderBox, const LayoutSize& referenceBoxSize, Image*& image, LayoutRect& rect)
-{
-    ASSERT(shapeValue.isImageValid());
-    StyleImage* styleImage = shapeValue.image();
-
-    const IntSize& imageSize = renderBox.calculateImageIntrinsicDimensions(styleImage, roundedIntSize(referenceBoxSize), RenderImage::ScaleByEffectiveZoom);
-    styleImage->setContainerSizeForRenderer(&renderBox, imageSize, renderBox.style()->effectiveZoom());
-
-    image = 0;
-    if (styleImage->isImageResource() || styleImage->isImageResourceSet())
-        image = styleImage->cachedImage()->imageForRenderer(&renderBox);
-    else if (styleImage->isGeneratedImage())
-        image = styleImage->image(const_cast<RenderBox*>(&renderBox), imageSize).get();
-
-    if (renderBox.isRenderImage())
-        rect = toRenderImage(&renderBox)->replacedContentRect();
-    else
-        rect = LayoutRect(LayoutPoint(), imageSize);
-}
-
 static LayoutRect getShapeImageMarginRect(const RenderBox& renderBox, const LayoutSize& referenceBoxLogicalSize)
 {
     LayoutPoint marginBoxOrigin(-renderBox.marginLogicalLeft() - renderBox.borderAndPaddingLogicalLeft(), -renderBox.marginBefore() - renderBox.borderBefore() - renderBox.paddingBefore());
     LayoutSize marginBoxSizeDelta(renderBox.marginLogicalWidth() + renderBox.borderAndPaddingLogicalWidth(), renderBox.marginLogicalHeight() + renderBox.borderAndPaddingLogicalHeight());
     return LayoutRect(marginBoxOrigin, referenceBoxLogicalSize + marginBoxSizeDelta);
+}
+
+PassOwnPtr<Shape> ShapeOutsideInfo::createShapeForImage(StyleImage* styleImage, float shapeImageThreshold, WritingMode writingMode, float margin) const
+{
+    const IntSize& imageSize = m_renderer.calculateImageIntrinsicDimensions(styleImage, roundedIntSize(m_referenceBoxLogicalSize), RenderImage::ScaleByEffectiveZoom);
+    styleImage->setContainerSizeForRenderer(&m_renderer, imageSize, m_renderer.style()->effectiveZoom());
+
+    const LayoutRect& marginRect = getShapeImageMarginRect(m_renderer, m_referenceBoxLogicalSize);
+    const LayoutRect& imageRect = (m_renderer.isRenderImage())
+        ? toRenderImage(&m_renderer)->replacedContentRect()
+        : LayoutRect(LayoutPoint(), imageSize);
+
+    Image* image = 0;
+    RefPtr<Image> generatedImage;
+
+    if (styleImage->isImageResource() || styleImage->isImageResourceSet()) {
+        image = styleImage->cachedImage()->imageForRenderer(&m_renderer);
+    } else if (styleImage->isGeneratedImage()) {
+        generatedImage = styleImage->image(const_cast<RenderBox*>(&m_renderer), imageSize);
+        image = generatedImage.get();
+    }
+
+    return Shape::createRasterShape(image, shapeImageThreshold, imageRect, marginRect, writingMode, margin);
 }
 
 const Shape& ShapeOutsideInfo::computedShape() const
@@ -146,14 +149,10 @@ const Shape& ShapeOutsideInfo::computedShape() const
         ASSERT(shapeValue.shape());
         m_shape = Shape::createShape(shapeValue.shape(), m_referenceBoxLogicalSize, writingMode, margin);
         break;
-    case ShapeValue::Image: {
-        Image* image;
-        LayoutRect imageRect;
-        getShapeImageAndRect(shapeValue, m_renderer, m_referenceBoxLogicalSize, image, imageRect);
-        const LayoutRect& marginRect = getShapeImageMarginRect(m_renderer, m_referenceBoxLogicalSize);
-        m_shape = Shape::createRasterShape(image, shapeImageThreshold, imageRect, marginRect, writingMode, margin);
+    case ShapeValue::Image:
+        ASSERT(shapeValue.isImageValid());
+        m_shape = createShapeForImage(shapeValue.image(), shapeImageThreshold, writingMode, margin);
         break;
-    }
     case ShapeValue::Box: {
         const RoundedRect& shapeRect = style.getRoundedBorderFor(LayoutRect(LayoutPoint(), m_referenceBoxLogicalSize), m_renderer.view());
         m_shape = Shape::createLayoutBoxShape(shapeRect, writingMode, margin);

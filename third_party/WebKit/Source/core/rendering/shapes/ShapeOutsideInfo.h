@@ -101,6 +101,8 @@ protected:
     { }
 
 private:
+    PassOwnPtr<Shape> createShapeForImage(StyleImage*, float shapeImageThreshold, WritingMode, float margin) const;
+
     LayoutUnit logicalTopOffset() const;
     LayoutUnit logicalLeftOffset() const;
 
