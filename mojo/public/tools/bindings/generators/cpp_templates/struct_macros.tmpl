@@ -11,22 +11,20 @@
   const {{class_name}}* MOJO_ALLOW_UNUSED object =
       static_cast<const {{class_name}}*>(data);
 
-{%-   for packed_field in struct.packed.packed_fields
-          if packed_field.field.kind|is_object_kind %}
-{%-     set wrapper_type = packed_field.field.kind|cpp_wrapper_type %}
+{%-   for packed_field in struct.packed.packed_fields %}
 {%-     set name = packed_field.field.name %}
+{%-     if packed_field.field.kind|is_object_kind %}
+{%-       set wrapper_type = packed_field.field.kind|cpp_wrapper_type %}
   if (!mojo::internal::ValidateEncodedPointer(&object->{{name}}.offset) ||
       !{{wrapper_type}}::Data_::Validate(
           mojo::internal::DecodePointerRaw(&object->{{name}}.offset),
           bounds_checker)) {
     return false;
   }
-{%-   endfor %}
-{%-   for packed_field in struct.packed.packed_fields
-          if packed_field.field.kind|is_handle_kind %}
-{%-     set name = packed_field.field.name %}
+{%-     elif packed_field.field.kind|is_handle_kind %}
   if (!bounds_checker->ClaimHandle(object->{{name}}))
     return false;
+{%-     endif %}
 {%-   endfor %}
 
   return true;
@@ -68,19 +66,21 @@
 {%- endmacro %}
 
 {%- macro encodes(struct) -%}
-{%-   for pf in struct.packed.packed_fields if pf.field.kind|is_object_kind -%}
+{%-   for pf in struct.packed.packed_fields %}
+{%-     if pf.field.kind|is_object_kind %}
 mojo::internal::Encode(&{{pf.field.name}}, handles);
-{%    endfor %}
-{%-   for pf in struct.packed.packed_fields if pf.field.kind|is_handle_kind -%}
+{%-     elif pf.field.kind|is_handle_kind %}
 mojo::internal::EncodeHandle(&{{pf.field.name}}, handles);
-{%    endfor %}
+{%-     endif %}
+{%-   endfor %}
 {%- endmacro -%}
 
 {%- macro decodes(struct) -%}
-{%-   for pf in struct.packed.packed_fields if pf.field.kind|is_object_kind -%}
+{%-   for pf in struct.packed.packed_fields %}
+{%-     if pf.field.kind|is_object_kind %}
 mojo::internal::Decode(&{{pf.field.name}}, handles);
-{%    endfor %}
-{%-   for pf in struct.packed.packed_fields if pf.field.kind|is_handle_kind -%}
+{%-     elif pf.field.kind|is_handle_kind %}
 mojo::internal::DecodeHandle(&{{pf.field.name}}, handles);
-{%    endfor %}
+{%-     endif %}
+{%-   endfor %}
 {%- endmacro -%}
