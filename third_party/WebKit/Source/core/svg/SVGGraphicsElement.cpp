@@ -27,7 +27,6 @@
 #include "core/rendering/svg/RenderSVGPath.h"
 #include "core/rendering/svg/RenderSVGResource.h"
 #include "core/rendering/svg/SVGPathData.h"
-#include "core/svg/SVGElementInstance.h"
 #include "platform/transforms/AffineTransform.h"
 
 namespace WebCore {

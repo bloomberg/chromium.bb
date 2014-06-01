@@ -26,7 +26,6 @@
 #include "SVGNames.h"
 #include "core/rendering/svg/RenderSVGResourceMarker.h"
 #include "core/svg/SVGAngleTearOff.h"
-#include "core/svg/SVGElementInstance.h"
 
 namespace WebCore {
 

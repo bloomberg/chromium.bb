@@ -22,7 +22,6 @@
 
 #include "core/svg/SVGFEMergeNodeElement.h"
 
-#include "core/svg/SVGElementInstance.h"
 #include "core/svg/SVGFilterPrimitiveStandardAttributes.h"
 
 namespace WebCore {

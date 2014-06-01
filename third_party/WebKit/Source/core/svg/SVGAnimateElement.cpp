@@ -30,7 +30,6 @@
 #include "core/dom/QualifiedName.h"
 #include "core/svg/SVGAnimatedTypeAnimator.h"
 #include "core/svg/SVGDocumentExtensions.h"
-#include "core/svg/SVGElementInstance.h"
 
 namespace WebCore {
 

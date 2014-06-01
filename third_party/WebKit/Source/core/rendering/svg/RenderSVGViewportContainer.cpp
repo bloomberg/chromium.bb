@@ -25,7 +25,6 @@
 
 #include "SVGNames.h"
 #include "core/rendering/svg/SVGRenderSupport.h"
-#include "core/svg/SVGElementInstance.h"
 #include "core/svg/SVGSVGElement.h"
 #include "core/svg/SVGUseElement.h"
 #include "platform/graphics/GraphicsContext.h"

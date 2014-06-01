@@ -71,7 +71,6 @@ class RenderLayer;
 class RenderLayerScrollableArea;
 class RenderObject;
 class RenderWidget;
-class SVGElementInstance;
 class ScrollableArea;
 class Scrollbar;
 class TextEvent;

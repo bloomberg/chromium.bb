@@ -24,7 +24,6 @@
 
 #include "SVGNames.h"
 #include "platform/graphics/filters/FilterEffect.h"
-#include "core/svg/SVGElementInstance.h"
 #include "core/svg/SVGParserUtilities.h"
 #include "core/svg/graphics/filters/SVGFilterBuilder.h"
 

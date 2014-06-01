@@ -27,7 +27,6 @@
 #include "core/dom/ElementTraversal.h"
 #include "core/rendering/svg/RenderSVGResourcePattern.h"
 #include "core/svg/PatternAttributes.h"
-#include "core/svg/SVGElementInstance.h"
 #include "platform/transforms/AffineTransform.h"
 
 namespace WebCore {

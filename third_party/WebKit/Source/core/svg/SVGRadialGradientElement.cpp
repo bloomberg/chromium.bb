@@ -27,7 +27,6 @@
 
 #include "core/rendering/svg/RenderSVGResourceRadialGradient.h"
 #include "core/svg/RadialGradientAttributes.h"
-#include "core/svg/SVGElementInstance.h"
 #include "core/svg/SVGTransformList.h"
 
 namespace WebCore {

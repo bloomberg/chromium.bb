@@ -25,7 +25,6 @@
 #include "core/svg/SVGAnimatedColor.h"
 #include "core/svg/SVGAnimationElement.h"
 #include "core/svg/SVGElement.h"
-#include "core/svg/SVGElementInstance.h"
 #include "core/svg/SVGLength.h"
 #include "core/svg/SVGLengthList.h"
 #include "core/svg/SVGNumber.h"

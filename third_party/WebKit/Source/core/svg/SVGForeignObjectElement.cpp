@@ -25,7 +25,6 @@
 #include "core/frame/UseCounter.h"
 #include "core/rendering/svg/RenderSVGForeignObject.h"
 #include "core/rendering/svg/RenderSVGResource.h"
-#include "core/svg/SVGElementInstance.h"
 #include "core/svg/SVGLength.h"
 #include "wtf/Assertions.h"
 

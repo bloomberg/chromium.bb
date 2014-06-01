@@ -25,7 +25,6 @@
 #include "XLinkNames.h"
 #include "core/rendering/svg/RenderSVGResource.h"
 #include "core/rendering/svg/RenderSVGTextPath.h"
-#include "core/svg/SVGElementInstance.h"
 
 namespace WebCore {
 

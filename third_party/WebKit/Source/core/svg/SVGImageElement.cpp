@@ -28,7 +28,6 @@
 #include "core/rendering/RenderImageResource.h"
 #include "core/rendering/svg/RenderSVGImage.h"
 #include "core/rendering/svg/RenderSVGResource.h"
-#include "core/svg/SVGElementInstance.h"
 
 namespace WebCore {
 

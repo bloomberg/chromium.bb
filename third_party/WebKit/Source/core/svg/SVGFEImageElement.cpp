@@ -28,7 +28,6 @@
 #include "core/fetch/FetchRequest.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/rendering/svg/RenderSVGResource.h"
-#include "core/svg/SVGElementInstance.h"
 #include "core/svg/SVGPreserveAspectRatio.h"
 #include "platform/graphics/Image.h"
 

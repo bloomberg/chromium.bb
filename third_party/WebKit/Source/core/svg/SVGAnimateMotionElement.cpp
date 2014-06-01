@@ -27,7 +27,6 @@
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/svg/RenderSVGResource.h"
 #include "core/rendering/svg/SVGPathData.h"
-#include "core/svg/SVGElementInstance.h"
 #include "core/svg/SVGMPathElement.h"
 #include "core/svg/SVGParserUtilities.h"
 #include "core/svg/SVGPathElement.h"

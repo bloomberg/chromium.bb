@@ -25,7 +25,6 @@
 #include "core/dom/Document.h"
 #include "core/svg/SVGAnimateMotionElement.h"
 #include "core/svg/SVGDocumentExtensions.h"
-#include "core/svg/SVGElementInstance.h"
 #include "core/svg/SVGPathElement.h"
 
 namespace WebCore {

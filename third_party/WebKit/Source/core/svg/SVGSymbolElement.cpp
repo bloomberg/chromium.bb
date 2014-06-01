@@ -24,7 +24,6 @@
 
 #include "SVGNames.h"
 #include "core/rendering/svg/RenderSVGHiddenContainer.h"
-#include "core/svg/SVGElementInstance.h"
 
 namespace WebCore {
 
