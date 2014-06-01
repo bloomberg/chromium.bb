@@ -55,7 +55,7 @@ using namespace HTMLNames;
 
 StyleEngine::StyleEngine(Document& document)
     : m_document(&document)
-    , m_isMaster(!document.importsController() || document.importsController()->isMaster(document) )
+    , m_isMaster(!document.importsController() || document.importsController()->master() == &document)
     , m_pendingStylesheets(0)
     , m_injectedStyleSheetCacheValid(false)
 #if ENABLE(OILPAN)

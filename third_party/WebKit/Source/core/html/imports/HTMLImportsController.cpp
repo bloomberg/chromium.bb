@@ -50,29 +50,27 @@ void HTMLImportsController::provideTo(Document& master)
 }
 
 HTMLImportsController::HTMLImportsController(Document& master)
-    : m_master(&master)
-    , m_root(HTMLImportTreeRoot::create(&master))
+    : m_root(HTMLImportTreeRoot::create(&master))
 {
 }
 
 HTMLImportsController::~HTMLImportsController()
 {
-    ASSERT(!m_master);
+    ASSERT(!m_root);
 }
 
 void HTMLImportsController::clear()
 {
+    Document* master = root()->document();
     m_root.clear();
 
     for (size_t i = 0; i < m_loaders.size(); ++i)
         m_loaders[i]->importDestroyed();
     m_loaders.clear();
 
-    if (m_master)
-        m_master->setImportsController(0);
-    m_master = 0;
-
-    m_root.clear();
+    if (master)
+        master->setImportsController(0);
+    master = 0;
 }
 
 static bool makesCycle(HTMLImport* parent, const KURL& url)
@@ -108,9 +106,9 @@ HTMLImportChild* HTMLImportsController::load(HTMLImport* parent, HTMLImportChild
         return child;
     }
 
-    bool sameOriginRequest = securityOrigin()->canRequest(request.url());
+    bool sameOriginRequest = master()->securityOrigin()->canRequest(request.url());
     request.setCrossOriginAccessControl(
-        securityOrigin(), sameOriginRequest ? AllowStoredCredentials : DoNotAllowStoredCredentials,
+        master()->securityOrigin(), sameOriginRequest ? AllowStoredCredentials : DoNotAllowStoredCredentials,
         ClientDidNotRequestCredentials);
     ResourcePtr<RawResource> resource = parent->document()->fetcher()->fetchImport(request);
     if (!resource)
@@ -128,22 +126,12 @@ HTMLImportChild* HTMLImportsController::load(HTMLImport* parent, HTMLImportChild
 
 void HTMLImportsController::showSecurityErrorMessage(const String& message)
 {
-    m_master->addConsoleMessage(JSMessageSource, ErrorMessageLevel, message);
+    master()->addConsoleMessage(JSMessageSource, ErrorMessageLevel, message);
 }
 
-SecurityOrigin* HTMLImportsController::securityOrigin() const
+Document* HTMLImportsController::master() const
 {
-    return m_master->securityOrigin();
-}
-
-ResourceFetcher* HTMLImportsController::fetcher() const
-{
-    return m_master->fetcher();
-}
-
-LocalFrame* HTMLImportsController::frame() const
-{
-    return m_master->frame();
+    return root()->document();
 }
 
 bool HTMLImportsController::shouldBlockScriptExecution(const Document& document) const
@@ -157,7 +145,7 @@ bool HTMLImportsController::shouldBlockScriptExecution(const Document& document)
 void HTMLImportsController::wasDetachedFrom(const Document& document)
 {
     ASSERT(document.importsController() == this);
-    if (m_master == &document)
+    if (master() == &document)
         clear();
 }
 

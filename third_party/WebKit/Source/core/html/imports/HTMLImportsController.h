@@ -61,17 +61,13 @@ public:
 
     HTMLImportTreeRoot* root() const { return m_root.get(); }
 
-    bool isMaster(const Document& document) const { return m_master == &document; }
     bool shouldBlockScriptExecution(const Document&) const;
     void wasDetachedFrom(const Document&);
 
     HTMLImportChild* load(HTMLImport* parent, HTMLImportChildClient*, FetchRequest);
     void showSecurityErrorMessage(const String&);
 
-    SecurityOrigin* securityOrigin() const;
-    ResourceFetcher* fetcher() const;
-    LocalFrame* frame() const;
-    Document* master() const { return m_master; }
+    Document* master() const;
 
     HTMLImportLoader* createLoader();
 
@@ -82,8 +78,6 @@ public:
 private:
     HTMLImportChild* createChild(const KURL&, HTMLImportLoader*, HTMLImport* parent, HTMLImportChildClient*);
     void clear();
-
-    Document* m_master;
 
     OwnPtr<HTMLImportTreeRoot> m_root;
 

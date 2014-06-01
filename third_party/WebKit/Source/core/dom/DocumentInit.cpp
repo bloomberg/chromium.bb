@@ -104,7 +104,7 @@ LocalFrame* DocumentInit::frameForSecurityContext() const
     if (m_frame)
         return m_frame;
     if (m_importsController)
-        return m_importsController->frame();
+        return m_importsController->master()->frame();
     return 0;
 }
 

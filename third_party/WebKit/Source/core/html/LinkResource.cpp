@@ -55,10 +55,10 @@ bool LinkResource::shouldLoadResource() const
 
 LocalFrame* LinkResource::loadingFrame() const
 {
-    HTMLImportsController* import = m_owner->document().importsController();
-    if (!import)
+    HTMLImportsController* importsController = m_owner->document().importsController();
+    if (!importsController)
         return m_owner->document().frame();
-    return import->frame();
+    return importsController->master()->frame();
 }
 
 void LinkResource::trace(Visitor* visitor)
