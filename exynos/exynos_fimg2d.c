@@ -382,7 +382,7 @@ int g2d_copy(struct g2d_context *ctx, struct g2d_image *src,
 	g2d_add_cmd(ctx, DST_LEFT_TOP_REG, pt.val);
 	pt.val = 0;
 	pt.data.x = dst_x + w;
-	pt.data.y = dst_x + h;
+	pt.data.y = dst_y + h;
 	g2d_add_cmd(ctx, DST_RIGHT_BOTTOM_REG, pt.val);
 
 	rop4.val = 0;
