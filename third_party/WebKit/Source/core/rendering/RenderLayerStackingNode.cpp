@@ -56,8 +56,6 @@ namespace WebCore {
 // layer about some of its state.
 RenderLayerStackingNode::RenderLayerStackingNode(RenderLayer* layer)
     : m_layer(layer)
-    , m_descendantsAreContiguousInStackingOrder(false)
-    , m_descendantsAreContiguousInStackingOrderDirty(true)
     , m_normalFlowListDirty(true)
 #if !ASSERT_DISABLED
     , m_layerListMutationAllowed(true)
@@ -111,8 +109,6 @@ void RenderLayerStackingNode::dirtyZOrderLists()
     if (m_negZOrderList)
         m_negZOrderList->clear();
     m_zOrderListsDirty = true;
-
-    m_descendantsAreContiguousInStackingOrderDirty = true;
 
     if (!renderer()->documentBeingDestroyed())
         compositor()->setCompositingLayersNeedRebuild();
