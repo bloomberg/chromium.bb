@@ -35,6 +35,7 @@ config("config") {
       "/wd4305",  # Truncation from 'type1' to 'type2'.
       "/wd4324",  # Struct padded due to declspec(align).
       "/wd4714",  # Function marked forceinline not inlined.
+      "/wd4800",  # Value forced to bool.
       "/wd4996",  # Deprecated function call.
     ]
   }
