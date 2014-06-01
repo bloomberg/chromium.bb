@@ -709,14 +709,10 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, PRE_UpdateWithTwoProfiles) {
   profile2->GetPrefs()->CommitPendingWrite();
 }
 
-#if defined (OS_MACOSX)
-// crbug.com/376184
-#define MAYBE_UpdateWithTwoProfiles DISABLED_UpdateWithTwoProfiles
-#else
-#define MAYBE_UpdateWithTwoProfiles UpdateWithTwoProfiles
-#endif
-
-IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, MAYBE_UpdateWithTwoProfiles) {
+// See crbug.com/376184 about improvements to this test on Mac.
+// Disabled because it's flaky. http://crbug.com/379579
+IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest,
+                       DISABLED_UpdateWithTwoProfiles) {
 #if defined(OS_WIN) && defined(USE_ASH)
   // Disable this test in Metro+Ash for now (http://crbug.com/262796).
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAshBrowserTests))
