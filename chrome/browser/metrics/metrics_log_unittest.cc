@@ -123,6 +123,14 @@ class MetricsLogTest : public testing::Test {
 #endif  // defined(OS_CHROMEOS)
   }
 
+  virtual ~MetricsLogTest() {
+#if defined(OS_CHROMEOS)
+    // TODO(blundell): Remove this code once MetricsService no longer creates
+    // ChromeOSMetricsProvider.
+    chromeos::LoginState::Shutdown();
+#endif  // defined(OS_CHROMEOS)
+  }
+
  protected:
   // Check that the values in |system_values| correspond to the test data
   // defined at the top of this file.

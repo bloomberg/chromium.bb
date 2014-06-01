@@ -81,6 +81,11 @@ class MetricsServiceTest : public testing::Test {
   virtual ~MetricsServiceTest() {
     MetricsService::SetExecutionPhase(MetricsService::UNINITIALIZED_PHASE,
                                       GetLocalState());
+#if defined(OS_CHROMEOS)
+    // TODO(blundell): Remove this code once MetricsService no longer creates
+    // ChromeOSMetricsProvider.
+    chromeos::LoginState::Shutdown();
+#endif  // defined(OS_CHROMEOS)
   }
 
   metrics::MetricsStateManager* GetMetricsStateManager() {
