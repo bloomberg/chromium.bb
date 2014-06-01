@@ -124,11 +124,6 @@ HTMLImportChild* HTMLImportsController::load(HTMLImport* parent, HTMLImportChild
     return child;
 }
 
-void HTMLImportsController::showSecurityErrorMessage(const String& message)
-{
-    master()->addConsoleMessage(JSMessageSource, ErrorMessageLevel, message);
-}
-
 Document* HTMLImportsController::master() const
 {
     return root()->document();

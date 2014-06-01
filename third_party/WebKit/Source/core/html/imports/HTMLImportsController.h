@@ -65,7 +65,6 @@ public:
     void wasDetachedFrom(const Document&);
 
     HTMLImportChild* load(HTMLImport* parent, HTMLImportChildClient*, FetchRequest);
-    void showSecurityErrorMessage(const String&);
 
     Document* master() const;
 
