@@ -47,7 +47,7 @@
 #include "chrome/browser/extensions/extension_sync_data.h"
 #include "chrome/browser/extensions/extension_sync_service.h"
 #include "chrome/browser/extensions/extension_util.h"
-#include "chrome/browser/extensions/external_install_manager.h"
+#include "chrome/browser/extensions/external_install_ui.h"
 #include "chrome/browser/extensions/external_policy_loader.h"
 #include "chrome/browser/extensions/external_pref_loader.h"
 #include "chrome/browser/extensions/external_provider_impl.h"
@@ -6743,7 +6743,7 @@ TEST_F(ExtensionServiceTest, ExternalInstallGlobalError) {
   service_->UpdateExternalExtensionAlert();
   // Should return false, meaning there aren't any extensions that the user
   // needs to know about.
-  EXPECT_FALSE(service_->external_install_manager()->HasExternalInstallError());
+  EXPECT_FALSE(extensions::HasExternalInstallError(service_));
 
   // This is a normal extension, installed normally.
   // This should NOT trigger an alert.
@@ -6753,7 +6753,7 @@ TEST_F(ExtensionServiceTest, ExternalInstallGlobalError) {
 
   service_->CheckForExternalUpdates();
   base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(service_->external_install_manager()->HasExternalInstallError());
+  EXPECT_FALSE(extensions::HasExternalInstallError(service_));
 
   // A hosted app, installed externally.
   // This should NOT trigger an alert.
@@ -6765,7 +6765,7 @@ TEST_F(ExtensionServiceTest, ExternalInstallGlobalError) {
       content::NotificationService::AllSources());
   service_->CheckForExternalUpdates();
   observer.Wait();
-  EXPECT_FALSE(service_->external_install_manager()->HasExternalInstallError());
+  EXPECT_FALSE(extensions::HasExternalInstallError(service_));
 
   // Another normal extension, but installed externally.
   // This SHOULD trigger an alert.
@@ -6777,7 +6777,7 @@ TEST_F(ExtensionServiceTest, ExternalInstallGlobalError) {
       content::NotificationService::AllSources());
   service_->CheckForExternalUpdates();
   observer2.Wait();
-  EXPECT_TRUE(service_->external_install_manager()->HasExternalInstallError());
+  EXPECT_TRUE(extensions::HasExternalInstallError(service_));
 }
 
 // Test that external extensions are initially disabled, and that enabling
@@ -6799,7 +6799,7 @@ TEST_F(ExtensionServiceTest, ExternalInstallInitiallyDisabled) {
       content::NotificationService::AllSources());
   service_->CheckForExternalUpdates();
   observer.Wait();
-  EXPECT_TRUE(service_->external_install_manager()->HasExternalInstallError());
+  EXPECT_TRUE(extensions::HasExternalInstallError(service_));
   EXPECT_FALSE(service_->IsExtensionEnabled(page_action));
 
   const Extension* extension =
@@ -6808,7 +6808,7 @@ TEST_F(ExtensionServiceTest, ExternalInstallInitiallyDisabled) {
   EXPECT_EQ(page_action, extension->id());
 
   service_->EnableExtension(page_action);
-  EXPECT_FALSE(service_->external_install_manager()->HasExternalInstallError());
+  EXPECT_FALSE(extensions::HasExternalInstallError(service_));
   EXPECT_TRUE(service_->IsExtensionEnabled(page_action));
 }
 
@@ -6841,25 +6841,20 @@ TEST_F(ExtensionServiceTest, MAYBE_ExternalInstallMultiple) {
       base::Bind(&WaitForCountNotificationsCallback, &count));
   service_->CheckForExternalUpdates();
   observer.Wait();
-  EXPECT_TRUE(service_->external_install_manager()->HasExternalInstallError());
+  EXPECT_TRUE(extensions::HasExternalInstallError(service_));
   EXPECT_FALSE(service_->IsExtensionEnabled(page_action));
   EXPECT_FALSE(service_->IsExtensionEnabled(good_crx));
   EXPECT_FALSE(service_->IsExtensionEnabled(theme_crx));
 
   service_->EnableExtension(page_action);
-  EXPECT_TRUE(service_->external_install_manager()->HasExternalInstallError());
-  EXPECT_FALSE(
-      service_->external_install_manager()->HasExternalInstallBubble());
-
+  EXPECT_TRUE(extensions::HasExternalInstallError(service_));
+  EXPECT_FALSE(extensions::HasExternalInstallBubble(service_));
   service_->EnableExtension(theme_crx);
-  EXPECT_TRUE(service_->external_install_manager()->HasExternalInstallError());
-  EXPECT_FALSE(
-      service_->external_install_manager()->HasExternalInstallBubble());
-
+  EXPECT_TRUE(extensions::HasExternalInstallError(service_));
+  EXPECT_FALSE(extensions::HasExternalInstallBubble(service_));
   service_->EnableExtension(good_crx);
-  EXPECT_FALSE(service_->external_install_manager()->HasExternalInstallError());
-  EXPECT_FALSE(
-      service_->external_install_manager()->HasExternalInstallBubble());
+  EXPECT_FALSE(extensions::HasExternalInstallError(service_));
+  EXPECT_FALSE(extensions::HasExternalInstallBubble(service_));
 }
 
 // Test that there is a bubble for external extensions that update
@@ -6889,8 +6884,8 @@ TEST_F(ExtensionServiceTest, ExternalInstallUpdatesFromWebstoreOldProfile) {
       content::NotificationService::AllSources());
   service_->CheckForExternalUpdates();
   observer.Wait();
-  EXPECT_TRUE(service_->external_install_manager()->HasExternalInstallError());
-  EXPECT_TRUE(service_->external_install_manager()->HasExternalInstallBubble());
+  EXPECT_TRUE(extensions::HasExternalInstallError(service_));
+  EXPECT_TRUE(extensions::HasExternalInstallBubble(service_));
   EXPECT_FALSE(service_->IsExtensionEnabled(updates_from_webstore));
 }
 
@@ -6916,9 +6911,8 @@ TEST_F(ExtensionServiceTest, ExternalInstallUpdatesFromWebstoreNewProfile) {
       content::NotificationService::AllSources());
   service_->CheckForExternalUpdates();
   observer.Wait();
-  EXPECT_TRUE(service_->external_install_manager()->HasExternalInstallError());
-  EXPECT_FALSE(
-      service_->external_install_manager()->HasExternalInstallBubble());
+  EXPECT_TRUE(extensions::HasExternalInstallError(service_));
+  EXPECT_FALSE(extensions::HasExternalInstallBubble(service_));
   EXPECT_FALSE(service_->IsExtensionEnabled(updates_from_webstore));
 }
 
