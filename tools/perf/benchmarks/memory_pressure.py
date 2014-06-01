@@ -5,6 +5,8 @@
 from telemetry import test
 from measurements import memory_pressure
 
+
+@test.Disabled('android')  # crbug.com/379561
 class MemoryPressure(test.Test):
   test = memory_pressure.MemoryPressure
   page_set = 'page_sets/typical_25.py'

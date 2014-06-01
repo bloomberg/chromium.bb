@@ -11,11 +11,14 @@ class TabSwitchingTop10(test.Test):
   test = tab_switching.TabSwitching
   page_set = 'page_sets/top_10.py'
 
+
 class TabSwitchingFiveBlankTabs(test.Test):
   test = tab_switching.TabSwitching
   page_set = 'page_sets/five_blank_pages.py'
   options = {'pageset_repeat': 10}
 
+
+@test.Disabled('android')  # crbug.com/379561
 class TabSwitchingToughEnergyCases(test.Test):
   test = tab_switching.TabSwitching
   page_set = 'page_sets/tough_energy_cases.py'
