@@ -1690,7 +1690,13 @@ bool Internals::isUnclippedDescendant(Element* element, ExceptionState& exceptio
         return 0;
     }
 
-    return layer->isUnclippedDescendant();
+    // We used to compute isUnclippedDescendant only when acceleratedCompositingForOverflowScrollEnabled,
+    // but now we compute it all the time.
+    // FIXME: Remove this if statement and rebaseline the tests that make this assumption.
+    if (!layer->compositor()->acceleratedCompositingForOverflowScrollEnabled())
+        return false;
+
+    return layer->ancestorDependentProperties().isUnclippedDescendant;
 }
 
 String Internals::layerTreeAsText(Document* document, unsigned flags, ExceptionState& exceptionState) const

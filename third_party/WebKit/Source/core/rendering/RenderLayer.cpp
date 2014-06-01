@@ -109,9 +109,6 @@ RenderLayer::RenderLayer(RenderLayerModelObject* renderer, LayerType type)
     : m_layerType(type)
     , m_hasSelfPaintingLayerDescendant(false)
     , m_hasSelfPaintingLayerDescendantDirty(false)
-    , m_hasOutOfFlowPositionedDescendant(false)
-    , m_hasOutOfFlowPositionedDescendantDirty(true)
-    , m_isUnclippedDescendant(false)
     , m_isRootLayer(renderer->isRenderView())
     , m_usedTransparency(false)
     , m_visibleContentStatusDirty(true)
@@ -162,9 +159,6 @@ RenderLayer::RenderLayer(RenderLayerModelObject* renderer, LayerType type)
 
 RenderLayer::~RenderLayer()
 {
-    if (!m_renderer->documentBeingDestroyed())
-        compositor()->removeOutOfFlowPositionedLayer(this);
-
     if (renderer()->frame() && renderer()->frame()->page()) {
         if (ScrollingCoordinator* scrollingCoordinator = renderer()->frame()->page()->scrollingCoordinator())
             scrollingCoordinator->willDestroyRenderLayer(this);
@@ -347,31 +341,6 @@ void RenderLayer::dirtyAncestorChainHasSelfPaintingLayerDescendantStatus()
         // in this case, there is no need to dirty our ancestors further.
         if (layer->isSelfPaintingLayer()) {
             ASSERT(!parent() || parent()->m_hasSelfPaintingLayerDescendantDirty || parent()->hasSelfPaintingLayerDescendant());
-            break;
-        }
-    }
-}
-
-void RenderLayer::setAncestorChainHasOutOfFlowPositionedDescendant()
-{
-    for (RenderLayer* layer = this; layer; layer = layer->parent()) {
-        if (!layer->m_hasOutOfFlowPositionedDescendantDirty && layer->hasOutOfFlowPositionedDescendant())
-            break;
-
-        layer->setHasOutOfFlowPositionedDescendantDirty(false);
-        layer->setHasOutOfFlowPositionedDescendant(true);
-    }
-}
-
-void RenderLayer::dirtyAncestorChainHasOutOfFlowPositionedDescendantStatus()
-{
-    for (RenderLayer* layer = this; layer; layer = layer->parent()) {
-        layer->setHasOutOfFlowPositionedDescendantDirty(true);
-
-        // If we have reached an out of flow positioned layer, we know our parent should have an out-of-flow positioned descendant.
-        // In this case, there is no need to dirty our ancestors further.
-        if (layer->renderer()->isOutOfFlowPositioned()) {
-            ASSERT(!parent() || parent()->m_hasOutOfFlowPositionedDescendantDirty || parent()->hasOutOfFlowPositionedDescendant());
             break;
         }
     }
@@ -802,35 +771,6 @@ void RenderLayer::setAncestorChainHasVisibleDescendant()
     }
 }
 
-void RenderLayer::updateIsUnclippedDescendant()
-{
-    TRACE_EVENT0("blink_rendering", "RenderLayer::updateIsUnclippedDescendant");
-    ASSERT(renderer()->isOutOfFlowPositioned());
-    if (!m_hasVisibleContent && !m_hasVisibleDescendant)
-        return;
-
-    FrameView* frameView = renderer()->view()->frameView();
-    if (!frameView)
-        return;
-
-    setIsUnclippedDescendant(false);
-
-    const RenderObject* containingBlock = renderer()->containingBlock();
-    for (RenderLayer* ancestor = parent(); ancestor && ancestor->renderer() != containingBlock; ancestor = ancestor->parent()) {
-        // TODO(vollick): This isn't quite right. Whenever ancestor is composited and clips
-        // overflow, we're technically unclipped. However, this will currently cause a huge
-        // number of layers to report that they are unclipped. Eventually, when we've formally
-        // separated the clipping, transform, opacity, and stacking trees here and in the
-        // compositor, we will be able to relax this restriction without it being prohibitively
-        // expensive (currently, we have to do a lot of work in the compositor to honor a
-        // clip child/parent relationship).
-        if (ancestor->scrollsOverflow()) {
-            setIsUnclippedDescendant(true);
-            return;
-        }
-    }
-}
-
 // FIXME: this is quite brute-force. We could be more efficient if we were to
 // track state and update it as appropriate as changes are made in the Render tree.
 void RenderLayer::updateScrollingStateAfterCompositingChange()
@@ -853,36 +793,27 @@ void RenderLayer::updateScrollingStateAfterCompositingChange()
     }
 }
 
-static bool subtreeContainsOutOfFlowPositionedLayer(const RenderLayer* subtreeRoot)
-{
-    return (subtreeRoot->renderer() && subtreeRoot->renderer()->isOutOfFlowPositioned()) || subtreeRoot->hasOutOfFlowPositionedDescendant();
-}
-
 void RenderLayer::updateDescendantDependentFlags()
 {
-    if (m_visibleDescendantStatusDirty || m_hasSelfPaintingLayerDescendantDirty || m_hasOutOfFlowPositionedDescendantDirty) {
+    if (m_visibleDescendantStatusDirty || m_hasSelfPaintingLayerDescendantDirty) {
         m_hasVisibleDescendant = false;
         m_hasSelfPaintingLayerDescendant = false;
-        m_hasOutOfFlowPositionedDescendant = false;
 
         for (RenderLayer* child = firstChild(); child; child = child->nextSibling()) {
             child->updateDescendantDependentFlags();
 
             bool hasVisibleDescendant = child->m_hasVisibleContent || child->m_hasVisibleDescendant;
             bool hasSelfPaintingLayerDescendant = child->isSelfPaintingLayer() || child->hasSelfPaintingLayerDescendant();
-            bool hasOutOfFlowPositionedDescendant = subtreeContainsOutOfFlowPositionedLayer(child);
 
             m_hasVisibleDescendant |= hasVisibleDescendant;
             m_hasSelfPaintingLayerDescendant |= hasSelfPaintingLayerDescendant;
-            m_hasOutOfFlowPositionedDescendant |= hasOutOfFlowPositionedDescendant;
 
-            if (m_hasVisibleDescendant && m_hasSelfPaintingLayerDescendant && hasOutOfFlowPositionedDescendant)
+            if (m_hasVisibleDescendant && m_hasSelfPaintingLayerDescendant)
                 break;
         }
 
         m_visibleDescendantStatusDirty = false;
         m_hasSelfPaintingLayerDescendantDirty = false;
-        m_hasOutOfFlowPositionedDescendantDirty = false;
     }
 
     if (m_blendInfo.childLayerHasBlendModeStatusDirty()) {
@@ -1470,15 +1401,6 @@ void RenderLayer::addChild(RenderLayer* child, RenderLayer* beforeChild)
     if (child->blendInfo().hasBlendMode() || child->blendInfo().childLayerHasBlendMode())
         m_blendInfo.setAncestorChainBlendedDescendant();
 
-    if (subtreeContainsOutOfFlowPositionedLayer(child)) {
-        // Now that the out of flow positioned descendant is in the tree, we
-        // need to tell the compositor to reevaluate the compositing
-        // requirements since we may be able to mark more layers as having
-        // an 'unclipped' descendant.
-        compositor()->setNeedsUpdateCompositingRequirementsState();
-        setAncestorChainHasOutOfFlowPositionedDescendant();
-    }
-
     compositor()->layerWasAdded(this, child);
 }
 
@@ -1516,13 +1438,6 @@ RenderLayer* RenderLayer::removeChild(RenderLayer* oldChild)
     oldChild->m_parent = 0;
 
     oldChild->updateDescendantDependentFlags();
-    if (subtreeContainsOutOfFlowPositionedLayer(oldChild)) {
-        // It may now be the case that a layer no longer has an unclipped
-        // descendant. Let the compositor know that it needs to reevaluate
-        // its compositing requirements to check this.
-        compositor()->setNeedsUpdateCompositingRequirementsState();
-        dirtyAncestorChainHasOutOfFlowPositionedDescendantStatus();
-    }
 
     if (oldChild->m_hasVisibleContent || oldChild->m_hasVisibleDescendant)
         dirtyAncestorChainVisibleDescendantStatus();
@@ -3737,38 +3652,6 @@ bool RenderLayer::isVisuallyNonEmpty() const
     return false;
 }
 
-void RenderLayer::updateOutOfFlowPositioned(const RenderStyle* oldStyle)
-{
-    ASSERT(!oldStyle || renderer()->style()->position() != oldStyle->position());
-
-    bool wasOutOfFlowPositioned = oldStyle && (oldStyle->position() == AbsolutePosition || oldStyle->position() == FixedPosition);
-    bool isOutOfFlowPositioned = renderer()->isOutOfFlowPositioned();
-    if (!wasOutOfFlowPositioned && !isOutOfFlowPositioned)
-        return;
-
-    // Ensures that we reset the above bits correctly.
-    compositor()->setNeedsUpdateCompositingRequirementsState();
-
-    if (wasOutOfFlowPositioned && isOutOfFlowPositioned)
-        return;
-
-    if (isOutOfFlowPositioned) {
-        setAncestorChainHasOutOfFlowPositionedDescendant();
-        compositor()->addOutOfFlowPositionedLayer(this);
-    } else {
-        dirtyAncestorChainHasSelfPaintingLayerDescendantStatus();
-        compositor()->removeOutOfFlowPositionedLayer(this);
-
-        // We need to reset the isUnclippedDescendant bit here because normally
-        // the "unclipped-ness" property is only updated in
-        // RenderLayerCompositor::updateCompositingRequirementsState(). However,
-        // it is only updated for layers which are known to be out of flow.
-        // Since this is no longer out of flow, we have to explicitly ensure
-        // that it doesn't think it is unclipped.
-        setIsUnclippedDescendant(false);
-    }
-}
-
 static bool hasOrHadFilters(const RenderStyle* oldStyle, const RenderStyle* newStyle)
 {
     ASSERT(newStyle);
@@ -3847,19 +3730,9 @@ void RenderLayer::styleChanged(StyleDifference diff, const RenderStyle* oldStyle
     if (m_scrollableArea)
         m_scrollableArea->updateAfterStyleChange(oldStyle);
 
-    if (!oldStyle || oldStyle->visibility() != renderer()->style()->visibility()) {
-        ASSERT(!oldStyle || diff.needsRepaint() || diff.needsLayout());
-        compositor()->setNeedsUpdateCompositingRequirementsState();
-    }
-
     // Overlay scrollbars can make this layer self-painting so we need
     // to recompute the bit once scrollbars have been updated.
     updateSelfPaintingLayer();
-
-    if (!oldStyle || renderer()->style()->position() != oldStyle->position()) {
-        ASSERT(!oldStyle || diff.needsFullLayout());
-        updateOutOfFlowPositioned(oldStyle);
-    }
 
     if (!oldStyle || !renderer()->style()->reflectionDataEquivalent(oldStyle)) {
         ASSERT(!oldStyle || diff.needsFullLayout());

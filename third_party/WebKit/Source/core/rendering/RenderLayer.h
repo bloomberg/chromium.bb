@@ -206,15 +206,6 @@ public:
     // Part of the issue is with subtree relayout: we don't check if our ancestors have some descendant flags dirty, missing some updates.
     bool hasSelfPaintingLayerDescendant() const { return m_hasSelfPaintingLayerDescendant; }
 
-    // FIXME: We should ASSERT(!m_hasOutOfFlowPositionedDescendantDirty) here. See above.
-    bool hasOutOfFlowPositionedDescendant() const { return m_hasOutOfFlowPositionedDescendant; }
-
-    void setHasOutOfFlowPositionedDescendant(bool hasDescendant) { m_hasOutOfFlowPositionedDescendant = hasDescendant; }
-    void setHasOutOfFlowPositionedDescendantDirty(bool dirty) { m_hasOutOfFlowPositionedDescendantDirty = dirty; }
-
-    void updateIsUnclippedDescendant();
-    bool isUnclippedDescendant() const { return m_isUnclippedDescendant; }
-
     // Will ensure that hasNonCompositiedChild are up to date.
     void updateScrollingStateAfterCompositingChange();
     bool hasVisibleNonLayerContent() const { return m_hasVisibleNonLayerContent; }
@@ -461,12 +452,14 @@ public:
             : opacityAncestor(0)
             , transformAncestor(0)
             , filterAncestor(0)
+            , isUnclippedDescendant(false)
         { }
 
         IntRect clippedAbsoluteBoundingBox;
         const RenderLayer* opacityAncestor;
         const RenderLayer* transformAncestor;
         const RenderLayer* filterAncestor;
+        unsigned isUnclippedDescendant : 1;
     };
 
     void setNeedsToUpdateAncestorDependentProperties();
@@ -477,6 +470,9 @@ public:
     void clearChildNeedsToUpdateAncestorDependantProperties();
 
     const AncestorDependentProperties& ancestorDependentProperties() const { ASSERT(!m_needsToUpdateAncestorDependentProperties); return m_ancestorDependentProperties; }
+
+    // FIXME: Remove this function.
+    bool potentiallyStaleIsUnclippedDescendant() const { return m_ancestorDependentProperties.isUnclippedDescendant; }
 
     bool lostGroupedMapping() const { ASSERT(isAllowedToQueryCompositingState()); return m_lostGroupedMapping; }
     void setLostGroupedMapping(bool b) { m_lostGroupedMapping = b; }
@@ -510,18 +506,11 @@ private:
 
     bool hasOverflowControls() const;
 
-    void setIsUnclippedDescendant(bool isUnclippedDescendant) { m_isUnclippedDescendant = isUnclippedDescendant; }
-
     void setAncestorChainHasSelfPaintingLayerDescendant();
     void dirtyAncestorChainHasSelfPaintingLayerDescendantStatus();
 
-    void setAncestorChainHasOutOfFlowPositionedDescendant();
-    void dirtyAncestorChainHasOutOfFlowPositionedDescendantStatus();
-
     void clipToRect(const LayerPaintingInfo&, GraphicsContext*, const ClipRect&, PaintLayerFlags, BorderRadiusClippingRule = IncludeSelfForBorderRadius);
     void restoreClip(GraphicsContext*, const LayoutRect& paintDirtyRect, const ClipRect&);
-
-    void updateOutOfFlowPositioned(const RenderStyle* oldStyle);
 
     // Returns true if the position changed.
     bool updateLayerPosition();
@@ -636,11 +625,6 @@ private:
     // significant savings, especially if the tree has lots of non-self-painting layers grouped together (e.g. table cells).
     unsigned m_hasSelfPaintingLayerDescendant : 1;
     unsigned m_hasSelfPaintingLayerDescendantDirty : 1;
-
-    unsigned m_hasOutOfFlowPositionedDescendant : 1;
-    unsigned m_hasOutOfFlowPositionedDescendantDirty : 1;
-
-    unsigned m_isUnclippedDescendant : 1;
 
     const unsigned m_isRootLayer : 1;
 

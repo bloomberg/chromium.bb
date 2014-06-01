@@ -114,10 +114,8 @@ void RenderLayerStackingNode::dirtyZOrderLists()
 
     m_descendantsAreContiguousInStackingOrderDirty = true;
 
-    if (!renderer()->documentBeingDestroyed()) {
-        compositor()->setNeedsUpdateCompositingRequirementsState();
+    if (!renderer()->documentBeingDestroyed())
         compositor()->setCompositingLayersNeedRebuild();
-    }
 }
 
 void RenderLayerStackingNode::dirtyStackingContextZOrderLists()
@@ -317,8 +315,6 @@ void RenderLayerStackingNode::updateStackingNodesAfterStyleChange(const RenderSt
         dirtyZOrderLists();
     else
         clearZOrderLists();
-
-    compositor()->setNeedsUpdateCompositingRequirementsState();
 }
 
 bool RenderLayerStackingNode::shouldBeNormalFlowOnly() const

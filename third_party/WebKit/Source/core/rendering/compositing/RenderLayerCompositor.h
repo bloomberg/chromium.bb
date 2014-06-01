@@ -101,10 +101,6 @@ public:
     // created, destroyed or re-parented).
     void setCompositingLayersNeedRebuild();
 
-    // Updating properties required for determining if compositing is necessary.
-    void updateCompositingRequirementsState();
-    void setNeedsUpdateCompositingRequirementsState() { m_needsUpdateCompositingRequirementsState = true; }
-
     // Used to indicate that a compositing update will be needed for the next frame that gets drawn.
     void setNeedsCompositingUpdate(CompositingUpdateType);
 
@@ -179,9 +175,6 @@ public:
     GraphicsLayer* layerForHorizontalScrollbar() const { return m_layerForHorizontalScrollbar.get(); }
     GraphicsLayer* layerForVerticalScrollbar() const { return m_layerForVerticalScrollbar.get(); }
     GraphicsLayer* layerForScrollCorner() const { return m_layerForScrollCorner.get(); }
-
-    void addOutOfFlowPositionedLayer(RenderLayer*);
-    void removeOutOfFlowPositionedLayer(RenderLayer*);
 
     void resetTrackedRepaintRects();
     void setTracksRepaints(bool);
@@ -280,7 +273,6 @@ private:
     // except the one in updateIfNeeded, then rename this to
     // m_compositingDirty.
     bool m_rootShouldAlwaysCompositeDirty;
-    bool m_needsUpdateCompositingRequirementsState;
     bool m_needsUpdateFixedBackground;
     bool m_isTrackingRepaints; // Used for testing.
 
@@ -289,10 +281,6 @@ private:
     // Enclosing container layer, which clips for iframe content
     OwnPtr<GraphicsLayer> m_containerLayer;
     OwnPtr<GraphicsLayer> m_scrollLayer;
-
-    // This is used in updateCompositingRequirementsState to avoid full tree
-    // walks while determining if layers have unclipped descendants.
-    HashSet<RenderLayer*> m_outOfFlowPositionedLayers;
 
     // Enclosing layer for overflow controls and the clipping layer
     OwnPtr<GraphicsLayer> m_overflowControlsHostLayer;

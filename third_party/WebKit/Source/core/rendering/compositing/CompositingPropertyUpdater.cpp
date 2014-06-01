@@ -5,6 +5,7 @@
 #include "config.h"
 #include "core/rendering/compositing/CompositingPropertyUpdater.h"
 
+#include "core/rendering/RenderBlock.h"
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/compositing/CompositedLayerMapping.h"
 
@@ -21,7 +22,7 @@ CompositingPropertyUpdater::~CompositingPropertyUpdater()
 {
 }
 
-void CompositingPropertyUpdater::updateAncestorDependentProperties(RenderLayer* layer, UpdateType updateType, RenderLayer* enclosingCompositedLayer)
+void CompositingPropertyUpdater::updateAncestorDependentProperties(RenderLayer* layer, UpdateType updateType, AncestorInfo info)
 {
     if (!layer->childNeedsToUpdateAncestorDependantProperties() && updateType != ForceUpdate)
         return;
@@ -29,11 +30,11 @@ void CompositingPropertyUpdater::updateAncestorDependentProperties(RenderLayer* 
     m_geometryMap.pushMappingsToAncestor(layer, layer->parent());
 
     if (layer->hasCompositedLayerMapping())
-        enclosingCompositedLayer = layer;
+        info.enclosingCompositedLayer = layer;
 
     if (layer->needsToUpdateAncestorDependentProperties()) {
-        if (enclosingCompositedLayer)
-            enclosingCompositedLayer->compositedLayerMapping()->setNeedsGraphicsLayerUpdate();
+        if (info.enclosingCompositedLayer)
+            info.enclosingCompositedLayer->compositedLayerMapping()->setNeedsGraphicsLayerUpdate();
         updateType = ForceUpdate;
     }
 
@@ -55,13 +56,22 @@ void CompositingPropertyUpdater::updateAncestorDependentProperties(RenderLayer* 
             properties.opacityAncestor = parent->isTransparent() ? parent : parent->ancestorDependentProperties().opacityAncestor;
             properties.transformAncestor = parent->hasTransform() ? parent : parent->ancestorDependentProperties().transformAncestor;
             properties.filterAncestor = parent->hasFilter() ? parent : parent->ancestorDependentProperties().filterAncestor;
+
+            if (layer->renderer()->isOutOfFlowPositioned() && info.ancestorScrollingLayer && !layer->subtreeIsInvisible()) {
+                const RenderObject* container = layer->renderer()->containingBlock();
+                const RenderObject* scroller = info.ancestorScrollingLayer->renderer();
+                properties.isUnclippedDescendant = scroller != container && scroller->isDescendantOf(container);
+            }
         }
 
         layer->updateAncestorDependentProperties(properties);
     }
 
+    if (layer->scrollsOverflow())
+        info.ancestorScrollingLayer = layer;
+
     for (RenderLayer* child = layer->firstChild(); child; child = child->nextSibling())
-        updateAncestorDependentProperties(child, updateType, enclosingCompositedLayer);
+        updateAncestorDependentProperties(child, updateType, info);
 
     m_geometryMap.popMappingsToAncestor(layer->parent());
 

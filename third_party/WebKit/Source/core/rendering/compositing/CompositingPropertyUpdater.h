@@ -12,6 +12,18 @@ namespace WebCore {
 class RenderLayer;
 
 class CompositingPropertyUpdater {
+private:
+    struct AncestorInfo {
+        AncestorInfo()
+            : enclosingCompositedLayer(0)
+            , ancestorScrollingLayer(0)
+        {
+        }
+
+        RenderLayer* enclosingCompositedLayer;
+        RenderLayer* ancestorScrollingLayer;
+    };
+
 public:
     explicit CompositingPropertyUpdater(RenderLayer* rootRenderLayer);
     ~CompositingPropertyUpdater();
@@ -21,7 +33,7 @@ public:
         ForceUpdate,
     };
 
-    void updateAncestorDependentProperties(RenderLayer*, UpdateType, RenderLayer* enclosingCompositedLayer);
+    void updateAncestorDependentProperties(RenderLayer*, UpdateType, AncestorInfo = AncestorInfo());
 
 #if !ASSERT_DISABLED
     static void assertNeedsToUpdateAncestorDependantPropertiesBitsCleared(RenderLayer*);

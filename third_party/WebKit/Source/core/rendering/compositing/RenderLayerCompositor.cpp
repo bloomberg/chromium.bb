@@ -116,7 +116,6 @@ RenderLayerCompositor::RenderLayerCompositor(RenderView& renderView)
     , m_compositing(false)
     , m_compositingLayersNeedRebuild(false)
     , m_rootShouldAlwaysCompositeDirty(true)
-    , m_needsUpdateCompositingRequirementsState(false)
     , m_needsUpdateFixedBackground(false)
     , m_isTrackingRepaints(false)
     , m_rootLayerAttachment(RootLayerUnattached)
@@ -228,21 +227,6 @@ void RenderLayerCompositor::setCompositingLayersNeedRebuild()
     lifecycle().ensureStateAtMost(DocumentLifecycle::LayoutClean);
 }
 
-void RenderLayerCompositor::updateCompositingRequirementsState()
-{
-    if (!m_needsUpdateCompositingRequirementsState)
-        return;
-
-    TRACE_EVENT0("blink_rendering,comp-scroll", "RenderLayerCompositor::updateCompositingRequirementsState");
-
-    m_needsUpdateCompositingRequirementsState = false;
-    if (!rootRenderLayer() || !acceleratedCompositingForOverflowScrollEnabled())
-        return;
-
-    for (HashSet<RenderLayer*>::iterator it = m_outOfFlowPositionedLayers.begin(); it != m_outOfFlowPositionedLayers.end(); ++it)
-        (*it)->updateIsUnclippedDescendant();
-}
-
 static RenderVideo* findFullscreenVideoRenderer(Document& document)
 {
     Element* fullscreenElement = FullscreenElementStack::fullscreenElementFrom(document);
@@ -311,7 +295,6 @@ void RenderLayerCompositor::setNeedsCompositingUpdate(CompositingUpdateType upda
 void RenderLayerCompositor::assertNoUnresolvedDirtyBits()
 {
     ASSERT(!compositingLayersNeedRebuild());
-    ASSERT(!m_needsUpdateCompositingRequirementsState);
     ASSERT(m_pendingUpdateType == CompositingUpdateNone);
     ASSERT(!m_rootShouldAlwaysCompositeDirty);
     ASSERT(!m_needsToRecomputeCompositingRequirements);
@@ -356,7 +339,6 @@ void RenderLayerCompositor::updateIfNeeded()
         // We'll need to remove DeprecatedDirtyCompositingDuringCompositingUpdate
         // before moving this function after checking the dirty bits.
         DeprecatedDirtyCompositingDuringCompositingUpdate marker(lifecycle());
-        updateCompositingRequirementsState();
 
         // FIXME: enableCompositingModeIfNeeded can call setCompositingLayersNeedRebuild,
         // which asserts that it's not InCompositingUpdate.
@@ -394,7 +376,7 @@ void RenderLayerCompositor::updateIfNeeded()
 
         {
             TRACE_EVENT0("blink_rendering", "CompositingPropertyUpdater::updateAncestorDependentProperties");
-            CompositingPropertyUpdater(updateRoot).updateAncestorDependentProperties(updateRoot, compositingPropertyUpdateType, 0);
+            CompositingPropertyUpdater(updateRoot).updateAncestorDependentProperties(updateRoot, compositingPropertyUpdateType);
 #if ASSERT_ENABLED
             CompositingPropertyUpdater::assertNeedsToUpdateAncestorDependantPropertiesBitsCleared(updateRoot);
 #endif
@@ -466,16 +448,6 @@ void RenderLayerCompositor::updateIfNeeded()
     // Inform the inspector that the layer tree has changed.
     if (m_renderView.frame()->isMainFrame())
         InspectorInstrumentation::layerTreeDidChange(m_renderView.frame());
-}
-
-void RenderLayerCompositor::addOutOfFlowPositionedLayer(RenderLayer* layer)
-{
-    m_outOfFlowPositionedLayers.add(layer);
-}
-
-void RenderLayerCompositor::removeOutOfFlowPositionedLayer(RenderLayer* layer)
-{
-    m_outOfFlowPositionedLayers.remove(layer);
 }
 
 bool RenderLayerCompositor::allocateOrClearCompositedLayerMapping(RenderLayer* layer, const CompositingStateTransitionType compositedLayerUpdate)
