@@ -204,7 +204,6 @@ extern const char kFlagSwitchesEnd[];
 extern const char kForceAppMode[];
 extern const char kForceFirstRun[];
 extern const char kForceVariationIds[];
-extern const char kGoogleBaseURL[];
 extern const char kGSSAPILibraryName[];
 extern const char kHelp[];
 extern const char kHelpShort[];

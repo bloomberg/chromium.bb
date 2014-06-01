@@ -18,6 +18,7 @@ class ChromeGoogleURLTrackerClient : public GoogleURLTrackerClient,
   // GoogleURLTrackerClient:
   virtual void SetListeningForNavigationStart(bool listen) OVERRIDE;
   virtual bool IsListeningForNavigationStart() OVERRIDE;
+  virtual bool IsBackgroundNetworkingEnabled() OVERRIDE;
 
  private:
   // content::NotificationObserver:

@@ -116,6 +116,7 @@ class TestGoogleURLTrackerClient : public GoogleURLTrackerClient {
 
   virtual void SetListeningForNavigationStart(bool listen) OVERRIDE;
   virtual bool IsListeningForNavigationStart() OVERRIDE;
+  virtual bool IsBackgroundNetworkingEnabled() OVERRIDE;
 
  private:
   bool observe_nav_start_;
@@ -136,6 +137,10 @@ void TestGoogleURLTrackerClient::SetListeningForNavigationStart(bool listen) {
 
 bool TestGoogleURLTrackerClient::IsListeningForNavigationStart() {
   return observe_nav_start_;
+}
+
+bool TestGoogleURLTrackerClient::IsBackgroundNetworkingEnabled() {
+  return true;
 }
 
 

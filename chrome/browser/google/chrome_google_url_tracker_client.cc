@@ -4,10 +4,12 @@
 
 #include "chrome/browser/google/chrome_google_url_tracker_client.h"
 
+#include "base/command_line.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/google/google_url_tracker.h"
 #include "chrome/browser/google/google_url_tracker_navigation_helper_impl.h"
 #include "chrome/browser/infobars/infobar_service.h"
+#include "chrome/common/chrome_switches.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
@@ -38,6 +40,11 @@ bool ChromeGoogleURLTrackerClient::IsListeningForNavigationStart() {
       this,
       content::NOTIFICATION_NAV_ENTRY_PENDING,
       content::NotificationService::AllBrowserContextsAndSources());
+}
+
+bool ChromeGoogleURLTrackerClient::IsBackgroundNetworkingEnabled() {
+  return !CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableBackgroundNetworking);
 }
 
 void ChromeGoogleURLTrackerClient::Observe(

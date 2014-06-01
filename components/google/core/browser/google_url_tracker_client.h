@@ -28,6 +28,9 @@ class GoogleURLTrackerClient {
   // starts.
   virtual bool IsListeningForNavigationStart() = 0;
 
+  // Returns whether background networking is enabled.
+  virtual bool IsBackgroundNetworkingEnabled() = 0;
+
  protected:
   GoogleURLTracker* google_url_tracker() { return google_url_tracker_; }
 

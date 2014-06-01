@@ -14,8 +14,8 @@
 #include "chrome/browser/google/google_url_tracker_navigation_helper.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "components/google/core/browser/google_switches.h"
 #include "components/google/core/browser/google_url_tracker_client.h"
 #include "components/infobars/core/infobar.h"
 #include "components/infobars/core/infobar_manager.h"
@@ -241,8 +241,7 @@ void GoogleURLTracker::StartFetchIfDesirable() {
   // do background networking, we can't do the necessary fetch, and if the user
   // specified a Google base URL manually, we shouldn't bother to look up any
   // alternatives or offer to switch to them.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableBackgroundNetworking) ||
+  if (!client_->IsBackgroundNetworkingEnabled() ||
       CommandLine::ForCurrentProcess()->HasSwitch(switches::kGoogleBaseURL))
     return;
 
