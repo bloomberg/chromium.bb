@@ -11,7 +11,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "components/bookmarks/browser/bookmark_node.h"
 
-class BookmarkIndex;
 class BookmarkModel;
 
 namespace base {
@@ -19,6 +18,8 @@ class SequencedTaskRunner;
 }
 
 namespace bookmarks {
+
+class BookmarkIndex;
 
 // BookmarkLoadDetails is used by BookmarkStorage when loading bookmarks.
 // BookmarkModel creates a BookmarkLoadDetails and passes it (including

@@ -22,6 +22,8 @@
 typedef BookmarkClient::NodeTypedCountPair NodeTypedCountPair;
 typedef BookmarkClient::NodeTypedCountPairs NodeTypedCountPairs;
 
+namespace bookmarks {
+
 namespace {
 
 // Returns a normalized version of the UTF16 string |text|.  If it fails to
@@ -363,3 +365,5 @@ void BookmarkIndex::UnregisterNode(const base::string16& term,
   if (i->second.empty())
     index_.erase(i);
 }
+
+}  // namespace bookmarks

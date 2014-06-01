@@ -24,7 +24,6 @@
 #include "url/gurl.h"
 
 class BookmarkExpandedStateTracker;
-class BookmarkIndex;
 class BookmarkModelObserver;
 struct BookmarkMatch;
 class PrefService;
@@ -36,6 +35,7 @@ class SequencedTaskRunner;
 }
 
 namespace bookmarks {
+class BookmarkIndex;
 class BookmarkLoadDetails;
 class BookmarkStorage;
 class ScopedGroupBookmarkActions;
@@ -409,7 +409,7 @@ class BookmarkModel : public BookmarkService {
   // Reads/writes bookmarks to disk.
   scoped_refptr<bookmarks::BookmarkStorage> store_;
 
-  scoped_ptr<BookmarkIndex> index_;
+  scoped_ptr<bookmarks::BookmarkIndex> index_;
 
   // True if URLs are stored in the BookmarkIndex in addition to bookmark
   // titles.

@@ -21,6 +21,7 @@
 using base::ASCIIToUTF16;
 using base::UTF8ToUTF16;
 
+namespace bookmarks {
 namespace {
 
 const char kAboutBlankURL[] = "about:blank";
@@ -461,3 +462,4 @@ TEST_F(BookmarkIndexTest, GetResultsSortedByTypedCount) {
 }
 
 }  // namespace
+}  // namespace bookmarks

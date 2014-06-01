@@ -26,6 +26,7 @@
 #include "ui/gfx/favicon_size.h"
 
 using base::Time;
+using bookmarks::BookmarkIndex;
 using bookmarks::BookmarkLoadDetails;
 using bookmarks::BookmarkStorage;
 
