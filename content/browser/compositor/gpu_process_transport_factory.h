@@ -19,6 +19,10 @@ namespace base {
 class Thread;
 }
 
+namespace cc {
+class SurfaceManager;
+}
+
 namespace content {
 class BrowserCompositorOutputSurface;
 class BrowserCompositorOutputSurfaceProxy;
@@ -78,6 +82,7 @@ class GpuProcessTransportFactory
   scoped_ptr<GLHelper> gl_helper_;
   ObserverList<ImageTransportFactoryObserver> observer_list_;
   base::WeakPtrFactory<GpuProcessTransportFactory> callback_factory_;
+  scoped_ptr<cc::SurfaceManager> surface_manager_;
 
   // The contents of this map and its methods may only be used on the compositor
   // thread.

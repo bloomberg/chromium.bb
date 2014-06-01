@@ -14,11 +14,14 @@
 #include "base/threading/thread.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/output/output_surface.h"
+#include "cc/surfaces/surface_manager.h"
 #include "content/browser/compositor/browser_compositor_output_surface.h"
 #include "content/browser/compositor/browser_compositor_output_surface_proxy.h"
 #include "content/browser/compositor/gpu_browser_compositor_output_surface.h"
+#include "content/browser/compositor/onscreen_display_client.h"
 #include "content/browser/compositor/reflector_impl.h"
 #include "content/browser/compositor/software_browser_compositor_output_surface.h"
+#include "content/browser/compositor/surface_display_output_surface.h"
 #include "content/browser/gpu/browser_gpu_channel_host_factory.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/gpu/gpu_surface_tracker.h"
@@ -29,6 +32,7 @@
 #include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
 #include "content/common/gpu/gpu_process_launch_causes.h"
 #include "content/common/host_shared_bitmap_manager.h"
+#include "content/public/common/content_switches.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/common/mailbox.h"
@@ -59,6 +63,7 @@ namespace content {
 struct GpuProcessTransportFactory::PerCompositorData {
   int surface_id;
   scoped_refptr<ReflectorImpl> reflector;
+  scoped_ptr<OnscreenDisplayClient> display_client;
 };
 
 GpuProcessTransportFactory::GpuProcessTransportFactory()
@@ -74,6 +79,10 @@ GpuProcessTransportFactory::GpuProcessTransportFactory()
   if (use_thread) {
     compositor_thread_.reset(new base::Thread("Browser Compositor"));
     compositor_thread_->Start();
+  }
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kUseSurfaces)) {
+    surface_manager_ = make_scoped_ptr(new cc::SurfaceManager);
   }
 }
 
@@ -141,6 +150,7 @@ scoped_ptr<cc::OutputSurface> GpuProcessTransportFactory::CreateOutputSurface(
 #endif
 
   scoped_refptr<ContextProviderCommandBuffer> context_provider;
+
   if (!create_software_renderer) {
     context_provider = ContextProviderCommandBuffer::Create(
         GpuProcessTransportFactory::CreateContextCommon(data->surface_id),
@@ -148,6 +158,34 @@ scoped_ptr<cc::OutputSurface> GpuProcessTransportFactory::CreateOutputSurface(
   }
 
   UMA_HISTOGRAM_BOOLEAN("Aura.CreatedGpuBrowserCompositor", !!context_provider);
+
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kUseSurfaces)) {
+    if (!context_provider.get())
+      LOG(FATAL) << "Surfaces do not support software compositing yet";
+    // This gets a bit confusing. Here we have a ContextProvider configured to
+    // render directly to this widget. We need to make an OnscreenDisplayClient
+    // associated with this context, then return a SurfaceDisplayOutputSurface
+    // set up to draw to the display's surface.
+    cc::SurfaceManager* manager = surface_manager_.get();
+    scoped_ptr<OnscreenDisplayClient> display_client(
+        new OnscreenDisplayClient(context_provider, manager));
+    // TODO(jamesr): Need to set up filtering for the
+    // GpuHostMsg_UpdateVSyncParameters message.
+
+    scoped_refptr<cc::ContextProvider> offscreen_context_provider =
+        ContextProviderCommandBuffer::Create(
+            GpuProcessTransportFactory::CreateOffscreenCommandBufferContext(),
+            "Offscreen-MainThread");
+    scoped_ptr<cc::SoftwareOutputDevice> software_device;
+    scoped_ptr<SurfaceDisplayOutputSurface> output_surface(
+        new SurfaceDisplayOutputSurface(display_client->display(),
+                                        manager,
+                                        offscreen_context_provider,
+                                        software_device.Pass()));
+    data->display_client = display_client.Pass();
+    return output_surface.PassAs<cc::OutputSurface>();
+  }
 
   if (!context_provider.get()) {
     if (compositor_thread_.get()) {

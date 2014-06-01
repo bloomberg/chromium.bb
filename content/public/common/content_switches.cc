@@ -878,6 +878,9 @@ const char kUseFakeUIForMediaStream[]     = "use-fake-ui-for-media-stream";
 // Set when Chromium should use a mobile user agent.
 const char kUseMobileUserAgent[] = "use-mobile-user-agent";
 
+// Use the new surfaces system to handle compositor delegation.
+const char kUseSurfaces[] = "use-surfaces";
+
 // On POSIX only: the contents of this flag are prepended to the utility
 // process command line. Useful values might be "valgrind" or "xterm -e gdb
 // --args".
