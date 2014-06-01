@@ -9,10 +9,8 @@
 #include <set>
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/scoped_vector.h"
 #include "base/timer/elapsed_timer.h"
 #include "extensions/common/user_script.h"
 
@@ -20,10 +18,6 @@ class GURL;
 
 namespace blink {
 class WebFrame;
-}
-
-namespace content {
-class RenderView;
 }
 
 namespace extensions {
@@ -62,36 +56,6 @@ class ScriptInjection {
                   UserScriptSlave* user_script_slave);
   ~ScriptInjection();
 
-  // Inject the script into the given |frame| if the script should run on the
-  // frame and has permission to do so. If the script requires user consent,
-  // this will register a pending request to inject at a later time.
-  // If the script is run immediately, |scripts_run_info| is updated with
-  // information about the run.
-  void InjectIfAllowed(blink::WebFrame* frame,
-                       UserScript::RunLocation location,
-                       const GURL& document_url,
-                       ScriptsRunInfo* scripts_run_info);
-
-  // If a request with the given |request_id| exists, runs that request and
-  // modifies |scripts_run_info| with information about the run. Otherwise, does
-  // nothing.
-  // If |frame_out| is non-NULL and a script was run, |frame_out| will be
-  // populated with the frame in which the script was run.
-  // Returns true if the request was found *and* the script was run.
-  bool NotifyScriptPermitted(int64 request_id,
-                             content::RenderView* render_view,
-                             ScriptsRunInfo* scripts_run_info,
-                             blink::WebFrame** frame_out);
-
-  // Notififies the Injection that the frame has been detached (i.e. is about
-  // to be destroyed).
-  void FrameDetached(blink::WebFrame* frame);
-
-  const std::string& extension_id() { return extension_id_; }
-
- private:
-  struct PendingInjection;
-
   // Returns true if this ScriptInjection wants to run on the given |frame| at
   // the given |run_location| (i.e., if this script would inject either JS or
   // CSS).
@@ -99,16 +63,19 @@ class ScriptInjection {
                   UserScript::RunLocation run_location,
                   const GURL& document_url) const;
 
-  // Returns true if the script will inject [css|js] at the given
-  // |run_location|.
-  bool ShouldInjectJS(UserScript::RunLocation run_location) const;
-  bool ShouldInjectCSS(UserScript::RunLocation run_location) const;
-
   // Injects the script into the given |frame|, and updates |scripts_run_info|
   // information about the run.
   void Inject(blink::WebFrame* frame,
               UserScript::RunLocation run_location,
               ScriptsRunInfo* scripts_run_info) const;
+
+  const std::string& extension_id() { return extension_id_; }
+
+ private:
+  // Returns true if the script will inject [css|js] at the given
+  // |run_location|.
+  bool ShouldInjectJS(UserScript::RunLocation run_location) const;
+  bool ShouldInjectCSS(UserScript::RunLocation run_location) const;
 
   // Injects the [css|js] scripts into the frame, and stores the results of
   // the run in |scripts_run_info|.
@@ -131,8 +98,6 @@ class ScriptInjection {
 
   // True if the script is a standalone script or emulates greasemonkey.
   bool is_standalone_or_emulate_greasemonkey_;
-
-  ScopedVector<PendingInjection> pending_injections_;
 
   DISALLOW_COPY_AND_ASSIGN(ScriptInjection);
 };

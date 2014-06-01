@@ -759,24 +759,9 @@ void Dispatcher::OnUpdateTabSpecificPermissions(
       this, page_id, tab_id, extension_id, origin_set);
 }
 
-void Dispatcher::OnUpdateUserScripts(
-    base::SharedMemoryHandle scripts,
-    const std::set<std::string>& extension_ids) {
-  if (!base::SharedMemory::IsHandleValid(scripts)) {
-    NOTREACHED() << "Bad scripts handle";
-    return;
-  }
-
-  for (std::set<std::string>::const_iterator iter = extension_ids.begin();
-       iter != extension_ids.end();
-       ++iter) {
-    if (!Extension::IdIsValid(*iter)) {
-      NOTREACHED() << "Invalid extension id: " << *iter;
-      return;
-    }
-  }
-
-  user_script_slave_->UpdateScripts(scripts, extension_ids);
+void Dispatcher::OnUpdateUserScripts(base::SharedMemoryHandle scripts) {
+  DCHECK(base::SharedMemory::IsHandleValid(scripts)) << "Bad scripts handle";
+  user_script_slave_->UpdateScripts(scripts);
   UpdateActiveExtensions();
 }
 

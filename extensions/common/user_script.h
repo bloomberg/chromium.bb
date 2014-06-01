@@ -45,8 +45,6 @@ class UserScript {
                     // is "idle". Currently this uses the simple heuristic of:
                     // min(DOM_CONTENT_LOADED + TIMEOUT, ONLOAD), but no
                     // particular injection point is guaranteed.
-    RUN_DEFERRED,  // The user script's injection was deferred for permissions
-                   // reasons, and was executed at a later time.
     RUN_LOCATION_LAST  // Leave this as the last item.
   };
 

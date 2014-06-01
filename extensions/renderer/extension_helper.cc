@@ -158,9 +158,7 @@ bool ExtensionHelper::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ExtensionMsg_AddMessageToConsole,
                         OnAddMessageToConsole)
     IPC_MESSAGE_HANDLER(ExtensionMsg_AppWindowClosed,
-                        OnAppWindowClosed)
-    IPC_MESSAGE_HANDLER(ExtensionMsg_GrantContentScriptPermission,
-                        OnGrantContentScriptPermission)
+                        OnAppWindowClosed);
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -219,8 +217,6 @@ void ExtensionHelper::FrameDetached(WebFrame* frame) {
 
   delete i->second;
   g_schedulers.Get().erase(i);
-
-  dispatcher_->user_script_slave()->FrameDetached(frame);
 }
 
 void ExtensionHelper::DidMatchCSS(
@@ -348,11 +344,6 @@ void ExtensionHelper::OnAppWindowClosed() {
     return;
   script_context->module_system()->CallModuleMethod("app.window",
                                                     "onAppWindowClosed");
-}
-
-void ExtensionHelper::OnGrantContentScriptPermission(int request_id) {
-  dispatcher_->user_script_slave()->OnContentScriptGrantedPermission(
-      render_view(), request_id);
 }
 
 }  // namespace extensions

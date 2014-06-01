@@ -110,7 +110,7 @@ void ActiveScriptController::OnActiveTabPermissionGranted(
 }
 
 void ActiveScriptController::OnAdInjectionDetected(
-    const std::set<std::string>& ad_injectors) {
+    const std::set<std::string> ad_injectors) {
   // We're only interested in data if there are ad injectors detected.
   if (ad_injectors.empty())
     return;
@@ -213,10 +213,9 @@ void ActiveScriptController::RunPendingForExtension(
   LocationBarController::NotifyChange(web_contents());
 }
 
-void ActiveScriptController::OnRequestContentScriptPermission(
+void ActiveScriptController::OnNotifyExtensionScriptExecution(
     const std::string& extension_id,
-    int page_id,
-    int request_id) {
+    int page_id) {
   if (!Extension::IdIsValid(extension_id)) {
     NOTREACHED() << "'" << extension_id << "' is not a valid id.";
     return;
@@ -230,44 +229,18 @@ void ActiveScriptController::OnRequestContentScriptPermission(
   if (!extension)
     return;
 
-  // If the request id is -1, that signals that the content script has already
-  // ran (because this feature is not enabled). Add the extension to the list of
-  // permitted extensions (for metrics), and return immediately.
-  if (request_id == -1) {
-    DCHECK(!enabled_);
-    permitted_extensions_.insert(extension->id());
-    return;
-  }
-
-  if (RequiresUserConsentForScriptInjection(extension)) {
-    // This base::Unretained() is safe, because the callback is only invoked by
-    // this object.
-    RequestScriptInjection(
-        extension,
-        page_id,
-        base::Bind(&ActiveScriptController::GrantContentScriptPermission,
-                   base::Unretained(this),
-                   request_id));
-  } else {
-    GrantContentScriptPermission(request_id);
-  }
-}
-
-void ActiveScriptController::GrantContentScriptPermission(int request_id) {
-  content::RenderViewHost* render_view_host =
-      web_contents()->GetRenderViewHost();
-  if (render_view_host) {
-    render_view_host->Send(new ExtensionMsg_GrantContentScriptPermission(
-                               render_view_host->GetRoutingID(),
-                               request_id));
-  }
+  // Right now, we allow all content scripts to execute, but notify the
+  // controller of them.
+  // TODO(rdevlin.cronin): Fix this in a future CL.
+  if (RequiresUserConsentForScriptInjection(extension))
+    RequestScriptInjection(extension, page_id, base::Bind(&base::DoNothing));
 }
 
 bool ActiveScriptController::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(ActiveScriptController, message)
-    IPC_MESSAGE_HANDLER(ExtensionHostMsg_RequestContentScriptPermission,
-                        OnRequestContentScriptPermission)
+    IPC_MESSAGE_HANDLER(ExtensionHostMsg_NotifyExtensionScriptExecution,
+                        OnNotifyExtensionScriptExecution)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;

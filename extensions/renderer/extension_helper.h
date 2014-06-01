@@ -93,7 +93,6 @@ class ExtensionHelper
   void OnAddMessageToConsole(content::ConsoleMessageLevel level,
                              const std::string& message);
   void OnAppWindowClosed();
-  void OnGrantContentScriptPermission(int request_id);
 
   Dispatcher* dispatcher_;
 

@@ -46,11 +46,7 @@ class UserScriptSlave {
   const Extension* GetExtension(const std::string& extension_id);
 
   // Update the parsed scripts from shared memory.
-  // If |changed_extensions| is not empty, only those extensions will be
-  // updated.
-  // Otherwise, all extensions will be updated.
-  bool UpdateScripts(base::SharedMemoryHandle shared_memory,
-                     const std::set<std::string>& changed_extensions);
+  bool UpdateScripts(base::SharedMemoryHandle shared_memory);
 
   // Gets the isolated world ID to use for the given |extension| in the given
   // |frame|. If no isolated world has been created for that extension,
@@ -69,14 +65,6 @@ class UserScriptSlave {
   // TODO(aa): Extract a UserScriptFrame interface out of this to improve
   // testability.
   void InjectScripts(blink::WebFrame* frame, UserScript::RunLocation location);
-
-  // Allow an extension to inject scripts that were previously delayed for user
-  // approval.
-  void OnContentScriptGrantedPermission(
-      content::RenderView* render_view, int request_id);
-
-  // Notify the UserScriptSlave that the |frame| is detached, and about to die.
-  void FrameDetached(blink::WebFrame* frame);
 
  private:
   // Log the data from scripts being run, including doing UMA and notifying the

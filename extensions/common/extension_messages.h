@@ -359,11 +359,8 @@ IPC_MESSAGE_ROUTED1(ExtensionMsg_ExecuteCode,
 // Notification that the user scripts have been updated. It has one
 // SharedMemoryHandle argument consisting of the pickled script data. This
 // handle is valid in the context of the renderer.
-// If |changed_extensions| is not empty, only the extensions in that set will
-// be updated. Otherwise, all extensions will be updated.
-IPC_MESSAGE_CONTROL2(ExtensionMsg_UpdateUserScripts,
-                     base::SharedMemoryHandle,
-                     std::set<std::string> /* changed extensions */)
+IPC_MESSAGE_CONTROL1(ExtensionMsg_UpdateUserScripts,
+                     base::SharedMemoryHandle)
 
 // Tell the render view which browser window it's being attached to.
 IPC_MESSAGE_ROUTED1(ExtensionMsg_UpdateBrowserWindowId,
@@ -575,21 +572,9 @@ IPC_MESSAGE_ROUTED3(ExtensionHostMsg_ContentScriptsExecuting,
                     int32 /* page_id of the _topmost_ frame */,
                     GURL /* url of the _topmost_ frame */)
 
-// Sent from the renderer to the browser to request permission for a content
-// script to execute on a given page.
-// If request id is -1, this signals that the request has already ran, and this
-// merely serves as a notification. This happens when the feature to disable
-// scripts running without user consent is not enabled.
-IPC_MESSAGE_ROUTED3(ExtensionHostMsg_RequestContentScriptPermission,
+IPC_MESSAGE_ROUTED2(ExtensionHostMsg_NotifyExtensionScriptExecution,
                     std::string /* extension id */,
-                    int /* page id */,
-                    int /* request id */)
-
-// Sent from the browser to the renderer in reply to a
-// RequestContentScriptPermission message, granting permission for a content
-// script to run.
-IPC_MESSAGE_ROUTED1(ExtensionMsg_GrantContentScriptPermission,
-                    int /* request id */)
+                    int /* page id */)
 
 // Sent by the renderer when a web page is checking if its app is installed.
 IPC_MESSAGE_ROUTED3(ExtensionHostMsg_GetAppInstallState,

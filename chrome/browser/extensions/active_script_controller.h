@@ -62,7 +62,7 @@ class ActiveScriptController : public LocationBarController::ActionProvider,
   void OnActiveTabPermissionGranted(const Extension* extension);
 
   // Notifies the ActiveScriptController of detected ad injection.
-  void OnAdInjectionDetected(const std::set<std::string>& ad_injectors);
+  void OnAdInjectionDetected(const std::set<std::string> ad_injectors);
 
   // LocationBarControllerProvider implementation.
   virtual ExtensionAction* GetActionForExtension(
@@ -88,13 +88,9 @@ class ActiveScriptController : public LocationBarController::ActionProvider,
   // Runs any pending injections for the corresponding extension.
   void RunPendingForExtension(const Extension* extension);
 
-  // Handle the RequestContentScriptPermission message.
-  void OnRequestContentScriptPermission(const std::string& extension_id,
-                                        int page_id,
-                                        int request_id);
-
-  // Grants permission for the given request to run.
-  void GrantContentScriptPermission(int request_id);
+  // Handles the NotifyExtensionScriptExecution message.
+  void OnNotifyExtensionScriptExecution(const std::string& extension_id,
+                                        int page_id);
 
   // content::WebContentsObserver implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;

@@ -149,13 +149,9 @@ class UserScriptMaster : public base::RefCountedThreadSafe<UserScriptMaster>,
       const Extension* extension,
       UnloadedExtensionInfo::Reason reason) OVERRIDE;
 
-  // Sends the renderer process a new set of user scripts. If
-  // |changed_extensions| is not empty, this signals that only the scripts from
-  // those extensions should be updated. Otherwise, all extensions will be
-  // updated.
+  // Sends the renderer process a new set of user scripts.
   void SendUpdate(content::RenderProcessHost* process,
-                  base::SharedMemory* shared_memory,
-                  const std::set<std::string>& changed_extensions);
+                  base::SharedMemory* shared_memory);
 
   // Manages our notification registrations.
   content::NotificationRegistrar registrar_;
@@ -171,10 +167,6 @@ class UserScriptMaster : public base::RefCountedThreadSafe<UserScriptMaster>,
 
   // Maps extension info needed for localization to an extension ID.
   ExtensionsInfo extensions_info_;
-
-  // The IDs of the extensions which have changed since the last update sent to
-  // the renderer.
-  std::set<std::string> changed_extensions_;
 
   // If the extensions service has finished loading its initial set of
   // extensions.

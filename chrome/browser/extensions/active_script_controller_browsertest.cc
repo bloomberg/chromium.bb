@@ -16,7 +16,6 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "extensions/common/feature_switch.h"
-#include "extensions/common/switches.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -62,9 +61,10 @@ enum RequiresConsent {
 
 class ActiveScriptControllerBrowserTest : public ExtensionBrowserTest {
  public:
-  ActiveScriptControllerBrowserTest() {}
+  ActiveScriptControllerBrowserTest()
+      : feature_override_(FeatureSwitch::scripts_require_action(),
+                          FeatureSwitch::OVERRIDE_ENABLED) {}
 
-  virtual void SetUpCommandLine(base::CommandLine* command_line) OVERRIDE;
   virtual void CleanUpOnMainThread() OVERRIDE;
 
   // Returns an extension with the given |host_type| and |injection_type|. If
@@ -75,18 +75,10 @@ class ActiveScriptControllerBrowserTest : public ExtensionBrowserTest {
                                         InjectionType injection_type);
 
  private:
+  FeatureSwitch::ScopedOverride feature_override_;
   ScopedVector<TestExtensionDir> test_extension_dirs_;
   std::vector<const Extension*> extensions_;
 };
-
-void ActiveScriptControllerBrowserTest::SetUpCommandLine(
-    base::CommandLine* command_line) {
-  ExtensionBrowserTest::SetUpCommandLine(command_line);
-  // We append the actual switch to the commandline because it needs to be
-  // passed over to the renderer, which a FeatureSwitch::ScopedOverride will
-  // not do.
-  command_line->AppendSwitch(switches::kEnableScriptsRequireAction);
-}
 
 void ActiveScriptControllerBrowserTest::CleanUpOnMainThread() {
   test_extension_dirs_.clear();
@@ -274,7 +266,10 @@ testing::AssertionResult ActiveScriptTester::Verify() {
 
   // Otherwise, we don't have permission, and have to grant it. Ensure the
   // script has *not* already executed.
-  if (inject_success_listener_->was_satisfied()) {
+  // Currently, it's okay for content scripts to execute, because we don't
+  // block them.
+  // TODO(rdevlin.cronin): Fix this.
+  if (inject_success_listener_->was_satisfied() && type_ != CONTENT_SCRIPT) {
     return testing::AssertionFailure() <<
         name_ << "'s script ran without permission.";
   }
@@ -321,7 +316,7 @@ ExtensionAction* ActiveScriptTester::GetAction() {
 }
 
 IN_PROC_BROWSER_TEST_F(ActiveScriptControllerBrowserTest,
-                       ActiveScriptsAreDisplayedAndDelayExecution) {
+                       ActiveScriptsAreDisplayed) {
   base::FilePath active_script_path =
       test_data_dir_.AppendASCII("active_script");
 
@@ -367,48 +362,8 @@ IN_PROC_BROWSER_TEST_F(ActiveScriptControllerBrowserTest,
   };
 
   // Navigate to an URL (which matches the explicit host specified in the
-  // extension content_scripts_explicit_hosts). All four extensions should
+  // extension content_scripts_explicit_hosts). All three extensions should
   // inject the script.
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
-  ui_test_utils::NavigateToURL(
-      browser(), embedded_test_server()->GetURL("/extensions/test_file.html"));
-
-  for (size_t i = 0u; i < arraysize(testers); ++i)
-    EXPECT_TRUE(testers[i].Verify()) << kExtensionNames[i];
-}
-
-// A version of the test with the flag off, in order to test that everything
-// still works as expected.
-class FlagOffActiveScriptControllerBrowserTest
-    : public ActiveScriptControllerBrowserTest {
- private:
-  // Simply don't append the flag.
-  virtual void SetUpCommandLine(base::CommandLine* command_line) OVERRIDE {
-    ExtensionBrowserTest::SetUpCommandLine(command_line);
-  }
-};
-
-IN_PROC_BROWSER_TEST_F(FlagOffActiveScriptControllerBrowserTest,
-                       ScriptsExecuteWhenFlagAbsent) {
-  const char* kExtensionNames[] = {
-    "content_scripts_all_hosts",
-    "inject_scripts_all_hosts",
-  };
-  ActiveScriptTester testers[] = {
-    ActiveScriptTester(
-          kExtensionNames[0],
-          GetOrCreateExtension(ALL_HOSTS, CONTENT_SCRIPT),
-          browser(),
-          DOES_NOT_REQUIRE_CONSENT,
-          CONTENT_SCRIPT),
-      ActiveScriptTester(
-          kExtensionNames[1],
-          GetOrCreateExtension(ALL_HOSTS, EXECUTE_SCRIPT),
-          browser(),
-          DOES_NOT_REQUIRE_CONSENT,
-          EXECUTE_SCRIPT),
-  };
-
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
   ui_test_utils::NavigateToURL(
       browser(), embedded_test_server()->GetURL("/extensions/test_file.html"));

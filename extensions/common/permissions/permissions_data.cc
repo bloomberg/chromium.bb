@@ -584,13 +584,12 @@ bool PermissionsData::RequiresActionForScriptExecution(
     int tab_id,
     const GURL& url) {
   // For now, the user should be notified when an extension with all hosts
-  // permission tries to execute a script on a page. Exceptions for policy-
-  // enabled and component extensions, and extensions which are whitelisted to
-  // execute scripts everywhere.
+  // permission tries to execute a script on a page, with exceptions for policy-
+  // enabled and component extensions. If this doesn't meet those criteria,
+  // return immediately.
   if (!extension->ShouldDisplayInExtensionSettings() ||
       Manifest::IsPolicyLocation(extension->location()) ||
       Manifest::IsComponentLocation(extension->location()) ||
-      CanExecuteScriptEverywhere(extension) ||
       !ShouldWarnAllHosts(extension)) {
     return false;
   }
