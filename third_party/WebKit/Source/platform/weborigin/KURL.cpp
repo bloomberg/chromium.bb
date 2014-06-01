@@ -176,6 +176,12 @@ String KURL::elidedString() const
     return string().left(511) + "..." + string().right(510);
 }
 
+KURL::KURL()
+    : m_isValid(false)
+    , m_protocolIsInHTTPFamily(false)
+{
+}
+
 // Initializes with a string representing an absolute URL. No encoding
 // information is specified. This generally happens when a KURL is converted
 // to a string and then converted back. In this case, the URL is already

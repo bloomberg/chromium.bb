@@ -46,12 +46,7 @@ enum ParsedURLStringTag { ParsedURLString };
 
 class PLATFORM_EXPORT KURL {
 public:
-    KURL()
-        : m_isValid(false)
-        , m_protocolIsInHTTPFamily(false)
-    {
-    }
-
+    KURL();
     KURL(const KURL&);
     KURL& operator=(const KURL&);
 
