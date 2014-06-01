@@ -1,0 +1,38 @@
+layer at (0,0) size 800x600
+  RenderView at (0,0) size 800x600
+layer at (0,0) size 800x325
+  RenderBlock {HTML} at (0,0) size 800x325
+    RenderBody {BODY} at (0,0) size 800x324
+      RenderBlock {DIV} at (0,0) size 600x36
+        RenderText {#text} at (0,0) size 203x15
+          text run at (0,0) width 203: "Table autosizing tests - nested-tables.html"
+        RenderBR {BR} at (203,0) size 0x15
+        RenderText {#text} at (0,16) size 370x15
+          text run at (0,16) width 370: "This test passes if \"This text should not overlap itself\" doesn't overlap itself."
+      RenderTable {TABLE} at (1,37) size 798x287 [border: none]
+        RenderTableSection {TBODY} at (0,0) size 797x286
+          RenderTableRow {TR} at (0,0) size 797x286
+            RenderTableCell {TD} at (0,0) size 797x286 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=0 c=0 rs=1 cs=1]
+              RenderBlock (anonymous) at (2,2) size 794x210
+                RenderText {#text} at (0,0) size 769x209
+                  text run at (0,0) width 769: "Autosize Autosize Autosize Autosize Autosize Autosize Autosize"
+                  text run at (0,35) width 769: "Autosize Autosize Autosize Autosize Autosize Autosize Autosize"
+                  text run at (0,70) width 769: "Autosize Autosize Autosize Autosize Autosize Autosize Autosize"
+                  text run at (0,105) width 769: "Autosize Autosize Autosize Autosize Autosize Autosize Autosize"
+                  text run at (0,140) width 769: "Autosize Autosize Autosize Autosize Autosize Autosize Autosize"
+                  text run at (0,175) width 103: "Autosize"
+              RenderTable {TABLE} at (3,213) size 94x71 [border: none]
+                RenderTableSection {TBODY} at (0,0) size 93x70
+                  RenderTableRow {TR} at (0,0) size 93x51
+                    RenderTableCell {TD} at (0,0) size 93x51 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=0 c=0 rs=1 cs=1]
+                      RenderText {#text} at (2,2) size 43x15
+                        text run at (2,2) width 43: "This text"
+                      RenderBR {BR} at (45,2) size 0x15
+                      RenderText {#text} at (2,18) size 90x15
+                        text run at (2,18) width 90: "should not overlap"
+                      RenderBR {BR} at (92,18) size 0x15
+                      RenderText {#text} at (2,34) size 27x15
+                        text run at (2,34) width 27: "itself."
+                  RenderTableRow {TR} at (0,51) size 93x19
+                    RenderTableCell {TD} at (0,51) size 93x19 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=1 c=0 rs=1 cs=1]
+                      RenderImage {IMG} at (2,9) size 5x5

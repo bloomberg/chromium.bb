@@ -1,0 +1,24 @@
+layer at (0,0) size 800x600
+  RenderView at (0,0) size 800x600
+layer at (0,0) size 800x117
+  RenderBlock {HTML} at (0,0) size 800x117
+    RenderBody {BODY} at (8,16) size 784x93
+      RenderBlock {P} at (0,0) size 784x20
+        RenderText {#text} at (0,0) size 648x19
+          text run at (0,0) width 374: "The base of the following three letters should all be connected "
+          text run at (374,0) width 274: "and not have a gap between the | and _ parts."
+      RenderBlock (anonymous) at (0,36) size 784x57
+        RenderInline {SPAN} at (0,0) size 21x55
+          RenderText {#text} at (50,1) size 21x55
+            text run at (50,1) width 21 RTL: "\x{640}\x{622}"
+        RenderText {#text} at (46,29) size 4x19
+          text run at (46,29) width 4 RTL: " "
+        RenderInline {SPAN} at (0,0) size 21x55
+          RenderText {#text} at (25,1) size 21x55
+            text run at (25,1) width 21 RTL: "\x{640}\x{623}"
+        RenderText {#text} at (21,29) size 4x19
+          text run at (21,29) width 4 RTL: " "
+        RenderInline {SPAN} at (0,0) size 21x55
+          RenderText {#text} at (0,1) size 21x55
+            text run at (0,1) width 21 RTL: "\x{640}\x{625}"
+        RenderText {#text} at (0,0) size 0x0

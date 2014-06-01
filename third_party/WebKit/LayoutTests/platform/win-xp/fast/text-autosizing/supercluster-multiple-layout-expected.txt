@@ -1,0 +1,28 @@
+layer at (0,0) size 800x600
+  RenderView at (0,0) size 800x600
+layer at (0,0) size 800x354
+  RenderBlock {HTML} at (0,0) size 800x354
+    RenderBody {BODY} at (0,0) size 800x354
+      RenderTable {TABLE} at (0,0) size 800x246
+        RenderTableSection {TBODY} at (0,0) size 800x246
+          RenderTableRow {TR} at (0,2) size 800x242
+            RenderTableCell {TD} at (2,2) size 796x242 [r=0 c=0 rs=1 cs=1]
+              RenderText {#text} at (1,2) size 793x238
+                text run at (1,2) width 636: "Lorem ipsum dolor sit amet, consectetur"
+                text run at (1,50) width 793: "adipisicing elit, sed do eiusmod tempor incididunt"
+                text run at (1,98) width 41: "ut "
+                text run at (42,98) width 667: "labore et dolore magna aliqua. Ut enim ad"
+                text run at (1,146) width 777: "minim veniam, quis nostrud exercitation ullamco"
+                text run at (1,194) width 783: "laboris ni si ut aliquip ex ea commodo consequat."
+      RenderTable {TABLE} at (50,246) size 301x54
+        RenderTableSection {TBODY} at (0,0) size 301x54
+          RenderTableRow {TR} at (0,2) size 301x50
+            RenderTableCell {TD} at (2,2) size 297x50 [r=0 c=0 rs=1 cs=1]
+              RenderText {#text} at (1,2) size 295x46
+                text run at (1,2) width 295: "Another comment."
+      RenderTable {TABLE} at (100,300) size 301x54
+        RenderTableSection {TBODY} at (0,0) size 301x54
+          RenderTableRow {TR} at (0,2) size 301x50
+            RenderTableCell {TD} at (2,2) size 297x50 [r=0 c=0 rs=1 cs=1]
+              RenderText {#text} at (1,2) size 295x46
+                text run at (1,2) width 295: "Another comment."
