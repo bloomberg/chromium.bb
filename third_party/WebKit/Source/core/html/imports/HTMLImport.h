@@ -106,14 +106,13 @@ public:
     // FIXME: Consider returning HTMLImportTreeRoot.
     HTMLImport* root();
     bool precedes(HTMLImport*);
-    bool isRoot() const { return !isChild(); }
+    bool isRoot() const { return !parent(); }
     bool isSync() const { return SyncMode(m_sync) == Sync; }
     bool formsCycle() const;
     const HTMLImportState& state() const { return m_state; }
 
     void appendImport(HTMLImport*);
 
-    virtual bool isChild() const { return false; }
     virtual Document* document() const = 0;
     virtual bool isDone() const = 0; // FIXME: Should be renamed to haveFinishedLoading()
     virtual HTMLImportLoader* loader() const { return 0; }

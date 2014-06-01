@@ -65,7 +65,6 @@ public:
     WeakPtr<HTMLImportChild> weakPtr() { return m_weakFactory.createWeakPtr(); }
 
     // HTMLImport
-    virtual bool isChild() const OVERRIDE { return true; }
     virtual Document* document() const OVERRIDE;
     virtual bool isDone() const OVERRIDE;
     virtual HTMLImportLoader* loader() const OVERRIDE { return m_loader; }
@@ -100,7 +99,7 @@ private:
 
 inline HTMLImportChild* toHTMLImportChild(HTMLImport* import)
 {
-    ASSERT(!import || import->isChild());
+    ASSERT(!import || !import->isRoot());
     return static_cast<HTMLImportChild*>(import);
 }
 
