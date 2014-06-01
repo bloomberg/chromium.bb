@@ -694,6 +694,11 @@ crbug.com/313846 http/tests/images/webp-partial-load.html [ ImageOnlyFailure Tim
 
 crbug.com/316150 inspector/timeline/timeline-network-received-data.html [ Failure Pass ]
 
+crbug.com/331251 fast/block/float/float-not-removed-from-next-sibling2.html [ NeedsRebaseline ]
+crbug.com/331251 fast/block/float/nestedAnonymousBlocks.html [ NeedsRebaseline ]
+crbug.com/331251 fast/block/do-not-strip-anonymous-blocks-when-block-child-becomes-float-and-continuation-on-line.html [ NeedsRebaseline ]
+crbug.com/331251 fast/block/do-not-strip-anonymous-blocks-when-block-child-becomes-float-and-other-block-on-line.html [ NeedsRebaseline ]
+
 # Macs do not support keyboard events to show a context menu.
 crbug.com/345913 [ Mac ] editing/spelling/spelling-on-context-menu-key.html [ Failure ]
 
