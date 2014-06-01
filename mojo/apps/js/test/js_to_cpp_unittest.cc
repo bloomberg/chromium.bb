@@ -433,8 +433,7 @@ TEST_F(JsToCppTest, Echo) {
   EXPECT_TRUE(cpp_side_connection.DidSucceed());
 }
 
-// TODO(tsepez): Disabled due to http://crbug.com/366797.
-TEST_F(JsToCppTest, DISABLED_BitFlip) {
+TEST_F(JsToCppTest, BitFlip) {
   if (IsRunningOnIsolatedBot())
     return;
 
@@ -443,8 +442,7 @@ TEST_F(JsToCppTest, DISABLED_BitFlip) {
   EXPECT_TRUE(cpp_side_connection.DidSucceed());
 }
 
-// TODO(tsepez): Disabled due to http://crbug.com/366797.
-TEST_F(JsToCppTest, DISABLED_BackPointer) {
+TEST_F(JsToCppTest, BackPointer) {
   if (IsRunningOnIsolatedBot())
     return;
 
