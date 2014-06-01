@@ -29,7 +29,7 @@
 namespace WebCore {
 
 class InlineIterator;
-class RenderBox;
+class RenderObject;
 class RenderText;
 
 struct BidiRun;
@@ -38,6 +38,19 @@ template <class Iterator, class Run> class BidiResolver;
 template <class Iterator> class MidpointState;
 typedef BidiResolver<InlineIterator, BidiRun> InlineBidiResolver;
 typedef MidpointState<InlineIterator> LineMidpointState;
+
+// This class allows us to ensure lineboxes are created in the right place on the line when
+// an out-of-flow positioned object or an empty inline is encountered between a trailing space
+// and subsequent spaces and we want to ignore (i.e. collapse) surplus whitespace. So for example:
+//   <div>X <span></span> Y</div>
+// or
+//   <div>X <div style="position: absolute"></div> Y</div>
+// In both of the above snippets the inline and the positioned object occur after a trailing space
+// and before a space that will cause our line breaking algorithm to start ignoring spaces. When it
+// does that we want to ensure that the inline/positioned object gets a linebox and that it is part
+// of the collapsed whitespace. So to achieve this we use appendObjectIfNeeded() to keep track of
+// objects encountered after a trailing whitespace and updateMidpointsForTrailingObjects() to put
+// them in the right place when we start ignoring surplus whitespace.
 
 class TrailingObjects {
 public:
@@ -58,22 +71,22 @@ public:
         // Using resize(0) rather than clear() here saves 2% on
         // PerformanceTests/Layout/line-layout.html because we avoid freeing and
         // re-allocating the underlying buffer repeatedly.
-        m_boxes.resize(0);
+        m_objects.resize(0);
     }
 
-    void appendBoxIfNeeded(RenderBox* box)
+    void appendObjectIfNeeded(RenderObject* object)
     {
         if (m_whitespace)
-            m_boxes.append(box);
+            m_objects.append(object);
     }
 
     enum CollapseFirstSpaceOrNot { DoNotCollapseFirstSpace, CollapseFirstSpace };
 
-    void updateMidpointsForTrailingBoxes(LineMidpointState&, const InlineIterator& lBreak, CollapseFirstSpaceOrNot);
+    void updateMidpointsForTrailingObjects(LineMidpointState&, const InlineIterator& lBreak, CollapseFirstSpaceOrNot);
 
 private:
     RenderText* m_whitespace;
-    Vector<RenderBox*, 4> m_boxes;
+    Vector<RenderObject*, 4> m_objects;
 };
 
 }
