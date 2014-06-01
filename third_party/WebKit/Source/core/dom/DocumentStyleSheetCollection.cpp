@@ -27,26 +27,15 @@
 #include "config.h"
 #include "core/dom/DocumentStyleSheetCollection.h"
 
-#include "HTMLNames.h"
 #include "RuntimeEnabledFeatures.h"
-#include "SVGNames.h"
-#include "core/css/CSSStyleSheet.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/Document.h"
 #include "core/dom/DocumentStyleSheetCollector.h"
-#include "core/dom/Element.h"
 #include "core/dom/ProcessingInstruction.h"
 #include "core/dom/StyleEngine.h"
 #include "core/dom/StyleSheetCandidate.h"
-#include "core/html/HTMLIFrameElement.h"
-#include "core/html/HTMLLinkElement.h"
-#include "core/html/HTMLStyleElement.h"
-#include "core/frame/Settings.h"
-#include "core/svg/SVGStyleElement.h"
 
 namespace WebCore {
-
-using namespace HTMLNames;
 
 DocumentStyleSheetCollection::DocumentStyleSheetCollection(TreeScope& treeScope)
     : TreeScopeStyleSheetCollection(treeScope)
