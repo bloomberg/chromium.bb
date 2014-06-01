@@ -19,7 +19,6 @@ import os
 import multiprocessing
 import pickle
 import sys
-import time
 import traceback
 
 from chromite.cbuildbot import cbuildbot_config
@@ -1624,14 +1623,7 @@ def main(argv):
 
   elif (not options.buildbot and not options.remote_trybot
         and not options.resume and not options.local):
-    options.local = True
-    cros_build_lib.Warning(
-        'Running in LOCAL TRYBOT mode!  Use --remote to submit REMOTE '
-        'tryjobs.  Use --local to suppress this message.')
-    cros_build_lib.Warning(
-        'In the future, --local will be required to run the local '
-        'trybot.')
-    time.sleep(5)
+    cros_build_lib.Die('Please use --remote or --local to run trybots')
 
   # Only one config arg is allowed in this mode, which was confirmed earlier.
   bot_id = args[-1]
