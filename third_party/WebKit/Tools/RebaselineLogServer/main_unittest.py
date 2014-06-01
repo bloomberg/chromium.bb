@@ -73,6 +73,16 @@ class TestHandlers(unittest.TestCase):
 
         request = webapp2.Request.blank('/updatelog')
         request.method = 'POST'
+        request.POST[main.LOG_PARAM] = 'x' * 1000000
+        request.POST[main.NEW_ENTRY_PARAM] = 'off'
+        request.POST[main.NO_NEEDS_REBASELINE_PARAM] = 'off'
+
+        response = request.get_response(main.app)
+        self.assertEqual(response.status_int, 200)
+        self.assertEqual(response.body, 'Created new log entry because the previous one exceeded the max length.')
+
+        request = webapp2.Request.blank('/updatelog')
+        request.method = 'POST'
         request.POST[main.LOG_PARAM] = 'data to log'
         request.POST[main.NEW_ENTRY_PARAM] = 'off'
         request.POST[main.NO_NEEDS_REBASELINE_PARAM] = 'on'

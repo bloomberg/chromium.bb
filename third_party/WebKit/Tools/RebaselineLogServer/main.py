@@ -32,6 +32,7 @@ import webapp2
 
 from google.appengine.ext import ndb
 from google.appengine.ext.webapp import template
+from google.appengine.ext.db import BadRequestError
 
 # A simple log server for rebaseline-o-matic.
 #
@@ -100,7 +101,12 @@ class UpdateLog(webapp2.RequestHandler):
         if new_entry or not log_entries:
             log_entry = LogEntry(content=new_log_data, is_no_needs_rebaseline=no_needs_rebaseline)
 
-        log_entry.put()
+        try:
+            log_entry.put()
+        except BadRequestError:
+            out = "Created new log entry because the previous one exceeded the max length."
+            LogEntry(content=new_log_data, is_no_needs_rebaseline=no_needs_rebaseline).put()
+
         self.response.out.write(out)
 
 
