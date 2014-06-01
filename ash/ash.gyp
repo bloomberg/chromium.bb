@@ -7,9 +7,6 @@
     'chromium_code': 1,
     'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/chrome',
   },
-  'includes': [
-    'ash_resources.gypi',
-  ],
   'targets': [
     {
       'target_name': 'ash',
@@ -43,8 +40,8 @@
         '../ui/web_dialogs/web_dialogs.gyp:web_dialogs',
         '../ui/wm/wm.gyp:wm',
         '../url/url.gyp:url_lib',
+        'ash_resources.gyp:ash_resources',
         'ash_strings.gyp:ash_strings',
-        'ash_resources',
       ],
       'defines': [
         'ASH_IMPLEMENTATION',
@@ -763,9 +760,9 @@
         '../ui/views/views.gyp:views',
         '../ui/web_dialogs/web_dialogs.gyp:web_dialogs',
         '../url/url.gyp:url_lib',
-        'ash_strings.gyp:ash_strings',
         'ash',
-        'ash_resources',
+        'ash_resources.gyp:ash_resources',
+        'ash_strings.gyp:ash_strings',
       ],
       'defines': [
         'ASH_WITH_CONTENT_IMPLEMENTATION',
@@ -792,7 +789,7 @@
         '../ui/app_list/app_list.gyp:app_list_test_support',
         '../ui/views/views.gyp:views_test_support',
         'ash',
-        'ash_resources',
+        'ash_resources.gyp:ash_resources',
       ],
       'sources': [
         'desktop_background/desktop_background_controller_test_api.cc',
@@ -908,9 +905,9 @@
         '../ui/web_dialogs/web_dialogs.gyp:web_dialogs_test_support',
         '../ui/wm/wm.gyp:wm',
         '../url/url.gyp:url_lib',
-        'ash_strings.gyp:ash_strings',
         'ash',
-        'ash_resources',
+        'ash_resources.gyp:ash_resources',
+        'ash_strings.gyp:ash_strings',
         'ash_test_support',
         'ash_with_content',
       ],
@@ -1130,10 +1127,10 @@
         '../ui/views/views.gyp:views',
         '../ui/views/views.gyp:views_test_support',
         'ash',
-        'ash_resources',
+        'ash_resources.gyp:ash_resources',
         'ash_strings.gyp:ash_strings',
-        'ash_with_content',
         'ash_test_support',
+        'ash_with_content',
       ],
       'sources': [
         '../content/app/startup_helper_win.cc',

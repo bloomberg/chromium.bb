@@ -2712,7 +2712,7 @@
           ],
           'dependencies': [
             # aura uses some of ash resources.
-            '../ash/ash.gyp:ash_resources',
+            '../ash/ash_resources.gyp:ash_resources',
             '../ui/aura/aura.gyp:aura',
             '../ui/keyboard/keyboard.gyp:keyboard',
             '../ui/keyboard/keyboard.gyp:keyboard_resources',

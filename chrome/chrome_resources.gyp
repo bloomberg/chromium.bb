@@ -427,8 +427,8 @@
         }],
         ['use_ash==1', {
           'dependencies': [
+             '<(DEPTH)/ash/ash_resources.gyp:ash_resources',
              '<(DEPTH)/ash/ash_strings.gyp:ash_strings',
-             '<(DEPTH)/ash/ash.gyp:ash_resources',
           ],
         }],
         ['enable_autofill_dialog==1 and OS!="android"', {

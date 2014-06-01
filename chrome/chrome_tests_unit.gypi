@@ -2124,8 +2124,8 @@
             'browser/ui/app_list/search/tokenized_string_unittest.cc',
           ],
           'dependencies': [
-            '../ash/ash.gyp:ash_resources',
             '../ash/ash.gyp:ash_test_support',
+            '../ash/ash_resources.gyp:ash_resources',
             '../ash/ash_strings.gyp:ash_strings',
           ],
           # We eventually want to compile both in Win Aura builds, see
@@ -2286,7 +2286,7 @@
         }],
         ['chromeos==1', {
           'dependencies': [
-            '../ash/ash.gyp:ash_resources',
+            '../ash/ash_resources.gyp:ash_resources',
           ],
           'sources!': [
             'browser/extensions/api/messaging/native_message_process_host_unittest.cc',
