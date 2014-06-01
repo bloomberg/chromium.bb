@@ -164,6 +164,13 @@ PassRefPtrWillBeRawPtr<Element> Element::create(const QualifiedName& tagName, Do
     return adoptRefWillBeRefCountedGarbageCollected(new Element(tagName, document, CreateElement));
 }
 
+Element::Element(const QualifiedName& tagName, Document* document, ConstructionType type)
+    : ContainerNode(document, type)
+    , m_tagName(tagName)
+{
+    ScriptWrappable::init(this);
+}
+
 Element::~Element()
 {
     ASSERT(needsAttach());

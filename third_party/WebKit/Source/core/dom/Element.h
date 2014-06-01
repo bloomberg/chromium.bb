@@ -511,12 +511,7 @@ public:
     virtual void trace(Visitor*) OVERRIDE;
 
 protected:
-    Element(const QualifiedName& tagName, Document* document, ConstructionType type)
-        : ContainerNode(document, type)
-        , m_tagName(tagName)
-    {
-        ScriptWrappable::init(this);
-    }
+    Element(const QualifiedName& tagName, Document*, ConstructionType);
 
     void addPropertyToPresentationAttributeStyle(MutableStylePropertySet*, CSSPropertyID, CSSValueID identifier);
     void addPropertyToPresentationAttributeStyle(MutableStylePropertySet*, CSSPropertyID, double value, CSSPrimitiveValue::UnitType);
