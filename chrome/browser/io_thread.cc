@@ -39,7 +39,6 @@
 #include "chrome/browser/net/sdch_dictionary_fetcher.h"
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/pref_names.h"
 #include "components/data_reduction_proxy/browser/data_reduction_proxy_prefs.h"
 #include "components/data_reduction_proxy/browser/http_auth_handler_data_reduction_proxy.h"
@@ -1159,16 +1158,9 @@ bool IOThread::ShouldEnableQuicTimeBasedLossDetection(
       kQuicFieldTrialTimeBasedLossDetectionSuffix);
 }
 
+// TODO(rtenneti): Delete this method after the merge.
 bool IOThread::ShouldEnableQuicPersistServerInfo(
     const CommandLine& command_line) {
-  chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
-  // Avoid persisting of Quic server config information to disk cache when we
-  // have a beta or stable release.  Allow in all other cases, including when we
-  // do a developer build (CHANNEL_UNKNOWN).
-  if (channel == chrome::VersionInfo::CHANNEL_STABLE ||
-      channel == chrome::VersionInfo::CHANNEL_BETA) {
-    return false;
-  }
   return true;
 }
 
