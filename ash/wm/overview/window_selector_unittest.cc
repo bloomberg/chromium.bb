@@ -371,7 +371,9 @@ TEST_F(WindowSelectorTest, SelectingHidesAppList) {
 
 // Tests that a minimized window's visibility and layer visibility is correctly
 // changed when entering overview and restored when leaving overview mode.
-TEST_F(WindowSelectorTest, MinimizedWindowVisibility) {
+// Crashes after the skia roll in http://crrev.com/274114.
+// http://crbug.com/379570
+TEST_F(WindowSelectorTest, DISABLED_MinimizedWindowVisibility) {
   gfx::Rect bounds(0, 0, 400, 400);
   scoped_ptr<aura::Window> window1(CreateWindow(bounds));
   wm::WindowState* window_state = wm::GetWindowState(window1.get());
