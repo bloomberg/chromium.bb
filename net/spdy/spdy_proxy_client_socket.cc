@@ -410,7 +410,6 @@ int SpdyProxyClientSocket::DoReadReplyComplete(int result) {
       if (SanitizeProxyRedirect(&response_, request_.url)) {
         redirect_has_load_timing_info_ =
             spdy_stream_->GetLoadTimingInfo(&redirect_load_timing_info_);
-        // Note that this triggers a RST_STREAM_CANCEL.
         spdy_stream_->DetachDelegate();
         next_state_ = STATE_DISCONNECTED;
         return ERR_HTTPS_PROXY_TUNNEL_RESPONSE;

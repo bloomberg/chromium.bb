@@ -250,13 +250,6 @@ HttpStreamFactoryImpl::Request::RemoveRequestFromSpdySessionRequestMap() {
   }
 }
 
-// TODO(jgraettinger): Currently, HttpStreamFactoryImpl::Job notifies a
-// Request that the session is ready, which in turn notifies it's delegate,
-// and then it notifies HttpStreamFactoryImpl so that /other/ requests may
-// be woken, but only if the spdy_session is still okay. This is tough to grok.
-// Instead, see if Job can notify HttpStreamFactoryImpl only, and have one
-// path for notifying any requests waiting for the session (including the
-// request which spawned it).
 void HttpStreamFactoryImpl::Request::OnNewSpdySessionReady(
     Job* job,
     scoped_ptr<HttpStream> stream,
@@ -299,7 +292,7 @@ void HttpStreamFactoryImpl::Request::OnNewSpdySessionReady(
                              stream.release());
   }
   // |this| may be deleted after this point.
-  if (spdy_session && spdy_session->IsAvailable()) {
+  if (spdy_session) {
     factory->OnNewSpdySessionReady(spdy_session,
                                    direct,
                                    used_ssl_config,

@@ -164,6 +164,7 @@ SpdyProxyClientSocketTest::SpdyProxyClientSocketTest()
 }
 
 void SpdyProxyClientSocketTest::TearDown() {
+  sock_.reset(NULL);
   if (session_.get() != NULL)
     session_->spdy_session_pool()->CloseAllSessions();
 
@@ -447,15 +448,14 @@ TEST_P(SpdyProxyClientSocketTest, ConnectWithAuthCredentials) {
 
 TEST_P(SpdyProxyClientSocketTest, ConnectRedirects) {
   scoped_ptr<SpdyFrame> conn(ConstructConnectRequestFrame());
-  scoped_ptr<SpdyFrame> rst(
-      spdy_util_.ConstructSpdyRstStream(1, RST_STREAM_CANCEL));
   MockWrite writes[] = {
-      CreateMockWrite(*conn, 0, SYNCHRONOUS), CreateMockWrite(*rst, 2),
+    CreateMockWrite(*conn, 0, SYNCHRONOUS),
   };
 
   scoped_ptr<SpdyFrame> resp(ConstructConnectRedirectReplyFrame());
   MockRead reads[] = {
-      CreateMockRead(*resp, 1, ASYNC), MockRead(ASYNC, 0, 3),  // EOF
+    CreateMockRead(*resp, 1, ASYNC),
+    MockRead(ASYNC, 0, 2),  // EOF
   };
 
   Initialize(reads, arraysize(reads), writes, arraysize(writes));
@@ -473,9 +473,6 @@ TEST_P(SpdyProxyClientSocketTest, ConnectRedirects) {
   std::string location;
   ASSERT_TRUE(headers->IsRedirect(&location));
   ASSERT_EQ(location, kRedirectUrl);
-
-  // Let the RST_STREAM write while |rst| is in-scope.
-  base::MessageLoop::current()->RunUntilIdle();
 }
 
 TEST_P(SpdyProxyClientSocketTest, ConnectFails) {
@@ -502,15 +499,14 @@ TEST_P(SpdyProxyClientSocketTest, ConnectFails) {
 
 TEST_P(SpdyProxyClientSocketTest, WasEverUsedReturnsCorrectValues) {
   scoped_ptr<SpdyFrame> conn(ConstructConnectRequestFrame());
-  scoped_ptr<SpdyFrame> rst(
-      spdy_util_.ConstructSpdyRstStream(1, RST_STREAM_CANCEL));
   MockWrite writes[] = {
-      CreateMockWrite(*conn, 0, SYNCHRONOUS), CreateMockWrite(*rst, 2),
+    CreateMockWrite(*conn, 0, SYNCHRONOUS),
   };
 
   scoped_ptr<SpdyFrame> resp(ConstructConnectReplyFrame());
   MockRead reads[] = {
-      CreateMockRead(*resp, 1, ASYNC), MockRead(ASYNC, 0, 3),  // EOF
+    CreateMockRead(*resp, 1, ASYNC),
+    MockRead(ASYNC, 0, 2),  // EOF
   };
 
   Initialize(reads, arraysize(reads), writes, arraysize(writes));
@@ -520,9 +516,6 @@ TEST_P(SpdyProxyClientSocketTest, WasEverUsedReturnsCorrectValues) {
   EXPECT_TRUE(sock_->WasEverUsed());
   sock_->Disconnect();
   EXPECT_TRUE(sock_->WasEverUsed());
-
-  // Let the RST_STREAM write while |rst| is in-scope.
-  base::MessageLoop::current()->RunUntilIdle();
 }
 
 // ----------- GetPeerAddress
@@ -994,15 +987,14 @@ TEST_P(SpdyProxyClientSocketTest, PendingReadOnCloseReturnsZero) {
 TEST_P(SpdyProxyClientSocketTest,
        ReadOnDisconnectSocketReturnsNotConnected) {
   scoped_ptr<SpdyFrame> conn(ConstructConnectRequestFrame());
-  scoped_ptr<SpdyFrame> rst(
-      spdy_util_.ConstructSpdyRstStream(1, RST_STREAM_CANCEL));
   MockWrite writes[] = {
-      CreateMockWrite(*conn, 0, SYNCHRONOUS), CreateMockWrite(*rst, 2),
+    CreateMockWrite(*conn, 0, SYNCHRONOUS),
   };
 
   scoped_ptr<SpdyFrame> resp(ConstructConnectReplyFrame());
   MockRead reads[] = {
-      CreateMockRead(*resp, 1, ASYNC), MockRead(ASYNC, 0, 3),  // EOF
+    CreateMockRead(*resp, 1, ASYNC),
+    MockRead(ASYNC, 0, 2),  // EOF
   };
 
   Initialize(reads, arraysize(reads), writes, arraysize(writes));
@@ -1013,9 +1005,6 @@ TEST_P(SpdyProxyClientSocketTest,
 
   ASSERT_EQ(ERR_SOCKET_NOT_CONNECTED,
             sock_->Read(NULL, 1, CompletionCallback()));
-
-  // Let the RST_STREAM write while |rst| is in-scope.
-  base::MessageLoop::current()->RunUntilIdle();
 }
 
 // Reading buffered data from an already closed socket should return
@@ -1079,16 +1068,15 @@ TEST_P(SpdyProxyClientSocketTest, WriteOnClosedStream) {
 // Calling Write() on a disconnected socket is an error
 TEST_P(SpdyProxyClientSocketTest, WriteOnDisconnectedSocket) {
   scoped_ptr<SpdyFrame> conn(ConstructConnectRequestFrame());
-  scoped_ptr<SpdyFrame> rst(
-      spdy_util_.ConstructSpdyRstStream(1, RST_STREAM_CANCEL));
   MockWrite writes[] = {
-      CreateMockWrite(*conn, 0, SYNCHRONOUS), CreateMockWrite(*rst, 2),
+    CreateMockWrite(*conn, 0, SYNCHRONOUS),
   };
 
   scoped_ptr<SpdyFrame> resp(ConstructConnectReplyFrame());
   scoped_ptr<SpdyFrame> msg1(ConstructBodyFrame(kMsg1, kLen1));
   MockRead reads[] = {
-      CreateMockRead(*resp, 1, ASYNC), MockRead(ASYNC, 0, 3),  // EOF
+    CreateMockRead(*resp, 1, ASYNC),
+    MockRead(ASYNC, 0, 2),  // EOF
   };
 
   Initialize(reads, arraysize(reads), writes, arraysize(writes));
@@ -1100,9 +1088,6 @@ TEST_P(SpdyProxyClientSocketTest, WriteOnDisconnectedSocket) {
   scoped_refptr<IOBufferWithSize> buf(CreateBuffer(kMsg1, kLen1));
   EXPECT_EQ(ERR_SOCKET_NOT_CONNECTED,
             sock_->Write(buf.get(), buf->size(), CompletionCallback()));
-
-  // Let the RST_STREAM write while |rst| is in-scope.
-  base::MessageLoop::current()->RunUntilIdle();
 }
 
 // If the socket is closed with a pending Write(), the callback
@@ -1139,16 +1124,15 @@ TEST_P(SpdyProxyClientSocketTest, WritePendingOnClose) {
 // should not be called.
 TEST_P(SpdyProxyClientSocketTest, DisconnectWithWritePending) {
   scoped_ptr<SpdyFrame> conn(ConstructConnectRequestFrame());
-  scoped_ptr<SpdyFrame> rst(
-      spdy_util_.ConstructSpdyRstStream(1, RST_STREAM_CANCEL));
   MockWrite writes[] = {
-      CreateMockWrite(*conn, 0, SYNCHRONOUS), CreateMockWrite(*rst, 2),
-      MockWrite(SYNCHRONOUS, 0, 3),  // EOF
+    CreateMockWrite(*conn, 0, SYNCHRONOUS),
+    MockWrite(SYNCHRONOUS, 0, 2),  // EOF
   };
 
   scoped_ptr<SpdyFrame> resp(ConstructConnectReplyFrame());
   MockRead reads[] = {
-      CreateMockRead(*resp, 1, ASYNC), MockRead(ASYNC, 0, 4),  // EOF
+    CreateMockRead(*resp, 1, ASYNC),
+    MockRead(ASYNC, 0, 3),  // EOF
   };
 
   Initialize(reads, arraysize(reads), writes, arraysize(writes));
@@ -1165,24 +1149,20 @@ TEST_P(SpdyProxyClientSocketTest, DisconnectWithWritePending) {
 
   EXPECT_FALSE(sock_->IsConnected());
   EXPECT_FALSE(write_callback_.have_result());
-
-  // Let the RST_STREAM write while |rst| is in-scope.
-  base::MessageLoop::current()->RunUntilIdle();
 }
 
 // If the socket is Disconnected with a pending Read(), the callback
 // should not be called.
 TEST_P(SpdyProxyClientSocketTest, DisconnectWithReadPending) {
   scoped_ptr<SpdyFrame> conn(ConstructConnectRequestFrame());
-  scoped_ptr<SpdyFrame> rst(
-      spdy_util_.ConstructSpdyRstStream(1, RST_STREAM_CANCEL));
   MockWrite writes[] = {
-      CreateMockWrite(*conn, 0, SYNCHRONOUS), CreateMockWrite(*rst, 2),
+    CreateMockWrite(*conn, 0, SYNCHRONOUS),
   };
 
   scoped_ptr<SpdyFrame> resp(ConstructConnectReplyFrame());
   MockRead reads[] = {
-      CreateMockRead(*resp, 1, ASYNC), MockRead(ASYNC, 0, 3),  // EOF
+    CreateMockRead(*resp, 1, ASYNC),
+    MockRead(ASYNC, 0, 2),  // EOF
   };
 
   Initialize(reads, arraysize(reads), writes, arraysize(writes));
@@ -1199,9 +1179,6 @@ TEST_P(SpdyProxyClientSocketTest, DisconnectWithReadPending) {
 
   EXPECT_FALSE(sock_->IsConnected());
   EXPECT_FALSE(read_callback_.have_result());
-
-  // Let the RST_STREAM write while |rst| is in-scope.
-  base::MessageLoop::current()->RunUntilIdle();
 }
 
 // If the socket is Reset when both a read and write are pending,
@@ -1243,26 +1220,22 @@ TEST_P(SpdyProxyClientSocketTest, RstWithReadAndWritePending) {
   EXPECT_TRUE(sock_.get());
   EXPECT_TRUE(read_callback_.have_result());
   EXPECT_TRUE(write_callback_.have_result());
-
-  // Let the RST_STREAM write while |rst| is in-scope.
-  base::MessageLoop::current()->RunUntilIdle();
 }
 
 // Makes sure the proxy client socket's source gets the expected NetLog events
 // and only the expected NetLog events (No SpdySession events).
 TEST_P(SpdyProxyClientSocketTest, NetLog) {
   scoped_ptr<SpdyFrame> conn(ConstructConnectRequestFrame());
-  scoped_ptr<SpdyFrame> rst(
-      spdy_util_.ConstructSpdyRstStream(1, RST_STREAM_CANCEL));
   MockWrite writes[] = {
-      CreateMockWrite(*conn, 0, SYNCHRONOUS), CreateMockWrite(*rst, 3),
+    CreateMockWrite(*conn, 0, SYNCHRONOUS),
   };
 
   scoped_ptr<SpdyFrame> resp(ConstructConnectReplyFrame());
   scoped_ptr<SpdyFrame> msg1(ConstructBodyFrame(kMsg1, kLen1));
   MockRead reads[] = {
-      CreateMockRead(*resp, 1, ASYNC), CreateMockRead(*msg1, 2, ASYNC),
-      MockRead(ASYNC, 0, 4),  // EOF
+    CreateMockRead(*resp, 1, ASYNC),
+    CreateMockRead(*msg1, 2, ASYNC),
+    MockRead(ASYNC, 0, 3),  // EOF
   };
 
   Initialize(reads, arraysize(reads), writes, arraysize(writes));
@@ -1302,9 +1275,6 @@ TEST_P(SpdyProxyClientSocketTest, NetLog) {
                   NetLog::TYPE_SOCKET_BYTES_RECEIVED,
                   NetLog::PHASE_NONE));
   EXPECT_TRUE(LogContainsEndEvent(entry_list, 9, NetLog::TYPE_SOCKET_ALIVE));
-
-  // Let the RST_STREAM write while |rst| is in-scope.
-  base::MessageLoop::current()->RunUntilIdle();
 }
 
 // CompletionCallback that causes the SpdyProxyClientSocket to be
@@ -1376,9 +1346,6 @@ TEST_P(SpdyProxyClientSocketTest, RstWithReadAndWritePendingDelete) {
   EXPECT_FALSE(sock_.get());
   EXPECT_TRUE(read_callback.have_result());
   EXPECT_FALSE(write_callback_.have_result());
-
-  // Let the RST_STREAM write while |rst| is in-scope.
-  base::MessageLoop::current()->RunUntilIdle();
 }
 
 }  // namespace net

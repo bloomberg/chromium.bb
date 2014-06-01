@@ -4277,9 +4277,7 @@ TEST_P(SpdyNetworkTransactionTest, BufferedCancelled) {
 
   scoped_ptr<SpdyFrame> req(
       spdy_util_.ConstructSpdyGet(NULL, 0, false, 1, LOWEST, true));
-  scoped_ptr<SpdyFrame> rst(
-      spdy_util_.ConstructSpdyRstStream(1, RST_STREAM_CANCEL));
-  MockWrite writes[] = {CreateMockWrite(*req), CreateMockWrite(*rst)};
+  MockWrite writes[] = { CreateMockWrite(*req) };
 
   // NOTE: We don't FIN the stream.
   scoped_ptr<SpdyFrame> data_frame(
