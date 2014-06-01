@@ -52,6 +52,10 @@ class ProfilePolicyConnector : public KeyedService {
   // cloud policy management. Otherwise returns an empty string.
   std::string GetManagementDomain() const;
 
+  // Returns true if the |name| Chrome policy is currently set via the
+  // CloudPolicyManager and isn't being overridden by a higher-level provider.
+  bool IsPolicyFromCloudPolicy(const char* name) const;
+
  private:
 #if defined(ENABLE_CONFIGURATION_POLICY)
 #if defined(OS_CHROMEOS)

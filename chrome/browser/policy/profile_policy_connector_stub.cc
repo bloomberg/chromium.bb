@@ -33,4 +33,8 @@ std::string ProfilePolicyConnector::GetManagementDomain() const {
   return "";
 }
 
+bool ProfilePolicyConnector::IsPolicyFromCloudPolicy(const char* name) const {
+  return false;
+}
+
 }  // namespace policy

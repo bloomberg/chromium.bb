@@ -30,6 +30,18 @@
 
 namespace policy {
 
+namespace {
+
+bool HasChromePolicy(ConfigurationPolicyProvider* provider,
+                     const char* name) {
+  if (!provider)
+    return false;
+  PolicyNamespace chrome_ns(POLICY_DOMAIN_CHROME, "");
+  return provider->policies().Get(chrome_ns).Get(name) != NULL;
+}
+
+}  // namespace
+
 ProfilePolicyConnector::ProfilePolicyConnector()
 #if defined(OS_CHROMEOS)
     : is_primary_user_(false),
@@ -58,6 +70,9 @@ void ProfilePolicyConnector::Init(
   // use the policies exposed by the PolicyService!
   // The default ConfigurationPolicyProvider::IsInitializationComplete()
   // result is true, so take care if a provider overrides that.
+  //
+  // Note: if you append a new provider then make sure IsPolicyFromCloudPolicy()
+  // is also updated below.
   std::vector<ConfigurationPolicyProvider*> providers;
 
 #if defined(OS_CHROMEOS)
@@ -142,6 +157,27 @@ std::string ProfilePolicyConnector::GetManagementDomain() const {
   if (store && store->is_managed() && store->policy()->has_username())
     return gaia::ExtractDomainName(store->policy()->username());
   return "";
+}
+
+bool ProfilePolicyConnector::IsPolicyFromCloudPolicy(const char* name) const {
+  if (!HasChromePolicy(user_cloud_policy_manager_, name))
+    return false;
+
+  // Check all the providers that have higher priority than the
+  // |user_cloud_policy_manager_|. These checks must be kept in sync with the
+  // order of the providers in Init().
+
+  if (HasChromePolicy(forwarding_policy_provider_.get(), name))
+    return false;
+
+#if defined(OS_CHROMEOS)
+  BrowserPolicyConnectorChromeOS* connector =
+      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  if (HasChromePolicy(connector->GetDeviceCloudPolicyManager(), name))
+    return false;
+#endif
+
+  return true;
 }
 
 }  // namespace policy
