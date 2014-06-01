@@ -5,32 +5,31 @@
 #ifndef CHROME_BROWSER_POLICY_MANAGED_BOOKMARKS_POLICY_HANDLER_H_
 #define CHROME_BROWSER_POLICY_MANAGED_BOOKMARKS_POLICY_HANDLER_H_
 
-#include <string>
-
 #include "components/policy/core/browser/configuration_policy_handler.h"
 
 namespace base {
-class Value;
+class ListValue;
 }
 
 namespace policy {
 
 // Handles the ManagedBookmarks policy.
-class ManagedBookmarksPolicyHandler : public TypeCheckingPolicyHandler {
+class ManagedBookmarksPolicyHandler : public SchemaValidatingPolicyHandler {
  public:
   static const char kName[];
   static const char kUrl[];
+  static const char kChildren[];
 
-  ManagedBookmarksPolicyHandler();
+  explicit ManagedBookmarksPolicyHandler(Schema chrome_schema);
   virtual ~ManagedBookmarksPolicyHandler();
 
   // ConfigurationPolicyHandler methods:
-  virtual bool CheckPolicySettings(const PolicyMap& policies,
-                                   PolicyErrorMap* errors) OVERRIDE;
   virtual void ApplyPolicySettings(const PolicyMap& policies,
                                    PrefValueMap* prefs) OVERRIDE;
 
  private:
+  void FilterBookmarks(base::ListValue* bookmarks);
+
   DISALLOW_COPY_AND_ASSIGN(ManagedBookmarksPolicyHandler);
 };
 

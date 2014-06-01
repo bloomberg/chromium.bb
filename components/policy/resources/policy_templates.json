@@ -6262,13 +6262,23 @@
         'type': 'array',
         'items': {
           'type': 'object',
+          'id': 'BookmarkType',
           'properties': {
             'name': { 'type': 'string' },
             'url': { 'type': 'string' },
+            'children': {
+              'type': 'array',
+              'items': { '$ref': 'BookmarkType' },
+            },
           },
         },
       },
-      'supported_on': ['android:30-', 'ios:35-'],
+      'supported_on': [
+        'android:30-',
+        'ios:35-',
+        'chrome.*:37-',
+        'chrome_os:37-',
+      ],
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,

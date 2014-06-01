@@ -1161,6 +1161,7 @@
         'browser/policy/cloud/user_policy_signin_service_unittest.cc',
         'browser/policy/file_selection_dialogs_policy_handler_unittest.cc',
         'browser/policy/javascript_policy_handler_unittest.cc',
+        'browser/policy/managed_bookmarks_policy_handler_unittest.cc',
         'browser/policy/policy_path_parser_unittest.cc',
         'browser/policy/url_blacklist_manager_unittest.cc',
         'browser/predictors/autocomplete_action_predictor_table_unittest.cc',

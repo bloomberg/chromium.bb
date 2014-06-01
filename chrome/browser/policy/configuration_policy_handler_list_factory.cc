@@ -9,6 +9,7 @@
 #include "base/memory/scoped_vector.h"
 #include "base/values.h"
 #include "chrome/browser/net/proxy_policy_handler.h"
+#include "chrome/browser/policy/managed_bookmarks_policy_handler.h"
 #include "chrome/browser/profiles/incognito_mode_policy_handler.h"
 #include "chrome/browser/search_engines/default_search_policy_handler.h"
 #include "chrome/common/pref_names.h"
@@ -44,10 +45,6 @@
 #include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/policy/configuration_policy_handler_chromeos.h"
 #include "chromeos/dbus/power_policy_controller.h"
-#endif
-
-#if defined(OS_ANDROID) || defined(OS_IOS)
-#include "chrome/browser/policy/managed_bookmarks_policy_handler.h"
 #endif
 
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
@@ -525,6 +522,8 @@ scoped_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
   handlers->AddHandler(make_scoped_ptr<ConfigurationPolicyHandler>(
       new IncognitoModePolicyHandler()));
   handlers->AddHandler(make_scoped_ptr<ConfigurationPolicyHandler>(
+      new ManagedBookmarksPolicyHandler(chrome_schema)));
+  handlers->AddHandler(make_scoped_ptr<ConfigurationPolicyHandler>(
       new ProxyPolicyHandler()));
   handlers->AddHandler(make_scoped_ptr<ConfigurationPolicyHandler>(
       new URLBlacklistPolicyHandler()));
@@ -732,10 +731,6 @@ scoped_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
       new ExternalDataPolicyHandler(key::kWallpaperImage)));
 #endif  // defined(OS_CHROMEOS)
 
-#if defined(OS_ANDROID) || defined(OS_IOS)
-  handlers->AddHandler(make_scoped_ptr<ConfigurationPolicyHandler>(
-      new ManagedBookmarksPolicyHandler()));
-#endif
   return handlers.Pass();
 }
 

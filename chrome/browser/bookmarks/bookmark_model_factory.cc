@@ -88,6 +88,9 @@ void BookmarkModelFactory::RegisterProfilePrefs(
   registry->RegisterListPref(prefs::kBookmarkEditorExpandedNodes,
                              new base::ListValue,
                              user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterListPref(
+      prefs::kManagedBookmarks,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
 content::BrowserContext* BookmarkModelFactory::GetBrowserContextToUse(

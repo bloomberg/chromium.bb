@@ -10,14 +10,19 @@ namespace prefs {
 // the bookmark editor.
 const char kBookmarkEditorExpandedNodes[] = "bookmark_editor.expanded_nodes";
 
-// Boolean which specifies whether the bookmark bar is visible on all tabs.
-const char kShowBookmarkBar[] = "bookmark_bar.show_on_all_tabs";
-
 // Modifying bookmarks is completely disabled when this is set to false.
 const char kEditBookmarksEnabled[] = "bookmarks.editing_enabled";
+
+// A list of bookmarks to include in a Managed Bookmarks root node. Each
+// list item is a dictionary containing a "name" and an "url" entry, detailing
+// the bookmark name and target URL respectively.
+const char kManagedBookmarks[] = "bookmarks.managed_bookmarks";
 
 // Boolean which specifies whether the apps shortcut is visible on the bookmark
 // bar.
 const char kShowAppsShortcutInBookmarkBar[] = "bookmark_bar.show_apps_shortcut";
+
+// Boolean which specifies whether the bookmark bar is visible on all tabs.
+const char kShowBookmarkBar[] = "bookmark_bar.show_on_all_tabs";
 
 }  // namespace prefs

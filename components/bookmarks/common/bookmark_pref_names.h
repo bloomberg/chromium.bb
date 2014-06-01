@@ -10,9 +10,10 @@
 namespace prefs {
 
 extern const char kBookmarkEditorExpandedNodes[];
-extern const char kShowBookmarkBar[];
 extern const char kEditBookmarksEnabled[];
+extern const char kManagedBookmarks[];
 extern const char kShowAppsShortcutInBookmarkBar[];
+extern const char kShowBookmarkBar[];
 
 }  // namespace prefs
 

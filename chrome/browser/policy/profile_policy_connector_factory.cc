@@ -8,9 +8,7 @@
 #include "base/memory/singleton.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/pref_names.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
-#include "components/pref_registry/pref_registry_syncable.h"
 
 #if defined(ENABLE_CONFIGURATION_POLICY)
 #include "chrome/browser/policy/schema_registry_service.h"
@@ -137,15 +135,6 @@ void ProfilePolicyConnectorFactory::BrowserContextDestroyed(
   if (it != connectors_.end())
     connectors_.erase(it);
   BrowserContextKeyedBaseFactory::BrowserContextDestroyed(context);
-}
-
-void ProfilePolicyConnectorFactory::RegisterProfilePrefs(
-    user_prefs::PrefRegistrySyncable* registry) {
-#if defined(OS_ANDROID) || defined(OS_IOS)
-  registry->RegisterListPref(
-      prefs::kManagedBookmarks,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-#endif
 }
 
 void ProfilePolicyConnectorFactory::SetEmptyTestingFactory(

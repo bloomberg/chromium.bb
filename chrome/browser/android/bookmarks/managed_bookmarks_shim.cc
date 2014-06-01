@@ -72,10 +72,10 @@ void ManagedBookmarksShim::Reload() {
   base::string16 root_node_name;
   if (domain.empty()) {
     root_node_name =
-        l10n_util::GetStringUTF16(IDS_POLICY_MANAGED_BOOKMARKS_DEFAULT_NAME);
+        l10n_util::GetStringUTF16(IDS_BOOKMARK_BAR_MANAGED_FOLDER_DEFAULT_NAME);
   } else {
-    root_node_name = l10n_util::GetStringFUTF16(IDS_POLICY_MANAGED_BOOKMARKS,
-                                                base::UTF8ToUTF16(domain));
+    root_node_name = l10n_util::GetStringFUTF16(
+        IDS_BOOKMARK_BAR_MANAGED_FOLDER_DOMAIN_NAME, base::UTF8ToUTF16(domain));
   }
 
   root_.reset(new BookmarkPermanentNode(0));

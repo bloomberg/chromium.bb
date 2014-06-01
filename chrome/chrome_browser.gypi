@@ -2805,8 +2805,6 @@
                 'policy_path_parser',
               ],
               'sources!': [
-                'browser/policy/managed_bookmarks_policy_handler.cc',
-                'browser/policy/managed_bookmarks_policy_handler.h',
                 'browser/policy/cloud/user_policy_signin_service_mobile.cc',
                 'browser/policy/cloud/user_policy_signin_service_mobile.h',
               ],

@@ -420,7 +420,8 @@ class SchemaNodesGenerator:
 
     if schema['type'] == 'array':
       # Special case for lists of strings, which is a common policy type.
-      if schema['items']['type'] == 'string':
+      # The 'type' may be missing if the schema has a '$ref' attribute.
+      if schema['items'].get('type', '') == 'string':
         return self.GetStringList()
       return self.AppendSchema('TYPE_LIST',
           self.GenerateAndCollectID(schema['items'], 'items of ' + name))
