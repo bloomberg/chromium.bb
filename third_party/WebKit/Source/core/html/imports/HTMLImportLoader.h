@@ -70,8 +70,7 @@ public:
 
     virtual ~HTMLImportLoader();
 
-    Document* document() const { return m_importedDocument.get(); }
-    Document* importedDocument() const;
+    Document* document() const { return m_document.get(); }
     void addImport(HTMLImportChild*);
     void removeImport(HTMLImportChild*);
     void moveToFirst(HTMLImportChild*);
@@ -116,7 +115,7 @@ private:
     HTMLImportsController* m_controller;
     Vector<HTMLImportChild*> m_imports;
     State m_state;
-    RefPtr<Document> m_importedDocument;
+    RefPtr<Document> m_document;
     RefPtr<DocumentWriter> m_writer;
     RefPtrWillBePersistent<CustomElementMicrotaskQueue> m_microtaskQueue;
 };

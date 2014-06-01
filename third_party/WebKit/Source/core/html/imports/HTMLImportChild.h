@@ -56,7 +56,6 @@ public:
     virtual ~HTMLImportChild();
 
     HTMLLinkElement* link() const;
-    Document* importedDocument() const;
     const KURL& url() const { return m_url; }
 
     void didShareLoader();

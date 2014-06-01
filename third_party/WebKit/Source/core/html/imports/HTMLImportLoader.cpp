@@ -63,10 +63,10 @@ void HTMLImportLoader::importDestroyed()
 void HTMLImportLoader::clear()
 {
     m_controller = 0;
-    if (m_importedDocument) {
-        m_importedDocument->setImportsController(0);
-        m_importedDocument->cancelParsing();
-        m_importedDocument.clear();
+    if (m_document) {
+        m_document->setImportsController(0);
+        m_document->cancelParsing();
+        m_document.clear();
     }
 }
 
@@ -109,8 +109,8 @@ HTMLImportLoader::State HTMLImportLoader::startWritingAndParsing(const ResourceR
     ASSERT(!m_imports.isEmpty());
     DocumentInit init = DocumentInit(response.url(), 0, m_controller->master()->contextDocument(), m_controller)
         .withRegistrationContext(m_controller->master()->registrationContext());
-    m_importedDocument = HTMLDocument::create(init);
-    m_writer = DocumentWriter::create(m_importedDocument.get(), response.mimeType(), "UTF-8");
+    m_document = HTMLDocument::create(init);
+    m_writer = DocumentWriter::create(m_document.get(), response.mimeType(), "UTF-8");
 
     return StateLoading;
 }
@@ -162,14 +162,7 @@ void HTMLImportLoader::didRemoveAllPendingStylesheet()
 
 bool HTMLImportLoader::hasPendingResources() const
 {
-    return m_importedDocument && m_importedDocument->styleEngine()->hasPendingSheets();
-}
-
-Document* HTMLImportLoader::importedDocument() const
-{
-    if (m_state == StateError)
-        return 0;
-    return m_importedDocument.get();
+    return m_document && m_document->styleEngine()->hasPendingSheets();
 }
 
 void HTMLImportLoader::didFinishLoading()
@@ -179,7 +172,7 @@ void HTMLImportLoader::didFinishLoading()
 
     clearResource();
 
-    ASSERT(!m_importedDocument || !m_importedDocument->parsing());
+    ASSERT(!m_document || !m_document->parsing());
 }
 
 void HTMLImportLoader::moveToFirst(HTMLImportChild* import)

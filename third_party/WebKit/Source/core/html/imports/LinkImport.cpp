@@ -64,7 +64,9 @@ Document* LinkImport::importedDocument() const
 {
     if (!m_child || !m_owner || !m_owner->inDocument())
         return 0;
-    return m_child->importedDocument();
+    if (m_child->loader()->hasError())
+        return 0;
+    return m_child->document();
 }
 
 void LinkImport::process()

@@ -101,13 +101,6 @@ bool HTMLImportChild::isFirst() const
     return m_loader && m_loader->isFirstImport(this);
 }
 
-Document* HTMLImportChild::importedDocument() const
-{
-    if (!m_loader)
-        return 0;
-    return m_loader->importedDocument();
-}
-
 void HTMLImportChild::importDestroyed()
 {
     if (parent())
