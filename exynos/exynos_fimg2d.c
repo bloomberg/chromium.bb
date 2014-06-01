@@ -451,7 +451,7 @@ int g2d_copy_with_scale(struct g2d_context *ctx, struct g2d_image *src,
 	else {
 		scale = 1;
 		scale_x = (double)src_w / (double)dst_w;
-		scale_y = (double)src_w / (double)dst_h;
+		scale_y = (double)src_h / (double)dst_h;
 	}
 
 	if (src_x + src_w > src->width)
