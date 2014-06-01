@@ -356,7 +356,7 @@ if (is_linux) {
 
     if (component_mode == "shared_library") {
       if (is_mac) {
-        cflags = [ "-all_load" ]
+        ldflags = [ "-all_load" ]
       } else if (is_win) {
         # Pass the def file to the linker.
         ldflags = [ rebase_path("nss/exports_win.def", root_build_dir) ]
