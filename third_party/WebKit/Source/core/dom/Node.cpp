@@ -253,6 +253,26 @@ void Node::trackForDebugging()
 #endif
 }
 
+Node::Node(TreeScope* treeScope, ConstructionType type)
+    : m_nodeFlags(type)
+    , m_parentOrShadowHostNode(nullptr)
+    , m_treeScope(treeScope)
+    , m_previous(nullptr)
+    , m_next(nullptr)
+{
+    ASSERT(m_treeScope || type == CreateDocument || type == CreateShadowRoot);
+    ScriptWrappable::init(this);
+#if !ENABLE(OILPAN)
+    if (m_treeScope)
+        m_treeScope->guardRef();
+#endif
+
+#if !defined(NDEBUG) || (defined(DUMP_NODE_STATISTICS) && DUMP_NODE_STATISTICS)
+    trackForDebugging();
+#endif
+    InspectorCounters::incrementCounter(InspectorCounters::NodeCounter);
+}
+
 Node::~Node()
 {
 #ifndef NDEBUG
