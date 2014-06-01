@@ -107,3 +107,6 @@ class MockSCM(object):
     def move(self, origin, destination):
         if self._filesystem:
             self._filesystem.move(self.absolute_path(origin), self.absolute_path(destination))
+
+    def changed_files(self):
+        return []

@@ -26,10 +26,12 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+import os
 import optparse
 from webkitpy.tool.multicommandtool import AbstractDeclarativeCommand
 from webkitpy.layout_tests.layout_package.bot_test_expectations import BotTestExpectationsFactory
 from webkitpy.layout_tests.models.test_expectations import TestExpectationParser, TestExpectationsModel, TestExpectations
+from webkitpy.common.net import sheriff_calendar
 
 
 class FlakyTests(AbstractDeclarativeCommand):
@@ -37,46 +39,85 @@ class FlakyTests(AbstractDeclarativeCommand):
     help_text = "Update FlakyTests file from the flakiness dashboard"
     show_in_main_help = True
 
+    ALWAYS_CC = [
+        'ojan@chromium.org',
+        'dpranke@chromium.org',
+        'eseidel@chromium.org',
+    ]
+
     def __init__(self):
         options = [
             optparse.make_option('--upload', action='store_true',
                 help='upload the changed FlakyTest file for review'),
+            optparse.make_option('--reviewers', action='store',
+                help='comma-separated list of reviewers, defaults to blink gardeners'),
         ]
         AbstractDeclarativeCommand.__init__(self, options=options)
+        # This is sorta silly, but allows for unit testing:
+        self.expectations_factory = BotTestExpectationsFactory
 
-    def execute(self, options, args, tool):
-        port = tool.port_factory.get()
+    def _collect_expectation_lines(self, port_names, factory):
         model = TestExpectationsModel()
-        for port_name in tool.port_factory.all_port_names():
-            expectations = BotTestExpectationsFactory().expectations_for_port(port_name)
+        for port_name in port_names:
+            expectations = factory.expectations_for_port(port_name)
             for line in expectations.expectation_lines(only_ignore_very_flaky=True):
                 model.add_expectation_line(line)
         # FIXME: We need an official API to get all the test names or all test lines.
-        lines = model._test_to_expectation_line.values()
-        lines.sort(key=lambda line: line.path)
-        # Skip any tests which are mentioned in the dashboard but not in our checkout:
-        fs = tool.filesystem
-        lines = filter(lambda line: fs.exists(fs.join(port.layout_tests_dir(), line.path)), lines)
-        flaky_tests_path = fs.join(port.layout_tests_dir(), 'FlakyTests')
-        # Note: This includes all flaky tests from the dashboard, even ones mentioned
-        # in existing TestExpectations. We could certainly load existing TestExpecations
-        # and filter accordingly, or update existing TestExpectations instead of FlakyTests.
-        with open(flaky_tests_path, 'w') as flake_file:
-            flake_file.write(TestExpectations.list_to_string(lines))
+        return model._test_to_expectation_line.values()
 
-        if not options.upload:
-            return 0
-
+    def _commit_and_upload(self, tool, options):
         files = tool.scm().changed_files()
         flaky_tests_path = 'LayoutTests/FlakyTests'
         if flaky_tests_path not in files:
             print "%s is not changed, not uploading." % flaky_tests_path
             return 0
 
-        commit_message = "Update FlakyTests"
-        git_cmd = ['git', 'commit', '-m', commit_message, flaky_tests_path]
-        tool.executive.run_command(git_cmd)
+        if options.reviewers:
+            # FIXME: Could validate these as emails. sheriff_calendar has some code for that.
+            reviewer_emails = options.reviewers.split(',')
+        else:
+            reviewer_emails = sheriff_calendar.current_gardener_emails()
+            if not reviewer_emails:
+                print "No gardener, and --reviewers not specified, not bothering."
+                return 1
 
-        git_cmd = ['git', 'cl', 'upload', '--use-commit-queue', '--send-mail']
-        tool.executive.run_command(git_cmd)
-        # If there are changes to git, upload.
+        commit_message = """Update FlakyTests to match current flakiness dashboard results
+
+Automatically generated using:
+webkit-patch update-flaky-tests
+
+R=%s
+""" % ','.join(reviewer_emails)
+
+        git_cmd = ['git', 'commit', '-m', commit_message,
+            tool.filesystem.join(tool.scm().checkout_root, flaky_tests_path)]
+        tool.executive.run_and_throw_if_fail(git_cmd)
+
+        # FIXME: There must be a cleaner way to avoid the editor!
+        # Silence the editor.
+        os.environ['EDITOR'] = 'true'
+
+        git_cmd = ['git', 'cl', 'upload', '--send-mail',
+            '--cc', ','.join(self.ALWAYS_CC)]
+        tool.executive.run_and_throw_if_fail(git_cmd)
+
+    def execute(self, options, args, tool):
+        port = tool.port_factory.get()
+        port_names = tool.port_factory.all_port_names()
+        factory = self.expectations_factory()
+        lines = self._collect_expectation_lines(port_names, factory)
+        lines.sort(key=lambda line: line.path)
+        # Skip any tests which are mentioned in the dashboard but not in our checkout:
+        fs = tool.filesystem
+        lines = filter(lambda line: fs.exists(fs.join(port.layout_tests_dir(), line.path)), lines)
+
+        # Note: This includes all flaky tests from the dashboard, even ones mentioned
+        # in existing TestExpectations. We could certainly load existing TestExpecations
+        # and filter accordingly, or update existing TestExpectations instead of FlakyTests.
+        flaky_tests_path = fs.join(port.layout_tests_dir(), 'FlakyTests')
+        fs.write_text_file(flaky_tests_path, TestExpectations.list_to_string(lines))
+        print "Updated %s" % flaky_tests_path
+
+        if options.upload:
+            return self._commit_and_upload(tool, options)
+
