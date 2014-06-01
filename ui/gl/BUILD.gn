@@ -117,16 +117,14 @@ component("gl") {
     "//base",
     "//base/third_party/dynamic_annotations",
     "//gpu/command_buffer/common",
+    "//third_party/mesa:mesa_headers",
     "//skia",
-    # TODO(GYP) hook up once this is converted.
-    # Also uncomment forward statement below.
-    #"//third_party/mesa:mesa_headers",
     "//ui/gfx",
     "//ui/gfx/geometry",
   ]
 
   # TODO(GYP) hook up once this is converted.
-  #forward_dependent_configs_from = [ "//third_party/mesa:mesa_headers" ]
+  forward_dependent_configs_from = [ "//third_party/mesa:mesa_headers" ]
 
   if (is_win || is_android || is_linux) {
     sources += [
