@@ -52,6 +52,7 @@ public:
     // ownership to the callee, and the proxy's lifetime is same as that of
     // WebServiceWorker.
     virtual void setProxy(WebServiceWorkerProxy*) { }
+    virtual WebServiceWorkerProxy* proxy() { return 0; }
 
     // Called by this worker's ServiceWorkerProxy when it has become ready or
     // not ready for state change notifications.

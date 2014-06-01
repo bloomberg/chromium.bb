@@ -137,11 +137,25 @@ const AtomicString& ServiceWorker::state() const
     }
 }
 
+PassRefPtr<ServiceWorker> ServiceWorker::from(ScriptState* scriptState, WebType* worker)
+{
+    blink::WebServiceWorkerProxy* proxy = worker->proxy();
+    ServiceWorker* existingServiceWorker = proxy ? proxy->unwrap() : 0;
+    if (existingServiceWorker) {
+        ASSERT(existingServiceWorker->executionContext() == scriptState->executionContext());
+        return existingServiceWorker;
+    }
+
+    return create(scriptState->executionContext(), adoptPtr(worker));
+}
+
 PassRefPtr<ServiceWorker> ServiceWorker::from(ScriptPromiseResolverWithContext* resolver, WebType* worker)
 {
+    RefPtr<ServiceWorker> serviceWorker = ServiceWorker::from(resolver->scriptState(), worker);
+
     ScriptState::Scope scope(resolver->scriptState());
-    RefPtr<ServiceWorker> serviceWorker = create(resolver->scriptState()->executionContext(), adoptPtr(worker));
     serviceWorker->waitOnPromise(resolver->promise());
+
     return serviceWorker;
 }
 
@@ -169,6 +183,7 @@ PassRefPtr<ServiceWorker> ServiceWorker::create(ExecutionContext* executionConte
 
 ServiceWorker::ServiceWorker(ExecutionContext* executionContext, PassOwnPtr<blink::WebServiceWorker> worker)
     : AbstractWorker(executionContext)
+    , WebServiceWorkerProxy(this)
     , m_outerWorker(worker)
     , m_isPromisePending(false)
 {

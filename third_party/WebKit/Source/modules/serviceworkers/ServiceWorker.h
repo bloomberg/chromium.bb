@@ -42,10 +42,6 @@
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 
-namespace blink {
-class WebServiceWorker;
-}
-
 namespace WebCore {
 
 class ScriptState;
@@ -63,6 +59,8 @@ public:
     // For CallbackPromiseAdapter
     typedef blink::WebServiceWorker WebType;
     static PassRefPtr<ServiceWorker> from(ScriptPromiseResolverWithContext*, WebType* worker);
+
+    static PassRefPtr<ServiceWorker> from(ScriptState*, WebType*);
 
     void postMessage(PassRefPtr<SerializedScriptValue> message, const MessagePortArray*, ExceptionState&);
 
