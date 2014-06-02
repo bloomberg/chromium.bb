@@ -84,6 +84,12 @@ int nacl_io_register_exit_handler(nacl_io_exit_handler_t exit_handler,
  *           "PERSISTENT" and "TEMPORARY". The default is "PERSISTENT".
  *       "expected_size": The expected file-system size. Note that this does
  *           not request quota -- you must do that from JavaScript.
+ *       "filesystem_resource": If specified, this is a string that contains
+ *           the integer ID of the Filesystem resource to use instead of
+ *           creating a new one. The "type" and "expected_size" parameters are
+ *           ignored in this case. This parameter is useful when you pass a
+ *           Filesystem resource from JavaScript, but still want to be able to
+ *           call open/read/write/etc.
  *
  *   "httpfs": A filesystem that reads from a URL via HTTP.
  *     source: The root URL to read from. All paths read from this filesystem
