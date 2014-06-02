@@ -1073,7 +1073,14 @@ void StartupBrowserCreatorFirstRunTest::SetUpInProcessBrowserTestFixture() {
 #endif  // defined(ENABLE_CONFIGURATION_POLICY)
 }
 
-IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest, SyncPromoForbidden) {
+#if defined(GOOGLE_CHROME_BUILD) && defined(OS_MACOSX)
+// http://crbug.com/314819
+#define MAYBE_SyncPromoForbidden DISABLED_SyncPromoForbidden
+#else
+#define MAYBE_SyncPromoForbidden SyncPromoForbidden
+#endif
+IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest,
+                       MAYBE_SyncPromoForbidden) {
   // Consistently enable the welcome page on all platforms.
   first_run::SetShouldShowWelcomePage();
 
@@ -1107,7 +1114,14 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest, SyncPromoForbidden) {
             tab_strip->GetWebContentsAt(1)->GetURL());
 }
 
-IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest, SyncPromoAllowed) {
+#if defined(GOOGLE_CHROME_BUILD) && defined(OS_MACOSX)
+// http://crbug.com/314819
+#define MAYBE_SyncPromoAllowed DISABLED_SyncPromoAllowed
+#else
+#define MAYBE_SyncPromoAllowed SyncPromoAllowed
+#endif
+IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest,
+                       MAYBE_SyncPromoAllowed) {
   // Consistently enable the welcome page on all platforms.
   first_run::SetShouldShowWelcomePage();
 
@@ -1141,8 +1155,14 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest, SyncPromoAllowed) {
             tab_strip->GetWebContentsAt(1)->GetURL());
 }
 
+#if defined(GOOGLE_CHROME_BUILD) && defined(OS_MACOSX)
+// http://crbug.com/314819
+#define MAYBE_FirstRunTabsPromoAllowed DISABLED_FirstRunTabsPromoAllowed
+#else
+#define MAYBE_FirstRunTabsPromoAllowed FirstRunTabsPromoAllowed
+#endif
 IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest,
-                       FirstRunTabsPromoAllowed) {
+                       MAYBE_FirstRunTabsPromoAllowed) {
   // Simulate the following master_preferences:
   // {
   //  "first_run_tabs" : [
@@ -1177,8 +1197,15 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest,
             tab_strip->GetWebContentsAt(1)->GetURL().ExtractFileName());
 }
 
+#if defined(GOOGLE_CHROME_BUILD) && defined(OS_MACOSX)
+// http://crbug.com/314819
+#define MAYBE_FirstRunTabsContainSyncPromo \
+    DISABLED_FirstRunTabsContainSyncPromo
+#else
+#define MAYBE_FirstRunTabsContainSyncPromo FirstRunTabsContainSyncPromo
+#endif
 IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest,
-                       FirstRunTabsContainSyncPromo) {
+                       MAYBE_FirstRunTabsContainSyncPromo) {
   // Simulate the following master_preferences:
   // {
   //  "first_run_tabs" : [
@@ -1218,8 +1245,16 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest,
             tab_strip->GetWebContentsAt(1)->GetURL());
 }
 
+#if defined(GOOGLE_CHROME_BUILD) && defined(OS_MACOSX)
+// http://crbug.com/314819
+#define MAYBE_FirstRunTabsContainNTPSyncPromoAllowed \
+    DISABLED_FirstRunTabsContainNTPSyncPromoAllowed
+#else
+#define MAYBE_FirstRunTabsContainNTPSyncPromoAllowed \
+    FirstRunTabsContainNTPSyncPromoAllowed
+#endif
 IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest,
-                       FirstRunTabsContainNTPSyncPromoAllowed) {
+                       MAYBE_FirstRunTabsContainNTPSyncPromoAllowed) {
   // Simulate the following master_preferences:
   // {
   //  "first_run_tabs" : [
@@ -1257,8 +1292,16 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest,
             tab_strip->GetWebContentsAt(1)->GetURL().ExtractFileName());
 }
 
+#if defined(GOOGLE_CHROME_BUILD) && defined(OS_MACOSX)
+// http://crbug.com/314819
+#define MAYBE_FirstRunTabsContainNTPSyncPromoForbidden \
+    DISABLED_FirstRunTabsContainNTPSyncPromoForbidden
+#else
+#define MAYBE_FirstRunTabsContainNTPSyncPromoForbidden \
+    FirstRunTabsContainNTPSyncPromoForbidden
+#endif
 IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest,
-                       FirstRunTabsContainNTPSyncPromoForbidden) {
+                       MAYBE_FirstRunTabsContainNTPSyncPromoForbidden) {
   // Simulate the following master_preferences:
   // {
   //  "first_run_tabs" : [
@@ -1296,8 +1339,15 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest,
             tab_strip->GetWebContentsAt(1)->GetURL().ExtractFileName());
 }
 
+#if defined(GOOGLE_CHROME_BUILD) && defined(OS_MACOSX)
+// http://crbug.com/314819
+#define MAYBE_FirstRunTabsSyncPromoForbidden \
+    DISABLED_FirstRunTabsSyncPromoForbidden
+#else
+#define MAYBE_FirstRunTabsSyncPromoForbidden FirstRunTabsSyncPromoForbidden
+#endif
 IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest,
-                       FirstRunTabsSyncPromoForbidden) {
+                       MAYBE_FirstRunTabsSyncPromoForbidden) {
   // Simulate the following master_preferences:
   // {
   //  "first_run_tabs" : [
@@ -1331,8 +1381,16 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest,
 }
 
 #if defined(ENABLE_CONFIGURATION_POLICY)
+#if defined(GOOGLE_CHROME_BUILD) && defined(OS_MACOSX)
+// http://crbug.com/314819
+#define MAYBE_RestoreOnStartupURLsPolicySpecified \
+    DISABLED_RestoreOnStartupURLsPolicySpecified
+#else
+#define MAYBE_RestoreOnStartupURLsPolicySpecified \
+    RestoreOnStartupURLsPolicySpecified
+#endif
 IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest,
-                       RestoreOnStartupURLsPolicySpecified) {
+                       MAYBE_RestoreOnStartupURLsPolicySpecified) {
   // Simulate the following master_preferences:
   // {
   //  "sync_promo": {
