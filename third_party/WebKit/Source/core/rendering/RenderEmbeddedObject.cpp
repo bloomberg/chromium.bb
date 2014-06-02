@@ -63,15 +63,6 @@ RenderEmbeddedObject::~RenderEmbeddedObject()
 {
 }
 
-LayerType RenderEmbeddedObject::layerTypeRequired() const
-{
-    LayerType type = RenderPart::layerTypeRequired();
-    if (type != NoLayer)
-        return type;
-
-    return requiresAcceleratedCompositing() ? NormalLayer : NoLayer;
-}
-
 static String unavailablePluginReplacementText(Node* node, RenderEmbeddedObject::PluginUnavailabilityReason pluginUnavailabilityReason)
 {
     Locale& locale = node ? toElement(node)->locale() : Locale::defaultLocale();

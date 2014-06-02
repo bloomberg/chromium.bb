@@ -59,8 +59,6 @@ private:
     void paintSnapshotImage(PaintInfo&, const LayoutPoint&, Image*);
     virtual void paintContents(PaintInfo&, const LayoutPoint&) OVERRIDE FINAL;
 
-    virtual LayerType layerTypeRequired() const OVERRIDE FINAL;
-
     virtual bool scroll(ScrollDirection, ScrollGranularity, float multiplier) OVERRIDE FINAL;
 
     bool getReplacementTextGeometry(const LayoutPoint& accumulatedOffset, FloatRect& contentRect, Path&, FloatRect& replacementTextRect, Font&, TextRun&, float& textWidth) const;
