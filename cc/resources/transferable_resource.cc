@@ -12,7 +12,9 @@ TransferableResource::TransferableResource()
     : id(0),
       format(RGBA_8888),
       filter(0),
-      is_software(false) {}
+      is_repeated(false),
+      is_software(false) {
+}
 
 TransferableResource::~TransferableResource() {
 }

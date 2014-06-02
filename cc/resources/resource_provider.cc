@@ -1445,7 +1445,7 @@ void ResourceProvider::ReceiveFromChild(
                           it->size,
                           Resource::Delegated,
                           GL_LINEAR,
-                          GL_CLAMP_TO_EDGE);
+                          it->is_repeated ? GL_REPEAT : GL_CLAMP_TO_EDGE);
     } else {
       resource = Resource(0,
                           it->size,
@@ -1453,7 +1453,7 @@ void ResourceProvider::ReceiveFromChild(
                           it->mailbox_holder.texture_target,
                           it->filter,
                           0,
-                          GL_CLAMP_TO_EDGE,
+                          it->is_repeated ? GL_REPEAT : GL_CLAMP_TO_EDGE,
                           TextureUsageAny,
                           it->format);
       resource.mailbox = TextureMailbox(it->mailbox_holder.mailbox,
@@ -1620,6 +1620,7 @@ void ResourceProvider::TransferResource(GLES2Interface* gl,
   resource->mailbox_holder.texture_target = source->target;
   resource->filter = source->filter;
   resource->size = source->size;
+  resource->is_repeated = (source->wrap_mode == GL_REPEAT);
 
   if (source->type == Bitmap) {
     resource->mailbox_holder.mailbox = source->shared_bitmap_id;

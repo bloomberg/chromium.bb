@@ -33,6 +33,7 @@ struct CC_EXPORT TransferableResource {
   uint32 filter;
   gfx::Size size;
   gpu::MailboxHolder mailbox_holder;
+  bool is_repeated;
   bool is_software;
 };
 
