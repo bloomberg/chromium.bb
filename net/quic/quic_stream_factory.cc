@@ -782,6 +782,7 @@ void QuicStreamFactory::ActivateSession(
     const QuicServerId& server_id,
     QuicClientSession* session) {
   DCHECK(!HasActiveSession(server_id));
+  UMA_HISTOGRAM_COUNTS("Net.QuicActiveSessions", active_sessions_.size());
   active_sessions_[server_id] = session;
   session_aliases_[session].insert(server_id);
   const IpAliasKey ip_alias_key(session->connection()->peer_address(),

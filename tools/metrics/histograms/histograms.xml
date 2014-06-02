@@ -13515,6 +13515,13 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Net.QuicActiveSessions">
+  <owner>rtenneti@chromium.org</owner>
+  <summary>
+    The number of active QUIC sessions before we activate a new QUIC session.
+  </summary>
+</histogram>
+
 <histogram name="Net.QuicEphemeralPortsSuggested">
   <owner>rch@chromium.org</owner>
   <summary>The number of ports suggested per server.</summary>
