@@ -22,7 +22,6 @@
       {"test": "browser_tests", "shard_index": 0, "total_shards": 3},
       "content_browsertests",
       "installer_util_unittests",
-      "mini_installer_test",
       "webkit_compositor_bindings_unittests"
     ]
   },
@@ -79,7 +78,6 @@
       {"test": "browser_tests", "shard_index": 0, "total_shards": 3},
       "content_browsertests",
       "installer_util_unittests",
-      "mini_installer_test",
       "webkit_compositor_bindings_unittests"
     ]
   },
@@ -146,7 +144,6 @@
       {"test": "browser_tests", "shard_index": 0, "total_shards": 3},
       "content_browsertests",
       "installer_util_unittests",
-      "mini_installer_test",
       "webkit_compositor_bindings_unittests"
     ]
   },

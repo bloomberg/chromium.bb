@@ -1427,7 +1427,7 @@ def GetDefaultTryConfigs(bots=None):
           'gfx_unittests',
           'google_apis_unittests',
           'installer_util_unittests',
-          'mini_installer_test',
+          'test_mini_installer',
           'nacl_integration',
           'remoting_unittests',
           'sync_integration_tests',
