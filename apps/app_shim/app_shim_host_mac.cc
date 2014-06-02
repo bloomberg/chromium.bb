@@ -24,12 +24,11 @@ AppShimHost::~AppShimHost() {
 void AppShimHost::ServeChannel(const IPC::ChannelHandle& handle) {
   DCHECK(CalledOnValidThread());
   DCHECK(!channel_.get());
-  channel_.reset(new IPC::ChannelProxy(
+  channel_ = IPC::ChannelProxy::CreateServer(
       handle,
-      IPC::Channel::MODE_SERVER,
       this,
       content::BrowserThread::GetMessageLoopProxyForThread(
-          content::BrowserThread::IO).get()));
+          content::BrowserThread::IO).get());
 }
 
 base::FilePath AppShimHost::GetProfilePath() const {

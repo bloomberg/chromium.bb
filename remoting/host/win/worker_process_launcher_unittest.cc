@@ -273,11 +273,10 @@ void WorkerProcessLauncherTest::TerminateWorker(DWORD exit_code) {
 }
 
 void WorkerProcessLauncherTest::ConnectClient() {
-  channel_client_.reset(new IPC::ChannelProxy(
+  channel_client_ = IPC::ChannelProxy::CreateClient(
       IPC::ChannelHandle(channel_name_),
-      IPC::Channel::MODE_CLIENT,
       &client_listener_,
-      task_runner_));
+      task_runner_);
 
   // Pretend that |kLaunchSuccessTimeoutSeconds| passed since launching
   // the worker process. This will make the backoff algorithm think that this
@@ -361,11 +360,10 @@ void WorkerProcessLauncherTest::DoLaunchProcess() {
   ASSERT_TRUE(CreateIpcChannel(channel_name_, kIpcSecurityDescriptor, &pipe));
 
   // Wrap the pipe into an IPC channel.
-  channel_server_.reset(new IPC::ChannelProxy(
+  channel_server_ = IPC::ChannelProxy::CreateServer(
       IPC::ChannelHandle(pipe),
-      IPC::Channel::MODE_SERVER,
       this,
-      task_runner_));
+      task_runner_);
 
   HANDLE temp_handle;
   ASSERT_TRUE(DuplicateHandle(GetCurrentProcess(),

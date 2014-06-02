@@ -22,10 +22,9 @@ ManifestService::ManifestService(
     scoped_refptr<base::MessageLoopProxy> io_message_loop,
     base::WaitableEvent* shutdown_event) {
   filter_ = new IPC::SyncMessageFilter(shutdown_event);
-  channel_.reset(new IPC::ChannelProxy(handle,
-                                       IPC::Channel::MODE_SERVER,
-                                       NULL,  // Listener
-                                       io_message_loop));
+  channel_ = IPC::ChannelProxy::CreateServer(handle,
+                                             NULL,  // Listener
+                                             io_message_loop);
   channel_->AddFilter(filter_.get());
 }
 

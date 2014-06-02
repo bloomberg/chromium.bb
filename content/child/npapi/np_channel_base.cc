@@ -178,9 +178,9 @@ bool NPChannelBase::Init(base::MessageLoopProxy* ipc_message_loop,
     return false;
 #endif
 
-  channel_.reset(new IPC::SyncChannel(
-      channel_handle_, mode_, this, ipc_message_loop, create_pipe_now,
-      shutdown_event));
+  channel_ = IPC::SyncChannel::Create(
+      this, ipc_message_loop, shutdown_event);
+  channel_->InitByMode(channel_handle_, mode_, create_pipe_now);
 
 #if defined(OS_POSIX)
   // Check the validity of fd for bug investigation.  Remove after fixed.

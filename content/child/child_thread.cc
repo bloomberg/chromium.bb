@@ -225,13 +225,12 @@ void ChildThread::Init() {
   // the logger, and the logger does not like being created on the IO thread.
   IPC::Logging::GetInstance();
 #endif
-  channel_.reset(
-      new IPC::SyncChannel(channel_name_,
-                           IPC::Channel::MODE_CLIENT,
-                           this,
-                           ChildProcess::current()->io_message_loop_proxy(),
-                           true,
-                           ChildProcess::current()->GetShutDownEvent()));
+  channel_ = IPC::SyncChannel::CreateClient(
+      channel_name_,
+      this,
+      ChildProcess::current()->io_message_loop_proxy(),
+      true,
+      ChildProcess::current()->GetShutDownEvent());
 #ifdef IPC_MESSAGE_LOG_ENABLED
   if (!in_browser_process_)
     IPC::Logging::GetInstance()->SetIPCSender(this);

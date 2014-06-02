@@ -304,17 +304,66 @@ void ChannelProxy::Context::OnDispatchBadMessage(const Message& message) {
 
 //-----------------------------------------------------------------------------
 
-ChannelProxy::ChannelProxy(const IPC::ChannelHandle& channel_handle,
-                           Channel::Mode mode,
-                           Listener* listener,
-                           base::SingleThreadTaskRunner* ipc_task_runner)
-    : context_(new Context(listener, ipc_task_runner)),
-      did_init_(false) {
-  Init(channel_handle, mode, true);
+// static
+scoped_ptr<ChannelProxy> ChannelProxy::Create(
+    Listener* listener,
+    base::SingleThreadTaskRunner* ipc_task_runner) {
+  return make_scoped_ptr(new ChannelProxy(
+      listener, ipc_task_runner));
+}
+
+// static
+scoped_ptr<ChannelProxy> ChannelProxy::CreateClient(
+    const IPC::ChannelHandle& channel_handle,
+    Listener* listener,
+    base::SingleThreadTaskRunner* ipc_task_runner) {
+  scoped_ptr<ChannelProxy> channel = Create(
+      listener, ipc_task_runner);
+  channel->InitClient(channel_handle, true);
+  return channel.Pass();
+}
+
+// static
+scoped_ptr<ChannelProxy> ChannelProxy::CreateServer(
+      const IPC::ChannelHandle& channel_handle,
+      Listener* listener,
+      base::SingleThreadTaskRunner* ipc_task_runner) {
+  scoped_ptr<ChannelProxy> channel = Create(
+      listener, ipc_task_runner);
+  channel->InitServer(channel_handle, true);
+  return channel.Pass();
+}
+
+// static
+scoped_ptr<ChannelProxy> ChannelProxy::CreateNamedClient(
+    const IPC::ChannelHandle& channel_handle,
+    Listener* listener,
+    base::SingleThreadTaskRunner* ipc_task_runner) {
+  scoped_ptr<ChannelProxy> channel = Create(
+      listener, ipc_task_runner);
+  channel->InitNamedClient(channel_handle, true);
+  return channel.Pass();
+}
+
+// static
+scoped_ptr<ChannelProxy> ChannelProxy::CreateNamedServer(
+    const IPC::ChannelHandle& channel_handle,
+    Listener* listener,
+    base::SingleThreadTaskRunner* ipc_task_runner) {
+  scoped_ptr<ChannelProxy> channel = Create(
+      listener, ipc_task_runner);
+  channel->InitNamedServer(channel_handle, true);
+  return channel.Pass();
 }
 
 ChannelProxy::ChannelProxy(Context* context)
     : context_(context),
+      did_init_(false) {
+}
+
+ChannelProxy::ChannelProxy(Listener* listener,
+                           base::SingleThreadTaskRunner* ipc_task_runner)
+    : context_(new Context(listener, ipc_task_runner)),
       did_init_(false) {
 }
 
@@ -324,9 +373,10 @@ ChannelProxy::~ChannelProxy() {
   Close();
 }
 
-void ChannelProxy::Init(const IPC::ChannelHandle& channel_handle,
-                        Channel::Mode mode,
-                        bool create_pipe_now) {
+void ChannelProxy::InitByMode(
+    const IPC::ChannelHandle& channel_handle,
+    Channel::Mode mode,
+    bool create_pipe_now) {
   DCHECK(CalledOnValidThread());
   DCHECK(!did_init_);
 #if defined(OS_POSIX)
@@ -356,6 +406,26 @@ void ChannelProxy::Init(const IPC::ChannelHandle& channel_handle,
       FROM_HERE, base::Bind(&Context::OnChannelOpened, context_.get()));
 
   did_init_ = true;
+}
+
+void ChannelProxy::InitClient(const IPC::ChannelHandle& channel_handle,
+                              bool create_pipe_now) {
+  InitByMode(channel_handle, Channel::MODE_CLIENT, create_pipe_now);
+}
+
+void ChannelProxy::InitServer(const IPC::ChannelHandle& channel_handle,
+                               bool create_pipe_now) {
+  InitByMode(channel_handle, Channel::MODE_SERVER, create_pipe_now);
+}
+
+void ChannelProxy::InitNamedClient(const IPC::ChannelHandle& channel_handle,
+                                   bool create_pipe_now) {
+  InitByMode(channel_handle, Channel::MODE_NAMED_CLIENT, create_pipe_now);
+}
+
+void ChannelProxy::InitNamedServer(const IPC::ChannelHandle& channel_handle,
+                                   bool create_pipe_now) {
+  InitByMode(channel_handle, Channel::MODE_NAMED_SERVER, create_pipe_now);
 }
 
 void ChannelProxy::Close() {

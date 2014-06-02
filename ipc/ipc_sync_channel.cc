@@ -404,19 +404,65 @@ base::WaitableEventWatcher::EventCallback
   return base::Bind(&SyncChannel::SyncContext::OnWaitableEventSignaled, this);
 }
 
-SyncChannel::SyncChannel(
+// static
+scoped_ptr<SyncChannel> SyncChannel::CreateClient(
+      const IPC::ChannelHandle& channel_handle,
+      Listener* listener,
+      base::SingleThreadTaskRunner* ipc_task_runner,
+      bool create_pipe_now,
+      base::WaitableEvent* shutdown_event) {
+  scoped_ptr<SyncChannel> channel = Create(
+      listener, ipc_task_runner, shutdown_event);
+  channel->InitClient(channel_handle, create_pipe_now);
+  return channel.Pass();
+}
+
+// static
+scoped_ptr<SyncChannel> SyncChannel::CreateServer(
     const IPC::ChannelHandle& channel_handle,
-    Channel::Mode mode,
     Listener* listener,
     base::SingleThreadTaskRunner* ipc_task_runner,
     bool create_pipe_now,
-    WaitableEvent* shutdown_event)
-    : ChannelProxy(new SyncContext(listener, ipc_task_runner, shutdown_event)) {
-  // The current (listener) thread must be distinct from the IPC thread, or else
-  // sending synchronous messages will deadlock.
-  DCHECK_NE(ipc_task_runner, base::ThreadTaskRunnerHandle::Get());
-  ChannelProxy::Init(channel_handle, mode, create_pipe_now);
-  StartWatching();
+    base::WaitableEvent* shutdown_event) {
+  scoped_ptr<SyncChannel> channel = Create(
+      listener, ipc_task_runner, shutdown_event);
+  channel->InitServer(channel_handle, create_pipe_now);
+  return channel.Pass();
+}
+
+// static
+scoped_ptr<SyncChannel> SyncChannel::CreateNamedClient(
+    const IPC::ChannelHandle& channel_handle,
+    Listener* listener,
+    base::SingleThreadTaskRunner* ipc_task_runner,
+    bool create_pipe_now,
+    base::WaitableEvent* shutdown_event) {
+  scoped_ptr<SyncChannel> channel = Create(
+      listener, ipc_task_runner, shutdown_event);
+  channel->InitNamedClient(channel_handle, create_pipe_now);
+  return channel.Pass();
+}
+
+// static
+scoped_ptr<SyncChannel> SyncChannel::CreateNamedServer(
+    const IPC::ChannelHandle& channel_handle,
+    Listener* listener,
+    base::SingleThreadTaskRunner* ipc_task_runner,
+    bool create_pipe_now,
+    base::WaitableEvent* shutdown_event) {
+  scoped_ptr<SyncChannel> channel = Create(
+      listener, ipc_task_runner, shutdown_event);
+  channel->InitNamedServer(channel_handle, create_pipe_now);
+  return channel.Pass();
+}
+
+// static
+scoped_ptr<SyncChannel> SyncChannel::Create(
+    Listener* listener,
+    base::SingleThreadTaskRunner* ipc_task_runner,
+    WaitableEvent* shutdown_event) {
+  return make_scoped_ptr(new SyncChannel(
+      listener, ipc_task_runner, shutdown_event));
 }
 
 SyncChannel::SyncChannel(

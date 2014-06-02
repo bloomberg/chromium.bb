@@ -64,10 +64,31 @@ class IPC_EXPORT ChannelProxy : public Sender, public base::NonThreadSafe {
   // on the background thread.  Any message not handled by the filter will be
   // dispatched to the listener.  The given task runner correspond to a thread
   // on which IPC::Channel is created and used (e.g. IO thread).
-  ChannelProxy(const IPC::ChannelHandle& channel_handle,
-               Channel::Mode mode,
-               Listener* listener,
-               base::SingleThreadTaskRunner* ipc_task_runner);
+  // The naming pattern follows IPC::Channel. The Create() does not create
+  // underlying channel and let Init*() do it.
+  static scoped_ptr<ChannelProxy> Create(
+      Listener* listener,
+      base::SingleThreadTaskRunner* ipc_task_runner);
+
+  static scoped_ptr<ChannelProxy> CreateClient(
+      const IPC::ChannelHandle& channel_handle,
+      Listener* listener,
+      base::SingleThreadTaskRunner* ipc_task_runner);
+
+  static scoped_ptr<ChannelProxy> CreateServer(
+      const IPC::ChannelHandle& channel_handle,
+      Listener* listener,
+      base::SingleThreadTaskRunner* ipc_task_runner);
+
+  static scoped_ptr<ChannelProxy> CreateNamedClient(
+      const IPC::ChannelHandle& channel_handle,
+      Listener* listener,
+      base::SingleThreadTaskRunner* ipc_task_runner);
+
+  static scoped_ptr<ChannelProxy> CreateNamedServer(
+      const IPC::ChannelHandle& channel_handle,
+      Listener* listener,
+      base::SingleThreadTaskRunner* ipc_task_runner);
 
   virtual ~ChannelProxy();
 
@@ -75,8 +96,17 @@ class IPC_EXPORT ChannelProxy : public Sender, public base::NonThreadSafe {
   // proxy that was not initialized in its constructor. If create_pipe_now is
   // true, the pipe is created synchronously. Otherwise it's created on the IO
   // thread.
-  void Init(const IPC::ChannelHandle& channel_handle, Channel::Mode mode,
-            bool create_pipe_now);
+  // The naming pattern follows IPC::Channel::Create*().
+  void InitByMode(const IPC::ChannelHandle& channel_handle, Channel::Mode mode,
+                  bool create_pipe_now);
+  void InitClient(const IPC::ChannelHandle& channel_handle,
+                  bool create_pipe_now);
+  void InitServer(const IPC::ChannelHandle& channel_handle,
+                  bool create_pipe_now);
+  void InitNamedClient(const IPC::ChannelHandle& channel_handle,
+                       bool create_pipe_now);
+  void InitNamedServer(const IPC::ChannelHandle& channel_handle,
+                       bool create_pipe_now);
 
   // Close the IPC::Channel.  This operation completes asynchronously, once the
   // background thread processes the command to close the channel.  It is ok to
@@ -123,6 +153,10 @@ class IPC_EXPORT ChannelProxy : public Sender, public base::NonThreadSafe {
   // A subclass uses this constructor if it needs to add more information
   // to the internal state.
   ChannelProxy(Context* context);
+
+  ChannelProxy(Listener* listener,
+               base::SingleThreadTaskRunner* ipc_task_runner);
+
 
   // Used internally to hold state that is referenced on the IPC thread.
   class Context : public base::RefCountedThreadSafe<Context>,

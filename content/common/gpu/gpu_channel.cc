@@ -411,13 +411,12 @@ void GpuChannel::Init(base::MessageLoopProxy* io_message_loop,
   DCHECK(!channel_.get());
 
   // Map renderer ID to a (single) channel to that process.
-  channel_.reset(new IPC::SyncChannel(
+  channel_ = IPC::SyncChannel::CreateServer(
       channel_id_,
-      IPC::Channel::MODE_SERVER,
       this,
       io_message_loop,
       false,
-      shutdown_event));
+      shutdown_event);
 
   filter_ =
       new GpuChannelMessageFilter(weak_factory_.GetWeakPtr(),

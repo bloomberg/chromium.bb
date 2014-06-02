@@ -905,11 +905,10 @@ void NaClProcessHost::OnPpapiChannelsCreated(
   if (!ipc_proxy_channel_.get()) {
     DCHECK_EQ(PROCESS_TYPE_NACL_LOADER, process_->GetData().process_type);
 
-    ipc_proxy_channel_.reset(
-        new IPC::ChannelProxy(browser_channel_handle,
-                              IPC::Channel::MODE_CLIENT,
-                              NULL,
-                              base::MessageLoopProxy::current().get()));
+    ipc_proxy_channel_ = IPC::ChannelProxy::CreateClient(
+        browser_channel_handle,
+        NULL,
+        base::MessageLoopProxy::current().get());
     // Create the browser ppapi host and enable PPAPI message dispatching to the
     // browser process.
     ppapi_host_.reset(content::BrowserPpapiHost::CreateExternalPluginProcess(

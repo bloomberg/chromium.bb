@@ -45,10 +45,10 @@ bool CreateConnectedIpcChannel(
   // Wrap the pipe into an IPC channel.
   base::FileDescriptor fd(pipe_fds[0], false);
   IPC::ChannelHandle handle(socket_name, fd);
-  server_out->reset(new IPC::ChannelProxy(IPC::ChannelHandle(socket_name, fd),
-                                          IPC::Channel::MODE_SERVER,
-                                          listener,
-                                          io_task_runner.get()));
+  *server_out = IPC::ChannelProxy::CreateServer(
+      IPC::ChannelHandle(socket_name, fd),
+      listener,
+      io_task_runner.get());
 
   *client_out = base::FileDescriptor(pipe_fds[1], false);
   return true;

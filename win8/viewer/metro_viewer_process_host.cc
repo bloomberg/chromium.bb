@@ -51,11 +51,10 @@ MetroViewerProcessHost::MetroViewerProcessHost(
   DCHECK(!instance_);
   instance_ = this;
 
-  channel_.reset(new IPC::ChannelProxy(
+  channel_ = IPC::ChannelProxy::CreateNamedServer(
       kMetroViewerIPCChannelName,
-      IPC::Channel::MODE_NAMED_SERVER,
       this,
-      ipc_task_runner));
+      ipc_task_runner);
 }
 
 MetroViewerProcessHost::~MetroViewerProcessHost() {
