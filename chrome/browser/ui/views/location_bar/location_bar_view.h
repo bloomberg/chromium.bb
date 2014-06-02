@@ -256,6 +256,7 @@ class LocationBarView : public LocationBar,
   // OmniboxEditController:
   virtual void Update(const content::WebContents* contents) OVERRIDE;
   virtual void ShowURL() OVERRIDE;
+  virtual void EndOriginChipAnimations(bool cancel_fade) OVERRIDE;
   virtual ToolbarModel* GetToolbarModel() OVERRIDE;
   virtual content::WebContents* GetWebContents() OVERRIDE;
 
@@ -336,9 +337,18 @@ class LocationBarView : public LocationBar,
   bool ShouldShowKeywordBubble() const;
   bool ShouldShowEVBubble() const;
 
-  // Origin chip animation control methods.
-  void OnShowURLAnimationEnded();
-  void OnHideURLAnimationEnded();
+  // Used to "reverse" the URL showing/hiding animations, since we use separate
+  // animations whose curves are not true inverses of each other.  Based on the
+  // current position of the omnibox, calculates what value the desired
+  // animation (|hide_url_animation_| if |hide| is true, |show_url_animation_|
+  // if it's false) should be set to in order to produce the same omnibox
+  // position.  This way we can stop the old animation, set the new animation to
+  // this value, and start it running, and the text will appear to reverse
+  // directions from its current location.
+  double GetValueForAnimation(bool hide) const;
+
+  // Resets |show_url_animation_| and the color changes it causes.
+  void ResetShowAnimationAndColors();
 
   // LocationBar:
   virtual void ShowFirstRunBubble() OVERRIDE;
@@ -512,11 +522,44 @@ class LocationBarView : public LocationBar,
   int dropdown_animation_offset_;
 
   // Origin chip animations.
+  //
+  // For the "show URL" animation, we instantly hide the origin chip and show
+  // the |omnibox_view_| in its place, containing the complete URL.  However, we
+  // clip that view (using the XXX_leading_inset_ and XXX_width_ members) so
+  // that only the hostname is visible.  We also offset the omnibox (using the
+  // XXX_offset_ members) so the hostname is in the same place as it was in the
+  // origin chip.  Finally, we set the selection text and background color of
+  // the text to match the pressed origin chip.  Then, as the animation runs,
+  // all of these values are animated to their steady-state values (no omnibox
+  // offset, no inset, width equal to the full omnibox text [which is reset to
+  // "no width clamp" after the animation ends], and standard selection colors).
+  //
+  // For the hide animation, we run the positioning and clipping parts of the
+  // animation in reverse, but instead of changing the selection color, because
+  // there usually isn't a selection when hiding, we leave the omnibox colors
+  // alone, and when the hide animation has ended, tell the origin chip to
+  // fade-in its background.
   scoped_ptr<gfx::SlideAnimation> show_url_animation_;
   scoped_ptr<gfx::SlideAnimation> hide_url_animation_;
-
-  // Text label shown only during origin chip animations.
-  views::Label* animated_host_label_;
+  // The omnibox offset may be positive or negative.  The starting offset is the
+  // amount necessary to shift the |omnibox_view_| by such that the hostname
+  // portion of the URL aligns with the hostname in the origin chip.  As the
+  // show animation runs, the current offset gradually moves to 0.
+  int starting_omnibox_offset_;
+  int current_omnibox_offset_;
+  // The leading inset is always positive.  The starting inset is the width of
+  // the text between the leading edge of the omnibox and the edge of the
+  // hostname, which is clipped off at the start of the show animation.  Note
+  // that in RTL mode, this will be the part of the URL that is logically after
+  // the hostname.  As the show animation runs, the current inset gradually
+  // moves to 0.
+  int starting_omnibox_leading_inset_;
+  int current_omnibox_leading_inset_;
+  // The width is always positive.  The ending width is the width of the entire
+  // omnibox URL.  As the show animation runs, the current width gradually moves
+  // from the width of the hostname to the ending value.
+  int current_omnibox_width_;
+  int ending_omnibox_width_;
 
   // Used to register for notifications received by NotificationObserver.
   content::NotificationRegistrar registrar_;

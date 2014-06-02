@@ -36,13 +36,10 @@ class ToolbarModelImpl : public ToolbarModel {
   static SecurityLevel GetSecurityLevelForWebContents(
       content::WebContents* web_contents);
 
-  // Returns "<organization_name> [<country>]".
-  static base::string16 GetEVCertName(const net::X509Certificate& cert);
-
  private:
   // ToolbarModel:
   virtual base::string16 GetText() const OVERRIDE;
-  virtual base::string16 GetFormattedURL() const OVERRIDE;
+  virtual base::string16 GetFormattedURL(size_t* prefix_end) const OVERRIDE;
   virtual base::string16 GetCorpusNameForMobile() const OVERRIDE;
   virtual GURL GetURL() const OVERRIDE;
   virtual bool WouldPerformSearchTermReplacement(

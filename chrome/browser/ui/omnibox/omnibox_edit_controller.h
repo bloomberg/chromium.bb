@@ -54,6 +54,11 @@ class OmniboxEditController {
   // to ShowURL().
   void ShowOriginChip();
 
+  // Ends any in-progress animations related to showing/hiding the origin chip.
+  // If |cancel_fade| is false, we still allow the chip itself to fade in if
+  // we're ending a currently-running hide animation.
+  virtual void EndOriginChipAnimations(bool cancel_fade) = 0;
+
   // Returns the InstantController, or NULL if instant is not enabled.
   virtual InstantController* GetInstant() = 0;
 

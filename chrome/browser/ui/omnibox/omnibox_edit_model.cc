@@ -522,6 +522,7 @@ void OmniboxEditModel::SetInputInProgress(bool in_progress) {
     controller()->GetToolbarModel()->set_origin_chip_enabled(false);
 
   controller_->GetToolbarModel()->set_input_in_progress(in_progress);
+  controller_->EndOriginChipAnimations(true);
   controller_->Update(NULL);
 
   if (user_input_in_progress_ || !in_revert_)

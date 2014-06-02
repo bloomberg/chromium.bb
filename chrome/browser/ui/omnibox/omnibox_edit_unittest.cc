@@ -112,6 +112,7 @@ class TestingOmniboxEditController : public OmniboxEditController {
   virtual void OnSetFocus() OVERRIDE {}
   virtual void ShowURL() OVERRIDE {}
   virtual void HideURL() OVERRIDE {}
+  virtual void EndOriginChipAnimations(bool cancel_fade) OVERRIDE {}
   virtual InstantController* GetInstant() OVERRIDE { return NULL; }
   virtual WebContents* GetWebContents() OVERRIDE { return NULL; }
   virtual ToolbarModel* GetToolbarModel() OVERRIDE { return toolbar_model_; }

@@ -8,6 +8,7 @@
 #include "chrome/browser/safe_browsing/ui_manager.h"
 #include "chrome/browser/ui/toolbar/toolbar_model.h"
 #include "chrome/browser/ui/views/location_bar/location_icon_view.h"
+#include "ui/gfx/animation/slide_animation.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/label_button.h"
 
@@ -20,16 +21,19 @@ class WebContents;
 }
 
 namespace gfx {
-class Canvas;
 class FontList;
-class SlideAnimation;
 }
 
 namespace views {
-class Button;
 class Label;
 }
 
+// A button visible at the beginning of the omnibox which contains the location
+// icon, an optional EV cert name, and a hostname.  The hostname is normally the
+// hostname for the current page with any leading "www." removed, though for
+// special built-in pages (e.g. chrome://settings), it can be a descriptive
+// string.  The EV cert name is the organization name of the EV cert holder and
+// is only present when the current page's security status is EV_SECURE.
 class OriginChipView : public views::LabelButton,
                        public views::ButtonListener,
                        public SafeBrowsingUIManager::Observer {
@@ -39,43 +43,46 @@ class OriginChipView : public views::LabelButton,
                  const gfx::FontList& font_list);
   virtual ~OriginChipView();
 
-  // Recalculates the contents of the Origin Chip based on the displayed tab.
-  void Update(content::WebContents* tab);
+  SkColor pressed_text_color() const { return pressed_text_color_; }
+  SkColor pressed_background_color() const {
+    return background_colors_[Button::STATE_PRESSED];
+  }
+  const base::string16& host_label_text() const { return host_label_->text(); }
 
   // Called to signal that the contents of the tab being shown has changed, so
   // the origin chip needs to update itself to the new state.
   void OnChanged();
 
-  views::ImageView* location_icon_view() {
-    return location_icon_view_;
-  }
-  const views::ImageView* location_icon_view() const {
-    return location_icon_view_;
-  }
-
-  // Elides the hostname shown to the indicated width, if needed. Returns the
-  // final width of the origin chip. Note: this may be more than the target
-  // width, since the hostname will not be elided past the TLD+1.
-  int ElideDomainTarget(int target_max_width);
-
-  // Starts an animation that fades in the border.
+  // Starts/stops a fade-in animation for the border.
   void FadeIn();
+  void CancelFade();
 
-  // Returns the current X position of the host label.
-  int host_label_x() const { return host_label_->x(); }
+  // Returns the offset of the host label, relative to where the first label
+  // starts.  When the EV cert name is not visible, this will always be 0;
+  // otherwise, it's a positive value equal to the width of the cert name plus
+  // the space between the labels.
+  int HostLabelOffset() const;
+
+  // Returns the width of the origin chip from the start of the first label to
+  // the trailing edge of the chip.
+  int WidthFromStartOfLabels() const;
 
   // views::LabelButton:
   virtual gfx::Size GetPreferredSize() const OVERRIDE;
+  virtual void Layout() OVERRIDE;
 
  private:
+  // Returns the X coordinate the first label should be placed at.
+  int GetLabelX() const;
+
   // Sets an image grid to represent the current security state.
   void SetBorderImages(const int images[3][9]);
 
   // views::LabelButton:
   virtual void AnimationProgressed(const gfx::Animation* animation) OVERRIDE;
   virtual void AnimationEnded(const gfx::Animation* animation) OVERRIDE;
-  virtual void Layout() OVERRIDE;
   virtual void OnPaintBorder(gfx::Canvas* canvas) OVERRIDE;
+  virtual void StateChanged() OVERRIDE;
 
   // views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender,
@@ -89,14 +96,17 @@ class OriginChipView : public views::LabelButton,
 
   LocationBarView* location_bar_view_;
   Profile* profile_;
+  SkColor pressed_text_color_;
+  SkColor background_colors_[3];
+  views::Label* ev_label_;
   views::Label* host_label_;
   LocationIconView* location_icon_view_;
   bool showing_16x16_icon_;
   scoped_ptr<OriginChipExtensionIcon> extension_icon_;
+  gfx::SlideAnimation fade_in_animation_;
   GURL url_displayed_;
   ToolbarModel::SecurityLevel security_level_;
   bool url_malware_;
-  scoped_ptr<gfx::SlideAnimation> fade_in_animation_;
 
   DISALLOW_COPY_AND_ASSIGN(OriginChipView);
 };

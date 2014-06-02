@@ -12,7 +12,6 @@
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
 #include "chrome/browser/ui/toolbar/toolbar_model.h"
 #include "ui/base/window_open_disposition.h"
-#include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/range/range.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
@@ -27,7 +26,6 @@ class Profile;
 
 namespace gfx {
 class RenderText;
-class SlideAnimation;
 }
 
 namespace ui {
@@ -38,7 +36,6 @@ class OSExchangeData;
 class OmniboxViewViews
     : public OmniboxView,
       public views::Textfield,
-      public gfx::AnimationDelegate,
 #if defined(OS_CHROMEOS)
       public
           chromeos::input_method::InputMethodManager::CandidateWindowObserver,
@@ -56,11 +53,8 @@ class OmniboxViewViews
                    const gfx::FontList& font_list);
   virtual ~OmniboxViewViews();
 
-  // Initialize, create the underlying views, etc;
+  // Initialize, create the underlying views, etc.
   void Init();
-
-  // Starts an animation that fades in the entire OmniboxView.
-  void FadeIn();
 
   // Exposes the RenderText for tests.
 #if defined(UNIT_TEST)
@@ -159,15 +153,10 @@ class OmniboxViewViews
   virtual bool SkipDefaultKeyEventProcessing(
       const ui::KeyEvent& event) OVERRIDE;
   virtual void GetAccessibleState(ui::AXViewState* state) OVERRIDE;
-  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
   virtual void OnFocus() OVERRIDE;
   virtual void OnBlur() OVERRIDE;
   virtual bool IsCommandIdEnabled(int command_id) const OVERRIDE;
   virtual base::string16 GetSelectionClipboardText() const OVERRIDE;
-
-  // gfx::AnimationDelegate:
-  virtual void AnimationProgressed(const gfx::Animation* animation) OVERRIDE;
-  virtual void AnimationEnded(const gfx::Animation* animation) OVERRIDE;
 
   // chromeos::input_method::InputMethodManager::CandidateWindowObserver:
 #if defined(OS_CHROMEOS)
@@ -232,8 +221,6 @@ class OmniboxViewViews
   // GESTURE_TAP. We want to select all only when the textfield is not in focus
   // and gets a tap. So we use this variable to remember focus state before tap.
   bool select_all_on_gesture_tap_;
-
-  scoped_ptr<gfx::SlideAnimation> fade_in_animation_;
 
   DISALLOW_COPY_AND_ASSIGN(OmniboxViewViews);
 };

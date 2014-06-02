@@ -95,17 +95,30 @@ class VIEWS_EXPORT Textfield : public View,
   // Checks if there is any selected text.
   bool HasSelection() const;
 
-  // Gets/Sets the text color to be used when painting the Textfield.
-  // Call |UseDefaultTextColor| to restore the default system color.
+  // Gets/sets the text color to be used when painting the Textfield.
+  // Call UseDefaultTextColor() to restore the default system color.
   SkColor GetTextColor() const;
   void SetTextColor(SkColor color);
   void UseDefaultTextColor();
 
-  // Gets/Sets the background color to be used when painting the Textfield.
-  // Call |UseDefaultBackgroundColor| to restore the default system color.
+  // Gets/sets the background color to be used when painting the Textfield.
+  // Call UseDefaultBackgroundColor() to restore the default system color.
   SkColor GetBackgroundColor() const;
   void SetBackgroundColor(SkColor color);
   void UseDefaultBackgroundColor();
+
+  // Gets/sets the selection text color to be used when painting the Textfield.
+  // Call UseDefaultSelectionTextColor() to restore the default system color.
+  SkColor GetSelectionTextColor() const;
+  void SetSelectionTextColor(SkColor color);
+  void UseDefaultSelectionTextColor();
+
+  // Gets/sets the selection background color to be used when painting the
+  // Textfield. Call UseDefaultSelectionBackgroundColor() to restore the default
+  // system color.
+  SkColor GetSelectionBackgroundColor() const;
+  void SetSelectionBackgroundColor(SkColor color);
+  void UseDefaultSelectionBackgroundColor();
 
   // Gets/Sets whether or not the cursor is enabled.
   bool GetCursorEnabled() const;
@@ -375,12 +388,16 @@ class VIEWS_EXPORT Textfield : public View,
 
   scoped_ptr<Painter> focus_painter_;
 
-  // Flags indicating whether text and background system colors should be used,
-  // and the actual color values used if the corresponding flags are set false.
-  SkColor text_color_;
+  // Flags indicating whether various system colors should be used, and if not,
+  // what overriding color values should be used instead.
   bool use_default_text_color_;
-  SkColor background_color_;
   bool use_default_background_color_;
+  bool use_default_selection_text_color_;
+  bool use_default_selection_background_color_;
+  SkColor text_color_;
+  SkColor background_color_;
+  SkColor selection_text_color_;
+  SkColor selection_background_color_;
 
   // Text to display when empty.
   base::string16 placeholder_text_;

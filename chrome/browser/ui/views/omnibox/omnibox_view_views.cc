@@ -43,7 +43,6 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/compositor/layer.h"
 #include "ui/events/event.h"
-#include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/selection_model.h"
@@ -177,14 +176,6 @@ void OmniboxViewViews::Init() {
   chromeos::input_method::InputMethodManager::Get()->
       AddCandidateWindowObserver(this);
 #endif
-
-  fade_in_animation_.reset(new gfx::SlideAnimation(this));
-  fade_in_animation_->SetTweenType(gfx::Tween::LINEAR);
-  fade_in_animation_->SetSlideDuration(300);
-}
-
-void OmniboxViewViews::FadeIn() {
-  fade_in_animation_->Show();
 }
 
 void OmniboxViewViews::SaveStateToTab(content::WebContents* tab) {
@@ -801,17 +792,6 @@ void OmniboxViewViews::GetAccessibleState(ui::AXViewState* state) {
   state->role = ui::AX_ROLE_TEXT_FIELD;
 }
 
-void OmniboxViewViews::OnPaint(gfx::Canvas* canvas) {
-  if (fade_in_animation_->is_animating()) {
-    canvas->SaveLayerAlpha(static_cast<uint8>(
-        fade_in_animation_->CurrentValueBetween(0, 255)));
-    views::Textfield::OnPaint(canvas);
-    canvas->Restore();
-  } else {
-    views::Textfield::OnPaint(canvas);
-  }
-}
-
 void OmniboxViewViews::OnFocus() {
   views::Textfield::OnFocus();
   // TODO(oshima): Get control key state.
@@ -868,14 +848,6 @@ bool OmniboxViewViews::IsCommandIdEnabled(int command_id) const {
 
 base::string16 OmniboxViewViews::GetSelectionClipboardText() const {
   return SanitizeTextForPaste(Textfield::GetSelectionClipboardText());
-}
-
-void OmniboxViewViews::AnimationProgressed(const gfx::Animation* animation) {
-  SchedulePaint();
-}
-
-void OmniboxViewViews::AnimationEnded(const gfx::Animation* animation) {
-  fade_in_animation_->Reset();
 }
 
 #if defined(OS_CHROMEOS)

@@ -255,10 +255,14 @@ Textfield::Textfield()
       controller_(NULL),
       read_only_(false),
       default_width_in_chars_(0),
-      text_color_(SK_ColorBLACK),
       use_default_text_color_(true),
-      background_color_(SK_ColorWHITE),
       use_default_background_color_(true),
+      use_default_selection_text_color_(true),
+      use_default_selection_background_color_(true),
+      text_color_(SK_ColorBLACK),
+      background_color_(SK_ColorWHITE),
+      selection_text_color_(SK_ColorWHITE),
+      selection_background_color_(SK_ColorBLUE),
       placeholder_text_color_(kDefaultPlaceholderTextColor),
       text_input_type_(ui::TEXT_INPUT_TYPE_TEXT),
       performing_user_action_(false),
@@ -383,6 +387,48 @@ void Textfield::SetBackgroundColor(SkColor color) {
 void Textfield::UseDefaultBackgroundColor() {
   use_default_background_color_ = true;
   UpdateBackgroundColor();
+}
+
+SkColor Textfield::GetSelectionTextColor() const {
+  return use_default_selection_text_color_ ?
+      GetNativeTheme()->GetSystemColor(
+          ui::NativeTheme::kColorId_TextfieldSelectionColor) :
+      selection_text_color_;
+}
+
+void Textfield::SetSelectionTextColor(SkColor color) {
+  selection_text_color_ = color;
+  use_default_selection_text_color_ = false;
+  GetRenderText()->set_selection_color(GetSelectionTextColor());
+  SchedulePaint();
+}
+
+void Textfield::UseDefaultSelectionTextColor() {
+  use_default_selection_text_color_ = true;
+  GetRenderText()->set_selection_color(GetSelectionTextColor());
+  SchedulePaint();
+}
+
+SkColor Textfield::GetSelectionBackgroundColor() const {
+  return use_default_selection_background_color_ ?
+      GetNativeTheme()->GetSystemColor(
+          ui::NativeTheme::kColorId_TextfieldSelectionBackgroundFocused) :
+      selection_background_color_;
+}
+
+void Textfield::SetSelectionBackgroundColor(SkColor color) {
+  selection_background_color_ = color;
+  use_default_selection_background_color_ = false;
+  GetRenderText()->set_selection_background_focused_color(
+      GetSelectionBackgroundColor());
+  SchedulePaint();
+}
+
+void Textfield::UseDefaultSelectionBackgroundColor() {
+  use_default_selection_background_color_ = true;
+  GetRenderText()->set_selection_background_focused_color(
+      GetSelectionBackgroundColor());
+  SchedulePaint();
 }
 
 bool Textfield::GetCursorEnabled() const {
@@ -908,11 +954,9 @@ void Textfield::OnNativeThemeChanged(const ui::NativeTheme* theme) {
   render_text->SetColor(GetTextColor());
   UpdateBackgroundColor();
   render_text->set_cursor_color(GetTextColor());
-  render_text->set_selection_color(theme->GetSystemColor(
-      ui::NativeTheme::kColorId_TextfieldSelectionColor));
-  render_text->set_selection_background_focused_color(theme->GetSystemColor(
-      ui::NativeTheme::kColorId_TextfieldSelectionBackgroundFocused));
-
+  render_text->set_selection_color(GetSelectionTextColor());
+  render_text->set_selection_background_focused_color(
+      GetSelectionBackgroundColor());
 }
 
 ////////////////////////////////////////////////////////////////////////////////

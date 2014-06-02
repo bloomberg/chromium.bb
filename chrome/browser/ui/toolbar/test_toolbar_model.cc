@@ -20,7 +20,7 @@ base::string16 TestToolbarModel::GetText() const {
   return text_;
 }
 
-base::string16 TestToolbarModel::GetFormattedURL() const {
+base::string16 TestToolbarModel::GetFormattedURL(size_t* prefix_end) const {
   return text_;
 }
 
@@ -55,7 +55,7 @@ int TestToolbarModel::GetIconForSecurityLevel(SecurityLevel level) const {
 }
 
 base::string16 TestToolbarModel::GetEVCertName() const {
-  return ev_cert_name_;
+  return (security_level_ == EV_SECURE) ? ev_cert_name_ : base::string16();
 }
 
 bool TestToolbarModel::ShouldDisplayURL() const {

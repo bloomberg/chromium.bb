@@ -36,9 +36,9 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
-#include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font_list.h"
+#include "ui/gfx/text_utils.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/button/label_button_border.h"
@@ -102,7 +102,6 @@ const int kEdgeThickness = 5;
 const int k16x16IconLeadingSpacing = 1;
 const int k16x16IconTrailingSpacing = 2;
 const int kIconTextSpacing = 3;
-const int kTrailingLabelMargin = 0;
 
 const int kNormalImages[3][9] = {
   IMAGE_GRID(IDR_ORIGIN_CHIP_NORMAL),
@@ -128,6 +127,14 @@ const int kEVImages[3][9] = {
   IMAGE_GRID(IDR_ORIGIN_CHIP_EV_PRESSED)
 };
 
+const extensions::Extension* GetExtension(const GURL& url, Profile* profile) {
+  if (!url.SchemeIs(extensions::kExtensionScheme))
+    return NULL;
+  ExtensionService* service =
+      extensions::ExtensionSystem::Get(profile)->extension_service();
+  return service->extensions()->GetExtensionOrAppByURL(url);
+}
+
 }  // namespace
 
 OriginChipView::OriginChipView(LocationBarView* location_bar_view,
@@ -136,7 +143,8 @@ OriginChipView::OriginChipView(LocationBarView* location_bar_view,
     : LabelButton(this, base::string16()),
       location_bar_view_(location_bar_view),
       profile_(profile),
-      showing_16x16_icon_(false) {
+      showing_16x16_icon_(false),
+      fade_in_animation_(this) {
   scoped_refptr<SafeBrowsingService> sb_service =
       g_browser_process->safe_browsing_service();
   // May not be set for unit tests.
@@ -154,12 +162,18 @@ OriginChipView::OriginChipView(LocationBarView* location_bar_view,
   location_icon_view_->ShowTooltip(true);
   AddChildView(location_icon_view_);
 
+  ev_label_ = new views::Label(base::string16(), GetFontList());
+  ev_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  ev_label_->SetElideBehavior(views::Label::NO_ELIDE);
+  AddChildView(ev_label_);
+
   host_label_ = new views::Label(base::string16(), GetFontList());
+  host_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  host_label_->SetElideBehavior(views::Label::NO_ELIDE);
   AddChildView(host_label_);
 
-  fade_in_animation_.reset(new gfx::SlideAnimation(this));
-  fade_in_animation_->SetTweenType(gfx::Tween::LINEAR);
-  fade_in_animation_->SetSlideDuration(300);
+  fade_in_animation_.SetTweenType(gfx::Tween::LINEAR_OUT_SLOW_IN);
+  fade_in_animation_.SetSlideDuration(175);
 }
 
 OriginChipView::~OriginChipView() {
@@ -169,7 +183,8 @@ OriginChipView::~OriginChipView() {
     sb_service->ui_manager()->RemoveObserver(this);
 }
 
-void OriginChipView::Update(content::WebContents* web_contents) {
+void OriginChipView::OnChanged() {
+  content::WebContents* web_contents = location_bar_view_->GetWebContents();
   if (!web_contents)
     return;
 
@@ -203,124 +218,65 @@ void OriginChipView::Update(content::WebContents* web_contents) {
     SetBorderImages(kNormalImages);
   }
 
+  ev_label_->SetText(location_bar_view_->GetToolbarModel()->GetEVCertName());
+  ev_label_->SetVisible(security_level_ == ToolbarModel::EV_SECURE);
+
+  // TODO(pkasting): Allow the origin chip to shrink, and use ElideHost().
   base::string16 host =
       OriginChip::LabelFromURLForProfile(url_displayed_, profile_);
-  if (security_level_ == ToolbarModel::EV_SECURE) {
-    host = l10n_util::GetStringFUTF16(IDS_SITE_CHIP_EV_SSL_LABEL,
-        location_bar_view_->GetToolbarModel()->GetEVCertName(),
-        host);
-  }
   host_label_->SetText(host);
   host_label_->SetTooltipText(base::UTF8ToUTF16(url.spec()));
-  host_label_->SetElideBehavior(views::Label::NO_ELIDE);
 
-  int icon = location_bar_view_->GetToolbarModel()->GetIconForSecurityLevel(
-      security_level_);
-  showing_16x16_icon_ = false;
-
-  if (url_displayed_.is_empty() ||
-      url_displayed_.SchemeIs(content::kChromeUIScheme)) {
-    icon = IDR_PRODUCT_LOGO_16;
-    showing_16x16_icon_ = true;
-  }
-
-  location_icon_view_->SetImage(GetThemeProvider()->GetImageSkiaNamed(icon));
-
-  if (url_displayed_.SchemeIs(extensions::kExtensionScheme)) {
+  showing_16x16_icon_ = url_displayed_.is_empty() ||
+      url_displayed_.SchemeIs(content::kChromeUIScheme);
+  int icon = showing_16x16_icon_ ? IDR_PRODUCT_LOGO_16 :
+      location_bar_view_->GetToolbarModel()->GetIconForSecurityLevel(
+          security_level_);
+  const extensions::Extension* extension =
+      GetExtension(url_displayed_, profile_);
+  if (extension) {
     icon = IDR_EXTENSIONS_FAVICON;
     showing_16x16_icon_ = true;
-    location_icon_view_->SetImage(GetThemeProvider()->GetImageSkiaNamed(icon));
-
-    ExtensionService* service =
-        extensions::ExtensionSystem::Get(profile_)->extension_service();
-    const extensions::Extension* extension =
-        service->extensions()->GetExtensionOrAppByURL(url_displayed_);
     extension_icon_.reset(
         new OriginChipExtensionIcon(location_icon_view_, profile_, extension));
   } else {
     extension_icon_.reset();
   }
+  location_icon_view_->SetImage(GetThemeProvider()->GetImageSkiaNamed(icon));
 
-  Layout();
-  SchedulePaint();
-}
-
-void OriginChipView::OnChanged() {
-  Update(location_bar_view_->GetWebContents());
-  // TODO(gbillock): Also need to potentially repaint infobars to make sure the
-  // arrows are pointing to the right spot. Only needed for some edge cases.
-}
-
-int OriginChipView::ElideDomainTarget(int target_max_width) {
-  base::string16 host =
-      OriginChip::LabelFromURLForProfile(url_displayed_, profile_);
-  host_label_->SetText(host);
-  int width = GetPreferredSize().width();
-  if (width <= target_max_width)
-    return width;
-
-  gfx::Size label_size = host_label_->GetPreferredSize();
-  int padding_width = width - label_size.width();
-
-  host_label_->SetText(ElideHost(
-      location_bar_view_->GetToolbarModel()->GetURL(),
-      host_label_->font_list(), target_max_width - padding_width));
-  return GetPreferredSize().width();
+  if (visible()) {
+    CancelFade();
+    Layout();
+    SchedulePaint();
+  }
 }
 
 void OriginChipView::FadeIn() {
-  fade_in_animation_->Show();
+  fade_in_animation_.Show();
+}
+
+void OriginChipView::CancelFade() {
+  fade_in_animation_.Stop();
+}
+
+int OriginChipView::HostLabelOffset() const {
+  return host_label_->x() - GetLabelX();
+}
+
+int OriginChipView::WidthFromStartOfLabels() const {
+  return width() - GetLabelX();
 }
 
 gfx::Size OriginChipView::GetPreferredSize() const {
-  gfx::Size label_size = host_label_->GetPreferredSize();
-  gfx::Size icon_size = location_icon_view_->GetPreferredSize();
-  int icon_spacing = showing_16x16_icon_ ?
-      (k16x16IconLeadingSpacing + k16x16IconTrailingSpacing) : 0;
-  return gfx::Size(kEdgeThickness + icon_size.width() + icon_spacing +
-                   kIconTextSpacing + label_size.width() +
-                   kTrailingLabelMargin + kEdgeThickness,
-                   icon_size.height());
-}
-
-void OriginChipView::SetBorderImages(const int images[3][9]) {
-  scoped_ptr<views::LabelButtonBorder> border(
-      new views::LabelButtonBorder(views::Button::STYLE_BUTTON));
-
-  views::Painter* painter = views::Painter::CreateImageGridPainter(images[0]);
-  border->SetPainter(false, Button::STATE_NORMAL, painter);
-  painter = views::Painter::CreateImageGridPainter(images[1]);
-  border->SetPainter(false, Button::STATE_HOVERED, painter);
-  painter = views::Painter::CreateImageGridPainter(images[2]);
-  border->SetPainter(false, Button::STATE_PRESSED, painter);
-
-  SetBorder(border.PassAs<views::Border>());
-
-  // Calculate a representative background color of the provided image grid and
-  // set it as the background color of the host label in order to color the text
-  // appropriately. We grab the color of the middle pixel of the middle image
-  // of the background, which we treat as the representative color of the entire
-  // background (reasonable, given the current appearance of these images).
-  const SkBitmap& bitmap(
-      GetThemeProvider()->GetImageSkiaNamed(
-          images[0][4])->GetRepresentation(1.0f).sk_bitmap());
-  SkAutoLockPixels pixel_lock(bitmap);
-  host_label_->SetBackgroundColor(
-      bitmap.getColor(bitmap.width() / 2, bitmap.height() / 2));
-}
-
-void OriginChipView::AnimationProgressed(const gfx::Animation* animation) {
-  if (animation == fade_in_animation_.get())
-    SchedulePaint();
-  else
-    views::LabelButton::AnimationProgressed(animation);
-}
-
-void OriginChipView::AnimationEnded(const gfx::Animation* animation) {
-  if (animation == fade_in_animation_.get())
-    fade_in_animation_->Reset();
-  else
-    views::LabelButton::AnimationEnded(animation);
+  // TODO(pkasting): Use of " " here is a horrible hack, to be replaced by
+  // splitting the chip into separate pieces for EV/host.
+  int label_size = host_label_->GetPreferredSize().width();
+  if (ev_label_->visible()) {
+    label_size += ev_label_->GetPreferredSize().width() +
+        gfx::GetStringWidth(base::ASCIIToUTF16(" "), GetFontList());
+  }
+  return gfx::Size(GetLabelX() + label_size + kEdgeThickness,
+                   location_icon_view_->GetPreferredSize().height());
 }
 
 void OriginChipView::Layout() {
@@ -333,26 +289,90 @@ void OriginChipView::Layout() {
       location_icon_view_->GetPreferredSize().width(),
       height() - 2 * LocationBarView::kNormalEdgeThickness);
 
-  int host_label_x = location_icon_view_->x() + location_icon_view_->width() +
-      kIconTextSpacing;
-  host_label_x += showing_16x16_icon_ ? k16x16IconTrailingSpacing : 0;
-  int host_label_width =
-      width() - host_label_x - kEdgeThickness - kTrailingLabelMargin;
-  host_label_->SetBounds(host_label_x,
-                         LocationBarView::kNormalEdgeThickness,
-                         host_label_width,
-                         height() - 2 * LocationBarView::kNormalEdgeThickness);
+  int label_x = GetLabelX();
+  int label_width = std::max(0, width() - label_x - kEdgeThickness);
+  const int label_y = LocationBarView::kNormalEdgeThickness;
+  const int label_height = height() - 2 * LocationBarView::kNormalEdgeThickness;
+  if (ev_label_->visible()) {
+    int ev_label_width =
+        std::min(ev_label_->GetPreferredSize().width(), label_width);
+    ev_label_->SetBounds(label_x, label_y, ev_label_width, label_height);
+    // TODO(pkasting): See comments in GetPreferredSize().
+    ev_label_width +=
+        gfx::GetStringWidth(base::ASCIIToUTF16(" "), GetFontList());
+    label_x += ev_label_width;
+    label_width = std::max(0, label_width - ev_label_width);
+  }
+  host_label_->SetBounds(label_x, label_y, label_width, label_height);
+}
+
+int OriginChipView::GetLabelX() const {
+  const int icon_spacing = showing_16x16_icon_ ?
+      (k16x16IconLeadingSpacing + k16x16IconTrailingSpacing) : 0;
+  return kEdgeThickness + location_icon_view_->GetPreferredSize().width() +
+      icon_spacing + kIconTextSpacing;
+}
+
+void OriginChipView::SetBorderImages(const int images[3][9]) {
+  scoped_ptr<views::LabelButtonBorder> border(
+      new views::LabelButtonBorder(views::Button::STYLE_BUTTON));
+
+  for (size_t i = 0; i < 3; ++i) {
+    views::Painter* painter = views::Painter::CreateImageGridPainter(images[i]);
+    border->SetPainter(false, static_cast<Button::ButtonState>(i), painter);
+
+    // Calculate a representative background color of the provided image grid to
+    // use as the background color of the host label in order to color the text
+    // appropriately. We grab the color of the middle pixel of the middle image
+    // of the background, which we treat as the representative color of the
+    // entire background (reasonable, given the current appearance of these
+    // images).
+    const SkBitmap& bitmap(
+        GetThemeProvider()->GetImageSkiaNamed(
+            images[i][4])->GetRepresentation(1.0f).sk_bitmap());
+    SkAutoLockPixels pixel_lock(bitmap);
+    background_colors_[i] =
+        bitmap.getColor(bitmap.width() / 2, bitmap.height() / 2);
+  }
+
+  // Calculate the actual text color of the pressed label.
+  host_label_->SetBackgroundColor(background_colors_[Button::STATE_PRESSED]);
+  pressed_text_color_ = host_label_->enabled_color();
+  host_label_->SetBackgroundColor(background_colors_[state()]);
+
+  SetBorder(border.PassAs<views::Border>());
+}
+
+void OriginChipView::AnimationProgressed(const gfx::Animation* animation) {
+  if (animation == &fade_in_animation_)
+    SchedulePaint();
+  else
+    views::LabelButton::AnimationProgressed(animation);
+}
+
+void OriginChipView::AnimationEnded(const gfx::Animation* animation) {
+  if (animation == &fade_in_animation_)
+    fade_in_animation_.Reset();
+  else
+    views::LabelButton::AnimationEnded(animation);
 }
 
 void OriginChipView::OnPaintBorder(gfx::Canvas* canvas) {
-  if (fade_in_animation_->is_animating()) {
+  if (fade_in_animation_.is_animating()) {
     canvas->SaveLayerAlpha(static_cast<uint8>(
-        fade_in_animation_->CurrentValueBetween(0, 255)));
+        fade_in_animation_.CurrentValueBetween(0, 255)));
     views::LabelButton::OnPaintBorder(canvas);
     canvas->Restore();
   } else {
     views::LabelButton::OnPaintBorder(canvas);
   }
+}
+
+void OriginChipView::StateChanged() {
+  DCHECK_LT(state(), 3);
+  SkColor background_color = background_colors_[state()];
+  ev_label_->SetBackgroundColor(background_color);
+  host_label_->SetBackgroundColor(background_color);
 }
 
 // TODO(gbillock): Make the LocationBarView or OmniboxView the listener for

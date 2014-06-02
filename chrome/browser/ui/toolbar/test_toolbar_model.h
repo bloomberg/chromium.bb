@@ -17,7 +17,7 @@ class TestToolbarModel : public ToolbarModel {
   TestToolbarModel();
   virtual ~TestToolbarModel();
   virtual base::string16 GetText() const OVERRIDE;
-  virtual base::string16 GetFormattedURL() const OVERRIDE;
+  virtual base::string16 GetFormattedURL(size_t* prefix_end) const OVERRIDE;
   virtual base::string16 GetCorpusNameForMobile() const OVERRIDE;
   virtual GURL GetURL() const OVERRIDE;
   virtual bool WouldPerformSearchTermReplacement(

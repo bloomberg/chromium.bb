@@ -583,6 +583,10 @@ void LocationBarViewMac::HideURL() {
   omnibox_view_->HideURL();
 }
 
+void LocationBarViewMac::EndOriginChipAnimations(bool cancel_fade) {
+  NOTIMPLEMENTED();
+}
+
 InstantController* LocationBarViewMac::GetInstant() {
   return browser_->instant_controller() ?
       browser_->instant_controller()->instant() : NULL;

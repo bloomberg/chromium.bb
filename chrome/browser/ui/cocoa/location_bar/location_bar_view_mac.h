@@ -151,6 +151,7 @@ class LocationBarViewMac : public LocationBar,
   virtual void OnChanged() OVERRIDE;
   virtual void OnSetFocus() OVERRIDE;
   virtual void ShowURL() OVERRIDE;
+  virtual void EndOriginChipAnimations(bool cancel_fade) OVERRIDE;
   virtual InstantController* GetInstant() OVERRIDE;
   virtual content::WebContents* GetWebContents() OVERRIDE;
   virtual ToolbarModel* GetToolbarModel() OVERRIDE;
