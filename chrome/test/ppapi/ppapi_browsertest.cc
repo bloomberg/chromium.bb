@@ -187,8 +187,6 @@ TEST_PPAPI_NACL(Console)
 #else
 #define MAYBE_Core Core
 #endif
-TEST_PPAPI_IN_PROCESS(MAYBE_Core)
-TEST_PPAPI_OUT_OF_PROCESS(MAYBE_Core)
 TEST_PPAPI_NACL(MAYBE_Core)
 
 // Non-NaCl TraceEvent tests are in content/test/ppapi/ppapi_browsertest.cc.
