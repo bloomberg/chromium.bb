@@ -64,13 +64,19 @@ class MediaStreamAudioProcessor::MediaStreamAudioConverter
     // |MediaStreamAudioProcessor::capture_converter_|.
     thread_checker_.DetachFromThread();
     audio_converter_.AddInput(this);
+
     // Create and initialize audio fifo and audio bus wrapper.
     // The size of the FIFO should be at least twice of the source buffer size
-    // or twice of the sink buffer size.
+    // or twice of the sink buffer size. Also, FIFO needs to have enough space
+    // to store pre-processed data before passing the data to
+    // webrtc::AudioProcessing, which requires 10ms as packet size.
+    int max_frame_size = std::max(source_params_.frames_per_buffer(),
+                                  sink_params_.frames_per_buffer());
     int buffer_size = std::max(
-        kMaxNumberOfBuffersInFifo * source_params_.frames_per_buffer(),
-        kMaxNumberOfBuffersInFifo * sink_params_.frames_per_buffer());
+        kMaxNumberOfBuffersInFifo * max_frame_size,
+        kMaxNumberOfBuffersInFifo * source_params_.sample_rate() / 100);
     fifo_.reset(new media::AudioFifo(source_params_.channels(), buffer_size));
+
     // TODO(xians): Use CreateWrapper to save one memcpy.
     audio_wrapper_ = media::AudioBus::Create(sink_params_.channels(),
                                              sink_params_.frames_per_buffer());

@@ -69,14 +69,15 @@ class MediaStreamAudioProcessorTest : public ::testing::Test {
                                   int expected_output_channels,
                                   int expected_output_buffer_size) {
     // Read the audio data from a file.
+    const media::AudioParameters& params = audio_processor->InputFormat();
     const int packet_size =
-        params_.frames_per_buffer() * 2 * params_.channels();
+        params.frames_per_buffer() * 2 * params.channels();
     const size_t length = packet_size * kNumberOfPacketsForTest;
     scoped_ptr<char[]> capture_data(new char[length]);
     ReadDataFromSpeechFile(capture_data.get(), length);
     const int16* data_ptr = reinterpret_cast<const int16*>(capture_data.get());
     scoped_ptr<media::AudioBus> data_bus = media::AudioBus::Create(
-        params_.channels(), params_.frames_per_buffer());
+        params.channels(), params.frames_per_buffer());
     for (int i = 0; i < kNumberOfPacketsForTest; ++i) {
       data_bus->FromInterleaved(data_ptr, data_bus->frames(), 2);
       audio_processor->PushCaptureData(data_bus.get());
@@ -92,7 +93,7 @@ class MediaStreamAudioProcessorTest : public ::testing::Test {
       const bool is_aec_enabled = ap && ap->echo_cancellation()->is_enabled();
 #endif
       if (is_aec_enabled) {
-        audio_processor->OnPlayoutData(data_bus.get(), params_.sample_rate(),
+        audio_processor->OnPlayoutData(data_bus.get(), params.sample_rate(),
                                        10);
       }
 
@@ -110,7 +111,7 @@ class MediaStreamAudioProcessorTest : public ::testing::Test {
                   expected_output_buffer_size);
       }
 
-      data_ptr += params_.frames_per_buffer() * params_.channels();
+      data_ptr += params.frames_per_buffer() * params.channels();
     }
   }
 
@@ -348,6 +349,39 @@ TEST_F(MediaStreamAudioProcessorTest, ValidateConstraints) {
   MediaAudioConstraints audio_constraints(
       constraint_factory.CreateWebMediaConstraints(), 0);
   EXPECT_FALSE(audio_constraints.IsValid());
+}
+
+TEST_F(MediaStreamAudioProcessorTest, TestAllSampleRates) {
+  MockMediaConstraintFactory constraint_factory;
+  scoped_refptr<WebRtcAudioDeviceImpl> webrtc_audio_device(
+      new WebRtcAudioDeviceImpl());
+  scoped_refptr<MediaStreamAudioProcessor> audio_processor(
+      new talk_base::RefCountedObject<MediaStreamAudioProcessor>(
+          constraint_factory.CreateWebMediaConstraints(), 0,
+          webrtc_audio_device.get()));
+  EXPECT_TRUE(audio_processor->has_audio_processing());
+
+  static const int kSupportedSampleRates[] =
+      { 8000, 16000, 22050, 32000, 44100, 48000, 88200, 96000 };
+  for (size_t i = 0; i < arraysize(kSupportedSampleRates); ++i) {
+    int buffer_size = (kSupportedSampleRates[i] / 100)  < 128 ?
+        kSupportedSampleRates[i] / 100 : 128;
+    media::AudioParameters params(
+        media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
+        media::CHANNEL_LAYOUT_STEREO, kSupportedSampleRates[i], 16,
+        buffer_size);
+    audio_processor->OnCaptureFormatChanged(params);
+    VerifyDefaultComponents(audio_processor);
+
+    ProcessDataAndVerifyFormat(audio_processor,
+                               kAudioProcessingSampleRate,
+                               kAudioProcessingNumberOfChannel,
+                               kAudioProcessingSampleRate / 100);
+  }
+
+  // Set |audio_processor| to NULL to make sure |webrtc_audio_device|
+  // outlives |audio_processor|.
+  audio_processor = NULL;
 }
 
 }  // namespace content
