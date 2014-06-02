@@ -157,7 +157,7 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11
   // Overridden frm ui::EventSource
   virtual ui::EventProcessor* GetEventProcessor() OVERRIDE;
 
-private:
+ private:
   // Initializes our X11 surface to draw on. This method performs all
   // initialization related to talking to the X11 server.
   void InitX11Window(const Widget::InitParams& params);

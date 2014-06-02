@@ -1192,21 +1192,16 @@ bool IsX11WindowFullScreen(XID window) {
   // If _NET_WM_STATE_FULLSCREEN is in _NET_SUPPORTED, use the presence or
   // absence of _NET_WM_STATE_FULLSCREEN in _NET_WM_STATE to determine
   // whether we're fullscreen.
-  std::vector<Atom> supported_atoms;
-  if (GetAtomArrayProperty(GetX11RootWindow(),
-                           "_NET_SUPPORTED",
-                           &supported_atoms)) {
-    Atom atom = GetAtom("_NET_WM_STATE_FULLSCREEN");
-
-    if (std::find(supported_atoms.begin(), supported_atoms.end(), atom)
-        != supported_atoms.end()) {
-      std::vector<Atom> atom_properties;
-      if (GetAtomArrayProperty(window,
-                               "_NET_WM_STATE",
-                               &atom_properties)) {
-        return std::find(atom_properties.begin(), atom_properties.end(), atom)
-            != atom_properties.end();
-      }
+  Atom fullscreen_atom = GetAtom("_NET_WM_STATE_FULLSCREEN");
+  if (WmSupportsHint(fullscreen_atom)) {
+    std::vector<Atom> atom_properties;
+    if (GetAtomArrayProperty(window,
+                             "_NET_WM_STATE",
+                             &atom_properties)) {
+      return std::find(atom_properties.begin(),
+                       atom_properties.end(),
+                       fullscreen_atom) !=
+          atom_properties.end();
     }
   }
 
@@ -1224,6 +1219,18 @@ bool IsX11WindowFullScreen(XID window) {
   int width = WidthOfScreen(screen);
   int height = HeightOfScreen(screen);
   return window_rect.size() == gfx::Size(width, height);
+}
+
+bool WmSupportsHint(Atom atom) {
+  std::vector<Atom> supported_atoms;
+  if (!GetAtomArrayProperty(GetX11RootWindow(),
+                            "_NET_SUPPORTED",
+                            &supported_atoms)) {
+    return false;
+  }
+
+  return std::find(supported_atoms.begin(), supported_atoms.end(), atom) !=
+      supported_atoms.end();
 }
 
 const unsigned char* XRefcountedMemory::front() const {

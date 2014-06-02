@@ -313,6 +313,9 @@ TEST_F(DesktopScreenX11Test, GetPrimaryDisplay) {
 }
 
 TEST_F(DesktopScreenX11Test, GetWindowAtScreenPoint) {
+  if (!ui::WmSupportsHint(ui::GetAtom("_NET_ACTIVE_WINDOW")))
+    return;
+
   Widget* window_one = BuildTopLevelDesktopWidget(gfx::Rect(110, 110, 10, 10),
       false);
   Widget* window_two = BuildTopLevelDesktopWidget(gfx::Rect(150, 150, 10, 10),
@@ -375,6 +378,9 @@ TEST_F(DesktopScreenX11Test, GetDisplayNearestWindow) {
 
 // Tests that the window is maximized in response to a double click event.
 TEST_F(DesktopScreenX11Test, DoubleClickHeaderMaximizes) {
+  if (!ui::WmSupportsHint(ui::GetAtom("_NET_WM_STATE_MAXIMIZED_VERT")))
+    return;
+
   Widget* widget = BuildTopLevelDesktopWidget(gfx::Rect(0, 0, 100, 100), true);
   widget->Show();
   TestDesktopNativeWidgetAura* native_widget =

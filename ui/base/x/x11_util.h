@@ -179,7 +179,7 @@ UI_BASE_EXPORT bool SetStringProperty(XID window,
                                       const std::string& value);
 
 // Gets the X atom for default display corresponding to atom_name.
-Atom GetAtom(const char* atom_name);
+UI_BASE_EXPORT Atom GetAtom(const char* atom_name);
 
 // Sets the WM_CLASS attribute for a given X11 window.
 UI_BASE_EXPORT void SetWindowClassHint(XDisplay* display,
@@ -262,8 +262,11 @@ UI_BASE_EXPORT WindowManagerName GuessWindowManager();
 // to set your own error handlers.
 UI_BASE_EXPORT void SetDefaultX11ErrorHandlers();
 
-// Return true if a given window is in full-screen mode.
+// Returns true if a given window is in full-screen mode.
 UI_BASE_EXPORT bool IsX11WindowFullScreen(XID window);
+
+// Returns true if the window manager supports the given hint.
+UI_BASE_EXPORT bool WmSupportsHint(Atom atom);
 
 // Manages a piece of X11 allocated memory as a RefCountedMemory segment. This
 // object takes ownership over the passed in memory and will free it with the

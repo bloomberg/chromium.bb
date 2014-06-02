@@ -262,45 +262,53 @@ TEST_F(DesktopWindowTreeHostX11Test, Shape) {
   XID xid1 = widget1->GetNativeWindow()->GetHost()->GetAcceleratedWidget();
   std::vector<gfx::Rect> shape_rects = GetShapeRects(xid1);
   ASSERT_FALSE(shape_rects.empty());
-  EXPECT_TRUE(ShapeRectContainsPoint(shape_rects, 85, 5));
-  EXPECT_FALSE(ShapeRectContainsPoint(shape_rects, 95, 5));
-  EXPECT_TRUE(ShapeRectContainsPoint(shape_rects, 95, 15));
-  EXPECT_FALSE(ShapeRectContainsPoint(shape_rects, 105, 15));
+
+  // The widget was supposed to be 100x100, but the WM might have ignored this
+  // suggestion.
+  int widget_width = widget1->GetWindowBoundsInScreen().width();
+  EXPECT_TRUE(ShapeRectContainsPoint(shape_rects, widget_width - 15, 5));
+  EXPECT_FALSE(ShapeRectContainsPoint(shape_rects, widget_width - 5, 5));
+  EXPECT_TRUE(ShapeRectContainsPoint(shape_rects, widget_width - 5, 15));
+  EXPECT_FALSE(ShapeRectContainsPoint(shape_rects, widget_width + 5, 15));
 
   // Changing widget's size should update the shape.
   widget1->SetBounds(gfx::Rect(100, 100, 200, 200));
   ui::X11EventSource::GetInstance()->DispatchXEvents();
 
-  shape_rects = GetShapeRects(xid1);
-  ASSERT_FALSE(shape_rects.empty());
-  EXPECT_TRUE(ShapeRectContainsPoint(shape_rects, 85, 5));
-  EXPECT_TRUE(ShapeRectContainsPoint(shape_rects, 95, 5));
-  EXPECT_TRUE(ShapeRectContainsPoint(shape_rects, 185, 5));
-  EXPECT_FALSE(ShapeRectContainsPoint(shape_rects, 195, 5));
-  EXPECT_TRUE(ShapeRectContainsPoint(shape_rects, 195, 15));
-  EXPECT_FALSE(ShapeRectContainsPoint(shape_rects, 205, 15));
-
-  // The shape should be changed to a rectangle which fills the entire screen
-  // when |widget1| is maximized.
-  {
-    MaximizeWaiter waiter(xid1);
-    widget1->Maximize();
-    waiter.Wait();
+  if (widget1->GetWindowBoundsInScreen().width() == 200) {
+    shape_rects = GetShapeRects(xid1);
+    ASSERT_FALSE(shape_rects.empty());
+    EXPECT_TRUE(ShapeRectContainsPoint(shape_rects, 85, 5));
+    EXPECT_TRUE(ShapeRectContainsPoint(shape_rects, 95, 5));
+    EXPECT_TRUE(ShapeRectContainsPoint(shape_rects, 185, 5));
+    EXPECT_FALSE(ShapeRectContainsPoint(shape_rects, 195, 5));
+    EXPECT_TRUE(ShapeRectContainsPoint(shape_rects, 195, 15));
+    EXPECT_FALSE(ShapeRectContainsPoint(shape_rects, 205, 15));
   }
 
-  // xvfb does not support Xrandr so we cannot check the maximized window's
-  // bounds.
-  gfx::Rect maximized_bounds;
-  ui::GetWindowRect(xid1, &maximized_bounds);
+  if (ui::WmSupportsHint(ui::GetAtom("_NET_WM_STATE_MAXIMIZED_VERT"))) {
+    // The shape should be changed to a rectangle which fills the entire screen
+    // when |widget1| is maximized.
+    {
+      MaximizeWaiter waiter(xid1);
+      widget1->Maximize();
+      waiter.Wait();
+    }
 
-  shape_rects = GetShapeRects(xid1);
-  ASSERT_FALSE(shape_rects.empty());
-  EXPECT_TRUE(ShapeRectContainsPoint(shape_rects,
-                                     maximized_bounds.width() - 1,
-                                     5));
-  EXPECT_TRUE(ShapeRectContainsPoint(shape_rects,
-                                     maximized_bounds.width() - 1,
-                                     15));
+    // xvfb does not support Xrandr so we cannot check the maximized window's
+    // bounds.
+    gfx::Rect maximized_bounds;
+    ui::GetWindowRect(xid1, &maximized_bounds);
+
+    shape_rects = GetShapeRects(xid1);
+    ASSERT_FALSE(shape_rects.empty());
+    EXPECT_TRUE(ShapeRectContainsPoint(shape_rects,
+                                       maximized_bounds.width() - 1,
+                                       5));
+    EXPECT_TRUE(ShapeRectContainsPoint(shape_rects,
+                                       maximized_bounds.width() - 1,
+                                       15));
+  }
 
   // 2) Test setting the window shape via Widget::SetShape().
   gfx::Path shape2;

@@ -30,12 +30,21 @@ TEST_F(DesktopNativeWidgetAuraTest, CreateWithParentNotInRootWindow) {
   widget.Init(params);
 }
 
-// Verifies that the AURA windows making up a widget instance have the correct
+// Verifies that the Aura windows making up a widget instance have the correct
 // bounds after the widget is resized.
 TEST_F(DesktopNativeWidgetAuraTest, DesktopAuraWindowSizeTest) {
   Widget widget;
+
+  // On Linux we test this with popup windows because the WM may ignore the size
+  // suggestion for normal windows.
+#if defined(OS_LINUX)
+  Widget::InitParams init_params =
+      CreateParams(Widget::InitParams::TYPE_POPUP);
+#else
   Widget::InitParams init_params =
       CreateParams(Widget::InitParams::TYPE_WINDOW_FRAMELESS);
+#endif
+
   init_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   init_params.native_widget = new DesktopNativeWidgetAura(&widget);
   widget.Init(init_params);
