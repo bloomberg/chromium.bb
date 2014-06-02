@@ -341,16 +341,18 @@ void AssociatedURLLoader::loadAsynchronously(const WebURLRequest& request, WebUR
 
     if (allowLoad) {
         ThreadableLoaderOptions options;
-        options.sniffContent = m_options.sniffContent ? SniffContent : DoNotSniffContent;
-        options.allowCredentials = m_options.allowCredentials ? AllowStoredCredentials : DoNotAllowStoredCredentials;
         options.preflightPolicy = static_cast<WebCore::PreflightPolicy>(m_options.preflightPolicy);
         options.crossOriginRequestPolicy = static_cast<WebCore::CrossOriginRequestPolicy>(m_options.crossOriginRequestPolicy);
-        options.dataBufferingPolicy = DoNotBufferData;
+
+        ResourceLoaderOptions resourceLoaderOptions;
+        resourceLoaderOptions.sniffContent = m_options.sniffContent ? SniffContent : DoNotSniffContent;
+        resourceLoaderOptions.allowCredentials = m_options.allowCredentials ? AllowStoredCredentials : DoNotAllowStoredCredentials;
+        resourceLoaderOptions.dataBufferingPolicy = DoNotBufferData;
 
         const ResourceRequest& webcoreRequest = newRequest.toResourceRequest();
         Document* webcoreDocument = m_frameImpl->frame()->document();
         ASSERT(webcoreDocument);
-        m_loader = DocumentThreadableLoader::create(*webcoreDocument, m_clientAdapter.get(), webcoreRequest, options);
+        m_loader = DocumentThreadableLoader::create(*webcoreDocument, m_clientAdapter.get(), webcoreRequest, options, resourceLoaderOptions);
     } else {
         // FIXME: return meaningful error codes.
         m_clientAdapter->setDelayedError(ResourceError());

@@ -836,17 +836,18 @@ void XMLHttpRequest::createRequest(ExceptionState& exceptionState)
         request.addHTTPHeaderFields(m_requestHeaders);
 
     ThreadableLoaderOptions options;
-    options.sniffContent = DoNotSniffContent;
     options.preflightPolicy = uploadEvents ? ForcePreflight : ConsiderPreflight;
-    options.allowCredentials = (m_sameOriginRequest || m_includeCredentials) ? AllowStoredCredentials : DoNotAllowStoredCredentials;
-    options.credentialsRequested = m_includeCredentials ? ClientRequestedCredentials : ClientDidNotRequestCredentials;
     options.crossOriginRequestPolicy = UseAccessControl;
-    options.securityOrigin = securityOrigin();
     options.initiator = FetchInitiatorTypeNames::xmlhttprequest;
     options.contentSecurityPolicyEnforcement = ContentSecurityPolicy::shouldBypassMainWorld(&executionContext) ? DoNotEnforceContentSecurityPolicy : EnforceConnectSrcDirective;
-    // TODO(tsepez): Specify TreatAsActiveContent per http://crbug.com/305303.
-    options.mixedContentBlockingTreatment = TreatAsPassiveContent;
     options.timeoutMilliseconds = m_timeoutMilliseconds;
+
+    ResourceLoaderOptions resourceLoaderOptions;
+    resourceLoaderOptions.allowCredentials = (m_sameOriginRequest || m_includeCredentials) ? AllowStoredCredentials : DoNotAllowStoredCredentials;
+    resourceLoaderOptions.credentialsRequested = m_includeCredentials ? ClientRequestedCredentials : ClientDidNotRequestCredentials;
+    resourceLoaderOptions.securityOrigin = securityOrigin();
+    // TODO(tsepez): Specify TreatAsActiveContent per http://crbug.com/305303.
+    resourceLoaderOptions.mixedContentBlockingTreatment = TreatAsPassiveContent;
 
     m_exceptionCode = 0;
     m_error = false;
@@ -860,7 +861,7 @@ void XMLHttpRequest::createRequest(ExceptionState& exceptionState)
         // FIXME: Maybe we need to be able to send XMLHttpRequests from onunload, <http://bugs.webkit.org/show_bug.cgi?id=10904>.
         // FIXME: Maybe create() can return null for other reasons too?
         ASSERT(!m_loader);
-        m_loader = ThreadableLoader::create(executionContext, this, request, options);
+        m_loader = ThreadableLoader::create(executionContext, this, request, options, resourceLoaderOptions);
         if (m_loader) {
             // Neither this object nor the JavaScript wrapper should be deleted while
             // a request is in progress because we need to keep the listeners alive,
@@ -868,7 +869,7 @@ void XMLHttpRequest::createRequest(ExceptionState& exceptionState)
             setPendingActivity(this);
         }
     } else {
-        ThreadableLoader::loadResourceSynchronously(executionContext, request, *this, options);
+        ThreadableLoader::loadResourceSynchronously(executionContext, request, *this, options, resourceLoaderOptions);
     }
 
     if (!m_exceptionCode && m_error)

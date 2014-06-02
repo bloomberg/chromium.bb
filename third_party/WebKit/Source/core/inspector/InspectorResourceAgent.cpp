@@ -752,11 +752,13 @@ void InspectorResourceAgent::loadResourceForFrontend(ErrorString* errorString, c
     }
 
     ThreadableLoaderOptions options;
-    options.allowCredentials = AllowStoredCredentials;
     options.crossOriginRequestPolicy = AllowCrossOriginRequests;
 
+    ResourceLoaderOptions resourceLoaderOptions;
+    resourceLoaderOptions.allowCredentials = AllowStoredCredentials;
+
     InspectorThreadableLoaderClient* inspectorThreadableLoaderClient = new InspectorThreadableLoaderClient(callback);
-    RefPtr<DocumentThreadableLoader> loader = DocumentThreadableLoader::create(*document, inspectorThreadableLoaderClient, request, options);
+    RefPtr<DocumentThreadableLoader> loader = DocumentThreadableLoader::create(*document, inspectorThreadableLoaderClient, request, options, resourceLoaderOptions);
     if (!loader) {
         inspectorThreadableLoaderClient->didFailLoaderCreation();
         return;

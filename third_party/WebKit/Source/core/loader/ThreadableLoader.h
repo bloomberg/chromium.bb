@@ -62,7 +62,7 @@ namespace WebCore {
         DoNotEnforceContentSecurityPolicy,
     };
 
-    struct ThreadableLoaderOptions : public ResourceLoaderOptions {
+    struct ThreadableLoaderOptions {
         ThreadableLoaderOptions()
             : preflightPolicy(ConsiderPreflight)
             , crossOriginRequestPolicy(DenyCrossOriginRequests)
@@ -81,8 +81,14 @@ namespace WebCore {
     class ThreadableLoader : public RefCounted<ThreadableLoader> {
         WTF_MAKE_NONCOPYABLE(ThreadableLoader);
     public:
-        static void loadResourceSynchronously(ExecutionContext&, const ResourceRequest&, ThreadableLoaderClient&, const ThreadableLoaderOptions&);
-        static PassRefPtr<ThreadableLoader> create(ExecutionContext&, ThreadableLoaderClient*, const ResourceRequest&, const ThreadableLoaderOptions&);
+        // ThreadableLoaderOptions argument configures this ThreadableLoader's
+        // behavior.
+        //
+        // ResourceLoaderOptions argument will be passed to the FetchRequest
+        // that this ThreadableLoader creates. It can be altered e.g. when
+        // redirect happens.
+        static void loadResourceSynchronously(ExecutionContext&, const ResourceRequest&, ThreadableLoaderClient&, const ThreadableLoaderOptions&, const ResourceLoaderOptions&);
+        static PassRefPtr<ThreadableLoader> create(ExecutionContext&, ThreadableLoaderClient*, const ResourceRequest&, const ThreadableLoaderOptions&, const ResourceLoaderOptions&);
 
         virtual void cancel() = 0;
 

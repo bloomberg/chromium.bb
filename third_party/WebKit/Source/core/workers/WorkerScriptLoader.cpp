@@ -64,12 +64,14 @@ void WorkerScriptLoader::loadSynchronously(ExecutionContext& executionContext, c
     ASSERT_WITH_SECURITY_IMPLICATION(executionContext.isWorkerGlobalScope());
 
     ThreadableLoaderOptions options;
-    options.allowCredentials = AllowStoredCredentials;
     options.crossOriginRequestPolicy = crossOriginRequestPolicy;
     // FIXME: Should we add EnforceScriptSrcDirective here?
     options.contentSecurityPolicyEnforcement = DoNotEnforceContentSecurityPolicy;
 
-    WorkerThreadableLoader::loadResourceSynchronously(toWorkerGlobalScope(executionContext), *request, *this, options);
+    ResourceLoaderOptions resourceLoaderOptions;
+    resourceLoaderOptions.allowCredentials = AllowStoredCredentials;
+
+    WorkerThreadableLoader::loadResourceSynchronously(toWorkerGlobalScope(executionContext), *request, *this, options, resourceLoaderOptions);
 }
 
 void WorkerScriptLoader::loadAsynchronously(ExecutionContext& executionContext, const KURL& url, CrossOriginRequestPolicy crossOriginRequestPolicy, WorkerScriptLoaderClient* client)
@@ -83,12 +85,14 @@ void WorkerScriptLoader::loadAsynchronously(ExecutionContext& executionContext, 
         return;
 
     ThreadableLoaderOptions options;
-    options.allowCredentials = AllowStoredCredentials;
     options.crossOriginRequestPolicy = crossOriginRequestPolicy;
+
+    ResourceLoaderOptions resourceLoaderOptions;
+    resourceLoaderOptions.allowCredentials = AllowStoredCredentials;
 
     // During create, callbacks may happen which remove the last reference to this object.
     RefPtr<WorkerScriptLoader> protect(this);
-    m_threadableLoader = ThreadableLoader::create(executionContext, this, *request, options);
+    m_threadableLoader = ThreadableLoader::create(executionContext, this, *request, options, resourceLoaderOptions);
 }
 
 const KURL& WorkerScriptLoader::responseURL() const

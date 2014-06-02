@@ -51,10 +51,10 @@
 
 namespace WebCore {
 
-WorkerThreadableLoader::WorkerThreadableLoader(WorkerGlobalScope& workerGlobalScope, PassRefPtr<ThreadableLoaderClientWrapper> clientWrapper, PassOwnPtr<ThreadableLoaderClient> clientBridge, const ResourceRequest& request, const ThreadableLoaderOptions& options)
+WorkerThreadableLoader::WorkerThreadableLoader(WorkerGlobalScope& workerGlobalScope, PassRefPtr<ThreadableLoaderClientWrapper> clientWrapper, PassOwnPtr<ThreadableLoaderClient> clientBridge, const ResourceRequest& request, const ThreadableLoaderOptions& options, const ResourceLoaderOptions& resourceLoaderOptions)
     : m_workerGlobalScope(&workerGlobalScope)
     , m_workerClientWrapper(clientWrapper)
-    , m_bridge(*(new MainThreadBridge(m_workerClientWrapper, clientBridge, workerGlobalScope.thread()->workerLoaderProxy(), request, options, workerGlobalScope.url().strippedForUseAsReferrer())))
+    , m_bridge(*(new MainThreadBridge(m_workerClientWrapper, clientBridge, workerGlobalScope.thread()->workerLoaderProxy(), request, options, resourceLoaderOptions, workerGlobalScope.url().strippedForUseAsReferrer())))
 {
 }
 
@@ -63,7 +63,7 @@ WorkerThreadableLoader::~WorkerThreadableLoader()
     m_bridge.destroy();
 }
 
-void WorkerThreadableLoader::loadResourceSynchronously(WorkerGlobalScope& workerGlobalScope, const ResourceRequest& request, ThreadableLoaderClient& client, const ThreadableLoaderOptions& options)
+void WorkerThreadableLoader::loadResourceSynchronously(WorkerGlobalScope& workerGlobalScope, const ResourceRequest& request, ThreadableLoaderClient& client, const ThreadableLoaderOptions& options, const ResourceLoaderOptions& resourceLoaderOptions)
 {
     blink::WebWaitableEvent* shutdownEvent =
         workerGlobalScope.thread()->shutdownEvent();
@@ -80,7 +80,7 @@ void WorkerThreadableLoader::loadResourceSynchronously(WorkerGlobalScope& worker
     // This must be valid while loader is around.
     WorkerLoaderClientBridgeSyncHelper* clientBridgePtr = clientBridge.get();
 
-    RefPtr<WorkerThreadableLoader> loader = WorkerThreadableLoader::create(workerGlobalScope, clientWrapper, clientBridge.release(), request, options);
+    RefPtr<WorkerThreadableLoader> loader = WorkerThreadableLoader::create(workerGlobalScope, clientWrapper, clientBridge.release(), request, options, resourceLoaderOptions);
 
     blink::WebWaitableEvent* signalled;
     {
@@ -104,7 +104,10 @@ WorkerThreadableLoader::MainThreadBridge::MainThreadBridge(
     PassRefPtr<ThreadableLoaderClientWrapper> workerClientWrapper,
     PassOwnPtr<ThreadableLoaderClient> clientBridge,
     WorkerLoaderProxy& loaderProxy,
-    const ResourceRequest& request, const ThreadableLoaderOptions& options, const String& outgoingReferrer)
+    const ResourceRequest& request,
+    const ThreadableLoaderOptions& options,
+    const ResourceLoaderOptions& resourceLoaderOptions,
+    const String& outgoingReferrer)
     : m_clientBridge(clientBridge)
     , m_workerClientWrapper(workerClientWrapper)
     , m_loaderProxy(loaderProxy)
@@ -112,23 +115,22 @@ WorkerThreadableLoader::MainThreadBridge::MainThreadBridge(
     ASSERT(m_workerClientWrapper.get());
     ASSERT(m_clientBridge.get());
     m_loaderProxy.postTaskToLoader(
-        createCallbackTask(&MainThreadBridge::mainThreadCreateLoader,
-                           AllowCrossThreadAccess(this), request, options, outgoingReferrer));
+        createCallbackTask(&MainThreadBridge::mainThreadCreateLoader, AllowCrossThreadAccess(this), request, options, resourceLoaderOptions, outgoingReferrer));
 }
 
 WorkerThreadableLoader::MainThreadBridge::~MainThreadBridge()
 {
 }
 
-void WorkerThreadableLoader::MainThreadBridge::mainThreadCreateLoader(ExecutionContext* context, MainThreadBridge* thisPtr, PassOwnPtr<CrossThreadResourceRequestData> requestData, ThreadableLoaderOptions options, const String& outgoingReferrer)
+void WorkerThreadableLoader::MainThreadBridge::mainThreadCreateLoader(ExecutionContext* context, MainThreadBridge* thisPtr, PassOwnPtr<CrossThreadResourceRequestData> requestData, ThreadableLoaderOptions options, ResourceLoaderOptions resourceLoaderOptions, const String& outgoingReferrer)
 {
     ASSERT(isMainThread());
     Document* document = toDocument(context);
 
     OwnPtr<ResourceRequest> request(ResourceRequest::adopt(requestData));
     request->setHTTPReferrer(Referrer(outgoingReferrer, ReferrerPolicyDefault));
-    options.requestInitiatorContext = WorkerContext;
-    thisPtr->m_mainThreadLoader = DocumentThreadableLoader::create(*document, thisPtr, *request, options);
+    resourceLoaderOptions.requestInitiatorContext = WorkerContext;
+    thisPtr->m_mainThreadLoader = DocumentThreadableLoader::create(*document, thisPtr, *request, options, resourceLoaderOptions);
     if (!thisPtr->m_mainThreadLoader) {
         // DocumentThreadableLoader::create may return 0 when the document loader has been already changed.
         thisPtr->didFail(ResourceError(errorDomainBlinkInternal, 0, request->url().string(), "Can't create DocumentThreadableLoader"));

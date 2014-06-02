@@ -54,8 +54,8 @@ class ThreadableLoaderClient;
 class DocumentThreadableLoader FINAL : public ThreadableLoader, private ResourceOwner<RawResource>  {
     WTF_MAKE_FAST_ALLOCATED;
     public:
-        static void loadResourceSynchronously(Document&, const ResourceRequest&, ThreadableLoaderClient&, const ThreadableLoaderOptions&);
-        static PassRefPtr<DocumentThreadableLoader> create(Document&, ThreadableLoaderClient*, const ResourceRequest&, const ThreadableLoaderOptions&);
+        static void loadResourceSynchronously(Document&, const ResourceRequest&, ThreadableLoaderClient&, const ThreadableLoaderOptions&, const ResourceLoaderOptions&);
+        static PassRefPtr<DocumentThreadableLoader> create(Document&, ThreadableLoaderClient*, const ResourceRequest&, const ThreadableLoaderOptions&, const ResourceLoaderOptions&);
         virtual ~DocumentThreadableLoader();
 
         virtual void cancel() OVERRIDE;
@@ -67,7 +67,7 @@ class DocumentThreadableLoader FINAL : public ThreadableLoader, private Resource
             LoadAsynchronously
         };
 
-        DocumentThreadableLoader(Document&, ThreadableLoaderClient*, BlockingBehavior, const ResourceRequest&, const ThreadableLoaderOptions&);
+        DocumentThreadableLoader(Document&, ThreadableLoaderClient*, BlockingBehavior, const ResourceRequest&, const ThreadableLoaderOptions&, const ResourceLoaderOptions&);
 
         // RawResourceClient implementation
         virtual void dataSent(Resource*, unsigned long long bytesSent, unsigned long long totalBytesToBeSent) OVERRIDE;
@@ -104,7 +104,13 @@ class DocumentThreadableLoader FINAL : public ThreadableLoader, private Resource
 
         ThreadableLoaderClient* m_client;
         Document& m_document;
-        ThreadableLoaderOptions m_options;
+
+        const ThreadableLoaderOptions m_options;
+        const ResourceLoaderOptions m_resourceLoaderOptions;
+
+        StoredCredentials m_allowCredentials;
+        RefPtr<SecurityOrigin> m_securityOrigin;
+
         bool m_sameOriginRequest;
         bool m_simpleRequest;
         bool m_async;

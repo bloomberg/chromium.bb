@@ -105,19 +105,20 @@ void FileReaderLoader::startInternal(ExecutionContext& executionContext, const S
         request.setHTTPHeaderField("Range", AtomicString(String::format("bytes=%d-%d", m_rangeStart, m_rangeEnd)));
 
     ThreadableLoaderOptions options;
-    options.sniffContent = DoNotSniffContent;
     options.preflightPolicy = ConsiderPreflight;
-    options.allowCredentials = AllowStoredCredentials;
     options.crossOriginRequestPolicy = DenyCrossOriginRequests;
     // FIXME: Is there a directive to which this load should be subject?
     options.contentSecurityPolicyEnforcement = DoNotEnforceContentSecurityPolicy;
     // Use special initiator to hide the request from the inspector.
     options.initiator = FetchInitiatorTypeNames::internal;
 
+    ResourceLoaderOptions resourceLoaderOptions;
+    resourceLoaderOptions.allowCredentials = AllowStoredCredentials;
+
     if (m_client)
-        m_loader = ThreadableLoader::create(executionContext, this, request, options);
+        m_loader = ThreadableLoader::create(executionContext, this, request, options, resourceLoaderOptions);
     else
-        ThreadableLoader::loadResourceSynchronously(executionContext, request, *this, options);
+        ThreadableLoader::loadResourceSynchronously(executionContext, request, *this, options, resourceLoaderOptions);
 }
 
 void FileReaderLoader::start(ExecutionContext* executionContext, PassRefPtr<BlobDataHandle> blobData)
