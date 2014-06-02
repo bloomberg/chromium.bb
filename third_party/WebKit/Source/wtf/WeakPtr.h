@@ -85,6 +85,7 @@ class WeakPtr {
     WTF_MAKE_FAST_ALLOCATED;
 public:
     WeakPtr() { }
+    WeakPtr(std::nullptr_t) { }
     WeakPtr(PassRefPtr<WeakReference<T> > ref) : m_ref(ref) { }
 
     T* get() const { return m_ref ? m_ref->get() : 0; }

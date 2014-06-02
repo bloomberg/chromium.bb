@@ -832,7 +832,7 @@ public:
 
     Document* parentDocument() const;
     Document& topDocument() const;
-    WeakPtr<Document> contextDocument();
+    WeakPtrWillBeRawPtr<Document> contextDocument();
 
     ScriptRunner* scriptRunner() { return m_scriptRunner.get(); }
 
@@ -1341,9 +1341,10 @@ private:
 
     RenderView* m_renderView;
 
-    // FIXME: Oilpan: We should use a real weak pointer here.
+#if !ENABLE(OILPAN)
     WeakPtrFactory<Document> m_weakFactory;
-    WeakPtr<Document> m_contextDocument;
+#endif
+    WeakPtrWillBeWeakMember<Document> m_contextDocument;
 
     bool m_hasFullscreenElementStack; // For early return in FullscreenElementStack::fromIfExists()
 

@@ -61,7 +61,7 @@ static Document* ownerDocument(LocalFrame* frame)
     return ownerFrame->document();
 }
 
-DocumentInit::DocumentInit(const KURL& url, LocalFrame* frame, WeakPtr<Document> contextDocument, HTMLImportsController* importsController)
+DocumentInit::DocumentInit(const KURL& url, LocalFrame* frame, WeakPtrWillBeRawPtr<Document> contextDocument, HTMLImportsController* importsController)
     : m_url(url)
     , m_frame(frame)
     , m_parent(parentDocument(frame))
@@ -150,12 +150,12 @@ PassRefPtrWillBeRawPtr<CustomElementRegistrationContext> DocumentInit::registrat
     return m_registrationContext.get();
 }
 
-WeakPtr<Document> DocumentInit::contextDocument() const
+WeakPtrWillBeRawPtr<Document> DocumentInit::contextDocument() const
 {
     return m_contextDocument;
 }
 
-DocumentInit DocumentInit::fromContext(WeakPtr<Document> contextDocument, const KURL& url)
+DocumentInit DocumentInit::fromContext(WeakPtrWillBeRawPtr<Document> contextDocument, const KURL& url)
 {
     return DocumentInit(url, 0, contextDocument, 0);
 }

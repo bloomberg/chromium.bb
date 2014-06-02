@@ -462,7 +462,9 @@ Document::Document(const DocumentInit& initializer, DocumentClassFlags documentC
     , m_isMobileDocument(false)
     , m_isTransitionDocument(false)
     , m_renderView(0)
+#if !ENABLE(OILPAN)
     , m_weakFactory(this)
+#endif
     , m_contextDocument(initializer.contextDocument())
     , m_hasFullscreenElementStack(false)
     , m_loadEventDelayCount(0)
@@ -4517,13 +4519,18 @@ Document& Document::topDocument() const
     return *doc;
 }
 
-WeakPtr<Document> Document::contextDocument()
+WeakPtrWillBeRawPtr<Document> Document::contextDocument()
 {
     if (m_contextDocument)
         return m_contextDocument;
-    if (m_frame)
+    if (m_frame) {
+#if ENABLE(OILPAN)
+        return this;
+#else
         return m_weakFactory.createWeakPtr();
-    return WeakPtr<Document>(nullptr);
+#endif
+    }
+    return WeakPtrWillBeRawPtr<Document>(nullptr);
 }
 
 PassRefPtrWillBeRawPtr<Attr> Document::createAttribute(const AtomicString& name, ExceptionState& exceptionState)
@@ -5814,6 +5821,7 @@ void Document::trace(Visitor* visitor)
     visitor->trace(m_svgExtensions);
     visitor->trace(m_timeline);
     visitor->trace(m_compositorPendingAnimations);
+    visitor->trace(m_contextDocument);
     visitor->registerWeakMembers<Document, &Document::clearWeakMembers>(this);
     DocumentSupplementable::trace(visitor);
     TreeScope::trace(visitor);
