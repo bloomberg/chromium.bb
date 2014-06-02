@@ -11,12 +11,12 @@ InspectorTest.invokeWithTracing = function(categoryFilter, functionName, callbac
 
     function onTracingStarted(error)
     {
-        InspectorTest.invokePageFunctionAsync(functionName, onPageActionsDone)
+        InspectorTest.invokePageFunctionAsync(functionName, onPageActionsDone);
     }
 
     function onPageActionsDone()
     {
-        InspectorTest.tracingModel.stop(callback);
+        InspectorTest.tracingModel.stop(InspectorTest.safeWrap(callback));
     }
 }
 

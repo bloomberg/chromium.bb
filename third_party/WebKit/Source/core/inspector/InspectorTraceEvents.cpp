@@ -14,6 +14,7 @@
 #include "core/inspector/InspectorNodeIds.h"
 #include "core/inspector/ScriptCallStack.h"
 #include "core/page/Page.h"
+#include "core/rendering/RenderImage.h"
 #include "core/rendering/RenderObject.h"
 #include "core/xml/XMLHttpRequest.h"
 #include "platform/JSONValues.h"
@@ -116,7 +117,7 @@ PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorReceiveResponseEvent::
     data->setString("requestId", requestId);
     data->setString("frame", toHexString(frame));
     data->setNumber("statusCode", response.httpStatusCode());
-    data->setString("mimeType", response.mimeType());
+    data->setString("mimeType", response.mimeType().string().isolatedCopy());
     return TracedValue::fromJSONValue(data);
 }
 
@@ -292,6 +293,17 @@ PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorFunctionCallEvent::dat
     data->setNumber("scriptLine", scriptLine);
     if (LocalFrame* frame = frameForExecutionContext(context))
         data->setString("frame", toHexString(frame));
+    return TracedValue::fromJSONValue(data);
+}
+
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorPaintImageEvent::data(const RenderImage& renderImage)
+{
+    RefPtr<JSONObject> data = JSONObject::create();
+    data->setNumber("nodeId", InspectorNodeIds::idForNode(renderImage.generatingNode()));
+
+    if (const ImageResource* resource = renderImage.cachedImage())
+        data->setString("url", resource->url().string());
+
     return TracedValue::fromJSONValue(data);
 }
 

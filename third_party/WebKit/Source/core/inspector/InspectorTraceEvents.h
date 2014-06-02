@@ -20,6 +20,7 @@ class KURL;
 class LayoutRect;
 class LocalFrame;
 class RenderObject;
+class RenderImage;
 class ResourceRequest;
 class ResourceResponse;
 class ScriptSourceCode;
@@ -100,6 +101,11 @@ public:
 class InspectorPaintEvent {
 public:
     static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(RenderObject*, const LayoutRect& clipRect, const GraphicsLayer*);
+};
+
+class InspectorPaintImageEvent {
+public:
+    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(const RenderImage&);
 };
 
 class InspectorMarkLoadEvent {
