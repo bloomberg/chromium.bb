@@ -106,8 +106,10 @@ PassRefPtrWillBeRawPtr<Range> Range::create(Document& ownerDocument, const Posit
 
 Range::~Range()
 {
+#if !ENABLE(OILPAN)
     // Always detach (even if we've already detached) to fix https://bugs.webkit.org/show_bug.cgi?id=26044
     m_ownerDocument->detachRange(this);
+#endif
 
 #ifndef NDEBUG
     rangeCounter.decrement();
@@ -1496,7 +1498,7 @@ static inline void boundaryNodeWillBeRemoved(RangeBoundaryPoint& boundary, Node&
 void Range::nodeWillBeRemoved(Node& node)
 {
     ASSERT(node.document() == m_ownerDocument);
-    ASSERT(node != m_ownerDocument);
+    ASSERT(node != m_ownerDocument.get());
 
     // FIXME: Once DOMNodeRemovedFromDocument mutation event removed, we
     // should change following if-statement to ASSERT(!node->parentNode).
@@ -1678,8 +1680,9 @@ FloatRect Range::boundingRect() const
     return result;
 }
 
-void Range::trace(Visitor*)
+void Range::trace(Visitor* visitor)
 {
+    visitor->trace(m_ownerDocument);
 }
 
 } // namespace WebCore

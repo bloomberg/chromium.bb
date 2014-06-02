@@ -532,9 +532,9 @@ Document::Document(const DocumentInit& initializer, DocumentClassFlags documentC
 Document::~Document()
 {
     ASSERT(!renderView());
-    ASSERT(m_ranges.isEmpty());
     ASSERT(!parentTreeScope());
 #if !ENABLE(OILPAN)
+    ASSERT(m_ranges.isEmpty());
     ASSERT(!hasGuardRefCount());
     // With Oilpan, either the document outlives the visibility observers
     // or the visibility observers and the document die in the same GC round.
@@ -2646,7 +2646,7 @@ bool Document::dispatchBeforeUnloadEvent(Chrome& chrome, bool& didAllowNavigatio
     if (!body())
         return true;
 
-    RefPtr<Document> protect(this);
+    RefPtrWillBeRawPtr<Document> protect(this);
 
     RefPtrWillBeRawPtr<BeforeUnloadEvent> beforeUnloadEvent = BeforeUnloadEvent::create();
     m_loadEventProgress = BeforeUnloadEventInProgress;
@@ -2672,7 +2672,7 @@ bool Document::dispatchBeforeUnloadEvent(Chrome& chrome, bool& didAllowNavigatio
 
 void Document::dispatchUnloadEvents()
 {
-    RefPtr<Document> protect(this);
+    RefPtrWillBeRawPtr<Document> protect(this);
     if (m_parser)
         m_parser->stopParsing();
 
@@ -3773,8 +3773,8 @@ void Document::moveNodeIteratorsToNewDocument(Node& node, Document& newDocument)
 void Document::updateRangesAfterChildrenChanged(ContainerNode* container)
 {
     if (!m_ranges.isEmpty()) {
-        HashSet<Range*>::const_iterator end = m_ranges.end();
-        for (HashSet<Range*>::const_iterator it = m_ranges.begin(); it != end; ++it)
+        AttachedRangeSet::const_iterator end = m_ranges.end();
+        for (AttachedRangeSet::const_iterator it = m_ranges.begin(); it != end; ++it)
             (*it)->nodeChildrenChanged(container);
     }
 }
@@ -3783,8 +3783,8 @@ void Document::nodeChildrenWillBeRemoved(ContainerNode& container)
 {
     NoEventDispatchAssertion assertNoEventDispatch;
     if (!m_ranges.isEmpty()) {
-        HashSet<Range*>::const_iterator end = m_ranges.end();
-        for (HashSet<Range*>::const_iterator it = m_ranges.begin(); it != end; ++it)
+        AttachedRangeSet::const_iterator end = m_ranges.end();
+        for (AttachedRangeSet::const_iterator it = m_ranges.begin(); it != end; ++it)
             (*it)->nodeChildrenWillBeRemoved(container);
     }
 
@@ -3810,8 +3810,8 @@ void Document::nodeWillBeRemoved(Node& n)
         (*it)->nodeWillBeRemoved(n);
 
     if (!m_ranges.isEmpty()) {
-        HashSet<Range*>::const_iterator rangesEnd = m_ranges.end();
-        for (HashSet<Range*>::const_iterator it = m_ranges.begin(); it != rangesEnd; ++it)
+        AttachedRangeSet::const_iterator rangesEnd = m_ranges.end();
+        for (AttachedRangeSet::const_iterator it = m_ranges.begin(); it != rangesEnd; ++it)
             (*it)->nodeWillBeRemoved(n);
     }
 
@@ -3825,8 +3825,8 @@ void Document::nodeWillBeRemoved(Node& n)
 void Document::didInsertText(Node* text, unsigned offset, unsigned length)
 {
     if (!m_ranges.isEmpty()) {
-        HashSet<Range*>::const_iterator end = m_ranges.end();
-        for (HashSet<Range*>::const_iterator it = m_ranges.begin(); it != end; ++it)
+        AttachedRangeSet::const_iterator end = m_ranges.end();
+        for (AttachedRangeSet::const_iterator it = m_ranges.begin(); it != end; ++it)
             (*it)->didInsertText(text, offset, length);
     }
 
@@ -3837,8 +3837,8 @@ void Document::didInsertText(Node* text, unsigned offset, unsigned length)
 void Document::didRemoveText(Node* text, unsigned offset, unsigned length)
 {
     if (!m_ranges.isEmpty()) {
-        HashSet<Range*>::const_iterator end = m_ranges.end();
-        for (HashSet<Range*>::const_iterator it = m_ranges.begin(); it != end; ++it)
+        AttachedRangeSet::const_iterator end = m_ranges.end();
+        for (AttachedRangeSet::const_iterator it = m_ranges.begin(); it != end; ++it)
             (*it)->didRemoveText(text, offset, length);
     }
 
@@ -3851,8 +3851,8 @@ void Document::didMergeTextNodes(Text& oldNode, unsigned offset)
 {
     if (!m_ranges.isEmpty()) {
         NodeWithIndex oldNodeWithIndex(oldNode);
-        HashSet<Range*>::const_iterator end = m_ranges.end();
-        for (HashSet<Range*>::const_iterator it = m_ranges.begin(); it != end; ++it)
+        AttachedRangeSet::const_iterator end = m_ranges.end();
+        for (AttachedRangeSet::const_iterator it = m_ranges.begin(); it != end; ++it)
             (*it)->didMergeTextNodes(oldNodeWithIndex, offset);
     }
 
@@ -3865,8 +3865,8 @@ void Document::didMergeTextNodes(Text& oldNode, unsigned offset)
 void Document::didSplitTextNode(Text& oldNode)
 {
     if (!m_ranges.isEmpty()) {
-        HashSet<Range*>::const_iterator end = m_ranges.end();
-        for (HashSet<Range*>::const_iterator it = m_ranges.begin(); it != end; ++it)
+        AttachedRangeSet::const_iterator end = m_ranges.end();
+        for (AttachedRangeSet::const_iterator it = m_ranges.begin(); it != end; ++it)
             (*it)->didSplitTextNode(oldNode);
     }
 
@@ -4649,7 +4649,7 @@ void Document::finishedParsing()
     // The loader's finishedParsing() method may invoke script that causes this object to
     // be dereferenced (when this document is in an iframe and the onload causes the iframe's src to change).
     // Keep it alive until we are done.
-    RefPtr<Document> protect(this);
+    RefPtrWillBeRawPtr<Document> protect(this);
 
     if (RefPtr<LocalFrame> f = frame()) {
         // Don't update the render tree if we haven't requested the main resource yet to avoid
@@ -5799,6 +5799,7 @@ void Document::trace(Visitor* visitor)
     visitor->trace(m_topLayerElements);
     visitor->trace(m_elemSheet);
     visitor->trace(m_nodeIterators);
+    visitor->trace(m_ranges);
     visitor->trace(m_styleEngine);
     visitor->trace(m_formController);
     visitor->trace(m_domWindow);

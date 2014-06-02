@@ -1246,7 +1246,8 @@ private:
     static uint64_t s_globalTreeVersion;
 
     WillBeHeapHashSet<RawPtrWillBeWeakMember<NodeIterator> > m_nodeIterators;
-    HashSet<Range*> m_ranges;
+    typedef WillBeHeapHashSet<RawPtrWillBeWeakMember<Range> > AttachedRangeSet;
+    AttachedRangeSet m_ranges;
 
     unsigned short m_listenerTypes;
 

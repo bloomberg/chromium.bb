@@ -516,7 +516,7 @@ bool ScriptController::executeScriptIfJavaScriptURL(const KURL& url)
     // We need to hold onto the LocalFrame here because executing script can
     // destroy the frame.
     RefPtr<LocalFrame> protector(m_frame);
-    RefPtr<Document> ownerDocument(m_frame->document());
+    RefPtrWillBeRawPtr<Document> ownerDocument(m_frame->document());
 
     const int javascriptSchemeLength = sizeof("javascript:") - 1;
 

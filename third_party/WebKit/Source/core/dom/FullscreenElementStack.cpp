@@ -291,7 +291,7 @@ void FullscreenElementStack::webkitExitFullscreen()
     // 3. Let descendants be all the doc's descendant browsing context's documents with a non-empty fullscreen
     // element stack (if any), ordered so that the child of the doc is last and the document furthest
     // away from the doc is first.
-    Deque<RefPtr<Document> > descendants;
+    WillBeHeapDeque<RefPtrWillBeMember<Document> > descendants;
     for (LocalFrame* descendant = document()->frame() ?  document()->frame()->tree().traverseNext() : 0; descendant; descendant = descendant->tree().traverseNext()) {
         ASSERT(descendant->document());
         if (fullscreenElementFrom(*descendant->document()))
@@ -300,7 +300,7 @@ void FullscreenElementStack::webkitExitFullscreen()
 
     // 4. For each descendant in descendants, empty descendant's fullscreen element stack, and queue a
     // task to fire an event named fullscreenchange with its bubbles attribute set to true on descendant.
-    for (Deque<RefPtr<Document> >::iterator i = descendants.begin(); i != descendants.end(); ++i) {
+    for (WillBeHeapDeque<RefPtrWillBeMember<Document> >::iterator i = descendants.begin(); i != descendants.end(); ++i) {
         ASSERT(*i);
         from(**i).clearFullscreenElementStack();
         addDocumentToFullScreenChangeEventQueue(i->get());

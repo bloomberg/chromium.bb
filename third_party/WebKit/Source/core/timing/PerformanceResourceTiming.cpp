@@ -191,4 +191,10 @@ double PerformanceResourceTiming::responseEnd() const
     return monotonicTimeToDocumentMilliseconds(m_requestingDocument.get(), m_finishTime);
 }
 
+void PerformanceResourceTiming::trace(Visitor* visitor)
+{
+    visitor->trace(m_requestingDocument);
+    PerformanceEntry::trace(visitor);
+}
+
 } // namespace WebCore

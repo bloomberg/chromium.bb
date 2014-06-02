@@ -60,7 +60,7 @@ namespace WebCore {
 
 void V8Document::evaluateMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    RefPtr<Document> document = V8Document::toNative(info.Holder());
+    RefPtrWillBeRawPtr<Document> document = V8Document::toNative(info.Holder());
     ASSERT(document);
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "evaluate", "Document", info.Holder(), info.GetIsolate());
     TOSTRING_VOID(V8StringResource<>, expression, info[0]);

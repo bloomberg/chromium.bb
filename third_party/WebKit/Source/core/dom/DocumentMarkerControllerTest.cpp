@@ -94,7 +94,7 @@ TEST_F(DocumentMarkerControllerTest, DidMoveToNewDocument)
     RefPtrWillBeRawPtr<Element> parent = toElement(document().body()->firstChild()->firstChild());
     markNodeContents(parent.get());
     EXPECT_EQ(1u, markerController().markers().size());
-    RefPtr<Document> anotherDocument = Document::create();
+    RefPtrWillBePersistent<Document> anotherDocument = Document::create();
     anotherDocument->adoptNode(parent.get(), ASSERT_NO_EXCEPTION);
 
     // No more reference to marked node.

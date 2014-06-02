@@ -74,10 +74,7 @@ public:
 
     virtual bool isResource() OVERRIDE { return true; }
 
-    virtual void trace(Visitor* visitor)
-    {
-        PerformanceEntry::trace(visitor);
-    }
+    virtual void trace(Visitor*) OVERRIDE;
 
 private:
     PerformanceResourceTiming(const ResourceTimingInfo&, Document* requestingDocument, double startTime, double lastRedirectEndTime, bool m_allowTimingDetails, bool m_allowRedirectDetails);
@@ -90,7 +87,7 @@ private:
     bool m_didReuseConnection;
     bool m_allowTimingDetails;
     bool m_allowRedirectDetails;
-    RefPtr<Document> m_requestingDocument;
+    RefPtrWillBeMember<Document> m_requestingDocument;
 };
 
 }
