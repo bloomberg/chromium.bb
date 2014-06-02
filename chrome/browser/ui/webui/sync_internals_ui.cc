@@ -24,6 +24,7 @@ content::WebUIDataSource* CreateSyncInternalsHTMLSource() {
   source->AddResourcePath("sync_index.js", IDR_SYNC_INTERNALS_INDEX_JS);
   source->AddResourcePath("chrome_sync.js",
                           IDR_SYNC_INTERNALS_CHROME_SYNC_JS);
+  source->AddResourcePath("types.js", IDR_SYNC_INTERNALS_TYPES_JS);
   source->AddResourcePath("sync_log.js", IDR_SYNC_INTERNALS_SYNC_LOG_JS);
   source->AddResourcePath("sync_node_browser.js",
                           IDR_SYNC_INTERNALS_SYNC_NODE_BROWSER_JS);

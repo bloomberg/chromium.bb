@@ -14,6 +14,9 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_ui.h"
 #include "sync/internal_api/public/events/protocol_event.h"
+#include "sync/internal_api/public/sessions/commit_counters.h"
+#include "sync/internal_api/public/sessions/status_counters.h"
+#include "sync/internal_api/public/sessions/update_counters.h"
 #include "sync/internal_api/public/util/weak_handle.h"
 #include "sync/js/js_event_details.h"
 
@@ -23,7 +26,9 @@ using syncer::WeakHandle;
 
 SyncInternalsMessageHandler::SyncInternalsMessageHandler()
     : is_registered_(false),
-      weak_ptr_factory_(this) {}
+      is_registered_for_counters_(false),
+      weak_ptr_factory_(this) {
+}
 
 SyncInternalsMessageHandler::~SyncInternalsMessageHandler() {
   if (js_controller_)
@@ -34,6 +39,10 @@ SyncInternalsMessageHandler::~SyncInternalsMessageHandler() {
     service->RemoveObserver(this);
     service->RemoveProtocolEventObserver(this);
   }
+
+  if (service && is_registered_for_counters_) {
+    service->RemoveTypeDebugInfoObserver(this);
+  }
 }
 
 void SyncInternalsMessageHandler::RegisterMessages() {
@@ -42,6 +51,11 @@ void SyncInternalsMessageHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "registerForEvents",
       base::Bind(&SyncInternalsMessageHandler::HandleRegisterForEvents,
+                 base::Unretained(this)));
+
+  web_ui()->RegisterMessageCallback(
+      "registerForPerTypeCounters",
+      base::Bind(&SyncInternalsMessageHandler::HandleRegisterForPerTypeCounters,
                  base::Unretained(this)));
 
   web_ui()->RegisterMessageCallback(
@@ -74,6 +88,21 @@ void SyncInternalsMessageHandler::HandleRegisterForEvents(
     js_controller_ = service->GetJsController();
     js_controller_->AddJsEventHandler(this);
     is_registered_ = true;
+  }
+}
+
+void SyncInternalsMessageHandler::HandleRegisterForPerTypeCounters(
+    const base::ListValue* args) {
+  DCHECK(args->empty());
+
+  ProfileSyncService* service = GetProfileSyncService();
+  if (service && !is_registered_for_counters_) {
+    service->AddTypeDebugInfoObserver(this);
+    is_registered_for_counters_ = true;
+  } else {
+    // Re-register to ensure counters get re-emitted.
+    service->RemoveTypeDebugInfoObserver(this);
+    service->AddTypeDebugInfoObserver(this);
   }
 }
 
@@ -137,6 +166,37 @@ void SyncInternalsMessageHandler::OnProtocolEvent(
       *value);
 }
 
+void SyncInternalsMessageHandler::OnCommitCountersUpdated(
+    syncer::ModelType type,
+    const syncer::CommitCounters& counters) {
+  EmitCounterUpdate(type, "commit", counters.ToValue());
+}
+
+void SyncInternalsMessageHandler::OnUpdateCountersUpdated(
+    syncer::ModelType type,
+    const syncer::UpdateCounters& counters) {
+  EmitCounterUpdate(type, "update", counters.ToValue());
+}
+
+void SyncInternalsMessageHandler::OnStatusCountersUpdated(
+    syncer::ModelType type,
+    const syncer::StatusCounters& counters) {
+  EmitCounterUpdate(type, "status", counters.ToValue());
+}
+
+void SyncInternalsMessageHandler::EmitCounterUpdate(
+    syncer::ModelType type,
+    const std::string& counter_type,
+    scoped_ptr<base::DictionaryValue> value) {
+  scoped_ptr<base::DictionaryValue> details(new base::DictionaryValue());
+  details->SetString("modelType", ModelTypeToString(type));
+  details->SetString("counterType", counter_type);
+  details->Set("counters", value.release());
+  web_ui()->CallJavascriptFunction("chrome.sync.dispatchEvent",
+                                   base::StringValue("onCountersUpdated"),
+                                   *details);
+}
+
 void SyncInternalsMessageHandler::HandleJsEvent(
     const std::string& name,
     const JsEventDetails& details) {
@@ -163,4 +223,3 @@ ProfileSyncService* SyncInternalsMessageHandler::GetProfileSyncService() {
   ProfileSyncServiceFactory* factory = ProfileSyncServiceFactory::GetInstance();
   return factory->GetForProfile(profile->GetOriginalProfile());
 }
-

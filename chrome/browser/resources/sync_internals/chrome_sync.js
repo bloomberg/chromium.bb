@@ -54,6 +54,14 @@ cr.define('chrome.sync', function() {
   };
 
   /**
+   * Registers to receive a stream of status counter update events
+   * chrome.sync.dispatchEvent().
+   */
+  var registerForPerTypeCounters = function() {
+    chrome.send('registerForPerTypeCounters');
+  }
+
+  /**
    * Asks the browser to refresh our snapshot of sync state.  Should result
    * in an onAboutInfoUpdated event being emitted.
    */
@@ -111,6 +119,7 @@ cr.define('chrome.sync', function() {
     getAllNodes: getAllNodes,
     getAllNodesCallback: getAllNodesCallback,
     registerForEvents: registerForEvents,
+    registerForPerTypeCounters: registerForPerTypeCounters,
     requestUpdatedAboutInfo: requestUpdatedAboutInfo,
     requestListOfTypes: requestListOfTypes,
   };

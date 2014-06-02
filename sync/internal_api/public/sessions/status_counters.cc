@@ -10,13 +10,13 @@
 namespace syncer {
 
 StatusCounters::StatusCounters()
-  : num_total_entries(0) {}
+  : num_entries(0) {}
 
 StatusCounters::~StatusCounters() {}
 
 scoped_ptr<base::DictionaryValue> StatusCounters::ToValue() const {
   scoped_ptr<base::DictionaryValue> value(new base::DictionaryValue());
-  value->SetInteger("numTotalEntries", num_total_entries);
+  value->SetInteger("numEntries", num_entries);
   return value.Pass();
 }
 

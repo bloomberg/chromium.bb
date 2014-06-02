@@ -15,17 +15,18 @@
 #include "chrome/browser/sync/profile_sync_service_observer.h"
 #include "chrome/browser/sync/protocol_event_observer.h"
 #include "content/public/browser/web_ui_message_handler.h"
+#include "sync/internal_api/public/sessions/type_debug_info_observer.h"
 #include "sync/js/js_controller.h"
 #include "sync/js/js_event_handler.h"
 
 class ProfileSyncService;
 
 // The implementation for the chrome://sync-internals page.
-class SyncInternalsMessageHandler
-    : public content::WebUIMessageHandler,
-      public syncer::JsEventHandler,
-      public ProfileSyncServiceObserver,
-      public browser_sync::ProtocolEventObserver {
+class SyncInternalsMessageHandler : public content::WebUIMessageHandler,
+                                    public syncer::JsEventHandler,
+                                    public ProfileSyncServiceObserver,
+                                    public browser_sync::ProtocolEventObserver,
+                                    public syncer::TypeDebugInfoObserver {
  public:
   SyncInternalsMessageHandler();
   virtual ~SyncInternalsMessageHandler();
@@ -34,6 +35,9 @@ class SyncInternalsMessageHandler
 
   // Sets up observers to receive events and forward them to the UI.
   void HandleRegisterForEvents(const base::ListValue* args);
+
+  // Sets up observers to receive per-type counters and forward them to the UI.
+  void HandleRegisterForPerTypeCounters(const base::ListValue* args);
 
   // Fires an event to send updated info back to the page.
   void HandleRequestUpdatedAboutInfo(const base::ListValue* args);
@@ -58,6 +62,26 @@ class SyncInternalsMessageHandler
   // ProtocolEventObserver implementation.
   virtual void OnProtocolEvent(const syncer::ProtocolEvent& e) OVERRIDE;
 
+  // TypeDebugInfoObserver implementation.
+  virtual void OnCommitCountersUpdated(
+      syncer::ModelType type,
+      const syncer::CommitCounters& counters) OVERRIDE;
+  virtual void OnUpdateCountersUpdated(
+      syncer::ModelType type,
+      const syncer::UpdateCounters& counters) OVERRIDE;
+  virtual void OnStatusCountersUpdated(
+      syncer::ModelType type,
+      const syncer::StatusCounters& counters) OVERRIDE;
+
+  // Helper to emit counter updates.
+  //
+  // Used in implementation of On*CounterUpdated methods.  Emits the given
+  // dictionary value with additional data to specify the model type and
+  // counter type.
+  void EmitCounterUpdate(syncer::ModelType type,
+                         const std::string& counter_type,
+                         scoped_ptr<base::DictionaryValue> value);
+
  private:
   // Fetches updated aboutInfo and sends it to the page in the form of an
   // onAboutInfoUpdated event.
@@ -69,6 +93,10 @@ class SyncInternalsMessageHandler
 
   // A flag used to prevent double-registration with ProfileSyncService.
   bool is_registered_;
+
+  // A flag used to prevent double-registration as TypeDebugInfoObserver with
+  // ProfileSyncService.
+  bool is_registered_for_counters_;
 
   base::WeakPtrFactory<SyncInternalsMessageHandler> weak_ptr_factory_;
 
