@@ -4,11 +4,9 @@
 
 #include "mojo/shell/dynamic_service_loader.h"
 
-#include "base/command_line.h"
 #include "base/location.h"
 #include "mojo/shell/context.h"
 #include "mojo/shell/keep_alive.h"
-#include "mojo/shell/switches.h"
 
 namespace mojo {
 namespace shell {
@@ -44,11 +42,8 @@ class DynamicServiceLoader::LoadContext : public mojo::shell::Loader::Delegate {
     GURL url_to_load;
 
     if (url.SchemeIs("mojo")) {
-      std::string origin =
-          base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-              switches::kOrigin);
       std::string lib = MakeSharedLibraryName(url.ExtractFileName());
-      url_to_load = GURL(origin + "/" + lib);
+      url_to_load = GURL(loader->context_->mojo_origin() + "/" + lib);
     } else {
       url_to_load = url;
     }

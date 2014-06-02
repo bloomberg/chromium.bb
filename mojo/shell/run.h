@@ -5,12 +5,16 @@
 #ifndef MOJO_SHELL_RUN_H_
 #define MOJO_SHELL_RUN_H_
 
+#include <vector>
+
+#include "url/gurl.h"
+
 namespace mojo {
 namespace shell {
 
 class Context;
 
-void Run(Context* context);
+void Run(Context* context, const std::vector<GURL>& app_urls);
 
 }  // namespace shell
 }  // namespace mojo

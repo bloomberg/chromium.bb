@@ -14,6 +14,7 @@
 #include "mojo/shell/context.h"
 #include "mojo/shell/init.h"
 #include "mojo/shell/run.h"
+#include "mojo/shell/switches.h"
 #include "ui/gl/gl_surface.h"
 
 namespace {
@@ -67,8 +68,26 @@ int main(int argc, char** argv) {
     gfx::GLSurface::InitializeOneOff();
 
     base::MessageLoop message_loop;
-    mojo::shell::Context context;
-    message_loop.PostTask(FROM_HERE, base::Bind(mojo::shell::Run, &context));
+    mojo::shell::Context shell_context;
+
+    const base::CommandLine& command_line =
+        *base::CommandLine::ForCurrentProcess();
+    if (command_line.HasSwitch(switches::kOrigin)) {
+      shell_context.set_mojo_origin(
+          command_line.GetSwitchValueASCII(switches::kOrigin));
+    }
+
+    std::vector<GURL> app_urls;
+    base::CommandLine::StringVector args = command_line.GetArgs();
+    for (base::CommandLine::StringVector::const_iterator it = args.begin();
+         it != args.end();
+         ++it)
+      app_urls.push_back(GURL(*it));
+
+    message_loop.PostTask(FROM_HERE,
+                          base::Bind(mojo::shell::Run,
+                                     &shell_context,
+                                     app_urls));
 
     message_loop.Run();
   }

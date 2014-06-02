@@ -58,21 +58,15 @@ static void Init(JNIEnv* env, jclass clazz, jobject context) {
 }
 
 static void Start(JNIEnv* env, jclass clazz, jobject context, jstring jurl) {
-  std::string app_url;
+  std::vector<GURL> app_urls;
 #if defined(MOJO_SHELL_DEBUG_URL)
-  app_url = MOJO_SHELL_DEBUG_URL;
+  app_urls.push_back(GURL(MOJO_SHELL_DEBUG_URL));
   // Sleep for 5 seconds to give the debugger a chance to attach.
   sleep(5);
 #else
   if (jurl)
-    app_url = base::android::ConvertJavaStringToUTF8(env, jurl);
+    app_urls.push_back(GURL(base::android::ConvertJavaStringToUTF8(env, jurl)));
 #endif
-  if (!app_url.empty()) {
-    std::vector<std::string> argv;
-    argv.push_back("mojo_shell");
-    argv.push_back(app_url);
-    base::CommandLine::ForCurrentProcess()->InitFromArgv(argv);
-  }
 
   g_env.Get().reset(new Environment);
 
@@ -83,7 +77,7 @@ static void Start(JNIEnv* env, jclass clazz, jobject context, jstring jurl) {
   shell_context->set_activity(activity.obj());
 
   g_context.Get().reset(shell_context);
-  shell::Run(shell_context);
+  shell::Run(shell_context, app_urls);
 }
 
 bool RegisterMojoMain(JNIEnv* env) {

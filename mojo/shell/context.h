@@ -5,6 +5,8 @@
 #ifndef MOJO_SHELL_CONTEXT_H_
 #define MOJO_SHELL_CONTEXT_H_
 
+#include <string>
+
 #include "mojo/service_manager/service_manager.h"
 #include "mojo/shell/keep_alive.h"
 #include "mojo/shell/loader.h"
@@ -29,6 +31,11 @@ class Context {
   Context();
   ~Context();
 
+  const std::string& mojo_origin() const { return mojo_origin_; }
+  void set_mojo_origin(const std::string& mojo_origin) {
+    mojo_origin_ = mojo_origin;
+  }
+
   TaskRunners* task_runners() { return &task_runners_; }
   Storage* storage() { return &storage_; }
   Loader* loader() { return &loader_; }
@@ -42,6 +49,9 @@ class Context {
 
  private:
   class NativeViewportServiceLoader;
+
+  std::string mojo_origin_;
+
   TaskRunners task_runners_;
   Storage storage_;
   Loader loader_;

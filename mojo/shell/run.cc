@@ -4,40 +4,32 @@
 
 #include "mojo/shell/run.h"
 
-#include "base/command_line.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
 #include "mojo/service_manager/service_manager.h"
 #include "mojo/shell/context.h"
 #include "mojo/shell/keep_alive.h"
-#include "mojo/shell/switches.h"
-#include "url/gurl.h"
 
 namespace mojo {
 namespace shell {
 
-void Run(Context* context) {
+void Run(Context* context, const std::vector<GURL>& app_urls) {
   KeepAlive keep_alive(context);
 
-  const base::CommandLine& command_line =
-      *base::CommandLine::ForCurrentProcess();
-  base::CommandLine::StringVector args = command_line.GetArgs();
-
-  if (args.empty()) {
-    LOG(ERROR) << "No app path specified.";
+  if (app_urls.empty()) {
+    LOG(ERROR) << "No app path specified";
     return;
   }
 
-  for (base::CommandLine::StringVector::const_iterator it = args.begin();
-       it != args.end(); ++it) {
-    GURL url(*it);
-    if (url.scheme() == "mojo" && !command_line.HasSwitch(switches::kOrigin)) {
-      LOG(ERROR) << "mojo: url passed with no --origin specified.";
+  for (std::vector<GURL>::const_iterator it = app_urls.begin();
+       it != app_urls.end();
+       ++it) {
+    if (it->scheme() == "mojo" && context->mojo_origin().empty()) {
+      LOG(ERROR) << "mojo: URL passed with no origin specified";
       return;
     }
     ScopedMessagePipeHandle no_handle;
     context->service_manager()->ConnectToService(
-        GURL(*it), std::string(), no_handle.Pass());
+        *it, std::string(), no_handle.Pass());
   }
 }
 
