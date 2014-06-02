@@ -8,6 +8,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/test_browser_context.h"
+#include "content/public/test/test_browser_thread.h"
 #include "ui/base/ime/text_input_focus_manager.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/gl/gl_surface.h"
@@ -18,7 +19,8 @@ namespace {
 
 class WebViewInteractiveUiTest : public views::test::WidgetTest {
  public:
-  WebViewInteractiveUiTest() {}
+  WebViewInteractiveUiTest()
+      : ui_thread_(content::BrowserThread::UI, base::MessageLoop::current()) {}
 
   virtual void SetUp() OVERRIDE {
     gfx::GLSurface::InitializeOneOffForTests();
@@ -31,6 +33,7 @@ class WebViewInteractiveUiTest : public views::test::WidgetTest {
  private:
   content::TestBrowserContext browser_context_;
   views::WebViewTestHelper webview_test_helper_;
+  content::TestBrowserThread ui_thread_;
 
   DISALLOW_COPY_AND_ASSIGN(WebViewInteractiveUiTest);
 };

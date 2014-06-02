@@ -52,6 +52,7 @@
 #include "content/renderer/context_menu_params_builder.h"
 #include "content/renderer/devtools/devtools_agent.h"
 #include "content/renderer/dom_automation_controller.h"
+#include "content/renderer/geolocation_dispatcher.h"
 #include "content/renderer/history_controller.h"
 #include "content/renderer/history_serialization.h"
 #include "content/renderer/image_loading_helper.h"
@@ -412,6 +413,7 @@ RenderFrameImpl::RenderFrameImpl(RenderViewImpl* render_view, int routing_id)
       media_player_manager_(NULL),
       cdm_manager_(NULL),
 #endif
+      geolocation_dispatcher_(NULL),
       weak_factory_(this) {
   RenderThread::Get()->AddRoute(routing_id_, this);
 
@@ -2741,7 +2743,9 @@ void RenderFrameImpl::willOpenWebSocket(blink::WebSocketHandle* handle) {
 }
 
 blink::WebGeolocationClient* RenderFrameImpl::geolocationClient() {
-  return render_view_->geolocationClient();
+  if (!geolocation_dispatcher_)
+    geolocation_dispatcher_ = new GeolocationDispatcher(this);
+  return geolocation_dispatcher_;
 }
 
 void RenderFrameImpl::willStartUsingPeerConnectionHandler(

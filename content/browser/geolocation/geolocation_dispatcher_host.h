@@ -5,6 +5,8 @@
 #ifndef CONTENT_BROWSER_GEOLOCATION_GEOLOCATION_DISPATCHER_HOST_H_
 #define CONTENT_BROWSER_GEOLOCATION_GEOLOCATION_DISPATCHER_HOST_H_
 
+#include <map>
+
 #include "content/browser/geolocation/geolocation_provider_impl.h"
 #include "content/public/browser/web_contents_observer.h"
 
@@ -29,19 +31,24 @@ class GeolocationDispatcherHost : public WebContentsObserver {
 
  private:
   // WebContentsObserver
+  virtual void RenderFrameDeleted(RenderFrameHost* render_frame_host) OVERRIDE;
   virtual void RenderViewHostChanged(RenderViewHost* old_host,
                                      RenderViewHost* new_host) OVERRIDE;
-  virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
+  virtual bool OnMessageReceived(
+      const IPC::Message& msg, RenderFrameHost* render_frame_host) OVERRIDE;
 
   // Message handlers:
-  void OnRequestPermission(int bridge_id,
+  void OnRequestPermission(RenderFrameHost* render_frame_host,
+                           int bridge_id,
                            const GURL& requesting_frame,
                            bool user_gesture);
-  void OnCancelPermissionRequest(int bridge_id,
+  void OnCancelPermissionRequest(RenderFrameHost* render_frame_host,
+                                 int bridge_id,
                                  const GURL& requesting_frame);
-  void OnStartUpdating(const GURL& requesting_frame,
+  void OnStartUpdating(RenderFrameHost* render_frame_host,
+                       const GURL& requesting_frame,
                        bool enable_high_accuracy);
-  void OnStopUpdating();
+  void OnStopUpdating(RenderFrameHost* render_frame_host);
 
   // Updates the geolocation provider with the currently required update
   // options.
@@ -51,9 +58,10 @@ class GeolocationDispatcherHost : public WebContentsObserver {
 
   scoped_refptr<GeolocationPermissionContext> geolocation_permission_context_;
 
-  bool watching_requested_;
+  // A map from the RenderFrameHosts that have requested geolocation updates to
+  // the type of accuracy they requested (true = high accuracy).
+  std::map<RenderFrameHost*, bool> updating_frames_;
   bool paused_;
-  bool high_accuracy_;
 
   scoped_ptr<GeolocationProvider::Subscription> geolocation_subscription_;
 

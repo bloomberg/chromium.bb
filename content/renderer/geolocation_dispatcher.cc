@@ -22,8 +22,8 @@ using blink::WebGeolocationPosition;
 
 namespace content {
 
-GeolocationDispatcher::GeolocationDispatcher(RenderViewImpl* render_view)
-    : RenderViewObserver(render_view),
+GeolocationDispatcher::GeolocationDispatcher(RenderFrame* render_frame)
+    : RenderFrameObserver(render_frame),
       pending_permissions_(new WebGeolocationPermissionRequestManager()),
       enable_high_accuracy_(false),
       updating_(false) {

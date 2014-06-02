@@ -58,6 +58,7 @@ class Rect;
 namespace content {
 
 class ChildFrameCompositingHelper;
+class GeolocationDispatcher;
 class MediaStreamRendererFactory;
 class NotificationProvider;
 class PepperPluginInstanceImpl;
@@ -615,6 +616,9 @@ class CONTENT_EXPORT RenderFrameImpl
   RendererMediaPlayerManager* media_player_manager_;
   RendererCdmManager* cdm_manager_;
 #endif
+
+  // The geolocation dispatcher attached to this view, lazily initialized.
+  GeolocationDispatcher* geolocation_dispatcher_;
 
   base::WeakPtrFactory<RenderFrameImpl> weak_factory_;
 

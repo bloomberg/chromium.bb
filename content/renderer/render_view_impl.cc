@@ -683,19 +683,19 @@ void RenderViewImpl::Initialize(RenderViewImplParams* params) {
   // Ensure we start with a valid next_page_id_ from the browser.
   DCHECK_GE(next_page_id_, 0);
 
-  RenderFrameImpl* main_render_frame = RenderFrameImpl::Create(
-      this, params->main_frame_routing_id);
+  main_render_frame_.reset(RenderFrameImpl::Create(
+      this, params->main_frame_routing_id));
   // The main frame WebLocalFrame object is closed by
   // RenderFrameImpl::frameDetached().
-  WebLocalFrame* web_frame = WebLocalFrame::create(main_render_frame);
-  main_render_frame->SetWebFrame(web_frame);
+  WebLocalFrame* web_frame = WebLocalFrame::create(main_render_frame_.get());
+  main_render_frame_->SetWebFrame(web_frame);
 
   if (params->proxy_routing_id != MSG_ROUTING_NONE) {
     CHECK(params->swapped_out);
     RenderFrameProxy* proxy =
         RenderFrameProxy::CreateFrameProxy(params->proxy_routing_id,
                                            params->main_frame_routing_id);
-    main_render_frame->set_render_frame_proxy(proxy);
+    main_render_frame_->set_render_frame_proxy(proxy);
   }
 
   webwidget_ = WebView::create(this);
@@ -757,7 +757,6 @@ void RenderViewImpl::Initialize(RenderViewImplParams* params) {
   webview()->settings()->setAllowConnectingInsecureWebSocket(
       command_line.HasSwitch(switches::kAllowInsecureWebSocketFromHttpsOrigin));
 
-  main_render_frame_.reset(main_render_frame);
   webview()->setMainFrame(main_render_frame_->GetWebFrame());
   main_render_frame_->Initialize();
 
@@ -3636,8 +3635,10 @@ bool RenderViewImpl::ScheduleFileChooser(
 }
 
 blink::WebGeolocationClient* RenderViewImpl::geolocationClient() {
-  if (!geolocation_dispatcher_)
-    geolocation_dispatcher_ = new GeolocationDispatcher(this);
+  if (!geolocation_dispatcher_) {
+    geolocation_dispatcher_ = new GeolocationDispatcher(
+        main_render_frame_.get());
+  }
   return geolocation_dispatcher_;
 }
 

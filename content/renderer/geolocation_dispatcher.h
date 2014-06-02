@@ -6,7 +6,7 @@
 #define CONTENT_RENDERER_GEOLOCATION_DISPATCHER_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "content/public/renderer/render_view_observer.h"
+#include "content/public/renderer/render_frame_observer.h"
 #include "third_party/WebKit/public/web/WebGeolocationClient.h"
 #include "third_party/WebKit/public/web/WebGeolocationController.h"
 
@@ -18,20 +18,19 @@ class WebGeolocationPosition;
 }
 
 namespace content {
-class RenderViewImpl;
 struct Geoposition;
 
 // GeolocationDispatcher is a delegate for Geolocation messages used by
 // WebKit.
-// It's the complement of GeolocationDispatcherHost (owned by RenderViewHost).
-class GeolocationDispatcher : public RenderViewObserver,
+// It's the complement of GeolocationDispatcherHost.
+class GeolocationDispatcher : public RenderFrameObserver,
                               public blink::WebGeolocationClient {
  public:
-  explicit GeolocationDispatcher(RenderViewImpl* render_view);
+  explicit GeolocationDispatcher(RenderFrame* render_frame);
   virtual ~GeolocationDispatcher();
 
  private:
-  // RenderView::Observer implementation.
+  // RenderFrame::Observer implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
   // WebGeolocationClient
@@ -55,7 +54,7 @@ class GeolocationDispatcher : public RenderViewObserver,
   // The controller_ is valid for the lifetime of the underlying
   // WebCore::GeolocationController. geolocationDestroyed() is
   // invoked when the underlying object is destroyed.
-  scoped_ptr< blink::WebGeolocationController> controller_;
+  scoped_ptr<blink::WebGeolocationController> controller_;
 
   scoped_ptr<blink::WebGeolocationPermissionRequestManager>
       pending_permissions_;
