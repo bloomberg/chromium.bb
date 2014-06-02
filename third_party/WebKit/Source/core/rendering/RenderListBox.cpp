@@ -207,10 +207,10 @@ void RenderListBox::layout()
     }
 }
 
-void RenderListBox::repaintTreeAfterLayout(const RenderLayerModelObject& repaintContainer)
+void RenderListBox::invalidateTreeAfterLayout(const RenderLayerModelObject& invalidationContainer)
 {
     repaintScrollbarIfNeeded();
-    RenderBox::repaintTreeAfterLayout(repaintContainer);
+    RenderBox::invalidateTreeAfterLayout(invalidationContainer);
 }
 
 void RenderListBox::scrollToRevealSelection()
@@ -678,7 +678,7 @@ void RenderListBox::scrollTo(int newOffset)
     m_indexOffset = newOffset;
 
     if (RuntimeEnabledFeatures::repaintAfterLayoutEnabled() && frameView()->isInPerformLayout())
-        setShouldDoFullRepaintAfterLayout(true);
+        setShouldDoFullPaintInvalidationAfterLayout(true);
     else
         repaint();
 

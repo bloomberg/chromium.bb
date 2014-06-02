@@ -135,7 +135,7 @@ void RenderLayerModelObject::styleDidChange(StyleDifference diff, const RenderSt
                 // FIXME: This invalidation is overly broad. We should update to
                 // do the correct invalidation at RenderStyle::diff time. crbug.com/349061
                 if (RuntimeEnabledFeatures::repaintAfterLayoutEnabled())
-                    layer()->renderer()->setShouldDoFullRepaintAfterLayout(true);
+                    layer()->renderer()->setShouldDoFullPaintInvalidationAfterLayout(true);
                 else
                     layer()->repainter().setRepaintStatus(NeedsFullRepaint);
                 // Hit in animations/interpolation/perspective-interpolation.html

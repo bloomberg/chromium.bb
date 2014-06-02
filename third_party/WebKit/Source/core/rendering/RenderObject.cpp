@@ -1633,18 +1633,18 @@ const char* RenderObject::invalidationReasonToString(InvalidationReason reason) 
     return "";
 }
 
-void RenderObject::repaintTreeAfterLayout(const RenderLayerModelObject& repaintContainer)
+void RenderObject::invalidateTreeAfterLayout(const RenderLayerModelObject& paintInvalidationContainer)
 {
-    // If we didn't need invalidation then our children don't need as well.
+    // If we didn't need paint invalidation then our children don't need as well.
     // Skip walking down the tree as everything should be fine below us.
-    if (!shouldCheckForInvalidationAfterLayout())
+    if (!shouldCheckForPaintInvalidationAfterLayout())
         return;
 
-    clearRepaintState();
+    clearPaintInvalidationState();
 
     for (RenderObject* child = slowFirstChild(); child; child = child->nextSibling()) {
         if (!child->isOutOfFlowPositioned())
-            child->repaintTreeAfterLayout(repaintContainer);
+            child->invalidateTreeAfterLayout(paintInvalidationContainer);
     }
 }
 
@@ -1810,7 +1810,7 @@ void RenderObject::repaintOverflow()
 
 void RenderObject::repaintOverflowIfNeeded()
 {
-    if (shouldRepaintOverflow())
+    if (shouldInvalidateOverflowForPaint())
         repaintOverflow();
 }
 
@@ -2173,7 +2173,7 @@ void RenderObject::setStyle(PassRefPtr<RenderStyle> style)
         // Repaint with the new style, e.g., for example if we go from not having
         // an outline to having an outline.
         if (RuntimeEnabledFeatures::repaintAfterLayoutEnabled() && needsLayout())
-            setShouldDoFullRepaintAfterLayout(true);
+            setShouldDoFullPaintInvalidationAfterLayout(true);
         else if (!selfNeedsLayout())
             repaint();
     }
@@ -2214,7 +2214,7 @@ void RenderObject::styleWillChange(StyleDifference diff, const RenderStyle& newS
 
         if (m_parent && diff.needsRepaintObject()) {
             if (RuntimeEnabledFeatures::repaintAfterLayoutEnabled() && (diff.needsLayout() || needsLayout()))
-                setShouldDoFullRepaintAfterLayout(true);
+                setShouldDoFullPaintInvalidationAfterLayout(true);
             else if (!diff.needsFullLayout() && !selfNeedsLayout())
                 repaint();
         }
@@ -3051,7 +3051,7 @@ void RenderObject::scheduleRelayout()
 void RenderObject::forceLayout()
 {
     setSelfNeedsLayout(true);
-    setShouldDoFullRepaintAfterLayout(true);
+    setShouldDoFullPaintInvalidationAfterLayout(true);
     layout();
 }
 
@@ -3509,14 +3509,14 @@ bool RenderObject::isRelayoutBoundaryForInspector() const
     return objectIsRelayoutBoundary(this);
 }
 
-void RenderObject::clearRepaintState()
+void RenderObject::clearPaintInvalidationState()
 {
-    setShouldDoFullRepaintAfterLayout(false);
-    setShouldDoFullRepaintIfSelfPaintingLayer(false);
+    setShouldDoFullPaintInvalidationAfterLayout(false);
+    setShouldDoFullPaintInvalidationIfSelfPaintingLayer(false);
     setOnlyNeededPositionedMovementLayout(false);
-    setShouldRepaintOverflow(false);
+    setShouldInvalidateOverflowForPaint(false);
     setLayoutDidGetCalled(false);
-    setMayNeedInvalidation(false);
+    setMayNeedPaintInvalidation(false);
 }
 
 bool RenderObject::isAllowedToModifyRenderTreeStructure(Document& document)

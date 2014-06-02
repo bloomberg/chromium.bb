@@ -250,7 +250,7 @@ void RenderImage::repaintOrMarkForLayout(bool imageSizeChangedToAccomodateAltTex
 
     {
         // FIXME: We should not be allowing repaint during layout. crbug.com/339584
-        AllowRepaintScope scoper(frameView());
+        AllowPaintInvalidationScope scoper(frameView());
         repaintRectangle(repaintRect);
     }
 

@@ -124,38 +124,39 @@ void RenderSVGModelObject::absoluteFocusRingQuads(Vector<FloatQuad>& quads)
     quads.append(localToAbsoluteQuad(FloatQuad(repaintRectInLocalCoordinates())));
 }
 
-void RenderSVGModelObject::repaintTreeAfterLayout(const RenderLayerModelObject& repaintContainer)
+void RenderSVGModelObject::invalidateTreeAfterLayout(const RenderLayerModelObject& paintInvalidationContainer)
 {
-    // Note: This is a reduced version of RenderBox::repaintTreeAfterLayout().
-    // FIXME: Should share code with RenderBox::repaintTreeAfterLayout().
+    // Note: This is a reduced version of RenderBox::invalidateTreeAfterLayout().
+    // FIXME: Should share code with RenderBox::invalidateTreeAfterLayout().
     ASSERT(RuntimeEnabledFeatures::repaintAfterLayoutEnabled());
     ASSERT(!needsLayout());
 
-    if (!shouldCheckForInvalidationAfterLayout())
+    if (!shouldCheckForPaintInvalidationAfterLayout())
         return;
 
     LayoutStateDisabler layoutStateDisabler(*this);
 
-    const LayoutRect oldRepaintRect = previousRepaintRect();
-    const LayoutPoint oldPositionFromRepaintContainer = previousPositionFromRepaintContainer();
-    const RenderLayerModelObject& newRepaintContainer = *containerForRepaint();
-    setPreviousRepaintRect(clippedOverflowRectForRepaint(&newRepaintContainer));
-    setPreviousPositionFromRepaintContainer(positionFromRepaintContainer(&newRepaintContainer));
+    const LayoutRect oldPaintInvalidationRect = previousPaintInvalidationRect();
+    const LayoutPoint oldPositionFromPaintInvalidationContainer = previousPositionFromPaintInvalidationContainer();
+    const RenderLayerModelObject& newPaintInvalidationContainer = *containerForRepaint();
+    setPreviousPaintInvalidationRect(clippedOverflowRectForRepaint(&newPaintInvalidationContainer));
+    setPreviousPositionFromPaintInvalidationContainer(positionFromRepaintContainer(&newPaintInvalidationContainer));
 
-    // If we are set to do a full repaint that means the RenderView will be
-    // invalidated. We can then skip issuing of invalidations for the child
+    // If we are set to do a full paint invalidation that means the RenderView will be
+    // issue paint invalidations. We can then skip issuing of paint invalidations for the child
     // renderers as they'll be covered by the RenderView.
     if (view()->doingFullRepaint()) {
-        RenderObject::repaintTreeAfterLayout(newRepaintContainer);
+        RenderObject::invalidateTreeAfterLayout(newPaintInvalidationContainer);
         return;
     }
 
-    const LayoutRect& newRepaintRect = previousRepaintRect();
-    const LayoutPoint& newPositionFromRepaintContainer = previousPositionFromRepaintContainer();
+    const LayoutRect& newPaintInvalidationRect = previousPaintInvalidationRect();
+    const LayoutPoint& newPositionFromPaintInvalidationContainer = previousPositionFromPaintInvalidationContainer();
     repaintAfterLayoutIfNeeded(containerForRepaint(),
-        shouldDoFullRepaintAfterLayout(), oldRepaintRect, oldPositionFromRepaintContainer, &newRepaintRect, &newPositionFromRepaintContainer);
+        shouldDoFullPaintInvalidationAfterLayout(), oldPaintInvalidationRect, oldPositionFromPaintInvalidationContainer,
+        &newPaintInvalidationRect, &newPositionFromPaintInvalidationContainer);
 
-    RenderObject::repaintTreeAfterLayout(newRepaintContainer);
+    RenderObject::invalidateTreeAfterLayout(newPaintInvalidationContainer);
 }
 
 } // namespace WebCore

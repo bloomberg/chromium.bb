@@ -619,7 +619,7 @@ public:
             removeFloatingOrPositionedChildFromBlockLists();
     }
 
-    virtual void repaintTreeAfterLayout(const RenderLayerModelObject& repaintContainer) OVERRIDE;
+    virtual void invalidateTreeAfterLayout(const RenderLayerModelObject&) OVERRIDE;
 
 protected:
     virtual void willBeDestroyed() OVERRIDE;

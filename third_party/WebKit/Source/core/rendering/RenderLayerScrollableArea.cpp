@@ -384,7 +384,7 @@ void RenderLayerScrollableArea::setScrollOffset(const IntPoint& newScrollOffset)
 
     FloatQuad quadForFakeMouseMoveEvent;
     if (RuntimeEnabledFeatures::repaintAfterLayoutEnabled())
-        quadForFakeMouseMoveEvent = FloatQuad(layer()->renderer()->previousRepaintRect());
+        quadForFakeMouseMoveEvent = FloatQuad(layer()->renderer()->previousPaintInvalidationRect());
     else
         quadForFakeMouseMoveEvent = FloatQuad(layer()->repainter().repaintRect());
 
@@ -410,9 +410,9 @@ void RenderLayerScrollableArea::setScrollOffset(const IntPoint& newScrollOffset)
     if (requiresRepaint) {
         if (RuntimeEnabledFeatures::repaintAfterLayoutEnabled()) {
             if (box().frameView()->isInPerformLayout())
-                box().setShouldDoFullRepaintAfterLayout(true);
+                box().setShouldDoFullPaintInvalidationAfterLayout(true);
             else
-                box().repaintUsingContainer(repaintContainer, pixelSnappedIntRect(layer()->renderer()->previousRepaintRect()), InvalidationScroll);
+                box().repaintUsingContainer(repaintContainer, pixelSnappedIntRect(layer()->renderer()->previousPaintInvalidationRect()), InvalidationScroll);
         } else {
             box().repaintUsingContainer(repaintContainer, pixelSnappedIntRect(layer()->repainter().repaintRect()), InvalidationScroll);
         }
@@ -682,7 +682,7 @@ void RenderLayerScrollableArea::updateAfterLayout()
 
     {
         // FIXME: We should not be allowing repaint during layout. crbug.com/336251
-        AllowRepaintScope scoper(box().view()->frameView());
+        AllowPaintInvalidationScope scoper(box().view()->frameView());
 
         // FIXME: Remove incremental compositing updates after fixing the chicken/egg issues
         // https://code.google.com/p/chromium/issues/detail?id=343756

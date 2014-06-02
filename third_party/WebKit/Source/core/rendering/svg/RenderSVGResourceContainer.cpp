@@ -149,7 +149,7 @@ void RenderSVGResourceContainer::markClientForInvalidation(RenderObject* client,
     case RepaintInvalidation:
         if (client->view()) {
             if (RuntimeEnabledFeatures::repaintAfterLayoutEnabled() && frameView()->isInPerformLayout())
-                client->setShouldDoFullRepaintAfterLayout(true);
+                client->setShouldDoFullPaintInvalidationAfterLayout(true);
             else
                 client->repaint();
         }

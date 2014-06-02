@@ -223,7 +223,7 @@ void FrameView::reset()
     m_doFullRepaint = false;
     m_layoutSchedulingEnabled = true;
     m_inPerformLayout = false;
-    m_canRepaintDuringPerformLayout = false;
+    m_canInvalidatePaintDuringPerformLayout = false;
     m_inSynchronousPostLayout = false;
     m_layoutCount = 0;
     m_nestedLayoutCount = 0;
@@ -807,7 +807,7 @@ void FrameView::performLayout(RenderObject* rootForThisLayout, bool inSubtreeLay
     TextAutosizer* textAutosizer = frame().document()->textAutosizer();
     bool autosized;
     {
-        AllowRepaintScope repaintAllowed(this);
+        AllowPaintInvalidationScope repaintAllowed(this);
         autosized = textAutosizer && textAutosizer->processSubtree(rootForThisLayout);
     }
 
@@ -1002,7 +1002,7 @@ void FrameView::layout(bool allowSubtree)
         return;
 
     if (RuntimeEnabledFeatures::repaintAfterLayoutEnabled()) {
-        repaintTree(rootForThisLayout);
+        invalidateTree(rootForThisLayout);
     } else if (m_doFullRepaint) {
         // FIXME: This isn't really right, since the RenderView doesn't fully encompass
         // the visibleContentRect(). It just happens to work out most of the time,
@@ -1031,7 +1031,7 @@ void FrameView::layout(bool allowSubtree)
 // method would setNeedsRedraw on the GraphicsLayers with invalidations and
 // let the compositor pick which to actually draw.
 // See http://crbug.com/306706
-void FrameView::repaintTree(RenderObject* root)
+void FrameView::invalidateTree(RenderObject* root)
 {
     ASSERT(RuntimeEnabledFeatures::repaintAfterLayoutEnabled());
     ASSERT(!root->needsLayout());
@@ -1048,7 +1048,7 @@ void FrameView::repaintTree(RenderObject* root)
 
     RootLayoutStateScope rootLayoutStateScope(*root);
 
-    root->repaintTreeAfterLayout(*root->containerForRepaint());
+    root->invalidateTreeAfterLayout(*root->containerForRepaint());
 
     // Repaint the frameviews scrollbars if needed
     if (hasVerticalBarDamage())
@@ -1080,7 +1080,7 @@ void FrameView::gatherDebugLayoutRects(RenderObject* layoutRoot)
     debugInfo.currentLayoutRects().clear();
     for (RenderObject* renderer = layoutRoot; renderer; renderer = renderer->nextInPreOrder()) {
         if (renderer->layoutDidGetCalled()) {
-            FloatQuad quad = renderer->localToAbsoluteQuad(FloatQuad(renderer->previousRepaintRect()));
+            FloatQuad quad = renderer->localToAbsoluteQuad(FloatQuad(renderer->previousPaintInvalidationRect()));
             LayoutRect rect = quad.enclosingBoundingBox();
             debugInfo.currentLayoutRects().append(rect);
             renderer->setLayoutDidGetCalled(false);

@@ -1476,7 +1476,7 @@ void RenderLayer::removeOnlyThisLayer()
         m_parent->addChild(current, nextSib);
 
         if (RuntimeEnabledFeatures::repaintAfterLayoutEnabled())
-            current->renderer()->setShouldDoFullRepaintAfterLayout(true);
+            current->renderer()->setShouldDoFullPaintInvalidationAfterLayout(true);
         else
             current->repainter().setRepaintStatus(NeedsFullRepaint);
 
@@ -3864,7 +3864,7 @@ void RenderLayer::filterNeedsRepaint()
 
     if (renderer()->view()) {
         if (RuntimeEnabledFeatures::repaintAfterLayoutEnabled() && renderer()->frameView()->isInPerformLayout())
-            renderer()->setShouldDoFullRepaintAfterLayout(true);
+            renderer()->setShouldDoFullPaintInvalidationAfterLayout(true);
         else
             renderer()->repaint();
     }

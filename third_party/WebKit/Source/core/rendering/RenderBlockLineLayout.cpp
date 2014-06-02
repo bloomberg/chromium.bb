@@ -1218,7 +1218,7 @@ void RenderBlockFlow::linkToEndLineIfNeeded(LineLayoutState& layoutState)
 void RenderBlockFlow::repaintDirtyFloats(Vector<FloatWithRect>& floats)
 {
     size_t floatCount = floats.size();
-    // Floats that did not have layout did not repaint when we laid them out. They would have
+    // Floats that did not have layout did not paint invalidations when we laid them out. They would have
     // painted by now if they had moved, but if they stayed at (0, 0), they still need to be
     // painted.
     for (size_t i = 0; i < floatCount; ++i) {
@@ -1226,7 +1226,7 @@ void RenderBlockFlow::repaintDirtyFloats(Vector<FloatWithRect>& floats)
             RenderBox* f = floats[i].object;
             if (!f->x() && !f->y() && f->checkForRepaint()) {
                 if (RuntimeEnabledFeatures::repaintAfterLayoutEnabled())
-                    f->setShouldDoFullRepaintAfterLayout(true);
+                    f->setShouldDoFullPaintInvalidationAfterLayout(true);
                 else
                     f->repaint();
             }
@@ -1831,11 +1831,11 @@ RootInlineBox* RenderBlockFlow::determineStartPosition(LineLayoutState& layoutSt
     }
 
     if (layoutState.isFullLayout()) {
-        // If we encountered a new float and have inline children, mark ourself to force us to repaint.
+        // If we encountered a new float and have inline children, mark ourself to force us to issue paint invalidations.
         if (layoutState.hasInlineChild() && !selfNeedsLayout()) {
             setNeedsLayoutAndFullRepaint(MarkOnlyThis);
             if (RuntimeEnabledFeatures::repaintAfterLayoutEnabled())
-                setShouldDoFullRepaintAfterLayout(true);
+                setShouldDoFullPaintInvalidationAfterLayout(true);
         }
 
         // FIXME: This should just call deleteLineBoxTree, but that causes

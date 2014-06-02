@@ -113,7 +113,7 @@ void RenderLayerRepainter::computeRepaintRects()
         // FIXME: We want RenderLayerRepainter to go away when
         // repaint-after-layout is on by default so we need to figure out how to
         // handle this update.
-        m_renderer.setPreviousRepaintRect(repaintRect);
+        m_renderer.setPreviousPaintInvalidationRect(repaintRect);
     } else {
         m_repaintRect = repaintRect;
         m_offset = m_renderer.positionFromRepaintContainer(repaintContainer);
@@ -164,7 +164,7 @@ LayoutRect RenderLayerRepainter::repaintRectIncludingNonCompositingDescendants()
 {
     LayoutRect repaintRect;
     if (RuntimeEnabledFeatures::repaintAfterLayoutEnabled())
-        repaintRect = m_renderer.previousRepaintRect();
+        repaintRect = m_renderer.previousPaintInvalidationRect();
     else
         repaintRect = m_repaintRect;
 

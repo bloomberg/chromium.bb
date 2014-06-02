@@ -328,7 +328,7 @@ void RenderBlockFlow::layoutBlock(bool relayoutChildren)
     bool didFullRepaint = repainter.repaintAfterLayout();
     if (!didFullRepaint && m_repaintLogicalTop != m_repaintLogicalBottom && (style()->visibility() == VISIBLE || enclosingLayer()->hasVisibleContent())) {
         if (RuntimeEnabledFeatures::repaintAfterLayoutEnabled())
-            setShouldRepaintOverflow(true);
+            setShouldInvalidateOverflowForPaint(true);
         else
             repaintOverflow();
     }
@@ -1951,7 +1951,7 @@ void RenderBlockFlow::repaintOverhangingFloats(bool paintAllDescendants)
 
             RenderBox* floatingRenderer = floatingObject->renderer();
             if (RuntimeEnabledFeatures::repaintAfterLayoutEnabled())
-                floatingRenderer->setShouldDoFullRepaintAfterLayout(true);
+                floatingRenderer->setShouldDoFullPaintInvalidationAfterLayout(true);
             else
                 floatingRenderer->repaint();
 
@@ -2324,7 +2324,7 @@ bool RenderBlockFlow::positionNewFloats()
         RenderBox* childBox = floatingObject->renderer();
 
         // FIXME Investigate if this can be removed. crbug.com/370006
-        childBox->setMayNeedInvalidation(true);
+        childBox->setMayNeedPaintInvalidation(true);
 
         LayoutUnit childLogicalLeftMargin = style()->isLeftToRightDirection() ? marginStartForChild(childBox) : marginEndForChild(childBox);
         LayoutRect oldRect = childBox->frameRect();

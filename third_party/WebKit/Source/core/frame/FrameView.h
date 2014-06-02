@@ -92,8 +92,8 @@ public:
     bool layoutPending() const;
     bool isInPerformLayout() const;
 
-    void setCanRepaintDuringPerformLayout(bool b) { m_canRepaintDuringPerformLayout = b; }
-    bool canRepaintDuringPerformLayout() const { return m_canRepaintDuringPerformLayout; }
+    void setCanInvalidatePaintDuringPerformLayout(bool b) { m_canInvalidatePaintDuringPerformLayout = b; }
+    bool canInvalidatePaintDuringPerformLayout() const { return m_canInvalidatePaintDuringPerformLayout; }
 
     RenderObject* layoutRoot(bool onlyDuringLayout = false) const;
     void clearLayoutSubtreeRoot() { m_layoutSubtreeRoot = 0; }
@@ -362,7 +362,7 @@ private:
     void scheduleOrPerformPostLayoutTasks();
     void performPostLayoutTasks();
 
-    void repaintTree(RenderObject* root);
+    void invalidateTree(RenderObject* root);
 
     void gatherDebugLayoutRects(RenderObject* layoutRoot);
 
@@ -413,7 +413,7 @@ private:
         if (!RuntimeEnabledFeatures::repaintAfterLayoutEnabled())
             return true;
 
-        return !isInPerformLayout() || canRepaintDuringPerformLayout();
+        return !isInPerformLayout() || canInvalidatePaintDuringPerformLayout();
     }
 
     static double s_currentFrameTimeStamp; // used for detecting decoded resource thrash in the cache
@@ -442,7 +442,7 @@ private:
 
     bool m_layoutSchedulingEnabled;
     bool m_inPerformLayout;
-    bool m_canRepaintDuringPerformLayout;
+    bool m_canInvalidatePaintDuringPerformLayout;
     bool m_inSynchronousPostLayout;
     int m_layoutCount;
     unsigned m_nestedLayoutCount;
@@ -540,24 +540,24 @@ inline void FrameView::incrementVisuallyNonEmptyPixelCount(const IntSize& size)
 
 DEFINE_TYPE_CASTS(FrameView, Widget, widget, widget->isFrameView(), widget.isFrameView());
 
-class AllowRepaintScope {
+class AllowPaintInvalidationScope {
 public:
-    explicit AllowRepaintScope(FrameView* view)
+    explicit AllowPaintInvalidationScope(FrameView* view)
         : m_view(view)
-        , m_originalValue(view ? view->canRepaintDuringPerformLayout() : false)
+        , m_originalValue(view ? view->canInvalidatePaintDuringPerformLayout() : false)
     {
         if (!m_view)
             return;
 
-        m_view->setCanRepaintDuringPerformLayout(true);
+        m_view->setCanInvalidatePaintDuringPerformLayout(true);
     }
 
-    ~AllowRepaintScope()
+    ~AllowPaintInvalidationScope()
     {
         if (!m_view)
             return;
 
-        m_view->setCanRepaintDuringPerformLayout(m_originalValue);
+        m_view->setCanInvalidatePaintDuringPerformLayout(m_originalValue);
     }
 private:
     FrameView* m_view;

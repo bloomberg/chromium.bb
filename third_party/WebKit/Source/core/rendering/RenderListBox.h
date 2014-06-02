@@ -82,7 +82,7 @@ private:
 
     virtual void layout() OVERRIDE;
 
-    virtual void repaintTreeAfterLayout(const RenderLayerModelObject& repaintContainer) OVERRIDE FINAL;
+    virtual void invalidateTreeAfterLayout(const RenderLayerModelObject&) OVERRIDE FINAL;
 
     virtual void addFocusRingRects(Vector<IntRect>&, const LayoutPoint& additionalOffset, const RenderLayerModelObject* paintContainer = 0) OVERRIDE;
 

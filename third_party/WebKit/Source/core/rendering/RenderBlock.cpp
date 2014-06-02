@@ -366,12 +366,12 @@ void RenderBlock::styleDidChange(StyleDifference diff, const RenderStyle* oldSty
         ResourceLoadPriorityOptimizer::resourceLoadPriorityOptimizer()->addRenderObject(this);
 }
 
-void RenderBlock::repaintTreeAfterLayout(const RenderLayerModelObject& repaintContainer)
+void RenderBlock::invalidateTreeAfterLayout(const RenderLayerModelObject& invalidationContainer)
 {
-    if (!shouldCheckForInvalidationAfterLayout())
+    if (!shouldCheckForPaintInvalidationAfterLayout())
         return;
 
-    RenderBox::repaintTreeAfterLayout(repaintContainer);
+    RenderBox::invalidateTreeAfterLayout(invalidationContainer);
 
     // Take care of positioned objects. This is required as LayoutState keeps a single clip rect.
     if (TrackedRendererListHashSet* positionedObjects = this->positionedObjects()) {
@@ -394,12 +394,12 @@ void RenderBlock::repaintTreeAfterLayout(const RenderLayerModelObject& repaintCo
                     // Currently, we will place absolutly positioned elements inside
                     // relatively positioned inline blocks in the wrong location. crbug.com/371485
                     LayoutStateDisabler disable(*this);
-                    box->repaintTreeAfterLayout(repaintContainerForChild);
+                    box->invalidateTreeAfterLayout(repaintContainerForChild);
                     continue;
                 }
             }
 
-            box->repaintTreeAfterLayout(repaintContainerForChild);
+            box->invalidateTreeAfterLayout(repaintContainerForChild);
         }
     }
 }
