@@ -368,6 +368,7 @@ class CONTENT_EXPORT RenderFrameImpl
                                    blink::WebStorageQuotaCallbacks callbacks);
   virtual void willOpenSocketStream(
       blink::WebSocketStreamHandle* handle);
+  virtual void willOpenWebSocket(blink::WebSocketHandle* handle);
   virtual blink::WebGeolocationClient* geolocationClient();
   virtual void willStartUsingPeerConnectionHandler(
       blink::WebLocalFrame* frame,

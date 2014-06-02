@@ -26,6 +26,7 @@
 #include "content/child/service_worker/web_service_worker_provider_impl.h"
 #include "content/child/web_socket_stream_handle_impl.h"
 #include "content/child/webmessageportchannel_impl.h"
+#include "content/child/websocket_bridge.h"
 #include "content/common/clipboard_messages.h"
 #include "content/common/frame_messages.h"
 #include "content/common/input_messages.h"
@@ -2739,6 +2740,11 @@ void RenderFrameImpl::willOpenSocketStream(
   WebSocketStreamHandleImpl* impl =
       static_cast<WebSocketStreamHandleImpl*>(handle);
   impl->SetUserData(handle, new SocketStreamHandleData(routing_id_));
+}
+
+void RenderFrameImpl::willOpenWebSocket(blink::WebSocketHandle* handle) {
+  WebSocketBridge* impl = static_cast<WebSocketBridge*>(handle);
+  impl->set_render_frame_id(routing_id_);
 }
 
 blink::WebGeolocationClient* RenderFrameImpl::geolocationClient() {

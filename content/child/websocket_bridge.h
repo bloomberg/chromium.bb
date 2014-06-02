@@ -45,6 +45,10 @@ class WebSocketBridge : public blink::WebSocketHandle {
 
   virtual void Disconnect();
 
+  void set_render_frame_id(int id) {
+    render_frame_id_ = id;
+  }
+
  private:
   virtual ~WebSocketBridge();
 
@@ -62,6 +66,7 @@ class WebSocketBridge : public blink::WebSocketHandle {
   void DidStartClosingHandshake();
 
   int channel_id_;
+  int render_frame_id_;
   blink::WebSocketHandleClient* client_;
 
   static const int kInvalidChannelId = -1;
