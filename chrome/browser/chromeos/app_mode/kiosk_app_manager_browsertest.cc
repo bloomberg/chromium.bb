@@ -484,7 +484,8 @@ IN_PROC_BROWSER_TEST_F(KioskAppManagerTest, UpdateAppDataFromProfile) {
   EXPECT_EQ("Updated App1 Name", apps[0].name);
 }
 
-IN_PROC_BROWSER_TEST_F(KioskAppManagerTest, BadApp) {
+// Test is flaky. See http://crbug.com/379769 for details.
+IN_PROC_BROWSER_TEST_F(KioskAppManagerTest, DISABLED_BadApp) {
   AppDataLoadWaiter waiter(manager(), 2);
   manager()->AddApp("unknown_app");
   TestKioskAppManagerObserver observer(manager());
