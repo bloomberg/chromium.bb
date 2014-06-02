@@ -527,17 +527,27 @@ WebGLRenderingContextBase::WebGLRenderingContextBase(HTMLCanvasElement* passedCa
     m_maxViewportDims[0] = m_maxViewportDims[1] = 0;
     context->getIntegerv(GL_MAX_VIEWPORT_DIMS, m_maxViewportDims);
 
-    RefPtr<WebGLRenderingContextEvictionManager> contextEvictionManager = adoptRef(new WebGLRenderingContextEvictionManager());
-
-    // Create the DrawingBuffer and initialize the platform layer.
-    DrawingBuffer::PreserveDrawingBuffer preserve = requestedAttributes->preserveDrawingBuffer() ? DrawingBuffer::Preserve : DrawingBuffer::Discard;
-    m_drawingBuffer = DrawingBuffer::create(context, clampedCanvasSize(), preserve, contextEvictionManager.release());
+    m_drawingBuffer = createDrawingBuffer(context);
     if (!m_drawingBuffer)
         return;
 
     m_drawingBuffer->bind();
     setupFlags();
     initializeNewContext();
+}
+
+PassRefPtr<DrawingBuffer> WebGLRenderingContextBase::createDrawingBuffer(PassOwnPtr<blink::WebGraphicsContext3D> context)
+{
+    RefPtr<WebGLRenderingContextEvictionManager> contextEvictionManager = adoptRef(new WebGLRenderingContextEvictionManager());
+
+    blink::WebGraphicsContext3D::Attributes attrs;
+    attrs.alpha = m_requestedAttributes->alpha();
+    attrs.depth = m_requestedAttributes->depth();
+    attrs.stencil = m_requestedAttributes->stencil();
+    attrs.antialias = m_requestedAttributes->antialias();
+    attrs.premultipliedAlpha = m_requestedAttributes->premultipliedAlpha();
+    DrawingBuffer::PreserveDrawingBuffer preserve = m_requestedAttributes->preserveDrawingBuffer() ? DrawingBuffer::Preserve : DrawingBuffer::Discard;
+    return DrawingBuffer::create(context, clampedCanvasSize(), preserve, attrs, contextEvictionManager.release());
 }
 
 void WebGLRenderingContextBase::initializeNewContext()
@@ -2070,7 +2080,7 @@ PassRefPtr<WebGLContextAttributes> WebGLRenderingContextBase::getContextAttribut
         return nullptr;
     // We always need to return a new WebGLContextAttributes object to
     // prevent the user from mutating any cached version.
-    blink::WebGraphicsContext3D::Attributes attrs = webContext()->getContextAttributes();
+    blink::WebGraphicsContext3D::Attributes attrs = m_drawingBuffer->getActualAttributes();
     RefPtr<WebGLContextAttributes> attributes = m_requestedAttributes->clone();
     // Some requested attributes may not be honored, so we need to query the underlying
     // context/drawing buffer and adjust accordingly.
@@ -3090,7 +3100,7 @@ void WebGLRenderingContextBase::readPixels(GLint x, GLint y, GLsizei width, GLsi
 #if OS(MACOSX)
     // FIXME: remove this section when GL driver bug on Mac is fixed, i.e.,
     // when alpha is off, readPixels should set alpha to 255 instead of 0.
-    if (!m_framebufferBinding && !webContext()->getContextAttributes().alpha) {
+    if (!m_framebufferBinding && !m_drawingBuffer->getActualAttributes().alpha) {
         unsigned char* pixels = reinterpret_cast<unsigned char*>(data);
         for (GLsizei iy = 0; iy < height; ++iy) {
             for (GLsizei ix = 0; ix < width; ++ix) {
@@ -5463,11 +5473,8 @@ void WebGLRenderingContextBase::maybeRestoreContext(Timer<WebGLRenderingContextB
     RefPtr<DrawingBuffer> drawingBuffer;
     // Even if a non-null WebGraphicsContext3D is created, until it's made current, it isn't known whether the context is still lost.
     if (context) {
-        RefPtr<WebGLRenderingContextEvictionManager> contextEvictionManager = adoptRef(new WebGLRenderingContextEvictionManager());
-
         // Construct a new drawing buffer with the new WebGraphicsContext3D.
-        DrawingBuffer::PreserveDrawingBuffer preserve = m_requestedAttributes->preserveDrawingBuffer() ? DrawingBuffer::Preserve : DrawingBuffer::Discard;
-        drawingBuffer = DrawingBuffer::create(context.release(), clampedCanvasSize(), preserve, contextEvictionManager.release());
+        drawingBuffer = createDrawingBuffer(context.release());
         // If DrawingBuffer::create() fails to allocate a fbo, |drawingBuffer| is set to null.
     }
     if (!drawingBuffer) {

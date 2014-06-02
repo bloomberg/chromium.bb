@@ -98,7 +98,7 @@ public:
         Discard
     };
 
-    static PassRefPtr<DrawingBuffer> create(PassOwnPtr<blink::WebGraphicsContext3D>, const IntSize&, PreserveDrawingBuffer, PassRefPtr<ContextEvictionManager>);
+    static PassRefPtr<DrawingBuffer> create(PassOwnPtr<blink::WebGraphicsContext3D>, const IntSize&, PreserveDrawingBuffer, blink::WebGraphicsContext3D::Attributes requestedAttributes, PassRefPtr<ContextEvictionManager>);
 
     virtual ~DrawingBuffer();
 
@@ -148,6 +148,10 @@ public:
 
     blink::WebGraphicsContext3D* context();
 
+    // Returns the actual context attributes for this drawing buffer which may differ from the
+    // requested context attributes due to implementation limits.
+    blink::WebGraphicsContext3D::Attributes getActualAttributes() const { return m_actualAttributes; }
+
     // WebExternalTextureLayerClient implementation.
     virtual bool prepareMailbox(blink::WebExternalTextureMailbox*, blink::WebExternalBitmap*) OVERRIDE;
     virtual void mailboxReleased(const blink::WebExternalTextureMailbox&) OVERRIDE;
@@ -166,7 +170,10 @@ protected: // For unittests
         PassOwnPtr<blink::WebGraphicsContext3D>,
         PassOwnPtr<Extensions3DUtil>,
         bool multisampleExtensionSupported,
-        bool packedDepthStencilExtensionSupported, PreserveDrawingBuffer, PassRefPtr<ContextEvictionManager>);
+        bool packedDepthStencilExtensionSupported,
+        PreserveDrawingBuffer,
+        blink::WebGraphicsContext3D::Attributes requestedAttributes,
+        PassRefPtr<ContextEvictionManager>);
 
     bool initialize(const IntSize&);
 
@@ -230,6 +237,7 @@ private:
     OwnPtr<blink::WebGraphicsContext3D> m_context;
     OwnPtr<Extensions3DUtil> m_extensionsUtil;
     IntSize m_size;
+    blink::WebGraphicsContext3D::Attributes m_requestedAttributes;
     bool m_multisampleExtensionSupported;
     bool m_packedDepthStencilExtensionSupported;
     Platform3DObject m_fbo;
@@ -263,7 +271,7 @@ private:
 
     MultisampleMode m_multisampleMode;
 
-    blink::WebGraphicsContext3D::Attributes m_attributes;
+    blink::WebGraphicsContext3D::Attributes m_actualAttributes;
     unsigned m_internalColorFormat;
     unsigned m_colorFormat;
     unsigned m_internalRenderbufferFormat;

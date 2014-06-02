@@ -87,7 +87,7 @@ private:
 
 } // namespace
 
-PassRefPtr<DrawingBuffer> DrawingBuffer::create(PassOwnPtr<blink::WebGraphicsContext3D> context, const IntSize& size, PreserveDrawingBuffer preserve, PassRefPtr<ContextEvictionManager> contextEvictionManager)
+PassRefPtr<DrawingBuffer> DrawingBuffer::create(PassOwnPtr<blink::WebGraphicsContext3D> context, const IntSize& size, PreserveDrawingBuffer preserve, blink::WebGraphicsContext3D::Attributes requestedAttributes, PassRefPtr<ContextEvictionManager> contextEvictionManager)
 {
     ASSERT(context);
     OwnPtr<Extensions3DUtil> extensionsUtil = Extensions3DUtil::create(context.get());
@@ -105,7 +105,7 @@ PassRefPtr<DrawingBuffer> DrawingBuffer::create(PassOwnPtr<blink::WebGraphicsCon
     if (packedDepthStencilSupported)
         extensionsUtil->ensureExtensionEnabled("GL_OES_packed_depth_stencil");
 
-    RefPtr<DrawingBuffer> drawingBuffer = adoptRef(new DrawingBuffer(context, extensionsUtil.release(), multisampleSupported, packedDepthStencilSupported, preserve, contextEvictionManager));
+    RefPtr<DrawingBuffer> drawingBuffer = adoptRef(new DrawingBuffer(context, extensionsUtil.release(), multisampleSupported, packedDepthStencilSupported, preserve, requestedAttributes, contextEvictionManager));
     if (!drawingBuffer->initialize(size)) {
         drawingBuffer->beginDestruction();
         return PassRefPtr<DrawingBuffer>();
@@ -118,6 +118,7 @@ DrawingBuffer::DrawingBuffer(PassOwnPtr<blink::WebGraphicsContext3D> context,
     bool multisampleExtensionSupported,
     bool packedDepthStencilExtensionSupported,
     PreserveDrawingBuffer preserve,
+    blink::WebGraphicsContext3D::Attributes requestedAttributes,
     PassRefPtr<ContextEvictionManager> contextEvictionManager)
     : m_preserveDrawingBuffer(preserve)
     , m_scissorEnabled(false)
@@ -127,6 +128,7 @@ DrawingBuffer::DrawingBuffer(PassOwnPtr<blink::WebGraphicsContext3D> context,
     , m_context(context)
     , m_extensionsUtil(extensionsUtil)
     , m_size(-1, -1)
+    , m_requestedAttributes(requestedAttributes)
     , m_multisampleExtensionSupported(multisampleExtensionSupported)
     , m_packedDepthStencilExtensionSupported(packedDepthStencilExtensionSupported)
     , m_fbo(0)
@@ -212,7 +214,7 @@ bool DrawingBuffer::prepareMailbox(blink::WebExternalTextureMailbox* outMailbox,
         bitmap->setSize(size());
 
         unsigned char* pixels = bitmap->pixels();
-        bool needPremultiply = m_attributes.alpha && !m_attributes.premultipliedAlpha;
+        bool needPremultiply = m_actualAttributes.alpha && !m_actualAttributes.premultipliedAlpha;
         WebGLImageConversion::AlphaOp op = needPremultiply ? WebGLImageConversion::AlphaDoPremultiply : WebGLImageConversion::AlphaDoNothing;
         if (pixels)
             readBackFramebuffer(pixels, size().width(), size().height(), ReadbackSkia, op);
@@ -372,9 +374,7 @@ bool DrawingBuffer::initialize(const IntSize& size)
         return false;
     }
 
-    m_attributes = m_context->getContextAttributes();
-
-    if (m_attributes.alpha) {
+    if (m_requestedAttributes.alpha) {
         m_internalColorFormat = GL_RGBA;
         m_colorFormat = GL_RGBA;
         m_internalRenderbufferFormat = GL_RGBA8_OES;
@@ -388,7 +388,7 @@ bool DrawingBuffer::initialize(const IntSize& size)
 
     int maxSampleCount = 0;
     m_multisampleMode = None;
-    if (m_attributes.antialias && m_multisampleExtensionSupported) {
+    if (m_requestedAttributes.antialias && m_multisampleExtensionSupported) {
         m_context->getIntegerv(GL_MAX_SAMPLES_ANGLE, &maxSampleCount);
         m_multisampleMode = ExplicitResolve;
         if (m_extensionsUtil->supportsExtension("GL_EXT_multisampled_render_to_texture"))
@@ -405,7 +405,28 @@ bool DrawingBuffer::initialize(const IntSize& size)
     else
         m_context->framebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_colorBuffer.textureId, 0);
     createSecondaryBuffers();
-    return reset(size);
+    // We first try to initialize everything with the requested attributes.
+    if (!reset(size))
+        return false;
+    // If that succeeds, we then see what we actually got and update our actual attributes to reflect that.
+    m_actualAttributes = m_requestedAttributes;
+    if (m_requestedAttributes.alpha) {
+        blink::WGC3Dint alphaBits = 0;
+        m_context->getIntegerv(GL_ALPHA_BITS, &alphaBits);
+        m_actualAttributes.alpha = alphaBits > 0;
+    }
+    if (m_requestedAttributes.depth) {
+        blink::WGC3Dint depthBits = 0;
+        m_context->getIntegerv(GL_DEPTH_BITS, &depthBits);
+        m_actualAttributes.depth = depthBits > 0;
+    }
+    if (m_requestedAttributes.stencil) {
+        blink::WGC3Dint stencilBits = 0;
+        m_context->getIntegerv(GL_STENCIL_BITS, &stencilBits);
+        m_actualAttributes.stencil = stencilBits > 0;
+    }
+    m_actualAttributes.antialias = multisample();
+    return true;
 }
 
 bool DrawingBuffer::copyToPlatformTexture(blink::WebGraphicsContext3D* context, Platform3DObject texture, GLenum internalFormat, GLenum destType, GLint level, bool premultiplyAlpha, bool flipY)
@@ -451,9 +472,9 @@ bool DrawingBuffer::copyToPlatformTexture(blink::WebGraphicsContext3D* context, 
 
     bool unpackPremultiplyAlphaNeeded = false;
     bool unpackUnpremultiplyAlphaNeeded = false;
-    if (m_attributes.alpha && m_attributes.premultipliedAlpha && !premultiplyAlpha)
+    if (m_actualAttributes.alpha && m_actualAttributes.premultipliedAlpha && !premultiplyAlpha)
         unpackUnpremultiplyAlphaNeeded = true;
-    else if (m_attributes.alpha && !m_attributes.premultipliedAlpha && premultiplyAlpha)
+    else if (m_actualAttributes.alpha && !m_actualAttributes.premultipliedAlpha && premultiplyAlpha)
         unpackPremultiplyAlphaNeeded = true;
 
     context->pixelStorei(GC3D_UNPACK_UNPREMULTIPLY_ALPHA_CHROMIUM, unpackUnpremultiplyAlphaNeeded);
@@ -483,9 +504,9 @@ blink::WebLayer* DrawingBuffer::platformLayer()
     if (!m_layer) {
         m_layer = adoptPtr(blink::Platform::current()->compositorSupport()->createExternalTextureLayer(this));
 
-        m_layer->setOpaque(!m_attributes.alpha);
-        m_layer->setBlendBackgroundColor(m_attributes.alpha);
-        m_layer->setPremultipliedAlpha(m_attributes.premultipliedAlpha);
+        m_layer->setOpaque(!m_actualAttributes.alpha);
+        m_layer->setBlendBackgroundColor(m_actualAttributes.alpha);
+        m_layer->setPremultipliedAlpha(m_actualAttributes.premultipliedAlpha);
         GraphicsLayer::registerContentsLayer(m_layer->layer());
     }
 
@@ -549,7 +570,7 @@ void DrawingBuffer::paintCompositedResultsToCanvas(ImageBuffer* imageBuffer)
     m_context->bindFramebuffer(GL_FRAMEBUFFER, framebuffer);
     m_context->framebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, sourceTexture, 0);
 
-    paintFramebufferToCanvas(framebuffer, size().width(), size().height(), !m_attributes.premultipliedAlpha, imageBuffer);
+    paintFramebufferToCanvas(framebuffer, size().width(), size().height(), !m_actualAttributes.premultipliedAlpha, imageBuffer);
     m_context->deleteFramebuffer(framebuffer);
     m_context->deleteTexture(sourceTexture);
 
@@ -686,7 +707,10 @@ bool DrawingBuffer::resizeMultisampleFramebuffer(const IntSize& size)
 
 void DrawingBuffer::resizeDepthStencil(const IntSize& size)
 {
-    if (m_attributes.depth && m_attributes.stencil && m_packedDepthStencilExtensionSupported) {
+    if (!m_requestedAttributes.depth && !m_requestedAttributes.stencil)
+        return;
+
+    if (m_packedDepthStencilExtensionSupported) {
         if (!m_depthStencilBuffer)
             m_depthStencilBuffer = m_context->createRenderbuffer();
         m_context->bindRenderbuffer(GL_RENDERBUFFER, m_depthStencilBuffer);
@@ -699,7 +723,7 @@ void DrawingBuffer::resizeDepthStencil(const IntSize& size)
         m_context->framebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, m_depthStencilBuffer);
         m_context->framebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, m_depthStencilBuffer);
     } else {
-        if (m_attributes.depth) {
+        if (m_requestedAttributes.depth) {
             if (!m_depthBuffer)
                 m_depthBuffer = m_context->createRenderbuffer();
             m_context->bindRenderbuffer(GL_RENDERBUFFER, m_depthBuffer);
@@ -711,7 +735,7 @@ void DrawingBuffer::resizeDepthStencil(const IntSize& size)
                 m_context->renderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, size.width(), size.height());
             m_context->framebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, m_depthBuffer);
         }
-        if (m_attributes.stencil) {
+        if (m_requestedAttributes.stencil) {
             if (!m_stencilBuffer)
                 m_stencilBuffer = m_context->createRenderbuffer();
             m_context->bindRenderbuffer(GL_RENDERBUFFER, m_stencilBuffer);
@@ -840,12 +864,12 @@ bool DrawingBuffer::reset(const IntSize& newSize)
     m_context->colorMask(true, true, true, true);
 
     GLbitfield clearMask = GL_COLOR_BUFFER_BIT;
-    if (m_attributes.depth) {
+    if (m_actualAttributes.depth) {
         m_context->clearDepth(1.0f);
         clearMask |= GL_DEPTH_BUFFER_BIT;
         m_context->depthMask(true);
     }
-    if (m_attributes.stencil) {
+    if (m_actualAttributes.stencil) {
         m_context->clearStencil(0);
         clearMask |= GL_STENCIL_BUFFER_BIT;
         m_context->stencilMaskSeparate(GL_FRONT, 0xFFFFFFFF);
@@ -907,12 +931,12 @@ void DrawingBuffer::setPackAlignment(GLint param)
 
 void DrawingBuffer::paintRenderingResultsToCanvas(ImageBuffer* imageBuffer)
 {
-    paintFramebufferToCanvas(framebuffer(), size().width(), size().height(), !m_attributes.premultipliedAlpha, imageBuffer);
+    paintFramebufferToCanvas(framebuffer(), size().width(), size().height(), !m_actualAttributes.premultipliedAlpha, imageBuffer);
 }
 
 PassRefPtr<Uint8ClampedArray> DrawingBuffer::paintRenderingResultsToImageData(int& width, int& height)
 {
-    if (m_attributes.premultipliedAlpha)
+    if (m_actualAttributes.premultipliedAlpha)
         return nullptr;
 
     width = size().width();

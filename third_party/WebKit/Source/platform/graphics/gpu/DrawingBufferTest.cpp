@@ -190,7 +190,7 @@ public:
         PreserveDrawingBuffer preserve,
         PassRefPtr<ContextEvictionManager> contextEvictionManager)
         : DrawingBuffer(context, extensionsUtil, false /* multisampleExtensionSupported */,
-            false /* packedDepthStencilExtensionSupported */, preserve, contextEvictionManager)
+            false /* packedDepthStencilExtensionSupported */, preserve, blink::WebGraphicsContext3D::Attributes(), contextEvictionManager)
         , m_live(0)
     { }
 
@@ -495,6 +495,129 @@ TEST_F(DrawingBufferImageChromiumTest, verifyResizingReallocatesImages)
     EXPECT_CALL(*webContext(), releaseTexImage2DMock(m_imageId4)).Times(1);
     m_drawingBuffer->beginDestruction();
     testing::Mock::VerifyAndClearExpectations(webContext());
+}
+
+class DepthStencilTrackingContext : public MockWebGraphicsContext3D {
+public:
+    DepthStencilTrackingContext()
+        : m_nextRenderBufferId(1)
+        , m_stencilAttachment(0)
+        , m_depthAttachment(0) { }
+    virtual ~DepthStencilTrackingContext() { }
+
+    int numAllocatedRenderBuffer() const { return m_nextRenderBufferId - 1; }
+    WebGLId stencilAttachment() const { return m_stencilAttachment; }
+    WebGLId depthAttachment() const { return m_depthAttachment; }
+
+    virtual WebString getString(WGC3Denum type) OVERRIDE
+    {
+        if (type == GL_EXTENSIONS) {
+            return WebString::fromUTF8("GL_OES_packed_depth_stencil");
+        }
+        return WebString();
+    }
+
+    virtual WebGLId createRenderbuffer() OVERRIDE
+    {
+        return ++m_nextRenderBufferId;
+    }
+
+    virtual void framebufferRenderbuffer(WGC3Denum target, WGC3Denum attachment, WGC3Denum renderbuffertarget, WebGLId renderbuffer) OVERRIDE
+    {
+        if (attachment == GL_STENCIL_ATTACHMENT) {
+            m_stencilAttachment = renderbuffer;
+        } else {
+            m_depthAttachment = renderbuffer;
+        }
+    }
+
+    virtual void getIntegerv(WGC3Denum ptype, WGC3Dint* value) OVERRIDE
+    {
+        switch (ptype) {
+        case GL_DEPTH_BITS:
+            *value = m_depthAttachment ? 24 : 0;
+            return;
+        case GL_STENCIL_BITS:
+            *value = m_stencilAttachment ? 8 : 0;
+            return;
+        }
+        MockWebGraphicsContext3D::getIntegerv(ptype, value);
+    }
+
+private:
+    WebGLId m_nextRenderBufferId;
+    WebGLId m_stencilAttachment;
+    WebGLId m_depthAttachment;
+};
+
+struct DepthStencilTestCase {
+    DepthStencilTestCase(bool requestStencil, bool requestDepth, int expectedRenderBuffers, bool expectDepthStencil, const char* const testCaseName)
+        : requestStencil(requestStencil)
+        , requestDepth(requestDepth)
+        , expectDepthStencil(expectDepthStencil)
+        , expectedRenderBuffers(expectedRenderBuffers)
+        , testCaseName(testCaseName) { }
+
+    bool requestStencil;
+    bool requestDepth;
+    bool expectDepthStencil;
+    int expectedRenderBuffers;
+    const char* const testCaseName;
+};
+
+// This tests that when the packed depth+stencil extension is supported DrawingBuffer always allocates
+// a single packed renderbuffer if either is requested and properly computes the actual context attributes
+// as defined by WebGL. We always allocate a packed buffer in this case since many desktop OpenGL drivers
+// that support this extension do not consider a framebuffer with only a depth or a stencil buffer attached
+// to be complete.
+TEST(DrawingBufferDepthStencilTest, packedDepthStencilSupported)
+{
+    DepthStencilTestCase cases[] = {
+        DepthStencilTestCase(false, false, false, 0, "neither"),
+        DepthStencilTestCase(true, false, true, 1, "stencil only"),
+        DepthStencilTestCase(false, true, true, 1, "depth only"),
+        DepthStencilTestCase(true, true, true, 1, "both"),
+    };
+
+    for (size_t i = 0; i < arraysize(cases); i++) {
+        SCOPED_TRACE(cases[i].testCaseName);
+        OwnPtr<DepthStencilTrackingContext> context = adoptPtr(new DepthStencilTrackingContext);
+        DepthStencilTrackingContext* trackingContext = context.get();
+        DrawingBuffer::PreserveDrawingBuffer preserve = DrawingBuffer::Preserve;
+        RefPtr<ContextEvictionManager> contextEvictionManager = adoptRef(new FakeContextEvictionManager);
+
+        blink::WebGraphicsContext3D::Attributes requestedAttributes;
+        requestedAttributes.stencil = cases[i].requestStencil;
+        requestedAttributes.depth = cases[i].requestDepth;
+        RefPtr<DrawingBuffer> drawingBuffer = DrawingBuffer::create(context.release(), IntSize(10, 10), preserve, requestedAttributes, contextEvictionManager);
+
+        EXPECT_EQ(cases[i].requestDepth, drawingBuffer->getActualAttributes().depth);
+        EXPECT_EQ(cases[i].requestStencil, drawingBuffer->getActualAttributes().stencil);
+        EXPECT_EQ(cases[i].expectedRenderBuffers, trackingContext->numAllocatedRenderBuffer());
+        if (cases[i].expectDepthStencil) {
+            EXPECT_EQ(trackingContext->stencilAttachment(), trackingContext->depthAttachment());
+        } else if (cases[i].requestStencil || cases[i].requestDepth) {
+            EXPECT_NE(trackingContext->stencilAttachment(), trackingContext->depthAttachment());
+        } else {
+            EXPECT_EQ(0u, trackingContext->stencilAttachment());
+            EXPECT_EQ(0u, trackingContext->depthAttachment());
+        }
+
+        drawingBuffer->reset(IntSize(10, 20));
+        EXPECT_EQ(cases[i].requestDepth, drawingBuffer->getActualAttributes().depth);
+        EXPECT_EQ(cases[i].requestStencil, drawingBuffer->getActualAttributes().stencil);
+        EXPECT_EQ(cases[i].expectedRenderBuffers, trackingContext->numAllocatedRenderBuffer());
+        if (cases[i].expectDepthStencil) {
+            EXPECT_EQ(trackingContext->stencilAttachment(), trackingContext->depthAttachment());
+        } else if (cases[i].requestStencil || cases[i].requestDepth) {
+            EXPECT_NE(trackingContext->stencilAttachment(), trackingContext->depthAttachment());
+        } else {
+            EXPECT_EQ(0u, trackingContext->stencilAttachment());
+            EXPECT_EQ(0u, trackingContext->depthAttachment());
+        }
+
+        drawingBuffer->beginDestruction();
+    }
 }
 
 } // namespace

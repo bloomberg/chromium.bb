@@ -262,7 +262,6 @@ public:
     virtual WGC3Dint getAttribLocation(WebGLId program, const WGC3Dchar* name) = 0;
     virtual void getBooleanv(WGC3Denum pname, WGC3Dboolean* value) = 0;
     virtual void getBufferParameteriv(WGC3Denum target, WGC3Denum pname, WGC3Dint* value) = 0;
-    virtual Attributes getContextAttributes() = 0;
     virtual WGC3Denum getError() = 0;
     virtual void getFloatv(WGC3Denum pname, WGC3Dfloat* value) = 0;
     virtual void getFramebufferAttachmentParameteriv(WGC3Denum target, WGC3Denum attachment, WGC3Denum pname, WGC3Dint* value) = 0;

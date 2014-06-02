@@ -363,6 +363,7 @@ protected:
     friend class ScopedTexture2DRestorer;
 
     WebGLRenderingContextBase(HTMLCanvasElement*, PassOwnPtr<blink::WebGraphicsContext3D>, WebGLContextAttributes*);
+    PassRefPtr<DrawingBuffer> createDrawingBuffer(PassOwnPtr<blink::WebGraphicsContext3D>);
     void initializeNewContext();
     void setupFlags();
 
