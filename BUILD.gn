@@ -85,7 +85,7 @@ group("root") {
     "//ui/strings",
     "//ui/surface",
     "//url",
-    "//v8:mksnapshot",
+    "//v8:v8",
     "//webkit/browser:storage",
     "//webkit/child",
   ]
