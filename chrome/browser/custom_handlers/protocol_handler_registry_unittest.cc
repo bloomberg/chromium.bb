@@ -972,27 +972,25 @@ TEST_F(ProtocolHandlerRegistryTest, MAYBE_TestInstallDefaultHandler) {
 #define URL_p3u1 "http://p3u1.com/%s"
 
 TEST_F(ProtocolHandlerRegistryTest, TestPrefPolicyOverlapRegister) {
-  base::ListValue* handlers_registered_by_pref = new base::ListValue();
-  base::ListValue* handlers_registered_by_policy = new base::ListValue();
+  base::ListValue handlers_registered_by_pref;
+  base::ListValue handlers_registered_by_policy;
 
-  handlers_registered_by_pref->Append(
+  handlers_registered_by_pref.Append(
       GetProtocolHandlerValueWithDefault("p1", URL_p1u2, true));
-  handlers_registered_by_pref->Append(
+  handlers_registered_by_pref.Append(
       GetProtocolHandlerValueWithDefault("p1", URL_p1u1, true));
-  handlers_registered_by_pref->Append(
+  handlers_registered_by_pref.Append(
       GetProtocolHandlerValueWithDefault("p1", URL_p1u2, false));
 
-  handlers_registered_by_policy->Append(
+  handlers_registered_by_policy.Append(
       GetProtocolHandlerValueWithDefault("p1", URL_p1u1, false));
-  handlers_registered_by_policy->Append(
+  handlers_registered_by_policy.Append(
       GetProtocolHandlerValueWithDefault("p3", URL_p3u1, true));
 
-  profile()->GetPrefs()->Set(
-      prefs::kRegisteredProtocolHandlers,
-      *static_cast<base::Value*>(handlers_registered_by_pref));
-  profile()->GetPrefs()->Set(
-      prefs::kPolicyRegisteredProtocolHandlers,
-      *static_cast<base::Value*>(handlers_registered_by_policy));
+  profile()->GetPrefs()->Set(prefs::kRegisteredProtocolHandlers,
+                             handlers_registered_by_pref);
+  profile()->GetPrefs()->Set(prefs::kPolicyRegisteredProtocolHandlers,
+                             handlers_registered_by_policy);
   registry()->InitProtocolSettings();
 
   // Duplicate p1u2 eliminated in memory but not yet saved in pref
@@ -1054,24 +1052,22 @@ TEST_F(ProtocolHandlerRegistryTest, TestPrefPolicyOverlapRegister) {
 }
 
 TEST_F(ProtocolHandlerRegistryTest, TestPrefPolicyOverlapIgnore) {
-  base::ListValue* handlers_ignored_by_pref = new base::ListValue();
-  base::ListValue* handlers_ignored_by_policy = new base::ListValue();
+  base::ListValue handlers_ignored_by_pref;
+  base::ListValue handlers_ignored_by_policy;
 
-  handlers_ignored_by_pref->Append(GetProtocolHandlerValue("p1", URL_p1u1));
-  handlers_ignored_by_pref->Append(GetProtocolHandlerValue("p1", URL_p1u2));
-  handlers_ignored_by_pref->Append(GetProtocolHandlerValue("p1", URL_p1u2));
-  handlers_ignored_by_pref->Append(GetProtocolHandlerValue("p3", URL_p3u1));
+  handlers_ignored_by_pref.Append(GetProtocolHandlerValue("p1", URL_p1u1));
+  handlers_ignored_by_pref.Append(GetProtocolHandlerValue("p1", URL_p1u2));
+  handlers_ignored_by_pref.Append(GetProtocolHandlerValue("p1", URL_p1u2));
+  handlers_ignored_by_pref.Append(GetProtocolHandlerValue("p3", URL_p3u1));
 
-  handlers_ignored_by_policy->Append(GetProtocolHandlerValue("p1", URL_p1u2));
-  handlers_ignored_by_policy->Append(GetProtocolHandlerValue("p1", URL_p1u3));
-  handlers_ignored_by_policy->Append(GetProtocolHandlerValue("p2", URL_p2u1));
+  handlers_ignored_by_policy.Append(GetProtocolHandlerValue("p1", URL_p1u2));
+  handlers_ignored_by_policy.Append(GetProtocolHandlerValue("p1", URL_p1u3));
+  handlers_ignored_by_policy.Append(GetProtocolHandlerValue("p2", URL_p2u1));
 
-  profile()->GetPrefs()->Set(
-      prefs::kIgnoredProtocolHandlers,
-      *static_cast<base::Value*>(handlers_ignored_by_pref));
-  profile()->GetPrefs()->Set(
-      prefs::kPolicyIgnoredProtocolHandlers,
-      *static_cast<base::Value*>(handlers_ignored_by_policy));
+  profile()->GetPrefs()->Set(prefs::kIgnoredProtocolHandlers,
+                             handlers_ignored_by_pref);
+  profile()->GetPrefs()->Set(prefs::kPolicyIgnoredProtocolHandlers,
+                             handlers_ignored_by_policy);
   registry()->InitProtocolSettings();
 
   // Duplicate p1u2 eliminated in memory but not yet saved in pref
