@@ -43,10 +43,14 @@ config("compiler") {
     cflags += [
       "/Gy",  # Enable function-level linking.
       "/GS",  # Enable buffer security checking.
-      "/EHsc",  # Assume C functions can't throw exceptions and don't catch
-                # structured exceptions (only C++ ones).
       "/FS",  # Preserve previous PDB behavior.
     ]
+    if (is_component_build) {
+      cflags += [
+        "/EHsc",  # Assume C functions can't throw exceptions and don't catch
+                  # structured exceptions (only C++ ones).
+      ]
+    }
   } else {
     # Common GCC compiler flags setup.
     # --------------------------------

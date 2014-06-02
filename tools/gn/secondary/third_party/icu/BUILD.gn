@@ -16,6 +16,11 @@ config("icu_config") {
   defines = [
     "U_USING_ICU_NAMESPACE=0",
   ]
+
+  if (component_mode != "shared_library") {
+    defines += [ "U_STATIC_IMPLEMENTATION" ]
+  }
+
   include_dirs = [
     "source/common",
     "source/i18n",
@@ -24,10 +29,6 @@ config("icu_config") {
 
 # Config used only by ICU code.
 config("icu_code") {
-  if (component_mode != "shared_library") {
-    defines = [ "U_STATIC_IMPLEMENTATION" ]
-  }
-
   if (is_win) {
     # Disable some compiler warnings.
     cflags = [

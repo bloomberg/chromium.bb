@@ -104,6 +104,13 @@ group("root") {
     ]
   }
 
+  if (is_win || is_mac || is_chromeos) {
+    # RLZ works on these platforms.
+    deps += [
+      "//rlz:rlz_lib",
+    ]
+  }
+
   if (is_android) {
     deps -= [
       "//cc",
