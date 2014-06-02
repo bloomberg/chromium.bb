@@ -186,9 +186,13 @@ void IndentOutdentCommand::outdentParagraph()
             splitElement(toElement(enclosingNode), (highestInlineNode) ? highestInlineNode : visibleStartOfParagraph.deepEquivalent().deprecatedNode());
         }
     }
+    VisiblePosition startOfParagraphToMove(startOfParagraph(visibleStartOfParagraph));
+    VisiblePosition endOfParagraphToMove(endOfParagraph(visibleEndOfParagraph));
+    if (startOfParagraphToMove.isNull() || endOfParagraphToMove.isNull())
+        return;
     RefPtrWillBeRawPtr<Node> placeholder = createBreakElement(document());
     insertNodeBefore(placeholder, splitBlockquoteNode);
-    moveParagraph(startOfParagraph(visibleStartOfParagraph), endOfParagraph(visibleEndOfParagraph), VisiblePosition(positionBeforeNode(placeholder.get())), true);
+    moveParagraph(startOfParagraphToMove, endOfParagraphToMove, VisiblePosition(positionBeforeNode(placeholder.get())), true);
 }
 
 // FIXME: We should merge this function with ApplyBlockElementCommand::formatSelection
