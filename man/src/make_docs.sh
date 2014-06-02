@@ -1,4 +1,7 @@
-#!/bin/bash -e
+#!/usr/bin/env bash
+
+set -e
+
 shopt -s nullglob
 
 cd $(dirname "$0")

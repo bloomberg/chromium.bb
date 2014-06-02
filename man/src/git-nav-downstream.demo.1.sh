@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 . demo_repo.sh
 
 silent git checkout origin/master

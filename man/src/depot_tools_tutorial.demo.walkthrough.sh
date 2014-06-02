@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 BLANK_DEMO=1
 . demo_repo.sh
 

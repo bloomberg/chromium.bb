@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 . demo_repo.sh
 
 add deleted_file
