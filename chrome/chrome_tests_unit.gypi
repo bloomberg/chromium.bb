@@ -48,7 +48,6 @@
       'sources': [
         'app/chrome_main_delegate.cc',
         'app/chrome_main_delegate.h',
-        'browser/android/bookmarks/partner_bookmarks_shim_unittest.cc',
         'browser/browsing_data/mock_browsing_data_appcache_helper.cc',
         'browser/browsing_data/mock_browsing_data_appcache_helper.h',
         'browser/browsing_data/mock_browsing_data_cookie_helper.cc',
@@ -584,6 +583,7 @@
         'app/chrome_dll.rc',
         # All unittests in browser, common, renderer and service.
         'browser/about_flags_unittest.cc',
+        'browser/android/bookmarks/partner_bookmarks_shim_unittest.cc',
         # mock_google_location_settings_helper could logically go in
         # test_support_unit. However tests suites in the internal repository
         # depend on an alternate implementation so instead each test suite
