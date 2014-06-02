@@ -10,6 +10,7 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/history/history_types.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -49,6 +50,12 @@ class MostVisitedSites : public content::NotificationObserver {
   // enabled, or if it returns no data.
   void InitiateTopSitesQuery();
 
+  // Callback for when data is available from TopSites.
+  void OnMostVisitedURLsAvailable(
+      base::android::ScopedJavaGlobalRef<jobject>* j_observer,
+      int num_sites,
+      const history::MostVisitedURLList& visited_list);
+
   // Callback for when data is available from the SuggestionsService.
   void OnSuggestionsProfileAvailable(
       base::android::ScopedJavaGlobalRef<jobject>* j_observer,
@@ -67,6 +74,13 @@ class MostVisitedSites : public content::NotificationObserver {
   base::WeakPtrFactory<MostVisitedSites> weak_ptr_factory_;
 
   content::NotificationRegistrar registrar_;
+
+  // The source of the Most Visited sites.
+  enum MostVisitedSource {
+    TOP_SITES,
+    SUGGESTIONS_SERVICE
+  };
+  MostVisitedSource mv_source_;
 
   DISALLOW_COPY_AND_ASSIGN(MostVisitedSites);
 };

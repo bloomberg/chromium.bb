@@ -29,9 +29,12 @@
 namespace {
 
 const char kFakeSuggestionsURL[] = "https://mysuggestions.com/proto";
+const char kFakeSuggestionsSuffix[] = "?foo=bar";
+const char kFakeBlacklistSuffix[] = "/blacklist?foo=bar&baz=";
 
 const char kTestTitle[] = "a title";
 const char kTestUrl[] = "http://go.com";
+const char kBlacklistUrl[] = "http://blacklist.com";
 
 scoped_ptr<net::FakeURLFetcher> CreateURLFetcher(
     const GURL& url, net::URLFetcherDelegate* delegate,
@@ -52,6 +55,18 @@ scoped_ptr<net::FakeURLFetcher> CreateURLFetcher(
 }  // namespace
 
 namespace suggestions {
+
+namespace {
+
+scoped_ptr<SuggestionsProfile> CreateSuggestionsProfile() {
+  scoped_ptr<SuggestionsProfile> profile(new SuggestionsProfile());
+  ChromeSuggestion* suggestion = profile->add_suggestions();
+  suggestion->set_title(kTestTitle);
+  suggestion->set_url(kTestUrl);
+  return profile.Pass();
+}
+
+}  // namespace
 
 class SuggestionsServiceTest : public testing::Test {
  public:
@@ -80,7 +95,9 @@ class SuggestionsServiceTest : public testing::Test {
   virtual ~SuggestionsServiceTest() {}
 
   // Enables the "ChromeSuggestions.Group1" field trial.
-  void EnableFieldTrial(const std::string& url) {
+  void EnableFieldTrial(const std::string& url,
+                        const std::string& suggestions_suffix,
+                        const std::string& blacklist_suffix) {
     // Clear the existing |field_trial_list_| to avoid firing a DCHECK.
     field_trial_list_.reset(NULL);
     field_trial_list_.reset(
@@ -91,6 +108,8 @@ class SuggestionsServiceTest : public testing::Test {
     params[kSuggestionsFieldTrialStateParam] =
         kSuggestionsFieldTrialStateEnabled;
     params[kSuggestionsFieldTrialURLParam] = url;
+    params[kSuggestionsFieldTrialSuggestionsSuffixParam] = suggestions_suffix;
+    params[kSuggestionsFieldTrialBlacklistSuffixParam] = blacklist_suffix;
     chrome_variations::AssociateVariationParams(kSuggestionsFieldTrialName,
                                                 "Group1", params);
     field_trial_ = base::FieldTrialList::CreateFieldTrial(
@@ -122,22 +141,23 @@ TEST_F(SuggestionsServiceTest, ServiceBeingCreated) {
   EXPECT_TRUE(CreateSuggestionsService() == NULL);
 
   // Field trial enabled.
-  EnableFieldTrial("");
+  EnableFieldTrial("", "", "");
   EXPECT_TRUE(CreateSuggestionsService() != NULL);
 }
 
 TEST_F(SuggestionsServiceTest, FetchSuggestionsData) {
   // Field trial enabled with a specific suggestions URL.
-  EnableFieldTrial(kFakeSuggestionsURL);
+  EnableFieldTrial(kFakeSuggestionsURL, kFakeSuggestionsSuffix,
+                   kFakeBlacklistSuffix);
   SuggestionsService* suggestions_service = CreateSuggestionsService();
   EXPECT_TRUE(suggestions_service != NULL);
 
-  SuggestionsProfile suggestions_profile;
-  ChromeSuggestion* suggestion = suggestions_profile.add_suggestions();
-  suggestion->set_title(kTestTitle);
-  suggestion->set_url(kTestUrl);
-  factory_.SetFakeResponse(GURL(kFakeSuggestionsURL),
-                           suggestions_profile.SerializeAsString(),
+  std::string expected_url = std::string(kFakeSuggestionsURL) +
+      kFakeSuggestionsSuffix;
+  scoped_ptr<SuggestionsProfile> suggestions_profile(
+      CreateSuggestionsProfile());
+  factory_.SetFakeResponse(GURL(expected_url),
+                           suggestions_profile->SerializeAsString(),
                            net::HTTP_OK,
                            net::URLRequestStatus::SUCCESS);
 
@@ -160,12 +180,15 @@ TEST_F(SuggestionsServiceTest, FetchSuggestionsData) {
 
 TEST_F(SuggestionsServiceTest, FetchSuggestionsDataRequestError) {
   // Field trial enabled with a specific suggestions URL.
-  EnableFieldTrial(kFakeSuggestionsURL);
+  EnableFieldTrial(kFakeSuggestionsURL, kFakeSuggestionsSuffix,
+                   kFakeBlacklistSuffix);
   SuggestionsService* suggestions_service = CreateSuggestionsService();
   EXPECT_TRUE(suggestions_service != NULL);
 
   // Fake a request error.
-  factory_.SetFakeResponse(GURL(kFakeSuggestionsURL),
+  std::string expected_url = std::string(kFakeSuggestionsURL) +
+      kFakeSuggestionsSuffix;
+  factory_.SetFakeResponse(GURL(expected_url),
                            "irrelevant",
                            net::HTTP_OK,
                            net::URLRequestStatus::FAILED);
@@ -184,12 +207,15 @@ TEST_F(SuggestionsServiceTest, FetchSuggestionsDataRequestError) {
 
 TEST_F(SuggestionsServiceTest, FetchSuggestionsDataResponseNotOK) {
   // Field trial enabled with a specific suggestions URL.
-  EnableFieldTrial(kFakeSuggestionsURL);
+  EnableFieldTrial(kFakeSuggestionsURL, kFakeSuggestionsSuffix,
+                   kFakeBlacklistSuffix);
   SuggestionsService* suggestions_service = CreateSuggestionsService();
   EXPECT_TRUE(suggestions_service != NULL);
 
   // Response code != 200.
-  factory_.SetFakeResponse(GURL(kFakeSuggestionsURL),
+  std::string expected_url = std::string(kFakeSuggestionsURL) +
+      kFakeSuggestionsSuffix;
+  factory_.SetFakeResponse(GURL(expected_url),
                            "irrelevant",
                            net::HTTP_BAD_REQUEST,
                            net::URLRequestStatus::SUCCESS);
@@ -204,6 +230,35 @@ TEST_F(SuggestionsServiceTest, FetchSuggestionsDataResponseNotOK) {
 
   // Ensure that ExpectEmptySuggestionsProfile ran once.
   EXPECT_EQ(1, suggestions_empty_data_count_);
+}
+
+TEST_F(SuggestionsServiceTest, BlacklistURL) {
+  EnableFieldTrial(kFakeSuggestionsURL, kFakeSuggestionsSuffix,
+                   kFakeBlacklistSuffix);
+  SuggestionsService* suggestions_service = CreateSuggestionsService();
+  EXPECT_TRUE(suggestions_service != NULL);
+
+  std::string expected_url(kFakeSuggestionsURL);
+  expected_url.append(kFakeBlacklistSuffix)
+      .append(net::EscapeQueryParamValue(GURL(kBlacklistUrl).spec(), true));
+  scoped_ptr<SuggestionsProfile> suggestions_profile(
+      CreateSuggestionsProfile());
+  factory_.SetFakeResponse(GURL(expected_url),
+                           suggestions_profile->SerializeAsString(),
+                           net::HTTP_OK,
+                           net::URLRequestStatus::SUCCESS);
+
+  // Send the request. The data will be returned to the callback.
+  suggestions_service->BlacklistURL(
+      GURL(kBlacklistUrl),
+      base::Bind(&SuggestionsServiceTest::CheckSuggestionsData,
+                 base::Unretained(this)));
+
+  // (Testing only) wait until blacklist request is complete.
+  base::MessageLoop::current()->RunUntilIdle();
+
+  // Ensure that CheckSuggestionsData() ran once.
+  EXPECT_EQ(1, suggestions_data_check_count_);
 }
 
 }  // namespace suggestions

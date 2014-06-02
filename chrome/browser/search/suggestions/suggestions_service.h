@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_SEARCH_SUGGESTIONS_SUGGESTIONS_SERVICE_H_
 #define CHROME_BROWSER_SEARCH_SUGGESTIONS_SUGGESTIONS_SERVICE_H_
 
+#include <string>
 #include <vector>
 
 #include "base/basictypes.h"
@@ -25,6 +26,8 @@ namespace suggestions {
 
 extern const char kSuggestionsFieldTrialName[];
 extern const char kSuggestionsFieldTrialURLParam[];
+extern const char kSuggestionsFieldTrialSuggestionsSuffixParam[];
+extern const char kSuggestionsFieldTrialBlacklistSuffixParam[];
 extern const char kSuggestionsFieldTrialStateParam[];
 extern const char kSuggestionsFieldTrialStateEnabled[];
 
@@ -51,6 +54,11 @@ class SuggestionsService : public KeyedService, public net::URLFetcherDelegate {
       const GURL& url,
       base::Callback<void(const GURL&, const SkBitmap*)> callback);
 
+  // Issue a blacklist request. If there is already a blacklist request
+  // in flight, the new blacklist request is ignored.
+  void BlacklistURL(const GURL& candidate_url,
+                         ResponseCallback callback);
+
  private:
   FRIEND_TEST_ALL_PREFIXES(SuggestionsServiceTest, FetchSuggestionsData);
 
@@ -62,6 +70,12 @@ class SuggestionsService : public KeyedService, public net::URLFetcherDelegate {
   // KeyedService implementation.
   virtual void Shutdown() OVERRIDE;
 
+  // Determines whether |request| is a blacklisting request.
+  bool IsBlacklistRequest(net::URLFetcher* request) const;
+
+  // Creates a request to the suggestions service, properly setting headers.
+  net::URLFetcher* CreateSuggestionsRequest(const GURL& url);
+
   // Contains the current suggestions fetch request. Will only have a value
   // while a request is pending, and will be reset by |OnURLFetchComplete|.
   scoped_ptr<net::URLFetcher> pending_request_;
@@ -72,6 +86,9 @@ class SuggestionsService : public KeyedService, public net::URLFetcherDelegate {
 
   // The URL to fetch suggestions data from.
   GURL suggestions_url_;
+
+  // Prefix for building the blacklisting URL.
+  std::string blacklist_url_prefix_;
 
   // Queue of callbacks. These are flushed when fetch request completes.
   std::vector<ResponseCallback> waiting_requestors_;
