@@ -22,7 +22,7 @@
 // See |ProfileOAuth2TokenService| for usage details.
 //
 // Note: requests should be started from the UI thread. To start a
-// request from other thread, please use ProfileOAuth2TokenServiceRequest.
+// request from other thread, please use OAuth2TokenServiceRequest.
 class AndroidProfileOAuth2TokenService : public ProfileOAuth2TokenService {
  public:
   // Registers the AndroidProfileOAuth2TokenService's native methods through

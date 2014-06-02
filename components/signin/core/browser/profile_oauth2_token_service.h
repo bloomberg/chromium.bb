@@ -33,7 +33,7 @@ class SigninClient;
 // won't be cached.
 //
 // Note: requests should be started from the UI thread. To start a
-// request from other thread, please use ProfileOAuth2TokenServiceRequest.
+// request from other thread, please use OAuth2TokenServiceRequest.
 class ProfileOAuth2TokenService : public OAuth2TokenService,
                                   public KeyedService {
  public:
