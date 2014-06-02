@@ -86,7 +86,13 @@ private:
     FakeIDBDatabaseCallbacks() { }
 };
 
-TEST_F(IDBTransactionTest, EnsureLifetime)
+// crbug.com/379616
+#if ENABLE(OILPAN)
+#define MAYBE_EnsureLifetime DISABLED_EnsureLifetime
+#else
+#define MAYBE_EnsureLifetime EnsureLifetime
+#endif
+TEST_F(IDBTransactionTest, MAYBE_EnsureLifetime)
 {
     OwnPtr<FakeWebIDBDatabase> backend = FakeWebIDBDatabase::create();
     Persistent<IDBDatabase> db = IDBDatabase::create(executionContext(), backend.release(), FakeIDBDatabaseCallbacks::create());
