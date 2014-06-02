@@ -135,7 +135,7 @@ namespace WebCore {
         // Implementation of EventListener function.
         virtual bool virtualisAttribute() const OVERRIDE { return m_isAttribute; }
 
-        virtual v8::Local<v8::Value> callListenerFunction(ExecutionContext*, v8::Handle<v8::Value> jsevent, Event*) = 0;
+        virtual v8::Local<v8::Value> callListenerFunction(v8::Handle<v8::Value> jsevent, Event*) = 0;
 
         virtual bool shouldPreventDefault(v8::Local<v8::Value> returnValue);
 

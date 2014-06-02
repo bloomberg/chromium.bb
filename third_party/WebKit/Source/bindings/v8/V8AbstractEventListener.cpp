@@ -123,7 +123,7 @@ void V8AbstractEventListener::invokeEventHandler(Event* event, v8::Local<v8::Val
         V8HiddenValue::setHiddenValue(isolate(), scriptState()->context()->Global(), V8HiddenValue::event(isolate()), jsEvent);
         tryCatch.Reset();
 
-        returnValue = callListenerFunction(scriptState()->executionContext(), jsEvent, event);
+        returnValue = callListenerFunction(jsEvent, event);
         if (tryCatch.HasCaught())
             event->target()->uncaughtExceptionInEventHandler();
 

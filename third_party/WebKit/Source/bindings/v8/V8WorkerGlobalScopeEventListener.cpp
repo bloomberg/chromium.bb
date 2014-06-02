@@ -70,7 +70,7 @@ void V8WorkerGlobalScopeEventListener::handleEvent(ExecutionContext*, Event* eve
     invokeEventHandler(event, v8::Local<v8::Value>::New(isolate(), jsEvent));
 }
 
-v8::Local<v8::Value> V8WorkerGlobalScopeEventListener::callListenerFunction(ExecutionContext*, v8::Handle<v8::Value> jsEvent, Event* event)
+v8::Local<v8::Value> V8WorkerGlobalScopeEventListener::callListenerFunction(v8::Handle<v8::Value> jsEvent, Event* event)
 {
     v8::Local<v8::Function> handlerFunction = getListenerFunction(scriptState()->executionContext());
     v8::Local<v8::Object> receiver = getReceiverObject(event);

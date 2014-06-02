@@ -48,10 +48,10 @@ V8ErrorHandler::V8ErrorHandler(v8::Local<v8::Object> listener, bool isInline, Sc
 {
 }
 
-v8::Local<v8::Value> V8ErrorHandler::callListenerFunction(ExecutionContext* context, v8::Handle<v8::Value> jsEvent, Event* event)
+v8::Local<v8::Value> V8ErrorHandler::callListenerFunction(v8::Handle<v8::Value> jsEvent, Event* event)
 {
     if (!event->hasInterface(EventNames::ErrorEvent))
-        return V8EventListener::callListenerFunction(context, jsEvent, event);
+        return V8EventListener::callListenerFunction(jsEvent, event);
 
     ErrorEvent* errorEvent = static_cast<ErrorEvent*>(event);
 
@@ -62,8 +62,7 @@ v8::Local<v8::Value> V8ErrorHandler::callListenerFunction(ExecutionContext* cont
     v8::Local<v8::Value> returnValue;
     if (!listener.IsEmpty() && listener->IsFunction()) {
         v8::Local<v8::Function> callFunction = v8::Local<v8::Function>::Cast(listener);
-        // FIXME: Is it correct to use the current context?
-        v8::Local<v8::Object> thisValue = isolate()->GetCurrentContext()->Global();
+        v8::Local<v8::Object> thisValue = scriptState()->context()->Global();
 
         v8::Local<v8::Value> error = V8HiddenValue::getHiddenValue(isolate(), jsEvent->ToObject(), V8HiddenValue::error(isolate()));
         if (error.IsEmpty())

@@ -74,9 +74,9 @@ v8::Handle<v8::Object> toObjectWrapper(T* domObject, ScriptState* scriptState)
     return v8::Local<v8::Object>::New(scriptState->isolate(), value.As<v8::Object>());
 }
 
-v8::Local<v8::Value> V8LazyEventListener::callListenerFunction(ExecutionContext* context, v8::Handle<v8::Value> jsEvent, Event* event)
+v8::Local<v8::Value> V8LazyEventListener::callListenerFunction(v8::Handle<v8::Value> jsEvent, Event* event)
 {
-    v8::Local<v8::Object> listenerObject = getListenerObject(context);
+    v8::Local<v8::Object> listenerObject = getListenerObject(scriptState()->executionContext());
     if (listenerObject.IsEmpty())
         return v8::Local<v8::Value>();
 

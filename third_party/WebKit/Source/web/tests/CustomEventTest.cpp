@@ -81,7 +81,7 @@ private:
     {
     }
 
-    virtual v8::Local<v8::Value> callListenerFunction(ExecutionContext*, v8::Handle<v8::Value> jsevent, Event*)
+    virtual v8::Local<v8::Value> callListenerFunction(v8::Handle<v8::Value> jsevent, Event*)
     {
         ASSERT_NOT_REACHED();
         return v8::Local<v8::Value>();
