@@ -40,6 +40,7 @@ bool InstallCairoSurfacePixels(SkBitmap* dst,
   return dst->installPixels(info,
                             cairo_image_surface_get_data(surface),
                             cairo_image_surface_get_stride(surface),
+                            NULL,
                             &CairoSurfaceReleaseProc,
                             static_cast<void*>(surface));
 }
