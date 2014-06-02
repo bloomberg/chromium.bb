@@ -73,14 +73,14 @@ class EphemeralAppServiceTest : public testing::Test {
     if (launch_times.empty())
       return;
 
-    // Verify that the removed apps have launch times earlier than all retained
-    // apps. We can actually just compare with the first entry in |launch_times|
-    // but will make no implementation assumptions.
+    // Verify that the removed apps have launch times earlier than or equal to
+    // all retained apps. We can actually just compare with the first entry in
+    // |launch_times| but will make no implementation assumptions.
     for (LaunchTimeAppMap::const_iterator removed = removed_apps.begin();
          removed != removed_apps.end(); ++removed) {
       for (LaunchTimeAppMap::iterator retained = launch_times.begin();
          retained != launch_times.end(); ++retained) {
-        EXPECT_TRUE(removed->first < retained->first);
+        EXPECT_LE(removed->first, retained->first);
       }
     }
   }
