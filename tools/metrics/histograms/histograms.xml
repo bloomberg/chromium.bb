@@ -41742,6 +41742,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="55" label="IDC_CONTENT_CONTEXT_SPELLING_TOGGLE"/>
   <int value="56" label="IDC_SPELLCHECK_LANGUAGES_FIRST"/>
   <int value="57" label="IDC_CONTENT_CONTEXT_SEARCHWEBFORIMAGE"/>
+  <int value="58" label="IDC_SPELLCHECK_SUGGESTION"/>
 </enum>
 
 <enum name="ResolutionCategory" type="int">

@@ -205,8 +205,9 @@ const struct UmaEnumCommandIdPair {
   { 55, IDC_CONTENT_CONTEXT_SPELLING_TOGGLE },
   { 56, IDC_SPELLCHECK_LANGUAGES_FIRST },
   { 57, IDC_CONTENT_CONTEXT_SEARCHWEBFORIMAGE },
+  { 58, IDC_SPELLCHECK_SUGGESTION_0 },
   // Add new items here and use |enum_id| from the next line.
-  { 58, 0 },  // Must be the last. Increment |enum_id| when new IDC was added.
+  { 59, 0 },  // Must be the last. Increment |enum_id| when new IDC was added.
 };
 
 // Collapses large ranges of ids before looking for UMA enum.
@@ -229,6 +230,11 @@ int CollapleCommandsForUMA(int id) {
   if (id >= IDC_SPELLCHECK_LANGUAGES_FIRST &&
       id <= IDC_SPELLCHECK_LANGUAGES_LAST) {
     return IDC_SPELLCHECK_LANGUAGES_FIRST;
+  }
+
+  if (id >= IDC_SPELLCHECK_SUGGESTION_0 &&
+      id <= IDC_SPELLCHECK_SUGGESTION_LAST) {
+    return IDC_SPELLCHECK_SUGGESTION_0;
   }
 
   return id;
@@ -1416,6 +1422,8 @@ bool RenderViewContextMenu::IsCommandIdChecked(int id) const {
 
 void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
   command_executed_ = true;
+  RecordUsedItem(id);
+
   // If this command is is added by one of our observers, we dispatch it to the
   // observer.
   ObserverListBase<RenderViewContextMenuObserver>::Iterator it(observers_);
@@ -1424,8 +1432,6 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
     if (observer->IsCommandIdSupported(id))
       return observer->ExecuteCommand(id);
   }
-
-  RecordUsedItem(id);
 
   RenderFrameHost* render_frame_host =
       RenderFrameHost::FromID(render_process_id_, render_frame_id_);
