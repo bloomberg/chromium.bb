@@ -35,12 +35,17 @@ class HTMLToken;
 
 class HTMLViewSourceDocument FINAL : public HTMLDocument {
 public:
+    enum SourceAnnotation {
+        AnnotateSourceAsSafe,
+        AnnotateSourceAsXSS
+    };
+
     static PassRefPtrWillBeRawPtr<HTMLViewSourceDocument> create(const DocumentInit& initializer, const String& mimeType)
     {
         return adoptRefWillBeRefCountedGarbageCollected(new HTMLViewSourceDocument(initializer, mimeType));
     }
 
-    void addSource(const String&, HTMLToken&);
+    void addSource(const String&, HTMLToken&, SourceAnnotation);
 
     virtual void trace(Visitor*) OVERRIDE;
 
@@ -51,16 +56,18 @@ private:
 
     void processDoctypeToken(const String& source, HTMLToken&);
     void processEndOfFileToken(const String& source, HTMLToken&);
-    void processTagToken(const String& source, HTMLToken&);
+    void processTagToken(const String& source, HTMLToken&, SourceAnnotation);
     void processCommentToken(const String& source, HTMLToken&);
-    void processCharacterToken(const String& source, HTMLToken&);
+    void processCharacterToken(const String& source, HTMLToken&, SourceAnnotation);
 
     void createContainingTable();
     PassRefPtrWillBeRawPtr<Element> addSpanWithClassName(const AtomicString&);
     void addLine(const AtomicString& className);
     void finishLine();
-    void addText(const String& text, const AtomicString& className);
+    void addText(const String& text, const AtomicString& className, SourceAnnotation = AnnotateSourceAsSafe);
     int addRange(const String& source, int start, int end, const AtomicString& className, bool isLink = false, bool isAnchor = false, const AtomicString& link = nullAtom);
+    void maybeAddSpanForAnnotation(SourceAnnotation);
+
     PassRefPtrWillBeRawPtr<Element> addLink(const AtomicString& url, bool isAnchor);
     PassRefPtrWillBeRawPtr<Element> addBase(const AtomicString& href);
 
