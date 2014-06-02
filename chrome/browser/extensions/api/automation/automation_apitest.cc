@@ -92,7 +92,8 @@ IN_PROC_BROWSER_TEST_F(AutomationApiTest, SanityCheck) {
       << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(AutomationApiTest, GetTreeByTabId) {
+// Test is failing on ASAN bots, crbug.com/379927
+IN_PROC_BROWSER_TEST_F(AutomationApiTest, DISABLED_GetTreeByTabId) {
   StartEmbeddedTestServer();
   ASSERT_TRUE(RunExtensionSubtest("automation/tests/tabs", "tab_id.html"))
       << message_;
