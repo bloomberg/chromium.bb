@@ -254,6 +254,7 @@
 
             # Dependencies of invalidation
             'components.gyp:invalidation',
+            'components.gyp:invalidation_test_support',
 
             # Dependencies of json_schema
             'components.gyp:json_schema',
@@ -458,6 +459,19 @@
                 'components.gyp:web_modal',
                 'components.gyp:web_modal_test_support',
                 '../third_party/libusb/libusb.gyp:libusb',
+              ],
+            }],
+            ['OS != "android"', {
+              'sources': [
+                'invalidation/fake_invalidator_unittest.cc',
+                'invalidation/gcm_network_channel_unittest.cc',
+                'invalidation/invalidation_notifier_unittest.cc',
+                'invalidation/invalidator_registrar_unittest.cc',
+                'invalidation/non_blocking_invalidator_unittest.cc',
+                'invalidation/p2p_invalidator_unittest.cc',
+                'invalidation/push_client_channel_unittest.cc',
+                'invalidation/sync_invalidation_listener_unittest.cc',
+                'invalidation/sync_system_resources_unittest.cc',
               ],
             }],
             ['chromeos==1', {

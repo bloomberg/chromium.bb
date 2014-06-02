@@ -45,7 +45,6 @@
 #include "sync/js/js_backend.h"
 #include "sync/js/js_event_handler.h"
 #include "sync/js/js_test_util.h"
-#include "sync/notifier/fake_invalidation_handler.h"
 #include "sync/notifier/invalidation_handler.h"
 #include "sync/notifier/invalidator.h"
 #include "sync/protocol/bookmark_specifics.pb.h"

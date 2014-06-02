@@ -73,6 +73,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "components/invalidation/fake_invalidation_handler.h"
 #include "components/invalidation/invalidation_service.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "google/cacheinvalidation/include/types.h"
@@ -80,7 +81,6 @@
 #include "sync/internal_api/public/base/ack_handle.h"
 #include "sync/internal_api/public/base/invalidation.h"
 #include "sync/internal_api/public/base/object_id_invalidation_map_test_util.h"
-#include "sync/notifier/fake_invalidation_handler.h"
 #include "sync/notifier/object_id_invalidation_map.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

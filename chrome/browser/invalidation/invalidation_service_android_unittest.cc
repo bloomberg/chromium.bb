@@ -9,8 +9,8 @@
 #include "chrome/browser/invalidation/invalidation_service_factory.h"
 #include "chrome/browser/invalidation/invalidation_service_test_template.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/invalidation/fake_invalidation_handler.h"
 #include "content/public/browser/notification_service.h"
-#include "sync/notifier/fake_invalidation_handler.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace invalidation {

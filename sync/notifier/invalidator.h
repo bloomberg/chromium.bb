@@ -12,9 +12,9 @@
 #include <string>
 
 #include "sync/base/sync_export.h"
+#include "sync/internal_api/public/base/invalidator_state.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/notifier/invalidation_util.h"
-#include "sync/notifier/invalidator_state.h"
 
 namespace syncer {
 class InvalidationHandler;

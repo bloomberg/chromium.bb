@@ -10,9 +10,9 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "components/gcm_driver/gcm_app_handler.h"
+#include "components/invalidation/gcm_network_channel_delegate.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 #include "google_apis/gcm/gcm_client.h"
-#include "sync/notifier/gcm_network_channel_delegate.h"
 
 class IdentityProvider;
 

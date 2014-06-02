@@ -11,9 +11,9 @@
 #include "base/basictypes.h"
 #include "chrome/browser/signin/fake_profile_oauth2_token_service.h"
 #include "components/invalidation/invalidation_service.h"
+#include "components/invalidation/invalidator_registrar.h"
 #include "google_apis/gaia/fake_identity_provider.h"
 #include "sync/internal_api/public/base/model_type.h"
-#include "sync/notifier/invalidator_registrar.h"
 #include "sync/test/fake_server/fake_server.h"
 
 namespace content {
