@@ -561,3 +561,15 @@ name=http://crbug.com/379204
 *!WTF::ThreadCondition::timedWait
 *!WTF::MessageQueue<>::waitForMessageWithTimeout
 *!WebCore::WorkerRunLoop::run
+
+GDI USAGE ERROR
+name=379774
+system call NtUserCallOneParam.RELEASEDC
+USER32.dll!ReleaseDC
+*!std::_Tree<>::_Erase
+*!std::_Tree<>::erase
+*!DefaultSingletonTraits<>::Delete
+*!Singleton<>::OnExit
+*!base::AtExitManager::ProcessCallbacksNow
+*!base::AtExitManager::~AtExitManager
+*!base::TestSuite::~TestSuite
