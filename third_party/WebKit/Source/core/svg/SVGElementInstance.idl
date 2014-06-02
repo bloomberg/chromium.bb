@@ -26,7 +26,7 @@
 
 [
     DependentLifetime,
-] interface SVGElementInstance : EventTarget
+] interface SVGElementInstance
 {
     readonly attribute SVGElement correspondingElement;
     readonly attribute SVGUseElement correspondingUseElement;
@@ -35,49 +35,4 @@
     readonly attribute SVGElementInstance lastChild;
     readonly attribute SVGElementInstance previousSibling;
     readonly attribute SVGElementInstance nextSibling;
-
-    // EventTarget
-    [NotEnumerable] attribute EventHandler onabort;
-    [NotEnumerable] attribute EventHandler onblur;
-    [NotEnumerable] attribute EventHandler onchange;
-    [NotEnumerable] attribute EventHandler onclick;
-    [NotEnumerable] attribute EventHandler oncontextmenu;
-    [NotEnumerable] attribute EventHandler ondblclick;
-    [NotEnumerable] attribute EventHandler onerror;
-    [NotEnumerable] attribute EventHandler onfocus;
-    [NotEnumerable] attribute EventHandler oninput;
-    [NotEnumerable] attribute EventHandler onkeydown;
-    [NotEnumerable] attribute EventHandler onkeypress;
-    [NotEnumerable] attribute EventHandler onkeyup;
-    [NotEnumerable] attribute EventHandler onload;
-    [NotEnumerable] attribute EventHandler onmousedown;
-    [NotEnumerable] attribute EventHandler onmouseenter;
-    [NotEnumerable] attribute EventHandler onmouseleave;
-    [NotEnumerable] attribute EventHandler onmousemove;
-    [NotEnumerable] attribute EventHandler onmouseout;
-    [NotEnumerable] attribute EventHandler onmouseover;
-    [NotEnumerable] attribute EventHandler onmouseup;
-    [NotEnumerable] attribute EventHandler onmousewheel; // Deprecated in favor of onwheel.
-    [NotEnumerable] attribute EventHandler onbeforecut;
-    [NotEnumerable] attribute EventHandler oncut;
-    [NotEnumerable] attribute EventHandler onbeforecopy;
-    [NotEnumerable] attribute EventHandler oncopy;
-    [NotEnumerable] attribute EventHandler onbeforepaste;
-    [NotEnumerable] attribute EventHandler onpaste;
-    [NotEnumerable] attribute EventHandler ondragenter;
-    [NotEnumerable] attribute EventHandler ondragover;
-    [NotEnumerable] attribute EventHandler ondragleave;
-    [NotEnumerable] attribute EventHandler ondrop;
-    [NotEnumerable] attribute EventHandler ondragstart;
-    [NotEnumerable] attribute EventHandler ondrag;
-    [NotEnumerable] attribute EventHandler ondragend;
-    [NotEnumerable] attribute EventHandler onreset;
-    [NotEnumerable] attribute EventHandler onresize;
-    [NotEnumerable] attribute EventHandler onscroll;
-    [NotEnumerable] attribute EventHandler onsearch;
-    [NotEnumerable] attribute EventHandler onselect;
-    [NotEnumerable] attribute EventHandler onselectstart;
-    [NotEnumerable] attribute EventHandler onsubmit;
-    [NotEnumerable] attribute EventHandler onunload;
-    [NotEnumerable] attribute EventHandler onwheel;
 };

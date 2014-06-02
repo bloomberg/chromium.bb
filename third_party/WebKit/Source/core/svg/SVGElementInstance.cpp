@@ -35,51 +35,6 @@ namespace WebCore {
 
 DEFINE_DEBUG_ONLY_GLOBAL(WTF::RefCountedLeakCounter, instanceCounter, ("WebCoreSVGElementInstance"));
 
-// EventTarget API
-DEFINE_FORWARDING_ATTRIBUTE_EVENT_LISTENER(SVGElementInstance, correspondingElement(), abort);
-DEFINE_FORWARDING_ATTRIBUTE_EVENT_LISTENER(SVGElementInstance, correspondingElement(), blur);
-DEFINE_FORWARDING_ATTRIBUTE_EVENT_LISTENER(SVGElementInstance, correspondingElement(), change);
-DEFINE_FORWARDING_ATTRIBUTE_EVENT_LISTENER(SVGElementInstance, correspondingElement(), click);
-DEFINE_FORWARDING_ATTRIBUTE_EVENT_LISTENER(SVGElementInstance, correspondingElement(), contextmenu);
-DEFINE_FORWARDING_ATTRIBUTE_EVENT_LISTENER(SVGElementInstance, correspondingElement(), dblclick);
-DEFINE_FORWARDING_ATTRIBUTE_EVENT_LISTENER(SVGElementInstance, correspondingElement(), error);
-DEFINE_FORWARDING_ATTRIBUTE_EVENT_LISTENER(SVGElementInstance, correspondingElement(), focus);
-DEFINE_FORWARDING_ATTRIBUTE_EVENT_LISTENER(SVGElementInstance, correspondingElement(), input);
-DEFINE_FORWARDING_ATTRIBUTE_EVENT_LISTENER(SVGElementInstance, correspondingElement(), keydown);
-DEFINE_FORWARDING_ATTRIBUTE_EVENT_LISTENER(SVGElementInstance, correspondingElement(), keypress);
-DEFINE_FORWARDING_ATTRIBUTE_EVENT_LISTENER(SVGElementInstance, correspondingElement(), keyup);
-DEFINE_FORWARDING_ATTRIBUTE_EVENT_LISTENER(SVGElementInstance, correspondingElement(), load);
-DEFINE_FORWARDING_ATTRIBUTE_EVENT_LISTENER(SVGElementInstance, correspondingElement(), mousedown);
-DEFINE_FORWARDING_ATTRIBUTE_EVENT_LISTENER(SVGElementInstance, correspondingElement(), mouseenter);
-DEFINE_FORWARDING_ATTRIBUTE_EVENT_LISTENER(SVGElementInstance, correspondingElement(), mouseleave);
-DEFINE_FORWARDING_ATTRIBUTE_EVENT_LISTENER(SVGElementInstance, correspondingElement(), mousemove);
-DEFINE_FORWARDING_ATTRIBUTE_EVENT_LISTENER(SVGElementInstance, correspondingElement(), mouseout);
-DEFINE_FORWARDING_ATTRIBUTE_EVENT_LISTENER(SVGElementInstance, correspondingElement(), mouseover);
-DEFINE_FORWARDING_ATTRIBUTE_EVENT_LISTENER(SVGElementInstance, correspondingElement(), mouseup);
-DEFINE_FORWARDING_ATTRIBUTE_EVENT_LISTENER(SVGElementInstance, correspondingElement(), mousewheel);
-DEFINE_FORWARDING_ATTRIBUTE_EVENT_LISTENER(SVGElementInstance, correspondingElement(), wheel);
-DEFINE_FORWARDING_ATTRIBUTE_EVENT_LISTENER(SVGElementInstance, correspondingElement(), beforecut);
-DEFINE_FORWARDING_ATTRIBUTE_EVENT_LISTENER(SVGElementInstance, correspondingElement(), cut);
-DEFINE_FORWARDING_ATTRIBUTE_EVENT_LISTENER(SVGElementInstance, correspondingElement(), beforecopy);
-DEFINE_FORWARDING_ATTRIBUTE_EVENT_LISTENER(SVGElementInstance, correspondingElement(), copy);
-DEFINE_FORWARDING_ATTRIBUTE_EVENT_LISTENER(SVGElementInstance, correspondingElement(), beforepaste);
-DEFINE_FORWARDING_ATTRIBUTE_EVENT_LISTENER(SVGElementInstance, correspondingElement(), paste);
-DEFINE_FORWARDING_ATTRIBUTE_EVENT_LISTENER(SVGElementInstance, correspondingElement(), dragenter);
-DEFINE_FORWARDING_ATTRIBUTE_EVENT_LISTENER(SVGElementInstance, correspondingElement(), dragover);
-DEFINE_FORWARDING_ATTRIBUTE_EVENT_LISTENER(SVGElementInstance, correspondingElement(), dragleave);
-DEFINE_FORWARDING_ATTRIBUTE_EVENT_LISTENER(SVGElementInstance, correspondingElement(), drop);
-DEFINE_FORWARDING_ATTRIBUTE_EVENT_LISTENER(SVGElementInstance, correspondingElement(), dragstart);
-DEFINE_FORWARDING_ATTRIBUTE_EVENT_LISTENER(SVGElementInstance, correspondingElement(), drag);
-DEFINE_FORWARDING_ATTRIBUTE_EVENT_LISTENER(SVGElementInstance, correspondingElement(), dragend);
-DEFINE_FORWARDING_ATTRIBUTE_EVENT_LISTENER(SVGElementInstance, correspondingElement(), reset);
-DEFINE_FORWARDING_ATTRIBUTE_EVENT_LISTENER(SVGElementInstance, correspondingElement(), resize);
-DEFINE_FORWARDING_ATTRIBUTE_EVENT_LISTENER(SVGElementInstance, correspondingElement(), scroll);
-DEFINE_FORWARDING_ATTRIBUTE_EVENT_LISTENER(SVGElementInstance, correspondingElement(), search);
-DEFINE_FORWARDING_ATTRIBUTE_EVENT_LISTENER(SVGElementInstance, correspondingElement(), select);
-DEFINE_FORWARDING_ATTRIBUTE_EVENT_LISTENER(SVGElementInstance, correspondingElement(), selectstart);
-DEFINE_FORWARDING_ATTRIBUTE_EVENT_LISTENER(SVGElementInstance, correspondingElement(), submit);
-DEFINE_FORWARDING_ATTRIBUTE_EVENT_LISTENER(SVGElementInstance, correspondingElement(), unload);
-
 PassRefPtrWillBeRawPtr<SVGElementInstance> SVGElementInstance::create(SVGUseElement* correspondingUseElement, SVGUseElement* directUseElement, PassRefPtrWillBeRawPtr<SVGElement> originalElement)
 {
     return adoptRefWillBeRefCountedGarbageCollected(new SVGElementInstance(correspondingUseElement, directUseElement, originalElement));
@@ -165,64 +120,6 @@ void SVGElementInstance::appendChild(PassRefPtrWillBeRawPtr<SVGElementInstance> 
     appendChildToContainer<SVGElementInstance, SVGElementInstance>(*child, *this);
 }
 
-const AtomicString& SVGElementInstance::interfaceName() const
-{
-    return EventTargetNames::SVGElementInstance;
-}
-
-ExecutionContext* SVGElementInstance::executionContext() const
-{
-    return &m_element->document();
-}
-
-bool SVGElementInstance::addEventListener(const AtomicString& eventType, PassRefPtr<EventListener> listener, bool useCapture)
-{
-    return m_element->addEventListener(eventType, listener, useCapture);
-}
-
-bool SVGElementInstance::removeEventListener(const AtomicString& eventType, EventListener* listener, bool useCapture)
-{
-    return m_element->removeEventListener(eventType, listener, useCapture);
-}
-
-void SVGElementInstance::removeAllEventListeners()
-{
-    m_element->removeAllEventListeners();
-}
-
-Node* SVGElementInstance::toNode()
-{
-    return shadowTreeElement();
-}
-
-Document* SVGElementInstance::ownerDocument() const
-{
-    return m_element ? m_element->ownerDocument() : 0;
-}
-
-bool SVGElementInstance::dispatchEvent(PassRefPtrWillBeRawPtr<Event> event)
-{
-    SVGElement* element = shadowTreeElement();
-    if (!element)
-        return false;
-
-    return element->dispatchEvent(event);
-}
-
-EventTargetData* SVGElementInstance::eventTargetData()
-{
-    // Since no event listeners are added to an SVGElementInstance, we don't have eventTargetData.
-    return 0;
-}
-
-EventTargetData& SVGElementInstance::ensureEventTargetData()
-{
-    // EventTarget would use these methods if we were actually using its add/removeEventListener logic.
-    // As we're forwarding those calls to the correspondingElement(), no one should ever call this function.
-    ASSERT_NOT_REACHED();
-    return *eventTargetData();
-}
-
 void SVGElementInstance::trace(Visitor* visitor)
 {
     visitor->trace(m_parentInstance);
@@ -234,7 +131,6 @@ void SVGElementInstance::trace(Visitor* visitor)
     visitor->trace(m_nextSibling);
     visitor->trace(m_firstChild);
     visitor->trace(m_lastChild);
-    EventTarget::trace(visitor);
 }
 
 }

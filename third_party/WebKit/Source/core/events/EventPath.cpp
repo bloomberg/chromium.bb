@@ -39,7 +39,6 @@
 #include "core/events/MouseEvent.h"
 #include "core/events/TouchEvent.h"
 #include "core/events/TouchEventContext.h"
-#include "core/svg/SVGElementInstance.h"
 #include "core/svg/SVGUseElement.h"
 
 namespace WebCore {
@@ -58,20 +57,6 @@ EventTarget* EventPath::eventTargetRespectingTargetRules(Node* referenceNode)
 
     if (referenceNode->isPseudoElement())
         return referenceNode->parentNode();
-
-    if (!usesDeprecatedSVGUseTreeEventRules(referenceNode))
-        return referenceNode;
-
-    // Spec: The event handling for the non-exposed tree works as if the referenced element had been textually included
-    // as a deeply cloned child of the 'use' element, except that events are dispatched to the SVGElementInstance objects.
-    Node& rootNode = referenceNode->treeScope().rootNode();
-    Element* shadowHostElement = rootNode.isShadowRoot() ? toShadowRoot(rootNode).host() : 0;
-    // At this time, SVG nodes are not supported in non-<use> shadow trees.
-    if (!isSVGUseElement(shadowHostElement))
-        return referenceNode;
-    SVGUseElement& useElement = toSVGUseElement(*shadowHostElement);
-    if (SVGElementInstance* instance = useElement.instanceForShadowTreeElement(referenceNode))
-        return instance;
 
     return referenceNode;
 }

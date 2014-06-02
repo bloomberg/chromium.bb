@@ -38,14 +38,16 @@ function fireSimulatedMouseClickEvent(eventTarget)
 function startTest() {
     var useElement = document.getElementById("test");
 
+    var shadowRoot = internals.shadowRoot(useElement);
+
     // No-op, as no listener is not yet registered
-    fireSimulatedMouseClickEvent(useElement.instanceRoot);
+    fireSimulatedMouseClickEvent(shadowRoot.firstChild);
 
     // Add listener
-    useElement.instanceRoot.addEventListener("click", eventHandler, false);
+    shadowRoot.firstChild.addEventListener("click", eventHandler, false);
 
     // Should fire immediately and finish the test
-    fireSimulatedMouseClickEvent(useElement.instanceRoot);
+    fireSimulatedMouseClickEvent(shadowRoot.firstChild);
 }
 </script>
 

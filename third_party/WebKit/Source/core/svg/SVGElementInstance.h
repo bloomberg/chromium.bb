@@ -23,7 +23,6 @@
 
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/dom/TreeShared.h"
-#include "core/events/EventTarget.h"
 
 namespace WebCore {
 
@@ -37,25 +36,13 @@ class SVGElement;
 class SVGUseElement;
 
 // SVGElementInstance mimics Node, but without providing all its functionality
-class SVGElementInstance FINAL : public TreeSharedWillBeRefCountedGarbageCollected<SVGElementInstance>, public EventTarget, public ScriptWrappable {
-    DEFINE_EVENT_TARGET_REFCOUNTING(TreeSharedWillBeRefCountedGarbageCollected<SVGElementInstance>);
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(SVGElementInstance);
+class SVGElementInstance FINAL : public TreeSharedWillBeRefCountedGarbageCollected<SVGElementInstance>, public ScriptWrappable {
 public:
     static PassRefPtrWillBeRawPtr<SVGElementInstance> create(SVGUseElement* correspondingUseElement, SVGUseElement* directUseElement, PassRefPtrWillBeRawPtr<SVGElement> originalElement);
 
     virtual ~SVGElementInstance();
 
     void setParentOrShadowHostNode(SVGElementInstance* instance) { m_parentInstance = instance; }
-
-    virtual const AtomicString& interfaceName() const OVERRIDE;
-    virtual ExecutionContext* executionContext() const OVERRIDE;
-
-    virtual bool addEventListener(const AtomicString& eventType, PassRefPtr<EventListener>, bool useCapture = false) OVERRIDE;
-    virtual bool removeEventListener(const AtomicString& eventType, EventListener*, bool useCapture = false) OVERRIDE;
-    virtual void removeAllEventListeners() OVERRIDE;
-
-    using EventTarget::dispatchEvent;
-    virtual bool dispatchEvent(PassRefPtrWillBeRawPtr<Event>) OVERRIDE;
 
     SVGElement* correspondingElement() const { return m_element.get(); }
     SVGUseElement* correspondingUseElement() const { return m_correspondingUseElement; }
@@ -74,52 +61,7 @@ public:
 
     inline Document* ownerDocument() const;
 
-    virtual void trace(Visitor*) OVERRIDE;
-
-    // EventTarget API
-    DECLARE_FORWARDING_ATTRIBUTE_EVENT_LISTENER(correspondingElement(), abort);
-    DECLARE_FORWARDING_ATTRIBUTE_EVENT_LISTENER(correspondingElement(), blur);
-    DECLARE_FORWARDING_ATTRIBUTE_EVENT_LISTENER(correspondingElement(), change);
-    DECLARE_FORWARDING_ATTRIBUTE_EVENT_LISTENER(correspondingElement(), click);
-    DECLARE_FORWARDING_ATTRIBUTE_EVENT_LISTENER(correspondingElement(), contextmenu);
-    DECLARE_FORWARDING_ATTRIBUTE_EVENT_LISTENER(correspondingElement(), dblclick);
-    DECLARE_FORWARDING_ATTRIBUTE_EVENT_LISTENER(correspondingElement(), error);
-    DECLARE_FORWARDING_ATTRIBUTE_EVENT_LISTENER(correspondingElement(), focus);
-    DECLARE_FORWARDING_ATTRIBUTE_EVENT_LISTENER(correspondingElement(), input);
-    DECLARE_FORWARDING_ATTRIBUTE_EVENT_LISTENER(correspondingElement(), keydown);
-    DECLARE_FORWARDING_ATTRIBUTE_EVENT_LISTENER(correspondingElement(), keypress);
-    DECLARE_FORWARDING_ATTRIBUTE_EVENT_LISTENER(correspondingElement(), keyup);
-    DECLARE_FORWARDING_ATTRIBUTE_EVENT_LISTENER(correspondingElement(), load);
-    DECLARE_FORWARDING_ATTRIBUTE_EVENT_LISTENER(correspondingElement(), mousedown);
-    DECLARE_FORWARDING_ATTRIBUTE_EVENT_LISTENER(correspondingElement(), mouseenter);
-    DECLARE_FORWARDING_ATTRIBUTE_EVENT_LISTENER(correspondingElement(), mouseleave);
-    DECLARE_FORWARDING_ATTRIBUTE_EVENT_LISTENER(correspondingElement(), mousemove);
-    DECLARE_FORWARDING_ATTRIBUTE_EVENT_LISTENER(correspondingElement(), mouseout);
-    DECLARE_FORWARDING_ATTRIBUTE_EVENT_LISTENER(correspondingElement(), mouseover);
-    DECLARE_FORWARDING_ATTRIBUTE_EVENT_LISTENER(correspondingElement(), mouseup);
-    DECLARE_FORWARDING_ATTRIBUTE_EVENT_LISTENER(correspondingElement(), mousewheel);
-    DECLARE_FORWARDING_ATTRIBUTE_EVENT_LISTENER(correspondingElement(), wheel);
-    DECLARE_FORWARDING_ATTRIBUTE_EVENT_LISTENER(correspondingElement(), beforecut);
-    DECLARE_FORWARDING_ATTRIBUTE_EVENT_LISTENER(correspondingElement(), cut);
-    DECLARE_FORWARDING_ATTRIBUTE_EVENT_LISTENER(correspondingElement(), beforecopy);
-    DECLARE_FORWARDING_ATTRIBUTE_EVENT_LISTENER(correspondingElement(), copy);
-    DECLARE_FORWARDING_ATTRIBUTE_EVENT_LISTENER(correspondingElement(), beforepaste);
-    DECLARE_FORWARDING_ATTRIBUTE_EVENT_LISTENER(correspondingElement(), paste);
-    DECLARE_FORWARDING_ATTRIBUTE_EVENT_LISTENER(correspondingElement(), dragenter);
-    DECLARE_FORWARDING_ATTRIBUTE_EVENT_LISTENER(correspondingElement(), dragover);
-    DECLARE_FORWARDING_ATTRIBUTE_EVENT_LISTENER(correspondingElement(), dragleave);
-    DECLARE_FORWARDING_ATTRIBUTE_EVENT_LISTENER(correspondingElement(), drop);
-    DECLARE_FORWARDING_ATTRIBUTE_EVENT_LISTENER(correspondingElement(), dragstart);
-    DECLARE_FORWARDING_ATTRIBUTE_EVENT_LISTENER(correspondingElement(), drag);
-    DECLARE_FORWARDING_ATTRIBUTE_EVENT_LISTENER(correspondingElement(), dragend);
-    DECLARE_FORWARDING_ATTRIBUTE_EVENT_LISTENER(correspondingElement(), reset);
-    DECLARE_FORWARDING_ATTRIBUTE_EVENT_LISTENER(correspondingElement(), resize);
-    DECLARE_FORWARDING_ATTRIBUTE_EVENT_LISTENER(correspondingElement(), scroll);
-    DECLARE_FORWARDING_ATTRIBUTE_EVENT_LISTENER(correspondingElement(), search);
-    DECLARE_FORWARDING_ATTRIBUTE_EVENT_LISTENER(correspondingElement(), select);
-    DECLARE_FORWARDING_ATTRIBUTE_EVENT_LISTENER(correspondingElement(), selectstart);
-    DECLARE_FORWARDING_ATTRIBUTE_EVENT_LISTENER(correspondingElement(), submit);
-    DECLARE_FORWARDING_ATTRIBUTE_EVENT_LISTENER(correspondingElement(), unload);
+    virtual void trace(Visitor*);
 
 private:
     friend class SVGUseElement;
@@ -132,8 +74,6 @@ private:
 #endif
 
     bool hasTreeSharedParent() const { return !!m_parentInstance; }
-
-    virtual Node* toNode() OVERRIDE;
 
     void appendChild(PassRefPtrWillBeRawPtr<SVGElementInstance> child);
     void setShadowTreeElement(SVGElement*);
@@ -156,9 +96,6 @@ private:
 
     void setNextSibling(SVGElementInstance* sibling) { m_nextSibling = sibling; }
     void setPreviousSibling(SVGElementInstance* sibling) { m_previousSibling = sibling; }
-
-    virtual EventTargetData* eventTargetData() OVERRIDE;
-    virtual EventTargetData& ensureEventTargetData() OVERRIDE;
 
     RawPtrWillBeMember<SVGElementInstance> m_parentInstance;
 

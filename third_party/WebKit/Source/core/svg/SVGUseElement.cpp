@@ -774,37 +774,6 @@ void SVGUseElement::associateInstancesWithShadowTreeElements(Node* target, SVGEl
     }
 }
 
-SVGElementInstance* SVGUseElement::instanceForShadowTreeElement(Node* element) const
-{
-    if (!m_targetElementInstance) {
-        ASSERT(!inDocument());
-        return 0;
-    }
-
-    return instanceForShadowTreeElement(element, m_targetElementInstance.get());
-}
-
-SVGElementInstance* SVGUseElement::instanceForShadowTreeElement(Node* element, SVGElementInstance* instance) const
-{
-    ASSERT(element);
-    ASSERT(instance);
-
-    // We're dispatching a mutation event during shadow tree construction
-    // this instance hasn't yet been associated to a shadowTree element.
-    if (!instance->shadowTreeElement())
-        return 0;
-
-    if (element == instance->shadowTreeElement())
-        return instance;
-
-    for (SVGElementInstance* current = instance->firstChild(); current; current = current->nextSibling()) {
-        if (SVGElementInstance* search = instanceForShadowTreeElement(element, current))
-            return search;
-    }
-
-    return 0;
-}
-
 void SVGUseElement::invalidateShadowTree()
 {
     if (!inActiveDocument() || m_needsShadowTreeRecreation)

@@ -23,7 +23,7 @@ function finishTest()
 {
     successfullyParsed = true;
 
-    useElement.instanceRoot.correspondingElement.setAttribute("fill", "green");
+    rectElement.setAttribute("fill", "green");
     shouldBeTrue("successfullyParsed");
     debug('<br /><span class="pass">TEST COMPLETE</span>');
 
@@ -66,22 +66,22 @@ function fireDelayedEvent()
 function testOne()
 {
     // Install event listener on correspondingElement via setAttribute
-    useElement.instanceRoot.correspondingElement.setAttribute("onmouseover", "eventHandler(evt)");
+    shadowRoot.firstChild.setAttribute("onmouseover", "eventHandler(evt)");
     recordMouseEvent("mouseover");
 }
 
 function testTwo()
 {
     // Install event listener on correspondingElement via onmouseout JS magic
-    useElement.instanceRoot.correspondingElement.onmouseout = eventHandler;
+    shadowRoot.firstChild.onmouseout = eventHandler;
     recordMouseEvent("mouseout");
 }
 
 function testThree()
 {
     // Clean event listeners on different ways
-    useElement.instanceRoot.correspondingElement.removeAttribute("onmouseover");
-    useElement.instanceRoot.correspondingElement.onmouseout = 0;
+    shadowRoot.firstChild.removeAttribute("onmouseover");
+    shadowRoot.firstChild.onmouseout = 0;
 
     // Verify they really got removed
     sendMouseEvent("mouseover");
@@ -93,7 +93,7 @@ function testThree()
 
 function testFour()
 {
-    useElement.instanceRoot.correspondingElement.removeAttribute("onmousedown");
+    shadowRoot.firstChild.removeAttribute("onmousedown");
 
     // Install event listener on the referenced element, without using the SVGElementInstance interface
     rectElement.setAttribute("onmouseup", "eventHandler(evt)");
@@ -108,25 +108,25 @@ function testFive()
 
 function testSix()
 {
-    useElement.instanceRoot.correspondingElement.onmouseout = null;
+    shadowRoot.firstChild.onmouseout = null;
     sendMouseEvent("mouseout");
 
-    useElement.instanceRoot.correspondingElement.removeAttribute('onmouseup');
+    shadowRoot.firstChild.removeAttribute('onmouseup');
     sendMouseEvent("mouseup");
 
-    useElement.instanceRoot.correspondingElement.onmouseup = eventHandler;
+    shadowRoot.firstChild.onmouseup = eventHandler;
     recordMouseEvent("mouseup");
 }
 
 function testSeven()
 {
-    useElement.instanceRoot.addEventListener("mouseout", eventHandler, false);
+    shadowRoot.firstChild.addEventListener("mouseout", eventHandler, false);
     recordMouseEvent("mouseout");
 }
 
 function testEight()
 {
-    useElement.instanceRoot.correspondingElement.addEventListener("mouseover", eventHandler, false);
+    shadowRoot.firstChild.addEventListener("mouseover", eventHandler, false);
     recordMouseEvent("mouseover");
 }
 

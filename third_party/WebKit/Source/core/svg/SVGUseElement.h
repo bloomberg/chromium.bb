@@ -42,7 +42,6 @@ public:
 
     SVGElementInstance* instanceRoot();
     SVGElementInstance* animatedInstanceRoot() const;
-    SVGElementInstance* instanceForShadowTreeElement(Node*) const;
     void invalidateShadowTree();
     void invalidateDependentShadowTrees();
 
@@ -92,7 +91,6 @@ private:
 
     // "Tree connector"
     void associateInstancesWithShadowTreeElements(Node* target, SVGElementInstance* targetInstance);
-    SVGElementInstance* instanceForShadowTreeElement(Node* element, SVGElementInstance* instance) const;
 
     void transferUseAttributesToReplacedElement(SVGElement* from, SVGElement* to) const;
     void transferEventListenersToShadowTree(SVGElement* shadowTreeTargetElement);

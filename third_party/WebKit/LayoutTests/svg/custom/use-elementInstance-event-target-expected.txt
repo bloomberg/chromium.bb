@@ -1,4 +1,0 @@
-Click on the grey rectangle to start
-Test for correspondingUseElement
-Test for correspondingElement
-

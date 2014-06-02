@@ -41,7 +41,7 @@ function finishTest()
 {
     successfullyParsed = true;
 
-    use.instanceRoot.correspondingElement.setAttribute("fill", "green");
+    rectContainer.setAttribute("fill", "green");
     shouldBeTrue("successfullyParsed");
     debug('<br /><span class="pass">TEST COMPLETE</span>');
 
@@ -56,22 +56,22 @@ function nextTest()
     switch (counter) {
     case 1:
         rect.onclick = function(evt) { eventHandler(evt, 1); };
-        expected[0] = "[EventHandler 1] type: click phase: AT_TARGET target: [object SVGElementInstance] (id: rect) currentTarget: [object SVGElementInstance] (id: rect)";
+        expected[0] = "[EventHandler 1] type: click phase: AT_TARGET target: [object SVGUseElement] (id: use) currentTarget: [object SVGUseElement] (id: use)";
         testListeners();
         break;
     case 2:
         rectContainer.addEventListener("click", function(evt) { eventHandler(evt, 2) }, false);
-        expected[1] = "[EventHandler 2] type: click phase: BUBBLING target: [object SVGElementInstance] (id: rect) currentTarget: [object SVGElementInstance] (id: rectParent)";    
+        expected[1] = "[EventHandler 2] type: click phase: AT_TARGET target: [object SVGUseElement] (id: use) currentTarget: [object SVGUseElement] (id: use)";
         testListeners();
         break;
     case 3:
         use.setAttribute("onclick", "eventHandler(evt, 3)");
-        expected[2] = "[EventHandler 3] type: click phase: BUBBLING target: [object SVGElementInstance] (id: rect) currentTarget: [object SVGUseElement] (id: use)";
+        expected[2] = "[EventHandler 3] type: click phase: AT_TARGET target: [object SVGUseElement] (id: use) currentTarget: [object SVGUseElement] (id: use)";
         testListeners();
         break;
     case 4:
         useContainer.onclick = function(evt) { eventHandler(evt, 4) };
-        expected[3] = "[EventHandler 4] type: click phase: BUBBLING target: [object SVGElementInstance] (id: rect) currentTarget: [object SVGGElement] (id: useParent)";
+        expected[3] = "[EventHandler 4] type: click phase: BUBBLING target: [object SVGUseElement] (id: use) currentTarget: [object SVGGElement] (id: useParent)";
         testListeners();
         break;
     }
