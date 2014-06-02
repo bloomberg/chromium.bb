@@ -109,9 +109,9 @@ letter      \x0A5B	245	# GURUMUKHI LETTER ZA = 0A1C AND 0A3C
  litdigit      \x0A6E	125	# GURUMUKHI DIGIT EIGHT
  litdigit      \x0A6F	24	# GURUMUKHI DIGIT NINE
  
- letter      \x0A70	56	# GURUMUKHI TIPPI • nasalization
- letter      \x0A71	4	# GURUMUKHI ADDAK • doubles following consonant
-letter      \x0A74	3456-1-136	# GURUMUKHI EK ONKAR • God is One
+ letter      \x0A70	56	# GURUMUKHI TIPPI Â• nasalization
+ letter      \x0A71	4	# GURUMUKHI ADDAK Â• doubles following consonant
+letter      \x0A74	3456-1-136	# GURUMUKHI EK ONKAR Â• God is One
 
   # half characters
    always      \x0A15\x0A71	4-13	# GURUMUKHI LETTER KA
