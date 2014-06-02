@@ -577,12 +577,13 @@ InspectorTest.columnContents = function(column, row)
 {
     // Make sure invisible nodes are removed from the view port.
     this._currentGrid().updateVisibleNodes();
+    var columnOrdinal = InspectorTest.viewColumns().indexOf(column);
     var result = [];
     var parent = row || this._currentGrid().rootNode();
     for (var node = parent.children[0]; node; node = node.traverseNextNode(true, parent, true)) {
         if (!node.selectable)
             continue;
-        var content = node.element.children[column.ordinal];
+        var content = node.element.children[columnOrdinal];
         // Do not inlcude percents
         if (content.firstElementChild)
             content = content.firstElementChild;
