@@ -150,7 +150,7 @@ def unit_test_list():
               actual_image=None, expected_image=None,
               actual_checksum=None)
     tests.add('failures/expected/testharness.html',
-            actual_text='CONSOLE LOG: error.\nThis is a testharness.js-based test.\nPASS: things are fine.\n.Harness: the test ran to completion.\n\n', expected_text=None,
+            actual_text='RANDOM TEXT.\nThis is a testharness.js-based test.\nPASS: things are fine.\n.Harness: the test ran to completion.\n\n', expected_text=None,
               actual_image=None, expected_image=None,
               actual_checksum=None)
     tests.add('failures/expected/text.html', actual_text='text_fail-png')
@@ -203,6 +203,18 @@ layer at (0,0) size 800x34
     tests.add('passes/checksum_in_image.html',
               expected_image='tEXtchecksum\x00checksum_in_image-checksum')
     tests.add('passes/skipped/skip.html')
+    tests.add('passes/testharness.html',
+            actual_text='CONSOLE LOG: error.\nThis is a testharness.js-based test.\nPASS: things are fine.\n.Harness: the test ran to completion.\n\n', expected_text=None,
+              actual_image=None, expected_image=None,
+              actual_checksum=None)
+    tests.add('passes/testharness.html',
+            actual_text='CONSOLE ERROR: error.\nThis is a testharness.js-based test.\nPASS: things are fine.\n.Harness: the test ran to completion.\n\n', expected_text=None,
+              actual_image=None, expected_image=None,
+              actual_checksum=None)
+    tests.add('passes/testharness.html',
+            actual_text='  This is a testharness.js-based test.\nPASS: assert is fine\nHarness: the test ran to completion.\n\n', expected_text=None,
+              actual_image=None, expected_image=None,
+              actual_checksum=None)
     tests.add('passes/testharness.html',
             actual_text='This is a testharness.js-based test.\nPASS: assert is fine\nHarness: the test ran to completion.\n\n', expected_text=None,
               actual_image=None, expected_image=None,
