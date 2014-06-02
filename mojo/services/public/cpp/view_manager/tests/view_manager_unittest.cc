@@ -258,8 +258,8 @@ class ViewManagerTest : public testing::Test {
   ViewManagerTest() : commit_count_(0) {}
 
  protected:
-  ViewManager* view_manager_1() { return view_manager_1_; }
-  ViewManager* view_manager_2() { return view_manager_2_; }
+  ViewManager* view_manager_1() { return view_manager_1_.get(); }
+  ViewManager* view_manager_2() { return view_manager_2_.get(); }
 
   ViewTreeNode* CreateNodeInParent(ViewTreeNode* parent) {
     ViewManager* parent_manager = ViewTreeNodePrivate(parent).view_manager();
@@ -269,19 +269,23 @@ class ViewManagerTest : public testing::Test {
   }
 
   void DestroyViewManager1() {
-    // view_manager_1_.reset();
+    view_manager_1_.reset();
   }
 
  private:
   // Overridden from testing::Test:
   virtual void SetUp() OVERRIDE {
     test_helper_.Init();
+    view_manager_1_.reset(new ViewManager(test_helper_.service_provider()));
+    view_manager_2_.reset(new ViewManager(test_helper_.service_provider()));
+    view_manager_1_->Init();
+    view_manager_2_->Init();
   }
 
   base::MessageLoop loop_;
   shell::ShellTestHelper test_helper_;
-  ViewManager* view_manager_1_;
-  ViewManager* view_manager_2_;
+  scoped_ptr<ViewManager> view_manager_1_;
+  scoped_ptr<ViewManager> view_manager_2_;
   int commit_count_;
 
   DISALLOW_COPY_AND_ASSIGN(ViewManagerTest);

@@ -63,9 +63,7 @@
           'dependencies': [
             'mojo_aura_demo',
             'mojo_launcher',
-            'mojo_demo_launcher',
-            'mojo_embedded_app',
-            'mojo_window_manager',
+            'mojo_sample_view_manager_app',
             'mojo_view_manager',
             'mojo_view_manager_unittests',
           ],

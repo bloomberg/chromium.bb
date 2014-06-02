@@ -15,6 +15,10 @@
 
 class SkBitmap;
 
+namespace base {
+class RunLoop;
+}
+
 namespace mojo {
 namespace view_manager {
 
@@ -22,7 +26,7 @@ class ViewManager;
 class ViewManagerTransaction;
 
 // Manages the connection with the View Manager service.
-class ViewManagerSynchronizer : public InterfaceImpl<IViewManagerClient> {
+class ViewManagerSynchronizer : public IViewManagerClient {
  public:
   explicit ViewManagerSynchronizer(ViewManager* view_manager);
   virtual ~ViewManagerSynchronizer();
@@ -50,8 +54,6 @@ class ViewManagerSynchronizer : public InterfaceImpl<IViewManagerClient> {
   void SetBounds(TransportNodeId node_id, const gfx::Rect& bounds);
   void SetViewContents(TransportViewId view_id, const SkBitmap& contents);
 
-  void Embed(const String& url, TransportNodeId node_id);
-
   void set_changes_acked_callback(const base::Callback<void(void)>& callback) {
     changes_acked_callback_ = callback;
   }
@@ -62,9 +64,6 @@ class ViewManagerSynchronizer : public InterfaceImpl<IViewManagerClient> {
  private:
   friend class ViewManagerTransaction;
   typedef ScopedVector<ViewManagerTransaction> Transactions;
-
-  // Overridden from InterfaceImpl:
-  virtual void OnConnectionEstablished() OVERRIDE;
 
   // Overridden from IViewManagerClient:
   virtual void OnViewManagerConnectionEstablished(
@@ -97,9 +96,7 @@ class ViewManagerSynchronizer : public InterfaceImpl<IViewManagerClient> {
   // front of the queue.
   void RemoveFromPendingQueue(ViewManagerTransaction* transaction);
 
-  ViewManager* view_manager() { return view_manager_.get(); }
-
-  scoped_ptr<ViewManager> view_manager_;
+  ViewManager* view_manager_;
   bool connected_;
   TransportConnectionId connection_id_;
   uint16_t next_id_;
@@ -109,9 +106,13 @@ class ViewManagerSynchronizer : public InterfaceImpl<IViewManagerClient> {
 
   base::WeakPtrFactory<ViewManagerSynchronizer> sync_factory_;
 
+  // Non-NULL while blocking on the connection to |service_| during
+  // construction.
+  base::RunLoop* init_loop_;
+
   base::Callback<void(void)> changes_acked_callback_;
 
-  IViewManager* service_;
+  IViewManagerPtr service_;
 
   DISALLOW_COPY_AND_ASSIGN(ViewManagerSynchronizer);
 };

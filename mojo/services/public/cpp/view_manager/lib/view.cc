@@ -7,7 +7,6 @@
 #include "mojo/services/public/cpp/view_manager/lib/view_manager_private.h"
 #include "mojo/services/public/cpp/view_manager/lib/view_private.h"
 #include "mojo/services/public/cpp/view_manager/view_observer.h"
-#include "ui/gfx/canvas.h"
 
 namespace mojo {
 namespace view_manager {
@@ -60,12 +59,6 @@ void View::RemoveObserver(ViewObserver* observer) {
 void View::SetContents(const SkBitmap& contents) {
   if (manager_)
     ViewManagerPrivate(manager_).synchronizer()->SetViewContents(id_, contents);
-}
-
-void View::SetColor(SkColor color) {
-  gfx::Canvas canvas(node_->bounds().size(), 1.0f, true);
-  canvas.DrawColor(color);
-  SetContents(skia::GetTopDevice(*canvas.sk_canvas())->accessBitmap(true));
 }
 
 View::View(ViewManager* manager)

@@ -13,7 +13,7 @@
 #include "mojo/services/public/cpp/view_manager/view_tree_node.h"
 
 namespace mojo {
-class Application;
+class ServiceProvider;
 namespace view_manager {
 
 class View;
@@ -21,12 +21,17 @@ class ViewManagerSynchronizer;
 class ViewTreeNode;
 
 // Approximately encapsulates the View Manager service.
-// Has a synchronizer that keeps a client model in sync with the service.
-// Owned by the connection.
+// Owns a synchronizer that keeps a client model in sync with the service.
+// Owned by the creator.
 //
 // TODO: displays
 class ViewManager {
  public:
+  explicit ViewManager(ServiceProvider* service_provider);
+  ~ViewManager();
+
+  // Connects to the View Manager service. This method must be called before
+  // using any other View Manager lib class or function.
   // Blocks on establishing the connection and subsequently receiving a node
   // tree from the service.
   // TODO(beng): blocking is currently achieved by running a nested runloop,
@@ -34,22 +39,20 @@ class ViewManager {
   //             we should instead wait on the client pipe receiving a
   //             connection established message.
   // TODO(beng): this method could optionally not block if supplied a callback.
-  explicit ViewManager(Application* application);
-  ~ViewManager();
+  void Init();
 
   ViewTreeNode* tree() { return tree_; }
 
   ViewTreeNode* GetNodeById(TransportNodeId id);
   View* GetViewById(TransportViewId id);
 
-  void Embed(const String& url, ViewTreeNode* node);
-
  private:
   friend class ViewManagerPrivate;
   typedef std::map<TransportNodeId, ViewTreeNode*> IdToNodeMap;
   typedef std::map<TransportViewId, View*> IdToViewMap;
 
-  ViewManagerSynchronizer* synchronizer_;
+  ServiceProvider* service_provider_;
+  scoped_ptr<ViewManagerSynchronizer> synchronizer_;
   ViewTreeNode* tree_;
 
   IdToNodeMap nodes_;
