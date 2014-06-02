@@ -71,13 +71,12 @@ int SQLiteStatement::prepare()
     // this lets SQLite avoid an extra string copy.
     size_t lengthIncludingNullCharacter = query.length() + 1;
 
-    const char* tail;
+    const char* tail = 0;
     int error = sqlite3_prepare_v2(m_database.sqlite3Handle(), query.data(), lengthIncludingNullCharacter, &m_statement, &tail);
 
     if (error != SQLITE_OK)
         WTF_LOG(SQLDatabase, "sqlite3_prepare16 failed (%i)\n%s\n%s", error, query.data(), sqlite3_errmsg(m_database.sqlite3Handle()));
-
-    if (tail && *tail)
+    else if (tail && *tail)
         error = SQLITE_ERROR;
 
 #ifndef NDEBUG
