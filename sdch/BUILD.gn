@@ -1,4 +1,4 @@
-# Copyright (c) 2013 The Chromium Authors. All rights reserved.
+# Copyright 2014 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -8,6 +8,7 @@ config("sdch_config") {
 
 static_library("sdch") {
   sources = [
+    "logging_forward.h",
     "open-vcdiff/src/addrcache.cc",
     "open-vcdiff/src/blockhash.cc",
     "open-vcdiff/src/blockhash.h",
@@ -25,8 +26,6 @@ static_library("sdch") {
     "open-vcdiff/src/headerparser.h",
     "open-vcdiff/src/instruction_map.cc",
     "open-vcdiff/src/instruction_map.h",
-    "open-vcdiff/src/logging.cc",
-    "open-vcdiff/src/logging.h",
     "open-vcdiff/src/rolling_hash.h",
     "open-vcdiff/src/testing.h",
     "open-vcdiff/src/varint_bigendian.cc",
@@ -41,6 +40,11 @@ static_library("sdch") {
 
   direct_dependent_configs = [ ":sdch_config" ]
 
+  deps = [
+    "//base",
+    "//third_party/zlib",
+  ]
+
   if (is_linux || is_android) {
     include_dirs = [ "linux" ]
   } else if (is_ios) {
@@ -51,12 +55,24 @@ static_library("sdch") {
     include_dirs = [ "win" ]
   }
 
-  deps = [ "//third_party/zlib" ]
-
-  if (is_clang) {
+  # open-vcdiff's logging.h introduces static initializers. This was
+  # reported upstream years ago (
+  # https://code.google.com/p/open-vcdiff/issues/detail?id=33 ). Since
+  # upstream won't fix this, work around it on the chromium side:
+  # Inject a header that forwards to base/logging.h instead (which doesn't
+  # introduce static initializers, and which prevents open-vcdiff's
+  # logging.h from being used).
+  logging_file = rebase_path("logging_forward.h", root_build_dir)
+  if (is_win) {
     cflags = [
-      # TODO(mostynb): remove this if open-vcdiff is ever updated for c++11:
-      "-Wno-deprecated-declarations",
+      "/FI", rebase_path("//build/intsafe_workaround.h", root_build_dir),
+      "/FI", logging_file,
     ]
+  } else {
+    cflags = [ "-include", logging_file ]
+    if (is_linux) {
+      # TODO(mostynb): remove this if open-vcdiff is ever updated for c++11:
+      cflags += [ "-Wno-deprecated-declarations" ]
+    }
   }
 }

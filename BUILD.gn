@@ -47,7 +47,7 @@ group("root") {
     "//net",
     "//ppapi:ppapi_c",
     #"//sandbox",
-    #"//sdch",
+    "//sdch",
     "//skia",
     "//sql",
     "//third_party/angle:translator",
