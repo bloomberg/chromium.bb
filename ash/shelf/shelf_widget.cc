@@ -717,7 +717,7 @@ void ShelfWidget::SetDimsShelf(bool dimming) {
   // status area background, app list button and overflow button.
   if (shelf_)
     shelf_->SchedulePaint();
-  status_area_widget_->GetContentsView()->SchedulePaint();
+  status_area_widget_->SchedulePaint();
 }
 
 bool ShelfWidget::GetDimsShelf() const {

@@ -67,6 +67,10 @@ class ASH_EXPORT StatusAreaWidget : public views::Widget {
   // True if any message bubble is shown.
   bool IsMessageBubbleShown() const;
 
+  // Notifies child trays, and the |status_area_widget_delegate_| to schedule a
+  // paint.
+  void SchedulePaint();
+
   // Overridden from views::Widget:
   virtual void OnNativeWidgetActivationChanged(bool active) OVERRIDE;
 

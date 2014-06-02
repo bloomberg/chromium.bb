@@ -117,6 +117,17 @@ bool StatusAreaWidget::IsMessageBubbleShown() const {
            web_notification_tray_->IsMessageCenterBubbleVisible()));
 }
 
+void StatusAreaWidget::SchedulePaint() {
+  status_area_widget_delegate_->SchedulePaint();
+  web_notification_tray_->SchedulePaint();
+  system_tray_->SchedulePaint();
+#if defined(OS_CHROMEOS)
+  virtual_keyboard_tray_->SchedulePaint();
+  logout_button_tray_->SchedulePaint();
+#endif
+  overview_button_tray_->SchedulePaint();
+}
+
 void StatusAreaWidget::OnNativeWidgetActivationChanged(bool active) {
   Widget::OnNativeWidgetActivationChanged(active);
   if (active)
