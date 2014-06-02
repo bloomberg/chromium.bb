@@ -185,7 +185,7 @@ static bool parseDescriptors(const CharType* attribute, Vector<DescriptorToken>&
         } else if (c == 'x') {
             if (result.hasDensity() || result.hasHeight() || result.hasWidth())
                 return false;
-            int density = it->toFloat(attribute, isValid);
+            float density = it->toFloat(attribute, isValid);
             if (!isValid || density < 0)
                 return false;
             result.setDensity(density);

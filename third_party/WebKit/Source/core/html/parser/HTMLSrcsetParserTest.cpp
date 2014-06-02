@@ -74,6 +74,8 @@ TEST(HTMLSrcsetParserTest, Basic)
         {1.0, 0, "", "400.gif 400w, 6000.gif 6000w", "400.gif", std::numeric_limits<float>::infinity(), 400},
         {2.0, -1, "", ", 1x.gif 1x, 2x.gif 2x", "2x.gif", 2.0, -1},
         {1.0, -1, "", ",1x.gif 1x, 2x.gif 2x", "1x.gif", 1.0, -1},
+        {1.2, -1, "", ",1x.gif 1x, 1.4x.gif 1.4x, 2x.gif 2x", "1.4x.gif", 1.4, -1},
+        {1.0, -1, "", "inf.gif 0.00000000001x", "inf.gif", 1e-11, -1},
         {1.0, -1, "", ",1x.gif 1x future-descriptor(3x, 4h, whatever), 2x.gif 2x", "1x.gif", 1.0, -1},
         {2.0, -1, "", ",1x.gif 1x future-descriptor(3x, 4h, whatever), 2x.gif 2x", "2x.gif", 2.0, -1},
         {0, 0, 0, 0, 0, 0} // Do not remove the terminator line.
