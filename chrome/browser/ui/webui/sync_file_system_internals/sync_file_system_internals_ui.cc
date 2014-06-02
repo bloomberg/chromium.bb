@@ -33,6 +33,8 @@ content::WebUIDataSource* CreateSyncFileSystemInternalsHTMLSource() {
   source->AddResourcePath(
       "sync_service.js", IDR_SYNC_FILE_SYSTEM_INTERNALS_SYNC_SERVICE_JS);
   source->AddResourcePath(
+      "task_log.js", IDR_SYNC_FILE_SYSTEM_INTERNALS_TASK_LOG_JS);
+  source->AddResourcePath(
       "dump_database.js", IDR_SYNC_FILE_SYSTEM_INTERNALS_DUMP_DATABASE_JS);
   source->AddResourcePath("file.png", IDR_DEFAULT_FAVICON);
   source->AddResourcePath("folder_closed.png", IDR_FOLDER_CLOSED);

@@ -40,6 +40,28 @@ tbody tr:nth-child(odd) {
   background: rgb(255, 220, 220);
 }
 
+.task-log-details label {
+  cursor: pointer;
+}
+
+.task-log-collapse-check {
+  vertical-align: top;
+}
+
+.task-log-collapse-check ~ ul {
+  display: inline-block;
+  height: 1em;
+  list-style: none;
+  margin: 0;
+  overflow: hidden;
+  padding: 0;
+  position: relative;
+}
+
+.task-log-collapse-check:checked ~ ul {
+  height: auto;
+}
+
 .file-icon {
   background-image: url('chrome://syncfs-internals/file.png');
   background-position: 0 2px;

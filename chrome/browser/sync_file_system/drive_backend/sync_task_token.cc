@@ -95,6 +95,7 @@ void SyncTaskToken::clear_blocking_factor() {
 
 void SyncTaskToken::InitializeTaskLog(const std::string& task_description) {
   DCHECK(task_log_);
+  task_log_.reset(new TaskLogger::TaskLog);
   task_log_->start_time = base::TimeTicks::Now();
   task_log_->task_description = task_description;
 }

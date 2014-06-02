@@ -69,9 +69,9 @@ SyncService.onGetLog = function(logEntries) {
     var tr = document.createElement('tr');
     var error = /ERROR/.test(logEntry.logEvent) ? ' error' : '';
     tr.appendChild(createElementFromText('td', logEntry.time,
-                                         {class: 'log-time'}));
+                                         {'class': 'log-time'}));
     tr.appendChild(createElementFromText('td', logEntry.logEvent,
-                                         {class: 'log-event' + error}));
+                                         {'class': 'log-event' + error}));
     itemContainer.appendChild(tr);
 
     lastLogEventId = logEntry.id;

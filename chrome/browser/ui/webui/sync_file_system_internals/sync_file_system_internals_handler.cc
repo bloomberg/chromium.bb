@@ -102,7 +102,7 @@ void SyncFileSystemInternalsHandler::OnLogRecorded(
   scoped_ptr<base::ListValue> details(new base::ListValue);
   details->AppendStrings(task_log.details);
   dict.Set("details", details.release());
-  web_ui()->CallJavascriptFunction("SyncService.onTaskLogRecorded", dict);
+  web_ui()->CallJavascriptFunction("TaskLog.onTaskLogRecorded", dict);
 }
 
 void SyncFileSystemInternalsHandler::GetServiceStatus(
@@ -174,11 +174,12 @@ void SyncFileSystemInternalsHandler::ObserveTaskLog(
   if (!observing_task_log_) {
     observing_task_log_ = true;
     sync_service->task_logger()->AddObserver(this);
-    return;
   }
 
+  DCHECK(sync_service->task_logger());
   const sync_file_system::TaskLogger::LogList& log =
       sync_service->task_logger()->GetLog();
+
   for (sync_file_system::TaskLogger::LogList::const_iterator itr = log.begin();
        itr != log.end(); ++itr)
     OnLogRecorded(**itr);

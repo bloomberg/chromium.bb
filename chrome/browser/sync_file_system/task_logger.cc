@@ -24,6 +24,9 @@ TaskLogger::~TaskLogger() {
 }
 
 void TaskLogger::RecordLog(scoped_ptr<TaskLog> log) {
+  if (!log)
+    return;
+
   if (log_history_.size() >= kMaxLogSize) {
     delete log_history_.front();
     log_history_.pop_front();

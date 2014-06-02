@@ -324,8 +324,6 @@ void SyncTaskManager::RunTask(scoped_ptr<SyncTaskToken> token,
                               scoped_ptr<SyncTask> task) {
   DCHECK(!running_foreground_task_);
 
-  token->SetTaskLog(make_scoped_ptr(new TaskLogger::TaskLog));
-
   running_foreground_task_ = task.Pass();
   running_foreground_task_->RunPreflight(token.Pass());
 }
