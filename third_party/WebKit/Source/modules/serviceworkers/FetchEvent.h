@@ -6,11 +6,13 @@
 #define FetchEvent_h
 
 #include "modules/EventModules.h"
+#include "modules/serviceworkers/Request.h"
 #include "modules/serviceworkers/RespondWithObserver.h"
 
 namespace WebCore {
 
 class ExecutionContext;
+class Request;
 class RespondWithObserver;
 
 // A fetch event is dispatched by the client to a service worker's script
@@ -19,8 +21,12 @@ class RespondWithObserver;
 class FetchEvent FINAL : public Event {
 public:
     static PassRefPtrWillBeRawPtr<FetchEvent> create();
+    // TODO(horo): Remove this.
     static PassRefPtrWillBeRawPtr<FetchEvent> create(PassRefPtr<RespondWithObserver>);
+    static PassRefPtrWillBeRawPtr<FetchEvent> create(PassRefPtr<RespondWithObserver>, PassRefPtr<Request>);
     virtual ~FetchEvent() { }
+
+    Request* request() const;
 
     void respondWith(const ScriptValue&);
 
@@ -30,10 +36,13 @@ public:
 
 protected:
     FetchEvent();
+    // TODO(horo): Remove this.
     explicit FetchEvent(PassRefPtr<RespondWithObserver>);
+    FetchEvent(PassRefPtr<RespondWithObserver>, PassRefPtr<Request>);
 
 private:
     RefPtr<RespondWithObserver> m_observer;
+    RefPtr<Request> m_request;
 };
 
 } // namespace WebCore

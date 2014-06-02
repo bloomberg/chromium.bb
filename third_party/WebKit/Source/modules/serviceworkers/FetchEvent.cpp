@@ -5,6 +5,7 @@
 #include "config.h"
 #include "FetchEvent.h"
 
+#include "modules/serviceworkers/Request.h"
 #include "modules/serviceworkers/ServiceWorkerGlobalScope.h"
 #include "wtf/RefPtr.h"
 
@@ -15,9 +16,20 @@ PassRefPtrWillBeRawPtr<FetchEvent> FetchEvent::create()
     return adoptRefWillBeNoop(new FetchEvent());
 }
 
+// TODO(horo): Remove this.
 PassRefPtrWillBeRawPtr<FetchEvent> FetchEvent::create(PassRefPtr<RespondWithObserver> observer)
 {
     return adoptRefWillBeNoop(new FetchEvent(observer));
+}
+
+PassRefPtrWillBeRawPtr<FetchEvent> FetchEvent::create(PassRefPtr<RespondWithObserver> observer, PassRefPtr<Request> request)
+{
+    return adoptRefWillBeNoop(new FetchEvent(observer, request));
+}
+
+Request* FetchEvent::request() const
+{
+    return m_request.get();
 }
 
 void FetchEvent::respondWith(const ScriptValue& value)
@@ -35,9 +47,18 @@ FetchEvent::FetchEvent()
     ScriptWrappable::init(this);
 }
 
+// TODO(horo): Remove this.
 FetchEvent::FetchEvent(PassRefPtr<RespondWithObserver> observer)
     : Event(EventTypeNames::fetch, /*canBubble=*/false, /*cancelable=*/true)
     , m_observer(observer)
+{
+    ScriptWrappable::init(this);
+}
+
+FetchEvent::FetchEvent(PassRefPtr<RespondWithObserver> observer, PassRefPtr<Request> request)
+    : Event(EventTypeNames::fetch, /*canBubble=*/false, /*cancelable=*/true)
+    , m_observer(observer)
+    , m_request(request)
 {
     ScriptWrappable::init(this);
 }

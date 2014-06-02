@@ -19,6 +19,7 @@ class ScriptValue;
 class HeaderMap FINAL : public ScriptWrappable, public RefCounted<HeaderMap> {
 public:
     static PassRefPtr<HeaderMap> create();
+    static PassRefPtr<HeaderMap> create(const HashMap<String, String>& headers);
 
     // HeaderMap.idl implementation.
     unsigned long size() const;
@@ -34,6 +35,7 @@ public:
 
 private:
     HeaderMap();
+    explicit HeaderMap(const HashMap<String, String>& headers);
     void forEachInternal(PassOwnPtr<HeaderMapForEachCallback>, ScriptValue* thisArg);
 
     // FIXME: this doesn't preserve ordering while ES6 Map type requires it.

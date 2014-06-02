@@ -78,11 +78,21 @@ void ServiceWorkerGlobalScopeProxy::dispatchActivateEvent(int eventID)
     observer->didDispatchEvent();
 }
 
+// TODO(horo): Remove this.
 void ServiceWorkerGlobalScopeProxy::dispatchFetchEvent(int eventID)
 {
     ASSERT(m_workerGlobalScope);
     RefPtr<RespondWithObserver> observer = RespondWithObserver::create(m_workerGlobalScope, eventID);
     m_workerGlobalScope->dispatchEvent(FetchEvent::create(observer));
+    observer->didDispatchEvent();
+}
+
+void ServiceWorkerGlobalScopeProxy::dispatchFetchEvent(int eventID, const WebServiceWorkerRequest& webRequest)
+{
+    ASSERT(m_workerGlobalScope);
+    RefPtr<RespondWithObserver> observer = RespondWithObserver::create(m_workerGlobalScope, eventID);
+    RefPtr<Request> request = Request::create(webRequest);
+    m_workerGlobalScope->dispatchEvent(FetchEvent::create(observer, request));
     observer->didDispatchEvent();
 }
 

@@ -300,6 +300,7 @@
       'exported/WebScrollbarThemeGeometryNative.h',
       'exported/WebSerializedOrigin.cpp',
       'exported/WebServiceWorkerProxy.cpp',
+      'exported/WebServiceWorkerRequest.cpp',
       'exported/WebServiceWorkerResponse.cpp',
       'exported/WebSocketHandshakeRequestInfo.cpp',
       'exported/WebSocketHandshakeResponseInfo.cpp',

@@ -44,6 +44,7 @@ namespace blink {
 
 class WebEmbeddedWorkerImpl;
 class WebServiceWorkerContextClient;
+class WebServiceWorkerRequest;
 
 // This class is created and destructed on the main thread, but live most
 // of its time as a resident of the worker thread.
@@ -68,7 +69,9 @@ public:
     // WebServiceWorkerContextProxy overrides:
     virtual void dispatchActivateEvent(int) OVERRIDE;
     virtual void dispatchInstallEvent(int) OVERRIDE;
+    // TODO(horo): remove this.
     virtual void dispatchFetchEvent(int) OVERRIDE;
+    virtual void dispatchFetchEvent(int, const WebServiceWorkerRequest&) OVERRIDE;
     virtual void dispatchMessageEvent(const WebString& message, const WebMessagePortChannelArray&) OVERRIDE;
     virtual void dispatchSyncEvent(int) OVERRIDE;
 

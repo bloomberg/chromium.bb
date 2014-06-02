@@ -6,5 +6,7 @@
     RuntimeEnabled=ServiceWorker,
     Exposed=ServiceWorker
 ] interface FetchEvent : Event {
+    readonly attribute Request request;
+
     void respondWith(any value);
 };

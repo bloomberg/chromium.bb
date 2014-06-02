@@ -18,6 +18,11 @@ PassRefPtr<HeaderMap> HeaderMap::create()
     return adoptRef(new HeaderMap);
 }
 
+PassRefPtr<HeaderMap> HeaderMap::create(const HashMap<String, String>& headers)
+{
+    return adoptRef(new HeaderMap(headers));
+}
+
 unsigned long HeaderMap::size() const
 {
     return m_headers.size();
@@ -62,6 +67,12 @@ void HeaderMap::forEach(PassOwnPtr<HeaderMapForEachCallback> callback)
 }
 
 HeaderMap::HeaderMap()
+{
+    ScriptWrappable::init(this);
+}
+
+HeaderMap::HeaderMap(const HashMap<String, String>& headers)
+    : m_headers(headers)
 {
     ScriptWrappable::init(this);
 }

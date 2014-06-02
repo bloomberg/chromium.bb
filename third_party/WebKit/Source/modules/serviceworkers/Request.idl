@@ -1,0 +1,28 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// https://slightlyoff.github.io/ServiceWorker/spec/service_worker/index.html#request-objects
+
+[
+    Constructor(optional Dictionary requestInitDict),
+    RuntimeEnabled=ServiceWorker,
+    Exposed=ServiceWorker
+] interface Request {
+    attribute DOMString url;
+    // FIXME: Spec uses ByteString for this. We must perform the DOMString -> ByteString conversion manually (crbug.com/347426).
+    attribute DOMString method;
+    readonly attribute DOMString origin;
+    readonly attribute HeaderMap headers;
+
+    // FIXME: Implement the following:
+    // attribute unsigned long timeout;
+    // readonly attribute Mode mode;
+    // attribute boolean synchronous;
+    // readonly attribute unsigned long redirectCount;
+    // attribute boolean forcePreflight;
+    // attribute boolean forceSameOrigin;
+    // attribute boolean omitCredentials;
+    // readonly attribute DOMString referrer;
+    // attribute any body;
+};
