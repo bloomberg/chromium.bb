@@ -104,7 +104,7 @@ int EventFlagsFromGdkState(guint state) {
 }
 
 void SetGtkTransientForAura(GtkWidget* dialog, aura::Window* parent) {
-  if (!parent)
+  if (!parent || !parent->GetHost())
     return;
 
   gtk_widget_realize(dialog);
