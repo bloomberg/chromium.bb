@@ -25,7 +25,6 @@
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/download/download_service.h"
 #include "chrome/browser/download/download_service_factory.h"
-#include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/bookmark_model_loaded_observer.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
@@ -48,7 +47,6 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "components/bookmarks/browser/bookmark_model.h"
-#include "components/password_manager/core/browser/password_store.h"
 #include "components/signin/core/common/profile_management_switches.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
@@ -1091,15 +1089,6 @@ void ProfileManager::FinishDeletingProfile(const base::FilePath& profile_dir) {
         profile)) {
       ProfileSyncServiceFactory::GetInstance()->GetForProfile(
           profile)->DisableForUser();
-    }
-
-    // Some platforms store passwords in keychains. They should be removed.
-    scoped_refptr<password_manager::PasswordStore> password_store =
-        PasswordStoreFactory::GetForProfile(profile, Profile::EXPLICIT_ACCESS)
-            .get();
-    if (password_store) {
-      password_store->RemoveLoginsCreatedBetween(base::Time(),
-                                                 base::Time::Max());
     }
   }
 
