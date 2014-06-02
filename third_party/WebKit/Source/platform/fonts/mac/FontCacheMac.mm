@@ -164,8 +164,8 @@ PassRefPtr<SimpleFontData> FontCache::platformFallbackForCharacter(const FontDes
 
     if (traits != substituteFontTraits || weight != substituteFontWeight || !nsFont) {
         if (NSFont *bestVariation = [fontManager fontWithFamily:[substituteFont familyName] traits:traits weight:weight size:size]) {
-            if (!nsFont || (([fontManager traitsOfFont:bestVariation] != substituteFontTraits || [fontManager weightOfFont:bestVariation] != substituteFontWeight)
-                && [[bestVariation coveredCharacterSet] longCharacterIsMember:character]))
+            if ((!nsFont || [fontManager traitsOfFont:bestVariation] != substituteFontTraits || [fontManager weightOfFont:bestVariation] != substituteFontWeight)
+                && [[bestVariation coveredCharacterSet] longCharacterIsMember:character])
                 substituteFont = bestVariation;
         }
     }
