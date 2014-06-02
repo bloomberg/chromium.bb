@@ -22,14 +22,6 @@ namespace plugin {
 class Plugin;
 class PnaclCoordinator;
 
-// Constants for loading LLC and LD.
-class PnaclUrls {
- public:
-  static bool IsPnaclComponent(const nacl::string& full_url);
-  static nacl::string PnaclComponentURLToFilename(
-      const nacl::string& full_url);
-};
-
 // Loads a list of resources, providing a way to get file descriptors for
 // these resources.  URLs for resources are resolved by the manifest
 // and point to pnacl component filesystem resources.

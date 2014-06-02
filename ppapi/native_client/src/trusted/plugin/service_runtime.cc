@@ -358,39 +358,6 @@ void PluginReverseInterface::OpenManifestEntry_MainThreadContinuation(
     return;
   }
 
-  if (PnaclUrls::IsPnaclComponent(mapped_url)) {
-    // Special PNaCl support files, that are installed on the
-    // user machine.
-    PP_FileHandle handle = plugin_->nacl_interface()->GetReadonlyPnaclFd(
-        PnaclUrls::PnaclComponentURLToFilename(mapped_url).c_str());
-    int32_t fd = -1;
-    if (handle != PP_kInvalidFileHandle)
-      fd = ConvertFileDescriptor(handle, true);
-
-    if (fd < 0) {
-      // We checked earlier if the pnacl component wasn't installed
-      // yet, so this shouldn't happen. At this point, we can't do much
-      // anymore, so just continue with an invalid fd.
-      NaClLog(4,
-              "OpenManifestEntry_MainThreadContinuation: "
-              "GetReadonlyPnaclFd failed\n");
-    }
-    {
-      nacl::MutexLocker take(&mu_);
-      *p->op_complete_ptr = true;  // done!
-      // TODO(ncbray): enable the fast loading and validation paths for this
-      // type of file.
-      p->file_info->desc = fd;
-      NaClXCondVarBroadcast(&cv_);
-    }
-    NaClLog(4,
-            "OpenManifestEntry_MainThreadContinuation: GetPnaclFd okay\n");
-    p->MaybeRunCallback(PP_OK);
-    return;
-  }
-
-  // Hereafter, normal files.
-
   // Because p is owned by the callback of this invocation, so it is necessary
   // to create another instance.
   OpenManifestEntryResource* open_cont = new OpenManifestEntryResource(*p);

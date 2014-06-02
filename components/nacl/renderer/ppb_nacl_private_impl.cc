@@ -66,6 +66,9 @@ namespace {
 // The pseudo-architecture used to indicate portable native client.
 const char* const kPortableArch = "portable";
 
+// The base URL for resources used by the PNaCl translator processes.
+const char* kPNaClTranslatorBaseUrl = "chrome://pnacl-translator/";
+
 base::LazyInstance<scoped_refptr<PnaclTranslationResourceHost> >
     g_pnacl_resource_host = LAZY_INSTANCE_INITIALIZER;
 
@@ -520,7 +523,30 @@ int32_t BrokerDuplicateHandle(PP_FileHandle source_handle,
 #endif
 }
 
-PP_FileHandle GetReadonlyPnaclFD(const char* filename) {
+// Convert a URL to a filename for GetReadonlyPnaclFd.
+// Must be kept in sync with PnaclCanOpenFile() in
+// components/nacl/browser/nacl_file_host.cc.
+std::string PnaclComponentURLToFilename(const std::string& url) {
+  // PNaCl component URLs aren't arbitrary URLs; they are always either
+  // generated from ManifestResolveKey or PnaclResources::ReadResourceInfo.
+  // So, it's safe to just use string parsing operations here instead of
+  // URL-parsing ones.
+  DCHECK(StartsWithASCII(url, kPNaClTranslatorBaseUrl, true));
+  std::string r = url.substr(std::string(kPNaClTranslatorBaseUrl).length());
+
+  // Use white-listed-chars.
+  size_t replace_pos;
+  static const char* white_list = "abcdefghijklmnopqrstuvwxyz0123456789_";
+  replace_pos = r.find_first_not_of(white_list);
+  while(replace_pos != std::string::npos) {
+    r = r.replace(replace_pos, 1, "_");
+    replace_pos = r.find_first_not_of(white_list);
+  }
+  return r;
+}
+
+PP_FileHandle GetReadonlyPnaclFd(const char* url) {
+  std::string filename = PnaclComponentURLToFilename(url);
   IPC::PlatformFileForTransit out_fd = IPC::InvalidPlatformFileForTransit();
   IPC::Sender* sender = content::RenderThread::Get();
   DCHECK(sender);
@@ -1075,7 +1101,7 @@ PP_Bool ManifestResolveKey(PP_Instance instance,
     }
     std::string key_basename = key_string.substr(kFilesPrefix.length());
     std::string pnacl_url =
-        std::string("chrome://pnacl-translator/") + GetSandboxArch() + "/" +
+        std::string(kPNaClTranslatorBaseUrl) + GetSandboxArch() + "/" +
         key_basename;
     *pp_full_url = ppapi::StringVar::StringToPPVar(pnacl_url);
     return PP_TRUE;
@@ -1101,7 +1127,7 @@ PP_Bool GetPNaClResourceInfo(PP_Instance instance,
   if (!load_manager)
     return PP_FALSE;
 
-  base::PlatformFile file = GetReadonlyPnaclFD(filename);
+  base::PlatformFile file = GetReadonlyPnaclFd(filename);
   if (file == base::kInvalidPlatformFileValue) {
     load_manager->ReportLoadError(
         PP_NACL_ERROR_PNACL_RESOURCE_FETCH,
@@ -1418,6 +1444,30 @@ void DownloadFile(PP_Instance instance,
     return;
   }
 
+  // Handle special PNaCl support files which are installed on the user's
+  // machine.
+  std::string url_string(url);
+  if (url_string.find(kPNaClTranslatorBaseUrl, 0) == 0) {
+    PP_FileHandle handle = GetReadonlyPnaclFd(url);
+    if (handle == PP_kInvalidFileHandle) {
+      ppapi::PpapiGlobals::Get()->GetMainThreadMessageLoop()->PostTask(
+          FROM_HERE,
+          base::Bind(callback.func, callback.user_data,
+                     static_cast<int32_t>(PP_ERROR_FAILED)));
+      return;
+    }
+    // TODO(ncbray): enable the fast loading and validation paths for this type
+    // of file.
+    file_info->handle = handle;
+    file_info->token_lo = 0;
+    file_info->token_hi = 0;
+    ppapi::PpapiGlobals::Get()->GetMainThreadMessageLoop()->PostTask(
+        FROM_HERE,
+        base::Bind(callback.func, callback.user_data,
+                   static_cast<int32_t>(PP_OK)));
+    return;
+  }
+
   // We have to ensure that this url resolves relative to the plugin base url
   // before downloading it.
   const GURL& test_gurl = load_manager->plugin_base_url().Resolve(url);
@@ -1484,7 +1534,7 @@ const PPB_NaCl_Private nacl_interface = {
   &UrandomFD,
   &Are3DInterfacesDisabled,
   &BrokerDuplicateHandle,
-  &GetReadonlyPnaclFD,
+  &GetReadonlyPnaclFd,
   &CreateTemporaryFile,
   &GetNumberOfProcessors,
   &PPIsNonSFIModeEnabled,
