@@ -800,8 +800,7 @@ bool InputMethodUtil::IsLoginKeyboard(const std::string& input_method_id)
   return ime ? ime->is_login_keyboard() : false;
 }
 
-void InputMethodUtil::SetComponentExtensions(
-    const InputMethodDescriptors& imes) {
+void InputMethodUtil::AppendInputMethods(const InputMethodDescriptors& imes) {
   for (size_t i = 0; i < imes.size(); ++i) {
     const InputMethodDescriptor& input_method = imes[i];
     DCHECK(!input_method.language_codes().empty());
@@ -826,6 +825,15 @@ void InputMethodUtil::SetComponentExtensions(
   }
 }
 
+void InputMethodUtil::ResetInputMethods(const InputMethodDescriptors& imes) {
+  // Clear the existing maps.
+  language_code_to_ids_.clear();
+  id_to_language_code_.clear();
+  id_to_descriptor_.clear();
+
+  AppendInputMethods(imes);
+}
+
 void InputMethodUtil::InitXkbInputMethodsForTesting() {
   cached_hardware_layouts_.clear();
   if (!extension_ime_util::UseWrappedExtensionKeyboardLayouts())
@@ -845,7 +853,7 @@ void InputMethodUtil::InitXkbInputMethodsForTesting() {
         ime.options_page_url(),
         ime.input_view_url()));
   }
-  SetComponentExtensions(whitelist_imes);
+  ResetInputMethods(whitelist_imes);
 }
 
 InputMethodDescriptor InputMethodUtil::GetFallbackInputMethodDescriptor() {

@@ -137,8 +137,11 @@ class InputMethodUtil {
   // Returns true if the given input method id is for a keyboard layout.
   static bool IsKeyboardLayout(const std::string& input_method_id);
 
-  // Sets the list of component extension IMEs.
-  void SetComponentExtensions(const InputMethodDescriptors& imes);
+  // Resets the list of component extension IMEs.
+  void ResetInputMethods(const InputMethodDescriptors& imes);
+
+  // Appends the additional list of component extension IMEs.
+  void AppendInputMethods(const InputMethodDescriptors& imes);
 
   // Initializes the extension based xkb IMEs for testing.
   void InitXkbInputMethodsForTesting();

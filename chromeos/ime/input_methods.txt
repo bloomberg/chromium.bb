@@ -43,11 +43,17 @@
 #
 
 # U.S. English
-xkb:us::eng           us             en-US,en-AU,id,fil,ms US   login
-xkb:us:intl:eng       us(intl)       en-US,nl,pt-BR        INTL login
-xkb:us:altgr-intl:eng us(altgr-intl) en-US                 EXTD login
-xkb:us:dvorak:eng     us(dvorak)     en-US                 DV   login
-xkb:us:colemak:eng    us(colemak)    en-US                 CO   login
+xkb:us::eng           us             en,en-US,en-AU,en-NZ US   login
+xkb:us:intl:eng       us(intl)       en,en-US             INTL login
+xkb:us:altgr-intl:eng us(altgr-intl) en,en-US             EXTD login
+xkb:us:dvorak:eng     us(dvorak)     en,en-US             DV   login
+xkb:us:colemak:eng    us(colemak)    en,en-US             CO   login
+xkb:us:intl:nld       us(intl)       nl                   INTL login
+xkb:us:intl:por       us(intl)       pt-BR                INTL login
+xkb:us::ind           us             id                   US   login
+xkb:us::fil           us             fil                  US   login
+xkb:us::msa           us             ms                   US   login
+
 # U.S. English entiries have to be above the Dutch entry so that xkb:us:intl:eng
 # will be selected as the default keyboard when the UI language is set to Dutch.
 
@@ -56,17 +62,17 @@ xkb:be::nld  be nl BE login
 # We don't support xkb:nl::nld. See b/4430951.
 
 # French
-xkb:fr::fra    fr     fr FR login
-xkb:be::fra    be     fr BE login
-xkb:ca::fra    ca     fr CA login
-xkb:ch:fr:fra  ch(fr) fr CH login
-xkb:ca:multix:fra ca(multix) fr CA login
+xkb:fr::fra       fr         fr,fr-FR FR login
+xkb:be::fra       be         fr       BE login
+xkb:ca::fra       ca         fr,fr-CA CA login
+xkb:ch:fr:fra     ch(fr)     fr,fr-CH CH login
+xkb:ca:multix:fra ca(multix) fr,fr-CA CA login
 
 # German
-xkb:de::ger     de      de DE  login
-xkb:de:neo:ger  de(neo) de NEO login
-xkb:be::ger     be      de BE  login
-xkb:ch::ger     ch      de CH  login
+xkb:de::ger     de      de,de-DE DE  login
+xkb:de:neo:ger  de(neo) de,de-DE NEO login
+xkb:be::ger     be      de       BE  login
+xkb:ch::ger     ch      de,de-CH CH  login
 
 # Japanese
 # |kMozcJaInputMethodIds| in ibus_ui_controller.cc should also be updated when
@@ -78,10 +84,10 @@ xkb:ru::rus          ru           ru RU
 xkb:ru:phonetic:rus  ru(phonetic) ru RU
 
 # Keyboard layouts.
-xkb:br::por           br             pt-BR     BR login
+xkb:br::por           br             pt-BR,pt  BR login
 xkb:bg::bul           bg             bg        BG
 xkb:bg:phonetic:bul   bg(phonetic)   bg        BG
-xkb:ca:eng:eng        ca(eng)        en-CA     CA login
+xkb:ca:eng:eng        ca(eng)        en,en-CA  CA login
 xkb:cz::cze           cz             cs        CZ login
 xkb:cz:qwerty:cze     cz(qwerty)     cs        CS login
 xkb:ee::est           ee             et        EE login
@@ -94,15 +100,15 @@ xkb:latam::spa        latam          es,es-419 LA login
 xkb:lt::lit           lt             lt        LT login
 xkb:lv:apostrophe:lav lv(apostrophe) lv        LV login
 xkb:hr::scr           hr             hr        HR login
-xkb:gb:extd:eng       gb(extd)       en-GB     GB login
-xkb:gb:dvorak:eng     gb(dvorak)     en-GB     DV login
+xkb:gb:extd:eng       gb(extd)       en,en-GB  GB login
+xkb:gb:dvorak:eng     gb(dvorak)     en,en-GB  DV login
 xkb:fi::fin           fi             fi        FI login
 xkb:hu::hun           hu             hu        HU login
-xkb:it::ita           it             it        IT login
+xkb:it::ita           it             it,it-IT  IT login
 xkb:is::ice           is             is        IS login
-xkb:no::nob           no             nb        NO login
+xkb:no::nob           no             nb,nn,no  NO login
 xkb:pl::pol           pl             pl        PL login
-xkb:pt::por           pt             pt-PT     PT login
+xkb:pt::por           pt             pt-PT,pt  PT login
 xkb:ro::rum           ro             ro        RO login
 xkb:se::swe           se             sv        SE login
 xkb:sk::slo           sk             sk        SK
@@ -114,5 +120,7 @@ xkb:by::bel           by             be        BY
 xkb:am:phonetic:arm   am             hy        AM
 xkb:ge::geo           ge             ka        GE
 xkb:mn::mon           mn             mn        MN
+xkb:ie::ga            ie             ga        GA login
+
 # TODO(yusukes): Support xkb:latam:deadtilde:spa and/or xkb:latam:nodeadkeys:spa
 # if necessary.

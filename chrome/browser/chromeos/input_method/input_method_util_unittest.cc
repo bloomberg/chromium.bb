@@ -93,7 +93,8 @@ class InputMethodUtilTest : public testing::Test {
                                      GURL(""));
     input_methods.push_back(zhuyin_ime);
 
-    util_.SetComponentExtensions(input_methods);
+    util_.InitXkbInputMethodsForTesting();
+    util_.AppendInputMethods(input_methods);
   }
 
   std::string Id(const std::string& id) {
@@ -481,7 +482,7 @@ TEST_F(InputMethodUtilTest, TestGetLanguageCodesFromInputMethodIds) {
   std::vector<std::string> language_codes;
   util_.GetLanguageCodesFromInputMethodIds(input_method_ids, &language_codes);
   ASSERT_EQ(3U, language_codes.size());
-  EXPECT_EQ("en-US", language_codes[0]);
+  EXPECT_EQ("en", language_codes[0]);
   EXPECT_EQ("zh-CN", language_codes[1]);
   EXPECT_EQ("fr", language_codes[2]);
 }
@@ -495,7 +496,7 @@ TEST_F(InputMethodUtilTest, TestIBusInputMethodText) {
         l10n_util::GetDisplayNameForLocale(language_code, "en", false);
     // Only two formats, like "fr" (lower case) and "en-US" (lower-upper), are
     // allowed. See the text file for details.
-    EXPECT_TRUE(language_code.length() == 2 ||
+    EXPECT_TRUE(language_code == "fil" || language_code.length() == 2 ||
                 (language_code.length() == 5 && language_code[2] == '-'))
         << "Invalid language code " << language_code;
     EXPECT_TRUE(l10n_util::IsValidLocaleSyntax(language_code))

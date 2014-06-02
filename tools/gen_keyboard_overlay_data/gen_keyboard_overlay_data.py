@@ -84,25 +84,6 @@ LABEL_MAP = {
 };
 
 INPUT_METHOD_ID_TO_OVERLAY_ID = {
-  'm17n:ar:kbd': 'ar',
-  'm17n:fa:isiri': 'ar',
-  'm17n:hi:itrans': 'hi',
-  'm17n:th:kesmanee': 'th',
-  'm17n:th:pattachote': 'th',
-  'm17n:th:tis820': 'th',
-  'm17n:vi:tcvn': 'vi',
-  'm17n:vi:telex': 'vi',
-  'm17n:vi:viqr': 'vi',
-  'm17n:vi:vni': 'vi',
-  'm17n:zh:cangjie': 'zh_TW',
-  'm17n:zh:quick': 'zh_TW',
-  'mozc': 'en_US',
-  'mozc-chewing': 'zh_TW',
-  'mozc-dv': 'en_US_dvorak',
-  'mozc-hangul': 'ko',
-  'mozc-jp': 'ja',
-  'pinyin': 'zh_CN',
-  'pinyin-dv': 'en_US_dvorak',
   'xkb:be::fra': 'fr',
   'xkb:be::ger': 'de',
   'xkb:be::nld': 'nl',
@@ -130,7 +111,6 @@ INPUT_METHOD_ID_TO_OVERLAY_ID = {
   'xkb:il::heb': 'iw',
   'xkb:it::ita': 'it',
   'xkb:jp::jpn': 'ja',
-  'xkb:kr:kr104:kor': 'ko',
   'xkb:latam::spa': 'es_419',
   'xkb:lt::lit': 'lt',
   'xkb:lv:apostrophe:lav': 'lv',
@@ -147,11 +127,15 @@ INPUT_METHOD_ID_TO_OVERLAY_ID = {
   'xkb:tr::tur': 'tr',
   'xkb:ua::ukr': 'uk',
   'xkb:us::eng': 'en_US',
+  'xkb:us::fil': 'en_US',
+  'xkb:us::ind': 'en_US',
+  'xkb:us::msa': 'en_US',
   'xkb:us:altgr-intl:eng': 'en_US_altgr_intl',
   'xkb:us:colemak:eng': 'en_US_colemak',
   'xkb:us:dvorak:eng': 'en_US_dvorak',
   'xkb:us:intl:eng': 'en_US_intl',
-  'zinnia-japanese': 'ja',
+  'xkb:us:intl:nld': 'en_US_intl',
+  'xkb:us:intl:por': 'en_US_intl'
 }
 
 # The file was first generated in 2012 and we have a policy of not updating

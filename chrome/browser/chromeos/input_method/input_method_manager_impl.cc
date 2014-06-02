@@ -386,6 +386,8 @@ bool InputMethodManagerImpl::ChangeInputMethodInternal(
     } else {
       descriptor =
           util_.GetInputMethodDescriptorFromId(input_method_id_to_switch);
+      if (!descriptor)
+        LOG(ERROR) << "Unknown input method id: " << input_method_id_to_switch;
     }
     DCHECK(descriptor);
 
@@ -411,8 +413,21 @@ void InputMethodManagerImpl::OnComponentExtensionInitialized(
     scoped_ptr<ComponentExtensionIMEManagerDelegate> delegate) {
   DCHECK(thread_checker_.CalledOnValidThread());
   component_extension_ime_manager_->Initialize(delegate.Pass());
-  util_.SetComponentExtensions(
-      component_extension_ime_manager_->GetAllIMEAsInputMethodDescriptor());
+  InputMethodDescriptors imes =
+      component_extension_ime_manager_->GetAllIMEAsInputMethodDescriptor();
+  // In case of XKB extension is not available (e.g. linux_chromeos), don't
+  // reset the input methods in InputMethodUtil, Instead append input methods.
+  bool xkb_found = false;
+  for (size_t i = 0; i < imes.size(); ++i) {
+    if (StartsWithASCII(imes[i].id(), "xkb:", true)) {
+      xkb_found = true;
+      break;
+    }
+  }
+  if (xkb_found)
+    util_.ResetInputMethods(imes);
+  else
+    util_.AppendInputMethods(imes);
 
   LoadNecessaryComponentExtensions();
 
