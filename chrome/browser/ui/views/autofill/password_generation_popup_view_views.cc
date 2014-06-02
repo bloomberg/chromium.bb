@@ -50,8 +50,9 @@ class PasswordRow : public views::View {
   }
   virtual ~PasswordRow() {}
 
-  virtual bool HitTestRect(const gfx::Rect& rect) const OVERRIDE {
-    // Have parent do event handling.
+  // views::View:
+  virtual bool CanProcessEventsWithinSubtree() const OVERRIDE {
+    // Send events to the parent view for handling.
     return false;
   }
 

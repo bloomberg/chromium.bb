@@ -49,13 +49,13 @@ class MESSAGE_CENTER_EXPORT BoundedLabel : public views::View {
   int GetLinesForWidthAndLimit(int width, int limit);
   gfx::Size GetSizeForWidthAndLines(int width, int lines);
 
-  // Overridden from views::View.
+  // views::View:
   virtual int GetBaseline() const OVERRIDE;
   virtual gfx::Size GetPreferredSize() const OVERRIDE;
   virtual int GetHeightForWidth(int width) const OVERRIDE;
   virtual void Paint(gfx::Canvas* canvas,
                      const views::CullSet& cull_set) OVERRIDE;
-  virtual bool HitTestRect(const gfx::Rect& rect) const OVERRIDE;
+  virtual bool CanProcessEventsWithinSubtree() const OVERRIDE;
   virtual void GetAccessibleState(ui::AXViewState* state) OVERRIDE;
 
  protected:

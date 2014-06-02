@@ -51,10 +51,10 @@ gfx::NativeCursor Link::GetCursor(const ui::MouseEvent& event) {
   return GetNativeHandCursor();
 }
 
-bool Link::HitTestRect(const gfx::Rect& rect) const {
-  // We need to allow clicks on the link. So we override the implementation in
-  // Label and use the default implementation of View.
-  return View::HitTestRect(rect);
+bool Link::CanProcessEventsWithinSubtree() const {
+  // Links need to be able to accept events (e.g., clicking) even though
+  // in general Labels do not.
+  return View::CanProcessEventsWithinSubtree();
 }
 
 bool Link::OnMousePressed(const ui::MouseEvent& event) {

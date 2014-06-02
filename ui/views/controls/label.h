@@ -172,7 +172,7 @@ class VIEWS_EXPORT Label : public View {
   void set_collapse_when_hidden(bool value) { collapse_when_hidden_ = value; }
   bool collapse_when_hidden() const { return collapse_when_hidden_; }
 
-  // Overridden from View:
+  // View:
   virtual gfx::Insets GetInsets() const OVERRIDE;
   virtual int GetBaseline() const OVERRIDE;
   // Overridden to compute the size required to display this label.
@@ -185,7 +185,7 @@ class VIEWS_EXPORT Label : public View {
   virtual int GetHeightForWidth(int w) const OVERRIDE;
   virtual const char* GetClassName() const OVERRIDE;
   virtual View* GetTooltipHandlerForPoint(const gfx::Point& point) OVERRIDE;
-  virtual bool HitTestRect(const gfx::Rect& rect) const OVERRIDE;
+  virtual bool CanProcessEventsWithinSubtree() const OVERRIDE;
   virtual void GetAccessibleState(ui::AXViewState* state) OVERRIDE;
   // Gets the tooltip text for labels that are wider than their bounds, except
   // when the label is multiline, in which case it just returns false (no

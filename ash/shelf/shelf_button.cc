@@ -123,9 +123,9 @@ class ShelfButton::BarView : public views::ImageView,
       ShelfButtonAnimation::GetInstance()->RemoveObserver(this);
   }
 
-  // View
-  virtual bool HitTestRect(const gfx::Rect& rect) const OVERRIDE {
-    // Allow Mouse...() messages to go to the parent view.
+  // views::View:
+  virtual bool CanProcessEventsWithinSubtree() const OVERRIDE {
+    // Send events to the parent view for handling.
     return false;
   }
 
@@ -201,8 +201,8 @@ ShelfButton::IconView::IconView() : icon_size_(kIconSize) {
 ShelfButton::IconView::~IconView() {
 }
 
-bool ShelfButton::IconView::HitTestRect(const gfx::Rect& rect) const {
-  // Return false so that ShelfButton gets all the mouse events.
+bool ShelfButton::IconView::CanProcessEventsWithinSubtree() const {
+  // Return false so that events are sent to ShelfView for handling.
   return false;
 }
 

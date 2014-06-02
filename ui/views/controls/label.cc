@@ -289,7 +289,8 @@ View* Label::GetTooltipHandlerForPoint(const gfx::Point& point) {
   return this;
 }
 
-bool Label::HitTestRect(const gfx::Rect& rect) const {
+bool Label::CanProcessEventsWithinSubtree() const {
+  // Send events to the parent view for handling.
   return false;
 }
 

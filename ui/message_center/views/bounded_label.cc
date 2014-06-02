@@ -333,8 +333,8 @@ void BoundedLabel::Paint(gfx::Canvas* canvas, const views::CullSet& cull_set) {
     label_->Paint(canvas, cull_set);
 }
 
-bool BoundedLabel::HitTestRect(const gfx::Rect& rect) const {
-  return label_->HitTestRect(rect);
+bool BoundedLabel::CanProcessEventsWithinSubtree() const {
+  return label_->CanProcessEventsWithinSubtree();
 }
 
 void BoundedLabel::GetAccessibleState(ui::AXViewState* state) {

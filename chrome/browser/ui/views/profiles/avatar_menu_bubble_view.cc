@@ -201,10 +201,12 @@ void EditProfileLink::OnBlur() {
 // them instead.
 class ProfileImageView : public views::ImageView {
  public:
-  virtual bool HitTestRect(const gfx::Rect& rect) const OVERRIDE;
+  // views::View:
+  virtual bool CanProcessEventsWithinSubtree() const OVERRIDE;
 };
 
-bool ProfileImageView::HitTestRect(const gfx::Rect& rect) const {
+bool ProfileImageView::CanProcessEventsWithinSubtree() const {
+  // Send events to the parent view for handling.
   return false;
 }
 
