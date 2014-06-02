@@ -211,4 +211,29 @@
       "browser_tests"
     ]
   }
+  "Chromium Linux MSan": {
+    "gtest_tests": [
+      "base_unittests",
+      "cacheinvalidation_unittests",
+      "cc_unittests",
+      "content_browsertests",
+      "content_unittests",
+      "crypto_unittests",
+      "device_unittests",
+      "gpu_unittests",
+      "ipc_tests",
+      "jingle_unittests",
+      "media_unittests",
+      "net_unittests",
+      "ppapi_unittests",
+      "printing_unittests",
+      "remoting_unittests",
+      "sandbox_linux_unittests",
+      "sql_unittests",
+      "sync_unit_tests",
+      "ui_unittests",
+      "unit_tests",
+      "url_unittests",
+    ],
+  },
 }
