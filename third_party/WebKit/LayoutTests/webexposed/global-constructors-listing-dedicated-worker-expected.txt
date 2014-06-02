@@ -39,6 +39,7 @@ Starting worker: resources/global-context-constructors-listing.js
 [Worker] Int8Array
 [Worker] MessageChannel
 [Worker] MessageEvent
+[Worker] NetworkInformation
 [Worker] Number
 [Worker] Object
 [Worker] Promise

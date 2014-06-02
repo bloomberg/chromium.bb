@@ -13,6 +13,7 @@ enum ConnectionType {
 
 [
     RuntimeEnabled=NetworkInformation,
+    Exposed=Window&Worker,
     WillBeGarbageCollected,
     ActiveDOMObject
 ] interface NetworkInformation : EventTarget {
