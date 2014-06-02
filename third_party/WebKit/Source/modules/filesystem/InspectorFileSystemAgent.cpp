@@ -714,9 +714,12 @@ bool InspectorFileSystemAgent::assertEnabled(ErrorString* error)
 
 ExecutionContext* InspectorFileSystemAgent::assertExecutionContextForOrigin(ErrorString* error, SecurityOrigin* origin)
 {
-    for (LocalFrame* frame = m_page->mainFrame(); frame; frame = frame->tree().traverseNext()) {
-        if (frame->document() && frame->document()->securityOrigin()->isSameSchemeHostPort(origin))
-            return frame->document();
+    for (Frame* frame = m_page->mainFrame(); frame; frame = frame->tree().traverseNext()) {
+        if (!frame->isLocalFrame())
+            continue;
+        LocalFrame* localFrame = toLocalFrame(frame);
+        if (localFrame->document() && localFrame->document()->securityOrigin()->isSameSchemeHostPort(origin))
+            return localFrame->document();
     }
 
     *error = "No frame is available for the request";

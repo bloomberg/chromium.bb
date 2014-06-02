@@ -100,8 +100,10 @@ void InspectorApplicationCacheAgent::getFramesWithManifests(ErrorString*, RefPtr
     result = TypeBuilder::Array<TypeBuilder::ApplicationCache::FrameWithManifest>::create();
 
     LocalFrame* mainFrame = m_pageAgent->mainFrame();
-    for (LocalFrame* frame = mainFrame; frame; frame = frame->tree().traverseNext(mainFrame)) {
-        DocumentLoader* documentLoader = frame->loader().documentLoader();
+    for (Frame* frame = mainFrame; frame; frame = frame->tree().traverseNext(mainFrame)) {
+        if (!frame->isLocalFrame())
+            continue;
+        DocumentLoader* documentLoader = toLocalFrame(frame)->loader().documentLoader();
         if (!documentLoader)
             continue;
 
@@ -110,7 +112,7 @@ void InspectorApplicationCacheAgent::getFramesWithManifests(ErrorString*, RefPtr
         String manifestURL = info.m_manifest.string();
         if (!manifestURL.isEmpty()) {
             RefPtr<TypeBuilder::ApplicationCache::FrameWithManifest> value = TypeBuilder::ApplicationCache::FrameWithManifest::create()
-                .setFrameId(m_pageAgent->frameId(frame))
+                .setFrameId(m_pageAgent->frameId(toLocalFrame(frame)))
                 .setManifestURL(manifestURL)
                 .setStatus(static_cast<int>(host->status()));
             result->addItem(value);

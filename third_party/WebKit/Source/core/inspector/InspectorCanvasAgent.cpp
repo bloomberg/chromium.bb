@@ -310,18 +310,21 @@ void InspectorCanvasAgent::didCommitLoad(LocalFrame*, DocumentLoader* loader)
 {
     if (!m_enabled)
         return;
-    LocalFrame* frame = loader->frame();
+    Frame* frame = loader->frame();
     if (frame == m_pageAgent->mainFrame()) {
         for (FramesWithUninstrumentedCanvases::iterator it = m_framesWithUninstrumentedCanvases.begin(); it != m_framesWithUninstrumentedCanvases.end(); ++it)
             it->value = false;
         m_frontend->traceLogsRemoved(0, 0);
     } else {
         while (frame) {
-            if (m_framesWithUninstrumentedCanvases.contains(frame))
-                m_framesWithUninstrumentedCanvases.set(frame, false);
-            if (m_pageAgent->hasIdForFrame(frame)) {
-                String frameId = m_pageAgent->frameId(frame);
-                m_frontend->traceLogsRemoved(&frameId, 0);
+            if (frame->isLocalFrame()) {
+                LocalFrame* localFrame = toLocalFrame(frame);
+                if (m_framesWithUninstrumentedCanvases.contains(localFrame))
+                    m_framesWithUninstrumentedCanvases.set(localFrame, false);
+                if (m_pageAgent->hasIdForFrame(localFrame)) {
+                    String frameId = m_pageAgent->frameId(localFrame);
+                    m_frontend->traceLogsRemoved(&frameId, 0);
+                }
             }
             frame = frame->tree().traverseNext();
         }

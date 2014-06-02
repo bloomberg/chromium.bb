@@ -539,10 +539,12 @@ public:
 
 LocalFrame* findFrameWithSecurityOrigin(Page* page, const String& securityOrigin)
 {
-    for (LocalFrame* frame = page->mainFrame(); frame; frame = frame->tree().traverseNext()) {
-        RefPtr<SecurityOrigin> documentOrigin = frame->document()->securityOrigin();
+    for (Frame* frame = page->mainFrame(); frame; frame = frame->tree().traverseNext()) {
+        if (!frame->isLocalFrame())
+            continue;
+        RefPtr<SecurityOrigin> documentOrigin = toLocalFrame(frame)->document()->securityOrigin();
         if (documentOrigin->toRawString() == securityOrigin)
-            return frame;
+            return toLocalFrame(frame);
     }
     return 0;
 }

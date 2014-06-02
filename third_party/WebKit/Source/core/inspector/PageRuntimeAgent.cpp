@@ -130,14 +130,17 @@ void PageRuntimeAgent::unmuteConsole()
 void PageRuntimeAgent::reportExecutionContextCreation()
 {
     Vector<std::pair<ScriptState*, SecurityOrigin*> > isolatedContexts;
-    for (LocalFrame* frame = m_inspectedPage->mainFrame(); frame; frame = frame->tree().traverseNext()) {
-        if (!frame->script().canExecuteScripts(NotAboutToExecuteScript))
+    for (Frame* frame = m_inspectedPage->mainFrame(); frame; frame = frame->tree().traverseNext()) {
+        if (!frame->isLocalFrame())
             continue;
-        String frameId = m_pageAgent->frameId(frame);
+        LocalFrame* localFrame = toLocalFrame(frame);
+        if (!localFrame->script().canExecuteScripts(NotAboutToExecuteScript))
+            continue;
+        String frameId = m_pageAgent->frameId(localFrame);
 
-        ScriptState* scriptState = ScriptState::forMainWorld(frame);
+        ScriptState* scriptState = ScriptState::forMainWorld(localFrame);
         addExecutionContextToFrontend(scriptState, true, "", frameId);
-        frame->script().collectIsolatedContexts(isolatedContexts);
+        localFrame->script().collectIsolatedContexts(isolatedContexts);
         if (isolatedContexts.isEmpty())
             continue;
         for (size_t i = 0; i< isolatedContexts.size(); i++)
