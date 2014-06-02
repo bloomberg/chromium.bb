@@ -26,6 +26,7 @@
           'dependencies': [
             '../base/base.gyp:base_java_application_state',
             '../base/base.gyp:base_java_memory_pressure_level_list',
+            '../content/content.gyp:content_gamepad_mapping',
             '../content/content.gyp:gesture_event_type_java',
             '../content/content.gyp:page_transition_types_java',
             '../content/content.gyp:popup_item_type_java',

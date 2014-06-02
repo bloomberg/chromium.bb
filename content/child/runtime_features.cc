@@ -12,6 +12,7 @@
 
 #if defined(OS_ANDROID)
 #include <cpu-features.h>
+#include "base/android/build_info.h"
 #include "media/base/android/media_codec_bridge.h"
 #endif
 
@@ -33,8 +34,10 @@ static void SetRuntimeFeatureDefaultsForPlatform() {
       media::MediaCodecBridge::IsAvailable() &&
       ((android_getCpuFamily() == ANDROID_CPU_FAMILY_ARM) ||
        (android_getCpuFamily() == ANDROID_CPU_FAMILY_X86)));
-  // Android does not support the Gamepad API.
-  WebRuntimeFeatures::enableGamepad(false);
+
+  // Android supports gamepad API for JellyBean and beyond
+  WebRuntimeFeatures::enableGamepad(
+      base::android::BuildInfo::GetInstance()->sdk_int() >= 16);
   // Android does not have support for PagePopup
   WebRuntimeFeatures::enablePagePopup(false);
   // Android does not yet support the Web Notification API. crbug.com/115320

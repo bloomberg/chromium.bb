@@ -131,6 +131,10 @@ void GamepadProvider::Initialize(scoped_ptr<GamepadDataFetcher> fetcher) {
   // On Linux, the data fetcher needs to watch file descriptors, so the message
   // loop needs to be a libevent loop.
   const base::MessageLoop::Type kMessageLoopType = base::MessageLoop::TYPE_IO;
+#elif defined(OS_ANDROID)
+  // On Android, keeping a message loop of default type.
+  const base::MessageLoop::Type kMessageLoopType =
+      base::MessageLoop::TYPE_DEFAULT;
 #else
   // On Mac, the data fetcher uses IOKit which depends on CFRunLoop, so the
   // message loop needs to be a UI-type loop. On Windows it must be a UI loop
