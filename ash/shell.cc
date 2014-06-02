@@ -862,8 +862,6 @@ void Shell::Init(const ShellInitParams& init_params) {
   window_modality_controller_.reset(
       new ::wm::WindowModalityController(this));
 
-  AddPreTargetHandler(this);
-
   env_filter_.reset(new ::wm::CompoundEventFilter);
   AddPreTargetHandler(env_filter_.get());
 
