@@ -672,6 +672,7 @@ class HWTestConfig(object):
     qav_kwargs = kwargs.copy()
     qav_kwargs.update(qav_dict)
     qav_kwargs['priority'] = constants.HWTEST_DEFAULT_PRIORITY
+    qav_kwargs['retry'] = False
 
     # BVT + AU suite.
     return [cls(cls.DEFAULT_HW_TEST, **kwargs),
@@ -696,7 +697,7 @@ class HWTestConfig(object):
     for optional args.
     """
     pgo_dict = dict(pool=constants.HWTEST_CHROME_PERF_POOL,
-                    timeout=90 * 60, num=1, async=True)
+                    timeout=90 * 60, num=1, async=True, retry=False)
     pgo_dict.update(kwargs)
     return [cls('pyauto_perf', **pgo_dict),
             cls('perf_v2', **pgo_dict)]
@@ -708,7 +709,7 @@ class HWTestConfig(object):
     """
     default_dict = dict(pool=constants.HWTEST_PALADIN_POOL, timeout=120 * 60,
                         file_bugs=False, priority=constants.HWTEST_CQ_PRIORITY,
-                        retry=True, minimum_duts=4)
+                        minimum_duts=4)
     # Allows kwargs overrides to default_dict for cq.
     default_dict.update(kwargs)
     return [cls(cls.CQ_HW_TEST, **default_dict)]
@@ -719,7 +720,8 @@ class HWTestConfig(object):
     with overrides for optional args.
     """
     default_dict = dict(pool=constants.HWTEST_PFQ_POOL, file_bugs=True,
-                        priority=constants.HWTEST_PFQ_PRIORITY, minimum_duts=4)
+                        priority=constants.HWTEST_PFQ_PRIORITY,
+                        retry=False, minimum_duts=4)
     # Allows kwargs overrides to default_dict for pfq.
     default_dict.update(kwargs)
     return [cls(cls.DEFAULT_HW_TEST, **default_dict)]
@@ -727,7 +729,7 @@ class HWTestConfig(object):
   def __init__(self, suite, num=constants.HWTEST_DEFAULT_NUM,
                pool=constants.HWTEST_MACH_POOL, timeout=DEFAULT_HW_TEST_TIMEOUT,
                async=False, warn_only=False, critical=False, file_bugs=False,
-               priority=constants.HWTEST_BUILD_PRIORITY, retry=False,
+               priority=constants.HWTEST_BUILD_PRIORITY, retry=True,
                minimum_duts=0):
     """Constructor -- see members above."""
     self.suite = suite
