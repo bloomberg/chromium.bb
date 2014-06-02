@@ -205,6 +205,33 @@ const char* WebNavigationTypeToString(blink::WebNavigationType type) {
   return kIllegalString;
 }
 
+std::string DumpFrameHeaderIfNeeded(blink::WebFrame* frame) {
+  std::string result;
+
+  // Add header for all but the main frame. Skip empty frames.
+  if (frame->parent() && !frame->document().documentElement().isNull()) {
+    result.append("\n--------\nFrame: '");
+    result.append(frame->uniqueName().utf8().data());
+    result.append("'\n--------\n");
+  }
+
+  return result;
+}
+
+std::string DumpFramesAsMarkup(blink::WebFrame* frame, bool recursive) {
+  std::string result = DumpFrameHeaderIfNeeded(frame);
+  result.append(frame->contentAsMarkup().utf8());
+  result.append("\n");
+
+  if (recursive) {
+    for (blink::WebFrame* child = frame->firstChild(); child;
+         child = child->nextSibling())
+      result.append(DumpFramesAsMarkup(child, recursive));
+  }
+
+  return result;
+}
+
 std::string DumpDocumentText(blink::WebFrame* frame) {
   // We use the document element's text instead of the body text here because
   // not all documents have a body, such as XML documents.
@@ -215,15 +242,7 @@ std::string DumpDocumentText(blink::WebFrame* frame) {
 }
 
 std::string DumpFramesAsText(blink::WebFrame* frame, bool recursive) {
-  std::string result;
-
-  // Add header for all but the main frame. Skip empty frames.
-  if (frame->parent() && !frame->document().documentElement().isNull()) {
-    result.append("\n--------\nFrame: '");
-    result.append(frame->uniqueName().utf8().data());
-    result.append("'\n--------\n");
-  }
-
+  std::string result = DumpFrameHeaderIfNeeded(frame);
   result.append(DumpDocumentText(frame));
   result.append("\n");
 
@@ -237,19 +256,11 @@ std::string DumpFramesAsText(blink::WebFrame* frame, bool recursive) {
 }
 
 std::string DumpFramesAsPrintedText(blink::WebFrame* frame, bool recursive) {
-  std::string result;
-
   // Cannot do printed format for anything other than HTML
   if (!frame->document().isHTMLDocument())
     return std::string();
 
-  // Add header for all but the main frame. Skip empty frames.
-  if (frame->parent() && !frame->document().documentElement().isNull()) {
-    result.append("\n--------\nFrame: '");
-    result.append(frame->uniqueName().utf8().data());
-    result.append("'\n--------\n");
-  }
-
+  std::string result = DumpFrameHeaderIfNeeded(frame);
   result.append(
       frame->renderTreeAsText(blink::WebFrame::RenderAsTextPrinting).utf8());
   result.append("\n");
@@ -382,12 +393,14 @@ std::string WebTestProxyBase::CaptureTree(bool debug_render_tree) {
   } else if (should_dump_as_text) {
     bool recursive =
         test_interfaces_->testRunner()->shouldDumpChildFramesAsText();
-    data_utf8 = should_dump_as_printed
-                    ? DumpFramesAsPrintedText(frame, recursive)
-                    : DumpFramesAsText(frame, recursive);
+    data_utf8 = should_dump_as_printed ?
+        DumpFramesAsPrintedText(frame, recursive) :
+        DumpFramesAsText(frame, recursive);
   } else if (should_dump_as_markup) {
+    bool recursive =
+        test_interfaces_->testRunner()->shouldDumpChildFramesAsMarkup();
     // Append a newline for the test driver.
-    data_utf8 = frame->contentAsMarkup().utf8() + "\n";
+    data_utf8 = DumpFramesAsMarkup(frame, recursive);
   } else {
     bool recursive =
         test_interfaces_->testRunner()->shouldDumpChildFrameScrollPositions();

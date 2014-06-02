@@ -77,6 +77,7 @@ class TestRunner : public WebTestRunner,
   std:: string customDumpText() const;
   bool shouldDumpAsMarkup();
   bool shouldDumpChildFrameScrollPositions() const;
+  bool shouldDumpChildFramesAsMarkup() const;
   bool shouldDumpChildFramesAsText() const;
   void showDevTools(const std::string& settings,
                     const std::string& frontend_url);
@@ -338,6 +339,11 @@ class TestRunner : public WebTestRunner,
   void DumpAsText();
 
   // This function sets a flag that tells the test_shell to dump pages as
+  // the DOM contents, rather than as a text representation of the renderer's
+  // state. The pixel results will not be generated for this test.
+  void DumpAsMarkup();
+
+  // This function sets a flag that tells the test_shell to dump pages as
   // plain text, rather than as a text representation of the renderer's state.
   // It will also generate a pixel dump for the test.
   void DumpAsTextWithPixelResults();
@@ -350,6 +356,11 @@ class TestRunner : public WebTestRunner,
   // dump all frames as plain text if the DumpAsText flag is set.
   // It takes no arguments, and ignores any that may be present.
   void DumpChildFramesAsText();
+
+  // This function sets a flag that tells the test_shell to recursively
+  // dump all frames as the DOM contents if the DumpAsMarkup flag is set.
+  // It takes no arguments, and ignores any that may be present.
+  void DumpChildFramesAsMarkup();
 
   // This function sets a flag that tells the test_shell to print out the
   // information about icon changes notifications from WebKit.
@@ -594,6 +605,11 @@ class TestRunner : public WebTestRunner,
   // If true, the test_shell will produce a dump of the DOM rather than a text
   // representation of the renderer.
   bool dump_as_markup_;
+
+  // If true and if dump_as_markup_ is true, the test_shell will recursively
+  // produce a dump of the DOM rather than a text representation of the
+  // renderer.
+  bool dump_child_frames_as_markup_;
 
   // If true, the test_shell will print out the child frame scroll offsets as
   // well.
