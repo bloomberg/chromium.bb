@@ -8,6 +8,7 @@
 #include "base/process/launch.h"
 #include "base/rand_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/timer/elapsed_timer.h"
 #include "base/win/windows_version.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/media/webrtc_browsertest_base.h"
@@ -219,6 +220,10 @@ class WebRtcApprtcBrowserTest : public WebRtcTestBase {
 };
 
 IN_PROC_BROWSER_TEST_F(WebRtcApprtcBrowserTest, MANUAL_WorksOnApprtc) {
+  // TODO(phoglund): temporary diagnostics to debug the crbug.com/377383
+  // heisenbug.
+  base::ElapsedTimer timer;
+
   // TODO(mcasas): Remove Win version filtering when this bug gets fixed:
   // http://code.google.com/p/webrtc/issues/detail?id=2703
 #if defined(OS_WIN)
@@ -230,24 +235,49 @@ IN_PROC_BROWSER_TEST_F(WebRtcApprtcBrowserTest, MANUAL_WorksOnApprtc) {
   while (!LocalApprtcInstanceIsUp())
     VLOG(1) << "Waiting for AppRTC to come up...";
 
+  LOG(INFO) << "AppRTC server up; " << timer.Elapsed().InSeconds()
+            << " seconds elapsed.";
+
   GURL room_url = GURL(base::StringPrintf("localhost:9999?r=room_%d",
                                           base::RandInt(0, 65536)));
 
   chrome::AddTabAt(browser(), GURL(), -1, true);
   content::WebContents* left_tab = OpenPageAndAcceptUserMedia(room_url);
+
+  // TODO(phoglund): trying to tease out apprtc races.
+  test::SleepInJavascript(left_tab, 2000);
+
   chrome::AddTabAt(browser(), GURL(), -1, true);
   content::WebContents* right_tab = OpenPageAndAcceptUserMedia(room_url);
+
+  LOG(INFO) << "Pages opened; " << timer.Elapsed().InSeconds()
+      << " seconds elapsed.";
 
   ASSERT_TRUE(WaitForCallToComeUp(left_tab));
   ASSERT_TRUE(WaitForCallToComeUp(right_tab));
 
+  LOG(INFO) << "Call up; " << timer.Elapsed().InSeconds()
+            << " seconds elapsed.";
+
   ASSERT_TRUE(DetectRemoteVideoPlaying(left_tab));
   ASSERT_TRUE(DetectRemoteVideoPlaying(right_tab));
+
+  LOG(INFO) << "Remote video playing; " << timer.Elapsed().InSeconds()
+            << " seconds elapsed.";
 
   ASSERT_TRUE(HangUpApprtcCall(left_tab));
 
   ASSERT_TRUE(WaitForCallToHangUp(left_tab));
   ASSERT_TRUE(WaitForCallToHangUp(right_tab));
+
+  LOG(INFO) << "Hung up; " << timer.Elapsed().InSeconds()
+            << " seconds elapsed.";
+
+  // TODO(phoglund): trying to tease out apprtc races.
+  test::SleepInJavascript(left_tab, 2000);
+
+  LOG(INFO) << "Slept a bit; " << timer.Elapsed().InSeconds()
+            << " seconds elapsed.";
 }
 
 #if defined(OS_LINUX)
