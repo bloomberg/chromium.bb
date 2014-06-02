@@ -185,11 +185,11 @@ cr.define('serviceworker', function() {
                            unregistered_versions);
     var template;
     var container = $('serviceworker-list');
-    // Existing templates are keyed by partition_path. This allows
+    // Existing templates are keyed by partition_id. This allows
     // the UI to be updated in-place rather than refreshing the
     // whole page.
     for (var i = 0; i < container.childNodes.length; ++i) {
-      if (container.childNodes[i].partition_path == partition_path) {
+      if (container.childNodes[i].partition_id == partition_id) {
         template = container.childNodes[i];
       }
     }
