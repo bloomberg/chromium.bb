@@ -96,10 +96,10 @@ void WebPopupMenuImpl::initialize(FramelessScrollView* widget, const WebRect& bo
     m_widget = widget;
     m_widget->setClient(this);
 
-    if (m_client) {
-        m_client->setWindowRect(bounds);
-        m_client->show(WebNavigationPolicy()); // Policy is ignored.
-    }
+    if (!m_client)
+        return;
+    m_client->setWindowRect(bounds);
+    m_client->show(WebNavigationPolicy()); // Policy is ignored.
 
     m_client->initializeLayerTreeView();
     m_layerTreeView = m_client->layerTreeView();
