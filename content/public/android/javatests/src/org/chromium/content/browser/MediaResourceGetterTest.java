@@ -4,6 +4,7 @@
 
 package org.chromium.content.browser;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.media.MediaMetadataRetriever;
@@ -23,6 +24,7 @@ import java.util.Map;
 /**
  * Tests for MediaResourceGetter.
  */
+@SuppressLint("SdCardPath")
 public class MediaResourceGetterTest extends InstrumentationTestCase {
     private static final String TEST_HTTP_URL = "http://example.com";
     private static final String TEST_USER_AGENT = // Anyhting, really
