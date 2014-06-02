@@ -2,7 +2,13 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Runs Facebook's JSGameBench benchmark."""
+"""Runs Facebook's JSGameBench benchmark.
+
+As of May 14, 2014, JSGameBench is no longer maintained. See README.md:
+https://github.com/facebookarchive/jsgamebench
+
+The benchmark is kept here for historical purposes but is disabled on the bots.
+"""
 
 import os
 
@@ -25,7 +31,7 @@ class _JsgamebenchMeasurement(page_measurement.PageMeasurement):
     results.Add('Score', 'score (bigger is better)', result)
 
 
-@test.Disabled('linux')  # crbug.com/365237
+@test.Disabled
 class Jsgamebench(test.Test):
   """Counts how many animating sprites can move around on the screen at once."""
   test = _JsgamebenchMeasurement
