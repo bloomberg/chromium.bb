@@ -8,6 +8,7 @@
 #include "base/basictypes.h"
 #include "base/observer_list.h"
 #include "mojo/services/public/cpp/view_manager/view_manager_types.h"
+#include "third_party/skia/include/core/SkColor.h"
 
 class SkBitmap;
 
@@ -31,7 +32,9 @@ class View {
   void AddObserver(ViewObserver* observer);
   void RemoveObserver(ViewObserver* observer);
 
+  // TODO(beng): temporary only.
   void SetContents(const SkBitmap& contents);
+  void SetColor(SkColor color);
 
  private:
   friend class ViewPrivate;
