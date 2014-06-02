@@ -895,8 +895,9 @@ SMILTime SVGSMILElement::resolveActiveEnd(SMILTime resolvedBegin, SMILTime resol
     return resolvedBegin + min(maxValue, max(minValue, preliminaryActiveDuration));
 }
 
-void SVGSMILElement::resolveInterval(bool first, SMILTime& beginResult, SMILTime& endResult) const
+SMILInterval SVGSMILElement::resolveInterval(ResolveInterval resolveIntervalType) const
 {
+    bool first = resolveIntervalType == FirstInterval;
     // See the pseudocode in http://www.w3.org/TR/SMIL3/smil-timing.html#q90.
     SMILTime beginAfter = first ? -numeric_limits<double>::infinity() : m_interval.end;
     SMILTime lastIntervalTempEnd = numeric_limits<double>::infinity();
@@ -918,28 +919,22 @@ void SVGSMILElement::resolveInterval(bool first, SMILTime& beginResult, SMILTime
             }
             tempEnd = resolveActiveEnd(tempBegin, tempEnd);
         }
-        if (!first || (tempEnd > 0 || (!tempBegin.value() && !tempEnd.value()))) {
-            beginResult = tempBegin;
-            endResult = tempEnd;
-            return;
-        }
+        if (!first || (tempEnd > 0 || (!tempBegin.value() && !tempEnd.value())))
+            return SMILInterval(tempBegin, tempEnd);
 
         beginAfter = tempEnd;
         lastIntervalTempEnd = tempEnd;
     }
-    beginResult = SMILTime::unresolved();
-    endResult = SMILTime::unresolved();
+    return SMILInterval(SMILTime::unresolved(), SMILTime::unresolved());
 }
 
 void SVGSMILElement::resolveFirstInterval()
 {
-    SMILInterval firstInterval;
-    resolveInterval(true, firstInterval.begin, firstInterval.end);
+    SMILInterval firstInterval = resolveInterval(FirstInterval);
     ASSERT(!firstInterval.begin.isIndefinite());
 
-    if (!firstInterval.begin.isUnresolved() && firstInterval != SMILInterval(m_interval.begin, m_interval.end)) {
-        m_interval.begin = firstInterval.begin;
-        m_interval.end = firstInterval.end;
+    if (!firstInterval.begin.isUnresolved() && firstInterval != m_interval) {
+        m_interval = firstInterval;
         notifyDependentsIntervalChanged();
         m_nextProgressTime = min(m_nextProgressTime, m_interval.begin);
 
@@ -950,14 +945,11 @@ void SVGSMILElement::resolveFirstInterval()
 
 bool SVGSMILElement::resolveNextInterval()
 {
-    SMILTime begin;
-    SMILTime end;
-    resolveInterval(false, begin, end);
-    ASSERT(!begin.isIndefinite());
+    SMILInterval nextInterval = resolveInterval(NextInterval);
+    ASSERT(!nextInterval.begin.isIndefinite());
 
-    if (!begin.isUnresolved() && begin != m_interval.begin) {
-        m_interval.begin = begin;
-        m_interval.end = end;
+    if (!nextInterval.begin.isUnresolved() && nextInterval.begin != m_interval.begin) {
+        m_interval = nextInterval;
         notifyDependentsIntervalChanged();
         m_nextProgressTime = min(m_nextProgressTime, m_interval.begin);
         return true;
@@ -981,7 +973,7 @@ void SVGSMILElement::beginListChanged(SMILTime eventTime)
             // Begin time changed, re-resolve the interval.
             SMILTime oldBegin = m_interval.begin;
             m_interval.end = eventTime;
-            resolveInterval(false, m_interval.begin, m_interval.end);
+            m_interval = resolveInterval(NextInterval);
             ASSERT(!m_interval.begin.isUnresolved());
             if (m_interval.begin != oldBegin) {
                 if (m_activeState == Active && m_interval.begin > eventTime) {

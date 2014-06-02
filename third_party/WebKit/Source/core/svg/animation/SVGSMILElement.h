@@ -147,9 +147,15 @@ private:
     };
 
     SMILTime findInstanceTime(BeginOrEnd, SMILTime minimumTime, bool equalsMinimumOK) const;
+
+    enum ResolveInterval {
+        FirstInterval,
+        NextInterval
+    };
+
+    SMILInterval resolveInterval(ResolveInterval) const;
     void resolveFirstInterval();
     bool resolveNextInterval();
-    void resolveInterval(bool first, SMILTime& beginResult, SMILTime& endResult) const;
     SMILTime resolveActiveEnd(SMILTime resolvedBegin, SMILTime resolvedEnd) const;
     SMILTime repeatingDuration() const;
 
