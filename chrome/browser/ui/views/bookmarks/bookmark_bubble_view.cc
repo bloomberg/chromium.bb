@@ -128,14 +128,6 @@ bool BookmarkBubbleView::AcceleratorPressed(
   return BubbleDelegateView::AcceleratorPressed(accelerator);
 }
 
-void BookmarkBubbleView::OnNativeThemeChanged(const ui::NativeTheme* theme) {
-  views::BubbleDelegateView::OnNativeThemeChanged(theme);
-  const SkColor background_color = theme->GetSystemColor(
-      ui::NativeTheme::kColorId_DialogBackground);
-  set_color(background_color);
-  set_background(views::Background::CreateSolidBackground(background_color));
-}
-
 void BookmarkBubbleView::Init() {
   views::Label* title_label = new views::Label(
       l10n_util::GetStringUTF16(

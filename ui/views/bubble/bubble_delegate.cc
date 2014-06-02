@@ -278,7 +278,7 @@ gfx::Rect BubbleDelegateView::GetBubbleBounds() {
 
 void BubbleDelegateView::UpdateColorsFromTheme(const ui::NativeTheme* theme) {
   if (!color_explicitly_set_)
-    color_ = theme->GetSystemColor(ui::NativeTheme::kColorId_WindowBackground);
+    color_ = theme->GetSystemColor(ui::NativeTheme::kColorId_DialogBackground);
   set_background(Background::CreateSolidBackground(color()));
   BubbleFrameView* frame_view = GetBubbleFrameView();
   if (frame_view)
