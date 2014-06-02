@@ -6,20 +6,9 @@ include_rules = [
 
   "+google/cacheinvalidation",
   "+google_apis/gaia",
-  "+google_apis/gcm",
   "+jingle/notifier",
-  "+net/base/backoff_entry.h",
-  "+net/base/mock_host_resolver.h",
-  "+net/base/network_change_notifier.h",
-  "+net/http/http_status_code.h",
   "+net/url_request",
 
-  # sync_notifier depends on the xmpp part of libjingle.
-  "+talk/xmpp",
-
-  #TODO(rlarocque): Move these dependencies into this component.
-  # See crbug.com/259559.
   "+sync/internal_api/public/base",
-  "+sync/internal_api/public/util",
   "+sync/notifier",
 ]

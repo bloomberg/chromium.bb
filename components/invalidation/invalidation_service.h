@@ -7,8 +7,8 @@
 
 #include "base/callback_forward.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "sync/internal_api/public/base/invalidator_state.h"
 #include "sync/notifier/invalidation_util.h"
+#include "sync/notifier/invalidator_state.h"
 
 class IdentityProvider;
 

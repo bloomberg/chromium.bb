@@ -15,7 +15,6 @@
 #include "base/message_loop/message_loop.h"
 #include "base/rand_util.h"
 #include "base/threading/thread.h"
-#include "components/invalidation/non_blocking_invalidator.h"
 #include "jingle/notifier/base/notification_method.h"
 #include "jingle/notifier/base/notifier_options.h"
 #include "net/base/host_port_pair.h"
@@ -28,6 +27,7 @@
 #include "sync/notifier/invalidation_state_tracker.h"
 #include "sync/notifier/invalidation_util.h"
 #include "sync/notifier/invalidator.h"
+#include "sync/notifier/non_blocking_invalidator.h"
 #include "sync/notifier/object_id_invalidation_map.h"
 #include "sync/tools/null_invalidation_state_tracker.h"
 

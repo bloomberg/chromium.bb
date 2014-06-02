@@ -7,6 +7,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "sync/internal_api/public/base/ack_handle.h"
 #include "sync/notifier/object_id_invalidation_map.h"
+#include "sync/notifier/sync_invalidation_listener.h"
 
 namespace {
 

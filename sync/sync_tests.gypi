@@ -159,6 +159,14 @@
         'sync',
       ],
       'sources': [
+        'notifier/fake_invalidation_handler.cc',
+        'notifier/fake_invalidation_handler.h',
+        'notifier/fake_invalidation_state_tracker.cc',
+        'notifier/fake_invalidation_state_tracker.h',
+        'notifier/fake_invalidator.cc',
+        'notifier/fake_invalidator.h',
+        'notifier/invalidator_test_template.cc',
+        'notifier/invalidator_test_template.h',
         'notifier/unacked_invalidation_set_test_util.cc',
         'notifier/unacked_invalidation_set_test_util.h',
         'internal_api/public/base/object_id_invalidation_map_test_util.h',
@@ -366,9 +374,18 @@
         'conditions': [
           ['OS != "android"', {
             'sources': [
+              'notifier/fake_invalidator_unittest.cc',
+              'notifier/gcm_network_channel_unittest.cc',
+              'notifier/invalidation_notifier_unittest.cc',
+              'notifier/invalidator_registrar_unittest.cc',
+              'notifier/non_blocking_invalidator_unittest.cc',
               'notifier/object_id_invalidation_map_unittest.cc',
+              'notifier/p2p_invalidator_unittest.cc',
+              'notifier/push_client_channel_unittest.cc',
               'notifier/registration_manager_unittest.cc',
               'notifier/single_object_invalidation_set_unittest.cc',
+              'notifier/sync_invalidation_listener_unittest.cc',
+              'notifier/sync_system_resources_unittest.cc',
               'notifier/unacked_invalidation_set_unittest.cc',
             ],
           }],

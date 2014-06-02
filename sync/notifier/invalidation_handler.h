@@ -6,7 +6,7 @@
 #define SYNC_NOTIFIER_INVALIDATION_HANDLER_H_
 
 #include "sync/base/sync_export.h"
-#include "sync/internal_api/public/base/invalidator_state.h"
+#include "sync/notifier/invalidator_state.h"
 
 namespace syncer {
 

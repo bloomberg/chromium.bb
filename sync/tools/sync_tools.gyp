@@ -39,7 +39,6 @@
     ],
     'dependencies': [
       '../../base/base.gyp:base',
-      '../../components/components.gyp:invalidation',
       '../../jingle/jingle.gyp:notifier',
       '../../net/net.gyp:net',
       '../../net/net.gyp:net_test_support',
@@ -60,7 +59,6 @@
     ],
     'dependencies': [
       '../../base/base.gyp:base',
-      '../../components/components.gyp:invalidation',
       '../../jingle/jingle.gyp:notifier',
       '../../net/net.gyp:net',
       '../../net/net.gyp:net_test_support',

@@ -32,8 +32,8 @@ namespace syncer {
 
 class SYNC_EXPORT InvalidationStateTracker {
  public:
-  InvalidationStateTracker();
-  virtual ~InvalidationStateTracker();
+  InvalidationStateTracker() {}
+  virtual ~InvalidationStateTracker() {}
 
   // The per-client unique ID used to register the invalidation client with the
   // server.  This is used to squelch invalidation notifications that originate
