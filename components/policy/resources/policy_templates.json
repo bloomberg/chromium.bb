@@ -3754,7 +3754,7 @@
       'caption': '''Report OS and firmware version''',
       'desc': '''Report OS and firmware version of enrolled devices.
 
-      If this setting is set to True, enrolled devices will report the OS and firmware version periodically. If this setting is not set or set to False, version info will not be reported.''',
+      If this setting is not set or set to True, enrolled devices will report the OS and firmware version periodically. If this setting is set to False, version info will not be reported.''',
     },
     {
       'name': 'ReportDeviceActivityTimes',
@@ -3770,7 +3770,7 @@
       'caption': '''Report device activity times''',
       'desc': '''Report device activity times.
 
-      If this setting is set to True, enrolled devices will report time periods when a user is active on the device. If this setting is not set or set to False, device activity times will not be recorded or reported.''',
+      If this setting is not set or set to True, enrolled devices will report time periods when a user is active on the device. If this setting is set to False, device activity times will not be recorded or reported.''',
     },
     {
       'name': 'ReportDeviceBootMode',
@@ -3786,7 +3786,7 @@
       'caption': '''Report device boot mode''',
       'desc': '''Report the state of the device's dev switch at boot.
 
-      If the policy is not set, or set to false, the state of the dev switch will not be reported.''',
+      If the policy is set to false, the state of the dev switch will not be reported.''',
     },
     {
       'name': 'ReportDeviceLocation',
@@ -3819,7 +3819,7 @@
       'caption': '''Report device network interfaces''',
       'desc': '''Report list of network interfaces with their types and hardware addresses to the server.
 
-      If the policy is not set, or set to false, the interface list will not be reported.''',
+      If the policy is set to false, the interface list will not be reported.''',
     },
     {
       'name': 'ReportDeviceUsers',
@@ -3835,7 +3835,7 @@
       'caption': '''Report device users''',
       'desc': '''Report list of device users that have recently logged in.
 
-      If the policy is not set, or set to false, the users will not be reported.''',
+      If the policy is set to false, the users will not be reported.''',
     },
     {
       'name': 'DeviceUserWhitelist',

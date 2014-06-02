@@ -191,6 +191,11 @@ class DeviceStatusCollectorTest : public testing::Test {
     cros_settings_->AddSettingsProvider(device_settings_provider_);
   }
 
+  virtual void SetUp() OVERRIDE {
+    // Disable network interface reporting since it requires additional setup.
+    cros_settings_->SetBoolean(chromeos::kReportDeviceNetworkInterfaces, false);
+  }
+
   void RestartStatusCollector() {
     policy::DeviceStatusCollector::LocationUpdateRequester callback =
         base::Bind(&MockPositionUpdateRequester);
@@ -425,9 +430,23 @@ TEST_F(DeviceStatusCollectorTest, MaxStoredPeriods) {
   EXPECT_LT(status_.active_period_size(), kMaxDays);
 }
 
-TEST_F(DeviceStatusCollectorTest, ActivityTimesDisabledByDefault) {
-  // If the pref for collecting device activity times isn't explicitly turned
-  // on, no data on activity times should be reported.
+TEST_F(DeviceStatusCollectorTest, ActivityTimesEnabledByDefault) {
+  // Device activity times should be reported by default.
+  IdleState test_states[] = {
+    IDLE_STATE_ACTIVE,
+    IDLE_STATE_ACTIVE,
+    IDLE_STATE_ACTIVE
+  };
+  status_collector_->Simulate(test_states,
+                              sizeof(test_states) / sizeof(IdleState));
+  GetStatus();
+  EXPECT_EQ(1, status_.active_period_size());
+  EXPECT_EQ(3 * ActivePeriodMilliseconds(), GetActiveMilliseconds(status_));
+}
+
+TEST_F(DeviceStatusCollectorTest, ActivityTimesOff) {
+  // Device activity times should not be reported if explicitly disabled.
+  cros_settings_->SetBoolean(chromeos::kReportDeviceActivityTimes, false);
 
   IdleState test_states[] = {
     IDLE_STATE_ACTIVE,
@@ -497,7 +516,16 @@ TEST_F(DeviceStatusCollectorTest, ActivityTimesKeptUntilSubmittedSuccessfully) {
 }
 
 TEST_F(DeviceStatusCollectorTest, DevSwitchBootMode) {
-  // Test that boot mode data is not reported if the pref is not turned on.
+  // Test that boot mode data is reported by default.
+  EXPECT_CALL(statistics_provider_,
+              GetMachineStatistic("devsw_boot", NotNull()))
+      .WillOnce(DoAll(SetArgPointee<1>("0"), Return(true)));
+  GetStatus();
+  EXPECT_EQ("Verified", status_.boot_mode());
+
+  // Test that boot mode data is not reported if the pref turned off.
+  cros_settings_->SetBoolean(chromeos::kReportDeviceBootMode, false);
+
   EXPECT_CALL(statistics_provider_,
               GetMachineStatistic("devsw_boot", NotNull()))
       .WillRepeatedly(DoAll(SetArgPointee<1>("0"), Return(true)));
@@ -534,8 +562,15 @@ TEST_F(DeviceStatusCollectorTest, DevSwitchBootMode) {
 }
 
 TEST_F(DeviceStatusCollectorTest, VersionInfo) {
+  // Expect the version info to be reported by default.
+  GetStatus();
+  EXPECT_TRUE(status_.has_browser_version());
+  EXPECT_TRUE(status_.has_os_version());
+  EXPECT_TRUE(status_.has_firmware_version());
+
   // When the pref to collect this data is not enabled, expect that none of
   // the fields are present in the protobuf.
+  cros_settings_->SetBoolean(chromeos::kReportDeviceVersionInfo, false);
   GetStatus();
   EXPECT_FALSE(status_.has_browser_version());
   EXPECT_FALSE(status_.has_os_version());
@@ -611,9 +646,9 @@ TEST_F(DeviceStatusCollectorTest, ReportUsers) {
   user_manager_->AddUser("user4@managed.com");
   user_manager_->AddUser("user5@managed.com");
 
-  // Verify that users are not reported by default.
+  // Verify that users are reported by default.
   GetStatus();
-  EXPECT_EQ(0, status_.user_size());
+  EXPECT_EQ(5, status_.user_size());
 
   // Verify that users are reported after enabling the setting.
   cros_settings_->SetBoolean(chromeos::kReportDeviceUsers, true);
@@ -730,7 +765,12 @@ class DeviceStatusCollectorNetworkInterfacesTest
 };
 
 TEST_F(DeviceStatusCollectorNetworkInterfacesTest, NetworkInterfaces) {
+  // Interfaces should be reported by default.
+  GetStatus();
+  EXPECT_TRUE(status_.network_interface_size() > 0);
+
   // No interfaces should be reported if the policy is off.
+  cros_settings_->SetBoolean(chromeos::kReportDeviceNetworkInterfaces, false);
   GetStatus();
   EXPECT_EQ(0, status_.network_interface_size());
 

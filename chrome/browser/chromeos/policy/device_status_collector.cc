@@ -185,18 +185,30 @@ void DeviceStatusCollector::UpdateReportingSettings() {
                  weak_factory_.GetWeakPtr()))) {
     return;
   }
-  cros_settings_->GetBoolean(
-      chromeos::kReportDeviceVersionInfo, &report_version_info_);
-  cros_settings_->GetBoolean(
-      chromeos::kReportDeviceActivityTimes, &report_activity_times_);
-  cros_settings_->GetBoolean(
-      chromeos::kReportDeviceBootMode, &report_boot_mode_);
-  cros_settings_->GetBoolean(
-      chromeos::kReportDeviceLocation, &report_location_);
-  cros_settings_->GetBoolean(
-      chromeos::kReportDeviceNetworkInterfaces, &report_network_interfaces_);
-  cros_settings_->GetBoolean(
-      chromeos::kReportDeviceUsers, &report_users_);
+  if (!cros_settings_->GetBoolean(
+      chromeos::kReportDeviceVersionInfo, &report_version_info_)) {
+    report_version_info_ = true;
+  }
+  if (!cros_settings_->GetBoolean(
+      chromeos::kReportDeviceActivityTimes, &report_activity_times_)) {
+    report_activity_times_ = true;
+  }
+  if (!cros_settings_->GetBoolean(
+      chromeos::kReportDeviceBootMode, &report_boot_mode_)) {
+    report_boot_mode_ = true;
+  }
+  if (!cros_settings_->GetBoolean(
+      chromeos::kReportDeviceLocation, &report_location_)) {
+    report_location_ = false;
+  }
+  if (!cros_settings_->GetBoolean(
+      chromeos::kReportDeviceNetworkInterfaces, &report_network_interfaces_)) {
+    report_network_interfaces_ = true;
+  }
+  if (!cros_settings_->GetBoolean(
+      chromeos::kReportDeviceUsers, &report_users_)) {
+    report_users_ = true;
+  }
 
   if (report_location_) {
     ScheduleGeolocationUpdateRequest();
