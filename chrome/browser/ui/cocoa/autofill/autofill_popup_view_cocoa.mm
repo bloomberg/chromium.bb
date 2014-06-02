@@ -28,12 +28,37 @@ using autofill::AutofillPopupView;
 // Draws an Autofill suggestion in the given |bounds|, labeled with the given
 // |name| and |subtext| hint.  If the suggestion |isSelected|, then it is drawn
 // with a highlight.  |index| determines the font to use, as well as the icon,
-// if the row requires it -- such as for credit cards.
+// if the row requires it -- such as for credit cards. |imageFirst| indicates
+// whether the image should be drawn before the name, and with the same
+// alignment, or whether it should be drawn afterwards, with the opposite
+// alignment.
 - (void)drawSuggestionWithName:(NSString*)name
                        subtext:(NSString*)subtext
                          index:(size_t)index
                         bounds:(NSRect)bounds
-                      selected:(BOOL)isSelected;
+                      selected:(BOOL)isSelected
+                    imageFirst:(BOOL)imageFirst;
+
+// This comment block applies to all three draw* methods that follow.
+// If |rightAlign| == YES.
+//   Draws the widget with right border aligned to |x|.
+//   Returns the x value of left border of the widget.
+// If |rightAlign| == NO.
+//   Draws the widget with left border aligned to |x|.
+//   Returns the x value of right border of the widget.
+- (CGFloat)drawName:(NSString*)name
+                atX:(CGFloat)x
+              index:(size_t)index
+         rightAlign:(BOOL)rightAlign
+             bounds:(NSRect)bounds;
+- (CGFloat)drawIconAtIndex:(size_t)index
+                       atX:(CGFloat)x
+                rightAlign:(BOOL)rightAlign
+                    bounds:(NSRect)bounds;
+- (CGFloat)drawSubtext:(NSString*)subtext
+                   atX:(CGFloat)x
+            rightAlign:(BOOL)rightAlign
+                bounds:(NSRect)bounds;
 
 // Returns the icon for the row with the given |index|, or |nil| if there is
 // none.
@@ -79,16 +104,20 @@ using autofill::AutofillPopupView;
 
     if (controller_->identifiers()[i] == autofill::POPUP_ITEM_ID_SEPARATOR) {
       [self drawSeparatorWithBounds:rowBounds];
-    } else {
-      NSString* name = SysUTF16ToNSString(controller_->names()[i]);
-      NSString* subtext = SysUTF16ToNSString(controller_->subtexts()[i]);
-      BOOL isSelected = static_cast<int>(i) == controller_->selected_line();
-      [self drawSuggestionWithName:name
-                           subtext:subtext
-                             index:i
-                            bounds:rowBounds
-                          selected:isSelected];
+      continue;
     }
+
+    BOOL imageFirst = (controller_->identifiers()[i] ==
+                       autofill::POPUP_ITEM_ID_MAC_ACCESS_CONTACTS);
+    NSString* name = SysUTF16ToNSString(controller_->names()[i]);
+    NSString* subtext = SysUTF16ToNSString(controller_->subtexts()[i]);
+    BOOL isSelected = static_cast<int>(i) == controller_->selected_line();
+    [self drawSuggestionWithName:name
+                         subtext:subtext
+                           index:i
+                          bounds:rowBounds
+                        selected:isSelected
+                      imageFirst:imageFirst];
   }
 }
 
@@ -115,7 +144,8 @@ using autofill::AutofillPopupView;
                        subtext:(NSString*)subtext
                          index:(size_t)index
                         bounds:(NSRect)bounds
-                      selected:(BOOL)isSelected {
+                      selected:(BOOL)isSelected
+                    imageFirst:(BOOL)imageFirst {
   // If this row is selected, highlight it.
   if (isSelected) {
     [[self highlightColor] set];
@@ -124,6 +154,28 @@ using autofill::AutofillPopupView;
 
   BOOL isRTL = controller_->IsRTL();
 
+  // The X values of the left and right borders of the autofill widget.
+  CGFloat leftX = NSMinX(bounds) + AutofillPopupView::kEndPadding;
+  CGFloat rightX = NSMaxX(bounds) - AutofillPopupView::kEndPadding;
+
+  // Draw left side if isRTL == NO, right side if isRTL == YES.
+  CGFloat x = isRTL ? rightX : leftX;
+  if (imageFirst)
+    x = [self drawIconAtIndex:index atX:x rightAlign:isRTL bounds:bounds];
+  [self drawName:name atX:x index:index rightAlign:isRTL bounds:bounds];
+
+  // Draw right side if isRTL == NO, left side if isRTL == YES.
+  x = isRTL ? leftX : rightX;
+  if (!imageFirst)
+    x = [self drawIconAtIndex:index atX:x rightAlign:!isRTL bounds:bounds];
+  [self drawSubtext:subtext atX:x rightAlign:!isRTL bounds:bounds];
+}
+
+- (CGFloat)drawName:(NSString*)name
+                atX:(CGFloat)x
+              index:(size_t)index
+         rightAlign:(BOOL)rightAlign
+             bounds:(NSRect)bounds {
   NSColor* nameColor =
       controller_->IsWarning(index) ? [self warningColor] : [self nameColor];
   NSDictionary* nameAttributes =
@@ -133,26 +185,25 @@ using autofill::AutofillPopupView;
            NSFontAttributeName, nameColor, NSForegroundColorAttributeName,
            nil];
   NSSize nameSize = [name sizeWithAttributes:nameAttributes];
-  CGFloat x = bounds.origin.x +
-      (isRTL ?
-       bounds.size.width - AutofillPopupView::kEndPadding - nameSize.width :
-       AutofillPopupView::kEndPadding);
+  x -= rightAlign ? nameSize.width : 0;
   CGFloat y = bounds.origin.y + (bounds.size.height - nameSize.height) / 2;
 
   [name drawAtPoint:NSMakePoint(x, y) withAttributes:nameAttributes];
 
-  // The x-coordinate will be updated as each element is drawn.
-  x = bounds.origin.x +
-      (isRTL ?
-       AutofillPopupView::kEndPadding :
-       bounds.size.width - AutofillPopupView::kEndPadding);
+  x += rightAlign ? 0 : nameSize.width;
+  return x;
+}
 
-  // Draw the Autofill icon, if one exists.
+- (CGFloat)drawIconAtIndex:(size_t)index
+                       atX:(CGFloat)x
+                rightAlign:(BOOL)rightAlign
+                    bounds:(NSRect)bounds {
   NSImage* icon = [self iconAtIndex:index];
-  if (icon) {
-    NSSize iconSize = [icon size];
-    x += isRTL ? 0 : -iconSize.width;
-    y = bounds.origin.y + (bounds.size.height - iconSize.height) / 2;
+  if (!icon)
+    return x;
+  NSSize iconSize = [icon size];
+  x -= rightAlign ? iconSize.width : 0;
+  CGFloat y = bounds.origin.y + (bounds.size.height - iconSize.height) / 2;
     [icon drawInRect:NSMakeRect(x, y, iconSize.width, iconSize.height)
             fromRect:NSZeroRect
            operation:NSCompositeSourceOver
@@ -160,12 +211,15 @@ using autofill::AutofillPopupView;
       respectFlipped:YES
                hints:nil];
 
-    x += isRTL ?
-        iconSize.width + AutofillPopupView::kIconPadding :
-        -AutofillPopupView::kIconPadding;
-  }
+    x += rightAlign ? -AutofillPopupView::kIconPadding
+                    : iconSize.width + AutofillPopupView::kIconPadding;
+    return x;
+}
 
-  // Draw the subtext.
+- (CGFloat)drawSubtext:(NSString*)subtext
+                   atX:(CGFloat)x
+            rightAlign:(BOOL)rightAlign
+                bounds:(NSRect)bounds {
   NSDictionary* subtextAttributes =
       [NSDictionary dictionaryWithObjectsAndKeys:
            controller_->subtext_font_list().GetPrimaryFont().GetNativeFont(),
@@ -174,10 +228,12 @@ using autofill::AutofillPopupView;
            NSForegroundColorAttributeName,
            nil];
   NSSize subtextSize = [subtext sizeWithAttributes:subtextAttributes];
-  x += isRTL ? 0 : -subtextSize.width;
-  y = bounds.origin.y + (bounds.size.height - subtextSize.height) / 2;
+  x -= rightAlign ? subtextSize.width : 0;
+  CGFloat y = bounds.origin.y + (bounds.size.height - subtextSize.height) / 2;
 
   [subtext drawAtPoint:NSMakePoint(x, y) withAttributes:subtextAttributes];
+  x += rightAlign ? 0 : subtextSize.width;
+  return x;
 }
 
 - (NSImage*)iconAtIndex:(size_t)index {
