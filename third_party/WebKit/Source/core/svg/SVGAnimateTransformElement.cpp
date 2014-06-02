@@ -45,7 +45,7 @@ bool SVGAnimateTransformElement::hasValidAttributeType()
     if (attributeType() == AttributeTypeCSS)
         return false;
 
-    return m_animatedPropertyType == AnimatedTransformList;
+    return animatedPropertyType() == AnimatedTransformList;
 }
 
 bool SVGAnimateTransformElement::isSupportedAttribute(const QualifiedName& attrName)

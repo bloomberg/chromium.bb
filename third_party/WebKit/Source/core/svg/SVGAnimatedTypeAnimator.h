@@ -38,9 +38,9 @@ class SVGAnimationElement;
 class SVGAnimatedTypeAnimator FINAL : public NoBaseWillBeGarbageCollectedFinalized<SVGAnimatedTypeAnimator> {
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
-    static PassOwnPtrWillBeRawPtr<SVGAnimatedTypeAnimator> create(AnimatedPropertyType type, SVGAnimationElement* animationElement, SVGElement* targetElement)
+    static PassOwnPtrWillBeRawPtr<SVGAnimatedTypeAnimator> create(SVGAnimationElement* animationElement, SVGElement* targetElement)
     {
-        return adoptPtrWillBeNoop(new SVGAnimatedTypeAnimator(type, animationElement, targetElement));
+        return adoptPtrWillBeNoop(new SVGAnimatedTypeAnimator(animationElement, targetElement));
     }
     ~SVGAnimatedTypeAnimator();
 
@@ -65,7 +65,7 @@ public:
     void trace(Visitor*);
 
 private:
-    SVGAnimatedTypeAnimator(AnimatedPropertyType, SVGAnimationElement*, SVGElement*);
+    SVGAnimatedTypeAnimator(SVGAnimationElement*, SVGElement*);
 
     friend class ParsePropertyFromString;
     PassRefPtr<SVGPropertyBase> createPropertyForAnimation(const String&);

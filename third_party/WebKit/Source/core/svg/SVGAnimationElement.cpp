@@ -336,7 +336,7 @@ String SVGAnimationElement::fromValue() const
     return fastGetAttribute(SVGNames::fromAttr);
 }
 
-bool SVGAnimationElement::isAdditive() const
+bool SVGAnimationElement::isAdditive()
 {
     DEFINE_STATIC_LOCAL(const AtomicString, sum, ("sum", AtomicString::ConstructFromLiteral));
     const AtomicString& value = fastGetAttribute(SVGNames::additiveAttr);
@@ -486,26 +486,6 @@ void SVGAnimationElement::currentValuesFromKeyPoints(float percent, float& effec
     to = m_values[index + 1];
 }
 
-AnimatedPropertyType SVGAnimationElement::determineAnimatedPropertyType() const
-{
-    if (!targetElement())
-        return AnimatedString;
-
-    RefPtr<SVGAnimatedPropertyBase> property = targetElement()->propertyFromAttribute(attributeName());
-    if (property) {
-        AnimatedPropertyType propertyType = property->type();
-
-        // Only <animatedTransform> is allowed to animate AnimatedTransformList.
-        // http://www.w3.org/TR/SVG/animate.html#AnimationAttributesAndProperties
-        if (propertyType == AnimatedTransformList && !isSVGAnimateTransformElement(*this))
-            return AnimatedUnknown;
-
-        return propertyType;
-    }
-
-    return SVGElement::animatedPropertyTypeForCSSAttribute(attributeName());
-}
-
 void SVGAnimationElement::currentValuesForValuesAnimation(float percent, float& effectivePercent, String& from, String& to)
 {
     unsigned valuesCount = m_values.size();
@@ -520,14 +500,13 @@ void SVGAnimationElement::currentValuesForValuesAnimation(float percent, float& 
     }
 
     CalcMode calcMode = this->calcMode();
-    if (hasTagName(SVGNames::animateTag)) {
-        AnimatedPropertyType attributeType = determineAnimatedPropertyType();
-        // Fall back to discrete animations for Strings.
-        if (attributeType == AnimatedBoolean
-            || attributeType == AnimatedEnumeration
-            || attributeType == AnimatedPreserveAspectRatio
-            || attributeType == AnimatedString)
+    if (isSVGAnimateElement(*this)) {
+        SVGAnimateElement& animateElement = toSVGAnimateElement(*this);
+        if (!animateElement.animatedPropertyTypeSupportsAddition()) {
+            ASSERT(animateElement.animatedPropertyType() != AnimatedTransformList || isSVGAnimateTransformElement(*this));
+            ASSERT(animateElement.animatedPropertyType() != AnimatedUnknown);
             calcMode = CalcModeDiscrete;
+        }
     }
     if (!m_keyPoints.isEmpty() && calcMode != CalcModePaced)
         return currentValuesFromKeyPoints(percent, effectivePercent, from, to);
