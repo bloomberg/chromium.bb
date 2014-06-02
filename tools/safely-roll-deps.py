@@ -142,7 +142,7 @@ def main():
     prnt_subprocess.check_output(['git', 'commit', '-m', commit_msg, 'DEPS'])
     prnt_subprocess.check_call(['git', 'diff', '--no-ext-diff',
                                 options.upstream])
-    upload_cmd = ['git', 'cl', 'upload']
+    upload_cmd = ['git', 'cl', 'upload', '--bypass-hooks']
     if options.commit:
       upload_cmd.append('--use-commit-queue')
     if options.reviewers:
