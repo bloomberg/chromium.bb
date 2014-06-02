@@ -60,14 +60,14 @@ MediaKeySession::PendingAction::~PendingAction()
 {
 }
 
-PassRefPtrWillBeRawPtr<MediaKeySession> MediaKeySession::create(ExecutionContext* context, blink::WebContentDecryptionModule* cdm, WeakPtrWillBeRawPtr<MediaKeys> keys)
+MediaKeySession* MediaKeySession::create(ExecutionContext* context, blink::WebContentDecryptionModule* cdm, MediaKeys* keys)
 {
-    RefPtrWillBeRawPtr<MediaKeySession> session(adoptRefWillBeRefCountedGarbageCollected(new MediaKeySession(context, cdm, keys)));
+    MediaKeySession* session = adoptRefCountedGarbageCollected(new MediaKeySession(context, cdm, keys));
     session->suspendIfNeeded();
-    return session.release();
+    return session;
 }
 
-MediaKeySession::MediaKeySession(ExecutionContext* context, blink::WebContentDecryptionModule* cdm, WeakPtrWillBeRawPtr<MediaKeys> keys)
+MediaKeySession::MediaKeySession(ExecutionContext* context, blink::WebContentDecryptionModule* cdm, MediaKeys* keys)
     : ActiveDOMObject(context)
     , m_keySystem(keys->keySystem())
     , m_asyncEventQueue(GenericEventQueue::create(this))

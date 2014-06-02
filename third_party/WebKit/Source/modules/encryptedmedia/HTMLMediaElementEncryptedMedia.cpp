@@ -86,12 +86,7 @@ void HTMLMediaElementEncryptedMedia::setMediaKeysInternal(HTMLMediaElement& elem
         return;
 
     ASSERT(m_emeMode == EmeModeUnprefixed);
-
-    if (m_mediaKeys)
-        m_mediaKeys->setMediaElement(0);
     m_mediaKeys = mediaKeys;
-    if (m_mediaKeys)
-        m_mediaKeys->setMediaElement(&element);
 
     // If a player is connected, tell it that the CDM has changed.
     if (element.webMediaPlayer())

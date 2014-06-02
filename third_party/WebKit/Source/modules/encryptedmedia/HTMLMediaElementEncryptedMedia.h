@@ -76,7 +76,7 @@ private:
 
     EmeMode m_emeMode;
 
-    RefPtrWillBeMember<MediaKeys> m_mediaKeys;
+    PersistentWillBeMember<MediaKeys> m_mediaKeys;
 };
 
 }

@@ -28,6 +28,7 @@
 
 #include "platform/PlatformExport.h"
 #include "platform/TraceLocation.h"
+#include "platform/heap/Handle.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/Threading.h"
 #include "wtf/Vector.h"
@@ -128,6 +129,7 @@ private:
     // FIXME: oilpan: TimerBase should be moved to the heap and m_object should be traced.
     // This raw pointer is safe as long as Timer<X> is held by the X itself (That's the case
     // in the current code base).
+    GC_PLUGIN_IGNORE("363031")
     TimerFiredClass* m_object;
     TimerFiredFunction m_function;
 };
@@ -183,6 +185,7 @@ private:
     // FIXME: oilpan: TimerBase should be moved to the heap and m_object should be traced.
     // This raw pointer is safe as long as Timer<X> is held by the X itself (That's the case
     // in the current code base).
+    GC_PLUGIN_IGNORE("363031")
     TimerFiredClass* m_object;
     TimerFiredFunction m_function;
 

@@ -64,12 +64,12 @@ class MediaKeys;
 // it may outlive any JavaScript references as long as the MediaKeys object is alive.
 // The WebContentDecryptionModuleSession has the same lifetime as this object.
 class MediaKeySession FINAL
-    : public RefCountedWillBeRefCountedGarbageCollected<MediaKeySession>, public ActiveDOMObject, public ScriptWrappable, public EventTargetWithInlineData
+    : public RefCountedGarbageCollected<MediaKeySession>, public ActiveDOMObject, public ScriptWrappable, public EventTargetWithInlineData
     , private blink::WebContentDecryptionModuleSession::Client {
-    REFCOUNTED_EVENT_TARGET(MediaKeySession);
+    DEFINE_EVENT_TARGET_REFCOUNTING(RefCountedGarbageCollected<MediaKeySession>);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(MediaKeySession);
 public:
-    static PassRefPtrWillBeRawPtr<MediaKeySession> create(ExecutionContext*, blink::WebContentDecryptionModule*, WeakPtrWillBeRawPtr<MediaKeys>);
+    static MediaKeySession* create(ExecutionContext*, blink::WebContentDecryptionModule*, MediaKeys*);
     virtual ~MediaKeySession();
 
     const String& keySystem() const { return m_keySystem; }
@@ -112,7 +112,7 @@ private:
         PendingAction(Type, PassRefPtr<Uint8Array> data);
     };
 
-    MediaKeySession(ExecutionContext*, blink::WebContentDecryptionModule*, WeakPtrWillBeRawPtr<MediaKeys>);
+    MediaKeySession(ExecutionContext*, blink::WebContentDecryptionModule*, MediaKeys*);
     void actionTimerFired(Timer<MediaKeySession>*);
 
     // blink::WebContentDecryptionModuleSession::Client
@@ -127,7 +127,7 @@ private:
     OwnPtr<blink::WebContentDecryptionModuleSession> m_session;
 
     // Used to determine if MediaKeys is still active.
-    WeakPtrWillBeWeakMember<MediaKeys> m_keys;
+    WeakMember<MediaKeys> m_keys;
 
     // Is the CDM finished with this session?
     bool m_isClosed;

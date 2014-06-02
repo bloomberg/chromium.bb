@@ -51,18 +51,16 @@ class ExceptionState;
 
 // References are held by JS and HTMLMediaElement.
 // The WebContentDecryptionModule has the same lifetime as this object.
-class MediaKeys : public RefCountedWillBeGarbageCollectedFinalized<MediaKeys>, public ContextLifecycleObserver, public ScriptWrappable {
+class MediaKeys : public GarbageCollectedFinalized<MediaKeys>, public ContextLifecycleObserver, public ScriptWrappable {
 public:
-    static PassRefPtrWillBeRawPtr<MediaKeys> create(ExecutionContext*, const String& keySystem, ExceptionState&);
+    static MediaKeys* create(ExecutionContext*, const String& keySystem, ExceptionState&);
     ~MediaKeys();
 
     const String& keySystem() const { return m_keySystem; }
 
-    PassRefPtrWillBeRawPtr<MediaKeySession> createSession(ExecutionContext*, const String& contentType, Uint8Array* initData, ExceptionState&);
+    MediaKeySession* createSession(ExecutionContext*, const String& contentType, Uint8Array* initData, ExceptionState&);
 
     static bool isTypeSupported(const String& keySystem, const String& contentType);
-
-    void setMediaElement(HTMLMediaElement*);
 
     blink::WebContentDecryptionModule* contentDecryptionModule();
 
@@ -75,31 +73,26 @@ protected:
     MediaKeys(ExecutionContext*, const String& keySystem, PassOwnPtr<blink::WebContentDecryptionModule>);
     void initializeNewSessionTimerFired(Timer<MediaKeys>*);
 
-    HTMLMediaElement* m_mediaElement;
     const String m_keySystem;
     OwnPtr<blink::WebContentDecryptionModule> m_cdm;
 
     // FIXME: Check whether |initData| can be changed by JS. Maybe we should not pass it as a pointer.
-    struct InitializeNewSessionData {
+    class InitializeNewSessionData {
         ALLOW_ONLY_INLINE_ALLOCATION();
     public:
-        InitializeNewSessionData(PassRefPtrWillBeRawPtr<MediaKeySession> session, const String& contentType, PassRefPtr<Uint8Array> initData)
+        InitializeNewSessionData(MediaKeySession* session, const String& contentType, PassRefPtr<Uint8Array> initData)
             : session(session)
             , contentType(contentType)
             , initData(initData) { }
 
         void trace(Visitor*);
 
-        RefPtrWillBeMember<MediaKeySession> session;
+        Member<MediaKeySession> session;
         String contentType;
         RefPtr<Uint8Array> initData;
     };
-    Deque<InitializeNewSessionData> m_pendingInitializeNewSessionData;
+    HeapDeque<InitializeNewSessionData> m_pendingInitializeNewSessionData;
     Timer<MediaKeys> m_initializeNewSessionTimer;
-
-#if !ENABLE(OILPAN)
-    WeakPtrFactory<MediaKeys> m_weakFactory;
-#endif
 };
 
 }
