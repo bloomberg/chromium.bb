@@ -159,4 +159,9 @@ HTMLImportLoader* HTMLImportsController::loaderFor(const Document& document) con
     return 0;
 }
 
+Document* HTMLImportsController::loaderDocumentAt(size_t i) const
+{
+    return loaderAt(i)->document();
+}
+
 } // namespace WebCore
