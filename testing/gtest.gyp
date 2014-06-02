@@ -6,6 +6,7 @@
   'targets': [
     {
       'target_name': 'gtest',
+      'toolsets': ['host', 'target'],
       'type': 'static_library',
       'sources': [
         'gtest/include/gtest/gtest-death-test.h',
