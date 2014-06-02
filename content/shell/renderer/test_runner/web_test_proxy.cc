@@ -17,9 +17,9 @@
 #include "content/shell/renderer/test_runner/TestPlugin.h"
 #include "content/shell/renderer/test_runner/WebTestDelegate.h"
 #include "content/shell/renderer/test_runner/WebTestInterfaces.h"
-#include "content/shell/renderer/test_runner/WebUserMediaClientMock.h"
 #include "content/shell/renderer/test_runner/accessibility_controller.h"
 #include "content/shell/renderer/test_runner/event_sender.h"
+#include "content/shell/renderer/test_runner/mock_web_user_media_client.h"
 #include "content/shell/renderer/test_runner/test_runner.h"
 #include "content/shell/renderer/test_runner/web_test_runner.h"
 // FIXME: Including platform_canvas.h here is a layering violation.
@@ -742,7 +742,7 @@ void WebTestProxyBase::ShowContextMenu(
 
 blink::WebUserMediaClient* WebTestProxyBase::GetUserMediaClient() {
   if (!user_media_client_.get())
-    user_media_client_.reset(new WebUserMediaClientMock(delegate_));
+    user_media_client_.reset(new MockWebUserMediaClient(delegate_));
   return user_media_client_.get();
 }
 

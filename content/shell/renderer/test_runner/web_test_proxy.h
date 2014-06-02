@@ -75,12 +75,12 @@ typedef unsigned WebColor;
 namespace content {
 
 class MockWebSpeechRecognizer;
+class MockWebUserMediaClient;
 class RenderFrame;
 class SpellCheckClient;
 class TestInterfaces;
 class WebTestDelegate;
 class WebTestInterfaces;
-class WebUserMediaClientMock;
 
 // WebTestProxyBase is the "brain" of WebTestProxy in the sense that
 // WebTestProxy does the bridge between RenderViewImpl and WebTestProxyBase and
@@ -251,7 +251,7 @@ class WebTestProxyBase : public blink::WebCompositeAndReadbackAsyncCallback {
   WebTaskList task_list_;
 
   scoped_ptr<SpellCheckClient> spellcheck_;
-  scoped_ptr<WebUserMediaClientMock> user_media_client_;
+  scoped_ptr<MockWebUserMediaClient> user_media_client_;
 
   bool animate_scheduled_;
   std::map<unsigned, std::string> resource_identifier_map_;
