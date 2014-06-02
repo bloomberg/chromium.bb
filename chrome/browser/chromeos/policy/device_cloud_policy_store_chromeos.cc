@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/policy/device_cloud_policy_store_chromeos.h"
 
 #include "base/bind.h"
+#include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/sequenced_task_runner.h"
 #include "chrome/browser/chromeos/policy/device_policy_decoder_chromeos.h"
@@ -147,6 +148,9 @@ void DeviceCloudPolicyStoreChromeOS::UpdateFromService() {
         device_settings_service_->policy_data() &&
         device_settings_service_->policy_data()->has_request_token();
     UMA_HISTOGRAM_BOOLEAN("Enterprise.EnrolledPolicyHasDMToken", has_dm_token);
+    LOG_IF(ERROR, !has_dm_token)
+        << "Policy read on enrolled device yields no DM token! "
+        << "Status: " << status << ".";
   }
 
   switch (device_settings_service_->status()) {
