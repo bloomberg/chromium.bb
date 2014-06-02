@@ -350,6 +350,8 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
       break;
     case WebURLRequest::UseProtocolCachePolicy:
       break;
+    default:
+      NOTREACHED();
   }
 
   if (request.reportUploadProgress())
