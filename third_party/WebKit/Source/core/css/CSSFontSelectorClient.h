@@ -31,9 +31,12 @@
 #ifndef CSSFontSelectorClient_h
 #define CSSFontSelectorClient_h
 
+#include "platform/heap/Handle.h"
+
 namespace WebCore {
 
 class CSSFontSelector;
+class Visitor;
 
 class CSSFontSelectorClient : public NoBaseWillBeGarbageCollectedFinalized<CSSFontSelectorClient> {
 public:

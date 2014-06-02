@@ -28,6 +28,7 @@
 #include "core/css/CSSFontSelector.h"
 
 #include "RuntimeEnabledFeatures.h"
+#include "core/css/CSSFontSelectorClient.h"
 #include "core/css/CSSSegmentedFontFace.h"
 #include "core/css/CSSValueList.h"
 #include "core/css/FontFaceSet.h"

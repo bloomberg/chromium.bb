@@ -76,6 +76,8 @@ StyleEngine::StyleEngine(Document& document)
     // HTMLTemplateElement's document, because those documents have no frame.
     , m_fontSelector(document.frame() ? CSSFontSelector::create(&document) : nullptr)
 {
+    if (m_fontSelector)
+        m_fontSelector->registerForInvalidationCallbacks(this);
 }
 
 StyleEngine::~StyleEngine()
@@ -95,8 +97,7 @@ void StyleEngine::detachFromDocument()
 
     if (m_fontSelector) {
         m_fontSelector->clearDocument();
-        if (m_resolver)
-            m_fontSelector->unregisterForInvalidationCallbacks(m_resolver.get());
+        m_fontSelector->unregisterForInvalidationCallbacks(this);
     }
 
     // Decrement reference counts for things we could be keeping alive.
@@ -450,11 +451,9 @@ void StyleEngine::createResolver()
     // Document::isActive() before calling into code which could get here.
 
     ASSERT(document().frame());
-    ASSERT(m_fontSelector);
 
     m_resolver = adoptPtrWillBeNoop(new StyleResolver(*m_document));
     appendActiveAuthorStyleSheets();
-    m_fontSelector->registerForInvalidationCallbacks(m_resolver.get());
     combineCSSFeatureFlags(m_resolver->ensureUpdatedRuleFeatureSet());
 }
 
@@ -462,13 +461,8 @@ void StyleEngine::clearResolver()
 {
     ASSERT(!document().inStyleRecalc());
     ASSERT(isMaster() || !m_resolver);
-    ASSERT(m_fontSelector || !m_resolver);
-    if (m_resolver) {
+    if (m_resolver)
         document().updateStyleInvalidationIfNeeded();
-#if !ENABLE(OILPAN)
-        m_fontSelector->unregisterForInvalidationCallbacks(m_resolver.get());
-#endif
-    }
     m_resolver.clear();
 }
 
@@ -634,6 +628,16 @@ void StyleEngine::removeSheet(StyleSheetContents* contents)
     m_sheetToTextCache.remove(contents);
 }
 
+void StyleEngine::fontsNeedUpdate(CSSFontSelector*)
+{
+    if (!document().isActive())
+        return;
+
+    if (m_resolver)
+        m_resolver->invalidateMatchedPropertiesCache();
+    document().setNeedsStyleRecalc(SubtreeStyleChange);
+}
+
 void StyleEngine::trace(Visitor* visitor)
 {
     visitor->trace(m_document);
@@ -645,6 +649,7 @@ void StyleEngine::trace(Visitor* visitor)
     visitor->trace(m_fontSelector);
     visitor->trace(m_textToSheetCache);
     visitor->trace(m_sheetToTextCache);
+    CSSFontSelectorClient::trace(visitor);
 }
 
 }

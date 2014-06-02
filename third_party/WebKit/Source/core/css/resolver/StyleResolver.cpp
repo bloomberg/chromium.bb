@@ -347,12 +347,6 @@ void StyleResolver::clearStyleSharingList()
     m_styleSharingLists.resize(0);
 }
 
-void StyleResolver::fontsNeedUpdate(CSSFontSelector* fontSelector)
-{
-    invalidateMatchedPropertiesCache();
-    m_document.setNeedsStyleRecalc(SubtreeStyleChange);
-}
-
 void StyleResolver::pushParentElement(Element& parent)
 {
     const ContainerNode* parentsParent = parent.parentOrShadowHostElement();
@@ -1506,7 +1500,6 @@ void StyleResolver::trace(Visitor* visitor)
     visitor->trace(m_watchedSelectorsRules);
     visitor->trace(m_treeBoundaryCrossingRules);
     visitor->trace(m_pendingStyleSheets);
-    CSSFontSelectorClient::trace(visitor);
 }
 
 } // namespace WebCore

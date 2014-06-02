@@ -28,6 +28,7 @@
 #ifndef StyleEngine_h
 #define StyleEngine_h
 
+#include "core/css/CSSFontSelectorClient.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/Document.h"
 #include "core/dom/DocumentOrderedList.h"
@@ -72,7 +73,7 @@ private:
     bool m_needsStyleRecalc;
 };
 
-class StyleEngine : public NoBaseWillBeGarbageCollectedFinalized<StyleEngine> {
+class StyleEngine FINAL : public CSSFontSelectorClient  {
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
 
@@ -187,7 +188,11 @@ public:
     PassRefPtrWillBeRawPtr<CSSStyleSheet> createSheet(Element*, const String& text, TextPosition startPosition, bool createdByParser);
     void removeSheet(StyleSheetContents*);
 
-    void trace(Visitor*);
+    virtual void trace(Visitor*) OVERRIDE;
+
+private:
+    // CSSFontSelectorClient implementation.
+    virtual void fontsNeedUpdate(CSSFontSelector*) OVERRIDE;
 
 private:
     StyleEngine(Document&);

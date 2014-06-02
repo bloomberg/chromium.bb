@@ -23,7 +23,6 @@
 #define StyleResolver_h
 
 #include "core/animation/KeyframeEffectModel.h"
-#include "core/css/CSSFontSelectorClient.h"
 #include "core/css/PseudoStyleRequest.h"
 #include "core/css/RuleFeature.h"
 #include "core/css/RuleSet.h"
@@ -100,7 +99,7 @@ public:
 };
 
 // This class selects a RenderStyle for a given element based on a collection of stylesheets.
-class StyleResolver FINAL : public CSSFontSelectorClient {
+class StyleResolver FINAL : public NoBaseWillBeGarbageCollectedFinalized<StyleResolver> {
     WTF_MAKE_NONCOPYABLE(StyleResolver); WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
     explicit StyleResolver(Document&);
@@ -230,11 +229,7 @@ public:
 
     PassRefPtrWillBeRawPtr<PseudoElement> createPseudoElementIfNeeded(Element& parent, PseudoId);
 
-    virtual void trace(Visitor*) OVERRIDE;
-
-private:
-    // CSSFontSelectorClient implementation.
-    virtual void fontsNeedUpdate(CSSFontSelector*) OVERRIDE;
+    void trace(Visitor*);
 
 private:
     void initWatchedSelectorRules(const WillBeHeapVector<RefPtrWillBeMember<StyleRule> >& watchedSelectors);
