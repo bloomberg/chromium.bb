@@ -54,6 +54,7 @@ AppListTestViewDelegate::AppListTestViewDelegate()
     : dismiss_count_(0),
       toggle_speech_recognition_count_(0),
       open_search_result_count_(0),
+      next_profile_app_count_(0),
       test_signin_delegate_(new TestSigninDelegate),
       model_(new AppListTestModel),
       speech_ui_(SPEECH_RECOGNITION_OFF) {
@@ -76,6 +77,11 @@ int AppListTestViewDelegate::GetToggleSpeechRecognitionCountAndReset() {
 
 bool AppListTestViewDelegate::ForceNativeDesktop() const {
   return false;
+}
+
+void AppListTestViewDelegate::SetProfileByPath(
+    const base::FilePath& profile_path) {
+  ReplaceTestModel(next_profile_app_count_);
 }
 
 AppListModel* AppListTestViewDelegate::GetModel() {

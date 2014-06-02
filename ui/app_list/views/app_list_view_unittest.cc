@@ -76,6 +76,9 @@ class AppListViewTestContext {
   // Tests displaying of the experimental app list and shows the start page.
   void RunStartPageTest();
 
+  // Tests that changing the App List profile.
+  void RunProfileChangeTest();
+
   // A standard set of checks on a view, e.g., ensuring it is drawn and visible.
   static void CheckView(views::View* subview);
 
@@ -301,6 +304,50 @@ void AppListViewTestContext::RunStartPageTest() {
   Close();
 }
 
+void AppListViewTestContext::RunProfileChangeTest() {
+  EXPECT_FALSE(view_->GetWidget()->IsVisible());
+  EXPECT_EQ(-1, pagination_model_.total_pages());
+  delegate_->GetTestModel()->PopulateApps(kInitialItems);
+
+  Show();
+
+  if (is_landscape())
+    EXPECT_EQ(2, pagination_model_.total_pages());
+  else
+    EXPECT_EQ(3, pagination_model_.total_pages());
+
+  // Change the profile. The original model needs to be kept alive for
+  // observers to unregister themselves.
+  scoped_ptr<AppListTestModel> original_test_model(
+      delegate_->ReleaseTestModel());
+  delegate_->set_next_profile_app_count(1);
+
+  // The original ContentsView is destroyed here.
+  view_->SetProfileByPath(base::FilePath());
+  EXPECT_EQ(1, pagination_model_.total_pages());
+
+  StartPageView* start_page_view =
+      view_->app_list_main_view()->contents_view()->start_page_view();
+  if (test_type_ == EXPERIMENTAL) {
+    EXPECT_NO_FATAL_FAILURE(CheckView(start_page_view));
+    EXPECT_EQ(1u, GetVisibleTileItemViews(start_page_view->tile_views()));
+  } else {
+    EXPECT_EQ(NULL, start_page_view);
+  }
+
+  // New model updates should be processed by the start page view.
+  delegate_->GetTestModel()->CreateAndAddItem("Test App");
+  if (test_type_ == EXPERIMENTAL)
+    EXPECT_EQ(2u, GetVisibleTileItemViews(start_page_view->tile_views()));
+
+  // Old model updates should be ignored.
+  original_test_model->CreateAndAddItem("Test App 2");
+  if (test_type_ == EXPERIMENTAL)
+    EXPECT_EQ(2u, GetVisibleTileItemViews(start_page_view->tile_views()));
+
+  Close();
+}
+
 class AppListViewTestAura : public views::ViewsTestBase,
                             public ::testing::WithParamInterface<int> {
  public:
@@ -412,6 +459,15 @@ TEST_P(AppListViewTestAura, StartPageTest) {
 
 TEST_P(AppListViewTestDesktop, StartPageTest) {
   EXPECT_NO_FATAL_FAILURE(test_context_->RunStartPageTest());
+}
+
+// Tests that the profile changes operate correctly.
+TEST_P(AppListViewTestAura, ProfileChangeTest) {
+  EXPECT_NO_FATAL_FAILURE(test_context_->RunProfileChangeTest());
+}
+
+TEST_P(AppListViewTestDesktop, ProfileChangeTest) {
+  EXPECT_NO_FATAL_FAILURE(test_context_->RunProfileChangeTest());
 }
 
 INSTANTIATE_TEST_CASE_P(AppListViewTestAuraInstance,

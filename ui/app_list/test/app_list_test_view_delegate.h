@@ -36,6 +36,10 @@ class AppListTestViewDelegate : public AppListViewDelegate {
     return open_search_result_counts_;
   }
 
+  // Sets the number of apps that the model will be created with the next time
+  // SetProfileByPath() is called.
+  void set_next_profile_app_count(int apps) { next_profile_app_count_ = apps; }
+
   void set_auto_launch_timeout(const base::TimeDelta& timeout) {
     auto_launch_timeout_ = timeout;
   }
@@ -50,7 +54,7 @@ class AppListTestViewDelegate : public AppListViewDelegate {
 
   // AppListViewDelegate overrides:
   virtual bool ForceNativeDesktop() const OVERRIDE;
-  virtual void SetProfileByPath(const base::FilePath& profile_path) OVERRIDE {}
+  virtual void SetProfileByPath(const base::FilePath& profile_path) OVERRIDE;
   virtual AppListModel* GetModel() OVERRIDE;
   virtual SigninDelegate* GetSigninDelegate() OVERRIDE;
   virtual SpeechUIModel* GetSpeechUI() OVERRIDE;
@@ -94,6 +98,7 @@ class AppListTestViewDelegate : public AppListViewDelegate {
   int dismiss_count_;
   int toggle_speech_recognition_count_;
   int open_search_result_count_;
+  int next_profile_app_count_;
   std::map<size_t, int> open_search_result_counts_;
   Users users_;
   scoped_ptr<TestSigninDelegate> test_signin_delegate_;

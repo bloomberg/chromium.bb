@@ -121,6 +121,8 @@ StartPageView::StartPageView(AppListMainView* app_list_main_view,
 
 StartPageView::~StartPageView() {
   view_delegate_->RemoveObserver(this);
+  if (model_)
+    model_->RemoveObserver(this);
 }
 
 void StartPageView::SetModel(AppListModel* model) {
