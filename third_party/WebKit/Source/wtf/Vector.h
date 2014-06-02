@@ -43,6 +43,9 @@ static const size_t kInitialVectorSize = 1;
 static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
 #endif
 
+    template<typename T, size_t inlineBuffer, typename Allocator>
+    class Deque;
+
     template <bool needsDestruction, typename T>
     struct VectorDestructor;
 
@@ -494,6 +497,8 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
         const T* inlineBuffer() const { return reinterpret_cast_ptr<const T*>(m_inlineBuffer.buffer); }
 
         AlignedBuffer<m_inlineBufferSize, WTF_ALIGN_OF(T)> m_inlineBuffer;
+        template<typename U, size_t inlineBuffer, typename V>
+        friend class Deque;
     };
 
     template<typename T, size_t inlineCapacity, typename Allocator>

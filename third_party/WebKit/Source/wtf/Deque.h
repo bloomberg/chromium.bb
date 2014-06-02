@@ -246,11 +246,14 @@ namespace WTF {
     template<typename T, size_t inlineCapacity, typename Allocator>
     inline void Deque<T, inlineCapacity, Allocator>::destroyAll()
     {
-        if (m_start <= m_end)
+        if (m_start <= m_end) {
             TypeOperations::destruct(m_buffer.buffer() + m_start, m_buffer.buffer() + m_end);
-        else {
+            m_buffer.clearUnusedSlots(m_buffer.buffer() + m_start, m_buffer.buffer() + m_end);
+        } else {
             TypeOperations::destruct(m_buffer.buffer(), m_buffer.buffer() + m_end);
+            m_buffer.clearUnusedSlots(m_buffer.buffer(), m_buffer.buffer() + m_end);
             TypeOperations::destruct(m_buffer.buffer() + m_start, m_buffer.buffer() + m_buffer.capacity());
+            m_buffer.clearUnusedSlots(m_buffer.buffer() + m_start, m_buffer.buffer() + m_buffer.capacity());
         }
     }
 
@@ -375,6 +378,7 @@ namespace WTF {
     {
         ASSERT(!isEmpty());
         TypeOperations::destruct(&m_buffer.buffer()[m_start], &m_buffer.buffer()[m_start + 1]);
+        m_buffer.clearUnusedSlots(&m_buffer.buffer()[m_start], &m_buffer.buffer()[m_start + 1]);
         if (m_start == m_buffer.capacity() - 1)
             m_start = 0;
         else
@@ -390,6 +394,7 @@ namespace WTF {
         else
             --m_end;
         TypeOperations::destruct(&m_buffer.buffer()[m_end], &m_buffer.buffer()[m_end + 1]);
+        m_buffer.clearUnusedSlots(&m_buffer.buffer()[m_end], &m_buffer.buffer()[m_end + 1]);
     }
 
     template<typename T, size_t inlineCapacity, typename Allocator>
@@ -416,9 +421,11 @@ namespace WTF {
         // Find which segment of the circular buffer contained the remove element, and only move elements in that part.
         if (position >= m_start) {
             TypeOperations::moveOverlapping(buffer + m_start, buffer + position, buffer + m_start + 1);
+            m_buffer.clearUnusedSlots(buffer + m_start, buffer + m_start + 1);
             m_start = (m_start + 1) % m_buffer.capacity();
         } else {
             TypeOperations::moveOverlapping(buffer + position + 1, buffer + m_end, buffer + position);
+            m_buffer.clearUnusedSlots(buffer + m_end - 1, buffer + m_end);
             m_end = (m_end - 1 + m_buffer.capacity()) % m_buffer.capacity();
         }
     }
