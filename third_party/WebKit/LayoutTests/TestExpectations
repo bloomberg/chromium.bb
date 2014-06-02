@@ -433,8 +433,6 @@ crbug.com/378610 [ Win7 ] fast/text/multiglyph-characters.html [ Failure ]
 # Image tests that needs investigation or test changes.
 crbug.com/378610 [ Win7 ] fast/text/selection-rect-rounding.html [ Failure ]
 
-Bug(eae) virtual/gpu/compositedscrolling/overflow/overflow-positioning.html [ NeedsManualRebaseline ]
-
 crbug.com/371725 http/tests/webfont/slow-loading.html [ Pass ImageOnlyFailure Timeout ]
 
 # Issues on the mac-antialiased fonts virtual test suite.
@@ -465,7 +463,7 @@ crbug.com/243599 [ Linux Win ] http/tests/xmlhttprequest/access-control-repeated
 
 crbug.com/310866 fast/workers/storage/use-same-database-in-page-and-workers.html [ Pass Timeout ]
 
-#crbug.com/245630 virtual/gpu/compositedscrolling/overflow/overflow-positioning.html [ ImageOnlyFailure Pass ]
+crbug.com/245630 virtual/gpu/compositedscrolling/overflow/overflow-positioning.html [ ImageOnlyFailure Pass ]
 
 crbug.com/248063 plugins/plugin-clip-subframe.html [ Pass Failure ]
 
