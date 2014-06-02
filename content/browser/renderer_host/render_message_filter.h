@@ -32,7 +32,6 @@
 #include "ui/surface/transport_dib.h"
 
 #if defined(OS_MACOSX)
-#include "base/mac/scoped_cftyperef.h"
 #include "content/common/mac/font_loader.h"
 #endif
 
@@ -51,11 +50,6 @@ namespace base {
 class ProcessMetrics;
 class SharedMemory;
 class TaskRunner;
-}
-
-namespace gfx {
-class Rect;
-struct GpuMemoryBufferHandle;
 }
 
 namespace media {
@@ -273,14 +267,6 @@ class RenderMessageFilter : public BrowserMessageFilter {
                             uint32_t data_size);
 #endif
 
-  void OnAllocateGpuMemoryBuffer(uint32 width,
-                                 uint32 height,
-                                 uint32 internalformat,
-                                 uint32 usage,
-                                 IPC::Message* reply);
-  void GpuMemoryBufferAllocated(IPC::Message* reply,
-                                const gfx::GpuMemoryBufferHandle& handle);
-
   // Cached resource request dispatcher host and plugin service, guaranteed to
   // be non-null if Init succeeds. We do not own the objects, they are managed
   // by the BrowserProcess, which has a wider scope than we do.
@@ -318,10 +304,6 @@ class RenderMessageFilter : public BrowserMessageFilter {
 
   media::AudioManager* audio_manager_;
   MediaInternals* media_internals_;
-
-#if defined(OS_MACOSX)
-  base::ScopedCFTypeRef<CFTypeRef> last_io_surface_;
-#endif
 
   DISALLOW_COPY_AND_ASSIGN(RenderMessageFilter);
 };

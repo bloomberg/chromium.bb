@@ -26,6 +26,7 @@
 #include "base/logging.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
+#include "base/numerics/safe_math.h"
 #include "base/path_service.h"
 #include "base/rand_util.h"
 #include "base/stl_util.h"
@@ -111,6 +112,8 @@
 #include "content/common/child_process_host_impl.h"
 #include "content/common/child_process_messages.h"
 #include "content/common/content_switches_internal.h"
+#include "content/common/gpu/client/gpu_memory_buffer_impl.h"
+#include "content/common/gpu/client/gpu_memory_buffer_impl_shm.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "content/common/mojo/mojo_messages.h"
 #include "content/common/resource_messages.h"
@@ -152,6 +155,13 @@
 
 #if defined(OS_ANDROID)
 #include "content/browser/media/android/browser_demuxer_android.h"
+#include "content/browser/renderer_host/compositor_impl_android.h"
+#include "content/common/gpu/client/gpu_memory_buffer_impl_surface_texture.h"
+#endif
+
+#if defined(OS_MACOSX)
+#include "content/common/gpu/client/gpu_memory_buffer_impl_io_surface.h"
+#include "ui/gl/io_surface_support_mac.h"
 #endif
 
 #if defined(OS_WIN)
@@ -325,6 +335,23 @@ class RendererSandboxedProcessLauncherDelegate
   int ipc_fd_;
 #endif  // OS_POSIX
 };
+
+#if defined(OS_MACOSX)
+void AddBooleanValue(CFMutableDictionaryRef dictionary,
+                     const CFStringRef key,
+                     bool value) {
+  CFDictionaryAddValue(
+      dictionary, key, value ? kCFBooleanTrue : kCFBooleanFalse);
+}
+
+void AddIntegerValue(CFMutableDictionaryRef dictionary,
+                     const CFStringRef key,
+                     int32 value) {
+  base::ScopedCFTypeRef<CFNumberRef> number(
+      CFNumberCreate(NULL, kCFNumberSInt32Type, &value));
+  CFDictionaryAddValue(dictionary, key, number.get());
+}
+#endif
 
 }  // namespace
 
@@ -500,6 +527,10 @@ RenderProcessHostImpl::~RenderProcessHostImpl() {
     BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
                             base::Bind(&RemoveShaderInfo, GetID()));
   }
+
+#if defined(OS_ANDROID)
+  CompositorImpl::DestroyAllSurfaceTextures(GetID());
+#endif
 }
 
 void RenderProcessHostImpl::EnableSendQueue() {
@@ -1314,6 +1345,9 @@ bool RenderProcessHostImpl::OnMessageReceived(const IPC::Message& msg) {
       IPC_MESSAGE_HANDLER(ViewHostMsg_UserMetricsRecordAction,
                           OnUserMetricsRecordAction)
       IPC_MESSAGE_HANDLER(ViewHostMsg_SavedPageAsMHTML, OnSavedPageAsMHTML)
+      IPC_MESSAGE_HANDLER_DELAY_REPLY(
+          ChildProcessHostMsg_SyncAllocateGpuMemoryBuffer,
+          OnAllocateGpuMemoryBuffer)
       // Adding single handlers for your service here is fine, but once your
       // service needs more than one handler, please extract them into a new
       // message filter and add that filter to CreateMessageFilters().
@@ -2111,6 +2145,113 @@ void RenderProcessHostImpl::ConnectTo(
       mojo::String::From(service_name),
       std::string(),
       handle.Pass());
+}
+
+void RenderProcessHostImpl::OnAllocateGpuMemoryBuffer(uint32 width,
+                                                      uint32 height,
+                                                      uint32 internalformat,
+                                                      uint32 usage,
+                                                      IPC::Message* reply) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (!GpuMemoryBufferImpl::IsFormatValid(internalformat) ||
+      !GpuMemoryBufferImpl::IsUsageValid(usage)) {
+    GpuMemoryBufferAllocated(reply, gfx::GpuMemoryBufferHandle());
+    return;
+  }
+  base::CheckedNumeric<int> size = width;
+  size *= height;
+  if (!size.IsValid()) {
+    GpuMemoryBufferAllocated(reply, gfx::GpuMemoryBufferHandle());
+    return;
+  }
+
+#if defined(OS_MACOSX)
+  // TODO(reveman): This should be moved to
+  // GpuMemoryBufferImpl::AllocateForChildProcess and
+  // GpuMemoryBufferImplIOSurface. crbug.com/325045, crbug.com/323304
+  if (GpuMemoryBufferImplIOSurface::IsConfigurationSupported(internalformat,
+                                                             usage)) {
+    IOSurfaceSupport* io_surface_support = IOSurfaceSupport::Initialize();
+    if (io_surface_support) {
+      base::ScopedCFTypeRef<CFMutableDictionaryRef> properties;
+      properties.reset(
+          CFDictionaryCreateMutable(kCFAllocatorDefault,
+                                    0,
+                                    &kCFTypeDictionaryKeyCallBacks,
+                                    &kCFTypeDictionaryValueCallBacks));
+      AddIntegerValue(
+          properties, io_surface_support->GetKIOSurfaceWidth(), width);
+      AddIntegerValue(
+          properties, io_surface_support->GetKIOSurfaceHeight(), height);
+      AddIntegerValue(properties,
+                      io_surface_support->GetKIOSurfaceBytesPerElement(),
+                      GpuMemoryBufferImpl::BytesPerPixel(internalformat));
+      AddIntegerValue(
+          properties,
+          io_surface_support->GetKIOSurfacePixelFormat(),
+          GpuMemoryBufferImplIOSurface::PixelFormat(internalformat));
+      // TODO(reveman): Remove this when using a mach_port_t to transfer
+      // IOSurface to renderer process. crbug.com/323304
+      AddBooleanValue(
+          properties, io_surface_support->GetKIOSurfaceIsGlobal(), true);
+
+      base::ScopedCFTypeRef<CFTypeRef> io_surface(
+          io_surface_support->IOSurfaceCreate(properties));
+      if (io_surface) {
+        gfx::GpuMemoryBufferHandle handle;
+        handle.type = gfx::IO_SURFACE_BUFFER;
+        handle.io_surface_id = io_surface_support->IOSurfaceGetID(io_surface);
+
+        // TODO(reveman): This makes the assumption that the renderer will
+        // grab a reference to the surface before sending another message.
+        // crbug.com/325045
+        last_io_surface_ = io_surface;
+        GpuMemoryBufferAllocated(reply, handle);
+        return;
+      }
+    }
+  }
+#endif
+
+#if defined(OS_ANDROID)
+  // TODO(reveman): This should be moved to
+  // GpuMemoryBufferImpl::AllocateForChildProcess and
+  // GpuMemoryBufferImplSurfaceTexture when adding support for out-of-process
+  // GPU service. crbug.com/368716
+  if (GpuMemoryBufferImplSurfaceTexture::IsConfigurationSupported(
+          internalformat, usage)) {
+    // Each surface texture is associated with a render process id. This allows
+    // the GPU service and Java Binder IPC to verify that a renderer is not
+    // trying to use a surface texture it doesn't own.
+    int surface_texture_id = CompositorImpl::CreateSurfaceTexture(GetID());
+    if (surface_texture_id != -1) {
+      gfx::GpuMemoryBufferHandle handle;
+      handle.type = gfx::SURFACE_TEXTURE_BUFFER;
+      handle.surface_texture_id =
+          gfx::SurfaceTextureId(surface_texture_id, GetID());
+      GpuMemoryBufferAllocated(reply, handle);
+      return;
+    }
+  }
+#endif
+
+  GpuMemoryBufferImpl::AllocateForChildProcess(
+      gfx::Size(width, height),
+      internalformat,
+      usage,
+      GetHandle(),
+      base::Bind(&RenderProcessHostImpl::GpuMemoryBufferAllocated,
+                 weak_factory_.GetWeakPtr(),
+                 reply));
+}
+
+void RenderProcessHostImpl::GpuMemoryBufferAllocated(
+    IPC::Message* reply,
+    const gfx::GpuMemoryBufferHandle& handle) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  ChildProcessHostMsg_SyncAllocateGpuMemoryBuffer::WriteReplyParams(reply,
+                                                                    handle);
+  Send(reply);
 }
 
 }  // namespace content
