@@ -105,7 +105,6 @@ public:
     // You can specify String() and 0 for sourceURL and lineNumber
     // respectively, if you can't / needn't provide the information.
     virtual void fail(const String& reason, MessageLevel, const String& sourceURL, unsigned lineNumber) = 0;
-    void fail(const String& reason, MessageLevel level) { fail(reason, level, String(), 0); }
 
     virtual void disconnect() = 0; // Will suppress didClose().
 

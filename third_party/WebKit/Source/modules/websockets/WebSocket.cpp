@@ -480,7 +480,7 @@ void WebSocket::closeInternal(int code, const String& reason, ExceptionState& ex
         return;
     if (m_state == CONNECTING) {
         m_state = CLOSING;
-        m_channel->fail("WebSocket is closed before the connection is established.", WarningMessageLevel);
+        m_channel->fail("WebSocket is closed before the connection is established.", WarningMessageLevel, String(), 0);
         return;
     }
     m_state = CLOSING;

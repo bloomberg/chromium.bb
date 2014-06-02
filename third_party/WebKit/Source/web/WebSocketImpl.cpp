@@ -42,6 +42,7 @@
 #include "public/platform/WebURL.h"
 #include "public/web/WebDocument.h"
 #include "wtf/ArrayBuffer.h"
+#include "wtf/text/WTFString.h"
 
 using namespace WebCore;
 
@@ -114,7 +115,7 @@ void WebSocketImpl::close(int code, const WebString& reason)
 
 void WebSocketImpl::fail(const WebString& reason)
 {
-    m_private->fail(reason, ErrorMessageLevel);
+    m_private->fail(reason, ErrorMessageLevel, String(), 0);
 }
 
 void WebSocketImpl::disconnect()
