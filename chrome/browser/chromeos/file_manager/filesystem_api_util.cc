@@ -16,6 +16,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
+#include "google_apis/drive/task_util.h"
 #include "webkit/browser/fileapi/file_system_context.h"
 
 namespace file_manager {
@@ -23,6 +24,8 @@ namespace util {
 
 namespace {
 
+// Helper function used to implement GetNonNativeLocalPathMimeType. It extracts
+// the mime type from the passed Drive resource entry.
 void GetMimeTypeAfterGetResourceEntry(
     const base::Callback<void(bool, const std::string&)>& callback,
     drive::FileError error,
@@ -41,19 +44,46 @@ void GetMimeTypeAfterGetResourceEntry(
 void BoolCallbackAsFileErrorCallback(
     const base::Callback<void(bool)>& callback,
     base::File::Error error) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
   return callback.Run(error == base::File::FILE_OK);
 }
 
-void CheckWritableAfterDriveCheck(const base::Callback<void(bool)>& callback,
-                                  drive::FileError error,
-                                  const base::FilePath& local_path) {
-  // This is called on the IO-allowed blocking pool. Call back to UI.
-  content::BrowserThread::PostTask(
-      content::BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(callback, error == drive::FILE_ERROR_OK));
+// Part of PrepareFileOnIOThread. It tries to create a new file if the given
+// |url| is not already inhabited.
+void PrepareFileAfterCheckExistOnIOThread(
+    scoped_refptr<fileapi::FileSystemContext> file_system_context,
+    const fileapi::FileSystemURL& url,
+    const fileapi::FileSystemOperation::StatusCallback& callback,
+    base::File::Error error) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+
+  if (error != base::File::FILE_ERROR_NOT_FOUND) {
+    callback.Run(error);
+    return;
+  }
+
+  // Call with the second argument |exclusive| set to false, meaning that it
+  // is not an error even if the file already exists (it can happen if the file
+  // is created after the previous FileExists call and before this CreateFile.)
+  //
+  // Note that the preceding call to FileExists is necessary for handling
+  // read only filesystems that blindly rejects handling CreateFile().
+  file_system_context->operation_runner()->CreateFile(url, false, callback);
+}
+
+// Checks whether a file exists at the given |url|, and try creating it if it
+// is not already there.
+void PrepareFileOnIOThread(
+    scoped_refptr<fileapi::FileSystemContext> file_system_context,
+    const fileapi::FileSystemURL& url,
+    const base::Callback<void(bool)>& callback) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+
+  file_system_context->operation_runner()->FileExists(
+      url,
+      base::Bind(&PrepareFileAfterCheckExistOnIOThread,
+                 file_system_context,
+                 url,
+                 base::Bind(&BoolCallbackAsFileErrorCallback, callback)));
 }
 
 }  // namespace
@@ -128,7 +158,7 @@ void IsNonNativeLocalPathDirectory(
   if (!util::ConvertAbsoluteFilePathToFileSystemUrl(
            profile, path, kFileManagerAppId, &url)) {
     // Posting to the current thread, so that we always call back asynchronously
-    // independent from whether or not the operation succeeeds.
+    // independent from whether or not the operation succeeds.
     content::BrowserThread::PostTask(content::BrowserThread::UI,
                                      FROM_HERE,
                                      base::Bind(callback, false));
@@ -146,12 +176,34 @@ void PrepareNonNativeLocalPathWritableFile(
     const base::FilePath& path,
     const base::Callback<void(bool)>& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK(IsUnderNonNativeLocalPath(profile, path));
 
-  // TODO(kinaba): support other types of volumes besides Drive.
-  drive::util::PrepareWritableFileAndRun(
-      profile,
-      path,
-      base::Bind(&CheckWritableAfterDriveCheck, callback));
+  GURL url;
+  if (!util::ConvertAbsoluteFilePathToFileSystemUrl(
+           profile, path, kFileManagerAppId, &url)) {
+    // Posting to the current thread, so that we always call back asynchronously
+    // independent from whether or not the operation succeeds.
+    content::BrowserThread::PostTask(content::BrowserThread::UI,
+                                     FROM_HERE,
+                                     base::Bind(callback, false));
+    return;
+  }
+
+  fileapi::FileSystemContext* const context =
+      GetFileSystemContextForExtensionId(profile, kFileManagerAppId);
+  DCHECK(context);
+
+  // Check the existence of a file using file system API implementation on
+  // behalf of the file manager app. We need to grant access beforehand.
+  context->external_backend()->GrantFullAccessToExtension(kFileManagerAppId);
+
+  content::BrowserThread::PostTask(
+      content::BrowserThread::IO,
+      FROM_HERE,
+      base::Bind(&PrepareFileOnIOThread,
+                 make_scoped_refptr(context),
+                 context->CrackURL(url),
+                 google_apis::CreateRelayCallback(callback)));
 }
 
 }  // namespace util
