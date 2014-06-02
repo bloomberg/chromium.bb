@@ -371,7 +371,7 @@ def BuildAndInstall_libgcc_s(skip_build=False):
                os.path.join(tcpath, 'arm-nacl', 'lib', 'libgcc_s.so'))
 
 
-def ConfigureAndBuild_libstdcpp():
+def ConfigureAndBuild_libstdcpp(skip_build=False):
   arch = 'arm'
   project = 'libstdc++'
   tcpath = GetBionicBuildPath(arch)
@@ -400,24 +400,17 @@ def ConfigureAndBuild_libstdcpp():
     'CFLAGS=-I../../../gcc_lib_arm_work'
   ]
 
-  ConfigureGCCProject(arch, project, cfg, dstpath, inspath)
-  MakeGCCProject(arch, project, dstpath)
-  MakeGCCProject(arch, project, dstpath, ['install'])
+  if not skip_build:
+    ConfigureGCCProject(arch, project, cfg, dstpath, inspath)
+    MakeGCCProject(arch, project, dstpath)
+    MakeGCCProject(arch, project, dstpath, ['install'])
 
-  filelist = [
-    'libstdc++.a',
-    'libstdc++.la',
-    'libstdc++.so',
-    'libstdc++.so.6',
-    'libstdc++.so.6.0.18',
-    'libstdc++.so.6.0.18-gdb.py',
-    'libsupc++.a',
-    'libsupc++.la'
-  ]
-  for filename in filelist:
-    UpdateFromTo(os.path.join(inspath, 'lib', filename),
-                os.path.join(tcpath, 'arm-nacl', 'lib', filename))
+  # Copy libsupc++ and libstdc++ files and symlinks
+  UpdateFromTo(os.path.join(inspath, 'lib'),
+               os.path.join(tcpath, 'arm-nacl', 'lib'),
+               paterns=['*libstdc++.*', '*libsupc++.*'])
 
+  # Copy C++ headers
   UpdateFromTo(os.path.join(inspath, 'include'),
                os.path.join(tcpath, 'arm-nacl', 'include'))
 
@@ -623,7 +616,7 @@ def main(argv):
   parser.add_argument(
       '--skip-gcc', dest='skip_gcc',
       default=False, action='store_true',
-      help='Skip building GCC components.')
+      help='Skip building GCC components (libgcc and libstdc++).')
 
   options, leftover_args = parser.parse_known_args()
   if '-h' in leftover_args or '--help' in leftover_args:
@@ -670,7 +663,7 @@ def main(argv):
   MakeBionicProject('libm')
 
   # With libc, libgcc, and libm, we can now build libstdc++
-  ConfigureAndBuild_libstdcpp()
+  ConfigureAndBuild_libstdcpp(skip_build=options.skip_gcc)
 
   # Now we can build the linker
   #MakeBionicProject('linker')
