@@ -557,10 +557,11 @@ system call NtCreate*
 UNADDRESSABLE ACCESS
 name=http://crbug.com/379204
 ...
-*!WTF::PlatformCondition::timedWait
-*!WTF::ThreadCondition::timedWait
 *!WTF::MessageQueue<>::waitForMessageWithTimeout
 *!WebCore::WorkerRunLoop::run
+*!WebCore::WorkerRunLoop::run
+*!WebCore::WorkerThread::workerThread
+*!WTF::threadEntryPoint
 
 GDI USAGE ERROR
 name=379774
