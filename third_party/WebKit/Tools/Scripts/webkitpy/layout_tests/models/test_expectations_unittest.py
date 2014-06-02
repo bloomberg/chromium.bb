@@ -520,7 +520,7 @@ Bug(y) [ Win Mac Debug ] failures/expected/foo.html [ Crash ]
 """}
         expectations = TestExpectations(test_port, self.get_basic_tests())
 
-        actual_expectations = expectations.remove_configuration_from_test('failures/expected/foo.html', test_config)
+        actual_expectations = expectations.remove_configurations([('failures/expected/foo.html', test_config)])
 
         self.assertEqual("""Bug(x) [ Linux Win7 Release ] failures/expected/foo.html [ Failure ]
 Bug(y) [ Win Mac Debug ] failures/expected/foo.html [ Crash ]
@@ -537,10 +537,30 @@ Bug(y) [ Win Mac Debug ] failures/expected/foo.html [ Crash ]
 """}
         expectations = TestExpectations(test_port, self.get_basic_tests())
 
-        actual_expectations = expectations.remove_configuration_from_test('failures/expected/foo.html', test_config)
+        actual_expectations = expectations.remove_configurations([('failures/expected/foo.html', test_config)])
 
         self.assertEqual("""Bug(x) [ XP Debug ] failures/expected/foo.html [ NeedsRebaseline ]
 Bug(x) [ Win7 ] failures/expected/foo.html [ NeedsRebaseline ]
+""", actual_expectations)
+
+    def test_remove_multiple_configurations(self):
+        host = MockHost()
+        test_port = host.port_factory.get('test-win-xp', None)
+        test_port.test_exists = lambda test: True
+        test_port.test_isfile = lambda test: True
+
+        test_config = test_port.test_configuration()
+        test_port.expectations_dict = lambda: {'expectations': """Bug(y) [ Win Debug ] failures/expected/foo.html [ Crash ]
+Bug(x) [ Win Release ] failures/expected/foo.html [ Failure ]
+"""}
+        expectations = TestExpectations(test_port)
+
+        actual_expectations = expectations.remove_configurations([
+            ('failures/expected/foo.html', test_config),
+            ('failures/expected/foo.html', host.port_factory.get('test-win-win7', None).test_configuration()),
+        ])
+
+        self.assertEqual("""Bug(y) [ Win Debug ] failures/expected/foo.html [ Crash ]
 """, actual_expectations)
 
     def test_remove_line_with_comments(self):
@@ -557,8 +577,8 @@ Bug(x) [ Win Release ] failures/expected/foo.html [ Failure ]
 """}
         expectations = TestExpectations(test_port)
 
-        actual_expectations = expectations.remove_configuration_from_test('failures/expected/foo.html', test_config)
-        actual_expectations = expectations.remove_configuration_from_test('failures/expected/foo.html', host.port_factory.get('test-win-win7', None).test_configuration())
+        actual_expectations = expectations.remove_configurations([('failures/expected/foo.html', test_config)])
+        actual_expectations = expectations.remove_configurations([('failures/expected/foo.html', host.port_factory.get('test-win-win7', None).test_configuration())])
 
         self.assertEqual("""Bug(y) [ Win Debug ] failures/expected/foo.html [ Crash ]
 """, actual_expectations)
@@ -578,8 +598,8 @@ Bug(y) [ Win Debug ] failures/expected/foo.html [ Crash ]
 """}
         expectations = TestExpectations(test_port)
 
-        actual_expectations = expectations.remove_configuration_from_test('failures/expected/foo.html', test_config)
-        actual_expectations = expectations.remove_configuration_from_test('failures/expected/foo.html', host.port_factory.get('test-win-win7', None).test_configuration())
+        actual_expectations = expectations.remove_configurations([('failures/expected/foo.html', test_config)])
+        actual_expectations = expectations.remove_configurations([('failures/expected/foo.html', host.port_factory.get('test-win-win7', None).test_configuration())])
 
         self.assertEqual("""
 Bug(y) [ Win Debug ] failures/expected/foo.html [ Crash ]
@@ -598,8 +618,8 @@ Bug(y) [ Win Debug ] failures/expected/foo.html [ Crash ]
 Bug(x) [ Win Release ] failures/expected/foo.html [ Failure ]"""}
         expectations = TestExpectations(test_port)
 
-        actual_expectations = expectations.remove_configuration_from_test('failures/expected/foo.html', test_config)
-        actual_expectations = expectations.remove_configuration_from_test('failures/expected/foo.html', host.port_factory.get('test-win-win7', None).test_configuration())
+        actual_expectations = expectations.remove_configurations([('failures/expected/foo.html', test_config)])
+        actual_expectations = expectations.remove_configurations([('failures/expected/foo.html', host.port_factory.get('test-win-win7', None).test_configuration())])
 
         self.assertEqual("""Bug(y) [ Win Debug ] failures/expected/foo.html [ Crash ]""", actual_expectations)
 
@@ -617,8 +637,8 @@ Bug(y) [ Win Debug ] failures/expected/foo.html [ Crash ]
 """}
         expectations = TestExpectations(test_port)
 
-        actual_expectations = expectations.remove_configuration_from_test('failures/expected/foo.html', test_config)
-        actual_expectations = expectations.remove_configuration_from_test('failures/expected/foo.html', host.port_factory.get('test-win-win7', None).test_configuration())
+        actual_expectations = expectations.remove_configurations([('failures/expected/foo.html', test_config)])
+        actual_expectations = expectations.remove_configurations([('failures/expected/foo.html', host.port_factory.get('test-win-win7', None).test_configuration())])
 
         self.assertEqual("""
  # This comment line should not get stripped.
@@ -640,8 +660,8 @@ Bug(y) [ Win Debug ] failures/expected/foo.html [ Crash ]
 """}
         expectations = TestExpectations(test_port)
 
-        actual_expectations = expectations.remove_configuration_from_test('failures/expected/foo.html', test_config)
-        actual_expectations = expectations.remove_configuration_from_test('failures/expected/foo.html', host.port_factory.get('test-win-win7', None).test_configuration())
+        actual_expectations = expectations.remove_configurations([('failures/expected/foo.html', test_config)])
+        actual_expectations = expectations.remove_configurations([('failures/expected/foo.html', host.port_factory.get('test-win-win7', None).test_configuration())])
 
         self.assertEqual(""" # This comment line should not get stripped.
 Bug(y) [ Win Debug ] failures/expected/foo.html [ Crash ]
@@ -660,8 +680,8 @@ Bug(y) [ Win Debug ] failures/expected/foo.html [ Crash ]
 """}
         expectations = TestExpectations(test_port)
 
-        actual_expectations = expectations.remove_configuration_from_test('failures/expected/foo.html', test_config)
-        actual_expectations = expectations.remove_configuration_from_test('failures/expected/foo.html', host.port_factory.get('test-win-win7', None).test_configuration())
+        actual_expectations = expectations.remove_configurations([('failures/expected/foo.html', test_config)])
+        actual_expectations = expectations.remove_configurations([('failures/expected/foo.html', host.port_factory.get('test-win-win7', None).test_configuration())])
 
         self.assertEqual(""" # This comment line should not get stripped.
 Bug(y) [ Win Debug ] failures/expected/foo.html [ Crash ]
@@ -679,8 +699,8 @@ Bug(y) [ Mac ] failures/expected/foo.html [ Crash ]
 """}
         expectations = TestExpectations(test_port)
 
-        actual_expectations = expectations.remove_configuration_from_test('failures/expected/foo.html', test_config)
-        actual_expectations = expectations.remove_configuration_from_test('failures/expected/foo.html', host.port_factory.get('test-win-win7', None).test_configuration())
+        actual_expectations = expectations.remove_configurations([('failures/expected/foo.html', test_config)])
+        actual_expectations = expectations.remove_configurations([('failures/expected/foo.html', host.port_factory.get('test-win-win7', None).test_configuration())])
 
         self.assertEqual("""Bug(x) [ Win Debug ] failures/expected/foo.html [ Failure Timeout ]
 Bug(y) [ Mac ] failures/expected/foo.html [ Crash ]

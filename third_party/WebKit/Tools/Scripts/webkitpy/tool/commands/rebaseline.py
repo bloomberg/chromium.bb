@@ -368,6 +368,7 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
         cwd = self._tool.scm().checkout_root
         copy_baseline_commands = []
         rebaseline_commands = []
+        lines_to_remove = {}
         port = self._tool.port_factory.get()
 
         for test_prefix in test_prefix_list:
@@ -375,6 +376,11 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
                 for builder in self._builders_to_fetch_from(test_prefix_list[test_prefix]):
                     actual_failures_suffixes = self._suffixes_for_actual_failures(test, builder, test_prefix_list[test_prefix][builder])
                     if not actual_failures_suffixes:
+                        # If we're not going to rebaseline the test because it's passing on this
+                        # builder, we still want to remove the line from TestExpectations.
+                        if test not in lines_to_remove:
+                            lines_to_remove[test] = []
+                        lines_to_remove[test].append(builder)
                         continue
 
                     suffixes = ','.join(actual_failures_suffixes)
@@ -385,7 +391,7 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
                         cmd_line.append('--verbose')
                     copy_baseline_commands.append(tuple([[path_to_webkit_patch, 'copy-existing-baselines-internal'] + cmd_line, cwd]))
                     rebaseline_commands.append(tuple([[path_to_webkit_patch, 'rebaseline-test-internal'] + cmd_line, cwd]))
-        return copy_baseline_commands, rebaseline_commands
+        return copy_baseline_commands, rebaseline_commands, lines_to_remove
 
     def _serial_commands(self, command_results):
         files_to_add = set()
@@ -435,37 +441,45 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
         return optimize_commands
 
     def _update_expectations_files(self, lines_to_remove):
-        # FIXME: This routine is way too expensive. We're creating N ports and N TestExpectations
-        # objects and (re-)writing the actual expectations file N times, for each test we update.
-        # We should be able to update everything in memory, once, and then write the file out a single time.
+        # FIXME: This routine is way too expensive. We're creating O(n ports) TestExpectations objects.
+        # This is slow and uses a lot of memory.
+        tests = lines_to_remove.keys()
+        to_remove = []
+
+        # This is so we remove lines for builders that skip this test, e.g. Android skips most
+        # tests and we don't want to leave stray [ Android ] lines in TestExpectations..
+        # FIXME: Is this necessary at all now that _rebaseline_commands includes the builders that
+        # used to be skipped because the result wasn't failing on tip of tree?
+        for port_name in self._tool.port_factory.all_port_names():
+            port = self._tool.port_factory.get(port_name)
+            generic_expectations = TestExpectations(port, tests=tests, include_overrides=False)
+            full_expectations = TestExpectations(port, tests=tests, include_overrides=True)
+            for test in tests:
+                if self._port_skips_test(port, test, generic_expectations, full_expectations):
+                    for test_configuration in port.all_test_configurations():
+                        if test_configuration.version == port.test_configuration().version:
+                            to_remove.append((test, test_configuration))
+
         for test in lines_to_remove:
             for builder in lines_to_remove[test]:
                 port = self._tool.port_factory.get_from_builder_name(builder)
-                path = port.path_to_generic_test_expectations_file()
-                expectations = TestExpectations(port, include_overrides=False)
                 for test_configuration in port.all_test_configurations():
                     if test_configuration.version == port.test_configuration().version:
-                        expectationsString = expectations.remove_configuration_from_test(test, test_configuration)
-                self._tool.filesystem.write_text_file(path, expectationsString)
+                        to_remove.append((test, test_configuration))
 
-            for port_name in self._tool.port_factory.all_port_names():
-                port = self._tool.port_factory.get(port_name)
-                generic_expectations = TestExpectations(port, tests=[test], include_overrides=False)
-                if self._port_skips_test(port, test, generic_expectations):
-                    for test_configuration in port.all_test_configurations():
-                        if test_configuration.version == port.test_configuration().version:
-                            expectationsString = generic_expectations.remove_configuration_from_test(test, test_configuration)
-                    generic_path = port.path_to_generic_test_expectations_file()
-                    self._tool.filesystem.write_text_file(generic_path, expectationsString)
+        port = self._tool.port_factory.get()
+        expectations = TestExpectations(port, include_overrides=False)
+        expectationsString = expectations.remove_configurations(to_remove)
+        path = port.path_to_generic_test_expectations_file()
+        self._tool.filesystem.write_text_file(path, expectationsString)
 
-    def _port_skips_test(self, port, test, generic_expectations):
+    def _port_skips_test(self, port, test, generic_expectations, full_expectations):
         fs = port.host.filesystem
         if port.default_smoke_test_only():
             smoke_test_filename = fs.join(port.layout_tests_dir(), 'SmokeTests')
             if fs.exists(smoke_test_filename) and test not in fs.read_text_file(smoke_test_filename):
                 return True
 
-        full_expectations = TestExpectations(port, tests=[test], include_overrides=True)
         return (SKIP in full_expectations.get_expectations(test) and
                 SKIP not in generic_expectations.get_expectations(test))
 
@@ -481,8 +495,7 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
             self._tool.scm().delete_list(files_to_delete)
         if files_to_add:
             self._tool.scm().add_list(files_to_add)
-        if lines_to_remove:
-            self._update_expectations_files(lines_to_remove)
+        return lines_to_remove
 
     def _rebaseline(self, options, test_prefix_list):
         for test, builders_to_check in sorted(test_prefix_list.items()):
@@ -490,11 +503,23 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
             for builder, suffixes in sorted(builders_to_check.items()):
                 _log.debug("  %s: %s" % (builder, ",".join(suffixes)))
 
-        copy_baseline_commands, rebaseline_commands = self._rebaseline_commands(test_prefix_list, options)
+        copy_baseline_commands, rebaseline_commands, extra_lines_to_remove = self._rebaseline_commands(test_prefix_list, options)
+        lines_to_remove = {}
+
         if copy_baseline_commands:
             self._run_in_parallel_and_update_scm(copy_baseline_commands)
         if rebaseline_commands:
-            self._run_in_parallel_and_update_scm(rebaseline_commands)
+            lines_to_remove = self._run_in_parallel_and_update_scm(rebaseline_commands)
+
+        for test in extra_lines_to_remove:
+            if test in lines_to_remove:
+                lines_to_remove[test] = lines_to_remove[test] + extra_lines_to_remove[test]
+            else:
+                lines_to_remove[test] = extra_lines_to_remove[test]
+
+        if lines_to_remove:
+            self._update_expectations_files(lines_to_remove)
+
         if options.optimize:
             self._run_in_parallel_and_update_scm(self._optimize_baselines(test_prefix_list, options.verbose))
 
@@ -865,9 +890,6 @@ class AutoRebaseline(AbstractParallelRebaselineCommand):
             # to rebaseline, but we'll still need to update TestExpectations.
             if test_prefix_list:
                 self._rebaseline(options, test_prefix_list)
-            # If a test is not failing on the bot, we don't try to rebaseline it, but we still
-            # want to remove the NeedsRebaseline line.
-            self._update_expectations_files(lines_to_remove)
 
             tool.scm().commit_locally_with_message(self.commit_message(author, revision, bugs))
 

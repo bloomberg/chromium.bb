@@ -1026,21 +1026,22 @@ class TestExpectations(object):
     def has_warnings(self):
         return self._has_warnings
 
-    def remove_configuration_from_test(self, test, test_configuration):
+    def remove_configurations(self, removals):
         expectations_to_remove = []
         modified_expectations = []
 
-        for expectation in self._expectations:
-            if expectation.name != test or not expectation.parsed_expectations:
-                continue
-            if test_configuration not in expectation.matching_configurations:
-                continue
+        for test, test_configuration in removals:
+            for expectation in self._expectations:
+                if expectation.name != test or not expectation.parsed_expectations:
+                    continue
+                if test_configuration not in expectation.matching_configurations:
+                    continue
 
-            expectation.matching_configurations.remove(test_configuration)
-            if expectation.matching_configurations:
-                modified_expectations.append(expectation)
-            else:
-                expectations_to_remove.append(expectation)
+                expectation.matching_configurations.remove(test_configuration)
+                if expectation.matching_configurations:
+                    modified_expectations.append(expectation)
+                else:
+                    expectations_to_remove.append(expectation)
 
         for expectation in expectations_to_remove:
             index = self._expectations.index(expectation)
