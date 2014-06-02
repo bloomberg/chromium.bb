@@ -204,8 +204,6 @@
     'SK_DEFAULT_FONT_CACHE_LIMIT=<(default_font_cache_limit)',
 
     'SK_USE_DISCARDABLE_SCALEDIMAGECACHE',
-
-    'SK_IGNORE_DWRITE_BITMAP_FIX',
   ],
 
   'direct_dependent_settings': {
