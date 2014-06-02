@@ -76,6 +76,8 @@ class MESSAGE_CENTER_EXPORT NotificationView : public MessageView,
   FRIEND_TEST_ALL_PREFIXES(NotificationViewTest, UpdateButtonsStateTest);
   FRIEND_TEST_ALL_PREFIXES(NotificationViewTest, UpdateButtonCountTest);
 
+  friend class NotificationViewTest;
+
   void CreateOrUpdateViews(const Notification& notification);
   void SetAccessibleName(const Notification& notification);
 

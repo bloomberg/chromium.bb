@@ -695,7 +695,7 @@ void NotificationView::CreateOrUpdateImageView(
     gfx::Size image_size(kNotificationPreferredImageWidth,
                          kNotificationPreferredImageHeight);
     image_view_ = MakeNotificationImage(notification.image(), image_size);
-    bottom_view_->AddChildView(image_view_);
+    bottom_view_->AddChildViewAt(image_view_, 0);
   }
 }
 

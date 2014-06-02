@@ -66,6 +66,34 @@ class NotificationViewTest : public views::ViewsTestBase,
     return std::vector<ButtonInfo>(number, info);
   }
 
+  void CheckVerticalOrderInNotification() {
+    std::vector<views::View*> vertical_order;
+    vertical_order.push_back(notification_view()->top_view_);
+    vertical_order.push_back(notification_view()->image_view_);
+    std::copy(notification_view()->action_buttons_.begin(),
+              notification_view()->action_buttons_.end(),
+              std::back_inserter(vertical_order));
+    std::vector<views::View*>::iterator current = vertical_order.begin();
+    std::vector<views::View*>::iterator last = current++;
+    while (current != vertical_order.end()) {
+      gfx::Point last_point = (*last)->bounds().origin();
+      views::View::ConvertPointToTarget(
+          (*last), notification_view(), &last_point);
+
+      gfx::Point current_point = (*current)->bounds().origin();
+      views::View::ConvertPointToTarget(
+          (*current), notification_view(), &current_point);
+
+      EXPECT_LT(last_point.y(), current_point.y());
+      last = current++;
+    }
+  }
+
+  void UpdateNotificationViews() {
+    notification_view()->CreateOrUpdateViews(*notification());
+    notification_view()->Layout();
+  }
+
  private:
   scoped_ptr<RichNotificationData> data_;
   scoped_ptr<Notification> notification_;
@@ -275,6 +303,21 @@ TEST_F(NotificationViewTest, UpdateButtonCountTest) {
   widget()->OnMouseEvent(&move);
 
   EXPECT_TRUE(NULL == notification_view()->action_buttons_[0]->background());
+}
+
+TEST_F(NotificationViewTest, ViewOrderingTest) {
+  // Tests that views are created in the correct vertical order.
+  notification()->set_buttons(CreateButtons(2));
+
+  // Layout the initial views.
+  UpdateNotificationViews();
+
+  // Double-check that vertical order is correct.
+  CheckVerticalOrderInNotification();
+
+  // Tests that views remain in that order even after an update.
+  UpdateNotificationViews();
+  CheckVerticalOrderInNotification();
 }
 
 }  // namespace message_center
