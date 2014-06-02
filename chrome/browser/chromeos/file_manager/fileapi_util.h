@@ -13,6 +13,7 @@
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "url/gurl.h"
+#include "webkit/browser/fileapi/file_system_operation_runner.h"
 
 class Profile;
 
@@ -123,6 +124,12 @@ void ConvertFileDefinitionListToEntryDefinitionList(
     const std::string& extension_id,
     const FileDefinitionList& file_definition_list,
     const EntryDefinitionListCallback& callback);
+
+// Checks if a directory exists at |url|.
+void CheckIfDirectoryExists(
+    scoped_refptr<fileapi::FileSystemContext> file_system_context,
+    const GURL& url,
+    const fileapi::FileSystemOperationRunner::StatusCallback& callback);
 
 }  // namespace util
 }  // namespace file_manager

@@ -7,6 +7,7 @@
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
+#include "chrome/browser/chromeos/file_manager/app_id.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
@@ -14,6 +15,7 @@
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/storage_partition.h"
 #include "extensions/common/extension.h"
+#include "google_apis/drive/task_util.h"
 #include "net/base/escape.h"
 #include "url/gurl.h"
 #include "webkit/browser/fileapi/file_system_context.h"
@@ -211,6 +213,18 @@ void OnConvertFileDefinitionDone(
   callback.Run(entry_definition_list->at(0));
 }
 
+// Used to implement CheckIfDirectoryExists().
+void CheckIfDirectoryExistsOnIOThread(
+    scoped_refptr<fileapi::FileSystemContext> file_system_context,
+    const GURL& url,
+    const fileapi::FileSystemOperationRunner::StatusCallback& callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  fileapi::FileSystemURL file_system_url = file_system_context->CrackURL(url);
+  file_system_context->operation_runner()->DirectoryExists(
+      file_system_url, callback);
+}
+
 }  // namespace
 
 EntryDefinition::EntryDefinition() {
@@ -326,6 +340,27 @@ void ConvertFileDefinitionToEntryDefinition(
       extension_id,
       file_definition_list,
       base::Bind(&OnConvertFileDefinitionDone, callback));
+}
+
+void CheckIfDirectoryExists(
+    scoped_refptr<fileapi::FileSystemContext> file_system_context,
+    const GURL& url,
+    const fileapi::FileSystemOperationRunner::StatusCallback& callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  // Check the existence of directory using file system API implementation on
+  // behalf of the file manager app. We need to grant access beforehand.
+  fileapi::ExternalFileSystemBackend* backend =
+      file_system_context->external_backend();
+  DCHECK(backend);
+  backend->GrantFullAccessToExtension(kFileManagerAppId);
+
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&CheckIfDirectoryExistsOnIOThread,
+                 file_system_context,
+                 url,
+                 google_apis::CreateRelayCallback(callback)));
 }
 
 }  // namespace util

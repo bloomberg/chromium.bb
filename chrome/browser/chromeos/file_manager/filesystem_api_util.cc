@@ -36,11 +36,14 @@ void GetMimeTypeAfterGetResourceEntry(
   callback.Run(true, entry->file_specific_info().content_mime_type());
 }
 
-void CheckDirectoryAfterDriveCheck(const base::Callback<void(bool)>& callback,
-                                   drive::FileError error) {
+// Helper function to converts a callback that takes boolean value to that takes
+// File::Error, by regarding FILE_OK as the only successful value.
+void BoolCallbackAsFileErrorCallback(
+    const base::Callback<void(bool)>& callback,
+    base::File::Error error) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  return callback.Run(error == drive::FILE_ERROR_OK);
+  return callback.Run(error == base::File::FILE_OK);
 }
 
 void CheckWritableAfterDriveCheck(const base::Callback<void(bool)>& callback,
@@ -65,13 +68,9 @@ bool IsUnderNonNativeLocalPath(Profile* profile,
     return false;
   }
 
-  content::StoragePartition* partition =
-      content::BrowserContext::GetStoragePartitionForSite(
-          profile,
-          extensions::util::GetSiteForExtensionId(kFileManagerAppId, profile));
-  fileapi::FileSystemContext* context = partition->GetFileSystemContext();
-
-  fileapi::FileSystemURL filesystem_url = context->CrackURL(url);
+  fileapi::FileSystemURL filesystem_url =
+      GetFileSystemContextForExtensionId(profile,
+                                         kFileManagerAppId)->CrackURL(url);
   if (!filesystem_url.is_valid())
     return false;
 
@@ -123,12 +122,23 @@ void IsNonNativeLocalPathDirectory(
     const base::FilePath& path,
     const base::Callback<void(bool)>& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK(IsUnderNonNativeLocalPath(profile, path));
 
-  // TODO(kinaba): support other types of volumes besides Drive.
-  drive::util::CheckDirectoryExists(
-      profile,
-      path,
-      base::Bind(&CheckDirectoryAfterDriveCheck, callback));
+  GURL url;
+  if (!util::ConvertAbsoluteFilePathToFileSystemUrl(
+           profile, path, kFileManagerAppId, &url)) {
+    // Posting to the current thread, so that we always call back asynchronously
+    // independent from whether or not the operation succeeeds.
+    content::BrowserThread::PostTask(content::BrowserThread::UI,
+                                     FROM_HERE,
+                                     base::Bind(callback, false));
+    return;
+  }
+
+  util::CheckIfDirectoryExists(
+      GetFileSystemContextForExtensionId(profile, kFileManagerAppId),
+      url,
+      base::Bind(&BoolCallbackAsFileErrorCallback, callback));
 }
 
 void PrepareNonNativeLocalPathWritableFile(

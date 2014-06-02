@@ -9,6 +9,7 @@
 #include "chrome/browser/chromeos/drive/test_util.h"
 #include "chrome/browser/drive/fake_drive_service.h"
 #include "chrome/browser/extensions/api/file_system/file_system_api.h"
+#include "chrome/browser/extensions/component_loader.h"
 #include "content/public/test/test_utils.h"
 #include "google_apis/drive/test_util.h"
 
@@ -27,6 +28,7 @@ class FileSystemApiTestForDrive : public PlatformAppBrowserTest {
   // real DriveIntegrationService instance is created.)
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
     PlatformAppBrowserTest::SetUpInProcessBrowserTestFixture();
+    extensions::ComponentLoader::EnableBackgroundExtensionsForTesting();
 
     ASSERT_TRUE(test_cache_root_.CreateUniqueTempDir());
 

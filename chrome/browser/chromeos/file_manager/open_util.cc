@@ -21,7 +21,6 @@
 #include "chrome/browser/ui/simple_message_box.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/user_metrics.h"
-#include "google_apis/drive/task_util.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "webkit/browser/fileapi/file_system_backend.h"
@@ -142,40 +141,6 @@ void ContinueOpenItem(Profile* profile,
                             IDS_FILE_BROWSER_ERROR_VIEWING_FILE);
     }
   }
-}
-
-// Used to implement CheckIfDirectoryExists().
-void CheckIfDirectoryExistsOnIOThread(
-    scoped_refptr<fileapi::FileSystemContext> file_system_context,
-    const GURL& url,
-    const fileapi::FileSystemOperationRunner::StatusCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-
-  fileapi::FileSystemURL file_system_url = file_system_context->CrackURL(url);
-  file_system_context->operation_runner()->DirectoryExists(
-      file_system_url, callback);
-}
-
-// Checks if a directory exists at |url|.
-void CheckIfDirectoryExists(
-    scoped_refptr<fileapi::FileSystemContext> file_system_context,
-    const GURL& url,
-    const fileapi::FileSystemOperationRunner::StatusCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  // Check the existence of directory using file system API implementation on
-  // behalf of the file manager app. We need to grant access beforehand.
-  fileapi::ExternalFileSystemBackend* backend =
-      file_system_context->external_backend();
-  DCHECK(backend);
-  backend->GrantFullAccessToExtension(kFileManagerAppId);
-
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::Bind(&CheckIfDirectoryExistsOnIOThread,
-                 file_system_context,
-                 url,
-                 google_apis::CreateRelayCallback(callback)));
 }
 
 // Converts the |given_path| passed from external callers to the form that the
