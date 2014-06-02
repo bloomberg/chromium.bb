@@ -22,7 +22,7 @@ component("sql") {
   defines = [ "SQL_IMPLEMENTATION" ]
 
   if (is_win) {
-    cflags += [ "/wd4267" ]  # size_t to int.
+    cflags = [ "/wd4267" ]  # size_t to int.
   }
 
   deps = [

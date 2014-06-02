@@ -23,7 +23,7 @@ component("child") {
   configs += [ "//build/config/compiler:wexit_time_destructors" ]
   if (is_win) {
     # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-    cflags += [ "/wd4267" ]
+    cflags = [ "/wd4267" ]
   }
 
   if (is_mac) {
