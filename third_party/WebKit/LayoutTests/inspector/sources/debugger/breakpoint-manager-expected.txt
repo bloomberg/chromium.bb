@@ -461,7 +461,6 @@ Running: testSourceMappingReload
     breakpointRemoved(b.js, 20, 0)
     Location disposed: a.js:10
     debuggerModel.removeBreakpoint(a.js:10)
-    debuggerModel.removeBreakpoint(b.js:20)
   Dumping Breakpoint Locations
 
 Running: testBreakpointInCollectedReload
