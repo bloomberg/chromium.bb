@@ -235,7 +235,8 @@ void RenderGeometryMap::pushMappingsToAncestor(const RenderLayer* layer, const R
         }
 
         TemporaryChange<size_t> positionChange(m_insertionPosition, m_mapping.size());
-        push(renderer, toLayoutSize(layerOffset), /*accumulatingTransform*/ true, /*isNonUniform*/ false, /*isFixedPosition*/ false, /*hasTransform*/ false);
+        bool accumulatingTransform = layer->renderer()->style()->preserves3D() || ancestorLayer->renderer()->style()->preserves3D();
+        push(renderer, toLayoutSize(layerOffset), accumulatingTransform, /*isNonUniform*/ false, /*isFixedPosition*/ false, /*hasTransform*/ false);
         return;
     }
     const RenderLayerModelObject* ancestorRenderer = ancestorLayer ? ancestorLayer->renderer() : 0;
