@@ -965,7 +965,7 @@ void DOMWindow::close(ExecutionContext* context)
         if (!activeDocument)
             return;
 
-        if (!activeDocument->canNavigate(m_frame))
+        if (!activeDocument->canNavigate(*m_frame))
             return;
     }
 
@@ -1667,7 +1667,8 @@ void DOMWindow::setLocation(const String& urlString, DOMWindow* callingWindow, D
     if (!activeDocument)
         return;
 
-    if (!activeDocument->canNavigate(m_frame))
+    ASSERT(m_frame);
+    if (!activeDocument->canNavigate(*m_frame))
         return;
 
     LocalFrame* firstFrame = enteredWindow->frame();
@@ -1819,7 +1820,7 @@ PassRefPtrWillBeRawPtr<DOMWindow> DOMWindow::open(const String& urlString, const
             targetFrame = m_frame;
     }
     if (targetFrame) {
-        if (!activeDocument->canNavigate(targetFrame))
+        if (!activeDocument->canNavigate(*targetFrame))
             return nullptr;
 
         KURL completedURL = firstFrame->document()->completeURL(urlString);

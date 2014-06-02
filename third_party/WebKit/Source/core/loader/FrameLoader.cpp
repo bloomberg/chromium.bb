@@ -1394,7 +1394,7 @@ LocalFrame* FrameLoader::findFrameForNavigation(const AtomicString& name, Docume
 {
     ASSERT(activeDocument);
     LocalFrame* frame = m_frame->tree().find(name);
-    if (!activeDocument->canNavigate(frame))
+    if (!frame || !activeDocument->canNavigate(*frame))
         return 0;
     return frame;
 }

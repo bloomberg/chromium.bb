@@ -105,7 +105,7 @@ void History::go(ExecutionContext* context, int distance)
     if (!activeDocument)
         return;
 
-    if (!activeDocument->canNavigate(m_frame))
+    if (!activeDocument->canNavigate(*m_frame))
         return;
 
     m_frame->navigationScheduler().scheduleHistoryNavigation(distance);

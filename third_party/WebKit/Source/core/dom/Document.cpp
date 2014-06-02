@@ -312,7 +312,7 @@ static bool acceptsEditingFocus(const Element& element)
     return element.document().frame() && element.rootEditableElement();
 }
 
-static bool canAccessAncestor(const SecurityOrigin& activeSecurityOrigin, Frame* targetFrame)
+static bool canAccessAncestor(const SecurityOrigin& activeSecurityOrigin, const Frame* targetFrame)
 {
     // targetFrame can be 0 when we're trying to navigate a top-level frame
     // that has a 0 opener.
@@ -320,7 +320,7 @@ static bool canAccessAncestor(const SecurityOrigin& activeSecurityOrigin, Frame*
         return false;
 
     const bool isLocalActiveOrigin = activeSecurityOrigin.isLocal();
-    for (Frame* ancestorFrame = targetFrame; ancestorFrame; ancestorFrame = ancestorFrame->tree().parent()) {
+    for (const Frame* ancestorFrame = targetFrame; ancestorFrame; ancestorFrame = ancestorFrame->tree().parent()) {
         // FIXME: SecurityOrigins need to be refactored to work with out-of-process iframes.
         // For now we prevent navigation between cross-process frames.
         if (!ancestorFrame->isLocalFrame())
@@ -2929,30 +2929,24 @@ void Document::disableEval(const String& errorMessage)
     frame()->script().disableEval(errorMessage);
 }
 
-bool Document::canNavigate(Frame* targetFrame)
+bool Document::canNavigate(const Frame& targetFrame)
 {
     if (!m_frame)
         return false;
-
-    // FIXME: We shouldn't call this function without a target frame, but
-    // fast/forms/submit-to-blank-multiple-times.html depends on this function
-    // returning true when supplied with a 0 targetFrame.
-    if (!targetFrame)
-        return true;
 
     // Frame-busting is generally allowed, but blocked for sandboxed frames lacking the 'allow-top-navigation' flag.
     if (!isSandboxed(SandboxTopNavigation) && targetFrame == m_frame->tree().top())
         return true;
 
     if (isSandboxed(SandboxNavigation)) {
-        if (targetFrame->tree().isDescendantOf(m_frame))
+        if (targetFrame.tree().isDescendantOf(m_frame))
             return true;
 
         const char* reason = "The frame attempting navigation is sandboxed, and is therefore disallowed from navigating its ancestors.";
         if (isSandboxed(SandboxTopNavigation) && targetFrame == m_frame->tree().top())
             reason = "The frame attempting navigation of the top-level window is sandboxed, but the 'allow-top-navigation' flag is not set.";
 
-        printNavigationErrorMessage(*toLocalFrameTemporary(targetFrame), url(), reason);
+        printNavigationErrorMessage(toLocalFrameTemporary(targetFrame), url(), reason);
         return false;
     }
 
@@ -2966,7 +2960,7 @@ bool Document::canNavigate(Frame* targetFrame)
     //
     // See http://www.adambarth.com/papers/2008/barth-jackson-mitchell.pdf for
     // historical information about this security check.
-    if (canAccessAncestor(origin, targetFrame))
+    if (canAccessAncestor(origin, &targetFrame))
         return true;
 
     // Top-level frames are easier to navigate than other frames because they
@@ -2980,16 +2974,16 @@ bool Document::canNavigate(Frame* targetFrame)
     // some way related to the frame being navigate (e.g., by the "opener"
     // and/or "parent" relation). Requiring some sort of relation prevents a
     // document from navigating arbitrary, unrelated top-level frames.
-    if (!targetFrame->tree().parent()) {
+    if (!targetFrame.tree().parent()) {
         if (targetFrame == m_frame->loader().opener())
             return true;
 
         // FIXME: We don't have access to RemoteFrame's opener yet.
-        if (targetFrame->isLocalFrame() && canAccessAncestor(origin, toLocalFrame(targetFrame)->loader().opener()))
+        if (targetFrame.isLocalFrame() && canAccessAncestor(origin, toLocalFrame(targetFrame).loader().opener()))
             return true;
     }
 
-    printNavigationErrorMessage(*toLocalFrameTemporary(targetFrame), url(), "The frame attempting navigation is neither same-origin with the target, nor is it the target's parent or opener.");
+    printNavigationErrorMessage(toLocalFrameTemporary(targetFrame), url(), "The frame attempting navigation is neither same-origin with the target, nor is it the target's parent or opener.");
     return false;
 }
 

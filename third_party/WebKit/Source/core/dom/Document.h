@@ -580,7 +580,7 @@ public:
     virtual String userAgent(const KURL&) const OVERRIDE FINAL;
     virtual void disableEval(const String& errorMessage) OVERRIDE FINAL;
 
-    bool canNavigate(Frame* targetFrame);
+    bool canNavigate(const Frame& targetFrame);
     LocalFrame* findUnsafeParentScrollPropagationBoundary();
 
     CSSStyleSheet& elementSheet();
