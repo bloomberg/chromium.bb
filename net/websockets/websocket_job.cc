@@ -59,16 +59,9 @@ static base::LazyInstance<WebSocketJobInitSingleton> g_websocket_job_init =
 
 namespace net {
 
-bool WebSocketJob::websocket_over_spdy_enabled_ = false;
-
 // static
 void WebSocketJob::EnsureInit() {
   g_websocket_job_init.Get();
-}
-
-// static
-void WebSocketJob::set_websocket_over_spdy_enabled(bool enabled) {
-  websocket_over_spdy_enabled_ = enabled;
 }
 
 WebSocketJob::WebSocketJob(SocketStream::Delegate* delegate)
@@ -579,16 +572,13 @@ int WebSocketJob::TrySpdyStream() {
   if (!socket_.get())
     return ERR_FAILED;
 
-  if (!websocket_over_spdy_enabled_)
-    return OK;
-
   // Check if we have a SPDY session available.
   HttpTransactionFactory* factory =
       socket_->context()->http_transaction_factory();
   if (!factory)
     return OK;
   scoped_refptr<HttpNetworkSession> session = factory->GetSession();
-  if (!session.get())
+  if (!session.get() || !session->params().enable_websocket_over_spdy)
     return OK;
   SpdySessionPool* spdy_pool = session->spdy_session_pool();
   PrivacyMode privacy_mode = socket_->privacy_mode();

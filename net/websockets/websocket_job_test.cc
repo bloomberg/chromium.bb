@@ -274,11 +274,14 @@ class MockURLRequestContext : public URLRequestContext {
 
 class MockHttpTransactionFactory : public HttpTransactionFactory {
  public:
-  MockHttpTransactionFactory(NextProto next_proto, OrderedSocketData* data) {
+  MockHttpTransactionFactory(NextProto next_proto,
+                             OrderedSocketData* data,
+                             bool enable_websocket_over_spdy) {
     data_ = data;
     MockConnect connect_data(SYNCHRONOUS, OK);
     data_->set_connect_data(connect_data);
     session_deps_.reset(new SpdySessionDependencies(next_proto));
+    session_deps_->enable_websocket_over_spdy = enable_websocket_over_spdy;
     session_deps_->socket_factory->AddSocketDataProvider(data_);
     http_session_ =
         SpdySessionDependencies::SpdyCreateSession(session_deps_.get());
@@ -389,7 +392,9 @@ class DeletingSocketStreamDelegate : public SocketStream::Delegate {
 class WebSocketJobTest : public PlatformTest,
                          public ::testing::WithParamInterface<NextProto> {
  public:
-  WebSocketJobTest() : spdy_util_(GetParam()) {}
+  WebSocketJobTest()
+      : spdy_util_(GetParam()),
+        enable_websocket_over_spdy_(false) {}
 
   virtual void SetUp() OVERRIDE {
     stream_type_ = STREAM_INVALID;
@@ -416,6 +421,7 @@ class WebSocketJobTest : public PlatformTest,
   int WaitForResult() {
     return sync_test_callback_.WaitForResult();
   }
+
  protected:
   enum StreamType {
     STREAM_INVALID,
@@ -444,8 +450,8 @@ class WebSocketJobTest : public PlatformTest,
 
     if (stream_type == STREAM_SOCKET || stream_type == STREAM_SPDY_WEBSOCKET) {
       if (stream_type == STREAM_SPDY_WEBSOCKET) {
-        http_factory_.reset(
-            new MockHttpTransactionFactory(GetParam(), data_.get()));
+        http_factory_.reset(new MockHttpTransactionFactory(
+            GetParam(), data_.get(), enable_websocket_over_spdy_));
         context_->set_http_transaction_factory(http_factory_.get());
       }
 
@@ -529,6 +535,9 @@ class WebSocketJobTest : public PlatformTest,
   scoped_ptr<ProxyService> proxy_service_;
   scoped_ptr<MockHostResolver> host_resolver_;
   scoped_ptr<MockHttpTransactionFactory> http_factory_;
+
+  // Must be set before call to enable_websocket_over_spdy, defaults to false.
+  bool enable_websocket_over_spdy_;
 
   static const char kHandshakeRequestWithoutCookie[];
   static const char kHandshakeRequestWithCookie[];
@@ -711,7 +720,7 @@ INSTANTIATE_TEST_CASE_P(
                     kProtoSPDY3, kProtoSPDY31, kProtoSPDY4));
 
 TEST_P(WebSocketJobTest, DelayedCookies) {
-  WebSocketJob::set_websocket_over_spdy_enabled(true);
+  enable_websocket_over_spdy_ = true;
   GURL url("ws://example.com/demo");
   GURL cookieUrl("http://example.com/demo");
   CookieOptions cookie_options;
@@ -1114,87 +1123,79 @@ void WebSocketJobTest::TestThrottlingLimit() {
 
 // Execute tests in both spdy-disabled mode and spdy-enabled mode.
 TEST_P(WebSocketJobTest, SimpleHandshake) {
-  WebSocketJob::set_websocket_over_spdy_enabled(false);
   TestSimpleHandshake();
 }
 
 TEST_P(WebSocketJobTest, SlowHandshake) {
-  WebSocketJob::set_websocket_over_spdy_enabled(false);
   TestSlowHandshake();
 }
 
 TEST_P(WebSocketJobTest, HandshakeWithCookie) {
-  WebSocketJob::set_websocket_over_spdy_enabled(false);
   TestHandshakeWithCookie();
 }
 
 TEST_P(WebSocketJobTest, HandshakeWithCookieButNotAllowed) {
-  WebSocketJob::set_websocket_over_spdy_enabled(false);
   TestHandshakeWithCookieButNotAllowed();
 }
 
 TEST_P(WebSocketJobTest, HSTSUpgrade) {
-  WebSocketJob::set_websocket_over_spdy_enabled(false);
   TestHSTSUpgrade();
 }
 
 TEST_P(WebSocketJobTest, InvalidSendData) {
-  WebSocketJob::set_websocket_over_spdy_enabled(false);
   TestInvalidSendData();
 }
 
 TEST_P(WebSocketJobTest, SimpleHandshakeSpdyEnabled) {
-  WebSocketJob::set_websocket_over_spdy_enabled(true);
+  enable_websocket_over_spdy_ = true;
   TestSimpleHandshake();
 }
 
 TEST_P(WebSocketJobTest, SlowHandshakeSpdyEnabled) {
-  WebSocketJob::set_websocket_over_spdy_enabled(true);
+  enable_websocket_over_spdy_ = true;
   TestSlowHandshake();
 }
 
 TEST_P(WebSocketJobTest, HandshakeWithCookieSpdyEnabled) {
-  WebSocketJob::set_websocket_over_spdy_enabled(true);
+  enable_websocket_over_spdy_ = true;
   TestHandshakeWithCookie();
 }
 
 TEST_P(WebSocketJobTest, HandshakeWithCookieButNotAllowedSpdyEnabled) {
-  WebSocketJob::set_websocket_over_spdy_enabled(true);
+  enable_websocket_over_spdy_ = true;
   TestHandshakeWithCookieButNotAllowed();
 }
 
 TEST_P(WebSocketJobTest, HSTSUpgradeSpdyEnabled) {
-  WebSocketJob::set_websocket_over_spdy_enabled(true);
+  enable_websocket_over_spdy_ = true;
   TestHSTSUpgrade();
 }
 
 TEST_P(WebSocketJobTest, InvalidSendDataSpdyEnabled) {
-  WebSocketJob::set_websocket_over_spdy_enabled(true);
+  enable_websocket_over_spdy_ = true;
   TestInvalidSendData();
 }
 
 TEST_P(WebSocketJobTest, ConnectByWebSocket) {
-  WebSocketJob::set_websocket_over_spdy_enabled(false);
+  enable_websocket_over_spdy_ = true;
   TestConnectByWebSocket(THROTTLING_OFF);
 }
 
 TEST_P(WebSocketJobTest, ConnectByWebSocketSpdyEnabled) {
-  WebSocketJob::set_websocket_over_spdy_enabled(true);
+  enable_websocket_over_spdy_ = true;
   TestConnectByWebSocket(THROTTLING_OFF);
 }
 
 TEST_P(WebSocketJobTest, ConnectBySpdy) {
-  WebSocketJob::set_websocket_over_spdy_enabled(false);
   TestConnectBySpdy(SPDY_OFF, THROTTLING_OFF);
 }
 
 TEST_P(WebSocketJobTest, ConnectBySpdySpdyEnabled) {
-  WebSocketJob::set_websocket_over_spdy_enabled(true);
+  enable_websocket_over_spdy_ = true;
   TestConnectBySpdy(SPDY_ON, THROTTLING_OFF);
 }
 
 TEST_P(WebSocketJobTest, ThrottlingWebSocket) {
-  WebSocketJob::set_websocket_over_spdy_enabled(false);
   TestConnectByWebSocket(THROTTLING_ON);
 }
 
@@ -1203,17 +1204,16 @@ TEST_P(WebSocketJobTest, ThrottlingMaxNumberOfThrottledJobLimit) {
 }
 
 TEST_P(WebSocketJobTest, ThrottlingWebSocketSpdyEnabled) {
-  WebSocketJob::set_websocket_over_spdy_enabled(true);
+  enable_websocket_over_spdy_ = true;
   TestConnectByWebSocket(THROTTLING_ON);
 }
 
 TEST_P(WebSocketJobTest, ThrottlingSpdy) {
-  WebSocketJob::set_websocket_over_spdy_enabled(false);
   TestConnectBySpdy(SPDY_OFF, THROTTLING_ON);
 }
 
 TEST_P(WebSocketJobTest, ThrottlingSpdySpdyEnabled) {
-  WebSocketJob::set_websocket_over_spdy_enabled(true);
+  enable_websocket_over_spdy_ = true;
   TestConnectBySpdy(SPDY_ON, THROTTLING_ON);
 }
 

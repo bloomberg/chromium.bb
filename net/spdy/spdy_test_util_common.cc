@@ -361,6 +361,7 @@ SpdySessionDependencies::SpdySessionDependencies(NextProto protocol)
       force_spdy_over_ssl(false),
       force_spdy_always(false),
       use_alternate_protocols(false),
+      enable_websocket_over_spdy(false),
       net_log(NULL) {
   DCHECK(next_proto_is_spdy(protocol)) << "Invalid protocol: " << protocol;
 
@@ -394,6 +395,7 @@ SpdySessionDependencies::SpdySessionDependencies(
       force_spdy_over_ssl(false),
       force_spdy_always(false),
       use_alternate_protocols(false),
+      enable_websocket_over_spdy(false),
       net_log(NULL) {
   DCHECK(next_proto_is_spdy(protocol)) << "Invalid protocol: " << protocol;
 }
@@ -453,6 +455,7 @@ net::HttpNetworkSession::Params SpdySessionDependencies::CreateSessionParams(
   params.force_spdy_over_ssl = session_deps->force_spdy_over_ssl;
   params.force_spdy_always = session_deps->force_spdy_always;
   params.use_alternate_protocols = session_deps->use_alternate_protocols;
+  params.enable_websocket_over_spdy = session_deps->enable_websocket_over_spdy;
   params.net_log = session_deps->net_log;
   return params;
 }

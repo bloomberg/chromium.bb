@@ -104,6 +104,7 @@ class NET_EXPORT HttpNetworkSession
     // Noe: Using this in the case of NPN for HTTP only results in the browser
     // trying SSL and then falling back to http.
     bool use_alternate_protocols;
+    bool enable_websocket_over_spdy;
 
     bool enable_quic;
     bool enable_quic_https;

@@ -95,6 +95,8 @@ void TestURLRequestContext::Init() {
     EXPECT_FALSE(client_socket_factory_);
   } else {
     HttpNetworkSession::Params params;
+    if (http_network_session_params_)
+      params = *http_network_session_params_;
     params.client_socket_factory = client_socket_factory();
     params.host_resolver = host_resolver();
     params.cert_verifier = cert_verifier();

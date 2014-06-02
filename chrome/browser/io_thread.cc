@@ -77,7 +77,6 @@
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_job_factory_impl.h"
 #include "net/url_request/url_request_throttler_manager.h"
-#include "net/websockets/websocket_job.h"
 #include "url/url_constants.h"
 
 #if defined(ENABLE_CONFIGURATION_POLICY)
@@ -756,11 +755,6 @@ void IOThread::InitializeNetworkOptions(const CommandLine& command_line) {
     std::string spdy_trial_group =
         base::FieldTrialList::FindFullName(kSpdyFieldTrialName);
 
-    if (command_line.HasSwitch(switches::kEnableWebSocketOverSpdy)) {
-      // Enable WebSocket over SPDY.
-      net::WebSocketJob::set_websocket_over_spdy_enabled(true);
-    }
-
     if (command_line.HasSwitch(switches::kTrustedSpdyProxy)) {
       globals_->trusted_spdy_proxy.set(
           command_line.GetSwitchValueASCII(switches::kTrustedSpdyProxy));
@@ -791,6 +785,9 @@ void IOThread::InitializeNetworkOptions(const CommandLine& command_line) {
         globals_->use_alternate_protocols.set(true);
       }
     }
+
+    if (command_line.HasSwitch(switches::kEnableWebSocketOverSpdy))
+      globals_->enable_websocket_over_spdy.set(true);
   }
 
   // TODO(rch): Make the client socket factory a per-network session
@@ -965,6 +962,8 @@ void IOThread::InitializeNetworkSessionParams(
   globals_->forced_spdy_exclusions = params->forced_spdy_exclusions;
   globals_->use_alternate_protocols.CopyToIfSet(
       &params->use_alternate_protocols);
+  globals_->enable_websocket_over_spdy.CopyToIfSet(
+      &params->enable_websocket_over_spdy);
 
   globals_->enable_quic.CopyToIfSet(&params->enable_quic);
   globals_->enable_quic_https.CopyToIfSet(&params->enable_quic_https);

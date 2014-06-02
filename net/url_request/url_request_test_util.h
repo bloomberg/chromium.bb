@@ -13,6 +13,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/path_service.h"
 #include "base/strings/string16.h"
@@ -31,6 +32,7 @@
 #include "net/http/http_auth_handler_factory.h"
 #include "net/http/http_cache.h"
 #include "net/http/http_network_layer.h"
+#include "net/http/http_network_session.h"
 #include "net/http/http_request_headers.h"
 #include "net/proxy/proxy_service.h"
 #include "net/ssl/ssl_config_service_defaults.h"
@@ -66,8 +68,17 @@ class TestURLRequestContext : public URLRequestContext {
     client_socket_factory_ = factory;
   }
 
+  void set_http_network_session_params(
+      const HttpNetworkSession::Params& params) {
+  }
+
  private:
   bool initialized_;
+
+  // Optional parameters to override default values.  Note that values that
+  // point to other objects the TestURLRequestContext creates will be
+  // overwritten.
+  scoped_ptr<HttpNetworkSession::Params> http_network_session_params_;
 
   // Not owned:
   ClientSocketFactory* client_socket_factory_;

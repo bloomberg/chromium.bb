@@ -49,10 +49,6 @@ class NET_EXPORT WebSocketJob
 
   static void EnsureInit();
 
-  // Enable or Disable WebSocket over SPDY feature.
-  // This function is intended to be called before I/O thread starts.
-  static void set_websocket_over_spdy_enabled(bool enabled);
-
   State state() const { return state_; }
   virtual void Connect() OVERRIDE;
   virtual bool SendData(const char* data, int len) OVERRIDE;
@@ -123,8 +119,6 @@ class NET_EXPORT WebSocketJob
   bool SendDataInternal(const char* data, int length);
   void CloseInternal();
   void SendPending();
-
-  static bool websocket_over_spdy_enabled_;
 
   SocketStream::Delegate* delegate_;
   State state_;

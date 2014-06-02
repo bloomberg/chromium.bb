@@ -16,20 +16,34 @@
 #include "testing/platform_test.h"
 #include "url/gurl.h"
 
-class DummySocketStreamDelegate : public net::SocketStream::Delegate {
+namespace net {
+
+namespace {
+
+class DummySocketStreamDelegate : public SocketStream::Delegate {
  public:
   DummySocketStreamDelegate() {}
   virtual ~DummySocketStreamDelegate() {}
   virtual void OnConnected(
-      net::SocketStream* socket, int max_pending_send_allowed) OVERRIDE {}
-  virtual void OnSentData(net::SocketStream* socket,
+      SocketStream* socket, int max_pending_send_allowed) OVERRIDE {}
+  virtual void OnSentData(SocketStream* socket,
                           int amount_sent) OVERRIDE {}
-  virtual void OnReceivedData(net::SocketStream* socket,
+  virtual void OnReceivedData(SocketStream* socket,
                               const char* data, int len) OVERRIDE {}
-  virtual void OnClose(net::SocketStream* socket) OVERRIDE {}
+  virtual void OnClose(SocketStream* socket) OVERRIDE {}
 };
 
-namespace net {
+class WebSocketThrottleTestContext : public TestURLRequestContext {
+ public:
+  explicit WebSocketThrottleTestContext(bool enable_websocket_over_spdy)
+      : TestURLRequestContext(true) {
+    HttpNetworkSession::Params params;
+    params.enable_websocket_over_spdy = enable_websocket_over_spdy;
+    Init();
+  }
+};
+
+}  // namespace
 
 class WebSocketThrottleTest : public PlatformTest {
  protected:
@@ -60,11 +74,10 @@ class WebSocketThrottleTest : public PlatformTest {
 };
 
 TEST_F(WebSocketThrottleTest, Throttle) {
-  TestURLRequestContext context;
-  DummySocketStreamDelegate delegate;
   // TODO(toyoshim): We need to consider both spdy-enabled and spdy-disabled
   // configuration.
-  WebSocketJob::set_websocket_over_spdy_enabled(true);
+  WebSocketThrottleTestContext context(true);
+  DummySocketStreamDelegate delegate;
 
   // For host1: 1.2.3.4, 1.2.3.5, 1.2.3.6
   AddressList addr;
@@ -273,9 +286,8 @@ TEST_F(WebSocketThrottleTest, Throttle) {
 }
 
 TEST_F(WebSocketThrottleTest, NoThrottleForDuplicateAddress) {
-  TestURLRequestContext context;
+  WebSocketThrottleTestContext context(true);
   DummySocketStreamDelegate delegate;
-  WebSocketJob::set_websocket_over_spdy_enabled(true);
 
   // For localhost: 127.0.0.1, 127.0.0.1
   AddressList addr;
@@ -302,11 +314,10 @@ TEST_F(WebSocketThrottleTest, NoThrottleForDuplicateAddress) {
 // A connection should not be blocked by another connection to the same IP
 // with a different port.
 TEST_F(WebSocketThrottleTest, NoThrottleForDistinctPort) {
-  TestURLRequestContext context;
+  WebSocketThrottleTestContext context(false);
   DummySocketStreamDelegate delegate;
   IPAddressNumber localhost;
   ParseIPLiteralToNumber("127.0.0.1", &localhost);
-  WebSocketJob::set_websocket_over_spdy_enabled(false);
 
   // socket1: 127.0.0.1:80
   scoped_refptr<WebSocketJob> w1(new WebSocketJob(&delegate));
@@ -345,4 +356,4 @@ TEST_F(WebSocketThrottleTest, NoThrottleForDistinctPort) {
   base::MessageLoopForIO::current()->RunUntilIdle();
 }
 
-}
+}  // namespace net
