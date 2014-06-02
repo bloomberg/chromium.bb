@@ -1102,7 +1102,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, MAYBE_WebContentsHasFocus) {
                   ->HasFocus());
 }
 
-#if defined(OS_WIN) || defined(OS_LINUX)
+#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_MACOSX)
 #define MAYBE_WindowDotPrintShouldBringUpPrintPreview \
     DISABLED_WindowDotPrintShouldBringUpPrintPreview
 #else
