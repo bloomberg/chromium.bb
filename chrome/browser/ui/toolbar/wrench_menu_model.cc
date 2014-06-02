@@ -179,6 +179,45 @@ void ZoomMenuModel::Build() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// HelpMenuModel
+
+#if defined(GOOGLE_CHROME_BUILD)
+
+class WrenchMenuModel::HelpMenuModel : public ui::SimpleMenuModel {
+ public:
+  HelpMenuModel(ui::SimpleMenuModel::Delegate* delegate,
+                Browser* browser)
+      : SimpleMenuModel(delegate) {
+    Build(browser);
+  }
+  virtual ~HelpMenuModel() {
+  }
+
+ private:
+  void Build(Browser* browser) {
+    int help_string_id = IDS_HELP_PAGE;
+#if defined(OS_CHROMEOS)
+    if (!CommandLine::ForCurrentProcess()->HasSwitch(
+            chromeos::switches::kDisableGeniusApp)) {
+      help_string_id = IDS_GENIUS_APP_NAME;
+    }
+#endif
+    AddItemWithStringId(IDC_HELP_PAGE_VIA_MENU, help_string_id);
+    if (browser_defaults::kShowHelpMenuItemIcon) {
+      ui::ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+      SetIcon(GetIndexOfCommandId(IDC_HELP_PAGE_VIA_MENU),
+              rb.GetNativeImageNamed(IDR_HELP_MENU));
+    }
+
+    AddItemWithStringId(IDC_FEEDBACK, IDS_FEEDBACK);
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(HelpMenuModel);
+};
+
+#endif  // defined(GOOGLE_CHROME_BUILD)
+
+////////////////////////////////////////////////////////////////////////////////
 // ToolsMenuModel
 
 ToolsMenuModel::ToolsMenuModel(ui::SimpleMenuModel::Delegate* delegate,
@@ -215,14 +254,6 @@ void ToolsMenuModel::Build(Browser* browser) {
   AddItemWithStringId(IDC_CLEAR_BROWSING_DATA, IDS_CLEAR_BROWSING_DATA);
 
   AddSeparator(ui::NORMAL_SEPARATOR);
-
-#if defined(GOOGLE_CHROME_BUILD)
-#if !defined(OS_CHROMEOS)
-  // Show IDC_FEEDBACK in "Tools" menu for non-ChromeOS platforms.
-  AddItemWithStringId(IDC_FEEDBACK, IDS_FEEDBACK);
-  AddSeparator(ui::NORMAL_SEPARATOR);
-#endif
-#endif // GOOGLE_CHROME_BUILD
 
   encoding_menu_model_.reset(new EncodingMenuModel(browser));
   AddSubMenuWithStringId(IDC_ENCODING_MENU, IDS_ENCODING_MENU,
@@ -603,20 +634,19 @@ void WrenchMenuModel::Build(bool is_new_menu) {
 
   AddItemWithStringId(IDC_OPTIONS, IDS_SETTINGS);
 
+#if defined(GOOGLE_CHROME_BUILD)
+  help_menu_model_.reset(new HelpMenuModel(this, browser_));
+  AddSubMenuWithStringId(IDC_HELP_MENU, IDS_HELP_MENU,
+                         help_menu_model_.get());
+  AddSeparator(ui::NORMAL_SEPARATOR);
+#endif
+
 #if defined(OS_CHROMEOS)
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           chromeos::switches::kEnableRequestTabletSite))
     AddCheckItemWithStringId(IDC_TOGGLE_REQUEST_TABLET_SITE,
                              IDS_TOGGLE_REQUEST_TABLET_SITE);
 #endif
-
-// On ChromeOS-Touch, we don't want the about menu option.
-#if defined(OS_CHROMEOS)
-  if (!is_new_menu)
-#endif
-  {
-    AddItem(IDC_ABOUT, l10n_util::GetStringUTF16(IDS_ABOUT));
-  }
 
   if (browser_defaults::kShowUpgradeMenuItem)
     AddItem(IDC_UPGRADE_DIALOG, GetUpgradeDialogMenuItemName());
@@ -625,22 +655,6 @@ void WrenchMenuModel::Build(bool is_new_menu) {
   SetIcon(GetIndexOfCommandId(IDC_VIEW_INCOMPATIBILITIES),
           ui::ResourceBundle::GetSharedInstance().
               GetNativeImageNamed(IDR_INPUT_ALERT_MENU));
-#endif
-
-  if (!is_new_menu) {
-    AddItemWithStringId(IDC_HELP_PAGE_VIA_MENU, IDS_HELP_PAGE);
-
-    if (browser_defaults::kShowHelpMenuItemIcon) {
-      ui::ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-      SetIcon(GetIndexOfCommandId(IDC_HELP_PAGE_VIA_MENU),
-              rb.GetNativeImageNamed(IDR_HELP_MENU));
-    }
-  }
-
-#if defined(GOOGLE_CHROME_BUILD)
-#if defined(OS_CHROMEOS)
-  AddItemWithStringId(IDC_FEEDBACK, IDS_FEEDBACK);
-#endif
 #endif
 
   AddGlobalErrorMenuItems();
@@ -660,6 +674,8 @@ void WrenchMenuModel::Build(bool is_new_menu) {
     AddSeparator(ui::NORMAL_SEPARATOR);
     AddItemWithStringId(IDC_EXIT, IDS_EXIT);
   }
+
+  RemoveTrailingSeparators();
 }
 
 void WrenchMenuModel::AddGlobalErrorMenuItems() {

@@ -212,6 +212,7 @@
 #define IDC_TAKE_SCREENSHOT             40242
 #define IDC_SHOW_SYNC_ERROR             40243
 #define IDC_DISTILL_PAGE                40244
+#define IDC_HELP_MENU                   40245
 
 // Spell-check
 // Insert any additional suggestions before _LAST; these have to be consecutive.

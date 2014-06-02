@@ -138,8 +138,10 @@ class WrenchMenuModel : public ui::SimpleMenuModel,
   void UpdateZoomControls();
 
  private:
+  class HelpMenuModel;
   // Testing constructor used for mocking.
   friend class ::MockWrenchMenuModel;
+
   WrenchMenuModel();
 
   void Build(bool is_new_menu);
@@ -167,6 +169,11 @@ class WrenchMenuModel : public ui::SimpleMenuModel,
 
   // Label of the zoom label in the zoom menu item.
   base::string16 zoom_label_;
+
+#if defined(GOOGLE_CHROME_BUILD)
+  // Help menu.
+  scoped_ptr<HelpMenuModel> help_menu_model_;
+#endif
 
   // Tools menu.
   scoped_ptr<ToolsMenuModel> tools_menu_model_;
