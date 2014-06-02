@@ -70,7 +70,7 @@ public:
     DOMWrapperWorld& world() const { return *m_world; }
     DOMWindow* domWindow() const;
     virtual ExecutionContext* executionContext() const;
-    virtual void setExecutionContext(PassRefPtr<ExecutionContext>);
+    virtual void setExecutionContext(ExecutionContext*);
 
     // This can return an empty handle if the v8::Context is gone.
     v8::Handle<v8::Context> context() const { return m_context.newLocal(m_isolate); }
@@ -107,12 +107,12 @@ public:
     static PassRefPtr<ScriptStateForTesting> create(v8::Handle<v8::Context>, PassRefPtr<DOMWrapperWorld>);
 
     virtual ExecutionContext* executionContext() const OVERRIDE;
-    virtual void setExecutionContext(PassRefPtr<ExecutionContext>) OVERRIDE;
+    virtual void setExecutionContext(ExecutionContext*) OVERRIDE;
 
 private:
     ScriptStateForTesting(v8::Handle<v8::Context>, PassRefPtr<DOMWrapperWorld>);
 
-    RefPtr<ExecutionContext> m_executionContext;
+    ExecutionContext* m_executionContext;
 };
 
 // ScriptStateProtectingContext keeps the context associated with the ScriptState alive.

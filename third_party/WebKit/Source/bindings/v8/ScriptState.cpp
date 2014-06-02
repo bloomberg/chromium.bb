@@ -69,7 +69,7 @@ ExecutionContext* ScriptState::executionContext() const
     return toExecutionContext(context());
 }
 
-void ScriptState::setExecutionContext(PassRefPtr<ExecutionContext>)
+void ScriptState::setExecutionContext(ExecutionContext*)
 {
     ASSERT_NOT_REACHED();
 }
@@ -103,10 +103,10 @@ ScriptStateForTesting::ScriptStateForTesting(v8::Handle<v8::Context> context, Pa
 
 ExecutionContext* ScriptStateForTesting::executionContext() const
 {
-    return m_executionContext.get();
+    return m_executionContext;
 }
 
-void ScriptStateForTesting::setExecutionContext(PassRefPtr<ExecutionContext> executionContext)
+void ScriptStateForTesting::setExecutionContext(ExecutionContext* executionContext)
 {
     m_executionContext = executionContext;
 }

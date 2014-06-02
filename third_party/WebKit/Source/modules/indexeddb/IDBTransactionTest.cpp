@@ -51,8 +51,14 @@ class IDBTransactionTest : public testing::Test {
 public:
     IDBTransactionTest()
         : m_scope(v8::Isolate::GetCurrent())
+        , m_executionContext(Document::create())
     {
-        m_scope.scriptState()->setExecutionContext(Document::create());
+        m_scope.scriptState()->setExecutionContext(m_executionContext.get());
+    }
+
+    ~IDBTransactionTest()
+    {
+        m_scope.scriptState()->setExecutionContext(0);
     }
 
     v8::Isolate* isolate() const { return m_scope.isolate(); }
@@ -61,6 +67,7 @@ public:
 
 private:
     V8TestingScope m_scope;
+    RefPtr<ExecutionContext> m_executionContext;
 };
 
 class FakeWebIDBDatabase FINAL : public blink::WebIDBDatabase {
@@ -86,13 +93,7 @@ private:
     FakeIDBDatabaseCallbacks() { }
 };
 
-// crbug.com/379616
-#if ENABLE(OILPAN)
-#define MAYBE_EnsureLifetime DISABLED_EnsureLifetime
-#else
-#define MAYBE_EnsureLifetime EnsureLifetime
-#endif
-TEST_F(IDBTransactionTest, MAYBE_EnsureLifetime)
+TEST_F(IDBTransactionTest, EnsureLifetime)
 {
     OwnPtr<FakeWebIDBDatabase> backend = FakeWebIDBDatabase::create();
     Persistent<IDBDatabase> db = IDBDatabase::create(executionContext(), backend.release(), FakeIDBDatabaseCallbacks::create());

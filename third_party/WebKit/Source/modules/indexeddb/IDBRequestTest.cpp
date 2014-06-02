@@ -75,8 +75,14 @@ class IDBRequestTest : public testing::Test {
 public:
     IDBRequestTest()
         : m_scope(v8::Isolate::GetCurrent())
+        , m_executionContext(adoptRef(new NullExecutionContext()))
     {
-        m_scope.scriptState()->setExecutionContext(adoptRef(new NullExecutionContext()));
+        m_scope.scriptState()->setExecutionContext(m_executionContext.get());
+    }
+
+    ~IDBRequestTest()
+    {
+        m_scope.scriptState()->setExecutionContext(0);
     }
 
     v8::Isolate* isolate() const { return m_scope.isolate(); }
@@ -85,6 +91,7 @@ public:
 
 private:
     V8TestingScope m_scope;
+    RefPtr<ExecutionContext> m_executionContext;
 };
 
 TEST_F(IDBRequestTest, EventsAfterStopping)
