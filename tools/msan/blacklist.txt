@@ -14,12 +14,8 @@ fun:*MOZ_Z_deflate*
 fun:unpack_RGBA8888
 fun:unpack_RGB888
 
-# http://crbug.com/363487
-fun:*WebCore*RenderLayerCompositor*updateIfNeeded*
-
-# Fixed in clang r207227.
-# http://code.google.com/p/memory-sanitizer/issues/detail?id=53
-fun:getc_unlocked
-
 # http://crbug.com/158510
 fun:_ZN7WebCore11RenderTable6layoutEv
+
+# Bug in MSan, fixed in clang r210020. http://crbug.com/378909
+fun:*convolveVertically_SSE2*
