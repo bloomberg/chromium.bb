@@ -15,6 +15,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "content/browser/service_worker/service_worker_database.pb.h"
+#include "content/common/service_worker/service_worker_types.h"
 #include "third_party/leveldatabase/src/helpers/memenv/memenv.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
 #include "third_party/leveldatabase/src/include/leveldb/env.h"
@@ -227,8 +228,8 @@ ServiceWorkerDatabase::Status LevelDBStatusToStatus(
 }  // namespace
 
 ServiceWorkerDatabase::RegistrationData::RegistrationData()
-    : registration_id(-1),
-      version_id(-1),
+    : registration_id(kInvalidServiceWorkerRegistrationId),
+      version_id(kInvalidServiceWorkerVersionId),
       is_active(false),
       has_fetch_handler(false) {
 }
@@ -878,8 +879,6 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::WriteResourceIdsInBatch(
   Status status = LazyOpen(true);
   if (status != STATUS_OK)
     return status;
-  if (ids.empty())
-    return STATUS_OK;
 
   for (std::set<int64>::const_iterator itr = ids.begin();
        itr != ids.end(); ++itr) {
@@ -911,8 +910,6 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::DeleteResourceIdsInBatch(
     return STATUS_OK;
   if (status != STATUS_OK)
     return status;
-  if (ids.empty())
-    return STATUS_OK;
 
   for (std::set<int64>::const_iterator itr = ids.begin();
        itr != ids.end(); ++itr) {
