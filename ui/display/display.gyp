@@ -110,7 +110,7 @@
         ['use_x11 == 1', {
           'dependencies': [
             '../../build/linux/system.gyp:xrandr',
-            '../../ui/gfx/gfx.gyp:gfx',
+            '../../ui/gfx/x/gfx_x11.gyp:gfx_x11',
           ],
         }],
         ['chromeos == 1', {
@@ -141,6 +141,21 @@
             'display_types',
           ],
         }],
+      ],
+    },
+    {
+      'target_name': 'display_unittests',
+      'type': 'executable',
+      'dependencies': [
+        '../../base/base.gyp:run_all_unittests',
+        '../../testing/gtest.gyp:gtest',
+        'display_util',
+      ],
+      'include_dirs': [
+        '../..',
+      ],
+      'sources': [
+        'util/edid_parser_unittest.cc',
       ],
     },
   ],
