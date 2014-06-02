@@ -31,6 +31,9 @@ fast/harness/sample-fail-mismatch-reftest.html [ WontFix ]
 # Chrome Mac doesn't support Ctrl+Up/Down key-bindings.
 [ Mac ] editing/input/ctrl-up-down.html [ WontFix ]
 
+# Macs do not support keyboard events to show a context menu.
+[ Mac ] editing/spelling/spelling-on-context-menu-key.html [ WontFix ]
+
 # Chrome uses different keyboard accelerators from those used by Safari, so
 # this test will always fail.
 [ Linux Win ] fast/events/option-tab.html [ WontFix ]
