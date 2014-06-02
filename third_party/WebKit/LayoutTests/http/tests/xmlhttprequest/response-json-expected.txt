@@ -1,4 +1,4 @@
-
+This is a testharness.js-based test.
 PASS Test XMLHttpRequest with responseType set to 'json' for '' expecting failure. 
 PASS Test XMLHttpRequest with responseType set to 'json' for '00' expecting failure. 
 PASS Test XMLHttpRequest with responseType set to 'json' for 'a' expecting failure. 
@@ -9,4 +9,5 @@ PASS Test XMLHttpRequest with responseType set to 'json' for '{}' expecting succ
 PASS Test XMLHttpRequest with responseType set to 'json' for '[]' expecting success. 
 PASS Test XMLHttpRequest with responseType set to 'json' for '{"a":5,"b":10,"c":[{},5,"\n"]}' expecting success. 
 PASS Test XMLHttpRequest with responseType set to 'json' for test.json. 
+Harness: the test ran to completion.
 

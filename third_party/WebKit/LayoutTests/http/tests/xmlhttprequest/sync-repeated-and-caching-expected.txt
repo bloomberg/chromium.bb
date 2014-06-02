@@ -1,4 +1,4 @@
-
+This is a testharness.js-based test.
 PASS Synchronous XMLHttpRequest and caching during document load 
 PASS Test repeated sync requests using verb 'GET' with constant query 
 PASS Test repeated sync requests using verb 'GET' with no query 
@@ -6,4 +6,5 @@ PASS Test repeated sync requests using verb 'GET' with unique query string
 PASS Test repeated sync requests using verb 'POST' with constant query 
 PASS Test repeated sync requests using verb 'POST' with no query 
 PASS Test repeated sync requests using verb 'POST' with unique query string 
+Harness: the test ran to completion.
 

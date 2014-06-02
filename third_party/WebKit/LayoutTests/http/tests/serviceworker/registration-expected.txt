@@ -1,6 +1,7 @@
-
+This is a testharness.js-based test.
 FAIL Registering normal pattern assert_unreached: Registration should succeed, but failed: NotSupportedError Reached unreachable code
 PASS Registering scope outside domain 
 PASS Registering script outside domain 
 FAIL Registering non-existent script assert_equals: Registration of non-existent script should fail. expected "AbortError" but got "NotSupportedError"
+Harness: the test ran to completion.
 

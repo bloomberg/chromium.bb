@@ -2,6 +2,7 @@ Test case for bug 40952: Onloadend event is not supported in XMLHttpRequest
 
 Verify that a loadend ProgressEvent is dispatched after the load ProgressEvent when an async request completes normally.
 
-
+This is a testharness.js-based test.
 PASS Check that 'loadend' events are delivered and have expected values. 
+Harness: the test ran to completion.
 

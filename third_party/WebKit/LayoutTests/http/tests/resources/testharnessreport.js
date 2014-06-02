@@ -47,7 +47,7 @@ add_completion_callback(function (tests, harness_status){
     var results = document.createElement("pre");
 
     // Declare result string
-    var resultStr = "\n";
+    var resultStr = "This is a testharness.js-based test.\n";
 
     // Check harness_status.  If it is not 0, tests did not
     // execute correctly, output the error code and message
@@ -67,9 +67,10 @@ add_completion_callback(function (tests, harness_status){
                         "\n";
         }
     }
+    resultStr += "Harness: the test ran to completion.\n";
 
-    // Set results element's innerHTML to the results string
-    results.innerHTML = resultStr;
+    // Set results element's textContent to the results string
+    results.textContent = resultStr;
 
     // Add results element to document
     document.body.appendChild(results);
