@@ -19,7 +19,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
-import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.util.Log;
@@ -397,8 +396,9 @@ public class Chromoting extends Activity implements JniInterface.ConnectionListe
      * Updates the infotext and host list display.
      */
     private void updateUi() {
-        mRefreshButton.setEnabled(mAccount != null);
-
+        if (mRefreshButton != null) {
+            mRefreshButton.setEnabled(mAccount != null);
+        }
         ArrayAdapter<HostInfo> displayer = new HostListAdapter(this, R.layout.host, mHosts);
         Log.i("hostlist", "About to populate host list display");
         mHostListView.setAdapter(displayer);
