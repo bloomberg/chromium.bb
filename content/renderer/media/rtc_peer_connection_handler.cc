@@ -235,7 +235,10 @@ class SetSessionDescriptionRequest
 class StatsResponse : public webrtc::StatsObserver {
  public:
   explicit StatsResponse(const scoped_refptr<LocalRTCStatsRequest>& request)
-      : request_(request.get()), response_(request_->createResponse().get()) {}
+      : request_(request.get()), response_(request_->createResponse().get()) {
+    // Measure the overall time it takes to satisfy a getStats request.
+    TRACE_EVENT_ASYNC_BEGIN0("webrtc", "getStats_Native", this);
+  }
 
   virtual void OnComplete(
       const std::vector<webrtc::StatsReport>& reports) OVERRIDE {
@@ -246,6 +249,12 @@ class StatsResponse : public webrtc::StatsObserver {
         AddReport(*it);
       }
     }
+
+    // Record the getSync operation as done before calling into Blink so that
+    // we don't skew the perf measurements of the native code with whatever the
+    // callback might be doing.
+    TRACE_EVENT_ASYNC_END0("webrtc", "getStats_Native", this);
+
     request_->requestSucceeded(response_);
   }
 
