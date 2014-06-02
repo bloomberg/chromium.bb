@@ -21,6 +21,7 @@ private:
     SizesAttributeParser(PassRefPtr<MediaValues> mediaValues)
         : m_mediaValues(mediaValues)
         , m_length(0)
+        , m_lengthWasSet(false)
     {
     }
 
@@ -34,6 +35,7 @@ private:
     RefPtrWillBeMember<MediaQuerySet> m_mediaCondition;
     RefPtr<MediaValues> m_mediaValues;
     unsigned m_length;
+    bool m_lengthWasSet;
 };
 
 } // namespace

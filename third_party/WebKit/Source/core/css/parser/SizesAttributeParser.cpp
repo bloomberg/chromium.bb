@@ -25,6 +25,8 @@ unsigned SizesAttributeParser::findEffectiveSize(const String& attribute, PassRe
 
 bool SizesAttributeParser::calculateLengthInPixels(MediaQueryTokenIterator startToken, MediaQueryTokenIterator endToken, unsigned& result)
 {
+    if (startToken == endToken)
+        return false;
     MediaQueryTokenType type = startToken->type();
     if (type == DimensionToken) {
         int length;
@@ -36,6 +38,9 @@ bool SizesAttributeParser::calculateLengthInPixels(MediaQueryTokenIterator start
         }
     } else if (type == FunctionToken) {
         return SizesCalcParser::parse(startToken, endToken, m_mediaValues, result);
+    } else if (type == NumberToken && !startToken->numericValue()) {
+        result = 0;
+        return true;
     }
 
     return false;
@@ -93,6 +98,7 @@ bool SizesAttributeParser::parseMediaConditionAndLength(MediaQueryTokenIterator 
     RefPtrWillBeRawPtr<MediaQuerySet> mediaCondition = MediaQueryParser::parseMediaCondition(startToken, endToken);
     if (mediaCondition && mediaConditionMatches(mediaCondition)) {
         m_length = length;
+        m_lengthWasSet = true;
         return true;
     }
     return false;
@@ -120,7 +126,7 @@ bool SizesAttributeParser::parse(Vector<MediaQueryToken>& tokens)
 
 unsigned SizesAttributeParser::effectiveSize()
 {
-    if (m_length)
+    if (m_lengthWasSet)
         return m_length;
     return effectiveSizeDefaultValue();
 }
