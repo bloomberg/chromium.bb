@@ -351,7 +351,7 @@ void DeviceSettingsService::HandleCompletedOperation(
     load_retries_left_ = kMaxLoadRetries;
   } else if (status != STORE_KEY_UNAVAILABLE) {
     LOG(ERROR) << "Session manager operation failed: " << status;
-    // Validation errors can be temprary if the rtc has went on holiday for a
+    // Validation errors can be temporary if the rtc has gone on holiday for a
     // short while. So we will retry such loads for up to 10 minutes.
     if (status == STORE_TEMP_VALIDATION_ERROR) {
       if (load_retries_left_ > 0) {
