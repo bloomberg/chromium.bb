@@ -97,6 +97,10 @@ component("net") {
     "//third_party/zlib",
     "//url",
   ]
+  forward_dependent_configs_from = [
+    "//crypto",
+    "//crypto:platform"
+  ]
 
   if (use_kerberos) {
     defines += [ "USE_KERBEROS" ]

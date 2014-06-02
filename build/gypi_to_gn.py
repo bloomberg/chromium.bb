@@ -85,24 +85,16 @@ def LoadPythonDictionary(path):
 
   assert isinstance(file_data, dict), "%s does not eval to a dictionary" % path
 
+  # Flatten any variables to the top level.
+  if 'variables' in file_data:
+    file_data.update(file_data['variables'])
+    del file_data['variables']
+
   # Strip any conditions.
   if 'conditions' in file_data:
     del file_data['conditions']
   if 'target_conditions' in file_data:
     del file_data['target_conditions']
-
-  # Flatten any varaiables to the top level.
-  if 'variables' in file_data:
-    file_data.update(file_data['variables'])
-    del file_data['variables']
-
-  # If the contents of the root is a dictionary with exactly one kee
-  # "variables", promote the contents of that to the top level. Some .gypi
-  # files contain this and some don't depending on how they expect to be
-  # embedded in a .gyp file. We don't actually care either way so collapse it
-  # away.
-  if len(file_data) == 1 and 'variables' in file_data:
-    return file_data['variables']
 
   return file_data
 
@@ -150,6 +142,15 @@ def main():
         split.append('')
       assert len(split) == 2, "Replacement must be of the form 'key=value'."
       data = ReplaceSubstrings(data, split[0], split[1])
+
+  # Sometimes .gypi files use the GYP syntax with percents at the end of the
+  # variable name (to indicate not to overwrite a previously-defined value):
+  #   'foo%': 'bar',
+  # Convert these to regular variables.
+  for key in data:
+    if len(key) > 1 and key[len(key) - 1] == '%':
+      data[key[:-1]] = data[key]
+      del data[key]
 
   print gn_helpers.ToGNString(data)
 
