@@ -35,25 +35,11 @@ namespace {
 const double kDefaultRefreshRate = 60.0;
 const double kTestRefreshRate = 200.0;
 
-ui::ContextFactory* g_context_factory = NULL;
-
 const int kCompositorLockTimeoutMs = 67;
 
 }  // namespace
 
 namespace ui {
-
-// static
-ContextFactory* ContextFactory::GetInstance() {
-  DCHECK(g_context_factory);
-  return g_context_factory;
-}
-
-// static
-void ContextFactory::SetInstance(ContextFactory* instance) {
-  DCHECK_NE(!!g_context_factory, !!instance);
-  g_context_factory = instance;
-}
 
 CompositorLock::CompositorLock(Compositor* compositor)
     : compositor_(compositor) {
@@ -82,25 +68,6 @@ namespace {
 
 namespace ui {
 
-Compositor::Compositor(gfx::AcceleratedWidget widget)
-    : context_factory_(g_context_factory),
-      root_layer_(NULL),
-      widget_(widget),
-      compositor_thread_loop_(g_context_factory->GetCompositorMessageLoop()),
-      vsync_manager_(new CompositorVSyncManager()),
-      device_scale_factor_(0.0f),
-      last_started_frame_(0),
-      last_ended_frame_(0),
-      disable_schedule_composite_(false),
-      compositor_lock_(NULL),
-      defer_draw_scheduling_(false),
-      waiting_on_compositing_end_(false),
-      draw_on_compositing_end_(false),
-      swap_state_(SWAP_NONE),
-      schedule_draw_factory_(this) {
-  Init();
-}
-
 Compositor::Compositor(gfx::AcceleratedWidget widget,
                        ui::ContextFactory* context_factory)
     : context_factory_(context_factory),
@@ -118,12 +85,6 @@ Compositor::Compositor(gfx::AcceleratedWidget widget,
       draw_on_compositing_end_(false),
       swap_state_(SWAP_NONE),
       schedule_draw_factory_(this) {
-  Init();
-}
-
-// Yes, this is the wrong place. I'm leaving here to minimize diffs since this
-// function will be nuked soonish.
-void Compositor::Init() {
   root_web_layer_ = cc::Layer::Create();
   root_web_layer_->SetAnchorPoint(gfx::PointF(0.f, 0.f));
 

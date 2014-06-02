@@ -20,7 +20,6 @@ static gfx::DisableNullDrawGLBindings* g_disable_null_draw = NULL;
 
 void SetFactory(ImageTransportFactory* factory) {
   g_factory = factory;
-  ui::ContextFactory::SetInstance(factory->GetContextFactory());
 }
 
 }
@@ -48,7 +47,6 @@ void ImageTransportFactory::InitializeForUnitTests(
 
 // static
 void ImageTransportFactory::Terminate() {
-  ui::ContextFactory::SetInstance(NULL);
   delete g_factory;
   g_factory = NULL;
   delete g_disable_null_draw;

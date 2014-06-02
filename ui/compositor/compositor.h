@@ -60,14 +60,6 @@ class COMPOSITOR_EXPORT ContextFactory {
  public:
   virtual ~ContextFactory() {}
 
-  // Gets the global instance.
-  static ContextFactory* GetInstance();
-
-  // Sets the global instance. Caller keeps ownership.
-  // If this function isn't called (for tests), a "default" factory will be
-  // created on the first call of GetInstance.
-  static void SetInstance(ContextFactory* instance);
-
   // Creates an output surface for the given compositor. The factory may keep
   // per-compositor data (e.g. a shared context), that needs to be cleaned up
   // by calling RemoveCompositor when the compositor gets destroyed.
@@ -136,9 +128,6 @@ class COMPOSITOR_EXPORT Compositor
     : NON_EXPORTED_BASE(public cc::LayerTreeHostClient),
       NON_EXPORTED_BASE(public cc::LayerTreeHostSingleThreadClient) {
  public:
-  // This is deprecated, and will be removed shortly.
-  // TODO(sky): remove this.
-  explicit Compositor(gfx::AcceleratedWidget widget);
   Compositor(gfx::AcceleratedWidget widget,
              ui::ContextFactory* context_factory);
   virtual ~Compositor();
@@ -253,11 +242,6 @@ class COMPOSITOR_EXPORT Compositor
  private:
   friend class base::RefCounted<Compositor>;
   friend class CompositorLock;
-
-  // Called from both constructors. It's temporary while we have both
-  // constructors.
-  // TODO(sky): nuke this.
-  void Init();
 
   // Called by CompositorLock.
   void UnlockCompositor();
