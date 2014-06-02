@@ -149,7 +149,7 @@ std::string DriveServiceOnWorker::GetRootResourceId() const {
 
 google_apis::CancelCallback DriveServiceOnWorker::GetRemainingFileList(
     const GURL& next_link,
-    const google_apis::GetResourceListCallback& callback) {
+    const google_apis::FileListCallback& callback) {
   ui_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&DriveServiceWrapper::GetRemainingFileList,
@@ -180,12 +180,12 @@ google_apis::CancelCallback DriveServiceOnWorker::GetResourceEntry(
   return google_apis::CancelCallback();
 }
 
-google_apis::CancelCallback DriveServiceOnWorker::GetResourceListInDirectory(
+google_apis::CancelCallback DriveServiceOnWorker::GetFileListInDirectory(
     const std::string& directory_resource_id,
-    const google_apis::GetResourceListCallback& callback) {
+    const google_apis::FileListCallback& callback) {
   ui_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&DriveServiceWrapper::GetResourceListInDirectory,
+      base::Bind(&DriveServiceWrapper::GetFileListInDirectory,
                  wrapper_,
                  directory_resource_id,
                  RelayCallbackToTaskRunner(
@@ -217,7 +217,7 @@ google_apis::CancelCallback DriveServiceOnWorker::RemoveResourceFromDirectory(
 google_apis::CancelCallback DriveServiceOnWorker::SearchByTitle(
     const std::string& title,
     const std::string& directory_resource_id,
-    const google_apis::GetResourceListCallback& callback) {
+    const google_apis::FileListCallback& callback) {
   ui_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&DriveServiceWrapper::SearchByTitle,
@@ -281,15 +281,15 @@ void DriveServiceOnWorker::ClearRefreshToken() {
   NOTREACHED();
 }
 
-google_apis::CancelCallback DriveServiceOnWorker::GetAllResourceList(
-    const google_apis::GetResourceListCallback& callback) {
+google_apis::CancelCallback DriveServiceOnWorker::GetAllFileList(
+    const google_apis::FileListCallback& callback) {
   NOTREACHED();
   return google_apis::CancelCallback();
 }
 
 google_apis::CancelCallback DriveServiceOnWorker::Search(
     const std::string& search_query,
-    const google_apis::GetResourceListCallback& callback) {
+    const google_apis::FileListCallback& callback) {
   NOTREACHED();
   return google_apis::CancelCallback();
 }

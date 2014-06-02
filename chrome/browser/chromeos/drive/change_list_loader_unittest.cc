@@ -164,7 +164,7 @@ TEST_F(ChangeListLoaderTest, Load) {
   int64 changestamp = 0;
   EXPECT_EQ(FILE_ERROR_OK, metadata_->GetLargestChangestamp(&changestamp));
   EXPECT_LT(0, changestamp);
-  EXPECT_EQ(1, drive_service_->resource_list_load_count());
+  EXPECT_EQ(1, drive_service_->file_list_load_count());
   EXPECT_EQ(1, drive_service_->about_resource_load_count());
   EXPECT_EQ(1, observer.initial_load_complete_count());
   EXPECT_EQ(1, observer.load_from_server_complete_count());
@@ -200,8 +200,8 @@ TEST_F(ChangeListLoaderTest, Load_LocalMetadataAvailable) {
 
   // Start loading. Because local metadata is available, the load results in
   // returning FILE_ERROR_OK without fetching full list of resources.
-  const int previous_resource_list_load_count =
-      drive_service_->resource_list_load_count();
+  const int previous_file_list_load_count =
+      drive_service_->file_list_load_count();
   TestChangeListLoaderObserver observer(change_list_loader_.get());
 
   change_list_loader_->LoadIfNeeded(
@@ -209,8 +209,8 @@ TEST_F(ChangeListLoaderTest, Load_LocalMetadataAvailable) {
   EXPECT_TRUE(change_list_loader_->IsRefreshing());
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(FILE_ERROR_OK, error);
-  EXPECT_EQ(previous_resource_list_load_count,
-            drive_service_->resource_list_load_count());
+  EXPECT_EQ(previous_file_list_load_count,
+            drive_service_->file_list_load_count());
   EXPECT_EQ(1, observer.initial_load_complete_count());
 
   // Update should be checked by Load().
@@ -242,7 +242,7 @@ TEST_F(ChangeListLoaderTest, CheckForUpdates) {
   int64 changestamp = 0;
   EXPECT_EQ(FILE_ERROR_OK, metadata_->GetLargestChangestamp(&changestamp));
   EXPECT_EQ(0, changestamp);
-  EXPECT_EQ(0, drive_service_->resource_list_load_count());
+  EXPECT_EQ(0, drive_service_->file_list_load_count());
   EXPECT_EQ(0, drive_service_->about_resource_load_count());
 
   // Start initial load.
@@ -262,7 +262,7 @@ TEST_F(ChangeListLoaderTest, CheckForUpdates) {
   EXPECT_EQ(FILE_ERROR_OK, check_for_updates_error);
   EXPECT_EQ(FILE_ERROR_OK, metadata_->GetLargestChangestamp(&changestamp));
   EXPECT_LT(0, changestamp);
-  EXPECT_EQ(1, drive_service_->resource_list_load_count());
+  EXPECT_EQ(1, drive_service_->file_list_load_count());
 
   int64 previous_changestamp = 0;
   EXPECT_EQ(FILE_ERROR_OK,

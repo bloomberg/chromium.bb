@@ -461,7 +461,7 @@ void APIUtil::SearchByTitle(const std::string& title,
   drive_service_->SearchByTitle(
       title,
       directory_resource_id,
-      base::Bind(&APIUtil::DidGetResourceList, AsWeakPtr(), callback));
+      base::Bind(&APIUtil::DidGetFileList, AsWeakPtr(), callback));
 }
 
 void APIUtil::ListFiles(const std::string& directory_resource_id,
@@ -470,7 +470,9 @@ void APIUtil::ListFiles(const std::string& directory_resource_id,
   DVLOG(2) << "Listing resources in the directory [" << directory_resource_id
            << "]";
 
-  drive_service_->GetResourceListInDirectory(directory_resource_id, callback);
+  drive_service_->GetFileListInDirectory(
+      directory_resource_id,
+      base::Bind(&APIUtil::DidGetFileList, AsWeakPtr(), callback));
 }
 
 void APIUtil::ListChanges(int64 start_changestamp,
@@ -490,7 +492,7 @@ void APIUtil::ContinueListing(const GURL& next_link,
 
   drive_service_->GetRemainingFileList(
       next_link,
-      base::Bind(&APIUtil::DidGetResourceList, AsWeakPtr(), callback));
+      base::Bind(&APIUtil::DidGetFileList, AsWeakPtr(), callback));
 }
 
 void APIUtil::DownloadFile(const std::string& resource_id,
@@ -675,6 +677,22 @@ void APIUtil::OnConnectionTypeChanged(
   CancelAllUploads(google_apis::GDATA_NO_CONNECTION);
 }
 
+void APIUtil::DidGetFileList(const ResourceListCallback& callback,
+                             google_apis::GDataErrorCode error,
+                             scoped_ptr<google_apis::FileList> file_list) {
+  DCHECK(CalledOnValidThread());
+
+  if (error != google_apis::HTTP_SUCCESS) {
+    DVLOG(2) << "Error on listing files: " << error;
+    callback.Run(error, scoped_ptr<google_apis::ResourceList>());
+    return;
+  }
+
+  DVLOG(2) << "Got file list";
+  DCHECK(file_list);
+  callback.Run(error, drive::util::ConvertFileListToResourceList(*file_list));
+}
+
 void APIUtil::DidGetChangeList(
     const ResourceListCallback& callback,
     google_apis::GDataErrorCode error,
@@ -691,23 +709,6 @@ void APIUtil::DidGetChangeList(
   DCHECK(change_list);
   callback.Run(error,
                drive::util::ConvertChangeListToResourceList(*change_list));
-}
-
-void APIUtil::DidGetResourceList(
-    const ResourceListCallback& callback,
-    google_apis::GDataErrorCode error,
-    scoped_ptr<google_apis::ResourceList> resource_list) {
-  DCHECK(CalledOnValidThread());
-
-  if (error != google_apis::HTTP_SUCCESS) {
-    DVLOG(2) << "Error on listing resource: " << error;
-    callback.Run(error, scoped_ptr<google_apis::ResourceList>());
-    return;
-  }
-
-  DVLOG(2) << "Got resource list";
-  DCHECK(resource_list);
-  callback.Run(error, resource_list.Pass());
 }
 
 void APIUtil::DidGetResourceEntry(

@@ -14,6 +14,7 @@
 #include "chrome/browser/chromeos/drive/file_errors.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/drive/resource_entry_conversion.h"
+#include "chrome/browser/drive/drive_api_util.h"
 #include "chrome/browser/drive/drive_service_interface.h"
 #include "content/public/browser/browser_thread.h"
 #include "google_apis/drive/drive_api_parser.h"
@@ -349,18 +350,18 @@ void FakeFileSystem::GetResourceEntryAfterGetParentEntryInfo(
   }
 
   DCHECK(parent_entry);
-  drive_service_->GetResourceListInDirectory(
+  drive_service_->GetFileListInDirectory(
       parent_entry->resource_id(),
       base::Bind(
-          &FakeFileSystem::GetResourceEntryAfterGetResourceList,
+          &FakeFileSystem::GetResourceEntryAfterGetFileList,
           weak_ptr_factory_.GetWeakPtr(), base_name, callback));
 }
 
-void FakeFileSystem::GetResourceEntryAfterGetResourceList(
+void FakeFileSystem::GetResourceEntryAfterGetFileList(
     const base::FilePath& base_name,
     const GetResourceEntryCallback& callback,
     google_apis::GDataErrorCode gdata_error,
-    scoped_ptr<google_apis::ResourceList> resource_list) {
+    scoped_ptr<google_apis::FileList> file_list) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   FileError error = GDataToFileError(gdata_error);
@@ -369,14 +370,14 @@ void FakeFileSystem::GetResourceEntryAfterGetResourceList(
     return;
   }
 
-  DCHECK(resource_list);
-  const ScopedVector<google_apis::ResourceEntry>& entries =
-      resource_list->entries();
+  DCHECK(file_list);
+  const ScopedVector<google_apis::FileResource>& entries = file_list->items();
   for (size_t i = 0; i < entries.size(); ++i) {
     scoped_ptr<ResourceEntry> entry(new ResourceEntry);
     std::string parent_resource_id;
-    bool converted =
-        ConvertToResourceEntry(*entries[i], entry.get(), &parent_resource_id);
+    bool converted = ConvertToResourceEntry(
+        *util::ConvertFileResourceToResourceEntry(*entries[i]), entry.get(),
+        &parent_resource_id);
     DCHECK(converted);
     entry->set_parent_local_id(parent_resource_id);
 

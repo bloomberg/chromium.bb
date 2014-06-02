@@ -275,19 +275,19 @@ class JobScheduler
   // Retries the job if needed and returns false. Otherwise returns true.
   bool OnJobDone(JobID job_id, google_apis::GDataErrorCode error);
 
+  // Callback for job finishing with a FileListCallback.
+  void OnGetFileListJobDone(
+      JobID job_id,
+      const google_apis::GetResourceListCallback& callback,
+      google_apis::GDataErrorCode error,
+      scoped_ptr<google_apis::FileList> file_list);
+
   // Callback for job finishing with a ChangeListCallback.
   void OnGetChangeListJobDone(
       JobID job_id,
       const google_apis::GetResourceListCallback& callback,
       google_apis::GDataErrorCode error,
       scoped_ptr<google_apis::ChangeList> change_list);
-
-  // Callback for job finishing with a GetResourceListCallback.
-  void OnGetResourceListJobDone(
-      JobID job_id,
-      const google_apis::GetResourceListCallback& callback,
-      google_apis::GDataErrorCode error,
-      scoped_ptr<google_apis::ResourceList> resource_list);
 
   // Callback for job finishing with a GetResourceEntryCallback.
   void OnGetResourceEntryJobDone(

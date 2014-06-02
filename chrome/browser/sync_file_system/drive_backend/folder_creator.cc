@@ -61,63 +61,62 @@ void FolderCreator::DidCreateFolder(
       title_, parent_folder_id_,
       base::Bind(&FolderCreator::DidListFolders,
                  weak_ptr_factory_.GetWeakPtr(), callback,
-                 base::Passed(ScopedVector<google_apis::ResourceEntry>())));
+                 base::Passed(ScopedVector<google_apis::FileResource>())));
 }
 
 void FolderCreator::DidListFolders(
     const FileIDCallback& callback,
-    ScopedVector<google_apis::ResourceEntry> candidates,
+    ScopedVector<google_apis::FileResource> candidates,
     google_apis::GDataErrorCode error,
-    scoped_ptr<google_apis::ResourceList> resource_list) {
+    scoped_ptr<google_apis::FileList> file_list) {
   SyncStatusCode status = GDataErrorCodeToSyncStatusCode(error);
   if (status != SYNC_STATUS_OK) {
     callback.Run(std::string(), status);
     return;
   }
 
-  if (!resource_list) {
+  if (!file_list) {
     NOTREACHED();
     callback.Run(std::string(), SYNC_STATUS_FAILED);
     return;
   }
 
-  candidates.reserve(candidates.size() + resource_list->entries().size());
+  candidates.reserve(candidates.size() + file_list->items().size());
   candidates.insert(candidates.end(),
-                    resource_list->entries().begin(),
-                    resource_list->entries().end());
-  resource_list->mutable_entries()->weak_clear();
+                    file_list->items().begin(),
+                    file_list->items().end());
+  file_list->mutable_items()->weak_clear();
 
-  GURL next_feed;
-  if (resource_list->GetNextFeedURL(&next_feed)) {
+  if (!file_list->next_link().is_empty()) {
     drive_service_->GetRemainingFileList(
-        next_feed,
+        file_list->next_link(),
         base::Bind(&FolderCreator::DidListFolders,
                    weak_ptr_factory_.GetWeakPtr(), callback,
                    base::Passed(&candidates)));
     return;
   }
 
-  ScopedVector<google_apis::FileResource> files;
-  files.reserve(candidates.size());
+  const google_apis::FileResource* oldest = NULL;
   for (size_t i = 0; i < candidates.size(); ++i) {
-    files.push_back(drive::util::ConvertResourceEntryToFileResource(
-        *candidates[i]).release());
-  }
+    const google_apis::FileResource& entry = *candidates[i];
+    if (!entry.IsDirectory() || entry.labels().is_trashed())
+      continue;
 
-  scoped_ptr<google_apis::ResourceEntry> oldest =
-      GetOldestCreatedFolderResource(candidates.Pass());
+    if (!oldest || oldest->created_date() > entry.created_date())
+      oldest = &entry;
+  }
 
   if (!oldest) {
     callback.Run(std::string(), SYNC_FILE_ERROR_NOT_FOUND);
     return;
   }
 
-  std::string file_id = oldest->resource_id();
+  std::string file_id = oldest->file_id();
 
   metadata_database_->UpdateByFileResourceList(
-      files.Pass(), base::Bind(&FolderCreator::DidUpdateDatabase,
-                               weak_ptr_factory_.GetWeakPtr(),
-                               file_id, callback));
+      candidates.Pass(), base::Bind(&FolderCreator::DidUpdateDatabase,
+                                    weak_ptr_factory_.GetWeakPtr(),
+                                    file_id, callback));
 }
 
 void FolderCreator::DidUpdateDatabase(const std::string& file_id,

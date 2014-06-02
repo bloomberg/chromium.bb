@@ -50,15 +50,15 @@ class DriveServiceWrapper : public base::SupportsWeakPtr<DriveServiceWrapper> {
 
   void GetRemainingFileList(
       const GURL& next_link,
-      const google_apis::GetResourceListCallback& callback);
+      const google_apis::FileListCallback& callback);
 
   void GetResourceEntry(
       const std::string& resource_id,
       const google_apis::GetResourceEntryCallback& callback);
 
-  void GetResourceListInDirectory(
+  void GetFileListInDirectory(
       const std::string& directory_resource_id,
-      const google_apis::GetResourceListCallback& callback);
+      const google_apis::FileListCallback& callback);
 
   bool HasRefreshToken() const;
 
@@ -70,7 +70,7 @@ class DriveServiceWrapper : public base::SupportsWeakPtr<DriveServiceWrapper> {
   void SearchByTitle(
       const std::string& title,
       const std::string& directory_resource_id,
-      const google_apis::GetResourceListCallback& callback);
+      const google_apis::FileListCallback& callback);
 
  private:
   drive::DriveServiceInterface* drive_service_;

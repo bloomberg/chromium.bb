@@ -79,8 +79,8 @@ class FakeDriveServiceHelper {
 
  private:
   google_apis::GDataErrorCode CompleteListing(
-      scoped_ptr<google_apis::ResourceList> list,
-      ScopedVector<google_apis::ResourceEntry> * entries);
+      scoped_ptr<google_apis::FileList> list,
+      ScopedVector<google_apis::ResourceEntry>* entries);
 
   void Initialize();
 

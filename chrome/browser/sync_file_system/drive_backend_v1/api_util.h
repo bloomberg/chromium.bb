@@ -158,13 +158,13 @@ class APIUtil : public APIUtilInterface,
       const std::string& sync_root_resource_id,
       google_apis::GDataErrorCode error);
 
+  void DidGetFileList(const ResourceListCallback& callback,
+                      google_apis::GDataErrorCode error,
+                      scoped_ptr<google_apis::FileList> file_list);
+
   void DidGetChangeList(const ResourceListCallback& callback,
                         google_apis::GDataErrorCode error,
                         scoped_ptr<google_apis::ChangeList> change_list);
-
-  void DidGetResourceList(const ResourceListCallback& callback,
-                          google_apis::GDataErrorCode error,
-                          scoped_ptr<google_apis::ResourceList> resource_list);
 
   void DidGetResourceEntry(const ResourceEntryCallback& callback,
                            google_apis::GDataErrorCode error,

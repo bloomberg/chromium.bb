@@ -64,15 +64,15 @@ class DriveServiceOnWorker : public drive::DriveServiceInterface {
 
   virtual google_apis::CancelCallback GetRemainingFileList(
       const GURL& next_link,
-      const google_apis::GetResourceListCallback& callback) OVERRIDE;
+      const google_apis::FileListCallback& callback) OVERRIDE;
 
   virtual google_apis::CancelCallback GetResourceEntry(
       const std::string& resource_id,
       const google_apis::GetResourceEntryCallback& callback) OVERRIDE;
 
-  virtual google_apis::CancelCallback GetResourceListInDirectory(
+  virtual google_apis::CancelCallback GetFileListInDirectory(
       const std::string& directory_resource_id,
-      const google_apis::GetResourceListCallback& callback) OVERRIDE;
+      const google_apis::FileListCallback& callback) OVERRIDE;
 
   virtual google_apis::CancelCallback RemoveResourceFromDirectory(
       const std::string& parent_resource_id,
@@ -82,7 +82,7 @@ class DriveServiceOnWorker : public drive::DriveServiceInterface {
   virtual google_apis::CancelCallback SearchByTitle(
       const std::string& title,
       const std::string& directory_resource_id,
-      const google_apis::GetResourceListCallback& callback) OVERRIDE;
+      const google_apis::FileListCallback& callback) OVERRIDE;
 
   virtual bool HasRefreshToken() const OVERRIDE;
 
@@ -98,11 +98,11 @@ class DriveServiceOnWorker : public drive::DriveServiceInterface {
       const google_apis::AuthStatusCallback& callback) OVERRIDE;
   virtual void ClearAccessToken() OVERRIDE;
   virtual void ClearRefreshToken() OVERRIDE;
-  virtual google_apis::CancelCallback GetAllResourceList(
-      const google_apis::GetResourceListCallback& callback) OVERRIDE;
+  virtual google_apis::CancelCallback GetAllFileList(
+      const google_apis::FileListCallback& callback) OVERRIDE;
   virtual google_apis::CancelCallback Search(
       const std::string& search_query,
-      const google_apis::GetResourceListCallback& callback) OVERRIDE;
+      const google_apis::FileListCallback& callback) OVERRIDE;
   virtual google_apis::CancelCallback GetShareUrl(
       const std::string& resource_id,
       const GURL& embed_origin,

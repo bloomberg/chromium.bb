@@ -38,13 +38,13 @@ class FakeDriveService : public DriveServiceInterface {
   // when offline. By default the offline state is false.
   void set_offline(bool offline) { offline_ = offline; }
 
-  // GetAllResourceList never returns result when this is set to true.
+  // GetAllFileList never returns result when this is set to true.
   // Used to emulate the real server's slowness.
-  void set_never_return_all_resource_list(bool value) {
-    never_return_all_resource_list_ = value;
+  void set_never_return_all_file_list(bool value) {
+    never_return_all_file_list_ = value;
   }
 
-  // Changes the default max results returned from GetResourceList().
+  // Changes the default max results returned from GetAllFileList().
   // By default, it's set to 0, which is unlimited.
   void set_default_max_results(int default_max_results) {
     default_max_results_ = default_max_results;
@@ -64,16 +64,16 @@ class FakeDriveService : public DriveServiceInterface {
     return *about_resource_;
   }
 
-  // Returns the number of times the resource list is successfully loaded by
-  // GetAllResourceList().
-  int resource_list_load_count() const { return resource_list_load_count_; }
+  // Returns the number of times the file list is successfully loaded by
+  // GetAllFileList().
+  int file_list_load_count() const { return file_list_load_count_; }
 
   // Returns the number of times the resource list is successfully loaded by
   // GetChangeList().
   int change_list_load_count() const { return change_list_load_count_; }
 
   // Returns the number of times the resource list is successfully loaded by
-  // GetResourceListInDirectory().
+  // GetFileListInDirectory().
   int directory_load_count() const { return directory_load_count_; }
 
   // Returns the number of times the about resource is successfully loaded
@@ -86,10 +86,10 @@ class FakeDriveService : public DriveServiceInterface {
   // GetAppList().
   int app_list_load_count() const { return app_list_load_count_; }
 
-  // Returns the number of times GetAllResourceList are blocked due to
-  // set_never_return_all_resource_list().
-  int blocked_resource_list_load_count() const {
-    return blocked_resource_list_load_count_;
+  // Returns the number of times GetAllFileList are blocked due to
+  // set_never_return_all_file_list().
+  int blocked_file_list_load_count() const {
+    return blocked_file_list_load_count_;
   }
 
   // Returns the file path whose request is cancelled just before this method
@@ -114,20 +114,20 @@ class FakeDriveService : public DriveServiceInterface {
   virtual bool HasRefreshToken() const OVERRIDE;
   virtual void ClearAccessToken() OVERRIDE;
   virtual void ClearRefreshToken() OVERRIDE;
-  virtual google_apis::CancelCallback GetAllResourceList(
-      const google_apis::GetResourceListCallback& callback) OVERRIDE;
-  virtual google_apis::CancelCallback GetResourceListInDirectory(
+  virtual google_apis::CancelCallback GetAllFileList(
+      const google_apis::FileListCallback& callback) OVERRIDE;
+  virtual google_apis::CancelCallback GetFileListInDirectory(
       const std::string& directory_resource_id,
-      const google_apis::GetResourceListCallback& callback) OVERRIDE;
+      const google_apis::FileListCallback& callback) OVERRIDE;
   // See the comment for EntryMatchWidthQuery() in .cc file for details about
   // the supported search query types.
   virtual google_apis::CancelCallback Search(
       const std::string& search_query,
-      const google_apis::GetResourceListCallback& callback) OVERRIDE;
+      const google_apis::FileListCallback& callback) OVERRIDE;
   virtual google_apis::CancelCallback SearchByTitle(
       const std::string& title,
       const std::string& directory_resource_id,
-      const google_apis::GetResourceListCallback& callback) OVERRIDE;
+      const google_apis::FileListCallback& callback) OVERRIDE;
   virtual google_apis::CancelCallback GetChangeList(
       int64 start_changestamp,
       const google_apis::ChangeListCallback& callback) OVERRIDE;
@@ -136,7 +136,7 @@ class FakeDriveService : public DriveServiceInterface {
       const google_apis::ChangeListCallback& callback) OVERRIDE;
   virtual google_apis::CancelCallback GetRemainingFileList(
       const GURL& next_link,
-      const google_apis::GetResourceListCallback& callback) OVERRIDE;
+      const google_apis::FileListCallback& callback) OVERRIDE;
   virtual google_apis::CancelCallback GetResourceEntry(
       const std::string& resource_id,
       const google_apis::GetResourceEntryCallback& callback) OVERRIDE;
@@ -299,12 +299,12 @@ class FakeDriveService : public DriveServiceInterface {
       const std::string& title,
       bool shared_with_me);
 
-  // Core implementation of GetResourceList.
+  // Core implementation of GetChangeList.
   // This method returns the slice of the all matched entries, and its range
   // is between |start_offset| (inclusive) and |start_offset| + |max_results|
   // (exclusive).
   // Increments *load_counter by 1 before it returns successfully.
-  void GetResourceListInternal(
+  void GetChangeListInternal(
       int64 start_changestamp,
       const std::string& search_query,
       const std::string& directory_resource_id,
@@ -325,14 +325,14 @@ class FakeDriveService : public DriveServiceInterface {
   int64 next_upload_sequence_number_;
   int default_max_results_;
   int resource_id_count_;
-  int resource_list_load_count_;
+  int file_list_load_count_;
   int change_list_load_count_;
   int directory_load_count_;
   int about_resource_load_count_;
   int app_list_load_count_;
-  int blocked_resource_list_load_count_;
+  int blocked_file_list_load_count_;
   bool offline_;
-  bool never_return_all_resource_list_;
+  bool never_return_all_file_list_;
   base::FilePath last_cancelled_file_;
   GURL share_url_base_;
 

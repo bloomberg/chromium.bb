@@ -531,7 +531,7 @@ void RemoteToLocalSyncer::ListFolderContent(
   DCHECK(!remote_metadata_->details().missing());
 
   // TODO(tzik): Replace this call with ChildList version.
-  drive_service()->GetResourceListInDirectory(
+  drive_service()->GetFileListInDirectory(
       dirty_tracker_->file_id(),
       base::Bind(&RemoteToLocalSyncer::DidListFolderContent,
                  weak_ptr_factory_.GetWeakPtr(),
@@ -543,31 +543,30 @@ void RemoteToLocalSyncer::DidListFolderContent(
     const SyncStatusCallback& callback,
     scoped_ptr<FileIDList> children,
     google_apis::GDataErrorCode error,
-    scoped_ptr<google_apis::ResourceList> resource_list) {
+    scoped_ptr<google_apis::FileList> file_list) {
   SyncStatusCode status = GDataErrorCodeToSyncStatusCode(error);
   if (status != SYNC_STATUS_OK) {
     callback.Run(status);
     return;
   }
 
-  if (!resource_list) {
+  if (!file_list) {
     NOTREACHED();
     callback.Run(SYNC_STATUS_FAILED);
     return;
   }
 
-  children->reserve(children->size() + resource_list->entries().size());
-  for (ScopedVector<google_apis::ResourceEntry>::const_iterator itr =
-           resource_list->entries().begin();
-       itr != resource_list->entries().end();
+  children->reserve(children->size() + file_list->items().size());
+  for (ScopedVector<google_apis::FileResource>::const_iterator itr =
+           file_list->items().begin();
+       itr != file_list->items().end();
        ++itr) {
-    children->push_back((*itr)->resource_id());
+    children->push_back((*itr)->file_id());
   }
 
-  GURL next_feed;
-  if (resource_list->GetNextFeedURL(&next_feed)) {
+  if (!file_list->next_link().is_empty()) {
     drive_service()->GetRemainingFileList(
-        next_feed,
+        file_list->next_link(),
         base::Bind(&RemoteToLocalSyncer::DidListFolderContent,
                    weak_ptr_factory_.GetWeakPtr(),
                    callback, base::Passed(&children)));

@@ -22,8 +22,9 @@ class DriveServiceInterface;
 
 namespace google_apis {
 class AboutResource;
+class FileList;
+class FileResource;
 class ResourceEntry;
-class ResourceList;
 }
 
 namespace leveldb {
@@ -88,7 +89,7 @@ class SyncEngineInitializer : public SyncTask {
   void FindSyncRoot(scoped_ptr<SyncTaskToken> token);
   void DidFindSyncRoot(scoped_ptr<SyncTaskToken> token,
                        google_apis::GDataErrorCode error,
-                       scoped_ptr<google_apis::ResourceList> resource_list);
+                       scoped_ptr<google_apis::FileList> file_list);
   void CreateSyncRoot(scoped_ptr<SyncTaskToken> token);
   void DidCreateSyncRoot(scoped_ptr<SyncTaskToken> token,
                          google_apis::GDataErrorCode error,
@@ -100,7 +101,7 @@ class SyncEngineInitializer : public SyncTask {
   void DidListAppRootFolders(
       scoped_ptr<SyncTaskToken> token,
       google_apis::GDataErrorCode error,
-      scoped_ptr<google_apis::ResourceList> resource_list);
+      scoped_ptr<google_apis::FileList> file_list);
   void PopulateDatabase(scoped_ptr<SyncTaskToken> token);
   void DidPopulateDatabase(scoped_ptr<SyncTaskToken> token,
                            SyncStatusCode status);
@@ -114,12 +115,12 @@ class SyncEngineInitializer : public SyncTask {
   int find_sync_root_retry_count_;
 
   scoped_ptr<MetadataDatabase> metadata_database_;
-  ScopedVector<google_apis::ResourceEntry> app_root_folders_;
+  ScopedVector<google_apis::FileResource> app_root_folders_;
 
   int64 largest_change_id_;
   std::string root_folder_id_;
 
-  scoped_ptr<google_apis::ResourceEntry> sync_root_folder_;
+  scoped_ptr<google_apis::FileResource> sync_root_folder_;
 
   base::WeakPtrFactory<SyncEngineInitializer> weak_ptr_factory_;
 

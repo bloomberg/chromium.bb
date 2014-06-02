@@ -62,9 +62,6 @@ bool HasFileAsParent(const FileDetails& details, const std::string& file_id);
 
 std::string GetMimeTypeFromTitle(const base::FilePath& title);
 
-scoped_ptr<google_apis::ResourceEntry> GetOldestCreatedFolderResource(
-    ScopedVector<google_apis::ResourceEntry> list);
-
 SyncStatusCode GDataErrorCodeToSyncStatusCode(
     google_apis::GDataErrorCode error);
 

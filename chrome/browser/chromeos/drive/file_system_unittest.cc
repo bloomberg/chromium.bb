@@ -543,7 +543,7 @@ TEST_F(FileSystemTest, DuplicatedAsyncInitialization) {
   loop.Run();  // Wait to get our result
   EXPECT_EQ(2, counter);
 
-  EXPECT_EQ(1, fake_drive_service_->resource_list_load_count());
+  EXPECT_EQ(1, fake_drive_service_->file_list_load_count());
 }
 
 TEST_F(FileSystemTest, GetGrandRootEntry) {
@@ -567,13 +567,13 @@ TEST_F(FileSystemTest, GetMyDriveRoot) {
   EXPECT_EQ(fake_drive_service_->GetRootResourceId(), entry->resource_id());
 
   // After "fast fetch" is done, full resource list is fetched.
-  EXPECT_EQ(1, fake_drive_service_->resource_list_load_count());
+  EXPECT_EQ(1, fake_drive_service_->file_list_load_count());
 }
 
 TEST_F(FileSystemTest, GetExistingFile) {
   // Simulate the situation that full feed fetching takes very long time,
   // to test the recursive "fast fetch" feature is properly working.
-  fake_drive_service_->set_never_return_all_resource_list(true);
+  fake_drive_service_->set_never_return_all_file_list(true);
 
   const base::FilePath kFilePath(
       FILE_PATH_LITERAL("drive/root/Directory 1/SubDirectory File 1.txt"));
@@ -583,7 +583,7 @@ TEST_F(FileSystemTest, GetExistingFile) {
 
   EXPECT_EQ(1, fake_drive_service_->about_resource_load_count());
   EXPECT_EQ(2, fake_drive_service_->directory_load_count());
-  EXPECT_EQ(1, fake_drive_service_->blocked_resource_list_load_count());
+  EXPECT_EQ(1, fake_drive_service_->blocked_file_list_load_count());
 }
 
 TEST_F(FileSystemTest, GetExistingDocument) {
@@ -661,7 +661,7 @@ TEST_F(FileSystemTest, LoadFileSystemFromUpToDateCache) {
   // SetUpTestFileSystem and FakeDriveService have the same
   // changestamp (i.e. the local metadata is up-to-date), so no request for
   // new resource list (i.e., call to GetResourceList) should happen.
-  EXPECT_EQ(0, fake_drive_service_->resource_list_load_count());
+  EXPECT_EQ(0, fake_drive_service_->file_list_load_count());
 
   // Since the file system has verified that it holds the latest snapshot,
   // it should change its state to "loaded", which admits periodic refresh.

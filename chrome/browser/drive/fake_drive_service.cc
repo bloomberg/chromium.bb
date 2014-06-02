@@ -38,6 +38,8 @@ using google_apis::ChangeListCallback;
 using google_apis::ChangeResource;
 using google_apis::DownloadActionCallback;
 using google_apis::EntryActionCallback;
+using google_apis::FileList;
+using google_apis::FileListCallback;
 using google_apis::FileResource;
 using google_apis::GDATA_FILE_ERROR;
 using google_apis::GDATA_NO_CONNECTION;
@@ -45,7 +47,6 @@ using google_apis::GDATA_OTHER_ERROR;
 using google_apis::GDataErrorCode;
 using google_apis::GetContentCallback;
 using google_apis::GetResourceEntryCallback;
-using google_apis::GetResourceListCallback;
 using google_apis::GetShareUrlCallback;
 using google_apis::HTTP_BAD_REQUEST;
 using google_apis::HTTP_CREATED;
@@ -59,7 +60,6 @@ using google_apis::Link;
 using google_apis::ParentReference;
 using google_apis::ProgressCallback;
 using google_apis::ResourceEntry;
-using google_apis::ResourceList;
 using google_apis::UploadRangeCallback;
 using google_apis::UploadRangeResponse;
 namespace test_util = google_apis::test_util;
@@ -123,12 +123,20 @@ void EntryActionCallbackAdapter(
   callback.Run(error);
 }
 
-void GetResourceListCallbackAdapter(const GetResourceListCallback& callback,
-                                    GDataErrorCode error,
-                                    scoped_ptr<ChangeList> change_list) {
-  callback.Run(error, change_list ?
-               util::ConvertChangeListToResourceList(*change_list) :
-               scoped_ptr<ResourceList>());
+void FileListCallbackAdapter(const FileListCallback& callback,
+                             GDataErrorCode error,
+                             scoped_ptr<ChangeList> change_list) {
+  scoped_ptr<FileList> file_list;
+  if (change_list) {
+    file_list.reset(new FileList);
+    file_list->set_next_link(change_list->next_link());
+    for (size_t i = 0; i < change_list->items().size(); ++i) {
+      const ChangeResource& entry = *change_list->items()[i];
+      if (entry.file())
+        file_list->mutable_items()->push_back(new FileResource(*entry.file()));
+    }
+  }
+  callback.Run(error, file_list.Pass());
 }
 
 }  // namespace
@@ -176,14 +184,14 @@ FakeDriveService::FakeDriveService()
       next_upload_sequence_number_(0),
       default_max_results_(0),
       resource_id_count_(0),
-      resource_list_load_count_(0),
+      file_list_load_count_(0),
       change_list_load_count_(0),
       directory_load_count_(0),
       about_resource_load_count_(0),
       app_list_load_count_(0),
-      blocked_resource_list_load_count_(0),
+      blocked_file_list_load_count_(0),
       offline_(false),
-      never_return_all_resource_list_(false),
+      never_return_all_file_list_(false),
       share_url_base_("https://share_url/") {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -270,81 +278,77 @@ std::string FakeDriveService::GetRootResourceId() const {
   return "fake_root";
 }
 
-CancelCallback FakeDriveService::GetAllResourceList(
-    const GetResourceListCallback& callback) {
+CancelCallback FakeDriveService::GetAllFileList(
+    const FileListCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  if (never_return_all_resource_list_) {
-    ++blocked_resource_list_load_count_;
+  if (never_return_all_file_list_) {
+    ++blocked_file_list_load_count_;
     return CancelCallback();
   }
 
-  GetResourceListInternal(0,  // start changestamp
-                          std::string(),  // empty search query
-                          std::string(),  // no directory resource id,
-                          0,  // start offset
-                          default_max_results_,
-                          &resource_list_load_count_,
-                          base::Bind(&GetResourceListCallbackAdapter,
-                                     callback));
+  GetChangeListInternal(0,  // start changestamp
+                        std::string(),  // empty search query
+                        std::string(),  // no directory resource id,
+                        0,  // start offset
+                        default_max_results_,
+                        &file_list_load_count_,
+                        base::Bind(&FileListCallbackAdapter, callback));
   return CancelCallback();
 }
 
-CancelCallback FakeDriveService::GetResourceListInDirectory(
+CancelCallback FakeDriveService::GetFileListInDirectory(
     const std::string& directory_resource_id,
-    const GetResourceListCallback& callback) {
+    const FileListCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!directory_resource_id.empty());
   DCHECK(!callback.is_null());
 
-  GetResourceListInternal(0,  // start changestamp
-                          std::string(),  // empty search query
-                          directory_resource_id,
-                          0,  // start offset
-                          default_max_results_,
-                          &directory_load_count_,
-                          base::Bind(&GetResourceListCallbackAdapter,
-                                     callback));
+  GetChangeListInternal(0,  // start changestamp
+                        std::string(),  // empty search query
+                        directory_resource_id,
+                        0,  // start offset
+                        default_max_results_,
+                        &directory_load_count_,
+                        base::Bind(&FileListCallbackAdapter, callback));
   return CancelCallback();
 }
 
 CancelCallback FakeDriveService::Search(
     const std::string& search_query,
-    const GetResourceListCallback& callback) {
+    const FileListCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!search_query.empty());
   DCHECK(!callback.is_null());
 
-  GetResourceListInternal(0,  // start changestamp
-                          search_query,
-                          std::string(),  // no directory resource id,
-                          0,  // start offset
-                          default_max_results_,
-                          NULL,
-                          base::Bind(&GetResourceListCallbackAdapter,
-                                     callback));
+  GetChangeListInternal(0,  // start changestamp
+                        search_query,
+                        std::string(),  // no directory resource id,
+                        0,  // start offset
+                        default_max_results_,
+                        NULL,
+                        base::Bind(&FileListCallbackAdapter, callback));
   return CancelCallback();
 }
 
 CancelCallback FakeDriveService::SearchByTitle(
     const std::string& title,
     const std::string& directory_resource_id,
-    const GetResourceListCallback& callback) {
+    const FileListCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!title.empty());
   DCHECK(!callback.is_null());
 
   // Note: the search implementation here doesn't support quotation unescape,
   // so don't escape here.
-  GetResourceListInternal(0,  // start changestamp
-                          base::StringPrintf("title:'%s'", title.c_str()),
-                          directory_resource_id,
-                          0,  // start offset
-                          default_max_results_,
-                          NULL,
-                          base::Bind(&GetResourceListCallbackAdapter,
-                                     callback));
+  GetChangeListInternal(0,  // start changestamp
+                        base::StringPrintf("title:'%s'", title.c_str()),
+                        directory_resource_id,
+                        0,  // start offset
+                        default_max_results_,
+                        NULL,
+                        base::Bind(&FileListCallbackAdapter, callback));
   return CancelCallback();
 }
 
@@ -354,13 +358,13 @@ CancelCallback FakeDriveService::GetChangeList(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  GetResourceListInternal(start_changestamp,
-                          std::string(),  // empty search query
-                          std::string(),  // no directory resource id,
-                          0,  // start offset
-                          default_max_results_,
-                          &change_list_load_count_,
-                          callback);
+  GetChangeListInternal(start_changestamp,
+                        std::string(),  // empty search query
+                        std::string(),  // no directory resource id,
+                        0,  // start offset
+                        default_max_results_,
+                        &change_list_load_count_,
+                        callback);
   return CancelCallback();
 }
 
@@ -373,9 +377,9 @@ CancelCallback FakeDriveService::GetRemainingChangeList(
 
   // "changestamp", "q", "parent" and "start-offset" are parameters to
   // implement "paging" of the result on FakeDriveService.
-  // The URL should be the one filled in GetResourceListInternal of the
+  // The URL should be the one filled in GetChangeListInternal of the
   // previous method invocation, so it should start with "http://localhost/?".
-  // See also GetResourceListInternal.
+  // See also GetChangeListInternal.
   DCHECK_EQ(next_link.host(), "localhost");
   DCHECK_EQ(next_link.path(), "/");
 
@@ -406,21 +410,20 @@ CancelCallback FakeDriveService::GetRemainingChangeList(
     }
   }
 
-  GetResourceListInternal(
-      start_changestamp, search_query, directory_resource_id,
-      start_offset, max_results, NULL, callback);
+  GetChangeListInternal(start_changestamp, search_query, directory_resource_id,
+                        start_offset, max_results, NULL, callback);
   return CancelCallback();
 }
 
 CancelCallback FakeDriveService::GetRemainingFileList(
     const GURL& next_link,
-    const GetResourceListCallback& callback) {
+    const FileListCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!next_link.is_empty());
   DCHECK(!callback.is_null());
 
   return GetRemainingChangeList(
-      next_link, base::Bind(&GetResourceListCallbackAdapter, callback));
+      next_link, base::Bind(&FileListCallbackAdapter, callback));
 }
 
 CancelCallback FakeDriveService::GetResourceEntry(
@@ -1385,7 +1388,7 @@ const FakeDriveService::EntryInfo* FakeDriveService::AddNewEntry(
   return raw_new_entry;
 }
 
-void FakeDriveService::GetResourceListInternal(
+void FakeDriveService::GetChangeListInternal(
     int64 start_changestamp,
     const std::string& search_query,
     const std::string& directory_resource_id,
@@ -1479,7 +1482,7 @@ void FakeDriveService::GetResourceListInternal(
     entries.erase(entries.begin() + max_results, entries.end());
     // Adds the next URL.
     // Here, we embed information which is needed for continuing the
-    // GetResourceList request in the next invocation into url query
+    // GetChangeList request in the next invocation into url query
     // parameters.
     GURL next_url(base::StringPrintf(
         "http://localhost/?start-offset=%d&max-results=%d",

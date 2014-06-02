@@ -9,6 +9,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/threading/sequenced_worker_pool.h"
+#include "chrome/browser/drive/drive_api_util.h"
 #include "chrome/browser/sync_file_system/sync_file_system_test_util.h"
 #include "chrome/browser/sync_file_system/sync_status_code.h"
 #include "google_apis/drive/drive_api_parser.h"
@@ -19,9 +20,10 @@
 #define FPL(path) FILE_PATH_LITERAL(path)
 
 using google_apis::AboutResource;
+using google_apis::FileList;
+using google_apis::FileResource;
 using google_apis::GDataErrorCode;
 using google_apis::ResourceEntry;
-using google_apis::ResourceList;
 
 namespace sync_file_system {
 namespace drive_backend {
@@ -209,7 +211,7 @@ GDataErrorCode FakeDriveServiceHelper::RemoveResourceFromDirectory(
 GDataErrorCode FakeDriveServiceHelper::GetSyncRootFolderID(
     std::string* sync_root_folder_id) {
   GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
-  scoped_ptr<ResourceList> resource_list;
+  scoped_ptr<FileList> resource_list;
   fake_drive_service_->SearchByTitle(
       sync_root_folder_title_, std::string(),
       CreateResultReceiver(&error, &resource_list));
@@ -217,12 +219,12 @@ GDataErrorCode FakeDriveServiceHelper::GetSyncRootFolderID(
   if (error != google_apis::HTTP_SUCCESS)
     return error;
 
-  const ScopedVector<ResourceEntry>& entries = resource_list->entries();
-  for (ScopedVector<ResourceEntry>::const_iterator itr = entries.begin();
-       itr != entries.end(); ++itr) {
-    const ResourceEntry& entry = **itr;
-    if (!entry.GetLinkByType(google_apis::Link::LINK_PARENT)) {
-      *sync_root_folder_id = entry.resource_id();
+  const ScopedVector<FileResource>& items = resource_list->items();
+  for (ScopedVector<FileResource>::const_iterator itr = items.begin();
+       itr != items.end(); ++itr) {
+    const FileResource& item = **itr;
+    if (item.parents().empty()) {
+      *sync_root_folder_id = item.file_id();
       return google_apis::HTTP_SUCCESS;
     }
   }
@@ -233,8 +235,8 @@ GDataErrorCode FakeDriveServiceHelper::ListFilesInFolder(
     const std::string& folder_id,
     ScopedVector<ResourceEntry>* entries) {
   GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
-  scoped_ptr<ResourceList> list;
-  fake_drive_service_->GetResourceListInDirectory(
+  scoped_ptr<FileList> list;
+  fake_drive_service_->GetFileListInDirectory(
       folder_id,
       CreateResultReceiver(&error, &list));
   base::RunLoop().RunUntilIdle();
@@ -249,7 +251,7 @@ GDataErrorCode FakeDriveServiceHelper::SearchByTitle(
     const std::string& title,
     ScopedVector<ResourceEntry>* entries) {
   GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
-  scoped_ptr<ResourceList> list;
+  scoped_ptr<FileList> list;
   fake_drive_service_->SearchByTitle(
       title, folder_id,
       CreateResultReceiver(&error, &list));
@@ -307,19 +309,18 @@ GDataErrorCode FakeDriveServiceHelper::GetAboutResource(
 }
 
 GDataErrorCode FakeDriveServiceHelper::CompleteListing(
-    scoped_ptr<ResourceList> list,
+    scoped_ptr<FileList> list,
     ScopedVector<ResourceEntry>* entries) {
   while (true) {
-    entries->reserve(entries->size() + list->entries().size());
-    for (ScopedVector<ResourceEntry>::iterator itr =
-         list->mutable_entries()->begin();
-         itr != list->mutable_entries()->end(); ++itr) {
-      entries->push_back(*itr);
-      *itr = NULL;
+    entries->reserve(entries->size() + list->items().size());
+    for (ScopedVector<FileResource>::const_iterator itr =
+             list->items().begin(); itr != list->items().end(); ++itr) {
+      entries->push_back(
+          drive::util::ConvertFileResourceToResourceEntry(**itr).release());
     }
 
-    GURL next_feed;
-    if (!list->GetNextFeedURL(&next_feed))
+    GURL next_feed = list->next_link();
+    if (next_feed.is_empty())
       return google_apis::HTTP_SUCCESS;
 
     GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
