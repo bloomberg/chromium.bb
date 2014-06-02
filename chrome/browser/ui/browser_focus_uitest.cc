@@ -430,18 +430,9 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FocusTraversal) {
   EXPECT_NO_FATAL_FAILURE(TestFocusTraversal(tab->GetRenderViewHost(), true));
 }
 
-#if defined(OS_MACOSX)
-// TODO(msw): Mac's details wrongly claim that the "textEdit" is not editable on
-// the 2nd forwards traveral loop (but is correct in the 1st loop). Mac also
-// doesn't advance focus on the 2nd reverse Tab press (gmapLink->gmailLink), but
-// the 1st and 3rd+ Tab key presses seem to work. http://crbug.com/60973
-#define MAYBE_FocusTraversalOnInterstitial DISABLED_FocusTraversalOnInterstitial
-#else
-#define MAYBE_FocusTraversalOnInterstitial FocusTraversalOnInterstitial
-#endif
-
 // Test forward and reverse focus traversal while an interstitial is showing.
-IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_FocusTraversalOnInterstitial) {
+// Disabled, see http://crbug.com/60973
+IN_PROC_BROWSER_TEST_F(BrowserFocusTest, DISABLED_FocusTraversalOnInterstitial) {
   ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
   const GURL url = embedded_test_server()->GetURL(kSimplePage);
   ui_test_utils::NavigateToURL(browser(), url);
