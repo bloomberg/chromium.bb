@@ -142,8 +142,17 @@ arm_list="libc6-dev-armhf-cross
           linux-libc-dev-armhf-cross
           g++-arm-linux-gnueabihf"
 
-# Packages to build standalone NaCl and all its toolchains.
-nacl_list="g++-mingw-w64-i686 libtinfo-dev libtinfo-dev:i386"
+# Packages to build NaCl, its toolchains, and its ports.
+nacl_list="bison cmake xvfb gawk texinfo autoconf libtool
+           libssl0.9.8:i386 lib32z1-dev
+           libgpm2:i386 libncurses5:i386
+           g++-mingw-w64-i686 libtinfo-dev libtinfo-dev:i386
+           libglib2.0-0:i386 libnss3:i386
+           libgconf-2-4:i386 libfontconfig:i386
+           libpango1.0-0:i386 libxi6:i386 libxcursor1:i386 libxcomposite1:i386
+           libasound2:i386 libxdamage1:i386 libxtst6:i386 libxrandr2:i386
+           libcap2:i386 libudev0:i386 libgtk2.0-0:i386 libxss1:i386
+           libexif12:i386 libgl1-mesa-glx:i386"
 
 # Some package names have changed over time
 if package_exists ttf-mscorefonts-installer; then
@@ -260,9 +269,9 @@ else
 fi
 
 if test "$do_inst_nacl" = "1"; then
-  echo "Including standalone NaCl dependencies."
+  echo "Including NaCl, NaCl toolchain, NaCl ports dependencies."
 else
-  echo "Skipping standalone NaCl dependencies."
+  echo "Skipping NaCl, NaCl toolchain, NaCl ports dependencies."
   nacl_list=
 fi
 
@@ -369,6 +378,18 @@ if test "$do_inst_chromeos_fonts" != "0"; then
   fi
 else
   echo "Skipping installation of Chrome OS fonts."
+fi
+
+if test "$do_inst_nacl" = "1"; then
+  echo "Installing symbolic links for NaCl."
+  if [ ! -r /usr/lib/i386-linux-gnu/libcrypto.so ]; then
+    sudo ln -fs libcrypto.so.0.9.8 /usr/lib/i386-linux-gnu/libcrypto.so
+  fi
+  if [ ! -r /usr/lib/i386-linux-gnu/libssl.so ]; then
+    sudo ln -fs libssl.so.0.9.8 /usr/lib/i386-linux-gnu/libssl.so
+  fi
+else
+  echo "Skipping symbolic links for NaCl."
 fi
 
 # Install 32bit backwards compatibility support for 64bit systems
