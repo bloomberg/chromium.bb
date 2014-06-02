@@ -66,7 +66,7 @@ public:
     // HTMLImport
     virtual Document* document() const OVERRIDE;
     virtual bool isDone() const OVERRIDE;
-    virtual HTMLImportLoader* loader() const OVERRIDE { return m_loader; }
+    virtual HTMLImportLoader* loader() const OVERRIDE;
     virtual void stateWillChange() OVERRIDE;
     virtual void stateDidChange() OVERRIDE;
 
@@ -76,12 +76,9 @@ public:
 
     void setClient(HTMLImportChildClient*);
     void clearClient();
-    bool loaderHasError() const;
 
     void didFinishLoading();
     void didFinishUpgradingCustomElements();
-    bool isLoaded() const;
-    bool isFirst() const;
     void normalize();
 
 private:

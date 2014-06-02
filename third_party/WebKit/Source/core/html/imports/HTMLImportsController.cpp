@@ -120,7 +120,6 @@ HTMLImportChild* HTMLImportsController::load(HTMLImport* parent, HTMLImportChild
     // Resource::addClient() immediately calls back to feed the bytes when the resource is cached.
     loader->startLoading(resource);
     child->didStartLoading();
-
     return child;
 }
 

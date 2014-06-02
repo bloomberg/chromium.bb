@@ -63,7 +63,7 @@ void CustomElementMicrotaskImportStep::parentWasChanged()
 
 bool CustomElementMicrotaskImportStep::shouldWaitForImport() const
 {
-    return m_import && !m_import->isLoaded();
+    return m_import && !m_import->loader()->isDone();
 }
 
 void CustomElementMicrotaskImportStep::didUpgradeAllCustomElements()

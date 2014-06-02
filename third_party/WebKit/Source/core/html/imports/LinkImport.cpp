@@ -125,7 +125,9 @@ HTMLLinkElement* LinkImport::link()
 
 bool LinkImport::hasLoaded() const
 {
-    return m_child && m_child->isDone() && !m_child->loaderHasError();
+    // Should never be called after importChildWasDestroyed was called.
+    ASSERT(m_owner);
+    return m_child && m_child->isDone() && !m_child->loader()->hasError();
 }
 
 void LinkImport::trace(Visitor* visitor)

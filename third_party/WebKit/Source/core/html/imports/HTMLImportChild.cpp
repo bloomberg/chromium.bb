@@ -91,29 +91,20 @@ void HTMLImportChild::didFinishUpgradingCustomElements()
     m_customElementMicrotaskStep.clear();
 }
 
-bool HTMLImportChild::isLoaded() const
-{
-    return m_loader && m_loader->isDone();
-}
-
-bool HTMLImportChild::isFirst() const
-{
-    return m_loader && m_loader->isFirstImport(this);
-}
-
 void HTMLImportChild::importDestroyed()
 {
     if (parent())
         parent()->removeChild(this);
-    if (m_loader) {
-        m_loader->removeImport(this);
-        m_loader = 0;
-    }
+
+    ASSERT(m_loader);
+    m_loader->removeImport(this);
+    m_loader = 0;
 }
 
 Document* HTMLImportChild::document() const
 {
-    return m_loader ? m_loader->document() : 0;
+    ASSERT(m_loader);
+    return m_loader->document();
 }
 
 void HTMLImportChild::stateWillChange()
@@ -153,14 +144,17 @@ void HTMLImportChild::createCustomElementMicrotaskStepIfNeeded()
 
 bool HTMLImportChild::isDone() const
 {
-    return m_loader && m_loader->isDone() && m_loader->microtaskQueue()->isEmpty() && !m_customElementMicrotaskStep;
+    ASSERT(m_loader);
+
+    return m_loader->isDone() && m_loader->microtaskQueue()->isEmpty() && !m_customElementMicrotaskStep;
 }
 
-bool HTMLImportChild::loaderHasError() const
+HTMLImportLoader* HTMLImportChild::loader() const
 {
-    return m_loader && m_loader->hasError();
+    // This should never be called after importDestroyed.
+    ASSERT(m_loader);
+    return m_loader;
 }
-
 
 void HTMLImportChild::setClient(HTMLImportChildClient* client)
 {

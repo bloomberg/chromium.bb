@@ -33,6 +33,7 @@
 
 #include "core/html/imports/HTMLImport.h"
 #include "core/html/imports/HTMLImportChild.h"
+#include "core/html/imports/HTMLImportLoader.h"
 
 namespace WebCore {
 
@@ -40,10 +41,9 @@ inline bool HTMLImportStateResolver::isBlockingFollowers(HTMLImport* import)
 {
     if (!import->isSync())
         return false;
-    if (!toHTMLImportChild(import)->isFirst())
+    HTMLImportChild* child = toHTMLImportChild(import);
+    if (!child->loader()->isFirstImport(child))
         return false;
-    if (!import->loader())
-        return true;
     return !import->state().isReady();
 }
 
