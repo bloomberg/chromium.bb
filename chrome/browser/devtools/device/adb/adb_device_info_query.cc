@@ -209,6 +209,7 @@ void AdbDeviceInfoQuery::ReceivedModel(int result,
     return;
   }
   device_info_.model = response;
+  device_info_.connected = true;
   command_callback_.Run(
       kDumpsysCommand,
       base::Bind(&AdbDeviceInfoQuery::ReceivedDumpsys, base::Unretained(this)));

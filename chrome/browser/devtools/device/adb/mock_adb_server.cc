@@ -463,7 +463,7 @@ class MockAdbServer : SingleConnectionServer::Parser,
       selected_device_ = command.substr(strlen(kHostTransportPrefix));
       SendResponse("");
     } else if (selected_device_ != kSerialOnline) {
-      NOTREACHED() << "Unknown device - " << selected_device_;
+      Send("FAIL", "device offline (x)");
     } else if (command == kDeviceModelCommand) {
       SendResponse(kDeviceModel);
     } else if (command == kOpenedUnixSocketsCommand) {
@@ -480,10 +480,14 @@ class MockAdbServer : SingleConnectionServer::Parser,
     }
   }
 
-  void SendResponse(const std::string& response) {
+  void SendResponse(const std::string& response) { Send("OKAY", response); }
+
+  void Send(const std::string& status, const std::string& response) {
     CHECK(CalledOnValidThread());
+    CHECK_EQ(4U, status.size());
+
     std::stringstream response_stream;
-    response_stream << "OKAY";
+    response_stream << status;
 
     int size = response.size();
     if (size > 0) {

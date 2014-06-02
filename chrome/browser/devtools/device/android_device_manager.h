@@ -23,6 +23,7 @@ class AndroidDeviceManager
  public:
   typedef base::Callback<void(int, const std::string&)> CommandCallback;
   typedef base::Callback<void(int result, net::StreamSocket*)> SocketCallback;
+  typedef base::Callback<void(const std::vector<std::string>&)> SerialsCallback;
 
   struct BrowserInfo {
     BrowserInfo();
@@ -43,117 +44,170 @@ class AndroidDeviceManager
     ~DeviceInfo();
 
     std::string model;
+    bool connected;
     gfx::Size screen_size;
     std::vector<BrowserInfo> browser_info;
   };
 
   typedef base::Callback<void(const DeviceInfo&)> DeviceInfoCallback;
 
-  class Device : public base::RefCounted<Device>,
-                 public base::NonThreadSafe {
+  class AndroidWebSocket : public base::RefCountedThreadSafe<AndroidWebSocket> {
+   public:
+    class Delegate {
+     public:
+      virtual void OnSocketOpened() = 0;
+      virtual void OnFrameRead(const std::string& message) = 0;
+      virtual void OnSocketClosed(bool closed_by_device) = 0;
+
+     protected:
+      virtual ~Delegate() {}
+    };
+
+    AndroidWebSocket() {}
+
+    virtual void Connect() = 0;
+    virtual void Disconnect() = 0;
+    virtual void SendFrame(const std::string& message) = 0;
+    virtual void ClearDelegate() = 0;
+
    protected:
-    friend class AndroidDeviceManager;
-
-    typedef AndroidDeviceManager::CommandCallback CommandCallback;
-    typedef AndroidDeviceManager::SocketCallback SocketCallback;
-    typedef AndroidDeviceManager::DeviceInfoCallback DeviceInfoCallback;
-
-    Device(const std::string& serial, bool is_connected);
-
-    virtual void QueryDeviceInfo(const DeviceInfoCallback& callback) = 0;
-
-    virtual void OpenSocket(const std::string& socket_name,
-                            const SocketCallback& callback) = 0;
-
-    virtual void HttpQuery(const std::string& socket_name,
-                           const std::string& request,
-                           const CommandCallback& callback);
-
-    std::string serial() { return serial_; }
-    bool is_connected() { return is_connected_; }
-
-    friend class base::RefCounted<Device>;
-    virtual ~Device();
+    virtual ~AndroidWebSocket() {}
 
    private:
-    const std::string serial_;
-    const bool is_connected_;
+    friend class base::RefCountedThreadSafe<AndroidWebSocket>;
+
+    DISALLOW_COPY_AND_ASSIGN(AndroidWebSocket);
+  };
+
+  class DeviceProvider;
+
+  class Device : public base::RefCountedThreadSafe<Device>,
+                 public base::NonThreadSafe {
+   public:
+    typedef AndroidDeviceManager::DeviceInfoCallback DeviceInfoCallback;
+    typedef AndroidDeviceManager::CommandCallback CommandCallback;
+    typedef AndroidDeviceManager::SocketCallback SocketCallback;
+
+    void QueryDeviceInfo(const DeviceInfoCallback& callback);
+
+    void OpenSocket(const std::string& socket_name,
+                    const SocketCallback& callback);
+
+    void SendJsonRequest(const std::string& socket_name,
+                         const std::string& request,
+                         const CommandCallback& callback);
+
+    void HttpUpgrade(const std::string& socket_name,
+                     const std::string& url,
+                     const SocketCallback& callback);
+
+    scoped_refptr<AndroidWebSocket> CreateWebSocket(
+        const std::string& socket_name,
+        const std::string& url,
+        AndroidWebSocket::Delegate* delegate);
+
+    std::string serial() { return serial_; }
+
+   private:
+    friend class AndroidDeviceManager;
+    Device(scoped_refptr<base::MessageLoopProxy> device_message_loop,
+           scoped_refptr<DeviceProvider> provider,
+           const std::string& serial);
+
+    friend class base::RefCountedThreadSafe<Device>;
+    virtual ~Device();
+
+    scoped_refptr<base::MessageLoopProxy> device_message_loop_;
+    scoped_refptr<DeviceProvider> provider_;
+    std::string serial_;
+    base::WeakPtrFactory<Device> weak_factory_;
 
     DISALLOW_COPY_AND_ASSIGN(Device);
   };
 
   typedef std::vector<scoped_refptr<Device> > Devices;
+  typedef base::Callback<void(const Devices&)> DevicesCallback;
 
-  class DeviceProvider
-      : public base::RefCountedThreadSafe<
-            DeviceProvider,
-            content::BrowserThread::DeleteOnUIThread> {
+  class DeviceProvider : public base::RefCountedThreadSafe<DeviceProvider> {
+   public:
+    typedef AndroidDeviceManager::SerialsCallback SerialsCallback;
+    typedef AndroidDeviceManager::DeviceInfoCallback DeviceInfoCallback;
+    typedef AndroidDeviceManager::SocketCallback SocketCallback;
+    typedef AndroidDeviceManager::CommandCallback CommandCallback;
+
+    virtual void QueryDevices(const SerialsCallback& callback) = 0;
+
+    virtual void QueryDeviceInfo(const std::string& serial,
+                                 const DeviceInfoCallback& callback) = 0;
+
+    virtual void OpenSocket(const std::string& serial,
+                            const std::string& socket_name,
+                            const SocketCallback& callback) = 0;
+
+    virtual void SendJsonRequest(const std::string& serial,
+                                 const std::string& socket_name,
+                                 const std::string& request,
+                                 const CommandCallback& callback);
+
+    virtual void HttpUpgrade(const std::string& serial,
+                             const std::string& socket_name,
+                             const std::string& url,
+                             const SocketCallback& callback);
+
+    virtual void ReleaseDevice(const std::string& serial);
+
    protected:
-    friend class AndroidDeviceManager;
-
-    typedef base::Callback<void(const Devices&)> QueryDevicesCallback;
-
-    virtual void QueryDevices(const QueryDevicesCallback& callback) = 0;
-
-   protected:
-    friend struct
-        content::BrowserThread::DeleteOnThread<content::BrowserThread::UI>;
-    friend class base::DeleteHelper<DeviceProvider>;
-
+    friend class base::RefCountedThreadSafe<DeviceProvider>;
     DeviceProvider();
     virtual ~DeviceProvider();
   };
 
- public:
+  typedef std::vector<scoped_refptr<DeviceProvider> > DeviceProviders;
+
   static scoped_refptr<AndroidDeviceManager> Create();
 
-  typedef std::vector<scoped_refptr<DeviceProvider> > DeviceProviders;
-  typedef base::Callback<void (const std::vector<std::string>&)>
-      QueryDevicesCallback;
+  void SetDeviceProviders(const DeviceProviders& providers);
 
-  void QueryDevices(const DeviceProviders& providers,
-                    const QueryDevicesCallback& callback);
+  void QueryDevices(const DevicesCallback& callback);
 
-  void Stop();
+  struct DeviceDescriptor {
+    DeviceDescriptor();
+    ~DeviceDescriptor();
 
-  bool IsConnected(const std::string& serial);
+    scoped_refptr<DeviceProvider> provider;
+    std::string serial;
+  };
 
-  void QueryDeviceInfo(const std::string& serial,
-                       const DeviceInfoCallback& callback);
-
-  void OpenSocket(const std::string& serial,
-                  const std::string& socket_name,
-                  const SocketCallback& callback);
-
-  void HttpQuery(const std::string& serial,
-                 const std::string& socket_name,
-                 const std::string& request,
-                 const CommandCallback& callback);
-
-  void HttpUpgrade(const std::string& serial,
-                   const std::string& socket_name,
-                   const std::string& url,
-                   const SocketCallback& callback);
+  typedef std::vector<DeviceDescriptor> DeviceDescriptors;
 
  private:
-  AndroidDeviceManager();
+  class HandlerThread : public base::RefCountedThreadSafe<HandlerThread> {
+   public:
+    static scoped_refptr<HandlerThread> GetInstance();
+    scoped_refptr<base::MessageLoopProxy> message_loop();
+
+   private:
+    friend class base::RefCountedThreadSafe<HandlerThread>;
+    static HandlerThread* instance_;
+    static void StopThread(base::Thread* thread);
+
+    HandlerThread();
+    virtual ~HandlerThread();
+    base::Thread* thread_;
+  };
 
   friend class base::RefCountedThreadSafe<AndroidDeviceManager>;
-
+  AndroidDeviceManager();
   virtual ~AndroidDeviceManager();
 
-  void QueryNextProvider(
-      const QueryDevicesCallback& callback,
-      const DeviceProviders& providers,
-      const Devices& total_devices,
-      const Devices& new_devices);
+  void UpdateDevices(const DevicesCallback& callback,
+                     DeviceDescriptors* descriptors);
 
-  Device* FindDevice(const std::string& serial);
+  typedef std::map<std::string, base::WeakPtr<Device> > DeviceWeakMap;
 
-  typedef std::map<std::string, scoped_refptr<Device> > DeviceMap;
-  DeviceMap devices_;
-
-  bool stopped_;
+  scoped_refptr<HandlerThread> handler_thread_;
+  DeviceProviders providers_;
+  DeviceWeakMap devices_;
 };
 
 #endif  // CHROME_BROWSER_DEVTOOLS_DEVICE_ANDROID_DEVICE_MANAGER_H_

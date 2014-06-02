@@ -34,6 +34,7 @@ class AdbClientSocketTest : public InProcessBrowserTest,
     device_providers.push_back(new AdbDeviceProvider());
     android_bridge_->set_device_providers_for_test(device_providers);
     android_bridge_->AddDeviceListListener(this);
+    content::RunMessageLoop();
   }
 
   virtual void DeviceListChanged(
@@ -125,7 +126,6 @@ class AdbClientSocketTest : public InProcessBrowserTest,
 IN_PROC_BROWSER_TEST_F(AdbClientSocketTest, TestAdbClientSocket) {
   StartMockAdbServer();
   StartTest();
-  content::RunMessageLoop();
   CheckDevices();
   StopMockAdbServer();
 }
