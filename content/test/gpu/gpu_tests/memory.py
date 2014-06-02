@@ -8,9 +8,9 @@ from telemetry.page import page_test
 from telemetry.core.timeline import counter
 from telemetry.core.timeline import model
 
-MEMORY_LIMIT_MB = 256
-SINGLE_TAB_LIMIT_MB = 128
-WIGGLE_ROOM_MB = 4
+MEMORY_LIMIT_MB = 192
+SINGLE_TAB_LIMIT_MB = 192
+WIGGLE_ROOM_MB = 8
 
 test_harness_script = r"""
   var domAutomationController = {};

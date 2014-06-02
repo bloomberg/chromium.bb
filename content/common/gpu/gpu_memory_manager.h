@@ -63,11 +63,8 @@ class CONTENT_EXPORT GpuMemoryManager :
       base::ProcessId pid, gpu::gles2::MemoryTracker* memory_tracker);
 
   uint64 GetClientMemoryUsage(const GpuMemoryManagerClient* client) const;
-
-  // The maximum and minimum amount of memory that a client may be assigned.
-  uint64 GetMaximumClientAllocation() const;
-  uint64 GetMinimumClientAllocation() const {
-    return bytes_minimum_per_client_;
+  uint64 GetMaximumClientAllocation() const {
+    return client_hard_limit_bytes_;
   }
 
  private:
@@ -118,46 +115,9 @@ class CONTENT_EXPORT GpuMemoryManager :
   void AssignSurfacesAllocations();
   void AssignNonSurfacesAllocations();
 
-  // Math helper function to compute the maximum value of cap such that
-  // sum_i min(bytes[i], cap) <= bytes_sum_limit
-  static uint64 ComputeCap(std::vector<uint64> bytes, uint64 bytes_sum_limit);
-
-  // Compute the allocation for clients when visible and not visible.
-  void ComputeVisibleSurfacesAllocations();
-  void DistributeRemainingMemoryToVisibleSurfaces();
-
-  // Compute the budget for a client. Allow at most bytes_above_required_cap
-  // bytes above client_state's required level. Allow at most
-  // bytes_above_minimum_cap bytes above client_state's minimum level. Allow
-  // at most bytes_overall_cap bytes total.
-  uint64 ComputeClientAllocationWhenVisible(
-      GpuMemoryManagerClientState* client_state,
-      uint64 bytes_above_required_cap,
-      uint64 bytes_above_minimum_cap,
-      uint64 bytes_overall_cap);
-
   // Update the amount of GPU memory we think we have in the system, based
   // on what the stubs' contexts report.
   void UpdateAvailableGpuMemory();
-  void UpdateUnmanagedMemoryLimits();
-
-  // The amount of video memory which is available for allocation.
-  uint64 GetAvailableGpuMemory() const;
-
-  // Minimum value of available GPU memory, no matter how little the GPU
-  // reports. This is the default value.
-  uint64 GetDefaultAvailableGpuMemory() const;
-
-  // Maximum cap on total GPU memory, no matter how much the GPU reports.
-  uint64 GetMaximumTotalGpuMemory() const;
-
-  // The default amount of memory that a client is assigned, if it has not
-  // reported any memory usage stats yet.
-  uint64 GetDefaultClientAllocation() const {
-    return bytes_default_per_client_;
-  }
-
-  static uint64 CalcAvailableFromGpuTotal(uint64 total_gpu_memory);
 
   // Send memory usage stats to the browser process.
   void SendUmaStatsToBrowser();
@@ -193,22 +153,6 @@ class CONTENT_EXPORT GpuMemoryManager :
 
   // Interfaces for testing
   void TestingDisableScheduleManage() { disable_schedule_manage_ = true; }
-  void TestingSetAvailableGpuMemory(uint64 bytes) {
-    bytes_available_gpu_memory_ = bytes;
-    bytes_available_gpu_memory_overridden_ = true;
-  }
-
-  void TestingSetMinimumClientAllocation(uint64 bytes) {
-    bytes_minimum_per_client_ = bytes;
-  }
-
-  void TestingSetDefaultClientAllocation(uint64 bytes) {
-    bytes_default_per_client_ = bytes;
-  }
-
-  void TestingSetUnmanagedLimitStep(uint64 bytes) {
-    bytes_unmanaged_limit_step_ = bytes;
-  }
 
   GpuChannelManager* channel_manager_;
 
@@ -225,35 +169,17 @@ class CONTENT_EXPORT GpuMemoryManager :
 
   base::CancelableClosure delayed_manage_callback_;
   bool manage_immediate_scheduled_;
+  bool disable_schedule_manage_;
 
   uint64 max_surfaces_with_frontbuffer_soft_limit_;
 
-  // The priority cutoff used for all renderers.
-  gpu::MemoryAllocation::PriorityCutoff priority_cutoff_;
-
-  // The maximum amount of memory that may be allocated for GPU resources
-  uint64 bytes_available_gpu_memory_;
-  bool bytes_available_gpu_memory_overridden_;
-
-  // The minimum and default allocations for a single client.
-  uint64 bytes_minimum_per_client_;
-  uint64 bytes_default_per_client_;
+  // The maximum amount of memory that may be allocated for a single client.
+  uint64 client_hard_limit_bytes_;
 
   // The current total memory usage, and historical maximum memory usage
   uint64 bytes_allocated_managed_current_;
   uint64 bytes_allocated_unmanaged_current_;
   uint64 bytes_allocated_historical_max_;
-
-  // If bytes_allocated_unmanaged_current_ leaves the interval [low_, high_),
-  // then ScheduleManage to take the change into account.
-  uint64 bytes_allocated_unmanaged_high_;
-  uint64 bytes_allocated_unmanaged_low_;
-
-  // Update bytes_allocated_unmanaged_low/high_ in intervals of step_.
-  uint64 bytes_unmanaged_limit_step_;
-
-  // Used to disable automatic changes to Manage() in testing.
-  bool disable_schedule_manage_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuMemoryManager);
 };
