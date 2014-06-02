@@ -4,7 +4,9 @@ table_files = \
 	ar-ar-g1.utb \
 	ar-fa.utb \
 	as.ctb \
+	as-in-g1.utb \
 	awa.ctb \
+	be-in-g1.utb \
 	bengali.cti \
 	bg.ctb \
 	bh.ctb \
@@ -13,9 +15,11 @@ table_files = \
 	boxes.ctb \
 	bra.ctb \
 	braille-patterns.cti \
+	braille-patternsin.cti \
 	ca-chardefs.cti \
 	ca-g1.ctb \
 	chardefs.cti \
+	chardefsin.cti \
 	ckb-chardefs.cti \
 	ckb-g1.ctb \
 	ckb-translation.cti \
@@ -71,6 +75,7 @@ table_files = \
 	en-gb-comp8.ctb \
 	en-gb-g1.utb \
 	en-GB-g2.ctb \
+	en-in-g1.ctb \
 	en-ueb-chardefs.uti \
 	en-ueb-g1.ctb \
 	en-ueb-g2.ctb \
@@ -113,8 +118,10 @@ table_files = \
 	gr-bb.ctb \
 	gr-gr-g1.utb \
 	gu.ctb \
+	gu-in-g1.utb \
 	gujarati.cti \
 	gurmukhi.cti \
+	gurumuki.cti \
 	he.ctb \
 	hi.ctb \
 	hi-in-g1.utb \
@@ -147,6 +154,7 @@ table_files = \
 	it-it-comp6.utb \
 	it-it-comp8.utb \
 	iu-ca-g1.ctb \
+	ka-in-g1.utb \
 	kannada.cti \
 	kha.ctb \
 	kn.ctb \
@@ -155,9 +163,13 @@ table_files = \
 	ko-g2.ctb \
 	kok.ctb \
 	kru.ctb \
+	ks-in-g1.utb \
 	latinLetterDef6Dots.uti \
+	latinLetterDef8Dotsin.uti \
 	latinLetterDef8Dots.uti \
+	litdigits6Dotsin.uti \
 	litdigits6Dots.uti \
+	loweredDigits6Dotsin.uti \
 	loweredDigits6Dots.uti \
 	loweredDigits8Dots.uti \
 	lt.ctb \
@@ -168,8 +180,11 @@ table_files = \
 	marburg_single_cell_defs.cti \
 	marburg_unicode_defs.cti \
 	ml.ctb \
+	ml-in-g1.utb \
 	mni.ctb \
+	mn-in-g1.utb \
 	mr.ctb \
+	mr-in-g1.utb \
 	mt.ctb \
 	mun.ctb \
 	mwr.ctb \
@@ -193,7 +208,9 @@ table_files = \
 	no-no-g3.ctb \
 	no-no-generic.ctb \
 	no-no-generic.dis \
+	np-in-g1.utb \
 	or.ctb \
+	or-in-g1.utb \
 	oriya.cti \
 	pa.ctb \
 	pi.ctb \
@@ -202,6 +219,7 @@ table_files = \
 	pt-pt-comp8.ctb \
 	pt-pt-g1.utb \
 	pt-pt-g2.ctb \
+	pu-in-g1.utb \
 	ro.ctb \
 	ru-chardefs.cti \
 	ru-compbrl.ctb \
@@ -211,11 +229,13 @@ table_files = \
 	ru-ru.dis \
 	ru-ru-g1.utb \
 	sa.ctb \
+	sa-in-g1.utb \
 	sat.ctb \
 	sd.ctb \
 	se-se.ctb \
 	se-se.dis \
 	Se-Se-g1.utb \
+	si-in-g1.utb \
 	sk-sk-g1.utb \
 	sk-sk.utb \
 	sl-si-comp8.ctb \
@@ -230,6 +250,7 @@ table_files = \
 	tamil.cti \
 	ta-ta-g1.ctb \
 	te.ctb \
+	te-in-g1.utb \
 	telugu.cti \
 	text_nabcc.dis \
 	tr.ctb \
