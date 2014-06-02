@@ -529,7 +529,7 @@ remoting.ClientSession.prototype.onPluginInitialized_ = function(initialized) {
   this.plugin_.onOutgoingIqHandler = this.sendIq_.bind(this);
   /** @param {string} msg The message to log. */
   this.plugin_.onDebugMessageHandler = function(msg) {
-    console.log('plugin: ' + msg);
+    console.log('plugin: ' + msg.trimRight());
   };
 
   this.plugin_.onConnectionStatusUpdateHandler =
