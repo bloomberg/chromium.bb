@@ -584,29 +584,32 @@ IN_PROC_BROWSER_TEST_F(ExtensionToolbarModelTest, HighlightModeAdd) {
   EXPECT_EQ(id_c, ExtensionAt(2)->id());
 }
 
-// Test is flaky on Linus and ChromeOS, see crbug.com/379170.
-#if defined(OS_LINUX) || defined(OS_CHROMEOS)
-#define MAYBE_SizeAfterPrefChange DISABLED_SizeAfterPrefChange
-#else
-#define MAYBE_SizeAfterPrefChange SizeAfterPrefChange
-#endif
-IN_PROC_BROWSER_TEST_F(ExtensionToolbarModelTest, MAYBE_SizeAfterPrefChange) {
+// Test is flaky (see crbug.com/379170), but currently enabled to gather traces.
+// If it fails, ping Finnur.
+IN_PROC_BROWSER_TEST_F(ExtensionToolbarModelTest, SizeAfterPrefChange) {
   // Load two extensions with browser action.
   base::FilePath extension_a_path(test_data_dir_.AppendASCII("api_test")
                                                 .AppendASCII("browser_action")
                                                 .AppendASCII("basics"));
+  LOG(ERROR) << "Loading [basics]";
   ASSERT_TRUE(LoadExtension(extension_a_path));
   base::FilePath extension_b_path(test_data_dir_.AppendASCII("api_test")
                                                 .AppendASCII("browser_action")
                                                 .AppendASCII("popup"));
+  LOG(ERROR) << "Loading [popup]";
   ASSERT_TRUE(LoadExtension(extension_b_path));
   std::string id_a = ExtensionAt(0)->id();
   std::string id_b = ExtensionAt(1)->id();
 
+  LOG(ERROR) << "GetVisibleIconCount";
+
   // Should be at max size (-1).
   EXPECT_EQ(-1, model_->GetVisibleIconCount());
 
+  LOG(ERROR) << "OnExtensionToolbarPrefChange";
   model_->OnExtensionToolbarPrefChange();
+
+  LOG(ERROR) << "GetVisibleIconCount";
 
   // Should still be at max size.
   EXPECT_EQ(-1, model_->GetVisibleIconCount());
