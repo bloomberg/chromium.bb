@@ -12,6 +12,7 @@
 #include "base/strings/string16.h"
 #include "url/url_canon.h"
 #include "url/url_canon_stdstring.h"
+#include "url/url_constants.h"
 #include "url/url_export.h"
 #include "url/url_parse.h"
 
@@ -231,7 +232,7 @@ class URL_EXPORT GURL {
 
   // If the scheme indicates a secure connection
   bool SchemeIsSecure() const {
-    return SchemeIs("https") || SchemeIs("wss") ||
+    return SchemeIs(url::kHttpsScheme) || SchemeIs(url::kWssScheme) ||
         (SchemeIsFileSystem() && inner_url() && inner_url()->SchemeIsSecure());
   }
 

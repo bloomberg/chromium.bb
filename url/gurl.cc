@@ -370,11 +370,11 @@ bool GURL::SchemeIs(const char* lower_ascii_scheme) const {
 }
 
 bool GURL::SchemeIsHTTPOrHTTPS() const {
-  return SchemeIs("http") || SchemeIs("https");
+  return SchemeIs(url::kHttpScheme) || SchemeIs(url::kHttpsScheme);
 }
 
 bool GURL::SchemeIsWSOrWSS() const {
-  return SchemeIs("ws") || SchemeIs("wss");
+  return SchemeIs(url::kWsScheme) || SchemeIs(url::kWssScheme);
 }
 
 int GURL::IntPort() const {

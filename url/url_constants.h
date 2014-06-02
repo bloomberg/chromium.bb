@@ -18,6 +18,8 @@ URL_EXPORT extern const char kHttpScheme[];
 URL_EXPORT extern const char kHttpsScheme[];
 URL_EXPORT extern const char kJavaScriptScheme[];
 URL_EXPORT extern const char kMailToScheme[];
+URL_EXPORT extern const char kWsScheme[];
+URL_EXPORT extern const char kWssScheme[];
 
 }  // namespace url
 
