@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view_ash.h"
 
+#include <algorithm>
+
 #include "ash/ash_switches.h"
 #include "ash/frame/caption_buttons/frame_caption_button_container_view.h"
 #include "ash/frame/default_header_painter.h"
@@ -374,6 +376,20 @@ gfx::ImageSkia BrowserNonClientFrameViewAsh::GetFaviconForTabIconView() {
   if (!delegate)
     return gfx::ImageSkia();
   return delegate->GetWindowIcon();
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// views::View:
+
+void BrowserNonClientFrameViewAsh::
+    ChildPreferredSizeChanged(views::View* child) {
+// FrameCaptionButtonContainerView animates the visibility changes in
+// UpdateSizeButtonVisibility(false). Due to this a new size is not available
+// until the completion of the animation. Layout in response to the preferred
+// size changes.
+  if (child != caption_button_container_)
+    return;
+  frame()->GetRootView()->Layout();
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -5,8 +5,11 @@
 #ifndef ASH_FRAME_CAPTION_BUTTONS_FRAME_CAPTION_BUTTON_CONTAINER_VIEW_H_
 #define ASH_FRAME_CAPTION_BUTTONS_FRAME_CAPTION_BUTTON_CONTAINER_VIEW_H_
 
+#include <map>
+
 #include "ash/ash_export.h"
 #include "ash/frame/caption_buttons/frame_size_button_delegate.h"
+#include "ui/compositor/layer_animation_observer.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/view.h"
 
@@ -21,7 +24,8 @@ namespace ash {
 class ASH_EXPORT FrameCaptionButtonContainerView
     : public views::View,
       public views::ButtonListener,
-      public FrameSizeButtonDelegate {
+      public FrameSizeButtonDelegate,
+      public ui::ImplicitAnimationObserver {
  public:
   static const char kViewClassName[];
 
@@ -136,6 +140,9 @@ class ASH_EXPORT FrameCaptionButtonContainerView
       const FrameCaptionButton* to_hover,
       const FrameCaptionButton* to_press) OVERRIDE;
 
+  // ui::ImplicitAnimationObserver:
+  virtual void OnImplicitAnimationsCompleted() OVERRIDE;
+
   // The widget that the buttons act on.
   views::Widget* frame_;
 
@@ -152,6 +159,6 @@ class ASH_EXPORT FrameCaptionButtonContainerView
   DISALLOW_COPY_AND_ASSIGN(FrameCaptionButtonContainerView);
 };
 
-}  // namesapace ash
+}  // namespace ash
 
 #endif  // ASH_FRAME_CAPTION_BUTTONS_FRAME_CAPTION_BUTTON_CONTAINER_VIEW_H_
