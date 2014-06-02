@@ -61,11 +61,17 @@ class WebRtcApprtcBrowserTest : public WebRtcTestBase {
 
   virtual void TearDown() OVERRIDE {
     // Kill any processes we may have brought up.
+    // TODO(phoglund): Temporarily disabling on win to debug
+    // test hang-on-shutdown.
+    LOG(INFO) << "Entering TearDown";
+#if !defined(OS_WIN)
     if (dev_appserver_ != base::kNullProcessHandle)
       base::KillProcess(dev_appserver_, 0, false);
+#endif
     // TODO(phoglund): Find some way to shut down Firefox cleanly on Windows.
     if (firefox_ != base::kNullProcessHandle)
       base::KillProcess(firefox_, 0, false);
+    LOG(INFO) << "Exiting TearDown";
   }
 
  protected:
