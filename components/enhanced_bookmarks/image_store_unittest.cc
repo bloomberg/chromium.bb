@@ -5,6 +5,7 @@
 #include "components/enhanced_bookmarks/image_store.h"
 
 #include "base/files/scoped_temp_dir.h"
+#include "base/strings/string_number_conversions.h"
 #include "components/enhanced_bookmarks/image_store_util.h"
 #include "components/enhanced_bookmarks/persistent_image_store.h"
 #include "components/enhanced_bookmarks/test_image_store.h"
@@ -215,6 +216,35 @@ TYPED_TEST(ImageStoreUnitTest, Persistence) {
     this->store_->GetAllPageUrls(&all_urls);
     EXPECT_EQ(0u, all_urls.size());
     EXPECT_FALSE(this->store_->HasKey(GURL("foo://bar")));
+  }
+}
+
+TYPED_TEST(ImageStoreUnitTest, GetSize) {
+  gfx::Image src_image = GenerateBlackImage();
+  const GURL url("foo://bar");
+  const GURL image_url("a.jpg");
+
+  int64 size = 0;
+  if (this->use_persistent_store()) {
+    // File shouldn't exist before we actually start using it since we do lazy
+    // initialization.
+    EXPECT_EQ(this->store_->GetStoreSizeInBytes(), -1);
+  } else {
+    EXPECT_LE(this->store_->GetStoreSizeInBytes(), 1024);
+  }
+  for (int i = 0; i < 100; ++i) {
+    this->store_->Insert(
+        GURL(url.spec() + '/' + base::IntToString(i)), image_url, src_image);
+    EXPECT_GE(this->store_->GetStoreSizeInBytes(), size);
+    size = this->store_->GetStoreSizeInBytes();
+  }
+
+  if (this->use_persistent_store()) {
+    EXPECT_GE(this->store_->GetStoreSizeInBytes(), 100 * 1024); // 100kb
+    EXPECT_LE(this->store_->GetStoreSizeInBytes(), 200 * 1024); // 200kb
+  } else {
+    EXPECT_GE(this->store_->GetStoreSizeInBytes(), 400 * 1024); // 400kb
+    EXPECT_LE(this->store_->GetStoreSizeInBytes(), 500 * 1024); // 500kb
   }
 }
 

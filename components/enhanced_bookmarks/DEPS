@@ -8,4 +8,7 @@ specific_include_rules = {
   "image_store_unittest\.cc": [
     "+third_party/skia"
   ],
+  "test_image_store\.cc": [
+    "+third_party/skia"
+  ],
 }

@@ -4,6 +4,7 @@
 
 #include "components/enhanced_bookmarks/test_image_store.h"
 
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/geometry/size.h"
 #include "url/gurl.h"
 
@@ -66,6 +67,21 @@ void TestImageStore::ClearAll() {
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
 
   store_.clear();
+}
+
+int64 TestImageStore::GetStoreSizeInBytes() {
+  // Not 100% accurate, but it's for testing so the actual value is not
+  // important.
+  int64 size = sizeof(store_);
+  for (ImageMap::const_iterator it = store_.begin(); it != store_.end(); ++it) {
+    size += sizeof(it->first);
+    size += it->first.spec().length();
+    size += sizeof(it->second);
+    SkBitmap bitmap = it->second.first.AsBitmap();
+    size += bitmap.getSize();
+    size += it->second.second.spec().length();
+  }
+  return size;
 }
 
 TestImageStore::~TestImageStore() {

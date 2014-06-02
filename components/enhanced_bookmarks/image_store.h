@@ -52,6 +52,10 @@ class ImageStore {
   // Moves an image from one url to another.
   void ChangeImageURL(const GURL& from, const GURL& to);
 
+  // Returns the saved images storage size in bytes. If the storage doesn't
+  // exist yet or failed to read, returns -1.
+  virtual int64 GetStoreSizeInBytes() = 0;
+
  protected:
   base::SequenceChecker sequence_checker_;
 

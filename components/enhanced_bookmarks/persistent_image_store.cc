@@ -4,6 +4,7 @@
 
 #include "components/enhanced_bookmarks/persistent_image_store.h"
 
+#include "base/files/file.h"
 #include "components/enhanced_bookmarks/image_store_util.h"
 #include "sql/statement.h"
 #include "sql/transaction.h"
@@ -195,6 +196,11 @@ void PersistentImageStore::ClearAll() {
   sql::Statement statement(db_.GetCachedStatement(
       SQL_FROM_HERE, "DELETE FROM images_by_url"));
   statement.Run();
+}
+
+int64 PersistentImageStore::GetStoreSizeInBytes() {
+  base::File file(path_, base::File::FLAG_OPEN | base::File::FLAG_READ);
+  return file.IsValid() ? file.GetLength() : -1;
 }
 
 PersistentImageStore::~PersistentImageStore() {

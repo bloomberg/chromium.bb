@@ -26,6 +26,7 @@ class PersistentImageStore : public ImageStore {
   virtual gfx::Size GetSize(const GURL& page_url) OVERRIDE;
   virtual void GetAllPageUrls(std::set<GURL>* urls) OVERRIDE;
   virtual void ClearAll() OVERRIDE;
+  virtual int64 GetStoreSizeInBytes() OVERRIDE;
 
  protected:
   virtual ~PersistentImageStore();
