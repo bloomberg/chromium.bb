@@ -15,7 +15,10 @@
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_info.h"
 #include "chrome/browser/chromeos/file_system_provider/service.h"
 #include "chrome/browser/chromeos/login/users/fake_user_manager.h"
+#include "chrome/common/pref_names.h"
+#include "chrome/test/base/testing_pref_service_syncable.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/user_prefs/user_prefs.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
@@ -84,6 +87,25 @@ scoped_refptr<extensions::Extension> createFakeExtension(
                                        extensions::Extension::NO_FLAGS,
                                        extension_id,
                                        &error);
+}
+
+// Stores a provided file system information in preferences.
+void RememberFakeFileSystem(TestingProfile* profile,
+                            const std::string& extension_id,
+                            const std::string& file_system_id,
+                            const std::string& file_system_name) {
+  TestingPrefServiceSyncable* pref_service = profile->GetTestingPrefService();
+  ASSERT_TRUE(pref_service);
+
+  base::DictionaryValue extensions;
+  base::ListValue* file_systems = new base::ListValue();
+  base::DictionaryValue* file_system = new base::DictionaryValue();
+  file_system->SetString(kPrefKeyFileSystemId, kFileSystemId);
+  file_system->SetString(kPrefKeyFileSystemName, kFileSystemName);
+  file_systems->Append(file_system);
+  extensions.Set(kExtensionId, file_systems);
+
+  pref_service->Set(prefs::kFileSystemProviderMounted, extensions);
 }
 
 }  // namespace
@@ -282,6 +304,110 @@ TEST_F(FileSystemProviderServiceTest, UnmountFileSystem_WrongExtensionId) {
   ASSERT_EQ(1u, file_system_info_list.size());
 
   file_system_provider_service_->RemoveObserver(&observer);
+}
+
+TEST_F(FileSystemProviderServiceTest, RestoreFileSystem_OnExtensionLoad) {
+  LoggingObserver observer;
+  file_system_provider_service_->AddObserver(&observer);
+
+  // Create a fake entry in the preferences.
+  RememberFakeFileSystem(
+      profile_.get(), kExtensionId, kFileSystemId, kFileSystemName);
+
+  EXPECT_EQ(0u, observer.mounts.size());
+
+  // Directly call the observer's method.
+  file_system_provider_service_->OnExtensionLoaded(profile_.get(),
+                                                   extension_.get());
+
+  ASSERT_EQ(1u, observer.mounts.size());
+  EXPECT_EQ(base::File::FILE_OK, observer.mounts[0].error());
+
+  EXPECT_EQ(kExtensionId, observer.mounts[0].file_system_info().extension_id());
+  EXPECT_EQ(kFileSystemId,
+            observer.mounts[0].file_system_info().file_system_id());
+
+  std::vector<ProvidedFileSystemInfo> file_system_info_list =
+      file_system_provider_service_->GetProvidedFileSystemInfoList();
+  ASSERT_EQ(1u, file_system_info_list.size());
+
+  file_system_provider_service_->RemoveObserver(&observer);
+}
+
+TEST_F(FileSystemProviderServiceTest, ForgetFileSystem_OnExtensionUnload) {
+  LoggingObserver observer;
+  file_system_provider_service_->AddObserver(&observer);
+
+  // Create a fake entry in the preferences.
+  RememberFakeFileSystem(
+      profile_.get(), kExtensionId, kFileSystemId, kFileSystemName);
+
+  // Directly call the observer's methods.
+  file_system_provider_service_->OnExtensionLoaded(profile_.get(),
+                                                   extension_.get());
+
+  file_system_provider_service_->OnExtensionUnloaded(
+      profile_.get(),
+      extension_.get(),
+      extensions::UnloadedExtensionInfo::REASON_DISABLE);
+
+  ASSERT_EQ(1u, observer.mounts.size());
+  EXPECT_EQ(base::File::FILE_OK, observer.mounts[0].error());
+  ASSERT_EQ(1u, observer.unmounts.size());
+  EXPECT_EQ(base::File::FILE_OK, observer.unmounts[0].error());
+
+  TestingPrefServiceSyncable* pref_service = profile_->GetTestingPrefService();
+  ASSERT_TRUE(pref_service);
+
+  const base::DictionaryValue* extensions =
+      pref_service->GetDictionary(prefs::kFileSystemProviderMounted);
+  ASSERT_TRUE(extensions);
+
+  const base::ListValue* file_systems;
+  EXPECT_FALSE(extensions->GetList(kExtensionId, &file_systems));
+
+  file_system_provider_service_->RemoveObserver(&observer);
+}
+
+TEST_F(FileSystemProviderServiceTest, RememberFileSystem_OnShutdown) {
+  {
+    scoped_ptr<Service> service(
+        new Service(profile_.get(), extension_registry_.get()));
+    service->SetFileSystemFactoryForTests(
+        base::Bind(&FakeProvidedFileSystem::Create));
+
+    LoggingObserver observer;
+    service->AddObserver(&observer);
+
+    const bool result =
+        service->MountFileSystem(kExtensionId, kFileSystemId, kFileSystemName);
+    EXPECT_TRUE(result);
+    ASSERT_EQ(1u, observer.mounts.size());
+
+    service->RemoveObserver(&observer);
+  }
+
+  TestingPrefServiceSyncable* pref_service = profile_->GetTestingPrefService();
+  ASSERT_TRUE(pref_service);
+
+  const base::DictionaryValue* extensions =
+      pref_service->GetDictionary(prefs::kFileSystemProviderMounted);
+  ASSERT_TRUE(extensions);
+
+  const base::ListValue* file_systems;
+  ASSERT_TRUE(extensions->GetList(kExtensionId, &file_systems));
+  ASSERT_EQ(1u, file_systems->GetSize());
+
+  const base::DictionaryValue* file_system = NULL;
+  ASSERT_TRUE(file_systems->GetDictionary(0, &file_system));
+
+  std::string file_system_id;
+  file_system->GetString(kPrefKeyFileSystemId, &file_system_id);
+  EXPECT_EQ(kFileSystemId, file_system_id);
+
+  std::string file_system_name;
+  file_system->GetString(kPrefKeyFileSystemName, &file_system_name);
+  EXPECT_EQ(kFileSystemName, file_system_name);
 }
 
 }  // namespace file_system_provider

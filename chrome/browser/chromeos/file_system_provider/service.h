@@ -15,6 +15,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/threading/thread_checker.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/file_system_provider/observer.h"
 #include "chrome/browser/profiles/profile.h"
@@ -29,13 +30,24 @@ class EventRouter;
 class ExtensionRegistry;
 }  // namespace extensions
 
+namespace user_prefs {
+class PrefRegistrySyncable;
+}  // namespace user_prefs
+
 namespace chromeos {
 namespace file_system_provider {
+
+// Key names for preferences.
+extern const char kPrefKeyFileSystemId[];
+extern const char kPrefKeyFileSystemName[];
 
 class ProvidedFileSystemFactoryInterface;
 class ProvidedFileSystemInfo;
 class ProvidedFileSystemInterface;
 class ServiceFactory;
+
+// Registers preferences to remember registered file systems between reboots.
+void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
 // Manages and registers the file system provider service. Maintains provided
 // file systems.
@@ -99,6 +111,9 @@ class Service : public KeyedService,
       content::BrowserContext* browser_context,
       const extensions::Extension* extension,
       extensions::UnloadedExtensionInfo::Reason reason) OVERRIDE;
+  virtual void OnExtensionLoaded(
+      content::BrowserContext* browser_context,
+      const extensions::Extension* extension) OVERRIDE;
 
  private:
   // Key is a pair of an extension id and file system id, which makes it
@@ -114,12 +129,25 @@ class Service : public KeyedService,
   void OnRequestUnmountStatus(const ProvidedFileSystemInfo& file_system_info,
                               base::File::Error error);
 
+  // Saves a list of currently mounted file systems to preferences. Called
+  // from a destructor (on shutdown).
+  void RememberFileSystems();
+
+  // Removes all of the file systems mounted by the |extension_id| from
+  // preferences, so they are not loaded again after reboot.
+  void ForgetFileSystems(const std::string& extension_id);
+
+  // Restores from preferences file systems mounted previously by the
+  // |extension_id| providing extension.
+  void RestoreFileSystems(const std::string& extension_id);
+
   Profile* profile_;
   extensions::ExtensionRegistry* extension_registry_;  // Not owned.
   FileSystemFactoryCallback file_system_factory_;
   ObserverList<Observer> observers_;
   ProvidedFileSystemMap file_system_map_;  // Owns pointers.
   MountPointNameToKeyMap mount_point_name_to_key_map_;
+  base::ThreadChecker thread_checker_;
   base::WeakPtrFactory<Service> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(Service);

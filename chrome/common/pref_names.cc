@@ -866,6 +866,10 @@ const char kTimeOnOobe[] = "settings.time_on_oobe";
 // The app/extension name who sets the current wallpaper. If current wallpaper
 // is set by the component wallpaper picker, it is set to an empty string.
 const char kCurrentWallpaperAppName[] = "wallpaper.app.name";
+
+// List of mounted file systems via the File System Provider API. Used to
+// restore them after a reboot.
+const char kFileSystemProviderMounted[] = "file_system_provider.mounted";
 #endif  // defined(OS_CHROMEOS)
 
 // The disabled messages in IPC logging.

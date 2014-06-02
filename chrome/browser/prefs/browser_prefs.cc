@@ -137,6 +137,7 @@
 #include "chrome/browser/chromeos/customization_document.h"
 #include "chrome/browser/chromeos/display/display_preferences.h"
 #include "chrome/browser/chromeos/extensions/echo_private_api.h"
+#include "chrome/browser/chromeos/file_system_provider/service.h"
 #include "chrome/browser/chromeos/first_run/first_run.h"
 #include "chrome/browser/chromeos/login/default_pinned_apps_field_trial.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
@@ -432,6 +433,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   chromeos::attestation::PlatformVerificationFlow::RegisterProfilePrefs(
       registry);
   chromeos::first_run::RegisterProfilePrefs(registry);
+  chromeos::file_system_provider::RegisterProfilePrefs(registry);
   chromeos::MultiProfileUserController::RegisterProfilePrefs(registry);
   chromeos::Preferences::RegisterProfilePrefs(registry);
   chromeos::proxy_config::RegisterProfilePrefs(registry);
