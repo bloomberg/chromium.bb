@@ -178,7 +178,7 @@ bool MockInputMethodManager::IsLoginKeyboard(
   return true;
 }
 
-bool MockInputMethodManager::MigrateXkbInputMethods(
+bool MockInputMethodManager::MigrateInputMethods(
     std::vector<std::string>* input_method_ids) {
   return false;
 }

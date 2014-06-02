@@ -104,10 +104,9 @@ class InputMethodUtil {
   // Migrates the legacy xkb id to extension based xkb id.
   // Returns true if the given input method id list is modified,
   // returns false otherwise.
-  // TODO(shuchen): Remove this function after few milestones are passed.
-  // See: http://crbug.com/345604
-  bool MigrateXkbInputMethods(
-      std::vector<std::string>* input_method_ids);
+  // This method should not be removed because it's required to transfer XKB
+  // input method ID from VPD into extension-based XKB input method ID.
+  bool MigrateInputMethods(std::vector<std::string>* input_method_ids);
 
   // Updates the internal cache of hardware layouts.
   void UpdateHardwareLayoutCache();

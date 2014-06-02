@@ -36,7 +36,7 @@ namespace input_method {
 namespace {
 
 const char nacl_mozc_jp_id[] =
-    "_comp_ime_fpfbhcjppmaeaijcidgiibchfbnhbeljnacl_mozc_jp";
+    "_comp_ime_gjaehgfemfahhmlgpdfknkhdnemmolopnacl_mozc_jp";
 
 bool Contains(const std::vector<std::string>& container,
               const std::string& value) {
@@ -51,9 +51,9 @@ bool InputMethodManagerImpl::IsLoginKeyboard(
   return util_.IsLoginKeyboard(layout);
 }
 
-bool InputMethodManagerImpl::MigrateXkbInputMethods(
+bool InputMethodManagerImpl::MigrateInputMethods(
     std::vector<std::string>* input_method_ids) {
-  return util_.MigrateXkbInputMethods(input_method_ids);
+  return util_.MigrateInputMethods(input_method_ids);
 }
 
 InputMethodManagerImpl::InputMethodManagerImpl(
@@ -218,7 +218,7 @@ void InputMethodManagerImpl::EnableLoginLayouts(
       layouts.push_back(candidate);
   }
 
-  MigrateXkbInputMethods(&layouts);
+  MigrateInputMethods(&layouts);
   active_input_method_ids_.swap(layouts);
 
   // Initialize candidate window controller and widgets such as
@@ -293,7 +293,7 @@ bool InputMethodManagerImpl::ReplaceEnabledInputMethods(
       new_active_input_method_ids_filtered.push_back(input_method_id);
   }
   active_input_method_ids_.swap(new_active_input_method_ids_filtered);
-  MigrateXkbInputMethods(&active_input_method_ids_);
+  MigrateInputMethods(&active_input_method_ids_);
 
   ReconfigureIMFramework();
 
@@ -689,7 +689,7 @@ bool InputMethodManagerImpl::SwitchInputMethod(
     return false;
   }
 
-  MigrateXkbInputMethods(&input_method_ids_to_switch);
+  MigrateInputMethods(&input_method_ids_to_switch);
 
   // Obtain the intersection of input_method_ids_to_switch and
   // active_input_method_ids_. The order of IDs in active_input_method_ids_ is

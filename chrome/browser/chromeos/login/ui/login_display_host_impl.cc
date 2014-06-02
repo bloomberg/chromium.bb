@@ -158,7 +158,7 @@ void DetermineAndSaveHardwareKeyboard(const std::string& locale,
   if (!layout.empty()) {
     std::vector<std::string> layouts;
     base::SplitString(layout, ',', &layouts);
-    manager->MigrateXkbInputMethods(&layouts);
+    manager->MigrateInputMethods(&layouts);
 
     PrefService* prefs = g_browser_process->local_state();
     prefs->SetString(prefs::kHardwareKeyboardLayout, JoinString(layouts, ","));

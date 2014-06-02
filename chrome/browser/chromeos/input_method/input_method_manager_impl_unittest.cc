@@ -39,15 +39,13 @@ namespace input_method {
 namespace {
 
 const char kNaclMozcUsId[] =
-    "_comp_ime_fpfbhcjppmaeaijcidgiibchfbnhbeljnacl_mozc_us";
+    "_comp_ime_gjaehgfemfahhmlgpdfknkhdnemmolopnacl_mozc_us";
 const char kNaclMozcJpId[] =
-    "_comp_ime_fpfbhcjppmaeaijcidgiibchfbnhbeljnacl_mozc_jp";
+    "_comp_ime_gjaehgfemfahhmlgpdfknkhdnemmolopnacl_mozc_jp";
 const char kExt2Engine1Id[] =
     "_comp_ime_gjaehgfemfahhmlgpdfknkhdnemmolopext2_engine1_engine_id";
 const char kExt2Engine2Id[] =
     "_comp_ime_gjaehgfemfahhmlgpdfknkhdnemmolopext2_engine2_engine_id";
-const char kPinyinImeId[] =
-    "_comp_ime_nmblnjkfdkabgdofidlkienfnnbjhnabzh-t-i0-pinyin";
 const char kXkbExtId[] =
 #if defined(OFFICIAL_BUILD)
     "jkghodnilhceideoidjikpgommlajknk";
@@ -220,7 +218,7 @@ class InputMethodManagerImplTest :  public BrowserWithTestWindowTest {
     ime_list_.push_back(ext_xkb);
 
     ComponentExtensionIME ext1;
-    ext1.id = "fpfbhcjppmaeaijcidgiibchfbnhbelj";
+    ext1.id = "gjaehgfemfahhmlgpdfknkhdnemmolop";
     ext1.description = "ext1_description";
     ext1.path = base::FilePath("ext1_file_path");
 
@@ -1353,9 +1351,9 @@ TEST_F(InputMethodManagerImplTest, MigrateInputMethodTest_1) {
   input_method_ids.push_back(
       std::string("_comp_ime_") + kXkbExtId + "xkb:us::eng");
   input_method_ids.push_back("_comp_ime_asdf_pinyin");
-  input_method_ids.push_back(kPinyinImeId);
+  input_method_ids.push_back(kNaclMozcUsId);
 
-  manager_->MigrateXkbInputMethods(&input_method_ids);
+  manager_->MigrateInputMethods(&input_method_ids);
 
   ASSERT_EQ(4U, input_method_ids.size());
 
@@ -1364,7 +1362,7 @@ TEST_F(InputMethodManagerImplTest, MigrateInputMethodTest_1) {
   EXPECT_EQ(std::string("_comp_ime_") + kXkbExtId + "xkb:fr::fra",
             input_method_ids[1]);
   EXPECT_EQ("_comp_ime_asdf_pinyin", input_method_ids[2]);
-  EXPECT_EQ("_comp_ime_gjaehgfemfahhmlgpdfknkhdnemmolopzh-t-i0-pinyin",
+  EXPECT_EQ("_comp_ime_gjaehgfemfahhmlgpdfknkhdnemmolopnacl_mozc_us",
             input_method_ids[3]);
 }
 
@@ -1382,7 +1380,7 @@ TEST_F(InputMethodManagerImplTest, MigrateInputMethodTest_2) {
       std::string("_comp_ime_") + kXkbExtId + "xkb:us::eng");
   input_method_ids.push_back("_comp_ime_asdf_pinyin");
 
-  manager_->MigrateXkbInputMethods(&input_method_ids);
+  manager_->MigrateInputMethods(&input_method_ids);
 
   ASSERT_EQ(3U, input_method_ids.size());
 

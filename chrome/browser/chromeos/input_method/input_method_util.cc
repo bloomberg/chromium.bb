@@ -36,8 +36,8 @@ const struct {
 } kMappingFromIdToIndicatorText[] = {
   // To distinguish from "xkb:jp::jpn"
   // TODO(nona): Make following variables configurable. http://crbug.com/232260.
-  { "_comp_ime_fpfbhcjppmaeaijcidgiibchfbnhbeljnacl_mozc_us", "\xe3\x81\x82" },
-  { "_comp_ime_fpfbhcjppmaeaijcidgiibchfbnhbeljnacl_mozc_jp", "\xe3\x81\x82" },
+  { "_comp_ime_gjaehgfemfahhmlgpdfknkhdnemmolopnacl_mozc_us", "\xe3\x81\x82" },
+  { "_comp_ime_gjaehgfemfahhmlgpdfknkhdnemmolopnacl_mozc_jp", "\xe3\x81\x82" },
   { "_comp_ime_bbaiamgfapehflhememkfglaehiobjnknacl_mozc_us", "\xe3\x81\x82" },
   { "_comp_ime_bbaiamgfapehflhememkfglaehiobjnknacl_mozc_jp", "\xe3\x81\x82" },
   // For simplified Chinese input methods
@@ -124,8 +124,8 @@ const struct {
   const char* layout;
   const char* input_method_id;
 } kDefaultInputMethodRecommendation[] = {
-  { "ja", "us", "_comp_ime_fpfbhcjppmaeaijcidgiibchfbnhbeljnacl_mozc_us" },
-  { "ja", "jp", "_comp_ime_fpfbhcjppmaeaijcidgiibchfbnhbeljnacl_mozc_jp" },
+  { "ja", "us", "_comp_ime_gjaehgfemfahhmlgpdfknkhdnemmolopnacl_mozc_us" },
+  { "ja", "jp", "_comp_ime_gjaehgfemfahhmlgpdfknkhdnemmolopnacl_mozc_jp" },
   { "zh-CN", "us", "_comp_ime_gjaehgfemfahhmlgpdfknkhdnemmolopzh-t-i0-pinyin" },
   { "zh-TW", "us",
     "_comp_ime_gjaehgfemfahhmlgpdfknkhdnemmolopzh-hant-t-i0-und" },
@@ -195,17 +195,11 @@ const char* const kXkbIndicators[][2] = {{"am", "AM"},
                                          {"us(dvorak)", "DV"},
                                          {"us(intl)", "INTL"}, };
 
-// The old chinese input method ids for migration.
-// See crbug.com/357384.
-const char* kOldChineseExtensionIds[] = {
-  "goedamlknlnjaengojinmfgpmdjmkooo",
-  "nmblnjkfdkabgdofidlkienfnnbjhnab",
-  "gjhclobljhjhgoebiipblnmdodbmpdgd"
+// The extension ID map for migration.
+const char* const kExtensionIdMigrationMap[][2] = {
+  // Official Japanese IME extension ID.
+  {"fpfbhcjppmaeaijcidgiibchfbnhbelj", "gjaehgfemfahhmlgpdfknkhdnemmolop"},
 };
-
-// The new chinese input method id for migration.
-// See crbug.com/357384.
-const char* kNewChineseExtensionId = "gjaehgfemfahhmlgpdfknkhdnemmolop";
 
 const size_t kExtensionIdLen = 32;
 
@@ -709,30 +703,22 @@ std::string InputMethodUtil::GetLanguageDefaultInputMethodId(
   return std::string();
 }
 
-bool InputMethodUtil::MigrateXkbInputMethods(
+bool InputMethodUtil::MigrateInputMethods(
     std::vector<std::string>* input_method_ids) {
   bool rewritten = false;
   std::vector<std::string>& ids = *input_method_ids;
   for (size_t i = 0; i < ids.size(); ++i) {
     std::string id =
         extension_ime_util::GetInputMethodIDByKeyboardLayout(ids[i]);
-    // Migrates the old chinese ime id to new ones.
-    // TODO(shuchen): Change the function name to MigrateInputMethods,
-    // and create an abstract layer to map a comprehensive input method id to
-    // the real extension based input method id.
-    // e.g. "zh-t-i0-pinyin" maps to
-    // "_comp_id_gjaehgfemfahhmlgpdfknkhdnemmolopzh-t-i0-pinyin".
-    // See crbug.com/358083.
-    for (size_t j = 0; j < arraysize(kOldChineseExtensionIds); ++j) {
-      size_t pos = id.find(kOldChineseExtensionIds[j]);
-      if (pos != std::string::npos) {
-        id.replace(pos, kExtensionIdLen, kNewChineseExtensionId);
-        break;
+    // Migrates old ime id's to new ones.
+    for (size_t j = 0; j < arraysize(kExtensionIdMigrationMap); ++j) {
+      size_t pos = id.find(kExtensionIdMigrationMap[j][0]);
+      if (pos != std::string::npos)
+        id.replace(pos, kExtensionIdLen, kExtensionIdMigrationMap[j][1]);
+      if (id != ids[i]) {
+        ids[i] = id;
+        rewritten = true;
       }
-    }
-    if (id != ids[i]) {
-      ids[i] = id;
-      rewritten = true;
     }
   }
   if (rewritten) {
@@ -755,7 +741,7 @@ void InputMethodUtil::UpdateHardwareLayoutCache() {
     Tokenize(delegate_->GetHardwareKeyboardLayouts(), ",",
              &cached_hardware_layouts_);
   hardware_layouts_ = cached_hardware_layouts_;
-  MigrateXkbInputMethods(&hardware_layouts_);
+  MigrateInputMethods(&hardware_layouts_);
 
   for (size_t i = 0; i < hardware_layouts_.size(); ++i) {
     if (IsLoginKeyboard(hardware_layouts_[i]))

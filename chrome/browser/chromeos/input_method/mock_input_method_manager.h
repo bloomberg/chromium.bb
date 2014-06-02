@@ -66,7 +66,7 @@ class MockInputMethodManager : public InputMethodManager {
   virtual ComponentExtensionIMEManager*
       GetComponentExtensionIMEManager() OVERRIDE;
   virtual bool IsLoginKeyboard(const std::string& layout) const OVERRIDE;
-  virtual bool MigrateXkbInputMethods(
+  virtual bool MigrateInputMethods(
        std::vector<std::string>* input_method_ids) OVERRIDE;
 
   // Sets an input method ID which will be returned by GetCurrentInputMethod().

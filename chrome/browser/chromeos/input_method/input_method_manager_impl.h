@@ -91,7 +91,7 @@ class InputMethodManagerImpl : public InputMethodManager,
       GetComponentExtensionIMEManager() OVERRIDE;
   virtual bool IsLoginKeyboard(const std::string& layout) const OVERRIDE;
 
-  virtual bool MigrateXkbInputMethods(
+  virtual bool MigrateInputMethods(
       std::vector<std::string>* input_method_ids) OVERRIDE;
 
   // Sets |candidate_window_controller_|.
