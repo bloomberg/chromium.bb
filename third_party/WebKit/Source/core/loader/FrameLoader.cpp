@@ -941,6 +941,10 @@ bool FrameLoader::checkLoadCompleteForThisFrame()
     ASSERT(client()->hasWebView());
     RefPtr<LocalFrame> protect(m_frame);
 
+    bool allChildrenAreDoneLoading = true;
+    for (LocalFrame* child = m_frame->tree().firstChild(); child; child = child->tree().nextSibling())
+        allChildrenAreDoneLoading &= child->loader().checkLoadCompleteForThisFrame();
+
     if (m_state == FrameStateProvisional && m_provisionalDocumentLoader) {
         const ResourceError& error = m_provisionalDocumentLoader->mainDocumentError();
         if (error.isNull())
@@ -956,9 +960,6 @@ bool FrameLoader::checkLoadCompleteForThisFrame()
         return true;
     }
 
-    bool allChildrenAreDoneLoading = true;
-    for (LocalFrame* child = m_frame->tree().firstChild(); child; child = child->tree().nextSibling())
-        allChildrenAreDoneLoading &= child->loader().checkLoadCompleteForThisFrame();
     if (!allChildrenAreDoneLoading)
         return false;
 
@@ -1293,8 +1294,13 @@ void FrameLoader::loadWithNavigationAction(const NavigationAction& action, Frame
         return;
     }
 
-    // A new navigation is in progress, so don't clear the history's provisional item.
-    stopAllLoaders();
+    if (m_provisionalDocumentLoader) {
+        m_provisionalDocumentLoader->stopLoading();
+        if (m_provisionalDocumentLoader)
+            m_provisionalDocumentLoader->detachFromFrame();
+        m_provisionalDocumentLoader = nullptr;
+    }
+    m_checkTimer.stop();
 
     // <rdar://problem/6250856> - In certain circumstances on pages with multiple frames, stopAllLoaders()
     // might detach the current FrameLoader, in which case we should bail on this newly defunct load.

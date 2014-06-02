@@ -11,10 +11,11 @@ function log(text)
     document.body.appendChild(document.createElement('br'));
     document.body.appendChild(document.createElement('div').appendChild(document.createTextNode(text)));
 }
-window.addEventListener('beforeunload', function ()
+window.addEventListener('beforeunload', function (e)
 {
     log('PASS');
     testRunner.notifyDone();
+    e.preventDefault();
 });
 document.body.addEventListener('dragenter', function (event)
 {
@@ -41,7 +42,6 @@ document.body.addEventListener('drop', function (event)
     window.setTimeout(function ()
     {
         // Deadman's switch so we don't need to wait for the test to timeout to fail.
-        log('FAIL');
         testRunner.notifyDone();
     }, 0);
 })();

@@ -54,9 +54,10 @@ window.onload = function()
     testRunner.dumpAsText();
     testRunner.waitUntilDone();
 
-    window.addEventListener('beforeunload', function () {
+    window.addEventListener('beforeunload', function (e) {
         if (!dropReceived)
             log('Drop not received');
+        e.preventDefault();
         testRunner.notifyDone();
     });
 
