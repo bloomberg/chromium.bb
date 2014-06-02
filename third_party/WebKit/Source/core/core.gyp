@@ -218,7 +218,8 @@
         'injected_script_source',
         'debugger_script_source',
         '../bindings/core/v8/generated.gyp:bindings_core_generated',
-        # FIXME: don't depend on bindings_modules http://crbug.com/358074
+        # FIXME: don't depend on bindings/modules http://crbug.com/358074
+        '../bindings/modules/generated.gyp:bindings_modules_generated',
         '../bindings/modules/v8/generated.gyp:bindings_modules_generated',
         '../platform/platform_generated.gyp:make_platform_generated',
         '../wtf/wtf.gyp:wtf',
