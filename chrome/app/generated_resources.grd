@@ -5433,10 +5433,10 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <if expr="is_win">
         <message name="IDS_FLAGS_ENABLE_CLOUD_PRINT_XPS_NAME">
-          Enable XPS in <ph name="CLOUD_PRINT_NAME">$1<ex>Google Cloud Print</ex></ph>
+          Enable XPS in Google Cloud Print
         </message>
         <message name="IDS_FLAGS_ENABLE_CLOUD_PRINT_XPS_DESCRIPTION">
-          Fallback to XPS. By default <ph name="CLOUD_PRINT_NAME">$1<ex>Google Cloud Print</ex></ph> uses CDD.
+          Fallback to XPS. By default Google Cloud Print uses CDD.
         </message>
       </if>
       <message name="IDS_FLAGS_ENABLE_PRINT_PREVIEW_REGISTER_PROMOS_NAME">
