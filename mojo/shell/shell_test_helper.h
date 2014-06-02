@@ -8,16 +8,12 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
-#include "base/threading/thread.h"
 #include "mojo/public/cpp/environment/environment.h"
 #include "mojo/public/interfaces/service_provider/service_provider.mojom.h"
+#include "mojo/service_manager/service_loader.h"
+#include "mojo/shell/context.h"
 
 class GURL;
-
-namespace base {
-class MessageLoopProxy;
-class RunLoop;
-}
 
 namespace mojo {
 
@@ -26,13 +22,10 @@ class ServiceLoader;
 namespace shell {
 
 // ShellTestHelper is useful for tests to establish a connection to the
-// ServiceProvider. ShellTestHelper does this by spawning a thread and
-// connecting. Invoke Init() to do this. Once done, service_provider()
-// returns the handle to the ServiceProvider.
+// ServiceProvider. Invoke Init() to establish the connection. Once done,
+// service_provider() returns the handle to the ServiceProvider.
 class ShellTestHelper {
  public:
-  struct State;
-
   ShellTestHelper();
   ~ShellTestHelper();
 
@@ -49,18 +42,13 @@ class ShellTestHelper {
  private:
   class TestServiceProvider;
 
-  // Invoked once connection has been established.
-  void OnServiceProviderStarted();
-
   Environment environment_;
 
-  base::Thread service_provider_thread_;
+  scoped_ptr<Context> context_;
 
-  // If non-null we're in Init() and waiting for connection.
-  scoped_ptr<base::RunLoop> run_loop_;
+  scoped_ptr<ServiceManager::TestAPI> test_api_;
 
-  // See comment in declaration for details.
-  State* state_;
+  //  ScopedMessagePipeHandle service_provider_handle_;
 
   // Client interface for the shell.
   scoped_ptr<TestServiceProvider> local_service_provider_;

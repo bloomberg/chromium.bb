@@ -43,19 +43,15 @@ const char kTestServiceURL[] = "mojo:test_url";
 // wait for a certain number of messages to be received.
 class ViewManagerProxy : public TestChangeTracker::Delegate {
  public:
-  ViewManagerProxy(TestChangeTracker* tracker, base::MessageLoop* loop)
+  explicit ViewManagerProxy(TestChangeTracker* tracker)
       : tracker_(tracker),
-        main_loop_(loop),
-        background_loop_(base::MessageLoop::current()),
         view_manager_(NULL),
         quit_count_(0),
         router_(NULL) {
-    main_loop_->PostTask(FROM_HERE,
-                         base::Bind(&ViewManagerProxy::SetInstance, this));
+    SetInstance(this);
   }
 
-  virtual ~ViewManagerProxy() {
-  }
+  virtual ~ViewManagerProxy() {}
 
   // Runs a message loop until the single instance has been created.
   static ViewManagerProxy* WaitForInstance() {
@@ -68,9 +64,12 @@ class ViewManagerProxy : public TestChangeTracker::Delegate {
 
   // Runs the main loop until |count| changes have been received.
   std::vector<Change> DoRunLoopUntilChangesCount(size_t count) {
-    background_loop_->PostTask(FROM_HERE,
-                               base::Bind(&ViewManagerProxy::SetQuitCount,
-                                          base::Unretained(this), count));
+    DCHECK_EQ(0u, quit_count_);
+    if (tracker_->changes()->size() >= count) {
+      CopyChangesFromTracker();
+      return changes_;
+    }
+    quit_count_ = count - tracker_->changes()->size();
     // Run the current message loop. When |count| Changes have been received,
     // we'll quit.
     RunMainLoop();
@@ -81,22 +80,17 @@ class ViewManagerProxy : public TestChangeTracker::Delegate {
 
   // Destroys the connection, blocking until done.
   void Destroy() {
-    background_loop_->PostTask(
-        FROM_HERE,
-        base::Bind(&ViewManagerProxy::DestroyOnBackgroundThread,
-                   base::Unretained(this)));
-    RunMainLoop();
+    router_->CloseMessagePipe();
   }
 
-  // The following functions mirror that of IViewManager. They bounce the
-  // function to the right thread and return the result.
+  // The following functions are cover methods for IViewManager. They block
+  // until the result is received.
   bool CreateNode(TransportNodeId node_id) {
     changes_.clear();
     bool result = false;
-    background_loop_->PostTask(
-        FROM_HERE,
-        base::Bind(&ViewManagerProxy::CreateNodeOnBackgroundThread,
-                   base::Unretained(this), node_id, &result));
+    view_manager_->CreateNode(node_id,
+                              base::Bind(&ViewManagerProxy::GotResult,
+                                         base::Unretained(this), &result));
     RunMainLoop();
     return result;
   }
@@ -105,11 +99,9 @@ class ViewManagerProxy : public TestChangeTracker::Delegate {
                TransportChangeId server_change_id) {
     changes_.clear();
     bool result = false;
-    background_loop_->PostTask(
-        FROM_HERE,
-        base::Bind(&ViewManagerProxy::AddNodeOnBackgroundThread,
-                   base::Unretained(this), parent, child, server_change_id,
-                   &result));
+    view_manager_->AddNode(parent, child, server_change_id,
+                           base::Bind(&ViewManagerProxy::GotResult,
+                                      base::Unretained(this), &result));
     RunMainLoop();
     return result;
   }
@@ -117,78 +109,71 @@ class ViewManagerProxy : public TestChangeTracker::Delegate {
                             TransportChangeId server_change_id) {
     changes_.clear();
     bool result = false;
-    background_loop_->PostTask(
-        FROM_HERE,
-        base::Bind(&ViewManagerProxy::RemoveNodeFromParentOnBackgroundThread,
-                   base::Unretained(this), node_id, server_change_id, &result));
+    view_manager_->RemoveNodeFromParent(node_id, server_change_id,
+        base::Bind(&ViewManagerProxy::GotResult,
+                   base::Unretained(this), &result));
     RunMainLoop();
     return result;
   }
   bool SetView(TransportNodeId node_id, TransportViewId view_id) {
     changes_.clear();
     bool result = false;
-    background_loop_->PostTask(
-        FROM_HERE,
-        base::Bind(&ViewManagerProxy::SetViewOnBackgroundThread,
-                   base::Unretained(this), node_id, view_id, &result));
+    view_manager_->SetView(node_id, view_id,
+                           base::Bind(&ViewManagerProxy::GotResult,
+                                      base::Unretained(this), &result));
     RunMainLoop();
     return result;
   }
   bool CreateView(TransportViewId view_id) {
     changes_.clear();
     bool result = false;
-    background_loop_->PostTask(
-        FROM_HERE,
-        base::Bind(&ViewManagerProxy::CreateViewOnBackgroundThread,
-                   base::Unretained(this), view_id, &result));
+    view_manager_->CreateView(view_id,
+                              base::Bind(&ViewManagerProxy::GotResult,
+                                         base::Unretained(this), &result));
     RunMainLoop();
     return result;
   }
   void GetNodeTree(TransportNodeId node_id, std::vector<TestNode>* nodes) {
     changes_.clear();
-    background_loop_->PostTask(
-        FROM_HERE,
-        base::Bind(&ViewManagerProxy::GetNodeTreeOnBackgroundThread,
-                   base::Unretained(this), node_id, nodes));
+    view_manager_->GetNodeTree(node_id,
+                               base::Bind(&ViewManagerProxy::GotNodeTree,
+                                          base::Unretained(this), nodes));
     RunMainLoop();
   }
   bool Connect(const std::vector<TransportNodeId>& nodes) {
     changes_.clear();
     base::AutoReset<bool> auto_reset(&in_connect_, true);
     bool result = false;
-    background_loop_->PostTask(
-        FROM_HERE,
-        base::Bind(&ViewManagerProxy::ConnectOnBackgroundThread,
-                   base::Unretained(this), nodes, &result));
+    view_manager_->Connect(kTestServiceURL, Array<TransportNodeId>::From(nodes),
+                           base::Bind(&ViewManagerProxy::GotResult,
+                                      base::Unretained(this), &result));
     RunMainLoop();
     return result;
   }
   bool DeleteNode(TransportNodeId node_id) {
     changes_.clear();
     bool result = false;
-    background_loop_->PostTask(
-        FROM_HERE,
-        base::Bind(&ViewManagerProxy::DeleteNodeOnBackgroundThread,
-                   base::Unretained(this), node_id, &result));
+    view_manager_->DeleteNode(node_id,
+                              base::Bind(&ViewManagerProxy::GotResult,
+                                         base::Unretained(this), &result));
     RunMainLoop();
     return result;
   }
-  bool DeleteView(TransportViewId node_id) {
+  bool DeleteView(TransportViewId view_id) {
     changes_.clear();
     bool result = false;
-    background_loop_->PostTask(
-        FROM_HERE,
-        base::Bind(&ViewManagerProxy::DeleteViewOnBackgroundThread,
-                   base::Unretained(this), node_id, &result));
+    view_manager_->DeleteView(view_id,
+                              base::Bind(&ViewManagerProxy::GotResult,
+                                         base::Unretained(this), &result));
     RunMainLoop();
     return result;
   }
-  bool SetNodeBounds(TransportNodeId node_id, const gfx::Rect& rect) {
+  bool SetNodeBounds(TransportNodeId node_id, const gfx::Rect& bounds) {
+    changes_.clear();
     bool result = false;
-    background_loop_->PostTask(
-        FROM_HERE,
-        base::Bind(&ViewManagerProxy::SetNodeBoundsOnBackgroundThread,
-                   base::Unretained(this), node_id, rect, &result));
+    view_manager_->SetNodeBounds(node_id, Rect::From(bounds),
+                                 base::Bind(&ViewManagerProxy::GotResult,
+                                            base::Unretained(this), &result));
     RunMainLoop();
     return result;
   }
@@ -202,23 +187,6 @@ class ViewManagerProxy : public TestChangeTracker::Delegate {
     view_manager_ = view_manager;
   }
 
-  void DestroyOnBackgroundThread() {
-    router_->CloseMessagePipe();
-    main_loop_->PostTask(
-        FROM_HERE,
-        base::Bind(&ViewManagerProxy::QuitOnMainThread,
-                   base::Unretained(this)));
-  }
-
-  void SetQuitCount(size_t count) {
-    DCHECK_EQ(background_loop_, base::MessageLoop::current());
-    if (tracker_->changes()->size() >= count) {
-      QuitCountReached();
-      return;
-    }
-    quit_count_ = count - tracker_->changes()->size();
-  }
-
   static void RunMainLoop() {
     DCHECK(!main_run_loop_);
     main_run_loop_ = new base::RunLoop;
@@ -228,18 +196,14 @@ class ViewManagerProxy : public TestChangeTracker::Delegate {
   }
 
   void QuitCountReached() {
-    std::vector<Change> changes;
-    tracker_->changes()->swap(changes);
-    main_loop_->PostTask(
-        FROM_HERE,
-        base::Bind(&ViewManagerProxy::QuitCountReachedOnMain,
-                   base::Unretained(this), changes));
+    CopyChangesFromTracker();
+    main_run_loop_->Quit();
   }
 
-  void QuitCountReachedOnMain(const std::vector<Change>& changes) {
-    changes_ = changes;
-    DCHECK(main_run_loop_);
-    main_run_loop_->Quit();
+  void CopyChangesFromTracker() {
+    std::vector<Change> changes;
+    tracker_->changes()->swap(changes);
+    changes_.swap(changes);
   }
 
   static void SetInstance(ViewManagerProxy* instance) {
@@ -254,94 +218,16 @@ class ViewManagerProxy : public TestChangeTracker::Delegate {
   }
 
   // Callbacks from the various IViewManager functions.
-  void GotResultOnBackgroundThread(bool* result_cache, bool result) {
+  void GotResult(bool* result_cache, bool result) {
     *result_cache = result;
-    main_loop_->PostTask(
-        FROM_HERE,
-        base::Bind(&ViewManagerProxy::QuitOnMainThread,
-                   base::Unretained(this)));
-  }
-
-  void GotNodeTreeOnBackgroundThread(std::vector<TestNode>* nodes,
-                                     Array<INodePtr> results) {
-    INodesToTestNodes(results, nodes);
-    main_loop_->PostTask(
-        FROM_HERE,
-        base::Bind(&ViewManagerProxy::QuitOnMainThread,
-                   base::Unretained(this)));
-  }
-
-  void QuitOnMainThread() {
     DCHECK(main_run_loop_);
     main_run_loop_->Quit();
   }
 
-  // The following functions correspond to the IViewManager functions. These run
-  // on the background thread.
-  void CreateNodeOnBackgroundThread(TransportNodeId node_id, bool* result) {
-    view_manager_->CreateNode(
-        node_id,
-        base::Bind(&ViewManagerProxy::GotResultOnBackgroundThread,
-                   base::Unretained(this), result));
-  }
-  void AddNodeOnBackgroundThread(TransportNodeId parent,
-                                 TransportNodeId child,
-                                 TransportChangeId server_change_id,
-                                 bool* result) {
-    view_manager_->AddNode(
-        parent, child, server_change_id,
-        base::Bind(&ViewManagerProxy::GotResultOnBackgroundThread,
-                   base::Unretained(this), result));
-  }
-  void RemoveNodeFromParentOnBackgroundThread(
-      TransportNodeId node_id,
-      TransportChangeId server_change_id,
-      bool* result) {
-    view_manager_->RemoveNodeFromParent(node_id, server_change_id,
-        base::Bind(&ViewManagerProxy::GotResultOnBackgroundThread,
-                   base::Unretained(this), result));
-  }
-  void SetViewOnBackgroundThread(TransportNodeId node_id,
-                                 TransportViewId view_id,
-                                 bool* result) {
-    view_manager_->SetView(node_id, view_id,
-        base::Bind(&ViewManagerProxy::GotResultOnBackgroundThread,
-                   base::Unretained(this), result));
-  }
-  void CreateViewOnBackgroundThread(TransportViewId view_id, bool* result) {
-    view_manager_->CreateView(view_id,
-        base::Bind(&ViewManagerProxy::GotResultOnBackgroundThread,
-                   base::Unretained(this), result));
-  }
-  void GetNodeTreeOnBackgroundThread(TransportNodeId node_id,
-                                     std::vector<TestNode>* nodes) {
-    view_manager_->GetNodeTree(node_id,
-        base::Bind(&ViewManagerProxy::GotNodeTreeOnBackgroundThread,
-                   base::Unretained(this), nodes));
-  }
-  void ConnectOnBackgroundThread(const std::vector<TransportNodeId>& ids,
-                                 bool* result) {
-    view_manager_->Connect(kTestServiceURL,
-                           Array<TransportNodeId>::From(ids),
-        base::Bind(&ViewManagerProxy::GotResultOnBackgroundThread,
-                   base::Unretained(this), result));
-  }
-  void DeleteNodeOnBackgroundThread(TransportNodeId node_id, bool* result) {
-    view_manager_->DeleteNode(node_id,
-        base::Bind(&ViewManagerProxy::GotResultOnBackgroundThread,
-                   base::Unretained(this), result));
-  }
-  void DeleteViewOnBackgroundThread(TransportViewId view_id, bool* result) {
-    view_manager_->DeleteView(view_id,
-        base::Bind(&ViewManagerProxy::GotResultOnBackgroundThread,
-                   base::Unretained(this), result));
-  }
-  void SetNodeBoundsOnBackgroundThread(TransportNodeId node_id,
-                                       const gfx::Rect& bounds,
-                                       bool* result) {
-    view_manager_->SetNodeBounds(node_id, Rect::From(bounds),
-        base::Bind(&ViewManagerProxy::GotResultOnBackgroundThread,
-                   base::Unretained(this), result));
+  void GotNodeTree(std::vector<TestNode>* nodes, Array<INodePtr> results) {
+    INodesToTestNodes(results, nodes);
+    DCHECK(main_run_loop_);
+    main_run_loop_->Quit();
   }
 
   // TestChangeTracker::Delegate:
@@ -358,9 +244,6 @@ class ViewManagerProxy : public TestChangeTracker::Delegate {
 
   // MessageLoop of the test.
   base::MessageLoop* main_loop_;
-
-  // MessageLoop ViewManagerProxy lives on.
-  base::MessageLoop* background_loop_;
 
   IViewManager* view_manager_;
 
@@ -386,8 +269,7 @@ bool ViewManagerProxy::in_connect_ = false;
 class TestViewManagerClientConnection
     : public InterfaceImpl<IViewManagerClient> {
  public:
-  explicit TestViewManagerClientConnection(base::MessageLoop* loop)
-      : connection_(&tracker_, loop) {
+  TestViewManagerClientConnection() : connection_(&tracker_) {
     tracker_.set_delegate(&connection_);
   }
 
@@ -447,17 +329,15 @@ class TestViewManagerClientConnection
 // which creates and owns the ViewManagerProxy.
 class ConnectServiceLoader : public ServiceLoader {
  public:
-  ConnectServiceLoader() : initial_loop_(base::MessageLoop::current()) {
-  }
-  virtual ~ConnectServiceLoader() {
-  }
+  ConnectServiceLoader() {}
+  virtual ~ConnectServiceLoader() {}
 
   // ServiceLoader:
   virtual void LoadService(ServiceManager* manager,
                            const GURL& url,
                            ScopedMessagePipeHandle shell_handle) OVERRIDE {
     scoped_ptr<Application> app(new Application(shell_handle.Pass()));
-    app->AddService<TestViewManagerClientConnection>(initial_loop_);
+    app->AddService<TestViewManagerClientConnection>();
     apps_.push_back(app.release());
   }
   virtual void OnServiceError(ServiceManager* manager,
@@ -465,7 +345,6 @@ class ConnectServiceLoader : public ServiceLoader {
   }
 
  private:
-  base::MessageLoop* initial_loop_;
   ScopedVector<Application> apps_;
 
   DISALLOW_COPY_AND_ASSIGN(ConnectServiceLoader);
