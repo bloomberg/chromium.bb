@@ -11,6 +11,10 @@
 #include "extensions/browser/extension_web_contents_observer.h"
 #include "extensions/common/stack_frame.h"
 
+namespace content {
+class RenderFrameHost;
+}
+
 namespace extensions {
 struct Message;
 
@@ -31,6 +35,9 @@ class ChromeExtensionWebContentsObserver
   virtual void RenderViewCreated(content::RenderViewHost* render_view_host)
       OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual bool OnMessageReceived(
+      const IPC::Message& message,
+      content::RenderFrameHost* render_frame_host) OVERRIDE;
 
   // Routes a message to the extensions MessageService.
   void OnPostMessage(int port_id, const Message& message);

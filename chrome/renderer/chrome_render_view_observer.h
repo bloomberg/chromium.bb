@@ -51,11 +51,6 @@ class ChromeRenderViewObserver : public content::RenderViewObserver {
   virtual void DidStopLoading() OVERRIDE;
   virtual void DidCommitProvisionalLoad(blink::WebLocalFrame* frame,
                                         bool is_new_navigation) OVERRIDE;
-  virtual void DetailedConsoleMessageAdded(const base::string16& message,
-                                           const base::string16& source,
-                                           const base::string16& stack_trace,
-                                           int32 line_number,
-                                           int32 severity_level) OVERRIDE;
   virtual void Navigate(const GURL& url) OVERRIDE;
 
   void OnWebUIJavaScript(const base::string16& javascript);

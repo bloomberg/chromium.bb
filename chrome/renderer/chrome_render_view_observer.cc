@@ -10,7 +10,6 @@
 #include "base/debug/trace_event.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
-#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/common/chrome_constants.h"
@@ -28,7 +27,6 @@
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_view.h"
 #include "extensions/common/constants.h"
-#include "extensions/common/stack_frame.h"
 #include "net/base/data_url.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/public/platform/WebCString.h"
@@ -102,62 +100,6 @@ GURL StripRef(const GURL& url) {
   GURL::Replacements replacements;
   replacements.ClearRef();
   return url.ReplaceComponents(replacements);
-}
-
-// The delimiter for a stack trace provided by WebKit.
-const char kStackFrameDelimiter[] = "\n    at ";
-
-// Get a stack trace from a WebKit console message.
-// There are three possible scenarios:
-// 1. WebKit gives us a stack trace in |stack_trace|.
-// 2. The stack trace is embedded in the error |message| by an internal
-//    script. This will be more useful than |stack_trace|, since |stack_trace|
-//    will include the internal bindings trace, instead of a developer's code.
-// 3. No stack trace is included. In this case, we should mock one up from
-//    the given line number and source.
-// |message| will be populated with the error message only (i.e., will not
-// include any stack trace).
-extensions::StackTrace GetStackTraceFromMessage(
-    base::string16* message,
-    const base::string16& source,
-    const base::string16& stack_trace,
-    int32 line_number) {
-  extensions::StackTrace result;
-  std::vector<base::string16> pieces;
-  size_t index = 0;
-
-  if (message->find(base::UTF8ToUTF16(kStackFrameDelimiter)) !=
-          base::string16::npos) {
-    base::SplitStringUsingSubstr(*message,
-                                 base::UTF8ToUTF16(kStackFrameDelimiter),
-                                 &pieces);
-    *message = pieces[0];
-    index = 1;
-  } else if (!stack_trace.empty()) {
-    base::SplitStringUsingSubstr(stack_trace,
-                                 base::UTF8ToUTF16(kStackFrameDelimiter),
-                                 &pieces);
-  }
-
-  // If we got a stack trace, parse each frame from the text.
-  if (index < pieces.size()) {
-    for (; index < pieces.size(); ++index) {
-      scoped_ptr<extensions::StackFrame> frame =
-          extensions::StackFrame::CreateFromText(pieces[index]);
-      if (frame.get())
-        result.push_back(*frame);
-    }
-  }
-
-  if (result.empty()) {  // If we don't have a stack trace, mock one up.
-    result.push_back(
-        extensions::StackFrame(line_number,
-                               1u,  // column number
-                               source,
-                               base::string16() /* no function name */ ));
-  }
-
-  return result;
 }
 
 #if defined(OS_ANDROID)
@@ -429,25 +371,6 @@ void ChromeRenderViewObserver::DidCommitProvisionalLoad(
       render_view()->GetPageId(),
       true,  // preliminary_capture
       base::TimeDelta::FromMilliseconds(kDelayForForcedCaptureMs));
-}
-
-void ChromeRenderViewObserver::DetailedConsoleMessageAdded(
-    const base::string16& message,
-    const base::string16& source,
-    const base::string16& stack_trace_string,
-    int32 line_number,
-    int32 severity_level) {
-  base::string16 trimmed_message = message;
-  extensions::StackTrace stack_trace = GetStackTraceFromMessage(
-      &trimmed_message,
-      source,
-      stack_trace_string,
-      line_number);
-  Send(new ChromeViewHostMsg_DetailedConsoleMessageAdded(routing_id(),
-                                                         trimmed_message,
-                                                         source,
-                                                         stack_trace,
-                                                         severity_level));
 }
 
 void ChromeRenderViewObserver::CapturePageInfoLater(int page_id,

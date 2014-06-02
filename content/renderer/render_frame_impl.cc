@@ -1632,13 +1632,6 @@ void RenderFrameImpl::didAddMessageToConsole(
 
   if (shouldReportDetailedMessageForSource(source_name)) {
     FOR_EACH_OBSERVER(
-        RenderViewObserver, render_view_->observers(),
-        DetailedConsoleMessageAdded(message.text,
-                                    source_name,
-                                    stack_trace,
-                                    source_line,
-                                    static_cast<int32>(log_severity)));
-    FOR_EACH_OBSERVER(
         RenderFrameObserver, observers_,
         DetailedConsoleMessageAdded(message.text,
                                     source_name,

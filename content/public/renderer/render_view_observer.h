@@ -89,18 +89,6 @@ class CONTENT_EXPORT RenderViewObserver : public IPC::Listener,
   virtual void DidHandleMouseEvent(const blink::WebMouseEvent& event) {}
   virtual void DidHandleTouchEvent(const blink::WebTouchEvent& event) {}
 
-  // Called when we receive a console message from WebKit for which we requested
-  // extra details (like the stack trace). |message| is the error message,
-  // |source| is the WebKit-reported source of the error (either external or
-  // internal), and |stack_trace| is the stack trace of the error in a
-  // human-readable format (each frame is formatted as
-  // "\n    at function_name (source:line_number:column_number)").
-  virtual void DetailedConsoleMessageAdded(const base::string16& message,
-                                           const base::string16& source,
-                                           const base::string16& stack_trace,
-                                           int32 line_number,
-                                           int32 severity_level) {}
-
   // These match incoming IPCs.
   virtual void Navigate(const GURL& url) {}
   virtual void ClosePage() {}

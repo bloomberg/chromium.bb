@@ -28,6 +28,7 @@ class FaviconDownloader;
 
 namespace content {
 struct LoadCommittedDetails;
+class RenderFrameHost;
 }
 
 namespace gfx {
@@ -178,6 +179,9 @@ class TabHelper : public content::WebContentsObserver,
       const content::LoadCommittedDetails& details,
       const content::FrameNavigateParams& params) OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual bool OnMessageReceived(
+      const IPC::Message& message,
+      content::RenderFrameHost* render_frame_host) OVERRIDE;
   virtual void DidCloneToNewWebContents(
       content::WebContents* old_web_contents,
       content::WebContents* new_web_contents) OVERRIDE;
