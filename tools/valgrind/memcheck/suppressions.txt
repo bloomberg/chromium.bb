@@ -6487,3 +6487,18 @@
    fun:_ZN7content21ShellBrowserMainParts21PreMainMessageLoopRunEv
    fun:_ZN7content15BrowserMainLoop21PreMainMessageLoopRunEv
 }
+{
+   bug_379943
+   Memcheck:Leak
+   fun:_Znw*
+   ...
+   fun:_ZN7content23CreateFileSystemContextEPNS_14BrowserContextERKN4base8FilePathEbPN5quota17QuotaManagerProxyE
+   fun:_ZN7content20StoragePartitionImpl6CreateEPNS_14BrowserContextEbRKN4base8FilePathE
+   fun:_ZN7content23StoragePartitionImplMap3GetERKSsS2_b
+   fun:_ZN7content12_GLOBAL__N_129GetStoragePartitionFromConfigEPNS_14BrowserContextERKSsS4_b
+   fun:_ZN7content14BrowserContext19GetStoragePartitionEPS0_PNS_12SiteInstanceE
+   fun:_ZN7content14BrowserContext26GetDefaultStoragePartitionEPS0_
+   fun:_ZN7content21ShellBrowserMainParts21PreMainMessageLoopRunEv
+   fun:_ZN7content15BrowserMainLoop21PreMainMessageLoopRunEv
+}
+
