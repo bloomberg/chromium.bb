@@ -432,7 +432,7 @@ void InspectorResourceAgent::didFailLoading(unsigned long identifier, const Reso
 {
     String requestId = IdentifiersFactory::requestId(identifier);
     bool canceled = error.isCancellation();
-    m_frontend->loadingFailed(requestId, currentTime(), error.localizedDescription(), canceled ? &canceled : 0);
+    m_frontend->loadingFailed(requestId, currentTime(), InspectorPageAgent::resourceTypeJson(m_resourcesData->resourceType(requestId)), error.localizedDescription(), canceled ? &canceled : 0);
 }
 
 void InspectorResourceAgent::scriptImported(unsigned long identifier, const String& sourceString)
@@ -454,6 +454,7 @@ void InspectorResourceAgent::documentThreadableLoaderStartedLoadingForClient(uns
     if (it == m_pendingXHRReplayData.end())
         return;
 
+    m_resourcesData->setResourceType(IdentifiersFactory::requestId(identifier), InspectorPageAgent::XHRResource);
     XHRReplayData* xhrReplayData = it->value.get();
     String requestId = IdentifiersFactory::requestId(identifier);
     m_resourcesData->setXHRReplayData(requestId, xhrReplayData);
