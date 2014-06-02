@@ -1,9 +1,9 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_TRANSLATE_OPTIONS_MENU_MODEL_H_
-#define CHROME_BROWSER_TRANSLATE_OPTIONS_MENU_MODEL_H_
+#ifndef COMPONENTS_TRANSLATE_CORE_BROWSER_OPTIONS_MENU_MODEL_H_
+#define COMPONENTS_TRANSLATE_CORE_BROWSER_OPTIONS_MENU_MODEL_H_
 
 #include "ui/base/models/simple_menu_model.h"
 
@@ -14,6 +14,15 @@ class TranslateInfoBarDelegate;
 class OptionsMenuModel : public ui::SimpleMenuModel,
                          public ui::SimpleMenuModel::Delegate {
  public:
+  // Command IDs of the items in this menu; exposed for testing.
+  enum CommandID {
+    ABOUT_TRANSLATE = 0,
+    ALWAYS_TRANSLATE,
+    NEVER_TRANSLATE_LANGUAGE,
+    NEVER_TRANSLATE_SITE,
+    REPORT_BAD_DETECTION
+  };
+
   explicit OptionsMenuModel(TranslateInfoBarDelegate* translate_delegate);
   virtual ~OptionsMenuModel();
 
@@ -31,4 +40,4 @@ class OptionsMenuModel : public ui::SimpleMenuModel,
   DISALLOW_COPY_AND_ASSIGN(OptionsMenuModel);
 };
 
-#endif  // CHROME_BROWSER_TRANSLATE_OPTIONS_MENU_MODEL_H_
+#endif  // COMPONENTS_TRANSLATE_CORE_BROWSER_OPTIONS_MENU_MODEL_H_

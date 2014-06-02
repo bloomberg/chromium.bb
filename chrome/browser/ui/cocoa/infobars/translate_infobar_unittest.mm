@@ -7,15 +7,15 @@
 #import "base/mac/scoped_nsobject.h"
 #import "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#import "chrome/app/chrome_command_ids.h"  // For translate menu command ids.
 #include "chrome/browser/infobars/infobar_service.h"
-#import "chrome/browser/translate/translate_infobar_delegate.h"
 #import "chrome/browser/translate/translate_tab_helper.h"
 #include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
 #import "chrome/browser/ui/cocoa/infobars/before_translate_infobar_controller.h"
 #import "chrome/browser/ui/cocoa/infobars/infobar_cocoa.h"
 #import "chrome/browser/ui/cocoa/infobars/translate_infobar_base.h"
 #include "chrome/test/base/testing_profile.h"
+#import "components/translate/core/browser/options_menu_model.h"
+#import "components/translate/core/browser/translate_infobar_delegate.h"
 #include "components/translate/core/browser/translate_language_list.h"
 #include "components/translate/core/browser/translate_manager.h"
 #import "content/public/browser/web_contents.h"
@@ -96,10 +96,12 @@ class TranslationInfoBarTest : public CocoaProfileTest {
       error = TranslateErrors::NETWORK;
     [[infobar_controller_ view] removeFromSuperview];
 
+    TranslateTabHelper* translate_tab_helper =
+        TranslateTabHelper::FromWebContents(web_contents_.get());
     scoped_ptr<TranslateInfoBarDelegate> delegate(
         new MockTranslateInfoBarDelegate(web_contents_.get(), type, error));
     scoped_ptr<infobars::InfoBar> infobar(
-        TranslateInfoBarDelegate::CreateInfoBar(delegate.Pass()));
+        translate_tab_helper->CreateInfoBar(delegate.Pass()));
     if (infobar_)
       infobar_->CloseSoon();
     infobar_ = static_cast<InfoBarCocoa*>(infobar.release());
@@ -203,9 +205,9 @@ TEST_F(TranslationInfoBarTest, OptionsMenuItemsHookedUp) {
   {
     // Can't mock these effectively, so just check that the tag is set
     // correctly.
-    EXPECT_EQ(IDC_TRANSLATE_REPORT_BAD_LANGUAGE_DETECTION,
+    EXPECT_EQ(OptionsMenuModel::REPORT_BAD_DETECTION,
               [reportBadLanguageItem tag]);
-    EXPECT_EQ(IDC_TRANSLATE_OPTIONS_ABOUT, [aboutTranslateItem tag]);
+    EXPECT_EQ(OptionsMenuModel::ABOUT_TRANSLATE, [aboutTranslateItem tag]);
   }
 }
 

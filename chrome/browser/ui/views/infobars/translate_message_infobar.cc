@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/views/infobars/translate_message_infobar.h"
 
-#include "chrome/browser/translate/translate_infobar_delegate.h"
+#include "components/translate/core/browser/translate_infobar_delegate.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/label.h"
 

@@ -1,8 +1,8 @@
-// Copyright 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/translate/translate_infobar_delegate.h"
+#include "components/translate/core/browser/translate_infobar_delegate.h"
 
 #include <algorithm>
 
@@ -18,8 +18,6 @@
 #include "components/translate/core/browser/translate_manager.h"
 #include "components/translate/core/common/translate_constants.h"
 #include "grit/components_strings.h"
-#include "grit/theme_resources.h"
-#include "third_party/icu/source/i18n/unicode/coll.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace {
@@ -29,17 +27,17 @@ namespace {
 // so we are more aggressive about showing the shortcut to never translate.
 // The "Always Translate" option is always shown on iOS and Android.
 #if defined(OS_ANDROID)
-  const int kAlwaysTranslateMinCount = 1;
-  const int kNeverTranslateMinCount = 1;
+const int kAlwaysTranslateMinCount = 1;
+const int kNeverTranslateMinCount = 1;
 #elif defined(OS_IOS)
-  // The iOS implementation, like the Android implementation, shows the "Never
-  // translate" infobar after two denials. There is an offset of one because on
-  // Android the last event is not counted.
-  const int kAlwaysTranslateMinCount = 1;
-  const int kNeverTranslateMinCount = 2;
+// The iOS implementation, like the Android implementation, shows the "Never
+// translate" infobar after two denials. There is an offset of one because on
+// Android the last event is not counted.
+const int kAlwaysTranslateMinCount = 1;
+const int kNeverTranslateMinCount = 2;
 #else
-  const int kAlwaysTranslateMinCount = 3;
-  const int kNeverTranslateMinCount = 3;
+const int kAlwaysTranslateMinCount = 3;
+const int kNeverTranslateMinCount = 3;
 #endif
 
 }  // namespace
@@ -77,10 +75,11 @@ void TranslateInfoBarDelegate::Create(
   }
 
   // Do not create the after translate infobar if we are auto translating.
+  TranslateClient* translate_client = translate_manager->translate_client();
   if (((step == translate::TRANSLATE_STEP_AFTER_TRANSLATE) ||
        (step == translate::TRANSLATE_STEP_TRANSLATING)) &&
-      translate_manager->translate_client()->GetTranslateDriver()
-          ->GetLanguageState().InTranslateNavigation()) {
+      translate_client->GetTranslateDriver()->GetLanguageState()
+          .InTranslateNavigation()) {
     return;
   }
 
@@ -98,7 +97,7 @@ void TranslateInfoBarDelegate::Create(
   }
 
   // Add the new delegate.
-  scoped_ptr<infobars::InfoBar> infobar(CreateInfoBar(
+  scoped_ptr<infobars::InfoBar> infobar(translate_client->CreateInfoBar(
       scoped_ptr<TranslateInfoBarDelegate>(new TranslateInfoBarDelegate(
           translate_manager, is_off_the_record, step, old_delegate,
           original_language, target_language, error_type,
@@ -108,7 +107,6 @@ void TranslateInfoBarDelegate::Create(
   else
     infobar_manager->AddInfoBar(infobar.Pass());
 }
-
 
 void TranslateInfoBarDelegate::UpdateOriginalLanguageIndex(
     size_t language_index) {
@@ -139,7 +137,7 @@ void TranslateInfoBarDelegate::TranslationDeclined() {
 }
 
 bool TranslateInfoBarDelegate::IsTranslatableLanguageByPrefs() {
-  TranslateClient* client = GetTranslateClient();
+  TranslateClient* client = translate_manager_->translate_client();
   scoped_ptr<TranslatePrefs> translate_prefs(client->GetTranslatePrefs());
   TranslateAcceptLanguages* accept_languages =
       client->GetTranslateAcceptLanguages();
@@ -186,7 +184,7 @@ void TranslateInfoBarDelegate::AlwaysTranslatePageLanguage() {
 void TranslateInfoBarDelegate::NeverTranslatePageLanguage() {
   DCHECK(!ui_delegate_.IsLanguageBlocked());
   ui_delegate_.SetLanguageBlocked(true);
-    infobar()->RemoveSelf();
+  infobar()->RemoveSelf();
 }
 
 base::string16 TranslateInfoBarDelegate::GetMessageInfoBarText() {
@@ -340,16 +338,6 @@ TranslateInfoBarDelegate::TranslateInfoBarDelegate(
     background_animation_ = is_error() ? NORMAL_TO_ERROR : ERROR_TO_NORMAL;
 }
 
-TranslateClient* TranslateInfoBarDelegate::GetTranslateClient() {
-  if (!translate_manager_)
-    return NULL;
-
-  return translate_manager_->translate_client();
-}
-
-// TranslateInfoBarDelegate::CreateInfoBar() is implemented in platform-specific
-// files.
-
 void TranslateInfoBarDelegate::InfoBarDismissed() {
   if (step_ != translate::TRANSLATE_STEP_BEFORE_TRANSLATE)
     return;
@@ -360,7 +348,7 @@ void TranslateInfoBarDelegate::InfoBarDismissed() {
 }
 
 int TranslateInfoBarDelegate::GetIconID() const {
-  return IDR_INFOBAR_TRANSLATE;
+  return translate_manager_->translate_client()->GetInfobarIconID();
 }
 
 infobars::InfoBarDelegate::Type TranslateInfoBarDelegate::GetInfoBarType()

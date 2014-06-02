@@ -1,9 +1,9 @@
-// Copyright 2011 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_TRANSLATE_TRANSLATE_INFOBAR_DELEGATE_H_
-#define CHROME_BROWSER_TRANSLATE_TRANSLATE_INFOBAR_DELEGATE_H_
+#ifndef COMPONENTS_TRANSLATE_CORE_BROWSER_TRANSLATE_INFOBAR_DELEGATE_H_
+#define COMPONENTS_TRANSLATE_CORE_BROWSER_TRANSLATE_INFOBAR_DELEGATE_H_
 
 #include <string>
 #include <utility>
@@ -189,14 +189,6 @@ class TranslateInfoBarDelegate : public infobars::InfoBarDelegate {
   friend class TranslationInfoBarTest;
   typedef std::pair<std::string, base::string16> LanguageNamePair;
 
-  // Returns a translate infobar that owns |delegate|.
-  static scoped_ptr<infobars::InfoBar> CreateInfoBar(
-      scoped_ptr<TranslateInfoBarDelegate> delegate);
-
-  // Gets the TranslateClient associated with this object.
-  // May return NULL if the client has been destroyed.
-  TranslateClient* GetTranslateClient();
-
   // InfoBarDelegate:
   virtual void InfoBarDismissed() OVERRIDE;
   virtual int GetIconID() const OVERRIDE;
@@ -226,4 +218,4 @@ class TranslateInfoBarDelegate : public infobars::InfoBarDelegate {
   DISALLOW_COPY_AND_ASSIGN(TranslateInfoBarDelegate);
 };
 
-#endif  // CHROME_BROWSER_TRANSLATE_TRANSLATE_INFOBAR_DELEGATE_H_
+#endif  // COMPONENTS_TRANSLATE_CORE_BROWSER_TRANSLATE_INFOBAR_DELEGATE_H_

@@ -13,7 +13,6 @@
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/translate/translate_accept_languages_factory.h"
-#include "chrome/browser/translate/translate_infobar_delegate.h"
 #include "chrome/browser/translate/translate_service.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -26,6 +25,7 @@
 #include "components/translate/core/browser/page_translated_details.h"
 #include "components/translate/core/browser/translate_accept_languages.h"
 #include "components/translate/core/browser/translate_download_manager.h"
+#include "components/translate/core/browser/translate_infobar_delegate.h"
 #include "components/translate/core/browser/translate_manager.h"
 #include "components/translate/core/browser/translate_prefs.h"
 #include "components/translate/core/common/language_detection_details.h"
@@ -34,6 +34,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
+#include "grit/theme_resources.h"
 #include "net/http/http_status_code.h"
 #include "url/gurl.h"
 
@@ -208,6 +209,13 @@ TranslateAcceptLanguages* TranslateTabHelper::GetTranslateAcceptLanguages() {
   DCHECK(web_contents());
   return GetTranslateAcceptLanguages(web_contents()->GetBrowserContext());
 }
+
+int TranslateTabHelper::GetInfobarIconID() const {
+  return IDR_INFOBAR_TRANSLATE;
+}
+
+// TranslateTabHelper::CreateInfoBar() is implemented in platform-specific
+// files.
 
 bool TranslateTabHelper::IsTranslatableURL(const GURL& url) {
   return TranslateService::IsTranslatableURL(url);

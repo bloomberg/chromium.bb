@@ -92,6 +92,9 @@ class TranslateTabHelper
   virtual PrefService* GetPrefs() OVERRIDE;
   virtual scoped_ptr<TranslatePrefs> GetTranslatePrefs() OVERRIDE;
   virtual TranslateAcceptLanguages* GetTranslateAcceptLanguages() OVERRIDE;
+  virtual int GetInfobarIconID() const OVERRIDE;
+  virtual scoped_ptr<infobars::InfoBar> CreateInfoBar(
+      scoped_ptr<TranslateInfoBarDelegate> delegate) const OVERRIDE;
   virtual void ShowTranslateUI(translate::TranslateStep step,
                                const std::string source_language,
                                const std::string target_language,

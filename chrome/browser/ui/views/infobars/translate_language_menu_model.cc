@@ -4,8 +4,8 @@
 
 #include "chrome/browser/ui/views/infobars/translate_language_menu_model.h"
 
-#include "chrome/browser/translate/translate_infobar_delegate.h"
 #include "chrome/browser/ui/views/infobars/translate_infobar_base.h"
+#include "components/translate/core/browser/translate_infobar_delegate.h"
 
 TranslateLanguageMenuModel::TranslateLanguageMenuModel(
     LanguageType language_type,

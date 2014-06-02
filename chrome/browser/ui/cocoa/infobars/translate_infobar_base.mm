@@ -7,7 +7,7 @@
 #include "base/logging.h"
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
-#include "chrome/browser/translate/translate_infobar_delegate.h"
+#import "chrome/browser/translate/translate_tab_helper.h"
 #import "chrome/browser/ui/cocoa/hover_close_button.h"
 #include "chrome/browser/ui/cocoa/infobars/after_translate_infobar_controller.h"
 #import "chrome/browser/ui/cocoa/infobars/before_translate_infobar_controller.h"
@@ -17,6 +17,7 @@
 #import "chrome/browser/ui/cocoa/infobars/infobar_gradient_view.h"
 #import "chrome/browser/ui/cocoa/infobars/infobar_utilities.h"
 #include "chrome/browser/ui/cocoa/infobars/translate_message_infobar_controller.h"
+#include "components/translate/core/browser/translate_infobar_delegate.h"
 #include "grit/components_strings.h"
 #include "third_party/google_toolbox_for_mac/src/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -27,9 +28,8 @@ using InfoBarUtilities::VerifyControlOrderAndSpacing;
 using InfoBarUtilities::CreateLabel;
 using InfoBarUtilities::AddMenuItem;
 
-// static
-scoped_ptr<infobars::InfoBar> TranslateInfoBarDelegate::CreateInfoBar(
-    scoped_ptr<TranslateInfoBarDelegate> delegate) {
+scoped_ptr<infobars::InfoBar> TranslateTabHelper::CreateInfoBar(
+    scoped_ptr<TranslateInfoBarDelegate> delegate) const {
   scoped_ptr<InfoBarCocoa> infobar(
       new InfoBarCocoa(delegate.PassAs<infobars::InfoBarDelegate>()));
   base::scoped_nsobject<TranslateInfoBarControllerBase> infobar_controller;

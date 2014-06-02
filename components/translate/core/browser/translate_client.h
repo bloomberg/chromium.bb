@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "components/translate/core/browser/translate_prefs.h"
 #include "components/translate/core/browser/translate_step.h"
 #include "components/translate/core/common/translate_errors.h"
@@ -16,6 +17,11 @@ class GURL;
 class PrefService;
 class TranslateAcceptLanguages;
 class TranslateDriver;
+class TranslateInfoBarDelegate;
+
+namespace infobars {
+class InfoBar;
+}
 
 // A client interface that needs to be supplied to TranslateManager by the
 // embedder.
@@ -35,6 +41,13 @@ class TranslateClient {
 
   // Returns the associated TranslateAcceptLanguages.
   virtual TranslateAcceptLanguages* GetTranslateAcceptLanguages() = 0;
+
+  // Returns the resource ID of the icon to be shown for the Translate infobars.
+  virtual int GetInfobarIconID() const = 0;
+
+  // Returns a translate infobar that owns |delegate|.
+  virtual scoped_ptr<infobars::InfoBar> CreateInfoBar(
+      scoped_ptr<TranslateInfoBarDelegate> delegate) const = 0;
 
   // Called when the embedder should present UI to the user corresponding to the
   // user's current |step|.

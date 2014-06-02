@@ -9,9 +9,9 @@
 
 #import "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/translate/options_menu_model.h"
-#include "chrome/browser/translate/translate_infobar_delegate.h"
 #import "chrome/browser/ui/cocoa/infobars/infobar_controller.h"
+#include "components/translate/core/browser/options_menu_model.h"
+#include "components/translate/core/browser/translate_infobar_delegate.h"
 #include "components/translate/core/common/translate_errors.h"
 
 // The base class for the three translate infobars.  This class does all of the
