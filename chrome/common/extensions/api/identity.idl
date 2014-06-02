@@ -62,8 +62,15 @@ namespace identity {
     // section of manifest.json</a>.
     //
     // The Identity API caches access tokens in memory, so it's ok to
-    // call <code>getAuthToken</code> any time a token is
+    // call <code>getAuthToken</code> non-interactively any time a token is
     // required. The token cache automatically handles expiration.
+    //
+    // For a good user experience it is important interactive token requests are
+    // initiated by UI in your app explaining what the authorization is for.
+    // Failing to do this will cause your users to get authorization requests,
+    // or Chrome sign in screens if they are not signed in, with with no
+    // context. In particular, do not use <code>getAuthToken</code>
+    // interactively when your app is first launched.
     //
     // |details| : Token options.
     // |callback| : Called with an OAuth2 access token as specified by the
@@ -96,9 +103,8 @@ namespace identity {
     // For a good user experience it is important interactive auth flows are
     // initiated by UI in your app explaining what the authorization is for.
     // Failing to do this will cause your users to get authorization requests
-    // - or even Chrome sign in screens if they are not signed in - with
-    // no context. In particular, do not launch an interactive auth flow when
-    // your app is first launched.
+    // with no context. In particular, do not launch an interactive auth flow
+    // when your app is first launched.
     //
     // |details| : WebAuth flow options.
     // |callback| : Called with the URL redirected back to your application.
