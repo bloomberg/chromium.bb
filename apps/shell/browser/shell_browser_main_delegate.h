@@ -11,6 +11,8 @@ class BrowserContext;
 
 namespace apps {
 
+class ShellDesktopController;
+
 class ShellBrowserMainDelegate {
  public:
   virtual ~ShellBrowserMainDelegate() {}
@@ -22,6 +24,11 @@ class ShellBrowserMainDelegate {
   // Called after the main message looop has stopped, but before
   // other services such as BrowserContext / extension system are shut down.
   virtual void Shutdown() = 0;
+
+  // Creates the ShellDesktopController instance to initialize the root window
+  // and window manager. Subclass may return its subclass to customize the
+  // windo manager.
+  virtual ShellDesktopController* CreateDesktopController() = 0;
 };
 
 }  // namespace apps

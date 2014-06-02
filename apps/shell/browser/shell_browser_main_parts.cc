@@ -81,8 +81,8 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
   // Initialize our "profile" equivalent.
   browser_context_.reset(new ShellBrowserContext);
 
-  desktop_controller_.reset(new ShellDesktopController);
-  desktop_controller_->GetWindowTreeHost()->AddObserver(this);
+  desktop_controller_.reset(browser_main_delegate_->CreateDesktopController());
+  desktop_controller_->CreateRootWindow();
 
   // NOTE: Much of this is culled from chrome/test/base/chrome_test_suite.cc
   // TODO(jamescook): Initialize chromeos::UserManager.
@@ -136,7 +136,6 @@ void ShellBrowserMainParts::PostMainMessageLoopRun() {
   extensions_browser_client_.reset();
   browser_context_.reset();
 
-  desktop_controller_->GetWindowTreeHost()->RemoveObserver(this);
   desktop_controller_.reset();
 }
 
@@ -145,13 +144,6 @@ void ShellBrowserMainParts::PostDestroyThreads() {
   network_controller_.reset();
   chromeos::DBusThreadManager::Shutdown();
 #endif
-}
-
-void ShellBrowserMainParts::OnHostCloseRequested(
-    const aura::WindowTreeHost* host) {
-  desktop_controller_->CloseAppWindow();
-  base::MessageLoop::current()->PostTask(FROM_HERE,
-                                         base::MessageLoop::QuitClosure());
 }
 
 void ShellBrowserMainParts::CreateExtensionSystem() {

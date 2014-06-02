@@ -8,8 +8,8 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
+#include "ui/aura/client/window_tree_client.h"
 #include "ui/aura/window_tree_host_observer.h"
-#include "ui/gfx/geometry/size.h"
 
 #if defined(OS_CHROMEOS)
 #include "ui/display/chromeos/display_configurator.h"
@@ -17,11 +17,20 @@
 
 namespace aura {
 class TestScreen;
+class Window;
 class WindowTreeHost;
+namespace client {
+class DefaultCaptureClient;
+class FocusClient;
+}
 }
 
 namespace content {
 class BrowserContext;
+}
+
+namespace gfx {
+class Size;
 }
 
 #if defined(OS_CHROMEOS)
@@ -31,9 +40,10 @@ class UserActivityPowerManagerNotifier;
 #endif
 
 namespace wm {
+class CompoundEventFilter;
 class CursorManager;
+class InputMethodEventFilter;
 class UserActivityDetector;
-class WMTestHelper;
 }
 
 namespace apps {
@@ -41,11 +51,13 @@ namespace apps {
 class ShellAppWindow;
 
 // Handles desktop-related tasks for app_shell.
-class ShellDesktopController
+class ShellDesktopController : public aura::client::WindowTreeClient,
+                               public aura::WindowTreeHostObserver
 #if defined(OS_CHROMEOS)
-    : public ui::DisplayConfigurator::Observer
+                               ,
+                               public ui::DisplayConfigurator::Observer
 #endif
-      {
+                               {
  public:
   ShellDesktopController();
   virtual ~ShellDesktopController();
@@ -55,6 +67,11 @@ class ShellDesktopController
   // we need a singleton somewhere).
   static ShellDesktopController* instance();
 
+  aura::WindowTreeHost* host() { return host_.get(); }
+
+  // Creates the window that hosts the app.
+  void CreateRootWindow();
+
   // Creates a new app window and adds it to the desktop. The desktop maintains
   // ownership of the window.
   ShellAppWindow* CreateAppWindow(content::BrowserContext* context);
@@ -62,8 +79,10 @@ class ShellDesktopController
   // Closes and destroys the app window.
   void CloseAppWindow();
 
-  // Returns the host for the Aura window tree.
-  aura::WindowTreeHost* GetWindowTreeHost();
+  // Overridden from aura::client::WindowTreeClient:
+  virtual aura::Window* GetDefaultParent(aura::Window* context,
+                                         aura::Window* window,
+                                         const gfx::Rect& bounds) OVERRIDE;
 
 #if defined(OS_CHROMEOS)
   // ui::DisplayConfigurator::Observer overrides.
@@ -71,10 +90,15 @@ class ShellDesktopController
       ui::DisplayConfigurator::DisplayState>& displays) OVERRIDE;
 #endif
 
- private:
-  // Creates the window that hosts the app.
-  void CreateRootWindow();
+  // aura::WindowTreeHostObserver overrides:
+  virtual void OnHostCloseRequested(const aura::WindowTreeHost* host) OVERRIDE;
 
+ protected:
+  // Creates and sets the aura clients and window manager stuff. Subclass may
+  // initialize different sets of the clients.
+  virtual void InitWindowManager();
+
+ private:
   // Closes and destroys the root window hosting the app.
   void DestroyRootWindow();
 
@@ -86,10 +110,17 @@ class ShellDesktopController
   scoped_ptr<ui::DisplayConfigurator> display_configurator_;
 #endif
 
-  // Enable a minimal set of views::corewm to be initialized.
-  scoped_ptr<wm::WMTestHelper> wm_test_helper_;
-
   scoped_ptr<aura::TestScreen> test_screen_;
+
+  scoped_ptr<aura::WindowTreeHost> host_;
+
+  scoped_ptr<wm::CompoundEventFilter> root_window_event_filter_;
+
+  scoped_ptr<aura::client::DefaultCaptureClient> capture_client_;
+
+  scoped_ptr<wm::InputMethodEventFilter> input_method_filter_;
+
+  scoped_ptr<aura::client::FocusClient> focus_client_;
 
   scoped_ptr<wm::CursorManager> cursor_manager_;
 

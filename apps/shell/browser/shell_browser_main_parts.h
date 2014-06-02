@@ -43,8 +43,7 @@ class ShellNetworkController;
 #endif
 
 // Handles initialization of AppShell.
-class ShellBrowserMainParts : public content::BrowserMainParts,
-                              public aura::WindowTreeHostObserver {
+class ShellBrowserMainParts : public content::BrowserMainParts {
  public:
   ShellBrowserMainParts(const content::MainFunctionParams& parameters,
                         ShellBrowserMainDelegate* browser_main_delegate);
@@ -67,9 +66,6 @@ class ShellBrowserMainParts : public content::BrowserMainParts,
   virtual bool MainMessageLoopRun(int* result_code) OVERRIDE;
   virtual void PostMainMessageLoopRun() OVERRIDE;
   virtual void PostDestroyThreads() OVERRIDE;
-
-  // aura::WindowTreeHostObserver overrides:
-  virtual void OnHostCloseRequested(const aura::WindowTreeHost* host) OVERRIDE;
 
  private:
   // Creates and initializes the ExtensionSystem.

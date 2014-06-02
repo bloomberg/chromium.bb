@@ -88,7 +88,6 @@
         '<(DEPTH)/skia/skia.gyp:skia',
         '<(DEPTH)/third_party/WebKit/public/blink.gyp:blink',
         '<(DEPTH)/ui/wm/wm.gyp:wm',
-        '<(DEPTH)/ui/wm/wm.gyp:wm_test_support',
         '<(DEPTH)/v8/tools/gyp/v8.gyp:v8',
       ],
       'include_dirs': [

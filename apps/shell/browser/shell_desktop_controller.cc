@@ -7,6 +7,7 @@
 #include "apps/shell/browser/shell_app_window.h"
 #include "content/public/browser/context_factory.h"
 #include "ui/aura/client/cursor_client.h"
+#include "ui/aura/client/default_capture_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/layout_manager.h"
 #include "ui/aura/test/test_screen.h"
@@ -18,11 +19,15 @@
 #include "ui/base/ime/input_method_initializer.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/screen.h"
+#include "ui/wm/core/base_focus_rules.h"
+#include "ui/wm/core/compound_event_filter.h"
 #include "ui/wm/core/cursor_manager.h"
+#include "ui/wm/core/default_activation_client.h"
+#include "ui/wm/core/focus_controller.h"
+#include "ui/wm/core/input_method_event_filter.h"
 #include "ui/wm/core/native_cursor_manager.h"
 #include "ui/wm/core/native_cursor_manager_delegate.h"
 #include "ui/wm/core/user_activity_detector.h"
-#include "ui/wm/test/wm_test_helper.h"
 
 #if defined(OS_CHROMEOS)
 #include "ui/chromeos/user_activity_power_manager_notifier.h"
@@ -138,6 +143,19 @@ class ShellNativeCursorManager : public wm::NativeCursorManager {
   DISALLOW_COPY_AND_ASSIGN(ShellNativeCursorManager);
 };
 
+class AppsFocusRules : public wm::BaseFocusRules {
+ public:
+  AppsFocusRules() {}
+  virtual ~AppsFocusRules() {}
+
+  virtual bool SupportsChildActivation(aura::Window* window) const OVERRIDE {
+    return true;
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(AppsFocusRules);
+};
+
 ShellDesktopController* g_instance = NULL;
 
 }  // namespace
@@ -149,24 +167,8 @@ ShellDesktopController::ShellDesktopController() {
   display_configurator_->ForceInitialConfigure(0);
   display_configurator_->AddObserver(this);
 #endif
-  CreateRootWindow();
-
-  cursor_manager_.reset(
-      new wm::CursorManager(scoped_ptr<wm::NativeCursorManager>(
-          new ShellNativeCursorManager(GetWindowTreeHost()))));
-  cursor_manager_->SetDisplay(
-      gfx::Screen::GetNativeScreen()->GetPrimaryDisplay());
-  cursor_manager_->SetCursor(ui::kCursorPointer);
-  aura::client::SetCursorClient(
-      GetWindowTreeHost()->window(), cursor_manager_.get());
-
-  user_activity_detector_.reset(new wm::UserActivityDetector);
-  GetWindowTreeHost()->event_processor()->GetRootTarget()->AddPreTargetHandler(
-      user_activity_detector_.get());
-#if defined(OS_CHROMEOS)
-  user_activity_notifier_.reset(
-      new ui::UserActivityPowerManagerNotifier(user_activity_detector_.get()));
-#endif
+  aura::Env::CreateInstance(true);
+  aura::Env::GetInstance()->set_context_factory(content::GetContextFactory());
 
   g_instance = this;
 }
@@ -175,8 +177,6 @@ ShellDesktopController::~ShellDesktopController() {
   // The app window must be explicitly closed before desktop teardown.
   DCHECK(!app_window_);
   g_instance = NULL;
-  GetWindowTreeHost()->event_processor()->GetRootTarget()
-      ->RemovePreTargetHandler(user_activity_detector_.get());
   DestroyRootWindow();
   aura::Env::DeleteInstance();
 }
@@ -188,7 +188,7 @@ ShellDesktopController* ShellDesktopController::instance() {
 
 ShellAppWindow* ShellDesktopController::CreateAppWindow(
     content::BrowserContext* context) {
-  aura::Window* root_window = GetWindowTreeHost()->window();
+  aura::Window* root_window = host_->window();
 
   app_window_.reset(new ShellAppWindow);
   app_window_->Init(context, root_window->bounds().size());
@@ -203,8 +203,11 @@ ShellAppWindow* ShellDesktopController::CreateAppWindow(
 
 void ShellDesktopController::CloseAppWindow() { app_window_.reset(); }
 
-aura::WindowTreeHost* ShellDesktopController::GetWindowTreeHost() {
-  return wm_test_helper_->host();
+aura::Window* ShellDesktopController::GetDefaultParent(
+    aura::Window* context,
+    aura::Window* window,
+    const gfx::Rect& bounds) {
+  return host_->window();
 }
 
 #if defined(OS_CHROMEOS)
@@ -212,9 +215,17 @@ void ShellDesktopController::OnDisplayModeChanged(
     const std::vector<ui::DisplayConfigurator::DisplayState>& displays) {
   gfx::Size size = GetPrimaryDisplaySize();
   if (!size.IsEmpty())
-    wm_test_helper_->host()->UpdateRootWindowSize(size);
+    host_->UpdateRootWindowSize(size);
 }
 #endif
+
+void ShellDesktopController::OnHostCloseRequested(
+    const aura::WindowTreeHost* host) {
+  DCHECK_EQ(host_.get(), host);
+  CloseAppWindow();
+  base::MessageLoop::current()->PostTask(FROM_HERE,
+                                         base::MessageLoop::QuitClosure());
+}
 
 void ShellDesktopController::CreateRootWindow() {
   test_screen_.reset(aura::TestScreen::Create());
@@ -227,19 +238,72 @@ void ShellDesktopController::CreateRootWindow() {
   gfx::Size size = GetPrimaryDisplaySize();
   if (size.IsEmpty())
     size = gfx::Size(800, 600);
-  wm_test_helper_.reset(
-      new wm::WMTestHelper(size, content::GetContextFactory()));
 
-  // Ensure new windows fill the display.
-  aura::WindowTreeHost* host = wm_test_helper_->host();
-  host->window()->SetLayoutManager(new FillLayout);
+  host_.reset(aura::WindowTreeHost::Create(gfx::Rect(size)));
+  host_->InitHost();
+  aura::client::SetWindowTreeClient(host_->window(), this);
+  root_window_event_filter_.reset(new wm::CompoundEventFilter);
+  host_->window()->AddPreTargetHandler(root_window_event_filter_.get());
+  InitWindowManager();
+
+  host_->AddObserver(this);
 
   // Ensure the X window gets mapped.
-  host->Show();
+  host_->Show();
+}
+
+void ShellDesktopController::InitWindowManager() {
+  focus_client_.reset(new wm::FocusController(new AppsFocusRules()));
+  aura::client::SetFocusClient(host_->window(), focus_client_.get());
+
+  input_method_filter_.reset(
+      new wm::InputMethodEventFilter(host_->GetAcceleratedWidget()));
+  input_method_filter_->SetInputMethodPropertyInRootWindow(host_->window());
+  root_window_event_filter_->AddHandler(input_method_filter_.get());
+
+  new wm::DefaultActivationClient(host_->window());
+
+  capture_client_.reset(
+      new aura::client::DefaultCaptureClient(host_->window()));
+
+  // Ensure new windows fill the display.
+  host_->window()->SetLayoutManager(new FillLayout);
+
+  cursor_manager_.reset(
+      new wm::CursorManager(scoped_ptr<wm::NativeCursorManager>(
+          new ShellNativeCursorManager(host_.get()))));
+  cursor_manager_->SetDisplay(
+      gfx::Screen::GetNativeScreen()->GetPrimaryDisplay());
+  cursor_manager_->SetCursor(ui::kCursorPointer);
+  aura::client::SetCursorClient(host_->window(), cursor_manager_.get());
+
+  user_activity_detector_.reset(new wm::UserActivityDetector);
+  host_->event_processor()->GetRootTarget()->AddPreTargetHandler(
+      user_activity_detector_.get());
+#if defined(OS_CHROMEOS)
+  user_activity_notifier_.reset(
+      new ui::UserActivityPowerManagerNotifier(user_activity_detector_.get()));
+#endif
 }
 
 void ShellDesktopController::DestroyRootWindow() {
-  wm_test_helper_.reset();
+  host_->RemoveObserver(this);
+  if (input_method_filter_)
+    root_window_event_filter_->RemoveHandler(input_method_filter_.get());
+  if (user_activity_detector_) {
+    host_->event_processor()->GetRootTarget()->RemovePreTargetHandler(
+        user_activity_detector_.get());
+  }
+  root_window_event_filter_.reset();
+  capture_client_.reset();
+  input_method_filter_.reset();
+  focus_client_.reset();
+  cursor_manager_.reset();
+#if defined(OS_CHROMEOS)
+  user_activity_notifier_.reset();
+#endif
+  user_activity_detector_.reset();
+  host_.reset();
   ui::ShutdownInputMethodForTesting();
 }
 
