@@ -9,6 +9,7 @@
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
+#include "chrome/browser/guest_view/guest_view_base.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_iterator.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
@@ -35,6 +36,8 @@ const char kTargetTypeApp[] = "app";
 const char kTargetTypeBackgroundPage[] = "background_page";
 const char kTargetTypePage[] = "page";
 const char kTargetTypeWorker[] = "worker";
+const char kTargetTypeWebView[] = "webview";
+const char kTargetTypeIFrame[] = "iframe";
 const char kTargetTypeOther[] = "other";
 
 // RenderViewHostTarget --------------------------------------------------------
@@ -67,9 +70,11 @@ RenderViewHostTarget::RenderViewHostTarget(RenderViewHost* rvh, bool is_tab)
   content::RenderFrameHost* rfh = rvh->GetMainFrame();
   if (rfh->IsCrossProcessSubframe()) {
     set_url(rfh->GetLastCommittedURL());
-    set_type(kTargetTypeOther);
+    set_type(kTargetTypeIFrame);
     // TODO(kaznacheev) Try setting the title when the frame navigation
     // refactoring is done.
+    RenderViewHost* parent_rvh = rfh->GetParent()->GetRenderViewHost();
+    set_parent_id(DevToolsAgentHost::GetOrCreateFor(parent_rvh)->GetId());
     return;
   }
 
@@ -80,6 +85,15 @@ RenderViewHostTarget::RenderViewHostTarget(RenderViewHost* rvh, bool is_tab)
   if (entry != NULL && entry->GetURL().is_valid())
     set_favicon_url(entry->GetFavicon().url);
   set_last_activity_time(web_contents->GetLastActiveTime());
+
+  GuestViewBase* guest = GuestViewBase::FromWebContents(web_contents);
+  if (guest) {
+    set_type(kTargetTypeWebView);
+    RenderViewHost* parent_rvh =
+        guest->embedder_web_contents()->GetRenderViewHost();
+    set_parent_id(DevToolsAgentHost::GetOrCreateFor(parent_rvh)->GetId());
+    return;
+  }
 
   if (is_tab) {
     set_type(kTargetTypePage);
@@ -205,6 +219,10 @@ DevToolsTargetImpl::~DevToolsTargetImpl() {
 DevToolsTargetImpl::DevToolsTargetImpl(
     scoped_refptr<DevToolsAgentHost> agent_host)
     : agent_host_(agent_host) {
+}
+
+std::string DevToolsTargetImpl::GetParentId() const {
+  return parent_id_;
 }
 
 std::string DevToolsTargetImpl::GetId() const {

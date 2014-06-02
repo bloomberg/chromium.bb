@@ -11,7 +11,6 @@
 #include "base/version.h"
 #include "chrome/browser/devtools/device/devtools_android_bridge.h"
 #include "chrome/browser/devtools/devtools_target_impl.h"
-#include "chrome/browser/guest_view/guest_view_base.h"
 #include "chrome/common/chrome_version_info.h"
 #include "content/public/browser/browser_child_process_observer.h"
 #include "content/public/browser/browser_thread.h"
@@ -21,18 +20,12 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
-#include "content/public/browser/render_frame_host.h"
-#include "content/public/browser/render_process_host.h"
-#include "content/public/browser/render_view_host.h"
-#include "content/public/browser/web_contents.h"
 #include "content/public/browser/worker_service.h"
 #include "content/public/browser/worker_service_observer.h"
 #include "content/public/common/process_type.h"
 #include "net/base/escape.h"
 
 using content::BrowserThread;
-using content::RenderFrameHost;
-using content::WebContents;
 
 namespace {
 
@@ -141,8 +134,7 @@ void RenderViewHostTargetsUIHandler::Observe(
 void RenderViewHostTargetsUIHandler::UpdateTargets() {
   scoped_ptr<base::ListValue> list_value(new base::ListValue());
 
-  std::map<RenderFrameHost*, base::DictionaryValue*> rfh_to_descriptor;
-  std::vector<RenderFrameHost*> nested_frames;
+  std::map<std::string, base::DictionaryValue*> id_to_descriptor;
 
   DevToolsTargetImpl::List targets =
       DevToolsTargetImpl::EnumerateRenderViewHostTargets();
@@ -150,51 +142,26 @@ void RenderViewHostTargetsUIHandler::UpdateTargets() {
   STLDeleteValues(&targets_);
   for (DevToolsTargetImpl::List::iterator it = targets.begin();
       it != targets.end(); ++it) {
-    scoped_ptr<DevToolsTargetImpl> target(*it);
-    content::RenderViewHost* rvh = target->GetRenderViewHost();
-    if (!rvh)
-      continue;
-
-    DevToolsTargetImpl* target_ptr = target.get();
-    targets_[target_ptr->GetId()] = target.release();
-    base::DictionaryValue* descriptor = Serialize(*target_ptr);
-
-    // TODO (kaznacheev): GetMainFrame() call is a temporary hack.
-    // Revisit this when multiple OOP frames are supported.
-    RenderFrameHost* rfh = rvh->GetMainFrame();
-    rfh_to_descriptor[rfh] = descriptor;
-    content::WebContents* web_contents =
-        content::WebContents::FromRenderViewHost(rvh);
-    if (GuestViewBase::IsGuest(web_contents) || rfh->IsCrossProcessSubframe()) {
-      nested_frames.push_back(rfh);
-    } else {
-      list_value->Append(descriptor);
-    }
+    DevToolsTargetImpl* target = *it;
+    targets_[target->GetId()] = target;
+    id_to_descriptor[target->GetId()] = Serialize(*target);
   }
 
-  // Add the list of nested targets to each of its owners.
-  for (std::vector<RenderFrameHost*>::iterator it(nested_frames.begin());
-       it != nested_frames.end(); ++it) {
-    RenderFrameHost* rfh = (*it);
-    RenderFrameHost* parent_rfh = NULL;
-    content::RenderViewHost* rvh = rfh->GetRenderViewHost();
-    WebContents* nested_web_contents = WebContents::FromRenderViewHost(rvh);
-    GuestViewBase* guest = GuestViewBase::FromWebContents(nested_web_contents);
-    if (guest) {
-      WebContents* embedder = guest->embedder_web_contents();
-      parent_rfh = embedder->GetRenderViewHost()->GetMainFrame();
+  for (TargetMap::iterator it(targets_.begin()); it != targets_.end(); ++it) {
+    DevToolsTargetImpl* target = it->second;
+    base::DictionaryValue* descriptor = id_to_descriptor[target->GetId()];
+
+    std::string parent_id = target->GetParentId();
+    if (parent_id.empty() || id_to_descriptor.count(parent_id) == 0) {
+      list_value->Append(descriptor);
     } else {
-      parent_rfh = rfh->GetParent();
-      DCHECK(parent_rfh);
-    }
-    if (parent_rfh && rfh_to_descriptor.count(parent_rfh) > 0) {
-      base::DictionaryValue* parent = rfh_to_descriptor[parent_rfh];
+      base::DictionaryValue* parent = id_to_descriptor[parent_id];
       base::ListValue* guests = NULL;
       if (!parent->GetList(kGuestList, &guests)) {
         guests = new base::ListValue();
         parent->Set(kGuestList, guests);
       }
-      guests->Append(rfh_to_descriptor[rfh]);
+      guests->Append(descriptor);
     }
   }
 

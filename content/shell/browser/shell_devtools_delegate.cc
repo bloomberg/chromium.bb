@@ -77,6 +77,7 @@ class Target : public content::DevToolsTarget {
   explicit Target(WebContents* web_contents);
 
   virtual std::string GetId() const OVERRIDE { return id_; }
+  virtual std::string GetParentId() const OVERRIDE { return std::string(); }
   virtual std::string GetType() const OVERRIDE { return kTargetTypePage; }
   virtual std::string GetTitle() const OVERRIDE { return title_; }
   virtual std::string GetDescription() const OVERRIDE { return std::string(); }

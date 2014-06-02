@@ -28,6 +28,9 @@ class DevToolsTarget {
   // Returns the unique target id.
   virtual std::string GetId() const = 0;
 
+  // Returns the id of the parent target, or empty string if no parent.
+  virtual std::string GetParentId() const = 0;
+
   // Returns the target type.
   virtual std::string GetType() const = 0;
 

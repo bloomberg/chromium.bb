@@ -79,6 +79,8 @@ static GURL GetFaviconURLForContents(WebContents* web_contents) {
 class TargetBase : public content::DevToolsTarget {
  public:
   // content::DevToolsTarget implementation:
+  virtual std::string GetParentId() const OVERRIDE { return std::string(); }
+
   virtual std::string GetTitle() const OVERRIDE { return title_; }
 
   virtual std::string GetDescription() const OVERRIDE { return std::string(); }

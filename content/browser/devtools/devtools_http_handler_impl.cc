@@ -54,6 +54,7 @@ const char kThumbUrlPrefix[] = "/thumb/";
 const char kPageUrlPrefix[] = "/devtools/page/";
 
 const char kTargetIdField[] = "id";
+const char kTargetParentIdField[] = "parentId";
 const char kTargetTypeField[] = "type";
 const char kTargetTitleField[] = "title";
 const char kTargetDescriptionField[] = "description";
@@ -753,6 +754,9 @@ base::DictionaryValue* DevToolsHttpHandlerImpl::SerializeTarget(
 
   std::string id = target.GetId();
   dictionary->SetString(kTargetIdField, id);
+  std::string parent_id = target.GetParentId();
+  if (!parent_id.empty())
+    dictionary->SetString(kTargetParentIdField, parent_id);
   dictionary->SetString(kTargetTypeField, target.GetType());
   dictionary->SetString(kTargetTitleField,
                         net::EscapeForHTML(target.GetTitle()));
