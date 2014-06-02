@@ -5,10 +5,12 @@
 #include "chrome/browser/chromeos/file_system_provider/fileapi/file_stream_reader.h"
 
 #include "base/files/file.h"
+#include "base/memory/ref_counted.h"
 #include "chrome/browser/chromeos/file_system_provider/fileapi/provider_async_file_util.h"
 #include "chrome/browser/chromeos/file_system_provider/mount_path_util.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_interface.h"
 #include "content/public/browser/browser_thread.h"
+#include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 
 using content::BrowserThread;
@@ -82,7 +84,7 @@ void CloseFileOnUIThread(base::WeakPtr<ProvidedFileSystemInterface> file_system,
 void ReadFileOnUIThread(
     base::WeakPtr<ProvidedFileSystemInterface> file_system,
     int file_handle,
-    net::IOBuffer* buffer,
+    scoped_refptr<net::IOBuffer> buffer,
     int64 offset,
     int length,
     const ProvidedFileSystemInterface::ReadChunkReceivedCallback& callback) {
@@ -206,7 +208,7 @@ int FileStreamReader::Read(net::IOBuffer* buffer,
   if (!file_handle_) {
     Initialize(base::Bind(&FileStreamReader::ReadAfterInitialized,
                           weak_ptr_factory_.GetWeakPtr(),
-                          buffer,
+                          make_scoped_refptr(buffer),
                           buffer_length,
                           callback),
                base::Bind(&Int64ToIntCompletionCallback, callback));
@@ -233,7 +235,7 @@ int64 FileStreamReader::GetLength(
 }
 
 void FileStreamReader::ReadAfterInitialized(
-    net::IOBuffer* buffer,
+    scoped_refptr<net::IOBuffer> buffer,
     int buffer_length,
     const net::CompletionCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);

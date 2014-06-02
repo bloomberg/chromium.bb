@@ -18,7 +18,7 @@ namespace {
 // Convert |value| into |output|. If parsing fails, then returns a negative
 // value. Otherwise returns number of bytes written to the buffer.
 int CopyRequestValueToBuffer(scoped_ptr<RequestValue> value,
-                             net::IOBuffer* buffer,
+                             scoped_refptr<net::IOBuffer> buffer,
                              int buffer_offset,
                              int buffer_length) {
   using extensions::api::file_system_provider_internal::
@@ -45,7 +45,7 @@ ReadFile::ReadFile(
     extensions::EventRouter* event_router,
     const ProvidedFileSystemInfo& file_system_info,
     int file_handle,
-    net::IOBuffer* buffer,
+    scoped_refptr<net::IOBuffer> buffer,
     int64 offset,
     int length,
     const ProvidedFileSystemInterface::ReadChunkReceivedCallback& callback)

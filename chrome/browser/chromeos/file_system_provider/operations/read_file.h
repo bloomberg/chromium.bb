@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_FILE_SYSTEM_PROVIDER_OPERATIONS_READ_FILE_H_
 
 #include "base/files/file.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/file_system_provider/operations/operation.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_info.h"
@@ -34,7 +35,7 @@ class ReadFile : public Operation {
       extensions::EventRouter* event_router,
       const ProvidedFileSystemInfo& file_system_info,
       int file_handle,
-      net::IOBuffer* buffer,
+      scoped_refptr<net::IOBuffer> buffer,
       int64 offset,
       int length,
       const ProvidedFileSystemInterface::ReadChunkReceivedCallback& callback);
@@ -49,7 +50,7 @@ class ReadFile : public Operation {
 
  private:
   int file_handle_;
-  net::IOBuffer* buffer_;
+  scoped_refptr<net::IOBuffer> buffer_;
   int64 offset_;
   int length_;
   int64 current_offset_;

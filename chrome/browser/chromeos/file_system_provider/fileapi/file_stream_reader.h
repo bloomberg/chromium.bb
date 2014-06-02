@@ -76,7 +76,7 @@ class FileStreamReader : public webkit_blob::FileStreamReader {
       const base::File::Info& file_info);
 
   // Same as Read(), but called after initializing is completed.
-  void ReadAfterInitialized(net::IOBuffer* buffer,
+  void ReadAfterInitialized(scoped_refptr<net::IOBuffer> buffer,
                             int buffer_length,
                             const net::CompletionCallback& callback);
 
