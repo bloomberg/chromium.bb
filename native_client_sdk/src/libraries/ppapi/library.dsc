@@ -77,6 +77,7 @@
         'ppp.h',
         'ppp_input_event.h',
         'ppp_instance.h',
+        'ppp_message_handler.h',
         'ppp_messaging.h',
         'ppp_mouse_lock.h',
         'pp_point.h',

@@ -411,6 +411,11 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
                                  double minimum_factor,
                                  double maximum_factor) OVERRIDE;
   virtual void PostMessage(PP_Instance instance, PP_Var message) OVERRIDE;
+  virtual int32_t RegisterMessageHandler(PP_Instance instance,
+                                         void* user_data,
+                                         const PPP_MessageHandler_0_1* handler,
+                                         PP_Resource message_loop) OVERRIDE;
+  virtual void UnregisterMessageHandler(PP_Instance instance) OVERRIDE;
   virtual PP_Bool SetCursor(PP_Instance instance,
                             PP_MouseCursor_Type type,
                             PP_Resource image,

@@ -100,6 +100,7 @@
 #include "ppapi/c/ppp_graphics_3d.h"
 #include "ppapi/c/ppp_input_event.h"
 #include "ppapi/c/ppp_instance.h"
+#include "ppapi/c/ppp_message_handler.h"
 #include "ppapi/c/ppp_messaging.h"
 #include "ppapi/c/ppp_mouse_lock.h"
 #include "ppapi/c/private/pp_private_font_charset.h"

@@ -12,7 +12,8 @@
 [generate_thunk]
 
 label Chrome {
-  M14 = 1.0
+  M14 = 1.0,
+  [channel=dev] M37 = 1.1
 };
 
 /**
@@ -81,6 +82,65 @@ interface PPB_Messaging {
    *
    * The browser will pop-up an alert saying "Hello world!"
    */
+  [version=1.0]
   void PostMessage([in] PP_Instance instance, [in] PP_Var message);
+
+  /**
+   * <strong>Note:</strong> This function is not yet implemented. Please use
+   * PPB_Messaging_1_0.
+   *
+   * Registers a handler for receiving messages from JavaScript. If a handler
+   * is registered this way, it will replace PPP_Messaging, and all messages
+   * sent from JavaScript via postMessage and postMessageAndAwaitResponse will
+   * be dispatched to <code>handler</code>.
+   *
+   * The function calls will be dispatched via <code>message_loop</code>. This
+   * means that the functions will be invoked on the thread to which
+   * <code>message_loop</code> is attached, when <code>message_loop</code> is
+   * run. It is illegal to pass the main thread message loop;
+   * RegisterMessageHandler will return PP_ERROR_WRONG_THREAD in that case.
+   *
+   * Attempting to register a message handler when one is already registered
+   * will cause the current MessageHandler to be unregistered and replaced. In
+   * that case, no messages will be sent to the "default" message handler
+   * (PPP_Messaging). Messages will stop arriving at the prior message handler
+   * and will begin to be dispatched at the new message handler.
+   *
+   * @param[in] instance A <code>PP_Instance</code> identifying one instance
+   * of a module.
+   * @param[in] user_data A pointer the plugin may choose to use when handling
+   * calls to functions within PPP_MessageHandler. The browser will pass this
+   * same pointer when invoking functions within PPP_MessageHandler.
+   * @param[in] handler The plugin-provided set of functions for handling
+   * messages.
+   * @param[in] message_loop Represents the message loop on which
+   * PPP_MessageHandler functions should be invoked.
+   * @return PP_OK on success, or an error from pp_errors.h.
+   */
+  [version=1.1]
+  int32_t RegisterMessageHandler([in] PP_Instance instance,
+                                 [inout] mem_t user_data,
+                                 [in] PPP_MessageHandler handler,
+                                 [in] PP_Resource message_loop);
+  /**
+   * <strong>Note:</strong> This function is not yet implemented. Please use
+   * PPB_Messaging_1_0.
+   *
+   * Unregisters the current message handler for <code>instance</code> if one
+   * is registered. After this call, the message handler (if one was
+   * registered) will have "Destroy" called on it and will receive no further
+   * messages after that point. After that point, all messages sent from
+   * JavaScript using postMessage() will be dispatched to PPP_Messaging (if
+   * the plugin supports PPP_MESSAGING_INTERFACE). Attempts to call
+   * postMessageAndAwaitResponse() from JavaScript will fail.
+   *
+   * Attempting to unregister a message handler when none is registered has no
+   * effect.
+   *
+   * @param[in] instance A <code>PP_Instance</code> identifying one instance
+   * of a module.
+   */
+  [version=1.1]
+  void UnregisterMessageHandler([in] PP_Instance instance);
 };
 

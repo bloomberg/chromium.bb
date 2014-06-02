@@ -226,6 +226,19 @@ void PluginInstance::PostMessage(PP_Instance instance, PP_Var message) {
   NOTIMPLEMENTED();
 }
 
+int32_t PluginInstance::RegisterMessageHandler(
+    PP_Instance instance,
+    void* user_data,
+    const PPP_MessageHandler_0_1* handler,
+    PP_Resource message_loop) {
+  NOTIMPLEMENTED();
+  return PP_ERROR_FAILED;
+}
+
+void PluginInstance::UnregisterMessageHandler(PP_Instance instance) {
+  NOTIMPLEMENTED();
+}
+
 PP_Bool PluginInstance::SetCursor(PP_Instance instance,
                                   PP_MouseCursor_Type type,
                                   PP_Resource image,

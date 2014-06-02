@@ -30,6 +30,7 @@
 
 struct PP_DecryptedBlockInfo;
 struct PP_DecryptedFrameInfo;
+struct PPP_MessageHandler_0_1;
 
 namespace ppapi {
 
@@ -114,6 +115,11 @@ class PPB_Instance_API {
 
   // Messaging.
   virtual void PostMessage(PP_Instance instance, PP_Var message) = 0;
+  virtual int32_t RegisterMessageHandler(PP_Instance instance,
+                                         void* user_data,
+                                         const PPP_MessageHandler_0_1* handler,
+                                         PP_Resource message_loop) = 0;
+  virtual void UnregisterMessageHandler(PP_Instance instance) = 0;
 
   // Mouse cursor.
   virtual PP_Bool SetCursor(PP_Instance instance,

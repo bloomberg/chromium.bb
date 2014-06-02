@@ -740,6 +740,18 @@ void PPB_Instance_Proxy::PostMessage(PP_Instance instance,
       instance, SerializedVarSendInputShmem(dispatcher(), message,
                                             instance)));
 }
+int32_t PPB_Instance_Proxy::RegisterMessageHandler(
+    PP_Instance instance,
+    void* user_data,
+    const PPP_MessageHandler_0_1* handler,
+    PP_Resource message_loop) {
+  // Not yet implemented. See crbug.com/367896
+  return PP_ERROR_NOTSUPPORTED;
+}
+
+void PPB_Instance_Proxy::UnregisterMessageHandler(PP_Instance instance) {
+  // Not yet implemented. See crbug.com/367896
+}
 
 PP_Bool PPB_Instance_Proxy::SetCursor(PP_Instance instance,
                                       PP_MouseCursor_Type type,
