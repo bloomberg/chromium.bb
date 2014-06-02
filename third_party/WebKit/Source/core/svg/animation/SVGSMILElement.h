@@ -87,7 +87,7 @@ public:
 
     SMILTime elapsed() const;
 
-    SMILTime intervalBegin() const { return m_intervalBegin; }
+    SMILTime intervalBegin() const { return m_interval.begin; }
     SMILTime previousIntervalBegin() const { return m_previousIntervalBegin; }
     SMILTime simpleDuration() const;
 
@@ -244,8 +244,7 @@ private:
     Vector<SMILTimeWithOrigin> m_endTimes;
 
     // This is the upcoming or current interval
-    SMILTime m_intervalBegin;
-    SMILTime m_intervalEnd;
+    SMILInterval m_interval;
 
     SMILTime m_previousIntervalBegin;
 
