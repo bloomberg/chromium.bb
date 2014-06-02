@@ -441,8 +441,10 @@ void SigninScreenHandler::DeclareLocalizedValues(
   builder->Add("publicAccountEnter", IDS_LOGIN_PUBLIC_ACCOUNT_ENTER);
   builder->Add("publicAccountEnterAccessibleName",
                IDS_LOGIN_PUBLIC_ACCOUNT_ENTER_ACCESSIBLE_NAME);
-  builder->AddF("removeUserWarningText",
-               IDS_LOGIN_POD_USER_REMOVE_WARNING,
+  builder->Add("removeUserWarningText",
+               base::string16());
+  builder->AddF("removeSupervisedUserWarningText",
+               IDS_LOGIN_POD_SUPERVISED_USER_REMOVE_WARNING,
                base::UTF8ToUTF16(chrome::kSupervisedUserManagementDisplayURL));
   builder->Add("removeUserWarningButtonTitle",
                IDS_LOGIN_POD_USER_REMOVE_WARNING_BUTTON);

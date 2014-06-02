@@ -21,6 +21,7 @@
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/singleton_tabs.h"
+#include "chrome/common/url_constants.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
@@ -507,8 +508,11 @@ void UserManagerScreenHandler::GetLocalizedValues(
   localized_strings->SetString("removeUserWarningButtonTitle",
       l10n_util::GetStringUTF16(IDS_LOGIN_POD_USER_REMOVE_WARNING_BUTTON));
   localized_strings->SetString("removeUserWarningText",
-      l10n_util::GetStringUTF16(
-           IDS_LOGIN_POD_USER_REMOVE_WARNING));
+      l10n_util::GetStringUTF16(IDS_LOGIN_POD_USER_REMOVE_WARNING));
+  localized_strings->SetString("removeSupervisedUserWarningText",
+      l10n_util::GetStringFUTF16(
+          IDS_LOGIN_POD_SUPERVISED_USER_REMOVE_WARNING,
+          base::UTF8ToUTF16(chrome::kSupervisedUserManagementDisplayURL)));
 
   // Strings needed for the User Manager tutorial slides.
   localized_strings->SetString("tutorialStart",
@@ -589,7 +593,8 @@ void UserManagerScreenHandler::SendUserList() {
         kKeyDisplayName, info_cache.GetNameOfProfileAtIndex(i));
     profile_value->SetString(kKeyProfilePath, profile_path.MaybeAsASCII());
     profile_value->SetBoolean(kKeyPublicAccount, false);
-    profile_value->SetBoolean(kKeyLocallyManagedUser, false);
+    profile_value->SetBoolean(
+        kKeyLocallyManagedUser, info_cache.ProfileIsManagedAtIndex(i));
     profile_value->SetBoolean(kKeySignedIn, is_active_user);
     profile_value->SetBoolean(
         kKeyNeedsSignin, info_cache.ProfileIsSigninRequiredAtIndex(i));

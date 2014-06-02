@@ -410,6 +410,23 @@ cr.define('login', function() {
     },
 
     /**
+     * Gets action box menu, remove user warning text div.
+     * @type {!HTMLInputElement}
+     */
+    get actionBoxRemoveUserWarningTextElement() {
+      return this.querySelector('.action-box-remove-user-warning-text');
+    },
+
+    /**
+     * Gets action box menu, remove supervised user warning text div.
+     * @type {!HTMLInputElement}
+     */
+    get actionBoxRemoveSupervisedUserWarningTextElement() {
+      return this.querySelector(
+          '.action-box-remove-supervised-user-warning-text');
+    },
+
+    /**
      * Gets action box menu, remove user command item div.
      * @type {!HTMLInputElement}
      */
@@ -422,8 +439,7 @@ cr.define('login', function() {
      * @type {!HTMLInputElement}
      */
     get actionBoxRemoveUserWarningButtonElement() {
-      return this.querySelector(
-          '.remove-warning-button');
+      return this.querySelector('.remove-warning-button');
     },
 
     /**
@@ -432,6 +448,14 @@ cr.define('login', function() {
      */
     get lockedIndicatorElement() {
       return this.querySelector('.locked-indicator');
+    },
+
+    /**
+     * Gets the supervised user indicator box.
+     * @type {!HTMLInputElement}
+     */
+    get supervisedUserIndicatorElement() {
+      return this.querySelector('.supervised-indicator');
     },
 
     /**
@@ -495,7 +519,7 @@ cr.define('login', function() {
       var isMultiProfilesUI =
           (Oobe.getInstance().displayType == DISPLAY_TYPE.USER_ADDING);
 
-      if (this.user_.locallyManagedUser) {
+      if (this.user_.locallyManagedUser && !this.user_.isDesktopUser) {
         this.setUserPodIconType('supervised');
       } else if (isMultiProfilesUI && !this.user_.isMultiProfilesAllowed) {
         // Mark user pod as not focusable which in addition to the grayed out
@@ -714,7 +738,7 @@ cr.define('login', function() {
      * Shows signin UI for this user.
      */
     showSigninUI: function() {
-      if (this.user.locallyManagedUser) {
+      if (this.user.locallyManagedUser && !this.user.isDesktopUser) {
         this.showSupervisedUserSigninWarning();
       } else {
         this.parentNode.showSigninUI(this.user.emailAddress);
@@ -793,7 +817,8 @@ cr.define('login', function() {
     },
 
     /**
-     * Shows remove warning for managed users.
+     * Shows remove user warning. Used for supervised users on CrOS, and for all
+     * users on desktop.
      */
     showRemoveWarning_: function() {
       this.actionBoxMenuRemoveElement.hidden = true;
@@ -1132,13 +1157,19 @@ cr.define('login', function() {
       this.nameElement.textContent = this.user.displayName;
 
       var isLockedUser = this.user.needsSignin;
+      var isSupervisedUser = this.user.locallyManagedUser;
       this.signinButtonElement.hidden = true;
       this.lockedIndicatorElement.hidden = !isLockedUser;
+      this.supervisedUserIndicatorElement.hidden = !isSupervisedUser;
       this.passwordElement.hidden = !isLockedUser;
       this.nameElement.hidden = isLockedUser;
 
       if (this.isAuthTypeUserClick)
         this.passwordLabelElement.textContent = this.authValue;
+
+      this.actionBoxRemoveUserWarningTextElement.hidden = isSupervisedUser;
+      this.actionBoxRemoveSupervisedUserWarningTextElement.hidden =
+          !isSupervisedUser;
 
       UserPod.prototype.updateActionBoxArea.call(this);
     },
@@ -1147,8 +1178,10 @@ cr.define('login', function() {
     focusInput: function() {
       // For focused pods, display the name unless the pod is locked.
       var isLockedUser = this.user.needsSignin;
+      var isSupervisedUser = this.user.locallyManagedUser;
       this.signinButtonElement.hidden = true;
       this.lockedIndicatorElement.hidden = !isLockedUser;
+      this.supervisedUserIndicatorElement.hidden = !isSupervisedUser;
       this.passwordElement.hidden = !isLockedUser;
       this.nameElement.hidden = isLockedUser;
 
