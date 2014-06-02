@@ -702,20 +702,24 @@ String StylePropertySerializer::borderPropertyValue(CommonValueMode valueMode) c
     return result.isEmpty() ? String() : result.toString();
 }
 
-static void buildSingleBackgroundRepeatValue(StringBuilder& builder, const CSSValue& repeatXValue, const CSSValue& repeatYValue)
+static void appendBackgroundRepeatValue(StringBuilder& builder, const CSSValue& repeatXCSSValue, const CSSValue& repeatYCSSValue)
 {
-    CSSValueID repeatXValueId = toCSSPrimitiveValue(repeatXValue).getValueID();
-    CSSValueID repeatYValueId = toCSSPrimitiveValue(repeatYValue).getValueID();
+    // FIXME: Ensure initial values do not appear in CSS_VALUE_LISTS.
+    DEFINE_STATIC_REF_WILL_BE_PERSISTENT(CSSPrimitiveValue, initialRepeatValue, CSSPrimitiveValue::create(CSSValueRepeat));
+    const CSSPrimitiveValue& repeatX = repeatXCSSValue.isInitialValue() ? *initialRepeatValue : toCSSPrimitiveValue(repeatXCSSValue);
+    const CSSPrimitiveValue& repeatY = repeatYCSSValue.isInitialValue() ? *initialRepeatValue : toCSSPrimitiveValue(repeatYCSSValue);
+    CSSValueID repeatXValueId = repeatX.getValueID();
+    CSSValueID repeatYValueId = repeatY.getValueID();
     if (repeatXValueId == repeatYValueId) {
-        builder.append(repeatXValue.cssText());
+        builder.append(repeatX.cssText());
     } else if (repeatXValueId == CSSValueNoRepeat && repeatYValueId == CSSValueRepeat) {
         builder.append("repeat-y");
     } else if (repeatXValueId == CSSValueRepeat && repeatYValueId == CSSValueNoRepeat) {
         builder.append("repeat-x");
     } else {
-        builder.append(repeatXValue.cssText());
+        builder.append(repeatX.cssText());
         builder.append(" ");
-        builder.append(repeatYValue.cssText());
+        builder.append(repeatY.cssText());
     }
 }
 
@@ -757,7 +761,7 @@ String StylePropertySerializer::backgroundRepeatPropertyValue() const
     for (size_t i = 0; i < shorthandLength; ++i) {
         if (i)
             builder.append(", ");
-        buildSingleBackgroundRepeatValue(builder,
+        appendBackgroundRepeatValue(builder,
             *repeatXList->item(i % repeatXList->length()),
             *repeatYList->item(i % repeatYList->length()));
     }
