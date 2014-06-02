@@ -69,8 +69,8 @@ void InspectorFrontendClientImpl::windowObjectCleared()
     if (m_frontendHost)
         m_frontendHost->disconnectClient();
     m_frontendHost = InspectorFrontendHost::create(this, m_frontendPage);
-    v8::Handle<v8::Value> frontendHostObj = toV8(m_frontendHost.get(), v8::Handle<v8::Object>(), frameContext->GetIsolate());
     v8::Handle<v8::Object> global = frameContext->Global();
+    v8::Handle<v8::Value> frontendHostObj = toV8(m_frontendHost.get(), global, frameContext->GetIsolate());
 
     global->Set(v8::String::NewFromUtf8(isolate, "InspectorFrontendHost"), frontendHostObj);
     ScriptController* scriptController = m_frontendPage->mainFrame() ? &m_frontendPage->mainFrame()->script() : 0;
