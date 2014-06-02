@@ -138,7 +138,7 @@ void WebDevToolsFrontendImpl::doDispatchOnInspectorFrontend(const WebString& mes
         return;
     v8::Isolate* isolate = toIsolate(frame->frame());
     v8::HandleScope scope(isolate);
-    v8::Handle<v8::Context> frameContext = toV8Context(isolate, frame->frame(), DOMWrapperWorld::mainWorld());
+    v8::Handle<v8::Context> frameContext = toV8Context(frame->frame(), DOMWrapperWorld::mainWorld());
     if (frameContext.IsEmpty())
         return;
     v8::Context::Scope contextScope(frameContext);

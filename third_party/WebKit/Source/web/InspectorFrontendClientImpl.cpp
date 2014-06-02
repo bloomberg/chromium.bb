@@ -63,7 +63,7 @@ void InspectorFrontendClientImpl::windowObjectCleared()
 {
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
     v8::HandleScope handleScope(isolate);
-    v8::Handle<v8::Context> frameContext = m_frontendPage->mainFrame() ? toV8Context(isolate, m_frontendPage->mainFrame(), DOMWrapperWorld::mainWorld()) : v8::Local<v8::Context>();
+    v8::Handle<v8::Context> frameContext = m_frontendPage->mainFrame() ? toV8Context(m_frontendPage->mainFrame(), DOMWrapperWorld::mainWorld()) : v8::Local<v8::Context>();
     v8::Context::Scope contextScope(frameContext);
 
     if (m_frontendHost)

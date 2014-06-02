@@ -58,7 +58,7 @@ void V8HTMLDocument::openMethodCustom(const v8::FunctionCallbackInfo<v8::Value>&
     if (info.Length() > 2) {
         if (RefPtr<LocalFrame> frame = htmlDocument->frame()) {
             // Fetch the global object for the frame.
-            v8::Local<v8::Context> context = toV8Context(info.GetIsolate(), frame.get(), DOMWrapperWorld::current(info.GetIsolate()));
+            v8::Local<v8::Context> context = toV8Context(frame.get(), DOMWrapperWorld::current(info.GetIsolate()));
             // Bail out if we cannot get the context.
             if (context.IsEmpty())
                 return;

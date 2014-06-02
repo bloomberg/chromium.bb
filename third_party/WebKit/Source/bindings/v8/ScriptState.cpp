@@ -84,7 +84,7 @@ ScriptState* ScriptState::forMainWorld(LocalFrame* frame)
 {
     v8::Isolate* isolate = toIsolate(frame);
     v8::HandleScope handleScope(isolate);
-    return ScriptState::from(toV8Context(isolate, frame, DOMWrapperWorld::mainWorld()));
+    return ScriptState::from(toV8Context(frame, DOMWrapperWorld::mainWorld()));
 }
 
 PassRefPtr<ScriptStateForTesting> ScriptStateForTesting::create(v8::Handle<v8::Context> context, PassRefPtr<DOMWrapperWorld> world)

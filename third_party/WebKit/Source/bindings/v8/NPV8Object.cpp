@@ -77,14 +77,14 @@ static NPClass V8NPObjectClass = {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 };
 
-static v8::Local<v8::Context> mainWorldContext(v8::Isolate* isolate, NPP npp, NPObject* npObject)
+static v8::Local<v8::Context> mainWorldContext(NPP npp, NPObject* npObject)
 {
     ASSERT(npObject->_class == &V8NPObjectClass);
     V8NPObject* object = reinterpret_cast<V8NPObject*>(npObject);
     DOMWindow* window = object->rootObject;
     if (!window || !window->isCurrentlyDisplayedInFrame())
         return v8::Local<v8::Context>();
-    return toV8Context(isolate, object->rootObject->frame(), DOMWrapperWorld::mainWorld());
+    return toV8Context(object->rootObject->frame(), DOMWrapperWorld::mainWorld());
 }
 
 static PassOwnPtr<v8::Handle<v8::Value>[]> createValueListFromVariantArgs(const NPVariant* arguments, uint32_t argumentCount, NPObject* owner, v8::Isolate* isolate)
@@ -232,7 +232,7 @@ bool _NPN_Invoke(NPP npp, NPObject* npObject, NPIdentifier methodName, const NPV
 
     v8::HandleScope handleScope(isolate);
     // FIXME: should use the plugin's owner frame as the security context.
-    v8::Handle<v8::Context> context = mainWorldContext(isolate, npp, npObject);
+    v8::Handle<v8::Context> context = mainWorldContext(npp, npObject);
     if (context.IsEmpty())
         return false;
 
@@ -287,7 +287,7 @@ bool _NPN_InvokeDefault(NPP npp, NPObject* npObject, const NPVariant* arguments,
     VOID_TO_NPVARIANT(*result);
 
     v8::HandleScope handleScope(isolate);
-    v8::Handle<v8::Context> context = mainWorldContext(isolate, npp, npObject);
+    v8::Handle<v8::Context> context = mainWorldContext(npp, npObject);
     if (context.IsEmpty())
         return false;
 
@@ -336,7 +336,7 @@ bool _NPN_EvaluateHelper(NPP npp, bool popupsAllowed, NPObject* npObject, NPStri
 
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
     v8::HandleScope handleScope(isolate);
-    v8::Handle<v8::Context> context = mainWorldContext(isolate, npp, npObject);
+    v8::Handle<v8::Context> context = mainWorldContext(npp, npObject);
     if (context.IsEmpty())
         return false;
 
@@ -372,7 +372,7 @@ bool _NPN_GetProperty(NPP npp, NPObject* npObject, NPIdentifier propertyName, NP
     if (V8NPObject* object = npObjectToV8NPObject(npObject)) {
         v8::Isolate* isolate = v8::Isolate::GetCurrent();
         v8::HandleScope handleScope(isolate);
-        v8::Handle<v8::Context> context = mainWorldContext(isolate, npp, npObject);
+        v8::Handle<v8::Context> context = mainWorldContext(npp, npObject);
         if (context.IsEmpty())
             return false;
 
@@ -406,7 +406,7 @@ bool _NPN_SetProperty(NPP npp, NPObject* npObject, NPIdentifier propertyName, co
     if (V8NPObject* object = npObjectToV8NPObject(npObject)) {
         v8::Isolate* isolate = v8::Isolate::GetCurrent();
         v8::HandleScope handleScope(isolate);
-        v8::Handle<v8::Context> context = mainWorldContext(isolate, npp, npObject);
+        v8::Handle<v8::Context> context = mainWorldContext(npp, npObject);
         if (context.IsEmpty())
             return false;
 
@@ -435,7 +435,7 @@ bool _NPN_RemoveProperty(NPP npp, NPObject* npObject, NPIdentifier propertyName)
 
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
     v8::HandleScope handleScope(isolate);
-    v8::Handle<v8::Context> context = mainWorldContext(isolate, npp, npObject);
+    v8::Handle<v8::Context> context = mainWorldContext(npp, npObject);
     if (context.IsEmpty())
         return false;
     v8::Context::Scope scope(context);
@@ -455,7 +455,7 @@ bool _NPN_HasProperty(NPP npp, NPObject* npObject, NPIdentifier propertyName)
     if (V8NPObject* object = npObjectToV8NPObject(npObject)) {
         v8::Isolate* isolate = v8::Isolate::GetCurrent();
         v8::HandleScope handleScope(isolate);
-        v8::Handle<v8::Context> context = mainWorldContext(isolate, npp, npObject);
+        v8::Handle<v8::Context> context = mainWorldContext(npp, npObject);
         if (context.IsEmpty())
             return false;
         v8::Context::Scope scope(context);
@@ -478,7 +478,7 @@ bool _NPN_HasMethod(NPP npp, NPObject* npObject, NPIdentifier methodName)
     if (V8NPObject* object = npObjectToV8NPObject(npObject)) {
         v8::Isolate* isolate = v8::Isolate::GetCurrent();
         v8::HandleScope handleScope(isolate);
-        v8::Handle<v8::Context> context = mainWorldContext(isolate, npp, npObject);
+        v8::Handle<v8::Context> context = mainWorldContext(npp, npObject);
         if (context.IsEmpty())
             return false;
         v8::Context::Scope scope(context);
@@ -505,7 +505,7 @@ void _NPN_SetException(NPObject* npObject, const NPUTF8 *message)
 
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
     v8::HandleScope handleScope(isolate);
-    v8::Handle<v8::Context> context = mainWorldContext(isolate, 0, npObject);
+    v8::Handle<v8::Context> context = mainWorldContext(0, npObject);
     if (context.IsEmpty())
         return;
 
@@ -523,7 +523,7 @@ bool _NPN_Enumerate(NPP npp, NPObject* npObject, NPIdentifier** identifier, uint
     if (V8NPObject* object = npObjectToV8NPObject(npObject)) {
         v8::Isolate* isolate = v8::Isolate::GetCurrent();
         v8::HandleScope handleScope(isolate);
-        v8::Local<v8::Context> context = mainWorldContext(isolate, npp, npObject);
+        v8::Local<v8::Context> context = mainWorldContext(npp, npObject);
         if (context.IsEmpty())
             return false;
         v8::Context::Scope scope(context);
@@ -579,7 +579,7 @@ bool _NPN_Construct(NPP npp, NPObject* npObject, const NPVariant* arguments, uin
 
     if (V8NPObject* object = npObjectToV8NPObject(npObject)) {
         v8::HandleScope handleScope(isolate);
-        v8::Handle<v8::Context> context = mainWorldContext(isolate, npp, npObject);
+        v8::Handle<v8::Context> context = mainWorldContext(npp, npObject);
         if (context.IsEmpty())
             return false;
         v8::Context::Scope scope(context);

@@ -47,7 +47,7 @@ ScriptPreprocessor::ScriptPreprocessor(const ScriptSourceCode& preprocessorSourc
     : m_isPreprocessing(false)
 {
     RefPtr<DOMWrapperWorld> world = DOMWrapperWorld::ensureIsolatedWorld(ScriptPreprocessorIsolatedWorldId, DOMWrapperWorld::mainWorldExtensionGroup);
-    m_scriptState = ScriptState::from(toV8Context(toIsolate(frame), frame, *world));
+    m_scriptState = ScriptState::from(toV8Context(frame, *world));
 
     ASSERT(frame);
     v8::TryCatch tryCatch;

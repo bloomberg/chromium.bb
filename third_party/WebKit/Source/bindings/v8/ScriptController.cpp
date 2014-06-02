@@ -254,7 +254,7 @@ void ScriptController::bindToWindowObject(LocalFrame* frame, const String& key, 
 {
     v8::HandleScope handleScope(m_isolate);
 
-    v8::Handle<v8::Context> v8Context = toV8Context(m_isolate, frame, DOMWrapperWorld::mainWorld());
+    v8::Handle<v8::Context> v8Context = toV8Context(frame, DOMWrapperWorld::mainWorld());
     if (v8Context.IsEmpty())
         return;
 
@@ -364,7 +364,7 @@ static NPObject* createNoScriptObject()
 static NPObject* createScriptObject(LocalFrame* frame, v8::Isolate* isolate)
 {
     v8::HandleScope handleScope(isolate);
-    v8::Handle<v8::Context> v8Context = toV8Context(isolate, frame, DOMWrapperWorld::mainWorld());
+    v8::Handle<v8::Context> v8Context = toV8Context(frame, DOMWrapperWorld::mainWorld());
     if (v8Context.IsEmpty())
         return createNoScriptObject();
 
@@ -402,7 +402,7 @@ NPObject* ScriptController::createScriptObjectForPluginElement(HTMLPlugInElement
         return createNoScriptObject();
 
     v8::HandleScope handleScope(m_isolate);
-    v8::Handle<v8::Context> v8Context = toV8Context(m_isolate, m_frame, DOMWrapperWorld::mainWorld());
+    v8::Handle<v8::Context> v8Context = toV8Context(m_frame, DOMWrapperWorld::mainWorld());
     if (v8Context.IsEmpty())
         return createNoScriptObject();
     v8::Context::Scope scope(v8Context);
@@ -574,7 +574,7 @@ ScriptValue ScriptController::evaluateScriptInMainWorld(const ScriptSourceCode& 
     m_sourceURL = &sourceURL;
 
     v8::HandleScope handleScope(m_isolate);
-    v8::Handle<v8::Context> v8Context = toV8Context(m_isolate, m_frame, DOMWrapperWorld::mainWorld());
+    v8::Handle<v8::Context> v8Context = toV8Context(m_frame, DOMWrapperWorld::mainWorld());
     if (v8Context.IsEmpty())
         return ScriptValue();
     v8::Context::Scope scope(v8Context);

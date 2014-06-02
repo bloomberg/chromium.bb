@@ -309,14 +309,13 @@ void DialogHandler::dialogCreated(DOMWindow* dialogFrame)
 {
     if (m_dialogArguments.IsEmpty())
         return;
-    v8::Isolate* isolate = m_scriptState->isolate();
-    v8::Handle<v8::Context> context = toV8Context(isolate, dialogFrame->frame(), m_scriptState->world());
+    v8::Handle<v8::Context> context = toV8Context(dialogFrame->frame(), m_scriptState->world());
     if (context.IsEmpty())
         return;
     m_scriptStateForDialogFrame = ScriptState::from(context);
 
     ScriptState::Scope scope(m_scriptStateForDialogFrame.get());
-    m_scriptStateForDialogFrame->context()->Global()->Set(v8AtomicString(isolate, "dialogArguments"), m_dialogArguments);
+    m_scriptStateForDialogFrame->context()->Global()->Set(v8AtomicString(m_scriptState->isolate(), "dialogArguments"), m_dialogArguments);
 }
 
 v8::Handle<v8::Value> DialogHandler::returnValue() const
@@ -530,7 +529,7 @@ v8::Handle<v8::Value> toV8(DOMWindow* window, v8::Handle<v8::Object> creationCon
     if (!frame)
         return v8Undefined();
 
-    v8::Handle<v8::Context> context = toV8Context(isolate, frame, DOMWrapperWorld::current(isolate));
+    v8::Handle<v8::Context> context = toV8Context(frame, DOMWrapperWorld::current(isolate));
     if (context.IsEmpty())
         return v8Undefined();
 

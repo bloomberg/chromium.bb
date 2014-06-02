@@ -770,7 +770,7 @@ ExecutionContext* callingExecutionContext(v8::Isolate*);
 v8::Local<v8::Context> toV8Context(ExecutionContext*, DOMWrapperWorld&);
 // Returns a V8 context associated with a LocalFrame and a DOMWrapperWorld.
 // This method returns an empty context if the frame is already detached.
-v8::Local<v8::Context> toV8Context(v8::Isolate*, LocalFrame*, DOMWrapperWorld&);
+v8::Local<v8::Context> toV8Context(LocalFrame*, DOMWrapperWorld&);
 
 // Returns the frame object of the window object associated with
 // a context, if the window is currently being displayed in the LocalFrame.
