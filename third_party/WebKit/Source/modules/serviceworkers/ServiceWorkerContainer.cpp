@@ -73,11 +73,11 @@ void ServiceWorkerContainer::detachClient()
     }
 }
 
-ScriptPromise ServiceWorkerContainer::registerServiceWorker(ExecutionContext* executionContext, const String& url, const Dictionary& dictionary)
+ScriptPromise ServiceWorkerContainer::registerServiceWorker(ScriptState* scriptState, const String& url, const Dictionary& dictionary)
 {
     RegistrationOptionList options(dictionary);
     ASSERT(RuntimeEnabledFeatures::serviceWorkerEnabled());
-    RefPtr<ScriptPromiseResolverWithContext> resolver = ScriptPromiseResolverWithContext::create(ScriptState::current(toIsolate(executionContext)));
+    RefPtr<ScriptPromiseResolverWithContext> resolver = ScriptPromiseResolverWithContext::create(scriptState);
     ScriptPromise promise = resolver->promise();
 
     if (!m_provider) {
@@ -85,6 +85,7 @@ ScriptPromise ServiceWorkerContainer::registerServiceWorker(ExecutionContext* ex
         return promise;
     }
 
+    ExecutionContext* executionContext = scriptState->executionContext();
     RefPtr<SecurityOrigin> documentOrigin = executionContext->securityOrigin();
     KURL patternURL = executionContext->completeURL(options.scope);
     patternURL.removeFragmentIdentifier();
@@ -117,10 +118,10 @@ private:
     UndefinedValue();
 };
 
-ScriptPromise ServiceWorkerContainer::unregisterServiceWorker(ExecutionContext* executionContext, const String& pattern)
+ScriptPromise ServiceWorkerContainer::unregisterServiceWorker(ScriptState* scriptState, const String& pattern)
 {
     ASSERT(RuntimeEnabledFeatures::serviceWorkerEnabled());
-    RefPtr<ScriptPromiseResolverWithContext> resolver = ScriptPromiseResolverWithContext::create(ScriptState::current(toIsolate(executionContext)));
+    RefPtr<ScriptPromiseResolverWithContext> resolver = ScriptPromiseResolverWithContext::create(scriptState);
     ScriptPromise promise = resolver->promise();
 
     if (!m_provider) {
@@ -128,8 +129,8 @@ ScriptPromise ServiceWorkerContainer::unregisterServiceWorker(ExecutionContext* 
         return promise;
     }
 
-    RefPtr<SecurityOrigin> documentOrigin = executionContext->securityOrigin();
-    KURL patternURL = executionContext->completeURL(pattern);
+    RefPtr<SecurityOrigin> documentOrigin = scriptState->executionContext()->securityOrigin();
+    KURL patternURL = scriptState->executionContext()->completeURL(pattern);
     patternURL.removeFragmentIdentifier();
     if (!pattern.isEmpty() && !documentOrigin->canRequest(patternURL)) {
         resolver->reject(DOMException::create(SecurityError, "Can only unregister for patterns in the document's origin."));

@@ -22,7 +22,7 @@ public:
     ~ServiceWorkerClients();
 
     // ServiceWorkerClients.idl
-    ScriptPromise getServiced(ExecutionContext*);
+    ScriptPromise getServiced(ScriptState*);
 
 private:
     ServiceWorkerClients();

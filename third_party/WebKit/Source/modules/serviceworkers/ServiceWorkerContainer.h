@@ -64,8 +64,8 @@ public:
 
     void detachClient();
 
-    ScriptPromise registerServiceWorker(ExecutionContext*, const String& pattern, const Dictionary&);
-    ScriptPromise unregisterServiceWorker(ExecutionContext*, const String& scope = String());
+    ScriptPromise registerServiceWorker(ScriptState*, const String& pattern, const Dictionary&);
+    ScriptPromise unregisterServiceWorker(ScriptState*, const String& scope = String());
 
     PassRefPtr<ServiceWorker> controller() { return m_controller; }
 

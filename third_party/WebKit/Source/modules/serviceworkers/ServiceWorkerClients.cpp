@@ -53,10 +53,10 @@ ServiceWorkerClients::~ServiceWorkerClients()
 {
 }
 
-ScriptPromise ServiceWorkerClients::getServiced(ExecutionContext* context)
+ScriptPromise ServiceWorkerClients::getServiced(ScriptState* scriptState)
 {
-    RefPtr<ScriptPromiseResolverWithContext> resolver = ScriptPromiseResolverWithContext::create(ScriptState::current(toIsolate(context)));
-    ServiceWorkerGlobalScopeClient::from(context)->getClients(new CallbackPromiseAdapter<ClientArray, ServiceWorkerError>(resolver));
+    RefPtr<ScriptPromiseResolverWithContext> resolver = ScriptPromiseResolverWithContext::create(scriptState);
+    ServiceWorkerGlobalScopeClient::from(scriptState->executionContext())->getClients(new CallbackPromiseAdapter<ClientArray, ServiceWorkerError>(resolver));
     return resolver->promise();
 }
 

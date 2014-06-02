@@ -6,6 +6,5 @@
     Exposed=ServiceWorker,
     RuntimeEnabled=ServiceWorker
 ] interface ServiceWorkerClients {
-
-    [CallWith=ExecutionContext] Promise getServiced();
+    [CallWith=ScriptState] Promise getServiced();
 };
