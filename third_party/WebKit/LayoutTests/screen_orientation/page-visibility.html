@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<body>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script>
+var orientationChangeEventListenerCalls = 0;
+
+window.addEventListener('orientationchange', function() {
+    orientationChangeEventListenerCalls++;
+});
+
+test(function() {
+    assert_false(document.hidden);
+    if (window.testRunner)
+        window.testRunner.setMockScreenOrientation("landscape-primary");
+    assert_equals(orientationChangeEventListenerCalls, 1);
+    assert_equals(screen.orientation, "landscape-primary");
+}, "Test that 'orientationchange' event is fired when the page is visible");
+
+if (window.testRunner)
+    testRunner.setPageVisibility("hidden");
+
+test(function() {
+    assert_true(document.hidden);
+    if (window.testRunner)
+        window.testRunner.setMockScreenOrientation("portrait-primary");
+    assert_equals(orientationChangeEventListenerCalls, 1);
+}, "Test that 'orientationchange' event is not fired when the page is not visible");
+
+test(function() {
+    assert_equals(screen.orientation, "landscape-primary");
+}, "Test that screen.orientation keeps returning the same orientation when the page is not visible");
+
+if (window.testRunner)
+    testRunner.setPageVisibility("visible");
+
+test(function() {
+    assert_false(document.hidden);
+    // An 'orientationchange' event should have been fired.
+    assert_equals(orientationChangeEventListenerCalls, 2);
+    // Should keep returning the start returning the orientation value.
+    assert_equals(screen.orientation, "portrait-primary");
+}, "Test that screen.orientation is updated once the page is visible again");
+</script>
+</body>
+</html>

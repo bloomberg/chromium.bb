@@ -166,6 +166,9 @@ void LocalFrame::sendOrientationChangeEvent()
     if (!RuntimeEnabledFeatures::orientationEventEnabled() && !RuntimeEnabledFeatures::screenOrientationEnabled())
         return;
 
+    if (page()->visibilityState() != PageVisibilityStateVisible)
+        return;
+
     DOMWindow* window = domWindow();
     if (!window)
         return;

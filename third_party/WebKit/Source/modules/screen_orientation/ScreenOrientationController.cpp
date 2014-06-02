@@ -10,6 +10,7 @@
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Screen.h"
+#include "core/page/Page.h"
 #include "platform/LayoutTestSupport.h"
 #include "platform/PlatformScreen.h"
 
@@ -28,7 +29,9 @@ ScreenOrientationController& ScreenOrientationController::from(Document& documen
 }
 
 ScreenOrientationController::ScreenOrientationController(Document& document)
-    : m_document(document)
+    : PageLifecycleObserver(document.page())
+    , m_document(document)
+    , m_overrideOrientation(blink::WebScreenOrientationUndefined)
 {
 }
 
@@ -64,8 +67,30 @@ blink::WebScreenOrientationType ScreenOrientationController::computeOrientation(
     }
 }
 
+void ScreenOrientationController::pageVisibilityChanged()
+{
+    if (page() && page()->visibilityState() == PageVisibilityStateVisible) {
+        blink::WebScreenOrientationType oldOrientation = m_overrideOrientation;
+        m_overrideOrientation = blink::WebScreenOrientationUndefined;
+        LocalFrame* mainFrame = m_document.frame();
+        if (mainFrame && oldOrientation != orientation())
+            mainFrame->sendOrientationChangeEvent();
+    } else if (m_overrideOrientation == blink::WebScreenOrientationUndefined) {
+        // The page is no longer visible, store the last know screen orientation
+        // so that we keep returning this orientation until the page becomes
+        // visible again.
+        m_overrideOrientation = orientation();
+    }
+}
+
 blink::WebScreenOrientationType ScreenOrientationController::orientation() const
 {
+    if (m_overrideOrientation != blink::WebScreenOrientationUndefined) {
+        // The page is not visible, keep returning the last known screen orientation.
+        ASSERT(!page() || page()->visibilityState() != PageVisibilityStateVisible);
+        return m_overrideOrientation;
+    }
+
     LocalFrame* mainFrame = m_document.frame();
     if (!mainFrame)
         return blink::WebScreenOrientationPortraitPrimary;

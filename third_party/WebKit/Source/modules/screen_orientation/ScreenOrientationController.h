@@ -6,13 +6,14 @@
 #define ScreenOrientationController_h
 
 #include "core/dom/DocumentSupplementable.h"
+#include "core/page/PageLifecycleObserver.h"
 #include "public/platform/WebScreenOrientationType.h"
 
 namespace WebCore {
 
 class FrameView;
 
-class ScreenOrientationController FINAL : public NoBaseWillBeGarbageCollected<ScreenOrientationController>, public DocumentSupplement {
+class ScreenOrientationController FINAL : public NoBaseWillBeGarbageCollected<ScreenOrientationController>, public DocumentSupplement, public PageLifecycleObserver {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(ScreenOrientationController);
     DECLARE_EMPTY_VIRTUAL_DESTRUCTOR_WILL_BE_REMOVED(ScreenOrientationController);
 public:
@@ -26,7 +27,11 @@ private:
     explicit ScreenOrientationController(Document&);
     static blink::WebScreenOrientationType computeOrientation(FrameView*);
 
+    // Inherited from PageLifecycleObserver.
+    virtual void pageVisibilityChanged() OVERRIDE;
+
     Document& m_document;
+    blink::WebScreenOrientationType m_overrideOrientation;
 };
 
 } // namespace WebCore
