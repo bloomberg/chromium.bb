@@ -262,7 +262,7 @@ TEST(PickleTest, Resize) {
 
   // one more byte should double the capacity
   pickle.WriteData(data_ptr, 1);
-  cur_payload += 5;
+  cur_payload += 8;
   EXPECT_EQ(unit * 4, pickle.capacity_after_header());
   EXPECT_EQ(cur_payload, pickle.payload_size());
 }

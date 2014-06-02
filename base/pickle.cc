@@ -19,8 +19,9 @@ const int Pickle::kPayloadUnit = 64;
 static const size_t kCapacityReadOnly = static_cast<size_t>(-1);
 
 PickleIterator::PickleIterator(const Pickle& pickle)
-    : read_ptr_(pickle.payload()),
-      read_end_ptr_(pickle.end_of_payload()) {
+    : payload_(pickle.payload()),
+      read_index_(0),
+      end_index_(pickle.payload_size()) {
 }
 
 template <typename Type>
@@ -35,28 +36,40 @@ inline bool PickleIterator::ReadBuiltinType(Type* result) {
   return true;
 }
 
+inline void PickleIterator::Advance(size_t size) {
+  size_t aligned_size = AlignInt(size, sizeof(uint32_t));
+  if (end_index_ - read_index_ < aligned_size) {
+    read_index_ = end_index_;
+  } else {
+    read_index_ += aligned_size;
+  }
+}
+
 template<typename Type>
 inline const char* PickleIterator::GetReadPointerAndAdvance() {
-  const char* current_read_ptr = read_ptr_;
-  if (read_ptr_ + sizeof(Type) > read_end_ptr_)
+  if (sizeof(Type) > end_index_ - read_index_) {
+    read_index_ = end_index_;
     return NULL;
-  if (sizeof(Type) < sizeof(uint32))
-    read_ptr_ += AlignInt(sizeof(Type), sizeof(uint32));
-  else
-    read_ptr_ += sizeof(Type);
+  }
+  const char* current_read_ptr = payload_ + read_index_;
+  Advance(sizeof(Type));
   return current_read_ptr;
 }
 
 const char* PickleIterator::GetReadPointerAndAdvance(int num_bytes) {
-  if (num_bytes < 0 || read_end_ptr_ - read_ptr_ < num_bytes)
+  if (num_bytes < 0 ||
+      end_index_ - read_index_ < static_cast<size_t>(num_bytes)) {
+    read_index_ = end_index_;
     return NULL;
-  const char* current_read_ptr = read_ptr_;
-  read_ptr_ += AlignInt(num_bytes, sizeof(uint32));
+  }
+  const char* current_read_ptr = payload_ + read_index_;
+  Advance(num_bytes);
   return current_read_ptr;
 }
 
-inline const char* PickleIterator::GetReadPointerAndAdvance(int num_elements,
-                                                          size_t size_element) {
+inline const char* PickleIterator::GetReadPointerAndAdvance(
+    int num_elements,
+    size_t size_element) {
   // Check for int32 overflow.
   int64 num_bytes = static_cast<int64>(num_elements) * size_element;
   int num_bytes32 = static_cast<int>(num_bytes);
@@ -332,6 +345,6 @@ inline void Pickle::WriteBytesCommon(const void* data, size_t length) {
   char* write = mutable_payload() + write_offset_;
   memcpy(write, data, length);
   memset(write + length, 0, data_len - length);
-  header_->payload_size = static_cast<uint32>(write_offset_ + length);
+  header_->payload_size = static_cast<uint32>(new_size);
   write_offset_ = new_size;
 }

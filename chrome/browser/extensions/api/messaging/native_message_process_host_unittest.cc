@@ -142,10 +142,8 @@ class NativeMessagingTest : public ::testing::Test,
 
  protected:
   std::string FormatMessage(const std::string& message) {
-    Pickle pickle;
-    pickle.WriteString(message);
-    return std::string(const_cast<const Pickle*>(&pickle)->payload(),
-                       pickle.payload_size());
+    uint32_t length = message.length();
+    return std::string(reinterpret_cast<char*>(&length), 4).append(message);
   }
 
   base::FilePath CreateTempFileWithMessage(const std::string& message) {
