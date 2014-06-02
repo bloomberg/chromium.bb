@@ -73,6 +73,7 @@
 #include "core/dom/ExecutionContextTask.h"
 #include "core/dom/MainThreadTaskRunner.h"
 #include "core/dom/MutationObserver.h"
+#include "core/dom/NoEventDispatchAssertion.h"
 #include "core/dom/NodeChildRemovalTracker.h"
 #include "core/dom/NodeFilter.h"
 #include "core/dom/NodeIterator.h"

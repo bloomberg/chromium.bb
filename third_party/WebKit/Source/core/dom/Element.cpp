@@ -57,6 +57,7 @@
 #include "core/dom/MutationObserverInterestGroup.h"
 #include "core/dom/MutationRecord.h"
 #include "core/dom/NamedNodeMap.h"
+#include "core/dom/NoEventDispatchAssertion.h"
 #include "core/dom/NodeRenderStyle.h"
 #include "core/dom/PresentationAttributeStyle.h"
 #include "core/dom/PseudoElement.h"

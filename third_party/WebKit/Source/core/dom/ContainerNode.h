@@ -27,7 +27,6 @@
 #include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/Node.h"
 #include "wtf/OwnPtr.h"
-#include "wtf/TemporaryChange.h"
 #include "wtf/Vector.h"
 
 namespace WebCore {
@@ -40,63 +39,6 @@ namespace Private {
     template<class GenericNode, class GenericNodeContainer>
     void addChildNodesToDeletionQueue(GenericNode*& head, GenericNode*& tail, GenericNodeContainer&);
 }
-
-#ifndef NDEBUG
-// FIXME: Move this class to its own file.
-class NoEventDispatchAssertion {
-public:
-    NoEventDispatchAssertion()
-    {
-        if (!isMainThread())
-            return;
-        s_count++;
-    }
-
-    ~NoEventDispatchAssertion()
-    {
-        if (!isMainThread())
-            return;
-        ASSERT(s_count);
-        s_count--;
-    }
-
-    static bool isEventDispatchForbidden()
-    {
-        if (!isMainThread())
-            return false;
-        return s_count;
-    }
-
-    // It's safe to dispatch events in SVGImage since there can't be any script
-    // listeners.
-    class AllowSVGImageEvents {
-    public:
-        AllowSVGImageEvents()
-            : m_change(s_count, 0)
-        {
-        }
-
-        ~AllowSVGImageEvents()
-        {
-            ASSERT(!s_count);
-        }
-
-        TemporaryChange<unsigned> m_change;
-    };
-
-private:
-    static unsigned s_count;
-};
-#else
-class NoEventDispatchAssertion {
-public:
-    NoEventDispatchAssertion() { }
-    class AllowSVGImageEvents {
-    public:
-        AllowSVGImageEvents() { }
-    };
-};
-#endif
 
 enum DynamicRestyleFlags {
     ChildrenOrSiblingsAffectedByFocus = 1 << 0,

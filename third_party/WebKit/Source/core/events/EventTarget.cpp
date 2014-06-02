@@ -34,8 +34,9 @@
 
 #include "RuntimeEnabledFeatures.h"
 #include "bindings/v8/ExceptionState.h"
-#include "core/events/Event.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/dom/NoEventDispatchAssertion.h"
+#include "core/events/Event.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/frame/DOMWindow.h"
 #include "wtf/StdLibExtras.h"

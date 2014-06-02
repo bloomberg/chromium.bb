@@ -47,6 +47,7 @@
 #include "core/dom/Element.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
+#include "core/dom/NoEventDispatchAssertion.h"
 #include "core/dom/RequestAnimationFrameCallback.h"
 #include "core/editing/Editor.h"
 #include "core/events/DOMWindowEventQueue.h"

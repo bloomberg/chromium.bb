@@ -44,6 +44,7 @@
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/LiveNodeList.h"
+#include "core/dom/NoEventDispatchAssertion.h"
 #include "core/dom/NodeRareData.h"
 #include "core/dom/NodeRenderingTraversal.h"
 #include "core/dom/NodeTraversal.h"

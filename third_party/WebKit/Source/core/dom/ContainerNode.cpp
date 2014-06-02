@@ -32,6 +32,7 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/FullscreenElementStack.h"
 #include "core/dom/NameNodeList.h"
+#include "core/dom/NoEventDispatchAssertion.h"
 #include "core/dom/NodeChildRemovalTracker.h"
 #include "core/dom/NodeRareData.h"
 #include "core/dom/NodeRenderStyle.h"

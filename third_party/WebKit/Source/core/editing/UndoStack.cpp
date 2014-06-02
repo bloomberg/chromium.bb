@@ -28,6 +28,7 @@
 #include "UndoStack.h"
 
 #include "core/dom/ContainerNode.h"
+#include "core/dom/NoEventDispatchAssertion.h"
 #include "core/editing/UndoStep.h"
 #include "wtf/TemporaryChange.h"
 

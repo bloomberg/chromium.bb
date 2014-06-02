@@ -27,6 +27,7 @@
 #include "core/events/EventDispatcher.h"
 
 #include "core/dom/ContainerNode.h"
+#include "core/dom/NoEventDispatchAssertion.h"
 #include "core/events/EventDispatchMediator.h"
 #include "core/events/MouseEvent.h"
 #include "core/events/ScopedEventQueue.h"

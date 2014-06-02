@@ -30,6 +30,7 @@
 #include "core/svg/graphics/SVGImage.h"
 
 #include "core/animation/AnimationTimeline.h"
+#include "core/dom/NoEventDispatchAssertion.h"
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/shadow/ComposedTreeWalker.h"
 #include "core/frame/FrameView.h"
