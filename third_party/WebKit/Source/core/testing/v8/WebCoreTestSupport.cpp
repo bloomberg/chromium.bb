@@ -41,6 +41,10 @@ namespace WebCoreTestSupport {
 
 void injectInternalsObject(v8::Local<v8::Context> context)
 {
+    // This can happen if no JavaScript was used in the main frame.
+    if (context.IsEmpty())
+        return;
+
     v8::Context::Scope contextScope(context);
     v8::HandleScope scope(context->GetIsolate());
     ExecutionContext* scriptContext = currentExecutionContext(context->GetIsolate());

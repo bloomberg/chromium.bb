@@ -465,8 +465,8 @@ int ScriptController::contextDebugId(v8::Handle<v8::Context> context)
 
 void ScriptController::updateDocument()
 {
-    // For an uninitialized main window shell, do not incur the cost of context initialization during FrameLoader::init().
-    if ((!m_windowShell->isContextInitialized() || !m_windowShell->isGlobalInitialized()) && m_frame->loader().stateMachine()->creatingInitialEmptyDocument())
+    // For an uninitialized main window shell, do not incur the cost of context initialization.
+    if (!m_windowShell->isGlobalInitialized())
         return;
 
     if (!initializeMainWorld())
