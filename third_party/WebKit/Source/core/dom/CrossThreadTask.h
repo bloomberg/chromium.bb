@@ -57,14 +57,8 @@ template<typename T> struct CrossThreadTaskTraits<PassOwnPtr<T> > {
     typedef PassOwnPtr<T> ParamType;
 };
 
-// FIXME: Oilpan: Using a RawPtr is not safe.
-// We need to move ExecutionContextTask to the heap and make this a Member.
-template<typename T> struct CrossThreadTaskTraits<RawPtr<T> > {
-    typedef RawPtr<T> ParamType;
-};
-
 template<typename P1, typename MP1>
-class GC_PLUGIN_IGNORE("crbug.com/378192") CrossThreadTask1 : public ExecutionContextTask {
+class CrossThreadTask1 : public ExecutionContextTask {
 public:
     typedef void (*Method)(ExecutionContext*, MP1);
     typedef CrossThreadTask1<P1, MP1> CrossThreadTask;
@@ -93,7 +87,7 @@ private:
 };
 
 template<typename P1, typename MP1, typename P2, typename MP2>
-class GC_PLUGIN_IGNORE("crbug.com/378192") CrossThreadTask2 : public ExecutionContextTask {
+class CrossThreadTask2 : public ExecutionContextTask {
 public:
     typedef void (*Method)(ExecutionContext*, MP1, MP2);
     typedef CrossThreadTask2<P1, MP1, P2, MP2> CrossThreadTask;
@@ -125,7 +119,7 @@ private:
 };
 
 template<typename P1, typename MP1, typename P2, typename MP2, typename P3, typename MP3>
-class GC_PLUGIN_IGNORE("crbug.com/378192") CrossThreadTask3 : public ExecutionContextTask {
+class CrossThreadTask3 : public ExecutionContextTask {
 public:
     typedef void (*Method)(ExecutionContext*, MP1, MP2, MP3);
     typedef CrossThreadTask3<P1, MP1, P2, MP2, P3, MP3> CrossThreadTask;
@@ -160,7 +154,7 @@ private:
 };
 
 template<typename P1, typename MP1, typename P2, typename MP2, typename P3, typename MP3, typename P4, typename MP4>
-class GC_PLUGIN_IGNORE("crbug.com/378192") CrossThreadTask4 : public ExecutionContextTask {
+class CrossThreadTask4 : public ExecutionContextTask {
 public:
     typedef void (*Method)(ExecutionContext*, MP1, MP2, MP3, MP4);
     typedef CrossThreadTask4<P1, MP1, P2, MP2, P3, MP3, P4, MP4> CrossThreadTask;
@@ -198,7 +192,7 @@ private:
 };
 
 template<typename P1, typename MP1, typename P2, typename MP2, typename P3, typename MP3, typename P4, typename MP4, typename P5, typename MP5>
-class GC_PLUGIN_IGNORE("crbug.com/378192") CrossThreadTask5 : public ExecutionContextTask {
+class CrossThreadTask5 : public ExecutionContextTask {
 public:
     typedef void (*Method)(ExecutionContext*, MP1, MP2, MP3, MP4, MP5);
     typedef CrossThreadTask5<P1, MP1, P2, MP2, P3, MP3, P4, MP4, P5, MP5> CrossThreadTask;
@@ -239,7 +233,7 @@ private:
 };
 
 template<typename P1, typename MP1, typename P2, typename MP2, typename P3, typename MP3, typename P4, typename MP4, typename P5, typename MP5, typename P6, typename MP6>
-class GC_PLUGIN_IGNORE("crbug.com/378192") CrossThreadTask6 : public ExecutionContextTask {
+class CrossThreadTask6 : public ExecutionContextTask {
 public:
     typedef void (*Method)(ExecutionContext*, MP1, MP2, MP3, MP4, MP5, MP6);
     typedef CrossThreadTask6<P1, MP1, P2, MP2, P3, MP3, P4, MP4, P5, MP5, P6, MP6> CrossThreadTask;
@@ -283,7 +277,7 @@ private:
 };
 
 template<typename P1, typename MP1, typename P2, typename MP2, typename P3, typename MP3, typename P4, typename MP4, typename P5, typename MP5, typename P6, typename MP6, typename P7, typename MP7>
-class GC_PLUGIN_IGNORE("crbug.com/378192") CrossThreadTask7 : public ExecutionContextTask {
+class CrossThreadTask7 : public ExecutionContextTask {
 public:
     typedef void (*Method)(ExecutionContext*, MP1, MP2, MP3, MP4, MP5, MP6, MP7);
     typedef CrossThreadTask7<P1, MP1, P2, MP2, P3, MP3, P4, MP4, P5, MP5, P6, MP6, P7, MP7> CrossThreadTask;
@@ -330,7 +324,7 @@ private:
 };
 
 template<typename P1, typename MP1, typename P2, typename MP2, typename P3, typename MP3, typename P4, typename MP4, typename P5, typename MP5, typename P6, typename MP6, typename P7, typename MP7, typename P8, typename MP8>
-class GC_PLUGIN_IGNORE("crbug.com/378192") CrossThreadTask8 : public ExecutionContextTask {
+class CrossThreadTask8 : public ExecutionContextTask {
 public:
     typedef void (*Method)(ExecutionContext*, MP1, MP2, MP3, MP4, MP5, MP6, MP7, MP8);
     typedef CrossThreadTask8<P1, MP1, P2, MP2, P3, MP3, P4, MP4, P5, MP5, P6, MP6, P7, MP7, P8, MP8> CrossThreadTask;

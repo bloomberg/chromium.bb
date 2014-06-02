@@ -32,7 +32,6 @@
 #define CrossThreadCopier_h
 
 #include "platform/PlatformExport.h"
-#include "platform/heap/Handle.h"
 #include "wtf/Assertions.h"
 #include "wtf/Forward.h"
 #include "wtf/PassOwnPtr.h"
@@ -61,25 +60,25 @@ namespace WebCore {
         }
     };
 
-    template<bool isConvertibleToInteger, bool isThreadSafeRefCounted, bool isGarbageCollected, typename T> struct CrossThreadCopierBase;
+    template<bool isConvertibleToInteger, bool isThreadSafeRefCounted, typename T> struct CrossThreadCopierBase;
 
     // Integers get passed through without any changes.
-    template<typename T> struct CrossThreadCopierBase<true, false, false, T> : public CrossThreadCopierPassThrough<T> {
+    template<typename T> struct CrossThreadCopierBase<true, false, T> : public CrossThreadCopierPassThrough<T> {
     };
 
     // To allow a type to be passed across threads using its copy constructor, add a forward declaration of the type and
     // a CopyThreadCopierBase<false, false, TypeName> : public CrossThreadCopierPassThrough<TypeName> { }; to this file.
-    template<> struct CrossThreadCopierBase<false, false, false, ThreadableLoaderOptions> : public CrossThreadCopierPassThrough<ThreadableLoaderOptions> {
+    template<> struct CrossThreadCopierBase<false, false, ThreadableLoaderOptions> : public CrossThreadCopierPassThrough<ThreadableLoaderOptions> {
     };
 
-    template<> struct CrossThreadCopierBase<false, false, false, IntRect> : public CrossThreadCopierPassThrough<IntRect> {
+    template<> struct CrossThreadCopierBase<false, false, IntRect> : public CrossThreadCopierPassThrough<IntRect> {
     };
 
-    template<> struct CrossThreadCopierBase<false, false, false, IntSize> : public CrossThreadCopierPassThrough<IntSize> {
+    template<> struct CrossThreadCopierBase<false, false, IntSize> : public CrossThreadCopierPassThrough<IntSize> {
     };
 
     // Custom copy methods.
-    template<typename T> struct CrossThreadCopierBase<false, true, false, T> {
+    template<typename T> struct CrossThreadCopierBase<false, true, T> {
         typedef typename WTF::RemoveTemplate<T, RefPtr>::Type TypeWithoutRefPtr;
         typedef typename WTF::RemoveTemplate<TypeWithoutRefPtr, PassRefPtr>::Type TypeWithoutPassRefPtr;
         typedef typename WTF::RemovePointer<TypeWithoutPassRefPtr>::Type RefCountedType;
@@ -97,7 +96,7 @@ namespace WebCore {
         }
     };
 
-    template<typename T> struct CrossThreadCopierBase<false, false, false, PassOwnPtr<T> > {
+    template<typename T> struct CrossThreadCopierBase<false, false, PassOwnPtr<T> > {
         typedef PassOwnPtr<T> Type;
         static Type copy(Type ownPtr)
         {
@@ -105,46 +104,36 @@ namespace WebCore {
         }
     };
 
-    template<> struct CrossThreadCopierBase<false, false, false, KURL> {
+    template<> struct CrossThreadCopierBase<false, false, KURL> {
         typedef KURL Type;
         PLATFORM_EXPORT static Type copy(const KURL&);
     };
 
-    template<> struct CrossThreadCopierBase<false, false, false, String> {
+    template<> struct CrossThreadCopierBase<false, false, String> {
         typedef String Type;
         PLATFORM_EXPORT static Type copy(const String&);
     };
 
-    template<> struct CrossThreadCopierBase<false, false, false, ResourceError> {
+    template<> struct CrossThreadCopierBase<false, false, ResourceError> {
         typedef ResourceError Type;
         PLATFORM_EXPORT static Type copy(const ResourceError&);
     };
 
-    template<> struct CrossThreadCopierBase<false, false, false, ResourceRequest> {
+    template<> struct CrossThreadCopierBase<false, false, ResourceRequest> {
         typedef PassOwnPtr<CrossThreadResourceRequestData> Type;
         PLATFORM_EXPORT static Type copy(const ResourceRequest&);
     };
 
-    template<> struct CrossThreadCopierBase<false, false, false, ResourceResponse> {
+    template<> struct CrossThreadCopierBase<false, false, ResourceResponse> {
         typedef PassOwnPtr<CrossThreadResourceResponseData> Type;
         PLATFORM_EXPORT static Type copy(const ResourceResponse&);
     };
 
-    template<typename T> struct CrossThreadCopierBase<false, false, true, T> {
-        typedef typename WTF::RemovePointer<T>::Type TypeWithoutPointer;
-        typedef PassRefPtrWillBeRawPtr<TypeWithoutPointer> Type;
-        static Type copy(const T& ptr)
-        {
-            return ptr;
-        }
-    };
-
     template<typename T> struct CrossThreadCopier : public CrossThreadCopierBase<WTF::IsConvertibleToInteger<T>::value,
-        WTF::IsSubclassOfTemplate<typename WTF::RemoveTemplate<T, RefPtr>::Type, ThreadSafeRefCounted>::value
-            || WTF::IsSubclassOfTemplate<typename WTF::RemovePointer<T>::Type, ThreadSafeRefCounted>::value
-            || WTF::IsSubclassOfTemplate<typename WTF::RemoveTemplate<T, PassRefPtr>::Type, ThreadSafeRefCounted>::value,
-        WTF::IsSubclassOfTemplate<typename WTF::RemovePointer<T>::Type, GarbageCollected>::value,
-        T> {
+                                                                                 WTF::IsSubclassOfTemplate<typename WTF::RemoveTemplate<T, RefPtr>::Type, ThreadSafeRefCounted>::value
+                                                                                     || WTF::IsSubclassOfTemplate<typename WTF::RemovePointer<T>::Type, ThreadSafeRefCounted>::value
+                                                                                     || WTF::IsSubclassOfTemplate<typename WTF::RemoveTemplate<T, PassRefPtr>::Type, ThreadSafeRefCounted>::value,
+                                                                                 T> {
     };
 
     template<typename T> struct AllowCrossThreadAccessWrapper {
@@ -155,7 +144,7 @@ namespace WebCore {
         T* m_value;
     };
 
-    template<typename T> struct CrossThreadCopierBase<false, false, false, AllowCrossThreadAccessWrapper<T> > {
+    template<typename T> struct CrossThreadCopierBase<false, false, AllowCrossThreadAccessWrapper<T> > {
         typedef T* Type;
         static Type copy(const AllowCrossThreadAccessWrapper<T>& wrapper) { return wrapper.value(); }
     };
@@ -175,7 +164,7 @@ namespace WebCore {
         T* m_value;
     };
 
-    template<typename T> struct CrossThreadCopierBase<false, false, false, AllowAccessLaterWrapper<T> > {
+    template<typename T> struct CrossThreadCopierBase<false, false, AllowAccessLaterWrapper<T> > {
         typedef T* Type;
         static Type copy(const AllowAccessLaterWrapper<T>& wrapper) { return wrapper.value(); }
     };

@@ -45,10 +45,9 @@ namespace WebCore {
 class ExecutionContext;
 class WebSocketChannelClient;
 
-class ThreadableWebSocketChannelClientWrapper : public ThreadSafeRefCountedWillBeGarbageCollectedFinalized<ThreadableWebSocketChannelClientWrapper> {
+class ThreadableWebSocketChannelClientWrapper : public ThreadSafeRefCounted<ThreadableWebSocketChannelClientWrapper> {
 public:
-    static PassRefPtrWillBeRawPtr<ThreadableWebSocketChannelClientWrapper> create(WebSocketChannelClient*);
-    ~ThreadableWebSocketChannelClientWrapper();
+    static PassRefPtr<ThreadableWebSocketChannelClientWrapper> create(WebSocketChannelClient*);
 
     // Subprotocol and extensions will be available when didConnect() callback is invoked.
     String subprotocol() const;
@@ -69,20 +68,18 @@ public:
     void suspend();
     void resume();
 
-    void trace(Visitor*) { }
-
 private:
     ThreadableWebSocketChannelClientWrapper(WebSocketChannelClient*);
 
     void processPendingTasks();
 
-    static void didConnectCallback(ExecutionContext*, PassRefPtrWillBeRawPtr<ThreadableWebSocketChannelClientWrapper>);
-    static void didReceiveMessageCallback(ExecutionContext*, PassRefPtrWillBeRawPtr<ThreadableWebSocketChannelClientWrapper>, const String& message);
-    static void didReceiveBinaryDataCallback(ExecutionContext*, PassRefPtrWillBeRawPtr<ThreadableWebSocketChannelClientWrapper>, PassOwnPtr<Vector<char> >);
-    static void didUpdateBufferedAmountCallback(ExecutionContext*, PassRefPtrWillBeRawPtr<ThreadableWebSocketChannelClientWrapper>, unsigned long bufferedAmount);
-    static void didStartClosingHandshakeCallback(ExecutionContext*, PassRefPtrWillBeRawPtr<ThreadableWebSocketChannelClientWrapper>);
-    static void didCloseCallback(ExecutionContext*, PassRefPtrWillBeRawPtr<ThreadableWebSocketChannelClientWrapper>, unsigned long unhandledBufferedAmount, WebSocketChannelClient::ClosingHandshakeCompletionStatus, unsigned short code, const String& reason);
-    static void didReceiveMessageErrorCallback(ExecutionContext*, PassRefPtrWillBeRawPtr<ThreadableWebSocketChannelClientWrapper>);
+    static void didConnectCallback(ExecutionContext*, PassRefPtr<ThreadableWebSocketChannelClientWrapper>);
+    static void didReceiveMessageCallback(ExecutionContext*, PassRefPtr<ThreadableWebSocketChannelClientWrapper>, const String& message);
+    static void didReceiveBinaryDataCallback(ExecutionContext*, PassRefPtr<ThreadableWebSocketChannelClientWrapper>, PassOwnPtr<Vector<char> >);
+    static void didUpdateBufferedAmountCallback(ExecutionContext*, PassRefPtr<ThreadableWebSocketChannelClientWrapper>, unsigned long bufferedAmount);
+    static void didStartClosingHandshakeCallback(ExecutionContext*, PassRefPtr<ThreadableWebSocketChannelClientWrapper>);
+    static void didCloseCallback(ExecutionContext*, PassRefPtr<ThreadableWebSocketChannelClientWrapper>, unsigned long unhandledBufferedAmount, WebSocketChannelClient::ClosingHandshakeCompletionStatus, unsigned short code, const String& reason);
+    static void didReceiveMessageErrorCallback(ExecutionContext*, PassRefPtr<ThreadableWebSocketChannelClientWrapper>);
 
     WebSocketChannelClient* m_client;
     // ThreadSafeRefCounted must not have String member variables.
