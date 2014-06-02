@@ -16,6 +16,7 @@
 #include "chrome/browser/sync_file_system/drive_backend/metadata_database.h"
 #include "chrome/browser/sync_file_system/drive_backend/metadata_database.pb.h"
 #include "chrome/browser/sync_file_system/drive_backend/sync_engine.h"
+#include "chrome/browser/sync_file_system/drive_backend/sync_worker.h"
 #include "chrome/browser/sync_file_system/local/canned_syncable_file_system.h"
 #include "chrome/browser/sync_file_system/local/local_file_sync_context.h"
 #include "chrome/browser/sync_file_system/local/local_file_sync_service.h"
@@ -41,10 +42,11 @@ typedef fileapi::FileSystemOperation::FileEntryList FileEntryList;
 
 namespace {
 
-void SetSyncStatus(const base::Closure& closure,
-                   SyncStatusCode* status_out,
-                   SyncStatusCode status) {
-  *status_out = status;
+template <typename T>
+void SetValueAndCallClosure(const base::Closure& closure,
+                            T* arg_out,
+                            T arg) {
+  *arg_out = base::internal::CallbackForward(arg);
   closure.Run();
 }
 
@@ -158,8 +160,21 @@ class DriveBackendSyncTest : public testing::Test,
 
   bool GetAppRootFolderID(const std::string& app_id,
                           std::string* folder_id) {
+    base::RunLoop run_loop;
+    bool success = false;
     FileTracker tracker;
-    if (!metadata_database()->FindAppRootTracker(app_id, &tracker))
+    PostTaskAndReplyWithResult(
+        worker_task_runner_,
+        FROM_HERE,
+        base::Bind(&MetadataDatabase::FindAppRootTracker,
+                   base::Unretained(metadata_database()),
+                   app_id,
+                   &tracker),
+        base::Bind(&SetValueAndCallClosure<bool>,
+                   run_loop.QuitClosure(),
+                   &success));
+    run_loop.Run();
+    if (!success)
       return false;
     *folder_id = tracker.file_id();
     return true;
@@ -172,11 +187,25 @@ class DriveBackendSyncTest : public testing::Test,
 
   std::string GetFileIDByPath(const std::string& app_id,
                               const base::FilePath& path) {
+    base::RunLoop run_loop;
+    bool success = false;
     FileTracker tracker;
     base::FilePath result_path;
     base::FilePath normalized_path = path.NormalizePathSeparators();
-    EXPECT_TRUE(metadata_database()->FindNearestActiveAncestor(
-        app_id, normalized_path, &tracker, &result_path));
+    PostTaskAndReplyWithResult(
+        worker_task_runner_,
+        FROM_HERE,
+        base::Bind(&MetadataDatabase::FindNearestActiveAncestor,
+                   base::Unretained(metadata_database()),
+                   app_id,
+                   normalized_path,
+                   &tracker,
+                   &result_path),
+        base::Bind(&SetValueAndCallClosure<bool>,
+                   run_loop.QuitClosure(),
+                   &success));
+    run_loop.Run();
+    EXPECT_TRUE(success);
     EXPECT_EQ(normalized_path, result_path);
     return tracker.file_id();
   }
@@ -193,7 +222,8 @@ class DriveBackendSyncTest : public testing::Test,
       base::RunLoop run_loop;
       local_sync_service_->MaybeInitializeFileSystemContext(
           origin, file_system->file_system_context(),
-          base::Bind(&SetSyncStatus, run_loop.QuitClosure(), &status));
+          base::Bind(&SetValueAndCallClosure<SyncStatusCode>,
+                     run_loop.QuitClosure(), &status));
       run_loop.Run();
       EXPECT_EQ(SYNC_STATUS_OK, status);
 
@@ -208,7 +238,8 @@ class DriveBackendSyncTest : public testing::Test,
     base::RunLoop run_loop;
     remote_sync_service_->RegisterOrigin(
         origin,
-        base::Bind(&SetSyncStatus, run_loop.QuitClosure(), &status));
+        base::Bind(&SetValueAndCallClosure<SyncStatusCode>,
+                   run_loop.QuitClosure(), &status));
     run_loop.Run();
     return status;
   }
@@ -310,8 +341,17 @@ class DriveBackendSyncTest : public testing::Test,
         if (pending_remote_changes_ || pending_local_changes_)
           continue;
 
-        int64 largest_fetched_change_id =
-            metadata_database()->GetLargestFetchedChangeID();
+        base::RunLoop run_loop;
+        int64 largest_fetched_change_id = -1;
+        PostTaskAndReplyWithResult(
+            worker_task_runner_,
+            FROM_HERE,
+            base::Bind(&MetadataDatabase::GetLargestFetchedChangeID,
+                       base::Unretained(metadata_database())),
+            base::Bind(&SetValueAndCallClosure<int64>,
+                       run_loop.QuitClosure(),
+                       &largest_fetched_change_id));
+        run_loop.Run();
         if (largest_fetched_change_id != GetLargestChangeID()) {
           FetchRemoteChanges();
           continue;
@@ -487,11 +527,32 @@ class DriveBackendSyncTest : public testing::Test,
   }
 
   size_t CountMetadata() {
-    return metadata_database()->CountFileMetadata();
+    size_t count = 0;
+    base::RunLoop run_loop;
+    PostTaskAndReplyWithResult(
+        worker_task_runner_,
+        FROM_HERE,
+        base::Bind(&MetadataDatabase::CountFileMetadata,
+                   base::Unretained(metadata_database())),
+        base::Bind(&SetValueAndCallClosure<size_t>,
+                   run_loop.QuitClosure(),
+                   &count));
+    run_loop.Run();
+    return count;
   }
 
   size_t CountTracker() {
-    return metadata_database()->CountFileTracker();
+    size_t count = 0;
+    base::RunLoop run_loop;
+    PostTaskAndReplyWithResult(
+        worker_task_runner_,
+        FROM_HERE,
+        base::Bind(&MetadataDatabase::CountFileTracker,
+                   base::Unretained(metadata_database())),
+        base::Bind(&SetValueAndCallClosure<size_t>,
+                   run_loop.QuitClosure(), &count));
+    run_loop.Run();
+    return count;
   }
 
   drive::FakeDriveService* fake_drive_service() {
@@ -503,11 +564,13 @@ class DriveBackendSyncTest : public testing::Test,
     return fake_drive_service_helper_.get();
   }
 
+ private:
+  // NOTE: Member functions of MetadataDatabase class must not be called
+  // directly through this method.  Call them via PostTask.
   MetadataDatabase* metadata_database() {
-    return remote_sync_service_->GetMetadataDatabase();
+    return remote_sync_service_->sync_worker_->GetMetadataDatabase();
   }
 
- private:
   content::TestBrowserThreadBundle thread_bundle_;
 
   base::ScopedTempDir base_dir_;

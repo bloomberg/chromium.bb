@@ -245,10 +245,22 @@ void SyncWorker::SetSyncEnabled(bool enabled) {
     return;
 
   FOR_EACH_OBSERVER(
-      Observer, observers_,
+      Observer,
+      observers_,
       UpdateServiceState(
           GetCurrentState(),
           enabled ? "Sync is enabled" : "Sync is disabled"));
+}
+
+void SyncWorker::PromoteDemotedChanges() {
+  MetadataDatabase* metadata_db = GetMetadataDatabase();
+  if (metadata_db && metadata_db->HasLowPriorityDirtyTracker()) {
+    metadata_db->PromoteLowerPriorityTrackersToNormal();
+    FOR_EACH_OBSERVER(
+        Observer,
+        observers_,
+        OnPendingFileListUpdated(metadata_db->CountDirtyTracker()));
+  }
 }
 
 SyncStatusCode SyncWorker::SetDefaultConflictResolutionPolicy(

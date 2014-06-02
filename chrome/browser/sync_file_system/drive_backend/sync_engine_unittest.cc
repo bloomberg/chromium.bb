@@ -14,6 +14,7 @@
 #include "chrome/browser/sync_file_system/drive_backend/metadata_database.pb.h"
 #include "chrome/browser/sync_file_system/drive_backend/sync_task.h"
 #include "chrome/browser/sync_file_system/drive_backend/sync_task_manager.h"
+#include "chrome/browser/sync_file_system/drive_backend/sync_worker.h"
 #include "chrome/browser/sync_file_system/sync_file_system_test_util.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/common/extension.h"
@@ -136,11 +137,11 @@ class SyncEngineTest
   SyncEngine* sync_engine() { return sync_engine_.get(); }
 
   void UpdateRegisteredApps() {
-    sync_engine_->UpdateRegisteredApps();
+    sync_engine_->UpdateRegisteredAppsForTesting();
   }
 
   SyncTaskManager* GetSyncEngineTaskManager() {
-    return sync_engine_->GetSyncTaskManagerForTesting();
+    return sync_engine_->sync_worker_->GetSyncTaskManager();
   }
 
   void CheckServiceState(SyncStatusCode expected_sync_status,
@@ -148,6 +149,10 @@ class SyncEngineTest
                          SyncStatusCode sync_status) {
     EXPECT_EQ(expected_sync_status, sync_status);
     EXPECT_EQ(expected_service_status, sync_engine_->GetCurrentState());
+  }
+
+  MetadataDatabase* metadata_database() {
+    return sync_engine()->sync_worker_->GetMetadataDatabase();
   }
 
  private:
@@ -164,25 +169,24 @@ class SyncEngineTest
 TEST_F(SyncEngineTest, EnableOrigin) {
   FileTracker tracker;
   SyncStatusCode sync_status = SYNC_STATUS_UNKNOWN;
-  MetadataDatabase* metadata_database = sync_engine()->GetMetadataDatabase();
   GURL origin = extensions::Extension::GetBaseURLFromExtensionId(kAppID);
 
   sync_engine()->RegisterOrigin(origin, CreateResultReceiver(&sync_status));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(SYNC_STATUS_OK, sync_status);
-  ASSERT_TRUE(metadata_database->FindAppRootTracker(kAppID, &tracker));
+  ASSERT_TRUE(metadata_database()->FindAppRootTracker(kAppID, &tracker));
   EXPECT_EQ(TRACKER_KIND_APP_ROOT, tracker.tracker_kind());
 
   sync_engine()->DisableOrigin(origin, CreateResultReceiver(&sync_status));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(SYNC_STATUS_OK, sync_status);
-  ASSERT_TRUE(metadata_database->FindAppRootTracker(kAppID, &tracker));
+  ASSERT_TRUE(metadata_database()->FindAppRootTracker(kAppID, &tracker));
   EXPECT_EQ(TRACKER_KIND_DISABLED_APP_ROOT, tracker.tracker_kind());
 
   sync_engine()->EnableOrigin(origin, CreateResultReceiver(&sync_status));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(SYNC_STATUS_OK, sync_status);
-  ASSERT_TRUE(metadata_database->FindAppRootTracker(kAppID, &tracker));
+  ASSERT_TRUE(metadata_database()->FindAppRootTracker(kAppID, &tracker));
   EXPECT_EQ(TRACKER_KIND_APP_ROOT, tracker.tracker_kind());
 
   sync_engine()->UninstallOrigin(
@@ -191,7 +195,7 @@ TEST_F(SyncEngineTest, EnableOrigin) {
       CreateResultReceiver(&sync_status));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(SYNC_STATUS_OK, sync_status);
-  ASSERT_FALSE(metadata_database->FindAppRootTracker(kAppID, &tracker));
+  ASSERT_FALSE(metadata_database()->FindAppRootTracker(kAppID, &tracker));
 }
 
 TEST_F(SyncEngineTest, UpdateRegisteredApps) {
@@ -214,16 +218,15 @@ TEST_F(SyncEngineTest, UpdateRegisteredApps) {
     EXPECT_EQ(SYNC_STATUS_OK, sync_status);
   }
 
-  MetadataDatabase* metadata_database = sync_engine()->GetMetadataDatabase();
   FileTracker tracker;
 
-  ASSERT_TRUE(metadata_database->FindAppRootTracker("app_0", &tracker));
+  ASSERT_TRUE(metadata_database()->FindAppRootTracker("app_0", &tracker));
   EXPECT_EQ(TRACKER_KIND_APP_ROOT, tracker.tracker_kind());
 
-  ASSERT_TRUE(metadata_database->FindAppRootTracker("app_1", &tracker));
+  ASSERT_TRUE(metadata_database()->FindAppRootTracker("app_1", &tracker));
   EXPECT_EQ(TRACKER_KIND_APP_ROOT, tracker.tracker_kind());
 
-  ASSERT_TRUE(metadata_database->FindAppRootTracker("app_2", &tracker));
+  ASSERT_TRUE(metadata_database()->FindAppRootTracker("app_2", &tracker));
   EXPECT_EQ(TRACKER_KIND_APP_ROOT, tracker.tracker_kind());
 
   extension_service()->DisableExtension("app_1");
@@ -232,13 +235,13 @@ TEST_F(SyncEngineTest, UpdateRegisteredApps) {
   UpdateRegisteredApps();
   base::RunLoop().RunUntilIdle();
 
-  ASSERT_TRUE(metadata_database->FindAppRootTracker("app_0", &tracker));
+  ASSERT_TRUE(metadata_database()->FindAppRootTracker("app_0", &tracker));
   EXPECT_EQ(TRACKER_KIND_APP_ROOT, tracker.tracker_kind());
 
-  ASSERT_TRUE(metadata_database->FindAppRootTracker("app_1", &tracker));
+  ASSERT_TRUE(metadata_database()->FindAppRootTracker("app_1", &tracker));
   EXPECT_EQ(TRACKER_KIND_DISABLED_APP_ROOT, tracker.tracker_kind());
 
-  ASSERT_FALSE(metadata_database->FindAppRootTracker("app_2", &tracker));
+  ASSERT_FALSE(metadata_database()->FindAppRootTracker("app_2", &tracker));
 }
 
 TEST_F(SyncEngineTest, GetOriginStatusMap) {

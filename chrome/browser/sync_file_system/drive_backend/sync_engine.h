@@ -121,8 +121,6 @@ class SyncEngine : public RemoteFileSyncService,
 
   drive::DriveServiceInterface* GetDriveService();
   drive::DriveUploaderInterface* GetDriveUploader();
-  MetadataDatabase* GetMetadataDatabase();
-  SyncTaskManager* GetSyncTaskManagerForTesting();
 
   void OnPendingFileListUpdated(int item_count);
   void OnFileStatusChanged(const fileapi::FileSystemURL& url,
@@ -145,7 +143,10 @@ class SyncEngine : public RemoteFileSyncService,
              ExtensionServiceInterface* extension_service,
              SigninManagerBase* signin_manager);
 
-  void UpdateRegisteredApps();
+  // TODO(peria): Migrate this method into test code.
+  // This method is not thread safe, because it requires to access metadata
+  // database which may live in another thread.
+  void UpdateRegisteredAppsForTesting();
 
   scoped_ptr<drive::DriveServiceInterface> drive_service_;
   scoped_ptr<DriveServiceWrapper> drive_service_wrapper_;

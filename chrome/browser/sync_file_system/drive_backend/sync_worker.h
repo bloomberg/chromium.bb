@@ -105,6 +105,7 @@ class SyncWorker : public SyncTaskManager::Client {
   scoped_ptr<base::ListValue> DumpFiles(const GURL& origin);
   scoped_ptr<base::ListValue> DumpDatabase();
   void SetSyncEnabled(bool enabled);
+  void PromoteDemotedChanges();
   SyncStatusCode SetDefaultConflictResolutionPolicy(
       ConflictResolutionPolicy policy);
   SyncStatusCode SetConflictResolutionPolicy(
@@ -137,9 +138,6 @@ class SyncWorker : public SyncTaskManager::Client {
   void AddObserver(Observer* observer);
 
  private:
-  friend class DriveBackendSyncTest;
-  friend class SyncEngineTest;
-
   void DoDisableApp(const std::string& app_id,
                     const SyncStatusCallback& callback);
   void DoEnableApp(const std::string& app_id,
