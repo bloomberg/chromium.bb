@@ -25,7 +25,7 @@
 #include "config.h"
 #include "bindings/v8/V8ThrowException.h"
 
-#include "V8DOMException.h"
+#include "bindings/core/v8/V8DOMException.h"
 #include "bindings/v8/V8Binding.h"
 #include "core/dom/DOMException.h"
 #include "core/dom/ExceptionCode.h"

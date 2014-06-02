@@ -31,9 +31,9 @@
 #include "config.h"
 #include "bindings/v8/V8LazyEventListener.h"
 
-#include "V8Document.h"
-#include "V8HTMLFormElement.h"
-#include "V8Node.h"
+#include "bindings/core/v8/V8Document.h"
+#include "bindings/core/v8/V8HTMLFormElement.h"
+#include "bindings/core/v8/V8Node.h"
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/ScriptSourceCode.h"
 #include "bindings/v8/V8Binding.h"

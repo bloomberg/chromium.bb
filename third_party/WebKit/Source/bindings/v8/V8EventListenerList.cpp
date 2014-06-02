@@ -31,7 +31,7 @@
 #include "config.h"
 #include "bindings/v8/V8EventListenerList.h"
 
-#include "V8Window.h"
+#include "bindings/core/v8/V8Window.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8WorkerGlobalScopeEventListener.h"
 

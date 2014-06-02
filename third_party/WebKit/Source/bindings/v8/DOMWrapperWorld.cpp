@@ -31,7 +31,7 @@
 #include "config.h"
 #include "bindings/v8/DOMWrapperWorld.h"
 
-#include "V8Window.h"
+#include "bindings/core/v8/V8Window.h"
 #include "bindings/v8/DOMDataStore.h"
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/V8Binding.h"

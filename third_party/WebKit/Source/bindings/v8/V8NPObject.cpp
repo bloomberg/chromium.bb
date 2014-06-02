@@ -32,9 +32,9 @@
 
 #include "bindings/v8/V8NPObject.h"
 
-#include "V8HTMLAppletElement.h"
-#include "V8HTMLEmbedElement.h"
-#include "V8HTMLObjectElement.h"
+#include "bindings/core/v8/V8HTMLAppletElement.h"
+#include "bindings/core/v8/V8HTMLEmbedElement.h"
+#include "bindings/core/v8/V8HTMLObjectElement.h"
 #include "bindings/v8/NPV8Object.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8NPUtils.h"

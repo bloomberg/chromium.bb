@@ -32,9 +32,9 @@
 #include "config.h"
 #include "bindings/v8/ScriptController.h"
 
-#include "V8Event.h"
-#include "V8HTMLElement.h"
-#include "V8Window.h"
+#include "bindings/core/v8/V8Event.h"
+#include "bindings/core/v8/V8HTMLElement.h"
+#include "bindings/core/v8/V8Window.h"
 #include "bindings/v8/BindingSecurity.h"
 #include "bindings/v8/NPV8Object.h"
 #include "bindings/v8/ScriptCallStackFactory.h"

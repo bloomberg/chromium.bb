@@ -32,8 +32,8 @@
 
 #include "bindings/v8/V8WorkerGlobalScopeEventListener.h"
 
-#include "V8Event.h"
-#include "V8EventTarget.h"
+#include "bindings/core/v8/V8Event.h"
+#include "bindings/core/v8/V8EventTarget.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8DOMWrapper.h"
 #include "bindings/v8/V8GCController.h"

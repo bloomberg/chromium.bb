@@ -44,8 +44,8 @@
       '../..',
       '..',
       '<(SHARED_INTERMEDIATE_DIR)/blink',
-      # FIXME: Remove these once the bindings script generates qualified
-      # includes correctly: http://crbug.com/377364
+      # FIXME: Remove these once core scripts generates qualified
+      # includes correctly: http://crbug.com/358074
       '<(bindings_core_v8_output_dir)',
       '<(bindings_modules_v8_output_dir)',
     ],

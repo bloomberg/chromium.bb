@@ -31,7 +31,7 @@
 #include "config.h"
 #include "bindings/v8/V8NodeFilterCondition.h"
 
-#include "V8Node.h"
+#include "bindings/core/v8/V8Node.h"
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/V8HiddenValue.h"
 #include "core/dom/Node.h"

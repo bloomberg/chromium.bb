@@ -32,10 +32,10 @@
 
 #include "bindings/v8/WorkerScriptController.h"
 
-#include "V8DedicatedWorkerGlobalScope.h"
-#include "V8ServiceWorkerGlobalScope.h"
-#include "V8SharedWorkerGlobalScope.h"
-#include "V8WorkerGlobalScope.h"
+#include "bindings/core/v8/V8DedicatedWorkerGlobalScope.h"
+#include "bindings/core/v8/V8SharedWorkerGlobalScope.h"
+#include "bindings/core/v8/V8WorkerGlobalScope.h"
+#include "bindings/modules/v8/V8ServiceWorkerGlobalScope.h"
 #include "bindings/v8/ScriptSourceCode.h"
 #include "bindings/v8/ScriptValue.h"
 #include "bindings/v8/V8ErrorHandler.h"

@@ -31,13 +31,12 @@
 #include "config.h"
 #include "bindings/v8/V8GCController.h"
 
-#include <algorithm>
-#include "V8MutationObserver.h"
-#include "V8Node.h"
-#include "V8ScriptRunner.h"
+#include "bindings/core/v8/V8MutationObserver.h"
+#include "bindings/core/v8/V8Node.h"
 #include "bindings/v8/RetainedDOMInfo.h"
 #include "bindings/v8/V8AbstractEventListener.h"
 #include "bindings/v8/V8Binding.h"
+#include "bindings/v8/V8ScriptRunner.h"
 #include "bindings/v8/WrapperTypeInfo.h"
 #include "core/dom/Attr.h"
 #include "core/dom/NodeTraversal.h"
@@ -49,6 +48,7 @@
 #include "core/inspector/InspectorTraceEvents.h"
 #include "core/svg/SVGElement.h"
 #include "platform/TraceEvent.h"
+#include <algorithm>
 
 namespace WebCore {
 

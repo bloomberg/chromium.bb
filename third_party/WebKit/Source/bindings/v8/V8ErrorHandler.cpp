@@ -31,7 +31,7 @@
 #include "config.h"
 #include "bindings/v8/V8ErrorHandler.h"
 
-#include "V8ErrorEvent.h"
+#include "bindings/core/v8/V8ErrorEvent.h"
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8HiddenValue.h"

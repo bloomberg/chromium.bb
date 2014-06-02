@@ -32,7 +32,7 @@
 #include "bindings/v8/ScriptDebugServer.h"
 
 #include "DebuggerScriptSource.h"
-#include "V8JavaScriptCallFrame.h"
+#include "bindings/core/v8/V8JavaScriptCallFrame.h"
 #include "bindings/v8/ScopedPersistent.h"
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/ScriptSourceCode.h"

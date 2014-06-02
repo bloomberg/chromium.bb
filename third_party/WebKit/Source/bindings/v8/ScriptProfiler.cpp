@@ -31,8 +31,8 @@
 #include "config.h"
 #include "bindings/v8/ScriptProfiler.h"
 
-#include "V8Node.h"
-#include "V8Window.h"
+#include "bindings/core/v8/V8Node.h"
+#include "bindings/core/v8/V8Window.h"
 #include "bindings/v8/RetainedDOMInfo.h"
 #include "bindings/v8/ScriptValue.h"
 #include "bindings/v8/V8Binding.h"

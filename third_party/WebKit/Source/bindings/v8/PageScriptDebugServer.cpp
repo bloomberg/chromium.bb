@@ -32,7 +32,7 @@
 #include "bindings/v8/PageScriptDebugServer.h"
 
 
-#include "V8Window.h"
+#include "bindings/core/v8/V8Window.h"
 #include "bindings/v8/DOMWrapperWorld.h"
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/ScriptSourceCode.h"

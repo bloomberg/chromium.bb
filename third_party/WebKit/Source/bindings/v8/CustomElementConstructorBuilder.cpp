@@ -33,9 +33,9 @@
 
 #include "HTMLNames.h"
 #include "SVGNames.h"
-#include "V8Document.h"
-#include "V8HTMLElementWrapperFactory.h"
-#include "V8SVGElementWrapperFactory.h"
+#include "V8HTMLElementWrapperFactory.h" // FIXME: should be bindings/core/v8
+#include "V8SVGElementWrapperFactory.h" // FIXME: should be bindings/core/v8
+#include "bindings/core/v8/V8Document.h"
 #include "bindings/v8/CustomElementBinding.h"
 #include "bindings/v8/DOMWrapperWorld.h"
 #include "bindings/v8/Dictionary.h"
