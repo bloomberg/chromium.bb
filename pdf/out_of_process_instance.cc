@@ -407,7 +407,7 @@ void OutOfProcessInstance::HandleMessage(const pp::Var& message) {
     pp::VarDictionary reply;
     reply.Set(pp::Var(kType), pp::Var(kJSGetAccessibilityJSONReplyType));
     if (dict.Get(pp::Var(kJSAccessibilityPageNumber)).is_int()) {
-      int page = dict.Get(pp::Var(kJSAccessibilityPageNumber)).AsInt();
+      int page = pp::Var(kJSAccessibilityPageNumber).AsInt();
       reply.Set(pp::Var(kJSAccessibilityJSON),
                         pp::Var(engine_->GetPageAsJSON(page)));
     } else {
