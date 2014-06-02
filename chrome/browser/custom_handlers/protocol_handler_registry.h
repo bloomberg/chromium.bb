@@ -36,6 +36,10 @@ class PrefRegistrySyncable;
 class ProtocolHandlerRegistry : public KeyedService {
 
  public:
+  enum HandlerSource {
+    USER,    // The handler was installed by user
+    POLICY,  // The handler was installed by policy
+  };
   // Provides notification of when the OS level user agent settings
   // are changed.
   class DefaultClientObserver
@@ -287,7 +291,12 @@ class ProtocolHandlerRegistry : public KeyedService {
   void NotifyChanged();
 
   // Registers a new protocol handler.
-  void RegisterProtocolHandler(const ProtocolHandler& handler);
+  void RegisterProtocolHandler(const ProtocolHandler& handler,
+                               const HandlerSource source);
+
+  // Registers protocol handlers from the preference.
+  void RegisterProtocolHandlersFromPref(const char* pref_name,
+                                        const HandlerSource source);
 
   // Get the DictionaryValues stored under the given pref name that are valid
   // ProtocolHandler values.
@@ -295,13 +304,47 @@ class ProtocolHandlerRegistry : public KeyedService {
       const char* pref_name) const;
 
   // Ignores future requests to register the given protocol handler.
-  void IgnoreProtocolHandler(const ProtocolHandler& handler);
+  void IgnoreProtocolHandler(const ProtocolHandler& handler,
+                             const HandlerSource source);
+
+  // Ignores protocol handlers from the preference.
+  void IgnoreProtocolHandlersFromPref(const char* pref_name,
+                                      const HandlerSource source);
+
+  // Verifies if the handler exists in the map.
+  bool HandlerExists(const ProtocolHandler& handler,
+                     ProtocolHandlerMultiMap* map);
+
+  // Verifies if the handler exists in the list.
+  bool HandlerExists(const ProtocolHandler& handler,
+                     const ProtocolHandlerList& list);
+
+  // Erases the handler that is guaranteed to exist from the map.
+  void EraseHandler(const ProtocolHandler& handler,
+                    ProtocolHandlerMultiMap* map);
+
+  // Erases the handler that is guaranteed to exist from the list.
+  void EraseHandler(const ProtocolHandler& handler, ProtocolHandlerList* list);
 
   // Map from protocols (strings) to protocol handlers.
   ProtocolHandlerMultiMap protocol_handlers_;
 
   // Protocol handlers that the user has told us to ignore.
   ProtocolHandlerList ignored_protocol_handlers_;
+
+  // These maps track the source of protocol handler registrations for the
+  // purposes of disallowing the removal of handlers that are registered by
+  // policy. Every entry in protocol_handlers_ should exist in at least one of
+  // the user or policy maps.
+  ProtocolHandlerMultiMap user_protocol_handlers_;
+  ProtocolHandlerMultiMap policy_protocol_handlers_;
+
+  // These lists track the source of protocol handlers that were ignored, for
+  // the purposes of disallowing the removal of handlers that are ignored by
+  // policy. Every entry in ignored_protocol_handlers_ should exist in at least
+  // one of the user or policy lists.
+  ProtocolHandlerList user_ignored_protocol_handlers_;
+  ProtocolHandlerList policy_ignored_protocol_handlers_;
 
   // Protocol handlers that are the defaults for a given protocol.
   ProtocolHandlerMap default_handlers_;

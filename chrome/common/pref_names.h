@@ -746,6 +746,8 @@ extern const char kBuiltInDnsClientEnabled[];
 
 extern const char kRegisteredProtocolHandlers[];
 extern const char kIgnoredProtocolHandlers[];
+extern const char kPolicyRegisteredProtocolHandlers[];
+extern const char kPolicyIgnoredProtocolHandlers[];
 extern const char kCustomHandlersEnabled[];
 
 #if defined(OS_MACOSX)

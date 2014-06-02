@@ -13,6 +13,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/common/custom_handlers/protocol_handler.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -101,6 +102,22 @@ void AssertWillHandle(
                                      expected,
                                      base::Unretained(interceptor)));
   base::MessageLoop::current()->RunUntilIdle();
+}
+
+base::DictionaryValue* GetProtocolHandlerValue(std::string protocol,
+                                               std::string url) {
+  base::DictionaryValue* value = new base::DictionaryValue();
+  value->SetString("protocol", protocol);
+  value->SetString("url", url);
+  return value;
+}
+
+base::DictionaryValue* GetProtocolHandlerValueWithDefault(std::string protocol,
+                                                          std::string url,
+                                                          bool is_default) {
+  base::DictionaryValue* value = GetProtocolHandlerValue(protocol, url);
+  value->SetBoolean("default", is_default);
+  return value;
 }
 
 class FakeDelegate : public ProtocolHandlerRegistry::Delegate {
@@ -332,6 +349,36 @@ class ProtocolHandlerRegistryTest : public testing::Test {
   void RecreateRegistry(bool initialize) {
     TeadDownRegistry();
     SetUpRegistry(initialize);
+  }
+
+  int InPrefHandlerCount() {
+    const base::ListValue* in_pref_handlers =
+        profile()->GetPrefs()->GetList(prefs::kRegisteredProtocolHandlers);
+    return static_cast<int>(in_pref_handlers->GetSize());
+  }
+
+  int InMemoryHandlerCount() {
+    int in_memory_handler_count = 0;
+    ProtocolHandlerRegistry::ProtocolHandlerMultiMap::iterator it =
+        registry()->protocol_handlers_.begin();
+    for (; it != registry()->protocol_handlers_.end(); ++it)
+      in_memory_handler_count += it->second.size();
+    return in_memory_handler_count;
+  }
+
+  int InPrefIgnoredHandlerCount() {
+    const base::ListValue* in_pref_ignored_handlers =
+        profile()->GetPrefs()->GetList(prefs::kIgnoredProtocolHandlers);
+    return static_cast<int>(in_pref_ignored_handlers->GetSize());
+  }
+
+  int InMemoryIgnoredHandlerCount() {
+    int in_memory_ignored_handler_count = 0;
+    ProtocolHandlerRegistry::ProtocolHandlerList::iterator it =
+        registry()->ignored_protocol_handlers_.begin();
+    for (; it != registry()->ignored_protocol_handlers_.end(); ++it)
+      in_memory_ignored_handler_count++;
+    return in_memory_ignored_handler_count;
   }
 
   // Returns a new registry, initializing it if |initialize| is true.
@@ -915,4 +962,167 @@ TEST_F(ProtocolHandlerRegistryTest, MAYBE_TestInstallDefaultHandler) {
   std::vector<std::string> protocols;
   registry()->GetRegisteredProtocols(&protocols);
   ASSERT_EQ(static_cast<size_t>(1), protocols.size());
+}
+
+#define URL_p1u1 "http://p1u1.com/%s"
+#define URL_p1u2 "http://p1u2.com/%s"
+#define URL_p1u3 "http://p1u3.com/%s"
+#define URL_p2u1 "http://p2u1.com/%s"
+#define URL_p2u2 "http://p2u2.com/%s"
+#define URL_p3u1 "http://p3u1.com/%s"
+
+TEST_F(ProtocolHandlerRegistryTest, TestPrefPolicyOverlapRegister) {
+  base::ListValue* handlers_registered_by_pref = new base::ListValue();
+  base::ListValue* handlers_registered_by_policy = new base::ListValue();
+
+  handlers_registered_by_pref->Append(
+      GetProtocolHandlerValueWithDefault("p1", URL_p1u2, true));
+  handlers_registered_by_pref->Append(
+      GetProtocolHandlerValueWithDefault("p1", URL_p1u1, true));
+  handlers_registered_by_pref->Append(
+      GetProtocolHandlerValueWithDefault("p1", URL_p1u2, false));
+
+  handlers_registered_by_policy->Append(
+      GetProtocolHandlerValueWithDefault("p1", URL_p1u1, false));
+  handlers_registered_by_policy->Append(
+      GetProtocolHandlerValueWithDefault("p3", URL_p3u1, true));
+
+  profile()->GetPrefs()->Set(
+      prefs::kRegisteredProtocolHandlers,
+      *static_cast<base::Value*>(handlers_registered_by_pref));
+  profile()->GetPrefs()->Set(
+      prefs::kPolicyRegisteredProtocolHandlers,
+      *static_cast<base::Value*>(handlers_registered_by_policy));
+  registry()->InitProtocolSettings();
+
+  // Duplicate p1u2 eliminated in memory but not yet saved in pref
+  ProtocolHandler p1u1 = CreateProtocolHandler("p1", GURL(URL_p1u1));
+  ProtocolHandler p1u2 = CreateProtocolHandler("p1", GURL(URL_p1u2));
+  ASSERT_EQ(InPrefHandlerCount(), 3);
+  ASSERT_EQ(InMemoryHandlerCount(), 3);
+  ASSERT_TRUE(registry()->IsDefault(p1u1));
+  ASSERT_FALSE(registry()->IsDefault(p1u2));
+
+  ProtocolHandler p2u1 = CreateProtocolHandler("p2", GURL(URL_p2u1));
+  registry()->OnDenyRegisterProtocolHandler(p2u1);
+
+  // Duplicate p1u2 saved in pref and a new handler added to pref and memory
+  ASSERT_EQ(InPrefHandlerCount(), 3);
+  ASSERT_EQ(InMemoryHandlerCount(), 4);
+  ASSERT_FALSE(registry()->IsDefault(p2u1));
+
+  registry()->RemoveHandler(p1u1);
+
+  // p1u1 removed from user pref but not from memory due to policy.
+  ASSERT_EQ(InPrefHandlerCount(), 2);
+  ASSERT_EQ(InMemoryHandlerCount(), 4);
+  ASSERT_TRUE(registry()->IsDefault(p1u1));
+
+  ProtocolHandler p3u1 = CreateProtocolHandler("p3", GURL(URL_p3u1));
+  registry()->RemoveHandler(p3u1);
+
+  // p3u1 not removed from memory due to policy and it was never in pref.
+  ASSERT_EQ(InPrefHandlerCount(), 2);
+  ASSERT_EQ(InMemoryHandlerCount(), 4);
+  ASSERT_TRUE(registry()->IsDefault(p3u1));
+
+  registry()->RemoveHandler(p1u2);
+
+  // p1u2 removed from user pref and memory.
+  ASSERT_EQ(InPrefHandlerCount(), 1);
+  ASSERT_EQ(InMemoryHandlerCount(), 3);
+  ASSERT_TRUE(registry()->IsDefault(p1u1));
+
+  ProtocolHandler p1u3 = CreateProtocolHandler("p1", GURL(URL_p1u3));
+  registry()->OnAcceptRegisterProtocolHandler(p1u3);
+
+  // p1u3 added to pref and memory.
+  ASSERT_EQ(InPrefHandlerCount(), 2);
+  ASSERT_EQ(InMemoryHandlerCount(), 4);
+  ASSERT_FALSE(registry()->IsDefault(p1u1));
+  ASSERT_TRUE(registry()->IsDefault(p1u3));
+
+  registry()->RemoveHandler(p1u3);
+
+  // p1u3 the default handler for p1 removed from user pref and memory.
+  ASSERT_EQ(InPrefHandlerCount(), 1);
+  ASSERT_EQ(InMemoryHandlerCount(), 3);
+  ASSERT_FALSE(registry()->IsDefault(p1u3));
+  ASSERT_TRUE(registry()->IsDefault(p1u1));
+  ASSERT_TRUE(registry()->IsDefault(p3u1));
+  ASSERT_FALSE(registry()->IsDefault(p2u1));
+}
+
+TEST_F(ProtocolHandlerRegistryTest, TestPrefPolicyOverlapIgnore) {
+  base::ListValue* handlers_ignored_by_pref = new base::ListValue();
+  base::ListValue* handlers_ignored_by_policy = new base::ListValue();
+
+  handlers_ignored_by_pref->Append(GetProtocolHandlerValue("p1", URL_p1u1));
+  handlers_ignored_by_pref->Append(GetProtocolHandlerValue("p1", URL_p1u2));
+  handlers_ignored_by_pref->Append(GetProtocolHandlerValue("p1", URL_p1u2));
+  handlers_ignored_by_pref->Append(GetProtocolHandlerValue("p3", URL_p3u1));
+
+  handlers_ignored_by_policy->Append(GetProtocolHandlerValue("p1", URL_p1u2));
+  handlers_ignored_by_policy->Append(GetProtocolHandlerValue("p1", URL_p1u3));
+  handlers_ignored_by_policy->Append(GetProtocolHandlerValue("p2", URL_p2u1));
+
+  profile()->GetPrefs()->Set(
+      prefs::kIgnoredProtocolHandlers,
+      *static_cast<base::Value*>(handlers_ignored_by_pref));
+  profile()->GetPrefs()->Set(
+      prefs::kPolicyIgnoredProtocolHandlers,
+      *static_cast<base::Value*>(handlers_ignored_by_policy));
+  registry()->InitProtocolSettings();
+
+  // Duplicate p1u2 eliminated in memory but not yet saved in pref
+  ASSERT_EQ(InPrefIgnoredHandlerCount(), 4);
+  ASSERT_EQ(InMemoryIgnoredHandlerCount(), 5);
+
+  ProtocolHandler p2u2 = CreateProtocolHandler("p2", GURL(URL_p2u2));
+  registry()->OnIgnoreRegisterProtocolHandler(p2u2);
+
+  // Duplicate p1u2 eliminated in pref, p2u2 added to pref and memory.
+  ASSERT_EQ(InPrefIgnoredHandlerCount(), 4);
+  ASSERT_EQ(InMemoryIgnoredHandlerCount(), 6);
+
+  ProtocolHandler p2u1 = CreateProtocolHandler("p2", GURL(URL_p2u1));
+  registry()->RemoveIgnoredHandler(p2u1);
+
+  // p2u1 installed by policy so cant be removed.
+  ASSERT_EQ(InPrefIgnoredHandlerCount(), 4);
+  ASSERT_EQ(InMemoryIgnoredHandlerCount(), 6);
+
+  ProtocolHandler p1u2 = CreateProtocolHandler("p1", GURL(URL_p1u2));
+  registry()->RemoveIgnoredHandler(p1u2);
+
+  // p1u2 installed by policy and pref so it is removed from pref and not from
+  // memory.
+  ASSERT_EQ(InPrefIgnoredHandlerCount(), 3);
+  ASSERT_EQ(InMemoryIgnoredHandlerCount(), 6);
+
+  ProtocolHandler p1u1 = CreateProtocolHandler("p1", GURL(URL_p1u1));
+  registry()->RemoveIgnoredHandler(p1u1);
+
+  // p1u1 installed by pref so it is removed from pref and memory.
+  ASSERT_EQ(InPrefIgnoredHandlerCount(), 2);
+  ASSERT_EQ(InMemoryIgnoredHandlerCount(), 5);
+
+  registry()->RemoveIgnoredHandler(p2u2);
+
+  // p2u2 installed by user so it is removed from pref and memory.
+  ASSERT_EQ(InPrefIgnoredHandlerCount(), 1);
+  ASSERT_EQ(InMemoryIgnoredHandlerCount(), 4);
+
+  registry()->OnIgnoreRegisterProtocolHandler(p2u1);
+
+  // p2u1 installed by user but it is already installed by policy, so it is
+  // added to pref.
+  ASSERT_EQ(InPrefIgnoredHandlerCount(), 2);
+  ASSERT_EQ(InMemoryIgnoredHandlerCount(), 4);
+
+  registry()->RemoveIgnoredHandler(p2u1);
+
+  // p2u1 installed by user and policy, so it is removed from pref alone.
+  ASSERT_EQ(InPrefIgnoredHandlerCount(), 1);
+  ASSERT_EQ(InMemoryIgnoredHandlerCount(), 4);
 }
