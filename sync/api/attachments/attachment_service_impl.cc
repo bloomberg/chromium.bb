@@ -7,17 +7,113 @@
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "sync/api/attachments/attachment.h"
+#include "sync/internal_api/public/attachments/fake_attachment_downloader.h"
 #include "sync/internal_api/public/attachments/fake_attachment_store.h"
 #include "sync/internal_api/public/attachments/fake_attachment_uploader.h"
 
 namespace syncer {
 
+// GetOrDownloadAttachments starts multiple parallel DownloadAttachment calls.
+// GetOrDownloadState tracks completion of these calls and posts callback for
+// consumer once all attachments are either retrieved or reported unavailable.
+class AttachmentServiceImpl::GetOrDownloadState
+    : public base::RefCounted<GetOrDownloadState>,
+      public base::NonThreadSafe {
+ public:
+  // GetOrDownloadState gets parameter from values passed to
+  // AttachmentService::GetOrDownloadAttachments.
+  // |attachment_ids| is a list of attachmens to retrieve.
+  // |callback| will be posted on current thread when all attachments retrieved
+  // or confirmed unavailable.
+  GetOrDownloadState(const AttachmentIdList& attachment_ids,
+                     const GetOrDownloadCallback& callback);
+
+  // Attachment was just retrieved. Add it to retrieved attachments.
+  void AddAttachment(const Attachment& attachment);
+
+  // Both reading from local store and downloading attachment failed.
+  // Add it to unavailable set.
+  void AddUnavailableAttachmentId(const AttachmentId& attachment_id);
+
+ private:
+  friend class base::RefCounted<GetOrDownloadState>;
+  virtual ~GetOrDownloadState();
+
+  // If all attachment requests completed then post callback to consumer with
+  // results.
+  void PostResultIfAllRequestsCompleted();
+
+  GetOrDownloadCallback callback_;
+
+  // Requests for these attachments are still in progress.
+  AttachmentIdSet in_progress_attachments_;
+
+  AttachmentIdSet unavailable_attachments_;
+  scoped_ptr<AttachmentMap> retrieved_attachments_;
+
+  DISALLOW_COPY_AND_ASSIGN(GetOrDownloadState);
+};
+
+AttachmentServiceImpl::GetOrDownloadState::GetOrDownloadState(
+    const AttachmentIdList& attachment_ids,
+    const GetOrDownloadCallback& callback)
+    : callback_(callback), retrieved_attachments_(new AttachmentMap()) {
+  std::copy(
+      attachment_ids.begin(),
+      attachment_ids.end(),
+      std::inserter(in_progress_attachments_, in_progress_attachments_.end()));
+  PostResultIfAllRequestsCompleted();
+}
+
+AttachmentServiceImpl::GetOrDownloadState::~GetOrDownloadState() {
+  DCHECK(CalledOnValidThread());
+}
+
+void AttachmentServiceImpl::GetOrDownloadState::AddAttachment(
+    const Attachment& attachment) {
+  DCHECK(CalledOnValidThread());
+  DCHECK(retrieved_attachments_->find(attachment.GetId()) ==
+         retrieved_attachments_->end());
+  retrieved_attachments_->insert(
+      std::make_pair(attachment.GetId(), attachment));
+  DCHECK(in_progress_attachments_.find(attachment.GetId()) !=
+         in_progress_attachments_.end());
+  in_progress_attachments_.erase(attachment.GetId());
+  PostResultIfAllRequestsCompleted();
+}
+
+void AttachmentServiceImpl::GetOrDownloadState::AddUnavailableAttachmentId(
+    const AttachmentId& attachment_id) {
+  DCHECK(CalledOnValidThread());
+  DCHECK(unavailable_attachments_.find(attachment_id) ==
+         unavailable_attachments_.end());
+  unavailable_attachments_.insert(attachment_id);
+  DCHECK(in_progress_attachments_.find(attachment_id) !=
+         in_progress_attachments_.end());
+  in_progress_attachments_.erase(attachment_id);
+  PostResultIfAllRequestsCompleted();
+}
+
+void
+AttachmentServiceImpl::GetOrDownloadState::PostResultIfAllRequestsCompleted() {
+  if (in_progress_attachments_.empty()) {
+    // All requests completed. Let's notify consumer.
+    GetOrDownloadResult result =
+        unavailable_attachments_.empty() ? GET_SUCCESS : GET_UNSPECIFIED_ERROR;
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(callback_, result, base::Passed(&retrieved_attachments_)));
+  }
+}
+
 AttachmentServiceImpl::AttachmentServiceImpl(
     scoped_ptr<AttachmentStore> attachment_store,
     scoped_ptr<AttachmentUploader> attachment_uploader,
+    scoped_ptr<AttachmentDownloader> attachment_downloader,
     Delegate* delegate)
     : attachment_store_(attachment_store.Pass()),
       attachment_uploader_(attachment_uploader.Pass()),
+      attachment_downloader_(attachment_downloader.Pass()),
       delegate_(delegate),
       weak_ptr_factory_(this) {
   DCHECK(CalledOnValidThread());
@@ -35,9 +131,13 @@ scoped_ptr<syncer::AttachmentService> AttachmentServiceImpl::CreateForTest() {
       new syncer::FakeAttachmentStore(base::MessageLoopProxy::current()));
   scoped_ptr<AttachmentUploader> attachment_uploader(
       new FakeAttachmentUploader);
+  scoped_ptr<AttachmentDownloader> attachment_downloader(
+      new FakeAttachmentDownloader());
   scoped_ptr<syncer::AttachmentService> attachment_service(
-      new syncer::AttachmentServiceImpl(
-          attachment_store.Pass(), attachment_uploader.Pass(), NULL));
+      new syncer::AttachmentServiceImpl(attachment_store.Pass(),
+                                        attachment_uploader.Pass(),
+                                        attachment_downloader.Pass(),
+                                        NULL));
   return attachment_service.Pass();
 }
 
@@ -45,10 +145,12 @@ void AttachmentServiceImpl::GetOrDownloadAttachments(
     const AttachmentIdList& attachment_ids,
     const GetOrDownloadCallback& callback) {
   DCHECK(CalledOnValidThread());
+  scoped_refptr<GetOrDownloadState> state(
+      new GetOrDownloadState(attachment_ids, callback));
   attachment_store_->Read(attachment_ids,
                           base::Bind(&AttachmentServiceImpl::ReadDone,
                                      weak_ptr_factory_.GetWeakPtr(),
-                                     callback));
+                                     state));
 }
 
 void AttachmentServiceImpl::DropAttachments(
@@ -96,18 +198,29 @@ void AttachmentServiceImpl::OnSyncDataUpdate(
 }
 
 void AttachmentServiceImpl::ReadDone(
-    const GetOrDownloadCallback& callback,
+    const scoped_refptr<GetOrDownloadState>& state,
     const AttachmentStore::Result& result,
     scoped_ptr<AttachmentMap> attachments,
     scoped_ptr<AttachmentIdList> unavailable_attachment_ids) {
-  AttachmentService::GetOrDownloadResult get_result =
-      AttachmentService::GET_UNSPECIFIED_ERROR;
-  if (result == AttachmentStore::SUCCESS) {
-    get_result = AttachmentService::GET_SUCCESS;
+  // Add read attachments to result.
+  for (AttachmentMap::const_iterator iter = attachments->begin();
+       iter != attachments->end();
+       ++iter) {
+    state->AddAttachment(iter->second);
   }
-  // TODO(maniscalco): Deal with case where an error occurred (bug 361251).
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE, base::Bind(callback, get_result, base::Passed(&attachments)));
+  // Try to download locally unavailable attachments.
+  for (AttachmentIdList::const_iterator iter =
+           unavailable_attachment_ids->begin();
+       iter != unavailable_attachment_ids->end();
+       ++iter) {
+    attachment_downloader_->DownloadAttachment(
+        *iter,
+        base::Bind(&AttachmentServiceImpl::DownloadDone,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   state,
+                   *iter));
+    ;
+  }
 }
 
 void AttachmentServiceImpl::DropDone(const DropCallback& callback,
@@ -142,6 +255,18 @@ void AttachmentServiceImpl::UploadDone(
     return;
   if (delegate_) {
     delegate_->OnAttachmentUploaded(attachment_id);
+  }
+}
+
+void AttachmentServiceImpl::DownloadDone(
+    const scoped_refptr<GetOrDownloadState>& state,
+    const AttachmentId& attachment_id,
+    const AttachmentDownloader::DownloadResult& result,
+    scoped_ptr<Attachment> attachment) {
+  if (result == AttachmentDownloader::DOWNLOAD_SUCCESS) {
+    state->AddAttachment(*attachment.get());
+  } else {
+    state->AddUnavailableAttachmentId(attachment_id);
   }
 }
 

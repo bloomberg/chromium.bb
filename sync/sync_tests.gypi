@@ -488,6 +488,7 @@
         'sources': [
           'api/attachments/attachment_unittest.cc',
           'api/attachments/attachment_id_unittest.cc',
+          'api/attachments/attachment_service_impl_unittest.cc',
           'api/attachments/attachment_service_proxy_unittest.cc',
           'api/sync_change_unittest.cc',
           'api/sync_data_unittest.cc',

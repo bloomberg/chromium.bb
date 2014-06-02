@@ -14,6 +14,7 @@
 #include "sync/api/fake_syncable_service.h"
 #include "sync/api/sync_change.h"
 #include "sync/api/sync_merge_result.h"
+#include "sync/internal_api/public/attachments/fake_attachment_downloader.h"
 #include "sync/internal_api/public/attachments/fake_attachment_store.h"
 #include "sync/internal_api/public/attachments/fake_attachment_uploader.h"
 #include "sync/internal_api/public/base/model_type.h"
@@ -51,6 +52,8 @@ MockAttachmentService::MockAttachmentService()
               base::MessageLoopProxy::current())),
           scoped_ptr<syncer::AttachmentUploader>(
               new syncer::FakeAttachmentUploader),
+          scoped_ptr<syncer::AttachmentDownloader>(
+              new syncer::FakeAttachmentDownloader),
           NULL) {
 }
 

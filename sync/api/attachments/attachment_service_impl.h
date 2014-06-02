@@ -5,8 +5,10 @@
 #ifndef SYNC_API_ATTACHMENTS_ATTACHMENT_SERVICE_IMPL_H_
 #define SYNC_API_ATTACHMENTS_ATTACHMENT_SERVICE_IMPL_H_
 
+#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
+#include "sync/api/attachments/attachment_downloader.h"
 #include "sync/api/attachments/attachment_service.h"
 #include "sync/api/attachments/attachment_service_proxy.h"
 #include "sync/api/attachments/attachment_store.h"
@@ -24,6 +26,7 @@ class SYNC_EXPORT AttachmentServiceImpl : public AttachmentService,
   // must be valid throughout AttachmentService lifetime.
   AttachmentServiceImpl(scoped_ptr<AttachmentStore> attachment_store,
                         scoped_ptr<AttachmentUploader> attachment_uploader,
+                        scoped_ptr<AttachmentDownloader> attachment_downloader,
                         Delegate* delegate);
   virtual ~AttachmentServiceImpl();
 
@@ -43,7 +46,9 @@ class SYNC_EXPORT AttachmentServiceImpl : public AttachmentService,
                                 const SyncData& updated_sync_data) OVERRIDE;
 
  private:
-  void ReadDone(const GetOrDownloadCallback& callback,
+  class GetOrDownloadState;
+
+  void ReadDone(const scoped_refptr<GetOrDownloadState>& state,
                 const AttachmentStore::Result& result,
                 scoped_ptr<AttachmentMap> attachments,
                 scoped_ptr<AttachmentIdList> unavailable_attachment_ids);
@@ -53,9 +58,14 @@ class SYNC_EXPORT AttachmentServiceImpl : public AttachmentService,
                  const AttachmentStore::Result& result);
   void UploadDone(const AttachmentUploader::UploadResult& result,
                   const AttachmentId& attachment_id);
+  void DownloadDone(const scoped_refptr<GetOrDownloadState>& state,
+                    const AttachmentId& attachment_id,
+                    const AttachmentDownloader::DownloadResult& result,
+                    scoped_ptr<Attachment> attachment);
 
   const scoped_ptr<AttachmentStore> attachment_store_;
   const scoped_ptr<AttachmentUploader> attachment_uploader_;
+  const scoped_ptr<AttachmentDownloader> attachment_downloader_;
   Delegate* delegate_;
   // Must be last data member.
   base::WeakPtrFactory<AttachmentServiceImpl> weak_ptr_factory_;

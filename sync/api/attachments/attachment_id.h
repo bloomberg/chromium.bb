@@ -5,6 +5,7 @@
 #ifndef SYNC_API_ATTACHMENTS_ATTACHMENT_ID_H_
 #define SYNC_API_ATTACHMENTS_ATTACHMENT_ID_H_
 
+#include <set>
 #include <string>
 #include <vector>
 
@@ -65,6 +66,7 @@ class SYNC_EXPORT AttachmentId {
 };
 
 typedef std::vector<AttachmentId> AttachmentIdList;
+typedef std::set<AttachmentId> AttachmentIdSet;
 
 }  // namespace syncer
 

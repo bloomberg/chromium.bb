@@ -61,6 +61,7 @@
 #include "sync/api/attachments/attachment_service.h"
 #include "sync/api/attachments/attachment_service_impl.h"
 #include "sync/api/syncable_service.h"
+#include "sync/internal_api/public/attachments/fake_attachment_downloader.h"
 #include "sync/internal_api/public/attachments/fake_attachment_store.h"
 #include "sync/internal_api/public/attachments/fake_attachment_uploader.h"
 
@@ -570,19 +571,23 @@ base::WeakPtr<syncer::SyncableService> ProfileSyncComponentsFactoryImpl::
 scoped_ptr<syncer::AttachmentService>
 ProfileSyncComponentsFactoryImpl::CreateAttachmentService(
     syncer::AttachmentService::Delegate* delegate) {
-  // TODO(maniscalco): Use a shared (one per profile) thread-safe instance of
-  // AttachmentUpload instead of creating a new one per AttachmentService (bug
-  // 369536).
+  // TODO(maniscalco): Use a shared (one per profile) thread-safe instances of
+  // AttachmentUploader and AttachmentDownloader instead of creating a new one
+  // per AttachmentService (bug 369536).
   scoped_ptr<syncer::AttachmentUploader> attachment_uploader(
       new syncer::FakeAttachmentUploader);
+  scoped_ptr<syncer::AttachmentDownloader> attachment_downloader(
+      new syncer::FakeAttachmentDownloader());
 
   scoped_ptr<syncer::AttachmentStore> attachment_store(
       new syncer::FakeAttachmentStore(
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE)));
 
   scoped_ptr<syncer::AttachmentService> attachment_service(
-      new syncer::AttachmentServiceImpl(
-          attachment_store.Pass(), attachment_uploader.Pass(), delegate));
+      new syncer::AttachmentServiceImpl(attachment_store.Pass(),
+                                        attachment_uploader.Pass(),
+                                        attachment_downloader.Pass(),
+                                        delegate));
 
   return attachment_service.Pass();
 }
