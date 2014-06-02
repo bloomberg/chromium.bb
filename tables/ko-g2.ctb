@@ -22,7 +22,7 @@
 
 # Globals:
 include ko.cti Uncontracted Hangul, punctuation and symbols.
-
+include en-us-g2.ctb To display contracted English in Korean grade 2 mode. Contributed by a certain Mr. Hahn in U.S.
 
 # Common letter contractions:
 # Using "always" opcode in order for contraction to work correctly.
