@@ -228,6 +228,16 @@ void Clipboard::setDragImage(Element* image, int x, int y, ExceptionState& excep
         setDragImageElement(image, location);
 }
 
+void Clipboard::clearDragImage()
+{
+    if (!canSetDragImage())
+        return;
+
+    m_dragImage = 0;
+    m_dragLoc = IntPoint();
+    m_dragImageElement = nullptr;
+}
+
 void Clipboard::setDragImageResource(ImageResource* img, const IntPoint& loc)
 {
     setDragImage(img, 0, loc);

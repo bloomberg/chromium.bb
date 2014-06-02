@@ -3037,8 +3037,10 @@ bool EventHandler::dragHysteresisExceeded(const FloatPoint& dragViewportLocation
 
 void EventHandler::freeClipboard()
 {
-    if (dragState().m_dragClipboard)
+    if (dragState().m_dragClipboard) {
+        dragState().m_dragClipboard->clearDragImage();
         dragState().m_dragClipboard->setAccessPolicy(ClipboardNumb);
+    }
 }
 
 void EventHandler::dragSourceEndedAt(const PlatformMouseEvent& event, DragOperation operation)
