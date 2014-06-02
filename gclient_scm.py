@@ -376,7 +376,6 @@ class GitWrapper(SCMWrapper):
       except subprocess2.CalledProcessError:
         self._DeleteOrMove(options.force)
         self._Clone(revision, url, options)
-      self._UpdateBranchHeads(options, fetch=True)
       if deps_revision and deps_revision.startswith('branch-heads/'):
         deps_branch = deps_revision.replace('branch-heads/', '')
         self._Capture(['branch', deps_branch, deps_revision])
@@ -821,6 +820,7 @@ class GitWrapper(SCMWrapper):
       if os.listdir(tmp_dir):
         self.Print('_____ removing non-empty tmp dir %s' % tmp_dir)
       gclient_utils.rmtree(tmp_dir)
+    self._UpdateBranchHeads(options, fetch=True)
     self._Run(['checkout', '--quiet', revision.replace('refs/heads/', '')],
               options)
     if self._GetCurrentBranch() is None:
