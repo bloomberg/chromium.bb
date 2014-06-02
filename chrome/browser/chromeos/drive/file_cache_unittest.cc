@@ -358,6 +358,7 @@ TEST_F(FileCacheTest, OpenForWrite) {
   EXPECT_EQ(FILE_ERROR_OK, metadata_storage_->PutEntry(entry));
   ASSERT_EQ(FILE_ERROR_OK, cache_->Store(id, "md5", src_file,
                                          FileCache::FILE_OPERATION_COPY));
+  EXPECT_EQ(0, entry.file_info().last_modified());
 
   // Entry is not dirty nor opened.
   EXPECT_FALSE(cache_->IsOpenedForWrite(id));
@@ -381,6 +382,10 @@ TEST_F(FileCacheTest, OpenForWrite) {
   // Close (1).
   file_closer1.reset();
   EXPECT_TRUE(cache_->IsOpenedForWrite(id));
+
+  // last_modified is updated.
+  EXPECT_EQ(FILE_ERROR_OK, metadata_storage_->GetEntry(id, &entry));
+  EXPECT_NE(0, entry.file_info().last_modified());
 
   // Close (2).
   file_closer2.reset();

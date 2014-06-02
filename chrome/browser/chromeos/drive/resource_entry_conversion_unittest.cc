@@ -362,32 +362,6 @@ TEST(ResourceEntryConversionTest, ToPlatformFileInfo) {
             file_info.last_accessed);
 }
 
-TEST(ResourceEntryConversionTest, FromPlatformFileInfo) {
-  base::File::Info file_info;
-  file_info.size = 12345;
-  file_info.is_directory = true;
-  file_info.is_symbolic_link = true;
-  file_info.last_modified =
-      base::Time::UnixEpoch() + base::TimeDelta::FromDays(999);
-  file_info.last_accessed =
-      base::Time::UnixEpoch() + base::TimeDelta::FromDays(12345);
-  file_info.creation_time =
-      base::Time::UnixEpoch() + base::TimeDelta::FromDays(54321);
-
-  ResourceEntry entry;
-  SetPlatformFileInfoToResourceEntry(file_info, &entry);
-
-  EXPECT_EQ(file_info.size, entry.file_info().size());
-  EXPECT_EQ(file_info.is_directory, entry.file_info().is_directory());
-  EXPECT_EQ(file_info.is_symbolic_link, entry.file_info().is_symbolic_link());
-  EXPECT_EQ(file_info.creation_time,
-            base::Time::FromInternalValue(entry.file_info().creation_time()));
-  EXPECT_EQ(file_info.last_modified,
-            base::Time::FromInternalValue(entry.file_info().last_modified()));
-  EXPECT_EQ(file_info.last_accessed,
-            base::Time::FromInternalValue(entry.file_info().last_accessed()));
-}
-
 TEST(ResourceEntryConversionTest, ConvertToResourceEntry_ImageMediaMetadata) {
   google_apis::ResourceEntry entry_all_fields;
   google_apis::ResourceEntry entry_zero_fields;

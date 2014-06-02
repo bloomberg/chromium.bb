@@ -81,7 +81,6 @@ FileError GetLocallyStoredResourceEntry(
   if (!base::GetFileInfo(local_cache_path, &file_info))
     return FILE_ERROR_NOT_FOUND;
 
-  // TODO(hashimoto): crbug.com/346625. Also reflect timestamps.
   entry->mutable_file_info()->set_size(file_info.size);
   return FILE_ERROR_OK;
 }

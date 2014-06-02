@@ -39,11 +39,6 @@ bool ConvertToResourceEntry(const google_apis::ResourceEntry& input,
 void ConvertResourceEntryToFileInfo(const ResourceEntry& entry,
                                     base::File::Info* file_info);
 
-// Converts the platform file info and sets it to the .file_info field of
-// the resource entry.
-void SetPlatformFileInfoToResourceEntry(const base::File::Info& file_info,
-                                        ResourceEntry* entry);
-
 }  // namespace drive
 
 #endif  // CHROME_BROWSER_CHROMEOS_DRIVE_RESOURCE_ENTRY_CONVERSION_H_

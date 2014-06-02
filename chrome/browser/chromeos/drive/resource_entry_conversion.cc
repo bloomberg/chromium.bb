@@ -146,15 +146,4 @@ void ConvertResourceEntryToFileInfo(const ResourceEntry& entry,
       entry.file_info().creation_time());
 }
 
-void SetPlatformFileInfoToResourceEntry(const base::File::Info& file_info,
-                                        ResourceEntry* entry) {
-  PlatformFileInfoProto* entry_file_info = entry->mutable_file_info();
-  entry_file_info->set_size(file_info.size);
-  entry_file_info->set_is_directory(file_info.is_directory);
-  entry_file_info->set_is_symbolic_link(file_info.is_symbolic_link);
-  entry_file_info->set_last_modified(file_info.last_modified.ToInternalValue());
-  entry_file_info->set_last_accessed(file_info.last_accessed.ToInternalValue());
-  entry_file_info->set_creation_time(file_info.creation_time.ToInternalValue());
-}
-
 }  // namespace drive

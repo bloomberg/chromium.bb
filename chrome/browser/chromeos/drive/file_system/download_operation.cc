@@ -114,7 +114,7 @@ FileError CheckPreConditionForEnsureFileDownloaded(
       return FILE_ERROR_FAILED;
 
     *cache_file_path = gdoc_file_path;
-    SetPlatformFileInfoToResourceEntry(file_info, entry);
+    entry->mutable_file_info()->set_size(file_info.size);
     return FILE_ERROR_OK;
   }
 
@@ -164,7 +164,7 @@ FileError CheckPreConditionForEnsureFileDownloaded(
   // drive::FileSystem::CheckLocalModificationAndRun. We should merge them.
   base::File::Info file_info;
   if (base::GetFileInfo(*cache_file_path, &file_info))
-    SetPlatformFileInfoToResourceEntry(file_info, entry);
+    entry->mutable_file_info()->set_size(file_info.size);
 
   return FILE_ERROR_OK;
 }

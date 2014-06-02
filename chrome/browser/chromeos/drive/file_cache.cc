@@ -591,6 +591,22 @@ void FileCache::CloseForWrite(const std::string& id) {
   --it->second;
   if (it->second == 0)
     write_opened_files_.erase(it);
+
+  // Update last modified date.
+  ResourceEntry entry;
+  FileError error = storage_->GetEntry(id, &entry);
+  if (error != FILE_ERROR_OK) {
+    LOG(ERROR) << "Failed to get entry: " << id << ", "
+               << FileErrorToString(error);
+    return;
+  }
+  entry.mutable_file_info()->set_last_modified(
+      base::Time::Now().ToInternalValue());
+  error = storage_->PutEntry(entry);
+  if (error != FILE_ERROR_OK) {
+    LOG(ERROR) << "Failed to put entry: " << id << ", "
+               << FileErrorToString(error);
+  }
 }
 
 }  // namespace internal
