@@ -259,9 +259,9 @@ GURL SavePackage::GetUrlToBeSaved() {
   // "real" url of the page) from the NavigationEntry because it reflects its
   // origin rather than the displayed one (returned by GetURL) which may be
   // different (like having "view-source:" on the front).
-  NavigationEntry* active_entry =
-      web_contents()->GetController().GetActiveEntry();
-  return active_entry->GetURL();
+  NavigationEntry* visible_entry =
+      web_contents()->GetController().GetVisibleEntry();
+  return visible_entry->GetURL();
 }
 
 void SavePackage::Cancel(bool user_action) {
