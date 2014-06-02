@@ -64,6 +64,9 @@ class OffTheRecordProfileIOData : public ProfileIOData {
             content::URLRequestInterceptorScopedVector
                 request_interceptors) const;
 
+    // Returns the DevToolsNetworkController attached to ProfileIOData.
+    DevToolsNetworkController* GetDevToolsNetworkController() const;
+
    private:
     typedef std::map<StoragePartitionDescriptor,
                      scoped_refptr<ChromeURLRequestContextGetter>,

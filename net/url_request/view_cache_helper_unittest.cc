@@ -9,6 +9,7 @@
 #include "net/base/test_completion_callback.h"
 #include "net/disk_cache/disk_cache.h"
 #include "net/http/http_cache.h"
+#include "net/http/http_transaction_test_util.h"
 #include "net/url_request/url_request_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -29,7 +30,7 @@ class TestURLRequestContext : public URLRequestContext {
 };
 
 TestURLRequestContext::TestURLRequestContext()
-    : cache_(reinterpret_cast<HttpTransactionFactory*>(NULL), NULL,
+    : cache_(new MockNetworkLayer(), NULL,
              HttpCache::DefaultBackend::InMemory(0)) {
   set_http_transaction_factory(&cache_);
 }

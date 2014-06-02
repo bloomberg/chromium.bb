@@ -872,6 +872,10 @@ chrome_browser_net::Predictor* TestingProfile::GetNetworkPredictor() {
   return NULL;
 }
 
+DevToolsNetworkController* TestingProfile::GetDevToolsNetworkController() {
+  return NULL;
+}
+
 void TestingProfile::ClearNetworkingHistorySince(
     base::Time time,
     const base::Closure& completion) {
