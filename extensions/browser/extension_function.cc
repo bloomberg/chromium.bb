@@ -386,18 +386,39 @@ void UIThreadExtensionFunction::SendResponse(bool success) {
     delegate_->OnSendResponse(this, success, bad_message_);
   else
     SendResponseImpl(success);
+
+  if (!transferred_blob_uuids_.empty()) {
+    DCHECK(!delegate_) << "Blob transfer not supported with test delegate.";
+    GetIPCSender()->Send(
+        new ExtensionMsg_TransferBlobs(transferred_blob_uuids_));
+  }
+}
+
+void UIThreadExtensionFunction::SetTransferredBlobUUIDs(
+    const std::vector<std::string>& blob_uuids) {
+  DCHECK(transferred_blob_uuids_.empty());  // Should only be called once.
+  transferred_blob_uuids_ = blob_uuids;
 }
 
 void UIThreadExtensionFunction::WriteToConsole(
     content::ConsoleMessageLevel level,
     const std::string& message) {
-  if (render_view_host_) {
-    render_view_host_->Send(new ExtensionMsg_AddMessageToConsole(
-        render_view_host_->GetRoutingID(), level, message));
-  } else {
-    render_frame_host_->Send(new ExtensionMsg_AddMessageToConsole(
-        render_frame_host_->GetRoutingID(), level, message));
-  }
+  GetIPCSender()->Send(
+      new ExtensionMsg_AddMessageToConsole(GetRoutingID(), level, message));
+}
+
+IPC::Sender* UIThreadExtensionFunction::GetIPCSender() {
+  if (render_view_host_)
+    return render_view_host_;
+  else
+    return render_frame_host_;
+}
+
+int UIThreadExtensionFunction::GetRoutingID() {
+  if (render_view_host_)
+    return render_view_host_->GetRoutingID();
+  else
+    return render_frame_host_->GetRoutingID();
 }
 
 IOThreadExtensionFunction::IOThreadExtensionFunction()

@@ -461,6 +461,7 @@ bool Dispatcher::OnControlMessageReceived(const IPC::Message& message) {
   IPC_MESSAGE_HANDLER(ExtensionMsg_SetSystemFont, OnSetSystemFont)
   IPC_MESSAGE_HANDLER(ExtensionMsg_ShouldSuspend, OnShouldSuspend)
   IPC_MESSAGE_HANDLER(ExtensionMsg_Suspend, OnSuspend)
+  IPC_MESSAGE_HANDLER(ExtensionMsg_TransferBlobs, OnTransferBlobs)
   IPC_MESSAGE_HANDLER(ExtensionMsg_Unloaded, OnUnloaded)
   IPC_MESSAGE_HANDLER(ExtensionMsg_UpdatePermissions, OnUpdatePermissions)
   IPC_MESSAGE_HANDLER(ExtensionMsg_UpdateTabSpecificPermissions,
@@ -678,6 +679,10 @@ void Dispatcher::OnSuspend(const std::string& extension_id) {
   // event creates.
   DispatchEvent(extension_id, kOnSuspendEvent);
   RenderThread::Get()->Send(new ExtensionHostMsg_SuspendAck(extension_id));
+}
+
+void Dispatcher::OnTransferBlobs(const std::vector<std::string>& blob_uuids) {
+  RenderThread::Get()->Send(new ExtensionHostMsg_TransferBlobsAck(blob_uuids));
 }
 
 void Dispatcher::OnUnloaded(const std::string& id) {

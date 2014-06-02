@@ -6,6 +6,7 @@
 #define EXTENSIONS_BROWSER_EXTENSION_MESSAGE_FILTER_H_
 
 #include <string>
+#include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
@@ -65,6 +66,7 @@ class ExtensionMessageFilter : public content::BrowserMessageFilter {
   void OnExtensionShouldSuspendAck(const std::string& extension_id,
                                    int sequence_id);
   void OnExtensionSuspendAck(const std::string& extension_id);
+  void OnExtensionTransferBlobsAck(const std::vector<std::string>& blob_uuids);
 
   // Message handlers on the IO thread.
   void OnExtensionGenerateUniqueID(int* unique_id);

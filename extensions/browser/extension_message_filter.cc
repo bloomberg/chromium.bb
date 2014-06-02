@@ -7,6 +7,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/resource_dispatcher_host.h"
+#include "extensions/browser/blob_holder.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_function_dispatcher.h"
 #include "extensions/browser/extension_system.h"
@@ -44,6 +45,7 @@ void ExtensionMessageFilter::OverrideThreadForMessage(
     case ExtensionHostMsg_RemoveFilteredListener::ID:
     case ExtensionHostMsg_ShouldSuspendAck::ID:
     case ExtensionHostMsg_SuspendAck::ID:
+    case ExtensionHostMsg_TransferBlobsAck::ID:
       *thread = BrowserThread::UI;
       break;
     default:
@@ -70,6 +72,8 @@ bool ExtensionMessageFilter::OnMessageReceived(const IPC::Message& message) {
                         OnExtensionShouldSuspendAck)
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_SuspendAck,
                         OnExtensionSuspendAck)
+    IPC_MESSAGE_HANDLER(ExtensionHostMsg_TransferBlobsAck,
+                        OnExtensionTransferBlobsAck)
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_GenerateUniqueID,
                         OnExtensionGenerateUniqueID)
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_ResumeRequests,
@@ -165,6 +169,14 @@ void ExtensionMessageFilter::OnExtensionSuspendAck(
       ExtensionSystem::Get(browser_context_)->process_manager();
   if (process_manager)
     process_manager->OnSuspendAck(extension_id);
+}
+
+void ExtensionMessageFilter::OnExtensionTransferBlobsAck(
+    const std::vector<std::string>& blob_uuids) {
+  RenderProcessHost* process = RenderProcessHost::FromID(render_process_id_);
+  if (!process)
+    return;
+  BlobHolder::FromRenderProcessHost(process)->DropBlobs(blob_uuids);
 }
 
 void ExtensionMessageFilter::OnExtensionGenerateUniqueID(int* unique_id) {

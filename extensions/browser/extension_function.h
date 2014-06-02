@@ -44,6 +44,10 @@ class ExtensionMessageFilter;
 class QuotaLimitHeuristic;
 }
 
+namespace IPC {
+class Sender;
+}
+
 #ifdef NDEBUG
 #define EXTENSION_FUNCTION_VALIDATE(test) \
   do {                                    \
@@ -441,6 +445,9 @@ class UIThreadExtensionFunction : public ExtensionFunction {
 
   virtual void SendResponse(bool success) OVERRIDE;
 
+  // Sets the Blob UUIDs whose ownership is being transferred to the renderer.
+  void SetTransferredBlobUUIDs(const std::vector<std::string>& blob_uuids);
+
   // The dispatcher that will service this extension function call.
   base::WeakPtr<extensions::ExtensionFunctionDispatcher> dispatcher_;
 
@@ -460,9 +467,16 @@ class UIThreadExtensionFunction : public ExtensionFunction {
 
   virtual void Destruct() const OVERRIDE;
 
+  // TODO(tommycli): Remove once RenderViewHost is gone.
+  IPC::Sender* GetIPCSender();
+  int GetRoutingID();
+
   scoped_ptr<RenderHostTracker> tracker_;
 
   DelegateForTests* delegate_;
+
+  // The blobs transferred to the renderer process.
+  std::vector<std::string> transferred_blob_uuids_;
 };
 
 // Extension functions that run on the IO thread. This type of function avoids
