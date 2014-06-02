@@ -49,8 +49,10 @@ ScopedPageLoadDeferrer::ScopedPageLoadDeferrer(Page* exclusion)
 
         // This code is not logically part of load deferring, but we do not want JS code executed
         // beneath modal windows or sheets, which is exactly when ScopedPageLoadDeferrer is used.
-        for (LocalFrame* frame = page->mainFrame(); frame; frame = frame->tree().traverseNext())
-            frame->document()->suspendScheduledTasks();
+        for (Frame* frame = page->mainFrame(); frame; frame = frame->tree().traverseNext()) {
+            if (frame->isLocalFrame())
+                toLocalFrame(frame)->document()->suspendScheduledTasks();
+        }
     }
 
     size_t count = m_deferredFrames.size();
@@ -66,8 +68,10 @@ ScopedPageLoadDeferrer::~ScopedPageLoadDeferrer()
         if (Page* page = m_deferredFrames[i]->page()) {
             page->setDefersLoading(false);
 
-            for (LocalFrame* frame = page->mainFrame(); frame; frame = frame->tree().traverseNext())
-                frame->document()->resumeScheduledTasks();
+            for (Frame* frame = page->mainFrame(); frame; frame = frame->tree().traverseNext()) {
+                if (frame->isLocalFrame())
+                    toLocalFrame(frame)->document()->resumeScheduledTasks();
+            }
         }
     }
 }

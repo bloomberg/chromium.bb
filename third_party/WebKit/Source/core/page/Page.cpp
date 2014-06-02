@@ -87,8 +87,11 @@ void Page::networkStateChanged(bool online)
     // Get all the frames of all the pages in all the page groups
     HashSet<Page*>::iterator end = allPages().end();
     for (HashSet<Page*>::iterator it = allPages().begin(); it != end; ++it) {
-        for (LocalFrame* frame = (*it)->mainFrame(); frame; frame = frame->tree().traverseNext())
-            frames.append(frame);
+        for (Frame* frame = (*it)->mainFrame(); frame; frame = frame->tree().traverseNext()) {
+            // FIXME: There is currently no way to dispatch events to out-of-process frames.
+            if (frame->isLocalFrame())
+                frames.append(toLocalFrame(frame));
+        }
         InspectorInstrumentation::networkStateChanged(*it, online);
     }
 
@@ -222,20 +225,26 @@ void Page::scheduleForcedStyleRecalcForAllPages()
 {
     HashSet<Page*>::iterator end = allPages().end();
     for (HashSet<Page*>::iterator it = allPages().begin(); it != end; ++it)
-        for (LocalFrame* frame = (*it)->mainFrame(); frame; frame = frame->tree().traverseNext())
-            frame->document()->setNeedsStyleRecalc(SubtreeStyleChange);
+        for (Frame* frame = (*it)->mainFrame(); frame; frame = frame->tree().traverseNext()) {
+            if (frame->isLocalFrame())
+                toLocalFrame(frame)->document()->setNeedsStyleRecalc(SubtreeStyleChange);
+        }
 }
 
 void Page::setNeedsRecalcStyleInAllFrames()
 {
-    for (LocalFrame* frame = mainFrame(); frame; frame = frame->tree().traverseNext())
-        frame->document()->styleResolverChanged();
+    for (Frame* frame = mainFrame(); frame; frame = frame->tree().traverseNext()) {
+        if (frame->isLocalFrame())
+            toLocalFrame(frame)->document()->styleResolverChanged();
+    }
 }
 
 void Page::setNeedsLayoutInAllFrames()
 {
-    for (LocalFrame* frame = mainFrame(); frame; frame = frame->tree().traverseNext()) {
-        if (FrameView* view = frame->view()) {
+    for (Frame* frame = mainFrame(); frame; frame = frame->tree().traverseNext()) {
+        if (!frame->isLocalFrame())
+            continue;
+        if (FrameView* view = toLocalFrame(frame)->view()) {
             view->setNeedsLayout();
             view->scheduleRelayout();
         }
@@ -262,9 +271,9 @@ void Page::refreshPlugins(bool reload)
         if (!reload)
             continue;
 
-        for (LocalFrame* frame = (*it)->mainFrame(); frame; frame = frame->tree().traverseNext()) {
-            if (frame->document()->containsPlugins())
-                framesNeedingReload.append(frame);
+        for (Frame* frame = (*it)->mainFrame(); frame; frame = frame->tree().traverseNext()) {
+            if (frame->isLocalFrame() && toLocalFrame(frame)->document()->containsPlugins())
+                framesNeedingReload.append(toLocalFrame(frame));
         }
     }
 
@@ -281,7 +290,7 @@ PluginData* Page::pluginData() const
     return m_pluginData.get();
 }
 
-static LocalFrame* incrementFrame(LocalFrame* curr, bool forward, bool wrapFlag)
+static Frame* incrementFrame(Frame* curr, bool forward, bool wrapFlag)
 {
     return forward
         ? curr->tree().traverseNextWithWrap(wrapFlag)
@@ -293,9 +302,10 @@ void Page::unmarkAllTextMatches()
     if (!mainFrame())
         return;
 
-    LocalFrame* frame = mainFrame();
+    Frame* frame = mainFrame();
     do {
-        frame->document()->markers().removeMarkers(DocumentMarker::TextMatch);
+        if (frame->isLocalFrame())
+            toLocalFrame(frame)->document()->markers().removeMarkers(DocumentMarker::TextMatch);
         frame = incrementFrame(frame, true, false);
     } while (frame);
 }
@@ -311,8 +321,10 @@ void Page::setDefersLoading(bool defers)
         return;
 
     m_defersLoading = defers;
-    for (LocalFrame* frame = mainFrame(); frame; frame = frame->tree().traverseNext())
-        frame->loader().setDefersLoading(defers);
+    for (Frame* frame = mainFrame(); frame; frame = frame->tree().traverseNext()) {
+        if (frame->isLocalFrame())
+            toLocalFrame(frame)->loader().setDefersLoading(defers);
+    }
 }
 
 void Page::setPageScaleFactor(float scale, const IntPoint& origin)
@@ -365,8 +377,10 @@ void Page::allVisitedStateChanged()
     HashSet<Page*>::iterator pagesEnd = ordinaryPages().end();
     for (HashSet<Page*>::iterator it = ordinaryPages().begin(); it != pagesEnd; ++it) {
         Page* page = *it;
-        for (LocalFrame* frame = page->m_mainFrame.get(); frame; frame = frame->tree().traverseNext())
-            frame->document()->visitedLinkState().invalidateStyleForAllLinks();
+        for (Frame* frame = page->m_mainFrame.get(); frame; frame = frame->tree().traverseNext()) {
+            if (frame->isLocalFrame())
+                toLocalFrame(frame)->document()->visitedLinkState().invalidateStyleForAllLinks();
+        }
     }
 }
 
@@ -375,8 +389,10 @@ void Page::visitedStateChanged(LinkHash linkHash)
     HashSet<Page*>::iterator pagesEnd = ordinaryPages().end();
     for (HashSet<Page*>::iterator it = ordinaryPages().begin(); it != pagesEnd; ++it) {
         Page* page = *it;
-        for (LocalFrame* frame = page->m_mainFrame.get(); frame; frame = frame->tree().traverseNext())
-            frame->document()->visitedLinkState().invalidateStyleForLink(linkHash);
+        for (Frame* frame = page->m_mainFrame.get(); frame; frame = frame->tree().traverseNext()) {
+            if (frame->isLocalFrame())
+                toLocalFrame(frame)->document()->visitedLinkState().invalidateStyleForLink(linkHash);
+        }
     }
 }
 
@@ -393,9 +409,9 @@ void Page::setTimerAlignmentInterval(double interval)
         return;
 
     m_timerAlignmentInterval = interval;
-    for (LocalFrame* frame = mainFrame(); frame; frame = frame->tree().traverseNextWithWrap(false)) {
-        if (frame->document())
-            frame->document()->didChangeTimerAlignmentInterval();
+    for (Frame* frame = mainFrame(); frame; frame = frame->tree().traverseNextWithWrap(false)) {
+        if (frame->isLocalFrame() && toLocalFrame(frame)->document())
+            toLocalFrame(frame)->document()->didChangeTimerAlignmentInterval();
     }
 }
 
@@ -410,7 +426,7 @@ void Page::checkSubframeCountConsistency() const
     ASSERT(m_subframeCount >= 0);
 
     int subframeCount = 0;
-    for (LocalFrame* frame = mainFrame(); frame; frame = frame->tree().traverseNext())
+    for (Frame* frame = mainFrame(); frame; frame = frame->tree().traverseNext())
         ++subframeCount;
 
     ASSERT(m_subframeCount + 1 == subframeCount);
@@ -470,8 +486,10 @@ void Page::settingsChanged(SettingsDelegate::ChangeType changeType)
         setNeedsRecalcStyleInAllFrames();
         break;
     case SettingsDelegate::DNSPrefetchingChange:
-        for (LocalFrame* frame = mainFrame(); frame; frame = frame->tree().traverseNext())
-            frame->document()->initDNSPrefetch();
+        for (Frame* frame = mainFrame(); frame; frame = frame->tree().traverseNext()) {
+            if (frame->isLocalFrame())
+                toLocalFrame(frame)->document()->initDNSPrefetch();
+        }
         break;
     case SettingsDelegate::MultisamplingChange: {
         WillBeHeapHashSet<RawPtrWillBeWeakMember<MultisamplingChangedObserver> >::iterator stop = m_multisamplingChangedObservers.end();
@@ -480,9 +498,11 @@ void Page::settingsChanged(SettingsDelegate::ChangeType changeType)
         break;
     }
     case SettingsDelegate::ImageLoadingChange:
-        for (LocalFrame* frame = mainFrame(); frame; frame = frame->tree().traverseNext()) {
-            frame->document()->fetcher()->setImagesEnabled(settings().imagesEnabled());
-            frame->document()->fetcher()->setAutoLoadImages(settings().loadsImagesAutomatically());
+        for (Frame* frame = mainFrame(); frame; frame = frame->tree().traverseNext()) {
+            if (frame->isLocalFrame()) {
+                toLocalFrame(frame)->document()->fetcher()->setImagesEnabled(settings().imagesEnabled());
+                toLocalFrame(frame)->document()->fetcher()->setAutoLoadImages(settings().loadsImagesAutomatically());
+            }
         }
         break;
     case SettingsDelegate::TextAutosizingChange:
@@ -491,8 +511,10 @@ void Page::settingsChanged(SettingsDelegate::ChangeType changeType)
         if (FastTextAutosizer* textAutosizer = mainFrame()->document()->fastTextAutosizer()) {
             textAutosizer->updatePageInfoInAllFrames();
         } else {
-            for (LocalFrame* frame = mainFrame(); frame; frame = frame->tree().traverseNext()) {
-                if (TextAutosizer* textAutosizer = frame->document()->textAutosizer())
+            for (Frame* frame = mainFrame(); frame; frame = frame->tree().traverseNext()) {
+                if (!frame->isLocalFrame())
+                    continue;
+                if (TextAutosizer* textAutosizer = toLocalFrame(frame)->document()->textAutosizer())
                     textAutosizer->recalculateMultipliers();
             }
             // TextAutosizing updates RenderStyle during layout phase (via TextAutosizer::processSubtree).
@@ -504,8 +526,10 @@ void Page::settingsChanged(SettingsDelegate::ChangeType changeType)
         m_inspectorController->scriptsEnabled(settings().scriptEnabled());
         break;
     case SettingsDelegate::FontFamilyChange:
-        for (LocalFrame* frame = mainFrame(); frame; frame = frame->tree().traverseNext())
-            frame->document()->styleEngine()->updateGenericFontFamilySettings();
+        for (Frame* frame = mainFrame(); frame; frame = frame->tree().traverseNext()) {
+            if (frame->isLocalFrame())
+                toLocalFrame(frame)->document()->styleEngine()->updateGenericFontFamilySettings();
+        }
         setNeedsRecalcStyleInAllFrames();
         break;
     case SettingsDelegate::AcceleratedCompositingChange:
@@ -516,8 +540,10 @@ void Page::settingsChanged(SettingsDelegate::ChangeType changeType)
 
 void Page::updateAcceleratedCompositingSettings()
 {
-    for (LocalFrame* frame = mainFrame(); frame; frame = frame->tree().traverseNext()) {
-        if (FrameView* view = frame->view())
+    for (Frame* frame = mainFrame(); frame; frame = frame->tree().traverseNext()) {
+        if (!frame->isLocalFrame())
+            continue;
+        if (FrameView* view = toLocalFrame(frame)->view())
             view->updateAcceleratedCompositingSettings();
     }
 }
@@ -574,8 +600,10 @@ void Page::willBeDestroyed()
     if (ordinaryPages().contains(this))
         ordinaryPages().remove(this);
 
-    for (LocalFrame* frame = mainFrame(); frame; frame = frame->tree().traverseNext())
-        frame->loader().frameDetached();
+    for (Frame* frame = mainFrame(); frame; frame = frame->tree().traverseNext()) {
+        if (frame->isLocalFrame())
+            toLocalFrame(frame)->loader().frameDetached();
+    }
 
     if (m_scrollingCoordinator)
         m_scrollingCoordinator->willBeDestroyed();

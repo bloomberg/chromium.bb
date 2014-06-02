@@ -55,8 +55,10 @@ void InjectedStyleSheets::invalidateInjectedStyleSheetCacheInAllFrames()
 
     HashSet<Page*>::const_iterator end = pages.end();
     for (HashSet<Page*>::const_iterator it = pages.begin(); it != end; ++it) {
-        for (LocalFrame* frame = (*it)->mainFrame(); frame; frame = frame->tree().traverseNext())
-            frame->document()->styleEngine()->invalidateInjectedStyleSheetCache();
+        for (Frame* frame = (*it)->mainFrame(); frame; frame = frame->tree().traverseNext()) {
+            if (frame->isLocalFrame())
+                toLocalFrame(frame)->document()->styleEngine()->invalidateInjectedStyleSheetCache();
+        }
     }
 }
 

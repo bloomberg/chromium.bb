@@ -922,10 +922,10 @@ bool EventHandler::bubblingScroll(ScrollDirection direction, ScrollGranularity g
     FrameView* view = frame->view();
     if (view && view->scroll(direction, granularity))
         return true;
-    frame = frame->tree().parent();
-    if (!frame)
+    Frame* parentFrame = frame->tree().parent();
+    if (!parentFrame || !parentFrame->isLocalFrame())
         return false;
-    return frame->eventHandler().bubblingScroll(direction, granularity, m_frame->ownerElement());
+    return toLocalFrame(parentFrame)->eventHandler().bubblingScroll(direction, granularity, m_frame->ownerElement());
 }
 
 IntPoint EventHandler::lastKnownMousePosition() const
@@ -1509,7 +1509,7 @@ bool EventHandler::handleMouseReleaseEvent(const PlatformMouseEvent& mouseEvent)
     OwnPtr<UserGestureIndicator> gestureIndicator;
 
     if (m_frame->localFrameRoot()->eventHandler().m_lastMouseDownUserGestureToken)
-        gestureIndicator = adoptPtr(new UserGestureIndicator(m_frame->tree().top()->eventHandler().m_lastMouseDownUserGestureToken.release()));
+        gestureIndicator = adoptPtr(new UserGestureIndicator(m_frame->localFrameRoot()->eventHandler().m_lastMouseDownUserGestureToken.release()));
     else
         gestureIndicator = adoptPtr(new UserGestureIndicator(DefinitelyProcessingUserGesture));
 

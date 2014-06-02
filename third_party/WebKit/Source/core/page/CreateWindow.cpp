@@ -66,6 +66,8 @@ static LocalFrame* createWindow(LocalFrame& openerFrame, LocalFrame& lookupFrame
 
     if (openerFrame.settings() && !openerFrame.settings()->supportsMultipleWindows()) {
         created = false;
+        if (!openerFrame.tree().top()->isLocalFrame())
+            return 0;
         return openerFrame.tree().top();
     }
 

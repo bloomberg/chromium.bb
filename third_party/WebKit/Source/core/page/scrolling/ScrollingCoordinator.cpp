@@ -168,9 +168,11 @@ void ScrollingCoordinator::updateAfterCompositingChange()
     }
 
     const FrameTree& tree = m_page->mainFrame()->tree();
-    for (const LocalFrame* child = tree.firstChild(); child; child = child->tree().nextSibling()) {
-        if (WebLayer* scrollLayer = toWebLayer(child->view()->layerForScrolling()))
-            scrollLayer->setBounds(child->view()->contentsSize());
+    for (const Frame* child = tree.firstChild(); child; child = child->tree().nextSibling()) {
+        if (!child->isLocalFrame())
+            continue;
+        if (WebLayer* scrollLayer = toWebLayer(toLocalFrame(child)->view()->layerForScrolling()))
+            scrollLayer->setBounds(toLocalFrame(child)->view()->contentsSize());
     }
 }
 
@@ -392,16 +394,18 @@ static void makeLayerChildFrameMap(const LocalFrame* currentFrame, LayerFrameMap
 {
     map->clear();
     const FrameTree& tree = currentFrame->tree();
-    for (const LocalFrame* child = tree.firstChild(); child; child = child->tree().nextSibling()) {
-        const RenderObject* ownerRenderer = child->ownerRenderer();
+    for (const Frame* child = tree.firstChild(); child; child = child->tree().nextSibling()) {
+        if (!child->isLocalFrame())
+            continue;
+        const RenderObject* ownerRenderer = toLocalFrame(child)->ownerRenderer();
         if (!ownerRenderer)
             continue;
         const RenderLayer* containingLayer = ownerRenderer->enclosingLayer();
         LayerFrameMap::iterator iter = map->find(containingLayer);
         if (iter == map->end())
-            map->add(containingLayer, Vector<const LocalFrame*>()).storedValue->value.append(child);
+            map->add(containingLayer, Vector<const LocalFrame*>()).storedValue->value.append(toLocalFrame(child));
         else
-            iter->value.append(child);
+            iter->value.append(toLocalFrame(child));
     }
 }
 
@@ -666,8 +670,9 @@ void ScrollingCoordinator::updateHaveWheelEventHandlers()
     if (WebLayer* scrollLayer = toWebLayer(m_page->mainFrame()->view()->layerForScrolling())) {
         unsigned wheelEventHandlerCount = 0;
 
-        for (LocalFrame* frame = m_page->mainFrame(); frame; frame = frame->tree().traverseNext()) {
-            wheelEventHandlerCount += WheelController::from(*frame->document())->wheelEventHandlerCount();
+        for (Frame* frame = m_page->mainFrame(); frame; frame = frame->tree().traverseNext()) {
+            if (frame->isLocalFrame())
+                wheelEventHandlerCount += WheelController::from(*toLocalFrame(frame)->document())->wheelEventHandlerCount();
         }
 
         scrollLayer->setHaveWheelEventHandlers(wheelEventHandlerCount);
@@ -772,8 +777,10 @@ Region ScrollingCoordinator::computeShouldHandleScrollGestureOnMainThreadRegion(
     }
 
     const FrameTree& tree = frame->tree();
-    for (LocalFrame* subFrame = tree.firstChild(); subFrame; subFrame = subFrame->tree().nextSibling())
-        shouldHandleScrollGestureOnMainThreadRegion.unite(computeShouldHandleScrollGestureOnMainThreadRegion(subFrame, offset));
+    for (Frame* subFrame = tree.firstChild(); subFrame; subFrame = subFrame->tree().nextSibling()) {
+        if (subFrame->isLocalFrame())
+            shouldHandleScrollGestureOnMainThreadRegion.unite(computeShouldHandleScrollGestureOnMainThreadRegion(toLocalFrame(subFrame), offset));
+    }
 
     return shouldHandleScrollGestureOnMainThreadRegion;
 }

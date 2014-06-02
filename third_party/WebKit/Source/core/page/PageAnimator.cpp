@@ -30,8 +30,10 @@ void PageAnimator::serviceScriptedAnimations(double monotonicAnimationStartTime)
     TemporaryChange<bool> servicing(m_servicingAnimations, true);
 
     WillBeHeapVector<RefPtrWillBeMember<Document> > documents;
-    for (RefPtr<LocalFrame> frame = m_page->mainFrame(); frame; frame = frame->tree().traverseNext())
-        documents.append(frame->document());
+    for (RefPtr<Frame> frame = m_page->mainFrame(); frame; frame = frame->tree().traverseNext()) {
+        if (frame->isLocalFrame())
+            documents.append(toLocalFrame(frame.get())->document());
+    }
 
     for (size_t i = 0; i < documents.size(); ++i) {
         if (documents[i]->frame()) {

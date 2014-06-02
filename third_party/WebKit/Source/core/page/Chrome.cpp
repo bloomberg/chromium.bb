@@ -141,8 +141,10 @@ bool Chrome::canRunModal() const
 
 static bool canRunModalIfDuringPageDismissal(Page* page, ChromeClient::DialogType dialog, const String& message)
 {
-    for (LocalFrame* frame = page->mainFrame(); frame; frame = frame->tree().traverseNext()) {
-        Document::PageDismissalType dismissal = frame->document()->pageDismissalEventBeingDispatched();
+    for (Frame* frame = page->mainFrame(); frame; frame = frame->tree().traverseNext()) {
+        if (!frame->isLocalFrame())
+            continue;
+        Document::PageDismissalType dismissal = toLocalFrame(frame)->document()->pageDismissalEventBeingDispatched();
         if (dismissal != Document::NoDismissal)
             return page->chrome().client().shouldRunModalDialogDuringPageDismissal(dialog, message, dismissal);
     }

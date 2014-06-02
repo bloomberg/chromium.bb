@@ -252,8 +252,10 @@ void PageSerializer::serializeFrame(LocalFrame* frame)
         }
     }
 
-    for (LocalFrame* childFrame = frame->tree().firstChild(); childFrame; childFrame = childFrame->tree().nextSibling())
-        serializeFrame(childFrame);
+    for (Frame* childFrame = frame->tree().firstChild(); childFrame; childFrame = childFrame->tree().nextSibling()) {
+        if (childFrame->isLocalFrame())
+            serializeFrame(toLocalFrame(childFrame));
+    }
 }
 
 void PageSerializer::serializeCSSStyleSheet(CSSStyleSheet* styleSheet, const KURL& url)
