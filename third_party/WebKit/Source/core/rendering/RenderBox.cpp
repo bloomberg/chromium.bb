@@ -1747,37 +1747,29 @@ LayoutRect RenderBox::clipRect(const LayoutPoint& location)
     return clipRect;
 }
 
+static LayoutUnit portionOfMarginNotConsumedByFloat(LayoutUnit childMargin, LayoutUnit contentSide, LayoutUnit offset)
+{
+    if (childMargin <= 0)
+        return 0;
+    LayoutUnit contentSideWithMargin = contentSide + childMargin;
+    if (offset > contentSideWithMargin)
+        return childMargin;
+    return offset - contentSide;
+}
+
 LayoutUnit RenderBox::shrinkLogicalWidthToAvoidFloats(LayoutUnit childMarginStart, LayoutUnit childMarginEnd, const RenderBlockFlow* cb) const
 {
     LayoutUnit logicalTopPosition = logicalTop();
-    LayoutUnit result = cb->availableLogicalWidthForLine(logicalTopPosition, false) - childMarginStart - childMarginEnd;
+    LayoutUnit width = cb->availableLogicalWidthForLine(logicalTopPosition, false) - max<LayoutUnit>(0, childMarginStart) - max<LayoutUnit>(0, childMarginEnd);
 
     // We need to see if margins on either the start side or the end side can contain the floats in question. If they can,
     // then just using the line width is inaccurate. In the case where a float completely fits, we don't need to use the line
     // offset at all, but can instead push all the way to the content edge of the containing block. In the case where the float
     // doesn't fit, we can use the line offset, but we need to grow it by the margin to reflect the fact that the margin was
     // "consumed" by the float. Negative margins aren't consumed by the float, and so we ignore them.
-    if (childMarginStart > 0) {
-        LayoutUnit startContentSide = cb->startOffsetForContent();
-        LayoutUnit startContentSideWithMargin = startContentSide + childMarginStart;
-        LayoutUnit startOffset = cb->startOffsetForLine(logicalTopPosition, false);
-        if (startOffset > startContentSideWithMargin)
-            result += childMarginStart;
-        else
-            result += startOffset - startContentSide;
-    }
-
-    if (childMarginEnd > 0) {
-        LayoutUnit endContentSide = cb->endOffsetForContent();
-        LayoutUnit endContentSideWithMargin = endContentSide + childMarginEnd;
-        LayoutUnit endOffset = cb->endOffsetForLine(logicalTopPosition, false);
-        if (endOffset > endContentSideWithMargin)
-            result += childMarginEnd;
-        else
-            result += endOffset - endContentSide;
-    }
-
-    return result;
+    width += portionOfMarginNotConsumedByFloat(childMarginStart, cb->startOffsetForContent(), cb->startOffsetForLine(logicalTopPosition, false));
+    width += portionOfMarginNotConsumedByFloat(childMarginEnd, cb->endOffsetForContent(), cb->endOffsetForLine(logicalTopPosition, false));
+    return width;
 }
 
 LayoutUnit RenderBox::containingBlockLogicalWidthForContent() const
@@ -2444,12 +2436,17 @@ void RenderBox::computeInlineDirectionMargins(RenderBlock* containingBlock, Layo
             marginEndLength.setValue(0);
     }
 
-    LayoutUnit availableWidth = containerWidth;
-    if (avoidsFloats() && containingBlock->containsFloats())
-        availableWidth = containingBlockAvailableLineWidth();
-
     LayoutUnit marginStartWidth = minimumValueForLength(marginStartLength, containerWidth);
     LayoutUnit marginEndWidth = minimumValueForLength(marginEndLength, containerWidth);
+
+    LayoutUnit availableWidth = containerWidth;
+    if (avoidsFloats() && containingBlock->containsFloats()) {
+        availableWidth = containingBlockAvailableLineWidth();
+        if (shrinkToAvoidFloats() && availableWidth < containerWidth) {
+            marginStart = max<LayoutUnit>(0, marginStartWidth);
+            marginEnd = max<LayoutUnit>(0, marginEndWidth);
+        }
+    }
 
     // CSS 2.1 (10.3.3): "If 'width' is not 'auto' and 'border-left-width' + 'padding-left' + 'width' + 'padding-right' + 'border-right-width'
     // (plus any of 'margin-left' or 'margin-right' that are not 'auto') is larger than the width of the containing block, then any 'auto'
