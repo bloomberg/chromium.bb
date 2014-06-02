@@ -236,12 +236,11 @@ cr.define('options', function() {
 
     // The page is already in history (the user may have clicked the same link
     // twice). Do nothing.
-    if (path == page.name && !OptionsPage.isLoading())
+    var hash = opt_params && opt_params.ignoreHash ? '' : window.location.hash;
+    var newPath = (page == this.getDefaultPage() ? '' : page.name) + hash;
+    if (path == newPath && !OptionsPage.isLoading())
       return;
 
-    var hash = opt_params && opt_params.ignoreHash ? '' : window.location.hash;
-
-    var newPath = (page == this.getDefaultPage() ? '' : page.name) + hash;
     var historyFunction = replace ? uber.replaceState : uber.pushState;
     historyFunction.call(uber, {pageName: page.name}, newPath);
   };

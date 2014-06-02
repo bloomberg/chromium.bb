@@ -636,6 +636,21 @@ TEST_F('OptionsWebUIExtendedTest', 'CloseOverlay', function() {
   });
 });
 
+// Test that closing an overlay that did not push history when opening does not
+// again push history.
+TEST_F('OptionsWebUIExtendedTest', 'CloseOverlayNoHistory', function() {
+  // Open the do not track confirmation prompt.
+  OptionsPage.showPageByName('doNotTrackConfirm', false);
+
+  // Opening the prompt does not add to the history.
+  this.verifyHistory_([''], function() {
+    // Close the overlay.
+    OptionsPage.closeOverlay();
+    // Still no history changes.
+    this.verifyHistory_([''], testDone);
+  }.bind(this));
+});
+
 // Make sure an overlay isn't closed (even temporarily) when another overlay is
 // opened on top.
 TEST_F('OptionsWebUIExtendedTest', 'OverlayAboveNoReset', function() {
