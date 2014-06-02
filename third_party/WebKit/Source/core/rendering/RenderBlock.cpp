@@ -4019,6 +4019,8 @@ void RenderBlock::updateFirstLetterStyle(RenderObject* firstLetterBlock, RenderO
     RenderStyle* pseudoStyle = styleForFirstLetter(firstLetterBlock, firstLetterContainer);
     ASSERT(firstLetter->isFloating() || firstLetter->isInline());
 
+    LayoutStateDisabler layoutStateDisabler(*this);
+
     if (RenderStyle::stylePropagationDiff(firstLetter->style(), pseudoStyle) == Reattach) {
         // The first-letter renderer needs to be replaced. Create a new renderer of the right type.
         RenderBoxModelObject* newFirstLetter;
@@ -4029,7 +4031,6 @@ void RenderBlock::updateFirstLetterStyle(RenderObject* firstLetterBlock, RenderO
         newFirstLetter->setStyle(pseudoStyle);
 
         // Move the first letter into the new renderer.
-        LayoutStateDisabler layoutStateDisabler(*this);
         while (RenderObject* child = firstLetter->slowFirstChild()) {
             if (child->isText())
                 toRenderText(child)->removeAndDestroyTextBoxes();
