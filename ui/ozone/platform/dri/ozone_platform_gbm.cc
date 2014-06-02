@@ -4,6 +4,7 @@
 
 #include "ui/ozone/platform/dri/ozone_platform_gbm.h"
 
+#include <dlfcn.h>
 #include <stdlib.h>
 #include <gbm.h>
 
@@ -32,9 +33,12 @@ class GbmSurfaceGenerator : public ScanoutSurfaceGenerator {
  public:
   GbmSurfaceGenerator(DriWrapper* dri)
       : dri_(dri),
+        glapi_lib_(dlopen("libglapi.so.0", RTLD_LAZY | RTLD_GLOBAL)),
         device_(gbm_create_device(dri_->get_fd())) {}
   virtual ~GbmSurfaceGenerator() {
     gbm_device_destroy(device_);
+    if (glapi_lib_)
+      dlclose(glapi_lib_);
   }
 
   gbm_device* device() const { return device_; }
@@ -45,6 +49,9 @@ class GbmSurfaceGenerator : public ScanoutSurfaceGenerator {
 
  private:
   DriWrapper* dri_;  // Not owned.
+
+  // HACK: gbm drivers have broken linkage
+  void *glapi_lib_;
 
   gbm_device* device_;
 
