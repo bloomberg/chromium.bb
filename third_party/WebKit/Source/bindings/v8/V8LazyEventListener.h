@@ -54,6 +54,10 @@ namespace WebCore {
         }
 
         virtual bool isLazy() const OVERRIDE { return true; }
+        // V8LazyEventListener is always for the main world.
+        virtual DOMWrapperWorld& world() const OVERRIDE { return DOMWrapperWorld::mainWorld(); }
+
+        virtual void handleEvent(ExecutionContext*, Event*) OVERRIDE;
 
     protected:
         virtual void prepareListenerObject(ExecutionContext*) OVERRIDE;

@@ -45,62 +45,52 @@
 
 namespace WebCore {
 
-V8WorkerGlobalScopeEventListener::V8WorkerGlobalScopeEventListener(v8::Local<v8::Object> listener, bool isInline, v8::Isolate* isolate)
-    : V8EventListener(listener, isInline, isolate)
+V8WorkerGlobalScopeEventListener::V8WorkerGlobalScopeEventListener(v8::Local<v8::Object> listener, bool isInline, ScriptState* scriptState)
+    : V8EventListener(listener, isInline, scriptState)
 {
 }
 
-void V8WorkerGlobalScopeEventListener::handleEvent(ExecutionContext* context, Event* event)
+void V8WorkerGlobalScopeEventListener::handleEvent(ExecutionContext*, Event* event)
 {
-    if (!context)
-        return;
-
     // The callback function on XMLHttpRequest can clear the event listener and destroys 'this' object. Keep a local reference to it.
     // See issue 889829.
     RefPtr<V8AbstractEventListener> protect(this);
 
-    v8::Isolate* isolate = toIsolate(context);
-    v8::HandleScope handleScope(isolate);
-
-    WorkerScriptController* script = toWorkerGlobalScope(context)->script();
+    WorkerScriptController* script = toWorkerGlobalScope(scriptState()->executionContext())->script();
     if (!script)
         return;
 
-    v8::Handle<v8::Context> v8Context = script->context();
-    if (v8Context.IsEmpty())
+    if (scriptState()->contextIsEmpty())
         return;
-
-    // Enter the V8 context in which to perform the event handling.
-    v8::Context::Scope scope(v8Context);
+    ScriptState::Scope scope(scriptState());
 
     // Get the V8 wrapper for the event object.
-    v8::Handle<v8::Value> jsEvent = toV8(event, v8::Handle<v8::Object>(), isolate);
+    v8::Handle<v8::Value> jsEvent = toV8(event, scriptState()->context()->Global(), isolate());
 
-    invokeEventHandler(context, event, v8::Local<v8::Value>::New(isolate, jsEvent));
+    invokeEventHandler(event, v8::Local<v8::Value>::New(isolate(), jsEvent));
 }
 
-v8::Local<v8::Value> V8WorkerGlobalScopeEventListener::callListenerFunction(ExecutionContext* context, v8::Handle<v8::Value> jsEvent, Event* event)
+v8::Local<v8::Value> V8WorkerGlobalScopeEventListener::callListenerFunction(ExecutionContext*, v8::Handle<v8::Value> jsEvent, Event* event)
 {
-    v8::Local<v8::Function> handlerFunction = getListenerFunction(context);
-    v8::Local<v8::Object> receiver = getReceiverObject(context, event);
+    v8::Local<v8::Function> handlerFunction = getListenerFunction(scriptState()->executionContext());
+    v8::Local<v8::Object> receiver = getReceiverObject(event);
     if (handlerFunction.IsEmpty() || receiver.IsEmpty())
         return v8::Local<v8::Value>();
 
-    v8::Isolate* isolate = toIsolate(context);
-    TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "FunctionCall", "data", devToolsTraceEventData(context, handlerFunction, isolate));
+    TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "FunctionCall", "data", devToolsTraceEventData(scriptState()->executionContext(), handlerFunction, isolate()));
     TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline.stack"), "CallStack", "stack", InspectorCallStackEvent::currentCallStack());
     // FIXME(361045): remove InspectorInstrumentation calls once DevTools Timeline migrates to tracing.
     InspectorInstrumentationCookie cookie;
-    if (InspectorInstrumentation::timelineAgentEnabled(context)) {
+    if (InspectorInstrumentation::timelineAgentEnabled(scriptState()->executionContext())) {
         int scriptId = 0;
         String resourceName;
         int lineNumber = 1;
-        GetDevToolsFunctionInfo(handlerFunction, isolate, scriptId, resourceName, lineNumber);
-        cookie = InspectorInstrumentation::willCallFunction(context, scriptId, resourceName, lineNumber);
+        GetDevToolsFunctionInfo(handlerFunction, isolate(), scriptId, resourceName, lineNumber);
+        cookie = InspectorInstrumentation::willCallFunction(scriptState()->executionContext(), scriptId, resourceName, lineNumber);
     }
 
     v8::Handle<v8::Value> parameters[1] = { jsEvent };
-    v8::Local<v8::Value> result = V8ScriptRunner::callFunction(handlerFunction, context, receiver, WTF_ARRAY_LENGTH(parameters), parameters, isolate);
+    v8::Local<v8::Value> result = V8ScriptRunner::callFunction(handlerFunction, scriptState()->executionContext(), receiver, WTF_ARRAY_LENGTH(parameters), parameters, isolate());
 
     InspectorInstrumentation::didCallFunction(cookie);
     TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "UpdateCounters", "data", InspectorUpdateCountersEvent::data());
@@ -108,19 +98,18 @@ v8::Local<v8::Value> V8WorkerGlobalScopeEventListener::callListenerFunction(Exec
     return result;
 }
 
-v8::Local<v8::Object> V8WorkerGlobalScopeEventListener::getReceiverObject(ExecutionContext* context, Event* event)
+v8::Local<v8::Object> V8WorkerGlobalScopeEventListener::getReceiverObject(Event* event)
 {
-    v8::Local<v8::Object> listener = getListenerObject(context);
+    v8::Local<v8::Object> listener = getListenerObject(scriptState()->executionContext());
 
     if (!listener.IsEmpty() && !listener->IsFunction())
         return listener;
 
     EventTarget* target = event->currentTarget();
-    v8::Isolate* isolate = toIsolate(context);
-    v8::Handle<v8::Value> value = toV8(target, v8::Handle<v8::Object>(), isolate);
+    v8::Handle<v8::Value> value = toV8(target, scriptState()->context()->Global(), isolate());
     if (value.IsEmpty())
         return v8::Local<v8::Object>();
-    return v8::Local<v8::Object>::New(isolate, v8::Handle<v8::Object>::Cast(value));
+    return v8::Local<v8::Object>::New(isolate(), v8::Handle<v8::Object>::Cast(value));
 }
 
 } // namespace WebCore

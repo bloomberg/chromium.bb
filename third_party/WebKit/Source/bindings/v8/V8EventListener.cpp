@@ -38,15 +38,15 @@
 
 namespace WebCore {
 
-V8EventListener::V8EventListener(v8::Local<v8::Object> listener, bool isAttribute, v8::Isolate* isolate)
-    : V8AbstractEventListener(isAttribute, DOMWrapperWorld::current(isolate), isolate)
+V8EventListener::V8EventListener(v8::Local<v8::Object> listener, bool isAttribute, ScriptState* scriptState)
+    : V8AbstractEventListener(isAttribute, scriptState)
 {
     setListenerObject(listener);
 }
 
-v8::Local<v8::Function> V8EventListener::getListenerFunction(ExecutionContext* context)
+v8::Local<v8::Function> V8EventListener::getListenerFunction(ExecutionContext*)
 {
-    v8::Local<v8::Object> listener = getListenerObject(context);
+    v8::Local<v8::Object> listener = getListenerObject(scriptState()->executionContext());
 
     // Has the listener been disposed?
     if (listener.IsEmpty())
@@ -67,22 +67,18 @@ v8::Local<v8::Function> V8EventListener::getListenerFunction(ExecutionContext* c
     return v8::Local<v8::Function>();
 }
 
-v8::Local<v8::Value> V8EventListener::callListenerFunction(ExecutionContext* context, v8::Handle<v8::Value> jsEvent, Event* event)
+v8::Local<v8::Value> V8EventListener::callListenerFunction(ExecutionContext*, v8::Handle<v8::Value> jsEvent, Event* event)
 {
 
-    v8::Local<v8::Function> handlerFunction = getListenerFunction(context);
-    v8::Local<v8::Object> receiver = getReceiverObject(context, event);
+    v8::Local<v8::Function> handlerFunction = getListenerFunction(scriptState()->executionContext());
+    v8::Local<v8::Object> receiver = getReceiverObject(event);
     if (handlerFunction.IsEmpty() || receiver.IsEmpty())
         return v8::Local<v8::Value>();
 
-    // FIXME: Can |context| be 0 here?
-    if (!context)
+    if (!scriptState()->executionContext()->isDocument())
         return v8::Local<v8::Value>();
 
-    if (!context->isDocument())
-        return v8::Local<v8::Value>();
-
-    LocalFrame* frame = toDocument(context)->frame();
+    LocalFrame* frame = toDocument(scriptState()->executionContext())->frame();
     if (!frame)
         return v8::Local<v8::Value>();
 

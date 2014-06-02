@@ -55,7 +55,7 @@ namespace {
 
 class TestListener : public V8AbstractEventListener {
 public:
-    virtual bool operator==(const EventListener& listener)
+    virtual bool operator==(const EventListener&)
     {
         return true;
     }
@@ -64,22 +64,20 @@ public:
     {
         EXPECT_EQ(event->type(), "blah");
 
-        v8::Local<v8::Context> v8Context = WebCore::toV8Context(context, DOMWrapperWorld::mainWorld());
-        v8::Isolate* isolate = v8Context->GetIsolate();
-        v8::Context::Scope scope(v8Context);
-        v8::Handle<v8::Value> jsEvent = toV8(event, v8::Handle<v8::Object>(), isolate);
+        ScriptState::Scope scope(scriptState());
+        v8::Handle<v8::Value> jsEvent = toV8(event, scriptState()->context()->Global(), isolate());
 
-        EXPECT_EQ(jsEvent->ToObject()->Get(v8::String::NewFromUtf8(isolate, "detail")), v8::Boolean::New(isolate, true));
+        EXPECT_EQ(jsEvent->ToObject()->Get(v8::String::NewFromUtf8(scriptState()->isolate(), "detail")), v8::Boolean::New(scriptState()->isolate(), true));
     }
 
-    static PassRefPtr<TestListener> create(v8::Isolate* isolate, DOMWrapperWorld& world)
+    static PassRefPtr<TestListener> create(ScriptState* scriptState)
     {
-        return adoptRef(new TestListener(isolate, world));
+        return adoptRef(new TestListener(scriptState));
     }
 
 private:
-    TestListener(v8::Isolate* isolate, DOMWrapperWorld& world)
-        : V8AbstractEventListener(false, world, isolate)
+    TestListener(ScriptState* scriptState)
+        : V8AbstractEventListener(false, scriptState)
     {
     }
 
@@ -110,8 +108,7 @@ TEST(CustomEventTest, InitWithSerializedScriptValue)
     v8::Isolate* isolate = toIsolate(frame->frame());
     V8TestingScope scope(isolate);
     customEvent.initCustomEvent("blah", false, false, WebSerializedScriptValue::serialize(v8::Boolean::New(isolate, true)));
-    RefPtr<DOMWrapperWorld> world = DOMWrapperWorld::create();
-    RefPtr<EventListener> listener = TestListener::create(isolate, *world);
+    RefPtr<EventListener> listener = TestListener::create(ScriptState::current(isolate));
     frame->frame()->document()->addEventListener("blah", listener, false);
     frame->frame()->document()->dispatchEvent(event);
 

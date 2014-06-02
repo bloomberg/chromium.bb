@@ -109,20 +109,27 @@ namespace WebCore {
         }
 
         virtual bool belongsToTheCurrentWorld() const OVERRIDE FINAL;
-        DOMWrapperWorld& world() const { return *m_world; }
         v8::Isolate* isolate() const { return m_isolate; }
+        virtual DOMWrapperWorld& world() const { return scriptState()->world(); }
+        ScriptState* scriptState() const
+        {
+            ASSERT(m_scriptState);
+            return m_scriptState.get();
+        }
+        void setScriptState(ScriptState* scriptState) { m_scriptState = scriptState; }
 
     protected:
-        V8AbstractEventListener(bool isAttribute, DOMWrapperWorld&, v8::Isolate*);
+        V8AbstractEventListener(bool isAttribute, ScriptState*);
+        V8AbstractEventListener(bool isAttribute, v8::Isolate*);
 
         virtual void prepareListenerObject(ExecutionContext*) { }
 
         void setListenerObject(v8::Handle<v8::Object> listener);
 
-        void invokeEventHandler(ExecutionContext*, Event*, v8::Local<v8::Value> jsEvent);
+        void invokeEventHandler(Event*, v8::Local<v8::Value> jsEvent);
 
         // Get the receiver object to use for event listener call.
-        v8::Local<v8::Object> getReceiverObject(ExecutionContext*, Event*);
+        v8::Local<v8::Object> getReceiverObject(Event*);
 
     private:
         // Implementation of EventListener function.
@@ -139,7 +146,10 @@ namespace WebCore {
         // Indicates if this is an HTML type listener.
         bool m_isAttribute;
 
-        RefPtr<DOMWrapperWorld> m_world;
+        // For V8LazyEventListener, m_scriptState can be 0 until V8LazyEventListener is actually used.
+        // m_scriptState is set lazily because V8LazyEventListener doesn't know the associated frame
+        // until the listener is actually used.
+        RefPtr<ScriptState> m_scriptState;
         v8::Isolate* m_isolate;
     };
 

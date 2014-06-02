@@ -44,11 +44,11 @@ PassRefPtr<EventListener> V8EventListenerList::getEventListener(ScriptState* scr
         // Used by EventTarget::removeEventListener, specifically
         // EventTargetV8Internal::removeEventListenerMethod
         ASSERT(!isAttribute);
-        return V8EventListenerList::findWrapper(value, scriptState->isolate());
+        return V8EventListenerList::findWrapper(value, scriptState);
     }
     if (toDOMWindow(scriptState->context()))
-        return V8EventListenerList::findOrCreateWrapper<V8EventListener>(value, isAttribute, scriptState->isolate());
-    return V8EventListenerList::findOrCreateWrapper<V8WorkerGlobalScopeEventListener>(value, isAttribute, scriptState->isolate());
+        return V8EventListenerList::findOrCreateWrapper<V8EventListener>(value, isAttribute, scriptState);
+    return V8EventListenerList::findOrCreateWrapper<V8WorkerGlobalScopeEventListener>(value, isAttribute, scriptState);
 }
 
 } // namespace WebCore

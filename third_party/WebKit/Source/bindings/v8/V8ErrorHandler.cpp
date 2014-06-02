@@ -43,8 +43,8 @@
 
 namespace WebCore {
 
-V8ErrorHandler::V8ErrorHandler(v8::Local<v8::Object> listener, bool isInline, v8::Isolate* isolate)
-    : V8EventListener(listener, isInline, isolate)
+V8ErrorHandler::V8ErrorHandler(v8::Local<v8::Object> listener, bool isInline, ScriptState* scriptState)
+    : V8EventListener(listener, isInline, scriptState)
 {
 }
 
@@ -55,27 +55,27 @@ v8::Local<v8::Value> V8ErrorHandler::callListenerFunction(ExecutionContext* cont
 
     ErrorEvent* errorEvent = static_cast<ErrorEvent*>(event);
 
-    v8::Isolate* isolate = toV8Context(context, world())->GetIsolate();
     if (errorEvent->world() && errorEvent->world() != &world())
-        return v8::Null(isolate);
+        return v8::Null(isolate());
 
-    v8::Local<v8::Object> listener = getListenerObject(context);
+    v8::Local<v8::Object> listener = getListenerObject(scriptState()->executionContext());
     v8::Local<v8::Value> returnValue;
     if (!listener.IsEmpty() && listener->IsFunction()) {
         v8::Local<v8::Function> callFunction = v8::Local<v8::Function>::Cast(listener);
-        v8::Local<v8::Object> thisValue = isolate->GetCurrentContext()->Global();
+        // FIXME: Is it correct to use the current context?
+        v8::Local<v8::Object> thisValue = isolate()->GetCurrentContext()->Global();
 
-        v8::Local<v8::Value> error = V8HiddenValue::getHiddenValue(isolate, jsEvent->ToObject(), V8HiddenValue::error(isolate));
+        v8::Local<v8::Value> error = V8HiddenValue::getHiddenValue(isolate(), jsEvent->ToObject(), V8HiddenValue::error(isolate()));
         if (error.IsEmpty())
-            error = v8::Null(isolate);
+            error = v8::Null(isolate());
 
-        v8::Handle<v8::Value> parameters[5] = { v8String(isolate, errorEvent->message()), v8String(isolate, errorEvent->filename()), v8::Integer::New(isolate, errorEvent->lineno()), v8::Integer::New(isolate, errorEvent->colno()), error };
+        v8::Handle<v8::Value> parameters[5] = { v8String(isolate(), errorEvent->message()), v8String(isolate(), errorEvent->filename()), v8::Integer::New(isolate(), errorEvent->lineno()), v8::Integer::New(isolate(), errorEvent->colno()), error };
         v8::TryCatch tryCatch;
         tryCatch.SetVerbose(true);
-        if (context->isWorkerGlobalScope())
-            returnValue = V8ScriptRunner::callFunction(callFunction, context, thisValue, WTF_ARRAY_LENGTH(parameters), parameters, isolate);
+        if (scriptState()->executionContext()->isWorkerGlobalScope())
+            returnValue = V8ScriptRunner::callFunction(callFunction, scriptState()->executionContext(), thisValue, WTF_ARRAY_LENGTH(parameters), parameters, isolate());
         else
-            returnValue = ScriptController::callFunction(context, callFunction, thisValue, WTF_ARRAY_LENGTH(parameters), parameters, isolate);
+            returnValue = ScriptController::callFunction(scriptState()->executionContext(), callFunction, thisValue, WTF_ARRAY_LENGTH(parameters), parameters, isolate());
     }
     return returnValue;
 }
