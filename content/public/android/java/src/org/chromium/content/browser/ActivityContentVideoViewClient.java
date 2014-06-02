@@ -4,6 +4,7 @@
 
 package org.chromium.content.browser;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.os.Build;
 import android.view.Gravity;
@@ -54,11 +55,12 @@ public class ActivityContentVideoViewClient implements ContentVideoViewClient {
      * @param view The decor view belongs to the activity window
      * @param enterFullscreen True if video is going fullscreen, or false otherwise.
      */
+    @SuppressLint("InlinedApi")
     private void setSystemUiVisibility(View view, boolean enterFullscreen) {
         if (enterFullscreen) {
             mActivity.getWindow().setFlags(
-                WindowManager.LayoutParams.FLAG_FULLSCREEN,
-                WindowManager.LayoutParams.FLAG_FULLSCREEN);
+                    WindowManager.LayoutParams.FLAG_FULLSCREEN,
+                    WindowManager.LayoutParams.FLAG_FULLSCREEN);
         } else {
             mActivity.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
         }
