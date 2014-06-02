@@ -142,11 +142,16 @@ ScriptPromise ServiceWorkerContainer::unregisterServiceWorker(ExecutionContext* 
 
 void ServiceWorkerContainer::setCurrentServiceWorker(blink::WebServiceWorker* serviceWorker)
 {
+    setController(serviceWorker);
+}
+
+void ServiceWorkerContainer::setController(blink::WebServiceWorker* serviceWorker)
+{
     if (!executionContext()) {
         delete serviceWorker;
         return;
     }
-    m_current = ServiceWorker::create(executionContext(), adoptPtr(serviceWorker));
+    m_controller = ServiceWorker::create(executionContext(), adoptPtr(serviceWorker));
 }
 
 void ServiceWorkerContainer::dispatchMessageEvent(const blink::WebString& message, const blink::WebMessagePortChannelArray& webChannels)

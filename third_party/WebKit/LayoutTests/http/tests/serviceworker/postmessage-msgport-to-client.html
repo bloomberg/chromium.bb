@@ -22,7 +22,7 @@ t.step(function() {
         with_iframe(scope, t.step_func(function(frame) {
             var w = frame.contentWindow;
             w.onmessage = t.step_func(onMessage);
-            w.navigator.serviceWorker.current.postMessage('ping');
+            w.navigator.serviceWorker.controller.postMessage('ping');
         }));
     }
 

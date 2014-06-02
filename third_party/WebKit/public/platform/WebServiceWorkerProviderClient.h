@@ -44,6 +44,9 @@ public:
     virtual ~WebServiceWorkerProviderClient() { }
 
     // The callee will take ownership of the given WebServiceWorker object.
+    virtual void setController(WebServiceWorker*) = 0;
+
+    // FIXME: Remove when the embedder switches to setController.
     virtual void setCurrentServiceWorker(WebServiceWorker*) = 0;
 
     virtual void dispatchMessageEvent(const WebString& message, const WebMessagePortChannelArray&) = 0;
