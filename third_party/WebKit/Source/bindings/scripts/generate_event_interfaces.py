@@ -45,7 +45,7 @@ import os
 import posixpath
 import sys
 
-from utilities import get_file_contents, write_file, get_interface_extended_attributes_from_idl
+from utilities import get_file_contents, read_file_to_list, write_file, get_interface_extended_attributes_from_idl
 
 EXPORTED_EXTENDED_ATTRIBUTES = (
     'Conditional',
@@ -111,8 +111,7 @@ def write_event_interfaces_file(event_idl_files, destination_filename, only_if_c
 
 def main():
     options = parse_options()
-    with open(options.event_idl_files_list) as event_idl_files_list:
-        event_idl_files = [line.rstrip('\n') for line in event_idl_files_list]
+    event_idl_files = read_file_to_list(options.event_idl_files_list)
     write_event_interfaces_file(event_idl_files,
                                 options.event_interfaces_file,
                                 options.write_file_only_if_changed,

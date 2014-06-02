@@ -20,18 +20,18 @@ Design document: http://www.chromium.org/developers/design-documents/idl-build
 import itertools
 import optparse
 import os
+import cPickle as pickle
 import re
 import sys
 
 from collections import defaultdict
-from utilities import get_file_contents, write_file, get_interface_extended_attributes_from_idl, is_callback_interface_from_idl
+from utilities import get_file_contents, idl_filename_to_interface_name, read_file_to_list, write_file, get_interface_extended_attributes_from_idl, is_callback_interface_from_idl
 
-interface_name_to_global_names = defaultdict(list)
+interface_name_to_global_names = {}
 global_name_to_constructors = defaultdict(list)
 
 
-HEADER_FORMAT = """
-// Stub header file for {{idl_basename}}
+HEADER_FORMAT = """// Stub header file for {{idl_basename}}
 // Required because the IDL compiler assumes that a corresponding header file
 // exists for each IDL file.
 """
@@ -39,37 +39,20 @@ HEADER_FORMAT = """
 def parse_options():
     parser = optparse.OptionParser()
     parser.add_option('--idl-files-list', help='file listing IDL files')
+    parser.add_option('--global-objects-file', help='pickle file of global objects')
     parser.add_option('--write-file-only-if-changed', type='int', help='if true, do not write an output file if it would be identical to the existing one, which avoids unnecessary rebuilds in ninja')
 
     options, args = parser.parse_args()
 
     if options.idl_files_list is None:
         parser.error('Must specify a file listing IDL files using --idl-files-list.')
+    if options.global_objects_file is None:
+        parser.error('Must specify a pickle file of global objects using --global-objects-file.')
     if options.write_file_only_if_changed is None:
         parser.error('Must specify whether output files are only written if changed using --write-file-only-if-changed.')
     options.write_file_only_if_changed = bool(options.write_file_only_if_changed)
 
     return options, args
-
-
-def interface_to_global_names(interface_name, extended_attributes):
-    """Returns global names, if any, for an interface name.
-
-    If the [Global] or [PrimaryGlobal] extended attribute is declared with an
-    identifier list argument, then those identifiers are the interface's global
-    names; otherwise, the interface has a single global name, which is the
-    interface's identifier (http://heycam.github.io/webidl/#Global).
-    """
-    for key in ['Global', 'PrimaryGlobal']:
-        if key not in extended_attributes:
-            continue
-        global_value = extended_attributes[key]
-        if global_value:
-            # FIXME: In spec names are comma-separated, but that makes parsing very
-            # difficult (https://www.w3.org/Bugs/Public/show_bug.cgi?id=24959).
-            return global_value.split('&')
-        return [interface_name]
-    return []
 
 
 def flatten_list(iterable):
@@ -84,7 +67,7 @@ def interface_name_to_constructors(interface_name):
 
 
 def record_global_constructors(idl_filename):
-    interface_name, _ = os.path.splitext(os.path.basename(idl_filename))
+    interface_name = idl_filename_to_interface_name(idl_filename)
     full_path = os.path.realpath(idl_filename)
     idl_file_contents = get_file_contents(full_path)
     extended_attributes = get_interface_extended_attributes_from_idl(idl_file_contents)
@@ -97,9 +80,6 @@ def record_global_constructors(idl_filename):
     if (is_callback_interface_from_idl(idl_file_contents) or
         'NoInterfaceObject' in extended_attributes):
         return
-
-    # Check if interface has [Global] / [PrimaryGlobal] extended attributes.
-    interface_name_to_global_names[interface_name] = interface_to_global_names(interface_name, extended_attributes)
 
     # The [Exposed] extended attribute MUST take an identifier list. Each
     # identifier in the list MUST be a global name. An interface or interface
@@ -164,8 +144,7 @@ def main():
 
     # Input IDL files are passed in a file, due to OS command line length
     # limits. This is generated at GYP time, which is ok b/c files are static.
-    with open(options.idl_files_list) as idl_files_list:
-        idl_files = [line.rstrip('\n') for line in idl_files_list]
+    idl_files = read_file_to_list(options.idl_files_list)
 
     # Output IDL files (to generate) are passed at the command line, since
     # these are in the build directory, which is determined at build time, not
@@ -174,13 +153,17 @@ def main():
     interface_name_idl_filename = [(args[i], args[i + 1])
                                    for i in range(0, len(args), 2)]
 
+    with open(options.global_objects_file) as global_objects_file:
+        interface_name_to_global_names.update(pickle.load(global_objects_file))
+
     for idl_filename in idl_files:
         record_global_constructors(idl_filename)
 
     # Check for [Exposed] / [Global] mismatch.
-    known_global_names = set(itertools.chain.from_iterable(interface_name_to_global_names.values()))
-    unknown_global_names = set(global_name_to_constructors).difference(known_global_names)
-    if unknown_global_names:
+    known_global_names = frozenset(itertools.chain.from_iterable(interface_name_to_global_names.values()))
+    exposed_global_names = frozenset(global_name_to_constructors)
+    if not exposed_global_names.issubset(known_global_names):
+        unknown_global_names = exposed_global_names.difference(known_global_names)
         raise ValueError('The following global names were used in '
                          '[Exposed=xxx] but do not match any [Global] / '
                          '[PrimaryGlobal] interface: %s'

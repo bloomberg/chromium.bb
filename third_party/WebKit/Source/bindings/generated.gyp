@@ -42,12 +42,47 @@
   'targets': [
 ################################################################################
   {
+    # FIXME: Generate separate core_global_objects
+    # http://crbug.com/358074
+    'target_name': 'global_objects',
+    'type': 'none',
+    'actions': [{
+      'action_name': 'compute_global_objects',
+      'inputs': [
+        'scripts/compute_global_objects.py',
+        'scripts/utilities.py',
+        # Only look in main IDL files (exclude dependencies and testing,
+        # which should not define global objects).
+        '<(main_interface_idl_files_list)',
+        '<@(main_interface_idl_files)',
+      ],
+      'outputs': [
+        '<(bindings_output_dir)/GlobalObjects.pickle',
+      ],
+      'action': [
+        'python',
+        'scripts/compute_global_objects.py',
+        '--idl-files-list',
+        '<(main_interface_idl_files_list)',
+        '--write-file-only-if-changed',
+        '<(write_file_only_if_changed)',
+        '--',
+        '<(bindings_output_dir)/GlobalObjects.pickle',
+       ],
+       'message': 'Computing global objects',
+      }]
+  },
+################################################################################
+  {
     # FIXME: Global constructors are used by bindings_core (e.g., V8Window.cpp)
     # but depend on modules, which violates layering http://crbug.com/358074
     # FIXME: Generate separate core_global_constructors_idls
     # http://crbug.com/358074
     'target_name': 'global_constructors_idls',
     'type': 'none',
+    'dependencies': [
+      'global_objects',
+    ],
     'actions': [{
       'action_name': 'generate_global_constructors_idls',
       'inputs': [
@@ -57,6 +92,7 @@
         # which should not appear on global objects).
         '<(main_interface_idl_files_list)',
         '<@(main_interface_idl_files)',
+        '<(bindings_output_dir)/GlobalObjects.pickle',
       ],
       'outputs': [
         '<@(generated_global_constructors_idl_files)',
@@ -67,6 +103,8 @@
         'scripts/generate_global_constructors.py',
         '--idl-files-list',
         '<(main_interface_idl_files_list)',
+        '--global-objects-file',
+        '<(bindings_output_dir)/GlobalObjects.pickle',
         '--write-file-only-if-changed',
         '<(write_file_only_if_changed)',
         '--',

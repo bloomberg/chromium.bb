@@ -18,6 +18,11 @@ class IdlBadFilenameError(Exception):
     pass
 
 
+def idl_filename_to_interface_name(idl_filename):
+    # interface name is the root of the basename: InterfaceName.idl
+    return os.path.splitext(os.path.basename(idl_filename))[0]
+
+
 ################################################################################
 # Basic file reading/writing
 ################################################################################
@@ -25,6 +30,12 @@ class IdlBadFilenameError(Exception):
 def get_file_contents(filename):
     with open(filename) as f:
         return f.read()
+
+
+def read_file_to_list(filename):
+    """Returns a list of (stripped) lines for a given filename."""
+    with open(filename) as f:
+        return [line.rstrip('\n') for line in f]
 
 
 def write_file(new_text, destination_filename, only_if_changed):

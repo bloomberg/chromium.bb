@@ -54,6 +54,8 @@ import re
 import subprocess
 import sys
 
+from utilities import idl_filename_to_interface_name
+
 # A regexp for finding Conditional attributes in interface definitions.
 CONDITIONAL_PATTERN = re.compile(
     r'\['
@@ -134,8 +136,7 @@ def extract_meta_data(file_paths):
             continue
 
         # Extract interface name from file name
-        parent_path, file_name = os.path.split(file_path)
-        interface_name, _ = os.path.splitext(file_name)
+        interface_name = idl_filename_to_interface_name(file_path)
 
         meta_data = {
             'conditional': extract_conditional(file_path),

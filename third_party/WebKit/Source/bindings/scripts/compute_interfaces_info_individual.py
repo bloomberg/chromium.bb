@@ -42,7 +42,7 @@ import os
 import posixpath
 import sys
 
-from utilities import get_file_contents, write_pickle_file, get_interface_extended_attributes_from_idl, is_callback_interface_from_idl, get_partial_interface_name_from_idl, get_implements_from_idl, get_parent_interface, get_put_forward_interfaces_from_idl
+from utilities import get_file_contents, read_file_to_list, idl_filename_to_interface_name, write_pickle_file, get_interface_extended_attributes_from_idl, is_callback_interface_from_idl, get_partial_interface_name_from_idl, get_implements_from_idl, get_parent_interface, get_put_forward_interfaces_from_idl
 
 module_path = os.path.dirname(__file__)
 source_path = os.path.normpath(os.path.join(module_path, os.pardir, os.pardir))
@@ -90,6 +90,7 @@ def include_path(idl_filename, implemented_as=None):
     relative_dir_local = os.path.dirname(relative_path_local)
     relative_dir_posix = relative_dir_local.replace(os.path.sep, posixpath.sep)
 
+    # IDL file basename is used even if only a partial interface file
     idl_file_basename, _ = os.path.splitext(os.path.basename(idl_filename))
     cpp_class_name = implemented_as or idl_file_basename
 
@@ -118,7 +119,7 @@ def compute_info_individual(idl_filename, component_dir):
         return
 
     # If not a partial interface, the basename is the interface name
-    interface_name, _ = os.path.splitext(os.path.basename(idl_filename))
+    interface_name = idl_filename_to_interface_name(idl_filename)
 
     # 'implements' statements can be included in either the file for the
     # implement*ing* interface (lhs of 'implements') or implement*ed* interface
@@ -165,8 +166,7 @@ def main():
 
     # Static IDL files are passed in a file (generated at GYP time), due to OS
     # command line length limits
-    with open(options.idl_files_list) as idl_files_list:
-        idl_files = [line.rstrip('\n') for line in idl_files_list]
+    idl_files = read_file_to_list(options.idl_files_list)
     # Generated IDL files are passed at the command line, since these are in the
     # build directory, which is determined at build time, not GYP time, so these
     # cannot be included in the file listing static files
