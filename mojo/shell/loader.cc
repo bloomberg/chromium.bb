@@ -34,16 +34,21 @@ void Loader::Job::OnURLFetchComplete(const net::URLFetcher* source) {
     LOG(ERROR) << "URL fetch didn't succeed: status = " << status.status()
                << ", error = " << status.error();
   } else if (source->GetResponseCode() != 200) {
-    LOG(ERROR) << "HTTP response not OK: code = " << source->GetResponseCode();
+    // Note: We may not have a response code (e.g., if it wasn't an http: URL).
+    LOG(WARNING) << "HTTP response not OK: code = "
+                 << source->GetResponseCode();
   }
   // TODO: Do something else in the error cases?
 
   base::FilePath app_path;
   source->GetResponseAsFilePath(true, &app_path);
   std::string mime_type;
-  std::string* passed_mime_type =
-      source->GetResponseHeaders()->GetMimeType(&mime_type) ? &mime_type : NULL;
-  delegate_->DidCompleteLoad(source->GetURL(), app_path, passed_mime_type);
+  // We may not have response headers (e.g., if it was a file: URL).
+  if (source->GetResponseHeaders())
+      source->GetResponseHeaders()->GetMimeType(&mime_type);
+  delegate_->DidCompleteLoad(source->GetURL(),
+                             app_path,
+                             mime_type.empty() ? NULL : &mime_type);
 }
 
 Loader::Loader(base::SingleThreadTaskRunner* network_runner,
