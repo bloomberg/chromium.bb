@@ -55,6 +55,7 @@ bool NetMetricsLogUploader::UploadLog(const std::string& log_data,
   // client-side as well.
   current_fetch_->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES |
                                net::LOAD_DO_NOT_SEND_COOKIES);
+  current_fetch_->Start();
   return true;
 }
 
