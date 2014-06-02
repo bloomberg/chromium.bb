@@ -10,9 +10,10 @@ var tests = [
    * Test that the page is sized to the size of the document.
    */
   function testPageSize() {
-    // Verify that the initial zoom is 100%.
-    chrome.test.assertEq(1, viewer.viewport.zoom);
+    // Verify that the initial zoom is less than or equal to 100%.
+    chrome.test.assertTrue(viewer.viewport.zoom <= 1);
 
+    viewer.viewport.zoom = 1;
     var sizer = document.getElementById('sizer');
     chrome.test.assertEq(826, sizer.offsetWidth);
     chrome.test.assertEq(1066, sizer.offsetHeight);
