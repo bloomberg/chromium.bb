@@ -97,28 +97,40 @@ bool Visibility::CanSeeMe(const Label& label) const {
   return false;
 }
 
-std::string Visibility::Describe() const {
+std::string Visibility::Describe(int indent, bool include_brackets) const {
+  std::string outer_indent_string(indent, ' ');
+
   if (patterns_.empty())
-    return std::string("[] (no visibility)");
-  std::string result = "[\n";
+    return outer_indent_string + "[] (no visibility)\n";
+
+  std::string result;
+
+  std::string inner_indent_string = outer_indent_string;
+  if (include_brackets) {
+    result += outer_indent_string + "[\n";
+    // Indent the insides more if brackets are requested.
+    inner_indent_string += "  ";
+  }
 
   for (size_t i = 0; i < patterns_.size(); i++) {
     switch (patterns_[i].type()) {
       case VisPattern::MATCH:
-        result += "  " + patterns_[i].dir().value() + ":" +
+        result += inner_indent_string +
+            DirectoryWithNoLastSlash(patterns_[i].dir()) + ":" +
             patterns_[i].name() + "\n";
         break;
       case VisPattern::DIRECTORY:
-        result += "  " + DirectoryWithNoLastSlash(patterns_[i].dir()) +
-            ":*\n";
+        result += inner_indent_string +
+            DirectoryWithNoLastSlash(patterns_[i].dir()) + ":*\n";
         break;
       case VisPattern::RECURSIVE_DIRECTORY:
-        result += "  " + patterns_[i].dir().value() + "*\n";
+        result += inner_indent_string + patterns_[i].dir().value() + "*\n";
         break;
     }
   }
 
-  result += "]";
+  if (include_brackets)
+    result += outer_indent_string + "]\n";
   return result;
 }
 
@@ -244,7 +256,7 @@ bool Visibility::CheckItemVisibility(const Item* from,
         "The item " + from->label().GetUserVisibleName(false) + "\n"
         "can not depend on " + to_label + "\n"
         "because it is not in " + to_label + "'s visibility list: " +
-        to->visibility().Describe());
+        to->visibility().Describe(0, true));
     return false;
   }
   return true;

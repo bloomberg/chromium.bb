@@ -69,6 +69,17 @@ void RecursivePrintDeps(const Target* target,
 
   std::string indent(indent_level * 2, ' ');
   for (size_t i = 0; i < sorted_deps.size(); i++) {
+    // Don't print groups. Groups are flattened such that the deps of the
+    // group are added directly to the target that depended on the group.
+    // Printing and recursing into groups here will cause such targets to be
+    // duplicated.
+    //
+    // It would be much more intuitive to do the opposite and not display the
+    // deps that were copied from the group to the target and instead display
+    // the group, but the source of those dependencies is not tracked.
+    if (sorted_deps[i].ptr->output_type() == Target::GROUP)
+      continue;
+
     OutputString(indent +
         sorted_deps[i].label.GetUserVisibleName(default_toolchain) + "\n");
     RecursivePrintDeps(sorted_deps[i].ptr, default_toolchain, indent_level + 1);
@@ -143,6 +154,28 @@ void PrintLibs(const Target* target, bool display_header) {
 
   for (size_t i = 0; i < libs.size(); i++)
     OutputString("    " + libs[i] + "\n");
+}
+
+void PrintPublic(const Target* target, bool display_header) {
+  if (display_header)
+    OutputString("\npublic\n");
+
+  if (target->all_headers_public()) {
+    OutputString("  [All headers listed in the sources are public.]\n");
+    return;
+  }
+
+  Target::FileList public_headers = target->public_headers();
+  std::sort(public_headers.begin(), public_headers.end());
+  for (size_t i = 0; i < public_headers.size(); i++)
+    OutputString("  " + public_headers[i].value() + "\n");
+}
+
+void PrintVisibility(const Target* target, bool display_header) {
+  if (display_header)
+    OutputString("\nvisibility\n");
+
+  OutputString(target->visibility().Describe(2, false));
 }
 
 void PrintConfigs(const Target* target, bool display_header) {
@@ -247,6 +280,12 @@ const char kDesc_Help[] =
     "  sources\n"
     "      Source files.\n"
     "\n"
+    "  public\n"
+    "      Public header files.\n"
+    "\n"
+    "  visibility\n"
+    "      Prints which targets can depend on this one.\n"
+    "\n"
     "  configs\n"
     "      Shows configs applied to the given target, sorted in the order\n"
     "      they're specified. This includes both configs specified in the\n"
@@ -320,6 +359,10 @@ int RunDesc(const std::vector<std::string>& args) {
       PrintConfigs(target, false);
     } else if (what == "sources") {
       PrintSources(target, false);
+    } else if (what == "public") {
+      PrintPublic(target, false);
+    } else if (what == "visibility") {
+      PrintVisibility(target, false);
     } else if (what == "deps") {
       PrintDeps(target, false);
     } else if (what == "lib_dirs") {
@@ -362,6 +405,8 @@ int RunDesc(const std::vector<std::string>& args) {
   OutputString(target_toolchain.GetUserVisibleName(false) + "\n");
 
   PrintSources(target, true);
+  PrintPublic(target, true);
+  PrintVisibility(target, true);
   PrintConfigs(target, true);
 
   OUTPUT_CONFIG_VALUE(defines, std::string)

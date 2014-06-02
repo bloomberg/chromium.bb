@@ -68,8 +68,11 @@ class Visibility {
   // current visibility.
   bool CanSeeMe(const Label& label) const;
 
-  // Returns a string listing the visibility.
-  std::string Describe() const;
+  // Returns a string listing the visibility. |indent| number of spaces will
+  // be added on the left side of the output. If |include_brackets| is set, the
+  // result will be wrapped in "[ ]" and the contents further indented. The
+  // result will end in a newline.
+  std::string Describe(int indent, bool include_brackets) const;
 
   // Converts the given input string to a pattern. This does special stuff
   // to treat the pattern as a label. Sets the error on failure.
