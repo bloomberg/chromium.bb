@@ -176,14 +176,15 @@ void IndentOutdentCommand::outdentParagraph()
 
         return;
     }
-    Node* enclosingBlockFlow = enclosingBlock(visibleStartOfParagraph.deepEquivalent().deprecatedNode());
     RefPtrWillBeRawPtr<Node> splitBlockquoteNode = enclosingNode;
-    if (enclosingBlockFlow != enclosingNode)
-        splitBlockquoteNode = splitTreeToNode(enclosingBlockFlow, enclosingNode, true);
-    else {
-        // We split the blockquote at where we start outdenting.
-        Node* highestInlineNode = highestEnclosingNodeOfType(visibleStartOfParagraph.deepEquivalent(), isInline, CannotCrossEditingBoundary, enclosingBlockFlow);
-        splitElement(toElement(enclosingNode), (highestInlineNode) ? highestInlineNode : visibleStartOfParagraph.deepEquivalent().deprecatedNode());
+    if (Node* enclosingBlockFlow = enclosingBlock(visibleStartOfParagraph.deepEquivalent().deprecatedNode())) {
+        if (enclosingBlockFlow != enclosingNode) {
+            splitBlockquoteNode = splitTreeToNode(enclosingBlockFlow, enclosingNode, true);
+        } else {
+            // We split the blockquote at where we start outdenting.
+            Node* highestInlineNode = highestEnclosingNodeOfType(visibleStartOfParagraph.deepEquivalent(), isInline, CannotCrossEditingBoundary, enclosingBlockFlow);
+            splitElement(toElement(enclosingNode), (highestInlineNode) ? highestInlineNode : visibleStartOfParagraph.deepEquivalent().deprecatedNode());
+        }
     }
     RefPtrWillBeRawPtr<Node> placeholder = createBreakElement(document());
     insertNodeBefore(placeholder, splitBlockquoteNode);
