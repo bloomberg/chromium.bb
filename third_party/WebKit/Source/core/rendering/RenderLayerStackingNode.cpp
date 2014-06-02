@@ -90,8 +90,7 @@ static inline bool compareZIndex(RenderLayerStackingNode* first, RenderLayerStac
 
 RenderLayerCompositor* RenderLayerStackingNode::compositor() const
 {
-    if (!renderer()->view())
-        return 0;
+    ASSERT(renderer()->view());
     return renderer()->view()->compositor();
 }
 
@@ -116,12 +115,7 @@ void RenderLayerStackingNode::dirtyZOrderLists()
 
 void RenderLayerStackingNode::dirtyStackingContextZOrderLists()
 {
-    RenderLayerStackingNode* stackingContextNode = ancestorStackingContextNode();
-    if (stackingContextNode)
-        stackingContextNode->dirtyZOrderLists();
-
-    RenderLayerStackingNode* stackingNode = ancestorStackingNode();
-    if (stackingNode && stackingNode != stackingContextNode)
+    if (RenderLayerStackingNode* stackingNode = ancestorStackingContextNode())
         stackingNode->dirtyZOrderLists();
 }
 
@@ -137,9 +131,8 @@ void RenderLayerStackingNode::dirtyNormalFlowList()
         m_normalFlowList->clear();
     m_normalFlowListDirty = true;
 
-    if (!renderer()->documentBeingDestroyed()) {
+    if (!renderer()->documentBeingDestroyed())
         compositor()->setCompositingLayersNeedRebuild();
-    }
 }
 
 void RenderLayerStackingNode::rebuildZOrderLists()
@@ -299,7 +292,7 @@ void RenderLayerStackingNode::updateStackingNodesAfterStyleChange(const RenderSt
     EVisibility oldVisibility = oldStyle ? oldStyle->visibility() : VISIBLE;
     int oldZIndex = oldStyle ? oldStyle->zIndex() : 0;
 
-    // FIXME: RenderLayer already handles visibility changes through our visiblity dirty bits. This logic could
+    // FIXME: RenderLayer already handles visibility changes through our visibility dirty bits. This logic could
     // likely be folded along with the rest.
     bool isStackingContext = this->isStackingContext();
     if (isStackingContext == wasStackingContext && oldVisibility == renderer()->style()->visibility() && oldZIndex == zIndex())
@@ -315,19 +308,22 @@ void RenderLayerStackingNode::updateStackingNodesAfterStyleChange(const RenderSt
 
 bool RenderLayerStackingNode::shouldBeNormalFlowOnly() const
 {
-    const bool couldBeNormalFlow = renderer()->hasOverflowClip()
-        || renderer()->hasReflection()
-        || renderer()->hasMask()
-        || renderer()->isCanvas()
-        || renderer()->isVideo()
-        || renderer()->isEmbeddedObject()
-        || renderer()->isRenderIFrame()
-        || (renderer()->style()->specifiesColumns() && !layer()->isRootLayer());
-    const bool preventsElementFromBeingNormalFlow = renderer()->isPositioned()
-        || renderer()->hasTransform()
-        || renderer()->hasClipPath()
-        || renderer()->hasFilter()
-        || renderer()->hasBlendMode()
+    RenderLayerModelObject* renderer = this->renderer();
+
+    const bool couldBeNormalFlow = renderer->hasOverflowClip()
+        || renderer->hasReflection()
+        || renderer->hasMask()
+        || renderer->isCanvas()
+        || renderer->isVideo()
+        || renderer->isEmbeddedObject()
+        || renderer->isRenderIFrame()
+        || (renderer->style()->specifiesColumns() && !layer()->isRootLayer());
+
+    const bool preventsElementFromBeingNormalFlow = renderer->isPositioned()
+        || renderer->hasTransform()
+        || renderer->hasClipPath()
+        || renderer->hasFilter()
+        || renderer->hasBlendMode()
         || layer()->isTransparent();
 
     return couldBeNormalFlow && !preventsElementFromBeingNormalFlow;
@@ -347,21 +343,11 @@ void RenderLayerStackingNode::updateIsNormalFlowOnly()
 
 RenderLayerStackingNode* RenderLayerStackingNode::ancestorStackingContextNode() const
 {
-    RenderLayer* ancestor = layer()->parent();
-    while (ancestor && !ancestor->stackingNode()->isStackingContext())
-        ancestor = ancestor->parent();
-    if (ancestor)
-        return ancestor->stackingNode();
-    return 0;
-}
-
-RenderLayerStackingNode* RenderLayerStackingNode::ancestorStackingNode() const
-{
-    RenderLayer* ancestor = layer()->parent();
-    while (ancestor && !ancestor->stackingNode()->isStackingContext())
-        ancestor = ancestor->parent();
-    if (ancestor)
-        return ancestor->stackingNode();
+    for (RenderLayer* ancestor = layer()->parent(); ancestor; ancestor = ancestor->parent()) {
+        RenderLayerStackingNode* stackingNode = ancestor->stackingNode();
+        if (stackingNode->isStackingContext())
+            return stackingNode;
+    }
     return 0;
 }
 
