@@ -214,8 +214,11 @@ void AppShimController::Init() {
 void AppShimController::CreateChannelAndSendLaunchApp(
     const base::FilePath& socket_path) {
   IPC::ChannelHandle handle(socket_path.value());
-  channel_ = IPC::ChannelProxy::CreateNamedClient(
-      handle, this, g_io_thread->message_loop_proxy().get());
+  channel_.reset(
+      new IPC::ChannelProxy(handle,
+                            IPC::Channel::MODE_NAMED_CLIENT,
+                            this,
+                            g_io_thread->message_loop_proxy().get()));
 
   bool launched_by_chrome =
       CommandLine::ForCurrentProcess()->HasSwitch(

@@ -568,11 +568,12 @@ bool RenderProcessHostImpl::Init() {
   // Setup the IPC channel.
   const std::string channel_id =
       IPC::Channel::GenerateVerifiedChannelID(std::string());
-  channel_ = IPC::ChannelProxy::CreateServer(
-      channel_id,
-      this,
-      BrowserThread::GetMessageLoopProxyForThread(
-          BrowserThread::IO).get());
+  channel_.reset(
+          new IPC::ChannelProxy(channel_id,
+                                IPC::Channel::MODE_SERVER,
+                                this,
+                                BrowserThread::GetMessageLoopProxyForThread(
+                                    BrowserThread::IO).get()));
 
   // Setup the Mojo channel.
   mojo_application_host_.reset(new MojoApplicationHost());

@@ -51,10 +51,11 @@ bool CreateConnectedIpcChannel(
   }
 
   // Wrap the pipe into an IPC channel.
-  scoped_ptr<IPC::ChannelProxy> server = IPC::ChannelProxy::CreateServer(
+  scoped_ptr<IPC::ChannelProxy> server(new IPC::ChannelProxy(
       IPC::ChannelHandle(pipe),
+      IPC::Channel::MODE_SERVER,
       listener,
-      io_task_runner);
+      io_task_runner));
 
   // Convert the channel name to the pipe name.
   std::string pipe_name(kChromePipeNamePrefix);

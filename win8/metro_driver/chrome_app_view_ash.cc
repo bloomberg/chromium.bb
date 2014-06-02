@@ -694,11 +694,11 @@ ChromeAppViewAsh::Run() {
   // In Aura mode we create an IPC channel to the browser, then ask it to
   // connect to us.
   ChromeChannelListener ui_channel_listener(&ui_loop_, this);
-  scoped_ptr<IPC::ChannelProxy> channel = IPC::ChannelProxy::CreateNamedClient(
-          win8::kMetroViewerIPCChannelName,
-          &ui_channel_listener,
-          io_thread.message_loop_proxy());
-  ui_channel_ = channel.get();
+  IPC::ChannelProxy ui_channel(win8::kMetroViewerIPCChannelName,
+                               IPC::Channel::MODE_NAMED_CLIENT,
+                               &ui_channel_listener,
+                               io_thread.message_loop_proxy());
+  ui_channel_ = &ui_channel;
 
   // Upon receipt of the MetroViewerHostMsg_SetTargetSurface message the
   // browser will use D3D from the browser process to present to our Window.

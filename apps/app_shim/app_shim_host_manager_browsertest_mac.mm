@@ -63,8 +63,8 @@ TestShimClient::TestShimClient() : io_thread_("TestShimClientIO") {
   app_mode::VerifySocketPermissions(socket_path);
 
   IPC::ChannelHandle handle(socket_path.value());
-  channel_ = IPC::ChannelProxy::CreateNamedClient(
-      handle, this, io_thread_.message_loop_proxy().get());
+  channel_.reset(new IPC::ChannelProxy(handle, IPC::Channel::MODE_NAMED_CLIENT,
+      this, io_thread_.message_loop_proxy().get()));
 }
 
 TestShimClient::~TestShimClient() {}

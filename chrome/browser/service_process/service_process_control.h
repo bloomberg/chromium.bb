@@ -201,7 +201,7 @@ class ServiceProcessControl : public IPC::Sender,
   void ConnectInternal();
 
   // Takes ownership of the pointer. Split out for testing.
-  void SetChannel(scoped_ptr<IPC::ChannelProxy> channel);
+  void SetChannel(IPC::ChannelProxy* channel);
 
   static void RunAllTasksHelper(TaskList* task_list);
 

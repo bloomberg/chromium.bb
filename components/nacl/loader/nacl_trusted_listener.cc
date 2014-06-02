@@ -8,8 +8,9 @@ NaClTrustedListener::NaClTrustedListener(
     const IPC::ChannelHandle& handle,
     base::MessageLoopProxy* message_loop_proxy,
     base::WaitableEvent* shutdown_event) {
-  channel_ = IPC::SyncChannel::CreateServer(
-      handle, this, message_loop_proxy, true, shutdown_event);
+  channel_.reset(new IPC::SyncChannel(handle, IPC::Channel::MODE_SERVER, this,
+                                      message_loop_proxy, true,
+                                      shutdown_event));
 }
 
 NaClTrustedListener::~NaClTrustedListener() {

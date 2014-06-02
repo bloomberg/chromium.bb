@@ -63,13 +63,13 @@ PpapiDispatcher::PpapiDispatcher(scoped_refptr<base::MessageLoopProxy> io_loop,
   // Delay initializing the SyncChannel until after we add filters. This
   // ensures that the filters won't miss any messages received by
   // the channel.
-  channel_ =IPC::SyncChannel::Create(
-      this, GetIPCMessageLoop(), GetShutdownEvent());
+  channel_.reset(new IPC::SyncChannel(
+      this, GetIPCMessageLoop(), GetShutdownEvent()));
   channel_->AddFilter(new proxy::PluginMessageFilter(
       NULL, proxy::PluginGlobals::Get()->resource_reply_thread_registrar()));
   channel_->AddFilter(
       new tracing::ChildTraceMessageFilter(message_loop_.get()));
-  channel_->InitServer(channel_handle, true);
+  channel_->Init(channel_handle, IPC::Channel::MODE_SERVER, true);
 }
 
 base::MessageLoopProxy* PpapiDispatcher::GetIPCMessageLoop() {
