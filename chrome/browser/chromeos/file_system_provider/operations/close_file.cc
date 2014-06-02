@@ -37,7 +37,7 @@ bool CloseFile::Execute(int request_id) {
 
 void CloseFile::OnSuccess(int /* request_id */,
                           scoped_ptr<RequestValue> result,
-                          bool has_next) {
+                          bool has_more) {
   callback_.Run(base::File::FILE_OK);
 }
 

@@ -40,7 +40,7 @@ class Operation : public RequestManager::HandlerInterface {
   virtual bool Execute(int request_id) OVERRIDE = 0;
   virtual void OnSuccess(int request_id,
                          scoped_ptr<RequestValue> result,
-                         bool has_next) OVERRIDE = 0;
+                         bool has_more) OVERRIDE = 0;
   virtual void OnError(int request_id, base::File::Error error) OVERRIDE = 0;
 
   // Sets custom dispatchign event implementation for tests.

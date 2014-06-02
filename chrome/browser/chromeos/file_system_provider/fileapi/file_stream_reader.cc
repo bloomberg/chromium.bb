@@ -78,7 +78,7 @@ void CloseFileOnUIThread(base::WeakPtr<ProvidedFileSystemInterface> file_system,
 }
 
 // Requests reading contents of a file. In case of either success or a failure
-// |callback| is executed. It can be called many times, until |has_next| is set
+// |callback| is executed. It can be called many times, until |has_more| is set
 // to false. This function guarantees that it will succeed only if the file has
 // not been changed while reading. Must be called on UI thread.
 void ReadFileOnUIThread(
@@ -92,7 +92,7 @@ void ReadFileOnUIThread(
 
   // If the file system got unmounted, then abort the reading operation.
   if (!file_system.get()) {
-    callback.Run(0, false /* has_next */, base::File::FILE_ERROR_ABORT);
+    callback.Run(0, false /* has_more */, base::File::FILE_ERROR_ABORT);
     return;
   }
 
@@ -104,13 +104,13 @@ void OnReadChunkReceivedOnUIThread(
     const ProvidedFileSystemInterface::ReadChunkReceivedCallback&
         chunk_received_callback,
     int chunk_length,
-    bool has_next,
+    bool has_more,
     base::File::Error result) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   BrowserThread::PostTask(
       BrowserThread::IO,
       FROM_HERE,
-      base::Bind(chunk_received_callback, chunk_length, has_next, result));
+      base::Bind(chunk_received_callback, chunk_length, has_more, result));
 }
 
 // Requests metadata of a file. In case of either succes or a failure,
@@ -289,13 +289,13 @@ void FileStreamReader::GetLengthAfterInitialized(
 void FileStreamReader::OnReadChunkReceived(
     const net::CompletionCallback& callback,
     int chunk_length,
-    bool has_next,
+    bool has_more,
     base::File::Error result) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   current_length_ += chunk_length;
 
   // If this is the last chunk with a success, then finalize.
-  if (!has_next && result == base::File::FILE_OK) {
+  if (!has_more && result == base::File::FILE_OK) {
     current_offset_ += current_length_;
     callback.Run(current_length_);
     return;
@@ -303,13 +303,13 @@ void FileStreamReader::OnReadChunkReceived(
 
   // In case of an error, abort.
   if (result != base::File::FILE_OK) {
-    DCHECK(!has_next);
+    DCHECK(!has_more);
     callback.Run(net::FileErrorToNetError(result));
     return;
   }
 
   // More data is about to come, so do not call the callback yet.
-  DCHECK(has_next);
+  DCHECK(has_more);
 }
 
 void FileStreamReader::OnGetMetadataForGetLengthReceived(

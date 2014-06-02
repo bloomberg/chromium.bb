@@ -76,17 +76,17 @@ bool ReadDirectory::Execute(int request_id) {
 
 void ReadDirectory::OnSuccess(int /* request_id */,
                               scoped_ptr<RequestValue> result,
-                              bool has_next) {
+                              bool has_more) {
   fileapi::AsyncFileUtil::EntryList entry_list;
   const bool convert_result =
       ConvertRequestValueToEntryList(result.Pass(), &entry_list);
   DCHECK(convert_result);
-  callback_.Run(base::File::FILE_OK, entry_list, has_next);
+  callback_.Run(base::File::FILE_OK, entry_list, has_more);
 }
 
 void ReadDirectory::OnError(int /* request_id */, base::File::Error error) {
   callback_.Run(
-      error, fileapi::AsyncFileUtil::EntryList(), false /* has_next */);
+      error, fileapi::AsyncFileUtil::EntryList(), false /* has_more */);
 }
 
 }  // namespace operations

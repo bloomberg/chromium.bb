@@ -198,7 +198,7 @@ void FakeProvidedFileSystem::ReadFile(
         FROM_HERE,
         base::Bind(callback,
                    0 /* chunk_length */,
-                   false /* has_next */,
+                   false /* has_more */,
                    base::File::FILE_ERROR_INVALID_OPERATION));
     return;
   }
@@ -213,18 +213,18 @@ void FakeProvidedFileSystem::ReadFile(
         FROM_HERE,
         base::Bind(callback,
                    0 /* chunk_length */,
-                   false /* has_next */,
+                   false /* has_more */,
                    base::File::FILE_OK));
   }
 
   while (current_offset < kFakeFileSize && current_length) {
     buffer->data()[current_offset - offset] = kFakeFileText[current_offset];
-    const bool has_next =
+    const bool has_more =
         (current_offset + 1 < kFakeFileSize) && (current_length - 1);
     base::MessageLoopProxy::current()->PostTask(
         FROM_HERE,
         base::Bind(
-            callback, 1 /* chunk_length */, has_next, base::File::FILE_OK));
+            callback, 1 /* chunk_length */, has_more, base::File::FILE_OK));
     current_offset++;
     current_length--;
   }

@@ -40,7 +40,7 @@ namespace fileSystemProviderInternal {
         DOMString fileSystemId,
         long requestId,
         fileSystemProvider.EntryMetadata[] entries,
-        boolean hasNext);
+        boolean hasMore);
 
     // Internal. Error callback of the <code>onReadDirectoryRequested</code>
     // event. Must be called when reading a directory fails.
@@ -81,7 +81,7 @@ namespace fileSystemProviderInternal {
         DOMString fileSystemId,
         long requestId,
         ArrayBuffer data,
-        boolean hasNext);
+        boolean hasMore);
 
     // Internal. Error callback of the <code>onReadFileRequested</code>
     // event. Must be called when reading a file fails.

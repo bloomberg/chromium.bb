@@ -210,8 +210,8 @@ TEST_F(FileSystemProviderOperationsGetMetadataTest, OnSuccess) {
       RequestValue::CreateForGetMetadataSuccess(params.Pass()));
   ASSERT_TRUE(request_value.get());
 
-  const bool has_next = false;
-  get_metadata.OnSuccess(kRequestId, request_value.Pass(), has_next);
+  const bool has_more = false;
+  get_metadata.OnSuccess(kRequestId, request_value.Pass(), has_more);
 
   ASSERT_EQ(1u, callback_logger.events().size());
   CallbackLogger::Event* event = callback_logger.events()[0];

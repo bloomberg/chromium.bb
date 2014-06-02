@@ -90,8 +90,8 @@ void FileSystemProviderInternalFunction::RejectRequest(
 
 void FileSystemProviderInternalFunction::FulfillRequest(
     scoped_ptr<RequestValue> value,
-    bool has_next) {
-  if (!request_manager_->FulfillRequest(request_id_, value.Pass(), has_next))
+    bool has_more) {
+  if (!request_manager_->FulfillRequest(request_id_, value.Pass(), has_more))
     SetErrorResponse(kSecurityErrorName, kResponseFailedErrorMessage);
 }
 

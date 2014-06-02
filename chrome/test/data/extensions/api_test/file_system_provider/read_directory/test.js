@@ -100,8 +100,8 @@ function onReadDirectoryRequested(
     return;
   }
 
-  onSuccess([TESTING_TIRAMISU_FILE], true /* has_next */);
-  onSuccess([TESTING_CANDIES_DIR], false /* has_next */);
+  onSuccess([TESTING_TIRAMISU_FILE], true /* hasMore */);
+  onSuccess([TESTING_CANDIES_DIR], false /* hasMore */);
 }
 
 /**

@@ -198,7 +198,7 @@ function onReadFileRequested(
       reader.onload = function(e) {
         onSuccess(
             e.target.result,
-            index < textToSendInChunks.length - 1 /* has_next */);
+            index < textToSendInChunks.length - 1 /* hasMore */);
       };
 
       reader.readAsArrayBuffer(new Blob([item]));

@@ -32,7 +32,7 @@ class ProvidedFileSystemInterface {
       OpenFileCallback;
 
   typedef base::Callback<
-      void(int chunk_length, bool has_next, base::File::Error result)>
+      void(int chunk_length, bool has_more, base::File::Error result)>
       ReadChunkReceivedCallback;
 
   // Mode of opening a file. Used by OpenFile().

@@ -132,9 +132,9 @@ bool FileSystemProviderInternalReadDirectoryRequestedSuccessFunction::
   scoped_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  const bool has_next = params->has_next;
+  const bool has_more = params->has_more;
   FulfillRequest(RequestValue::CreateForReadDirectorySuccess(params.Pass()),
-                 has_next);
+                 has_more);
   return true;
 }
 
@@ -194,9 +194,9 @@ FileSystemProviderInternalReadFileRequestedSuccessFunction::RunWhenValid() {
   scoped_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  const bool has_next = params->has_next;
+  const bool has_more = params->has_more;
   FulfillRequest(RequestValue::CreateForReadFileSuccess(params.Pass()),
-                 has_next);
+                 has_more);
   return true;
 }
 

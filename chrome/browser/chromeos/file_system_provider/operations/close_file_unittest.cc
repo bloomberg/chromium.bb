@@ -160,7 +160,7 @@ TEST_F(FileSystemProviderOperationsCloseFileTest, OnSuccess) {
 
   close_file.OnSuccess(kRequestId,
                        scoped_ptr<RequestValue>(new RequestValue()),
-                       false /* has_next */);
+                       false /* has_more */);
   ASSERT_EQ(1u, callback_logger.events().size());
   EXPECT_EQ(base::File::FILE_OK, callback_logger.events()[0]);
 }

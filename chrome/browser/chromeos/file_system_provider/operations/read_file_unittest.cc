@@ -57,17 +57,17 @@ class CallbackLogger {
  public:
   class Event {
    public:
-    Event(int chunk_length, bool has_next, base::File::Error result)
-        : chunk_length_(chunk_length), has_next_(has_next), result_(result) {}
+    Event(int chunk_length, bool has_more, base::File::Error result)
+        : chunk_length_(chunk_length), has_more_(has_more), result_(result) {}
     virtual ~Event() {}
 
     int chunk_length() const { return chunk_length_; }
-    bool has_next() const { return has_next_; }
+    bool has_more() const { return has_more_; }
     base::File::Error result() const { return result_; }
 
    private:
     int chunk_length_;
-    bool has_next_;
+    bool has_more_;
     base::File::Error result_;
 
     DISALLOW_COPY_AND_ASSIGN(Event);
@@ -76,8 +76,8 @@ class CallbackLogger {
   CallbackLogger() : weak_ptr_factory_(this) {}
   virtual ~CallbackLogger() {}
 
-  void OnReadFile(int chunk_length, bool has_next, base::File::Error result) {
-    events_.push_back(new Event(chunk_length, has_next, result));
+  void OnReadFile(int chunk_length, bool has_more, base::File::Error result) {
+    events_.push_back(new Event(chunk_length, has_more, result));
   }
 
   ScopedVector<Event>& events() { return events_; }
@@ -202,14 +202,14 @@ TEST_F(FileSystemProviderOperationsReadFileTest, OnSuccess) {
   EXPECT_TRUE(read_file.Execute(kRequestId));
 
   const std::string data = "ABCDE";
-  const bool has_next = false;
+  const bool has_more = false;
 
   base::ListValue value_as_list;
   value_as_list.Set(0, new base::StringValue(kFileSystemId));
   value_as_list.Set(1, new base::FundamentalValue(kRequestId));
   value_as_list.Set(
       2, base::BinaryValue::CreateWithCopiedBuffer(data.c_str(), data.size()));
-  value_as_list.Set(3, new base::FundamentalValue(has_next));
+  value_as_list.Set(3, new base::FundamentalValue(has_more));
 
   scoped_ptr<Params> params(Params::Create(value_as_list));
   ASSERT_TRUE(params.get());
@@ -217,12 +217,12 @@ TEST_F(FileSystemProviderOperationsReadFileTest, OnSuccess) {
       RequestValue::CreateForReadFileSuccess(params.Pass()));
   ASSERT_TRUE(request_value.get());
 
-  read_file.OnSuccess(kRequestId, request_value.Pass(), has_next);
+  read_file.OnSuccess(kRequestId, request_value.Pass(), has_more);
 
   ASSERT_EQ(1u, callback_logger.events().size());
   CallbackLogger::Event* event = callback_logger.events()[0];
   EXPECT_EQ(kLength, event->chunk_length());
-  EXPECT_FALSE(event->has_next());
+  EXPECT_FALSE(event->has_more());
   EXPECT_EQ(data, std::string(io_buffer_->data(), kLength));
   EXPECT_EQ(base::File::FILE_OK, event->result());
 }

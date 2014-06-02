@@ -70,16 +70,16 @@ namespace fileSystemProvider {
   callback MetadataCallback = void(EntryMetadata metadata);
 
   // Success callback for the <code>onReadDirectoryRequested</code> event. If
-  // more entries will be returned, then <code>hasNext</code> must be true, and
+  // more entries will be returned, then <code>hasMore</code> must be true, and
   // it has to be called again with additional entries. If no more entries are
-  // available, then <code>hasNext</code> must be set to false.
-  callback EntriesCallback = void(ResourceEntry[] entries, bool hasNext);
+  // available, then <code>hasMore</code> must be set to false.
+  callback EntriesCallback = void(ResourceEntry[] entries, bool hasMore);
 
   // Success callback for the <code>onReadFileRequested</code> event. If more
-  // data will be returned, then <code>hasNext</code> must be true, and it
+  // data will be returned, then <code>hasMore</code> must be true, and it
   // has to be called again with additional entries. If no more data is
-  // available, then <code>hasNext</code> must be set to false.
-  callback FileDataCallback = void(ArrayBuffer data, bool hasNext);
+  // available, then <code>hasMore</code> must be set to false.
+  callback FileDataCallback = void(ArrayBuffer data, bool hasMore);
 
   interface Functions {
     // Mounts a file system with the given <code>fileSystemId</code> and <code>

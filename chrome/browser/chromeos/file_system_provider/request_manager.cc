@@ -73,17 +73,17 @@ int RequestManager::CreateRequest(RequestType type,
 
 bool RequestManager::FulfillRequest(int request_id,
                                     scoped_ptr<RequestValue> response,
-                                    bool has_next) {
+                                    bool has_more) {
   RequestMap::iterator request_it = requests_.find(request_id);
   if (request_it == requests_.end())
     return false;
 
-  request_it->second->handler->OnSuccess(request_id, response.Pass(), has_next);
+  request_it->second->handler->OnSuccess(request_id, response.Pass(), has_more);
 
   FOR_EACH_OBSERVER(
-      Observer, observers_, OnRequestFulfilled(request_id, has_next));
+      Observer, observers_, OnRequestFulfilled(request_id, has_more));
 
-  if (!has_next)
+  if (!has_more)
     DestroyRequest(request_id);
   else
     request_it->second->timeout_timer.Reset();

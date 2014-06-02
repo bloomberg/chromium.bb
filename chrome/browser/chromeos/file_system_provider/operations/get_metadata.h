@@ -38,7 +38,7 @@ class GetMetadata : public Operation {
   virtual bool Execute(int request_id) OVERRIDE;
   virtual void OnSuccess(int request_id,
                          scoped_ptr<RequestValue> result,
-                         bool has_next) OVERRIDE;
+                         bool has_more) OVERRIDE;
   virtual void OnError(int request_id, base::File::Error error) OVERRIDE;
 
  private:

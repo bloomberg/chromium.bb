@@ -196,7 +196,7 @@ TEST_F(FileSystemProviderOperationsOpenFileTest, OnSuccess) {
 
   open_file.OnSuccess(kRequestId,
                       scoped_ptr<RequestValue>(new RequestValue()),
-                      false /* has_next */);
+                      false /* has_more */);
   ASSERT_EQ(1u, callback_logger.events().size());
   CallbackLogger::Event* event = callback_logger.events()[0];
   EXPECT_EQ(base::File::FILE_OK, event->result());

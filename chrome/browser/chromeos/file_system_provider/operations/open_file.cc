@@ -55,7 +55,7 @@ bool OpenFile::Execute(int request_id) {
 
 void OpenFile::OnSuccess(int request_id,
                          scoped_ptr<RequestValue> result,
-                         bool has_next) {
+                         bool has_more) {
   // File handle is the same as request id of the OpenFile operation.
   callback_.Run(request_id, base::File::FILE_OK);
 }

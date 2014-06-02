@@ -61,11 +61,11 @@ class FileStreamReader : public webkit_blob::FileStreamReader {
 
   // Called when a file system provider returns chunk of read data. Note, that
   // this may be called multiple times per single Read() call, as long as
-  // |has_next| is set to true. |result| is set to success only if reading is
+  // |has_more| is set to true. |result| is set to success only if reading is
   // successful, and the file has not changed while reading.
   void OnReadChunkReceived(const net::CompletionCallback& callback,
                            int chunk_length,
-                           bool has_next,
+                           bool has_more,
                            base::File::Error result);
 
   // Called when fetching length of the file is completed with either a success

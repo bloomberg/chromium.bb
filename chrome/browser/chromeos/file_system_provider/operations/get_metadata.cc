@@ -69,7 +69,7 @@ bool GetMetadata::Execute(int request_id) {
 
 void GetMetadata::OnSuccess(int /* request_id */,
                             scoped_ptr<RequestValue> result,
-                            bool has_next) {
+                            bool has_more) {
   base::File::Info file_info;
   const bool convert_result =
       ConvertRequestValueToFileInfo(result.Pass(), &file_info);

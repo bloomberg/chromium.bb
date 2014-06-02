@@ -38,20 +38,20 @@ class EventLogger {
 
   class SuccessEvent {
    public:
-    SuccessEvent(int request_id, scoped_ptr<RequestValue> result, bool has_next)
+    SuccessEvent(int request_id, scoped_ptr<RequestValue> result, bool has_more)
         : request_id_(request_id),
           result_(result.Pass()),
-          has_next_(has_next) {}
+          has_more_(has_more) {}
     virtual ~SuccessEvent() {}
 
     int request_id() { return request_id_; }
     RequestValue* result() { return result_.get(); }
-    bool has_next() { return has_next_; }
+    bool has_more() { return has_more_; }
 
    private:
     int request_id_;
     scoped_ptr<RequestValue> result_;
-    bool has_next_;
+    bool has_more_;
   };
 
   class ErrorEvent {
@@ -77,9 +77,9 @@ class EventLogger {
 
   void OnSuccess(int request_id,
                  scoped_ptr<RequestValue> result,
-                 bool has_next) {
+                 bool has_more) {
     success_events_.push_back(
-        new SuccessEvent(request_id, result.Pass(), has_next));
+        new SuccessEvent(request_id, result.Pass(), has_more));
   }
 
   void OnError(int request_id, base::File::Error error) {
@@ -123,9 +123,9 @@ class FakeHandler : public RequestManager::HandlerInterface {
   // RequestManager::Handler overrides.
   virtual void OnSuccess(int request_id,
                          scoped_ptr<RequestValue> result,
-                         bool has_next) OVERRIDE {
+                         bool has_more) OVERRIDE {
     if (logger_.get())
-      logger_->OnSuccess(request_id, result.Pass(), has_next);
+      logger_->OnSuccess(request_id, result.Pass(), has_more);
   }
 
   // RequestManager::Handler overrides.
@@ -304,10 +304,10 @@ TEST_F(FileSystemProviderRequestManagerTest, CreateAndFulFill) {
 
   scoped_ptr<RequestValue> response(
       RequestValue::CreateForTesting("i-like-vanilla"));
-  const bool has_next = false;
+  const bool has_more = false;
 
   bool result =
-      request_manager_->FulfillRequest(request_id, response.Pass(), has_next);
+      request_manager_->FulfillRequest(request_id, response.Pass(), has_more);
   EXPECT_TRUE(result);
 
   ASSERT_EQ(1u, observer.fulfilled().size());
@@ -322,14 +322,14 @@ TEST_F(FileSystemProviderRequestManagerTest, CreateAndFulFill) {
   const std::string* response_test_string = event->result()->testing_params();
   ASSERT_TRUE(response_test_string);
   EXPECT_EQ("i-like-vanilla", *response_test_string);
-  EXPECT_FALSE(event->has_next());
+  EXPECT_FALSE(event->has_more());
 
   // Confirm, that the request is removed. Basically, fulfilling again for the
   // same request, should fail.
   {
     scoped_ptr<RequestValue> response;
     bool retry =
-        request_manager_->FulfillRequest(request_id, response.Pass(), has_next);
+        request_manager_->FulfillRequest(request_id, response.Pass(), has_more);
     EXPECT_FALSE(retry);
     EXPECT_EQ(1u, observer.fulfilled().size());
   }
@@ -371,10 +371,10 @@ TEST_F(FileSystemProviderRequestManagerTest, CreateAndFulFill_WithHasNext) {
   EXPECT_EQ(request_id, observer.executed()[0].request_id());
 
   scoped_ptr<RequestValue> response;
-  const bool has_next = true;
+  const bool has_more = true;
 
   bool result =
-      request_manager_->FulfillRequest(request_id, response.Pass(), has_next);
+      request_manager_->FulfillRequest(request_id, response.Pass(), has_more);
   EXPECT_TRUE(result);
 
   // Validate if the callback has correct arguments.
@@ -382,18 +382,18 @@ TEST_F(FileSystemProviderRequestManagerTest, CreateAndFulFill_WithHasNext) {
   EXPECT_EQ(0u, logger.error_events().size());
   EventLogger::SuccessEvent* event = logger.success_events()[0];
   EXPECT_FALSE(event->result());
-  EXPECT_TRUE(event->has_next());
+  EXPECT_TRUE(event->has_more());
 
   ASSERT_EQ(1u, observer.fulfilled().size());
   EXPECT_EQ(request_id, observer.fulfilled()[0].request_id());
   EXPECT_TRUE(observer.fulfilled()[0].has_more());
 
-  // Confirm, that the request is not removed (since it has has_next == true).
+  // Confirm, that the request is not removed (since it has has_more == true).
   // Basically, fulfilling again for the same request, should not fail.
   {
-    bool new_has_next = false;
+    bool new_has_more = false;
     bool retry = request_manager_->FulfillRequest(
-        request_id, response.Pass(), new_has_next);
+        request_id, response.Pass(), new_has_more);
     EXPECT_TRUE(retry);
 
     ASSERT_EQ(2u, observer.fulfilled().size());
@@ -401,12 +401,12 @@ TEST_F(FileSystemProviderRequestManagerTest, CreateAndFulFill_WithHasNext) {
     EXPECT_FALSE(observer.fulfilled()[1].has_more());
   }
 
-  // Since |new_has_next| is false, then the request should be removed. To check
+  // Since |new_has_more| is false, then the request should be removed. To check
   // it, try to fulfill again, what should fail.
   {
-    bool new_has_next = false;
+    bool new_has_more = false;
     bool retry = request_manager_->FulfillRequest(
-        request_id, response.Pass(), new_has_next);
+        request_id, response.Pass(), new_has_more);
     EXPECT_FALSE(retry);
     EXPECT_EQ(0u, observer.rejected().size());
   }
@@ -457,9 +457,9 @@ TEST_F(FileSystemProviderRequestManagerTest, CreateAndReject) {
   // same request, should fail.
   {
     scoped_ptr<RequestValue> response;
-    bool has_next = false;
+    bool has_more = false;
     bool retry =
-        request_manager_->FulfillRequest(request_id, response.Pass(), has_next);
+        request_manager_->FulfillRequest(request_id, response.Pass(), has_more);
     EXPECT_FALSE(retry);
     EXPECT_EQ(0u, observer.fulfilled().size());
   }
