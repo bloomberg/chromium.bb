@@ -33,6 +33,10 @@
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_switches.h"
 
+#if defined(ADDRESS_SANITIZER)
+#include <sanitizer/asan_interface.h>
+#endif
+
 // See http://code.google.com/p/chromium/wiki/LinuxZygote
 
 namespace content {
@@ -77,11 +81,14 @@ void KillAndReap(pid_t pid, ZygoteForkDelegate* helper) {
 
 }  // namespace
 
-Zygote::Zygote(int sandbox_flags, ScopedVector<ZygoteForkDelegate> helpers)
+Zygote::Zygote(int sandbox_flags, ScopedVector<ZygoteForkDelegate> helpers,
+               const std::vector<base::ProcessHandle>& extra_children,
+               const std::vector<int>& extra_fds)
     : sandbox_flags_(sandbox_flags),
       helpers_(helpers.Pass()),
-      initial_uma_index_(0) {
-}
+      initial_uma_index_(0),
+      extra_children_(extra_children),
+      extra_fds_(extra_fds) {}
 
 Zygote::~Zygote() {
 }
@@ -147,6 +154,22 @@ bool Zygote::HandleRequestFromBrowser(int fd) {
 
   if (len == 0 || (len == -1 && errno == ECONNRESET)) {
     // EOF from the browser. We should die.
+    // TODO(earthdok): call __sanititizer_cov_dump() here to obtain code
+    // coverage  for the Zygote. Currently it's not possible because of
+    // confusion over who is responsible for closing the file descriptor.
+    for (std::vector<int>::iterator it = extra_fds_.begin();
+         it < extra_fds_.end(); ++it) {
+      PCHECK(0 == IGNORE_EINTR(close(*it)));
+    }
+#if !defined(ADDRESS_SANITIZER)
+    // TODO(earthdok): add watchdog thread before using this in non-ASAN builds.
+    CHECK(extra_children_.empty());
+#endif
+    for (std::vector<base::ProcessHandle>::iterator it =
+             extra_children_.begin();
+         it < extra_children_.end(); ++it) {
+      PCHECK(*it == HANDLE_EINTR(waitpid(*it, NULL, 0)));
+    }
     _exit(0);
     return false;
   }

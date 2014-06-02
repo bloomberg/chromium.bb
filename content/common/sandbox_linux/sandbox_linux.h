@@ -11,6 +11,11 @@
 #include "base/memory/scoped_ptr.h"
 #include "content/public/common/sandbox_linux.h"
 
+#if defined(ADDRESS_SANITIZER) || defined(MEMORY_SANITIZER) || \
+    defined(LEAK_SANITIZER)
+#include <sanitizer/common_interface_defs.h>
+#endif
+
 template <typename T> struct DefaultSingletonTraits;
 namespace base {
 class Thread;
@@ -82,6 +87,13 @@ class LinuxSandbox {
   // to make some vulnerabilities harder to exploit.
   bool LimitAddressSpace(const std::string& process_type);
 
+#if defined(ADDRESS_SANITIZER) || defined(MEMORY_SANITIZER) || \
+    defined(LEAK_SANITIZER)
+  __sanitizer_sandbox_arguments* sanitizer_args() const {
+    return sanitizer_args_.get();
+  };
+#endif
+
  private:
   friend struct DefaultSingletonTraits<LinuxSandbox>;
 
@@ -120,6 +132,10 @@ class LinuxSandbox {
   bool seccomp_bpf_supported_;  // Accurate if pre_initialized_.
   bool yama_is_enforcing_;  // Accurate if pre_initialized_.
   scoped_ptr<sandbox::SetuidSandboxClient> setuid_sandbox_client_;
+#if defined(ADDRESS_SANITIZER) || defined(MEMORY_SANITIZER) || \
+    defined(LEAK_SANITIZER)
+  scoped_ptr<__sanitizer_sandbox_arguments> sanitizer_args_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(LinuxSandbox);
 };
