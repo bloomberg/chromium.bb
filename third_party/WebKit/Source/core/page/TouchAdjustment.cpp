@@ -76,7 +76,7 @@ bool nodeRespondsToTapGesture(Node* node)
         if (element->isMouseFocusable())
             return true;
         // Accept nodes that has a CSS effect when touched.
-        if (element->childrenAffectedByActive() || element->childrenAffectedByHover())
+        if (element->childrenOrSiblingsAffectedByActive() || element->childrenOrSiblingsAffectedByHover())
             return true;
     }
     if (RenderStyle* renderStyle = node->renderStyle()) {

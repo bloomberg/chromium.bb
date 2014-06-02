@@ -764,7 +764,7 @@ bool SelectorChecker::checkOne(const SelectorCheckingContext& context, const Sib
                 if (context.elementStyle)
                     context.elementStyle->setAffectedByDrag();
                 else
-                    element.setChildrenAffectedByDrag();
+                    element.setChildrenOrSiblingsAffectedByDrag();
             }
             if (element.renderer() && element.renderer()->isDragging())
                 return true;
@@ -774,7 +774,7 @@ bool SelectorChecker::checkOne(const SelectorCheckingContext& context, const Sib
                 if (context.elementStyle)
                     context.elementStyle->setAffectedByFocus();
                 else
-                    element.setChildrenAffectedByFocus();
+                    element.setChildrenOrSiblingsAffectedByFocus();
             }
             return matchesFocusPseudoClass(element);
         case CSSSelector::PseudoHover:
@@ -785,7 +785,7 @@ bool SelectorChecker::checkOne(const SelectorCheckingContext& context, const Sib
                     if (context.elementStyle)
                         context.elementStyle->setAffectedByHover();
                     else
-                        element.setChildrenAffectedByHover();
+                        element.setChildrenOrSiblingsAffectedByHover();
                 }
                 if (element.hovered() || InspectorInstrumentation::forcePseudoState(&element, CSSSelector::PseudoHover))
                     return true;
@@ -799,7 +799,7 @@ bool SelectorChecker::checkOne(const SelectorCheckingContext& context, const Sib
                     if (context.elementStyle)
                         context.elementStyle->setAffectedByActive();
                     else
-                        element.setChildrenAffectedByActive();
+                        element.setChildrenOrSiblingsAffectedByActive();
                 }
                 if (element.active() || InspectorInstrumentation::forcePseudoState(&element, CSSSelector::PseudoActive))
                     return true;

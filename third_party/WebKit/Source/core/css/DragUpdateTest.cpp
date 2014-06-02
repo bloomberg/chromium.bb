@@ -40,7 +40,7 @@ TEST(DragUpdateTest, AffectedByDragUpdate)
     ASSERT_EQ(1U, accessCount);
 }
 
-TEST(DragUpdateTest, ChildrenAffectedByDragUpdate)
+TEST(DragUpdateTest, ChildrenOrSiblingsAffectedByDragUpdate)
 {
     // Check that when dragging the div in the document below, you get a
     // full subtree style recalc.

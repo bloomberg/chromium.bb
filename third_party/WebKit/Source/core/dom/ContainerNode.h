@@ -99,10 +99,10 @@ public:
 #endif
 
 enum DynamicRestyleFlags {
-    ChildrenAffectedByFocus = 1 << 0,
-    ChildrenAffectedByHover = 1 << 1,
-    ChildrenAffectedByActive = 1 << 2,
-    ChildrenAffectedByDrag = 1 << 3,
+    ChildrenOrSiblingsAffectedByFocus = 1 << 0,
+    ChildrenOrSiblingsAffectedByHover = 1 << 1,
+    ChildrenOrSiblingsAffectedByActive = 1 << 2,
+    ChildrenOrSiblingsAffectedByDrag = 1 << 3,
     ChildrenAffectedByFirstChildRules = 1 << 4,
     ChildrenAffectedByLastChildRules = 1 << 5,
     ChildrenAffectedByDirectAdjacentRules = 1 << 6,
@@ -170,17 +170,17 @@ public:
     virtual void setActive(bool = true) OVERRIDE;
     virtual void setHovered(bool = true) OVERRIDE;
 
-    bool childrenAffectedByFocus() const { return hasRestyleFlag(ChildrenAffectedByFocus); }
-    void setChildrenAffectedByFocus() { setRestyleFlag(ChildrenAffectedByFocus); }
+    bool childrenOrSiblingsAffectedByFocus() const { return hasRestyleFlag(ChildrenOrSiblingsAffectedByFocus); }
+    void setChildrenOrSiblingsAffectedByFocus() { setRestyleFlag(ChildrenOrSiblingsAffectedByFocus); }
 
-    bool childrenAffectedByHover() const { return hasRestyleFlag(ChildrenAffectedByHover); }
-    void setChildrenAffectedByHover() { setRestyleFlag(ChildrenAffectedByHover); }
+    bool childrenOrSiblingsAffectedByHover() const { return hasRestyleFlag(ChildrenOrSiblingsAffectedByHover); }
+    void setChildrenOrSiblingsAffectedByHover() { setRestyleFlag(ChildrenOrSiblingsAffectedByHover); }
 
-    bool childrenAffectedByActive() const { return hasRestyleFlag(ChildrenAffectedByActive); }
-    void setChildrenAffectedByActive() { setRestyleFlag(ChildrenAffectedByActive); }
+    bool childrenOrSiblingsAffectedByActive() const { return hasRestyleFlag(ChildrenOrSiblingsAffectedByActive); }
+    void setChildrenOrSiblingsAffectedByActive() { setRestyleFlag(ChildrenOrSiblingsAffectedByActive); }
 
-    bool childrenAffectedByDrag() const { return hasRestyleFlag(ChildrenAffectedByDrag); }
-    void setChildrenAffectedByDrag() { setRestyleFlag(ChildrenAffectedByDrag); }
+    bool childrenOrSiblingsAffectedByDrag() const { return hasRestyleFlag(ChildrenOrSiblingsAffectedByDrag); }
+    void setChildrenOrSiblingsAffectedByDrag() { setRestyleFlag(ChildrenOrSiblingsAffectedByDrag); }
 
     bool childrenAffectedByPositionalRules() const { return hasRestyleFlag(ChildrenAffectedByForwardPositionalRules) || hasRestyleFlag(ChildrenAffectedByBackwardPositionalRules); }
 

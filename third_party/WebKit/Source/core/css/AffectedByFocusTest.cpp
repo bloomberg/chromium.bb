@@ -25,7 +25,7 @@ protected:
     struct ElementResult {
         const WebCore::QualifiedName tag;
         bool affectedBy;
-        bool childrenAffectedBy;
+        bool childrenOrSiblingsAffectedBy;
     };
 
     virtual void SetUp() OVERRIDE;
@@ -64,7 +64,7 @@ void AffectedByFocusTest::checkElements(ElementResult expected[], unsigned expec
         ASSERT_TRUE(elm->hasTagName(expected[i].tag));
         ASSERT(elm->renderStyle());
         ASSERT_EQ(expected[i].affectedBy, elm->renderStyle()->affectedByFocus());
-        ASSERT_EQ(expected[i].childrenAffectedBy, elm->childrenAffectedByFocus());
+        ASSERT_EQ(expected[i].childrenOrSiblingsAffectedBy, elm->childrenOrSiblingsAffectedByFocus());
     }
 
     ASSERT(!elm && i == expectedCount);
@@ -72,7 +72,7 @@ void AffectedByFocusTest::checkElements(ElementResult expected[], unsigned expec
 
 // A global :focus rule in html.css currently causes every single element to be
 // affectedByFocus. Check that all elements in a document with no :focus rules
-// gets the affectedByFocus set on RenderStyle and not childrenAffectedByFocus.
+// gets the affectedByFocus set on RenderStyle and not childrenOrSiblingsAffectedByFocus.
 TEST_F(AffectedByFocusTest, UAUniversalFocusRule)
 {
     ElementResult expected[] = {
@@ -91,7 +91,7 @@ TEST_F(AffectedByFocusTest, UAUniversalFocusRule)
     checkElements(expected, sizeof(expected) / sizeof(ElementResult));
 }
 
-// ":focus div" will mark ascendants of all divs with childrenAffectedByFocus.
+// ":focus div" will mark ascendants of all divs with childrenOrSiblingsAffectedByFocus.
 TEST_F(AffectedByFocusTest, FocusedAscendant)
 {
     ElementResult expected[] = {
@@ -113,7 +113,7 @@ TEST_F(AffectedByFocusTest, FocusedAscendant)
     checkElements(expected, sizeof(expected) / sizeof(ElementResult));
 }
 
-// "body:focus div" will mark the body element with childrenAffectedByFocus.
+// "body:focus div" will mark the body element with childrenOrSiblingsAffectedByFocus.
 TEST_F(AffectedByFocusTest, FocusedAscendantWithType)
 {
     ElementResult expected[] = {
@@ -135,9 +135,9 @@ TEST_F(AffectedByFocusTest, FocusedAscendantWithType)
     checkElements(expected, sizeof(expected) / sizeof(ElementResult));
 }
 
-// ":not(body):focus div" should not mark the body element with childrenAffectedByFocus.
+// ":not(body):focus div" should not mark the body element with childrenOrSiblingsAffectedByFocus.
 // Note that currently ":focus:not(body)" does not do the same. Then the :focus is
-// checked and the childrenAffectedByFocus flag set before the negated type selector
+// checked and the childrenOrSiblingsAffectedByFocus flag set before the negated type selector
 // is found.
 TEST_F(AffectedByFocusTest, FocusedAscendantWithNegatedType)
 {
@@ -161,7 +161,7 @@ TEST_F(AffectedByFocusTest, FocusedAscendantWithNegatedType)
 }
 
 // Checking current behavior for ":focus + div", but this is a BUG or at best
-// sub-optimal. The focused element will also in this case get childrenAffectedByFocus
+// sub-optimal. The focused element will also in this case get childrenOrSiblingsAffectedByFocus
 // even if it's really a sibling. Effectively, the whole sub-tree of the focused
 // element will have styles recalculated even though none of the children are
 // affected. There are other mechanisms that makes sure the sibling also gets its
@@ -219,7 +219,7 @@ TEST_F(AffectedByFocusTest, AffectedByFocusUpdate)
     ASSERT_EQ(1U, accessCount);
 }
 
-TEST_F(AffectedByFocusTest, ChildrenAffectedByFocusUpdate)
+TEST_F(AffectedByFocusTest, ChildrenOrSiblingsAffectedByFocusUpdate)
 {
     // Check that when focussing the outer div in the document below, you get a
     // style recalc for the whole subtree.
@@ -285,7 +285,7 @@ TEST_F(AffectedByFocusTest, NoInvalidationSetFocusUpdate)
 {
     // Check that when focussing the outer div in the document below, you get a
     // style recalc for the outer div only. The invalidation set for :focus will
-    // include 'a', but the id=d div should be affectedByFocus, not childrenAffectedByFocus.
+    // include 'a', but the id=d div should be affectedByFocus, not childrenOrSiblingsAffectedByFocus.
 
     setHtmlInnerHTML("<style>#nomatch:focus .a { border: 1px solid lime; }</style>"
         "<div id=d tabIndex=1>"
