@@ -353,6 +353,11 @@ IN_PROC_BROWSER_TEST_P(WebRtcAudioQualityBrowserTest,
     LOG(ERROR) << "This test is not implemented for Windows XP.";
     return;
   }
+  if (OnWin8()) {
+    // http://crbug.com/379798.
+    LOG(ERROR) << "Temporarily disabled for Win 8.";
+    return;
+  }
   ASSERT_TRUE(test::HasReferenceFilesInCheckout());
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 

@@ -360,3 +360,11 @@ bool WebRtcTestBase::OnWinXp() const {
   return false;
 #endif
 }
+
+bool WebRtcTestBase::OnWin8() const {
+#if defined(OS_WIN)
+  return base::win::GetVersion() > base::win::VERSION_WIN7;
+#else
+  return false;
+#endif
+}

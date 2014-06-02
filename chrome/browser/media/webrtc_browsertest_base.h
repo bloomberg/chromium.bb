@@ -113,6 +113,9 @@ class WebRtcTestBase : public InProcessBrowserTest {
   // Returns true if we're on WinXP, that lovely operating system of bliss.
   bool OnWinXp() const;
 
+  // Returns true if we're on win 8.
+  bool OnWin8() const;
+
  private:
   void CloseInfoBarInTab(content::WebContents* tab_contents,
                          infobars::InfoBar* infobar) const;
