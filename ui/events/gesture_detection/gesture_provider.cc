@@ -356,10 +356,17 @@ class GestureProvider::GestureListenerImpl
     }
 
     if (distance_x || distance_y) {
+      const gfx::RectF bounding_box = GetBoundingBox(e2);
       GestureEventDetails scroll_details(
           ET_GESTURE_SCROLL_UPDATE, -distance_x, -distance_y);
-      provider_->Send(
-          CreateGesture(ET_GESTURE_SCROLL_UPDATE, e2, scroll_details));
+      provider_->Send(CreateGesture(ET_GESTURE_SCROLL_UPDATE,
+                                    e2.GetId(),
+                                    e2.GetEventTime(),
+                                    bounding_box.CenterPoint().x(),
+                                    bounding_box.CenterPoint().y(),
+                                    e2.GetPointerCount(),
+                                    bounding_box,
+                                    scroll_details));
     }
 
     return true;
@@ -739,8 +746,15 @@ void GestureProvider::OnTouchEventHandlingBegin(const MotionEvent& event) {
         Send(CreateGesture(ET_GESTURE_BEGIN, event));
       break;
     case MotionEvent::ACTION_POINTER_DOWN:
-      if (gesture_begin_end_types_enabled_)
-        Send(CreateGesture(ET_GESTURE_BEGIN, event));
+      if (gesture_begin_end_types_enabled_) {
+        Send(CreateGesture(ET_GESTURE_BEGIN,
+                           event.GetId(),
+                           event.GetEventTime(),
+                           event.GetX(event.GetActionIndex()),
+                           event.GetY(event.GetActionIndex()),
+                           event.GetPointerCount(),
+                           GetBoundingBox(event)));
+      }
       break;
     case MotionEvent::ACTION_POINTER_UP:
     case MotionEvent::ACTION_UP:
@@ -753,18 +767,30 @@ void GestureProvider::OnTouchEventHandlingBegin(const MotionEvent& event) {
 void GestureProvider::OnTouchEventHandlingEnd(const MotionEvent& event) {
   switch (event.GetAction()) {
     case MotionEvent::ACTION_UP:
-    case MotionEvent::ACTION_CANCEL:
+    case MotionEvent::ACTION_CANCEL: {
       // Note: This call will have no effect if a fling was just generated, as
       // |Fling()| will have already signalled an end to touch-scrolling.
       EndTouchScrollIfNecessary(event, true);
 
-      if (gesture_begin_end_types_enabled_)
-        Send(CreateGesture(ET_GESTURE_END, event));
+      const gfx::RectF bounding_box = GetBoundingBox(event);
+
+      if (gesture_begin_end_types_enabled_) {
+        for (size_t i = 0; i < event.GetPointerCount(); ++i) {
+          Send(CreateGesture(ET_GESTURE_END,
+                             event.GetId(),
+                             event.GetEventTime(),
+                             event.GetX(i),
+                             event.GetY(i),
+                             event.GetPointerCount() - i,
+                             bounding_box));
+        }
+      }
 
       current_down_event_.reset();
 
       UpdateDoubleTapDetectionSupport();
       break;
+    }
     case MotionEvent::ACTION_POINTER_UP:
       if (gesture_begin_end_types_enabled_)
         Send(CreateGesture(ET_GESTURE_END, event));

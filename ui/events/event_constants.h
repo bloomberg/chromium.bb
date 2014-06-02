@@ -38,8 +38,8 @@ enum EventType {
   ET_GESTURE_TAP_CANCEL,
   ET_GESTURE_TAP_UNCONFIRMED, // User tapped, but the tap delay hasn't expired.
   ET_GESTURE_DOUBLE_TAP,
-  ET_GESTURE_BEGIN,  // Sent before any other gesture types.
-  ET_GESTURE_END,    // Sent after any other gestures.
+  ET_GESTURE_BEGIN,  // The first event sent when each finger is pressed.
+  ET_GESTURE_END,    // Sent for each released finger.
   ET_GESTURE_TWO_FINGER_TAP,
   ET_GESTURE_PINCH_BEGIN,
   ET_GESTURE_PINCH_END,

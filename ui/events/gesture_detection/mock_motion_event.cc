@@ -54,8 +54,8 @@ MockMotionEvent::MockMotionEvent(const MockMotionEvent& other)
       pointer_count(other.pointer_count),
       time(other.time),
       id(other.GetId()) {
-  points[0] = other.points[0];
-  points[1] = other.points[1];
+  for (size_t i = 0; i < pointer_count; ++i)
+    points[i] = other.points[i];
 }
 
 MockMotionEvent::~MockMotionEvent() {}

@@ -11,6 +11,7 @@
 
 #include "base/logging.h"
 #include "ui/events/event_constants.h"
+#include "ui/events/event_utils.h"
 #include "ui/events/keycodes/keyboard_code_conversion_x.h"
 #include "ui/events/x/touch_factory_x11.h"
 
@@ -238,7 +239,21 @@ void ScopedXI2Event::InitTouchEvent(int deviceid,
                                     const gfx::Point& location,
                                     const std::vector<Valuator>& valuators) {
   event_.reset(CreateXInput2Event(deviceid, evtype, tracking_id, location));
-  SetUpValuators(valuators);
+
+  // If a timestamp was specified, setup the event.
+  for (size_t i = 0; i < valuators.size(); ++i) {
+    if (valuators[i].data_type == DeviceDataManager::DT_TOUCH_RAW_TIMESTAMP) {
+      SetUpValuators(valuators);
+      return;
+    }
+  }
+
+  // No timestamp was specified. Use |ui::EventTimeForNow()|.
+  std::vector<Valuator> valuators_with_time = valuators;
+  valuators_with_time.push_back(
+      Valuator(DeviceDataManager::DT_TOUCH_RAW_TIMESTAMP,
+               (ui::EventTimeForNow()).InMicroseconds()));
+  SetUpValuators(valuators_with_time);
 }
 
 void ScopedXI2Event::SetUpValuators(const std::vector<Valuator>& valuators) {

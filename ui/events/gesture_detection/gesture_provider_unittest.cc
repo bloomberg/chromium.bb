@@ -74,6 +74,17 @@ class GestureProviderTest : public testing::Test, public GestureProviderClient {
     return MockMotionEvent(action, event_time, x0, y0, x1, y1);
   }
 
+  static MockMotionEvent ObtainMotionEvent(base::TimeTicks event_time,
+                                           MotionEvent::Action action,
+                                           float x0,
+                                           float y0,
+                                           float x1,
+                                           float y1,
+                                           float x2,
+                                           float y2) {
+    return MockMotionEvent(action, event_time, x0, y0, x1, y1, x2, y2);
+  }
+
   static MockMotionEvent ObtainMotionEvent(
       base::TimeTicks event_time,
       MotionEvent::Action action,
@@ -1395,6 +1406,10 @@ TEST_F(GestureProviderTest, PinchZoom) {
   EXPECT_TRUE(HasReceivedGesture(ET_GESTURE_PINCH_BEGIN));
   EXPECT_TRUE(HasReceivedGesture(ET_GESTURE_SCROLL_BEGIN));
   EXPECT_TRUE(HasReceivedGesture(ET_GESTURE_SCROLL_UPDATE));
+
+  EXPECT_EQ((kFakeCoordX + secondary_coord_x) / 2, GetReceivedGesture(3).x);
+  EXPECT_EQ((kFakeCoordY + secondary_coord_y) / 2, GetReceivedGesture(3).y);
+
   EXPECT_EQ(
       gfx::RectF(kFakeCoordX - kMockTouchRadius,
                  kFakeCoordY - kMockTouchRadius,
@@ -1714,84 +1729,154 @@ TEST_F(GestureProviderTest, GestureBeginAndEnd) {
 
   EXPECT_EQ(0U, GetReceivedGestureCount());
   MockMotionEvent event =
-      ObtainMotionEvent(event_time, MotionEvent::ACTION_DOWN);
+      ObtainMotionEvent(event_time, MotionEvent::ACTION_DOWN, 1, 1);
   event.pointer_count = 1;
   EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
   EXPECT_EQ(ET_GESTURE_BEGIN, GetReceivedGesture(0).type);
   EXPECT_EQ(ET_GESTURE_TAP_DOWN, GetMostRecentGestureEventType());
   EXPECT_EQ(2U, GetReceivedGestureCount());
   EXPECT_EQ(1, GetMostRecentGestureEvent().details.touch_points());
-  EXPECT_EQ(gfx::RectF(kFakeCoordX - kMockTouchRadius,
-                       kFakeCoordY - kMockTouchRadius,
+  EXPECT_EQ(1, GetMostRecentGestureEvent().x);
+  EXPECT_EQ(1, GetMostRecentGestureEvent().y);
+  EXPECT_EQ(gfx::RectF(1 - kMockTouchRadius,
+                       1 - kMockTouchRadius,
                        kMockTouchRadius * 2,
                        kMockTouchRadius * 2),
             GetMostRecentGestureEvent().details.bounding_box());
 
-  event = ObtainMotionEvent(event_time, MotionEvent::ACTION_POINTER_DOWN);
+  event = ObtainMotionEvent(
+      event_time, MotionEvent::ACTION_POINTER_DOWN, 1, 1, 2, 2);
   event.pointer_count = 2;
   EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
   EXPECT_EQ(ET_GESTURE_BEGIN, GetMostRecentGestureEventType());
   EXPECT_EQ(3U, GetReceivedGestureCount());
   EXPECT_EQ(2, GetMostRecentGestureEvent().details.touch_points());
+  EXPECT_EQ(2, GetMostRecentGestureEvent().x);
+  EXPECT_EQ(2, GetMostRecentGestureEvent().y);
 
-  event = ObtainMotionEvent(event_time, MotionEvent::ACTION_POINTER_DOWN);
+  event = ObtainMotionEvent(
+      event_time, MotionEvent::ACTION_POINTER_DOWN, 1, 1, 2, 2, 3, 3);
   event.pointer_count = 3;
   EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
   EXPECT_EQ(ET_GESTURE_BEGIN, GetMostRecentGestureEventType());
   EXPECT_EQ(4U, GetReceivedGestureCount());
   EXPECT_EQ(3, GetMostRecentGestureEvent().details.touch_points());
+  EXPECT_EQ(3, GetMostRecentGestureEvent().x);
+  EXPECT_EQ(3, GetMostRecentGestureEvent().y);
 
-  event = ObtainMotionEvent(event_time, MotionEvent::ACTION_POINTER_UP);
+  event = ObtainMotionEvent(
+      event_time, MotionEvent::ACTION_POINTER_UP, 1, 1, 2, 2, 3, 3);
   event.pointer_count = 2;
   EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
   EXPECT_EQ(ET_GESTURE_END, GetMostRecentGestureEventType());
   EXPECT_EQ(5U, GetReceivedGestureCount());
   EXPECT_EQ(2, GetMostRecentGestureEvent().details.touch_points());
+  EXPECT_EQ(1, GetMostRecentGestureEvent().x);
+  EXPECT_EQ(1, GetMostRecentGestureEvent().y);
 
-  event = ObtainMotionEvent(event_time, MotionEvent::ACTION_POINTER_DOWN);
+  event = ObtainMotionEvent(
+      event_time, MotionEvent::ACTION_POINTER_DOWN, 2, 2, 3, 3, 4, 4);
   event.pointer_count = 3;
   EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
   EXPECT_EQ(ET_GESTURE_BEGIN, GetMostRecentGestureEventType());
   EXPECT_EQ(6U, GetReceivedGestureCount());
   EXPECT_EQ(3, GetMostRecentGestureEvent().details.touch_points());
+  EXPECT_EQ(4, GetMostRecentGestureEvent().x);
+  EXPECT_EQ(4, GetMostRecentGestureEvent().y);
 
-  event = ObtainMotionEvent(event_time, MotionEvent::ACTION_POINTER_UP);
+  event = ObtainMotionEvent(
+      event_time, MotionEvent::ACTION_POINTER_UP, 2, 2, 3, 3, 4, 4);
   event.pointer_count = 2;
   EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
   EXPECT_EQ(ET_GESTURE_END, GetMostRecentGestureEventType());
   EXPECT_EQ(7U, GetReceivedGestureCount());
   EXPECT_EQ(2, GetMostRecentGestureEvent().details.touch_points());
+  EXPECT_EQ(2, GetMostRecentGestureEvent().x);
+  EXPECT_EQ(2, GetMostRecentGestureEvent().y);
 
-  event = ObtainMotionEvent(event_time, MotionEvent::ACTION_POINTER_UP);
+  event =
+      ObtainMotionEvent(event_time, MotionEvent::ACTION_POINTER_UP, 3, 3, 4, 4);
   event.pointer_count = 1;
   EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
   EXPECT_EQ(ET_GESTURE_END, GetMostRecentGestureEventType());
   EXPECT_EQ(8U, GetReceivedGestureCount());
   EXPECT_EQ(1, GetMostRecentGestureEvent().details.touch_points());
+  EXPECT_EQ(3, GetMostRecentGestureEvent().x);
+  EXPECT_EQ(3, GetMostRecentGestureEvent().y);
 
-  event = ObtainMotionEvent(event_time, MotionEvent::ACTION_UP);
+
+  event = ObtainMotionEvent(event_time, MotionEvent::ACTION_UP, 4, 4);
   event.pointer_count = 1;
   EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
   EXPECT_EQ(ET_GESTURE_END, GetMostRecentGestureEventType());
   EXPECT_EQ(9U, GetReceivedGestureCount());
   EXPECT_EQ(1, GetMostRecentGestureEvent().details.touch_points());
-
-  event = ObtainMotionEvent(event_time, MotionEvent::ACTION_DOWN);
-  event.pointer_count = 1;
-  EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
-  EXPECT_EQ(ET_GESTURE_BEGIN, GetReceivedGesture(9).type);
-  EXPECT_EQ(ET_GESTURE_TAP_DOWN, GetMostRecentGestureEventType());
-  EXPECT_EQ(11U, GetReceivedGestureCount());
-  EXPECT_EQ(1, GetMostRecentGestureEvent().details.touch_points());
-
-  event = ObtainMotionEvent(event_time, MotionEvent::ACTION_CANCEL);
-  event.pointer_count = 1;
-  EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
-  EXPECT_EQ(ET_GESTURE_END, GetMostRecentGestureEventType());
-  EXPECT_EQ(12U, GetReceivedGestureCount());
-  EXPECT_EQ(1, GetMostRecentGestureEvent().details.touch_points());
+  EXPECT_EQ(4, GetMostRecentGestureEvent().x);
+  EXPECT_EQ(4, GetMostRecentGestureEvent().y);
 }
 
+// Verify that gesture begin and gesture end events are dispatched correctly
+// when an ACTION_CANCEL is received.
+TEST_F(GestureProviderTest, GestureBeginAndEndOnCancel) {
+  EnableBeginEndTypes();
+  base::TimeTicks event_time = base::TimeTicks::Now();
+
+  EXPECT_EQ(0U, GetReceivedGestureCount());
+  MockMotionEvent event =
+      ObtainMotionEvent(event_time, MotionEvent::ACTION_DOWN, 1, 1);
+  event.pointer_count = 1;
+  EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
+  EXPECT_EQ(ET_GESTURE_BEGIN, GetReceivedGesture(0).type);
+  EXPECT_EQ(ET_GESTURE_TAP_DOWN, GetMostRecentGestureEventType());
+  EXPECT_EQ(2U, GetReceivedGestureCount());
+  EXPECT_EQ(1, GetMostRecentGestureEvent().details.touch_points());
+  EXPECT_EQ(gfx::RectF(1 - kMockTouchRadius,
+                       1 - kMockTouchRadius,
+                       kMockTouchRadius * 2,
+                       kMockTouchRadius * 2),
+            GetMostRecentGestureEvent().details.bounding_box());
+  EXPECT_EQ(1, GetMostRecentGestureEvent().x);
+  EXPECT_EQ(1, GetMostRecentGestureEvent().y);
+
+  event = ObtainMotionEvent(
+      event_time, MotionEvent::ACTION_POINTER_DOWN, 1, 1, 2, 2);
+  event.pointer_count = 2;
+  EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
+  EXPECT_EQ(ET_GESTURE_BEGIN, GetMostRecentGestureEventType());
+  EXPECT_EQ(3U, GetReceivedGestureCount());
+  EXPECT_EQ(2, GetMostRecentGestureEvent().details.touch_points());
+  EXPECT_EQ(2, GetMostRecentGestureEvent().x);
+  EXPECT_EQ(2, GetMostRecentGestureEvent().y);
+
+
+  event = ObtainMotionEvent(
+      event_time, MotionEvent::ACTION_POINTER_DOWN, 1, 1, 2, 2, 3, 3);
+  event.pointer_count = 3;
+  EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
+  EXPECT_EQ(ET_GESTURE_BEGIN, GetMostRecentGestureEventType());
+  EXPECT_EQ(4U, GetReceivedGestureCount());
+  EXPECT_EQ(3, GetMostRecentGestureEvent().details.touch_points());
+  EXPECT_EQ(3, GetMostRecentGestureEvent().x);
+  EXPECT_EQ(3, GetMostRecentGestureEvent().y);
+
+  event = ObtainMotionEvent(
+      event_time, MotionEvent::ACTION_CANCEL, 1, 1, 2, 2, 3, 3);
+  event.pointer_count = 3;
+  EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
+  EXPECT_EQ(7U, GetReceivedGestureCount());
+  EXPECT_EQ(3, GetReceivedGesture(4).details.touch_points());
+  EXPECT_EQ(ET_GESTURE_END, GetReceivedGesture(4).details.type());
+  EXPECT_EQ(2, GetReceivedGesture(5).details.touch_points());
+  EXPECT_EQ(ET_GESTURE_END, GetReceivedGesture(5).details.type());
+  EXPECT_EQ(1, GetReceivedGesture(6).details.touch_points());
+  EXPECT_EQ(ET_GESTURE_END, GetReceivedGesture(6).details.type());
+  EXPECT_EQ(1, GetReceivedGesture(4).x);
+  EXPECT_EQ(1, GetReceivedGesture(4).y);
+  EXPECT_EQ(2, GetReceivedGesture(5).x);
+  EXPECT_EQ(2, GetReceivedGesture(5).y);
+  EXPECT_EQ(3, GetReceivedGesture(6).x);
+  EXPECT_EQ(3, GetReceivedGesture(6).y);
+}
 
 // Test a simple two finger tap
 TEST_F(GestureProviderTest, TwoFingerTap) {

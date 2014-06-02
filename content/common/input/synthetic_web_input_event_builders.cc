@@ -147,7 +147,9 @@ WebGestureEvent SyntheticWebGestureEventBuilder::BuildFling(
   return result;
 }
 
-SyntheticWebTouchEvent::SyntheticWebTouchEvent() : WebTouchEvent() {}
+SyntheticWebTouchEvent::SyntheticWebTouchEvent() : WebTouchEvent() {
+  SetTimestamp(base::TimeTicks::Now() - base::TimeTicks());
+}
 
 void SyntheticWebTouchEvent::ResetPoints() {
   int point = 0;

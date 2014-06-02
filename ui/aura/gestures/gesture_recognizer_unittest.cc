@@ -689,11 +689,6 @@ class GestureRecognizerTest : public AuraTestBase,
     AuraTestBase::SetUp();
   }
 
-  virtual void TearDown() OVERRIDE {
-    AuraTestBase::TearDown();
-    RunAllPendingInMessageLoop();
-  }
-
   DISALLOW_COPY_AND_ASSIGN(GestureRecognizerTest);
 };
 

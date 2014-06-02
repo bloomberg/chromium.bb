@@ -4,6 +4,7 @@
 
 #include "ui/events/gestures/gesture_provider_aura.h"
 
+#include "base/auto_reset.h"
 #include "base/logging.h"
 #include "ui/events/event.h"
 #include "ui/events/gesture_detection/gesture_config_helper.h"
@@ -14,7 +15,8 @@ namespace ui {
 
 GestureProviderAura::GestureProviderAura(GestureProviderAuraClient* client)
     : client_(client),
-      filtered_gesture_provider_(ui::DefaultGestureProviderConfig(), this) {
+      filtered_gesture_provider_(ui::DefaultGestureProviderConfig(), this),
+      handling_event_(false) {
   filtered_gesture_provider_.SetDoubleTapSupportForPlatformEnabled(false);
 }
 
@@ -48,6 +50,9 @@ bool GestureProviderAura::OnTouchEvent(const TouchEvent& event) {
 }
 
 void GestureProviderAura::OnTouchEventAck(bool event_consumed) {
+  DCHECK(pending_gestures_.empty());
+  DCHECK(!handling_event_);
+  base::AutoReset<bool> handling_event(&handling_event_, true);
   filtered_gesture_provider_.OnTouchEventAck(event_consumed);
 }
 
@@ -69,18 +74,36 @@ void GestureProviderAura::OnGestureEvent(
     previous_tap_.reset();
   }
 
-  ui::GestureEvent event(gesture.type,
-                         gesture.x,
-                         gesture.y,
-                         last_touch_event_flags_,
-                         gesture.time - base::TimeTicks(),
-                         details,
-                         // ui::GestureEvent stores a bitfield indicating the
-                         // ids of active touch points. This is currently only
-                         // used when one finger is down, and will eventually
-                         // be cleaned up. See crbug.com/366707.
-                         1 << gesture.motion_event_id);
-  client_->OnGestureEvent(&event);
+  scoped_ptr<ui::GestureEvent> event(
+      new ui::GestureEvent(gesture.type,
+                           gesture.x,
+                           gesture.y,
+                           last_touch_event_flags_,
+                           gesture.time - base::TimeTicks(),
+                           details,
+                           // ui::GestureEvent stores a bitfield indicating the
+                           // ids of active touch points. This is currently only
+                           // used when one finger is down, and will eventually
+                           // be cleaned up. See crbug.com/366707.
+                           1 << gesture.motion_event_id));
+
+  if (!handling_event_) {
+    // Dispatching event caused by timer.
+    client_->OnGestureEvent(event.get());
+  } else {
+    // Memory managed by ScopedVector pending_gestures_.
+    pending_gestures_.push_back(event.release());
+  }
+}
+
+ScopedVector<GestureEvent>* GestureProviderAura::GetAndResetPendingGestures() {
+  if (pending_gestures_.empty())
+    return NULL;
+  // Caller is responsible for deleting old_pending_gestures.
+  ScopedVector<GestureEvent>* old_pending_gestures =
+      new ScopedVector<GestureEvent>();
+  old_pending_gestures->swap(pending_gestures_);
+  return old_pending_gestures;
 }
 
 bool GestureProviderAura::IsConsideredDoubleTap(

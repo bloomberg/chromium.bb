@@ -24,6 +24,7 @@
 #include "ui/base/test/ui_controls.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/events/event_processor.h"
+#include "ui/events/event_utils.h"
 #include "ui/views/controls/textfield/textfield_test_api.h"
 
 class OmniboxViewViewsTest : public InProcessBrowserTest {
@@ -80,13 +81,22 @@ class OmniboxViewViewsTest : public InProcessBrowserTest {
     ui::EventProcessor* dispatcher =
         browser()->window()->GetNativeWindow()->GetHost()->event_processor();
 
-    ui::TouchEvent press(ui::ET_TOUCH_PRESSED, press_location,
-                         5, base::TimeDelta::FromMilliseconds(0));
+    base::TimeDelta timestamp = ui::EventTimeForNow();
+    ui::TouchEvent press(
+        ui::ET_TOUCH_PRESSED, press_location, 5, timestamp);
     ui::EventDispatchDetails details = dispatcher->OnEventFromSource(&press);
     ASSERT_FALSE(details.dispatcher_destroyed);
 
-    ui::TouchEvent release(ui::ET_TOUCH_RELEASED, release_location,
-                           5, base::TimeDelta::FromMilliseconds(50));
+    if (press_location != release_location) {
+      timestamp += base::TimeDelta::FromMilliseconds(10);
+      ui::TouchEvent move(
+          ui::ET_TOUCH_MOVED, release_location, 5, timestamp);
+      details = dispatcher->OnEventFromSource(&move);
+    }
+
+    timestamp += base::TimeDelta::FromMilliseconds(50);
+    ui::TouchEvent release(
+        ui::ET_TOUCH_RELEASED, release_location, 5, timestamp);
     details = dispatcher->OnEventFromSource(&release);
     ASSERT_FALSE(details.dispatcher_destroyed);
   }

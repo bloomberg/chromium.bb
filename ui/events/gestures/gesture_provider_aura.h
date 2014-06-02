@@ -31,6 +31,7 @@ class EVENTS_EXPORT GestureProviderAura : public GestureProviderClient {
   bool OnTouchEvent(const TouchEvent& event);
   void OnTouchEventAck(bool event_consumed);
   const MotionEventAura& pointer_state() { return pointer_state_; }
+  ScopedVector<GestureEvent>* GetAndResetPendingGestures();
 
   // GestureProviderClient implementation
   virtual void OnGestureEvent(const GestureEventData& gesture) OVERRIDE;
@@ -46,6 +47,8 @@ class EVENTS_EXPORT GestureProviderAura : public GestureProviderClient {
   FilteredGestureProvider filtered_gesture_provider_;
 
   int last_touch_event_flags_;
+  bool handling_event_;
+  ScopedVector<GestureEvent> pending_gestures_;
 
   DISALLOW_COPY_AND_ASSIGN(GestureProviderAura);
 };

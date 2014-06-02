@@ -308,7 +308,7 @@ void GestureRecognizerImpl::DispatchGestureEvent(GestureEvent* event) {
   }
 }
 
-GestureSequence::Gestures* GestureRecognizerImpl::ProcessTouchEventForGesture(
+ScopedVector<GestureEvent>* GestureRecognizerImpl::ProcessTouchEventForGesture(
     const TouchEvent& event,
     ui::EventResult result,
     GestureConsumer* target) {
@@ -322,8 +322,10 @@ GestureSequence::Gestures* GestureRecognizerImpl::ProcessTouchEventForGesture(
         GetGestureProviderForConsumer(target);
     // TODO(tdresser) - detect gestures eagerly.
     if (!(result & ER_CONSUMED)) {
-      if (gesture_provider->OnTouchEvent(event))
+      if (gesture_provider->OnTouchEvent(event)) {
         gesture_provider->OnTouchEventAck(result != ER_UNHANDLED);
+        return gesture_provider->GetAndResetPendingGestures();
+      }
     }
     return NULL;
   }
@@ -342,10 +344,7 @@ bool GestureRecognizerImpl::CleanupStateForConsumer(
   } else {
     if (consumer_gesture_provider_.count(consumer)) {
       state_cleaned_up = true;
-      // Don't immediately delete the GestureProvider, as we could be in the
-      // middle of dispatching a set of gestures.
-      base::MessageLoop::current()->DeleteSoon(
-          FROM_HERE, consumer_gesture_provider_[consumer]);
+      delete consumer_gesture_provider_[consumer];
       consumer_gesture_provider_.erase(consumer);
     }
   }

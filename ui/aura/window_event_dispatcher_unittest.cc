@@ -395,14 +395,16 @@ TEST_F(WindowEventDispatcherTest, TouchEventsOutsideBounds) {
 
   gfx::Point position = root_window()->bounds().origin();
   position.Offset(-10, -10);
-  ui::TouchEvent press(ui::ET_TOUCH_PRESSED, position, 0, base::TimeDelta());
+  ui::TouchEvent press(
+      ui::ET_TOUCH_PRESSED, position, 0, ui::EventTimeForNow());
   DispatchEventUsingWindowDispatcher(&press);
   EXPECT_EQ(1, handler.num_touch_events());
 
   position = root_window()->bounds().origin();
   position.Offset(root_window()->bounds().width() + 10,
                   root_window()->bounds().height() + 10);
-  ui::TouchEvent release(ui::ET_TOUCH_RELEASED, position, 0, base::TimeDelta());
+  ui::TouchEvent release(
+      ui::ET_TOUCH_RELEASED, position, 0, ui::EventTimeForNow());
   DispatchEventUsingWindowDispatcher(&release);
   EXPECT_EQ(2, handler.num_touch_events());
 }
@@ -497,6 +499,10 @@ class EventFilterRecorder : public ui::EventHandler {
 
   virtual void OnTouchEvent(ui::TouchEvent* event) OVERRIDE {
     touch_locations_.push_back(event->location());
+  }
+
+  bool HasReceivedEvent(ui::EventType type) {
+    return std::find(events_.begin(), events_.end(), type) != events_.end();
   }
 
  private:
@@ -727,8 +733,8 @@ TEST_F(WindowEventDispatcherTest, TouchMovesHeld) {
   // Starting the touch and throwing out the first few events, since the system
   // is going to generate synthetic mouse events that are not relevant to the
   // test.
-  ui::TouchEvent touch_pressed_event(ui::ET_TOUCH_PRESSED, touch_location,
-                                     0, base::TimeDelta());
+  ui::TouchEvent touch_pressed_event(
+      ui::ET_TOUCH_PRESSED, touch_location, 0, ui::EventTimeForNow());
   DispatchEventUsingWindowDispatcher(&touch_pressed_event);
   recorder.WaitUntilReceivedEvent(ui::ET_GESTURE_SHOW_PRESS);
   recorder.Reset();
@@ -736,8 +742,8 @@ TEST_F(WindowEventDispatcherTest, TouchMovesHeld) {
   host()->dispatcher()->HoldPointerMoves();
 
   // Check that we don't immediately dispatch the TOUCH_MOVED event.
-  ui::TouchEvent touch_moved_event(ui::ET_TOUCH_MOVED, touch_location,
-                                   0, base::TimeDelta());
+  ui::TouchEvent touch_moved_event(
+      ui::ET_TOUCH_MOVED, touch_location, 0, ui::EventTimeForNow());
   DispatchEventUsingWindowDispatcher(&touch_moved_event);
   EXPECT_TRUE(recorder.events().empty());
 
@@ -753,13 +759,13 @@ TEST_F(WindowEventDispatcherTest, TouchMovesHeld) {
 
   // If another touch event occurs then the held touch should be dispatched
   // immediately before it.
-  ui::TouchEvent touch_released_event(ui::ET_TOUCH_RELEASED, touch_location,
-                                      0, base::TimeDelta());
+  ui::TouchEvent touch_released_event(
+      ui::ET_TOUCH_RELEASED, touch_location, 0, ui::EventTimeForNow());
   recorder.Reset();
   host()->dispatcher()->HoldPointerMoves();
   DispatchEventUsingWindowDispatcher(&touch_moved_event);
   DispatchEventUsingWindowDispatcher(&touch_released_event);
-  EXPECT_EQ("TOUCH_MOVED TOUCH_RELEASED GESTURE_TAP_CANCEL GESTURE_END",
+  EXPECT_EQ("TOUCH_MOVED TOUCH_RELEASED GESTURE_TAP GESTURE_END",
             EventTypesToString(recorder.events()));
   recorder.Reset();
   host()->dispatcher()->ReleasePointerMoves();
@@ -1213,14 +1219,13 @@ TEST_F(WindowEventDispatcherTest, RepostTapdownGestureTest) {
 
   ui::GestureEventDetails details(ui::ET_GESTURE_TAP_DOWN, 0.0f, 0.0f);
   gfx::Point point(10, 10);
-  ui::GestureEvent event(
-      ui::ET_GESTURE_TAP_DOWN,
-      point.x(),
-      point.y(),
-      0,
-      ui::EventTimeForNow(),
-      details,
-      0);
+  ui::GestureEvent event(ui::ET_GESTURE_TAP_DOWN,
+                         point.x(),
+                         point.y(),
+                         0,
+                         ui::EventTimeForNow(),
+                         details,
+                         0);
   host()->dispatcher()->RepostEvent(event);
   RunAllPendingInMessageLoop();
   // TODO(rbyers): Currently disabled - crbug.com/170987
@@ -1574,7 +1579,8 @@ TEST_F(WindowEventDispatcherTest, WindowHideCancelsActiveTouches) {
       &delegate, 1, gfx::Rect(0, 0, 100, 100), root_window()));
 
   gfx::Point position1 = root_window()->bounds().origin();
-  ui::TouchEvent press(ui::ET_TOUCH_PRESSED, position1, 0, base::TimeDelta());
+  ui::TouchEvent press(
+      ui::ET_TOUCH_PRESSED, position1, 0, ui::EventTimeForNow());
   DispatchEventUsingWindowDispatcher(&press);
 
   EXPECT_EQ("TOUCH_PRESSED GESTURE_BEGIN GESTURE_TAP_DOWN",
@@ -1582,8 +1588,10 @@ TEST_F(WindowEventDispatcherTest, WindowHideCancelsActiveTouches) {
 
   window->Hide();
 
-  EXPECT_EQ("TOUCH_CANCELLED GESTURE_TAP_CANCEL GESTURE_END",
-            EventTypesToString(recorder.events()));
+  EXPECT_EQ(ui::ET_TOUCH_CANCELLED, recorder.events()[0]);
+  EXPECT_TRUE(recorder.HasReceivedEvent(ui::ET_GESTURE_TAP_CANCEL));
+  EXPECT_TRUE(recorder.HasReceivedEvent(ui::ET_GESTURE_END));
+  EXPECT_EQ(3U, recorder.events().size());
   root_window()->RemovePreTargetHandler(&recorder);
 }
 
@@ -1597,25 +1605,45 @@ TEST_F(WindowEventDispatcherTest, WindowHideCancelsActiveGestures) {
 
   gfx::Point position1 = root_window()->bounds().origin();
   gfx::Point position2 = root_window()->bounds().CenterPoint();
-  ui::TouchEvent press(ui::ET_TOUCH_PRESSED, position1, 0, base::TimeDelta());
+  ui::TouchEvent press(
+      ui::ET_TOUCH_PRESSED, position1, 0, ui::EventTimeForNow());
   DispatchEventUsingWindowDispatcher(&press);
 
-  ui::TouchEvent move(ui::ET_TOUCH_MOVED, position2, 0, base::TimeDelta());
+  ui::TouchEvent move(
+      ui::ET_TOUCH_MOVED, position2, 0, ui::EventTimeForNow());
   DispatchEventUsingWindowDispatcher(&move);
 
-  ui::TouchEvent press2(ui::ET_TOUCH_PRESSED, position1, 1, base::TimeDelta());
+  ui::TouchEvent press2(
+      ui::ET_TOUCH_PRESSED, position1, 1, ui::EventTimeForNow());
   DispatchEventUsingWindowDispatcher(&press2);
 
-  EXPECT_EQ("TOUCH_PRESSED GESTURE_BEGIN GESTURE_TAP_DOWN TOUCH_MOVED "
-            "GESTURE_TAP_CANCEL GESTURE_SCROLL_BEGIN GESTURE_SCROLL_UPDATE "
-            "TOUCH_PRESSED GESTURE_BEGIN GESTURE_PINCH_BEGIN",
-            EventTypesToString(recorder.GetAndResetEvents()));
+  // TODO(tdresser): once the unified Gesture Recognizer has stuck, remove the
+  // special casing here. See crbug.com/332418 for details.
+  std::string expected =
+      "TOUCH_PRESSED GESTURE_BEGIN GESTURE_TAP_DOWN TOUCH_MOVED "
+      "GESTURE_TAP_CANCEL GESTURE_SCROLL_BEGIN GESTURE_SCROLL_UPDATE "
+      "TOUCH_PRESSED GESTURE_BEGIN GESTURE_PINCH_BEGIN";
+
+  std::string expected_ugr =
+      "TOUCH_PRESSED GESTURE_BEGIN GESTURE_TAP_DOWN TOUCH_MOVED "
+      "GESTURE_TAP_CANCEL GESTURE_SCROLL_BEGIN GESTURE_SCROLL_UPDATE "
+      "TOUCH_PRESSED GESTURE_BEGIN";
+
+  std::string events_string = EventTypesToString(recorder.GetAndResetEvents());
+  EXPECT_TRUE((expected == events_string) || (expected_ugr == events_string));
 
   window->Hide();
 
-  EXPECT_EQ("TOUCH_CANCELLED GESTURE_PINCH_END GESTURE_END TOUCH_CANCELLED "
-            "GESTURE_SCROLL_END GESTURE_END",
-            EventTypesToString(recorder.events()));
+  expected =
+      "TOUCH_CANCELLED GESTURE_PINCH_END GESTURE_END TOUCH_CANCELLED "
+      "GESTURE_SCROLL_END GESTURE_END";
+  expected_ugr =
+      "TOUCH_CANCELLED GESTURE_SCROLL_END GESTURE_END GESTURE_END "
+      "TOUCH_CANCELLED";
+
+  events_string = EventTypesToString(recorder.GetAndResetEvents());
+  EXPECT_TRUE((expected == events_string) || (expected_ugr == events_string));
+
   root_window()->RemovePreTargetHandler(&recorder);
 }
 
@@ -1635,11 +1663,13 @@ TEST_F(WindowEventDispatcherTest, EndingEventDoesntRetarget) {
   window2->AddPreTargetHandler(&recorder2);
 
   gfx::Point position = window1->bounds().origin();
-  ui::TouchEvent press(ui::ET_TOUCH_PRESSED, position, 0, base::TimeDelta());
+  ui::TouchEvent press(
+      ui::ET_TOUCH_PRESSED, position, 0, ui::EventTimeForNow());
   DispatchEventUsingWindowDispatcher(&press);
 
   gfx::Point position2 = window1->bounds().CenterPoint();
-  ui::TouchEvent move(ui::ET_TOUCH_MOVED, position2, 0, base::TimeDelta());
+  ui::TouchEvent move(
+      ui::ET_TOUCH_MOVED, position2, 0, ui::EventTimeForNow());
   DispatchEventUsingWindowDispatcher(&move);
 
   window2->SetCapture();
