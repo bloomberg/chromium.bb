@@ -1385,6 +1385,12 @@ bool InspectorStyleSheet::findRuleBySelectorRange(const SourceRange& sourceRange
     return false;
 }
 
+const CSSRuleVector& InspectorStyleSheet::flatRules()
+{
+    ensureFlatRules();
+    return m_flatRules;
+}
+
 Document* InspectorStyleSheet::ownerDocument() const
 {
     return m_pageStyleSheet->ownerDocument();

@@ -40,6 +40,7 @@
 #include "core/css/CSSStyleRule.h"
 #include "core/css/CSSStyleSheet.h"
 #include "core/css/MediaList.h"
+#include "core/css/MediaQuery.h"
 #include "core/css/StylePropertySet.h"
 #include "core/css/StyleRule.h"
 #include "core/css/StyleSheet.h"
@@ -638,6 +639,21 @@ bool InspectorCSSAgent::forcePseudoState(Element* element, CSSSelector::PseudoTy
     }
 }
 
+void InspectorCSSAgent::getMediaQueries(ErrorString* errorString, RefPtr<TypeBuilder::Array<TypeBuilder::CSS::CSSMedia> >& medias)
+{
+    medias = TypeBuilder::Array<TypeBuilder::CSS::CSSMedia>::create();
+    for (IdToInspectorStyleSheet::iterator it = m_idToInspectorStyleSheet.begin(); it != m_idToInspectorStyleSheet.end(); ++it) {
+        RefPtr<InspectorStyleSheet> styleSheet = it->value;
+        collectMediaQueriesFromStyleSheet(styleSheet->pageStyleSheet(), medias.get());
+        const CSSRuleVector& flatRules = styleSheet->flatRules();
+        for (unsigned i = 0; i < flatRules.size(); ++i) {
+            CSSRule* rule = flatRules.at(i).get();
+            if (rule->type() == CSSRule::MEDIA_RULE)
+                collectMediaQueriesFromRule(rule, medias.get());
+        }
+    }
+}
+
 void InspectorCSSAgent::getMatchedStylesForNode(ErrorString* errorString, int nodeId, const bool* includePseudo, const bool* includeInherited, RefPtr<TypeBuilder::Array<TypeBuilder::CSS::RuleMatch> >& matchedCSSRules, RefPtr<TypeBuilder::Array<TypeBuilder::CSS::PseudoIdMatches> >& pseudoIdMatches, RefPtr<TypeBuilder::Array<TypeBuilder::CSS::InheritedStyleEntry> >& inheritedEntries)
 {
     Element* element = elementForId(errorString, nodeId);
@@ -992,14 +1008,45 @@ PassRefPtr<TypeBuilder::CSS::CSSMedia> InspectorCSSAgent::buildMediaObject(const
         break;
     }
 
+    const MediaQuerySet* queries = media->queries();
+    const WillBeHeapVector<OwnPtrWillBeMember<MediaQuery> >& queryVector = queries->queryVector();
+    bool hasMediaQueryItems = false;
+    RefPtr<TypeBuilder::Array<TypeBuilder::Array<TypeBuilder::CSS::MediaQueryExpression> > > mediaListArray = TypeBuilder::Array<TypeBuilder::Array<TypeBuilder::CSS::MediaQueryExpression> >::create();
+    for (size_t i = 0; i < queryVector.size(); ++i) {
+        MediaQuery* query = queryVector.at(i).get();
+        const ExpressionHeapVector& expressions = query->expressions();
+        RefPtr<TypeBuilder::Array<TypeBuilder::CSS::MediaQueryExpression> > expressionArray = TypeBuilder::Array<TypeBuilder::CSS::MediaQueryExpression>::create();
+        bool hasExpressionItems = false;
+        for (size_t j = 0; j < expressions.size(); ++j) {
+            MediaQueryExp* mediaQueryExp = expressions.at(j).get();
+            MediaQueryExpValue expValue = mediaQueryExp->expValue();
+            if (!expValue.isValue)
+                continue;
+            const char* valueName = CSSPrimitiveValue::unitTypeToString(expValue.unit);
+            RefPtr<TypeBuilder::CSS::MediaQueryExpression> mediaQueryExpression = TypeBuilder::CSS::MediaQueryExpression::create()
+                .setValue(expValue.value)
+                .setUnit(String(valueName))
+                .setFeature(mediaQueryExp->mediaFeature());
+            expressionArray->addItem(mediaQueryExpression);
+            hasExpressionItems = true;
+        }
+        if (hasExpressionItems) {
+            mediaListArray->addItem(expressionArray);
+            hasMediaQueryItems = true;
+        }
+    }
+
     RefPtr<TypeBuilder::CSS::CSSMedia> mediaObject = TypeBuilder::CSS::CSSMedia::create()
         .setText(media->mediaText())
         .setSource(source);
+    if (hasMediaQueryItems)
+        mediaObject->setMediaList(mediaListArray);
 
     if (parentStyleSheet && mediaListSource != MediaListSourceLinkedSheet) {
         if (InspectorStyleSheet* inspectorStyleSheet = m_cssStyleSheetToInspectorStyleSheet.get(parentStyleSheet))
             mediaObject->setParentStyleSheetId(inspectorStyleSheet->id());
     }
+
     if (!sourceURL.isEmpty()) {
         mediaObject->setSourceURL(sourceURL);
 
@@ -1014,61 +1061,75 @@ PassRefPtr<TypeBuilder::CSS::CSSMedia> InspectorCSSAgent::buildMediaObject(const
     return mediaObject.release();
 }
 
+bool InspectorCSSAgent::collectMediaQueriesFromStyleSheet(CSSStyleSheet* styleSheet, TypeBuilder::Array<TypeBuilder::CSS::CSSMedia>* mediaArray)
+{
+    bool addedItems = false;
+    MediaList* mediaList = styleSheet->media();
+    String sourceURL;
+    if (mediaList && mediaList->length()) {
+        Document* doc = styleSheet->ownerDocument();
+        if (doc)
+            sourceURL = doc->url();
+        else if (!styleSheet->contents()->baseURL().isEmpty())
+            sourceURL = styleSheet->contents()->baseURL();
+        else
+            sourceURL = "";
+        mediaArray->addItem(buildMediaObject(mediaList, styleSheet->ownerNode() ? MediaListSourceLinkedSheet : MediaListSourceInlineSheet, sourceURL, styleSheet));
+        addedItems = true;
+    }
+    return addedItems;
+}
+
+bool InspectorCSSAgent::collectMediaQueriesFromRule(CSSRule* rule, TypeBuilder::Array<TypeBuilder::CSS::CSSMedia>* mediaArray)
+{
+    MediaList* mediaList;
+    String sourceURL;
+    CSSStyleSheet* parentStyleSheet = 0;
+    bool isMediaRule = true;
+    bool addedItems = false;
+    if (rule->type() == CSSRule::MEDIA_RULE) {
+        CSSMediaRule* mediaRule = toCSSMediaRule(rule);
+        mediaList = mediaRule->media();
+        parentStyleSheet = mediaRule->parentStyleSheet();
+    } else if (rule->type() == CSSRule::IMPORT_RULE) {
+        CSSImportRule* importRule = toCSSImportRule(rule);
+        mediaList = importRule->media();
+        parentStyleSheet = importRule->parentStyleSheet();
+        isMediaRule = false;
+    } else {
+        mediaList = 0;
+    }
+
+    if (parentStyleSheet) {
+        sourceURL = parentStyleSheet->contents()->baseURL();
+        if (sourceURL.isEmpty())
+            sourceURL = InspectorDOMAgent::documentURLString(parentStyleSheet->ownerDocument());
+    } else {
+        sourceURL = "";
+    }
+
+    if (mediaList && mediaList->length()) {
+        mediaArray->addItem(buildMediaObject(mediaList, isMediaRule ? MediaListSourceMediaRule : MediaListSourceImportRule, sourceURL, parentStyleSheet));
+        addedItems = true;
+    }
+    return addedItems;
+}
+
 PassRefPtr<TypeBuilder::Array<TypeBuilder::CSS::CSSMedia> > InspectorCSSAgent::buildMediaListChain(CSSRule* rule)
 {
     if (!rule)
         return nullptr;
     RefPtr<TypeBuilder::Array<TypeBuilder::CSS::CSSMedia> > mediaArray = TypeBuilder::Array<TypeBuilder::CSS::CSSMedia>::create();
     bool hasItems = false;
-    MediaList* mediaList;
     CSSRule* parentRule = rule;
-    String sourceURL;
     while (parentRule) {
-        CSSStyleSheet* parentStyleSheet = 0;
-        bool isMediaRule = true;
-        if (parentRule->type() == CSSRule::MEDIA_RULE) {
-            CSSMediaRule* mediaRule = toCSSMediaRule(parentRule);
-            mediaList = mediaRule->media();
-            parentStyleSheet = mediaRule->parentStyleSheet();
-        } else if (parentRule->type() == CSSRule::IMPORT_RULE) {
-            CSSImportRule* importRule = toCSSImportRule(parentRule);
-            mediaList = importRule->media();
-            parentStyleSheet = importRule->parentStyleSheet();
-            isMediaRule = false;
-        } else {
-            mediaList = 0;
-        }
-
-        if (parentStyleSheet) {
-            sourceURL = parentStyleSheet->contents()->baseURL();
-            if (sourceURL.isEmpty())
-                sourceURL = InspectorDOMAgent::documentURLString(parentStyleSheet->ownerDocument());
-        } else {
-            sourceURL = "";
-        }
-
-        if (mediaList && mediaList->length()) {
-            mediaArray->addItem(buildMediaObject(mediaList, isMediaRule ? MediaListSourceMediaRule : MediaListSourceImportRule, sourceURL, parentStyleSheet));
-            hasItems = true;
-        }
-
+        hasItems = collectMediaQueriesFromRule(parentRule, mediaArray.get()) || hasItems;
         if (parentRule->parentRule()) {
             parentRule = parentRule->parentRule();
         } else {
             CSSStyleSheet* styleSheet = parentRule->parentStyleSheet();
             while (styleSheet) {
-                mediaList = styleSheet->media();
-                if (mediaList && mediaList->length()) {
-                    Document* doc = styleSheet->ownerDocument();
-                    if (doc)
-                        sourceURL = doc->url();
-                    else if (!styleSheet->contents()->baseURL().isEmpty())
-                        sourceURL = styleSheet->contents()->baseURL();
-                    else
-                        sourceURL = "";
-                    mediaArray->addItem(buildMediaObject(mediaList, styleSheet->ownerNode() ? MediaListSourceLinkedSheet : MediaListSourceInlineSheet, sourceURL, styleSheet));
-                    hasItems = true;
-                }
+                hasItems = collectMediaQueriesFromStyleSheet(styleSheet, mediaArray.get()) || hasItems;
                 parentRule = styleSheet->ownerRule();
                 if (parentRule)
                     break;

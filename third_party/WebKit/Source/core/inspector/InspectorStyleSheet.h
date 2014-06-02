@@ -221,6 +221,8 @@ public:
 
     bool findRuleBySelectorRange(const SourceRange&, InspectorCSSId*);
 
+    const CSSRuleVector& flatRules();
+
 protected:
     virtual PassRefPtr<InspectorStyle> inspectorStyleForId(const InspectorCSSId&) OVERRIDE;
     virtual unsigned ruleCount() OVERRIDE;

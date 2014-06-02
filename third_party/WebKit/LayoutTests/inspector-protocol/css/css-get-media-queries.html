@@ -1,0 +1,67 @@
+<html>
+<head>
+<script type="text/javascript" src="../../http/tests/inspector-protocol/inspector-protocol-test.js"></script>
+<script type="text/javascript">
+function test()
+{
+    InspectorTest.sendCommandOrDie("CSS.enable", {}, onCSSEnabled);
+
+    function onCSSEnabled()
+    {
+        InspectorTest.sendCommandOrDie("CSS.getMediaQueries", {}, onMediaQueries);
+    }
+
+    function onMediaQueries(response)
+    {
+        function mediaComparator(media1, media2)
+        {
+            if (media1.text < media2.text)
+                return -1;
+            if (media1.text > media2.text)
+                return 1;
+            return 0;
+        }
+        response.medias.sort(mediaComparator);
+        for (var i = 0; i < response.medias.length; ++i) {
+            var mediaRule = response.medias[i];
+            InspectorTest.log("mediaRule #" + i);
+            InspectorTest.log("    text: " + mediaRule.text);
+            InspectorTest.log("    source: " + mediaRule.source);
+            InspectorTest.log("    range: " + JSON.stringify(mediaRule.range));
+            if (!mediaRule.mediaList) {
+                InspectorTest.log("    mediaList is empty");
+                continue;
+            }
+            for (var j = 0; j < mediaRule.mediaList.length; ++j) {
+                var mediaQuery = mediaRule.mediaList[j];
+                InspectorTest.log("    mediaQuery #" + j);
+                for (var k = 0; k < mediaQuery.length; ++k) {
+                    var expression = mediaQuery[k];
+                    InspectorTest.log("        mediaExpression #" + k);
+                    InspectorTest.log("            feature: " + expression.feature);
+                    InspectorTest.log("            value: " + expression.value + expression.unit);
+                }
+            }
+        }
+        InspectorTest.completeTest();
+    }
+};
+</script>
+<link rel="stylesheet" media="print and (min-width: 8.5in)" href="./resources/media-queries.css"></link>
+<style>
+@media screen and (device-aspect-ratio: 16/9), screen and (device-aspect-ratio: 16/10) {
+    * {
+        padding: 1em;
+    }
+
+    @media (max-width: 200px) and (min-width: 100px) {
+        * {
+            margin: 1in;
+        }
+    }
+}
+</style>
+</head>
+<body onload="runTest()">
+</body>
+</html>

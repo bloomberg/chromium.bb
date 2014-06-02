@@ -1,0 +1,24 @@
+@media screen and (min-resolution: 2dppx) {
+    @media handheld and (min-width: 20em), screen and (min-width: 20em) {
+        body {
+            border: 1px solid black;
+        }
+    }
+
+    @media all and (orientation: portrait) {
+        div {
+            color: blue;
+        }
+    }
+}
+
+@media (max-width: 100px), (max-width: 72em) {
+    @media all and (min-monochrome: 8) {
+        p {
+            margin: 1px;
+        }
+    }
+}
+
+@media () {
+}
