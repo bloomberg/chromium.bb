@@ -31,8 +31,11 @@
 #include "HTMLNames.h"
 #include "core/dom/Document.h"
 #include "core/editing/htmlediting.h"
+#include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/PinchViewport.h"
+#include "core/frame/Settings.h"
 #include "core/html/HTMLElement.h"
 #include "core/html/HTMLFrameElementBase.h"
 #include "core/html/HTMLFrameOwnerElement.h"
@@ -500,9 +503,15 @@ void RenderBox::scrollRectToVisible(const LayoutRect& rect, const ScrollAlignmen
                     }
                 }
             } else {
-                LayoutRect viewRect = frameView->visibleContentRect();
-                LayoutRect r = ScrollAlignment::getRectToExpose(viewRect, rect, alignX, alignY);
-                frameView->setScrollPosition(roundedIntPoint(r.location()));
+                if (frame()->settings()->pinchVirtualViewportEnabled()) {
+                    PinchViewport& pinchViewport = frame()->page()->frameHost().pinchViewport();
+                    LayoutRect r = ScrollAlignment::getRectToExpose(LayoutRect(pinchViewport.visibleRectInDocument()), rect, alignX, alignY);
+                    pinchViewport.scrollIntoView(r);
+                } else {
+                    LayoutRect viewRect = frameView->visibleContentRect();
+                    LayoutRect r = ScrollAlignment::getRectToExpose(viewRect, rect, alignX, alignY);
+                    frameView->setScrollPosition(roundedIntPoint(r.location()));
+                }
             }
         }
     }

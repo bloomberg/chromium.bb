@@ -610,6 +610,7 @@ TEST_F(PinchViewportTest, TestScrollFocusedNodeIntoRect)
     PinchViewport& pinchViewport = frame()->page()->frameHost().pinchViewport();
     webViewImpl()->resizePinchViewport(IntSize(200, 100));
     webViewImpl()->setInitialFocus(false);
+    pinchViewport.setLocation(FloatPoint());
     webViewImpl()->scrollFocusedNodeIntoRect(IntRect(0, 0, 500, 200));
 
     EXPECT_POINT_EQ(IntPoint(0, frame()->view()->maximumScrollPosition().y()),
@@ -631,6 +632,7 @@ TEST_F(PinchViewportTest, TestScrollFocusedNodeIntoRect)
     registerMockedHttpURLLoad("pinch-viewport-input-field-long-and-wide.html");
     navigateTo(m_baseURL + "pinch-viewport-input-field-long-and-wide.html");
     webViewImpl()->setInitialFocus(false);
+    pinchViewport.setLocation(FloatPoint());
     frame()->view()->notifyScrollPositionChanged(IntPoint(0, 0));
     webViewImpl()->resizePinchViewport(IntSize(500, 300));
     pinchViewport.setLocation(FloatPoint(30, 50));
@@ -724,6 +726,44 @@ TEST_F(PinchViewportTest, TestContextMenuShownInCorrectLocation)
 
     // Reset the old client so destruction can occur naturally.
     webViewImpl()->mainFrameImpl()->setClient(oldClient);
+}
+
+// Test that the scrollIntoView correctly scrolls the main frame
+// and pinch viewports such that the given rect is centered in the viewport.
+TEST_F(PinchViewportTest, TestScrollingDocumentRegionIntoView)
+{
+    initializeWithDesktopSettings();
+    webViewImpl()->resize(IntSize(100, 150));
+
+    registerMockedHttpURLLoad("200-by-300-viewport.html");
+    navigateTo(m_baseURL + "200-by-300-viewport.html");
+
+    PinchViewport& pinchViewport = frame()->page()->frameHost().pinchViewport();
+
+    // Test that the pinch viewport is scrolled if the viewport has been
+    // resized (as is the case when the ChromeOS keyboard comes up) but not
+    // scaled.
+    webViewImpl()->resizePinchViewport(WebSize(100, 100));
+    pinchViewport.scrollIntoView(FloatRect(100, 250, 50, 50));
+    EXPECT_POINT_EQ(IntPoint(75, 150), frame()->view()->scrollPosition());
+    EXPECT_FLOAT_POINT_EQ(FloatPoint(0, 50), pinchViewport.visibleRect().location());
+
+    pinchViewport.scrollIntoView(FloatRect(25, 75, 50, 50));
+    EXPECT_POINT_EQ(IntPoint(0, 0), frame()->view()->scrollPosition());
+    EXPECT_FLOAT_POINT_EQ(FloatPoint(0, 50), pinchViewport.visibleRect().location());
+
+    // Reset the pinch viewport's size, scale the page and repeat the test
+    webViewImpl()->resizePinchViewport(IntSize(100, 150));
+    webViewImpl()->setPageScaleFactor(2);
+    pinchViewport.setLocation(FloatPoint());
+
+    pinchViewport.scrollIntoView(FloatRect(50, 75, 50, 75));
+    EXPECT_POINT_EQ(IntPoint(50, 75), frame()->view()->scrollPosition());
+    EXPECT_FLOAT_POINT_EQ(FloatPoint(), pinchViewport.visibleRect().location());
+
+    pinchViewport.scrollIntoView(FloatRect(190, 290, 10, 10));
+    EXPECT_POINT_EQ(IntPoint(100, 150), frame()->view()->scrollPosition());
+    EXPECT_FLOAT_POINT_EQ(FloatPoint(50, 75), pinchViewport.visibleRect().location());
 }
 
 } // namespace
