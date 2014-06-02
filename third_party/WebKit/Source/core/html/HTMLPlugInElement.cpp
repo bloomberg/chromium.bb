@@ -437,7 +437,7 @@ bool HTMLPlugInElement::requestObject(const String& url, const String& mimeType,
 
     bool useFallback;
     bool requireRenderer = true;
-    if (shouldUsePlugin(completedURL, mimeType, renderer->hasFallbackContent(), useFallback))
+    if (shouldUsePlugin(completedURL, mimeType, hasFallbackContent(), useFallback))
         return loadPlugin(completedURL, mimeType, paramNames, paramValues, useFallback, requireRenderer);
 
     // If the plug-in element already contains a subframe,
@@ -553,6 +553,11 @@ void HTMLPlugInElement::didAddUserAgentShadowRoot(ShadowRoot&)
 void HTMLPlugInElement::willAddFirstAuthorShadowRoot()
 {
     lazyReattachIfAttached();
+}
+
+bool HTMLPlugInElement::hasFallbackContent() const
+{
+    return false;
 }
 
 bool HTMLPlugInElement::useFallbackContent() const

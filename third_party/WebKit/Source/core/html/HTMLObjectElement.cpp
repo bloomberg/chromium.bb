@@ -326,9 +326,6 @@ void HTMLObjectElement::updateWidgetInternal()
         return;
     }
 
-    bool fallbackContent = hasFallbackContent();
-    renderEmbeddedObject()->setHasFallbackContent(fallbackContent);
-
     // FIXME: Is it possible to get here without a renderer now that we don't have beforeload events?
     if (!renderer())
         return;
@@ -336,7 +333,7 @@ void HTMLObjectElement::updateWidgetInternal()
     if (!hasValidClassId() || !requestObject(url, serviceType, paramNames, paramValues)) {
         if (!url.isEmpty())
             dispatchErrorEvent();
-        if (fallbackContent)
+        if (hasFallbackContent())
             renderFallbackContent();
     }
 }
