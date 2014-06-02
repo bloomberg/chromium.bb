@@ -2067,7 +2067,7 @@ void EventSender::GestureEvent(WebInputEvent::Type type,
   if (force_layout_on_events_)
     view_->layout();
 
-  view_->handleInputEvent(event);
+  bool result = view_->handleInputEvent(event);
 
   // Long press might start a drag drop session. Complete it if so.
   if (type == WebInputEvent::GestureLongPress && !current_drag_data_.isNull()) {
@@ -2082,6 +2082,7 @@ void EventSender::GestureEvent(WebInputEvent::Type type,
 
     FinishDragAndDrop(mouse_event, blink::WebDragOperationNone);
   }
+  args->Return(result);
 }
 
 void EventSender::UpdateClickCountForButton(
