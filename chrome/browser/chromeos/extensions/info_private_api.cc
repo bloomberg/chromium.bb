@@ -8,10 +8,14 @@
 #include "base/prefs/pref_service.h"
 #include "base/sys_info.h"
 #include "base/values.h"
+#include "chrome/browser/app_mode/app_mode_utils.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/users/user_manager.h"
+#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/system/timezone_util.h"
+#include "chrome/browser/metrics/metrics_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/network/device_state.h"
@@ -43,8 +47,11 @@ const char kPropertyInitialLocale[] = "initialLocale";
 // Key which corresponds to the board property in JS.
 const char kPropertyBoard[] = "board";
 
-// Key which corresponds to the board property in JS.
+// Key which corresponds to the isOwner property in JS.
 const char kPropertyOwner[] = "isOwner";
+
+// Key which corresponds to the clientId property in JS.
+const char kPropertyClientId[] = "clientId";
 
 // Key which corresponds to the timezone property in JS.
 const char kPropertyTimezone[] = "timezone";
@@ -103,6 +110,21 @@ const char* GetBoolPrefNameForApiProperty(const char* api_name) {
   return NULL;
 }
 
+bool IsEnterpriseKiosk() {
+  if (!chrome::IsRunningInForcedAppMode())
+    return false;
+
+  policy::BrowserPolicyConnectorChromeOS* connector =
+      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  return connector->IsEnterpriseManaged();
+}
+
+std::string GetClientId() {
+  return IsEnterpriseKiosk()
+             ? g_browser_process->metrics_service()->GetClientId()
+             : std::string();
+}
+
 }  // namespace
 
 ChromeosInfoPrivateGetFunction::ChromeosInfoPrivateGetFunction() {
@@ -158,6 +180,8 @@ base::Value* ChromeosInfoPrivateGetFunction::GetValue(
   } else if (property_name == kPropertyOwner) {
     return base::Value::CreateBooleanValue(
         chromeos::UserManager::Get()->IsCurrentUserOwner());
+  } else if (property_name == kPropertyClientId) {
+    return base::Value::CreateStringValue(GetClientId());
   } else if (property_name == kPropertyTimezone) {
     return chromeos::CrosSettings::Get()->GetPref(
             chromeos::kSystemTimezone)->DeepCopy();

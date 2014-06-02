@@ -38,6 +38,7 @@
                   "hwid": {"type": "string", "optional": true, "description": "Hardware ID"},
                   "initialLocale" : {"type": "string", "optional": true, "description": "Initial locale for the device"},
                   "isOwner" : {"type": "boolean", "optional": true, "description": "True if current logged in user is device owner"},
+                  "clientId" : {"type": "string", "optional": true, "description": "Device client id"},
                   "timezone" : {"type": "string", "optional": true, "description": "Timezone"},
                   "a11yLargeCursorEnabled" : {"type": "boolean", "optional": true, "description": "If true, ChromeOS is showing enlarged cursor."},
                   "a11yStickyKeysEnabled" : {"type": "boolean", "optional": true, "description": "If true, sticky keys are turned on."},
