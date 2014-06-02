@@ -1132,9 +1132,6 @@ public:
     void setWordSpacing(float);
     void setLetterSpacing(float);
 
-    void clearBackgroundLayers() { m_background.access()->m_background = FillLayer(BackgroundFillLayer); }
-    void inheritBackgroundLayers(const FillLayer& parent) { m_background.access()->m_background = parent; }
-
     void adjustBackgroundLayers()
     {
         if (backgroundLayers()->next()) {
@@ -1142,9 +1139,6 @@ public:
             accessBackgroundLayers()->fillUnsetProperties();
         }
     }
-
-    void clearMaskLayers() { rareNonInheritedData.access()->m_mask = FillLayer(MaskFillLayer); }
-    void inheritMaskLayers(const FillLayer& parent) { rareNonInheritedData.access()->m_mask = parent; }
 
     void adjustMaskLayers()
     {
