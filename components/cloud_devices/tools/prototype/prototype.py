@@ -999,7 +999,7 @@ class WebRequestHandler(WifiHandler.Delegate, CloudDevice.Delegate):
 
   def get_common_info(self):
     return {
-        'version': '2.0',
+        'version': '3.0',
         'name': 'Sample Device',
         'device_state': self.device_state()
     }
