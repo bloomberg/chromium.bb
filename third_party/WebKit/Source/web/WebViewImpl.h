@@ -68,7 +68,6 @@ class UserGestureToken;
 }
 
 namespace blink {
-class GeolocationClientProxy;
 class LinkHighlight;
 class PopupContainer;
 class WebActiveGestureAnimation;
@@ -692,8 +691,6 @@ private:
     // If true, the graphics context is being restored.
     bool m_recreatingGraphicsContext;
     static const WebInputEvent* m_currentInputEvent;
-
-    OwnPtr<GeolocationClientProxy> m_geolocationClientProxy;
 
     MediaKeysClientImpl m_mediaKeysClientImpl;
     OwnPtr<WebActiveGestureAnimation> m_gestureAnimation;

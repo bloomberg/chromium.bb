@@ -58,6 +58,7 @@ struct WindowFeatures;
 
 namespace blink {
 class ChromePrintContext;
+class GeolocationClientProxy;
 class SharedWorkerRepositoryClientImpl;
 class TextFinder;
 class WebDataSourceImpl;
@@ -354,6 +355,8 @@ private:
     float m_inputEventsScaleFactorForEmulation;
 
     UserMediaClientImpl m_userMediaClientImpl;
+
+    OwnPtr<GeolocationClientProxy> m_geolocationClientProxy;
 };
 
 DEFINE_TYPE_CASTS(WebLocalFrameImpl, WebFrame, frame, frame->isWebLocalFrame(), frame.isWebLocalFrame());

@@ -50,8 +50,6 @@ public:
     GeolocationClientMock();
     virtual ~GeolocationClientMock();
 
-    void setController(GeolocationController*);
-
     void setPosition(PassRefPtrWillBeRawPtr<GeolocationPosition>);
     void setPositionUnavailableError(const String& errorMessage);
     void setPermission(bool allowed);
@@ -65,6 +63,8 @@ public:
     virtual GeolocationPosition* lastPosition() OVERRIDE;
     virtual void requestPermission(Geolocation*) OVERRIDE;
     virtual void cancelPermissionRequest(Geolocation*) OVERRIDE;
+    void controllerForTestAdded(GeolocationController*) OVERRIDE;
+    void controllerForTestRemoved(GeolocationController*) OVERRIDE;
 
 private:
     void asyncUpdateController();
@@ -75,7 +75,7 @@ private:
 
     void clearError();
 
-    GeolocationController* m_controller;
+    HashSet<GeolocationController*> m_controllers;
     RefPtrWillBePersistent<GeolocationPosition> m_lastPosition;
     bool m_hasError;
     String m_errorMessage;

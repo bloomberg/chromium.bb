@@ -29,8 +29,9 @@
 namespace WebCore {
 
 class Geolocation;
+class GeolocationController;
 class GeolocationPosition;
-class Page;
+class LocalFrame;
 
 class GeolocationClient {
 public:
@@ -44,11 +45,14 @@ public:
     virtual void requestPermission(Geolocation*) = 0;
     virtual void cancelPermissionRequest(Geolocation*) = 0;
 
+    virtual void controllerForTestAdded(GeolocationController*) { }
+    virtual void controllerForTestRemoved(GeolocationController*) { }
+
 protected:
     virtual ~GeolocationClient() { }
 };
 
-void provideGeolocationTo(Page&, GeolocationClient*);
+void provideGeolocationTo(LocalFrame&, GeolocationClient*);
 
 } // namespace WebCore
 

@@ -39,8 +39,7 @@
 namespace WebCore {
 
 GeolocationClientMock::GeolocationClientMock()
-    : m_controller(0)
-    , m_hasError(false)
+    : m_hasError(false)
     , m_controllerTimer(this, &GeolocationClientMock::controllerTimerFired)
     , m_permissionTimer(this, &GeolocationClientMock::permissionTimerFired)
     , m_isActive(false)
@@ -51,12 +50,6 @@ GeolocationClientMock::GeolocationClientMock()
 GeolocationClientMock::~GeolocationClientMock()
 {
     ASSERT(!m_isActive);
-}
-
-void GeolocationClientMock::setController(GeolocationController *controller)
-{
-    ASSERT(controller && !m_controller);
-    m_controller = controller;
 }
 
 void GeolocationClientMock::setPosition(PassRefPtrWillBeRawPtr<GeolocationPosition> position)
@@ -98,6 +91,16 @@ void GeolocationClientMock::cancelPermissionRequest(Geolocation* geolocation)
     m_pendingPermissions.remove(geolocation);
     if (m_pendingPermissions.isEmpty() && m_permissionTimer.isActive())
         m_permissionTimer.stop();
+}
+
+void GeolocationClientMock::controllerForTestAdded(GeolocationController* controller)
+{
+    m_controllers.add(controller);
+}
+
+void GeolocationClientMock::controllerForTestRemoved(GeolocationController* controller)
+{
+    m_controllers.remove(controller);
 }
 
 void GeolocationClientMock::asyncUpdatePermission()
@@ -155,7 +158,6 @@ GeolocationPosition* GeolocationClientMock::lastPosition()
 
 void GeolocationClientMock::asyncUpdateController()
 {
-    ASSERT(m_controller);
     if (m_isActive && !m_controllerTimer.isActive())
         m_controllerTimer.startOneShot(0, FROM_HERE);
 }
@@ -163,13 +165,16 @@ void GeolocationClientMock::asyncUpdateController()
 void GeolocationClientMock::controllerTimerFired(Timer<GeolocationClientMock>* timer)
 {
     ASSERT_UNUSED(timer, timer == &m_controllerTimer);
-    ASSERT(m_controller);
 
+    // Make a copy of the set of controllers since it might be modified while iterating.
+    HashSet<GeolocationController*> controllers = m_controllers;
     if (m_lastPosition.get()) {
         ASSERT(!m_hasError);
-        m_controller->positionChanged(m_lastPosition.get());
+        for (HashSet<GeolocationController*>::iterator it = controllers.begin(); it != controllers.end(); ++it)
+            (*it)->positionChanged(m_lastPosition.get());
     } else if (m_hasError) {
-        m_controller->errorOccurred(GeolocationError::create(GeolocationError::PositionUnavailable, m_errorMessage).get());
+        for (HashSet<GeolocationController*>::iterator it = controllers.begin(); it != controllers.end(); ++it)
+            (*it)->errorOccurred(GeolocationError::create(GeolocationError::PositionUnavailable, m_errorMessage).get());
     }
 }
 

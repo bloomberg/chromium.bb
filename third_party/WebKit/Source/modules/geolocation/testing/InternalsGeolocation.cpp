@@ -32,6 +32,7 @@
 #include "InternalsGeolocation.h"
 
 #include "core/dom/Document.h"
+#include "core/page/Page.h"
 #include "core/testing/Internals.h"
 #include "modules/geolocation/GeolocationController.h"
 #include "modules/geolocation/GeolocationError.h"
@@ -43,16 +44,16 @@ namespace WebCore {
 
 void InternalsGeolocation::setGeolocationClientMock(Internals&, Document* document)
 {
-    ASSERT(document && document->page());
-    GeolocationController* controller = GeolocationController::from(document->page());
+    ASSERT(document && document->frame());
     GeolocationClientMock* client = new GeolocationClientMock();
-    controller->setClientForTest(client);
-    client->setController(controller);
+
+    for (LocalFrame* childFrame = document->page()->mainFrame(); childFrame; childFrame = childFrame->tree().nextSibling())
+        GeolocationController::from(document->frame())->setClientForTest(client);
 }
 
 void InternalsGeolocation::setGeolocationPosition(Internals&, Document* document, double latitude, double longitude, double accuracy)
 {
-    ASSERT(document && document->page());
+    ASSERT(document && document->frame());
     GeolocationClientMock* client = geolocationClient(document);
     if (!client)
         return;
@@ -61,7 +62,7 @@ void InternalsGeolocation::setGeolocationPosition(Internals&, Document* document
 
 void InternalsGeolocation::setGeolocationPositionUnavailableError(Internals&, Document* document, const String& message)
 {
-    ASSERT(document && document->page());
+    ASSERT(document && document->frame());
     GeolocationClientMock* client = geolocationClient(document);
     if (!client)
         return;
@@ -70,7 +71,7 @@ void InternalsGeolocation::setGeolocationPositionUnavailableError(Internals&, Do
 
 void InternalsGeolocation::setGeolocationPermission(Internals&, Document* document, bool allowed)
 {
-    ASSERT(document && document->page());
+    ASSERT(document && document->frame());
     GeolocationClientMock* client = geolocationClient(document);
     if (!client)
         return;
@@ -79,7 +80,7 @@ void InternalsGeolocation::setGeolocationPermission(Internals&, Document* docume
 
 int InternalsGeolocation::numberOfPendingGeolocationPermissionRequests(Internals&, Document* document)
 {
-    ASSERT(document && document->page());
+    ASSERT(document && document->frame());
     GeolocationClientMock* client = geolocationClient(document);
     if (!client)
         return -1;
@@ -88,7 +89,7 @@ int InternalsGeolocation::numberOfPendingGeolocationPermissionRequests(Internals
 
 GeolocationClientMock* InternalsGeolocation::geolocationClient(Document* document)
 {
-    GeolocationController* controller = GeolocationController::from(document->page());
+    GeolocationController* controller = GeolocationController::from(document->frame());
     if (!controller->hasClientForTest())
         return 0;
     return static_cast<GeolocationClientMock*>(controller->client());

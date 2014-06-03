@@ -26,7 +26,7 @@
 #ifndef GeolocationController_h
 #define GeolocationController_h
 
-#include "core/page/Page.h"
+#include "core/frame/LocalFrame.h"
 #include "core/page/PageLifecycleObserver.h"
 #include "modules/geolocation/Geolocation.h"
 #include "platform/heap/Handle.h"
@@ -40,15 +40,14 @@ class GeolocationInspectorAgent;
 class GeolocationClient;
 class GeolocationError;
 class GeolocationPosition;
-class Page;
 
-class GeolocationController FINAL : public NoBaseWillBeGarbageCollectedFinalized<GeolocationController>, public WillBeHeapSupplement<Page>, public PageLifecycleObserver {
+class GeolocationController FINAL : public NoBaseWillBeGarbageCollectedFinalized<GeolocationController>, public WillBeHeapSupplement<LocalFrame>, public PageLifecycleObserver {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(GeolocationController);
     WTF_MAKE_NONCOPYABLE(GeolocationController);
 public:
     virtual ~GeolocationController();
 
-    static PassOwnPtrWillBeRawPtr<GeolocationController> create(Page&, GeolocationClient*);
+    static PassOwnPtr<GeolocationController> create(LocalFrame&, GeolocationClient*);
 
     void addObserver(Geolocation*, bool enableHighAccuracy);
     void removeObserver(Geolocation*);
@@ -69,14 +68,14 @@ public:
     virtual void pageVisibilityChanged() OVERRIDE;
 
     static const char* supplementName();
-    static GeolocationController* from(Page* page) { return static_cast<GeolocationController*>(WillBeHeapSupplement<Page>::from(page, supplementName())); }
+    static GeolocationController* from(LocalFrame* frame) { return static_cast<GeolocationController*>(WillBeHeapSupplement<LocalFrame>::from(frame, supplementName())); }
 
     virtual void trace(Visitor*) OVERRIDE;
 
     virtual void willBeDestroyed() OVERRIDE;
 
 private:
-    GeolocationController(Page&, GeolocationClient*);
+    GeolocationController(LocalFrame&, GeolocationClient*);
 
     void startUpdatingIfNeeded();
     void stopUpdatingIfNeeded();
