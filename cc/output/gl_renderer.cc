@@ -648,7 +648,7 @@ static SkBitmap ApplyImageFilter(
   };
   // Place the platform texture inside an SkBitmap.
   SkBitmap source;
-  source.setConfig(info);
+  source.setInfo(info);
   skia::RefPtr<SkGrPixelRef> pixel_ref =
       skia::AdoptRef(new SkGrPixelRef(info, texture.get()));
   source.setPixelRef(pixel_ref.get());
@@ -752,7 +752,7 @@ static SkBitmap ApplyBlendModeWithBackdrop(
   };
   // Place the platform texture inside an SkBitmap.
   SkBitmap source;
-  source.setConfig(source_info);
+  source.setInfo(source_info);
   skia::RefPtr<SkGrPixelRef> source_pixel_ref =
       skia::AdoptRef(new SkGrPixelRef(source_info, source_texture.get()));
   source.setPixelRef(source_pixel_ref.get());
@@ -765,7 +765,7 @@ static SkBitmap ApplyBlendModeWithBackdrop(
   };
 
   SkBitmap background;
-  background.setConfig(background_info);
+  background.setInfo(background_info);
   skia::RefPtr<SkGrPixelRef> background_pixel_ref =
       skia::AdoptRef(new SkGrPixelRef(
           background_info, background_texture.get()));
