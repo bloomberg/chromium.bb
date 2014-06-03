@@ -15,6 +15,7 @@
 #include "content/public/renderer/media_stream_audio_sink.h"
 #include "content/renderer/pepper/pepper_media_stream_track_host_base.h"
 #include "media/audio/audio_parameters.h"
+#include "ppapi/shared_impl/media_stream_audio_track_shared.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
 
 namespace base {
@@ -43,10 +44,14 @@ class PepperMediaStreamAudioTrackHost : public PepperMediaStreamTrackHostBase {
     // This function is called on the main thread.
     void EnqueueBuffer(int32_t index);
 
+    // This function is called on the main thread.
+    void Configure(int32_t number_of_buffers);
+
    private:
     // Initializes buffers on the main thread.
-    void InitBuffersOnMainThread(int32_t number_of_buffers,
-                                 int32_t buffer_size);
+    void SetFormatOnMainThread(int bytes_per_second);
+
+    void InitBuffers();
 
     // Send enqueue buffer message on the main thread.
     void SendEnqueueBufferMessageOnMainThread(int32_t index);
@@ -99,10 +104,26 @@ class PepperMediaStreamAudioTrackHost : public PepperMediaStreamTrackHostBase {
 
     base::WeakPtrFactory<AudioSink> weak_factory_;
 
+    // Number of buffers.
+    int32_t number_of_buffers_;
+
+    // Number of bytes per second.
+    int bytes_per_second_;
+
     DISALLOW_COPY_AND_ASSIGN(AudioSink);
   };
 
   virtual ~PepperMediaStreamAudioTrackHost();
+
+  // ResourceMessageHandler overrides:
+  virtual int32_t OnResourceMessageReceived(
+      const IPC::Message& msg,
+      ppapi::host::HostMessageContext* context) OVERRIDE;
+
+  // Message handlers:
+  int32_t OnHostMsgConfigure(
+      ppapi::host::HostMessageContext* context,
+      const ppapi::MediaStreamAudioTrackShared::Attributes& attributes);
 
   // PepperMediaStreamTrackHostBase overrides:
   virtual void OnClose() OVERRIDE;

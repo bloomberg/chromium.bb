@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppb_media_stream_audio_track.idl modified Fri Mar 28 10:13:34 2014. */
+/* From ppb_media_stream_audio_track.idl modified Wed May 28 09:36:15 2014. */
 
 #ifndef PPAPI_C_PPB_MEDIA_STREAM_AUDIO_TRACK_H_
 #define PPAPI_C_PPB_MEDIA_STREAM_AUDIO_TRACK_H_
@@ -98,7 +98,8 @@ struct PPB_MediaStreamAudioTrack_0_1 {
    * the input buffers. If all buffers are filled, then samples will be
    * dropped. The application can detect this by examining the timestamp on
    * returned buffers. If <code>Configure()</code> is not called, default
-   * settings will be used.
+   * settings will be used. Calls to Configure while the plugin holds
+   * buffers will fail.
    * Example usage from plugin code:
    * @code
    * int32_t attribs[] = {

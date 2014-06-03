@@ -5,6 +5,7 @@
 #include "content/renderer/pepper/pepper_media_stream_track_host_base.h"
 
 #include "base/logging.h"
+#include "base/numerics/safe_math.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/renderer_ppapi_host.h"
 #include "ppapi/c/pp_errors.h"
@@ -36,20 +37,26 @@ bool PepperMediaStreamTrackHostBase::InitBuffers(int32_t number_of_buffers,
   DCHECK_GT(buffer_size,
             static_cast<int32_t>(sizeof(ppapi::MediaStreamBuffer::Header)));
   // Make each buffer 4 byte aligned.
-  buffer_size = (buffer_size + 3) & ~0x3;
+  base::CheckedNumeric<int32_t> buffer_size_aligned = buffer_size;
+  buffer_size_aligned += (4 - buffer_size % 4);
 
   // TODO(penghuang): |HostAllocateSharedMemoryBuffer| uses sync IPC. We should
   // avoid it.
-  int32_t size = number_of_buffers * buffer_size;
+  base::CheckedNumeric<int32_t> size = number_of_buffers * buffer_size_aligned;
+  if (!size.IsValid())
+    return false;
+
   content::RenderThread* render_thread = content::RenderThread::Get();
   scoped_ptr<base::SharedMemory> shm(
-      render_thread->HostAllocateSharedMemoryBuffer(size).Pass());
+      render_thread->HostAllocateSharedMemoryBuffer(size.ValueOrDie()).Pass());
   if (!shm)
     return false;
 
   base::SharedMemoryHandle shm_handle = shm->handle();
-  if (!buffer_manager_.SetBuffers(
-          number_of_buffers, buffer_size, shm.Pass(), true)) {
+  if (!buffer_manager_.SetBuffers(number_of_buffers,
+                                  buffer_size_aligned.ValueOrDie(),
+                                  shm.Pass(),
+                                  true)) {
     return false;
   }
 
@@ -62,13 +69,14 @@ bool PepperMediaStreamTrackHostBase::InitBuffers(int32_t number_of_buffers,
 #error Not implemented.
 #endif
   SerializedHandle handle(host_->ShareHandleWithRemote(platform_file, false),
-                          size);
+                          size.ValueOrDie());
   bool readonly = (track_type == kRead);
   host()->SendUnsolicitedReplyWithHandles(
       pp_resource(),
-      PpapiPluginMsg_MediaStreamTrack_InitBuffers(number_of_buffers,
-                                                  buffer_size,
-                                                  readonly),
+      PpapiPluginMsg_MediaStreamTrack_InitBuffers(
+          number_of_buffers,
+          buffer_size_aligned.ValueOrDie(),
+          readonly),
       std::vector<SerializedHandle>(1, handle));
   return true;
 }

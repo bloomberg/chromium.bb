@@ -83,7 +83,8 @@ interface PPB_MediaStreamAudioTrack {
    * the input buffers. If all buffers are filled, then samples will be
    * dropped. The application can detect this by examining the timestamp on
    * returned buffers. If <code>Configure()</code> is not called, default
-   * settings will be used.
+   * settings will be used. Calls to Configure while the plugin holds
+   * buffers will fail.
    * Example usage from plugin code:
    * @code
    * int32_t attribs[] = {

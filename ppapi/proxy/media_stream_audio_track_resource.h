@@ -6,6 +6,7 @@
 #define PPAPI_PROXY_MEDIA_STREAM_AUDIO_TRACK_RESOURCE_H_
 
 #include <map>
+#include <string>
 
 #include "base/memory/ref_counted.h"
 #include "ppapi/proxy/media_stream_track_resource_base.h"
@@ -53,11 +54,16 @@ class PPAPI_PROXY_EXPORT MediaStreamAudioTrackResource
 
   void ReleaseBuffers();
 
+  // IPC message handlers.
+  void OnPluginMsgConfigureReply(const ResourceMessageReplyParams& params);
+
   // Allocated buffer resources by |GetBuffer()|.
   typedef std::map<PP_Resource, scoped_refptr<AudioBufferResource> > BufferMap;
   BufferMap buffers_;
 
   PP_Resource* get_buffer_output_;
+
+  scoped_refptr<TrackedCallback> configure_callback_;
 
   scoped_refptr<TrackedCallback> get_buffer_callback_;
 

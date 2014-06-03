@@ -5,6 +5,8 @@
 #include "ppapi/proxy/media_stream_audio_track_resource.h"
 
 #include "ppapi/proxy/audio_buffer_resource.h"
+#include "ppapi/proxy/ppapi_messages.h"
+#include "ppapi/shared_impl/media_stream_audio_track_shared.h"
 #include "ppapi/shared_impl/media_stream_buffer.h"
 #include "ppapi/shared_impl/var.h"
 
@@ -41,8 +43,46 @@ PP_Bool MediaStreamAudioTrackResource::HasEnded() {
 int32_t MediaStreamAudioTrackResource::Configure(
     const int32_t attrib_list[],
     scoped_refptr<TrackedCallback> callback) {
-  // TODO(penghuang): Implement this function.
-  return PP_ERROR_NOTSUPPORTED;
+  if (has_ended())
+    return PP_ERROR_FAILED;
+
+  if (TrackedCallback::IsPending(configure_callback_) ||
+      TrackedCallback::IsPending(get_buffer_callback_)) {
+    return PP_ERROR_INPROGRESS;
+  }
+
+  // Do not support configure if audio buffers are held by plugin.
+  if (!buffers_.empty())
+    return PP_ERROR_INPROGRESS;
+
+  MediaStreamAudioTrackShared::Attributes attributes;
+  int i = 0;
+  for (; attrib_list[i] != PP_MEDIASTREAMAUDIOTRACK_ATTRIB_NONE; i += 2) {
+    switch (attrib_list[i]) {
+      case PP_MEDIASTREAMAUDIOTRACK_ATTRIB_BUFFERS:
+        attributes.buffers = attrib_list[i + 1];
+        break;
+      case PP_MEDIASTREAMAUDIOTRACK_ATTRIB_SAMPLE_RATE:
+      case PP_MEDIASTREAMAUDIOTRACK_ATTRIB_SAMPLE_SIZE:
+      case PP_MEDIASTREAMAUDIOTRACK_ATTRIB_CHANNELS:
+      case PP_MEDIASTREAMAUDIOTRACK_ATTRIB_DURATION:
+        return PP_ERROR_NOTSUPPORTED;
+      default:
+        return PP_ERROR_BADARGUMENT;
+    }
+  }
+
+  if (!MediaStreamAudioTrackShared::VerifyAttributes(attributes))
+    return PP_ERROR_BADARGUMENT;
+
+  configure_callback_ = callback;
+  Call<PpapiPluginMsg_MediaStreamAudioTrack_ConfigureReply>(
+      RENDERER,
+      PpapiHostMsg_MediaStreamAudioTrack_Configure(attributes),
+      base::Bind(&MediaStreamAudioTrackResource::OnPluginMsgConfigureReply,
+                 base::Unretained(this)),
+      callback);
+  return PP_OK_COMPLETIONPENDING;
 }
 
 int32_t MediaStreamAudioTrackResource::GetAttrib(
@@ -58,7 +98,8 @@ int32_t MediaStreamAudioTrackResource::GetBuffer(
   if (has_ended())
     return PP_ERROR_FAILED;
 
-  if (TrackedCallback::IsPending(get_buffer_callback_))
+  if (TrackedCallback::IsPending(configure_callback_) ||
+      TrackedCallback::IsPending(get_buffer_callback_))
     return PP_ERROR_INPROGRESS;
 
   *buffer = GetAudioBuffer();
@@ -141,6 +182,15 @@ void MediaStreamAudioTrackResource::ReleaseBuffers() {
     // So plugin can still use |RecycleBuffer()|.
     it->second->Invalidate();
     it->second = NULL;
+  }
+}
+
+void MediaStreamAudioTrackResource::OnPluginMsgConfigureReply(
+    const ResourceMessageReplyParams& params) {
+  if (TrackedCallback::IsPending(configure_callback_)) {
+    scoped_refptr<TrackedCallback> callback;
+    callback.swap(configure_callback_);
+    callback->Run(params.result());
   }
 }
 
