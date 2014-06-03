@@ -70,6 +70,7 @@ public:
     void setSrc(const String&);
 
     void setWidth(int);
+    void updateCurrentSrc();
 
     int x() const;
     int y() const;

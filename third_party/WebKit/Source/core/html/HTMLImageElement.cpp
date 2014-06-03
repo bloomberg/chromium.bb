@@ -176,10 +176,14 @@ void HTMLImageElement::resetFormOwner()
     }
 }
 
+void HTMLImageElement::updateCurrentSrc()
+{
+    m_currentSrc = AtomicString(document().completeURL(imageSourceURL()).string());
+}
+
 void HTMLImageElement::setBestFitURLAndDPRFromImageCandidate(const ImageCandidate& candidate)
 {
     m_bestFitImageURL = candidate.url();
-    m_currentSrc = AtomicString(document().completeURL(imageSourceURL()).string());
     float candidateDensity = candidate.density();
     // FIXME: Make this ">0" part match the spec, once it settles.
     if (candidateDensity > 0)
