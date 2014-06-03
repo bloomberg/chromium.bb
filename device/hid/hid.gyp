@@ -14,9 +14,9 @@
         '../..',
       ],
       'conditions': [
-        ['OS=="linux"', {
+        ['use_udev==1', {
           'dependencies': [
-            '../../build/linux/system.gyp:udev',
+            '../udev_linux/udev.gyp:udev_linux',
           ],
         }],
       ],
@@ -51,7 +51,6 @@
         'hid_utils_mac.h',
         'input_service_linux.cc',
         'input_service_linux.h',
-        'udev_common.h'
       ],
     },
   ],

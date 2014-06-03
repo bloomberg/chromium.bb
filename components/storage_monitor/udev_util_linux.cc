@@ -5,16 +5,9 @@
 #include "components/storage_monitor/udev_util_linux.h"
 
 #include "base/files/file_path.h"
+#include "device/udev_linux/udev.h"
 
 namespace storage_monitor {
-
-void UdevDeleter::operator()(struct udev* udev) {
-  udev_unref(udev);
-}
-
-void UdevDeviceDeleter::operator()(struct udev_device* device) {
-  udev_device_unref(device);
-}
 
 std::string GetUdevDevicePropertyValue(struct udev_device* udev_device,
                                        const char* key) {
@@ -25,10 +18,10 @@ std::string GetUdevDevicePropertyValue(struct udev_device* udev_device,
 bool GetUdevDevicePropertyValueByPath(const base::FilePath& device_path,
                                       const char* key,
                                       std::string* result) {
-  ScopedUdevObject udev(udev_new());
+  device::ScopedUdevPtr udev(udev_new());
   if (!udev.get())
     return false;
-  ScopedUdevDeviceObject device(udev_device_new_from_syspath(
+  device::ScopedUdevDevicePtr device(udev_device_new_from_syspath(
       udev.get(), device_path.value().c_str()));
   if (!device.get())
     return false;

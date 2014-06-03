@@ -21,7 +21,7 @@
 #include "device/hid/hid_device_info.h"
 #include "device/hid/hid_report_descriptor.h"
 #include "device/hid/hid_service_linux.h"
-#include "device/hid/udev_common.h"
+#include "device/udev_linux/udev.h"
 
 namespace device {
 
@@ -33,7 +33,7 @@ const char kHIDID[] = "HID_ID";
 const char kHIDName[] = "HID_NAME";
 const char kHIDUnique[] = "HID_UNIQ";
 
-} // namespace
+}  // namespace
 
 HidServiceLinux::HidServiceLinux() {
   DeviceMonitorLinux* monitor = DeviceMonitorLinux::GetInstance();
@@ -198,4 +198,4 @@ bool HidServiceLinux::FindHidrawDevNode(udev_device* parent,
   return false;
 }
 
-} // namespace dev
+}  // namespace device

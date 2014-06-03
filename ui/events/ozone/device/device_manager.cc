@@ -4,8 +4,11 @@
 
 #include "ui/events/ozone/device/device_manager.h"
 
-#include "ui/events/ozone/device/device_manager_manual.h"
+#if defined(USE_UDEV)
 #include "ui/events/ozone/device/udev/device_manager_udev.h"
+#else
+#include "ui/events/ozone/device/device_manager_manual.h"
+#endif
 
 namespace ui {
 

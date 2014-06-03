@@ -7,8 +7,8 @@
 
 #include "base/message_loop/message_pump_libevent.h"
 #include "base/observer_list.h"
+#include "device/udev_linux/udev.h"
 #include "ui/events/ozone/device/device_manager.h"
-#include "ui/events/ozone/device/udev/scoped_udev.h"
 
 namespace ui {
 
@@ -36,8 +36,8 @@ class DeviceManagerUdev
   virtual void OnFileCanReadWithoutBlocking(int fd) OVERRIDE;
   virtual void OnFileCanWriteWithoutBlocking(int fd) OVERRIDE;
 
-  scoped_udev udev_;
-  scoped_udev_monitor monitor_;
+  device::ScopedUdevPtr udev_;
+  device::ScopedUdevMonitorPtr monitor_;
 
   base::MessagePumpLibevent::FileDescriptorWatcher controller_;
 

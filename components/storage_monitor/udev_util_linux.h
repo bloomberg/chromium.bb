@@ -17,19 +17,6 @@ class FilePath;
 
 namespace storage_monitor {
 
-// Deleter for ScopedUdevObject.
-struct UdevDeleter {
-  void operator()(struct udev* udev);
-};
-typedef scoped_ptr<struct udev, UdevDeleter> ScopedUdevObject;
-
-// Deleter for ScopedUdevDeviceObject().
-struct UdevDeviceDeleter {
-  void operator()(struct udev_device* device);
-};
-typedef scoped_ptr<struct udev_device, UdevDeviceDeleter>
-    ScopedUdevDeviceObject;
-
 // Wrapper function for udev_device_get_property_value() that also checks for
 // valid but empty values.
 std::string GetUdevDevicePropertyValue(struct udev_device* udev_device,

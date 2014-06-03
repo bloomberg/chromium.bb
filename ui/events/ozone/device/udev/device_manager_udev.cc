@@ -50,17 +50,17 @@ void UdevLog(struct udev* udev,
 }
 
 // Create libudev context.
-scoped_udev UdevCreate() {
+device::ScopedUdevPtr UdevCreate() {
   struct udev* udev = udev_new();
   if (udev) {
     udev_set_log_fn(udev, UdevLog);
     udev_set_log_priority(udev, SYS_LOG_DEBUG);
   }
-  return scoped_udev(udev);
+  return device::ScopedUdevPtr(udev);
 }
 
 // Start monitoring input device changes.
-scoped_udev_monitor UdevCreateMonitor(struct udev* udev) {
+device::ScopedUdevMonitorPtr UdevCreateMonitor(struct udev* udev) {
   struct udev_monitor* monitor = udev_monitor_new_from_netlink(udev, "udev");
   if (monitor) {
     for (size_t i = 0; i < arraysize(kSubsystems); ++i)
@@ -73,7 +73,7 @@ scoped_udev_monitor UdevCreateMonitor(struct udev* udev) {
     LOG(ERROR) << "Failed to create udev monitor";
   }
 
-  return scoped_udev_monitor(monitor);
+  return device::ScopedUdevMonitorPtr(monitor);
 }
 
 }  // namespace
@@ -99,7 +99,7 @@ void DeviceManagerUdev::CreateMonitor() {
 void DeviceManagerUdev::ScanDevices(DeviceEventObserver* observer) {
   CreateMonitor();
 
-  scoped_udev_enumerate enumerate(udev_enumerate_new(udev_.get()));
+  device::ScopedUdevEnumeratePtr enumerate(udev_enumerate_new(udev_.get()));
   if (!enumerate)
     return;
 
@@ -112,7 +112,7 @@ void DeviceManagerUdev::ScanDevices(DeviceEventObserver* observer) {
   struct udev_list_entry* entry;
 
   udev_list_entry_foreach(entry, devices) {
-    scoped_udev_device device(udev_device_new_from_syspath(
+    device::ScopedUdevDevicePtr device(udev_device_new_from_syspath(
         udev_.get(), udev_list_entry_get_name(entry)));
     if (!device)
       continue;
@@ -136,7 +136,8 @@ void DeviceManagerUdev::OnFileCanReadWithoutBlocking(int fd) {
   // to handle broken connections here.
   TRACE_EVENT1("ozone", "UdevDeviceChange", "socket", fd);
 
-  scoped_udev_device device(udev_monitor_receive_device(monitor_.get()));
+  device::ScopedUdevDevicePtr device(
+      udev_monitor_receive_device(monitor_.get()));
   if (!device)
     return;
 

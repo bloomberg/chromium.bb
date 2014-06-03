@@ -26,6 +26,7 @@
 #include "components/storage_monitor/storage_info.h"
 #include "components/storage_monitor/udev_util_linux.h"
 #include "device/media_transfer_protocol/media_transfer_protocol_manager.h"
+#include "device/udev_linux/udev.h"
 
 using content::BrowserThread;
 
@@ -124,7 +125,7 @@ scoped_ptr<StorageInfo> GetDeviceInfo(const base::FilePath& device_path,
 
   ScopedGetDeviceInfoResultRecorder results_recorder;
 
-  ScopedUdevObject udev_obj(udev_new());
+  device::ScopedUdevPtr udev_obj(udev_new());
   if (!udev_obj.get())
     return storage_info.Pass();
 
@@ -140,7 +141,7 @@ scoped_ptr<StorageInfo> GetDeviceInfo(const base::FilePath& device_path,
   else
     return storage_info.Pass();  // Not a supported type.
 
-  ScopedUdevDeviceObject device(
+  device::ScopedUdevDevicePtr device(
       udev_device_new_from_devnum(udev_obj.get(), device_type,
                                   device_stat.st_rdev));
   if (!device.get())

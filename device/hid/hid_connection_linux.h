@@ -12,7 +12,6 @@
 #include "base/message_loop/message_pump_libevent.h"
 #include "device/hid/hid_connection.h"
 #include "device/hid/hid_device_info.h"
-#include "device/hid/udev_common.h"
 
 namespace device {
 
@@ -57,4 +56,4 @@ class HidConnectionLinux : public HidConnection,
 
 }  // namespace device
 
-#endif  // DEVICE_HID_HID_CONNECTION_LINUX__
+#endif  // DEVICE_HID_HID_CONNECTION_LINUX_H_
