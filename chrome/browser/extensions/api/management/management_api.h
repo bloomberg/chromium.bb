@@ -6,13 +6,9 @@
 #define CHROME_BROWSER_EXTENSIONS_API_MANAGEMENT_MANAGEMENT_API_H_
 
 #include "base/compiler_specific.h"
-#include "base/task/cancelable_task_tracker.h"
-#include "chrome/browser/extensions/bookmark_app_helper.h"
 #include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/extensions/extension_uninstall_dialog.h"
-#include "chrome/common/web_application_info.h"
-#include "components/favicon_base/favicon_types.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -202,32 +198,6 @@ class ManagementSetLaunchTypeFunction : public ManagementFunction {
   virtual ~ManagementSetLaunchTypeFunction() {}
 
   virtual bool RunSync() OVERRIDE;
-};
-
-class ManagementGenerateAppForLinkFunction : public AsyncManagementFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION("management.generateAppForLink",
-      MANAGEMENT_GENERATEAPPFORLINK);
-
-  ManagementGenerateAppForLinkFunction();
-
- protected:
-  virtual ~ManagementGenerateAppForLinkFunction();
-
-  virtual bool RunAsync() OVERRIDE;
-
- private:
-  void OnFaviconForApp(const favicon_base::FaviconImageResult& image_result);
-  void FinishCreateBookmarkApp(const extensions::Extension* extension,
-                               const WebApplicationInfo& web_app_info);
-
-  std::string title_;
-  GURL launch_url_;
-
-  scoped_ptr<BookmarkAppHelper> bookmark_app_helper_;
-
-  // Used for favicon loading tasks.
-  base::CancelableTaskTracker cancelable_task_tracker_;
 };
 
 class ManagementEventRouter : public content::NotificationObserver {

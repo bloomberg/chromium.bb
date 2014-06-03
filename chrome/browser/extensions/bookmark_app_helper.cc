@@ -183,9 +183,6 @@ BookmarkAppHelper::BookmarkAppHelper(ExtensionService* service,
 
   crx_installer_->set_error_on_unsupported_requirements(true);
 
-  if (!contents)
-    return;
-
   // Add urls from the WebApplicationInfo.
   std::vector<GURL> web_app_info_icon_urls;
   for (std::vector<WebApplicationInfo::IconInfo>::const_iterator it =
@@ -207,11 +204,7 @@ BookmarkAppHelper::~BookmarkAppHelper() {}
 
 void BookmarkAppHelper::Create(const CreateBookmarkAppCallback& callback) {
   callback_ = callback;
-
-  if (favicon_downloader_.get())
-    favicon_downloader_->Start();
-  else
-    OnIconsDownloaded(true, std::map<GURL, std::vector<SkBitmap> >());
+  favicon_downloader_->Start();
 }
 
 void BookmarkAppHelper::OnIconsDownloaded(
@@ -245,18 +238,6 @@ void BookmarkAppHelper::OnIconsDownloaded(
       downloaded_icons.push_back(*bitmap_it);
     }
   }
-
-  // Add all existing icons from WebApplicationInfo.
-  for (std::vector<WebApplicationInfo::IconInfo>::const_iterator it =
-           web_app_info_.icons.begin();
-       it != web_app_info_.icons.end();
-       ++it) {
-    const SkBitmap& icon = it->data;
-    if (!icon.drawsNothing() && icon.width() == icon.height())
-      downloaded_icons.push_back(icon);
-  }
-
-  web_app_info_.icons.clear();
 
   // If there are icons that don't match the accepted icon sizes, find the
   // closest bigger icon to the accepted sizes and resize the icon to it. An

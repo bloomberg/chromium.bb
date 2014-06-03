@@ -8,9 +8,6 @@
 #include "chrome/browser/extensions/extension_service_unittest.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/public/browser/render_process_host.h"
-#include "content/public/browser/web_contents.h"
-#include "content/public/test/web_contents_tester.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension_icon_set.h"
@@ -27,9 +24,7 @@ const char kAppTitle[] = "Test title";
 const char kAlternativeAppTitle[] = "Different test title";
 const char kAppDescription[] = "Test description";
 
-const int kIconSizeTiny = extension_misc::EXTENSION_ICON_BITTY;
 const int kIconSizeSmall = extension_misc::EXTENSION_ICON_SMALL;
-const int kIconSizeMedium = extension_misc::EXTENSION_ICON_MEDIUM;
 const int kIconSizeLarge = extension_misc::EXTENSION_ICON_LARGE;
 #endif
 
@@ -52,19 +47,6 @@ class BookmarkAppHelperExtensionServiceTest : public ExtensionServiceTestBase {
     InitializeEmptyExtensionService();
     service_->Init();
     EXPECT_EQ(0u, service_->extensions()->size());
-  }
-
-  virtual void TearDown() OVERRIDE {
-    ExtensionServiceTestBase::TearDown();
-    for (content::RenderProcessHost::iterator i(
-             content::RenderProcessHost::AllHostsIterator());
-         !i.IsAtEnd();
-         i.Advance()) {
-      content::RenderProcessHost* host = i.GetCurrentValue();
-      if (Profile::FromBrowserContext(host->GetBrowserContext()) ==
-          profile_.get())
-        delete host;
-    }
   }
 
  private:
@@ -154,9 +136,7 @@ TEST_F(BookmarkAppHelperExtensionServiceTest, CreateBookmarkApp) {
   web_app_info.title = base::UTF8ToUTF16(kAppTitle);
   web_app_info.description = base::UTF8ToUTF16(kAppDescription);
 
-  scoped_ptr<content::WebContents> contents(
-      content::WebContentsTester::CreateTestWebContents(profile_.get(), NULL));
-  TestBookmarkAppHelper helper(service_, web_app_info, contents.get());
+  TestBookmarkAppHelper helper(service_, web_app_info, NULL);
   helper.Create(base::Bind(&TestBookmarkAppHelper::CreationComplete,
                            base::Unretained(&helper)));
 
@@ -178,47 +158,6 @@ TEST_F(BookmarkAppHelperExtensionServiceTest, CreateBookmarkApp) {
   EXPECT_FALSE(
       IconsInfo::GetIconResource(
           extension, kIconSizeSmall, ExtensionIconSet::MATCH_EXACTLY).empty());
-}
-
-TEST_F(BookmarkAppHelperExtensionServiceTest, CreateBookmarkAppNoContents) {
-  WebApplicationInfo web_app_info;
-  web_app_info.app_url = GURL(kAppUrl);
-  web_app_info.title = base::UTF8ToUTF16(kAppTitle);
-  web_app_info.description = base::UTF8ToUTF16(kAppDescription);
-  web_app_info.icons.push_back(
-      CreateIconInfoWithBitmap(kIconSizeTiny, SK_ColorRED));
-
-  TestBookmarkAppHelper helper(service_, web_app_info, NULL);
-  helper.Create(base::Bind(&TestBookmarkAppHelper::CreationComplete,
-                           base::Unretained(&helper)));
-
-  base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(helper.extension());
-  const Extension* extension =
-      service_->GetInstalledExtension(helper.extension()->id());
-  EXPECT_TRUE(extension);
-  EXPECT_EQ(1u, service_->extensions()->size());
-  EXPECT_TRUE(extension->from_bookmark());
-  EXPECT_EQ(kAppTitle, extension->name());
-  EXPECT_EQ(kAppDescription, extension->description());
-  EXPECT_EQ(GURL(kAppUrl), AppLaunchInfo::GetLaunchWebURL(extension));
-  EXPECT_FALSE(
-      IconsInfo::GetIconResource(
-          extension, kIconSizeTiny, ExtensionIconSet::MATCH_EXACTLY).empty());
-  EXPECT_FALSE(
-      IconsInfo::GetIconResource(
-          extension, kIconSizeSmall, ExtensionIconSet::MATCH_EXACTLY).empty());
-  EXPECT_FALSE(
-      IconsInfo::GetIconResource(extension,
-                                 kIconSizeSmall * 2,
-                                 ExtensionIconSet::MATCH_EXACTLY).empty());
-  EXPECT_FALSE(
-      IconsInfo::GetIconResource(
-          extension, kIconSizeMedium, ExtensionIconSet::MATCH_EXACTLY).empty());
-  EXPECT_FALSE(
-      IconsInfo::GetIconResource(extension,
-                                 kIconSizeMedium * 2,
-                                 ExtensionIconSet::MATCH_EXACTLY).empty());
 }
 
 TEST_F(BookmarkAppHelperExtensionServiceTest, CreateAndUpdateBookmarkApp) {

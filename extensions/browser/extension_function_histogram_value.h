@@ -843,7 +843,6 @@ enum HistogramValue {
   FILEBROWSERPRIVATE_OPENINSPECTOR,
   STREAMSPRIVATE_ABORT,
   MANAGEMENT_SETLAUNCHTYPE,
-  MANAGEMENT_GENERATEAPPFORLINK,
   // Last entry: Add new entries above and ensure to update
   // tools/metrics/histograms/histograms/histograms.xml.
   ENUM_BOUNDARY

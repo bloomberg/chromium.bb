@@ -37,8 +37,7 @@ class BookmarkAppHelper : public content::NotificationObserver {
 
   // This helper class will create a bookmark app out of |web_app_info| and
   // install it to |service|. Icons will be downloaded from the URLs in
-  // |web_app_info.icons| using |contents| if |contents| is not NULL.
-  // All existing icons from WebApplicationInfo will also be used.
+  // |web_app_info.icons| using |contents|.
   BookmarkAppHelper(ExtensionService* service,
                     WebApplicationInfo web_app_info,
                     content::WebContents* contents);
