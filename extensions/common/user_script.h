@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/basictypes.h"
 #include "base/files/file_path.h"
 #include "base/strings/string_piece.h"
 #include "extensions/common/url_pattern.h"
@@ -45,6 +46,8 @@ class UserScript {
                     // is "idle". Currently this uses the simple heuristic of:
                     // min(DOM_CONTENT_LOADED + TIMEOUT, ONLOAD), but no
                     // particular injection point is guaranteed.
+    RUN_DEFERRED,  // The user script's injection was deferred for permissions
+                   // reasons, and was executed at a later time.
     RUN_LOCATION_LAST  // Leave this as the last item.
   };
 
@@ -174,6 +177,9 @@ class UserScript {
   const std::string& extension_id() const { return extension_id_; }
   void set_extension_id(const std::string& id) { extension_id_ = id; }
 
+  int64 id() const { return user_script_id_; }
+  void set_id(int64 id) { user_script_id_ = id; }
+
   bool is_incognito_enabled() const { return incognito_enabled_; }
   void set_incognito_enabled(bool enabled) { incognito_enabled_ = enabled; }
 
@@ -244,6 +250,10 @@ class UserScript {
   // The ID of the extension this script is a part of, if any. Can be empty if
   // the script is a "standlone" user script.
   std::string extension_id_;
+
+  // The globally-unique id associated with this user script. Defaults to
+  // -1 for invalid.
+  int64 user_script_id_;
 
   // Whether we should try to emulate Greasemonkey's APIs when running this
   // script.

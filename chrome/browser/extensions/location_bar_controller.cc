@@ -21,7 +21,10 @@ LocationBarController::LocationBarController(
     : WebContentsObserver(web_contents),
       web_contents_(web_contents),
       active_script_controller_(new ActiveScriptController(web_contents_)),
-      page_action_controller_(new PageActionController(web_contents_)) {
+      page_action_controller_(new PageActionController(web_contents_)),
+      extension_registry_observer_(this) {
+  extension_registry_observer_.Add(
+      ExtensionRegistry::Get(web_contents_->GetBrowserContext()));
 }
 
 LocationBarController::~LocationBarController() {
@@ -83,6 +86,24 @@ void LocationBarController::DidNavigateMainFrame(
 
   page_action_controller_->OnNavigated();
   active_script_controller_->OnNavigated();
+}
+
+void LocationBarController::OnExtensionUnloaded(
+    content::BrowserContext* browser_context,
+    const Extension* extension,
+    UnloadedExtensionInfo::Reason reason) {
+  bool should_update = false;
+  if (page_action_controller_->GetActionForExtension(extension)) {
+    page_action_controller_->OnExtensionUnloaded(extension);
+    should_update = true;
+  }
+  if (active_script_controller_->GetActionForExtension(extension)) {
+    active_script_controller_->OnExtensionUnloaded(extension);
+    should_update = true;
+  }
+
+  if (should_update)
+    NotifyChange(web_contents());
 }
 
 }  // namespace extensions

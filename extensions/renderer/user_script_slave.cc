@@ -31,7 +31,6 @@ using blink::WebFrame;
 using blink::WebSecurityOrigin;
 using blink::WebSecurityPolicy;
 using blink::WebString;
-using blink::WebView;
 using content::RenderThread;
 
 namespace extensions {
@@ -102,9 +101,9 @@ const Extension* UserScriptSlave::GetExtension(
   return extensions_->GetByID(extension_id);
 }
 
-bool UserScriptSlave::UpdateScripts(base::SharedMemoryHandle shared_memory) {
-  script_injections_.clear();
-
+bool UserScriptSlave::UpdateScripts(
+    base::SharedMemoryHandle shared_memory,
+    const std::set<std::string>& changed_extensions) {
   bool only_inject_incognito =
       ExtensionsRendererClient::Get()->IsIncognitoProcess();
 
@@ -130,6 +129,26 @@ bool UserScriptSlave::UpdateScripts(base::SharedMemoryHandle shared_memory) {
   Pickle pickle(reinterpret_cast<char*>(shared_memory_->memory()), pickle_size);
   PickleIterator iter(pickle);
   CHECK(pickle.ReadUInt64(&iter, &num_scripts));
+
+  // If we pass no explicit extension ids, we should refresh all extensions.
+  bool include_all_extensions = changed_extensions.empty();
+
+  // If we include all extensions, then we clear the script injections and
+  // start from scratch. If not, then clear only the scripts for extension ids
+  // that we are updating. This is important to maintain pending script
+  // injection state for each ScriptInjection.
+  if (include_all_extensions) {
+    script_injections_.clear();
+  } else {
+    for (ScopedVector<ScriptInjection>::iterator iter =
+             script_injections_.begin();
+         iter != script_injections_.end();) {
+      if (changed_extensions.count((*iter)->extension_id()) > 0)
+        iter = script_injections_.erase(iter);
+      else
+        ++iter;
+    }
+  }
 
   script_injections_.reserve(num_scripts);
   for (uint64 i = 0; i < num_scripts; ++i) {
@@ -157,9 +176,31 @@ bool UserScriptSlave::UpdateScripts(base::SharedMemoryHandle shared_memory) {
     if (only_inject_incognito && !script->is_incognito_enabled())
       continue; // This script shouldn't run in an incognito tab.
 
-    script_injections_.push_back(new ScriptInjection(script.Pass(), this));
+    // If we include all extensions or the given extension changed, we add a
+    // new script injection.
+    if (include_all_extensions ||
+        changed_extensions.count(script->extension_id()) > 0) {
+      script_injections_.push_back(new ScriptInjection(script.Pass(), this));
+    } else {
+      // Otherwise, we need to update the existing script injection with the
+      // new user script (since the old content was invalidated).
+      //
+      // Note: Yes, this is O(n^2). But vectors are faster than maps for
+      // relatively few elements, and less than 1% of our users actually have
+      // enough content scripts for it to matter. If this changes, or if
+      // std::maps get a much faster implementation, we should look into
+      // making a map for script injections.
+      for (ScopedVector<ScriptInjection>::iterator iter =
+               script_injections_.begin();
+           iter != script_injections_.end();
+           ++iter) {
+        if ((*iter)->script()->id() == script->id()) {
+          (*iter)->SetScript(script.Pass());
+          break;
+        }
+      }
+    }
   }
-
   return true;
 }
 
@@ -169,38 +210,44 @@ void UserScriptSlave::InjectScripts(WebFrame* frame,
   if (document_url.is_empty())
     return;
 
-  content::RenderView* top_render_view =
-      content::RenderView::FromWebView(frame->top()->view());
-
   ScriptInjection::ScriptsRunInfo scripts_run_info;
   for (ScopedVector<ScriptInjection>::const_iterator iter =
            script_injections_.begin();
        iter != script_injections_.end();
        ++iter) {
-    ScriptInjection* injection = *iter;
-    if (!injection->WantsToRun(frame, location, document_url))
-      continue;
-
-    const Extension* extension = GetExtension(injection->extension_id());
-    DCHECK(extension);
-
-    if (PermissionsData::RequiresActionForScriptExecution(
-            extension,
-            ExtensionHelper::Get(top_render_view)->tab_id(),
-            document_url)) {
-      // TODO(rdevlin.cronin): Right now, this is just a notification, but soon
-      // we should block without user consent.
-      top_render_view->Send(
-          new ExtensionHostMsg_NotifyExtensionScriptExecution(
-              top_render_view->GetRoutingID(),
-              extension->id(),
-              top_render_view->GetPageId()));
-    }
-
-    injection->Inject(frame, location, &scripts_run_info);
+    (*iter)->InjectIfAllowed(frame, location, document_url, &scripts_run_info);
   }
 
   LogScriptsRun(frame, location, scripts_run_info);
+}
+
+void UserScriptSlave::OnContentScriptGrantedPermission(
+    content::RenderView* render_view, int request_id) {
+  ScriptInjection::ScriptsRunInfo run_info;
+  blink::WebFrame* frame = NULL;
+  // Notify the injections that a request to inject has been granted.
+  for (ScopedVector<ScriptInjection>::iterator iter =
+           script_injections_.begin();
+       iter != script_injections_.end();
+       ++iter) {
+    if ((*iter)->NotifyScriptPermitted(request_id,
+                                       render_view,
+                                       &run_info,
+                                       &frame)) {
+      DCHECK(frame);
+      LogScriptsRun(frame, UserScript::RUN_DEFERRED, run_info);
+      break;
+    }
+  }
+}
+
+void UserScriptSlave::FrameDetached(blink::WebFrame* frame) {
+  for (ScopedVector<ScriptInjection>::iterator iter =
+           script_injections_.begin();
+       iter != script_injections_.end();
+       ++iter) {
+    (*iter)->FrameDetached(frame);
+  }
 }
 
 void UserScriptSlave::LogScriptsRun(
@@ -218,22 +265,33 @@ void UserScriptSlave::LogScriptsRun(
         ScriptContext::GetDataSourceURLForFrame(frame)));
   }
 
-  if (location == UserScript::DOCUMENT_START) {
-    UMA_HISTOGRAM_COUNTS_100("Extensions.InjectStart_CssCount",
-                             info.num_css);
-    UMA_HISTOGRAM_COUNTS_100("Extensions.InjectStart_ScriptCount", info.num_js);
-    if (info.num_css || info.num_js)
-      UMA_HISTOGRAM_TIMES("Extensions.InjectStart_Time", info.timer.Elapsed());
-  } else if (location == UserScript::DOCUMENT_END) {
-    UMA_HISTOGRAM_COUNTS_100("Extensions.InjectEnd_ScriptCount", info.num_js);
-    if (info.num_js)
-      UMA_HISTOGRAM_TIMES("Extensions.InjectEnd_Time", info.timer.Elapsed());
-  } else if (location == UserScript::DOCUMENT_IDLE) {
-    UMA_HISTOGRAM_COUNTS_100("Extensions.InjectIdle_ScriptCount", info.num_js);
-    if (info.num_js)
-      UMA_HISTOGRAM_TIMES("Extensions.InjectIdle_Time", info.timer.Elapsed());
-  } else {
-    NOTREACHED();
+  switch (location) {
+    case UserScript::DOCUMENT_START:
+      UMA_HISTOGRAM_COUNTS_100("Extensions.InjectStart_CssCount",
+                               info.num_css);
+      UMA_HISTOGRAM_COUNTS_100("Extensions.InjectStart_ScriptCount",
+                               info.num_js);
+      if (info.num_css || info.num_js)
+        UMA_HISTOGRAM_TIMES("Extensions.InjectStart_Time",
+                            info.timer.Elapsed());
+      break;
+    case UserScript::DOCUMENT_END:
+      UMA_HISTOGRAM_COUNTS_100("Extensions.InjectEnd_ScriptCount", info.num_js);
+      if (info.num_js)
+        UMA_HISTOGRAM_TIMES("Extensions.InjectEnd_Time", info.timer.Elapsed());
+      break;
+    case UserScript::DOCUMENT_IDLE:
+      UMA_HISTOGRAM_COUNTS_100("Extensions.InjectIdle_ScriptCount",
+                               info.num_js);
+      if (info.num_js)
+        UMA_HISTOGRAM_TIMES("Extensions.InjectIdle_Time", info.timer.Elapsed());
+      break;
+    case UserScript::RUN_DEFERRED:
+      // TODO(rdevlin.cronin): Add histograms.
+      break;
+    case UserScript::UNDEFINED:
+    case UserScript::RUN_LOCATION_LAST:
+      NOTREACHED();
   }
 }
 

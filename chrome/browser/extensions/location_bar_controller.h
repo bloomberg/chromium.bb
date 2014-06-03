@@ -9,7 +9,9 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/scoped_observer.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "extensions/browser/extension_registry_observer.h"
 
 namespace content {
 class WebContents;
@@ -21,12 +23,14 @@ namespace extensions {
 
 class ActiveScriptController;
 class Extension;
+class ExtensionRegistry;
 class PageActionController;
 
 // Interface for a class that controls the the extension icons that show up in
 // the location bar. Depending on switches, these icons can have differing
 // behavior.
-class LocationBarController : public content::WebContentsObserver {
+class LocationBarController : public content::WebContentsObserver,
+                              public ExtensionRegistryObserver {
  public:
   // The action that the UI should take after executing |OnClicked|.
   enum Action {
@@ -49,6 +53,12 @@ class LocationBarController : public content::WebContentsObserver {
     // not in page), so any state relating to the current page should likely be
     // reset.
     virtual void OnNavigated() = 0;
+
+    // A notification that the given |extension| has been unloaded, and any
+    // actions associated with it should be removed.
+    // The location bar controller will update itself after this if needed, so
+    // Providers should not call NotifyChange().
+    virtual void OnExtensionUnloaded(const Extension* extension) {}
   };
 
   explicit LocationBarController(content::WebContents* web_contents);
@@ -74,6 +84,12 @@ class LocationBarController : public content::WebContentsObserver {
       const content::LoadCommittedDetails& details,
       const content::FrameNavigateParams& params) OVERRIDE;
 
+  // ExtensionRegistryObserver implementation.
+  virtual void OnExtensionUnloaded(
+      content::BrowserContext* browser_context,
+      const Extension* extension,
+      UnloadedExtensionInfo::Reason reason) OVERRIDE;
+
   // The associated WebContents.
   content::WebContents* web_contents_;
 
@@ -84,6 +100,9 @@ class LocationBarController : public content::WebContentsObserver {
   // instead.
   scoped_ptr<ActiveScriptController> active_script_controller_;
   scoped_ptr<PageActionController> page_action_controller_;
+
+  ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
+      extension_registry_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(LocationBarController);
 };

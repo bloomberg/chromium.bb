@@ -67,4 +67,20 @@ TEST_F(ContentScriptsManifestTest, ScriptableHosts) {
   EXPECT_EQ(expected, scriptable_hosts);
 }
 
+TEST_F(ContentScriptsManifestTest, ContentScriptIds) {
+  scoped_refptr<Extension> extension1 =
+      LoadAndExpectSuccess("content_script_yahoo.json");
+  scoped_refptr<Extension> extension2 =
+      LoadAndExpectSuccess("content_script_yahoo.json");
+  const UserScriptList& user_scripts1 =
+      ContentScriptsInfo::GetContentScripts(extension1);
+  ASSERT_EQ(1u, user_scripts1.size());
+  int64 id = user_scripts1[0].id();
+  const UserScriptList& user_scripts2 =
+      ContentScriptsInfo::GetContentScripts(extension2);
+  ASSERT_EQ(1u, user_scripts2.size());
+  // The id of the content script should be one higher than the previous.
+  EXPECT_EQ(id + 1, user_scripts2[0].id());
+}
+
 }  // namespace extensions

@@ -33,9 +33,6 @@ class PageActionController : public LocationBarController::ActionProvider {
   // Returns the associated Profile.
   Profile* GetProfile();
 
-  // The current page actions for the associated WebContents.
-  std::vector<ExtensionAction*> current_actions_;
-
   // The associated WebContents.
   content::WebContents* web_contents_;
 
