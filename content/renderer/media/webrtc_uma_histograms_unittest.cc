@@ -33,6 +33,19 @@ TEST(PerSessionWebRTCAPIMetrics, CallOngoingGetUserMedia) {
   metrics.LogUsageOnlyOnce(WEBKIT_GET_USER_MEDIA);
 }
 
+TEST(PerSessionWebRTCAPIMetrics, NoCallOngoingGetMediaDevices) {
+  MockPerSessionWebRTCAPIMetrics metrics;
+  EXPECT_CALL(metrics, LogUsage(_)).Times(1);
+  metrics.LogUsageOnlyOnce(WEBKIT_GET_MEDIA_DEVICES);
+}
+
+TEST(PerSessionWebRTCAPIMetrics, CallOngoingGetMediaDevices) {
+  MockPerSessionWebRTCAPIMetrics metrics;
+  metrics.IncrementStreamCounter();
+  EXPECT_CALL(metrics, LogUsage(WEBKIT_GET_MEDIA_DEVICES)).Times(1);
+  metrics.LogUsageOnlyOnce(WEBKIT_GET_MEDIA_DEVICES);
+}
+
 TEST(PerSessionWebRTCAPIMetrics, NoCallOngoingRTCPeerConnection) {
   MockPerSessionWebRTCAPIMetrics metrics;
   EXPECT_CALL(metrics, LogUsage(WEBKIT_RTC_PEER_CONNECTION));

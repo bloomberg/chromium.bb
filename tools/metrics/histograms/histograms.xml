@@ -37592,6 +37592,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="1" label="PeerConnection00"/>
   <int value="2" label="DeprecatedPeerConnection"/>
   <int value="3" label="RTCPeerConnection"/>
+  <int value="4" label="GetMediaDevices"/>
 </enum>
 
 <enum name="KeyboardControlEvent" type="int">

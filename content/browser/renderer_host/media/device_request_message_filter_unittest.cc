@@ -25,15 +25,15 @@ class MockMediaStreamManager : public MediaStreamManager {
 
   virtual ~MockMediaStreamManager() {}
 
-  MOCK_METHOD7(EnumerateDevices,
+  MOCK_METHOD8(EnumerateDevices,
                std::string(MediaStreamRequester* requester,
                            int render_process_id,
                            int render_view_id,
                            const ResourceContext::SaltCallback& rc,
                            int page_request_id,
                            MediaStreamType type,
-                           const GURL& security_origin));
-  MOCK_METHOD1(CancelRequest, void(const std::string& label));
+                           const GURL& security_origin,
+                           bool have_permission));
 
   std::string DoEnumerateDevices(MediaStreamRequester* requester,
                                  int render_process_id,
@@ -41,7 +41,8 @@ class MockMediaStreamManager : public MediaStreamManager {
                                  const ResourceContext::SaltCallback& rc,
                                  int page_request_id,
                                  MediaStreamType type,
-                                 const GURL& security_origin) {
+                                 const GURL& security_origin,
+                                 bool have_permission) {
     if (type == MEDIA_DEVICE_AUDIO_CAPTURE) {
       return kAudioLabel;
     } else {
@@ -95,10 +96,12 @@ class DeviceRequestMessageFilterTest : public testing::Test {
     AddVideoDevices(number_video_devices);
     GURL origin("https://test.com");
     EXPECT_CALL(*media_stream_manager_,
-                EnumerateDevices(_, _, _, _, _, MEDIA_DEVICE_AUDIO_CAPTURE, _))
+                EnumerateDevices(_, _, _, _, _, MEDIA_DEVICE_AUDIO_CAPTURE,
+                                 _, _))
         .Times(1);
     EXPECT_CALL(*media_stream_manager_,
-                EnumerateDevices(_, _, _, _, _, MEDIA_DEVICE_VIDEO_CAPTURE, _))
+                EnumerateDevices(_, _, _, _, _, MEDIA_DEVICE_VIDEO_CAPTURE,
+                                 _, _))
         .Times(1);
     // Send message to get devices. Should trigger 2 EnumerateDevice() requests.
     const int kRequestId = 123;
@@ -110,24 +113,11 @@ class DeviceRequestMessageFilterTest : public testing::Test {
     EXPECT_EQ(0u, host_->requested_devices().size());
 
     // After the video device callback is fired, |message| should be populated.
-    EXPECT_CALL(*media_stream_manager_, CancelRequest(kAudioLabel))
-        .Times(1);
-    EXPECT_CALL(*media_stream_manager_, CancelRequest(kVideoLabel))
-        .Times(1);
     FireVideoDeviceCallback();
     EXPECT_EQ(static_cast<size_t>(number_audio_devices + number_video_devices),
               host_->requested_devices().size());
 
     EXPECT_EQ(kRequestId, host_->received_id());
-  }
-
-  bool AreLabelsPresent(MediaStreamType type) {
-    const StreamDeviceInfoArray& devices = host_->requested_devices();
-    for (size_t i = 0; i < devices.size(); i++) {
-      if (devices[i].device.type == type && !devices[i].device.name.empty())
-        return true;
-    }
-    return false;
   }
 
  protected:
@@ -139,7 +129,7 @@ class DeviceRequestMessageFilterTest : public testing::Test {
         new TestBrowserThread(BrowserThread::IO, message_loop_.get()));
 
     media_stream_manager_.reset(new MockMediaStreamManager());
-    ON_CALL(*media_stream_manager_, EnumerateDevices(_, _, _, _, _, _, _))
+    ON_CALL(*media_stream_manager_, EnumerateDevices(_, _, _, _, _, _, _, _))
         .WillByDefault(Invoke(media_stream_manager_.get(),
                               &MockMediaStreamManager::DoEnumerateDevices));
 
@@ -218,38 +208,6 @@ TEST_F(DeviceRequestMessageFilterTest, TestGetSources_NoAudioDevices) {
 TEST_F(DeviceRequestMessageFilterTest, TestGetSources_NoDevices) {
   // Runs through test with no devices.
   RunTest(0, 0);
-}
-
-TEST_F(DeviceRequestMessageFilterTest, TestGetSources_DenyMicDenyCamera) {
-  resource_context_->set_mic_access(false);
-  resource_context_->set_camera_access(false);
-  RunTest(3, 3);
-  EXPECT_FALSE(AreLabelsPresent(MEDIA_DEVICE_AUDIO_CAPTURE));
-  EXPECT_FALSE(AreLabelsPresent(MEDIA_DEVICE_VIDEO_CAPTURE));
-}
-
-TEST_F(DeviceRequestMessageFilterTest, TestGetSources_AllowMicDenyCamera) {
-  resource_context_->set_mic_access(true);
-  resource_context_->set_camera_access(false);
-  RunTest(3, 3);
-  EXPECT_TRUE(AreLabelsPresent(MEDIA_DEVICE_AUDIO_CAPTURE));
-  EXPECT_FALSE(AreLabelsPresent(MEDIA_DEVICE_VIDEO_CAPTURE));
-}
-
-TEST_F(DeviceRequestMessageFilterTest, TestGetSources_DenyMicAllowCamera) {
-  resource_context_->set_mic_access(false);
-  resource_context_->set_camera_access(true);
-  RunTest(3, 3);
-  EXPECT_FALSE(AreLabelsPresent(MEDIA_DEVICE_AUDIO_CAPTURE));
-  EXPECT_TRUE(AreLabelsPresent(MEDIA_DEVICE_VIDEO_CAPTURE));
-}
-
-TEST_F(DeviceRequestMessageFilterTest, TestGetSources_AllowMicAllowCamera) {
-  resource_context_->set_mic_access(true);
-  resource_context_->set_camera_access(true);
-  RunTest(3, 3);
-  EXPECT_TRUE(AreLabelsPresent(MEDIA_DEVICE_AUDIO_CAPTURE));
-  EXPECT_TRUE(AreLabelsPresent(MEDIA_DEVICE_VIDEO_CAPTURE));
 }
 
 };  // namespace content

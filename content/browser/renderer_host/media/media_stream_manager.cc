@@ -161,6 +161,15 @@ std::string ReturnEmptySalt() {
   return std::string();
 }
 
+// Clears the MediaStreamDevice.name from all devices in |devices|.
+static void ClearDeviceLabels(content::StreamDeviceInfoArray* devices) {
+  for (content::StreamDeviceInfoArray::iterator device_itr = devices->begin();
+       device_itr != devices->end();
+       ++device_itr) {
+    device_itr->device.name.clear();
+  }
+}
+
 }  // namespace
 
 
@@ -177,6 +186,7 @@ class MediaStreamManager::DeviceRequest {
                 int requesting_view_id,
                 int page_request_id,
                 const GURL& security_origin,
+                bool have_permission,
                 bool user_gesture,
                 MediaStreamRequestType request_type,
                 const StreamOptions& options,
@@ -186,6 +196,7 @@ class MediaStreamManager::DeviceRequest {
         requesting_view_id(requesting_view_id),
         page_request_id(page_request_id),
         security_origin(security_origin),
+        have_permission(have_permission),
         user_gesture(user_gesture),
         request_type(request_type),
         options(options),
@@ -307,6 +318,10 @@ class MediaStreamManager::DeviceRequest {
 
   const GURL security_origin;
 
+  // This is used when enumerating devices; if we don't have device access
+  // permission, we remove the device label.
+  bool have_permission;
+
   const bool user_gesture;
 
   const MediaStreamRequestType request_type;
@@ -411,6 +426,7 @@ std::string MediaStreamManager::MakeMediaAccessRequest(
                                              render_view_id,
                                              page_request_id,
                                              security_origin,
+                                             true,
                                              false,  // user gesture
                                              MEDIA_DEVICE_ACCESS,
                                              options,
@@ -451,6 +467,7 @@ void MediaStreamManager::GenerateStream(MediaStreamRequester* requester,
                                              render_view_id,
                                              page_request_id,
                                              security_origin,
+                                             true,
                                              user_gesture,
                                              MEDIA_GENERATE_STREAM,
                                              options,
@@ -633,7 +650,8 @@ std::string MediaStreamManager::EnumerateDevices(
     const ResourceContext::SaltCallback& sc,
     int page_request_id,
     MediaStreamType type,
-    const GURL& security_origin) {
+    const GURL& security_origin,
+    bool have_permission) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(requester);
   DCHECK(type == MEDIA_DEVICE_AUDIO_CAPTURE ||
@@ -644,6 +662,7 @@ std::string MediaStreamManager::EnumerateDevices(
                                              render_view_id,
                                              page_request_id,
                                              security_origin,
+                                             have_permission,
                                              false,  // user gesture
                                              MEDIA_ENUMERATE_DEVICES,
                                              StreamOptions(),
@@ -680,6 +699,7 @@ void MediaStreamManager::DoEnumerateDevices(const std::string& label) {
     cache = &audio_enumeration_cache_;
   } else {
     DCHECK_EQ(MEDIA_DEVICE_VIDEO_CAPTURE, request->video_type());
+    DCHECK_EQ(MEDIA_NO_SERVICE, request->audio_type());
     type = MEDIA_DEVICE_VIDEO_CAPTURE;
     cache = &video_enumeration_cache_;
   }
@@ -724,6 +744,7 @@ void MediaStreamManager::OpenDevice(MediaStreamRequester* requester,
                                              render_view_id,
                                              page_request_id,
                                              security_origin,
+                                             true,
                                              false,  // user gesture
                                              MEDIA_OPEN_DEVICE,
                                              options,
@@ -1374,6 +1395,9 @@ void MediaStreamManager::FinalizeEnumerateDevices(const std::string& label,
   } else {
     request->devices.clear();
   }
+
+  if (!request->have_permission)
+    ClearDeviceLabels(&request->devices);
 
   request->requester->DevicesEnumerated(
       request->requesting_view_id,

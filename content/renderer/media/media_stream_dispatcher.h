@@ -56,7 +56,7 @@ class CONTENT_EXPORT MediaStreamDispatcher
   virtual void StopStreamDevice(const StreamDeviceInfo& device_info);
 
   // Request to enumerate devices.
-  void EnumerateDevices(
+  virtual void EnumerateDevices(
       int request_id,
       const base::WeakPtr<MediaStreamDispatcherEventHandler>& event_handler,
       MediaStreamType type,
@@ -123,7 +123,6 @@ class CONTENT_EXPORT MediaStreamDispatcher
   void OnDevicesEnumerated(
       int request_id,
       const StreamDeviceInfoArray& device_array);
-  void OnDevicesEnumerationFailed(int request_id);
   void OnDeviceOpened(
       int request_id,
       const std::string& label,

@@ -10,15 +10,6 @@
 #include "content/common/media/media_stream_messages.h"
 #include "content/public/browser/resource_context.h"
 
-// Clears the MediaStreamDevice.name from all devices in |device_list|.
-static void ClearDeviceLabels(content::StreamDeviceInfoArray* devices) {
-  for (content::StreamDeviceInfoArray::iterator device_itr = devices->begin();
-       device_itr != devices->end();
-       ++device_itr) {
-    device_itr->device.name.clear();
-  }
-}
-
 namespace content {
 
 DeviceRequestMessageFilter::DeviceRequestMessageFilter(
@@ -98,12 +89,6 @@ void DeviceRequestMessageFilter::DevicesEnumerated(
     return;
   }
 
-  // Query for mic and camera permissions.
-  if (!resource_context_->AllowMicAccess(request_it->origin))
-    ClearDeviceLabels(audio_devices);
-  if (!resource_context_->AllowCameraAccess(request_it->origin))
-    ClearDeviceLabels(video_devices);
-
   // Both audio and video devices are ready for copying.
   StreamDeviceInfoArray all_devices = *audio_devices;
   all_devices.insert(
@@ -147,13 +132,15 @@ void DeviceRequestMessageFilter::OnGetSources(int request_id,
   // Make request to get audio devices.
   const std::string& audio_label = media_stream_manager_->EnumerateDevices(
       this, -1, -1, resource_context_->GetMediaDeviceIDSalt(), -1,
-      MEDIA_DEVICE_AUDIO_CAPTURE, security_origin);
+      MEDIA_DEVICE_AUDIO_CAPTURE, security_origin,
+      resource_context_->AllowMicAccess(security_origin));
   DCHECK(!audio_label.empty());
 
   // Make request for video devices.
   const std::string& video_label = media_stream_manager_->EnumerateDevices(
       this, -1, -1, resource_context_->GetMediaDeviceIDSalt(), -1,
-      MEDIA_DEVICE_VIDEO_CAPTURE, security_origin);
+      MEDIA_DEVICE_VIDEO_CAPTURE, security_origin,
+      resource_context_->AllowCameraAccess(security_origin));
   DCHECK(!video_label.empty());
 
   requests_.push_back(DeviceRequest(

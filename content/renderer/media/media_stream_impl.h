@@ -22,6 +22,7 @@
 #include "third_party/WebKit/public/platform/WebMediaStream.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamSource.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
+#include "third_party/WebKit/public/web/WebMediaDevicesRequest.h"
 #include "third_party/WebKit/public/web/WebUserMediaClient.h"
 #include "third_party/WebKit/public/web/WebUserMediaRequest.h"
 #include "third_party/libjingle/source/talk/app/webrtc/mediastreaminterface.h"
@@ -56,6 +57,10 @@ class CONTENT_EXPORT MediaStreamImpl
       const blink::WebUserMediaRequest& user_media_request);
   virtual void cancelUserMediaRequest(
       const blink::WebUserMediaRequest& user_media_request);
+  virtual void requestMediaDevices(
+      const blink::WebMediaDevicesRequest& media_devices_request) OVERRIDE;
+  virtual void cancelMediaDevicesRequest(
+      const blink::WebMediaDevicesRequest& media_devices_request) OVERRIDE;
 
   // MediaStreamDispatcherEventHandler implementation.
   virtual void OnStreamGenerated(
@@ -94,7 +99,9 @@ class CONTENT_EXPORT MediaStreamImpl
   virtual void GetUserMediaRequestFailed(
       blink::WebUserMediaRequest* request_info,
       content::MediaStreamRequestResult result);
-
+  virtual void EnumerateDevicesSucceded(
+      blink::WebMediaDevicesRequest* request,
+      blink::WebVector<blink::WebMediaDeviceInfo>& devices);
   // Creates a MediaStreamVideoSource object.
   // This is virtual for test purposes.
   virtual MediaStreamVideoSource* CreateVideoSource(
@@ -165,6 +172,9 @@ class CONTENT_EXPORT MediaStreamImpl
   };
   typedef std::vector<LocalStreamSource> LocalStreamSources;
 
+  struct MediaDevicesRequestInfo;
+  typedef ScopedVector<MediaDevicesRequestInfo> MediaDevicesRequests;
+
   // Creates a WebKit representation of stream sources based on
   // |devices| from the MediaStreamDispatcher.
   void InitializeSourceObject(
@@ -197,6 +207,11 @@ class CONTENT_EXPORT MediaStreamImpl
       const blink::WebUserMediaRequest& request);
   void DeleteUserMediaRequestInfo(UserMediaRequestInfo* request);
 
+  MediaDevicesRequestInfo* FindMediaDevicesRequestInfo(int request_id);
+  MediaDevicesRequestInfo* FindMediaDevicesRequestInfo(
+      const blink::WebMediaDevicesRequest& request);
+  void DeleteMediaDevicesRequestInfo(MediaDevicesRequestInfo* request);
+
   // Returns the source that use a device with |device.session_id|
   // and |device.device.id|. NULL if such source doesn't exist.
   const blink::WebMediaStreamSource* FindLocalSource(
@@ -218,6 +233,9 @@ class CONTENT_EXPORT MediaStreamImpl
   LocalStreamSources local_sources_;
 
   UserMediaRequests user_media_requests_;
+
+  // Requests to enumerate media devices.
+  MediaDevicesRequests media_devices_requests_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaStreamImpl);
 };
