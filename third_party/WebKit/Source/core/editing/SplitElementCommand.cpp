@@ -49,7 +49,7 @@ void SplitElementCommand::executeApply()
     if (m_atChild->parentNode() != m_element2)
         return;
 
-    Vector<RefPtr<Node> > children;
+    WillBeHeapVector<RefPtrWillBeMember<Node> > children;
     for (Node* node = m_element2->firstChild(); node != m_atChild; node = node->nextSibling())
         children.append(node);
 
@@ -82,11 +82,11 @@ void SplitElementCommand::doUnapply()
     if (!m_element1 || !m_element1->rendererIsEditable() || !m_element2->rendererIsEditable())
         return;
 
-    Vector<RefPtr<Node> > children;
+    WillBeHeapVector<RefPtrWillBeMember<Node> > children;
     for (Node* node = m_element1->firstChild(); node; node = node->nextSibling())
         children.append(node);
 
-    RefPtr<Node> refChild = m_element2->firstChild();
+    RefPtrWillBeRawPtr<Node> refChild = m_element2->firstChild();
 
     size_t size = children.size();
     for (size_t i = 0; i < size; ++i)

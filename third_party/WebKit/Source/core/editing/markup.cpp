@@ -649,7 +649,7 @@ String createMarkup(const Range* range, WillBeHeapVector<RawPtrWillBeMember<Node
 PassRefPtrWillBeRawPtr<DocumentFragment> createFragmentFromMarkup(Document& document, const String& markup, const String& baseURL, ParserContentPolicy parserContentPolicy)
 {
     // We use a fake body element here to trick the HTML parser to using the InBody insertion mode.
-    RefPtr<HTMLBodyElement> fakeBody = HTMLBodyElement::create(document);
+    RefPtrWillBeRawPtr<HTMLBodyElement> fakeBody = HTMLBodyElement::create(document);
     RefPtrWillBeRawPtr<DocumentFragment> fragment = DocumentFragment::create(document);
 
     fragment->parseHTML(markup, fakeBody.get(), parserContentPolicy);
@@ -662,7 +662,7 @@ PassRefPtrWillBeRawPtr<DocumentFragment> createFragmentFromMarkup(Document& docu
 
 static const char fragmentMarkerTag[] = "webkit-fragment-marker";
 
-static bool findNodesSurroundingContext(Document* document, RefPtr<Node>& nodeBeforeContext, RefPtr<Node>& nodeAfterContext)
+static bool findNodesSurroundingContext(Document* document, RefPtrWillBeRawPtr<Node>& nodeBeforeContext, RefPtrWillBeRawPtr<Node>& nodeAfterContext)
 {
     for (Node* node = document->firstChild(); node; node = NodeTraversal::next(*node)) {
         if (node->nodeType() == Node::COMMENT_NODE && toCharacterData(node)->data() == fragmentMarkerTag) {
@@ -679,8 +679,8 @@ static bool findNodesSurroundingContext(Document* document, RefPtr<Node>& nodeBe
 
 static void trimFragment(DocumentFragment* fragment, Node* nodeBeforeContext, Node* nodeAfterContext)
 {
-    RefPtr<Node> next;
-    for (RefPtr<Node> node = fragment->firstChild(); node; node = next) {
+    RefPtrWillBeRawPtr<Node> next = nullptr;
+    for (RefPtrWillBeRawPtr<Node> node = fragment->firstChild(); node; node = next) {
         if (nodeBeforeContext->isDescendantOf(node.get())) {
             next = NodeTraversal::next(*node);
             continue;
@@ -693,7 +693,7 @@ static void trimFragment(DocumentFragment* fragment, Node* nodeBeforeContext, No
     }
 
     ASSERT(nodeAfterContext->parentNode());
-    for (RefPtr<Node> node = nodeAfterContext; node; node = next) {
+    for (RefPtrWillBeRawPtr<Node> node = nodeAfterContext; node; node = next) {
         next = NodeTraversal::nextSkippingChildren(*node);
         node->parentNode()->removeChild(node.get(), ASSERT_NO_EXCEPTION);
     }
@@ -719,8 +719,8 @@ PassRefPtrWillBeRawPtr<DocumentFragment> createFragmentFromMarkupWithContext(Doc
     // Document that are not normally allowed by using the parser machinery.
     taggedDocument->parserTakeAllChildrenFrom(*taggedFragment);
 
-    RefPtr<Node> nodeBeforeContext;
-    RefPtr<Node> nodeAfterContext;
+    RefPtrWillBeRawPtr<Node> nodeBeforeContext = nullptr;
+    RefPtrWillBeRawPtr<Node> nodeAfterContext = nullptr;
     if (!findNodesSurroundingContext(taggedDocument.get(), nodeBeforeContext, nodeAfterContext))
         return nullptr;
 
@@ -949,7 +949,7 @@ PassRefPtrWillBeRawPtr<DocumentFragment> createFragmentForTransformToFragment(co
         // Based on the documentation I can find, it looks like we want to start parsing the fragment in the InBody insertion mode.
         // Unfortunately, that's an implementation detail of the parser.
         // We achieve that effect here by passing in a fake body element as context for the fragment.
-        RefPtr<HTMLBodyElement> fakeBody = HTMLBodyElement::create(outputDoc);
+        RefPtrWillBeRawPtr<HTMLBodyElement> fakeBody = HTMLBodyElement::create(outputDoc);
         fragment->parseHTML(sourceString, fakeBody.get());
     } else if (sourceMIMEType == "text/plain") {
         fragment->parserAppendChild(Text::create(outputDoc, sourceString));
@@ -966,8 +966,8 @@ PassRefPtrWillBeRawPtr<DocumentFragment> createFragmentForTransformToFragment(co
 
 static inline void removeElementPreservingChildren(PassRefPtrWillBeRawPtr<DocumentFragment> fragment, HTMLElement* element)
 {
-    RefPtr<Node> nextChild;
-    for (RefPtr<Node> child = element->firstChild(); child; child = nextChild) {
+    RefPtrWillBeRawPtr<Node> nextChild = nullptr;
+    for (RefPtrWillBeRawPtr<Node> child = element->firstChild(); child; child = nextChild) {
         nextChild = child->nextSibling();
         element->removeChild(child.get());
         fragment->insertBefore(child, element);
@@ -992,8 +992,8 @@ PassRefPtrWillBeRawPtr<DocumentFragment> createContextualFragment(const String& 
     // accommodate folks passing complete HTML documents to make the
     // child of an element.
 
-    RefPtr<Node> nextNode;
-    for (RefPtr<Node> node = fragment->firstChild(); node; node = nextNode) {
+    RefPtrWillBeRawPtr<Node> nextNode = nullptr;
+    for (RefPtrWillBeRawPtr<Node> node = fragment->firstChild(); node; node = nextNode) {
         nextNode = node->nextSibling();
         if (isHTMLHtmlElement(*node) || isHTMLHeadElement(*node) || isHTMLBodyElement(*node)) {
             HTMLElement* element = toHTMLElement(node);
@@ -1068,7 +1068,7 @@ void replaceChildrenWithText(ContainerNode* container, const String& text, Excep
     containerNode->appendChild(textNode.release(), exceptionState);
 }
 
-void mergeWithNextTextNode(PassRefPtr<Node> node, ExceptionState& exceptionState)
+void mergeWithNextTextNode(PassRefPtrWillBeRawPtr<Node> node, ExceptionState& exceptionState)
 {
     ASSERT(node && node->isTextNode());
     Node* next = node->nextSibling();

@@ -49,7 +49,7 @@ void MergeIdenticalElementsCommand::doApply()
 
     m_atChild = m_element2->firstChild();
 
-    Vector<RefPtr<Node> > children;
+    WillBeHeapVector<RefPtrWillBeMember<Node> > children;
     for (Node* child = m_element1->firstChild(); child; child = child->nextSibling())
         children.append(child);
 
@@ -65,7 +65,7 @@ void MergeIdenticalElementsCommand::doUnapply()
     ASSERT(m_element1);
     ASSERT(m_element2);
 
-    RefPtr<Node> atChild = m_atChild.release();
+    RefPtrWillBeRawPtr<Node> atChild = m_atChild.release();
 
     ContainerNode* parent = m_element2->parentNode();
     if (!parent || !parent->rendererIsEditable())
@@ -77,7 +77,7 @@ void MergeIdenticalElementsCommand::doUnapply()
     if (exceptionState.hadException())
         return;
 
-    Vector<RefPtr<Node> > children;
+    WillBeHeapVector<RefPtrWillBeMember<Node> > children;
     for (Node* child = m_element2->firstChild(); child && child != atChild; child = child->nextSibling())
         children.append(child);
 

@@ -68,7 +68,7 @@ String createMarkup(const Node*, EChildrenOnly = IncludeNode, WillBeHeapVector<R
 String createFullMarkup(const Node*);
 
 String urlToMarkup(const KURL&, const String& title);
-void mergeWithNextTextNode(PassRefPtr<Node>, ExceptionState&);
+void mergeWithNextTextNode(PassRefPtrWillBeRawPtr<Node>, ExceptionState&);
 
 }
 
