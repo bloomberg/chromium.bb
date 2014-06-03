@@ -344,6 +344,29 @@ static void ConvertUTF16BufferToUTF8String(const uint16_t* utf16_data,
   }
 }
 
+
+// For fields that may or may not be valid, PrintValueOrInvalid will print the
+// string "(invalid)" if the field is not valid, and will print the value if
+// the field is valid. The value is printed as hexadecimal or decimal.
+
+enum NumberFormat {
+  kNumberFormatDecimal,
+  kNumberFormatHexadecimal,
+};
+
+static void PrintValueOrInvalid(bool valid,
+                                NumberFormat number_format,
+                                uint32_t value) {
+  if (!valid) {
+    printf("(invalid)\n");
+  } else if (number_format == kNumberFormatDecimal) {
+    printf("%d\n", value);
+  } else {
+    printf("0x%x\n", value);
+  }
+}
+
+
 //
 // MinidumpObject
 //
@@ -3785,7 +3808,7 @@ void MinidumpSystemInfo::Print() {
   }
 
   printf("MDRawSystemInfo\n");
-  printf("  processor_architecture                     = %d\n",
+  printf("  processor_architecture                     = 0x%x\n",
          system_info_.processor_architecture);
   printf("  processor_level                            = %d\n",
          system_info_.processor_level);
@@ -3801,7 +3824,7 @@ void MinidumpSystemInfo::Print() {
          system_info_.minor_version);
   printf("  build_number                               = %d\n",
          system_info_.build_number);
-  printf("  platform_id                                = %d\n",
+  printf("  platform_id                                = 0x%x\n",
          system_info_.platform_id);
   printf("  csd_version_rva                            = 0x%x\n",
          system_info_.csd_version_rva);
@@ -3937,43 +3960,124 @@ void MinidumpMiscInfo::Print() {
   // Print version 1 fields
   printf("  size_of_info                 = %d\n",   misc_info_.size_of_info);
   printf("  flags1                       = 0x%x\n", misc_info_.flags1);
-  printf("  process_id                   = 0x%x\n", misc_info_.process_id);
-  printf("  process_create_time          = 0x%x\n",
-         misc_info_.process_create_time);
-  printf("  process_user_time            = 0x%x\n",
-         misc_info_.process_user_time);
-  printf("  process_kernel_time          = 0x%x\n",
-         misc_info_.process_kernel_time);
+  printf("  process_id                   = ");
+  PrintValueOrInvalid(misc_info_.flags1 & MD_MISCINFO_FLAGS1_PROCESS_ID,
+                      kNumberFormatDecimal, misc_info_.process_id);
+  if (misc_info_.flags1 & MD_MISCINFO_FLAGS1_PROCESS_TIMES) {
+    struct tm timestruct;
+#ifdef _WIN32
+    gmtime_s(&timestruct,
+             reinterpret_cast<time_t*>(&misc_info_.process_create_time));
+#else
+    gmtime_r(reinterpret_cast<time_t*>(&misc_info_.process_create_time),
+             &timestruct);
+#endif
+    char timestr[20];
+    strftime(timestr, 20, "%Y-%m-%d %H:%M:%S", &timestruct);
+    printf("  process_create_time          = 0x%x %s\n",
+           misc_info_.process_create_time,
+           timestr);
+  } else {
+    printf("  process_create_time          = (invalid)\n");
+  }
+  printf("  process_user_time            = ");
+  PrintValueOrInvalid(misc_info_.flags1 & MD_MISCINFO_FLAGS1_PROCESS_TIMES,
+                      kNumberFormatDecimal, misc_info_.process_user_time);
+  printf("  process_kernel_time          = ");
+  PrintValueOrInvalid(misc_info_.flags1 & MD_MISCINFO_FLAGS1_PROCESS_TIMES,
+                      kNumberFormatDecimal, misc_info_.process_kernel_time);
   if (misc_info_.size_of_info > MD_MISCINFO_SIZE) {
     // Print version 2 fields
-    printf("  processor_max_mhz            = %d\n",
-           misc_info_.processor_max_mhz);
-    printf("  processor_current_mhz        = %d\n",
-           misc_info_.processor_current_mhz);
-    printf("  processor_mhz_limit          = %d\n",
-           misc_info_.processor_mhz_limit);
-    printf("  processor_max_idle_state     = 0x%x\n",
-           misc_info_.processor_max_idle_state);
-    printf("  processor_current_idle_state = 0x%x\n",
-           misc_info_.processor_current_idle_state);
+    printf("  processor_max_mhz            = ");
+    PrintValueOrInvalid(misc_info_.flags1 &
+                            MD_MISCINFO_FLAGS1_PROCESSOR_POWER_INFO,
+                        kNumberFormatDecimal, misc_info_.processor_max_mhz);
+    printf("  processor_current_mhz        = ");
+    PrintValueOrInvalid(misc_info_.flags1 &
+                            MD_MISCINFO_FLAGS1_PROCESSOR_POWER_INFO,
+                        kNumberFormatDecimal, misc_info_.processor_current_mhz);
+    printf("  processor_mhz_limit          = ");
+    PrintValueOrInvalid(misc_info_.flags1 &
+                            MD_MISCINFO_FLAGS1_PROCESSOR_POWER_INFO,
+                        kNumberFormatDecimal, misc_info_.processor_mhz_limit);
+    printf("  processor_max_idle_state     = ");
+    PrintValueOrInvalid(misc_info_.flags1 &
+                            MD_MISCINFO_FLAGS1_PROCESSOR_POWER_INFO,
+                        kNumberFormatDecimal,
+                        misc_info_.processor_max_idle_state);
+    printf("  processor_current_idle_state = ");
+    PrintValueOrInvalid(misc_info_.flags1 &
+                            MD_MISCINFO_FLAGS1_PROCESSOR_POWER_INFO,
+                        kNumberFormatDecimal,
+                        misc_info_.processor_current_idle_state);
   }
   if (misc_info_.size_of_info > MD_MISCINFO2_SIZE) {
     // Print version 3 fields
-    printf("  process_integrity_level      = 0x%x\n",
-           misc_info_.process_integrity_level);
-    printf("  process_execute_flags        = 0x%x\n",
-           misc_info_.process_execute_flags);
-    printf("  protected_process            = %d\n",
-           misc_info_.protected_process);
-    printf("  time_zone_id                 = %d\n", misc_info_.time_zone_id);
-    printf("  time_zone.bias               = %d\n", misc_info_.time_zone.bias);
-    printf("  time_zone.standard_name      = %s\n", standard_name_.c_str());
-    printf("  time_zone.daylight_name      = %s\n", daylight_name_.c_str());
+    printf("  process_integrity_level      = ");
+    PrintValueOrInvalid(misc_info_.flags1 &
+                            MD_MISCINFO_FLAGS1_PROCESS_INTEGRITY,
+                        kNumberFormatHexadecimal,
+                        misc_info_.process_integrity_level);
+    printf("  process_execute_flags        = ");
+    PrintValueOrInvalid(misc_info_.flags1 &
+                            MD_MISCINFO_FLAGS1_PROCESS_EXECUTE_FLAGS,
+                        kNumberFormatHexadecimal,
+                        misc_info_.process_execute_flags);
+    printf("  protected_process            = ");
+    PrintValueOrInvalid(misc_info_.flags1 &
+                            MD_MISCINFO_FLAGS1_PROTECTED_PROCESS,
+                        kNumberFormatDecimal, misc_info_.protected_process);
+    printf("  time_zone_id                 = ");
+    PrintValueOrInvalid(misc_info_.flags1 & MD_MISCINFO_FLAGS1_TIMEZONE,
+                        kNumberFormatDecimal, misc_info_.time_zone_id);
+    if (misc_info_.flags1 & MD_MISCINFO_FLAGS1_TIMEZONE) {
+      printf("  time_zone.bias               = %d\n",
+             misc_info_.time_zone.bias);
+      printf("  time_zone.standard_name      = %s\n", standard_name_.c_str());
+      printf("  time_zone.standard_date      = "
+                 "%04d-%02d-%02d (%d) %02d:%02d:%02d.%03d\n",
+             misc_info_.time_zone.standard_date.year,
+             misc_info_.time_zone.standard_date.month,
+             misc_info_.time_zone.standard_date.day,
+             misc_info_.time_zone.standard_date.day_of_week,
+             misc_info_.time_zone.standard_date.hour,
+             misc_info_.time_zone.standard_date.minute,
+             misc_info_.time_zone.standard_date.second,
+             misc_info_.time_zone.standard_date.milliseconds);
+      printf("  time_zone.standard_bias      = %d\n",
+             misc_info_.time_zone.standard_bias);
+      printf("  time_zone.daylight_name      = %s\n", daylight_name_.c_str());
+      printf("  time_zone.daylight_date      = "
+                 "%04d-%02d-%02d (%d) %02d:%02d:%02d.%03d\n",
+             misc_info_.time_zone.daylight_date.year,
+             misc_info_.time_zone.daylight_date.month,
+             misc_info_.time_zone.daylight_date.day,
+             misc_info_.time_zone.daylight_date.day_of_week,
+             misc_info_.time_zone.daylight_date.hour,
+             misc_info_.time_zone.daylight_date.minute,
+             misc_info_.time_zone.daylight_date.second,
+             misc_info_.time_zone.daylight_date.milliseconds);
+      printf("  time_zone.daylight_bias      = %d\n",
+             misc_info_.time_zone.daylight_bias);
+    } else {
+      printf("  time_zone.bias               = (invalid)\n");
+      printf("  time_zone.standard_name      = (invalid)\n");
+      printf("  time_zone.standard_date      = (invalid)\n");
+      printf("  time_zone.standard_bias      = (invalid)\n");
+      printf("  time_zone.daylight_name      = (invalid)\n");
+      printf("  time_zone.daylight_date      = (invalid)\n");
+      printf("  time_zone.daylight_bias      = (invalid)\n");
+    }
   }
   if (misc_info_.size_of_info > MD_MISCINFO3_SIZE) {
     // Print version 4 fields
-    printf("  build_string                 = %s\n", build_string_.c_str());
-    printf("  dbg_bld_str                  = %s\n", dbg_bld_str_.c_str());
+    if (misc_info_.flags1 & MD_MISCINFO_FLAGS1_BUILDSTRING) {
+      printf("  build_string                 = %s\n", build_string_.c_str());
+      printf("  dbg_bld_str                  = %s\n", dbg_bld_str_.c_str());
+    } else {
+      printf("  build_string                 = (invalid)\n");
+      printf("  dbg_bld_str                  = (invalid)\n");
+    }
   }
   printf("\n");
 }
@@ -4067,19 +4171,15 @@ void MinidumpBreakpadInfo::Print() {
 
   printf("MDRawBreakpadInfo\n");
   printf("  validity             = 0x%x\n", breakpad_info_.validity);
-
-  if (breakpad_info_.validity & MD_BREAKPAD_INFO_VALID_DUMP_THREAD_ID) {
-    printf("  dump_thread_id       = 0x%x\n", breakpad_info_.dump_thread_id);
-  } else {
-    printf("  dump_thread_id       = (invalid)\n");
-  }
-
-  if (breakpad_info_.validity & MD_BREAKPAD_INFO_VALID_DUMP_THREAD_ID) {
-    printf("  requesting_thread_id = 0x%x\n",
-           breakpad_info_.requesting_thread_id);
-  } else {
-    printf("  requesting_thread_id = (invalid)\n");
-  }
+  printf("  dump_thread_id       = ");
+  PrintValueOrInvalid(breakpad_info_.validity &
+                          MD_BREAKPAD_INFO_VALID_DUMP_THREAD_ID,
+                      kNumberFormatHexadecimal, breakpad_info_.dump_thread_id);
+  printf("  requesting_thread_id = ");
+  PrintValueOrInvalid(breakpad_info_.validity &
+                          MD_BREAKPAD_INFO_VALID_REQUESTING_THREAD_ID,
+                      kNumberFormatHexadecimal,
+                      breakpad_info_.requesting_thread_id);
 
   printf("\n");
 }
