@@ -62,6 +62,7 @@ group("root") {
     "//third_party/libusb",
     "//third_party/libwebm",
     "//third_party/libwebp",
+    "//third_party/mesa",
     "//third_party/ots",
     "//third_party/protobuf:protobuf_lite",
     "//third_party/qcms",

@@ -74,12 +74,6 @@
           '-fPIC',
         ],
       }],
-      ['OS=="win"', {
-        # Pick up emulation headers not supported by Visual Studio.
-        'include_dirs': [
-          'src/include/c99',
-        ],
-      }],
     ],
   },
   'targets': [
