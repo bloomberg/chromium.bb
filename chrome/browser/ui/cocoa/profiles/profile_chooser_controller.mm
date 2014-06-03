@@ -1271,6 +1271,20 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   [container addSubview:iconView];
   yOffset = NSMaxY([iconView frame]);
 
+  if (browser_->profile()->IsManaged()) {
+    base::scoped_nsobject<NSImageView> supervisedIcon(
+        [[NSImageView alloc] initWithFrame:NSZeroRect]);
+    ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
+    [supervisedIcon setImage:rb->GetNativeImageNamed(
+        IDR_ICON_PROFILES_MENU_SUPERVISED).ToNSImage()];
+    NSSize size = [[supervisedIcon image] size];
+    [supervisedIcon setFrameSize:size];
+    NSRect parentFrame = [iconView frame];
+    [supervisedIcon setFrameOrigin:NSMakePoint(NSMaxX(parentFrame) - size.width,
+                                               NSMinY(parentFrame))];
+    [container addSubview:supervisedIcon];
+  }
+
   if (switches::IsNewProfileManagementPreviewEnabled()) {
     base::scoped_nsobject<HoverImageButton> questionButton(
         [[HoverImageButton alloc] initWithFrame:NSZeroRect]);

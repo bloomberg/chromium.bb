@@ -1051,6 +1051,21 @@ views::View* ProfileChooserView::CreateCurrentProfileView(
     current_profile_photo_->AddChildView(question_mark_button_);
   }
 
+  if (browser_->profile()->IsManaged()) {
+    views::ImageView* supervised_icon = new views::ImageView();
+    ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
+    supervised_icon->SetImage(
+        rb->GetImageSkiaNamed(IDR_ICON_PROFILES_MENU_SUPERVISED));
+    gfx::Size preferred_size = supervised_icon->GetPreferredSize();
+    gfx::Rect parent_bounds = current_profile_photo_->bounds();
+    supervised_icon->SetBounds(
+        parent_bounds.right() - preferred_size.width(),
+        parent_bounds.bottom() - preferred_size.height(),
+        preferred_size.width(),
+        preferred_size.height());
+    current_profile_photo_->AddChildView(supervised_icon);
+  }
+
   layout->StartRow(1, 0);
   layout->AddView(current_profile_photo_);
 
