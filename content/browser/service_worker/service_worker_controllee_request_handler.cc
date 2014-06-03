@@ -10,6 +10,7 @@
 #include "content/browser/service_worker/service_worker_url_request_job.h"
 #include "content/browser/service_worker/service_worker_utils.h"
 #include "content/common/service_worker/service_worker_types.h"
+#include "net/base/net_util.h"
 #include "net/url_request/url_request.h"
 
 namespace content {
@@ -82,9 +83,11 @@ void ServiceWorkerControlleeRequestHandler::PrepareForMainResource(
   // redirect case, unassociate it now.
   provider_host_->SetActiveVersion(NULL);
   provider_host_->SetWaitingVersion(NULL);
-  provider_host_->set_document_url(url);
+
+  GURL stripped_url = net::SimplifyUrlForRequest(url);
+  provider_host_->SetDocumentUrl(stripped_url);
   context_->storage()->FindRegistrationForDocument(
-      url,
+      stripped_url,
       base::Bind(&self::DidLookupRegistrationForMainResource,
                  weak_factory_.GetWeakPtr()));
 }

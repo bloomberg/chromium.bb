@@ -109,6 +109,7 @@ ServiceWorkerStorage::~ServiceWorkerStorage() {
 void ServiceWorkerStorage::FindRegistrationForDocument(
     const GURL& document_url,
     const FindRegistrationCallback& callback) {
+  DCHECK(!document_url.has_ref());
   if (!LazyInitialize(base::Bind(
           &ServiceWorkerStorage::FindRegistrationForDocument,
           weak_factory_.GetWeakPtr(), document_url, callback))) {
@@ -672,6 +673,7 @@ ServiceWorkerStorage::GetOrCreateRegistration(
 ServiceWorkerRegistration*
 ServiceWorkerStorage::FindInstallingRegistrationForDocument(
     const GURL& document_url) {
+  DCHECK(!document_url.has_ref());
   // TODO(michaeln): if there are multiple matches the one with
   // the longest scope should win.
   for (RegistrationRefsById::const_iterator it =

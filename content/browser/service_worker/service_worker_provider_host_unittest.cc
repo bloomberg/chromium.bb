@@ -177,7 +177,7 @@ class ServiceWorkerProviderHostWaitingVersionTest : public testing::Test {
       const GURL& document_url) {
     scoped_ptr<ServiceWorkerProviderHost> host(new ServiceWorkerProviderHost(
         kRenderProcessId, next_provider_id_++, context_->AsWeakPtr(), NULL));
-    host->set_document_url(document_url);
+    host->SetDocumentUrl(document_url);
     base::WeakPtr<ServiceWorkerProviderHost> provider_host = host->AsWeakPtr();
     context_->AddProviderHost(host.Pass());
     return provider_host;

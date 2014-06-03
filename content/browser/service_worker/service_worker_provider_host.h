@@ -70,7 +70,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
     return running_hosted_version_.get();
   }
 
-  void set_document_url(const GURL& url) { document_url_ = url; }
+  void SetDocumentUrl(const GURL& url);
   const GURL& document_url() const { return document_url_; }
 
   // Associate |version| to this provider as its '.active' or '.waiting'

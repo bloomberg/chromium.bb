@@ -36,6 +36,11 @@ ServiceWorkerProviderHost::~ServiceWorkerProviderHost() {
     waiting_version_->RemoveWaitingControllee(this);
 }
 
+void ServiceWorkerProviderHost::SetDocumentUrl(const GURL& url) {
+  DCHECK(!url.has_ref());
+  document_url_ = url;
+}
+
 void ServiceWorkerProviderHost::SetActiveVersion(
     ServiceWorkerVersion* version) {
   if (version == active_version_)
