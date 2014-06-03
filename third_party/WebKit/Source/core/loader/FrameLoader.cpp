@@ -656,6 +656,8 @@ FrameLoadType FrameLoader::determineFrameLoadType(const FrameLoadRequest& reques
         return FrameLoadTypeBackForward;
     if (request.resourceRequest().cachePolicy() == ReloadIgnoringCacheData)
         return FrameLoadTypeReload;
+    if (request.resourceRequest().cachePolicy() == ReloadBypassingCache)
+        return FrameLoadTypeReloadFromOrigin;
     if (request.lockBackForwardList() || isScriptTriggeredFormSubmissionInChildFrame(request))
         return FrameLoadTypeRedirectWithLockedBackForwardList;
     if (!request.originDocument() && request.resourceRequest().url() == m_documentLoader->urlForHistory())

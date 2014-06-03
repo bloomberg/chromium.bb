@@ -55,6 +55,7 @@ public:
         ReloadIgnoringCacheData, // reload
         ReturnCacheDataElseLoad, // back/forward or encoding change - allow stale data
         ReturnCacheDataDontLoad, // results of a post - allow stale data and only use cache
+        ReloadBypassingCache, // end-to-end reload
     };
 
     enum Priority {
