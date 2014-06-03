@@ -114,6 +114,7 @@ bool SystemPrivateGetUpdateStatusFunction::RunSync() {
       download_progress = 1;
       break;
     case chromeos::UpdateEngineClient::UPDATE_STATUS_REPORTING_ERROR_EVENT:
+    case chromeos::UpdateEngineClient::UPDATE_STATUS_ATTEMPTING_ROLLBACK:
       state = kNotAvailableState;
       break;
   }

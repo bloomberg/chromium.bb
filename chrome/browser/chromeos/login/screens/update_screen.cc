@@ -204,13 +204,15 @@ void UpdateScreen::UpdateStatusChanged(
         ExitUpdate(REASON_UPDATE_NON_CRITICAL);
       }
       break;
+    case UpdateEngineClient::UPDATE_STATUS_ATTEMPTING_ROLLBACK:
+      VLOG(1) << "Attempting rollback";
+      break;
     case UpdateEngineClient::UPDATE_STATUS_IDLE:
       if (ignore_idle_status_) {
         // It is first IDLE status that is sent before we initiated the check.
         break;
       }
       // else no break
-
     case UpdateEngineClient::UPDATE_STATUS_ERROR:
     case UpdateEngineClient::UPDATE_STATUS_REPORTING_ERROR_EVENT:
       ExitUpdate(REASON_UPDATE_ENDED);
@@ -329,6 +331,8 @@ void UpdateScreen::ExitUpdate(UpdateScreen::ExitReason reason) {
         UpdateEngineClient* update_engine_client =
             DBusThreadManager::Get()->GetUpdateEngineClient();
         switch (update_engine_client->GetLastStatus().status) {
+          case UpdateEngineClient::UPDATE_STATUS_ATTEMPTING_ROLLBACK:
+            break;
           case UpdateEngineClient::UPDATE_STATUS_UPDATE_AVAILABLE:
           case UpdateEngineClient::UPDATE_STATUS_UPDATED_NEED_REBOOT:
           case UpdateEngineClient::UPDATE_STATUS_DOWNLOADING:

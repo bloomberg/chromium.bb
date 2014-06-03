@@ -175,6 +175,7 @@ void VersionUpdaterCros::UpdateStatusChanged(
   switch (operation_to_show) {
     case UpdateEngineClient::UPDATE_STATUS_ERROR:
     case UpdateEngineClient::UPDATE_STATUS_REPORTING_ERROR_EVENT:
+    case UpdateEngineClient::UPDATE_STATUS_ATTEMPTING_ROLLBACK:
       // This path previously used the FAILED status and IDS_UPGRADE_ERROR, but
       // the update engine reports errors for some conditions that shouldn't
       // actually be displayed as errors to users: http://crbug.com/146919.
