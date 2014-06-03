@@ -7,7 +7,6 @@ from benchmarks import silk_flags
 from measurements import thread_times
 
 
-@test.Disabled('android')  # crbug.com/355952
 class ThreadTimesKeySilkCases(test.Test):
   """Measures timeline metrics while performing smoothness action on key silk
   cases."""
@@ -16,7 +15,6 @@ class ThreadTimesKeySilkCases(test.Test):
   options = {"report_silk_results": True}
 
 
-@test.Disabled('android')  # crbug.com/355952
 class ThreadTimesFastPathKeySilkCases(test.Test):
   """Measures timeline metrics while performing smoothness action on key silk
   cases using bleeding edge rendering fast paths."""
