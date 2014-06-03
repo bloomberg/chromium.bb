@@ -11321,6 +11321,337 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="NCN.CM.FastestRTTOn2G" units="milliseconds">
+  <owner>pauljensen@chromium.org</owner>
+  <summary>
+    Rough estimate of the fastest round-trip-time seen on a 2G connection,
+    before the NetworkChangeNotifier detected a connectivity change.
+  </summary>
+</histogram>
+
+<histogram name="NCN.CM.FastestRTTOn3G" units="milliseconds">
+  <owner>pauljensen@chromium.org</owner>
+  <summary>
+    Rough estimate of the fastest round-trip-time seen on a 3G connection,
+    before the NetworkChangeNotifier detected a connectivity change.
+  </summary>
+</histogram>
+
+<histogram name="NCN.CM.FastestRTTOn4G" units="milliseconds">
+  <owner>pauljensen@chromium.org</owner>
+  <summary>
+    Rough estimate of the fastest round-trip-time seen on a 4G connection,
+    before the NetworkChangeNotifier detected a connectivity change.
+  </summary>
+</histogram>
+
+<histogram name="NCN.CM.FastestRTTOnEthernet" units="milliseconds">
+  <owner>pauljensen@chromium.org</owner>
+  <summary>
+    Rough estimate of the fastest round-trip-time seen on an Ethernet
+    connection, before the NetworkChangeNotifier detected a connectivity change.
+  </summary>
+</histogram>
+
+<histogram name="NCN.CM.FastestRTTOnNone" units="milliseconds">
+  <owner>pauljensen@chromium.org</owner>
+  <summary>
+    Rough estimate of the fastest round-trip-time seen while the
+    NetworkChangeNotifier thought there was no network connection, before the
+    NetworkChangeNotifier detected a connectivity change.
+  </summary>
+</histogram>
+
+<histogram name="NCN.CM.FastestRTTOnUnknown" units="milliseconds">
+  <owner>pauljensen@chromium.org</owner>
+  <summary>
+    Rough estimate of the fastest round-trip-time seen on an unknown connection
+    type, before the NetworkChangeNotifier detected a connectivity change.
+  </summary>
+</histogram>
+
+<histogram name="NCN.CM.FastestRTTOnWifi" units="milliseconds">
+  <owner>pauljensen@chromium.org</owner>
+  <summary>
+    Rough estimate of the fastest round-trip-time seen on a Wifi connection,
+    before the NetworkChangeNotifier detected a connectivity change.
+  </summary>
+</histogram>
+
+<histogram name="NCN.CM.FirstReadOn2G" units="milliseconds">
+  <owner>pauljensen@chromium.org</owner>
+  <summary>
+    Time between switching to a 2G connection and receiving the first network
+    data.
+  </summary>
+</histogram>
+
+<histogram name="NCN.CM.FirstReadOn3G" units="milliseconds">
+  <owner>pauljensen@chromium.org</owner>
+  <summary>
+    Time between switching to a 3G connection and receiving the first network
+    data.
+  </summary>
+</histogram>
+
+<histogram name="NCN.CM.FirstReadOn4G" units="milliseconds">
+  <owner>pauljensen@chromium.org</owner>
+  <summary>
+    Time between switching to a 4G connection and receiving the first network
+    data.
+  </summary>
+</histogram>
+
+<histogram name="NCN.CM.FirstReadOnEthernet" units="milliseconds">
+  <owner>pauljensen@chromium.org</owner>
+  <summary>
+    Time between switching to an Ethernet connection and receiving the first
+    network data.
+  </summary>
+</histogram>
+
+<histogram name="NCN.CM.FirstReadOnNone" units="milliseconds">
+  <owner>pauljensen@chromium.org</owner>
+  <summary>
+    Time between disconnecting and receiving the first network data.
+  </summary>
+</histogram>
+
+<histogram name="NCN.CM.FirstReadOnUnknown" units="milliseconds">
+  <owner>pauljensen@chromium.org</owner>
+  <summary>
+    Time between switching to an unknown connection type and receiving the first
+    network data.
+  </summary>
+</histogram>
+
+<histogram name="NCN.CM.FirstReadOnWifi" units="milliseconds">
+  <owner>pauljensen@chromium.org</owner>
+  <summary>
+    Time between switching to a Wifi connection and receiving the first network
+    data.
+  </summary>
+</histogram>
+
+<histogram name="NCN.CM.KBTransferedOn2G" units="KB">
+  <owner>pauljensen@chromium.org</owner>
+  <summary>
+    How much data was transfered while connected via a 2G connection, before the
+    NetworkChangeNotifier detected a connectivity change.
+  </summary>
+</histogram>
+
+<histogram name="NCN.CM.KBTransferedOn3G" units="KB">
+  <owner>pauljensen@chromium.org</owner>
+  <summary>
+    How much data was transfered while connected via a 3G connection, before the
+    NetworkChangeNotifier detected a connectivity change.
+  </summary>
+</histogram>
+
+<histogram name="NCN.CM.KBTransferedOn4G" units="KB">
+  <owner>pauljensen@chromium.org</owner>
+  <summary>
+    How much data was transfered while connected via a 4G connection, before the
+    NetworkChangeNotifier detected a connectivity change.
+  </summary>
+</histogram>
+
+<histogram name="NCN.CM.KBTransferedOnEthernet" units="KB">
+  <owner>pauljensen@chromium.org</owner>
+  <summary>
+    How much data was transfered while connected via an Ethernet connection,
+    before the NetworkChangeNotifier detected a connectivity change.
+  </summary>
+</histogram>
+
+<histogram name="NCN.CM.KBTransferedOnNone" units="KB">
+  <owner>pauljensen@chromium.org</owner>
+  <summary>
+    How much data was transfered while the NetworkChangeNotifier thought there
+    was no network connection, before the NetworkChangeNotifier detected a
+    connectivity change.
+  </summary>
+</histogram>
+
+<histogram name="NCN.CM.KBTransferedOnUnknown" units="KB">
+  <owner>pauljensen@chromium.org</owner>
+  <summary>
+    How much data was transfered while connected via an unknown connection type,
+    before the NetworkChangeNotifier detected a connectivity change.
+  </summary>
+</histogram>
+
+<histogram name="NCN.CM.KBTransferedOnWifi" units="KB">
+  <owner>pauljensen@chromium.org</owner>
+  <summary>
+    How much data was transfered while connected via a Wifi connection, before
+    the NetworkChangeNotifier detected a connectivity change.
+  </summary>
+</histogram>
+
+<histogram name="NCN.CM.PeakKbpsOn2G" units="Kbps">
+  <owner>pauljensen@chromium.org</owner>
+  <summary>
+    Rough estimate of peak throughput seen on a 2G connection, before the
+    NetworkChangeNotifier detected a connectivity change.
+  </summary>
+</histogram>
+
+<histogram name="NCN.CM.PeakKbpsOn3G" units="Kbps">
+  <owner>pauljensen@chromium.org</owner>
+  <summary>
+    Rough estimate of peak throughput seen on a 3G connection, before the
+    NetworkChangeNotifier detected a connectivity change.
+  </summary>
+</histogram>
+
+<histogram name="NCN.CM.PeakKbpsOn4G" units="Kbps">
+  <owner>pauljensen@chromium.org</owner>
+  <summary>
+    Rough estimate of peak throughput seen on a 4G connection, before the
+    NetworkChangeNotifier detected a connectivity change.
+  </summary>
+</histogram>
+
+<histogram name="NCN.CM.PeakKbpsOnEthernet" units="Kbps">
+  <owner>pauljensen@chromium.org</owner>
+  <summary>
+    Rough estimate of peak throughput seen on an Ethernet connection, before the
+    NetworkChangeNotifier detected a connectivity change.
+  </summary>
+</histogram>
+
+<histogram name="NCN.CM.PeakKbpsOnNone" units="Kbps">
+  <owner>pauljensen@chromium.org</owner>
+  <summary>
+    Rough estimate of peak throughput seen while the NetworkChangeNotifier
+    thought there was no network connection, before the NetworkChangeNotifier
+    detected a connectivity change.
+  </summary>
+</histogram>
+
+<histogram name="NCN.CM.PeakKbpsOnUnknown" units="Kbps">
+  <owner>pauljensen@chromium.org</owner>
+  <summary>
+    Rough estimate of peak throughput seen on an unknown connection type, before
+    the NetworkChangeNotifier detected a connectivity change.
+  </summary>
+</histogram>
+
+<histogram name="NCN.CM.PeakKbpsOnWifi" units="Kbps">
+  <owner>pauljensen@chromium.org</owner>
+  <summary>
+    Rough estimate of peak throughput seen on a Wifi connection, before the
+    NetworkChangeNotifier detected a connectivity change.
+  </summary>
+</histogram>
+
+<histogram name="NCN.CM.TimeOn2G" units="milliseconds">
+  <owner>pauljensen@chromium.org</owner>
+  <summary>
+    How long was spent connected via a 2G connection, before the
+    NetworkChangeNotifier detected a connectivity change.
+  </summary>
+</histogram>
+
+<histogram name="NCN.CM.TimeOn3G" units="milliseconds">
+  <owner>pauljensen@chromium.org</owner>
+  <summary>
+    How long was spent connected via a 3G connection, before the
+    NetworkChangeNotifier detected a connectivity change.
+  </summary>
+</histogram>
+
+<histogram name="NCN.CM.TimeOn4G" units="milliseconds">
+  <owner>pauljensen@chromium.org</owner>
+  <summary>
+    How long was spent connected via a 4G connection, before the
+    NetworkChangeNotifier detected a connectivity change.
+  </summary>
+</histogram>
+
+<histogram name="NCN.CM.TimeOnEthernet" units="milliseconds">
+  <owner>pauljensen@chromium.org</owner>
+  <summary>
+    How long was spent connected via an Ethernet connection, before the
+    NetworkChangeNotifier detected a connectivity change.
+  </summary>
+</histogram>
+
+<histogram name="NCN.CM.TimeOnNone" units="milliseconds">
+  <owner>pauljensen@chromium.org</owner>
+  <summary>
+    How long was spent disconnected, before the NetworkChangeNotifier detected a
+    connectivity change.
+  </summary>
+</histogram>
+
+<histogram name="NCN.CM.TimeOnUnknown" units="milliseconds">
+  <owner>pauljensen@chromium.org</owner>
+  <summary>
+    How long was spent connected via an unknown connection type, before the
+    NetworkChangeNotifier detected a connectivity change.
+  </summary>
+</histogram>
+
+<histogram name="NCN.CM.TimeOnWifi" units="milliseconds">
+  <owner>pauljensen@chromium.org</owner>
+  <summary>
+    How long was spent connected via a Wifi connection, before the
+    NetworkChangeNotifier detected a connectivity change.
+  </summary>
+</histogram>
+
+<histogram name="NCN.ConnectionTypeChangeToIPAddressChange"
+    units="milliseconds">
+  <owner>pauljensen@chromium.org</owner>
+  <summary>
+    Time from ConnectionTypeChanged message until IPAddressChanged message.
+  </summary>
+</histogram>
+
+<histogram name="NCN.DNSConfigChange" units="milliseconds">
+  <owner>pauljensen@chromium.org</owner>
+  <summary>Time between DNS configuration change messages.</summary>
+</histogram>
+
+<histogram name="NCN.GetConnectionTypeTime" units="milliseconds">
+  <owner>pauljensen@chromium.org</owner>
+  <summary>
+    How long does each call to NetworkChangeNotifier::GetConnectionType() take.
+  </summary>
+</histogram>
+
+<histogram name="NCN.IPAddressChange" units="milliseconds">
+  <owner>pauljensen@chromium.org</owner>
+  <summary>Time between IP address change messages.</summary>
+</histogram>
+
+<histogram name="NCN.IPAddressChangeToConnectionTypeChange"
+    units="milliseconds">
+  <owner>pauljensen@chromium.org</owner>
+  <summary>
+    Time from IPAddressChanged message until ConnectionTypeChanged message.
+  </summary>
+</histogram>
+
+<histogram name="NCN.NetworkOfflineChange" units="milliseconds">
+  <owner>pauljensen@chromium.org</owner>
+  <summary>
+    Time between going online until we go offline change messages, using new
+    filtered signal.
+  </summary>
+</histogram>
+
+<histogram name="NCN.NetworkOnlineChange" units="milliseconds">
+  <owner>pauljensen@chromium.org</owner>
+  <summary>
+    Time between going offline until we go online change messages, using new
+    filtered signal.
+  </summary>
+</histogram>
+
 <histogram name="NCN.NetworkOperatorMCCMNC">
   <owner>bolian@chromium.org</owner>
   <owner>bengr@google.com</owner>
@@ -11330,6 +11661,62 @@ Therefore, the affected-histogram name has to have at least one dot in it.
     operator when a new metrics log is created or when the network connection is
     changed. A value of zero means a non-mobile network or the operator code is
     unknown.
+  </summary>
+</histogram>
+
+<histogram name="NCN.OfflineChange" units="milliseconds">
+  <owner>pauljensen@chromium.org</owner>
+  <summary>
+    Time between going online until we go offline change messages.
+  </summary>
+</histogram>
+
+<histogram name="NCN.OfflineDataRecv" units="milliseconds">
+  <owner>pauljensen@chromium.org</owner>
+  <summary>
+    Time between when we thought we went offline and when we received some
+    network data (a URLRequest read completed).
+  </summary>
+</histogram>
+
+<histogram name="NCN.OfflineDataRecvAny5sBeforeOnline">
+  <owner>pauljensen@chromium.org</owner>
+  <summary>
+    Count of how many times we received network data (a URLRequest read
+    completed) while offline when some data was received at most five seconds
+    before going online.
+  </summary>
+</histogram>
+
+<histogram name="NCN.OfflineDataRecvUntilOnline" units="milliseconds">
+  <owner>pauljensen@chromium.org</owner>
+  <summary>
+    Time between when we received the last network data (a URLRequest read
+    completed) while offline and when we thought we went online.
+  </summary>
+</histogram>
+
+<histogram name="NCN.OfflinePolls">
+  <owner>pauljensen@chromium.org</owner>
+  <summary>
+    Count of how many times we polled the online/offline status before detecting
+    an offline to online transition.
+  </summary>
+</histogram>
+
+<histogram name="NCN.OnlineChange" units="milliseconds">
+  <owner>pauljensen@chromium.org</owner>
+  <summary>
+    Time between going offline until we go online change messages.
+  </summary>
+</histogram>
+
+<histogram name="NCN.PollingOfflineDataRecv" units="milliseconds">
+  <owner>pauljensen@chromium.org</owner>
+  <summary>
+    Time between when we thought we went offline and when we received some
+    network data (a URLRequest read completed), while polling
+    NetworkChangeNotifier::GetConnectionType() still told us we were offline.
   </summary>
 </histogram>
 
