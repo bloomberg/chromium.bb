@@ -103,8 +103,8 @@ Status GetWebCryptoUsagesFromJwkKeyOps(
       return Status::ErrorJwkPropertyWrongType(
           base::StringPrintf("key_ops[%d]", static_cast<int>(i)), "string");
     }
-    if (!JwkKeyOpToWebCryptoUsage(key_op, usage_mask))
-      return Status::ErrorJwkUnrecognizedKeyop();
+    // Unrecognized key_ops are silently skipped.
+    ignore_result(JwkKeyOpToWebCryptoUsage(key_op, usage_mask));
   }
   return Status::Success();
 }

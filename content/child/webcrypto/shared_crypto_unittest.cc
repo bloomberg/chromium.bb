@@ -1397,14 +1397,53 @@ TEST_F(SharedCryptoTest, ImportJwkFailures) {
             ImportKeyJwkFromDict(dict, algorithm, false, usage_mask, &key));
   RestoreJwkOctDictionary(&dict);
 
-  // Fail on invalid key_ops (wrong element value).
+  // Fail on inconsistent key_ops - asking for "encrypt" however JWK contains
+  // only "foo".
   base::ListValue* key_ops = new base::ListValue;
   // Note: the following call makes dict assume ownership of key_ops.
   dict.Set("key_ops", key_ops);
   key_ops->AppendString("foo");
-  EXPECT_EQ(Status::ErrorJwkUnrecognizedKeyop(),
+  EXPECT_EQ(Status::ErrorJwkKeyopsInconsistent(),
             ImportKeyJwkFromDict(dict, algorithm, false, usage_mask, &key));
   RestoreJwkOctDictionary(&dict);
+}
+
+// Import a JWK with unrecognized values for "key_ops".
+TEST_F(SharedCryptoTest, ImportJwkUnrecognizedKeyOps) {
+  blink::WebCryptoKey key = blink::WebCryptoKey::createNull();
+  blink::WebCryptoAlgorithm algorithm =
+      CreateAlgorithm(blink::WebCryptoAlgorithmIdAesCbc);
+  blink::WebCryptoKeyUsageMask usage_mask = blink::WebCryptoKeyUsageEncrypt;
+
+  base::DictionaryValue dict;
+  RestoreJwkOctDictionary(&dict);
+
+  base::ListValue* key_ops = new base::ListValue;
+  dict.Set("key_ops", key_ops);
+  key_ops->AppendString("foo");
+  key_ops->AppendString("bar");
+  key_ops->AppendString("baz");
+  key_ops->AppendString("encrypt");
+  EXPECT_EQ(Status::Success(),
+            ImportKeyJwkFromDict(dict, algorithm, false, usage_mask, &key));
+}
+
+// Import a JWK with a value in key_ops array that is not a string.
+TEST_F(SharedCryptoTest, ImportJwkNonStringKeyOp) {
+  blink::WebCryptoKey key = blink::WebCryptoKey::createNull();
+  blink::WebCryptoAlgorithm algorithm =
+      CreateAlgorithm(blink::WebCryptoAlgorithmIdAesCbc);
+  blink::WebCryptoKeyUsageMask usage_mask = blink::WebCryptoKeyUsageEncrypt;
+
+  base::DictionaryValue dict;
+  RestoreJwkOctDictionary(&dict);
+
+  base::ListValue* key_ops = new base::ListValue;
+  dict.Set("key_ops", key_ops);
+  key_ops->AppendString("encrypt");
+  key_ops->AppendInteger(3);
+  EXPECT_EQ(Status::ErrorJwkPropertyWrongType("key_ops[1]", "string"),
+            ImportKeyJwkFromDict(dict, algorithm, false, usage_mask, &key));
 }
 
 TEST_F(SharedCryptoTest, ImportJwkOctFailures) {
