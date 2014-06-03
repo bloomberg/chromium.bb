@@ -146,8 +146,6 @@ LocationBarViewMac::LocationBarViewMac(AutocompleteTextField* field,
       this, chrome::NOTIFICATION_EXTENSION_PAGE_ACTION_VISIBILITY_CHANGED,
       content::NotificationService::AllSources());
   content::Source<Profile> profile_source = content::Source<Profile>(profile);
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOCATION_BAR_UPDATED,
-                 profile_source);
   registrar_.Add(
       this, chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED, profile_source);
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
@@ -627,14 +625,6 @@ void LocationBarViewMac::Observe(int type,
 
       [field_ updateMouseTracking];
       [field_ setNeedsDisplay:YES];
-      break;
-    }
-
-    case chrome::NOTIFICATION_EXTENSION_LOCATION_BAR_UPDATED: {
-      // Only update if the updated action box was for the active tab contents.
-      WebContents* target_tab = content::Details<WebContents>(details).ptr();
-      if (target_tab == GetWebContents())
-        UpdatePageActions();
       break;
     }
 

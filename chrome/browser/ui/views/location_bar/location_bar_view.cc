@@ -435,9 +435,6 @@ void LocationBarView::Init() {
   hide_url_animation_->SetSlideDuration(175);
 
   content::Source<Profile> profile_source = content::Source<Profile>(profile());
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_EXTENSION_LOCATION_BAR_UPDATED,
-                 profile_source);
   registrar_.Add(
       this, chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED, profile_source);
   registrar_.Add(this,
@@ -1786,13 +1783,6 @@ void LocationBarView::Observe(int type,
                               const content::NotificationSource& source,
                               const content::NotificationDetails& details) {
   switch (type) {
-    case chrome::NOTIFICATION_EXTENSION_LOCATION_BAR_UPDATED: {
-      // Only update if the updated action box was for the active tab contents.
-      if (content::Details<WebContents>(details).ptr() == GetWebContents())
-        UpdatePageActions();
-      break;
-    }
-
     case chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED:
     case chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED:
       Update(NULL);

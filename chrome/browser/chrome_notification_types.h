@@ -388,11 +388,6 @@ enum NotificationType {
   // unloaded and reloaded. The source is a Profile.
   NOTIFICATION_EXTENSIONS_READY,
 
-  // Sent when an extension icon being displayed in the location bar is updated.
-  // The source is the Profile and the details are the WebContents for
-  // the tab.
-  NOTIFICATION_EXTENSION_LOCATION_BAR_UPDATED,
-
   // DEPRECATED: Use ExtensionRegistry::AddObserver instead.
   //
   // Sent when a new extension is loaded. The details are an Extension, and
