@@ -61,9 +61,9 @@ def CheckChangeHasDescription(input_api, output_api):
   text = input_api.change.DescriptionText()
   if text.strip() == '':
     if input_api.is_committing:
-      return [output_api.PresubmitError('Add a description.')]
+      return [output_api.PresubmitError('Add a description to the CL.')]
     else:
-      return [output_api.PresubmitNotifyResult('Add a description.')]
+      return [output_api.PresubmitNotifyResult('Add a description to the CL.')]
   return []
 
 
