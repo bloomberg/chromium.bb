@@ -48,6 +48,10 @@ pkg_config("udev") {
   packages = [ "libudev" ]
 }
 
+pkg_config("dbus") {
+  packages = [ "dbus-1" ]
+}
+
 config("x11") {
   # Don't bother running pkg-config for these X related libraries since it just
   # returns the same libs, and forking pkg-config is slow.
