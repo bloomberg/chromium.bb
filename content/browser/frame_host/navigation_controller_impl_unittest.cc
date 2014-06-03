@@ -2261,6 +2261,19 @@ TEST_F(NavigationControllerTest, ClientRedirectAfterInPageNavigation) {
   }
 }
 
+TEST_F(NavigationControllerTest, PushStateWithoutPreviousEntry)
+{
+  ASSERT_FALSE(controller_impl().GetLastCommittedEntry());
+  FrameHostMsg_DidCommitProvisionalLoad_Params params;
+  GURL url("http://foo");
+  params.page_id = 1;
+  params.url = url;
+  params.page_state = PageState::CreateFromURL(url);
+  params.was_within_same_page = true;
+  test_rvh()->SendNavigateWithParams(&params);
+  // We pass if we don't crash.
+}
+
 // NotificationObserver implementation used in verifying we've received the
 // NOTIFICATION_NAV_LIST_PRUNED method.
 class PrunedListener : public NotificationObserver {

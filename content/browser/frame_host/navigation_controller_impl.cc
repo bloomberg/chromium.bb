@@ -1060,7 +1060,7 @@ void NavigationControllerImpl::RendererDidNavigateToNewPage(
   // history.pushState() is classified as a navigation to a new page, but
   // sets was_within_same_page to true. In this case, we already have the
   // title available, so set it immediately.
-  if (params.was_within_same_page)
+  if (params.was_within_same_page && GetLastCommittedEntry())
     new_entry->SetTitle(GetLastCommittedEntry()->GetTitle());
 
   DCHECK(!params.history_list_was_cleared || !replace_entry);
