@@ -3,20 +3,24 @@ This test validates initial set of loaded modules.
 
 Running: testInitialLoad
 Loaded modules:
+    main
     elements
 
 Running: testCreateElementsPanel
 Loaded modules:
+    main
     elements
 
 Running: testCreateNetworkPanel
 Loaded modules:
+    main
     elements
     network
     source_frame
 
 Running: testShowSourcesPanel
 Loaded modules:
+    main
     elements
     network
     sources
@@ -24,6 +28,7 @@ Loaded modules:
 
 Running: testOpenUISourceCode
 Loaded modules:
+    main
     elements
     network
     sources
