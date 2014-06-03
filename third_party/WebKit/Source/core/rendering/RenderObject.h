@@ -1289,13 +1289,8 @@ private:
     TemporaryChange<bool> m_disabler;
 };
 
-// Allow equality comparisons of RenderObject's by reference or pointer, interchangeably.
-inline bool operator==(const RenderObject& a, const RenderObject& b) { return &a == &b; }
-inline bool operator==(const RenderObject& a, const RenderObject* b) { return &a == b; }
-inline bool operator==(const RenderObject* a, const RenderObject& b) { return a == &b; }
-inline bool operator!=(const RenderObject& a, const RenderObject& b) { return !(a == b); }
-inline bool operator!=(const RenderObject& a, const RenderObject* b) { return !(a == b); }
-inline bool operator!=(const RenderObject* a, const RenderObject& b) { return !(a == b); }
+// Allow equality comparisons of RenderObjects by reference or pointer, interchangeably.
+DEFINE_COMPARISON_OPERATORS_WITH_REFERENCES(RenderObject)
 
 inline bool RenderObject::documentBeingDestroyed() const
 {

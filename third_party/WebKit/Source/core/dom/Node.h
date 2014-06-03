@@ -884,16 +884,7 @@ inline bool isTreeScopeRoot(const Node& node)
 }
 
 // Allow equality comparisons of Nodes by reference or pointer, interchangeably.
-inline bool operator==(const Node& a, const Node& b) { return &a == &b; }
-inline bool operator==(const Node& a, const Node* b) { return &a == b; }
-inline bool operator==(const Node* a, const Node& b) { return a == &b; }
-inline bool operator!=(const Node& a, const Node& b) { return !(a == b); }
-inline bool operator!=(const Node& a, const Node* b) { return !(a == b); }
-inline bool operator!=(const Node* a, const Node& b) { return !(a == b); }
-inline bool operator==(const PassRefPtr<Node>& a, const Node& b) { return a.get() == &b; }
-inline bool operator==(const Node& a, const PassRefPtr<Node>& b) { return &a == b.get(); }
-inline bool operator!=(const PassRefPtr<Node>& a, const Node& b) { return !(a == b); }
-inline bool operator!=(const Node& a, const PassRefPtr<Node>& b) { return !(a == b); }
+DEFINE_COMPARISON_OPERATORS_WITH_REFERENCES_REFCOUNTED(Node)
 
 
 #define DEFINE_NODE_TYPE_CASTS(thisType, predicate) \

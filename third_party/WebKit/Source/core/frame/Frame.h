@@ -143,16 +143,7 @@ inline FrameTree& Frame::tree() const
 }
 
 // Allow equality comparisons of Frames by reference or pointer, interchangeably.
-inline bool operator==(const Frame& a, const Frame& b) { return &a == &b; }
-inline bool operator==(const Frame& a, const Frame* b) { return &a == b; }
-inline bool operator==(const Frame* a, const Frame& b) { return a == &b; }
-inline bool operator!=(const Frame& a, const Frame& b) { return !(a == b); }
-inline bool operator!=(const Frame& a, const Frame* b) { return !(a == b); }
-inline bool operator!=(const Frame* a, const Frame& b) { return !(a == b); }
-inline bool operator==(const PassRefPtr<Frame>& a, const Frame& b) { return a.get() == &b; }
-inline bool operator==(const Frame& a, const PassRefPtr<Frame>& b) { return &a == b.get(); }
-inline bool operator!=(const PassRefPtr<Frame>& a, const Frame& b) { return !(a == b); }
-inline bool operator!=(const Frame& a, const PassRefPtr<Frame>& b) { return !(a == b); }
+DEFINE_COMPARISON_OPERATORS_WITH_REFERENCES_REFCOUNTED(Frame)
 
 } // namespace WebCore
 
