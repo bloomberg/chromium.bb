@@ -403,13 +403,24 @@ ImageView.prototype.load = function(entry, metadata, effect,
 
   function displayThumbnail(loadType, canvas) {
     if (canvas) {
+      var width = null;
+      var height = null;
+      if (metadata.media) {
+        width = metadata.media.width;
+        height = metadata.media.height;
+      }
+      // If metadata.drive.present is true, the image data is loaded directly
+      // from local cache, whose size may be out of sync with the drive
+      // metadata.
+      if (metadata.drive && !metadata.drive.present) {
+        width = metadata.drive.imageWidth;
+        height = metadata.drive.imageHeight;
+      }
       self.replace(
           canvas,
           effect,
-          (metadata.media && metadata.media.width) ||
-              metadata.drive.imageWidth,
-          (metadata.media && metadata.media.height) ||
-              metadata.drive.imageHeight,
+          width,
+          height,
           true /* preview */);
       if (displayCallback) displayCallback();
     }

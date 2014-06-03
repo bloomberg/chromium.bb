@@ -940,6 +940,8 @@ SlideMode.prototype.saveCurrentImage_ = function(callback) {
       this.selectedImageMetadata_.media, canvas, 1 /* quality */);
   var selectedImageMetadata = ContentProvider.ConvertContentMetadata(
       metadataEncoder.getMetadata(), this.selectedImageMetadata_);
+  if (selectedImageMetadata.filesystem)
+    selectedImageMetadata.filesystem.modificationTime = new Date();
   this.selectedImageMetadata_ = selectedImageMetadata;
   this.metadataCache_.set(oldEntry,
                           Gallery.METADATA_TYPE,

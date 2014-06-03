@@ -273,8 +273,15 @@ AuthorizedXHR.prototype.load = function(url, onSuccess, onFailure) {
   }.bind(this);
 
   // Do not request a token for local resources, since it is not necessary.
-  if (url.indexOf('filesystem:') === 0) {
-    this.xhr_ = AuthorizedXHR.load_(null, url, onMaybeSuccess, onMaybeFailure);
+  if (/^filesystem:/.test(url)) {
+    // The query parameter is workaround for
+    // crbug.com/379678, which force to obtain the latest contents of the image.
+    var noCacheUrl = url + '?nocache=' + Date.now();
+    this.xhr_ = AuthorizedXHR.load_(
+        null,
+        noCacheUrl,
+        onMaybeSuccess,
+        onMaybeFailure);
     return;
   }
 

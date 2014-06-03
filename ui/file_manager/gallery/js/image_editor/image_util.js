@@ -489,14 +489,9 @@ ImageUtil.ImageLoader.prototype.load = function(
     // general error should not be specified
     this.image_.onerror = onError.bind(this, 'GALLERY_IMAGE_ERROR');
 
-    // Extract the last modification date to determine if the cached image
-    // is outdated.
-    var modificationTime = opt_metadata &&
-                           opt_metadata.modificationTime &&
-                           opt_metadata.modificationTime.getTime();
-
-    // Load the image directly.
-    this.image_.src = entry.toURL();
+    // Load the image directly. The query parameter is workaround for
+    // crbug.com/379678, which force to update the contents of the image.
+    this.image_.src = entry.toURL() + "?nocache=" + Date.now();
   }.bind(this);
 
   // Loads the image. If already loaded, then forces a reload.
