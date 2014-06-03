@@ -10,6 +10,8 @@
 #include "content/common/service_worker/service_worker_messages.h"
 #include "content/renderer/service_worker/embedded_worker_context_client.h"
 #include "ipc/ipc_message.h"
+#include "third_party/WebKit/public/platform/WebServiceWorkerRequest.h"
+#include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/web/WebServiceWorkerContextClient.h"
 #include "third_party/WebKit/public/web/WebServiceWorkerContextProxy.h"
 
@@ -121,8 +123,17 @@ void ServiceWorkerScriptContext::OnInstallEvent(int request_id,
 void ServiceWorkerScriptContext::OnFetchEvent(
     int request_id,
     const ServiceWorkerFetchRequest& request) {
-  // TODO(falken): Pass in the request.
-  proxy_->dispatchFetchEvent(request_id);
+  blink::WebServiceWorkerRequest webRequest;
+  webRequest.setURL(blink::WebURL(request.url));
+  webRequest.setMethod(blink::WebString::fromUTF8(request.method));
+  for (std::map<std::string, std::string>::const_iterator it =
+           request.headers.begin();
+       it != request.headers.end();
+       ++it) {
+    webRequest.setHeader(blink::WebString::fromUTF8(it->first),
+                         blink::WebString::fromUTF8(it->second));
+  }
+  proxy_->dispatchFetchEvent(request_id, webRequest);
 }
 
 void ServiceWorkerScriptContext::OnSyncEvent(int request_id) {
