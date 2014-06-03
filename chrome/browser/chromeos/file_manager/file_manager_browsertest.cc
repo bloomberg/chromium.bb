@@ -524,9 +524,13 @@ class FileManagerBrowserTestBase : public ExtensionApiTest {
 
   // Loads our testing extension and sends it a string identifying the current
   // test.
-  void StartTest();
+  virtual void StartTest();
+  void RunTestMessageLoop();
 
   // Overriding point for test configurations.
+  virtual const char* GetTestManifestName() const {
+    return "file_manager_test_manifest.json";
+  }
   virtual GuestMode GetGuestModeParam() const = 0;
   virtual const char* GetTestCaseNameParam() const = 0;
   virtual std::string OnMessage(const std::string& name,
@@ -587,10 +591,16 @@ void FileManagerBrowserTestBase::SetUpCommandLine(CommandLine* command_line) {
 
 void FileManagerBrowserTestBase::StartTest() {
   // Launch the extension.
-  base::FilePath path = test_data_dir_.AppendASCII("file_manager_browsertest");
-  const extensions::Extension* extension = LoadExtensionAsComponent(path);
+  const base::FilePath path =
+      test_data_dir_.AppendASCII("file_manager_browsertest");
+  const extensions::Extension* const extension =
+      LoadExtensionAsComponentWithManifest(path, GetTestManifestName());
   ASSERT_TRUE(extension);
 
+  RunTestMessageLoop();
+}
+
+void FileManagerBrowserTestBase::RunTestMessageLoop() {
   // Handle the messages from JavaScript.
   // The while loop is break when the test is passed or failed.
   FileManagerTestListener listener;
@@ -1065,6 +1075,69 @@ IN_PROC_BROWSER_TEST_F(MultiProfileFileManagerBrowserTest,
   AddExtraUsersForStressTesting();
 
   set_test_case_name("multiProfileVisitDesktopMenu");
+  StartTest();
+}
+
+template<GuestMode M>
+class GalleryBrowserTestBase : public FileManagerBrowserTestBase {
+ public:
+  virtual GuestMode GetGuestModeParam() const OVERRIDE { return M; }
+  virtual const char* GetTestCaseNameParam() const OVERRIDE {
+    return test_case_name_.c_str();
+  }
+
+ protected:
+  virtual std::string OnMessage(const std::string& name,
+                                const base::Value* value) OVERRIDE;
+
+  virtual const char* GetTestManifestName() const OVERRIDE {
+    return "gallery_test_manifest.json";
+  }
+
+  void AddScript(const std::string& name) {
+    scripts_.AppendString(
+        "chrome-extension://ejhcmmdhhpdhhgmifplfmjobgegbibkn/" + name);
+  }
+
+  void set_test_case_name(const std::string& name) {
+    test_case_name_ = name;
+  }
+
+ private:
+  base::ListValue scripts_;
+  std::string test_case_name_;
+};
+
+template<GuestMode M>
+std::string GalleryBrowserTestBase<M>::OnMessage(const std::string& name,
+                                                 const base::Value* value) {
+  if (name == "getScripts") {
+    std::string jsonString;
+    base::JSONWriter::Write(&scripts_, &jsonString);
+    return jsonString;
+  }
+  return FileManagerBrowserTestBase::OnMessage(name, value);
+}
+
+typedef GalleryBrowserTestBase<NOT_IN_GUEST_MODE> GalleryBrowserTest;
+typedef GalleryBrowserTestBase<IN_GUEST_MODE> GalleryBrowserTestInGuestMode;
+
+IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, OpenSingleImageOnDownloads) {
+  AddScript("gallery/open_image_files.js");
+  set_test_case_name("openSingleImageOnDownloads");
+  StartTest();
+}
+
+IN_PROC_BROWSER_TEST_F(GalleryBrowserTestInGuestMode,
+                       OpenSingleImageOnDownloads) {
+  AddScript("gallery/open_image_files.js");
+  set_test_case_name("openSingleImageOnDownloads");
+  StartTest();
+}
+
+IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, OpenSingleImageOnDrive) {
+  AddScript("gallery/open_image_files.js");
+  set_test_case_name("openSingleImageOnDrive");
   StartTest();
 }
 

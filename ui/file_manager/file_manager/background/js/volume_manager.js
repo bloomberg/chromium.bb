@@ -47,7 +47,7 @@ function VolumeInfo(
     this.fakeEntries_[VolumeManagerCommon.RootType.DRIVE_OFFLINE] = {
       isDirectory: true,
       rootType: VolumeManagerCommon.RootType.DRIVE_OFFLINE,
-      toURL: function() { return 'fake-entry://drive_offline' }
+      toURL: function() { return 'fake-entry://drive_offline'; }
     };
     this.fakeEntries_[VolumeManagerCommon.RootType.DRIVE_SHARED_WITH_ME] = {
       isDirectory: true,

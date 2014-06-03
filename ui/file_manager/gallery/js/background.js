@@ -103,45 +103,14 @@ var appWindowPromise = Promise.resolve(null);
  */
 var closingPromise = Promise.resolve(null);
 
-chrome.app.runtime.onLaunched.addListener(function(launchData) {
-  // Skip if files are not selected.
-  if (!launchData || !launchData.items || launchData.items.length == 0)
-    return;
-
-  // Obtains entries in non-isolated file systems.
-  // The entries in launchData are stored in the isolated file system.
-  // We need to map the isolated entries to the normal entries to retrieve their
-  // parent directory.
-  var isolatedEntries = launchData.items.map(function(item) {
-    return item.entry;
-  });
-  var selectedEntriesPromise = backgroundComponentsPromise.then(function() {
-    return resolveEntries(isolatedEntries);
-  });
-
-  // If only 1 entry is selected, retrieve entries in the same directory.
-  // Otherwise, just use the selectedEntries as an entry set.
-  var allEntriesPromise = selectedEntriesPromise.then(function(entries) {
-    if (entries.length === 1) {
-      var parent = new Promise(entries[0].getParent.bind(entries[0]));
-      return parent.then(getChildren).then(function(entries) {
-        return entries.filter(FileType.isImageOrVideo);
-      });
-    } else {
-      return entries;
-    }
-  });
-
-  // Store the selected and all entries to the launchData.
-  launchData.entriesPromise = Promise.all([selectedEntriesPromise,
-                                           allEntriesPromise]).then(
-      function(args) {
-        return Object.freeze({
-          selectedEntries: args[0],
-          allEntries: args[1]
-        });
-      });
-
+/**
+ * Launches the application with entries.
+ *
+ * @param {Promise} selectedEntriesPromise Promise to be fulfilled with the
+ *     entries that are stored in the exteranl file system (not in the isolated
+ *     file system).
+ */
+function launch(selectedEntriesPromise) {
   // If there is the previous window, close the window.
   appWindowPromise = appWindowPromise.then(function(appWindow) {
     if (appWindow) {
@@ -180,14 +149,61 @@ chrome.app.runtime.onLaunched.addListener(function(launchData) {
     return args[0];
   });
 
+
+  // If only 1 entry is selected, retrieve entries in the same directory.
+  // Otherwise, just use the selectedEntries as an entry set.
+  var allEntriesPromise = selectedEntriesPromise.then(function(entries) {
+    if (entries.length === 1) {
+      var parentPromise = new Promise(entries[0].getParent.bind(entries[0]));
+      return parentPromise.then(getChildren).then(function(entries) {
+        return entries.filter(FileType.isImageOrVideo);
+      });
+    } else {
+      return entries;
+    }
+  });
+
   // Open entries.
-  Promise.all([
+  return Promise.all([
     appWindowPromise,
     allEntriesPromise,
     selectedEntriesPromise
   ]).then(function(args) {
     args[0].contentWindow.loadEntries(args[1], args[2]);
-  }).catch(function(error) {
+  });
+}
+
+chrome.app.runtime.onLaunched.addListener(function(launchData) {
+  // Skip if files are not selected.
+  if (!launchData || !launchData.items || launchData.items.length === 0)
+    return;
+
+  // Obtains entries in non-isolated file systems.
+  // The entries in launchData are stored in the isolated file system.
+  // We need to map the isolated entries to the normal entries to retrieve their
+  // parent directory.
+  var isolatedEntries = launchData.items.map(function(item) {
+    return item.entry;
+  });
+  var selectedEntriesPromise = backgroundComponentsPromise.then(function() {
+    return resolveEntries(isolatedEntries);
+  });
+
+  launch(selectedEntriesPromise).catch(function(error) {
     console.error(error.stack || error);
   });
 });
+
+// If is is run in the browser test, wait for the test resources are installed
+// as a component extension, and then load the test resources.
+if (chrome.test) {
+  chrome.runtime.onMessageExternal.addListener(function(message) {
+    if (message.name !== 'testResourceLoaded')
+      return;
+    var script = document.createElement('script');
+    script.src =
+        'chrome-extension://ejhcmmdhhpdhhgmifplfmjobgegbibkn' +
+        '/gallery/test_loader.js';
+    document.documentElement.appendChild(script);
+  });
+}

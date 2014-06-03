@@ -1,0 +1,40 @@
+{
+  // chrome-extension://hoobinhbdbiehknkpbpejbbpdbkdjmoco/
+  "key": "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDBjsTE4ocXJWzgcCDCUcsPASoRCGaTHrHn6b4zDTCayTuJtyGKzw4xZPMiG4dbEbmSAwEU7UCoyJAM1XfLS7UQ/Zz7ft8wpZkSS8/PJW+E4Qu++tMS0csj2Wdrrd2c5yyWxlJ+H9o2ivwtwuxs7pd+LXt+gsBA0epnT04T9EvOTQIDAQAB",
+  "name": "chrome file manager browser tests",
+  "version": "0.1",
+  "incognito": "split",  // Run a separate instance for the incognito mode.
+  "manifest_version": 2,
+  "background": {
+    "scripts": [
+      // List test_util.js and background.js first because the testcase
+      // namespace is defined here.
+      "test_util.js",
+      "file_manager/background.js",
+      "file_manager/create_new_folder.js",
+      "file_manager/drive_specific.js",
+      "file_manager/copy_between_windows.js",
+      "file_manager/execute_default_task.js",
+      "file_manager/file_display.js",
+      "file_manager/keyboard_operations.js",
+      "file_manager/multi_profile.js",
+      "file_manager/navigation_list.js",
+      "file_manager/open_audio_files.js",
+      "file_manager/open_zip_files.js",
+      "file_manager/open_video_files.js",
+      "file_manager/restore_geometry.js",
+      "file_manager/restore_prefs.js",
+      "file_manager/share_dialog.js",
+      "file_manager/suggest_app_dialog.js",
+      "file_manager/tab_index.js",
+      "file_manager/thumbnails.js",
+      "file_manager/transfer.js",
+      "file_manager/traverse.js"
+    ]
+  },
+  "permissions": [
+    "tabs",
+    "chrome-extension://oobinhbdbiehknkpbpejbbpdbkdjmoco/*",
+    "chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/*"
+  ]
+}
