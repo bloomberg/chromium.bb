@@ -6,29 +6,85 @@
 #include "bindings/v8/V8DOMActivityLogger.h"
 
 #include "bindings/v8/V8Binding.h"
+#include "platform/weborigin/KURL.h"
 #include "wtf/HashMap.h"
+#include "wtf/MainThread.h"
+#include "wtf/text/StringHash.h"
 
 namespace WebCore {
 
-typedef HashMap<int, OwnPtr<V8DOMActivityLogger>, WTF::IntHash<int>, WTF::UnsignedWithZeroKeyHashTraits<int> > DOMActivityLoggerMap;
+typedef HashMap<String, OwnPtr<V8DOMActivityLogger> > DOMActivityLoggerMapForMainWorld;
+typedef HashMap<int, OwnPtr<V8DOMActivityLogger>, WTF::IntHash<int>, WTF::UnsignedWithZeroKeyHashTraits<int> > DOMActivityLoggerMapForIsolatedWorld;
 
-static DOMActivityLoggerMap& domActivityLoggers()
+static DOMActivityLoggerMapForMainWorld& domActivityLoggersForMainWorld()
 {
     ASSERT(isMainThread());
-    DEFINE_STATIC_LOCAL(DOMActivityLoggerMap, map, ());
+    DEFINE_STATIC_LOCAL(DOMActivityLoggerMapForMainWorld, map, ());
     return map;
 }
 
-void V8DOMActivityLogger::setActivityLogger(int worldId, PassOwnPtr<V8DOMActivityLogger> logger)
+static DOMActivityLoggerMapForIsolatedWorld& domActivityLoggersForIsolatedWorld()
 {
-    domActivityLoggers().set(worldId, logger);
+    ASSERT(isMainThread());
+    DEFINE_STATIC_LOCAL(DOMActivityLoggerMapForIsolatedWorld, map, ());
+    return map;
 }
 
-V8DOMActivityLogger* V8DOMActivityLogger::activityLogger(int worldId)
+void V8DOMActivityLogger::setActivityLogger(int worldId, const String& extensionId, PassOwnPtr<V8DOMActivityLogger> logger)
 {
-    DOMActivityLoggerMap& loggers = domActivityLoggers();
-    DOMActivityLoggerMap::iterator it = loggers.find(worldId);
+    // FIXME: The following line is a stub to allow appropriate modifications to
+    // chromium code base. When the modifications are done, remove this line.
+    domActivityLoggersForIsolatedWorld().set(worldId, logger);
+    return;
+
+    if (worldId) {
+        domActivityLoggersForIsolatedWorld().set(worldId, logger);
+    } else {
+        domActivityLoggersForMainWorld().set(extensionId, logger);
+    }
+}
+
+V8DOMActivityLogger* V8DOMActivityLogger::activityLogger(int worldId, const String& extensionId)
+{
+    {
+        // FIXME: The following lines are a stub to allow appropriate modifications to
+        // chromium code base. When the modifications are done, remove these lines.
+        DOMActivityLoggerMapForIsolatedWorld& loggers = domActivityLoggersForIsolatedWorld();
+        DOMActivityLoggerMapForIsolatedWorld::iterator it = loggers.find(worldId);
+        return it == loggers.end() ? 0 : it->value.get();
+    }
+
+    if (worldId) {
+        DOMActivityLoggerMapForIsolatedWorld& loggers = domActivityLoggersForIsolatedWorld();
+        DOMActivityLoggerMapForIsolatedWorld::iterator it = loggers.find(worldId);
+        return it == loggers.end() ? 0 : it->value.get();
+    }
+
+    if (extensionId.isEmpty())
+        return 0;
+
+    DOMActivityLoggerMapForMainWorld& loggers = domActivityLoggersForMainWorld();
+    DOMActivityLoggerMapForMainWorld::iterator it = loggers.find(extensionId);
     return it == loggers.end() ? 0 : it->value.get();
+}
+
+V8DOMActivityLogger* V8DOMActivityLogger::activityLogger(int worldId, const KURL& url)
+{
+    // FIXME: The following line is a stub to allow appropriate modifications to
+    // chromium code base. When the modifications are done, remove this line.
+    return activityLogger(worldId, String());
+
+    // extension ID is ignored for worldId != 0.
+    if (worldId)
+        return activityLogger(worldId, String());
+
+    // To find an activity logger that corresponds to the main world of an
+    // extension, we need to obtain the extension ID. Extension ID is a hostname
+    // of a background page's URL.
+    if (!url.protocolIs("chrome-extension"))
+        return 0;
+
+    return activityLogger(worldId, url.host());
 }
 
 } // namespace WebCore

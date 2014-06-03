@@ -47,6 +47,7 @@
 namespace WebCore {
 
 class CustomElementDefinition;
+class V8DOMActivityLogger;
 class V8PerContextData;
 struct V8NPObject;
 typedef WTF::Vector<V8NPObject*> V8NPObjectVector;
@@ -90,6 +91,9 @@ public:
     void clearCustomElementBinding(CustomElementDefinition*);
     CustomElementBinding* customElementBinding(CustomElementDefinition*);
 
+    V8DOMActivityLogger* activityLogger() const { return m_activityLogger; }
+    void setActivityLogger(V8DOMActivityLogger* activityLogger) { m_activityLogger = activityLogger; }
+
 private:
     V8PerContextData(v8::Handle<v8::Context>);
 
@@ -114,6 +118,9 @@ private:
 
     typedef WTF::HashMap<CustomElementDefinition*, OwnPtr<CustomElementBinding> > CustomElementBindingMap;
     OwnPtr<CustomElementBindingMap> m_customElementBindings;
+
+    // This is owned by a static hash map in V8DOMActivityLogger.
+    V8DOMActivityLogger* m_activityLogger;
 };
 
 class V8PerContextDebugData {

@@ -165,9 +165,9 @@ v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info
     UseCounter::count(callingExecutionContext(info.GetIsolate()), UseCounter::{{attribute.measure_as}});
     {% endif %}
     {% if world_suffix in attribute.activity_logging_world_list_for_getter %}
-    DOMWrapperWorld& world = DOMWrapperWorld::current(info.GetIsolate());
-    if (world.activityLogger())
-        world.activityLogger()->logGetter("{{interface_name}}.{{attribute.name}}");
+    V8PerContextData* contextData = V8PerContextData::from(info.GetIsolate()->GetCurrentContext());
+    if (contextData && contextData->activityLogger())
+        contextData->activityLogger()->logGetter("{{interface_name}}.{{attribute.name}}");
     {% endif %}
     {% if attribute.has_custom_getter %}
     {{v8_class}}::{{attribute.name}}AttributeGetterCustom(info);
@@ -313,8 +313,8 @@ v8::Local<v8::String>, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackI
     UseCounter::count(callingExecutionContext(info.GetIsolate()), UseCounter::{{attribute.measure_as}});
     {% endif %}
     {% if world_suffix in attribute.activity_logging_world_list_for_setter %}
-    DOMWrapperWorld& world = DOMWrapperWorld::current(info.GetIsolate());
-    if (world.activityLogger()) {
+    V8PerContextData* contextData = V8PerContextData::from(info.GetIsolate()->GetCurrentContext());
+    if (contextData && contextData->activityLogger()) {
         {% if attribute.activity_logging_include_old_value_for_setter %}
         {{cpp_class}}* impl = {{v8_class}}::toNative(info.Holder());
         {% if attribute.cpp_value_original %}
@@ -323,9 +323,9 @@ v8::Local<v8::String>, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackI
         {{attribute.cpp_type}} original = {{attribute.cpp_value}};
         {% endif %}
         v8::Handle<v8::Value> originalValue = {{attribute.cpp_value_to_v8_value}};
-        world.activityLogger()->logSetter("{{interface_name}}.{{attribute.name}}", v8Value, originalValue);
+        contextData->activityLogger()->logSetter("{{interface_name}}.{{attribute.name}}", v8Value, originalValue);
         {% else %}
-        world.activityLogger()->logSetter("{{interface_name}}.{{attribute.name}}", v8Value);
+        contextData->activityLogger()->logSetter("{{interface_name}}.{{attribute.name}}", v8Value);
         {% endif %}
     }
     {% endif %}

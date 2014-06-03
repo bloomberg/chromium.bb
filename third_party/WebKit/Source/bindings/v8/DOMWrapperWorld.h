@@ -45,7 +45,6 @@ namespace WebCore {
 class DOMDataStore;
 class ExecutionContext;
 class ScriptController;
-class V8DOMActivityLogger;
 
 enum WorldIdConstants {
     MainWorldId = 0,
@@ -113,8 +112,6 @@ public:
     int worldId() const { return m_worldId; }
     int extensionGroup() const { return m_extensionGroup; }
     DOMDataStore& domDataStore() const { return *m_domDataStore; }
-    V8DOMActivityLogger* activityLogger() const { return m_activityLogger; }
-    void setActivityLogger(V8DOMActivityLogger* activityLogger) { m_activityLogger = activityLogger; }
 
     static void setWorldOfInitializingWindow(DOMWrapperWorld* world)
     {
@@ -133,8 +130,6 @@ private:
     const int m_worldId;
     const int m_extensionGroup;
     OwnPtr<DOMDataStore> m_domDataStore;
-    // This is owned by a static hash map in V8DOMActivityLogger.
-    V8DOMActivityLogger* m_activityLogger;
 };
 
 } // namespace WebCore

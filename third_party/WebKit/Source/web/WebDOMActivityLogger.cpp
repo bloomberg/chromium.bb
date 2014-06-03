@@ -87,15 +87,28 @@ private:
     OwnPtr<WebDOMActivityLogger> m_domActivityLogger;
 };
 
+bool hasDOMActivityLogger(int worldId, const WebString& extensionId)
+{
+    return V8DOMActivityLogger::activityLogger(worldId, extensionId);
+}
+
+void setDOMActivityLogger(int worldId, const WebString& extensionId, WebDOMActivityLogger* logger)
+{
+    ASSERT(logger);
+    V8DOMActivityLogger::setActivityLogger(worldId, extensionId, adoptPtr(new DOMActivityLoggerContainer(adoptPtr(logger))));
+}
+
+// FIXME: remove the following two methods after modifying Chrome to use the
+// above ones.
 bool hasDOMActivityLogger(int worldId)
 {
-    return V8DOMActivityLogger::activityLogger(worldId);
+    return V8DOMActivityLogger::activityLogger(worldId, WebString());
 }
 
 void setDOMActivityLogger(int worldId, WebDOMActivityLogger* logger)
 {
     ASSERT(logger);
-    V8DOMActivityLogger::setActivityLogger(worldId, adoptPtr(new DOMActivityLoggerContainer(adoptPtr(logger))));
+    V8DOMActivityLogger::setActivityLogger(worldId, WebString(), adoptPtr(new DOMActivityLoggerContainer(adoptPtr(logger))));
 }
 
 } // namespace blink
