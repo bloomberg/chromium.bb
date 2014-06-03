@@ -82,6 +82,9 @@ class FakeProfileOAuth2TokenService
   void IssueRefreshTokenForUser(const std::string& account_id,
                                 const std::string& token);
 
+  // Fire OnRefreshTokensLoaded on all observers.
+  void IssueAllRefreshTokensLoaded();
+
   // Gets a list of active requests (can be used by tests to validate that the
   // correct request has been issued).
   std::vector<PendingRequest> GetPendingRequests();
@@ -90,6 +93,10 @@ class FakeProfileOAuth2TokenService
   void IssueAllTokensForAccount(const std::string& account_id,
                                 const std::string& access_token,
                                 const base::Time& expiration);
+
+  void IssueErrorForAllPendingRequestsForAccount(
+      const std::string& account_id,
+      const GoogleServiceAuthError& error);
 
   void IssueTokenForScope(const ScopeSet& scopes,
                           const std::string& access_token,

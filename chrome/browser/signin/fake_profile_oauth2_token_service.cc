@@ -67,6 +67,10 @@ void FakeProfileOAuth2TokenService::IssueRefreshTokenForUser(
   }
 }
 
+void FakeProfileOAuth2TokenService::IssueAllRefreshTokensLoaded() {
+  FireRefreshTokensLoaded();
+}
+
 void FakeProfileOAuth2TokenService::IssueAllTokensForAccount(
     const std::string& account_id,
     const std::string& access_token,
@@ -77,6 +81,17 @@ void FakeProfileOAuth2TokenService::IssueAllTokensForAccount(
                    GoogleServiceAuthError::AuthErrorNone(),
                    access_token,
                    expiration);
+}
+
+void FakeProfileOAuth2TokenService::IssueErrorForAllPendingRequestsForAccount(
+    const std::string& account_id,
+    const GoogleServiceAuthError& error) {
+  CompleteRequests(account_id,
+                   true,
+                   ScopeSet(),
+                   error,
+                   std::string(),
+                   base::Time());
 }
 
 void FakeProfileOAuth2TokenService::IssueTokenForScope(

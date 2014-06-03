@@ -1295,6 +1295,7 @@
         'browser/shell_integration_linux_unittest.cc',
         'browser/shell_integration_win_unittest.cc',
         'browser/signin/account_reconcilor_unittest.cc',
+        'browser/signin/account_service_flag_fetcher_unittest.cc',
         'browser/signin/local_auth_unittest.cc',
         'browser/signin/signin_error_notifier_ash_unittest.cc',
         'browser/signin/signin_global_error_unittest.cc',
