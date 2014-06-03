@@ -1000,10 +1000,14 @@ void RenderTableSection::layoutRows()
                     view()->addLayoutDelta(childOffset);
 
                 // If the child moved, we have to repaint it as well as any floating/positioned
-                // descendants.  An exception is if we need a layout.  In this case, we know we're going to
+                // descendants. An exception is if we need a layout. In this case, we know we're going to
                 // repaint ourselves (and the child) anyway.
-                if (!table()->selfNeedsLayout() && cell->checkForRepaintDuringLayout())
-                    cell->repaintDuringLayoutIfMoved(oldCellRect);
+                if (!table()->selfNeedsLayout() && cell->checkForRepaint()) {
+                    if (RuntimeEnabledFeatures::repaintAfterLayoutEnabled())
+                        cell->setMayNeedPaintInvalidation(true);
+                    else
+                        cell->repaintDuringLayoutIfMoved(oldCellRect);
+                }
             }
         }
         if (rowHeightIncreaseForPagination) {
