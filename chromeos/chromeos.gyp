@@ -357,6 +357,8 @@
         'network/shill_property_util.h',
         'network/dhcp_proxy_script_fetcher_chromeos.cc',
         'network/dhcp_proxy_script_fetcher_chromeos.h',
+        'pairing/controller_pairing_flow.cc',
+        'pairing/controller_pairing_flow.h',
         'process_proxy/process_output_watcher.cc',
         'process_proxy/process_output_watcher.h',
         'process_proxy/process_proxy.cc',
