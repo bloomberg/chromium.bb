@@ -16,7 +16,7 @@
 #include "extensions/renderer/extension_groups.h"
 #include "extensions/renderer/script_context.h"
 #include "extensions/renderer/user_script_slave.h"
-#include "grit/renderer_resources.h"
+#include "grit/extensions_renderer_resources.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebScriptSource.h"
