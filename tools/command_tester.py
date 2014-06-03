@@ -14,6 +14,7 @@ This harness is used instead of shell scripts to ensure windows compatibility
 # python imports
 import getopt
 import os
+import pipes
 import re
 import sys
 
@@ -659,9 +660,8 @@ def Main(argv):
   if run_under:
     command = run_under.split(',') + command
 
-  Banner('running %s' % str(command))
   # print the command in copy-and-pastable fashion
-  print ' '.join(env_vars + command)
+  print ' '.join(pipes.quote(arg) for arg in env_vars + command)
 
   # Concatenate output when running multiple times (e.g., for timing).
   combined_stdout = ''
