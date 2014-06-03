@@ -27,7 +27,6 @@ include_rules = [
   "!chrome/browser/content_settings/cookie_settings.h",
   "!chrome/browser/diagnostics/sqlite_diagnostics.h",
   "!chrome/browser/omnibox/omnibox_field_trial.h",
-  "!chrome/browser/omnibox/omnibox_log.h",
   "!chrome/browser/prefs/scoped_user_pref_update.h",
   "!chrome/browser/prerender/prerender_contents.h",
   "!chrome/browser/prerender/prerender_manager.h",
