@@ -9275,6 +9275,16 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Login.UsersActiveWeekly.Percent" units="%">
+  <owner>alemate@chromium.org</owner>
+  <owner>nkostylev@chromium.org</owner>
+  <summary>
+    Chrome OS histogram that keeps track of percentage of local users who have
+    logged in in the last 7 days. Reported on every boot and once a day after
+    that.
+  </summary>
+</histogram>
+
 <histogram name="Login.UserType" enum="LoginUserType">
   <owner>cmasone@chromium.org</owner>
   <summary>
