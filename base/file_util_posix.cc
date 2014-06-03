@@ -459,9 +459,8 @@ bool GetTempDir(FilePath* path) {
 FilePath GetHomeDir() {
 #if defined(OS_CHROMEOS)
   if (SysInfo::IsRunningOnChromeOS()) {
-    // On Chrome OS chrome::DIR_USER_DATA is overriden with a primary user
-    // homedir once it becomes available.
-    NOTREACHED() << "Called GetHomeDir() without base::DIR_HOME override";
+    // On Chrome OS chrome::DIR_USER_DATA is overridden with a primary user
+    // homedir once it becomes available. Return / as the safe option.
     return FilePath("/");
   }
 #endif
