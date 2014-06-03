@@ -63,7 +63,7 @@ class DiscoveryRequest : public base::RefCountedThreadSafe<
     DiscoveryRequest,
     BrowserThread::DeleteOnUIThread> {
  public:
-  typedef base::Callback<void(scoped_ptr<DevToolsAndroidBridge::RemoteDevices>)>
+  typedef base::Callback<void(const DevToolsAndroidBridge::RemoteDevices&)>
       DiscoveryCallback;
   typedef AndroidDeviceManager::Device Device;
   typedef AndroidDeviceManager::Devices Devices;
@@ -99,7 +99,7 @@ class DiscoveryRequest : public base::RefCountedThreadSafe<
   DiscoveryCallback callback_;
   Devices devices_;
   DevToolsAndroidBridge::RemoteBrowsers browsers_;
-  scoped_ptr<DevToolsAndroidBridge::RemoteDevices> remote_devices_;
+  DevToolsAndroidBridge::RemoteDevices remote_devices_;
 };
 
 DiscoveryRequest::DiscoveryRequest(
@@ -107,7 +107,6 @@ DiscoveryRequest::DiscoveryRequest(
     const DiscoveryCallback& callback)
     : callback_(callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  remote_devices_.reset(new DevToolsAndroidBridge::RemoteDevices());
 
   device_manager->QueryDevices(
       base::Bind(&DiscoveryRequest::ReceivedDevices, this));
@@ -136,9 +135,9 @@ void DiscoveryRequest::ProcessDevices() {
 void DiscoveryRequest::ReceivedDeviceInfo(
     const AndroidDeviceManager::DeviceInfo& device_info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  remote_devices_->push_back(
+  remote_devices_.push_back(
       new DevToolsAndroidBridge::RemoteDevice(current_device(), device_info));
-  browsers_ = remote_devices_->back()->browsers();
+  browsers_ = remote_devices_.back()->browsers();
   ProcessSockets();
 }
 
@@ -212,7 +211,7 @@ void DiscoveryRequest::NextDevice() {
 }
 
 void DiscoveryRequest::Respond() {
-  callback_.Run(remote_devices_.Pass());
+  callback_.Run(remote_devices_);
 }
 
 // ProtocolCommand ------------------------------------------------------------
@@ -766,7 +765,8 @@ DevToolsAndroidBridge::RemoteDevice::~RemoteDevice() {
 
 DevToolsAndroidBridge::DevToolsAndroidBridge(Profile* profile)
     : profile_(profile),
-      device_manager_(AndroidDeviceManager::Create()) {
+      device_manager_(AndroidDeviceManager::Create()),
+      task_scheduler_(base::Bind(&DevToolsAndroidBridge::ScheduleTaskDefault)) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   pref_change_registrar_.Init(profile_->GetPrefs());
   pref_change_registrar_.Add(prefs::kDevToolsDiscoverUsbDevicesEnabled,
@@ -780,7 +780,7 @@ void DevToolsAndroidBridge::AddDeviceListListener(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   device_list_listeners_.push_back(listener);
   if (device_list_listeners_.size() == 1)
-    RequestDeviceList();
+    StartDeviceListPolling();
 }
 
 void DevToolsAndroidBridge::RemoveDeviceListListener(
@@ -791,14 +791,14 @@ void DevToolsAndroidBridge::RemoveDeviceListListener(
   DCHECK(it != device_list_listeners_.end());
   device_list_listeners_.erase(it);
   if (device_list_listeners_.empty())
-    devices_.clear();
+    StopDeviceListPolling();
 }
 
 void DevToolsAndroidBridge::AddDeviceCountListener(
     DeviceCountListener* listener) {
   device_count_listeners_.push_back(listener);
   if (device_count_listeners_.size() == 1)
-    RequestDeviceCount();
+    StartDeviceCountPolling();
 }
 
 void DevToolsAndroidBridge::RemoveDeviceCountListener(
@@ -808,6 +808,8 @@ void DevToolsAndroidBridge::RemoveDeviceCountListener(
       device_count_listeners_.begin(), device_count_listeners_.end(), listener);
   DCHECK(it != device_count_listeners_.end());
   device_count_listeners_.erase(it);
+  if (device_count_listeners_.empty())
+    StopDeviceCountPolling();
 }
 
 // static
@@ -822,61 +824,87 @@ DevToolsAndroidBridge::~DevToolsAndroidBridge() {
   DCHECK(device_count_listeners_.empty());
 }
 
-void DevToolsAndroidBridge::RequestDeviceList() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  if (device_list_listeners_.empty())
-    return;
-
-  new DiscoveryRequest(
-      device_manager_.get(),
-      base::Bind(&DevToolsAndroidBridge::ReceivedDeviceList, this));
+void DevToolsAndroidBridge::StartDeviceListPolling() {
+  device_list_callback_.Reset(
+    base::Bind(&DevToolsAndroidBridge::ReceivedDeviceList, this));
+  RequestDeviceList(device_list_callback_.callback());
 }
 
-void DevToolsAndroidBridge::ReceivedDeviceList(
-    scoped_ptr<RemoteDevices> devices) {
+void DevToolsAndroidBridge::StopDeviceListPolling() {
+  device_list_callback_.Cancel();
+  devices_.clear();
+}
+
+void DevToolsAndroidBridge::RequestDeviceList(
+    const base::Callback<void(const RemoteDevices&)>& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (device_list_listeners_.empty())
+  if (device_list_listeners_.empty() ||
+      !callback.Equals(device_list_callback_.callback()))
     return;
 
-  devices_ = *devices;
+  new DiscoveryRequest(device_manager_.get(), callback);
+}
+
+void DevToolsAndroidBridge::ReceivedDeviceList(const RemoteDevices& devices) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   DeviceListListeners copy(device_list_listeners_);
   for (DeviceListListeners::iterator it = copy.begin(); it != copy.end(); ++it)
-    (*it)->DeviceListChanged(*devices.get());
+    (*it)->DeviceListChanged(devices);
 
-  BrowserThread::PostDelayedTask(
-      BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(&DevToolsAndroidBridge::RequestDeviceList, this),
-      base::TimeDelta::FromMilliseconds(kAdbPollingIntervalMs));
-}
-
-void DevToolsAndroidBridge::RequestDeviceCount() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  if (device_count_listeners_.empty())
+  if (device_list_listeners_.empty())
     return;
 
-  UsbDeviceProvider::CountDevices(
+  devices_ = devices;
+
+  task_scheduler_.Run(
+      base::Bind(&DevToolsAndroidBridge::RequestDeviceList,
+                 this, device_list_callback_.callback()));
+}
+
+void DevToolsAndroidBridge::StartDeviceCountPolling() {
+  device_count_callback_.Reset(
       base::Bind(&DevToolsAndroidBridge::ReceivedDeviceCount, this));
+  RequestDeviceCount(device_count_callback_.callback());
+}
+
+void DevToolsAndroidBridge::StopDeviceCountPolling() {
+  device_count_callback_.Cancel();
+}
+
+void DevToolsAndroidBridge::RequestDeviceCount(
+    const base::Callback<void(int)>& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  if (device_count_listeners_.empty() ||
+      !callback.Equals(device_count_callback_.callback()))
+    return;
+
+  UsbDeviceProvider::CountDevices(callback);
 }
 
 void DevToolsAndroidBridge::ReceivedDeviceCount(int count) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (device_count_listeners_.empty())
-     return;
-
   DeviceCountListeners copy(device_count_listeners_);
   for (DeviceCountListeners::iterator it = copy.begin(); it != copy.end(); ++it)
     (*it)->DeviceCountChanged(count);
 
+  if (device_count_listeners_.empty())
+     return;
+
+  task_scheduler_.Run(
+      base::Bind(&DevToolsAndroidBridge::RequestDeviceCount,
+                 this, device_count_callback_.callback()));
+}
+
+// static
+void DevToolsAndroidBridge::ScheduleTaskDefault(const base::Closure& task) {
   BrowserThread::PostDelayedTask(
       BrowserThread::UI,
       FROM_HERE,
-      base::Bind(&DevToolsAndroidBridge::RequestDeviceCount, this),
+      task,
       base::TimeDelta::FromMilliseconds(kAdbPollingIntervalMs));
 }
 
@@ -901,4 +929,8 @@ void DevToolsAndroidBridge::CreateDeviceProviders() {
     device_providers.push_back(new UsbDeviceProvider(profile_));
   }
   device_manager_->SetDeviceProviders(device_providers);
+  if (!device_list_listeners_.empty()) {
+    StopDeviceListPolling();
+    StartDeviceListPolling();
+  }
 }

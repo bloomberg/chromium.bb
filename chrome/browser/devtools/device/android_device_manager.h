@@ -18,7 +18,9 @@ class StreamSocket;
 }
 
 class AndroidDeviceManager
-    : public base::RefCountedThreadSafe<AndroidDeviceManager>,
+    : public base::RefCountedThreadSafe<
+          AndroidDeviceManager,
+          content::BrowserThread::DeleteOnUIThread>,
       public base::NonThreadSafe {
  public:
   typedef base::Callback<void(int, const std::string&)> CommandCallback;
@@ -196,7 +198,9 @@ class AndroidDeviceManager
     base::Thread* thread_;
   };
 
-  friend class base::RefCountedThreadSafe<AndroidDeviceManager>;
+  friend struct content::BrowserThread::DeleteOnThread<
+      content::BrowserThread::UI>;
+  friend class base::DeleteHelper<AndroidDeviceManager>;
   AndroidDeviceManager();
   virtual ~AndroidDeviceManager();
 

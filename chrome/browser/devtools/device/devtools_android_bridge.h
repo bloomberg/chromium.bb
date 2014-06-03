@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/cancelable_callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_change_registrar.h"
@@ -212,6 +213,11 @@ class DevToolsAndroidBridge
     device_manager_->SetDeviceProviders(device_providers);
   }
 
+  void set_task_scheduler_for_test(
+      base::Callback<void(const base::Closure&)> scheduler) {
+    task_scheduler_ = scheduler;
+  }
+
   static bool HasDevToolsWindow(const std::string& agent_id);
 
  private:
@@ -221,10 +227,17 @@ class DevToolsAndroidBridge
 
   virtual ~DevToolsAndroidBridge();
 
-  void RequestDeviceList();
-  void ReceivedDeviceList(scoped_ptr<RemoteDevices> devices);
-  void RequestDeviceCount();
+  void StartDeviceListPolling();
+  void StopDeviceListPolling();
+  void RequestDeviceList(
+      const base::Callback<void(const RemoteDevices&)>& callback);
+  void ReceivedDeviceList(const RemoteDevices& devices);
+  void StartDeviceCountPolling();
+  void StopDeviceCountPolling();
+  void RequestDeviceCount(const base::Callback<void(int)>& callback);
   void ReceivedDeviceCount(int count);
+
+  static void ScheduleTaskDefault(const base::Closure& task);
 
   void CreateDeviceProviders();
 
@@ -234,9 +247,12 @@ class DevToolsAndroidBridge
 
   typedef std::vector<DeviceListListener*> DeviceListListeners;
   DeviceListListeners device_list_listeners_;
+  base::CancelableCallback<void(const RemoteDevices&)> device_list_callback_;
 
   typedef std::vector<DeviceCountListener*> DeviceCountListeners;
   DeviceCountListeners device_count_listeners_;
+  base::CancelableCallback<void(int)> device_count_callback_;
+  base::Callback<void(const base::Closure&)> task_scheduler_;
 
   PrefChangeRegistrar pref_change_registrar_;
   DISALLOW_COPY_AND_ASSIGN(DevToolsAndroidBridge);
