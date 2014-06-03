@@ -1,3 +1,4 @@
+
 Canvas log: 
 {
     0 : {
@@ -61,6 +62,53 @@ Canvas log:
         }
     }
     3 : {
+        method : "drawBitmapRectToRect"
+        params : {
+            bitmap : {
+                config : "ARGB8888"
+                data : {
+                    base64 : "iVBORw0KGgoAAAANSUhEUgAAABMAAAAVCAYAAACkCdXRAAAAKElEQVQ4T2P8DwQMVAKMo4aRHJKjYUZykDGMhtlomOEIgdGkMcBJAwBg3lPCYiIiUQAAAABJRU5ErkJggg=="
+                    mimeType : "image/png"
+                }
+                genID : 1
+                height : 21
+                immutable : true
+                opaque : true
+                volatile : false
+                width : 19
+            }
+            dst : {
+                bottom : 71
+                left : 0
+                right : 19
+                top : 50
+            }
+            flags : 0
+            paint : {
+                color : "#FF000000"
+                filterLevel : "Low"
+                flags : "none"
+                hinting : "Normal"
+                strokeCap : "Butt"
+                strokeJoin : "Miter"
+                strokeMiter : 4
+                strokeWidth : 0
+                styleName : "Fill"
+                textAlign : "Left"
+                textEncoding : "UTF-8"
+                textScaleX : 1
+                textSize : 12
+                textSkewX : 0
+            }
+            src : {
+                bottom : 21
+                left : 0
+                right : 19
+                top : 0
+            }
+        }
+    }
+    4 : {
         method : "restore"
     }
 }
