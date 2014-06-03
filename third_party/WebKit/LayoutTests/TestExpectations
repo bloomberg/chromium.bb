@@ -1049,6 +1049,8 @@ crbug.com/239722 http/tests/websocket/connection-throttling.html [ Failure ]
 crbug.com/376194 inspector/console/console-format-es6.html [ Skip ]
 crbug.com/376194 inspector/console/console-format-es6-symbols-error.html [ Skip ]
 
+crbug.com/380151 fast/events/only-valid-drop-targets-receive-file-drop.html [ Failure Pass ]
+
 # Temporarily skipped until Chromium side change lands.
 crbug.com/308768 http/tests/security/XFrameOptions/x-frame-options-deny-meta-tag-in-body.html [ Skip ]
 crbug.com/308768 http/tests/security/XFrameOptions/x-frame-options-deny-meta-tag-parent-same-origin-deny.html [ Skip ]
