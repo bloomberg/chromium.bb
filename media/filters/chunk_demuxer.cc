@@ -860,15 +860,13 @@ bool ChunkDemuxerStream::UpdateAudioConfig(const AudioDecoderConfig& config,
     DCHECK_EQ(state_, UNINITIALIZED);
 
     // On platforms which support splice frames, enable splice frames and
-    // partial append window support for a limited set of codecs.
-    // TODO(dalecurtis): Verify this works for codecs other than MP3 and Vorbis.
-    // Right now we want to be extremely conservative to ensure we don't break
-    // the world.
-    const bool mp3_or_vorbis =
-        config.codec() == kCodecMP3 || config.codec() == kCodecVorbis;
-    splice_frames_enabled_ = splice_frames_enabled_ && mp3_or_vorbis;
+    // partial append window support for most codecs (notably: not opus).
+    const bool codec_supported = config.codec() == kCodecMP3 ||
+                                 config.codec() == kCodecAAC ||
+                                 config.codec() == kCodecVorbis;
+    splice_frames_enabled_ = splice_frames_enabled_ && codec_supported;
     partial_append_window_trimming_enabled_ =
-        splice_frames_enabled_ && mp3_or_vorbis;
+        splice_frames_enabled_ && codec_supported;
 
     stream_.reset(
         new SourceBufferStream(config, log_cb, splice_frames_enabled_));

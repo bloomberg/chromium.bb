@@ -919,24 +919,35 @@ TEST_P(PipelineIntegrationTest, MediaSource_ADTS) {
 
 TEST_P(PipelineIntegrationTest, MediaSource_ADTS_TimestampOffset) {
   MockMediaSource source("sfx.adts", kADTS, kAppendWholeFile, GetParam());
-  StartPipelineWithMediaSource(&source);
+  StartHashedPipelineWithMediaSource(&source);
   EXPECT_EQ(325, source.last_timestamp_offset().InMilliseconds());
 
+  // Trim off multiple frames off the beginning of the segment which will cause
+  // the first decoded frame to be incorrect if preroll isn't implemented.
+  const base::TimeDelta adts_preroll_duration =
+      base::TimeDelta::FromSecondsD(2.5 * 1024 / 44100);
+  const base::TimeDelta append_time =
+      source.last_timestamp_offset() - adts_preroll_duration;
+
   scoped_refptr<DecoderBuffer> second_file = ReadTestDataFile("sfx.adts");
-  source.AppendAtTime(
-      source.last_timestamp_offset() - base::TimeDelta::FromMilliseconds(10),
-      second_file->data(),
-      second_file->data_size());
+  source.AppendAtTimeWithWindow(append_time,
+                                append_time + adts_preroll_duration,
+                                kInfiniteDuration(),
+                                second_file->data(),
+                                second_file->data_size());
   source.EndOfStream();
 
-  EXPECT_EQ(640, source.last_timestamp_offset().InMilliseconds());
+  EXPECT_EQ(592, source.last_timestamp_offset().InMilliseconds());
   EXPECT_EQ(1u, pipeline_->GetBufferedTimeRanges().size());
   EXPECT_EQ(0, pipeline_->GetBufferedTimeRanges().start(0).InMilliseconds());
-  EXPECT_EQ(640, pipeline_->GetBufferedTimeRanges().end(0).InMilliseconds());
+  EXPECT_EQ(592, pipeline_->GetBufferedTimeRanges().end(0).InMilliseconds());
 
   Play();
 
   EXPECT_TRUE(WaitUntilOnEnded());
+
+  // Verify preroll is stripped.
+  EXPECT_EQ("-0.06,0.97,-0.90,-0.70,-0.53,-0.34,", GetAudioHash());
 }
 
 TEST_F(PipelineIntegrationTest, BasicPlaybackHashed_MP3) {
