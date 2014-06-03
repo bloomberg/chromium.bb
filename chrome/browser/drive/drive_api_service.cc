@@ -105,7 +105,7 @@ const char kFileResourceFields[] =
     "kind,id,title,createdDate,sharedWithMeDate,mimeType,"
     "md5Checksum,fileSize,labels/trashed,imageMediaMetadata/width,"
     "imageMediaMetadata/height,imageMediaMetadata/rotation,etag,"
-    "parents/parentLink,alternateLink,"
+    "parents(id,parentLink),alternateLink,"
     "modifiedDate,lastViewedByMeDate,shared";
 const char kFileResourceOpenWithLinksFields[] =
     "kind,id,openWithLinks/*";
@@ -113,14 +113,15 @@ const char kFileListFields[] =
     "kind,items(kind,id,title,createdDate,sharedWithMeDate,"
     "mimeType,md5Checksum,fileSize,labels/trashed,imageMediaMetadata/width,"
     "imageMediaMetadata/height,imageMediaMetadata/rotation,etag,"
-    "parents/parentLink,alternateLink,"
+    "parents(id,parentLink),alternateLink,"
     "modifiedDate,lastViewedByMeDate,shared),nextLink";
 const char kChangeListFields[] =
     "kind,items(file(kind,id,title,createdDate,sharedWithMeDate,"
     "mimeType,md5Checksum,fileSize,labels/trashed,imageMediaMetadata/width,"
     "imageMediaMetadata/height,imageMediaMetadata/rotation,etag,"
-    "parents/parentLink,alternateLink,modifiedDate,lastViewedByMeDate,shared),"
-    "deleted,id,fileId,modificationDate),nextLink,largestChangeId";
+    "parents(id,parentLink),alternateLink,modifiedDate,"
+    "lastViewedByMeDate,shared),deleted,id,fileId,modificationDate),nextLink,"
+    "largestChangeId";
 
 // Converts the FileResource value to ResourceEntry and runs |callback| on the
 // UI thread.
