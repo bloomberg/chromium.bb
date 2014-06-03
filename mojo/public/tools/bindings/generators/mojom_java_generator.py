@@ -78,14 +78,16 @@ def GetNameForElement(element):
     return ConstantStyle(element.name)
   raise Exception("Unexpected element: " % element)
 
+def ParseStringAttribute(attribute):
+  if isinstance(attribute, basestring):
+    return attribute
+  assert attribute[0] == 'EXPRESSION'
+  assert len(attribute[1]) == 1
+  return attribute[1][0][1:-1].encode('string_escape')
+
 def GetPackage(module):
   if 'JavaPackage' in module.attributes:
-    package = module.attributes['JavaPackage']
-    if isinstance(package, basestring):
-      return package
-    assert package[0] == 'EXPRESSION'
-    assert len(package[1]) == 1
-    return package[1][0][1:-1].encode('string_escape')
+    return ParseStringAttribute(module.attributes['JavaPackage'])
   # Default package.
   return "org.chromium.mojom." + module.namespace
 
@@ -135,6 +137,8 @@ def ExpressionToText(value, module):
       lambda token: TranslateConstants(token, module)))
 
 def GetConstantsMainEntityName(module):
+  if 'JavaConstantsClassName' in module.attributes:
+    return ParseStringAttribute(module.attributes['JavaConstantsClassName'])
   # This constructs the name of the embedding classes for module level constants
   # by extracting the mojom's filename and prepending it to Constants.
   return (UpperCamelCase(module.path.split('/')[-1].rsplit('.', 1)[0]) +

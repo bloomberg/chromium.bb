@@ -8,6 +8,7 @@ import android.test.suitebuilder.annotation.SmallTest;
 
 import junit.framework.TestCase;
 
+import org.chromium.mojo.bindings.test.sample.InterfaceConstants;
 import org.chromium.mojo.bindings.test.sample.SampleServiceConstants;
 
 import java.lang.reflect.Field;
@@ -18,16 +19,23 @@ import java.lang.reflect.Modifier;
  */
 public class BindingsTest extends TestCase {
 
+    private static void checkConstantField(Field field, Class<?> expectedClass)
+    {
+        assertEquals(expectedClass, field.getType());
+        assertEquals(Modifier.FINAL, field.getModifiers() & Modifier.FINAL);
+        assertEquals(Modifier.STATIC, field.getModifiers() & Modifier.STATIC);
+    }
+
     /**
      * Testing constants are correctly generated.
      */
     @SmallTest
     public void testConstants() throws NoSuchFieldException, SecurityException {
         assertEquals(3, SampleServiceConstants.THREE);
-        Field threeField = SampleServiceConstants.class.getField("THREE");
-        assertEquals(byte.class, threeField.getType());
-        assertEquals(Modifier.FINAL, threeField.getModifiers() & Modifier.FINAL);
-        assertEquals(Modifier.STATIC, threeField.getModifiers() & Modifier.STATIC);
+        checkConstantField(SampleServiceConstants.class.getField("THREE"), byte.class);
+
+        assertEquals(4405, InterfaceConstants.LONG);
+        checkConstantField(InterfaceConstants.class.getField("LONG"), long.class);
     }
 
 }

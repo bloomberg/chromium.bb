@@ -3,8 +3,11 @@
 // found in the LICENSE file.
 
 [JavaPackage="org.chromium.mojo.bindings.test.sample",
+ JavaConstantsClassName="InterfaceConstants",
  Foo = "hello world"]
 module sample {
+
+const uint64 kLong = 4405;
 
 enum Enum {
   ENUM_VALUE
