@@ -41,7 +41,7 @@ class Node;
 
 class StaticNodeList FINAL : public NodeList {
 public:
-    static PassRefPtrWillBeRawPtr<StaticNodeList> adopt(Vector<RefPtr<Node> >& nodes);
+    static PassRefPtrWillBeRawPtr<StaticNodeList> adopt(WillBeHeapVector<RefPtrWillBeMember<Node> >& nodes);
 
     static PassRefPtrWillBeRawPtr<StaticNodeList> createEmpty()
     {

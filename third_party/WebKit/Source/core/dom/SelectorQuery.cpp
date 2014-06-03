@@ -51,11 +51,11 @@ struct SingleElementSelectorQueryTrait {
 };
 
 struct AllElementsSelectorQueryTrait {
-    typedef Vector<RefPtr<Node> > OutputType;
+    typedef WillBeHeapVector<RefPtrWillBeMember<Node> > OutputType;
     static const bool shouldOnlyMatchFirstElement = false;
     ALWAYS_INLINE static void appendElement(OutputType& output, Node& element)
     {
-        output.append(RefPtr<Node>(element));
+        output.append(&element);
     }
 };
 
@@ -136,7 +136,7 @@ bool SelectorDataList::matches(Element& targetElement) const
 
 PassRefPtrWillBeRawPtr<NodeList> SelectorDataList::queryAll(ContainerNode& rootNode) const
 {
-    Vector<RefPtr<Node> > result;
+    WillBeHeapVector<RefPtrWillBeMember<Node> > result;
     execute<AllElementsSelectorQueryTrait>(rootNode, result);
     return StaticNodeList::adopt(result);
 }

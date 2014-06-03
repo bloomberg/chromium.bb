@@ -2472,7 +2472,7 @@ PassRefPtrWillBeRawPtr<NodeList> Node::getDestinationInsertionPoints()
     document().updateDistributionForNodeIfNeeded(this);
     WillBeHeapVector<RawPtrWillBeMember<InsertionPoint>, 8> insertionPoints;
     collectDestinationInsertionPoints(*this, insertionPoints);
-    Vector<RefPtr<Node> > filteredInsertionPoints;
+    WillBeHeapVector<RefPtrWillBeMember<Node> > filteredInsertionPoints;
     for (size_t i = 0; i < insertionPoints.size(); ++i) {
         InsertionPoint* insertionPoint = insertionPoints[i];
         ASSERT(insertionPoint->containingShadowRoot());

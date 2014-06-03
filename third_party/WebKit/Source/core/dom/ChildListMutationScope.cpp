@@ -39,36 +39,46 @@
 
 namespace WebCore {
 
-typedef HashMap<Node*, ChildListMutationAccumulator*> AccumulatorMap;
+// The accumulator map is used to make sure that there is only one mutation
+// accumulator for a given node even if there are multiple ChildListMutationScopes
+// on the stack. The map is always empty when there are no ChildListMutationScopes
+// on the stack.
+typedef WillBeHeapHashMap<RawPtrWillBeMember<Node>, RawPtrWillBeMember<ChildListMutationAccumulator> > AccumulatorMap;
 
 static AccumulatorMap& accumulatorMap()
 {
-    DEFINE_STATIC_LOCAL(AccumulatorMap, map, ());
-    return map;
+    DEFINE_STATIC_LOCAL(OwnPtrWillBePersistent<AccumulatorMap>, map, (adoptPtrWillBeNoop(new AccumulatorMap())));
+    return *map;
 }
 
 ChildListMutationAccumulator::ChildListMutationAccumulator(PassRefPtr<Node> target, PassOwnPtrWillBeRawPtr<MutationObserverInterestGroup> observers)
     : m_target(target)
-    , m_lastAdded(0)
+    , m_lastAdded(nullptr)
     , m_observers(observers)
+    , m_mutationScopes(0)
 {
 }
 
-ChildListMutationAccumulator::~ChildListMutationAccumulator()
+void ChildListMutationAccumulator::leaveMutationScope()
 {
-    if (!isEmpty())
-        enqueueMutationRecord();
-    accumulatorMap().remove(m_target.get());
+    ASSERT(m_mutationScopes > 0);
+    if (!--m_mutationScopes) {
+        if (!isEmpty())
+            enqueueMutationRecord();
+        accumulatorMap().remove(m_target.get());
+    }
 }
 
-PassRefPtr<ChildListMutationAccumulator> ChildListMutationAccumulator::getOrCreate(Node& target)
+DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(ChildListMutationAccumulator);
+
+PassRefPtrWillBeRawPtr<ChildListMutationAccumulator> ChildListMutationAccumulator::getOrCreate(Node& target)
 {
-    AccumulatorMap::AddResult result = accumulatorMap().add(&target, 0);
-    RefPtr<ChildListMutationAccumulator> accumulator;
+    AccumulatorMap::AddResult result = accumulatorMap().add(&target, nullptr);
+    RefPtrWillBeRawPtr<ChildListMutationAccumulator> accumulator;
     if (!result.isNewEntry)
         accumulator = result.storedValue->value;
     else {
-        accumulator = adoptRef(new ChildListMutationAccumulator(PassRefPtr<Node>(target), MutationObserverInterestGroup::createForChildListMutation(target)));
+        accumulator = adoptRefWillBeNoop(new ChildListMutationAccumulator(PassRefPtr<Node>(target), MutationObserverInterestGroup::createForChildListMutation(target)));
         result.storedValue->value = accumulator.get();
     }
     return accumulator.release();
@@ -130,7 +140,7 @@ void ChildListMutationAccumulator::enqueueMutationRecord()
     RefPtrWillBeRawPtr<NodeList> removedNodes = StaticNodeList::adopt(m_removedNodes);
     RefPtrWillBeRawPtr<MutationRecord> record = MutationRecord::createChildList(m_target, addedNodes.release(), removedNodes.release(), m_previousSibling.release(), m_nextSibling.release());
     m_observers->enqueueMutationRecord(record.release());
-    m_lastAdded = 0;
+    m_lastAdded = nullptr;
     ASSERT(isEmpty());
 }
 
@@ -145,6 +155,17 @@ bool ChildListMutationAccumulator::isEmpty()
     }
 #endif
     return result;
+}
+
+void ChildListMutationAccumulator::trace(Visitor* visitor)
+{
+    visitor->trace(m_target);
+    visitor->trace(m_removedNodes);
+    visitor->trace(m_addedNodes);
+    visitor->trace(m_previousSibling);
+    visitor->trace(m_nextSibling);
+    visitor->trace(m_lastAdded);
+    visitor->trace(m_observers);
 }
 
 } // namespace WebCore

@@ -1477,7 +1477,7 @@ PassRefPtrWillBeRawPtr<NodeList> Internals::nodesFromRect(Document* document, in
     if (!request.ignoreClipping() && !frameView->visibleContentRect().intersects(HitTestLocation::rectForPoint(point, topPadding, rightPadding, bottomPadding, leftPadding)))
         return nullptr;
 
-    Vector<RefPtr<Node> > matches;
+    WillBeHeapVector<RefPtrWillBeMember<Node> > matches;
 
     // Need padding to trigger a rect based hit test, but we want to return a NodeList
     // so we special case this.

@@ -1019,6 +1019,7 @@ PassRefPtrWillBeRawPtr<NodeList> ContainerNode::querySelectorAll(const AtomicStr
     SelectorQuery* selectorQuery = document().selectorQueryCache().add(selectors, document(), exceptionState);
     if (!selectorQuery)
         return nullptr;
+
     return selectorQuery->queryAll(*this);
 }
 

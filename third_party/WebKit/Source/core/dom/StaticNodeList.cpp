@@ -33,17 +33,10 @@
 
 namespace WebCore {
 
-PassRefPtrWillBeRawPtr<StaticNodeList> StaticNodeList::adopt(Vector<RefPtr<Node> >& nodes)
+PassRefPtrWillBeRawPtr<StaticNodeList> StaticNodeList::adopt(WillBeHeapVector<RefPtrWillBeMember<Node> >& nodes)
 {
     RefPtrWillBeRawPtr<StaticNodeList> nodeList = adoptRefWillBeNoop(new StaticNodeList);
-#if ENABLE(OILPAN)
-    // FIXME: Oilpan: switch to a WillBeHeapVector<RefPtrWillBeMember<>> argument.
-    for (size_t i = 0; i < nodes.size(); ++i)
-        nodeList->m_nodes.append(nodes[i]);
-    nodes.clear();
-#else
     nodeList->m_nodes.swap(nodes);
-#endif
     if (nodeList->AllocationSize() > externalMemoryReportSizeLimit)
         v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(nodeList->AllocationSize());
     return nodeList.release();

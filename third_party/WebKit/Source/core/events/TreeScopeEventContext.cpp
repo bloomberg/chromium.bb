@@ -39,7 +39,7 @@ PassRefPtrWillBeRawPtr<NodeList> TreeScopeEventContext::ensureEventPath(EventPat
     if (m_eventPath)
         return m_eventPath;
 
-    Vector<RefPtr<Node> > nodes;
+    WillBeHeapVector<RefPtrWillBeMember<Node> > nodes;
     nodes.reserveInitialCapacity(path.size());
     for (size_t i = 0; i < path.size(); ++i) {
         TreeScope& treeScope = path[i].treeScopeEventContext().treeScope();
