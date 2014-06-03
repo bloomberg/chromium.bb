@@ -31,6 +31,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
+#include "ui/compositor/test/draw_waiter_for_test.h"
 #include "ui/events/event_processor.h"
 #include "ui/events/event_utils.h"
 
@@ -262,6 +263,15 @@ class WebContentsViewAuraTest : public ContentBrowserTest {
   }
 
  private:
+  // BrowserTestBase:
+  virtual void TearDownOnMainThread() OVERRIDE {
+    aura::Window* window = shell()->web_contents()->GetNativeView();
+    ui::Compositor* compositor = window->layer()->GetCompositor();
+    while (compositor->layer_animator_collection()->HasActiveAnimators())
+      ui::DrawWaiterForTest::Wait(compositor);
+    ContentBrowserTest::TearDownOnMainThread();
+  }
+
   ScreenshotTracker* screenshot_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(WebContentsViewAuraTest);
