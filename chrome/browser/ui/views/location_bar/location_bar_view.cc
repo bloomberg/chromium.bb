@@ -1550,6 +1550,12 @@ void LocationBarView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
     popup->UpdatePopupAppearance();
 }
 
+void LocationBarView::OnFocus() {
+  // Explicitly focus the omnibox so a focus ring will be displayed around it on
+  // Windows.
+  omnibox_view_->SetFocus();
+}
+
 void LocationBarView::OnPaint(gfx::Canvas* canvas) {
   View::OnPaint(canvas);
 
