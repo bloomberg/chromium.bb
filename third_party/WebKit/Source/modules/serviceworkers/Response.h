@@ -8,6 +8,7 @@
 #include "bindings/v8/Dictionary.h"
 #include "bindings/v8/ScriptWrappable.h"
 #include "modules/serviceworkers/HeaderMap.h"
+#include "platform/blob/BlobData.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
 #include "wtf/text/WTFString.h"
@@ -16,12 +17,13 @@ namespace blink { class WebServiceWorkerResponse; }
 
 namespace WebCore {
 
+class Blob;
 struct ResponseInit;
 
 class Response FINAL : public ScriptWrappable, public RefCounted<Response> {
 public:
-    static PassRefPtr<Response> create();
     static PassRefPtr<Response> create(const Dictionary& responseInit);
+    static PassRefPtr<Response> create(Blob* body, const Dictionary& responseInit);
     ~Response() { };
 
     unsigned short status() const { return m_status; }
@@ -31,10 +33,11 @@ public:
     void populateWebServiceWorkerResponse(blink::WebServiceWorkerResponse&);
 
 private:
-    explicit Response(const ResponseInit&);
+    Response(PassRefPtr<BlobDataHandle>, const ResponseInit&);
     unsigned short m_status;
     String m_statusText;
     RefPtr<HeaderMap> m_headers;
+    RefPtr<BlobDataHandle> m_blobDataHandle;
 };
 
 } // namespace WebCore

@@ -14,10 +14,11 @@
 #include "wtf/Forward.h"
 #include "wtf/HashMap.h"
 #include "wtf/text/StringHash.h"
-#endif
 
-// FIXME: Remove this after chromium code is cleaned up.
-#define NEW_SERVICE_WORKER_RESPONSE_INTERFACE
+namespace WebCore {
+class BlobDataHandle;
+}
+#endif
 
 namespace blink {
 
@@ -49,12 +50,15 @@ public:
     WebVector<WebString> getHeaderKeys() const;
     WebString getHeader(const WebString& key) const;
 
+    WebString blobUUID() const;
+
 #if INSIDE_BLINK
     void setHeaders(const HashMap<String, String>&);
     const HashMap<String, String>& headers() const;
-#endif
 
-    // FIXME: Eventually this should have additional methods such as for blob.
+    void setBlobDataHandle(PassRefPtr<WebCore::BlobDataHandle>);
+    PassRefPtr<WebCore::BlobDataHandle> blobDataHandle() const;
+#endif
 
 private:
     WebPrivatePtr<WebServiceWorkerResponsePrivate> m_private;

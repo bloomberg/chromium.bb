@@ -6,7 +6,7 @@ test(function() {
     headers.set('Content-Type', 'text/html; charset=UTF-8');
     headers.set('X-ServiceWorker-Test', 'response test field');
 
-    var response = new Response({
+    var response = new Response(new Blob(), {
         status: 303,
         statusText: 'See Other',
         headers: headers

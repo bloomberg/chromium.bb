@@ -6,20 +6,26 @@
 #include "Response.h"
 
 #include "bindings/v8/Dictionary.h"
+#include "core/fileapi/Blob.h"
 #include "modules/serviceworkers/ResponseInit.h"
 #include "platform/NotImplemented.h"
 #include "public/platform/WebServiceWorkerResponse.h"
 
 namespace WebCore {
 
-PassRefPtr<Response> Response::create()
-{
-    return create(Dictionary());
-}
-
+// FIXME: Remove this legacy function when the required Chromium-side patch lands.
 PassRefPtr<Response> Response::create(const Dictionary& responseInit)
 {
-    return adoptRef(new Response(ResponseInit(responseInit)));
+    return create(nullptr, responseInit);
+}
+
+PassRefPtr<Response> Response::create(Blob* body, const Dictionary& responseInit)
+{
+    RefPtr<BlobDataHandle> blobDataHandle = body ? body->blobDataHandle() : nullptr;
+
+    // FIXME: Maybe append or override content-length and content-type headers using the blob. The spec will clarify what to do:
+    // https://github.com/slightlyoff/ServiceWorker/issues/192
+    return adoptRef(new Response(blobDataHandle.release(), ResponseInit(responseInit)));
 }
 
 PassRefPtr<HeaderMap> Response::headers() const
@@ -33,12 +39,14 @@ void Response::populateWebServiceWorkerResponse(blink::WebServiceWorkerResponse&
     response.setStatus(status());
     response.setStatusText(statusText());
     response.setHeaders(m_headers->headerMap());
+    response.setBlobDataHandle(m_blobDataHandle);
 }
 
-Response::Response(const ResponseInit& responseInit)
+Response::Response(PassRefPtr<BlobDataHandle> blobDataHandle, const ResponseInit& responseInit)
     : m_status(responseInit.status)
     , m_statusText(responseInit.statusText)
     , m_headers(responseInit.headers)
+    , m_blobDataHandle(blobDataHandle)
 {
     ScriptWrappable::init(this);
 
