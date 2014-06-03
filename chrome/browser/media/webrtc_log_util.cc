@@ -6,7 +6,9 @@
 
 #include "base/file_util.h"
 #include "base/files/file_enumerator.h"
+#include "base/files/file_path.h"
 #include "base/logging.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/media/webrtc_log_list.h"
@@ -44,7 +46,7 @@ void WebRtcLogUtil::DeleteOldWebRtcLogFiles(const base::FilePath& log_dir) {
 void WebRtcLogUtil::DeleteOldAndRecentWebRtcLogFiles(
     const base::FilePath& log_dir,
     const base::Time& delete_begin_time) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
+  base::ThreadRestrictions::AssertIOAllowed();
 
   if (!base::PathExists(log_dir)) {
     // This will happen if no logs have been stored or uploaded.
@@ -108,8 +110,7 @@ void WebRtcLogUtil::DeleteOldWebRtcLogFilesForAllProfiles() {
       g_browser_process->profile_manager()->GetProfileInfoCache();
   size_t profiles_count = profile_cache.GetNumberOfProfiles();
   for (size_t i = 0; i < profiles_count; ++i) {
-    content::BrowserThread::PostTask(
-        content::BrowserThread::FILE,
+    content::BrowserThread::PostBlockingPoolTask(
         FROM_HERE,
         base::Bind(&DeleteOldWebRtcLogFiles,
                    WebRtcLogList::GetWebRtcLogDirectoryForProfile(
