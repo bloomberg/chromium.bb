@@ -220,8 +220,10 @@ class WebRtcApprtcBrowserTest : public WebRtcTestBase {
     return false;
   }
 
- private:
+  // TODO(phoglund): should be private again after win-only experiments.
   base::ProcessHandle dev_appserver_;
+
+ private:
   base::ProcessHandle firefox_;
 };
 
@@ -284,6 +286,16 @@ IN_PROC_BROWSER_TEST_F(WebRtcApprtcBrowserTest, MANUAL_WorksOnApprtc) {
 
   LOG(INFO) << "Slept a bit; " << timer.Elapsed().InSeconds()
             << " seconds elapsed.";
+
+#if defined (OS_WIN)
+  // TODO(phoglund): experimenting with explicitly tearing down here.
+  chrome::CloseWebContents(browser(), left_tab, false);
+  LOG(INFO) << "Closed left tab.";
+  chrome::CloseWebContents(browser(), right_tab, false);
+  LOG(INFO) << "Closed right tab.";
+
+  base::KillProcess(dev_appserver_, 0, false);
+#endif
 }
 
 #if defined(OS_LINUX)
