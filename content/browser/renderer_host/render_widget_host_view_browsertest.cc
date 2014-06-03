@@ -499,7 +499,7 @@ class CompositingRenderWidgetHostViewBrowserTestTabCapture
     bitmap.allocPixels(SkImageInfo::Make(video_frame->visible_rect().width(),
                                          video_frame->visible_rect().height(),
                                          kPMColor_SkColorType,
-                                         kOpaque_SkAlphaType));
+                                         kPremul_SkAlphaType));
     bitmap.allocPixels();
     SkCanvas canvas(bitmap);
 

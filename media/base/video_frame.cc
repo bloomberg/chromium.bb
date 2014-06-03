@@ -36,6 +36,8 @@ scoped_refptr<VideoFrame> VideoFrame::CreateFrame(
   // request does not line up on sample boundaries.
   gfx::Size new_coded_size(coded_size);
   switch (format) {
+    case VideoFrame::YV24:
+      break;
     case VideoFrame::YV12:
     case VideoFrame::YV12A:
     case VideoFrame::I420:
@@ -45,7 +47,12 @@ scoped_refptr<VideoFrame> VideoFrame::CreateFrame(
     case VideoFrame::YV16:
       new_coded_size.set_width((new_coded_size.width() + 1) / 2 * 2);
       break;
-    default:
+    case VideoFrame::UNKNOWN:
+    case VideoFrame::NV12:
+#if defined(VIDEO_HOLE)
+    case VideoFrame::HOLE:
+#endif  // defined(VIDEO_HOLE)
+    case VideoFrame::NATIVE_TEXTURE:
       LOG(FATAL) << "Only YUV formats supported: " << format;
       return NULL;
   }
@@ -85,6 +92,8 @@ std::string VideoFrame::FormatToString(VideoFrame::Format format) {
       return "YV12J";
     case VideoFrame::NV12:
       return "NV12";
+    case VideoFrame::YV24:
+      return "YV24";
   }
   NOTREACHED() << "Invalid videoframe format provided: " << format;
   return "";
@@ -112,12 +121,14 @@ bool VideoFrame::IsValidConfig(VideoFrame::Format format,
     case VideoFrame::UNKNOWN:
       return (coded_size.IsEmpty() && visible_rect.IsEmpty() &&
               natural_size.IsEmpty());
+    case VideoFrame::YV24:
+      break;
     case VideoFrame::YV12:
     case VideoFrame::YV12J:
     case VideoFrame::I420:
     case VideoFrame::YV12A:
     case VideoFrame::NV12:
-      // YUV formats have width/height requirements due to chroma subsampling.
+      // Subsampled YUV formats have width/height requirements.
       if (static_cast<size_t>(coded_size.height()) <
           RoundUp(visible_rect.bottom(), 2))
         return false;
@@ -186,7 +197,7 @@ scoped_refptr<VideoFrame> VideoFrame::WrapExternalPackedMemory(
     return NULL;
 
   switch (format) {
-    case I420: {
+    case VideoFrame::I420: {
       scoped_refptr<VideoFrame> frame(
           new VideoFrame(format,
                          coded_size,
@@ -390,6 +401,7 @@ size_t VideoFrame::NumPlanes(Format format) {
     case VideoFrame::YV16:
     case VideoFrame::I420:
     case VideoFrame::YV12J:
+    case VideoFrame::YV24:
       return 3;
     case VideoFrame::YV12A:
       return 4;
@@ -413,12 +425,25 @@ size_t VideoFrame::AllocationSize(Format format, const gfx::Size& coded_size) {
 gfx::Size VideoFrame::PlaneSize(Format format,
                                 size_t plane,
                                 const gfx::Size& coded_size) {
+  // Align to multiple-of-two size overall. This ensures that non-subsampled
+  // planes can be addressed by pixel with the same scaling as the subsampled
+  // planes.
   const int width = RoundUp(coded_size.width(), 2);
   const int height = RoundUp(coded_size.height(), 2);
   switch (format) {
+    case VideoFrame::YV24:
+      switch (plane) {
+        case VideoFrame::kYPlane:
+        case VideoFrame::kUPlane:
+        case VideoFrame::kVPlane:
+          return gfx::Size(width, height);
+        default:
+          break;
+      }
+      break;
     case VideoFrame::YV12:
     case VideoFrame::YV12J:
-    case VideoFrame::I420: {
+    case VideoFrame::I420:
       switch (plane) {
         case VideoFrame::kYPlane:
           return gfx::Size(width, height);
@@ -428,8 +453,8 @@ gfx::Size VideoFrame::PlaneSize(Format format,
         default:
           break;
       }
-    }
-    case VideoFrame::YV12A: {
+      break;
+    case VideoFrame::YV12A:
       switch (plane) {
         case VideoFrame::kYPlane:
         case VideoFrame::kAPlane:
@@ -440,8 +465,8 @@ gfx::Size VideoFrame::PlaneSize(Format format,
         default:
           break;
       }
-    }
-    case VideoFrame::YV16: {
+      break;
+    case VideoFrame::YV16:
       switch (plane) {
         case VideoFrame::kYPlane:
           return gfx::Size(width, height);
@@ -451,8 +476,8 @@ gfx::Size VideoFrame::PlaneSize(Format format,
         default:
           break;
       }
-    }
-    case VideoFrame::NV12: {
+      break;
+    case VideoFrame::NV12:
       switch (plane) {
         case VideoFrame::kYPlane:
           return gfx::Size(width, height);
@@ -461,7 +486,7 @@ gfx::Size VideoFrame::PlaneSize(Format format,
         default:
           break;
       }
-    }
+      break;
     case VideoFrame::UNKNOWN:
     case VideoFrame::NATIVE_TEXTURE:
 #if defined(VIDEO_HOLE)
@@ -484,14 +509,20 @@ size_t VideoFrame::PlaneAllocationSize(Format format,
 // static
 int VideoFrame::PlaneHorizontalBitsPerPixel(Format format, size_t plane) {
   switch (format) {
-    case VideoFrame::YV12A:
-      if (plane == kAPlane)
-        return 8;
-    // fallthrough
+    case VideoFrame::YV24:
+      switch (plane) {
+        case kYPlane:
+        case kUPlane:
+        case kVPlane:
+          return 8;
+        default:
+          break;
+      }
+      break;
     case VideoFrame::YV12:
     case VideoFrame::YV16:
     case VideoFrame::I420:
-    case VideoFrame::YV12J: {
+    case VideoFrame::YV12J:
       switch (plane) {
         case kYPlane:
           return 8;
@@ -501,9 +532,20 @@ int VideoFrame::PlaneHorizontalBitsPerPixel(Format format, size_t plane) {
         default:
           break;
       }
-    }
-
-    case VideoFrame::NV12: {
+      break;
+    case VideoFrame::YV12A:
+      switch (plane) {
+        case kYPlane:
+        case kAPlane:
+          return 8;
+        case kUPlane:
+        case kVPlane:
+          return 2;
+        default:
+          break;
+      }
+      break;
+    case VideoFrame::NV12:
       switch (plane) {
         case kYPlane:
           return 8;
@@ -512,12 +554,16 @@ int VideoFrame::PlaneHorizontalBitsPerPixel(Format format, size_t plane) {
         default:
           break;
       }
-    }
-    default:
+      break;
+    case VideoFrame::UNKNOWN:
+#if defined(VIDEO_HOLE)
+    case VideoFrame::HOLE:
+#endif  // defined(VIDEO_HOLE)
+    case VideoFrame::NATIVE_TEXTURE:
       break;
   }
-
-  NOTREACHED() << "Unsupported video frame format: " << format;
+  NOTREACHED() << "Unsupported video frame format/plane: "
+               << format << "/" << plane;
   return 0;
 }
 
@@ -530,7 +576,7 @@ static void ReleaseData(uint8* data) {
 void VideoFrame::AllocateYUV() {
   DCHECK(format_ == VideoFrame::YV12 || format_ == VideoFrame::YV16 ||
          format_ == VideoFrame::YV12A || format_ == VideoFrame::I420 ||
-         format_ == VideoFrame::YV12J);
+         format_ == VideoFrame::YV12J || format_ == VideoFrame::YV24);
   // Align Y rows at least at 16 byte boundaries.  The stride for both
   // YV12 and YV16 is 1/2 of the stride of Y.  For YV12, every row of bytes for
   // U and V applies to two rows of Y (one byte of UV for 4 bytes of Y), so in
@@ -541,11 +587,11 @@ void VideoFrame::AllocateYUV() {
   // the Y values of the final row, but assumes that the last row of U & V
   // applies to a full two rows of Y. YV12A is the same as YV12, but with an
   // additional alpha plane that has the same size and alignment as the Y plane.
-
   size_t y_stride = RoundUp(row_bytes(VideoFrame::kYPlane),
                             kFrameSizeAlignment);
   size_t uv_stride = RoundUp(row_bytes(VideoFrame::kUPlane),
                              kFrameSizeAlignment);
+
   // The *2 here is because some formats (e.g. h264) allow interlaced coding,
   // and then the size needs to be a multiple of two macroblocks (vertically).
   // See libavcodec/utils.c:avcodec_align_dimensions2().
@@ -628,32 +674,60 @@ int VideoFrame::row_bytes(size_t plane) const {
   DCHECK(IsValidPlane(plane));
   int width = coded_size_.width();
   switch (format_) {
-    // Planar, 8bpp.
-    case YV12A:
-      if (plane == kAPlane)
-        return width;
-    // Fallthrough.
-    case YV12:
-    case YV16:
-    case I420:
-    case YV12J:
-      if (plane == kYPlane)
-        return width;
-      else if (plane <= kVPlane)
-        return RoundUp(width, 2) / 2;
+    case VideoFrame::YV24:
+      switch (plane) {
+        case kYPlane:
+        case kUPlane:
+        case kVPlane:
+          return width;
+        default:
+          break;
+      }
       break;
-
-    case NV12:
-      if (plane <= kUVPlane)
-        return width;
+    case VideoFrame::YV12:
+    case VideoFrame::YV16:
+    case VideoFrame::I420:
+    case VideoFrame::YV12J:
+      switch (plane) {
+        case kYPlane:
+          return width;
+        case kUPlane:
+        case kVPlane:
+          return RoundUp(width, 2) / 2;
+        default:
+          break;
+      }
       break;
-
-    default:
+    case VideoFrame::YV12A:
+      switch (plane) {
+        case kYPlane:
+        case kAPlane:
+          return width;
+        case kUPlane:
+        case kVPlane:
+          return RoundUp(width, 2) / 2;
+        default:
+          break;
+      }
+      break;
+    case VideoFrame::NV12:
+      switch (plane) {
+        case kYPlane:
+        case kUVPlane:
+          return width;
+        default:
+          break;
+      }
+      break;
+    case VideoFrame::UNKNOWN:
+#if defined(VIDEO_HOLE)
+    case VideoFrame::HOLE:
+#endif  // defined(VIDEO_HOLE)
+    case VideoFrame::NATIVE_TEXTURE:
       break;
   }
-
-  // Intentionally leave out non-production formats.
-  NOTREACHED() << "Unsupported video frame format: " << format_;
+  NOTREACHED() << "Unsupported video frame format/plane: "
+               << format_ << "/" << plane;
   return 0;
 }
 
@@ -661,35 +735,61 @@ int VideoFrame::rows(size_t plane) const {
   DCHECK(IsValidPlane(plane));
   int height = coded_size_.height();
   switch (format_) {
-    case YV16:
-      return height;
-
-    case YV12A:
-      if (plane == kAPlane)
-        return height;
-    // Fallthrough.
-    case YV12:
-    case YV12J:
-    case I420:
-      if (plane == kYPlane)
-        return height;
-      else if (plane <= kVPlane)
-        return RoundUp(height, 2) / 2;
+    case VideoFrame::YV24:
+    case VideoFrame::YV16:
+      switch (plane) {
+        case kYPlane:
+        case kUPlane:
+        case kVPlane:
+          return height;
+        default:
+          break;
+      }
       break;
-
-    case NV12:
-      if (plane == kYPlane)
-        return height;
-      else if (plane == kUVPlane)
-        return RoundUp(height, 2) / 2;
+    case VideoFrame::YV12:
+    case VideoFrame::YV12J:
+    case VideoFrame::I420:
+      switch (plane) {
+        case kYPlane:
+          return height;
+        case kUPlane:
+        case kVPlane:
+          return RoundUp(height, 2) / 2;
+        default:
+          break;
+      }
       break;
-
-    default:
+    case VideoFrame::YV12A:
+      switch (plane) {
+        case kYPlane:
+        case kAPlane:
+          return height;
+        case kUPlane:
+        case kVPlane:
+          return RoundUp(height, 2) / 2;
+        default:
+          break;
+      }
+      break;
+    case VideoFrame::NV12:
+      switch (plane) {
+        case kYPlane:
+          return height;
+        case kUVPlane:
+          return RoundUp(height, 2) / 2;
+        default:
+          break;
+      }
+      break;
+    case VideoFrame::UNKNOWN:
+#if defined(VIDEO_HOLE)
+    case VideoFrame::HOLE:
+#endif  // defined(VIDEO_HOLE)
+    case VideoFrame::NATIVE_TEXTURE:
       break;
   }
-
-  // Intentionally leave out non-production formats.
-  NOTREACHED() << "Unsupported video frame format: " << format_;
+  NOTREACHED() << "Unsupported video frame format/plane: "
+               << format_ << "/" << plane;
   return 0;
 }
 

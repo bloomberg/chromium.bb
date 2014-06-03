@@ -400,9 +400,11 @@ void AVStreamToVideoDecoderConfig(
   }
 
   // Pad out |coded_size| for subsampled YUV formats.
-  coded_size.set_width((coded_size.width() + 1) / 2 * 2);
-  if (format != VideoFrame::YV16)
-    coded_size.set_height((coded_size.height() + 1) / 2 * 2);
+  if (format != VideoFrame::YV24) {
+    coded_size.set_width((coded_size.width() + 1) / 2 * 2);
+    if (format != VideoFrame::YV16)
+      coded_size.set_height((coded_size.height() + 1) / 2 * 2);
+  }
 
   bool is_encrypted = false;
   AVDictionaryEntry* key = av_dict_get(stream->metadata, "enc_key_id", NULL, 0);
@@ -517,6 +519,8 @@ VideoFrame::Format PixelFormatToVideoFormat(PixelFormat pixel_format) {
   switch (pixel_format) {
     case PIX_FMT_YUV422P:
       return VideoFrame::YV16;
+    case PIX_FMT_YUV444P:
+      return VideoFrame::YV24;
     case PIX_FMT_YUV420P:
       return VideoFrame::YV12;
     case PIX_FMT_YUVJ420P:
@@ -539,6 +543,8 @@ PixelFormat VideoFormatToPixelFormat(VideoFrame::Format video_format) {
       return PIX_FMT_YUVJ420P;
     case VideoFrame::YV12A:
       return PIX_FMT_YUVA420P;
+    case VideoFrame::YV24:
+      return PIX_FMT_YUV444P;
     default:
       DVLOG(1) << "Unsupported VideoFrame::Format: " << video_format;
   }

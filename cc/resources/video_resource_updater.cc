@@ -65,6 +65,7 @@ bool VideoResourceUpdater::VerifyFrame(
     case media::VideoFrame::YV12A:
     case media::VideoFrame::YV16:
     case media::VideoFrame::YV12J:
+    case media::VideoFrame::YV24:
     case media::VideoFrame::NATIVE_TEXTURE:
 #if defined(VIDEO_HOLE)
     case media::VideoFrame::HOLE:
@@ -111,12 +112,14 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
          input_frame_format == media::VideoFrame::I420 ||
          input_frame_format == media::VideoFrame::YV12A ||
          input_frame_format == media::VideoFrame::YV12J ||
-         input_frame_format == media::VideoFrame::YV16);
+         input_frame_format == media::VideoFrame::YV16 ||
+         input_frame_format == media::VideoFrame::YV24);
   if (input_frame_format != media::VideoFrame::YV12 &&
       input_frame_format != media::VideoFrame::I420 &&
       input_frame_format != media::VideoFrame::YV12A &&
       input_frame_format != media::VideoFrame::YV12J &&
-      input_frame_format != media::VideoFrame::YV16)
+      input_frame_format != media::VideoFrame::YV16 &&
+      input_frame_format != media::VideoFrame::YV24)
     return VideoFrameExternalResources();
 
   bool software_compositor = context_provider_ == NULL;

@@ -29,21 +29,22 @@ namespace media {
 
 static bool IsYUV(media::VideoFrame::Format format) {
   return format == media::VideoFrame::YV12 ||
-         format == media::VideoFrame::I420 ||
          format == media::VideoFrame::YV16 ||
+         format == media::VideoFrame::I420 ||
+         format == media::VideoFrame::YV12A ||
+         format == media::VideoFrame::YV12J ||
+         format == media::VideoFrame::YV24;
+}
+
+static bool IsFastPaintYUV(media::VideoFrame::Format format) {
+  return format == media::VideoFrame::YV12 ||
+         format == media::VideoFrame::YV16 ||
+         format == media::VideoFrame::I420 ||
          format == media::VideoFrame::YV12J;
 }
 
-static bool IsEitherYUVOrNative(media::VideoFrame::Format format) {
+static bool IsYUVOrNative(media::VideoFrame::Format format) {
   return IsYUV(format) || format == media::VideoFrame::NATIVE_TEXTURE;
-}
-
-static bool IsEitherYUVOrYUVA(media::VideoFrame::Format format) {
-  return IsYUV(format) || format == media::VideoFrame::YV12A;
-}
-
-static bool IsEitherYUVOrYUVAOrNative(media::VideoFrame::Format format) {
-  return IsEitherYUVOrNative(format) || format == media::VideoFrame::YV12A;
 }
 
 // CanFastPaint is a helper method to determine the conditions for fast
@@ -58,7 +59,7 @@ static bool IsEitherYUVOrYUVAOrNative(media::VideoFrame::Format format) {
 // Disable the flipping and mirroring checks once we have it.
 static bool CanFastPaint(SkCanvas* canvas, uint8 alpha,
                          media::VideoFrame::Format format) {
-  if (alpha != 0xFF || !IsYUV(format))
+  if (alpha != 0xFF || !IsFastPaintYUV(format))
     return false;
 
   const SkMatrix& total_matrix = canvas->getTotalMatrix();
@@ -88,7 +89,7 @@ static void FastPaint(
     const scoped_refptr<media::VideoFrame>& video_frame,
     SkCanvas* canvas,
     const SkRect& dest_rect) {
-  DCHECK(IsYUV(video_frame->format())) << video_frame->format();
+  DCHECK(IsFastPaintYUV(video_frame->format())) << video_frame->format();
   DCHECK_EQ(video_frame->stride(media::VideoFrame::kUPlane),
             video_frame->stride(media::VideoFrame::kVPlane));
 
@@ -96,8 +97,7 @@ static void FastPaint(
   media::YUVType yuv_type = media::YV16;
   int y_shift = 0;
   if (video_frame->format() == media::VideoFrame::YV12 ||
-      video_frame->format() == media::VideoFrame::I420 ||
-      video_frame->format() == media::VideoFrame::YV12A) {
+      video_frame->format() == media::VideoFrame::I420) {
     yuv_type = media::YV12;
     y_shift = 1;
   }
@@ -251,9 +251,9 @@ static void FastPaint(
 static void ConvertVideoFrameToBitmap(
     const scoped_refptr<media::VideoFrame>& video_frame,
     SkBitmap* bitmap) {
-  DCHECK(IsEitherYUVOrYUVAOrNative(video_frame->format()))
+  DCHECK(IsYUVOrNative(video_frame->format()))
       << video_frame->format();
-  if (IsEitherYUVOrYUVA(video_frame->format())) {
+  if (IsYUV(video_frame->format())) {
     DCHECK_EQ(video_frame->stride(media::VideoFrame::kUPlane),
               video_frame->stride(media::VideoFrame::kVPlane));
   }
@@ -273,7 +273,7 @@ static void ConvertVideoFrameToBitmap(
 
   size_t y_offset = 0;
   size_t uv_offset = 0;
-  if (IsEitherYUVOrYUVA(video_frame->format())) {
+  if (IsYUV(video_frame->format())) {
     int y_shift = (video_frame->format() == media::VideoFrame::YV16) ? 0 : 1;
     // Use the "left" and "top" of the destination rect to locate the offset
     // in Y, U and V planes.
@@ -350,6 +350,30 @@ static void ConvertVideoFrameToBitmap(
           media::YV12);
       break;
 
+    case media::VideoFrame::YV24:
+      libyuv::I444ToARGB(
+          video_frame->data(media::VideoFrame::kYPlane) + y_offset,
+          video_frame->stride(media::VideoFrame::kYPlane),
+          video_frame->data(media::VideoFrame::kUPlane) + uv_offset,
+          video_frame->stride(media::VideoFrame::kUPlane),
+          video_frame->data(media::VideoFrame::kVPlane) + uv_offset,
+          video_frame->stride(media::VideoFrame::kVPlane),
+          static_cast<uint8*>(bitmap->getPixels()),
+          bitmap->rowBytes(),
+          video_frame->visible_rect().width(),
+          video_frame->visible_rect().height());
+#if SK_R32_SHIFT == 0 && SK_G32_SHIFT == 8 && SK_B32_SHIFT == 16 && \
+    SK_A32_SHIFT == 24
+      libyuv::ARGBToABGR(
+          static_cast<uint8*>(bitmap->getPixels()),
+          bitmap->rowBytes(),
+          static_cast<uint8*>(bitmap->getPixels()),
+          bitmap->rowBytes(),
+          video_frame->visible_rect().width(),
+          video_frame->visible_rect().height());
+#endif
+      break;
+
     case media::VideoFrame::NATIVE_TEXTURE:
       DCHECK_EQ(video_frame->format(), media::VideoFrame::NATIVE_TEXTURE);
       video_frame->ReadPixelsFromNativeTexture(*bitmap);
@@ -385,7 +409,7 @@ void SkCanvasVideoRenderer::Paint(media::VideoFrame* video_frame,
 
   // Paint black rectangle if there isn't a frame available or the
   // frame has an unexpected format.
-  if (!video_frame || !IsEitherYUVOrYUVAOrNative(video_frame->format())) {
+  if (!video_frame || !IsYUVOrNative(video_frame->format())) {
     canvas->drawRect(dest, paint);
     return;
   }
@@ -403,7 +427,7 @@ void SkCanvasVideoRenderer::Paint(media::VideoFrame* video_frame,
     last_frame_timestamp_ = video_frame->timestamp();
   }
 
-  // Do a slower paint using |last_frame_|.
+  // Paint using |last_frame_|.
   paint.setFilterLevel(SkPaint::kLow_FilterLevel);
   canvas->drawBitmapRect(last_frame_, NULL, dest, &paint);
 }

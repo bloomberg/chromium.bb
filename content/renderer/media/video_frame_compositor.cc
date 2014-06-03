@@ -15,6 +15,7 @@ static bool IsOpaque(const scoped_refptr<media::VideoFrame>& frame) {
     case media::VideoFrame::YV12J:
     case media::VideoFrame::YV16:
     case media::VideoFrame::I420:
+    case media::VideoFrame::YV24:
     case media::VideoFrame::NV12:
       return true;
 

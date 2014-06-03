@@ -82,7 +82,7 @@ int FFmpegVideoDecoder::GetVideoBuffer(struct AVCodecContext* codec_context,
   if (format == VideoFrame::UNKNOWN)
     return AVERROR(EINVAL);
   DCHECK(format == VideoFrame::YV12 || format == VideoFrame::YV16 ||
-         format == VideoFrame::YV12J);
+         format == VideoFrame::YV12J || format == VideoFrame::YV24);
 
   gfx::Size size(codec_context->width, codec_context->height);
   const int ret = av_image_check_size(size.width(), size.height(), 0, NULL);
