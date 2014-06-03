@@ -314,57 +314,11 @@ void PluginReverseInterface::OpenManifestEntry_MainThreadContinuation(
     int32_t err) {
   UNREFERENCED_PARAMETER(err);
   // CallOnMainThread continuations always called with err == PP_OK.
-
   NaClLog(4, "Entered OpenManifestEntry_MainThreadContinuation\n");
-
-  PP_Var pp_mapped_url;
-  PP_PNaClOptions pnacl_options = {PP_FALSE, PP_FALSE, 2};
-  if (!GetNaClInterface()->ManifestResolveKey(
-          plugin_->pp_instance(),
-          PP_FromBool(!service_runtime_->main_service_runtime()),
-          p->url.c_str(),
-          &pp_mapped_url,
-          &pnacl_options)) {
-    NaClLog(4, "OpenManifestEntry_MainThreadContinuation: ResolveKey failed\n");
-    // Failed, and error_info has the details on what happened.  Wake
-    // up requesting thread -- we are done.
-    {
-      nacl::MutexLocker take(&mu_);
-      *p->op_complete_ptr = true;  // done...
-      p->file_info->desc = -1;  // but failed.
-      NaClXCondVarBroadcast(&cv_);
-    }
-    p->MaybeRunCallback(PP_OK);
-    return;
-  }
-  nacl::string mapped_url = pp::Var(pp_mapped_url).AsString();
-  NaClLog(4,
-          "OpenManifestEntry_MainThreadContinuation: "
-          "ResolveKey: %s -> %s (pnacl_translate(%d))\n",
-          p->url.c_str(), mapped_url.c_str(), pnacl_options.translate);
-
-  if (pnacl_options.translate) {
-    // Requires PNaCl translation, but that's not supported.
-    NaClLog(4,
-            "OpenManifestEntry_MainThreadContinuation: "
-            "Requires PNaCl translation -- not supported\n");
-    {
-      nacl::MutexLocker take(&mu_);
-      *p->op_complete_ptr = true;  // done...
-      p->file_info->desc = -1;  // but failed.
-      NaClXCondVarBroadcast(&cv_);
-    }
-    p->MaybeRunCallback(PP_OK);
-    return;
-  }
 
   // Because p is owned by the callback of this invocation, so it is necessary
   // to create another instance.
   OpenManifestEntryResource* open_cont = new OpenManifestEntryResource(*p);
-  open_cont->url = mapped_url;
-  // Callback is now delegated from p to open_cont. So, here we manually clear
-  // complete callback.
-  p->callback = NULL;
 
   pp::CompletionCallback stream_cc = WeakRefNewCallback(
       anchor_,
@@ -372,10 +326,12 @@ void PluginReverseInterface::OpenManifestEntry_MainThreadContinuation(
       &PluginReverseInterface::StreamAsFile_MainThreadContinuation,
       open_cont);
 
-  GetNaClInterface()->DownloadFile(plugin_->pp_instance(),
-                                   mapped_url.c_str(),
-                                   &open_cont->pp_file_info,
-                                   stream_cc.pp_completion_callback());
+  GetNaClInterface()->OpenManifestEntry(
+      plugin_->pp_instance(),
+      PP_FromBool(!service_runtime_->main_service_runtime()),
+      p->url.c_str(),
+      &open_cont->pp_file_info,
+      stream_cc.pp_completion_callback());
   // p is deleted automatically.
 }
 

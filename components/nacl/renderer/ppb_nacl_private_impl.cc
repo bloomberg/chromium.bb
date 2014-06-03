@@ -1080,15 +1080,23 @@ PP_Bool ManifestGetProgramURL(PP_Instance instance,
   return PP_FALSE;
 }
 
-PP_Bool ManifestResolveKey(PP_Instance instance,
-                           PP_Bool is_helper_process,
-                           const char* key,
-                           PP_Var* pp_full_url,
-                           PP_PNaClOptions* pnacl_options) {
+// TODO(teravest): Refactor DownloadFile/DownloadNexe out to their own file;
+// this one is getting way too messy.
+void DownloadFile(PP_Instance instance,
+                  const std::string& url,
+                  struct PP_NaClFileInfo* file_info,
+                  struct PP_CompletionCallback callback);
+
+void OpenManifestEntry(PP_Instance instance,
+                       PP_Bool is_helper_process,
+                       const char* key,
+                       PP_NaClFileInfo* out_file_info,
+                       PP_CompletionCallback callback) {
+  std::string resolved_url;
+
   // For "helper" processes (llc and ld), we resolve keys manually as there is
   // no existing .nmf file to parse.
   if (PP_ToBool(is_helper_process)) {
-    pnacl_options->translate = PP_FALSE;
     // We can only resolve keys in the files/ namespace.
     const std::string kFilesPrefix = "files/";
     std::string key_string(key);
@@ -1097,25 +1105,41 @@ PP_Bool ManifestResolveKey(PP_Instance instance,
       if (load_manager)
         load_manager->ReportLoadError(PP_NACL_ERROR_MANIFEST_RESOLVE_URL,
                                       "key did not start with files/");
-      return PP_FALSE;
+      ppapi::PpapiGlobals::Get()->GetMainThreadMessageLoop()->PostTask(
+          FROM_HERE,
+          base::Bind(callback.func, callback.user_data,
+                     static_cast<int32_t>(PP_ERROR_FAILED)));
+      return;
     }
     std::string key_basename = key_string.substr(kFilesPrefix.length());
-    std::string pnacl_url =
+    resolved_url =
         std::string(kPNaClTranslatorBaseUrl) + GetSandboxArch() + "/" +
         key_basename;
-    *pp_full_url = ppapi::StringVar::StringToPPVar(pnacl_url);
-    return PP_TRUE;
+  } else {
+    JsonManifestMap::iterator it = g_manifest_map.Get().find(instance);
+    if (it == g_manifest_map.Get().end()) {
+      ppapi::PpapiGlobals::Get()->GetMainThreadMessageLoop()->PostTask(
+          FROM_HERE,
+          base::Bind(callback.func, callback.user_data,
+                     static_cast<int32_t>(PP_ERROR_FAILED)));
+      return;
+    }
+
+    PP_PNaClOptions pnacl_options;
+    bool ok = it->second->ResolveKey(key, &resolved_url, &pnacl_options);
+    // We don't support OpenManifestEntry for files that require PNaCl
+    // translation.
+    if (!ok || pnacl_options.translate) {
+      ppapi::PpapiGlobals::Get()->GetMainThreadMessageLoop()->PostTask(
+          FROM_HERE,
+          base::Bind(callback.func, callback.user_data,
+                     static_cast<int32_t>(PP_ERROR_FAILED)));
+      return;
+    }
   }
 
-  JsonManifestMap::iterator it = g_manifest_map.Get().find(instance);
-  if (it == g_manifest_map.Get().end())
-    return PP_FALSE;
-
-  std::string full_url;
-  bool ok = it->second->ResolveKey(key, &full_url, pnacl_options);
-  if (ok)
-    *pp_full_url = ppapi::StringVar::StringToPPVar(full_url);
-  return PP_FromBool(ok);
+  // Hand off to DownloadFile to perform fetching the actual file.
+  DownloadFile(instance, resolved_url, out_file_info, callback);
 }
 
 PP_Bool GetPNaClResourceInfo(PP_Instance instance,
@@ -1428,10 +1452,9 @@ void DownloadFileCompletion(base::PlatformFile file,
 }
 
 void DownloadFile(PP_Instance instance,
-                  const char* url,
+                  const std::string& url,
                   struct PP_NaClFileInfo* file_info,
                   struct PP_CompletionCallback callback) {
-  CHECK(url);
   CHECK(file_info);
 
   NexeLoadManager* load_manager = GetNexeLoadManager(instance);
@@ -1446,9 +1469,8 @@ void DownloadFile(PP_Instance instance,
 
   // Handle special PNaCl support files which are installed on the user's
   // machine.
-  std::string url_string(url);
-  if (url_string.find(kPNaClTranslatorBaseUrl, 0) == 0) {
-    PP_FileHandle handle = GetReadonlyPnaclFd(url);
+  if (url.find(kPNaClTranslatorBaseUrl, 0) == 0) {
+    PP_FileHandle handle = GetReadonlyPnaclFd(url.c_str());
     if (handle == PP_kInvalidFileHandle) {
       ppapi::PpapiGlobals::Get()->GetMainThreadMessageLoop()->PostTask(
           FROM_HERE,
@@ -1483,7 +1505,7 @@ void DownloadFile(PP_Instance instance,
   uint64_t file_token_lo = 0;
   uint64_t file_token_hi = 0;
   PP_FileHandle file_handle = OpenNaClExecutable(instance,
-                                                 url,
+                                                 url.c_str(),
                                                  &file_token_lo,
                                                  &file_token_hi);
   if (file_handle != PP_kInvalidFileHandle) {
@@ -1563,12 +1585,11 @@ const PPB_NaCl_Private nacl_interface = {
   &GetManifestURLArgument,
   &DevInterfacesEnabled,
   &ManifestGetProgramURL,
-  &ManifestResolveKey,
+  &OpenManifestEntry,
   &GetPNaClResourceInfo,
   &GetCpuFeatureAttrs,
   &PostMessageToJavaScript,
   &DownloadNexe,
-  &DownloadFile
 };
 
 }  // namespace

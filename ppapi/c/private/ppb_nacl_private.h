@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From private/ppb_nacl_private.idl modified Fri May 30 10:50:23 2014. */
+/* From private/ppb_nacl_private.idl modified Tue Jun  3 08:33:15 2014. */
 
 #ifndef PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
 #define PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
@@ -403,11 +403,16 @@ struct PPB_NaCl_Private_1_0 {
                                    struct PP_Var* full_url,
                                    struct PP_PNaClOptions* pnacl_options,
                                    PP_Bool* uses_nonsfi_mode);
-  PP_Bool (*ManifestResolveKey)(PP_Instance instance,
-                                PP_Bool helper_process,
-                                const char* key,
-                                struct PP_Var* full_url,
-                                struct PP_PNaClOptions* pnacl_options);
+  /* Opens a manifest entry for the given instance. If this is for a helper
+   * process, we consult our internal pnacl.json instead of the user-supplied
+   * NMF.
+   * Fails for files which require PNaCl translation.
+   */
+  void (*OpenManifestEntry)(PP_Instance instance,
+                            PP_Bool is_helper_process,
+                            const char* key,
+                            struct PP_NaClFileInfo* file_info,
+                            struct PP_CompletionCallback callback);
   /* Returns the filenames for the llc and ld tools, parsing that information
    * from the file given in |filename|.
    */
@@ -430,12 +435,6 @@ struct PPB_NaCl_Private_1_0 {
    * then it sets token information in |file_info| (otherwise left untouched).
    */
   void (*DownloadNexe)(PP_Instance instance,
-                       const char* url,
-                       struct PP_NaClFileInfo* file_info,
-                       struct PP_CompletionCallback callback);
-  /* Downloads a non-nexe file specified in the manifest, and sets |file_info|
-   * to corresponding information about the file. */
-  void (*DownloadFile)(PP_Instance instance,
                        const char* url,
                        struct PP_NaClFileInfo* file_info,
                        struct PP_CompletionCallback callback);

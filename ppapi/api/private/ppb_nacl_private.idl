@@ -389,11 +389,16 @@ interface PPB_NaCl_Private {
                                 [out] PP_PNaClOptions pnacl_options,
                                 [out] PP_Bool uses_nonsfi_mode);
 
-  PP_Bool ManifestResolveKey([in] PP_Instance instance,
-                             [in] PP_Bool helper_process,
-                             [in] str_t key,
-                             [out] PP_Var full_url,
-                             [out] PP_PNaClOptions pnacl_options);
+  /* Opens a manifest entry for the given instance. If this is for a helper
+   * process, we consult our internal pnacl.json instead of the user-supplied
+   * NMF.
+   * Fails for files which require PNaCl translation.
+   */
+  void OpenManifestEntry([in] PP_Instance instance,
+                         [in] PP_Bool is_helper_process,
+                         [in] str_t key,
+                         [out] PP_NaClFileInfo file_info,
+                         [in] PP_CompletionCallback callback);
 
   /* Returns the filenames for the llc and ld tools, parsing that information
    * from the file given in |filename|.
@@ -421,13 +426,6 @@ interface PPB_NaCl_Private {
    * then it sets token information in |file_info| (otherwise left untouched).
    */
   void DownloadNexe([in] PP_Instance instance,
-                    [in] str_t url,
-                    [out] PP_NaClFileInfo file_info,
-                    [in] PP_CompletionCallback callback);
-
-  /* Downloads a non-nexe file specified in the manifest, and sets |file_info|
-   * to corresponding information about the file. */
-  void DownloadFile([in] PP_Instance instance,
                     [in] str_t url,
                     [out] PP_NaClFileInfo file_info,
                     [in] PP_CompletionCallback callback);
