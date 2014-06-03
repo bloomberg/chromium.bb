@@ -21325,6 +21325,15 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>The frequency of ways that new user profiles are added.</summary>
 </histogram>
 
+<histogram name="Profile.AndroidAccountManagementMenu"
+    enum="ProfileAndroidAccountManagementMenu">
+  <owner>aruslan@chromium.org</owner>
+  <summary>
+    Track user interactions that can be performed in the Android account
+    management menu.
+  </summary>
+</histogram>
+
 <histogram name="Profile.AppCount">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>The number of installed apps when a profile is opened.</summary>
@@ -41247,6 +41256,33 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="3" label="Add new user from the User Manager"/>
 </enum>
 
+<enum name="ProfileAndroidAccountManagementMenu" type="int">
+  <int value="0" label="Opened Menu">
+    User arrived at the Account management screen.
+  </int>
+  <int value="1" label="Add Account">
+    User arrived at the Account management screen, and clicked Add account.
+  </int>
+  <int value="2" label="Go Incognito">
+    User arrived at the Account management screen, and clicked Go incognito.
+  </int>
+  <int value="3" label="Primary Account">
+    User arrived at the Account management screen, and clicked on primary.
+  </int>
+  <int value="4" label="Secondary Account">
+    User arrived at the Account management screen, and clicked on secondary.
+  </int>
+  <int value="5" label="Toggled Signout">
+    User arrived at the Account management screen, toggled Chrome signout.
+  </int>
+  <int value="6" label="Confirm Signout">
+    User toggled Chrome signout, and clicked Signout.
+  </int>
+  <int value="7" label="Cancel Signout">
+    User toggled Chrome signout, and clicked Cancel.
+  </int>
+</enum>
+
 <enum name="ProfileAuth" type="int">
   <int value="0" label="Authentication was unnecessary (profile not locked)"/>
   <int value="1" label="Authentication performed using local credentials"/>
@@ -46818,6 +46854,24 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <affected-histogram name="Prerender.TimeBetweenPrerenderRequests"/>
   <affected-histogram name="Prerender.TimeSinceLastRecentVisit"/>
   <affected-histogram name="Prerender.TimeUntilUsed2"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="Profile.AndroidAccountManagementMenu" separator=".">
+  <suffix name="NonGAIA" label="Interaction was not initiated from GAIA"/>
+  <suffix name="GAIASignout"
+      label="GAIA-initiated interaction indicating a service type of Signout"/>
+  <suffix name="GAIASignoutIncognito"
+      label="GAIA-initiated interaction indicating a service type of Signout
+             and go Incogntio"/>
+  <suffix name="GAIAAddSession"
+      label="GAIA-initiated interaction indicating a service type of Add a
+             Session"/>
+  <suffix name="GAIAReAuth"
+      label="GAIA-initiated interaction indicating a service type of
+             Reauthenticate this user"/>
+  <suffix name="GAIADefault"
+      label="GAIA-initiated interaction indicating the default service type"/>
+  <affected-histogram name="Profile.AndroidAccountManagementMenu"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="Profile.DesktopMenu" separator=".">

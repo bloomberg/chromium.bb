@@ -8,6 +8,7 @@
 #include <jni.h>
 
 #include "base/basictypes.h"
+#include "chrome/browser/signin/signin_header_helper.h"
 
 class Profile;
 
@@ -18,7 +19,8 @@ class AccountManagementScreenHelper {
   static bool Register(JNIEnv* env);
 
   // Opens the account management screen.
-  static void OpenAccountManagementScreen(Profile* profile);
+  static void OpenAccountManagementScreen(Profile* profile,
+                                          signin::GAIAServiceType service_type);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AccountManagementScreenHelper);

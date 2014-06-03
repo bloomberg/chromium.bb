@@ -83,10 +83,9 @@ void ProcessMirrorHeaderUIThread(
         GURL(chrome::kChromeUINativeNewTabURL), content::Referrer(),
         OFF_THE_RECORD, content::PAGE_TRANSITION_AUTO_TOPLEVEL, false));
   } else {
-    // TODO(mlerman): pass service_type to android logic for UMA metrics
-    // that will eventually be installed there.
     AccountManagementScreenHelper::OpenAccountManagementScreen(
-        Profile::FromBrowserContext(web_contents->GetBrowserContext()));
+        Profile::FromBrowserContext(web_contents->GetBrowserContext()),
+        service_type);
   }
 #endif // OS_ANDROID
 }

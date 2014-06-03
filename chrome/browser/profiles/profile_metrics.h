@@ -118,6 +118,32 @@ class ProfileMetrics {
     NUM_PROFILE_DESKTOP_MENU_METRICS,
   };
 
+#if defined(OS_ANDROID)
+  // TODO(aruslan): http://crbug.com/379987 Move to a generator.
+  // Enum for tracking user interactions with the account management menu
+  // on Android.
+  // This should match its counterpart in AccountManagementScreenHelper.java.
+  enum ProfileAndroidAccountManagementMenu {
+    // User arrived at the Account management screen.
+    PROFILE_ANDROID_ACCOUNT_MANAGEMENT_MENU_VIEW = 0,
+    // User arrived at the Account management screen, and clicked Add account.
+    PROFILE_ANDROID_ACCOUNT_MANAGEMENT_MENU_ADD_ACCOUNT,
+    // User arrived at the Account management screen, and clicked Go incognito.
+    PROFILE_ANDROID_ACCOUNT_MANAGEMENT_MENU_GO_INCOGNITO,
+    // User arrived at the Account management screen, and clicked on primary.
+    PROFILE_ANDROID_ACCOUNT_MANAGEMENT_MENU_CLICK_PRIMARY_ACCOUNT,
+    // User arrived at the Account management screen, and clicked on secondary.
+    PROFILE_ANDROID_ACCOUNT_MANAGEMENT_MENU_CLICK_SECONDARY_ACCOUNT,
+    // User arrived at the Account management screen, toggled Chrome signout.
+    PROFILE_ANDROID_ACCOUNT_MANAGEMENT_MENU_TOGGLE_SIGNOUT,
+    // User toggled Chrome signout, and clicked Signout.
+    PROFILE_ANDROID_ACCOUNT_MANAGEMENT_MENU_SIGNOUT_SIGNOUT,
+    // User toggled Chrome signout, and clicked Cancel.
+    PROFILE_ANDROID_ACCOUNT_MANAGEMENT_MENU_SIGNOUT_CANCEL,
+    NUM_PROFILE_ANDROID_ACCOUNT_MANAGEMENT_MENU_METRICS,
+  };
+#endif  // defined(OS_ANDROID)
+
   static void UpdateReportedProfilesStatistics(ProfileManager* manager);
 
   static void LogNumberOfProfiles(ProfileManager* manager);
@@ -132,6 +158,12 @@ class ProfileMetrics {
   static void LogProfileUpgradeEnrollment(ProfileUpgradeEnrollment metric);
   static void LogProfileDesktopMenu(ProfileDesktopMenu metric,
                                     signin::GAIAServiceType gaia_service);
+
+#if defined(OS_ANDROID)
+  static void LogProfileAndroidAccountManagementMenu(
+      ProfileAndroidAccountManagementMenu metric,
+      signin::GAIAServiceType gaia_service);
+#endif  // defined(OS_ANDROID)
 
   // These functions should only be called on the UI thread because they hook
   // into g_browser_process through a helper function.

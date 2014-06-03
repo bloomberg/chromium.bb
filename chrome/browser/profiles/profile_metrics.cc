@@ -330,6 +330,54 @@ void ProfileMetrics::LogProfileDesktopMenu(
   }
 }
 
+#if defined(OS_ANDROID)
+void ProfileMetrics::LogProfileAndroidAccountManagementMenu(
+    ProfileAndroidAccountManagementMenu metric,
+    signin::GAIAServiceType gaia_service) {
+  // The first parameter to the histogram needs to be literal, because of the
+  // optimized implementation of |UMA_HISTOGRAM_ENUMERATION|. Do not attempt
+  // to refactor.
+  switch (gaia_service) {
+    case signin::GAIA_SERVICE_TYPE_NONE:
+      UMA_HISTOGRAM_ENUMERATION(
+          "Profile.AndroidAccountManagementMenu.NonGAIA",
+          metric,
+          NUM_PROFILE_ANDROID_ACCOUNT_MANAGEMENT_MENU_METRICS);
+      break;
+    case signin::GAIA_SERVICE_TYPE_SIGNOUT:
+      UMA_HISTOGRAM_ENUMERATION(
+          "Profile.AndroidAccountManagementMenu.GAIASignout",
+          metric,
+          NUM_PROFILE_ANDROID_ACCOUNT_MANAGEMENT_MENU_METRICS);
+      break;
+    case signin::GAIA_SERVICE_TYPE_INCOGNITO:
+      UMA_HISTOGRAM_ENUMERATION(
+          "Profile.AndroidAccountManagementMenu.GAIASignoutIncognito",
+          metric,
+          NUM_PROFILE_ANDROID_ACCOUNT_MANAGEMENT_MENU_METRICS);
+      break;
+    case signin::GAIA_SERVICE_TYPE_ADDSESSION:
+      UMA_HISTOGRAM_ENUMERATION(
+          "Profile.AndroidAccountManagementMenu.GAIAAddSession",
+          metric,
+          NUM_PROFILE_ANDROID_ACCOUNT_MANAGEMENT_MENU_METRICS);
+      break;
+    case signin::GAIA_SERVICE_TYPE_REAUTH:
+      UMA_HISTOGRAM_ENUMERATION(
+          "Profile.AndroidAccountManagementMenu.GAIAReAuth",
+          metric,
+          NUM_PROFILE_ANDROID_ACCOUNT_MANAGEMENT_MENU_METRICS);
+      break;
+    case signin::GAIA_SERVICE_TYPE_DEFAULT:
+      UMA_HISTOGRAM_ENUMERATION(
+          "Profile.AndroidAccountManagementMenu.GAIADefault",
+          metric,
+          NUM_PROFILE_ANDROID_ACCOUNT_MANAGEMENT_MENU_METRICS);
+      break;
+  }
+}
+#endif  // defined(OS_ANDROID)
+
 void ProfileMetrics::LogProfileLaunch(Profile* profile) {
   base::FilePath profile_path = profile->GetPath();
   UMA_HISTOGRAM_ENUMERATION("Profile.LaunchBrowser",

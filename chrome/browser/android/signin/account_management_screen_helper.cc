@@ -8,18 +8,30 @@
 #include "base/android/jni_string.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
+#include "chrome/browser/profiles/profile_metrics.h"
 #include "jni/AccountManagementScreenHelper_jni.h"
 
 // static
 void AccountManagementScreenHelper::OpenAccountManagementScreen(
-    Profile* profile) {
+    Profile* profile,
+    signin::GAIAServiceType service_type) {
   DCHECK(profile);
   DCHECK(ProfileAndroid::FromProfile(profile));
 
   Java_AccountManagementScreenHelper_openAccountManagementScreen(
       base::android::AttachCurrentThread(),
       base::android::GetApplicationContext(),
-      ProfileAndroid::FromProfile(profile)->GetJavaObject().obj());
+      ProfileAndroid::FromProfile(profile)->GetJavaObject().obj(),
+      static_cast<int>(service_type));
+}
+
+static void LogEvent(JNIEnv* env,
+                     jclass clazz,
+                     jint metric,
+                     jint gaiaServiceType) {
+  ProfileMetrics::LogProfileAndroidAccountManagementMenu(
+      static_cast<ProfileMetrics::ProfileAndroidAccountManagementMenu>(metric),
+      static_cast<signin::GAIAServiceType>(gaiaServiceType));
 }
 
 // static
