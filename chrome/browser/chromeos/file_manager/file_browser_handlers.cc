@@ -490,6 +490,7 @@ bool IsFallbackFileBrowserHandler(const file_tasks::TaskDescriptor& task) {
            task.task_type == file_tasks::TASK_TYPE_FILE_HANDLER) &&
           (task.app_id == kFileManagerAppId ||
            task.app_id == kVideoPlayerAppId ||
+           task.app_id == kGalleryAppId ||
            task.app_id == extension_misc::kQuickOfficeComponentExtensionId ||
            task.app_id == extension_misc::kQuickOfficeInternalExtensionId ||
            task.app_id == extension_misc::kQuickOfficeExtensionId));
