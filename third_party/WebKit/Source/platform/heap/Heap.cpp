@@ -829,20 +829,28 @@ void ThreadHeap<Header>::assertEmpty()
             BasicObjectHeader* basicHeader = reinterpret_cast<BasicObjectHeader*>(headerAddress);
             ASSERT(basicHeader->size() < blinkPagePayloadSize());
             // A live object is potentially a dangling pointer from
-            // some root. Treat that as a critical bug both in release
-            // and debug mode. Unfortunately, we can only check when
-            // nothing has been marked conservatively from the
-            // stack. Something could be conservatively kept alive
-            // because a non-pointer on another thread's stack is
-            // treated as a pointer into the heap.
-            RELEASE_ASSERT(Heap::lastGCWasConservative() || basicHeader->isFree());
+            // some root. Treat that as a bug. Unfortunately, it is
+            // hard to reliably check in the presence of conservative
+            // stack scanning. Something could be conservatively kept
+            // alive because a non-pointer on another thread's stack
+            // is treated as a pointer into the heap.
+            //
+            // FIXME: This assert can currently trigger in cases where
+            // worker shutdown does not get enough precise GCs to get
+            // all objects removed from the worker heap. There are two
+            // issues: 1) conservative GCs keeping objects alive, and
+            // 2) long chains of RefPtrs/Persistents that require more
+            // GCs to get everything cleaned up. Maybe we can keep
+            // threads alive until their heaps become empty instead of
+            // forcing the threads to die immediately?
+            ASSERT(Heap::lastGCWasConservative() || basicHeader->isFree());
             headerAddress += basicHeader->size();
         }
         ASSERT(headerAddress == end);
         addToFreeList(page->payload(), end - page->payload());
     }
 
-    RELEASE_ASSERT(!m_firstLargeHeapObject);
+    ASSERT(Heap::lastGCWasConservative() || !m_firstLargeHeapObject);
 }
 
 template<typename Header>
