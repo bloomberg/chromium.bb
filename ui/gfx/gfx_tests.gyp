@@ -115,6 +115,11 @@
             'text_elider_unittest.cc',
           ],
         }],
+        ['OS == "android"', {
+          'dependencies': [
+            '../../testing/android/native_test.gyp:native_test_native_code',
+          ],
+        }],
       ],
     }
   ],
@@ -125,6 +130,7 @@
           'target_name': 'gfx_unittests_apk',
           'type': 'none',
           'dependencies': [
+            '../android/ui_android.gyp:ui_java',
             'gfx_unittests',
           ],
           'variables': {

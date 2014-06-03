@@ -12,6 +12,11 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
 
+#if defined(OS_ANDROID)
+#include "base/android/jni_android.h"
+#include "ui/gfx/android/gfx_jni_registrar.h"
+#endif
+
 namespace {
 
 class GfxTestSuite : public base::TestSuite {
@@ -21,6 +26,11 @@ class GfxTestSuite : public base::TestSuite {
  protected:
   virtual void Initialize() OVERRIDE {
     base::TestSuite::Initialize();
+
+#if defined(OS_ANDROID)
+    gfx::android::RegisterJni(base::android::AttachCurrentThread());
+#endif
+
     ui::RegisterPathProvider();
 
     base::FilePath ui_test_pak_path;
