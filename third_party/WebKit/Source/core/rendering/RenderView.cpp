@@ -201,8 +201,15 @@ bool RenderView::shouldDoFullRepaintForNextLayout() const
 
     if (height() != viewHeight()) {
         if (RenderObject* backgroundRenderer = this->backgroundRenderer()) {
-            if (backgroundRenderer->mustRepaintFillLayersOnHeightChange(*backgroundRenderer->style()->backgroundLayers()))
+            // When background-attachment is 'fixed', we treat the viewport (instead of the 'root'
+            // i.e. html or body) as the background positioning area, and we should full repaint
+            // viewport resize if the background image is not composited and needs full repaint on
+            // background positioning area resize.
+            if (!m_compositor || !m_compositor->needsFixedRootBackgroundLayer(layer())) {
+                if (backgroundRenderer->style()->hasFixedBackgroundImage()
+                    && mustRepaintFillLayersOnHeightChange(*backgroundRenderer->style()->backgroundLayers()))
                 return true;
+            }
         }
     }
 
