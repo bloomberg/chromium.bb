@@ -15,6 +15,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::_;
+using ::testing::SaveArg;
 
 namespace media {
 
@@ -53,6 +54,22 @@ class MockClient : public media::VideoCaptureDevice::Client {
   base::Callback<void(const VideoCaptureFormat&)> frame_cb_;
 };
 
+class DeviceEnumerationListener :
+    public base::RefCounted<DeviceEnumerationListener> {
+ public:
+  MOCK_METHOD1(OnEnumeratedDevicesCallbackPtr,
+               void(media::VideoCaptureDevice::Names* names));
+  // GMock doesn't support move-only arguments, so we use this forward method.
+  void OnEnumeratedDevicesCallback(
+      scoped_ptr<media::VideoCaptureDevice::Names> names) {
+    OnEnumeratedDevicesCallbackPtr(names.release());
+  }
+
+ private:
+  friend class base::RefCounted<DeviceEnumerationListener>;
+  virtual ~DeviceEnumerationListener() {}
+};
+
 class FakeVideoCaptureDeviceTest : public testing::Test {
  protected:
   typedef media::VideoCaptureDevice::Client Client;
@@ -62,7 +79,9 @@ class FakeVideoCaptureDeviceTest : public testing::Test {
         client_(new MockClient(
             base::Bind(&FakeVideoCaptureDeviceTest::OnFrameCaptured,
                        base::Unretained(this)))),
-        video_capture_device_factory_(new FakeVideoCaptureDeviceFactory()) {}
+        video_capture_device_factory_(new FakeVideoCaptureDeviceFactory()) {
+    device_enumeration_listener_ = new DeviceEnumerationListener();
+  }
 
   virtual void SetUp() {
   }
@@ -77,26 +96,36 @@ class FakeVideoCaptureDeviceTest : public testing::Test {
     run_loop_->Run();
   }
 
+  scoped_ptr<media::VideoCaptureDevice::Names> EnumerateDevices() {
+    media::VideoCaptureDevice::Names* names;
+    EXPECT_CALL(*device_enumeration_listener_,
+                OnEnumeratedDevicesCallbackPtr(_)).WillOnce(SaveArg<0>(&names));
+
+    video_capture_device_factory_->EnumerateDeviceNames(
+        base::Bind(&DeviceEnumerationListener::OnEnumeratedDevicesCallback,
+                   device_enumeration_listener_));
+    base::MessageLoop::current()->RunUntilIdle();
+    return scoped_ptr<media::VideoCaptureDevice::Names>(names);
+  }
+
   const VideoCaptureFormat& last_format() const { return last_format_; }
 
   VideoCaptureDevice::Names names_;
   scoped_ptr<base::MessageLoop> loop_;
   scoped_ptr<base::RunLoop> run_loop_;
   scoped_ptr<MockClient> client_;
+  scoped_refptr<DeviceEnumerationListener> device_enumeration_listener_;
   VideoCaptureFormat last_format_;
   scoped_ptr<VideoCaptureDeviceFactory> video_capture_device_factory_;
 };
 
 TEST_F(FakeVideoCaptureDeviceTest, Capture) {
-  VideoCaptureDevice::Names names;
+  scoped_ptr<media::VideoCaptureDevice::Names> names(EnumerateDevices());
 
-  video_capture_device_factory_->GetDeviceNames(&names);
-
-  ASSERT_GT(static_cast<int>(names.size()), 0);
+  ASSERT_GT(static_cast<int>(names->size()), 0);
 
   scoped_ptr<VideoCaptureDevice> device(
-      video_capture_device_factory_->Create(
-          base::MessageLoopProxy::current(), names.front()));
+      video_capture_device_factory_->Create(names->front()));
   ASSERT_TRUE(device);
 
   EXPECT_CALL(*client_, OnErr()).Times(0);
@@ -115,13 +144,12 @@ TEST_F(FakeVideoCaptureDeviceTest, Capture) {
 }
 
 TEST_F(FakeVideoCaptureDeviceTest, GetDeviceSupportedFormats) {
-  VideoCaptureDevice::Names names;
-  video_capture_device_factory_->GetDeviceNames(&names);
+  scoped_ptr<VideoCaptureDevice::Names> names(EnumerateDevices());
 
   VideoCaptureFormats supported_formats;
   VideoCaptureDevice::Names::iterator names_iterator;
 
-  for (names_iterator = names.begin(); names_iterator != names.end();
+  for (names_iterator = names->begin(); names_iterator != names->end();
        ++names_iterator) {
     video_capture_device_factory_->GetDeviceSupportedFormats(
         *names_iterator, &supported_formats);
@@ -142,25 +170,23 @@ TEST_F(FakeVideoCaptureDeviceTest, GetDeviceSupportedFormats) {
 }
 
 TEST_F(FakeVideoCaptureDeviceTest, CaptureVariableResolution) {
-  VideoCaptureDevice::Names names;
+  scoped_ptr<VideoCaptureDevice::Names> names(EnumerateDevices());
 
-  video_capture_device_factory_->GetDeviceNames(&names);
   VideoCaptureParams capture_params;
   capture_params.requested_format.frame_size.SetSize(640, 480);
   capture_params.requested_format.frame_rate = 30;
   capture_params.requested_format.pixel_format = PIXEL_FORMAT_I420;
   capture_params.allow_resolution_change = true;
 
-  ASSERT_GT(static_cast<int>(names.size()), 0);
+  ASSERT_GT(static_cast<int>(names->size()), 0);
 
   scoped_ptr<VideoCaptureDevice> device(
-      video_capture_device_factory_->Create(
-          base::MessageLoopProxy::current(), names.front()));
+      video_capture_device_factory_->Create(names->front()));
   ASSERT_TRUE(device);
 
   // Configure the FakeVideoCaptureDevice to use all its formats as roster.
   VideoCaptureFormats formats;
-  video_capture_device_factory_->GetDeviceSupportedFormats(names.front(),
+  video_capture_device_factory_->GetDeviceSupportedFormats(names->front(),
                                                            &formats);
   static_cast<FakeVideoCaptureDevice*>(device.get())->
       PopulateVariableFormatsRoster(formats);

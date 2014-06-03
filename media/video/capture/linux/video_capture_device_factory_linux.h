@@ -18,11 +18,11 @@ namespace media {
 class MEDIA_EXPORT VideoCaptureDeviceFactoryLinux
     : public VideoCaptureDeviceFactory {
  public:
-  VideoCaptureDeviceFactoryLinux() {}
-  virtual ~VideoCaptureDeviceFactoryLinux() {}
+  explicit VideoCaptureDeviceFactoryLinux(
+      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
+  virtual ~VideoCaptureDeviceFactoryLinux();
 
   virtual scoped_ptr<VideoCaptureDevice> Create(
-      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
       const VideoCaptureDevice::Name& device_name) OVERRIDE;
   virtual void GetDeviceNames(VideoCaptureDevice::Names* device_names) OVERRIDE;
   virtual void GetDeviceSupportedFormats(
@@ -30,7 +30,7 @@ class MEDIA_EXPORT VideoCaptureDeviceFactoryLinux
       VideoCaptureFormats* supported_formats) OVERRIDE;
 
  private:
-
+  scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
   DISALLOW_COPY_AND_ASSIGN(VideoCaptureDeviceFactoryLinux);
 };
 

@@ -18,7 +18,9 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/message_loop/message_loop.h"
 #include "base/process/process_handle.h"
+#include "base/timer/elapsed_timer.h"
 #include "content/browser/renderer_host/media/media_stream_provider.h"
 #include "content/browser/renderer_host/media/video_capture_controller_event_handler.h"
 #include "content/common/content_export.h"
@@ -123,7 +125,7 @@ class CONTENT_EXPORT VideoCaptureManager : public MediaStreamProvider {
   };
   typedef std::vector<DeviceInfo> DeviceInfos;
 
-  // Check to see if |entry| has no clients left on its controller. If so,
+  // Checks to see if |entry| has no clients left on its controller. If so,
   // remove it from the list of devices, and delete it asynchronously. |entry|
   // may be freed by this function.
   void DestroyDeviceEntryIfNoClients(DeviceEntry* entry);
@@ -133,34 +135,35 @@ class CONTENT_EXPORT VideoCaptureManager : public MediaStreamProvider {
                 media::VideoCaptureSessionId capture_session_id);
   void OnClosed(MediaStreamType type,
                 media::VideoCaptureSessionId capture_session_id);
-  void OnDevicesInfoEnumerated(
-      MediaStreamType stream_type,
-      const DeviceInfos& new_devices_info_cache);
+  void OnDevicesInfoEnumerated(MediaStreamType stream_type,
+                               base::ElapsedTimer* timer,
+                               const DeviceInfos& new_devices_info_cache);
 
-  // Find a DeviceEntry by its device ID and type, if it is already opened.
+  // Finds a DeviceEntry by its device ID and type, if it is already opened.
   DeviceEntry* GetDeviceEntryForMediaStreamDevice(
       const MediaStreamDevice& device_info);
 
-  // Find a DeviceEntry entry for the indicated session, creating a fresh one
+  // Finds a DeviceEntry entry for the indicated session, creating a fresh one
   // if necessary. Returns NULL if the session id is invalid.
   DeviceEntry* GetOrCreateDeviceEntry(
       media::VideoCaptureSessionId capture_session_id);
 
-  // Find the DeviceEntry that owns a particular controller pointer.
+  // Finds the DeviceEntry that owns a particular controller pointer.
   DeviceEntry* GetDeviceEntryForController(
       const VideoCaptureController* controller) const;
 
   bool IsOnDeviceThread() const;
 
-  // Queries the Names of the devices in the system; the formats supported by
-  // the new devices are also queried, and consolidated with the copy of the
-  // local device info cache passed. The consolidated list of devices and
-  // supported formats is returned.
-  DeviceInfos GetAvailableDevicesInfoOnDeviceThread(
+  // Consolidates the cached devices list with the list of currently connected
+  // devices in the system |names_snapshot|. Retrieves the supported formats of
+  // the new devices and sends the new cache to OnDevicesInfoEnumerated().
+  void ConsolidateDevicesInfoOnDeviceThread(
+      base::Callback<void(const DeviceInfos&)> on_devices_enumerated_callback,
       MediaStreamType stream_type,
-      const DeviceInfos& old_device_info_cache);
+      const DeviceInfos& old_device_info_cache,
+      scoped_ptr<media::VideoCaptureDevice::Names> names_snapshot);
 
-  // Create and Start a new VideoCaptureDevice, storing the result in
+  // Creates and Starts a new VideoCaptureDevice, storing the result in
   // |entry->video_capture_device|. Ownership of |client| passes to
   // the device.
   void DoStartDeviceOnDeviceThread(
@@ -169,7 +172,7 @@ class CONTENT_EXPORT VideoCaptureManager : public MediaStreamProvider {
       const media::VideoCaptureParams& params,
       scoped_ptr<media::VideoCaptureDevice::Client> client);
 
-  // Stop and destroy the VideoCaptureDevice held in
+  // Stops and destroys the VideoCaptureDevice held in
   // |entry->video_capture_device|.
   void DoStopDeviceOnDeviceThread(DeviceEntry* entry);
 
@@ -230,9 +233,9 @@ class CONTENT_EXPORT VideoCaptureManager : public MediaStreamProvider {
 
   // Local cache of the enumerated video capture devices' names and capture
   // supported formats. A snapshot of the current devices and their capabilities
-  // is composed in GetAvailableDevicesInfoOnDeviceThread() --coming
-  // from EnumerateDevices()--, and this snapshot is used to update this list in
-  // OnDevicesInfoEnumerated(). GetDeviceSupportedFormats() will
+  // is composed in VideoCaptureDeviceFactory::EnumerateDeviceNames() and
+  // ConsolidateDevicesInfoOnDeviceThread(), and this snapshot is used to update
+  // this list in OnDevicesInfoEnumerated(). GetDeviceSupportedFormats() will
   // use this list if the device is not started, otherwise it will retrieve the
   // active device capture format from the VideoCaptureController associated.
   DeviceInfos devices_info_cache_;

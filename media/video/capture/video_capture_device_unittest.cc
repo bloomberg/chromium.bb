@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/run_loop.h"
@@ -17,6 +19,10 @@
 #if defined(OS_WIN)
 #include "base/win/scoped_com_initializer.h"
 #include "media/video/capture/win/video_capture_device_factory_win.h"
+#endif
+
+#if defined(OS_MACOSX)
+#include "media/video/capture/mac/video_capture_device_factory_mac.h"
 #endif
 
 #if defined(OS_ANDROID)
@@ -50,6 +56,9 @@
 #define MAYBE_AllocateBadSize AllocateBadSize
 #define MAYBE_CaptureMjpeg CaptureMjpeg
 #endif
+
+using ::testing::_;
+using ::testing::SaveArg;
 
 namespace media {
 
@@ -88,6 +97,21 @@ class MockClient : public media::VideoCaptureDevice::Client {
   base::Callback<void(const VideoCaptureFormat&)> frame_cb_;
 };
 
+class DeviceEnumerationListener :
+    public base::RefCounted<DeviceEnumerationListener>{
+ public:
+  MOCK_METHOD1(OnEnumeratedDevicesCallbackPtr,
+               void(media::VideoCaptureDevice::Names* names));
+  // GMock doesn't support move-only arguments, so we use this forward method.
+  void OnEnumeratedDevicesCallback(
+      scoped_ptr<media::VideoCaptureDevice::Names> names) {
+    OnEnumeratedDevicesCallbackPtr(names.release());
+  }
+ private:
+  friend class base::RefCounted<DeviceEnumerationListener>;
+  virtual ~DeviceEnumerationListener() {}
+};
+
 class VideoCaptureDeviceTest : public testing::Test {
  protected:
   typedef media::VideoCaptureDevice::Client Client;
@@ -97,8 +121,10 @@ class VideoCaptureDeviceTest : public testing::Test {
         client_(
             new MockClient(base::Bind(&VideoCaptureDeviceTest::OnFrameCaptured,
                                       base::Unretained(this)))),
-        video_capture_device_factory_(
-            VideoCaptureDeviceFactory::CreateFactory()) {}
+        video_capture_device_factory_(VideoCaptureDeviceFactory::CreateFactory(
+            base::MessageLoopProxy::current())) {
+    device_enumeration_listener_ = new DeviceEnumerationListener();
+  }
 
   virtual void SetUp() {
 #if defined(OS_ANDROID)
@@ -122,17 +148,29 @@ class VideoCaptureDeviceTest : public testing::Test {
     run_loop_->Run();
   }
 
+  scoped_ptr<media::VideoCaptureDevice::Names> EnumerateDevices() {
+    media::VideoCaptureDevice::Names* names;
+    EXPECT_CALL(*device_enumeration_listener_,
+                OnEnumeratedDevicesCallbackPtr(_)).WillOnce(SaveArg<0>(&names));
+
+    video_capture_device_factory_->EnumerateDeviceNames(
+        base::Bind(&DeviceEnumerationListener::OnEnumeratedDevicesCallback,
+                   device_enumeration_listener_));
+    base::MessageLoop::current()->RunUntilIdle();
+    return scoped_ptr<media::VideoCaptureDevice::Names>(names);
+  }
+
   const VideoCaptureFormat& last_format() const { return last_format_; }
 
   scoped_ptr<VideoCaptureDevice::Name> GetFirstDeviceNameSupportingPixelFormat(
       const VideoPixelFormat& pixel_format) {
-    video_capture_device_factory_->GetDeviceNames(&names_);
-    if (!names_.size()) {
+    names_ = EnumerateDevices();
+    if (!names_->size()) {
       DVLOG(1) << "No camera available.";
       return scoped_ptr<VideoCaptureDevice::Name>();
     }
     VideoCaptureDevice::Names::iterator names_iterator;
-    for (names_iterator = names_.begin(); names_iterator != names_.end();
+    for (names_iterator = names_->begin(); names_iterator != names_->end();
          ++names_iterator) {
       VideoCaptureFormats supported_formats;
       video_capture_device_factory_->GetDeviceSupportedFormats(
@@ -154,10 +192,11 @@ class VideoCaptureDeviceTest : public testing::Test {
 #if defined(OS_WIN)
   base::win::ScopedCOMInitializer initialize_com_;
 #endif
-  VideoCaptureDevice::Names names_;
+  scoped_ptr<VideoCaptureDevice::Names> names_;
   scoped_ptr<base::MessageLoop> loop_;
   scoped_ptr<base::RunLoop> run_loop_;
   scoped_ptr<MockClient> client_;
+  scoped_refptr<DeviceEnumerationListener> device_enumeration_listener_;
   VideoCaptureFormat last_format_;
   scoped_ptr<VideoCaptureDeviceFactory> video_capture_device_factory_;
 };
@@ -171,29 +210,45 @@ TEST_F(VideoCaptureDeviceTest, OpenInvalidDevice) {
   VideoCaptureDevice::Name device_name("jibberish", "jibberish", api_type);
 #elif defined(OS_MACOSX)
   VideoCaptureDevice::Name device_name("jibberish", "jibberish",
-      VideoCaptureDevice::Name::AVFOUNDATION);
+      VideoCaptureDeviceFactoryMac::PlatformSupportsAVFoundation()
+          ? VideoCaptureDevice::Name::AVFOUNDATION
+          : VideoCaptureDevice::Name::QTKIT);
 #else
   VideoCaptureDevice::Name device_name("jibberish", "jibberish");
 #endif
   scoped_ptr<VideoCaptureDevice> device =
-      video_capture_device_factory_->Create(
-          base::MessageLoopProxy::current(),
-          device_name);
+      video_capture_device_factory_->Create(device_name);
+#if !defined(OS_MACOSX)
   EXPECT_TRUE(device == NULL);
+#else
+  if (VideoCaptureDeviceFactoryMac::PlatformSupportsAVFoundation()) {
+    EXPECT_TRUE(device == NULL);
+  } else {
+    // The presence of the actual device is only checked on AllocateAndStart()
+    // and not on creation for QTKit API in Mac OS X platform.
+    EXPECT_CALL(*client_, OnErr()).Times(1);
+
+    VideoCaptureParams capture_params;
+    capture_params.requested_format.frame_size.SetSize(640, 480);
+    capture_params.requested_format.frame_rate = 30;
+    capture_params.requested_format.pixel_format = PIXEL_FORMAT_I420;
+    capture_params.allow_resolution_change = false;
+    device->AllocateAndStart(capture_params, client_.PassAs<Client>());
+  }
+#endif
 }
 
 TEST_F(VideoCaptureDeviceTest, CaptureVGA) {
-  video_capture_device_factory_->GetDeviceNames(&names_);
-  if (!names_.size()) {
+  names_ = EnumerateDevices();
+  if (!names_->size()) {
     DVLOG(1) << "No camera available. Exiting test.";
     return;
   }
 
   scoped_ptr<VideoCaptureDevice> device(
-      video_capture_device_factory_->Create(base::MessageLoopProxy::current(),
-                                            names_.front()));
+      video_capture_device_factory_->Create(names_->front()));
   ASSERT_TRUE(device);
-  DVLOG(1) << names_.front().id();
+  DVLOG(1) << names_->front().id();
 
   EXPECT_CALL(*client_, OnErr())
       .Times(0);
@@ -212,15 +267,14 @@ TEST_F(VideoCaptureDeviceTest, CaptureVGA) {
 }
 
 TEST_F(VideoCaptureDeviceTest, Capture720p) {
-  video_capture_device_factory_->GetDeviceNames(&names_);
-  if (!names_.size()) {
+  names_ = EnumerateDevices();
+  if (!names_->size()) {
     DVLOG(1) << "No camera available. Exiting test.";
     return;
   }
 
   scoped_ptr<VideoCaptureDevice> device(
-      video_capture_device_factory_->Create(base::MessageLoopProxy::current(),
-                                            names_.front()));
+      video_capture_device_factory_->Create(names_->front()));
   ASSERT_TRUE(device);
 
   EXPECT_CALL(*client_, OnErr())
@@ -238,14 +292,13 @@ TEST_F(VideoCaptureDeviceTest, Capture720p) {
 }
 
 TEST_F(VideoCaptureDeviceTest, MAYBE_AllocateBadSize) {
-  video_capture_device_factory_->GetDeviceNames(&names_);
-  if (!names_.size()) {
+  names_ = EnumerateDevices();
+  if (!names_->size()) {
     DVLOG(1) << "No camera available. Exiting test.";
     return;
   }
   scoped_ptr<VideoCaptureDevice> device(
-      video_capture_device_factory_->Create(base::MessageLoopProxy::current(),
-                                            names_.front()));
+      video_capture_device_factory_->Create(names_->front()));
   ASSERT_TRUE(device);
 
   EXPECT_CALL(*client_, OnErr())
@@ -264,8 +317,8 @@ TEST_F(VideoCaptureDeviceTest, MAYBE_AllocateBadSize) {
 }
 
 TEST_F(VideoCaptureDeviceTest, ReAllocateCamera) {
-  video_capture_device_factory_->GetDeviceNames(&names_);
-  if (!names_.size()) {
+  names_ = EnumerateDevices();
+  if (!names_->size()) {
     DVLOG(1) << "No camera available. Exiting test.";
     return;
   }
@@ -274,8 +327,7 @@ TEST_F(VideoCaptureDeviceTest, ReAllocateCamera) {
   for (int i = 0; i <= 5; i++) {
     ResetWithNewClient();
     scoped_ptr<VideoCaptureDevice> device(
-        video_capture_device_factory_->Create(base::MessageLoopProxy::current(),
-                                              names_.front()));
+        video_capture_device_factory_->Create(names_->front()));
     gfx::Size resolution;
     if (i % 2) {
       resolution = gfx::Size(640, 480);
@@ -300,8 +352,7 @@ TEST_F(VideoCaptureDeviceTest, ReAllocateCamera) {
 
   ResetWithNewClient();
   scoped_ptr<VideoCaptureDevice> device(
-      video_capture_device_factory_->Create(base::MessageLoopProxy::current(),
-                                            names_.front()));
+      video_capture_device_factory_->Create(names_->front()));
 
   device->AllocateAndStart(capture_params, client_.PassAs<Client>());
   WaitForCapturedFrame();
@@ -312,14 +363,13 @@ TEST_F(VideoCaptureDeviceTest, ReAllocateCamera) {
 }
 
 TEST_F(VideoCaptureDeviceTest, DeAllocateCameraWhileRunning) {
-  video_capture_device_factory_->GetDeviceNames(&names_);
-  if (!names_.size()) {
+  names_ = EnumerateDevices();
+  if (!names_->size()) {
     DVLOG(1) << "No camera available. Exiting test.";
     return;
   }
   scoped_ptr<VideoCaptureDevice> device(
-      video_capture_device_factory_->Create(base::MessageLoopProxy::current(),
-                                            names_.front()));
+      video_capture_device_factory_->Create(names_->front()));
   ASSERT_TRUE(device);
 
   EXPECT_CALL(*client_, OnErr())
@@ -348,8 +398,7 @@ TEST_F(VideoCaptureDeviceTest, MAYBE_CaptureMjpeg) {
     return;
   }
   scoped_ptr<VideoCaptureDevice> device(
-      video_capture_device_factory_->Create(base::MessageLoopProxy::current(),
-                                            *name));
+      video_capture_device_factory_->Create(*name));
   ASSERT_TRUE(device);
 
   EXPECT_CALL(*client_, OnErr())

@@ -15,18 +15,25 @@ namespace media {
 class MEDIA_EXPORT VideoCaptureDeviceFactoryMac :
     public VideoCaptureDeviceFactory {
  public:
-  VideoCaptureDeviceFactoryMac();
-  virtual ~VideoCaptureDeviceFactoryMac() {}
+  static bool PlatformSupportsAVFoundation();
+
+  explicit VideoCaptureDeviceFactoryMac(
+      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
+  virtual ~VideoCaptureDeviceFactoryMac();
 
   virtual scoped_ptr<VideoCaptureDevice> Create(
-      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
       const VideoCaptureDevice::Name& device_name) OVERRIDE;
   virtual void GetDeviceNames(VideoCaptureDevice::Names* device_names) OVERRIDE;
+  virtual void EnumerateDeviceNames(const base::Callback<
+      void(scoped_ptr<media::VideoCaptureDevice::Names>)>& callback) OVERRIDE;
   virtual void GetDeviceSupportedFormats(
       const VideoCaptureDevice::Name& device,
       VideoCaptureFormats* supported_formats) OVERRIDE;
 
  private:
+  // Cache of |ui_task_runner| for enumerating devices there for QTKit.
+  scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
+
   DISALLOW_COPY_AND_ASSIGN(VideoCaptureDeviceFactoryMac);
 };
 

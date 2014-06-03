@@ -1442,8 +1442,9 @@ void MediaStreamManager::InitializeDeviceManagersOnIOThread() {
     audio_input_device_manager()->UseFakeDevice();
   }
 
-  video_capture_manager_ = new VideoCaptureManager(
-      media::VideoCaptureDeviceFactory::CreateFactory());
+  video_capture_manager_ =
+      new VideoCaptureManager(media::VideoCaptureDeviceFactory::CreateFactory(
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI)));
   video_capture_manager_->Register(this, device_task_runner_);
 }
 

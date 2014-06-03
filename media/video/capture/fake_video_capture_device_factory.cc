@@ -14,8 +14,8 @@ FakeVideoCaptureDeviceFactory::FakeVideoCaptureDeviceFactory()
 }
 
 scoped_ptr<VideoCaptureDevice> FakeVideoCaptureDeviceFactory::Create(
-    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
     const VideoCaptureDevice::Name& device_name) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   for (int n = 0; n < number_of_devices_; ++n) {
     std::string possible_id = base::StringPrintf("/dev/video%d", n);
     if (device_name.id().compare(possible_id) == 0)
@@ -26,6 +26,7 @@ scoped_ptr<VideoCaptureDevice> FakeVideoCaptureDeviceFactory::Create(
 
 void FakeVideoCaptureDeviceFactory::GetDeviceNames(
     VideoCaptureDevice::Names* const device_names) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(device_names->empty());
   for (int n = 0; n < number_of_devices_; ++n) {
     VideoCaptureDevice::Name name(base::StringPrintf("fake_device_%d", n),
@@ -37,6 +38,7 @@ void FakeVideoCaptureDeviceFactory::GetDeviceNames(
 void FakeVideoCaptureDeviceFactory::GetDeviceSupportedFormats(
     const VideoCaptureDevice::Name& device,
     VideoCaptureFormats* supported_formats) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   const int frame_rate = 1000 / FakeVideoCaptureDevice::kFakeCaptureTimeoutMs;
   const gfx::Size supported_sizes[] = {gfx::Size(320, 240),
                                        gfx::Size(640, 480),

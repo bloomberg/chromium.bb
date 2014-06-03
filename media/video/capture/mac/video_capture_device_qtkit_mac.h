@@ -39,7 +39,13 @@ class VideoCaptureDeviceMac;
   std::vector<UInt8> adjustedFrame_;
 }
 
-// Returns a dictionary of capture devices with friendly name and unique id.
+// Fills up the |deviceNames| dictionary of capture devices with friendly name
+// and unique id. No thread assumptions, but this method should run in UI
+// thread, see http://crbug.com/139164
++ (void)getDeviceNames:(NSMutableDictionary*)deviceNames;
+
+// Returns a dictionary of capture devices with friendly name and unique id, via
+// runing +getDeviceNames: on Main Thread.
 + (NSDictionary*)deviceNames;
 
 // Initializes the instance and registers the frame receiver.

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "media/base/media_switches.h"
 #import "media/video/capture/mac/avfoundation_glue.h"
 #include "media/video/capture/mac/video_capture_device_factory_mac.h"
@@ -23,7 +24,8 @@ TEST_F(VideoCaptureDeviceFactoryMacTest, ListDevicesAVFoundation) {
     DVLOG(1) << "AVFoundation not supported, skipping test.";
     return;
   }
-  VideoCaptureDeviceFactoryMac video_capture_device_factory;
+  VideoCaptureDeviceFactoryMac video_capture_device_factory(
+      base::MessageLoopProxy::current());
 
   VideoCaptureDevice::Names names;
   video_capture_device_factory.GetDeviceNames(&names);

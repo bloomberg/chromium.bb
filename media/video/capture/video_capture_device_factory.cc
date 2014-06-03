@@ -22,8 +22,8 @@
 namespace media {
 
 // static
-scoped_ptr<VideoCaptureDeviceFactory>
-    VideoCaptureDeviceFactory::CreateFactory() {
+scoped_ptr<VideoCaptureDeviceFactory> VideoCaptureDeviceFactory::CreateFactory(
+    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner) {
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
   // Use a Fake or File Video Device Factory if the command line flags are
   // present, otherwise use the normal, platform-dependent, device factory.
@@ -36,15 +36,14 @@ scoped_ptr<VideoCaptureDeviceFactory>
           media::FakeVideoCaptureDeviceFactory());
     }
   } else {
+    // |ui_task_runner| is needed for the Linux ChromeOS factory to retrieve
+    // screen rotations and for the Mac factory to run QTKit device enumeration.
 #if defined(OS_MACOSX)
     return scoped_ptr<VideoCaptureDeviceFactory>(new
-        VideoCaptureDeviceFactoryMac());
+        VideoCaptureDeviceFactoryMac(ui_task_runner));
 #elif defined(OS_LINUX)
     return scoped_ptr<VideoCaptureDeviceFactory>(new
-        VideoCaptureDeviceFactoryLinux());
-#elif defined(OS_LINUX)
-    return scoped_ptr<VideoCaptureDeviceFactory>(new
-        VideoCaptureDeviceFactoryLinux());
+        VideoCaptureDeviceFactoryLinux(ui_task_runner));
 #elif defined(OS_ANDROID)
     return scoped_ptr<VideoCaptureDeviceFactory>(new
         VideoCaptureDeviceFactoryAndroid());
@@ -64,25 +63,14 @@ VideoCaptureDeviceFactory::VideoCaptureDeviceFactory() {
 
 VideoCaptureDeviceFactory::~VideoCaptureDeviceFactory() {}
 
-scoped_ptr<VideoCaptureDevice> VideoCaptureDeviceFactory::Create(
-    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
-    const VideoCaptureDevice::Name& device_name) {
+void VideoCaptureDeviceFactory::EnumerateDeviceNames(const base::Callback<
+    void(scoped_ptr<media::VideoCaptureDevice::Names>)>& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  return scoped_ptr<VideoCaptureDevice>(
-      VideoCaptureDevice::Create(ui_task_runner, device_name));
-}
-
-void VideoCaptureDeviceFactory::GetDeviceNames(
-    VideoCaptureDevice::Names* device_names) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  VideoCaptureDevice::GetDeviceNames(device_names);
-}
-
-void VideoCaptureDeviceFactory::GetDeviceSupportedFormats(
-    const VideoCaptureDevice::Name& device,
-    VideoCaptureFormats* supported_formats) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  VideoCaptureDevice::GetDeviceSupportedFormats(device, supported_formats);
+  DCHECK(!callback.is_null());
+  scoped_ptr<VideoCaptureDevice::Names> device_names(
+      new VideoCaptureDevice::Names());
+  GetDeviceNames(device_names.get());
+  callback.Run(device_names.Pass());
 }
 
 }  // namespace media

@@ -16,18 +16,19 @@ namespace media {
 // in Device Thread (a.k.a. Audio Thread).
 class MEDIA_EXPORT VideoCaptureDeviceFactory {
  public:
-  static scoped_ptr<VideoCaptureDeviceFactory> CreateFactory();
+  static scoped_ptr<VideoCaptureDeviceFactory> CreateFactory(
+      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
 
   VideoCaptureDeviceFactory();
   virtual ~VideoCaptureDeviceFactory();
 
   // Creates a VideoCaptureDevice object. Returns NULL if something goes wrong.
   virtual scoped_ptr<VideoCaptureDevice> Create(
-      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
-      const VideoCaptureDevice::Name& device_name);
+      const VideoCaptureDevice::Name& device_name) = 0;
 
-  // Gets the names of all video capture devices connected to this computer.
-  virtual void GetDeviceNames(VideoCaptureDevice::Names* device_names);
+  // Asynchronous version of GetDeviceNames calling back to |callback|.
+  virtual void EnumerateDeviceNames(const base::Callback<
+      void(scoped_ptr<media::VideoCaptureDevice::Names>)>& callback);
 
   // Gets the supported formats of a particular device attached to the system.
   // This method should be called before allocating or starting a device. In
@@ -35,9 +36,13 @@ class MEDIA_EXPORT VideoCaptureDeviceFactory {
   // formats array will be empty.
   virtual void GetDeviceSupportedFormats(
       const VideoCaptureDevice::Name& device,
-      VideoCaptureFormats* supported_formats);
+      VideoCaptureFormats* supported_formats) = 0;
 
  protected:
+  // Gets the names of all video capture devices connected to this computer.
+  // Used by the default implementation of EnumerateDeviceNames().
+  virtual void GetDeviceNames(VideoCaptureDevice::Names* device_names) = 0;
+
   base::ThreadChecker thread_checker_;
 
  private:

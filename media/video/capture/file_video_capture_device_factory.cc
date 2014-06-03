@@ -25,8 +25,8 @@ base::FilePath GetFilePathFromCommandLine() {
 }
 
 scoped_ptr<VideoCaptureDevice> FileVideoCaptureDeviceFactory::Create(
-    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
     const VideoCaptureDevice::Name& device_name) {
+  DCHECK(thread_checker_.CalledOnValidThread());
 #if defined(OS_WIN)
   return scoped_ptr<VideoCaptureDevice>(new FileVideoCaptureDevice(
       base::FilePath(base::SysUTF8ToWide(device_name.name()))));
@@ -38,6 +38,7 @@ scoped_ptr<VideoCaptureDevice> FileVideoCaptureDeviceFactory::Create(
 
 void FileVideoCaptureDeviceFactory::GetDeviceNames(
     VideoCaptureDevice::Names* const device_names) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(device_names->empty());
   base::FilePath command_line_file_path = GetFilePathFromCommandLine();
 #if defined(OS_WIN)
@@ -54,6 +55,7 @@ void FileVideoCaptureDeviceFactory::GetDeviceNames(
 void FileVideoCaptureDeviceFactory::GetDeviceSupportedFormats(
     const VideoCaptureDevice::Name& device,
     VideoCaptureFormats* supported_formats) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   base::File file =
       FileVideoCaptureDevice::OpenFileForRead(GetFilePathFromCommandLine());
   VideoCaptureFormat capture_format;

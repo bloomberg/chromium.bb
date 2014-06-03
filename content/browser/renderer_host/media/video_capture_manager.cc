@@ -7,6 +7,7 @@
 #include <set>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
@@ -19,6 +20,7 @@
 #include "content/public/browser/desktop_media_id.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/media_stream_request.h"
+#include "media/base/bind_to_current_loop.h"
 #include "media/base/scoped_histogram_timer.h"
 #include "media/video/capture/video_capture_device.h"
 #include "media/video/capture/video_capture_device_factory.h"
@@ -122,12 +124,28 @@ void VideoCaptureManager::EnumerateDevices(MediaStreamType stream_type) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DVLOG(1) << "VideoCaptureManager::EnumerateDevices, type " << stream_type;
   DCHECK(listener_);
-  base::PostTaskAndReplyWithResult(
-      device_task_runner_, FROM_HERE,
-      base::Bind(&VideoCaptureManager::GetAvailableDevicesInfoOnDeviceThread,
-                 this, stream_type, devices_info_cache_),
-      base::Bind(&VideoCaptureManager::OnDevicesInfoEnumerated, this,
-                 stream_type));
+  DCHECK_EQ(stream_type, MEDIA_DEVICE_VIDEO_CAPTURE);
+
+  // Bind a callback to ConsolidateDevicesInfoOnDeviceThread() with an argument
+  // for another callback to OnDevicesInfoEnumerated() to be run in the current
+  // loop, i.e. IO loop. Pass a timer for UMA histogram collection.
+  base::Callback<void(scoped_ptr<media::VideoCaptureDevice::Names>)>
+      devices_enumerated_callback =
+          base::Bind(&VideoCaptureManager::ConsolidateDevicesInfoOnDeviceThread,
+                     this,
+                     media::BindToCurrentLoop(base::Bind(
+                         &VideoCaptureManager::OnDevicesInfoEnumerated,
+                         this,
+                         stream_type,
+                         base::Owned(new base::ElapsedTimer()))),
+                     stream_type,
+                     devices_info_cache_);
+  // OK to use base::Unretained() since we own the VCDFactory and |this| is
+  // bound in |devices_enumerated_callback|.
+  device_task_runner_->PostTask(FROM_HERE,
+      base::Bind(&media::VideoCaptureDeviceFactory::EnumerateDeviceNames,
+                 base::Unretained(video_capture_device_factory_.get()),
+                 devices_enumerated_callback));
 }
 
 int VideoCaptureManager::Open(const StreamDeviceInfo& device_info) {
@@ -200,9 +218,7 @@ void VideoCaptureManager::DoStartDeviceOnDeviceThread(
       DeviceInfo* found = FindDeviceInfoById(entry->id, devices_info_cache_);
       if (found) {
         video_capture_device =
-            video_capture_device_factory_->Create(
-                BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
-                found->name);
+            video_capture_device_factory_->Create(found->name);
       }
       break;
     }
@@ -432,9 +448,12 @@ void VideoCaptureManager::OnClosed(
 
 void VideoCaptureManager::OnDevicesInfoEnumerated(
     MediaStreamType stream_type,
+    base::ElapsedTimer* timer,
     const DeviceInfos& new_devices_info_cache) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
+  UMA_HISTOGRAM_TIMES(
+      "Media.VideoCaptureManager.GetAvailableDevicesInfoOnDeviceThreadTime",
+      timer->Elapsed());
   if (!listener_) {
     // Listener has been removed.
     return;
@@ -456,29 +475,12 @@ bool VideoCaptureManager::IsOnDeviceThread() const {
   return device_task_runner_->BelongsToCurrentThread();
 }
 
-VideoCaptureManager::DeviceInfos
-VideoCaptureManager::GetAvailableDevicesInfoOnDeviceThread(
+void VideoCaptureManager::ConsolidateDevicesInfoOnDeviceThread(
+    base::Callback<void(const DeviceInfos&)> on_devices_enumerated_callback,
     MediaStreamType stream_type,
-    const DeviceInfos& old_device_info_cache) {
-  SCOPED_UMA_HISTOGRAM_TIMER(
-      "Media.VideoCaptureManager.GetAvailableDevicesInfoOnDeviceThreadTime");
+    const DeviceInfos& old_device_info_cache,
+    scoped_ptr<media::VideoCaptureDevice::Names> names_snapshot) {
   DCHECK(IsOnDeviceThread());
-  media::VideoCaptureDevice::Names names_snapshot;
-  switch (stream_type) {
-    case MEDIA_DEVICE_VIDEO_CAPTURE:
-      // Cache the latest enumeration of video capture devices.
-      // We'll refer to this list again in OnOpen to avoid having to
-      // enumerate the devices again.
-      video_capture_device_factory_->GetDeviceNames(&names_snapshot);
-      break;
-    case MEDIA_DESKTOP_VIDEO_CAPTURE:
-      // Do nothing.
-      break;
-    default:
-      NOTREACHED();
-      break;
-  }
-
   // Construct |new_devices_info_cache| with the cached devices that are still
   // present in the system, and remove their names from |names_snapshot|, so we
   // keep there the truly new devices.
@@ -487,11 +489,11 @@ VideoCaptureManager::GetAvailableDevicesInfoOnDeviceThread(
            old_device_info_cache.begin();
        it_device_info != old_device_info_cache.end(); ++it_device_info) {
      for (media::VideoCaptureDevice::Names::iterator it =
-              names_snapshot.begin();
-          it != names_snapshot.end(); ++it) {
+         names_snapshot->begin();
+          it != names_snapshot->end(); ++it) {
       if (it_device_info->name.id() == it->id()) {
         new_devices_info_cache.push_back(*it_device_info);
-        names_snapshot.erase(it);
+        names_snapshot->erase(it);
         break;
       }
     }
@@ -499,8 +501,8 @@ VideoCaptureManager::GetAvailableDevicesInfoOnDeviceThread(
 
   // Get the supported capture formats for the new devices in |names_snapshot|.
   for (media::VideoCaptureDevice::Names::const_iterator it =
-           names_snapshot.begin();
-       it != names_snapshot.end(); ++it) {
+      names_snapshot->begin();
+       it != names_snapshot->end(); ++it) {
     media::VideoCaptureFormats supported_formats;
     DeviceInfo device_info(*it, media::VideoCaptureFormats());
     video_capture_device_factory_->GetDeviceSupportedFormats(
@@ -508,7 +510,8 @@ VideoCaptureManager::GetAvailableDevicesInfoOnDeviceThread(
     ConsolidateCaptureFormats(&device_info.supported_formats);
     new_devices_info_cache.push_back(device_info);
   }
-  return new_devices_info_cache;
+
+  on_devices_enumerated_callback.Run(new_devices_info_cache);
 }
 
 VideoCaptureManager::DeviceEntry*

@@ -44,13 +44,20 @@ static bool HasUsableFormats(int fd) {
   return false;
 }
 
+VideoCaptureDeviceFactoryLinux::VideoCaptureDeviceFactoryLinux(
+    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner)
+    : ui_task_runner_(ui_task_runner) {
+}
+
+VideoCaptureDeviceFactoryLinux::~VideoCaptureDeviceFactoryLinux() {
+}
+
 scoped_ptr<VideoCaptureDevice> VideoCaptureDeviceFactoryLinux::Create(
-    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
     const VideoCaptureDevice::Name& device_name) {
   DCHECK(thread_checker_.CalledOnValidThread());
 #if defined(OS_CHROMEOS)
   VideoCaptureDeviceChromeOS* self =
-      new VideoCaptureDeviceChromeOS(ui_task_runner, device_name);
+      new VideoCaptureDeviceChromeOS(ui_task_runner_, device_name);
 #else
   VideoCaptureDeviceLinux* self = new VideoCaptureDeviceLinux(device_name);
 #endif

@@ -387,7 +387,6 @@ VideoCaptureDeviceFactoryWin::VideoCaptureDeviceFactoryWin() {
 
 
 scoped_ptr<VideoCaptureDevice> VideoCaptureDeviceFactoryWin::Create(
-    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
     const VideoCaptureDevice::Name& device_name) {
   DCHECK(thread_checker_.CalledOnValidThread());
   scoped_ptr<VideoCaptureDevice> device;
