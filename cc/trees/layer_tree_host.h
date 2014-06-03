@@ -186,9 +186,7 @@ class CC_EXPORT LayerTreeHost {
   bool has_gpu_rasterization_trigger() const {
     return has_gpu_rasterization_trigger_;
   }
-  void set_has_gpu_rasterization_trigger(bool has_trigger) {
-    has_gpu_rasterization_trigger_ = has_trigger;
-  }
+  void SetHasGpuRasterizationTrigger(bool has_trigger);
   bool UseGpuRasterization() const;
 
   void SetViewportSize(const gfx::Size& device_viewport_size);

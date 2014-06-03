@@ -529,7 +529,7 @@ void RenderWidgetCompositor::startPageScaleAnimation(
 
 void RenderWidgetCompositor::heuristicsForGpuRasterizationUpdated(
     bool matches_heuristics) {
-  layer_tree_host_->set_has_gpu_rasterization_trigger(matches_heuristics);
+  layer_tree_host_->SetHasGpuRasterizationTrigger(matches_heuristics);
 }
 
 void RenderWidgetCompositor::setNeedsAnimate() {

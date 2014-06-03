@@ -618,6 +618,18 @@ bool LayerTreeHost::UseGpuRasterization() const {
   }
 }
 
+void LayerTreeHost::SetHasGpuRasterizationTrigger(bool has_trigger) {
+  if (has_trigger == has_gpu_rasterization_trigger_)
+    return;
+
+  has_gpu_rasterization_trigger_ = has_trigger;
+  TRACE_EVENT_INSTANT1("cc",
+                       "LayerTreeHost::SetHasGpuRasterizationTrigger",
+                       TRACE_EVENT_SCOPE_THREAD,
+                       "has_trigger",
+                       has_gpu_rasterization_trigger_);
+}
+
 void LayerTreeHost::SetViewportSize(const gfx::Size& device_viewport_size) {
   if (device_viewport_size == device_viewport_size_)
     return;

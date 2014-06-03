@@ -4671,7 +4671,7 @@ class LayerTreeHostTestGpuRasterizationDefault : public LayerTreeHostTest {
     EXPECT_FALSE(layer_tree_host()->UseGpuRasterization());
 
     // Setting gpu rasterization trigger does not enable gpu rasterization.
-    layer_tree_host()->set_has_gpu_rasterization_trigger(true);
+    layer_tree_host()->SetHasGpuRasterizationTrigger(true);
     EXPECT_TRUE(layer_tree_host()->has_gpu_rasterization_trigger());
     EXPECT_FALSE(layer_tree_host()->UseGpuRasterization());
 
@@ -4727,7 +4727,7 @@ class LayerTreeHostTestGpuRasterizationEnabled : public LayerTreeHostTest {
     EXPECT_FALSE(layer_tree_host()->UseGpuRasterization());
 
     // Gpu rasterization trigger is relevant.
-    layer_tree_host()->set_has_gpu_rasterization_trigger(true);
+    layer_tree_host()->SetHasGpuRasterizationTrigger(true);
     EXPECT_TRUE(layer_tree_host()->has_gpu_rasterization_trigger());
     EXPECT_TRUE(layer_tree_host()->UseGpuRasterization());
 
@@ -4792,7 +4792,7 @@ class LayerTreeHostTestGpuRasterizationForced : public LayerTreeHostTest {
 
     // With gpu rasterization forced, gpu rasterization trigger is irrelevant.
     EXPECT_TRUE(layer_tree_host()->UseGpuRasterization());
-    layer_tree_host()->set_has_gpu_rasterization_trigger(true);
+    layer_tree_host()->SetHasGpuRasterizationTrigger(true);
     EXPECT_TRUE(layer_tree_host()->has_gpu_rasterization_trigger());
     EXPECT_TRUE(layer_tree_host()->UseGpuRasterization());
 
