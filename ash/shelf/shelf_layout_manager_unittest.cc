@@ -34,7 +34,6 @@
 #include "ui/compositor/layer_animator.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/events/gestures/gesture_configuration.h"
-#include "ui/gfx/animation/animation_container_element.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/controls/label.h"
@@ -50,10 +49,8 @@ namespace ash {
 namespace {
 
 void StepWidgetLayerAnimatorToEnd(views::Widget* widget) {
-  gfx::AnimationContainerElement* element =
-      static_cast<gfx::AnimationContainerElement*>(
-      widget->GetNativeView()->layer()->GetAnimator());
-  element->Step(base::TimeTicks::Now() + base::TimeDelta::FromSeconds(1));
+  widget->GetNativeView()->layer()->GetAnimator()->Step(
+      base::TimeTicks::Now() + base::TimeDelta::FromSeconds(1));
 }
 
 ShelfWidget* GetShelfWidget() {

@@ -9,13 +9,13 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/gtest_prod_util.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
 #include "ui/compositor/compositor_export.h"
 #include "ui/compositor/layer_animation_element.h"
-#include "ui/gfx/animation/animation_container_element.h"
 #include "ui/gfx/animation/tween.h"
 
 namespace gfx {
@@ -29,6 +29,7 @@ class Layer;
 class LayerAnimationSequence;
 class LayerAnimationDelegate;
 class LayerAnimationObserver;
+class LayerAnimatorCollection;
 class ScopedLayerAnimationSettings;
 
 // When a property of layer needs to be changed it is set by way of
@@ -40,9 +41,7 @@ class ScopedLayerAnimationSettings;
 // ensure that it is not disposed of until it finishes executing. It does this
 // by holding a reference to itself for the duration of methods for which it
 // must guarantee that |this| is valid.
-class COMPOSITOR_EXPORT LayerAnimator
-    : public gfx::AnimationContainerElement,
-      public base::RefCounted<LayerAnimator> {
+class COMPOSITOR_EXPORT LayerAnimator : public base::RefCounted<LayerAnimator> {
  public:
   enum PreemptionStrategy {
     IMMEDIATELY_SET_NEW_TARGET,
@@ -188,6 +187,11 @@ class COMPOSITOR_EXPORT LayerAnimator
   }
   base::TimeTicks last_step_time() const { return last_step_time_; }
 
+  void Step(base::TimeTicks time_now);
+
+  void AddToCollection(LayerAnimatorCollection* collection);
+  void RemoveFromCollection(LayerAnimatorCollection* collection);
+
  protected:
   virtual ~LayerAnimator();
 
@@ -207,6 +211,9 @@ class COMPOSITOR_EXPORT LayerAnimator
   friend class base::RefCounted<LayerAnimator>;
   friend class ScopedLayerAnimationSettings;
   friend class LayerAnimatorTestController;
+  FRIEND_TEST_ALL_PREFIXES(LayerAnimatorTest, AnimatorStartedCorrectly);
+  FRIEND_TEST_ALL_PREFIXES(LayerAnimatorTest,
+                           AnimatorRemovedFromCollectionWhenLayerIsDestroyed);
 
   class RunningAnimation {
    public:
@@ -224,11 +231,6 @@ class COMPOSITOR_EXPORT LayerAnimator
 
   typedef std::vector<RunningAnimation> RunningAnimations;
   typedef std::deque<linked_ptr<LayerAnimationSequence> > AnimationQueue;
-
-  // Implementation of AnimationContainerElement
-  virtual void SetStartTime(base::TimeTicks start_time) OVERRIDE;
-  virtual void Step(base::TimeTicks time_now) OVERRIDE;
-  virtual base::TimeDelta GetTimerInterval() const OVERRIDE;
 
   // Finishes all animations by either advancing them to their final state or by
   // aborting them.
@@ -306,6 +308,8 @@ class COMPOSITOR_EXPORT LayerAnimator
 
   // Cleans up any running animations that may have been deleted.
   void PurgeDeletedAnimations();
+
+  LayerAnimatorCollection* GetLayerAnimatorCollection();
 
   // This is the queue of animations to run.
   AnimationQueue animation_queue_;

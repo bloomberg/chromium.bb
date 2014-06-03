@@ -142,10 +142,15 @@ void Layer::SetCompositor(Compositor* compositor) {
   DCHECK(!compositor || !compositor_);
   DCHECK(!compositor || compositor->root_layer() == this);
   DCHECK(!parent_);
+  if (compositor_) {
+    RemoveAnimatorsInTreeFromCollection(
+        compositor_->layer_animator_collection());
+  }
   compositor_ = compositor;
   if (compositor) {
     OnDeviceScaleFactorChanged(compositor->device_scale_factor());
     SendPendingThreadedAnimations();
+    AddAnimatorsInTreeToCollection(compositor_->layer_animator_collection());
   }
 }
 
@@ -159,15 +164,21 @@ void Layer::Add(Layer* child) {
   child->OnDeviceScaleFactorChanged(device_scale_factor_);
   if (GetCompositor())
     child->SendPendingThreadedAnimations();
+  LayerAnimatorCollection* collection = GetLayerAnimatorCollection();
+  if (collection)
+    child->AddAnimatorsInTreeToCollection(collection);
 }
 
 void Layer::Remove(Layer* child) {
   // Current bounds are used to calculate offsets when layers are reparented.
   // Stop (and complete) an ongoing animation to update the bounds immediately.
-  if (child->GetAnimator()) {
-    child->GetAnimator()->StopAnimatingProperty(
-        ui::LayerAnimationElement::BOUNDS);
-  }
+  LayerAnimator* child_animator = child->animator_;
+  if (child_animator)
+    child_animator->StopAnimatingProperty(ui::LayerAnimationElement::BOUNDS);
+  LayerAnimatorCollection* collection = GetLayerAnimatorCollection();
+  if (collection)
+    child->RemoveAnimatorsInTreeFromCollection(collection);
+
   std::vector<Layer*>::iterator i =
       std::find(children_.begin(), children_.end(), child);
   DCHECK(i != children_.end());
@@ -873,6 +884,11 @@ void Layer::RemoveThreadedAnimation(int animation_id) {
       pending_threaded_animations_.end());
 }
 
+LayerAnimatorCollection* Layer::GetLayerAnimatorCollection() {
+  Compositor* compositor = GetCompositor();
+  return compositor ? compositor->layer_animator_collection() : NULL;
+}
+
 void Layer::SendPendingThreadedAnimations() {
   for (cc::ScopedPtrVector<cc::Animation>::iterator it =
            pending_threaded_animations_.begin();
@@ -928,6 +944,34 @@ void Layer::RecomputeDrawsContentAndUVRect() {
 
 void Layer::RecomputePosition() {
   cc_layer_->SetPosition(gfx::PointF(bounds_.x(), bounds_.y()));
+}
+
+void Layer::AddAnimatorsInTreeToCollection(
+    LayerAnimatorCollection* collection) {
+  DCHECK(collection);
+  if (IsAnimating())
+    animator_->AddToCollection(collection);
+  std::for_each(
+      children_.begin(),
+      children_.end(),
+      std::bind2nd(std::mem_fun(&Layer::AddAnimatorsInTreeToCollection),
+                   collection));
+}
+
+void Layer::RemoveAnimatorsInTreeFromCollection(
+    LayerAnimatorCollection* collection) {
+  DCHECK(collection);
+  if (IsAnimating())
+    animator_->RemoveFromCollection(collection);
+  std::for_each(
+      children_.begin(),
+      children_.end(),
+      std::bind2nd(std::mem_fun(&Layer::RemoveAnimatorsInTreeFromCollection),
+                   collection));
+}
+
+bool Layer::IsAnimating() const {
+  return animator_ && animator_->is_animating();
 }
 
 }  // namespace ui

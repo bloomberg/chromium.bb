@@ -14,7 +14,7 @@
 #include "ui/compositor/layer_animation_delegate.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/layer_animation_sequence.h"
-#include "ui/gfx/animation/animation_container.h"
+#include "ui/compositor/layer_animator_collection.h"
 #include "ui/gfx/frame_time.h"
 
 #define SAFE_INVOKE_VOID(function, running_anim, ...) \
@@ -31,22 +31,9 @@
 
 namespace ui {
 
-class LayerAnimator;
-
 namespace {
 
 const int kDefaultTransitionDurationMs = 120;
-const int kTimerIntervalMs = 10;
-
-// Returns the AnimationContainer we're added to.
-gfx::AnimationContainer* GetAnimationContainer() {
-  static gfx::AnimationContainer* container = NULL;
-  if (!container) {
-    container = new gfx::AnimationContainer();
-    container->AddRef();
-  }
-  return container;
-}
 
 }  // namespace
 
@@ -124,7 +111,17 @@ base::TimeDelta LayerAnimator::GetTransitionDuration() const {
 }
 
 void LayerAnimator::SetDelegate(LayerAnimationDelegate* delegate) {
+  if (delegate_ && is_started_) {
+    LayerAnimatorCollection* collection = GetLayerAnimatorCollection();
+    if (collection)
+      collection->StopAnimator(this);
+  }
   delegate_ = delegate;
+  if (delegate_ && is_started_) {
+    LayerAnimatorCollection* collection = GetLayerAnimatorCollection();
+    if (collection)
+      collection->StartAnimator(this);
+  }
 }
 
 void LayerAnimator::StartAnimation(LayerAnimationSequence* animation) {
@@ -181,8 +178,9 @@ void LayerAnimator::StartTogether(
 
   adding_animations_ = true;
   if (!is_animating()) {
-    if (GetAnimationContainer()->is_running())
-      last_step_time_ = GetAnimationContainer()->last_tick_time();
+    LayerAnimatorCollection* collection = GetLayerAnimatorCollection();
+    if (collection && collection->HasActiveAnimators())
+      last_step_time_ = collection->last_tick_time();
     else
       last_step_time_ = gfx::FrameTime::Now();
   }
@@ -343,6 +341,20 @@ void LayerAnimator::OnThreadedAnimationStarted(
   }
 }
 
+void LayerAnimator::AddToCollection(LayerAnimatorCollection* collection) {
+  if (is_animating() && !is_started_) {
+    collection->StartAnimator(this);
+    is_started_ = true;
+  }
+}
+
+void LayerAnimator::RemoveFromCollection(LayerAnimatorCollection* collection) {
+  if (is_animating() && is_started_) {
+    collection->StopAnimator(this);
+    is_started_ = false;
+  }
+}
+
 // LayerAnimator protected -----------------------------------------------------
 
 void LayerAnimator::ProgressAnimation(LayerAnimationSequence* sequence,
@@ -395,14 +407,6 @@ void LayerAnimator::Step(base::TimeTicks now) {
   }
 }
 
-void LayerAnimator::SetStartTime(base::TimeTicks start_time) {
-  // Do nothing.
-}
-
-base::TimeDelta LayerAnimator::GetTimerInterval() const {
-  return base::TimeDelta::FromMilliseconds(kTimerIntervalMs);
-}
-
 void LayerAnimator::StopAnimatingInternal(bool abort) {
   scoped_refptr<LayerAnimator> retain(this);
   while (is_animating()) {
@@ -431,12 +435,16 @@ void LayerAnimator::UpdateAnimationState() {
     return;
 
   const bool should_start = is_animating();
-  if (should_start && !is_started_)
-    GetAnimationContainer()->Start(this);
-  else if (!should_start && is_started_)
-    GetAnimationContainer()->Stop(this);
-
-  is_started_ = should_start;
+  LayerAnimatorCollection* collection = GetLayerAnimatorCollection();
+  if (collection) {
+    if (should_start && !is_started_)
+      collection->StartAnimator(this);
+    else if (!should_start && is_started_)
+      collection->StopAnimator(this);
+    is_started_ = should_start;
+  } else {
+    is_started_ = false;
+  }
 }
 
 LayerAnimationSequence* LayerAnimator::RemoveAnimation(
@@ -753,14 +761,15 @@ bool LayerAnimator::StartSequenceImmediately(LayerAnimationSequence* sequence) {
   // a resolution that can be as bad as 15ms. If this causes glitches in the
   // animations, this can be switched to HighResNow() (animation uses Now()
   // internally).
-  // All LayerAnimators share the same AnimationContainer. Use the
+  // All LayerAnimators share the same LayerAnimatorCollection. Use the
   // last_tick_time() from there to ensure animations started during the same
   // event complete at the same time.
   base::TimeTicks start_time;
+  LayerAnimatorCollection* collection = GetLayerAnimatorCollection();
   if (is_animating() || adding_animations_)
     start_time = last_step_time_;
-  else if (GetAnimationContainer()->is_running())
-    start_time = GetAnimationContainer()->last_tick_time();
+  else if (collection && collection->HasActiveAnimators())
+    start_time = collection->last_tick_time();
   else
     start_time = gfx::FrameTime::Now();
 
@@ -837,6 +846,10 @@ void LayerAnimator::PurgeDeletedAnimations() {
     else
       i++;
   }
+}
+
+LayerAnimatorCollection* LayerAnimator::GetLayerAnimatorCollection() {
+  return delegate_ ? delegate_->GetLayerAnimatorCollection() : NULL;
 }
 
 LayerAnimator::RunningAnimation::RunningAnimation(

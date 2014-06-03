@@ -53,13 +53,13 @@ void RunAnimationForWidget(views::Widget* widget) {
 
   ui::Layer* layer = widget->GetNativeView()->layer();
   ui::LayerAnimatorTestController controller(layer->GetAnimator());
-  gfx::AnimationContainerElement* element = layer->GetAnimator();
   // Multiple steps are required to complete complex animations.
   // TODO(vollick): This should not be necessary. crbug.com/154017
   while (controller.animator()->is_animating()) {
     controller.StartThreadedAnimationsIfNeeded();
     base::TimeTicks step_time = controller.animator()->last_step_time();
-    element->Step(step_time + base::TimeDelta::FromMilliseconds(1000));
+    layer->GetAnimator()->Step(step_time +
+                               base::TimeDelta::FromMilliseconds(1000));
   }
 }
 
