@@ -46,7 +46,7 @@ bool TouchActionFilter::FilterGestureEvent(WebGestureEvent* gesture_event) {
       break;
 
     case WebInputEvent::GestureFlingStart:
-      if (gesture_event->sourceDevice != WebGestureEvent::Touchscreen)
+      if (gesture_event->sourceDevice != blink::WebGestureDeviceTouchscreen)
         break;
       if (!drop_scroll_gesture_events_) {
         if (allowed_touch_action_ == TOUCH_ACTION_PAN_X)

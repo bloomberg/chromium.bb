@@ -39,6 +39,7 @@
 #endif
 
 using base::TimeDelta;
+using blink::WebGestureDevice;
 using blink::WebGestureEvent;
 using blink::WebInputEvent;
 using blink::WebKeyboardEvent;
@@ -551,15 +552,14 @@ class RenderWidgetHostTest : public testing::Test {
 
   // Inject simple synthetic WebGestureEvent instances.
   void SimulateGestureEvent(WebInputEvent::Type type,
-                            WebGestureEvent::SourceDevice sourceDevice) {
+                            WebGestureDevice sourceDevice) {
     host_->ForwardGestureEvent(
         SyntheticWebGestureEventBuilder::Build(type, sourceDevice));
   }
 
-  void SimulateGestureEventWithLatencyInfo(
-      WebInputEvent::Type type,
-      WebGestureEvent::SourceDevice sourceDevice,
-      const ui::LatencyInfo& ui_latency) {
+  void SimulateGestureEventWithLatencyInfo(WebInputEvent::Type type,
+                                           WebGestureDevice sourceDevice,
+                                           const ui::LatencyInfo& ui_latency) {
     host_->ForwardGestureEventWithLatencyInfo(
         SyntheticWebGestureEventBuilder::Build(type, sourceDevice),
         ui_latency);
@@ -624,8 +624,7 @@ class RenderWidgetHostTest : public testing::Test {
 // This is for tests that are to be run for all source devices.
 class RenderWidgetHostWithSourceTest
     : public RenderWidgetHostTest,
-      public testing::WithParamInterface<WebGestureEvent::SourceDevice> {
-};
+      public testing::WithParamInterface<WebGestureDevice> {};
 #endif  // GTEST_HAS_PARAM_TEST
 
 }  // namespace
@@ -923,7 +922,7 @@ TEST_F(RenderWidgetHostTest, HandleWheelEvent) {
 
 TEST_F(RenderWidgetHostTest, UnhandledGestureEvent) {
   SimulateGestureEvent(WebInputEvent::GestureTwoFingerTap,
-                       WebGestureEvent::Touchscreen);
+                       blink::WebGestureDeviceTouchscreen);
 
   // Make sure we sent the input event to the renderer.
   EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(
@@ -1245,7 +1244,7 @@ TEST_F(RenderWidgetHostTest, IgnoreInputEvent) {
   EXPECT_FALSE(host_->mock_input_router()->sent_wheel_event_);
 
   SimulateGestureEvent(WebInputEvent::GestureScrollBegin,
-                       WebGestureEvent::Touchscreen);
+                       blink::WebGestureDeviceTouchpad);
   EXPECT_FALSE(host_->mock_input_router()->sent_gesture_event_);
 
   PressTouchPoint(100, 100);
@@ -1396,13 +1395,13 @@ TEST_F(RenderWidgetHostTest, InputEventRWHLatencyComponent) {
 
   // Tests RWHI::ForwardGestureEvent().
   SimulateGestureEvent(WebInputEvent::GestureScrollBegin,
-                       WebGestureEvent::Touchscreen);
+                       blink::WebGestureDeviceTouchscreen);
   CheckLatencyInfoComponentInMessage(
       process_, GetLatencyComponentId(), WebInputEvent::GestureScrollBegin);
 
   // Tests RWHI::ForwardGestureEventWithLatencyInfo().
   SimulateGestureEventWithLatencyInfo(WebInputEvent::GestureScrollUpdate,
-                                      WebGestureEvent::Touchscreen,
+                                      blink::WebGestureDeviceTouchscreen,
                                       ui::LatencyInfo());
   CheckLatencyInfoComponentInMessage(
       process_, GetLatencyComponentId(), WebInputEvent::GestureScrollUpdate);

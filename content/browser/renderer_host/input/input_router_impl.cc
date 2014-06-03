@@ -180,7 +180,7 @@ void InputRouterImpl::SendGestureEvent(
   if (touch_action_filter_.FilterGestureEvent(&gesture_event.event))
     return;
 
-  if (gesture_event.event.sourceDevice == WebGestureEvent::Touchscreen)
+  if (gesture_event.event.sourceDevice == blink::WebGestureDeviceTouchscreen)
     touch_event_queue_.OnGestureScrollEvent(gesture_event);
 
   if (!gesture_event_queue_.ShouldForward(gesture_event))
@@ -233,7 +233,7 @@ void InputRouterImpl::SendTouchEventImmediately(
 void InputRouterImpl::SendGestureEventImmediately(
     const GestureEventWithLatencyInfo& gesture_event) {
   if (gesture_event.event.type == WebInputEvent::GesturePinchUpdate &&
-      gesture_event.event.sourceDevice == WebGestureEvent::Touchpad) {
+      gesture_event.event.sourceDevice == blink::WebGestureDeviceTouchpad) {
     SendSyntheticWheelEventForPinch(gesture_event);
     return;
   }

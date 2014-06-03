@@ -27,7 +27,7 @@ void InputEventStreamValidator::OnEvent(const WebInputEvent& event) {
   if (WebInputEvent::isGestureEventType(event.type)) {
     const WebGestureEvent& gesture_event =
         static_cast<const WebGestureEvent&>(event);
-    if (gesture_event.sourceDevice == blink::WebGestureEvent::Touchscreen) {
+    if (gesture_event.sourceDevice == blink::WebGestureDeviceTouchscreen) {
       if (!gesture_validator_.Validate(gesture_event, &error_message))
         NOTREACHED() << error_message;
     }

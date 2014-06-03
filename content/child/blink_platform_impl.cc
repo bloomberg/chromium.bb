@@ -46,7 +46,6 @@
 #include "third_party/WebKit/public/platform/WebData.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebWaitableEvent.h"
-#include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "ui/base/layout.h"
 
 #if defined(OS_ANDROID)
@@ -878,7 +877,7 @@ void BlinkPlatformImpl::callOnMainThread(
 }
 
 blink::WebGestureCurve* BlinkPlatformImpl::createFlingAnimationCurve(
-    int device_source,
+    blink::WebGestureDevice device_source,
     const blink::WebFloatPoint& velocity,
     const blink::WebSize& cumulative_scroll) {
 #if defined(OS_ANDROID)
@@ -887,7 +886,7 @@ blink::WebGestureCurve* BlinkPlatformImpl::createFlingAnimationCurve(
       cumulative_scroll);
 #endif
 
-  if (device_source == blink::WebGestureEvent::Touchscreen)
+  if (device_source == blink::WebGestureDeviceTouchscreen)
     return fling_curve_configuration_->CreateForTouchScreen(velocity,
                                                             cumulative_scroll);
 

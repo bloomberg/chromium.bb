@@ -24,9 +24,9 @@ TEST(TouchActionFilterTest, SimpleFilter) {
   WebGestureEvent scroll_update =
       SyntheticWebGestureEventBuilder::BuildScrollUpdate(kDeltaX, kDeltaY, 0);
   WebGestureEvent scroll_end = SyntheticWebGestureEventBuilder::Build(
-      WebInputEvent::GestureScrollEnd, WebGestureEvent::Touchscreen);
+      WebInputEvent::GestureScrollEnd, blink::WebGestureDeviceTouchscreen);
   WebGestureEvent tap = SyntheticWebGestureEventBuilder::Build(
-      WebInputEvent::GestureTap, WebGestureEvent::Touchscreen);
+      WebInputEvent::GestureTap, blink::WebGestureDeviceTouchscreen);
 
   // No events filtered by default.
   filter.ResetTouchAction();
@@ -99,9 +99,9 @@ TEST(TouchActionFilterTest, Fling) {
   const float kFlingX = 7;
   const float kFlingY = -4;
   WebGestureEvent fling_start = SyntheticWebGestureEventBuilder::BuildFling(
-      kFlingX, kFlingY, WebGestureEvent::Touchscreen);
+      kFlingX, kFlingY, blink::WebGestureDeviceTouchscreen);
   WebGestureEvent pad_fling = SyntheticWebGestureEventBuilder::BuildFling(
-      kFlingX, kFlingY, WebGestureEvent::Touchpad);
+      kFlingX, kFlingY, blink::WebGestureDeviceTouchpad);
 
   // TOUCH_ACTION_NONE filters out fling events.
   filter.ResetTouchAction();
@@ -129,7 +129,7 @@ TEST(TouchActionFilterTest, PanX) {
   const float kFlingX = 7;
   const float kFlingY = -4;
   WebGestureEvent scroll_end = SyntheticWebGestureEventBuilder::Build(
-      WebInputEvent::GestureScrollEnd, WebGestureEvent::Touchscreen);
+      WebInputEvent::GestureScrollEnd, blink::WebGestureDeviceTouchscreen);
 
   {
     // Scrolls with no direction hint are permitted in the X axis.
@@ -170,7 +170,7 @@ TEST(TouchActionFilterTest, PanX) {
     EXPECT_EQ(0, scroll_update2.data.scrollUpdate.deltaY);
 
     WebGestureEvent fling_start = SyntheticWebGestureEventBuilder::BuildFling(
-        kFlingX, kFlingY, WebGestureEvent::Touchscreen);
+        kFlingX, kFlingY, blink::WebGestureDeviceTouchscreen);
     EXPECT_FALSE(filter.FilterGestureEvent(&fling_start));
     EXPECT_EQ(kFlingX, fling_start.data.flingStart.velocityX);
     EXPECT_EQ(0, fling_start.data.flingStart.velocityY);
@@ -202,7 +202,7 @@ TEST(TouchActionFilterTest, PanY) {
   const float kFlingX = 7;
   const float kFlingY = -4;
   WebGestureEvent scroll_end = SyntheticWebGestureEventBuilder::Build(
-      WebInputEvent::GestureScrollEnd, WebGestureEvent::Touchscreen);
+      WebInputEvent::GestureScrollEnd, blink::WebGestureDeviceTouchscreen);
 
   {
     // Scrolls with no direction hint are permitted in the Y axis.
@@ -243,7 +243,7 @@ TEST(TouchActionFilterTest, PanY) {
     EXPECT_EQ(-2, scroll_update2.data.scrollUpdate.deltaY);
 
     WebGestureEvent fling_start = SyntheticWebGestureEventBuilder::BuildFling(
-        kFlingX, kFlingY, WebGestureEvent::Touchscreen);
+        kFlingX, kFlingY, blink::WebGestureDeviceTouchscreen);
     EXPECT_FALSE(filter.FilterGestureEvent(&fling_start));
     EXPECT_EQ(0, fling_start.data.flingStart.velocityX);
     EXPECT_EQ(kFlingY, fling_start.data.flingStart.velocityY);
@@ -290,7 +290,7 @@ TEST(TouchActionFilterTest, PanXY) {
     EXPECT_EQ(kDY, scroll_update.data.scrollUpdate.deltaY);
 
     WebGestureEvent fling_start = SyntheticWebGestureEventBuilder::BuildFling(
-        kFlingX, kFlingY, WebGestureEvent::Touchscreen);
+        kFlingX, kFlingY, blink::WebGestureDeviceTouchscreen);
     EXPECT_FALSE(filter.FilterGestureEvent(&fling_start));
     EXPECT_EQ(kFlingX, fling_start.data.flingStart.velocityX);
     EXPECT_EQ(kFlingY, fling_start.data.flingStart.velocityY);
@@ -311,7 +311,7 @@ TEST(TouchActionFilterTest, PanXY) {
     EXPECT_EQ(kDY, scroll_update.data.scrollUpdate.deltaY);
 
     WebGestureEvent fling_start = SyntheticWebGestureEventBuilder::BuildFling(
-        kFlingX, kFlingY, WebGestureEvent::Touchscreen);
+        kFlingX, kFlingY, blink::WebGestureDeviceTouchscreen);
     EXPECT_FALSE(filter.FilterGestureEvent(&fling_start));
     EXPECT_EQ(kFlingX, fling_start.data.flingStart.velocityX);
     EXPECT_EQ(kFlingY, fling_start.data.flingStart.velocityY);
@@ -350,7 +350,7 @@ TEST(TouchActionFilterTest, MultiTouch) {
   WebGestureEvent scroll_update =
       SyntheticWebGestureEventBuilder::BuildScrollUpdate(kDeltaX, kDeltaY, 0);
   WebGestureEvent scroll_end = SyntheticWebGestureEventBuilder::Build(
-      WebInputEvent::GestureScrollEnd, WebGestureEvent::Touchscreen);
+      WebInputEvent::GestureScrollEnd, blink::WebGestureDeviceTouchscreen);
 
   // For multiple points, the intersection is what matters.
   filter.ResetTouchAction();
@@ -380,14 +380,14 @@ TEST(TouchActionFilterTest, Pinch) {
   WebGestureEvent scroll_begin =
       SyntheticWebGestureEventBuilder::BuildScrollBegin(2, 3);
   WebGestureEvent pinch_begin = SyntheticWebGestureEventBuilder::Build(
-          WebInputEvent::GesturePinchBegin, WebGestureEvent::Touchscreen);
+      WebInputEvent::GesturePinchBegin, blink::WebGestureDeviceTouchscreen);
   WebGestureEvent pinch_update =
       SyntheticWebGestureEventBuilder::BuildPinchUpdate(
-          1.2f, 5, 5, 0, WebGestureEvent::Touchscreen);
+          1.2f, 5, 5, 0, blink::WebGestureDeviceTouchscreen);
   WebGestureEvent pinch_end = SyntheticWebGestureEventBuilder::Build(
-          WebInputEvent::GesturePinchEnd, WebGestureEvent::Touchscreen);
+      WebInputEvent::GesturePinchEnd, blink::WebGestureDeviceTouchscreen);
   WebGestureEvent scroll_end = SyntheticWebGestureEventBuilder::Build(
-      WebInputEvent::GestureScrollEnd, WebGestureEvent::Touchscreen);
+      WebInputEvent::GestureScrollEnd, blink::WebGestureDeviceTouchscreen);
 
   // Pinch is allowed with touch-action: auto.
   filter.ResetTouchAction();
@@ -476,13 +476,13 @@ TEST(TouchActionFilterTest, DoubleTapWithTouchActionAuto) {
   TouchActionFilter filter;
 
   WebGestureEvent tap_down = SyntheticWebGestureEventBuilder::Build(
-      WebInputEvent::GestureTapDown, WebGestureEvent::Touchscreen);
+      WebInputEvent::GestureTapDown, blink::WebGestureDeviceTouchscreen);
   WebGestureEvent unconfirmed_tap = SyntheticWebGestureEventBuilder::Build(
-      WebInputEvent::GestureTapUnconfirmed, WebGestureEvent::Touchscreen);
+      WebInputEvent::GestureTapUnconfirmed, blink::WebGestureDeviceTouchscreen);
   WebGestureEvent tap_cancel = SyntheticWebGestureEventBuilder::Build(
-      WebInputEvent::GestureTapCancel, WebGestureEvent::Touchscreen);
+      WebInputEvent::GestureTapCancel, blink::WebGestureDeviceTouchscreen);
   WebGestureEvent double_tap = SyntheticWebGestureEventBuilder::Build(
-      WebInputEvent::GestureDoubleTap, WebGestureEvent::Touchscreen);
+      WebInputEvent::GestureDoubleTap, blink::WebGestureDeviceTouchscreen);
 
   // Double tap is allowed with touch action auto.
   filter.ResetTouchAction();
@@ -504,13 +504,13 @@ TEST(TouchActionFilterTest, DoubleTap) {
   TouchActionFilter filter;
 
   WebGestureEvent tap_down = SyntheticWebGestureEventBuilder::Build(
-      WebInputEvent::GestureTapDown, WebGestureEvent::Touchscreen);
+      WebInputEvent::GestureTapDown, blink::WebGestureDeviceTouchscreen);
   WebGestureEvent unconfirmed_tap = SyntheticWebGestureEventBuilder::Build(
-      WebInputEvent::GestureTapUnconfirmed, WebGestureEvent::Touchscreen);
+      WebInputEvent::GestureTapUnconfirmed, blink::WebGestureDeviceTouchscreen);
   WebGestureEvent tap_cancel = SyntheticWebGestureEventBuilder::Build(
-      WebInputEvent::GestureTapCancel, WebGestureEvent::Touchscreen);
+      WebInputEvent::GestureTapCancel, blink::WebGestureDeviceTouchscreen);
   WebGestureEvent double_tap = SyntheticWebGestureEventBuilder::Build(
-      WebInputEvent::GestureDoubleTap, WebGestureEvent::Touchscreen);
+      WebInputEvent::GestureDoubleTap, blink::WebGestureDeviceTouchscreen);
 
   // Double tap is disabled with any touch action other than auto.
   filter.ResetTouchAction();
@@ -533,11 +533,11 @@ TEST(TouchActionFilterTest, SingleTapWithTouchActionAuto) {
   TouchActionFilter filter;
 
   WebGestureEvent tap_down = SyntheticWebGestureEventBuilder::Build(
-      WebInputEvent::GestureTapDown, WebGestureEvent::Touchscreen);
+      WebInputEvent::GestureTapDown, blink::WebGestureDeviceTouchscreen);
   WebGestureEvent unconfirmed_tap1 = SyntheticWebGestureEventBuilder::Build(
-      WebInputEvent::GestureTapUnconfirmed, WebGestureEvent::Touchscreen);
+      WebInputEvent::GestureTapUnconfirmed, blink::WebGestureDeviceTouchscreen);
   WebGestureEvent tap = SyntheticWebGestureEventBuilder::Build(
-      WebInputEvent::GestureTap, WebGestureEvent::Touchscreen);
+      WebInputEvent::GestureTap, blink::WebGestureDeviceTouchscreen);
 
   // Single tap is allowed with touch action auto.
   filter.ResetTouchAction();
@@ -552,11 +552,11 @@ TEST(TouchActionFilterTest, SingleTap) {
   TouchActionFilter filter;
 
   WebGestureEvent tap_down = SyntheticWebGestureEventBuilder::Build(
-      WebInputEvent::GestureTapDown, WebGestureEvent::Touchscreen);
+      WebInputEvent::GestureTapDown, blink::WebGestureDeviceTouchscreen);
   WebGestureEvent unconfirmed_tap1 = SyntheticWebGestureEventBuilder::Build(
-      WebInputEvent::GestureTapUnconfirmed, WebGestureEvent::Touchscreen);
+      WebInputEvent::GestureTapUnconfirmed, blink::WebGestureDeviceTouchscreen);
   WebGestureEvent tap = SyntheticWebGestureEventBuilder::Build(
-      WebInputEvent::GestureTap, WebGestureEvent::Touchscreen);
+      WebInputEvent::GestureTap, blink::WebGestureDeviceTouchscreen);
 
   // With touch action other than auto, tap unconfirmed is turned into tap.
   filter.ResetTouchAction();
@@ -572,11 +572,11 @@ TEST(TouchActionFilterTest, TouchActionResetsOnResetTouchAction) {
   TouchActionFilter filter;
 
   WebGestureEvent tap = SyntheticWebGestureEventBuilder::Build(
-      WebInputEvent::GestureTap, WebGestureEvent::Touchscreen);
+      WebInputEvent::GestureTap, blink::WebGestureDeviceTouchscreen);
   WebGestureEvent scroll_begin =
       SyntheticWebGestureEventBuilder::BuildScrollBegin(2, 3);
   WebGestureEvent scroll_end = SyntheticWebGestureEventBuilder::Build(
-      WebInputEvent::GestureScrollEnd, WebGestureEvent::Touchscreen);
+      WebInputEvent::GestureScrollEnd, blink::WebGestureDeviceTouchscreen);
 
   filter.ResetTouchAction();
   filter.OnSetTouchAction(TOUCH_ACTION_NONE);
@@ -597,14 +597,14 @@ TEST(TouchActionFilterTest, TouchActionResetMidSequence) {
   WebGestureEvent scroll_begin =
       SyntheticWebGestureEventBuilder::BuildScrollBegin(2, 3);
   WebGestureEvent pinch_begin = SyntheticWebGestureEventBuilder::Build(
-          WebInputEvent::GesturePinchBegin, WebGestureEvent::Touchscreen);
+      WebInputEvent::GesturePinchBegin, blink::WebGestureDeviceTouchscreen);
   WebGestureEvent pinch_update =
       SyntheticWebGestureEventBuilder::BuildPinchUpdate(
-          1.2f, 5, 5, 0, WebGestureEvent::Touchscreen);
+          1.2f, 5, 5, 0, blink::WebGestureDeviceTouchscreen);
   WebGestureEvent pinch_end = SyntheticWebGestureEventBuilder::Build(
-          WebInputEvent::GesturePinchEnd, WebGestureEvent::Touchscreen);
+      WebInputEvent::GesturePinchEnd, blink::WebGestureDeviceTouchscreen);
   WebGestureEvent scroll_end = SyntheticWebGestureEventBuilder::Build(
-      WebInputEvent::GestureScrollEnd, WebGestureEvent::Touchscreen);
+      WebInputEvent::GestureScrollEnd, blink::WebGestureDeviceTouchscreen);
 
   filter.OnSetTouchAction(TOUCH_ACTION_NONE);
   EXPECT_TRUE(filter.FilterGestureEvent(&scroll_begin));

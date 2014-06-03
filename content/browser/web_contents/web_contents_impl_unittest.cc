@@ -2496,7 +2496,7 @@ TEST_F(WebContentsImplTest, HandleGestureEvent) {
 
   const float kZoomStepValue = 0.6f;
   blink::WebGestureEvent event = SyntheticWebGestureEventBuilder::Build(
-      WebInputEvent::GesturePinchUpdate, WebGestureEvent::Touchpad);
+      WebInputEvent::GesturePinchUpdate, blink::WebGestureDeviceTouchpad);
 
   // A pinch less than the step value doesn't change the zoom level.
   event.data.pinchUpdate.scale = 1.0f + kZoomStepValue * 0.8f;
@@ -2526,7 +2526,7 @@ TEST_F(WebContentsImplTest, HandleGestureEvent) {
   // No other type of gesture event is handled by WebContentsImpl (for example
   // a touchscreen pinch gesture).
   event = SyntheticWebGestureEventBuilder::Build(
-      WebInputEvent::GesturePinchUpdate, WebGestureEvent::Touchscreen);
+      WebInputEvent::GesturePinchUpdate, blink::WebGestureDeviceTouchscreen);
   event.data.pinchUpdate.scale = 1.0f + kZoomStepValue * 3;
   EXPECT_FALSE(contents()->HandleGestureEvent(event));
   EXPECT_EQ(0, delegate->GetAndResetContentsZoomChangedCallCount());

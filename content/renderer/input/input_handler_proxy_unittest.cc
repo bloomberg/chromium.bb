@@ -21,6 +21,7 @@
 using blink::WebActiveWheelFlingParameters;
 using blink::WebFloatPoint;
 using blink::WebFloatSize;
+using blink::WebGestureDevice;
 using blink::WebGestureEvent;
 using blink::WebInputEvent;
 using blink::WebKeyboardEvent;
@@ -38,7 +39,7 @@ double InSecondsF(const base::TimeTicks& time) {
 }
 
 WebGestureEvent CreateFling(base::TimeTicks timestamp,
-                            WebGestureEvent::SourceDevice source_device,
+                            WebGestureDevice source_device,
                             WebFloatPoint velocity,
                             WebPoint point,
                             WebPoint global_point,
@@ -57,7 +58,7 @@ WebGestureEvent CreateFling(base::TimeTicks timestamp,
   return fling;
 }
 
-WebGestureEvent CreateFling(WebGestureEvent::SourceDevice source_device,
+WebGestureEvent CreateFling(WebGestureDevice source_device,
                             WebFloatPoint velocity,
                             WebPoint point,
                             WebPoint global_point,
@@ -165,7 +166,7 @@ class MockInputHandlerProxyClient
                void(const WebActiveWheelFlingParameters&));
 
   virtual blink::WebGestureCurve* CreateFlingAnimationCurve(
-      int deviceSource,
+      WebGestureDevice deviceSource,
       const WebFloatPoint& velocity,
       const WebSize& cumulative_scroll) OVERRIDE {
     return new FakeWebGestureCurve(
@@ -211,7 +212,7 @@ class InputHandlerProxyTest : public testing::Test {
   } while (false)
 
   void StartFling(base::TimeTicks timestamp,
-                  WebGestureEvent::SourceDevice source_device,
+                  WebGestureDevice source_device,
                   WebFloatPoint velocity,
                   WebPoint position) {
     expected_disposition_ = InputHandlerProxy::DID_HANDLE;
@@ -486,14 +487,14 @@ TEST_F(InputHandlerProxyTest, GestureFlingStartedTouchpad) {
 
   gesture_.type = WebInputEvent::GestureFlingStart;
   gesture_.data.flingStart.velocityX = 10;
-  gesture_.sourceDevice = WebGestureEvent::Touchpad;
+  gesture_.sourceDevice = blink::WebGestureDeviceTouchpad;
   EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(gesture_));
 
   VERIFY_AND_RESET_MOCKS();
 
   // Verify that a GestureFlingCancel during an animation cancels it.
   gesture_.type = WebInputEvent::GestureFlingCancel;
-  gesture_.sourceDevice = WebGestureEvent::Touchpad;
+  gesture_.sourceDevice = blink::WebGestureDeviceTouchpad;
   EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(gesture_));
 }
 
@@ -506,7 +507,7 @@ TEST_F(InputHandlerProxyTest, GestureFlingOnMainThreadTouchpad) {
       .WillOnce(testing::Return(cc::InputHandler::ScrollOnMainThread));
 
   gesture_.type = WebInputEvent::GestureFlingStart;
-  gesture_.sourceDevice = WebGestureEvent::Touchpad;
+  gesture_.sourceDevice = blink::WebGestureDeviceTouchpad;
   EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(gesture_));
 
   // Since we returned ScrollStatusOnMainThread from scrollBegin, ensure the
@@ -518,7 +519,7 @@ TEST_F(InputHandlerProxyTest, GestureFlingOnMainThreadTouchpad) {
   // Even if we didn't start a fling ourselves, we still need to send the cancel
   // event to the widget.
   gesture_.type = WebInputEvent::GestureFlingCancel;
-  gesture_.sourceDevice = WebGestureEvent::Touchpad;
+  gesture_.sourceDevice = blink::WebGestureDeviceTouchpad;
   EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(gesture_));
 }
 
@@ -530,7 +531,7 @@ TEST_F(InputHandlerProxyTest, GestureFlingIgnoredTouchpad) {
       .WillOnce(testing::Return(cc::InputHandler::ScrollIgnored));
 
   gesture_.type = WebInputEvent::GestureFlingStart;
-  gesture_.sourceDevice = WebGestureEvent::Touchpad;
+  gesture_.sourceDevice = blink::WebGestureDeviceTouchpad;
   EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(gesture_));
 
   expected_disposition_ = InputHandlerProxy::DROP_EVENT;
@@ -539,7 +540,7 @@ TEST_F(InputHandlerProxyTest, GestureFlingIgnoredTouchpad) {
   // Since the previous fling was ignored, we should also be dropping the next
   // fling_cancel.
   gesture_.type = WebInputEvent::GestureFlingCancel;
-  gesture_.sourceDevice = WebGestureEvent::Touchpad;
+  gesture_.sourceDevice = blink::WebGestureDeviceTouchpad;
   EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(gesture_));
 }
 
@@ -557,7 +558,7 @@ TEST_F(InputHandlerProxyTest, GestureFlingAnimatesTouchpad) {
   // Note that for trackpad, wheel events with the Control modifier are
   // special (reserved for zoom), so don't set that here.
   int modifiers = WebInputEvent::ShiftKey | WebInputEvent::AltKey;
-  gesture_ = CreateFling(WebGestureEvent::Touchpad,
+  gesture_ = CreateFling(blink::WebGestureDeviceTouchpad,
                          fling_delta,
                          fling_point,
                          fling_global_point,
@@ -662,7 +663,7 @@ TEST_F(InputHandlerProxyTest, GestureFlingTransferResetsTouchpad) {
   // Note that for trackpad, wheel events with the Control modifier are
   // special (reserved for zoom), so don't set that here.
   int modifiers = WebInputEvent::ShiftKey | WebInputEvent::AltKey;
-  gesture_ = CreateFling(WebGestureEvent::Touchpad,
+  gesture_ = CreateFling(blink::WebGestureDeviceTouchpad,
                          fling_delta,
                          fling_point,
                          fling_global_point,
@@ -763,7 +764,7 @@ TEST_F(InputHandlerProxyTest, GestureFlingTransferResetsTouchpad) {
   fling_point = WebPoint(95, 87);
   fling_global_point = WebPoint(32, 71);
   modifiers = WebInputEvent::AltKey;
-  gesture_ = CreateFling(WebGestureEvent::Touchpad,
+  gesture_ = CreateFling(blink::WebGestureDeviceTouchpad,
                          fling_delta,
                          fling_point,
                          fling_global_point,
@@ -835,7 +836,7 @@ TEST_F(InputHandlerProxyTest, GestureFlingStartedTouchscreen) {
   EXPECT_CALL(mock_input_handler_, ScrollBegin(testing::_, testing::_))
       .WillOnce(testing::Return(cc::InputHandler::ScrollStarted));
   gesture_.type = WebInputEvent::GestureScrollBegin;
-  gesture_.sourceDevice = WebGestureEvent::Touchscreen;
+  gesture_.sourceDevice = blink::WebGestureDeviceTouchscreen;
   EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(gesture_));
 
   VERIFY_AND_RESET_MOCKS();
@@ -846,7 +847,7 @@ TEST_F(InputHandlerProxyTest, GestureFlingStartedTouchscreen) {
 
   gesture_.type = WebInputEvent::GestureFlingStart;
   gesture_.data.flingStart.velocityX = 10;
-  gesture_.sourceDevice = WebGestureEvent::Touchscreen;
+  gesture_.sourceDevice = blink::WebGestureDeviceTouchscreen;
   EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(gesture_));
 
   VERIFY_AND_RESET_MOCKS();
@@ -855,7 +856,7 @@ TEST_F(InputHandlerProxyTest, GestureFlingStartedTouchscreen) {
 
   // Verify that a GestureFlingCancel during an animation cancels it.
   gesture_.type = WebInputEvent::GestureFlingCancel;
-  gesture_.sourceDevice = WebGestureEvent::Touchscreen;
+  gesture_.sourceDevice = blink::WebGestureDeviceTouchscreen;
   EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(gesture_));
 }
 
@@ -875,7 +876,7 @@ TEST_F(InputHandlerProxyTest, GestureFlingOnMainThreadTouchscreen) {
   EXPECT_CALL(mock_input_handler_, FlingScrollBegin()).Times(0);
 
   gesture_.type = WebInputEvent::GestureFlingStart;
-  gesture_.sourceDevice = WebGestureEvent::Touchscreen;
+  gesture_.sourceDevice = blink::WebGestureDeviceTouchscreen;
   EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(gesture_));
 
   VERIFY_AND_RESET_MOCKS();
@@ -883,7 +884,7 @@ TEST_F(InputHandlerProxyTest, GestureFlingOnMainThreadTouchscreen) {
   // Even if we didn't start a fling ourselves, we still need to send the cancel
   // event to the widget.
   gesture_.type = WebInputEvent::GestureFlingCancel;
-  gesture_.sourceDevice = WebGestureEvent::Touchscreen;
+  gesture_.sourceDevice = blink::WebGestureDeviceTouchscreen;
   EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(gesture_));
 }
 
@@ -895,7 +896,7 @@ TEST_F(InputHandlerProxyTest, GestureFlingIgnoredTouchscreen) {
       .WillOnce(testing::Return(cc::InputHandler::ScrollStarted));
 
   gesture_.type = WebInputEvent::GestureScrollBegin;
-  gesture_.sourceDevice = WebGestureEvent::Touchscreen;
+  gesture_.sourceDevice = blink::WebGestureDeviceTouchscreen;
   EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(gesture_));
 
   expected_disposition_ = InputHandlerProxy::DROP_EVENT;
@@ -905,7 +906,7 @@ TEST_F(InputHandlerProxyTest, GestureFlingIgnoredTouchscreen) {
       .WillOnce(testing::Return(cc::InputHandler::ScrollIgnored));
 
   gesture_.type = WebInputEvent::GestureFlingStart;
-  gesture_.sourceDevice = WebGestureEvent::Touchscreen;
+  gesture_.sourceDevice = blink::WebGestureDeviceTouchscreen;
   EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(gesture_));
 
   VERIFY_AND_RESET_MOCKS();
@@ -913,7 +914,7 @@ TEST_F(InputHandlerProxyTest, GestureFlingIgnoredTouchscreen) {
   // Even if we didn't start a fling ourselves, we still need to send the cancel
   // event to the widget.
   gesture_.type = WebInputEvent::GestureFlingCancel;
-  gesture_.sourceDevice = WebGestureEvent::Touchscreen;
+  gesture_.sourceDevice = blink::WebGestureDeviceTouchscreen;
   EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(gesture_));
 }
 
@@ -926,7 +927,7 @@ TEST_F(InputHandlerProxyTest, GestureFlingAnimatesTouchscreen) {
       .WillOnce(testing::Return(cc::InputHandler::ScrollStarted));
 
   gesture_.type = WebInputEvent::GestureScrollBegin;
-  gesture_.sourceDevice = WebGestureEvent::Touchscreen;
+  gesture_.sourceDevice = blink::WebGestureDeviceTouchscreen;
   EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(gesture_));
 
   VERIFY_AND_RESET_MOCKS();
@@ -938,7 +939,7 @@ TEST_F(InputHandlerProxyTest, GestureFlingAnimatesTouchscreen) {
   WebPoint fling_global_point = WebPoint(17, 23);
   // Note that for touchscreen the control modifier is not special.
   int modifiers = WebInputEvent::ControlKey;
-  gesture_ = CreateFling(WebGestureEvent::Touchscreen,
+  gesture_ = CreateFling(blink::WebGestureDeviceTouchscreen,
                          fling_delta,
                          fling_point,
                          fling_global_point,
@@ -985,7 +986,7 @@ TEST_F(InputHandlerProxyTest, GestureFlingWithValidTimestamp) {
       .WillOnce(testing::Return(cc::InputHandler::ScrollStarted));
 
   gesture_.type = WebInputEvent::GestureScrollBegin;
-  gesture_.sourceDevice = WebGestureEvent::Touchscreen;
+  gesture_.sourceDevice = blink::WebGestureDeviceTouchscreen;
   EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(gesture_));
 
   VERIFY_AND_RESET_MOCKS();
@@ -999,7 +1000,7 @@ TEST_F(InputHandlerProxyTest, GestureFlingWithValidTimestamp) {
   WebPoint fling_global_point = WebPoint(17, 23);
   int modifiers = WebInputEvent::ControlKey;
   gesture_ = CreateFling(time,
-                         WebGestureEvent::Touchscreen,
+                         blink::WebGestureDeviceTouchscreen,
                          fling_delta,
                          fling_point,
                          fling_global_point,
@@ -1039,7 +1040,7 @@ TEST_F(InputHandlerProxyTest, GestureFlingWithInvalidTimestamp) {
       .WillOnce(testing::Return(cc::InputHandler::ScrollStarted));
 
   gesture_.type = WebInputEvent::GestureScrollBegin;
-  gesture_.sourceDevice = WebGestureEvent::Touchscreen;
+  gesture_.sourceDevice = blink::WebGestureDeviceTouchscreen;
   EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(gesture_));
 
   VERIFY_AND_RESET_MOCKS();
@@ -1055,7 +1056,7 @@ TEST_F(InputHandlerProxyTest, GestureFlingWithInvalidTimestamp) {
   gesture_.timeStampSeconds = start_time_offset.InSecondsF();
   gesture_.data.flingStart.velocityX = fling_delta.x;
   gesture_.data.flingStart.velocityY = fling_delta.y;
-  gesture_.sourceDevice = WebGestureEvent::Touchscreen;
+  gesture_.sourceDevice = blink::WebGestureDeviceTouchscreen;
   gesture_.x = fling_point.x;
   gesture_.y = fling_point.y;
   gesture_.globalX = fling_global_point.x;
@@ -1118,7 +1119,7 @@ TEST_F(InputHandlerProxyTest,
   WebPoint fling_point = WebPoint(7, 13);
   WebPoint fling_global_point = WebPoint(17, 23);
   int modifiers = WebInputEvent::ControlKey | WebInputEvent::AltKey;
-  gesture_ = CreateFling(WebGestureEvent::Touchscreen,
+  gesture_ = CreateFling(blink::WebGestureDeviceTouchscreen,
                          fling_delta,
                          fling_point,
                          fling_global_point,
@@ -1239,7 +1240,7 @@ TEST_F(InputHandlerProxyTest, GestureFlingNotCancelledBySmallTimeDelta) {
       .WillOnce(testing::Return(cc::InputHandler::ScrollStarted));
 
   gesture_.type = WebInputEvent::GestureScrollBegin;
-  gesture_.sourceDevice = WebGestureEvent::Touchscreen;
+  gesture_.sourceDevice = blink::WebGestureDeviceTouchscreen;
   EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(gesture_));
 
   VERIFY_AND_RESET_MOCKS();
@@ -1253,7 +1254,7 @@ TEST_F(InputHandlerProxyTest, GestureFlingNotCancelledBySmallTimeDelta) {
   WebPoint fling_global_point = WebPoint(17, 23);
   int modifiers = WebInputEvent::ControlKey;
   gesture_ = CreateFling(time,
-                         WebGestureEvent::Touchscreen,
+                         blink::WebGestureDeviceTouchscreen,
                          fling_delta,
                          fling_point,
                          fling_global_point,
@@ -1315,7 +1316,7 @@ TEST_F(InputHandlerProxyTest, GestureFlingCancelledAfterBothAxesStopScrolling) {
   EXPECT_CALL(mock_input_handler_, ScrollBegin(testing::_, testing::_))
       .WillOnce(testing::Return(cc::InputHandler::ScrollStarted));
   gesture_.type = WebInputEvent::GestureScrollBegin;
-  gesture_.sourceDevice = WebGestureEvent::Touchscreen;
+  gesture_.sourceDevice = blink::WebGestureDeviceTouchscreen;
   EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(gesture_));
   testing::Mock::VerifyAndClearExpectations(&mock_input_handler_);
 
@@ -1457,7 +1458,7 @@ TEST_F(InputHandlerProxyTest, GestureFlingCancelledByKeyboardEvent) {
   EXPECT_CALL(mock_input_handler_, ScrollBegin(testing::_, testing::_))
       .WillOnce(testing::Return(cc::InputHandler::ScrollStarted));
   gesture_.type = WebInputEvent::GestureScrollBegin;
-  gesture_.sourceDevice = WebGestureEvent::Touchscreen;
+  gesture_.sourceDevice = blink::WebGestureDeviceTouchscreen;
   EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(gesture_));
   EXPECT_TRUE(input_handler_->gesture_scroll_on_impl_thread_for_testing());
   testing::Mock::VerifyAndClearExpectations(&mock_input_handler_);
@@ -1510,7 +1511,7 @@ TEST_F(InputHandlerProxyTest, GestureFlingWithNegativeTimeDelta) {
       .WillOnce(testing::Return(cc::InputHandler::ScrollStarted));
 
   gesture_.type = WebInputEvent::GestureScrollBegin;
-  gesture_.sourceDevice = WebGestureEvent::Touchscreen;
+  gesture_.sourceDevice = blink::WebGestureDeviceTouchscreen;
   EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(gesture_));
 
   VERIFY_AND_RESET_MOCKS();
@@ -1524,7 +1525,7 @@ TEST_F(InputHandlerProxyTest, GestureFlingWithNegativeTimeDelta) {
   WebPoint fling_global_point = WebPoint(17, 23);
   int modifiers = WebInputEvent::ControlKey;
   gesture_ = CreateFling(time,
-                         WebGestureEvent::Touchscreen,
+                         blink::WebGestureDeviceTouchscreen,
                          fling_delta,
                          fling_point,
                          fling_global_point,
@@ -1571,7 +1572,8 @@ TEST_F(InputHandlerProxyTest, FlingBoost) {
   base::TimeTicks last_animate_time = time;
   WebFloatPoint fling_delta = WebFloatPoint(1000, 0);
   WebPoint fling_point = WebPoint(7, 13);
-  StartFling(time, WebGestureEvent::Touchscreen, fling_delta, fling_point);
+  StartFling(
+      time, blink::WebGestureDeviceTouchscreen, fling_delta, fling_point);
 
   // Now cancel the fling.  The fling cancellation should be deferred to allow
   // fling boosting events to arrive.
@@ -1634,7 +1636,7 @@ TEST_F(InputHandlerProxyTest, FlingBoost) {
   // boost the active fling.
 
   gesture_ = CreateFling(time,
-                         WebGestureEvent::Touchscreen,
+                         blink::WebGestureDeviceTouchscreen,
                          fling_delta,
                          fling_point,
                          fling_point,
@@ -1660,7 +1662,7 @@ TEST_F(InputHandlerProxyTest, FlingBoost) {
 
   CancelFling(time);
   gesture_ = CreateFling(time,
-                         WebGestureEvent::Touchscreen,
+                         blink::WebGestureDeviceTouchscreen,
                          fling_delta,
                          fling_point,
                          fling_point,
@@ -1704,7 +1706,8 @@ TEST_F(InputHandlerProxyTest, NoFlingBoostIfScrollTargetsDifferentLayer) {
   base::TimeTicks time = base::TimeTicks() + dt;
   WebFloatPoint fling_delta = WebFloatPoint(1000, 0);
   WebPoint fling_point = WebPoint(7, 13);
-  StartFling(time, WebGestureEvent::Touchscreen, fling_delta, fling_point);
+  StartFling(
+      time, blink::WebGestureDeviceTouchscreen, fling_delta, fling_point);
 
   // Cancel the fling.  The fling cancellation should be deferred to allow
   // fling boosting events to arrive.
@@ -1733,7 +1736,8 @@ TEST_F(InputHandlerProxyTest, NoFlingBoostIfScrollDelayed) {
   base::TimeTicks time = base::TimeTicks() + dt;
   WebFloatPoint fling_delta = WebFloatPoint(1000, 0);
   WebPoint fling_point = WebPoint(7, 13);
-  StartFling(time, WebGestureEvent::Touchscreen, fling_delta, fling_point);
+  StartFling(
+      time, blink::WebGestureDeviceTouchscreen, fling_delta, fling_point);
 
   // Cancel the fling.  The fling cancellation should be deferred to allow
   // fling boosting events to arrive.
@@ -1769,7 +1773,8 @@ TEST_F(InputHandlerProxyTest, NoFlingBoostIfScrollInDifferentDirection) {
   base::TimeTicks time = base::TimeTicks() + dt;
   WebFloatPoint fling_delta = WebFloatPoint(1000, 0);
   WebPoint fling_point = WebPoint(7, 13);
-  StartFling(time, WebGestureEvent::Touchscreen, fling_delta, fling_point);
+  StartFling(
+      time, blink::WebGestureDeviceTouchscreen, fling_delta, fling_point);
 
   // Cancel the fling.  The fling cancellation should be deferred to allow
   // fling boosting events to arrive.
@@ -1813,7 +1818,8 @@ TEST_F(InputHandlerProxyTest, NoFlingBoostIfFlingTooSlow) {
   base::TimeTicks time = base::TimeTicks() + dt;
   WebFloatPoint fling_delta = WebFloatPoint(1000, 0);
   WebPoint fling_point = WebPoint(7, 13);
-  StartFling(time, WebGestureEvent::Touchscreen, fling_delta, fling_point);
+  StartFling(
+      time, blink::WebGestureDeviceTouchscreen, fling_delta, fling_point);
 
   // Cancel the fling.  The fling cancellation should be deferred to allow
   // fling boosting events to arrive.
@@ -1824,7 +1830,7 @@ TEST_F(InputHandlerProxyTest, NoFlingBoostIfFlingTooSlow) {
   // fling replacing the old.
   WebFloatPoint small_fling_delta = WebFloatPoint(100, 0);
   gesture_ = CreateFling(time,
-                         WebGestureEvent::Touchscreen,
+                         blink::WebGestureDeviceTouchscreen,
                          small_fling_delta,
                          fling_point,
                          fling_point,

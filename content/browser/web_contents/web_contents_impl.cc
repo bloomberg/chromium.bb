@@ -1233,7 +1233,7 @@ bool WebContentsImpl::HandleGestureEvent(
   // Some platforms (eg. Mac) send GesturePinch events for trackpad pinch-zoom.
   // Use them to implement browser zoom, as for HandleWheelEvent above.
   if (event.type == blink::WebInputEvent::GesturePinchUpdate &&
-      event.sourceDevice == blink::WebGestureEvent::Touchpad) {
+      event.sourceDevice == blink::WebGestureDeviceTouchpad) {
     // The scale difference necessary to trigger a zoom action. Derived from
     // experimentation to find a value that feels reasonable.
     const float kZoomStepValue = 0.6f;

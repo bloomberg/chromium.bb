@@ -30,7 +30,7 @@ class InputHandlerWrapper : public InputHandlerProxyClient {
   virtual void TransferActiveWheelFlingAnimation(
       const blink::WebActiveWheelFlingParameters& params) OVERRIDE;
   virtual blink::WebGestureCurve* CreateFlingAnimationCurve(
-      int deviceSource,
+      blink::WebGestureDevice deviceSource,
       const blink::WebFloatPoint& velocity,
       const blink::WebSize& cumulativeScroll) OVERRIDE;
   virtual void DidOverscroll(const DidOverscrollParams& params) OVERRIDE;

@@ -233,7 +233,7 @@ blink::WebGestureEvent MakeWebGestureEventFromUIEvent(
       NOTREACHED() << "Unknown gesture type: " << event.type();
   }
 
-  gesture_event.sourceDevice = blink::WebGestureEvent::Touchscreen;
+  gesture_event.sourceDevice = blink::WebGestureDeviceTouchscreen;
   gesture_event.modifiers = EventFlagsToWebEventModifiers(event.flags());
   gesture_event.timeStampSeconds = event.time_stamp().InSecondsF();
 

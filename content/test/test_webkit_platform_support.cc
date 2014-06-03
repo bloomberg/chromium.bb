@@ -216,7 +216,7 @@ blink::WebCompositorSupport* TestWebKitPlatformSupport::compositorSupport() {
 }
 
 blink::WebGestureCurve* TestWebKitPlatformSupport::createFlingAnimationCurve(
-    int device_source,
+    blink::WebGestureDevice device_source,
     const blink::WebFloatPoint& velocity,
     const blink::WebSize& cumulative_scroll) {
   // Caller will retain and release.

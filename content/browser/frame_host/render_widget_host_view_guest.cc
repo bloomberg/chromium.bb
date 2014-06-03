@@ -37,7 +37,7 @@ blink::WebGestureEvent CreateFlingCancelEvent(double time_stamp) {
   blink::WebGestureEvent gesture_event;
   gesture_event.timeStampSeconds = time_stamp;
   gesture_event.type = blink::WebGestureEvent::GestureFlingCancel;
-  gesture_event.sourceDevice = blink::WebGestureEvent::Touchscreen;
+  gesture_event.sourceDevice = blink::WebGestureDeviceTouchscreen;
   return gesture_event;
 }
 #endif  // defined(USE_AURA)

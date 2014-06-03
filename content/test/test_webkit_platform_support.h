@@ -64,9 +64,9 @@ class TestWebKitPlatformSupport
   }
 
   virtual blink::WebGestureCurve* createFlingAnimationCurve(
-      int device_source,
+      blink::WebGestureDevice device_source,
       const blink::WebFloatPoint& velocity,
-      const blink::WebSize& cumulative_scroll);
+      const blink::WebSize& cumulative_scroll) OVERRIDE;
 
   virtual blink::WebUnitTestSupport* unitTestSupport();
 

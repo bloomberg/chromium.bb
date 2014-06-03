@@ -128,7 +128,7 @@ WebGestureEvent WebGestureEventBuilder::Build(WebInputEvent::Type type,
   result.x = x;
   result.y = y;
   result.timeStampSeconds = time_sec;
-  result.sourceDevice = WebGestureEvent::Touchscreen;
+  result.sourceDevice = blink::WebGestureDeviceTouchscreen;
 
   return result;
 }

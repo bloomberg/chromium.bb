@@ -177,7 +177,7 @@ blink::WebGestureEvent MakeWebGestureEventFromAuraEvent(
       NOTREACHED() << "Unknown gesture type: " << event->type();
   }
 
-  webkit_event.sourceDevice = blink::WebGestureEvent::Touchpad;
+  webkit_event.sourceDevice = blink::WebGestureDeviceTouchpad;
   webkit_event.modifiers = EventFlagsToWebEventModifiers(event->flags());
   webkit_event.timeStampSeconds = event->time_stamp().InSecondsF();
   return webkit_event;
@@ -349,7 +349,7 @@ blink::WebGestureEvent MakeWebGestureEventFlingCancel() {
 
   // All other fields are ignored on a GestureFlingCancel event.
   gesture_event.type = blink::WebInputEvent::GestureFlingCancel;
-  gesture_event.sourceDevice = blink::WebGestureEvent::Touchpad;
+  gesture_event.sourceDevice = blink::WebGestureDeviceTouchpad;
   return gesture_event;
 }
 

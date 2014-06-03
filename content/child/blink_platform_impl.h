@@ -14,6 +14,7 @@
 #include "content/child/webfallbackthemeengine_impl.h"
 #include "content/common/content_export.h"
 #include "third_party/WebKit/public/platform/Platform.h"
+#include "third_party/WebKit/public/platform/WebGestureDevice.h"
 #include "third_party/WebKit/public/platform/WebURLError.h"
 #include "ui/base/layout.h"
 
@@ -141,7 +142,7 @@ class CONTENT_EXPORT BlinkPlatformImpl
   virtual void stopSharedTimer();
   virtual void callOnMainThread(void (*func)(void*), void* context);
   virtual blink::WebGestureCurve* createFlingAnimationCurve(
-      int device_source,
+      blink::WebGestureDevice device_source,
       const blink::WebFloatPoint& velocity,
       const blink::WebSize& cumulative_scroll) OVERRIDE;
   virtual void didStartWorkerRunLoop(

@@ -42,7 +42,7 @@ void InputHandlerWrapper::WillShutdown() {
 }
 
 blink::WebGestureCurve* InputHandlerWrapper::CreateFlingAnimationCurve(
-    int deviceSource,
+    blink::WebGestureDevice deviceSource,
     const blink::WebFloatPoint& velocity,
     const blink::WebSize& cumulative_scroll) {
   return blink::Platform::current()->createFlingAnimationCurve(

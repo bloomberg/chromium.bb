@@ -39,9 +39,8 @@ class CONTENT_EXPORT SyntheticWebKeyboardEventBuilder {
 
 class CONTENT_EXPORT SyntheticWebGestureEventBuilder {
  public:
-  static blink::WebGestureEvent Build(
-      blink::WebInputEvent::Type type,
-      blink::WebGestureEvent::SourceDevice source_device);
+  static blink::WebGestureEvent Build(blink::WebInputEvent::Type type,
+                                      blink::WebGestureDevice source_device);
   static blink::WebGestureEvent BuildScrollBegin(float dx_hint,
                                                  float dy_hint);
   static blink::WebGestureEvent BuildScrollUpdate(float dx,
@@ -52,11 +51,11 @@ class CONTENT_EXPORT SyntheticWebGestureEventBuilder {
       float anchor_x,
       float anchor_y,
       int modifiers,
-      blink::WebGestureEvent::SourceDevice source_device);
+      blink::WebGestureDevice source_device);
   static blink::WebGestureEvent BuildFling(
       float velocity_x,
       float velocity_y,
-      blink::WebGestureEvent::SourceDevice source_device);
+      blink::WebGestureDevice source_device);
 };
 
 class CONTENT_EXPORT SyntheticWebTouchEvent

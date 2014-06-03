@@ -75,7 +75,7 @@ WebMouseEvent WebMouseEventFromGestureEvent(const WebGestureEvent& gesture) {
       break;
 
     case WebInputEvent::GestureFlingStart:
-      if (gesture.sourceDevice == WebGestureEvent::Touchscreen) {
+      if (gesture.sourceDevice == blink::WebGestureDeviceTouchscreen) {
         // A scroll gesture on the touchscreen may end with a GestureScrollEnd
         // when there is no velocity, or a GestureFlingStart when it has a
         // velocity. In both cases, it should end the drag that was initiated by

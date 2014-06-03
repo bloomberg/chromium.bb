@@ -82,7 +82,7 @@ WebKeyboardEvent SyntheticWebKeyboardEventBuilder::Build(
 
 WebGestureEvent SyntheticWebGestureEventBuilder::Build(
     WebInputEvent::Type type,
-    WebGestureEvent::SourceDevice source_device) {
+    blink::WebGestureDevice source_device) {
   DCHECK(WebInputEvent::isGestureEventType(type));
   WebGestureEvent result;
   result.type = type;
@@ -101,7 +101,7 @@ WebGestureEvent SyntheticWebGestureEventBuilder::BuildScrollBegin(
     float dx_hint,
     float dy_hint) {
   WebGestureEvent result = Build(WebInputEvent::GestureScrollBegin,
-                                 WebGestureEvent::Touchscreen);
+                                 blink::WebGestureDeviceTouchscreen);
   result.data.scrollBegin.deltaXHint = dx_hint;
   result.data.scrollBegin.deltaYHint = dy_hint;
   return result;
@@ -112,7 +112,7 @@ WebGestureEvent SyntheticWebGestureEventBuilder::BuildScrollUpdate(
     float dy,
     int modifiers) {
   WebGestureEvent result = Build(WebInputEvent::GestureScrollUpdate,
-                                 WebGestureEvent::Touchscreen);
+                                 blink::WebGestureDeviceTouchscreen);
   result.data.scrollUpdate.deltaX = dx;
   result.data.scrollUpdate.deltaY = dy;
   result.modifiers = modifiers;
@@ -124,7 +124,7 @@ WebGestureEvent SyntheticWebGestureEventBuilder::BuildPinchUpdate(
     float anchor_x,
     float anchor_y,
     int modifiers,
-    WebGestureEvent::SourceDevice source_device) {
+    blink::WebGestureDevice source_device) {
   WebGestureEvent result =
       Build(WebInputEvent::GesturePinchUpdate, source_device);
   result.data.pinchUpdate.scale = scale;
@@ -139,7 +139,7 @@ WebGestureEvent SyntheticWebGestureEventBuilder::BuildPinchUpdate(
 WebGestureEvent SyntheticWebGestureEventBuilder::BuildFling(
     float velocity_x,
     float velocity_y,
-    WebGestureEvent::SourceDevice source_device) {
+    blink::WebGestureDevice source_device) {
   WebGestureEvent result = Build(WebInputEvent::GestureFlingStart,
                                  source_device);
   result.data.flingStart.velocityX = velocity_x;

@@ -1216,7 +1216,7 @@ InputEventAckState RenderWidgetHostViewAura::FilterInputEvent(
         static_cast<const WebGestureEvent&>(input_event);
     // Zero-velocity touchpad flings are an Aura-specific signal that the
     // touchpad scroll has ended, and should not be forwarded to the renderer.
-    if (gesture_event.sourceDevice == WebGestureEvent::Touchpad &&
+    if (gesture_event.sourceDevice == blink::WebGestureDeviceTouchpad &&
         !gesture_event.data.flingStart.velocityX &&
         !gesture_event.data.flingStart.velocityY) {
       consumed = true;
@@ -1984,7 +1984,7 @@ void RenderWidgetHostViewAura::OnGestureEvent(ui::GestureEvent* event) {
     // event to stop any in-progress flings.
     blink::WebGestureEvent fling_cancel = gesture;
     fling_cancel.type = blink::WebInputEvent::GestureFlingCancel;
-    fling_cancel.sourceDevice = blink::WebGestureEvent::Touchscreen;
+    fling_cancel.sourceDevice = blink::WebGestureDeviceTouchscreen;
     host_->ForwardGestureEvent(fling_cancel);
   }
 
