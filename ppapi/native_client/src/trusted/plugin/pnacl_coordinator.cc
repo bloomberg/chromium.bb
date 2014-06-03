@@ -377,7 +377,7 @@ void PnaclCoordinator::BitcodeStreamDidOpen(int32_t pp_error) {
   // The component updater's resource throttles + OnDemand update/install
   // should block the URL request until the compiler is present. Now we
   // can load the resources (e.g. llc and ld nexes).
-  resources_.reset(new PnaclResources(plugin_, this));
+  resources_.reset(new PnaclResources(plugin_));
   CHECK(resources_ != NULL);
 
   // The first step of loading resources: read the resource info file.
@@ -389,6 +389,10 @@ void PnaclCoordinator::BitcodeStreamDidOpen(int32_t pp_error) {
 void PnaclCoordinator::ResourceInfoWasRead(int32_t pp_error) {
   PLUGIN_PRINTF(("PluginCoordinator::ResourceInfoWasRead (pp_error=%"
                 NACL_PRId32 ")\n", pp_error));
+  if (pp_error != PP_OK) {
+    ExitWithError();
+    return;
+  }
   // Second step of loading resources: call StartLoad to load pnacl-llc
   // and pnacl-ld, based on the filenames found in the resource info file.
   pp::CompletionCallback resources_cb =
@@ -400,8 +404,11 @@ void PnaclCoordinator::ResourcesDidLoad(int32_t pp_error) {
   PLUGIN_PRINTF(("PnaclCoordinator::ResourcesDidLoad (pp_error=%"
                  NACL_PRId32 ")\n", pp_error));
   if (pp_error != PP_OK) {
-    // Finer-grained error code should have already been reported by
-    // the PnaclResources class.
+    ReportNonPpapiError(
+        PP_NACL_ERROR_PNACL_RESOURCE_FETCH,
+        nacl::string("The Portable Native Client (pnacl) component is not "
+                     "installed. Please consult chrome://components for more "
+                      "information."));
     return;
   }
 

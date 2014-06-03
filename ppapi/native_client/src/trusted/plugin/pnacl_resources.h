@@ -20,17 +20,14 @@
 namespace plugin {
 
 class Plugin;
-class PnaclCoordinator;
 
 // Loads a list of resources, providing a way to get file descriptors for
 // these resources.  URLs for resources are resolved by the manifest
 // and point to pnacl component filesystem resources.
 class PnaclResources {
  public:
-  PnaclResources(Plugin* plugin,
-                 PnaclCoordinator* coordinator)
+  explicit PnaclResources(Plugin* plugin)
       : plugin_(plugin),
-        coordinator_(coordinator),
         llc_file_handle_(PP_kInvalidFileHandle),
         ld_file_handle_(PP_kInvalidFileHandle) {
   }
@@ -56,8 +53,6 @@ class PnaclResources {
 
   // The plugin requesting the resource loading.
   Plugin* plugin_;
-  // The coordinator responsible for reporting errors, etc.
-  PnaclCoordinator* coordinator_;
 
   // Tool names for llc and ld; read from the resource info file.
   nacl::string llc_tool_name_;

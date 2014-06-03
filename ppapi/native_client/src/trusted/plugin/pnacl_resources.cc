@@ -9,7 +9,6 @@
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/native_client/src/trusted/plugin/plugin.h"
-#include "ppapi/native_client/src/trusted/plugin/pnacl_coordinator.h"
 #include "ppapi/native_client/src/trusted/plugin/utility.h"
 
 namespace plugin {
@@ -41,9 +40,11 @@ void PnaclResources::ReadResourceInfo(
           "chrome://pnacl-translator/pnacl.json",
           &pp_llc_tool_name_var,
           &pp_ld_tool_name_var)) {
-    coordinator_->ExitWithError();
+    pp::Module::Get()->core()->CallOnMainThread(0,
+                                                resource_info_read_cb,
+                                                PP_ERROR_FAILED);
+    return;
   }
-
   pp::Var llc_tool_name(pp::PASS_REF, pp_llc_tool_name_var);
   pp::Var ld_tool_name(pp::PASS_REF, pp_ld_tool_name_var);
   llc_tool_name_ = GetFullUrl(llc_tool_name.AsString());
@@ -76,14 +77,6 @@ void PnaclResources::StartLoad(
   int32_t result = PP_OK;
   if (llc_file_handle_ == PP_kInvalidFileHandle ||
       ld_file_handle_ == PP_kInvalidFileHandle) {
-    // File-open failed. Assume this means that the file is
-    // not actually installed. This shouldn't actually occur since
-    // ReadResourceInfo() fail first.
-    coordinator_->ReportNonPpapiError(
-        PP_NACL_ERROR_PNACL_RESOURCE_FETCH,
-      nacl::string("The Portable Native Client (pnacl) component is not "
-                   "installed. Please consult chrome://components for more "
-                   "information."));
     result = PP_ERROR_FILENOTFOUND;
   }
   pp::Module::Get()->core()->CallOnMainThread(0, all_loaded_callback, result);

@@ -69,19 +69,6 @@ class PnaclCoordinator: public CallbackSource<FileStreamData> {
   // BitcodeToNative has completed (and the finish_callback called).
   PP_FileHandle TakeTranslatedFileHandle();
 
-  // Run |translate_notify_callback_| with an error condition that is not
-  // PPAPI specific.  Also set ErrorInfo report.
-  void ReportNonPpapiError(PP_NaClError err, const nacl::string& message);
-  // Run when faced with a PPAPI error condition. Bring control back to the
-  // plugin by invoking the |translate_notify_callback_|.
-  // Also set ErrorInfo report.
-  void ReportPpapiError(PP_NaClError err,
-                        int32_t pp_error, const nacl::string& message);
-  // Bring control back to the plugin by invoking the
-  // |translate_notify_callback_|.  This does not set the ErrorInfo report,
-  // it is assumed that it was already set.
-  void ExitWithError();
-
   // Implement FileDownloader's template of the CallbackSource interface.
   // This method returns a callback which will be called by the FileDownloader
   // to stream the bitcode data as it arrives. The callback
@@ -157,6 +144,20 @@ class PnaclCoordinator: public CallbackSource<FileStreamData> {
   // Invoked when a UMA timing measurement from the translate thread is ready.
   void DoUMATimeMeasure(
       int32_t pp_error, const nacl::string& event_name, int64_t microsecs);
+
+  // Bring control back to the plugin by invoking the
+  // |translate_notify_callback_|.  This does not set the ErrorInfo report,
+  // it is assumed that it was already set.
+  void ExitWithError();
+  // Run |translate_notify_callback_| with an error condition that is not
+  // PPAPI specific.  Also set ErrorInfo report.
+  void ReportNonPpapiError(PP_NaClError err, const nacl::string& message);
+  // Run when faced with a PPAPI error condition. Bring control back to the
+  // plugin by invoking the |translate_notify_callback_|.
+  // Also set ErrorInfo report.
+  void ReportPpapiError(PP_NaClError err,
+                        int32_t pp_error, const nacl::string& message);
+
 
   // Keeps track of the pp_error upon entry to TranslateFinished,
   // for inspection after cleanup.
