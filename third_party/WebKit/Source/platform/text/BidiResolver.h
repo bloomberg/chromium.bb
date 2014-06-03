@@ -73,7 +73,6 @@ public:
     // Adding a pair of midpoints before a character will split it out into a new line box.
     void ensureCharacterGetsLineBox(Iterator& textParagraphSeparator)
     {
-        Iterator midpoint(0, textParagraphSeparator.object(), textParagraphSeparator.offset());
         startIgnoringSpaces(Iterator(0, textParagraphSeparator.object(), textParagraphSeparator.offset() - 1));
         stopIgnoringSpaces(Iterator(0, textParagraphSeparator.object(), textParagraphSeparator.offset()));
     }
