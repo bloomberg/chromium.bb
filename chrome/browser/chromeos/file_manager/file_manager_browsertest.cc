@@ -881,8 +881,11 @@ INSTANTIATE_TEST_CASE_P(
     ::testing::Values(TestParameter(NOT_IN_GUEST_MODE, "thumbnailsDownloads"),
                       TestParameter(IN_GUEST_MODE, "thumbnailsDownloads")));
 
+// Test/4 has been failing every 3rd or 4th pass on the waterfall for
+// "Linux ChromiumOS Tests (dbg)".
+// http://crbug.com/380339
 INSTANTIATE_TEST_CASE_P(
-    CopyBetweenWindows,
+    DISABLED_CopyBetweenWindows,
     FileManagerBrowserTest,
     ::testing::Values(
         TestParameter(NOT_IN_GUEST_MODE, "copyBetweenWindowsLocalToDrive"),
