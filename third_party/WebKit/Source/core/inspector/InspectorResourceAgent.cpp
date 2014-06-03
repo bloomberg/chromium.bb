@@ -80,6 +80,9 @@ static const char userAgentOverride[] = "userAgentOverride";
 
 namespace {
 
+// Keep in sync with kDevToolsRequestInitiator defined in devtools_network_controller.cc
+const char kDevToolsRequestInitiator[] = "X-DevTools-Request-Initiator";
+
 static PassRefPtr<JSONObject> buildObjectForHeaders(const HTTPHeaderMap& headers)
 {
     RefPtr<JSONObject> headersObject = JSONObject::create();
@@ -752,6 +755,7 @@ void InspectorResourceAgent::loadResourceForFrontend(ErrorString* errorString, c
             request.addHTTPHeaderField(AtomicString(it->key), AtomicString(value));
         }
     }
+    request.addHTTPHeaderField(kDevToolsRequestInitiator, "frontend");
 
     ThreadableLoaderOptions options;
     options.crossOriginRequestPolicy = AllowCrossOriginRequests;
