@@ -23,8 +23,7 @@ class SurfaceDisplayOutputSurface : public cc::OutputSurface {
   SurfaceDisplayOutputSurface(
       cc::Display* display,
       cc::SurfaceManager* surface_manager,
-      const scoped_refptr<cc::ContextProvider>& context_provider,
-      scoped_ptr<cc::SoftwareOutputDevice> software_device);
+      const scoped_refptr<cc::ContextProvider>& context_provider);
   virtual ~SurfaceDisplayOutputSurface();
 
   // cc::OutputSurface implementation.

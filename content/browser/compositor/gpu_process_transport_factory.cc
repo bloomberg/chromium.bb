@@ -161,28 +161,35 @@ scoped_ptr<cc::OutputSurface> GpuProcessTransportFactory::CreateOutputSurface(
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kUseSurfaces)) {
-    if (!context_provider.get())
-      LOG(FATAL) << "Surfaces do not support software compositing yet";
     // This gets a bit confusing. Here we have a ContextProvider configured to
     // render directly to this widget. We need to make an OnscreenDisplayClient
     // associated with this context, then return a SurfaceDisplayOutputSurface
     // set up to draw to the display's surface.
     cc::SurfaceManager* manager = surface_manager_.get();
-    scoped_ptr<OnscreenDisplayClient> display_client(
-        new OnscreenDisplayClient(context_provider, manager));
+    scoped_ptr<cc::OutputSurface> software_surface;
+    if (!context_provider) {
+      software_surface =
+          make_scoped_ptr(new SoftwareBrowserCompositorOutputSurface(
+              output_surface_proxy_,
+              CreateSoftwareOutputDevice(compositor),
+              per_compositor_data_[compositor]->surface_id,
+              &output_surface_map_,
+              compositor->vsync_manager()));
+    }
+    scoped_ptr<OnscreenDisplayClient> display_client(new OnscreenDisplayClient(
+        context_provider, software_surface.Pass(), manager));
     // TODO(jamesr): Need to set up filtering for the
     // GpuHostMsg_UpdateVSyncParameters message.
 
-    scoped_refptr<cc::ContextProvider> offscreen_context_provider =
-        ContextProviderCommandBuffer::Create(
-            GpuProcessTransportFactory::CreateOffscreenCommandBufferContext(),
-            "Offscreen-MainThread");
-    scoped_ptr<cc::SoftwareOutputDevice> software_device;
+    scoped_refptr<cc::ContextProvider> offscreen_context_provider;
+    if (context_provider) {
+      offscreen_context_provider = ContextProviderCommandBuffer::Create(
+          GpuProcessTransportFactory::CreateOffscreenCommandBufferContext(),
+          "Offscreen-Compositor");
+    }
     scoped_ptr<SurfaceDisplayOutputSurface> output_surface(
-        new SurfaceDisplayOutputSurface(display_client->display(),
-                                        manager,
-                                        offscreen_context_provider,
-                                        software_device.Pass()));
+        new SurfaceDisplayOutputSurface(
+            display_client->display(), manager, offscreen_context_provider));
     data->display_client = display_client.Pass();
     return output_surface.PassAs<cc::OutputSurface>();
   }

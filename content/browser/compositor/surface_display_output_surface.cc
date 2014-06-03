@@ -14,9 +14,9 @@ namespace content {
 SurfaceDisplayOutputSurface::SurfaceDisplayOutputSurface(
     cc::Display* display,
     cc::SurfaceManager* surface_manager,
-    const scoped_refptr<cc::ContextProvider>& context_provider,
-    scoped_ptr<cc::SoftwareOutputDevice> software_device)
-    : cc::OutputSurface(context_provider, software_device.Pass()),
+    const scoped_refptr<cc::ContextProvider>& context_provider)
+    : cc::OutputSurface(context_provider,
+                        scoped_ptr<cc::SoftwareOutputDevice>()),
       display_(display),
       surface_manager_(surface_manager) {
   capabilities_.delegated_rendering = true;

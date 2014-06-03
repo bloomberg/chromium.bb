@@ -24,6 +24,7 @@ class DisplayClient;
 class LayerTreeHost;
 class OutputSurface;
 class ResourceProvider;
+class SharedBitmapManager;
 class Surface;
 class SurfaceManager;
 
@@ -33,7 +34,9 @@ class CC_SURFACES_EXPORT Display
       NON_EXPORTED_BASE(public LayerTreeHostClient),
       NON_EXPORTED_BASE(public LayerTreeHostSingleThreadClient) {
  public:
-  Display(DisplayClient* client, SurfaceManager* manager);
+  Display(DisplayClient* client,
+          SurfaceManager* manager,
+          SharedBitmapManager* bitmap_manager);
   virtual ~Display();
 
   void Resize(const gfx::Size& new_size);
@@ -75,6 +78,7 @@ class CC_SURFACES_EXPORT Display
   DisplayClient* client_;
   SurfaceManager* manager_;
   SurfaceAggregator aggregator_;
+  SharedBitmapManager* bitmap_manager_;
   scoped_ptr<Surface> current_surface_;
   scoped_ptr<LayerTreeHost> layer_tree_host_;
   scoped_refptr<DelegatedFrameResourceCollection> resource_collection_;
