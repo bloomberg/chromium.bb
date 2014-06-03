@@ -151,6 +151,36 @@ SkColor HSLToSkColor(const HSL& hsl, SkAlpha alpha) {
       calcHue(temp1, temp2, hue - 1.0 / 3.0));
 }
 
+bool IsWithinHSLRange(const HSL& hsl,
+                      const HSL& lower_bound,
+                      const HSL& upper_bound) {
+  DCHECK(hsl.h >= 0 && hsl.h <= 1) << hsl.h;
+  DCHECK(hsl.s >= 0 && hsl.s <= 1) << hsl.s;
+  DCHECK(hsl.l >= 0 && hsl.l <= 1) << hsl.l;
+  DCHECK(lower_bound.h < 0 || upper_bound.h < 0 ||
+         (lower_bound.h <= 1 && upper_bound.h <= lower_bound.h + 1))
+      << "lower_bound.h: " << lower_bound.h
+      << ", upper_bound.h: " << upper_bound.h;
+  DCHECK(lower_bound.s < 0 || upper_bound.s < 0 ||
+         (lower_bound.s <= upper_bound.s && upper_bound.s <= 1))
+      << "lower_bound.s: " << lower_bound.s
+      << ", upper_bound.s: " << upper_bound.s;
+  DCHECK(lower_bound.l < 0 || upper_bound.l < 0 ||
+         (lower_bound.l <= upper_bound.l && upper_bound.l <= 1))
+      << "lower_bound.l: " << lower_bound.l
+      << ", upper_bound.l: " << upper_bound.l;
+
+  // If the upper hue is >1, the given hue bounds wrap around at 1.
+  bool matches_hue = upper_bound.h > 1
+                         ? hsl.h >= lower_bound.h || hsl.h <= upper_bound.h - 1
+                         : hsl.h >= lower_bound.h && hsl.h <= upper_bound.h;
+  return (upper_bound.h < 0 || lower_bound.h < 0 || matches_hue) &&
+         (upper_bound.s < 0 || lower_bound.s < 0 ||
+          (hsl.s >= lower_bound.s && hsl.s <= upper_bound.s)) &&
+         (upper_bound.l < 0 || lower_bound.l < 0 ||
+          (hsl.l >= lower_bound.l && hsl.l <= upper_bound.l));
+}
+
 SkColor HSLShift(SkColor color, const HSL& shift) {
   HSL hsl;
   int alpha = SkColorGetA(color);

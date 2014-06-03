@@ -37,8 +37,7 @@ base::StringValue* SkColorToCss(SkColor color) {
 base::StringValue* GetDominantColorCssString(
     scoped_refptr<base::RefCountedMemory> png) {
   color_utils::GridSampler sampler;
-  SkColor color =
-      color_utils::CalculateKMeanColorOfPNG(png, 100, 665, &sampler);
+  SkColor color = color_utils::CalculateKMeanColorOfPNG(png);
   return SkColorToCss(color);
 }
 

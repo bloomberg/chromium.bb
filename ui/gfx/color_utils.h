@@ -29,6 +29,20 @@ GFX_EXPORT double RelativeLuminance(SkColor color);
 GFX_EXPORT void SkColorToHSL(SkColor c, HSL* hsl);
 GFX_EXPORT SkColor HSLToSkColor(const HSL& hsl, SkAlpha alpha);
 
+// Determines whether the given |hsl| falls within the given range for each
+// component. All components of |hsl| are expected to be in the range [0, 1].
+//
+// If a component is negative in either |lower_bound| or |upper_bound|, that
+// component will be ignored.
+//
+// For hue, the lower bound should be in the range [0, 1] and the upper bound
+// should be in the range [(lower bound), (lower bound + 1)].
+// For saturation and value, bounds should be specified in the range [0, 1],
+// with the lower bound less than the upper bound.
+GFX_EXPORT bool IsWithinHSLRange(const HSL& hsl,
+                                 const HSL& lower_bound,
+                                 const HSL& upper_bound);
+
 // HSL-Shift an SkColor. The shift values are in the range of 0-1, with the
 // option to specify -1 for 'no change'. The shift values are defined as:
 // hsl_shift[0] (hue): The absolute hue value - 0 and 1 map

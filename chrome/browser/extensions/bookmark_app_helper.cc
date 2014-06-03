@@ -276,12 +276,8 @@ void BookmarkAppHelper::OnIconsDownloaded(
     SkColor background_color = SK_ColorBLACK;
     if (resized_bitmaps.size()) {
       color_utils::GridSampler sampler;
-      background_color = color_utils::CalculateKMeanColorOfPNG(
-          gfx::Image::CreateFrom1xBitmap(resized_bitmaps.begin()->second)
-              .As1xPNGBytes(),
-          100,
-          568,
-          &sampler);
+      background_color = color_utils::CalculateKMeanColorOfBitmap(
+          resized_bitmaps.begin()->second);
     }
 
     for (std::set<int>::const_iterator it = generate_sizes.begin();

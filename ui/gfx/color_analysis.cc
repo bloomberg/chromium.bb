@@ -13,14 +13,17 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkUnPreMultiply.h"
 #include "ui/gfx/codec/png_codec.h"
+#include "ui/gfx/color_utils.h"
 
+namespace color_utils {
 namespace {
 
 // RGBA KMean Constants
 const uint32_t kNumberOfClusters = 4;
 const int kNumberOfIterations = 50;
-const uint32_t kMaxBrightness = 665;
-const uint32_t kMinDarkness = 100;
+
+const HSL kDefaultLowerHSLBound = {-1, -1, 0.15};
+const HSL kDefaultUpperHSLBound = {-1, -1, 0.85};
 
 // Background Color Modification Constants
 const SkColor kDefaultBgColor = SK_ColorWHITE;
@@ -139,8 +142,6 @@ void UnPreMultiply(const SkBitmap& bitmap, uint32_t* buffer, int buffer_size) {
 
 } // namespace
 
-namespace color_utils {
-
 KMeanImageSampler::KMeanImageSampler() {
 }
 
@@ -214,8 +215,8 @@ SkColor FindClosestColor(const uint8_t* image,
 SkColor CalculateKMeanColorOfBuffer(uint8_t* decoded_data,
                                     int img_width,
                                     int img_height,
-                                    uint32_t darkness_limit,
-                                    uint32_t brightness_limit,
+                                    const HSL& lower_bound,
+                                    const HSL& upper_bound,
                                     KMeanImageSampler* sampler) {
   SkColor color = kDefaultBgColor;
   if (img_width > 0 && img_height > 0) {
@@ -331,21 +332,19 @@ SkColor CalculateKMeanColorOfBuffer(uint8_t* decoded_data,
         cluster != clusters.end(); ++cluster) {
       uint8_t r, g, b;
       cluster->GetCentroid(&r, &g, &b);
-      // Sum the RGB components to determine if the color is too bright or too
-      // dark.
-      // TODO (dtrainor): Look into using HSV here instead. This approximation
-      // might be fine though.
-      uint32_t summed_color = r + g + b;
 
-      if (summed_color < brightness_limit && summed_color > darkness_limit) {
+      SkColor current_color = SkColorSetARGB(SK_AlphaOPAQUE, r, g, b);
+      HSL hsl;
+      SkColorToHSL(current_color, &hsl);
+      if (IsWithinHSLRange(hsl, lower_bound, upper_bound)) {
         // If we found a valid color just set it and break. We don't want to
         // check the other ones.
-        color = SkColorSetARGB(0xFF, r, g, b);
+        color = current_color;
         break;
       } else if (cluster == clusters.begin()) {
         // We haven't found a valid color, but we are at the first color so
         // set the color anyway to make sure we at least have a value here.
-        color = SkColorSetARGB(0xFF, r, g, b);
+        color = current_color;
       }
     }
   }
@@ -356,16 +355,15 @@ SkColor CalculateKMeanColorOfBuffer(uint8_t* decoded_data,
 }
 
 SkColor CalculateKMeanColorOfPNG(scoped_refptr<base::RefCountedMemory> png,
-                                 uint32_t darkness_limit,
-                                 uint32_t brightness_limit,
+                                 const HSL& lower_bound,
+                                 const HSL& upper_bound,
                                  KMeanImageSampler* sampler) {
   int img_width = 0;
   int img_height = 0;
   std::vector<uint8_t> decoded_data;
   SkColor color = kDefaultBgColor;
 
-  if (png.get() &&
-      png->size() &&
+  if (png.get() && png->size() &&
       gfx::PNGCodec::Decode(png->front(),
                             png->size(),
                             gfx::PNGCodec::FORMAT_BGRA,
@@ -375,8 +373,8 @@ SkColor CalculateKMeanColorOfPNG(scoped_refptr<base::RefCountedMemory> png,
     return CalculateKMeanColorOfBuffer(&decoded_data[0],
                                        img_width,
                                        img_height,
-                                       darkness_limit,
-                                       brightness_limit,
+                                       lower_bound,
+                                       upper_bound,
                                        sampler);
   }
   return color;
@@ -384,12 +382,13 @@ SkColor CalculateKMeanColorOfPNG(scoped_refptr<base::RefCountedMemory> png,
 
 SkColor CalculateKMeanColorOfPNG(scoped_refptr<base::RefCountedMemory> png) {
   GridSampler sampler;
-  return CalculateKMeanColorOfPNG(png, kMinDarkness, kMaxBrightness, &sampler);
+  return CalculateKMeanColorOfPNG(
+      png, kDefaultLowerHSLBound, kDefaultUpperHSLBound, &sampler);
 }
 
 SkColor CalculateKMeanColorOfBitmap(const SkBitmap& bitmap,
-                                    uint32_t darkness_limit,
-                                    uint32_t brightness_limit,
+                                    const HSL& lower_bound,
+                                    const HSL& upper_bound,
                                     KMeanImageSampler* sampler) {
   // SkBitmap uses pre-multiplied alpha but the KMean clustering function
   // above uses non-pre-multiplied alpha. Transform the bitmap before we
@@ -401,15 +400,15 @@ SkColor CalculateKMeanColorOfBitmap(const SkBitmap& bitmap,
   return CalculateKMeanColorOfBuffer(reinterpret_cast<uint8_t*>(image.get()),
                                      bitmap.width(),
                                      bitmap.height(),
-                                     darkness_limit,
-                                     brightness_limit,
+                                     lower_bound,
+                                     upper_bound,
                                      sampler);
 }
 
 SkColor CalculateKMeanColorOfBitmap(const SkBitmap& bitmap) {
   GridSampler sampler;
   return CalculateKMeanColorOfBitmap(
-      bitmap, kMinDarkness, kMaxBrightness, &sampler);
+      bitmap, kDefaultLowerHSLBound, kDefaultUpperHSLBound, &sampler);
 }
 
 gfx::Matrix3F ComputeColorCovariance(const SkBitmap& bitmap) {

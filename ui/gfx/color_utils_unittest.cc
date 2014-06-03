@@ -38,7 +38,6 @@ TEST(ColorUtils, HSLToSkColorWithAlpha) {
   EXPECT_EQ(SkColorGetB(red), SkColorGetB(result));
 }
 
-
 TEST(ColorUtils, RGBtoHSLRoundTrip) {
   // Just spot check values near the edges.
   for (int r = 0; r < 10; ++r) {
@@ -67,6 +66,38 @@ TEST(ColorUtils, RGBtoHSLRoundTrip) {
       }
     }
   }
+}
+
+TEST(ColorUtils, IsWithinHSLRange) {
+  HSL hsl = {0.3, 0.4, 0.5};
+  HSL lower = {0.2, 0.3, 0.4};
+  HSL upper = {0.4, 0.5, 0.6};
+  EXPECT_TRUE(IsWithinHSLRange(hsl, lower, upper));
+  // Bounds are inclusive.
+  hsl.h = 0.2;
+  EXPECT_TRUE(IsWithinHSLRange(hsl, lower, upper));
+  hsl.h = 0.4;
+  EXPECT_TRUE(IsWithinHSLRange(hsl, lower, upper));
+  hsl.s = 0.3;
+  EXPECT_TRUE(IsWithinHSLRange(hsl, lower, upper));
+  hsl.s = 0.5;
+  EXPECT_TRUE(IsWithinHSLRange(hsl, lower, upper));
+  hsl.l = 0.4;
+  EXPECT_TRUE(IsWithinHSLRange(hsl, lower, upper));
+  hsl.l = 0.6;
+  EXPECT_TRUE(IsWithinHSLRange(hsl, lower, upper));
+}
+
+TEST(ColorUtils, IsWithinHSLRangeHueWrapAround) {
+  HSL hsl = {0.3, 0.4, 0.5};
+  HSL lower = {0.8, -1, -1};
+  HSL upper = {1.2, -1, -1};
+  hsl.h = 0.1;
+  EXPECT_TRUE(IsWithinHSLRange(hsl, lower, upper));
+  hsl.h = 0.9;
+  EXPECT_TRUE(IsWithinHSLRange(hsl, lower, upper));
+  hsl.h = 0.3;
+  EXPECT_FALSE(IsWithinHSLRange(hsl, lower, upper));
 }
 
 TEST(ColorUtils, ColorToHSLRegisterSpill) {
