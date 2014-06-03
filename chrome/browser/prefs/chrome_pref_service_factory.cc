@@ -230,17 +230,12 @@ SettingsEnforcementGroup GetSettingsEnforcementGroup() {
       GROUP_ENFORCE_ALWAYS_WITH_EXTENSIONS_AND_DSE },
   };
 
-  // Use the strongest enforcement setting in the absence of a field trial
-  // config on Windows. Remember to update the OFFICIAL_BUILD sections of
+  // Use the no enforcement setting in the absence of a field trial
+  // config. Remember to update the OFFICIAL_BUILD sections of
   // pref_hash_browsertest.cc and extension_startup_browsertest.cc when updating
   // the default value below.
-  // TODO(gab): Enforce this on all platforms.
-  SettingsEnforcementGroup enforcement_group =
-#if defined(OS_WIN)
-      GROUP_ENFORCE_DEFAULT;
-#else
-      GROUP_NO_ENFORCEMENT;
-#endif
+  // TODO(gab): Change this to the strongest enforcement on all platforms.
+  SettingsEnforcementGroup enforcement_group = GROUP_NO_ENFORCEMENT;
   bool group_determined_from_trial = false;
   base::FieldTrial* trial =
       base::FieldTrialList::Find(
