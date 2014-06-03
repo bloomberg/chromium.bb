@@ -45,6 +45,7 @@
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_job.h"
+#include "net/url_request/url_request_job_factory.h"
 #include "net/url_request/url_request_simple_job.h"
 #include "net/url_request/url_request_test_job.h"
 #include "net/url_request/url_request_test_util.h"
@@ -460,14 +461,16 @@ class URLRequestBigJob : public net::URLRequestSimpleJob {
   }
 };
 
+class ResourceDispatcherHostTest;
+
 class TestURLRequestJobFactory : public net::URLRequestJobFactory {
  public:
-  explicit TestURLRequestJobFactory(ResourceDispatcherHostTest* test_fixture) :
-      test_fixture_(test_fixture),
-      delay_start_(false),
-      delay_complete_(false),
-      network_start_notification_(false),
-      url_request_jobs_created_count_(0) {
+  explicit TestURLRequestJobFactory(ResourceDispatcherHostTest* test_fixture)
+      : test_fixture_(test_fixture),
+        delay_start_(false),
+        delay_complete_(false),
+        network_start_notification_(false),
+        url_request_jobs_created_count_(0) {
   }
 
   void HandleScheme(const std::string& scheme) {
