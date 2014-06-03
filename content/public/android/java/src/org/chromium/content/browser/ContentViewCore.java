@@ -3020,6 +3020,12 @@ public class ContentViewCore
         mSmartClipDataListener = listener;
     }
 
+    public void setBackgroundOpaque(boolean opaque) {
+        if (mNativeContentViewCore != 0) {
+            nativeSetBackgroundOpaque(mNativeContentViewCore, opaque);
+        }
+    }
+
     /**
      * Offer a long press gesture to the embedding View, primarily for WebView compatibility.
      *
@@ -3230,4 +3236,5 @@ public class ContentViewCore
 
     private native void nativeExtractSmartClipData(long nativeContentViewCoreImpl,
             int x, int y, int w, int h);
+    private native void nativeSetBackgroundOpaque(long nativeContentViewCoreImpl, boolean opaque);
 }

@@ -1594,6 +1594,12 @@ jint ContentViewCoreImpl::GetCurrentRenderProcessId(JNIEnv* env, jobject obj) {
       web_contents_->GetRenderViewHost());
 }
 
+void ContentViewCoreImpl::SetBackgroundOpaque(JNIEnv* env, jobject jobj,
+    jboolean opaque) {
+  if (GetRenderWidgetHostViewAndroid())
+    GetRenderWidgetHostViewAndroid()->SetBackgroundOpaque(opaque);
+}
+
 void ContentViewCoreImpl::OnSmartClipDataExtracted(
     const base::string16& result) {
   JNIEnv* env = AttachCurrentThread();
