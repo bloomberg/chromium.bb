@@ -35,7 +35,7 @@ ProvidedFileSystem::~ProvidedFileSystem() {}
 void ProvidedFileSystem::RequestUnmount(
     const fileapi::AsyncFileUtil::StatusCallback& callback) {
   if (!request_manager_.CreateRequest(
-          RequestManager::REQUEST_UNMOUNT,
+          REQUEST_UNMOUNT,
           scoped_ptr<RequestManager::HandlerInterface>(new operations::Unmount(
               event_router_, file_system_info_, callback)))) {
     callback.Run(base::File::FILE_ERROR_SECURITY);
@@ -46,7 +46,7 @@ void ProvidedFileSystem::GetMetadata(
     const base::FilePath& entry_path,
     const fileapi::AsyncFileUtil::GetFileInfoCallback& callback) {
   if (!request_manager_.CreateRequest(
-          RequestManager::GET_METADATA,
+          GET_METADATA,
           scoped_ptr<RequestManager::HandlerInterface>(
               new operations::GetMetadata(
                   event_router_, file_system_info_, entry_path, callback)))) {
@@ -58,7 +58,7 @@ void ProvidedFileSystem::ReadDirectory(
     const base::FilePath& directory_path,
     const fileapi::AsyncFileUtil::ReadDirectoryCallback& callback) {
   if (!request_manager_.CreateRequest(
-          RequestManager::READ_DIRECTORY,
+          READ_DIRECTORY,
           scoped_ptr<
               RequestManager::HandlerInterface>(new operations::ReadDirectory(
               event_router_, file_system_info_, directory_path, callback)))) {
@@ -74,7 +74,7 @@ void ProvidedFileSystem::ReadFile(int file_handle,
                                   int length,
                                   const ReadChunkReceivedCallback& callback) {
   if (!request_manager_.CreateRequest(
-          RequestManager::READ_FILE,
+          READ_FILE,
           make_scoped_ptr<RequestManager::HandlerInterface>(
               new operations::ReadFile(event_router_,
                                        file_system_info_,
@@ -101,7 +101,7 @@ void ProvidedFileSystem::OpenFile(const base::FilePath& file_path,
   }
 
   if (!request_manager_.CreateRequest(
-          RequestManager::OPEN_FILE,
+          OPEN_FILE,
           scoped_ptr<RequestManager::HandlerInterface>(
               new operations::OpenFile(event_router_,
                                        file_system_info_,
@@ -117,7 +117,7 @@ void ProvidedFileSystem::CloseFile(
     int file_handle,
     const fileapi::AsyncFileUtil::StatusCallback& callback) {
   if (!request_manager_.CreateRequest(
-          RequestManager::CLOSE_FILE,
+          CLOSE_FILE,
           scoped_ptr<RequestManager::HandlerInterface>(
               new operations::CloseFile(
                   event_router_, file_system_info_, file_handle, callback)))) {

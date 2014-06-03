@@ -9,7 +9,6 @@
 
 namespace chromeos {
 namespace file_system_provider {
-
 namespace {
 
 // Timeout in seconds, before a request is considered as stale and hence
@@ -17,6 +16,27 @@ namespace {
 const int kDefaultTimeout = 10;
 
 }  // namespace
+
+std::string RequestTypeToString(RequestType type) {
+  switch (type) {
+    case REQUEST_UNMOUNT:
+      return "REQUEST_UNMOUNT";
+    case GET_METADATA:
+      return "GET_METADATA";
+    case READ_DIRECTORY:
+      return "READ_DIRECTORY";
+    case OPEN_FILE:
+      return "OPEN_FILE";
+    case CLOSE_FILE:
+      return "CLOSE_FILE";
+    case READ_FILE:
+      return "READ_FILE";
+    case TESTING:
+      return "TESTING";
+  }
+  NOTREACHED();
+  return "";
+}
 
 RequestManager::RequestManager()
     : next_id_(1),

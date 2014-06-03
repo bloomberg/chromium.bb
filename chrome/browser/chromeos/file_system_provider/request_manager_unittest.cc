@@ -157,14 +157,14 @@ class RequestObserver : public RequestManager::Observer {
 
   class CreatedEvent : public Event {
    public:
-    CreatedEvent(int request_id, RequestManager::RequestType type)
+    CreatedEvent(int request_id, RequestType type)
         : Event(request_id), type_(type) {}
     virtual ~CreatedEvent() {}
 
-    RequestManager::RequestType type() const { return type_; }
+    RequestType type() const { return type_; }
 
    private:
-    RequestManager::RequestType type_;
+    RequestType type_;
   };
 
   class FulfilledEvent : public Event {
@@ -195,8 +195,7 @@ class RequestObserver : public RequestManager::Observer {
   virtual ~RequestObserver() {}
 
   // RequestManager::Observer overrides.
-  virtual void OnRequestCreated(int request_id,
-                                RequestManager::RequestType type) OVERRIDE {
+  virtual void OnRequestCreated(int request_id, RequestType type) OVERRIDE {
     created_.push_back(CreatedEvent(request_id, type));
   }
 
@@ -265,7 +264,7 @@ TEST_F(FileSystemProviderRequestManagerTest, CreateFailure) {
   request_manager_->AddObserver(&observer);
 
   const int request_id = request_manager_->CreateRequest(
-      RequestManager::TESTING,
+      TESTING,
       make_scoped_ptr<RequestManager::HandlerInterface>(
           new FakeHandler(logger.GetWeakPtr(), false /* execute_reply */)));
 
@@ -274,7 +273,7 @@ TEST_F(FileSystemProviderRequestManagerTest, CreateFailure) {
   EXPECT_EQ(0u, logger.error_events().size());
 
   EXPECT_EQ(1u, observer.created().size());
-  EXPECT_EQ(RequestManager::TESTING, observer.created()[0].type());
+  EXPECT_EQ(TESTING, observer.created()[0].type());
   EXPECT_EQ(1u, observer.destroyed().size());
   EXPECT_EQ(0u, observer.executed().size());
 
@@ -287,7 +286,7 @@ TEST_F(FileSystemProviderRequestManagerTest, CreateAndFulFill) {
   request_manager_->AddObserver(&observer);
 
   const int request_id = request_manager_->CreateRequest(
-      RequestManager::TESTING,
+      TESTING,
       make_scoped_ptr<RequestManager::HandlerInterface>(
           new FakeHandler(logger.GetWeakPtr(), true /* execute_reply */)));
 
@@ -297,7 +296,7 @@ TEST_F(FileSystemProviderRequestManagerTest, CreateAndFulFill) {
 
   ASSERT_EQ(1u, observer.created().size());
   EXPECT_EQ(request_id, observer.created()[0].request_id());
-  EXPECT_EQ(RequestManager::TESTING, observer.created()[0].type());
+  EXPECT_EQ(TESTING, observer.created()[0].type());
 
   ASSERT_EQ(1u, observer.executed().size());
   EXPECT_EQ(request_id, observer.executed()[0].request_id());
@@ -355,7 +354,7 @@ TEST_F(FileSystemProviderRequestManagerTest, CreateAndFulFill_WithHasNext) {
   request_manager_->AddObserver(&observer);
 
   const int request_id = request_manager_->CreateRequest(
-      RequestManager::TESTING,
+      TESTING,
       make_scoped_ptr<RequestManager::HandlerInterface>(
           new FakeHandler(logger.GetWeakPtr(), true /* execute_reply */)));
 
@@ -365,7 +364,7 @@ TEST_F(FileSystemProviderRequestManagerTest, CreateAndFulFill_WithHasNext) {
 
   ASSERT_EQ(1u, observer.created().size());
   EXPECT_EQ(request_id, observer.created()[0].request_id());
-  EXPECT_EQ(RequestManager::TESTING, observer.created()[0].type());
+  EXPECT_EQ(TESTING, observer.created()[0].type());
 
   ASSERT_EQ(1u, observer.executed().size());
   EXPECT_EQ(request_id, observer.executed()[0].request_id());
@@ -424,7 +423,7 @@ TEST_F(FileSystemProviderRequestManagerTest, CreateAndReject) {
   request_manager_->AddObserver(&observer);
 
   const int request_id = request_manager_->CreateRequest(
-      RequestManager::TESTING,
+      TESTING,
       make_scoped_ptr<RequestManager::HandlerInterface>(
           new FakeHandler(logger.GetWeakPtr(), true /* execute_reply */)));
 
@@ -434,7 +433,7 @@ TEST_F(FileSystemProviderRequestManagerTest, CreateAndReject) {
 
   ASSERT_EQ(1u, observer.created().size());
   EXPECT_EQ(request_id, observer.created()[0].request_id());
-  EXPECT_EQ(RequestManager::TESTING, observer.created()[0].type());
+  EXPECT_EQ(TESTING, observer.created()[0].type());
 
   ASSERT_EQ(1u, observer.executed().size());
   EXPECT_EQ(request_id, observer.executed()[0].request_id());
@@ -485,7 +484,7 @@ TEST_F(FileSystemProviderRequestManagerTest,
   request_manager_->AddObserver(&observer);
 
   const int request_id = request_manager_->CreateRequest(
-      RequestManager::TESTING,
+      TESTING,
       make_scoped_ptr<RequestManager::HandlerInterface>(
           new FakeHandler(logger.GetWeakPtr(), true /* execute_reply */)));
 
@@ -495,7 +494,7 @@ TEST_F(FileSystemProviderRequestManagerTest,
 
   ASSERT_EQ(1u, observer.created().size());
   EXPECT_EQ(request_id, observer.created()[0].request_id());
-  EXPECT_EQ(RequestManager::TESTING, observer.created()[0].type());
+  EXPECT_EQ(TESTING, observer.created()[0].type());
 
   ASSERT_EQ(1u, observer.executed().size());
   EXPECT_EQ(request_id, observer.executed()[0].request_id());
@@ -532,7 +531,7 @@ TEST_F(FileSystemProviderRequestManagerTest,
   request_manager_->AddObserver(&observer);
 
   const int request_id = request_manager_->CreateRequest(
-      RequestManager::TESTING,
+      TESTING,
       make_scoped_ptr<RequestManager::HandlerInterface>(
           new FakeHandler(logger.GetWeakPtr(), true /* execute_reply */)));
 
@@ -542,7 +541,7 @@ TEST_F(FileSystemProviderRequestManagerTest,
 
   ASSERT_EQ(1u, observer.created().size());
   EXPECT_EQ(request_id, observer.created()[0].request_id());
-  EXPECT_EQ(RequestManager::TESTING, observer.created()[0].type());
+  EXPECT_EQ(TESTING, observer.created()[0].type());
 
   ASSERT_EQ(1u, observer.executed().size());
   EXPECT_EQ(request_id, observer.executed()[0].request_id());
@@ -571,12 +570,12 @@ TEST_F(FileSystemProviderRequestManagerTest, UniqueIds) {
   EventLogger logger;
 
   const int first_request_id = request_manager_->CreateRequest(
-      RequestManager::TESTING,
+      TESTING,
       make_scoped_ptr<RequestManager::HandlerInterface>(
           new FakeHandler(logger.GetWeakPtr(), true /* execute_reply */)));
 
   const int second_request_id = request_manager_->CreateRequest(
-      RequestManager::TESTING,
+      TESTING,
       make_scoped_ptr<RequestManager::HandlerInterface>(
           new FakeHandler(logger.GetWeakPtr(), true /* execute_reply */)));
 
@@ -594,7 +593,7 @@ TEST_F(FileSystemProviderRequestManagerTest, AbortOnDestroy) {
     request_manager.AddObserver(&observer);
 
     request_id = request_manager.CreateRequest(
-        RequestManager::TESTING,
+        TESTING,
         make_scoped_ptr<RequestManager::HandlerInterface>(
             new FakeHandler(logger.GetWeakPtr(), true /* execute_reply */)));
 
@@ -604,7 +603,7 @@ TEST_F(FileSystemProviderRequestManagerTest, AbortOnDestroy) {
 
     ASSERT_EQ(1u, observer.created().size());
     EXPECT_EQ(request_id, observer.created()[0].request_id());
-    EXPECT_EQ(RequestManager::TESTING, observer.created()[0].type());
+    EXPECT_EQ(TESTING, observer.created()[0].type());
 
     ASSERT_EQ(1u, observer.executed().size());
     EXPECT_EQ(request_id, observer.executed()[0].request_id());
@@ -639,7 +638,7 @@ TEST_F(FileSystemProviderRequestManagerTest, AbortOnTimeout) {
 
   request_manager_->SetTimeoutForTests(base::TimeDelta::FromSeconds(0));
   const int request_id = request_manager_->CreateRequest(
-      RequestManager::TESTING,
+      TESTING,
       make_scoped_ptr<RequestManager::HandlerInterface>(
           new FakeHandler(logger.GetWeakPtr(), true /* execute_reply */)));
   EXPECT_EQ(1, request_id);
@@ -648,7 +647,7 @@ TEST_F(FileSystemProviderRequestManagerTest, AbortOnTimeout) {
 
   ASSERT_EQ(1u, observer.created().size());
   EXPECT_EQ(request_id, observer.created()[0].request_id());
-  EXPECT_EQ(RequestManager::TESTING, observer.created()[0].type());
+  EXPECT_EQ(TESTING, observer.created()[0].type());
 
   ASSERT_EQ(1u, observer.executed().size());
   EXPECT_EQ(request_id, observer.executed()[0].request_id());

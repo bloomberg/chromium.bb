@@ -4,9 +4,12 @@
 
 #include "chrome/browser/ui/webui/chromeos/provided_file_systems_ui.h"
 
+#include <string>
 #include <vector>
 
 #include "base/bind.h"
+#include "base/files/file.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_info.h"
@@ -28,12 +31,58 @@ namespace chromeos {
 
 namespace {
 
+const char kKeyId[] = "id";
+const char kKeyEventType[] = "eventType";
+const char kKeyRequestType[] = "requestType";
+const char kKeyTime[] = "time";
+const char kKeyHasMore[] = "hasMore";
+const char kKeyError[] = "error";
+
+const char kKeyName[] = "name";
+const char kKeyExtensionId[] = "extensionId";
+const char kKeyMountPath[] = "mountPath";
+const char kKeyActiveRequests[] = "activeRequests";
+
+const char kRequestCreated[] = "created";
+const char kRequestDestroyed[] = "destroyed";
+const char kRequestExecuted[] = "executed";
+const char kRequestFulfilled[] = "fulfilled";
+const char kRequestRejected[] = "rejected";
+const char kRequestTimeouted[] = "timeouted";
+
+const char kFunctionOnRequestEvent[] = "onRequestEvent";
+const char kFunctionUpdateFileSystems[] = "updateFileSystems";
+const char kFunctionSelectFileSystem[] = "selectFileSystem";
+
+// Creates a dictionary holding common fields for the onRequest* events.
+scoped_ptr<base::DictionaryValue> CreateRequestEvent(const std::string& type,
+                                                     int request_id) {
+  scoped_ptr<base::DictionaryValue> event(new base::DictionaryValue);
+  event->SetInteger(kKeyId, request_id);
+  event->SetString(kKeyEventType, type);
+  event->SetDouble(kKeyTime, base::Time::Now().ToJsTime());
+  return event.Pass();
+}
+
 // Class to handle messages from chrome://provided-file-systems.
-class ProvidedFileSystemsWebUIHandler : public content::WebUIMessageHandler {
+class ProvidedFileSystemsWebUIHandler
+    : public content::WebUIMessageHandler,
+      public file_system_provider::RequestManager::Observer {
  public:
   ProvidedFileSystemsWebUIHandler() : weak_ptr_factory_(this) {}
 
-  virtual ~ProvidedFileSystemsWebUIHandler() {}
+  virtual ~ProvidedFileSystemsWebUIHandler();
+
+  // RequestManager::Observer overrides.
+  virtual void OnRequestCreated(
+      int request_id,
+      file_system_provider::RequestType type) OVERRIDE;
+  virtual void OnRequestDestroyed(int request_id) OVERRIDE;
+  virtual void OnRequestExecuted(int request_id) OVERRIDE;
+  virtual void OnRequestFulfilled(int request_id, bool has_more) OVERRIDE;
+  virtual void OnRequestRejected(int request_id,
+                                 base::File::Error error) OVERRIDE;
+  virtual void OnRequestTimeouted(int request_id) OVERRIDE;
 
  private:
   // content::WebUIMessageHandler overrides.
@@ -44,17 +93,89 @@ class ProvidedFileSystemsWebUIHandler : public content::WebUIMessageHandler {
   file_system_provider::Service* GetService();
 
   // Invoked when updating file system list is requested.
-  void OnUpdateFileSystems(const base::ListValue* args);
+  void UpdateFileSystems(const base::ListValue* args);
 
+  // Invoked when a file system is selected from the list.
+  void SelectFileSystem(const base::ListValue* args);
+
+  std::string selected_extension_id;
+  std::string selected_file_system_id;
   base::WeakPtrFactory<ProvidedFileSystemsWebUIHandler> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ProvidedFileSystemsWebUIHandler);
 };
 
+ProvidedFileSystemsWebUIHandler::~ProvidedFileSystemsWebUIHandler() {
+  // Stop observing the currently selected file system.
+  file_system_provider::Service* const service = GetService();
+  if (!service)
+    return;
+
+  file_system_provider::ProvidedFileSystemInterface* const file_system =
+      service->GetProvidedFileSystem(selected_extension_id,
+                                     selected_file_system_id);
+
+  if (file_system) {
+    file_system_provider::RequestManager* const request_manager =
+        file_system->GetRequestManager();
+    DCHECK(request_manager);
+    request_manager->RemoveObserver(this);
+  }
+}
+
+void ProvidedFileSystemsWebUIHandler::OnRequestCreated(
+    int request_id,
+    file_system_provider::RequestType type) {
+  scoped_ptr<base::DictionaryValue> const event =
+      CreateRequestEvent(kRequestCreated, request_id);
+  event->SetString(kKeyRequestType,
+                   file_system_provider::RequestTypeToString(type));
+  web_ui()->CallJavascriptFunction(kFunctionOnRequestEvent, *event);
+}
+
+void ProvidedFileSystemsWebUIHandler::OnRequestDestroyed(int request_id) {
+  scoped_ptr<base::DictionaryValue> const event =
+      CreateRequestEvent(kRequestDestroyed, request_id);
+  web_ui()->CallJavascriptFunction(kFunctionOnRequestEvent, *event);
+}
+
+void ProvidedFileSystemsWebUIHandler::OnRequestExecuted(int request_id) {
+  scoped_ptr<base::DictionaryValue> const event =
+      CreateRequestEvent(kRequestExecuted, request_id);
+  web_ui()->CallJavascriptFunction(kFunctionOnRequestEvent, *event);
+}
+
+void ProvidedFileSystemsWebUIHandler::OnRequestFulfilled(int request_id,
+                                                         bool has_more) {
+  scoped_ptr<base::DictionaryValue> const event =
+      CreateRequestEvent(kRequestFulfilled, request_id);
+  event->SetBoolean(kKeyHasMore, has_more);
+  web_ui()->CallJavascriptFunction(kFunctionOnRequestEvent, *event);
+}
+
+void ProvidedFileSystemsWebUIHandler::OnRequestRejected(
+    int request_id,
+    base::File::Error error) {
+  scoped_ptr<base::DictionaryValue> const event =
+      CreateRequestEvent(kRequestRejected, request_id);
+  event->SetString(kKeyError, base::File::ErrorToString(error));
+  web_ui()->CallJavascriptFunction(kFunctionOnRequestEvent, *event);
+}
+
+void ProvidedFileSystemsWebUIHandler::OnRequestTimeouted(int request_id) {
+  scoped_ptr<base::DictionaryValue> const event =
+      CreateRequestEvent(kRequestTimeouted, request_id);
+  web_ui()->CallJavascriptFunction(kFunctionOnRequestEvent, *event);
+}
+
 void ProvidedFileSystemsWebUIHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
-      "updateFileSystems",
-      base::Bind(&ProvidedFileSystemsWebUIHandler::OnUpdateFileSystems,
+      kFunctionUpdateFileSystems,
+      base::Bind(&ProvidedFileSystemsWebUIHandler::UpdateFileSystems,
+                 weak_ptr_factory_.GetWeakPtr()));
+  web_ui()->RegisterMessageCallback(
+      kFunctionSelectFileSystem,
+      base::Bind(&ProvidedFileSystemsWebUIHandler::SelectFileSystem,
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
@@ -65,7 +186,7 @@ file_system_provider::Service* ProvidedFileSystemsWebUIHandler::GetService() {
   return file_system_provider::ServiceFactory::FindExisting(profile);
 }
 
-void ProvidedFileSystemsWebUIHandler::OnUpdateFileSystems(
+void ProvidedFileSystemsWebUIHandler::UpdateFileSystems(
     const base::ListValue* args) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
@@ -91,19 +212,63 @@ void ProvidedFileSystemsWebUIHandler::OnUpdateFileSystems(
         file_system->GetRequestManager();
     DCHECK(request_manager);
 
-    base::DictionaryValue* item_value = new base::DictionaryValue();
-    item_value->SetString("id", file_system_info.file_system_id());
-    item_value->SetString("name", file_system_info.file_system_name());
-    item_value->SetString("extensionId", file_system_info.extension_id());
-    item_value->SetString("mountPath",
-                          file_system_info.mount_path().AsUTF8Unsafe());
-    item_value->SetInteger("activeRequests",
-                           request_manager->GetActiveRequestsForLogging());
+    base::DictionaryValue* item = new base::DictionaryValue();
+    item->SetString(kKeyId, file_system_info.file_system_id());
+    item->SetString(kKeyName, file_system_info.file_system_name());
+    item->SetString(kKeyExtensionId, file_system_info.extension_id());
+    item->SetString(kKeyMountPath,
+                    file_system_info.mount_path().AsUTF8Unsafe());
+    item->SetInteger(kKeyActiveRequests,
+                     request_manager->GetActiveRequestsForLogging());
 
-    items.Append(item_value);
+    items.Append(item);
   }
 
-  web_ui()->CallJavascriptFunction("updateFileSystems", items);
+  web_ui()->CallJavascriptFunction(kFunctionUpdateFileSystems, items);
+}
+
+void ProvidedFileSystemsWebUIHandler::SelectFileSystem(
+    const base::ListValue* args) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  file_system_provider::Service* const service = GetService();
+  if (!service)
+    return;
+
+  std::string extension_id;
+  if (!args->GetString(0, &extension_id))
+    return;
+
+  std::string file_system_id;
+  if (!args->GetString(1, &file_system_id))
+    return;
+
+  // Stop observing the previously selected request manager.
+  {
+    file_system_provider::ProvidedFileSystemInterface* const file_system =
+        service->GetProvidedFileSystem(selected_extension_id,
+                                       selected_file_system_id);
+    if (file_system) {
+      file_system_provider::RequestManager* const request_manager =
+          file_system->GetRequestManager();
+      DCHECK(request_manager);
+      request_manager->RemoveObserver(this);
+    }
+  }
+
+  // Observe the selected file system.
+  file_system_provider::ProvidedFileSystemInterface* const file_system =
+      service->GetProvidedFileSystem(extension_id, file_system_id);
+  if (!file_system)
+    return;
+
+  file_system_provider::RequestManager* const request_manager =
+      file_system->GetRequestManager();
+  DCHECK(request_manager);
+
+  request_manager->AddObserver(this);
+  selected_extension_id = extension_id;
+  selected_file_system_id = file_system_id;
 }
 
 }  // namespace

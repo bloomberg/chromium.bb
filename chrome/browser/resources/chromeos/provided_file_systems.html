@@ -12,37 +12,77 @@
       <template>
         <link rel="stylesheet"
             href="chrome://provided-file-systems/provided_file_systems.css">
-        <table>
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Name</th>
-              <th>Extension ID</th>
-              <th>Active Requests</th>
-            </tr>
-          </thead>
-          <tbody>
-            <template id="file-system" repeat="{{item in model}}">
+        <div id="fileSystems">
+          <table>
+            <thead>
               <tr>
-                <td>{{item.id}}</td>
-                <td>{{item.name}}</td>
-                <td>
-                  <div class="icon" style="background-image: -webkit-image-set(
-                      url(chrome://extension-icon/{{item.extensionId}}/24/1) 1x,
-                      url(chrome://extension-icon/{{item.extensionId}}/48/1)
-                      2x)"></div>
-                  {{item.extensionId}}
-                </td>
-                <td>{{item.activeRequests}}</td>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Extension ID</th>
+                <th>Active Requests</th>
               </tr>
-            </template>
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              <template id="file-system" repeat="{{item in model}}">
+                <tr on-click="{{rowClicked}}" data-id="{{item.id}}"
+                    data-extension-id="{{item.extensionId}}">
+                  <td>{{item.id}}</td>
+                  <td>{{item.name}}</td>
+                  <td>
+                    <div class="icon" style="background-image:
+                        -webkit-image-set(
+                        url(chrome://extension-icon/{{item.extensionId}}/24/1)
+                            1x,
+                        url(chrome://extension-icon/{{item.extensionId}}/48/1)
+                            2x)"></div>
+                    {{item.extensionId}}
+                  </td>
+                  <td>{{item.activeRequests}}</td>
+                </tr>
+              </template>
+            </tbody>
+          </table>
+        </div>
       </template>
     </polymer-element>
 
-    <h1>Mounted provided file systems</h1>
-    <file-systems id="mounted-file-systems">
+    <polymer-element name="request-events">
+      <template>
+        <link rel="stylesheet"
+            href="chrome://provided-file-systems/provided_file_systems.css">
+        <div id="requestEvents">
+          <table>
+            <thead>
+              <tr>
+                <th>Time</th>
+                <th>Request ID</th>
+                <th>Request Type</th>
+                <th>Event Type</th>
+                <th>Error</th>
+                <th>Has Next</th>
+              </tr>
+            </thead>
+            <tbody>
+              <template id="request-event" repeat="{{item in model}}">
+                <tr>
+                  <td>{{item.time | formatTime}}</td>
+                  <td>{{item.id}}</td>
+                  <td>{{item.requestType}}</td>
+                  <td>{{item.eventType}}</td>
+                  <td>{{item.error}}</td>
+                  <td>{{item.hasMore | formatHasMore}}</td>
+                </tr>
+              </template>
+            </tbody>
+          </table>
+        </div>
+      </template>
+    </polymer-element>
+
+    <file-systems id="file-systems">
     </file-systems>
+
+    <request-events hidden id="request-events">
+    </request-events>
   </body>
 </html>

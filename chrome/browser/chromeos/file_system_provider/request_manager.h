@@ -21,21 +21,24 @@
 namespace chromeos {
 namespace file_system_provider {
 
+// Request type, passed to RequestManager::CreateRequest. For logging purposes.
+enum RequestType {
+  REQUEST_UNMOUNT,
+  GET_METADATA,
+  READ_DIRECTORY,
+  OPEN_FILE,
+  CLOSE_FILE,
+  READ_FILE,
+  TESTING
+};
+
+// Converts a request type to human-readable format.
+std::string RequestTypeToString(RequestType type);
+
 // Manages requests between the service, async utils and the providing
 // extensions.
 class RequestManager {
  public:
-  // Request type, passed to |CreateRequest|. For logging purposes.
-  enum RequestType {
-    REQUEST_UNMOUNT,
-    GET_METADATA,
-    READ_DIRECTORY,
-    OPEN_FILE,
-    CLOSE_FILE,
-    READ_FILE,
-    TESTING
-  };
-
   // Handles requests. Each request implementation must implement
   // this interface.
   class HandlerInterface {
