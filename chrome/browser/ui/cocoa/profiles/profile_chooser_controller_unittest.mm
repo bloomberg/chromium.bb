@@ -15,6 +15,7 @@
 #include "chrome/browser/signin/fake_profile_oauth2_token_service.h"
 #include "chrome/browser/signin/fake_profile_oauth2_token_service_builder.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
+#include "chrome/browser/signin/signin_header_helper.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
@@ -68,7 +69,8 @@ class ProfileChooserControllerTest : public CocoaProfileTest {
     controller_.reset([[ProfileChooserController alloc]
         initWithBrowser:browser()
              anchoredAt:point
-               withMode:profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER]);
+               withMode:profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER
+        withServiceType:signin::GAIA_SERVICE_TYPE_NONE]);
     [controller_ showWindow:nil];
   }
 

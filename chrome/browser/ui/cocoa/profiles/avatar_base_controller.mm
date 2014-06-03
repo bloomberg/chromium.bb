@@ -10,6 +10,7 @@
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_metrics.h"
+#include "chrome/browser/signin/signin_header_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -98,7 +99,8 @@ class ProfileInfoUpdateObserver : public ProfileInfoCacheObserver {
 }
 
 - (void)showAvatarBubble:(NSView*)anchor
-                withMode:(BrowserWindow::AvatarBubbleMode)mode {
+                withMode:(BrowserWindow::AvatarBubbleMode)mode
+         withServiceType:(signin::GAIAServiceType)serviceType {
   if (menuController_)
     return;
 
@@ -129,7 +131,8 @@ class ProfileInfoUpdateObserver : public ProfileInfoCacheObserver {
     menuController_ =
         [[ProfileChooserController alloc] initWithBrowser:browser_
                                                anchoredAt:point
-                                                 withMode:viewMode];
+                                                 withMode:viewMode
+                                          withServiceType:serviceType];
   } else {
     menuController_ =
       [[AvatarMenuBubbleController alloc] initWithBrowser:browser_
@@ -149,7 +152,8 @@ class ProfileInfoUpdateObserver : public ProfileInfoCacheObserver {
 - (IBAction)buttonClicked:(id)sender {
   DCHECK_EQ(sender, button_.get());
   [self showAvatarBubble:button_
-                withMode:BrowserWindow::AVATAR_BUBBLE_MODE_DEFAULT];
+                withMode:BrowserWindow::AVATAR_BUBBLE_MODE_DEFAULT
+         withServiceType:signin::GAIA_SERVICE_TYPE_NONE];
 }
 
 - (void)bubbleWillClose:(NSNotification*)notif {

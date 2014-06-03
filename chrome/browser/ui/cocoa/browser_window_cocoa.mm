@@ -710,9 +710,9 @@ void BrowserWindowCocoa::ShowAvatarBubbleFromAvatarButton(
   NSView* anchor = [controller buttonView];
   if ([anchor isHiddenOrHasHiddenAncestor])
     anchor = [[controller_ toolbarController] wrenchButton];
-  // TODO(mlerman): pass |service_type| to profile_chooser_controller to
-  // implement UMA instrumentation of the menu.
-  [controller showAvatarBubble:anchor withMode:mode];
+  [controller showAvatarBubble:anchor
+                      withMode:mode
+               withServiceType:service_type];
 }
 
 void BrowserWindowCocoa::ShowPasswordGenerationBubble(

@@ -10,6 +10,8 @@
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/profiles/profile_metrics.h"
+#include "chrome/browser/signin/signin_header_helper.h"
 #include "chrome/browser/ui/profile_chooser_constants.h"
 #import "chrome/browser/ui/cocoa/base_bubble_controller.h"
 
@@ -57,11 +59,15 @@ class WebContents;
 
   // Whether the bubble is displayed for an active guest profile.
   BOOL isGuestSession_;
+
+  // The GAIA service type that caused this menu to open.
+  signin::GAIAServiceType serviceType_;
 }
 
 - (id)initWithBrowser:(Browser*)browser
            anchoredAt:(NSPoint)point
-             withMode:(profiles::BubbleViewMode)mode;
+             withMode:(profiles::BubbleViewMode)mode
+      withServiceType:(signin::GAIAServiceType)GAIAServiceType;
 
 // Creates all the subviews of the avatar bubble for |viewToDisplay|.
 - (void)initMenuContentsWithView:(profiles::BubbleViewMode)viewToDisplay;
@@ -105,6 +111,9 @@ class WebContents;
 
 // Reset the WebContents used by the Gaia embedded view.
 - (void)cleanUpEmbeddedViewContents;
+
+// Clean-up done after an action was performed in the ProfileChooser.
+- (void)postActionPerformed:(ProfileMetrics::ProfileDesktopMenu)action;
 @end
 
 // Testing API /////////////////////////////////////////////////////////////////
@@ -112,7 +121,8 @@ class WebContents;
 @interface ProfileChooserController (ExposedForTesting)
 - (id)initWithBrowser:(Browser*)browser
            anchoredAt:(NSPoint)point
-             withMode:(profiles::BubbleViewMode)mode;
+             withMode:(profiles::BubbleViewMode)mode
+      withServiceType:(signin::GAIAServiceType)serviceType;
 @end
 
 #endif  // CHROME_BROWSER_UI_COCOA_PROFILES_PROFILE_CHOOSER_CONTROLLER_H_
