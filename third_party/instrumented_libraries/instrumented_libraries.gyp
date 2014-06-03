@@ -73,8 +73,7 @@
         '<(_sanitizer_type)-libxrender1',
         '<(_sanitizer_type)-libxss1',
         '<(_sanitizer_type)-libxtst6',
-        # https://crbug.com/313751#c110
-        #'<(_sanitizer_type)-zlib1g',
+        '<(_sanitizer_type)-zlib1g',
         '<(_sanitizer_type)-libglib2.0-0',
         '<(_sanitizer_type)-libdbus-1-3',
         '<(_sanitizer_type)-libdbus-glib-1-2',
@@ -336,6 +335,7 @@
     {
       'library_name': 'zlib1g',
       'dependencies=': [],
+      'run_before_build': 'zlib1g.sh',
       'includes': ['standard_instrumented_library_target.gypi'],
     },
     {
