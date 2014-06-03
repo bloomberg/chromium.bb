@@ -339,6 +339,8 @@ class GLES2DecoderTestBase : public ::testing::TestWithParam<bool> {
                                      bool green,
                                      bool blue,
                                      bool alpha);
+  void SetupExpectationsForStencilMask(uint32 front_mask,
+                                       uint32 back_mask);
 
   void SetupExpectationsForApplyingDirtyState(
       bool framebuffer_is_rgb,

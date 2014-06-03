@@ -3069,7 +3069,8 @@ bool GLES2DecoderImpl::CheckFramebufferValid(
           offscreen_target_color_format_) & 0x0008) != 0 ? 0 : 1);
       state_.SetDeviceColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
       glClearStencil(0);
-      glStencilMask(-1);
+      state_.SetDeviceStencilMaskSeparate(GL_FRONT, -1);
+      state_.SetDeviceStencilMaskSeparate(GL_BACK, -1);
       glClearDepth(1.0f);
       state_.SetDeviceDepthMask(GL_TRUE);
       state_.SetDeviceCapabilityState(GL_SCISSOR_TEST, false);
@@ -5032,7 +5033,8 @@ void GLES2DecoderImpl::ClearUnclearedAttachments(
   if (framebuffer->HasUnclearedAttachment(GL_STENCIL_ATTACHMENT) ||
       framebuffer->HasUnclearedAttachment(GL_DEPTH_STENCIL_ATTACHMENT)) {
     glClearStencil(0);
-    glStencilMask(-1);
+    state_.SetDeviceStencilMaskSeparate(GL_FRONT, -1);
+    state_.SetDeviceStencilMaskSeparate(GL_BACK, -1);
     clear_bits |= GL_STENCIL_BUFFER_BIT;
   }
 
@@ -7824,7 +7826,8 @@ bool GLES2DecoderImpl::ClearLevel(
       return false;
     }
     glClearStencil(0);
-    glStencilMask(-1);
+    state_.SetDeviceStencilMaskSeparate(GL_FRONT, -1);
+    state_.SetDeviceStencilMaskSeparate(GL_BACK, -1);
     glClearDepth(1.0f);
     state_.SetDeviceDepthMask(GL_TRUE);
     state_.SetDeviceCapabilityState(GL_SCISSOR_TEST, false);

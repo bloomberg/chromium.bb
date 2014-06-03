@@ -2256,7 +2256,7 @@ TEST_P(GLES2DecoderManualInitTest, DrawClearsDepthTexture) {
       .RetiresOnSaturation();
 
   EXPECT_CALL(*gl_, ClearStencil(0)).Times(1).RetiresOnSaturation();
-  EXPECT_CALL(*gl_, StencilMask(-1)).Times(1).RetiresOnSaturation();
+  SetupExpectationsForStencilMask(-1, -1);
   EXPECT_CALL(*gl_, ClearDepth(1.0f)).Times(1).RetiresOnSaturation();
   SetupExpectationsForDepthMask(true);
   SetupExpectationsForEnableDisable(GL_SCISSOR_TEST, false);
