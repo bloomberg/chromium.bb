@@ -126,6 +126,10 @@ per-file signin*=atwilson@chromium.org
 per-file signin*=tim@chromium.org
 per-file signin*=rogerta@chromium.org
 
+per-file storage_monitor.gypi=gbillock@chromium.org
+per-file storage_monitor.gypi=thestig@chromium.org
+per-file storage_monitor.gypi=vandebo@chromium.org
+
 per-file sync_driver*=haitaol@chromium.org
 per-file sync_driver*=maniscalco@chromium.org
 per-file sync_driver*=pavely@chromium.org
