@@ -3,20 +3,20 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   RenderBlock {HTML} at (0,0) size 800x600
     RenderBody {BODY} at (8,8) size 784x576 [bgcolor=#FFFFFF]
-      RenderBlock {H3} at (0,0) size 784x21
-        RenderText {#text} at (0,0) size 301x20
+      RenderBlock {H3} at (0,0) size 784x22
+        RenderText {#text} at (0,0) size 301x21
           text run at (0,0) width 301: "Testcase for bug 5538 - distilled from "
-        RenderInline {A} at (0,0) size 115x20 [color=#0000EE]
-          RenderText {#text} at (300,0) size 115x20
+        RenderInline {A} at (0,0) size 115x21 [color=#0000EE]
+          RenderText {#text} at (300,0) size 115x21
             text run at (300,0) width 115: "www.fool.com"
-      RenderTable {TABLE} at (0,39.72) size 600x89
+      RenderTable {TABLE} at (0,40.72) size 600x89
         RenderTableSection {TBODY} at (0,0) size 600x89
           RenderTableRow {TR} at (0,0) size 600x89
             RenderTableCell {TD} at (0,0) size 128x89 [bgcolor=#336699] [r=0 c=0 rs=1 cs=1]
               RenderInline {A} at (0,0) size 128x17 [color=#0000EE]
                 RenderImage {IMG} at (0,0) size 128x89
             RenderTableCell {TD} at (128,44) size 472x0 [r=0 c=1 rs=1 cs=1]
-      RenderTable {TABLE} at (0,128.72) size 600x18
+      RenderTable {TABLE} at (0,129.72) size 600x18
         RenderTableSection {TBODY} at (0,0) size 600x18
           RenderTableRow {TR} at (0,0) size 600x18
             RenderTableCell {TD} at (0,0) size 600x18 [r=0 c=0 rs=1 cs=1]
@@ -24,7 +24,7 @@ layer at (0,0) size 800x600
               RenderInline {MAP} at (0,0) size 0x17
               RenderImage {IMG} at (348,0) size 88x18
               RenderImage {IMG} at (436,0) size 55x18
-      RenderBlock {P} at (0,162.72) size 784x161
+      RenderBlock {P} at (0,163.72) size 784x161
         RenderBlock (anonymous) at (0,0) size 784x54
           RenderText {#text} at (0,0) size 476x17
             text run at (0,0) width 476: "When removing <A HREF=\"...\"> surrounding logo image in first row and"

@@ -3,10 +3,10 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   RenderBlock {HTML} at (0,0) size 800x600
     RenderBody {BODY} at (8,8) size 784x584
-      RenderBlock {H3} at (0,0) size 784x21
-        RenderText {#text} at (0,0) size 194x20
+      RenderBlock {H3} at (0,0) size 784x22
+        RenderText {#text} at (0,0) size 194x21
           text run at (0,0) width 194: "With long hidden values"
-      RenderTable {TABLE} at (0,39.72) size 198x69 [border: (1px solid #FF0000)]
+      RenderTable {TABLE} at (0,40.72) size 198x69 [border: (1px solid #FF0000)]
         RenderTableSection {TBODY} at (1,1) size 196x67
           RenderTableRow {TR} at (0,2) size 196x61
             RenderTableCell {TD} at (2,2) size 192x61 [r=0 c=0 rs=1 cs=1]
@@ -24,11 +24,11 @@ layer at (0,0) size 800x600
                 RenderText {#text} at (0,25) size 190x17
                   text run at (0,25) width 190: "Enter City Name or Zip Code"
           RenderTableRow {TR} at (0,65) size 196x0
-      RenderBlock {HR} at (0,116.72) size 784x2 [border: (1px inset #EEEEEE)]
-      RenderBlock {H3} at (0,137.44) size 784x21
-        RenderText {#text} at (0,0) size 202x20
+      RenderBlock {HR} at (0,117.72) size 784x2 [border: (1px inset #EEEEEE)]
+      RenderBlock {H3} at (0,138.44) size 784x22
+        RenderText {#text} at (0,0) size 202x21
           text run at (0,0) width 202: "With short hidden values"
-      RenderTable {TABLE} at (0,177.16) size 198x69 [border: (1px solid #FF0000)]
+      RenderTable {TABLE} at (0,179.16) size 198x69 [border: (1px solid #FF0000)]
         RenderTableSection {TBODY} at (1,1) size 196x67
           RenderTableRow {TR} at (0,2) size 196x61
             RenderTableCell {TD} at (2,2) size 192x61 [r=0 c=0 rs=1 cs=1]
@@ -46,7 +46,7 @@ layer at (0,0) size 800x600
                 RenderText {#text} at (0,25) size 190x17
                   text run at (0,25) width 190: "Enter City Name or Zip Code"
           RenderTableRow {TR} at (0,65) size 196x0
-layer at (16,57) size 91x15
+layer at (16,58) size 91x15
   RenderBlock {DIV} at (2,3) size 91x15
-layer at (16,194) size 91x15
+layer at (16,196) size 91x15
   RenderBlock {DIV} at (2,3) size 91x15

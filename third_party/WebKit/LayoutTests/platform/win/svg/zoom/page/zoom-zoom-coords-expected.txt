@@ -53,9 +53,9 @@ PASS image1.height.toFixed(2) is "25.00"
 PASS image1.right.toFixed(2) is "150.00"
 PASS image1.bottom.toFixed(2) is "275.00"
 PASS text1.left.toFixed(2) is "100.00"
-FAIL text1.top.toFixed(2) should be 282.66. Was 283.10.
+PASS text1.top.toFixed(2) is "282.66"
 FAIL text1.width.toFixed(2) should be 49.20. Was 48.00.
-FAIL text1.height.toFixed(2) should be 6.16. Was 5.72.
+PASS text1.height.toFixed(2) is "6.16"
 FAIL text1.right.toFixed(2) should be 149.20. Was 148.00.
 PASS text1.bottom.toFixed(2) is "288.82"
 
@@ -103,9 +103,9 @@ PASS image3.height.toFixed(2) is "50.00"
 PASS image3.right.toFixed(2) is "1200.00"
 PASS image3.bottom.toFixed(2) is "550.00"
 PASS text3.left.toFixed(2) is "1100.00"
-FAIL text3.top.toFixed(2) should be 565.33. Was 566.20.
+PASS text3.top.toFixed(2) is "565.33"
 FAIL text3.width.toFixed(2) should be 98.41. Was 96.00.
-FAIL text3.height.toFixed(2) should be 12.31. Was 11.44.
+PASS text3.height.toFixed(2) is "12.31"
 FAIL text3.right.toFixed(2) should be 1198.41. Was 1196.00.
 PASS text3.bottom.toFixed(2) is "577.64"
 

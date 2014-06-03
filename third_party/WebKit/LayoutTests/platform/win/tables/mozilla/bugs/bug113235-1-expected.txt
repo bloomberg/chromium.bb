@@ -1,15 +1,15 @@
-layer at (0,0) size 785x11399
+layer at (0,0) size 785x11400
   RenderView at (0,0) size 785x600
-layer at (0,0) size 785x11399
-  RenderBlock {HTML} at (0,0) size 785x11399
-    RenderBody {BODY} at (8,8) size 769x11383
-      RenderTable {TABLE} at (0,0) size 732x11383 [border: (1px outset #808080)]
-        RenderTableSection {TBODY} at (1,1) size 730x11381
-          RenderTableRow {TR} at (0,2) size 730x11377
+layer at (0,0) size 785x11400
+  RenderBlock {HTML} at (0,0) size 785x11400
+    RenderBody {BODY} at (8,8) size 769x11384
+      RenderTable {TABLE} at (0,0) size 732x11384 [border: (1px outset #808080)]
+        RenderTableSection {TBODY} at (1,1) size 730x11382
+          RenderTableRow {TR} at (0,2) size 730x11378
             RenderTableCell {TD} at (2,2) size 12x22 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
               RenderText {#text} at (2,2) size 8x17
                 text run at (2,2) width 8: "x"
-            RenderTableCell {TD} at (16,2) size 712x11377.34 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
+            RenderTableCell {TD} at (16,2) size 712x11378.34 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
               RenderBlock (anonymous) at (2,2) size 708x0
                 RenderInline {FONT} at (0,0) size 0x0
                   RenderText {#text} at (0,0) size 0x0
@@ -32,12 +32,12 @@ layer at (0,0) size 785x11399
                     text run at (326,0) width 305: "If it were a large collection of inlines, the page would "
                     text run at (630,0) width 78: "hang forever."
                   RenderInline {A} at (0,0) size 0x0
-              RenderBlock (anonymous) at (2,85.17) size 708x11290.17
-                RenderBlock {H2} at (0,0) size 708x22
-                  RenderInline {A} at (0,0) size 165x21
-                    RenderText {#text} at (0,0) size 165x21
+              RenderBlock (anonymous) at (2,85.17) size 708x11291.17
+                RenderBlock {H2} at (0,0) size 708x23
+                  RenderInline {A} at (0,0) size 165x22
+                    RenderText {#text} at (0,0) size 165x22
                       text run at (0,0) width 165: "Table of Contents"
-                RenderBlock {P} at (0,38.17) size 708x150
+                RenderBlock {P} at (0,39.17) size 708x150
                   RenderInline {B} at (0,0) size 76x15
                     RenderInline {A} at (0,0) size 76x15 [color=#0000EE]
                       RenderText {#text} at (0,0) size 76x15
@@ -90,7 +90,7 @@ layer at (0,0) size 785x11399
                     RenderText {#text} at (0,135) size 217x15
                       text run at (0,135) width 217: "Related Documentation for This Book"
                   RenderText {#text} at (0,0) size 0x0
-                RenderBlock {P} at (0,201.17) size 708x990
+                RenderBlock {P} at (0,202.17) size 708x990
                   RenderInline {B} at (0,0) size 60x15
                     RenderInline {A} at (0,0) size 60x15 [color=#0000EE]
                       RenderText {#text} at (0,0) size 60x15
@@ -479,7 +479,7 @@ layer at (0,0) size 785x11399
                     RenderText {#text} at (0,975) size 101x15
                       text run at (0,975) width 101: "Table Collocation"
                   RenderText {#text} at (0,0) size 0x0
-                RenderBlock {P} at (0,1204.17) size 708x1995
+                RenderBlock {P} at (0,1205.17) size 708x1995
                   RenderInline {B} at (0,0) size 123x15
                     RenderInline {A} at (0,0) size 123x15 [color=#0000EE]
                       RenderText {#text} at (0,0) size 123x15
@@ -1270,7 +1270,7 @@ layer at (0,0) size 785x11399
                     RenderText {#text} at (0,1980) size 58x15
                       text run at (0,1980) width 58: "Examples"
                   RenderText {#text} at (0,0) size 0x0
-                RenderBlock {P} at (0,3212.17) size 708x1935
+                RenderBlock {P} at (0,3213.17) size 708x1935
                   RenderInline {B} at (0,0) size 63x15
                     RenderInline {A} at (0,0) size 63x15 [color=#0000EE]
                       RenderText {#text} at (0,0) size 63x15
@@ -2037,7 +2037,7 @@ layer at (0,0) size 785x11399
                     RenderText {#text} at (0,1920) size 137x15
                       text run at (0,1920) width 137: "User-Defined Functions"
                   RenderText {#text} at (0,0) size 0x0
-                RenderBlock {P} at (0,5160.17) size 708x345
+                RenderBlock {P} at (0,5161.17) size 708x345
                   RenderInline {B} at (0,0) size 49x15
                     RenderInline {A} at (0,0) size 49x15 [color=#0000EE]
                       RenderText {#text} at (0,0) size 49x15
@@ -2168,7 +2168,7 @@ layer at (0,0) size 785x11399
                     RenderText {#text} at (0,330) size 182x15
                       text run at (0,330) width 182: "Examples of a select-statement"
                   RenderText {#text} at (0,0) size 0x0
-                RenderBlock {P} at (0,5518.17) size 708x1770
+                RenderBlock {P} at (0,5519.17) size 708x1770
                   RenderInline {B} at (0,0) size 101x15
                     RenderInline {A} at (0,0) size 101x15 [color=#0000EE]
                       RenderText {#text} at (0,0) size 101x15
@@ -2869,7 +2869,7 @@ layer at (0,0) size 785x11399
                     RenderText {#text} at (0,1755) size 76x15
                       text run at (0,1755) width 76: "WHENEVER"
                   RenderText {#text} at (0,0) size 0x0
-                RenderBlock {P} at (0,7301.17) size 708x300
+                RenderBlock {P} at (0,7302.17) size 708x300
                   RenderInline {B} at (0,0) size 102x15
                     RenderInline {A} at (0,0) size 102x15 [color=#0000EE]
                       RenderText {#text} at (0,0) size 102x15
@@ -2982,13 +2982,13 @@ layer at (0,0) size 785x11399
                     RenderText {#text} at (0,285) size 105x15
                       text run at (0,285) width 105: "WHILE Statement"
                   RenderText {#text} at (0,0) size 0x0
-                RenderBlock {P} at (0,7614.17) size 708x15
+                RenderBlock {P} at (0,7615.17) size 708x15
                   RenderInline {B} at (0,0) size 149x15
                     RenderInline {A} at (0,0) size 149x15 [color=#0000EE]
                       RenderText {#text} at (0,0) size 149x15
                         text run at (0,0) width 149: "Appendix A. SQL Limits"
                   RenderBR {BR} at (148,12) size 1x0
-                RenderBlock {P} at (0,7642.17) size 708x90
+                RenderBlock {P} at (0,7643.17) size 708x90
                   RenderInline {B} at (0,0) size 274x15
                     RenderInline {A} at (0,0) size 274x15 [color=#0000EE]
                       RenderText {#text} at (0,0) size 274x15
@@ -3017,7 +3017,7 @@ layer at (0,0) size 785x11399
                     RenderText {#text} at (0,75) size 324x15
                       text run at (0,75) width 324: "DB2 Enterprise - Extended Edition Usage of the SQLCA"
                   RenderText {#text} at (0,0) size 0x0
-                RenderBlock {P} at (0,7745.17) size 708x165
+                RenderBlock {P} at (0,7746.17) size 708x165
                   RenderInline {B} at (0,0) size 266x15
                     RenderInline {A} at (0,0) size 266x15 [color=#0000EE]
                       RenderText {#text} at (0,0) size 266x15
@@ -3076,7 +3076,7 @@ layer at (0,0) size 785x11399
                     RenderText {#text} at (0,150) size 153x15
                       text run at (0,150) width 153: "SQLLEN Field for Decimal"
                   RenderText {#text} at (0,0) size 0x0
-                RenderBlock {P} at (0,7923.17) size 708x1095
+                RenderBlock {P} at (0,7924.17) size 708x1095
                   RenderInline {B} at (0,0) size 168x15
                     RenderInline {A} at (0,0) size 168x15 [color=#0000EE]
                       RenderText {#text} at (0,0) size 168x15
@@ -3507,7 +3507,7 @@ layer at (0,0) size 785x11399
                     RenderText {#text} at (0,1080) size 113x15
                       text run at (0,1080) width 113: "SYSSTAT.TABLES"
                   RenderText {#text} at (0,0) size 0x0
-                RenderBlock {P} at (0,9031.17) size 708x165
+                RenderBlock {P} at (0,9032.17) size 708x165
                   RenderInline {B} at (0,0) size 362x15
                     RenderInline {A} at (0,0) size 362x15 [color=#0000EE]
                       RenderText {#text} at (0,0) size 362x15
@@ -3566,7 +3566,7 @@ layer at (0,0) size 785x11399
                     RenderText {#text} at (0,150) size 146x15
                       text run at (0,150) width 146: "OBJCAT.TRANSFORMS"
                   RenderText {#text} at (0,0) size 0x0
-                RenderBlock {P} at (0,9209.17) size 708x240
+                RenderBlock {P} at (0,9210.17) size 708x240
                   RenderInline {B} at (0,0) size 198x15
                     RenderInline {A} at (0,0) size 198x15 [color=#0000EE]
                       RenderText {#text} at (0,0) size 198x15
@@ -3655,7 +3655,7 @@ layer at (0,0) size 785x11399
                     RenderText {#text} at (0,225) size 184x15
                       text run at (0,225) width 184: "Considerations and Restrictions"
                   RenderText {#text} at (0,0) size 0x0
-                RenderBlock {P} at (0,9462.17) size 708x390
+                RenderBlock {P} at (0,9463.17) size 708x390
                   RenderInline {B} at (0,0) size 233x15
                     RenderInline {A} at (0,0) size 233x15 [color=#0000EE]
                       RenderText {#text} at (0,0) size 233x15
@@ -3804,7 +3804,7 @@ layer at (0,0) size 785x11399
                     RenderText {#text} at (0,375) size 93x15
                       text run at (0,375) width 93: "Walker Resume"
                   RenderText {#text} at (0,0) size 0x0
-                RenderBlock {P} at (0,9865.17) size 708x90
+                RenderBlock {P} at (0,9866.17) size 708x90
                   RenderInline {B} at (0,0) size 371x15
                     RenderInline {A} at (0,0) size 371x15 [color=#0000EE]
                       RenderText {#text} at (0,0) size 371x15
@@ -3833,19 +3833,19 @@ layer at (0,0) size 785x11399
                     RenderText {#text} at (0,75) size 198x15
                       text run at (0,75) width 198: "ISO/ANS SQL92 Reserved Words"
                   RenderText {#text} at (0,0) size 0x0
-                RenderBlock {P} at (0,9968.17) size 708x15
+                RenderBlock {P} at (0,9969.17) size 708x15
                   RenderInline {B} at (0,0) size 267x15
                     RenderInline {A} at (0,0) size 267x15 [color=#0000EE]
                       RenderText {#text} at (0,0) size 267x15
                         text run at (0,0) width 267: "Appendix I. Comparison of Isolation Levels"
                   RenderBR {BR} at (266,12) size 1x0
-                RenderBlock {P} at (0,9996.17) size 708x15
+                RenderBlock {P} at (0,9997.17) size 708x15
                   RenderInline {B} at (0,0) size 318x15
                     RenderInline {A} at (0,0) size 318x15 [color=#0000EE]
                       RenderText {#text} at (0,0) size 318x15
                         text run at (0,0) width 318: "Appendix J. Interaction of Triggers and Constraints"
                   RenderBR {BR} at (317,12) size 1x0
-                RenderBlock {P} at (0,10024.17) size 708x315
+                RenderBlock {P} at (0,10025.17) size 708x315
                   RenderInline {B} at (0,0) size 268x15
                     RenderInline {A} at (0,0) size 268x15 [color=#0000EE]
                       RenderText {#text} at (0,0) size 268x15
@@ -3964,13 +3964,13 @@ layer at (0,0) size 785x11399
                     RenderText {#text} at (0,300) size 225x15
                       text run at (0,300) width 225: "ADVISE_WORKLOAD Table Definition"
                   RenderText {#text} at (0,0) size 0x0
-                RenderBlock {P} at (0,10352.17) size 708x15
+                RenderBlock {P} at (0,10353.17) size 708x15
                   RenderInline {B} at (0,0) size 226x15
                     RenderInline {A} at (0,0) size 226x15 [color=#0000EE]
                       RenderText {#text} at (0,0) size 226x15
                         text run at (0,0) width 226: "Appendix L. Explain Register Values"
                   RenderBR {BR} at (225,12) size 1x0
-                RenderBlock {P} at (0,10380.17) size 708x75
+                RenderBlock {P} at (0,10381.17) size 708x75
                   RenderInline {B} at (0,0) size 306x15
                     RenderInline {A} at (0,0) size 306x15 [color=#0000EE]
                       RenderText {#text} at (0,0) size 306x15
@@ -3993,7 +3993,7 @@ layer at (0,0) size 785x11399
                     RenderText {#text} at (0,60) size 170x15
                       text run at (0,60) width 170: "Example 3: Controlling Depth"
                   RenderText {#text} at (0,0) size 0x0
-                RenderBlock {P} at (0,10468.17) size 708x75
+                RenderBlock {P} at (0,10469.17) size 708x75
                   RenderInline {B} at (0,0) size 187x15
                     RenderInline {A} at (0,0) size 187x15 [color=#0000EE]
                       RenderText {#text} at (0,0) size 187x15
@@ -4016,7 +4016,7 @@ layer at (0,0) size 785x11399
                     RenderText {#text} at (0,60) size 178x15
                       text run at (0,60) width 178: "Querying the Exception Tables"
                   RenderText {#text} at (0,0) size 0x0
-                RenderBlock {P} at (0,10556.17) size 708x330
+                RenderBlock {P} at (0,10557.17) size 708x330
                   RenderInline {B} at (0,0) size 421x15
                     RenderInline {A} at (0,0) size 421x15 [color=#0000EE]
                       RenderText {#text} at (0,0) size 421x15
@@ -4141,13 +4141,13 @@ layer at (0,0) size 785x11399
                     RenderText {#text} at (0,315) size 63x15
                       text run at (0,315) width 63: "PREPARE"
                   RenderText {#text} at (0,0) size 0x0
-                RenderBlock {P} at (0,10899.17) size 708x15
+                RenderBlock {P} at (0,10900.17) size 708x15
                   RenderInline {B} at (0,0) size 296x15
                     RenderInline {A} at (0,0) size 296x15 [color=#0000EE]
                       RenderText {#text} at (0,0) size 296x15
                         text run at (0,0) width 296: "Appendix P. BNF Specifications for DATALINKs"
                   RenderBR {BR} at (295,12) size 1x0
-                RenderBlock {P} at (0,10927.17) size 708x180
+                RenderBlock {P} at (0,10928.17) size 708x180
                   RenderInline {B} at (0,0) size 217x15
                     RenderInline {A} at (0,0) size 217x15 [color=#0000EE]
                       RenderText {#text} at (0,0) size 217x15
@@ -4212,7 +4212,7 @@ layer at (0,0) size 785x11399
                     RenderText {#text} at (0,165) size 169x15
                       text run at (0,165) width 169: "Searching Information Online"
                   RenderText {#text} at (0,0) size 0x0
-                RenderBlock {P} at (0,11120.17) size 708x45
+                RenderBlock {P} at (0,11121.17) size 708x45
                   RenderInline {B} at (0,0) size 127x15
                     RenderInline {A} at (0,0) size 127x15 [color=#0000EE]
                       RenderText {#text} at (0,0) size 127x15
@@ -4223,13 +4223,13 @@ layer at (0,0) size 785x11399
                     RenderText {#text} at (0,30) size 70x15
                       text run at (0,30) width 70: "Trademarks"
                   RenderText {#text} at (0,0) size 0x0
-                RenderBlock {P} at (0,11178.17) size 708x15
+                RenderBlock {P} at (0,11179.17) size 708x15
                   RenderInline {B} at (0,0) size 34x15
                     RenderInline {A} at (0,0) size 34x15 [color=#0000EE]
                       RenderText {#text} at (0,0) size 34x15
                         text run at (0,0) width 34: "Index"
                   RenderBR {BR} at (33,12) size 1x0
-                RenderBlock {P} at (0,11206.17) size 708x45
+                RenderBlock {P} at (0,11207.17) size 708x45
                   RenderInline {B} at (0,0) size 96x15
                     RenderInline {A} at (0,0) size 96x15 [color=#0000EE]
                       RenderText {#text} at (0,0) size 96x15
@@ -4242,7 +4242,7 @@ layer at (0,0) size 785x11399
                   RenderText {#text} at (0,0) size 0x0
                   RenderInline {A} at (0,0) size 0x0
                   RenderText {#text} at (0,0) size 0x0
-                RenderTable {TABLE} at (0,11264.17) size 26x26
+                RenderTable {TABLE} at (0,11265.17) size 26x26
                   RenderTableSection {TBODY} at (0,0) size 26x26
                     RenderTableRow {TR} at (0,2) size 26x0
                     RenderTableRow {TR} at (0,4) size 26x20
@@ -4252,5 +4252,5 @@ layer at (0,0) size 785x11399
                       RenderTableCell {TD} at (14,4) size 10x20 [r=1 c=1 rs=1 cs=1]
                         RenderText {#text} at (1,1) size 8x17
                           text run at (1,1) width 8: "x"
-              RenderBlock (anonymous) at (2,11375.34) size 708x0
+              RenderBlock (anonymous) at (2,11376.34) size 708x0
                 RenderInline {FONT} at (0,0) size 0x0
