@@ -449,6 +449,7 @@ void GraphicsLayer::setupContentsLayer(WebLayer* contentsLayer)
     m_contentsLayerId = m_contentsLayer->id();
 
     m_contentsLayer->setWebLayerClient(this);
+    m_contentsLayer->setTransformOrigin(FloatPoint3D());
     m_contentsLayer->setAnchorPoint(FloatPoint(0, 0));
     m_contentsLayer->setUseParentBackfaceVisibility(true);
 
@@ -566,6 +567,8 @@ void GraphicsLayer::dumpProperties(TextStream& ts, int indent, LayerTreeFlags fl
     if (m_anchorPoint != FloatPoint3D(0.5f, 0.5f, 0)) {
         writeIndent(ts, indent + 1);
         ts << "(anchor " << m_anchorPoint.x() << " " << m_anchorPoint.y() << ")\n";
+        writeIndent(ts, indent + 1);
+        ts << "(transformOrigin " << m_transformOrigin.x() << " " << m_transformOrigin.y() << ")\n";
     }
 
     if (m_size != IntSize()) {

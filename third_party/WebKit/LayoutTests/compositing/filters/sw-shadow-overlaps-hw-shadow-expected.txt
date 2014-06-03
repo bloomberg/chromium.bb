@@ -11,6 +11,7 @@
             (GraphicsLayer
               (position 105.00 105.00)
               (anchor 0.60 0.60)
+              (transformOrigin 75.00 75.00)
               (bounds 125.00 125.00)
               (drawsContent 1)
               (backgroundColor #000000)

@@ -10,6 +10,7 @@
           (children 2
             (GraphicsLayer
               (anchor 1.56 0.00)
+              (transformOrigin 400.00 0.00)
               (bounds 256.00 256.00)
               (contentsOpaque 1)
               (drawsContent 1)

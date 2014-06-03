@@ -14,6 +14,7 @@
             (GraphicsLayer
               (position 15.00 0.00)
               (anchor 1.47 0.00)
+              (transformOrigin 377.00 0.00)
               (bounds 256.00 256.00)
               (contentsOpaque 1)
               (drawsContent 1)

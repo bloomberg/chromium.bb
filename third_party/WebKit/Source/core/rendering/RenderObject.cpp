@@ -1503,7 +1503,7 @@ void RenderObject::repaintUsingContainer(const RenderLayerModelObject* repaintCo
         return;
 
     // FIXME: This should be an assert, but editing/selection can trigger this case to invalidate
-    // the selection. crbug.com/368140
+    // the selection. crbug.com/368140. It can also happen for reflections.
     if (!isRooted())
         return;
 
@@ -1567,7 +1567,7 @@ void RenderObject::repaint() const
 
 LayoutRect RenderObject::boundsRectForRepaint(const RenderLayerModelObject* repaintContainer) const
 {
-    if (hasLayer())
+    if (repaintContainer && hasLayer())
         return toRenderLayerModelObject(this)->layer()->computeRepaintRect(repaintContainer);
     return computeRepaintRect(repaintContainer);
 }

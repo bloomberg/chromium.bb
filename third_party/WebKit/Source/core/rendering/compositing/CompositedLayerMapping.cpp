@@ -828,7 +828,7 @@ void CompositedLayerMapping::updateTransformGeometry(const IntPoint& snappedOffs
             layerBounds.x() - relativeCompositingBounds.x() + transformOrigin.x(),
             layerBounds.y() - relativeCompositingBounds.y() + transformOrigin.y(),
             transformOrigin.z());
-        m_graphicsLayer->setTransformOrigin(transformOrigin);
+        m_graphicsLayer->setTransformOrigin(compositedTransformOrigin);
 
         // Compute the anchor point, which is in the center of the renderer box unless transform-origin is set.
         // FIXME: get rid of anchor once transformOrigin is plumbed.
@@ -838,6 +838,11 @@ void CompositedLayerMapping::updateTransformGeometry(const IntPoint& snappedOffs
             transformOrigin.z());
         m_graphicsLayer->setAnchorPoint(anchor);
     } else {
+        FloatPoint3D compositedTransformOrigin(
+            relativeCompositingBounds.width() * 0.5f,
+            relativeCompositingBounds.height() * 0.5f,
+            0.f);
+        m_graphicsLayer->setTransformOrigin(compositedTransformOrigin);
         m_graphicsLayer->setAnchorPoint(FloatPoint3D(0.5f, 0.5f, 0));
     }
 }
@@ -1093,6 +1098,7 @@ void CompositedLayerMapping::updateChildrenTransform()
 {
     if (GraphicsLayer* childTransformLayer = layerForChildrenTransform()) {
         childTransformLayer->setTransform(owningLayer().perspectiveTransform());
+        childTransformLayer->setTransformOrigin(FloatPoint3D(childTransformLayer->size().width() * 0.5f, childTransformLayer->size().height() * 0.5f, 0.f));
         bool hasPerspective = false;
         if (RenderStyle* style = m_owningLayer.renderer()->style())
             hasPerspective = style->hasPerspective();
@@ -1369,6 +1375,7 @@ bool CompositedLayerMapping::updateBackgroundLayer(bool needsBackgroundLayer)
             m_backgroundLayer = createGraphicsLayer(CompositingReasonLayerForBackground);
             m_backgroundLayer->setDrawsContent(true);
             m_backgroundLayer->setAnchorPoint(FloatPoint3D());
+            m_backgroundLayer->setTransformOrigin(FloatPoint3D());
             m_backgroundLayer->setPaintingPhase(GraphicsLayerPaintBackground);
 #if !OS(ANDROID)
             m_backgroundLayer->contentLayer()->setDrawCheckerboardForMissingTiles(true);
