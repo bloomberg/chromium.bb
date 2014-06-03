@@ -153,7 +153,8 @@ class DepsBuilder(object):
       ignore_temp_rules: Ignore rules that start with Rule.TEMP_ALLOW ("!").
     """
     base_directory = (base_directory or
-                      os.path.join(os.path.dirname(__file__), os.path.pardir))
+                      os.path.join(os.path.dirname(__file__),
+                      os.path.pardir, os.path.pardir))
     self.base_directory = os.path.abspath(base_directory)  # Local absolute path
     self.verbose = verbose
     self._under_test = being_tested

@@ -17,7 +17,9 @@ import results
 class CheckDepsTest(unittest.TestCase):
 
   def setUp(self):
-    self.deps_checker = checkdeps.DepsChecker(being_tested=True)
+    self.deps_checker = checkdeps.DepsChecker(
+        being_tested=True,
+        base_directory=os.path.join(os.path.dirname(__file__), os.path.pardir))
 
   def ImplTestRegularCheckDepsRun(self, ignore_temp_rules, skip_tests):
     self.deps_checker._ignore_temp_rules = ignore_temp_rules
