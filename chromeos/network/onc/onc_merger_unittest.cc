@@ -53,6 +53,7 @@ class ONCMergerTest : public testing::Test {
   scoped_ptr<const base::DictionaryValue> policy_;
   scoped_ptr<const base::DictionaryValue> policy_without_recommended_;
   scoped_ptr<const base::DictionaryValue> device_policy_;
+  scoped_ptr<const base::DictionaryValue> active_;
 
   virtual void SetUp() {
     policy_ = test_utils::ReadTestDictionary("managed_vpn.onc");
@@ -60,6 +61,7 @@ class ONCMergerTest : public testing::Test {
         test_utils::ReadTestDictionary("managed_vpn_without_recommended.onc");
     user_ = test_utils::ReadTestDictionary("user.onc");
     device_policy_ = test_utils::ReadTestDictionary("device_policy.onc");
+    active_ = test_utils::ReadTestDictionary("vpn_active_settings.onc");
   }
 };
 
@@ -148,7 +150,7 @@ TEST_F(ONCMergerTest, MergeToAugmented) {
       test_utils::ReadTestDictionary("augmented_merge.json");
   scoped_ptr<base::DictionaryValue> merged(MergeSettingsAndPoliciesToAugmented(
       kNetworkConfigurationSignature, policy_.get(), device_policy_.get(),
-      user_.get(), NULL, NULL));
+      user_.get(), NULL, active_.get()));
   EXPECT_TRUE(test_utils::Equals(expected_augmented.get(), merged.get()));
 }
 

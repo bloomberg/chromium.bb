@@ -323,11 +323,7 @@ var availableTests = [
                      "Active": "NotConnected",
                      "Effective": "Unmanaged"
                    },
-                   "GUID": {
-                     "Active": "stub_wifi2",
-                     "Effective": "UserPolicy",
-                     "UserPolicy": "stub_wifi2"
-                   },
+                   "GUID": "stub_wifi2",
                    "Name": {
                      "Active": "wifi2_PSK",
                      "Effective": "UserPolicy",

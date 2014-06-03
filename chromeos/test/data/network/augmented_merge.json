@@ -1,9 +1,9 @@
 {
-   "GUID": {
-      "DevicePolicy": "123",
-      "Effective": "UserPolicy",
-      "UserPolicy": "123"
+   "ConnectionState": {
+      "Active": "Connected",
+      "Effective": "Unmanaged"
    },
+   "GUID": "123",
    "IPConfigs": {
       "DevicePolicy": [ {
          "IPAddress": "127.0.0.1",
@@ -25,6 +25,7 @@
       } ]
    },
    "Name": {
+      "Active": "testopenvpn",
       "DevicePolicy": "testopenvpn",
       "Effective": "UserPolicy",
       "UserPolicy": "testopenvpn",
@@ -37,6 +38,7 @@
       }
    },
    "Type": {
+      "Active": "VPN",
       "DevicePolicy": "VPN",
       "Effective": "UserPolicy",
       "UserPolicy": "VPN",
@@ -61,7 +63,7 @@
             "UserPolicy": 1
          },
          "PSK": {
-            "Effective": "UserPolicy",
+            "Effective": "UserPolicy"
          }
       },
       "OpenVPN": {
@@ -96,15 +98,15 @@
             "UserPolicy": 1194,
             "UserSetting": 1195
          },
+         "ServerCARefs": {
+            "Effective": "UserPolicy",
+            "UserPolicy": ["ref1", "ref2"]
+         },
          "Username": {
             "DevicePolicy": "device user",
             "Effective": "DevicePolicy",
             "UserEditable": true,
             "UserPolicy": "policy user"
-         },
-         "ServerCARefs": {
-            "UserPolicy": ["ref1", "ref2"],
-            "Effective": "UserPolicy"
          }
       },
       "Type": {

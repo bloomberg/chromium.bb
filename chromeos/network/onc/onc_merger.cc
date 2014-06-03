@@ -20,6 +20,18 @@ namespace {
 
 typedef scoped_ptr<base::DictionaryValue> DictionaryPtr;
 
+// Returns true if the field is the identifier of a configuration, i.e. the GUID
+// of a network or a certificate. These can be special handled during merging
+// because they are always identical for the various setting sources.
+bool IsIdentifierField(const OncValueSignature& value_signature,
+                       const std::string& field_name) {
+  if (&value_signature == &kNetworkConfigurationSignature)
+    return field_name == ::onc::network_config::kGUID;
+  if (&value_signature == &kCertificateSignature)
+    return field_name == ::onc::certificate::kGUID;
+  return false;
+}
+
 // Inserts |true| at every field name in |result| that is recommended in
 // |policy|.
 void MarkRecommendedFieldnames(const base::DictionaryValue& policy,
@@ -302,6 +314,26 @@ class MergeToEffective : public MergeSettingsAndPolicies {
   DISALLOW_COPY_AND_ASSIGN(MergeToEffective);
 };
 
+namespace {
+
+// Returns true if all not-null values in |values| are equal to |value|.
+bool AllPresentValuesEqual(const MergeSettingsAndPolicies::ValueParams& values,
+                           const base::Value& value) {
+  if (values.user_policy && !value.Equals(values.user_policy))
+    return false;
+  if (values.device_policy && !value.Equals(values.device_policy))
+    return false;
+  if (values.user_setting && !value.Equals(values.user_setting))
+    return false;
+  if (values.shared_setting && !value.Equals(values.shared_setting))
+    return false;
+  if (values.active_setting && !value.Equals(values.active_setting))
+    return false;
+  return true;
+}
+
+}  // namespace
+
 // Call MergeDictionaries to merge policies and settings to an augmented
 // dictionary which contains a dictionary for each value in the original
 // dictionaries. See the description of MergeSettingsAndPoliciesToAugmented.
@@ -329,10 +361,11 @@ class MergeToAugmented : public MergeToEffective {
   virtual scoped_ptr<base::Value> MergeValues(
       const std::string& key,
       const ValueParams& values) OVERRIDE {
-    scoped_ptr<base::DictionaryValue> result(new base::DictionaryValue);
+    scoped_ptr<base::DictionaryValue> augmented_value(
+        new base::DictionaryValue);
     if (values.active_setting) {
-      result->SetWithoutPathExpansion(::onc::kAugmentationActiveSetting,
-                                      values.active_setting->DeepCopy());
+      augmented_value->SetWithoutPathExpansion(
+          ::onc::kAugmentationActiveSetting, values.active_setting->DeepCopy());
     }
 
     const OncFieldSignature* field = NULL;
@@ -343,9 +376,22 @@ class MergeToAugmented : public MergeToEffective {
       // This field is part of the provided ONCSignature, thus it can be
       // controlled by policy.
       std::string which_effective;
-      MergeToEffective::MergeValues(key, values, &which_effective).reset();
+      scoped_ptr<base::Value> effective_value =
+          MergeToEffective::MergeValues(key, values, &which_effective);
+
+      if (IsIdentifierField(*signature_, key)) {
+        // Don't augment the GUID but write the plain value.
+        DCHECK(effective_value);
+
+        // DCHECK that all provided GUIDs are identical.
+        DCHECK(AllPresentValuesEqual(values, *effective_value));
+
+        // Return the un-augmented GUID.
+        return effective_value.Pass();
+      }
+
       if (!which_effective.empty()) {
-        result->SetStringWithoutPathExpansion(
+        augmented_value->SetStringWithoutPathExpansion(
             ::onc::kAugmentationEffectiveSetting, which_effective);
       }
       bool is_credential = onc::FieldIsCredential(*signature_, key);
@@ -355,39 +401,41 @@ class MergeToAugmented : public MergeToEffective {
       // leak here.
       if (!is_credential) {
         if (values.user_policy) {
-          result->SetWithoutPathExpansion(::onc::kAugmentationUserPolicy,
-                                          values.user_policy->DeepCopy());
+          augmented_value->SetWithoutPathExpansion(
+              ::onc::kAugmentationUserPolicy, values.user_policy->DeepCopy());
         }
         if (values.device_policy) {
-          result->SetWithoutPathExpansion(::onc::kAugmentationDevicePolicy,
-                                          values.device_policy->DeepCopy());
+          augmented_value->SetWithoutPathExpansion(
+              ::onc::kAugmentationDevicePolicy,
+              values.device_policy->DeepCopy());
         }
       }
       if (values.user_setting) {
-        result->SetWithoutPathExpansion(::onc::kAugmentationUserSetting,
-                                        values.user_setting->DeepCopy());
+        augmented_value->SetWithoutPathExpansion(
+            ::onc::kAugmentationUserSetting, values.user_setting->DeepCopy());
       }
       if (values.shared_setting) {
-        result->SetWithoutPathExpansion(::onc::kAugmentationSharedSetting,
-                                        values.shared_setting->DeepCopy());
+        augmented_value->SetWithoutPathExpansion(
+            ::onc::kAugmentationSharedSetting,
+            values.shared_setting->DeepCopy());
       }
       if (HasUserPolicy() && values.user_editable) {
-        result->SetBooleanWithoutPathExpansion(::onc::kAugmentationUserEditable,
-                                               true);
+        augmented_value->SetBooleanWithoutPathExpansion(
+            ::onc::kAugmentationUserEditable, true);
       }
       if (HasDevicePolicy() && values.device_editable) {
-        result->SetBooleanWithoutPathExpansion(
+        augmented_value->SetBooleanWithoutPathExpansion(
             ::onc::kAugmentationDeviceEditable, true);
       }
     } else {
       // This field is not part of the provided ONCSignature, thus it cannot be
       // controlled by policy.
-      result->SetStringWithoutPathExpansion(
+      augmented_value->SetStringWithoutPathExpansion(
           ::onc::kAugmentationEffectiveSetting, ::onc::kAugmentationUnmanaged);
     }
-    if (result->empty())
-      result.reset();
-    return result.PassAs<base::Value>();
+    if (augmented_value->empty())
+      augmented_value.reset();
+    return augmented_value.PassAs<base::Value>();
   }
 
   // MergeListOfDictionaries override.

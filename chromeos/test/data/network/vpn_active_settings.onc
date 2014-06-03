@@ -1,0 +1,5 @@
+{ "Type": "VPN",
+  "Name": "testopenvpn",
+  "ConnectionState": "Connected",
+  "GUID": "123"
+}
