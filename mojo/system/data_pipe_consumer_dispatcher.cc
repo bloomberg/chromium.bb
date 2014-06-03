@@ -56,7 +56,7 @@ MojoResult DataPipeConsumerDispatcher::ReadDataImplNoLock(
     MojoReadDataFlags flags) {
   lock().AssertAcquired();
 
-  if (!VerifyUserPointer<uint32_t>(num_bytes, 1))
+  if (!VerifyUserPointer<uint32_t>(num_bytes))
     return MOJO_RESULT_INVALID_ARGUMENT;
 
   if ((flags & MOJO_READ_DATA_FLAG_DISCARD)) {
@@ -75,7 +75,7 @@ MojoResult DataPipeConsumerDispatcher::ReadDataImplNoLock(
   }
 
   // Only verify |elements| if we're neither discarding nor querying.
-  if (!VerifyUserPointer<void>(elements, *num_bytes))
+  if (!VerifyUserPointerWithSize<1>(elements, *num_bytes))
     return MOJO_RESULT_INVALID_ARGUMENT;
 
   return data_pipe_->ConsumerReadData(
@@ -88,9 +88,9 @@ MojoResult DataPipeConsumerDispatcher::BeginReadDataImplNoLock(
     MojoReadDataFlags flags) {
   lock().AssertAcquired();
 
-  if (!VerifyUserPointer<const void*>(buffer, 1))
+  if (!VerifyUserPointerWithCount<const void*>(buffer, 1))
     return MOJO_RESULT_INVALID_ARGUMENT;
-  if (!VerifyUserPointer<uint32_t>(buffer_num_bytes, 1))
+  if (!VerifyUserPointer<uint32_t>(buffer_num_bytes))
     return MOJO_RESULT_INVALID_ARGUMENT;
   // These flags may not be used in two-phase mode.
   if ((flags & MOJO_READ_DATA_FLAG_DISCARD) ||
