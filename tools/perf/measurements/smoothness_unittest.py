@@ -106,19 +106,12 @@ class SmoothnessUnitTest(
     self.assertEquals(len(mostly_smooth), 1)
     self.assertGreaterEqual(mostly_smooth[0].GetRepresentativeNumber(), 0)
 
-    mean_mouse_wheel_latency = results.FindAllPageSpecificValuesNamed(
-        'mean_mouse_wheel_latency')
-    if mean_mouse_wheel_latency:
-      self.assertEquals(len(mean_mouse_wheel_latency), 1)
+    mean_input_event_latency = results.FindAllPageSpecificValuesNamed(
+        'mean_input_event_latency')
+    if mean_input_event_latency:
+      self.assertEquals(len(mean_input_event_latency), 1)
       self.assertGreater(
-          mean_mouse_wheel_latency[0].GetRepresentativeNumber(), 0)
-
-    mean_touch_scroll_latency = results.FindAllPageSpecificValuesNamed(
-        'mean_touch_scroll_latency')
-    if mean_touch_scroll_latency:
-      self.assertEquals(len(mean_touch_scroll_latency), 1)
-      self.assertGreater(
-          mean_touch_scroll_latency[0].GetRepresentativeNumber(), 0)
+          mean_input_event_latency[0].GetRepresentativeNumber(), 0)
 
   def testSmoothnessForPageWithNoGesture(self):
     ps = self.CreateEmptyPageSet()
