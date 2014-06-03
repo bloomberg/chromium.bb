@@ -6,6 +6,8 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "mojo/public/cpp/application/application.h"
+#include "mojo/service_manager/service_manager.h"
 #include "mojo/services/public/cpp/view_manager/lib/view_manager_private.h"
 #include "mojo/services/public/cpp/view_manager/lib/view_manager_synchronizer.h"
 #include "mojo/services/public/cpp/view_manager/lib/view_tree_node_private.h"
@@ -19,6 +21,8 @@
 namespace mojo {
 namespace view_manager {
 namespace {
+
+const char kTestServiceURL[] = "mojo:test_url";
 
 base::RunLoop* current_run_loop = NULL;
 
@@ -43,6 +47,33 @@ void WaitForAllChangesToBeAcked(ViewManager* manager) {
   DoRunLoop();
   ViewManagerPrivate(manager).synchronizer()->ClearChangesAckedCallback();
 }
+
+// Used with IViewManager::Connect(). Creates a TestViewManagerClientConnection,
+// which creates and owns the ViewManagerProxy.
+class ConnectServiceLoader : public ServiceLoader {
+ public:
+  explicit ConnectServiceLoader(base::Callback<void(ViewManager*)> callback)
+      : callback_(callback) {}
+  virtual ~ConnectServiceLoader() {}
+
+  // ServiceLoader:
+  virtual void LoadService(ServiceManager* manager,
+                           const GURL& url,
+                           ScopedMessagePipeHandle shell_handle) OVERRIDE {
+    scoped_ptr<Application> app(new Application(shell_handle.Pass()));
+    ViewManager::Create(app.get(), callback_);
+    apps_.push_back(app.release());
+  }
+  virtual void OnServiceError(ServiceManager* manager,
+                              const GURL& url) OVERRIDE {
+  }
+
+ private:
+  ScopedVector<Application> apps_;
+  base::Callback<void(ViewManager*)> callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(ConnectServiceLoader);
+};
 
 class ActiveViewChangedObserver : public ViewTreeNodeObserver {
  public:
@@ -276,10 +307,45 @@ class ViewManagerTest : public testing::Test {
   // Overridden from testing::Test:
   virtual void SetUp() OVERRIDE {
     test_helper_.Init();
+    ConnectServiceLoader* loader =
+        new ConnectServiceLoader(
+            base::Bind(&ViewManagerTest::OnViewManagerLoaded,
+                       base::Unretained(this)));
+    test_helper_.SetLoaderForURL(
+        scoped_ptr<ServiceLoader>(loader),
+        GURL(kTestServiceURL));
+
+    ConnectToService(test_helper_.service_provider(),
+                     "mojo:mojo_view_manager",
+                     &view_manager_init_);
+    ASSERT_TRUE(ViewManagerInitConnect(view_manager_init_.get(),
+                                       kTestServiceURL));
+  }
+
+  void ViewManagerInitConnectCallback(bool* result_cache,
+                                      bool result) {
+    *result_cache = result;
+  }
+
+  bool ViewManagerInitConnect(IViewManagerInit* view_manager_init,
+                              const std::string& url) {
+    bool result = false;
+    view_manager_init->Connect(
+        url,
+        base::Bind(&ViewManagerTest::ViewManagerInitConnectCallback,
+                   base::Unretained(this), &result));
+    init_loop_.Run();
+    return result;
+  }
+
+  void OnViewManagerLoaded(ViewManager* view_manager) {
+    init_loop_.Quit();
   }
 
   base::MessageLoop loop_;
+  base::RunLoop init_loop_;
   shell::ShellTestHelper test_helper_;
+  IViewManagerInitPtr view_manager_init_;
   ViewManager* view_manager_1_;
   ViewManager* view_manager_2_;
   int commit_count_;
@@ -335,6 +401,9 @@ class HierarchyChanged_NodeCreatedObserver : public TreeObserverBase {
 };
 
 // TODO(beng): reenable these once converted to new way of connecting.
+
+TEST_F(ViewManagerTest, SetUp) {
+}
 
 TEST_F(ViewManagerTest, DISABLED_HierarchyChanged_NodeCreated) {
   HierarchyChanged_NodeCreatedObserver observer(view_manager_2());

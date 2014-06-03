@@ -19,7 +19,7 @@ class EmbeddedApp : public Application {
  private:
   // Overridden from Application:
   virtual void Initialize() MOJO_OVERRIDE {
-    view_manager_ = new view_manager::ViewManager(this);
+    view_manager_ = view_manager::ViewManager::CreateBlocking(this);
     view_manager::View* view = view_manager::View::Create(view_manager_);
     view_manager_->tree()->SetActiveView(view);
     view->SetColor(SK_ColorYELLOW);

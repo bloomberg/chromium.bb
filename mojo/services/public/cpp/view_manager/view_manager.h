@@ -8,6 +8,7 @@
 #include <map>
 
 #include "base/basictypes.h"
+#include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "mojo/public/cpp/bindings/callback.h"
 #include "mojo/services/public/cpp/view_manager/view_tree_node.h"
@@ -27,15 +28,15 @@ class ViewTreeNode;
 // TODO: displays
 class ViewManager {
  public:
-  // Blocks on establishing the connection and subsequently receiving a node
-  // tree from the service.
-  // TODO(beng): blocking is currently achieved by running a nested runloop,
-  //             which will dispatch all messages on all pipes while blocking.
-  //             we should instead wait on the client pipe receiving a
-  //             connection established message.
-  // TODO(beng): this method could optionally not block if supplied a callback.
-  explicit ViewManager(Application* application);
   ~ViewManager();
+
+  // |ready_callback| is run when the ViewManager connection is established
+  // and ready to use.
+  static void Create(
+      Application* application,
+      const base::Callback<void(ViewManager*)> ready_callback);
+  // Blocks until ViewManager is ready to use.
+  static ViewManager* CreateBlocking(Application* application);
 
   ViewTreeNode* tree() { return tree_; }
 
@@ -48,6 +49,11 @@ class ViewManager {
   friend class ViewManagerPrivate;
   typedef std::map<TransportNodeId, ViewTreeNode*> IdToNodeMap;
   typedef std::map<TransportViewId, View*> IdToViewMap;
+
+  ViewManager(Application* application,
+              const base::Callback<void(ViewManager*)> ready_callback);
+
+  base::Callback<void(ViewManager*)> ready_callback_;
 
   ViewManagerSynchronizer* synchronizer_;
   ViewTreeNode* tree_;

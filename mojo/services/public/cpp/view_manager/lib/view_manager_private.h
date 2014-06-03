@@ -19,6 +19,10 @@ class ViewManagerPrivate {
   explicit ViewManagerPrivate(ViewManager* manager);
   ~ViewManagerPrivate();
 
+  void NotifyReady() {
+    manager_->ready_callback_.Run(manager_);
+  }
+
   ViewManagerSynchronizer* synchronizer() {
     return manager_->synchronizer_;
   }

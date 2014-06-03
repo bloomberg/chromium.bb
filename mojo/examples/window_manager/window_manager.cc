@@ -19,7 +19,7 @@ class WindowManager : public Application {
  private:
   // Overridden from Application:
   virtual void Initialize() MOJO_OVERRIDE {
-    view_manager_ = new view_manager::ViewManager(this);
+    view_manager_ = view_manager::ViewManager::CreateBlocking(this);
     view_manager::ViewTreeNode* node =
         view_manager::ViewTreeNode::Create(view_manager_);
     view_manager_->tree()->AddChild(node);

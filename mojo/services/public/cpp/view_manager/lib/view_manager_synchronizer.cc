@@ -560,12 +560,10 @@ void ViewManagerSynchronizer::OnViewManagerConnectionEstablished(
   connection_id_ = connection_id;
   next_server_change_id_ = next_server_change_id;
 
-  ViewManagerPrivate(view_manager()).set_root(
-      BuildNodeTree(view_manager(), nodes));
-
+  ViewManagerPrivate private_manager(view_manager());
+  private_manager.set_root(BuildNodeTree(view_manager(), nodes));
   Sync();
-
-  base::MessageLoop::current()->Quit();
+  private_manager.NotifyReady();
 }
 
 void ViewManagerSynchronizer::OnServerChangeIdAdvanced(
