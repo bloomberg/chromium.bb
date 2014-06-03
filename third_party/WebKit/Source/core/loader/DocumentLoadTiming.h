@@ -46,8 +46,6 @@ public:
 
     void markUnloadEventStart() { m_unloadEventStart = monotonicallyIncreasingTime(); }
     void markUnloadEventEnd() { m_unloadEventEnd = monotonicallyIncreasingTime(); }
-    void markRedirectStart() { m_redirectStart = monotonicallyIncreasingTime(); }
-    void markRedirectEnd() { m_redirectEnd = monotonicallyIncreasingTime(); }
     void markFetchStart() { m_fetchStart = monotonicallyIncreasingTime(); }
     void setResponseEnd(double monotonicTime) { m_responseEnd = monotonicTime; }
     void markLoadEventStart() { m_loadEventStart = monotonicallyIncreasingTime(); }
