@@ -56,7 +56,7 @@ int RunSlave(int iteration) {
   base::FilePath exe;
   PathService::Get(base::FILE_EXE, &exe);
 
-  CommandLine cmdline(exe);
+  base::CommandLine cmdline(exe);
   cmdline.AppendArg(base::IntToString(iteration));
 
   base::ProcessHandle handle;
@@ -271,7 +271,7 @@ int main(int argc, const char* argv[]) {
 #if defined(OS_WIN)
   logging::LogEventProvider::Initialize(kStressCacheTraceProviderName);
 #else
-  CommandLine::Init(argc, argv);
+  base::CommandLine::Init(argc, argv);
   logging::LoggingSettings settings;
   settings.logging_dest = logging::LOG_TO_SYSTEM_DEBUG_LOG;
   logging::InitLogging(settings);

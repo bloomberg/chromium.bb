@@ -161,8 +161,8 @@ int main(int argc, char** argv) {
   signal(SIGINT, SignalHandler);
   signal(SIGHUP, SignalHandler);
 
-  CommandLine::Init(argc, argv);
-  CommandLine cl(argc, argv);
+  base::CommandLine::Init(argc, argv);
+  base::CommandLine cl(argc, argv);
 
   if (cl.HasSwitch("help") || argc < 2) {
     printf("%s <options>\n", argv[0]);

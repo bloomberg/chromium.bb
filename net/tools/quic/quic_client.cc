@@ -213,7 +213,7 @@ void QuicClient::Disconnect() {
 }
 
 void QuicClient::SendRequestsAndWaitForResponse(
-    const CommandLine::StringVector& args) {
+    const base::CommandLine::StringVector& args) {
   for (size_t i = 0; i < args.size(); ++i) {
     BalsaHeaders headers;
     headers.SetRequestFirstlineFromStringPieces("GET", args[i], "HTTP/1.1");

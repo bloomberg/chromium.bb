@@ -53,7 +53,7 @@ int main(int argc, const char* argv[]) {
       logging::LOG_TO_ALL;
 #endif
 
-  CommandLine::Init(argc, argv);
+  base::CommandLine::Init(argc, argv);
 
   base::FilePath log_filename;
   PathService::Get(base::DIR_EXE, &log_filename);

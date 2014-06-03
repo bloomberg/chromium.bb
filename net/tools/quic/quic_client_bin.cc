@@ -35,8 +35,8 @@ int32 FLAGS_initial_flow_control_window = 100 * net::kMaxPacketSize;
 bool FLAGS_secure = false;
 
 int main(int argc, char *argv[]) {
-  CommandLine::Init(argc, argv);
-  CommandLine* line = CommandLine::ForCurrentProcess();
+  base::CommandLine::Init(argc, argv);
+  base::CommandLine* line = base::CommandLine::ForCurrentProcess();
 
   logging::LoggingSettings settings;
   settings.logging_dest = logging::LOG_TO_SYSTEM_DEBUG_LOG;

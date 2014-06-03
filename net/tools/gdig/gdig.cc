@@ -276,8 +276,9 @@ GDig::Result GDig::Main(int argc, const char* argv[]) {
 }
 
 bool GDig::ParseCommandLine(int argc, const char* argv[]) {
-  CommandLine::Init(argc, argv);
-  const CommandLine& parsed_command_line = *CommandLine::ForCurrentProcess();
+  base::CommandLine::Init(argc, argv);
+  const base::CommandLine& parsed_command_line =
+      *base::CommandLine::ForCurrentProcess();
 
   if (parsed_command_line.HasSwitch("config_timeout")) {
     int timeout_seconds = 0;

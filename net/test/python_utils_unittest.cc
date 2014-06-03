@@ -45,7 +45,7 @@ TEST(PythonUtils, Append) {
 }
 
 TEST(PythonUtils, PythonRunTime) {
-  CommandLine cmd_line(CommandLine::NO_PROGRAM);
+  base::CommandLine cmd_line(base::CommandLine::NO_PROGRAM);
   EXPECT_TRUE(GetPythonCommand(&cmd_line));
 
   // Run a python command to print a string and make sure the output is what

@@ -21,7 +21,7 @@
 #include "net/proxy/proxy_config_service.h"
 #include "net/proxy/proxy_service.h"
 
-#if defined(USE_GLIB) && !defined(OS_MACOSX) && !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+#if defined(USE_GLIB)
 #include <glib-object.h>
 #endif
 
@@ -131,7 +131,7 @@ int main(int argc, char* argv[]) {
 #if defined(OS_MACOSX)
   base::mac::ScopedNSAutoreleasePool pool;
 #endif
-#if defined(USE_GLIB) && !defined(OS_MACOSX) && !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+#if defined(USE_GLIB)
   // g_type_init will be deprecated in 2.36. 2.35 is the development
   // version for 2.36, hence do not call g_type_init starting 2.35.
   // http://developer.gnome.org/gobject/unstable/gobject-Type-Information.html#g-type-init
@@ -140,9 +140,9 @@ int main(int argc, char* argv[]) {
   // Normally handled by BrowserMainLoop::InitializeToolkit().
   g_type_init();
 #endif
-#endif  // defined(USE_GLIB) && !defined(OS_MACOSX) && !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+#endif  // defined(USE_GLIB)
   base::AtExitManager exit_manager;
-  CommandLine::Init(argc, argv);
+  base::CommandLine::Init(argc, argv);
   logging::LoggingSettings settings;
   settings.logging_dest = logging::LOG_TO_SYSTEM_DEBUG_LOG;
   logging::InitLogging(settings);

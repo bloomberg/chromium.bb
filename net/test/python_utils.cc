@@ -106,7 +106,7 @@ bool GetPyProtoPath(base::FilePath* dir) {
   return true;
 }
 
-bool GetPythonCommand(CommandLine* python_cmd) {
+bool GetPythonCommand(base::CommandLine* python_cmd) {
   DCHECK(python_cmd);
 
 #if defined(OS_WIN)

@@ -348,7 +348,7 @@ class WebSocketFrameTestMaskBenchmark : public testing::Test {
 
   virtual void SetUp() {
     std::string iterations(
-        CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+        base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
             kBenchmarkIterations));
     int benchmark_iterations = 0;
     if (!iterations.empty() &&

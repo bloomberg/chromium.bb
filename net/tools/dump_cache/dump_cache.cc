@@ -96,7 +96,7 @@ int LaunchSlave(CommandLine command_line,
   if (!base::LaunchProcess(command_line, base::LaunchOptions(), NULL)) {
     printf("Unable to launch the needed version of this tool: %ls\n",
            command_line.GetProgram().value().c_str());
-    printf(kUpgradeHelp);
+    printf("%s", kUpgradeHelp);
     return TOOL_NOT_FOUND;
   }
   return ALL_GOOD;
@@ -110,9 +110,10 @@ int main(int argc, const char* argv[]) {
   // Setup an AtExitManager so Singleton objects will be destroyed.
   base::AtExitManager at_exit_manager;
 
-  CommandLine::Init(argc, argv);
+  base::CommandLine::Init(argc, argv);
 
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
   base::FilePath input_path = command_line.GetSwitchValuePath(kInputPath);
   if (input_path.empty())
     return Help();

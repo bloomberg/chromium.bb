@@ -23,8 +23,9 @@ using std::string;
 int main(int argc, char** argv) {
   base::AtExitManager exit_manager;
 
-  CommandLine::Init(argc, argv);
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  base::CommandLine::Init(argc, argv);
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
 
   if (!command_line.HasSwitch(kFileToParse)) {
     LOG(ERROR) << "Usage: " << argv[0]

@@ -194,12 +194,13 @@ int main(int argc, char* argv[]) {
 #endif
 
   base::AtExitManager exit_manager;
-  CommandLine::Init(argc, argv);
+  base::CommandLine::Init(argc, argv);
   logging::LoggingSettings settings;
   settings.logging_dest = logging::LOG_TO_SYSTEM_DEBUG_LOG;
   logging::InitLogging(settings);
 
-  const CommandLine& parsed_command_line = *CommandLine::ForCurrentProcess();
+  const base::CommandLine& parsed_command_line =
+      *base::CommandLine::ForCurrentProcess();
   GURL url(parsed_command_line.GetSwitchValueASCII("url"));
   if (!url.is_valid() ||
       (url.scheme() != "http" && url.scheme() != "https")) {
