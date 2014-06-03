@@ -4,6 +4,8 @@
 
 #include "mojo/services/public/cpp/view_manager/view_manager.h"
 
+#include "base/message_loop/message_loop.h"
+#include "mojo/public/cpp/application/application.h"
 #include "mojo/services/public/cpp/view_manager/lib/view_manager_synchronizer.h"
 #include "mojo/services/public/cpp/view_manager/lib/view_tree_node_private.h"
 #include "mojo/services/public/cpp/view_manager/view.h"
@@ -11,8 +13,13 @@
 namespace mojo {
 namespace view_manager {
 
-ViewManager::ViewManager(ServiceProvider* service_provider)
-    : service_provider_(service_provider) {}
+ViewManager::ViewManager(Application* application)
+    : synchronizer_(NULL),
+      tree_(NULL) {
+  application->AddService<ViewManagerSynchronizer>(this);
+  // Block in a nested message loop until the ViewManagerSynchronizer is set up.
+  base::MessageLoop::current()->Run();
+}
 
 ViewManager::~ViewManager() {
   while (!nodes_.empty()) {
@@ -31,10 +38,6 @@ ViewManager::~ViewManager() {
   }
 }
 
-void ViewManager::Init() {
-  synchronizer_.reset(new ViewManagerSynchronizer(this));
-}
-
 ViewTreeNode* ViewManager::GetNodeById(TransportNodeId id) {
   IdToNodeMap::const_iterator it = nodes_.find(id);
   return it != nodes_.end() ? it->second : NULL;
@@ -43,6 +46,10 @@ ViewTreeNode* ViewManager::GetNodeById(TransportNodeId id) {
 View* ViewManager::GetViewById(TransportViewId id) {
   IdToViewMap::const_iterator it = views_.find(id);
   return it != views_.end() ? it->second : NULL;
+}
+
+void ViewManager::Embed(const String& url, ViewTreeNode* node) {
+  synchronizer_->Embed(url, node->id());
 }
 
 }  // namespace view_manager

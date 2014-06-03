@@ -36,10 +36,7 @@ class SampleApp : public Application {
     view_manager_->tree()->AddChild(node1);
     node1->AddChild(node11);
 
-    gfx::Canvas canvas(gfx::Size(800, 600), 1.0f, true);
-    canvas.DrawColor(SK_ColorRED);
-    view11->SetContents(
-        skia::GetTopDevice(*canvas.sk_canvas())->accessBitmap(true));
+    view11->SetColor(SK_ColorRED);
   }
 
  private:
