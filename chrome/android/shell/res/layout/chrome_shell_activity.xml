@@ -28,7 +28,7 @@
             android:selectAllOnFocus="true"
             android:hint="@string/url_hint"
             android:inputType="textUri"
-            android:imeOptions="actionGo" />
+            android:imeOptions="actionGo|flagNoExtractUi" />
         <ImageButton android:id="@+id/menu_button"
             android:layout_width="38dp"
             android:layout_height="38dp"
