@@ -36,6 +36,8 @@
 
 namespace WebCore {
 
+// If you change this value, then also update the corresponding value in
+// LayoutTests/media/media-controls.js.
 static const double timeWithoutMouseMovementBeforeHidingMediaControls = 3;
 
 MediaControls::MediaControls(HTMLMediaElement& mediaElement)

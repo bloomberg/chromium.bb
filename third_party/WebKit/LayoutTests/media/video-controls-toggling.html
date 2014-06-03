@@ -8,7 +8,6 @@
         var video;
         var panel;
         var muteButtonCoordinates;
-        var fadeoutTime = 300;
 
         function init()
         {
@@ -47,13 +46,13 @@
                 run("eventSender.mouseMoveTo(video.offsetLeft, video.offsetTop + 2 * video.offsetHeight)");
             }
 
-            setTimeout(continueTest, fadeoutTime);
+            setTimeout(continueTest, controlsFadeOutDurationMs);
         }
 
         function continueTest()
         {
             if (panel.style['display'] != 'none') {
-                setTimeout(continueTest, fadeoutTime);
+                setTimeout(continueTest, controlsFadeOutDurationMs);
                 return;
             }
 

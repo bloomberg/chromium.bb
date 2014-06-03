@@ -8,7 +8,6 @@
     <script>
         var panel;
         var playButtonCoordinates;
-        var fadeoutTime = 3500;
         var count = 0;
 
         function init()
@@ -22,7 +21,7 @@
         {
             waitForEvent(video, 'webkitfullscreenchange', onfullscreenchange);
 
-            panel = mediaControlsElement(internals.shadowRoot(video).firstChild, "-webkit-media-controls-panel");
+            panel = mediaControlsButton(video, "panel");
             if (window.eventSender) {
                 try {
                     playButtonCoordinates = mediaControlsButtonCoordinates(video, "play-button");
@@ -52,7 +51,7 @@
         {
             switch (count) {
                 case 0:
-                    setTimeout(continueTest, fadeoutTime);
+                    runAfterControlsHidden(continueTest, video);
                     break;
                 case 1:
                     consoleWrite("");

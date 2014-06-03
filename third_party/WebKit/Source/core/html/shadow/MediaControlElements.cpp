@@ -55,6 +55,8 @@ using namespace HTMLNames;
 static const AtomicString& getMediaControlCurrentTimeDisplayElementShadowPseudoId();
 static const AtomicString& getMediaControlTimeRemainingDisplayElementShadowPseudoId();
 
+// If you change any of the following fade durations, then also update the
+// corresponding values in LayoutTests/media/media-controls.js.
 static const double fadeInDuration = 0.1;
 static const double fadeOutDuration = 0.3;
 

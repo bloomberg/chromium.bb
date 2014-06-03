@@ -20,20 +20,17 @@ video.addEventListener("canplay", function()
     playButton.click();
 
     testExpected("document.activeElement", video);
-});
 
-video.addEventListener("timeupdate", function(event)
-{
-    var video = event.target;
-    if (video.currentTime < 4)
-        return;
-    controls = mediaControlsButton(video, "panel");
-    testExpected("getComputedStyle(controls).opacity", 0);
+    runAfterControlsHidden(function()
+    {
+        controls = mediaControlsButton(video, "panel");
+        testExpected("getComputedStyle(controls).opacity", 0);
 
-    testExpected("document.activeElement", document.body);
+        testExpected("document.activeElement", document.body);
 
-    consoleWrite("");
-    endTest();
+        consoleWrite("");
+        endTest();
+    }, video);
 });
 
 </script>

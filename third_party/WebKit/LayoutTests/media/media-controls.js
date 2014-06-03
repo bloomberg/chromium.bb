@@ -1,6 +1,16 @@
 var captionsButtonElement;
 var captionsButtonCoordinates;
 
+// These reflect the values used to fade in/out the media controls. Should
+// mirror the values 'fadeInDuration'/'fadeOutDuration' in MediaControlElements.cpp.
+const controlsFadeInDurationMs = 100;
+const controlsFadeOutDurationMs = 300;
+
+// The timeout for the hide-after-no-mouse-movement behavior. Defined (and
+// should mirror) the value 'timeWithoutMouseMovementBeforeHidingMediaControls'
+// in MediaControls.cpp.
+const controlsMouseMovementTimeoutMs = 3000;
+
 function mediaControlsElement(first, id)
 {
     for (var element = first; element; element = element.nextSibling) {
@@ -108,4 +118,20 @@ function clickCCButton()
     eventSender.mouseMoveTo(captionsButtonCoordinates[0], captionsButtonCoordinates[1]);
     eventSender.mouseDown();
     eventSender.mouseUp();
+}
+
+function runAfterControlsHidden(func, mediaElement)
+{
+    if (mediaElement.paused)
+        throw "The media element is not playing";
+
+    // Compute the time it'll take until the controls will be invisible -
+    // assuming playback has been started prior to invoking this
+    // function. Allow 500ms slack.
+    var hideTimeoutMs = controlsMouseMovementTimeoutMs + controlsFadeOutDurationMs + 500;
+
+    if (!mediaElement.loop && hideTimeoutMs >= 1000 * (mediaElement.duration - mediaElement.currentTime))
+        throw "The media will end before the controls have been hidden";
+
+    setTimeout(func, hideTimeoutMs);
 }
