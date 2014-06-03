@@ -92,7 +92,7 @@ class WebRtcLoggingHandlerHost : public content::BrowserMessageFilter {
 
   // Called when an RTP packet is sent or received. Must be called on the UI
   // thread.
-  void OnRtpPacket(const uint8* packet_header,
+  void OnRtpPacket(scoped_ptr<uint8[]> packet_header,
                    size_t header_length,
                    size_t packet_length,
                    bool incoming);

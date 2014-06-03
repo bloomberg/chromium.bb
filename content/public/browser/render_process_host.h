@@ -208,7 +208,7 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   virtual void SetWebRtcLogMessageCallback(
       base::Callback<void(const std::string&)> callback) = 0;
 
-  typedef base::Callback<void(const uint8* packet_header,
+  typedef base::Callback<void(scoped_ptr<uint8[]> packet_header,
                               size_t header_length,
                               size_t packet_length,
                               bool incoming)> WebRtcRtpPacketCallback;

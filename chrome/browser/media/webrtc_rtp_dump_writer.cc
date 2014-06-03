@@ -71,8 +71,9 @@ void WritePacketDumpHeaderBigEndian(const base::TimeTicks& start,
   base::WriteBigEndian(buffer, packet_length);
   buffer += sizeof(packet_length);
 
-  base::WriteBigEndian(buffer,
-                       (base::TimeTicks::Now() - start).InMilliseconds());
+  uint32 elapsed =
+      static_cast<uint32>((base::TimeTicks::Now() - start).InMilliseconds());
+  base::WriteBigEndian(buffer, elapsed);
 }
 
 // Append |src_len| bytes from |src| to |dest|.

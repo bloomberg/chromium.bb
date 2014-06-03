@@ -281,21 +281,18 @@ void WebRtcLoggingHandlerHost::StopRtpDump(
   rtp_dump_handler_->StopDump(type, callback);
 }
 
-void WebRtcLoggingHandlerHost::OnRtpPacket(const uint8* packet_header,
+void WebRtcLoggingHandlerHost::OnRtpPacket(scoped_ptr<uint8[]> packet_header,
                                            size_t header_length,
                                            size_t packet_length,
                                            bool incoming) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  scoped_ptr<uint8[]> header_data(new uint8[header_length]);
-  memcpy(header_data.get(), packet_header, header_length);
 
   BrowserThread::PostTask(
       BrowserThread::IO,
       FROM_HERE,
       base::Bind(&WebRtcLoggingHandlerHost::DumpRtpPacketOnIOThread,
                  this,
-                 base::Passed(&header_data),
+                 base::Passed(&packet_header),
                  header_length,
                  packet_length,
                  incoming));

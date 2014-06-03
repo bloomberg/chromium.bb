@@ -576,7 +576,7 @@ void P2PSocketHost::DumpRtpPacketOnIOThread(scoped_ptr<uint8[]> packet_header,
   BrowserThread::PostTask(BrowserThread::UI,
                           FROM_HERE,
                           base::Bind(packet_dump_callback_,
-                                     packet_header.get(),
+                                     Passed(&packet_header),
                                      header_length,
                                      packet_length,
                                      incoming));
