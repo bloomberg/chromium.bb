@@ -415,7 +415,7 @@ class Builder(object):
       runner = subprocess.call
       if get_output:
         runner = subprocess.check_output
-      if self.is_pnacl_toolchain:
+      if self.is_pnacl_toolchain and pynacl.platform.IsWindows():
         # PNaCl toolchain executable is a script, not a binary, so it doesn't
         # want to run on Windows without a shell
         result = runner(' '.join(cmd_line), shell=True, **kwargs)
