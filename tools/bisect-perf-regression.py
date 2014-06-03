@@ -1438,16 +1438,17 @@ class BisectPerformanceMetrics(object):
           continue
 
         if (depot_data.get('recurse') and depot in depot_data.get('from')):
-          src_dir = (deps_data.get(depot_data.get('src')) or
-                     deps_data.get(depot_data.get('src_old')))
+          depot_data_src = depot_data.get('src') or depot_data.get('src_old')
+          src_dir = deps_data.get(depot_data_src)
           if src_dir:
-            self.depot_cwd[depot_name] = os.path.join(self.src_cwd, src_dir[4:])
-            re_results = rxp.search(deps_data.get(src_dir, ''))
+            self.depot_cwd[depot_name] = os.path.join(self.src_cwd,
+                                                      depot_data_src[4:])
+            re_results = rxp.search(src_dir)
             if re_results:
               results[depot_name] = re_results.group('revision')
             else:
               warning_text = ('Couldn\'t parse revision for %s while bisecting '
-                             '%s' % (depot_name, depot))
+                              '%s' % (depot_name, depot))
               if not warning_text in self.warnings:
                 self.warnings.append(warning_text)
           else:
