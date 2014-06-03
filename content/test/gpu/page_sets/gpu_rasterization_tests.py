@@ -11,11 +11,10 @@ class GpuRasterizationTestsPage(page_module.Page):
 
   def __init__(self, page_set):
     super(GpuRasterizationTestsPage, self).__init__(
-      url='file://../../data/gpu/pixel_css3d.html',
+      url='file://../../data/gpu/pixel_background.html',
       page_set=page_set,
-      name='GpuRasterization.CSS3DBlueBox')
+      name='GpuRasterization.BlueBox')
 
-    self.user_agent_type = 'desktop'
     self.expectations = [
       {'comment': 'body-t',
        'color': [255, 255, 255],
@@ -24,15 +23,15 @@ class GpuRasterizationTestsPage(page_module.Page):
       {'comment': 'body-r',
        'color': [255, 255, 255],
        'tolerance': 0,
-       'location': [245, 5]},
+       'location': [215, 5]},
       {'comment': 'body-b',
        'color': [255, 255, 255],
        'tolerance': 0,
-       'location': [245, 245]},
+       'location': [215, 215]},
       {'comment': 'body-l',
        'color': [255, 255, 255],
        'tolerance': 0,
-       'location': [5, 245]},
+       'location': [5, 215]},
       {'comment': 'background-t',
        'color': [0, 0, 0],
        'tolerance': 0,
@@ -60,13 +59,13 @@ class GpuRasterizationTestsPage(page_module.Page):
       {'comment': 'box-b',
        'color': [0, 0, 255],
        'tolerance': 0,
-       'location': [140, 120]},
+       'location': [140, 140]},
       {'comment': 'box-l',
        'color': [0, 0, 255],
        'tolerance': 0,
-       'location': [70, 120]}
+       'location': [70, 140]}
     ]
-    self.test_rect = [0, 0, 250, 250]
+    self.test_rect = [0, 0, 220, 220]
 
   def RunNavigateSteps(self, action_runner):
     action_runner.NavigateToPage(self)
@@ -82,7 +81,6 @@ class GpuRasterizationTestsPageSet(page_set_module.PageSet):
   """ Basic test cases for GPU rasterization. """
 
   def __init__(self):
-    super(GpuRasterizationTestsPageSet, self).__init__(
-      user_agent_type='desktop')
+    super(GpuRasterizationTestsPageSet, self).__init__()
 
     self.AddPage(GpuRasterizationTestsPage(self))
