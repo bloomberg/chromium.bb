@@ -131,3 +131,57 @@ onload = function() {
     </p>
   </div>
 
+<h2 id="local_resources">Accessing packaged resources</h2>
+
+<p>
+By default, webviews are prevented from loading any resources packaged with
+the app. However, <a href="#partition">webview partitions</a> may be granted
+access to these resources via a <code>webview.partitions</code> section in
+the app manifest. Partitions may be granted access to a set of files by
+matching partition name patterns with file name patterns. Both sorts of
+patterns may contain the <code>*</code> wildcard.
+</p>
+
+<p>
+Consider the following <code>manifest.json</code> snippet:
+</p>
+
+<pre data-filename="manifest.json">
+{
+  "name": "My extension",
+  ...
+  "permissions": [
+    "webview"
+  ],
+  <strong>"webview": {
+    "partitions": [
+      // In this example, any &lt;webview partition="static"&gt; or
+      // &lt;webview partition="persist:static"&gt; will have access to
+      // header.html, footer.html, and static.png.
+      {
+        "name": "static",
+        "accessible_resources": ["header.html", "footer.html", "static.png"]
+      },
+      // Also, any webview with a partition name beginning with "trusted"
+      // (e.g., "trusted-foo", "persist:trusted-bar") will have access to
+      // ".html" files beginning with "local_", as well as ".png" and ".js"
+      // files.
+      {
+        "name": "trusted*",
+        "accessible_resources": ["local_*.html", "*.png", "*.js"]
+      }
+      // In addition, any &lt;webview partition="trusted-audio"&gt; or
+      // &lt;webview partition="persist:trusted-audio"&gt; will have access to
+      // ".mp3" files. Note that this is in addition to "local_*.html",
+      // "*.png", "*.js" above because "trusted-audio" also matches the
+      // "trusted*" pattern.
+      {
+        "name": "trusted-audio",
+        "accessible_resources": ["*.mp3"]
+      }
+      // Webviews in any other partition are denied access to package-local
+      // resources.
+    ]
+  }</strong>
+}
+</pre>
