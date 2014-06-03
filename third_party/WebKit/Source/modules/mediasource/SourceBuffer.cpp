@@ -247,8 +247,7 @@ void SourceBuffer::setAppendWindowEnd(double end, ExceptionState& exceptionState
     // 4. If the new value is less than or equal to appendWindowStart then throw an InvalidAccessError
     //    exception and abort these steps.
     if (end <= m_appendWindowStart) {
-        // FIXME: Use ExceptionState::indexExceedsMinimumBound() once it lands.
-        exceptionState.throwDOMException(InvalidAccessError, "The value provided ('" + String::number(end) + "') is less than or equal to the minimum value (" + String::number(m_appendWindowStart) + ").");
+        exceptionState.throwDOMException(InvalidAccessError, ExceptionMessages::indexExceedsMinimumBound("value", end, m_appendWindowStart));
         return;
     }
 
