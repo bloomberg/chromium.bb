@@ -88,8 +88,9 @@ Element* FocusNavigationScope::owner() const
         ShadowRoot* shadowRoot = toShadowRoot(root);
         return shadowRoot->isYoungest() ? shadowRoot->host() : shadowRoot->shadowInsertionPointOfYoungerShadowRoot();
     }
+    // FIXME: Figure out the right thing for OOPI here.
     if (Frame* frame = root->document().frame())
-        return frame->ownerElement();
+        return frame->deprecatedLocalOwner();
     return 0;
 }
 

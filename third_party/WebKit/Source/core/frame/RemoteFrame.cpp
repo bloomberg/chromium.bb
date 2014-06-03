@@ -10,14 +10,14 @@
 
 namespace WebCore {
 
-inline RemoteFrame::RemoteFrame(FrameClient* client, FrameHost* host, HTMLFrameOwnerElement* ownerElement)
-    : Frame(client, host, ownerElement)
+inline RemoteFrame::RemoteFrame(FrameClient* client, FrameHost* host, FrameOwner* owner)
+    : Frame(client, host, owner)
 {
 }
 
-PassRefPtr<RemoteFrame> RemoteFrame::create(FrameClient* client, FrameHost* host, HTMLFrameOwnerElement* ownerElement)
+PassRefPtr<RemoteFrame> RemoteFrame::create(FrameClient* client, FrameHost* host, FrameOwner* owner)
 {
-    RefPtr<RemoteFrame> frame = adoptRef(new RemoteFrame(client, host, ownerElement));
+    RefPtr<RemoteFrame> frame = adoptRef(new RemoteFrame(client, host, owner));
     return frame.release();
 }
 
@@ -37,8 +37,9 @@ void RemoteFrame::createView()
     setView(view);
 
     if (ownerRenderer()) {
-        ASSERT(ownerElement());
-        ownerElement()->setWidget(view);
+        HTMLFrameOwnerElement* owner = deprecatedLocalOwner();
+        ASSERT(owner);
+        owner->setWidget(view);
     }
 }
 

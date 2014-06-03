@@ -337,7 +337,7 @@ static void didFailContentSecurityPolicyCheck(FrameLoader* loader)
     // Fire a load event, as timing attacks would otherwise reveal that the
     // frame was blocked. This way, it looks like every other cross-origin
     // page.
-    if (FrameOwner* frameOwner = frame->ownerElement())
+    if (FrameOwner* frameOwner = frame->owner())
         frameOwner->dispatchLoad();
 }
 
@@ -751,7 +751,7 @@ SubstituteData FrameLoader::defaultSubstituteDataForURL(const KURL& url)
 {
     if (!shouldTreatURLAsSrcdocDocument(url))
         return SubstituteData();
-    String srcdoc = m_frame->ownerElement()->fastGetAttribute(srcdocAttr);
+    String srcdoc = m_frame->deprecatedLocalOwner()->fastGetAttribute(srcdocAttr);
     ASSERT(!srcdoc.isNull());
     CString encodedSrcdoc = srcdoc.utf8();
     return SubstituteData(SharedBuffer::create(encodedSrcdoc.data(), encodedSrcdoc.length()), "text/html", "UTF-8", KURL());
@@ -1123,7 +1123,7 @@ void FrameLoader::detachFromParent()
     if (parent && parent->isLocalFrame()) {
         m_frame->setView(nullptr);
         // FIXME: Shouldn't need to check if page() is null here.
-        if (m_frame->ownerElement() && m_frame->page())
+        if (m_frame->owner() && m_frame->page())
             m_frame->page()->decrementSubframeCount();
         m_frame->willDetachFrameHost();
         detachClient();
@@ -1196,8 +1196,11 @@ void FrameLoader::receivedMainResourceError(const ResourceError& error)
     // FIXME: We really ought to be able to just check for isCancellation() here, but there are some
     // ResourceErrors that setIsCancellation() but aren't created by ResourceError::cancelledError().
     ResourceError c(ResourceError::cancelledError(KURL()));
-    if ((error.errorCode() != c.errorCode() || error.domain() != c.domain()) && m_frame->ownerElement())
-        m_frame->ownerElement()->renderFallbackContent();
+    if ((error.errorCode() != c.errorCode() || error.domain() != c.domain()) && m_frame->owner()) {
+        // FIXME: For now, fallback content doesn't work cross process.
+        ASSERT(m_frame->owner()->isLocal());
+        m_frame->deprecatedLocalOwner()->renderFallbackContent();
+    }
 
     checkCompleted();
     if (m_frame->page())
@@ -1399,7 +1402,7 @@ bool FrameLoader::shouldTreatURLAsSrcdocDocument(const KURL& url) const
 {
     if (!equalIgnoringCase(url.string(), "about:srcdoc"))
         return false;
-    HTMLFrameOwnerElement* ownerElement = m_frame->ownerElement();
+    HTMLFrameOwnerElement* ownerElement = m_frame->deprecatedLocalOwner();
     if (!isHTMLIFrameElement(ownerElement))
         return false;
     return ownerElement->fastHasAttribute(srcdocAttr);
@@ -1466,7 +1469,7 @@ SandboxFlags FrameLoader::effectiveSandboxFlags() const
     Frame* parentFrame = m_frame->tree().parent();
     if (parentFrame && parentFrame->isLocalFrame())
         flags |= toLocalFrame(parentFrame)->document()->sandboxFlags();
-    if (FrameOwner* frameOwner = m_frame->ownerElement())
+    if (FrameOwner* frameOwner = m_frame->owner())
         flags |= frameOwner->sandboxFlags();
     return flags;
 }

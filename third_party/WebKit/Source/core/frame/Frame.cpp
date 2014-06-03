@@ -56,10 +56,10 @@ using namespace HTMLNames;
 
 DEFINE_DEBUG_ONLY_GLOBAL(WTF::RefCountedLeakCounter, frameCounter, ("Frame"));
 
-Frame::Frame(FrameClient* client, FrameHost* host, HTMLFrameOwnerElement* ownerElement)
+Frame::Frame(FrameClient* client, FrameHost* host, FrameOwner* owner)
     : m_treeNode(this)
     , m_host(host)
-    , m_ownerElement(ownerElement)
+    , m_owner(owner)
     , m_client(client)
     , m_remotePlatformLayer(0)
 {
@@ -69,9 +69,10 @@ Frame::Frame(FrameClient* client, FrameHost* host, HTMLFrameOwnerElement* ownerE
     frameCounter.increment();
 #endif
 
-    if (this->ownerElement()) {
+    if (m_owner) {
         page()->incrementSubframeCount();
-        this->ownerElement()->setContentFrame(*this);
+        if (m_owner->isLocal())
+            toHTMLFrameOwnerElement(m_owner)->setContentFrame(*this);
     }
 }
 
@@ -142,9 +143,9 @@ ChromeClient& Frame::chromeClient() const
 
 RenderPart* Frame::ownerRenderer() const
 {
-    if (!ownerElement())
+    if (!deprecatedLocalOwner())
         return 0;
-    RenderObject* object = ownerElement()->renderer();
+    RenderObject* object = deprecatedLocalOwner()->renderer();
     if (!object)
         return 0;
     // FIXME: If <object> is ever fixed to disassociate itself from frames
@@ -183,12 +184,13 @@ bool Frame::isMainFrame() const
 
 void Frame::disconnectOwnerElement()
 {
-    if (ownerElement()) {
-        ownerElement()->clearContentFrame();
+    if (m_owner) {
+        if (m_owner->isLocal())
+            toHTMLFrameOwnerElement(m_owner)->clearContentFrame();
         if (page())
             page()->decrementSubframeCount();
     }
-    m_ownerElement = 0;
+    m_owner = 0;
 }
 
 } // namespace WebCore

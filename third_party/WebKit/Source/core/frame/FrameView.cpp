@@ -208,7 +208,8 @@ FrameView::~FrameView()
 
     ASSERT(m_frame);
     ASSERT(m_frame->view() != this || !m_frame->contentRenderer());
-    HTMLFrameOwnerElement* ownerElement = m_frame->ownerElement();
+    // FIXME: Do we need to do something here for OOPI?
+    HTMLFrameOwnerElement* ownerElement = m_frame->deprecatedLocalOwner();
     if (ownerElement && ownerElement->ownedWidget() == this)
         ownerElement->setWidget(nullptr);
 }
@@ -273,7 +274,8 @@ void FrameView::init()
     m_size = LayoutSize();
 
     // Propagate the marginwidth/height and scrolling modes to the view.
-    Element* ownerElement = m_frame->ownerElement();
+    // FIXME: Do we need to do this for OOPI?
+    Element* ownerElement = m_frame->deprecatedLocalOwner();
     if (ownerElement && (isHTMLFrameElement(*ownerElement) || isHTMLIFrameElement(*ownerElement))) {
         HTMLFrameElementBase* frameElt = toHTMLFrameElementBase(ownerElement);
         if (frameElt->scrollingMode() == ScrollbarAlwaysOff)
@@ -588,7 +590,8 @@ void FrameView::calculateScrollbarModesForLayoutAndSetViewportRenderer(Scrollbar
 {
     m_viewportRenderer = 0;
 
-    const HTMLFrameOwnerElement* owner = m_frame->ownerElement();
+    // FIXME: How do we handle this for OOPI?
+    const HTMLFrameOwnerElement* owner = m_frame->deprecatedLocalOwner();
     if (owner && (owner->scrollingMode() == ScrollbarAlwaysOff)) {
         hMode = ScrollbarAlwaysOff;
         vMode = ScrollbarAlwaysOff;
@@ -1186,7 +1189,7 @@ bool FrameView::useSlowRepaints(bool considerOverlap) const
 
     // The chromium compositor does not support scrolling a non-composited frame within a composited page through
     // the fast scrolling path, so force slow scrolling in that case.
-    if (m_frame->ownerElement() && !hasCompositedContent() && m_frame->page() && m_frame->page()->mainFrame()->view()->hasCompositedContent())
+    if (m_frame->owner() && !hasCompositedContent() && m_frame->page() && m_frame->page()->mainFrame()->view()->hasCompositedContent())
         return true;
 
     if (m_isOverlapped && considerOverlap)
@@ -1751,7 +1754,7 @@ HostWindow* FrameView::hostWindow() const
 void FrameView::repaintContentRectangle(const IntRect& r)
 {
     ASSERT(repaintAllowed());
-    ASSERT(!m_frame->ownerElement());
+    ASSERT(!m_frame->owner());
 
     if (m_isTrackingRepaints) {
         IntRect repaintRect = r;
@@ -2300,11 +2303,12 @@ IntRect FrameView::windowClipRect(IncludeScrollbarsInRect scrollbarInclusion) co
 
     // Set our clip rect to be our contents.
     IntRect clipRect = contentsToWindow(visibleContentRect(scrollbarInclusion));
-    if (!m_frame->ownerElement())
+    if (!m_frame->deprecatedLocalOwner())
         return clipRect;
 
     // Take our owner element and get its clip rect.
-    HTMLFrameOwnerElement* ownerElement = m_frame->ownerElement();
+    // FIXME: Do we need to do this for remote frames?
+    HTMLFrameOwnerElement* ownerElement = m_frame->deprecatedLocalOwner();
     FrameView* parentView = ownerElement->document().view();
     if (parentView)
         clipRect.intersect(parentView->windowClipRectForFrameOwner(ownerElement));
@@ -2444,7 +2448,8 @@ bool FrameView::isScrollable()
         return false;
 
     // Covers #2.
-    HTMLFrameOwnerElement* owner = m_frame->ownerElement();
+    // FIXME: Do we need to fix this for OOPI?
+    HTMLFrameOwnerElement* owner = m_frame->deprecatedLocalOwner();
     if (owner && (!owner->renderer() || !owner->renderer()->visibleToHitTesting()))
         return false;
 
@@ -2701,7 +2706,7 @@ void FrameView::paintContents(GraphicsContext* p, const IntRect& rect)
     bool fillWithRed;
     if (document->printing())
         fillWithRed = false; // Printing, don't fill with red (can't remember why).
-    else if (m_frame->ownerElement())
+    else if (m_frame->owner())
         fillWithRed = false; // Subframe, don't fill with red.
     else if (isTransparent())
         fillWithRed = false; // Transparent, don't fill with red.

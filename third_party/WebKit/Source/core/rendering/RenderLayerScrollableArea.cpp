@@ -1459,8 +1459,9 @@ void RenderLayerScrollableArea::updateScrollableAreaSet(bool hasOverflow)
     if (!frameView)
         return;
 
+    // FIXME: Does this need to be fixed later for OOPI?
     bool isVisibleToHitTest = box().visibleToHitTesting();
-    if (HTMLFrameOwnerElement* owner = frame->ownerElement())
+    if (HTMLFrameOwnerElement* owner = frame->deprecatedLocalOwner())
         isVisibleToHitTest &= owner->renderer() && owner->renderer()->visibleToHitTesting();
 
     bool didNeedCompositedScrolling = needsCompositedScrolling();

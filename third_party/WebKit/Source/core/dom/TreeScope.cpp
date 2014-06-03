@@ -349,8 +349,10 @@ void TreeScope::adoptIfNeeded(Node& node)
 static Element* focusedFrameOwnerElement(LocalFrame* focusedFrame, LocalFrame* currentFrame)
 {
     for (; focusedFrame; focusedFrame = focusedFrame->tree().parent()) {
-        if (focusedFrame->tree().parent() == currentFrame)
-            return focusedFrame->ownerElement();
+        if (focusedFrame->tree().parent() == currentFrame) {
+            // FIXME: This won't work for OOPI.
+            return focusedFrame->deprecatedLocalOwner();
+        }
     }
     return 0;
 }

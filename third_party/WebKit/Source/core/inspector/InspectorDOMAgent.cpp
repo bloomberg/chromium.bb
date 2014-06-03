@@ -1258,12 +1258,13 @@ void InspectorDOMAgent::highlightFrame(
     const RefPtr<JSONObject>* outlineColor)
 {
     LocalFrame* frame = m_pageAgent->frameForId(frameId);
-    if (frame && frame->ownerElement()) {
+    // FIXME: Inspector doesn't currently work cross process.
+    if (frame && frame->deprecatedLocalOwner()) {
         OwnPtr<HighlightConfig> highlightConfig = adoptPtr(new HighlightConfig());
         highlightConfig->showInfo = true; // Always show tooltips for frames.
         highlightConfig->content = parseColor(color);
         highlightConfig->contentOutline = parseColor(outlineColor);
-        m_overlay->highlightNode(frame->ownerElement(), 0 /* eventTarget */, *highlightConfig, false);
+        m_overlay->highlightNode(frame->deprecatedLocalOwner(), 0 /* eventTarget */, *highlightConfig, false);
     }
 }
 

@@ -393,7 +393,7 @@ static void printFrames(const WebCore::LocalFrame* frame, const WebCore::LocalFr
     WebCore::FrameView* view = frame->view();
     printf("LocalFrame %p %dx%d\n", frame, view ? view->width() : 0, view ? view->height() : 0);
     printIndent(indent);
-    printf("  ownerElement=%p\n", frame->ownerElement());
+    printf("  owner=%p\n", frame->owner());
     printIndent(indent);
     printf("  frameView=%p\n", view);
     printIndent(indent);

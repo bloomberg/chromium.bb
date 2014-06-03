@@ -918,7 +918,9 @@ Element* DOMWindow::frameElement() const
     if (!m_frame)
         return 0;
 
-    return m_frame->ownerElement();
+    // The bindings security check should ensure we're same origin...
+    ASSERT(!m_frame->owner() || m_frame->owner()->isLocal());
+    return m_frame->deprecatedLocalOwner();
 }
 
 void DOMWindow::focus(ExecutionContext* context)
@@ -1598,9 +1600,9 @@ void DOMWindow::dispatchLoadEvent()
     // For load events, send a separate load event to the enclosing frame only.
     // This is a DOM extension and is independent of bubbling/capturing rules of
     // the DOM.
-    Element* ownerElement = m_frame ? m_frame->ownerElement() : 0;
-    if (ownerElement)
-        ownerElement->dispatchEvent(Event::create(EventTypeNames::load));
+    FrameOwner* owner = m_frame ? m_frame->owner() : 0;
+    if (owner)
+        owner->dispatchLoad();
 
     TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "MarkLoad", "data", InspectorMarkLoadEvent::data(frame()));
     // FIXME(361045): remove InspectorInstrumentation calls once DevTools Timeline migrates to tracing.

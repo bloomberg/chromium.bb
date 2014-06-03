@@ -1340,7 +1340,8 @@ void FrameSelection::selectFrameElementInParentIfFullySelected()
         return;
 
     // Get to the <iframe> or <frame> (or even <object>) element in the parent frame.
-    Element* ownerElement = m_frame->ownerElement();
+    // FIXME: Doesn't work for OOPI.
+    Element* ownerElement = m_frame->deprecatedLocalOwner();
     if (!ownerElement)
         return;
     ContainerNode* ownerElementParent = ownerElement->parentNode();

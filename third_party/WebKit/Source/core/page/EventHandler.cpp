@@ -925,7 +925,8 @@ bool EventHandler::bubblingScroll(ScrollDirection direction, ScrollGranularity g
     Frame* parentFrame = frame->tree().parent();
     if (!parentFrame || !parentFrame->isLocalFrame())
         return false;
-    return toLocalFrame(parentFrame)->eventHandler().bubblingScroll(direction, granularity, m_frame->ownerElement());
+    // FIXME: Broken for OOPI.
+    return toLocalFrame(parentFrame)->eventHandler().bubblingScroll(direction, granularity, m_frame->deprecatedLocalOwner());
 }
 
 IntPoint EventHandler::lastKnownMousePosition() const

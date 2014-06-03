@@ -546,7 +546,9 @@ void WebLocalFrameImpl::setRemoteWebLayer(WebLayer* webLayer)
     if (webLayer)
         GraphicsLayer::registerContentsLayer(webLayer);
     frame()->setRemotePlatformLayer(webLayer);
-    frame()->ownerElement()->scheduleLayerUpdate();
+    // FIXME: This should be moved to WebRemoteFrame.
+    ASSERT(frame()->deprecatedLocalOwner());
+    frame()->deprecatedLocalOwner()->scheduleLayerUpdate();
 }
 
 void WebLocalFrameImpl::setPermissionClient(WebPermissionClient* permissionClient)

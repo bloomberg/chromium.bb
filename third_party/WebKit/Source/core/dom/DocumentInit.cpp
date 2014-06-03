@@ -37,11 +37,12 @@
 
 namespace WebCore {
 
+// FIXME: Broken with OOPI.
 static Document* parentDocument(LocalFrame* frame)
 {
     if (!frame)
         return 0;
-    Element* ownerElement = frame->ownerElement();
+    Element* ownerElement = frame->deprecatedLocalOwner();
     if (!ownerElement)
         return 0;
     return &ownerElement->document();
@@ -91,7 +92,7 @@ DocumentInit::~DocumentInit()
 bool DocumentInit::shouldSetURL() const
 {
     LocalFrame* frame = frameForSecurityContext();
-    return (frame && frame->ownerElement()) || !m_url.isEmpty();
+    return (frame && frame->owner()) || !m_url.isEmpty();
 }
 
 bool DocumentInit::shouldTreatURLAsSrcdocDocument() const

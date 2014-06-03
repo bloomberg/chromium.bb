@@ -62,7 +62,7 @@ namespace WebCore {
 
     class LocalFrame : public Frame, public Supplementable<LocalFrame>  {
     public:
-        static PassRefPtr<LocalFrame> create(FrameLoaderClient*, FrameHost*, HTMLFrameOwnerElement*);
+        static PassRefPtr<LocalFrame> create(FrameLoaderClient*, FrameHost*, FrameOwner*);
 
         virtual bool isLocalFrame() const OVERRIDE { return true; }
 
@@ -151,7 +151,7 @@ namespace WebCore {
     // ========
 
     private:
-        LocalFrame(FrameLoaderClient*, FrameHost*, HTMLFrameOwnerElement*);
+        LocalFrame(FrameLoaderClient*, FrameHost*, FrameOwner*);
 
         String localLayerTreeAsText(unsigned flags) const;
 

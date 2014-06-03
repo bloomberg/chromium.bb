@@ -173,7 +173,8 @@ void getPluginOcclusions(Element* element, Widget* parentWidget, const IntRect& 
         const FrameView* frameView = toFrameView((*it).get());
         // Check to make sure we can get both the element and the RenderObject
         // for this FrameView, if we can't just move on to the next object.
-        HTMLElement* element = frameView->frame().ownerElement();
+        // FIXME: Plugin occlusion by remote frames is probably broken.
+        HTMLElement* element = frameView->frame().deprecatedLocalOwner();
         if (!element || !element->renderer())
             continue;
 

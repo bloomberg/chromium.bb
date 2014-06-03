@@ -1869,7 +1869,7 @@ static ContainerNode* parentOrShadowHostOrFrameOwner(const Node* node)
 {
     ContainerNode* parent = node->parentOrShadowHostNode();
     if (!parent && node->document().frame())
-        parent = node->document().frame()->ownerElement();
+        parent = node->document().frame()->deprecatedLocalOwner();
     return parent;
 }
 

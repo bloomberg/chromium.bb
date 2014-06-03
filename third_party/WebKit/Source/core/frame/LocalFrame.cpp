@@ -88,8 +88,8 @@ static inline float parentTextZoomFactor(LocalFrame* frame)
     return parent->textZoomFactor();
 }
 
-inline LocalFrame::LocalFrame(FrameLoaderClient* client, FrameHost* host, HTMLFrameOwnerElement* ownerElement)
-    : Frame(client, host, ownerElement)
+inline LocalFrame::LocalFrame(FrameLoaderClient* client, FrameHost* host, FrameOwner* owner)
+    : Frame(client, host, owner)
     , m_loader(this)
     , m_navigationScheduler(this)
     , m_script(adoptPtr(new ScriptController(this)))
@@ -105,10 +105,11 @@ inline LocalFrame::LocalFrame(FrameLoaderClient* client, FrameHost* host, HTMLFr
 {
 }
 
-PassRefPtr<LocalFrame> LocalFrame::create(FrameLoaderClient* client, FrameHost* host, HTMLFrameOwnerElement* ownerElement)
+PassRefPtr<LocalFrame> LocalFrame::create(FrameLoaderClient* client, FrameHost* host, FrameOwner* owner)
 {
-    RefPtr<LocalFrame> frame = adoptRef(new LocalFrame(client, host, ownerElement));
-    if (!frame->ownerElement())
+    RefPtr<LocalFrame> frame = adoptRef(new LocalFrame(client, host, owner));
+    // FIXME: Why is this here? RemoteFrames need this too.
+    if (!frame->owner())
         frame->page()->setMainFrame(frame);
     InspectorInstrumentation::frameAttachedToParent(frame.get());
     return frame.release();
@@ -127,6 +128,7 @@ bool LocalFrame::inScope(TreeScope* scope) const
     Document* doc = document();
     if (!doc)
         return false;
+    // FIXME: This check is broken in for OOPI.
     HTMLFrameOwnerElement* owner = doc->ownerElement();
     if (!owner)
         return false;
@@ -388,13 +390,14 @@ void LocalFrame::createView(const IntSize& viewportSize, const Color& background
     if (isMainFrame)
         frameView->setParentVisible(true);
 
+    // FIXME: Not clear what the right thing for OOPI is here.
     if (ownerRenderer()) {
-        HTMLFrameOwnerElement* owner = ownerElement();
+        HTMLFrameOwnerElement* owner = deprecatedLocalOwner();
         ASSERT(owner);
         owner->setWidget(frameView);
     }
 
-    if (HTMLFrameOwnerElement* owner = ownerElement())
+    if (HTMLFrameOwnerElement* owner = deprecatedLocalOwner())
         view()->setCanHaveScrollbars(owner->scrollingMode() != ScrollbarAlwaysOff);
 }
 
@@ -643,7 +646,7 @@ double LocalFrame::devicePixelRatio() const
 
 void LocalFrame::disconnectOwnerElement()
 {
-    if (ownerElement()) {
+    if (owner()) {
         if (Document* doc = document())
             doc->topDocument().clearAXObjectCache();
     }

@@ -13,7 +13,7 @@ class RemoteFrameView;
 
 class RemoteFrame: public Frame {
 public:
-    static PassRefPtr<RemoteFrame> create(FrameClient*, FrameHost*, HTMLFrameOwnerElement*);
+    static PassRefPtr<RemoteFrame> create(FrameClient*, FrameHost*, FrameOwner*);
     virtual bool isRemoteFrame() const OVERRIDE { return true; }
 
     virtual ~RemoteFrame();
@@ -24,7 +24,7 @@ public:
     RemoteFrameView* view() const;
 
 private:
-    RemoteFrame(FrameClient*, FrameHost*, HTMLFrameOwnerElement*);
+    RemoteFrame(FrameClient*, FrameHost*, FrameOwner*);
 
     RefPtr<RemoteFrameView> m_view;
 };

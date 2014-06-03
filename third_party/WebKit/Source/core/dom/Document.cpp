@@ -3982,7 +3982,8 @@ HTMLFrameOwnerElement* Document::ownerElement() const
 {
     if (!frame())
         return 0;
-    return frame()->ownerElement();
+    // FIXME: This probably breaks the attempts to layout after a load is finished in implicitClose(), and probably tons of other things...
+    return frame()->deprecatedLocalOwner();
 }
 
 String Document::cookie(ExceptionState& exceptionState) const
@@ -4493,6 +4494,8 @@ Document* Document::parentDocument() const
 
 Document& Document::topDocument() const
 {
+    // FIXME: Not clear what topDocument() should do in the OOPI case--should it return the topmost
+    // available Document, or something else?
     Document* doc = const_cast<Document*>(this);
     Element* element;
     while ((element = doc->ownerElement()))

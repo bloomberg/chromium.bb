@@ -873,10 +873,11 @@ void ResourceFetcher::storeResourceTimingInitiatorInformation(Resource* resource
 
     if (resource->type() == Resource::MainResource) {
         // <iframe>s should report the initial navigation requested by the parent document, but not subsequent navigations.
-        if (frame()->ownerElement() && !frame()->ownerElement()->loadedNonEmptyDocument()) {
-            info->setInitiatorType(frame()->ownerElement()->localName());
+        // FIXME: Resource timing is broken when the parent is a remote frame.
+        if (frame()->deprecatedLocalOwner() && !frame()->deprecatedLocalOwner()->loadedNonEmptyDocument()) {
+            info->setInitiatorType(frame()->deprecatedLocalOwner()->localName());
             m_resourceTimingInfoMap.add(resource, info);
-            frame()->ownerElement()->didLoadNonEmptyDocument();
+            frame()->deprecatedLocalOwner()->didLoadNonEmptyDocument();
         }
     } else {
         m_resourceTimingInfoMap.add(resource, info);

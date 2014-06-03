@@ -1080,13 +1080,14 @@ PassRefPtr<TypeBuilder::Page::Frame> InspectorPageAgent::buildObjectForFrame(Loc
         .setUrl(urlWithoutFragment(frame->document()->url()).string())
         .setMimeType(frame->loader().documentLoader()->responseMIMEType())
         .setSecurityOrigin(frame->document()->securityOrigin()->toRawString());
+    // FIXME: This doesn't work for OOPI.
     Frame* parentFrame = frame->tree().parent();
     if (parentFrame && parentFrame->isLocalFrame())
         frameObject->setParentId(frameId(toLocalFrame(parentFrame)));
-    if (frame->ownerElement()) {
-        AtomicString name = frame->ownerElement()->getNameAttribute();
+    if (frame->deprecatedLocalOwner()) {
+        AtomicString name = frame->deprecatedLocalOwner()->getNameAttribute();
         if (name.isEmpty())
-            name = frame->ownerElement()->getAttribute(HTMLNames::idAttr);
+            name = frame->deprecatedLocalOwner()->getAttribute(HTMLNames::idAttr);
         frameObject->setName(name);
     }
 
