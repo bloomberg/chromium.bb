@@ -6,6 +6,7 @@
 
 #include "sync/internal_api/public/sessions/status_counters.h"
 #include "sync/internal_api/public/sessions/type_debug_info_observer.h"
+#include "sync/syncable/entry.h"
 #include "sync/syncable/syncable_read_transaction.h"
 
 namespace syncer {
@@ -61,7 +62,27 @@ void DirectoryTypeDebugInfoEmitter::EmitUpdateCountersUpdate() {
 }
 
 void DirectoryTypeDebugInfoEmitter::EmitStatusCountersUpdate() {
-  // TODO(rlarocque): Implement this.  Part of crbug.com/328606.
+  // This is expensive.  Avoid running this code unless about:sync is open.
+  if (!type_debug_info_observers_->might_have_observers())
+    return;
+
+  syncable::ReadTransaction trans(FROM_HERE, directory_);
+  std::vector<int64> result;
+  directory_->GetMetaHandlesOfType(&trans, type_, &result);
+
+  StatusCounters counters;
+  counters.num_entries_and_tombstones = result.size();
+
+  for (std::vector<int64>::const_iterator it = result.begin();
+       it != result.end(); ++it) {
+    syncable::Entry e(&trans, syncable::GET_BY_HANDLE, *it);
+    if (!e.GetIsDel()) {
+      counters.num_entries++;
+    }
+  }
+
+  FOR_EACH_OBSERVER(TypeDebugInfoObserver, (*type_debug_info_observers_),
+                    OnStatusCountersUpdated(type_, counters));
 }
 
 }  // namespace syncer

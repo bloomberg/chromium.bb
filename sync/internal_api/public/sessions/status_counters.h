@@ -20,6 +20,7 @@ struct SYNC_EXPORT_PRIVATE StatusCounters {
   std::string ToString() const;
 
   size_t num_entries;
+  size_t num_entries_and_tombstones;
 };
 
 }  // namespace syncer

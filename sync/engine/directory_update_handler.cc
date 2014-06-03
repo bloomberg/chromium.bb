@@ -90,6 +90,7 @@ void DirectoryUpdateHandler::ApplyUpdates(sessions::StatusController* status) {
   worker_->DoWorkAndWaitUntilDone(c);
 
   debug_info_emitter_->EmitUpdateCountersUpdate();
+  debug_info_emitter_->EmitStatusCountersUpdate();
 }
 
 void DirectoryUpdateHandler::PassiveApplyUpdates(
@@ -102,6 +103,7 @@ void DirectoryUpdateHandler::PassiveApplyUpdates(
   ApplyUpdatesImpl(status);
 
   debug_info_emitter_->EmitUpdateCountersUpdate();
+  debug_info_emitter_->EmitStatusCountersUpdate();
 }
 
 SyncerError DirectoryUpdateHandler::ApplyUpdatesImpl(

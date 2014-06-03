@@ -158,6 +158,7 @@ void DirectoryCommitContribution::CleanUp() {
   DCHECK(syncing_bits_set_);
   UnsetSyncingBits();
   debug_info_emitter_->EmitCommitCountersUpdate();
+  debug_info_emitter_->EmitStatusCountersUpdate();
 }
 
 size_t DirectoryCommitContribution::GetNumEntries() const {
