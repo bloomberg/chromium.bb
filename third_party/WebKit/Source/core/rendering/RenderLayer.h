@@ -342,8 +342,8 @@ public:
     // Adjusts the given rect to the coordinate space of the repaint container's GraphicsLayer backing.
     void mapRectToRepaintBacking(const RenderLayerModelObject* repaintContainer, LayoutRect&) const;
 
-    // Computes the bounding repaint rect for this layer, in the coordinate space of the repaint container's GraphicsLayer backing.
-    LayoutRect computeRepaintRect(const RenderLayerModelObject* repaintContainer) const;
+    // Computes the bounding repaint rect for |renderObject|, in the coordinate space of |repaintContainer|'s GraphicsLayer backing.
+    static LayoutRect computeRepaintRect(const RenderObject*, const RenderLayer* repaintContainer);
 
     bool needsCompositingLayersRebuiltForClip(const RenderStyle* oldStyle, const RenderStyle* newStyle) const;
     bool needsCompositingLayersRebuiltForOverflow(const RenderStyle* oldStyle, const RenderStyle* newStyle) const;

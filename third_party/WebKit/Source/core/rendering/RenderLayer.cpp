@@ -706,12 +706,12 @@ void RenderLayer::mapRectToRepaintBacking(const RenderLayerModelObject* repaintC
     return;
 }
 
-LayoutRect RenderLayer::computeRepaintRect(const RenderLayerModelObject* repaintContainer) const
+LayoutRect RenderLayer::computeRepaintRect(const RenderObject* renderObject, const RenderLayer* repaintContainer)
 {
     if (!repaintContainer->groupedMapping())
-        return m_renderer->computeRepaintRect(repaintContainer);
-    LayoutRect rect = renderer()->clippedOverflowRectForRepaint(repaintContainer);
-    repaintContainer->layer()->mapRectToRepaintBacking(repaintContainer, rect);
+        return renderObject->computeRepaintRect(repaintContainer->renderer());
+    LayoutRect rect = renderObject->clippedOverflowRectForRepaint(repaintContainer->renderer());
+    repaintContainer->mapRectToRepaintBacking(repaintContainer->renderer(), rect);
     return rect;
 }
 
