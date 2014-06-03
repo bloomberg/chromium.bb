@@ -11,9 +11,6 @@
 namespace wm {
 namespace {
 
-const int kModifierFlagMask =
-    (ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN);
-
 // Returns true if |key_code| is a key usually handled directly by the shell.
 bool IsSystemKey(ui::KeyboardCode key_code) {
 #if defined(OS_CHROMEOS)
@@ -52,14 +49,13 @@ AcceleratorFilter::~AcceleratorFilter() {
 
 void AcceleratorFilter::OnKeyEvent(ui::KeyEvent* event) {
   const ui::EventType type = event->type();
+  DCHECK(event->target());
   if ((type != ui::ET_KEY_PRESSED && type != ui::ET_KEY_RELEASED) ||
-      event->is_char()) {
+      event->is_char() || !event->target()) {
     return;
   }
 
-  ui::Accelerator accelerator(event->key_code(),
-                              event->flags() & kModifierFlagMask);
-  accelerator.set_type(event->type());
+  ui::Accelerator accelerator = CreateAcceleratorFromKeyEvent(*event);
 
   delegate_->PreProcessAccelerator(accelerator);
 
@@ -69,6 +65,17 @@ void AcceleratorFilter::OnKeyEvent(ui::KeyEvent* event) {
 
   if (delegate_->ProcessAccelerator(*event, accelerator, key_type))
     event->StopPropagation();
+}
+
+ui::Accelerator CreateAcceleratorFromKeyEvent(const ui::KeyEvent& key_event) {
+  const int kModifierFlagMask =
+      (ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN);
+
+  ui::Accelerator accelerator(key_event.key_code(),
+                              key_event.flags() & kModifierFlagMask);
+  if (key_event.type() == ui::ET_KEY_RELEASED)
+    accelerator.set_type(ui::ET_KEY_RELEASED);
+  return accelerator;
 }
 
 }  // namespace wm

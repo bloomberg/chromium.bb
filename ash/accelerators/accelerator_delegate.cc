@@ -49,8 +49,7 @@ bool AcceleratorDelegate::ProcessAccelerator(const ui::KeyEvent& key_event,
 // containing parent window will be checked for the property.
 bool AcceleratorDelegate::CanConsumeSystemKeys(const ui::KeyEvent& event) {
   aura::Window* target = static_cast<aura::Window*>(event.target());
-  if (!target)  // Can be NULL in tests.
-    return false;
+  DCHECK(target);
   aura::Window* top_level = ::wm::GetToplevelWindow(target);
   return top_level && wm::GetWindowState(top_level)->can_consume_system_keys();
 }
@@ -61,8 +60,7 @@ bool AcceleratorDelegate::ShouldProcessAcceleratorNow(
     const ui::KeyEvent& event,
     const ui::Accelerator& accelerator) {
   aura::Window* target = static_cast<aura::Window*>(event.target());
-  if (!target)
-    return true;
+  DCHECK(target);
 
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
   if (std::find(root_windows.begin(), root_windows.end(), target) !=

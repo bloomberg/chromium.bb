@@ -16,8 +16,8 @@ class NestedAcceleratorDelegate : public wm::NestedAcceleratorDelegate {
   virtual ~NestedAcceleratorDelegate();
 
   // wm::AcceleratorDispatcher::Delegate
-  virtual bool ShouldProcessEventNow(const ui::KeyEvent& key_event) OVERRIDE;
-  virtual bool ProcessEvent(const ui::KeyEvent& key_event) OVERRIDE;
+  virtual Result ProcessAccelerator(
+      const ui::Accelerator& accelerator) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NestedAcceleratorDelegate);

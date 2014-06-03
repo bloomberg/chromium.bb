@@ -7,7 +7,9 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_pump_dispatcher.h"
 #include "base/run_loop.h"
+#include "ui/base/accelerators/accelerator.h"
 #include "ui/events/event.h"
+#include "ui/wm/core/accelerator_filter.h"
 #include "ui/wm/core/nested_accelerator_delegate.h"
 
 using base::MessagePumpDispatcher;
@@ -41,11 +43,16 @@ class NestedAcceleratorDispatcherWin : public NestedAcceleratorDispatcher,
   virtual uint32_t Dispatch(const MSG& event) OVERRIDE {
     if (IsKeyEvent(event)) {
       ui::KeyEvent key_event(event, false);
-      if (!delegate_->ShouldProcessEventNow(key_event))
-        return POST_DISPATCH_QUIT_LOOP;
+      ui::Accelerator accelerator = CreateAcceleratorFromKeyEvent(key_event);
 
-      if (delegate_->ProcessEvent(key_event))
-        return POST_DISPATCH_NONE;
+      switch (delegate_->ProcessAccelerator(accelerator)) {
+        case NestedAcceleratorDelegate::RESULT_PROCESS_LATER:
+          return POST_DISPATCH_QUIT_LOOP;
+        case NestedAcceleratorDelegate::RESULT_PROCESSED:
+          return POST_DISPATCH_NONE;
+        case NestedAcceleratorDelegate::RESULT_NOT_PROCESSED:
+          break;
+      }
     }
 
     return nested_dispatcher_ ? nested_dispatcher_->Dispatch(event)

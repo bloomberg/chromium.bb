@@ -6,7 +6,7 @@
 #define UI_WM_CORE_NESTED_ACCELERATOR_DELEGATE_H_
 
 namespace ui {
-class KeyEvent;
+class Accelerator;
 }
 
 namespace wm {
@@ -15,15 +15,18 @@ namespace wm {
 // handling.
 class NestedAcceleratorDelegate {
  public:
+  enum Result {
+    RESULT_PROCESSED,
+    RESULT_NOT_PROCESSED,
+    // The key event should be ignored now and instead be reposted so that
+    // next event loop.
+    RESULT_PROCESS_LATER,
+  };
+
   virtual ~NestedAcceleratorDelegate() {}
 
-  // If the key event should be ignored now and instead be reposted so that next
-  // event loop.
-  virtual bool ShouldProcessEventNow(const ui::KeyEvent& key_event) = 0;
-
-  // Attempts to process an accelerator for the key-event.
-  // Returns whether an accelerator was triggered and processed.
-  virtual bool ProcessEvent(const ui::KeyEvent& key_event) = 0;
+  // Attempts to process the |accelerator|.
+  virtual Result ProcessAccelerator(const ui::Accelerator& accelerator) = 0;
 };
 
 }  // namespace wm

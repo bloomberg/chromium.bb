@@ -104,17 +104,10 @@ class MockNestedAcceleratorDelegate : public NestedAcceleratorDelegate {
   virtual ~MockNestedAcceleratorDelegate() {}
 
   // NestedAcceleratorDelegate:
-  virtual bool ShouldProcessEventNow(const ui::KeyEvent& key_event) OVERRIDE {
-    return true;
-  }
-  virtual bool ProcessEvent(const ui::KeyEvent& key_event) OVERRIDE {
-    const int kModifierMask =
-        (ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN);
-    ui::Accelerator accelerator(key_event.key_code(),
-                                key_event.flags() & kModifierMask);
-    if (key_event.type() == ui::ET_KEY_RELEASED)
-      accelerator.set_type(ui::ET_KEY_RELEASED);
-    return accelerator_manager_->Process(accelerator);
+  virtual Result ProcessAccelerator(
+      const ui::Accelerator& accelerator) OVERRIDE {
+    return accelerator_manager_->Process(accelerator) ?
+        RESULT_PROCESSED : RESULT_NOT_PROCESSED;
   }
 
   void Register(const ui::Accelerator& accelerator,

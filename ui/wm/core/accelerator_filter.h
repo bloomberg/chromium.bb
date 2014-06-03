@@ -10,6 +10,10 @@
 #include "ui/events/event_handler.h"
 #include "ui/wm/wm_export.h"
 
+namespace ui {
+class Accelerator;
+}
+
 namespace wm {
 class AcceleratorDelegate;
 
@@ -28,6 +32,8 @@ class WM_EXPORT AcceleratorFilter : public ui::EventHandler {
 
   DISALLOW_COPY_AND_ASSIGN(AcceleratorFilter);
 };
+
+ui::Accelerator CreateAcceleratorFromKeyEvent(const ui::KeyEvent& key_event);
 
 }  // namespace wm
 

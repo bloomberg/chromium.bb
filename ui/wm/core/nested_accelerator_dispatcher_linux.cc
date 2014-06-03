@@ -6,10 +6,12 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
+#include "ui/base/accelerators/accelerator.h"
 #include "ui/events/event.h"
 #include "ui/events/platform/platform_event_dispatcher.h"
 #include "ui/events/platform/platform_event_source.h"
 #include "ui/events/platform/scoped_event_dispatcher.h"
+#include "ui/wm/core/accelerator_filter.h"
 #include "ui/wm/core/nested_accelerator_delegate.h"
 
 #if defined(USE_X11)
@@ -65,17 +67,21 @@ class NestedAcceleratorDispatcherLinux : public NestedAcceleratorDispatcher,
   virtual uint32_t DispatchEvent(const ui::PlatformEvent& event) OVERRIDE {
     if (IsKeyEvent(event)) {
       ui::KeyEvent key_event(event, false);
-      if (!delegate_->ShouldProcessEventNow(key_event)) {
-#if defined(USE_X11)
-        XPutBackEvent(event->xany.display, event);
-#else
-        NOTIMPLEMENTED();
-#endif
-        return ui::POST_DISPATCH_NONE;
-      }
+      ui::Accelerator accelerator = CreateAcceleratorFromKeyEvent(key_event);
 
-      if (delegate_->ProcessEvent(key_event))
-        return ui::POST_DISPATCH_NONE;
+      switch (delegate_->ProcessAccelerator(accelerator)) {
+        case NestedAcceleratorDelegate::RESULT_PROCESS_LATER:
+#if defined(USE_X11)
+          XPutBackEvent(event->xany.display, event);
+#else
+          NOTIMPLEMENTED();
+#endif
+          return ui::POST_DISPATCH_NONE;
+        case NestedAcceleratorDelegate::RESULT_PROCESSED:
+          return ui::POST_DISPATCH_NONE;
+        case NestedAcceleratorDelegate::RESULT_NOT_PROCESSED:
+          break;
+      }
     }
     ui::PlatformEventDispatcher* prev = *restore_dispatcher_;
 
