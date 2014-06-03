@@ -5,8 +5,8 @@
 #ifndef CONTENT_RENDERER_MHTML_GENERATOR_H_
 #define CONTENT_RENDERER_MHTML_GENERATOR_H_
 
+#include "base/files/file.h"
 #include "content/public/renderer/render_view_observer.h"
-
 #include "ipc/ipc_platform_file.h"
 
 namespace content {
@@ -28,7 +28,7 @@ class MHTMLGenerator : public RenderViewObserver {
   // Returns the size of the generated MHTML, -1 if it failed.
   int64 GenerateMHTML();
 
-  base::PlatformFile file_;
+  base::File file_;
 
   DISALLOW_COPY_AND_ASSIGN(MHTMLGenerator);
 };

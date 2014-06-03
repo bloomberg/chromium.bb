@@ -4,7 +4,6 @@
 
 #include "content/renderer/mhtml_generator.h"
 
-#include "base/platform_file.h"
 #include "content/common/view_messages.h"
 #include "content/renderer/render_view_impl.h"
 #include "third_party/WebKit/public/platform/WebCString.h"
@@ -13,8 +12,7 @@
 namespace content {
 
 MHTMLGenerator::MHTMLGenerator(RenderViewImpl* render_view)
-    : RenderViewObserver(render_view),
-      file_(base::kInvalidPlatformFileValue) {
+    : RenderViewObserver(render_view) {
 }
 
 MHTMLGenerator::~MHTMLGenerator() {
@@ -32,17 +30,14 @@ bool MHTMLGenerator::OnMessageReceived(const IPC::Message& message) {
 
 void MHTMLGenerator::OnSavePageAsMHTML(
     int job_id, IPC::PlatformFileForTransit file_for_transit) {
-  base::PlatformFile file =
-      IPC::PlatformFileForTransitToPlatformFile(file_for_transit);
-  file_ = file;
+  file_ = IPC::PlatformFileForTransitToFile(file_for_transit);
   int64 size = GenerateMHTML();
-  base::ClosePlatformFile(file);
+  file_.Close();
   NotifyBrowser(job_id, size);
 }
 
 void MHTMLGenerator::NotifyBrowser(int job_id, int64 data_size) {
   render_view()->Send(new ViewHostMsg_SavedPageAsMHTML(job_id, data_size));
-  file_ = base::kInvalidPlatformFileValue;
 }
 
 // TODO(jcivelli): write the chunks in deferred tasks to give a chance to the
@@ -56,9 +51,8 @@ int64 MHTMLGenerator::GenerateMHTML() {
   while (total_bytes_written < mhtml.length()) {
     size_t copy_size =
         std::min(mhtml.length() - total_bytes_written, chunk_size);
-    int bytes_written = base::WritePlatformFile(file_, total_bytes_written,
-                                                data + total_bytes_written,
-                                                copy_size);
+    int bytes_written = file_.Write(total_bytes_written,
+                                    data + total_bytes_written, copy_size);
     if (bytes_written == -1)
       return -1;
     total_bytes_written += bytes_written;
