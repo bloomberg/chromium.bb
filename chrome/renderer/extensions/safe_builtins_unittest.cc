@@ -4,6 +4,8 @@
 
 #include "chrome/test/base/module_system_test.h"
 
+#include "grit/renderer_resources.h"
+
 namespace extensions {
 namespace {
 
