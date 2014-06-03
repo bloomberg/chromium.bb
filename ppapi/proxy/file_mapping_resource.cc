@@ -41,9 +41,9 @@ int32_t FileMappingResource::Map(PP_Instance /* instance */,
     return PP_ERROR_BADARGUMENT;
   FileIOResource* file_io_resource =
       static_cast<FileIOResource*>(enter.object());
-  scoped_refptr<FileIOResource::FileHandleHolder> file_handle =
-      file_io_resource->file_handle();
-  if (!FileIOResource::FileHandleHolder::IsValid(file_handle))
+  scoped_refptr<FileIOResource::FileHolder> file_holder =
+      file_io_resource->file_holder();
+  if (!FileIOResource::FileHolder::IsValid(file_holder))
     return PP_ERROR_FAILED;
   if (length < 0 || offset < 0 ||
       !base::IsValueInRangeForNumericType<off_t>(offset)) {
@@ -75,7 +75,7 @@ int32_t FileMappingResource::Map(PP_Instance /* instance */,
     return PP_ERROR_BADARGUMENT;
 
   base::Callback<MapResult()> map_cb(
-      base::Bind(&FileMappingResource::DoMapBlocking, file_handle, *address,
+      base::Bind(&FileMappingResource::DoMapBlocking, file_holder, *address,
                  length, protection, flags, offset));
   if (callback->is_blocking()) {
     // The plugin could release its reference to this instance when we release

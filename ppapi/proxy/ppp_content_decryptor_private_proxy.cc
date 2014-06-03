@@ -4,7 +4,7 @@
 
 #include "ppapi/proxy/ppp_content_decryptor_private_proxy.h"
 
-#include "base/platform_file.h"
+#include "base/files/file.h"
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/ppb_core.h"
 #include "ppapi/proxy/content_decryptor_private_serializer.h"

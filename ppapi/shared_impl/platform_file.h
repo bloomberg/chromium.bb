@@ -5,7 +5,7 @@
 #ifndef PPAPI_SHARED_IMPL_PLATFORM_FILE_H_
 #define PPAPI_SHARED_IMPL_PLATFORM_FILE_H_
 
-#include "base/platform_file.h"
+#include "base/files/file.h"
 #include "ppapi/c/pp_stdint.h"
 #include "ppapi/shared_impl/ppapi_shared_export.h"
 

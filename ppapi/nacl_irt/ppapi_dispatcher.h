@@ -9,8 +9,8 @@
 #include <set>
 #include <string>
 
+#include "base/files/file.h"
 #include "base/memory/ref_counted.h"
-#include "base/platform_file.h"
 #include "base/process/process_handle.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_platform_file.h"

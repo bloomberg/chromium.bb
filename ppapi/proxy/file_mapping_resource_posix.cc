@@ -35,7 +35,7 @@ int32_t ErrnoToPPError(int error_code) {
 
 // static
 FileMappingResource::MapResult FileMappingResource::DoMapBlocking(
-    scoped_refptr<FileIOResource::FileHandleHolder> handle,
+    scoped_refptr<FileIOResource::FileHolder> file_holder,
     void* address_hint,
     int64_t length,
     uint32_t map_protection,
@@ -63,7 +63,7 @@ FileMappingResource::MapResult FileMappingResource::DoMapBlocking(
            static_cast<size_t>(length),
            prot_for_mmap,
            flags_for_mmap,
-           handle->raw_handle(),
+           file_holder->file()->GetPlatformFile(),
            static_cast<off_t>(offset));
   if (map_result.address != MAP_FAILED)
     map_result.result = PP_OK;

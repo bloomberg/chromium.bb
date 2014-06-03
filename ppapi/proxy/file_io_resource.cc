@@ -39,8 +39,7 @@ void* DummyGetDataBuffer(void* user_data, uint32_t count, uint32_t size) {
 }
 
 // File thread task to close the file handle.
-void DoClose(base::PlatformFile file) {
-  base::ClosePlatformFile(file);
+void DoClose(base::File auto_close_file) {
 }
 
 }  // namespace
@@ -48,29 +47,25 @@ void DoClose(base::PlatformFile file) {
 namespace ppapi {
 namespace proxy {
 
-FileIOResource::QueryOp::QueryOp(scoped_refptr<FileHandleHolder> file_handle)
-    : file_handle_(file_handle) {
-  DCHECK(file_handle_);
+FileIOResource::QueryOp::QueryOp(scoped_refptr<FileHolder> file_holder)
+    : file_holder_(file_holder) {
+  DCHECK(file_holder_);
 }
 
 FileIOResource::QueryOp::~QueryOp() {
 }
 
 int32_t FileIOResource::QueryOp::DoWork() {
-  // TODO(rvargas): Convert this code to use base::File.
-  base::File file(file_handle_->raw_handle());
-  bool success = file.GetInfo(&file_info_);
-  file.TakePlatformFile();
-  return success ? PP_OK : PP_ERROR_FAILED;
+  return file_holder_->file()->GetInfo(&file_info_) ? PP_OK : PP_ERROR_FAILED;
 }
 
-FileIOResource::ReadOp::ReadOp(scoped_refptr<FileHandleHolder> file_handle,
+FileIOResource::ReadOp::ReadOp(scoped_refptr<FileHolder> file_holder,
                                int64_t offset,
                                int32_t bytes_to_read)
-  : file_handle_(file_handle),
+  : file_holder_(file_holder),
     offset_(offset),
     bytes_to_read_(bytes_to_read) {
-  DCHECK(file_handle_);
+  DCHECK(file_holder_);
 }
 
 FileIOResource::ReadOp::~ReadOp() {
@@ -79,16 +74,15 @@ FileIOResource::ReadOp::~ReadOp() {
 int32_t FileIOResource::ReadOp::DoWork() {
   DCHECK(!buffer_.get());
   buffer_.reset(new char[bytes_to_read_]);
-  return base::ReadPlatformFile(
-      file_handle_->raw_handle(), offset_, buffer_.get(), bytes_to_read_);
+  return file_holder_->file()->Read(offset_, buffer_.get(), bytes_to_read_);
 }
 
-FileIOResource::WriteOp::WriteOp(scoped_refptr<FileHandleHolder> file_handle,
+FileIOResource::WriteOp::WriteOp(scoped_refptr<FileHolder> file_holder,
                                  int64_t offset,
                                  scoped_ptr<char[]> buffer,
                                  int32_t bytes_to_write,
                                  bool append)
-    : file_handle_(file_handle),
+    : file_holder_(file_holder),
       offset_(offset),
       buffer_(buffer.Pass()),
       bytes_to_write_(bytes_to_write),
@@ -102,11 +96,10 @@ int32_t FileIOResource::WriteOp::DoWork() {
   // In append mode, we can't call WritePlatformFile, since NaCl doesn't
   // implement fcntl, causing the function to call pwrite, which is incorrect.
   if (append_) {
-    return base::WritePlatformFileAtCurrentPos(
-        file_handle_->raw_handle(), buffer_.get(), bytes_to_write_);
+    return file_holder_->file()->WriteAtCurrentPos(buffer_.get(),
+                                                   bytes_to_write_);
   } else {
-    return base::WritePlatformFile(
-        file_handle_->raw_handle(), offset_, buffer_.get(), bytes_to_write_);
+    return file_holder_->file()->Write(offset_, buffer_.get(), bytes_to_write_);
   }
 }
 
@@ -183,7 +176,7 @@ int32_t FileIOResource::Query(PP_FileInfo* info,
     return rv;
   if (!info)
     return PP_ERROR_BADARGUMENT;
-  if (!FileHandleHolder::IsValid(file_handle_))
+  if (!FileHolder::IsValid(file_holder_))
     return PP_ERROR_FAILED;
 
   state_manager_.SetPendingOperation(FileIOStateManager::OPERATION_EXCLUSIVE);
@@ -198,11 +191,7 @@ int32_t FileIOResource::Query(PP_FileInfo* info,
     {
       // Release the proxy lock while making a potentially slow file call.
       ProxyAutoUnlock unlock;
-      // TODO(rvargas): Convert this code to base::File.
-      base::File file(file_handle_->raw_handle());
-      bool success = file.GetInfo(&file_info);
-      file.TakePlatformFile();
-      if (success)
+      if (file_holder_->file()->GetInfo(&file_info))
         result = PP_OK;
     }
     if (result == PP_OK) {
@@ -217,7 +206,7 @@ int32_t FileIOResource::Query(PP_FileInfo* info,
 
   // For the non-blocking case, post a task to the file thread and add a
   // completion task to write the result.
-  scoped_refptr<QueryOp> query_op(new QueryOp(file_handle_));
+  scoped_refptr<QueryOp> query_op(new QueryOp(file_holder_));
   base::PostTaskAndReplyWithResult(
       PpapiGlobals::Get()->GetFileTaskRunner(),
       FROM_HERE,
@@ -282,7 +271,7 @@ int32_t FileIOResource::Write(int64_t offset,
     return PP_ERROR_FAILED;
   if (offset < 0 || bytes_to_write < 0)
     return PP_ERROR_FAILED;
-  if (!FileHandleHolder::IsValid(file_handle_))
+  if (!FileHolder::IsValid(file_holder_))
     return PP_ERROR_FAILED;
 
   int32_t rv = state_manager_.CheckOperationState(
@@ -408,8 +397,8 @@ void FileIOResource::Close() {
         pp_resource());
   }
 
-  if (file_handle_)
-    file_handle_ = NULL;
+  if (file_holder_)
+    file_holder_ = NULL;
 
   Post(BROWSER, PpapiHostMsg_FileIO_Close(
       FileGrowth(max_written_offset_, append_mode_write_amount_)));
@@ -432,22 +421,22 @@ int32_t FileIOResource::RequestOSFileHandle(
   return PP_OK_COMPLETIONPENDING;
 }
 
-FileIOResource::FileHandleHolder::FileHandleHolder(PP_FileHandle file_handle)
-    : raw_handle_(file_handle) {
+FileIOResource::FileHolder::FileHolder(PP_FileHandle file_handle)
+    : file_(file_handle) {
 }
 
 // static
-bool FileIOResource::FileHandleHolder::IsValid(
-    const scoped_refptr<FileIOResource::FileHandleHolder>& handle) {
-  return handle && (handle->raw_handle() != base::kInvalidPlatformFileValue);
+bool FileIOResource::FileHolder::IsValid(
+    const scoped_refptr<FileIOResource::FileHolder>& handle) {
+  return handle && handle->file_.IsValid();
 }
 
-FileIOResource::FileHandleHolder::~FileHandleHolder() {
-  if (raw_handle_ != base::kInvalidPlatformFileValue) {
+FileIOResource::FileHolder::~FileHolder() {
+  if (file_.IsValid()) {
     base::TaskRunner* file_task_runner =
         PpapiGlobals::Get()->GetFileTaskRunner();
     file_task_runner->PostTask(FROM_HERE,
-                               base::Bind(&DoClose, raw_handle_));
+                               base::Bind(&DoClose, Passed(&file_)));
   }
 }
 
@@ -457,7 +446,7 @@ int32_t FileIOResource::ReadValidated(int64_t offset,
                                       scoped_refptr<TrackedCallback> callback) {
   if (bytes_to_read < 0)
     return PP_ERROR_FAILED;
-  if (!FileHandleHolder::IsValid(file_handle_))
+  if (!FileHolder::IsValid(file_holder_))
     return PP_ERROR_FAILED;
 
   state_manager_.SetPendingOperation(FileIOStateManager::OPERATION_READ);
@@ -473,8 +462,7 @@ int32_t FileIOResource::ReadValidated(int64_t offset,
     if (buffer) {
       // Release the proxy lock while making a potentially slow file call.
       ProxyAutoUnlock unlock;
-      result = base::ReadPlatformFile(
-          file_handle_->raw_handle(), offset, buffer, bytes_to_read);
+      result = file_holder_->file()->Read(offset, buffer, bytes_to_read);
       if (result < 0)
         result = PP_ERROR_FAILED;
     }
@@ -484,7 +472,7 @@ int32_t FileIOResource::ReadValidated(int64_t offset,
 
   // For the non-blocking case, post a task to the file thread.
   scoped_refptr<ReadOp> read_op(
-      new ReadOp(file_handle_, offset, bytes_to_read));
+      new ReadOp(file_holder_, offset, bytes_to_read));
   base::PostTaskAndReplyWithResult(
       PpapiGlobals::Get()->GetFileTaskRunner(),
       FROM_HERE,
@@ -508,11 +496,10 @@ int32_t FileIOResource::WriteValidated(
       // Release the proxy lock while making a potentially slow file call.
       ProxyAutoUnlock unlock;
       if (append) {
-        result = base::WritePlatformFileAtCurrentPos(
-            file_handle_->raw_handle(), buffer, bytes_to_write);
+        result = file_holder_->file()->WriteAtCurrentPos(buffer,
+                                                         bytes_to_write);
       } else {
-        result = base::WritePlatformFile(
-            file_handle_->raw_handle(), offset, buffer, bytes_to_write);
+        result = file_holder_->file()->Write(offset, buffer, bytes_to_write);
       }
     }
     if (result < 0)
@@ -527,7 +514,7 @@ int32_t FileIOResource::WriteValidated(
   scoped_ptr<char[]> copy(new char[bytes_to_write]);
   memcpy(copy.get(), buffer, bytes_to_write);
   scoped_refptr<WriteOp> write_op(
-      new WriteOp(file_handle_, offset, copy.Pass(), bytes_to_write, append));
+      new WriteOp(file_holder_, offset, copy.Pass(), bytes_to_write, append));
   base::PostTaskAndReplyWithResult(
       PpapiGlobals::Get()->GetFileTaskRunner(),
       FROM_HERE,
@@ -619,7 +606,7 @@ void FileIOResource::OnRequestWriteQuotaComplete(
   } else {
     bool append = (open_flags_ & PP_FILEOPENFLAG_APPEND) != 0;
     scoped_refptr<WriteOp> write_op(new WriteOp(
-        file_handle_, offset, buffer.Pass(), bytes_to_write, append));
+        file_holder_, offset, buffer.Pass(), bytes_to_write, append));
     base::PostTaskAndReplyWithResult(
         PpapiGlobals::Get()->GetFileTaskRunner(),
         FROM_HERE,
@@ -693,7 +680,7 @@ void FileIOResource::OnPluginMsgOpenFileComplete(
 
     IPC::PlatformFileForTransit transit_file;
     if (params.TakeFileHandleAtIndex(0, &transit_file)) {
-      file_handle_ = new FileHandleHolder(
+      file_holder_ = new FileHolder(
           IPC::PlatformFileForTransitToPlatformFile(transit_file));
     }
   }

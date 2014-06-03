@@ -64,11 +64,7 @@ IPC::PlatformFileForTransit ProxyChannel::ShareHandleWithRemote(
   // Channel could be closed if the plugin crashes.
   if (!channel_.get()) {
     if (should_close_source) {
-#if !defined(OS_NACL)
-      base::ClosePlatformFile(handle);
-#else
-      close(handle);
-#endif
+      base::File file_closer(handle);
     }
     return IPC::InvalidPlatformFileForTransit();
   }

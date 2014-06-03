@@ -4,9 +4,9 @@
 
 #include "ppapi/proxy/serialized_handle.h"
 
+#include "base/files/file.h"
 #include "base/memory/shared_memory.h"
 #include "base/pickle.h"
-#include "base/platform_file.h"
 #include "build/build_config.h"
 #include "ipc/ipc_platform_file.h"
 
@@ -81,13 +81,7 @@ void SerializedHandle::Close() {
         break;
       case SOCKET:
       case FILE:
-        base::PlatformFile file =
-            IPC::PlatformFileForTransitToPlatformFile(descriptor_);
-#if !defined(OS_NACL)
-        base::ClosePlatformFile(file);
-#else
-        close(file);
-#endif
+        base::File file_closer = IPC::PlatformFileForTransitToFile(descriptor_);
         break;
       // No default so the compiler will warn us if a new type is added.
     }

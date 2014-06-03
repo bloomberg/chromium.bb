@@ -69,8 +69,8 @@ class PPAPI_PROXY_EXPORT FileIOResource
       PP_FileHandle* handle,
       scoped_refptr<TrackedCallback> callback) OVERRIDE;
 
-  // FileHandleHolder is used to guarantee that file operations will have a
-  // valid FD to operate on, even if they're in a different thread.
+  // FileHolder is used to guarantee that file operations will have a valid FD
+  // to operate on, even if they're in a different thread.
   // If instead we just passed the raw FD, the FD could be closed before the
   // file operation has a chance to run. It could interact with an invalid FD,
   // or worse, the FD value could be reused if another file is opened quickly
@@ -80,36 +80,37 @@ class PPAPI_PROXY_EXPORT FileIOResource
   //
   // Operations that run on a background thread should hold one of these to
   // ensure they have a valid file descriptor. The file handle is only closed
-  // when the last reference to the FileHandleHolder is removed, so we are
-  // guaranteed to operate on the correct file descriptor. It *is* still
-  // possible that the FileIOResource will be destroyed and "Abort" callbacks
-  // just before the operation does its task (e.g., Reading). In that case, we
-  // might for example Read from a file even though the FileIO has been
-  // destroyed and the plugin's callback got a PP_ERROR_ABORTED result. In the
-  // case of a write, we could write some data to the file despite the plugin
-  // receiving a PP_ERROR_ABORTED instead of a successful result.
-  class FileHandleHolder : public base::RefCountedThreadSafe<FileHandleHolder> {
+  // when the last reference to the FileHolder is removed, so we are guaranteed
+  // to operate on the correct file descriptor. It *is* still possible that the
+  // FileIOResource will be destroyed and "Abort" callbacks just before the
+  // operation does its task (e.g., Reading). In that case, we might for example
+  // Read from a file even though the FileIO has been destroyed and the plugin's
+  // callback got a PP_ERROR_ABORTED result. In the case of a write, we could
+  // write some data to the file despite the plugin receiving a
+  // PP_ERROR_ABORTED instead of a successful result.
+  class FileHolder : public base::RefCountedThreadSafe<FileHolder> {
    public:
-    explicit FileHandleHolder(PP_FileHandle file_handle_);
-    PP_FileHandle raw_handle() {
-      return raw_handle_;
+    explicit FileHolder(PP_FileHandle file_handle);
+    base::File* file() {
+      return &file_;
     }
     static bool IsValid(
-        const scoped_refptr<FileIOResource::FileHandleHolder>& handle);
+        const scoped_refptr<FileIOResource::FileHolder>& handle);
    private:
-    friend class base::RefCountedThreadSafe<FileHandleHolder>;
-    ~FileHandleHolder();
-    PP_FileHandle raw_handle_;
+    friend class base::RefCountedThreadSafe<FileHolder>;
+    ~FileHolder();
+    base::File file_;
   };
-  scoped_refptr<FileHandleHolder> file_handle() {
-    return file_handle_;
+
+  scoped_refptr<FileHolder> file_holder() {
+    return file_holder_;
   }
 
  private:
   // Class to perform file query operations across multiple threads.
   class QueryOp : public base::RefCountedThreadSafe<QueryOp> {
    public:
-    explicit QueryOp(scoped_refptr<FileHandleHolder> file_handle);
+    explicit QueryOp(scoped_refptr<FileHolder> file_holder);
 
     // Queries the file. Called on the file thread (non-blocking) or the plugin
     // thread (blocking). This should not be called when we hold the proxy lock.
@@ -121,14 +122,14 @@ class PPAPI_PROXY_EXPORT FileIOResource
     friend class base::RefCountedThreadSafe<QueryOp>;
     ~QueryOp();
 
-    scoped_refptr<FileHandleHolder> file_handle_;
+    scoped_refptr<FileHolder> file_holder_;
     base::File::Info file_info_;
   };
 
   // Class to perform file read operations across multiple threads.
   class ReadOp : public base::RefCountedThreadSafe<ReadOp> {
    public:
-    ReadOp(scoped_refptr<FileHandleHolder> file_handle,
+    ReadOp(scoped_refptr<FileHolder> file_holder,
            int64_t offset,
            int32_t bytes_to_read);
 
@@ -142,7 +143,7 @@ class PPAPI_PROXY_EXPORT FileIOResource
     friend class base::RefCountedThreadSafe<ReadOp>;
     ~ReadOp();
 
-    scoped_refptr<FileHandleHolder> file_handle_;
+    scoped_refptr<FileHolder> file_holder_;
     int64_t offset_;
     int32_t bytes_to_read_;
     scoped_ptr<char[]> buffer_;
@@ -151,7 +152,7 @@ class PPAPI_PROXY_EXPORT FileIOResource
   // Class to perform file write operations across multiple threads.
   class WriteOp : public base::RefCountedThreadSafe<WriteOp> {
    public:
-    WriteOp(scoped_refptr<FileHandleHolder> file_handle,
+    WriteOp(scoped_refptr<FileHolder> file_holder,
             int64_t offset,
             scoped_ptr<char[]> buffer,
             int32_t bytes_to_write,
@@ -165,7 +166,7 @@ class PPAPI_PROXY_EXPORT FileIOResource
     friend class base::RefCountedThreadSafe<WriteOp>;
     ~WriteOp();
 
-    scoped_refptr<FileHandleHolder> file_handle_;
+    scoped_refptr<FileHolder> file_holder_;
     int64_t offset_;
     scoped_ptr<char[]> buffer_;
     int32_t bytes_to_write_;
@@ -213,7 +214,7 @@ class PPAPI_PROXY_EXPORT FileIOResource
       PP_FileHandle* output_handle,
       const ResourceMessageReplyParams& params);
 
-  scoped_refptr<FileHandleHolder> file_handle_;
+  scoped_refptr<FileHolder> file_holder_;
   PP_FileSystemType file_system_type_;
   scoped_refptr<Resource> file_system_resource_;
   FileIOStateManager state_manager_;

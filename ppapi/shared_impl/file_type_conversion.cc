@@ -5,7 +5,6 @@
 #include "ppapi/shared_impl/file_type_conversion.h"
 
 #include "base/logging.h"
-#include "base/platform_file.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppb_file_io.h"
 #include "ppapi/shared_impl/time_conversion.h"
@@ -46,17 +45,17 @@ bool PepperFileOpenFlagsToPlatformFileFlags(int32_t pp_open_flags,
   bool pp_append = !!(pp_open_flags & PP_FILEOPENFLAG_APPEND);
 
   // Pepper allows Touch on any open file, so always set this Windows-only flag.
-  int flags = base::PLATFORM_FILE_WRITE_ATTRIBUTES;
+  int flags = base::File::FLAG_WRITE_ATTRIBUTES;
 
   if (pp_read)
-    flags |= base::PLATFORM_FILE_READ;
+    flags |= base::File::FLAG_READ;
   if (pp_write) {
-    flags |= base::PLATFORM_FILE_WRITE;
+    flags |= base::File::FLAG_WRITE;
   }
   if (pp_append) {
     if (pp_write)
       return false;
-    flags |= base::PLATFORM_FILE_APPEND;
+    flags |= base::File::FLAG_APPEND;
   }
 
   if (pp_truncate && !pp_write)
@@ -64,16 +63,16 @@ bool PepperFileOpenFlagsToPlatformFileFlags(int32_t pp_open_flags,
 
   if (pp_create) {
     if (pp_exclusive) {
-      flags |= base::PLATFORM_FILE_CREATE;
+      flags |= base::File::FLAG_CREATE;
     } else if (pp_truncate) {
-      flags |= base::PLATFORM_FILE_CREATE_ALWAYS;
+      flags |= base::File::FLAG_CREATE_ALWAYS;
     } else {
-      flags |= base::PLATFORM_FILE_OPEN_ALWAYS;
+      flags |= base::File::FLAG_OPEN_ALWAYS;
     }
   } else if (pp_truncate) {
-    flags |= base::PLATFORM_FILE_OPEN_TRUNCATED;
+    flags |= base::File::FLAG_OPEN_TRUNCATED;
   } else {
-    flags |= base::PLATFORM_FILE_OPEN;
+    flags |= base::File::FLAG_OPEN;
   }
 
   if (flags_out)

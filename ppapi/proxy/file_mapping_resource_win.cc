@@ -11,7 +11,7 @@ namespace proxy {
 
 // static
 FileMappingResource::MapResult FileMappingResource::DoMapBlocking(
-    scoped_refptr<FileIOResource::FileHandleHolder> handle,
+    scoped_refptr<FileIOResource::FileHolder> file_holder,
     void* address_hint,
     int64_t length,
     uint32_t map_protection,

@@ -57,7 +57,7 @@ class PPAPI_PROXY_EXPORT FileMappingResource
   // implementation is platform specific. See file_mapping_resource_posix.cc and
   // file_mapping_resource_win.cc.
   static MapResult DoMapBlocking(
-      scoped_refptr<FileIOResource::FileHandleHolder> handle,
+      scoped_refptr<FileIOResource::FileHolder> file_holder,
       void* address_hint,
       int64_t length,
       uint32_t protection,
