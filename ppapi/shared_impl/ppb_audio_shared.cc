@@ -4,6 +4,7 @@
 
 #include "ppapi/shared_impl/ppb_audio_shared.h"
 
+#include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "ppapi/nacl_irt/public/irt_ppapi.h"
 #include "ppapi/shared_impl/ppapi_globals.h"
@@ -212,10 +213,13 @@ void PPB_Audio_Shared::Run() {
     if (pending_data < 0)
       break;
 
-    PP_TimeDelta latency =
-        static_cast<double>(pending_data) / bytes_per_second_;
-    callback_.Run(
-        client_buffer_.get(), client_buffer_size_bytes_, latency, user_data_);
+    {
+      TRACE_EVENT0("audio", "PPB_Audio_Shared::FireRenderCallback");
+      PP_TimeDelta latency =
+          static_cast<double>(pending_data) / bytes_per_second_;
+      callback_.Run(
+          client_buffer_.get(), client_buffer_size_bytes_, latency, user_data_);
+    }
 
     // Deinterleave the audio data into the shared memory as floats.
     audio_bus_->FromInterleaved(client_buffer_.get(),
