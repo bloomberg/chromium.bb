@@ -622,7 +622,7 @@ void DocumentLoader::addAllArchiveResources(MHTMLArchive* archive)
 
 void DocumentLoader::prepareSubframeArchiveLoadIfNeeded()
 {
-    if (!m_frame->tree().parent())
+    if (!m_frame->tree().parent() || !m_frame->tree().parent()->isLocalFrame())
         return;
 
     ArchiveResourceCollection* parentCollection = m_frame->tree().parent()->loader().documentLoader()->m_archiveResourceCollection.get();

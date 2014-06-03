@@ -69,7 +69,9 @@ inline PassOwnPtr<TextResourceDecoder> TextResourceDecoderBuilder::createDecoder
 inline void TextResourceDecoderBuilder::setupEncoding(TextResourceDecoder* decoder, Document* document)
 {
     LocalFrame* frame = document->frame();
-    LocalFrame* parentFrame = frame ? frame->tree().parent() : 0;
+    LocalFrame* parentFrame = 0;
+    if (frame && frame->tree().parent() && frame->tree().parent()->isLocalFrame())
+        parentFrame = frame->tree().parent();
 
     if (!m_encoding.isEmpty())
         decoder->setEncoding(m_encoding.string(), m_encodingWasChosenByUser ? TextResourceDecoder::UserChosenEncoding : TextResourceDecoder::EncodingFromHTTPHeader);

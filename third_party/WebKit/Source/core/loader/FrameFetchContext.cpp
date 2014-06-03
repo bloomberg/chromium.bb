@@ -82,7 +82,7 @@ void FrameFetchContext::addAdditionalRequestHeaders(Document* document, Resource
 
     if (isMainResource && m_frame->isMainFrame())
         request.setFirstPartyForCookies(request.url());
-    else
+    else if (m_frame->tree().top()->isLocalFrame())
         request.setFirstPartyForCookies(m_frame->tree().top()->document()->firstPartyForCookies());
 
     // The remaining modifications are only necessary for HTTP and HTTPS.
@@ -116,8 +116,9 @@ CachePolicy FrameFetchContext::cachePolicy(Document* document) const
     if (loadType == FrameLoadTypeReloadFromOrigin)
         return CachePolicyReload;
 
-    if (LocalFrame* parentFrame = m_frame->tree().parent()) {
-        CachePolicy parentCachePolicy = parentFrame->loader().fetchContext().cachePolicy(parentFrame->document());
+    Frame* parentFrame = m_frame->tree().parent();
+    if (parentFrame && parentFrame->isLocalFrame()) {
+        CachePolicy parentCachePolicy = toLocalFrame(parentFrame)->loader().fetchContext().cachePolicy(toLocalFrame(parentFrame)->document());
         if (parentCachePolicy != CachePolicyVerify)
             return parentCachePolicy;
     }

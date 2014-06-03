@@ -311,7 +311,7 @@ void FrameLoader::receivedFirstData()
     HistoryCommitType historyCommitType = loadTypeToCommitType(m_loadType);
     if (historyCommitType == StandardCommit && (m_documentLoader->urlForHistory().isEmpty() || (opener() && !m_currentItem && m_documentLoader->originalRequest().url().isEmpty())))
         historyCommitType = HistoryInertCommit;
-    else if (historyCommitType == InitialCommitInChildFrame && MixedContentChecker::isMixedContent(m_frame->tree().top()->document()->securityOrigin(), m_documentLoader->url()))
+    else if (historyCommitType == InitialCommitInChildFrame && (!m_frame->tree().top()->isLocalFrame() || MixedContentChecker::isMixedContent(m_frame->tree().top()->document()->securityOrigin(), m_documentLoader->url())))
         historyCommitType = HistoryInertCommit;
     setHistoryItemStateForCommit(historyCommitType);
 
@@ -415,8 +415,8 @@ void FrameLoader::loadDone()
 
 bool FrameLoader::allChildrenAreComplete() const
 {
-    for (LocalFrame* child = m_frame->tree().firstChild(); child; child = child->tree().nextSibling()) {
-        if (!child->loader().m_isComplete)
+    for (Frame* child = m_frame->tree().firstChild(); child; child = child->tree().nextSibling()) {
+        if (child->isLocalFrame() && !toLocalFrame(child)->loader().m_isComplete)
             return false;
     }
     return true;
@@ -424,8 +424,8 @@ bool FrameLoader::allChildrenAreComplete() const
 
 bool FrameLoader::allAncestorsAreComplete() const
 {
-    for (LocalFrame* ancestor = m_frame; ancestor; ancestor = ancestor->tree().parent()) {
-        if (!ancestor->document()->loadEventFinished())
+    for (Frame* ancestor = m_frame; ancestor; ancestor = ancestor->tree().parent()) {
+        if (ancestor->isLocalFrame() && !toLocalFrame(ancestor)->document()->loadEventFinished())
             return false;
     }
     return true;
@@ -610,8 +610,10 @@ void FrameLoader::completed()
 
 void FrameLoader::started()
 {
-    for (LocalFrame* frame = m_frame; frame; frame = frame->tree().parent())
-        frame->loader().m_isComplete = false;
+    for (Frame* frame = m_frame; frame; frame = frame->tree().parent()) {
+        if (frame->isLocalFrame())
+            toLocalFrame(frame)->loader().m_isComplete = false;
+    }
 }
 
 void FrameLoader::setReferrerForFrameRequest(ResourceRequest& request, ShouldSendReferrer shouldSendReferrer, Document* originDocument)
@@ -807,8 +809,10 @@ void FrameLoader::stopAllLoaders()
 
     m_inStopAllLoaders = true;
 
-    for (RefPtr<LocalFrame> child = m_frame->tree().firstChild(); child; child = child->tree().nextSibling())
-        child->loader().stopAllLoaders();
+    for (RefPtr<Frame> child = m_frame->tree().firstChild(); child; child = child->tree().nextSibling()) {
+        if (child->isLocalFrame())
+            toLocalFrame(child.get())->loader().stopAllLoaders();
+    }
     if (m_provisionalDocumentLoader)
         m_provisionalDocumentLoader->stopLoading();
     if (m_documentLoader)
@@ -942,8 +946,10 @@ bool FrameLoader::checkLoadCompleteForThisFrame()
     RefPtr<LocalFrame> protect(m_frame);
 
     bool allChildrenAreDoneLoading = true;
-    for (LocalFrame* child = m_frame->tree().firstChild(); child; child = child->tree().nextSibling())
-        allChildrenAreDoneLoading &= child->loader().checkLoadCompleteForThisFrame();
+    for (Frame* child = m_frame->tree().firstChild(); child; child = child->tree().nextSibling()) {
+        if (child->isLocalFrame())
+            allChildrenAreDoneLoading &= toLocalFrame(child)->loader().checkLoadCompleteForThisFrame();
+    }
 
     if (m_state == FrameStateProvisional && m_provisionalDocumentLoader) {
         const ResourceError& error = m_provisionalDocumentLoader->mainDocumentError();
@@ -1052,8 +1058,10 @@ void FrameLoader::detachChildren()
     typedef Vector<RefPtr<LocalFrame> > FrameVector;
     FrameVector childrenToDetach;
     childrenToDetach.reserveCapacity(m_frame->tree().childCount());
-    for (LocalFrame* child = m_frame->tree().lastChild(); child; child = child->tree().previousSibling())
-        childrenToDetach.append(child);
+    for (Frame* child = m_frame->tree().lastChild(); child; child = child->tree().previousSibling()) {
+        if (child->isLocalFrame())
+            childrenToDetach.append(toLocalFrame(child));
+    }
     FrameVector::iterator end = childrenToDetach.end();
     for (FrameVector::iterator it = childrenToDetach.begin(); it != end; ++it)
         (*it)->loader().detachFromParent();
@@ -1109,14 +1117,15 @@ void FrameLoader::detachFromParent()
     TemporaryChange<bool> willDetachClient(m_willDetachClient, true);
 
     // FIXME: All this code belongs up in Page.
-    if (LocalFrame* parent = m_frame->tree().parent()) {
+    Frame* parent = m_frame->tree().parent();
+    if (parent && parent->isLocalFrame()) {
         m_frame->setView(nullptr);
         // FIXME: Shouldn't need to check if page() is null here.
         if (m_frame->ownerElement() && m_frame->page())
             m_frame->page()->decrementSubframeCount();
         m_frame->willDetachFrameHost();
         detachClient();
-        parent->loader().scheduleCheckCompleted();
+        toLocalFrame(parent)->loader().scheduleCheckCompleted();
     } else {
         m_frame->setView(nullptr);
         m_frame->willDetachFrameHost();
@@ -1236,8 +1245,11 @@ bool FrameLoader::shouldClose()
     // Store all references to each subframe in advance since beforeunload's event handler may modify frame
     Vector<RefPtr<LocalFrame> > targetFrames;
     targetFrames.append(m_frame);
-    for (LocalFrame* child = m_frame->tree().firstChild(); child; child = child->tree().traverseNext(m_frame))
-        targetFrames.append(child);
+    for (Frame* child = m_frame->tree().firstChild(); child; child = child->tree().traverseNext(m_frame)) {
+        // FIXME: There is not yet any way to dispatch events to out-of-process frames.
+        if (child->isLocalFrame())
+            targetFrames.append(toLocalFrame(child));
+    }
 
     bool shouldClose = false;
     {
@@ -1279,8 +1291,9 @@ void FrameLoader::loadWithNavigationAction(const NavigationAction& action, Frame
     m_policyDocumentLoader->setReplacesCurrentHistoryItem(replacesCurrentHistoryItem);
     m_policyDocumentLoader->setIsClientRedirect(clientRedirect == ClientRedirect);
 
-    if (LocalFrame* parent = m_frame->tree().parent())
-        m_policyDocumentLoader->setOverrideEncoding(parent->loader().documentLoader()->overrideEncoding());
+    Frame* parent = m_frame->tree().parent();
+    if (parent && parent->isLocalFrame())
+        m_policyDocumentLoader->setOverrideEncoding(toLocalFrame(parent)->loader().documentLoader()->overrideEncoding());
     else if (!overrideEncoding.isEmpty())
         m_policyDocumentLoader->setOverrideEncoding(overrideEncoding);
     else if (m_documentLoader)
@@ -1393,10 +1406,10 @@ bool FrameLoader::shouldTreatURLAsSrcdocDocument(const KURL& url) const
 LocalFrame* FrameLoader::findFrameForNavigation(const AtomicString& name, Document* activeDocument)
 {
     ASSERT(activeDocument);
-    LocalFrame* frame = m_frame->tree().find(name);
-    if (!frame || !activeDocument->canNavigate(*frame))
+    Frame* frame = m_frame->tree().find(name);
+    if (!frame || !frame->isLocalFrame() || !activeDocument->canNavigate(toLocalFrame(*frame)))
         return 0;
-    return frame;
+    return toLocalFrame(frame);
 }
 
 void FrameLoader::loadHistoryItem(HistoryItem* item, HistoryLoadType historyLoadType, ResourceRequestCachePolicy cachePolicy)
