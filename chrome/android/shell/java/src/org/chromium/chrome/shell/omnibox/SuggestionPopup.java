@@ -61,7 +61,7 @@ public class SuggestionPopup implements OnSuggestionsReceivedListener, TextWatch
         dismissPopup();
     }
 
-    private void dismissPopup() {
+    public void dismissPopup() {
         if (mSuggestionsPopup != null) {
             mSuggestionsPopup.dismiss();
             mSuggestionsPopup = null;
