@@ -1727,14 +1727,6 @@ void FrameView::updateFixedElementRepaintRectsAfterScroll()
     }
 }
 
-bool FrameView::shouldRubberBandInDirection(ScrollDirection direction) const
-{
-    Page* page = frame().page();
-    if (!page)
-        return ScrollView::shouldRubberBandInDirection(direction);
-    return page->chrome().client().shouldRubberBandInDirection(direction);
-}
-
 bool FrameView::isRubberBandInProgress() const
 {
     if (scrollbarsSuppressed())

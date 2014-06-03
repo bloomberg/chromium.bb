@@ -965,11 +965,6 @@ static WebMouseWheelEvent::Phase momentumPhaseForEvent(NSEvent *event)
     return phaseForNSEventPhase(eventMomentumPhase);
 }
 
-WebMouseWheelEvent WebInputEventFactory::mouseWheelEvent(NSEvent* event, NSView* view)
-{
-    return mouseWheelEvent(event, view, true, true);
-}
-
 WebMouseWheelEvent WebInputEventFactory::mouseWheelEvent(NSEvent* event, NSView* view, bool canRubberbandLeft, bool canRubberbandRight)
 {
     WebMouseWheelEvent result;
