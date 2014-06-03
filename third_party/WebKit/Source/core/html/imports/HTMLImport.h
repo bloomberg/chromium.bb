@@ -32,6 +32,7 @@
 #define HTMLImport_h
 
 #include "core/html/imports/HTMLImportState.h"
+#include "platform/heap/Handle.h"
 #include "wtf/TreeNode.h"
 #include "wtf/Vector.h"
 
@@ -94,7 +95,7 @@ class KURL;
 
 // The superclass of HTMLImportTreeRoot and HTMLImportChild
 // This represents the import tree data structure.
-class HTMLImport : public TreeNode<HTMLImport> {
+class HTMLImport : public NoBaseWillBeGarbageCollectedFinalized<HTMLImport>, public TreeNode<HTMLImport> {
 public:
     enum SyncMode {
         Sync  = 0,
@@ -118,6 +119,8 @@ public:
     virtual HTMLImportLoader* loader() const { return 0; }
     virtual void stateWillChange() { }
     virtual void stateDidChange();
+
+    virtual void trace(Visitor*) { }
 
 protected:
     // Stating from most conservative state.

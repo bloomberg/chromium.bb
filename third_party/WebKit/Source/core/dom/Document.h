@@ -1086,7 +1086,9 @@ protected:
 
     void clearXMLVersion() { m_xmlVersion = String(); }
 
+#if !ENABLE(OILPAN)
     virtual void dispose() OVERRIDE;
+#endif
 
     virtual PassRefPtrWillBeRawPtr<Document> cloneDocumentWithoutChildren();
 
@@ -1199,7 +1201,10 @@ private:
 
     LocalFrame* m_frame;
     RawPtrWillBeMember<DOMWindow> m_domWindow;
-    HTMLImportsController* m_importsController;
+    // FIXME: oilpan: when we get rid of the transition types change the
+    // HTMLImportsController to not be a DocumentSupplement since it is
+    // redundant with oilpan.
+    RawPtrWillBeMember<HTMLImportsController> m_importsController;
 
     RefPtrWillBeMember<ResourceFetcher> m_fetcher;
     RefPtrWillBeMember<DocumentParser> m_parser;

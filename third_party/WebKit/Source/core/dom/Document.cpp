@@ -569,14 +569,12 @@ Document::~Document()
 #if !ENABLE(OILPAN)
     if (m_styleSheetList)
         m_styleSheetList->detachFromDocument();
-#endif
 
     if (m_importsController) {
         m_importsController->wasDetachedFrom(*this);
-        m_importsController = 0;
+        m_importsController = nullptr;
     }
 
-#if !ENABLE(OILPAN)
     m_timeline->detachFromDocument();
 
     // We need to destroy CSSFontSelector before destroying m_fetcher.
@@ -608,9 +606,9 @@ Document::~Document()
     InspectorCounters::decrementCounter(InspectorCounters::DocumentCounter);
 }
 
+#if !ENABLE(OILPAN)
 void Document::dispose()
 {
-#if !ENABLE(OILPAN)
     ASSERT_WITH_SECURITY_IMPLICATION(!m_deletionHasBegun);
 
     // We must make sure not to be retaining any of our children through
@@ -628,14 +626,12 @@ void Document::dispose()
     detachParser();
 
     m_registrationContext.clear();
-#endif
 
     if (m_importsController) {
         m_importsController->wasDetachedFrom(*this);
-        m_importsController = 0;
+        m_importsController = nullptr;
     }
 
-#if !ENABLE(OILPAN)
     // removeDetachedChildren() doesn't always unregister IDs,
     // so tear down scope information upfront to avoid having stale references in the map.
     destroyTreeScopeData();
@@ -648,7 +644,6 @@ void Document::dispose()
     m_markers->clear();
 
     m_cssCanvasElements.clear();
-#endif
 
     // FIXME: consider using ActiveDOMObject.
     if (m_scriptedAnimationController)
@@ -661,6 +656,7 @@ void Document::dispose()
     m_lifecycle.advanceTo(DocumentLifecycle::Disposed);
     lifecycleNotifier().notifyDocumentWasDisposed();
 }
+#endif
 
 SelectorQueryCache& Document::selectorQueryCache()
 {
@@ -2250,14 +2246,6 @@ void Document::detach(const AttachContext& context)
     lifecycleNotifier().notifyDocumentWasDetached();
     m_lifecycle.advanceTo(DocumentLifecycle::Stopped);
 #if ENABLE(OILPAN)
-    // FIXME: Oilpan: With Oilpan dispose should not be needed. At
-    // this point we still have dispose in order to clear out some
-    // RefPtrs that would otherwise cause leaks. However, when the
-    // Document is detached the document can still be alive, so we
-    // really shouldn't clear anything at this point. It should just
-    // die with the document when the document is no longer reachable.
-    dispose();
-
     // This mirrors the clearing of the document object's touch
     // handlers that happens when the DOMWindow is destructed in a
     // non-Oilpan setting (DOMWindow::removeAllEventListeners()),
@@ -5778,6 +5766,7 @@ void Document::clearWeakMembers(Visitor* visitor)
 
 void Document::trace(Visitor* visitor)
 {
+    visitor->trace(m_importsController);
     visitor->trace(m_docType);
     visitor->trace(m_implementation);
     visitor->trace(m_autofocusElement);

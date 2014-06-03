@@ -60,8 +60,10 @@ public:
 
     void didShareLoader();
     void didStartLoading();
+#if !ENABLE(OILPAN)
     void importDestroyed();
     WeakPtr<HTMLImportChild> weakPtr() { return m_weakFactory.createWeakPtr(); }
+#endif
 
     // HTMLImport
     virtual Document* document() const OVERRIDE;
@@ -69,13 +71,16 @@ public:
     virtual HTMLImportLoader* loader() const OVERRIDE;
     virtual void stateWillChange() OVERRIDE;
     virtual void stateDidChange() OVERRIDE;
+    virtual void trace(Visitor*) OVERRIDE;
 
 #if !defined(NDEBUG)
     virtual void showThis() OVERRIDE;
 #endif
 
     void setClient(HTMLImportChildClient*);
+#if !ENABLE(OILPAN)
     void clearClient();
+#endif
 
     void didFinishLoading();
     void didFinishUpgradingCustomElements();
@@ -87,10 +92,12 @@ private:
     void createCustomElementMicrotaskStepIfNeeded();
 
     KURL m_url;
+    WeakPtrWillBeWeakMember<CustomElementMicrotaskImportStep> m_customElementMicrotaskStep;
+#if !ENABLE(OILPAN)
     WeakPtrFactory<HTMLImportChild> m_weakFactory;
-    WeakPtr<CustomElementMicrotaskImportStep> m_customElementMicrotaskStep;
-    HTMLImportLoader* m_loader;
-    HTMLImportChildClient* m_client;
+#endif
+    RawPtrWillBeMember<HTMLImportLoader> m_loader;
+    RawPtrWillBeMember<HTMLImportChildClient> m_client;
 };
 
 inline HTMLImportChild* toHTMLImportChild(HTMLImport* import)

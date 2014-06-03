@@ -53,7 +53,9 @@ private:
     explicit ImageDocument(const DocumentInit&);
 
     virtual PassRefPtrWillBeRawPtr<DocumentParser> createParser() OVERRIDE;
+#if !ENABLE(OILPAN)
     virtual void dispose() OVERRIDE;
+#endif
 
     void createDocumentStructure();
     void resizeImageToFit();

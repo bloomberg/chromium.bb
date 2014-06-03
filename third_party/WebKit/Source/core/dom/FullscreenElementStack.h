@@ -97,7 +97,9 @@ public:
     Element* webkitCurrentFullScreenElement() const { return m_fullScreenElement.get(); }
 
     virtual void documentWasDetached() OVERRIDE;
+#if !ENABLE(OILPAN)
     virtual void documentWasDisposed() OVERRIDE;
+#endif
 
     virtual void trace(Visitor*) OVERRIDE;
 

@@ -59,7 +59,9 @@ public:
     // API for HTML Imports
     void parentWasChanged();
     void importDidFinishLoading();
+#if !ENABLE(OILPAN)
     WeakPtr<CustomElementMicrotaskImportStep> weakPtr() { return m_weakFactory.createWeakPtr(); }
+#endif
 
     virtual void trace(Visitor*) OVERRIDE;
 
@@ -75,9 +77,11 @@ private:
 #if !defined(NDEBUG)
     virtual void show(unsigned indent) OVERRIDE;
 #endif
-    WeakPtr<HTMLImportChild> m_import;
-    RefPtrWillBeMember<CustomElementMicrotaskQueue> m_queue;
+    WeakPtrWillBeWeakMember<HTMLImportChild> m_import;
+#if !ENABLE(OILPAN)
     WeakPtrFactory<CustomElementMicrotaskImportStep> m_weakFactory;
+#endif
+    RefPtrWillBeMember<CustomElementMicrotaskQueue> m_queue;
 };
 
 }

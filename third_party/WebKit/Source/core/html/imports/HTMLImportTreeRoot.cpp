@@ -12,9 +12,9 @@
 
 namespace WebCore {
 
-PassOwnPtr<HTMLImportTreeRoot> HTMLImportTreeRoot::create(Document* document)
+PassOwnPtrWillBeRawPtr<HTMLImportTreeRoot> HTMLImportTreeRoot::create(Document* document)
 {
-    return adoptPtr(new HTMLImportTreeRoot(document));
+    return adoptPtrWillBeNoop(new HTMLImportTreeRoot(document));
 }
 
 HTMLImportTreeRoot::HTMLImportTreeRoot(Document* document)
@@ -27,9 +27,12 @@ HTMLImportTreeRoot::HTMLImportTreeRoot(Document* document)
 
 HTMLImportTreeRoot::~HTMLImportTreeRoot()
 {
+#if !ENABLE(OILPAN)
     for (size_t i = 0; i < m_imports.size(); ++i)
         m_imports[i]->importDestroyed();
     m_imports.clear();
+    m_document = nullptr;
+#endif
 }
 
 Document* HTMLImportTreeRoot::document() const
@@ -59,12 +62,18 @@ void HTMLImportTreeRoot::stateDidChange()
 
 void HTMLImportTreeRoot::scheduleRecalcState()
 {
+#if ENABLE(OILPAN)
+    ASSERT(m_document);
+    if (m_recalcTimer.isActive() || !m_document->isActive())
+        return;
+#else
     if (m_recalcTimer.isActive() || !m_document)
         return;
+#endif
     m_recalcTimer.startOneShot(0, FROM_HERE);
 }
 
-HTMLImportChild* HTMLImportTreeRoot::add(PassOwnPtr<HTMLImportChild> child)
+HTMLImportChild* HTMLImportTreeRoot::add(PassOwnPtrWillBeRawPtr<HTMLImportChild> child)
 {
     m_imports.append(child);
     return m_imports.last().get();
@@ -89,6 +98,13 @@ void HTMLImportTreeRoot::recalcTimerFired(Timer<HTMLImportTreeRoot>*)
         m_recalcTimer.stop();
         HTMLImport::recalcTreeState(this);
     } while (m_recalcTimer.isActive());
+}
+
+void HTMLImportTreeRoot::trace(Visitor* visitor)
+{
+    visitor->trace(m_document);
+    visitor->trace(m_imports);
+    HTMLImport::trace(visitor);
 }
 
 }

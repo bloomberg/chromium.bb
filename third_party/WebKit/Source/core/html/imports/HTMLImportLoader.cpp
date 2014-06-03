@@ -52,9 +52,12 @@ HTMLImportLoader::HTMLImportLoader(HTMLImportsController* controller)
 
 HTMLImportLoader::~HTMLImportLoader()
 {
+#if !ENABLE(OILPAN)
     clear();
+#endif
 }
 
+#if !ENABLE(OILPAN)
 void HTMLImportLoader::importDestroyed()
 {
     clear();
@@ -62,13 +65,14 @@ void HTMLImportLoader::importDestroyed()
 
 void HTMLImportLoader::clear()
 {
-    m_controller = 0;
+    m_controller = nullptr;
     if (m_document) {
         m_document->setImportsController(0);
         m_document->cancelParsing();
         m_document.clear();
     }
 }
+#endif
 
 void HTMLImportLoader::startLoading(const ResourcePtr<RawResource>& resource)
 {
@@ -193,11 +197,13 @@ void HTMLImportLoader::addImport(HTMLImportChild* import)
         import->didFinishLoading();
 }
 
+#if !ENABLE(OILPAN)
 void HTMLImportLoader::removeImport(HTMLImportChild* client)
 {
     ASSERT(kNotFound != m_imports.find(client));
     m_imports.remove(m_imports.find(client));
 }
+#endif
 
 bool HTMLImportLoader::shouldBlockScriptExecution() const
 {
@@ -207,6 +213,16 @@ bool HTMLImportLoader::shouldBlockScriptExecution() const
 PassRefPtrWillBeRawPtr<CustomElementMicrotaskQueue> HTMLImportLoader::microtaskQueue() const
 {
     return m_microtaskQueue;
+}
+
+void HTMLImportLoader::trace(Visitor* visitor)
+{
+    visitor->trace(m_controller);
+#if ENABLE(OILPAN)
+    visitor->trace(m_imports);
+#endif
+    visitor->trace(m_document);
+    visitor->trace(m_microtaskQueue);
 }
 
 } // namespace WebCore

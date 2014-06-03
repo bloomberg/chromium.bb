@@ -45,9 +45,13 @@ PassOwnPtrWillBeRawPtr<CustomElementMicrotaskImportStep> CustomElementMicrotaskI
 }
 
 CustomElementMicrotaskImportStep::CustomElementMicrotaskImportStep(HTMLImportChild* import)
+#if ENABLE(OILPAN)
+    : m_import(import)
+#else
     : m_import(import->weakPtr())
-    , m_queue(import->loader()->microtaskQueue())
     , m_weakFactory(this)
+#endif
+    , m_queue(import->loader()->microtaskQueue())
 {
 }
 
@@ -85,6 +89,7 @@ CustomElementMicrotaskStep::Result CustomElementMicrotaskImportStep::process()
 
 void CustomElementMicrotaskImportStep::trace(Visitor* visitor)
 {
+    visitor->trace(m_import);
     visitor->trace(m_queue);
     CustomElementMicrotaskStep::trace(visitor);
 }

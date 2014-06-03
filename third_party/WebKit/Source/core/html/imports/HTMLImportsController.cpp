@@ -56,9 +56,12 @@ HTMLImportsController::HTMLImportsController(Document& master)
 
 HTMLImportsController::~HTMLImportsController()
 {
+#if !ENABLE(OILPAN)
     ASSERT(!m_root);
+#endif
 }
 
+#if !ENABLE(OILPAN)
 void HTMLImportsController::clear()
 {
     Document* master = root()->document();
@@ -70,8 +73,8 @@ void HTMLImportsController::clear()
 
     if (master)
         master->setImportsController(0);
-    master = 0;
 }
+#endif
 
 static bool makesCycle(HTMLImport* parent, const KURL& url)
 {
@@ -86,7 +89,7 @@ static bool makesCycle(HTMLImport* parent, const KURL& url)
 HTMLImportChild* HTMLImportsController::createChild(const KURL& url, HTMLImportLoader* loader, HTMLImport* parent, HTMLImportChildClient* client)
 {
     HTMLImport::SyncMode mode = client->isSync() && !makesCycle(parent, url) ? HTMLImport::Sync : HTMLImport::Async;
-    OwnPtr<HTMLImportChild> child = adoptPtr(new HTMLImportChild(url, loader, mode));
+    OwnPtrWillBeRawPtr<HTMLImportChild> child = adoptPtrWillBeNoop(new HTMLImportChild(url, loader, mode));
     child->setClient(client);
     parent->appendImport(child.get());
     loader->addImport(child.get());
@@ -136,12 +139,14 @@ bool HTMLImportsController::shouldBlockScriptExecution(const Document& document)
     return root()->state().shouldBlockScriptExecution();
 }
 
+#if !ENABLE(OILPAN)
 void HTMLImportsController::wasDetachedFrom(const Document& document)
 {
     ASSERT(document.importsController() == this);
     if (master() == &document)
         clear();
 }
+#endif
 
 HTMLImportLoader* HTMLImportsController::createLoader()
 {
@@ -162,6 +167,13 @@ HTMLImportLoader* HTMLImportsController::loaderFor(const Document& document) con
 Document* HTMLImportsController::loaderDocumentAt(size_t i) const
 {
     return loaderAt(i)->document();
+}
+
+void HTMLImportsController::trace(Visitor* visitor)
+{
+    visitor->trace(m_root);
+    visitor->trace(m_loaders);
+    DocumentSupplement::trace(visitor);
 }
 
 } // namespace WebCore

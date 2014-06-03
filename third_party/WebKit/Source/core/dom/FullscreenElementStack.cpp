@@ -127,13 +127,23 @@ void FullscreenElementStack::documentWasDetached()
 
     if (m_fullScreenRenderer)
         setFullScreenRenderer(0);
+
+#if ENABLE(OILPAN)
+    m_fullScreenElement = nullptr;
+    m_fullScreenElementStack.clear();
+#endif
+
 }
 
+#if !ENABLE(OILPAN)
 void FullscreenElementStack::documentWasDisposed()
 {
+    // NOTE: the context dispose phase is not supported in oilpan. Please
+    // consider using the detach phase instead.
     m_fullScreenElement = nullptr;
     m_fullScreenElementStack.clear();
 }
+#endif
 
 bool FullscreenElementStack::fullScreenIsAllowedForElement(Element* element) const
 {

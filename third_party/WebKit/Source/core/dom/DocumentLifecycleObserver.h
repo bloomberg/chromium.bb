@@ -40,7 +40,9 @@ public:
     explicit DocumentLifecycleObserver(Document*);
     virtual ~DocumentLifecycleObserver();
     virtual void documentWasDetached() { }
+#if !ENABLE(OILPAN)
     virtual void documentWasDisposed() { }
+#endif
 };
 
 } // namespace WebCore

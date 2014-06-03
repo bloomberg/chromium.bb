@@ -366,11 +366,13 @@ bool ImageDocument::shouldShrinkToFit() const
     return frame()->settings()->shrinksStandaloneImagesToFit() && frame()->isMainFrame();
 }
 
+#if !ENABLE(OILPAN)
 void ImageDocument::dispose()
 {
     m_imageElement = nullptr;
     HTMLDocument::dispose();
 }
+#endif
 
 void ImageDocument::trace(Visitor* visitor)
 {

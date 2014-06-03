@@ -46,19 +46,23 @@ namespace WebCore {
 HTMLImportChild::HTMLImportChild(const KURL& url, HTMLImportLoader* loader, SyncMode sync)
     : HTMLImport(sync)
     , m_url(url)
+#if !ENABLE(OILPAN)
     , m_weakFactory(this)
+#endif
     , m_loader(loader)
-    , m_client(0)
+    , m_client(nullptr)
 {
 }
 
 HTMLImportChild::~HTMLImportChild()
 {
+#if !ENABLE(OILPAN)
     // importDestroyed() should be called before the destruction.
     ASSERT(!m_loader);
 
     if (m_client)
         m_client->importChildWasDestroyed(this);
+#endif
 }
 
 void HTMLImportChild::didShareLoader()
@@ -91,6 +95,7 @@ void HTMLImportChild::didFinishUpgradingCustomElements()
     m_customElementMicrotaskStep.clear();
 }
 
+#if !ENABLE(OILPAN)
 void HTMLImportChild::importDestroyed()
 {
     if (parent())
@@ -98,8 +103,9 @@ void HTMLImportChild::importDestroyed()
 
     ASSERT(m_loader);
     m_loader->removeImport(this);
-    m_loader = 0;
+    m_loader = nullptr;
 }
+#endif
 
 Document* HTMLImportChild::document() const
 {
@@ -135,7 +141,11 @@ void HTMLImportChild::createCustomElementMicrotaskStepIfNeeded()
     }
 
     if (!isDone() && !formsCycle()) {
+#if ENABLE(OILPAN)
+        m_customElementMicrotaskStep = CustomElement::didCreateImport(this);
+#else
         m_customElementMicrotaskStep = CustomElement::didCreateImport(this)->weakPtr();
+#endif
     }
 
     for (HTMLImport* child = firstChild(); child; child = child->next())
@@ -163,12 +173,14 @@ void HTMLImportChild::setClient(HTMLImportChildClient* client)
     m_client = client;
 }
 
+#if !ENABLE(OILPAN)
 void HTMLImportChild::clearClient()
 {
     // Doesn't check m_client nullity because we allow
     // clearClient() to reenter.
-    m_client = 0;
+    m_client = nullptr;
 }
+#endif
 
 HTMLLinkElement* HTMLImportChild::link() const
 {
@@ -198,12 +210,20 @@ void HTMLImportChild::showThis()
     bool isFirst = loader() ? loader()->isFirstImport(this) : false;
     HTMLImport::showThis();
     fprintf(stderr, " loader=%p first=%d, step=%p sync=%s url=%s",
-        m_loader,
+        m_loader.get(),
         isFirst,
         m_customElementMicrotaskStep.get(),
         isSync() ? "Y" : "N",
         url().string().utf8().data());
 }
 #endif
+
+void HTMLImportChild::trace(Visitor* visitor)
+{
+    visitor->trace(m_customElementMicrotaskStep);
+    visitor->trace(m_loader);
+    visitor->trace(m_client);
+    HTMLImport::trace(visitor);
+}
 
 } // namespace WebCore

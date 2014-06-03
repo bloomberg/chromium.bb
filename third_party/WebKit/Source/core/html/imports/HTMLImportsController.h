@@ -62,8 +62,9 @@ public:
     HTMLImportTreeRoot* root() const { return m_root.get(); }
 
     bool shouldBlockScriptExecution(const Document&) const;
+#if !ENABLE(OILPAN)
     void wasDetachedFrom(const Document&);
-
+#endif
     HTMLImportChild* load(HTMLImport* parent, HTMLImportChildClient*, FetchRequest);
 
     Document* master() const;
@@ -75,13 +76,16 @@ public:
     Document* loaderDocumentAt(size_t) const;
     HTMLImportLoader* loaderFor(const Document&) const;
 
+    virtual void trace(Visitor*);
+
 private:
     HTMLImportChild* createChild(const KURL&, HTMLImportLoader*, HTMLImport* parent, HTMLImportChildClient*);
+#if !ENABLE(OILPAN)
     void clear();
+#endif
 
-    OwnPtr<HTMLImportTreeRoot> m_root;
-
-    typedef Vector<OwnPtr<HTMLImportLoader> > LoaderList;
+    OwnPtrWillBeMember<HTMLImportTreeRoot> m_root;
+    typedef WillBeHeapVector<OwnPtrWillBeMember<HTMLImportLoader> > LoaderList;
     LoaderList m_loaders;
 };
 

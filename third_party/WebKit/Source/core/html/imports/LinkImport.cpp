@@ -48,16 +48,18 @@ PassOwnPtrWillBeRawPtr<LinkImport> LinkImport::create(HTMLLinkElement* owner)
 
 LinkImport::LinkImport(HTMLLinkElement* owner)
     : LinkResource(owner)
-    , m_child(0)
+    , m_child(nullptr)
 {
 }
 
 LinkImport::~LinkImport()
 {
+#if !ENABLE(OILPAN)
     if (m_child) {
         m_child->clearClient();
-        m_child = 0;
+        m_child = nullptr;
     }
+#endif
 }
 
 Document* LinkImport::importedDocument() const
@@ -106,12 +108,14 @@ void LinkImport::didFinish()
     m_owner->scheduleEvent();
 }
 
+#if !ENABLE(OILPAN)
 void LinkImport::importChildWasDestroyed(HTMLImportChild* child)
 {
     ASSERT(m_child == child);
-    m_child = 0;
+    m_child = nullptr;
     m_owner = nullptr;
 }
+#endif
 
 bool LinkImport::isSync() const
 {
@@ -132,6 +136,8 @@ bool LinkImport::hasLoaded() const
 
 void LinkImport::trace(Visitor* visitor)
 {
+    visitor->trace(m_child);
+    HTMLImportChildClient::trace(visitor);
     LinkResource::trace(visitor);
 }
 
