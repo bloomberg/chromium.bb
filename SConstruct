@@ -3406,8 +3406,8 @@ nacl_irt_env.Replace(LIBPATH='${LIB_DIR}')
 
 if nacl_irt_env.Bit('bitcode'):
   if nacl_irt_env.Bit('target_x86_64'):
-    nacl_irt_env.Append(CCFLAGS=['--target=x86_64-nacl'])
-    nacl_irt_env.Append(LINKFLAGS=['--target=x86_64-nacl',
+    nacl_irt_env.Append(CCFLAGS=['--target=x86_64-unknown-nacl'])
+    nacl_irt_env.Append(LINKFLAGS=['--target=x86_64-unknown-nacl',
                                    '--pnacl-allow-translate',
                                    '-arch', 'x86-64'])
 
