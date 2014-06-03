@@ -16,10 +16,11 @@ namespace {
 
 class EnableDisableSingleClientTest : public SyncTest {
  public:
-  // TODO(pvalenzuela): Switch to SINGLE_CLIENT once FakeServer
-  // supports this scenario.
-  EnableDisableSingleClientTest() : SyncTest(SINGLE_CLIENT_LEGACY) {}
+  EnableDisableSingleClientTest() : SyncTest(SINGLE_CLIENT) {}
   virtual ~EnableDisableSingleClientTest() {}
+
+  // Don't use self-notifications as they can trigger additional sync cycles.
+  virtual bool TestUsesSelfNotifications() OVERRIDE { return false; }
  private:
   DISALLOW_COPY_AND_ASSIGN(EnableDisableSingleClientTest);
 };
@@ -36,11 +37,6 @@ IN_PROC_BROWSER_TEST_F(EnableDisableSingleClientTest, EnableOneAtATime) {
 
   // Setup sync with no enabled types.
   ASSERT_TRUE(GetClient(0)->SetupSync(syncer::ModelTypeSet()));
-
-  // TODO(rlarocque, 97780): It should be possible to disable notifications
-  // before calling SetupSync().  We should move this line back to the top
-  // of this function when this is supported.
-  DisableNotifications();
 
   const syncer::ModelTypeSet registered_types =
       GetSyncService((0))->GetRegisteredDataTypes();
@@ -73,8 +69,6 @@ IN_PROC_BROWSER_TEST_F(EnableDisableSingleClientTest, EnableOneAtATime) {
                                         syncer::SESSIONS));
     }
   }
-
-  EnableNotifications();
 }
 
 IN_PROC_BROWSER_TEST_F(EnableDisableSingleClientTest, DisableOneAtATime) {
@@ -82,11 +76,6 @@ IN_PROC_BROWSER_TEST_F(EnableDisableSingleClientTest, DisableOneAtATime) {
 
   // Setup sync with no disabled types.
   ASSERT_TRUE(GetClient(0)->SetupSync());
-
-  // TODO(rlarocque, 97780): It should be possible to disable notifications
-  // before calling SetupSync().  We should move this line back to the top
-  // of this function when this is supported.
-  DisableNotifications();
 
   const syncer::ModelTypeSet registered_types =
       GetSyncService((0))->GetRegisteredDataTypes();
@@ -151,8 +140,6 @@ IN_PROC_BROWSER_TEST_F(EnableDisableSingleClientTest, DisableOneAtATime) {
                                          syncer::PRIORITY_PREFERENCES));
     }
   }
-
-  EnableNotifications();
 }
 
 }  // namespace
