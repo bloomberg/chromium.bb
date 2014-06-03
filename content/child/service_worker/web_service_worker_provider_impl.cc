@@ -45,18 +45,14 @@ void WebServiceWorkerProviderImpl::setClient(
   // (e.g. on document and on dedicated workers) can properly share
   // the single provider context across threads. (http://crbug.com/366538
   // for more context)
-  scoped_ptr<ServiceWorkerHandleReference> current =
-      context_->GetCurrentServiceWorkerHandle();
   GetDispatcher()->AddScriptClient(provider_id_, client);
-  if (!current)
+
+  int handle_id = context_->current_handle_id();
+  if (handle_id == kInvalidServiceWorkerHandleId)
     return;
 
-  int handle_id = current->info().handle_id;
-  if (handle_id != kInvalidServiceWorkerHandleId) {
-    scoped_ptr<WebServiceWorkerImpl> worker(
-        new WebServiceWorkerImpl(current.Pass(), thread_safe_sender_));
-    client->setCurrentServiceWorker(worker.release());
-  }
+  client->setCurrentServiceWorker(
+      GetDispatcher()->GetServiceWorker(context_->current()->info(), false));
 }
 
 void WebServiceWorkerProviderImpl::registerServiceWorker(

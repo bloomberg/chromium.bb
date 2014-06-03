@@ -36,13 +36,9 @@ ServiceWorkerProviderContext::~ServiceWorkerProviderContext() {
   }
 }
 
-scoped_ptr<ServiceWorkerHandleReference>
-ServiceWorkerProviderContext::GetCurrentServiceWorkerHandle() {
+ServiceWorkerHandleReference* ServiceWorkerProviderContext::current() {
   DCHECK(main_thread_loop_proxy_->RunsTasksOnCurrentThread());
-  if (!current_)
-    return scoped_ptr<ServiceWorkerHandleReference>();
-  return ServiceWorkerHandleReference::Create(
-      current_->info(), thread_safe_sender_);
+  return current_.get();
 }
 
 void ServiceWorkerProviderContext::OnServiceWorkerStateChanged(
@@ -63,8 +59,7 @@ void ServiceWorkerProviderContext::OnSetCurrentServiceWorker(
 
   // This context is is the primary owner of this handle, keeps the
   // initial reference until it goes away.
-  current_ = ServiceWorkerHandleReference::CreateForDeleter(
-      info, thread_safe_sender_);
+  current_ = ServiceWorkerHandleReference::Adopt(info, thread_safe_sender_);
 
   // TODO(kinuko): We can forward the message to other threads here
   // when we support navigator.serviceWorker in dedicated workers.

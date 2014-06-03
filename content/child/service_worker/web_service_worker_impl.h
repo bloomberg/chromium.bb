@@ -35,8 +35,6 @@ class ThreadSafeSender;
 class WebServiceWorkerImpl
     : NON_EXPORTED_BASE(public blink::WebServiceWorker) {
  public:
-  WebServiceWorkerImpl(const ServiceWorkerObjectInfo& info,
-                       ThreadSafeSender* thread_safe_sender);
   WebServiceWorkerImpl(scoped_ptr<ServiceWorkerHandleReference> handle_ref,
                        ThreadSafeSender* thread_safe_sender);
   virtual ~WebServiceWorkerImpl();
@@ -47,6 +45,7 @@ class WebServiceWorkerImpl
   void OnStateChanged(blink::WebServiceWorkerState new_state);
 
   virtual void setProxy(blink::WebServiceWorkerProxy* proxy);
+  virtual blink::WebServiceWorkerProxy* proxy();
   virtual void proxyReadyChanged();
   virtual blink::WebURL scope() const;
   virtual blink::WebURL url() const;

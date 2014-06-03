@@ -17,8 +17,7 @@ ServiceWorkerHandleReference::Create(
   return make_scoped_ptr(new ServiceWorkerHandleReference(info, sender, true));
 }
 
-scoped_ptr<ServiceWorkerHandleReference>
-ServiceWorkerHandleReference::CreateForDeleter(
+scoped_ptr<ServiceWorkerHandleReference> ServiceWorkerHandleReference::Adopt(
     const ServiceWorkerObjectInfo& info,
     ThreadSafeSender* sender) {
   DCHECK(sender);

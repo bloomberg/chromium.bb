@@ -37,9 +37,6 @@ class ServiceWorkerProviderContext
  public:
   explicit ServiceWorkerProviderContext(int provider_id);
 
-  // Returns a new handle reference for .current.
-  scoped_ptr<ServiceWorkerHandleReference> GetCurrentServiceWorkerHandle();
-
   // Called from ServiceWorkerDispatcher.
   void OnServiceWorkerStateChanged(int handle_id,
                                    blink::WebServiceWorkerState state);
@@ -47,6 +44,14 @@ class ServiceWorkerProviderContext
                                  const ServiceWorkerObjectInfo& info);
 
   int provider_id() const { return provider_id_; }
+
+  // Gets the context's handle reference for .controller.
+  // TODO(dominicc): Rename this to "controller".
+  ServiceWorkerHandleReference* current();
+
+  // Gets the handle ID of the controller, or
+  // kInvalidServiceWorkerHandleId if the provider is not controlled
+  // by a Service Worker.
   int current_handle_id() const;
 
  private:

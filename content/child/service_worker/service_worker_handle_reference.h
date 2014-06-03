@@ -17,12 +17,17 @@ class ThreadSafeSender;
 // (in the browser side) in ctor and dtor.
 class ServiceWorkerHandleReference {
  public:
-  // Creates a new ServiceWorkerHandleReference (and increments ref-count).
+  // Creates a new ServiceWorkerHandleReference and increments ref-count.
   static scoped_ptr<ServiceWorkerHandleReference> Create(
       const ServiceWorkerObjectInfo& info,
       ThreadSafeSender* sender);
-  // This doesn't increment ref-count in ctor.
-  static scoped_ptr<ServiceWorkerHandleReference> CreateForDeleter(
+
+  // Creates a new ServiceWorkerHandleReference by adopting a
+  // ref-count. ServiceWorkerHandleReferences created this way must
+  // have a matching
+  // ServiceWorkerDispatcherHost::RegisterServiceWorkerHandle call on
+  // the browser side.
+  static scoped_ptr<ServiceWorkerHandleReference> Adopt(
       const ServiceWorkerObjectInfo& info,
       ThreadSafeSender* sender);
 

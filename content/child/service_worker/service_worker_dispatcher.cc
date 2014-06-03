@@ -148,6 +148,29 @@ void ServiceWorkerDispatcher::OnWorkerRunLoopStopped() {
   delete this;
 }
 
+WebServiceWorkerImpl* ServiceWorkerDispatcher::GetServiceWorker(
+    const ServiceWorkerObjectInfo& info,
+    bool adopt_handle) {
+  WorkerObjectMap::iterator existing_worker =
+      service_workers_.find(info.handle_id);
+
+  if (existing_worker != service_workers_.end()) {
+    if (adopt_handle) {
+      // We are instructed to adopt a handle but we already have one, so
+      // adopt and destroy a handle ref.
+      ServiceWorkerHandleReference::Adopt(info, thread_safe_sender_);
+    }
+    return existing_worker->second;
+  }
+
+  scoped_ptr<ServiceWorkerHandleReference> handle_ref =
+      adopt_handle
+          ? ServiceWorkerHandleReference::Adopt(info, thread_safe_sender_)
+          : ServiceWorkerHandleReference::Create(info, thread_safe_sender_);
+  // WebServiceWorkerImpl constructor calls AddServiceWorker.
+  return new WebServiceWorkerImpl(handle_ref.Pass(), thread_safe_sender_);
+}
+
 void ServiceWorkerDispatcher::OnRegistered(
     int thread_id,
     int request_id,
@@ -158,17 +181,7 @@ void ServiceWorkerDispatcher::OnRegistered(
   if (!callbacks)
     return;
 
-  // The browser has to generate the registration_id so the same
-  // worker can be called from different renderer contexts. However,
-  // the impl object doesn't have to be the same instance across calls
-  // unless we require the DOM objects to be identical when there's a
-  // duplicate registration. So for now we mint a new object each
-  // time.
-  //
-  // WebServiceWorkerImpl's ctor internally calls AddServiceWorker.
-  scoped_ptr<WebServiceWorkerImpl> worker(
-      new WebServiceWorkerImpl(info, thread_safe_sender_));
-  callbacks->onSuccess(worker.release());
+  callbacks->onSuccess(GetServiceWorker(info, true));
   pending_callbacks_.Remove(request_id);
 }
 
@@ -228,10 +241,7 @@ void ServiceWorkerDispatcher::OnSetCurrentServiceWorker(
   ScriptClientMap::iterator found = script_clients_.find(provider_id);
   if (found != script_clients_.end()) {
     // Populate the .current field with the new worker object.
-    scoped_ptr<ServiceWorkerHandleReference> handle_ref(
-        ServiceWorkerHandleReference::Create(info, thread_safe_sender_));
-    found->second->setCurrentServiceWorker(
-        new WebServiceWorkerImpl(handle_ref.Pass(), thread_safe_sender_));
+    found->second->setCurrentServiceWorker(GetServiceWorker(info, false));
   }
 }
 

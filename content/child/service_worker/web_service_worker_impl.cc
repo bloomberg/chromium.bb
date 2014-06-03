@@ -20,21 +20,6 @@ using blink::WebString;
 namespace content {
 
 WebServiceWorkerImpl::WebServiceWorkerImpl(
-    const ServiceWorkerObjectInfo& info,
-    ThreadSafeSender* thread_safe_sender)
-    : handle_ref_(
-          ServiceWorkerHandleReference::CreateForDeleter(info,
-                                                         thread_safe_sender)),
-      state_(handle_ref_->state()),
-      thread_safe_sender_(thread_safe_sender),
-      proxy_(NULL) {
-  ServiceWorkerDispatcher* dispatcher =
-      ServiceWorkerDispatcher::GetThreadSpecificInstance();
-  DCHECK(dispatcher);
-  dispatcher->AddServiceWorker(handle_ref_->handle_id(), this);
-}
-
-WebServiceWorkerImpl::WebServiceWorkerImpl(
     scoped_ptr<ServiceWorkerHandleReference> handle_ref,
     ThreadSafeSender* thread_safe_sender)
     : handle_ref_(handle_ref.Pass()),
@@ -67,6 +52,10 @@ void WebServiceWorkerImpl::OnStateChanged(
 
 void WebServiceWorkerImpl::setProxy(blink::WebServiceWorkerProxy* proxy) {
   proxy_ = proxy;
+}
+
+blink::WebServiceWorkerProxy* WebServiceWorkerImpl::proxy() {
+  return proxy_;
 }
 
 void WebServiceWorkerImpl::proxyReadyChanged() {

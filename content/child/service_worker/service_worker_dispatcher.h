@@ -70,6 +70,22 @@ class ServiceWorkerDispatcher : public WorkerTaskRunner::Observer {
                        blink::WebServiceWorkerProviderClient* client);
   void RemoveScriptClient(int provider_id);
 
+  // If an existing WebServiceWorkerImpl exists for the Service
+  // Worker, it is returned; otherwise a WebServiceWorkerImpl is
+  // created and its ownership is transferred to the caller. If
+  // |adopt_handle| is true, a ServiceWorkerHandleReference will be
+  // adopted for the specified Service Worker.
+  //
+  // TODO(dominicc): The lifetime of WebServiceWorkerImpl is too tricky; this
+  // method can return an existing WebServiceWorkerImpl, in which case
+  // it is owned by a WebCore::ServiceWorker and the lifetime is not
+  // being transferred to the owner; or it can create a
+  // WebServiceWorkerImpl, in which case ownership is transferred to
+  // the caller who must bounce it to a method that will associate it
+  // with a WebCore::ServiceWorker.
+  WebServiceWorkerImpl* GetServiceWorker(const ServiceWorkerObjectInfo&,
+                                         bool adopt_handle);
+
   // |thread_safe_sender| needs to be passed in because if the call leads to
   // construction it will be needed.
   static ServiceWorkerDispatcher* GetOrCreateThreadSpecificInstance(
