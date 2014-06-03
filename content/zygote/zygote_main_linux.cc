@@ -22,6 +22,7 @@
 #include "base/posix/eintr_wrapper.h"
 #include "base/posix/unix_domain_socket_linux.h"
 #include "base/rand_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/sys_info.h"
 #include "build/build_config.h"
 #include "content/common/child_process_sandbox_support_impl_linux.h"
@@ -496,7 +497,10 @@ bool ZygoteMain(const MainFunctionParams& params,
   LinuxSandbox* linux_sandbox = LinuxSandbox::GetInstance();
 
 #if defined(ADDRESS_SANITIZER)
-  base::ScopedFD sancov_file_fd(__sanitizer_maybe_open_cov_file("zygote"));
+  const std::string sancov_file_name =
+      "zygote." + base::Uint64ToString(base::RandUint64());
+  base::ScopedFD sancov_file_fd(
+      __sanitizer_maybe_open_cov_file(sancov_file_name.c_str()));
   int sancov_socket_fds[2] = {-1, -1};
   CreateSanitizerCoverageSocketPair(sancov_socket_fds);
   linux_sandbox->sanitizer_args()->coverage_sandboxed = 1;

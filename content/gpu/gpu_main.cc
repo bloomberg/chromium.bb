@@ -450,9 +450,12 @@ bool StartSandboxLinux(const gpu::GPUInfo& gpu_info,
   }
 
 #if defined(ADDRESS_SANITIZER)
+  const std::string sancov_file_name =
+      "gpu." + base::Uint64ToString(base::RandUint64());
   LinuxSandbox* linux_sandbox = LinuxSandbox::GetInstance();
   linux_sandbox->sanitizer_args()->coverage_sandboxed = 1;
-  linux_sandbox->sanitizer_args()->coverage_fd = -1;
+  linux_sandbox->sanitizer_args()->coverage_fd =
+      __sanitizer_maybe_open_cov_file(sancov_file_name.c_str());
   linux_sandbox->sanitizer_args()->coverage_max_block_size = 0;
 #endif
 
