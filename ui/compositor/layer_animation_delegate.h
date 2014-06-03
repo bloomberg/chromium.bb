@@ -14,8 +14,6 @@
 
 namespace ui {
 
-class LayerAnimatorCollection;
-
 // Layer animations interact with the layers using this interface.
 class COMPOSITOR_EXPORT LayerAnimationDelegate {
  public:
@@ -37,7 +35,6 @@ class COMPOSITOR_EXPORT LayerAnimationDelegate {
   virtual float GetDeviceScaleFactor() const = 0;
   virtual void AddThreadedAnimation(scoped_ptr<cc::Animation> animation) = 0;
   virtual void RemoveThreadedAnimation(int animation_id) = 0;
-  virtual LayerAnimatorCollection* GetLayerAnimatorCollection() = 0;
 
  protected:
   virtual ~LayerAnimationDelegate() {}

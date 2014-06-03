@@ -41,13 +41,13 @@ void RunAnimationForLayer(ui::Layer* layer) {
             ui::ScopedAnimationDurationScaleMode::ZERO_DURATION);
 
   ui::LayerAnimatorTestController controller(layer->GetAnimator());
+  gfx::AnimationContainerElement* element = layer->GetAnimator();
   // Multiple steps are required to complete complex animations.
   // TODO(vollick): This should not be necessary. crbug.com/154017
   while (controller.animator()->is_animating()) {
     controller.StartThreadedAnimationsIfNeeded();
     base::TimeTicks step_time = controller.animator()->last_step_time();
-    controller.animator()->Step(step_time +
-                                base::TimeDelta::FromMilliseconds(1000));
+    element->Step(step_time + base::TimeDelta::FromMilliseconds(1000));
   }
 }
 

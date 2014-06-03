@@ -49,8 +49,6 @@
         'layer_animation_sequence.h',
         'layer_animator.cc',
         'layer_animator.h',
-        'layer_animator_collection.cc',
-        'layer_animator_collection.h',
         'layer_delegate.h',
         'layer_owner.cc',
         'layer_owner.h',

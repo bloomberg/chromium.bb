@@ -31,7 +31,6 @@
 #include "ui/base/ui_base_types.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
-#include "ui/compositor/test/draw_waiter_for_test.h"
 #include "ui/events/event_utils.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/widget/widget.h"
@@ -1237,12 +1236,6 @@ TEST_F(WorkspaceControllerTest, AnimatedNormToMaxToNormRepositionsRemaining) {
                 desktop_area.width() - window1->bounds().width()) +
             ",32 640x320", window1->bounds().ToString());
   EXPECT_EQ("0,48 256x512", window2->bounds().ToString());
-
-  // Wait for the compositor to draw, which would terminate the pending
-  // animations.
-  ui::Compositor* compositor = window2->layer()->GetCompositor();
-  while (compositor->layer_animator_collection()->HasActiveAnimators())
-    ui::DrawWaiterForTest::Wait(compositor);
 }
 
 // This tests simulates a browser and an app and verifies the ordering of the

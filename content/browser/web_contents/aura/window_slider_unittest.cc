@@ -341,6 +341,7 @@ TEST_F(WindowSliderTest, WindowSlideInterruptedThenContinues) {
   ui::ScopedAnimationDurationScaleMode normal_duration_(
       ui::ScopedAnimationDurationScaleMode::NORMAL_DURATION);
   ui::LayerAnimator* animator = window->layer()->GetAnimator();
+  gfx::AnimationContainerElement* element = animator;
   animator->set_disable_timer_for_test(true);
   ui::LayerAnimatorTestController test_controller(animator);
 
@@ -427,7 +428,7 @@ TEST_F(WindowSliderTest, WindowSlideInterruptedThenContinues) {
   ui::ScopedLayerAnimationSettings settings(animator);
   base::TimeDelta duration = settings.GetTransitionDuration();
   test_controller.StartThreadedAnimationsIfNeeded();
-  animator->Step(gfx::FrameTime::Now() + duration);
+  element->Step(gfx::FrameTime::Now() + duration);
 
   EXPECT_TRUE(slider_delegate.slide_completed());
   EXPECT_FALSE(slider_delegate.slider_destroyed());
@@ -595,6 +596,7 @@ TEST_F(WindowSliderTest, SwipeDuringSwipeAnimation) {
   ui::ScopedAnimationDurationScaleMode normal_duration_(
       ui::ScopedAnimationDurationScaleMode::NORMAL_DURATION);
   ui::LayerAnimator* animator = window->layer()->GetAnimator();
+  gfx::AnimationContainerElement* element = animator;
   animator->set_disable_timer_for_test(true);
   ui::LayerAnimatorTestController test_controller(animator);
 
@@ -617,7 +619,7 @@ TEST_F(WindowSliderTest, SwipeDuringSwipeAnimation) {
   test_controller.StartThreadedAnimationsIfNeeded();
   base::TimeTicks start_time1 =  gfx::FrameTime::Now();
 
-  animator->Step(start_time1 + duration / 2);
+  element->Step(start_time1 + duration/2);
   EXPECT_FALSE(slider_delegate.slide_completed());
   slider_delegate.Reset();
   // Generate another horizontal swipe while the animation from the previous
@@ -638,7 +640,7 @@ TEST_F(WindowSliderTest, SwipeDuringSwipeAnimation) {
   test_controller.StartThreadedAnimationsIfNeeded();
   base::TimeTicks start_time2 =  gfx::FrameTime::Now();
   slider_delegate.Reset();
-  animator->Step(start_time2 + duration);
+  element->Step(start_time2 + duration);
   // The animation for the second slide should now be completed.
   EXPECT_TRUE(slider_delegate.slide_completed());
   slider_delegate.Reset();

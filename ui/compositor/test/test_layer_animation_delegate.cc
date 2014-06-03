@@ -98,9 +98,4 @@ void TestLayerAnimationDelegate::AddThreadedAnimation(
 void TestLayerAnimationDelegate::RemoveThreadedAnimation(int animation_id) {
 }
 
-LayerAnimatorCollection*
-TestLayerAnimationDelegate::GetLayerAnimatorCollection() {
-  return NULL;
-}
-
 }  // namespace ui

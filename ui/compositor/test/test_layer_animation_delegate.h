@@ -39,7 +39,6 @@ class TestLayerAnimationDelegate : public LayerAnimationDelegate {
   virtual void AddThreadedAnimation(
       scoped_ptr<cc::Animation> animation) OVERRIDE;
   virtual void RemoveThreadedAnimation(int animation_id) OVERRIDE;
-  virtual LayerAnimatorCollection* GetLayerAnimatorCollection() OVERRIDE;
 
  private:
   gfx::Rect bounds_;

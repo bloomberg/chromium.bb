@@ -17,7 +17,6 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/compositor/compositor_export.h"
 #include "ui/compositor/compositor_observer.h"
-#include "ui/compositor/layer_animator_collection.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/size.h"
 #include "ui/gfx/vector2d.h"
@@ -127,8 +126,7 @@ class COMPOSITOR_EXPORT CompositorLock
 // view hierarchy.
 class COMPOSITOR_EXPORT Compositor
     : NON_EXPORTED_BASE(public cc::LayerTreeHostClient),
-      NON_EXPORTED_BASE(public cc::LayerTreeHostSingleThreadClient),
-      NON_EXPORTED_BASE(public LayerAnimatorCollectionDelegate) {
+      NON_EXPORTED_BASE(public cc::LayerTreeHostSingleThreadClient) {
  public:
   Compositor(gfx::AcceleratedWidget widget,
              ui::ContextFactory* context_factory);
@@ -215,7 +213,7 @@ class COMPOSITOR_EXPORT Compositor
   // LayerTreeHostClient implementation.
   virtual void WillBeginMainFrame(int frame_id) OVERRIDE {}
   virtual void DidBeginMainFrame() OVERRIDE {}
-  virtual void Animate(base::TimeTicks frame_begin_time) OVERRIDE;
+  virtual void Animate(base::TimeTicks frame_begin_time) OVERRIDE {}
   virtual void Layout() OVERRIDE;
   virtual void ApplyScrollAndScale(const gfx::Vector2d& scroll_delta,
                                    float page_scale) OVERRIDE {}
@@ -233,9 +231,6 @@ class COMPOSITOR_EXPORT Compositor
   virtual void DidPostSwapBuffers() OVERRIDE;
   virtual void DidAbortSwapBuffers() OVERRIDE;
 
-  // LayerAnimatorCollectionDelegate implementation.
-  virtual void ScheduleAnimationForLayerCollection() OVERRIDE;
-
   int last_started_frame() { return last_started_frame_; }
   int last_ended_frame() { return last_ended_frame_; }
 
@@ -243,10 +238,6 @@ class COMPOSITOR_EXPORT Compositor
 
   const cc::LayerTreeDebugState& GetLayerTreeDebugState() const;
   void SetLayerTreeDebugState(const cc::LayerTreeDebugState& debug_state);
-
-  LayerAnimatorCollection* layer_animator_collection() {
-    return &layer_animator_collection_;
-  }
 
  private:
   friend class base::RefCounted<Compositor>;
@@ -297,8 +288,6 @@ class COMPOSITOR_EXPORT Compositor
   bool draw_on_compositing_end_;
   enum SwapState { SWAP_NONE, SWAP_POSTED, SWAP_COMPLETED };
   SwapState swap_state_;
-
-  LayerAnimatorCollection layer_animator_collection_;
 
   base::WeakPtrFactory<Compositor> schedule_draw_factory_;
 
