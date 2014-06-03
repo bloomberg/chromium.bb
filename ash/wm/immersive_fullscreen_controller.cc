@@ -274,8 +274,13 @@ void ImmersiveFullscreenController::SetEnabled(WindowType window_type,
 
   EnableWindowObservers(enabled_);
 
+  ash::wm::WindowState* window_state = wm::GetWindowState(native_window_);
   // Auto hide the shelf in immersive fullscreen instead of hiding it.
-  wm::GetWindowState(native_window_)->set_hide_shelf_when_fullscreen(!enabled);
+  window_state->set_hide_shelf_when_fullscreen(!enabled);
+
+  // Update the window's immersive mode state for the window manager.
+  window_state->set_in_immersive_fullscreen(enabled);
+
   Shell::GetInstance()->UpdateShelfVisibility();
 
   if (enabled_) {

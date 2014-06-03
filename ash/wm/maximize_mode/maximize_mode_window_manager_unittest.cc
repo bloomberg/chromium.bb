@@ -1155,6 +1155,71 @@ TEST_F(MaximizeModeWindowManagerTest, ExitFullScreenWithEdgeTouchAtBottom) {
   DestroyMaximizeModeWindowManager();
 }
 
+// Test that an edge swipe from the top on an immersive mode window will not end
+// full screen mode.
+TEST_F(MaximizeModeWindowManagerTest, NoExitImmersiveModeWithEdgeSwipeFromTop) {
+  scoped_ptr<aura::Window> window(CreateWindow(ui::wm::WINDOW_TYPE_NORMAL,
+                                  gfx::Rect(10, 10, 200, 50)));
+  wm::WindowState* window_state = wm::GetWindowState(window.get());
+  wm::ActivateWindow(window.get());
+  CreateMaximizeModeWindowManager();
+
+  // Fullscreen the window.
+  wm::WMEvent event(wm::WM_EVENT_TOGGLE_FULLSCREEN);
+  window_state->OnWMEvent(&event);
+  EXPECT_TRUE(window_state->IsFullscreen());
+  EXPECT_FALSE(window_state->in_immersive_fullscreen());
+  EXPECT_EQ(window.get(), wm::GetActiveWindow());
+
+  window_state->set_in_immersive_fullscreen(true);
+
+  // Do an edge swipe top into screen.
+  aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
+  generator.GestureScrollSequence(gfx::Point(50, 0),
+                                  gfx::Point(50, 100),
+                                  base::TimeDelta::FromMilliseconds(20),
+                                  10);
+
+  // It should have not exited full screen or immersive mode.
+  EXPECT_TRUE(window_state->IsFullscreen());
+  EXPECT_TRUE(window_state->in_immersive_fullscreen());
+
+  DestroyMaximizeModeWindowManager();
+}
+
+// Test that an edge swipe from the bottom will not end immersive mode.
+TEST_F(MaximizeModeWindowManagerTest,
+       NoExitImmersiveModeWithEdgeSwipeFromBottom) {
+  scoped_ptr<aura::Window> window(CreateWindow(ui::wm::WINDOW_TYPE_NORMAL,
+                                               gfx::Rect(10, 10, 200, 50)));
+  wm::WindowState* window_state = wm::GetWindowState(window.get());
+  wm::ActivateWindow(window.get());
+  CreateMaximizeModeWindowManager();
+
+  // Fullscreen the window.
+  wm::WMEvent event(wm::WM_EVENT_TOGGLE_FULLSCREEN);
+  window_state->OnWMEvent(&event);
+  EXPECT_TRUE(window_state->IsFullscreen());
+  EXPECT_FALSE(window_state->in_immersive_fullscreen());
+  EXPECT_EQ(window.get(), wm::GetActiveWindow());
+  window_state->set_in_immersive_fullscreen(true);
+  EXPECT_TRUE(window_state->in_immersive_fullscreen());
+
+  // Do an edge swipe bottom into screen.
+  aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
+  int y = Shell::GetPrimaryRootWindow()->bounds().bottom();
+  generator.GestureScrollSequence(gfx::Point(50, y),
+                                  gfx::Point(50, y - 100),
+                                  base::TimeDelta::FromMilliseconds(20),
+                                  10);
+
+  // The window should still be full screen and immersive.
+  EXPECT_TRUE(window_state->IsFullscreen());
+  EXPECT_TRUE(window_state->in_immersive_fullscreen());
+
+  DestroyMaximizeModeWindowManager();
+}
+
 #endif  // OS_WIN
 
 }  // namespace ash

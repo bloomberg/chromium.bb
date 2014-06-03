@@ -11,6 +11,7 @@
 #include "ash/shelf/shelf_types.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/wm/window_state.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/env.h"
@@ -777,6 +778,20 @@ TEST_F(ImmersiveFullscreenControllerTest, EventsDoNotLeakToWindowUnderneath) {
                         ui::EventTimeForNow());
   // The event should still be targeted to window().
   EXPECT_EQ(window(), targeter->FindTargetForEvent(root, &touch2));
+}
+
+// Check that the window state gets properly marked for immersive fullscreen.
+TEST_F(ImmersiveFullscreenControllerTest, WindowStateImmersiveFullscreen) {
+  ash::wm::WindowState* window_state = ash::wm::GetWindowState(window());
+
+  EXPECT_FALSE(window_state->in_immersive_fullscreen());
+  SetEnabled(true);
+  ASSERT_TRUE(controller()->IsEnabled());
+  EXPECT_TRUE(window_state->in_immersive_fullscreen());
+
+  SetEnabled(false);
+  ASSERT_FALSE(controller()->IsEnabled());
+  EXPECT_FALSE(window_state->in_immersive_fullscreen());
 }
 
 // Do not test under windows because focus testing is not reliable on
