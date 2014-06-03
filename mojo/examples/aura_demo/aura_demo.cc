@@ -5,13 +5,15 @@
 #include <stdio.h>
 #include <string>
 
+#include "base/bind.h"
 #include "mojo/aura/screen_mojo.h"
-#include "mojo/aura/window_tree_host_mojo.h"
+#include "mojo/examples/aura_demo/context_factory_view_manager.h"
+#include "mojo/examples/aura_demo/window_tree_host_view_manager.h"
 #include "mojo/public/cpp/application/application.h"
-#include "mojo/public/cpp/gles2/gles2.h"
 #include "mojo/public/cpp/system/core.h"
 #include "mojo/public/interfaces/service_provider/service_provider.mojom.h"
 #include "mojo/services/native_viewport/native_viewport.mojom.h"
+#include "mojo/services/public/interfaces/view_manager/view_manager.mojom.h"
 #include "ui/aura/client/default_capture_client.h"
 #include "ui/aura/client/window_tree_client.h"
 #include "ui/aura/env.h"
@@ -63,7 +65,7 @@ class DemoWindowDelegate : public aura::WindowDelegate {
   virtual void GetHitTestMask(gfx::Path* mask) const OVERRIDE {}
 
  private:
-  SkColor color_;
+  const SkColor color_;
 
   DISALLOW_COPY_AND_ASSIGN(DemoWindowDelegate);
 };
@@ -96,27 +98,73 @@ class DemoWindowTreeClient : public aura::client::WindowTreeClient {
   DISALLOW_COPY_AND_ASSIGN(DemoWindowTreeClient);
 };
 
+class AuraDemo;
+
+// Trivial IViewManagerClient implementation. Forwards to AuraDemo when
+// connection established.
+class IViewManagerClientImpl
+    : public InterfaceImpl<view_manager::IViewManagerClient> {
+ public:
+  explicit IViewManagerClientImpl(AuraDemo* aura_demo)
+      : aura_demo_(aura_demo) {}
+  virtual ~IViewManagerClientImpl() {}
+
+ private:
+  void OnResult(bool result) {
+    VLOG(1) << "IViewManagerClientImpl::::OnResult result=" << result;
+    DCHECK(result);
+  }
+
+  // IViewManagerClient:
+  virtual void OnViewManagerConnectionEstablished(
+      uint16_t connection_id,
+      uint32_t next_server_change_id,
+      mojo::Array<view_manager::INodePtr> nodes) OVERRIDE;
+  virtual void OnServerChangeIdAdvanced(
+      uint32_t next_server_change_id) OVERRIDE {
+  }
+  virtual void OnNodeBoundsChanged(uint32_t node,
+                                   mojo::RectPtr old_bounds,
+                                   mojo::RectPtr new_bounds) OVERRIDE {
+  }
+  virtual void OnNodeHierarchyChanged(
+      uint32_t node,
+      uint32_t new_parent,
+      uint32_t old_parent,
+      uint32_t server_change_id,
+      mojo::Array<view_manager::INodePtr> nodes) OVERRIDE {
+  }
+  virtual void OnNodeDeleted(uint32_t node, uint32_t server_change_id)
+      OVERRIDE {
+  }
+  virtual void OnNodeViewReplaced(uint32_t node,
+                                  uint32_t new_view_id,
+                                  uint32_t old_view_id) OVERRIDE {
+  }
+  virtual void OnViewDeleted(uint32_t view) OVERRIDE {
+  }
+
+  AuraDemo* aura_demo_;
+
+  DISALLOW_COPY_AND_ASSIGN(IViewManagerClientImpl);
+};
+
 class AuraDemo : public Application {
  public:
-  AuraDemo() {}
+  AuraDemo() {
+    AddService<IViewManagerClientImpl>(this);
+  }
   virtual ~AuraDemo() {}
 
-  virtual void Initialize() OVERRIDE {
+  void SetRoot(view_manager::IViewManager* view_manager, uint32_t node_id) {
+    context_factory_.reset(
+        new ContextFactoryViewManager(view_manager, node_id));
     aura::Env::CreateInstance(true);
+    aura::Env::GetInstance()->set_context_factory(context_factory_.get());
     screen_.reset(ScreenMojo::Create());
     gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, screen_.get());
 
-    NativeViewportPtr native_viewport;
-    ConnectTo("mojo:mojo_native_viewport_service", &native_viewport);
-
-    window_tree_host_.reset(new WindowTreeHostMojo(
-        native_viewport.Pass(),
-        gfx::Rect(800, 600),
-        base::Bind(&AuraDemo::HostContextCreated, base::Unretained(this))));
-  }
-
- private:
-  void HostContextCreated() {
+    window_tree_host_.reset(new WindowTreeHostViewManager(gfx::Rect(800, 600)));
     window_tree_host_->InitHost();
 
     window_tree_client_.reset(
@@ -146,7 +194,11 @@ class AuraDemo : public Application {
     window_tree_host_->Show();
   }
 
-  mojo::GLES2Initializer gles2;
+  virtual void Initialize() OVERRIDE {
+  }
+
+  scoped_ptr<ContextFactoryViewManager> context_factory_;
+
   scoped_ptr<ScreenMojo> screen_;
 
   scoped_ptr<DemoWindowTreeClient> window_tree_client_;
@@ -163,6 +215,20 @@ class AuraDemo : public Application {
 
   DISALLOW_COPY_AND_ASSIGN(AuraDemo);
 };
+
+void IViewManagerClientImpl::OnViewManagerConnectionEstablished(
+      uint16_t connection_id,
+      uint32_t next_server_change_id,
+      mojo::Array<view_manager::INodePtr> nodes) {
+  const uint32_t view_id = connection_id << 16 | 1;
+  client()->CreateView(view_id, base::Bind(&IViewManagerClientImpl::OnResult,
+                                           base::Unretained(this)));
+  client()->SetView(nodes[0]->node_id, view_id,
+                    base::Bind(&IViewManagerClientImpl::OnResult,
+                               base::Unretained(this)));
+
+  aura_demo_->SetRoot(client(), view_id);
+}
 
 }  // namespace examples
 
