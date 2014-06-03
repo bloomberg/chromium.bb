@@ -431,6 +431,11 @@ cr.define('print_preview', function() {
       if (marginValue != null) {
         this.customMarginsTicketItem_.updateMargin(
             control.getOrientation(), marginValue);
+        // Enable all controls.
+        for (var o in this.controls_) {
+          this.controls_[o].setIsEnabled(true);
+        }
+        control.setIsInError(false);
       } else {
         var enableOtherControls;
         if (!control.getIsFocused()) {

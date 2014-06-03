@@ -410,6 +410,42 @@ TEST_F('PrintPreviewWebUITest', 'PrintScalingDisabledForPlugin', function() {
           checked);
 });
 
+// Make sure that custom margins controls are properly set up.
+TEST_F('PrintPreviewWebUITest', 'CustomMarginsControlsCheck', function() {
+  var initialSettingsSetEvent =
+      new Event(print_preview.NativeLayer.EventType.INITIAL_SETTINGS_SET);
+  initialSettingsSetEvent.initialSettings = this.initialSettings_;
+  this.nativeLayer_.dispatchEvent(initialSettingsSetEvent);
+
+  var localDestsSetEvent =
+      new Event(print_preview.NativeLayer.EventType.LOCAL_DESTINATIONS_SET);
+  localDestsSetEvent.destinationInfos = this.localDestinationInfos_;
+  this.nativeLayer_.dispatchEvent(localDestsSetEvent);
+
+  var capsSetEvent =
+      new Event(print_preview.NativeLayer.EventType.CAPABILITIES_SET);
+  capsSetEvent.settingsInfo = {
+    'printerId': 'FooDevice',
+    'disableColorOption': false,
+    'setColorAsDefault': true,
+    'disableCopiesOption': true,
+    'disableLandscapeOption': true,
+    'printerDefaultDuplexValue': 0
+  };
+  this.nativeLayer_.dispatchEvent(capsSetEvent);
+
+  printPreview.printTicketStore_.marginsType.updateValue(
+      print_preview.ticket_items.MarginsType.Value.CUSTOM);
+
+  ['left', 'top', 'right', 'bottom'].forEach(function(margin) {
+    var control = $('preview-area').querySelector('.margin-control-' + margin);
+    assertNotEquals(null, control);
+    var input = control.querySelector('.margin-control-textbox');
+    assertTrue(input.hasAttribute('aria-label'));
+    assertNotEquals('undefined', input.getAttribute('aria-label'));
+  });
+});
+
 // Page layout has zero margins. Hide header and footer option.
 TEST_F('PrintPreviewWebUITest',
        'PageLayoutHasNoMarginsHideHeaderFooter',

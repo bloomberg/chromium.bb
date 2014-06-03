@@ -73,13 +73,6 @@ cr.define('print_preview', function() {
     this.textTimeout_ = null;
 
     /**
-     * Value of the textbox when the timeout was started.
-     * @type {?string}
-     * @private
-     */
-    this.preTimeoutValue_ = null;
-
-    /**
      * Textbox used to display and receive the value of the margin.
      * @type {HTMLInputElement}
      * @private
@@ -126,38 +119,10 @@ cr.define('print_preview', function() {
    * @private
    */
   MarginControl.Classes_ = {
-    TOP: 'margin-control-top',
-    RIGHT: 'margin-control-right',
-    BOTTOM: 'margin-control-bottom',
-    LEFT: 'margin-control-left',
     TEXTBOX: 'margin-control-textbox',
-    INVALID: 'invalid',
-    INVISIBLE: 'invisible',
-    DISABLED: 'margin-control-disabled',
     DRAGGING: 'margin-control-dragging',
     LINE: 'margin-control-line'
   };
-
-  /**
-   * Map from orientation to CSS class name.
-   * @type {!Object.<
-   *     !print_preview.ticket_items.CustomMargins.Orientation,
-   *     !MarginControl.Classes_>}
-   * @private
-   */
-  MarginControl.OrientationToClass_ = {};
-  MarginControl.OrientationToClass_[
-      print_preview.ticket_items.CustomMargins.Orientation.TOP] =
-      MarginControl.Classes_.TOP;
-  MarginControl.OrientationToClass_[
-      print_preview.ticket_items.CustomMargins.Orientation.RIGHT] =
-      MarginControl.Classes_.RIGHT;
-  MarginControl.OrientationToClass_[
-      print_preview.ticket_items.CustomMargins.Orientation.BOTTOM] =
-      MarginControl.Classes_.BOTTOM;
-  MarginControl.OrientationToClass_[
-      print_preview.ticket_items.CustomMargins.Orientation.LEFT] =
-      MarginControl.Classes_.LEFT;
 
   /**
    * Radius of the margin control in pixels. Padding of control + 1 for border.
@@ -221,11 +186,7 @@ cr.define('print_preview', function() {
 
     /** @param {boolean} isVisible Whether the margin control is visible. */
     setIsVisible: function(isVisible) {
-      if (isVisible) {
-        this.getElement().classList.remove(MarginControl.Classes_.INVISIBLE);
-      } else {
-        this.getElement().classList.add(MarginControl.Classes_.INVISIBLE);
-      }
+      this.getElement().classList.toggle('invisible', !isVisible);
     },
 
     /** @return {boolean} Whether the margin control is in an error state. */
@@ -239,21 +200,13 @@ cr.define('print_preview', function() {
      */
     setIsInError: function(isInError) {
       this.isInError_ = isInError;
-      if (isInError) {
-        this.textbox_.classList.add(MarginControl.Classes_.INVALID);
-      } else {
-        this.textbox_.classList.remove(MarginControl.Classes_.INVALID);
-      }
+      this.textbox_.classList.toggle('invalid', isInError);
     },
 
     /** @param {boolean} isEnabled Whether to enable the margin control. */
     setIsEnabled: function(isEnabled) {
       this.textbox_.disabled = !isEnabled;
-      if (isEnabled) {
-        this.getElement().classList.remove(MarginControl.Classes_.DISABLED);
-      } else {
-        this.getElement().classList.add(MarginControl.Classes_.DISABLED);
-      }
+      this.getElement().classList.toggle('margin-control-disabled', !isEnabled);
     },
 
     /** @return {number} Current position of the margin control in points. */
@@ -356,10 +309,11 @@ cr.define('print_preview', function() {
     createDom: function() {
       this.setElementInternal(this.cloneTemplateInternal(
           'margin-control-template'));
-      this.getElement().classList.add(MarginControl.OrientationToClass_[
-          this.orientation_]);
+      this.getElement().classList.add('margin-control-' + this.orientation_);
       this.textbox_ = this.getElement().getElementsByClassName(
           MarginControl.Classes_.TEXTBOX)[0];
+      this.textbox_.setAttribute(
+          'aria-label', localStrings.getString(this.orientation_));
       this.marginLineEl_ = this.getElement().getElementsByClassName(
           MarginControl.Classes_.LINE)[0];
     },
@@ -369,6 +323,12 @@ cr.define('print_preview', function() {
       print_preview.Component.prototype.enterDocument.call(this);
       this.tracker.add(
           this.getElement(), 'mousedown', this.onMouseDown_.bind(this));
+      this.tracker.add(
+          this.getElement(),
+          'webkitTransitionEnd',
+          this.onWebkitTransitionEnd_.bind(this));
+      this.tracker.add(
+          this.textbox_, 'input', this.onTextboxInput_.bind(this));
       this.tracker.add(
           this.textbox_, 'keydown', this.onTextboxKeyDown_.bind(this));
       this.tracker.add(
@@ -411,6 +371,31 @@ cr.define('print_preview', function() {
     },
 
     /**
+     * Called when opacity CSS transition ends.
+     * @private
+     */
+    onWebkitTransitionEnd_: function(event) {
+      if (event.propertyName != 'opacity')
+        return;
+      var elStyle = window.getComputedStyle(this.getElement());
+      var opacity = parseInt(elStyle.getPropertyValue('opacity'));
+      this.textbox_.setAttribute('aria-hidden', opacity == 0);
+    },
+
+    /**
+     * Called when textbox content changes. Starts text change timeout.
+     * @private
+     */
+    onTextboxInput_: function(event) {
+      if (this.textTimeout_) {
+        clearTimeout(this.textTimeout_);
+        this.textTimeout_ = null;
+      }
+      this.textTimeout_ = setTimeout(
+          this.onTextboxTimeout_.bind(this), MarginControl.TEXTBOX_TIMEOUT_);
+    },
+
+    /**
      * Called when a key down event occurs on the textbox. Dispatches a
      * TEXT_CHANGE event if the "Enter" key was pressed.
      * @param {Event} event Contains the key that was pressed.
@@ -422,14 +407,7 @@ cr.define('print_preview', function() {
         this.textTimeout_ = null;
       }
       if (event.keyCode == 13 /*enter*/) {
-        this.preTimeoutValue_ = null;
         cr.dispatchSimpleEvent(this, MarginControl.EventType.TEXT_CHANGE);
-      } else {
-        if (this.preTimeoutValue_ == null) {
-          this.preTimeoutValue_ = this.textbox_.value;
-        }
-        this.textTimeout_ = setTimeout(
-            this.onTextboxTimeout_.bind(this), MarginControl.TEXTBOX_TIMEOUT_);
       }
     },
 
@@ -440,10 +418,7 @@ cr.define('print_preview', function() {
      */
     onTextboxTimeout_: function() {
       this.textTimeout_ = null;
-      if (this.textbox_.value != this.preTimeoutValue_) {
-        cr.dispatchSimpleEvent(this, MarginControl.EventType.TEXT_CHANGE);
-      }
-      this.preTimeoutValue_ = null;
+      cr.dispatchSimpleEvent(this, MarginControl.EventType.TEXT_CHANGE);
     },
 
     /**
@@ -453,7 +428,6 @@ cr.define('print_preview', function() {
       if (this.textTimeout_) {
         clearTimeout(this.textTimeout_);
         this.textTimeout_ = null;
-        this.preTimeoutValue_ = null;
       }
       this.setIsFocused_(false);
       cr.dispatchSimpleEvent(this, MarginControl.EventType.TEXT_CHANGE);
