@@ -21,10 +21,10 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "extensions/common/extension.h"
+#include "grit/chrome_unscaled_resources.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/google_chrome_strings.h"
-#include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -58,7 +58,7 @@ QuitWithAppsController::QuitWithAppsController()
       l10n_util::GetStringUTF16(IDS_QUIT_WITH_APPS_TITLE),
       l10n_util::GetStringUTF16(IDS_QUIT_WITH_APPS_EXPLANATION),
       ui::ResourceBundle::GetSharedInstance().GetImageNamed(
-          IDR_APP_DEFAULT_ICON),
+          IDR_PRODUCT_LOGO_128),
       blink::WebTextDirectionDefault,
       message_center::NotifierId(message_center::NotifierId::SYSTEM_COMPONENT,
                                  kQuitWithAppsNotificationID),
