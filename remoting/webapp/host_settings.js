@@ -81,14 +81,17 @@ remoting.HostSettings.loadInternal_ = function(hostId, callback) {
   var onDone = function(allHosts) {
     var result = {};
     try {
-      result = jsonParseSafe(allHosts[remoting.HostSettings.KEY_]);
-      if (typeof(result) != 'object') {
-        console.error("Error loading host settings: Not an object");
-        result = {};
-      } else if (/** @type {Object} */ (result).hasOwnProperty(hostId) &&
-                 typeof(result[hostId]) == 'object') {
-        callback(result[hostId], result);
-        return;
+      var hosts = allHosts[remoting.HostSettings.KEY_];
+      if (hosts) {
+        result = jsonParseSafe(hosts);
+        if (typeof(result) != 'object') {
+          console.error("Error loading host settings: Not an object");
+          result = {};
+        } else if (/** @type {Object} */ (result).hasOwnProperty(hostId) &&
+                   typeof(result[hostId]) == 'object') {
+          callback(result[hostId], result);
+          return;
+        }
       }
     } catch (err) {
       var typedErr = /** @type {*} */ (err);

@@ -718,6 +718,10 @@ remoting.ClientSession.prototype.applyRemapKeys_ = function(apply) {
     remapKeys = '0x0700e4>0x0700e7';
   }
 
+  if (remapKeys == '') {
+    return;
+  }
+
   var remappings = remapKeys.split(',');
   for (var i = 0; i < remappings.length; ++i) {
     var keyCodes = remappings[i].split('>');
