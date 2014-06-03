@@ -612,6 +612,7 @@ crbug.com/369615 virtual/gpu/fast/canvas/canvas-overflow-hidden-animation.html [
 # worked on actively. Rebaseline after impl-side painting becomes stable.
 crbug.com/24182 crbug.com/318490 [ Win Linux Android ] virtual/implsidepainting/inspector/timeline/timeline-decode-resize.html [ Crash Pass ]
 crbug.com/24182 crbug.com/318490 crbug.com/372213 [ Mac ] virtual/implsidepainting/inspector/timeline/timeline-decode-resize.html [ Crash Pass Timeout ]
+crbug.com/24182 crbug.com/318490 crbug.com/372213 [ Mac ] virtual/deferred/inspector/timeline/tracing/decode-resize.html [ Pass Failure Slow ]
 
 # This test is flaky on all platforms, and has image failures most of the time on
 # WebKit Win7 (dbg)
