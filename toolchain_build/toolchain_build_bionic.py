@@ -38,7 +38,7 @@ from file_update import Mkdir, Rmdir, Symlink
 from file_update import NeedsUpdate, UpdateFromTo, UpdateText
 
 
-BIONIC_VERSION = '92a6eb7644a83947eefb198e3704b18b3ad14c17'
+BIONIC_VERSION = '034ebed9f16ce0cafb7e8746884cc910b6e097d0'
 ARCHES = ['arm']
 TOOLCHAIN_BUILD_SRC = os.path.join(TOOLCHAIN_BUILD, 'src')
 TOOLCHAIN_BUILD_OUT = os.path.join(TOOLCHAIN_BUILD, 'out')
@@ -87,7 +87,7 @@ def ReplaceArch(text, arch, subarch=None):
     'pnacl': 'pnacl'
   }
   VERSION_MAP = {
-    'arm': '4.8.2',
+    'arm': '4.8.3',
     'x86': '4.4.3',
   }
   REPLACE_MAP = {
@@ -151,12 +151,17 @@ def CreateBasicToolchain():
   # Create a toolchain directory containing only the toolchain binaries and
   # basic files line nacl_arm_macros.s.
   arch = 'arm'
-  UpdateFromTo(GetToolchainPath(arch, 'newlib'),
-               GetBionicBuildPath(arch),
-               filters=['*arm-nacl/include*', '*arm-nacl/lib*','*.a', '*.o'])
-  UpdateFromTo(GetToolchainPath(arch, 'newlib'),
-               GetBionicBuildPath(arch),
-               paterns=['*.s'])
+  install_dirs = [
+    'gcc_arm_x86_64_linux_install',
+    'binutils_arm_x86_64_linux_install'
+  ]
+  for ins_path in install_dirs:
+    UpdateFromTo(os.path.join(TOOLCHAIN_BUILD_OUT, ins_path),
+                 GetBionicBuildPath(arch),
+                 filters=['*arm-nacl/include*', '*arm-nacl/lib*','*.a', '*.o'])
+    UpdateFromTo(os.path.join(TOOLCHAIN_BUILD_OUT, ins_path),
+                 GetBionicBuildPath(arch),
+                 paterns=['*.s'])
 
   #  Static build uses:
   #     crt1.o crti.o 4.8.2/crtbeginT.o ... 4.8.2/crtend.o crtn.o
@@ -192,7 +197,7 @@ def CreateBasicToolchain():
     ('bionic/libm/$CPU', '$NACL-nacl/include'),
     ('bionic/safe-iop/include', '$NACL-nacl/include'),
     ('bionic/libstdc++/nacl',
-        '$NACL-nacl/include/c++/4.8.2/$NACL-nacl'),
+        '$NACL-nacl/include/c++/$VER/$NACL-nacl'),
     ('bionic/nacl/$ARCH', '.'),
   ]
 
@@ -200,8 +205,10 @@ def CreateBasicToolchain():
   for arch in ARCHES:
     for name in ['irt.h', 'irt_dev.h']:
       src = os.path.join(NATIVE_CLIENT, 'src', 'untrusted', 'irt', name)
-      dst = GetBionicBuildPath(arch, '$NACL-nacl', 'include', name)
-      MungeIRT(src, ReplaceArch(dst, arch))
+      dst = GetBionicBuildPath(arch, '$NACL-nacl', 'include')
+      dst = ReplaceArch(dst, arch)
+      Mkdir(dst)
+      MungeIRT(src, os.path.join(dst, name))
 
     inspath = GetBionicBuildPath(arch)
 
@@ -423,10 +430,13 @@ def GetProjectPaths(arch, project):
   toolpath = GetBionicBuildPath(arch)
   workpath = ReplaceArch(os.path.join(workpath, 'bionic', project), arch)
   instpath = ReplaceArch(os.path.join(toolpath, '$NACL-nacl', 'lib'), arch)
+  gccpath = os.path.join(toolpath, 'lib', 'gcc', '$NACL-nacl', '$VER')
+  gccpath = ReplaceArch(gccpath, arch)
   out = {
     'src': srcpath,
     'work': workpath,
     'ins': instpath,
+    'gcc': gccpath,
     'tc': toolpath,
   }
   return out
@@ -454,6 +464,7 @@ AR:=$(TOOLCHAIN_PREFIX)ar
 SRC_ROOT=$(src_path)
 DST_ROOT=$(dst_path)
 INS_ROOT=$(ins_path)
+GCC_ROOT=$(gcc_path)
 
 NACL_ARCH=$NACL
 GCC_ARCH=$GCC
@@ -471,6 +482,7 @@ include $(src_path)/Makefile
     '$(tc_path)':  GetBionicBuildPath(arch),
     '$(build_tc_path)': TOOLCHAIN_BUILD,
     '$(nacl_path)': NATIVE_CLIENT,
+    '$(gcc_path)': paths['gcc'],
   }
   text = ReplaceText(MAKEFILE_TEMPLATE, [remap])
   text = ReplaceArch(text, arch)
@@ -614,6 +626,11 @@ def main(argv):
         help='Output packages file describing list of package files built.')
 
   parser.add_argument(
+      '--skip-newlib', dest='skip_newlib',
+      default=False, action='store_true',
+      help='Skip building GCC components (libgcc and libstdc++).')
+
+  parser.add_argument(
       '--skip-gcc', dest='skip_gcc',
       default=False, action='store_true',
       help='Skip building GCC components (libgcc and libstdc++).')
@@ -637,21 +654,21 @@ def main(argv):
   if options.sync or options.buildbot:
     FetchBionicSources()
 
+  if not options.skip_newlib:
+    # Build newlib gcc_libs for use by bionic
+    FetchAndBuild_gcc_libs()
+
   # Copy headers and compiler tools
   CreateBasicToolchain()
+
+  # Configure and build libgcc.a
+  ConfigureAndBuild_libgcc(skip_build=options.skip_gcc)
 
   # Configure Bionic Projects, libc, libm, linker, tests, ...
   ConfigureBionicProjects(clobber=options.buildbot)
 
   # Build and install IRT header before building GCC
   MakeBionicProject('libc', ['irt'])
-
-  if not options.skip_gcc:
-    # Build newlib gcc_libs for use by bionic
-    FetchAndBuild_gcc_libs()
-
-  # Configure and build libgcc.a
-  ConfigureAndBuild_libgcc(skip_build=options.skip_gcc)
 
   # With libgcc.a, we can now build libc.so
   MakeBionicProject('libc')
