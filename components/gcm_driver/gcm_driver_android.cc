@@ -4,22 +4,32 @@
 
 #include "components/gcm_driver/gcm_driver_android.h"
 
+#include "base/android/jni_android.h"
+#include "base/android/jni_array.h"
+#include "base/android/jni_string.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
-
-namespace gcm {
-static void Java_GCMDriver_doNothing(JNIEnv* env) ALLOW_UNUSED;
-}  // namespace gcm
-
-// Must come after the ALLOW_UNUSED declaration.
 #include "jni/GCMDriver_jni.h"
 
+using base::android::AppendJavaStringArrayToStringVector;
+using base::android::AttachCurrentThread;
+using base::android::ConvertJavaStringToUTF8;
+using base::android::ConvertUTF8ToJavaString;
+using base::android::ToJavaArrayOfStrings;
+
 namespace gcm {
 
-GCMDriverAndroid::GCMDriverAndroid() {
+ GCMDriverAndroid::GCMDriverAndroid() {
+  JNIEnv* env = AttachCurrentThread();
+  java_ref_.Reset(
+      Java_GCMDriver_create(env,
+                            reinterpret_cast<intptr_t>(this),
+                            base::android::GetApplicationContext()));
 }
 
 GCMDriverAndroid::~GCMDriverAndroid() {
+  JNIEnv* env = AttachCurrentThread();
+  Java_GCMDriver_destroy(env, java_ref_.obj());
 }
 
 void GCMDriverAndroid::Enable() {
@@ -31,14 +41,23 @@ void GCMDriverAndroid::Disable() {
 void GCMDriverAndroid::Register(const std::string& app_id,
                                 const std::vector<std::string>& sender_ids,
                                 const RegisterCallback& callback) {
-  // TODO(johnme): Hook up to Android GCM API via JNI.
-  NOTIMPLEMENTED();
+  // TODO(johnme): Store callback.
+
+  JNIEnv* env = AttachCurrentThread();
+  Java_GCMDriver_register(
+      env, java_ref_.obj(),
+      ConvertUTF8ToJavaString(env, app_id).Release(),
+      ToJavaArrayOfStrings(env, sender_ids).obj());
 }
 
 void GCMDriverAndroid::Unregister(const std::string& app_id,
                                   const UnregisterCallback& callback) {
-  // TODO(johnme): Hook up to Android GCM API via JNI.
-  NOTIMPLEMENTED();
+  // TODO(johnme): Store callback.
+
+  JNIEnv* env = AttachCurrentThread();
+  Java_GCMDriver_unregister(
+      env, java_ref_.obj(),
+      ConvertUTF8ToJavaString(env, app_id).Release());
 }
 
 void GCMDriverAndroid::Send(const std::string& app_id,
@@ -74,6 +93,60 @@ void GCMDriverAndroid::SetGCMRecording(const GetGCMStatisticsCallback& callback,
 
 std::string GCMDriverAndroid::SignedInUserName() const {
   return std::string();
+}
+
+void GCMDriverAndroid::OnRegisterFinished(JNIEnv* env,
+                                          jobject obj,
+                                          jstring j_app_id,
+                                          jstring j_registration_id,
+                                          jboolean success) {
+  std::string app_id = ConvertJavaStringToUTF8(env, j_app_id);
+  std::string registration_id = ConvertJavaStringToUTF8(env, j_registration_id);
+  GCMClient::Result result ALLOW_UNUSED = success ? GCMClient::SUCCESS
+                                                  : GCMClient::UNKNOWN_ERROR;
+
+  NOTIMPLEMENTED(); // TODO(johnme): Fire callback.
+}
+
+void GCMDriverAndroid::OnUnregisterFinished(JNIEnv* env,
+                                            jobject obj,
+                                            jstring j_app_id,
+                                            jboolean success) {
+  std::string app_id = ConvertJavaStringToUTF8(env, j_app_id);
+  GCMClient::Result result ALLOW_UNUSED = success ? GCMClient::SUCCESS
+                                                  : GCMClient::UNKNOWN_ERROR;
+
+  NOTIMPLEMENTED(); // TODO(johnme): Fire callback.
+}
+
+void GCMDriverAndroid::OnMessageReceived(JNIEnv* env,
+                                         jobject obj,
+                                         jstring j_app_id,
+                                         jstring j_sender_id,
+                                         jstring j_collapse_key,
+                                         jobjectArray j_data_keys_and_values) {
+  std::string app_id = ConvertJavaStringToUTF8(env, j_app_id);
+  GCMClient::IncomingMessage message;
+  message.sender_id = ConvertJavaStringToUTF8(env, j_sender_id);
+  message.collapse_key = ConvertJavaStringToUTF8(env, j_collapse_key);
+  // Expand j_data_keys_and_values from array to map.
+  std::vector<std::string> data_keys_and_values;
+  AppendJavaStringArrayToStringVector(env,
+                                      j_data_keys_and_values,
+                                      &data_keys_and_values);
+  for (size_t i = 0; i + 1 < data_keys_and_values.size(); i += 2) {
+    message.data[data_keys_and_values[i]] = data_keys_and_values[i+1];
+  }
+
+  NOTIMPLEMENTED(); // TODO(johnme): Notify app handler.
+}
+
+void GCMDriverAndroid::OnMessagesDeleted(JNIEnv* env,
+                                         jobject obj,
+                                         jstring j_app_id) {
+  std::string app_id = ConvertJavaStringToUTF8(env, j_app_id);
+
+  NOTIMPLEMENTED(); // TODO(johnme): Notify app handler.
 }
 
 // static

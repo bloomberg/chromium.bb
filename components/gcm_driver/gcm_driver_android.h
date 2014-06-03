@@ -7,13 +7,14 @@
 
 #include <jni.h>
 
+#include "base/android/scoped_java_ref.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "components/gcm_driver/gcm_driver.h"
 
 namespace gcm {
 
-// GCMDriver implementation for Android.
+// GCMDriver implementation for Android, using Android GCM APIs.
 class GCMDriverAndroid : public GCMDriver {
  public:
   GCMDriverAndroid();
@@ -40,10 +41,32 @@ class GCMDriverAndroid : public GCMDriver {
                                bool recording) OVERRIDE;
   virtual std::string SignedInUserName() const OVERRIDE;
 
+  // Methods called from Java via JNI:
+  void OnRegisterFinished(JNIEnv* env,
+                          jobject obj,
+                          jstring app_id,
+                          jstring registration_id,
+                          jboolean success);
+  void OnUnregisterFinished(JNIEnv* env,
+                           jobject obj,
+                           jstring app_id,
+                           jboolean success);
+  void OnMessageReceived(JNIEnv* env,
+                         jobject obj,
+                         jstring app_id,
+                         jstring sender_id,
+                         jstring collapse_key,
+                         jobjectArray data_keys_and_values);
+  void OnMessagesDeleted(JNIEnv* env,
+                         jobject obj,
+                         jstring app_id);
+
   // Register JNI methods.
   static bool RegisterBindings(JNIEnv* env);
 
  private:
+  base::android::ScopedJavaGlobalRef<jobject> java_ref_;
+
   DISALLOW_COPY_AND_ASSIGN(GCMDriverAndroid);
 };
 
