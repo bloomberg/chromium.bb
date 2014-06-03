@@ -580,12 +580,20 @@ void ServiceWorkerStorage::DidGetAllRegistrations(
     info.pattern = it->scope;
     info.script_url = it->script;
     info.registration_id = it->registration_id;
-    info.active_version.is_null = false;
-    if (it->is_active)
-      info.active_version.status = ServiceWorkerVersion::ACTIVE;
-    else
-      info.active_version.status = ServiceWorkerVersion::INSTALLED;
-    info.active_version.version_id = it->version_id;
+    if (ServiceWorkerVersion* version =
+            context_->GetLiveVersion(it->version_id)) {
+      if (it->is_active)
+        info.active_version = version->GetInfo();
+      else
+        info.pending_version = version->GetInfo();
+    } else {
+      info.active_version.is_null = false;
+      if (it->is_active)
+        info.active_version.status = ServiceWorkerVersion::ACTIVE;
+      else
+        info.active_version.status = ServiceWorkerVersion::INSTALLED;
+      info.active_version.version_id = it->version_id;
+    }
     infos.push_back(info);
   }
 
