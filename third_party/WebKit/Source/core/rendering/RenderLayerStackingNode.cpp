@@ -289,13 +289,10 @@ void RenderLayerStackingNode::updateLayerListsIfNeeded()
 void RenderLayerStackingNode::updateStackingNodesAfterStyleChange(const RenderStyle* oldStyle)
 {
     bool wasStackingContext = oldStyle ? !oldStyle->hasAutoZIndex() : false;
-    EVisibility oldVisibility = oldStyle ? oldStyle->visibility() : VISIBLE;
     int oldZIndex = oldStyle ? oldStyle->zIndex() : 0;
 
-    // FIXME: RenderLayer already handles visibility changes through our visibility dirty bits. This logic could
-    // likely be folded along with the rest.
     bool isStackingContext = this->isStackingContext();
-    if (isStackingContext == wasStackingContext && oldVisibility == renderer()->style()->visibility() && oldZIndex == zIndex())
+    if (isStackingContext == wasStackingContext && oldZIndex == zIndex())
         return;
 
     dirtyStackingContextZOrderLists();
