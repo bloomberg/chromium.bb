@@ -42,7 +42,8 @@ struct SANDBOX_EXPORT Rule {
   PolicyDecision result;
 
   // The Rule does not take ownership of this port, but additional send rights
-  // will be allocated to it before it is sent to a client.
+  // will be allocated to it before it is sent to a client. This name must
+  // denote a send right that can duplicated with MACH_MSG_TYPE_COPY_SEND.
   mach_port_t substitute_port;
 };
 

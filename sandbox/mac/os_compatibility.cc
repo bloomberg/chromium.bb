@@ -87,7 +87,7 @@ void LaunchdLookUp2FillReply(mach_msg_header_t* header, mach_port_t port) {
       MACH_MSGH_BITS_COMPLEX;
   reply->msgh_body.msgh_descriptor_count = 1;
   reply->service_port.name = port;
-  reply->service_port.disposition = MACH_MSG_TYPE_PORT_SEND;
+  reply->service_port.disposition = MACH_MSG_TYPE_COPY_SEND;
   reply->service_port.type = MACH_MSG_PORT_DESCRIPTOR;
 }
 

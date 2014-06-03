@@ -225,10 +225,26 @@ struct SubstitutePortAckRecv : public SubstitutePortAckSend {
 const char kSubstituteAck[] = "Hello, this is doge!";
 
 TEST_F(BootstrapSandboxTest, PolicySubstitutePort) {
+  mach_port_t task = mach_task_self();
+
   mach_port_t port;
-  ASSERT_EQ(KERN_SUCCESS, mach_port_allocate(mach_task_self(),
-      MACH_PORT_RIGHT_RECEIVE, &port));
+  ASSERT_EQ(KERN_SUCCESS, mach_port_allocate(task, MACH_PORT_RIGHT_RECEIVE,
+      &port));
   base::mac::ScopedMachReceiveRight scoped_port(port);
+
+  mach_port_urefs_t send_rights = 0;
+  ASSERT_EQ(KERN_SUCCESS, mach_port_get_refs(task, port, MACH_PORT_RIGHT_SEND,
+      &send_rights));
+  EXPECT_EQ(0u, send_rights);
+
+  ASSERT_EQ(KERN_SUCCESS, mach_port_insert_right(task, port, port,
+      MACH_MSG_TYPE_MAKE_SEND));
+  base::mac::ScopedMachSendRight scoped_port_send(port);
+
+  send_rights = 0;
+  ASSERT_EQ(KERN_SUCCESS, mach_port_get_refs(task, port, MACH_PORT_RIGHT_SEND,
+      &send_rights));
+  EXPECT_EQ(1u, send_rights);
 
   BootstrapSandboxPolicy policy(BaselinePolicy());
   policy[kTestServer] = Rule(port);
@@ -244,6 +260,11 @@ TEST_F(BootstrapSandboxTest, PolicySubstitutePort) {
       msg.header.msgh_size, port,
       TestTimeouts::tiny_timeout().InMilliseconds(), MACH_PORT_NULL);
   EXPECT_EQ(KERN_SUCCESS, kr);
+
+  send_rights = 0;
+  ASSERT_EQ(KERN_SUCCESS, mach_port_get_refs(task, port, MACH_PORT_RIGHT_SEND,
+      &send_rights));
+  EXPECT_EQ(1u, send_rights);
 
   EXPECT_EQ(0, strncmp(kSubstituteAck, msg.buf, sizeof(msg.buf)));
 }

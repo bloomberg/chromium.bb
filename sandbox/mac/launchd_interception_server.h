@@ -54,8 +54,8 @@ class LaunchdInterceptionServer {
                          mach_msg_header_t* reply,
                          pid_t sender_pid);
 
-  // Sends a reply message.
-  void SendReply(mach_msg_header_t* reply);
+  // Sends a reply message. Returns true if the message was sent successfully.
+  bool SendReply(mach_msg_header_t* reply);
 
   // Forwards the original |request| on to real bootstrap server for handling.
   void ForwardMessage(mach_msg_header_t* request, mach_msg_header_t* reply);
@@ -88,6 +88,9 @@ class LaunchdInterceptionServer {
   // The Mach port handed out in reply to denied look up requests. All denied
   // requests share the same port, though nothing reads messages from it.
   base::mac::ScopedMachReceiveRight sandbox_port_;
+  // The send right for the above |sandbox_port_|, used with
+  // MACH_MSG_TYPE_COPY_SEND when handing out references to the dummy port.
+  base::mac::ScopedMachSendRight sandbox_send_port_;
 
   // The compatibility shim that handles differences in message header IDs and
   // request/reply structures between different OS X versions.
