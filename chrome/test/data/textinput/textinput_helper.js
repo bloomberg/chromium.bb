@@ -4,8 +4,10 @@
 var textinput_helper = {
   retrieveElementCoordinate: function(id) {
     var ele = document.getElementById(id);
-    var coordinate = ele.offsetLeft + ',' + ele.offsetTop + ',' +
-        ele.offsetWidth + ',' + ele.offsetHeight;
+    var coordinate = Math.floor(ele.offsetLeft) + ',' +
+        Math.floor(ele.offsetTop) + ',' +
+        Math.ceil(ele.offsetWidth) + ',' +
+        Math.ceil(ele.offsetHeight);
     window.domAutomationController.send(coordinate);
   }
 };
