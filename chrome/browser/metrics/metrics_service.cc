@@ -190,6 +190,7 @@
 #include "chrome/browser/metrics/metrics_state_manager.h"
 #include "chrome/browser/metrics/network_metrics_provider.h"
 #include "chrome/browser/metrics/omnibox_metrics_provider.h"
+#include "chrome/browser/metrics/profiler_metrics_provider.h"
 #include "chrome/browser/metrics/tracking_synchronizer.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/variations/variations_util.h"
@@ -395,6 +396,9 @@ MetricsService::MetricsService(metrics::MetricsStateManager* state_manager,
       scoped_ptr<metrics::MetricsProvider>(new ChromeStabilityMetricsProvider));
   RegisterMetricsProvider(
       scoped_ptr<metrics::MetricsProvider>(new GPUMetricsProvider()));
+  profiler_metrics_provider_ = new ProfilerMetricsProvider;
+  RegisterMetricsProvider(
+      scoped_ptr<metrics::MetricsProvider>(profiler_metrics_provider_));
 
 #if defined(OS_WIN)
   google_update_metrics_provider_ = new GoogleUpdateMetricsProviderWin;
@@ -735,19 +739,19 @@ void MetricsService::ReceivedProfilerData(
     int process_type) {
   DCHECK_EQ(INIT_TASK_SCHEDULED, state_);
 
-  // Upon the first callback, create the initial log so that we can immediately
-  // save the profiler data.
-  if (!initial_metrics_log_.get()) {
-    initial_metrics_log_ = CreateLog(MetricsLog::ONGOING_LOG);
-    NotifyOnDidCreateMetricsLog();
-  }
-
-  initial_metrics_log_->RecordProfilerData(process_data, process_type);
+  profiler_metrics_provider_->RecordProfilerData(process_data, process_type);
 }
 
 void MetricsService::FinishedReceivingProfilerData() {
   DCHECK_EQ(INIT_TASK_SCHEDULED, state_);
   state_ = INIT_TASK_DONE;
+
+  // Create the initial log.
+  if (!initial_metrics_log_.get()) {
+    initial_metrics_log_ = CreateLog(MetricsLog::ONGOING_LOG);
+    NotifyOnDidCreateMetricsLog();
+  }
+
   scheduler_->InitTaskComplete();
 }
 

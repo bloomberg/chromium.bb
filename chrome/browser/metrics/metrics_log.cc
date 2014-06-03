@@ -15,25 +15,17 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
-#include "base/profiler/alternate_timer.h"
 #include "base/sha1.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/sys_info.h"
-#include "base/third_party/nspr/prtime.h"
 #include "base/time/time.h"
-#include "base/tracked_objects.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/common/pref_names.h"
 #include "components/metrics/metrics_provider.h"
 #include "components/metrics/metrics_service_client.h"
-#include "components/metrics/proto/profiler_event.pb.h"
 #include "components/metrics/proto/system_profile.pb.h"
-#include "components/nacl/common/nacl_process_type.h"
 #include "components/variations/active_field_trials.h"
-#include "content/public/common/content_client.h"
-#include "url/gurl.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/build_info.h"
@@ -49,7 +41,6 @@ extern "C" IMAGE_DOS_HEADER __ImageBase;
 using metrics::MetricsLogBase;
 using metrics::ProfilerEventProto;
 using metrics::SystemProfileProto;
-using tracked_objects::ProcessDataSnapshot;
 typedef variations::ActiveGroupId ActiveGroupId;
 
 namespace {
@@ -63,39 +54,6 @@ std::string GetMetricsEnabledDate(PrefService* pref) {
   }
 
   return pref->GetString(prefs::kMetricsReportingEnabledTimestamp);
-}
-
-ProfilerEventProto::TrackedObject::ProcessType AsProtobufProcessType(
-    int process_type) {
-  switch (process_type) {
-    case content::PROCESS_TYPE_BROWSER:
-      return ProfilerEventProto::TrackedObject::BROWSER;
-    case content::PROCESS_TYPE_RENDERER:
-      return ProfilerEventProto::TrackedObject::RENDERER;
-    case content::PROCESS_TYPE_PLUGIN:
-      return ProfilerEventProto::TrackedObject::PLUGIN;
-    case content::PROCESS_TYPE_WORKER:
-      return ProfilerEventProto::TrackedObject::WORKER;
-    case content::PROCESS_TYPE_UTILITY:
-      return ProfilerEventProto::TrackedObject::UTILITY;
-    case content::PROCESS_TYPE_ZYGOTE:
-      return ProfilerEventProto::TrackedObject::ZYGOTE;
-    case content::PROCESS_TYPE_SANDBOX_HELPER:
-      return ProfilerEventProto::TrackedObject::SANDBOX_HELPER;
-    case content::PROCESS_TYPE_GPU:
-      return ProfilerEventProto::TrackedObject::GPU;
-    case content::PROCESS_TYPE_PPAPI_PLUGIN:
-      return ProfilerEventProto::TrackedObject::PPAPI_PLUGIN;
-    case content::PROCESS_TYPE_PPAPI_BROKER:
-      return ProfilerEventProto::TrackedObject::PPAPI_BROKER;
-    case PROCESS_TYPE_NACL_LOADER:
-      return ProfilerEventProto::TrackedObject::NACL_LOADER;
-    case PROCESS_TYPE_NACL_BROKER:
-      return ProfilerEventProto::TrackedObject::NACL_BROKER;
-    default:
-      NOTREACHED();
-      return ProfilerEventProto::TrackedObject::UNKNOWN;
-  }
 }
 
 // Computes a SHA-1 hash of |data| and returns it as a hex string.
@@ -112,60 +70,6 @@ void WriteFieldTrials(const std::vector<ActiveGroupId>& field_trial_ids,
         system_profile->add_field_trial();
     field_trial->set_name_id(it->name);
     field_trial->set_group_id(it->group);
-  }
-}
-
-// Maps a thread name by replacing trailing sequence of digits with "*".
-// Examples:
-// 1. "BrowserBlockingWorker1/23857" => "BrowserBlockingWorker1/*"
-// 2. "Chrome_IOThread" => "Chrome_IOThread"
-std::string MapThreadName(const std::string& thread_name) {
-  size_t i = thread_name.length();
-
-  while (i > 0 && isdigit(thread_name[i - 1])) {
-    --i;
-  }
-
-  if (i == thread_name.length())
-    return thread_name;
-
-  return thread_name.substr(0, i) + '*';
-}
-
-// Normalizes a source filename (which is platform- and build-method-dependent)
-// by extracting the last component of the full file name.
-// Example: "c:\b\build\slave\win\build\src\chrome\app\chrome_main.cc" =>
-// "chrome_main.cc".
-std::string NormalizeFileName(const std::string& file_name) {
-  const size_t offset = file_name.find_last_of("\\/");
-  return offset != std::string::npos ? file_name.substr(offset + 1) : file_name;
-}
-
-void WriteProfilerData(const ProcessDataSnapshot& profiler_data,
-                       int process_type,
-                       ProfilerEventProto* performance_profile) {
-  for (std::vector<tracked_objects::TaskSnapshot>::const_iterator it =
-           profiler_data.tasks.begin();
-       it != profiler_data.tasks.end(); ++it) {
-    const tracked_objects::DeathDataSnapshot& death_data = it->death_data;
-    ProfilerEventProto::TrackedObject* tracked_object =
-        performance_profile->add_tracked_object();
-    tracked_object->set_birth_thread_name_hash(
-        MetricsLogBase::Hash(MapThreadName(it->birth.thread_name)));
-    tracked_object->set_exec_thread_name_hash(
-        MetricsLogBase::Hash(MapThreadName(it->death_thread_name)));
-    tracked_object->set_source_file_name_hash(
-        MetricsLogBase::Hash(NormalizeFileName(it->birth.location.file_name)));
-    tracked_object->set_source_function_name_hash(
-        MetricsLogBase::Hash(it->birth.location.function_name));
-    tracked_object->set_source_line_number(it->birth.location.line_number);
-    tracked_object->set_exec_count(death_data.count);
-    tracked_object->set_exec_time_total(death_data.run_duration_sum);
-    tracked_object->set_exec_time_sampled(death_data.run_duration_sample);
-    tracked_object->set_queue_time_total(death_data.queue_duration_sum);
-    tracked_object->set_queue_time_sampled(death_data.queue_duration_sample);
-    tracked_object->set_process_type(AsProtobufProcessType(process_type));
-    tracked_object->set_process_id(profiler_data.process_id);
   }
 }
 
@@ -408,27 +312,3 @@ bool MetricsLog::LoadSavedEnvironmentFromPrefs() {
          system_profile->ParseFromString(serialied_system_profile);
 }
 
-void MetricsLog::RecordProfilerData(
-    const tracked_objects::ProcessDataSnapshot& process_data,
-    int process_type) {
-  DCHECK(!locked());
-
-  if (tracked_objects::GetTimeSourceType() !=
-          tracked_objects::TIME_SOURCE_TYPE_WALL_TIME) {
-    // We currently only support the default time source, wall clock time.
-    return;
-  }
-
-  ProfilerEventProto* profile;
-  if (!uma_proto()->profiler_event_size()) {
-    // For the first process's data, add a new field to the protocol buffer.
-    profile = uma_proto()->add_profiler_event();
-    profile->set_profile_type(ProfilerEventProto::STARTUP_PROFILE);
-    profile->set_time_source(ProfilerEventProto::WALL_CLOCK_TIME);
-  } else {
-    // For the remaining calls, re-use the existing field.
-    profile = uma_proto()->mutable_profiler_event(0);
-  }
-
-  WriteProfilerData(process_data, process_type, profile);
-}

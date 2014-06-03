@@ -72,12 +72,6 @@ class MetricsLog : public metrics::MetricsLogBase {
   // if there was no saved environment in prefs or it could not be decoded.
   bool LoadSavedEnvironmentFromPrefs();
 
-  // Records the passed profiled data, which should be a snapshot of the
-  // browser's profiled performance during startup for a single process.
-  void RecordProfilerData(
-      const tracked_objects::ProcessDataSnapshot& process_data,
-      int process_type);
-
   // Writes application stability metrics, including stability metrics provided
   // by the specified set of |metrics_providers|. The system profile portion of
   // the log must have already been filled in by a call to RecordEnvironment()

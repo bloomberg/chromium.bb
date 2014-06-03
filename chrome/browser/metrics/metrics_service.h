@@ -38,6 +38,7 @@ class MetricsReportingScheduler;
 class PrefService;
 class PrefRegistrySimple;
 class PluginMetricsProvider;
+class ProfilerMetricsProvider;
 
 namespace base {
 class DictionaryValue;
@@ -432,6 +433,8 @@ class MetricsService
 
   // Whether the initial stability log has been recorded during startup.
   bool has_initial_stability_log_;
+
+  ProfilerMetricsProvider* profiler_metrics_provider_;
 
 #if defined(ENABLE_PLUGINS)
   PluginMetricsProvider* plugin_metrics_provider_;
