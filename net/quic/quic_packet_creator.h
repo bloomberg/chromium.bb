@@ -29,22 +29,6 @@ class QuicRandomBoolSource;
 
 class NET_EXPORT_PRIVATE QuicPacketCreator : public QuicFecBuilderInterface {
  public:
-  // Options for controlling how packets are created.
-  struct Options {
-    Options()
-        : max_packet_length(kDefaultMaxPacketSize),
-          max_packets_per_fec_group(0),
-          send_connection_id_length(PACKET_8BYTE_CONNECTION_ID),
-          send_sequence_number_length(PACKET_1BYTE_SEQUENCE_NUMBER) {}
-
-    size_t max_packet_length;
-    // 0 indicates fec is disabled.
-    size_t max_packets_per_fec_group;
-    // Length of connection_id to send over the wire.
-    QuicConnectionIdLength send_connection_id_length;
-    QuicSequenceNumberLength send_sequence_number_length;
-  };
-
   // QuicRandom* required for packet entropy.
   QuicPacketCreator(QuicConnectionId connection_id,
                     QuicFramer* framer,
@@ -63,20 +47,14 @@ class NET_EXPORT_PRIVATE QuicPacketCreator : public QuicFecBuilderInterface {
   void StartFecProtectingPackets();
 
   // Turn off FEC protection for subsequently created packets. If the creator
-  // has any open fec group, call will fail. It is the caller's responsibility
+  // has any open FEC group, call will fail. It is the caller's responsibility
   // to flush out FEC packets in generation, and to verify with ShouldSendFec()
   // that there is no open FEC group.
   void StopFecProtectingPackets();
 
   // Checks if it's time to send an FEC packet.  |force_close| forces this to
-  // return true if an fec group is open.
+  // return true if an FEC group is open.
   bool ShouldSendFec(bool force_close) const;
-
-  // Returns current max number of packets covered by an FEC group.
-  size_t max_packets_per_fec_group() const;
-
-  // Sets creator's max number of packets covered by an FEC group.
-  void set_max_packets_per_fec_group(size_t max_packets_per_fec_group);
 
   // Makes the framer not serialize the protocol version in sent packets.
   void StopSendingVersion();
@@ -213,8 +191,39 @@ class NET_EXPORT_PRIVATE QuicPacketCreator : public QuicFecBuilderInterface {
     sequence_number_ = s;
   }
 
-  Options* options() {
-    return &options_;
+  QuicConnectionIdLength connection_id_length() const {
+    return connection_id_length_;
+  }
+
+  QuicSequenceNumberLength next_sequence_number_length() const {
+    return next_sequence_number_length_;
+  }
+
+  void set_next_sequence_number_length(QuicSequenceNumberLength length) {
+    next_sequence_number_length_ = length;
+  }
+
+  size_t max_packet_length() const {
+    return max_packet_length_;
+  }
+
+  void set_max_packet_length(size_t length) {
+    // |max_packet_length_| should not be changed mid-packet or mid-FEC group.
+    DCHECK(fec_group_.get() == NULL && queued_frames_.empty());
+    max_packet_length_ = length;
+  }
+
+  // Returns current max number of packets covered by an FEC group.
+  size_t max_packets_per_fec_group() const {
+      return max_packets_per_fec_group_;
+  }
+
+  // Sets creator's max number of packets covered by an FEC group.
+  void set_max_packets_per_fec_group(
+      size_t max_packets_per_fec_group) {
+    // To turn off FEC protection, use StopFecProtectingPackets().
+    DCHECK_NE(0u, max_packets_per_fec_group);
+    max_packets_per_fec_group_ = max_packets_per_fec_group;
   }
 
  private:
@@ -222,9 +231,12 @@ class NET_EXPORT_PRIVATE QuicPacketCreator : public QuicFecBuilderInterface {
 
   static bool ShouldRetransmit(const QuicFrame& frame);
 
-  // Updates sequence number length on a packet or FEC group boundary.
-  // Also starts an FEC group if FEC protection is on and there is not already
-  // an FEC group open.
+  // Updates sequence number and max packet lengths on a packet or FEC group
+  // boundary.
+  void MaybeUpdateLengths();
+
+  // Updates lengths and also starts an FEC group if FEC protection is on and
+  // there is not already an FEC group open.
   InFecGroup MaybeUpdateLengthsAndStartFec();
 
   void FillPacketHeader(QuicFecGroupNumber fec_group,
@@ -240,7 +252,6 @@ class NET_EXPORT_PRIVATE QuicPacketCreator : public QuicFecBuilderInterface {
   // padding frame.
   void MaybeAddPadding();
 
-  Options options_;
   QuicConnectionId connection_id_;
   EncryptionLevel encryption_level_;
   QuicFramer* framer_;
@@ -255,9 +266,20 @@ class NET_EXPORT_PRIVATE QuicPacketCreator : public QuicFecBuilderInterface {
   // Controls whether protocol version should be included while serializing the
   // packet.
   bool send_version_in_packet_;
-  // The sequence number length for the current packet and the current FEC group
-  // if FEC is enabled.
-  // Mutable so PacketSize() can adjust it when the packet is empty.
+  // Maximum length including headers and encryption (UDP payload length.)
+  size_t max_packet_length_;
+  // 0 indicates FEC is disabled.
+  size_t max_packets_per_fec_group_;
+  // Length of connection_id to send over the wire.
+  QuicConnectionIdLength connection_id_length_;
+  // Staging variable to hold next packet sequence number length. When sequence
+  // number length is to be changed, this variable holds the new length until
+  // a packet or FEC group boundary, when the creator's sequence_number_length_
+  // can be changed to this new value.
+  QuicSequenceNumberLength next_sequence_number_length_;
+  // Sequence number length for the current packet and for the current FEC group
+  // when FEC is enabled. Mutable so PacketSize() can adjust it when the packet
+  // is empty.
   mutable QuicSequenceNumberLength sequence_number_length_;
   // packet_size_ is mutable because it's just a cache of the current size.
   // packet_size should never be read directly, use PacketSize() instead.

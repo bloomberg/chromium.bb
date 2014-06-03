@@ -97,13 +97,13 @@ TEST_F(QuicFlowControllerTest, ReceivingBytes) {
   EXPECT_FALSE(flow_controller_->FlowControlViolation());
 
   // Buffer some bytes, not enough to fill window.
-  flow_controller_->AddBytesBuffered(receive_window_ / 2);
+  EXPECT_TRUE(
+      flow_controller_->UpdateHighestReceivedOffset(1 + receive_window_ / 2));
   EXPECT_FALSE(flow_controller_->FlowControlViolation());
-  EXPECT_EQ(receive_window_ / 2,
+  EXPECT_EQ((receive_window_ / 2) - 1,
             QuicFlowControllerPeer::ReceiveWindowSize(flow_controller_.get()));
 
   // Consume enough bytes to send a WINDOW_UPDATE frame.
-  flow_controller_->RemoveBytesBuffered(receive_window_ / 2);
   flow_controller_->AddBytesConsumed(1 + receive_window_ / 2);
   EXPECT_FALSE(flow_controller_->FlowControlViolation());
   EXPECT_EQ((receive_window_ / 2) - 1,
@@ -132,8 +132,7 @@ TEST_F(QuicFlowControllerTest,
                                  flow_controller_.get()));
   flow_controller_->AddBytesSent(123);
   flow_controller_->AddBytesConsumed(456);
-  flow_controller_->AddBytesBuffered(789);
-  flow_controller_->RemoveBytesBuffered(321);
+  flow_controller_->UpdateHighestReceivedOffset(789);
   EXPECT_EQ(send_window_, flow_controller_->SendWindowSize());
   EXPECT_EQ(send_window_,
             QuicFlowControllerPeer::SendWindowOffset(flow_controller_.get()));

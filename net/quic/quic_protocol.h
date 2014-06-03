@@ -318,6 +318,9 @@ NET_EXPORT_PRIVATE std::string QuicVersionVectorToString(
 //   MakeQuicTag('C', 'H', 'L', 'O');
 NET_EXPORT_PRIVATE QuicTag MakeQuicTag(char a, char b, char c, char d);
 
+// Returns true if the tag vector contains the specified tag.
+bool ContainsQuicTag(QuicTagVector tag_vector, QuicTag tag);
+
 // Size in bytes of the data or fec packet header.
 NET_EXPORT_PRIVATE size_t GetPacketHeaderSize(const QuicPacketHeader& header);
 

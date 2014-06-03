@@ -133,7 +133,6 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
   // Note 2: Send algorithms may or may not use |retransmit| in their
   // calculations.
   virtual QuicTime::Delta TimeUntilSend(QuicTime now,
-                                        TransmissionType transmission_type,
                                         HasRetransmittableData retransmittable);
 
   // Returns amount of time for delayed ack timer.
@@ -274,6 +273,8 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
   size_t consecutive_tlp_count_;
   // Number of times the crypto handshake has been retransmitted.
   size_t consecutive_crypto_retransmission_count_;
+  // Whether a tlp packet can be sent even if the send algorithm says not to.
+  bool pending_tlp_transmission_;
   // Maximum number of tail loss probes to send before firing an RTO.
   size_t max_tail_loss_probes_;
   bool using_pacing_;

@@ -749,7 +749,7 @@ int QuicStreamFactory::CreateSession(
       new QuicConnection(connection_id, addr, helper_.get(), writer.get(),
                          false, supported_versions_);
   writer->SetConnection(connection);
-  connection->options()->max_packet_length = max_packet_length_;
+  connection->set_max_packet_length(max_packet_length_);
 
   InitializeCachedStateInCryptoConfig(server_id, server_info);
 

@@ -33,11 +33,11 @@ class NET_EXPORT_PRIVATE QuicFlowController {
                      uint64 max_receive_window);
   ~QuicFlowController() {}
 
-  // Called when bytes are received from the peer, and buffered.
-  void AddBytesBuffered(uint64 bytes_buffered);
-
-  // Called when bytes currently buffered locally, are removed from the buffer.
-  void RemoveBytesBuffered(uint64 bytes_buffered);
+  // Called when we see a new highest received byte offset from the peer, either
+  // via a data frame or a RST.
+  // Returns true if this call changes highest_received_byte_offset_, and false
+  // in the case where |new_offset| is <= highest_received_byte_offset_.
+  bool UpdateHighestReceivedOffset(uint64 new_offset);
 
   // Called when bytes received from the peer are consumed locally.
   void AddBytesConsumed(uint64 bytes_consumed);
@@ -71,11 +71,12 @@ class NET_EXPORT_PRIVATE QuicFlowController {
   // Returns true if flow control receive limits have been violated by the peer.
   bool FlowControlViolation();
 
+  uint64 highest_received_byte_offset() const {
+    return highest_received_byte_offset_;
+  }
+
  private:
   friend class test::QuicFlowControllerPeer;
-
-  // Total received bytes is the sum of bytes buffered, and bytes consumed.
-  uint64 TotalReceivedBytes() const;
 
   // ID of stream this flow controller belongs to. This can be 0 if this is a
   // connection level flow controller.
@@ -91,8 +92,9 @@ class NET_EXPORT_PRIVATE QuicFlowController {
   // locally.
   uint64 bytes_consumed_;
 
-  // Tracks number of bytes received from the peer, and buffered locally.
-  uint64 bytes_buffered_;
+  // The highest byte offset we have seen from the peer. This could be the
+  // highest offset in a data frame, or a final value in a RST.
+  uint64 highest_received_byte_offset_;
 
   // Tracks number of bytes sent to the peer.
   uint64 bytes_sent_;

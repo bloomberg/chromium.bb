@@ -78,16 +78,16 @@ class NET_EXPORT_PRIVATE QuicPacketGenerator {
   // Interface which gets callbacks from the QuicPacketGenerator at interesting
   // points.  Implementations must not mutate the state of the generator
   // as a result of these callbacks.
-  class NET_EXPORT_PRIVATE DebugDelegateInterface {
+  class NET_EXPORT_PRIVATE DebugDelegate {
    public:
-    virtual ~DebugDelegateInterface() {}
+    virtual ~DebugDelegate() {}
 
     // Called when a frame has been added to the current packet.
     virtual void OnFrameAddedToPacket(const QuicFrame& frame) {}
   };
 
   QuicPacketGenerator(DelegateInterface* delegate,
-                      DebugDelegateInterface* debug_delegate,
+                      DebugDelegate* debug_delegate,
                       QuicPacketCreator* creator);
 
   virtual ~QuicPacketGenerator();
@@ -131,7 +131,7 @@ class NET_EXPORT_PRIVATE QuicPacketGenerator {
 
   bool HasQueuedFrames() const;
 
-  void set_debug_delegate(DebugDelegateInterface* debug_delegate) {
+  void set_debug_delegate(DebugDelegate* debug_delegate) {
     debug_delegate_ = debug_delegate;
   }
 
@@ -152,7 +152,7 @@ class NET_EXPORT_PRIVATE QuicPacketGenerator {
   void SerializeAndSendPacket();
 
   DelegateInterface* delegate_;
-  DebugDelegateInterface* debug_delegate_;
+  DebugDelegate* debug_delegate_;
 
   QuicPacketCreator* packet_creator_;
   QuicFrames queued_control_frames_;

@@ -175,8 +175,6 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
     return connection_->connection_id();
   }
 
-  QuicPacketCreator::Options* options() { return connection()->options(); }
-
   // Returns the number of currently open streams, including those which have
   // been implicitly created, but excluding the reserved headers and crypto
   // streams.

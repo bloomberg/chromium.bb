@@ -272,10 +272,6 @@ ssize_t QuicTestClient::SendData(string data, bool last_data) {
   return data.length();
 }
 
-QuicPacketCreator::Options* QuicTestClient::options() {
-  return client_->options();
-}
-
 bool QuicTestClient::response_complete() const {
   return response_complete_;
 }

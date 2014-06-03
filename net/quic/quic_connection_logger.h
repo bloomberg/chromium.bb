@@ -20,7 +20,7 @@ class CryptoHandshakeMessage;
 // This class is a debug visitor of a QuicConnection which logs
 // events to |net_log|.
 class NET_EXPORT_PRIVATE QuicConnectionLogger
-    : public QuicConnectionDebugVisitorInterface {
+    : public QuicConnectionDebugVisitor {
  public:
   explicit QuicConnectionLogger(const BoundNetLog& net_log);
 

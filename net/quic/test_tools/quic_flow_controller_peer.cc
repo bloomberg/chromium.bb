@@ -54,7 +54,7 @@ uint64 QuicFlowControllerPeer::ReceiveWindowOffset(
 uint64 QuicFlowControllerPeer::ReceiveWindowSize(
     QuicFlowController* flow_controller) {
   return flow_controller->receive_window_offset_ -
-         flow_controller->TotalReceivedBytes();
+         flow_controller->highest_received_byte_offset_;
 }
 
 }  // namespace test

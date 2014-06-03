@@ -93,6 +93,13 @@ QuicAckFrame MakeAckFrame(QuicPacketSequenceNumber largest_observed,
 QuicAckFrame MakeAckFrameWithNackRanges(size_t num_nack_ranges,
                                         QuicPacketSequenceNumber least_unacked);
 
+// Returns a SerializedPacket whose |packet| member is owned by the caller,
+// and is populated with the fields in |header| and |frames|, or is NULL if
+// the packet could not be created.
+SerializedPacket BuildUnsizedDataPacket(QuicFramer* framer,
+                                        const QuicPacketHeader& header,
+                                        const QuicFrames& frames);
+
 template<typename SaveType>
 class ValueRestore {
  public:

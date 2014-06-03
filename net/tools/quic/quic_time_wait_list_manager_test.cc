@@ -21,10 +21,10 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using net::test::BuildUnsizedDataPacket;
 using net::test::NoOpFramerVisitor;
 using net::test::QuicVersionMax;
 using net::test::QuicVersionMin;
-using testing::_;
 using testing::Args;
 using testing::Assign;
 using testing::DoAll;
@@ -36,6 +36,7 @@ using testing::ReturnPointee;
 using testing::SetArgPointee;
 using testing::StrictMock;
 using testing::Truly;
+using testing::_;
 
 namespace net {
 namespace tools {
@@ -150,7 +151,7 @@ class QuicTimeWaitListManagerTest : public ::testing::Test {
     QuicFrames frames;
     frames.push_back(frame);
     scoped_ptr<QuicPacket> packet(
-        framer_.BuildUnsizedDataPacket(header, frames).packet);
+        BuildUnsizedDataPacket(&framer_, header, frames).packet);
     EXPECT_TRUE(packet != NULL);
     QuicEncryptedPacket* encrypted = framer_.EncryptPacket(ENCRYPTION_NONE,
                                                            sequence_number,

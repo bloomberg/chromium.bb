@@ -144,6 +144,11 @@ uint32 MakeQuicTag(char a, char b, char c, char d) {
          static_cast<uint32>(d) << 24;
 }
 
+bool ContainsQuicTag(QuicTagVector tag_vector, QuicTag tag) {
+  return std::find(tag_vector.begin(), tag_vector.end(),  tag)
+      != tag_vector.end();
+}
+
 QuicVersionVector QuicSupportedVersions() {
   QuicVersionVector supported_versions;
   for (size_t i = 0; i < arraysize(kSupportedQuicVersions); ++i) {

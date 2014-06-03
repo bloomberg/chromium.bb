@@ -332,26 +332,6 @@ QuicPacketEntropyHash QuicFramer::GetPacketEntropyHash(
   return header.entropy_flag << (header.packet_sequence_number % 8);
 }
 
-// Test only.
-SerializedPacket QuicFramer::BuildUnsizedDataPacket(
-    const QuicPacketHeader& header,
-    const QuicFrames& frames) {
-  const size_t max_plaintext_size = GetMaxPlaintextSize(kMaxPacketSize);
-  size_t packet_size = GetPacketHeaderSize(header);
-  for (size_t i = 0; i < frames.size(); ++i) {
-    DCHECK_LE(packet_size, max_plaintext_size);
-    bool first_frame = i == 0;
-    bool last_frame = i == frames.size() - 1;
-    const size_t frame_size = GetSerializedFrameLength(
-        frames[i], max_plaintext_size - packet_size, first_frame, last_frame,
-        header.is_in_fec_group,
-        header.public_header.sequence_number_length);
-    DCHECK(frame_size);
-    packet_size += frame_size;
-  }
-  return BuildDataPacket(header, frames, packet_size);
-}
-
 SerializedPacket QuicFramer::BuildDataPacket(
     const QuicPacketHeader& header,
     const QuicFrames& frames,

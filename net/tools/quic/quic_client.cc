@@ -296,13 +296,6 @@ void QuicClient::OnClose(QuicDataStream* stream) {
   printf("%s\n", client_stream->data().c_str());
 }
 
-QuicPacketCreator::Options* QuicClient::options() {
-  if (session() == NULL) {
-    return NULL;
-  }
-  return session_->options();
-}
-
 bool QuicClient::connected() const {
   return session_.get() && session_->connection() &&
       session_->connection()->connected();

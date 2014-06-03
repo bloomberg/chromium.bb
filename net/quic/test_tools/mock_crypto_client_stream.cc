@@ -83,7 +83,7 @@ void MockCryptoClientStream::SetConfigNegotiated() {
   QuicTagVector cgst;
   cgst.push_back(kINAR);
   cgst.push_back(kQBIC);
-  session()->config()->set_congestion_control(cgst, kQBIC);
+  session()->config()->set_congestion_feedback(cgst, kQBIC);
   session()->config()->set_idle_connection_state_lifetime(
       QuicTime::Delta::FromSeconds(2 * kDefaultTimeoutSecs),
       QuicTime::Delta::FromSeconds(kDefaultTimeoutSecs));

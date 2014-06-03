@@ -69,6 +69,7 @@ QuicSentPacketManager::QuicSentPacketManager(bool is_server,
       consecutive_rto_count_(0),
       consecutive_tlp_count_(0),
       consecutive_crypto_retransmission_count_(0),
+      pending_tlp_transmission_(false),
       max_tail_loss_probes_(kDefaultMaxTailLossProbes),
       using_pacing_(false) {
 }
@@ -82,7 +83,13 @@ void QuicSentPacketManager::SetFromConfig(const QuicConfig& config) {
     rtt_stats_.set_initial_rtt_us(min(kMaxInitialRoundTripTimeUs,
                                       config.ReceivedInitialRoundTripTimeUs()));
   }
-  if (config.congestion_control() == kPACE) {
+  // TODO(ianswett): BBR is currently a server only feature.
+  if (config.HasReceivedCongestionOptions() &&
+      ContainsQuicTag(config.ReceivedCongestionOptions(), kTBBR)) {
+    send_algorithm_.reset(
+        SendAlgorithmInterface::Create(clock_, &rtt_stats_, kTCPBBR, stats_));
+  }
+  if (config.congestion_feedback() == kPACE) {
     MaybeEnablePacing();
   }
   if (config.HasReceivedLossDetection() &&
@@ -396,6 +403,7 @@ bool QuicSentPacketManager::OnPacketSent(
     HasRetransmittableData has_retransmittable_data) {
   DCHECK_LT(0u, sequence_number);
   LOG_IF(DFATAL, bytes == 0) << "Cannot send empty packets.";
+  pending_tlp_transmission_ = false;
   // In rare circumstances, the packet could be serialized, sent, and then acked
   // before OnPacketSent is called.
   if (!unacked_packets_.IsUnacked(sequence_number)) {
@@ -446,6 +454,7 @@ void QuicSentPacketManager::OnRetransmissionTimeout() {
       // If no tail loss probe can be sent, because there are no retransmittable
       // packets, execute a conventional RTO to abandon old packets.
       ++stats_->tlp_count;
+      pending_tlp_transmission_ = true;
       RetransmitOldestPacket();
       return;
     case RTO_MODE:
@@ -497,12 +506,8 @@ void QuicSentPacketManager::RetransmitOldestPacket() {
 }
 
 void QuicSentPacketManager::RetransmitAllPackets() {
-  // Abandon all retransmittable packets and packets older than the
-  // retransmission delay.
-
-  DVLOG(1) << "OnRetransmissionTimeout() fired with "
+  DVLOG(1) << "RetransmitAllPackets() called with "
            << unacked_packets_.GetNumUnackedPackets() << " unacked packets.";
-
   // Request retransmission of all retransmittable packets when the RTO
   // fires, and let the congestion manager decide how many to send
   // immediately and the remaining packets will be queued.
@@ -605,11 +610,10 @@ bool QuicSentPacketManager::MaybeUpdateRTT(
 
 QuicTime::Delta QuicSentPacketManager::TimeUntilSend(
     QuicTime now,
-    TransmissionType transmission_type,
     HasRetransmittableData retransmittable) {
   // The TLP logic is entirely contained within QuicSentPacketManager, so the
   // send algorithm does not need to be consulted.
-  if (transmission_type == TLP_RETRANSMISSION) {
+  if (pending_tlp_transmission_) {
     return QuicTime::Delta::Zero();
   }
   return send_algorithm_->TimeUntilSend(
@@ -731,10 +735,11 @@ void QuicSentPacketManager::MaybeEnablePacing() {
     return;
   }
 
+  // Set up a pacing sender with a 5 millisecond alarm granularity.
   using_pacing_ = true;
   send_algorithm_.reset(
       new PacingSender(send_algorithm_.release(),
-                       QuicTime::Delta::FromMicroseconds(1)));
+                       QuicTime::Delta::FromMilliseconds(5)));
 }
 
 }  // namespace net

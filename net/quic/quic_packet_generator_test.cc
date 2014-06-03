@@ -231,7 +231,7 @@ class QuicPacketGeneratorTest : public ::testing::Test {
   scoped_ptr<char[]> data_array_;
 };
 
-class MockDebugDelegate : public QuicPacketGenerator::DebugDelegateInterface {
+class MockDebugDelegate : public QuicPacketGenerator::DebugDelegate {
  public:
   MOCK_METHOD1(OnFrameAddedToPacket,
                void(const QuicFrame&));
@@ -503,11 +503,11 @@ TEST_F(QuicPacketGeneratorTest, ConsumeDataSendsFecAtEnd) {
 TEST_F(QuicPacketGeneratorTest, ConsumeData_FramesPreviouslyQueued) {
   // Set the packet size be enough for two stream frames with 0 stream offset,
   // but not enough for a stream frame of 0 offset and one with non-zero offset.
-  creator_.options()->max_packet_length =
+  size_t length =
       NullEncrypter().GetCiphertextSize(0) +
-      GetPacketHeaderSize(creator_.options()->send_connection_id_length,
+      GetPacketHeaderSize(creator_.connection_id_length(),
                           true,
-                          creator_.options()->send_sequence_number_length,
+                          creator_.next_sequence_number_length(),
                           NOT_IN_FEC_GROUP) +
       // Add an extra 3 bytes for the payload and 1 byte so BytesFree is larger
       // than the GetMinStreamFrameSize.
@@ -515,6 +515,7 @@ TEST_F(QuicPacketGeneratorTest, ConsumeData_FramesPreviouslyQueued) {
                                         NOT_IN_FEC_GROUP) + 3 +
       QuicFramer::GetMinStreamFrameSize(framer_.version(), 1, 0, true,
                                         NOT_IN_FEC_GROUP) + 1;
+  creator_.set_max_packet_length(length);
   delegate_.SetCanWriteAnything();
   {
      InSequence dummy;

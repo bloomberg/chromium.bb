@@ -306,13 +306,6 @@ class NET_EXPORT_PRIVATE QuicFramer {
       QuicSequenceNumberLength sequence_number_length);
 
   // Returns a SerializedPacket whose |packet| member is owned by the caller,
-  // and is populated with the fields in |header| and |frames|, or is NULL if
-  // the packet could not be created.
-  // TODO(ianswett): Used for testing only.
-  SerializedPacket BuildUnsizedDataPacket(const QuicPacketHeader& header,
-                                          const QuicFrames& frames);
-
-  // Returns a SerializedPacket whose |packet| member is owned by the caller,
   // is created from the first |num_frames| frames, or is NULL if the packet
   // could not be created.  The packet must be of size |packet_size|.
   SerializedPacket BuildDataPacket(const QuicPacketHeader& header,

@@ -215,6 +215,42 @@ class NET_EXPORT_PRIVATE QuicFixedTag : public QuicConfigValue {
   bool has_receive_value_;
 };
 
+// Stores tag from CHLO or SHLO messages that are not negotiated.
+class NET_EXPORT_PRIVATE QuicFixedTagVector : public QuicConfigValue {
+ public:
+  QuicFixedTagVector(QuicTag name, QuicConfigPresence presence);
+  virtual ~QuicFixedTagVector();
+
+  bool HasSendValues() const;
+
+  QuicTagVector GetSendValues() const;
+
+  void SetSendValues(const QuicTagVector& values);
+
+  bool HasReceivedValues() const;
+
+  QuicTagVector GetReceivedValues() const;
+
+  void SetReceivedValues(const QuicTagVector& values);
+
+  // If has_send_value is true, serialises |tag_vector_| and |send_value_| to
+  // |out|.
+  virtual void ToHandshakeMessage(CryptoHandshakeMessage* out) const OVERRIDE;
+
+  // Sets |receive_values_| to the corresponding value from |client_hello_| if
+  // it exists.
+  virtual QuicErrorCode ProcessPeerHello(
+      const CryptoHandshakeMessage& peer_hello,
+      HelloType hello_type,
+      std::string* error_details) OVERRIDE;
+
+ private:
+  QuicTagVector send_values_;
+  bool has_send_values_;
+  QuicTagVector receive_values_;
+  bool has_receive_values_;
+};
+
 // QuicConfig contains non-crypto configuration options that are negotiated in
 // the crypto handshake.
 class NET_EXPORT_PRIVATE QuicConfig {
@@ -222,10 +258,16 @@ class NET_EXPORT_PRIVATE QuicConfig {
   QuicConfig();
   ~QuicConfig();
 
-  void set_congestion_control(const QuicTagVector& congestion_control,
-                              QuicTag default_congestion_control);
+  void set_congestion_feedback(const QuicTagVector& congestion_feedback,
+                               QuicTag default_congestion_feedback);
 
-  QuicTag congestion_control() const;
+  QuicTag congestion_feedback() const;
+
+  void SetCongestionOptionsToSend(const QuicTagVector& congestion_options);
+
+  bool HasReceivedCongestionOptions() const;
+
+  QuicTagVector ReceivedCongestionOptions() const;
 
   void SetLossDetectionToSend(QuicTag loss_detection);
 
@@ -294,7 +336,9 @@ class NET_EXPORT_PRIVATE QuicConfig {
   friend class test::QuicConfigPeer;
 
   // Congestion control feedback type.
-  QuicNegotiableTag congestion_control_;
+  QuicNegotiableTag congestion_feedback_;
+  // Congestion control option.
+  QuicFixedTagVector congestion_options_;
   // Loss detection feedback type.
   QuicFixedTag loss_detection_;
   // Idle connection state lifetime

@@ -84,7 +84,7 @@ scoped_ptr<QuicEncryptedPacket> QuicTestPacketMaker::MakeAckAndRstPacket(
 
   QuicFramer framer(SupportedVersions(version_), QuicTime::Zero(), false);
   scoped_ptr<QuicPacket> packet(
-      framer.BuildUnsizedDataPacket(header, frames).packet);
+      BuildUnsizedDataPacket(&framer, header, frames).packet);
   return scoped_ptr<QuicEncryptedPacket>(framer.EncryptPacket(
       ENCRYPTION_NONE, header.packet_sequence_number, *packet));
 }
@@ -143,7 +143,7 @@ scoped_ptr<QuicEncryptedPacket> QuicTestPacketMaker::MakeAckPacket(
   }
 
   scoped_ptr<QuicPacket> packet(
-      framer.BuildUnsizedDataPacket(header, frames).packet);
+      BuildUnsizedDataPacket(&framer, header, frames).packet);
   return scoped_ptr<QuicEncryptedPacket>(framer.EncryptPacket(
       ENCRYPTION_NONE, header.packet_sequence_number, *packet));
 }
@@ -227,7 +227,7 @@ scoped_ptr<QuicEncryptedPacket> QuicTestPacketMaker::MakePacket(
   QuicFrames frames;
   frames.push_back(frame);
   scoped_ptr<QuicPacket> packet(
-      framer.BuildUnsizedDataPacket(header, frames).packet);
+      BuildUnsizedDataPacket(&framer, header, frames).packet);
   return scoped_ptr<QuicEncryptedPacket>(framer.EncryptPacket(
       ENCRYPTION_NONE, header.packet_sequence_number, *packet));
 }

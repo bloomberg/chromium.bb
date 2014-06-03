@@ -11,6 +11,7 @@
 #include "net/quic/quic_write_blocked_list.h"
 #include "net/quic/spdy_utils.h"
 #include "net/quic/test_tools/quic_config_peer.h"
+#include "net/quic/test_tools/quic_connection_peer.h"
 #include "net/quic/test_tools/quic_flow_controller_peer.h"
 #include "net/quic/test_tools/quic_session_peer.h"
 #include "net/quic/test_tools/quic_test_utils.h"
@@ -150,13 +151,14 @@ class ReliableQuicStreamTest : public ::testing::TestWithParam<bool> {
 TEST_F(ReliableQuicStreamTest, WriteAllData) {
   Initialize(kShouldProcessData);
 
-  connection_->options()->max_packet_length =
-      1 + QuicPacketCreator::StreamFramePacketOverhead(
-              connection_->version(), PACKET_8BYTE_CONNECTION_ID,
-              !kIncludeVersion, PACKET_6BYTE_SEQUENCE_NUMBER, 0u,
-              NOT_IN_FEC_GROUP);
-  EXPECT_CALL(*session_, WritevData(kHeadersStreamId, _, _, _, _))
-      .WillOnce(Return(QuicConsumedData(kDataLen, true)));
+  size_t length = 1 + QuicPacketCreator::StreamFramePacketOverhead(
+      connection_->version(), PACKET_8BYTE_CONNECTION_ID, !kIncludeVersion,
+      PACKET_6BYTE_SEQUENCE_NUMBER, 0u, NOT_IN_FEC_GROUP);
+  QuicConnectionPeer::GetPacketCreator(connection_)->set_max_packet_length(
+      length);
+
+  EXPECT_CALL(*session_, WritevData(kHeadersStreamId, _, _, _, _)).WillOnce(
+      Return(QuicConsumedData(kDataLen, true)));
   stream_->WriteOrBufferData(kData1, false, NULL);
   EXPECT_FALSE(HasWriteBlockedStreams());
 }
@@ -209,10 +211,12 @@ TEST_F(ReliableQuicStreamTest, WriteOrBufferData) {
   Initialize(kShouldProcessData);
 
   EXPECT_FALSE(HasWriteBlockedStreams());
-  connection_->options()->max_packet_length =
-      1 + QuicPacketCreator::StreamFramePacketOverhead(
-          connection_->version(), PACKET_8BYTE_CONNECTION_ID, !kIncludeVersion,
-          PACKET_6BYTE_SEQUENCE_NUMBER, 0u, NOT_IN_FEC_GROUP);
+  size_t length = 1 + QuicPacketCreator::StreamFramePacketOverhead(
+      connection_->version(), PACKET_8BYTE_CONNECTION_ID, !kIncludeVersion,
+      PACKET_6BYTE_SEQUENCE_NUMBER, 0u, NOT_IN_FEC_GROUP);
+  QuicConnectionPeer::GetPacketCreator(connection_)->set_max_packet_length(
+      length);
+
   EXPECT_CALL(*session_, WritevData(_, _, _, _, _)).WillOnce(
       Return(QuicConsumedData(kDataLen - 1, false)));
   stream_->WriteOrBufferData(kData1, false, NULL);

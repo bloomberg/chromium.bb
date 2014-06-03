@@ -92,24 +92,19 @@ class NET_EXPORT_PRIVATE ReliableQuicStream {
   // Adjust our flow control windows according to new offset in |frame|.
   virtual void OnWindowUpdateFrame(const QuicWindowUpdateFrame& frame);
 
-  // If our receive window has dropped below the threshold, then send a
-  // WINDOW_UPDATE frame. This is called whenever bytes are consumed from the
-  // sequencer's buffer.
-  void MaybeSendWindowUpdate();
-
   int num_frames_received() const;
 
   int num_duplicate_frames_received() const;
 
   QuicFlowController* flow_controller() { return &flow_controller_; }
 
-  // Called by the stream sequeuncer as bytes are added to the buffer.
-  void AddBytesBuffered(uint64 bytes);
-  // Called by the stream sequeuncer as bytes are removed from the buffer.
-  void RemoveBytesBuffered(uint64 bytes);
+  // Called when we see a frame which could increase the highest offset.
+  void MaybeIncreaseHighestReceivedOffset(uint64 new_offset);
   // Called when bytese are sent to the peer.
   void AddBytesSent(uint64 bytes);
-  // Called by the stream sequeuncer as bytes are consumed from the buffer.
+  // Called by the stream sequencer as bytes are consumed from the buffer.
+  // If our receive window has dropped below the threshold, then send a
+  // WINDOW_UPDATE frame.
   void AddBytesConsumed(uint64 bytes);
 
   // Returns true if the stream is flow control blocked, by the stream flow
@@ -170,12 +165,6 @@ class NET_EXPORT_PRIVATE ReliableQuicStream {
     // Can be nullptr.
     scoped_refptr<ProxyAckNotifierDelegate> delegate;
   };
-
-  // Calculates and returns available flow control send window.
-  uint64 SendWindowSize() const;
-
-  // Calculates and returns total number of bytes this stream has received.
-  uint64 TotalReceivedBytes() const;
 
   // Calls MaybeSendBlocked on our flow controller, and connection level flow
   // controller. If we are flow control blocked, marks this stream as write

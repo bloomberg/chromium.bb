@@ -38,15 +38,17 @@ class PacingSenderTest : public ::testing::Test {
   void CheckPacketIsSentImmediately() {
     // In order for the packet to be sendable, the underlying sender must
     // permit it to be sent immediately.
-    EXPECT_CALL(*mock_sender_, TimeUntilSend(clock_.Now(),
-                                             kBytesInFlight,
-                                             HAS_RETRANSMITTABLE_DATA))
-        .WillOnce(Return(zero_time_));
-    // Verify that the packet can be sent immediately.
-    EXPECT_EQ(zero_time_,
-              pacing_sender_->TimeUntilSend(clock_.Now(),
-                                            kBytesInFlight,
-                                            HAS_RETRANSMITTABLE_DATA));
+    for (int i = 0; i < 2; ++i) {
+      EXPECT_CALL(*mock_sender_, TimeUntilSend(clock_.Now(),
+                                               kBytesInFlight,
+                                               HAS_RETRANSMITTABLE_DATA))
+          .WillOnce(Return(zero_time_));
+      // Verify that the packet can be sent immediately.
+      EXPECT_EQ(zero_time_,
+                pacing_sender_->TimeUntilSend(clock_.Now(),
+                                              kBytesInFlight,
+                                              HAS_RETRANSMITTABLE_DATA));
+    }
 
     // Actually send the packet.
     EXPECT_CALL(*mock_sender_,
@@ -82,15 +84,17 @@ class PacingSenderTest : public ::testing::Test {
   void CheckPacketIsDelayed(QuicTime::Delta delay) {
     // In order for the packet to be sendable, the underlying sender must
     // permit it to be sent immediately.
-    EXPECT_CALL(*mock_sender_, TimeUntilSend(clock_.Now(),
-                                             kBytesInFlight,
-                                             HAS_RETRANSMITTABLE_DATA))
-        .WillOnce(Return(zero_time_));
-    // Verify that the packet is delayed.
-    EXPECT_EQ(delay.ToMicroseconds(),
-              pacing_sender_->TimeUntilSend(
-                  clock_.Now(), kBytesInFlight,
-                  HAS_RETRANSMITTABLE_DATA).ToMicroseconds());
+    for (int i = 0; i < 2; ++i) {
+      EXPECT_CALL(*mock_sender_, TimeUntilSend(clock_.Now(),
+                                               kBytesInFlight,
+                                               HAS_RETRANSMITTABLE_DATA))
+          .WillOnce(Return(zero_time_));
+      // Verify that the packet is delayed.
+      EXPECT_EQ(delay.ToMicroseconds(),
+                pacing_sender_->TimeUntilSend(
+                    clock_.Now(), kBytesInFlight,
+                    HAS_RETRANSMITTABLE_DATA).ToMicroseconds());
+    }
   }
 
   const QuicTime::Delta zero_time_;
@@ -102,25 +106,29 @@ class PacingSenderTest : public ::testing::Test {
 };
 
 TEST_F(PacingSenderTest, NoSend) {
-  EXPECT_CALL(*mock_sender_, TimeUntilSend(clock_.Now(),
-                                           kBytesInFlight,
-                                           HAS_RETRANSMITTABLE_DATA))
-      .WillOnce(Return(infinite_time_));
-  EXPECT_EQ(infinite_time_,
-            pacing_sender_->TimeUntilSend(clock_.Now(),
-                                          kBytesInFlight,
-                                          HAS_RETRANSMITTABLE_DATA));
+  for (int i = 0; i < 2; ++i) {
+    EXPECT_CALL(*mock_sender_, TimeUntilSend(clock_.Now(),
+                                             kBytesInFlight,
+                                             HAS_RETRANSMITTABLE_DATA))
+        .WillOnce(Return(infinite_time_));
+    EXPECT_EQ(infinite_time_,
+              pacing_sender_->TimeUntilSend(clock_.Now(),
+                                            kBytesInFlight,
+                                            HAS_RETRANSMITTABLE_DATA));
+  }
 }
 
 TEST_F(PacingSenderTest, SendNow) {
-  EXPECT_CALL(*mock_sender_, TimeUntilSend(clock_.Now(),
-                                           kBytesInFlight,
-                                           HAS_RETRANSMITTABLE_DATA))
-      .WillOnce(Return(zero_time_));
-  EXPECT_EQ(zero_time_,
-            pacing_sender_->TimeUntilSend(clock_.Now(),
-                                          kBytesInFlight,
-                                          HAS_RETRANSMITTABLE_DATA));
+  for (int i = 0; i < 2; ++i) {
+    EXPECT_CALL(*mock_sender_, TimeUntilSend(clock_.Now(),
+                                             kBytesInFlight,
+                                             HAS_RETRANSMITTABLE_DATA))
+        .WillOnce(Return(zero_time_));
+    EXPECT_EQ(zero_time_,
+              pacing_sender_->TimeUntilSend(clock_.Now(),
+                                            kBytesInFlight,
+                                            HAS_RETRANSMITTABLE_DATA));
+  }
 }
 
 TEST_F(PacingSenderTest, VariousSending) {
@@ -157,6 +165,29 @@ TEST_F(PacingSenderTest, VariousSending) {
 
   // Wake up late.
   clock_.AdvanceTime(QuicTime::Delta::FromMilliseconds(4));
+  CheckPacketIsSentImmediately();
+  CheckPacketIsSentImmediately();
+  CheckPacketIsSentImmediately();
+  CheckPacketIsSentImmediately();
+  CheckPacketIsDelayed(QuicTime::Delta::FromMilliseconds(2));
+
+  // Wake up really late.
+  clock_.AdvanceTime(QuicTime::Delta::FromMilliseconds(8));
+  CheckPacketIsSentImmediately();
+  CheckPacketIsSentImmediately();
+  CheckPacketIsSentImmediately();
+  CheckPacketIsSentImmediately();
+  CheckPacketIsSentImmediately();
+  CheckPacketIsSentImmediately();
+  CheckPacketIsSentImmediately();
+  CheckPacketIsSentImmediately();
+  CheckPacketIsDelayed(QuicTime::Delta::FromMilliseconds(2));
+
+  // Wake up really late again, but application pause partway through.
+  clock_.AdvanceTime(QuicTime::Delta::FromMilliseconds(8));
+  CheckPacketIsSentImmediately();
+  CheckPacketIsSentImmediately();
+  clock_.AdvanceTime(QuicTime::Delta::FromMilliseconds(100));
   CheckPacketIsSentImmediately();
   CheckPacketIsSentImmediately();
   CheckPacketIsSentImmediately();

@@ -116,8 +116,6 @@ class QuicClient : public EpollCallbackInterface,
   // QuicDataStream::Visitor
   virtual void OnClose(QuicDataStream* stream) OVERRIDE;
 
-  QuicPacketCreator::Options* options();
-
   QuicClientSession* session() { return session_.get(); }
 
   bool connected() const;

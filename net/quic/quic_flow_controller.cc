@@ -23,7 +23,7 @@ QuicFlowController::QuicFlowController(QuicVersion version,
         is_enabled_(true),
         is_server_(is_server),
         bytes_consumed_(0),
-        bytes_buffered_(0),
+        highest_received_byte_offset_(0),
         bytes_sent_(0),
         send_window_offset_(send_window_offset),
         receive_window_offset_(receive_window_offset),
@@ -51,29 +51,21 @@ void QuicFlowController::AddBytesConsumed(uint64 bytes_consumed) {
   DVLOG(1) << ENDPOINT << "Stream " << id_ << " consumed: " << bytes_consumed_;
 }
 
-void QuicFlowController::AddBytesBuffered(uint64 bytes_buffered) {
+bool QuicFlowController::UpdateHighestReceivedOffset(uint64 new_offset) {
   if (!IsEnabled()) {
-    return;
+    return false;
   }
 
-  bytes_buffered_ += bytes_buffered;
-  DVLOG(1) << ENDPOINT << "Stream " << id_ << " buffered: " << bytes_buffered_;
-}
-
-void QuicFlowController::RemoveBytesBuffered(uint64 bytes_buffered) {
-  if (!IsEnabled()) {
-    return;
+  // Only update if offset has increased.
+  if (new_offset <= highest_received_byte_offset_) {
+    return false;
   }
 
-  if (bytes_buffered_ < bytes_buffered) {
-    LOG(DFATAL) << "Trying to remove " << bytes_buffered << " bytes, when only "
-                << bytes_buffered_ << " bytes are buffered";
-    bytes_buffered_ = 0;
-    return;
-  }
-
-  bytes_buffered_ -= bytes_buffered;
-  DVLOG(1) << ENDPOINT << "Stream " << id_ << " buffered: " << bytes_buffered_;
+  DVLOG(1) << ENDPOINT << "Stream " << id_
+           << " highest byte offset increased from: "
+           << highest_received_byte_offset_ << " to " << new_offset;
+  highest_received_byte_offset_ = new_offset;
+  return true;
 }
 
 void QuicFlowController::AddBytesSent(uint64 bytes_sent) {
@@ -98,12 +90,12 @@ bool QuicFlowController::FlowControlViolation() {
     return false;
   }
 
-  if (receive_window_offset_ < TotalReceivedBytes()) {
-    LOG(ERROR)
-        << ENDPOINT << "Flow control violation on stream " << id_
-        << ", receive window: " << receive_window_offset_
-        << ", bytes received: " << TotalReceivedBytes();
-
+  if (highest_received_byte_offset_ > receive_window_offset_) {
+    LOG(ERROR) << ENDPOINT << "Flow control violation on stream "
+               << id_ << ", receive window offset: "
+               << receive_window_offset_
+               << ", highest received byte offset: "
+               << highest_received_byte_offset_;
     return true;
   }
   return false;
@@ -199,10 +191,6 @@ uint64 QuicFlowController::SendWindowSize() const {
     return 0;
   }
   return send_window_offset_ - bytes_sent_;
-}
-
-uint64 QuicFlowController::TotalReceivedBytes() const {
-  return bytes_consumed_ + bytes_buffered_;
 }
 
 }  // namespace net

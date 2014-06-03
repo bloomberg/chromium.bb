@@ -63,6 +63,25 @@ QuicAckFrame MakeAckFrameWithNackRanges(
   return ack;
 }
 
+SerializedPacket BuildUnsizedDataPacket(QuicFramer* framer,
+                                        const QuicPacketHeader& header,
+                                        const QuicFrames& frames) {
+  const size_t max_plaintext_size = framer->GetMaxPlaintextSize(kMaxPacketSize);
+  size_t packet_size = GetPacketHeaderSize(header);
+  for (size_t i = 0; i < frames.size(); ++i) {
+    DCHECK_LE(packet_size, max_plaintext_size);
+    bool first_frame = i == 0;
+    bool last_frame = i == frames.size() - 1;
+    const size_t frame_size = framer->GetSerializedFrameLength(
+        frames[i], max_plaintext_size - packet_size, first_frame, last_frame,
+        header.is_in_fec_group,
+        header.public_header.sequence_number_length);
+    DCHECK(frame_size);
+    packet_size += frame_size;
+  }
+  return framer->BuildDataPacket(header, frames, packet_size);
+}
+
 MockFramerVisitor::MockFramerVisitor() {
   // By default, we want to accept packets.
   ON_CALL(*this, OnProtocolVersionMismatch(_))
@@ -423,7 +442,7 @@ QuicEncryptedPacket* ConstructEncryptedPacket(
   frames.push_back(frame);
   QuicFramer framer(QuicSupportedVersions(), QuicTime::Zero(), false);
   scoped_ptr<QuicPacket> packet(
-      framer.BuildUnsizedDataPacket(header, frames).packet);
+      BuildUnsizedDataPacket(&framer, header, frames).packet);
   EXPECT_TRUE(packet != NULL);
   QuicEncryptedPacket* encrypted = framer.EncryptPacket(ENCRYPTION_NONE,
                                                         sequence_number,
@@ -500,7 +519,7 @@ static QuicPacket* ConstructPacketFromHandshakeMessage(
   QuicFrame frame(&stream_frame);
   QuicFrames frames;
   frames.push_back(frame);
-  return quic_framer.BuildUnsizedDataPacket(header, frames).packet;
+  return BuildUnsizedDataPacket(&quic_framer, header, frames).packet;
 }
 
 QuicPacket* ConstructHandshakePacket(QuicConnectionId connection_id,

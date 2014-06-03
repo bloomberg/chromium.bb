@@ -69,12 +69,12 @@ TEST_F(QuicConfigTest, ToHandshakeMessageWithPacing) {
   EXPECT_EQ(kQBIC, out[1]);
 }
 
-TEST_F(QuicConfigTest, ProcessPeerHello) {
+TEST_F(QuicConfigTest, ProcessClientHello) {
   QuicConfig client_config;
   QuicTagVector cgst;
   cgst.push_back(kINAR);
   cgst.push_back(kQBIC);
-  client_config.set_congestion_control(cgst, kQBIC);
+  client_config.set_congestion_feedback(cgst, kQBIC);
   client_config.set_idle_connection_state_lifetime(
       QuicTime::Delta::FromSeconds(2 * kDefaultTimeoutSecs),
       QuicTime::Delta::FromSeconds(kDefaultTimeoutSecs));
@@ -82,6 +82,9 @@ TEST_F(QuicConfigTest, ProcessPeerHello) {
       2 * kDefaultMaxStreamsPerConnection, kDefaultMaxStreamsPerConnection);
   client_config.SetInitialRoundTripTimeUsToSend(
       10 * base::Time::kMicrosecondsPerMillisecond);
+  QuicTagVector copt;
+  copt.push_back(kTBBR);
+  client_config.SetCongestionOptionsToSend(copt);
   CryptoHandshakeMessage msg;
   client_config.ToHandshakeMessage(&msg);
   string error_details;
@@ -89,7 +92,7 @@ TEST_F(QuicConfigTest, ProcessPeerHello) {
       config_.ProcessPeerHello(msg, CLIENT, &error_details);
   EXPECT_EQ(QUIC_NO_ERROR, error);
   EXPECT_TRUE(config_.negotiated());
-  EXPECT_EQ(kQBIC, config_.congestion_control());
+  EXPECT_EQ(kQBIC, config_.congestion_feedback());
   EXPECT_EQ(QuicTime::Delta::FromSeconds(kDefaultTimeoutSecs),
             config_.idle_connection_state_lifetime());
   EXPECT_EQ(kDefaultMaxStreamsPerConnection,
@@ -98,13 +101,16 @@ TEST_F(QuicConfigTest, ProcessPeerHello) {
   EXPECT_EQ(10 * base::Time::kMicrosecondsPerMillisecond,
             config_.ReceivedInitialRoundTripTimeUs());
   EXPECT_FALSE(config_.HasReceivedLossDetection());
+  EXPECT_TRUE(config_.HasReceivedCongestionOptions());
+  EXPECT_EQ(1u, config_.ReceivedCongestionOptions().size());
+  EXPECT_EQ(config_.ReceivedCongestionOptions()[0], kTBBR);
 }
 
 TEST_F(QuicConfigTest, ProcessServerHello) {
   QuicConfig server_config;
   QuicTagVector cgst;
   cgst.push_back(kQBIC);
-  server_config.set_congestion_control(cgst, kQBIC);
+  server_config.set_congestion_feedback(cgst, kQBIC);
   server_config.set_idle_connection_state_lifetime(
       QuicTime::Delta::FromSeconds(kDefaultTimeoutSecs / 2),
       QuicTime::Delta::FromSeconds(kDefaultTimeoutSecs / 2));
@@ -121,7 +127,7 @@ TEST_F(QuicConfigTest, ProcessServerHello) {
       config_.ProcessPeerHello(msg, SERVER, &error_details);
   EXPECT_EQ(QUIC_NO_ERROR, error);
   EXPECT_TRUE(config_.negotiated());
-  EXPECT_EQ(kQBIC, config_.congestion_control());
+  EXPECT_EQ(kQBIC, config_.congestion_feedback());
   EXPECT_EQ(QuicTime::Delta::FromSeconds(kDefaultTimeoutSecs / 2),
             config_.idle_connection_state_lifetime());
   EXPECT_EQ(kDefaultMaxStreamsPerConnection / 2,
@@ -211,7 +217,7 @@ TEST_F(QuicConfigTest, MultipleNegotiatedValuesInVectorTag) {
   QuicTagVector cgst;
   cgst.push_back(kQBIC);
   cgst.push_back(kINAR);
-  server_config.set_congestion_control(cgst, kQBIC);
+  server_config.set_congestion_feedback(cgst, kQBIC);
 
   CryptoHandshakeMessage msg;
   server_config.ToHandshakeMessage(&msg);
@@ -226,7 +232,7 @@ TEST_F(QuicConfigTest, NoOverLapInCGST) {
   server_config.SetDefaults();
   QuicTagVector cgst;
   cgst.push_back(kINAR);
-  server_config.set_congestion_control(cgst, kINAR);
+  server_config.set_congestion_feedback(cgst, kINAR);
 
   CryptoHandshakeMessage msg;
   string error_details;

@@ -949,15 +949,8 @@ void QuicConnection::MaybeSendInResponseToPacket() {
 
   // Now that we have received an ack, we might be able to send packets which
   // are queued locally, or drain streams which are blocked.
-  QuicTime::Delta delay = sent_packet_manager_.TimeUntilSend(
-      time_of_last_received_packet_, NOT_RETRANSMISSION,
-      HAS_RETRANSMITTABLE_DATA);
-  if (delay.IsZero()) {
-    send_alarm_->Cancel();
-    WriteIfNotBlocked();
-  } else if (!delay.IsInfinite()) {
-    send_alarm_->Cancel();
-    send_alarm_->Set(time_of_last_received_packet_.Add(delay));
+  if (CanWrite(HAS_RETRANSMITTABLE_DATA)) {
+    OnCanWrite();
   }
 }
 
@@ -1066,7 +1059,7 @@ const QuicConnectionStats& QuicConnection::GetStats() {
   stats_.estimated_bandwidth =
       sent_packet_manager_.BandwidthEstimate().ToBytesPerSecond();
   stats_.congestion_window = sent_packet_manager_.GetCongestionWindow();
-  stats_.max_packet_size = options()->max_packet_length;
+  stats_.max_packet_size = packet_creator_.max_packet_length();
   return stats_;
 }
 
@@ -1145,7 +1138,7 @@ void QuicConnection::OnCanWrite() {
   // or the congestion manager to prohibit sending.  If we've sent everything
   // we had queued and we're still not blocked, let the visitor know it can
   // write more.
-  if (!CanWrite(NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA)) {
+  if (!CanWrite(HAS_RETRANSMITTABLE_DATA)) {
     return;
   }
 
@@ -1159,7 +1152,7 @@ void QuicConnection::OnCanWrite() {
   // blocked or the congestion manager to prohibit sending, so check again.
   if (visitor_->WillingAndAbleToWrite() &&
       !resume_writes_alarm_->IsSet() &&
-      CanWrite(NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA)) {
+      CanWrite(HAS_RETRANSMITTABLE_DATA)) {
     // We're not write blocked, but some stream didn't write out all of its
     // bytes. Register for 'immediate' resumption so we'll keep writing after
     // other connections and events have had a chance to use the thread.
@@ -1196,8 +1189,8 @@ bool QuicConnection::ProcessValidatedPacket() {
            << time_of_last_received_packet_.ToDebuggingValue();
 
   if (is_server_ && encryption_level_ == ENCRYPTION_NONE &&
-      last_size_ > options()->max_packet_length) {
-    options()->max_packet_length = last_size_;
+      last_size_ > packet_creator_.max_packet_length()) {
+    packet_creator_.set_max_packet_length(last_size_);
   }
   return true;
 }
@@ -1230,7 +1223,7 @@ void QuicConnection::WritePendingRetransmissions() {
     const QuicSentPacketManager::PendingRetransmission pending =
         sent_packet_manager_.NextPendingRetransmission();
     if (GetPacketType(&pending.retransmittable_frames) == NORMAL &&
-        !CanWrite(pending.transmission_type, HAS_RETRANSMITTABLE_DATA)) {
+        !CanWrite(HAS_RETRANSMITTABLE_DATA)) {
       break;
     }
 
@@ -1288,35 +1281,25 @@ bool QuicConnection::ShouldGeneratePacket(
     return true;
   }
 
-  return CanWrite(transmission_type, retransmittable);
+  return CanWrite(retransmittable);
 }
 
-bool QuicConnection::CanWrite(TransmissionType transmission_type,
-                              HasRetransmittableData retransmittable) {
+bool QuicConnection::CanWrite(HasRetransmittableData retransmittable) {
   if (writer_->IsWriteBlocked()) {
     visitor_->OnWriteBlocked();
     return false;
   }
 
-  // TODO(rch): consider removing this check so that if an ACK comes in
-  // before the alarm goes it, we might be able send out a packet.
-  // This check assumes that if the send alarm is set, it applies equally to all
-  // types of transmissions.
-  if (send_alarm_->IsSet()) {
-    DVLOG(1) << "Send alarm set.  Not sending.";
-    return false;
-  }
-
+  send_alarm_->Cancel();
   QuicTime now = clock_->Now();
   QuicTime::Delta delay = sent_packet_manager_.TimeUntilSend(
-      now, transmission_type, retransmittable);
+      now, retransmittable);
   if (delay.IsInfinite()) {
     return false;
   }
 
   // If the scheduler requires a delay, then we can not send this packet now.
   if (!delay.IsZero()) {
-    send_alarm_->Cancel();
     send_alarm_->Set(now.Add(delay));
     DVLOG(1) << "Delaying sending.";
     return false;
@@ -1339,8 +1322,7 @@ bool QuicConnection::WritePacket(QueuedPacket packet) {
   // This ensures packets are sent in sequence number order.
   // TODO(ianswett): The congestion control should have been consulted before
   // serializing the packet, so this could be turned into a LOG_IF(DFATAL).
-  if (packet.type == NORMAL && !CanWrite(packet.transmission_type,
-                                         packet.retransmittable)) {
+  if (packet.type == NORMAL && !CanWrite(packet.retransmittable)) {
     return false;
   }
 
@@ -1375,9 +1357,10 @@ bool QuicConnection::WritePacket(QueuedPacket packet) {
     encrypted_deleter.reset(encrypted);
   }
 
-  LOG_IF(DFATAL, encrypted->length() > options()->max_packet_length)
+  LOG_IF(DFATAL, encrypted->length() >
+                 packet_creator_.max_packet_length())
       << "Writing an encrypted packet larger than max_packet_length:"
-      << options()->max_packet_length << " encrypted length: "
+      << packet_creator_.max_packet_length() << " encrypted length: "
       << encrypted->length();
   DVLOG(1) << ENDPOINT << "Sending packet " << sequence_number
            << " : " << (packet.packet->is_fec_packet() ? "FEC " :

@@ -10,6 +10,7 @@ PacingSender::PacingSender(SendAlgorithmInterface* sender,
                            QuicTime::Delta alarm_granularity)
     : sender_(sender),
       alarm_granularity_(alarm_granularity),
+      last_delayed_packet_sent_time_(QuicTime::Zero()),
       next_packet_send_time_(QuicTime::Zero()),
       was_last_send_delayed_(false),
       has_valid_rtt_(false) {
@@ -54,7 +55,29 @@ bool PacingSender::OnPacketSent(
     const float kPacingAggression = 2;
     QuicTime::Delta delay =
         BandwidthEstimate().Scale(kPacingAggression).TransferTime(bytes);
-    next_packet_send_time_ = next_packet_send_time_.Add(delay);
+    // If the last send was delayed, and the alarm took a long time to get
+    // invoked, allow the connection to make up for lost time.
+    if (was_last_send_delayed_) {
+      next_packet_send_time_ = next_packet_send_time_.Add(delay);
+      // As long as we're making up time and not application limited,
+      // continue to consider the packets delayed.
+      // The send was application limited if it takes longer than the
+      // pacing delay between sent packets.
+      const bool application_limited =
+          last_delayed_packet_sent_time_.IsInitialized() &&
+          sent_time > last_delayed_packet_sent_time_.Add(delay);
+      const bool making_up_for_lost_time = next_packet_send_time_ > sent_time;
+      if (making_up_for_lost_time || application_limited) {
+        was_last_send_delayed_ = false;
+        last_delayed_packet_sent_time_ = QuicTime::Zero();
+      } else {
+        last_delayed_packet_sent_time_ = sent_time;
+      }
+    } else {
+      next_packet_send_time_ =
+          QuicTime::Max(next_packet_send_time_.Add(delay),
+                        sent_time.Add(delay).Subtract(alarm_granularity_));
+    }
   }
   return sender_->OnPacketSent(sent_time, bytes_in_flight, sequence_number,
                                bytes, has_retransmittable_data);
@@ -87,25 +110,14 @@ QuicTime::Delta PacingSender::TimeUntilSend(
     return QuicTime::Delta::Zero();
   }
 
-  if (!was_last_send_delayed_ &&
-      (!next_packet_send_time_.IsInitialized() ||
-       now > next_packet_send_time_.Add(alarm_granularity_))) {
-    // An alarm did not go off late, instead the application is "slow"
-    // delivering data.  In this case, we restrict the amount of lost time
-    // that we can make up for.
-    next_packet_send_time_ = now.Subtract(alarm_granularity_);
-  }
-
-  // If the end of the epoch is far enough in the future, delay the send.
+  // If the next send time is within the alarm granularity, send immediately.
   if (next_packet_send_time_ > now.Add(alarm_granularity_)) {
-    was_last_send_delayed_ = true;
     DVLOG(1) << "Delaying packet: "
              << next_packet_send_time_.Subtract(now).ToMicroseconds();
+    was_last_send_delayed_ = true;
     return next_packet_send_time_.Subtract(now);
   }
 
-  // Sent it immediately.  The epoch end will be adjusted in OnPacketSent.
-  was_last_send_delayed_ = false;
   DVLOG(1) << "Sending packet now";
   return QuicTime::Delta::Zero();
 }

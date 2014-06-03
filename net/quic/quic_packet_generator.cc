@@ -16,7 +16,7 @@ namespace net {
 class QuicAckNotifier;
 
 QuicPacketGenerator::QuicPacketGenerator(DelegateInterface* delegate,
-                                         DebugDelegateInterface* debug_delegate,
+                                         DebugDelegate* debug_delegate,
                                          QuicPacketCreator* creator)
     : delegate_(delegate),
       debug_delegate_(debug_delegate),

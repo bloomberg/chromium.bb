@@ -55,8 +55,10 @@ class NET_EXPORT_PRIVATE PacingSender : public SendAlgorithmInterface {
  private:
   scoped_ptr<SendAlgorithmInterface> sender_;  // Underlying sender.
   QuicTime::Delta alarm_granularity_;
+  // Send time of the last packet considered delayed.
+  QuicTime last_delayed_packet_sent_time_;
   QuicTime next_packet_send_time_;  // When can the next packet be sent.
-  bool was_last_send_delayed_;  // True when the last send was delayed.
+  mutable bool was_last_send_delayed_;  // True when the last send was delayed.
   bool has_valid_rtt_;  // True if we have at least one RTT update.
 
   DISALLOW_COPY_AND_ASSIGN(PacingSender);

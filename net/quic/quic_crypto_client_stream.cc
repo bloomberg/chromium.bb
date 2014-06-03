@@ -132,7 +132,7 @@ void QuicCryptoClientStream::DoHandshakeLoop(
           // Pad the inchoate client hello to fill up a packet.
           const size_t kFramingOverhead = 50;  // A rough estimate.
           const size_t max_packet_size =
-              session()->connection()->options()->max_packet_length;
+              session()->connection()->max_packet_length();
           if (max_packet_size <= kFramingOverhead) {
             DLOG(DFATAL) << "max_packet_length (" << max_packet_size
                          << ") has no room for framing overhead.";

@@ -151,7 +151,11 @@ bool ReliableQuicStream::OnStreamFrame(const QuicStreamFrame& frame) {
   }
 
   // This count include duplicate data received.
-  stream_bytes_read_ += frame.data.TotalBufferSize();
+  size_t frame_payload_size = frame.data.TotalBufferSize();
+  stream_bytes_read_ += frame_payload_size;
+
+  // Flow control is interested in tracking highest received offset.
+  MaybeIncreaseHighestReceivedOffset(frame.offset + frame_payload_size);
 
   bool accepted = sequencer_.OnStreamFrame(frame);
 
@@ -160,14 +164,8 @@ bool ReliableQuicStream::OnStreamFrame(const QuicStreamFrame& frame) {
     session_->connection()->SendConnectionClose(QUIC_FLOW_CONTROL_ERROR);
     return false;
   }
-  MaybeSendWindowUpdate();
 
   return accepted;
-}
-
-void ReliableQuicStream::MaybeSendWindowUpdate() {
-  flow_controller_.MaybeSendWindowUpdate(session()->connection());
-  connection_flow_controller_->MaybeSendWindowUpdate(session()->connection());
 }
 
 int ReliableQuicStream::num_frames_received() const {
@@ -179,6 +177,8 @@ int ReliableQuicStream::num_duplicate_frames_received() const {
 }
 
 void ReliableQuicStream::OnStreamReset(const QuicRstStreamFrame& frame) {
+  MaybeIncreaseHighestReceivedOffset(frame.byte_offset);
+
   stream_error_ = frame.error_code;
   CloseWriteSide();
   CloseReadSide();
@@ -436,17 +436,18 @@ void ReliableQuicStream::OnWindowUpdateFrame(
   }
 }
 
-void ReliableQuicStream::AddBytesBuffered(uint64 bytes) {
+void ReliableQuicStream::MaybeIncreaseHighestReceivedOffset(uint64 new_offset) {
   if (flow_controller_.IsEnabled()) {
-    flow_controller_.AddBytesBuffered(bytes);
-    connection_flow_controller_->AddBytesBuffered(bytes);
-  }
-}
-
-void ReliableQuicStream::RemoveBytesBuffered(uint64 bytes) {
-  if (flow_controller_.IsEnabled()) {
-    flow_controller_.RemoveBytesBuffered(bytes);
-    connection_flow_controller_->RemoveBytesBuffered(bytes);
+    uint64 increment =
+        new_offset - flow_controller_.highest_received_byte_offset();
+    if (flow_controller_.UpdateHighestReceivedOffset(new_offset)) {
+      // If |new_offset| increased the stream flow controller's highest received
+      // offset, then we need to increase the connection flow controller's value
+      // by the incremental difference.
+      connection_flow_controller_->UpdateHighestReceivedOffset(
+          connection_flow_controller_->highest_received_byte_offset() +
+          increment);
+    }
   }
 }
 
@@ -460,7 +461,10 @@ void ReliableQuicStream::AddBytesSent(uint64 bytes) {
 void ReliableQuicStream::AddBytesConsumed(uint64 bytes) {
   if (flow_controller_.IsEnabled()) {
     flow_controller_.AddBytesConsumed(bytes);
+    flow_controller_.MaybeSendWindowUpdate(session()->connection());
+
     connection_flow_controller_->AddBytesConsumed(bytes);
+    connection_flow_controller_->MaybeSendWindowUpdate(session()->connection());
   }
 }
 
