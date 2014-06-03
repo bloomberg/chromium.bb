@@ -111,7 +111,6 @@ public:
         , m_size(size)
     {
         ASSERT(size > 0);
-        __lsan_register_root_region(base, size);
     }
 
     bool contains(Address addr) const
@@ -134,7 +133,6 @@ public:
         bool success = VirtualFree(m_base, 0, MEM_RELEASE);
         RELEASE_ASSERT(success);
 #endif
-        __lsan_unregister_root_region(m_base, m_size);
     }
 
     WARN_UNUSED_RETURN bool commit()
@@ -167,6 +165,7 @@ public:
     }
 
     Address base() const { return m_base; }
+    size_t size() const { return m_size; }
 
 private:
     Address m_base;
@@ -186,7 +185,11 @@ private:
 // Guard pages are created before and after the writable memory.
 class PageMemory {
 public:
-    ~PageMemory() { m_reserved.release(); }
+    ~PageMemory()
+    {
+        __lsan_unregister_root_region(m_writable.base(), m_writable.size());
+        m_reserved.release();
+    }
 
     bool commit() WARN_UNUSED_RETURN { return m_writable.commit(); }
     void decommit() { m_writable.decommit(); }
@@ -287,19 +290,13 @@ private:
         : m_reserved(reserved)
         , m_writable(writable)
     {
-        // This annotation is for letting the LeakSanitizer ignore PageMemory objects.
-        //
-        // - The LeakSanitizer runs before the shutdown sequence and reports unreachable memory blocks.
-        // - The LeakSanitizer only recognizes memory blocks allocated through malloc/new,
-        //   and we need special handling for mapped regions.
-        // - The PageMemory object is only referenced by a HeapPage<Header> object, which is
-        //   located inside the mapped region, which is not released until the shutdown sequence.
-        //
-        // Given the above, we need to explicitly annotate that the LeakSanitizer should ignore
-        // PageMemory objects.
-        WTF_ANNOTATE_LEAKING_OBJECT_PTR(this);
-
         ASSERT(reserved.contains(writable));
+
+        // Register the writable area of the memory as part of the LSan root set.
+        // Only the writable area is mapped and can contain C++ objects. Those
+        // C++ objects can contain pointers to objects outside of the heap and
+        // should therefore be part of the LSan root set.
+        __lsan_register_root_region(m_writable.base(), m_writable.size());
     }
 
     MemoryRegion m_reserved;
