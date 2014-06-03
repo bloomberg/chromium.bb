@@ -157,8 +157,16 @@ std::string GetDeviceIdentifier(const char* salt) {
     [defaults synchronize];
   }
 
-  NSData* hash_data = [[NSString stringWithFormat:@"%@%s", client_id,
-      salt ? salt : kDefaultSalt] dataUsingEncoding:NSUTF8StringEncoding];
+  return GetSaltedString([client_id UTF8String], salt ? salt : kDefaultSalt);
+}
+
+std::string GetSaltedString(const std::string& in_string,
+                            const std::string& salt) {
+  DCHECK(in_string.length());
+  DCHECK(salt.length());
+  NSData* hash_data =
+      [[NSString stringWithFormat:@"%s%s", in_string.c_str(), salt.c_str()]
+          dataUsingEncoding:NSUTF8StringEncoding];
 
   unsigned char hash[CC_SHA256_DIGEST_LENGTH];
   CC_SHA256([hash_data bytes], [hash_data length], hash);
