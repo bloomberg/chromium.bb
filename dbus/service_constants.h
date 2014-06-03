@@ -1117,10 +1117,17 @@ const char kBluetoothGattCharacteristicServiceName[] = "org.bluez";
 const char kBluetoothGattCharacteristicInterface[] =
     "org.bluez.GattCharacteristic1";
 
+// Bluetooth GATT Characteristic methods.
+const char kReadValue[] = "ReadValue";
+const char kWriteValue[] = "WriteValue";
+
+// Bluetooth GATT Characteristic signals.
+const char kValueUpdatedSignal[] = "ValueUpdated";
+
 // Bluetooth GATT Characteristic properties.
 const char kUUIDProperty[] = "UUID";
 const char kServiceProperty[] = "Service";
-const char kValueProperty[] = "Value";
+const char kValueProperty[] = "Value";  // TODO(armansito): Remove
 const char kFlagsProperty[] = "Flags";
 }  // namespace bluetooth_gatt_characteristic
 
@@ -1130,10 +1137,14 @@ namespace bluetooth_gatt_descriptor {
 const char kBluetoothGattDescriptorServiceName[] = "org.bluez";
 const char kBluetoothGattDescriptorInterface[] = "org.bluez.GattDescriptor1";
 
+// Bluetooth GATT Descriptor methods.
+const char kReadValue[] = "ReadValue";
+const char kWriteValue[] = "WriteValue";
+
 // Bluetooth GATT Descriptor properties.
 const char kUUIDProperty[] = "UUID";
 const char kCharacteristicProperty[] = "Characteristic";
-const char kValueProperty[] = "Value";
+const char kValueProperty[] = "Value";  // TODO(armansito): Remove
 }  // namespace bluetooth_gatt_descriptor
 
 namespace bluetooth_gatt_manager {
@@ -1159,6 +1170,8 @@ const char kBluetoothGattServiceInterface[] = "org.bluez.GattService1";
 
 // Bluetooth GATT Service properties.
 const char kUUIDProperty[] = "UUID";
+const char kDeviceProperty[] = "Device";
+const char kPrimaryProperty[] = "Primary";
 const char kIncludesProperty[] = "Includes";
 }  // namespace bluetooth_gatt_service
 
