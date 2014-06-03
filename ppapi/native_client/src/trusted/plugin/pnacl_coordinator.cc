@@ -256,11 +256,12 @@ void PnaclCoordinator::TranslateFinished(int32_t pp_error) {
   // that were delayed (see the delay inserted in BitcodeGotCompiled).
   if (ExpectedProgressKnown()) {
     pexe_bytes_compiled_ = expected_pexe_size_;
-    plugin_->EnqueueProgressEvent(PP_NACL_EVENT_PROGRESS,
-                                  pexe_url_,
-                                  plugin::Plugin::LENGTH_IS_COMPUTABLE,
-                                  pexe_bytes_compiled_,
-                                  expected_pexe_size_);
+    GetNaClInterface()->DispatchEvent(plugin_->pp_instance(),
+                                      PP_NACL_EVENT_PROGRESS,
+                                      pexe_url_.c_str(),
+                                      PP_TRUE,
+                                      pexe_bytes_compiled_,
+                                      expected_pexe_size_);
   }
 
   // If there are no errors, report stats from this thread (the main thread).
@@ -549,18 +550,20 @@ void PnaclCoordinator::BitcodeGotCompiled(int32_t pp_error,
   // that bytes were sent to the compiler.
   if (ExpectedProgressKnown()) {
     if (!ShouldDelayProgressEvent()) {
-      plugin_->EnqueueProgressEvent(PP_NACL_EVENT_PROGRESS,
-                                    pexe_url_,
-                                    plugin::Plugin::LENGTH_IS_COMPUTABLE,
-                                    pexe_bytes_compiled_,
-                                    expected_pexe_size_);
+      GetNaClInterface()->DispatchEvent(plugin_->pp_instance(),
+                                        PP_NACL_EVENT_PROGRESS,
+                                        pexe_url_.c_str(),
+                                        PP_TRUE,
+                                        pexe_bytes_compiled_,
+                                        expected_pexe_size_);
     }
   } else {
-    plugin_->EnqueueProgressEvent(PP_NACL_EVENT_PROGRESS,
-                                  pexe_url_,
-                                  plugin::Plugin::LENGTH_IS_NOT_COMPUTABLE,
-                                  pexe_bytes_compiled_,
-                                  expected_pexe_size_);
+    GetNaClInterface()->DispatchEvent(plugin_->pp_instance(),
+                                      PP_NACL_EVENT_PROGRESS,
+                                      pexe_url_.c_str(),
+                                      PP_FALSE,
+                                      pexe_bytes_compiled_,
+                                      expected_pexe_size_);
   }
 }
 

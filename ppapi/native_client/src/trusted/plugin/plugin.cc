@@ -559,29 +559,6 @@ void Plugin::ReportSelLdrLoadStatus(int status) {
   HistogramEnumerateSelLdrLoadStatus(static_cast<NaClErrorCode>(status));
 }
 
-void Plugin::EnqueueProgressEvent(PP_NaClEventType event_type,
-                                  const nacl::string& url,
-                                  LengthComputable length_computable,
-                                  uint64_t loaded_bytes,
-                                  uint64_t total_bytes) {
-  PLUGIN_PRINTF(("Plugin::EnqueueProgressEvent ("
-                 "event_type='%d', url='%s', length_computable=%d, "
-                 "loaded=%" NACL_PRIu64 ", total=%" NACL_PRIu64 ")\n",
-                 static_cast<int>(event_type),
-                 url.c_str(),
-                 static_cast<int>(length_computable),
-                 loaded_bytes,
-                 total_bytes));
-
-  nacl_interface_->DispatchEvent(
-      pp_instance(),
-      event_type,
-      url.c_str(),
-      length_computable == LENGTH_IS_COMPUTABLE ? PP_TRUE : PP_FALSE,
-      loaded_bytes,
-      total_bytes);
-}
-
 bool Plugin::DocumentCanRequest(const std::string& url) {
   CHECK(pp::Module::Get()->core()->IsMainThread());
   CHECK(pp::URLUtil_Dev::Get() != NULL);
