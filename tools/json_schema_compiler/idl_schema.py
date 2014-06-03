@@ -469,8 +469,14 @@ def Main():
   Dump a json serialization of parse result for the IDL files whose names
   were passed in on the command line.
   '''
-  for filename in sys.argv[1:]:
-    schema = Load(filename)
+  if len(sys.argv) > 1:
+    for filename in sys.argv[1:]:
+      schema = Load(filename)
+      print json.dumps(schema, indent=2)
+  else:
+    contents = sys.stdin.read()
+    idl = idl_parser.IDLParser().ParseData(contents, '<stdin>')
+    schema = IDLSchema(idl).process()
     print json.dumps(schema, indent=2)
 
 

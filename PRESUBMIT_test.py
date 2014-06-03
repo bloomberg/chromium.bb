@@ -3,22 +3,42 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import glob
+import json
 import os
 import re
+import subprocess
+import sys
 import unittest
 
 import PRESUBMIT
 
 
+_TEST_DATA_DIR = 'base/test/data/presubmit'
+
+
 class MockInputApi(object):
   def __init__(self):
+    self.json = json
     self.re = re
     self.os_path = os.path
+    self.python_executable = sys.executable
+    self.subprocess = subprocess
     self.files = []
     self.is_committing = False
 
   def AffectedFiles(self):
     return self.files
+
+  def PresubmitLocalPath(self):
+    return os.path.dirname(__file__)
+
+  def ReadFile(self, filename, mode='rU'):
+    for file_ in self.files:
+      if file_.LocalPath() == filename:
+        return '\n'.join(file_.NewContents())
+    # Otherwise, file is not in our mock API.
+    raise IOError, "No such file or directory: '%s'" % filename
 
 
 class MockOutputApi(object):
@@ -429,6 +449,202 @@ class CheckAddedDepsHaveTetsApprovalsTest(unittest.TestCase):
       'third_party/lss/linux_syscall_support.h',
     ])
     self.assertEqual(expected, files_to_check);
+
+
+class JSONParsingTest(unittest.TestCase):
+  def testSuccess(self):
+    input_api = MockInputApi()
+    filename = 'valid_json.json'
+    contents = ['// This is a comment.',
+                '{',
+                '  "key1": ["value1", "value2"],',
+                '  "key2": 3  // This is an inline comment.',
+                '}'
+                ]
+    input_api.files = [MockFile(filename, contents)]
+    self.assertEqual(None,
+                     PRESUBMIT._GetJSONParseError(input_api, filename))
+
+  def testFailure(self):
+    input_api = MockInputApi()
+    test_data = [
+      ('invalid_json_1.json',
+       ['{ x }'],
+       'Expecting property name: line 1 column 2 (char 2)'),
+      ('invalid_json_2.json',
+       ['// Hello world!',
+        '{ "hello": "world }'],
+       'Unterminated string starting at: line 2 column 12 (char 12)'),
+      ('invalid_json_3.json',
+       ['{ "a": "b", "c": "d", }'],
+       'Expecting property name: line 1 column 22 (char 22)'),
+      ('invalid_json_4.json',
+       ['{ "a": "b" "c": "d" }'],
+       'Expecting , delimiter: line 1 column 11 (char 11)'),
+      ]
+
+    input_api.files = [MockFile(filename, contents)
+                       for (filename, contents, _) in test_data]
+
+    for (filename, _, expected_error) in test_data:
+      actual_error = PRESUBMIT._GetJSONParseError(input_api, filename)
+      self.assertEqual(expected_error, str(actual_error))
+
+  def testNoEatComments(self):
+    input_api = MockInputApi()
+    file_with_comments = 'file_with_comments.json'
+    contents_with_comments = ['// This is a comment.',
+                              '{',
+                              '  "key1": ["value1", "value2"],',
+                              '  "key2": 3  // This is an inline comment.',
+                              '}'
+                              ]
+    file_without_comments = 'file_without_comments.json'
+    contents_without_comments = ['{',
+                                 '  "key1": ["value1", "value2"],',
+                                 '  "key2": 3',
+                                 '}'
+                                 ]
+    input_api.files = [MockFile(file_with_comments, contents_with_comments),
+                       MockFile(file_without_comments,
+                                contents_without_comments)]
+
+    self.assertEqual('No JSON object could be decoded',
+                     str(PRESUBMIT._GetJSONParseError(input_api,
+                                                      file_with_comments,
+                                                      eat_comments=False)))
+    self.assertEqual(None,
+                     PRESUBMIT._GetJSONParseError(input_api,
+                                                  file_without_comments,
+                                                  eat_comments=False))
+
+
+class IDLParsingTest(unittest.TestCase):
+  def testSuccess(self):
+    input_api = MockInputApi()
+    filename = 'valid_idl_basics.idl'
+    contents = ['// Tests a valid IDL file.',
+                'namespace idl_basics {',
+                '  enum EnumType {',
+                '    name1,',
+                '    name2',
+                '  };',
+                '',
+                '  dictionary MyType1 {',
+                '    DOMString a;',
+                '  };',
+                '',
+                '  callback Callback1 = void();',
+                '  callback Callback2 = void(long x);',
+                '  callback Callback3 = void(MyType1 arg);',
+                '  callback Callback4 = void(EnumType type);',
+                '',
+                '  interface Functions {',
+                '    static void function1();',
+                '    static void function2(long x);',
+                '    static void function3(MyType1 arg);',
+                '    static void function4(Callback1 cb);',
+                '    static void function5(Callback2 cb);',
+                '    static void function6(Callback3 cb);',
+                '    static void function7(Callback4 cb);',
+                '  };',
+                '',
+                '  interface Events {',
+                '    static void onFoo1();',
+                '    static void onFoo2(long x);',
+                '    static void onFoo2(MyType1 arg);',
+                '    static void onFoo3(EnumType type);',
+                '  };',
+                '};'
+                ]
+    input_api.files = [MockFile(filename, contents)]
+    self.assertEqual(None,
+                     PRESUBMIT._GetIDLParseError(input_api, filename))
+
+  def testFailure(self):
+    input_api = MockInputApi()
+    test_data = [
+      ('invalid_idl_1.idl',
+       ['//',
+        'namespace test {',
+        '  dictionary {',
+        '    DOMString s;',
+        '  };',
+        '};'],
+       'Unexpected "{" after keyword "dictionary".\n'),
+      # TODO(yoz): Disabled because it causes the IDL parser to hang.
+      # See crbug.com/363830.
+      # ('invalid_idl_2.idl',
+      #  (['namespace test {',
+      #    '  dictionary MissingSemicolon {',
+      #    '    DOMString a',
+      #    '    DOMString b;',
+      #    '  };',
+      #    '};'],
+      #   'Unexpected symbol DOMString after symbol a.'),
+      ('invalid_idl_3.idl',
+       ['//',
+        'namespace test {',
+        '  enum MissingComma {',
+        '    name1',
+        '    name2',
+        '  };',
+        '};'],
+       'Unexpected symbol name2 after symbol name1.'),
+      ('invalid_idl_4.idl',
+       ['//',
+        'namespace test {',
+        '  enum TrailingComma {',
+        '    name1,',
+        '    name2,',
+        '  };',
+        '};'],
+       'Trailing comma in block.'),
+      ('invalid_idl_5.idl',
+       ['//',
+        'namespace test {',
+        '  callback Callback1 = void(;',
+        '};'],
+       'Unexpected ";" after "(".'),
+      ('invalid_idl_6.idl',
+       ['//',
+        'namespace test {',
+        '  callback Callback1 = void(long );',
+        '};'],
+       'Unexpected ")" after symbol long.'),
+      ('invalid_idl_7.idl',
+       ['//',
+        'namespace test {',
+        '  interace Events {',
+        '    static void onFoo1();',
+        '  };',
+        '};'],
+       'Unexpected symbol Events after symbol interace.'),
+      ('invalid_idl_8.idl',
+       ['//',
+        'namespace test {',
+        '  interface NotEvent {',
+        '    static void onFoo1();',
+        '  };',
+        '};'],
+       'Did not process Interface Interface(NotEvent)'),
+      ('invalid_idl_9.idl',
+       ['//',
+        'namespace test {',
+        '  interface {',
+        '    static void function1();',
+        '  };',
+        '};'],
+       'Interface missing name.'),
+      ]
+
+    input_api.files = [MockFile(filename, contents)
+                       for (filename, contents, _) in test_data]
+
+    for (filename, _, expected_error) in test_data:
+      actual_error = PRESUBMIT._GetIDLParseError(input_api, filename)
+      self.assertTrue(expected_error in str(actual_error),
+                      "'%s' not found in '%s'" % (expected_error, actual_error))
 
 
 if __name__ == '__main__':

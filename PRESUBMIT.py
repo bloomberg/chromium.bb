@@ -1063,6 +1063,106 @@ def _CheckUserActionUpdate(input_api, output_api):
   return []
 
 
+def _GetJSONParseError(input_api, filename, eat_comments=True):
+  try:
+    contents = input_api.ReadFile(filename)
+    if eat_comments:
+      json_comment_eater = input_api.os_path.join(
+          input_api.PresubmitLocalPath(),
+          'tools', 'json_comment_eater', 'json_comment_eater.py')
+      process = input_api.subprocess.Popen(
+          [input_api.python_executable, json_comment_eater],
+          stdin=input_api.subprocess.PIPE,
+          stdout=input_api.subprocess.PIPE,
+          universal_newlines=True)
+      (contents, _) = process.communicate(input=contents)
+
+    input_api.json.loads(contents)
+  except ValueError as e:
+    return e
+  return None
+
+
+def _GetIDLParseError(input_api, filename):
+  try:
+    contents = input_api.ReadFile(filename)
+    idl_schema = input_api.os_path.join(
+        input_api.PresubmitLocalPath(),
+        'tools', 'json_schema_compiler', 'idl_schema.py')
+    process = input_api.subprocess.Popen(
+        [input_api.python_executable, idl_schema],
+        stdin=input_api.subprocess.PIPE,
+        stdout=input_api.subprocess.PIPE,
+        stderr=input_api.subprocess.PIPE,
+        universal_newlines=True)
+    (_, error) = process.communicate(input=contents)
+    return error or None
+  except ValueError as e:
+    return e
+
+
+def _CheckParseErrors(input_api, output_api):
+  """Check that IDL and JSON files do not contain syntax errors."""
+  actions = {
+    '.idl': _GetIDLParseError,
+    '.json': _GetJSONParseError,
+  }
+  # These paths contain test data and other known invalid JSON files.
+  excluded_patterns = [
+    'test/data/',
+    '^components/policy/resources/policy_templates.json$',
+  ]
+  # Most JSON files are preprocessed and support comments, but these do not.
+  json_no_comments_patterns = [
+    '^testing/',
+  ]
+  # Only run IDL checker on files in these directories.
+  idl_included_patterns = [
+    '^chrome/common/extensions/api/',
+    '^extensions/common/api/',
+  ]
+
+  def get_action(affected_file):
+    filename = affected_file.LocalPath()
+    return actions.get(input_api.os_path.splitext(filename)[1])
+
+  def MatchesFile(patterns, path):
+    for pattern in patterns:
+      if input_api.re.search(pattern, path):
+        return True
+    return False
+
+  def FilterFile(affected_file):
+    action = get_action(affected_file)
+    if not action:
+      return False
+    path = affected_file.LocalPath()
+
+    if MatchesFile(excluded_patterns, path):
+      return False
+
+    if (action == _GetIDLParseError and
+        not MatchesFile(idl_included_patterns, path)):
+      return False
+    return True
+
+  results = []
+  for affected_file in input_api.AffectedFiles(
+      file_filter=FilterFile, include_deletes=False):
+    action = get_action(affected_file)
+    kwargs = {}
+    if (action == _GetJSONParseError and
+        MatchesFile(json_no_comments_patterns, affected_file.LocalPath())):
+      kwargs['eat_comments'] = False
+    parse_error = action(input_api,
+                         affected_file.AbsoluteLocalPath(),
+                         **kwargs)
+    if parse_error:
+      results.append(output_api.PresubmitError('%s could not be parsed: %s' %
+          (affected_file.LocalPath(), parse_error)))
+  return results
+
+
 def _CheckJavaStyle(input_api, output_api):
   """Runs checkstyle on changed java files and returns errors if any exist."""
   original_sys_path = sys.path
@@ -1162,6 +1262,7 @@ def _CommonChecks(input_api, output_api):
   results.extend(_CheckCygwinShell(input_api, output_api))
   results.extend(_CheckUserActionUpdate(input_api, output_api))
   results.extend(_CheckNoDeprecatedCSS(input_api, output_api))
+  results.extend(_CheckParseErrors(input_api, output_api))
 
   if any('PRESUBMIT.py' == f.LocalPath() for f in input_api.AffectedFiles()):
     results.extend(input_api.canned_checks.RunUnitTestsInDirectory(
