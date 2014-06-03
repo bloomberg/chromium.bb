@@ -584,9 +584,13 @@ IN_PROC_BROWSER_TEST_F(ExtensionToolbarModelTest, HighlightModeAdd) {
   EXPECT_EQ(id_c, ExtensionAt(2)->id());
 }
 
-// Test is flaky (see crbug.com/379170), but currently enabled to gather traces.
-// If it fails, ping Finnur.
-IN_PROC_BROWSER_TEST_F(ExtensionToolbarModelTest, SizeAfterPrefChange) {
+// Test is flaky on Linus and ChromeOS, see crbug.com/379170.
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+#define MAYBE_SizeAfterPrefChange DISABLED_SizeAfterPrefChange
+#else
+#define MAYBE_SizeAfterPrefChange SizeAfterPrefChange
+#endif
+IN_PROC_BROWSER_TEST_F(ExtensionToolbarModelTest, MAYBE_SizeAfterPrefChange) {
   // Load two extensions with browser action.
   base::FilePath extension_a_path(test_data_dir_.AppendASCII("api_test")
                                                 .AppendASCII("browser_action")
