@@ -86,13 +86,6 @@ void CSSFontSelector::dispatchInvalidationCallbacks()
     copyToVector(m_clients, clients);
     for (size_t i = 0; i < clients.size(); ++i)
         clients[i]->fontsNeedUpdate(this);
-    // FIXME: we sometimes have no StyleResolver when a font is loaded.
-    // It would be better to make StyleEngine FontSelectorClient instead of
-    // StyleResolver.
-    // FIXME: crbug.com/366533: CSSFontSelector lives longer than the life of
-    // the Document. We need document() here.
-    if (clients.size() == 0 && document() && document()->isActive())
-        document()->setNeedsStyleRecalc(SubtreeStyleChange);
 }
 
 void CSSFontSelector::fontFaceInvalidated()
