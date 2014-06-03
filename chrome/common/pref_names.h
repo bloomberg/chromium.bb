@@ -716,6 +716,7 @@ extern const char kDeviceRegistered[];
 extern const char kUsedPolicyCertificates[];
 extern const char kServerBackedDeviceState[];
 extern const char kCustomizationDefaultWallpaperURL[];
+extern const char kLogoutStartedLast[];
 #endif
 
 extern const char kClearPluginLSODataEnabled[];

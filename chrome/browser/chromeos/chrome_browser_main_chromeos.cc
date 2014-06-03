@@ -613,6 +613,8 @@ void ChromeBrowserMainPartsChromeos::PostProfileInit() {
   // -- This used to be in ChromeBrowserMainParts::PreMainMessageLoopRun()
   // -- just after CreateProfile().
 
+  BootTimesLoader::Get()->OnChromeProcessStart();
+
   // Restarting Chrome inside existing user session. Possible cases:
   // 1. Chrome is restarted after crash.
   // 2. Chrome is started in browser_tests skipping the login flow

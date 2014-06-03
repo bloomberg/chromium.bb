@@ -83,6 +83,7 @@ void Preferences::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(prefs::kOwnerPrimaryMouseButtonRight, false);
   registry->RegisterBooleanPref(prefs::kOwnerTapToClickEnabled, true);
   registry->RegisterBooleanPref(prefs::kVirtualKeyboardEnabled, false);
+  registry->RegisterStringPref(prefs::kLogoutStartedLast, std::string());
 }
 
 // static

@@ -2074,6 +2074,10 @@ const char kServerBackedDeviceState[] = "server_backed_device_state";
 // since wallpaper was cached.
 const char kCustomizationDefaultWallpaperURL[] =
     "customization.default_wallpaper_url";
+
+// System uptime, when last logout started.
+// This is saved to file and cleared after chrome process starts.
+const char kLogoutStartedLast[] = "chromeos.logout-started";
 #endif
 
 // Whether there is a Flash version installed that supports clearing LSO data.

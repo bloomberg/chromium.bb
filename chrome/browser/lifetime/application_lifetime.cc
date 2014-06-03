@@ -143,13 +143,12 @@ void AttemptUserExit() {
 #if defined(OS_CHROMEOS)
   StartShutdownTracing();
   chromeos::BootTimesLoader::Get()->AddLogoutTimeMarker("LogoutStarted", false);
-  // Write /tmp/uptime-logout-started as well.
-  const char kLogoutStarted[] = "logout-started";
-  chromeos::BootTimesLoader::Get()->RecordCurrentStats(kLogoutStarted);
 
-  // Login screen should show up in owner's locale.
   PrefService* state = g_browser_process->local_state();
   if (state) {
+    chromeos::BootTimesLoader::Get()->OnLogoutStarted(state);
+
+    // Login screen should show up in owner's locale.
     std::string owner_locale = state->GetString(prefs::kOwnerLocale);
     if (!owner_locale.empty() &&
         state->GetString(prefs::kApplicationLocale) != owner_locale &&

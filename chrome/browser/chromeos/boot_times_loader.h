@@ -17,6 +17,8 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/render_widget_host.h"
 
+class PrefService;
+
 namespace chromeos {
 
 // BootTimesLoader loads the bootimes of Chrome OS from the file system.
@@ -82,6 +84,12 @@ class BootTimesLoader : public content::NotificationObserver {
   // Mark that WriteLogoutTimes should handle restart.
   void set_restart_requested() { restart_requested_ = true; }
 
+  // This is called on Chrome process startup to write saved logout stats.
+  void OnChromeProcessStart();
+
+  // This saves logout-started metric to Local State.
+  void OnLogoutStarted(PrefService* state);
+
  private:
   // BootTimesLoader calls into the Backend on the file thread to load
   // the boot times.
@@ -119,20 +127,45 @@ class BootTimesLoader : public content::NotificationObserver {
     bool send_to_uma_;
   };
 
-  struct Stats {
+  class Stats {
    public:
-    std::string uptime;
-    std::string disk;
+    // Initializes stats with current /proc values.
+    static Stats GetCurrentStats();
+
+    // Returns JSON representation.
+    std::string SerializeToString() const;
+
+    // Creates new object from JSON representation.
+    static Stats DeserializeFromString(const std::string& value);
+
+    const std::string& uptime() const { return uptime_; }
+    const std::string& disk() const { return disk_; }
+
+    // Writes "uptime in seconds" to result. (This is first field in uptime_.)
+    // Returns true on successful conversion.
+    bool UptimeDouble(double* result) const;
+
+    void RecordStats(const std::string& name) const;
+    void RecordStatsWithCallback(const std::string& name,
+                                 const base::Closure& callback) const;
+
+   private:
+    // Runs on BlockingPool
+    void RecordStatsImpl(const std::string& name) const;
+
+    std::string uptime_;
+    std::string disk_;
   };
 
-  static void RecordStats(
-      const std::string& name, const Stats& stats);
-  static Stats GetCurrentStats();
   static void WriteTimes(const std::string base_name,
                          const std::string uma_name,
                          const std::string uma_prefix,
                          std::vector<TimeMarker> login_times);
   static void AddMarker(std::vector<TimeMarker>* vector, TimeMarker marker);
+
+  // Clear saved logout-started metric in Local State.
+  // This method is called when logout-state was writen to file.
+  static void ClearLogoutStartedLastPreference();
 
   // Used to hold the stats at main().
   Stats chrome_main_stats_;
