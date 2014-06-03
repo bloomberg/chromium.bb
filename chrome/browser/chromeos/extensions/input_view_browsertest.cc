@@ -33,7 +33,7 @@ const base::FilePath::CharType kInputViewTestDir[] =
 const base::FilePath::CharType kBaseKeyboardTestFramework[] = "test_base.js";
 
 const char kDefaultLayout[] = "us";
-const char kCompactLayout[] = "us.compact";
+const char kCompactLayout[] = "us.compact.qwerty";
 
 struct InputViewConfig : public VirtualKeyboardBrowserTestConfig {
   explicit InputViewConfig(std::string id, std::string layout) {
@@ -70,13 +70,6 @@ class InputViewBrowserTest : public VirtualKeyboardBrowserTest {
     std::string extensionId = installer->extension()->id();
     if (!service->GetExtensionById(extensionId, false))
       return "";
-
-    // Register extension with IME.
-    chromeos::input_method::InputMethodManager* ime =
-        chromeos::input_method::InputMethodManager::Get();
-    std::string id = chromeos::extension_ime_util::GetComponentInputMethodID(
-        extensionId, "xkb:us::eng");
-    ime->ChangeInputMethod(id);
     return extensionId;
   }
 };
