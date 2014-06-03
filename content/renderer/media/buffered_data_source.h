@@ -50,24 +50,23 @@ class CONTENT_EXPORT BufferedDataSource : public media::DataSource {
  public:
   typedef base::Callback<void(bool)> DownloadingCB;
 
-  // Buffered byte range changes will be reported to |host|. |downloading_cb|
-  // will be called whenever the downloading/paused state of the source changes.
-  BufferedDataSource(const scoped_refptr<base::MessageLoopProxy>& render_loop,
+  // |url| and |cors_mode| are passed to the object. Buffered byte range changes
+  // will be reported to |host|. |downloading_cb| will be called whenever the
+  // downloading/paused state of the source changes.
+  BufferedDataSource(const GURL& url,
+                     BufferedResourceLoader::CORSMode cors_mode,
+                     const scoped_refptr<base::MessageLoopProxy>& render_loop,
                      blink::WebFrame* frame,
                      media::MediaLog* media_log,
                      BufferedDataSourceHost* host,
                      const DownloadingCB& downloading_cb);
   virtual ~BufferedDataSource();
 
-  // Initialize this object using |url| and |cors_mode|, executing |init_cb|
-  // with the result of initialization when it has completed.
+  // Executes |init_cb| with the result of initialization when it has completed.
   //
   // Method called on the render thread.
   typedef base::Callback<void(bool)> InitializeCB;
-  void Initialize(
-      const GURL& url,
-      BufferedResourceLoader::CORSMode cors_mode,
-      const InitializeCB& init_cb);
+  void Initialize(const InitializeCB& init_cb);
 
   // Adjusts the buffering algorithm based on the given preload value.
   void SetPreload(Preload preload);
@@ -93,6 +92,9 @@ class CONTENT_EXPORT BufferedDataSource : public media::DataSource {
   void MediaPlaybackRateChanged(float playback_rate);
   void MediaIsPlaying();
   void MediaIsPaused();
+
+  // Returns true if the resource is local.
+  bool assume_fully_buffered() { return !url_.SchemeIsHTTPOrHTTPS(); }
 
   // media::DataSource implementation.
   // Called from demuxer thread.
@@ -156,10 +158,6 @@ class CONTENT_EXPORT BufferedDataSource : public media::DataSource {
   // known, otherwise it will remain kPositionNotSpecified until the size is
   // determined by reaching EOF.
   int64 total_bytes_;
-
-  // Some resources are assumed to be fully buffered (i.e., file://) so we don't
-  // need to report what |loader_| has buffered.
-  bool assume_fully_buffered_;
 
   // This value will be true if this data source can only support streaming.
   // i.e. range request is not supported.

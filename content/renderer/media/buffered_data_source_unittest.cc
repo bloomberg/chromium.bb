@@ -48,15 +48,20 @@ class MockBufferedDataSourceHost : public BufferedDataSourceHost {
 class MockBufferedDataSource : public BufferedDataSource {
  public:
   MockBufferedDataSource(
+      const GURL& url,
       const scoped_refptr<base::MessageLoopProxy>& message_loop,
       WebLocalFrame* frame,
       BufferedDataSourceHost* host)
-      : BufferedDataSource(message_loop, frame, new media::MediaLog(), host,
+      : BufferedDataSource(url,
+                           BufferedResourceLoader::kUnspecified,
+                           message_loop,
+                           frame,
+                           new media::MediaLog(),
+                           host,
                            base::Bind(&MockBufferedDataSource::set_downloading,
                                       base::Unretained(this))),
         downloading_(false),
-        loading_(false) {
-  }
+        loading_(false) {}
   virtual ~MockBufferedDataSource() {}
 
   MOCK_METHOD2(CreateResourceLoader, BufferedResourceLoader*(int64, int64));
@@ -107,11 +112,6 @@ class BufferedDataSourceTest : public testing::Test {
   BufferedDataSourceTest()
       : view_(WebView::create(NULL)), frame_(WebLocalFrame::create(&client_)) {
     view_->setMainFrame(frame_);
-
-    data_source_.reset(
-        new MockBufferedDataSource(message_loop_.message_loop_proxy(),
-                                   view_->mainFrame()->toWebLocalFrame(),
-                                   &host_));
   }
 
   virtual ~BufferedDataSourceTest() {
@@ -123,17 +123,20 @@ class BufferedDataSourceTest : public testing::Test {
 
   void Initialize(const char* url, bool expected) {
     GURL gurl(url);
-    response_generator_.reset(new TestResponseGenerator(gurl, kFileSize));
+    data_source_.reset(
+        new MockBufferedDataSource(gurl,
+                                   message_loop_.message_loop_proxy(),
+                                   view_->mainFrame()->toWebLocalFrame(),
+                                   &host_));
 
+    response_generator_.reset(new TestResponseGenerator(gurl, kFileSize));
     ExpectCreateResourceLoader();
     EXPECT_CALL(*this, OnInitialize(expected));
-    data_source_->Initialize(
-        gurl, BufferedResourceLoader::kUnspecified, base::Bind(
-            &BufferedDataSourceTest::OnInitialize, base::Unretained(this)));
+    data_source_->Initialize(base::Bind(&BufferedDataSourceTest::OnInitialize,
+                                        base::Unretained(this)));
     message_loop_.RunUntilIdle();
 
-    bool is_http =
-        gurl.SchemeIs(url::kHttpScheme) || gurl.SchemeIs(url::kHttpsScheme);
+    bool is_http = gurl.SchemeIsHTTPOrHTTPS();
     EXPECT_EQ(data_source_->downloading(), is_http);
   }
 

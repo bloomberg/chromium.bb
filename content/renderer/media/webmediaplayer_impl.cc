@@ -167,7 +167,6 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       accelerated_compositing_reported_(false),
       incremented_externally_allocated_memory_(false),
       gpu_factories_(RenderThreadImpl::current()->GetGpuFactories()),
-      is_local_source_(false),
       supports_save_(true),
       starting_(false),
       chunk_demuxer_(NULL),
@@ -318,18 +317,15 @@ void WebMediaPlayerImpl::DoLoad(LoadType load_type,
 
   // Otherwise it's a regular request which requires resolving the URL first.
   data_source_.reset(new BufferedDataSource(
+      url,
+      static_cast<BufferedResourceLoader::CORSMode>(cors_mode),
       main_loop_,
       frame_,
       media_log_.get(),
       &buffered_data_source_host_,
       base::Bind(&WebMediaPlayerImpl::NotifyDownloading, AsWeakPtr())));
   data_source_->Initialize(
-      url, static_cast<BufferedResourceLoader::CORSMode>(cors_mode),
-      base::Bind(
-          &WebMediaPlayerImpl::DataSourceInitialized,
-          AsWeakPtr(), gurl));
-
-  is_local_source_ = !gurl.SchemeIsHTTPOrHTTPS();
+      base::Bind(&WebMediaPlayerImpl::DataSourceInitialized, AsWeakPtr()));
 }
 
 void WebMediaPlayerImpl::play() {
@@ -1112,7 +1108,7 @@ void WebMediaPlayerImpl::OnKeyMessage(const std::string& session_id,
       destination_url);
 }
 
-void WebMediaPlayerImpl::DataSourceInitialized(const GURL& gurl, bool success) {
+void WebMediaPlayerImpl::DataSourceInitialized(bool success) {
   DCHECK(main_loop_->BelongsToCurrentThread());
 
   if (!success) {
@@ -1248,8 +1244,8 @@ void WebMediaPlayerImpl::SetReadyState(WebMediaPlayer::ReadyState state) {
   DCHECK(main_loop_->BelongsToCurrentThread());
   DVLOG(1) << "SetReadyState: " << state;
 
-  if (state == WebMediaPlayer::ReadyStateHaveEnoughData &&
-      is_local_source_ &&
+  if (state == WebMediaPlayer::ReadyStateHaveEnoughData && data_source_ &&
+      data_source_->assume_fully_buffered() &&
       network_state_ == WebMediaPlayer::NetworkStateLoading)
     SetNetworkState(WebMediaPlayer::NetworkStateLoaded);
 
