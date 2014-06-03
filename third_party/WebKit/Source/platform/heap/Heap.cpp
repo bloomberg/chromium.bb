@@ -409,7 +409,11 @@ void HeapObjectHeader::finalize(const GCInfo* gcInfo, Address object, size_t obj
     if (gcInfo->hasFinalizer()) {
         gcInfo->m_finalize(object);
     }
-#ifndef NDEBUG
+#if !defined(NDEBUG) || defined(LEAK_SANITIZER)
+    // Zap freed memory with a recognizable zap value in debug mode.
+    // Also zap when using leak sanitizer because the heap is used as
+    // a root region for lsan and therefore pointers in unreachable
+    // memory could hide leaks.
     for (size_t i = 0; i < objectSize; i++)
         object[i] = finalizedZapValue;
 #endif
