@@ -246,6 +246,10 @@ void WebRTCInternals::EnableAecDump(content::WebContents* web_contents) {
 void WebRTCInternals::DisableAecDump() {
 #if defined(ENABLE_WEBRTC)
   aec_dump_enabled_ = false;
+
+  // Tear down the dialog since the user has unchecked the AEC dump box.
+  select_file_dialog_ = NULL;
+
   for (RenderProcessHost::iterator i(
            content::RenderProcessHost::AllHostsIterator());
        !i.IsAtEnd(); i.Advance()) {

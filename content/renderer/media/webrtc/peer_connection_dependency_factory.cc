@@ -643,7 +643,9 @@ void PeerConnectionDependencyFactory::OnAecDumpFile(
 
 void PeerConnectionDependencyFactory::OnDisableAecDump() {
   if (MediaStreamAudioProcessor::IsAudioTrackProcessingEnabled()) {
-    GetWebRtcAudioDevice()->DisableAecDump();
+    // Do nothing if OnAecDumpFile() has never been called.
+    if (GetWebRtcAudioDevice())
+      GetWebRtcAudioDevice()->DisableAecDump();
     return;
   }
 

@@ -524,7 +524,14 @@ bool WebRtcAudioDeviceImpl::GetAuthorizedDeviceInfoForAudioRenderer(
 void WebRtcAudioDeviceImpl::EnableAecDump(base::File aec_dump_file) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(aec_dump_file.IsValid());
-  DCHECK(!aec_dump_file_.IsValid());
+
+  // Close the previous AEC dump file description if it has not been consumed.
+  // This can happen if no getUserMedia has been made yet.
+  // TODO(xians): DCHECK(!aec_dump_file_.IsValid()) after the browser
+  // guarantees it won't call EnableAecDump() more than once in a row.
+  if (aec_dump_file_.IsValid())
+    aec_dump_file_.Close();
+
   aec_dump_file_ = aec_dump_file.Pass();
   MaybeStartAecDump();
 }
