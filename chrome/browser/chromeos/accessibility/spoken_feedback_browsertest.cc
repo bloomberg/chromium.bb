@@ -106,7 +106,8 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, FocusToolbar) {
   EXPECT_EQ("button", monitor.GetNextUtterance());
 }
 
-IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, TypeInOmnibox) {
+// Disabled for flakiness: http://crbug.com/359204
+IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, DISABLED_TypeInOmnibox) {
   EXPECT_FALSE(AccessibilityManager::Get()->IsSpokenFeedbackEnabled());
 
   SpeechMonitor monitor;
