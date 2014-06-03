@@ -24,8 +24,8 @@ var hasChildFrameEventFired = false;
 
 function mainFrameListener() {
     hasMainFrameEventFired = true;
-    if (connection.type != newConnectionType)
-        testFailed("Event fired event but type not yet changed.");
+    shouldBe('connection.type', 'newConnectionType')
+
     if (!hasChildFrameEventFired && childConnection.type != initialType)
         testFailed("Child frame connection type changed before firing its event.");
     maybeFinishTest();
@@ -33,8 +33,8 @@ function mainFrameListener() {
 
 function childFrameListener() {
     hasChildFrameEventFired = true;
-    if (childConnection.type != newConnectionType)
-        testFailed("Child frame fired event but type not yet changed.");
+    shouldBe('childConnection.type', 'newConnectionType');
+    
     if (!hasMainFrameEventFired && connection.type != initialType)
         testFailed("Main frame connection type changed before firing its event.");
     maybeFinishTest();
@@ -42,8 +42,6 @@ function childFrameListener() {
 
 function maybeFinishTest() {
     if (hasMainFrameEventFired && hasChildFrameEventFired) {
-        if (connection.type != newConnectionType && childConnection.type == newConnectionType)
-            testFailed("Connection types did not change in both frames.");
         finishJSTest();
     }
 }

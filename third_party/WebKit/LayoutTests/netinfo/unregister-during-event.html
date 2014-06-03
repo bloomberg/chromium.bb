@@ -12,14 +12,12 @@ shouldBe('typeof window.internals.observeGC', '"function"',
 'this test requires window.internals');
 
 var otherHandler = function(e) {
-    if (connection.type != initialType)
-        testFailed("The connection type did not revert.");
+    shouldBe('connection.type', 'initialType');
     finishJSTest();
 };
 
 var handler = function(e) {
-    if (connection.type != newConnectionType)
-        testFailed("The connection type did not change.");
+    shouldBe('connection.type', 'newConnectionType');
     connection.removeEventListener('typechange', handler);
     connection.addEventListener('typechange', otherHandler);
     internals.setNetworkConnectionInfo(initialType);

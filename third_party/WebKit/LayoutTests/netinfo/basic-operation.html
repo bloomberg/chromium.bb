@@ -15,8 +15,7 @@ shouldBeDefined("navigator.connection.type");
 
 connection.addEventListener('typechange', function(e) {
     shouldBe("typeof connection.type", '"string"');
-    if (connection.type != newConnectionType)
-        testFailed("The connection type did not change.");
+    shouldBe('connection.type', 'newConnectionType');
     finishJSTest();
 });
 
