@@ -130,6 +130,13 @@ void OptionsUIBrowserTest::NavigateToSettingsSubpage(
       subscription = options_ui->RegisterOnFinishedLoadingCallback(
           message_loop_runner->QuitClosure());
   message_loop_runner->Run();
+
+  // The OnFinishedLoading event, which indicates that all WebUI initialization
+  // methods have been called on the JS side, is temporally unrelated to whether
+  // or not the WebContents considers itself to have finished loading. We want
+  // to wait for this too, however, because, e.g. this is a sufficient condition
+  // to get the focus properly placed on a form element.
+  content::WaitForLoadStop(web_contents);
 }
 
 void OptionsUIBrowserTest::NavigateToSettingsFrame() {

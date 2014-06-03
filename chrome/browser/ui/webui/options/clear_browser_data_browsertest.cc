@@ -51,9 +51,8 @@ class ClearBrowserDataBrowserTest : public OptionsUIBrowserTest {
   }
 };
 
-// Fails flakily. http://crbug.com/379574
 IN_PROC_BROWSER_TEST_F(ClearBrowserDataBrowserTest,
-                       DISABLED_CommitButtonDisabledWhileDeletionInProgress) {
+                       CommitButtonDisabledWhileDeletionInProgress) {
   const char kTimePeriodSelectorId[] = "#clear-browser-data-time-period";
   const char kCommitButtonId[] = "#clear-browser-data-commit";
   BrowsingDataRemoverCompletionInhibitor completion_inhibitor;
