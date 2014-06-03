@@ -305,7 +305,7 @@ void InspectorController::inspect(Node* node)
     if (!frame)
         return;
 
-    if (node->nodeType() != Node::ELEMENT_NODE && node->nodeType() != Node::DOCUMENT_NODE)
+    if (!node->isElementNode() && !node->isDocumentNode())
         node = node->parentNode();
 
     InjectedScript injectedScript = m_injectedScriptManager->injectedScriptFor(ScriptState::forMainWorld(frame));

@@ -49,7 +49,7 @@ String stringValue(Node* node)
         case Node::CDATA_SECTION_NODE:
             return node->nodeValue();
         default:
-            if (isRootDomNode(node) || node->nodeType() == Node::ELEMENT_NODE) {
+            if (isRootDomNode(node) || node->isElementNode()) {
                 StringBuilder result;
                 result.reserveCapacity(1024);
 

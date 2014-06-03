@@ -419,7 +419,7 @@ Element* InspectorDOMAgent::assertElement(ErrorString* errorString, int nodeId)
     if (!node)
         return 0;
 
-    if (node->nodeType() != Node::ELEMENT_NODE) {
+    if (!node->isElementNode()) {
         *errorString = "Node is not an Element";
         return 0;
     }
@@ -526,7 +526,7 @@ void InspectorDOMAgent::getDocument(ErrorString* errorString, RefPtr<TypeBuilder
 void InspectorDOMAgent::pushChildNodesToFrontend(int nodeId, int depth)
 {
     Node* node = nodeForId(nodeId);
-    if (!node || (node->nodeType() != Node::ELEMENT_NODE && node->nodeType() != Node::DOCUMENT_NODE && node->nodeType() != Node::DOCUMENT_FRAGMENT_NODE))
+    if (!node || (!node->isElementNode() && !node->isDocumentNode() && !node->isDocumentFragment()))
         return;
 
     NodeToIdMap* nodeMap = m_idToNodesMap.get(nodeId);
@@ -1116,7 +1116,7 @@ void InspectorDOMAgent::inspect(Node* inspectedNode)
         return;
 
     Node* node = inspectedNode;
-    while (node && node->nodeType() != Node::ELEMENT_NODE && node->nodeType() != Node::DOCUMENT_NODE && node->nodeType() != Node::DOCUMENT_FRAGMENT_NODE)
+    while (node && !node->isElementNode() && !node->isDocumentNode() && !node->isDocumentFragment())
         node = node->parentOrShadowHostNode();
 
     if (!node)

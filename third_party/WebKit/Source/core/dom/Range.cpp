@@ -953,7 +953,8 @@ String Range::toString() const
 
     Node* pastLast = pastLastNode();
     for (Node* n = firstNode(); n != pastLast; n = NodeTraversal::next(*n)) {
-        if (n->nodeType() == Node::TEXT_NODE || n->nodeType() == Node::CDATA_SECTION_NODE) {
+        Node::NodeType type = n->nodeType();
+        if (type == Node::TEXT_NODE || type == Node::CDATA_SECTION_NODE) {
             String data = toCharacterData(n)->data();
             int length = data.length();
             int start = (n == m_start.container()) ? min(max(0, m_start.offset()), length) : 0;

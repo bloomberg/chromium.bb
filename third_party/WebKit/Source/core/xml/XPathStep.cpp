@@ -166,8 +166,10 @@ static inline Node::NodeType primaryNodeType(Step::Axis axis)
 static inline bool nodeMatchesBasicTest(Node* node, Step::Axis axis, const Step::NodeTest& nodeTest)
 {
     switch (nodeTest.kind()) {
-        case Step::NodeTest::TextNodeTest:
-            return node->nodeType() == Node::TEXT_NODE || node->nodeType() == Node::CDATA_SECTION_NODE;
+        case Step::NodeTest::TextNodeTest: {
+            Node::NodeType type = node->nodeType();
+            return type == Node::TEXT_NODE || type == Node::CDATA_SECTION_NODE;
+        }
         case Step::NodeTest::CommentNodeTest:
             return node->nodeType() == Node::COMMENT_NODE;
         case Step::NodeTest::ProcessingInstructionNodeTest: {
@@ -198,21 +200,22 @@ static inline bool nodeMatchesBasicTest(Node* node, Step::Axis axis, const Step:
 
             // For other axes, the principal node type is element.
             ASSERT(primaryNodeType(axis) == Node::ELEMENT_NODE);
-            if (node->nodeType() != Node::ELEMENT_NODE)
+            if (!node->isElementNode())
                 return false;
+            Element& element = toElement(*node);
 
             if (name == starAtom)
-                return namespaceURI.isEmpty() || namespaceURI == node->namespaceURI();
+                return namespaceURI.isEmpty() || namespaceURI == element.namespaceURI();
 
-            if (node->document().isHTMLDocument()) {
-                if (node->isHTMLElement()) {
+            if (element.document().isHTMLDocument()) {
+                if (element.isHTMLElement()) {
                     // Paths without namespaces should match HTML elements in HTML documents despite those having an XHTML namespace. Names are compared case-insensitively.
-                    return equalIgnoringCase(toElement(node)->localName(), name) && (namespaceURI.isNull() || namespaceURI == node->namespaceURI());
+                    return equalIgnoringCase(element.localName(), name) && (namespaceURI.isNull() || namespaceURI == element.namespaceURI());
                 }
                 // An expression without any prefix shouldn't match no-namespace nodes (because HTML5 says so).
-                return toElement(node)->hasLocalName(name) && namespaceURI == node->namespaceURI() && !namespaceURI.isNull();
+                return element.hasLocalName(name) && namespaceURI == element.namespaceURI() && !namespaceURI.isNull();
             }
-            return toElement(node)->hasLocalName(name) && namespaceURI == node->namespaceURI();
+            return element.hasLocalName(name) && namespaceURI == element.namespaceURI();
         }
     }
     ASSERT_NOT_REACHED();

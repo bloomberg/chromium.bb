@@ -51,7 +51,7 @@ private:
     virtual bool childTypeAllowed(NodeType) const OVERRIDE;
 };
 
-DEFINE_NODE_TYPE_CASTS(DocumentFragment, nodeType() == Node::DOCUMENT_FRAGMENT_NODE);
+DEFINE_NODE_TYPE_CASTS(DocumentFragment, isDocumentFragment());
 
 } // namespace WebCore
 

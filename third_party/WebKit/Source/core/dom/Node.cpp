@@ -512,14 +512,13 @@ void Node::normalize()
     while (Node* firstChild = node->firstChild())
         node = firstChild;
     while (node) {
-        NodeType type = node->nodeType();
-        if (type == ELEMENT_NODE)
+        if (node->isElementNode())
             toElement(node)->normalizeAttributes();
 
         if (node == this)
             break;
 
-        if (type == TEXT_NODE)
+        if (node->nodeType() == TEXT_NODE)
             node = toText(node)->mergeNextSiblingNodesIfPossible();
         else
             node = NodeTraversal::nextPostOrder(*node);
@@ -1486,7 +1485,8 @@ static void appendTextContent(const Node* node, bool convertBRsToNewlines, bool&
     case Node::DOCUMENT_FRAGMENT_NODE:
         isNullString = false;
         for (Node* child = node->firstChild(); child; child = child->nextSibling()) {
-            if (child->nodeType() == Node::COMMENT_NODE || child->nodeType() == Node::PROCESSING_INSTRUCTION_NODE)
+            Node::NodeType childNodeType = child->nodeType();
+            if (childNodeType == Node::COMMENT_NODE || childNodeType == Node::PROCESSING_INSTRUCTION_NODE)
                 continue;
             appendTextContent(child, convertBRsToNewlines, isNullString, content);
         }

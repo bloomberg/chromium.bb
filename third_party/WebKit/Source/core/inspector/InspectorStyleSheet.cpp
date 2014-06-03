@@ -1537,7 +1537,7 @@ bool InspectorStyleSheet::resourceStyleSheetText(String* result) const
 bool InspectorStyleSheet::inlineStyleSheetText(String* result) const
 {
     Node* ownerNode = m_pageStyleSheet->ownerNode();
-    if (!ownerNode || ownerNode->nodeType() != Node::ELEMENT_NODE)
+    if (!ownerNode || !ownerNode->isElementNode())
         return false;
     Element& ownerElement = toElement(*ownerNode);
 

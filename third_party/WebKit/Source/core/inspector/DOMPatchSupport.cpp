@@ -181,7 +181,7 @@ bool DOMPatchSupport::innerPatchNode(Digest* oldDigest, Digest* newDigest, Excep
             return false;
     }
 
-    if (oldNode->nodeType() != Node::ELEMENT_NODE)
+    if (!oldNode->isElementNode())
         return true;
 
     // Patch attributes
@@ -420,21 +420,21 @@ PassOwnPtr<DOMPatchSupport::Digest> DOMPatchSupport::createDigest(Node* node, Un
     addStringToDigestor(digestor.get(), node->nodeName());
     addStringToDigestor(digestor.get(), node->nodeValue());
 
-    if (node->nodeType() == Node::ELEMENT_NODE) {
-        Node* child = node->firstChild();
+    if (node->isElementNode()) {
+        Element& element = toElement(*node);
+        Node* child = element.firstChild();
         while (child) {
             OwnPtr<Digest> childInfo = createDigest(child, unusedNodesMap);
             addStringToDigestor(digestor.get(), childInfo->m_sha1);
             child = child->nextSibling();
             digest->m_children.append(childInfo.release());
         }
-        Element* element = toElement(node);
 
-        if (element->hasAttributesWithoutUpdate()) {
-            size_t numAttrs = element->attributeCount();
+        if (element.hasAttributesWithoutUpdate()) {
+            size_t numAttrs = element.attributeCount();
             OwnPtr<blink::WebCryptoDigestor> attrsDigestor = createDigestor(HashAlgorithmSha1);
             for (size_t i = 0; i < numAttrs; ++i) {
-                const Attribute& attribute = element->attributeItem(i);
+                const Attribute& attribute = element.attributeItem(i);
                 addStringToDigestor(attrsDigestor.get(), attribute.name().toString());
                 addStringToDigestor(attrsDigestor.get(), attribute.value().string());
             }

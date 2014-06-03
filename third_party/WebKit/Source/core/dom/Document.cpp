@@ -3316,8 +3316,8 @@ bool Document::canReplaceChild(const Node& newChild, const Node& oldChild) const
     }
 
     // Then, see how many doctypes and elements might be added by the new child.
-    if (newChild.nodeType() == DOCUMENT_FRAGMENT_NODE) {
-        for (Node* c = newChild.firstChild(); c; c = c->nextSibling()) {
+    if (newChild.isDocumentFragment()) {
+        for (Node* c = toDocumentFragment(newChild).firstChild(); c; c = c->nextSibling()) {
             switch (c->nodeType()) {
             case ATTRIBUTE_NODE:
             case CDATA_SECTION_NODE:
