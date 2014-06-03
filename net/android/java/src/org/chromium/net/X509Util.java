@@ -235,7 +235,7 @@ public class X509Util {
     /**
      * Creates a X509TrustManagerImplementation backed up by the given key
      * store. When null is passed as a key store, system default trust store is
-     * used.
+     * used. Returns null if no created TrustManager was suitable.
      * @throws KeyStoreException, NoSuchAlgorithmException on error initializing the TrustManager.
      */
     private static X509TrustManagerImplementation createTrustManager(KeyStore keyStore) throws
@@ -253,10 +253,12 @@ public class X509Util {
                         return new X509TrustManagerIceCreamSandwich((X509TrustManager) tm);
                     }
                 } catch (IllegalArgumentException e) {
-                    Log.e(TAG, "Error creating trust manager: " + e);
+                    String className = tm.getClass().getName();
+                    Log.e(TAG, "Error creating trust manager (" + className + "): " + e);
                 }
             }
         }
+        Log.e(TAG, "Could not find suitable trust manager");
         return null;
     }
 
@@ -465,6 +467,10 @@ public class X509Util {
         }
 
         synchronized (sLock) {
+            // If no trust manager was found, fail without crashing on the null pointer.
+            if (sDefaultTrustManager == null)
+                return new AndroidCertVerifyResult(CertVerifyStatusAndroid.VERIFY_FAILED);
+
             List<X509Certificate> verifiedChain;
             try {
                 verifiedChain = sDefaultTrustManager.checkServerTrusted(serverCertificates,
