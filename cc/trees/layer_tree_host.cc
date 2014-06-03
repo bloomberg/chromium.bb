@@ -395,8 +395,6 @@ void LayerTreeHost::FinishCommitOnImplThread(LayerTreeHostImpl* host_impl) {
   }
 
   micro_benchmark_controller_.ScheduleImplBenchmarks(host_impl);
-
-  source_frame_number_++;
 }
 
 void LayerTreeHost::WillCommit() {
@@ -417,6 +415,7 @@ void LayerTreeHost::UpdateHudLayer() {
 }
 
 void LayerTreeHost::CommitComplete() {
+  source_frame_number_++;
   client_->DidCommit();
 }
 

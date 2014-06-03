@@ -1107,6 +1107,7 @@ class TextureLayerNoExtraCommitForMailboxTest
       scoped_ptr<SingleReleaseCallback>* release_callback,
       bool use_shared_memory) OVERRIDE {
     if (layer_tree_host()->source_frame_number() == 1) {
+      // Once this has been committed, the mailbox will be released.
       *texture_mailbox = TextureMailbox();
       return true;
     }
@@ -1119,7 +1120,9 @@ class TextureLayerNoExtraCommitForMailboxTest
   }
 
   void MailboxReleased(uint32 sync_point, bool lost_resource) {
-    EXPECT_EQ(2, layer_tree_host()->source_frame_number());
+    // Source frame number during callback is the same as the source frame
+    // on which it was released.
+    EXPECT_EQ(1, layer_tree_host()->source_frame_number());
     EndTest();
   }
 
