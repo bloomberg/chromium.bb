@@ -15,6 +15,8 @@
 #include "base/synchronization/lock.h"
 #include "base/threading/worker_pool.h"
 #include "base/time/time.h"
+#include "base/values.h"
+#include "net/base/hash_value.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_log.h"
 #include "net/cert/cert_trust_anchor_provider.h"
@@ -77,6 +79,35 @@ const unsigned kMaxCacheEntries = 256;
 
 // The number of seconds for which we'll cache a cache entry.
 const unsigned kTTLSecs = 1800;  // 30 minutes.
+
+base::Value* CertVerifyResultCallback(const CertVerifyResult& verify_result,
+                                      NetLog::LogLevel log_level) {
+  base::DictionaryValue* results = new base::DictionaryValue();
+  results->SetBoolean("has_md5", verify_result.has_md5);
+  results->SetBoolean("has_md2", verify_result.has_md2);
+  results->SetBoolean("has_md4", verify_result.has_md4);
+  results->SetBoolean("is_issued_by_known_root",
+                      verify_result.is_issued_by_known_root);
+  results->SetBoolean("is_issued_by_additional_trust_anchor",
+                      verify_result.is_issued_by_additional_trust_anchor);
+  results->SetBoolean("common_name_fallback_used",
+                      verify_result.common_name_fallback_used);
+  results->SetInteger("cert_status", verify_result.cert_status);
+  results->Set(
+      "verified_cert",
+      NetLogX509CertificateCallback(verify_result.verified_cert, log_level));
+
+  base::ListValue* hashes = new base::ListValue();
+  for (std::vector<HashValue>::const_iterator it =
+           verify_result.public_key_hashes.begin();
+       it != verify_result.public_key_hashes.end();
+       ++it) {
+    hashes->AppendString(it->ToString());
+  }
+  results->Set("public_key_hashes", hashes);
+
+  return results;
+}
 
 }  // namespace
 
@@ -351,7 +382,9 @@ class CertVerifierJob {
       const MultiThreadedCertVerifier::CachedResult& verify_result,
       bool is_first_job) {
     worker_ = NULL;
-    net_log_.EndEvent(NetLog::TYPE_CERT_VERIFIER_JOB);
+    net_log_.EndEvent(
+        NetLog::TYPE_CERT_VERIFIER_JOB,
+        base::Bind(&CertVerifyResultCallback, verify_result.result));
     base::TimeDelta latency = base::TimeTicks::Now() - start_time_;
     UMA_HISTOGRAM_CUSTOM_TIMES("Net.CertVerifier_Job_Latency",
                                latency,
@@ -583,3 +616,4 @@ void MultiThreadedCertVerifier::OnCACertChanged(
 }
 
 }  // namespace net
+
