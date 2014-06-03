@@ -22,7 +22,6 @@
 #include "ui/wm/core/base_focus_rules.h"
 #include "ui/wm/core/compound_event_filter.h"
 #include "ui/wm/core/cursor_manager.h"
-#include "ui/wm/core/default_activation_client.h"
 #include "ui/wm/core/focus_controller.h"
 #include "ui/wm/core/input_method_event_filter.h"
 #include "ui/wm/core/native_cursor_manager.h"
@@ -231,8 +230,7 @@ void ShellDesktopController::CreateRootWindow() {
   test_screen_.reset(aura::TestScreen::Create());
   // TODO(jamescook): Replace this with a real Screen implementation.
   gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, test_screen_.get());
-  // TODO(jamescook): Initialize a real input method.
-  ui::InitializeInputMethodForTesting();
+  // TODO(mukai): Set up input method.
 
   // Set up basic pieces of ui::wm.
   gfx::Size size = GetPrimaryDisplaySize();
@@ -253,15 +251,17 @@ void ShellDesktopController::CreateRootWindow() {
 }
 
 void ShellDesktopController::InitWindowManager() {
-  focus_client_.reset(new wm::FocusController(new AppsFocusRules()));
-  aura::client::SetFocusClient(host_->window(), focus_client_.get());
+  wm::FocusController* focus_controller =
+      new wm::FocusController(new AppsFocusRules());
+  aura::client::SetFocusClient(host_->window(), focus_controller);
+  host_->window()->AddPreTargetHandler(focus_controller);
+  aura::client::SetActivationClient(host_->window(), focus_controller);
+  focus_client_.reset(focus_controller);
 
   input_method_filter_.reset(
       new wm::InputMethodEventFilter(host_->GetAcceleratedWidget()));
   input_method_filter_->SetInputMethodPropertyInRootWindow(host_->window());
   root_window_event_filter_->AddHandler(input_method_filter_.get());
-
-  new wm::DefaultActivationClient(host_->window());
 
   capture_client_.reset(
       new aura::client::DefaultCaptureClient(host_->window()));
@@ -294,6 +294,12 @@ void ShellDesktopController::DestroyRootWindow() {
     host_->event_processor()->GetRootTarget()->RemovePreTargetHandler(
         user_activity_detector_.get());
   }
+  wm::FocusController* focus_controller =
+      static_cast<wm::FocusController*>(focus_client_.get());
+  if (focus_controller) {
+    host_->window()->RemovePreTargetHandler(focus_controller);
+    aura::client::SetActivationClient(host_->window(), NULL);
+  }
   root_window_event_filter_.reset();
   capture_client_.reset();
   input_method_filter_.reset();
@@ -304,7 +310,6 @@ void ShellDesktopController::DestroyRootWindow() {
 #endif
   user_activity_detector_.reset();
   host_.reset();
-  ui::ShutdownInputMethodForTesting();
 }
 
 gfx::Size ShellDesktopController::GetPrimaryDisplaySize() {
