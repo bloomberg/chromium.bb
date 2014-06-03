@@ -5,6 +5,12 @@
 #include "chrome/browser/web_applications/web_app.h"
 
 namespace web_app {
+
+void UpdateShortcutsForAllApps(Profile* profile,
+                               const base::Closure& callback) {
+  callback.Run();
+}
+
 namespace internals {
 
 bool CreatePlatformShortcuts(

@@ -860,7 +860,7 @@ extern const char kShowAppLauncherPromo[];
 
 extern const char kAppLaunchForMetroRestart[];
 extern const char kAppLaunchForMetroRestartProfile[];
-extern const char kAppShortcutsHaveBeenCreated[];
+extern const char kAppShortcutsVersion[];
 
 extern const char kModuleConflictBubbleShown[];
 

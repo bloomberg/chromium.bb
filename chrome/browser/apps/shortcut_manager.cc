@@ -31,6 +31,14 @@ using extensions::Extension;
 
 namespace {
 
+// This version number is stored in local prefs to check whether app shortcuts
+// need to be recreated. This might happen when we change various aspects of app
+// shortcuts like command-line flags or associated icons, binaries, etc.
+const int kCurrentAppShortcutsVersion = 0;
+
+// Delay in seconds before running UpdateShortcutsForAllApps.
+const int kUpdateShortcutsForAllAppsDelay = 10;
+
 // Creates a shortcut for an application in the applications menu, if there is
 // not already one present.
 void CreateShortcutsInApplicationsMenu(Profile* profile,
@@ -43,10 +51,8 @@ void CreateShortcutsInApplicationsMenu(Profile* profile,
       web_app::SHORTCUT_CREATION_AUTOMATED, creation_locations, profile, app);
 }
 
-bool ShouldCreateShortcutFor(Profile* profile, const Extension* extension) {
-  return extension->is_platform_app() &&
-      extension->location() != extensions::Manifest::COMPONENT &&
-      extensions::ui_util::ShouldDisplayInAppLauncher(extension, profile);
+void SetCurrentAppShortcutsVersion(PrefService* prefs) {
+  prefs->SetInteger(prefs::kAppShortcutsVersion, kCurrentAppShortcutsVersion);
 }
 
 }  // namespace
@@ -55,8 +61,8 @@ bool ShouldCreateShortcutFor(Profile* profile, const Extension* extension) {
 void AppShortcutManager::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   // Indicates whether app shortcuts have been created.
-  registry->RegisterBooleanPref(
-      prefs::kAppShortcutsHaveBeenCreated, false,
+  registry->RegisterIntegerPref(
+      prefs::kAppShortcutsVersion, 0,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
@@ -74,10 +80,11 @@ AppShortcutManager::AppShortcutManager(Profile* profile)
 
   extension_registry_observer_.Add(
       extensions::ExtensionRegistry::Get(profile_));
-  // Wait for extensions to be ready before running OnceOffCreateShortcuts.
+  // Wait for extensions to be ready before running
+  // UpdateShortcutsForAllAppsIfNeeded.
   extensions::ExtensionSystem::Get(profile)->ready().Post(
       FROM_HERE,
-      base::Bind(&AppShortcutManager::OnceOffCreateShortcuts,
+      base::Bind(&AppShortcutManager::UpdateShortcutsForAllAppsIfNeeded,
                  weak_ptr_factory_.GetWeakPtr()));
 
   ProfileManager* profile_manager = g_browser_process->profile_manager();
@@ -112,7 +119,7 @@ void AppShortcutManager::OnExtensionWillBeInstalled(
   if (is_update && !from_ephemeral) {
     web_app::UpdateAllShortcuts(
         base::UTF8ToUTF16(old_name), profile_, extension);
-  } else if (ShouldCreateShortcutFor(profile_, extension)) {
+  } else {
     CreateShortcutsInApplicationsMenu(profile_, extension);
   }
 }
@@ -133,25 +140,16 @@ void AppShortcutManager::OnProfileWillBeRemoved(
                  profile_path));
 }
 
-void AppShortcutManager::OnceOffCreateShortcuts() {
-  if (prefs_->GetBoolean(prefs::kAppShortcutsHaveBeenCreated))
+void AppShortcutManager::UpdateShortcutsForAllAppsIfNeeded() {
+  int last_version = prefs_->GetInteger(prefs::kAppShortcutsVersion);
+  if (last_version >= kCurrentAppShortcutsVersion)
     return;
 
-  prefs_->SetBoolean(prefs::kAppShortcutsHaveBeenCreated, true);
-
-  // Check if extension system/service are available. They might not be in
-  // tests.
-  extensions::ExtensionSystem* extension_system;
-  ExtensionServiceInterface* extension_service;
-  if (!(extension_system = extensions::ExtensionSystem::Get(profile_)) ||
-      !(extension_service = extension_system->extension_service()))
-    return;
-
-  // Create an applications menu shortcut for each app in this profile.
-  const extensions::ExtensionSet* apps = extension_service->extensions();
-  for (extensions::ExtensionSet::const_iterator it = apps->begin();
-       it != apps->end(); ++it) {
-    if (ShouldCreateShortcutFor(profile_, it->get()))
-      CreateShortcutsInApplicationsMenu(profile_, it->get());
-  }
+  content::BrowserThread::PostDelayedTask(
+      content::BrowserThread::UI,
+      FROM_HERE,
+      base::Bind(&web_app::UpdateShortcutsForAllApps,
+                 profile_,
+                 base::Bind(&SetCurrentAppShortcutsVersion, prefs_)),
+      base::TimeDelta::FromSeconds(kUpdateShortcutsForAllAppsDelay));
 }

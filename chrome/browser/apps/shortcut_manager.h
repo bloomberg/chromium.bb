@@ -34,9 +34,9 @@ class AppShortcutManager : public KeyedService,
 
   virtual ~AppShortcutManager();
 
-  // Checks if kShortcutsEnabled is set in prefs. If not, this sets it and
-  // creates shortcuts for all apps.
-  void OnceOffCreateShortcuts();
+  // Updates all shortcuts if kAppShortcutsVersion in prefs is less than
+  // kCurrentAppShortcutsVersion.
+  void UpdateShortcutsForAllAppsIfNeeded();
 
   // extensions::ExtensionRegistryObserver.
   virtual void OnExtensionWillBeInstalled(

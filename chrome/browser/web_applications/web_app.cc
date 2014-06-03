@@ -12,6 +12,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread.h"
+#include "chrome/browser/extensions/extension_ui_util.h"
 #include "chrome/browser/extensions/image_loader.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
@@ -21,8 +22,10 @@
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/extension_set.h"
 #include "extensions/common/manifest_handlers/icons_handler.h"
 #include "grit/theme_resources.h"
 #include "skia/ext/image_operations.h"
@@ -292,6 +295,13 @@ void UpdateShortcutInfoAndIconForApp(const extensions::Extension* extension,
                 base::Bind(&IgnoreFileHandlersInfo, callback));
 }
 
+bool ShouldCreateShortcutFor(Profile* profile,
+                             const extensions::Extension* extension) {
+  return extension->is_platform_app() &&
+      extension->location() != extensions::Manifest::COMPONENT &&
+      extensions::ui_util::ShouldDisplayInAppLauncher(extension, profile);
+}
+
 base::FilePath GetWebAppDataDirectory(const base::FilePath& profile_path,
                                       const std::string& extension_id,
                                       const GURL& url) {
@@ -373,6 +383,9 @@ void CreateShortcuts(ShortcutCreationReason reason,
                      Profile* profile,
                      const extensions::Extension* app) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  if (!ShouldCreateShortcutFor(profile, app))
+    return;
 
   GetInfoForApp(app,
                 profile,

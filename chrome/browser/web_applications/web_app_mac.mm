@@ -24,7 +24,9 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #import "chrome/browser/mac/dock.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
@@ -32,6 +34,7 @@
 #include "chrome/common/chrome_version_info.h"
 #import "chrome/common/mac/app_mode_common.h"
 #include "content/public/browser/browser_thread.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
 #include "grit/chrome_unscaled_resources.h"
 #include "grit/chromium_strings.h"
@@ -913,6 +916,27 @@ void CreateAppShortcutInfoLoaded(
 
   if (!close_callback.is_null())
     close_callback.Run(dialog_accepted);
+}
+
+void UpdateShortcutsForAllApps(Profile* profile,
+                               const base::Closure& callback) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  extensions::ExtensionRegistry* registry =
+      extensions::ExtensionRegistry::Get(profile);
+  if (!registry)
+    return;
+
+  // Update all apps.
+  scoped_ptr<extensions::ExtensionSet> everything =
+      registry->GenerateInstalledExtensionsSet();
+  for (extensions::ExtensionSet::const_iterator it = everything->begin();
+       it != everything->end(); ++it) {
+    if (web_app::ShouldCreateShortcutFor(profile, it->get()))
+      web_app::UpdateAllShortcuts(base::string16(), profile, it->get());
+  }
+
+  callback.Run();
 }
 
 namespace internals {

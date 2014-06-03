@@ -413,6 +413,11 @@ void UpdateRelaunchDetailsForApp(Profile* profile,
       base::Bind(&OnShortcutInfoLoadedForSetRelaunchDetails, hwnd));
 }
 
+void UpdateShortcutsForAllApps(Profile* profile,
+                               const base::Closure& callback) {
+  callback.Run();
+}
+
 namespace internals {
 
 // Saves |image| to |icon_file| if the file is outdated and refresh shell's

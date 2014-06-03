@@ -13,8 +13,6 @@
 #include "base/prefs/pref_service.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
-#include "chrome/browser/apps/shortcut_manager.h"
-#include "chrome/browser/apps/shortcut_manager_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -347,11 +345,6 @@ void AppListServiceImpl::EnableAppList(Profile* initial_profile,
                    false),
         base::TimeDelta::FromMinutes(kDiscoverabilityTimeoutMinutes));
   }
-
-  AppShortcutManager* shortcut_manager =
-      AppShortcutManagerFactory::GetForProfile(initial_profile);
-  if (shortcut_manager)
-    shortcut_manager->OnceOffCreateShortcuts();
 }
 
 void AppListServiceImpl::InvalidatePendingProfileLoads() {

@@ -2480,9 +2480,9 @@ const char kAppLaunchForMetroRestart[] = "apps.app_launch_for_metro_restart";
 const char kAppLaunchForMetroRestartProfile[] =
     "apps.app_launch_for_metro_restart_profile";
 
-// A boolean that indicates whether app shortcuts have been created.
-// On a transition from false to true, shortcuts are created for all apps.
-const char kAppShortcutsHaveBeenCreated[] = "apps.shortcuts_have_been_created";
+// An integer that is incremented whenever changes are made to app shortcuts.
+// Increasing this causes all app shortcuts to be recreated.
+const char kAppShortcutsVersion[] = "apps.shortcuts_version";
 
 // How often the bubble has been shown.
 extern const char kModuleConflictBubbleShown[] = "module_conflict.bubble_shown";

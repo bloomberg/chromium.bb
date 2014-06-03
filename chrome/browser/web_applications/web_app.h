@@ -122,6 +122,10 @@ void UpdateShortcutInfoAndIconForApp(const extensions::Extension* extension,
                                      Profile* profile,
                                      const ShortcutInfoCallback& callback);
 
+// Whether to create a shortcut for this type of extension.
+bool ShouldCreateShortcutFor(Profile* profile,
+                             const extensions::Extension* extension);
+
 // Gets the user data directory for given web app. The path for the directory is
 // based on |extension_id|. If |extension_id| is empty then |url| is used
 // to construct a unique ID.
@@ -171,6 +175,11 @@ void DeleteAllShortcuts(Profile* profile, const extensions::Extension* app);
 void UpdateAllShortcuts(const base::string16& old_app_title,
                         Profile* profile,
                         const extensions::Extension* app);
+
+// Updates shortcuts for all apps in this profile. This is expected to be called
+// on the UI thread.
+void UpdateShortcutsForAllApps(Profile* profile,
+                               const base::Closure& callback);
 
 // Returns true if given url is a valid web app url.
 bool IsValidUrl(const GURL& url);
