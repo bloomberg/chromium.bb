@@ -104,6 +104,7 @@ void UserMetricsRecorder::RecordUserMetricsAction(UserMetricsAction action) {
     case ash::UMA_SHELF_ALIGNMENT_SET_RIGHT:
       base::RecordAction(
           base::UserMetricsAction("Shelf_AlignmentSetRight"));
+      break;
     case ash::UMA_STATUS_AREA_AUDIO_CURRENT_INPUT_DEVICE:
       base::RecordAction(
           base::UserMetricsAction("StatusArea_Audio_CurrentInputDevice"));
