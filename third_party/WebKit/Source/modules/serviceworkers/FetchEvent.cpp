@@ -16,12 +16,6 @@ PassRefPtrWillBeRawPtr<FetchEvent> FetchEvent::create()
     return adoptRefWillBeNoop(new FetchEvent());
 }
 
-// TODO(horo): Remove this.
-PassRefPtrWillBeRawPtr<FetchEvent> FetchEvent::create(PassRefPtr<RespondWithObserver> observer)
-{
-    return adoptRefWillBeNoop(new FetchEvent(observer));
-}
-
 PassRefPtrWillBeRawPtr<FetchEvent> FetchEvent::create(PassRefPtr<RespondWithObserver> observer, PassRefPtr<Request> request)
 {
     return adoptRefWillBeNoop(new FetchEvent(observer, request));
@@ -43,14 +37,6 @@ const AtomicString& FetchEvent::interfaceName() const
 }
 
 FetchEvent::FetchEvent()
-{
-    ScriptWrappable::init(this);
-}
-
-// TODO(horo): Remove this.
-FetchEvent::FetchEvent(PassRefPtr<RespondWithObserver> observer)
-    : Event(EventTypeNames::fetch, /*canBubble=*/false, /*cancelable=*/true)
-    , m_observer(observer)
 {
     ScriptWrappable::init(this);
 }

@@ -47,8 +47,6 @@ public:
     virtual void dispatchActivateEvent(int eventID) = 0;
     // FIXME: This needs to pass the active service worker info.
     virtual void dispatchInstallEvent(int installEventID) = 0;
-    // TODO(horo): Remove this.
-    virtual void dispatchFetchEvent(int fetchEventID) = 0;
     virtual void dispatchFetchEvent(int fetchEventID, const WebServiceWorkerRequest& webRequest) = 0;
 
     virtual void dispatchMessageEvent(const WebString& message, const WebMessagePortChannelArray& channels) = 0;

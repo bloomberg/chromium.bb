@@ -69,8 +69,6 @@ public:
     // WebServiceWorkerContextProxy overrides:
     virtual void dispatchActivateEvent(int) OVERRIDE;
     virtual void dispatchInstallEvent(int) OVERRIDE;
-    // TODO(horo): remove this.
-    virtual void dispatchFetchEvent(int) OVERRIDE;
     virtual void dispatchFetchEvent(int, const WebServiceWorkerRequest&) OVERRIDE;
     virtual void dispatchMessageEvent(const WebString& message, const WebMessagePortChannelArray&) OVERRIDE;
     virtual void dispatchSyncEvent(int) OVERRIDE;
