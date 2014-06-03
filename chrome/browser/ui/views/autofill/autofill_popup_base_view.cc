@@ -161,7 +161,7 @@ void AutofillPopupBaseView::OnMouseMoved(const ui::MouseEvent& event) {
 }
 
 bool AutofillPopupBaseView::OnMousePressed(const ui::MouseEvent& event) {
-  return true;
+  return event.GetClickCount() == 1;
 }
 
 void AutofillPopupBaseView::OnMouseReleased(const ui::MouseEvent& event) {
@@ -239,6 +239,5 @@ void AutofillPopupBaseView::HideController() {
 gfx::NativeView AutofillPopupBaseView::container_view() {
   return delegate_->container_view();
 }
-
 
 }  // namespace autofill
