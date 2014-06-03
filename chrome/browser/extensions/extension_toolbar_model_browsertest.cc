@@ -27,12 +27,6 @@ class ExtensionToolbarModelTest : public ExtensionBrowserTest,
     ExtensionBrowserTest::SetUp();
   }
 
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
-    ExtensionBrowserTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitchNative(
-        "vmodule", "*extension_toolbar_model*=4,*browser_actions_container*=4");
-  }
-
   virtual void SetUpOnMainThread() OVERRIDE {
     model_ = ExtensionToolbarModel::Get(browser()->profile());
     model_->AddObserver(this);
@@ -590,32 +584,36 @@ IN_PROC_BROWSER_TEST_F(ExtensionToolbarModelTest, HighlightModeAdd) {
   EXPECT_EQ(id_c, ExtensionAt(2)->id());
 }
 
-// Test is flaky (see crbug.com/379170), but currently enabled to gather traces.
-// If it fails, ping Finnur.
-IN_PROC_BROWSER_TEST_F(ExtensionToolbarModelTest, SizeAfterPrefChange) {
+// Test is flaky on Linus and ChromeOS, see crbug.com/379170.
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+#define MAYBE_SizeAfterPrefChange DISABLED_SizeAfterPrefChange
+#else
+#define MAYBE_SizeAfterPrefChange SizeAfterPrefChange
+#endif
+IN_PROC_BROWSER_TEST_F(ExtensionToolbarModelTest, MAYBE_SizeAfterPrefChange) {
   // Load two extensions with browser action.
   base::FilePath extension_a_path(test_data_dir_.AppendASCII("api_test")
                                                 .AppendASCII("browser_action")
                                                 .AppendASCII("basics"));
-  VLOG(4) << "Loading [basics]";
+  LOG(ERROR) << "Loading [basics]";
   ASSERT_TRUE(LoadExtension(extension_a_path));
   base::FilePath extension_b_path(test_data_dir_.AppendASCII("api_test")
                                                 .AppendASCII("browser_action")
                                                 .AppendASCII("popup"));
-  VLOG(4) << "Loading [popup]";
+  LOG(ERROR) << "Loading [popup]";
   ASSERT_TRUE(LoadExtension(extension_b_path));
   std::string id_a = ExtensionAt(0)->id();
   std::string id_b = ExtensionAt(1)->id();
 
-  VLOG(4) << "GetVisibleIconCount";
+  LOG(ERROR) << "GetVisibleIconCount";
 
   // Should be at max size (-1).
   EXPECT_EQ(-1, model_->GetVisibleIconCount());
 
-  VLOG(4) << "OnExtensionToolbarPrefChange";
+  LOG(ERROR) << "OnExtensionToolbarPrefChange";
   model_->OnExtensionToolbarPrefChange();
 
-  VLOG(4) << "GetVisibleIconCount";
+  LOG(ERROR) << "GetVisibleIconCount";
 
   // Should still be at max size.
   EXPECT_EQ(-1, model_->GetVisibleIconCount());

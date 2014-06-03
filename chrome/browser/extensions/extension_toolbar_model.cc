@@ -158,13 +158,13 @@ ExtensionToolbarModel::Action ExtensionToolbarModel::ExecuteBrowserAction(
 }
 
 void ExtensionToolbarModel::SetVisibleIconCount(int count) {
-  VLOG(4) << "visible_icon_count_ before: " << visible_icon_count_;
+  LOG(ERROR) << "visible_icon_count_ before: " << visible_icon_count_;
   visible_icon_count_ =
       count == static_cast<int>(toolbar_items_.size()) ? -1 : count;
-  VLOG(4) << "SetVisibleIconCount "
-          << count << " == " << toolbar_items_.size() << " -> "
-          << visible_icon_count_ << " "
-          << "is_highlighting: " << is_highlighting_;
+  LOG(ERROR) << "SetVisibleIconCount "
+             << count << " == " << toolbar_items_.size() << " -> "
+             << visible_icon_count_ << " "
+             << "is_highlighting: " << is_highlighting_;
   // Only set the prefs if we're not in highlight mode. Highlight mode is
   // designed to be a transitory state, and should not persist across browser
   // restarts (though it may be re-entered).
@@ -176,23 +176,23 @@ void ExtensionToolbarModel::SetVisibleIconCount(int count) {
 void ExtensionToolbarModel::OnExtensionLoaded(
     content::BrowserContext* browser_context,
     const Extension* extension) {
-  VLOG(4) << "Loading extension";
+  LOG(ERROR) << "Loading extension";
 
   // We don't want to add the same extension twice. It may have already been
   // added by EXTENSION_BROWSER_ACTION_VISIBILITY_CHANGED below, if the user
   // hides the browser action and then disables and enables the extension.
   for (size_t i = 0; i < toolbar_items_.size(); i++) {
     if (toolbar_items_[i].get() == extension) {
-      VLOG(4) << "... but returning early";
+      LOG(ERROR) << "... but returning early";
       return;
     }
   }
   if (ExtensionActionAPI::GetBrowserActionVisibility(extension_prefs_,
                                                      extension->id())) {
-    VLOG(4) << "Adding extensions";
+    LOG(ERROR) << "Adding extensions";
     AddExtension(extension);
   } else {
-    VLOG(4) << "NOT visible";
+    LOG(ERROR) << "NOT visible";
   }
 }
 
@@ -230,16 +230,15 @@ void ExtensionToolbarModel::Observe(
           ExtensionRegistry::EVERYTHING);
   if (ExtensionActionAPI::GetBrowserActionVisibility(extension_prefs_,
                                                      extension->id())) {
-    VLOG(4) << "Adding extension";
+    LOG(ERROR) << "Adding extension";
     AddExtension(extension);
   } else {
-    VLOG(4) << "Removing extension";
+    LOG(ERROR) << "Removing extension";
     RemoveExtension(extension);
   }
 }
 
 void ExtensionToolbarModel::OnReady() {
-  VLOG(4) << "OnReady called";
   ExtensionRegistry* registry = ExtensionRegistry::Get(profile_);
   InitializeExtensionList(registry->enabled_extensions());
   // Wait until the extension system is ready before observing any further
@@ -353,7 +352,6 @@ void ExtensionToolbarModel::InitializeExtensionList(
   last_known_positions_ = extension_prefs_->GetToolbarOrder();
   Populate(last_known_positions_, extensions);
 
-  VLOG(4) << "extensions_initialized!";
   extensions_initialized_ = true;
   FOR_EACH_OBSERVER(Observer, observers_, VisibleCountChanged());
 }
