@@ -1,27 +1,27 @@
 layer at (0,0) size 800x600
   RenderView at (0,0) size 800x600
-layer at (0,0) size 800x309
-  RenderBlock {HTML} at (0,0) size 800x309
-    RenderBody {BODY} at (0,0) size 800x308
+layer at (0,0) size 800x315
+  RenderBlock {HTML} at (0,0) size 800x315
+    RenderBody {BODY} at (0,0) size 800x314
       RenderBlock {DIV} at (0,0) size 600x36
         RenderText {#text} at (0,0) size 202x14
           text run at (0,0) width 202: "Table autosizing tests - nested-tables.html"
         RenderBR {BR} at (201,0) size 1x14
         RenderText {#text} at (0,15) size 365x14
           text run at (0,15) width 365: "This test passes if \"This text should not overlap itself\" doesn't overlap itself."
-      RenderTable {TABLE} at (1,37) size 798x271 [border: none]
-        RenderTableSection {TBODY} at (0,0) size 797x270
-          RenderTableRow {TR} at (0,0) size 797x270
-            RenderTableCell {TD} at (0,0) size 797x270 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=0 c=0 rs=1 cs=1]
-              RenderBlock (anonymous) at (2,2) size 794x198
-                RenderText {#text} at (0,0) size 786x197
+      RenderTable {TABLE} at (1,37) size 798x277 [border: none]
+        RenderTableSection {TBODY} at (0,0) size 797x276
+          RenderTableRow {TR} at (0,0) size 797x276
+            RenderTableCell {TD} at (0,0) size 797x276 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=0 c=0 rs=1 cs=1]
+              RenderBlock (anonymous) at (2,2) size 794x204
+                RenderText {#text} at (0,0) size 786x203
                   text run at (0,0) width 786: "Autosize Autosize Autosize Autosize Autosize Autosize Autosize"
-                  text run at (0,33) width 786: "Autosize Autosize Autosize Autosize Autosize Autosize Autosize"
-                  text run at (0,66) width 786: "Autosize Autosize Autosize Autosize Autosize Autosize Autosize"
-                  text run at (0,99) width 786: "Autosize Autosize Autosize Autosize Autosize Autosize Autosize"
-                  text run at (0,132) width 786: "Autosize Autosize Autosize Autosize Autosize Autosize Autosize"
-                  text run at (0,165) width 106: "Autosize"
-              RenderTable {TABLE} at (3,201) size 94x67 [border: none]
+                  text run at (0,34) width 786: "Autosize Autosize Autosize Autosize Autosize Autosize Autosize"
+                  text run at (0,68) width 786: "Autosize Autosize Autosize Autosize Autosize Autosize Autosize"
+                  text run at (0,102) width 786: "Autosize Autosize Autosize Autosize Autosize Autosize Autosize"
+                  text run at (0,136) width 786: "Autosize Autosize Autosize Autosize Autosize Autosize Autosize"
+                  text run at (0,170) width 106: "Autosize"
+              RenderTable {TABLE} at (3,207) size 94x67 [border: none]
                 RenderTableSection {TBODY} at (0,0) size 93x66
                   RenderTableRow {TR} at (0,0) size 93x48
                     RenderTableCell {TD} at (0,0) size 93x48 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=0 c=0 rs=1 cs=1]

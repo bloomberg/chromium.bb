@@ -15,8 +15,8 @@ layer at (0,0) size 800x319
         RenderImage {IMG} at (68.50,25.50) size 30x30
         RenderText {#text} at (98,34) size 16x16
           text run at (98,34) width 16: " "
-        RenderInline {SPAN} at (0,0) size 113x38 [color=#C0C0C0]
-          RenderText {#text} at (113,16) size 113x38
+        RenderInline {SPAN} at (0,0) size 113x39 [color=#C0C0C0]
+          RenderText {#text} at (113,16) size 113x39
             text run at (113,16) width 113: "xxx"
         RenderText {#text} at (226,34) size 15x16
           text run at (226,34) width 15: " "
@@ -50,13 +50,13 @@ layer at (0,0) size 800x319
         RenderImage {IMG} at (113.50,87.50) size 50x50
         RenderText {#text} at (163,106) size 16x16
           text run at (163,106) width 16: " "
-        RenderInline {SPAN} at (0,0) size 350x23 [color=#C0C0C0]
-          RenderText {#text} at (178,100) size 91x23
+        RenderInline {SPAN} at (0,0) size 350x24 [color=#C0C0C0]
+          RenderText {#text} at (178,100) size 91x24
             text run at (178,100) width 91: "xxx "
           RenderInline {SPAN} at (0,0) size 170x57
             RenderText {#text} at (268,73) size 170x57
               text run at (268,73) width 170: "xxx"
-          RenderText {#text} at (437,100) size 91x23
+          RenderText {#text} at (437,100) size 91x24
             text run at (437,100) width 91: " xxx"
         RenderText {#text} at (527,106) size 16x16
           text run at (527,106) width 16: " "

@@ -2,22 +2,22 @@ layer at (0,0) size 800x600
   RenderView at (0,0) size 800x600
 layer at (0,0) size 800x0
   RenderBlock {HTML} at (0,0) size 800x0
-layer at (158,8) size 634x546
-  RenderBody {BODY} at (158,8) size 634x546.33
-    RenderBlock {H3} at (0,18.72) size 634x42
-      RenderText {#text} at (0,0) size 202x20
+layer at (158,8) size 634x548
+  RenderBody {BODY} at (158,8) size 634x548.33
+    RenderBlock {H3} at (0,18.72) size 634x44
+      RenderText {#text} at (0,0) size 202x21
         text run at (0,0) width 202: "Test for chromium bug : "
-      RenderInline {A} at (0,0) size 47x20 [color=#0000EE]
-        RenderText {#text} at (201,0) size 47x20
+      RenderInline {A} at (0,0) size 47x21 [color=#0000EE]
+        RenderText {#text} at (201,0) size 47x21
           text run at (201,0) width 47: "31286"
-      RenderText {#text} at (247,0) size 627x41
+      RenderText {#text} at (247,0) size 627x43
         text run at (247,0) width 380: ". css rendering bug : fixed-position-element and"
-        text run at (0,21) width 42: "'left'."
-    RenderBlock {H4} at (0,81.98) size 634x36
+        text run at (0,22) width 42: "'left'."
+    RenderBlock {H4} at (0,83.98) size 634x36
       RenderText {#text} at (0,0) size 623x35
         text run at (0,0) width 623: "If fixed position inline element does not have left and/or right position then it should render"
         text run at (0,18) width 106: "as normal flow."
-    RenderBlock {H5} at (0,140.16) size 634x384
+    RenderBlock {H5} at (0,142.16) size 634x384
       RenderBlock (anonymous) at (0,0) size 634x16
         RenderText {#text} at (0,0) size 340x15
           text run at (0,0) width 340: "Case 1 : fixed text box should be just after relative text box. "
@@ -66,143 +66,143 @@ layer at (158,8) size 634x546
         RenderText {#text} at (0,0) size 434x15
           text run at (0,0) width 434: "Case 12 : fixed text box should be before relative2 text box in some distance. "
         RenderBR {BR} at (433,0) size 1x15
-layer at (258,164) size 400x16
+layer at (258,166) size 400x16
   RenderBlock (relative positioned) {DIV} at (0,16) size 400x16 [bgcolor=#008000]
     RenderText {#text} at (0,0) size 43x15
       text run at (0,0) width 43: "relative"
     RenderText {#text} at (0,0) size 0x0
-layer at (301,164) size 28x16
-  RenderBlock (positioned) {SPAN} at (300.77,164.16) size 28.05x16 [bgcolor=#FF0000]
+layer at (301,166) size 28x16
+  RenderBlock (positioned) {SPAN} at (300.77,166.16) size 28.05x16 [bgcolor=#FF0000]
     RenderText {#text} at (0,0) size 29x15
       text run at (0,0) width 29: "fixed"
-layer at (258,196) size 400x16
+layer at (258,198) size 400x16
   RenderBlock (relative positioned) {DIV} at (0,48) size 400x16 [bgcolor=#008000]
     RenderText {#text} at (357,0) size 43x15
       text run at (357,0) width 43: "relative"
     RenderText {#text} at (0,0) size 0x0
-layer at (587,196) size 28x16
-  RenderBlock (positioned) {SPAN} at (587.19,196.16) size 28.05x16 [bgcolor=#FF0000]
+layer at (587,198) size 28x16
+  RenderBlock (positioned) {SPAN} at (587.19,198.16) size 28.05x16 [bgcolor=#FF0000]
     RenderText {#text} at (0,0) size 29x15
       text run at (0,0) width 28: "fixed"
-layer at (58,228) size 400x16
+layer at (58,230) size 400x16
   RenderBlock (relative positioned) {DIV} at (0,80) size 400x16 [bgcolor=#008000]
     RenderText {#text} at (0,0) size 43x15
       text run at (0,0) width 43: "relative"
     RenderText {#text} at (0,0) size 0x0
-layer at (101,228) size 28x16
-  RenderBlock (positioned) {SPAN} at (100.77,228.16) size 28.05x16 [bgcolor=#FF0000]
+layer at (101,230) size 28x16
+  RenderBlock (positioned) {SPAN} at (100.77,230.16) size 28.05x16 [bgcolor=#FF0000]
     RenderText {#text} at (0,0) size 29x15
       text run at (0,0) width 29: "fixed"
-layer at (58,260) size 400x16
+layer at (58,262) size 400x16
   RenderBlock (relative positioned) {DIV} at (0,112) size 400x16 [bgcolor=#008000]
     RenderText {#text} at (357,0) size 43x15
       text run at (357,0) width 43: "relative"
     RenderText {#text} at (0,0) size 0x0
-layer at (387,260) size 28x16
-  RenderBlock (positioned) {SPAN} at (387.19,260.16) size 28.05x16 [bgcolor=#FF0000]
+layer at (387,262) size 28x16
+  RenderBlock (positioned) {SPAN} at (387.19,262.16) size 28.05x16 [bgcolor=#FF0000]
     RenderText {#text} at (0,0) size 29x15
       text run at (0,0) width 28: "fixed"
-layer at (258,292) size 400x16
+layer at (258,294) size 400x16
   RenderBlock (relative positioned) {DIV} at (0,144) size 400x16 [bgcolor=#808080]
     RenderText {#text} at (0,0) size 47x15
       text run at (0,0) width 47: "relative "
     RenderText {#text} at (0,0) size 0x0
-layer at (358,292) size 50x15
+layer at (358,294) size 50x15
   RenderInline (relative positioned) {SPAN} at (0,0) size 50x15 [bgcolor=#008000]
     RenderText {#text} at (46,0) size 50x15
       text run at (46,0) width 50: "relative2"
-layer at (453,292) size 29x16
-  RenderBlock (positioned) {SPAN} at (453.48,292.16) size 28.05x16 [bgcolor=#FF0000]
+layer at (453,294) size 29x16
+  RenderBlock (positioned) {SPAN} at (453.48,294.16) size 28.05x16 [bgcolor=#FF0000]
     RenderText {#text} at (0,0) size 29x15
       text run at (0,0) width 29: "fixed"
-layer at (258,324) size 400x16
+layer at (258,326) size 400x16
   RenderBlock (relative positioned) {DIV} at (0,176) size 400x16 [bgcolor=#808080]
     RenderText {#text} at (304,0) size 47x15
       text run at (304,0) width 47: "relative "
     RenderText {#text} at (0,0) size 0x0
-layer at (358,324) size 96x15
+layer at (358,326) size 96x15
   RenderInline (relative positioned) {SPAN} at (0,0) size 96x15 [bgcolor=#008000]
     RenderText {#text} at (350,0) size 50x15
       text run at (350,0) width 50: "relative2"
-layer at (634,324) size 29x16
-  RenderBlock (positioned) {SPAN} at (634.47,324.16) size 28.05x16 [bgcolor=#FF0000]
+layer at (634,326) size 29x16
+  RenderBlock (positioned) {SPAN} at (634.47,326.16) size 28.05x16 [bgcolor=#FF0000]
     RenderText {#text} at (0,0) size 29x15
       text run at (0,0) width 28: "fixed"
-layer at (258,356) size 400x16
+layer at (258,358) size 400x16
   RenderBlock (relative positioned) {DIV} at (0,208) size 400x16 [bgcolor=#808080]
     RenderText {#text} at (0,0) size 47x15
       text run at (0,0) width 47: "relative "
     RenderText {#text} at (0,0) size 0x0
-layer at (158,356) size 50x15
+layer at (158,358) size 50x15
   RenderInline (relative positioned) {SPAN} at (0,0) size 50x15 [bgcolor=#008000]
     RenderText {#text} at (46,0) size 50x15
       text run at (46,0) width 50: "relative2"
-layer at (253,356) size 29x16
-  RenderBlock (positioned) {SPAN} at (253.48,356.16) size 28.05x16 [bgcolor=#FF0000]
+layer at (253,358) size 29x16
+  RenderBlock (positioned) {SPAN} at (253.48,358.16) size 28.05x16 [bgcolor=#FF0000]
     RenderText {#text} at (0,0) size 29x15
       text run at (0,0) width 29: "fixed"
-layer at (258,388) size 400x16
+layer at (258,390) size 400x16
   RenderBlock (relative positioned) {DIV} at (0,240) size 400x16 [bgcolor=#808080]
     RenderText {#text} at (304,0) size 47x15
       text run at (304,0) width 47: "relative "
     RenderText {#text} at (0,0) size 0x0
-layer at (158,388) size 96x15
+layer at (158,390) size 96x15
   RenderInline (relative positioned) {SPAN} at (0,0) size 96x15 [bgcolor=#008000]
     RenderText {#text} at (350,0) size 50x15
       text run at (350,0) width 50: "relative2"
-layer at (434,388) size 29x16
-  RenderBlock (positioned) {SPAN} at (434.47,388.16) size 28.05x16 [bgcolor=#FF0000]
+layer at (434,390) size 29x16
+  RenderBlock (positioned) {SPAN} at (434.47,390.16) size 28.05x16 [bgcolor=#FF0000]
     RenderText {#text} at (0,0) size 29x15
       text run at (0,0) width 28: "fixed"
-layer at (58,420) size 400x16
+layer at (58,422) size 400x16
   RenderBlock (relative positioned) {DIV} at (0,272) size 400x16 [bgcolor=#808080]
     RenderText {#text} at (0,0) size 47x15
       text run at (0,0) width 47: "relative "
     RenderText {#text} at (0,0) size 0x0
-layer at (158,420) size 50x15
+layer at (158,422) size 50x15
   RenderInline (relative positioned) {SPAN} at (0,0) size 50x15 [bgcolor=#008000]
     RenderText {#text} at (46,0) size 50x15
       text run at (46,0) width 50: "relative2"
-layer at (253,420) size 29x16
-  RenderBlock (positioned) {SPAN} at (253.48,420.16) size 28.05x16 [bgcolor=#FF0000]
+layer at (253,422) size 29x16
+  RenderBlock (positioned) {SPAN} at (253.48,422.16) size 28.05x16 [bgcolor=#FF0000]
     RenderText {#text} at (0,0) size 29x15
       text run at (0,0) width 29: "fixed"
-layer at (58,452) size 400x16
+layer at (58,454) size 400x16
   RenderBlock (relative positioned) {DIV} at (0,304) size 400x16 [bgcolor=#808080]
     RenderText {#text} at (304,0) size 47x15
       text run at (304,0) width 47: "relative "
     RenderText {#text} at (0,0) size 0x0
-layer at (158,452) size 96x15
+layer at (158,454) size 96x15
   RenderInline (relative positioned) {SPAN} at (0,0) size 96x15 [bgcolor=#008000]
     RenderText {#text} at (350,0) size 50x15
       text run at (350,0) width 50: "relative2"
-layer at (434,452) size 29x16
-  RenderBlock (positioned) {SPAN} at (434.47,452.16) size 28.05x16 [bgcolor=#FF0000]
+layer at (434,454) size 29x16
+  RenderBlock (positioned) {SPAN} at (434.47,454.16) size 28.05x16 [bgcolor=#FF0000]
     RenderText {#text} at (0,0) size 29x15
       text run at (0,0) width 28: "fixed"
-layer at (58,484) size 400x16
+layer at (58,486) size 400x16
   RenderBlock (relative positioned) {DIV} at (0,336) size 400x16 [bgcolor=#808080]
     RenderText {#text} at (0,0) size 47x15
       text run at (0,0) width 47: "relative "
     RenderText {#text} at (0,0) size 0x0
-layer at (-42,484) size 50x15 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600 outlineClip at (0,0) size 800x600
+layer at (-42,486) size 50x15 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600 outlineClip at (0,0) size 800x600
   RenderInline (relative positioned) {SPAN} at (0,0) size 50x15 [bgcolor=#008000]
     RenderText {#text} at (46,0) size 50x15
       text run at (46,0) width 50: "relative2"
-layer at (53,484) size 29x16
-  RenderBlock (positioned) {SPAN} at (53.48,484.16) size 28.05x16 [bgcolor=#FF0000]
+layer at (53,486) size 29x16
+  RenderBlock (positioned) {SPAN} at (53.48,486.16) size 28.05x16 [bgcolor=#FF0000]
     RenderText {#text} at (0,0) size 29x15
       text run at (0,0) width 29: "fixed"
-layer at (58,516) size 400x16
+layer at (58,518) size 400x16
   RenderBlock (relative positioned) {DIV} at (0,368) size 400x16 [bgcolor=#808080]
     RenderText {#text} at (304,0) size 47x15
       text run at (304,0) width 47: "relative "
     RenderText {#text} at (0,0) size 0x0
-layer at (-42,516) size 96x15 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600 outlineClip at (0,0) size 800x600
+layer at (-42,518) size 96x15 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600 outlineClip at (0,0) size 800x600
   RenderInline (relative positioned) {SPAN} at (0,0) size 96x15 [bgcolor=#008000]
     RenderText {#text} at (350,0) size 50x15
       text run at (350,0) width 50: "relative2"
-layer at (234,516) size 29x16
-  RenderBlock (positioned) {SPAN} at (234.47,516.16) size 28.05x16 [bgcolor=#FF0000]
+layer at (234,518) size 29x16
+  RenderBlock (positioned) {SPAN} at (234.47,518.16) size 28.05x16 [bgcolor=#FF0000]
     RenderText {#text} at (0,0) size 29x15
       text run at (0,0) width 28: "fixed"

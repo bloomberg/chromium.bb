@@ -1,19 +1,19 @@
 layer at (0,0) size 800x600
   RenderView at (0,0) size 800x600
-layer at (0,0) size 800x126
-  RenderBlock {HTML} at (0,0) size 800x126.44
-    RenderBody {BODY} at (8,18.72) size 784x91.72
-      RenderBlock {H3} at (0,0) size 784x21
-        RenderText {#text} at (0,0) size 202x20
+layer at (0,0) size 800x127
+  RenderBlock {HTML} at (0,0) size 800x127.44
+    RenderBody {BODY} at (8,18.72) size 784x92.72
+      RenderBlock {H3} at (0,0) size 784x22
+        RenderText {#text} at (0,0) size 202x21
           text run at (0,0) width 202: "Test for chromium bug : "
-        RenderInline {A} at (0,0) size 57x20 [color=#0000EE]
-          RenderText {#text} at (201,0) size 57x20
+        RenderInline {A} at (0,0) size 57x21 [color=#0000EE]
+          RenderText {#text} at (201,0) size 57x21
             text run at (201,0) width 57: "256333"
-        RenderText {#text} at (257,0) size 282x20
+        RenderText {#text} at (257,0) size 282x21
           text run at (257,0) width 282: ". Test case for Ignorable characters"
-      RenderBlock {P} at (0,39.72) size 784x18
+      RenderBlock {P} at (0,40.72) size 784x18
         RenderText {#text} at (0,0) size 154x17
           text run at (0,0) width 154: "abc should be displayed"
-      RenderBlock {P} at (0,73.72) size 784x18
+      RenderBlock {P} at (0,74.72) size 784x18
         RenderText {#text} at (0,0) size 23x17
           text run at (0,0) width 23: "a\x{2066}b\x{2069}c"

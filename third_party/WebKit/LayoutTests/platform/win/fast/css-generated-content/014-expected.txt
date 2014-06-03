@@ -1,8 +1,8 @@
-layer at (0,0) size 785x884
+layer at (0,0) size 785x886
   RenderView at (0,0) size 785x600
-layer at (0,0) size 785x884
-  RenderBlock {HTML} at (0,0) size 785x883.56
-    RenderBody {BODY} at (8,21.44) size 769x837.13
+layer at (0,0) size 785x886
+  RenderBlock {HTML} at (0,0) size 785x885.56
+    RenderBody {BODY} at (8,21.44) size 769x839.13
       RenderBlock {H1} at (0,0) size 769x74
         RenderText {#text} at (0,0) size 748x73
           text run at (0,0) width 748: "Problem: Safari improperly handles generated content"
@@ -82,22 +82,22 @@ layer at (0,0) size 785x884
             text run at (339,0) width 53: "in green"
         RenderText {#text} at (391,0) size 11x17
           text run at (391,0) width 11: "):"
-      RenderBlock {DIV} at (0,487.25) size 769x162.44 [border: (1px solid #000000)]
-        RenderBlock {H3} at (26,44.72) size 717x21
-          RenderText {#text} at (0,0) size 46x20
+      RenderBlock {DIV} at (0,487.25) size 769x163.44 [border: (1px solid #000000)]
+        RenderBlock {H3} at (26,44.72) size 717x22
+          RenderText {#text} at (0,0) size 46x21
             text run at (0,0) width 46: "Box 1"
-        RenderBlock {P} at (26,84.44) size 717x36
+        RenderBlock {P} at (26,85.44) size 717x36
           RenderBlock (anonymous) at (0,0) size 717x18
             RenderText {#text} at (0,0) size 661x17
               text run at (0,0) width 661: "This box should contain the text \"generated content\" in CSS2-compliant browsers (but won't in Safari)."
           RenderBlock (generated) at (0,18) size 717x18 [color=#008000]
             RenderText at (0,0) size 114x17
               text run at (0,0) width 114: "generated content"
-      RenderBlock {DIV} at (0,674.69) size 769x162.44 [border: (1px solid #000000)]
-        RenderBlock {H3} at (26,44.72) size 717x21
-          RenderText {#text} at (0,0) size 46x20
+      RenderBlock {DIV} at (0,675.69) size 769x163.44 [border: (1px solid #000000)]
+        RenderBlock {H3} at (26,44.72) size 717x22
+          RenderText {#text} at (0,0) size 46x21
             text run at (0,0) width 46: "Box 2"
-        RenderBlock {P} at (26,84.44) size 717x36
+        RenderBlock {P} at (26,85.44) size 717x36
           RenderBlock (anonymous) at (0,0) size 717x18
             RenderText {#text} at (0,0) size 639x17
               text run at (0,0) width 639: "This box should contain the text \"generated content\" in CSS2-compliant browsers, including Safari."

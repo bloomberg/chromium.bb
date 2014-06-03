@@ -78,7 +78,7 @@ PASS image2.height is 25
 PASS image2.right is 225
 PASS image2.bottom is 125
 PASS text2.left is 175
-FAIL text2.top should be within 1 of 132. Was 133.0703125.
+PASS text2.top is within 1 of 132
 PASS text2.width is within 1 of 49
 PASS text2.height is within 1 of 6
 PASS text2.right is within 1 of 224
@@ -103,7 +103,7 @@ PASS image3.height is 50
 PASS image3.right is 1200
 PASS image3.bottom is 550
 PASS text3.left is 1100
-FAIL text3.top should be within 1 of 565. Was 566.140625.
+PASS text3.top is within 1 of 565
 FAIL text3.width should be within 1 of 92. Was 95.9375.
 PASS text3.height is within 1 of 12
 FAIL text3.right should be within 1 of 1192. Was 1195.9375.
