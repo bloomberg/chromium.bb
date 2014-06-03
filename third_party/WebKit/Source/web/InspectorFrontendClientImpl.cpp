@@ -62,15 +62,15 @@ InspectorFrontendClientImpl::~InspectorFrontendClientImpl()
 void InspectorFrontendClientImpl::windowObjectCleared()
 {
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
-    v8::HandleScope handleScope(isolate);
-    v8::Handle<v8::Context> frameContext = m_frontendPage->mainFrame() ? toV8Context(m_frontendPage->mainFrame(), DOMWrapperWorld::mainWorld()) : v8::Local<v8::Context>();
-    v8::Context::Scope contextScope(frameContext);
+    ASSERT(m_frontendPage->mainFrame());
+    ScriptState* scriptState = ScriptState::forMainWorld(m_frontendPage->mainFrame());
+    ScriptState::Scope scope(scriptState);
 
     if (m_frontendHost)
         m_frontendHost->disconnectClient();
     m_frontendHost = InspectorFrontendHost::create(this, m_frontendPage);
-    v8::Handle<v8::Object> global = frameContext->Global();
-    v8::Handle<v8::Value> frontendHostObj = toV8(m_frontendHost.get(), global, frameContext->GetIsolate());
+    v8::Handle<v8::Object> global = scriptState->context()->Global();
+    v8::Handle<v8::Value> frontendHostObj = toV8(m_frontendHost.get(), global, scriptState->isolate());
 
     global->Set(v8::String::NewFromUtf8(isolate, "InspectorFrontendHost"), frontendHostObj);
     ScriptController* scriptController = m_frontendPage->mainFrame() ? &m_frontendPage->mainFrame()->script() : 0;

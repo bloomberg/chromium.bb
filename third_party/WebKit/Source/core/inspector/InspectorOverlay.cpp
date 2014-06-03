@@ -713,11 +713,10 @@ Page* InspectorOverlay::overlayPage()
     RefPtr<SharedBuffer> data = SharedBuffer::create(reinterpret_cast<const char*>(InspectorOverlayPage_html), sizeof(InspectorOverlayPage_html));
     loader.load(FrameLoadRequest(0, blankURL(), SubstituteData(data, "text/html", "UTF-8", KURL(), ForceSynchronousLoad)));
     v8::Isolate* isolate = toIsolate(frame.get());
-    v8::HandleScope handleScope(isolate);
-    v8::Handle<v8::Context> frameContext = toV8Context(frame.get(), DOMWrapperWorld::mainWorld());
-    ASSERT(!frameContext.IsEmpty());
-    v8::Context::Scope contextScope(frameContext);
-    v8::Handle<v8::Object> global = frameContext->Global();
+    ScriptState* scriptState = ScriptState::forMainWorld(frame.get());
+    ASSERT(!scriptState->contextIsEmpty());
+    ScriptState::Scope scope(scriptState);
+    v8::Handle<v8::Object> global = scriptState->context()->Global();
     v8::Handle<v8::Value> overlayHostObj = toV8(m_overlayHost.get(), global, isolate);
     global->Set(v8::String::NewFromUtf8(isolate, "InspectorOverlayHost"), overlayHostObj);
 

@@ -252,19 +252,15 @@ TextPosition ScriptController::eventHandlerPosition() const
 // Create a V8 object with an interceptor of NPObjectPropertyGetter.
 void ScriptController::bindToWindowObject(LocalFrame* frame, const String& key, NPObject* object)
 {
-    v8::HandleScope handleScope(m_isolate);
-
-    v8::Handle<v8::Context> v8Context = toV8Context(frame, DOMWrapperWorld::mainWorld());
-    if (v8Context.IsEmpty())
+    ScriptState* scriptState = ScriptState::forMainWorld(frame);
+    if (scriptState->contextIsEmpty())
         return;
 
-    v8::Context::Scope scope(v8Context);
-
+    ScriptState::Scope scope(scriptState);
     v8::Handle<v8::Object> value = createV8ObjectForNPObject(object, 0, m_isolate);
 
     // Attach to the global object.
-    v8::Handle<v8::Object> global = v8Context->Global();
-    global->Set(v8String(m_isolate, key), value);
+    scriptState->context()->Global()->Set(v8String(m_isolate, key), value);
 }
 
 void ScriptController::enableEval()
@@ -363,16 +359,14 @@ static NPObject* createNoScriptObject()
 
 static NPObject* createScriptObject(LocalFrame* frame, v8::Isolate* isolate)
 {
-    v8::HandleScope handleScope(isolate);
-    v8::Handle<v8::Context> v8Context = toV8Context(frame, DOMWrapperWorld::mainWorld());
-    if (v8Context.IsEmpty())
+    ScriptState* scriptState = ScriptState::forMainWorld(frame);
+    if (scriptState->contextIsEmpty())
         return createNoScriptObject();
 
-    v8::Context::Scope scope(v8Context);
+    ScriptState::Scope scope(scriptState);
     DOMWindow* window = frame->domWindow();
-    v8::Handle<v8::Value> global = toV8(window, v8Context->Global(), v8Context->GetIsolate());
+    v8::Handle<v8::Value> global = toV8(window, scriptState->context()->Global(), scriptState->isolate());
     ASSERT(global->IsObject());
-
     return npCreateV8ScriptObject(0, v8::Handle<v8::Object>::Cast(global), window, isolate);
 }
 
@@ -401,18 +395,17 @@ NPObject* ScriptController::createScriptObjectForPluginElement(HTMLPlugInElement
     if (!canExecuteScripts(NotAboutToExecuteScript))
         return createNoScriptObject();
 
-    v8::HandleScope handleScope(m_isolate);
-    v8::Handle<v8::Context> v8Context = toV8Context(m_frame, DOMWrapperWorld::mainWorld());
-    if (v8Context.IsEmpty())
+    ScriptState* scriptState = ScriptState::forMainWorld(m_frame);
+    if (scriptState->contextIsEmpty())
         return createNoScriptObject();
-    v8::Context::Scope scope(v8Context);
 
+    ScriptState::Scope scope(scriptState);
     DOMWindow* window = m_frame->domWindow();
-    v8::Handle<v8::Value> v8plugin = toV8(plugin, v8Context->Global(), v8Context->GetIsolate());
+    v8::Handle<v8::Value> v8plugin = toV8(plugin, scriptState->context()->Global(), scriptState->isolate());
     if (!v8plugin->IsObject())
         return createNoScriptObject();
 
-    return npCreateV8ScriptObject(0, v8::Handle<v8::Object>::Cast(v8plugin), window, v8Context->GetIsolate());
+    return npCreateV8ScriptObject(0, v8::Handle<v8::Object>::Cast(v8plugin), window, scriptState->isolate());
 }
 
 void ScriptController::clearWindowShell()
@@ -434,17 +427,14 @@ void ScriptController::setCaptureCallStackForUncaughtExceptions(bool value)
 
 void ScriptController::collectIsolatedContexts(Vector<std::pair<ScriptState*, SecurityOrigin*> >& result)
 {
-    v8::HandleScope handleScope(m_isolate);
     for (IsolatedWorldMap::iterator it = m_isolatedWorlds.begin(); it != m_isolatedWorlds.end(); ++it) {
         V8WindowShell* isolatedWorldShell = it->value.get();
         SecurityOrigin* origin = isolatedWorldShell->world().isolatedWorldSecurityOrigin();
         if (!origin)
             continue;
-        v8::Local<v8::Context> v8Context = isolatedWorldShell->context();
-        if (v8Context.IsEmpty())
+        if (!isolatedWorldShell->isContextInitialized())
             continue;
-        ScriptState* scriptState = ScriptState::from(v8Context);
-        result.append(std::pair<ScriptState*, SecurityOrigin*>(scriptState, origin));
+        result.append(std::pair<ScriptState*, SecurityOrigin*>(isolatedWorldShell->scriptState(), origin));
     }
 }
 
@@ -573,11 +563,11 @@ ScriptValue ScriptController::evaluateScriptInMainWorld(const ScriptSourceCode& 
     const String* savedSourceURL = m_sourceURL;
     m_sourceURL = &sourceURL;
 
-    v8::HandleScope handleScope(m_isolate);
-    v8::Handle<v8::Context> v8Context = toV8Context(m_frame, DOMWrapperWorld::mainWorld());
-    if (v8Context.IsEmpty())
+    ScriptState* scriptState = ScriptState::forMainWorld(m_frame);
+    if (scriptState->contextIsEmpty())
         return ScriptValue();
-    v8::Context::Scope scope(v8Context);
+
+    ScriptState::Scope scope(scriptState);
 
     RefPtr<LocalFrame> protect(m_frame);
     if (m_frame->loader().stateMachine()->isDisplayingInitialEmptyDocument())
@@ -586,31 +576,30 @@ ScriptValue ScriptController::evaluateScriptInMainWorld(const ScriptSourceCode& 
     OwnPtr<ScriptSourceCode> maybeProcessedSourceCode =  InspectorInstrumentation::preprocess(m_frame, sourceCode);
     const ScriptSourceCode& sourceCodeToCompile = maybeProcessedSourceCode ? *maybeProcessedSourceCode : sourceCode;
 
-    v8::Local<v8::Value> object = executeScriptAndReturnValue(v8Context, sourceCodeToCompile, corsStatus);
+    v8::Local<v8::Value> object = executeScriptAndReturnValue(scriptState->context(), sourceCodeToCompile, corsStatus);
     m_sourceURL = savedSourceURL;
 
     if (object.IsEmpty())
         return ScriptValue();
 
-    return ScriptValue(ScriptState::from(v8Context), object);
+    return ScriptValue(scriptState, object);
 }
 
 void ScriptController::executeScriptInIsolatedWorld(int worldID, const Vector<ScriptSourceCode>& sources, int extensionGroup, Vector<ScriptValue>* results)
 {
     ASSERT(worldID > 0);
 
-    v8::HandleScope handleScope(m_isolate);
     RefPtr<DOMWrapperWorld> world = DOMWrapperWorld::ensureIsolatedWorld(worldID, extensionGroup);
     V8WindowShell* isolatedWorldShell = windowShell(*world);
     if (!isolatedWorldShell->isContextInitialized())
         return;
 
-    v8::Local<v8::Context> context = isolatedWorldShell->context();
-    v8::Context::Scope contextScope(context);
+    ScriptState* scriptState = isolatedWorldShell->scriptState();
+    ScriptState::Scope scope(scriptState);
     v8::Local<v8::Array> resultArray = v8::Array::New(m_isolate, sources.size());
 
     for (size_t i = 0; i < sources.size(); ++i) {
-        v8::Local<v8::Value> evaluationResult = executeScriptAndReturnValue(context, sources[i]);
+        v8::Local<v8::Value> evaluationResult = executeScriptAndReturnValue(scriptState->context(), sources[i]);
         if (evaluationResult.IsEmpty())
             evaluationResult = v8::Local<v8::Value>::New(m_isolate, v8::Undefined(m_isolate));
         resultArray->Set(i, evaluationResult);
@@ -618,7 +607,7 @@ void ScriptController::executeScriptInIsolatedWorld(int worldID, const Vector<Sc
 
     if (results) {
         for (size_t i = 0; i < resultArray->Length(); ++i)
-            results->append(ScriptValue(ScriptState::from(context), resultArray->Get(i)));
+            results->append(ScriptValue(scriptState, resultArray->Get(i)));
     }
 }
 

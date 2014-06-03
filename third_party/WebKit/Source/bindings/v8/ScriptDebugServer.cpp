@@ -203,7 +203,7 @@ void ScriptDebugServer::continueProgram()
 {
     if (isPaused())
         quitMessageLoopOnPause();
-    m_pausedContext.Clear();
+    m_pausedScriptState.clear();
     m_executionState.Clear();
 }
 
@@ -337,17 +337,17 @@ PassRefPtr<JavaScriptCallFrame> ScriptDebugServer::wrapCallFrames(int maximumLim
 
 ScriptValue ScriptDebugServer::currentCallFramesInner(ScopeInfoDetails scopeDetails)
 {
-    v8::HandleScope scope(m_isolate);
-    v8::Handle<v8::Context> pausedContext = m_pausedContext.IsEmpty() ? m_isolate->GetCurrentContext() : m_pausedContext;
-    if (pausedContext.IsEmpty())
+    if (!m_isolate->InContext())
         return ScriptValue();
+    v8::HandleScope handleScope(m_isolate);
 
     RefPtr<JavaScriptCallFrame> currentCallFrame = wrapCallFrames(0, scopeDetails);
     if (!currentCallFrame)
         return ScriptValue();
 
-    v8::Context::Scope contextScope(pausedContext);
-    return ScriptValue(ScriptState::from(pausedContext), toV8(currentCallFrame.release(), pausedContext->Global(), pausedContext->GetIsolate()));
+    ScriptState* scriptState = m_pausedScriptState ? m_pausedScriptState.get() : ScriptState::current(m_isolate);
+    ScriptState::Scope scope(scriptState);
+    return ScriptValue(scriptState, toV8(currentCallFrame.release(), scriptState->context()->Global(), m_isolate));
 }
 
 ScriptValue ScriptDebugServer::currentCallFrames()
@@ -385,19 +385,19 @@ void ScriptDebugServer::breakProgramCallback(const v8::FunctionCallbackInfo<v8::
 {
     ASSERT(2 == info.Length());
     ScriptDebugServer* thisPtr = toScriptDebugServer(info.Data());
-    v8::Handle<v8::Context> pausedContext = thisPtr->m_isolate->GetCurrentContext();
+    ScriptState* pausedScriptState = ScriptState::current(thisPtr->m_isolate);
     v8::Handle<v8::Value> exception;
     v8::Handle<v8::Array> hitBreakpoints;
-    thisPtr->handleProgramBreak(pausedContext, v8::Handle<v8::Object>::Cast(info[0]), exception, hitBreakpoints);
+    thisPtr->handleProgramBreak(pausedScriptState, v8::Handle<v8::Object>::Cast(info[0]), exception, hitBreakpoints);
 }
 
-void ScriptDebugServer::handleProgramBreak(v8::Handle<v8::Context> pausedContext, v8::Handle<v8::Object> executionState, v8::Handle<v8::Value> exception, v8::Handle<v8::Array> hitBreakpointNumbers)
+void ScriptDebugServer::handleProgramBreak(ScriptState* pausedScriptState, v8::Handle<v8::Object> executionState, v8::Handle<v8::Value> exception, v8::Handle<v8::Array> hitBreakpointNumbers)
 {
     // Don't allow nested breaks.
     if (isPaused())
         return;
 
-    ScriptDebugListener* listener = getDebugListenerForContext(pausedContext);
+    ScriptDebugListener* listener = getDebugListenerForContext(pausedScriptState->context());
     if (!listener)
         return;
 
@@ -411,16 +411,15 @@ void ScriptDebugServer::handleProgramBreak(v8::Handle<v8::Context> pausedContext
         }
     }
 
-    m_pausedContext = pausedContext;
+    m_pausedScriptState = pausedScriptState;
     m_executionState = executionState;
-    ScriptState* scriptState = ScriptState::from(pausedContext);
-    ScriptDebugListener::SkipPauseRequest result = listener->didPause(scriptState, currentCallFrames(), ScriptValue(scriptState, exception), breakpointIds);
+    ScriptDebugListener::SkipPauseRequest result = listener->didPause(pausedScriptState, currentCallFrames(), ScriptValue(pausedScriptState, exception), breakpointIds);
     if (result == ScriptDebugListener::NoSkip) {
         m_runningNestedMessageLoop = true;
-        runMessageLoopOnPause(pausedContext);
+        runMessageLoopOnPause(pausedScriptState->context());
         m_runningNestedMessageLoop = false;
     }
-    m_pausedContext.Clear();
+    m_pausedScriptState.clear();
     m_executionState.Clear();
 
     if (result == ScriptDebugListener::StepInto) {
@@ -477,13 +476,13 @@ void ScriptDebugServer::handleV8DebugEvent(const v8::Debug::EventDetails& eventD
             v8::Handle<v8::Value> exceptionGetterValue = eventData->Get(v8AtomicString(m_isolate, "exception"));
             ASSERT(!exceptionGetterValue.IsEmpty() && exceptionGetterValue->IsFunction());
             v8::Handle<v8::Value> exception = V8ScriptRunner::callInternalFunction(v8::Handle<v8::Function>::Cast(exceptionGetterValue), eventData, 0, 0, m_isolate);
-            handleProgramBreak(eventContext, eventDetails.GetExecutionState(), exception, v8::Handle<v8::Array>());
+            handleProgramBreak(ScriptState::from(eventContext), eventDetails.GetExecutionState(), exception, v8::Handle<v8::Array>());
         } else if (event == v8::Break) {
             v8::Handle<v8::Function> getBreakpointNumbersFunction = v8::Local<v8::Function>::Cast(debuggerScript->Get(v8AtomicString(m_isolate, "getBreakpointNumbers")));
             v8::Handle<v8::Value> argv[] = { eventDetails.GetEventData() };
             v8::Handle<v8::Value> hitBreakpoints = V8ScriptRunner::callInternalFunction(getBreakpointNumbersFunction, debuggerScript, WTF_ARRAY_LENGTH(argv), argv, m_isolate);
             ASSERT(hitBreakpoints->IsArray());
-            handleProgramBreak(eventContext, eventDetails.GetExecutionState(), v8::Handle<v8::Value>(), hitBreakpoints.As<v8::Array>());
+            handleProgramBreak(ScriptState::from(eventContext), eventDetails.GetExecutionState(), v8::Handle<v8::Value>(), hitBreakpoints.As<v8::Array>());
         }
     }
 }
@@ -556,7 +555,7 @@ v8::Handle<v8::Value> ScriptDebugServer::setFunctionVariableValue(v8::Handle<v8:
 
 bool ScriptDebugServer::isPaused()
 {
-    return !m_pausedContext.IsEmpty();
+    return m_pausedScriptState;
 }
 
 void ScriptDebugServer::compileScript(ScriptState* scriptState, const String& expression, const String& sourceURL, String* scriptId, String* exceptionMessage)

@@ -126,7 +126,7 @@ bool WorkerScriptController::initializeContextIfNeeded()
 
     m_scriptState = ScriptState::create(context, m_world);
 
-    v8::Context::Scope scope(context);
+    ScriptState::Scope scope(m_scriptState.get());
 
     // Set DebugId for the new context.
     context->SetEmbedderData(0, v8AtomicString(m_isolate, "worker"));

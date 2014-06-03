@@ -76,16 +76,13 @@ static v8::Local<v8::Object> createInjectedScriptHostV8Wrapper(InjectedScriptHos
 ScriptValue InjectedScriptManager::createInjectedScript(const String& scriptSource, ScriptState* inspectedScriptState, int id)
 {
     v8::Isolate* isolate = inspectedScriptState->isolate();
-    v8::HandleScope handleScope(isolate);
-
-    v8::Local<v8::Context> inspectedContext = inspectedScriptState->context();
-    v8::Context::Scope contextScope(inspectedContext);
+    ScriptState::Scope scope(inspectedScriptState);
 
     // Call custom code to create InjectedScripHost wrapper specific for the context
     // instead of calling toV8() that would create the
     // wrapper in the current context.
     // FIXME: make it possible to use generic bindings factory for InjectedScriptHost.
-    v8::Local<v8::Object> scriptHostWrapper = createInjectedScriptHostV8Wrapper(m_injectedScriptHost.get(), inspectedContext->GetIsolate());
+    v8::Local<v8::Object> scriptHostWrapper = createInjectedScriptHostV8Wrapper(m_injectedScriptHost.get(), inspectedScriptState->isolate());
     if (scriptHostWrapper.IsEmpty())
         return ScriptValue();
 
@@ -98,25 +95,23 @@ ScriptValue InjectedScriptManager::createInjectedScript(const String& scriptSour
     ASSERT(!value.IsEmpty());
     ASSERT(value->IsFunction());
 
-    v8::Local<v8::Object> windowGlobal = inspectedContext->Global();
-    v8::Handle<v8::Value> info[] = { scriptHostWrapper, windowGlobal, v8::Number::New(inspectedContext->GetIsolate(), id) };
-    v8::Local<v8::Value> injectedScriptValue = V8ScriptRunner::callInternalFunction(v8::Local<v8::Function>::Cast(value), windowGlobal, WTF_ARRAY_LENGTH(info), info, inspectedContext->GetIsolate());
+    v8::Local<v8::Object> windowGlobal = inspectedScriptState->context()->Global();
+    v8::Handle<v8::Value> info[] = { scriptHostWrapper, windowGlobal, v8::Number::New(inspectedScriptState->isolate(), id) };
+    v8::Local<v8::Value> injectedScriptValue = V8ScriptRunner::callInternalFunction(v8::Local<v8::Function>::Cast(value), windowGlobal, WTF_ARRAY_LENGTH(info), info, inspectedScriptState->isolate());
     return ScriptValue(inspectedScriptState, injectedScriptValue);
 }
 
 bool InjectedScriptManager::canAccessInspectedWindow(ScriptState* scriptState)
 {
-    v8::HandleScope handleScope(scriptState->isolate());
-    v8::Local<v8::Context> context = scriptState->context();
-    v8::Local<v8::Object> global = context->Global();
+    ScriptState::Scope scope(scriptState);
+    v8::Local<v8::Object> global = scriptState->context()->Global();
     if (global.IsEmpty())
         return false;
-    v8::Handle<v8::Object> holder = V8Window::findInstanceInPrototypeChain(global, context->GetIsolate());
+    v8::Handle<v8::Object> holder = V8Window::findInstanceInPrototypeChain(global, scriptState->isolate());
     if (holder.IsEmpty())
         return false;
     LocalFrame* frame = V8Window::toNative(holder)->frame();
 
-    v8::Context::Scope contextScope(context);
     return BindingSecurity::shouldAllowAccessToFrame(scriptState->isolate(), frame, DoNotReportSecurityError);
 }
 

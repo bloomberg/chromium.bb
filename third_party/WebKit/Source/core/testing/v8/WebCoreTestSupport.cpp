@@ -41,15 +41,12 @@ namespace WebCoreTestSupport {
 
 void injectInternalsObject(v8::Local<v8::Context> context)
 {
-    // This can happen if no JavaScript was used in the main frame.
-    if (context.IsEmpty())
-        return;
-
-    v8::Context::Scope contextScope(context);
-    v8::HandleScope scope(context->GetIsolate());
-    ExecutionContext* scriptContext = currentExecutionContext(context->GetIsolate());
-    if (scriptContext->isDocument())
-        context->Global()->Set(v8::String::NewFromUtf8(context->GetIsolate(), Internals::internalsId), toV8(Internals::create(toDocument(scriptContext)), v8::Handle<v8::Object>(), context->GetIsolate()));
+    ScriptState* scriptState = ScriptState::from(context);
+    ScriptState::Scope scope(scriptState);
+    v8::Handle<v8::Object> global = scriptState->context()->Global();
+    ExecutionContext* executionContext = scriptState->executionContext();
+    if (executionContext->isDocument())
+        global->Set(v8::String::NewFromUtf8(scriptState->isolate(), Internals::internalsId), toV8(Internals::create(toDocument(executionContext)), global, scriptState->isolate()));
 }
 
 void resetInternalsObject(v8::Local<v8::Context> context)
@@ -58,11 +55,9 @@ void resetInternalsObject(v8::Local<v8::Context> context)
     if (context.IsEmpty())
         return;
 
-    v8::Context::Scope contextScope(context);
-    v8::HandleScope scope(context->GetIsolate());
-
-    ExecutionContext* scriptContext = currentExecutionContext(context->GetIsolate());
-    Page* page = toDocument(scriptContext)->frame()->page();
+    ScriptState* scriptState = ScriptState::from(context);
+    ScriptState::Scope scope(scriptState);
+    Page* page = toDocument(scriptState->executionContext())->frame()->page();
     ASSERT(page);
     Internals::resetToConsistentState(page);
     InternalSettings::from(*page)->resetToConsistentState();
