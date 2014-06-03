@@ -50,6 +50,12 @@ NetworkInformation::~NetworkInformation()
 
 String NetworkInformation::type() const
 {
+    // m_type is only updated when listening for events, so ask networkStateNotifier
+    // if not listening (crbug.com/379841).
+    if (!m_observing)
+        return connectionTypeToString(networkStateNotifier().connectionType());
+
+    // If observing, return m_type which changes when the event fires, per spec.
     return connectionTypeToString(m_type);
 }
 
@@ -117,6 +123,7 @@ void NetworkInformation::stop()
 void NetworkInformation::startObserving()
 {
     if (!m_observing && !m_contextStopped) {
+        m_type = networkStateNotifier().connectionType();
         networkStateNotifier().addObserver(this, executionContext());
         m_observing = true;
     }
