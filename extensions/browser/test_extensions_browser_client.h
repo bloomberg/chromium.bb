@@ -16,7 +16,7 @@ namespace extensions {
 class TestExtensionsBrowserClient : public ExtensionsBrowserClient {
  public:
   // |context| is required and must not be an incognito context.
-  TestExtensionsBrowserClient(content::BrowserContext* main_context);
+  explicit TestExtensionsBrowserClient(content::BrowserContext* main_context);
   virtual ~TestExtensionsBrowserClient();
 
   // Associates an incognito context with |main_context_|.

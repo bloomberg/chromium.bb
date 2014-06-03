@@ -41,7 +41,7 @@ class FileHighlighter {
   void SetHighlightedRegions(base::DictionaryValue* dict) const;
 
  protected:
-  FileHighlighter(const std::string& contents);
+  explicit FileHighlighter(const std::string& contents);
 
   // The contents of the file we are parsing.
   std::string contents_;

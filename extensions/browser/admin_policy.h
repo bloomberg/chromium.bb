@@ -36,7 +36,7 @@ bool UserMayModifySettings(const Extension* extension, base::string16* error);
 // this enforces the admin policy forcelist.
 bool MustRemainEnabled(const Extension* extension, base::string16* error);
 
-}  // namespace
+}  // namespace admin_policy
 }  // namespace extensions
 
 #endif  // EXTENSIONS_BROWSER_ADMIN_POLICY_H_
