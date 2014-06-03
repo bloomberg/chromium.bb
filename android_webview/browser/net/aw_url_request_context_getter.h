@@ -50,13 +50,15 @@ class AwURLRequestContextGetter : public net::URLRequestContextGetter {
   friend class AwBrowserContext;
   virtual ~AwURLRequestContextGetter();
 
-  // Prior to GetURLRequestContext() being called, SetProtocolHandlers() is
-  // called to hand over the ProtocolHandlers that GetURLRequestContext() will
-  // later install into |job_factory_|.  This ordering is enforced by having
-  // AwBrowserContext::CreateRequestContext() call SetProtocolHandlers().
-  // SetProtocolHandlers() is necessary because the ProtocolHandlers are created
+  // Prior to GetURLRequestContext() being called, this is called to hand over
+  // the objects that GetURLRequestContext() will later install into
+  // |job_factory_|.  This ordering is enforced by having
+  // AwBrowserContext::CreateRequestContext() call this method.
+  // This method is necessary because the passed in objects are created
   // on the UI thread while |job_factory_| must be created on the IO thread.
-  void SetProtocolHandlers(content::ProtocolHandlerMap* protocol_handlers);
+  void SetHandlersAndInterceptors(
+      content::ProtocolHandlerMap* protocol_handlers,
+      content::URLRequestInterceptorScopedVector request_interceptors);
 
   void InitializeURLRequestContext();
 
@@ -67,9 +69,10 @@ class AwURLRequestContextGetter : public net::URLRequestContextGetter {
   scoped_ptr<net::URLRequestJobFactory> job_factory_;
   scoped_ptr<net::HttpTransactionFactory> main_http_factory_;
 
-  // ProtocolHandlers are stored here between SetProtocolHandlers() and the
-  // first GetURLRequestContext() call.
+  // ProtocolHandlers and interceptors are stored here between
+  // SetHandlersAndInterceptors() and the first GetURLRequestContext() call.
   content::ProtocolHandlerMap protocol_handlers_;
+  content::URLRequestInterceptorScopedVector request_interceptors_;
 
   DISALLOW_COPY_AND_ASSIGN(AwURLRequestContextGetter);
 };

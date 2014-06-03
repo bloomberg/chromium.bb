@@ -101,7 +101,8 @@ void PopulateNetworkSessionParams(
 }
 
 scoped_ptr<net::URLRequestJobFactory> CreateJobFactory(
-    content::ProtocolHandlerMap* protocol_handlers) {
+    content::ProtocolHandlerMap* protocol_handlers,
+    content::URLRequestInterceptorScopedVector request_interceptors) {
   scoped_ptr<AwURLRequestJobFactory> aw_job_factory(new AwURLRequestJobFactory);
   bool set_protocol = aw_job_factory->SetProtocolHandler(
       url::kFileScheme,
@@ -131,12 +132,6 @@ scoped_ptr<net::URLRequestJobFactory> CreateJobFactory(
   DCHECK(set_protocol);
   protocol_handlers->clear();
 
-  // Create a chain of URLRequestJobFactories. The handlers will be invoked
-  // in the order in which they appear in the |request_interceptors| vector.
-  typedef std::vector<net::URLRequestInterceptor*>
-      URLRequestInterceptorVector;
-  URLRequestInterceptorVector request_interceptors;
-
   // Note that even though the content:// scheme handler is created here,
   // it cannot be used by child processes until access to it is granted via
   // ChildProcessSecurityPolicy::GrantScheme(). This is done in
@@ -157,13 +152,14 @@ scoped_ptr<net::URLRequestJobFactory> CreateJobFactory(
   // The chain of responsibility will execute the handlers in reverse to the
   // order in which the elements of the chain are created.
   scoped_ptr<net::URLRequestJobFactory> job_factory(aw_job_factory.Pass());
-  for (URLRequestInterceptorVector::reverse_iterator
-           i = request_interceptors.rbegin();
+  for (content::URLRequestInterceptorScopedVector::reverse_iterator i =
+           request_interceptors.rbegin();
        i != request_interceptors.rend();
        ++i) {
     job_factory.reset(new net::URLRequestInterceptingJobFactory(
         job_factory.Pass(), make_scoped_ptr(*i)));
   }
+  request_interceptors.weak_clear();
 
   return job_factory.Pass();
 }
@@ -246,7 +242,8 @@ void AwURLRequestContextGetter::InitializeURLRequestContext() {
   url_request_context_->set_http_transaction_factory(main_cache);
   url_request_context_->set_cookie_store(cookie_store_);
 
-  job_factory_ = CreateJobFactory(&protocol_handlers_);
+  job_factory_ = CreateJobFactory(&protocol_handlers_,
+                                  request_interceptors_.Pass());
   url_request_context_->set_job_factory(job_factory_.get());
 }
 
@@ -263,9 +260,11 @@ AwURLRequestContextGetter::GetNetworkTaskRunner() const {
   return BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO);
 }
 
-void AwURLRequestContextGetter::SetProtocolHandlers(
-    content::ProtocolHandlerMap* protocol_handlers) {
+void AwURLRequestContextGetter::SetHandlersAndInterceptors(
+    content::ProtocolHandlerMap* protocol_handlers,
+    content::URLRequestInterceptorScopedVector request_interceptors) {
   std::swap(protocol_handlers_, *protocol_handlers);
+  request_interceptors_.swap(request_interceptors);
 }
 
 DataReductionProxyConfigService*

@@ -73,11 +73,13 @@ class AwBrowserContext : public content::BrowserContext,
   void AddVisitedURLs(const std::vector<GURL>& urls);
 
   net::URLRequestContextGetter* CreateRequestContext(
-      content::ProtocolHandlerMap* protocol_handlers);
+      content::ProtocolHandlerMap* protocol_handlers,
+      content::URLRequestInterceptorScopedVector request_interceptors);
   net::URLRequestContextGetter* CreateRequestContextForStoragePartition(
       const base::FilePath& partition_path,
       bool in_memory,
-      content::ProtocolHandlerMap* protocol_handlers);
+      content::ProtocolHandlerMap* protocol_handlers,
+      content::URLRequestInterceptorScopedVector request_interceptors);
 
   AwQuotaManagerBridge* GetQuotaManagerBridge();
 
