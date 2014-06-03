@@ -31,7 +31,9 @@ ExtensionMessageFilter::ExtensionMessageFilter(int render_process_id,
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
-ExtensionMessageFilter::~ExtensionMessageFilter() {}
+ExtensionMessageFilter::~ExtensionMessageFilter() {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+}
 
 void ExtensionMessageFilter::OverrideThreadForMessage(
     const IPC::Message& message,
@@ -51,6 +53,12 @@ void ExtensionMessageFilter::OverrideThreadForMessage(
     default:
       break;
   }
+}
+
+void ExtensionMessageFilter::OnDestruct() const {
+  // Destroy the filter on the IO thread since that's where its weak pointers
+  // are being used.
+  BrowserThread::DeleteOnIOThread::Destruct(this);
 }
 
 bool ExtensionMessageFilter::OnMessageReceived(const IPC::Message& message) {
