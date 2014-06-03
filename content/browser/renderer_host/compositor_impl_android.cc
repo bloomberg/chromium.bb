@@ -700,9 +700,11 @@ void CompositorImpl::OnVSync(base::TimeTicks frame_time,
   last_vsync_ = frame_time;
 
   if (WillCompositeThisFrame()) {
-    // We somehow missed the last vsync interval, so reschedule immediately.
+    // We somehow missed the last vsync interval, so reschedule for deadline.
+    // We cannot schedule immediately, or will get us out-of-phase with new
+    // renderer frames.
     CancelComposite();
-    composite_on_vsync_trigger_ = COMPOSITE_IMMEDIATELY;
+    composite_on_vsync_trigger_ = COMPOSITE_EVENTUALLY;
   } else {
     current_composite_task_.reset();
   }
