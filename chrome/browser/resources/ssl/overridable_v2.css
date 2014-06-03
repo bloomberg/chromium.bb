@@ -1,0 +1,75 @@
+/* Copyright 2014 The Chromium Authors. All rights reserved.
+   Use of this source code is governed by a BSD-style license that can be
+   found in the LICENSE file. */
+
+a {
+  color: rgb(43, 43, 43);
+}
+
+body {
+  background: rgb(247, 247, 247);
+  color: rgb(43, 43, 43);
+  line-height: 1.7em;
+}
+
+button {
+  background: rgb(76, 142, 250);
+  border: 0;
+  border-radius: 2px;
+  box-sizing: border-box;
+  color: #fff;
+  float: right;
+  margin: -6px 0 0;
+  padding: 8px 24px;
+}
+
+#details {
+  margin: 40px 0 150px 0;
+}
+
+h1 {
+  -webkit-margin-after: 15px;
+  font-size: 1.6em;
+  font-weight: normal;
+  line-height: 1.2em;
+}
+
+.hidden {
+  display: none;
+}
+
+.icon {
+  background: url(images/lock_red.png) no-repeat;
+  background-size: 100%;
+  height: 69px;
+  margin: 0 0 40px;
+  width: 56px;
+}
+
+.interstitial-wrapper {
+  box-sizing: border-box;
+  margin: 10% auto 0;
+  max-width: 582px;
+  width: 100%;
+}
+
+.nav-wrapper {
+  margin-top: 60px;
+}
+
+.nav-wrapper::after {
+  clear: both;
+  content: '';
+  display: table;
+  width: 100%;
+}
+
+p {
+  margin-bottom: 22px;
+}
+
+@media (max-width: 700px) {
+  .interstitial-wrapper {
+    padding: 0 10%;
+  }
+}

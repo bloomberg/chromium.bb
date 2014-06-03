@@ -5,6 +5,7 @@
 #include "chrome/browser/ssl/ssl_blocking_page.h"
 
 #include "base/i18n/rtl.h"
+#include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
@@ -37,6 +38,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/webui/jstemplate_builder.h"
+#include "ui/base/webui/web_ui_util.h"
 
 #if defined(ENABLE_CAPTIVE_PORTAL_DETECTION)
 #include "chrome/browser/captive_portal/captive_portal_service.h"
@@ -260,10 +262,59 @@ SSLBlockingPage::~SSLBlockingPage() {
   }
 }
 
+std::string SSLBlockingPage::GetHTMLContentsV2() {
+  base::DictionaryValue strings;
+  SSLErrorInfo error_info =
+      SSLErrorInfo::CreateError(
+          SSLErrorInfo::NetErrorToErrorType(cert_error_),
+          ssl_info_.cert.get(),
+          request_url_);
+  base::string16 url(ASCIIToUTF16(request_url_.host()));
+  bool rtl = base::i18n::IsRTL();
+  strings.SetString("textDirection", rtl ? "rtl" : "ltr");
+  if (rtl)
+    base::i18n::WrapStringWithLTRFormatting(&url);
+  webui::SetFontAndTextDirection(&strings);
+
+  strings.SetString(
+      "tabTitle", l10n_util::GetStringUTF16(IDS_SSL_OVERRIDABLE_TITLE));
+  strings.SetString(
+      "heading", l10n_util::GetStringUTF16(IDS_SSL_OVERRIDABLE_HEADING));
+  strings.SetString(
+      "primaryParagraph",
+      l10n_util::GetStringFUTF16(IDS_SSL_OVERRIDABLE_PRIMARY_PARAGRAPH,
+                                 url.c_str()));
+  strings.SetString(
+      "explanationParagraph", error_info.details());
+  strings.SetString(
+      "safetyButtonText",
+      l10n_util::GetStringUTF16(IDS_SSL_OVERRIDABLE_SAFETY_BUTTON));
+  strings.SetString(
+      "openDetails",
+      l10n_util::GetStringUTF16(IDS_SSL_OVERRIDABLE_OPEN_DETAILS_BUTTON));
+  strings.SetString(
+      "closeDetails",
+      l10n_util::GetStringUTF16(IDS_SSL_OVERRIDABLE_CLOSE_DETAILS_BUTTON));
+  strings.SetString(
+      "proceedParagraph",
+      l10n_util::GetStringFUTF16(IDS_SSL_OVERRIDABLE_PROCEED_PARAGRAPH,
+                                 url.c_str()));
+
+  base::StringPiece html(
+     ResourceBundle::GetSharedInstance().GetRawDataResource(
+         IRD_SSL_OVERRIDABLE_V2_HTML));
+  webui::UseVersion2 version;
+  return webui::GetI18nTemplateHtml(html, &strings);
+}
+
 std::string SSLBlockingPage::GetHTMLContents() {
   base::DictionaryValue strings;
   int resource_id;
   if (overridable_ && !strict_enforcement_) {
+    // Check to see if the v2 version should be displayed instead.
+    if (base::FieldTrialList::FindFullName("InterstitialsV2") == "ShowV2")
+      return GetHTMLContentsV2();
+
     // Let's build the overridable error page.
     SSLErrorInfo error_info =
         SSLErrorInfo::CreateError(
