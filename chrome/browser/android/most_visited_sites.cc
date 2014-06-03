@@ -11,6 +11,7 @@
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
+#include "base/callback.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -84,10 +85,31 @@ void AddForcedURLOnUIThread(scoped_refptr<history::TopSites> top_sites,
   top_sites->AddForcedURL(url, base::Time::Now());
 }
 
+void OnSuggestionsThumbnailAvailable(
+    ScopedJavaGlobalRef<jobject>* j_callback,
+    const GURL& url,
+    const SkBitmap* bitmap) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  JNIEnv* env = AttachCurrentThread();
+
+  ScopedJavaGlobalRef<jobject>* j_bitmap_ref =
+      new ScopedJavaGlobalRef<jobject>();
+  if (bitmap) {
+    j_bitmap_ref->Reset(
+        env,
+        gfx::ConvertToJavaBitmap(bitmap).obj());
+  }
+
+  Java_ThumbnailCallback_onMostVisitedURLsThumbnailAvailable(
+      env, j_callback->obj(), j_bitmap_ref->obj());
+}
+
+// Runs on the DB thread.
 void GetUrlThumbnailTask(
     std::string url_string,
     scoped_refptr<TopSites> top_sites,
-    ScopedJavaGlobalRef<jobject>* j_callback) {
+    ScopedJavaGlobalRef<jobject>* j_callback,
+    base::Closure lookup_failed_ui_callback) {
   JNIEnv* env = AttachCurrentThread();
 
   ScopedJavaGlobalRef<jobject>* j_bitmap_ref =
@@ -109,6 +131,13 @@ void GetUrlThumbnailTask(
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         base::Bind(AddForcedURLOnUIThread, top_sites, gurl));
+
+    // If appropriate, return on the UI thread to execute the proper callback.
+    if (!lookup_failed_ui_callback.is_null()) {
+      BrowserThread::PostTask(
+          BrowserThread::UI, FROM_HERE, lookup_failed_ui_callback);
+      return;
+    }
   }
 
   // Since j_callback is owned by this callback, when the callback falls out of
@@ -120,6 +149,16 @@ void GetUrlThumbnailTask(
       base::Bind(
           &OnObtainedThumbnail,
           base::Owned(j_bitmap_ref), base::Owned(j_callback_pass)));
+}
+
+void GetSuggestionsThumbnailOnUIThread(
+    SuggestionsService* suggestions_service,
+    const std::string& url_string,
+    ScopedJavaGlobalRef<jobject>* j_callback) {
+  suggestions_service->GetPageThumbnail(
+      GURL(url_string),
+      base::Bind(&OnSuggestionsThumbnailAvailable,
+                 base::Owned(new ScopedJavaGlobalRef<jobject>(*j_callback))));
 }
 
 }  // namespace
@@ -162,22 +201,33 @@ void MostVisitedSites::SetMostVisitedURLsObserver(JNIEnv* env,
   }
 }
 
-// May be called from any thread
+// Called from the UI Thread.
 void MostVisitedSites::GetURLThumbnail(JNIEnv* env,
                                        jobject obj,
                                        jstring url,
                                        jobject j_callback_obj) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   ScopedJavaGlobalRef<jobject>* j_callback =
       new ScopedJavaGlobalRef<jobject>();
   j_callback->Reset(env, j_callback_obj);
 
   std::string url_string = ConvertJavaStringToUTF8(env, url);
   scoped_refptr<TopSites> top_sites(profile_->GetTopSites());
+
+  // If the Suggestions service is enabled, create a callback to fetch a
+  // server thumbnail from it, in case the local thumbnail is not found.
+  SuggestionsService* suggestions_service =
+      SuggestionsServiceFactory::GetForProfile(profile_);
+  base::Closure lookup_failed_callback = suggestions_service ?
+      base::Bind(&GetSuggestionsThumbnailOnUIThread,
+                 suggestions_service, url_string,
+                 base::Owned(new ScopedJavaGlobalRef<jobject>(*j_callback))) :
+      base::Closure();
   BrowserThread::PostTask(
-      BrowserThread::DB, FROM_HERE, base::Bind(
-          &GetUrlThumbnailTask,
-          url_string,
-          top_sites, base::Owned(j_callback)));
+      BrowserThread::DB, FROM_HERE,
+          base::Bind(
+              &GetUrlThumbnailTask, url_string, top_sites,
+              base::Owned(j_callback), lookup_failed_callback));
 }
 
 void MostVisitedSites::BlacklistUrl(JNIEnv* env,
