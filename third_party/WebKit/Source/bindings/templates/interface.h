@@ -115,11 +115,19 @@ public:
        FIXME: Remove this internal field, and share one field for either:
        * a persistent handle (if the object is in oilpan) or
        * a C++ pointer to the DOM object (if the object is not in oilpan) #}
-    {% if not gc_type == 'RefCountedObject' %}
+    {% if gc_type == 'GarbageCollectedObject' %}
     static const int persistentHandleIndex = v8DefaultWrapperInternalFieldCount + {{custom_internal_field_counter}};
-    {% set custom_internal_field_counter = custom_internal_field_counter + 1 %}
-    {% endif %}
+    static const int internalFieldCount = v8DefaultWrapperInternalFieldCount + {{custom_internal_field_counter}} + 1;
+    {% elif gc_type == 'WillBeGarbageCollectedObject' %}
+#if ENABLE(OILPAN)
+    static const int persistentHandleIndex = v8DefaultWrapperInternalFieldCount + {{custom_internal_field_counter}};
+    static const int internalFieldCount = v8DefaultWrapperInternalFieldCount + {{custom_internal_field_counter}} + 1;
+#else
     static const int internalFieldCount = v8DefaultWrapperInternalFieldCount + {{custom_internal_field_counter}};
+#endif
+    {% else %}
+    static const int internalFieldCount = v8DefaultWrapperInternalFieldCount + {{custom_internal_field_counter}};
+    {% endif %}
     {# End custom internal fields #}
     static inline void* toInternalPointer({{cpp_class}}* impl)
     {

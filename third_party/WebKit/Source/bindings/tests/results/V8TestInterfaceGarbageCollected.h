@@ -32,7 +32,7 @@ public:
     static void constructorCallback(const v8::FunctionCallbackInfo<v8::Value>&);
     static const int eventListenerCacheIndex = v8DefaultWrapperInternalFieldCount + 0;
     static const int persistentHandleIndex = v8DefaultWrapperInternalFieldCount + 1;
-    static const int internalFieldCount = v8DefaultWrapperInternalFieldCount + 2;
+    static const int internalFieldCount = v8DefaultWrapperInternalFieldCount + 1 + 1;
     static inline void* toInternalPointer(TestInterfaceGarbageCollected* impl)
     {
         return V8EventTarget::toInternalPointer(impl);

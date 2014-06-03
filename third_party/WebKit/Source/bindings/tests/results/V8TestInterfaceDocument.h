@@ -29,8 +29,12 @@ public:
     static const WrapperTypeInfo wrapperTypeInfo;
     static void derefObject(void*);
     static EventTarget* toEventTarget(v8::Handle<v8::Object>);
+#if ENABLE(OILPAN)
     static const int persistentHandleIndex = v8DefaultWrapperInternalFieldCount + 0;
-    static const int internalFieldCount = v8DefaultWrapperInternalFieldCount + 1;
+    static const int internalFieldCount = v8DefaultWrapperInternalFieldCount + 0 + 1;
+#else
+    static const int internalFieldCount = v8DefaultWrapperInternalFieldCount + 0;
+#endif
     static inline void* toInternalPointer(TestInterfaceDocument* impl)
     {
         return V8Document::toInternalPointer(impl);

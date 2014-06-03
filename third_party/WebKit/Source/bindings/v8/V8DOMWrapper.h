@@ -87,10 +87,17 @@ struct WrapperTypeInfo;
 #else
         ASSERT(wrapperTypeInfo->gcType == RefCountedObject || wrapperTypeInfo->gcType == WillBeGarbageCollectedObject);
 #endif
+
+        // Clear out the last internal field, which is assumed to contain a valid persistent pointer value.
+        if (wrapperTypeInfo->gcType == GarbageCollectedObject) {
+            wrapper->SetAlignedPointerInInternalField(wrapper->InternalFieldCount() - 1, 0);
+        } else if (wrapperTypeInfo->gcType == WillBeGarbageCollectedObject) {
+#if ENABLE(OILPAN)
+            wrapper->SetAlignedPointerInInternalField(wrapper->InternalFieldCount() - 1, 0);
+#endif
+        }
         wrapper->SetAlignedPointerInInternalField(v8DOMWrapperObjectIndex, object);
         wrapper->SetAlignedPointerInInternalField(v8DOMWrapperTypeIndex, const_cast<WrapperTypeInfo*>(wrapperTypeInfo));
-        // Clear out the last internal field, which is assumed to contain a valid persistent pointer value.
-        wrapper->SetAlignedPointerInInternalField(wrapper->InternalFieldCount() - 1, 0);
     }
 
     inline void V8DOMWrapper::setNativeInfoWithPersistentHandle(v8::Handle<v8::Object> wrapper, const WrapperTypeInfo* wrapperTypeInfo, void* object, PersistentNode* handle)

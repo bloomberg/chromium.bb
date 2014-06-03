@@ -37,8 +37,12 @@ public:
     static EventTarget* toEventTarget(v8::Handle<v8::Object>);
     static void constructorCallback(const v8::FunctionCallbackInfo<v8::Value>&);
     static const int eventListenerCacheIndex = v8DefaultWrapperInternalFieldCount + 0;
+#if ENABLE(OILPAN)
     static const int persistentHandleIndex = v8DefaultWrapperInternalFieldCount + 1;
-    static const int internalFieldCount = v8DefaultWrapperInternalFieldCount + 2;
+    static const int internalFieldCount = v8DefaultWrapperInternalFieldCount + 1 + 1;
+#else
+    static const int internalFieldCount = v8DefaultWrapperInternalFieldCount + 1;
+#endif
     static inline void* toInternalPointer(TestInterfaceWillBeGarbageCollected* impl)
     {
         return V8EventTarget::toInternalPointer(impl);
