@@ -12,6 +12,7 @@
 #include "third_party/WebKit/public/platform/WebScreenOrientationType.h"
 
 namespace blink {
+class WebBatteryStatus;
 class WebDeviceMotionData;
 class WebDeviceOrientationData;
 class WebGamepad;
@@ -66,6 +67,9 @@ void SetMockScreenOrientation(
 
 // Resets the mock screen orientation data.
 void ResetMockScreenOrientation();
+
+// Notifies blink that battery status has changed.
+void MockBatteryStatusChanged(const blink::WebBatteryStatus& status);
 
 // Returns the length of the local session history of a render view.
 int GetLocalSessionHistoryLength(RenderView* render_view);

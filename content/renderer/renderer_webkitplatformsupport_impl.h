@@ -28,6 +28,7 @@ class SyncMessageFilter;
 }
 
 namespace blink {
+class WebBatteryStatus;
 class WebDeviceMotionData;
 class WebDeviceOrientationData;
 class WebGraphicsContext3DProvider;
@@ -184,6 +185,10 @@ class CONTENT_EXPORT RendererWebKitPlatformSupportImpl
       blink::WebScreenOrientationType);
   // Resets the mock screen orientation data used for testing.
   static void ResetMockScreenOrientationForTesting();
+
+  // Notifies blink::WebBatteryStatusListener that battery status has changed.
+  static void MockBatteryStatusChangedForTesting(
+      const blink::WebBatteryStatus& status);
 
   WebDatabaseObserverImpl* web_database_observer_impl() {
     return web_database_observer_impl_.get();

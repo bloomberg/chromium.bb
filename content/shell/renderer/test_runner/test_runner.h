@@ -301,6 +301,12 @@ class TestRunner : public WebTestRunner,
 
   void SetMockScreenOrientation(const std::string& orientation);
 
+  void DidChangeBatteryStatus(bool charging,
+                              double chargingTime,
+                              double dischargingTime,
+                              double level);
+  void ResetBatteryStatus();
+
   void DidAcquirePointerLock();
   void DidNotAcquirePointerLock();
   void DidLosePointerLock();

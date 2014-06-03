@@ -19,6 +19,7 @@
 #include "gin/handle.h"
 #include "gin/object_template_builder.h"
 #include "gin/wrappable.h"
+#include "third_party/WebKit/public/platform/WebBatteryStatus.h"
 #include "third_party/WebKit/public/platform/WebCanvas.h"
 #include "third_party/WebKit/public/platform/WebData.h"
 #include "third_party/WebKit/public/platform/WebDeviceMotionData.h"
@@ -173,6 +174,11 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
   void SetMockDeviceMotion(gin::Arguments* args);
   void SetMockDeviceOrientation(gin::Arguments* args);
   void SetMockScreenOrientation(const std::string& orientation);
+  void DidChangeBatteryStatus(bool charging,
+                              double chargingTime,
+                              double dischargingTime,
+                              double level);
+  void ResetBatteryStatus();
   void DidAcquirePointerLock();
   void DidNotAcquirePointerLock();
   void DidLosePointerLock();
@@ -367,6 +373,10 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
                  &TestRunnerBindings::SetMockDeviceOrientation)
       .SetMethod("setMockScreenOrientation",
                  &TestRunnerBindings::SetMockScreenOrientation)
+      .SetMethod("didChangeBatteryStatus",
+                 &TestRunnerBindings::DidChangeBatteryStatus)
+      .SetMethod("resetBatteryStatus",
+                 &TestRunnerBindings::ResetBatteryStatus)
       .SetMethod("didAcquirePointerLock",
                  &TestRunnerBindings::DidAcquirePointerLock)
       .SetMethod("didNotAcquirePointerLock",
@@ -872,6 +882,21 @@ void TestRunnerBindings::SetMockScreenOrientation(const std::string& orientation
     return;
 
   runner_->SetMockScreenOrientation(orientation);
+}
+
+void TestRunnerBindings::DidChangeBatteryStatus(bool charging,
+                                                double chargingTime,
+                                                double dischargingTime,
+                                                double level) {
+  if (runner_) {
+    runner_->DidChangeBatteryStatus(charging, chargingTime,
+                                    dischargingTime, level);
+  }
+}
+
+void TestRunnerBindings::ResetBatteryStatus() {
+  if (runner_)
+    runner_->ResetBatteryStatus();
 }
 
 void TestRunnerBindings::DidAcquirePointerLock() {
@@ -1475,6 +1500,7 @@ void TestRunner::Reset() {
     delegate_->disableAutoResizeMode(WebSize());
     delegate_->deleteAllCookies();
     delegate_->resetScreenOrientation();
+    ResetBatteryStatus();
   }
 
   dump_editting_callbacks_ = false;
@@ -2268,6 +2294,23 @@ void TestRunner::SetMockScreenOrientation(const std::string& orientation_str) {
   }
 
   delegate_->setScreenOrientation(orientation);
+}
+
+void TestRunner::DidChangeBatteryStatus(bool charging,
+                                        double chargingTime,
+                                        double dischargingTime,
+                                        double level) {
+  blink::WebBatteryStatus status;
+  status.charging = charging;
+  status.chargingTime = chargingTime;
+  status.dischargingTime = dischargingTime;
+  status.level = level;
+  delegate_->didChangeBatteryStatus(status);
+}
+
+void TestRunner::ResetBatteryStatus() {
+  blink::WebBatteryStatus status;
+  delegate_->didChangeBatteryStatus(status);
 }
 
 void TestRunner::DidAcquirePointerLock() {

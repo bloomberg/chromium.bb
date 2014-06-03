@@ -38,6 +38,7 @@
 #include "content/public/common/webplugininfo.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/renderer/battery_status/battery_status_dispatcher.h"
+#include "content/renderer/battery_status/fake_battery_status_dispatcher.h"
 #include "content/renderer/device_sensors/device_motion_event_pump.h"
 #include "content/renderer/device_sensors/device_orientation_event_pump.h"
 #include "content/renderer/dom_storage/webstoragenamespace_impl.h"
@@ -151,6 +152,8 @@ base::LazyInstance<blink::WebDeviceOrientationData>::Leaky
     g_test_device_orientation_data = LAZY_INSTANCE_INITIALIZER;
 base::LazyInstance<MockScreenOrientationController>::Leaky
     g_test_screen_orientation_controller = LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<FakeBatteryStatusDispatcher>::Leaky
+    g_test_battery_status_dispatcher = LAZY_INSTANCE_INITIALIZER;
 
 } // namespace
 
@@ -1189,11 +1192,26 @@ void RendererWebKitPlatformSupportImpl::queryStorageUsageAndQuota(
 
 void RendererWebKitPlatformSupportImpl::setBatteryStatusListener(
     blink::WebBatteryStatusListener* listener) {
+  if (RenderThreadImpl::current() &&
+      RenderThreadImpl::current()->layout_test_mode()) {
+    // If we are in test mode, we want to use a fake battery status dispatcher,
+    // which does not communicate with the browser process. Battery status
+    // changes are signalled by invoking MockBatteryStatusChangedForTesting().
+    g_test_battery_status_dispatcher.Get().SetListener(listener);
+    return;
+  }
+
   if (!battery_status_dispatcher_) {
     battery_status_dispatcher_.reset(
         new BatteryStatusDispatcher(RenderThreadImpl::current()));
   }
   battery_status_dispatcher_->SetListener(listener);
+}
+
+// static
+void RendererWebKitPlatformSupportImpl::MockBatteryStatusChangedForTesting(
+    const blink::WebBatteryStatus& status) {
+  g_test_battery_status_dispatcher.Get().PostBatteryStatusChange(status);
 }
 
 }  // namespace content

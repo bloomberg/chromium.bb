@@ -18,6 +18,7 @@
 #include "content/shell/renderer/test_runner/TestCommon.h"
 #include "content/shell/renderer/test_runner/web_frame_test_proxy.h"
 #include "content/shell/renderer/test_runner/web_test_proxy.h"
+#include "third_party/WebKit/public/platform/WebBatteryStatus.h"
 #include "third_party/WebKit/public/platform/WebDeviceMotionData.h"
 #include "third_party/WebKit/public/platform/WebDeviceOrientationData.h"
 #include "third_party/WebKit/public/platform/WebGamepads.h"
@@ -27,6 +28,7 @@
 #include "content/browser/renderer_host/popup_menu_helper_mac.h"
 #endif
 
+using blink::WebBatteryStatus;
 using blink::WebDeviceMotionData;
 using blink::WebDeviceOrientationData;
 using blink::WebGamepad;
@@ -112,6 +114,10 @@ void SetMockScreenOrientation(
 void ResetMockScreenOrientation()
 {
   RendererWebKitPlatformSupportImpl::ResetMockScreenOrientationForTesting();
+}
+
+void MockBatteryStatusChanged(const WebBatteryStatus& status) {
+  RendererWebKitPlatformSupportImpl::MockBatteryStatusChangedForTesting(status);
 }
 
 void EnableRendererLayoutTestMode() {

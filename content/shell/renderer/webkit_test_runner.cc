@@ -235,6 +235,11 @@ void WebKitTestRunner::resetScreenOrientation() {
   ResetMockScreenOrientation();
 }
 
+void WebKitTestRunner::didChangeBatteryStatus(
+    const blink::WebBatteryStatus& status) {
+  MockBatteryStatusChanged(status);
+}
+
 void WebKitTestRunner::printMessage(const std::string& message) {
   Send(new ShellViewHostMsg_PrintMessage(routing_id(), message));
 }

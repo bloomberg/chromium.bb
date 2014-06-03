@@ -96,6 +96,8 @@
       'renderer/android/synchronous_compositor_factory.h',
       'renderer/battery_status/battery_status_dispatcher.cc',
       'renderer/battery_status/battery_status_dispatcher.h',
+      'renderer/battery_status/fake_battery_status_dispatcher.cc',
+      'renderer/battery_status/fake_battery_status_dispatcher.h',
       'renderer/browser_plugin/browser_plugin.cc',
       'renderer/browser_plugin/browser_plugin.h',
       'renderer/browser_plugin/browser_plugin_bindings.cc',
