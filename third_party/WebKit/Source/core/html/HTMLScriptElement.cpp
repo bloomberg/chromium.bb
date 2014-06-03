@@ -92,7 +92,7 @@ void HTMLScriptElement::didNotifySubtreeInsertionsToDocument()
 
 void HTMLScriptElement::setText(const String &value)
 {
-    RefPtr<Node> protectFromMutationEvents(this);
+    RefPtrWillBeRawPtr<Node> protectFromMutationEvents(this);
 
     if (hasOneTextChild()) {
         toText(firstChild())->setData(value);

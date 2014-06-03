@@ -85,7 +85,7 @@ String HTMLTitleElement::text() const
 
 void HTMLTitleElement::setText(const String &value)
 {
-    RefPtr<Node> protectFromMutationEvents(this);
+    RefPtrWillBeRawPtr<Node> protectFromMutationEvents(this);
     ChildListMutationScope mutation(*this);
 
     // Avoid calling Document::setTitleElement() during intermediate steps.

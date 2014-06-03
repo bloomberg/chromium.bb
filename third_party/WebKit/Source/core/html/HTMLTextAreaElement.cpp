@@ -408,10 +408,10 @@ String HTMLTextAreaElement::defaultValue() const
 
 void HTMLTextAreaElement::setDefaultValue(const String& defaultValue)
 {
-    RefPtr<Node> protectFromMutationEvents(this);
+    RefPtrWillBeRawPtr<Node> protectFromMutationEvents(this);
 
     // To preserve comments, remove only the text nodes, then add a single text node.
-    Vector<RefPtr<Node> > textNodes;
+    WillBeHeapVector<RefPtrWillBeMember<Node> > textNodes;
     for (Node* n = firstChild(); n; n = n->nextSibling()) {
         if (n->isTextNode())
             textNodes.append(n);

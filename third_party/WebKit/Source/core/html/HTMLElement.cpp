@@ -418,9 +418,9 @@ void HTMLElement::setOuterText(const String &text, ExceptionState& exceptionStat
         return;
     }
 
-    RefPtr<Node> prev = previousSibling();
-    RefPtr<Node> next = nextSibling();
-    RefPtr<Node> newChild;
+    RefPtrWillBeRawPtr<Node> prev = previousSibling();
+    RefPtrWillBeRawPtr<Node> next = nextSibling();
+    RefPtrWillBeRawPtr<Node> newChild = nullptr;
 
     // Convert text to fragment with <br> tags instead of linebreaks if needed.
     if (text.contains('\r') || text.contains('\n'))
@@ -437,7 +437,7 @@ void HTMLElement::setOuterText(const String &text, ExceptionState& exceptionStat
 
     parent->replaceChild(newChild.release(), this, exceptionState);
 
-    RefPtr<Node> node = next ? next->previousSibling() : 0;
+    RefPtrWillBeRawPtr<Node> node = next ? next->previousSibling() : nullptr;
     if (!exceptionState.hadException() && node && node->isTextNode())
         mergeWithNextTextNode(node.release(), exceptionState);
 

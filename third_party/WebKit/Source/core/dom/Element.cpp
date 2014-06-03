@@ -2093,7 +2093,7 @@ void Element::focus(bool restorePreviousSelection, FocusType type)
     if (!isFocusable())
         return;
 
-    RefPtr<Node> protect(this);
+    RefPtrWillBeRawPtr<Node> protect(this);
     if (!document().page()->focusController().setFocusedElement(this, document().frame(), type))
         return;
 
@@ -2241,15 +2241,15 @@ void Element::setOuterHTML(const String& html, ExceptionState& exceptionState)
     }
 
     RefPtrWillBeRawPtr<Element> parent = toElement(p);
-    RefPtr<Node> prev = previousSibling();
-    RefPtr<Node> next = nextSibling();
+    RefPtrWillBeRawPtr<Node> prev = previousSibling();
+    RefPtrWillBeRawPtr<Node> next = nextSibling();
 
     RefPtrWillBeRawPtr<DocumentFragment> fragment = createFragmentForInnerOuterHTML(html, parent.get(), AllowScriptingContent, "outerHTML", exceptionState);
     if (exceptionState.hadException())
         return;
 
     parent->replaceChild(fragment.release(), this, exceptionState);
-    RefPtr<Node> node = next ? next->previousSibling() : 0;
+    RefPtrWillBeRawPtr<Node> node = next ? next->previousSibling() : 0;
     if (!exceptionState.hadException() && node && node->isTextNode())
         mergeWithNextTextNode(node.release(), exceptionState);
 

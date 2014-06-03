@@ -96,7 +96,7 @@ class Document;
 class Element;
 class HTMLFormElement;
 
-class HTMLConstructionSite {
+class HTMLConstructionSite FINAL {
     WTF_MAKE_NONCOPYABLE(HTMLConstructionSite);
     DISALLOW_ALLOCATION();
 public:
@@ -247,13 +247,15 @@ private:
 
     TaskQueue m_taskQueue;
 
-    struct PendingText {
+    class PendingText FINAL {
+        DISALLOW_ALLOCATION();
+    public:
         PendingText()
             : whitespaceMode(WhitespaceUnknown)
         {
         }
 
-        void append(PassRefPtr<ContainerNode> newParent, PassRefPtr<Node> newNextChild, const String& newString, WhitespaceMode newWhitespaceMode)
+        void append(PassRefPtrWillBeRawPtr<ContainerNode> newParent, PassRefPtrWillBeRawPtr<Node> newNextChild, const String& newString, WhitespaceMode newWhitespaceMode)
         {
             ASSERT(!parent || parent == newParent);
             parent = newParent;
@@ -286,8 +288,10 @@ private:
             return stringBuilder.isEmpty();
         }
 
-        RefPtr<ContainerNode> parent;
-        RefPtr<Node> nextChild;
+        void trace(Visitor*);
+
+        RefPtrWillBeMember<ContainerNode> parent;
+        RefPtrWillBeMember<Node> nextChild;
         StringBuilder stringBuilder;
         WhitespaceMode whitespaceMode;
     };

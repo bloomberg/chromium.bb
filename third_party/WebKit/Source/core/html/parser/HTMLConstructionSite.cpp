@@ -355,6 +355,7 @@ void HTMLConstructionSite::trace(Visitor* visitor)
     visitor->trace(m_openElements);
     visitor->trace(m_activeFormattingElements);
     visitor->trace(m_taskQueue);
+    visitor->trace(m_pendingText);
 }
 
 void HTMLConstructionSite::detach()
@@ -867,5 +868,12 @@ void HTMLConstructionSite::fosterParent(PassRefPtrWillBeRawPtr<Node> node)
     ASSERT(task.parent);
     queueTask(task);
 }
+
+void HTMLConstructionSite::PendingText::trace(Visitor* visitor)
+{
+    visitor->trace(parent);
+    visitor->trace(nextChild);
+}
+
 
 }
