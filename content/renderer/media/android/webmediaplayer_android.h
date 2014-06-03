@@ -228,7 +228,7 @@ class WebMediaPlayerAndroid : public blink::WebMediaPlayer,
                   uint32 system_code);
   void OnKeyMessage(const std::string& session_id,
                     const std::vector<uint8>& message,
-                    const std::string& destination_url);
+                    const GURL& destination_url);
 
   void OnMediaSourceOpened(blink::WebMediaSource* web_media_source);
 

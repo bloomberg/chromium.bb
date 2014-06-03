@@ -52,7 +52,7 @@ class ProxyDecryptor {
                               uint32 system_code)> KeyErrorCB;
   typedef base::Callback<void(const std::string& session_id,
                               const std::vector<uint8>& message,
-                              const std::string& default_url)> KeyMessageCB;
+                              const GURL& destination_url)> KeyMessageCB;
 
   ProxyDecryptor(
 #if defined(ENABLE_PEPPER_CDMS)

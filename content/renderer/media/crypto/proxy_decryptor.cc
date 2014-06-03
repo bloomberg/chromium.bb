@@ -226,7 +226,7 @@ void ProxyDecryptor::OnSessionMessage(uint32 session_id,
                                       const GURL& destination_url) {
   // Assumes that OnSessionCreated() has been called before this.
   key_message_cb_.Run(
-      LookupWebSessionId(session_id), message, destination_url.spec());
+      LookupWebSessionId(session_id), message, destination_url);
 }
 
 void ProxyDecryptor::OnSessionReady(uint32 session_id) {

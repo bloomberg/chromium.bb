@@ -177,7 +177,7 @@ class WebMediaPlayerImpl
                   uint32 system_code);
   void OnKeyMessage(const std::string& session_id,
                     const std::vector<uint8>& message,
-                    const std::string& default_url);
+                    const GURL& destination_url);
   void OnNeedKey(const std::string& type,
                  const std::vector<uint8>& init_data);
   void OnAddTextTrack(const media::TextTrackConfig& config,

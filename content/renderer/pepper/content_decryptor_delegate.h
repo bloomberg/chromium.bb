@@ -88,7 +88,7 @@ class ContentDecryptorDelegate {
   void OnSessionCreated(uint32 session_id, PP_Var web_session_id_var);
   void OnSessionMessage(uint32 session_id,
                         PP_Var message,
-                        PP_Var destination_url);
+                        PP_Var destination_url_var);
   void OnSessionReady(uint32 session_id);
   void OnSessionClosed(uint32 session_id);
   void OnSessionError(uint32 session_id,

@@ -235,16 +235,17 @@ void ContentDecryptor_Private::SessionCreated(
   }
 }
 
-void ContentDecryptor_Private::SessionMessage(uint32_t session_id,
-                                              pp::VarArrayBuffer message,
-                                              const std::string& default_url) {
+void ContentDecryptor_Private::SessionMessage(
+    uint32_t session_id,
+    pp::VarArrayBuffer message,
+    const std::string& destination_url) {
   if (has_interface<PPB_ContentDecryptor_Private>()) {
-    pp::Var default_url_var(default_url);
+    pp::Var destination_url_var(destination_url);
     get_interface<PPB_ContentDecryptor_Private>()->SessionMessage(
         associated_instance_.pp_instance(),
         session_id,
         message.pp_var(),
-        default_url_var.pp_var());
+        destination_url_var.pp_var());
   }
 }
 

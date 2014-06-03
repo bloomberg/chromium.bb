@@ -330,7 +330,7 @@ class AesDecryptorTest : public testing::Test {
   MOCK_METHOD3(OnSessionMessage,
                void(uint32 session_id,
                     const std::vector<uint8>& message,
-                    const GURL& default_url));
+                    const GURL& destination_url));
   MOCK_METHOD1(OnSessionReady, void(uint32 session_id));
   MOCK_METHOD1(OnSessionClosed, void(uint32 session_id));
   MOCK_METHOD3(OnSessionError,

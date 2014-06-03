@@ -581,10 +581,11 @@ void CdmAdapter::SendSessionCreatedInternal(int32_t result,
   pp::ContentDecryptor_Private::SessionCreated(session_id, web_session_id);
 }
 
-void CdmAdapter::SendSessionMessageInternal(int32_t result,
-                                            uint32_t session_id,
-                                            const std::vector<uint8>& message,
-                                            const std::string& default_url) {
+void CdmAdapter::SendSessionMessageInternal(
+    int32_t result,
+    uint32_t session_id,
+    const std::vector<uint8>& message,
+    const std::string& destination_url) {
   PP_DCHECK(result == PP_OK);
 
   pp::VarArrayBuffer message_array_buffer(message.size());
@@ -593,7 +594,7 @@ void CdmAdapter::SendSessionMessageInternal(int32_t result,
   }
 
   pp::ContentDecryptor_Private::SessionMessage(
-      session_id, message_array_buffer, default_url);
+      session_id, message_array_buffer, destination_url);
 }
 
 void CdmAdapter::SendSessionReadyInternal(int32_t result, uint32_t session_id) {

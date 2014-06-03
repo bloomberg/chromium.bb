@@ -1483,17 +1483,15 @@ void WebMediaPlayerAndroid::OnKeyError(const std::string& session_id,
 
 void WebMediaPlayerAndroid::OnKeyMessage(const std::string& session_id,
                                          const std::vector<uint8>& message,
-                                         const std::string& destination_url) {
-  const GURL destination_url_gurl(destination_url);
-  DLOG_IF(WARNING, !destination_url.empty() && !destination_url_gurl.is_valid())
-      << "Invalid URL in destination_url: " << destination_url;
+                                         const GURL& destination_url) {
+  DCHECK(destination_url.is_empty() || destination_url.is_valid());
 
   client_->keyMessage(
       WebString::fromUTF8(GetPrefixedKeySystemName(current_key_system_)),
       WebString::fromUTF8(session_id),
       message.empty() ? NULL : &message[0],
       message.size(),
-      destination_url_gurl);
+      destination_url);
 }
 
 void WebMediaPlayerAndroid::OnMediaSourceOpened(

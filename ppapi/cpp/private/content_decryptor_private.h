@@ -63,7 +63,7 @@ class ContentDecryptor_Private {
   void SessionCreated(uint32_t session_id, const std::string& web_session_id);
   void SessionMessage(uint32_t session_id,
                       pp::VarArrayBuffer message,
-                      const std::string& default_url);
+                      const std::string& destination_url);
   void SessionReady(uint32_t session_id);
   void SessionClosed(uint32_t session_id);
   void SessionError(uint32_t session_id,

@@ -202,7 +202,7 @@ class KeyProvidingApp : public FakeEncryptedMedia::AppBase {
 
   virtual void OnSessionMessage(uint32 session_id,
                                 const std::vector<uint8>& message,
-                                const GURL& default_url) OVERRIDE {
+                                const GURL& destination_url) OVERRIDE {
     EXPECT_GT(session_id, 0u);
     EXPECT_FALSE(message.empty());
 

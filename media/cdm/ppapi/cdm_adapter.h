@@ -129,7 +129,7 @@ class CdmAdapter : public pp::Instance,
   void SendSessionMessageInternal(int32_t result,
                                   uint32_t session_id,
                                   const std::vector<uint8>& message,
-                                  const std::string& default_url);
+                                  const std::string& destination_url);
   void SendSessionReadyInternal(int32_t result, uint32_t session_id);
   void SendSessionClosedInternal(int32_t result, uint32_t session_id);
   void SendSessionErrorInternal(int32_t result,
