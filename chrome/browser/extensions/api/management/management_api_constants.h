@@ -29,6 +29,10 @@ extern const char kCreateOnlyPackagedAppShortcutMac[];
 extern const char kCreateShortcutCanceledError[];
 extern const char kGestureNeededForSetLaunchTypeError[];
 extern const char kLaunchTypeNotAvailableError[];
+extern const char kGestureNeededForGenerateAppForLinkError[];
+extern const char kInvalidURLError[];
+extern const char kEmptyTitleError[];
+extern const char kGenerateAppForLinkInstallError[];
 
 
 }  // namespace extension_management_api_constants

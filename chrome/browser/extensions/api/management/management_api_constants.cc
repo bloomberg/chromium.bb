@@ -37,5 +37,11 @@ const char kGestureNeededForSetLaunchTypeError[] =
     "chrome.management.setLaunchType requires a user gesture.";
 const char kLaunchTypeNotAvailableError[] =
     "The launch type is not available for this app.";
+const char kGestureNeededForGenerateAppForLinkError[] =
+    "chrome.management.generateAppForLink requires a user gesture.";
+const char kInvalidURLError[] = "The URL \"*\" is invalid.";
+const char kEmptyTitleError[] = "The title can not be empty.";
+const char kGenerateAppForLinkInstallError[] =
+    "Failed to install the generated app.";
 
 }  // namespace extension_management_api_constants

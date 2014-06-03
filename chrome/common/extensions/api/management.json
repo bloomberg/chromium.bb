@@ -355,6 +355,33 @@
             "parameters": []
           }
         ]
+      },
+      {
+        "name": "generateAppForLink",
+        "description": "Generate an app for a URL. Returns the generated bookmark app. Note: This function is only available to Chrome users on the dev channel.",
+        "parameters": [
+          {
+            "name": "url",
+            "type": "string",
+            "description": "The URL of a web page. The scheme of the URL can only be \"http\" or \"https\"."
+          },
+          {
+            "name": "title",
+            "type": "string",
+            "description": "The title of the generated app."
+          },
+          {
+            "name": "callback",
+            "type": "function",
+            "optional": true,
+            "parameters":  [
+              {
+                "name": "result",
+                "$ref": "ExtensionInfo"
+              }
+            ]
+          }
+        ]
       }
     ],
     "events": [
