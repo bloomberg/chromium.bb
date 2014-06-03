@@ -5,6 +5,12 @@ $sleepTime = $_GET['sleep'];
 
 usleep($sleepTime*1000);
 
+if (isset($_GET['redirect_name'])) {
+    header('HTTP/1.1 302');
+    header('Location: ' . $_GET['redirect_name']);
+    exit;
+}
+
 header('Content-Type: ' . $mimeType);
 header('Content-Length: ' . filesize($name));
 if (isset($_GET['expires']))
