@@ -40,7 +40,7 @@
 namespace WebCore {
 
 class KURL;
-class MediaSourceBase;
+class MediaSource;
 
 class MediaSourceRegistry FINAL : public URLRegistry {
 public:
@@ -54,7 +54,7 @@ public:
 
 private:
     MediaSourceRegistry();
-    WillBePersistentHeapHashMap<String, RefPtrWillBeMember<MediaSourceBase> > m_mediaSources;
+    WillBePersistentHeapHashMap<String, RefPtrWillBeMember<MediaSource> > m_mediaSources;
 };
 
 } // namespace WebCore

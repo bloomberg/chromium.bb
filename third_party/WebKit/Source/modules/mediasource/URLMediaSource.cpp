@@ -32,12 +32,12 @@
 #include "modules/mediasource/URLMediaSource.h"
 
 #include "core/dom/DOMURL.h"
-#include "modules/mediasource/MediaSourceBase.h"
+#include "modules/mediasource/MediaSource.h"
 #include "wtf/MainThread.h"
 
 namespace WebCore {
 
-String URLMediaSource::createObjectURL(ExecutionContext* executionContext, MediaSourceBase* source)
+String URLMediaSource::createObjectURL(ExecutionContext* executionContext, MediaSource* source)
 {
     // Since WebWorkers cannot obtain MediaSource objects, we should be on the main thread.
     ASSERT(isMainThread());

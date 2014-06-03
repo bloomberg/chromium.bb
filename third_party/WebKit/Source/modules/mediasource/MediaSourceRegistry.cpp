@@ -31,7 +31,7 @@
 #include "config.h"
 #include "modules/mediasource/MediaSourceRegistry.h"
 
-#include "modules/mediasource/MediaSourceBase.h"
+#include "modules/mediasource/MediaSource.h"
 #include "platform/weborigin/KURL.h"
 #include "wtf/MainThread.h"
 
@@ -49,7 +49,7 @@ void MediaSourceRegistry::registerURL(SecurityOrigin*, const KURL& url, URLRegis
     ASSERT(&registrable->registry() == this);
     ASSERT(isMainThread());
 
-    MediaSourceBase* source = static_cast<MediaSourceBase*>(registrable);
+    MediaSource* source = static_cast<MediaSource*>(registrable);
     source->addedToRegistry();
     m_mediaSources.set(url.string(), source);
 }
@@ -57,11 +57,11 @@ void MediaSourceRegistry::registerURL(SecurityOrigin*, const KURL& url, URLRegis
 void MediaSourceRegistry::unregisterURL(const KURL& url)
 {
     ASSERT(isMainThread());
-    WillBePersistentHeapHashMap<String, RefPtrWillBeMember<MediaSourceBase> >::iterator iter = m_mediaSources.find(url.string());
+    WillBePersistentHeapHashMap<String, RefPtrWillBeMember<MediaSource> >::iterator iter = m_mediaSources.find(url.string());
     if (iter == m_mediaSources.end())
         return;
 
-    RefPtrWillBeRawPtr<MediaSourceBase> source = iter->value;
+    RefPtrWillBeRawPtr<MediaSource> source = iter->value;
     m_mediaSources.remove(iter);
     source->removedFromRegistry();
 }

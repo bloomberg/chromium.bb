@@ -505,8 +505,6 @@
       'mediasource/HTMLVideoElementMediaSource.h',
       'mediasource/MediaSource.cpp',
       'mediasource/MediaSource.h',
-      'mediasource/MediaSourceBase.cpp',
-      'mediasource/MediaSourceBase.h',
       'mediasource/MediaSourceRegistry.cpp',
       'mediasource/MediaSourceRegistry.h',
       'mediasource/SourceBuffer.cpp',

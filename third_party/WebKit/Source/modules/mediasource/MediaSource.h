@@ -32,17 +32,39 @@
 #define MediaSource_h
 
 #include "bindings/v8/ScriptWrappable.h"
-#include "modules/mediasource/MediaSourceBase.h"
+#include "core/dom/ActiveDOMObject.h"
+#include "core/events/EventTarget.h"
+#include "core/html/HTMLMediaSource.h"
+#include "core/html/URLRegistry.h"
 #include "modules/mediasource/SourceBuffer.h"
 #include "modules/mediasource/SourceBufferList.h"
+#include "public/platform/WebMediaSource.h"
+#include "wtf/PassOwnPtr.h"
 #include "wtf/RefCounted.h"
+#include "wtf/Vector.h"
+
+namespace blink {
+class WebSourceBuffer;
+}
 
 namespace WebCore {
 
 class ExceptionState;
+class GenericEventQueue;
 
-class MediaSource FINAL : public MediaSourceBase, public ScriptWrappable {
+class MediaSource FINAL
+    : public RefCountedWillBeRefCountedGarbageCollected<MediaSource>
+    , public HTMLMediaSource
+    , public ActiveDOMObject
+    , public EventTargetWithInlineData
+    , public ScriptWrappable {
+    REFCOUNTED_EVENT_TARGET(MediaSource);
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(MediaSource);
 public:
+    static const AtomicString& openKeyword();
+    static const AtomicString& closedKeyword();
+    static const AtomicString& endedKeyword();
+
     static PassRefPtrWillBeRawPtr<MediaSource> create(ExecutionContext*);
     virtual ~MediaSource();
 
@@ -51,25 +73,60 @@ public:
     SourceBufferList* activeSourceBuffers() { return m_activeSourceBuffers.get(); }
     SourceBuffer* addSourceBuffer(const String& type, ExceptionState&);
     void removeSourceBuffer(SourceBuffer*, ExceptionState&);
+    void setDuration(double, ExceptionState&);
+    const AtomicString& readyState() const { return m_readyState; }
+    void endOfStream(const AtomicString& error, ExceptionState&);
+    void endOfStream(ExceptionState&);
     static bool isTypeSupported(const String& type);
+
+        // HTMLMediaSource
+    virtual bool attachToElement(HTMLMediaElement*) OVERRIDE;
+    virtual void setWebMediaSourceAndOpen(PassOwnPtr<blink::WebMediaSource>) OVERRIDE;
+    virtual void close() OVERRIDE;
+    virtual bool isClosed() const OVERRIDE;
+    virtual double duration() const OVERRIDE;
+    virtual PassRefPtr<TimeRanges> buffered() const OVERRIDE;
+    virtual void refHTMLMediaSource() OVERRIDE { ref(); }
+    virtual void derefHTMLMediaSource() OVERRIDE { deref(); }
 
     // EventTarget interface
     virtual const AtomicString& interfaceName() const OVERRIDE;
+    virtual ExecutionContext* executionContext() const OVERRIDE;
 
-    virtual void trace(Visitor*) OVERRIDE;
+    // ActiveDOMObject interface
+    virtual bool hasPendingActivity() const OVERRIDE;
+    virtual void stop() OVERRIDE;
 
-#if !ENABLE(OILPAN)
-    using RefCounted<MediaSourceBase>::ref;
-    using RefCounted<MediaSourceBase>::deref;
-#endif
+    // URLRegistrable interface
+    virtual URLRegistry& registry() const OVERRIDE;
+
+    // Used by SourceBuffer.
+    void openIfInEndedState();
+    bool isOpen() const;
+
+    // Used by MediaSourceRegistry.
+    void addedToRegistry();
+    void removedFromRegistry();
+
+    void trace(Visitor*);
 
 private:
     explicit MediaSource(ExecutionContext*);
 
-    // MediaSourceBase interface
-    virtual void onReadyStateChange(const AtomicString&, const AtomicString&) OVERRIDE;
-    virtual Vector<RefPtr<TimeRanges> > activeRanges() const OVERRIDE;
-    virtual bool isUpdating() const OVERRIDE;
+    void setReadyState(const AtomicString&);
+    void onReadyStateChange(const AtomicString&, const AtomicString&);
+
+    bool isUpdating() const;
+
+    PassOwnPtr<blink::WebSourceBuffer> createWebSourceBuffer(const String& type, const Vector<String>& codecs, ExceptionState&);
+    void scheduleEvent(const AtomicString& eventName);
+    void endOfStreamInternal(const blink::WebMediaSource::EndOfStreamStatus, ExceptionState&);
+
+    OwnPtr<blink::WebMediaSource> m_webMediaSource;
+    AtomicString m_readyState;
+    OwnPtr<GenericEventQueue> m_asyncEventQueue;
+    // FIXME: oilpan: This should become a Member. For now, m_attachedElement will be cleared by the HTMLMediaElement destructor.
+    HTMLMediaElement* m_attachedElement;
 
     RefPtrWillBeMember<SourceBufferList> m_sourceBuffers;
     RefPtrWillBeMember<SourceBufferList> m_activeSourceBuffers;

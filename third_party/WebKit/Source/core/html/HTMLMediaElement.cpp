@@ -1941,7 +1941,7 @@ double HTMLMediaElement::duration() const
     // FIXME: Refactor so m_duration is kept current (in both MSE and
     // non-MSE cases) once we have transitioned from HAVE_NOTHING ->
     // HAVE_METADATA. Currently, m_duration may be out of date for at least MSE
-    // case because MediaSourceBase and SourceBuffer do not notify the element
+    // case because MediaSource and SourceBuffer do not notify the element
     // directly upon duration changes caused by endOfStream, remove, or append
     // operations; rather the notification is triggered by the WebMediaPlayer
     // implementation observing that the underlying engine has updated duration
