@@ -633,17 +633,21 @@ def _RunMonkeyTests(options, error_func, devices):
   return exit_code
 
 
-def _RunPerfTests(options, args, error_func, devices):
+def _RunPerfTests(options, args, error_func):
   """Subcommand of RunTestsCommands which runs perf tests."""
   perf_options = ProcessPerfTestOptions(options, args, error_func)
   # Just print the results from a single previously executed step.
   if perf_options.print_step:
     return perf_test_runner.PrintTestOutput(perf_options.print_step)
 
-  runner_factory, tests = perf_setup.Setup(perf_options)
+  runner_factory, tests, devices = perf_setup.Setup(perf_options)
 
+  # shard=False means that each device will get the full list of tests
+  # and then each one will decide their own affinity.
+  # shard=True means each device will pop the next test available from a queue,
+  # which increases throughput but have no affinity.
   results, _ = test_dispatcher.RunTests(
-      tests, runner_factory, devices, shard=True, test_timeout=None,
+      tests, runner_factory, devices, shard=False, test_timeout=None,
       num_retries=options.num_retries)
 
   report_results.LogFull(
@@ -731,7 +735,7 @@ def RunTestsCommand(command, options, args, option_parser):
   elif command == 'monkey':
     return _RunMonkeyTests(options, option_parser.error, devices)
   elif command == 'perf':
-    return _RunPerfTests(options, args, option_parser.error, devices)
+    return _RunPerfTests(options, args, option_parser.error)
   else:
     raise Exception('Unknown test type.')
 

@@ -31,6 +31,7 @@ from pylib import constants
 from pylib.cmd_helper import GetCmdOutput
 from pylib.device import device_blacklist
 from pylib.device import device_errors
+from pylib.device import device_list
 from pylib.device import device_utils
 
 def DeviceInfo(serial, options):
@@ -108,26 +109,6 @@ def DeviceInfo(serial, options):
   return device_type, device_build, battery_level, full_report, errors, True
 
 
-def GetLastDevices(out_dir):
-  """Returns a list of devices that have been seen on the bot.
-
-  Args:
-    options: out_dir parameter of options argument is used as the base
-             directory to load and update the cache file.
-
-  Returns: List of device serial numbers that were on the bot.
-  """
-  devices_path = os.path.join(out_dir, '.last_devices')
-  devices = []
-  try:
-    with open(devices_path) as f:
-      devices = f.read().splitlines()
-  except IOError:
-    # Ignore error, file might not exist
-    pass
-  return devices
-
-
 def CheckForMissingDevices(options, adb_online_devs):
   """Uses file of previous online devices to detect broken phones.
 
@@ -144,21 +125,19 @@ def CheckForMissingDevices(options, adb_online_devs):
 
   out_dir = os.path.abspath(options.out_dir)
 
-  def WriteDeviceList(file_name, device_list):
-    path = os.path.join(out_dir, file_name)
-    if not os.path.exists(out_dir):
-      os.makedirs(out_dir)
-    with open(path, 'w') as f:
-      # Write devices currently visible plus devices previously seen.
-      f.write('\n'.join(set(device_list)))
-
-  last_devices_path = os.path.join(out_dir, '.last_devices')
-  last_devices = GetLastDevices(out_dir)
+  last_devices_path = os.path.join(out_dir, device_list.LAST_DEVICES_FILENAME)
+  try:
+    last_devices = device_list.GetPersistentDeviceList(last_devices_path)
+  except IOError:
+    # Ignore error, file might not exist
+    last_devices = []
   missing_devs = list(set(last_devices) - set(adb_online_devs))
 
   all_known_devices = list(set(adb_online_devs) | set(last_devices))
-  WriteDeviceList('.last_devices', all_known_devices)
-  WriteDeviceList('.last_missing', missing_devs)
+  device_list.WritePersistentDeviceList(last_devices_path, all_known_devices)
+  device_list.WritePersistentDeviceList(
+      os.path.join(out_dir, device_list.LAST_MISSING_DEVICES_FILENAME),
+      missing_devs)
 
   if not all_known_devices:
     # This can happen if for some reason the .last_devices file is not
@@ -289,7 +268,11 @@ def main():
   device_blacklist.ResetBlacklist()
 
   if options.restart_usb:
-    expected_devices = GetLastDevices(os.path.abspath(options.out_dir))
+    try:
+      expected_devices = device_list.GetPersistentDeviceList(
+          os.path.join(options.out_dir, device_list.LAST_DEVICES_FILENAME))
+    except IOError:
+      expected_devices = []
     devices = android_commands.GetAttachedDevices()
     # Only restart usb if devices are missing.
     if set(expected_devices) != set(devices):
