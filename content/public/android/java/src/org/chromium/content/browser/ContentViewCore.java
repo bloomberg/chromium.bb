@@ -540,7 +540,7 @@ public class ContentViewCore
                                     // always be called, crbug.com/294908.
                                     getContainerView().getWindowVisibleDisplayFrame(
                                             mFocusPreOSKViewportRect);
-                                } else if (resultCode ==
+                                } else if (hasFocus() && resultCode ==
                                         InputMethodManager.RESULT_UNCHANGED_SHOWN) {
                                     // If the OSK was already there, focus the form immediately.
                                     scrollFocusedEditableNodeIntoView();
@@ -1573,6 +1573,7 @@ public class ContentViewCore
     public void onFocusChanged(boolean gainFocus) {
         if (!gainFocus) {
             hideImeIfNeeded();
+            cancelRequestToScrollFocusedEditableNodeIntoView();
         }
         if (mNativeContentViewCore != 0) nativeSetFocus(mNativeContentViewCore, gainFocus);
     }
