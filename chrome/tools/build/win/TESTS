@@ -1,9 +1,10 @@
-test_shell.exe
-interactive_ui_tests.exe
+browser_tests.exe
+fonts\*
 icudt38.dll
 icudt42.dll
 icudt46.dll
 icudt.dll
 icudtl.dat
+interactive_ui_tests.exe
 plugins\np_test_netscape_plugin.dll
-fonts\*
+test_shell.exe
