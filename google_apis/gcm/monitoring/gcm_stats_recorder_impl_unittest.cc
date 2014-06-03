@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "google_apis/gcm/monitoring/gcm_stats_recorder.h"
+#include "google_apis/gcm/monitoring/gcm_stats_recorder_impl.h"
 
 #include <deque>
 #include <string>
@@ -97,10 +97,10 @@ static const char kIncomingSendErrorDetails[] = "";
 
 }  // namespace
 
-class GCMStatsRecorderTest : public testing::Test {
+class GCMStatsRecorderImplTest : public testing::Test {
  public:
-  GCMStatsRecorderTest();
-  virtual ~GCMStatsRecorderTest();
+  GCMStatsRecorderImplTest();
+  virtual ~GCMStatsRecorderImplTest();
   virtual void SetUp() OVERRIDE;
 
   void VerifyRecordedCheckinCount(int expected_count) {
@@ -339,21 +339,21 @@ class GCMStatsRecorderTest : public testing::Test {
   }
 
   std::vector<std::string> sender_ids_;
-  GCMStatsRecorder recorder_;
+  GCMStatsRecorderImpl recorder_;
 };
 
-GCMStatsRecorderTest::GCMStatsRecorderTest(){
+GCMStatsRecorderImplTest::GCMStatsRecorderImplTest(){
 }
 
-GCMStatsRecorderTest::~GCMStatsRecorderTest() {}
+GCMStatsRecorderImplTest::~GCMStatsRecorderImplTest() {}
 
-void GCMStatsRecorderTest::SetUp(){
+void GCMStatsRecorderImplTest::SetUp(){
   sender_ids_.push_back("s1");
   sender_ids_.push_back("s2");
   recorder_.SetRecording(true);
 }
 
-TEST_F(GCMStatsRecorderTest, StartStopRecordingTest) {
+TEST_F(GCMStatsRecorderImplTest, StartStopRecordingTest) {
   EXPECT_TRUE(recorder_.is_recording());
   recorder_.RecordDataSentToWire(kAppId, kReceiverId, kMessageId, kQueuedSec);
   VerifyRecordedSendingCount(1);
@@ -403,7 +403,7 @@ TEST_F(GCMStatsRecorderTest, StartStopRecordingTest) {
   VerifyAllActivityQueueEmpty("no sending");
 }
 
-TEST_F(GCMStatsRecorderTest, ClearLogTest) {
+TEST_F(GCMStatsRecorderImplTest, ClearLogTest) {
   recorder_.RecordDataSentToWire(kAppId, kReceiverId, kMessageId, kQueuedSec);
   VerifyRecordedSendingCount(1);
   VerifyDataSentToWire("1st call");
@@ -417,7 +417,7 @@ TEST_F(GCMStatsRecorderTest, ClearLogTest) {
   VerifyRecordedSendingCount(0);
 }
 
-TEST_F(GCMStatsRecorderTest, CheckinTest) {
+TEST_F(GCMStatsRecorderImplTest, CheckinTest) {
   recorder_.RecordCheckinInitiated(kAndroidId);
   VerifyRecordedCheckinCount(1);
   VerifyCheckinInitiated("1st call");
@@ -435,7 +435,7 @@ TEST_F(GCMStatsRecorderTest, CheckinTest) {
   VerifyCheckinFailure("4th call");
 }
 
-TEST_F(GCMStatsRecorderTest, ConnectionTest) {
+TEST_F(GCMStatsRecorderImplTest, ConnectionTest) {
   recorder_.RecordConnectionInitiated(kHost);
   VerifyRecordedConnectionCount(1);
   VerifyConnectionInitiated("1st call");
@@ -457,7 +457,7 @@ TEST_F(GCMStatsRecorderTest, ConnectionTest) {
   VerifyConnectionResetSignaled("5th call");
 }
 
-TEST_F(GCMStatsRecorderTest, RegistrationTest) {
+TEST_F(GCMStatsRecorderImplTest, RegistrationTest) {
   recorder_.RecordRegistrationSent(kAppId, kSenderIds);
   VerifyRecordedRegistrationCount(1);
   VerifyRegistrationSent("1st call");
@@ -484,7 +484,7 @@ TEST_F(GCMStatsRecorderTest, RegistrationTest) {
   VerifyUnregistrationRetryDelayed("6th call");
 }
 
-TEST_F(GCMStatsRecorderTest, RecordReceivingTest) {
+TEST_F(GCMStatsRecorderImplTest, RecordReceivingTest) {
   recorder_.RecordDataMessageReceived(kAppId, kFrom, kByteSize, true,
                                       GCMStatsRecorder::DATA_MESSAGE);
   VerifyRecordedReceivingCount(1);
@@ -501,7 +501,7 @@ TEST_F(GCMStatsRecorderTest, RecordReceivingTest) {
   VerifyDataMessageReceivedNotRegistered("3rd call");
 }
 
-TEST_F(GCMStatsRecorderTest, RecordSendingTest) {
+TEST_F(GCMStatsRecorderImplTest, RecordSendingTest) {
   recorder_.RecordDataSentToWire(kAppId, kReceiverId, kMessageId, kQueuedSec);
   VerifyRecordedSendingCount(1);
   VerifyDataSentToWire("1st call");

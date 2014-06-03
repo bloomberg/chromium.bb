@@ -15,7 +15,7 @@
 #include "google_apis/gcm/engine/fake_connection_factory.h"
 #include "google_apis/gcm/engine/fake_connection_handler.h"
 #include "google_apis/gcm/engine/gcm_store_impl.h"
-#include "google_apis/gcm/monitoring/gcm_stats_recorder.h"
+#include "google_apis/gcm/monitoring/fake_gcm_stats_recorder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace gcm {
@@ -139,7 +139,7 @@ class MCSClientTest : public testing::Test {
   std::string sent_message_id_;
   MCSClient::MessageSendStatus message_send_status_;
 
-  gcm::GCMStatsRecorder recorder_;
+  gcm::FakeGCMStatsRecorder recorder_;
 };
 
 MCSClientTest::MCSClientTest()

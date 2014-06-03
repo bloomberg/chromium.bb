@@ -31,7 +31,7 @@
 #include "google_apis/gcm/engine/gcm_store_impl.h"
 #include "google_apis/gcm/engine/gservices_settings.h"
 #include "google_apis/gcm/engine/mcs_client.h"
-#include "google_apis/gcm/monitoring/gcm_stats_recorder.h"
+#include "google_apis/gcm/monitoring/fake_gcm_stats_recorder.h"
 #include "net/base/host_mapping_rules.h"
 #include "net/base/net_log_logger.h"
 #include "net/cert/cert_verifier.h"
@@ -243,7 +243,7 @@ class MCSProbe {
   scoped_refptr<net::HttpNetworkSession> network_session_;
   scoped_ptr<net::ProxyService> proxy_service_;
 
-  GCMStatsRecorder recorder_;
+  FakeGCMStatsRecorder recorder_;
   scoped_ptr<GCMStore> gcm_store_;
   scoped_ptr<MCSClient> mcs_client_;
   scoped_ptr<CheckinRequest> checkin_request_;

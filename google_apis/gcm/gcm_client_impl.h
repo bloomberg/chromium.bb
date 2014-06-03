@@ -20,7 +20,7 @@
 #include "google_apis/gcm/engine/registration_request.h"
 #include "google_apis/gcm/engine/unregistration_request.h"
 #include "google_apis/gcm/gcm_client.h"
-#include "google_apis/gcm/monitoring/gcm_stats_recorder.h"
+#include "google_apis/gcm/monitoring/gcm_stats_recorder_impl.h"
 #include "google_apis/gcm/protocol/android_checkin.pb.h"
 #include "google_apis/gcm/protocol/checkin.pb.h"
 #include "net/base/net_log.h"
@@ -233,7 +233,7 @@ class GCM_EXPORT GCMClientImpl
   scoped_ptr<GCMInternalsBuilder> internals_builder_;
 
   // Recorder that logs GCM activities.
-  GCMStatsRecorder recorder_;
+  GCMStatsRecorderImpl recorder_;
 
   // State of the GCM Client Implementation.
   State state_;

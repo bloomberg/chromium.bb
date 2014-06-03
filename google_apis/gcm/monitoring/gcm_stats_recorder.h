@@ -2,10 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef GOOGLE_APIS_GCM_GCM_STATS_RECORDER_H_
-#define GOOGLE_APIS_GCM_GCM_STATS_RECORDER_H_
+#ifndef GOOGLE_APIS_GCM_MONITORING_GCM_STATS_RECORDER_H_
+#define GOOGLE_APIS_GCM_MONITORING_GCM_STATS_RECORDER_H_
 
-#include <deque>
 #include <string>
 #include <vector>
 
@@ -15,15 +14,11 @@
 #include "google_apis/gcm/engine/mcs_client.h"
 #include "google_apis/gcm/engine/registration_request.h"
 #include "google_apis/gcm/engine/unregistration_request.h"
-#include "google_apis/gcm/gcm_activity.h"
 
 namespace gcm {
 
-// Records GCM internal stats and activities for debugging purpose. Recording
-// can be turned on/off by calling SetRecording(...) function. It is turned off
-// by default.
-// This class is not thread safe. It is meant to be owned by a gcm client
-// instance.
+// Defines the interface to record GCM internal stats and activities for
+// debugging purpose.
 class GCM_EXPORT GCMStatsRecorder {
  public:
   // Type of a received message
@@ -34,181 +29,107 @@ class GCM_EXPORT GCMStatsRecorder {
     DELETED_MESSAGES,
   };
 
-  // A delegate interface that allows the GCMStatsRecorder instance to interact
-  // with its container.
+  // A delegate interface that allows the GCMStatsRecorderImpl instance to
+  // interact with its container.
   class Delegate {
-   public:
-    // Called when the GCMStatsRecorder is recording activities and a new
+  public:
+    // Called when the GCMStatsRecorderImpl is recording activities and a new
     // activity has just been recorded.
     virtual void OnActivityRecorded() = 0;
   };
 
-  GCMStatsRecorder();
-  virtual ~GCMStatsRecorder();
-
-  // Indicates whether the recorder is currently recording activities or not.
-  bool is_recording() const {
-    return is_recording_;
-  }
-
-  // Turns recording on/off.
-  void SetRecording(bool recording);
-
-  // Set a delegate to receive callback from the recorder.
-  void SetDelegate(Delegate* delegate);
-
-  // Clear all recorded activities.
-  void Clear();
-
-  // All RecordXXXX methods below will record one activity. It will be inserted
-  // to the front of a queue so that entries in the queue had reverse
-  // chronological order.
+  GCMStatsRecorder() {}
+  virtual ~GCMStatsRecorder() {}
 
   // Records that a check-in has been initiated.
-  void RecordCheckinInitiated(uint64 android_id);
+  virtual void RecordCheckinInitiated(uint64 android_id) = 0;
 
   // Records that a check-in has been delayed due to backoff.
-  void RecordCheckinDelayedDueToBackoff(int64 delay_msec);
+  virtual void RecordCheckinDelayedDueToBackoff(int64 delay_msec) = 0;
 
   // Records that a check-in request has succeeded.
-  void RecordCheckinSuccess();
+  virtual void RecordCheckinSuccess() = 0;
 
   // Records that a check-in request has failed. If a retry will be tempted then
   // will_retry should be true.
-  void RecordCheckinFailure(std::string status, bool will_retry);
+  virtual void RecordCheckinFailure(std::string status, bool will_retry) = 0;
 
   // Records that a connection to MCS has been initiated.
-  void RecordConnectionInitiated(const std::string& host);
+  virtual void RecordConnectionInitiated(const std::string& host) = 0;
 
   // Records that a connection has been delayed due to backoff.
-  void RecordConnectionDelayedDueToBackoff(int64 delay_msec);
+  virtual void RecordConnectionDelayedDueToBackoff(int64 delay_msec) = 0;
 
   // Records that connection has been successfully established.
-  void RecordConnectionSuccess();
+  virtual void RecordConnectionSuccess() = 0;
 
   // Records that connection has failed with a network error code.
-  void RecordConnectionFailure(int network_error);
+  virtual void RecordConnectionFailure(int network_error) = 0;
 
   // Records that connection reset has been signaled.
-  void RecordConnectionResetSignaled(
-      ConnectionFactory::ConnectionResetReason reason);
+  virtual void RecordConnectionResetSignaled(
+      ConnectionFactory::ConnectionResetReason reason) = 0;
 
   // Records that a registration request has been sent. This could be initiated
   // directly from API, or from retry logic.
-  void RecordRegistrationSent(const std::string& app_id,
-                              const std::string& sender_ids);
+  virtual void RecordRegistrationSent(const std::string& app_id,
+                                      const std::string& sender_ids) = 0;
 
   // Records that a registration response has been received from server.
-  void RecordRegistrationResponse(const std::string& app_id,
-                                  const std::vector<std::string>& sender_ids,
-                                  RegistrationRequest::Status status);
+  virtual void RecordRegistrationResponse(
+      const std::string& app_id,
+      const std::vector<std::string>& sender_ids,
+      RegistrationRequest::Status status) = 0;
 
   // Records that a registration retry has been requested. The actual retry
   // action may not occur until some time later according to backoff logic.
-  void RecordRegistrationRetryRequested(
+  virtual void RecordRegistrationRetryRequested(
       const std::string& app_id,
       const std::vector<std::string>& sender_ids,
-      int retries_left);
+      int retries_left) = 0;
 
   // Records that an unregistration request has been sent. This could be
   // initiated directly from API, or from retry logic.
-  void RecordUnregistrationSent(const std::string& app_id);
+  virtual void RecordUnregistrationSent(const std::string& app_id) = 0;
 
   // Records that an unregistration response has been received from server.
-  void RecordUnregistrationResponse(const std::string& app_id,
-                                    UnregistrationRequest::Status status);
+  virtual void RecordUnregistrationResponse(
+      const std::string& app_id,
+      UnregistrationRequest::Status status) = 0;
 
   // Records that an unregistration retry has been requested and delayed due to
   // backoff logic.
-  void RecordUnregistrationRetryDelayed(const std::string& app_id,
-                                        int64 delay_msec);
+  virtual void RecordUnregistrationRetryDelayed(const std::string& app_id,
+                                                int64 delay_msec) = 0;
 
   // Records that a data message has been received. If this message is not
   // sent to a registered app, to_registered_app shoudl be false. If it
   // indicates that a message has been dropped on the server, is_message_dropped
   // should be true.
-  void RecordDataMessageReceived(const std::string& app_id,
-                                 const std::string& from,
-                                 int message_byte_size,
-                                 bool to_registered_app,
-                                 ReceivedMessageType message_type);
+  virtual void RecordDataMessageReceived(const std::string& app_id,
+                                         const std::string& from,
+                                         int message_byte_size,
+                                         bool to_registered_app,
+                                         ReceivedMessageType message_type) = 0;
 
   // Records that an outgoing data message was sent over the wire.
-  void RecordDataSentToWire(const std::string& app_id,
-                            const std::string& receiver_id,
-                            const std::string& message_id,
-                            int queued);
+  virtual void RecordDataSentToWire(const std::string& app_id,
+                                    const std::string& receiver_id,
+                                    const std::string& message_id,
+                                    int queued) = 0;
   // Records that the MCS client sent a 'send status' notification to callback.
-  void RecordNotifySendStatus(const std::string& app_id,
-                              const std::string& receiver_id,
-                              const std::string& message_id,
-                              MCSClient::MessageSendStatus status,
-                              int byte_size,
-                              int ttl);
+  virtual void RecordNotifySendStatus(const std::string& app_id,
+                                      const std::string& receiver_id,
+                                      const std::string& message_id,
+                                      MCSClient::MessageSendStatus status,
+                                      int byte_size,
+                                      int ttl) = 0;
   // Records that a 'send error' message was received.
-  void RecordIncomingSendError(const std::string& app_id,
-                               const std::string& receiver_id,
-                               const std::string& message_id);
-
-  // Collect all recorded activities into the struct.
-  void CollectActivities(RecordedActivities* recorder_activities) const;
-
-  const std::deque<CheckinActivity>& checkin_activities() const {
-    return checkin_activities_;
-  }
-  const std::deque<ConnectionActivity>& connection_activities() const {
-    return connection_activities_;
-  }
-  const std::deque<RegistrationActivity>& registration_activities() const {
-    return registration_activities_;
-  }
-  const std::deque<ReceivingActivity>& receiving_activities() const {
-    return receiving_activities_;
-  }
-  const std::deque<SendingActivity>& sending_activities() const {
-    return sending_activities_;
-  }
-
- protected:
-  // Notify the recorder delegate, if it exists, that an activity has been
-  // recorded.
-  void NotifyActivityRecorded();
-
-  void RecordCheckin(const std::string& event,
-                     const std::string& details);
-
-  void RecordConnection(const std::string& event,
-                        const std::string& details);
-
-  void RecordRegistration(const std::string& app_id,
-                          const std::string& sender_id,
-                          const std::string& event,
-                          const std::string& details);
-
-  void RecordReceiving(const std::string& app_id,
-                       const std::string& from,
-                       int message_byte_size,
-                       const std::string& event,
-                       const std::string& details);
-
-  void RecordSending(const std::string& app_id,
-                     const std::string& receiver_id,
-                     const std::string& message_id,
-                     const std::string& event,
-                     const std::string& details);
-
-  bool is_recording_;
-  Delegate* delegate_;
-
-  std::deque<CheckinActivity> checkin_activities_;
-  std::deque<ConnectionActivity> connection_activities_;
-  std::deque<RegistrationActivity> registration_activities_;
-  std::deque<ReceivingActivity> receiving_activities_;
-  std::deque<SendingActivity> sending_activities_;
-
-  DISALLOW_COPY_AND_ASSIGN(GCMStatsRecorder);
+  virtual void RecordIncomingSendError(const std::string& app_id,
+                                       const std::string& receiver_id,
+                                       const std::string& message_id) = 0;
 };
 
 }  // namespace gcm
 
-#endif  // GOOGLE_APIS_GCM_GCM_STATS_RECORDER_H_
+#endif  // GOOGLE_APIS_GCM_MONITORING_GCM_STATS_RECORDER_H_

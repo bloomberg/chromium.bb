@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "google_apis/gcm/monitoring/gcm_stats_recorder.h"
+#include "google_apis/gcm/monitoring/gcm_stats_recorder_impl.h"
 
 #include <deque>
 #include <vector>
@@ -140,21 +140,23 @@ std::string GetUnregistrationStatusString(
 
 }  // namespace
 
-GCMStatsRecorder::GCMStatsRecorder() : is_recording_(false), delegate_(NULL) {
+GCMStatsRecorderImpl::GCMStatsRecorderImpl()
+    : is_recording_(false),
+      delegate_(NULL) {
 }
 
-GCMStatsRecorder::~GCMStatsRecorder() {
+GCMStatsRecorderImpl::~GCMStatsRecorderImpl() {
 }
 
-void GCMStatsRecorder::SetRecording(bool recording) {
+void GCMStatsRecorderImpl::SetRecording(bool recording) {
   is_recording_ = recording;
 }
 
-void GCMStatsRecorder::SetDelegate(Delegate* delegate) {
+void GCMStatsRecorderImpl::SetDelegate(Delegate* delegate) {
   delegate_ = delegate;
 }
 
-void GCMStatsRecorder::Clear() {
+void GCMStatsRecorderImpl::Clear() {
   checkin_activities_.clear();
   connection_activities_.clear();
   registration_activities_.clear();
@@ -162,12 +164,12 @@ void GCMStatsRecorder::Clear() {
   sending_activities_.clear();
 }
 
-void GCMStatsRecorder::NotifyActivityRecorded() {
+void GCMStatsRecorderImpl::NotifyActivityRecorded() {
   if (delegate_)
     delegate_->OnActivityRecorded();
 }
 
-void GCMStatsRecorder::RecordCheckin(
+void GCMStatsRecorderImpl::RecordCheckin(
     const std::string& event,
     const std::string& details) {
   CheckinActivity data;
@@ -178,14 +180,14 @@ void GCMStatsRecorder::RecordCheckin(
   NotifyActivityRecorded();
 }
 
-void GCMStatsRecorder::RecordCheckinInitiated(uint64 android_id) {
+void GCMStatsRecorderImpl::RecordCheckinInitiated(uint64 android_id) {
   if (!is_recording_)
     return;
   RecordCheckin("Checkin initiated",
                 base::StringPrintf("Android Id: %" PRIu64, android_id));
 }
 
-void GCMStatsRecorder::RecordCheckinDelayedDueToBackoff(int64 delay_msec) {
+void GCMStatsRecorderImpl::RecordCheckinDelayedDueToBackoff(int64 delay_msec) {
   if (!is_recording_)
     return;
   RecordCheckin("Checkin backoff",
@@ -193,13 +195,13 @@ void GCMStatsRecorder::RecordCheckinDelayedDueToBackoff(int64 delay_msec) {
                                    delay_msec));
 }
 
-void GCMStatsRecorder::RecordCheckinSuccess() {
+void GCMStatsRecorderImpl::RecordCheckinSuccess() {
   if (!is_recording_)
     return;
   RecordCheckin("Checkin succeeded", std::string());
 }
 
-void GCMStatsRecorder::RecordCheckinFailure(std::string status,
+void GCMStatsRecorderImpl::RecordCheckinFailure(std::string status,
                                             bool will_retry) {
   if (!is_recording_)
     return;
@@ -209,7 +211,7 @@ void GCMStatsRecorder::RecordCheckinFailure(std::string status,
       will_retry ? " Will retry." : "Will not retry."));
 }
 
-void GCMStatsRecorder::RecordConnection(
+void GCMStatsRecorderImpl::RecordConnection(
     const std::string& event,
     const std::string& details) {
   ConnectionActivity data;
@@ -220,13 +222,14 @@ void GCMStatsRecorder::RecordConnection(
   NotifyActivityRecorded();
 }
 
-void GCMStatsRecorder::RecordConnectionInitiated(const std::string& host) {
+void GCMStatsRecorderImpl::RecordConnectionInitiated(const std::string& host) {
   if (!is_recording_)
     return;
   RecordConnection("Connection initiated", host);
 }
 
-void GCMStatsRecorder::RecordConnectionDelayedDueToBackoff(int64 delay_msec) {
+void GCMStatsRecorderImpl::RecordConnectionDelayedDueToBackoff(
+    int64 delay_msec) {
   if (!is_recording_)
     return;
   RecordConnection("Connection backoff",
@@ -234,20 +237,20 @@ void GCMStatsRecorder::RecordConnectionDelayedDueToBackoff(int64 delay_msec) {
                                       delay_msec));
 }
 
-void GCMStatsRecorder::RecordConnectionSuccess() {
+void GCMStatsRecorderImpl::RecordConnectionSuccess() {
   if (!is_recording_)
     return;
   RecordConnection("Connection succeeded", std::string());
 }
 
-void GCMStatsRecorder::RecordConnectionFailure(int network_error) {
+void GCMStatsRecorderImpl::RecordConnectionFailure(int network_error) {
   if (!is_recording_)
     return;
   RecordConnection("Connection failed",
                    base::StringPrintf("With network error %d", network_error));
 }
 
-void GCMStatsRecorder::RecordConnectionResetSignaled(
+void GCMStatsRecorderImpl::RecordConnectionResetSignaled(
       ConnectionFactory::ConnectionResetReason reason) {
   if (!is_recording_)
     return;
@@ -255,7 +258,7 @@ void GCMStatsRecorder::RecordConnectionResetSignaled(
                    GetConnectionResetReasonString(reason));
 }
 
-void GCMStatsRecorder::RecordRegistration(
+void GCMStatsRecorderImpl::RecordRegistration(
     const std::string& app_id,
     const std::string& sender_ids,
     const std::string& event,
@@ -270,7 +273,7 @@ void GCMStatsRecorder::RecordRegistration(
   NotifyActivityRecorded();
 }
 
-void GCMStatsRecorder::RecordRegistrationSent(
+void GCMStatsRecorderImpl::RecordRegistrationSent(
     const std::string& app_id,
     const std::string& sender_ids) {
   UMA_HISTOGRAM_COUNTS("GCM.RegistrationRequest", 1);
@@ -280,7 +283,7 @@ void GCMStatsRecorder::RecordRegistrationSent(
                      "Registration request sent", std::string());
 }
 
-void GCMStatsRecorder::RecordRegistrationResponse(
+void GCMStatsRecorderImpl::RecordRegistrationResponse(
     const std::string& app_id,
     const std::vector<std::string>& sender_ids,
     RegistrationRequest::Status status) {
@@ -291,7 +294,7 @@ void GCMStatsRecorder::RecordRegistrationResponse(
                      GetRegistrationStatusString(status));
 }
 
-void GCMStatsRecorder::RecordRegistrationRetryRequested(
+void GCMStatsRecorderImpl::RecordRegistrationRetryRequested(
     const std::string& app_id,
     const std::vector<std::string>& sender_ids,
     int retries_left) {
@@ -302,7 +305,7 @@ void GCMStatsRecorder::RecordRegistrationRetryRequested(
                      base::StringPrintf("Retries left: %d", retries_left));
 }
 
-void GCMStatsRecorder::RecordUnregistrationSent(
+void GCMStatsRecorderImpl::RecordUnregistrationSent(
     const std::string& app_id) {
   UMA_HISTOGRAM_COUNTS("GCM.UnregistrationRequest", 1);
   if (!is_recording_)
@@ -311,7 +314,7 @@ void GCMStatsRecorder::RecordUnregistrationSent(
                      std::string());
 }
 
-void GCMStatsRecorder::RecordUnregistrationResponse(
+void GCMStatsRecorderImpl::RecordUnregistrationResponse(
     const std::string& app_id,
     UnregistrationRequest::Status status) {
   if (!is_recording_)
@@ -322,7 +325,7 @@ void GCMStatsRecorder::RecordUnregistrationResponse(
                      GetUnregistrationStatusString(status));
 }
 
-void GCMStatsRecorder::RecordUnregistrationRetryDelayed(
+void GCMStatsRecorderImpl::RecordUnregistrationRetryDelayed(
     const std::string& app_id,
     int64 delay_msec) {
   if (!is_recording_)
@@ -334,7 +337,7 @@ void GCMStatsRecorder::RecordUnregistrationRetryDelayed(
                                         delay_msec));
 }
 
-void GCMStatsRecorder::RecordReceiving(
+void GCMStatsRecorderImpl::RecordReceiving(
     const std::string& app_id,
     const std::string& from,
     int message_byte_size,
@@ -351,7 +354,7 @@ void GCMStatsRecorder::RecordReceiving(
   NotifyActivityRecorded();
 }
 
-void GCMStatsRecorder::RecordDataMessageReceived(
+void GCMStatsRecorderImpl::RecordDataMessageReceived(
     const std::string& app_id,
     const std::string& from,
     int message_byte_size,
@@ -367,11 +370,11 @@ void GCMStatsRecorder::RecordDataMessageReceived(
                                         "No such registered app found");
   } else {
     switch(message_type) {
-      case GCMStatsRecorder::DATA_MESSAGE:
+      case GCMStatsRecorderImpl::DATA_MESSAGE:
         RecordReceiving(app_id, from, message_byte_size, "Data msg received",
                         std::string());
         break;
-      case GCMStatsRecorder::DELETED_MESSAGES:
+      case GCMStatsRecorderImpl::DELETED_MESSAGES:
         RecordReceiving(app_id, from, message_byte_size, "Data msg received",
                         "Message has been deleted on server");
         break;
@@ -381,7 +384,7 @@ void GCMStatsRecorder::RecordDataMessageReceived(
   }
 }
 
-void GCMStatsRecorder::CollectActivities(
+void GCMStatsRecorderImpl::CollectActivities(
     RecordedActivities* recorder_activities) const {
   recorder_activities->checkin_activities.insert(
       recorder_activities->checkin_activities.begin(),
@@ -405,11 +408,11 @@ void GCMStatsRecorder::CollectActivities(
       sending_activities_.end());
 }
 
-void GCMStatsRecorder::RecordSending(const std::string& app_id,
-                                     const std::string& receiver_id,
-                                     const std::string& message_id,
-                                     const std::string& event,
-                                     const std::string& details) {
+void GCMStatsRecorderImpl::RecordSending(const std::string& app_id,
+                                         const std::string& receiver_id,
+                                         const std::string& message_id,
+                                         const std::string& event,
+                                         const std::string& details) {
   SendingActivity data;
   SendingActivity* inserted_data = InsertCircularBuffer(
       &sending_activities_, data);
@@ -421,7 +424,7 @@ void GCMStatsRecorder::RecordSending(const std::string& app_id,
   NotifyActivityRecorded();
 }
 
-void GCMStatsRecorder::RecordDataSentToWire(
+void GCMStatsRecorderImpl::RecordDataSentToWire(
     const std::string& app_id,
     const std::string& receiver_id,
     const std::string& message_id,
@@ -432,7 +435,7 @@ void GCMStatsRecorder::RecordDataSentToWire(
                 base::StringPrintf("Msg queued for %d seconds", queued));
 }
 
-void GCMStatsRecorder::RecordNotifySendStatus(
+void GCMStatsRecorderImpl::RecordNotifySendStatus(
     const std::string& app_id,
     const std::string& receiver_id,
     const std::string& message_id,
@@ -452,7 +455,7 @@ void GCMStatsRecorder::RecordNotifySendStatus(
       base::StringPrintf("Msg size: %d bytes, TTL: %d", byte_size, ttl));
 }
 
-void GCMStatsRecorder::RecordIncomingSendError(
+void GCMStatsRecorderImpl::RecordIncomingSendError(
     const std::string& app_id,
     const std::string& receiver_id,
     const std::string& message_id) {
