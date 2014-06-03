@@ -16,6 +16,10 @@ class TwoClientDictionarySyncTest : public SyncTest {
   TwoClientDictionarySyncTest() : SyncTest(TWO_CLIENT) {}
   virtual ~TwoClientDictionarySyncTest() {}
 
+  virtual bool TestUsesSelfNotifications() OVERRIDE {
+    return false;
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(TwoClientDictionarySyncTest);
 };

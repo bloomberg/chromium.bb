@@ -16,6 +16,10 @@ class MultipleClientPreferencesSyncTest : public SyncTest {
   MultipleClientPreferencesSyncTest() : SyncTest(MULTIPLE_CLIENT) {}
   virtual ~MultipleClientPreferencesSyncTest() {}
 
+  virtual bool TestUsesSelfNotifications() OVERRIDE {
+    return false;
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(MultipleClientPreferencesSyncTest);
 };

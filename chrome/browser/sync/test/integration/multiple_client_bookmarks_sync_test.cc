@@ -15,6 +15,10 @@ class MultipleClientBookmarksSyncTest : public SyncTest {
   MultipleClientBookmarksSyncTest() : SyncTest(MULTIPLE_CLIENT) {}
   virtual ~MultipleClientBookmarksSyncTest() {}
 
+  virtual bool TestUsesSelfNotifications() OVERRIDE {
+    return false;
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(MultipleClientBookmarksSyncTest);
 };
