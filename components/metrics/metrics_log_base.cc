@@ -37,7 +37,6 @@ MetricsLogBase::MetricsLogBase(const std::string& client_id,
                                const std::string& version_string)
     : locked_(false),
       log_type_(log_type) {
-  DCHECK_NE(NO_LOG, log_type);
   if (IsTestingID(client_id))
     uma_proto_.set_client_id(0);
   else

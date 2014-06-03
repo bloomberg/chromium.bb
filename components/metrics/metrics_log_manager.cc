@@ -102,12 +102,14 @@ void MetricsLogManager::ResumePausedLog() {
 }
 
 void MetricsLogManager::StoreLog(std::string* log, LogType log_type) {
-  DCHECK_NE(MetricsLogBase::NO_LOG, log_type);
-  metrics::PersistedLogs* destination_queue =
-      (log_type == MetricsLogBase::INITIAL_STABILITY_LOG) ?
-      &initial_log_queue_ : &ongoing_log_queue_;
-
-  destination_queue->StoreLog(log);
+  switch (log_type) {
+    case MetricsLogBase::INITIAL_STABILITY_LOG:
+      initial_log_queue_.StoreLog(log);
+      break;
+    case MetricsLogBase::ONGOING_LOG:
+      ongoing_log_queue_.StoreLog(log);
+      break;
+  }
 }
 
 void MetricsLogManager::StoreStagedLogAsUnsent(

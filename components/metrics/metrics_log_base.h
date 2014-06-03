@@ -24,11 +24,9 @@ namespace metrics {
 // This class provides base functionality for logging metrics data.
 class MetricsLogBase {
  public:
-  // TODO(asvitkine): Remove the NO_LOG value.
   enum LogType {
     INITIAL_STABILITY_LOG,  // The initial log containing stability stats.
     ONGOING_LOG,            // Subsequent logs in a session.
-    NO_LOG,                 // Placeholder value for when there is no log.
   };
 
   // Creates a new metrics log of the specified type.
