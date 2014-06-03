@@ -1,4 +1,4 @@
 include_rules = [
-  "-athena/task",
+  "-athena/activity",
   "+athena/athena_export.h",
 ]
