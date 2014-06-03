@@ -74,11 +74,11 @@ bool CompositingReasonFinder::isMainFrame() const
     return !m_renderView.document().ownerElement();
 }
 
-CompositingReasons CompositingReasonFinder::directReasons(const RenderLayer* layer, bool* needToRecomputeCompositingRequirements) const
+CompositingReasons CompositingReasonFinder::directReasons(const RenderLayer* layer) const
 {
     CompositingReasons styleReasons = layer->styleDeterminedCompositingReasons();
     ASSERT(styleDeterminedReasons(layer->renderer()) == styleReasons);
-    return styleReasons | nonStyleDeterminedDirectReasons(layer, needToRecomputeCompositingRequirements);
+    return styleReasons | nonStyleDeterminedDirectReasons(layer);
 }
 
 // This information doesn't appear to be incorporated into CompositingReasons.
@@ -136,7 +136,7 @@ bool CompositingReasonFinder::requiresCompositingForFilters(RenderObject* render
     return renderer->hasFilter();
 }
 
-CompositingReasons CompositingReasonFinder::nonStyleDeterminedDirectReasons(const RenderLayer* layer, bool* needToRecomputeCompositingRequirements) const
+CompositingReasons CompositingReasonFinder::nonStyleDeterminedDirectReasons(const RenderLayer* layer) const
 {
     CompositingReasons directReasons = CompositingReasonNone;
     RenderObject* renderer = layer->renderer();
@@ -158,7 +158,7 @@ CompositingReasons CompositingReasonFinder::nonStyleDeterminedDirectReasons(cons
     if (requiresCompositingForPositionSticky(renderer, layer))
         directReasons |= CompositingReasonPositionSticky;
 
-    if (requiresCompositingForPositionFixed(renderer, layer, 0, needToRecomputeCompositingRequirements))
+    if (requiresCompositingForPositionFixed(renderer, layer, 0))
         directReasons |= CompositingReasonPositionFixed;
 
     directReasons |= renderer->additionalCompositingReasons(m_compositingTriggers);
@@ -167,9 +167,9 @@ CompositingReasons CompositingReasonFinder::nonStyleDeterminedDirectReasons(cons
     return directReasons;
 }
 
-bool CompositingReasonFinder::requiresCompositingForPosition(RenderObject* renderer, const RenderLayer* layer, RenderLayer::ViewportConstrainedNotCompositedReason* viewportConstrainedNotCompositedReason, bool* needToRecomputeCompositingRequirements) const
+bool CompositingReasonFinder::requiresCompositingForPosition(RenderObject* renderer, const RenderLayer* layer, RenderLayer::ViewportConstrainedNotCompositedReason* viewportConstrainedNotCompositedReason) const
 {
-    return requiresCompositingForPositionSticky(renderer, layer) || requiresCompositingForPositionFixed(renderer, layer, viewportConstrainedNotCompositedReason, needToRecomputeCompositingRequirements);
+    return requiresCompositingForPositionSticky(renderer, layer) || requiresCompositingForPositionFixed(renderer, layer, viewportConstrainedNotCompositedReason);
 }
 
 bool CompositingReasonFinder::requiresCompositingForPositionSticky(RenderObject* renderer, const RenderLayer* layer) const
@@ -183,7 +183,7 @@ bool CompositingReasonFinder::requiresCompositingForPositionSticky(RenderObject*
     return !layer->enclosingOverflowClipLayer(ExcludeSelf);
 }
 
-bool CompositingReasonFinder::requiresCompositingForPositionFixed(RenderObject* renderer, const RenderLayer* layer, RenderLayer::ViewportConstrainedNotCompositedReason* viewportConstrainedNotCompositedReason, bool* needToRecomputeCompositingRequirements) const
+bool CompositingReasonFinder::requiresCompositingForPositionFixed(RenderObject* renderer, const RenderLayer* layer, RenderLayer::ViewportConstrainedNotCompositedReason* viewportConstrainedNotCompositedReason) const
 {
     if (!(m_compositingTriggers & ViewportConstrainedPositionedTrigger))
         return false;
@@ -199,7 +199,6 @@ bool CompositingReasonFinder::requiresCompositingForPositionFixed(RenderObject* 
         // allocateOrClearCompositedLayerMapping compositing update. This happens when
         // adding the renderer to the tree because we setStyle before addChild in
         // createRendererForElementIfNeeded.
-        *needToRecomputeCompositingRequirements = true;
         return false;
     }
 
@@ -239,10 +238,8 @@ bool CompositingReasonFinder::requiresCompositingForPositionFixed(RenderObject* 
 
     // Subsequent tests depend on layout. If we can't tell now, just keep things the way they are until layout is done.
     // FIXME: Get rid of this codepath once we get rid of the incremental compositing update in RenderLayer::styleChanged.
-    if (m_renderView.document().lifecycle().state() < DocumentLifecycle::LayoutClean) {
-        *needToRecomputeCompositingRequirements = true;
+    if (m_renderView.document().lifecycle().state() < DocumentLifecycle::LayoutClean)
         return layer->hasCompositedLayerMapping();
-    }
 
     bool paintsContent = layer->isVisuallyNonEmpty() || layer->hasVisibleDescendant();
     if (!paintsContent) {

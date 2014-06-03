@@ -553,8 +553,7 @@ bool RenderLayerCompositor::allocateOrClearCompositedLayerMapping(RenderLayer* l
 bool RenderLayerCompositor::updateLayerIfViewportConstrained(RenderLayer* layer)
 {
     RenderLayer::ViewportConstrainedNotCompositedReason viewportConstrainedNotCompositedReason = RenderLayer::NoNotCompositedReason;
-    m_compositingReasonFinder.requiresCompositingForPosition(layer->renderer(), layer, &viewportConstrainedNotCompositedReason, &m_needsToRecomputeCompositingRequirements);
-    ASSERT(!m_needsToRecomputeCompositingRequirements || lifecycle().state() < DocumentLifecycle::InCompositingUpdate);
+    m_compositingReasonFinder.requiresCompositingForPosition(layer->renderer(), layer, &viewportConstrainedNotCompositedReason);
 
     if (layer->viewportConstrainedNotCompositedReason() != viewportConstrainedNotCompositedReason) {
         ASSERT(viewportConstrainedNotCompositedReason == RenderLayer::NoNotCompositedReason || layer->renderer()->style()->position() == FixedPosition);
@@ -880,7 +879,7 @@ void RenderLayerCompositor::updateStyleDeterminedCompositingReasons(RenderLayer*
 
 void RenderLayerCompositor::updateDirectCompositingReasons(RenderLayer* layer)
 {
-    CompositingReasons reasons = m_compositingReasonFinder.directReasons(layer, &m_needsToRecomputeCompositingRequirements);
+    CompositingReasons reasons = m_compositingReasonFinder.directReasons(layer);
     layer->setCompositingReasons(reasons, CompositingReasonComboAllDirectReasons);
 }
 

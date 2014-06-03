@@ -21,24 +21,24 @@ public:
     explicit CompositingReasonFinder(RenderView&);
 
     CompositingReasons styleDeterminedReasons(RenderObject*) const;
-    CompositingReasons directReasons(const RenderLayer*, bool* needToRecomputeCompositingRequirements = 0) const;
+    CompositingReasons directReasons(const RenderLayer*) const;
 
     void updateTriggers();
 
     bool hasOverflowScrollTrigger() const;
 
     bool requiresCompositingForScrollableFrame() const;
-    bool requiresCompositingForPosition(RenderObject*, const RenderLayer*, RenderLayer::ViewportConstrainedNotCompositedReason*, bool* needToRecomputeCompositingRequirements) const;
+    bool requiresCompositingForPosition(RenderObject*, const RenderLayer*, RenderLayer::ViewportConstrainedNotCompositedReason*) const;
 
 private:
     bool isMainFrame() const;
 
-    CompositingReasons nonStyleDeterminedDirectReasons(const RenderLayer*, bool* needToRecomputeCompositingRequirements) const;
+    CompositingReasons nonStyleDeterminedDirectReasons(const RenderLayer*) const;
 
     bool requiresCompositingForTransform(RenderObject*) const;
     bool requiresCompositingForFilters(RenderObject*) const;
     bool requiresCompositingForPositionSticky(RenderObject*, const RenderLayer*) const;
-    bool requiresCompositingForPositionFixed(RenderObject*, const RenderLayer*, RenderLayer::ViewportConstrainedNotCompositedReason*, bool* needToRecomputeCompositingRequirements) const;
+    bool requiresCompositingForPositionFixed(RenderObject*, const RenderLayer*, RenderLayer::ViewportConstrainedNotCompositedReason*) const;
 
     RenderView& m_renderView;
     CompositingTriggerFlags m_compositingTriggers;
