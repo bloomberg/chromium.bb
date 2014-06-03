@@ -72,6 +72,7 @@ GoogleURLTrackerInfoBarDelegate::GoogleURLTrackerInfoBarDelegate(
     const GURL& search_url)
     : ConfirmInfoBarDelegate(),
       google_url_tracker_(google_url_tracker),
+      navigation_helper_weak_ptr_(NULL),
       search_url_(search_url),
       pending_id_(0) {
 }
