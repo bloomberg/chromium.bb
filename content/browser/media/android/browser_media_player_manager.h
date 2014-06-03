@@ -26,8 +26,8 @@
 #include "url/gurl.h"
 
 namespace media {
+class BrowserCdm;
 class DemuxerAndroid;
-class MediaKeys;
 }
 
 namespace content {
@@ -91,7 +91,7 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
   virtual media::MediaResourceGetter* GetMediaResourceGetter() OVERRIDE;
   virtual media::MediaPlayerAndroid* GetFullscreenPlayer() OVERRIDE;
   virtual media::MediaPlayerAndroid* GetPlayer(int player_id) OVERRIDE;
-  virtual media::MediaKeys* GetCdm(int cdm_id) OVERRIDE;
+  virtual media::BrowserCdm* GetCdm(int cdm_id) OVERRIDE;
   virtual void DestroyAllMediaPlayers() OVERRIDE;
   virtual void RequestFullScreen(int player_id) OVERRIDE;
   virtual void OnSessionCreated(int cdm_id,
@@ -229,15 +229,8 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
   ScopedVector<media::MediaPlayerAndroid> players_;
 
   // A map from CDM IDs to managed CDMs.
-  typedef std::map<int, media::MediaKeys*> CdmMap;
+  typedef std::map<int, media::BrowserCdm*> CdmMap;
   CdmMap cdm_map_;
-
-  // Map from CDM ID to MediaPlayerAndroid player ID to indicate that
-  // the CDM is set on the MediaPlayerAndroid object.
-  // TODO(xhwang): Register a callback in the CDM to resume playback so that we
-  // can remove this map. See http://crbug.com/373327
-  typedef std::map<int, int> CdmToPlayerMap;
-  CdmToPlayerMap cdm_to_player_map_;
 
   // Map from CDM ID to CDM's security origin.
   std::map<int, GURL> cdm_security_origin_map_;

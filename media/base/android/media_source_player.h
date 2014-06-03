@@ -61,8 +61,7 @@ class MEDIA_EXPORT MediaSourcePlayer : public MediaPlayerAndroid,
   virtual bool CanSeekForward() OVERRIDE;
   virtual bool CanSeekBackward() OVERRIDE;
   virtual bool IsPlayerReady() OVERRIDE;
-  virtual void SetCdm(MediaKeys* cdm) OVERRIDE;
-  virtual void OnKeyAdded() OVERRIDE;
+  virtual void SetCdm(BrowserCdm* cdm) OVERRIDE;
   virtual bool IsSurfaceInUse() const OVERRIDE;
 
   // DemuxerAndroidClient implementation.
@@ -171,6 +170,12 @@ class MEDIA_EXPORT MediaSourcePlayer : public MediaPlayerAndroid,
   // Sets the demuxer configs for audio or video stream.
   void SetDemuxerConfigs(const DemuxerConfigs& configs, bool is_audio);
 
+  // Called when new decryption key becomes available.
+  void OnKeyAdded();
+
+  // Called when the CDM is detached.
+  void OnCdmUnset();
+
   // Test-only method to setup hook for the completion of the next decode cycle.
   // This callback state is cleared when it is next run.
   // Prevent usage creep by only calling this from the
@@ -273,6 +278,7 @@ class MEDIA_EXPORT MediaSourcePlayer : public MediaPlayerAndroid,
   base::CancelableClosure decoder_starvation_callback_;
 
   MediaDrmBridge* drm_bridge_;
+  int cdm_registration_id_;
 
   // No decryption key available to decrypt the encrypted buffer. In this case,
   // the player should pause. When a new key is added (OnKeyAdded()), we should
@@ -292,6 +298,7 @@ class MEDIA_EXPORT MediaSourcePlayer : public MediaPlayerAndroid,
   // Weak pointer passed to media decoder jobs for callbacks.
   // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<MediaSourcePlayer> weak_factory_;
+  base::WeakPtr<MediaSourcePlayer> weak_this_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaSourcePlayer);
 };

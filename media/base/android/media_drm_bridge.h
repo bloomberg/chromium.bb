@@ -12,8 +12,9 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
+#include "media/base/browser_cdm.h"
 #include "media/base/media_export.h"
-#include "media/base/media_keys.h"
+#include "media/cdm/player_tracker_impl.h"
 #include "url/gurl.h"
 
 class GURL;
@@ -24,7 +25,7 @@ class MediaPlayerManager;
 
 // This class provides DRM services for android EME implementation.
 // TODO(qinmin): implement all the functions in this class.
-class MEDIA_EXPORT MediaDrmBridge : public MediaKeys {
+class MEDIA_EXPORT MediaDrmBridge : public BrowserCdm {
  public:
   enum SecurityLevel {
     SECURITY_LEVEL_NONE = 0,
@@ -88,7 +89,7 @@ class MEDIA_EXPORT MediaDrmBridge : public MediaKeys {
   //   object. Calling this function multiples times may cause errors.
   bool SetSecurityLevel(SecurityLevel security_level);
 
-  // MediaKeys implementations.
+  // BrowserCdm implementations.
   virtual bool CreateSession(uint32 session_id,
                              const std::string& content_type,
                              const uint8* init_data,
@@ -99,6 +100,9 @@ class MEDIA_EXPORT MediaDrmBridge : public MediaKeys {
                              const uint8* response,
                              int response_length) OVERRIDE;
   virtual void ReleaseSession(uint32 session_id) OVERRIDE;
+  virtual int RegisterPlayer(const base::Closure& new_key_cb,
+                             const base::Closure& cdm_unset_cb) OVERRIDE;
+  virtual void UnregisterPlayer(int registration_id) OVERRIDE;
 
   // Returns a MediaCrypto object if it's already created. Returns a null object
   // otherwise.
@@ -162,6 +166,8 @@ class MEDIA_EXPORT MediaDrmBridge : public MediaKeys {
   base::Closure media_crypto_ready_cb_;
 
   ResetCredentialsCB reset_credentials_cb_;
+
+  PlayerTrackerImpl player_tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaDrmBridge);
 };

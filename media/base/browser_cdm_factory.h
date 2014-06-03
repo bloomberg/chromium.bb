@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_BASE_CDM_FACTORY_H_
-#define MEDIA_BASE_CDM_FACTORY_H_
+#ifndef MEDIA_BASE_BROWSER_CDM_FACTORY_H_
+#define MEDIA_BASE_BROWSER_CDM_FACTORY_H_
 
 #include <string>
 
@@ -13,9 +13,12 @@
 
 namespace media {
 
-// Creates a CDM for |key_system|. Returns NULL if the CDM cannot be created.
+class BrowserCdm;
+
+// Creates a BrowserCdm for |key_system|. Returns NULL if the CDM cannot be
+// created.
 // TODO(xhwang): Add ifdef for IPC based CDM.
-scoped_ptr<MediaKeys> MEDIA_EXPORT
+scoped_ptr<BrowserCdm> MEDIA_EXPORT
     CreateBrowserCdm(const std::string& key_system,
                      const SessionCreatedCB& session_created_cb,
                      const SessionMessageCB& session_message_cb,
@@ -25,4 +28,4 @@ scoped_ptr<MediaKeys> MEDIA_EXPORT
 
 }  // namespace media
 
-#endif  // MEDIA_BASE_CDM_FACTORY_H_
+#endif  // MEDIA_BASE_BROWSER_CDM_FACTORY_H_

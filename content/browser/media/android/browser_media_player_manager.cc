@@ -28,9 +28,11 @@
 #include "content/public/common/content_switches.h"
 #include "media/base/android/media_player_bridge.h"
 #include "media/base/android/media_source_player.h"
-#include "media/base/cdm_factory.h"
+#include "media/base/browser_cdm.h"
+#include "media/base/browser_cdm_factory.h"
 #include "media/base/media_switches.h"
 
+using media::BrowserCdm;
 using media::MediaKeys;
 using media::MediaPlayerAndroid;
 using media::MediaPlayerBridge;
@@ -317,7 +319,7 @@ MediaPlayerAndroid* BrowserMediaPlayerManager::GetPlayer(int player_id) {
   return NULL;
 }
 
-MediaKeys* BrowserMediaPlayerManager::GetCdm(int cdm_id) {
+BrowserCdm* BrowserMediaPlayerManager::GetCdm(int cdm_id) {
   CdmMap::const_iterator iter = cdm_map_.find(cdm_id);
   return (iter == cdm_map_.end()) ? NULL : iter->second;
 }
@@ -376,11 +378,10 @@ void BrowserMediaPlayerManager::OnSessionClosed(int cdm_id, uint32 session_id) {
   Send(new CdmMsg_SessionClosed(RoutingID(), cdm_id, session_id));
 }
 
-void BrowserMediaPlayerManager::OnSessionError(
-    int cdm_id,
-    uint32 session_id,
-    media::MediaKeys::KeyError error_code,
-    uint32 system_code) {
+void BrowserMediaPlayerManager::OnSessionError(int cdm_id,
+                                               uint32 session_id,
+                                               MediaKeys::KeyError error_code,
+                                               uint32 system_code) {
   Send(new CdmMsg_SessionError(
       RoutingID(), cdm_id, session_id, error_code, system_code));
 }
@@ -576,7 +577,7 @@ void BrowserMediaPlayerManager::OnCreateSession(
   if (init_data.size() > kMaxInitDataLength) {
     LOG(WARNING) << "InitData for ID: " << cdm_id
                  << " too long: " << init_data.size();
-    OnSessionError(cdm_id, session_id, media::MediaKeys::kUnknownError, 0);
+    OnSessionError(cdm_id, session_id, MediaKeys::kUnknownError, 0);
     return;
   }
 
@@ -603,10 +604,10 @@ void BrowserMediaPlayerManager::OnCreateSession(
     return;
   }
 
-  MediaKeys* cdm = GetCdm(cdm_id);
+  BrowserCdm* cdm = GetCdm(cdm_id);
   if (!cdm) {
     DLOG(WARNING) << "No CDM for ID " << cdm_id << " found";
-    OnSessionError(cdm_id, session_id, media::MediaKeys::kUnknownError, 0);
+    OnSessionError(cdm_id, session_id, MediaKeys::kUnknownError, 0);
     return;
   }
 
@@ -617,7 +618,7 @@ void BrowserMediaPlayerManager::OnCreateSession(
       cdm_security_origin_map_.find(cdm_id);
   if (iter == cdm_security_origin_map_.end()) {
     NOTREACHED();
-    OnSessionError(cdm_id, session_id, media::MediaKeys::kUnknownError, 0);
+    OnSessionError(cdm_id, session_id, MediaKeys::kUnknownError, 0);
     return;
   }
 
@@ -637,38 +638,29 @@ void BrowserMediaPlayerManager::OnUpdateSession(
     int cdm_id,
     uint32 session_id,
     const std::vector<uint8>& response) {
-  MediaKeys* cdm = GetCdm(cdm_id);
+  BrowserCdm* cdm = GetCdm(cdm_id);
   if (!cdm) {
     DLOG(WARNING) << "No CDM for ID " << cdm_id << " found";
-    OnSessionError(cdm_id, session_id, media::MediaKeys::kUnknownError, 0);
+    OnSessionError(cdm_id, session_id, MediaKeys::kUnknownError, 0);
     return;
   }
 
   if (response.size() > kMaxSessionResponseLength) {
     LOG(WARNING) << "Response for ID " << cdm_id
                  << " is too long: " << response.size();
-    OnSessionError(cdm_id, session_id, media::MediaKeys::kUnknownError, 0);
+    OnSessionError(cdm_id, session_id, MediaKeys::kUnknownError, 0);
     return;
   }
 
   cdm->UpdateSession(session_id, &response[0], response.size());
-
-  CdmToPlayerMap::const_iterator iter = cdm_to_player_map_.find(cdm_id);
-  if (iter == cdm_to_player_map_.end())
-    return;
-
-  int player_id = iter->second;
-  MediaPlayerAndroid* player = GetPlayer(player_id);
-  if (player)
-    player->OnKeyAdded();
 }
 
 void BrowserMediaPlayerManager::OnReleaseSession(int cdm_id,
                                                  uint32 session_id) {
-  MediaKeys* cdm = GetCdm(cdm_id);
+  BrowserCdm* cdm = GetCdm(cdm_id);
   if (!cdm) {
     DLOG(WARNING) << "No CDM for ID " << cdm_id << " found";
-    OnSessionError(cdm_id, session_id, media::MediaKeys::kUnknownError, 0);
+    OnSessionError(cdm_id, session_id, MediaKeys::kUnknownError, 0);
     return;
   }
 
@@ -676,7 +668,7 @@ void BrowserMediaPlayerManager::OnReleaseSession(int cdm_id,
 }
 
 void BrowserMediaPlayerManager::OnDestroyCdm(int cdm_id) {
-  MediaKeys* cdm = GetCdm(cdm_id);
+  BrowserCdm* cdm = GetCdm(cdm_id);
   if (!cdm)
     return;
 
@@ -711,15 +703,6 @@ void BrowserMediaPlayerManager::RemovePlayer(int player_id) {
       break;
     }
   }
-
-  for (CdmToPlayerMap::iterator it = cdm_to_player_map_.begin();
-       it != cdm_to_player_map_.end();
-       ++it) {
-    if (it->second == player_id) {
-      cdm_to_player_map_.erase(it);
-      break;
-    }
-  }
 }
 
 scoped_ptr<media::MediaPlayerAndroid> BrowserMediaPlayerManager::SwapPlayer(
@@ -744,18 +727,14 @@ void BrowserMediaPlayerManager::AddCdm(int cdm_id,
   base::WeakPtr<BrowserMediaPlayerManager> weak_this =
       weak_ptr_factory_.GetWeakPtr();
 
-  scoped_ptr<MediaKeys> cdm(media::CreateBrowserCdm(
+  int id = cdm_id;
+  scoped_ptr<BrowserCdm> cdm(media::CreateBrowserCdm(
       key_system,
-      base::Bind(
-          &BrowserMediaPlayerManager::OnSessionCreated, weak_this, cdm_id),
-      base::Bind(
-          &BrowserMediaPlayerManager::OnSessionMessage, weak_this, cdm_id),
-      base::Bind(
-          &BrowserMediaPlayerManager::OnSessionReady, weak_this, cdm_id),
-      base::Bind(
-          &BrowserMediaPlayerManager::OnSessionClosed, weak_this, cdm_id),
-      base::Bind(
-          &BrowserMediaPlayerManager::OnSessionError, weak_this, cdm_id)));
+      base::Bind(&BrowserMediaPlayerManager::OnSessionCreated, weak_this, id),
+      base::Bind(&BrowserMediaPlayerManager::OnSessionMessage, weak_this, id),
+      base::Bind(&BrowserMediaPlayerManager::OnSessionReady, weak_this, id),
+      base::Bind(&BrowserMediaPlayerManager::OnSessionClosed, weak_this, id),
+      base::Bind(&BrowserMediaPlayerManager::OnSessionError, weak_this, id)));
 
   if (!cdm) {
     // This failure will be discovered and reported by OnCreateSession()
@@ -778,29 +757,21 @@ void BrowserMediaPlayerManager::RemoveCdm(int cdm_id) {
     delete iter->second;
     cdm_map_.erase(iter);
   }
-  cdm_to_player_map_.erase(cdm_id);
   cdm_security_origin_map_.erase(cdm_id);
 }
 
 void BrowserMediaPlayerManager::OnSetCdm(int player_id, int cdm_id) {
   MediaPlayerAndroid* player = GetPlayer(player_id);
-  MediaKeys* cdm = GetCdm(cdm_id);
+  BrowserCdm* cdm = GetCdm(cdm_id);
+  // Currently we do not support detaching CDM from a player.
   if (!cdm || !player) {
-    DVLOG(1) << "Cannot set CDM on the specified player.";
+    NOTREACHED() << "Cannot set CDM on the specified player.";
     return;
   }
 
   // TODO(qinmin): add the logic to decide whether we should create the
   // fullscreen surface for EME lv1.
   player->SetCdm(cdm);
-  // Do now support setting one CDM on multiple players.
-
-  if (ContainsKey(cdm_to_player_map_, cdm_id)) {
-    DVLOG(1) << "CDM is already set on another player.";
-    return;
-  }
-
-  cdm_to_player_map_[cdm_id] = player_id;
 }
 
 int BrowserMediaPlayerManager::RoutingID() {
@@ -818,14 +789,14 @@ void BrowserMediaPlayerManager::CreateSessionIfPermitted(
     const std::vector<uint8>& init_data,
     bool permitted) {
   if (!permitted) {
-    OnSessionError(cdm_id, session_id, media::MediaKeys::kUnknownError, 0);
+    OnSessionError(cdm_id, session_id, MediaKeys::kUnknownError, 0);
     return;
   }
 
-  MediaKeys* cdm = GetCdm(cdm_id);
+  BrowserCdm* cdm = GetCdm(cdm_id);
   if (!cdm) {
     DLOG(WARNING) << "No CDM for ID: " << cdm_id << " found";
-    OnSessionError(cdm_id, session_id, media::MediaKeys::kUnknownError, 0);
+    OnSessionError(cdm_id, session_id, MediaKeys::kUnknownError, 0);
     return;
   }
 

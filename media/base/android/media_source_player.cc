@@ -54,16 +54,23 @@ MediaSourcePlayer::MediaSourcePlayer(
       reconfig_audio_decoder_(false),
       reconfig_video_decoder_(false),
       drm_bridge_(NULL),
+      cdm_registration_id_(0),
       is_waiting_for_key_(false),
       has_pending_audio_data_request_(false),
       has_pending_video_data_request_(false),
       weak_factory_(this) {
   demuxer_->Initialize(this);
   clock_.SetMaxTime(base::TimeDelta());
+  weak_this_ = weak_factory_.GetWeakPtr();
 }
 
 MediaSourcePlayer::~MediaSourcePlayer() {
   Release();
+  DCHECK_EQ(!drm_bridge_, !cdm_registration_id_);
+  if (drm_bridge_) {
+    drm_bridge_->UnregisterPlayer(cdm_registration_id_);
+    cdm_registration_id_ = 0;
+  }
 }
 
 void MediaSourcePlayer::SetVideoSurface(gfx::ScopedJavaSurface surface) {
@@ -239,16 +246,6 @@ void MediaSourcePlayer::SetVolume(double volume) {
   SetVolumeInternal();
 }
 
-void MediaSourcePlayer::OnKeyAdded() {
-  DVLOG(1) << __FUNCTION__;
-  if (!is_waiting_for_key_)
-    return;
-
-  is_waiting_for_key_ = false;
-  if (playing_)
-    StartInternal();
-}
-
 bool MediaSourcePlayer::IsSurfaceInUse() const {
   return is_surface_in_use_;
 }
@@ -355,7 +352,7 @@ void MediaSourcePlayer::OnMediaCryptoReady() {
     StartInternal();
 }
 
-void MediaSourcePlayer::SetCdm(MediaKeys* cdm) {
+void MediaSourcePlayer::SetCdm(BrowserCdm* cdm) {
   // Currently we don't support DRM change during the middle of playback, even
   // if the player is paused.
   // TODO(qinmin): support DRM change after playback has started.
@@ -365,12 +362,21 @@ void MediaSourcePlayer::SetCdm(MediaKeys* cdm) {
             << "This is not well supported!";
   }
 
+  if (drm_bridge_) {
+    NOTREACHED() << "Currently we do not support resetting CDM.";
+    return;
+  }
+
   // Only MediaDrmBridge will be set on MediaSourcePlayer.
   drm_bridge_ = static_cast<MediaDrmBridge*>(cdm);
 
+  cdm_registration_id_ = drm_bridge_->RegisterPlayer(
+      base::Bind(&MediaSourcePlayer::OnKeyAdded, weak_this_),
+      base::Bind(&MediaSourcePlayer::OnCdmUnset, weak_this_));
+
   if (drm_bridge_->GetMediaCrypto().is_null()) {
-    drm_bridge_->SetMediaCryptoReadyCB(base::Bind(
-        &MediaSourcePlayer::OnMediaCryptoReady, weak_factory_.GetWeakPtr()));
+    drm_bridge_->SetMediaCryptoReadyCB(
+        base::Bind(&MediaSourcePlayer::OnMediaCryptoReady, weak_this_));
     return;
   }
 
@@ -524,10 +530,8 @@ void MediaSourcePlayer::ProcessPendingEvents() {
       return;
 
     SetPendingEvent(PREFETCH_DONE_EVENT_PENDING);
-    base::Closure barrier =
-        BarrierClosure(count,
-                       base::Bind(&MediaSourcePlayer::OnPrefetchDone,
-                                  weak_factory_.GetWeakPtr()));
+    base::Closure barrier = BarrierClosure(
+        count, base::Bind(&MediaSourcePlayer::OnPrefetchDone, weak_this_));
 
     if (!AudioFinished())
       audio_decoder_job_->Prefetch(barrier);
@@ -655,9 +659,7 @@ void MediaSourcePlayer::DecodeMoreAudio() {
   scoped_ptr<DemuxerConfigs> configs(audio_decoder_job_->Decode(
       start_time_ticks_,
       start_presentation_timestamp_,
-      base::Bind(&MediaSourcePlayer::MediaDecoderCallback,
-                 weak_factory_.GetWeakPtr(),
-                 true)));
+      base::Bind(&MediaSourcePlayer::MediaDecoderCallback, weak_this_, true)));
   if (!configs) {
     TRACE_EVENT_ASYNC_BEGIN0("media", "MediaSourcePlayer::DecodeMoreAudio",
                              audio_decoder_job_.get());
@@ -687,9 +689,7 @@ void MediaSourcePlayer::DecodeMoreVideo() {
   scoped_ptr<DemuxerConfigs> configs(video_decoder_job_->Decode(
       start_time_ticks_,
       start_presentation_timestamp_,
-      base::Bind(&MediaSourcePlayer::MediaDecoderCallback,
-                 weak_factory_.GetWeakPtr(),
-                 false)));
+      base::Bind(&MediaSourcePlayer::MediaDecoderCallback, weak_this_, false)));
   if (!configs) {
     TRACE_EVENT_ASYNC_BEGIN0("media", "MediaSourcePlayer::DecodeMoreVideo",
                              video_decoder_job_.get());
@@ -914,8 +914,8 @@ void MediaSourcePlayer::StartStarvationCallback(
 
   timeout = std::max(timeout, kMinStarvationTimeout);
 
-  decoder_starvation_callback_.Reset(base::Bind(
-      &MediaSourcePlayer::OnDecoderStarved, weak_factory_.GetWeakPtr()));
+  decoder_starvation_callback_.Reset(
+      base::Bind(&MediaSourcePlayer::OnDecoderStarved, weak_this_));
   base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE, decoder_starvation_callback_.callback(), timeout);
 }
@@ -1020,6 +1020,25 @@ void MediaSourcePlayer::SetDemuxerConfigs(const DemuxerConfigs& configs,
     height_ = configs.video_size.height();
     is_video_encrypted_ = configs.is_video_encrypted;
   }
+}
+
+void MediaSourcePlayer::OnKeyAdded() {
+  DVLOG(1) << __FUNCTION__;
+  if (!is_waiting_for_key_)
+    return;
+
+  is_waiting_for_key_ = false;
+  if (playing_)
+    StartInternal();
+}
+
+void MediaSourcePlayer::OnCdmUnset() {
+  DVLOG(1) << __FUNCTION__;
+  DCHECK(drm_bridge_);
+  // TODO(xhwang): Support detachment of CDM. This will be needed when we start
+  // to support setMediaKeys(0), or when we release MediaDrm when the video is
+  // paused, or when the device goes to sleep. See http://crbug.com/272421
+  DVLOG(1) << "CDM detachment not supported.";
 }
 
 }  // namespace media

@@ -16,7 +16,7 @@
 
 namespace media {
 
-class MediaKeys;
+class BrowserCdm;
 class MediaPlayerManager;
 
 // This class serves as the base class for different media player
@@ -74,11 +74,7 @@ class MEDIA_EXPORT MediaPlayerAndroid {
   virtual GURL GetFirstPartyForCookies();
 
   // Associates the |cdm| with this player.
-  virtual void SetCdm(MediaKeys* cdm);
-
-  // Notifies the player that a decryption key has been added. The player
-  // may want to start/resume playback if it is waiting for a key.
-  virtual void OnKeyAdded();
+  virtual void SetCdm(BrowserCdm* cdm);
 
   // Check whether the player still uses the current surface.
   virtual bool IsSurfaceInUse() const = 0;

@@ -311,6 +311,7 @@ MediaDrmBridge::MediaDrmBridge(const std::vector<uint8>& scheme_uuid,
 
 MediaDrmBridge::~MediaDrmBridge() {
   JNIEnv* env = AttachCurrentThread();
+  player_tracker_.NotifyCdmUnset();
   if (!j_media_drm_.is_null())
     Java_MediaDrmBridge_release(env, j_media_drm_.obj());
 }
@@ -422,6 +423,10 @@ void MediaDrmBridge::UpdateSession(uint32 session_id,
       base::android::ToJavaByteArray(env, response, response_length);
   Java_MediaDrmBridge_updateSession(
       env, j_media_drm_.obj(), session_id, j_response.obj());
+
+  // TODO(xhwang/jrummell): Move this when usableKeyIds/keyschange are
+  // implemented.
+  player_tracker_.NotifyNewKey();
 }
 
 void MediaDrmBridge::ReleaseSession(uint32 session_id) {
@@ -432,6 +437,15 @@ void MediaDrmBridge::ReleaseSession(uint32 session_id) {
 
   JNIEnv* env = AttachCurrentThread();
   Java_MediaDrmBridge_releaseSession(env, j_media_drm_.obj(), session_id);
+}
+
+int MediaDrmBridge::RegisterPlayer(const base::Closure& new_key_cb,
+                                   const base::Closure& cdm_unset_cb) {
+  return player_tracker_.RegisterPlayer(new_key_cb, cdm_unset_cb);
+}
+
+void MediaDrmBridge::UnregisterPlayer(int registration_id) {
+  player_tracker_.UnregisterPlayer(registration_id);
 }
 
 void MediaDrmBridge::SetMediaCryptoReadyCB(const base::Closure& closure) {

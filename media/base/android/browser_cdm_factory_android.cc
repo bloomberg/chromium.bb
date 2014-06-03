@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/base/cdm_factory.h"
+#include "media/base/browser_cdm_factory.h"
 
 #include "base/command_line.h"
 #include "base/logging.h"
@@ -12,7 +12,7 @@
 
 namespace media {
 
-scoped_ptr<MediaKeys> CreateBrowserCdm(
+scoped_ptr<BrowserCdm> CreateBrowserCdm(
     const std::string& key_system,
     const SessionCreatedCB& session_created_cb,
     const SessionMessageCB& session_message_cb,
@@ -21,7 +21,7 @@ scoped_ptr<MediaKeys> CreateBrowserCdm(
     const SessionErrorCB& session_error_cb) {
   if (!MediaDrmBridge::IsKeySystemSupported(key_system)) {
     NOTREACHED() << "Unsupported key system: " << key_system;
-    return scoped_ptr<MediaKeys>();
+    return scoped_ptr<BrowserCdm>();
   }
 
   scoped_ptr<MediaDrmBridge> cdm(MediaDrmBridge::Create(key_system,
@@ -32,7 +32,7 @@ scoped_ptr<MediaKeys> CreateBrowserCdm(
                                                         session_error_cb));
   if (!cdm) {
     NOTREACHED() << "MediaDrmBridge cannot be created for " << key_system;
-    return scoped_ptr<MediaKeys>();
+    return scoped_ptr<BrowserCdm>();
   }
 
   // TODO(xhwang/ddorwin): Pass the security level from key system.
@@ -44,10 +44,10 @@ scoped_ptr<MediaKeys> CreateBrowserCdm(
   }
   if (!cdm->SetSecurityLevel(security_level)) {
     DVLOG(1) << "failed to set security level " << security_level;
-    return scoped_ptr<MediaKeys>();
+    return scoped_ptr<BrowserCdm>();
   }
 
-  return cdm.PassAs<MediaKeys>();
+  return cdm.PassAs<BrowserCdm>();
 }
 
 }  // namespace media

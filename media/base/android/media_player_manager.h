@@ -19,7 +19,7 @@ class GURL;
 
 namespace media {
 
-class MediaKeys;
+class BrowserCdm;
 class MediaPlayerAndroid;
 class MediaResourceGetter;
 
@@ -75,7 +75,7 @@ class MEDIA_EXPORT MediaPlayerManager {
   virtual void DestroyAllMediaPlayers() = 0;
 
   // Get the CDM for the given CDM ID.
-  virtual MediaKeys* GetCdm(int cdm_id) = 0;
+  virtual BrowserCdm* GetCdm(int cdm_id) = 0;
 
   // Called by the player to get a hardware protected surface.
   virtual void RequestFullScreen(int player_id) = 0;
@@ -105,7 +105,7 @@ class MEDIA_EXPORT MediaPlayerManager {
   // Called when CDM wants to send an Error event.
   virtual void OnSessionError(int cdm_id,
                               uint32 session_id,
-                              media::MediaKeys::KeyError error_code,
+                              MediaKeys::KeyError error_code,
                               uint32 system_code) = 0;
 };
 
