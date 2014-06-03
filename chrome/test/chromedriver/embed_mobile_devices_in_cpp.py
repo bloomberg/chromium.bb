@@ -30,7 +30,8 @@ def main():
   with open(file_name, 'r') as f:
     for line in f:
       if not inside_list:
-        if 'DeviceTab._phones = [' in line or 'DeviceTab._tablets = [' in line:
+        if 'WebInspector.OverridesSupport._phones = [' in line or \
+           'WebInspector.OverridesSupport._tablets = [' in line:
           inside_list = True
       else:
         if line.strip() == '];':
