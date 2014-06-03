@@ -43,7 +43,8 @@ public:
         return GridResolvedPosition(resolvedPosition);
     }
 
-    static GridSpan resolveGridPositionsFromAutoPlacementPosition(const RenderBox&, GridTrackSizingDirection, const GridResolvedPosition&);
+    static void initialAndFinalPositionsFromStyle(const RenderStyle&, const RenderBox&, GridTrackSizingDirection, GridPosition &initialPosition, GridPosition &finalPosition);
+    static GridSpan resolveGridPositionsFromAutoPlacementPosition(const RenderStyle&, const RenderBox&, GridTrackSizingDirection, const GridResolvedPosition&);
     static PassOwnPtr<GridSpan> resolveGridPositionsFromStyle(const RenderStyle&, const RenderBox&, GridTrackSizingDirection);
     static GridResolvedPosition resolveNamedGridLinePositionFromStyle(const RenderStyle&, const GridPosition&, GridPositionSide);
     static GridResolvedPosition resolveGridPositionFromStyle(const RenderStyle&, const GridPosition&, GridPositionSide);

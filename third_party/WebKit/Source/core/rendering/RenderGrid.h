@@ -78,10 +78,12 @@ private:
     void resolveContentBasedTrackSizingFunctions(GridTrackSizingDirection, GridSizingData&, LayoutUnit& availableLogicalSpace);
 
     void growGrid(GridTrackSizingDirection, size_t maximumPosition);
-    void insertItemIntoGrid(RenderBox*, const GridResolvedPosition& rowTrack, const GridResolvedPosition& columnTrack);
     void insertItemIntoGrid(RenderBox*, const GridCoordinate&);
     void placeItemsOnGrid();
     void populateExplicitGridAndOrderIterator();
+    bool checkEmptyCells(const GridCoordinate&) const;
+    PassOwnPtr<GridCoordinate> createEmptyGridAreaAtSpecifiedPositionsOutsideGrid(const RenderBox*, GridTrackSizingDirection, const GridSpan& specifiedPositions) const;
+    PassOwnPtr<GridCoordinate> findEmptyGridAreaAtSpecifiedPositionsInsideGrid(const RenderBox*, GridTrackSizingDirection, const GridSpan& specifiedPositions) const;
     void placeSpecifiedMajorAxisItemsOnGrid(const Vector<RenderBox*>&);
     void placeAutoMajorAxisItemsOnGrid(const Vector<RenderBox*>&);
     void placeAutoMajorAxisItemOnGrid(RenderBox*);

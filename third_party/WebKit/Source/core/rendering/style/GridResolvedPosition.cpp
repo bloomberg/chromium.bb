@@ -10,13 +10,6 @@
 
 namespace WebCore {
 
-GridSpan GridResolvedPosition::resolveGridPositionsFromAutoPlacementPosition(const RenderBox&, GridTrackSizingDirection, const GridResolvedPosition& initialPosition)
-{
-    // FIXME: We don't support spanning with auto positions yet. Once we do, this is wrong. Also we should make
-    // sure the grid can accomodate the new item as we only grow 1 position in a given direction.
-    return GridSpan(initialPosition, initialPosition);
-}
-
 static const NamedGridLinesMap& gridLinesForSide(const RenderStyle& style, GridPositionSide side)
 {
     return (side == ColumnStartSide || side == ColumnEndSide) ? style.namedGridColumnLines() : style.namedGridRowLines();
@@ -27,12 +20,22 @@ static inline bool isNonExistentNamedLineOrArea(const String& lineName, const Re
     return !style.namedGridArea().contains(lineName) && !gridLinesForSide(style, side).contains(lineName);
 }
 
-PassOwnPtr<GridSpan> GridResolvedPosition::resolveGridPositionsFromStyle(const RenderStyle& gridContainerStyle, const RenderBox& gridItem, GridTrackSizingDirection direction)
+static GridPositionSide calculateInitialPositionSide(GridTrackSizingDirection direction)
 {
-    GridPosition initialPosition = (direction == ForColumns) ? gridItem.style()->gridColumnStart() : gridItem.style()->gridRowStart();
-    const GridPositionSide initialPositionSide = (direction == ForColumns) ? ColumnStartSide : RowStartSide;
-    GridPosition finalPosition = (direction == ForColumns) ? gridItem.style()->gridColumnEnd() : gridItem.style()->gridRowEnd();
-    const GridPositionSide finalPositionSide = (direction == ForColumns) ? ColumnEndSide : RowEndSide;
+    return (direction == ForColumns) ? ColumnStartSide : RowStartSide;
+}
+
+static GridPositionSide calculateFinalPositionSide(GridTrackSizingDirection direction)
+{
+    return (direction == ForColumns) ? ColumnEndSide : RowEndSide;
+}
+
+void GridResolvedPosition::initialAndFinalPositionsFromStyle(const RenderStyle& gridContainerStyle, const RenderBox& gridItem, GridTrackSizingDirection direction, GridPosition& initialPosition, GridPosition& finalPosition)
+{
+    initialPosition = (direction == ForColumns) ? gridItem.style()->gridColumnStart() : gridItem.style()->gridRowStart();
+    finalPosition = (direction == ForColumns) ? gridItem.style()->gridColumnEnd() : gridItem.style()->gridRowEnd();
+    GridPositionSide initialPositionSide = calculateInitialPositionSide(direction);
+    GridPositionSide finalPositionSide = calculateFinalPositionSide(direction);
 
     // We must handle the placement error handling code here instead of in the StyleAdjuster because we don't want to
     // overwrite the specified values.
@@ -44,6 +47,36 @@ PassOwnPtr<GridSpan> GridResolvedPosition::resolveGridPositionsFromStyle(const R
 
     if (finalPosition.isNamedGridArea() && isNonExistentNamedLineOrArea(finalPosition.namedGridLine(), gridContainerStyle, finalPositionSide))
         finalPosition.setAutoPosition();
+}
+
+GridSpan GridResolvedPosition::resolveGridPositionsFromAutoPlacementPosition(const RenderStyle& gridContainerStyle, const RenderBox& gridItem, GridTrackSizingDirection direction, const GridResolvedPosition& resolvedInitialPosition)
+{
+    GridPosition initialPosition, finalPosition;
+    initialAndFinalPositionsFromStyle(gridContainerStyle, gridItem, direction, initialPosition, finalPosition);
+
+    GridPositionSide finalPositionSide = calculateFinalPositionSide(direction);
+
+    // This method will only be used when both positions need to be resolved against the opposite one.
+    ASSERT(initialPosition.shouldBeResolvedAgainstOppositePosition() && finalPosition.shouldBeResolvedAgainstOppositePosition());
+
+    GridResolvedPosition resolvedFinalPosition = resolvedInitialPosition;
+
+    if (initialPosition.isSpan()) {
+        resolvedFinalPosition = resolveGridPositionAgainstOppositePosition(gridContainerStyle, resolvedInitialPosition, initialPosition, finalPositionSide)->resolvedFinalPosition;
+    } else if (finalPosition.isSpan()) {
+        resolvedFinalPosition = resolveGridPositionAgainstOppositePosition(gridContainerStyle, resolvedInitialPosition, finalPosition, finalPositionSide)->resolvedFinalPosition;
+    }
+
+    return GridSpan(resolvedInitialPosition, resolvedFinalPosition);
+}
+
+PassOwnPtr<GridSpan> GridResolvedPosition::resolveGridPositionsFromStyle(const RenderStyle& gridContainerStyle, const RenderBox& gridItem, GridTrackSizingDirection direction)
+{
+    GridPosition initialPosition, finalPosition;
+    initialAndFinalPositionsFromStyle(gridContainerStyle, gridItem, direction, initialPosition, finalPosition);
+
+    GridPositionSide initialPositionSide = calculateInitialPositionSide(direction);
+    GridPositionSide finalPositionSide = calculateFinalPositionSide(direction);
 
     if (initialPosition.shouldBeResolvedAgainstOppositePosition() && finalPosition.shouldBeResolvedAgainstOppositePosition()) {
         if (gridContainerStyle.gridAutoFlow() == AutoFlowNone)
