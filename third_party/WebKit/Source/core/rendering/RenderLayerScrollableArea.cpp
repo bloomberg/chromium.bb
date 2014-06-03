@@ -1476,12 +1476,8 @@ void RenderLayerScrollableArea::updateScrollableAreaSet(bool hasOverflow)
     else
         frameView->removeScrollableArea(this);
 
-    if (didNeedCompositedScrolling != needsCompositedScrolling()) {
+    if (didNeedCompositedScrolling != needsCompositedScrolling())
         layer()->didUpdateNeedsCompositedScrolling();
-        RenderLayerCompositor* compositor = box().view()->compositor();
-        compositor->setCompositingLayersNeedRebuild();
-        compositor->setNeedsToRecomputeCompositingRequirements();
-    }
 }
 
 void RenderLayerScrollableArea::updateCompositingLayersAfterScroll()

@@ -112,7 +112,6 @@ RenderLayerCompositor::RenderLayerCompositor(RenderView& renderView)
     , m_compositingReasonFinder(renderView)
     , m_pendingUpdateType(CompositingUpdateNone)
     , m_hasAcceleratedCompositing(true)
-    , m_needsToRecomputeCompositingRequirements(false)
     , m_compositing(false)
     , m_compositingLayersNeedRebuild(false)
     , m_rootShouldAlwaysCompositeDirty(true)
@@ -297,7 +296,6 @@ void RenderLayerCompositor::assertNoUnresolvedDirtyBits()
     ASSERT(!compositingLayersNeedRebuild());
     ASSERT(m_pendingUpdateType == CompositingUpdateNone);
     ASSERT(!m_rootShouldAlwaysCompositeDirty);
-    ASSERT(!m_needsToRecomputeCompositingRequirements);
 }
 
 void RenderLayerCompositor::applyOverlayFullscreenVideoAdjustment()
@@ -346,18 +344,16 @@ void RenderLayerCompositor::updateIfNeeded()
     }
 
     CompositingUpdateType updateType = m_pendingUpdateType;
-    bool needCompositingRequirementsUpdate = m_needsToRecomputeCompositingRequirements;
     bool needHierarchyAndGeometryUpdate = compositingLayersNeedRebuild();
 
     m_pendingUpdateType = CompositingUpdateNone;
     m_compositingLayersNeedRebuild = false;
-    m_needsToRecomputeCompositingRequirements = false;
 
     if (!hasAcceleratedCompositing())
         return;
 
     bool needsToUpdateScrollingCoordinator = scrollingCoordinator() ? scrollingCoordinator()->needsToUpdateAfterCompositingChange() : false;
-    if (updateType == CompositingUpdateNone && !needCompositingRequirementsUpdate && !needHierarchyAndGeometryUpdate && !needsToUpdateScrollingCoordinator)
+    if (updateType == CompositingUpdateNone && !needHierarchyAndGeometryUpdate && !needsToUpdateScrollingCoordinator)
         return;
 
     GraphicsLayerUpdater::UpdateType graphicsLayerUpdateType = GraphicsLayerUpdater::DoNotForceUpdate;
@@ -371,7 +367,7 @@ void RenderLayerCompositor::updateIfNeeded()
 
     RenderLayer* updateRoot = rootRenderLayer();
 
-    if (needCompositingRequirementsUpdate || updateType >= CompositingUpdateAfterCompositingInputChange) {
+    if (updateType >= CompositingUpdateAfterCompositingInputChange) {
         bool layersChanged = false;
 
         {
@@ -576,10 +572,8 @@ void RenderLayerCompositor::updateLayerCompositingState(RenderLayer* layer, Upda
     updateDirectCompositingReasons(layer);
     CompositingStateTransitionType compositedLayerUpdate = CompositingLayerAssigner(this).computeCompositedLayerUpdate(layer);
 
-    if (compositedLayerUpdate != NoCompositingStateChange) {
+    if (compositedLayerUpdate != NoCompositingStateChange)
         setCompositingLayersNeedRebuild();
-        setNeedsToRecomputeCompositingRequirements();
-    }
 
     if (options == UseChickenEggHacks)
         applyUpdateLayerCompositingStateChickenEggHacks(layer, compositedLayerUpdate);
@@ -1334,7 +1328,7 @@ void RenderLayerCompositor::notifyIFramesOfCompositingChange()
     // Compositing also affects the answer to RenderIFrame::requiresAcceleratedCompositing(), so
     // we need to schedule a style recalc in our parent document.
     if (HTMLFrameOwnerElement* ownerElement = m_renderView.document().ownerElement()) {
-        ownerElement->document().renderView()->compositor()->setNeedsToRecomputeCompositingRequirements();
+        ownerElement->document().renderView()->compositor()->setNeedsCompositingUpdate(CompositingUpdateAfterCompositingInputChange);
         DeprecatedScheduleStyleRecalcDuringCompositingUpdate marker(ownerElement->document().lifecycle());
         ownerElement->scheduleLayerUpdate();
     }

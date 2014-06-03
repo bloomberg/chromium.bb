@@ -201,8 +201,10 @@ void RenderLayer::contentChanged(ContentChangeType changeType)
     DisableCompositingQueryAsserts disabler;
 
     // This can get called when video becomes accelerated, so the layers may change.
-    if (changeType == CanvasChanged || changeType == VideoChanged || changeType == FullScreenChanged)
+    if (changeType == CanvasChanged || changeType == VideoChanged || changeType == FullScreenChanged) {
         compositor()->updateLayerCompositingState(this);
+        compositor()->setNeedsCompositingUpdate(CompositingUpdateAfterCompositingInputChange);
+    }
 
     if (changeType == CanvasContextChanged) {
         compositor()->setNeedsCompositingUpdate(CompositingUpdateAfterCompositingInputChange);

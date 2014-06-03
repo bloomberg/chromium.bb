@@ -179,8 +179,6 @@ public:
     void resetTrackedRepaintRects();
     void setTracksRepaints(bool);
 
-    void setNeedsToRecomputeCompositingRequirements() { m_needsToRecomputeCompositingRequirements = true; }
-
     virtual String debugName(const GraphicsLayer*) OVERRIDE;
 
     void updateStyleDeterminedCompositingReasons(RenderLayer*);
@@ -261,7 +259,6 @@ private:
     CompositingUpdateType m_pendingUpdateType;
 
     bool m_hasAcceleratedCompositing;
-    bool m_needsToRecomputeCompositingRequirements;
     bool m_compositing;
     bool m_compositingLayersNeedRebuild;
 
