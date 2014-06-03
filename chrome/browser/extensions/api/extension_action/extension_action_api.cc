@@ -174,8 +174,10 @@ void SetDefaultsFromValue(const base::DictionaryValue* dict,
       case INVISIBLE:
       case OBSOLETE_WANTS_ATTENTION:
         action->SetIsVisible(kDefaultTabId, false);
+        break;
       case ACTIVE:
         action->SetIsVisible(kDefaultTabId, true);
+        break;
     }
   }
 
