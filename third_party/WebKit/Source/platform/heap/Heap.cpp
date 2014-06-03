@@ -106,7 +106,13 @@ size_t osPageSize()
 
 class MemoryRegion {
 public:
-    MemoryRegion(Address base, size_t size) : m_base(base), m_size(size) { ASSERT(size > 0); }
+    MemoryRegion(Address base, size_t size)
+        : m_base(base)
+        , m_size(size)
+    {
+        ASSERT(size > 0);
+        __lsan_register_root_region(base, size);
+    }
 
     bool contains(Address addr) const
     {
@@ -128,6 +134,7 @@ public:
         bool success = VirtualFree(m_base, 0, MEM_RELEASE);
         RELEASE_ASSERT(success);
 #endif
+        __lsan_unregister_root_region(m_base, m_size);
     }
 
     WARN_UNUSED_RETURN bool commit()

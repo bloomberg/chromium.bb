@@ -41,6 +41,13 @@
     ((void)(addr), (void)(size))
 #endif
 
+#if defined(LEAK_SANITIZER)
+#include <sanitizer/lsan_interface.h>
+#else
+#define __lsan_register_root_region(addr, size) ((void)(addr), (void)(size))
+#define __lsan_unregister_root_region(addr, size) ((void)(addr), (void)(size))
+#endif
+
 // FIXME: Have to handle (ADDRESS_SANITIZER && _WIN32) differently as it uses
 // both Clang (which supports the __attribute__ syntax) and CL (which doesn't)
 // as long as we use "clang-cl /fallback". This shouldn't be needed when Clang
