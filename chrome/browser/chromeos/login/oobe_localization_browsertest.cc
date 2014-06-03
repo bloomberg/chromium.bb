@@ -223,14 +223,12 @@ std::string OobeLocalizationTest::DumpOptions(const char* select_id) {
 
 std::string TranslateXKB2Extension(const std::string& src) {
   std::string result(src);
-  if (!extension_ime_util::UseWrappedExtensionKeyboardLayouts())
-    return result;
   // Modifies the expected keyboard select control options for the new
   // extension based xkb id.
   size_t pos = 0;
   std::string repl_old = "xkb:";
   std::string repl_new =
-      extension_ime_util::GetInputMethodIDByKeyboardLayout("xkb:");
+      extension_ime_util::GetInputMethodIDByEngineID("xkb:");
   while ((pos = result.find(repl_old, pos)) != std::string::npos) {
     result.replace(pos, repl_old.length(), repl_new);
     pos += repl_new.length();
@@ -285,7 +283,7 @@ void OobeLocalizationTest::RunLocalizationTest(
 
   // Make sure we have a fallback keyboard.
   if (!VerifyOptionExists(kKeyboardSelect,
-                          extension_ime_util::GetInputMethodIDByKeyboardLayout(
+                          extension_ime_util::GetInputMethodIDByEngineID(
                               kUSLayout).c_str())) {
     LOG(ERROR) << "Actual value of " << kKeyboardSelect << ":\n"
                << DumpOptions(kKeyboardSelect);

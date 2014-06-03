@@ -31,46 +31,26 @@ namespace {
 // mapping is necessary since some input methods belong to the same language.
 // For example, both "xkb:us::eng" and "xkb:us:dvorak:eng" are for US English.
 const struct {
-  const char* input_method_id;
+  const char* engine_id;
   const char* indicator_text;
 } kMappingFromIdToIndicatorText[] = {
   // To distinguish from "xkb:jp::jpn"
   // TODO(nona): Make following variables configurable. http://crbug.com/232260.
-  { "_comp_ime_gjaehgfemfahhmlgpdfknkhdnemmolopnacl_mozc_us", "\xe3\x81\x82" },
-  { "_comp_ime_gjaehgfemfahhmlgpdfknkhdnemmolopnacl_mozc_jp", "\xe3\x81\x82" },
-  { "_comp_ime_bbaiamgfapehflhememkfglaehiobjnknacl_mozc_us", "\xe3\x81\x82" },
-  { "_comp_ime_bbaiamgfapehflhememkfglaehiobjnknacl_mozc_jp", "\xe3\x81\x82" },
+  { "nacl_mozc_us", "\xe3\x81\x82" },
+  { "nacl_mozc_jp", "\xe3\x81\x82" },
   // For simplified Chinese input methods
-  { "pinyin", "\xe6\x8b\xbc" },  // U+62FC
-  { "_comp_ime_cpgalbafkoofkjmaeonnfijgpfennjjnzh-t-i0-pinyin",
-    "\xe6\x8b\xbc" },
-  { "_comp_ime_gjaehgfemfahhmlgpdfknkhdnemmolopzh-t-i0-pinyin",
-    "\xe6\x8b\xbc" },
-  { "_comp_ime_gjaehgfemfahhmlgpdfknkhdnemmolopzh-t-i0-wubi-1986",
-    "\xe4\xba\x94" }, // U+4E94
-  { "pinyin-dv", "\xe6\x8b\xbc" },
+  { "zh-t-i0-pinyin", "\xe6\x8b\xbc" },  // U+62FC
+  { "zh-t-i0-wubi-1986", "\xe4\xba\x94" }, // U+4E94
   // For traditional Chinese input methods
-  { "mozc-chewing", "\xe9\x85\xb7" },  // U+9177
-  { "_comp_ime_ekbifjdfhkmdeeajnolmgdlmkllopefizh-hant-t-i0-und",
-    "\xE6\xB3\xA8" },  // U+6CE8
-  { "_comp_ime_gjaehgfemfahhmlgpdfknkhdnemmolopzh-hant-t-i0-und",
-    "\xE6\xB3\xA8" },  // U+6CE8
-  { "m17n:zh:cangjie", "\xe5\x80\x89" },  // U+5009
-  { "_comp_ime_aeebooiibjahgpgmhkeocbeekccfknbjzh-hant-t-i0-cangjie-1987",
-    "\xe5\x80\x89" },  // U+5009
-  { "_comp_ime_gjaehgfemfahhmlgpdfknkhdnemmolopzh-hant-t-i0-cangjie-1987",
-    "\xe5\x80\x89" },  // U+5009
-  { "m17n:zh:quick", "\xe9\x80\x9f" },  // U+901F
+  { "zh-hant-t-i0-und", "\xE6\xB3\xA8" },  // U+9177
+  { "zh-hant-t-i0-cangjie-1987", "\xe5\x80\x89" },  // U+5009
+  { "zh-hant-t-i0-cangjie-1987-x-m0-simplified", "\xe9\x80\x9f" },  // U+901F
   // For Hangul input method.
-  { "mozc-hangul", "\xed\x95\x9c" },  // U+D55C
-  { "_comp_ime_bdgdidmhaijohebebipajioienkglgfohangul_2set", "\xed\x95\x9c" },
-  { "_comp_ime_bdgdidmhaijohebebipajioienkglgfohangul_3set390",
-    "\xed\x95\x9c" },
-  { "_comp_ime_bdgdidmhaijohebebipajioienkglgfohangul_3setfinal",
-    "\xed\x95\x9c" },
-  { "_comp_ime_bdgdidmhaijohebebipajioienkglgfohangul_3setnoshift",
-    "\xed\x95\x9c" },
-  { "_comp_ime_bdgdidmhaijohebebipajioienkglgfohangul_romaja", "\xed\x95\x9c" },
+  { "hangul_2set", "\xed\x95\x9c" },  // U+D55C
+  { "hangul_3set390", "\xed\x95\x9c" },  // U+D55C
+  { "hangul_3setfinal", "\xed\x95\x9c" },  // U+D55C
+  { "hangul_3setnoshift", "\xed\x95\x9c" },  // U+D55C
+  { "hangul_romaja", "\xed\x95\x9c" },  // U+D55C
   { extension_misc::kBrailleImeEngineId,
     // U+2803 U+2817 U+2807 (Unicode braille patterns for the letters 'brl' in
     // English (and many other) braille codes.
@@ -86,28 +66,20 @@ const size_t kMappingFromIdToIndicatorTextLen =
 // "Your input method has changed to..." bubble than in the status tray.
 // If an entry is not found in this table the short name is used.
 const struct {
-  const char* input_method_id;
+  const char* engine_id;
   const int resource_id;
 } kMappingImeIdToMediumLenNameResourceId[] = {
-  { "m17n:zh:cangjie", IDS_LANGUAGES_MEDIUM_LEN_NAME_CHINESE_TRADITIONAL },
-  { "m17n:zh:quick", IDS_LANGUAGES_MEDIUM_LEN_NAME_CHINESE_TRADITIONAL },
-  { "mozc-chewing", IDS_LANGUAGES_MEDIUM_LEN_NAME_CHINESE_TRADITIONAL },
-  { "mozc-hangul", IDS_LANGUAGES_MEDIUM_LEN_NAME_KOREAN },
-  { "pinyin", IDS_LANGUAGES_MEDIUM_LEN_NAME_CHINESE_SIMPLIFIED },
-  { "pinyin-dv", IDS_LANGUAGES_MEDIUM_LEN_NAME_CHINESE_SIMPLIFIED },
-  { "_comp_ime_cpgalbafkoofkjmaeonnfijgpfennjjnzh-t-i0-pinyin",
-    IDS_LANGUAGES_MEDIUM_LEN_NAME_CHINESE_SIMPLIFIED},
-  { "_comp_ime_gjaehgfemfahhmlgpdfknkhdnemmolopzh-t-i0-pinyin",
-    IDS_LANGUAGES_MEDIUM_LEN_NAME_CHINESE_SIMPLIFIED },
-  { "_comp_ime_gjaehgfemfahhmlgpdfknkhdnemmolopzh-t-i0-wubi-1986",
-    IDS_LANGUAGES_MEDIUM_LEN_NAME_CHINESE_SIMPLIFIED },
-  { "_comp_ime_ekbifjdfhkmdeeajnolmgdlmkllopefizh-hant-t-i0-und",
+  { "hangul_2set", IDS_LANGUAGES_MEDIUM_LEN_NAME_KOREAN },
+  { "hangul_3set390", IDS_LANGUAGES_MEDIUM_LEN_NAME_KOREAN },
+  { "hangul_3setfinal", IDS_LANGUAGES_MEDIUM_LEN_NAME_KOREAN },
+  { "hangul_3setnoshift", IDS_LANGUAGES_MEDIUM_LEN_NAME_KOREAN },
+  { "hangul_3setromaja", IDS_LANGUAGES_MEDIUM_LEN_NAME_KOREAN },
+  { "zh-t-i0-pinyin", IDS_LANGUAGES_MEDIUM_LEN_NAME_CHINESE_SIMPLIFIED},
+  { "zh-t-i0-wubi-1986", IDS_LANGUAGES_MEDIUM_LEN_NAME_CHINESE_SIMPLIFIED },
+  { "zh-hant-t-i0-und", IDS_LANGUAGES_MEDIUM_LEN_NAME_CHINESE_TRADITIONAL },
+  { "zh-hant-t-i0-cangjie-1987",
     IDS_LANGUAGES_MEDIUM_LEN_NAME_CHINESE_TRADITIONAL },
-  { "_comp_ime_gjaehgfemfahhmlgpdfknkhdnemmolopzh-hant-t-i0-und",
-    IDS_LANGUAGES_MEDIUM_LEN_NAME_CHINESE_TRADITIONAL },
-  { "_comp_ime_aeebooiibjahgpgmhkeocbeekccfknbjzh-hant-t-i0-cangjie-1987",
-    IDS_LANGUAGES_MEDIUM_LEN_NAME_CHINESE_TRADITIONAL },
-  { "_comp_ime_gjaehgfemfahhmlgpdfknkhdnemmolopzh-hant-t-i0-cangjie-1987",
+  { "zh-hant-t-i0-cangjie-1987-x-m0-simplified",
     IDS_LANGUAGES_MEDIUM_LEN_NAME_CHINESE_TRADITIONAL },
   { extension_misc::kBrailleImeEngineId,
     IDS_LANGUAGES_MEDIUM_LEN_NAME_BRAILLE },
@@ -122,22 +94,14 @@ const size_t kMappingImeIdToMediumLenNameResourceIdLen =
 const struct {
   const char* locale;
   const char* layout;
-  const char* input_method_id;
+  const char* engine_id;
 } kDefaultInputMethodRecommendation[] = {
-  { "ja", "us", "_comp_ime_gjaehgfemfahhmlgpdfknkhdnemmolopnacl_mozc_us" },
-  { "ja", "jp", "_comp_ime_gjaehgfemfahhmlgpdfknkhdnemmolopnacl_mozc_jp" },
-  { "zh-CN", "us", "_comp_ime_gjaehgfemfahhmlgpdfknkhdnemmolopzh-t-i0-pinyin" },
-  { "zh-TW", "us",
-    "_comp_ime_gjaehgfemfahhmlgpdfknkhdnemmolopzh-hant-t-i0-und" },
-#if defined(OFFICIAL_BUILD)
-  { "th", "us", "_comp_ime_habcdindjejkmepknlhkkloncjcpcnbfvkd_th" },
-  { "vi", "us", "_comp_ime_habcdindjejkmepknlhkkloncjcpcnbfvkd_vi_tcvn" },
-  { "vi", "us", "_comp_ime_habcdindjejkmepknlhkkloncjcpcnbfvkd_vi_tcvn" },
-#else
-  { "th", "us", "_comp_ime_jhffeifommiaekmbkkjlpmilogcfdohpvkd_th" },
-  { "vi", "us", "_comp_ime_jhffeifommiaekmbkkjlpmilogcfdohpvkd_vi_tcvn" },
-  { "vi", "us", "_comp_ime_jhffeifommiaekmbkkjlpmilogcfdohpvkd_vi_tcvn" },
-#endif
+  { "ja", "us", "nacl_mozc_us" },
+  { "ja", "jp", "nacl_mozc_jp" },
+  { "zh-CN", "us", "zh-t-i0-pinyin" },
+  { "zh-TW", "us", "zh-hant-t-i0-und" },
+  { "th", "us", "vkd_th" },
+  { "vi", "us", "vkd_vi_tcvn" },
 };
 
 // The map from xkb layout to the indicator text.
@@ -477,8 +441,8 @@ base::string16 InputMethodUtil::GetInputMethodShortName(
   base::string16 text;
   // Check special cases first.
   for (size_t i = 0; i < kMappingFromIdToIndicatorTextLen; ++i) {
-    if (kMappingFromIdToIndicatorText[i].input_method_id ==
-        input_method.id()) {
+    if (extension_ime_util::GetInputMethodIDByEngineID(
+        kMappingFromIdToIndicatorText[i].engine_id) == input_method.id()) {
       text = base::UTF8ToUTF16(kMappingFromIdToIndicatorText[i].indicator_text);
       break;
     }
@@ -515,7 +479,8 @@ base::string16 InputMethodUtil::GetInputMethodMediumName(
   // it uses the same name as the short name, unless found in a table
   // for medium length names.
   for (size_t i = 0; i < kMappingImeIdToMediumLenNameResourceIdLen; ++i) {
-    if (kMappingImeIdToMediumLenNameResourceId[i].input_method_id ==
+    if (extension_ime_util::GetInputMethodIDByEngineID(
+        kMappingImeIdToMediumLenNameResourceId[i].engine_id) ==
         input_method.id()) {
       return delegate_->GetLocalizedString(
           kMappingImeIdToMediumLenNameResourceId[i].resource_id);
@@ -624,7 +589,8 @@ void InputMethodUtil::GetFirstLoginInputMethodIds(
     if (kDefaultInputMethodRecommendation[i].locale == language_code &&
         kDefaultInputMethodRecommendation[i].layout == current_layout) {
       out_input_method_ids->push_back(
-          kDefaultInputMethodRecommendation[i].input_method_id);
+          extension_ime_util::GetInputMethodIDByEngineID(
+              kDefaultInputMethodRecommendation[i].engine_id));
       return;
     }
   }
@@ -709,7 +675,7 @@ bool InputMethodUtil::MigrateInputMethods(
   std::vector<std::string>& ids = *input_method_ids;
   for (size_t i = 0; i < ids.size(); ++i) {
     std::string id =
-        extension_ime_util::GetInputMethodIDByKeyboardLayout(ids[i]);
+        extension_ime_util::GetInputMethodIDByEngineID(ids[i]);
     // Migrates old ime id's to new ones.
     for (size_t j = 0; j < arraysize(kExtensionIdMigrationMap); ++j) {
       size_t pos = id.find(kExtensionIdMigrationMap[j][0]);
@@ -822,15 +788,13 @@ void InputMethodUtil::ResetInputMethods(const InputMethodDescriptors& imes) {
 
 void InputMethodUtil::InitXkbInputMethodsForTesting() {
   cached_hardware_layouts_.clear();
-  if (!extension_ime_util::UseWrappedExtensionKeyboardLayouts())
-    return;
   scoped_ptr<InputMethodDescriptors> original_imes =
       InputMethodWhitelist().GetSupportedInputMethods();
   InputMethodDescriptors whitelist_imes;
   for (size_t i = 0; i < original_imes->size(); ++i) {
     const InputMethodDescriptor& ime = (*original_imes)[i];
     whitelist_imes.push_back(InputMethodDescriptor(
-        extension_ime_util::GetInputMethodIDByKeyboardLayout(ime.id()),
+        extension_ime_util::GetInputMethodIDByEngineID(ime.id()),
         "",
         ime.indicator(),
         ime.keyboard_layouts(),
@@ -848,7 +812,7 @@ InputMethodDescriptor InputMethodUtil::GetFallbackInputMethodDescriptor() {
   std::vector<std::string> languages;
   languages.push_back("en-US");
   return InputMethodDescriptor(
-      extension_ime_util::GetInputMethodIDByKeyboardLayout("xkb:us::eng"),
+      extension_ime_util::GetInputMethodIDByEngineID("xkb:us::eng"),
       "",
       "US",
       layouts,
@@ -872,7 +836,7 @@ void InputMethodUtil::ReloadInternalMaps() {
   for (size_t i = 0; i < supported_input_methods_->size(); ++i) {
     const InputMethodDescriptor& input_method = supported_input_methods_->at(i);
     const std::string input_method_id =
-        extension_ime_util::GetInputMethodIDByKeyboardLayout(input_method.id());
+        extension_ime_util::GetInputMethodIDByEngineID(input_method.id());
     const std::vector<std::string>& language_codes =
         input_method.language_codes();
 

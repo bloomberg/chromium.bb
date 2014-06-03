@@ -15,6 +15,26 @@ namespace chromeos {
 // Extension IME related utilities.
 namespace extension_ime_util {
 
+#if defined(OFFICIAL_BUILD)
+const char kXkbExtensionId[] = "jkghodnilhceideoidjikpgommlajknk";
+const char kM17nExtensionId[] = "habcdindjejkmepknlhkkloncjcpcnbf";
+const char kHangulExtensionId[] = "bdgdidmhaijohebebipajioienkglgfo";
+const char kMozcExtensionId[] = "gjaehgfemfahhmlgpdfknkhdnemmolop";
+const char kT13nExtensionId[] = "gjaehgfemfahhmlgpdfknkhdnemmolop";
+const char kChinesePinyinExtensionId[] = "gjaehgfemfahhmlgpdfknkhdnemmolop";
+const char kChineseZhuyinExtensionId[] = "gjaehgfemfahhmlgpdfknkhdnemmolop";
+const char kChineseCangjieExtensionId[] = "gjaehgfemfahhmlgpdfknkhdnemmolop";
+#else
+const char kXkbExtensionId[] = "fgoepimhcoialccpbmpnnblemnepkkao";
+const char kM17nExtensionId[] = "jhffeifommiaekmbkkjlpmilogcfdohp";
+const char kHangulExtensionId[] = "bdgdidmhaijohebebipajioienkglgfo";
+const char kMozcExtensionId[] = "bbaiamgfapehflhememkfglaehiobjnk";
+const char kT13nExtensionId[] = "gjaehgfemfahhmlgpdfknkhdnemmolop";
+const char kChinesePinyinExtensionId[] = "cpgalbafkoofkjmaeonnfijgpfennjjn";
+const char kChineseZhuyinExtensionId[] = "ekbifjdfhkmdeeajnolmgdlmkllopefi";
+const char kChineseCangjieExtensionId[] = "aeebooiibjahgpgmhkeocbeekccfknbj";
+#endif
+
 // Returns InputMethodID for |engine_id| in |extension_id| of extension IME.
 // This function does not check |extension_id| is installed extension IME nor
 // |engine_id| is really a member of |extension_id|.
@@ -33,9 +53,12 @@ std::string CHROMEOS_EXPORT GetComponentInputMethodID(
 std::string CHROMEOS_EXPORT GetExtensionIDFromInputMethodID(
     const std::string& input_method_id);
 
-// Returns InputMethodID from keyboard layout (xkb) id (e.g. xkb:fr:fra).
-std::string CHROMEOS_EXPORT GetInputMethodIDByKeyboardLayout(
-    const std::string& keyboard_layout_id);
+// Returns InputMethodID from engine id (e.g. xkb:fr:fra), or returns itself if
+// the |engine_id| is not a known engine id.
+// The caller must make sure the |engine_id| is from system input methods
+// instead of 3rd party input methods.
+std::string CHROMEOS_EXPORT GetInputMethodIDByEngineID(
+    const std::string& engine_id);
 
 // Returns true if |input_method_id| is extension IME ID. This function does not
 // check |input_method_id| is installed extension IME.
@@ -58,26 +81,11 @@ bool CHROMEOS_EXPORT IsMemberOfExtension(const std::string& input_method_id,
 bool CHROMEOS_EXPORT IsKeyboardLayoutExtension(
     const std::string& input_method_id);
 
-// Returns true to use the wrapped extension keyboards instead of the legacy
-// xkb keyboards, returns false otherwise.
-bool CHROMEOS_EXPORT UseWrappedExtensionKeyboardLayouts();
-
 // Gets legacy xkb id (e.g. xkb:us::eng) from the new extension based xkb id
 // (e.g. _comp_ime_...xkb:us::eng). If the given id is not prefixed with
 // 'xkb:', just return the same as the given id.
 std::string CHROMEOS_EXPORT MaybeGetLegacyXkbId(
     const std::string& input_method_id);
-
-// The scoped class to temporarily set the flag to use extension based xkb
-// keyboards for testing.
-class CHROMEOS_EXPORT ScopedUseExtensionKeyboardFlagForTesting {
- public:
-  explicit ScopedUseExtensionKeyboardFlagForTesting(bool new_flag);
-  ~ScopedUseExtensionKeyboardFlagForTesting();
-
- private:
-  base::AutoReset<bool> auto_reset_;
-};
 
 }  // namespace extension_ime_util
 

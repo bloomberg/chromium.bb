@@ -80,8 +80,7 @@ InputMethodAPI::~InputMethodAPI() {
 // static
 std::string InputMethodAPI::GetInputMethodForXkb(const std::string& xkb_id) {
   std::string xkb_prefix =
-      chromeos::extension_ime_util::GetInputMethodIDByKeyboardLayout(
-          kXkbPrefix);
+      chromeos::extension_ime_util::GetInputMethodIDByEngineID(kXkbPrefix);
   size_t prefix_length = xkb_prefix.length();
   DCHECK(xkb_id.substr(0, prefix_length) == xkb_prefix);
   return xkb_id.substr(prefix_length);

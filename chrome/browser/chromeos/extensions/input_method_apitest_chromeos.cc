@@ -58,7 +58,7 @@ class SetInputMethodListener : public content::NotificationObserver {
 
       std::vector<std::string> keyboard_layouts;
       keyboard_layouts.push_back(
-          chromeos::extension_ime_util::GetInputMethodIDByKeyboardLayout(
+          chromeos::extension_ime_util::GetInputMethodIDByEngineID(
               kInitialInputMethodOnLoginScreen));
       manager->EnableLoginLayouts(kLoginScreenUILanguage, keyboard_layouts);
       return;
@@ -68,7 +68,7 @@ class SetInputMethodListener : public content::NotificationObserver {
         base::StringPrintf("%s:%s", kSetInputMethodMessage, kNewInputMethod);
     if (content == expected_message) {
       chromeos::input_method::InputMethodManager::Get()->ChangeInputMethod(
-          chromeos::extension_ime_util::GetInputMethodIDByKeyboardLayout(
+          chromeos::extension_ime_util::GetInputMethodIDByEngineID(
               base::StringPrintf("xkb:%s", kNewInputMethod)));
 
       scoped_refptr<extensions::TestSendMessageFunction> function =

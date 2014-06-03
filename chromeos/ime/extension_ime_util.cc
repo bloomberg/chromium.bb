@@ -7,26 +7,22 @@
 #include "base/strings/string_util.h"
 
 namespace chromeos {
+
 namespace {
+
 const char kExtensionIMEPrefix[] = "_ext_ime_";
 const int kExtensionIMEPrefixLength =
     sizeof(kExtensionIMEPrefix) / sizeof(kExtensionIMEPrefix[0]) - 1;
 const char kComponentExtensionIMEPrefix[] = "_comp_ime_";
-const char kPublicExtensionXkbIdPrefix[] =
-    "_comp_ime_fgoepimhcoialccpbmpnnblemnepkkao";
-const char kInternalExtensionXkbIdPrefix[] =
-    "_comp_ime_jkghodnilhceideoidjikpgommlajknk";
-
 const int kComponentExtensionIMEPrefixLength =
     sizeof(kComponentExtensionIMEPrefix) /
         sizeof(kComponentExtensionIMEPrefix[0]) - 1;
 const int kExtensionIdLength = 32;
-// Hard coded to true. If the wrapped extension keyboards misbehaves,
-// we can easily change this to false to switch back to legacy xkb keyboards.
-bool g_use_wrapped_extension_keyboard_layouts = true;
+
 }  // namespace
 
 namespace extension_ime_util {
+
 std::string GetInputMethodID(const std::string& extension_id,
                              const std::string& engine_id) {
   DCHECK(!extension_id.empty());
@@ -58,25 +54,36 @@ std::string GetExtensionIDFromInputMethodID(
   return "";
 }
 
-std::string GetInputMethodIDByKeyboardLayout(
-    const std::string& keyboard_layout_id) {
-  const char* kExtensionXkbIdPrefix =
-#if defined(OFFICIAL_BUILD)
-      kInternalExtensionXkbIdPrefix;
-#else
-      kPublicExtensionXkbIdPrefix;
-#endif
-  bool migrate = UseWrappedExtensionKeyboardLayouts();
-  if (IsKeyboardLayoutExtension(keyboard_layout_id)) {
-    std::string id = keyboard_layout_id.substr(
-        arraysize(kPublicExtensionXkbIdPrefix) - 1);
-    if (migrate)
-      return kExtensionXkbIdPrefix + id;
-    return id;
+std::string GetInputMethodIDByEngineID(const std::string& engine_id) {
+  if (StartsWithASCII(engine_id, kComponentExtensionIMEPrefix, true) ||
+      StartsWithASCII(engine_id, kExtensionIMEPrefix, true)) {
+    return engine_id;
   }
-  if (migrate && StartsWithASCII(keyboard_layout_id, "xkb:", true))
-    return kExtensionXkbIdPrefix + keyboard_layout_id;
-  return keyboard_layout_id;
+  if (StartsWithASCII(engine_id, "xkb:", true))
+    return GetComponentInputMethodID(kXkbExtensionId, engine_id);
+  if (StartsWithASCII(engine_id, "vkd_", true))
+    return GetComponentInputMethodID(kM17nExtensionId, engine_id);
+  if (StartsWithASCII(engine_id, "nacl_mozc_", true))
+    return GetComponentInputMethodID(kMozcExtensionId, engine_id);
+  if (StartsWithASCII(engine_id, "hangul_", true))
+    return GetComponentInputMethodID(kHangulExtensionId, engine_id);
+
+  if (StartsWithASCII(engine_id, "zh-", true) &&
+      engine_id.find("pinyin") != std::string::npos) {
+    return GetComponentInputMethodID(kChinesePinyinExtensionId, engine_id);
+  }
+  if (StartsWithASCII(engine_id, "zh-", true) &&
+      engine_id.find("zhuyin") != std::string::npos) {
+    return GetComponentInputMethodID(kChineseZhuyinExtensionId, engine_id);
+  }
+  if (StartsWithASCII(engine_id, "zh-", true) &&
+      engine_id.find("cangjie") != std::string::npos) {
+    return GetComponentInputMethodID(kChineseCangjieExtensionId, engine_id);
+  }
+  if (engine_id.find("-t-i0-") != std::string::npos)
+    return GetComponentInputMethodID(kT13nExtensionId, engine_id);
+
+  return engine_id;
 }
 
 bool IsExtensionIME(const std::string& input_method_id) {
@@ -99,12 +106,8 @@ bool IsMemberOfExtension(const std::string& input_method_id,
 }
 
 bool IsKeyboardLayoutExtension(const std::string& input_method_id) {
-  return StartsWithASCII(input_method_id, kPublicExtensionXkbIdPrefix, true) ||
-      StartsWithASCII(input_method_id, kInternalExtensionXkbIdPrefix, true);
-}
-
-bool UseWrappedExtensionKeyboardLayouts() {
-  return g_use_wrapped_extension_keyboard_layouts;
+  std::string prefix = kComponentExtensionIMEPrefix;
+  return StartsWithASCII(input_method_id, prefix + kXkbExtensionId, true);
 }
 
 std::string MaybeGetLegacyXkbId(const std::string& input_method_id) {
@@ -114,15 +117,6 @@ std::string MaybeGetLegacyXkbId(const std::string& input_method_id) {
       return input_method_id.substr(pos);
   }
   return input_method_id;
-}
-
-ScopedUseExtensionKeyboardFlagForTesting::
-    ScopedUseExtensionKeyboardFlagForTesting(bool new_flag)
-  : auto_reset_(&g_use_wrapped_extension_keyboard_layouts, new_flag) {
-}
-
-ScopedUseExtensionKeyboardFlagForTesting::
-    ~ScopedUseExtensionKeyboardFlagForTesting() {
 }
 
 }  // namespace extension_ime_util

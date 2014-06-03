@@ -53,8 +53,6 @@ const char kJsApiNetworkOnLanguageChanged[] = "networkOnLanguageChanged";
 const char kJsApiNetworkOnInputMethodChanged[] = "networkOnInputMethodChanged";
 const char kJsApiNetworkOnTimezoneChanged[] = "networkOnTimezoneChanged";
 
-const char kUSLayout[] = "xkb:us::eng";
-
 const int kDerelectDetectionTimeoutSeconds = 8 * 60 * 60;  // 8 hours.
 const int kDerelectIdleTimeoutSeconds = 5 * 60;  // 5 minutes.
 const int kOobeTimerUpdateIntervalSeconds = 5 * 60;  // 5 minutes.
@@ -450,12 +448,8 @@ base::ListValue* NetworkScreenHandler::GetLanguageList() {
   ComponentExtensionIMEManager* comp_manager =
       manager->GetComponentExtensionIMEManager();
   input_method::InputMethodDescriptors descriptors;
-  if (extension_ime_util::UseWrappedExtensionKeyboardLayouts()) {
-    if (comp_manager->IsInitialized())
-      descriptors = comp_manager->GetXkbIMEAsInputMethodDescriptor();
-  } else {
-    descriptors = *(manager->GetSupportedInputMethods());
-  }
+  if (comp_manager->IsInitialized())
+    descriptors = comp_manager->GetXkbIMEAsInputMethodDescriptor();
   base::ListValue* languages_list =
       options::CrosLanguageOptionsHandler::GetUILanguageList(descriptors);
   for (size_t i = 0; i < languages_list->GetSize(); ++i) {
@@ -538,16 +532,14 @@ base::ListValue* NetworkScreenHandler::GetInputMethods() {
   input_method::InputMethodManager* manager =
       input_method::InputMethodManager::Get();
   input_method::InputMethodUtil* util = manager->GetInputMethodUtil();
-  if (extension_ime_util::UseWrappedExtensionKeyboardLayouts()) {
-    ComponentExtensionIMEManager* comp_manager =
-        manager->GetComponentExtensionIMEManager();
-    if (!comp_manager->IsInitialized()) {
-      input_method::InputMethodDescriptor fallback =
-          util->GetFallbackInputMethodDescriptor();
-      input_methods_list->Append(
-          CreateInputMethodsEntry(fallback, fallback.id()));
-      return input_methods_list;
-    }
+  ComponentExtensionIMEManager* comp_manager =
+      manager->GetComponentExtensionIMEManager();
+  if (!comp_manager->IsInitialized()) {
+    input_method::InputMethodDescriptor fallback =
+        util->GetFallbackInputMethodDescriptor();
+    input_methods_list->Append(
+        CreateInputMethodsEntry(fallback, fallback.id()));
+    return input_methods_list;
   }
 
   const std::vector<std::string>& hardware_login_input_methods =
@@ -590,8 +582,8 @@ base::ListValue* NetworkScreenHandler::GetInputMethods() {
         CreateInputMethodsEntry((*input_methods)[i], current_input_method_id));
   }
   // "xkb:us::eng" should always be in the list of available layouts.
-  const std::string& us_keyboard_id =
-      extension_ime_util::GetInputMethodIDByKeyboardLayout(kUSLayout);
+  const std::string us_keyboard_id =
+      util->GetFallbackInputMethodDescriptor().id();
   if (input_methods_added.find(us_keyboard_id) == input_methods_added.end()) {
     const input_method::InputMethodDescriptor* us_eng_descriptor =
         util->GetInputMethodDescriptorFromId(us_keyboard_id);

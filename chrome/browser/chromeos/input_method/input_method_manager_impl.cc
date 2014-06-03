@@ -35,9 +35,6 @@ namespace input_method {
 
 namespace {
 
-const char nacl_mozc_jp_id[] =
-    "_comp_ime_gjaehgfemfahhmlgpdfknkhdnemmolopnacl_mozc_jp";
-
 bool Contains(const std::vector<std::string>& container,
               const std::string& value) {
   return std::find(container.begin(), container.end(), value) !=
@@ -115,7 +112,7 @@ scoped_ptr<InputMethodDescriptors>
 InputMethodManagerImpl::GetSupportedInputMethods() const {
   scoped_ptr<InputMethodDescriptors> whitelist_imes =
       whitelist_.GetSupportedInputMethods();
-  if (!extension_ime_util::UseWrappedExtensionKeyboardLayouts())
+  if (!component_extension_ime_manager_->IsInitialized())
     return whitelist_imes.Pass();
   return scoped_ptr<InputMethodDescriptors>(new InputMethodDescriptors).Pass();
 }
@@ -229,8 +226,7 @@ void InputMethodManagerImpl::EnableLoginLayouts(
 
   // you can pass empty |initial_layout|.
   ChangeInputMethod(initial_layouts.empty() ? "" :
-      extension_ime_util::GetInputMethodIDByKeyboardLayout(
-          initial_layouts[0]));
+      extension_ime_util::GetInputMethodIDByEngineID(initial_layouts[0]));
 }
 
 // Adds new input method to given list.
@@ -670,15 +666,19 @@ bool InputMethodManagerImpl::SwitchInputMethod(
   std::vector<std::string> input_method_ids_to_switch;
   switch (accelerator.key_code()) {
     case ui::VKEY_CONVERT:  // Henkan key on JP106 keyboard
-      input_method_ids_to_switch.push_back(nacl_mozc_jp_id);
+      input_method_ids_to_switch.push_back(
+          extension_ime_util::GetInputMethodIDByEngineID("nacl_mozc_jp"));
       break;
     case ui::VKEY_NONCONVERT:  // Muhenkan key on JP106 keyboard
-      input_method_ids_to_switch.push_back("xkb:jp::jpn");
+      input_method_ids_to_switch.push_back(
+          extension_ime_util::GetInputMethodIDByEngineID("xkb:jp::jpn"));
       break;
     case ui::VKEY_DBE_SBCSCHAR:  // ZenkakuHankaku key on JP106 keyboard
     case ui::VKEY_DBE_DBCSCHAR:
-      input_method_ids_to_switch.push_back(nacl_mozc_jp_id);
-      input_method_ids_to_switch.push_back("xkb:jp::jpn");
+      input_method_ids_to_switch.push_back(
+          extension_ime_util::GetInputMethodIDByEngineID("nacl_mozc_jp"));
+      input_method_ids_to_switch.push_back(
+          extension_ime_util::GetInputMethodIDByEngineID("xkb:jp::jpn"));
       break;
     default:
       NOTREACHED();
@@ -688,8 +688,6 @@ bool InputMethodManagerImpl::SwitchInputMethod(
     DVLOG(1) << "Unexpected VKEY: " << accelerator.key_code();
     return false;
   }
-
-  MigrateInputMethods(&input_method_ids_to_switch);
 
   // Obtain the intersection of input_method_ids_to_switch and
   // active_input_method_ids_. The order of IDs in active_input_method_ids_ is

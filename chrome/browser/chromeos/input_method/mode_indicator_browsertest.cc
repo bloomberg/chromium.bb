@@ -133,7 +133,7 @@ IN_PROC_BROWSER_TEST_F(ModeIndicatorBrowserTest, Bounds) {
 
   std::vector<std::string> keyboard_layouts;
   keyboard_layouts.push_back(
-      extension_ime_util::GetInputMethodIDByKeyboardLayout("xkb:fr::fra"));
+      extension_ime_util::GetInputMethodIDByEngineID("xkb:fr::fra"));
 
   // Add keyboard layouts to enable the mode indicator.
   imm->EnableLoginLayouts("fr", keyboard_layouts);
@@ -201,7 +201,7 @@ IN_PROC_BROWSER_TEST_F(ModeIndicatorBrowserTest, NumOfWidgets) {
 
   std::vector<std::string> keyboard_layouts;
   keyboard_layouts.push_back(
-      extension_ime_util::GetInputMethodIDByKeyboardLayout("xkb:fr::fra"));
+      extension_ime_util::GetInputMethodIDByEngineID("xkb:fr::fra"));
 
   // Add keyboard layouts to enable the mode indicator.
   imm->EnableLoginLayouts("fr", keyboard_layouts);
