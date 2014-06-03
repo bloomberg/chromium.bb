@@ -933,10 +933,6 @@ crbug.com/320139 fast/repaint/block-layout-inline-children-replaced.html [ Needs
 #crbug.com/362050 [ Retina ] fast/repaint/block-layout-inline-children-replaced.html [ Failure ]
 crbug.com/362073 [ Mac Debug ] fast/dom/shadow/input-color-in-content.html [ Crash Pass ]
 
-crbug.com/371233 fast/repaint/repaint-table-row-in-composited-document.html [ NeedsRebaseline ]
-crbug.com/371233 fast/repaint/table-cell-move.html [ NeedsRebaseline ]
-crbug.com/371233 fast/repaint/table-shrink-row-repaint.html [ NeedsRebaseline ]
-
 crbug.com/363772 [ Linux Mac Win ] virtual/gpu/fast/hidpi/gradient-with-scaled-ancestor.html [ NeedsManualRebaseline ]
 crbug.com/365400 [ Mac ] compositing/images/direct-pdf-image.html [ Pass ImageOnlyFailure ]
 
