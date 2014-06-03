@@ -188,8 +188,7 @@ TEST_F(ApplyControlDataUpdatesTest, EncryptUnsyncedChanges) {
   // Simulate another nigori update that doesn't change anything.
   {
     syncable::WriteTransaction trans(FROM_HERE, UNITTEST, directory());
-    MutableEntry entry(&trans, syncable::GET_BY_SERVER_TAG,
-                       ModelTypeToRootTag(NIGORI));
+    MutableEntry entry(&trans, syncable::GET_TYPE_ROOT, NIGORI);
     ASSERT_TRUE(entry.good());
     entry.PutServerVersion(entry_factory_->GetNextRevision());
     entry.PutIsUnappliedUpdate(true);

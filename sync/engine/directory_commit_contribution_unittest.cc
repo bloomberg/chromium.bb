@@ -36,10 +36,7 @@ class DirectoryCommitContributionTest : public ::testing::Test {
   int64 CreateUnsyncedItem(syncable::WriteTransaction* trans,
                            ModelType type,
                            const std::string& tag) {
-    syncable::Entry parent_entry(
-        trans,
-        syncable::GET_BY_SERVER_TAG,
-        ModelTypeToRootTag(type));
+    syncable::Entry parent_entry(trans, syncable::GET_TYPE_ROOT, type);
     syncable::MutableEntry entry(
         trans,
         syncable::CREATE,
@@ -53,10 +50,7 @@ class DirectoryCommitContributionTest : public ::testing::Test {
   int64 CreateSyncedItem(syncable::WriteTransaction* trans,
                          ModelType type,
                          const std::string& tag) {
-    syncable::Entry parent_entry(
-        trans,
-        syncable::GET_BY_SERVER_TAG,
-        ModelTypeToRootTag(type));
+    syncable::Entry parent_entry(trans, syncable::GET_TYPE_ROOT, type);
     syncable::MutableEntry entry(
         trans,
         syncable::CREATE,

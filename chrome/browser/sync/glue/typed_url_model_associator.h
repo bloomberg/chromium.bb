@@ -37,8 +37,6 @@ class WriteTransaction;
 
 namespace browser_sync {
 
-extern const char kTypedUrlTag[];
-
 // Contains all model association related logic:
 // * Algorithm to associate typed_url model and sync model.
 // * Persisting model associations and loading them back.

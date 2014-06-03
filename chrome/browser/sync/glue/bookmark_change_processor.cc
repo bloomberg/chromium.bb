@@ -551,7 +551,7 @@ void BookmarkChangeProcessor::ApplyChangesFromSyncModel(
 
   syncer::ReadNode synced_bookmarks(trans);
   int64 synced_bookmarks_id = syncer::kInvalidId;
-  if (synced_bookmarks.InitByTagLookup(kMobileBookmarksTag) ==
+  if (synced_bookmarks.InitByTagLookupForBookmarks(kMobileBookmarksTag) ==
       syncer::BaseNode::INIT_OK) {
     synced_bookmarks_id = synced_bookmarks.GetId();
   }

@@ -52,8 +52,7 @@ class SyncBackupManagerTest : public testing::Test {
                    const std::string& client_tag) {
     WriteTransaction trans(FROM_HERE, user_share);
     ReadNode type_root(&trans);
-    EXPECT_EQ(BaseNode::INIT_OK,
-              type_root.InitByTagLookup(ModelTypeToRootTag(type)));
+    EXPECT_EQ(BaseNode::INIT_OK, type_root.InitTypeRoot(type));
 
     WriteNode node(&trans);
     EXPECT_EQ(WriteNode::INIT_SUCCESS,

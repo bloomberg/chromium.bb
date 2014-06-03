@@ -77,7 +77,7 @@ const BaseTransaction* ReadNode::GetTransaction() const {
   return transaction_;
 }
 
-BaseNode::InitByLookupResult ReadNode::InitByTagLookup(
+BaseNode::InitByLookupResult ReadNode::InitByTagLookupForBookmarks(
     const std::string& tag) {
   DCHECK(!entry_) << "Init called twice";
   if (tag.empty())
@@ -89,8 +89,25 @@ BaseNode::InitByLookupResult ReadNode::InitByTagLookup(
   if (entry_->GetIsDel())
     return INIT_FAILED_ENTRY_IS_DEL;
   ModelType model_type = GetModelType();
-  LOG_IF(WARNING, model_type == UNSPECIFIED || model_type == TOP_LEVEL_FOLDER)
-      << "SyncAPI InitByTagLookup referencing unusually typed object.";
+  DCHECK_EQ(model_type, BOOKMARKS)
+      << "InitByTagLookup deprecated for all types except bookmarks.";
+  return DecryptIfNecessary() ? INIT_OK : INIT_FAILED_DECRYPT_IF_NECESSARY;
+}
+
+BaseNode::InitByLookupResult ReadNode::InitTypeRoot(ModelType type) {
+  DCHECK(!entry_) << "Init called twice";
+  if (!IsRealDataType(type))
+    return INIT_FAILED_PRECONDITION;
+  syncable::BaseTransaction* trans = transaction_->GetWrappedTrans();
+  entry_ = new syncable::Entry(trans, syncable::GET_TYPE_ROOT, type);
+  if (!entry_->good())
+    return INIT_FAILED_ENTRY_NOT_GOOD;
+  if (entry_->GetIsDel())
+    return INIT_FAILED_ENTRY_IS_DEL;
+  ModelType found_model_type = GetModelType();
+  LOG_IF(WARNING, found_model_type == UNSPECIFIED ||
+                  found_model_type == TOP_LEVEL_FOLDER)
+      << "SyncAPI InitTypeRoot referencing unusually typed object.";
   return DecryptIfNecessary() ? INIT_OK : INIT_FAILED_DECRYPT_IF_NECESSARY;
 }
 

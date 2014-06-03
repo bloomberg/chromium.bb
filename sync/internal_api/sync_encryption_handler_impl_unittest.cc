@@ -146,7 +146,7 @@ class SyncEncryptionHandlerImplTest : public ::testing::Test {
       const std::string& passphrase) {
     ReadTransaction trans(FROM_HERE, user_share());
     ReadNode nigori_node(&trans);
-    ASSERT_EQ(nigori_node.InitByTagLookup(kNigoriTag), BaseNode::INIT_OK);
+    ASSERT_EQ(nigori_node.InitTypeRoot(NIGORI), BaseNode::INIT_OK);
     const sync_pb::NigoriSpecifics& nigori = nigori_node.GetNigoriSpecifics();
     if (migration_time > 0)
       EXPECT_EQ(migration_time, nigori.keystore_migration_time());
@@ -239,7 +239,7 @@ class SyncEncryptionHandlerImplTest : public ::testing::Test {
     {
       WriteTransaction trans(FROM_HERE, user_share());
       WriteNode nigori_node(&trans);
-      ASSERT_EQ(nigori_node.InitByTagLookup(kNigoriTag), BaseNode::INIT_OK);
+      ASSERT_EQ(nigori_node.InitTypeRoot(NIGORI), BaseNode::INIT_OK);
       sync_pb::NigoriSpecifics nigori = BuildMigratedNigori(
           KEYSTORE_PASSPHRASE,
           migration_time,
@@ -272,7 +272,7 @@ class SyncEncryptionHandlerImplTest : public ::testing::Test {
     {
       WriteTransaction trans(FROM_HERE, user_share());
       WriteNode nigori_node(&trans);
-      ASSERT_EQ(nigori_node.InitByTagLookup(kNigoriTag), BaseNode::INIT_OK);
+      ASSERT_EQ(nigori_node.InitTypeRoot(NIGORI), BaseNode::INIT_OK);
       sync_pb::NigoriSpecifics nigori = BuildMigratedNigori(
           CUSTOM_PASSPHRASE,
           migration_time,
@@ -309,7 +309,7 @@ class SyncEncryptionHandlerImplTest : public ::testing::Test {
     {
       WriteTransaction trans(FROM_HERE, user_share());
       WriteNode nigori_node(&trans);
-      ASSERT_EQ(nigori_node.InitByTagLookup(kNigoriTag), BaseNode::INIT_OK);
+      ASSERT_EQ(nigori_node.InitTypeRoot(NIGORI), BaseNode::INIT_OK);
       sync_pb::NigoriSpecifics nigori;
       other_cryptographer.GetKeys(nigori.mutable_encryption_keybag());
       nigori.set_keybag_is_frozen(passphrase_type == CUSTOM_PASSPHRASE);
@@ -587,7 +587,7 @@ TEST_F(SyncEncryptionHandlerImplTest, ReceiveOldNigori) {
     // In addition, the nigori node should match the current encryption state.
     ReadTransaction trans(FROM_HERE, user_share());
     ReadNode nigori_node(&trans);
-    ASSERT_EQ(nigori_node.InitByTagLookup(kNigoriTag), BaseNode::INIT_OK);
+    ASSERT_EQ(nigori_node.InitTypeRoot(NIGORI), BaseNode::INIT_OK);
     const sync_pb::NigoriSpecifics& nigori = nigori_node.GetNigoriSpecifics();
     EXPECT_TRUE(GetCryptographer()->CanDecryptUsingDefaultKey(
         our_encrypted_specifics.encrypted()));
@@ -730,7 +730,7 @@ TEST_F(SyncEncryptionHandlerImplTest, MigrateOnDecryptImplicitPass) {
   {
     WriteTransaction trans(FROM_HERE, user_share());
     WriteNode nigori_node(&trans);
-    ASSERT_EQ(nigori_node.InitByTagLookup(kNigoriTag), BaseNode::INIT_OK);
+    ASSERT_EQ(nigori_node.InitTypeRoot(NIGORI), BaseNode::INIT_OK);
     Cryptographer other_cryptographer(GetCryptographer()->encryptor());
     KeyParams other_key = {"localhost", "dummy", kOtherKey};
     other_cryptographer.AddKey(other_key);
@@ -787,7 +787,7 @@ TEST_F(SyncEncryptionHandlerImplTest, MigrateOnDecryptCustomPass) {
   {
     WriteTransaction trans(FROM_HERE, user_share());
     WriteNode nigori_node(&trans);
-    ASSERT_EQ(nigori_node.InitByTagLookup(kNigoriTag), BaseNode::INIT_OK);
+    ASSERT_EQ(nigori_node.InitTypeRoot(NIGORI), BaseNode::INIT_OK);
     Cryptographer other_cryptographer(GetCryptographer()->encryptor());
     KeyParams other_key = {"localhost", "dummy", kOtherKey};
     other_cryptographer.AddKey(other_key);
@@ -1035,7 +1035,7 @@ TEST_F(SyncEncryptionHandlerImplTest, ReceiveMigratedNigoriKeystorePass) {
   {
     WriteTransaction trans(FROM_HERE, user_share());
     WriteNode nigori_node(&trans);
-    ASSERT_EQ(nigori_node.InitByTagLookup(kNigoriTag), BaseNode::INIT_OK);
+    ASSERT_EQ(nigori_node.InitTypeRoot(NIGORI), BaseNode::INIT_OK);
     sync_pb::NigoriSpecifics nigori;
     nigori.mutable_keystore_decryptor_token()->CopyFrom(
         keystore_decryptor_token);
@@ -1115,7 +1115,7 @@ TEST_F(SyncEncryptionHandlerImplTest, ReceiveMigratedNigoriFrozenImplicitPass) {
                 OnEncryptedTypesChanged(_, true));
     WriteTransaction trans(FROM_HERE, user_share());
     WriteNode nigori_node(&trans);
-    ASSERT_EQ(nigori_node.InitByTagLookup(kNigoriTag), BaseNode::INIT_OK);
+    ASSERT_EQ(nigori_node.InitTypeRoot(NIGORI), BaseNode::INIT_OK);
     sync_pb::NigoriSpecifics nigori;
     nigori.set_keybag_is_frozen(true);
     nigori.set_passphrase_type(
@@ -1195,7 +1195,7 @@ TEST_F(SyncEncryptionHandlerImplTest, ReceiveMigratedNigoriCustomPass) {
                 OnEncryptedTypesChanged(_, true));
     WriteTransaction trans(FROM_HERE, user_share());
     WriteNode nigori_node(&trans);
-    ASSERT_EQ(nigori_node.InitByTagLookup(kNigoriTag), BaseNode::INIT_OK);
+    ASSERT_EQ(nigori_node.InitTypeRoot(NIGORI), BaseNode::INIT_OK);
     sync_pb::NigoriSpecifics nigori;
     nigori.set_keybag_is_frozen(true);
     nigori.set_passphrase_type(sync_pb::NigoriSpecifics::CUSTOM_PASSPHRASE);
@@ -1257,7 +1257,7 @@ TEST_F(SyncEncryptionHandlerImplTest, ReceiveUnmigratedNigoriAfterMigration) {
   {
     WriteTransaction trans(FROM_HERE, user_share());
     WriteNode nigori_node(&trans);
-    ASSERT_EQ(nigori_node.InitByTagLookup(kNigoriTag), BaseNode::INIT_OK);
+    ASSERT_EQ(nigori_node.InitTypeRoot(NIGORI), BaseNode::INIT_OK);
     sync_pb::NigoriSpecifics nigori;
     GetCryptographer()->GetKeys(nigori.mutable_encryption_keybag());
     nigori.set_keybag_is_frozen(true);
@@ -1302,7 +1302,7 @@ TEST_F(SyncEncryptionHandlerImplTest, ReceiveUnmigratedNigoriAfterMigration) {
     other_cryptographer.AddKey(old_key);
     WriteTransaction trans(FROM_HERE, user_share());
     WriteNode nigori_node(&trans);
-    ASSERT_EQ(nigori_node.InitByTagLookup(kNigoriTag), BaseNode::INIT_OK);
+    ASSERT_EQ(nigori_node.InitTypeRoot(NIGORI), BaseNode::INIT_OK);
     sync_pb::NigoriSpecifics nigori;
     other_cryptographer.GetKeys(nigori.mutable_encryption_keybag());
     nigori.set_keybag_is_frozen(false);
@@ -1336,7 +1336,7 @@ TEST_F(SyncEncryptionHandlerImplTest, ReceiveOldMigratedNigori) {
   {
     WriteTransaction trans(FROM_HERE, user_share());
     WriteNode nigori_node(&trans);
-    ASSERT_EQ(nigori_node.InitByTagLookup(kNigoriTag), BaseNode::INIT_OK);
+    ASSERT_EQ(nigori_node.InitTypeRoot(NIGORI), BaseNode::INIT_OK);
     sync_pb::NigoriSpecifics nigori;
     GetCryptographer()->GetKeys(nigori.mutable_encryption_keybag());
     nigori.set_keybag_is_frozen(true);
@@ -1379,7 +1379,7 @@ TEST_F(SyncEncryptionHandlerImplTest, ReceiveOldMigratedNigori) {
   {
     WriteTransaction trans(FROM_HERE, user_share());
     WriteNode nigori_node(&trans);
-    ASSERT_EQ(nigori_node.InitByTagLookup(kNigoriTag), BaseNode::INIT_OK);
+    ASSERT_EQ(nigori_node.InitTypeRoot(NIGORI), BaseNode::INIT_OK);
     sync_pb::NigoriSpecifics nigori;
     Cryptographer other_cryptographer(GetCryptographer()->encryptor());
     other_cryptographer.AddKey(old_key);
@@ -1428,7 +1428,7 @@ TEST_F(SyncEncryptionHandlerImplTest, SetKeystoreAfterReceivingMigratedNigori) {
   {
     WriteTransaction trans(FROM_HERE, user_share());
     WriteNode nigori_node(&trans);
-    ASSERT_EQ(nigori_node.InitByTagLookup(kNigoriTag), BaseNode::INIT_OK);
+    ASSERT_EQ(nigori_node.InitTypeRoot(NIGORI), BaseNode::INIT_OK);
     sync_pb::NigoriSpecifics nigori;
     nigori.mutable_keystore_decryptor_token()->CopyFrom(
         keystore_decryptor_token);
@@ -1509,7 +1509,7 @@ TEST_F(SyncEncryptionHandlerImplTest, SetCustomPassAfterMigration) {
   {
     WriteTransaction trans(FROM_HERE, user_share());
     WriteNode nigori_node(&trans);
-    ASSERT_EQ(nigori_node.InitByTagLookup(kNigoriTag), BaseNode::INIT_OK);
+    ASSERT_EQ(nigori_node.InitTypeRoot(NIGORI), BaseNode::INIT_OK);
     sync_pb::NigoriSpecifics nigori;
     nigori.mutable_keystore_decryptor_token()->CopyFrom(
         keystore_decryptor_token);
@@ -1611,7 +1611,7 @@ TEST_F(SyncEncryptionHandlerImplTest,
   {
     WriteTransaction trans(FROM_HERE, user_share());
     WriteNode nigori_node(&trans);
-    ASSERT_EQ(nigori_node.InitByTagLookup(kNigoriTag), BaseNode::INIT_OK);
+    ASSERT_EQ(nigori_node.InitTypeRoot(NIGORI), BaseNode::INIT_OK);
     sync_pb::NigoriSpecifics nigori;
     nigori.mutable_keystore_decryptor_token()->CopyFrom(
         keystore_decryptor_token);
@@ -1718,7 +1718,7 @@ TEST_F(SyncEncryptionHandlerImplTest,
   {
     WriteTransaction trans(FROM_HERE, user_share());
     WriteNode nigori_node(&trans);
-    ASSERT_EQ(nigori_node.InitByTagLookup(kNigoriTag), BaseNode::INIT_OK);
+    ASSERT_EQ(nigori_node.InitTypeRoot(NIGORI), BaseNode::INIT_OK);
     sync_pb::NigoriSpecifics nigori;
     nigori.mutable_keystore_decryptor_token()->CopyFrom(
         keystore_decryptor_token);
@@ -1813,7 +1813,7 @@ TEST_F(SyncEncryptionHandlerImplTest,
   {
     WriteTransaction trans(FROM_HERE, user_share());
     WriteNode nigori_node(&trans);
-    ASSERT_EQ(nigori_node.InitByTagLookup(kNigoriTag), BaseNode::INIT_OK);
+    ASSERT_EQ(nigori_node.InitTypeRoot(NIGORI), BaseNode::INIT_OK);
     sync_pb::NigoriSpecifics nigori;
     nigori.mutable_keystore_decryptor_token()->CopyFrom(
         keystore_decryptor_token);
@@ -1931,7 +1931,7 @@ TEST_F(SyncEncryptionHandlerImplTest,
   {
     WriteTransaction trans(FROM_HERE, user_share());
     WriteNode nigori_node(&trans);
-    ASSERT_EQ(nigori_node.InitByTagLookup(kNigoriTag), BaseNode::INIT_OK);
+    ASSERT_EQ(nigori_node.InitTypeRoot(NIGORI), BaseNode::INIT_OK);
     sync_pb::NigoriSpecifics nigori;
     Cryptographer other_cryptographer(GetCryptographer()->encryptor());
     other_cryptographer.AddKey(old_key);

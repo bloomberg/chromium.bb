@@ -49,20 +49,20 @@ TEST_F(SyncRollbackManagerBaseTest, InitTypeOnConfiguration) {
   ReadTransaction trans(FROM_HERE, manager_.GetUserShare());
   ReadNode pref_root(&trans);
   EXPECT_EQ(BaseNode::INIT_OK,
-            pref_root.InitByTagLookup(ModelTypeToRootTag(PREFERENCES)));
+            pref_root.InitTypeRoot(PREFERENCES));
 
   ReadNode bookmark_root(&trans);
   EXPECT_EQ(BaseNode::INIT_OK,
-            bookmark_root.InitByTagLookup(ModelTypeToRootTag(BOOKMARKS)));
+            bookmark_root.InitTypeRoot(BOOKMARKS));
   ReadNode bookmark_bar(&trans);
   EXPECT_EQ(BaseNode::INIT_OK,
-            bookmark_bar.InitByTagLookup("bookmark_bar"));
+            bookmark_bar.InitByTagLookupForBookmarks("bookmark_bar"));
   ReadNode bookmark_mobile(&trans);
   EXPECT_EQ(BaseNode::INIT_OK,
-            bookmark_mobile.InitByTagLookup("synced_bookmarks"));
+            bookmark_mobile.InitByTagLookupForBookmarks("synced_bookmarks"));
   ReadNode bookmark_other(&trans);
   EXPECT_EQ(BaseNode::INIT_OK,
-            bookmark_other.InitByTagLookup("other_bookmarks"));
+            bookmark_other.InitByTagLookupForBookmarks("other_bookmarks"));
 }
 
 }  // anonymous namespace

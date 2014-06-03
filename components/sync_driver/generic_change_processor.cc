@@ -223,8 +223,7 @@ syncer::SyncError GenericChangeProcessor::GetAllSyncDataReturnError(
   std::string type_name = syncer::ModelTypeToString(type);
   syncer::ReadTransaction trans(FROM_HERE, share_handle());
   syncer::ReadNode root(&trans);
-  if (root.InitByTagLookup(syncer::ModelTypeToRootTag(type)) !=
-          syncer::BaseNode::INIT_OK) {
+  if (root.InitTypeRoot(type) != syncer::BaseNode::INIT_OK) {
     syncer::SyncError error(FROM_HERE,
                             syncer::SyncError::DATATYPE_ERROR,
                             "Server did not create the top-level " + type_name +
@@ -276,8 +275,7 @@ bool GenericChangeProcessor::GetDataTypeContext(syncer::ModelType type,
 int GenericChangeProcessor::GetSyncCountForType(syncer::ModelType type) {
   syncer::ReadTransaction trans(FROM_HERE, share_handle());
   syncer::ReadNode root(&trans);
-  if (root.InitByTagLookup(syncer::ModelTypeToRootTag(type)) !=
-      syncer::BaseNode::INIT_OK)
+  if (root.InitTypeRoot(type) != syncer::BaseNode::INIT_OK)
     return 0;
 
   // Subtract one to account for type's root node.
@@ -495,8 +493,8 @@ syncer::SyncError GenericChangeProcessor::HandleActionAdd(
   // etc.).
   syncer::ReadNode root_node(&trans);
   const syncer::SyncDataLocal sync_data_local(change.sync_data());
-  if (root_node.InitByTagLookup(syncer::ModelTypeToRootTag(
-          sync_data_local.GetDataType())) != syncer::BaseNode::INIT_OK) {
+  if (root_node.InitTypeRoot(sync_data_local.GetDataType()) !=
+      syncer::BaseNode::INIT_OK) {
     syncer::SyncError error(FROM_HERE,
                             syncer::SyncError::DATATYPE_ERROR,
                             "Failed to look up root node for type " + type_str,
@@ -704,8 +702,7 @@ bool GenericChangeProcessor::SyncModelHasUserCreatedNodes(
   *has_nodes = false;
   syncer::ReadTransaction trans(FROM_HERE, share_handle());
   syncer::ReadNode type_root_node(&trans);
-  if (type_root_node.InitByTagLookup(syncer::ModelTypeToRootTag(type)) !=
-          syncer::BaseNode::INIT_OK) {
+  if (type_root_node.InitTypeRoot(type) != syncer::BaseNode::INIT_OK) {
     LOG(ERROR) << err_str;
     return false;
   }

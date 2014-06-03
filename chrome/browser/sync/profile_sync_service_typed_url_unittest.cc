@@ -178,7 +178,7 @@ class ProfileSyncServiceTypedUrlTest : public AbstractProfileSyncServiceTest {
     syncer::WriteTransaction trans(FROM_HERE, sync_service_->GetUserShare());
     syncer::ReadNode typed_url_root(&trans);
     ASSERT_EQ(syncer::BaseNode::INIT_OK,
-              typed_url_root.InitByTagLookup(browser_sync::kTypedUrlTag));
+              typed_url_root.InitTypeRoot(syncer::TYPED_URLS));
 
     syncer::WriteNode node(&trans);
     std::string tag = url.url().spec();
@@ -267,8 +267,8 @@ class ProfileSyncServiceTypedUrlTest : public AbstractProfileSyncServiceTest {
     urls->clear();
     syncer::ReadTransaction trans(FROM_HERE, sync_service_->GetUserShare());
     syncer::ReadNode typed_url_root(&trans);
-    if (typed_url_root.InitByTagLookup(browser_sync::kTypedUrlTag) !=
-            syncer::BaseNode::INIT_OK)
+    if (typed_url_root.InitTypeRoot(syncer::TYPED_URLS) !=
+        syncer::BaseNode::INIT_OK)
       return;
 
     int64 child_id = typed_url_root.GetFirstChildId();

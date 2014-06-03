@@ -37,8 +37,6 @@ static const int kMaxTypedUrlVisits = 100;
 // RELOAD visits, which will be stripped.
 static const int kMaxVisitsToFetch = 1000;
 
-const char kTypedUrlTag[] = "google_chrome_typed_urls";
-
 static bool CheckVisitOrdering(const history::VisitVector& visits) {
   int64 previous_visit_time = 0;
   for (history::VisitVector::const_iterator visit = visits.begin();
@@ -228,8 +226,8 @@ syncer::SyncError TypedUrlModelAssociator::DoAssociateModels() {
 
     syncer::WriteTransaction trans(FROM_HERE, sync_service_->GetUserShare());
     syncer::ReadNode typed_url_root(&trans);
-    if (typed_url_root.InitByTagLookup(kTypedUrlTag) !=
-            syncer::BaseNode::INIT_OK) {
+    if (typed_url_root.InitTypeRoot(syncer::TYPED_URLS) !=
+        syncer::BaseNode::INIT_OK) {
       return error_handler_->CreateAndUploadError(
           FROM_HERE,
           "Server did not create the top-level typed_url node. We "
@@ -466,7 +464,7 @@ bool TypedUrlModelAssociator::DeleteAllNodes(
 
   // Just walk through all our child nodes and delete them.
   syncer::ReadNode typed_url_root(trans);
-  if (typed_url_root.InitByTagLookup(kTypedUrlTag) !=
+  if (typed_url_root.InitTypeRoot(syncer::TYPED_URLS) !=
           syncer::BaseNode::INIT_OK) {
     LOG(ERROR) << "Could not lookup root node";
     return false;
@@ -499,7 +497,7 @@ bool TypedUrlModelAssociator::SyncModelHasUserCreatedNodes(bool* has_nodes) {
   *has_nodes = false;
   syncer::ReadTransaction trans(FROM_HERE, sync_service_->GetUserShare());
   syncer::ReadNode sync_node(&trans);
-  if (sync_node.InitByTagLookup(kTypedUrlTag) != syncer::BaseNode::INIT_OK) {
+  if (sync_node.InitTypeRoot(syncer::TYPED_URLS) != syncer::BaseNode::INIT_OK) {
     LOG(ERROR) << "Server did not create the top-level typed_url node. We "
                << "might be running against an out-of-date server.";
     return false;

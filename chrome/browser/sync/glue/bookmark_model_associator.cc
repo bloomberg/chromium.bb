@@ -387,7 +387,8 @@ bool BookmarkModelAssociator::GetSyncIdForTaggedNode(const std::string& tag,
                                                      int64* sync_id) {
   syncer::ReadTransaction trans(FROM_HERE, user_share_);
   syncer::ReadNode sync_node(&trans);
-  if (sync_node.InitByTagLookup(tag.c_str()) != syncer::BaseNode::INIT_OK)
+  if (sync_node.InitByTagLookupForBookmarks(
+      tag.c_str()) != syncer::BaseNode::INIT_OK)
     return false;
   *sync_id = sync_node.GetId();
   return true;
@@ -484,8 +485,7 @@ syncer::SyncError BookmarkModelAssociator::BuildAssociations(
 
   syncer::WriteTransaction trans(FROM_HERE, user_share_);
   syncer::ReadNode bm_root(&trans);
-  if (bm_root.InitByTagLookup(syncer::ModelTypeToRootTag(syncer::BOOKMARKS)) ==
-      syncer::BaseNode::INIT_OK) {
+  if (bm_root.InitTypeRoot(syncer::BOOKMARKS) == syncer::BaseNode::INIT_OK) {
     syncer_merge_result->set_num_items_before_association(
         bm_root.GetTotalNodeCount());
   }

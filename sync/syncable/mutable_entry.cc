@@ -98,9 +98,8 @@ MutableEntry::MutableEntry(WriteTransaction* trans, GetByClientTag,
       write_transaction_(trans) {
 }
 
-MutableEntry::MutableEntry(WriteTransaction* trans, GetByServerTag,
-                           const string& tag)
-    : ModelNeutralMutableEntry(trans, GET_BY_SERVER_TAG, tag),
+MutableEntry::MutableEntry(WriteTransaction* trans, GetTypeRoot, ModelType type)
+    : ModelNeutralMutableEntry(trans, GET_TYPE_ROOT, type),
       write_transaction_(trans) {
 }
 

@@ -310,13 +310,12 @@ BaseNode::InitByLookupResult WriteNode::InitByClientTagLookup(
   return DecryptIfNecessary() ? INIT_OK : INIT_FAILED_DECRYPT_IF_NECESSARY;
 }
 
-BaseNode::InitByLookupResult WriteNode::InitByTagLookup(
-    const std::string& tag) {
+BaseNode::InitByLookupResult WriteNode::InitTypeRoot(ModelType type) {
   DCHECK(!entry_) << "Init called twice";
-  if (tag.empty())
+  if (!IsRealDataType(type))
     return INIT_FAILED_PRECONDITION;
   entry_ = new syncable::MutableEntry(transaction_->GetWrappedWriteTrans(),
-                                      syncable::GET_BY_SERVER_TAG, tag);
+                                      syncable::GET_TYPE_ROOT, type);
   if (!entry_->good())
     return INIT_FAILED_ENTRY_NOT_GOOD;
   if (entry_->GetIsDel())

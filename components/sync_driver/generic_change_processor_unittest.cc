@@ -141,8 +141,7 @@ class SyncGenericChangeProcessorTest : public testing::Test {
   void BuildChildNodes(int n) {
     syncer::WriteTransaction trans(FROM_HERE, user_share());
     syncer::ReadNode root(&trans);
-    ASSERT_EQ(syncer::BaseNode::INIT_OK,
-              root.InitByTagLookup(syncer::ModelTypeToRootTag(kType)));
+    ASSERT_EQ(syncer::BaseNode::INIT_OK, root.InitTypeRoot(kType));
     for (int i = 0; i < n; ++i) {
       syncer::WriteNode node(&trans);
       node.InitUniqueByCreation(kType, root, base::StringPrintf("node%05d", i));

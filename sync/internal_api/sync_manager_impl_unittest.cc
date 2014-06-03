@@ -174,8 +174,7 @@ int64 MakeServerNode(UserShare* share, ModelType model_type,
                      const sync_pb::EntitySpecifics& specifics) {
   syncable::WriteTransaction trans(
       FROM_HERE, syncable::UNITTEST, share->directory.get());
-  syncable::Entry root_entry(&trans, syncable::GET_BY_SERVER_TAG,
-                             ModelTypeToRootTag(model_type));
+  syncable::Entry root_entry(&trans, syncable::GET_TYPE_ROOT, model_type);
   EXPECT_TRUE(root_entry.good());
   syncable::Id root_id = root_entry.GetId();
   syncable::Id node_id = syncable::Id::CreateFromServerId(client_tag);
@@ -583,7 +582,7 @@ TEST_F(SyncApiTest, EmptyTags) {
       node.InitUniqueByCreation(TYPED_URLS, root_node, empty_tag);
   EXPECT_NE(WriteNode::INIT_SUCCESS, result);
   EXPECT_EQ(BaseNode::INIT_FAILED_PRECONDITION,
-            node.InitByTagLookup(empty_tag));
+            node.InitByClientTagLookup(TYPED_URLS, empty_tag));
 }
 
 // Test counting nodes when the type's root node has no children.
@@ -1248,7 +1247,7 @@ TEST_F(SyncManagerTest, SetInitialGaiaPass) {
   {
     ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
     ReadNode node(&trans);
-    EXPECT_EQ(BaseNode::INIT_OK, node.InitByTagLookup(kNigoriTag));
+    EXPECT_EQ(BaseNode::INIT_OK, node.InitTypeRoot(NIGORI));
     sync_pb::NigoriSpecifics nigori = node.GetNigoriSpecifics();
     Cryptographer* cryptographer = trans.GetCryptographer();
     EXPECT_TRUE(cryptographer->is_ready());
@@ -1368,7 +1367,7 @@ TEST_F(SyncManagerTest, SupplyPendingGAIAPass) {
     KeyParams params = {"localhost", "dummy", "passphrase2"};
     other_cryptographer.AddKey(params);
     WriteNode node(&trans);
-    EXPECT_EQ(BaseNode::INIT_OK, node.InitByTagLookup(kNigoriTag));
+    EXPECT_EQ(BaseNode::INIT_OK, node.InitTypeRoot(NIGORI));
     sync_pb::NigoriSpecifics nigori;
     other_cryptographer.GetKeys(nigori.mutable_encryption_keybag());
     cryptographer->SetPendingKeys(nigori.encryption_keybag());
@@ -1416,7 +1415,7 @@ TEST_F(SyncManagerTest, SupplyPendingOldGAIAPass) {
     KeyParams params = {"localhost", "dummy", "old_gaia"};
     other_cryptographer.AddKey(params);
     WriteNode node(&trans);
-    EXPECT_EQ(BaseNode::INIT_OK, node.InitByTagLookup(kNigoriTag));
+    EXPECT_EQ(BaseNode::INIT_OK, node.InitTypeRoot(NIGORI));
     sync_pb::NigoriSpecifics nigori;
     other_cryptographer.GetKeys(nigori.mutable_encryption_keybag());
     node.SetNigoriSpecifics(nigori);
@@ -1499,7 +1498,7 @@ TEST_F(SyncManagerTest, SupplyPendingExplicitPass) {
     KeyParams params = {"localhost", "dummy", "explicit"};
     other_cryptographer.AddKey(params);
     WriteNode node(&trans);
-    EXPECT_EQ(BaseNode::INIT_OK, node.InitByTagLookup(kNigoriTag));
+    EXPECT_EQ(BaseNode::INIT_OK, node.InitTypeRoot(NIGORI));
     sync_pb::NigoriSpecifics nigori;
     other_cryptographer.GetKeys(nigori.mutable_encryption_keybag());
     cryptographer->SetPendingKeys(nigori.encryption_keybag());
@@ -1548,7 +1547,7 @@ TEST_F(SyncManagerTest, SupplyPendingGAIAPassUserProvided) {
     KeyParams params = {"localhost", "dummy", "passphrase"};
     other_cryptographer.AddKey(params);
     WriteNode node(&trans);
-    EXPECT_EQ(BaseNode::INIT_OK, node.InitByTagLookup(kNigoriTag));
+    EXPECT_EQ(BaseNode::INIT_OK, node.InitTypeRoot(NIGORI));
     sync_pb::NigoriSpecifics nigori;
     other_cryptographer.GetKeys(nigori.mutable_encryption_keybag());
     node.SetNigoriSpecifics(nigori);
@@ -1743,8 +1742,7 @@ TEST_F(SyncManagerTest, CreateLocalBookmark) {
   {
     WriteTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
     ReadNode bookmark_root(&trans);
-    ASSERT_EQ(BaseNode::INIT_OK,
-              bookmark_root.InitByTagLookup(ModelTypeToRootTag(BOOKMARKS)));
+    ASSERT_EQ(BaseNode::INIT_OK, bookmark_root.InitTypeRoot(BOOKMARKS));
     WriteNode node(&trans);
     ASSERT_TRUE(node.InitBookmarkByCreation(bookmark_root, NULL));
     node.SetIsFolder(false);
@@ -1757,8 +1755,7 @@ TEST_F(SyncManagerTest, CreateLocalBookmark) {
   {
     ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
     ReadNode bookmark_root(&trans);
-    ASSERT_EQ(BaseNode::INIT_OK,
-              bookmark_root.InitByTagLookup(ModelTypeToRootTag(BOOKMARKS)));
+    ASSERT_EQ(BaseNode::INIT_OK, bookmark_root.InitTypeRoot(BOOKMARKS));
     int64 child_id = bookmark_root.GetFirstChildId();
 
     ReadNode node(&trans);
@@ -2583,8 +2580,9 @@ TEST_F(SyncManagerTest, PurgePartiallySyncedTypes) {
   // Further ensure that the test harness did not create its root node.
   {
     syncable::ReadTransaction trans(FROM_HERE, share->directory.get());
-    syncable::Entry autofill_root_node(&trans, syncable::GET_BY_SERVER_TAG,
-                                       ModelTypeToRootTag(AUTOFILL));
+    syncable::Entry autofill_root_node(&trans,
+                                       syncable::GET_TYPE_ROOT,
+                                       AUTOFILL);
     ASSERT_FALSE(autofill_root_node.good());
   }
 

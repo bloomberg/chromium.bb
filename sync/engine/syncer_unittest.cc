@@ -86,6 +86,7 @@ using syncable::GET_BY_HANDLE;
 using syncable::GET_BY_ID;
 using syncable::GET_BY_CLIENT_TAG;
 using syncable::GET_BY_SERVER_TAG;
+using syncable::GET_TYPE_ROOT;
 using syncable::UNITTEST;
 
 using sessions::MockDebugInfoGetter;

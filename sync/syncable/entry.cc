@@ -28,14 +28,20 @@ Entry::Entry(BaseTransaction* trans, GetByClientTag, const string& tag)
   kernel_ = trans->directory()->GetEntryByClientTag(tag);
 }
 
-Entry::Entry(BaseTransaction* trans, GetByServerTag, const string& tag)
+Entry::Entry(BaseTransaction* trans, GetTypeRoot, ModelType type)
     : basetrans_(trans) {
+  const std::string& tag = ModelTypeToRootTag(type);
   kernel_ = trans->directory()->GetEntryByServerTag(tag);
 }
 
 Entry::Entry(BaseTransaction* trans, GetByHandle, int64 metahandle)
     : basetrans_(trans) {
   kernel_ = trans->directory()->GetEntryByHandle(metahandle);
+}
+
+Entry::Entry(BaseTransaction* trans, GetByServerTag, const string& tag)
+    : basetrans_(trans) {
+  kernel_ = trans->directory()->GetEntryByServerTag(tag);
 }
 
 Directory* Entry::dir() const {

@@ -100,8 +100,7 @@ bool VerifyDataTypeEncryptionForTest(
     NOTREACHED();
     return true;
   }
-  std::string type_tag = ModelTypeToRootTag(type);
-  Entry type_root(trans, GET_BY_SERVER_TAG, type_tag);
+  Entry type_root(trans, GET_TYPE_ROOT, type);
   if (!type_root.good()) {
     NOTREACHED();
     return false;

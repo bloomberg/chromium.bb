@@ -104,8 +104,7 @@ void SyncedDeviceTracker::GetAllSyncedDeviceInfo(
   syncer::ReadTransaction trans(FROM_HERE, user_share_);
   syncer::ReadNode root_node(&trans);
 
-  if (root_node.InitByTagLookup(
-          syncer::ModelTypeToRootTag(syncer::DEVICE_INFO)) !=
+  if (root_node.InitTypeRoot(syncer::DEVICE_INFO) !=
       syncer::BaseNode::INIT_OK) {
     return;
   }
@@ -182,7 +181,7 @@ void SyncedDeviceTracker::WriteDeviceInfo(
   } else {
     syncer::ReadNode type_root(&trans);
     syncer::BaseNode::InitByLookupResult type_root_lookup_result =
-        type_root.InitByTagLookup(ModelTypeToRootTag(syncer::DEVICE_INFO));
+        type_root.InitTypeRoot(syncer::DEVICE_INFO);
     DCHECK_EQ(syncer::BaseNode::INIT_OK, type_root_lookup_result);
 
     syncer::WriteNode new_node(&trans);

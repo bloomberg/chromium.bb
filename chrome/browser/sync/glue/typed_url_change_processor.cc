@@ -111,7 +111,7 @@ bool TypedUrlChangeProcessor::CreateOrUpdateSyncNode(
   }
 
   syncer::ReadNode typed_url_root(trans);
-  if (typed_url_root.InitByTagLookup(kTypedUrlTag) !=
+  if (typed_url_root.InitTypeRoot(syncer::TYPED_URLS) !=
           syncer::BaseNode::INIT_OK) {
     error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
         "Server did not create the top-level typed_url node. We "
@@ -252,7 +252,7 @@ void TypedUrlChangeProcessor::ApplyChangesFromSyncModel(
     return;
 
   syncer::ReadNode typed_url_root(trans);
-  if (typed_url_root.InitByTagLookup(kTypedUrlTag) !=
+  if (typed_url_root.InitTypeRoot(syncer::TYPED_URLS) !=
           syncer::BaseNode::INIT_OK) {
     error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
         "TypedUrl root node lookup failed.");

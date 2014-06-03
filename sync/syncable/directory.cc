@@ -952,9 +952,7 @@ bool Directory::InitialSyncEndedForType(ModelType type) {
 bool Directory::InitialSyncEndedForType(
     BaseTransaction* trans, ModelType type) {
   // True iff the type's root node has been received and applied.
-  syncable::Entry entry(trans,
-                        syncable::GET_BY_SERVER_TAG,
-                        ModelTypeToRootTag(type));
+  syncable::Entry entry(trans, syncable::GET_TYPE_ROOT, type);
   return entry.good() && entry.GetBaseVersion() != CHANGES_VERSION;
 }
 

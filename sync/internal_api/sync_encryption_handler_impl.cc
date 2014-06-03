@@ -248,7 +248,7 @@ void SyncEncryptionHandlerImpl::Init() {
   WriteTransaction trans(FROM_HERE, user_share_);
   WriteNode node(&trans);
 
-  if (node.InitByTagLookup(kNigoriTag) != BaseNode::INIT_OK)
+  if (node.InitTypeRoot(NIGORI) != BaseNode::INIT_OK)
     return;
   if (!ApplyNigoriUpdateImpl(node.GetNigoriSpecifics(),
                              trans.GetWrappedTrans())) {
@@ -332,7 +332,7 @@ void SyncEncryptionHandlerImpl::SetEncryptionPassphrase(
   WriteTransaction trans(FROM_HERE, user_share_);
   KeyParams key_params = {"localhost", "dummy", passphrase};
   WriteNode node(&trans);
-  if (node.InitByTagLookup(kNigoriTag) != BaseNode::INIT_OK) {
+  if (node.InitTypeRoot(NIGORI) != BaseNode::INIT_OK) {
     NOTREACHED();
     return;
   }
@@ -484,7 +484,7 @@ void SyncEncryptionHandlerImpl::SetDecryptionPassphrase(
   WriteTransaction trans(FROM_HERE, user_share_);
   KeyParams key_params = {"localhost", "dummy", passphrase};
   WriteNode node(&trans);
-  if (node.InitByTagLookup(kNigoriTag) != BaseNode::INIT_OK) {
+  if (node.InitTypeRoot(NIGORI) != BaseNode::INIT_OK) {
     NOTREACHED();
     return;
   }
@@ -717,7 +717,7 @@ bool SyncEncryptionHandlerImpl::SetKeystoreKeys(
   // If this is a first time sync, we get the encryption keys before we process
   // the nigori node. Just return for now, ApplyNigoriUpdate will be invoked
   // once we have the nigori node.
-  syncable::Entry entry(trans, syncable::GET_BY_SERVER_TAG, kNigoriTag);
+  syncable::Entry entry(trans, syncable::GET_TYPE_ROOT, NIGORI);
   if (!entry.good())
     return true;
 
@@ -765,7 +765,7 @@ bool SyncEncryptionHandlerImpl::MigratedToKeystore() {
   DCHECK(thread_checker_.CalledOnValidThread());
   ReadTransaction trans(FROM_HERE, user_share_);
   ReadNode nigori_node(&trans);
-  if (nigori_node.InitByTagLookup(kNigoriTag) != BaseNode::INIT_OK)
+  if (nigori_node.InitTypeRoot(NIGORI) != BaseNode::INIT_OK)
     return false;
   return IsNigoriMigratedToKeystore(nigori_node.GetNigoriSpecifics());
 }
@@ -793,8 +793,7 @@ void SyncEncryptionHandlerImpl::ReEncryptEverything(
       continue; // These types handle encryption differently.
 
     ReadNode type_root(trans);
-    std::string tag = ModelTypeToRootTag(iter.Get());
-    if (type_root.InitByTagLookup(tag) != BaseNode::INIT_OK)
+    if (type_root.InitTypeRoot(iter.Get()) != BaseNode::INIT_OK)
       continue; // Don't try to reencrypt if the type's data is unavailable.
 
     // Iterate through all children of this datatype.
@@ -825,9 +824,7 @@ void SyncEncryptionHandlerImpl::ReEncryptEverything(
   // Passwords are encrypted with their own legacy scheme.  Passwords are always
   // encrypted so we don't need to check GetEncryptedTypes() here.
   ReadNode passwords_root(trans);
-  std::string passwords_tag = ModelTypeToRootTag(PASSWORDS);
-  if (passwords_root.InitByTagLookup(passwords_tag) ==
-          BaseNode::INIT_OK) {
+  if (passwords_root.InitTypeRoot(PASSWORDS) == BaseNode::INIT_OK) {
     int64 child_id = passwords_root.GetFirstChildId();
     while (child_id != kInvalidId) {
       WriteNode child(trans);
@@ -1012,7 +1009,7 @@ void SyncEncryptionHandlerImpl::WriteEncryptionStateToNigori(
   DCHECK(thread_checker_.CalledOnValidThread());
   WriteNode nigori_node(trans);
   // This can happen in tests that don't have nigori nodes.
-  if (nigori_node.InitByTagLookup(kNigoriTag) != BaseNode::INIT_OK)
+  if (nigori_node.InitTypeRoot(NIGORI) != BaseNode::INIT_OK)
     return;
 
   sync_pb::NigoriSpecifics nigori = nigori_node.GetNigoriSpecifics();

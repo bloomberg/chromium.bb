@@ -28,8 +28,7 @@ bool DoesTopLevelNodeExist(syncer::UserShare* user_share,
                            syncer::ModelType type) {
     syncer::ReadTransaction trans(FROM_HERE, user_share);
     syncer::ReadNode node(&trans);
-    return node.InitByTagLookup(syncer::ModelTypeToRootTag(type)) ==
-        syncer::BaseNode::INIT_OK;
+    return node.InitTypeRoot(type) == syncer::BaseNode::INIT_OK;
 }
 
 IN_PROC_BROWSER_TEST_F(EnableDisableSingleClientTest, EnableOneAtATime) {

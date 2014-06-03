@@ -38,8 +38,8 @@ class SYNC_EXPORT_PRIVATE ModelNeutralMutableEntry : public Entry {
       const std::string& tag);
   ModelNeutralMutableEntry(
       BaseWriteTransaction* trans,
-      GetByServerTag,
-      const std::string& tag);
+      GetTypeRoot,
+      ModelType type);
 
   inline BaseWriteTransaction* base_write_transaction() const {
     return base_write_transaction_;

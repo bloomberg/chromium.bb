@@ -350,7 +350,8 @@ class ProfileSyncServiceBookmarkTest : public testing::Test {
 
     // Be sure to call CreatePermanentBookmarkNodes(), otherwise this will fail.
     syncer::ReadNode bookmark_bar(trans);
-    EXPECT_EQ(BaseNode::INIT_OK, bookmark_bar.InitByTagLookup("bookmark_bar"));
+    EXPECT_EQ(BaseNode::INIT_OK,
+              bookmark_bar.InitByTagLookupForBookmarks("bookmark_bar"));
 
     syncer::WriteNode node(trans);
     EXPECT_TRUE(node.InitBookmarkByCreation(bookmark_bar, NULL));
@@ -406,8 +407,7 @@ class ProfileSyncServiceBookmarkTest : public testing::Test {
   int GetSyncBookmarkCount() {
     syncer::ReadTransaction trans(FROM_HERE, test_user_share_.user_share());
     syncer::ReadNode node(&trans);
-    if (node.InitByTagLookup(syncer::ModelTypeToRootTag(syncer::BOOKMARKS)) !=
-        syncer::BaseNode::INIT_OK)
+    if (node.InitTypeRoot(syncer::BOOKMARKS) != syncer::BaseNode::INIT_OK)
       return 0;
     return node.GetTotalNodeCount();
   }
@@ -424,8 +424,7 @@ class ProfileSyncServiceBookmarkTest : public testing::Test {
       uber_root.InitByRootLookup();
 
       syncer::ReadNode root(&trans);
-      root_exists = (root.InitByTagLookup(syncer::ModelTypeToRootTag(type)) ==
-                     BaseNode::INIT_OK);
+      root_exists = (root.InitTypeRoot(type) == BaseNode::INIT_OK);
     }
 
     if (!root_exists) {
@@ -440,8 +439,7 @@ class ProfileSyncServiceBookmarkTest : public testing::Test {
     };
     syncer::WriteTransaction trans(FROM_HERE, test_user_share_.user_share());
     syncer::ReadNode root(&trans);
-    EXPECT_EQ(BaseNode::INIT_OK, root.InitByTagLookup(
-        syncer::ModelTypeToRootTag(type)));
+    EXPECT_EQ(BaseNode::INIT_OK, root.InitTypeRoot(type));
 
     // Loop through creating permanent nodes as necessary.
     int64 last_child_id = syncer::kInvalidId;
@@ -449,7 +447,7 @@ class ProfileSyncServiceBookmarkTest : public testing::Test {
       // First check if the node already exists. This is for tests that involve
       // persistence and set up sync more than once.
       syncer::ReadNode lookup(&trans);
-      if (lookup.InitByTagLookup(permanent_tags[i]) ==
+      if (lookup.InitByTagLookupForBookmarks(permanent_tags[i]) ==
           syncer::ReadNode::INIT_OK) {
         last_child_id = lookup.GetId();
         continue;

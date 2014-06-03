@@ -60,8 +60,8 @@ ModelNeutralMutableEntry::ModelNeutralMutableEntry(
 }
 
 ModelNeutralMutableEntry::ModelNeutralMutableEntry(
-    BaseWriteTransaction* trans, GetByServerTag, const string& tag)
-    : Entry(trans, GET_BY_SERVER_TAG, tag), base_write_transaction_(trans) {
+    BaseWriteTransaction* trans, GetTypeRoot, ModelType type)
+    : Entry(trans, GET_TYPE_ROOT, type), base_write_transaction_(trans) {
 }
 
 void ModelNeutralMutableEntry::PutBaseVersion(int64 value) {

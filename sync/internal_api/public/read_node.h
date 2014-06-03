@@ -37,10 +37,17 @@ class SYNC_EXPORT ReadNode : public BaseNode {
   // never mutable, so root lookup is only possible on a ReadNode.
   void InitByRootLookup();
 
-  // Each server-created permanent node is tagged with a unique string.
-  // Look up the node with the particular tag.  If it does not exist,
-  // return false.
-  InitByLookupResult InitByTagLookup(const std::string& tag);
+  // Returns the type root node, if it exists.  This is usually created by the
+  // server during first sync.  Eventually, we plan to remove support for it
+  // from the protocol and have the client create the node instead.
+  InitByLookupResult InitTypeRoot(ModelType type);
+
+  // Returns a server-created and unique-server-tagged item.
+  //
+  // This functionality is only useful for bookmarks because only bookmarks
+  // have server-tagged items.  All other server-tagged items are type root
+  // nodes, which should be looked up with InitTypeRoot().
+  InitByLookupResult InitByTagLookupForBookmarks(const std::string& tag);
 
   // Implementation of BaseNode's abstract virtual accessors.
   virtual const syncable::Entry* GetEntry() const OVERRIDE;

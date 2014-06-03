@@ -17,7 +17,7 @@
 
 namespace syncer {
 
-using syncable::GET_BY_SERVER_TAG;
+using syncable::GET_TYPE_ROOT;
 using syncable::IS_UNAPPLIED_UPDATE;
 using syncable::IS_UNSYNCED;
 using syncable::SERVER_SPECIFICS;
@@ -39,9 +39,7 @@ void ApplyControlDataUpdates(syncable::Directory* dir) {
   ModelTypeSet control_types = ControlTypes();
   for (ModelTypeSet::Iterator iter = control_types.First(); iter.Good();
        iter.Inc()) {
-    syncable::MutableEntry entry(&trans,
-                                 syncable::GET_BY_SERVER_TAG,
-                                 ModelTypeToRootTag(iter.Get()));
+    syncable::MutableEntry entry(&trans, syncable::GET_TYPE_ROOT, iter.Get());
     if (!entry.good())
       continue;
     if (!entry.GetIsUnappliedUpdate())

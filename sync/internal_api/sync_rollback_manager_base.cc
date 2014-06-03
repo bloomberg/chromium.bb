@@ -278,7 +278,7 @@ bool SyncRollbackManagerBase::InitBackupDB(
 bool SyncRollbackManagerBase::InitTypeRootNode(ModelType type) {
   WriteTransaction trans(FROM_HERE, &share_);
   ReadNode root(&trans);
-  if (BaseNode::INIT_OK == root.InitByTagLookup(ModelTypeToRootTag(type)))
+  if (BaseNode::INIT_OK == root.InitTypeRoot(type))
     return true;
 
   syncable::MutableEntry entry(trans.GetWrappedWriteTrans(),
@@ -305,8 +305,8 @@ bool SyncRollbackManagerBase::InitTypeRootNode(ModelType type) {
 void SyncRollbackManagerBase::InitBookmarkFolder(const std::string& folder) {
   WriteTransaction trans(FROM_HERE, &share_);
   syncable::Entry bookmark_root(trans.GetWrappedTrans(),
-                                syncable::GET_BY_SERVER_TAG,
-                                ModelTypeToRootTag(BOOKMARKS));
+                                syncable::GET_TYPE_ROOT,
+                                BOOKMARKS);
   if (!bookmark_root.good())
     return;
 
