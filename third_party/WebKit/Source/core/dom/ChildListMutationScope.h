@@ -54,8 +54,8 @@ class ChildListMutationAccumulator FINAL : public RefCountedWillBeGarbageCollect
 public:
     static PassRefPtrWillBeRawPtr<ChildListMutationAccumulator> getOrCreate(Node&);
 
-    void childAdded(PassRefPtr<Node>);
-    void willRemoveChild(PassRefPtr<Node>);
+    void childAdded(PassRefPtrWillBeRawPtr<Node>);
+    void willRemoveChild(PassRefPtrWillBeRawPtr<Node>);
 
     bool hasObservers() const { return m_observers; }
 
@@ -67,7 +67,7 @@ public:
     void trace(Visitor*);
 
 private:
-    ChildListMutationAccumulator(PassRefPtr<Node>, PassOwnPtrWillBeRawPtr<MutationObserverInterestGroup>);
+    ChildListMutationAccumulator(PassRefPtrWillBeRawPtr<Node>, PassOwnPtrWillBeRawPtr<MutationObserverInterestGroup>);
 
     void enqueueMutationRecord();
     bool isEmpty();
@@ -112,13 +112,13 @@ public:
     void childAdded(Node& child)
     {
         if (m_accumulator && m_accumulator->hasObservers())
-            m_accumulator->childAdded(PassRefPtr<Node>(child));
+            m_accumulator->childAdded(&child);
     }
 
     void willRemoveChild(Node& child)
     {
         if (m_accumulator && m_accumulator->hasObservers())
-            m_accumulator->willRemoveChild(PassRefPtr<Node>(child));
+            m_accumulator->willRemoveChild(&child);
     }
 
 private:

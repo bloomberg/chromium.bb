@@ -54,7 +54,7 @@ public:
     RuleSet& ruleSet();
 
 private:
-    RefPtr<Document> m_document;
+    RefPtrWillBePersistent<Document> m_document;
     RefPtrWillBePersistent<CSSStyleSheet> m_styleSheet;
 };
 

@@ -51,7 +51,7 @@ static AccumulatorMap& accumulatorMap()
     return *map;
 }
 
-ChildListMutationAccumulator::ChildListMutationAccumulator(PassRefPtr<Node> target, PassOwnPtrWillBeRawPtr<MutationObserverInterestGroup> observers)
+ChildListMutationAccumulator::ChildListMutationAccumulator(PassRefPtrWillBeRawPtr<Node> target, PassOwnPtrWillBeRawPtr<MutationObserverInterestGroup> observers)
     : m_target(target)
     , m_lastAdded(nullptr)
     , m_observers(observers)
@@ -78,7 +78,7 @@ PassRefPtrWillBeRawPtr<ChildListMutationAccumulator> ChildListMutationAccumulato
     if (!result.isNewEntry)
         accumulator = result.storedValue->value;
     else {
-        accumulator = adoptRefWillBeNoop(new ChildListMutationAccumulator(PassRefPtr<Node>(target), MutationObserverInterestGroup::createForChildListMutation(target)));
+        accumulator = adoptRefWillBeNoop(new ChildListMutationAccumulator(PassRefPtrWillBeRawPtr<Node>(target), MutationObserverInterestGroup::createForChildListMutation(target)));
         result.storedValue->value = accumulator.get();
     }
     return accumulator.release();
@@ -89,11 +89,11 @@ inline bool ChildListMutationAccumulator::isAddedNodeInOrder(Node* child)
     return isEmpty() || (m_lastAdded == child->previousSibling() && m_nextSibling == child->nextSibling());
 }
 
-void ChildListMutationAccumulator::childAdded(PassRefPtr<Node> prpChild)
+void ChildListMutationAccumulator::childAdded(PassRefPtrWillBeRawPtr<Node> prpChild)
 {
     ASSERT(hasObservers());
 
-    RefPtr<Node> child = prpChild;
+    RefPtrWillBeRawPtr<Node> child = prpChild;
 
     if (!isAddedNodeInOrder(child.get()))
         enqueueMutationRecord();
@@ -112,11 +112,11 @@ inline bool ChildListMutationAccumulator::isRemovedNodeInOrder(Node* child)
     return isEmpty() || m_nextSibling == child;
 }
 
-void ChildListMutationAccumulator::willRemoveChild(PassRefPtr<Node> prpChild)
+void ChildListMutationAccumulator::willRemoveChild(PassRefPtrWillBeRawPtr<Node> prpChild)
 {
     ASSERT(hasObservers());
 
-    RefPtr<Node> child = prpChild;
+    RefPtrWillBeRawPtr<Node> child = prpChild;
 
     if (!m_addedNodes.isEmpty() || !isRemovedNodeInOrder(child.get()))
         enqueueMutationRecord();

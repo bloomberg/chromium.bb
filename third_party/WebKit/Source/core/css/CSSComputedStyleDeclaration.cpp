@@ -1121,7 +1121,7 @@ static PassRefPtrWillBeRawPtr<CSSValue> createLineBoxContainValue(unsigned lineB
     return CSSLineBoxContainValue::create(lineBoxContain);
 }
 
-CSSComputedStyleDeclaration::CSSComputedStyleDeclaration(PassRefPtr<Node> n, bool allowVisitedStyle, const String& pseudoElementName)
+CSSComputedStyleDeclaration::CSSComputedStyleDeclaration(PassRefPtrWillBeRawPtr<Node> n, bool allowVisitedStyle, const String& pseudoElementName)
     : m_node(n)
     , m_allowVisitedStyle(allowVisitedStyle)
 #if !ENABLE(OILPAN)
@@ -3055,6 +3055,12 @@ PassRefPtrWillBeRawPtr<CSSValueList> CSSComputedStyleDeclaration::valuesForBackg
     list->append(valuesForShorthandProperty(StylePropertyShorthand(CSSPropertyBackground, propertiesBeforeSlashSeperator, WTF_ARRAY_LENGTH(propertiesBeforeSlashSeperator))));
     list->append(valuesForShorthandProperty(StylePropertyShorthand(CSSPropertyBackground, propertiesAfterSlashSeperator, WTF_ARRAY_LENGTH(propertiesAfterSlashSeperator))));
     return list.release();
+}
+
+void CSSComputedStyleDeclaration::trace(Visitor* visitor)
+{
+    visitor->trace(m_node);
+    CSSStyleDeclaration::trace(visitor);
 }
 
 } // namespace WebCore
