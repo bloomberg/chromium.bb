@@ -550,7 +550,7 @@ void SelectFileDialogImpl::SelectFileImpl(
       GetShellDialogsDelegate()->IsWindowInMetro(owning_window)) {
     if (type == SELECT_SAVEAS_FILE) {
       win8::MetroViewerProcessHost::HandleSaveFile(
-          base::UTF16ToWide(title),
+          title,
           default_path,
           GetFilterForFileTypes(file_types),
           file_type_index,
@@ -562,7 +562,7 @@ void SelectFileDialogImpl::SelectFileImpl(
       return;
     } else if (type == SELECT_OPEN_FILE) {
       win8::MetroViewerProcessHost::HandleOpenFile(
-          base::UTF16ToWide(title),
+          title,
           default_path,
           GetFilterForFileTypes(file_types),
           base::Bind(&ui::SelectFileDialog::Listener::FileSelected,
@@ -572,7 +572,7 @@ void SelectFileDialogImpl::SelectFileImpl(
       return;
     } else if (type == SELECT_OPEN_MULTI_FILE) {
       win8::MetroViewerProcessHost::HandleOpenMultipleFiles(
-          base::UTF16ToWide(title),
+          title,
           default_path,
           GetFilterForFileTypes(file_types),
           base::Bind(&ui::SelectFileDialog::Listener::MultiFilesSelected,
@@ -589,7 +589,7 @@ void SelectFileDialogImpl::SelectFileImpl(
             IDS_SELECT_UPLOAD_FOLDER_DIALOG_TITLE);
       }
       win8::MetroViewerProcessHost::HandleSelectFolder(
-          base::UTF16ToWide(title_string),
+          title_string,
           base::Bind(&ui::SelectFileDialog::Listener::FileSelected,
                      base::Unretained(listener_)),
           base::Bind(&ui::SelectFileDialog::Listener::FileSelectionCanceled,
@@ -600,7 +600,7 @@ void SelectFileDialogImpl::SelectFileImpl(
   HWND owner = owning_window && owning_window->GetRootWindow()
       ? owning_window->GetHost()->GetAcceleratedWidget() : NULL;
 
-  ExecuteSelectParams execute_params(type, base::UTF16ToWide(title),
+  ExecuteSelectParams execute_params(type, title,
                                      default_path, file_types, file_type_index,
                                      default_extension, BeginRun(owner),
                                      owner, params);
@@ -639,8 +639,7 @@ void SelectFileDialogImpl::ExecuteSelectFile(
     if (title.empty() && params.type == SELECT_UPLOAD_FOLDER) {
       // If it's for uploading don't use default dialog title to
       // make sure we clearly tell it's for uploading.
-      title = base::UTF16ToWide(
-          l10n_util::GetStringUTF16(IDS_SELECT_UPLOAD_FOLDER_DIALOG_TITLE));
+      title = l10n_util::GetStringUTF16(IDS_SELECT_UPLOAD_FOLDER_DIALOG_TITLE);
     }
     success = RunSelectFolderDialog(title,
                                     params.run_state.owner,

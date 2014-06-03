@@ -322,7 +322,7 @@ PrintingContext::Result PrintingContextWin::UpdatePrinterSettings(
   {
     DEVMODE* dev_mode = scoped_dev_mode.get();
     dev_mode->dmCopies = std::max(settings_.copies(), 1);
-    if (dev_mode->dmCopies > 1) { // do not change unless multiple copies
+    if (dev_mode->dmCopies > 1) {  // do not change unless multiple copies
       dev_mode->dmFields |= DM_COPIES;
       dev_mode->dmCollate = settings_.collate() ? DMCOLLATE_TRUE :
                                                   DMCOLLATE_FALSE;
@@ -405,8 +405,7 @@ PrintingContext::Result PrintingContextWin::NewDocument(
 
   DCHECK(SimplifyDocumentTitle(document_name) == document_name);
   DOCINFO di = { sizeof(DOCINFO) };
-  const std::wstring& document_name_wide = base::UTF16ToWide(document_name);
-  di.lpszDocName = document_name_wide.c_str();
+  di.lpszDocName = document_name.c_str();
 
   // Is there a debug dump directory specified? If so, force to print to a file.
   base::FilePath debug_dump_path = PrintedDocument::debug_dump_path();
@@ -418,7 +417,7 @@ PrintingContext::Result PrintingContextWin::NewDocument(
     filename += L"_";
     filename += base::TimeFormatTimeOfDay(now);
     filename += L"_";
-    filename += base::UTF16ToWide(document_name);
+    filename += document_name;
     filename += L"_";
     filename += L"buffer.prn";
     file_util::ReplaceIllegalCharactersInPath(&filename, '_');

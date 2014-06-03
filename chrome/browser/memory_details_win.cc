@@ -38,8 +38,8 @@ enum {
 
 MemoryDetails::MemoryDetails()
     : user_metrics_mode_(UPDATE_USER_METRICS) {
-  static const std::wstring google_browser_name =
-      base::UTF16ToWide(l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
+  static const base::string16 google_browser_name =
+      l10n_util::GetStringUTF16(IDS_PRODUCT_NAME);
   struct {
     const wchar_t* name;
     const wchar_t* process_name;

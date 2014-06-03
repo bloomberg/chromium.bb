@@ -285,11 +285,9 @@ CrashKeysWin::GetCustomInfo(const std::wstring& exe_path,
   // We only expect this method to be called once per process.
   // Common enties
   custom_entries_.push_back(
-      google_breakpad::CustomInfoEntry(L"ver",
-                                       base::UTF16ToWide(version).c_str()));
+      google_breakpad::CustomInfoEntry(L"ver", version.c_str()));
   custom_entries_.push_back(
-      google_breakpad::CustomInfoEntry(L"prod",
-                                       base::UTF16ToWide(product).c_str()));
+      google_breakpad::CustomInfoEntry(L"prod", product.c_str()));
   custom_entries_.push_back(
       google_breakpad::CustomInfoEntry(L"plat", L"Win32"));
   custom_entries_.push_back(
@@ -297,13 +295,14 @@ CrashKeysWin::GetCustomInfo(const std::wstring& exe_path,
   custom_entries_.push_back(google_breakpad::CustomInfoEntry(
       L"pid", base::StringPrintf(L"%d", ::GetCurrentProcessId()).c_str()));
   custom_entries_.push_back(google_breakpad::CustomInfoEntry(
-      L"channel", base::UTF16ToWide(channel_name).c_str()));
+      L"channel", channel_name.c_str()));
   custom_entries_.push_back(google_breakpad::CustomInfoEntry(
       L"profile-type", GetProfileType().c_str()));
 
-  if (!special_build.empty())
+  if (!special_build.empty()) {
     custom_entries_.push_back(google_breakpad::CustomInfoEntry(
-        L"special", base::UTF16ToWide(special_build).c_str()));
+        L"special", special_build.c_str()));
+  }
 
   if (type == L"plugin" || type == L"ppapi") {
     std::wstring plugin_path =
@@ -538,10 +537,7 @@ bool ShowRestartDialogIfCrashed(bool* exit_now) {
   if (is_rtl_locale)
     flags |= MB_RIGHT | MB_RTLREADING;
 
-  return WrapMessageBoxWithSEH(base::UTF16ToWide(message).c_str(),
-                               base::UTF16ToWide(title).c_str(),
-                               flags,
-                               exit_now);
+  return WrapMessageBoxWithSEH(message.c_str(), title.c_str(), flags, exit_now);
 }
 
 // Crashes the process after generating a dump for the provided exception. Note

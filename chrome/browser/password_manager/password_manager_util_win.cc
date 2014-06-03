@@ -156,11 +156,9 @@ bool AuthenticateUser(gfx::NativeWindow window) {
   WCHAR displayname[CREDUI_MAX_USERNAME_LENGTH+1] = {};
   WCHAR password[CREDUI_MAX_PASSWORD_LENGTH+1] = {};
   DWORD username_length = CREDUI_MAX_USERNAME_LENGTH;
-  std::wstring product_name =
-      base::UTF16ToWide(l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
-  std::wstring password_prompt =
-      base::UTF16ToWide(l10n_util::GetStringUTF16(
-                            IDS_PASSWORDS_PAGE_AUTHENTICATION_PROMPT));
+  base::string16 product_name = l10n_util::GetStringUTF16(IDS_PRODUCT_NAME);
+  base::string16 password_prompt =
+      l10n_util::GetStringUTF16(IDS_PASSWORDS_PAGE_AUTHENTICATION_PROMPT);
   HANDLE handle = INVALID_HANDLE_VALUE;
   int tries = 0;
   bool use_displayname = false;

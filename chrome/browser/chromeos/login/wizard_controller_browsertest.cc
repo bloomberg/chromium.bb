@@ -283,15 +283,15 @@ IN_PROC_BROWSER_TEST_F(WizardControllerTest, SwitchLanguage) {
   EXPECT_EQ("en-US", g_browser_process->GetApplicationLocale());
   EXPECT_STREQ("en", icu::Locale::getDefault().getLanguage());
   EXPECT_FALSE(base::i18n::IsRTL());
-  const std::wstring en_str =
-      base::UTF16ToWide(l10n_util::GetStringUTF16(IDS_NETWORK_SELECTION_TITLE));
+  const base::string16 en_str =
+      l10n_util::GetStringUTF16(IDS_NETWORK_SELECTION_TITLE);
 
   RunSwitchLanguageTest("fr", "fr", true);
   EXPECT_EQ("fr", g_browser_process->GetApplicationLocale());
   EXPECT_STREQ("fr", icu::Locale::getDefault().getLanguage());
   EXPECT_FALSE(base::i18n::IsRTL());
-  const std::wstring fr_str =
-      base::UTF16ToWide(l10n_util::GetStringUTF16(IDS_NETWORK_SELECTION_TITLE));
+  const base::string16 fr_str =
+      l10n_util::GetStringUTF16(IDS_NETWORK_SELECTION_TITLE);
 
   EXPECT_NE(en_str, fr_str);
 
@@ -299,8 +299,8 @@ IN_PROC_BROWSER_TEST_F(WizardControllerTest, SwitchLanguage) {
   EXPECT_EQ("ar", g_browser_process->GetApplicationLocale());
   EXPECT_STREQ("ar", icu::Locale::getDefault().getLanguage());
   EXPECT_TRUE(base::i18n::IsRTL());
-  const std::wstring ar_str =
-      base::UTF16ToWide(l10n_util::GetStringUTF16(IDS_NETWORK_SELECTION_TITLE));
+  const base::string16 ar_str =
+      l10n_util::GetStringUTF16(IDS_NETWORK_SELECTION_TITLE);
 
   EXPECT_NE(fr_str, ar_str);
 }
@@ -940,7 +940,6 @@ IN_PROC_BROWSER_TEST_F(WizardControllerKioskFlowTest,
 
 IN_PROC_BROWSER_TEST_F(WizardControllerKioskFlowTest,
                        ControlFlowEnrollmentBack) {
-
   EXPECT_CALL(*mock_enrollment_screen_->actor(),
               SetParameters(mock_enrollment_screen_,
                             EnrollmentScreenActor::ENROLLMENT_MODE_FORCED,
