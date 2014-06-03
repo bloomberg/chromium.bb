@@ -58,11 +58,11 @@ ViewManagerConnection::~ViewManagerConnection() {
         this, root_node_manager_,
         RootNodeManager::CHANGE_TYPE_ADVANCE_SERVER_CHANGE_ID, true);
     while (!node_map_.empty()) {
-      Node* node = node_map_.begin()->second;
+      scoped_ptr<Node> node(node_map_.begin()->second);
       Node* parent = node->GetParent();
       const NodeId node_id(node->id());
       if (parent)
-        parent->Remove(node);
+        parent->Remove(node.get());
       root_node_manager_->ProcessNodeDeleted(node_id);
       node_map_.erase(NodeIdToTransportId(node_id));
     }
