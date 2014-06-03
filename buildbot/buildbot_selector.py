@@ -340,7 +340,9 @@ def Main():
   # Use .boto file from home-dir instead of buildbot supplied one.
   if 'AWS_CREDENTIAL_FILE' in env:
     del env['AWS_CREDENTIAL_FILE']
-  env['BOTO_CONFIG'] = os.path.expanduser('~/.boto')
+  alt_boto = os.path.expanduser('~/.boto')
+  if os.path.exists(alt_boto):
+    env['BOTO_CONFIG'] = alt_boto
   cwd_drive = os.path.splitdrive(os.getcwd())[0]
   env['GSUTIL'] = cwd_drive + '/b/build/third_party/gsutil/gsutil'
 
