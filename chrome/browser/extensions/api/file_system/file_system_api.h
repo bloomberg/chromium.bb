@@ -53,7 +53,7 @@ class FileSystemEntryFunction : public ChromeAsyncExtensionFunction {
   // will ensure the files exist, creating them if necessary, and also check
   // that none of the files are links. If it succeeds it proceeds to
   // RegisterFileSystemsAndSendResponse, otherwise to HandleWritableFileError.
-  void CheckWritableFiles(const std::vector<base::FilePath>& path);
+  void PrepareFilesForWritableApp(const std::vector<base::FilePath>& path);
 
   // This will finish the choose file process. This is either called directly
   // from FilesSelected, or from WritableFileChecker. It is called on the UI

@@ -40,9 +40,10 @@ void IsNonNativeLocalPathDirectory(
     const base::FilePath& path,
     const base::Callback<void(bool)>& callback);
 
-// Prepares a writable file at |path|, i.e., creates a file there if it didn't
-// exist, and asynchronously sends to |callback| whether it succeeded.
-void PrepareNonNativeLocalPathWritableFile(
+// Ensures a file exists at |path|, i.e., it does nothing if a file is already
+// present, or creates a file there if it isn't, and asynchronously sends to
+// |callback| whether it succeeded.
+void PrepareNonNativeLocalFileForWritableApp(
     Profile* profile,
     const base::FilePath& path,
     const base::Callback<void(bool)>& callback);

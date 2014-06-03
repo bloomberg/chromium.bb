@@ -171,7 +171,7 @@ void IsNonNativeLocalPathDirectory(
       base::Bind(&BoolCallbackAsFileErrorCallback, callback));
 }
 
-void PrepareNonNativeLocalPathWritableFile(
+void PrepareNonNativeLocalFileForWritableApp(
     Profile* profile,
     const base::FilePath& path,
     const base::Callback<void(bool)>& callback) {

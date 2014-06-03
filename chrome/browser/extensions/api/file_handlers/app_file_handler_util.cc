@@ -77,12 +77,9 @@ bool DoCheckWritableFile(const base::FilePath& path, bool is_directory) {
     return base::DirectoryExists(path);
 
   // Create the file if it doesn't already exist.
-  int creation_flags = base::File::FLAG_CREATE | base::File::FLAG_READ |
-                       base::File::FLAG_WRITE;
+  int creation_flags = base::File::FLAG_OPEN_ALWAYS | base::File::FLAG_READ;
   base::File file(path, creation_flags);
-  if (file.IsValid())
-    return true;
-  return file.error_details() == base::File::FILE_ERROR_EXISTS;
+  return file.IsValid();
 }
 
 // Checks whether a list of paths are all OK for writing and calls a provided
@@ -155,7 +152,7 @@ void WritableFileChecker::Check() {
             base::Bind(&WritableFileChecker::NonNativeLocalPathCheckDone,
                        this, *it));
       } else {
-        file_manager::util::PrepareNonNativeLocalPathWritableFile(
+        file_manager::util::PrepareNonNativeLocalFileForWritableApp(
             profile_,
             *it,
             base::Bind(&WritableFileChecker::NonNativeLocalPathCheckDone,
@@ -320,7 +317,7 @@ GrantedFileEntry CreateFileEntry(
   return result;
 }
 
-void CheckWritableFiles(
+void PrepareFilesForWritableApp(
     const std::vector<base::FilePath>& paths,
     Profile* profile,
     bool is_directory,

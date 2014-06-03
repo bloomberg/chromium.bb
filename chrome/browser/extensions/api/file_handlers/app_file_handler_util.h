@@ -66,7 +66,12 @@ apps::file_handler_util::GrantedFileEntry CreateFileEntry(
     const base::FilePath& path,
     bool is_directory);
 
-void CheckWritableFiles(
+// When |is_directory| is true, it verifies that directories exist at each of
+// the |paths| and calls back to |on_success| or otherwise to |on_failure|.
+// When |is_directory| is false, it ensures regular files exists (not links and
+// directories) at the |paths|, creating files if needed, and calls back to
+// |on_success| or to |on_failure| depending on the result.
+void PrepareFilesForWritableApp(
     const std::vector<base::FilePath>& paths,
     Profile* profile,
     bool is_directory,

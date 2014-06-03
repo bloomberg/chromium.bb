@@ -283,10 +283,10 @@ FileSystemEntryFunction::FileSystemEntryFunction()
       is_directory_(false),
       response_(NULL) {}
 
-void FileSystemEntryFunction::CheckWritableFiles(
+void FileSystemEntryFunction::PrepareFilesForWritableApp(
     const std::vector<base::FilePath>& paths) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  app_file_handler_util::CheckWritableFiles(
+  app_file_handler_util::PrepareFilesForWritableApp(
       paths,
       GetProfile(),
       is_directory_,
@@ -392,7 +392,7 @@ void FileSystemGetWritableEntryFunction::CheckPermissionAndSendResponse() {
   }
   std::vector<base::FilePath> paths;
   paths.push_back(path_);
-  CheckWritableFiles(paths);
+  PrepareFilesForWritableApp(paths);
 }
 
 void FileSystemGetWritableEntryFunction::SetIsDirectoryOnFileThread() {
@@ -770,7 +770,7 @@ void FileSystemChooseEntryFunction::ConfirmDirectoryAccessOnFileThread(
 void FileSystemChooseEntryFunction::OnDirectoryAccessConfirmed(
     const std::vector<base::FilePath>& paths) {
   if (app_file_handler_util::HasFileSystemWritePermission(extension_)) {
-    CheckWritableFiles(paths);
+    PrepareFilesForWritableApp(paths);
     return;
   }
 

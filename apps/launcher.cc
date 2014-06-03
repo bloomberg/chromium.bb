@@ -46,7 +46,7 @@ namespace app_runtime = apps::api::app_runtime;
 
 using apps::file_handler_util::GrantedFileEntry;
 using content::BrowserThread;
-using extensions::app_file_handler_util::CheckWritableFiles;
+using extensions::app_file_handler_util::PrepareFilesForWritableApp;
 using extensions::app_file_handler_util::FileHandlerForId;
 using extensions::app_file_handler_util::FileHandlerCanHandleFile;
 using extensions::app_file_handler_util::FirstFileHandlerForFile;
@@ -114,7 +114,7 @@ class PlatformAppPathLauncher
     if (HasFileSystemWritePermission(extension_)) {
       std::vector<base::FilePath> paths;
       paths.push_back(file_path_);
-      CheckWritableFiles(
+      PrepareFilesForWritableApp(
           paths,
           profile_,
           false,
