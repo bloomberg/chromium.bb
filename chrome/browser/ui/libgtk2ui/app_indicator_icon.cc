@@ -8,8 +8,11 @@
 #include <dlfcn.h>
 
 #include "base/bind.h"
+#include "base/environment.h"
 #include "base/file_util.h"
+#include "base/md5.h"
 #include "base/memory/ref_counted_memory.h"
+#include "base/nix/xdg_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/sequenced_worker_pool.h"
@@ -121,9 +124,56 @@ void EnsureMethodsLoaded() {
           dlsym(indicator_lib, "app_indicator_set_icon_theme_path"));
 }
 
-base::FilePath CreateTempImageFile(gfx::ImageSkia* image_ptr,
+// Returns whether a temporary directory should be created for each app
+// indicator image.
+bool ShouldCreateTempDirectoryPerImage(bool using_kde4) {
+  // Create a new temporary directory for each image on Unity since using a
+  // single temporary directory seems to have issues when changing icons in
+  // quick succession.
+  return !using_kde4;
+}
+
+// Returns the subdirectory of |temp_dir| in which the app indicator image
+// should be saved.
+base::FilePath GetImageDirectoryPath(bool using_kde4,
+                                     const base::FilePath& temp_dir) {
+  // On KDE4, an image located in a directory ending with
+  // "icons/hicolor/16x16/apps" can be used as the app indicator image because
+  // "/usr/share/icons/hicolor/16x16/apps" exists.
+  return using_kde4 ?
+      temp_dir.AppendASCII("icons").AppendASCII("hicolor").AppendASCII("16x16").
+          AppendASCII("apps") :
+      temp_dir;
+}
+
+std::string GetImageFileNameForKDE4(
+    const scoped_refptr<base::RefCountedMemory>& png_data) {
+  // On KDE4, the name of the image file for each different looking bitmap must
+  // be unique. It must also be unique across runs of Chrome.
+  base::MD5Digest digest;
+  base::MD5Sum(png_data->front_as<char>(), png_data->size(), &digest);
+  return base::StringPrintf("chrome_app_indicator_%s.png",
+                            base::MD5DigestToBase16(digest).c_str());
+}
+
+std::string GetImageFileNameForNonKDE4(int icon_change_count,
+                                       const std::string& id) {
+  return base::StringPrintf("%s_%d.png", id.c_str(), icon_change_count);
+}
+
+// Returns the "icon theme path" given the file path of the app indicator image.
+std::string GetIconThemePath(bool using_kde4,
+                             const base::FilePath& image_path) {
+  return using_kde4 ?
+      image_path.DirName().DirName().DirName().DirName().value() :
+      image_path.DirName().value();
+}
+
+base::FilePath CreateTempImageFile(bool using_kde4,
+                                   gfx::ImageSkia* image_ptr,
                                    int icon_change_count,
-                                   std::string id) {
+                                   std::string id,
+                                   const base::FilePath& previous_file_path) {
   scoped_ptr<gfx::ImageSkia> image(image_ptr);
 
   scoped_refptr<base::RefCountedMemory> png_data =
@@ -134,16 +184,25 @@ base::FilePath CreateTempImageFile(gfx::ImageSkia* image_ptr,
     return base::FilePath();
   }
 
-  base::FilePath temp_dir;
   base::FilePath new_file_path;
+  if (previous_file_path.empty() ||
+      ShouldCreateTempDirectoryPerImage(using_kde4)) {
+    base::FilePath tmp_dir;
+    if (!base::CreateNewTempDirectory(base::FilePath::StringType(), &tmp_dir))
+      return base::FilePath();
+    new_file_path = GetImageDirectoryPath(using_kde4, tmp_dir);
+    if (new_file_path != tmp_dir) {
+      if (!base::CreateDirectory(new_file_path))
+        return base::FilePath();
+    }
+  } else {
+    new_file_path = previous_file_path.DirName();
+  }
 
-  // Create a new temporary directory for each image since using a single
-  // temporary directory seems to have issues when changing icons in quick
-  // succession.
-  if (!base::CreateNewTempDirectory(base::FilePath::StringType(), &temp_dir))
-    return base::FilePath();
-  new_file_path =
-      temp_dir.Append(id + base::StringPrintf("_%d.png", icon_change_count));
+  new_file_path = new_file_path.Append(using_kde4 ?
+      GetImageFileNameForKDE4(png_data) :
+      GetImageFileNameForNonKDE4(icon_change_count, id));
+
   int bytes_written =
       base::WriteFile(new_file_path,
                       png_data->front_as<char>(), png_data->size());
@@ -153,10 +212,10 @@ base::FilePath CreateTempImageFile(gfx::ImageSkia* image_ptr,
   return new_file_path;
 }
 
-void DeleteTempImagePath(const base::FilePath& icon_file_path) {
-  if (icon_file_path.empty())
+void DeleteTempDirectory(const base::FilePath& dir_path) {
+  if (dir_path.empty())
     return;
-  base::DeleteFile(icon_file_path, true);
+  base::DeleteFile(dir_path, true);
 }
 
 }  // namespace
@@ -167,10 +226,15 @@ AppIndicatorIcon::AppIndicatorIcon(std::string id,
                                    const gfx::ImageSkia& image,
                                    const base::string16& tool_tip)
     : id_(id),
+      using_kde4_(false),
       icon_(NULL),
       menu_model_(NULL),
       icon_change_count_(0),
       weak_factory_(this) {
+  scoped_ptr<base::Environment> env(base::Environment::Create());
+  using_kde4_ = base::nix::GetDesktopEnvironment(env.get()) ==
+      base::nix::DESKTOP_ENVIRONMENT_KDE4;
+
   EnsureMethodsLoaded();
   tool_tip_ = base::UTF16ToUTF8(tool_tip);
   SetImage(image);
@@ -181,7 +245,7 @@ AppIndicatorIcon::~AppIndicatorIcon() {
     g_object_unref(icon_);
     content::BrowserThread::GetBlockingPool()->PostTask(
         FROM_HERE,
-        base::Bind(&DeleteTempImagePath, icon_file_path_.DirName()));
+        base::Bind(&DeleteTempDirectory, icon_file_path_.DirName()));
   }
 }
 
@@ -206,9 +270,11 @@ void AppIndicatorIcon::SetImage(const gfx::ImageSkia& image) {
                 base::SequencedWorkerPool::SKIP_ON_SHUTDOWN).get(),
       FROM_HERE,
       base::Bind(&CreateTempImageFile,
+                 using_kde4_,
                  safe_image.release(),
                  icon_change_count_,
-                 id_),
+                 id_,
+                 icon_file_path_),
       base::Bind(&AppIndicatorIcon::SetImageFromFile,
                  weak_factory_.GetWeakPtr()));
 }
@@ -250,7 +316,7 @@ void AppIndicatorIcon::SetImageFromFile(const base::FilePath& icon_file_path) {
 
   std::string icon_name =
       icon_file_path_.BaseName().RemoveExtension().value();
-  std::string icon_dir = icon_file_path_.DirName().value();
+  std::string icon_dir = GetIconThemePath(using_kde4_, icon_file_path);
   if (!icon_) {
     icon_ =
         app_indicator_new_with_path(id_.c_str(),
@@ -265,10 +331,12 @@ void AppIndicatorIcon::SetImageFromFile(const base::FilePath& icon_file_path) {
     app_indicator_set_icon_theme_path(icon_, icon_dir.c_str());
     app_indicator_set_icon_full(icon_, icon_name.c_str(), "icon");
 
-    // Delete previous icon directory.
-    content::BrowserThread::GetBlockingPool()->PostTask(
-        FROM_HERE,
-        base::Bind(&DeleteTempImagePath, old_path.DirName()));
+    if (ShouldCreateTempDirectoryPerImage(using_kde4_)) {
+      // Delete previous icon directory.
+      content::BrowserThread::GetBlockingPool()->PostTask(
+          FROM_HERE,
+          base::Bind(&DeleteTempDirectory, old_path.DirName()));
+    }
   }
 }
 

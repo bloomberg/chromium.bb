@@ -60,6 +60,9 @@ class AppIndicatorIcon : public views::StatusIconLinux {
   std::string id_;
   std::string tool_tip_;
 
+  // Whether the user is using KDE.
+  bool using_kde4_;
+
   // Gtk status icon wrapper
   AppIndicator* icon_;
 
