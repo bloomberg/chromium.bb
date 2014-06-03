@@ -52,16 +52,6 @@ DirectConvolver::DirectConvolver(size_t inputBlockSize)
 {
 }
 
-#if OS(WIN)
-// On Windows, the following pragmas are equivalent to compiling the code with /fp:fast. The
-// following code does not need precise FP semantics, and speed is critical here. See
-// crbug.com/316740 and crrev.com/116823002.
-#pragma float_control(except, off, push)
-#pragma float_control(precise, off, push)
-#pragma fp_contract(on)
-#pragma fenv_access(off)
-#endif
-
 void DirectConvolver::process(AudioFloatArray* convolutionKernel, const float* sourceP, float* destP, size_t framesToProcess)
 {
     ASSERT(framesToProcess == m_inputBlockSize);

@@ -73,17 +73,6 @@ PassOwnPtr<FFTFrame> FFTFrame::createInterpolatedFrame(const FFTFrame& frame1, c
     return newFrame.release();
 }
 
-#if OS(WIN)
-// On Windows, the following pragmas are equivalent to compiling the code with /fp:fast. The
-// following code does not need precise FP semantics, and speed is critical here. See
-// crbug.com/316740 and crrev.com/116823002.
-#pragma float_control(push)
-#pragma float_control(except, off)
-#pragma float_control(precise, off)
-#pragma fp_contract(on)
-#pragma fenv_access(off)
-#endif
-
 void FFTFrame::interpolateFrequencyComponents(const FFTFrame& frame1, const FFTFrame& frame2, double interp)
 {
     // FIXME : with some work, this method could be optimized
