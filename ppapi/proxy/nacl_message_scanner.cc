@@ -392,6 +392,7 @@ void NaClMessageScanner::ScanUntrustedMessage(
                   PpapiHostMsg_FileIO_Close(
                       FileGrowth(trusted_max_written_offset, 0))));
         }
+        break;
       }
       case PpapiHostMsg_FileIO_SetLength::ID: {
         FileIOMap::iterator it = files_.find(params.pp_resource());
@@ -466,6 +467,7 @@ void NaClMessageScanner::ScanUntrustedMessage(
           delete fs_it->second;
           file_systems_.erase(fs_it);
         }
+        break;
       }
     }
   }
