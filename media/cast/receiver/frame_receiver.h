@@ -1,41 +1,35 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_CAST_VIDEO_RECEIVER_VIDEO_RECEIVER_H_
-#define MEDIA_CAST_VIDEO_RECEIVER_VIDEO_RECEIVER_H_
+#ifndef MEDIA_CAST_RECEIVER_FRAME_RECEIVER_H_
+#define MEDIA_CAST_RECEIVER_FRAME_RECEIVER_H_
 
-#include "base/basictypes.h"
-#include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/threading/non_thread_safe.h"
-#include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "media/cast/base/clock_drift_smoother.h"
 #include "media/cast/cast_config.h"
-#include "media/cast/cast_environment.h"
 #include "media/cast/cast_receiver.h"
 #include "media/cast/framer/framer.h"
+#include "media/cast/logging/logging_defines.h"
 #include "media/cast/rtcp/receiver_rtcp_event_subscriber.h"
 #include "media/cast/rtcp/rtcp.h"
-#include "media/cast/rtp_receiver/rtp_receiver.h"
+#include "media/cast/rtp_receiver/receiver_stats.h"
+#include "media/cast/rtp_receiver/rtp_parser/rtp_parser.h"
 #include "media/cast/rtp_receiver/rtp_receiver_defines.h"
 #include "media/cast/transport/utility/transport_encryption_handler.h"
 
 namespace media {
-
-class VideoFrame;
-
 namespace cast {
 
-class VideoDecoder;
+class CastEnvironment;
 
-// VideoReceiver receives packets out-of-order while clients make requests for
+// FrameReceiver receives packets out-of-order while clients make requests for
 // complete frames in-order.  (A frame consists of one or more packets.)
 //
-// VideoReceiver also includes logic for computing the playout time for each
+// FrameReceiver also includes logic for computing the playout time for each
 // frame, accounting for a constant targeted playout delay.  The purpose of the
 // playout delay is to provide a fixed window of time between the capture event
 // on the sender and the playout on the receiver.  This is important because
@@ -43,47 +37,43 @@ class VideoDecoder;
 // the sender, then receive and re-order packets on the receiver, then decode
 // frame) can vary in duration and is typically very hard to predict.
 //
-// Two types of frames can be requested: 1) A frame of decoded video data; or 2)
-// a frame of still-encoded video data, to be passed into an external video
-// decoder.  Each request for a frame includes a callback which VideoReceiver
-// guarantees will be called at some point in the future unless the
-// VideoReceiver is destroyed. Clients should generally limit the number of
-// outstanding requests (perhaps to just one or two).
+// Each request for a frame includes a callback which FrameReceiver guarantees
+// will be called at some point in the future unless the FrameReceiver is
+// destroyed.  Clients should generally limit the number of outstanding requests
+// (perhaps to just one or two).
 //
 // This class is not thread safe.  Should only be called from the Main cast
 // thread.
-class VideoReceiver : public RtpReceiver,
-                      public RtpPayloadFeedback,
-                      public base::NonThreadSafe,
-                      public base::SupportsWeakPtr<VideoReceiver> {
+class FrameReceiver : public RtpPayloadFeedback,
+                      public base::SupportsWeakPtr<FrameReceiver> {
  public:
-  VideoReceiver(scoped_refptr<CastEnvironment> cast_environment,
-                const FrameReceiverConfig& video_config,
+  FrameReceiver(const scoped_refptr<CastEnvironment>& cast_environment,
+                const FrameReceiverConfig& config,
+                EventMediaType event_media_type,
                 transport::PacedPacketSender* const packet_sender);
 
-  virtual ~VideoReceiver();
+  virtual ~FrameReceiver();
 
-  // Request a decoded video frame.
+  // Request an encoded frame.
   //
   // The given |callback| is guaranteed to be run at some point in the future,
-  // even if to respond with NULL at shutdown time.
-  void GetRawVideoFrame(const VideoFrameDecodedCallback& callback);
+  // except for those requests still enqueued at destruction time.
+  void RequestEncodedFrame(const ReceiveEncodedFrameCallback& callback);
 
-  // Request an encoded video frame.
-  //
-  // The given |callback| is guaranteed to be run at some point in the future,
-  // even if to respond with NULL at shutdown time.
-  void GetEncodedVideoFrame(const FrameEncodedCallback& callback);
+  // Called to deliver another packet, possibly a duplicate, and possibly
+  // out-of-order.  Returns true if the parsing of the packet succeeded.
+  bool ProcessPacket(scoped_ptr<Packet> packet);
 
-  // Deliver another packet, possibly a duplicate, and possibly out-of-order.
-  void IncomingPacket(scoped_ptr<Packet> packet);
+  // TODO(miu): This is the wrong place for this, but the (de)serialization
+  // implementation needs to be consolidated first.
+  static bool ParseSenderSsrc(const uint8* packet, size_t length, uint32* ssrc);
 
  protected:
-  friend class VideoReceiverTest;  // Invokes OnReceivedPayloadData().
+  friend class FrameReceiverTest;  // Invokes ProcessParsedPacket().
 
-  virtual void OnReceivedPayloadData(const uint8* payload_data,
-                                     size_t payload_size,
-                                     const RtpCastHeader& rtp_header) OVERRIDE;
+  void ProcessParsedPacket(const RtpCastHeader& rtp_header,
+                           const uint8* payload_data,
+                           size_t payload_size);
 
   // RtpPayloadFeedback implementation.
   virtual void CastFeedback(const RtcpCastMessage& cast_message) OVERRIDE;
@@ -98,12 +88,6 @@ class VideoReceiver : public RtpReceiver,
   // Clears the |is_waiting_for_consecutive_frame_| flag and invokes
   // EmitAvailableEncodedFrames().
   void EmitAvailableEncodedFramesAfterWaiting();
-
-  // Feeds an EncodedFrame into |video_decoder_|.  GetRawVideoFrame() uses this
-  // as a callback for GetEncodedVideoFrame().
-  void DecodeEncodedVideoFrame(
-      const VideoFrameDecodedCallback& callback,
-      scoped_ptr<transport::EncodedFrame> encoded_frame);
 
   // Computes the playout time for a frame with the given |rtp_timestamp|.
   // Because lip-sync info is refreshed regularly, calling this method with the
@@ -122,28 +106,23 @@ class VideoReceiver : public RtpReceiver,
   // Actually send the next RTCP report.
   void SendNextRtcpReport();
 
-  // Receives a VideoFrame from |video_decoder_|, logs the event, and passes the
-  // data on by running the given |callback|.  This method is static to ensure
-  // it can be called after a VideoReceiver instance is destroyed.
-  // DecodeEncodedVideoFrame() uses this as a callback for
-  // VideoDecoder::DecodeFrame().
-  static void EmitRawVideoFrame(
-      const scoped_refptr<CastEnvironment>& cast_environment,
-      const VideoFrameDecodedCallback& callback,
-      uint32 frame_id,
-      uint32 rtp_timestamp,
-      const base::TimeTicks& playout_time,
-      const scoped_refptr<VideoFrame>& video_frame,
-      bool is_continuous);
-
   const scoped_refptr<CastEnvironment> cast_environment_;
 
+  // Deserializes a packet into a RtpHeader + payload bytes.
+  RtpParser packet_parser_;
+
+  // Accumulates packet statistics, including packet loss, counts, and jitter.
+  ReceiverStats stats_;
+
+  // Partitions logged events by the type of media passing through.
+  EventMediaType event_media_type_;
+
   // Subscribes to raw events.
-  // Processes raw audio events to be sent over to the cast sender via RTCP.
+  // Processes raw events to be sent over to the cast sender via RTCP.
   ReceiverRtcpEventSubscriber event_subscriber_;
 
-  // Configured video codec.
-  const transport::VideoCodec codec_;
+  // RTP timebase: The number of RTP units advanced per one second.
+  const int rtp_timebase_;
 
   // The total amount of time between a frame's capture/recording on the sender
   // and its playback on the receiver (i.e., shown to a user).  This is fixed as
@@ -154,6 +133,8 @@ class VideoReceiver : public RtpReceiver,
   const base::TimeDelta target_playout_delay_;
 
   // Hack: This is used in logic that determines whether to skip frames.
+  // TODO(miu): Revisit this.  Logic needs to also account for expected decode
+  // time.
   const base::TimeDelta expected_frame_duration_;
 
   // Set to false initially, then set to true after scheduling the periodic
@@ -166,9 +147,6 @@ class VideoReceiver : public RtpReceiver,
   // decodable EncodedFrames.
   Framer framer_;
 
-  // Decodes frames into media::VideoFrame images for playback.
-  scoped_ptr<VideoDecoder> video_decoder_;
-
   // Manages sending/receiving of RTCP packets, including sender/receiver
   // reports.
   Rtcp rtcp_;
@@ -177,7 +155,7 @@ class VideoReceiver : public RtpReceiver,
   transport::TransportEncryptionHandler decryptor_;
 
   // Outstanding callbacks to run to deliver on client requests for frames.
-  std::list<FrameEncodedCallback> frame_request_queue_;
+  std::list<ReceiveEncodedFrameCallback> frame_request_queue_;
 
   // True while there's an outstanding task to re-invoke
   // EmitAvailableEncodedFrames().
@@ -195,12 +173,12 @@ class VideoReceiver : public RtpReceiver,
   ClockDriftSmoother lip_sync_drift_;
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
-  base::WeakPtrFactory<VideoReceiver> weak_factory_;
+  base::WeakPtrFactory<FrameReceiver> weak_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(VideoReceiver);
+  DISALLOW_COPY_AND_ASSIGN(FrameReceiver);
 };
 
 }  // namespace cast
 }  // namespace media
 
-#endif  // MEDIA_CAST_VIDEO_RECEIVER_VIDEO_RECEIVER_H_
+#endif  // MEDIA_CAST_RECEIVER_FRAME_RECEIVER_H_

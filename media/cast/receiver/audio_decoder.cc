@@ -1,8 +1,8 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/cast/audio_receiver/audio_decoder.h"
+#include "media/cast/receiver/audio_decoder.h"
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -200,18 +200,16 @@ class AudioDecoder::Pcm16Impl : public AudioDecoder::ImplBase {
 
 AudioDecoder::AudioDecoder(
     const scoped_refptr<CastEnvironment>& cast_environment,
-    const FrameReceiverConfig& audio_config)
+    int channels,
+    int sampling_rate,
+    transport::AudioCodec codec)
     : cast_environment_(cast_environment) {
-  switch (audio_config.codec.audio) {
+  switch (codec) {
     case transport::kOpus:
-      impl_ = new OpusImpl(cast_environment,
-                           audio_config.channels,
-                           audio_config.frequency);
+      impl_ = new OpusImpl(cast_environment, channels, sampling_rate);
       break;
     case transport::kPcm16:
-      impl_ = new Pcm16Impl(cast_environment,
-                            audio_config.channels,
-                            audio_config.frequency);
+      impl_ = new Pcm16Impl(cast_environment, channels, sampling_rate);
       break;
     default:
       NOTREACHED() << "Unknown or unspecified codec.";

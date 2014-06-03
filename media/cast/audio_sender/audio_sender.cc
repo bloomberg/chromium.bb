@@ -33,7 +33,7 @@ AudioSender::AudioSender(scoped_refptr<CastEnvironment> cast_environment,
             audio_config.rtp_config.ssrc,
             audio_config.incoming_feedback_ssrc,
             audio_config.rtcp_c_name,
-            true),
+            AUDIO_EVENT),
       num_aggressive_rtcp_reports_sent_(0),
       cast_initialization_cb_(STATUS_AUDIO_UNINITIALIZED),
       weak_factory_(this) {

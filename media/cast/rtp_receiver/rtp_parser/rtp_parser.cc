@@ -7,7 +7,6 @@
 #include "base/big_endian.h"
 #include "base/logging.h"
 #include "media/cast/cast_defines.h"
-#include "media/cast/rtp_receiver/rtp_receiver.h"
 
 namespace media {
 namespace cast {

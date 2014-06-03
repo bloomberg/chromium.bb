@@ -68,7 +68,7 @@ class Rtcp {
        uint32 local_ssrc,
        uint32 remote_ssrc,
        const std::string& c_name,
-       bool is_audio);
+       EventMediaType event_media_type);
 
   virtual ~Rtcp();
 
@@ -156,6 +156,7 @@ class Rtcp {
   const uint32 local_ssrc_;
   const uint32 remote_ssrc_;
   const std::string c_name_;
+  const EventMediaType event_media_type_;
 
   // Not owned by this class.
   RtpReceiverStatistics* const rtp_receiver_statistics_;
@@ -195,7 +196,6 @@ class Rtcp {
   int number_of_rtt_in_avg_;
   double avg_rtt_ms_;
   uint16 target_delay_ms_;
-  bool is_audio_;
 
   DISALLOW_COPY_AND_ASSIGN(Rtcp);
 };

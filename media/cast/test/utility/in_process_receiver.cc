@@ -114,14 +114,14 @@ void InProcessReceiver::GotVideoFrame(
 
 void InProcessReceiver::PullNextAudioFrame() {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
-  cast_receiver_->frame_receiver()->GetRawAudioFrame(
+  cast_receiver_->RequestDecodedAudioFrame(
       base::Bind(&InProcessReceiver::GotAudioFrame,
                  weak_factory_.GetWeakPtr()));
 }
 
 void InProcessReceiver::PullNextVideoFrame() {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
-  cast_receiver_->frame_receiver()->GetRawVideoFrame(base::Bind(
+  cast_receiver_->RequestDecodedVideoFrame(base::Bind(
       &InProcessReceiver::GotVideoFrame, weak_factory_.GetWeakPtr()));
 }
 

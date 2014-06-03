@@ -79,7 +79,8 @@ Rtcp::Rtcp(scoped_refptr<CastEnvironment> cast_environment,
            transport::PacedPacketSender* paced_packet_sender,
            RtpReceiverStatistics* rtp_receiver_statistics, RtcpMode rtcp_mode,
            const base::TimeDelta& rtcp_interval, uint32 local_ssrc,
-           uint32 remote_ssrc, const std::string& c_name, bool is_audio)
+           uint32 remote_ssrc, const std::string& c_name,
+           EventMediaType event_media_type)
     : cast_environment_(cast_environment),
       transport_sender_(transport_sender),
       rtcp_interval_(rtcp_interval),
@@ -87,6 +88,7 @@ Rtcp::Rtcp(scoped_refptr<CastEnvironment> cast_environment,
       local_ssrc_(local_ssrc),
       remote_ssrc_(remote_ssrc),
       c_name_(c_name),
+      event_media_type_(event_media_type),
       rtp_receiver_statistics_(rtp_receiver_statistics),
       rtt_feedback_(new LocalRtcpRttFeedback(this)),
       receiver_feedback_(new LocalRtcpReceiverFeedback(this, cast_environment)),
@@ -97,8 +99,7 @@ Rtcp::Rtcp(scoped_refptr<CastEnvironment> cast_environment,
       lip_sync_rtp_timestamp_(0),
       lip_sync_ntp_timestamp_(0),
       min_rtt_(base::TimeDelta::FromMilliseconds(kMaxRttMs)),
-      number_of_rtt_in_avg_(0),
-      is_audio_(is_audio) {
+      number_of_rtt_in_avg_(0) {
   rtcp_receiver_.reset(new RtcpReceiver(cast_environment, sender_feedback,
                                         receiver_feedback_.get(),
                                         rtt_feedback_.get(), local_ssrc));
@@ -394,7 +395,6 @@ void Rtcp::UpdateNextTimeToSendRtcp() {
 void Rtcp::OnReceivedReceiverLog(const RtcpReceiverLogMessage& receiver_log) {
   // Add received log messages into our log system.
   RtcpReceiverLogMessage::const_iterator it = receiver_log.begin();
-  EventMediaType media_type = is_audio_ ? AUDIO_EVENT : VIDEO_EVENT;
   for (; it != receiver_log.end(); ++it) {
     uint32 rtp_timestamp = it->rtp_timestamp_;
 
@@ -405,18 +405,18 @@ void Rtcp::OnReceivedReceiverLog(const RtcpReceiverLogMessage& receiver_log) {
         case PACKET_RECEIVED:
           cast_environment_->Logging()->InsertPacketEvent(
               event_it->event_timestamp, event_it->type,
-              media_type, rtp_timestamp,
+              event_media_type_, rtp_timestamp,
               kFrameIdUnknown, event_it->packet_id, 0, 0);
           break;
         case FRAME_ACK_SENT:
         case FRAME_DECODED:
           cast_environment_->Logging()->InsertFrameEvent(
-              event_it->event_timestamp, event_it->type, media_type,
+              event_it->event_timestamp, event_it->type, event_media_type_,
               rtp_timestamp, kFrameIdUnknown);
           break;
         case FRAME_PLAYOUT:
           cast_environment_->Logging()->InsertFrameEventWithDelay(
-              event_it->event_timestamp, event_it->type, media_type,
+              event_it->event_timestamp, event_it->type, event_media_type_,
               rtp_timestamp, kFrameIdUnknown, event_it->delay_delta);
           break;
         default:

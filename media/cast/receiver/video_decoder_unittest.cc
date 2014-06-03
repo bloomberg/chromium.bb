@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,10 +10,9 @@
 #include "base/synchronization/lock.h"
 #include "base/time/time.h"
 #include "media/cast/cast_config.h"
-#include "media/cast/test/utility/default_config.h"
+#include "media/cast/receiver/video_decoder.h"
 #include "media/cast/test/utility/standalone_cast_environment.h"
 #include "media/cast/test/utility/video_utility.h"
-#include "media/cast/video_receiver/video_decoder.h"
 #include "media/cast/video_sender/codecs/vp8/vp8_encoder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -48,9 +47,7 @@ class VideoDecoderTest
 
  protected:
   virtual void SetUp() OVERRIDE {
-    FrameReceiverConfig decoder_config = GetDefaultVideoReceiverConfig();
-    decoder_config.codec.video = GetParam();
-    video_decoder_.reset(new VideoDecoder(cast_environment_, decoder_config));
+    video_decoder_.reset(new VideoDecoder(cast_environment_, GetParam()));
     CHECK_EQ(STATUS_VIDEO_INITIALIZED, video_decoder_->InitializationResult());
 
     next_frame_timestamp_ = base::TimeDelta();

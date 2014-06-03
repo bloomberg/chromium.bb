@@ -1,8 +1,8 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/cast/video_receiver/video_decoder.h"
+#include "media/cast/receiver/video_decoder.h"
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -209,9 +209,9 @@ class VideoDecoder::FakeImpl : public VideoDecoder::ImplBase {
 
 VideoDecoder::VideoDecoder(
     const scoped_refptr<CastEnvironment>& cast_environment,
-    const FrameReceiverConfig& video_config)
+    transport::VideoCodec codec)
     : cast_environment_(cast_environment) {
-  switch (video_config.codec.video) {
+  switch (codec) {
 #ifndef OFFICIAL_BUILD
     case transport::kFakeSoftwareVideo:
       impl_ = new FakeImpl(cast_environment);

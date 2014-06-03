@@ -6,7 +6,6 @@
 #include "base/rand_util.h"
 #include "media/cast/rtp_receiver/rtp_parser/rtp_parser.h"
 #include "media/cast/rtp_receiver/rtp_parser/test/rtp_packet_builder.h"
-#include "media/cast/rtp_receiver/rtp_receiver.h"
 #include "media/cast/rtp_receiver/rtp_receiver_defines.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

@@ -566,7 +566,7 @@ class End2EndTest : public ::testing::Test {
 
   void RequestAudioFrames(int count, bool with_check) {
     for (int i = 0; i < count; ++i) {
-      frame_receiver_->GetRawAudioFrame(
+      cast_receiver_->RequestDecodedAudioFrame(
           base::Bind(with_check ? &TestReceiverAudioCallback::CheckAudioFrame :
                                   &TestReceiverAudioCallback::IgnoreAudioFrame,
                      test_receiver_audio_callback_));
@@ -610,8 +610,6 @@ class End2EndTest : public ::testing::Test {
 
     audio_frame_input_ = cast_sender_->audio_frame_input();
     video_frame_input_ = cast_sender_->video_frame_input();
-
-    frame_receiver_ = cast_receiver_->frame_receiver();
 
     audio_bus_factory_.reset(
         new TestAudioBusFactory(audio_sender_config_.channels,
@@ -684,7 +682,7 @@ class End2EndTest : public ::testing::Test {
     video_ticks_.push_back(std::make_pair(
         testing_clock_receiver_->NowTicks(),
         playout_time));
-    frame_receiver_->GetRawVideoFrame(
+    cast_receiver_->RequestDecodedVideoFrame(
         base::Bind(&End2EndTest::BasicPlayerGotVideoFrame,
                    base::Unretained(this)));
   }
@@ -701,16 +699,16 @@ class End2EndTest : public ::testing::Test {
     audio_ticks_.push_back(std::make_pair(
         testing_clock_receiver_->NowTicks(),
         playout_time));
-    frame_receiver_->GetRawAudioFrame(
+    cast_receiver_->RequestDecodedAudioFrame(
         base::Bind(&End2EndTest::BasicPlayerGotAudioFrame,
                    base::Unretained(this)));
   }
 
   void StartBasicPlayer() {
-    frame_receiver_->GetRawVideoFrame(
+    cast_receiver_->RequestDecodedVideoFrame(
         base::Bind(&End2EndTest::BasicPlayerGotVideoFrame,
                    base::Unretained(this)));
-    frame_receiver_->GetRawAudioFrame(
+    cast_receiver_->RequestDecodedAudioFrame(
         base::Bind(&End2EndTest::BasicPlayerGotAudioFrame,
                    base::Unretained(this)));
   }
@@ -768,7 +766,6 @@ class End2EndTest : public ::testing::Test {
   scoped_ptr<CastSender> cast_sender_;
   scoped_refptr<AudioFrameInput> audio_frame_input_;
   scoped_refptr<VideoFrameInput> video_frame_input_;
-  scoped_refptr<FrameReceiver> frame_receiver_;
 
   scoped_refptr<TestReceiverAudioCallback> test_receiver_audio_callback_;
   scoped_refptr<TestReceiverVideoCallback> test_receiver_video_callback_;
@@ -820,7 +817,7 @@ TEST_F(End2EndTest, LoopNoLossPcm16) {
     RequestAudioFrames(num_audio_frames, true);
     num_audio_frames_requested += num_audio_frames;
 
-    frame_receiver_->GetRawVideoFrame(
+    cast_receiver_->RequestDecodedVideoFrame(
         base::Bind(&TestReceiverVideoCallback::CheckVideoFrame,
                    test_receiver_video_callback_));
 
@@ -846,7 +843,7 @@ TEST_F(End2EndTest, LoopNoLossPcm16ExternalDecoder) {
   for (int i = 0; i < kNumIterations; ++i) {
     FeedAudioFrames(1, true);
     RunTasks(kAudioFrameDurationMs);
-    frame_receiver_->GetCodedAudioFrame(
+    cast_receiver_->RequestEncodedAudioFrame(
         base::Bind(&TestReceiverAudioCallback::CheckCodedAudioFrame,
                    test_receiver_audio_callback_));
   }
@@ -954,7 +951,7 @@ TEST_F(End2EndTest, DISABLED_StartSenderBeforeReceiver) {
     RequestAudioFrames(num_audio_frames, true);
     num_audio_frames_requested += num_audio_frames;
 
-    frame_receiver_->GetRawVideoFrame(
+    cast_receiver_->RequestDecodedVideoFrame(
         base::Bind(&TestReceiverVideoCallback::CheckVideoFrame,
                    test_receiver_video_callback_));
 
@@ -990,7 +987,7 @@ TEST_F(End2EndTest, DISABLED_GlitchWith3Buffers) {
         video_sender_config_.height,
         capture_time + base::TimeDelta::FromMilliseconds(kTargetPlayoutDelayMs),
         true);
-    frame_receiver_->GetRawVideoFrame(
+    cast_receiver_->RequestDecodedVideoFrame(
         base::Bind(&TestReceiverVideoCallback::CheckVideoFrame,
                    test_receiver_video_callback_));
     RunTasks(kFrameTimerMs);
@@ -1023,7 +1020,7 @@ TEST_F(End2EndTest, DISABLED_GlitchWith3Buffers) {
       capture_time + base::TimeDelta::FromMilliseconds(kTargetPlayoutDelayMs),
       true);
 
-  frame_receiver_->GetRawVideoFrame(
+  cast_receiver_->RequestDecodedVideoFrame(
       base::Bind(&TestReceiverVideoCallback::CheckVideoFrame,
                  test_receiver_video_callback_));
 
@@ -1059,7 +1056,7 @@ TEST_F(End2EndTest, DISABLED_DropEveryOtherFrame3Buffers) {
 
       // GetRawVideoFrame will not return the frame until we are close in
       // time before we should render the frame.
-      frame_receiver_->GetRawVideoFrame(
+      cast_receiver_->RequestDecodedVideoFrame(
           base::Bind(&TestReceiverVideoCallback::CheckVideoFrame,
                      test_receiver_video_callback_));
     }
@@ -1100,7 +1097,7 @@ TEST_F(End2EndTest, CryptoVideo) {
 
     RunTasks(kFrameTimerMs);
 
-    frame_receiver_->GetRawVideoFrame(
+    cast_receiver_->RequestDecodedVideoFrame(
         base::Bind(&TestReceiverVideoCallback::CheckVideoFrame,
                    test_receiver_video_callback_));
   }
@@ -1156,7 +1153,7 @@ TEST_F(End2EndTest, VideoLogging) {
     SendVideoFrame(video_start, capture_time);
     RunTasks(kFrameTimerMs);
 
-    frame_receiver_->GetRawVideoFrame(
+    cast_receiver_->RequestDecodedVideoFrame(
         base::Bind(&TestReceiverVideoCallback::CheckVideoFrame,
                    test_receiver_video_callback_));
 

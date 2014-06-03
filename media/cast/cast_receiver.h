@@ -45,27 +45,8 @@ typedef base::Callback<void(const scoped_refptr<media::VideoFrame>& video_frame,
 // dropped (i.e., frame_id should be incrementing by one each time).  Note: A
 // NULL pointer can be returned on error.
 typedef base::Callback<void(scoped_ptr<transport::EncodedFrame>)>
-    FrameEncodedCallback;
+    ReceiveEncodedFrameCallback;
 
-// This Class is thread safe.
-class FrameReceiver : public base::RefCountedThreadSafe<FrameReceiver> {
- public:
-  virtual void GetRawAudioFrame(const AudioFrameDecodedCallback& callback) = 0;
-
-  virtual void GetCodedAudioFrame(const FrameEncodedCallback& callback) = 0;
-
-  virtual void GetRawVideoFrame(const VideoFrameDecodedCallback& callback) = 0;
-
-  virtual void GetEncodedVideoFrame(const FrameEncodedCallback& callback) = 0;
-
- protected:
-  virtual ~FrameReceiver() {}
-
- private:
-  friend class base::RefCountedThreadSafe<FrameReceiver>;
-};
-
-// This Class is thread safe.
 class CastReceiver {
  public:
   static scoped_ptr<CastReceiver> Create(
@@ -75,13 +56,28 @@ class CastReceiver {
       transport::PacketSender* const packet_sender);
 
   // All received RTP and RTCP packets for the call should be sent to this
-  // PacketReceiver. Can be called from any function.
+  // PacketReceiver.  Can be called from any thread.
   // TODO(hubbe): Replace with:
   //   virtual void ReceivePacket(scoped_ptr<Packet> packet) = 0;
   virtual transport::PacketReceiverCallback packet_receiver() = 0;
 
-  // Polling interface to get audio and video frames from the CastReceiver.
-  virtual scoped_refptr<FrameReceiver> frame_receiver() = 0;
+  // Polling interface to get audio and video frames from the CastReceiver.  The
+  // the RequestDecodedXXXXXFrame() methods utilize internal software-based
+  // decoding, while the RequestEncodedXXXXXFrame() methods provides
+  // still-encoded frames for use with external/hardware decoders.
+  //
+  // In all cases, the given |callback| is guaranteed to be run at some point in
+  // the future, except for those requests still enqueued at destruction time.
+  //
+  // These methods should all be called on the CastEnvironment's MAIN thread.
+  virtual void RequestDecodedAudioFrame(
+      const AudioFrameDecodedCallback& callback) = 0;
+  virtual void RequestEncodedAudioFrame(
+      const ReceiveEncodedFrameCallback& callback) = 0;
+  virtual void RequestDecodedVideoFrame(
+      const VideoFrameDecodedCallback& callback) = 0;
+  virtual void RequestEncodedVideoFrame(
+      const ReceiveEncodedFrameCallback& callback) = 0;
 
   virtual ~CastReceiver() {}
 };
