@@ -64,8 +64,8 @@ public:
 
     Node* commonAncestorContainer() const;
     static Node* commonAncestorContainer(Node* containerA, Node* containerB);
-    void setStart(PassRefPtr<Node> container, int offset, ExceptionState& = ASSERT_NO_EXCEPTION);
-    void setEnd(PassRefPtr<Node> container, int offset, ExceptionState& = ASSERT_NO_EXCEPTION);
+    void setStart(PassRefPtrWillBeRawPtr<Node> container, int offset, ExceptionState& = ASSERT_NO_EXCEPTION);
+    void setEnd(PassRefPtrWillBeRawPtr<Node> container, int offset, ExceptionState& = ASSERT_NO_EXCEPTION);
     void collapse(bool toStart);
     bool isPointInRange(Node* refNode, int offset, ExceptionState&);
     short comparePoint(Node* refNode, int offset, ExceptionState&) const;
@@ -80,7 +80,7 @@ public:
     void deleteContents(ExceptionState&);
     PassRefPtrWillBeRawPtr<DocumentFragment> extractContents(ExceptionState&);
     PassRefPtrWillBeRawPtr<DocumentFragment> cloneContents(ExceptionState&);
-    void insertNode(PassRefPtr<Node>, ExceptionState&);
+    void insertNode(PassRefPtrWillBeRawPtr<Node>, ExceptionState&);
     String toString() const;
 
     String toHTML() const;
@@ -96,7 +96,7 @@ public:
     void setEndAfter(Node*, ExceptionState& = ASSERT_NO_EXCEPTION);
     void selectNode(Node*, ExceptionState& = ASSERT_NO_EXCEPTION);
     void selectNodeContents(Node*, ExceptionState&);
-    void surroundContents(PassRefPtr<Node>, ExceptionState&);
+    void surroundContents(PassRefPtrWillBeRawPtr<Node>, ExceptionState&);
     void setStartBefore(Node*, ExceptionState& = ASSERT_NO_EXCEPTION);
 
     const Position startPosition() const { return m_start.toPosition(); }
@@ -159,10 +159,10 @@ private:
 
     enum ActionType { DELETE_CONTENTS, EXTRACT_CONTENTS, CLONE_CONTENTS };
     PassRefPtrWillBeRawPtr<DocumentFragment> processContents(ActionType, ExceptionState&);
-    static PassRefPtr<Node> processContentsBetweenOffsets(ActionType, PassRefPtrWillBeRawPtr<DocumentFragment>, Node*, unsigned startOffset, unsigned endOffset, ExceptionState&);
-    static void processNodes(ActionType, Vector<RefPtr<Node> >&, PassRefPtr<Node> oldContainer, PassRefPtr<Node> newContainer, ExceptionState&);
+    static PassRefPtrWillBeRawPtr<Node> processContentsBetweenOffsets(ActionType, PassRefPtrWillBeRawPtr<DocumentFragment>, Node*, unsigned startOffset, unsigned endOffset, ExceptionState&);
+    static void processNodes(ActionType, WillBeHeapVector<RefPtrWillBeMember<Node> >&, PassRefPtrWillBeRawPtr<Node> oldContainer, PassRefPtrWillBeRawPtr<Node> newContainer, ExceptionState&);
     enum ContentsProcessDirection { ProcessContentsForward, ProcessContentsBackward };
-    static PassRefPtr<Node> processAncestorsAndTheirSiblings(ActionType, Node* container, ContentsProcessDirection, PassRefPtr<Node> clonedContainer, Node* commonRoot, ExceptionState&);
+    static PassRefPtrWillBeRawPtr<Node> processAncestorsAndTheirSiblings(ActionType, Node* container, ContentsProcessDirection, PassRefPtrWillBeRawPtr<Node> clonedContainer, Node* commonRoot, ExceptionState&);
 
     RefPtrWillBeMember<Document> m_ownerDocument; // Cannot be null.
     RangeBoundaryPoint m_start;

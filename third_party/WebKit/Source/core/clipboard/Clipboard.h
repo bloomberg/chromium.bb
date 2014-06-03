@@ -133,7 +133,7 @@ private:
 
     IntPoint m_dragLoc;
     ResourcePtr<ImageResource> m_dragImage;
-    RefPtr<Node> m_dragImageElement;
+    RefPtrWillBeMember<Node> m_dragImageElement;
 };
 
 DragOperation convertDropZoneOperationToDragOperation(const String& dragOperation);

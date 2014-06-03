@@ -537,6 +537,7 @@ String convertDragOperationToDropZoneOperation(DragOperation operation)
 void Clipboard::trace(Visitor* visitor)
 {
     visitor->trace(m_dataObject);
+    visitor->trace(m_dragImageElement);
 }
 
 } // namespace WebCore

@@ -32,6 +32,7 @@
 namespace WebCore {
 
 class RangeBoundaryPoint {
+    DISALLOW_ALLOCATION();
 public:
     explicit RangeBoundaryPoint(PassRefPtr<Node> container);
 
@@ -56,12 +57,14 @@ public:
     void invalidateOffset() const;
     void ensureOffsetIsValid() const;
 
+    void trace(Visitor*);
+
 private:
     static const int invalidOffset = -1;
 
-    RefPtr<Node> m_containerNode;
+    RefPtrWillBeMember<Node> m_containerNode;
     mutable int m_offsetInContainer;
-    RefPtr<Node> m_childBeforeBoundary;
+    RefPtrWillBeMember<Node> m_childBeforeBoundary;
 };
 
 inline RangeBoundaryPoint::RangeBoundaryPoint(PassRefPtr<Node> container)
@@ -176,6 +179,12 @@ inline void RangeBoundaryPoint::childBeforeWillBeRemoved()
 inline void RangeBoundaryPoint::invalidateOffset() const
 {
     m_offsetInContainer = invalidOffset;
+}
+
+inline void RangeBoundaryPoint::trace(Visitor* visitor)
+{
+    visitor->trace(m_containerNode);
+    visitor->trace(m_childBeforeBoundary);
 }
 
 inline bool operator==(const RangeBoundaryPoint& a, const RangeBoundaryPoint& b)
