@@ -13,7 +13,3 @@ ExtensionUpdaterTest.TestMultipleManifestDownloading
 
 # Test fail: crbug.com/314216
 ExtensionIconManagerTest.LoadComponentExtensionResource
-
-# fail due to incorrect login state (crbug.com/379140)
-LoginStateNotificationBlockerChromeOSTest.BaseTest
-LoginStateNotificationBlockerChromeOSTest.AlwaysAllowedNotifier
