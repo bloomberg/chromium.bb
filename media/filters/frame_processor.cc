@@ -238,19 +238,6 @@ bool FrameProcessor::ProcessFrame(
       }
     }
 
-    // 8. If the presentation timestamp or decode timestamp is less than the
-    // presentation start time, then run the end of stream algorithm with the
-    // error parameter set to "decode", and abort these steps.
-    if (presentation_timestamp < base::TimeDelta() ||
-        decode_timestamp < base::TimeDelta()) {
-      DVLOG(2) << __FUNCTION__
-               << ": frame PTS=" << presentation_timestamp.InSecondsF()
-               << " or DTS=" << decode_timestamp.InSecondsF()
-               << " negative after applying timestampOffset and handling any "
-               << " discontinuity";
-      return false;
-    }
-
     // 9. Let frame end timestamp equal the sum of presentation timestamp and
     //    frame duration.
     const base::TimeDelta frame_end_timestamp =
@@ -298,6 +285,24 @@ bool FrameProcessor::ProcessFrame(
       }
 
       return true;
+    }
+
+    // Note: This step is relocated, versus April 1 spec, to allow append window
+    // processing to first filter coded frames shifted by |timestamp_offset_| in
+    // such a way that their PTS is negative.
+    // 8. If the presentation timestamp or decode timestamp is less than the
+    // presentation start time, then run the end of stream algorithm with the
+    // error parameter set to "decode", and abort these steps.
+    DCHECK(presentation_timestamp >= base::TimeDelta());
+    if (decode_timestamp < base::TimeDelta()) {
+      // B-frames may still result in negative DTS here after being shifted by
+      // |timestamp_offset_|.
+      DVLOG(2) << __FUNCTION__
+               << ": frame PTS=" << presentation_timestamp.InSecondsF()
+               << " has negative DTS=" << decode_timestamp.InSecondsF()
+               << " after applying timestampOffset, handling any discontinuity,"
+               << " and filtering against append window";
+      return false;
     }
 
     // 12. If the need random access point flag on track buffer equals true,
@@ -351,9 +356,9 @@ bool FrameProcessor::ProcessFrame(
 
     // 22. If frame end timestamp is greater than group end timestamp, then set
     //     group end timestamp equal to frame end timestamp.
-    DCHECK(group_end_timestamp_ >= base::TimeDelta());
     if (frame_end_timestamp > group_end_timestamp_)
       group_end_timestamp_ = frame_end_timestamp;
+    DCHECK(group_end_timestamp_ >= base::TimeDelta());
 
     return true;
   }

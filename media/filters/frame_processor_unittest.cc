@@ -214,6 +214,12 @@ class FrameProcessorTest : public testing::TestWithParam<bool> {
           last_read_buffer_->data()));
       if (original_time_in_ms != time_in_ms)
         ss << ":" << original_time_in_ms;
+
+      // Detect full-discard preroll buffer.
+      if (last_read_buffer_->discard_padding().first == kInfiniteDuration() &&
+          last_read_buffer_->discard_padding().second == base::TimeDelta()) {
+        ss << "P";
+      }
     }
 
     EXPECT_EQ(expected, ss.str());
@@ -565,6 +571,23 @@ TEST_P(FrameProcessorTest, AudioVideo_Discontinuity) {
     video_->StartReturningData();
     CheckReadsThenReadStalls(video_.get(), "50");
   }
+}
+
+TEST_P(FrameProcessorTest,
+       AppendWindowFilterOfNegativeBufferTimestampsWithPrerollDiscard) {
+  InSequence s;
+  AddTestTracks(HAS_AUDIO);
+  new_media_segment_ = true;
+  if (GetParam())
+    frame_processor_->SetSequenceMode(true);
+
+  SetTimestampOffset(frame_duration_ * -2);
+  EXPECT_CALL(callbacks_, PossibleDurationIncrease(frame_duration_));
+  ProcessFrames("0K 10K 20K", "");
+  EXPECT_FALSE(new_media_segment_);
+  EXPECT_EQ(frame_duration_ * -2, timestamp_offset_);
+  CheckExpectedRangesByTimestamp(audio_.get(), "{ [0,10) }");
+  CheckReadsThenReadStalls(audio_.get(), "0:10P 0:20");
 }
 
 INSTANTIATE_TEST_CASE_P(SequenceMode, FrameProcessorTest, Values(true));
