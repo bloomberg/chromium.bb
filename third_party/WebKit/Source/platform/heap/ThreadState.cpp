@@ -469,8 +469,11 @@ void ThreadState::visitStack(Visitor* visitor)
     for (; current < start; ++current) {
         Address ptr = *current;
 #if defined(MEMORY_SANITIZER)
-        // ptr may be uninitialized by design. Mark it as initialized to keep
+        // |ptr| may be uninitialized by design. Mark it as initialized to keep
         // MSan from complaining.
+        // Note: it may be tempting to get rid of |ptr| and simply use |current|
+        // here, but that would be incorrect. We intentionally use a local
+        // variable because we don't want to unpoison the original stack.
         __msan_unpoison(&ptr, sizeof(ptr));
 #endif
         Heap::checkAndMarkPointer(visitor, ptr);
@@ -478,8 +481,13 @@ void ThreadState::visitStack(Visitor* visitor)
     }
 
     for (Vector<Address>::iterator it = m_safePointStackCopy.begin(); it != m_safePointStackCopy.end(); ++it) {
-        Heap::checkAndMarkPointer(visitor, *it);
-        visitAsanFakeStackForPointer(visitor, *it);
+        Address ptr = *it;
+#if defined(MEMORY_SANITIZER)
+        // See the comment above.
+        __msan_unpoison(&ptr, sizeof(ptr));
+#endif
+        Heap::checkAndMarkPointer(visitor, ptr);
+        visitAsanFakeStackForPointer(visitor, ptr);
     }
 }
 
