@@ -147,13 +147,24 @@ class EventRewriter
       const MutableKeyState& input,
       MutableKeyState* remapped_state);
 
+  // Rewrite a particular kind of event.
+  ui::EventRewriteStatus RewriteKeyEvent(
+      const ui::KeyEvent& key_event,
+      scoped_ptr<ui::Event>* rewritten_event);
+  ui::EventRewriteStatus RewriteMouseEvent(
+      const ui::MouseEvent& mouse_event,
+      scoped_ptr<ui::Event>* rewritten_event);
+  ui::EventRewriteStatus RewriteTouchEvent(
+      const ui::TouchEvent& touch_event,
+      scoped_ptr<ui::Event>* rewritten_event);
+
   // Rewriter phases. These can inspect the original |event|, but operate using
   // the current |state|, which may have been modified by previous phases.
   void RewriteModifierKeys(const ui::KeyEvent& event, MutableKeyState* state);
   void RewriteNumPadKeys(const ui::KeyEvent& event, MutableKeyState* state);
   void RewriteExtendedKeys(const ui::KeyEvent& event, MutableKeyState* state);
   void RewriteFunctionKeys(const ui::KeyEvent& event, MutableKeyState* state);
-  void RewriteLocatedEvent(const ui::Event& event, MutableKeyState* state);
+  void RewriteLocatedEvent(const ui::Event& event, int* flags);
 
   // A set of device IDs whose press event has been rewritten.
   std::set<int> pressed_device_ids_;

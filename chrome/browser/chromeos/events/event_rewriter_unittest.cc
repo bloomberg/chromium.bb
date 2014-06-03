@@ -1565,6 +1565,39 @@ TEST_F(EventRewriterAshTest, TopRowKeysAreFunctionKeys) {
                 *static_cast<const ui::KeyEvent*>(rewritten_event.get())));
 }
 
+TEST_F(EventRewriterTest, TestRewrittenModifierClick) {
+  std::vector<unsigned int> device_list;
+  device_list.push_back(10);
+  ui::TouchFactory::GetInstance()->SetPointerDeviceForTest(device_list);
+
+  // Remap Control to Alt.
+  TestingPrefServiceSyncable prefs;
+  chromeos::Preferences::RegisterProfilePrefs(prefs.registry());
+  IntegerPrefMember control;
+  control.Init(prefs::kLanguageRemapControlKeyTo, &prefs);
+  control.SetValue(chromeos::input_method::kAltKey);
+
+  EventRewriter rewriter;
+  rewriter.set_pref_service_for_testing(&prefs);
+
+  // Check that Control + Left Button is converted (via Alt + Left Button)
+  // to Right Button.
+  ui::ScopedXI2Event xev;
+  xev.InitGenericButtonEvent(10,
+                             ui::ET_MOUSE_PRESSED,
+                             gfx::Point(),
+                             ui::EF_LEFT_MOUSE_BUTTON | ui::EF_CONTROL_DOWN);
+  ui::MouseEvent press(xev);
+  // Sanity check.
+  EXPECT_EQ(ui::ET_MOUSE_PRESSED, press.type());
+  EXPECT_EQ(ui::EF_LEFT_MOUSE_BUTTON | ui::EF_CONTROL_DOWN, press.flags());
+  int flags = RewriteMouseEvent(&rewriter, press);
+  EXPECT_TRUE(ui::EF_RIGHT_MOUSE_BUTTON & flags);
+  EXPECT_FALSE(ui::EF_CONTROL_DOWN & flags);
+  EXPECT_FALSE(ui::EF_ALT_DOWN & flags);
+}
+
+
 TEST_F(EventRewriterTest, DontRewriteIfNotRewritten) {
   std::vector<unsigned int> device_list;
   device_list.push_back(10);
