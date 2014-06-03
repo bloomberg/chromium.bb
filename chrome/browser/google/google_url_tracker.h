@@ -188,13 +188,6 @@ class GoogleURLTracker : public net::URLFetcherDelegate,
 
   scoped_ptr<GoogleURLTrackerClient> client_;
 
-  // Creates an infobar and adds it to the provided InfoBarManager.  Returns
-  // the infobar on success or NULL on failure.  The caller does not own the
-  // returned object, the InfoBarManager does.
-  base::Callback<infobars::InfoBar*(infobars::InfoBarManager*,
-                                    GoogleURLTracker*,
-                                    const GURL&)> infobar_creator_;
-
   GURL google_url_;
   GURL fetched_google_url_;
   scoped_ptr<net::URLFetcher> fetcher_;

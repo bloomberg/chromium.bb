@@ -36,7 +36,6 @@ GoogleURLTracker::GoogleURLTracker(Profile* profile,
                                    Mode mode)
     : profile_(profile),
       client_(client.Pass()),
-      infobar_creator_(base::Bind(&GoogleURLTrackerInfoBarDelegate::Create)),
       google_url_(mode == UNIT_TEST_MODE ?
           kDefaultGoogleHomepage :
           profile->GetPrefs()->GetString(prefs::kLastKnownGoogleURL)),
@@ -343,7 +342,7 @@ void GoogleURLTracker::OnNavigationCommitted(
   if (map_entry->has_infobar_delegate()) {
     map_entry->infobar_delegate()->Update(search_url);
   } else {
-    infobars::InfoBar* infobar = infobar_creator_.Run(
+    infobars::InfoBar* infobar = GoogleURLTrackerInfoBarDelegate::Create(
         infobar_manager, this, search_url);
     if (infobar) {
       map_entry->SetInfoBarDelegate(
