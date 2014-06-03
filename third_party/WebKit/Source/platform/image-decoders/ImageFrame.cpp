@@ -106,7 +106,7 @@ bool ImageFrame::setSize(int newWidth, int newHeight)
     // setSize() should only be called once, it leaks memory otherwise.
     ASSERT(!width() && !height());
 
-    m_bitmap.setConfig(SkImageInfo::MakeN32Premul(newWidth, newHeight));
+    m_bitmap.setInfo(SkImageInfo::MakeN32Premul(newWidth, newHeight));
     if (!m_bitmap.allocPixels(m_allocator, 0))
         return false;
 

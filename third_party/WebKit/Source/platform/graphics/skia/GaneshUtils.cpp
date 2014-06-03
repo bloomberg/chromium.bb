@@ -61,7 +61,7 @@ bool ensureTextureBackedSkBitmap(GrContext* gr, SkBitmap& bitmap, const IntSize&
         SkGrPixelRef* pixelRef = SkNEW_ARGS(SkGrPixelRef, (info, texture.get()));
         if (!pixelRef)
             return false;
-        bitmap.setConfig(info);
+        bitmap.setInfo(info);
         bitmap.setPixelRef(pixelRef)->unref();
     }
 
