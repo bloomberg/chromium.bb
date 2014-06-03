@@ -116,7 +116,9 @@ jstring GetCachedNameForPrimaryAccount(JNIEnv* env,
   const size_t index = info.GetIndexOfProfileWithPath(profile->GetPath());
 
   base::string16 name;
-  if (index != std::string::npos) {
+
+  if (index != std::string::npos &&
+      !info.ProfileIsUsingDefaultNameAtIndex(index)) {
     name = info.GetGAIANameOfProfileAtIndex(index);
     if (name.empty())
       name = info.GetNameOfProfileAtIndex(index);
