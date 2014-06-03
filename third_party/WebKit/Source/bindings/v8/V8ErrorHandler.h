@@ -47,7 +47,7 @@ public:
         return adoptRef(new V8ErrorHandler(listener, isInline, scriptState));
     }
 
-    static void storeExceptionOnErrorEventWrapper(ErrorEvent*, v8::Handle<v8::Value>, v8::Isolate*);
+    static void storeExceptionOnErrorEventWrapper(ErrorEvent*, v8::Handle<v8::Value>, v8::Handle<v8::Object> creationContext, v8::Isolate*);
 
 private:
     V8ErrorHandler(v8::Local<v8::Object> listener, bool isInline, ScriptState*);

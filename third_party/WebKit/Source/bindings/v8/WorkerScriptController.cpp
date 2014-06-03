@@ -207,7 +207,7 @@ void WorkerScriptController::evaluate(const ScriptSourceCode& sourceCode, RefPtr
         if (errorEvent) {
             *errorEvent = m_workerGlobalScope.shouldSanitizeScriptError(state.sourceURL, NotSharableCrossOrigin) ?
                 ErrorEvent::createSanitizedError(m_world.get()) : ErrorEvent::create(state.errorMessage, state.sourceURL, state.lineNumber, state.columnNumber, m_world.get());
-            V8ErrorHandler::storeExceptionOnErrorEventWrapper(errorEvent->get(), state.exception.v8Value(), m_isolate);
+            V8ErrorHandler::storeExceptionOnErrorEventWrapper(errorEvent->get(), state.exception.v8Value(), m_scriptState->context()->Global(), m_isolate);
         } else {
             ASSERT(!m_workerGlobalScope.shouldSanitizeScriptError(state.sourceURL, NotSharableCrossOrigin));
             RefPtrWillBeRawPtr<ErrorEvent> event = nullptr;
