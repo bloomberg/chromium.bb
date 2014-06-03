@@ -29,7 +29,6 @@ class IntranetRedirectDetector;
 class IOThread;
 class MediaFileSystemRegistry;
 class MetricsService;
-class MetricsServicesManager;
 class NetworkTimeTracker;
 class NotificationUIManager;
 class PrefRegistrySimple;
@@ -102,10 +101,6 @@ class BrowserProcess {
   // to normal shutdown and saves any state that must be saved before we are
   // continue shutdown.
   virtual void EndSession() = 0;
-
-  // Gets the manager for the various metrics-related services, constructing it
-  // if necessary.
-  virtual MetricsServicesManager* GetMetricsServicesManager() = 0;
 
   // Services: any of these getters may return NULL
   virtual MetricsService* metrics_service() = 0;

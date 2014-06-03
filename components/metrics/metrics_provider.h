@@ -44,9 +44,6 @@ class MetricsProvider {
   virtual void ProvideGeneralMetrics(
       ChromeUserMetricsExtension* uma_proto) {}
 
-  // TODO(asvitkine): Remove this method. http://crbug.com/379148
-  virtual void RecordCurrentState() {}
-
  private:
   DISALLOW_COPY_AND_ASSIGN(MetricsProvider);
 };

@@ -423,13 +423,6 @@ void BrowserProcessImpl::EndSession() {
 #endif
 }
 
-MetricsServicesManager* BrowserProcessImpl::GetMetricsServicesManager() {
-  DCHECK(CalledOnValidThread());
-  if (!metrics_services_manager_)
-    metrics_services_manager_.reset(new MetricsServicesManager(local_state()));
-  return metrics_services_manager_.get();
-}
-
 MetricsService* BrowserProcessImpl::metrics_service() {
   DCHECK(CalledOnValidThread());
   return GetMetricsServicesManager()->GetMetricsService();
@@ -991,6 +984,13 @@ void BrowserProcessImpl::CreateSafeBrowsingService() {
   safe_browsing_service_ = SafeBrowsingService::CreateSafeBrowsingService();
   safe_browsing_service_->Initialize();
 #endif
+}
+
+MetricsServicesManager* BrowserProcessImpl::GetMetricsServicesManager() {
+  DCHECK(CalledOnValidThread());
+  if (!metrics_services_manager_)
+    metrics_services_manager_.reset(new MetricsServicesManager(local_state()));
+  return metrics_services_manager_.get();
 }
 
 void BrowserProcessImpl::ApplyDefaultBrowserPolicy() {
