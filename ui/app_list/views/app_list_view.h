@@ -30,8 +30,6 @@ class AppListViewDelegate;
 class AppListViewObserver;
 class HideViewAnimationObserver;
 class PaginationModel;
-class SigninDelegate;
-class SigninView;
 class SpeechView;
 
 // AppListView is the top-level view and controller of app list UI. It creates
@@ -151,12 +149,9 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDelegateView,
   virtual void OnSpeechRecognitionStateChanged(
       SpeechRecognitionState new_state) OVERRIDE;
 
-  SigninDelegate* GetSigninDelegate();
-
   scoped_ptr<AppListViewDelegate> delegate_;
 
   AppListMainView* app_list_main_view_;
-  SigninView* signin_view_;
   SpeechView* speech_view_;
 
   // A semi-transparent white overlay that covers the app list while dialogs are

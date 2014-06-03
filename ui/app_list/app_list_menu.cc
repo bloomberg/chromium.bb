@@ -67,10 +67,6 @@ bool AppListMenu::IsCommandIdChecked(int command_id) const {
 }
 
 bool AppListMenu::IsCommandIdEnabled(int command_id) const {
-  if (command_id >= SELECT_PROFILE &&
-      command_id < SELECT_PROFILE + static_cast<int>(users_.size())) {
-    return !users_[command_id - SELECT_PROFILE].signin_required;
-  }
   return true;
 }
 

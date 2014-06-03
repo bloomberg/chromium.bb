@@ -11,63 +11,22 @@
 #include "ui/app_list/app_list_model.h"
 #include "ui/app_list/app_list_switches.h"
 #include "ui/app_list/app_list_view_delegate_observer.h"
-#include "ui/app_list/signin_delegate.h"
 #include "ui/app_list/test/app_list_test_model.h"
 #include "ui/gfx/image/image_skia.h"
 
 namespace app_list {
 namespace test {
 
-class TestSigninDelegate : public SigninDelegate {
- public:
-  TestSigninDelegate() : signed_in_(true) {}
-
-  void set_signed_in(bool signed_in) { signed_in_ = signed_in; }
-
-  // SigninDelegate overrides:
-  virtual bool NeedSignin() OVERRIDE { return !signed_in_; }
-  virtual void ShowSignin() OVERRIDE {}
-  virtual void OpenLearnMore() OVERRIDE {}
-  virtual void OpenSettings() OVERRIDE {}
-
-  virtual base::string16 GetSigninHeading() OVERRIDE {
-    return base::string16();
-  }
-  virtual base::string16 GetSigninText() OVERRIDE { return base::string16(); }
-  virtual base::string16 GetSigninButtonText() OVERRIDE {
-    return base::string16();
-  }
-  virtual base::string16 GetLearnMoreLinkText() OVERRIDE {
-    return base::string16();
-  }
-  virtual base::string16 GetSettingsLinkText() OVERRIDE {
-    return base::string16();
-  }
-
- private:
-  bool signed_in_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestSigninDelegate);
-};
-
 AppListTestViewDelegate::AppListTestViewDelegate()
     : dismiss_count_(0),
       toggle_speech_recognition_count_(0),
       open_search_result_count_(0),
       next_profile_app_count_(0),
-      test_signin_delegate_(new TestSigninDelegate),
       model_(new AppListTestModel),
       speech_ui_(SPEECH_RECOGNITION_OFF) {
 }
 
 AppListTestViewDelegate::~AppListTestViewDelegate() {}
-
-void AppListTestViewDelegate::SetSignedIn(bool signed_in) {
-  test_signin_delegate_->set_signed_in(signed_in);
-  FOR_EACH_OBSERVER(AppListViewDelegateObserver,
-                    observers_,
-                    OnProfilesChanged());
-}
 
 int AppListTestViewDelegate::GetToggleSpeechRecognitionCountAndReset() {
   int count = toggle_speech_recognition_count_;
@@ -86,10 +45,6 @@ void AppListTestViewDelegate::SetProfileByPath(
 
 AppListModel* AppListTestViewDelegate::GetModel() {
   return model_.get();
-}
-
-SigninDelegate* AppListTestViewDelegate::GetSigninDelegate() {
-  return test_signin_delegate_.get();
 }
 
 SpeechUIModel* AppListTestViewDelegate::GetSpeechUI() {

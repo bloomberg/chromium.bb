@@ -31,7 +31,6 @@ namespace app_list {
 class AppListModel;
 class AppListViewDelegateObserver;
 class SearchResult;
-class SigninDelegate;
 class SpeechUIModel;
 
 class APP_LIST_EXPORT AppListViewDelegate {
@@ -52,9 +51,6 @@ class APP_LIST_EXPORT AppListViewDelegate {
 
     // The path to this user's profile directory.
     base::FilePath profile_path;
-
-    // Whether or not the current profile requires sign-in beofre use.
-    bool signin_required;
   };
   typedef std::vector<User> Users;
 
@@ -72,9 +68,6 @@ class APP_LIST_EXPORT AppListViewDelegate {
   // Gets the model associated with the view delegate. The model may be owned
   // by the delegate, or owned elsewhere (e.g. a profile keyed service).
   virtual AppListModel* GetModel() = 0;
-
-  // Gets the SigninDelegate for the app list. Owned by the AppListViewDelegate.
-  virtual SigninDelegate* GetSigninDelegate() = 0;
 
   // Gets the SpeechUIModel for the app list. Owned by the AppListViewDelegate.
   virtual SpeechUIModel* GetSpeechUI() = 0;

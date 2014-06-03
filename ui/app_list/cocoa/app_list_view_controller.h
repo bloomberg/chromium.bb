@@ -22,7 +22,6 @@ class AppListModelObserverBridge;
 
 @class AppListPagerView;
 @class AppsGridController;
-@class SigninViewController;
 
 // Controller for the top-level view of the app list UI. It creates and hosts an
 // AppsGridController (displaying an AppListModel), pager control to navigate
@@ -37,9 +36,8 @@ APP_LIST_EXPORT
   base::scoped_nsobject<AppsSearchBoxController> appsSearchBoxController_;
   base::scoped_nsobject<AppsSearchResultsController>
       appsSearchResultsController_;
-  base::scoped_nsobject<SigninViewController> signinViewController_;
 
-  // Subview for drawing the background. Hidden when the signin view is visible.
+  // Subview for drawing the background.
   base::scoped_nsobject<NSView> backgroundView_;
 
   // Subview of |backgroundView_| that slides out when search results are shown.

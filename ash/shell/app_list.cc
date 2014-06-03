@@ -254,10 +254,6 @@ class ExampleAppListViewDelegate : public app_list::AppListViewDelegate {
 
   virtual app_list::AppListModel* GetModel() OVERRIDE { return model_.get(); }
 
-  virtual app_list::SigninDelegate* GetSigninDelegate() OVERRIDE {
-    return NULL;
-  }
-
   virtual app_list::SpeechUIModel* GetSpeechUI() OVERRIDE {
     return &speech_ui_;
   }

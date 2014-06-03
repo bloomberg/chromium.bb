@@ -20,7 +20,6 @@ class AppListViewControllerTest : public AppsGridControllerTestHelper {
   virtual void SetUp() OVERRIDE {
     app_list_view_controller_.reset([[AppListViewController alloc] init]);
     scoped_ptr<AppListTestViewDelegate> delegate(new AppListTestViewDelegate);
-    delegate->SetSignedIn(true);
     [app_list_view_controller_
         setDelegate:delegate.PassAs<app_list::AppListViewDelegate>()];
     SetUpWithGridController([app_list_view_controller_ appsGridController]);
@@ -102,26 +101,6 @@ TEST_F(AppListViewControllerTest, PagerChangingPage) {
   EXPECT_EQ(0, [pager selectedSegment]);
   EXPECT_EQ(1, [pager segmentCount]);
   EXPECT_EQ(1.0, [apps_grid_controller_ visiblePortionOfPage:0]);
-}
-
-// Test the view when the user is already signed in.
-TEST_F(AppListViewControllerTest, SignedIn) {
-  // There should be just 1, visible subview when signed in.
-  EXPECT_EQ(1u, [[[app_list_view_controller_ view] subviews] count]);
-  EXPECT_FALSE([[app_list_view_controller_ backgroundView] isHidden]);
-}
-
-// Test the view when signin is required.
-TEST_F(AppListViewControllerTest, NeedsSignin) {
-  // Begin the test with a signed out app list.
-  delegate()->SetSignedIn(false);
-  EXPECT_EQ(2u, [[[app_list_view_controller_ view] subviews] count]);
-  EXPECT_TRUE([[app_list_view_controller_ backgroundView] isHidden]);
-
-  // Simulate signing in, should enter the SignedIn state.
-  delegate()->SetSignedIn(true);
-  EXPECT_EQ(1u, [[[app_list_view_controller_ view] subviews] count]);
-  EXPECT_FALSE([[app_list_view_controller_ backgroundView] isHidden]);
 }
 
 }  // namespace test

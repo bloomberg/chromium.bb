@@ -13,10 +13,8 @@
 #include "ui/app_list/app_list_model.h"
 #include "ui/app_list/app_list_view_delegate.h"
 #include "ui/app_list/app_list_view_delegate_observer.h"
-#include "ui/app_list/signin_delegate.h"
 #import "ui/app_list/cocoa/app_list_pager_view.h"
 #import "ui/app_list/cocoa/apps_grid_controller.h"
-#import "ui/app_list/cocoa/signin_view_controller.h"
 #import "ui/base/cocoa/flipped_view.h"
 #include "ui/app_list/search_box_model.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
@@ -364,24 +362,6 @@ void AppListModelObserverBridge::OnProfilesChanged() {
 
 - (void)onProfilesChanged {
   [appsSearchBoxController_ rebuildMenu];
-  app_list::SigninDelegate* signinDelegate =
-      delegate_ ? delegate_->GetSigninDelegate() : NULL;
-  BOOL showSigninView = signinDelegate && signinDelegate->NeedSignin();
-
-  [[signinViewController_ view] removeFromSuperview];
-  signinViewController_.reset();
-
-  if (!showSigninView) {
-    [backgroundView_ setHidden:NO];
-    return;
-  }
-
-  [backgroundView_ setHidden:YES];
-  signinViewController_.reset(
-      [[SigninViewController alloc] initWithFrame:[backgroundView_ frame]
-                                     cornerRadius:kBubbleCornerRadius
-                                         delegate:signinDelegate]);
-  [[self view] addSubview:[signinViewController_ view]];
 }
 
 @end

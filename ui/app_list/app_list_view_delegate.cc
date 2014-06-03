@@ -6,7 +6,8 @@
 
 namespace app_list {
 
-AppListViewDelegate::User::User() : active(false), signin_required(false) {}
+AppListViewDelegate::User::User() : active(false) {
+}
 
 AppListViewDelegate::User::~User() {}
 

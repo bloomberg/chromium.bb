@@ -13,7 +13,6 @@
 #include "ui/app_list/app_list_model.h"
 #include "ui/app_list/app_list_view_delegate.h"
 #include "ui/app_list/pagination_model.h"
-#include "ui/app_list/signin_delegate.h"
 #include "ui/app_list/speech_ui_model.h"
 #include "ui/app_list/views/app_list_background.h"
 #include "ui/app_list/views/app_list_folder_view.h"
@@ -22,7 +21,6 @@
 #include "ui/app_list/views/apps_container_view.h"
 #include "ui/app_list/views/contents_view.h"
 #include "ui/app_list/views/search_box_view.h"
-#include "ui/app_list/views/signin_view.h"
 #include "ui/app_list/views/speech_view.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/compositor/layer.h"
@@ -148,7 +146,6 @@ class HideViewAnimationObserver : public ui::ImplicitAnimationObserver {
 AppListView::AppListView(AppListViewDelegate* delegate)
     : delegate_(delegate),
       app_list_main_view_(NULL),
-      signin_view_(NULL),
       speech_view_(NULL),
       overlay_view_(NULL),
       animation_observer_(new HideViewAnimationObserver()) {
@@ -254,12 +251,6 @@ void AppListView::Prerender() {
 }
 
 void AppListView::OnProfilesChanged() {
-  SigninDelegate* signin_delegate =
-      delegate_ ? delegate_->GetSigninDelegate() : NULL;
-  bool show_signin_view = signin_delegate && signin_delegate->NeedSignin();
-
-  signin_view_->SetVisible(show_signin_view);
-  app_list_main_view_->SetVisible(!show_signin_view);
   app_list_main_view_->search_box_view()->InvalidateMenu();
 }
 
@@ -307,11 +298,6 @@ void AppListView::InitAsBubbleInternal(gfx::NativeView parent,
   app_list_main_view_->SetFillsBoundsOpaquely(false);
   app_list_main_view_->layer()->SetMasksToBounds(true);
 #endif
-
-  signin_view_ =
-      new SigninView(delegate_->GetSigninDelegate(),
-                     app_list_main_view_->GetPreferredSize().width());
-  AddChildView(signin_view_);
 
   // Speech recognition is available only when the start page exists.
   if (delegate_ && delegate_->GetSpeechRecognitionContents()) {
@@ -459,7 +445,6 @@ bool AppListView::AcceleratorPressed(const ui::Accelerator& accelerator) {
 void AppListView::Layout() {
   const gfx::Rect contents_bounds = GetContentsBounds();
   app_list_main_view_->SetBoundsRect(contents_bounds);
-  signin_view_->SetBoundsRect(contents_bounds);
 
   if (speech_view_) {
     gfx::Rect speech_bounds = contents_bounds;
@@ -502,15 +487,11 @@ void AppListView::OnWidgetVisibilityChanged(views::Widget* widget,
 
   if (!visible)
     app_list_main_view_->ResetForShow();
-
-  // Whether we need to signin or not may have changed since last time we were
-  // shown.
-  Layout();
 }
 
 void AppListView::OnSpeechRecognitionStateChanged(
     SpeechRecognitionState new_state) {
-  if (signin_view_->visible() || !speech_view_)
+  if (!speech_view_)
     return;
 
   bool recognizing = (new_state == SPEECH_RECOGNITION_RECOGNIZING ||

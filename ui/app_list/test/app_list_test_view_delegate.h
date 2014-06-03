@@ -19,7 +19,6 @@ namespace app_list {
 namespace test {
 
 class AppListTestModel;
-class TestSigninDelegate;
 
 // A concrete AppListViewDelegate for unit tests.
 class AppListTestViewDelegate : public AppListViewDelegate {
@@ -44,10 +43,6 @@ class AppListTestViewDelegate : public AppListViewDelegate {
     auto_launch_timeout_ = timeout;
   }
 
-  // Sets the signin status of the signin delegate, creating one if there isn't
-  // one already.
-  void SetSignedIn(bool signed_in);
-
   // Returns the value of |toggle_speech_recognition_count_| and then
   // resets this value to 0.
   int GetToggleSpeechRecognitionCountAndReset();
@@ -56,7 +51,6 @@ class AppListTestViewDelegate : public AppListViewDelegate {
   virtual bool ForceNativeDesktop() const OVERRIDE;
   virtual void SetProfileByPath(const base::FilePath& profile_path) OVERRIDE;
   virtual AppListModel* GetModel() OVERRIDE;
-  virtual SigninDelegate* GetSigninDelegate() OVERRIDE;
   virtual SpeechUIModel* GetSpeechUI() OVERRIDE;
   virtual void GetShortcutPathForApp(
       const std::string& app_id,
@@ -101,7 +95,6 @@ class AppListTestViewDelegate : public AppListViewDelegate {
   int next_profile_app_count_;
   std::map<size_t, int> open_search_result_counts_;
   Users users_;
-  scoped_ptr<TestSigninDelegate> test_signin_delegate_;
   scoped_ptr<AppListTestModel> model_;
   ObserverList<AppListViewDelegateObserver> observers_;
   SpeechUIModel speech_ui_;
