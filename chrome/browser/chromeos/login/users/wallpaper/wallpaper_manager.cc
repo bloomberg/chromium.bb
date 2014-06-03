@@ -1055,6 +1055,13 @@ void WallpaperManager::ScheduleSetUserWallpaper(const std::string& user_id,
     GetPendingWallpaper(user_id, delayed)
         ->ResetSetWallpaperImage(user_wallpaper, info);
   } else {
+    if (info.file.empty()) {
+      // Uses default built-in wallpaper when file is empty. Eventually, we
+      // will only ship one built-in wallpaper in ChromeOS image.
+      GetPendingWallpaper(user_id, delayed)->ResetSetDefaultWallpaper();
+      return;
+    }
+
     if (info.type == User::CUSTOMIZED || info.type == User::POLICY) {
       const char* sub_dir = GetCustomWallpaperSubdirForCurrentResolution();
       // Wallpaper is not resized when layout is ash::WALLPAPER_LAYOUT_CENTER.
@@ -1071,13 +1078,6 @@ void WallpaperManager::ScheduleSetUserWallpaper(const std::string& user_id,
 
       GetPendingWallpaper(user_id, delayed)
           ->ResetSetCustomWallpaper(info, wallpaper_path);
-      return;
-    }
-
-    if (info.file.empty()) {
-      // Uses default built-in wallpaper when file is empty. Eventually, we
-      // will only ship one built-in wallpaper in ChromeOS image.
-      GetPendingWallpaper(user_id, delayed)->ResetSetDefaultWallpaper();
       return;
     }
 
@@ -1169,6 +1169,9 @@ void WallpaperManager::CacheUserWallpaper(const std::string& user_id) {
     return;
   WallpaperInfo info;
   if (GetUserWallpaperInfo(user_id, &info)) {
+    if (info.file.empty())
+      return;
+
     base::FilePath wallpaper_dir;
     base::FilePath wallpaper_path;
     if (info.type == User::CUSTOMIZED || info.type == User::POLICY) {
