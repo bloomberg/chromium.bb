@@ -30,10 +30,6 @@ IN_PROC_BROWSER_TEST_F(Me2MeBrowserTest,
 
   ConnectToLocalHost(false);
 
-  OpenClientBrowserPage();
-
-  TestKeyboardInput();
-
   // TODO(chaitali): Change the mouse input test to also work in the
   // HTTP server framework
   // TestMouseInput();
