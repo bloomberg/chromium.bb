@@ -18,9 +18,6 @@ typedef struct {
 
 TEST(SizesAttributeParserTest, Basic)
 {
-    // The first string represents the input string.
-    // The second string represents the output string, if present.
-    // Otherwise, the output string is identical to the first string.
     TestCase testCases[] = {
         {"screen", 500},
         {"(min-width:500px)", 500},
@@ -52,7 +49,10 @@ TEST(SizesAttributeParserTest, Basic)
         {"(min-width:5000px) calc(5000px/10), (min-width:500px) calc(1200px/3)", 400},
         {"(min-width:500px) calc(1200/3)", 500},
         {"(min-width:500px) calc(1200px/(0px*14))", 500},
-        // FIXME - test all other units, zero length and calc().
+        {"(max-width: 3000px) 200px, 400px", 200},
+        {"(max-width: 3000px) 20em, 40em", 320},
+        {"(max-width: 3000px) 0, 40em", 0},
+        {"(max-width: 3000px) 50vw, 40em", 250},
         {0, 0} // Do not remove the terminator line.
     };
 
