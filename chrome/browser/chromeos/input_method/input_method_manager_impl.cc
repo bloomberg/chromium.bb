@@ -110,10 +110,8 @@ void InputMethodManagerImpl::SetState(State new_state) {
 
 scoped_ptr<InputMethodDescriptors>
 InputMethodManagerImpl::GetSupportedInputMethods() const {
-  scoped_ptr<InputMethodDescriptors> whitelist_imes =
-      whitelist_.GetSupportedInputMethods();
-  if (!component_extension_ime_manager_->IsInitialized())
-    return whitelist_imes.Pass();
+  if (!IsXkbComponentExtensionAvailable())
+    return whitelist_.GetSupportedInputMethods().Pass();
   return scoped_ptr<InputMethodDescriptors>(new InputMethodDescriptors).Pass();
 }
 
@@ -325,9 +323,7 @@ bool InputMethodManagerImpl::ChangeInputMethodInternal(
   }
 
   if (!component_extension_ime_manager_->IsInitialized() &&
-      (!InputMethodUtil::IsKeyboardLayout(input_method_id_to_switch) ||
-       extension_ime_util::IsKeyboardLayoutExtension(
-           input_method_id_to_switch))) {
+      !InputMethodUtil::IsKeyboardLayout(input_method_id_to_switch)) {
     // We can't change input method before the initialization of
     // component extension ime manager.  ChangeInputMethod will be
     // called with |pending_input_method_| when the initialization is
@@ -405,6 +401,18 @@ bool InputMethodManagerImpl::ChangeInputMethodInternal(
   return true;
 }
 
+bool InputMethodManagerImpl::IsXkbComponentExtensionAvailable() const {
+  if (!component_extension_ime_manager_->IsInitialized())
+    return false;
+  InputMethodDescriptors imes =
+      component_extension_ime_manager_->GetAllIMEAsInputMethodDescriptor();
+  for (size_t i = 0; i < imes.size(); ++i) {
+    if (StartsWithASCII(imes[i].id(), "xkb:", true))
+      return true;
+  }
+  return false;
+}
+
 void InputMethodManagerImpl::OnComponentExtensionInitialized(
     scoped_ptr<ComponentExtensionIMEManagerDelegate> delegate) {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -413,14 +421,7 @@ void InputMethodManagerImpl::OnComponentExtensionInitialized(
       component_extension_ime_manager_->GetAllIMEAsInputMethodDescriptor();
   // In case of XKB extension is not available (e.g. linux_chromeos), don't
   // reset the input methods in InputMethodUtil, Instead append input methods.
-  bool xkb_found = false;
-  for (size_t i = 0; i < imes.size(); ++i) {
-    if (StartsWithASCII(imes[i].id(), "xkb:", true)) {
-      xkb_found = true;
-      break;
-    }
-  }
-  if (xkb_found)
+  if (IsXkbComponentExtensionAvailable())
     util_.ResetInputMethods(imes);
   else
     util_.AppendInputMethods(imes);

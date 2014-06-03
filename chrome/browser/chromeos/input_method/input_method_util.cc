@@ -167,177 +167,86 @@ const char* const kExtensionIdMigrationMap[][2] = {
 
 const size_t kExtensionIdLen = 32;
 
-}  // namespace
-
-namespace chromeos {
-
-extern const char* kExtensionImePrefix;
-
-namespace input_method {
-
-namespace {
-
 const struct EnglishToResouceId {
   const char* english_string_from_ibus;
   int resource_id;
 } kEnglishToResourceIdArray[] = {
-  // For ibus-mozc-hangul
-  { "Hanja mode", IDS_STATUSBAR_IME_KOREAN_HANJA_INPUT_MODE },
-  { "Hangul mode", IDS_STATUSBAR_IME_KOREAN_HANGUL_INPUT_MODE },
-
-  // For ibus-mozc-pinyin.
-  { "Full/Half width",
-    IDS_STATUSBAR_IME_CHINESE_PINYIN_TOGGLE_FULL_HALF },
-  { "Full/Half width punctuation",
-    IDS_STATUSBAR_IME_CHINESE_PINYIN_TOGGLE_FULL_HALF_PUNCTUATION },
-  // TODO(hsumita): Fixes a typo
-  { "Simplfied/Traditional Chinese",
-    IDS_STATUSBAR_IME_CHINESE_PINYIN_TOGGLE_S_T_CHINESE },
-  { "Chinese",
-    IDS_STATUSBAR_IME_CHINESE_PINYIN_TOGGLE_CHINESE_ENGLISH },
-
-  // For ibus-mozc-chewing.
-  { "English",
-    IDS_STATUSBAR_IME_CHINESE_MOZC_CHEWING_ENGLISH_MODE },
-  { "_Chinese",
-    IDS_STATUSBAR_IME_CHINESE_MOZC_CHEWING_CHINESE_MODE },
-  { "Full-width English",
-    IDS_STATUSBAR_IME_CHINESE_MOZC_CHEWING_FULL_WIDTH_ENGLISH_MODE },
-
-  // For the "Languages and Input" dialog.
-  { "m17n:ar:kbd", IDS_OPTIONS_SETTINGS_LANGUAGES_M17N_STANDARD_INPUT_METHOD },
-  { "m17n:hi:itrans",  // also uses the "STANDARD_INPUT_METHOD" id.
-    IDS_OPTIONS_SETTINGS_LANGUAGES_M17N_STANDARD_INPUT_METHOD },
-  { "m17n:zh:cangjie",
-    IDS_OPTIONS_SETTINGS_LANGUAGES_M17N_CHINESE_CANGJIE_INPUT_METHOD },
-  { "m17n:zh:quick",
-    IDS_OPTIONS_SETTINGS_LANGUAGES_M17N_CHINESE_QUICK_INPUT_METHOD },
-  { "m17n:fa:isiri",
-    IDS_OPTIONS_SETTINGS_LANGUAGES_M17N_PERSIAN_ISIRI_2901_INPUT_METHOD },
-  { "m17n:th:kesmanee",
-    IDS_OPTIONS_SETTINGS_LANGUAGES_M17N_THAI_KESMANEE_INPUT_METHOD },
-  { "m17n:th:tis820",
-    IDS_OPTIONS_SETTINGS_LANGUAGES_M17N_THAI_TIS820_INPUT_METHOD },
-  { "m17n:th:pattachote",
-    IDS_OPTIONS_SETTINGS_LANGUAGES_M17N_THAI_PATTACHOTE_INPUT_METHOD },
-  { "m17n:vi:tcvn",
-    IDS_OPTIONS_SETTINGS_LANGUAGES_M17N_VIETNAMESE_TCVN_INPUT_METHOD },
-  { "m17n:vi:telex",
-    IDS_OPTIONS_SETTINGS_LANGUAGES_M17N_VIETNAMESE_TELEX_INPUT_METHOD },
-  { "m17n:vi:viqr",
-    IDS_OPTIONS_SETTINGS_LANGUAGES_M17N_VIETNAMESE_VIQR_INPUT_METHOD },
-  { "m17n:vi:vni",
-    IDS_OPTIONS_SETTINGS_LANGUAGES_M17N_VIETNAMESE_VNI_INPUT_METHOD },
-  { "m17n:bn:itrans",
-    IDS_OPTIONS_SETTINGS_LANGUAGES_M17N_STANDARD_INPUT_METHOD },
-  { "m17n:gu:itrans",
-    IDS_OPTIONS_SETTINGS_LANGUAGES_M17N_STANDARD_INPUT_METHOD },
-  { "m17n:ml:itrans",
-    IDS_OPTIONS_SETTINGS_LANGUAGES_M17N_STANDARD_INPUT_METHOD },
-  { "m17n:mr:itrans",
-    IDS_OPTIONS_SETTINGS_LANGUAGES_M17N_STANDARD_INPUT_METHOD },
-  { "m17n:ta:phonetic",
-    IDS_OPTIONS_SETTINGS_LANGUAGES_M17N_TAMIL_PHONETIC },
-  { "m17n:ta:inscript",
-    IDS_OPTIONS_SETTINGS_LANGUAGES_M17N_TAMIL_INSCRIPT },
-  { "m17n:ta:tamil99",
-    IDS_OPTIONS_SETTINGS_LANGUAGES_M17N_TAMIL_TAMIL99 },
-  { "m17n:ta:itrans",
-    IDS_OPTIONS_SETTINGS_LANGUAGES_M17N_TAMIL_ITRANS },
-  { "m17n:ta:typewriter",
-    IDS_OPTIONS_SETTINGS_LANGUAGES_M17N_TAMIL_TYPEWRITER },
-  { "m17n:am:sera",
-    IDS_OPTIONS_SETTINGS_LANGUAGES_M17N_STANDARD_INPUT_METHOD },
-  { "m17n:te:itrans",
-    IDS_OPTIONS_SETTINGS_LANGUAGES_M17N_STANDARD_INPUT_METHOD },
-  { "m17n:kn:itrans",
-    IDS_OPTIONS_SETTINGS_LANGUAGES_M17N_STANDARD_INPUT_METHOD },
-
-  { "mozc-chewing",
-    IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_INPUT_METHOD },
-  { "pinyin", IDS_OPTIONS_SETTINGS_LANGUAGES_PINYIN_INPUT_METHOD },
-  { "pinyin-dv",
-    IDS_OPTIONS_SETTINGS_LANGUAGES_PINYIN_DV_INPUT_METHOD },
-  { "zinnia-japanese",
-    IDS_OPTIONS_SETTINGS_LANGUAGES_JAPANESE_HANDWRITING_INPUT_METHOD },
-  { "mozc-hangul", IDS_OPTIONS_SETTINGS_LANGUAGES_KOREAN_INPUT_METHOD },
-
-  // For ibus-xkb-layouts engine: third_party/ibus-xkb-layouts/files
-  { "xkb:jp::jpn", IDS_STATUSBAR_LAYOUT_JAPAN },
-  { "xkb:si::slv", IDS_STATUSBAR_LAYOUT_SLOVENIA },
-  { "xkb:de::ger", IDS_STATUSBAR_LAYOUT_GERMANY },
-  { "xkb:de:neo:ger", IDS_STATUSBAR_LAYOUT_GERMANY_NEO2 },
-  { "xkb:it::ita", IDS_STATUSBAR_LAYOUT_ITALY },
-  { "xkb:ee::est", IDS_STATUSBAR_LAYOUT_ESTONIA },
-  { "xkb:hu::hun", IDS_STATUSBAR_LAYOUT_HUNGARY },
-  { "xkb:pl::pol", IDS_STATUSBAR_LAYOUT_POLAND },
-  { "xkb:dk::dan", IDS_STATUSBAR_LAYOUT_DENMARK },
-  { "xkb:hr::scr", IDS_STATUSBAR_LAYOUT_CROATIA },
-  { "xkb:br::por", IDS_STATUSBAR_LAYOUT_BRAZIL },
-  { "xkb:rs::srp", IDS_STATUSBAR_LAYOUT_SERBIA },
-  { "xkb:cz::cze", IDS_STATUSBAR_LAYOUT_CZECHIA },
-  { "xkb:cz:qwerty:cze", IDS_STATUSBAR_LAYOUT_CZECHIA_QWERTY },
-  { "xkb:us:dvorak:eng", IDS_STATUSBAR_LAYOUT_USA_DVORAK },
-  { "xkb:us:colemak:eng", IDS_STATUSBAR_LAYOUT_USA_COLEMAK },
-  { "xkb:ro::rum", IDS_STATUSBAR_LAYOUT_ROMANIA },
-  { "xkb:us::eng", IDS_STATUSBAR_LAYOUT_USA },
-  { "xkb:us:altgr-intl:eng", IDS_STATUSBAR_LAYOUT_USA_EXTENDED },
-  { "xkb:us:intl:eng", IDS_STATUSBAR_LAYOUT_USA_INTERNATIONAL },
-  { "xkb:lt::lit", IDS_STATUSBAR_LAYOUT_LITHUANIA },
-  { "xkb:gb:extd:eng", IDS_STATUSBAR_LAYOUT_UNITED_KINGDOM },
-  { "xkb:gb:dvorak:eng", IDS_STATUSBAR_LAYOUT_UNITED_KINGDOM_DVORAK },
-  { "xkb:sk::slo", IDS_STATUSBAR_LAYOUT_SLOVAKIA },
-  { "xkb:ru::rus", IDS_STATUSBAR_LAYOUT_RUSSIA },
-  { "xkb:ru:phonetic:rus", IDS_STATUSBAR_LAYOUT_RUSSIA_PHONETIC },
-  { "xkb:gr::gre", IDS_STATUSBAR_LAYOUT_GREECE },
+  // For xkb-layouts.
+  { "xkb:am:phonetic:arm", IDS_STATUSBAR_LAYOUT_ARMENIAN_PHONETIC },
   { "xkb:be::fra", IDS_STATUSBAR_LAYOUT_BELGIUM },
   { "xkb:be::ger", IDS_STATUSBAR_LAYOUT_BELGIUM },
   { "xkb:be::nld", IDS_STATUSBAR_LAYOUT_BELGIUM },
   { "xkb:bg::bul", IDS_STATUSBAR_LAYOUT_BULGARIA },
   { "xkb:bg:phonetic:bul", IDS_STATUSBAR_LAYOUT_BULGARIA_PHONETIC },
-  { "xkb:ch::ger", IDS_STATUSBAR_LAYOUT_SWITZERLAND },
-  { "xkb:ch:fr:fra", IDS_STATUSBAR_LAYOUT_SWITZERLAND_FRENCH },
-  { "xkb:tr::tur", IDS_STATUSBAR_LAYOUT_TURKEY },
-  { "xkb:pt::por", IDS_STATUSBAR_LAYOUT_PORTUGAL },
-  { "xkb:es::spa", IDS_STATUSBAR_LAYOUT_SPAIN },
-  { "xkb:fi::fin", IDS_STATUSBAR_LAYOUT_FINLAND },
-  { "xkb:ua::ukr", IDS_STATUSBAR_LAYOUT_UKRAINE },
-  { "xkb:es:cat:cat", IDS_STATUSBAR_LAYOUT_SPAIN_CATALAN },
-  { "xkb:fr::fra", IDS_STATUSBAR_LAYOUT_FRANCE },
-  { "xkb:no::nob", IDS_STATUSBAR_LAYOUT_NORWAY },
-  { "xkb:se::swe", IDS_STATUSBAR_LAYOUT_SWEDEN },
-  { "xkb:nl::nld", IDS_STATUSBAR_LAYOUT_NETHERLANDS },
-  { "xkb:latam::spa", IDS_STATUSBAR_LAYOUT_LATIN_AMERICAN },
-  { "xkb:lv:apostrophe:lav", IDS_STATUSBAR_LAYOUT_LATVIA },
+  { "xkb:br::por", IDS_STATUSBAR_LAYOUT_BRAZIL },
+  { "xkb:by::bel", IDS_STATUSBAR_LAYOUT_BELARUSIAN },
   { "xkb:ca::fra", IDS_STATUSBAR_LAYOUT_CANADA },
   { "xkb:ca:eng:eng", IDS_STATUSBAR_LAYOUT_CANADA_ENGLISH },
-  { "xkb:il::heb", IDS_STATUSBAR_LAYOUT_ISRAEL },
-  { "xkb:kr:kr104:kor", IDS_STATUSBAR_LAYOUT_KOREA_104 },
-  { "xkb:is::ice", IDS_STATUSBAR_LAYOUT_ICELANDIC },
   { "xkb:ca:multix:fra", IDS_STATUSBAR_LAYOUT_CANADIAN_MULTILINGUAL },
-  { "xkb:by::bel", IDS_STATUSBAR_LAYOUT_BELARUSIAN },
-  { "xkb:am:phonetic:arm", IDS_STATUSBAR_LAYOUT_ARMENIAN_PHONETIC },
+  { "xkb:ch::ger", IDS_STATUSBAR_LAYOUT_SWITZERLAND },
+  { "xkb:ch:fr:fra", IDS_STATUSBAR_LAYOUT_SWITZERLAND_FRENCH },
+  { "xkb:cz::cze", IDS_STATUSBAR_LAYOUT_CZECHIA },
+  { "xkb:cz:qwerty:cze", IDS_STATUSBAR_LAYOUT_CZECHIA_QWERTY },
+  { "xkb:de::ger", IDS_STATUSBAR_LAYOUT_GERMANY },
+  { "xkb:de:neo:ger", IDS_STATUSBAR_LAYOUT_GERMANY_NEO2 },
+  { "xkb:dk::dan", IDS_STATUSBAR_LAYOUT_DENMARK },
+  { "xkb:ee::est", IDS_STATUSBAR_LAYOUT_ESTONIA },
+  { "xkb:es::spa", IDS_STATUSBAR_LAYOUT_SPAIN },
+  { "xkb:es:cat:cat", IDS_STATUSBAR_LAYOUT_SPAIN_CATALAN },
+  { "xkb:fi::fin", IDS_STATUSBAR_LAYOUT_FINLAND },
+  { "xkb:fr::fra", IDS_STATUSBAR_LAYOUT_FRANCE },
+  { "xkb:gb:dvorak:eng", IDS_STATUSBAR_LAYOUT_UNITED_KINGDOM_DVORAK },
+  { "xkb:gb:extd:eng", IDS_STATUSBAR_LAYOUT_UNITED_KINGDOM },
   { "xkb:ge::geo", IDS_STATUSBAR_LAYOUT_GEORGIAN },
+  { "xkb:gr::gre", IDS_STATUSBAR_LAYOUT_GREECE },
+  { "xkb:hr::scr", IDS_STATUSBAR_LAYOUT_CROATIA },
+  { "xkb:hu::hun", IDS_STATUSBAR_LAYOUT_HUNGARY },
+  { "xkb:il::heb", IDS_STATUSBAR_LAYOUT_ISRAEL },
+  { "xkb:is::ice", IDS_STATUSBAR_LAYOUT_ICELANDIC },
+  { "xkb:it::ita", IDS_STATUSBAR_LAYOUT_ITALY },
+  { "xkb:jp::jpn", IDS_STATUSBAR_LAYOUT_JAPAN },
+  { "xkb:latam::spa", IDS_STATUSBAR_LAYOUT_LATIN_AMERICAN },
+  { "xkb:lt::lit", IDS_STATUSBAR_LAYOUT_LITHUANIA },
+  { "xkb:lv:apostrophe:lav", IDS_STATUSBAR_LAYOUT_LATVIA },
   { "xkb:mn::mon", IDS_STATUSBAR_LAYOUT_MONGOLIAN },
-
-  { "english-m", IDS_STATUSBAR_LAYOUT_USA_MYSTERY },
+  { "xkb:nl::nld", IDS_STATUSBAR_LAYOUT_NETHERLANDS },
+  { "xkb:no::nob", IDS_STATUSBAR_LAYOUT_NORWAY },
+  { "xkb:pl::pol", IDS_STATUSBAR_LAYOUT_POLAND },
+  { "xkb:pt::por", IDS_STATUSBAR_LAYOUT_PORTUGAL },
+  { "xkb:ro::rum", IDS_STATUSBAR_LAYOUT_ROMANIA },
+  { "xkb:rs::srp", IDS_STATUSBAR_LAYOUT_SERBIA },
+  { "xkb:ru::rus", IDS_STATUSBAR_LAYOUT_RUSSIA },
+  { "xkb:ru:phonetic:rus", IDS_STATUSBAR_LAYOUT_RUSSIA_PHONETIC },
+  { "xkb:se::swe", IDS_STATUSBAR_LAYOUT_SWEDEN },
+  { "xkb:si::slv", IDS_STATUSBAR_LAYOUT_SLOVENIA },
+  { "xkb:sk::slo", IDS_STATUSBAR_LAYOUT_SLOVAKIA },
+  { "xkb:tr::tur", IDS_STATUSBAR_LAYOUT_TURKEY },
+  { "xkb:ua::ukr", IDS_STATUSBAR_LAYOUT_UKRAINE },
+  { "xkb:us::eng", IDS_STATUSBAR_LAYOUT_USA },
+  { "xkb:us:altgr-intl:eng", IDS_STATUSBAR_LAYOUT_USA_EXTENDED },
+  { "xkb:us:colemak:eng", IDS_STATUSBAR_LAYOUT_USA_COLEMAK },
+  { "xkb:us:dvorak:eng", IDS_STATUSBAR_LAYOUT_USA_DVORAK },
+  { "xkb:us:intl:eng", IDS_STATUSBAR_LAYOUT_USA_INTERNATIONAL },
 };
 const size_t kEnglishToResourceIdArraySize =
     arraysize(kEnglishToResourceIdArray);
 
 }  // namespace
 
+namespace chromeos {
+
+namespace input_method {
+
 InputMethodUtil::InputMethodUtil(
     InputMethodDelegate* delegate,
     scoped_ptr<InputMethodDescriptors> supported_input_methods)
-    : supported_input_methods_(supported_input_methods.Pass()),
-      delegate_(delegate) {
+    : delegate_(delegate) {
   // Makes sure the supported input methods at least have the fallback ime.
   // So that it won't cause massive test failures.
-  if (supported_input_methods_->empty())
-    supported_input_methods_->push_back(GetFallbackInputMethodDescriptor());
+  if (supported_input_methods->empty())
+    supported_input_methods->push_back(GetFallbackInputMethodDescriptor());
 
-  ReloadInternalMaps();
+  ResetInputMethods(*supported_input_methods);
 
   // Initialize a map from English string to Chrome string resource ID as well.
   for (size_t i = 0; i < kEnglishToResourceIdArraySize; ++i) {
@@ -360,12 +269,18 @@ InputMethodUtil::~InputMethodUtil() {
 bool InputMethodUtil::TranslateStringInternal(
     const std::string& english_string, base::string16 *out_string) const {
   DCHECK(out_string);
-  HashType::const_iterator iter = english_to_resource_id_.find(english_string);
+  // |english_string| could be an input method id. So legacy xkb id is required
+  // to get the translated string.
+  std::string key_string = extension_ime_util::MaybeGetLegacyXkbId(
+      english_string);
+  HashType::const_iterator iter = english_to_resource_id_.find(key_string);
+
   if (iter == english_to_resource_id_.end()) {
     // TODO(yusukes): Write Autotest which checks if all display names and all
     // property names for supported input methods are listed in the resource
     // ID array (crosbug.com/4572).
-    LOG(ERROR) << "Resource ID is not found for: " << english_string;
+    LOG(ERROR) << "Resource ID is not found for: " << english_string
+               << ", " << key_string;
     return false;
   }
 
@@ -394,19 +309,6 @@ bool InputMethodUtil::IsValidInputMethodId(
 bool InputMethodUtil::IsKeyboardLayout(const std::string& input_method_id) {
   return StartsWithASCII(input_method_id, "xkb:", false) ||
       extension_ime_util::IsKeyboardLayoutExtension(input_method_id);
-}
-
-std::string InputMethodUtil::GetLanguageCodeFromInputMethodId(
-    const std::string& input_method_id) const {
-  // The code should be compatible with one of codes used for UI languages,
-  // defined in app/l10_util.cc.
-  const char kDefaultLanguageCode[] = "en-US";
-  std::map<std::string, std::string>::const_iterator iter
-      = id_to_language_code_.find(input_method_id);
-  return (iter == id_to_language_code_.end()) ?
-      // Returning |kDefaultLanguageCode| here is not for Chrome OS but for
-      // Ubuntu where the ibus-xkb-layouts engine could be missing.
-      kDefaultLanguageCode : iter->second;
 }
 
 std::string InputMethodUtil::GetKeyboardLayoutName(
@@ -509,12 +411,7 @@ base::string16 InputMethodUtil::GetInputMethodLongName(
   DCHECK(!input_method.language_codes().empty());
   const std::string language_code = input_method.language_codes().at(0);
 
-  // Before translate the string, convert the input method id to legacy xkb id
-  // if possible.
-  // TODO(shuchen): the GetInputMethodLongName() method should be removed when
-  // finish the wrapping of xkb to extension.
-  base::string16 text = TranslateString(
-      extension_ime_util::MaybeGetLegacyXkbId(input_method.id()));
+  base::string16 text = TranslateString(input_method.id());
   if (text == standard_input_method_text ||
              language_code == "de" ||
              language_code == "fr" ||
@@ -628,9 +525,7 @@ void InputMethodUtil::GetFirstLoginInputMethodIds(
   }
   // Add the most popular input method ID, if it's different from the
   // current input method.
-  if (most_popular_id != current_input_method.id() &&
-      // TODO(yusukes): Remove this hack when we remove the "english-m" IME.
-      most_popular_id != "english-m") {
+  if (most_popular_id != current_input_method.id()) {
     out_input_method_ids->push_back(most_popular_id);
   }
 }
@@ -758,7 +653,6 @@ void InputMethodUtil::AppendInputMethods(const InputMethodDescriptors& imes) {
     DCHECK(!input_method.language_codes().empty());
     const std::vector<std::string>& language_codes =
         input_method.language_codes();
-    id_to_language_code_[input_method.id()] = language_codes[0];
     id_to_descriptor_[input_method.id()] = input_method;
 
     typedef LanguageCodeToIdsMap::const_iterator It;
@@ -780,7 +674,6 @@ void InputMethodUtil::AppendInputMethods(const InputMethodDescriptors& imes) {
 void InputMethodUtil::ResetInputMethods(const InputMethodDescriptors& imes) {
   // Clear the existing maps.
   language_code_to_ids_.clear();
-  id_to_language_code_.clear();
   id_to_descriptor_.clear();
 
   AppendInputMethods(imes);
@@ -788,22 +681,12 @@ void InputMethodUtil::ResetInputMethods(const InputMethodDescriptors& imes) {
 
 void InputMethodUtil::InitXkbInputMethodsForTesting() {
   cached_hardware_layouts_.clear();
-  scoped_ptr<InputMethodDescriptors> original_imes =
-      InputMethodWhitelist().GetSupportedInputMethods();
-  InputMethodDescriptors whitelist_imes;
-  for (size_t i = 0; i < original_imes->size(); ++i) {
-    const InputMethodDescriptor& ime = (*original_imes)[i];
-    whitelist_imes.push_back(InputMethodDescriptor(
-        extension_ime_util::GetInputMethodIDByEngineID(ime.id()),
-        "",
-        ime.indicator(),
-        ime.keyboard_layouts(),
-        ime.language_codes(),
-        ime.is_login_keyboard(),
-        ime.options_page_url(),
-        ime.input_view_url()));
-  }
-  ResetInputMethods(whitelist_imes);
+  ResetInputMethods(*(InputMethodWhitelist().GetSupportedInputMethods()));
+}
+
+const InputMethodUtil::InputMethodIdToDescriptorMap&
+InputMethodUtil::GetIdToDesciptorMapForTesting() {
+  return id_to_descriptor_;
 }
 
 InputMethodDescriptor InputMethodUtil::GetFallbackInputMethodDescriptor() {
@@ -820,46 +703,6 @@ InputMethodDescriptor InputMethodUtil::GetFallbackInputMethodDescriptor() {
       true,  // login keyboard.
       GURL(),  // options page, not available.
       GURL()); // input view page, not available.
-}
-
-void InputMethodUtil::ReloadInternalMaps() {
-  if (supported_input_methods_->size() <= 1) {
-    DVLOG(1) << "GetSupportedInputMethods returned a fallback ID";
-    // TODO(yusukes): Handle this error in nicer way.
-  }
-
-  // Clear the existing maps.
-  language_code_to_ids_.clear();
-  id_to_language_code_.clear();
-  id_to_descriptor_.clear();
-
-  for (size_t i = 0; i < supported_input_methods_->size(); ++i) {
-    const InputMethodDescriptor& input_method = supported_input_methods_->at(i);
-    const std::string input_method_id =
-        extension_ime_util::GetInputMethodIDByEngineID(input_method.id());
-    const std::vector<std::string>& language_codes =
-        input_method.language_codes();
-
-    // |input_method_id| may be different than input_method.id().
-    id_to_descriptor_.insert(
-        std::make_pair(input_method_id,
-                       InputMethodDescriptor(input_method_id,
-                                             input_method.name(),
-                                             input_method.indicator(),
-                                             input_method.keyboard_layouts(),
-                                             input_method.language_codes(),
-                                             input_method.is_login_keyboard(),
-                                             input_method.options_page_url(),
-                                             input_method.input_view_url())));
-
-    for (size_t i = 0; i < language_codes.size(); ++i) {
-      language_code_to_ids_.insert(
-          std::make_pair(language_codes[i], input_method_id));
-      // Remember the pairs.
-      id_to_language_code_.insert(
-          std::make_pair(input_method_id, language_codes[i]));
-    }
-  }
 }
 
 }  // namespace input_method

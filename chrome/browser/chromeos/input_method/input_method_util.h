@@ -145,6 +145,13 @@ class InputMethodUtil {
   // Initializes the extension based xkb IMEs for testing.
   void InitXkbInputMethodsForTesting();
 
+  // Map from input method ID to associated input method descriptor.
+  typedef std::map<
+    std::string, InputMethodDescriptor> InputMethodIdToDescriptorMap;
+
+  // Gets the id to desctiptor map for testing.
+  const InputMethodIdToDescriptorMap& GetIdToDesciptorMapForTesting();
+
   // Returns the fallback input method descriptor (the very basic US
   // keyboard). This function is mostly used for testing, but may be used
   // as the fallback, when there is no other choice.
@@ -157,13 +164,6 @@ class InputMethodUtil {
       const std::string& normalized_language_code,
       InputMethodType type,
       std::vector<std::string>* out_input_method_ids) const;
-
-  // protected: for unit testing as well.
-  void ReloadInternalMaps();
-
-  // All input methods that are supported, including ones not active.
-  // protected: for testing.
-  scoped_ptr<InputMethodDescriptors> supported_input_methods_;
 
   // Gets the keyboard layout name from the given input method ID.
   // If the ID is invalid, an empty string will be returned.
@@ -183,14 +183,8 @@ class InputMethodUtil {
 
   // Map from language code to associated input method IDs, etc.
   typedef std::multimap<std::string, std::string> LanguageCodeToIdsMap;
-  // Map from input method ID to associated input method descriptor.
-  typedef std::map<
-    std::string, InputMethodDescriptor> InputMethodIdToDescriptorMap;
-  // Map from component extention IME id to associated input method descriptor.
-  typedef std::map<std::string, InputMethodDescriptor> ComponentExtIMEMap;
 
   LanguageCodeToIdsMap language_code_to_ids_;
-  std::map<std::string, std::string> id_to_language_code_;
   InputMethodIdToDescriptorMap id_to_descriptor_;
   std::map<std::string, std::string> xkb_layout_to_indicator_;
 

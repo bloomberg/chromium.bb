@@ -39,8 +39,6 @@ class TestableInputMethodUtil : public InputMethodUtil {
   // Change access rights.
   using InputMethodUtil::GetInputMethodIdsFromLanguageCodeInternal;
   using InputMethodUtil::GetKeyboardLayoutName;
-  using InputMethodUtil::ReloadInternalMaps;
-  using InputMethodUtil::supported_input_methods_;
 };
 
 }  // namespace
@@ -121,19 +119,7 @@ class InputMethodUtilTest : public testing::Test {
 };
 
 TEST_F(InputMethodUtilTest, GetInputMethodShortNameTest) {
-  // Test normal cases. Two-letter language code should be returned.
-  {
-    InputMethodDescriptor desc = GetDesc("vkd_fa",  // input method id
-                                         "us",  // keyboard layout name
-                                         "fa", // language name
-                                         ""); // indicator
-    EXPECT_EQ(ASCIIToUTF16("FA"), util_.GetInputMethodShortName(desc));
-  }
-  {
-    InputMethodDescriptor desc = GetDesc("hangul_2set", "us", "ko", "");
-    EXPECT_EQ(base::UTF8ToUTF16("\xed\x95\x9c"),
-              util_.GetInputMethodShortName(desc));
-  }
+  // Test invalid cases. Two-letter language code should be returned.
   {
     InputMethodDescriptor desc = GetDesc("invalid-id", "us", "xx", "");
     // Upper-case string of the unknown language code, "xx", should be returned.
@@ -305,11 +291,6 @@ TEST_F(InputMethodUtilTest, TestGetKeyboardLayoutName) {
   EXPECT_EQ("de(neo)", util_.GetKeyboardLayoutName(Id("xkb:de:neo:ger")));
 }
 
-TEST_F(InputMethodUtilTest, TestGetLanguageCodeFromInputMethodId) {
-  // Make sure that the -CN is added properly.
-  EXPECT_EQ("zh-CN", util_.GetLanguageCodeFromInputMethodId(Id(pinyin_ime_id)));
-}
-
 TEST_F(InputMethodUtilTest, TestGetInputMethodDisplayNameFromId) {
   EXPECT_EQ("US",
             util_.GetInputMethodDisplayNameFromId("xkb:us::eng"));
@@ -448,9 +429,11 @@ TEST_F(InputMethodUtilTest, TestGetLanguageCodesFromInputMethodIds) {
 
 // Test all supported descriptors to detect a typo in input_methods.txt.
 TEST_F(InputMethodUtilTest, TestIBusInputMethodText) {
-  for (size_t i = 0; i < util_.supported_input_methods_->size(); ++i) {
-    const std::string language_code =
-        util_.supported_input_methods_->at(i).language_codes().at(0);
+  const std::map<std::string, InputMethodDescriptor>& id_to_descriptor =
+      util_.GetIdToDesciptorMapForTesting();
+  for (std::map<std::string, InputMethodDescriptor>::const_iterator it =
+       id_to_descriptor.begin(); it != id_to_descriptor.end(); ++it) {
+    const std::string language_code = it->second.language_codes().at(0);
     const base::string16 display_name =
         l10n_util::GetDisplayNameForLocale(language_code, "en", false);
     // Only two formats, like "fr" (lower case) and "en-US" (lower-upper), are

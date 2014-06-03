@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "base/strings/string_util.h"
+#include "chromeos/ime/extension_ime_util.h"
 #include "chromeos/ime/input_method_descriptor.h"
 #include "chromeos/ime/input_methods.h"
 
@@ -42,7 +43,8 @@ InputMethodWhitelist::GetSupportedInputMethods() const {
     DCHECK(!languages.empty());
 
     input_methods->push_back(InputMethodDescriptor(
-        kInputMethods[i].input_method_id,
+        extension_ime_util::GetInputMethodIDByEngineID(
+            kInputMethods[i].input_method_id),
         "",
         kInputMethods[i].indicator,
         layouts,

@@ -142,6 +142,10 @@ class InputMethodManagerImpl : public InputMethodManager,
   bool ChangeInputMethodInternal(const std::string& input_method_id,
                                  bool show_message);
 
+  // Gets whether the XKB extension is loaded successfully by checking the XKB
+  // input methods in input methods in |component_extension_ime_manager_|.
+  bool IsXkbComponentExtensionAvailable() const;
+
   // Called when the ComponentExtensionIMEManagerDelegate is initialized.
   void OnComponentExtensionInitialized(
       scoped_ptr<ComponentExtensionIMEManagerDelegate> delegate);
