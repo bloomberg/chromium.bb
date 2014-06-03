@@ -58,7 +58,7 @@ using extensions::BundleInstaller;
 namespace {
 
 // Size of extension icon in top left of dialog.
-const int kIconSize = 69;
+const int kIconSize = 64;
 
 // We offset the icon a little bit from the right edge of the dialog, to make it
 // align with the button below it.

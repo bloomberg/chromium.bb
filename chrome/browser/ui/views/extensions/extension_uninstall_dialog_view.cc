@@ -31,7 +31,7 @@
 namespace {
 
 const int kRightColumnWidth = 210;
-const int kIconSize = 69;
+const int kIconSize = 64;
 
 class ExtensionUninstallDialogDelegateView;
 

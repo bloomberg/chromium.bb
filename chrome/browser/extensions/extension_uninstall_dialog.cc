@@ -30,14 +30,6 @@
 
 namespace {
 
-// Returns pixel size under maximal scale factor for the icon whose device
-// independent size is |size_in_dip|
-int GetSizeForMaxScaleFactor(int size_in_dip) {
-  float max_scale_factor_scale = gfx::ImageSkia::GetMaxSupportedScale();
-
-  return static_cast<int>(size_in_dip * max_scale_factor_scale);
-}
-
 // Returns bitmap for the default icon with size equal to the default icon's
 // pixel size under maximal supported scale factor.
 SkBitmap GetDefaultIconBitmapForMaxScaleFactor(bool is_app) {
@@ -49,9 +41,6 @@ SkBitmap GetDefaultIconBitmapForMaxScaleFactor(bool is_app) {
 }
 
 }  // namespace
-
-// Size of extension icon in top left of dialog.
-static const int kIconSize = 69;
 
 ExtensionUninstallDialog::ExtensionUninstallDialog(
     Profile* profile,
@@ -85,28 +74,31 @@ void ExtensionUninstallDialog::ConfirmUninstall(
     const extensions::Extension* extension) {
   DCHECK(ui_loop_ == base::MessageLoop::current());
   extension_ = extension;
-  // Bookmark apps may not have 128x128 icons so accept 48x48 icons.
+  // Bookmark apps may not have 128x128 icons so accept 64x64 icons.
   const int icon_size = extension_->from_bookmark()
-      ? extension_misc::EXTENSION_ICON_MEDIUM
-      : extension_misc::EXTENSION_ICON_LARGE;
+                            ? extension_misc::EXTENSION_ICON_SMALL * 2
+                            : extension_misc::EXTENSION_ICON_LARGE;
   extensions::ExtensionResource image = extensions::IconsInfo::GetIconResource(
       extension_,
       icon_size,
       ExtensionIconSet::MATCH_BIGGER);
-  // Load the icon whose pixel size is large enough to be displayed under
-  // maximal supported scale factor. UI code will scale the icon down if needed.
-  int pixel_size = GetSizeForMaxScaleFactor(kIconSize);
 
   // Load the image asynchronously. The response will be sent to OnImageLoaded.
   state_ = kImageIsLoading;
   extensions::ImageLoader* loader =
       extensions::ImageLoader::Get(profile_);
-  loader->LoadImageAsync(extension_,
-                         image,
-                         gfx::Size(pixel_size, pixel_size),
-                         base::Bind(&ExtensionUninstallDialog::OnImageLoaded,
-                                    AsWeakPtr(),
-                                    extension_->id()));
+
+  std::vector<extensions::ImageLoader::ImageRepresentation> images_list;
+  images_list.push_back(extensions::ImageLoader::ImageRepresentation(
+      image,
+      extensions::ImageLoader::ImageRepresentation::NEVER_RESIZE,
+      gfx::Size(),
+      ui::SCALE_FACTOR_100P));
+  loader->LoadImagesAsync(extension_,
+                          images_list,
+                          base::Bind(&ExtensionUninstallDialog::OnImageLoaded,
+                                     AsWeakPtr(),
+                                     extension_->id()));
 }
 
 void ExtensionUninstallDialog::SetIcon(const gfx::Image& image) {

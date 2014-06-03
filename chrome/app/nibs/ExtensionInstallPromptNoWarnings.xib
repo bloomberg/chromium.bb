@@ -171,7 +171,7 @@ ARcABAAAAAEAAAACARwAAwAAAAEAAQAAAVIAAwAAAAEAAQAAAVMAAwAAAAIAAQABAAAAAA</bytes>
 								<string>NeXT TIFF v4.0 pasteboard type</string>
 							</object>
 						</object>
-						<string key="NSFrame">{{380, 66}, {69, 69}}</string>
+						<string key="NSFrame">{{380, 66}, {64, 64}}</string>
 						<reference key="NSSuperview" ref="232836874"/>
 						<reference key="NSWindow"/>
 						<reference key="NSNextKeyView" ref="478302198"/>

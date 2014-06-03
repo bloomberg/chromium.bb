@@ -119,15 +119,6 @@ static const int
         IDS_EXTENSION_PROMPT_WILL_HAVE_ACCESS_TO,
 };
 
-// Size of extension icon in top left of dialog.
-const int kIconSize = 69;
-
-// Returns pixel size under maximal scale factor for the icon whose device
-// independent size is |size_in_dip|
-int GetSizeForMaxScaleFactor(int size_in_dip) {
-  return static_cast<int>(size_in_dip * gfx::ImageSkia::GetMaxSupportedScale());
-}
-
 // Returns bitmap for the default icon with size equal to the default icon's
 // pixel size under maximal supported scale factor.
 SkBitmap GetDefaultIconBitmapForMaxScaleFactor(bool is_app) {
@@ -690,18 +681,24 @@ void ExtensionInstallPrompt::LoadImageIfNeeded() {
     return;
   }
 
-  // Load the image asynchronously. For the response, check OnImageLoaded.
   extensions::ExtensionResource image = extensions::IconsInfo::GetIconResource(
       extension_,
       extension_misc::EXTENSION_ICON_LARGE,
       ExtensionIconSet::MATCH_BIGGER);
-  // Load the icon whose pixel size is large enough to be displayed under
-  // maximal supported scale factor. UI code will scale the icon down if needed.
-  // TODO(tbarzic): We should use IconImage here and load the required bitmap
-  //     lazily.
-  int pixel_size = GetSizeForMaxScaleFactor(kIconSize);
-  extensions::ImageLoader::Get(install_ui_->profile())->LoadImageAsync(
-      extension_, image, gfx::Size(pixel_size, pixel_size),
+
+  // Load the image asynchronously. The response will be sent to OnImageLoaded.
+  extensions::ImageLoader* loader =
+      extensions::ImageLoader::Get(install_ui_->profile());
+
+  std::vector<extensions::ImageLoader::ImageRepresentation> images_list;
+  images_list.push_back(extensions::ImageLoader::ImageRepresentation(
+      image,
+      extensions::ImageLoader::ImageRepresentation::NEVER_RESIZE,
+      gfx::Size(),
+      ui::SCALE_FACTOR_100P));
+  loader->LoadImagesAsync(
+      extension_,
+      images_list,
       base::Bind(&ExtensionInstallPrompt::OnImageLoaded, AsWeakPtr()));
 }
 
