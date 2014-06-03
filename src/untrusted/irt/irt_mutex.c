@@ -42,10 +42,3 @@ const struct nacl_irt_mutex nacl_irt_mutex = {
   nacl_irt_mutex_unlock,
   nacl_irt_mutex_trylock,
 };
-
-/*
- * This name is used inside the IRT itself and in libpthread_private,
- * by the private copy of irt_futex.c.
- */
-extern const struct nacl_irt_mutex __nc_irt_mutex
-  __attribute__((alias("nacl_irt_mutex")));
