@@ -93,19 +93,10 @@ bool GestureEventQueue::ShouldForwardForBounceReduction(
 bool GestureEventQueue::ShouldForward(
     const GestureEventWithLatencyInfo& gesture_event) {
   TRACE_EVENT0("input", "GestureEventQueue::ShouldForward");
-  return ShouldForwardForZeroVelocityFlingStart(gesture_event) &&
-      ShouldForwardForBounceReduction(gesture_event) &&
-      ShouldForwardForGFCFiltering(gesture_event) &&
-      ShouldForwardForTapSuppression(gesture_event) &&
-      ShouldForwardForCoalescing(gesture_event);
-}
-
-bool GestureEventQueue::ShouldForwardForZeroVelocityFlingStart(
-    const GestureEventWithLatencyInfo& gesture_event) const {
-  return gesture_event.event.type != WebInputEvent::GestureFlingStart ||
-      gesture_event.event.sourceDevice != WebGestureEvent::Touchpad ||
-      gesture_event.event.data.flingStart.velocityX != 0 ||
-      gesture_event.event.data.flingStart.velocityY != 0;
+  return ShouldForwardForBounceReduction(gesture_event) &&
+         ShouldForwardForGFCFiltering(gesture_event) &&
+         ShouldForwardForTapSuppression(gesture_event) &&
+         ShouldForwardForCoalescing(gesture_event);
 }
 
 bool GestureEventQueue::ShouldForwardForGFCFiltering(

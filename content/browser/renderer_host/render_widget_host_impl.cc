@@ -39,7 +39,6 @@
 #include "content/browser/renderer_host/input/synthetic_gesture_target.h"
 #include "content/browser/renderer_host/input/timeout_monitor.h"
 #include "content/browser/renderer_host/input/touch_emulator.h"
-#include "content/browser/renderer_host/overscroll_controller.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_helper.h"
@@ -233,12 +232,6 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
 
   touch_emulator_.reset();
 
-#if defined(USE_AURA)
-  bool overscroll_enabled = CommandLine::ForCurrentProcess()->
-      GetSwitchValueASCII(switches::kOverscrollHistoryNavigation) != "0";
-  SetOverscrollControllerEnabled(overscroll_enabled);
-#endif
-
   RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(
       IsRenderView() ? RenderViewHost::From(this) : NULL);
   if (BrowserPluginGuest::IsGuest(rvh) ||
@@ -392,13 +385,6 @@ void RenderWidgetHostImpl::SendScreenRects() {
   if (delegate_)
     delegate_->DidSendScreenRects(this);
   waiting_for_screen_rects_ack_ = true;
-}
-
-void RenderWidgetHostImpl::SetOverscrollControllerEnabled(bool enabled) {
-  if (!enabled)
-    overscroll_controller_.reset();
-  else if (!overscroll_controller_)
-    overscroll_controller_.reset(new OverscrollController());
 }
 
 void RenderWidgetHostImpl::SuppressNextCharEvents() {
@@ -650,10 +636,6 @@ void RenderWidgetHostImpl::Blur() {
   // request later.
   if (IsMouseLocked())
     view_->UnlockMouse();
-
-  // If there is a pending overscroll, then that should be cancelled.
-  if (overscroll_controller_)
-    overscroll_controller_->Cancel();
 
   if (touch_emulator_)
     touch_emulator_->CancelTouch();
@@ -1211,10 +1193,7 @@ void RenderWidgetHostImpl::RendererExited(base::TerminationStatus status,
   input_router_.reset(new InputRouterImpl(
       process_, this, this, routing_id_, GetInputRouterConfigForPlatform()));
 
-  if (overscroll_controller_)
-    overscroll_controller_->Reset();
-
- // Must reset these to ensure that keyboard events work with a new renderer.
+  // Must reset these to ensure that keyboard events work with a new renderer.
   suppress_next_char_events_ = false;
 
   // Reset some fields in preparation for recovering from a crash.
@@ -1810,7 +1789,7 @@ void RenderWidgetHostImpl::IncrementInFlightEventCount() {
 }
 
 void RenderWidgetHostImpl::DecrementInFlightEventCount() {
-  DCHECK(in_flight_event_count_ >= 0);
+  DCHECK_GE(in_flight_event_count_, 0);
   // Cancel pending hung renderer checks since the renderer is responsive.
   if (decrement_in_flight_event_count() <= 0)
     StopHangMonitorTimeout();
@@ -1818,10 +1797,6 @@ void RenderWidgetHostImpl::DecrementInFlightEventCount() {
 
 void RenderWidgetHostImpl::OnHasTouchEventHandlers(bool has_handlers) {
   has_touch_handler_ = has_handlers;
-}
-
-OverscrollController* RenderWidgetHostImpl::GetOverscrollController() const {
-  return overscroll_controller_.get();
 }
 
 void RenderWidgetHostImpl::DidFlush() {
@@ -1869,10 +1844,12 @@ void RenderWidgetHostImpl::OnWheelEventAck(
         ui::INPUT_EVENT_LATENCY_TERMINATED_MOUSE_COMPONENT, 0, 0);
   }
 
-  const bool processed = (INPUT_EVENT_ACK_STATE_CONSUMED == ack_result);
-  if (!processed && !is_hidden() && view_) {
-    if (!delegate_->HandleWheelEvent(wheel_event.event))
-      view_->UnhandledWheelEvent(wheel_event.event);
+  if (!is_hidden() && view_) {
+    if (ack_result != INPUT_EVENT_ACK_STATE_CONSUMED &&
+        delegate_->HandleWheelEvent(wheel_event.event)) {
+      ack_result = INPUT_EVENT_ACK_STATE_CONSUMED;
+    }
+    view_->WheelEventAck(wheel_event.event, ack_result);
   }
 }
 

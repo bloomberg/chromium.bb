@@ -768,7 +768,7 @@ void WebContentsViewAura::EndDrag(blink::WebDragOperationsMask ops) {
 }
 
 void WebContentsViewAura::InstallOverscrollControllerDelegate(
-    RenderWidgetHostImpl* host) {
+    RenderWidgetHostViewAura* view) {
   const std::string value = CommandLine::ForCurrentProcess()->
       GetSwitchValueASCII(switches::kOverscrollHistoryNavigation);
   if (value == "0") {
@@ -779,10 +779,10 @@ void WebContentsViewAura::InstallOverscrollControllerDelegate(
     navigation_overlay_.reset();
     if (!gesture_nav_simple_)
       gesture_nav_simple_.reset(new GestureNavSimple(web_contents_));
-    host->overscroll_controller()->set_delegate(gesture_nav_simple_.get());
+    view->overscroll_controller()->set_delegate(gesture_nav_simple_.get());
     return;
   }
-  host->overscroll_controller()->set_delegate(this);
+  view->overscroll_controller()->set_delegate(this);
   if (!navigation_overlay_)
     navigation_overlay_.reset(new OverscrollNavigationOverlay(web_contents_));
 }
@@ -1101,8 +1101,8 @@ RenderWidgetHostViewBase* WebContentsViewAura::CreateViewForWidget(
         render_widget_host->GetView());
   }
 
-  RenderWidgetHostViewBase* view = new RenderWidgetHostViewAura(
-      render_widget_host);
+  RenderWidgetHostViewAura* view =
+      new RenderWidgetHostViewAura(render_widget_host);
   view->InitAsChild(NULL);
   GetNativeView()->AddChild(view->GetNativeView());
 
@@ -1119,10 +1119,10 @@ RenderWidgetHostViewBase* WebContentsViewAura::CreateViewForWidget(
   // We listen to drag drop events in the newly created view's window.
   aura::client::SetDragDropDelegate(view->GetNativeView(), this);
 
-  if (host_impl->overscroll_controller() &&
+  if (view->overscroll_controller() &&
       (!web_contents_->GetDelegate() ||
        web_contents_->GetDelegate()->CanOverscrollContent())) {
-    InstallOverscrollControllerDelegate(host_impl);
+    InstallOverscrollControllerDelegate(view);
   }
 
   AttachTouchEditableToRenderView();
@@ -1148,12 +1148,12 @@ void WebContentsViewAura::RenderViewSwappedIn(RenderViewHost* host) {
 }
 
 void WebContentsViewAura::SetOverscrollControllerEnabled(bool enabled) {
-  RenderViewHostImpl* host = static_cast<RenderViewHostImpl*>(
-      web_contents_->GetRenderViewHost());
-  if (host) {
-    host->SetOverscrollControllerEnabled(enabled);
+  RenderWidgetHostViewAura* view =
+      ToRenderWidgetHostViewAura(web_contents_->GetRenderWidgetHostView());
+  if (view) {
+    view->SetOverscrollControllerEnabled(enabled);
     if (enabled)
-      InstallOverscrollControllerDelegate(host);
+      InstallOverscrollControllerDelegate(view);
   }
 
   if (!enabled)

@@ -8,6 +8,7 @@
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/command_line.h"
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
@@ -35,9 +36,11 @@
 #include "content/common/gpu/gpu_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/overscroll_configuration.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view_frame_subscriber.h"
 #include "content/public/browser/user_metrics.h"
+#include "content/public/common/content_switches.h"
 #include "third_party/WebKit/public/platform/WebScreenInfo.h"
 #include "third_party/WebKit/public/web/WebCompositionUnderline.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
@@ -93,6 +96,8 @@ using gfx::RectToSkIRect;
 using gfx::SkIRectToRect;
 
 using blink::WebScreenInfo;
+using blink::WebInputEvent;
+using blink::WebGestureEvent;
 using blink::WebTouchEvent;
 
 namespace content {
@@ -434,6 +439,10 @@ RenderWidgetHostViewAura::RenderWidgetHostViewAura(RenderWidgetHost* host)
   aura::client::SetFocusChangeObserver(window_, this);
   window_->set_layer_owner_delegate(delegated_frame_host_.get());
   gfx::Screen::GetScreenFor(window_)->AddObserver(this);
+
+  bool overscroll_enabled = CommandLine::ForCurrentProcess()->
+      GetSwitchValueASCII(switches::kOverscrollHistoryNavigation) != "0";
+  SetOverscrollControllerEnabled(overscroll_enabled);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1147,11 +1156,25 @@ gfx::Rect RenderWidgetHostViewAura::GetBoundsInRootWindow() {
   return bounds;
 }
 
+void RenderWidgetHostViewAura::WheelEventAck(
+    const blink::WebMouseWheelEvent& event,
+    InputEventAckState ack_result) {
+  if (overscroll_controller_) {
+    overscroll_controller_->ReceivedEventACK(
+        event, (INPUT_EVENT_ACK_STATE_CONSUMED == ack_result));
+  }
+}
+
 void RenderWidgetHostViewAura::GestureEventAck(
     const blink::WebGestureEvent& event,
     InputEventAckState ack_result) {
   if (touch_editing_client_)
     touch_editing_client_->GestureEventAck(event.type);
+
+  if (overscroll_controller_) {
+    overscroll_controller_->ReceivedEventACK(
+        event, (INPUT_EVENT_ACK_STATE_CONSUMED == ack_result));
+  }
 }
 
 void RenderWidgetHostViewAura::ProcessAckedTouchEvent(
@@ -1183,6 +1206,29 @@ RenderWidgetHostViewAura::CreateSyntheticGestureTarget() {
 void RenderWidgetHostViewAura::SetScrollOffsetPinning(
     bool is_pinned_to_left, bool is_pinned_to_right) {
   // Not needed. Mac-only.
+}
+
+InputEventAckState RenderWidgetHostViewAura::FilterInputEvent(
+    const blink::WebInputEvent& input_event) {
+  bool consumed = false;
+  if (input_event.type == WebInputEvent::GestureFlingStart) {
+    const WebGestureEvent& gesture_event =
+        static_cast<const WebGestureEvent&>(input_event);
+    // Zero-velocity touchpad flings are an Aura-specific signal that the
+    // touchpad scroll has ended, and should not be forwarded to the renderer.
+    if (gesture_event.sourceDevice == WebGestureEvent::Touchpad &&
+        !gesture_event.data.flingStart.velocityX &&
+        !gesture_event.data.flingStart.velocityY) {
+      consumed = true;
+    }
+  }
+
+  if (overscroll_controller_)
+    consumed |= overscroll_controller_->WillHandleEvent(input_event);
+
+  return consumed && !WebTouchEvent::isTouchEventType(input_event.type)
+             ? INPUT_EVENT_ACK_STATE_CONSUMED
+             : INPUT_EVENT_ACK_STATE_NOT_CONSUMED;
 }
 
 void RenderWidgetHostViewAura::CreateBrowserAccessibilityManagerIfNeeded() {
@@ -1637,6 +1683,9 @@ void RenderWidgetHostViewAura::OnWindowDestroying(aura::Window* window) {
   ui::InputMethod* input_method = GetInputMethod();
   if (input_method)
     input_method->DetachTextInputClient(this);
+
+  if (overscroll_controller_)
+    overscroll_controller_->Reset();
 }
 
 void RenderWidgetHostViewAura::OnWindowDestroyed(aura::Window* window) {
@@ -1783,8 +1832,8 @@ void RenderWidgetHostViewAura::OnMouseEvent(ui::MouseEvent* event) {
   // RootWindow). But this event interferes with the overscroll gesture. So,
   // ignore such synthetic mouse-move events if an overscroll gesture is in
   // progress.
-  if (host_->overscroll_controller() &&
-      host_->overscroll_controller()->overscroll_mode() != OVERSCROLL_NONE &&
+  if (overscroll_controller_ &&
+      overscroll_controller_->overscroll_mode() != OVERSCROLL_NONE &&
       event->flags() & ui::EF_IS_SYNTHESIZED &&
       (event->type() == ui::ET_MOUSE_ENTERED ||
        event->type() == ui::ET_MOUSE_EXITED ||
@@ -2039,6 +2088,9 @@ void RenderWidgetHostViewAura::OnWindowFocused(aura::Window* gained_focus,
     if (touch_editing_client_)
       touch_editing_client_->EndTouchEditing(false);
 
+    if (overscroll_controller_)
+      overscroll_controller_->Cancel();
+
     BrowserAccessibilityManager* manager = GetBrowserAccessibilityManager();
     if (manager)
       manager->OnWindowBlurred();
@@ -2210,6 +2262,13 @@ void RenderWidgetHostViewAura::NotifyRendererOfCursorVisibilityState(
 
   cursor_visibility_state_in_renderer_ = is_visible ? VISIBLE : NOT_VISIBLE;
   host_->SendCursorVisibilityState(is_visible);
+}
+
+void RenderWidgetHostViewAura::SetOverscrollControllerEnabled(bool enabled) {
+  if (!enabled)
+    overscroll_controller_.reset();
+  else if (!overscroll_controller_)
+    overscroll_controller_.reset(new OverscrollController());
 }
 
 void RenderWidgetHostViewAura::SchedulePaintIfNotInClip(

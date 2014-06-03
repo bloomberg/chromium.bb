@@ -1151,17 +1151,4 @@ TEST_F(GestureEventQueueTest, DebounceDropsDeferredEvents) {
   }
 }
 
-TEST_F(GestureEventQueueTest, DropZeroVelocityFlings) {
-  WebGestureEvent gesture_event;
-  gesture_event.type = WebInputEvent::GestureFlingStart;
-  gesture_event.sourceDevice = WebGestureEvent::Touchpad;
-  gesture_event.data.flingStart.velocityX = 0.f;
-  gesture_event.data.flingStart.velocityY = 0.f;
-  ASSERT_EQ(0U, GetAndResetSentGestureEventCount());
-  ASSERT_EQ(0U, GestureEventQueueSize());
-  EXPECT_FALSE(SimulateGestureEvent(gesture_event));
-  EXPECT_EQ(0U, GetAndResetSentGestureEventCount());
-  EXPECT_EQ(0U, GestureEventQueueSize());
-}
-
 }  // namespace content

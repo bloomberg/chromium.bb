@@ -9,6 +9,7 @@
 #include "content/browser/frame_host/navigation_controller_impl.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
+#include "content/public/browser/overscroll_configuration.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/common/content_switches.h"
@@ -96,12 +97,11 @@ void NavigationEntryScreenshotManager::TakeScreenshot() {
   if (!entry)
     return;
 
+  if (!owner_->delegate()->CanOverscrollContent())
+    return;
+
   RenderViewHost* render_view_host =
       owner_->delegate()->GetRenderViewHost();
-  if (!static_cast<RenderViewHostImpl*>
-      (render_view_host)->overscroll_controller()) {
-    return;
-  }
   content::RenderWidgetHostView* view = render_view_host->GetView();
   if (!view)
     return;

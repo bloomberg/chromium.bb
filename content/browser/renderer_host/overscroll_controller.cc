@@ -34,9 +34,7 @@ OverscrollController::OverscrollController()
 OverscrollController::~OverscrollController() {
 }
 
-OverscrollController::Disposition OverscrollController::DispatchEvent(
-    const blink::WebInputEvent& event,
-    const ui::LatencyInfo& latency_info) {
+bool OverscrollController::WillHandleEvent(const blink::WebInputEvent& event) {
   if (scroll_state_ != STATE_UNKNOWN) {
     switch (event.type) {
       case blink::WebInputEvent::GestureScrollEnd:
@@ -67,41 +65,24 @@ OverscrollController::Disposition OverscrollController::DispatchEvent(
   if (DispatchEventCompletesAction(event)) {
     CompleteAction();
 
-    // If the overscroll was caused by touch-scrolling, then the gesture event
-    // that completes the action needs to be sent to the renderer, because the
-    // touch-scrolls maintain state in the renderer side (in the compositor, for
-    // example), and the event that completes this action needs to be sent to
-    // the renderer so that those states can be updated/reset appropriately.
-    if (blink::WebInputEvent::isGestureEventType(event.type)) {
-      // A gesture-event isn't sent to the GestureEventQueue when overscroll is
-      // in progress. So dispatch the event through the RenderWidgetHost so that
-      // it can reach the GestureEventQueue.
-      return SHOULD_FORWARD_TO_GESTURE_QUEUE;
-    }
-
-    return SHOULD_FORWARD_TO_RENDERER;
+    // Let the event be dispatched to the renderer.
+    return false;
   }
 
   if (overscroll_mode_ != OVERSCROLL_NONE && DispatchEventResetsState(event)) {
     SetOverscrollMode(OVERSCROLL_NONE);
-    if (blink::WebInputEvent::isGestureEventType(event.type)) {
-      // A gesture-event isn't sent to the GestureEventQueue when overscroll is
-      // in progress. So dispatch the event through the RenderWidgetHost so that
-      // it can reach the GestureEventQueue.
-      return SHOULD_FORWARD_TO_GESTURE_QUEUE;
-    }
 
     // Let the event be dispatched to the renderer.
-    return SHOULD_FORWARD_TO_RENDERER;
+    return false;
   }
 
   if (overscroll_mode_ != OVERSCROLL_NONE) {
     // Consume the event only if it updates the overscroll state.
     if (ProcessEventForOverscroll(event))
-      return CONSUMED;
+      return true;
   }
 
-  return SHOULD_FORWARD_TO_RENDERER;
+  return false;
 }
 
 void OverscrollController::ReceivedEventACK(const blink::WebInputEvent& event,

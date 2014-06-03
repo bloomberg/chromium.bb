@@ -26,10 +26,9 @@ class MockInputRouterClient : public InputRouterClient {
   virtual void IncrementInFlightEventCount() OVERRIDE;
   virtual void DecrementInFlightEventCount() OVERRIDE;
   virtual void OnHasTouchEventHandlers(bool has_handlers) OVERRIDE;
-  virtual OverscrollController* GetOverscrollController() const OVERRIDE;
+  virtual void SetNeedsFlush() OVERRIDE;
   virtual void DidFlush() OVERRIDE;
   virtual void DidOverscroll(const DidOverscrollParams& params) OVERRIDE;
-  virtual void SetNeedsFlush() OVERRIDE;
 
   bool GetAndResetFilterEventCalled();
   size_t GetAndResetDidFlushCount();

@@ -50,8 +50,8 @@ void MockInputRouterClient::OnHasTouchEventHandlers(
   has_touch_handler_ = has_handlers;
 }
 
-OverscrollController* MockInputRouterClient::GetOverscrollController() const {
-  return NULL;
+void MockInputRouterClient::SetNeedsFlush() {
+  set_needs_flush_called_ = true;
 }
 
 void MockInputRouterClient::DidFlush() {
@@ -60,10 +60,6 @@ void MockInputRouterClient::DidFlush() {
 
 void MockInputRouterClient::DidOverscroll(const DidOverscrollParams& params) {
   overscroll_ = params;
-}
-
-void MockInputRouterClient::SetNeedsFlush() {
-  set_needs_flush_called_ = true;
 }
 
 bool MockInputRouterClient::GetAndResetFilterEventCalled() {

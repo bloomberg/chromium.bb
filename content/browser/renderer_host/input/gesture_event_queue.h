@@ -40,17 +40,16 @@ class CONTENT_EXPORT GestureEventQueueClient {
 
 // Maintains WebGestureEvents in a queue before forwarding them to the renderer
 // to apply a sequence of filters on them:
-// 1. Zero-velocity fling-starts from touchpad are filtered.
-// 2. The sequence is filtered for bounces. A bounce is when the finger lifts
+// 1. The sequence is filtered for bounces. A bounce is when the finger lifts
 //    from the screen briefly during an in-progress scroll. Ifco this happens,
 //    non-GestureScrollUpdate events are queued until the de-bounce interval
 //    passes or another GestureScrollUpdate event occurs.
-// 3. Unnecessary GestureFlingCancel events are filtered. These are
+// 2. Unnecessary GestureFlingCancel events are filtered. These are
 //    GestureFlingCancels that have no corresponding GestureFlingStart in the
 //    queue.
-// 4. Taps immediately after a GestureFlingCancel (caused by the same tap) are
+// 3. Taps immediately after a GestureFlingCancel (caused by the same tap) are
 //    filtered.
-// 5. Whenever possible, events in the queue are coalesced to have as few events
+// 4. Whenever possible, events in the queue are coalesced to have as few events
 //    as possible and therefore maximize the chance that the event stream can be
 //    handled entirely by the compositor thread.
 // Events in the queue are forwarded to the renderer one by one; i.e., each
@@ -141,10 +140,6 @@ class CONTENT_EXPORT GestureEventQueue {
   // the coalescing queue.
   void MergeOrInsertScrollAndPinchEvent(
       const GestureEventWithLatencyInfo& gesture_event);
-
-  // Sub-filter for removing zero-velocity fling-starts from touchpad.
-  bool ShouldForwardForZeroVelocityFlingStart(
-      const GestureEventWithLatencyInfo& gesture_event) const;
 
   // Sub-filter for removing bounces from in-progress scrolls.
   bool ShouldForwardForBounceReduction(

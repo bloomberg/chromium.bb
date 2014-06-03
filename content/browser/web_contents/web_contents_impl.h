@@ -477,7 +477,7 @@ class CONTENT_EXPORT WebContentsImpl
       const LoadCommittedDetails& details,
       const FrameHostMsg_DidCommitProvisionalLoad_Params& params) OVERRIDE;
   virtual void SetMainFrameMimeType(const std::string& mime_type) OVERRIDE;
-  virtual bool CanOverscrollContent() OVERRIDE;
+  virtual bool CanOverscrollContent() const OVERRIDE;
   virtual void NotifyChangedNavigationState(
       InvalidateTypes changed_flags) OVERRIDE;
   virtual void AboutToNavigateRenderFrame(

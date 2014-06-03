@@ -81,7 +81,6 @@ class WebLayer;
 namespace content {
 class InputRouter;
 class MockRenderWidgetHost;
-class OverscrollController;
 class RenderWidgetHostDelegate;
 class RenderWidgetHostViewBase;
 class SyntheticGestureController;
@@ -472,13 +471,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // Update the renderer's cache of the screen rect of the view and window.
   void SendScreenRects();
 
-  OverscrollController* overscroll_controller() const {
-    return overscroll_controller_.get();
-  }
-
-  // Sets whether the overscroll controller should be enabled for this page.
-  void SetOverscrollControllerEnabled(bool enabled);
-
   // Suppreses future char events until a keydown. See
   // suppress_next_char_events_.
   void SuppressNextCharEvents();
@@ -586,9 +578,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   int increment_in_flight_event_count() { return ++in_flight_event_count_; }
   int decrement_in_flight_event_count() { return --in_flight_event_count_; }
 
-  // Returns whether an overscroll gesture is in progress.
-  bool IsInOverscrollGesture() const;
-
   // The View associated with the RenderViewHost. The lifetime of this object
   // is associated with the lifetime of the Render process. If the Renderer
   // crashes, its View is destroyed and this pointer becomes NULL, even though
@@ -684,7 +673,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   virtual void IncrementInFlightEventCount() OVERRIDE;
   virtual void DecrementInFlightEventCount() OVERRIDE;
   virtual void OnHasTouchEventHandlers(bool has_handlers) OVERRIDE;
-  virtual OverscrollController* GetOverscrollController() const OVERRIDE;
   virtual void DidFlush() OVERRIDE;
   virtual void DidOverscroll(const DidOverscrollParams& params) OVERRIDE;
 
@@ -865,8 +853,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
 
   // Receives and handles all input events.
   scoped_ptr<InputRouter> input_router_;
-
-  scoped_ptr<OverscrollController> overscroll_controller_;
 
   scoped_ptr<TimeoutMonitor> hang_monitor_timeout_;
 

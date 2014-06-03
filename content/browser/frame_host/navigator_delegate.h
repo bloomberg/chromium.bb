@@ -77,7 +77,7 @@ class CONTENT_EXPORT NavigatorDelegate {
       const FrameHostMsg_DidCommitProvisionalLoad_Params& params) {}
 
   virtual void SetMainFrameMimeType(const std::string& mime_type) {}
-  virtual bool CanOverscrollContent();
+  virtual bool CanOverscrollContent() const;
 
   // Notification to the Navigator embedder that navigation state has
   // changed. This method corresponds to

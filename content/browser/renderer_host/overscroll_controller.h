@@ -15,7 +15,7 @@ struct LatencyInfo;
 
 namespace content {
 
-class MockRenderWidgetHost;
+class RenderWidgetHostViewAuraOverscrollTest;
 class OverscrollControllerDelegate;
 
 // Indicates the direction that the scroll is heading in relative to the screen,
@@ -38,18 +38,11 @@ class OverscrollController {
   OverscrollController();
   virtual ~OverscrollController();
 
-  // The result of |DispatchEvent()|, indicating either how the event was
-  // handled, or how it should be handled by the caller.
-  enum Disposition {
-    CONSUMED,
-    SHOULD_FORWARD_TO_RENDERER,
-    SHOULD_FORWARD_TO_GESTURE_QUEUE
-  };
   // This must be called when dispatching any event from the
   // RenderWidgetHostView so that the state of the overscroll gesture can be
-  // updated properly.
-  Disposition DispatchEvent(const blink::WebInputEvent& event,
-                            const ui::LatencyInfo& latency_info);
+  // updated properly. Returns true if the event was handled, in which case
+  // further processing should cease.
+  bool WillHandleEvent(const blink::WebInputEvent& event);
 
   // This must be called when the ACK for any event comes in. This updates the
   // overscroll gesture status as appropriate.
@@ -73,7 +66,7 @@ class OverscrollController {
   void Cancel();
 
  private:
-  friend class MockRenderWidgetHost;
+  friend class RenderWidgetHostViewAuraOverscrollTest;
 
   // Different scrolling states.
   enum ScrollState {

@@ -2480,7 +2480,7 @@ void WebContentsImpl::SetMainFrameMimeType(const std::string& mime_type) {
   contents_mime_type_ = mime_type;
 }
 
-bool WebContentsImpl::CanOverscrollContent() {
+bool WebContentsImpl::CanOverscrollContent() const {
   if (delegate_)
     return delegate_->CanOverscrollContent();
 

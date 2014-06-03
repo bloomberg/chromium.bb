@@ -17,7 +17,6 @@ struct LatencyInfo;
 
 namespace content {
 
-class OverscrollController;
 struct DidOverscrollParams;
 
 class CONTENT_EXPORT InputRouterClient {
@@ -43,11 +42,6 @@ class CONTENT_EXPORT InputRouterClient {
   // Called when the renderer notifies that it has touch event handlers.
   virtual void OnHasTouchEventHandlers(bool has_handlers) = 0;
 
-  // Returns an optional OverscrollController.  If non-NULL, the controller
-  // will be fed events and event acks by the router, when appropriate.
-  // TODO(jdduke): crbug.com/306133 - Move the controller to the router.
-  virtual OverscrollController* GetOverscrollController() const = 0;
-
   // Certain router implementations require periodic flushing of queued events.
   // When this method is called, the client should ensure a timely call, either
   // synchronous or asynchronous, of |Flush| on the InputRouter.
@@ -58,6 +52,8 @@ class CONTENT_EXPORT InputRouterClient {
   // respect to the call to |Flush| on the InputRouter.
   virtual void DidFlush() = 0;
 
+  // Called when the router has received an overscroll notification from the
+  // renderer.
   virtual void DidOverscroll(const DidOverscrollParams& params) = 0;
 };
 

@@ -23,16 +23,8 @@ namespace {
 GestureEventQueue::Config GetGestureEventQueueConfig() {
   GestureEventQueue::Config config;
 
-#if defined(OS_CHROMEOS)
-  // Default debouncing interval duration on ChromeOS: if a scroll is in
-  // progress, non-scroll events during this interval are deferred to either its
-  // end or discarded on receipt of another GestureScrollUpdate.
-  // TODO(jdduke): Disable and remove entirely when issues with spurious
-  // scroll end detection on the Pixel are resolved, crbug.com/353702.
-  const int kDebouncingIntervalTimeMs = 30;
-  config.debounce_interval =
-      base::TimeDelta::FromMilliseconds(kDebouncingIntervalTimeMs);
-#endif
+  config.debounce_interval = base::TimeDelta::FromMilliseconds(
+      ui::GestureConfiguration::scroll_debounce_interval_in_ms());
 
   config.touchscreen_tap_suppression_config.enabled = true;
   config.touchscreen_tap_suppression_config.max_cancel_to_down_time =

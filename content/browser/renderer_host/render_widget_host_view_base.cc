@@ -445,11 +445,6 @@ bool RenderWidgetHostViewBase::IsMouseLocked() {
   return mouse_locked_;
 }
 
-void RenderWidgetHostViewBase::UnhandledWheelEvent(
-    const blink::WebMouseWheelEvent& event) {
-  // Most implementations don't need to do anything here.
-}
-
 InputEventAckState RenderWidgetHostViewBase::FilterInputEvent(
     const blink::WebInputEvent& input_event) {
   // By default, input events are simply forwarded to the renderer.
@@ -469,6 +464,11 @@ void RenderWidgetHostViewBase::OnSetNeedsFlushInput() {
       base::TimeDelta::FromMicroseconds(kFlushInputRateInUs),
       this,
       &RenderWidgetHostViewBase::FlushInput);
+}
+
+void RenderWidgetHostViewBase::WheelEventAck(
+    const blink::WebMouseWheelEvent& event,
+    InputEventAckState ack_result) {
 }
 
 void RenderWidgetHostViewBase::GestureEventAck(

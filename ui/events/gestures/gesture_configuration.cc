@@ -45,6 +45,14 @@ double GestureConfiguration::rail_break_proportion_ = 15;
 double GestureConfiguration::rail_start_proportion_ = 2;
 int GestureConfiguration::show_press_delay_in_ms_ = 150;
 
+// TODO(jdduke): Disable and remove entirely when issues with intermittent
+// scroll end detection on the Pixel are resolved, crbug.com/353702.
+#if defined(OS_CHROMEOS)
+int GestureConfiguration::scroll_debounce_interval_in_ms_ = 30;
+#else
+int GestureConfiguration::scroll_debounce_interval_in_ms_ = 0;
+#endif
+
 // Coefficients for a function that computes fling acceleration.
 // These are empirically determined defaults. Do not adjust without
 // additional empirical validation.

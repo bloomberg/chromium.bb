@@ -80,7 +80,6 @@ class CONTENT_EXPORT InputRouterImpl
 
 private:
   friend class InputRouterImplTest;
-  friend class MockRenderWidgetHost;
 
   // TouchpadTapSuppressionControllerClient
   virtual void SendMouseEventImmediately(
@@ -161,7 +160,6 @@ private:
   enum AckSource {
     RENDERER,
     CLIENT,
-    OVERSCROLL_CONTROLLER,
     IGNORING_DISPOSITION,
     ACK_SOURCE_NONE
   };
@@ -195,10 +193,6 @@ private:
   // dispatch of queued touch events, or the creation of gesture events.
   void ProcessTouchAck(InputEventAckState ack_result,
                        const ui::LatencyInfo& latency);
-
-  // Forwards |ack_result| to the client's OverscrollController, if necessary.
-  void ProcessAckForOverscroll(const blink::WebInputEvent& event,
-                               InputEventAckState ack_result);
 
   // Called when a touch timeout-affecting bit has changed, in turn toggling the
   // touch ack timeout feature of the |touch_event_queue_| as appropriate. Input

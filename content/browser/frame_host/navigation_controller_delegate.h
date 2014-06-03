@@ -41,6 +41,7 @@ class NavigationControllerDelegate {
   virtual int32 GetMaxPageIDForSiteInstance(SiteInstance* site_instance) = 0;
   virtual bool IsLoading() const = 0;
   virtual bool IsBeingDestroyed() const = 0;
+  virtual bool CanOverscrollContent() const = 0;
 
   // Methods from WebContentsImpl that NavigationControllerImpl needs to
   // call.
