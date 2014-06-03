@@ -368,10 +368,12 @@ void RenderBlock::styleDidChange(StyleDifference diff, const RenderStyle* oldSty
 
 void RenderBlock::invalidateTreeAfterLayout(const RenderLayerModelObject& invalidationContainer)
 {
-    if (!shouldCheckForPaintInvalidationAfterLayout())
-        return;
+    // Note, we don't want to early out here using shouldCheckForInvalidationAfterLayout as
+    // we have to make sure we go through any positioned objects as they won't be seen in
+    // the normal tree walk.
 
-    RenderBox::invalidateTreeAfterLayout(invalidationContainer);
+    if (shouldCheckForPaintInvalidationAfterLayout())
+        RenderBox::invalidateTreeAfterLayout(invalidationContainer);
 
     // Take care of positioned objects. This is required as LayoutState keeps a single clip rect.
     if (TrackedRendererListHashSet* positionedObjects = this->positionedObjects()) {

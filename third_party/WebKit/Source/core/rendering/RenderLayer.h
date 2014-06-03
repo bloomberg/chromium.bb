@@ -167,7 +167,7 @@ public:
     void updateLayerPositionsAfterDocumentScroll();
 
     // FIXME: Should updateLayerPositions be private?
-    void updateLayerPositions(RenderGeometryMap*, UpdateLayerPositionsFlags = CheckForRepaint);
+    void updateLayerPositions(RenderGeometryMap*, const RenderLayerModelObject* paintInvalidationContainer, UpdateLayerPositionsFlags = CheckForRepaint);
 
     bool isPaginated() const { return m_isPaginated; }
     RenderLayer* enclosingPaginationLayer() const { return m_enclosingPaginationLayer; }

@@ -726,6 +726,16 @@ crbug.com/368560 [ Win ] http/tests/svg/image-fetch-fail.svg [ Timeout Pass ]
 
 crbug.com/253763 fast/text-autosizing/first-line-scale-factor.html [ ImageOnlyFailure ]
 
+crbug.com/371640 [ Mac Win ] fast/repaint/crbug-371640-4.html [ NeedsRebaseline ]
+crbug.com/371640 [ Mac Win ] fast/repaint/crbug-371640-3.html [ NeedsRebaseline ]
+crbug.com/371640 [ Mac Win ] fast/repaint/crbug-371640-2.html [ NeedsRebaseline ]
+crbug.com/371640 [ Mac Win ] fast/repaint/crbug-371640.html [ NeedsRebaseline ]
+crbug.com/371640 fast/repaint/abspos-shift-image-incorrect-repaint.html [ NeedsRebaseline ]
+crbug.com/371640 fast/repaint/float-overflow-right.html [ NeedsRebaseline ]
+crbug.com/371640 fast/repaint/float-overflow.html [ NeedsRebaseline ]
+crbug.com/371640 fast/repaint/layout-state-scrolloffset2.html [ NeedsRebaseline ]
+crbug.com/371640 fast/repaint/shift-relative-positioned-container-with-image-removal.html [ NeedsRebaseline ]
+
 # FIXME(crbug.com/302005): Remove these as expectations are updated or the fasttextautosizer improves.
 crbug.com/322782 fast/text-autosizing/cluster-inline-grid-flex-box.html [ ImageOnlyFailure ]
 crbug.com/322782 fast/text-autosizing/cluster-list-item.html [ ImageOnlyFailure ]

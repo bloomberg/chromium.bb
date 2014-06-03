@@ -263,11 +263,17 @@ void RenderLayer::updateLayerPositionsAfterLayout(const RenderLayer* rootLayer, 
     RenderGeometryMap geometryMap(UseTransforms);
     if (this != rootLayer)
         geometryMap.pushMappingsToAncestor(parent(), 0);
-    updateLayerPositions(&geometryMap, flags);
+    updateLayerPositions(&geometryMap, rootLayer->renderer()->containerForRepaint(), flags);
 }
 
-void RenderLayer::updateLayerPositions(RenderGeometryMap* geometryMap, UpdateLayerPositionsFlags flags)
+void RenderLayer::updateLayerPositions(RenderGeometryMap* geometryMap, const RenderLayerModelObject* paintInvalidationContainer, UpdateLayerPositionsFlags flags)
 {
+    // For performance reasons we only check if the RenderObject has moved if we
+    // have a geometryMap. If not, blank out the paint invalidation container so we
+    // can skip doing any further work to update it.
+    if (!geometryMap)
+        paintInvalidationContainer = 0;
+
     updateLayerPosition(); // For relpositioned layers or non-positioned layers,
                            // we need to keep in sync, since we may have shifted relative
                            // to our parent layer.
@@ -298,6 +304,18 @@ void RenderLayer::updateLayerPositions(RenderGeometryMap* geometryMap, UpdateLay
         m_enclosingPaginationLayer = 0;
     }
 
+    const RenderLayerModelObject* newPaintInvalidationContainer = paintInvalidationContainer;
+    // If we don't have a paintInvalidationContainer then we can't check if
+    // the object has moved.
+    if (RuntimeEnabledFeatures::repaintAfterLayoutEnabled() && paintInvalidationContainer) {
+        bool establishesNewPaintInvalidationContainer = isRepaintContainer();
+        newPaintInvalidationContainer = renderer()->adjustCompositedContainerForSpecialAncestors(establishesNewPaintInvalidationContainer ? renderer() : paintInvalidationContainer);
+
+        LayoutPoint offset = renderer()->isBox() ? toRenderBox(renderer())->location() : LayoutPoint();
+        if (renderer()->previousPositionFromPaintInvalidationContainer() != geometryMap->mapToContainer(offset, newPaintInvalidationContainer))
+            renderer()->setMayNeedPaintInvalidation(true);
+    }
+
     repainter().repaintAfterLayout(flags & CheckForRepaint);
 
     // Go ahead and update the reflection's position and size.
@@ -313,7 +331,7 @@ void RenderLayer::updateLayerPositions(RenderGeometryMap* geometryMap, UpdateLay
         flags |= UpdatePagination;
 
     for (RenderLayer* child = firstChild(); child; child = child->nextSibling())
-        child->updateLayerPositions(geometryMap, flags);
+        child->updateLayerPositions(geometryMap, newPaintInvalidationContainer, flags);
 
     if ((flags & NeedsFullRepaintInBacking) && hasCompositedLayerMapping() && !compositedLayerMapping()->paintsIntoCompositedAncestor())
         compositedLayerMapping()->setContentsNeedDisplay();
@@ -1483,7 +1501,7 @@ void RenderLayer::removeOnlyThisLayer()
         // Hits in compositing/overflow/automatically-opt-into-composited-scrolling-part-1.html
         DisableCompositingQueryAsserts disabler;
 
-        current->updateLayerPositions(0); // FIXME: use geometry map.
+        current->updateLayerPositions(0, 0); // FIXME: use geometry map.
         current = next;
     }
 
