@@ -195,19 +195,19 @@ gyp-arm-build() {
   fi
   local toolchain_dir=native_client/toolchain/linux_x86/arm_trusted
   local extra="-isystem ${toolchain_dir}/usr/include \
-               -Wl,-rpath-link=${toolchain_dir}/lib/arm-linux-gnueabi \
+               -Wl,-rpath-link=${toolchain_dir}/lib/arm-linux-gnueabihf \
                -L${toolchain_dir}/lib \
-               -L${toolchain_dir}/lib/arm-linux-gnueabi \
+               -L${toolchain_dir}/lib/arm-linux-gnueabihf \
                -L${toolchain_dir}/usr/lib \
-               -L${toolchain_dir}/usr/lib/arm-linux-gnueabi"
+               -L${toolchain_dir}/usr/lib/arm-linux-gnueabihf"
   # Setup environment for arm.
 
-  export AR=arm-linux-gnueabi-ar
-  export AS=arm-linux-gnueabi-as
-  export CC="arm-linux-gnueabi-gcc ${extra} "
-  export CXX="arm-linux-gnueabi-g++ ${extra} "
-  export LD="arm-linux-gnueabi-g++ ${extra} "
-  export RANLIB=arm-linux-gnueabi-ranlib
+  export AR=arm-linux-gnueabihf-ar
+  export AS=arm-linux-gnueabihf-as
+  export CC="arm-linux-gnueabihf-gcc ${extra} "
+  export CXX="arm-linux-gnueabihf-g++ ${extra} "
+  export LD="arm-linux-gnueabihf-g++ ${extra} "
+  export RANLIB=arm-linux-gnueabihf-ranlib
   export SYSROOT
   export GYP_DEFINES="target_arch=arm \
     sysroot=${toolchain_dir} \

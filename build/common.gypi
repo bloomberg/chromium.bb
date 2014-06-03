@@ -65,7 +65,7 @@
     'arm_fpu%': 'vfpv3',
 
     # Set ARM float abi compilation flag.
-    'arm_float_abi%': 'softfp',
+    'arm_float_abi%': 'hard',
 
     # Version of the mac sdk to use.
     'mac_sdk%': '10.6',

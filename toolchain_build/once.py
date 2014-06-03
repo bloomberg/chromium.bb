@@ -284,11 +284,21 @@ class Once(object):
       assert p.returncode == 0
     except pynacl.file_tools.ExecutableNotFound:
       gcc_version = 0
+    try:
+      arm_gcc = pynacl.file_tools.Which('arm-linux-gnueabihf-gcc',
+                                        paths=env['PATH'].split(os.pathsep))
+      p = subprocess.Popen([gcc, '-v'], stdout=subprocess.PIPE,
+                           stderr=subprocess.PIPE, env=env)
+      _, arm_gcc_version = p.communicate()
+      assert p.returncode == 0
+    except pynacl.file_tools.ExecutableNotFound:
+      arm_gcc_version = 0
 
     items = [
         ('platform', sys.platform),
         ('machine', platform.machine()),
         ('gcc-v', gcc_version),
+        ('arm-gcc-v', arm_gcc_version),
         ]
     self._system_summary = str(items)
     return self._system_summary
