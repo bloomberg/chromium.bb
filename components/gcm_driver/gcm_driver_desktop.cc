@@ -746,8 +746,9 @@ void GCMDriverDesktop::SendFinished(const std::string& app_id,
   callback.Run(message_id, result);
 }
 
-void GCMDriverDesktop::MessageReceived(const std::string& app_id,
-                                       GCMClient::IncomingMessage message) {
+void GCMDriverDesktop::MessageReceived(
+    const std::string& app_id,
+    const GCMClient::IncomingMessage& message) {
   DCHECK(ui_thread_->RunsTasksOnCurrentThread());
 
   // Drop the event if signed out.
@@ -790,7 +791,7 @@ void GCMDriverDesktop::GCMClientReady() {
 }
 
 void GCMDriverDesktop::GetGCMStatisticsFinished(
-    GCMClient::GCMStatistics stats) {
+    const GCMClient::GCMStatistics& stats) {
   DCHECK(ui_thread_->RunsTasksOnCurrentThread());
 
   // Normally request_gcm_statistics_callback_ would not be null.

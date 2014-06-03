@@ -120,13 +120,13 @@ class GCMDriverDesktop : public GCMDriver, public IdentityProvider::Observer {
                     const std::string& message_id,
                     GCMClient::Result result);
   void MessageReceived(const std::string& app_id,
-                       GCMClient::IncomingMessage message);
+                       const GCMClient::IncomingMessage& message);
   void MessagesDeleted(const std::string& app_id);
   void MessageSendError(const std::string& app_id,
                         const GCMClient::SendErrorDetails& send_error_details);
   void GCMClientReady();
 
-  void GetGCMStatisticsFinished(GCMClient::GCMStatistics stats);
+  void GetGCMStatisticsFinished(const GCMClient::GCMStatistics& stats);
 
   // Flag to indicate if GCM is enabled.
   bool gcm_enabled_;
