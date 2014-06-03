@@ -8,6 +8,7 @@
 #include <set>
 
 #include "base/files/file.h"
+#include "base/scoped_observer.h"
 #include "chrome/browser/extensions/api/developer_private/entry_picker.h"
 #include "chrome/browser/extensions/api/file_system/file_system_api.h"
 #include "chrome/browser/extensions/chrome_extension_function.h"
@@ -21,6 +22,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/event_router.h"
+#include "extensions/browser/extension_registry_observer.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
 #include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/browser/fileapi/file_system_operation.h"
@@ -30,6 +32,7 @@ class Profile;
 namespace extensions {
 
 class ExtensionError;
+class ExtensionRegistry;
 class ExtensionSystem;
 class ManagementPolicy;
 
@@ -56,6 +59,7 @@ typedef std::vector<linked_ptr<developer::ItemInspectView> >
     ItemInspectViewList;
 
 class DeveloperPrivateEventRouter : public content::NotificationObserver,
+                                    public ExtensionRegistryObserver,
                                     public ErrorConsole::Observer {
  public:
   explicit DeveloperPrivateEventRouter(Profile* profile);
@@ -66,15 +70,35 @@ class DeveloperPrivateEventRouter : public content::NotificationObserver,
   void RemoveExtensionId(const std::string& extension_id);
 
  private:
-  // content::NotificationObserver implementation
+  // content::NotificationObserver implementation.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  // ErrorConsole::Observer implementation
+  // ExtensionRegistryObserver implementation.
+  virtual void OnExtensionLoaded(content::BrowserContext* browser_context,
+                                 const Extension* extension) OVERRIDE;
+  virtual void OnExtensionUnloaded(
+      content::BrowserContext* browser_context,
+      const Extension* extension,
+      UnloadedExtensionInfo::Reason reason) OVERRIDE;
+  virtual void OnExtensionWillBeInstalled(
+      content::BrowserContext* browser_context,
+      const Extension* extension,
+      bool is_update,
+      bool from_ephemeral,
+      const std::string& old_name) OVERRIDE;
+  virtual void OnExtensionUninstalled(content::BrowserContext* browser_context,
+                                      const Extension* extension) OVERRIDE;
+
+  // ErrorConsole::Observer implementation.
   virtual void OnErrorAdded(const ExtensionError* error) OVERRIDE;
 
   content::NotificationRegistrar registrar_;
+
+  ScopedObserver<extensions::ExtensionRegistry,
+                 extensions::ExtensionRegistryObserver>
+      extension_registry_observer_;
 
   Profile* profile_;
 

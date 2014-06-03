@@ -141,6 +141,20 @@ std::string GetExtensionID(const RenderViewHost* render_view_host) {
   return render_view_host->GetSiteInstance()->GetSiteURL().host();
 }
 
+void BroadcastItemStateChanged(content::BrowserContext* browser_context,
+                               developer::EventType event_type,
+                               const std::string& item_id) {
+  developer::EventData event_data;
+  event_data.event_type = event_type;
+  event_data.item_id = item_id;
+
+  scoped_ptr<base::ListValue> args(new base::ListValue());
+  args->Append(event_data.ToValue().release());
+  scoped_ptr<Event> event(new Event(
+      developer_private::OnItemStateChanged::kEventName, args.Pass()));
+  EventRouter::Get(browser_context)->BroadcastEvent(event.Pass());
+}
+
 }  // namespace
 
 namespace AllowFileAccess = api::developer_private::AllowFileAccess;
@@ -173,22 +187,18 @@ DeveloperPrivateAPI::DeveloperPrivateAPI(content::BrowserContext* context)
 }
 
 DeveloperPrivateEventRouter::DeveloperPrivateEventRouter(Profile* profile)
-    : profile_(profile) {
-  int types[] = {chrome::NOTIFICATION_EXTENSION_INSTALLED_DEPRECATED,
-                 chrome::NOTIFICATION_EXTENSION_UNINSTALLED_DEPRECATED,
-                 chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
-                 chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
+    : extension_registry_observer_(this), profile_(profile) {
+  registrar_.Add(this,
                  chrome::NOTIFICATION_EXTENSION_VIEW_REGISTERED,
-                 chrome::NOTIFICATION_EXTENSION_VIEW_UNREGISTERED};
+                 content::Source<Profile>(profile_));
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_EXTENSION_VIEW_UNREGISTERED,
+                 content::Source<Profile>(profile_));
 
-  CHECK(registrar_.IsEmpty());
-  for (size_t i = 0; i < arraysize(types); ++i) {
-    registrar_.Add(this,
-                   types[i],
-                   content::Source<Profile>(profile_));
-  }
-
+  // TODO(limasdf): Use scoped_observer instead.
   ErrorConsole::Get(profile)->AddObserver(this);
+
+  extension_registry_observer_.Add(ExtensionRegistry::Get(profile_));
 }
 
 DeveloperPrivateEventRouter::~DeveloperPrivateEventRouter() {
@@ -209,56 +219,66 @@ void DeveloperPrivateEventRouter::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  const char* event_name = NULL;
   Profile* profile = content::Source<Profile>(source).ptr();
   CHECK(profile);
   CHECK(profile_->IsSameProfile(profile));
   developer::EventData event_data;
-  const Extension* extension = NULL;
 
   switch (type) {
-    case chrome::NOTIFICATION_EXTENSION_INSTALLED_DEPRECATED:
-      event_data.event_type = developer::EVENT_TYPE_INSTALLED;
-      extension =
-          content::Details<const InstalledExtensionInfo>(details)->extension;
-      break;
-    case chrome::NOTIFICATION_EXTENSION_UNINSTALLED_DEPRECATED:
-      event_data.event_type = developer::EVENT_TYPE_UNINSTALLED;
-      extension = content::Details<const Extension>(details).ptr();
-      break;
-    case chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED:
-      event_data.event_type = developer::EVENT_TYPE_LOADED;
-      extension = content::Details<const Extension>(details).ptr();
-      break;
-    case chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED:
-      event_data.event_type = developer::EVENT_TYPE_UNLOADED;
-      extension =
-          content::Details<const UnloadedExtensionInfo>(details)->extension;
-      break;
-    case chrome::NOTIFICATION_EXTENSION_VIEW_UNREGISTERED:
+    case chrome::NOTIFICATION_EXTENSION_VIEW_UNREGISTERED: {
       event_data.event_type = developer::EVENT_TYPE_VIEW_UNREGISTERED;
       event_data.item_id = GetExtensionID(
           content::Details<const RenderViewHost>(details).ptr());
       break;
-    case chrome::NOTIFICATION_EXTENSION_VIEW_REGISTERED:
+    }
+    case chrome::NOTIFICATION_EXTENSION_VIEW_REGISTERED: {
       event_data.event_type = developer::EVENT_TYPE_VIEW_REGISTERED;
       event_data.item_id = GetExtensionID(
           content::Details<const RenderViewHost>(details).ptr());
       break;
+    }
     default:
       NOTREACHED();
       return;
   }
 
-  if (extension)
-    event_data.item_id = extension->id();
+  BroadcastItemStateChanged(profile, event_data.event_type, event_data.item_id);
+}
 
-  scoped_ptr<base::ListValue> args(new base::ListValue());
-  args->Append(event_data.ToValue().release());
+void DeveloperPrivateEventRouter::OnExtensionLoaded(
+    content::BrowserContext* browser_context,
+    const Extension* extension) {
+  DCHECK(profile_->IsSameProfile(Profile::FromBrowserContext(browser_context)));
+  BroadcastItemStateChanged(
+      browser_context, developer::EVENT_TYPE_LOADED, extension->id());
+}
 
-  event_name = developer_private::OnItemStateChanged::kEventName;
-  scoped_ptr<Event> event(new Event(event_name, args.Pass()));
-  EventRouter::Get(profile)->BroadcastEvent(event.Pass());
+void DeveloperPrivateEventRouter::OnExtensionUnloaded(
+    content::BrowserContext* browser_context,
+    const Extension* extension,
+    UnloadedExtensionInfo::Reason reason) {
+  DCHECK(profile_->IsSameProfile(Profile::FromBrowserContext(browser_context)));
+  BroadcastItemStateChanged(
+      browser_context, developer::EVENT_TYPE_UNLOADED, extension->id());
+}
+
+void DeveloperPrivateEventRouter::OnExtensionWillBeInstalled(
+    content::BrowserContext* browser_context,
+    const Extension* extension,
+    bool is_update,
+    bool from_ephemeral,
+    const std::string& old_name) {
+  DCHECK(profile_->IsSameProfile(Profile::FromBrowserContext(browser_context)));
+  BroadcastItemStateChanged(
+      browser_context, developer::EVENT_TYPE_INSTALLED, extension->id());
+}
+
+void DeveloperPrivateEventRouter::OnExtensionUninstalled(
+    content::BrowserContext* browser_context,
+    const Extension* extension) {
+  DCHECK(profile_->IsSameProfile(Profile::FromBrowserContext(browser_context)));
+  BroadcastItemStateChanged(
+      browser_context, developer::EVENT_TYPE_UNINSTALLED, extension->id());
 }
 
 void DeveloperPrivateEventRouter::OnErrorAdded(const ExtensionError* error) {
@@ -268,15 +288,8 @@ void DeveloperPrivateEventRouter::OnErrorAdded(const ExtensionError* error) {
   if (extension_ids_.find(error->extension_id()) != extension_ids_.end())
     return;
 
-  developer::EventData event_data;
-  event_data.event_type = developer::EVENT_TYPE_ERROR_ADDED;
-  event_data.item_id = error->extension_id();
-
-  scoped_ptr<base::ListValue> args(new base::ListValue);
-  args->Append(event_data.ToValue().release());
-
-  EventRouter::Get(profile_)->BroadcastEvent(scoped_ptr<Event>(new Event(
-      developer_private::OnItemStateChanged::kEventName, args.Pass())));
+  BroadcastItemStateChanged(
+      profile_, developer::EVENT_TYPE_ERROR_ADDED, error->extension_id());
 }
 
 void DeveloperPrivateAPI::SetLastUnpackedDirectory(const base::FilePath& path) {
