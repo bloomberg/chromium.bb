@@ -57,6 +57,11 @@ class FakeServer {
   // result in successful server operations.
   void InjectEntity(scoped_ptr<FakeServerEntity> entity);
 
+  // Sets a new store birthday so that tests may trigger a NOT_MY_BIRTHDAY
+  // error. If |store_birthday| is the same as |store_birthday_|, false is
+  // returned and this method has no effect.
+  bool SetNewStoreBirthday(const std::string& store_birthday);
+
   // Adds |observer| to FakeServer's observer list. This should be called
   // before the Profile associated with |observer| is connected to the server.
   void AddObserver(Observer* observer);
@@ -115,8 +120,8 @@ class FakeServer {
   // have a version number of version_ + 1.
   int64 version_;
 
-  // The current birthday value.
-  std::string birthday_;
+  // The current store birthday value.
+  std::string store_birthday_;
 
   // All SyncEntity objects saved by the server. The key value is the entity's
   // id string.

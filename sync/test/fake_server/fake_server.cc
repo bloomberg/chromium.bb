@@ -34,8 +34,8 @@ using syncer::GetModelType;
 using syncer::ModelType;
 using syncer::ModelTypeSet;
 
-// The default birthday value.
-static const char kDefaultBirthday[] = "1234567890";
+// The default store birthday value.
+static const char kDefaultStoreBirthday[] = "1234567890";
 
 // The default keystore key.
 static const char kDefaultKeystoreKey[] = "1111111111111111";
@@ -145,7 +145,7 @@ scoped_ptr<UpdateSieve> UpdateSieve::Create(
 
 }  // namespace
 
-FakeServer::FakeServer() : version_(0), birthday_(kDefaultBirthday) {
+FakeServer::FakeServer() : version_(0), store_birthday_(kDefaultStoreBirthday) {
   keystore_keys_.push_back(kDefaultKeystoreKey);
   CHECK(CreateDefaultPermanentItems());
 }
@@ -218,32 +218,41 @@ void FakeServer::HandleCommand(const string& request,
   bool parsed = message.ParseFromString(request);
   DCHECK(parsed);
 
+  sync_pb::SyncEnums_ErrorType error_code;
   sync_pb::ClientToServerResponse response_proto;
-  bool success;
-  switch (message.message_contents()) {
-    case sync_pb::ClientToServerMessage::GET_UPDATES:
-      success = HandleGetUpdatesRequest(message.get_updates(),
-                                        response_proto.mutable_get_updates());
-      break;
-    case sync_pb::ClientToServerMessage::COMMIT:
-      success = HandleCommitRequest(message.commit(),
-                                    message.invalidator_client_id(),
-                                    response_proto.mutable_commit());
-      break;
-    default:
-      callback.Run(net::ERR_NOT_IMPLEMENTED, 0, string());;
+
+  if (message.has_store_birthday() &&
+      message.store_birthday() != store_birthday_) {
+    error_code = sync_pb::SyncEnums::NOT_MY_BIRTHDAY;
+  } else {
+    bool success = false;
+    switch (message.message_contents()) {
+      case sync_pb::ClientToServerMessage::GET_UPDATES:
+        success = HandleGetUpdatesRequest(message.get_updates(),
+                                          response_proto.mutable_get_updates());
+        break;
+      case sync_pb::ClientToServerMessage::COMMIT:
+        success = HandleCommitRequest(message.commit(),
+                                      message.invalidator_client_id(),
+                                      response_proto.mutable_commit());
+        break;
+      default:
+        callback.Run(net::ERR_NOT_IMPLEMENTED, 0, string());;
+        return;
+    }
+
+    if (!success) {
+      // TODO(pvalenzuela): Add logging here so that tests have more info about
+      // the failure.
+      callback.Run(net::ERR_FAILED, 0, string());
       return;
+    }
+
+    error_code = sync_pb::SyncEnums::SUCCESS;
   }
 
-  if (!success) {
-    // TODO(pvalenzuela): Add logging here so that tests have more info about
-    // the failure.
-    callback.Run(net::ERR_FAILED, 0, string());
-    return;
-  }
-
-  response_proto.set_error_code(sync_pb::SyncEnums::SUCCESS);
-  response_proto.set_store_birthday(birthday_);
+  response_proto.set_error_code(error_code);
+  response_proto.set_store_birthday(store_birthday_);
   callback.Run(0, net::HTTP_OK, response_proto.SerializeAsString());
 }
 
@@ -471,6 +480,14 @@ scoped_ptr<base::DictionaryValue> FakeServer::GetEntitiesAsDictionaryValue() {
 
 void FakeServer::InjectEntity(scoped_ptr<FakeServerEntity> entity) {
   SaveEntity(entity.release());
+}
+
+bool FakeServer::SetNewStoreBirthday(const string& store_birthday) {
+  if (store_birthday_ == store_birthday)
+    return false;
+
+  store_birthday_ = store_birthday;
+  return true;
 }
 
 void FakeServer::AddObserver(Observer* observer) {

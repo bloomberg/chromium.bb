@@ -234,10 +234,6 @@ class SyncTest : public InProcessBrowserTest {
   // only if ServerSupportsErrorTriggering() returned true.
   void TriggerMigrationDoneError(syncer::ModelTypeSet model_types);
 
-  // Triggers the server to set its birthday to a random value thereby
-  // the server would return a birthday error on next sync.
-  void TriggerBirthdayError();
-
   // Triggers a transient error on the server. Note the server will stay in
   // this state until shut down.
   void TriggerTransientError();

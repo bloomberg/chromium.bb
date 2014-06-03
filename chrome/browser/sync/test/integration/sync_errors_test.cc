@@ -44,13 +44,22 @@ bool AwaitSyncDisabled(ProfileSyncService* service) {
 
 class SyncErrorTest : public SyncTest {
  public:
-  // TODO(pvalenzuela): Switch to SINGLE_CLIENT once FakeServer
-  // supports this scenario.
-  SyncErrorTest() : SyncTest(SINGLE_CLIENT_LEGACY) {}
+  SyncErrorTest() : SyncTest(SINGLE_CLIENT) {}
   virtual ~SyncErrorTest() {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SyncErrorTest);
+};
+
+// TODO(pvalenzuela): Remove this class when all tests here are converted to
+// use FakeServer.
+class LegacySyncErrorTest : public SyncTest {
+ public:
+  LegacySyncErrorTest() : SyncTest(SINGLE_CLIENT_LEGACY) {}
+  virtual ~LegacySyncErrorTest() {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(LegacySyncErrorTest);
 };
 
 // Helper class that waits until the sync engine has hit an actionable error.
@@ -85,7 +94,7 @@ IN_PROC_BROWSER_TEST_F(SyncErrorTest, BirthdayErrorTest) {
   const BookmarkNode* node1 = AddFolder(0, 0, L"title1");
   SetTitle(0, node1, L"new_title1");
   ASSERT_TRUE(AwaitCommitActivityCompletion(GetSyncService((0))));
-  TriggerBirthdayError();
+  ASSERT_TRUE(GetFakeServer()->SetNewStoreBirthday("new store birthday"));
 
   // Now make one more change so we will do another sync.
   const BookmarkNode* node2 = AddFolder(0, 0, L"title2");
@@ -93,7 +102,7 @@ IN_PROC_BROWSER_TEST_F(SyncErrorTest, BirthdayErrorTest) {
   ASSERT_TRUE(AwaitSyncDisabled(GetSyncService((0))));
 }
 
-IN_PROC_BROWSER_TEST_F(SyncErrorTest, ActionableErrorTest) {
+IN_PROC_BROWSER_TEST_F(LegacySyncErrorTest, ActionableErrorTest) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   const BookmarkNode* node1 = AddFolder(0, 0, L"title1");
@@ -126,7 +135,7 @@ IN_PROC_BROWSER_TEST_F(SyncErrorTest, ActionableErrorTest) {
 }
 
 // Disabled, http://crbug.com/351160 .
-IN_PROC_BROWSER_TEST_F(SyncErrorTest, DISABLED_ErrorWhileSettingUp) {
+IN_PROC_BROWSER_TEST_F(LegacySyncErrorTest, DISABLED_ErrorWhileSettingUp) {
   ASSERT_TRUE(SetupClients());
 
   syncer::SyncProtocolError protocol_error;
@@ -156,7 +165,7 @@ IN_PROC_BROWSER_TEST_F(SyncErrorTest, DISABLED_ErrorWhileSettingUp) {
   }
 }
 
-IN_PROC_BROWSER_TEST_F(SyncErrorTest,
+IN_PROC_BROWSER_TEST_F(LegacySyncErrorTest,
     BirthdayErrorUsingActionableErrorTest) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
@@ -185,7 +194,8 @@ IN_PROC_BROWSER_TEST_F(SyncErrorTest,
 }
 
 // TODO(lipalani): Fix the typed_url dtc so this test case can pass.
-IN_PROC_BROWSER_TEST_F(SyncErrorTest, DISABLED_DisableDatatypeWhileRunning) {
+IN_PROC_BROWSER_TEST_F(LegacySyncErrorTest,
+                       DISABLED_DisableDatatypeWhileRunning) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   syncer::ModelTypeSet synced_datatypes =
       GetSyncService((0))->GetPreferredDataTypes();

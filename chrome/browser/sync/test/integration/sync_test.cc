@@ -914,16 +914,6 @@ void SyncTest::TriggerMigrationDoneError(syncer::ModelTypeSet model_types) {
                     GetTitle()));
 }
 
-void SyncTest::TriggerBirthdayError() {
-  ASSERT_TRUE(ServerSupportsErrorTriggering());
-  std::string path = "chromiumsync/birthdayerror";
-  ui_test_utils::NavigateToURL(browser(), sync_server_.GetURL(path));
-  ASSERT_EQ("Birthday error",
-            base::UTF16ToASCII(
-                browser()->tab_strip_model()->GetActiveWebContents()->
-                    GetTitle()));
-}
-
 void SyncTest::TriggerTransientError() {
   ASSERT_TRUE(ServerSupportsErrorTriggering());
   std::string path = "chromiumsync/transienterror";
