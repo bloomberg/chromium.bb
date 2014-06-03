@@ -272,8 +272,8 @@ void ManagedUserCreationControllerNew::OnMountSuccess(
                      &password_key.signature_key);
 
   Key key(Key::KEY_TYPE_SALTED_PBKDF2_AES256_1234,
-          creation_context_->salted_master_key,
-          std::string());  // The salt is stored elsewhere.
+          std::string(),  // The salt is stored elsewhere.
+          creation_context_->salted_master_key);
   key.SetLabel(kCryptohomeMasterKeyLabel);
   UserContext context(creation_context_->local_user_id);
   context.SetKey(key);
