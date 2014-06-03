@@ -400,6 +400,8 @@ InjectedScript.prototype = {
                 descriptor.configurable = false;
             if (!("enumerable" in descriptor))
                 descriptor.enumerable = false;
+            if ("symbol" in descriptor)
+                descriptor.symbol = this._wrapObject(descriptor.symbol, objectGroupName);
         }
         return descriptors;
     },
@@ -481,22 +483,27 @@ InjectedScript.prototype = {
     _propertyDescriptors: function(object, ownProperties, accessorPropertiesOnly)
     {
         var descriptors = [];
-        var nameProcessed = { __proto__: null };
+        var propertyProcessed = { __proto__: null };
 
         /**
          * @param {Object} o
-         * @param {Array.<string>} names
+         * @param {!Array.<string|symbol>} properties
          */
-        function process(o, names)
+        function process(o, properties)
         {
-            for (var i = 0; i < names.length; ++i) {
-                var name = names[i];
-                if (nameProcessed[name])
+            for (var i = 0; i < properties.length; ++i) {
+                var property = properties[i];
+                if (propertyProcessed[property])
                     continue;
 
+                var name = property;
+                var type = typeof property;
+                if (type === "symbol")
+                    name = injectedScript._describe(property);
+
                 try {
-                    nameProcessed[name] = true;
-                    var descriptor = nullifyObjectProto(InjectedScriptHost.suppressWarningsAndCall(Object, Object.getOwnPropertyDescriptor, o, name));
+                    propertyProcessed[property] = true;
+                    var descriptor = nullifyObjectProto(InjectedScriptHost.suppressWarningsAndCall(Object, Object.getOwnPropertyDescriptor, o, property));
                     if (descriptor) {
                         if (accessorPropertiesOnly && !("get" in descriptor || "set" in descriptor))
                             continue;
@@ -505,7 +512,7 @@ InjectedScript.prototype = {
                         if (accessorPropertiesOnly)
                             continue;
                         try {
-                            descriptor = { name: name, value: o[name], writable: false, configurable: false, enumerable: false, __proto__: null };
+                            descriptor = { name: name, value: o[property], writable: false, configurable: false, enumerable: false, __proto__: null };
                             if (o === object)
                                 descriptor.isOwn = true;
                             push(descriptors, descriptor);
@@ -525,6 +532,8 @@ InjectedScript.prototype = {
                 descriptor.name = name;
                 if (o === object)
                     descriptor.isOwn = true;
+                if (type === "symbol")
+                    descriptor.symbol = property;
                 push(descriptors, descriptor);
             }
         }
@@ -533,6 +542,8 @@ InjectedScript.prototype = {
             // First call Object.keys() to enforce ordering of the property descriptors.
             process(o, Object.keys(/** @type {!Object} */ (o)));
             process(o, Object.getOwnPropertyNames(/** @type {!Object} */ (o)));
+            if (Object.getOwnPropertySymbols)
+                process(o, Object.getOwnPropertySymbols(/** @type {!Object} */ (o)));
 
             if (ownProperties) {
                 if (object.__proto__ && !accessorPropertiesOnly)

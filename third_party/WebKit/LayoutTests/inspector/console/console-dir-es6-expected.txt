@@ -1,0 +1,11 @@
+CONSOLE MESSAGE: line 15: [object Object]
+Tests that console logging dumps proper messages.
+
+Object
+    Symbol(): 2
+    Symbol(Symbol.iterator): Symbol(foo)
+    Symbol(a): 3
+    Symbol(a): Symbol(Symbol.iterator)
+    a: 1
+    __proto__: Object console-dir-es6.html:15
+

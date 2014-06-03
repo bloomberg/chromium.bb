@@ -1,0 +1,40 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/console-test.js"></script>
+<script>
+
+function onload()
+{
+    var obj = new Object();
+    obj["a"] = 1;
+    obj[Symbol()] = 2;
+    obj[Symbol("a")] = 3;
+    obj[Symbol("a")] = Symbol.iterator;
+    obj[Symbol.iterator] = Symbol("foo");
+    console.dir(obj);
+
+    runTest();
+}
+
+function test()
+{
+    InspectorTest.expandConsoleMessages(dumpConsoleMessages);
+
+    function dumpConsoleMessages()
+    {
+        InspectorTest.dumpConsoleMessages(false, false, InspectorTest.textContentWithLineBreaks);
+        InspectorTest.completeTest();
+    }
+}
+
+</script>
+</head>
+
+<body onload="onload()">
+<p>
+Tests that console logging dumps proper messages.
+</p>
+
+</body>
+</html>
