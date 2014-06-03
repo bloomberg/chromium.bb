@@ -24,6 +24,7 @@
 #include "url/gurl.h"
 
 using content::BrowserThread;
+using content::BrowserContext;
 using content::WebContents;
 
 AutoLoginPrompter::AutoLoginPrompter(WebContents* web_contents,
@@ -73,9 +74,11 @@ void AutoLoginPrompter::ShowInfoBarUIThread(Params params,
   if (!web_contents)
     return;
 
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  BrowserContext* context = web_contents->GetBrowserContext();
+  if (context->IsOffTheRecord())
+    return;
 
+  Profile* profile = Profile::FromBrowserContext(context);
   if (!profile->GetPrefs()->GetBoolean(prefs::kAutologinEnabled))
     return;
 
