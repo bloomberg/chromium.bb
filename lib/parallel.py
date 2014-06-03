@@ -24,6 +24,8 @@ import tempfile
 import time
 import traceback
 
+from multiprocessing.managers import SyncManager
+
 from chromite.cbuildbot import cbuildbot_failures as failures_lib
 from chromite.cbuildbot import cbuildbot_results as results_lib
 from chromite.lib import cros_build_lib
@@ -33,6 +35,30 @@ from chromite.lib import timeout_util
 _BUFSIZE = 1024
 
 logger = logging.getLogger(__name__)
+
+
+class HackTimeoutSyncManager(SyncManager):
+  """Increase the process join timeout in SyncManager.
+
+  The timeout for the manager process to join in the core library is
+  too low. The process is often killed before shutting down properly,
+  resulting in temporary directories (pymp-xxx) not being cleaned
+  up. This class increases the default timeout.
+  """
+
+  @staticmethod
+  def _finalize_manager(process, *args, **kwargs):
+    """Shutdown the manager process."""
+
+    def _join(functor, *args, **kwargs):
+      timeout = kwargs.get('timeout')
+      if not timeout is None and timeout < 1:
+        kwargs['timeout'] = 1
+
+      functor(*args, **kwargs)
+
+    process.join = functools.partial(_join, process.join)
+    SyncManager._finalize_manager(process, *args, **kwargs)
 
 
 def Manager():
@@ -53,7 +79,9 @@ def Manager():
   """
   old_tempdir_value, old_tempdir_env = osutils.SetGlobalTempDir('/tmp')
   try:
-    return multiprocessing.Manager()
+    m = HackTimeoutSyncManager()
+    m.start()
+    return m
   finally:
     osutils.SetGlobalTempDir(old_tempdir_value, old_tempdir_env)
 
