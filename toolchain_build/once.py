@@ -276,29 +276,24 @@ class Once(object):
     assert len(sys.platform) != 0, len(platform.machine()) != 0
     # Use environment from command so we can access MinGW on windows.
     env = command.PlatformEnvironment([])
-    try:
-      gcc = pynacl.file_tools.Which('gcc', paths=env['PATH'].split(os.pathsep))
-      p = subprocess.Popen([gcc, '-v'], stdout=subprocess.PIPE,
-                           stderr=subprocess.PIPE, env=env)
-      _, gcc_version = p.communicate()
-      assert p.returncode == 0
-    except pynacl.file_tools.ExecutableNotFound:
-      gcc_version = 0
-    try:
-      arm_gcc = pynacl.file_tools.Which('arm-linux-gnueabihf-gcc',
-                                        paths=env['PATH'].split(os.pathsep))
-      p = subprocess.Popen([gcc, '-v'], stdout=subprocess.PIPE,
-                           stderr=subprocess.PIPE, env=env)
-      _, arm_gcc_version = p.communicate()
-      assert p.returncode == 0
-    except pynacl.file_tools.ExecutableNotFound:
-      arm_gcc_version = 0
+
+    def GetCompilerVersion(compiler_name):
+      try:
+        compiler_file = pynacl.file_tools.Which(
+            compiler_name, paths=env['PATH'].split(os.pathsep))
+        p = subprocess.Popen([compiler_file, '-v'], stdout=subprocess.PIPE,
+                             stderr=subprocess.PIPE, env=env)
+        _, compiler_version = p.communicate()
+        assert p.returncode == 0
+      except pynacl.file_tools.ExecutableNotFound:
+        compiler_version = 0
+      return compiler_version
 
     items = [
         ('platform', sys.platform),
         ('machine', platform.machine()),
-        ('gcc-v', gcc_version),
-        ('arm-gcc-v', arm_gcc_version),
+        ('gcc-v', GetCompilerVersion('gcc')),
+        ('arm-gcc-v', GetCompilerVersion('arm-linux-gnueabihf-gcc')),
         ]
     self._system_summary = str(items)
     return self._system_summary
