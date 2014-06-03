@@ -5,6 +5,7 @@
 #include "chrome/browser/net/crl_set_fetcher.h"
 
 #include "base/bind.h"
+#include "base/debug/trace_event.h"
 #include "base/file_util.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/path_service.h"
@@ -73,11 +74,16 @@ void CRLSetFetcher::DoInitialLoadFromDisk() {
 
 void CRLSetFetcher::LoadFromDisk(base::FilePath path,
                                  scoped_refptr<net::CRLSet>* out_crl_set) {
+  TRACE_EVENT0("CRLSetFetcher", "LoadFromDisk");
+
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   std::string crl_set_bytes;
-  if (!base::ReadFileToString(path, &crl_set_bytes))
-    return;
+  {
+    TRACE_EVENT0("CRLSetFetcher", "ReadFileToString");
+    if (!base::ReadFileToString(path, &crl_set_bytes))
+      return;
+  }
 
   if (!net::CRLSet::Parse(crl_set_bytes, out_crl_set)) {
     LOG(WARNING) << "Failed to parse CRL set from " << path.MaybeAsASCII();

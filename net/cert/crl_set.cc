@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/base64.h"
+#include "base/debug/trace_event.h"
 #include "base/format_macros.h"
 #include "base/json/json_reader.h"
 #include "base/logging.h"
@@ -151,27 +152,32 @@ static bool ReadCRL(base::StringPiece* data, std::string* out_parent_spki_hash,
                     std::vector<std::string>* out_serials) {
   if (data->size() < crypto::kSHA256Length)
     return false;
-  *out_parent_spki_hash = std::string(data->data(), crypto::kSHA256Length);
+  out_parent_spki_hash->assign(data->data(), crypto::kSHA256Length);
   data->remove_prefix(crypto::kSHA256Length);
 
   if (data->size() < sizeof(uint32))
     return false;
   uint32 num_serials;
   memcpy(&num_serials, data->data(), sizeof(uint32));  // assumes little endian
+  if (num_serials > 32 * 1024 * 1024)  // Sanity check.
+    return false;
+
+  out_serials->reserve(num_serials);
   data->remove_prefix(sizeof(uint32));
 
   for (uint32 i = 0; i < num_serials; ++i) {
-    uint8 serial_length;
     if (data->size() < sizeof(uint8))
       return false;
-    memcpy(&serial_length, data->data(), sizeof(uint8));
+
+    uint8 serial_length = data->data()[0];
     data->remove_prefix(sizeof(uint8));
 
     if (data->size() < serial_length)
       return false;
-    std::string serial(data->data(), serial_length);
+
+    out_serials->push_back(std::string());
+    out_serials->back().assign(data->data(), serial_length);
     data->remove_prefix(serial_length);
-    out_serials->push_back(serial);
   }
 
   return true;
@@ -185,14 +191,21 @@ bool CRLSet::CopyBlockedSPKIsFromHeader(base::DictionaryValue* header_dict) {
   }
 
   blocked_spkis_.clear();
+  blocked_spkis_.reserve(blocked_spkis_list->GetSize());
+
+  std::string spki_sha256_base64;
 
   for (size_t i = 0; i < blocked_spkis_list->GetSize(); ++i) {
-    std::string spki_sha256_base64, spki_sha256;
+    spki_sha256_base64.clear();
+
     if (!blocked_spkis_list->GetString(i, &spki_sha256_base64))
       return false;
-    if (!base::Base64Decode(spki_sha256_base64, &spki_sha256))
+
+    blocked_spkis_.push_back(std::string());
+    if (!base::Base64Decode(spki_sha256_base64, &blocked_spkis_.back())) {
+      blocked_spkis_.pop_back();
       return false;
-    blocked_spkis_.push_back(spki_sha256);
+    }
   }
 
   return true;
@@ -200,6 +213,7 @@ bool CRLSet::CopyBlockedSPKIsFromHeader(base::DictionaryValue* header_dict) {
 
 // static
 bool CRLSet::Parse(base::StringPiece data, scoped_refptr<CRLSet>* out_crl_set) {
+  TRACE_EVENT0("CRLSet", "Parse");
   // Other parts of Chrome assume that we're little endian, so we don't lose
   // anything by doing this.
 #if defined(__BYTE_ORDER)
@@ -238,18 +252,26 @@ bool CRLSet::Parse(base::StringPiece data, scoped_refptr<CRLSet>* out_crl_set) {
   if (not_after < 0)
     return false;
 
-  scoped_refptr<CRLSet> crl_set(new CRLSet);
+  scoped_refptr<CRLSet> crl_set(new CRLSet());
   crl_set->sequence_ = static_cast<uint32>(sequence);
   crl_set->not_after_ = static_cast<uint64>(not_after);
+  crl_set->crls_.reserve(64);  // Value observed experimentally.
 
   for (size_t crl_index = 0; !data.empty(); crl_index++) {
-    std::string parent_spki_sha256;
-    std::vector<std::string> serials;
-    if (!ReadCRL(&data, &parent_spki_sha256, &serials))
-      return false;
+    // Speculatively push back a pair and pass it to ReadCRL() to avoid
+    // unnecessary copies.
+    crl_set->crls_.push_back(
+        std::make_pair(std::string(), std::vector<std::string>()));
+    std::pair<std::string, std::vector<std::string> >* const back_pair =
+        &crl_set->crls_.back();
 
-    crl_set->crls_.push_back(std::make_pair(parent_spki_sha256, serials));
-    crl_set->crls_index_by_issuer_[parent_spki_sha256] = crl_index;
+    if (!ReadCRL(&data, &back_pair->first, &back_pair->second)) {
+      // Undo the speculative push_back() performed above.
+      crl_set->crls_.pop_back();
+      return false;
+    }
+
+    crl_set->crls_index_by_issuer_[back_pair->first] = crl_index;
   }
 
   if (!crl_set->CopyBlockedSPKIsFromHeader(header_dict.get()))
@@ -548,7 +570,7 @@ CRLSet::Result CRLSet::CheckSerial(
   while (serial.size() > 1 && serial[0] == 0x00)
     serial.remove_prefix(1);
 
-  std::map<std::string, size_t>::const_iterator i =
+  base::hash_map<std::string, size_t>::const_iterator i =
       crls_index_by_issuer_.find(issuer_spki_hash.as_string());
   if (i == crls_index_by_issuer_.end())
     return UNKNOWN;
