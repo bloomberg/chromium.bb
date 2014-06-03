@@ -107,8 +107,9 @@ static bool InstallHBitmapPixels(SkBitmap* bitmap, int width, int height,
   const SkAlphaType at = is_opaque ? kOpaque_SkAlphaType : kPremul_SkAlphaType;
   const SkImageInfo info = SkImageInfo::MakeN32(width, height, at);
   const size_t rowBytes = info.minRowBytes();
-  return bitmap->installPixels(info, data, rowBytes, DeleteHBitmapCallback,
-                               hbitmap);
+  SkColorTable* color_table = NULL;
+  return bitmap->installPixels(info, data, rowBytes, color_table,
+                               DeleteHBitmapCallback, hbitmap);
 }
 
 // We use this static factory function instead of the regular constructor so
