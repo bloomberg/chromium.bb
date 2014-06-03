@@ -11,12 +11,14 @@
         (GraphicsLayer
           (position 10.00 10.00)
           (anchor -0.02 -0.05)
+          (transformOrigin -10.00 -10.00)
           (bounds 590.00 210.00)
           (drawsContent 1)
         )
         (GraphicsLayer
           (position 10.00 260.00)
           (anchor -0.02 -0.05)
+          (transformOrigin -10.00 -10.00)
           (bounds 590.00 210.00)
           (drawsContent 1)
           (children 1
