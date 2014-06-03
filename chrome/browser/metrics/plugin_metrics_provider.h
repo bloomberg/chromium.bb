@@ -42,10 +42,7 @@ class PluginMetricsProvider : public metrics::MetricsProvider,
       metrics::SystemProfileProto* system_profile_proto) OVERRIDE;
   virtual void ProvideStabilityMetrics(
       metrics::SystemProfileProto* system_profile_proto) OVERRIDE;
-
-  // Saves plugin-related updates from the in-object buffer to Local State
-  // for retrieval next time we send a Profile log (generally next launch).
-  void RecordPluginChanges();
+  virtual void RecordCurrentState() OVERRIDE;
 
   // Notifies the provider about an error loading the plugin at |plugin_path|.
   void LogPluginLoadingError(const base::FilePath& plugin_path);

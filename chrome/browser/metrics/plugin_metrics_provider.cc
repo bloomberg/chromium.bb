@@ -191,7 +191,9 @@ void PluginMetricsProvider::ProvideStabilityMetrics(
   local_state_->ClearPref(prefs::kStabilityPluginStats);
 }
 
-void PluginMetricsProvider::RecordPluginChanges() {
+// Saves plugin-related updates from the in-object buffer to Local State
+// for retrieval next time we send a Profile log (generally next launch).
+void PluginMetricsProvider::RecordCurrentState() {
   ListPrefUpdate update(local_state_, prefs::kStabilityPluginStats);
   base::ListValue* plugins = update.Get();
   DCHECK(plugins);

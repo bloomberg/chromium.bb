@@ -58,6 +58,11 @@ MetricsServicesManager::GetVariationsService() {
   return variations_service_.get();
 }
 
+void MetricsServicesManager::OnPluginLoadingError(
+    const base::FilePath& plugin_path) {
+  GetMetricsService()->LogPluginLoadingError(plugin_path);
+}
+
 metrics::MetricsStateManager* MetricsServicesManager::GetMetricsStateManager() {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (!metrics_state_manager_) {
