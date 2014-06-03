@@ -464,7 +464,7 @@ public:
     bool contains(Address addr)
     {
         Address blinkPageStart = roundToBlinkPageStart(address());
-        ASSERT(blinkPageStart = address() - osPageSize()); // Page is at aligned address plus guard page size.
+        ASSERT(blinkPageStart == address() - osPageSize()); // Page is at aligned address plus guard page size.
         return blinkPageStart <= addr && addr < blinkPageStart + blinkPageSize;
     }
 
