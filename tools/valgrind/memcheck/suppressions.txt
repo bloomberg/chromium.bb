@@ -4208,13 +4208,6 @@
    fun:_ZN7content23AudioInputDeviceManager23EnumerateOnDeviceThread*
 }
 {
-   bug_158510
-   Memcheck:Uninitialized
-   fun:_ZN7WebCore11RenderTable6layoutEv
-   ...
-   fun:_ZN7WebCore11RenderBlock6layoutEv
-}
-{
    bug_158514
    Memcheck:Uninitialized
    ...

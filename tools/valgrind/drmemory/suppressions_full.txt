@@ -1455,12 +1455,6 @@ name=bug_145244
 *!WebCore::StyleSheetContents::requestImportedStyleSheets
 
 UNINITIALIZED READ
-name=bug_158510
-*!WebCore::RenderTable::layout
-...
-*!WebCore::RenderBlock::layout
-
-UNINITIALIZED READ
 name=bug_159005
 *!WebCore::RenderMarquee::updateMarqueeStyle
 *!WebCore::RenderLayer::styleChanged
@@ -2061,14 +2055,6 @@ blink_web.dll!WebCore::RenderLayerCompositor::updateIfNeeded
 blink_web.dll!WebCore::RenderLayerCompositor::updateIfNeededRecursive
 blink_web.dll!WebCore::FrameView::updateLayoutAndStyleForPainting
 blink_web.dll!WebCore::PageAnimator::updateLayoutAndStyleForPainting
-
-UNINITIALIZED READ
-name=bug_364675
-blink_web.dll!WebCore::AutoTableLayout::layout
-blink_web.dll!WebCore::RenderTable::layout
-blink_web.dll!...
-blink_web.dll!WebCore::RenderBlockFlow::layoutBlockFlow
-blink_web.dll!WebCore::RenderBlockFlow::layoutBlock
 
 UNINITIALIZED READ
 name=bug_365101
