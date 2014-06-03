@@ -2,6 +2,7 @@ cpu@chromium.org
 laforge@chromium.org
 mal@chromium.org
 sorin@chromium.org
+waffles@chromium.org
 
 per-file ppapi_utils*=bbudge@chromium.org
 per-file ppapi_utils*=brettw@chromium.org
