@@ -33,11 +33,12 @@ namespace WebCore {
 
 PassRefPtrWillBeRawPtr<HTMLAllCollection> HTMLAllCollection::create(ContainerNode& node, CollectionType type)
 {
-    return adoptRefWillBeNoop(new HTMLAllCollection(node, type));
+    ASSERT_UNUSED(type, type == DocAll);
+    return adoptRefWillBeNoop(new HTMLAllCollection(node));
 }
 
-HTMLAllCollection::HTMLAllCollection(ContainerNode& node, CollectionType type)
-    : HTMLCollection(node, type, DoesNotOverrideItemAfter)
+HTMLAllCollection::HTMLAllCollection(ContainerNode& node)
+    : HTMLCollection(node, DocAll, DoesNotOverrideItemAfter)
 {
     ScriptWrappable::init(this);
 }

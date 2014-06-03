@@ -62,6 +62,7 @@ private:
     mutable RawPtrWillBeMember<Element> m_cachedElement;
     mutable unsigned m_cachedElementOffsetInArray;
 };
+DEFINE_TYPE_CASTS(HTMLFormControlsCollection, LiveNodeListBase, collection, collection->type() == FormControls, collection.type() == FormControls);
 
 } // namespace
 

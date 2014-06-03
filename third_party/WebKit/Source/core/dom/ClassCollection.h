@@ -57,6 +57,8 @@ private:
     AtomicString m_originalClassNames;
 };
 
+DEFINE_TYPE_CASTS(ClassCollection, LiveNodeListBase, collection, collection->type() == ClassCollectionType, collection.type() == ClassCollectionType);
+
 inline bool ClassCollection::elementMatches(const Element& testElement) const
 {
     if (!testElement.hasClass())

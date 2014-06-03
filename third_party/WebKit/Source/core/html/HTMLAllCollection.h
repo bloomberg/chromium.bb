@@ -39,8 +39,10 @@ public:
     void namedGetter(const AtomicString& name, bool&, RefPtrWillBeRawPtr<NodeList>&, bool&, RefPtrWillBeRawPtr<Element>&);
 
 private:
-    HTMLAllCollection(ContainerNode&, CollectionType);
+    explicit HTMLAllCollection(ContainerNode&);
 };
+
+DEFINE_TYPE_CASTS(HTMLAllCollection, LiveNodeListBase, collection, collection->type() == DocAll, collection.type() == DocAll);
 
 } // namespace WebCore
 

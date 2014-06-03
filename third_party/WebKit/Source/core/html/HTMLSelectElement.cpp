@@ -381,7 +381,7 @@ PassRefPtrWillBeRawPtr<HTMLCollection> HTMLSelectElement::selectedOptions()
 
 PassRefPtrWillBeRawPtr<HTMLOptionsCollection> HTMLSelectElement::options()
 {
-    return static_cast<HTMLOptionsCollection*>(ensureCachedHTMLCollection(SelectOptions).get());
+    return toHTMLOptionsCollection(ensureCachedHTMLCollection(SelectOptions).get());
 }
 
 void HTMLSelectElement::updateListItemSelectedStates()

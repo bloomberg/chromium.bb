@@ -56,6 +56,8 @@ protected:
     AtomicString m_localName;
 };
 
+DEFINE_TYPE_CASTS(TagCollection, LiveNodeListBase, collection, collection->type() == TagCollectionType, collection.type() == TagCollectionType);
+
 class HTMLTagCollection FINAL : public TagCollection {
 public:
     static PassRefPtrWillBeRawPtr<HTMLTagCollection> create(ContainerNode& rootNode, CollectionType type, const AtomicString& localName)
@@ -71,6 +73,8 @@ private:
 
     AtomicString m_loweredLocalName;
 };
+
+DEFINE_TYPE_CASTS(HTMLTagCollection, LiveNodeListBase, collection, collection->type() == HTMLTagCollectionType, collection.type() == HTMLTagCollectionType);
 
 inline bool HTMLTagCollection::elementMatches(const Element& testElement) const
 {

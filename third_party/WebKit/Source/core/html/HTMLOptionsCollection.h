@@ -54,6 +54,8 @@ private:
     virtual void supportedPropertyNames(Vector<String>& names) OVERRIDE;
 };
 
+DEFINE_TYPE_CASTS(HTMLOptionsCollection, LiveNodeListBase, collection, collection->type() == SelectOptions, collection.type() == SelectOptions);
+
 } //namespace
 
 #endif

@@ -47,8 +47,9 @@ HTMLFormControlsCollection::HTMLFormControlsCollection(ContainerNode& ownerNode)
     ScriptWrappable::init(this);
 }
 
-PassRefPtrWillBeRawPtr<HTMLFormControlsCollection> HTMLFormControlsCollection::create(ContainerNode& ownerNode, CollectionType)
+PassRefPtrWillBeRawPtr<HTMLFormControlsCollection> HTMLFormControlsCollection::create(ContainerNode& ownerNode, CollectionType type)
 {
+    ASSERT_UNUSED(type, type == FormControls);
     return adoptRefWillBeNoop(new HTMLFormControlsCollection(ownerNode));
 }
 
