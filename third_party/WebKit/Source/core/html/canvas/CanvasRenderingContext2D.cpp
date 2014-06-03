@@ -364,7 +364,6 @@ void CanvasRenderingContext2D::realizeSaves()
         // turn necessary to support correct resizing and unwinding of the stack).
         m_stateStack.last()->m_unrealizedSaveCount = 0;
         GraphicsContext* context = drawingContext();
-        ASSERT(context);
         if (context)
             context->save();
         validateStateStack();
