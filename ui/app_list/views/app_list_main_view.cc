@@ -21,6 +21,7 @@
 #include "ui/app_list/search_box_model.h"
 #include "ui/app_list/views/app_list_item_view.h"
 #include "ui/app_list/views/apps_container_view.h"
+#include "ui/app_list/views/apps_grid_view.h"
 #include "ui/app_list/views/contents_switcher_view.h"
 #include "ui/app_list/views/contents_view.h"
 #include "ui/app_list/views/search_box_view.h"
@@ -91,9 +92,6 @@ AppListMainView::AppListMainView(AppListViewDelegate* delegate,
       search_box_view_(NULL),
       contents_view_(NULL),
       weak_ptr_factory_(this) {
-  // Starts icon loading early.
-  PreloadIcons(parent);
-
   SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical,
                                         kInnerPadding,
                                         kInnerPadding,
@@ -104,6 +102,9 @@ AppListMainView::AppListMainView(AppListViewDelegate* delegate,
   AddContentsView();
   if (app_list::switches::IsExperimentalAppListEnabled())
     AddChildView(new ContentsSwitcherView(contents_view_));
+
+  // Starts icon loading early.
+  PreloadIcons(parent);
 }
 
 void AppListMainView::AddContentsView() {
@@ -196,7 +197,11 @@ void AppListMainView::PreloadIcons(gfx::NativeView parent) {
   // assumes first page (i.e. index 0) will be used in this case.
   const int selected_page = std::max(0, pagination_model_->selected_page());
 
-  const int tiles_per_page = kPreferredCols * kPreferredRows;
+  const AppsGridView* const apps_grid_view =
+      contents_view_->apps_container_view()->apps_grid_view();
+  const int tiles_per_page =
+      apps_grid_view->cols() * apps_grid_view->rows_per_page();
+
   const int start_model_index = selected_page * tiles_per_page;
   const int end_model_index =
       std::min(static_cast<int>(model_->top_level_item_list()->item_count()),

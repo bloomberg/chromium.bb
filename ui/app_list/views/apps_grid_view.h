@@ -80,8 +80,8 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   // is no longer called to dynamically choosing those layout params.
   void SetLayout(int icon_size, int cols, int rows_per_page);
 
-  int cols() { return cols_; }
-  int rows_per_page() { return rows_per_page_; }
+  int cols() const { return cols_; }
+  int rows_per_page() const { return rows_per_page_; }
 
   // This resets the grid view to a fresh state for showing the app list.
   void ResetForShowApps();
