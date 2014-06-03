@@ -66,16 +66,27 @@ def print_results(results, columns, buckets):
     print('')
 
 
+def generate_version(source):
+  """Generates the sha-1 based on the content of this zip.
+
+  Copied from:
+  https://code.google.com/p/swarming/source/browse/services/swarming/swarm_bot/zipped_archive.py
+  """
+  result = hashlib.sha1()
+  with zipfile.ZipFile(source, 'r') as z:
+    for item in sorted(z.namelist()):
+      with z.open(item) as f:
+        result.update(item)
+        result.update('\x00')
+        result.update(f.read())
+        result.update('\x00')
+  return result.hexdigest()
+
+
 def calculate_version(url):
   """Retrieves the swarm_bot code and returns the SHA-1 for it."""
   # Cannot use url_open() since zipfile requires .seek().
-  archive = zipfile.ZipFile(StringIO.StringIO(net.url_read(url)))
-  # See
-  # https://code.google.com/p/swarming/source/browse/services/swarming/common/bot_archive.py
-  d = hashlib.sha1()
-  for f in archive.namelist():
-    d.update(archive.read(f))
-  return d.hexdigest()
+  return generate_version(StringIO.StringIO(net.url_read(url)))
 
 
 class FakeSwarmBot(object):
@@ -157,7 +168,7 @@ class FakeSwarmBot(object):
           self._events.put('update_slave')
           continue
 
-        if commands != ['StoreFiles', 'RunCommands']:
+        if commands != ['StoreFiles', 'RunManifest']:
           self._progress.update_item(
               'Unexpected RPC call %s\n%s' % (commands, manifest))
           self._events.put('unknown_rpc')
@@ -170,8 +181,9 @@ class FakeSwarmBot(object):
         filepath, filename, test_run_content = store_cmd['args'][0]
         assert filepath == ''
         assert filename == 'test_run.swarm'
-        assert 'local_test_runner.py' in manifest['commands'][1]['args'][0], (
-            manifest['commands'][1])
+
+        assert manifest['commands'][1]['args'] == 'test_run.swarm', (
+            manifest['commands'][1]['args'])
         result_url = manifest['result_url']
         test_run = json.loads(test_run_content)
         assert result_url == test_run['result_url']
@@ -233,8 +245,8 @@ def main():
   # Use improbable values to reduce the chance of interferring with real slaves.
   parser.set_defaults(
       dimensions=[
-        ('bits', '36'),
-        ('machine', os.uname()[4] + '-experimental'),
+        ('cpu', ['arm36']),
+        ('hostname', socket.getfqdn()),
         ('os', OS_NAME),
       ])
 
