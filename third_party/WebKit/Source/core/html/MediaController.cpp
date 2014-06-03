@@ -41,7 +41,7 @@
 using namespace WebCore;
 using namespace std;
 
-PassRefPtr<MediaController> MediaController::create(ExecutionContext* context)
+PassRefPtrWillBeRawPtr<MediaController> MediaController::create(ExecutionContext* context)
 {
     return adoptRefWillBeRefCountedGarbageCollected(new MediaController(context));
 }

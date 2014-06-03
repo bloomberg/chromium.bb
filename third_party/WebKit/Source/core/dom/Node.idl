@@ -21,7 +21,6 @@
 [
     Custom=Wrap,
     DependentLifetime,
-    WillBeGarbageCollected,
 ] interface Node : EventTarget {
     // NodeType
     const unsigned short      ELEMENT_NODE                   = 1;

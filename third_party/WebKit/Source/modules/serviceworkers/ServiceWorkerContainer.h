@@ -67,7 +67,7 @@ public:
     ScriptPromise registerServiceWorker(ScriptState*, const String& pattern, const Dictionary&);
     ScriptPromise unregisterServiceWorker(ScriptState*, const String& scope = String());
 
-    PassRefPtr<ServiceWorker> controller() { return m_controller; }
+    PassRefPtrWillBeRawPtr<ServiceWorker> controller() { return m_controller.get(); }
 
     // WebServiceWorkerProviderClient overrides.
     virtual void setController(blink::WebServiceWorker*) OVERRIDE;

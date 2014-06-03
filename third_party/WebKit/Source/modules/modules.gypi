@@ -893,6 +893,7 @@
       'webmidi/MIDIClient.h',
       'webmidi/MIDIClientMock.cpp',
       'webmidi/MIDIClientMock.h',
+      'webmidi/MIDIConnectionEvent.cpp',
       'webmidi/MIDIConnectionEvent.h',
       'webmidi/MIDIController.cpp',
       'webmidi/MIDIController.h',

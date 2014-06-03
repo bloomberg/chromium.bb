@@ -44,7 +44,7 @@ class MediaController FINAL : public RefCountedWillBeRefCountedGarbageCollected<
     REFCOUNTED_EVENT_TARGET(MediaController);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(MediaController);
 public:
-    static PassRefPtr<MediaController> create(ExecutionContext*);
+    static PassRefPtrWillBeRawPtr<MediaController> create(ExecutionContext*);
     virtual ~MediaController();
 
     void addMediaElement(HTMLMediaElement*);

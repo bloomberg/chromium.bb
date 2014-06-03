@@ -1280,7 +1280,7 @@ static void readonlyEventTargetOrNullAttributeAttributeGetter(const v8::Property
     v8::Handle<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toNative(holder);
     bool isNull = false;
-    RefPtr<EventTarget> v8Value = impl->readonlyEventTargetOrNullAttribute(isNull);
+    RefPtrWillBeRawPtr<EventTarget> v8Value = impl->readonlyEventTargetOrNullAttribute(isNull);
     if (isNull) {
         v8SetReturnValueNull(info);
         return;

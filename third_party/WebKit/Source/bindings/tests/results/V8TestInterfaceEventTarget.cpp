@@ -37,7 +37,7 @@ void webCoreInitializeScriptWrappableForInterface(WebCore::TestInterfaceEventTar
 }
 
 namespace WebCore {
-const WrapperTypeInfo V8TestInterfaceEventTarget::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterfaceEventTarget::domTemplate, V8TestInterfaceEventTarget::derefObject, 0, V8TestInterfaceEventTarget::toEventTarget, 0, V8TestInterfaceEventTarget::installPerContextEnabledMethods, &V8EventTarget::wrapperTypeInfo, WrapperTypeObjectPrototype, RefCountedObject };
+const WrapperTypeInfo V8TestInterfaceEventTarget::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterfaceEventTarget::domTemplate, V8TestInterfaceEventTarget::derefObject, 0, V8TestInterfaceEventTarget::toEventTarget, 0, V8TestInterfaceEventTarget::installPerContextEnabledMethods, &V8EventTarget::wrapperTypeInfo, WrapperTypeObjectPrototype, WillBeGarbageCollectedObject };
 
 namespace TestInterfaceEventTargetV8Internal {
 
@@ -45,7 +45,7 @@ template <typename T> void V8_USE(T) { }
 
 } // namespace TestInterfaceEventTargetV8Internal
 
-const WrapperTypeInfo V8TestInterfaceEventTargetConstructor::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterfaceEventTargetConstructor::domTemplate, V8TestInterfaceEventTarget::derefObject, 0, V8TestInterfaceEventTarget::toEventTarget, 0, V8TestInterfaceEventTarget::installPerContextEnabledMethods, 0, WrapperTypeObjectPrototype, RefCountedObject };
+const WrapperTypeInfo V8TestInterfaceEventTargetConstructor::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterfaceEventTargetConstructor::domTemplate, V8TestInterfaceEventTarget::derefObject, 0, V8TestInterfaceEventTarget::toEventTarget, 0, V8TestInterfaceEventTarget::installPerContextEnabledMethods, 0, WrapperTypeObjectPrototype, WillBeGarbageCollectedObject };
 
 static void V8TestInterfaceEventTargetConstructorCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
@@ -67,7 +67,7 @@ static void V8TestInterfaceEventTargetConstructorCallback(const v8::FunctionCall
     // may end up being the only node in the map and get garbage-collected prematurely.
     toV8(document, info.Holder(), isolate);
 
-    RefPtr<TestInterfaceEventTarget> impl = TestInterfaceEventTarget::createForJSConstructor(*document);
+    RefPtrWillBeRawPtr<TestInterfaceEventTarget> impl = TestInterfaceEventTarget::createForJSConstructor(*document);
 
     v8::Handle<v8::Object> wrapper = info.Holder();
     V8DOMWrapper::associateObjectWithWrapper<V8TestInterfaceEventTarget>(impl.release(), &V8TestInterfaceEventTargetConstructor::wrapperTypeInfo, wrapper, isolate, WrapperConfiguration::Independent);
@@ -143,7 +143,7 @@ EventTarget* V8TestInterfaceEventTarget::toEventTarget(v8::Handle<v8::Object> ob
     return toNative(object);
 }
 
-v8::Handle<v8::Object> V8TestInterfaceEventTarget::createWrapper(PassRefPtr<TestInterfaceEventTarget> impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+v8::Handle<v8::Object> V8TestInterfaceEventTarget::createWrapper(PassRefPtrWillBeRawPtr<TestInterfaceEventTarget> impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     ASSERT(impl);
     ASSERT(!DOMDataStore::containsWrapper<V8TestInterfaceEventTarget>(impl.get(), isolate));
@@ -165,7 +165,9 @@ v8::Handle<v8::Object> V8TestInterfaceEventTarget::createWrapper(PassRefPtr<Test
 
 void V8TestInterfaceEventTarget::derefObject(void* object)
 {
+#if !ENABLE(OILPAN)
     fromInternalPointer(object)->deref();
+#endif // !ENABLE(OILPAN)
 }
 
 template<>
