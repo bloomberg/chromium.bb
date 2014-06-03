@@ -1446,10 +1446,23 @@ bool TileManager::RasterTileIterator::RasterOrderComparator::operator()(
       b_tile->priority_for_tree_priority(tree_priority_);
   bool prioritize_low_res = tree_priority_ == SMOOTHNESS_TAKES_PRIORITY;
 
-  if (b_priority.resolution != a_priority.resolution) {
-    return (prioritize_low_res && b_priority.resolution == LOW_RESOLUTION) ||
-           (!prioritize_low_res && b_priority.resolution == HIGH_RESOLUTION) ||
-           (a_priority.resolution == NON_IDEAL_RESOLUTION);
+  // Now we have to return true iff b is higher priority than a.
+
+  // If the bin is the same but the resolution is not, then the order will be
+  // determined by whether we prioritize low res or not.
+  if (b_priority.priority_bin == a_priority.priority_bin &&
+      b_priority.resolution != a_priority.resolution) {
+    // Non ideal resolution should be sorted lower than other resolutions.
+    if (a_priority.resolution == NON_IDEAL_RESOLUTION)
+      return true;
+
+    if (b_priority.resolution == NON_IDEAL_RESOLUTION)
+      return false;
+
+    if (prioritize_low_res)
+      return b_priority.resolution == LOW_RESOLUTION;
+
+    return b_priority.resolution == HIGH_RESOLUTION;
   }
 
   return b_priority.IsHigherPriorityThan(a_priority);
