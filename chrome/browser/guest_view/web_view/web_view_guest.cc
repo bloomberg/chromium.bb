@@ -277,6 +277,7 @@ void WebViewGuest::RecordUserInitiatedUMA(const PermissionResponseInfo& info,
       case WEB_VIEW_PERMISSION_TYPE_LOAD_PLUGIN:
         content::RecordAction(
             UserMetricsAction("WebView.Guest.PermissionDeny.PluginLoad"));
+        break;
       case WEB_VIEW_PERMISSION_TYPE_MEDIA:
         content::RecordAction(
             UserMetricsAction("WebView.PermissionDeny.Media"));
