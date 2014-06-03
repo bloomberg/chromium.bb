@@ -11,6 +11,7 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/component_updater/component_updater_service.h"
+#include "chrome/browser/component_updater/crx_update_item.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/chrome_paths.h"
@@ -43,6 +44,8 @@ content::WebUIDataSource* CreateComponentsUIHTMLSource(Profile* profile) {
   source->AddLocalizedString("componentVersion", IDS_COMPONENTS_VERSION);
   source->AddLocalizedString("checkUpdate", IDS_COMPONENTS_CHECK_FOR_UPDATE);
   source->AddLocalizedString("noComponents", IDS_COMPONENTS_NO_COMPONENTS);
+  source->AddLocalizedString("statusLabel", IDS_COMPONENTS_STATUS_LABEL);
+  source->AddLocalizedString("checkingLabel", IDS_COMPONENTS_CHECKING_LABEL);
 
   source->SetJsonPath("strings.js");
   source->AddResourcePath("components.js", IDR_COMPONENTS_JS);
@@ -75,8 +78,6 @@ class ComponentsDOMHandler : public WebUIMessageHandler {
   void HandleCheckUpdate(const base::ListValue* args);
 
  private:
-  void LoadComponents();
-
   content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(ComponentsDOMHandler);
@@ -86,18 +87,23 @@ ComponentsDOMHandler::ComponentsDOMHandler() {
 }
 
 void ComponentsDOMHandler::RegisterMessages() {
-  web_ui()->RegisterMessageCallback("requestComponentsData",
+  web_ui()->RegisterMessageCallback(
+      "requestComponentsData",
       base::Bind(&ComponentsDOMHandler::HandleRequestComponentsData,
                  base::Unretained(this)));
 
-  web_ui()->RegisterMessageCallback("checkUpdate",
+  web_ui()->RegisterMessageCallback(
+      "checkUpdate",
       base::Bind(&ComponentsDOMHandler::HandleCheckUpdate,
                  base::Unretained(this)));
 }
 
 void ComponentsDOMHandler::HandleRequestComponentsData(
     const base::ListValue* args) {
-  LoadComponents();
+  base::ListValue* list = ComponentsUI::LoadComponents();
+  base::DictionaryValue result;
+  result.Set("components", list);
+  web_ui()->CallJavascriptFunction("returnComponentsData", result);
 }
 
 // This function is called when user presses button from html UI.
@@ -119,30 +125,6 @@ void ComponentsDOMHandler::HandleCheckUpdate(const base::ListValue* args) {
   ComponentsUI::OnDemandUpdate(component_id);
 }
 
-void ComponentsDOMHandler::LoadComponents() {
-  component_updater::ComponentUpdateService* cus =
-      g_browser_process->component_updater();
-  std::vector<component_updater::CrxComponentInfo> components;
-  cus->GetComponents(&components);
-
-  // Construct DictionaryValues to return to UI.
-  base::ListValue* component_list = new base::ListValue();
-  for (size_t j = 0; j < components.size(); ++j) {
-    const component_updater::CrxComponentInfo& component = components[j];
-
-    base::DictionaryValue* component_entry = new base::DictionaryValue();
-    component_entry->SetString("id", component.id);
-    component_entry->SetString("name", component.name);
-    component_entry->SetString("version", component.version);
-
-    component_list->Append(component_entry);
-  }
-
-  base::DictionaryValue results;
-  results.Set("components", component_list);
-  web_ui()->CallJavascriptFunction("returnComponentsData", results);
-}
-
 }  // namespace
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -157,6 +139,16 @@ ComponentsUI::ComponentsUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   // Set up the chrome://components/ source.
   Profile* profile = Profile::FromWebUI(web_ui);
   content::WebUIDataSource::Add(profile, CreateComponentsUIHTMLSource(profile));
+  component_updater::ComponentUpdateService* cus =
+      g_browser_process->component_updater();
+  cus->AddObserver(this);
+}
+
+ComponentsUI::~ComponentsUI() {
+  component_updater::ComponentUpdateService* cus =
+      g_browser_process->component_updater();
+  if (cus)
+    cus->RemoveObserver(this);
 }
 
 // static
@@ -167,8 +159,94 @@ void ComponentsUI::OnDemandUpdate(const std::string& component_id) {
 }
 
 // static
+base::ListValue* ComponentsUI::LoadComponents() {
+  component_updater::ComponentUpdateService* cus =
+      g_browser_process->component_updater();
+  std::vector<std::string> component_ids;
+  component_ids = cus->GetComponentIDs();
+
+  // Construct DictionaryValues to return to UI.
+  base::ListValue* component_list = new base::ListValue();
+  for (size_t j = 0; j < component_ids.size(); ++j) {
+    const component_updater::CrxUpdateItem* item =
+        cus->GetComponentDetails(component_ids[j]);
+    if (item) {
+      base::DictionaryValue* component_entry = new base::DictionaryValue();
+      component_entry->SetString("id", component_ids[j]);
+      component_entry->SetString("name", item->component.name);
+      component_entry->SetString("version",
+                                 item->component.version.GetString());
+
+      component_entry->SetString("status",
+                                 ServiceStatusToString(item->status));
+
+      component_list->Append(component_entry);
+    }
+  }
+
+  return component_list;
+}
+
+// static
 base::RefCountedMemory* ComponentsUI::GetFaviconResourceBytes(
       ui::ScaleFactor scale_factor) {
   return ResourceBundle::GetSharedInstance().
       LoadDataResourceBytesForScale(IDR_PLUGINS_FAVICON, scale_factor);
+}
+
+base::string16 ComponentsUI::ComponentEventToString(Events event) {
+  switch (event) {
+    case COMPONENT_UPDATER_STARTED:
+      return l10n_util::GetStringUTF16(IDS_COMPONENTS_EVT_STATUS_STARTED);
+    case COMPONENT_UPDATER_SLEEPING:
+      return l10n_util::GetStringUTF16(IDS_COMPONENTS_EVT_STATUS_SLEEPING);
+    case COMPONENT_UPDATE_FOUND:
+      return l10n_util::GetStringUTF16(IDS_COMPONENTS_EVT_STATUS_FOUND);
+    case COMPONENT_UPDATE_READY:
+      return l10n_util::GetStringUTF16(IDS_COMPONENTS_EVT_STATUS_READY);
+    case COMPONENT_UPDATED:
+      return l10n_util::GetStringUTF16(IDS_COMPONENTS_EVT_STATUS_UPDATED);
+    case COMPONENT_NOT_UPDATED:
+      return l10n_util::GetStringUTF16(IDS_COMPONENTS_EVT_STATUS_NOTUPDATED);
+    case COMPONENT_UPDATE_DOWNLOADING:
+      return l10n_util::GetStringUTF16(IDS_COMPONENTS_EVT_STATUS_DOWNLOADING);
+  }
+  return l10n_util::GetStringUTF16(IDS_COMPONENTS_UNKNOWN);
+}
+
+base::string16 ComponentsUI::ServiceStatusToString(
+    component_updater::CrxUpdateItem::Status status) {
+  switch (status) {
+    case component_updater::CrxUpdateItem::kNew:
+      return l10n_util::GetStringUTF16(IDS_COMPONENTS_SVC_STATUS_NEW);
+    case component_updater::CrxUpdateItem::kChecking:
+      return l10n_util::GetStringUTF16(IDS_COMPONENTS_SVC_STATUS_CHECKING);
+    case component_updater::CrxUpdateItem::kCanUpdate:
+      return l10n_util::GetStringUTF16(IDS_COMPONENTS_SVC_STATUS_UPDATE);
+    case component_updater::CrxUpdateItem::kDownloadingDiff:
+      return l10n_util::GetStringUTF16(IDS_COMPONENTS_SVC_STATUS_DNL_DIFF);
+    case component_updater::CrxUpdateItem::kDownloading:
+      return l10n_util::GetStringUTF16(IDS_COMPONENTS_SVC_STATUS_DNL);
+    case component_updater::CrxUpdateItem::kUpdatingDiff:
+      return l10n_util::GetStringUTF16(IDS_COMPONENTS_SVC_STATUS_UPDT_DIFF);
+    case component_updater::CrxUpdateItem::kUpdating:
+      return l10n_util::GetStringUTF16(IDS_COMPONENTS_SVC_STATUS_UPDATING);
+    case component_updater::CrxUpdateItem::kUpdated:
+      return l10n_util::GetStringUTF16(IDS_COMPONENTS_SVC_STATUS_UPDATED);
+    case component_updater::CrxUpdateItem::kUpToDate:
+      return l10n_util::GetStringUTF16(IDS_COMPONENTS_SVC_STATUS_UPTODATE);
+    case component_updater::CrxUpdateItem::kNoUpdate:
+      return l10n_util::GetStringUTF16(IDS_COMPONENTS_SVC_STATUS_NOUPDATE);
+    case component_updater::CrxUpdateItem::kLastStatus:
+      return l10n_util::GetStringUTF16(IDS_COMPONENTS_UNKNOWN);
+  }
+  return l10n_util::GetStringUTF16(IDS_COMPONENTS_UNKNOWN);
+}
+
+void ComponentsUI::OnEvent(Events event, const std::string& id) {
+  base::DictionaryValue parameters;
+  parameters.SetString("event", ComponentEventToString(event));
+  if (!id.empty())
+    parameters.SetString("id", id);
+  web_ui()->CallJavascriptFunction("onComponentEvent", parameters);
 }

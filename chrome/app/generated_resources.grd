@@ -5236,6 +5236,66 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_COMPONENTS_CHECK_FOR_UPDATE" desc="The button label for triggering update check.">
         Check for update
       </message>
+      <message name="IDS_COMPONENTS_STATUS_LABEL" desc="Status label">
+        Status
+      </message>
+      <message name="IDS_COMPONENTS_CHECKING_LABEL" desc="Checking label">
+        Checking for status...
+      </message>
+      <message name="IDS_COMPONENTS_SVC_STATUS_NEW" desc="Service Status">
+        New
+      </message>
+      <message name="IDS_COMPONENTS_SVC_STATUS_CHECKING" desc="Service Status">
+        Checking
+      </message>
+      <message name="IDS_COMPONENTS_SVC_STATUS_UPDATE" desc="Service Status">
+        Update
+      </message>
+      <message name="IDS_COMPONENTS_SVC_STATUS_DNL_DIFF" desc="Service Status">
+        Downloading diff
+      </message>
+      <message name="IDS_COMPONENTS_SVC_STATUS_DNL" desc="Service Status">
+        Downloading
+      </message>
+      <message name="IDS_COMPONENTS_SVC_STATUS_UPDT_DIFF" desc="Service Status">
+        Updating diff
+      </message>
+      <message name="IDS_COMPONENTS_SVC_STATUS_UPDATING" desc="Service Status">
+        Updating
+      </message>
+      <message name="IDS_COMPONENTS_SVC_STATUS_UPDATED" desc="Service Status">
+        Updated
+      </message>
+      <message name="IDS_COMPONENTS_SVC_STATUS_UPTODATE" desc="Service Status">
+        Up-to-date
+      </message>
+      <message name="IDS_COMPONENTS_SVC_STATUS_NOUPDATE" desc="Service Status">
+        No update
+      </message>
+      <message name="IDS_COMPONENTS_UNKNOWN" desc="Service Status">
+        Unknown
+      </message>
+      <message name="IDS_COMPONENTS_EVT_STATUS_STARTED" desc="Service Status">
+        Updater started
+      </message>
+      <message name="IDS_COMPONENTS_EVT_STATUS_SLEEPING" desc="Service Status">
+        Updater sleeping
+      </message>
+      <message name="IDS_COMPONENTS_EVT_STATUS_FOUND" desc="Service Status">
+        Update found
+      </message>
+      <message name="IDS_COMPONENTS_EVT_STATUS_READY" desc="Service Status">
+        Update ready
+      </message>
+      <message name="IDS_COMPONENTS_EVT_STATUS_UPDATED" desc="Service Status">
+        Component updated
+      </message>
+      <message name="IDS_COMPONENTS_EVT_STATUS_NOTUPDATED" desc="Service Status">
+        Component not updated
+      </message>
+      <message name="IDS_COMPONENTS_EVT_STATUS_DOWNLOADING" desc="Service Status">
+        Component downloading
+      </message>
 
       <!-- Plugins -->
       <if expr="enable_plugins">

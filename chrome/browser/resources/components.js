@@ -14,8 +14,11 @@
 function renderTemplate(componentsData) {
   // This is the javascript code that processes the template:
   var input = new JsEvalContext(componentsData);
-  var output = $('componentTemplate');
+  var output = $('component-template').cloneNode(true);
+  $('component-placeholder').innerHTML = '';
+  $('component-placeholder').appendChild(output);
   jstProcess(input, output);
+  output.removeAttribute('hidden');
 }
 
 /**
@@ -73,18 +76,30 @@ function returnComponentsData(componentsData) {
 }
 
 /**
+ * This event function is called from component UI indicating changed state
+ * of component updater service.
+ * @param {Object} eventArgs Contains event and component ID. Component ID is
+ * optional.
+ */
+function onComponentEvent(eventArgs) {
+  if (eventArgs['id']) {
+    var id = eventArgs['id'];
+    $('status-' + id).textContent = eventArgs['event'];
+  }
+}
+
+/**
  * Handles an 'enable' or 'disable' button getting clicked.
  * @param {HTMLElement} node The HTML element representing the component
  *     being checked for update.
  */
 function handleCheckUpdate(node) {
-  node.disabled = true;
+  $('status-' + String(node.id)).textContent =
+      loadTimeData.getString('checkingLabel');
+
   // Tell the C++ ComponentssDOMHandler to check for update.
   chrome.send('checkUpdate', [String(node.id)]);
 }
 
 // Get data and have it displayed upon loading.
 document.addEventListener('DOMContentLoaded', requestComponentsData);
-
-// Add handlers to static HTML elements.
-$('button-check-update').onclick = handleCheckUpdate;

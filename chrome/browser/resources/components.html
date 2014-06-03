@@ -13,57 +13,56 @@
 <div id="body-container" style="visibility:hidden">
 
   <div id="header"><h1 i18n-content="componentsTitle">TITLE</h1></div>
-
-  <div id="componentTemplate">
+  <div id="component-placeholder"></div>
+  <div id="component-template" hidden>
 
     <div id="container" class="vbox-container">
     <div id="top" class="wbox">
 
       <div class="section-header">
-        <table><tr>
-          <td>
-            <span class="section-header-title" i18n-content="componentsTitle"
-              >TITLE</span>
-            <span class="section-header-title"
-                  jsdisplay="components.length > 0">(<span
-                  jscontent="components.length"></span>)</span>
-          </td>
-        </tr></table>
+        <span class="section-header-title" i18n-content="componentsTitle">
+        </span>
+        <span class="section-header-title"
+              jsdisplay="components.length > 0">(<span
+              jscontent="components.length"></span>)</span>
       </div>
 
     </div>
     </div>
 
     <div class="content">
-      <div class="component-name no-components" jsdisplay="components.length === 0">
-        <div i18n-content="noComponents">NO_COMPONENTS_ARE_INSTALLED</div>
+      <div class="component-name no-components"
+           jsdisplay="components.length === 0">
+        <div i18n-content="noComponents"></div>
       </div>
 
       <div jsdisplay="components.length > 0">
         <div class="component"
              jsselect="components">
-          <table>
-          <tr class='component-enabled'>
-          <td>
+          <div class='component-enabled'>
             <div class="component-text">
               <div>
                 <span class="component-name" dir="ltr"
-                      jscontent="name">NAME</span>
+                    jscontent="name">
+                </span>
                 <span>
-                  - <span i18n-content="componentVersion">VERSION</span>
-                    <span dir="ltr" jscontent="version">x.x.x.x</span>
+                  - <span i18n-content="componentVersion"></span>
+                    <span dir="ltr" jscontent="version"></span>
                 </span>
               </div>
-              <div class="component-actions" guest-visibility="disabled">
-                <button class="button-check-update" jsvalues=".id:id"
-                        i18n-content="checkUpdate">
-                   CHECK_UPDATE
-                </button>
-              </div>
             </div>
-          </td>
-          </tr>
-          </table>
+          </div>
+          <div class="component-text">
+            <span i18n-content="statusLabel"></span>
+            -
+            <span jscontent="status" jsvalues=".id: 'status-' + id">
+            <span>
+          </div>
+          <div class="component-actions" guest-visibility="disabled">
+            <button class="button-check-update"
+                jsvalues=".id:id" i18n-content="checkUpdate">
+            </button>
+          </div>
         </div>
       </div>
     </div>

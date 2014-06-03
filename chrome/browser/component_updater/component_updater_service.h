@@ -78,16 +78,7 @@ struct CrxComponent {
   ~CrxComponent();
 };
 
-// Convenience structure to use with component listing / enumeration.
-struct CrxComponentInfo {
-  // |id| is currently derived from |CrxComponent.pk_hash|, see rest of the
-  // class implementation for details.
-  std::string id;
-  std::string version;
-  std::string name;
-  CrxComponentInfo();
-  ~CrxComponentInfo();
-};
+struct CrxUpdateItem;
 
 // The component update service is in charge of installing or upgrading
 // select parts of chrome. Each part is called a component and managed by
@@ -206,7 +197,13 @@ class ComponentUpdateService {
   virtual Status RegisterComponent(const CrxComponent& component) = 0;
 
   // Returns a list of registered components.
-  virtual void GetComponents(std::vector<CrxComponentInfo>* components) = 0;
+  virtual std::vector<std::string> GetComponentIDs() const = 0;
+
+  // Returns details about registered component.
+  // Note: Object returned here is owned by this class, in simple words
+  // don't try to free this object.
+  virtual CrxUpdateItem* GetComponentDetails(
+      const std::string& component_id) const = 0;
 
   // Returns an interface for on-demand updates. On-demand updates are
   // proactively triggered outside the normal component update service schedule.
@@ -249,7 +246,6 @@ class OnDemandUpdater {
 // the heap which the component updater will own.
 ComponentUpdateService* ComponentUpdateServiceFactory(
     ComponentUpdateService::Configurator* config);
-
 }  // namespace component_updater
 
 #endif  // CHROME_BROWSER_COMPONENT_UPDATER_COMPONENT_UPDATER_SERVICE_H_
