@@ -809,17 +809,10 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
 
   webkit::SetSharedMemoryAllocationFunction(AllocateSharedMemoryFunction);
 
-  // Limit use of the scaled image cache to when deferred image decoding
-  // is enabled.
-  // TODO(reveman): Allow use of this cache on Android once
-  // SkDiscardablePixelRef is used for decoded images. crbug.com/330041
-  bool use_skia_scaled_image_cache = false;
-#if !defined(OS_ANDROID)
-  use_skia_scaled_image_cache =
-      command_line.HasSwitch(switches::kEnableDeferredImageDecoding) ||
-      is_impl_side_painting_enabled_;
-#endif
-  if (!use_skia_scaled_image_cache)
+  // Limit use of the scaled image cache to when deferred image decoding is
+  // enabled.
+  if (!command_line.HasSwitch(switches::kEnableDeferredImageDecoding) &&
+      !is_impl_side_painting_enabled_)
     SkGraphics::SetImageCacheByteLimit(0u);
 }
 
