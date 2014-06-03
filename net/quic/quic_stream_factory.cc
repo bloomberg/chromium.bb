@@ -838,13 +838,18 @@ void QuicStreamFactory::ProcessGoingAwaySession(
   if (!session_was_active)
     return;
 
+  const HostPortPair& server = server_id.host_port_pair();
+  // Don't try to change the alternate-protocol state, if the
+  // alternate-protocol state is unknown.
+  if (!http_server_properties_->HasAlternateProtocol(server))
+    return;
+
   // TODO(rch):  In the special case where the session has received no
   // packets from the peer, we should consider blacklisting this
   // differently so that we still race TCP but we don't consider the
   // session connected until the handshake has been confirmed.
   HistogramBrokenAlternateProtocolLocation(
       BROKEN_ALTERNATE_PROTOCOL_LOCATION_QUIC_STREAM_FACTORY);
-  const HostPortPair& server = server_id.host_port_pair();
   PortAlternateProtocolPair alternate =
       http_server_properties_->GetAlternateProtocol(server);
   DCHECK_EQ(QUIC, alternate.protocol);
