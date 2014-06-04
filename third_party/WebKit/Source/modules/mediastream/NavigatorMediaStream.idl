@@ -23,4 +23,6 @@
     [RaisesException] void webkitGetUserMedia(Dictionary options,
                                               NavigatorUserMediaSuccessCallback successCallback,
                                               NavigatorUserMediaErrorCallback errorCallback);
+
+    [RaisesException] void getMediaDevices(MediaDeviceInfoCallback resultCallback);
 };

@@ -78,6 +78,8 @@
       'mediasource/SourceBuffer.idl',
       'mediasource/SourceBufferList.idl',
       'mediasource/VideoPlaybackQuality.idl',
+      'mediastream/MediaDeviceInfo.idl',
+      'mediastream/MediaDeviceInfoCallback.idl',
       'mediastream/MediaStream.idl',
       'mediastream/MediaStreamEvent.idl',
       'mediastream/MediaStreamTrack.idl',
