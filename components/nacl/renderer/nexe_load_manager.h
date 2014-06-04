@@ -8,10 +8,10 @@
 #include <map>
 #include <string>
 
+#include "base/files/file.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/platform_file.h"
 #include "base/time/time.h"
 #include "ppapi/c/private/ppb_nacl_private.h"
 #include "url/gurl.h"
@@ -33,7 +33,7 @@ class NexeLoadManager {
   ~NexeLoadManager();
 
   void NexeFileDidOpen(int32_t pp_error,
-                       base::PlatformFile file,
+                       const base::File& file,
                        int32_t http_status,
                        int64_t nexe_bytes_read,
                        const std::string& url,

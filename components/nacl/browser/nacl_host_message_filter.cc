@@ -132,14 +132,16 @@ void NaClHostMessageFilter::OnNaClCreateTemporaryFile(
 
 void NaClHostMessageFilter::AsyncReturnTemporaryFile(
     int pp_instance,
-    base::PlatformFile fd,
+    const base::File& file,
     bool is_hit) {
-  Send(new NaClViewMsg_NexeTempFileReply(
-      pp_instance,
-      is_hit,
-      // Don't close our copy of the handle, because PnaclHost will use it
-      // when the translation finishes.
-      IPC::GetFileHandleForProcess(fd, PeerHandle(), false)));
+  IPC::PlatformFileForTransit fd = IPC::InvalidPlatformFileForTransit();
+  if (file.IsValid()) {
+    // Don't close our copy of the handle, because PnaclHost will use it
+    // when the translation finishes.
+    fd = IPC::GetFileHandleForProcess(file.GetPlatformFile(), PeerHandle(),
+                                      false);
+  }
+  Send(new NaClViewMsg_NexeTempFileReply(pp_instance, is_hit, fd));
 }
 
 void NaClHostMessageFilter::OnNaClGetNumProcessors(int* num_processors) {

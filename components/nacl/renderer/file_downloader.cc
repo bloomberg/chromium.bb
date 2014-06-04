@@ -5,7 +5,6 @@
 #include "components/nacl/renderer/file_downloader.h"
 
 #include "base/callback.h"
-#include "base/platform_file.h"
 #include "components/nacl/renderer/nexe_load_manager.h"
 #include "net/base/net_errors.h"
 #include "third_party/WebKit/public/platform/WebURLError.h"
@@ -15,11 +14,11 @@
 namespace nacl {
 
 FileDownloader::FileDownloader(scoped_ptr<blink::WebURLLoader> url_loader,
-                               base::PlatformFile file,
+                               base::File file,
                                StatusCallback status_cb,
                                ProgressCallback progress_cb)
     : url_loader_(url_loader.Pass()),
-      file_(file),
+      file_(file.Pass()),
       status_cb_(status_cb),
       progress_cb_(progress_cb),
       http_status_code_(-1),
@@ -55,8 +54,7 @@ void FileDownloader::didReceiveData(
     int data_length,
     int encoded_data_length) {
   if (status_ == SUCCESS) {
-    if (base::WritePlatformFile(file_, total_bytes_received_, data,
-                                data_length) == -1) {
+    if (file_.Write(total_bytes_received_, data, data_length) == -1) {
       status_ = FAILED;
       return;
     }
@@ -73,10 +71,10 @@ void FileDownloader::didFinishLoading(
   if (status_ == SUCCESS) {
     // Seek back to the beginning of the file that was just written so it's
     // easy for consumers to use.
-    if (base::SeekPlatformFile(file_, base::PLATFORM_FILE_FROM_BEGIN, 0) != 0)
+    if (file_.Seek(base::File::FROM_BEGIN, 0) != 0)
       status_ = FAILED;
   }
-  status_cb_.Run(status_, http_status_code_);
+  status_cb_.Run(status_, file_.Pass(), http_status_code_);
   delete this;
 }
 

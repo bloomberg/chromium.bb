@@ -65,7 +65,7 @@ class NaClHostMessageFilter : public content::BrowserMessageFilter {
   void SyncReturnTemporaryFile(IPC::Message* reply_msg,
                                base::File file);
   void AsyncReturnTemporaryFile(int pp_instance,
-                                base::PlatformFile fd,
+                                const base::File& file,
                                 bool is_hit);
   void OnNaClDebugEnabledForURL(const GURL& nmf_url, bool* should_debug);
 

@@ -67,24 +67,26 @@ class PnaclHostTest : public testing::Test {
   // CallbackExpectMiss checks that the fd is valid and a miss is reported,
   // and also writes some data into the file, which is read back by
   // CallbackExpectHit
-  void CallbackExpectMiss(base::PlatformFile fd, bool is_hit) {
+  void CallbackExpectMiss(const base::File& file, bool is_hit) {
     EXPECT_FALSE(is_hit);
-    ASSERT_FALSE(fd == base::kInvalidPlatformFileValue);
-    base::PlatformFileInfo info;
-    EXPECT_TRUE(base::GetPlatformFileInfo(fd, &info));
+    ASSERT_TRUE(file.IsValid());
+    base::File::Info info;
+    base::File* mutable_file = const_cast<base::File*>(&file);
+    EXPECT_TRUE(mutable_file->GetInfo(&info));
     EXPECT_FALSE(info.is_directory);
     EXPECT_EQ(0LL, info.size);
     char str[16];
     memset(str, 0x0, 16);
     snprintf(str, 16, "testdata%d", ++write_callback_count_);
-    EXPECT_EQ(16, base::WritePlatformFile(fd, 0, str, 16));
+    EXPECT_EQ(16, mutable_file->Write(0, str, 16));
     temp_callback_count_++;
   }
-  void CallbackExpectHit(base::PlatformFile fd, bool is_hit) {
+  void CallbackExpectHit(const base::File& file, bool is_hit) {
     EXPECT_TRUE(is_hit);
-    ASSERT_FALSE(fd == base::kInvalidPlatformFileValue);
-    base::PlatformFileInfo info;
-    EXPECT_TRUE(base::GetPlatformFileInfo(fd, &info));
+    ASSERT_TRUE(file.IsValid());
+    base::File::Info info;
+    base::File* mutable_file = const_cast<base::File*>(&file);
+    EXPECT_TRUE(mutable_file->GetInfo(&info));
     EXPECT_FALSE(info.is_directory);
     EXPECT_EQ(16LL, info.size);
     char data[16];
@@ -92,7 +94,7 @@ class PnaclHostTest : public testing::Test {
     char str[16];
     memset(str, 0x0, 16);
     snprintf(str, 16, "testdata%d", write_callback_count_);
-    EXPECT_EQ(16, base::ReadPlatformFile(fd, 0, data, 16));
+    EXPECT_EQ(16, mutable_file->Read(0, data, 16));
     EXPECT_STREQ(str, data);
     temp_callback_count_++;
   }

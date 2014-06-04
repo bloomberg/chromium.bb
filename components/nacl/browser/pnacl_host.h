@@ -32,7 +32,7 @@ class PnaclTranslationCache;
 class PnaclHost {
  public:
   typedef base::Callback<void(base::File)> TempFileCallback;
-  typedef base::Callback<void(base::PlatformFile, bool is_hit)> NexeFdCallback;
+  typedef base::Callback<void(const base::File&, bool is_hit)> NexeFdCallback;
 
   static PnaclHost* GetInstance();
 
@@ -102,6 +102,7 @@ class PnaclHost {
   // so that the BrowsingDataRemover can clear it even if no translation has
   // ever been started.
   friend struct DefaultSingletonTraits<PnaclHost>;
+  friend class FileProxy;
   friend class pnacl::PnaclHostTest;
   friend class pnacl::PnaclHostTestDisk;
   enum CacheState {
@@ -115,7 +116,7 @@ class PnaclHost {
     ~PendingTranslation();
     base::ProcessHandle process_handle;
     int render_view_id;
-    base::PlatformFile nexe_fd;
+    base::File* nexe_fd;
     bool got_nexe_fd;
     bool got_cache_reply;
     bool got_cache_hit;
@@ -149,16 +150,16 @@ class PnaclHost {
   // GetNexeFd miss path
   void ReturnMiss(const PendingTranslationMap::iterator& entry);
   static scoped_refptr<net::DrainableIOBuffer> CopyFileToBuffer(
-      base::PlatformFile fd);
+      scoped_ptr<base::File> file);
   void StoreTranslatedNexe(TranslationID id,
                            scoped_refptr<net::DrainableIOBuffer>);
   void OnTranslatedNexeStored(const TranslationID& id, int net_error);
   void RequeryMatchingTranslations(const std::string& key);
 
   // GetNexeFd hit path
-  static int CopyBufferToFile(base::PlatformFile fd,
-                              scoped_refptr<net::DrainableIOBuffer> buffer);
-  void OnBufferCopiedToTempFile(const TranslationID& id, int file_error);
+  void OnBufferCopiedToTempFile(const TranslationID& id,
+                                scoped_ptr<base::File> file,
+                                int file_error);
 
   void OnEntriesDoomed(const base::Closure& callback, int net_error);
 

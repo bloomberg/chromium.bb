@@ -28,14 +28,14 @@ class FileDownloader : public blink::WebURLLoaderClient {
   };
 
   // Provides the FileDownloader status and the HTTP status code.
-  typedef base::Callback<void(Status, int)> StatusCallback;
+  typedef base::Callback<void(Status, base::File, int)> StatusCallback;
 
   // Provides the bytes received so far, and the total bytes expected to be
   // received.
   typedef base::Callback<void(int64_t, int64_t)> ProgressCallback;
 
   FileDownloader(scoped_ptr<blink::WebURLLoader> url_loader,
-                 base::PlatformFile file,
+                 base::File file,
                  StatusCallback status_cb,
                  ProgressCallback progress_cb);
 
@@ -58,7 +58,7 @@ class FileDownloader : public blink::WebURLLoaderClient {
                        const blink::WebURLError& error);
 
   scoped_ptr<blink::WebURLLoader> url_loader_;
-  base::PlatformFile file_;
+  base::File file_;
   StatusCallback status_cb_;
   ProgressCallback progress_cb_;
   int http_status_code_;

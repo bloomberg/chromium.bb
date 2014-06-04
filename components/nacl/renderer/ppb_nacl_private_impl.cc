@@ -553,14 +553,12 @@ PP_FileHandle GetReadonlyPnaclFd(const char* url) {
   if (!sender->Send(new NaClHostMsg_GetReadonlyPnaclFD(
           std::string(filename),
           &out_fd))) {
-    return base::kInvalidPlatformFileValue;
+    return PP_kInvalidFileHandle;
   }
   if (out_fd == IPC::InvalidPlatformFileForTransit()) {
-    return base::kInvalidPlatformFileValue;
+    return PP_kInvalidFileHandle;
   }
-  base::PlatformFile handle =
-      IPC::PlatformFileForTransitToPlatformFile(out_fd);
-  return handle;
+  return IPC::PlatformFileForTransitToPlatformFile(out_fd);
 }
 
 PP_FileHandle CreateTemporaryFile(PP_Instance instance) {
@@ -569,16 +567,14 @@ PP_FileHandle CreateTemporaryFile(PP_Instance instance) {
   DCHECK(sender);
   if (!sender->Send(new NaClHostMsg_NaClCreateTemporaryFile(
           &transit_fd))) {
-    return base::kInvalidPlatformFileValue;
+    return PP_kInvalidFileHandle;
   }
 
   if (transit_fd == IPC::InvalidPlatformFileForTransit()) {
-    return base::kInvalidPlatformFileValue;
+    return PP_kInvalidFileHandle;
   }
 
-  base::PlatformFile handle = IPC::PlatformFileForTransitToPlatformFile(
-      transit_fd);
-  return handle;
+  return IPC::PlatformFileForTransitToPlatformFile(transit_fd);
 }
 
 int32_t GetNumberOfProcessors() {
@@ -700,16 +696,13 @@ PP_FileHandle OpenNaClExecutable(PP_Instance instance,
                                          &out_fd,
                                          nonce_lo,
                                          nonce_hi))) {
-    return base::kInvalidPlatformFileValue;
+    return PP_kInvalidFileHandle;
   }
 
-  if (out_fd == IPC::InvalidPlatformFileForTransit()) {
-    return base::kInvalidPlatformFileValue;
-  }
+  if (out_fd == IPC::InvalidPlatformFileForTransit())
+    return PP_kInvalidFileHandle;
 
-  base::PlatformFile handle =
-      IPC::PlatformFileForTransitToPlatformFile(out_fd);
-  return handle;
+  return IPC::PlatformFileForTransitToPlatformFile(out_fd);
 }
 
 void DispatchEvent(PP_Instance instance,
@@ -1127,8 +1120,8 @@ PP_Bool GetPNaClResourceInfo(PP_Instance instance,
   if (!load_manager)
     return PP_FALSE;
 
-  base::PlatformFile file = GetReadonlyPnaclFd(filename);
-  if (file == base::kInvalidPlatformFileValue) {
+  base::File file(GetReadonlyPnaclFd(filename));
+  if (!file.IsValid()) {
     load_manager->ReportLoadError(
         PP_NACL_ERROR_PNACL_RESOURCE_FETCH,
         "The Portable Native Client (pnacl) component is not "
@@ -1137,8 +1130,8 @@ PP_Bool GetPNaClResourceInfo(PP_Instance instance,
     return PP_FALSE;
   }
 
-  base::PlatformFileInfo file_info;
-  if (!GetPlatformFileInfo(file, &file_info)) {
+  base::File::Info file_info;
+  if (!file.GetInfo(&file_info)) {
     load_manager->ReportLoadError(
         PP_NACL_ERROR_PNACL_RESOURCE_FETCH,
         std::string("GetPNaClResourceInfo, GetFileInfo failed for: ") +
@@ -1162,7 +1155,7 @@ PP_Bool GetPNaClResourceInfo(PP_Instance instance,
     return PP_FALSE;
   }
 
-  int rc = base::ReadPlatformFile(file, 0, buffer.get(), file_info.size);
+  int rc = file.Read(0, buffer.get(), file_info.size);
   if (rc < 0) {
     load_manager->ReportLoadError(
         PP_NACL_ERROR_PNACL_RESOURCE_FETCH,
@@ -1315,9 +1308,9 @@ class ProgressEventRateLimiter {
 };
 
 void DownloadNexeCompletion(const DownloadNexeRequest& request,
-                            base::PlatformFile target_file,
                             PP_NaClFileInfo* out_file_info,
                             FileDownloader::Status status,
+                            base::File target_file,
                             int http_status);
 
 void DownloadNexe(PP_Instance instance,
@@ -1339,16 +1332,16 @@ void DownloadNexe(PP_Instance instance,
                                             &out_file_info->token_hi);
   if (handle != PP_kInvalidFileHandle) {
     DownloadNexeCompletion(request,
-                           handle,
                            out_file_info,
                            FileDownloader::SUCCESS,
+                           base::File(handle),
                            200);
     return;
   }
 
   // The fast path didn't work, we'll fetch the file using URLLoader and write
   // it to local storage.
-  base::PlatformFile target_file = CreateTemporaryFile(instance);
+  base::File target_file(CreateTemporaryFile(instance));
   GURL gurl(url);
 
   content::PepperPluginInstance* plugin_instance =
@@ -1370,31 +1363,28 @@ void DownloadNexe(PP_Instance instance,
   // FileDownloader deletes itself after invoking DownloadNexeCompletion.
   FileDownloader* file_downloader = new FileDownloader(
       url_loader.Pass(),
-      target_file,
-      base::Bind(&DownloadNexeCompletion, request, target_file, out_file_info),
+      target_file.Pass(),
+      base::Bind(&DownloadNexeCompletion, request, out_file_info),
       base::Bind(&ProgressEventRateLimiter::ReportProgress,
                  base::Owned(tracker), url));
   file_downloader->Load(url_request);
 }
 
 void DownloadNexeCompletion(const DownloadNexeRequest& request,
-                            base::PlatformFile target_file,
                             PP_NaClFileInfo* out_file_info,
                             FileDownloader::Status status,
+                            base::File target_file,
                             int http_status) {
   int32_t pp_error = FileDownloaderToPepperError(status);
-  if (pp_error == PP_OK)
-    out_file_info->handle = target_file;
-
   int64_t bytes_read = -1;
-  if (pp_error == PP_OK && target_file != base::kInvalidPlatformFileValue) {
-    base::PlatformFileInfo info;
-    if (GetPlatformFileInfo(target_file, &info))
+  if (pp_error == PP_OK && target_file.IsValid()) {
+    base::File::Info info;
+    if (target_file.GetInfo(&info))
       bytes_read = info.size;
   }
 
   if (bytes_read == -1) {
-    base::ClosePlatformFile(target_file);
+    target_file.Close();
     pp_error = PP_ERROR_FAILED;
   }
 
@@ -1410,17 +1400,22 @@ void DownloadNexeCompletion(const DownloadNexeRequest& request,
                                   download_time);
   }
 
+  if (pp_error == PP_OK && target_file.IsValid())
+    out_file_info->handle = target_file.TakePlatformFile();
+  else
+    out_file_info->handle = PP_kInvalidFileHandle;
+
   request.callback.func(request.callback.user_data, pp_error);
 }
 
-void DownloadFileCompletion(base::PlatformFile file,
-                            PP_NaClFileInfo* file_info,
+void DownloadFileCompletion(PP_NaClFileInfo* file_info,
                             PP_CompletionCallback callback,
                             FileDownloader::Status status,
+                            base::File file,
                             int http_status) {
   int32_t pp_error = FileDownloaderToPepperError(status);
   if (pp_error == PP_OK) {
-    file_info->handle = file;
+    file_info->handle = file.TakePlatformFile();
     file_info->token_lo = 0;
     file_info->token_hi = 0;
   }
@@ -1499,7 +1494,7 @@ void DownloadFile(PP_Instance instance,
 
   // The fast path didn't work, we'll fetch the file using URLLoader and write
   // it to local storage.
-  base::PlatformFile target_file = CreateTemporaryFile(instance);
+  base::File target_file(CreateTemporaryFile(instance));
   GURL gurl(url);
 
   content::PepperPluginInstance* plugin_instance =
@@ -1521,8 +1516,8 @@ void DownloadFile(PP_Instance instance,
   // FileDownloader deletes itself after invoking DownloadNexeCompletion.
   FileDownloader* file_downloader = new FileDownloader(
       url_loader.Pass(),
-      target_file,
-      base::Bind(&DownloadFileCompletion, target_file, file_info, callback),
+      target_file.Pass(),
+      base::Bind(&DownloadFileCompletion, file_info, callback),
       base::Bind(&ProgressEventRateLimiter::ReportProgress,
                  base::Owned(tracker), url));
   file_downloader->Load(url_request);

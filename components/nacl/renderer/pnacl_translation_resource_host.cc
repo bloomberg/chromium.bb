@@ -129,14 +129,14 @@ void PnaclTranslationResourceHost::OnNexeTempFileReply(
     bool is_hit,
     IPC::PlatformFileForTransit file) {
   DCHECK(io_message_loop_->BelongsToCurrentThread());
+  base::File base_file = IPC::PlatformFileForTransitToFile(file);
   CacheRequestInfoMap::iterator it = pending_cache_requests_.find(instance);
   int32_t status = PP_ERROR_FAILED;
   // Handle the expected successful case first.
-  if (it != pending_cache_requests_.end() &&
-      !(file == IPC::InvalidPlatformFileForTransit()) &&
+  if (it != pending_cache_requests_.end() && base_file.IsValid() &&
       TrackedCallback::IsPending(it->second.callback)) {
     *it->second.is_hit = PP_FromBool(is_hit);
-    *it->second.file_handle = IPC::PlatformFileForTransitToPlatformFile(file);
+    *it->second.file_handle = base_file.TakePlatformFile();
     status = PP_OK;
   }
   if (it == pending_cache_requests_.end()) {
@@ -147,10 +147,8 @@ void PnaclTranslationResourceHost::OnNexeTempFileReply(
         base::Bind(&TrackedCallback::Run, it->second.callback, status));
     pending_cache_requests_.erase(it);
   }
-  if (file == IPC::InvalidPlatformFileForTransit()) {
+  if (!base_file.IsValid()) {
     DLOG(ERROR) << "Got invalid platformfilefortransit";
-  } else if (status != PP_OK) {
-    base::ClosePlatformFile(IPC::PlatformFileForTransitToPlatformFile(file));
   }
 }
 

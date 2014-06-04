@@ -26,14 +26,49 @@ static const base::FilePath::CharType kTranslationCacheDirectoryName[] =
 // Delay to wait for initialization of the cache backend
 static const int kTranslationCacheInitializationDelayMs = 20;
 
-void CloseBaseFile(base::File file) {
-  // Not really needed because the file will go out of scope here.
-  file.Close();
+void CloseBaseFile(base::File auto_file_closer) {
 }
 
+void CloseScopedFile(scoped_ptr<base::File> auto_file_closer) {
 }
+
+}  // namespace
 
 namespace pnacl {
+
+class FileProxy {
+ public:
+  FileProxy(scoped_ptr<base::File> file, base::WeakPtr<pnacl::PnaclHost> host);
+  int Write(scoped_refptr<net::DrainableIOBuffer> buffer);
+  void WriteDone(const PnaclHost::TranslationID& id, int result);
+
+ private:
+  scoped_ptr<base::File> file_;
+  base::WeakPtr<pnacl::PnaclHost> host_;
+};
+
+FileProxy::FileProxy(scoped_ptr<base::File> file,
+                     base::WeakPtr<pnacl::PnaclHost> host)
+    : file_(file.Pass()),
+      host_(host) {
+}
+
+int FileProxy::Write(scoped_refptr<net::DrainableIOBuffer> buffer) {
+  int rv = file_->Write(0, buffer->data(), buffer->size());
+  if (rv == -1)
+    PLOG(ERROR) << "FileProxy::Write error";
+  return rv;
+}
+
+void FileProxy::WriteDone(const PnaclHost::TranslationID& id, int result) {
+  if (host_) {
+    host_->OnBufferCopiedToTempFile(id, file_.Pass(), result);
+  } else {
+    BrowserThread::PostBlockingPoolTask(
+        FROM_HERE,
+        base::Bind(CloseScopedFile, Passed(&file_)));
+  }
+}
 
 PnaclHost::PnaclHost()
     : pending_backend_operations_(0),
@@ -47,19 +82,26 @@ PnaclHost::~PnaclHost() {
   (void)cache;
 }
 
-PnaclHost* PnaclHost::GetInstance() { return Singleton<PnaclHost>::get(); }
+PnaclHost* PnaclHost::GetInstance() {
+  return Singleton<PnaclHost>::get();
+}
 
 PnaclHost::PendingTranslation::PendingTranslation()
     : process_handle(base::kNullProcessHandle),
       render_view_id(0),
-      nexe_fd(base::kInvalidPlatformFileValue),
+      nexe_fd(NULL),
       got_nexe_fd(false),
       got_cache_reply(false),
       got_cache_hit(false),
       is_incognito(false),
       callback(NexeFdCallback()),
-      cache_info(nacl::PnaclCacheInfo()) {}
-PnaclHost::PendingTranslation::~PendingTranslation() {}
+      cache_info(nacl::PnaclCacheInfo()) {
+}
+
+PnaclHost::PendingTranslation::~PendingTranslation() {
+  if (nexe_fd)
+    delete nexe_fd;
+}
 
 bool PnaclHost::TranslationMayBeCached(
     const PendingTranslationMap::iterator& entry) {
@@ -219,7 +261,7 @@ void PnaclHost::GetNexeFd(int render_process_id,
   std::string cache_key(disk_cache_->GetKey(cache_info));
   if (cache_key.empty()) {
     LOG(ERROR) << "GetNexeFd: Invalid cache info";
-    cb.Run(base::kInvalidPlatformFileValue, false);
+    cb.Run(base::File(), false);
     return;
   }
 
@@ -296,7 +338,7 @@ void PnaclHost::OnTempFileReturn(const TranslationID& id,
     // waiting for its result.
     LOG(ERROR) << "OnTempFileReturn: temp file creation failed";
     std::string key(entry->second.cache_key);
-    entry->second.callback.Run(base::kInvalidPlatformFileValue, false);
+    entry->second.callback.Run(base::File(), false);
     bool may_be_cached = TranslationMayBeCached(entry);
     pending_translations_.erase(entry);
     // No translations will be waiting for entries that will not be stored.
@@ -306,7 +348,7 @@ void PnaclHost::OnTempFileReturn(const TranslationID& id,
   }
   PendingTranslation* pt = &entry->second;
   pt->got_nexe_fd = true;
-  pt->nexe_fd = file.TakePlatformFile();
+  pt->nexe_fd = new base::File(file.Pass());
   CheckCacheQueryReady(entry);
 }
 
@@ -339,15 +381,19 @@ void PnaclHost::CheckCacheQueryReady(
     return;
   }
 
+  scoped_ptr<base::File> file(pt->nexe_fd);
+  pt->nexe_fd = NULL;
+  pt->got_nexe_fd = false;
+  FileProxy* proxy(new FileProxy(file.Pass(), weak_factory_.GetWeakPtr()));
+
   if (!base::PostTaskAndReplyWithResult(
            BrowserThread::GetBlockingPool(),
            FROM_HERE,
-           base::Bind(
-               &PnaclHost::CopyBufferToFile, pt->nexe_fd, pt->nexe_read_buffer),
-           base::Bind(&PnaclHost::OnBufferCopiedToTempFile,
-                      weak_factory_.GetWeakPtr(),
+           base::Bind(&FileProxy::Write, base::Unretained(proxy),
+                      pt->nexe_read_buffer),
+           base::Bind(&FileProxy::WriteDone, base::Owned(proxy),
                       entry->first))) {
-    pt->callback.Run(base::kInvalidPlatformFileValue, false);
+    pt->callback.Run(base::File(), false);
   }
 }
 
@@ -357,29 +403,28 @@ void PnaclHost::ReturnMiss(const PendingTranslationMap::iterator& entry) {
   // Return the fd
   PendingTranslation* pt = &entry->second;
   NexeFdCallback cb(pt->callback);
-  if (pt->nexe_fd == base::kInvalidPlatformFileValue) {
-    // Bad FD is unrecoverable, so clear out the entry
+  cb.Run(*pt->nexe_fd, false);
+  if (!pt->nexe_fd->IsValid()) {
+    // Bad FD is unrecoverable, so clear out the entry.
     pending_translations_.erase(entry);
   }
-  cb.Run(pt->nexe_fd, false);
 }
 
 // On error, just return a null refptr.
 // static
 scoped_refptr<net::DrainableIOBuffer> PnaclHost::CopyFileToBuffer(
-    base::PlatformFile fd) {
-  base::PlatformFileInfo info;
+    scoped_ptr<base::File> file) {
+  base::File::Info info;
   scoped_refptr<net::DrainableIOBuffer> buffer;
   bool error = false;
-  if (!base::GetPlatformFileInfo(fd, &info) ||
+  if (!file->GetInfo(&info) ||
       info.size >= std::numeric_limits<int>::max()) {
-    PLOG(ERROR) << "GetPlatformFileInfo failed";
+    PLOG(ERROR) << "File::GetInfo failed";
     error = true;
   } else {
     buffer = new net::DrainableIOBuffer(
         new net::IOBuffer(static_cast<int>(info.size)), info.size);
-    if (base::ReadPlatformFile(fd, 0, buffer->data(), buffer->size()) !=
-        info.size) {
+    if (file->Read(0, buffer->data(), buffer->size()) != info.size) {
       PLOG(ERROR) << "CopyFileToBuffer file read failed";
       error = true;
     }
@@ -387,7 +432,6 @@ scoped_refptr<net::DrainableIOBuffer> PnaclHost::CopyFileToBuffer(
   if (error) {
     buffer = NULL;
   }
-  base::ClosePlatformFile(fd);
   return buffer;
 }
 
@@ -414,24 +458,30 @@ void PnaclHost::TranslationFinished(int render_process_id,
   if (!entry->second.got_nexe_fd || !entry->second.got_cache_reply ||
       !success || !TranslationMayBeCached(entry)) {
     store_nexe = false;
-  } else if (!base::PostTaskAndReplyWithResult(
-                  BrowserThread::GetBlockingPool(),
-                  FROM_HERE,
-                  base::Bind(&PnaclHost::CopyFileToBuffer,
-                             entry->second.nexe_fd),
-                  base::Bind(&PnaclHost::StoreTranslatedNexe,
-                             weak_factory_.GetWeakPtr(),
-                             id))) {
-    store_nexe = false;
+  } else {
+    scoped_ptr<base::File> file(entry->second.nexe_fd);
+    entry->second.nexe_fd = NULL;
+    entry->second.got_nexe_fd = false;
+
+    if (!base::PostTaskAndReplyWithResult(
+             BrowserThread::GetBlockingPool(),
+             FROM_HERE,
+             base::Bind(&PnaclHost::CopyFileToBuffer, Passed(&file)),
+             base::Bind(&PnaclHost::StoreTranslatedNexe,
+                        weak_factory_.GetWeakPtr(),
+                        id))) {
+      store_nexe = false;
+    }
   }
 
   if (!store_nexe) {
     // If store_nexe is true, the fd will be closed by CopyFileToBuffer.
     if (entry->second.got_nexe_fd) {
+      scoped_ptr<base::File> file(entry->second.nexe_fd);
+      entry->second.nexe_fd = NULL;
       BrowserThread::PostBlockingPoolTask(
           FROM_HERE,
-          base::Bind(base::IgnoreResult(base::ClosePlatformFile),
-                     entry->second.nexe_fd));
+          base::Bind(CloseScopedFile, Passed(&file)));
     }
     pending_translations_.erase(entry);
   }
@@ -507,38 +557,31 @@ void PnaclHost::RequeryMatchingTranslations(const std::string& key) {
 
 //////////////////// GetNexeFd hit path
 
-// static
-int PnaclHost::CopyBufferToFile(base::PlatformFile fd,
-                                scoped_refptr<net::DrainableIOBuffer> buffer) {
-  int rv = base::WritePlatformFile(fd, 0, buffer->data(), buffer->size());
-  if (rv == -1)
-    PLOG(ERROR) << "CopyBufferToFile write error";
-  return rv;
-}
-
 void PnaclHost::OnBufferCopiedToTempFile(const TranslationID& id,
+                                         scoped_ptr<base::File> file,
                                          int file_error) {
   DCHECK(thread_checker_.CalledOnValidThread());
   PendingTranslationMap::iterator entry(pending_translations_.find(id));
   if (entry == pending_translations_.end()) {
+    BrowserThread::PostBlockingPoolTask(
+        FROM_HERE,
+        base::Bind(CloseScopedFile, Passed(&file)));
     return;
   }
   if (file_error == -1) {
     // Write error on the temp file. Request a new file and start over.
     BrowserThread::PostBlockingPoolTask(
         FROM_HERE,
-        base::Bind(base::IgnoreResult(base::ClosePlatformFile),
-                   entry->second.nexe_fd));
-    entry->second.got_nexe_fd = false;
+        base::Bind(CloseScopedFile, Passed(&file)));
     CreateTemporaryFile(base::Bind(&PnaclHost::OnTempFileReturn,
                                    weak_factory_.GetWeakPtr(),
                                    entry->first));
     return;
   }
-  base::PlatformFile fd = entry->second.nexe_fd;
-  entry->second.callback.Run(fd, true);
+  entry->second.callback.Run(*file.get(), true);
   BrowserThread::PostBlockingPoolTask(
-      FROM_HERE, base::Bind(base::IgnoreResult(base::ClosePlatformFile), fd));
+      FROM_HERE,
+      base::Bind(CloseScopedFile, Passed(&file)));
   pending_translations_.erase(entry);
 }
 
@@ -553,10 +596,11 @@ void PnaclHost::RendererClosing(int render_process_id) {
     PendingTranslationMap::iterator to_erase(it++);
     if (to_erase->first.first == render_process_id) {
       // Clean up the open files.
+      scoped_ptr<base::File> file(to_erase->second.nexe_fd);
+      to_erase->second.nexe_fd = NULL;
       BrowserThread::PostBlockingPoolTask(
           FROM_HERE,
-          base::Bind(base::IgnoreResult(base::ClosePlatformFile),
-                     to_erase->second.nexe_fd));
+          base::Bind(CloseScopedFile, Passed(&file)));
       std::string key(to_erase->second.cache_key);
       bool may_be_cached = TranslationMayBeCached(to_erase);
       pending_translations_.erase(to_erase);
