@@ -26,11 +26,13 @@
 #ifndef NestingLevelIncrementer_h
 #define NestingLevelIncrementer_h
 
+#include "platform/heap/Handle.h"
 #include "wtf/Noncopyable.h"
 
 namespace WebCore {
 
 class NestingLevelIncrementer {
+    STACK_ALLOCATED();
     WTF_MAKE_NONCOPYABLE(NestingLevelIncrementer);
 public:
     explicit NestingLevelIncrementer(unsigned& nestingLevel)

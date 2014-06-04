@@ -38,15 +38,17 @@ class Document;
 class HTMLDocumentParser;
 
 class ActiveParserSession {
+    STACK_ALLOCATED();
 public:
     explicit ActiveParserSession(Document*);
     ~ActiveParserSession();
 
 private:
-    RefPtr<Document> m_document;
+    RefPtrWillBeMember<Document> m_document;
 };
 
 class PumpSession : public NestingLevelIncrementer, public ActiveParserSession {
+    STACK_ALLOCATED();
 public:
     PumpSession(unsigned& nestingLevel, Document*);
     ~PumpSession();
