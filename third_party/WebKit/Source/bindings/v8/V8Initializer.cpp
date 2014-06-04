@@ -142,7 +142,7 @@ static void failedAccessCheckCallbackInMainThread(v8::Local<v8::Object> host, v8
     DOMWindow* targetWindow = target->domWindow();
 
     // FIXME: We should modify V8 to pass in more contextual information (context, property, and object).
-    ExceptionState exceptionState(ExceptionState::UnknownContext, 0, 0, v8::Handle<v8::Object>(), isolate);
+    ExceptionState exceptionState(ExceptionState::UnknownContext, 0, 0, isolate->GetCurrentContext()->Global(), isolate);
     exceptionState.throwSecurityError(targetWindow->sanitizedCrossDomainAccessErrorMessage(callingDOMWindow(isolate)), targetWindow->crossDomainAccessErrorMessage(callingDOMWindow(isolate)));
     exceptionState.throwIfNeeded();
 }
