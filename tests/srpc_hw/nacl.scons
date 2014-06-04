@@ -8,16 +8,6 @@ Import('env')
 srpc_hw_libs = ['srpc', 'platform', 'gio', 'imc', 'imc_syscalls']
 
 srpc_hw_obj = env.ComponentObject('srpc_hw.o', 'srpc_hw.c')
-srpc_hw_nexe_name = 'srpc_hw_%s' % env.get('TARGET_FULLARCH')
-srpc_hw_nexe = env.ComponentProgram(srpc_hw_nexe_name,
-                                    srpc_hw_obj,
-                                    EXTRA_LIBS=srpc_hw_libs + [
-                                        '${PTHREAD_LIBS}'])
-
-env.Publish(srpc_hw_nexe_name, 'run',
-            ['srpc_hw.html',
-             'srpc_hw_data.html'])
-
 srpc_hw_nonbrowser = env.ComponentProgram('srpc_hw_nonbrowser',
                                            srpc_hw_obj,
                                            EXTRA_LIBS=srpc_hw_libs + [
