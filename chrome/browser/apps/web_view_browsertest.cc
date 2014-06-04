@@ -1922,7 +1922,7 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, GeolocationAPIEmbedderHasAccessDeny) {
 
 // GeolocationAPI* test 3 of 3.
 IN_PROC_BROWSER_TEST_F(WebViewTest,
-                       GeolocationAPIEmbedderHasAccessMultipleBridgeIdAllow) {
+                       DISABLED_GeolocationAPIEmbedderHasAccessMultipleBridgeIdAllow) {
   TestHelper("testMultipleBridgeIdAllow",
              "web_view/geolocation/embedder_has_permission",
              NEEDS_TEST_SERVER);
