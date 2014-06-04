@@ -931,7 +931,8 @@ void RenderWidgetHostViewAndroid::SynchronousFrameMetadata(
 }
 
 void RenderWidgetHostViewAndroid::SetOverlayVideoMode(bool enabled) {
-  layer_->SetContentsOpaque(!enabled);
+  if (layer_)
+    layer_->SetContentsOpaque(!enabled);
 }
 
 void RenderWidgetHostViewAndroid::SynchronousCopyContents(
