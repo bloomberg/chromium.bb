@@ -30,6 +30,8 @@ struct WifiCredentials {
   std::string psk;
 };
 
+class WifiManagerFactory;
+
 // Observer for the network list. Classes may implement this interface and call
 // |AddNetworkListObserver| to be notified of changes to the visible network
 // list.
@@ -54,6 +56,8 @@ class WifiManager {
   virtual ~WifiManager() {}
 
   static scoped_ptr<WifiManager> Create();
+
+  static void SetFactory(WifiManagerFactory* factory);
 
   // Start the wifi manager. This must be called before any other method calls.
   virtual void Start() = 0;
@@ -91,6 +95,16 @@ class WifiManager {
 
   // Remove a network list observer.
   virtual void RemoveNetworkListObserver(NetworkListObserver* observer) = 0;
+
+ private:
+  static scoped_ptr<WifiManager> CreateDefault();
+};
+
+class WifiManagerFactory {
+ public:
+  virtual ~WifiManagerFactory() {}
+
+  virtual scoped_ptr<WifiManager> CreateWifiManager() = 0;
 };
 
 }  // namespace wifi

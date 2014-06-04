@@ -3526,6 +3526,8 @@
         }],
         [ 'enable_wifi_bootstrapping==1', {
           'sources': [
+           'browser/local_discovery/wifi/bootstrapping_device_lister.cc',
+           'browser/local_discovery/wifi/bootstrapping_device_lister.h',
            'browser/local_discovery/wifi/wifi_manager.cc',
            'browser/local_discovery/wifi/wifi_manager.h',
           ],

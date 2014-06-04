@@ -413,7 +413,7 @@ void WifiManagerNonChromeos::WifiServiceWrapper::PostClosure(
       base::Bind(&WifiManagerNonChromeos::PostClosure, wifi_manager_, closure));
 }
 
-scoped_ptr<WifiManager> WifiManager::Create() {
+scoped_ptr<WifiManager> WifiManager::CreateDefault() {
   return scoped_ptr<WifiManager>(new WifiManagerNonChromeos());
 }
 
