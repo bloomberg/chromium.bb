@@ -11,3 +11,15 @@ config("blink_headers_config") {
 source_set("blink_headers") {
   direct_dependent_configs = [ ":blink_headers_config" ]
 }
+
+group("blink_devtools_frontend_resources") {
+  deps = [
+    "//third_party/WebKit/Source/devtools:devtools_frontend_resources",
+  ]
+}
+
+group("blink_generate_devtools_grd") {
+  deps = [
+    "//third_party/WebKit/Source/devtools:generate_devtools_grd",
+  ]
+}
