@@ -189,6 +189,17 @@ size_t BrowserActionsContainer::VisibleBrowserActions() const {
   return visible_actions;
 }
 
+size_t BrowserActionsContainer::VisibleBrowserActionsAfterAnimation() const {
+  if (!animating())
+    return VisibleBrowserActions();
+
+  size_t visible_actions = WidthToIconCount(animation_target_size_);
+  VLOG(4) << "BAC::VisibleBrowserActionsAfterAnimation() returns "
+          << visible_actions
+          << " with size=" << browser_action_views_.size();
+  return visible_actions;
+}
+
 void BrowserActionsContainer::ExecuteExtensionCommand(
     const extensions::Extension* extension,
     const extensions::Command& command) {
@@ -679,7 +690,7 @@ void BrowserActionsContainer::BrowserActionAdded(const Extension* extension,
     return;
   }
 
-  size_t visible_actions = VisibleBrowserActions();
+  size_t visible_actions = VisibleBrowserActionsAfterAnimation();
   VLOG(4) << "Got back " << visible_actions << " visible.";
 
   // Add the new browser action to the vector and the view hierarchy.
@@ -716,7 +727,7 @@ void BrowserActionsContainer::BrowserActionRemoved(const Extension* extension) {
   if (popup_ && popup_->host()->extension() == extension)
     HidePopup();
 
-  size_t visible_actions = VisibleBrowserActions();
+  size_t visible_actions = VisibleBrowserActionsAfterAnimation();
   for (BrowserActionViews::iterator i(browser_action_views_.begin());
        i != browser_action_views_.end(); ++i) {
     if ((*i)->button()->extension() == extension) {

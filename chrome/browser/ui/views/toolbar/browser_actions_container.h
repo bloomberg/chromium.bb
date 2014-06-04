@@ -160,8 +160,15 @@ class BrowserActionsContainer
   // Delete all browser action views.
   void DeleteBrowserActionViews();
 
-  // Returns how many browser actions are visible.
+  // Returns how many browser actions are currently visible. If the intent is
+  // to find how many are visible once the container finishes animation, see
+  // VisibleBrowserActionsAfterAnimation() below.
   size_t VisibleBrowserActions() const;
+
+  // Returns how many browser actions will be visible once the container
+  // finishes animating to a new size, or (if not animating) the currently
+  // visible icons.
+  size_t VisibleBrowserActionsAfterAnimation() const;
 
   // Executes |command| registered by |extension|.
   void ExecuteExtensionCommand(const extensions::Extension* extension,
