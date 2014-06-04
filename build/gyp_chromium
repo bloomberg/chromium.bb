@@ -190,6 +190,10 @@ if __name__ == '__main__':
   args = sys.argv[1:]
 
   if int(os.environ.get('GYP_CHROMIUM_NO_ACTION', 0)):
+    # Check for landmines (reasons to clobber the build) in any case.
+    print 'Running build/landmines.py...'
+    subprocess.check_call(
+        [sys.executable, os.path.join(script_dir, 'landmines.py')])
     print 'Skipping gyp_chromium due to GYP_CHROMIUM_NO_ACTION env var.'
     sys.exit(0)
 
