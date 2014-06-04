@@ -409,23 +409,6 @@ const char kEnableLowResTiling[] = "enable-low-res-tiling";
 const char kEnableHighDpiCompositingForFixedPosition[] =
      "enable-high-dpi-fixed-position-compositing";
 
-#if defined(OS_WIN)
-// Disable the Legacy Window which corresponds to the size of the WebContents.
-const char kDisableLegacyIntermediateWindow[] = "disable-legacy-window";
-
-// Enables the DirectWrite font rendering system on windows.
-const char kEnableDirectWrite[]             = "enable-direct-write";
-
-// Use high resolution timers for TimeTicks.
-const char kEnableHighResolutionTime[]      = "enable-high-resolution-time";
-
-// Enable the Win32K process mitigation policy for renderer processes which
-// prevents them from invoking user32 and gdi32 system calls which enter
-// the kernel. This is only supported on Windows 8 and beyond.
-const char kEnableWin32kRendererLockDown[]
-    = "enable_win32k_renderer_lockdown";
-#endif
-
 // Paint content on the compositor thread instead of the main thread.
 const char kEnableImplSidePainting[]        = "enable-impl-side-painting";
 
@@ -980,6 +963,26 @@ const char kEnableCarbonInterposing[]       = "enable-carbon-interposing";
 // accelerated compositing is disabled. See http://crbug.com/122430 .
 const char kDisableCoreAnimationPlugins[] =
     "disable-core-animation-plugins";
+#endif
+
+#if defined(OS_WIN)
+// Device scale factor passed to certain processes like renderers, etc.
+const char kDeviceScaleFactor[]     = "device-scale-factor";
+
+// Disable the Legacy Window which corresponds to the size of the WebContents.
+const char kDisableLegacyIntermediateWindow[] = "disable-legacy-window";
+
+// Enables the DirectWrite font rendering system on windows.
+const char kEnableDirectWrite[]             = "enable-direct-write";
+
+// Use high resolution timers for TimeTicks.
+const char kEnableHighResolutionTime[]      = "enable-high-resolution-time";
+
+// Enable the Win32K process mitigation policy for renderer processes which
+// prevents them from invoking user32 and gdi32 system calls which enter
+// the kernel. This is only supported on Windows 8 and beyond.
+const char kEnableWin32kRendererLockDown[]
+    = "enable_win32k_renderer_lockdown";
 #endif
 
 // Don't dump stuff here, follow the same order as the header.

@@ -69,6 +69,10 @@ GFX_EXPORT double GetUndocumentedDPIScale();
 // This function returns the appropriate scaling factor for touch events.
 GFX_EXPORT double GetUndocumentedDPITouchScale();
 
+// Returns true if the global device scale factor has been explicitly set for
+// the process.
+GFX_EXPORT bool IsDeviceScaleFactorSet();
+
 }  // namespace win
 }  // namespace gfx
 

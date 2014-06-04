@@ -605,7 +605,10 @@ void ResourceBundle::InitSharedInstance(Delegate* delegate) {
 #if defined(OS_WIN)
   // Must be called _after_ supported scale factors are set since it
   // uses them.
-  ui::win::InitDeviceScaleFactor();
+  // Don't initialize the device scale factor if it has already been
+  // initialized.
+  if (!gfx::win::IsDeviceScaleFactorSet())
+    ui::win::InitDeviceScaleFactor();
 #endif
 }
 

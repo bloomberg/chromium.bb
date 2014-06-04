@@ -246,5 +246,9 @@ double GetUndocumentedDPITouchScale() {
   return scale;
 }
 
+bool IsDeviceScaleFactorSet() {
+  return g_device_scale_factor != 0.0f;
+}
+
 }  // namespace win
 }  // namespace gfx

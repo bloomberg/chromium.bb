@@ -49,7 +49,6 @@
 #include "sandbox/win/src/sandbox_types.h"
 #include "ui/base/ui_base_paths.h"
 #include "ui/base/ui_base_switches.h"
-#include "ui/gfx/win/dpi.h"
 
 #if defined(USE_TCMALLOC)
 #include "third_party/tcmalloc/chromium/src/gperftools/malloc_extension.h"
@@ -74,6 +73,10 @@
 #include <atlapp.h>
 #include <malloc.h>
 #include <cstring>
+
+#include "base/strings/string_number_conversions.h"
+#include "ui/base/win/dpi_setup.h"
+#include "ui/gfx/win/dpi.h"
 #elif defined(OS_MACOSX)
 #include "base/mac/scoped_nsautorelease_pool.h"
 #if !defined(OS_IOS)
@@ -657,6 +660,19 @@ class ContentMainRunnerImpl : public ContentMainRunner {
 #elif defined(OS_WIN)
     if (command_line.HasSwitch(switches::kEnableHighResolutionTime))
       base::TimeTicks::SetNowIsHighResNowIfSupported();
+
+    bool init_device_scale_factor = true;
+    if (command_line.HasSwitch(switches::kDeviceScaleFactor)) {
+      std::string scale_factor_string = command_line.GetSwitchValueASCII(
+          switches::kDeviceScaleFactor);
+      double scale_factor = 0;
+      if (base::StringToDouble(scale_factor_string, &scale_factor)) {
+        init_device_scale_factor = false;
+        gfx::InitDeviceScaleFactor(scale_factor);
+      }
+    }
+    if (init_device_scale_factor)
+      ui::win::InitDeviceScaleFactor();
 
     SetupCRT(command_line);
 #endif

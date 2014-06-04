@@ -164,9 +164,11 @@
 #endif
 
 #if defined(OS_WIN)
+#include "base/strings/string_number_conversions.h"
 #include "base/win/scoped_com_initializer.h"
 #include "content/common/font_cache_dispatcher_win.h"
 #include "content/common/sandbox_win.h"
+#include "ui/gfx/win/dpi.h"
 #endif
 
 #if defined(ENABLE_WEBRTC)
@@ -1036,6 +1038,11 @@ void RenderProcessHostImpl::AppendRendererCommandLine(
 
   if (content::IsPinchToZoomEnabled())
     command_line->AppendSwitch(switches::kEnablePinch);
+
+#if defined(OS_WIN)
+  command_line->AppendSwitchASCII(switches::kDeviceScaleFactor,
+                                  base::DoubleToString(gfx::GetDPIScale()));
+#endif
 
   AppendCompositorCommandLineFlags(command_line);
 }
