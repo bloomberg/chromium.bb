@@ -940,6 +940,7 @@
     # 'partial interface' or target (right side of) 'implements'
     'modules_testing_dependency_idl_files' : [
       'geolocation/testing/InternalsGeolocation.idl',
+      'navigatorcontentutils/testing/InternalsNavigatorContentUtils.idl',
       'speech/testing/InternalsSpeechSynthesis.idl',
       'vibration/testing/InternalsVibration.idl',
     ],
@@ -948,6 +949,10 @@
       'geolocation/testing/GeolocationClientMock.h',
       'geolocation/testing/InternalsGeolocation.cpp',
       'geolocation/testing/InternalsGeolocation.h',
+      'navigatorcontentutils/testing/InternalsNavigatorContentUtils.cpp',
+      'navigatorcontentutils/testing/InternalsNavigatorContentUtils.h',
+      'navigatorcontentutils/testing/NavigatorContentUtilsClientMock.cpp',
+      'navigatorcontentutils/testing/NavigatorContentUtilsClientMock.h',
       'speech/testing/InternalsSpeechSynthesis.cpp',
       'speech/testing/InternalsSpeechSynthesis.h',
       'speech/testing/PlatformSpeechSynthesizerMock.cpp',

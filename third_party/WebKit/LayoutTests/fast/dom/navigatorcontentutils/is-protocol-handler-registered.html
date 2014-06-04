@@ -10,6 +10,9 @@
 if (window.testRunner)
     testRunner.dumpAsText();
 
+if (window.internals)
+    internals.setNavigatorContentUtilsClientMock(document);
+
 if (window.navigator.isProtocolHandlerRegistered)
     debug('PASS window.navigator.isProtocolHandlerRegistered is defined.');
 else
@@ -44,16 +47,24 @@ invalid_schemes.forEach(function (scheme) {
         debug('FAIL Invalid scheme "' + scheme + '" allowed. Threw exception: "' + errorMessage + '".');
 });
 
-// FIXME: Need to check if this function can return 'registered' and 'declined' states as well.
+debug("\nCheck if isProtocolHandlerRegistered() works correctly. If isProtocolHandlerRegistered() returns 'new' state, it works well.");
+debug("'bitcoin' protocol will be registered, and then checks if the 'bitcoin' protocol is registered by isProtocolHandlerRegistered().\n");
 try {
+    // Register 'bitcoin' protocol for testing.
+    window.navigator.registerProtocolHandler('bitcoin', 'invalid scheme uri=%s', 'title');
+
     var state = window.navigator.isProtocolHandlerRegistered("bitcoin", "valid protocol %s");
-    if (state == "new")
-        debug('PASS window.navigator.isProtocolHandlerRegistered returns "new" state');
-    else
-        debug("FAIL window.navigator.isProtocolHandlerRegistered doesn't return the default state.");
+    if (state == "registered")
+        debug("PASS window.navigator.isProtocolHandlerRegistered returns 'registered' state. isProtocolHandlerRegistered() works correctly.");
+    else if (state == "new")
+        debug("FAIL window.navigator.isProtocolHandlerRegistered returns 'new' state.");
+    else if (state == "declined")
+        debug("FAIL window.navigator.isProtocolHandlerRegistered returns 'declined' state.");
 } catch (e) {
     debug('FAIL window.navigator.isProtocolHandlerRegistered call is failed: "' + e.message + '".');
 }
+debug("\n");
+
 </script>
 </body>
 </html>

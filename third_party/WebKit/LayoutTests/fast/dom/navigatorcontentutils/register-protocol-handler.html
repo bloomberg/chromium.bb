@@ -1,4 +1,7 @@
 <html>
+<head>
+<script src="../../../resources/js-test.js"></script>
+</head>
 <body>
 <p>This test makes sure that navigator.registerProtocolHandler throws the proper exceptions and has no-op default implementation.</p>
 <pre id="console"></pre>
@@ -6,16 +9,13 @@
 if (window.testRunner)
     testRunner.dumpAsText();
 
-function debug(str)
-{
-    var c = document.getElementById('console')
-    c.appendChild(document.createTextNode(str + '\n'));
-}
+if (window.internals)
+    internals.setNavigatorContentUtilsClientMock(document);
 
 if (window.navigator.registerProtocolHandler)
-    debug('Pass: window.navigator.registerProtocolHandler is defined.');
+    debug('PASS window.navigator.registerProtocolHandler is defined.');
 else
-    debug('Fail: window.navigator.registerProtocolHandler is not defined.');
+    debug('FAIL window.navigator.registerProtocolHandler is not defined.');
 
 var invalid_protocols = ['http', 'https', 'file', 'web+'];
 invalid_protocols.forEach(function (protocol) {
@@ -29,9 +29,9 @@ invalid_protocols.forEach(function (protocol) {
     }
 
     if (succeeded) {
-        debug('Pass: Invalid protocol "' + protocol + '" threw SecurityError exception: "' + errorMessage + '".');
+        debug('PASS Invalid protocol "' + protocol + '" threw SecurityError exception: "' + errorMessage + '".');
     }else
-        debug('Fail: Invalid protocol "' + protocol + '" allowed.');
+        debug('FAIL Invalid protocol "' + protocol + '" allowed.');
 });
 
 var valid_protocols = ['bitcoin', 'geo', 'im', 'irc', 'ircs', 'magnet', 'mailto', 'mms', 'news', 'nntp', 'sip', 'sms', 'smsto', 'ssh', 'tel', 'urn', 'webcal', 'wtai', 'xmpp'];
@@ -45,9 +45,9 @@ valid_protocols.forEach(function (protocol) {
     }
 
     if (succeeded)
-        debug('Pass: Valid protocol "' + protocol + '" allowed.');
+        debug('PASS Valid protocol "' + protocol + '" allowed.');
     else
-        debug('Fail: Valid protocol "' + protocol + '" failed.');
+        debug('FAIL Valid protocol "' + protocol + '" failed.');
 });
 
 var invalid_schemes = ['mailto:', 'ssh:/', 'magnet:+', 'tel:sip'];
@@ -61,7 +61,7 @@ invalid_schemes.forEach(function (scheme) {
     }
 
     if (succeeded)
-        debug('Pass: Invalid scheme "' + scheme + '" falied.');
+        debug('PASS Invalid scheme "' + scheme + '" falied.');
     else
         debug('Fail: Invalid scheme "' + scheme + '" allowed. Threw exception: "' + errorMessage + '".');
 });
@@ -77,9 +77,9 @@ invalid_urls.forEach(function (url) {
     }
 
     if (succeeded)
-        debug('Pass: Invalid url "' + url + '" threw SyntaxError exception: "' + errorMessage + '".');
+        debug('PASS Invalid url "' + url + '" threw SyntaxError exception: "' + errorMessage + '".');
     else
-        debug('Fail: Invalid url "' + url + '" allowed.');
+        debug('FAIL Invalid url "' + url + '" allowed.');
 });
 
 // Test that the API has default no-op implementation.
@@ -91,9 +91,29 @@ try {
 }
 
 if (succeeded)
-    debug('Pass: Valid call succeeded.');
+    debug('PASS Valid call succeeded.');
 else
-    debug('Fail: Invalid call did not succeed.');
+    debug('FAIL Invalid call did not succeed.');
+
+// Check if registerProtocolHandler can register protocol.
+debug("\nCheck if registerProtocolHandler can register protocol correctly. If isProtocolHandlerRegistered() returns 'registered' state, registerProtoclHandler() works well.");
+debug("'bitcoin' protocol will be registered for testing.\n");
+try {
+    // Register 'bitcoin' protocol for testing.
+    window.navigator.registerProtocolHandler('bitcoin', 'invalid scheme uri=%s', 'title');
+
+    var state = window.navigator.isProtocolHandlerRegistered('bitcoin', 'valid protocol %s');
+    if (state == "registered")
+        debug("PASS window.navigator.isProtocolHandlerRegistered returns 'registered' state. 'bitcoin' is registered successfully.");
+    else if (state == "new")
+        debug("FAIL window.navigator.isProtocolHandlerRegistered returns 'new' state. Fail to register 'bitcoin' protocol.");
+    else if (state == "declined")
+        debug("FAIL window.navigator.isProtocolHandlerRegistered returns 'declined' state. Fail to register 'bitcoin' protocol");
+} catch (e) {
+    debug('FAIL window.navigator.isProtocolHandlerRegistered call is failed: "' + e.message + '".');
+}
+debug("\n");
+
 </script>
 </body>
 </html>

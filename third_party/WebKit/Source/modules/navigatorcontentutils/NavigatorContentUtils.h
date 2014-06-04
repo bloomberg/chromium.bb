@@ -47,13 +47,14 @@ public:
     static const char* supplementName();
 
     static void registerProtocolHandler(Navigator&, const String& scheme, const String& url, const String& title, ExceptionState&);
-
     static String isProtocolHandlerRegistered(Navigator&, const String& scheme, const String& url, ExceptionState&);
     static void unregisterProtocolHandler(Navigator&, const String& scheme, const String& url, ExceptionState&);
 
     static PassOwnPtrWillBeRawPtr<NavigatorContentUtils> create(PassOwnPtr<NavigatorContentUtilsClient>);
 
     virtual void trace(Visitor* visitor) OVERRIDE { WillBeHeapSupplement<Page>::trace(visitor); }
+
+    void setClientForTest(PassOwnPtr<NavigatorContentUtilsClient> client) { m_client = client; }
 
 private:
     explicit NavigatorContentUtils(PassOwnPtr<NavigatorContentUtilsClient> client)
