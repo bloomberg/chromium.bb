@@ -824,9 +824,9 @@ void AppLauncherHandler::ExtensionEnableFlowAborted(bool user_initiated) {
   // called when the extension uninstall dialog is canceled.
   const Extension* extension =
       extension_service_->GetExtensionById(extension_id_prompting_, true);
-  std::string histogram_name = user_initiated ?
-      "Extensions.Permissions_ReEnableCancel" :
-      "Extensions.Permissions_ReEnableAbort";
+  std::string histogram_name = user_initiated
+                                   ? "Extensions.Permissions_ReEnableCancel2"
+                                   : "Extensions.Permissions_ReEnableAbort2";
   ExtensionService::RecordPermissionMessagesHistogram(
       extension, histogram_name.c_str());
 

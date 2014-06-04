@@ -742,7 +742,7 @@ bool ExtensionService::UninstallExtension(
   UMA_HISTOGRAM_ENUMERATION("Extensions.UninstallType",
                             extension->GetType(), 100);
   RecordPermissionMessagesHistogram(extension.get(),
-                                    "Extensions.Permissions_Uninstall");
+                                    "Extensions.Permissions_Uninstall2");
 
   // Unload before doing more cleanup to ensure that nothing is hanging on to
   // any of these resources.
@@ -956,8 +956,8 @@ void ExtensionService::DisableUserExtensions(
 void ExtensionService::GrantPermissionsAndEnableExtension(
     const Extension* extension) {
   GrantPermissions(extension);
-  RecordPermissionMessagesHistogram(
-      extension, "Extensions.Permissions_ReEnable");
+  RecordPermissionMessagesHistogram(extension,
+                                    "Extensions.Permissions_ReEnable2");
   extension_prefs_->SetDidExtensionEscalatePermissions(extension, false);
   EnableExtension(extension->id());
 }
@@ -1709,8 +1709,8 @@ void ExtensionService::CheckPermissionsIncrease(const Extension* extension,
   } else if (is_privilege_increase) {
     disable_reasons |= Extension::DISABLE_PERMISSIONS_INCREASE;
     if (!extension_prefs_->DidExtensionEscalatePermissions(extension->id())) {
-      RecordPermissionMessagesHistogram(
-          extension, "Extensions.Permissions_AutoDisable");
+      RecordPermissionMessagesHistogram(extension,
+                                        "Extensions.Permissions_AutoDisable2");
     }
     extension_prefs_->SetExtensionState(extension->id(), Extension::DISABLED);
     extension_prefs_->SetDidExtensionEscalatePermissions(extension, true);
@@ -1815,8 +1815,8 @@ void ExtensionService::OnExtensionInstalled(
                               extension->GetType(), 100);
     UMA_HISTOGRAM_ENUMERATION("Extensions.InstallSource",
                               extension->location(), Manifest::NUM_LOCATIONS);
-    RecordPermissionMessagesHistogram(
-        extension, "Extensions.Permissions_Install");
+    RecordPermissionMessagesHistogram(extension,
+                                      "Extensions.Permissions_Install2");
   } else {
     UMA_HISTOGRAM_ENUMERATION("Extensions.UpdateType",
                               extension->GetType(), 100);

@@ -6787,7 +6787,21 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Extensions.Permissions_AutoDisable" enum="ExtensionPermission">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <obsolete>
+    Deprecated as of 5/2014, replaced by Extensions.Permissions_AutoDisable2.
+  </obsolete>
+  <owner>kalman@chromium.org</owner>
+  <owner>rpaquay@chromium.org</owner>
+  <summary>
+    The permissions present in an extension when it is automatically disabled
+    due to a permission increase (e.g., after an extension upgrade).
+  </summary>
+</histogram>
+
+<histogram name="Extensions.Permissions_AutoDisable2"
+    enum="ExtensionPermission2">
+  <owner>kalman@chromium.org</owner>
+  <owner>rpaquay@chromium.org</owner>
   <summary>
     The permissions present in an extension when it is automatically disabled
     due to a permission increase (e.g., after an extension upgrade).
@@ -6795,7 +6809,19 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Extensions.Permissions_Install" enum="ExtensionPermission">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <obsolete>
+    Deprecated as of 5/2014, replaced by Extensions.Permissions_Install2.
+  </obsolete>
+  <owner>kalman@chromium.org</owner>
+  <owner>rpaquay@chromium.org</owner>
+  <summary>
+    The permissions present in an extension when it was installed.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.Permissions_Install2" enum="ExtensionPermission2">
+  <owner>kalman@chromium.org</owner>
+  <owner>rpaquay@chromium.org</owner>
   <summary>
     The permissions present in an extension when it was installed.
   </summary>
@@ -6803,7 +6829,21 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="Extensions.Permissions_InstallAbort"
     enum="ExtensionPermission">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <obsolete>
+    Deprecated as of 5/2014, replaced by Extensions.Permissions_InstallAbort2.
+  </obsolete>
+  <owner>kalman@chromium.org</owner>
+  <owner>rpaquay@chromium.org</owner>
+  <summary>
+    The permissions present in an extension when installation was aborted, not
+    including installation errors and user cancels.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.Permissions_InstallAbort2"
+    enum="ExtensionPermission2">
+  <owner>kalman@chromium.org</owner>
+  <owner>rpaquay@chromium.org</owner>
   <summary>
     The permissions present in an extension when installation was aborted, not
     including installation errors and user cancels.
@@ -6812,19 +6852,55 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="Extensions.Permissions_InstallCancel"
     enum="ExtensionPermission">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <obsolete>
+    Deprecated as of 5/2014, replaced by Extensions.Permissions_InstallCancel2.
+  </obsolete>
+  <owner>kalman@chromium.org</owner>
+  <owner>rpaquay@chromium.org</owner>
+  <summary>
+    The permissions present in an extension when installation was canceled.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.Permissions_InstallCancel2"
+    enum="ExtensionPermission2">
+  <owner>kalman@chromium.org</owner>
+  <owner>rpaquay@chromium.org</owner>
   <summary>
     The permissions present in an extension when installation was canceled.
   </summary>
 </histogram>
 
 <histogram name="Extensions.Permissions_Load" enum="ExtensionPermission">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <obsolete>
+    Deprecated as of 5/2014, replaced by Extensions.Permissions_Load2.
+  </obsolete>
+  <owner>kalman@chromium.org</owner>
+  <owner>rpaquay@chromium.org</owner>
+  <summary>The permissions present in an extension when it was loaded.</summary>
+</histogram>
+
+<histogram name="Extensions.Permissions_Load2" enum="ExtensionPermission2">
+  <owner>kalman@chromium.org</owner>
+  <owner>rpaquay@chromium.org</owner>
   <summary>The permissions present in an extension when it was loaded.</summary>
 </histogram>
 
 <histogram name="Extensions.Permissions_ReEnable" enum="ExtensionPermission">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <obsolete>
+    Deprecated as of 5/2014, replaced by Extensions.Permissions_ReEnable2.
+  </obsolete>
+  <owner>kalman@chromium.org</owner>
+  <owner>rpaquay@chromium.org</owner>
+  <summary>
+    The permissions present in an extension when it was re-enabled from a
+    confirmation prompt.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.Permissions_ReEnable2" enum="ExtensionPermission2">
+  <owner>kalman@chromium.org</owner>
+  <owner>rpaquay@chromium.org</owner>
   <summary>
     The permissions present in an extension when it was re-enabled from a
     confirmation prompt.
@@ -6833,7 +6909,21 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="Extensions.Permissions_ReEnableAbort"
     enum="ExtensionPermission">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <obsolete>
+    Deprecated as of 5/2014, replaced by Extensions.Permissions_ReEnableAbort2.
+  </obsolete>
+  <owner>kalman@chromium.org</owner>
+  <owner>rpaquay@chromium.org</owner>
+  <summary>
+    The permissions present in an extension when the re-enable prompt was
+    aborted, not including installation errors and manual user cancels.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.Permissions_ReEnableAbort2"
+    enum="ExtensionPermission2">
+  <owner>kalman@chromium.org</owner>
+  <owner>rpaquay@chromium.org</owner>
   <summary>
     The permissions present in an extension when the re-enable prompt was
     aborted, not including installation errors and manual user cancels.
@@ -6842,7 +6932,21 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="Extensions.Permissions_ReEnableCancel"
     enum="ExtensionPermission">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <obsolete>
+    Deprecated as of 5/2014, replaced by Extensions.Permissions_ReEnableCancel2.
+  </obsolete>
+  <owner>kalman@chromium.org</owner>
+  <owner>rpaquay@chromium.org</owner>
+  <summary>
+    The permissions present in an extension when the re-enable was canceled from
+    the confirmation prompt.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.Permissions_ReEnableCancel2"
+    enum="ExtensionPermission2">
+  <owner>kalman@chromium.org</owner>
+  <owner>rpaquay@chromium.org</owner>
   <summary>
     The permissions present in an extension when the re-enable was canceled from
     the confirmation prompt.
@@ -6850,7 +6954,19 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Extensions.Permissions_Uninstall" enum="ExtensionPermission">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <obsolete>
+    Deprecated as of 5/2014, replaced by Extensions.Permissions_Uninstall2.
+  </obsolete>
+  <owner>kalman@chromium.org</owner>
+  <owner>rpaquay@chromium.org</owner>
+  <summary>
+    The permissions present in an extension when it was uninstalled.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.Permissions_Uninstall2" enum="ExtensionPermission2">
+  <owner>kalman@chromium.org</owner>
+  <owner>rpaquay@chromium.org</owner>
   <summary>
     The permissions present in an extension when it was uninstalled.
   </summary>
@@ -6858,7 +6974,22 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="Extensions.Permissions_WebStoreInstall"
     enum="ExtensionPermission">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <obsolete>
+    Deprecated as of 5/2014, replaced by
+    Extensions.Permissions_WebStoreInstall2.
+  </obsolete>
+  <owner>kalman@chromium.org</owner>
+  <owner>rpaquay@chromium.org</owner>
+  <summary>
+    The permissions present in an extension when it was installed through the
+    web store.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.Permissions_WebStoreInstall2"
+    enum="ExtensionPermission2">
+  <owner>kalman@chromium.org</owner>
+  <owner>rpaquay@chromium.org</owner>
   <summary>
     The permissions present in an extension when it was installed through the
     web store.
@@ -6867,7 +6998,22 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="Extensions.Permissions_WebStoreInstallAbort"
     enum="ExtensionPermission">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <obsolete>
+    Deprecated as of 5/2014, replaced by
+    Extensions.Permissions_WebStoreInstallAbort2.
+  </obsolete>
+  <owner>kalman@chromium.org</owner>
+  <owner>rpaquay@chromium.org</owner>
+  <summary>
+    The permissions present in an extension when installation from the web store
+    was aborted, not including installation errors and user cancels.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.Permissions_WebStoreInstallAbort2"
+    enum="ExtensionPermission2">
+  <owner>kalman@chromium.org</owner>
+  <owner>rpaquay@chromium.org</owner>
   <summary>
     The permissions present in an extension when installation from the web store
     was aborted, not including installation errors and user cancels.
@@ -6876,7 +7022,22 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="Extensions.Permissions_WebStoreInstallCancel"
     enum="ExtensionPermission">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <obsolete>
+    Deprecated as of 5/2014, replaced by
+    Extensions.Permissions_WebStoreInstallCancel2.
+  </obsolete>
+  <owner>kalman@chromium.org</owner>
+  <owner>rpaquay@chromium.org</owner>
+  <summary>
+    The permissions present in an extension when installation from the web store
+    was canceled.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.Permissions_WebStoreInstallCancel2"
+    enum="ExtensionPermission2">
+  <owner>kalman@chromium.org</owner>
+  <owner>rpaquay@chromium.org</owner>
   <summary>
     The permissions present in an extension when installation from the web store
     was canceled.
