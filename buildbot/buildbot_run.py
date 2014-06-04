@@ -107,7 +107,7 @@ def PrepareAndroidTree():
       cwd=ANDROID_DIR)
 
 
-def GypTestFormat(title, format=None, msvs_version=None):
+def GypTestFormat(title, format=None, msvs_version=None, tests=[]):
   """Run the gyp tests for a given format, emitting annotator tags.
 
   See annotator docs at:
@@ -131,7 +131,7 @@ def GypTestFormat(title, format=None, msvs_version=None):
        '--passed',
        '--format', format,
        '--path', CMAKE_BIN_DIR,
-       '--chdir', 'trunk'])
+       '--chdir', 'trunk'] + tests)
   if format == 'android':
     # gyptest needs the environment setup from envsetup/lunch in order to build
     # using the 'android' backend, so this is done in a single shell.
@@ -173,6 +173,12 @@ def GypBuild():
   elif sys.platform == 'win32':
     retcode += GypTestFormat('ninja')
     if os.environ['BUILDBOT_BUILDERNAME'] == 'gyp-win64':
+      retcode += GypTestFormat('msvs-ninja-2012', format='msvs-ninja',
+                               msvs_version='2012',
+                               tests=[
+                                   'test\generator-output\gyptest-actions.py',
+                                   'test\generator-output\gyptest-relocate.py',
+                                   'test\generator-output\gyptest-rules.py'])
       retcode += GypTestFormat('msvs-2010', format='msvs', msvs_version='2010')
       retcode += GypTestFormat('msvs-2012', format='msvs', msvs_version='2012')
   else:

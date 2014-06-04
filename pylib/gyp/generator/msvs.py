@@ -12,6 +12,7 @@ import sys
 
 import gyp.common
 import gyp.easy_xml as easy_xml
+import gyp.generator.ninja as ninja_generator
 import gyp.MSVSNew as MSVSNew
 import gyp.MSVSProject as MSVSProject
 import gyp.MSVSSettings as MSVSSettings
@@ -1787,7 +1788,7 @@ def _CreateProjectObjects(target_list, target_dicts, options, msvs_version):
   return projects
 
 
-def _InitNinjaFlavor(options, target_list, target_dicts):
+def _InitNinjaFlavor(params, target_list, target_dicts):
   """Initialize targets for the ninja flavor.
 
   This sets up the necessary variables in the targets to generate msvs projects
@@ -1795,7 +1796,7 @@ def _InitNinjaFlavor(options, target_list, target_dicts):
   if they have not been set. This allows individual specs to override the
   default values initialized here.
   Arguments:
-    options: Options provided to the generator.
+    params: Params provided to the generator.
     target_list: List of target pairs: 'base/base.gyp:base'.
     target_dicts: Dict of target properties keyed on target pair.
   """
@@ -1809,8 +1810,12 @@ def _InitNinjaFlavor(options, target_list, target_dicts):
 
     spec['msvs_external_builder'] = 'ninja'
     if not spec.get('msvs_external_builder_out_dir'):
-      spec['msvs_external_builder_out_dir'] = \
-        options.depth + '/out/$(Configuration)'
+      gyp_file, _, _ = gyp.common.ParseQualifiedTarget(qualified_target)
+      gyp_dir = os.path.dirname(gyp_file)
+      spec['msvs_external_builder_out_dir'] = os.path.join(
+          gyp.common.RelativePath(params['options'].toplevel_dir, gyp_dir),
+          ninja_generator.ComputeOutputDir(params),
+          '$(Configuration)')
     if not spec.get('msvs_external_builder_build_cmd'):
       spec['msvs_external_builder_build_cmd'] = [
         path_to_ninja,
@@ -1905,7 +1910,7 @@ def GenerateOutput(target_list, target_dicts, data, params):
 
   # Optionally configure each spec to use ninja as the external builder.
   if params.get('flavor') == 'ninja':
-    _InitNinjaFlavor(options, target_list, target_dicts)
+    _InitNinjaFlavor(params, target_list, target_dicts)
 
   # Prepare the set of configurations.
   configs = set()

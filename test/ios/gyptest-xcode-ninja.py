@@ -16,12 +16,8 @@ import sys
 if sys.platform == 'darwin':
   test = TestGyp.TestGyp(formats=['xcode'])
 
-  # Run ninja first
-  test.format = 'ninja'
-  test.run_gyp('test.gyp', chdir='app-bundle')
-
-  # Then run xcode-ninja
-  test.format = 'xcode-ninja'
+  # Run ninja and xcode-ninja
+  test.formats = ['ninja', 'xcode-ninja']
   test.run_gyp('test.gyp', chdir='app-bundle')
 
   # If it builds the target, it works.
