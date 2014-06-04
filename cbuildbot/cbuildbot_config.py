@@ -950,29 +950,6 @@ internal = _config(
   manifest_repo_url=constants.MANIFEST_INT_URL,
 )
 
-# TODO(build/embedded): Decide on what brillo builders should look like and be
-# consistent. Currently sonic and other brillo builds differ too much.
-sonic = _config(
-  manifest='official.xml',
-  # TODO(gauravsh): crbug.com/330225 - remove this when all canaries and
-  # paladins start using the official.xml manifest. See crbug.com/320913
-  # for the why (see comment #4).
-  manifest_version=False,
-  boards=['sonic'],
-  # Until these are configured and ready, disable them.
-  images=['base', 'dev'],
-  unittests=True,
-  upload_hw_test_artifacts=False,
-  perform_paygen_testing=False,
-  build_tests=False,
-  factory_toolkit=False,
-  vm_tests=[],
-  signer_tests=False,
-  sync_chrome=False,
-  chrome_sdk=False,
-  hw_tests=[],
-)
-
 brillo = _config(
   sync_chrome=False,
   chrome_sdk=False,
@@ -1728,12 +1705,6 @@ internal_paladin.add_config('slippy-paladin',
   important=False,
 )
 
-internal_paladin.add_config('sonic-paladin',
-  sonic,
-  paladin_builder_name='sonic paladin (experimental)',
-  important=False,
-)
-
 internal_paladin.add_config('monroe-paladin',
   boards=['monroe'],
   paladin_builder_name='monroe paladin',
@@ -2040,10 +2011,6 @@ _arm_release = _release.derive(arm)
 _arm_release.add_config('daisy-release',
   boards=['daisy'],
   critical_for_chrome=True,
-)
-
-_release.add_config('sonic-release',
-  sonic,
 )
 
 # Now generate generic release configs if we haven't created anything more
