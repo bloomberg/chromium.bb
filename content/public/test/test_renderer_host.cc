@@ -150,7 +150,8 @@ void RenderViewHostTestHarness::Reload() {
   DCHECK(entry);
   controller().Reload(false);
   static_cast<TestRenderViewHost*>(
-      rvh())->SendNavigate(entry->GetPageID(), entry->GetURL());
+      rvh())->SendNavigateWithTransition(
+          entry->GetPageID(), entry->GetURL(), PAGE_TRANSITION_RELOAD);
 }
 
 void RenderViewHostTestHarness::FailedReload() {

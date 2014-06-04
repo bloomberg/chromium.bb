@@ -159,15 +159,11 @@ class CONTENT_EXPORT NavigationControllerImpl
   // whether a navigation happened without loading anything, the same URL could
   // be a reload, while only a different ref would be in-page (pages can't clear
   // refs without reload, only change to "#" which we don't count as empty).
-  bool IsURLInPageNavigation(const GURL& url) const {
-    return IsURLInPageNavigation(url, false, NAVIGATION_TYPE_UNKNOWN);
-  }
-
+  //
   // The situation is made murkier by history.replaceState(), which could
   // provide the same URL as part of an in-page navigation, not a reload. So
-  // we need this form which lets the (untrustworthy) renderer resolve the
-  // ambiguity, but only when the URLs are equal. This should be safe since the
-  // origin isn't changing.
+  // we need to let the (untrustworthy) renderer resolve the ambiguity, but
+  // only when the URLs are on the same origin.
   bool IsURLInPageNavigation(
       const GURL& url,
       bool renderer_says_in_page,

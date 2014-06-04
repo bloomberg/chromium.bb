@@ -2163,6 +2163,7 @@ TEST_F(NavigationControllerTest, InPage_Replace) {
   params.gesture = NavigationGestureUser;
   params.is_post = false;
   params.page_state = PageState::CreateFromURL(url2);
+  params.was_within_same_page = true;
 
   // This should NOT generate a new entry, nor prune the list.
   LoadCommittedDetails details;
@@ -2214,6 +2215,7 @@ TEST_F(NavigationControllerTest, ClientRedirectAfterInPageNavigation) {
     params.gesture = NavigationGestureUnknown;
     params.is_post = false;
     params.page_state = PageState::CreateFromURL(url);
+    params.was_within_same_page = true;
 
     // This should NOT generate a new entry, nor prune the list.
     LoadCommittedDetails details;
@@ -3077,21 +3079,28 @@ TEST_F(NavigationControllerTest, IsInPageNavigation) {
   main_test_rfh()->SendNavigate(0, url);
 
   // Reloading the page is not an in-page navigation.
-  EXPECT_FALSE(controller.IsURLInPageNavigation(url));
+  EXPECT_FALSE(controller.IsURLInPageNavigation(url, false,
+      NAVIGATION_TYPE_UNKNOWN));
   const GURL other_url("http://www.google.com/add.html");
-  EXPECT_FALSE(controller.IsURLInPageNavigation(other_url));
+  EXPECT_FALSE(controller.IsURLInPageNavigation(other_url, false,
+      NAVIGATION_TYPE_UNKNOWN));
   const GURL url_with_ref("http://www.google.com/home.html#my_ref");
-  EXPECT_TRUE(controller.IsURLInPageNavigation(url_with_ref));
+  EXPECT_TRUE(controller.IsURLInPageNavigation(url_with_ref, true,
+      NAVIGATION_TYPE_UNKNOWN));
 
   // Navigate to URL with refs.
   main_test_rfh()->SendNavigate(1, url_with_ref);
 
   // Reloading the page is not an in-page navigation.
-  EXPECT_FALSE(controller.IsURLInPageNavigation(url_with_ref));
-  EXPECT_FALSE(controller.IsURLInPageNavigation(url));
-  EXPECT_FALSE(controller.IsURLInPageNavigation(other_url));
+  EXPECT_FALSE(controller.IsURLInPageNavigation(url_with_ref, false,
+      NAVIGATION_TYPE_UNKNOWN));
+  EXPECT_FALSE(controller.IsURLInPageNavigation(url, false,
+      NAVIGATION_TYPE_UNKNOWN));
+  EXPECT_FALSE(controller.IsURLInPageNavigation(other_url, false,
+      NAVIGATION_TYPE_UNKNOWN));
   const GURL other_url_with_ref("http://www.google.com/home.html#my_other_ref");
-  EXPECT_TRUE(controller.IsURLInPageNavigation(other_url_with_ref));
+  EXPECT_TRUE(controller.IsURLInPageNavigation(other_url_with_ref, true,
+      NAVIGATION_TYPE_UNKNOWN));
 
   // Going to the same url again will be considered in-page
   // if the renderer says it is even if the navigation type isn't IN_PAGE.
@@ -3102,6 +3111,17 @@ TEST_F(NavigationControllerTest, IsInPageNavigation) {
   // type is IN_PAGE.
   EXPECT_TRUE(controller.IsURLInPageNavigation(url, true,
       NAVIGATION_TYPE_IN_PAGE));
+
+  // If the renderer says this is a same-origin in-page navigation, believe it.
+  // This is the pushState/replaceState case.
+  EXPECT_TRUE(controller.IsURLInPageNavigation(other_url, true,
+      NAVIGATION_TYPE_UNKNOWN));
+
+  // Don't believe the renderer if it claims a cross-origin navigation is
+  // in-page.
+  const GURL different_origin_url("http://www.example.com");
+  EXPECT_FALSE(controller.IsURLInPageNavigation(different_origin_url, true,
+      NAVIGATION_TYPE_UNKNOWN));
 }
 
 // Some pages can have subframes with the same base URL (minus the reference) as

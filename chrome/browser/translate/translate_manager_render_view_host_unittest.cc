@@ -94,7 +94,10 @@ class TranslateManagerRenderViewHostTest
   void SimulateNavigation(const GURL& url,
                           const std::string& lang,
                           bool page_translatable) {
-    NavigateAndCommit(url);
+    if (rvh()->GetMainFrame()->GetLastCommittedURL() == url)
+      Reload();
+    else
+      NavigateAndCommit(url);
     SimulateOnTranslateLanguageDetermined(lang, page_translatable);
   }
 
@@ -794,7 +797,8 @@ TEST_F(TranslateManagerRenderViewHostTest, ReloadFromLocationBar) {
   NavEntryCommittedObserver nav_observer(web_contents());
   web_contents()->GetController().LoadURL(
       url, content::Referrer(), content::PAGE_TRANSITION_TYPED, std::string());
-  rvh_tester()->SendNavigate(0, url);
+  rvh_tester()->SendNavigateWithTransition(
+      0, url, content::PAGE_TRANSITION_TYPED);
 
   // Test that we are really getting a same page navigation, the test would be
   // useless if it was not the case.

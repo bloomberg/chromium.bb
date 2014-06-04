@@ -219,9 +219,9 @@ TEST_F(ActiveScriptControllerUnitTest, PendingInjectionsRemovedAtNavigation) {
   EXPECT_TRUE(controller()->GetActionForExtension(extension));
   EXPECT_EQ(0u, GetExecutionCountForExtension(extension->id()));
 
-  // Navigate away. This should remove the pending injection, and we should not
+  // Reload. This should remove the pending injection, and we should not
   // execute anything.
-  NavigateAndCommit(GURL("https://www.google.com"));
+  Reload();
   EXPECT_FALSE(controller()->GetActionForExtension(extension));
   EXPECT_EQ(0u, GetExecutionCountForExtension(extension->id()));
 
@@ -281,7 +281,7 @@ TEST_F(ActiveScriptControllerUnitTest, ActiveScriptsUseActiveTabPermissions) {
   EXPECT_FALSE(controller()->RequiresUserConsentForScriptInjection(extension));
 
   // Also test that granting active tab runs any pending tasks.
-  NavigateAndCommit(GURL("https://www.google.com"));
+  Reload();
   // Navigating should mean we need permission again.
   EXPECT_TRUE(controller()->RequiresUserConsentForScriptInjection(extension));
 

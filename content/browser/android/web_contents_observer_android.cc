@@ -129,12 +129,23 @@ void WebContentsObserverAndroid::DidNavigateMainFrame(
       ConvertUTF8ToJavaString(env, params.url.spec()));
   ScopedJavaLocalRef<jstring> jstring_base_url(
       ConvertUTF8ToJavaString(env, params.base_url.spec()));
+
   // See http://crbug.com/251330 for why it's determined this way.
-  bool in_page_navigation =
-      details.type == NAVIGATION_TYPE_IN_PAGE || details.is_in_page;
+  url::Replacements<char> replacements;
+  replacements.ClearRef();
+  bool urls_same_ignoring_fragment =
+      params.url.ReplaceComponents(replacements) ==
+      details.previous_url.ReplaceComponents(replacements);
+
+  // is_fragment_navigation is indicative of the intent of this variable.
+  // However, there isn't sufficient information here to determine whether this
+  // is actually a fragment navigation, or a history API navigation to a URL
+  // that would also be valid for a fragment navigation.
+  bool is_fragment_navigation = urls_same_ignoring_fragment &&
+      (details.type == NAVIGATION_TYPE_IN_PAGE || details.is_in_page);
   Java_WebContentsObserverAndroid_didNavigateMainFrame(
       env, obj.obj(), jstring_url.obj(), jstring_base_url.obj(),
-      details.is_navigation_to_different_page(), in_page_navigation);
+      details.is_navigation_to_different_page(), is_fragment_navigation);
 }
 
 void WebContentsObserverAndroid::DidNavigateAnyFrame(

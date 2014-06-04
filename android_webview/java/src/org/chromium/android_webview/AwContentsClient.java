@@ -89,10 +89,10 @@ public abstract class AwContentsClient {
 
         @Override
         public void didNavigateMainFrame(String url, String baseUrl,
-                boolean isNavigationToDifferentPage, boolean isNavigationInPage) {
+                boolean isNavigationToDifferentPage, boolean isFragmentNavigation) {
             // This is here to emulate the Classic WebView firing onPageFinished for main frame
             // navigations where only the hash fragment changes.
-            if (isNavigationInPage) {
+            if (isFragmentNavigation) {
                 AwContentsClient.this.onPageFinished(url);
             }
         }

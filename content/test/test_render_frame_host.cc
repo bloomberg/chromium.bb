@@ -46,7 +46,7 @@ void TestRenderFrameHost::SendNavigateWithTransition(
 
 void TestRenderFrameHost::SendFailedNavigate(int page_id, const GURL& url) {
   SendNavigateWithTransitionAndResponseCode(
-      page_id, url, PAGE_TRANSITION_LINK, 500);
+      page_id, url, PAGE_TRANSITION_RELOAD, 500);
 }
 
 void TestRenderFrameHost::SendNavigateWithTransitionAndResponseCode(
@@ -113,12 +113,18 @@ void TestRenderFrameHost::SendNavigateWithParameters(
   params.gesture = NavigationGestureUser;
   params.contents_mime_type = contents_mime_type_;
   params.is_post = false;
-  params.was_within_same_page = false;
   params.http_status_code = response_code;
   params.socket_address.set_host("2001:db8::1");
   params.socket_address.set_port(80);
   params.history_list_was_cleared = simulate_history_list_was_cleared_;
   params.original_request_url = original_request_url;
+
+  url::Replacements<char> replacements;
+  replacements.ClearRef();
+  params.was_within_same_page = transition != PAGE_TRANSITION_RELOAD &&
+      transition != PAGE_TRANSITION_TYPED &&
+      url.ReplaceComponents(replacements) ==
+          GetLastCommittedURL().ReplaceComponents(replacements);
 
   params.page_state = PageState::CreateForTesting(
       url,

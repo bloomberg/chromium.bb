@@ -291,7 +291,7 @@ TEST_F(GeolocationPermissionContextTests, GeolocationEnabledDisabled) {
   base::string16 text_0 = infobar_delegate_0->GetButtonLabel(
       ConfirmInfoBarDelegate::BUTTON_OK);
 
-  NavigateAndCommit(requesting_frame);
+  Reload();
   MockGoogleLocationSettingsHelper::SetLocationStatus(true, false);
   EXPECT_EQ(0U, infobar_service()->infobar_count());
   RequestGeolocationPermission(web_contents(), RequestID(0), requesting_frame);
@@ -303,7 +303,7 @@ TEST_F(GeolocationPermissionContextTests, GeolocationEnabledDisabled) {
       ConfirmInfoBarDelegate::BUTTON_OK);
   EXPECT_NE(text_0, text_1);
 
-  NavigateAndCommit(requesting_frame);
+  Reload();
   MockGoogleLocationSettingsHelper::SetLocationStatus(false, false);
   EXPECT_EQ(0U, infobar_service()->infobar_count());
   RequestGeolocationPermission(web_contents(), RequestID(0), requesting_frame);

@@ -619,7 +619,7 @@ public class ContentViewCore
         mWebContentsObserver = new WebContentsObserverAndroid(this) {
             @Override
             public void didNavigateMainFrame(String url, String baseUrl,
-                    boolean isNavigationToDifferentPage, boolean isNavigationInPage) {
+                    boolean isNavigationToDifferentPage, boolean isFragmentNavigation) {
                 if (!isNavigationToDifferentPage) return;
                 hidePopups();
                 resetScrollInProgress();

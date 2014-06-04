@@ -109,7 +109,7 @@ bool AreURLsInPageNavigation(const GURL& existing_url,
                              const GURL& new_url,
                              bool renderer_says_in_page,
                              NavigationType navigation_type) {
-  if (existing_url == new_url)
+  if (existing_url.GetOrigin() == new_url.GetOrigin())
     return renderer_says_in_page;
 
   if (!new_url.has_ref()) {
