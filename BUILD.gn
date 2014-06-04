@@ -48,6 +48,7 @@ group("root") {
     "//mojo",
     "//net",
     "//ppapi:ppapi_c",
+    "//printing",
     #"//sandbox",
     "//sdch",
     "//skia",

@@ -11,7 +11,8 @@ to keep these separate: cflags are only needed when compiling files
 that use cups directly, while libs are only needed on the final link
 line.
 
-TODO(evan): remove me once
+This can be dramatically simplified or maybe removed (depending on GN
+requirements) when this is fixed:
   https://bugs.launchpad.net/ubuntu/+source/cupsys/+bug/163704
 is fixed.
 """
@@ -20,7 +21,8 @@ import subprocess
 import sys
 
 def usage():
-  print 'usage: %s {--cflags|--ldflags|--libs}' % sys.argv[0]
+  print 'usage: %s {--api-version|--cflags|--ldflags|--libs|--libs-for-gn}' % \
+      sys.argv[0]
 
 
 def run_cups_config(mode):
@@ -60,11 +62,33 @@ def main():
     return 1
 
   mode = sys.argv[1]
-  if mode not in ('--cflags', '--libs', '--ldflags'):
+  if mode == '--api-version':
+    subprocess.call(['cups-config', '--api-version'])
+    return 0
+
+  # All other modes get the flags.
+  if mode not in ('--cflags', '--libs', '--libs-for-gn', '--ldflags'):
     usage()
     return 1
+
+  if mode == '--libs-for-gn':
+    gn_libs_output = True
+    mode = '--libs'
+  else:
+    gn_libs_output = False
+
   flags = run_cups_config(mode)
-  print ' '.join(flags)
+
+  if gn_libs_output:
+    # Strip "-l" from beginning of libs, quote, and surround in [ ].
+    print '['
+    for lib in flags:
+      if lib[:2] == "-l":
+        print '"%s", ' % lib[2:]
+    print ']'
+  else:
+    print ' '.join(flags)
+
   return 0
 
 
