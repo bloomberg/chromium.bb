@@ -5,12 +5,17 @@
 #ifndef COMPONENTS_DOM_DISTILLER_CORE_DOM_DISTILLER_CONTENT_STORE_H_
 #define COMPONENTS_DOM_DISTILLER_CORE_DOM_DISTILLER_CONTENT_STORE_H_
 
+#include <string>
+
 #include "base/bind.h"
-#include "base/containers/hash_tables.h"
+#include "base/containers/mru_cache.h"
 #include "components/dom_distiller/core/article_entry.h"
 #include "components/dom_distiller/core/proto/distilled_article.pb.h"
 
 namespace dom_distiller {
+
+// The maximum number of items to keep in the cache before deleting some.
+const int kDefaultMaxNumCachedEntries = 32;
 
 // This is a simple interface for saving and loading of distilled content for an
 // ArticleEntry.
@@ -24,21 +29,20 @@ class DistilledContentStore {
                            const DistilledArticleProto& proto,
                            SaveCallback callback) = 0;
   virtual void LoadContent(const ArticleEntry& entry,
-                           LoadCallback callback) const = 0;
+                           LoadCallback callback) = 0;
 
   DistilledContentStore() {};
   virtual ~DistilledContentStore() {};
+
  private:
   DISALLOW_COPY_AND_ASSIGN(DistilledContentStore);
 };
 
-// This content store keeps anything put in it around forever. Its memory use
-// then may grow very large.
-//
-// TODO(cjhopman): Do something about unbound memory growth.
+// This content store keeps up to |max_num_entries| of the last accessed items
+// in its cache. Both loading and saving content is counted as access.
 class InMemoryContentStore : public DistilledContentStore {
  public:
-  InMemoryContentStore();
+  explicit InMemoryContentStore(const int max_num_entries);
   virtual ~InMemoryContentStore();
 
   // DistilledContentStore implementation
@@ -46,14 +50,14 @@ class InMemoryContentStore : public DistilledContentStore {
                            const DistilledArticleProto& proto,
                            SaveCallback callback) OVERRIDE;
   virtual void LoadContent(const ArticleEntry& entry,
-                           LoadCallback callback) const OVERRIDE;
+                           LoadCallback callback) OVERRIDE;
 
   // Synchronously saves the content.
   void InjectContent(const ArticleEntry& entry,
                      const DistilledArticleProto& proto);
 
  private:
-  typedef base::hash_map<std::string, DistilledArticleProto> ContentMap;
+  typedef base::MRUCache<std::string, DistilledArticleProto> ContentMap;
   ContentMap cache_;
 };
 }  // dom_distiller

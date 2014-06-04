@@ -8,8 +8,12 @@
 
 namespace dom_distiller {
 
-InMemoryContentStore::InMemoryContentStore() {}
-InMemoryContentStore::~InMemoryContentStore() {}
+InMemoryContentStore::InMemoryContentStore(const int max_num_entries)
+    : cache_(max_num_entries) {
+}
+
+InMemoryContentStore::~InMemoryContentStore() {
+}
 
 void InMemoryContentStore::SaveContent(
     const ArticleEntry& entry,
@@ -24,11 +28,11 @@ void InMemoryContentStore::SaveContent(
 
 void InMemoryContentStore::LoadContent(
     const ArticleEntry& entry,
-    InMemoryContentStore::LoadCallback callback) const {
+    InMemoryContentStore::LoadCallback callback) {
   if (callback.is_null())
     return;
 
-  ContentMap::const_iterator it = cache_.find(entry.entry_id());
+  ContentMap::const_iterator it = cache_.Get(entry.entry_id());
   bool success = it != cache_.end();
   scoped_ptr<DistilledArticleProto> distilled_article;
   if (success) {
@@ -43,7 +47,7 @@ void InMemoryContentStore::LoadContent(
 
 void InMemoryContentStore::InjectContent(const ArticleEntry& entry,
                                          const DistilledArticleProto& proto) {
-  cache_[entry.entry_id()] = proto;
+  cache_.Put(entry.entry_id(), proto);
 }
 
 }  // namespace dom_distiller

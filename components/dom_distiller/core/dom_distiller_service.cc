@@ -41,7 +41,7 @@ DomDistillerService::DomDistillerService(
     scoped_ptr<DistillerFactory> distiller_factory,
     scoped_ptr<DistillerPageFactory> distiller_page_factory)
     : store_(store.Pass()),
-      content_store_(new InMemoryContentStore()),
+      content_store_(new InMemoryContentStore(kDefaultMaxNumCachedEntries)),
       distiller_factory_(distiller_factory.Pass()),
       distiller_page_factory_(distiller_page_factory.Pass()) {
 }

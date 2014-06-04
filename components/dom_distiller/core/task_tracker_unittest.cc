@@ -28,8 +28,8 @@ class FakeViewRequestDelegate : public ViewRequestDelegate {
 
 class MockContentStore : public DistilledContentStore {
  public:
-  MOCK_CONST_METHOD2(LoadContent,
-                     void(const ArticleEntry& entry, LoadCallback callback));
+  MOCK_METHOD2(LoadContent,
+               void(const ArticleEntry& entry, LoadCallback callback));
   MOCK_METHOD3(SaveContent,
                void(const ArticleEntry& entry,
                     const DistilledArticleProto& proto,
@@ -198,7 +198,7 @@ TEST_F(DomDistillerTaskTrackerTest, TestBlobFetcher) {
   ArticleEntry entry_with_blob = GetDefaultEntry();
   DistilledArticleProto stored_distilled_article =
       CreateDistilledArticleForEntry(entry_with_blob);
-  InMemoryContentStore content_store;
+  InMemoryContentStore content_store(kDefaultMaxNumCachedEntries);
   content_store.InjectContent(entry_with_blob, stored_distilled_article);
   TestCancelCallback cancel_callback;
 
@@ -232,7 +232,7 @@ TEST_F(DomDistillerTaskTrackerTest, TestBlobFetcherFinishesFirst) {
   ArticleEntry entry_with_blob = GetDefaultEntry();
   DistilledArticleProto stored_distilled_article =
       CreateDistilledArticleForEntry(entry_with_blob);
-  InMemoryContentStore content_store;
+  InMemoryContentStore content_store(kDefaultMaxNumCachedEntries);
   content_store.InjectContent(entry_with_blob, stored_distilled_article);
   TestCancelCallback cancel_callback;
   TaskTracker task_tracker(
@@ -271,7 +271,7 @@ TEST_F(DomDistillerTaskTrackerTest, TestBlobFetcherWithoutBlob) {
       .WillOnce(Return(distiller));
 
   ArticleEntry entry(GetDefaultEntry());
-  InMemoryContentStore content_store;
+  InMemoryContentStore content_store(kDefaultMaxNumCachedEntries);
   scoped_ptr<DistilledArticleProto> distilled_article(
       new DistilledArticleProto(CreateDistilledArticleForEntry(entry)));
 
