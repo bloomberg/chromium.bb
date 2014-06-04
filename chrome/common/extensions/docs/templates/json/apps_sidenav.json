@@ -76,6 +76,10 @@
               {
                 "title": "Build Apps with Sencha Ext JS",
                 "href": "/apps/sencha_framework"
+              },
+              {
+                "title": "Game Engines",
+                "href": "/apps/game_engines"
               }
             ]
           }

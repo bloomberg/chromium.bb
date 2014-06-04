@@ -430,6 +430,10 @@
               {
                 "title": "Build Apps with SenchaJS",
                 "href": "/apps/sencha_framework"
+              },
+              {
+                "title": "Game Engines",
+                "href": "/apps/game_engines"
               }
             ]
           },
