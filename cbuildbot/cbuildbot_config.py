@@ -2083,6 +2083,13 @@ _brillo_release.add_config('gizmo-release',
 
 _arm_brillo_release = _brillo_release.derive(arm)
 
+_arm_brillo_release.add_config('storm-release',
+   boards=['storm'],
+
+   # Hw Lab can't test duck, yet.
+   perform_paygen_testing=False,
+)
+
 _beaglebone_release = _arm_brillo_release.derive(beaglebone)
 
 _config.add_group('beaglebone-release-group',
