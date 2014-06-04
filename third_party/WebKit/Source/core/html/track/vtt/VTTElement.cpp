@@ -83,9 +83,9 @@ PassRefPtrWillBeRawPtr<Element> VTTElement::cloneElementWithoutAttributesAndChil
     return clone.release();
 }
 
-PassRefPtr<HTMLElement> VTTElement::createEquivalentHTMLElement(Document& document)
+PassRefPtrWillBeRawPtr<HTMLElement> VTTElement::createEquivalentHTMLElement(Document& document)
 {
-    RefPtr<HTMLElement> htmlElement;
+    RefPtrWillBeRawPtr<HTMLElement> htmlElement = nullptr;
     switch (m_webVTTNodeType) {
     case VTTNodeTypeClass:
     case VTTNodeTypeLanguage:

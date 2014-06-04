@@ -424,7 +424,7 @@ void VTTCue::createVTTNodeTree()
 void VTTCue::copyVTTNodeToDOMTree(ContainerNode* vttNode, ContainerNode* parent)
 {
     for (Node* node = vttNode->firstChild(); node; node = node->nextSibling()) {
-        RefPtr<Node> clonedNode;
+        RefPtrWillBeRawPtr<Node> clonedNode;
         if (node->isVTTElement())
             clonedNode = toVTTElement(node)->createEquivalentHTMLElement(document());
         else

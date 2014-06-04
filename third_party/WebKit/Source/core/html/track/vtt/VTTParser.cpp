@@ -317,19 +317,21 @@ VTTParser::ParseState VTTParser::ignoreBadCue(const String& line)
 
 // A helper class for the construction of a "cue fragment" from the cue text.
 class VTTTreeBuilder {
+    STACK_ALLOCATED();
 public:
-    VTTTreeBuilder(Document& document)
-        : m_document(document) { }
+    explicit VTTTreeBuilder(Document& document)
+        : m_document(&document) { }
 
     PassRefPtrWillBeRawPtr<DocumentFragment> buildFromString(const String& cueText);
 
 private:
     void constructTreeFromToken(Document&);
+    Document& document() const { return *m_document; }
 
     VTTToken m_token;
-    RefPtr<ContainerNode> m_currentNode;
+    RefPtrWillBeMember<ContainerNode> m_currentNode;
     Vector<AtomicString> m_languageStack;
-    Document& m_document;
+    RawPtrWillBeMember<Document> m_document;
 };
 
 PassRefPtrWillBeRawPtr<DocumentFragment> VTTTreeBuilder::buildFromString(const String& cueText)
@@ -338,10 +340,10 @@ PassRefPtrWillBeRawPtr<DocumentFragment> VTTTreeBuilder::buildFromString(const S
     // 5.4 WebVTT cue text parsing rules, and
     // 5.5 WebVTT cue text DOM construction rules
 
-    RefPtrWillBeRawPtr<DocumentFragment> fragment = DocumentFragment::create(m_document);
+    RefPtrWillBeRawPtr<DocumentFragment> fragment = DocumentFragment::create(document());
 
     if (cueText.isEmpty()) {
-        fragment->parserAppendChild(Text::create(m_document, ""));
+        fragment->parserAppendChild(Text::create(document(), ""));
         return fragment;
     }
 
@@ -351,7 +353,7 @@ PassRefPtrWillBeRawPtr<DocumentFragment> VTTTreeBuilder::buildFromString(const S
     m_languageStack.clear();
 
     while (tokenizer.nextToken(m_token))
-        constructTreeFromToken(m_document);
+        constructTreeFromToken(document());
 
     return fragment.release();
 }

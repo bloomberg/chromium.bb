@@ -43,7 +43,7 @@ class VTTElement FINAL : public Element {
 public:
     static PassRefPtrWillBeRawPtr<VTTElement> create(const VTTNodeType, Document*);
     static PassRefPtrWillBeRawPtr<VTTElement> create(const QualifiedName&, Document*);
-    PassRefPtr<HTMLElement> createEquivalentHTMLElement(Document&);
+    PassRefPtrWillBeRawPtr<HTMLElement> createEquivalentHTMLElement(Document&);
 
     virtual PassRefPtrWillBeRawPtr<Element> cloneElementWithoutAttributesAndChildren() OVERRIDE;
 

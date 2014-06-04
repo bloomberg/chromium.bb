@@ -214,7 +214,7 @@ PassRefPtrWillBeRawPtr<HTMLElement> HTMLTableElement::insertRow(int index, Excep
         }
     }
 
-    RefPtr<ContainerNode> parent;
+    RefPtrWillBeRawPtr<ContainerNode> parent;
     if (lastRow)
         parent = row ? row->parentNode() : lastRow->parentNode();
     else {
