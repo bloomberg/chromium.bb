@@ -2154,7 +2154,7 @@ def MakeBaseTrustedEnv(platform=None):
       'src/shared/serialization/build.scons',
       'src/shared/srpc/build.scons',
       'src/shared/utils/build.scons',
-      'src/third_party_mod/gtest/build.scons',
+      'src/third_party/gtest/build.scons',
       'src/tools/validator_tools/build.scons',
       'src/trusted/cpu_features/build.scons',
       'src/trusted/debug_stub/build.scons',

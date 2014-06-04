@@ -494,7 +494,7 @@ def NativeLibs(host, arch):
           'inputs': { 'src': os.path.join(NACL_DIR, 'pnacl', 'support'),
                       'include': os.path.join(NACL_DIR, 'src'),
                       'newlib_subset': os.path.join(
-                          NACL_DIR, 'src', 'third_party_mod',
+                          NACL_DIR, 'src', 'third_party',
                           'pnacl_native_newlib_subset'),
                       'driver': os.path.join(NACL_DIR, 'pnacl', 'driver')},
           'commands':

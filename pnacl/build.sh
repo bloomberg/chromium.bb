@@ -93,7 +93,7 @@ SPECULATIVE_REBUILD_SET=""
 readonly PNACL_SUPPORT="${PNACL_ROOT}/support"
 
 readonly THIRD_PARTY="${NACL_ROOT}"/../third_party
-readonly NACL_SRC_THIRD_PARTY_MOD="${NACL_ROOT}/src/third_party_mod"
+readonly NACL_SRC_THIRD_PARTY="${NACL_ROOT}/src/third_party"
 
 # Git sources
 readonly PNACL_GIT_ROOT="${NACL_ROOT}/toolchain_build/src"
@@ -2445,7 +2445,7 @@ libs-support-native() {
   # Some of the support code lives in third_party/ because it's based on code
   # from other open-source projects.
   ${cc_cmd} \
-    -c "${NACL_SRC_THIRD_PARTY_MOD}/pnacl_native_newlib_subset/string.c" \
+    -c "${NACL_SRC_THIRD_PARTY}/pnacl_native_newlib_subset/string.c" \
     -std=c99 -o "${tmpdir}"/string.o
   # Pull in the no-errno __ieee754_fmod from newlib and rename it to fmod.
   # This is to support the LLVM frem instruction.
