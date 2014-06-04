@@ -118,7 +118,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 266
+#   For your editing convenience: highest ID currently used: 267
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -3211,6 +3211,24 @@
       If you enable this setting, bookmarks can be added, removed or modified. This is the default also when this policy is not set.
 
       If you disable this setting, bookmarks can not be added, removed or modified. Existing bookmarks are still available.''',
+    },
+    {
+      'name': 'ShowAppsShortcutInBookmarkBar',
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome.*:37-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': False,
+      'id': 267,
+      'caption': '''Show the apps shortcut in the bookmark bar''',
+      'desc': '''Enables or disables the apps shortcut in the bookmark bar.
+
+      If this policy is not set then the user can choose to show or hide the apps shortcut from the bookmark bar context menu.
+
+      If this policy is configured then the user can't change it, and the apps shortcut is always shown or never shown.''',
     },
     {
       'name': 'AllowFileSelectionDialogs',

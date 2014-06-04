@@ -24,6 +24,7 @@
 #import "chrome/browser/ui/cocoa/view_resizer_pong.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/test/base/testing_pref_service_syncable.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
@@ -1605,6 +1606,24 @@ TEST_F(BookmarkBarControllerTest, BookmarksWithoutAppsPageShortcut) {
             NSMinX([[[bar_ buttonView] noItemTextfield] frame]));
   EXPECT_LE(NSMaxX([[[bar_ buttonView] noItemTextfield] frame]),
             NSMinX([[[bar_ buttonView] importBookmarksButton] frame]));
+}
+
+TEST_F(BookmarkBarControllerTest, ManagedShowAppsShortcutInBookmarksBar) {
+  // By default the pref is not managed and the apps shortcut is shown.
+  TestingPrefServiceSyncable* prefs = profile()->GetTestingPrefService();
+  EXPECT_FALSE(
+      prefs->IsManagedPreference(prefs::kShowAppsShortcutInBookmarkBar));
+  EXPECT_FALSE([bar_ appsPageShortcutButtonIsHidden]);
+
+  // Hide the apps shortcut by policy, via the managed pref.
+  prefs->SetManagedPref(prefs::kShowAppsShortcutInBookmarkBar,
+                        new base::FundamentalValue(false));
+  EXPECT_TRUE([bar_ appsPageShortcutButtonIsHidden]);
+
+  // And try showing it via policy too.
+  prefs->SetManagedPref(prefs::kShowAppsShortcutInBookmarkBar,
+                        new base::FundamentalValue(true));
+  EXPECT_FALSE([bar_ appsPageShortcutButtonIsHidden]);
 }
 
 class BookmarkBarControllerOpenAllTest : public BookmarkBarControllerTest {

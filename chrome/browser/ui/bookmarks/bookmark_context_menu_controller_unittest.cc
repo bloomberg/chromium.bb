@@ -9,12 +9,16 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/values.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/bookmarks/bookmark_utils.h"
+#include "chrome/common/pref_names.h"
+#include "chrome/test/base/testing_pref_service_syncable.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/bookmarks/browser/bookmark_model.h"
+#include "components/bookmarks/browser/bookmark_node.h"
 #include "components/bookmarks/test/bookmark_test_helpers.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/test/test_browser_thread.h"
@@ -332,4 +336,30 @@ TEST_F(BookmarkContextMenuControllerTest, CutCopyPasteNode) {
   ASSERT_TRUE(bb_node->GetChild(0)->is_url());
   ASSERT_TRUE(bb_node->GetChild(1)->is_folder());
   ASSERT_EQ(old_count, bb_node->child_count());
+}
+
+TEST_F(BookmarkContextMenuControllerTest,
+       ManagedShowAppsShortcutInBookmarksBar) {
+  BookmarkContextMenuController controller(
+      NULL, NULL, NULL, profile_.get(), NULL, model_->bookmark_bar_node(),
+      std::vector<const BookmarkNode*>());
+
+  // By default, the pref is not managed and the command is enabled.
+  TestingPrefServiceSyncable* prefs = profile_->GetTestingPrefService();
+  EXPECT_FALSE(
+      prefs->IsManagedPreference(prefs::kShowAppsShortcutInBookmarkBar));
+  EXPECT_TRUE(
+      controller.IsCommandIdEnabled(IDC_BOOKMARK_BAR_SHOW_APPS_SHORTCUT));
+
+  // Disabling the shorcut by policy disables the command.
+  prefs->SetManagedPref(prefs::kShowAppsShortcutInBookmarkBar,
+                        new base::FundamentalValue(false));
+  EXPECT_FALSE(
+      controller.IsCommandIdEnabled(IDC_BOOKMARK_BAR_SHOW_APPS_SHORTCUT));
+
+  // And enabling the shortcut by policy disables the command too.
+  prefs->SetManagedPref(prefs::kShowAppsShortcutInBookmarkBar,
+                        new base::FundamentalValue(true));
+  EXPECT_FALSE(
+      controller.IsCommandIdEnabled(IDC_BOOKMARK_BAR_SHOW_APPS_SHORTCUT));
 }

@@ -260,7 +260,7 @@ class BookmarkBarView : public DetachableToolbarView,
   friend class BookmarkBarViewEventTestBase;
   FRIEND_TEST_ALL_PREFIXES(BookmarkBarViewTest, SwitchProfile);
   FRIEND_TEST_ALL_PREFIXES(BookmarkBarViewTest,
-                           NoAppsShortcutWithoutInstantExtended);
+                           ManagedShowAppsShortcutInBookmarksBar);
   FRIEND_TEST_ALL_PREFIXES(BookmarkBarViewInstantExtendedTest,
                            AppsShortcutVisibility);
 

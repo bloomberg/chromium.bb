@@ -34755,6 +34755,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
       label="Restrict the UDP port range used by the remote access host"/>
   <int value="265" label="Enables the old web-based signin"/>
   <int value="266" label="Block developer mode"/>
+  <int value="267" label="Show the apps shortcut in the bookmark bar"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations" type="int">

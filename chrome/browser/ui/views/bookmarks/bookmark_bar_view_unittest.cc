@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/bookmarks/bookmark_bar_view.h"
 
 #include "base/prefs/pref_service.h"
+#include "base/values.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service.h"
@@ -15,6 +16,7 @@
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
+#include "chrome/test/base/testing_pref_service_syncable.h"
 #include "components/bookmarks/test/bookmark_test_helpers.h"
 #include "ui/views/controls/button/text_button.h"
 
@@ -70,3 +72,34 @@ TEST_F(BookmarkBarViewInstantExtendedTest, AppsShortcutVisibility) {
       prefs::kShowAppsShortcutInBookmarkBar, false);
   EXPECT_FALSE(bookmark_bar_view.apps_page_shortcut_->visible());
 }
+
+#if !defined(OS_CHROMEOS)
+typedef BrowserWithTestWindowTest BookmarkBarViewTest;
+
+// Verifies that the apps shortcut is shown or hidden following the policy
+// value. This policy (and the apps shortcut) isn't present on ChromeOS.
+TEST_F(BookmarkBarViewTest, ManagedShowAppsShortcutInBookmarksBar) {
+  ScopedTestingLocalState local_state(TestingBrowserProcess::GetGlobal());
+  profile()->CreateBookmarkModel(true);
+  test::WaitForBookmarkModelToLoad(
+      BookmarkModelFactory::GetForProfile(profile()));
+  BookmarkBarView bookmark_bar_view(browser(), NULL);
+  bookmark_bar_view.set_owned_by_client();
+
+  // By default, the pref is not managed and the apps shortcut is shown.
+  TestingPrefServiceSyncable* prefs = profile()->GetTestingPrefService();
+  EXPECT_FALSE(
+      prefs->IsManagedPreference(prefs::kShowAppsShortcutInBookmarkBar));
+  EXPECT_TRUE(bookmark_bar_view.apps_page_shortcut_->visible());
+
+  // Hide the apps shortcut by policy, via the managed pref.
+  prefs->SetManagedPref(prefs::kShowAppsShortcutInBookmarkBar,
+                        new base::FundamentalValue(false));
+  EXPECT_FALSE(bookmark_bar_view.apps_page_shortcut_->visible());
+
+  // And try showing it via policy too.
+  prefs->SetManagedPref(prefs::kShowAppsShortcutInBookmarkBar,
+                        new base::FundamentalValue(true));
+  EXPECT_TRUE(bookmark_bar_view.apps_page_shortcut_->visible());
+}
+#endif
