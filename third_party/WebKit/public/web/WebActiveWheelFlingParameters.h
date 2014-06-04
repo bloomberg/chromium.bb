@@ -40,9 +40,7 @@ struct WebActiveWheelFlingParameters {
     WebPoint point;
     WebPoint globalPoint;
     int modifiers;
-    // TODO(rjkroege): Restore typing once chromium side lands
-    // (http://crbug.com/343327)
-    int sourceDevice;
+    WebGestureDevice sourceDevice;
     WebSize cumulativeScroll;
     double startTime;
 

@@ -409,18 +409,11 @@ public:
 
 class WebGestureEvent : public WebInputEvent {
 public:
-    enum SourceDevice {
-        Touchpad,
-        Touchscreen,
-    };
-
     int x;
     int y;
     int globalX;
     int globalY;
-    // TODO(rjkroege): Restore typing once chromium side lands
-    // (http://crbug.com/343327)
-    int sourceDevice;
+    WebGestureDevice sourceDevice;
 
     union {
         // Tap information must be set for GestureTap, GestureTapUnconfirmed,
