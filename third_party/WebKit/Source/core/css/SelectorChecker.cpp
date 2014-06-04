@@ -548,10 +548,8 @@ bool SelectorChecker::checkOne(const SelectorCheckingContext& context, const Sib
     if (selector.m_match == CSSSelector::Id)
         return element.hasID() && element.idForStyleResolution() == selector.value();
 
-    if (selector.isAttributeSelector()) {
-        if (!anyAttributeMatches(element, static_cast<CSSSelector::Match>(selector.m_match), selector))
-            return false;
-    }
+    if (selector.isAttributeSelector())
+        return anyAttributeMatches(element, static_cast<CSSSelector::Match>(selector.m_match), selector);
 
     if (selector.m_match == CSSSelector::PseudoClass) {
         // Handle :not up front.
