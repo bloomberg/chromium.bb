@@ -37,6 +37,10 @@
 #include "base/win/windows_version.h"
 #endif
 
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+#include "ui/events/linux/text_edit_key_bindings_delegate_auralinux.h"
+#endif
+
 using base::ASCIIToUTF16;
 using base::UTF8ToUTF16;
 using base::WideToUTF16;
@@ -140,12 +144,6 @@ class TextfieldTest : public ViewsTestBase, public TextfieldController {
     // paste action did not change the content. So |new_contents| may match
     // |last_contents_|. For more info, see http://crbug.com/79002
     last_contents_ = new_contents;
-  }
-
-  virtual bool HandleKeyEvent(Textfield* sender,
-                              const ui::KeyEvent& key_event) OVERRIDE {
-    // TODO(oshima): figure out how to test the keystroke.
-    return false;
   }
 
   virtual void OnBeforeUserAction(Textfield* sender) OVERRIDE {
@@ -511,7 +509,7 @@ TEST_F(TextfieldTest, TextInputType) {
   EXPECT_EQ(ui::TEXT_INPUT_TYPE_PASSWORD, textfield_->GetTextInputType());
 }
 
-TEST_F(TextfieldTest, OnKeyPressReturnValueTest) {
+TEST_F(TextfieldTest, OnKeyPress) {
   InitTextfield();
 
   // Character keys are handled by the input method.
@@ -556,6 +554,53 @@ TEST_F(TextfieldTest, OnKeyPressReturnValueTest) {
   EXPECT_TRUE(textfield_->key_received());
   EXPECT_FALSE(textfield_->key_handled());
   textfield_->clear();
+}
+
+// Tests that default key bindings are handled even with a delegate installed.
+TEST_F(TextfieldTest, OnKeyPressBinding) {
+  InitTextfield();
+
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+  // Install a TextEditKeyBindingsDelegateAuraLinux that does nothing.
+  class TestDelegate : public ui::TextEditKeyBindingsDelegateAuraLinux {
+   public:
+    TestDelegate() {}
+    virtual ~TestDelegate() {}
+
+    virtual bool MatchEvent(
+        const ui::Event& event,
+        std::vector<ui::TextEditCommandAuraLinux>* commands) OVERRIDE {
+      return false;
+    }
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(TestDelegate);
+  };
+
+  TestDelegate delegate;
+  ui::SetTextEditKeyBindingsDelegate(&delegate);
+#endif
+
+  SendKeyEvent(ui::VKEY_A, false, false);
+  EXPECT_STR_EQ("a", textfield_->text());
+  textfield_->clear();
+
+  // Undo/Redo command keys are handled by the textfield.
+  SendKeyEvent(ui::VKEY_Z, false, true);
+  EXPECT_TRUE(textfield_->key_received());
+  EXPECT_TRUE(textfield_->key_handled());
+  EXPECT_TRUE(textfield_->text().empty());
+  textfield_->clear();
+
+  SendKeyEvent(ui::VKEY_Z, true, true);
+  EXPECT_TRUE(textfield_->key_received());
+  EXPECT_TRUE(textfield_->key_handled());
+  EXPECT_STR_EQ("a", textfield_->text());
+  textfield_->clear();
+
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+  ui::SetTextEditKeyBindingsDelegate(NULL);
+#endif
 }
 
 TEST_F(TextfieldTest, CursorMovement) {
