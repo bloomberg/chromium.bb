@@ -1,5 +1,0 @@
-Dumping matched rules: 
-*:host* {    regular
-    color: red;
-}
-

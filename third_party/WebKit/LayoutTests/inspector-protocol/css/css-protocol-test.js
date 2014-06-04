@@ -120,9 +120,14 @@ InspectorTest.displayName = function(url)
     return url.substr(url.lastIndexOf("/") + 1);
 };
 
-InspectorTest.loadAndDumpMatchingRulesForNode = function(nodeId, callback)
+InspectorTest.loadAndDumpMatchingRules = function(nodeId, callback)
 {
-    InspectorTest.sendCommandOrDie("CSS.getMatchedStylesForNode", { "nodeId": nodeId }, matchingRulesLoaded);
+    InspectorTest.requestNodeId(nodeId, nodeIdLoaded);
+
+    function nodeIdLoaded(nodeId)
+    {
+        InspectorTest.sendCommandOrDie("CSS.getMatchedStylesForNode", { "nodeId": nodeId }, matchingRulesLoaded);
+    }
 
     function matchingRulesLoaded(result)
     {
@@ -136,16 +141,6 @@ InspectorTest.loadAndDumpMatchingRulesForNode = function(nodeId, callback)
             InspectorTest.dumpRuleMatch(ruleMatch);
         }
         callback();
-    }
-}
-
-InspectorTest.loadAndDumpMatchingRules = function(selector, callback)
-{
-    InspectorTest.requestNodeId(selector, nodeIdLoaded);
-
-    function nodeIdLoaded(nodeId)
-    {
-        InspectorTest.loadAndDumpMatchingRulesForNode(nodeId, callback);
     }
 }
 
