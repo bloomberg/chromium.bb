@@ -46,11 +46,9 @@ INSTANTIATE_TEST_CASE_P(WebRtcBrowserTests,
                         WebRtcBrowserTest,
                         testing::ValuesIn(kRunTestsWithFlag));
 
-IN_PROC_BROWSER_TEST_P(WebRtcBrowserTest,
-                       MANUAL_RunsAudioVideoWebRTCCallInTwoTabs) {
+IN_PROC_BROWSER_TEST_P(WebRtcBrowserTest, RunsAudioVideoWebRTCCallInTwoTabs) {
   if (OnWinXp()) return;
 
-  ASSERT_TRUE(test::HasReferenceFilesInCheckout());
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 
   content::WebContents* left_tab =
@@ -73,7 +71,7 @@ IN_PROC_BROWSER_TEST_P(WebRtcBrowserTest,
   HangUp(right_tab);
 }
 
-IN_PROC_BROWSER_TEST_P(WebRtcBrowserTest, MANUAL_TestWebAudioMediaStream) {
+IN_PROC_BROWSER_TEST_P(WebRtcBrowserTest, TestWebAudioMediaStream) {
   // This tests against crash regressions for the WebAudio-MediaStream
   // integration.
   if (OnWinXp()) return;
