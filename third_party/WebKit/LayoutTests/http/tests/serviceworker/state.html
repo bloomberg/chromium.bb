@@ -13,7 +13,7 @@
         t, 'resources/worker-no-op.js', scope, onRegister);
 
     function onRegister(sw) {
-        sw.addEventListener('statechange', t.step_func(onStateChange));
+        sw.addEventListener('statechange', t.step_func(onStateChange(sw)));
         assert_in_array(sw.state, ['parsed', 'installing'],
                         'the service worker should be in a state up to ' +
                         '"installing".');
@@ -51,17 +51,22 @@
         currentState = newState;
     }
 
-    function onStateChange(event) {
-        assert_true(event.target instanceof ServiceWorker,
-                    'the target of the statechange event should be a ' +
-                    'ServiceWorker.');
-        assert_equals(event.type, 'statechange',
-                      'the type of the event should be "statechange".');
+    function onStateChange(expectedTarget) {
+        return function(event) {
+            assert_true(event.target instanceof ServiceWorker,
+                        'the target of the statechange event should be a ' +
+                        'ServiceWorker.');
+            assert_equals(event.target, expectedTarget,
+                          'the target of the statechange event should be ' +
+                          'the installing ServiceWorker');
+            assert_equals(event.type, 'statechange',
+                          'the type of the event should be "statechange".');
 
-        checkStateTransition(event.target.state);
+            checkStateTransition(event.target.state);
 
-        if (event.target.state == 'active')
-            service_worker_unregister_and_done(t, scope);
+            if (event.target.state == 'active')
+                service_worker_unregister_and_done(t, scope);
+        };
     }
 }());
 </script>
