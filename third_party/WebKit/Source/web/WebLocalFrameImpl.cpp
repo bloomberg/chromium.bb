@@ -1442,14 +1442,12 @@ void WebLocalFrameImpl::increaseMatchCount(int count, int identifier)
 {
     // This function should only be called on the mainframe.
     ASSERT(!parent());
-    ASSERT(m_textFinder);
-    m_textFinder->increaseMatchCount(identifier, count);
+    ensureTextFinder().increaseMatchCount(identifier, count);
 }
 
 void WebLocalFrameImpl::resetMatchCount()
 {
-    ASSERT(m_textFinder);
-    m_textFinder->resetMatchCount();
+    ensureTextFinder().resetMatchCount();
 }
 
 void WebLocalFrameImpl::sendOrientationChangeEvent()
@@ -1476,8 +1474,7 @@ int WebLocalFrameImpl::findMatchMarkersVersion() const
 int WebLocalFrameImpl::selectNearestFindMatch(const WebFloatPoint& point, WebRect* selectionRect)
 {
     ASSERT(!parent());
-    ASSERT(m_textFinder);
-    return m_textFinder->selectNearestFindMatch(point, selectionRect);
+    return ensureTextFinder().selectNearestFindMatch(point, selectionRect);
 }
 
 WebFloatRect WebLocalFrameImpl::activeFindMatchRect()
@@ -1492,8 +1489,7 @@ WebFloatRect WebLocalFrameImpl::activeFindMatchRect()
 void WebLocalFrameImpl::findMatchRects(WebVector<WebFloatRect>& outputRects)
 {
     ASSERT(!parent());
-    ASSERT(m_textFinder);
-    m_textFinder->findMatchRects(outputRects);
+    ensureTextFinder().findMatchRects(outputRects);
 }
 
 void WebLocalFrameImpl::setTickmarks(const WebVector<WebRect>& tickmarks)

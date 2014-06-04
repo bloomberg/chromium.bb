@@ -3414,6 +3414,37 @@ TEST_F(WebFrameTest, FindDetachFrameWhileScopingStrings)
     holdSecondFrame.release();
 }
 
+TEST_F(WebFrameTest, ResetMatchCount)
+{
+    registerMockedHttpURLLoad("find_in_generated_frame.html");
+
+    FindUpdateWebFrameClient client;
+    FrameTestHelpers::WebViewHelper webViewHelper;
+    webViewHelper.initializeAndLoad(m_baseURL + "find_in_generated_frame.html", true, &client);
+    webViewHelper.webView()->resize(WebSize(640, 480));
+    webViewHelper.webView()->layout();
+    runPendingTasks();
+
+    static const char* kFindString = "result";
+    static const int kFindIdentifier = 12345;
+
+    WebFindOptions options;
+    WebString searchText = WebString::fromUTF8(kFindString);
+    WebLocalFrameImpl* mainFrame = toWebLocalFrameImpl(webViewHelper.webView()->mainFrame());
+
+    // Check that child frame exists.
+    EXPECT_TRUE(!!mainFrame->traverseNext(false));
+
+    for (WebFrame* frame = mainFrame; frame; frame = frame->traverseNext(false)) {
+        EXPECT_FALSE(frame->find(kFindIdentifier, searchText, options, false, 0));
+    }
+
+    runPendingTasks();
+    EXPECT_FALSE(client.findResultsAreReady());
+
+    mainFrame->resetMatchCount();
+}
+
 TEST_F(WebFrameTest, SetTickmarks)
 {
     registerMockedHttpURLLoad("find.html");
