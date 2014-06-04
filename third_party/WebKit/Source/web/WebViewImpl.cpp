@@ -3642,6 +3642,12 @@ void WebViewImpl::setOverlayLayer(WebCore::GraphicsLayer* layer)
     if (!m_rootGraphicsLayer)
         return;
 
+    if (pinchVirtualViewportEnabled()) {
+        m_page->mainFrame()->view()->renderView()->compositor()->setOverlayLayer(layer);
+        return;
+    }
+
+    // FIXME(bokan): This path goes away after virtual viewport pinch is enabled everywhere.
     if (!m_rootTransformLayer)
         m_rootTransformLayer = m_page->mainFrame()->view()->renderView()->compositor()->ensureRootTransformLayer();
 
@@ -3696,7 +3702,7 @@ void WebViewImpl::setRootGraphicsLayer(GraphicsLayer* layer)
         if (layer) {
             m_rootGraphicsLayer = pinchViewport.rootGraphicsLayer();
             m_rootLayer = pinchViewport.rootGraphicsLayer()->platformLayer();
-            m_rootTransformLayer = 0;
+            m_rootTransformLayer = pinchViewport.rootGraphicsLayer();
         } else {
             m_rootGraphicsLayer = 0;
             m_rootLayer = 0;
@@ -3950,6 +3956,8 @@ void WebViewImpl::updateRootLayerTransform()
     if (!m_rootGraphicsLayer)
         return;
 
+    // FIXME(bokan): m_rootTransformLayer is always set here in pinch virtual viewport. This can go away once
+    // that's default everywhere.
     if (!m_rootTransformLayer)
         m_rootTransformLayer = m_page->mainFrame()->view()->renderView()->compositor()->ensureRootTransformLayer();
 

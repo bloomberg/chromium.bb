@@ -889,6 +889,14 @@ void RenderLayerCompositor::updateDirectCompositingReasons(RenderLayer* layer)
     layer->setCompositingReasons(reasons, CompositingReasonComboAllDirectReasons);
 }
 
+void RenderLayerCompositor::setOverlayLayer(GraphicsLayer* layer)
+{
+    ASSERT(rootGraphicsLayer());
+
+    if (layer->parent() != m_overflowControlsHostLayer.get())
+        m_overflowControlsHostLayer->addChild(layer);
+}
+
 bool RenderLayerCompositor::canBeComposited(const RenderLayer* layer) const
 {
     // FIXME: We disable accelerated compositing for elements in a RenderFlowThread as it doesn't work properly.

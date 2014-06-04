@@ -216,7 +216,7 @@ TEST_F(PinchViewportTest, TestWebViewResizedBeforeAttachment)
     webViewImpl()->layout();
 
     PinchViewport& pinchViewport = frame()->page()->frameHost().pinchViewport();
-    EXPECT_FLOAT_SIZE_EQ(FloatSize(320, 240), pinchViewport.rootGraphicsLayer()->size());
+    EXPECT_FLOAT_SIZE_EQ(FloatSize(320, 240), pinchViewport.containerLayer()->size());
 }
 // Make sure that the visibleRect method acurately reflects the scale and scroll location
 // of the viewport.

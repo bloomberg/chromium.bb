@@ -69,6 +69,10 @@ public:
     void attachToLayerTree(GraphicsLayer*, GraphicsLayerFactory*);
     GraphicsLayer* rootGraphicsLayer()
     {
+        return m_rootTransformLayer.get();
+    }
+    GraphicsLayer* containerLayer()
+    {
         return m_innerViewportContainerLayer.get();
     }
 
@@ -141,6 +145,7 @@ private:
     LocalFrame* mainFrame() const;
 
     FrameHost& m_frameHost;
+    OwnPtr<GraphicsLayer> m_rootTransformLayer;
     OwnPtr<GraphicsLayer> m_innerViewportContainerLayer;
     OwnPtr<GraphicsLayer> m_pageScaleLayer;
     OwnPtr<GraphicsLayer> m_innerViewportScrollLayer;
