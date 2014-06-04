@@ -48,6 +48,7 @@ import android.widget.FrameLayout;
 
 import com.google.common.annotations.VisibleForTesting;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.CalledByNative;
 import org.chromium.base.CommandLine;
 import org.chromium.base.JNINamespace;
@@ -440,12 +441,19 @@ public class ContentViewCore
                 int scaledWidth = Math.round(width * scale);
                 // ContentViewCore currently only supports these two container view types.
                 if (mContainerView instanceof FrameLayout) {
-                    if (scaledWidth + leftMargin > mContainerView.getWidth()) {
-                        scaledWidth = mContainerView.getWidth() - leftMargin;
+                    int startMargin;
+                    if (ApiCompatibilityUtils.isLayoutRtl(mContainerView)) {
+                        startMargin = mContainerView.getMeasuredWidth()
+                                - Math.round((width + x) * scale);
+                    } else {
+                        startMargin = leftMargin;
+                    }
+                    if (scaledWidth + startMargin > mContainerView.getWidth()) {
+                        scaledWidth = mContainerView.getWidth() - startMargin;
                     }
                     FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(
                         scaledWidth, Math.round(height * scale));
-                    lp.leftMargin = leftMargin;
+                    ApiCompatibilityUtils.setMarginStart(lp, startMargin);
                     lp.topMargin = topMargin;
                     view.setLayoutParams(lp);
                 } else if (mContainerView instanceof android.widget.AbsoluteLayout) {
