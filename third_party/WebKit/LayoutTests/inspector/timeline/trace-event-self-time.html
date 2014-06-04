@@ -189,12 +189,13 @@ function test()
     ];
 
     var model = new WebInspector.TracingModel();
+    var tracineTimelineModel = new WebInspector.TracingTimelineModel(model);
+    tracineTimelineModel.willStartRecordingTraceEvents();
     model.setSessionIdForTest(sessionId);
     model._eventsCollected(rawTraceEvents);
     model._tracingComplete();
-    var events = model.inspectedTargetEvents();
-    var bindings = new WebInspector.TimelineTraceEventBindings();
-    bindings.setEvents(events);
+    tracineTimelineModel.didStopRecordingTraceEvents();
+    var events = tracineTimelineModel.inspectedTargetEvents();
     InspectorTest.assertEquals(8, events.length);
     var eventTimes = events.map(function(e)
     {

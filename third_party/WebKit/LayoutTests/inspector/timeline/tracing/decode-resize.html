@@ -58,14 +58,15 @@ function test()
     var imageCount = 0;
 
     InspectorTest.invokeWithTracing("-*,devtools,disabled-by-default-devtools.timeline*", "showImages", onTracingComplete);
+    var tracineTimelineModel = new WebInspector.TracingTimelineModel(InspectorTest.tracingModel);
+    tracineTimelineModel.willStartRecordingTraceEvents();
     function onTracingComplete()
     {
-        var traceEventBindings = new WebInspector.TimelineTraceEventBindings();
-        var events = InspectorTest.tracingModel.inspectedTargetEvents();
-        traceEventBindings.setEvents(events);
+        tracineTimelineModel.didStopRecordingTraceEvents();
+        var events = tracineTimelineModel.inspectedTargetEvents();
         for (var i = 0; i < events.length; ++i) {
             var event = events[i];
-            if (events[i].name !== WebInspector.TimelineTraceEventBindings.RecordType.DecodeImage)
+            if (events[i].name !== WebInspector.TracingTimelineModel.RecordType.DecodeImage)
                 continue;
             InspectorTest.addResult("event: " + event.name);
             InspectorTest.addResult("imageURL: " + InspectorTest.formatters.formatAsURL(event.imageURL));
