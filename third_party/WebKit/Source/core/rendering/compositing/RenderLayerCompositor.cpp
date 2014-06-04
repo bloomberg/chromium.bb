@@ -35,7 +35,6 @@
 #include "core/dom/FullscreenElementStack.h"
 #include "core/dom/NodeList.h"
 #include "core/dom/ScriptForbiddenScope.h"
-#include "core/frame/DeprecatedScheduleStyleRecalcDuringCompositingUpdate.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
@@ -159,7 +158,10 @@ void RenderLayerCompositor::setCompositingModeEnabled(bool enable)
     else
         destroyRootLayer();
 
-    notifyIFramesOfCompositingChange();
+    // Compositing also affects the answer to RenderIFrame::requiresAcceleratedCompositing(), so
+    // we need to schedule a style recalc in our parent document.
+    if (HTMLFrameOwnerElement* ownerElement = m_renderView.document().ownerElement())
+        ownerElement->setNeedsCompositingUpdate();
 }
 
 void RenderLayerCompositor::enableCompositingModeIfNeeded()
@@ -1276,10 +1278,9 @@ void RenderLayerCompositor::attachRootLayer(RootLayerAttachment attachment)
         case RootLayerAttachedViaEnclosingFrame: {
             HTMLFrameOwnerElement* ownerElement = m_renderView.document().ownerElement();
             ASSERT(ownerElement);
-            DeprecatedScheduleStyleRecalcDuringCompositingUpdate marker(ownerElement->document().lifecycle());
             // The layer will get hooked up via CompositedLayerMapping::updateGraphicsLayerConfiguration()
             // for the frame's renderer in the parent document.
-            ownerElement->scheduleLayerUpdate();
+            ownerElement->setNeedsCompositingUpdate();
             break;
         }
     }
@@ -1301,10 +1302,8 @@ void RenderLayerCompositor::detachRootLayer()
         else
             m_rootContentLayer->removeFromParent();
 
-        if (HTMLFrameOwnerElement* ownerElement = m_renderView.document().ownerElement()) {
-            DeprecatedScheduleStyleRecalcDuringCompositingUpdate marker(ownerElement->document().lifecycle());
-            ownerElement->scheduleLayerUpdate();
-        }
+        if (HTMLFrameOwnerElement* ownerElement = m_renderView.document().ownerElement())
+            ownerElement->setNeedsCompositingUpdate();
         break;
     }
     case RootLayerAttachedViaChromeClient: {
@@ -1325,33 +1324,6 @@ void RenderLayerCompositor::detachRootLayer()
 void RenderLayerCompositor::updateRootLayerAttachment()
 {
     ensureRootLayer();
-}
-
-// IFrames are special, because we hook compositing layers together across iframe boundaries
-// when both parent and iframe content are composited. So when this frame becomes composited, we have
-// to use a synthetic style change to get the iframes into RenderLayers in order to allow them to composite.
-void RenderLayerCompositor::notifyIFramesOfCompositingChange()
-{
-    if (!m_renderView.frameView())
-        return;
-    LocalFrame& frame = m_renderView.frameView()->frame();
-
-    for (LocalFrame* child = frame.tree().firstChild(); child; child = child->tree().traverseNext(&frame)) {
-        if (!child->document())
-            continue; // FIXME: Can this happen?
-        if (HTMLFrameOwnerElement* ownerElement = child->document()->ownerElement()) {
-            DeprecatedScheduleStyleRecalcDuringCompositingUpdate marker(ownerElement->document().lifecycle());
-            ownerElement->scheduleLayerUpdate();
-        }
-    }
-
-    // Compositing also affects the answer to RenderIFrame::requiresAcceleratedCompositing(), so
-    // we need to schedule a style recalc in our parent document.
-    if (HTMLFrameOwnerElement* ownerElement = m_renderView.document().ownerElement()) {
-        ownerElement->document().renderView()->compositor()->setNeedsCompositingUpdate(CompositingUpdateAfterCompositingInputChange);
-        DeprecatedScheduleStyleRecalcDuringCompositingUpdate marker(ownerElement->document().lifecycle());
-        ownerElement->scheduleLayerUpdate();
-    }
 }
 
 ScrollingCoordinator* RenderLayerCompositor::scrollingCoordinator() const

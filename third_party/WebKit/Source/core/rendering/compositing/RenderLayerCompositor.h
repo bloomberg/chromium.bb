@@ -230,8 +230,6 @@ private:
 
     void updateOverflowControlsLayers();
 
-    void notifyIFramesOfCompositingChange();
-
     Page* page() const;
 
     GraphicsLayerFactory* graphicsLayerFactory() const;
