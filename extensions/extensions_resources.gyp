@@ -18,8 +18,20 @@
           },
           'includes': [ '../build/grit_action.gypi' ],
         },
+        {
+          'action_name': 'extensions_renderer_resources',
+          'variables': {
+            'grit_grd_file': 'renderer/resources/extensions_renderer_resources.grd',
+          },
+          'includes': [ '../build/grit_action.gypi' ],
+        },
       ],
       'includes': [ '../build/grit_target.gypi' ],
+      'direct_dependent_settings': {
+        'include_dirs': [
+          '<(SHARED_INTERMEDIATE_DIR)/extensions',
+        ]
+      },
       'hard_dependency': 1,
     }
   ]

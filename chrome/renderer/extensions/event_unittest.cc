@@ -5,7 +5,7 @@
 #include "chrome/test/base/module_system_test.h"
 
 #include "extensions/common/extension_urls.h"
-#include "grit/renderer_resources.h"
+#include "grit/extensions_renderer_resources.h"
 
 namespace extensions {
 namespace {
