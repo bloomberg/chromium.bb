@@ -86,6 +86,10 @@ class VMTestStage(generic_stages.BoardSpecificBuilderStage,
       self.PrintDownloadLink(
           os.path.join(test_basename, path), text_to_display=test_name)
 
+  def _NoTestResults(self, path):
+    """Returns True if |path| is not a directory or is an empty directory."""
+    return not os.path.isdir(path) or not os.listdir(path)
+
   def _ArchiveTestResults(self, test_results_dir, test_basename):
     """Archives test results to Google Storage.
 
@@ -97,7 +101,7 @@ class VMTestStage(generic_stages.BoardSpecificBuilderStage,
         self._build_root, test_results_dir)
 
     # Skip archiving if results_path does not exist or is an empty directory.
-    if not os.path.isdir(results_path) or not os.listdir(results_path):
+    if self._NoTestResults(results_path):
       return
 
     archived_results_dir = os.path.join(self.archive_path, test_basename)
