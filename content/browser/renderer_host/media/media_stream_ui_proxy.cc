@@ -229,8 +229,8 @@ void FakeMediaStreamUIProxy::RequestAccess(
   for (MediaStreamDevices::const_iterator it = devices_.begin();
        it != devices_.end(); ++it) {
     if (!accepted_audio &&
-        IsAudioMediaType(request.audio_type) &&
-        IsAudioMediaType(it->type) &&
+        IsAudioInputMediaType(request.audio_type) &&
+        IsAudioInputMediaType(it->type) &&
         (request.requested_audio_device_id.empty() ||
          request.requested_audio_device_id == it->id)) {
       devices_to_use.push_back(*it);

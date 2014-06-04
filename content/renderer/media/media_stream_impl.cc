@@ -6,7 +6,9 @@
 
 #include <utility>
 
+#include "base/hash.h"
 #include "base/logging.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -57,20 +59,26 @@ static int g_next_request_id  = 0;
 struct MediaStreamImpl::MediaDevicesRequestInfo {
   MediaDevicesRequestInfo(const blink::WebMediaDevicesRequest& request,
                           int audio_input_request_id,
-                          int video_input_request_id)
+                          int video_input_request_id,
+                          int audio_output_request_id)
       : request(request),
         audio_input_request_id(audio_input_request_id),
         video_input_request_id(video_input_request_id),
+        audio_output_request_id(audio_output_request_id),
         has_audio_input_returned(false),
-        has_video_input_returned(false) {}
+        has_video_input_returned(false),
+        has_audio_output_returned(false) {}
 
   blink::WebMediaDevicesRequest request;
   int audio_input_request_id;
   int video_input_request_id;
+  int audio_output_request_id;
   bool has_audio_input_returned;
   bool has_video_input_returned;
+  bool has_audio_output_returned;
   StreamDeviceInfoArray audio_input_devices;
   StreamDeviceInfoArray video_input_devices;
+  StreamDeviceInfoArray audio_output_devices;
 };
 
 MediaStreamImpl::MediaStreamImpl(
@@ -197,6 +205,7 @@ void MediaStreamImpl::requestMediaDevices(
 
   int audio_input_request_id = g_next_request_id++;
   int video_input_request_id = g_next_request_id++;
+  int audio_output_request_id = g_next_request_id++;
 
   // |media_devices_request| can't be mocked, so in tests it will be empty (the
   // underlying pointer is null). In order to use this function in a test we
@@ -206,11 +215,14 @@ void MediaStreamImpl::requestMediaDevices(
     security_origin = GURL(media_devices_request.securityOrigin().toString());
 
   DVLOG(1) << "MediaStreamImpl::requestMediaDevices(" << audio_input_request_id
-           << ", " << video_input_request_id << ", "
-           << security_origin.spec() << ")";
+           << ", " << video_input_request_id << ", " << audio_output_request_id
+           << ", " << security_origin.spec() << ")";
 
   media_devices_requests_.push_back(new MediaDevicesRequestInfo(
-      media_devices_request, audio_input_request_id, video_input_request_id));
+      media_devices_request,
+      audio_input_request_id,
+      video_input_request_id,
+      audio_output_request_id));
 
   media_stream_dispatcher_->EnumerateDevices(
       audio_input_request_id,
@@ -222,6 +234,12 @@ void MediaStreamImpl::requestMediaDevices(
       video_input_request_id,
       AsWeakPtr(),
       MEDIA_DEVICE_VIDEO_CAPTURE,
+      security_origin);
+
+  media_stream_dispatcher_->EnumerateDevices(
+      audio_output_request_id,
+      AsWeakPtr(),
+      MEDIA_DEVICE_AUDIO_OUTPUT,
       security_origin);
 }
 
@@ -239,6 +257,9 @@ void MediaStreamImpl::cancelMediaDevicesRequest(
       AsWeakPtr());
   media_stream_dispatcher_->StopEnumerateDevices(
       request->video_input_request_id,
+      AsWeakPtr());
+  media_stream_dispatcher_->StopEnumerateDevices(
+      request->audio_output_request_id,
       AsWeakPtr());
   DeleteMediaDevicesRequestInfo(request);
 }
@@ -500,41 +521,64 @@ void MediaStreamImpl::OnDevicesEnumerated(
     request->has_audio_input_returned = true;
     DCHECK(request->audio_input_devices.empty());
     request->audio_input_devices = device_array;
-  } else {
-    DCHECK(request_id == request->video_input_request_id);
+  } else if (request_id == request->video_input_request_id) {
     request->has_video_input_returned = true;
     DCHECK(request->video_input_devices.empty());
     request->video_input_devices = device_array;
+  } else {
+    DCHECK_EQ(request->audio_output_request_id, request_id);
+    request->has_audio_output_returned = true;
+    DCHECK(request->audio_output_devices.empty());
+    request->audio_output_devices = device_array;
   }
 
   if (!request->has_audio_input_returned ||
-      !request->has_video_input_returned) {
+      !request->has_video_input_returned ||
+      !request->has_audio_output_returned) {
     // Wait for the rest of the devices to complete.
     return;
   }
 
-  // Both audio and video devices are ready for copying.
-  // TODO(grunell): Add support for output devices and group id.
+  // All devices are ready for copying. We use a hashed audio output device id
+  // as the group id for input and output audio devices. If an input device
+  // doesn't have an associated output device, we use the input device's own id.
+  // We don't support group id for video devices, that's left empty.
   blink::WebVector<blink::WebMediaDeviceInfo>
       devices(request->audio_input_devices.size() +
-              request->video_input_devices.size());
+              request->video_input_devices.size() +
+              request->audio_output_devices.size());
   for (size_t i = 0; i  < request->audio_input_devices.size(); ++i) {
     const MediaStreamDevice& device = request->audio_input_devices[i].device;
     DCHECK_EQ(device.type, MEDIA_DEVICE_AUDIO_CAPTURE);
-    devices[i].initialize(blink::WebString::fromUTF8(device.id),
-                          blink::WebMediaDeviceInfo::MediaDeviceKindAudioInput,
-                          blink::WebString::fromUTF8(device.name),
-                          blink::WebString());
+    std::string group_id = base::UintToString(base::Hash(
+        !device.matched_output_device_id.empty() ?
+            device.matched_output_device_id :
+            device.id));
+    devices[i].initialize(
+        blink::WebString::fromUTF8(device.id),
+        blink::WebMediaDeviceInfo::MediaDeviceKindAudioInput,
+        blink::WebString::fromUTF8(device.name),
+        blink::WebString::fromUTF8(group_id));
   }
-  size_t audio_size = request->audio_input_devices.size();
+  size_t offset = request->audio_input_devices.size();
   for (size_t i = 0; i  < request->video_input_devices.size(); ++i) {
     const MediaStreamDevice& device = request->video_input_devices[i].device;
     DCHECK_EQ(device.type, MEDIA_DEVICE_VIDEO_CAPTURE);
-    devices[audio_size + i].initialize(
+    devices[offset + i].initialize(
         blink::WebString::fromUTF8(device.id),
         blink::WebMediaDeviceInfo::MediaDeviceKindVideoInput,
         blink::WebString::fromUTF8(device.name),
         blink::WebString());
+  }
+  offset += request->video_input_devices.size();
+  for (size_t i = 0; i  < request->audio_output_devices.size(); ++i) {
+    const MediaStreamDevice& device = request->audio_output_devices[i].device;
+    DCHECK_EQ(device.type, MEDIA_DEVICE_AUDIO_OUTPUT);
+    devices[offset + i].initialize(
+        blink::WebString::fromUTF8(device.id),
+        blink::WebMediaDeviceInfo::MediaDeviceKindAudioOutput,
+        blink::WebString::fromUTF8(device.name),
+        blink::WebString::fromUTF8(base::UintToString(base::Hash(device.id))));
   }
 
   EnumerateDevicesSucceded(&request->request, devices);
@@ -545,6 +589,9 @@ void MediaStreamImpl::OnDevicesEnumerated(
       AsWeakPtr());
   media_stream_dispatcher_->StopEnumerateDevices(
       request->video_input_request_id,
+      AsWeakPtr());
+  media_stream_dispatcher_->StopEnumerateDevices(
+      request->audio_output_request_id,
       AsWeakPtr());
 
   DeleteMediaDevicesRequestInfo(request);
@@ -673,7 +720,8 @@ MediaStreamImpl::FindMediaDevicesRequestInfo(
   MediaDevicesRequests::iterator it = media_devices_requests_.begin();
   for (; it != media_devices_requests_.end(); ++it) {
     if ((*it)->audio_input_request_id == request_id ||
-        (*it)->video_input_request_id == request_id) {
+        (*it)->video_input_request_id == request_id ||
+        (*it)->audio_output_request_id == request_id) {
       return (*it);
     }
   }

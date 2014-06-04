@@ -209,7 +209,9 @@ class MediaStreamManager::DeviceRequest {
   ~DeviceRequest() {}
 
   void SetAudioType(MediaStreamType audio_type) {
-    DCHECK(IsAudioMediaType(audio_type) || audio_type == MEDIA_NO_SERVICE);
+    DCHECK(IsAudioInputMediaType(audio_type) ||
+           audio_type == MEDIA_DEVICE_AUDIO_OUTPUT ||
+           audio_type == MEDIA_NO_SERVICE);
     audio_type_ = audio_type;
   }
 
@@ -655,7 +657,8 @@ std::string MediaStreamManager::EnumerateDevices(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(requester);
   DCHECK(type == MEDIA_DEVICE_AUDIO_CAPTURE ||
-         type == MEDIA_DEVICE_VIDEO_CAPTURE);
+         type == MEDIA_DEVICE_VIDEO_CAPTURE ||
+         type == MEDIA_DEVICE_AUDIO_OUTPUT);
 
   DeviceRequest* request = new DeviceRequest(requester,
                                              render_process_id,
@@ -667,7 +670,7 @@ std::string MediaStreamManager::EnumerateDevices(
                                              MEDIA_ENUMERATE_DEVICES,
                                              StreamOptions(),
                                              sc);
-  if (IsAudioMediaType(type))
+  if (IsAudioInputMediaType(type) || type == MEDIA_DEVICE_AUDIO_OUTPUT)
     request->SetAudioType(type);
   else if (IsVideoMediaType(type))
     request->SetVideoType(type);
@@ -690,6 +693,21 @@ void MediaStreamManager::DoEnumerateDevices(const std::string& label) {
   DeviceRequest* request = FindRequest(label);
   if (!request)
     return;  // This can happen if the request has been canceled.
+
+  if (request->audio_type() == MEDIA_DEVICE_AUDIO_OUTPUT) {
+    DCHECK_EQ(MEDIA_NO_SERVICE, request->video_type());
+    DCHECK_GE(active_enumeration_ref_count_[MEDIA_DEVICE_AUDIO_OUTPUT], 0);
+    request->SetState(MEDIA_DEVICE_AUDIO_OUTPUT, MEDIA_REQUEST_STATE_REQUESTED);
+    if (active_enumeration_ref_count_[MEDIA_DEVICE_AUDIO_OUTPUT] == 0) {
+      ++active_enumeration_ref_count_[MEDIA_DEVICE_AUDIO_OUTPUT];
+      device_task_runner_->PostTask(
+          FROM_HERE,
+          base::Bind(&MediaStreamManager::EnumerateAudioOutputDevices,
+                     base::Unretained(this),
+                     label));
+    }
+    return;
+  }
 
   MediaStreamType type;
   EnumerationCache* cache;
@@ -715,6 +733,57 @@ void MediaStreamManager::DoEnumerateDevices(const std::string& label) {
   DVLOG(1) << "Enumerate Devices ({label = " << label <<  "})";
 }
 
+void MediaStreamManager::EnumerateAudioOutputDevices(
+    const std::string& label) {
+  DCHECK(device_task_runner_->BelongsToCurrentThread());
+
+  scoped_ptr<media::AudioDeviceNames> device_names(
+      new media::AudioDeviceNames());
+  audio_manager_->GetAudioOutputDeviceNames(device_names.get());
+  StreamDeviceInfoArray devices;
+  for (media::AudioDeviceNames::iterator it = device_names->begin();
+       it != device_names->end(); ++it) {
+    StreamDeviceInfo device(MEDIA_DEVICE_AUDIO_OUTPUT,
+                            it->device_name,
+                            it->unique_id);
+    devices.push_back(device);
+  }
+
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&MediaStreamManager::AudioOutputDevicesEnumerated,
+                 base::Unretained(this),
+                 devices));
+}
+
+void MediaStreamManager::AudioOutputDevicesEnumerated(
+    const StreamDeviceInfoArray& devices) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DVLOG(1) << "AudioOutputDevicesEnumerated()";
+
+  std::string log_message = "New device enumeration result:\n" +
+                            GetLogMessageString(MEDIA_DEVICE_AUDIO_OUTPUT,
+                                                devices);
+  SendMessageToNativeLog(log_message);
+
+  // Publish the result for all requests waiting for device list(s).
+  for (DeviceRequests::iterator it = requests_.begin(); it != requests_.end();
+       ++it) {
+    if (it->second->state(MEDIA_DEVICE_AUDIO_OUTPUT) ==
+            MEDIA_REQUEST_STATE_REQUESTED &&
+        it->second->audio_type() == MEDIA_DEVICE_AUDIO_OUTPUT) {
+      DCHECK_EQ(MEDIA_ENUMERATE_DEVICES, it->second->request_type);
+      it->second->SetState(MEDIA_DEVICE_AUDIO_OUTPUT,
+                           MEDIA_REQUEST_STATE_PENDING_APPROVAL);
+      it->second->devices = devices;
+      FinalizeEnumerateDevices(it->first, it->second);
+    }
+  }
+
+  --active_enumeration_ref_count_[MEDIA_DEVICE_AUDIO_OUTPUT];
+  DCHECK_GE(active_enumeration_ref_count_[MEDIA_DEVICE_AUDIO_OUTPUT], 0);
+}
+
 void MediaStreamManager::OpenDevice(MediaStreamRequester* requester,
                                     int render_process_id,
                                     int render_view_id,
@@ -728,7 +797,7 @@ void MediaStreamManager::OpenDevice(MediaStreamRequester* requester,
          type == MEDIA_DEVICE_VIDEO_CAPTURE);
   DVLOG(1) << "OpenDevice ({page_request_id = " << page_request_id <<  "})";
   StreamOptions options;
-  if (IsAudioMediaType(type)) {
+  if (IsAudioInputMediaType(type)) {
     options.audio_requested = true;
     options.mandatory_audio.push_back(
         StreamOptions::Constraint(kMediaStreamSourceInfoId, device_id));
@@ -964,6 +1033,7 @@ void MediaStreamManager::TranslateDeviceIdToSourceId(
     DeviceRequest* request,
     MediaStreamDevice* device) {
   if (request->audio_type() == MEDIA_DEVICE_AUDIO_CAPTURE ||
+      request->audio_type() == MEDIA_DEVICE_AUDIO_OUTPUT ||
       request->video_type() == MEDIA_DEVICE_VIDEO_CAPTURE) {
     device->id = content::GetHMACForMediaDeviceID(
         request->salt_callback,
@@ -1060,7 +1130,7 @@ void MediaStreamManager::PostRequestToUI(const std::string& label,
   const MediaStreamType video_type = request->video_type();
 
   // Post the request to UI and set the state.
-  if (IsAudioMediaType(audio_type))
+  if (IsAudioInputMediaType(audio_type))
     request->SetState(audio_type, MEDIA_REQUEST_STATE_PENDING_APPROVAL);
   if (IsVideoMediaType(video_type))
     request->SetState(video_type, MEDIA_REQUEST_STATE_PENDING_APPROVAL);
@@ -1341,7 +1411,7 @@ void MediaStreamManager::FinalizeGenerateStream(const std::string& label,
   for (StreamDeviceInfoArray::const_iterator device_it =
            requested_devices.begin();
        device_it != requested_devices.end(); ++device_it) {
-    if (IsAudioMediaType(device_it->device.type)) {
+    if (IsAudioInputMediaType(device_it->device.type)) {
       audio_devices.push_back(*device_it);
     } else if (IsVideoMediaType(device_it->device.type)) {
       video_devices.push_back(*device_it);
@@ -1494,7 +1564,7 @@ void MediaStreamManager::Opened(MediaStreamType stream_type,
         // We've found a matching request.
         request->SetState(device_it->device.type, MEDIA_REQUEST_STATE_DONE);
 
-        if (IsAudioMediaType(device_it->device.type)) {
+        if (IsAudioInputMediaType(device_it->device.type)) {
           // Store the native audio parameters in the device struct.
           // TODO(xians): Handle the tab capture sample rate/channel layout
           // in AudioInputDeviceManager::Open().
@@ -1797,7 +1867,7 @@ void MediaStreamManager::HandleAccessRequestResponse(
   }
 
   // Check whether we've received all stream types requested.
-  if (!found_audio && IsAudioMediaType(request->audio_type())) {
+  if (!found_audio && IsAudioInputMediaType(request->audio_type())) {
     request->SetState(request->audio_type(), MEDIA_REQUEST_STATE_ERROR);
     DVLOG(1) << "Set no audio found label " << label;
   }
@@ -1865,7 +1935,7 @@ void MediaStreamManager::NotifyDevicesChanged(
     new_devices.push_back(it->device);
   }
 
-  if (IsAudioMediaType(stream_type)) {
+  if (IsAudioInputMediaType(stream_type)) {
     MediaCaptureDevicesImpl::GetInstance()->OnAudioCaptureDevicesChanged(
         new_devices);
     if (media_observer)
@@ -1883,7 +1953,7 @@ void MediaStreamManager::NotifyDevicesChanged(
 bool MediaStreamManager::RequestDone(const DeviceRequest& request) const {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  const bool requested_audio = IsAudioMediaType(request.audio_type());
+  const bool requested_audio = IsAudioInputMediaType(request.audio_type());
   const bool requested_video = IsVideoMediaType(request.video_type());
 
   const bool audio_done =
@@ -1907,7 +1977,7 @@ MediaStreamProvider* MediaStreamManager::GetDeviceManager(
     MediaStreamType stream_type) {
   if (IsVideoMediaType(stream_type)) {
     return video_capture_manager();
-  } else if (IsAudioMediaType(stream_type)) {
+  } else if (IsAudioInputMediaType(stream_type)) {
     return audio_input_device_manager();
   }
   NOTREACHED();

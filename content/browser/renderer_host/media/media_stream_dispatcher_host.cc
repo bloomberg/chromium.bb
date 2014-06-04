@@ -181,10 +181,12 @@ void MediaStreamDispatcherHost::OnEnumerateDevices(
     return;
 
   DCHECK(type == MEDIA_DEVICE_AUDIO_CAPTURE ||
-         type == MEDIA_DEVICE_VIDEO_CAPTURE);
-  bool have_permission = type == MEDIA_DEVICE_AUDIO_CAPTURE ?
-      resource_context_->AllowMicAccess(security_origin) :
-      resource_context_->AllowCameraAccess(security_origin);
+         type == MEDIA_DEVICE_VIDEO_CAPTURE ||
+         type == MEDIA_DEVICE_AUDIO_OUTPUT);
+  bool have_permission =
+      type == MEDIA_DEVICE_AUDIO_CAPTURE || type == MEDIA_DEVICE_AUDIO_OUTPUT ?
+          resource_context_->AllowMicAccess(security_origin) :
+          resource_context_->AllowCameraAccess(security_origin);
 
   media_stream_manager_->EnumerateDevices(
       this, render_process_id_, render_view_id, salt_callback_,

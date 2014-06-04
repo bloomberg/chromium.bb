@@ -8,11 +8,16 @@
 #include "content/public/common/media_stream_request.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+// Used for ID for output devices and for matching output device ID for input
+// devices.
+const char kAudioOutputDeviceIdPrefix[] = "audio_output_device_id";
+
 namespace content {
 
 MockMediaStreamDispatcher::MockMediaStreamDispatcher()
     : MediaStreamDispatcher(NULL),
-      audio_request_id_(-1),
+      audio_input_request_id_(-1),
+      audio_output_request_id_(-1),
       video_request_id_(-1),
       request_stream_counter_(0),
       stop_audio_device_counter_(0),
@@ -27,15 +32,16 @@ void MockMediaStreamDispatcher::GenerateStream(
     const base::WeakPtr<MediaStreamDispatcherEventHandler>& event_handler,
     const StreamOptions& components,
     const GURL& url) {
-  // Audio and video share the same request so we use |audio_request_id_| only.
-  audio_request_id_ = request_id;
+  // Audio and video share the same request so we use |audio_input_request_id_|
+  // only.
+  audio_input_request_id_ = request_id;
 
   stream_label_ = "local_stream" + base::IntToString(request_id);
-  audio_array_.clear();
+  audio_input_array_.clear();
   video_array_.clear();
 
   if (components.audio_requested) {
-    AddAudioDeviceToArray();
+    AddAudioInputDeviceToArray(false);
   }
   if (components.video_requested) {
     AddVideoDeviceToArray();
@@ -46,7 +52,7 @@ void MockMediaStreamDispatcher::GenerateStream(
 void MockMediaStreamDispatcher::CancelGenerateStream(
     int request_id,
     const base::WeakPtr<MediaStreamDispatcherEventHandler>& event_handler) {
-  EXPECT_EQ(request_id, audio_request_id_);
+  EXPECT_EQ(request_id, audio_input_request_id_);
 }
 
 void MockMediaStreamDispatcher::EnumerateDevices(
@@ -55,9 +61,14 @@ void MockMediaStreamDispatcher::EnumerateDevices(
     MediaStreamType type,
     const GURL& security_origin) {
   if (type == MEDIA_DEVICE_AUDIO_CAPTURE) {
-    audio_request_id_ = request_id;
-    audio_array_.clear();
-    AddAudioDeviceToArray();
+    audio_input_request_id_ = request_id;
+    audio_input_array_.clear();
+    AddAudioInputDeviceToArray(true);
+    AddAudioInputDeviceToArray(false);
+  } else if (type == MEDIA_DEVICE_AUDIO_OUTPUT) {
+    audio_output_request_id_ = request_id;
+    audio_output_array_.clear();
+    AddAudioOutputDeviceToArray();
   } else if (type == MEDIA_DEVICE_VIDEO_CAPTURE) {
     video_request_id_ = request_id;
     video_array_.clear();
@@ -67,7 +78,7 @@ void MockMediaStreamDispatcher::EnumerateDevices(
 
 void MockMediaStreamDispatcher::StopStreamDevice(
     const StreamDeviceInfo& device_info) {
-  if (IsAudioMediaType(device_info.device.type)) {
+  if (IsAudioInputMediaType(device_info.device.type)) {
     ++stop_audio_device_counter_;
     return;
   }
@@ -92,13 +103,27 @@ int MockMediaStreamDispatcher::audio_session_id(const std::string& label,
   return -1;
 }
 
-void MockMediaStreamDispatcher::AddAudioDeviceToArray() {
+void MockMediaStreamDispatcher::AddAudioInputDeviceToArray(
+    bool matched_output) {
   StreamDeviceInfo audio;
-  audio.device.id = "audio_device_id" + base::IntToString(session_id_);
+  audio.device.id = "audio_input_device_id" + base::IntToString(session_id_);
   audio.device.name = "microphone";
   audio.device.type = MEDIA_DEVICE_AUDIO_CAPTURE;
+  if (matched_output) {
+    audio.device.matched_output_device_id =
+        kAudioOutputDeviceIdPrefix + base::IntToString(session_id_);
+  }
   audio.session_id = session_id_;
-  audio_array_.push_back(audio);
+  audio_input_array_.push_back(audio);
+}
+
+void MockMediaStreamDispatcher::AddAudioOutputDeviceToArray() {
+  StreamDeviceInfo audio;
+  audio.device.id = kAudioOutputDeviceIdPrefix + base::IntToString(session_id_);
+  audio.device.name = "speaker";
+  audio.device.type = MEDIA_DEVICE_AUDIO_OUTPUT;
+  audio.session_id = session_id_;
+  audio_output_array_.push_back(audio);
 }
 
 void MockMediaStreamDispatcher::AddVideoDeviceToArray() {

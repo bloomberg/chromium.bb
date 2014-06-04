@@ -37,7 +37,8 @@ class MockMediaStreamDispatcher : public MediaStreamDispatcher {
   virtual int video_session_id(const std::string& label, int index) OVERRIDE;
   virtual int audio_session_id(const std::string& label, int index) OVERRIDE;
 
-  int audio_request_id() const { return audio_request_id_; }
+  int audio_input_request_id() const { return audio_input_request_id_; }
+  int audio_output_request_id() const { return audio_output_request_id_; }
   int video_request_id() const { return video_request_id_; }
   int request_stream_counter() const { return request_stream_counter_; }
   void IncrementSessionId() { ++session_id_; }
@@ -46,14 +47,21 @@ class MockMediaStreamDispatcher : public MediaStreamDispatcher {
   int stop_video_device_counter() const { return stop_video_device_counter_; }
 
   const std::string& stream_label() const { return stream_label_;}
-  StreamDeviceInfoArray audio_array() const { return audio_array_; }
-  StreamDeviceInfoArray video_array() const { return video_array_; }
+  const StreamDeviceInfoArray& audio_input_array() const {
+    return audio_input_array_;
+  }
+  const StreamDeviceInfoArray& audio_output_array() const {
+    return audio_output_array_;
+  }
+  const StreamDeviceInfoArray& video_array() const { return video_array_; }
 
  private:
-  void AddAudioDeviceToArray();
+  void AddAudioInputDeviceToArray(bool matched_output);
+  void AddAudioOutputDeviceToArray();
   void AddVideoDeviceToArray();
 
-  int audio_request_id_;
+  int audio_input_request_id_;
+  int audio_output_request_id_;  // Only used for EnumerateDevices.
   int video_request_id_;  // Only used for EnumerateDevices.
   base::WeakPtr<MediaStreamDispatcherEventHandler> event_handler_;
   int request_stream_counter_;
@@ -62,7 +70,8 @@ class MockMediaStreamDispatcher : public MediaStreamDispatcher {
 
   std::string stream_label_;
   int session_id_;
-  StreamDeviceInfoArray audio_array_;
+  StreamDeviceInfoArray audio_input_array_;
+  StreamDeviceInfoArray audio_output_array_;
   StreamDeviceInfoArray video_array_;
 
   DISALLOW_COPY_AND_ASSIGN(MockMediaStreamDispatcher);

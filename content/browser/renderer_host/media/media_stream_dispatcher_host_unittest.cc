@@ -176,7 +176,7 @@ class MockMediaStreamDispatcherHost : public MediaStreamDispatcherHost,
                                const content::StreamDeviceInfo& device) {
     if (IsVideoMediaType(device.device.type))
       EXPECT_TRUE(StreamDeviceInfo::IsEqual(device, video_devices_[0]));
-    if (IsAudioMediaType(device.device.type))
+    if (IsAudioInputMediaType(device.device.type))
       EXPECT_TRUE(StreamDeviceInfo::IsEqual(device, audio_devices_[0]));
 
     OnDeviceStopped(current_ipc_->routing_id());

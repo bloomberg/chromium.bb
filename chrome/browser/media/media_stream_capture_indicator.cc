@@ -230,7 +230,7 @@ void MediaStreamCaptureIndicator::WebContentsDeviceUsage::AddDevices(
     if (it->type == content::MEDIA_TAB_AUDIO_CAPTURE ||
         it->type == content::MEDIA_TAB_VIDEO_CAPTURE) {
       ++mirroring_ref_count_;
-    } else if (content::IsAudioMediaType(it->type)) {
+    } else if (content::IsAudioInputMediaType(it->type)) {
       ++audio_ref_count_;
     } else if (content::IsVideoMediaType(it->type)) {
       ++video_ref_count_;
@@ -252,7 +252,7 @@ void MediaStreamCaptureIndicator::WebContentsDeviceUsage::RemoveDevices(
     if (it->type == content::MEDIA_TAB_AUDIO_CAPTURE ||
         it->type == content::MEDIA_TAB_VIDEO_CAPTURE) {
       --mirroring_ref_count_;
-    } else if (content::IsAudioMediaType(it->type)) {
+    } else if (content::IsAudioInputMediaType(it->type)) {
       --audio_ref_count_;
     } else if (content::IsVideoMediaType(it->type)) {
       --video_ref_count_;

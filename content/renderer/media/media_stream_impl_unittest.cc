@@ -163,15 +163,17 @@ class MediaStreamImplTest : public ::testing::Test {
 
   void FakeMediaStreamDispatcherRequestUserMediaComplete() {
     // Audio request ID is used as the shared request ID.
-    ms_impl_->OnStreamGenerated(ms_dispatcher_->audio_request_id(),
+    ms_impl_->OnStreamGenerated(ms_dispatcher_->audio_input_request_id(),
                                 ms_dispatcher_->stream_label(),
-                                ms_dispatcher_->audio_array(),
+                                ms_dispatcher_->audio_input_array(),
                                 ms_dispatcher_->video_array());
   }
 
   void FakeMediaStreamDispatcherRequestMediaDevicesComplete() {
-    ms_impl_->OnDevicesEnumerated(ms_dispatcher_->audio_request_id(),
-                                  ms_dispatcher_->audio_array());
+    ms_impl_->OnDevicesEnumerated(ms_dispatcher_->audio_input_request_id(),
+                                  ms_dispatcher_->audio_input_array());
+    ms_impl_->OnDevicesEnumerated(ms_dispatcher_->audio_output_request_id(),
+                                  ms_dispatcher_->audio_output_array());
     ms_impl_->OnDevicesEnumerated(ms_dispatcher_->video_request_id(),
                                   ms_dispatcher_->video_array());
   }
@@ -435,15 +437,39 @@ TEST_F(MediaStreamImplTest, EnumerateMediaDevices) {
   EXPECT_EQ(MediaStreamImplUnderTest::REQUEST_SUCCEEDED,
             ms_impl_->request_state());
 
+  // Audio input device with matched output ID.
   EXPECT_FALSE(ms_impl_->last_devices()[0].deviceId().isEmpty());
   EXPECT_EQ(blink::WebMediaDeviceInfo::MediaDeviceKindAudioInput,
             ms_impl_->last_devices()[0].kind());
   EXPECT_FALSE(ms_impl_->last_devices()[0].label().isEmpty());
+  EXPECT_FALSE(ms_impl_->last_devices()[0].groupId().isEmpty());
 
+  // Audio input device without matched output ID.
   EXPECT_FALSE(ms_impl_->last_devices()[1].deviceId().isEmpty());
-  EXPECT_EQ(blink::WebMediaDeviceInfo::MediaDeviceKindVideoInput,
+  EXPECT_EQ(blink::WebMediaDeviceInfo::MediaDeviceKindAudioInput,
             ms_impl_->last_devices()[1].kind());
   EXPECT_FALSE(ms_impl_->last_devices()[1].label().isEmpty());
+  EXPECT_FALSE(ms_impl_->last_devices()[1].groupId().isEmpty());
+
+  // Video input device.
+  EXPECT_FALSE(ms_impl_->last_devices()[2].deviceId().isEmpty());
+  EXPECT_EQ(blink::WebMediaDeviceInfo::MediaDeviceKindVideoInput,
+            ms_impl_->last_devices()[2].kind());
+  EXPECT_FALSE(ms_impl_->last_devices()[2].label().isEmpty());
+  EXPECT_TRUE(ms_impl_->last_devices()[2].groupId().isEmpty());
+
+  // Audio output device.
+  EXPECT_FALSE(ms_impl_->last_devices()[3].deviceId().isEmpty());
+  EXPECT_EQ(blink::WebMediaDeviceInfo::MediaDeviceKindAudioOutput,
+            ms_impl_->last_devices()[3].kind());
+  EXPECT_FALSE(ms_impl_->last_devices()[3].label().isEmpty());
+  EXPECT_FALSE(ms_impl_->last_devices()[3].groupId().isEmpty());
+
+  // Verfify group IDs.
+  EXPECT_TRUE(ms_impl_->last_devices()[0].groupId().equals(
+                  ms_impl_->last_devices()[3].groupId()));
+  EXPECT_FALSE(ms_impl_->last_devices()[1].groupId().equals(
+                   ms_impl_->last_devices()[3].groupId()));
 }
 
 }  // namespace content

@@ -38,6 +38,11 @@ enum MediaStreamType {
   // TODO(sergeyu): Replace with MEDIA_DESKTOP_AUDIO_CAPTURE.
   MEDIA_LOOPBACK_AUDIO_CAPTURE,
 
+  // This is used for enumerating audio output devices.
+  // TODO(grunell): Output isn't really a part of media streams. Device
+  // enumeration should be decoupled from media streams and related code.
+  MEDIA_DEVICE_AUDIO_OUTPUT,
+
   NUM_MEDIA_TYPES
 };
 
@@ -77,7 +82,7 @@ enum MediaStreamRequestResult {
 
 // Convenience predicates to determine whether the given type represents some
 // audio or some video device.
-CONTENT_EXPORT bool IsAudioMediaType(MediaStreamType type);
+CONTENT_EXPORT bool IsAudioInputMediaType(MediaStreamType type);
 CONTENT_EXPORT bool IsVideoMediaType(MediaStreamType type);
 
 // TODO(xians): Change the structs to classes.
@@ -152,7 +157,7 @@ struct CONTENT_EXPORT MediaStreamDevice {
   };
 
   // These below two member variables are valid only when the type of device is
-  // audio (i.e. IsAudioMediaType returns true).
+  // audio (i.e. IsAudioInputMediaType returns true).
 
   // Contains the device properties of the capture device.
   AudioDeviceParameters input;

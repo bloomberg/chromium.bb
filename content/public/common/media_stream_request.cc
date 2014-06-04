@@ -8,7 +8,7 @@
 
 namespace content {
 
-bool IsAudioMediaType(MediaStreamType type) {
+bool IsAudioInputMediaType(MediaStreamType type) {
   return (type == MEDIA_DEVICE_AUDIO_CAPTURE ||
           type == content::MEDIA_TAB_AUDIO_CAPTURE ||
           type == content::MEDIA_LOOPBACK_AUDIO_CAPTURE);
