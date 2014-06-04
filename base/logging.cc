@@ -537,10 +537,19 @@ LogMessage::LogMessage(const char* file, int line)
   Init(file, line);
 }
 
+#if defined(OS_WIN)
+// Disable warning C4702 ("unreachable code") until we fix crbug.com/380175.
+// TODO(scottmg|sebmarchand): Remove this pragma once the bug is fixed.
+#pragma warning(push)
+#pragma warning(disable: 4702)
+#endif
 LogMessage::LogMessage(const char* file, int line, LogSeverity severity)
     : severity_(severity), file_(file), line_(line) {
   Init(file, line);
 }
+#if defined(OS_WIN)
+#pragma warning(pop)
+#endif
 
 LogMessage::LogMessage(const char* file, int line, std::string* result)
     : severity_(LOG_FATAL), file_(file), line_(line) {
