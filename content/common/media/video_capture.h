@@ -32,10 +32,6 @@ typedef base::Callback<void(VideoCaptureState)>
     VideoCaptureStateUpdateCB;
 typedef base::Callback<void(const media::VideoCaptureFormats&)>
     VideoCaptureDeviceFormatsCB;
-typedef base::Callback<
-  void(const scoped_refptr<media::VideoFrame>&,
-       const media::VideoCaptureFormat&)>
-    VideoCaptureDeliverFrameCB;
 
 }  // namespace content
 

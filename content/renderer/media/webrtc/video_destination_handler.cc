@@ -67,7 +67,9 @@ void PpFrameWriter::FrameWriterDelegate::DeliverFrameOnIO(
      const scoped_refptr<media::VideoFrame>& frame,
      const media::VideoCaptureFormat& format) {
   DCHECK(io_message_loop_->BelongsToCurrentThread());
-  new_frame_callback_.Run(frame, format);
+  // The local time when this frame is generated is unknown so give a null
+  // value to |estimated_capture_time|.
+  new_frame_callback_.Run(frame, format, base::TimeTicks());
 }
 
 PpFrameWriter::PpFrameWriter() {

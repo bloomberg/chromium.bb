@@ -27,6 +27,7 @@
 #include "base/threading/thread_checker.h"
 #include "content/common/content_export.h"
 #include "content/common/media/video_capture.h"
+#include "content/public/renderer/media_stream_video_sink.h"
 #include "content/renderer/media/video_capture_message_filter.h"
 #include "media/video/capture/video_capture_types.h"
 

@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/time/time.h"
 #include "content/renderer/media/media_stream_video_track.h"
 #include "media/base/video_frame.h"
 
@@ -44,7 +45,8 @@ class VideoTrackAdapter
   // Must be called on the IO-thread.
   void DeliverFrameOnIO(
       const scoped_refptr<media::VideoFrame>& frame,
-      const media::VideoCaptureFormat& format);
+      const media::VideoCaptureFormat& format,
+      const base::TimeTicks& estimated_capture_time);
 
   const scoped_refptr<base::MessageLoopProxy>& io_message_loop() {
     DCHECK(thread_checker_.CalledOnValidThread());

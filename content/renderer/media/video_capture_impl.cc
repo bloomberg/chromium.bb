@@ -251,7 +251,7 @@ void VideoCaptureImpl::OnBufferReceived(int buffer_id,
 
   for (ClientInfoMap::iterator it = clients_.begin(); it != clients_.end();
        ++it) {
-    it->second.deliver_frame_cb.Run(frame, format);
+    it->second.deliver_frame_cb.Run(frame, format, timestamp);
   }
 }
 
@@ -289,7 +289,7 @@ void VideoCaptureImpl::OnMailboxBufferReceived(
 
   for (ClientInfoMap::iterator it = clients_.begin(); it != clients_.end();
        ++it) {
-    it->second.deliver_frame_cb.Run(frame, format);
+    it->second.deliver_frame_cb.Run(frame, format, timestamp);
   }
 }
 

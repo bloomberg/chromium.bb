@@ -54,7 +54,8 @@ class PpFrameReceiver : public MediaStreamVideoSink {
 
   void OnVideoFrame(
       const scoped_refptr<media::VideoFrame>& frame,
-      const media::VideoCaptureFormat& format) {
+      const media::VideoCaptureFormat& format,
+      const base::TimeTicks& estimated_capture_time) {
     if (reader_) {
       reader_->GotFrame(frame);
     }
@@ -138,7 +139,8 @@ void VideoSourceHandler::DeliverFrameForTesting(
     return;
   }
   PpFrameReceiver* receiver = it->second->receiver_.get();
-  receiver->OnVideoFrame(frame, media::VideoCaptureFormat());
+  receiver->OnVideoFrame(frame, media::VideoCaptureFormat(),
+                         base::TimeTicks());
 }
 
 VideoSourceHandler::SourceInfo::SourceInfo(

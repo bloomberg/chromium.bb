@@ -120,7 +120,8 @@ RemoteVideoSourceDelegate::DoRenderFrameOnIOThread(
     scoped_refptr<media::VideoFrame> video_frame,
     const media::VideoCaptureFormat& format) {
   DCHECK(io_message_loop_->BelongsToCurrentThread());
-  frame_callback_.Run(video_frame, format);
+  // TODO(hclam): Give the estimated capture time.
+  frame_callback_.Run(video_frame, format, base::TimeTicks());
 }
 
 MediaStreamRemoteVideoSource::MediaStreamRemoteVideoSource(

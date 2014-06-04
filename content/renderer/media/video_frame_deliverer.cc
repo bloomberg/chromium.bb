@@ -72,11 +72,12 @@ void VideoFrameDeliverer::RemoveCallbackOnIO(
 
 void VideoFrameDeliverer::DeliverFrameOnIO(
     const scoped_refptr<media::VideoFrame>& frame,
-    const media::VideoCaptureFormat& format) {
+    const media::VideoCaptureFormat& format,
+    const base::TimeTicks& estimated_capture_time) {
   DCHECK(io_message_loop_->BelongsToCurrentThread());
   for (std::vector<VideoIdCallbackPair>::iterator it = callbacks_.begin();
        it != callbacks_.end(); ++it) {
-    it->second.Run(frame, format);
+    it->second.Run(frame, format, estimated_capture_time);
   }
 }
 

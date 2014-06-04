@@ -232,21 +232,26 @@ class CastVideoSink : public base::SupportsWeakPtr<CastVideoSink>,
       const scoped_refptr<media::cast::VideoFrameInput> frame_input,
       // These parameters are passed for each frame.
       const scoped_refptr<media::VideoFrame>& frame,
-      const media::VideoCaptureFormat& format) {
+      const media::VideoCaptureFormat& format,
+      const base::TimeTicks& estimated_capture_time) {
     if (frame->coded_size() != expected_coded_size) {
       error_callback.Run("Video frame resolution does not match config.");
       return;
     }
 
-    const base::TimeTicks now = base::TimeTicks::Now();
+    base::TimeTicks timestamp;
+    if (estimated_capture_time.is_null())
+      timestamp = base::TimeTicks::Now();
+    else
+      timestamp = estimated_capture_time;
 
     // Used by chrome/browser/extension/api/cast_streaming/performance_test.cc
     TRACE_EVENT_INSTANT2(
         "cast_perf_test", "MediaStreamVideoSink::OnVideoFrame",
         TRACE_EVENT_SCOPE_THREAD,
-        "timestamp",  now.ToInternalValue(),
+        "timestamp",  timestamp.ToInternalValue(),
         "time_delta", frame->timestamp().ToInternalValue());
-    frame_input->InsertRawVideoFrame(frame, now);
+    frame_input->InsertRawVideoFrame(frame, timestamp);
   }
 
   // Attach this sink to a video track represented by |track_|.

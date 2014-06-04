@@ -53,11 +53,13 @@ class MediaStreamVideoTrack::FrameDeliverer : public VideoFrameDeliverer {
 
   virtual void DeliverFrameOnIO(
       const scoped_refptr<media::VideoFrame>& frame,
-      const media::VideoCaptureFormat& format) OVERRIDE {
+      const media::VideoCaptureFormat& format,
+      const base::TimeTicks& estimated_capture_time) OVERRIDE {
     DCHECK(io_message_loop()->BelongsToCurrentThread());
     if (!enabled_)
       return;
-    VideoFrameDeliverer::DeliverFrameOnIO(frame, format);
+    VideoFrameDeliverer::DeliverFrameOnIO(frame, format,
+                                          estimated_capture_time);
   }
 
   const std::vector<MediaStreamVideoSink*>& sinks() const { return sinks_; }

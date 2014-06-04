@@ -14,6 +14,7 @@
 #include "base/threading/non_thread_safe.h"
 #include "content/common/content_export.h"
 #include "content/common/media/video_capture.h"
+#include "content/public/renderer/media_stream_video_sink.h"
 #include "content/renderer/media/media_stream_source.h"
 #include "media/base/video_frame.h"
 #include "media/video/capture/video_capture_types.h"

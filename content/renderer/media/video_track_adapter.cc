@@ -56,7 +56,8 @@ class VideoTrackAdapter::VideoFrameResolutionAdapter
   void RemoveCallback(const MediaStreamVideoTrack* track);
 
   void DeliverFrame(const scoped_refptr<media::VideoFrame>& frame,
-                    const media::VideoCaptureFormat& format);
+                    const media::VideoCaptureFormat& format,
+                    const base::TimeTicks& estimated_capture_time);
 
   // Returns true if all arguments match with the output of this adapter.
   bool ConstraintsMatch(int max_width,
@@ -72,7 +73,8 @@ class VideoTrackAdapter::VideoFrameResolutionAdapter
 
   virtual void DoDeliverFrame(
       const scoped_refptr<media::VideoFrame>& frame,
-      const media::VideoCaptureFormat& format);
+      const media::VideoCaptureFormat& format,
+      const base::TimeTicks& estimated_capture_time);
 
   // Bound to the IO-thread.
   base::ThreadChecker io_thread_checker_;
@@ -122,12 +124,13 @@ VideoFrameResolutionAdapter::~VideoFrameResolutionAdapter() {
 
 void VideoTrackAdapter::VideoFrameResolutionAdapter::DeliverFrame(
     const scoped_refptr<media::VideoFrame>& frame,
-    const media::VideoCaptureFormat& format) {
+    const media::VideoCaptureFormat& format,
+    const base::TimeTicks& estimated_capture_time) {
   DCHECK(io_thread_checker_.CalledOnValidThread());
   // TODO(perkj): Allow cropping / scaling of textures once
   // http://crbug/362521 is fixed.
   if (frame->format() == media::VideoFrame::NATIVE_TEXTURE) {
-    DoDeliverFrame(frame, format);
+    DoDeliverFrame(frame, format, estimated_capture_time);
     return;
   }
   scoped_refptr<media::VideoFrame> video_frame(frame);
@@ -189,17 +192,18 @@ void VideoTrackAdapter::VideoFrameResolutionAdapter::DeliverFrame(
              << " output visible rect  "
              << video_frame->visible_rect().ToString();
   }
-  DoDeliverFrame(video_frame, format);
+  DoDeliverFrame(video_frame, format, estimated_capture_time);
 }
 
 void VideoTrackAdapter::
 VideoFrameResolutionAdapter::DoDeliverFrame(
     const scoped_refptr<media::VideoFrame>& frame,
-    const media::VideoCaptureFormat& format) {
+    const media::VideoCaptureFormat& format,
+    const base::TimeTicks& estimated_capture_time) {
   DCHECK(io_thread_checker_.CalledOnValidThread());
   for (std::vector<VideoIdCallbackPair>::const_iterator it = callbacks_.begin();
        it != callbacks_.end(); ++it) {
-    it->second.Run(frame, format);
+    it->second.Run(frame, format, estimated_capture_time);
   }
 }
 
@@ -323,12 +327,13 @@ void VideoTrackAdapter::RemoveTrackOnIO(const MediaStreamVideoTrack* track) {
 
 void VideoTrackAdapter::DeliverFrameOnIO(
     const scoped_refptr<media::VideoFrame>& frame,
-    const media::VideoCaptureFormat& format) {
+    const media::VideoCaptureFormat& format,
+    const base::TimeTicks& estimated_capture_time) {
   DCHECK(io_message_loop_->BelongsToCurrentThread());
   TRACE_EVENT0("video", "VideoTrackAdapter::DeliverFrameOnIO");
   for (FrameAdapters::iterator it = adapters_.begin();
        it != adapters_.end(); ++it) {
-    (*it)->DeliverFrame(frame, format);
+    (*it)->DeliverFrame(frame, format, estimated_capture_time);
   }
 }
 

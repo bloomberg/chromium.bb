@@ -77,14 +77,15 @@ void MockMediaStreamVideoSource::DeliverVideoFrame(
       FROM_HERE,
       base::Bind(&MockMediaStreamVideoSource::DeliverVideoFrameOnIO,
                  base::Unretained(this), frame, params_.requested_format,
-                 frame_callback_));
+                 base::TimeTicks(), frame_callback_));
 }
 
 void MockMediaStreamVideoSource::DeliverVideoFrameOnIO(
     const scoped_refptr<media::VideoFrame>& frame,
     media::VideoCaptureFormat format,
+    const base::TimeTicks& estimated_capture_time,
     const VideoCaptureDeliverFrameCB& frame_callback) {
-  frame_callback.Run(frame, format);
+  frame_callback.Run(frame, format, estimated_capture_time);
 }
 
 }  // namespace content

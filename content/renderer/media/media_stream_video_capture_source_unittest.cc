@@ -3,12 +3,16 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/child/child_process.h"
+#include "content/public/renderer/media_stream_video_sink.h"
 #include "content/renderer/media/media_stream_video_capturer_source.h"
 #include "content/renderer/media/media_stream_video_track.h"
 #include "content/renderer/media/mock_media_constraint_factory.h"
+#include "media/base/bind_to_current_loop.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -129,6 +133,68 @@ TEST_F(MediaStreamVideoCapturerSourceTest, Ended) {
   message_loop_.RunUntilIdle();
   EXPECT_EQ(blink::WebMediaStreamSource::ReadyStateEnded,
             webkit_source_.readyState());
+}
+
+class FakeMediaStreamVideoSink : public MediaStreamVideoSink {
+ public:
+  FakeMediaStreamVideoSink(base::TimeTicks* capture_time,
+                           base::Closure got_frame_cb)
+      : capture_time_(capture_time),
+        got_frame_cb_(got_frame_cb) {
+  }
+
+  void OnVideoFrame(const scoped_refptr<media::VideoFrame>& frame,
+                    const media::VideoCaptureFormat& format,
+                    const base::TimeTicks& capture_time) {
+    *capture_time_ = capture_time;
+    base::ResetAndReturn(&got_frame_cb_).Run();
+  }
+
+ private:
+  base::TimeTicks* capture_time_;
+  base::Closure got_frame_cb_;
+};
+
+TEST_F(MediaStreamVideoCapturerSourceTest, CaptureTime) {
+  StreamDeviceInfo device_info;
+  device_info.device.type = MEDIA_DESKTOP_VIDEO_CAPTURE;
+  InitWithDeviceInfo(device_info);
+
+  VideoCaptureDeliverFrameCB deliver_frame_cb;
+  VideoCapturerDelegate::RunningCallback running_cb;
+
+  EXPECT_CALL(mock_delegate(), StartCapture(
+      testing::_,
+      testing::_,
+      testing::_))
+      .Times(1)
+      .WillOnce(testing::DoAll(testing::SaveArg<1>(&deliver_frame_cb),
+                               testing::SaveArg<2>(&running_cb)));
+  EXPECT_CALL(mock_delegate(), StopCapture());
+  blink::WebMediaStreamTrack track = StartSource();
+  running_cb.Run(true);
+
+  base::RunLoop run_loop;
+  base::TimeTicks reference_capture_time =
+      base::TimeTicks::FromInternalValue(60013);
+  base::TimeTicks capture_time;
+  FakeMediaStreamVideoSink fake_sink(
+      &capture_time,
+      media::BindToCurrentLoop(run_loop.QuitClosure()));
+  FakeMediaStreamVideoSink::AddToVideoTrack(
+      &fake_sink,
+      base::Bind(&FakeMediaStreamVideoSink::OnVideoFrame,
+                 base::Unretained(&fake_sink)),
+      track);
+  child_process_->io_message_loop()->PostTask(
+      FROM_HERE,
+      base::Bind(deliver_frame_cb,
+                 media::VideoFrame::CreateBlackFrame(gfx::Size(2, 2)),
+                 media::VideoCaptureFormat(),
+                 reference_capture_time));
+  run_loop.Run();
+  FakeMediaStreamVideoSink::RemoveFromVideoTrack(&fake_sink, track);
+  EXPECT_EQ(reference_capture_time, capture_time);
 }
 
 }  // namespace content
