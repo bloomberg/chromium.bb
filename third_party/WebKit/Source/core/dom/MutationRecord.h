@@ -45,9 +45,9 @@ class QualifiedName;
 
 class MutationRecord : public RefCountedWillBeGarbageCollectedFinalized<MutationRecord>, public ScriptWrappable {
 public:
-    static PassRefPtrWillBeRawPtr<MutationRecord> createChildList(PassRefPtr<Node> target, PassRefPtrWillBeRawPtr<NodeList> added, PassRefPtrWillBeRawPtr<NodeList> removed, PassRefPtr<Node> previousSibling, PassRefPtr<Node> nextSibling);
-    static PassRefPtrWillBeRawPtr<MutationRecord> createAttributes(PassRefPtr<Node> target, const QualifiedName&, const AtomicString& oldValue);
-    static PassRefPtrWillBeRawPtr<MutationRecord> createCharacterData(PassRefPtr<Node> target, const String& oldValue);
+    static PassRefPtrWillBeRawPtr<MutationRecord> createChildList(PassRefPtrWillBeRawPtr<Node> target, PassRefPtrWillBeRawPtr<NodeList> added, PassRefPtrWillBeRawPtr<NodeList> removed, PassRefPtrWillBeRawPtr<Node> previousSibling, PassRefPtrWillBeRawPtr<Node> nextSibling);
+    static PassRefPtrWillBeRawPtr<MutationRecord> createAttributes(PassRefPtrWillBeRawPtr<Node> target, const QualifiedName&, const AtomicString& oldValue);
+    static PassRefPtrWillBeRawPtr<MutationRecord> createCharacterData(PassRefPtrWillBeRawPtr<Node> target, const String& oldValue);
     static PassRefPtrWillBeRawPtr<MutationRecord> createWithNullOldValue(PassRefPtrWillBeRawPtr<MutationRecord>);
 
     MutationRecord()

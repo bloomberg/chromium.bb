@@ -71,8 +71,8 @@ private:
     RefPtrWillBeMember<MutationObserver> m_observer;
     RawPtrWillBeWeakMember<Node> m_registrationNode;
     RefPtrWillBeMember<Node> m_registrationNodeKeepAlive;
-    typedef HashSet<RefPtr<Node> > NodeHashSet;
-    OwnPtr<NodeHashSet> m_transientRegistrationNodes;
+    typedef WillBeHeapHashSet<RefPtrWillBeMember<Node> > NodeHashSet;
+    OwnPtrWillBeMember<NodeHashSet> m_transientRegistrationNodes;
 
     MutationObserverOptions m_options;
     HashSet<AtomicString> m_attributeFilter;

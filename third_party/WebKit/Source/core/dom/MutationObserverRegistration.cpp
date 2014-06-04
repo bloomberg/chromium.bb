@@ -81,7 +81,7 @@ void MutationObserverRegistration::observedSubtreeNodeWillDetach(Node& node)
     m_observer->setHasTransientRegistration();
 
     if (!m_transientRegistrationNodes) {
-        m_transientRegistrationNodes = adoptPtr(new NodeHashSet);
+        m_transientRegistrationNodes = adoptPtrWillBeNoop(new NodeHashSet);
 
         ASSERT(m_registrationNode);
         ASSERT(!m_registrationNodeKeepAlive);
@@ -146,6 +146,9 @@ void MutationObserverRegistration::trace(Visitor* visitor)
     visitor->trace(m_observer);
     visitor->trace(m_registrationNode);
     visitor->trace(m_registrationNodeKeepAlive);
+#if ENABLE(OILPAN)
+    visitor->trace(m_transientRegistrationNodes);
+#endif
 }
 
 } // namespace WebCore

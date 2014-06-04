@@ -44,7 +44,7 @@ namespace {
 
 class ChildListRecord : public MutationRecord {
 public:
-    ChildListRecord(PassRefPtr<Node> target, PassRefPtrWillBeRawPtr<NodeList> added, PassRefPtrWillBeRawPtr<NodeList> removed, PassRefPtr<Node> previousSibling, PassRefPtr<Node> nextSibling)
+    ChildListRecord(PassRefPtrWillBeRawPtr<Node> target, PassRefPtrWillBeRawPtr<NodeList> added, PassRefPtrWillBeRawPtr<NodeList> removed, PassRefPtrWillBeRawPtr<Node> previousSibling, PassRefPtrWillBeRawPtr<Node> nextSibling)
         : m_target(target)
         , m_addedNodes(added)
         , m_removedNodes(removed)
@@ -80,7 +80,7 @@ private:
 
 class RecordWithEmptyNodeLists : public MutationRecord {
 public:
-    RecordWithEmptyNodeLists(PassRefPtr<Node> target, const String& oldValue)
+    RecordWithEmptyNodeLists(PassRefPtrWillBeRawPtr<Node> target, const String& oldValue)
         : m_target(target)
         , m_oldValue(oldValue)
     {
@@ -115,7 +115,7 @@ private:
 
 class AttributesRecord : public RecordWithEmptyNodeLists {
 public:
-    AttributesRecord(PassRefPtr<Node> target, const QualifiedName& name, const AtomicString& oldValue)
+    AttributesRecord(PassRefPtrWillBeRawPtr<Node> target, const QualifiedName& name, const AtomicString& oldValue)
         : RecordWithEmptyNodeLists(target, oldValue)
         , m_attributeName(name.localName())
         , m_attributeNamespace(name.namespaceURI())
@@ -133,7 +133,7 @@ private:
 
 class CharacterDataRecord : public RecordWithEmptyNodeLists {
 public:
-    CharacterDataRecord(PassRefPtr<Node> target, const String& oldValue)
+    CharacterDataRecord(PassRefPtrWillBeRawPtr<Node> target, const String& oldValue)
         : RecordWithEmptyNodeLists(target, oldValue)
     {
     }
@@ -190,17 +190,17 @@ const AtomicString& CharacterDataRecord::type()
 
 } // namespace
 
-PassRefPtrWillBeRawPtr<MutationRecord> MutationRecord::createChildList(PassRefPtr<Node> target, PassRefPtrWillBeRawPtr<NodeList> added, PassRefPtrWillBeRawPtr<NodeList> removed, PassRefPtr<Node> previousSibling, PassRefPtr<Node> nextSibling)
+PassRefPtrWillBeRawPtr<MutationRecord> MutationRecord::createChildList(PassRefPtrWillBeRawPtr<Node> target, PassRefPtrWillBeRawPtr<NodeList> added, PassRefPtrWillBeRawPtr<NodeList> removed, PassRefPtrWillBeRawPtr<Node> previousSibling, PassRefPtrWillBeRawPtr<Node> nextSibling)
 {
     return adoptRefWillBeNoop(new ChildListRecord(target, added, removed, previousSibling, nextSibling));
 }
 
-PassRefPtrWillBeRawPtr<MutationRecord> MutationRecord::createAttributes(PassRefPtr<Node> target, const QualifiedName& name, const AtomicString& oldValue)
+PassRefPtrWillBeRawPtr<MutationRecord> MutationRecord::createAttributes(PassRefPtrWillBeRawPtr<Node> target, const QualifiedName& name, const AtomicString& oldValue)
 {
     return adoptRefWillBeNoop(new AttributesRecord(target, name, oldValue));
 }
 
-PassRefPtrWillBeRawPtr<MutationRecord> MutationRecord::createCharacterData(PassRefPtr<Node> target, const String& oldValue)
+PassRefPtrWillBeRawPtr<MutationRecord> MutationRecord::createCharacterData(PassRefPtrWillBeRawPtr<Node> target, const String& oldValue)
 {
     return adoptRefWillBeNoop(new CharacterDataRecord(target, oldValue));
 }
