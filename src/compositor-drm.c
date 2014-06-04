@@ -1678,7 +1678,7 @@ drm_set_dpms(struct weston_output *output_base, enum dpms_enum level)
 				    output->dpms_prop->prop_id, level);
 }
 
-static const char *connector_type_names[] = {
+static const char * const connector_type_names[] = {
 	"None",
 	"VGA",
 	"DVI",
@@ -1695,6 +1695,21 @@ static const char *connector_type_names[] = {
 	"TV",
 	"eDP",
 };
+
+static char *
+make_connector_name(const drmModeConnector *con)
+{
+	char name[32];
+	const char *type_name;
+
+	if (con->connector_type < ARRAY_LENGTH(connector_type_names))
+		type_name = connector_type_names[con->connector_type];
+	else
+		type_name = "UNKNOWN";
+	snprintf(name, sizeof name, "%s%d", type_name, con->connector_type_id);
+
+	return strdup(name);
+}
 
 static int
 find_crtc_for_connector(struct drm_backend *b,
@@ -2171,8 +2186,7 @@ create_output_for_connector(struct drm_backend *b,
 	drmModeModeInfo crtc_mode, modeline;
 	drmModeCrtc *crtc;
 	int i, width, height, scale;
-	char name[32], *s;
-	const char *type_name;
+	char *s;
 	enum output_config config;
 	uint32_t transform;
 
@@ -2187,17 +2201,11 @@ create_output_for_connector(struct drm_backend *b,
 		return -1;
 
 	output->base.subpixel = drm_subpixel_to_wayland(connector->subpixel);
+	output->base.name = make_connector_name(connector);
 	output->base.make = "unknown";
 	output->base.model = "unknown";
 	output->base.serial_number = "unknown";
 	wl_list_init(&output->base.mode_list);
-
-	if (connector->connector_type < ARRAY_LENGTH(connector_type_names))
-		type_name = connector_type_names[connector->connector_type];
-	else
-		type_name = "UNKNOWN";
-	snprintf(name, 32, "%s%d", type_name, connector->connector_type_id);
-	output->base.name = strdup(name);
 
 	section = weston_config_get_section(b->compositor->config, "output", "name",
 					    output->base.name);
