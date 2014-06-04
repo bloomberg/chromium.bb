@@ -5,7 +5,7 @@
 var code = 404;
 
 this.onfetch = function(event) {
-    response = new Response(new Blob(), {
+    response = new Response({
         status: code,
         statusText: 'OK'
     });
