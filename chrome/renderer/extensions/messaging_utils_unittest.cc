@@ -4,7 +4,7 @@
 
 #include "base/strings/stringprintf.h"
 #include "chrome/test/base/module_system_test.h"
-#include "grit/renderer_resources.h"
+#include "grit/extensions_renderer_resources.h"
 
 namespace extensions {
 namespace {

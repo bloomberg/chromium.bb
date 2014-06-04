@@ -163,10 +163,13 @@
     "messages": [26000],
   },
   "chrome/common/extensions_api_resources.grd": {
-    "includes": [26500],
+    "includes": [26400],
   },
   "extensions/extensions_resources.grd": {
-    "includes": [26750],
+    "includes": [26600],
+  },
+  "extensions/renderer/resources/extensions_renderer_resources.grd": {
+    "includes": [26800],
   },
   "extensions/extensions_strings.grd": {
     "messages": [27000],
