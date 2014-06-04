@@ -195,7 +195,9 @@ public:
 private:
     class OverlapMap;
 
+#if ASSERT_ENABLED
     void assertNoUnresolvedDirtyBits();
+#endif
 
     // Make updates to the layer based on viewport-constrained properties such as position:fixed. This can in turn affect
     // compositing.

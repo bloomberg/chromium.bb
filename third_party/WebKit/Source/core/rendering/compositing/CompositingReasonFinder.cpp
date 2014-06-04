@@ -92,8 +92,7 @@ bool CompositingReasonFinder::requiresCompositingForScrollableFrame() const
     if (!(m_compositingTriggers & ScrollableInnerFrameTrigger))
         return false;
 
-    FrameView* frameView = m_renderView.frameView();
-    return frameView->isScrollable();
+    return m_renderView.frameView()->isScrollable();
 }
 
 CompositingReasons CompositingReasonFinder::styleDeterminedReasons(RenderObject* renderer) const

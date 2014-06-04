@@ -264,9 +264,11 @@ void RenderLayerCompositor::updateIfNeededRecursive()
     // TODO: Figure out why this fails on Chrome OS login page. crbug.com/365507
     // ASSERT(lifecycle().state() == DocumentLifecycle::CompositingClean);
 
+#if ASSERT_ENABLED
     assertNoUnresolvedDirtyBits();
     for (LocalFrame* child = m_renderView.frameView()->frame().tree().firstChild(); child; child = child->tree().nextSibling())
         child->contentRenderer()->compositor()->assertNoUnresolvedDirtyBits();
+#endif
 }
 
 void RenderLayerCompositor::setNeedsCompositingUpdate(CompositingUpdateType updateType)
@@ -291,12 +293,16 @@ void RenderLayerCompositor::setNeedsCompositingUpdate(CompositingUpdateType upda
     lifecycle().ensureStateAtMost(DocumentLifecycle::LayoutClean);
 }
 
+#if ASSERT_ENABLED
+
 void RenderLayerCompositor::assertNoUnresolvedDirtyBits()
 {
     ASSERT(!compositingLayersNeedRebuild());
     ASSERT(m_pendingUpdateType == CompositingUpdateNone);
     ASSERT(!m_rootShouldAlwaysCompositeDirty);
 }
+
+#endif
 
 void RenderLayerCompositor::applyOverlayFullscreenVideoAdjustment()
 {
@@ -352,7 +358,7 @@ void RenderLayerCompositor::updateIfNeeded()
     if (!hasAcceleratedCompositing())
         return;
 
-    bool needsToUpdateScrollingCoordinator = scrollingCoordinator() ? scrollingCoordinator()->needsToUpdateAfterCompositingChange() : false;
+    bool needsToUpdateScrollingCoordinator = scrollingCoordinator() && scrollingCoordinator()->needsToUpdateAfterCompositingChange();
     if (updateType == CompositingUpdateNone && !needHierarchyAndGeometryUpdate && !needsToUpdateScrollingCoordinator)
         return;
 
@@ -387,8 +393,7 @@ void RenderLayerCompositor::updateIfNeeded()
 
         {
             TRACE_EVENT0("blink_rendering", "RenderLayerCompositor::updateAfterCompositingChange");
-            const FrameView::ScrollableAreaSet* scrollableAreas = m_renderView.frameView()->scrollableAreas();
-            if (scrollableAreas) {
+            if (const FrameView::ScrollableAreaSet* scrollableAreas = m_renderView.frameView()->scrollableAreas()) {
                 for (FrameView::ScrollableAreaSet::iterator it = scrollableAreas->begin(); it != scrollableAreas->end(); ++it)
                     (*it)->updateAfterCompositingChange();
             }
