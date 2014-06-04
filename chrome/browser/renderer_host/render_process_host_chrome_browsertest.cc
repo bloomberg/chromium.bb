@@ -21,6 +21,7 @@
 #include "content/public/browser/render_widget_host_iterator.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/test/browser_test_utils.h"
 
 using content::RenderViewHost;
 using content::RenderWidgetHost;
@@ -72,6 +73,7 @@ class ChromeRenderProcessHostTest : public InProcessBrowserTest {
     CHECK(wc->GetURL() == page);
 
     WaitForLauncherThread();
+    WaitForMessageProcessing(wc);
     return wc->GetRenderProcessHost()->GetHandle();
   }
 
@@ -87,6 +89,7 @@ class ChromeRenderProcessHostTest : public InProcessBrowserTest {
     CHECK(wc->GetVisibleURL() == page);
 
     WaitForLauncherThread();
+    WaitForMessageProcessing(wc);
     return wc->GetRenderProcessHost()->GetHandle();
   }
 
@@ -96,6 +99,16 @@ class ChromeRenderProcessHostTest : public InProcessBrowserTest {
         content::BrowserThread::PROCESS_LAUNCHER, FROM_HERE,
         base::Bind(&base::DoNothing), base::MessageLoop::QuitClosure());
     base::MessageLoop::current()->Run();
+  }
+
+  // Implicitly waits for the renderer process associated with the specified
+  // WebContents to process outstanding IPC messages by running some JavaScript
+  // and waiting for the result.
+  void WaitForMessageProcessing(WebContents* wc) {
+    bool result = false;
+    ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+        wc, "window.domAutomationController.send(true);", &result));
+    ASSERT_TRUE(result);
   }
 
   // When we hit the max number of renderers, verify that the way we do process
@@ -252,9 +265,7 @@ IN_PROC_BROWSER_TEST_F(ChromeRenderProcessHostTest, ProcessPerTab) {
 
 // We don't change process priorities on Mac or Posix because the user lacks the
 // permission to raise a process' priority even after lowering it.
-// TODO(dalecurtis): Reenable this on Windows after figuring out how to reliably
-// wait for the renderer process to process IPC messages.
-#if defined(OS_LINUX)
+#if defined(OS_WIN) || defined(OS_LINUX)
 IN_PROC_BROWSER_TEST_F(ChromeRenderProcessHostTest, Backgrounding) {
   if (!base::Process::CanBackgroundProcesses()) {
     LOG(ERROR) << "Can't background processes";
