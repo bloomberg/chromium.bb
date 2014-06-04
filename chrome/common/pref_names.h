@@ -789,28 +789,8 @@ extern const char kShowLogoutButtonInTray[];
 #endif
 
 #if defined(USE_AURA)
-extern const char kFlingVelocityCap[];
-extern const char kLongPressTimeInSeconds[];
-extern const char kMaxDistanceBetweenTapsForDoubleTap[];
-extern const char kMaxDistanceForTwoFingerTapInPixels[];
-extern const char kMaxSecondsBetweenDoubleClick[];
 extern const char kMaxSeparationForGestureTouchesInPixels[];
-extern const char kMaxSwipeDeviationRatio[];
-extern const char kMaxTouchDownDurationInSecondsForClick[];
-extern const char kMaxTouchMoveInPixelsForClick[];
-extern const char kMinDistanceForPinchScrollInPixels[];
-extern const char kMinFlickSpeedSquared[];
-extern const char kMinPinchUpdateDistanceInPixels[];
-extern const char kMinRailBreakVelocity[];
-extern const char kMinScrollDeltaSquared[];
-extern const char kMinSwipeSpeed[];
-extern const char kMinTouchDownDurationInSecondsForClick[];
-extern const char kPointsBufferedForVelocity[];
-extern const char kRailBreakProportion[];
-extern const char kRailStartProportion[];
-extern const char kScrollPredictionSeconds[];
 extern const char kSemiLongPressTimeInSeconds[];
-extern const char kShowPressDelayInMS[];
 extern const char kTabScrubActivationDelayInMS[];
 extern const char kFlingAccelerationCurveCoefficient0[];
 extern const char kFlingAccelerationCurveCoefficient1[];

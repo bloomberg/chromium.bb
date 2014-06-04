@@ -27,6 +27,48 @@ using ui::GestureConfiguration;
 
 namespace {
 
+// TODO(tdresser): Remove these deprecated prefs in M38. See crbug.com/379912.
+
+const char kFlingVelocityCap[] = "gesture.fling_velocity_cap";
+const char kLongPressTimeInSeconds[] =
+    "gesture.long_press_time_in_seconds";
+const char kMaxDistanceBetweenTapsForDoubleTap[] =
+    "gesture.max_distance_between_taps_for_double_tap";
+const char kMaxDistanceForTwoFingerTapInPixels[] =
+    "gesture.max_distance_for_two_finger_tap_in_pixels";
+const char kMaxSecondsBetweenDoubleClick[] =
+    "gesture.max_seconds_between_double_click";
+const char kMaxSwipeDeviationRatio[] =
+    "gesture.max_swipe_deviation_ratio";
+const char kMaxTouchDownDurationInSecondsForClick[] =
+    "gesture.max_touch_down_duration_in_seconds_for_click";
+const char kMaxTouchMoveInPixelsForClick[] =
+    "gesture.max_touch_move_in_pixels_for_click";
+const char kMinDistanceForPinchScrollInPixels[] =
+    "gesture.min_distance_for_pinch_scroll_in_pixels";
+const char kMinFlickSpeedSquared[] =
+    "gesture.min_flick_speed_squared";
+const char kMinPinchUpdateDistanceInPixels[] =
+    "gesture.min_pinch_update_distance_in_pixels";
+const char kMinRailBreakVelocity[] =
+    "gesture.min_rail_break_velocity";
+const char kMinScrollDeltaSquared[] =
+    "gesture.min_scroll_delta_squared";
+const char kMinSwipeSpeed[] =
+    "gesture.min_swipe_speed";
+const char kMinTouchDownDurationInSecondsForClick[] =
+    "gesture.min_touch_down_duration_in_seconds_for_click";
+const char kPointsBufferedForVelocity[] =
+    "gesture.points_buffered_for_velocity";
+const char kRailBreakProportion[] =
+    "gesture.rail_break_proportion";
+const char kRailStartProportion[] =
+    "gesture.rail_start_proportion";
+const char kScrollPredictionSeconds[] =
+    "gesture.scroll_prediction_seconds";
+const char kShowPressDelayInMS[] =
+    "gesture.show_press_delay_in_ms";
+
 struct OverscrollPref {
   const char* pref_name;
   content::OverscrollConfig config;
@@ -98,26 +140,8 @@ const char* kPrefsToObserve[] = {
   prefs::kFlingMaxCancelToDownTimeInMs,
   prefs::kFlingMaxTapGapTimeInMs,
   prefs::kTabScrubActivationDelayInMS,
-  prefs::kFlingVelocityCap,
-  prefs::kLongPressTimeInSeconds,
-  prefs::kMaxDistanceForTwoFingerTapInPixels,
-  prefs::kMaxSecondsBetweenDoubleClick,
   prefs::kMaxSeparationForGestureTouchesInPixels,
-  prefs::kMaxSwipeDeviationRatio,
-  prefs::kMaxTouchDownDurationInSecondsForClick,
-  prefs::kMaxTouchMoveInPixelsForClick,
-  prefs::kMinDistanceForPinchScrollInPixels,
-  prefs::kMinFlickSpeedSquared,
-  prefs::kMinPinchUpdateDistanceInPixels,
-  prefs::kMinRailBreakVelocity,
-  prefs::kMinScrollDeltaSquared,
-  prefs::kMinSwipeSpeed,
-  prefs::kMinTouchDownDurationInSecondsForClick,
-  prefs::kPointsBufferedForVelocity,
-  prefs::kRailBreakProportion,
-  prefs::kRailStartProportion,
   prefs::kSemiLongPressTimeInSeconds,
-  prefs::kShowPressDelayInMS,
 };
 
 const char* kFlingTouchpadPrefs[] = {
@@ -132,8 +156,37 @@ const char* kFlingTouchscreenPrefs[] = {
   prefs::kFlingCurveTouchscreenGamma,
 };
 
+const char* kPrefsToRemove[] = {
+  kFlingVelocityCap,
+  kLongPressTimeInSeconds,
+  kMaxDistanceBetweenTapsForDoubleTap,
+  kMaxDistanceForTwoFingerTapInPixels,
+  kMaxSecondsBetweenDoubleClick,
+  kMaxSwipeDeviationRatio,
+  kMaxTouchDownDurationInSecondsForClick,
+  kMaxTouchMoveInPixelsForClick,
+  kMinDistanceForPinchScrollInPixels,
+  kMinFlickSpeedSquared,
+  kMinPinchUpdateDistanceInPixels,
+  kMinRailBreakVelocity,
+  kMinScrollDeltaSquared,
+  kMinSwipeSpeed,
+  kMinTouchDownDurationInSecondsForClick,
+  kPointsBufferedForVelocity,
+  kRailBreakProportion,
+  kRailStartProportion,
+  kScrollPredictionSeconds,
+  kShowPressDelayInMS,
+};
+
 GesturePrefsObserver::GesturePrefsObserver(PrefService* prefs)
     : prefs_(prefs) {
+  // Clear for migration.
+  for (size_t i = 0; i < arraysize(kPrefsToRemove); ++i) {
+    if (prefs->FindPreference(kPrefsToRemove[i]))
+      prefs->ClearPref(kPrefsToRemove[i]);
+  }
+
   registrar_.Init(prefs);
   registrar_.RemoveAll();
   base::Closure callback = base::Bind(&GesturePrefsObserver::Update,
@@ -178,69 +231,12 @@ void GesturePrefsObserver::Update() {
       prefs_->GetInteger(prefs::kFlingMaxTapGapTimeInMs));
   GestureConfiguration::set_tab_scrub_activation_delay_in_ms(
       prefs_->GetInteger(prefs::kTabScrubActivationDelayInMS));
-  GestureConfiguration::set_fling_velocity_cap(
-      prefs_->GetDouble(prefs::kFlingVelocityCap));
-  GestureConfiguration::set_long_press_time_in_seconds(
-      prefs_->GetDouble(
-          prefs::kLongPressTimeInSeconds));
   GestureConfiguration::set_semi_long_press_time_in_seconds(
       prefs_->GetDouble(
           prefs::kSemiLongPressTimeInSeconds));
-  GestureConfiguration::set_max_distance_for_two_finger_tap_in_pixels(
-      prefs_->GetDouble(
-          prefs::kMaxDistanceForTwoFingerTapInPixels));
-  GestureConfiguration::set_max_seconds_between_double_click(
-      prefs_->GetDouble(
-          prefs::kMaxSecondsBetweenDoubleClick));
   GestureConfiguration::set_max_separation_for_gesture_touches_in_pixels(
       prefs_->GetDouble(
           prefs::kMaxSeparationForGestureTouchesInPixels));
-  GestureConfiguration::set_max_swipe_deviation_ratio(
-      prefs_->GetDouble(
-          prefs::kMaxSwipeDeviationRatio));
-  GestureConfiguration::set_max_touch_down_duration_in_seconds_for_click(
-      prefs_->GetDouble(
-          prefs::kMaxTouchDownDurationInSecondsForClick));
-  GestureConfiguration::set_max_touch_move_in_pixels_for_click(
-      prefs_->GetDouble(
-          prefs::kMaxTouchMoveInPixelsForClick));
-  GestureConfiguration::set_max_distance_between_taps_for_double_tap(
-      prefs_->GetDouble(
-          prefs::kMaxDistanceBetweenTapsForDoubleTap));
-  GestureConfiguration::set_min_distance_for_pinch_scroll_in_pixels(
-      prefs_->GetDouble(
-          prefs::kMinDistanceForPinchScrollInPixels));
-  GestureConfiguration::set_min_flick_speed_squared(
-      prefs_->GetDouble(
-          prefs::kMinFlickSpeedSquared));
-  GestureConfiguration::set_min_pinch_update_distance_in_pixels(
-      prefs_->GetDouble(
-          prefs::kMinPinchUpdateDistanceInPixels));
-  GestureConfiguration::set_min_rail_break_velocity(
-      prefs_->GetDouble(
-          prefs::kMinRailBreakVelocity));
-  GestureConfiguration::set_min_scroll_delta_squared(
-      prefs_->GetDouble(
-          prefs::kMinScrollDeltaSquared));
-  GestureConfiguration::set_min_swipe_speed(
-      prefs_->GetDouble(
-          prefs::kMinSwipeSpeed));
-  GestureConfiguration::set_min_touch_down_duration_in_seconds_for_click(
-      prefs_->GetDouble(
-          prefs::kMinTouchDownDurationInSecondsForClick));
-  GestureConfiguration::set_points_buffered_for_velocity(
-      prefs_->GetInteger(
-          prefs::kPointsBufferedForVelocity));
-  GestureConfiguration::set_rail_break_proportion(
-      prefs_->GetDouble(
-          prefs::kRailBreakProportion));
-  GestureConfiguration::set_rail_start_proportion(
-      prefs_->GetDouble(
-          prefs::kRailStartProportion));
-  GestureConfiguration::set_scroll_prediction_seconds(
-      prefs_->GetDouble(prefs::kScrollPredictionSeconds));
-  GestureConfiguration::set_show_press_delay_in_ms(
-      prefs_->GetInteger(prefs::kShowPressDelayInMS));
 
   UpdateOverscrollPrefs();
 }
@@ -342,92 +338,12 @@ void GesturePrefsObserverFactoryAura::RegisterProfilePrefs(
       GestureConfiguration::tab_scrub_activation_delay_in_ms(),
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterDoublePref(
-      prefs::kFlingVelocityCap,
-      GestureConfiguration::fling_velocity_cap(),
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterDoublePref(
-      prefs::kLongPressTimeInSeconds,
-      GestureConfiguration::long_press_time_in_seconds(),
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterDoublePref(
       prefs::kSemiLongPressTimeInSeconds,
       GestureConfiguration::semi_long_press_time_in_seconds(),
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterDoublePref(
-      prefs::kMaxDistanceForTwoFingerTapInPixels,
-      GestureConfiguration::max_distance_for_two_finger_tap_in_pixels(),
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterDoublePref(
-      prefs::kMaxSecondsBetweenDoubleClick,
-      GestureConfiguration::max_seconds_between_double_click(),
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterDoublePref(
       prefs::kMaxSeparationForGestureTouchesInPixels,
       GestureConfiguration::max_separation_for_gesture_touches_in_pixels(),
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterDoublePref(
-      prefs::kMaxSwipeDeviationRatio,
-      GestureConfiguration::max_swipe_deviation_ratio(),
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterDoublePref(
-      prefs::kMaxTouchDownDurationInSecondsForClick,
-      GestureConfiguration::max_touch_down_duration_in_seconds_for_click(),
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterDoublePref(
-      prefs::kMaxTouchMoveInPixelsForClick,
-      GestureConfiguration::max_touch_move_in_pixels_for_click(),
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterDoublePref(
-      prefs::kMaxDistanceBetweenTapsForDoubleTap,
-      GestureConfiguration::max_distance_between_taps_for_double_tap(),
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterDoublePref(
-      prefs::kMinDistanceForPinchScrollInPixels,
-      GestureConfiguration::min_distance_for_pinch_scroll_in_pixels(),
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterDoublePref(
-      prefs::kMinFlickSpeedSquared,
-      GestureConfiguration::min_flick_speed_squared(),
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterDoublePref(
-      prefs::kMinPinchUpdateDistanceInPixels,
-      GestureConfiguration::min_pinch_update_distance_in_pixels(),
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterDoublePref(
-      prefs::kMinRailBreakVelocity,
-      GestureConfiguration::min_rail_break_velocity(),
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterDoublePref(
-      prefs::kMinScrollDeltaSquared,
-      GestureConfiguration::min_scroll_delta_squared(),
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterDoublePref(
-      prefs::kMinSwipeSpeed,
-      GestureConfiguration::min_swipe_speed(),
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterDoublePref(
-      prefs::kMinTouchDownDurationInSecondsForClick,
-      GestureConfiguration::min_touch_down_duration_in_seconds_for_click(),
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterIntegerPref(
-      prefs::kPointsBufferedForVelocity,
-      GestureConfiguration::points_buffered_for_velocity(),
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterDoublePref(
-      prefs::kRailBreakProportion,
-      GestureConfiguration::rail_break_proportion(),
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterDoublePref(
-      prefs::kRailStartProportion,
-      GestureConfiguration::rail_start_proportion(),
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterDoublePref(
-      prefs::kScrollPredictionSeconds,
-      GestureConfiguration::scroll_prediction_seconds(),
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterIntegerPref(
-      prefs::kShowPressDelayInMS,
-      GestureConfiguration::show_press_delay_in_ms(),
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   RegisterOverscrollPrefs(registry);
   RegisterFlingCurveParameters(registry);

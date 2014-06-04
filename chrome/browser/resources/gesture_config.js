@@ -168,24 +168,8 @@ function GestureConfig() {
       units: 'milliseconds',
     },
     {
-      key: 'long_press_time_in_seconds',
-      label: 'Long Press Time',
-      units: 'seconds'
-    },
-    {
       key: 'semi_long_press_time_in_seconds',
       label: 'Semi Long Press Time',
-      units: 'seconds',
-      step: 0.1
-    },
-    {
-      key: 'show_press_delay_in_ms',
-      label: 'Delay before show press event is fired',
-      units: 'milliseconds',
-    },
-    {
-      key: 'max_seconds_between_double_click',
-      label: 'Maximum Double Click Interval',
       units: 'seconds',
       step: 0.1
     },
@@ -193,87 +177,6 @@ function GestureConfig() {
       key: 'max_separation_for_gesture_touches_in_pixels',
       label: 'Maximum Separation for Gesture Touches',
       units: 'pixels'
-    },
-    {
-      key: 'max_swipe_deviation_ratio',
-      label: 'Maximum Swipe Deviation',
-      units: ''
-    },
-    {
-      key: 'max_touch_down_duration_in_seconds_for_click',
-      label: 'Maximum Touch-Down Duration for Click',
-      units: 'seconds',
-      step: 0.1
-    },
-    {
-      key: 'max_touch_move_in_pixels_for_click',
-      label: 'Maximum Touch-Move for Click',
-      units: 'pixels'
-    },
-    {
-      key: 'max_distance_between_taps_for_double_tap',
-      label: 'Maximum Distance between two taps for Double Tap',
-      units: 'pixels'
-    },
-    {
-      key: 'min_distance_for_pinch_scroll_in_pixels',
-      label: 'Minimum Distance for Pinch Scroll',
-      units: 'pixels'
-    },
-    {
-      key: 'min_flick_speed_squared',
-      label: 'Minimum Flick Speed Squared',
-      units: '(pixels/sec.)<sup>2</sup>'
-    },
-    {
-      key: 'min_pinch_update_distance_in_pixels',
-      label: 'Minimum Pinch Update Distance',
-      units: 'pixels'
-    },
-    {
-      key: 'min_rail_break_velocity',
-      label: 'Minimum Rail-Break Velocity',
-      units: 'pixels/sec.'
-    },
-    {
-      key: 'min_scroll_delta_squared',
-      label: 'Minimum Scroll Delta Squared',
-      units: ''
-    },
-    {
-      key: 'scroll_prediction_seconds',
-      label: 'Scroll prediction interval<br>' +
-          '(Enable scroll prediction in ' +
-              '<a href="chrome://flags">chrome://flags</a>)',
-      units: 'seconds',
-      step: 0.01
-    },
-    {
-      key: 'min_swipe_speed',
-      label: 'Minimum Swipe Speed',
-      units: 'pixels/sec.'
-    },
-    {
-      key: 'min_touch_down_duration_in_seconds_for_click',
-      label: 'Minimum Touch-Down Duration for Click',
-      units: 'seconds',
-      step: 0.01
-    },
-    {
-      key: 'points_buffered_for_velocity',
-      label: 'Points Buffered for Velocity',
-      units: '',
-      step: 1
-    },
-    {
-      key: 'rail_break_proportion',
-      label: 'Rail-Break Proportion',
-      units: '%'
-    },
-    {
-      key: 'rail_start_proportion',
-      label: 'Rail-Start Proportion',
-      units: '%'
     },
     {
       key: 'fling_acceleration_curve_coefficient_0',
@@ -298,11 +201,6 @@ function GestureConfig() {
       label: '+',
       units: 'x<sup>0</sup>',
       min: '-1'
-    },
-    {
-      key: 'fling_velocity_cap',
-      label: 'Touchscreen Fling Velocity Cap',
-      units: 'pixels / second'
     },
     {
       key: 'tab_scrub_activation_delay_in_ms',
