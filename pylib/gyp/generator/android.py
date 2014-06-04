@@ -317,12 +317,19 @@ class AndroidMkWriter(object):
       self.WriteLn('%s: export PATH := $(subst $(ANDROID_BUILD_PATHS),,$(PATH))'
                    % main_output)
 
+      # Don't allow spaces in input/output filenames, but make an exception for
+      # filenames which start with '$(' since it's okay for there to be spaces
+      # inside of make function/macro invocations.
       for input in inputs:
-        assert ' ' not in input, (
-            "Spaces in action input filenames not supported (%s)"  % input)
+        if not input.startswith('$(') and ' ' in input:
+          raise gyp.common.GypError(
+              'Action input filename "%s" in target %s contains a space' %
+              (input, self.target))
       for output in outputs:
-        assert ' ' not in output, (
-            "Spaces in action output filenames not supported (%s)"  % output)
+        if not output.startswith('$(') and ' ' in output:
+          raise gyp.common.GypError(
+              'Action output filename "%s" in target %s contains a space' %
+              (output, self.target))
 
       self.WriteLn('%s: %s $(GYP_TARGET_DEPENDENCIES)' %
                    (main_output, ' '.join(map(self.LocalPathify, inputs))))
