@@ -379,8 +379,6 @@ wl_connection_queue(struct wl_connection *connection,
 	}
 
 	return wl_buffer_put(&connection->out, data, count);
-
-	return 0;
 }
 
 static int
