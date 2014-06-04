@@ -84,6 +84,9 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
   // Support EME/L1 with hole-punching.
   cl->AppendSwitch(switches::kMediaDrmEnableNonCompositing);
 #endif
+
+  // WebRTC hardware decoding is not supported, internal bug 15075307
+  cl->AppendSwitch(switches::kDisableWebRtcHWDecoding);
   return false;
 }
 
