@@ -16,7 +16,7 @@ inline void ConnectToService(ServiceProvider* service_provider,
   MessagePipe pipe;
   ptr->Bind(pipe.handle0.Pass());
   service_provider->ConnectToService(
-      url, Interface::Name_, pipe.handle1.Pass());
+      url, Interface::Name_, pipe.handle1.Pass(), std::string());
 }
 
 }  // namespace mojo

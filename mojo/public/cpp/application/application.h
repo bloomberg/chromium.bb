@@ -100,10 +100,10 @@ class Application : public internal::ServiceConnectorBase::Owner {
  protected:
   // ServiceProvider methods.
   // Override this to dispatch to correct service when there's more than one.
-  // TODO(davemoore): Augment this with name registration.
-  virtual void ConnectToService(const mojo::String& url,
-                                const mojo::String& name,
-                                ScopedMessagePipeHandle client_handle)
+  virtual void ConnectToService(const mojo::String& service_url,
+                                const mojo::String& service_name,
+                                ScopedMessagePipeHandle client_handle,
+                                const mojo::String& requestor_url)
       MOJO_OVERRIDE;
 
  private:

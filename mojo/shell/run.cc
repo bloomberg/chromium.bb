@@ -29,7 +29,7 @@ void Run(Context* context, const std::vector<GURL>& app_urls) {
     }
     ScopedMessagePipeHandle no_handle;
     context->service_manager()->ConnectToService(
-        *it, std::string(), no_handle.Pass());
+        *it, std::string(), no_handle.Pass(), GURL());
   }
 }
 

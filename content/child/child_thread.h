@@ -172,9 +172,10 @@ class CONTENT_EXPORT ChildThread
 
   // mojo::ServiceProvider implementation:
   virtual void ConnectToService(
-      const mojo::String& url,
-      const mojo::String& name,
-      mojo::ScopedMessagePipeHandle message_pipe) OVERRIDE;
+      const mojo::String& service_url,
+      const mojo::String& service_name,
+      mojo::ScopedMessagePipeHandle message_pipe,
+      const mojo::String& requestor_url) OVERRIDE;
 
  private:
   class ChildThreadMessageRouter : public MessageRouter {

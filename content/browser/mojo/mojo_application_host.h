@@ -49,9 +49,10 @@ class MojoApplicationHost {
 
     // mojo::ServiceProvider methods:
     virtual void ConnectToService(
-        const mojo::String& url,
-        const mojo::String& name,
-        mojo::ScopedMessagePipeHandle handle) OVERRIDE;
+        const mojo::String& service_url,
+        const mojo::String& service_name,
+        mojo::ScopedMessagePipeHandle handle,
+        const mojo::String& requestor_url) OVERRIDE;
   };
 
   mojo::common::ChannelInit channel_init_;

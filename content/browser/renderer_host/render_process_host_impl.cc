@@ -2150,7 +2150,8 @@ void RenderProcessHostImpl::ConnectTo(
   mojo_application_host_->service_provider()->ConnectToService(
       mojo::String::From(service_name),
       std::string(),
-      handle.Pass());
+      handle.Pass(),
+      mojo::String());
 }
 
 void RenderProcessHostImpl::OnAllocateGpuMemoryBuffer(uint32 width,

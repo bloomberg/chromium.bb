@@ -58,9 +58,22 @@ class MOJO_SERVICE_MANAGER_EXPORT ServiceManager {
   static ServiceManager* GetInstance();
 
   // Loads a service if necessary and establishes a new client connection.
-  void ConnectToService(const GURL& url,
-                        const std::string& name,
-                        ScopedMessagePipeHandle client_handle);
+  void ConnectToService(const GURL& service_url,
+                        const std::string& service_name,
+                        ScopedMessagePipeHandle client_handle,
+                        const GURL& requestor_url);
+
+  template <typename Interface>
+  void ConnectTo(const GURL& service_url,
+                 InterfacePtr<Interface>* ptr,
+                 const GURL& requestor_url) {
+    MessagePipe pipe;
+    ptr->Bind(pipe.handle0.Pass());
+    ConnectToService(service_url,
+                     Interface::Name_,
+                     pipe.handle1.Pass(),
+                     requestor_url);
+  }
 
   // Sets the default Loader to be used if not overridden by SetLoaderForURL()
   // or SetLoaderForScheme().

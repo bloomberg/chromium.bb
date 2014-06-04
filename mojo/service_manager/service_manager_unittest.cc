@@ -15,6 +15,8 @@ namespace mojo {
 namespace {
 
 const char kTestURLString[] = "test:testService";
+const char kTestAURLString[] = "test:TestA";
+const char kTestBURLString[] = "test:TestB";
 
 struct TestContext {
   TestContext() : num_impls(0), num_loader_deletes(0) {}
@@ -115,6 +117,67 @@ class TestServiceLoader : public ServiceLoader {
   DISALLOW_COPY_AND_ASSIGN(TestServiceLoader);
 };
 
+// Used to test that the requestor url will be correctly passed.
+class TestAImpl : public InterfaceImpl<TestA> {
+ public:
+  TestAImpl(Application* app) : app_(app) {}
+
+  virtual void LoadB() OVERRIDE {
+    TestBPtr b;
+    app_->ConnectTo(kTestBURLString, &b);
+    b->Test();
+  }
+
+ private:
+  Application* app_;
+};
+
+class TestBImpl : public InterfaceImpl<TestB> {
+ public:
+  virtual void Test() OVERRIDE {
+    base::MessageLoop::current()->Quit();
+  }
+};
+
+class TestApp : public Application, public ServiceLoader {
+ public:
+  TestApp(std::string requestor_url)
+      : requestor_url_(requestor_url),
+        num_connects_(0) {
+  }
+
+  int num_connects() const { return num_connects_; }
+
+ private:
+  virtual void LoadService(
+      ServiceManager* manager,
+      const GURL& url,
+      ScopedMessagePipeHandle service_provider_handle) OVERRIDE {
+    BindServiceProvider(service_provider_handle.Pass());
+  }
+
+  virtual void ConnectToService(const mojo::String& service_url,
+                                const mojo::String& service_name,
+                                ScopedMessagePipeHandle client_handle,
+                                const mojo::String& requestor_url)
+      MOJO_OVERRIDE {
+    if (requestor_url_.empty() || requestor_url_ == requestor_url) {
+      ++num_connects_;
+      Application::ConnectToService(service_url,
+                                    service_name,
+                                    client_handle.Pass(),
+                                    requestor_url);
+    } else {
+      base::MessageLoop::current()->Quit();
+    }
+  }
+
+  virtual void OnServiceError(ServiceManager* manager,
+                              const GURL& url) OVERRIDE {}
+  std::string requestor_url_;
+  int num_connects_;
+};
+
 class TestServiceInterceptor : public ServiceManager::Interceptor {
  public:
   TestServiceInterceptor() : call_count_(0) {}
@@ -165,7 +228,7 @@ class ServiceManagerTest : public testing::Test {
         scoped_ptr<ServiceLoader>(default_loader));
 
     service_manager_->ConnectToService(
-        test_url, TestService::Name_, pipe.handle1.Pass());
+        test_url, TestService::Name_, pipe.handle1.Pass(), GURL());
   }
 
   virtual void TearDown() OVERRIDE {
@@ -239,28 +302,67 @@ TEST_F(ServiceManagerTest, SetLoaders) {
   sm.SetLoaderForScheme(scoped_ptr<ServiceLoader>(scheme_loader), "test");
 
   // test::test1 should go to url_loader.
-  MessagePipe pipe1;
-  sm.ConnectToService(
-      GURL("test:test1"), TestService::Name_, pipe1.handle0.Pass());
+  TestServicePtr test_service;
+  sm.ConnectTo(GURL("test:test1"), &test_service, GURL());
   EXPECT_EQ(1, url_loader->num_loads());
   EXPECT_EQ(0, scheme_loader->num_loads());
   EXPECT_EQ(0, default_loader->num_loads());
 
   // test::test2 should go to scheme loader.
-  MessagePipe pipe2;
-  sm.ConnectToService(
-      GURL("test:test2"), TestService::Name_, pipe2.handle0.Pass());
+  sm.ConnectTo(GURL("test:test2"), &test_service, GURL());
   EXPECT_EQ(1, url_loader->num_loads());
   EXPECT_EQ(1, scheme_loader->num_loads());
   EXPECT_EQ(0, default_loader->num_loads());
 
   // http::test1 should go to default loader.
-  MessagePipe pipe3;
-  sm.ConnectToService(
-      GURL("http:test1"), TestService::Name_, pipe3.handle0.Pass());
+  sm.ConnectTo(GURL("http:test1"), &test_service, GURL());
   EXPECT_EQ(1, url_loader->num_loads());
   EXPECT_EQ(1, scheme_loader->num_loads());
   EXPECT_EQ(1, default_loader->num_loads());
+}
+
+// Confirm that the url of a service is correctly passed to another service that
+// it loads.
+TEST_F(ServiceManagerTest, ALoadB) {
+  ServiceManager sm;
+
+  // Any url can load a.
+  TestApp* a_app = new TestApp(std::string());
+  a_app->AddService<TestAImpl>(a_app);
+  sm.SetLoaderForURL(scoped_ptr<ServiceLoader>(a_app), GURL(kTestAURLString));
+
+  // Only a can load b.
+  TestApp* b_app = new TestApp(kTestAURLString);
+  b_app->AddService<TestBImpl>();
+  sm.SetLoaderForURL(scoped_ptr<ServiceLoader>(b_app), GURL(kTestBURLString));
+
+  TestAPtr a;
+  sm.ConnectTo(GURL(kTestAURLString), &a, GURL());
+  a->LoadB();
+  loop_.Run();
+  EXPECT_EQ(1, b_app->num_connects());
+}
+
+// Confirm that the url of a service is correctly passed to another service that
+// it loads, and that it can be rejected.
+TEST_F(ServiceManagerTest, ANoLoadB) {
+  ServiceManager sm;
+
+  // Any url can load a.
+  TestApp* a_app = new TestApp(std::string());
+  a_app->AddService<TestAImpl>(a_app);
+  sm.SetLoaderForURL(scoped_ptr<ServiceLoader>(a_app), GURL(kTestAURLString));
+
+  // Only c can load b, so this will fail.
+  TestApp* b_app = new TestApp("test:TestC");
+  b_app->AddService<TestBImpl>();
+  sm.SetLoaderForURL(scoped_ptr<ServiceLoader>(b_app), GURL(kTestBURLString));
+
+  TestAPtr a;
+  sm.ConnectTo(GURL(kTestAURLString), &a, GURL());
+  a->LoadB();
+  loop_.Run();
+  EXPECT_EQ(0, b_app->num_connects());
 }
 
 TEST_F(ServiceManagerTest, Interceptor) {
@@ -271,8 +373,8 @@ TEST_F(ServiceManagerTest, Interceptor) {
   sm.SetInterceptor(&interceptor);
 
   std::string url("test:test3");
-  MessagePipe pipe1;
-  sm.ConnectToService(GURL(url), TestService::Name_, pipe1.handle0.Pass());
+  TestServicePtr test_service;
+  sm.ConnectTo(GURL(url), &test_service, GURL());
   EXPECT_EQ(1, interceptor.call_count());
   EXPECT_EQ(url, interceptor.url_spec());
   EXPECT_EQ(1, default_loader->num_loads());

@@ -13,4 +13,12 @@ interface TestClient {
   AckTest();
 };
 
+interface TestA {
+  LoadB();
+};
+
+interface TestB {
+  Test();
+};
+
 }

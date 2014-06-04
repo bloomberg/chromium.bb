@@ -51,13 +51,17 @@ void Application::BindServiceProvider(
   service_provider_.set_client(this);
 }
 
-void Application::ConnectToService(const mojo::String& url,
-                                   const mojo::String& name,
-                                   ScopedMessagePipeHandle client_handle) {
+void Application::ConnectToService(const mojo::String& service_url,
+                                   const mojo::String& service_name,
+                                   ScopedMessagePipeHandle client_handle,
+                                   const mojo::String& requestor_url) {
   internal::ServiceConnectorBase* service_connector =
-      name_to_service_connector_[name];
+      name_to_service_connector_[service_name];
+  assert(service_connector);
+  // requestor_url is ignored because the service_connector stores the url
+  // of the requestor safely.
   return service_connector->ConnectToService(
-      url, name, client_handle.Pass());
+      service_url, service_name, client_handle.Pass());
 }
 
 }  // namespace mojo
