@@ -334,7 +334,9 @@ static inline String formSignature(const HTMLFormElement& form)
     KURL actionURL = form.getURLAttribute(actionAttr);
     // Remove the query part because it might contain volatile parameters such
     // as a session key.
-    actionURL.setQuery(String());
+    if (!actionURL.isEmpty())
+        actionURL.setQuery(String());
+
     StringBuilder builder;
     if (!actionURL.isEmpty())
         builder.append(actionURL.string());
