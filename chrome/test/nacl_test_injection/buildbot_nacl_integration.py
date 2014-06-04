@@ -53,6 +53,11 @@ def Main(args):
       # See http://crbug.com/332301
       tests_to_disable.append('run_breakpad_crash_in_syscall_test')
 
+      # It appears that crash_service.exe is not being reliably built by
+      # default in the CQ.  See: http://crbug.com/380880
+      tests_to_disable.append('run_breakpad_untrusted_crash_test')
+      tests_to_disable.append('run_breakpad_trusted_crash_in_startup_test')
+
   script_dir = os.path.dirname(os.path.abspath(__file__))
   nacl_integration_script = os.path.join(script_dir,
                                          'buildbot_chrome_nacl_stage.py')
