@@ -74,7 +74,7 @@ private:
     LayoutRect m_dirtySourceRect;
 
     static RenderLayerFilterInfoMap* s_filterMap;
-    Vector<RefPtr<Element> > m_internalSVGReferences;
+    WillBePersistentHeapVector<RefPtrWillBeMember<Element> > m_internalSVGReferences;
     Vector<ResourcePtr<DocumentResource> > m_externalSVGReferences;
 };
 

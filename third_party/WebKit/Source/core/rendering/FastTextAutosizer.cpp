@@ -55,7 +55,7 @@ namespace WebCore {
 #ifdef AUTOSIZING_DOM_DEBUG_INFO
 class WriteDebugInfoTask : public ExecutionContextTask {
 public:
-    WriteDebugInfoTask(PassRefPtr<Element> element, AtomicString value)
+    WriteDebugInfoTask(PassRefPtrWillBeRawPtr<Element> element, AtomicString value)
         : m_element(element)
         , m_value(value)
     {
@@ -67,7 +67,7 @@ public:
     }
 
 private:
-    RefPtr<Element> m_element;
+    RefPtrWillBePersistent<Element> m_element;
     AtomicString m_value;
 };
 

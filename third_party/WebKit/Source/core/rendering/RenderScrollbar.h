@@ -81,7 +81,7 @@ private:
     // so we keep a reference to the Node which caused this custom scrollbar creation.
     // This will not create a reference cycle as the Widget tree is owned by our containing
     // FrameView which this Node pointer can in no way keep alive. See webkit bug 80610.
-    RefPtr<Node> m_owner;
+    RefPtrWillBePersistent<Node> m_owner;
 
     LocalFrame* m_owningFrame;
     HashMap<unsigned, RenderScrollbarPart*> m_parts;

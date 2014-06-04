@@ -750,7 +750,7 @@ static void writeCounterValuesFromChildren(TextStream& stream, RenderObject* par
 String counterValueForElement(Element* element)
 {
     // Make sure the element is not freed during the layout.
-    RefPtr<Element> elementRef(element);
+    RefPtrWillBeRawPtr<Element> protector(element);
     element->document().updateLayout();
     TextStream stream;
     bool isFirstCounter = true;
@@ -765,7 +765,7 @@ String counterValueForElement(Element* element)
 String markerTextForListItem(Element* element)
 {
     // Make sure the element is not freed during the layout.
-    RefPtr<Element> elementRef(element);
+    RefPtrWillBeRawPtr<Element> protector(element);
     element->document().updateLayout();
 
     RenderObject* renderer = element->renderer();
