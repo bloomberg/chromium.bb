@@ -94,5 +94,5 @@ Adding file system.
 Dumping uiSourceCodes origin URLs:
   - file:///var/www/foo.js
 Removing project:
-Received project will reset event.
+Received project removed event.
 

@@ -330,12 +330,12 @@ function test()
             dumpWorkspaceUISourceCodes();
             InspectorTest.addResult("Removing project:");
             var project = InspectorTest.testWorkspace.uiSourceCodes()[0].project();
-            InspectorTest.testWorkspace.addEventListener(WebInspector.Workspace.Events.ProjectWillReset, projectWillReset);
+            InspectorTest.testWorkspace.addEventListener(WebInspector.Workspace.Events.ProjectRemoved, projectRemoved);
             project.remove();
 
-            function projectWillReset()
+            function projectRemoved()
             {
-                InspectorTest.addResult("Received project will reset event.");
+                InspectorTest.addResult("Received project removed event.");
                 next();
             }
         },
