@@ -36,6 +36,7 @@ component("blink_common") {
   configs += [
     "//build/config/compiler:wexit_time_destructors",
     "//third_party/WebKit/Source:config",
+    "//third_party/WebKit/Source:non_test_config",
   ]
 
   deps = [
@@ -169,6 +170,7 @@ component("platform") {
   configs += [
     ":v8_stub_config",
     "//third_party/WebKit/Source:config",
+    "//third_party/WebKit/Source:non_test_config",
   ]
 
   defines = [
@@ -266,12 +268,6 @@ component("platform") {
       "geometry/cg/IntPointCG.cpp",
       "geometry/cg/IntRectCG.cpp",
       "geometry/cg/IntSizeCG.cpp",
-    ]
-  }
-
-  if (!(is_linux || is_android)) {
-    sources -= [
-      "fonts/linux/FontPlatformDataLinuxHarfBuzz.cpp",
     ]
   }
 
