@@ -982,8 +982,12 @@ class AndroidCommands(object):
     md5sum_dist_path = os.path.join(constants.GetOutDirectory(),
                                     'md5sum_dist')
     assert os.path.exists(md5sum_dist_path), 'Please build md5sum.'
-    command = 'push %s %s' % (md5sum_dist_path, MD5SUM_DEVICE_FOLDER)
-    assert _HasAdbPushSucceeded(self._adb.SendCommand(command))
+    md5sum_dist_mtime = os.stat(md5sum_dist_path).st_mtime
+    if (md5sum_dist_path not in self._push_if_needed_cache or
+        self._push_if_needed_cache[md5sum_dist_path] != md5sum_dist_mtime):
+      command = 'push %s %s' % (md5sum_dist_path, MD5SUM_DEVICE_FOLDER)
+      assert _HasAdbPushSucceeded(self._adb.SendCommand(command))
+      self._push_if_needed_cache[md5sum_dist_path] = md5sum_dist_mtime
 
     (_, md5_device_output) = self.GetAndroidToolStatusAndOutput(
         self._util_wrapper + ' ' + MD5SUM_DEVICE_PATH + ' ' + device_path,
