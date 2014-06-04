@@ -3,21 +3,18 @@
 # found in the LICENSE file.
 
 {
-  'includes': [
-    '../../bindings.gypi',
-  ],
   'variables': {
-    'bindings_core_v8_output_dir': '<(bindings_output_dir)/core/v8',
+    'bindings_core_v8_output_dir': '<(SHARED_INTERMEDIATE_DIR)/blink/bindings/core/v8',
 
     'conditions': [
       ['OS=="win" and buildtype=="Official"', {
         # On Windows Official release builds, we try to preserve symbol
         # space.
-        'bindings_core_generated_aggregate_files': [
+        'bindings_core_v8_generated_aggregate_files': [
           '<(bindings_core_v8_output_dir)/V8GeneratedCoreBindings.cpp',
         ],
       }, {
-        'bindings_core_generated_aggregate_files': [
+        'bindings_core_v8_generated_aggregate_files': [
           '<(bindings_core_v8_output_dir)/V8GeneratedCoreBindings01.cpp',
           '<(bindings_core_v8_output_dir)/V8GeneratedCoreBindings02.cpp',
           '<(bindings_core_v8_output_dir)/V8GeneratedCoreBindings03.cpp',

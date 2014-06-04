@@ -41,11 +41,10 @@
     'enable_wexit_time_destructors': 1,
 
     'webcore_include_dirs': [
-      '../..',
-      '..',
-      '<(SHARED_INTERMEDIATE_DIR)/blink',
+      '..',  # WebKit/Source
+      '<(SHARED_INTERMEDIATE_DIR)/blink',  # gen/blink
       # FIXME: Remove these once core scripts generates qualified
-      # includes correctly: http://crbug.com/358074
+      # includes correctly: http://crbug.com/380054
       '<(bindings_core_v8_output_dir)',
       '<(bindings_modules_v8_output_dir)',
     ],
@@ -217,10 +216,10 @@
         'injected_canvas_script_source',
         'injected_script_source',
         'debugger_script_source',
-        '../bindings/core/v8/generated.gyp:bindings_core_generated',
-        # FIXME: don't depend on bindings/modules http://crbug.com/358074
-        '../bindings/modules/generated.gyp:bindings_modules_generated',
-        '../bindings/modules/v8/generated.gyp:bindings_modules_generated',
+        '../bindings/core/v8/generated.gyp:bindings_core_v8_generated',
+        # FIXME: don't depend on bindings_modules http://crbug.com/358074
+        '../bindings/modules/generated.gyp:modules_event_generated',
+        '../bindings/modules/v8/generated.gyp:bindings_modules_v8_generated',
         '../platform/platform_generated.gyp:make_platform_generated',
         '../wtf/wtf.gyp:wtf',
         '<(DEPTH)/gin/gin.gyp:gin',
@@ -253,7 +252,7 @@
         '<@(bindings_v8_files)',
         # These files include all the .cpp files generated from the .idl files
         # in webcore_files.
-        '<@(bindings_core_generated_aggregate_files)',
+        '<@(bindings_core_v8_generated_aggregate_files)',
 
         # Additional .cpp files for HashTools.h
         '<(SHARED_INTERMEDIATE_DIR)/blink/CSSPropertyNames.cpp',
@@ -366,9 +365,9 @@
         'inspector_protocol_sources',
         'inspector_instrumentation_sources',
         'core_generated.gyp:make_core_generated',
-        '../bindings/core/v8/generated.gyp:bindings_core_generated',
+        '../bindings/core/v8/generated.gyp:bindings_core_v8_generated',
         # FIXME: don't depend on bindings_modules http://crbug.com/358074
-        '../bindings/modules/v8/generated.gyp:bindings_modules_generated',
+        '../bindings/modules/v8/generated.gyp:bindings_modules_v8_generated',
         '../wtf/wtf.gyp:wtf',
         '../config.gyp:config',
         '../platform/blink_platform.gyp:blink_platform',

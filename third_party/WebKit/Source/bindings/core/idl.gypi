@@ -7,7 +7,7 @@
 {
   'includes': [
     '../../core/core.gypi',
-    '../idl.gypi',
+    'generated.gypi',
   ],
 
   'variables': {
@@ -18,6 +18,10 @@
       '<@(webcore_testing_idl_files)',
       '<@(generated_webcore_testing_idl_files)',
     ],
+
+    # Write lists of main IDL files to a file, so that the command lines don't
+    # exceed OS length limits.
+    'core_idl_files_list': '<|(core_idl_files_list.tmp <@(core_idl_files))',
 
     # Dependency IDL files: don't generate individual bindings, but do process
     # in IDL dependency computation, and count as build dependencies
@@ -61,9 +65,7 @@
     ],
 
     'core_generated_dependency_idl_files': [
-      # FIXME: Generate separate core_global_constructors_idls
-      # http://crbug.com/358074
-      '<@(generated_global_constructors_idl_files)',  # partial interfaces
+      '<@(core_global_constructors_generated_idl_files)',  # partial interfaces
     ],
   },
 }

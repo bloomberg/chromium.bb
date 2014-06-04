@@ -8,37 +8,26 @@
 
 {
   'includes': [
+    # ../../.. == Source
+    '../../../bindings/bindings.gypi',
+    '../../../bindings/modules/idl.gypi',
+    '../../../bindings/modules/modules.gypi',
+    '../../../bindings/scripts/scripts.gypi',
     '../../../modules/modules.gypi',
-    '../../bindings.gypi',
-    '../../core/idl.gypi',
-    '../../scripts/scripts.gypi',
-    '../idl.gypi',
-    '../modules.gypi',
     'generated.gypi',
   ],
-
-  'variables': {
-    # IDL file lists; see: http://www.chromium.org/developers/web-idl-interfaces
-    # Write lists of main IDL files to a file, so that the command lines don't
-    # exceed OS length limits.
-    'modules_idl_files_list': '<|(modules_idl_files_list.tmp <@(modules_idl_files))',
-
-    # Interface IDL files: generate individual bindings (includes testing)
-    'modules_interface_idl_files': [
-      # No testing or generated interface IDL files in modules currently
-      '<@(modules_idl_files)',
-    ],
-  },
 
   'targets': [
 ################################################################################
   {
-    'target_name': 'bindings_modules_generated_individual',
+    'target_name': 'bindings_modules_v8_generated_individual',
     'type': 'none',
     # The 'binding' rule generates .h files, so mark as hard_dependency, per:
     # https://code.google.com/p/gyp/wiki/InputFormatReference#Linking_Dependencies
     'hard_dependency': 1,
     'dependencies': [
+      '../../core/generated.gyp:core_global_constructors_idls',
+      '../generated.gyp:modules_global_constructors_idls',
       '../generated.gyp:interfaces_info',
       '<(bindings_scripts_dir)/scripts.gyp:cached_jinja_templates',
       '<(bindings_scripts_dir)/scripts.gyp:cached_lex_yacc_tables',
@@ -96,16 +85,16 @@
   },
 ################################################################################
   {
-    'target_name': 'bindings_modules_generated_aggregate',
+    'target_name': 'bindings_modules_v8_generated_aggregate',
     'type': 'none',
     'actions': [{
-      'action_name': 'generate_aggregate_bindings_modules',
+      'action_name': 'generate_aggregate_bindings_modules_v8',
       'inputs': [
         '<(bindings_scripts_dir)/aggregate_generated_bindings.py',
         '<(modules_idl_files_list)',
       ],
       'outputs': [
-        '<@(bindings_modules_generated_aggregate_files)',
+        '<@(bindings_modules_v8_generated_aggregate_files)',
       ],
       'action': [
         'python',
@@ -113,18 +102,18 @@
         'modules',
         '<(modules_idl_files_list)',
         '--',
-        '<@(bindings_modules_generated_aggregate_files)',
+        '<@(bindings_modules_v8_generated_aggregate_files)',
       ],
-      'message': 'Generating aggregate generated modules bindings files',
+      'message': 'Generating aggregate generated modules V8 bindings files',
     }],
   },
 ################################################################################
   {
-    'target_name': 'bindings_modules_generated',
+    'target_name': 'bindings_modules_v8_generated',
     'type': 'none',
     'dependencies': [
-      'bindings_modules_generated_aggregate',
-      'bindings_modules_generated_individual',
+      'bindings_modules_v8_generated_aggregate',
+      'bindings_modules_v8_generated_individual',
     ],
   },
 ################################################################################

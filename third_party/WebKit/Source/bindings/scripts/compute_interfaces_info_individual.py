@@ -31,7 +31,12 @@
 """Compute global interface information for individual IDL files.
 
 Auxiliary module for compute_interfaces_info_overall, which consolidates
-this individual information.
+this individual information, computing info that spans multiple files
+(dependencies and ancestry).
+
+This distinction is so that individual interface info can be computed
+separately for each component (avoiding duplicated reading of individual
+files), then consolidated using *only* the info visible to a given component.
 
 Design doc: http://www.chromium.org/developers/design-documents/idl-build
 """

@@ -6,13 +6,23 @@
 
 {
   'includes': [
-    '../../core/core.gypi',
+    '../../modules/modules.gypi',
     '../core/idl.gypi',
-    '../idl.gypi',
+    'generated.gypi',
   ],
 
   'variables': {
     # IDL file lists; see: http://www.chromium.org/developers/web-idl-interfaces
+
+    # Interface IDL files: generate individual bindings (includes testing)
+    'modules_interface_idl_files': [
+      # No testing or generated interface IDL files in modules currently
+      '<@(modules_idl_files)',
+    ],
+
+    # Write lists of main IDL files to a file, so that the command lines don't
+    # exceed OS length limits.
+    'modules_idl_files_list': '<|(modules_idl_files_list.tmp <@(modules_idl_files))',
 
     # Dependency IDL files: don't generate individual bindings, but do process
     # in IDL dependency computation, and count as build dependencies
@@ -24,7 +34,7 @@
     # collision
     'modules_all_dependency_idl_files': [
       '<@(modules_static_dependency_idl_files)',
-      # '<@(modules_generated_dependency_idl_files)',
+      '<@(modules_generated_dependency_idl_files)',
     ],
 
     # Static IDL files / Generated IDL files
@@ -40,9 +50,9 @@
     'modules_static_idl_files_list':
       '<|(modules_static_idl_files_list.tmp <@(modules_static_idl_files))',
 
-    #'modules_generated_idl_files': [
-    #  '<@(modules_generated_dependency_idl_files)',
-    #],
+    'modules_generated_idl_files': [
+      '<@(modules_generated_dependency_idl_files)',
+    ],
 
     # Static IDL files
     'modules_static_interface_idl_files': [
@@ -54,10 +64,8 @@
     ],
 
     # Generated IDL files
-    #'modules_generated_dependency_idl_files': [
-    #  # FIXME: Generate separate modules_global_constructors_idls
-    #  # http://crbug.com/358074
-    #  # '<@(modules_generated_global_constructors_idl_files)',  # partial interfaces
-    #],
+    'modules_generated_dependency_idl_files': [
+      '<@(modules_global_constructors_generated_idl_files)',  # partial interfaces
+    ],
   },
 }

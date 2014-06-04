@@ -4,8 +4,9 @@
 
 {
   'includes': [
-    '../bindings.gypi',  # FIXME: factor out bindings_core http://crbug.com/358074
-    '../modules/v8/generated.gypi',  # FIXME: remove once bindings CG generates qualified includes http://crbug.com/377364
+    '../bindings.gypi',
+    '../modules/v8/generated.gypi',  # FIXME: remove once core scripts generate qualified includes correctly: http://crbug.com/358074
+    '../v8/v8.gypi',  # FIXME: should be v8/v8.gypi: http://crbug.com/358074
     'v8/generated.gypi',
   ],
 

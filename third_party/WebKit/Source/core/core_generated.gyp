@@ -38,11 +38,11 @@
 
   'targets': [
     {
-      'target_name': 'core_bindings_generated',
+      'target_name': 'core_event_interfaces',
       'type': 'none',
       'actions': [
         {
-          'action_name': 'event_interfaces',
+          'action_name': 'make_core_event_interfaces',
           'variables': {
             'event_idl_files': [
               '<@(core_event_idl_files)',
@@ -51,13 +51,14 @@
                 '<|(event_idl_files_list.tmp <@(event_idl_files))',
           },
           'inputs': [
+            # FIXME: should be in build/scripts, not bindings/scripts
             '../bindings/scripts/generate_event_interfaces.py',
             '../bindings/scripts/utilities.py',
             '<(event_idl_files_list)',
             '<@(event_idl_files)',
           ],
           'outputs': [
-            '<(blink_output_dir)/EventInterfaces.in',
+            '<(SHARED_INTERMEDIATE_DIR)/blink/EventInterfaces.in',
           ],
           'action': [
             'python',
@@ -65,7 +66,7 @@
             '--event-idl-files-list',
             '<(event_idl_files_list)',
             '--event-interfaces-file',
-            '<(blink_output_dir)/EventInterfaces.in',
+            '<(SHARED_INTERMEDIATE_DIR)/blink/EventInterfaces.in',
             '--write-file-only-if-changed',
             '<(write_file_only_if_changed)',
           ],
@@ -130,7 +131,7 @@
       'hard_dependency': 1,
       'dependencies': [
         'generated_testing_idls',
-        'core_bindings_generated',
+        'core_event_interfaces',
         '../config.gyp:config',
       ],
       'sources': [

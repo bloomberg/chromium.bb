@@ -8,10 +8,13 @@
 
 {
   'includes': [
-    '../../build/scripts/scripts.gypi',
-    '../bindings.gypi',
-    '../core/core.gypi',
-    '../scripts/scripts.gypi',
+    # ../.. == Source
+    '../../bindings/bindings.gypi',
+    '../../bindings/core/core.gypi',
+    '../../bindings/scripts/scripts.gypi',
+    '../../build/scripts/scripts.gypi',  # FIXME: Needed for event files, should be in modules, not bindings_modules http://crbug.com/358074
+    '../../modules/modules.gypi',
+    'generated.gypi',
     'idl.gypi',
     'modules.gypi',
   ],
@@ -19,7 +22,7 @@
   'targets': [
 ################################################################################
   {
-    'target_name': 'bindings_modules_generated',
+    'target_name': 'modules_event_generated',
     'type': 'none',
     'actions': [
       {
@@ -38,7 +41,8 @@
           '<@(event_idl_files)',
         ],
         'outputs': [
-          '<(blink_output_dir)/EventModulesInterfaces.in',
+          # FIXME: should output to bindings_modules_output_dir  http://crbug.com/358074
+          '<(SHARED_INTERMEDIATE_DIR)/blink/EventModulesInterfaces.in',
         ],
         'action': [
           'python',
@@ -46,7 +50,7 @@
           '--event-idl-files-list',
           '<(event_idl_files_list)',
           '--event-interfaces-file',
-          '<(blink_output_dir)/EventModulesInterfaces.in',
+          '<(SHARED_INTERMEDIATE_DIR)/blink/EventModulesInterfaces.in',
           '--write-file-only-if-changed',
           '<(write_file_only_if_changed)',
           '--suffix',
@@ -128,13 +132,58 @@
       },
     ],
   },
+################################################################################
+  {
+    'target_name': 'modules_global_constructors_idls',
+    'type': 'none',
+    'dependencies': [
+        # FIXME: should be modules_global_objects http://crbug.com/358074
+        '../generated.gyp:global_objects',
+    ],
+    'actions': [{
+      'action_name': 'generate_modules_global_constructors_idls',
+      'inputs': [
+        '<(bindings_scripts_dir)/generate_global_constructors.py',
+        '<(bindings_scripts_dir)/utilities.py',
+        # Only includes main IDL files (exclude dependencies and testing,
+        # which should not appear on global objects).
+        '<(modules_idl_files_list)',
+        '<@(modules_idl_files)',
+        '<(bindings_output_dir)/GlobalObjects.pickle',
+      ],
+      'outputs': [
+        '<@(modules_global_constructors_generated_idl_files)',
+        '<@(modules_global_constructors_generated_header_files)',
+      ],
+      'action': [
+        'python',
+        '<(bindings_scripts_dir)/generate_global_constructors.py',
+        '--idl-files-list',
+        '<(modules_idl_files_list)',
+        '--global-objects-file',
+        '<(bindings_output_dir)/GlobalObjects.pickle',
+        '--write-file-only-if-changed',
+        '<(write_file_only_if_changed)',
+        '--',
+        'Window',
+        '<(blink_modules_output_dir)/WindowModulesConstructors.idl',
+        'SharedWorkerGlobalScope',
+        '<(blink_modules_output_dir)/SharedWorkerGlobalScopeModulesConstructors.idl',
+        'DedicatedWorkerGlobalScope',
+        '<(blink_modules_output_dir)/DedicatedWorkerGlobalScopeModulesConstructors.idl',
+        'ServiceWorkerGlobalScope',
+        '<(blink_modules_output_dir)/ServiceWorkerGlobalScopeModulesConstructors.idl',
+       ],
+       'message':
+         'Generating IDL files for constructors on global objects from modules',
+      }]
+  },
+################################################################################
   {
     'target_name': 'interfaces_info_individual_modules',
     'type': 'none',
     'dependencies': [
-      # FIXME: should be modules_generated_idls
-      # http://crbug.com/358074
-      '../generated.gyp:generated_idls',
+      'modules_global_constructors_idls',
     ],
     'actions': [{
       'action_name': 'compute_interfaces_info_individual_modules',
@@ -143,8 +192,7 @@
         '<(bindings_scripts_dir)/utilities.py',
         '<(modules_static_idl_files_list)',
         '<@(modules_static_idl_files)',
-        # No generated files currently, will add with constructors
-        # '<@(modules_generated_idl_files)',
+        '<@(modules_generated_idl_files)',
       ],
       'outputs': [
         '<(bindings_modules_output_dir)/InterfacesInfoModulesIndividual.pickle',
@@ -160,10 +208,9 @@
         '<(bindings_modules_output_dir)/InterfacesInfoModulesIndividual.pickle',
         '--write-file-only-if-changed',
         '<(write_file_only_if_changed)',
-        # No generated files currently, will add with constructors
-        # '--',
+        '--',
         # Generated files must be passed at command line
-        # '<@(modules_generated_idl_files)',
+        '<@(modules_generated_idl_files)',
       ],
       'message': 'Computing global information about individual IDL files',
       }]

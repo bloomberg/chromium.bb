@@ -6,7 +6,6 @@
 
 {
   'includes': [
-    'bindings.gypi',
     '../core/core.gypi',
     '../modules/modules.gypi',
   ],
@@ -22,21 +21,5 @@
     # Write lists of main IDL files to a file, so that the command lines don't
     # exceed OS length limits.
     'main_interface_idl_files_list': '<|(main_interface_idl_files_list.tmp <@(main_interface_idl_files))',
-
-    # Global constructors
-    # FIXME: Split into core vs. modules http://crbug.com/358074
-    'generated_global_constructors_idl_files': [
-      '<(blink_output_dir)/WindowConstructors.idl',
-      '<(blink_output_dir)/SharedWorkerGlobalScopeConstructors.idl',
-      '<(blink_output_dir)/DedicatedWorkerGlobalScopeConstructors.idl',
-      '<(blink_output_dir)/ServiceWorkerGlobalScopeConstructors.idl',
-    ],
-
-    'generated_global_constructors_header_files': [
-      '<(blink_output_dir)/WindowConstructors.h',
-      '<(blink_output_dir)/SharedWorkerGlobalScopeConstructors.h',
-      '<(blink_output_dir)/DedicatedWorkerGlobalScopeConstructors.h',
-      '<(blink_output_dir)/ServiceWorkerGlobalScopeConstructors.h',
-    ],
   },
 }

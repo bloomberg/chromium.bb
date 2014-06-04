@@ -50,7 +50,7 @@
     ],
     'sources': [
       '<@(modules_files)',
-      '<@(bindings_modules_generated_aggregate_files)',
+      '<@(bindings_modules_v8_generated_aggregate_files)',
     ],
     # Disable c4267 warnings until we fix size_t to int truncations.
     'msvs_disabled_warnings': [ 4267, 4334, ]
@@ -72,13 +72,14 @@
 
   },
   {
+    # FIXME: should be in modules_generated.gyp
     'target_name': 'make_modules_generated',
     'type': 'none',
     'hard_dependency': 1,
     'dependencies': [
       #'generated_testing_idls',
-      '../core/core_generated.gyp:core_bindings_generated',
-      '../bindings/modules/generated.gyp:bindings_modules_generated',
+      '../core/core_generated.gyp:core_event_interfaces',
+      '../bindings/modules/generated.gyp:modules_event_generated',
       '../config.gyp:config',
     ],
     'sources': [

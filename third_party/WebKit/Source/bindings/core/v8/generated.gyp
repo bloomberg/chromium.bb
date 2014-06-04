@@ -8,35 +8,33 @@
 
 {
   'includes': [
-    '../../../core/core.gypi',
-    '../../bindings.gypi',
-    # FIXME: need list of modules IDL files because some core IDL files depend
-    # on modules IDL files  http://crbug.com/358074
-    '../../modules/idl.gypi',
+    # ../../.. == Source
+    '../../../bindings/bindings.gypi',
+    '../../../bindings/core/generated.gypi',
+    '../../../bindings/core/idl.gypi',
     # FIXME: need info about modules IDL files because some core IDL files
     # depend on modules IDL files  http://crbug.com/358074
-    '../../modules/modules.gypi',
-    '../../scripts/scripts.gypi',
-    '../idl.gypi',
+    '../../../bindings/modules/idl.gypi',
+    '../../../bindings/modules/modules.gypi',
+    '../../../bindings/scripts/scripts.gypi',
+    '../../../core/core.gypi',
     'generated.gypi',
   ],
-
-  # Write lists of main IDL files to a file, so that the command lines don't
-  # exceed OS length limits.
-  'variables': {
-      'core_idl_files_list': '<|(core_idl_files_list.tmp <@(core_idl_files))',
-  },
 
   'targets': [
 ################################################################################
   {
-    'target_name': 'bindings_core_generated_individual',
+    'target_name': 'bindings_core_v8_generated_individual',
     'type': 'none',
     # The 'binding' rule generates .h files, so mark as hard_dependency, per:
     # https://code.google.com/p/gyp/wiki/InputFormatReference#Linking_Dependencies
     'hard_dependency': 1,
     'dependencies': [
       '../../../core/core_generated.gyp:generated_testing_idls',
+      '../generated.gyp:core_global_constructors_idls',
+      # FIXME: should not depend on modules, but partial interface definitions
+      # in modules change bindings for core http://crbug.com/358074
+      '../../modules/generated.gyp:modules_global_constructors_idls',
       '<(bindings_scripts_dir)/scripts.gyp:cached_jinja_templates',
       '<(bindings_scripts_dir)/scripts.gyp:cached_lex_yacc_tables',
       # FIXME: should be interfaces_info_core (w/o modules)
@@ -98,16 +96,16 @@
   },
 ################################################################################
   {
-    'target_name': 'bindings_core_generated_aggregate',
+    'target_name': 'bindings_core_v8_generated_aggregate',
     'type': 'none',
     'actions': [{
-      'action_name': 'generate_aggregate_bindings_core',
+      'action_name': 'generate_aggregate_bindings_core_v8',
       'inputs': [
         '<(bindings_scripts_dir)/aggregate_generated_bindings.py',
         '<(core_idl_files_list)',
       ],
       'outputs': [
-        '<@(bindings_core_generated_aggregate_files)',
+        '<@(bindings_core_v8_generated_aggregate_files)',
       ],
       'action': [
         'python',
@@ -115,18 +113,18 @@
         'core',
         '<(core_idl_files_list)',
         '--',
-        '<@(bindings_core_generated_aggregate_files)',
+        '<@(bindings_core_v8_generated_aggregate_files)',
       ],
-      'message': 'Generating aggregate generated core bindings files',
+      'message': 'Generating aggregate generated core V8 bindings files',
     }],
   },
 ################################################################################
   {
-    'target_name': 'bindings_core_generated',
+    'target_name': 'bindings_core_v8_generated',
     'type': 'none',
     'dependencies': [
-      'bindings_core_generated_aggregate',
-      'bindings_core_generated_individual',
+      'bindings_core_v8_generated_aggregate',
+      'bindings_core_v8_generated_individual',
     ],
   },
 ################################################################################

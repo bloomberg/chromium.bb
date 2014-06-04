@@ -3,12 +3,8 @@
 # found in the LICENSE file.
 
 {
-  'includes': [
-    '../bindings.gypi',
-    'v8/generated.gypi',
-  ],
-
   'variables': {
-    'bindings_modules_output_dir': '<(bindings_output_dir)/modules',
+    # FIXME: modules_generated should output to here http://crbug.com/358074
+    'blink_modules_output_dir': '<(SHARED_INTERMEDIATE_DIR)/blink/modules',
   },
 }
