@@ -135,8 +135,6 @@ class PepperFileIOHost : public ppapi::host::ResourceHost,
 
   ppapi::FileIOStateManager state_manager_;
 
-  base::WeakPtrFactory<PepperFileIOHost> weak_factory_;
-
   DISALLOW_COPY_AND_ASSIGN(PepperFileIOHost);
 };
 

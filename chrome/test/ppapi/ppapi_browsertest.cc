@@ -630,12 +630,7 @@ TEST_PPAPI_NACL(Memory)
 #define MAYBE_FileIO DISABLED_FileIO
 #define MAYBE_FileIO_Private DISABLED_FileIO_Private
 #else
-// Flaky on Mac and Win. http://crbug.com/377599
-#if defined(OS_MACOSX) || defined(OS_WIN)
-#define MAYBE_FileIO DISABLED_FileIO
-#else
 #define MAYBE_FileIO FileIO
-#endif  // OS_MACOSX || OS_WIN
 #define MAYBE_FileIO_Private FileIO_Private
 #endif
 

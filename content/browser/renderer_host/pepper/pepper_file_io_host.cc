@@ -78,6 +78,29 @@ bool FileOpenForWrite(int32_t open_flags) {
   return (open_flags & (PP_FILEOPENFLAG_WRITE | PP_FILEOPENFLAG_APPEND)) != 0;
 }
 
+void FileCloser(base::File auto_close) {
+}
+
+void DidCloseFile(const base::Closure& on_close_callback) {
+  if (!on_close_callback.is_null())
+    on_close_callback.Run();
+}
+
+void DidOpenFile(base::WeakPtr<PepperFileIOHost> file_host,
+                 fileapi::FileSystemOperation::OpenFileCallback callback,
+                 base::File file,
+                 const base::Closure& on_close_callback) {
+  if (file_host) {
+    callback.Run(file.Pass(), on_close_callback);
+  } else {
+    BrowserThread::PostTaskAndReply(
+        BrowserThread::FILE,
+        FROM_HERE,
+        base::Bind(&FileCloser, base::Passed(&file)),
+        base::Bind(&DidCloseFile, on_close_callback));
+  }
+}
+
 }  // namespace
 
 PepperFileIOHost::PepperFileIOHost(BrowserPpapiHostImpl* host,
@@ -90,8 +113,7 @@ PepperFileIOHost::PepperFileIOHost(BrowserPpapiHostImpl* host,
       open_flags_(0),
       file_system_type_(PP_FILESYSTEMTYPE_INVALID),
       max_written_offset_(0),
-      check_quota_(false),
-      weak_factory_(this) {
+      check_quota_(false) {
   int unused;
   if (!host->GetRenderFrameIDsForInstance(
           instance, &render_process_id_, &unused)) {
@@ -184,7 +206,7 @@ int32_t PepperFileIOHost::OnHostMsgOpen(
         FROM_HERE,
         base::Bind(&GetUIThreadStuffForInternalFileSystems, render_process_id_),
         base::Bind(&PepperFileIOHost::GotUIThreadStuffForInternalFileSystems,
-                   weak_factory_.GetWeakPtr(),
+                   AsWeakPtr(),
                    context->MakeReplyMessageContext(),
                    platform_file_flags));
   } else {
@@ -196,7 +218,7 @@ int32_t PepperFileIOHost::OnHostMsgOpen(
         FROM_HERE,
         base::Bind(&GetResolvedRenderProcessId, render_process_id_),
         base::Bind(&PepperFileIOHost::GotResolvedRenderProcessId,
-                   weak_factory_.GetWeakPtr(),
+                   AsWeakPtr(),
                    context->MakeReplyMessageContext(),
                    path,
                    platform_file_flags));
@@ -227,12 +249,15 @@ void PepperFileIOHost::GotUIThreadStuffForInternalFileSystems(
 
   DCHECK(file_system_host_.get());
   DCHECK(file_system_host_->GetFileSystemOperationRunner());
+
   file_system_host_->GetFileSystemOperationRunner()->OpenFile(
       file_system_url_,
       platform_file_flags,
-      base::Bind(&PepperFileIOHost::DidOpenInternalFile,
-                 weak_factory_.GetWeakPtr(),
-                 reply_context));
+      base::Bind(&DidOpenFile,
+                 AsWeakPtr(),
+                 base::Bind(&PepperFileIOHost::DidOpenInternalFile,
+                            AsWeakPtr(),
+                            reply_context)));
 }
 
 void PepperFileIOHost::DidOpenInternalFile(
@@ -248,7 +273,7 @@ void PepperFileIOHost::DidOpenInternalFile(
           this,
           file_system_url_,
           base::Bind(&PepperFileIOHost::DidOpenQuotaFile,
-                     weak_factory_.GetWeakPtr(),
+                     AsWeakPtr(),
                      reply_context,
                      base::Passed(&file)));
       return;
@@ -273,7 +298,7 @@ void PepperFileIOHost::GotResolvedRenderProcessId(
       path,
       file_flags,
       base::Bind(&PepperFileIOHost::OnOpenProxyCallback,
-                 weak_factory_.GetWeakPtr(),
+                 AsWeakPtr(),
                  reply_context));
 }
 
@@ -290,7 +315,7 @@ int32_t PepperFileIOHost::OnHostMsgTouch(
           PPTimeToTime(last_access_time),
           PPTimeToTime(last_modified_time),
           base::Bind(&PepperFileIOHost::ExecutePlatformGeneralCallback,
-                     weak_factory_.GetWeakPtr(),
+                     AsWeakPtr(),
                      context->MakeReplyMessageContext()))) {
     return PP_ERROR_FAILED;
   }
@@ -315,7 +340,7 @@ int32_t PepperFileIOHost::OnHostMsgSetLength(
   if (!file_.SetLength(
           length,
           base::Bind(&PepperFileIOHost::ExecutePlatformGeneralCallback,
-                     weak_factory_.GetWeakPtr(),
+                     AsWeakPtr(),
                      context->MakeReplyMessageContext()))) {
     return PP_ERROR_FAILED;
   }
@@ -333,7 +358,7 @@ int32_t PepperFileIOHost::OnHostMsgFlush(
 
   if (!file_.Flush(
           base::Bind(&PepperFileIOHost::ExecutePlatformGeneralCallback,
-                     weak_factory_.GetWeakPtr(),
+                     AsWeakPtr(),
                      context->MakeReplyMessageContext()))) {
     return PP_ERROR_FAILED;
   }
@@ -352,7 +377,7 @@ int32_t PepperFileIOHost::OnHostMsgClose(
 
   if (file_.IsValid()) {
     file_.Close(base::Bind(&PepperFileIOHost::DidCloseFile,
-                           weak_factory_.GetWeakPtr()));
+                           AsWeakPtr()));
   }
   return PP_OK;
 }
@@ -391,7 +416,7 @@ int32_t PepperFileIOHost::OnHostMsgRequestOSFileHandle(
                  render_process_id_,
                  document_url),
       base::Bind(&PepperFileIOHost::GotPluginAllowedToCallRequestOSFileHandle,
-                 weak_factory_.GetWeakPtr(),
+                 AsWeakPtr(),
                  context->MakeReplyMessageContext()));
   return PP_OK_COMPLETIONPENDING;
 }
