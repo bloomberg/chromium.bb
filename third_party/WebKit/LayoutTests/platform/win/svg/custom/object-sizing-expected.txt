@@ -4,12 +4,6 @@ layer at (0,0) size 800x391
   RenderBlock {html} at (0,0) size 800x390.81
     RenderBody {body} at (8,8) size 784x366.81
       RenderBlock {div} at (0,0) size 784x212 [bgcolor=#008000]
-        RenderEmbeddedObject {object} at (0,0) size 208x208 [bgcolor=#FFA500]
-          layer at (0,0) size 208x208
-            RenderView at (0,0) size 208x208
-          layer at (0,0) size 208x208
-            RenderSVGRoot {svg} at (20,20) size 168x168
-              RenderSVGEllipse {circle} at (20,20) size 168x168 [fill={[type=SOLID] [color=#FF0000]}] [cx=25.00] [cy=25.00] [r=20.00]
         RenderText {#text} at (0,0) size 0x0
       RenderBlock {p} at (0,228) size 208x18 [bgcolor=#0000FF]
         RenderText {#text} at (0,0) size 13x17
@@ -40,3 +34,10 @@ layer at (0,0) size 800x391
           RenderListMarker at (-17,0) size 7x17: bullet
           RenderText {#text} at (0,0) size 174x17
             text run at (0,0) width 174: "The blue line is 13em wide"
+layer at (8,8) size 208x208
+  RenderEmbeddedObject {object} at (0,0) size 208x208 [bgcolor=#FFA500]
+    layer at (0,0) size 208x208
+      RenderView at (0,0) size 208x208
+    layer at (0,0) size 208x208
+      RenderSVGRoot {svg} at (20,20) size 168x168
+        RenderSVGEllipse {circle} at (20,20) size 168x168 [fill={[type=SOLID] [color=#FF0000]}] [cx=25.00] [cy=25.00] [r=20.00]

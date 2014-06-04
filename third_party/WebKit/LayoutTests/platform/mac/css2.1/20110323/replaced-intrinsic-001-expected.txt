@@ -18,9 +18,10 @@ layer at (8,8) size 150x244 layerType: foreground only
           text run at (0,54) width 107: "inside a 2px lime"
           text run at (0,72) width 45: "border."
       RenderBlock {P} at (0,90) size 150x154
-        RenderEmbeddedObject {OBJECT} at (0,0) size 300x150
-          layer at (0,0) size 300x150
-            RenderView at (0,0) size 300x150
-          layer at (0,0) size 300x150
-            RenderSVGRoot {svg} at (0,0) size 300x150
-              RenderSVGRect {rect} at (0,0) size 300x150 [fill={[type=SOLID] [color=#008000]}] [x=0.00] [y=0.00] [width=300.00] [height=200.00]
+layer at (8,98) size 300x150
+  RenderEmbeddedObject {OBJECT} at (0,0) size 300x150
+    layer at (0,0) size 300x150
+      RenderView at (0,0) size 300x150
+    layer at (0,0) size 300x150
+      RenderSVGRoot {svg} at (0,0) size 300x150
+        RenderSVGRect {rect} at (0,0) size 300x150 [fill={[type=SOLID] [color=#008000]}] [x=0.00] [y=0.00] [width=300.00] [height=200.00]
