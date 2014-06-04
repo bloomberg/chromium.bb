@@ -17,6 +17,29 @@
 #include "ui/gfx/size_conversions.h"
 #include "ui/gl/gpu_switching_manager.h"
 
+@interface CompositingIOSurfaceLayer(Private)
+- (void)immediatelyForceDisplayAndAck;
+- (void)ackPendingFrame:(bool)success;
+- (void)timerFired;
+@end
+
+namespace content {
+
+// The base::DelayTimer needs a C++ class to operate on, rather than Objective C
+// class. This helper class provides a bridge between the two.
+class CompositingIOSurfaceLayerHelper {
+ public:
+  CompositingIOSurfaceLayerHelper(CompositingIOSurfaceLayer* layer)
+      : layer_(layer) {}
+  void TimerFired() {
+    [layer_ timerFired];
+  }
+ private:
+  CompositingIOSurfaceLayer* layer_;
+};
+
+}  // namespace content
+
 @implementation CompositingIOSurfaceLayer
 
 - (content::CompositingIOSurfaceMac*)iosurface {
@@ -33,11 +56,18 @@
   if (self = [super init]) {
     iosurface_ = iosurface;
     client_ = client;
+    helper_.reset(new content::CompositingIOSurfaceLayerHelper(self));
+    timer_.reset(new base::DelayTimer<content::CompositingIOSurfaceLayerHelper>(
+        FROM_HERE,
+        base::TimeDelta::FromSeconds(1) / 6,
+        helper_.get(),
+        &content::CompositingIOSurfaceLayerHelper::TimerFired));
 
     context_ = content::CompositingIOSurfaceContext::Get(
         content::CompositingIOSurfaceContext::kCALayerContextWindowNumber);
     DCHECK(context_);
     needs_display_ = NO;
+    has_pending_frame_ = NO;
     did_not_draw_counter_ = 0;
 
     [self setBackgroundColor:CGColorGetConstantColor(kCGColorWhite)];
@@ -57,23 +87,50 @@
 }
 
 - (void)gotNewFrame {
+  has_pending_frame_ = YES;
+  timer_->Reset();
+
+  // A trace value of 2 indicates that there is a pending swap ack. See
+  // canDrawInCGLContext for other value meanings.
+  TRACE_COUNTER_ID1("browser", "PendingSwapAck", self, 2);
+
   if (context_ && context_->is_vsync_disabled()) {
     // If vsync is disabled, draw immediately and don't bother trying to use
     // the isAsynchronous property to ensure smooth animation.
-    [self setNeedsDisplay];
-    [self displayIfNeeded];
-
-    // Calls to setNeedsDisplay can sometimes be ignored, especially if issued
-    // rapidly (e.g, with vsync off). This is unacceptable because the failure
-    // to ack a single frame will hang the renderer. Ensure that the renderer
-    // not be blocked by lying and claiming that we drew the frame.
-    if (needs_display_ && client_)
-      client_->AcceleratedLayerDidDrawFrame(true);
+    [self immediatelyForceDisplayAndAck];
   } else {
     needs_display_ = YES;
     if (![self isAsynchronous])
       [self setAsynchronous:YES];
   }
+}
+
+// Private methods:
+
+- (void)immediatelyForceDisplayAndAck {
+  [self setNeedsDisplay];
+  [self displayIfNeeded];
+
+  // Calls to setNeedsDisplay can sometimes be ignored, especially if issued
+  // rapidly (e.g, with vsync off). This is unacceptable because the failure
+  // to ack a single frame will hang the renderer. Ensure that the renderer
+  // not be blocked by lying and claiming that we drew the frame.
+  [self ackPendingFrame:true];
+}
+
+- (void)ackPendingFrame:(bool)success {
+  if (!has_pending_frame_)
+    return;
+
+  TRACE_COUNTER_ID1("browser", "PendingSwapAck", self, 0);
+  has_pending_frame_ = NO;
+  if (client_)
+    client_->AcceleratedLayerDidDrawFrame(success);
+}
+
+- (void)timerFired {
+  if (has_pending_frame_)
+    [self immediatelyForceDisplayAndAck];
 }
 
 // The remaining methods implement the CAOpenGLLayer interface.
@@ -106,12 +163,9 @@
   // ack) indicates that we did not request a draw. This would be more natural
   // to do with a tracing pseudo-thread
   // http://crbug.com/366300
-  if (client_) {
-    TRACE_COUNTER_ID1("browser", "PendingSwapAck", self,
-        needs_display_ ? 3 : 1);
-    TRACE_COUNTER_ID1("browser", "PendingSwapAck", self,
-        client_->AcceleratedLayerHasNotAckedPendingFrame() ? 2 : 0);
-  }
+  TRACE_COUNTER_ID1("browser", "PendingSwapAck", self, needs_display_ ? 3 : 1);
+  TRACE_COUNTER_ID1("browser", "PendingSwapAck", self,
+                    has_pending_frame_ ? 2 : 0);
 
   // If we return NO 30 times in a row, switch to being synchronous to avoid
   // burning CPU cycles on this callback.
@@ -153,9 +207,8 @@
   bool draw_succeeded = iosurface_->DrawIOSurface(
       context_, window_rect, window_scale_factor, false);
 
+  [self ackPendingFrame:draw_succeeded];
   needs_display_ = NO;
-  if (client_)
-    client_->AcceleratedLayerDidDrawFrame(draw_succeeded);
 
   [super drawInCGLContext:glContext
               pixelFormat:pixelFormat

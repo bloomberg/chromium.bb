@@ -345,7 +345,6 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
 
   // CompositingIOSurfaceLayerClient implementation.
   virtual void AcceleratedLayerDidDrawFrame(bool succeeded) OVERRIDE;
-  virtual bool AcceleratedLayerHasNotAckedPendingFrame() const OVERRIDE;
 
   // Forwards the mouse event to the renderer.
   void ForwardMouseEvent(const blink::WebMouseEvent& event);

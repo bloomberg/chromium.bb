@@ -2357,11 +2357,6 @@ void RenderWidgetHostViewMac::AddPendingSwapAck(
   // loss. Drop the old acks.
   pending_swap_ack_.reset(new PendingSwapAck(
       route_id, gpu_host_id, renderer_id));
-
-  // A trace value of 2 indicates that there is a pending swap ack. See
-  // CompositingIOSurfaceLayer's canDrawInCGLContext for other value meanings.
-  TRACE_COUNTER_ID1("browser", "PendingSwapAck",
-                    compositing_iosurface_layer_.get(), 2);
 }
 
 void RenderWidgetHostViewMac::SendPendingSwapAck() {
@@ -2375,7 +2370,6 @@ void RenderWidgetHostViewMac::SendPendingSwapAck() {
                                                  pending_swap_ack_->gpu_host_id,
                                                  ack_params);
   pending_swap_ack_.reset();
-  TRACE_COUNTER_ID1("browser", "PendingSwapAck", this, 0);
 }
 
 void RenderWidgetHostViewMac::PauseForPendingResizeOrRepaintsAndDraw() {
@@ -2483,10 +2477,6 @@ void RenderWidgetHostViewMac::AcceleratedLayerDidDrawFrame(bool succeeded) {
   SendPendingSwapAck();
   if (!succeeded)
     GotAcceleratedCompositingError();
-}
-
-bool RenderWidgetHostViewMac::AcceleratedLayerHasNotAckedPendingFrame() const {
-  return pending_swap_ack_;
 }
 
 }  // namespace content
