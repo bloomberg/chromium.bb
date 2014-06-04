@@ -1439,6 +1439,17 @@ TEST_P(HttpNetworkTransactionTest, KeepAliveConnectionEOF) {
   KeepAliveConnectionResendRequestTest(NULL, &read_failure);
 }
 
+// Make sure that on a 408 response (Request Timeout), the request is retried,
+// if the socket was a reused keep alive socket.
+TEST_P(HttpNetworkTransactionTest, KeepAlive408) {
+  MockRead read_failure(SYNCHRONOUS,
+                        "HTTP/1.1 408 Request Timeout\r\n"
+                        "Connection: Keep-Alive\r\n"
+                        "Content-Length: 6\r\n\r\n"
+                        "Pickle");
+  KeepAliveConnectionResendRequestTest(NULL, &read_failure);
+}
+
 TEST_P(HttpNetworkTransactionTest,
        PreconnectErrorNotConnectedOnWrite) {
   MockWrite write_failure(ASYNC, ERR_SOCKET_NOT_CONNECTED);
@@ -1457,6 +1468,18 @@ TEST_P(HttpNetworkTransactionTest, PreconnectErrorEOF) {
 
 TEST_P(HttpNetworkTransactionTest, PreconnectErrorAsyncEOF) {
   MockRead read_failure(ASYNC, OK);  // EOF
+  PreconnectErrorResendRequestTest(NULL, &read_failure, false);
+}
+
+// Make sure that on a 408 response (Request Timeout), the request is retried,
+// if the socket was a preconnected (UNUSED_IDLE) socket.
+TEST_P(HttpNetworkTransactionTest, RetryOnIdle408) {
+  MockRead read_failure(SYNCHRONOUS,
+                        "HTTP/1.1 408 Request Timeout\r\n"
+                        "Connection: Keep-Alive\r\n"
+                        "Content-Length: 6\r\n\r\n"
+                        "Pickle");
+  KeepAliveConnectionResendRequestTest(NULL, &read_failure);
   PreconnectErrorResendRequestTest(NULL, &read_failure, false);
 }
 

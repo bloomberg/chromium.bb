@@ -1024,7 +1024,9 @@ EVENT_TYPE(HTTP_TRANSACTION_DRAIN_BODY_FOR_AUTH_RESTART)
 // This event is sent when we try to restart a transaction after an error.
 // The following parameters are attached:
 //   {
-//     "net_error": <The net error code integer for the failure>,
+//     "net_error": <The net error code integer for the failure, if applicable>,
+//     "http_status_code": <HTTP status code indicating an error, if
+//                          applicable>,
 //   }
 EVENT_TYPE(HTTP_TRANSACTION_RESTART_AFTER_ERROR)
 

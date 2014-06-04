@@ -987,6 +987,19 @@ int HttpNetworkTransaction::DoReadHeadersComplete(int result) {
 
   DCHECK(response_.headers.get());
 
+  // On a 408 response from the server ("Request Timeout") on a stale socket,
+  // retry the request.
+  if (response_.headers->response_code() == 408 &&
+      stream_->IsConnectionReused()) {
+    net_log_.AddEventWithNetErrorCode(
+        NetLog::TYPE_HTTP_TRANSACTION_RESTART_AFTER_ERROR,
+        response_.headers->response_code());
+    // This will close the socket - it would be weird to try and reuse it, even
+    // if the server doesn't actually close it.
+    ResetConnectionAndRequestForResend();
+    return OK;
+  }
+
 #if defined(SPDY_PROXY_AUTH_ORIGIN)
   // Server-induced fallback; see: http://crbug.com/143712
   if (response_.was_fetched_via_proxy) {
