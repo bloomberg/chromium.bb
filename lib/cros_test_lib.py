@@ -206,7 +206,7 @@ class StackedSetup(type):
 
   TEST_CASE_TIMEOUT = 10 * 60
 
-  def __new__(mcs, name, bases, scope):
+  def __new__(mcs, mcs_name, bases, scope):
     """Generate the new class with pointers to original funcs & our helpers"""
     if 'setUp' in scope:
       scope['__raw_setUp__'] = scope.pop('setUp')
@@ -224,7 +224,7 @@ class StackedSetup(type):
           wrapper = timeout_util.TimeoutDecorator(timeout)
           scope[name] = wrapper(func)
 
-    return type.__new__(mcs, name, bases, scope)
+    return type.__new__(mcs, mcs_name, bases, scope)
 
   @staticmethod
   def _walk_mro_stacking(obj, attr, reverse=False):
