@@ -389,18 +389,11 @@ crbug.com/290411 [ XP Mac ] fast/text/sub-pixel/text-scaling-webfont.html [ Skip
 crbug.com/377696 printing/setPrinting.html [ Skip ]
 crbug.com/377696 printing/width-overflow.html [ Skip ]
 
-# Subtle text differences with DirectWrite
-crbug.com/378610 [ Win7 ] fast/css/text-overflow-ellipsis-button.html [ ImageOnlyFailure ]
-
 # Flaky since DirectWrite.
 crbug.com/378610 [ Win ] fast/text/decorations-transformed.html [ Pass Failure ]
 
 # FIXME: Remove windows-directwrite test suite once we're sure the DW won't be reverted. Keep it but skip it for now.
 crbug.com/378610 [ Win7 ] virtual/windows-directwrite [ Skip ]
-
-# Broken tests with hard coded values that only work on one platform, lots of FAIL lines in expectations.
-crbug.com/378610 [ Win7 ] fast/dom/Element/getClientRects.html  [ Failure ]
-crbug.com/378610 [ Win7 ] fast/dom/Range/getClientRects.html [ Failure ]
 
 # Reftests that needs investigation.
 crbug.com/378610 [ Win7 ] compositing/gestures/gesture-tapHighlight-1-iframe-composited-scrolled-late-noncomposite.html [ ImageOnlyFailure ]
