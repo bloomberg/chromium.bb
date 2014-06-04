@@ -163,8 +163,6 @@ class RequestQuotaInfoBarDelegate : public ConfirmInfoBarDelegate {
   virtual ~RequestQuotaInfoBarDelegate();
 
   // ConfirmInfoBarDelegate:
-  virtual bool ShouldExpireInternal(
-      const NavigationDetails& details) const OVERRIDE;
   virtual base::string16 GetMessageText() const OVERRIDE;
   virtual bool Accept() OVERRIDE;
   virtual bool Cancel() OVERRIDE;
@@ -211,11 +209,6 @@ RequestQuotaInfoBarDelegate::~RequestQuotaInfoBarDelegate() {
         callback_,
         content::QuotaPermissionContext::QUOTA_PERMISSION_RESPONSE_CANCELLED);
   }
-}
-
-bool RequestQuotaInfoBarDelegate::ShouldExpireInternal(
-    const NavigationDetails& details) const {
-  return false;
 }
 
 base::string16 RequestQuotaInfoBarDelegate::GetMessageText() const {
