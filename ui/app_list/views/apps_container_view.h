@@ -25,7 +25,6 @@ class AppListMainView;
 class AppListModel;
 class ContentsView;
 class FolderBackgroundView;
-class PaginationModel;
 
 // AppsContainerView contains a root level AppsGridView to render the root level
 // app items, and a AppListFolderView to render the app items inside the
@@ -34,7 +33,6 @@ class AppsContainerView : public views::View,
                           public TopIconAnimationObserver {
  public:
   AppsContainerView(AppListMainView* app_list_main_view,
-                    PaginationModel* pagination_model,
                     AppListModel* model);
   virtual ~AppsContainerView();
 

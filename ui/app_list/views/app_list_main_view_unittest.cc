@@ -9,7 +9,6 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/app_list/pagination_model.h"
 #include "ui/app_list/test/app_list_test_model.h"
 #include "ui/app_list/test/app_list_test_view_delegate.h"
 #include "ui/app_list/views/app_list_folder_view.h"
@@ -74,8 +73,7 @@ class AppListMainViewTest : public views::ViewsTestBase {
     views::ViewsTestBase::SetUp();
     delegate_.reset(new AppListTestViewDelegate);
 
-    main_view_ =
-        new AppListMainView(delegate_.get(), &pagination_model_, GetContext());
+    main_view_ = new AppListMainView(delegate_.get(), 0, GetContext());
     main_view_->SetPaintToLayer(true);
 
     widget_ = new views::Widget;
@@ -170,7 +168,6 @@ class AppListMainViewTest : public views::ViewsTestBase {
  protected:
   views::Widget* widget_;  // Owned by native window.
   AppListMainView* main_view_;  // Owned by |widget_|.
-  PaginationModel pagination_model_;
   scoped_ptr<AppListTestViewDelegate> delegate_;
 
  private:

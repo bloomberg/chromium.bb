@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_UI_APP_LIST_APP_LIST_SHOWER_VIEWS_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "ui/app_list/pagination_model.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace app_list {
@@ -67,7 +66,6 @@ class AppListShower {
   scoped_ptr<ScopedKeepAlive> keep_alive_;
 
   bool window_icon_updated_;
-  app_list::PaginationModel pagination_model_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListShower);
 };

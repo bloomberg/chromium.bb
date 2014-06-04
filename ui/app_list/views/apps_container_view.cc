@@ -11,7 +11,6 @@
 #include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_folder_item.h"
 #include "ui/app_list/app_list_switches.h"
-#include "ui/app_list/pagination_model.h"
 #include "ui/app_list/views/app_list_folder_view.h"
 #include "ui/app_list/views/app_list_item_view.h"
 #include "ui/app_list/views/app_list_main_view.h"
@@ -22,12 +21,11 @@
 namespace app_list {
 
 AppsContainerView::AppsContainerView(AppListMainView* app_list_main_view,
-                                     PaginationModel* pagination_model,
                                      AppListModel* model)
     : model_(model),
       show_state_(SHOW_NONE),
       top_icon_animation_pending_count_(0) {
-  apps_grid_view_ = new AppsGridView(app_list_main_view, pagination_model);
+  apps_grid_view_ = new AppsGridView(app_list_main_view);
   int cols = kPreferredCols;
   int rows = kPreferredRows;
   // ShouldCenterWindow also implies that it is wide instead of tall.

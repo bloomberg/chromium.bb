@@ -45,7 +45,7 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDelegateView,
   // Initializes the widget and use a given |anchor| plus an |anchor_offset| for
   // positioning.
   void InitAsBubbleAttachedToAnchor(gfx::NativeView parent,
-                                    PaginationModel* pagination_model,
+                                    int initial_apps_page,
                                     views::View* anchor,
                                     const gfx::Vector2d& anchor_offset,
                                     views::BubbleBorder::Arrow arrow,
@@ -54,7 +54,7 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDelegateView,
   // Initializes the widget and use a fixed |anchor_point_in_screen| for
   // positioning.
   void InitAsBubbleAtFixedLocation(gfx::NativeView parent,
-                                   PaginationModel* pagination_model,
+                                   int initial_apps_page,
                                    const gfx::Point& anchor_point_in_screen,
                                    views::BubbleBorder::Arrow arrow,
                                    bool border_accepts_events);
@@ -113,11 +113,14 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDelegateView,
 
   AppListMainView* app_list_main_view() { return app_list_main_view_; }
 
+  // Gets the PaginationModel owned by this view's apps grid.
+  PaginationModel* GetAppsPaginationModel();
+
  private:
   friend class ::test::AppListViewTestApi;
 
   void InitAsBubbleInternal(gfx::NativeView parent,
-                            PaginationModel* pagination_model,
+                            int initial_apps_page,
                             views::BubbleBorder::Arrow arrow,
                             bool border_accepts_events,
                             const gfx::Vector2d& anchor_offset);

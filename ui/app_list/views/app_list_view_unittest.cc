@@ -102,9 +102,11 @@ class AppListViewTestContext {
   // Closes the app list. This sets |view_| to NULL.
   void Close();
 
+  // Gets the PaginationModel owned by |view_|.
+  PaginationModel* GetPaginationModel();
+
   const TestType test_type_;
   scoped_ptr<base::RunLoop> run_loop_;
-  PaginationModel pagination_model_;
   app_list::AppListView* view_;  // Owned by native widget.
   app_list::test::AppListTestViewDelegate* delegate_;  // Owned by |view_|;
 
@@ -156,7 +158,7 @@ AppListViewTestContext::AppListViewTestContext(int test_type,
 
   // Initialize centered around a point that ensures the window is wholly shown.
   view_->InitAsBubbleAtFixedLocation(parent,
-                                     &pagination_model_,
+                                     0,
                                      gfx::Point(300, 300),
                                      views::BubbleBorder::FLOAT,
                                      false /* border_accepts_events */);
@@ -195,17 +197,21 @@ void AppListViewTestContext::Close() {
   EXPECT_FALSE(view_);
 }
 
+PaginationModel* AppListViewTestContext::GetPaginationModel() {
+  return view_->GetAppsPaginationModel();
+}
+
 void AppListViewTestContext::RunDisplayTest() {
   EXPECT_FALSE(view_->GetWidget()->IsVisible());
-  EXPECT_EQ(-1, pagination_model_.total_pages());
+  EXPECT_EQ(-1, GetPaginationModel()->total_pages());
   delegate_->GetTestModel()->PopulateApps(kInitialItems);
 
   Show();
   if (is_landscape())
-    EXPECT_EQ(2, pagination_model_.total_pages());
+    EXPECT_EQ(2, GetPaginationModel()->total_pages());
   else
-    EXPECT_EQ(3, pagination_model_.total_pages());
-  EXPECT_EQ(0, pagination_model_.selected_page());
+    EXPECT_EQ(3, GetPaginationModel()->total_pages());
+  EXPECT_EQ(0, GetPaginationModel()->selected_page());
 
   // Checks on the main view.
   AppListMainView* main_view = view_->app_list_main_view();
@@ -218,7 +224,7 @@ void AppListViewTestContext::RunDisplayTest() {
 
 void AppListViewTestContext::RunReshowWithOpenFolderTest() {
   EXPECT_FALSE(view_->GetWidget()->IsVisible());
-  EXPECT_EQ(-1, pagination_model_.total_pages());
+  EXPECT_EQ(-1, GetPaginationModel()->total_pages());
 
   AppListTestModel* model = delegate_->GetTestModel();
   model->PopulateApps(kInitialItems);
@@ -262,7 +268,7 @@ void AppListViewTestContext::RunReshowWithOpenFolderTest() {
 
 void AppListViewTestContext::RunStartPageTest() {
   EXPECT_FALSE(view_->GetWidget()->IsVisible());
-  EXPECT_EQ(-1, pagination_model_.total_pages());
+  EXPECT_EQ(-1, GetPaginationModel()->total_pages());
   AppListTestModel* model = delegate_->GetTestModel();
   model->PopulateApps(3);
 
@@ -306,15 +312,15 @@ void AppListViewTestContext::RunStartPageTest() {
 
 void AppListViewTestContext::RunProfileChangeTest() {
   EXPECT_FALSE(view_->GetWidget()->IsVisible());
-  EXPECT_EQ(-1, pagination_model_.total_pages());
+  EXPECT_EQ(-1, GetPaginationModel()->total_pages());
   delegate_->GetTestModel()->PopulateApps(kInitialItems);
 
   Show();
 
   if (is_landscape())
-    EXPECT_EQ(2, pagination_model_.total_pages());
+    EXPECT_EQ(2, GetPaginationModel()->total_pages());
   else
-    EXPECT_EQ(3, pagination_model_.total_pages());
+    EXPECT_EQ(3, GetPaginationModel()->total_pages());
 
   // Change the profile. The original model needs to be kept alive for
   // observers to unregister themselves.
@@ -324,7 +330,7 @@ void AppListViewTestContext::RunProfileChangeTest() {
 
   // The original ContentsView is destroyed here.
   view_->SetProfileByPath(base::FilePath());
-  EXPECT_EQ(1, pagination_model_.total_pages());
+  EXPECT_EQ(1, GetPaginationModel()->total_pages());
 
   StartPageView* start_page_view =
       view_->app_list_main_view()->contents_view()->start_page_view();

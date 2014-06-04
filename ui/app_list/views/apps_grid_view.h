@@ -10,10 +10,12 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/memory/ref_counted.h"
 #include "base/timer/timer.h"
 #include "ui/app_list/app_list_export.h"
 #include "ui/app_list/app_list_model.h"
 #include "ui/app_list/app_list_model_observer.h"
+#include "ui/app_list/pagination_model.h"
 #include "ui/app_list/pagination_model_observer.h"
 #include "ui/base/models/list_model_observer.h"
 #include "ui/compositor/layer_animation_observer.h"
@@ -70,10 +72,8 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   };
 
   // Constructs the app icon grid view. |delegate| is the delegate of this
-  // view, which usually is the hosting AppListView. |pagination_model| is
-  // the paging info shared within the launcher UI.
-  AppsGridView(AppsGridViewDelegate* delegate,
-               PaginationModel* pagination_model);
+  // view, which usually is the hosting AppListView.
+  explicit AppsGridView(AppsGridViewDelegate* delegate);
   virtual ~AppsGridView();
 
   // Sets fixed layout parameters. After setting this, CalculateLayout below
@@ -130,6 +130,9 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
 
   bool has_dragged_view() const { return drag_view_ != NULL; }
   bool dragging() const { return drag_pointer_ != NONE; }
+
+  // Gets the PaginationModel used for the grid view.
+  PaginationModel* pagination_model() { return &pagination_model_; }
 
   // Overridden from views::View:
   virtual gfx::Size GetPreferredSize() const OVERRIDE;
@@ -461,7 +464,7 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   // This can be NULL. Only grid views inside folders have a folder delegate.
   AppsGridViewFolderDelegate* folder_delegate_;
 
-  PaginationModel* pagination_model_;  // Owned by AppListController.
+  PaginationModel pagination_model_;
   PageSwitcher* page_switcher_view_;  // Owned by views hierarchy.
 
   gfx::Size icon_size_;

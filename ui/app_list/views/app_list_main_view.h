@@ -39,7 +39,7 @@ class APP_LIST_EXPORT AppListMainView : public views::View,
  public:
   // Takes ownership of |delegate|.
   explicit AppListMainView(AppListViewDelegate* delegate,
-                           PaginationModel* pagination_model,
+                           int initial_apps_page,
                            gfx::NativeView parent);
   virtual ~AppListMainView();
 
@@ -74,6 +74,9 @@ class APP_LIST_EXPORT AppListMainView : public views::View,
 
   void AddContentsView();
 
+  // Gets the PaginationModel owned by the AppsGridView.
+  PaginationModel* GetAppsPaginationModel();
+
   // Loads icon image for the apps in the selected page of |pagination_model_|.
   // |parent| is used to determine the image scale factor to use.
   void PreloadIcons(gfx::NativeView parent);
@@ -101,7 +104,6 @@ class APP_LIST_EXPORT AppListMainView : public views::View,
   virtual void OnResultUninstalled(SearchResult* result) OVERRIDE;
 
   AppListViewDelegate* delegate_;  // Owned by parent view (AppListView).
-  PaginationModel* pagination_model_;  // Owned by AppListController.
   AppListModel* model_;  // Unowned; ownership is handled by |delegate_|.
 
   SearchBoxView* search_box_view_;  // Owned by views hierarchy.

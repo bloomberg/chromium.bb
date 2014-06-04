@@ -45,7 +45,6 @@ class APP_LIST_EXPORT ContentsView : public views::View {
   };
 
   ContentsView(AppListMainView* app_list_main_view,
-               PaginationModel* pagination_model,
                AppListModel* model,
                AppListViewDelegate* view_delegate);
   virtual ~ContentsView();
@@ -84,12 +83,14 @@ class APP_LIST_EXPORT ContentsView : public views::View {
   void CalculateIdealBounds();
   void AnimateToIdealBounds();
 
+  // Gets the PaginationModel owned by the AppsGridView.
+  PaginationModel* GetAppsPaginationModel();
+
   // Overridden from ui::EventHandler:
   virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
   virtual void OnScrollEvent(ui::ScrollEvent* event) OVERRIDE;
 
   ShowState show_state_;
-  PaginationModel* pagination_model_;  // Owned by AppListController.
 
   AppsContainerView* apps_container_view_;  // Owned by the views hierarchy.
   StartPageView* start_page_view_;          // Owned by the views hierarchy.

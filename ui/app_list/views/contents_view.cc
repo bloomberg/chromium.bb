@@ -53,22 +53,16 @@ StartPageView* GetStartPageView(views::ViewModel* model) {
 }  // namespace
 
 ContentsView::ContentsView(AppListMainView* app_list_main_view,
-                           PaginationModel* pagination_model,
                            AppListModel* model,
                            AppListViewDelegate* view_delegate)
     : show_state_(SHOW_APPS),
-      pagination_model_(pagination_model),
       start_page_view_(NULL),
       app_list_main_view_(app_list_main_view),
       view_model_(new views::ViewModel),
       bounds_animator_(new views::BoundsAnimator(this)) {
   DCHECK(model);
-  pagination_model_->SetTransitionDurations(
-      kPageTransitionDurationInMs,
-      kOverscrollPageTransitionDurationMs);
 
-  apps_container_view_ =
-      new AppsContainerView(app_list_main_view, pagination_model, model);
+  apps_container_view_ = new AppsContainerView(app_list_main_view, model);
   AddChildView(apps_container_view_);
   view_model_->Add(apps_container_view_, kIndexAppsContainer);
 
@@ -194,6 +188,10 @@ void ContentsView::AnimateToIdealBounds() {
   }
 }
 
+PaginationModel* ContentsView::GetAppsPaginationModel() {
+  return apps_container_view_->apps_grid_view()->pagination_model();
+}
+
 void ContentsView::ShowSearchResults(bool show) {
   SetShowState(show ? SHOW_SEARCH_RESULTS : SHOW_APPS);
 }
@@ -203,7 +201,8 @@ void ContentsView::ShowFolderContent(AppListFolderItem* item) {
 }
 
 void ContentsView::Prerender() {
-  const int selected_page = std::max(0, pagination_model_->selected_page());
+  const int selected_page =
+      std::max(0, GetAppsPaginationModel()->selected_page());
   apps_container_view_->apps_grid_view()->Prerender(selected_page);
 }
 
@@ -248,9 +247,8 @@ bool ContentsView::OnMouseWheel(const ui::MouseWheelEvent& event) {
     offset = event.y_offset();
 
   if (abs(offset) > kMinMouseWheelToSwitchPage) {
-    if (!pagination_model_->has_transition()) {
-      pagination_model_->SelectPageRelative(
-          offset > 0 ? -1 : 1, true);
+    if (!GetAppsPaginationModel()->has_transition()) {
+      GetAppsPaginationModel()->SelectPageRelative(offset > 0 ? -1 : 1, true);
     }
     return true;
   }
@@ -264,27 +262,27 @@ void ContentsView::OnGestureEvent(ui::GestureEvent* event) {
 
   switch (event->type()) {
     case ui::ET_GESTURE_SCROLL_BEGIN:
-      pagination_model_->StartScroll();
+      GetAppsPaginationModel()->StartScroll();
       event->SetHandled();
       return;
     case ui::ET_GESTURE_SCROLL_UPDATE:
       // event->details.scroll_x() > 0 means moving contents to right. That is,
       // transitioning to previous page.
-      pagination_model_->UpdateScroll(
-          event->details().scroll_x() / GetContentsBounds().width());
+      GetAppsPaginationModel()->UpdateScroll(event->details().scroll_x() /
+                                             GetContentsBounds().width());
       event->SetHandled();
       return;
     case ui::ET_GESTURE_SCROLL_END:
-      pagination_model_->EndScroll(pagination_model_->
-          transition().progress < kFinishTransitionThreshold);
+      GetAppsPaginationModel()->EndScroll(
+          GetAppsPaginationModel()->transition().progress <
+          kFinishTransitionThreshold);
       event->SetHandled();
       return;
     case ui::ET_SCROLL_FLING_START: {
-      pagination_model_->EndScroll(true);
+      GetAppsPaginationModel()->EndScroll(true);
       if (fabs(event->details().velocity_x()) > kMinHorizVelocityToSwitchPage) {
-        pagination_model_->SelectPageRelative(
-            event->details().velocity_x() < 0 ? 1 : -1,
-            true);
+        GetAppsPaginationModel()->SelectPageRelative(
+            event->details().velocity_x() < 0 ? 1 : -1, true);
       }
       event->SetHandled();
       return;
@@ -307,9 +305,8 @@ void ContentsView::OnScrollEvent(ui::ScrollEvent* event) {
     offset = event->y_offset();
 
   if (std::abs(offset) > kMinScrollToSwitchPage) {
-    if (!pagination_model_->has_transition()) {
-      pagination_model_->SelectPageRelative(offset > 0 ? -1 : 1,
-                                            true);
+    if (!GetAppsPaginationModel()->has_transition()) {
+      GetAppsPaginationModel()->SelectPageRelative(offset > 0 ? -1 : 1, true);
     }
     event->SetHandled();
     event->StopPropagation();

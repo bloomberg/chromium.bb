@@ -29,7 +29,6 @@ class AppListItemView;
 class AppListMainView;
 class AppListModel;
 class FolderHeaderView;
-class PaginationModel;
 
 class AppListFolderView : public views::View,
                           public FolderHeaderViewDelegate,
@@ -118,8 +117,6 @@ class AppListFolderView : public views::View,
 
   AppListModel* model_;  // Not owned.
   AppListFolderItem* folder_item_;  // Not owned.
-
-  scoped_ptr<PaginationModel> pagination_model_;
 
   bool hide_for_reparent_;
 

@@ -9,7 +9,6 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
 #include "grit/ui_resources.h"
-#include "ui/app_list/pagination_model.h"
 #include "ui/app_list/test/app_list_test_model.h"
 #include "ui/app_list/test/app_list_test_view_delegate.h"
 #include "ui/app_list/views/app_list_view.h"
@@ -44,7 +43,6 @@ class DemoAppListViewDelegate : public app_list::test::AppListTestViewDelegate {
   virtual content::WebContents* GetStartPageContents() OVERRIDE;
 
  private:
-  app_list::PaginationModel pagination_model_;
   app_list::AppListView* view_;  // Weak. Owns this.
   content::BrowserContext* browser_context_;
   scoped_ptr<content::WebContents> web_contents_;
@@ -57,7 +55,7 @@ app_list::AppListView* DemoAppListViewDelegate::InitView(
   // Note AppListView takes ownership of |this| on the next line.
   view_ = new app_list::AppListView(this);
   view_->InitAsBubbleAtFixedLocation(window_context,
-                                     &pagination_model_,
+                                     0,
                                      gfx::Point(300, 300),
                                      views::BubbleBorder::FLOAT,
                                      false /* border_accepts_events */);

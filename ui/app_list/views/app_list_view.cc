@@ -12,7 +12,6 @@
 #include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_model.h"
 #include "ui/app_list/app_list_view_delegate.h"
-#include "ui/app_list/pagination_model.h"
 #include "ui/app_list/speech_ui_model.h"
 #include "ui/app_list/views/app_list_background.h"
 #include "ui/app_list/views/app_list_folder_view.h"
@@ -165,26 +164,26 @@ AppListView::~AppListView() {
 
 void AppListView::InitAsBubbleAttachedToAnchor(
     gfx::NativeView parent,
-    PaginationModel* pagination_model,
+    int initial_apps_page,
     views::View* anchor,
     const gfx::Vector2d& anchor_offset,
     views::BubbleBorder::Arrow arrow,
     bool border_accepts_events) {
   SetAnchorView(anchor);
   InitAsBubbleInternal(
-      parent, pagination_model, arrow, border_accepts_events, anchor_offset);
+      parent, initial_apps_page, arrow, border_accepts_events, anchor_offset);
 }
 
 void AppListView::InitAsBubbleAtFixedLocation(
     gfx::NativeView parent,
-    PaginationModel* pagination_model,
+    int initial_apps_page,
     const gfx::Point& anchor_point_in_screen,
     views::BubbleBorder::Arrow arrow,
     bool border_accepts_events) {
   SetAnchorView(NULL);
   SetAnchorRect(gfx::Rect(anchor_point_in_screen, gfx::Size()));
   InitAsBubbleInternal(
-      parent, pagination_model, arrow, border_accepts_events, gfx::Vector2d());
+      parent, initial_apps_page, arrow, border_accepts_events, gfx::Vector2d());
 }
 
 void AppListView::SetBubbleArrow(views::BubbleBorder::Arrow arrow) {
@@ -284,14 +283,20 @@ HWND AppListView::GetHWND() const {
 }
 #endif
 
+PaginationModel* AppListView::GetAppsPaginationModel() {
+  return app_list_main_view_->contents_view()
+      ->apps_container_view()
+      ->apps_grid_view()
+      ->pagination_model();
+}
+
 void AppListView::InitAsBubbleInternal(gfx::NativeView parent,
-                                       PaginationModel* pagination_model,
+                                       int initial_apps_page,
                                        views::BubbleBorder::Arrow arrow,
                                        bool border_accepts_events,
                                        const gfx::Vector2d& anchor_offset) {
-  app_list_main_view_ = new AppListMainView(delegate_.get(),
-                                            pagination_model,
-                                            parent);
+  app_list_main_view_ =
+      new AppListMainView(delegate_.get(), initial_apps_page, parent);
   AddChildView(app_list_main_view_);
 #if defined(USE_AURA)
   app_list_main_view_->SetPaintToLayer(true);

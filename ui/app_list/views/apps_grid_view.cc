@@ -14,7 +14,6 @@
 #include "ui/app_list/app_list_folder_item.h"
 #include "ui/app_list/app_list_item.h"
 #include "ui/app_list/app_list_switches.h"
-#include "ui/app_list/pagination_model.h"
 #include "ui/app_list/views/app_list_drag_and_drop_host.h"
 #include "ui/app_list/views/app_list_folder_view.h"
 #include "ui/app_list/views/app_list_item_view.h"
@@ -335,14 +334,12 @@ class SynchronousDrag : public ui::DragSourceWin {
 };
 #endif  // defined(OS_WIN)
 
-AppsGridView::AppsGridView(AppsGridViewDelegate* delegate,
-                           PaginationModel* pagination_model)
+AppsGridView::AppsGridView(AppsGridViewDelegate* delegate)
     : model_(NULL),
       item_list_(NULL),
       delegate_(delegate),
       folder_delegate_(NULL),
-      pagination_model_(pagination_model),
-      page_switcher_view_(new PageSwitcher(pagination_model)),
+      page_switcher_view_(NULL),
       cols_(0),
       rows_per_page_(0),
       selected_view_(NULL),
@@ -366,7 +363,11 @@ AppsGridView::AppsGridView(AppsGridViewDelegate* delegate,
   layer()->SetMasksToBounds(true);
   SetFillsBoundsOpaquely(false);
 
-  pagination_model_->AddObserver(this);
+  pagination_model_.SetTransitionDurations(kPageTransitionDurationInMs,
+                                           kOverscrollPageTransitionDurationMs);
+
+  pagination_model_.AddObserver(this);
+  page_switcher_view_ = new PageSwitcher(&pagination_model_);
   AddChildView(page_switcher_view_);
 }
 
@@ -380,10 +381,14 @@ AppsGridView::~AppsGridView() {
 
   if (model_)
     model_->RemoveObserver(this);
-  pagination_model_->RemoveObserver(this);
+  pagination_model_.RemoveObserver(this);
 
   if (item_list_)
     item_list_->RemoveObserver(this);
+
+  // Make sure |page_switcher_view_| is deleted before |pagination_model_|.
+  view_model_.Clear();
+  RemoveAllChildViews(true);
 }
 
 void AppsGridView::SetLayout(int icon_size, int cols, int rows_per_page) {
@@ -457,12 +462,12 @@ bool AppsGridView::IsSelectedView(const views::View* view) const {
 }
 
 void AppsGridView::EnsureViewVisible(const views::View* view) {
-  if (pagination_model_->has_transition())
+  if (pagination_model_.has_transition())
     return;
 
   Index index = GetIndexOfView(view);
   if (IsValidIndex(index))
-    pagination_model_->SelectPage(index.page, false);
+    pagination_model_.SelectPage(index.page, false);
 }
 
 void AppsGridView::InitiateDrag(AppListItemView* view,
@@ -475,7 +480,7 @@ void AppsGridView::InitiateDrag(AppListItemView* view,
   drag_view_ = view;
   drag_view_init_index_ = GetIndexOfView(drag_view_);
   drag_view_offset_ = event.location();
-  drag_start_page_ = pagination_model_->selected_page();
+  drag_start_page_ = pagination_model_.selected_page();
   ExtractDragLocation(event, &drag_start_grid_view_);
   drag_view_start_ = gfx::Point(drag_view_->x(), drag_view_->y());
 }
@@ -785,7 +790,7 @@ void AppsGridView::InitiateDragFromReparentItemInRootLevelGridView(
   // Add drag_view_ to the end of the view_model_.
   view_model_.Add(drag_view_, view_model_.view_size());
 
-  drag_start_page_ = pagination_model_->selected_page();
+  drag_start_page_ = pagination_model_.selected_page();
   drag_start_grid_view_ = drag_point;
 
   drag_view_start_ = gfx::Point(drag_view_->x(), drag_view_->y());
@@ -982,7 +987,7 @@ void AppsGridView::UpdatePaging() {
                        ? (view_model_.view_size() - 1) / tiles_per_page() + 1
                        : 0;
 
-  pagination_model_->SetTotalPages(total_page);
+  pagination_model_.SetTotalPages(total_page);
 }
 
 void AppsGridView::UpdatePulsingBlockViews() {
@@ -1051,7 +1056,7 @@ void AppsGridView::SetSelectedItemByIndex(const Index& index) {
 }
 
 bool AppsGridView::IsValidIndex(const Index& index) const {
-  return index.page >= 0 && index.page < pagination_model_->total_pages() &&
+  return index.page >= 0 && index.page < pagination_model_.total_pages() &&
          index.slot >= 0 && index.slot < tiles_per_page() &&
          GetModelIndexFromIndex(index) < view_model_.view_size();
 }
@@ -1077,7 +1082,7 @@ void AppsGridView::MoveSelected(int page_delta,
                                 int slot_x_delta,
                                 int slot_y_delta) {
   if (!selected_view_)
-    return SetSelectedItemByIndex(Index(pagination_model_->selected_page(), 0));
+    return SetSelectedItemByIndex(Index(pagination_model_.selected_page(), 0));
 
   const Index& selected = GetIndexOfView(selected_view_);
   int target_slot = selected.slot + slot_x_delta + slot_y_delta * cols_;
@@ -1092,7 +1097,7 @@ void AppsGridView::MoveSelected(int page_delta,
   }
 
   if (selected.slot % cols_ == cols_ - 1 && slot_x_delta == 1) {
-    if (selected.page < pagination_model_->total_pages() - 1) {
+    if (selected.page < pagination_model_.total_pages() - 1) {
       page_delta = 1;
       target_slot = selected.slot - cols_ + 1;
     } else {
@@ -1103,14 +1108,14 @@ void AppsGridView::MoveSelected(int page_delta,
   // Clamp the target slot to the last item if we are moving to the last page
   // but our target slot is past the end of the item list.
   if (page_delta &&
-      selected.page + page_delta == pagination_model_->total_pages() - 1) {
+      selected.page + page_delta == pagination_model_.total_pages() - 1) {
     int last_item_slot = (view_model_.view_size() - 1) % tiles_per_page();
     if (last_item_slot < target_slot) {
       target_slot = last_item_slot;
     }
   }
 
-  int target_page = std::min(pagination_model_->total_pages() - 1,
+  int target_page = std::min(pagination_model_.total_pages() - 1,
                              std::max(selected.page + page_delta, 0));
   SetSelectedItemByIndex(Index(target_page, target_slot));
 }
@@ -1131,11 +1136,10 @@ void AppsGridView::CalculateIdealBounds() {
   const int page_width = grid_rect.width() + kPagePadding;
 
   // If there is a transition, calculates offset for current and target page.
-  const int current_page = pagination_model_->selected_page();
+  const int current_page = pagination_model_.selected_page();
   const PaginationModel::Transition& transition =
-      pagination_model_->transition();
-  const bool is_valid =
-      pagination_model_->is_valid_page(transition.target_page);
+      pagination_model_.transition();
+  const bool is_valid = pagination_model_.is_valid_page(transition.target_page);
 
   // Transition to right means negative offset.
   const int dir = transition.target_page > current_page ? -1 : 1;
@@ -1306,7 +1310,7 @@ void AppsGridView::CalculateDropTarget(const gfx::Point& drag_point,
     return;
   }
 
-  int current_page = pagination_model_->selected_page();
+  int current_page = pagination_model_.selected_page();
   gfx::Point point(drag_point);
   if (!IsPointWithinDragBuffer(drag_point)) {
     point = drag_start_grid_view_;
@@ -1319,7 +1323,7 @@ void AppsGridView::CalculateDropTarget(const gfx::Point& drag_point,
     views::View::ConvertPointToTarget(this, page_switcher_view_,
                                       &page_switcher_point);
     int page = page_switcher_view_->GetPageForPoint(page_switcher_point);
-    if (pagination_model_->is_valid_page(page)) {
+    if (pagination_model_.is_valid_page(page)) {
       drop_target_.page = page;
       drop_target_.slot = tiles_per_page() - 1;
     }
@@ -1336,7 +1340,7 @@ void AppsGridView::CalculateDropTarget(const gfx::Point& drag_point,
   }
 
   // Limits to the last possible slot on last page.
-  if (drop_target_.page == pagination_model_->total_pages() - 1) {
+  if (drop_target_.page == pagination_model_.total_pages() - 1) {
     drop_target_.slot = std::min(
         (view_model_.view_size() - 1) % tiles_per_page(),
         drop_target_.slot);
@@ -1358,7 +1362,7 @@ void AppsGridView::CalculateDropTargetWithFolderEnabled(
     views::View::ConvertPointToTarget(this, page_switcher_view_,
                                       &page_switcher_point);
     int page = page_switcher_view_->GetPageForPoint(page_switcher_point);
-    if (pagination_model_->is_valid_page(page))
+    if (pagination_model_.is_valid_page(page))
       drop_attempt_ = DROP_FOR_NONE;
   } else {
     DCHECK(drag_view_);
@@ -1603,21 +1607,21 @@ void AppsGridView::MaybeStartPageFlipTimer(const gfx::Point& drag_point) {
 
   // TODO(xiyuan): Fix this for RTL.
   if (new_page_flip_target == -1 && drag_point.x() < kPageFlipZoneSize)
-    new_page_flip_target = pagination_model_->selected_page() - 1;
+    new_page_flip_target = pagination_model_.selected_page() - 1;
 
   if (new_page_flip_target == -1 &&
       drag_point.x() > width() - kPageFlipZoneSize) {
-    new_page_flip_target = pagination_model_->selected_page() + 1;
+    new_page_flip_target = pagination_model_.selected_page() + 1;
   }
 
   if (new_page_flip_target == page_flip_target_)
     return;
 
   StopPageFlipTimer();
-  if (pagination_model_->is_valid_page(new_page_flip_target)) {
+  if (pagination_model_.is_valid_page(new_page_flip_target)) {
     page_flip_target_ = new_page_flip_target;
 
-    if (page_flip_target_ != pagination_model_->selected_page()) {
+    if (page_flip_target_ != pagination_model_.selected_page()) {
       page_flip_timer_.Start(FROM_HERE,
           base::TimeDelta::FromMilliseconds(page_flip_delay_in_ms_),
           this, &AppsGridView::OnPageFlipTimer);
@@ -1626,8 +1630,8 @@ void AppsGridView::MaybeStartPageFlipTimer(const gfx::Point& drag_point) {
 }
 
 void AppsGridView::OnPageFlipTimer() {
-  DCHECK(pagination_model_->is_valid_page(page_flip_target_));
-  pagination_model_->SelectPage(page_flip_target_, true);
+  DCHECK(pagination_model_.is_valid_page(page_flip_target_));
+  pagination_model_.SelectPage(page_flip_target_, true);
 }
 
 void AppsGridView::MoveItemInModel(views::View* item_view,
@@ -1644,8 +1648,8 @@ void AppsGridView::MoveItemInModel(views::View* item_view,
   view_model_.Move(current_model_index, target_model_index);
   item_list_->AddObserver(this);
 
-  if (pagination_model_->selected_page() != target.page)
-    pagination_model_->SelectPage(target.page, false);
+  if (pagination_model_.selected_page() != target.page)
+    pagination_model_.SelectPage(target.page, false);
 }
 
 void AppsGridView::MoveItemToFolder(views::View* item_view,
@@ -1853,7 +1857,7 @@ void AppsGridView::CancelFolderItemReparent(AppListItemView* drag_item_view) {
 }
 
 void AppsGridView::CancelContextMenusOnCurrentPage() {
-  int start = pagination_model_->selected_page() * tiles_per_page();
+  int start = pagination_model_.selected_page() * tiles_per_page();
   int end = std::min(view_model_.view_size(), start + tiles_per_page());
   for (int i = start; i < end; ++i) {
     AppListItemView* view =
@@ -1960,8 +1964,8 @@ void AppsGridView::TransitionChanged() {
   // Update layout for valid page transition only since over-scroll no longer
   // animates app icons.
   const PaginationModel::Transition& transition =
-      pagination_model_->transition();
-  if (pagination_model_->is_valid_page(transition.target_page))
+      pagination_model_.transition();
+  if (pagination_model_.is_valid_page(transition.target_page))
     Layout();
 }
 
@@ -2122,7 +2126,7 @@ gfx::Rect AppsGridView::GetTileBoundsForPoint(const gfx::Point& point,
   gfx::Rect tile_rect = GetTileBounds(row, col);
 
   // Check if |point| is outside a valid item's tile.
-  Index index(pagination_model_->selected_page(), row * cols_ + col);
+  Index index(pagination_model_.selected_page(), row * cols_ + col);
   *tile_index = index;
   return tile_rect;
 }
@@ -2142,7 +2146,7 @@ gfx::Rect AppsGridView::GetTileBounds(int row, int col) const {
 
 bool AppsGridView::IsLastPossibleDropTarget(const Index& index) const {
   int last_possible_slot = view_model_.view_size() % tiles_per_page();
-  return (index.page == pagination_model_->total_pages() - 1 &&
+  return (index.page == pagination_model_.total_pages() - 1 &&
           index.slot == last_possible_slot + 1);
 }
 

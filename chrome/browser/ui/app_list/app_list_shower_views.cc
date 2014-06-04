@@ -109,7 +109,7 @@ app_list::AppListView* AppListShower::MakeViewForCurrentProfile() {
   app_list::AppListView* view = new app_list::AppListView(view_delegate);
   gfx::Point cursor = gfx::Screen::GetNativeScreen()->GetCursorScreenPoint();
   view->InitAsBubbleAtFixedLocation(NULL,
-                                    &pagination_model_,
+                                    0,
                                     cursor,
                                     views::BubbleBorder::FLOAT,
                                     false /* border_accepts_events */);

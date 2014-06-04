@@ -153,23 +153,24 @@ int GetMinimumBoundsHeightForAppList(const app_list::AppListView* app_list) {
 // AppListController, public:
 
 AppListController::AppListController()
-    : pagination_model_(new app_list::PaginationModel),
-      is_visible_(false),
+    : is_visible_(false),
       is_centered_(false),
       view_(NULL),
+      current_apps_page_(-1),
       should_snap_back_(false) {
   Shell::GetInstance()->AddShellObserver(this);
-  pagination_model_->AddObserver(this);
 }
 
 AppListController::~AppListController() {
   // Ensures app list view goes before the controller since pagination model
   // lives in the controller and app list view would access it on destruction.
-  if (view_ && view_->GetWidget())
-    view_->GetWidget()->CloseNow();
+  if (view_) {
+    view_->GetAppsPaginationModel()->RemoveObserver(this);
+    if (view_->GetWidget())
+      view_->GetWidget()->CloseNow();
+  }
 
   Shell::GetInstance()->RemoveShellObserver(this);
-  pagination_model_->RemoveObserver(this);
 }
 
 void AppListController::SetVisible(bool visible, aura::Window* window) {
@@ -206,12 +207,11 @@ void AppListController::SetVisible(bool visible, aura::Window* window) {
     if (is_centered_) {
       // Note: We can't center the app list until we have its dimensions, so we
       // init at (0, 0) and then reset its anchor point.
-      view->InitAsBubbleAtFixedLocation(
-          container,
-          pagination_model_.get(),
-          gfx::Point(),
-          views::BubbleBorder::FLOAT,
-          true /* border_accepts_events */);
+      view->InitAsBubbleAtFixedLocation(container,
+                                        current_apps_page_,
+                                        gfx::Point(),
+                                        views::BubbleBorder::FLOAT,
+                                        true /* border_accepts_events */);
       // The experimental app list is centered over the display of the app list
       // button that was pressed (if triggered via keyboard, this is the display
       // with the currently focused window).
@@ -225,11 +225,11 @@ void AppListController::SetVisible(bool visible, aura::Window* window) {
           applist_button_bounds);
       view->InitAsBubbleAttachedToAnchor(
           container,
-          pagination_model_.get(),
+          current_apps_page_,
           Shelf::ForWindow(container)->GetAppListButtonView(),
-          GetAnchorPositionOffsetToShelf(applist_button_bounds,
-              Shelf::ForWindow(container)->GetAppListButtonView()->
-                  GetWidget()),
+          GetAnchorPositionOffsetToShelf(
+              applist_button_bounds,
+              Shelf::ForWindow(container)->GetAppListButtonView()->GetWidget()),
           GetBubbleArrow(container),
           true /* border_accepts_events */);
       view->SetArrowPaintType(views::BubbleBorder::PAINT_NONE);
@@ -277,6 +277,8 @@ void AppListController::SetView(app_list::AppListView* view) {
   widget->GetNativeView()->GetRootWindow()->AddObserver(this);
   aura::client::GetFocusClient(widget->GetNativeView())->AddObserver(this);
 
+  view_->GetAppsPaginationModel()->AddObserver(this);
+
   view_->ShowWhenReady();
 }
 
@@ -295,6 +297,9 @@ void AppListController::ResetView() {
   Shelf::ForWindow(widget->GetNativeWindow())->RemoveIconObserver(this);
   widget->GetNativeView()->GetRootWindow()->RemoveObserver(this);
   aura::client::GetFocusClient(widget->GetNativeView())->RemoveObserver(this);
+
+  view_->GetAppsPaginationModel()->RemoveObserver(this);
+
   view_ = NULL;
 }
 
@@ -449,6 +454,7 @@ void AppListController::TotalPagesChanged() {
 
 void AppListController::SelectedPageChanged(int old_selected,
                                             int new_selected) {
+  current_apps_page_ = new_selected;
 }
 
 void AppListController::TransitionStarted() {
@@ -459,20 +465,22 @@ void AppListController::TransitionChanged() {
   if (!view_)
     return;
 
+  app_list::PaginationModel* pagination_model = view_->GetAppsPaginationModel();
+
   const app_list::PaginationModel::Transition& transition =
-      pagination_model_->transition();
-  if (pagination_model_->is_valid_page(transition.target_page))
+      pagination_model->transition();
+  if (pagination_model->is_valid_page(transition.target_page))
     return;
 
   views::Widget* widget = view_->GetWidget();
   ui::LayerAnimator* widget_animator = GetLayer(widget)->GetAnimator();
-  if (!pagination_model_->IsRevertingCurrentTransition()) {
+  if (!pagination_model->IsRevertingCurrentTransition()) {
     // Update cached |view_bounds_| if it is the first over-scroll move and
     // widget does not have running animations.
     if (!should_snap_back_ && !widget_animator->is_animating())
       view_bounds_ = widget->GetWindowBoundsInScreen();
 
-    const int current_page = pagination_model_->selected_page();
+    const int current_page = pagination_model->selected_page();
     const int dir = transition.target_page > current_page ? -1 : 1;
 
     const double progress = 1.0 - pow(1.0 - transition.progress, 4);
