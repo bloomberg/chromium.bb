@@ -100,6 +100,9 @@ class VIEWS_EXPORT Label : public View {
   // Disables shadows.
   void ClearEmbellishing();
 
+  // Set the color of a halo on the painted text (use transparent for none).
+  void set_halo_color(SkColor halo_color) { halo_color_ = halo_color; }
+
   // Sets horizontal alignment. If the locale is RTL, and the directionality
   // mode is USE_UI_DIRECTIONALITY, the alignment is flipped around.
   //
@@ -270,8 +273,6 @@ class VIEWS_EXPORT Label : public View {
   bool auto_color_readability_;
   mutable gfx::Size text_size_;
   mutable bool text_size_valid_;
-  // Indicates the level of shadow blurring. Default is zero.
-  double shadow_blur_;
   int line_height_;
   bool is_multi_line_;
   bool is_obscured_;
@@ -295,6 +296,12 @@ class VIEWS_EXPORT Label : public View {
 
   // Should a shadow be drawn behind the text?
   bool has_shadow_;
+
+  // Indicates the level of shadow blurring. Default is zero.
+  double shadow_blur_;
+
+  // The halo color drawn around the text if it is not transparent.
+  SkColor halo_color_;
 
   // The cached heights to avoid recalculation in GetHeightForWidth().
   mutable std::vector<gfx::Size> cached_heights_;

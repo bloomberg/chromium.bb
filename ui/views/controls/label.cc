@@ -323,12 +323,18 @@ void Label::PaintText(gfx::Canvas* canvas,
                       const gfx::Rect& text_bounds,
                       int flags) {
   gfx::ShadowValues shadows;
-  if (has_shadow_)
+  if (has_shadow_) {
     shadows.push_back(gfx::ShadowValue(shadow_offset_, shadow_blur_,
         enabled() ? enabled_shadow_color_ : disabled_shadow_color_));
-  canvas->DrawStringRectWithShadows(text, font_list_,
-      enabled() ? actual_enabled_color_ : actual_disabled_color_,
-      text_bounds, line_height_, flags, shadows);
+  }
+  SkColor color = enabled() ? actual_enabled_color_ : actual_disabled_color_;
+  canvas->DrawStringRectWithShadows(text, font_list_, color, text_bounds,
+                                    line_height_, flags, shadows);
+
+  if (SkColorGetA(halo_color_) != SK_AlphaTRANSPARENT) {
+    canvas->DrawStringRectWithHalo(text, font_list_, color, halo_color_,
+                                   text_bounds, flags);
+  }
 
   if (HasFocus()) {
     gfx::Rect focus_bounds = text_bounds;
@@ -400,6 +406,7 @@ void Label::Init(const base::string16& text, const gfx::FontList& font_list) {
   shadow_offset_.SetPoint(1, 1);
   has_shadow_ = false;
   shadow_blur_ = 0;
+  halo_color_ = SK_ColorTRANSPARENT;
   cached_heights_.resize(kCachedSizeLimit);
   ResetCachedSize();
 
