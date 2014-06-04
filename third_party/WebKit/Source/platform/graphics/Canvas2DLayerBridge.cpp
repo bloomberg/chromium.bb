@@ -414,14 +414,14 @@ bool Canvas2DLayerBridge::prepareMailbox(blink::WebExternalTextureMailbox* outMa
     mailboxInfo->m_status = MailboxInUse;
     mailboxInfo->m_image = image;
 
+    ASSERT(mailboxInfo->m_mailbox.syncPoint == 0);
+    ASSERT(mailboxInfo->m_image.get());
+    ASSERT(mailboxInfo->m_image->getTexture());
+
     // Because of texture sharing with the compositor, we must invalidate
     // the state cached in skia so that the deferred copy on write
     // in SkSurface_Gpu does not make any false assumptions.
     mailboxInfo->m_image->getTexture()->textureParamsModified();
-
-    ASSERT(mailboxInfo->m_mailbox.syncPoint == 0);
-    ASSERT(mailboxInfo->m_image.get());
-    ASSERT(mailboxInfo->m_image->getTexture());
 
     webContext->bindTexture(GL_TEXTURE_2D, mailboxInfo->m_image->getTexture()->getTextureHandle());
     webContext->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
