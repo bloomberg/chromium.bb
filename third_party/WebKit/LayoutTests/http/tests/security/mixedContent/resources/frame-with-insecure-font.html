@@ -1,0 +1,14 @@
+<style>
+  @font-face {
+      font-family: "AhemTest";
+      src: url(http://127.0.0.1:8080/resources/Ahem.ttf);
+  }
+  p { font-family: AhemTest; }
+</style>
+<p>Yay!</p>
+<script>
+window.onload = function() {
+    if (window.opener)
+        window.opener.postMessage('done', '*');
+};
+</script>
