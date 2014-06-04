@@ -53,9 +53,12 @@ void DOMActivityLogger::AttachToWorld(int world_id,
 #if defined(ENABLE_EXTENSIONS)
   // If there is no logger registered for world_id, construct a new logger
   // and register it with world_id.
-  if (!blink::hasDOMActivityLogger(world_id)) {
+  if (!blink::hasDOMActivityLogger(world_id,
+                                   WebString::fromUTF8(extension_id))) {
     DOMActivityLogger* logger = new DOMActivityLogger(extension_id);
-    blink::setDOMActivityLogger(world_id, logger);
+    blink::setDOMActivityLogger(world_id,
+                                WebString::fromUTF8(extension_id),
+                                logger);
   }
 #endif
 }
