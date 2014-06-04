@@ -389,9 +389,6 @@ crbug.com/290411 [ XP Mac ] fast/text/sub-pixel/text-scaling-webfont.html [ Skip
 crbug.com/377696 printing/setPrinting.html [ Skip ]
 crbug.com/377696 printing/width-overflow.html [ Skip ]
 
-# Flaky since DirectWrite.
-crbug.com/378610 [ Win ] fast/text/decorations-transformed.html [ Pass Failure ]
-
 # FIXME: Remove windows-directwrite test suite once we're sure the DW won't be reverted. Keep it but skip it for now.
 crbug.com/378610 [ Win7 ] virtual/windows-directwrite [ Skip ]
 

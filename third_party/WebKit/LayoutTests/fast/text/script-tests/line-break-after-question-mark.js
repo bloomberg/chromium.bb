@@ -2,7 +2,7 @@ description("Tests when line breaking is allowed after a question mark character
 
 var div = document.body.appendChild(document.createElement("div"));
 div.style.width = "1px";
-div.style.fontFamily = "ahem";
+div.style.fontFamily = "Ahem";
 div.style.fontSize = "25px";
 
 function allowsBreakBefore(i)
