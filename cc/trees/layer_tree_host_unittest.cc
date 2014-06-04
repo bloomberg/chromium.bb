@@ -4221,7 +4221,10 @@ class LayerTreeHostTestMaxTransferBufferUsageBytes : public LayerTreeHostTest {
 };
 
 // Impl-side painting is a multi-threaded compositor feature.
+// Disabled for flakiness: http://crbug.com/380662
+#if 0
 MULTI_THREAD_TEST_F(LayerTreeHostTestMaxTransferBufferUsageBytes);
+#endif
 
 // Test ensuring that memory limits are sent to the prioritized resource
 // manager.
