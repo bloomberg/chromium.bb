@@ -54,6 +54,37 @@ class GoogleUpdateSettingsTest : public testing::Test {
     ASSERT_EQ(ERROR_SUCCESS, update_key.WriteValue(L"ap", value));
   }
 
+  // Sets the "ap" field for a multi-install product (both the product and
+  // the binaries).
+  void SetMultiApField(SystemUserInstall is_system, const wchar_t* value) {
+    // Caller must specify a multi-install ap value.
+    ASSERT_NE(std::wstring::npos, std::wstring(value).find(L"-multi"));
+    HKEY root = is_system == SYSTEM_INSTALL ?
+        HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
+    RegKey update_key;
+
+    // Write the ap value for both the product and the binaries.
+    BrowserDistribution* const kDists[] = {
+      BrowserDistribution::GetDistribution(),
+      BrowserDistribution::GetSpecificDistribution(
+          BrowserDistribution::CHROME_BINARIES)
+    };
+    for (size_t i = 0; i < arraysize(kDists); ++i) {
+      std::wstring path = kDists[i]->GetStateKey();
+      ASSERT_EQ(ERROR_SUCCESS, update_key.Create(root, path.c_str(),
+                                                 KEY_WRITE));
+      ASSERT_EQ(ERROR_SUCCESS, update_key.WriteValue(L"ap", value));
+    }
+
+    // Make the product technically multi-install.
+    BrowserDistribution* dist = BrowserDistribution::GetDistribution();
+    ASSERT_EQ(ERROR_SUCCESS,
+              update_key.Create(root, dist->GetStateKey().c_str(), KEY_WRITE));
+    ASSERT_EQ(ERROR_SUCCESS,
+              update_key.WriteValue(installer::kUninstallArgumentsField,
+                                    L"--multi-install"));
+  }
+
   // Tests setting the ap= value to various combinations of values with
   // prefixes and suffixes, while asserting on the correct channel value.
   // Note that any non-empty ap= value that doesn't match ".*-{dev|beta}.*"
@@ -308,6 +339,29 @@ TEST_F(GoogleUpdateSettingsTest, CurrentChromeChannelEmptyUser) {
   EXPECT_TRUE(GoogleUpdateSettings::GetChromeChannelAndModifiers(false,
                                                                  &channel));
   EXPECT_STREQ(L"", channel.c_str());
+}
+
+// Test that the channel is pulled from the binaries for multi-install products.
+TEST_F(GoogleUpdateSettingsTest, MultiInstallChannelFromBinaries) {
+  SetMultiApField(USER_INSTALL, L"2.0-dev-multi-chrome");
+  base::string16 channel;
+
+  EXPECT_TRUE(GoogleUpdateSettings::GetChromeChannelAndModifiers(false,
+                                                                 &channel));
+  EXPECT_STREQ(L"dev-m", channel.c_str());
+
+  // See if the same happens if the product's ap is cleared.
+  SetApField(USER_INSTALL, L"");
+  EXPECT_TRUE(GoogleUpdateSettings::GetChromeChannelAndModifiers(false,
+                                                                 &channel));
+  EXPECT_STREQ(L"dev-m", channel.c_str());
+
+  // Test the converse (binaries are stable, Chrome is other).
+  SetMultiApField(USER_INSTALL, L"-multi-chrome");
+  SetApField(USER_INSTALL, L"2.0-dev-multi-chrome");
+  EXPECT_TRUE(GoogleUpdateSettings::GetChromeChannelAndModifiers(false,
+                                                                 &channel));
+  EXPECT_STREQ(L"m", channel.c_str());
 }
 
 TEST_F(GoogleUpdateSettingsTest, CurrentChromeChannelVariousApValuesSystem) {

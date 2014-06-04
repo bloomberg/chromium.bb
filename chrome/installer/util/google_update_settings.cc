@@ -134,29 +134,41 @@ bool GetChromeChannelInternal(bool system_install,
                               bool add_multi_modifier,
                               base::string16* channel) {
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-  if (dist->GetChromeChannel(channel)) {
+
+  // Shortcut in case this distribution knows what channel it is (canary).
+  if (dist->GetChromeChannel(channel))
     return true;
-  }
 
-  HKEY root_key = system_install ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
-  base::string16 reg_path = dist->GetStateKey();
-  RegKey key(root_key, reg_path.c_str(), KEY_READ | KEY_WOW64_32KEY);
-
+  // Determine whether or not chrome is multi-install. If so, updates are
+  // delivered under the binaries' app guid, so that's where the relevant
+  // channel is found.
+  installer::ProductState state;
   installer::ChannelInfo channel_info;
-  if (!channel_info.Initialize(key)) {
-    channel->assign(installer::kChromeChannelUnknown);
-    return false;
+  ignore_result(state.Initialize(system_install, dist));
+  if (!state.is_multi_install()) {
+    // Use the channel info that was just read for this single-install chrome.
+    channel_info = state.channel();
+  } else {
+    // Read the channel info from the binaries' state key.
+    HKEY root_key = system_install ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
+    dist = BrowserDistribution::GetSpecificDistribution(
+        BrowserDistribution::CHROME_BINARIES);
+    RegKey key(root_key, dist->GetStateKey().c_str(),
+               KEY_READ | KEY_WOW64_32KEY);
+
+    if (!channel_info.Initialize(key)) {
+      channel->assign(installer::kChromeChannelUnknown);
+      return false;
+    }
   }
 
-  if (!channel_info.GetChannelName(channel)) {
+  if (!channel_info.GetChannelName(channel))
     channel->assign(installer::kChromeChannelUnknown);
-  }
 
   // Tag the channel name if this is a multi-install.
-  if (add_multi_modifier && channel_info.IsMultiInstall()) {
-    if (!channel->empty()) {
+  if (add_multi_modifier && state.is_multi_install()) {
+    if (!channel->empty())
       channel->push_back(L'-');
-    }
     channel->push_back(L'm');
   }
 
