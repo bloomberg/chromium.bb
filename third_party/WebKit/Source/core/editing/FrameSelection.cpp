@@ -471,7 +471,6 @@ void FrameSelection::updateSelectionIfNeeded(const Position& base, const Positio
         return;
     VisibleSelection newSelection;
     newSelection.setWithoutValidation(base, extent);
-    m_frame->document()->updateLayout();
     setSelection(newSelection, DoNotSetFocus);
 }
 
@@ -1410,17 +1409,13 @@ bool FrameSelection::setSelectedRange(Range* range, EAffinity affinity, SetSelec
         return false;
     ASSERT(range->startContainer()->document() == range->endContainer()->document());
 
-    m_frame->document()->updateLayoutIgnorePendingStylesheets();
-
     // Non-collapsed ranges are not allowed to start at the end of a line that is wrapped,
     // they start at the beginning of the next line instead
     m_logicalRange = nullptr;
     stopObservingVisibleSelectionChangeIfNecessary();
 
-    // FIXME: Can we provide extentAffinity?
-    VisiblePosition visibleStart(range->startPosition(), range->collapsed() ? affinity : DOWNSTREAM);
-    VisiblePosition visibleEnd(range->endPosition(), SEL_DEFAULT_AFFINITY);
-    setSelection(VisibleSelection(visibleStart, visibleEnd), options);
+    VisibleSelection newSelection(range, affinity);
+    setSelection(newSelection, options);
 
     m_logicalRange = range->cloneRange();
     startObservingVisibleSelectionChange();
