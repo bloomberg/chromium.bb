@@ -102,7 +102,7 @@ bool ImageTransportSurfaceAndroid::Initialize() {
 
 bool ImageTransportSurfaceAndroid::OnMakeCurrent(gfx::GLContext* context) {
   DidAccessGpu();
-  return PassThroughImageTransportSurface::OnMakeCurrent(context);
+  return true;
 }
 
 bool ImageTransportSurfaceAndroid::SwapBuffers() {
