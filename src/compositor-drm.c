@@ -1279,6 +1279,17 @@ drm_output_destroy(struct weston_output *output_base)
 	free(output);
 }
 
+/**
+ * Find the closest-matching mode for a given target
+ *
+ * Given a target mode, find the most suitable mode amongst the output's
+ * current mode list to use, preferring the current mode if possible, to
+ * avoid an expensive mode switch.
+ *
+ * @param output DRM output
+ * @param target_mode Mode to attempt to match
+ * @returns Pointer to a mode from the output's mode list
+ */
 static struct drm_mode *
 choose_mode (struct drm_output *output, struct weston_mode *target_mode)
 {
@@ -1531,8 +1542,18 @@ init_pixman(struct drm_backend *b)
 	return pixman_renderer_init(b->compositor);
 }
 
+/**
+ * Add a mode to output's mode list
+ *
+ * Copy the supplied DRM mode into a Weston mode structure, and add it to the
+ * output's mode list.
+ *
+ * @param output DRM output to add mode to
+ * @param info DRM mode structure to add
+ * @returns Newly-allocated Weston/DRM mode structure
+ */
 static struct drm_mode *
-drm_output_add_mode(struct drm_output *output, drmModeModeInfo *info)
+drm_output_add_mode(struct drm_output *output, const drmModeModeInfo *info)
 {
 	struct drm_mode *mode;
 	uint64_t refresh;
@@ -2045,6 +2066,97 @@ get_gbm_format_from_section(struct weston_config_section *section,
 	return ret;
 }
 
+/**
+ * Choose suitable mode for an output
+ *
+ * Find the most suitable mode to use for initial setup (or reconfiguration on
+ * hotplug etc) for a DRM output.
+ *
+ * @param output DRM output to choose mode for
+ * @param kind Strategy and preference to use when choosing mode
+ * @param width Desired width for this output
+ * @param height Desired height for this output
+ * @param current_mode Mode currently being displayed on this output
+ * @param modeline Manually-entered mode (may be NULL)
+ * @returns A mode from the output's mode list, or NULL if none available
+ */
+static struct drm_mode *
+drm_output_choose_initial_mode(struct drm_output *output,
+			       enum output_config kind,
+			       int width, int height,
+			       const drmModeModeInfo *current_mode,
+			       const drmModeModeInfo *modeline)
+{
+	struct drm_mode *preferred = NULL;
+	struct drm_mode *current = NULL;
+	struct drm_mode *configured = NULL;
+	struct drm_mode *best = NULL;
+	struct drm_mode *drm_mode;
+
+	wl_list_for_each_reverse(drm_mode, &output->base.mode_list, base.link) {
+		if (kind == OUTPUT_CONFIG_MODE &&
+		    width == drm_mode->base.width &&
+		    height == drm_mode->base.height)
+			configured = drm_mode;
+
+		if (memcmp(&current_mode, &drm_mode->mode_info,
+			   sizeof *current_mode) == 0)
+			current = drm_mode;
+
+		if (drm_mode->base.flags & WL_OUTPUT_MODE_PREFERRED)
+			preferred = drm_mode;
+
+		best = drm_mode;
+	}
+
+	if (kind == OUTPUT_CONFIG_MODELINE) {
+		configured = drm_output_add_mode(output, modeline);
+		if (!configured)
+			return NULL;
+	}
+
+	if (current == NULL && current_mode->clock != 0) {
+		current = drm_output_add_mode(output, current_mode);
+		if (!current)
+			return NULL;
+	}
+
+	if (kind == OUTPUT_CONFIG_CURRENT)
+		configured = current;
+
+	if (option_current_mode && current)
+		return current;
+
+	if (configured)
+		return configured;
+
+	if (preferred)
+		return preferred;
+
+	if (current)
+		return current;
+
+	if (best)
+		return best;
+
+	weston_log("no available modes for %s\n", output->base.name);
+	return NULL;
+}
+
+/**
+ * Create and configure a Weston output structure
+ *
+ * Given a DRM connector, create a matching drm_output structure and add it
+ * to Weston's output list.
+ *
+ * @param ec DRM compositor structure
+ * @param resources DRM resources for this device
+ * @param connector DRM connector to use for this new output
+ * @param x Horizontal offset to use into global co-ordinate space
+ * @param y Vertical offset to use into global co-ordinate space
+ * @param drm_device udev device pointer
+ * @returns 0 on success, or -1 on failure
+ */
 static int
 create_output_for_connector(struct drm_backend *b,
 			    drmModeRes *resources,
@@ -2052,7 +2164,7 @@ create_output_for_connector(struct drm_backend *b,
 			    int x, int y, struct udev_device *drm_device)
 {
 	struct drm_output *output;
-	struct drm_mode *drm_mode, *next, *preferred, *current, *configured, *best;
+	struct drm_mode *drm_mode, *next, *current;
 	struct weston_mode *m;
 	struct weston_config_section *section;
 	drmModeEncoder *encoder;
@@ -2160,54 +2272,12 @@ create_output_for_connector(struct drm_backend *b,
 		goto err_free;
 	}
 
-	preferred = NULL;
-	current = NULL;
-	configured = NULL;
-	best = NULL;
-
-	wl_list_for_each_reverse(drm_mode, &output->base.mode_list, base.link) {
-		if (config == OUTPUT_CONFIG_MODE &&
-		    width == drm_mode->base.width &&
-		    height == drm_mode->base.height)
-			configured = drm_mode;
-		if (!memcmp(&crtc_mode, &drm_mode->mode_info, sizeof crtc_mode))
-			current = drm_mode;
-		if (drm_mode->base.flags & WL_OUTPUT_MODE_PREFERRED)
-			preferred = drm_mode;
-		best = drm_mode;
-	}
-
-	if (config == OUTPUT_CONFIG_MODELINE) {
-		configured = drm_output_add_mode(output, &modeline);
-		if (!configured)
-			goto err_free;
-	}
-
-	if (current == NULL && crtc_mode.clock != 0) {
-		current = drm_output_add_mode(output, &crtc_mode);
-		if (!current)
-			goto err_free;
-	}
-
-	if (config == OUTPUT_CONFIG_CURRENT)
-		configured = current;
-
-	if (option_current_mode && current)
-		output->base.current_mode = &current->base;
-	else if (configured)
-		output->base.current_mode = &configured->base;
-	else if (preferred)
-		output->base.current_mode = &preferred->base;
-	else if (current)
-		output->base.current_mode = &current->base;
-	else if (best)
-		output->base.current_mode = &best->base;
-
-	if (output->base.current_mode == NULL) {
-		weston_log("no available modes for %s\n", output->base.name);
+	current = drm_output_choose_initial_mode(output, config,
+						 width, height,
+						 &crtc_mode, &modeline);
+	if (!current)
 		goto err_free;
-	}
-
+	output->base.current_mode = &current->base;
 	output->base.current_mode->flags |= WL_OUTPUT_MODE_CURRENT;
 
 	weston_output_init(&output->base, b->compositor, x, y,
