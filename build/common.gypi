@@ -166,6 +166,9 @@
         'sysroot%': '',
         'chroot_cmd%': '',
 
+        # The system libdir used for this ABI.
+        'system_libdir%': 'lib',
+
         'conditions': [
           # Ash needs Aura.
           ['use_aura==0', {
@@ -261,6 +264,7 @@
       'arm_version%': '<(arm_version)',
       'sysroot%': '<(sysroot)',
       'chroot_cmd%': '<(chroot_cmd)',
+      'system_libdir%': '<(system_libdir)',
 
       # Set to 1 to enable fast builds. Set to 2 for even faster builds
       # (it disables debug info for fastest compilation - only for use
@@ -288,8 +292,6 @@
       # Detect NEON support at run-time.
       'arm_neon_optional%': 0,
 
-      # The system libdir used for this ABI.
-      'system_libdir%': 'lib',
 
       # Use libjpeg-turbo as the JPEG codec used by Chromium.
       'use_libjpeg_turbo%': 1,
