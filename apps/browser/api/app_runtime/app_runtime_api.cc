@@ -65,23 +65,26 @@ void AppEventRouter::DispatchOnRestartedEvent(BrowserContext* context,
 }
 
 // static.
-void AppEventRouter::DispatchOnLaunchedEventWithFileEntry(
+void AppEventRouter::DispatchOnLaunchedEventWithFileEntries(
     BrowserContext* context,
     const Extension* extension,
     const std::string& handler_id,
-    const std::string& mime_type,
-    const file_handler_util::GrantedFileEntry& file_entry) {
+    const std::vector<std::string>& mime_types,
+    const std::vector<file_handler_util::GrantedFileEntry>& file_entries) {
   // TODO(sergeygs): Use the same way of creating an event (using the generated
   // boilerplate) as below in DispatchOnLaunchedEventWithUrl.
   scoped_ptr<base::DictionaryValue> launch_data(new base::DictionaryValue);
   launch_data->SetString("id", handler_id);
-  scoped_ptr<base::DictionaryValue> launch_item(new base::DictionaryValue);
-  launch_item->SetString("fileSystemId", file_entry.filesystem_id);
-  launch_item->SetString("baseName", file_entry.registered_name);
-  launch_item->SetString("mimeType", mime_type);
-  launch_item->SetString("entryId", file_entry.id);
   scoped_ptr<base::ListValue> items(new base::ListValue);
-  items->Append(launch_item.release());
+  DCHECK(file_entries.size() == mime_types.size());
+  for (size_t i = 0; i < file_entries.size(); ++i) {
+    scoped_ptr<base::DictionaryValue> launch_item(new base::DictionaryValue);
+    launch_item->SetString("fileSystemId", file_entries[i].filesystem_id);
+    launch_item->SetString("baseName", file_entries[i].registered_name);
+    launch_item->SetString("mimeType", mime_types[i]);
+    launch_item->SetString("entryId", file_entries[i].id);
+    items->Append(launch_item.release());
+  }
   launch_data->Set("items", items.release());
   DispatchOnLaunchedEventImpl(extension->id(), launch_data.Pass(), context);
 }

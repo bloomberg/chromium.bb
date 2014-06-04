@@ -6,6 +6,7 @@
 #define APPS_BROWSER_API_APP_RUNTIME_APP_RUNTIME_API_H_
 
 #include <string>
+#include <vector>
 
 class GURL;
 
@@ -47,15 +48,15 @@ class AppEventRouter {
   //   }
   // }
 
-  // The FileEntry is created from |file_system_id| and |base_name|.
+  // The FileEntries are created from |file_system_id| and |base_name|.
   // |handler_id| corresponds to the id of the file_handlers item in the
   // manifest that resulted in a match which triggered this launch.
-  static void DispatchOnLaunchedEventWithFileEntry(
+  static void DispatchOnLaunchedEventWithFileEntries(
       content::BrowserContext* context,
       const extensions::Extension* extension,
       const std::string& handler_id,
-      const std::string& mime_type,
-      const file_handler_util::GrantedFileEntry& file_entry);
+      const std::vector<std::string>& mime_types,
+      const std::vector<file_handler_util::GrantedFileEntry>& file_entries);
 
   // |handler_id| corresponds to the id of the url_handlers item
   // in the manifest that resulted in a match which triggered this launch.

@@ -311,11 +311,12 @@ bool ExecuteFileTask(Profile* profile,
         file_urls,
         done);
   } else if (task.task_type == TASK_TYPE_FILE_HANDLER) {
+    std::vector<base::FilePath> paths;
     for (size_t i = 0; i != file_urls.size(); ++i) {
-      apps::LaunchPlatformAppWithFileHandler(
-          profile, extension, task.action_id, file_urls[i].path());
+      paths.push_back(file_urls[i].path());
     }
-
+    apps::LaunchPlatformAppWithFileHandler(
+        profile, extension, task.action_id, paths);
     if (!done.is_null())
       done.Run(extensions::api::file_browser_private::TASK_RESULT_MESSAGE_SENT);
     return true;

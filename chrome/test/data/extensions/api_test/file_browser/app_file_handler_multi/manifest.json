@@ -1,0 +1,23 @@
+{
+  "key": "MIGdMA0GCSqGSIb3DQEBAQUAA4GLADCBhwKBgQChptAQ0n4R56N03nWQ1ogR7DVRBjGo80Vw6G9KLjzZv44D8rq5Q5IkeQrtKgWyZfXevlsCe3LaLo18rcz8iZx6lK2xhLdUR+ORjsjuBfdEL5a5cWeRTSxf75AcqndQsmpwMBdrMTCZ8jQNusUI+XlrihLNNJuI5TM4vNINI5bYFQIBIw==",
+  "name": "ChromeOS File handler extension",
+  "version": "0.1",
+  "manifest_version": 2,
+  "description": "Tests of the file handler for multiple items",
+  "app": {
+    "background": {
+      "scripts": ["test.js"]
+    }
+  },
+  "file_handlers": {
+    "textAction": {
+      "extensions": ["txt"],
+      "title": "foo action handler"
+    }
+  },
+  "permissions": [
+    "fileBrowserPrivate",
+    "fileBrowserHandler",
+    "unlimitedStorage"
+  ]
+}

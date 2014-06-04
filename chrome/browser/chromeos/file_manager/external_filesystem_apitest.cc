@@ -599,6 +599,78 @@ class MultiProfileDriveFileSystemExtensionApiTest :
   std::map<std::string, std::string> resource_ids_;
 };
 
+class LocalAndDriveFileSystemExtensionApiTest
+    : public FileSystemExtensionApiTestBase {
+ public:
+  LocalAndDriveFileSystemExtensionApiTest() {}
+  virtual ~LocalAndDriveFileSystemExtensionApiTest() {}
+
+  // FileSystemExtensionApiTestBase OVERRIDE.
+  virtual void InitTestFileSystem() OVERRIDE {
+    ASSERT_TRUE(InitializeLocalFileSystem(
+        kLocalMountPointName, &local_tmp_dir_, &local_mount_point_dir_))
+        << "Failed to initialize file system.";
+
+    // Set up cache root to be used by DriveIntegrationService. This has to be
+    // done before the browser is created because the service instance is
+    // initialized by EventRouter.
+    ASSERT_TRUE(test_cache_root_.CreateUniqueTempDir());
+
+    // This callback will get called during Profile creation.
+    create_drive_integration_service_ = base::Bind(
+        &LocalAndDriveFileSystemExtensionApiTest::CreateDriveIntegrationService,
+        base::Unretained(this));
+    service_factory_for_test_.reset(
+        new DriveIntegrationServiceFactory::ScopedFactoryForTest(
+            &create_drive_integration_service_));
+  }
+
+  // FileSystemExtensionApiTestBase OVERRIDE.
+  virtual void AddTestMountPoint() OVERRIDE {
+    EXPECT_TRUE(content::BrowserContext::GetMountPoints(browser()->profile())
+                    ->RegisterFileSystem(kLocalMountPointName,
+                                         fileapi::kFileSystemTypeNativeLocal,
+                                         fileapi::FileSystemMountOption(),
+                                         local_mount_point_dir_));
+    VolumeManager::Get(browser()->profile())
+        ->AddVolumeInfoForTesting(local_mount_point_dir_,
+                                  VOLUME_TYPE_TESTING,
+                                  chromeos::DEVICE_TYPE_UNKNOWN);
+    test_util::WaitUntilDriveMountPointIsAdded(browser()->profile());
+  }
+
+ protected:
+  // DriveIntegrationService factory function for this test.
+  drive::DriveIntegrationService* CreateDriveIntegrationService(
+      Profile* profile) {
+    fake_drive_service_ = new drive::FakeDriveService;
+    fake_drive_service_->LoadAppListForDriveApi("drive/applist.json");
+
+    std::map<std::string, std::string> resource_ids;
+    EXPECT_TRUE(InitializeDriveService(fake_drive_service_, &resource_ids));
+
+    return new drive::DriveIntegrationService(profile,
+                                              NULL,
+                                              fake_drive_service_,
+                                              "drive",
+                                              test_cache_root_.path(),
+                                              NULL);
+  }
+
+ private:
+  // For local volume.
+  base::ScopedTempDir local_tmp_dir_;
+  base::FilePath local_mount_point_dir_;
+
+  // For drive volume.
+  base::ScopedTempDir test_cache_root_;
+  drive::FakeDriveService* fake_drive_service_;
+  DriveIntegrationServiceFactory::FactoryCallback
+      create_drive_integration_service_;
+  scoped_ptr<DriveIntegrationServiceFactory::ScopedFactoryForTest>
+      service_factory_for_test_;
+};
+
 //
 // LocalFileSystemExtensionApiTests.
 //
@@ -712,5 +784,17 @@ IN_PROC_BROWSER_TEST_F(MultiProfileDriveFileSystemExtensionApiTest,
       FLAGS_NONE)) << message_;
 }
 
+//
+// LocalAndDriveFileSystemExtensionApiTests.
+//
+IN_PROC_BROWSER_TEST_F(LocalAndDriveFileSystemExtensionApiTest,
+                       AppFileHandlerMulti) {
+  EXPECT_TRUE(
+      RunFileSystemExtensionApiTest("file_browser/app_file_handler_multi",
+                                    FILE_PATH_LITERAL("manifest.json"),
+                                    "",
+                                    FLAGS_NONE))
+      << message_;
+}
 }  // namespace
 }  // namespace file_manager
