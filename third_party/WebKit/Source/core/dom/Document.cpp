@@ -913,10 +913,10 @@ PassRefPtrWillBeRawPtr<Text> Document::createEditingTextNode(const String& text)
     return Text::createEditingText(*this, text);
 }
 
-bool Document::importContainerNodeChildren(ContainerNode* oldContainerNode, PassRefPtr<ContainerNode> newContainerNode, ExceptionState& exceptionState)
+bool Document::importContainerNodeChildren(ContainerNode* oldContainerNode, PassRefPtrWillBeRawPtr<ContainerNode> newContainerNode, ExceptionState& exceptionState)
 {
     for (Node* oldChild = oldContainerNode->firstChild(); oldChild; oldChild = oldChild->nextSibling()) {
-        RefPtr<Node> newChild = importNode(oldChild, true, exceptionState);
+        RefPtrWillBeRawPtr<Node> newChild = importNode(oldChild, true, exceptionState);
         if (exceptionState.hadException())
             return false;
         newContainerNode->appendChild(newChild.release(), exceptionState);
@@ -2434,9 +2434,9 @@ HTMLElement* Document::body() const
     return 0;
 }
 
-void Document::setBody(PassRefPtr<HTMLElement> prpNewBody, ExceptionState& exceptionState)
+void Document::setBody(PassRefPtrWillBeRawPtr<HTMLElement> prpNewBody, ExceptionState& exceptionState)
 {
-    RefPtr<HTMLElement> newBody = prpNewBody;
+    RefPtrWillBeRawPtr<HTMLElement> newBody = prpNewBody;
 
     if (!newBody) {
         exceptionState.throwDOMException(HierarchyRequestError, ExceptionMessages::argumentNullOrIncorrectType(1, "HTMLElement"));
@@ -3463,7 +3463,7 @@ void Document::styleResolverMayHaveChanged()
     styleResolverChanged(hasNodesWithPlaceholderStyle() ? FullStyleUpdate : AnalyzedStyleUpdate);
 }
 
-void Document::setHoverNode(PassRefPtr<Node> newHoverNode)
+void Document::setHoverNode(PassRefPtrWillBeRawPtr<Node> newHoverNode)
 {
     m_hoverNode = newHoverNode;
 }
@@ -5452,7 +5452,7 @@ void Document::updateHoverActiveState(const HitTestRequest& request, Element* in
     // at the time the mouse went down.
     bool mustBeInActiveChain = request.active() && request.move();
 
-    RefPtr<Node> oldHoverNode = hoverNode();
+    RefPtrWillBeRawPtr<Node> oldHoverNode = hoverNode();
 
     // Check to see if the hovered node has changed.
     // If it hasn't, we do not need to do anything.
@@ -5469,10 +5469,10 @@ void Document::updateHoverActiveState(const HitTestRequest& request, Element* in
 
     // Locate the common ancestor render object for the two renderers.
     RenderObject* ancestor = nearestCommonHoverAncestor(oldHoverObj, newHoverObj);
-    RefPtr<Node> ancestorNode(ancestor ? ancestor->node() : 0);
+    RefPtrWillBeRawPtr<Node> ancestorNode(ancestor ? ancestor->node() : 0);
 
-    Vector<RefPtr<Node>, 32> nodesToRemoveFromChain;
-    Vector<RefPtr<Node>, 32> nodesToAddToChain;
+    WillBeHeapVector<RefPtrWillBeMember<Node>, 32> nodesToRemoveFromChain;
+    WillBeHeapVector<RefPtrWillBeMember<Node>, 32> nodesToAddToChain;
 
     if (oldHoverObj != newHoverObj) {
         // If the old hovered node is not nil but it's renderer is, it was probably detached as part of the :hover style

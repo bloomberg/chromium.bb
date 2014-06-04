@@ -643,9 +643,6 @@ public:
     void setAutofocusElement(Element*);
     Element* autofocusElement() const { return m_autofocusElement.get(); }
 
-    void setHoverNode(PassRefPtr<Node>);
-    Node* hoverNode() const { return m_hoverNode.get(); }
-
     void setActiveHoverElement(PassRefPtrWillBeRawPtr<Element>);
     Element* activeHoverElement() const { return m_activeHoverElement.get(); }
 
@@ -796,7 +793,7 @@ public:
     static bool hasValidNamespaceForAttributes(const QualifiedName&);
 
     HTMLElement* body() const;
-    void setBody(PassRefPtr<HTMLElement>, ExceptionState&);
+    void setBody(PassRefPtrWillBeRawPtr<HTMLElement>, ExceptionState&);
 
     HTMLHeadElement* head() const;
 
@@ -1092,7 +1089,7 @@ protected:
 
     virtual PassRefPtrWillBeRawPtr<Document> cloneDocumentWithoutChildren();
 
-    bool importContainerNodeChildren(ContainerNode* oldContainerNode, PassRefPtr<ContainerNode> newContainerNode, ExceptionState&);
+    bool importContainerNodeChildren(ContainerNode* oldContainerNode, PassRefPtrWillBeRawPtr<ContainerNode> newContainerNode, ExceptionState&);
     void lockCompatibilityMode() { m_compatibilityModeLocked = true; }
 
 private:
@@ -1185,6 +1182,9 @@ private:
     void didRemoveTouchEventHandler(Node*, bool clearAll);
 
     bool haveStylesheetsLoaded() const;
+
+    void setHoverNode(PassRefPtrWillBeRawPtr<Node>);
+    Node* hoverNode() const { return m_hoverNode.get(); }
 
     typedef HashSet<EventFactoryBase*> EventFactorySet;
     static EventFactorySet& eventFactories();
