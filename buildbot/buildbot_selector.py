@@ -165,25 +165,26 @@ BOT_ASSIGNMENT = {
     'win7-toolchain_arm':
         python +
         ' buildbot/buildbot_toolchain_build.py'
-        ' toolchain_build'
-        ' --buildbot',
+        ' --buildbot'
+        ' toolchain_build',
     'mac-toolchain_arm':
         python +
         ' buildbot/buildbot_toolchain_build.py'
-        ' toolchain_build'
-        ' --buildbot',
+        ' --buildbot'
+        ' toolchain_build',
     'precise64-toolchain_arm':
         python +
         ' buildbot/buildbot_toolchain_build.py'
-        ' toolchain_build'
-        ' --buildbot',
+        ' --buildbot'
+        ' --test_toolchain nacl_arm_newlib'
+        ' toolchain_build',
 
     # BIONIC toolchain builders.
     'precise64-toolchain_bionic':
         python +
         ' buildbot/buildbot_toolchain_build.py'
-        ' toolchain_build_bionic'
-        ' --buildbot',
+        ' --buildbot'
+        ' toolchain_build_bionic',
 
     # Pnacl toolchain builders.
     'linux-armtools-x86_32':
@@ -225,18 +226,19 @@ BOT_ASSIGNMENT = {
     'nacl-toolchain-precise64-newlib-arm':
         python +
         ' buildbot/buildbot_toolchain_build.py'
-        ' toolchain_build'
-        ' --trybot',
+        ' --trybot'
+        ' --test_toolchain nacl_arm_newlib'
+        ' toolchain_build',
     'nacl-toolchain-mac-newlib-arm':
         python +
         ' buildbot/buildbot_toolchain_build.py'
-        ' toolchain_build'
-        ' --trybot',
+        ' --trybot'
+        ' toolchain_build',
     'nacl-toolchain-win7-newlib-arm':
         python +
         ' buildbot/buildbot_toolchain_build.py'
-        ' toolchain_build'
-        ' --trybot',
+        ' --trybot'
+        ' toolchain_build',
     'nacl-toolchain-precise64-glibc':
         bash + ' buildbot/buildbot_linux-glibc-makefile.sh',
     'nacl-toolchain-mac-glibc':

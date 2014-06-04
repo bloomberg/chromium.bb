@@ -23,6 +23,13 @@ def ValidateKey(key):
   if KEY_PATTERN.match(key) is None:
     raise KeyError('Invalid storage key "%s"' % key)
 
+def LocalFileURL(local_file):
+  abs_path = os.path.abspath(local_file)
+  if not abs_path.startswith('/'):
+    # Windows paths needs an extra slash for the file protocol.
+    return 'file:///' + abs_path
+  else:
+    return 'file://' + abs_path
 
 class LocalStorageCache(object):
   """A caching wrapper for reading a GSDStorage object or storing locally.
@@ -69,7 +76,7 @@ class LocalStorageCache(object):
     if not os.path.exists(cache_dir):
       os.makedirs(cache_dir)
     file_tools.AtomicWriteFile(data, cache_file)
-    return 'LOCAL_CACHE_NO_URL_AVAILABLE'
+    return LocalFileURL(cache_file)
 
   def GetFile(self, key, path):
     """Read a file from storage.
@@ -85,7 +92,7 @@ class LocalStorageCache(object):
     if os.path.exists(cache_file):
       data = file_tools.ReadFile(cache_file)
       file_tools.WriteFile(data, path)
-      return 'LOCAL_CACHE_NO_URL_AVAILABLE'
+      return LocalFileURL(cache_file)
     else:
       return self._storage.GetFile(key, path)
 
