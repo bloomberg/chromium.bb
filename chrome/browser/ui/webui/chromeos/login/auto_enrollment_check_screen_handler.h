@@ -35,9 +35,6 @@ class AutoEnrollmentCheckScreenHandler : public AutoEnrollmentCheckScreenActor,
   virtual void RegisterMessages() OVERRIDE;
 
  private:
-  // JS messages handlers.
-  void HandleOnSkip();
-
   Delegate* delegate_;
 
   // Keeps whether screen should be shown right after initialization.

@@ -30,6 +30,8 @@ AutoEnrollmentCheckScreen::AutoEnrollmentCheckScreen(
 
 AutoEnrollmentCheckScreen::~AutoEnrollmentCheckScreen() {
   NetworkPortalDetector::Get()->RemoveObserver(this);
+  if (actor_)
+    actor_->SetDelegate(NULL);
 }
 
 void AutoEnrollmentCheckScreen::Start() {
