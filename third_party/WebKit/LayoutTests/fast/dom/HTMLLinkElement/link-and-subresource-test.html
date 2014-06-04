@@ -31,8 +31,6 @@ subresource of the current document can be loaded correctly as a subresource.  S
 bug 49236 in which this wasn't working.
 <p>When this test succeeds, you'll see an image of Nick on a sailboat immediately below
 this text.  When this test fails, you will see no images at all.
-<p>This test shows 3 loads of nick.jpg even though from the source it looks like there
-should only be 2.  crbug.com/379893
 <link rel="prefetch" href="resources/nick.jpg" onload="nick_onload()" />
 <img src="resources/nick.jpg" onload="nick_onload()" />
 <hr>

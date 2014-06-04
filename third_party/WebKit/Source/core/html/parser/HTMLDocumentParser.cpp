@@ -355,13 +355,7 @@ void HTMLDocumentParser::didReceiveParsedChunkFromBackgroundParser(PassOwnPtr<Pa
     RefPtrWillBeRawPtr<HTMLDocumentParser> protect(this);
 
     ASSERT(m_speculations.isEmpty());
-    // This preload call is redundant, but we plan to change treebuilding to
-    // always operate asynchronously after a message-loop round trip after delivery
-    // to the main thread, thus we'll always use the preloader. Before making
-    // that change, we're sending all chunks through the preloader right
-    // before treebuilding (changes 15 layout tests).
-    // https://codereview.chromium.org/258013009/
-    m_preloader->takeAndPreload(chunk->preloads);
+    chunk->preloads.clear(); // We don't need to preload because we're going to parse immediately.
     m_speculations.append(chunk);
     pumpPendingSpeculations();
 }

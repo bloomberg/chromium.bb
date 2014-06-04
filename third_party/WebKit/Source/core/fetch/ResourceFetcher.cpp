@@ -900,10 +900,6 @@ ResourceFetcher::RevalidationPolicy ResourceFetcher::determineRevalidationPolicy
 
     // If the same URL has been loaded as a different type, we need to reload.
     if (existingResource->type() != type) {
-        // FIXME: If existingResource is a Preload and the new type is LinkPrefetch
-        // We really should discard the new prefetch since the preload has more
-        // specific type information! crbug.com/379893
-        // fast/dom/HTMLLinkElement/link-and-subresource-test hits this case.
         WTF_LOG(ResourceLoading, "ResourceFetcher::determineRevalidationPolicy reloading due to type mismatch.");
         return Reload;
     }
@@ -939,10 +935,6 @@ ResourceFetcher::RevalidationPolicy ResourceFetcher::determineRevalidationPolicy
     if (m_allowStaleResources)
         return Use;
 
-    // If fetching a resource with a different 'CORS enabled' flag, reload.
-    if (type != Resource::MainResource && options.corsEnabled != existingResource->options().corsEnabled)
-        return Reload;
-
     // Always use preloads.
     if (existingResource->isPreloaded())
         return Use;
@@ -957,6 +949,10 @@ ResourceFetcher::RevalidationPolicy ResourceFetcher::determineRevalidationPolicy
         WTF_LOG(ResourceLoading, "ResourceFetcher::determineRevalidationPolicy reloading due to Cache-control: no-store.");
         return Reload;
     }
+
+    // If fetching a resource with a different 'CORS enabled' flag, reload.
+    if (type != Resource::MainResource && options.corsEnabled != existingResource->options().corsEnabled)
+        return Reload;
 
     // If credentials were sent with the previous request and won't be
     // with this one, or vice versa, re-fetch the resource.
