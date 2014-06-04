@@ -45,19 +45,10 @@ void NotifyViewTreeChangeDown(
 void NotifyViewTreeChange(
     const ViewTreeNodeObserver::TreeChangeParams& params) {
   NotifyViewTreeChangeDown(params.target, params);
-  switch (params.phase) {
-  case ViewTreeNodeObserver::DISPOSITION_CHANGING:
-    if (params.old_parent)
-      NotifyViewTreeChangeUp(params.old_parent, params);
-    break;
-  case ViewTreeNodeObserver::DISPOSITION_CHANGED:
-    if (params.new_parent)
-      NotifyViewTreeChangeUp(params.new_parent, params);
-    break;
-  default:
-    NOTREACHED();
-    break;
-  }
+  if (params.old_parent)
+    NotifyViewTreeChangeUp(params.old_parent, params);
+  if (params.new_parent)
+    NotifyViewTreeChangeUp(params.new_parent, params);
 }
 
 class ScopedTreeNotifier {
@@ -321,7 +312,7 @@ void ViewTreeNode::LocalAddChild(ViewTreeNode* child) {
 
 void ViewTreeNode::LocalRemoveChild(ViewTreeNode* child) {
   DCHECK_EQ(this, child->parent());
-  ScopedTreeNotifier(child, this, NULL);
+  ScopedTreeNotifier notifier(child, this, NULL);
   RemoveChildImpl(child, &children_);
 }
 

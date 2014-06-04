@@ -446,7 +446,7 @@ ViewManagerSynchronizer::ViewManagerSynchronizer(ViewManager* view_manager)
 }
 
 ViewManagerSynchronizer::~ViewManagerSynchronizer() {
-  Sync();
+  view_manager_.reset();
 }
 
 TransportNodeId ViewManagerSynchronizer::CreateViewTreeNode() {

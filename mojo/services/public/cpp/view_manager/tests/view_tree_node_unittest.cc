@@ -140,7 +140,7 @@ TEST_F(ViewTreeNodeObserverTest, TreeChange_SimpleAddRemove) {
 
   v1.AddChild(&v11);
 
-  EXPECT_EQ(1U, o1.received_params().size());
+  EXPECT_EQ(2U, o1.received_params().size());
   ViewTreeNodeObserver::TreeChangeParams p1;
   p1.target = &v11;
   p1.receiver = &v1;
@@ -166,13 +166,13 @@ TEST_F(ViewTreeNodeObserverTest, TreeChange_SimpleAddRemove) {
 
   v1.RemoveChild(&v11);
 
-  EXPECT_EQ(1U, o1.received_params().size());
+  EXPECT_EQ(2U, o1.received_params().size());
   p1.target = &v11;
   p1.receiver = &v1;
   p1.old_parent = &v1;
   p1.new_parent = NULL;
   p1.phase = ViewTreeNodeObserver::DISPOSITION_CHANGING;
-  EXPECT_TRUE(TreeChangeParamsMatch(p1, o1.received_params().back()));
+  EXPECT_TRUE(TreeChangeParamsMatch(p1, o1.received_params().front()));
 
   EXPECT_EQ(2U, o11.received_params().size());
   p11 = p1;
@@ -207,7 +207,7 @@ TEST_F(ViewTreeNodeObserverTest, TreeChange_NestedAddRemove) {
 
   v11.AddChild(&v111);
 
-  EXPECT_EQ(1U, o1.received_params().size());
+  EXPECT_EQ(2U, o1.received_params().size());
   p1.target = &v111;
   p1.receiver = &v1;
   p1.old_parent = NULL;
@@ -215,7 +215,7 @@ TEST_F(ViewTreeNodeObserverTest, TreeChange_NestedAddRemove) {
   p1.phase = ViewTreeNodeObserver::DISPOSITION_CHANGED;
   EXPECT_TRUE(TreeChangeParamsMatch(p1, o1.received_params().back()));
 
-  EXPECT_EQ(1U, o11.received_params().size());
+  EXPECT_EQ(2U, o11.received_params().size());
   p11 = p1;
   p11.receiver = &v11;
   EXPECT_TRUE(TreeChangeParamsMatch(p11, o11.received_params().back()));
@@ -258,18 +258,18 @@ TEST_F(ViewTreeNodeObserverTest, TreeChange_NestedAddRemove) {
 
   v11.RemoveChild(&v111);
 
-  EXPECT_EQ(1U, o1.received_params().size());
+  EXPECT_EQ(2U, o1.received_params().size());
   p1.target = &v111;
   p1.receiver = &v1;
   p1.old_parent = &v11;
   p1.new_parent = NULL;
   p1.phase = ViewTreeNodeObserver::DISPOSITION_CHANGING;
-  EXPECT_TRUE(TreeChangeParamsMatch(p1, o1.received_params().back()));
+  EXPECT_TRUE(TreeChangeParamsMatch(p1, o1.received_params().front()));
 
-  EXPECT_EQ(1U, o11.received_params().size());
+  EXPECT_EQ(2U, o11.received_params().size());
   p11 = p1;
   p11.receiver = &v11;
-  EXPECT_TRUE(TreeChangeParamsMatch(p11, o11.received_params().back()));
+  EXPECT_TRUE(TreeChangeParamsMatch(p11, o11.received_params().front()));
 
   EXPECT_EQ(2U, o111.received_params().size());
   p111 = p11;
@@ -308,7 +308,7 @@ TEST_F(ViewTreeNodeObserverTest, TreeChange_Reparent) {
   v12.AddChild(&v111);
 
   // v1 (root) should see both changing and changed notifications.
-  EXPECT_EQ(2U, o1.received_params().size());
+  EXPECT_EQ(4U, o1.received_params().size());
   ViewTreeNodeObserver::TreeChangeParams p1;
   p1.target = &v111;
   p1.receiver = &v1;
@@ -320,15 +320,15 @@ TEST_F(ViewTreeNodeObserverTest, TreeChange_Reparent) {
   EXPECT_TRUE(TreeChangeParamsMatch(p1, o1.received_params().back()));
 
   // v11 should see changing notifications.
-  EXPECT_EQ(1U, o11.received_params().size());
+  EXPECT_EQ(2U, o11.received_params().size());
   ViewTreeNodeObserver::TreeChangeParams p11;
   p11 = p1;
   p11.receiver = &v11;
   p11.phase = ViewTreeNodeObserver::DISPOSITION_CHANGING;
-  EXPECT_TRUE(TreeChangeParamsMatch(p11, o11.received_params().back()));
+  EXPECT_TRUE(TreeChangeParamsMatch(p11, o11.received_params().front()));
 
   // v12 should see changed notifications.
-  EXPECT_EQ(1U, o12.received_params().size());
+  EXPECT_EQ(2U, o12.received_params().size());
   ViewTreeNodeObserver::TreeChangeParams p12;
   p12 = p1;
   p12.receiver = &v12;
