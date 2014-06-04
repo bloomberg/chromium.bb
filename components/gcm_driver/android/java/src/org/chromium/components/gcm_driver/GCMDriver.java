@@ -20,7 +20,7 @@ import java.util.List;
 @JNINamespace("gcm")
 public final class GCMDriver {
     private long mNativeGCMDriverAndroid;
-    private Context mContext;
+    private final Context mContext;
 
     private GCMDriver(long nativeGCMDriverAndroid, Context context) {
         mNativeGCMDriverAndroid = nativeGCMDriverAndroid;
@@ -69,13 +69,16 @@ public final class GCMDriver {
     }
 
     public void onMessageReceived(String appId, Bundle extras) {
-        String senderId = extras.getString("from");
-        String collapseKey = extras.getString("collapse_key");
+        final String BUNDLE_SENDER_ID = "from";
+        final String BUNDLE_COLLAPSE_KEY = "collapse_key";
+
+        String senderId = extras.getString(BUNDLE_SENDER_ID);
+        String collapseKey = extras.getString(BUNDLE_COLLAPSE_KEY);
 
         List<String> dataKeysAndValues = new ArrayList<String>();
         for (String key : extras.keySet()) {
             // TODO(johnme): Check there aren't other default keys that we need to exclude.
-            if (key == "from" || key == "collapse_key")
+            if (key == BUNDLE_SENDER_ID || key == BUNDLE_COLLAPSE_KEY)
                 continue;
             dataKeysAndValues.add(key);
             dataKeysAndValues.add(extras.getString(key));
