@@ -118,7 +118,7 @@ protected:
     const Referrer& referrer() const { return m_referrer; }
 
 private:
-    RefPtr<Document> m_originDocument;
+    RefPtrWillBePersistent<Document> m_originDocument;
     String m_url;
     Referrer m_referrer;
 };

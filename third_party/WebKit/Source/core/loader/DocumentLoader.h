@@ -141,7 +141,7 @@ namespace WebCore {
         Vector<KURL> m_redirectChain;
 
     private:
-        static PassRefPtr<DocumentWriter> createWriterFor(LocalFrame*, const Document* ownerDocument, const KURL&, const AtomicString& mimeType, const AtomicString& encoding, bool userChosen, bool dispatch);
+        static PassRefPtrWillBeRawPtr<DocumentWriter> createWriterFor(LocalFrame*, const Document* ownerDocument, const KURL&, const AtomicString& mimeType, const AtomicString& encoding, bool userChosen, bool dispatch);
 
         void ensureWriter(const AtomicString& mimeType, const KURL& overridingURL = KURL());
         void endWriting(DocumentWriter*);
@@ -181,7 +181,7 @@ namespace WebCore {
 
         ResourcePtr<RawResource> m_mainResource;
 
-        RefPtr<DocumentWriter> m_writer;
+        RefPtrWillBePersistent<DocumentWriter> m_writer;
 
         // A reference to actual request used to create the data source.
         // The only part of this request that should change is the url, and

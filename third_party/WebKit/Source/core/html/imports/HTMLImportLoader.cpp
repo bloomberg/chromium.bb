@@ -92,7 +92,7 @@ void HTMLImportLoader::responseReceived(Resource* resource, const ResourceRespon
 
 void HTMLImportLoader::dataReceived(Resource*, const char* data, int length)
 {
-    RefPtr<DocumentWriter> protectingWriter(m_writer);
+    RefPtrWillBeRawPtr<DocumentWriter> protectingWriter(m_writer.get());
     m_writer->addData(data, length);
 }
 
@@ -142,7 +142,7 @@ void HTMLImportLoader::setState(State state)
     m_state = state;
 
     if (m_state == StateParsed || m_state == StateError || m_state == StateWritten) {
-        if (RefPtr<DocumentWriter> writer = m_writer.release())
+        if (RefPtrWillBeRawPtr<DocumentWriter> writer = m_writer.release())
             writer->end();
     }
 
@@ -222,6 +222,7 @@ void HTMLImportLoader::trace(Visitor* visitor)
     visitor->trace(m_imports);
 #endif
     visitor->trace(m_document);
+    visitor->trace(m_writer);
     visitor->trace(m_microtaskQueue);
 }
 

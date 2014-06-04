@@ -44,9 +44,9 @@
 
 namespace WebCore {
 
-PassRefPtr<DocumentWriter> DocumentWriter::create(Document* document, const AtomicString& mimeType, const AtomicString& encoding, bool encodingUserChoosen)
+PassRefPtrWillBeRawPtr<DocumentWriter> DocumentWriter::create(Document* document, const AtomicString& mimeType, const AtomicString& encoding, bool encodingUserChoosen)
 {
-    return adoptRef(new DocumentWriter(document, mimeType, encoding, encodingUserChoosen));
+    return adoptRefWillBeNoop(new DocumentWriter(document, mimeType, encoding, encodingUserChoosen));
 }
 
 DocumentWriter::DocumentWriter(Document* document, const AtomicString& mimeType, const AtomicString& encoding, bool encodingUserChoosen)
@@ -65,6 +65,12 @@ DocumentWriter::DocumentWriter(Document* document, const AtomicString& mimeType,
 
 DocumentWriter::~DocumentWriter()
 {
+}
+
+void DocumentWriter::trace(Visitor* visitor)
+{
+    visitor->trace(m_document);
+    visitor->trace(m_parser);
 }
 
 void DocumentWriter::appendReplacingData(const String& source)
@@ -89,7 +95,7 @@ void DocumentWriter::addData(const char* bytes, size_t length)
         m_parser->setDecoder(decoder.release());
     }
     // appendBytes() can result replacing DocumentLoader::m_writer.
-    RefPtr<DocumentWriter> protectingThis(this);
+    RefPtrWillBeRawPtr<DocumentWriter> protectingThis(this);
     m_parser->appendBytes(bytes, length);
 }
 
@@ -110,7 +116,7 @@ void DocumentWriter::end()
         m_parser->setDecoder(decoder.release());
     }
     // flush() can result replacing DocumentLoader::m_writer.
-    RefPtr<DocumentWriter> protectingThis(this);
+    RefPtrWillBeRawPtr<DocumentWriter> protectingThis(this);
     m_parser->flush();
 
     if (!m_parser)
@@ -118,7 +124,7 @@ void DocumentWriter::end()
 
     m_parser->finish();
     m_parser = nullptr;
-    m_document = 0;
+    m_document = nullptr;
 }
 
 void DocumentWriter::setUserChosenEncoding(const String& charset)

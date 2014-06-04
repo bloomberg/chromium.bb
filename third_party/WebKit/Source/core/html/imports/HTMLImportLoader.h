@@ -124,7 +124,7 @@ private:
     WillBeHeapVector<RawPtrWillBeMember<HTMLImportChild> > m_imports;
     State m_state;
     RefPtrWillBeMember<Document> m_document;
-    RefPtr<DocumentWriter> m_writer;
+    RefPtrWillBeMember<DocumentWriter> m_writer;
     RefPtrWillBeMember<CustomElementMicrotaskQueue> m_microtaskQueue;
 };
 

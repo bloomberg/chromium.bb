@@ -43,12 +43,13 @@ class KURL;
 class SecurityOrigin;
 class TextResourceDecoder;
 
-class DocumentWriter : public RefCounted<DocumentWriter> {
+class DocumentWriter : public RefCountedWillBeGarbageCollectedFinalized<DocumentWriter> {
     WTF_MAKE_NONCOPYABLE(DocumentWriter);
 public:
-    static PassRefPtr<DocumentWriter> create(Document*, const AtomicString& mimeType = emptyAtom, const AtomicString& encoding = emptyAtom, bool encodingUserChoosen = false);
+    static PassRefPtrWillBeRawPtr<DocumentWriter> create(Document*, const AtomicString& mimeType = emptyAtom, const AtomicString& encoding = emptyAtom, bool encodingUserChoosen = false);
 
     ~DocumentWriter();
+    void trace(Visitor*);
 
     void end();
 
@@ -72,12 +73,10 @@ public:
 private:
     DocumentWriter(Document*, const AtomicString& mimeType, const AtomicString& encoding, bool encodingUserChoosen);
 
-    PassRefPtr<Document> createDocument(const KURL&);
-
-    Document* m_document;
+    RawPtrWillBeMember<Document> m_document;
     TextResourceDecoderBuilder m_decoderBuilder;
 
-    RefPtrWillBePersistent<DocumentParser> m_parser;
+    RefPtrWillBeMember<DocumentParser> m_parser;
 };
 
 } // namespace WebCore
