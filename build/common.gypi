@@ -2973,6 +2973,9 @@
         'msvs_configuration_platform': 'x64',
         'msvs_settings': {
           'VCLinkerTool': {
+            # Make sure to understand http://crbug.com/361720 if you want to
+            # increase this.
+            'MinimumRequiredVersion': '5.02',  # Server 2003.
             'TargetMachine': '17', # x86 - 64
             'AdditionalLibraryDirectories!':
               ['<(windows_sdk_path)/Lib/win8/um/x86'],
