@@ -538,8 +538,9 @@ bool EventHandler::handleMousePressEventSingleClick(const MouseEventWithHitTestR
         newSelection = expandSelectionToRespectUserSelectAll(innerNode, VisibleSelection(visiblePos));
     }
 
-    bool handled = updateSelectionForMouseDownDispatchingSelectStart(innerNode, newSelection, granularity);
-    return handled;
+    // Updating the selection is considered side-effect of the event and so it doesn't impact the handled state.
+    updateSelectionForMouseDownDispatchingSelectStart(innerNode, newSelection, granularity);
+    return false;
 }
 
 static inline bool canMouseDownStartSelect(Node* node)
