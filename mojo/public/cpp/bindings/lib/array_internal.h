@@ -12,6 +12,7 @@
 #include "mojo/public/cpp/bindings/lib/bindings_serialization.h"
 #include "mojo/public/cpp/bindings/lib/bounds_checker.h"
 #include "mojo/public/cpp/bindings/lib/buffer.h"
+#include "mojo/public/cpp/bindings/lib/validation_errors.h"
 
 namespace mojo {
 template <typename T> class Array;
@@ -183,10 +184,12 @@ struct ArraySerializationHelper<P*, false> {
                                const ElementType* elements,
                                BoundsChecker* bounds_checker) {
     for (uint32_t i = 0; i < header->num_elements; ++i) {
-      if (!ValidateEncodedPointer(&elements[i].offset) ||
-          !P::Validate(DecodePointerRaw(&elements[i].offset), bounds_checker)) {
+      if (!ValidateEncodedPointer(&elements[i].offset)) {
+        ReportValidationError(VALIDATION_ERROR_ILLEGAL_POINTER);
         return false;
       }
+      if (!P::Validate(DecodePointerRaw(&elements[i].offset), bounds_checker))
+        return false;
     }
     return true;
   }
@@ -211,17 +214,24 @@ class Array_Data {
   static bool Validate(const void* data, BoundsChecker* bounds_checker) {
     if (!data)
       return true;
-    if (!IsAligned(data))
+    if (!IsAligned(data)) {
+      ReportValidationError(VALIDATION_ERROR_MISALIGNED_OBJECT);
       return false;
-    if (!bounds_checker->IsValidRange(data, sizeof(ArrayHeader)))
+    }
+    if (!bounds_checker->IsValidRange(data, sizeof(ArrayHeader))) {
+      ReportValidationError(VALIDATION_ERROR_ILLEGAL_MEMORY_RANGE);
       return false;
+    }
     const ArrayHeader* header = static_cast<const ArrayHeader*>(data);
     if (header->num_bytes < (sizeof(Array_Data<T>) +
                              Traits::GetStorageSize(header->num_elements))) {
+      ReportValidationError(VALIDATION_ERROR_UNEXPECTED_ARRAY_HEADER);
       return false;
     }
-    if (!bounds_checker->ClaimMemory(data, header->num_bytes))
+    if (!bounds_checker->ClaimMemory(data, header->num_bytes)) {
+      ReportValidationError(VALIDATION_ERROR_ILLEGAL_MEMORY_RANGE);
       return false;
+    }
 
     const Array_Data<T>* object = static_cast<const Array_Data<T>*>(data);
     return Helper::ValidateElements(&object->header_, object->storage(),

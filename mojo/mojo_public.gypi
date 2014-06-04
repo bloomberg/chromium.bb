@@ -273,6 +273,8 @@
         'public/cpp/bindings/lib/string_serialization.h',
         'public/cpp/bindings/lib/string_serialization.cc',
         'public/cpp/bindings/lib/sync_dispatcher.cc',
+        'public/cpp/bindings/lib/validation_errors.cc',
+        'public/cpp/bindings/lib/validation_errors.h',
       ],
     },
     {

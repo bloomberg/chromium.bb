@@ -5,49 +5,52 @@
 #include "mojo/public/cpp/bindings/lib/message_header_validator.h"
 
 #include "mojo/public/cpp/bindings/lib/bindings_serialization.h"
+#include "mojo/public/cpp/bindings/lib/bounds_checker.h"
+#include "mojo/public/cpp/bindings/lib/validation_errors.h"
 
 namespace mojo {
 namespace internal {
 namespace {
 
-bool IsValidMessageHeader(const internal::MessageHeader* header) {
+bool IsValidMessageHeader(const MessageHeader* header) {
   // NOTE: Our goal is to preserve support for future extension of the message
   // header. If we encounter fields we do not understand, we must ignore them.
 
-  // Validate num_bytes:
-
-  if (header->num_bytes < sizeof(internal::MessageHeader))
-    return false;
-  if (internal::Align(header->num_bytes) != header->num_bytes)
-    return false;
-
-  // Validate num_fields:
-
-  if (header->num_fields < 2)
-    return false;
+  // Extra validation of the struct header:
   if (header->num_fields == 2) {
-    if (header->num_bytes != sizeof(internal::MessageHeader))
+    if (header->num_bytes != sizeof(MessageHeader)) {
+      ReportValidationError(VALIDATION_ERROR_UNEXPECTED_STRUCT_HEADER);
       return false;
+    }
   } else if (header->num_fields == 3) {
-    if (header->num_bytes != sizeof(internal::MessageHeaderWithRequestID))
+    if (header->num_bytes != sizeof(MessageHeaderWithRequestID)) {
+      ReportValidationError(VALIDATION_ERROR_UNEXPECTED_STRUCT_HEADER);
       return false;
+    }
   } else if (header->num_fields > 3) {
-    if (header->num_bytes < sizeof(internal::MessageHeaderWithRequestID))
+    if (header->num_bytes < sizeof(MessageHeaderWithRequestID)) {
+      ReportValidationError(VALIDATION_ERROR_UNEXPECTED_STRUCT_HEADER);
       return false;
+    }
   }
 
   // Validate flags (allow unknown bits):
 
   // These flags require a RequestID.
   if (header->num_fields < 3 &&
-        ((header->flags & internal::kMessageExpectsResponse) ||
-         (header->flags & internal::kMessageIsResponse)))
+        ((header->flags & kMessageExpectsResponse) ||
+         (header->flags & kMessageIsResponse))) {
+    ReportValidationError(VALIDATION_ERROR_MESSAGE_HEADER_MISSING_REQUEST_ID);
     return false;
+  }
 
   // These flags are mutually exclusive.
-  if ((header->flags & internal::kMessageExpectsResponse) &&
-      (header->flags & internal::kMessageIsResponse))
+  if ((header->flags & kMessageExpectsResponse) &&
+      (header->flags & kMessageIsResponse)) {
+    ReportValidationError(
+        VALIDATION_ERROR_MESSAGE_HEADER_INVALID_FLAG_COMBINAION);
     return false;
+  }
 
   return true;
 }
@@ -59,9 +62,12 @@ MessageHeaderValidator::MessageHeaderValidator(MessageReceiver* sink)
 }
 
 bool MessageHeaderValidator::Accept(Message* message) {
-  // Make sure the message header isn't truncated before we start to read it.
-  if (message->data_num_bytes() < sizeof(internal::MessageHeader) ||
-      message->data_num_bytes() < message->header()->num_bytes) {
+  // Pass 0 as number of handles because we don't expect any in the header, even
+  // if |message| contains handles.
+  BoundsChecker bounds_checker(message->data(), message->data_num_bytes(), 0);
+
+  if (!ValidateStructHeader(message->data(), sizeof(MessageHeader), 2,
+                            &bounds_checker)) {
     return false;
   }
 

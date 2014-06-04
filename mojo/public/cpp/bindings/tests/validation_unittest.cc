@@ -10,12 +10,19 @@
 #include <vector>
 
 #include "mojo/public/cpp/bindings/lib/message_header_validator.h"
+#include "mojo/public/cpp/bindings/lib/validation_errors.h"
 #include "mojo/public/cpp/test_support/test_support.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {
 namespace test {
 namespace {
+
+std::string ValidationErrorToResultString(internal::ValidationError error) {
+  std::string result = internal::ValidationErrorToString(error);
+  result.push_back('\n');
+  return result;
+}
 
 std::vector<std::string> GetMatchingTests(const std::vector<std::string>& names,
                                           const std::string& prefix) {
@@ -99,11 +106,14 @@ class DummyMessageReceiver : public MessageReceiver {
 };
 
 std::string DumpMessageHeader(Message* message) {
+  internal::ValidationErrorObserverForTesting observer;
   DummyMessageReceiver not_reached_receiver;
   internal::MessageHeaderValidator validator(&not_reached_receiver);
   bool rv = validator.Accept(message);
-  if (!rv)
-    return "ERROR\n";
+  if (!rv) {
+    EXPECT_NE(internal::VALIDATION_ERROR_NONE, observer.last_error());
+    return ValidationErrorToResultString(observer.last_error());
+  }
 
   std::ostringstream os;
   os << "num_bytes: " << message->header()->num_bytes << "\n"

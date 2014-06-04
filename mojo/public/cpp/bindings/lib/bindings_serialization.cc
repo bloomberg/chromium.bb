@@ -8,6 +8,7 @@
 
 #include "mojo/public/cpp/bindings/lib/bindings_internal.h"
 #include "mojo/public/cpp/bindings/lib/bounds_checker.h"
+#include "mojo/public/cpp/bindings/lib/validation_errors.h"
 
 namespace mojo {
 namespace internal {
@@ -83,21 +84,30 @@ bool ValidateStructHeader(const void* data,
                           uint32_t min_num_bytes,
                           uint32_t min_num_fields,
                           BoundsChecker* bounds_checker) {
-  if (!IsAligned(data))
+  if (!IsAligned(data)) {
+    ReportValidationError(VALIDATION_ERROR_MISALIGNED_OBJECT);
     return false;
-  if (!bounds_checker->IsValidRange(data, sizeof(StructHeader)))
+  }
+  if (!bounds_checker->IsValidRange(data, sizeof(StructHeader))) {
+    ReportValidationError(VALIDATION_ERROR_ILLEGAL_MEMORY_RANGE);
     return false;
+  }
 
   const StructHeader* header = static_cast<const StructHeader*>(data);
 
   // TODO(yzshen): Currently our binding code cannot handle structs of smaller
   // size or with fewer fields than the version that it sees. That needs to be
   // changed in order to provide backward compatibility.
-  if (header->num_bytes < min_num_bytes || header->num_fields < min_num_fields)
+  if (header->num_bytes < min_num_bytes ||
+      header->num_fields < min_num_fields) {
+    ReportValidationError(VALIDATION_ERROR_UNEXPECTED_STRUCT_HEADER);
     return false;
+  }
 
-  if (!bounds_checker->ClaimMemory(data, header->num_bytes))
+  if (!bounds_checker->ClaimMemory(data, header->num_bytes)) {
+    ReportValidationError(VALIDATION_ERROR_ILLEGAL_MEMORY_RANGE);
     return false;
+  }
 
   return true;
 }

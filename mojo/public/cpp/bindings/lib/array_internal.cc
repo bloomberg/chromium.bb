@@ -58,8 +58,10 @@ bool ArraySerializationHelper<Handle, true>::ValidateElements(
     const ElementType* elements,
     BoundsChecker* bounds_checker) {
   for (uint32_t i = 0; i < header->num_elements; ++i) {
-    if (!bounds_checker->ClaimHandle(elements[i]))
+    if (!bounds_checker->ClaimHandle(elements[i])) {
+      ReportValidationError(VALIDATION_ERROR_ILLEGAL_HANDLE);
       return false;
+    }
   }
   return true;
 }

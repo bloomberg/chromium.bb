@@ -15,15 +15,20 @@
 {%-     set name = packed_field.field.name %}
 {%-     if packed_field.field.kind|is_object_kind %}
 {%-       set wrapper_type = packed_field.field.kind|cpp_wrapper_type %}
-  if (!mojo::internal::ValidateEncodedPointer(&object->{{name}}.offset) ||
-      !{{wrapper_type}}::Data_::Validate(
+  if (!mojo::internal::ValidateEncodedPointer(&object->{{name}}.offset)) {
+    ReportValidationError(mojo::internal::VALIDATION_ERROR_ILLEGAL_POINTER);
+    return false;
+  }
+  if (!{{wrapper_type}}::Data_::Validate(
           mojo::internal::DecodePointerRaw(&object->{{name}}.offset),
           bounds_checker)) {
     return false;
   }
 {%-     elif packed_field.field.kind|is_handle_kind %}
-  if (!bounds_checker->ClaimHandle(object->{{name}}))
+  if (!bounds_checker->ClaimHandle(object->{{name}})) {
+    ReportValidationError(mojo::internal::VALIDATION_ERROR_ILLEGAL_HANDLE);
     return false;
+  }
 {%-     endif %}
 {%-   endfor %}
 

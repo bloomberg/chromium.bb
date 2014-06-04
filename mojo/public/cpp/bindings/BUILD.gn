@@ -47,5 +47,7 @@ source_set("bindings") {
     "lib/string_serialization.h",
     "lib/sync_dispatcher.cc",
     "lib/template_util.h",
+    "lib/validation_errors.cc",
+    "lib/validation_errors.h",
   ]
 }
