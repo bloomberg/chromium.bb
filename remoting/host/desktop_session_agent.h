@@ -153,9 +153,6 @@ class DesktopSessionAgent
   // Called by SharedBuffer when it's destroyed.
   void OnSharedBufferDeleted(int id);
 
-  // Closes |desktop_pipe_| if it is open.
-  void CloseDesktopPipeHandle();
-
   // Task runner dedicated to running methods of |audio_capturer_|.
   scoped_refptr<AutoThreadTaskRunner> audio_capture_task_runner_;
 
@@ -201,7 +198,7 @@ class DesktopSessionAgent
 
   // The client end of the network-to-desktop pipe. It is kept alive until
   // the network process connects to the pipe.
-  IPC::PlatformFileForTransit desktop_pipe_;
+  base::File desktop_pipe_;
 
   // Size of the most recent captured video frame.
   webrtc::DesktopSize current_size_;

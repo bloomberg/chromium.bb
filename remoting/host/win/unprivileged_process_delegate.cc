@@ -11,6 +11,7 @@
 #include <sddl.h>
 
 #include "base/command_line.h"
+#include "base/files/file.h"
 #include "base/logging.h"
 #include "base/rand_util.h"
 #include "base/single_thread_task_runner.h"
@@ -277,18 +278,16 @@ void UnprivilegedProcessDelegate::LaunchProcess(
     base::AutoLock lock(g_inherit_handles_lock.Get());
 
     // Create a connected IPC channel.
-    HANDLE temp_handle;
-    if (!CreateConnectedIpcChannel(io_task_runner_, this, &temp_handle,
-                                   &server)) {
+    base::File client;
+    if (!CreateConnectedIpcChannel(io_task_runner_, this, &client, &server)) {
       ReportFatalError();
       return;
     }
-    ScopedHandle client(temp_handle);
 
     // Convert the handle value into a decimal integer. Handle values are 32bit
     // even on 64bit platforms.
     std::string pipe_handle = base::StringPrintf(
-        "%d", reinterpret_cast<ULONG_PTR>(client.Get()));
+        "%d", reinterpret_cast<ULONG_PTR>(client.GetPlatformFile()));
 
     // Pass the IPC channel via the command line.
     base::CommandLine command_line(target_command_->argv());

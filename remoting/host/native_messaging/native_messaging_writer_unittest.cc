@@ -7,7 +7,6 @@
 #include "base/basictypes.h"
 #include "base/json/json_reader.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/platform_file.h"
 #include "base/stl_util.h"
 #include "base/values.h"
 #include "remoting/host/setup/test_util.h"

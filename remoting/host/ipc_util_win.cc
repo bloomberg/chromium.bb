@@ -4,6 +4,7 @@
 
 #include "remoting/host/ipc_util.h"
 
+#include "base/files/file.h"
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
@@ -25,7 +26,7 @@ const char kChromePipeNamePrefix[] = "\\\\.\\pipe\\chrome.";
 bool CreateConnectedIpcChannel(
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
     IPC::Listener* listener,
-    IPC::PlatformFileForTransit* client_out,
+    base::File* client_out,
     scoped_ptr<IPC::ChannelProxy>* server_out) {
   // presubmit: allow wstring
   std::wstring user_sid;
@@ -68,21 +69,20 @@ bool CreateConnectedIpcChannel(
 
   // Create the client end of the channel. This code should match the code in
   // IPC::Channel.
-  ScopedHandle client;
-  client.Set(CreateFile(base::UTF8ToUTF16(pipe_name).c_str(),
-                        GENERIC_READ | GENERIC_WRITE,
-                        0,
-                        &security_attributes,
-                        OPEN_EXISTING,
-                        SECURITY_SQOS_PRESENT | SECURITY_IDENTIFICATION |
-                            FILE_FLAG_OVERLAPPED,
-                        NULL));
+  base::File client(CreateFile(base::UTF8ToUTF16(pipe_name).c_str(),
+                               GENERIC_READ | GENERIC_WRITE,
+                               0,
+                               &security_attributes,
+                               OPEN_EXISTING,
+                               SECURITY_SQOS_PRESENT | SECURITY_IDENTIFICATION |
+                                   FILE_FLAG_OVERLAPPED,
+                               NULL));
   if (!client.IsValid()) {
     PLOG(ERROR) << "Failed to connect to '" << pipe_name << "'";
     return false;
   }
 
-  *client_out = client.Take();
+  *client_out = client.Pass();
   *server_out = server.Pass();
   return true;
 }

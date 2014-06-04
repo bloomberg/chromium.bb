@@ -6,7 +6,6 @@
 
 #include "base/compiler_specific.h"
 #include "base/logging.h"
-#include "base/platform_file.h"
 #include "base/process/process_handle.h"
 #include "base/memory/shared_memory.h"
 #include "base/single_thread_task_runner.h"

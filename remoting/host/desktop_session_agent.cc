@@ -120,7 +120,6 @@ DesktopSessionAgent::DesktopSessionAgent(
       io_task_runner_(io_task_runner),
       video_capture_task_runner_(video_capture_task_runner),
       control_factory_(this),
-      desktop_pipe_(IPC::InvalidPlatformFileForTransit()),
       next_shared_buffer_id_(1),
       shared_buffers_(0),
       started_(false) {
@@ -164,7 +163,7 @@ void DesktopSessionAgent::OnChannelConnected(int32 peer_pid) {
 
   VLOG(1) << "IPC: desktop <- network (" << peer_pid << ")";
 
-  CloseDesktopPipeHandle();
+  desktop_pipe_.Close();
 }
 
 void DesktopSessionAgent::OnChannelError() {
@@ -172,7 +171,7 @@ void DesktopSessionAgent::OnChannelError() {
 
   // Make sure the channel is closed.
   network_channel_.reset();
-  CloseDesktopPipeHandle();
+  desktop_pipe_.Close();
 
   // Notify the caller that the channel has been disconnected.
   if (delegate_.get())
@@ -216,8 +215,6 @@ DesktopSessionAgent::~DesktopSessionAgent() {
   DCHECK(!network_channel_);
   DCHECK(!screen_controls_);
   DCHECK(!video_capturer_);
-
-  CloseDesktopPipeHandle();
 }
 
 const std::string& DesktopSessionAgent::client_jid() const {
@@ -371,7 +368,14 @@ bool DesktopSessionAgent::Start(const base::WeakPtr<Delegate>& delegate,
                                           this,
                                           &desktop_pipe_,
                                           &network_channel_);
-  *desktop_pipe_out = desktop_pipe_;
+  base::PlatformFile raw_desktop_pipe = desktop_pipe_.GetPlatformFile();
+#if defined(OS_WIN)
+  *desktop_pipe_out = IPC::PlatformFileForTransit(raw_desktop_pipe);
+#elif defined(OS_POSIX)
+  *desktop_pipe_out = IPC::PlatformFileForTransit(raw_desktop_pipe, false);
+#else
+#error Unsupported platform.
+#endif
   return result;
 }
 
@@ -560,20 +564,6 @@ void DesktopSessionAgent::OnSharedBufferDeleted(int id) {
   shared_buffers_--;
   DCHECK_GE(shared_buffers_, 0);
   SendToNetwork(new ChromotingDesktopNetworkMsg_ReleaseSharedBuffer(id));
-}
-
-void DesktopSessionAgent::CloseDesktopPipeHandle() {
-  if (!(desktop_pipe_ == IPC::InvalidPlatformFileForTransit())) {
-#if defined(OS_WIN)
-    base::ClosePlatformFile(desktop_pipe_);
-#elif defined(OS_POSIX)
-    base::ClosePlatformFile(desktop_pipe_.fd);
-#else  // !defined(OS_POSIX)
-#error Unsupported platform.
-#endif  // !defined(OS_POSIX)
-
-    desktop_pipe_ = IPC::InvalidPlatformFileForTransit();
-  }
 }
 
 }  // namespace remoting

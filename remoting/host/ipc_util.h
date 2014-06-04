@@ -18,6 +18,7 @@
 #endif  // defined(OS_WIN)
 
 namespace base {
+class File;
 class SingleThreadTaskRunner;
 }  // namespace base
 
@@ -36,7 +37,7 @@ namespace remoting {
 bool CreateConnectedIpcChannel(
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
     IPC::Listener* listener,
-    IPC::PlatformFileForTransit* client_out,
+    base::File* client_out,
     scoped_ptr<IPC::ChannelProxy>* server_out);
 
 #if defined(OS_WIN)

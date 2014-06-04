@@ -9,6 +9,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#include "base/files/file.h"
 #include "base/logging.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/single_thread_task_runner.h"
@@ -20,7 +21,7 @@ namespace remoting {
 bool CreateConnectedIpcChannel(
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
     IPC::Listener* listener,
-    IPC::PlatformFileForTransit* client_out,
+    base::File* client_out,
     scoped_ptr<IPC::ChannelProxy>* server_out) {
   // Create a socket pair.
   int pipe_fds[2];
@@ -50,7 +51,7 @@ bool CreateConnectedIpcChannel(
                                           listener,
                                           io_task_runner.get()));
 
-  *client_out = base::FileDescriptor(pipe_fds[1], false);
+  *client_out = base::File(pipe_fds[1]);
   return true;
 }
 

@@ -193,8 +193,7 @@ void IpcDesktopEnvironmentFactory::OnDesktopSessionAgentAttached(
 
 #if defined(OS_POSIX)
     DCHECK(desktop_pipe.auto_close);
-
-    base::ClosePlatformFile(desktop_pipe.fd);
+    base::File pipe_closer(IPC::PlatformFileForTransitToFile(desktop_pipe));
 #endif  // defined(OS_POSIX)
   }
 }

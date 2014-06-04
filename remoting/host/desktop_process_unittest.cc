@@ -186,7 +186,7 @@ void DesktopProcessTest::OnDesktopAttached(
 #if defined(OS_POSIX)
     DCHECK(desktop_process.auto_close);
 
-    base::ClosePlatformFile(desktop_process.fd);
+    base::File closer(IPC::PlatformFileForTransitToFile(desktop_process));
 #endif  // defined(OS_POSIX)
 }
 
