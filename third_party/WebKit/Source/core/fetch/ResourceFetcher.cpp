@@ -774,12 +774,13 @@ ResourceRequestCachePolicy ResourceFetcher::resourceRequestCachePolicy(const Res
 {
     if (type == Resource::MainResource) {
         FrameLoadType frameLoadType = frame()->loader().loadType();
-        bool isReload = frameLoadType == FrameLoadTypeReload || frameLoadType == FrameLoadTypeReloadFromOrigin;
         if (request.httpMethod() == "POST" && frameLoadType == FrameLoadTypeBackForward)
             return ReturnCacheDataDontLoad;
         if (!m_documentLoader->overrideEncoding().isEmpty() || frameLoadType == FrameLoadTypeBackForward)
             return ReturnCacheDataElseLoad;
-        if (isReload || frameLoadType == FrameLoadTypeSame || request.isConditional() || request.httpMethod() == "POST")
+        if (frameLoadType == FrameLoadTypeReloadFromOrigin)
+            return ReloadBypassingCache;
+        if (frameLoadType == FrameLoadTypeReload || frameLoadType == FrameLoadTypeSame || request.isConditional() || request.httpMethod() == "POST")
             return ReloadIgnoringCacheData;
         Frame* parent = frame()->tree().parent();
         if (parent && parent->isLocalFrame())

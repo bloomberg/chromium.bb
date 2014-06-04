@@ -5480,4 +5480,16 @@ TEST_F(WebFrameTest, NotifyManifestChange)
     EXPECT_EQ(14, webFrameClient.manifestChangeCount());
 }
 
+TEST_F(WebFrameTest, ReloadBypassingCache)
+{
+    // Check that a reload ignoring cache on a frame will result in the cache
+    // policy of the request being set to ReloadBypassingCache.
+    registerMockedHttpURLLoad("foo.html");
+    FrameTestHelpers::WebViewHelper webViewHelper;
+    webViewHelper.initializeAndLoad(m_baseURL + "foo.html", true);
+    WebFrame* frame = webViewHelper.webView()->mainFrame();
+    FrameTestHelpers::reloadFrameIgnoringCache(frame);
+    EXPECT_EQ(WebURLRequest::ReloadBypassingCache, frame->dataSource()->request().cachePolicy());
+}
+
 } // namespace

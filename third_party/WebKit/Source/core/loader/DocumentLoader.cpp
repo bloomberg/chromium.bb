@@ -372,7 +372,7 @@ void DocumentLoader::willSendRequest(ResourceRequest& newRequest, const Resource
     // this is a common site technique to return to a page viewing some data that the POST
     // just modified.
     if (newRequest.cachePolicy() == UseProtocolCachePolicy && isRedirectAfterPost(newRequest, redirectResponse))
-        newRequest.setCachePolicy(ReloadIgnoringCacheData);
+        newRequest.setCachePolicy(ReloadBypassingCache);
 
     // If this is a sub-frame, check for mixed content blocking against the top frame.
     if (m_frame->tree().parent()) {

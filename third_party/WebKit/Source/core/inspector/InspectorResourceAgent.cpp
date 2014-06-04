@@ -315,11 +315,8 @@ void InspectorResourceAgent::willSendRequest(unsigned long identifier, DocumentL
     request.setReportLoadTiming(true);
     request.setReportRawHeaders(true);
 
-    if (m_state->getBoolean(ResourceAgentState::cacheDisabled)) {
-        request.setHTTPHeaderField("Pragma", "no-cache");
-        request.setCachePolicy(ReloadIgnoringCacheData);
-        request.setHTTPHeaderField("Cache-Control", "no-cache");
-    }
+    if (m_state->getBoolean(ResourceAgentState::cacheDisabled))
+        request.setCachePolicy(ReloadBypassingCache);
 
     String frameId = m_pageAgent->frameId(loader->frame());
 

@@ -91,16 +91,6 @@ void FrameFetchContext::addAdditionalRequestHeaders(Document* document, Resource
 
     m_frame->loader().applyUserAgent(request);
 
-    if (request.cachePolicy() == ReloadIgnoringCacheData
-        || request.cachePolicy() == ReloadBypassingCache) {
-        if (m_frame->loader().loadType() == FrameLoadTypeReload) {
-            request.setHTTPHeaderField("Cache-Control", "max-age=0");
-        } else if (m_frame->loader().loadType() == FrameLoadTypeReloadFromOrigin) {
-            request.setHTTPHeaderField("Cache-Control", "no-cache");
-            request.setHTTPHeaderField("Pragma", "no-cache");
-        }
-    }
-
     if (isMainResource)
         request.setHTTPAccept(defaultAcceptHeader);
 

@@ -786,7 +786,8 @@ void FrameLoader::reload(ReloadPolicy reloadPolicy, const KURL& overrideURL, con
     if (!m_currentItem)
         return;
 
-    ResourceRequest request = requestFromHistoryItem(m_currentItem.get(), ReloadIgnoringCacheData);
+    ResourceRequestCachePolicy cachePolicy = reloadPolicy == EndToEndReload ? ReloadBypassingCache : ReloadIgnoringCacheData;
+    ResourceRequest request = requestFromHistoryItem(m_currentItem.get(), cachePolicy);
     if (!overrideURL.isEmpty()) {
         request.setURL(overrideURL);
         request.clearHTTPReferrer();
