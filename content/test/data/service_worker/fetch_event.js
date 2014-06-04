@@ -6,7 +6,8 @@ this.onfetch = function(event) {
     var headers = new HeaderMap;
     headers.set('Content-Language', 'fi');
     headers.set('Content-Type', 'text/html; charset=UTF-8');
-    var response = new Response({
+    var blob = new Blob(["This resource is gone. Gone, gone, gone."]);
+    var response = new Response(blob, {
         status: 301,
         statusText: 'Moved Permanently',
         headers: headers

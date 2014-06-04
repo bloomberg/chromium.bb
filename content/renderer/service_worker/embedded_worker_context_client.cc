@@ -258,7 +258,7 @@ void EmbeddedWorkerContextClient::didHandleFetchEvent(
   ServiceWorkerResponse response(web_response.status(),
                                  web_response.statusText().utf8(),
                                  headers,
-                                 std::string());
+                                 web_response.blobUUID().utf8());
   script_context_->DidHandleFetchEvent(
       request_id, SERVICE_WORKER_FETCH_EVENT_RESULT_RESPONSE, response);
 }
