@@ -6,6 +6,7 @@
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/run_loop.h"
+#include "content/browser/fileapi/chrome_blob_storage_context.h"
 #include "content/browser/service_worker/embedded_worker_instance.h"
 #include "content/browser/service_worker/embedded_worker_registry.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
@@ -26,6 +27,9 @@
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "webkit/browser/blob/blob_data_handle.h"
+#include "webkit/browser/blob/blob_storage_context.h"
+#include "webkit/common/blob/blob_data.h"
 
 namespace content {
 
@@ -88,6 +92,16 @@ ServiceWorkerVersion::FetchCallback CreateResponseReceiver(
     const base::Closure& quit,
     FetchResult* result) {
   return base::Bind(&ReceiveFetchResult, run_quit_thread, quit, result);
+}
+
+void ReadResponseBody(std::string* body,
+                      scoped_refptr<ChromeBlobStorageContext> context,
+                      std::string blob_uuid) {
+  scoped_ptr<webkit_blob::BlobDataHandle> blob_data_handle =
+      context->context()->GetBlobDataFromUUID(blob_uuid);
+  ASSERT_EQ(1U, blob_data_handle->data()->items().size());
+  *body = std::string(blob_data_handle->data()->items()[0].bytes(),
+                      blob_data_handle->data()->items()[0].length());
 }
 
 }  // namespace
@@ -474,22 +488,14 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest, FetchEvent_Response) {
   expected_headers["Content-Language"] = "fi";
   expected_headers["Content-Type"] = "text/html; charset=UTF-8";
   EXPECT_EQ(expected_headers, response.headers);
-}
 
-IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
-                       FetchEvent_FallbackToNative) {
-  ServiceWorkerFetchEventResult result;
-  ServiceWorkerResponse response;
-  FetchTestHelper(
-      "/service_worker/fetch_event_fallback.js", &result, &response);
-  ASSERT_EQ(SERVICE_WORKER_FETCH_EVENT_RESULT_FALLBACK, result);
-}
-
-IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest, FetchEvent_Rejected) {
-  ServiceWorkerFetchEventResult result;
-  ServiceWorkerResponse response;
-  FetchTestHelper("/service_worker/fetch_event_error.js", &result, &response);
-  ASSERT_EQ(SERVICE_WORKER_FETCH_EVENT_RESULT_FALLBACK, result);
+  scoped_refptr<ChromeBlobStorageContext> context =
+      ChromeBlobStorageContext::GetFor(
+          shell()->web_contents()->GetBrowserContext());
+  std::string body;
+  RunOnIOThread(
+      base::Bind(&ReadResponseBody, &body, context, response.blob_uuid));
+  EXPECT_EQ("This resource is gone. Gone, gone, gone.", body);
 }
 
 IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
