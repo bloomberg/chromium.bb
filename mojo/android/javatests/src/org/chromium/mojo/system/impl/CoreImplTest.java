@@ -11,20 +11,15 @@ import org.chromium.mojo.system.AsyncWaiter;
 import org.chromium.mojo.system.AsyncWaiter.Callback;
 import org.chromium.mojo.system.AsyncWaiter.Cancellable;
 import org.chromium.mojo.system.Core;
-import org.chromium.mojo.system.Core.WaitFlags;
 import org.chromium.mojo.system.Core.WaitManyResult;
 import org.chromium.mojo.system.DataPipe;
 import org.chromium.mojo.system.Handle;
 import org.chromium.mojo.system.InvalidHandle;
 import org.chromium.mojo.system.MessagePipeHandle;
-import org.chromium.mojo.system.MessagePipeHandle.ReadFlags;
-import org.chromium.mojo.system.MessagePipeHandle.ReadMessageResult;
-import org.chromium.mojo.system.MessagePipeHandle.WriteFlags;
 import org.chromium.mojo.system.MojoException;
 import org.chromium.mojo.system.MojoResult;
 import org.chromium.mojo.system.Pair;
 import org.chromium.mojo.system.SharedBufferHandle;
-import org.chromium.mojo.system.SharedBufferHandle.MapFlags;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -70,20 +65,19 @@ public class CoreImplTest extends MojoTestCase {
         random.nextBytes(bytes);
         ByteBuffer buffer = ByteBuffer.allocateDirect(bytes.length);
         buffer.put(bytes);
-        in.writeMessage(buffer, null, MessagePipeHandle.WriteFlags.none());
+        in.writeMessage(buffer, null, MessagePipeHandle.WriteFlags.NONE);
 
         // Try to read into a small buffer.
         ByteBuffer receiveBuffer = ByteBuffer.allocateDirect(bytes.length / 2);
-        MessagePipeHandle.ReadMessageResult result = out.readMessage(receiveBuffer, 0,
-                MessagePipeHandle.ReadFlags.none());
+        MessagePipeHandle.ReadMessageResult result = out.readMessage(
+                receiveBuffer, 0, MessagePipeHandle.ReadFlags.NONE);
         assertEquals(MojoResult.RESOURCE_EXHAUSTED, result.getMojoResult());
         assertEquals(bytes.length, result.getMessageSize());
         assertEquals(0, result.getHandlesCount());
 
         // Read into a correct buffer.
         receiveBuffer = ByteBuffer.allocateDirect(bytes.length);
-        result = out.readMessage(receiveBuffer, 0,
-                MessagePipeHandle.ReadFlags.none());
+        result = out.readMessage(receiveBuffer, 0, MessagePipeHandle.ReadFlags.NONE);
         assertEquals(MojoResult.OK, result.getMojoResult());
         assertEquals(bytes.length, result.getMessageSize());
         assertEquals(0, result.getHandlesCount());
@@ -104,24 +98,22 @@ public class CoreImplTest extends MojoTestCase {
         Pair<MessagePipeHandle, MessagePipeHandle> handles = core.createMessagePipe();
 
         try {
-            List<Pair<Handle, WaitFlags>> handlesToWaitOn = new ArrayList<
-                    Pair<Handle, WaitFlags>>();
+            List<Pair<Handle, Core.WaitFlags>> handlesToWaitOn = new ArrayList<
+                    Pair<Handle, Core.WaitFlags>>();
 
             handlesToWaitOn.add(
-                    new Pair<Handle, WaitFlags>(handles.second,
-                            WaitFlags.none().setReadable(true)));
+                    new Pair<Handle, Core.WaitFlags>(handles.second, Core.WaitFlags.READABLE));
             handlesToWaitOn.add(
-                    new Pair<Handle, WaitFlags>(handles.first, WaitFlags.none().setWritable(true)));
+                    new Pair<Handle, Core.WaitFlags>(handles.first, Core.WaitFlags.WRITABLE));
             WaitManyResult result = core.waitMany(handlesToWaitOn, 0);
             assertEquals(MojoResult.OK, result.getMojoResult());
             assertEquals(1, result.getHandleIndex());
 
             handlesToWaitOn.clear();
             handlesToWaitOn.add(
-                    new Pair<Handle, WaitFlags>(handles.first, WaitFlags.none().setWritable(true)));
+                    new Pair<Handle, Core.WaitFlags>(handles.first, Core.WaitFlags.WRITABLE));
             handlesToWaitOn.add(
-                    new Pair<Handle, WaitFlags>(handles.second,
-                            WaitFlags.none().setReadable(true)));
+                    new Pair<Handle, Core.WaitFlags>(handles.second, Core.WaitFlags.READABLE));
             result = core.waitMany(handlesToWaitOn, 0);
             assertEquals(MojoResult.OK, result.getMojoResult());
             assertEquals(0, result.getHandleIndex());
@@ -141,20 +133,20 @@ public class CoreImplTest extends MojoTestCase {
 
         try {
             // Testing wait.
-            assertEquals(MojoResult.OK, handles.first.wait(WaitFlags.all(), 0));
-            assertEquals(MojoResult.OK, handles.first.wait(WaitFlags.none().setWritable(true), 0));
+            assertEquals(MojoResult.OK, handles.first.wait(Core.WaitFlags.all(), 0));
+            assertEquals(MojoResult.OK, handles.first.wait(Core.WaitFlags.WRITABLE, 0));
             assertEquals(MojoResult.DEADLINE_EXCEEDED,
-                    handles.first.wait(WaitFlags.none().setReadable(true), 0));
+                    handles.first.wait(Core.WaitFlags.READABLE, 0));
 
             // Testing read on an empty pipe.
-            ReadMessageResult result = handles.first.readMessage(null, 0,
-                    MessagePipeHandle.ReadFlags.none());
+            MessagePipeHandle.ReadMessageResult result = handles.first.readMessage(null, 0,
+                    MessagePipeHandle.ReadFlags.NONE);
             assertEquals(MojoResult.SHOULD_WAIT, result.getMojoResult());
 
             // Closing a pipe while waiting.
             WORKER.schedule(new CloseHandle(handles.first), 10, TimeUnit.MILLISECONDS);
             assertEquals(MojoResult.CANCELLED,
-                    handles.first.wait(WaitFlags.none().setReadable(true), 1000000L));
+                    handles.first.wait(Core.WaitFlags.READABLE, 1000000L));
         } finally {
             handles.first.close();
             handles.second.close();
@@ -166,13 +158,13 @@ public class CoreImplTest extends MojoTestCase {
             // Closing the other pipe while waiting.
             WORKER.schedule(new CloseHandle(handles.first), 10, TimeUnit.MILLISECONDS);
             assertEquals(MojoResult.FAILED_PRECONDITION,
-                    handles.second.wait(WaitFlags.none().setReadable(true), 1000000L));
+                    handles.second.wait(Core.WaitFlags.READABLE, 1000000L));
 
             // Waiting on a closed pipe.
             assertEquals(MojoResult.FAILED_PRECONDITION,
-                    handles.second.wait(WaitFlags.none().setReadable(true), 0));
+                    handles.second.wait(Core.WaitFlags.READABLE, 0));
             assertEquals(MojoResult.FAILED_PRECONDITION,
-                    handles.second.wait(WaitFlags.none().setWritable(true), 0));
+                    handles.second.wait(Core.WaitFlags.WRITABLE, 0));
         } finally {
             handles.first.close();
             handles.second.close();
@@ -212,12 +204,11 @@ public class CoreImplTest extends MojoTestCase {
             random.nextBytes(bytes);
             ByteBuffer buffer = ByteBuffer.allocateDirect(bytes.length);
             buffer.put(bytes);
-            handles.first.writeMessage(buffer, null, MessagePipeHandle.WriteFlags.none());
+            handles.first.writeMessage(buffer, null, MessagePipeHandle.WriteFlags.NONE);
 
             ByteBuffer receiveBuffer = ByteBuffer.allocateDirect(1);
-            MessagePipeHandle.ReadMessageResult result = handles.second.readMessage(receiveBuffer,
-                    0,
-                    MessagePipeHandle.ReadFlags.none());
+            MessagePipeHandle.ReadMessageResult result = handles.second
+                    .readMessage(receiveBuffer, 0, MessagePipeHandle.ReadFlags.NONE);
             assertEquals(MojoResult.RESOURCE_EXHAUSTED, result.getMojoResult());
             assertEquals(bytes.length, result.getMessageSize());
             assertEquals(0, result.getHandlesCount());
@@ -239,10 +230,10 @@ public class CoreImplTest extends MojoTestCase {
         try {
             handles.first.writeMessage(null,
                     Collections.<Handle> singletonList(handlesToShare.second),
-                    WriteFlags.none());
+                    MessagePipeHandle.WriteFlags.NONE);
             assertFalse(handlesToShare.second.isValid());
-            ReadMessageResult readMessageResult = handles.second.readMessage(null, 1,
-                    ReadFlags.none());
+            MessagePipeHandle.ReadMessageResult readMessageResult =
+                    handles.second.readMessage(null, 1, MessagePipeHandle.ReadFlags.NONE);
             assertEquals(1, readMessageResult.getHandlesCount());
             MessagePipeHandle newHandle = readMessageResult.getHandles().get(0)
                     .toMessagePipeHandle();
@@ -303,18 +294,16 @@ public class CoreImplTest extends MojoTestCase {
             random.nextBytes(bytes);
             ByteBuffer buffer = ByteBuffer.allocateDirect(bytes.length);
             buffer.put(bytes);
-            int result = handles.first.writeData(buffer, DataPipe.WriteFlags.none());
+            int result = handles.first.writeData(buffer, DataPipe.WriteFlags.NONE);
             assertEquals(bytes.length, result);
 
             // Query number of bytes available.
-            result = handles.second.readData(null,
-                    DataPipe.ReadFlags.none().query(true));
+            result = handles.second.readData(null, DataPipe.ReadFlags.none().query(true));
             assertEquals(bytes.length, result);
 
             // Read into a buffer.
             ByteBuffer receiveBuffer = ByteBuffer.allocateDirect(bytes.length);
-            result = handles.second.readData(receiveBuffer,
-                    DataPipe.ReadFlags.none());
+            result = handles.second.readData(receiveBuffer, DataPipe.ReadFlags.NONE);
             assertEquals(bytes.length, result);
             assertEquals(0, receiveBuffer.position());
             assertEquals(bytes.length, receiveBuffer.limit());
@@ -341,14 +330,14 @@ public class CoreImplTest extends MojoTestCase {
             byte[] bytes = new byte[8];
             random.nextBytes(bytes);
             ByteBuffer buffer = handles.first.beginWriteData(bytes.length,
-                    DataPipe.WriteFlags.none());
+                    DataPipe.WriteFlags.NONE);
             assertTrue(buffer.capacity() >= bytes.length);
             buffer.put(bytes);
             handles.first.endWriteData(bytes.length);
 
             // Read into a buffer.
             ByteBuffer receiveBuffer = handles.second.beginReadData(bytes.length,
-                    DataPipe.ReadFlags.none());
+                    DataPipe.ReadFlags.NONE);
             assertEquals(0, receiveBuffer.position());
             assertEquals(bytes.length, receiveBuffer.limit());
             byte[] receivedBytes = new byte[bytes.length];
@@ -376,18 +365,17 @@ public class CoreImplTest extends MojoTestCase {
             random.nextBytes(bytes);
             ByteBuffer buffer = ByteBuffer.allocateDirect(bytes.length);
             buffer.put(bytes);
-            int result = handles.first.writeData(buffer, DataPipe.WriteFlags.none());
+            int result = handles.first.writeData(buffer, DataPipe.WriteFlags.NONE);
             assertEquals(bytes.length, result);
 
             // Discard bytes.
             final int nbBytesToDiscard = 4;
             assertEquals(nbBytesToDiscard,
-                    handles.second.discardData(nbBytesToDiscard, DataPipe.ReadFlags.none()));
+                    handles.second.discardData(nbBytesToDiscard, DataPipe.ReadFlags.NONE));
 
             // Read into a buffer.
             ByteBuffer receiveBuffer = ByteBuffer.allocateDirect(bytes.length - nbBytesToDiscard);
-            result = handles.second.readData(receiveBuffer,
-                    DataPipe.ReadFlags.none());
+            result = handles.second.readData(receiveBuffer, DataPipe.ReadFlags.NONE);
             assertEquals(bytes.length - nbBytesToDiscard, result);
             assertEquals(0, receiveBuffer.position());
             assertEquals(bytes.length - nbBytesToDiscard, receiveBuffer.limit());
@@ -441,9 +429,9 @@ public class CoreImplTest extends MojoTestCase {
         SharedBufferHandle newHandle = handle.duplicate(null);
 
         try {
-            ByteBuffer buffer1 = handle.map(0, 8, MapFlags.none());
+            ByteBuffer buffer1 = handle.map(0, 8, SharedBufferHandle.MapFlags.NONE);
             assertEquals(8, buffer1.capacity());
-            ByteBuffer buffer2 = newHandle.map(0, 8, MapFlags.none());
+            ByteBuffer buffer2 = newHandle.map(0, 8, SharedBufferHandle.MapFlags.NONE);
             assertEquals(8, buffer2.capacity());
 
             byte[] bytes = new byte[8];
@@ -474,7 +462,7 @@ public class CoreImplTest extends MojoTestCase {
         // Checking wait.
         boolean exception = false;
         try {
-            core.wait(handle, WaitFlags.all(), 0);
+            core.wait(handle, Core.WaitFlags.all(), 0);
         } catch (MojoException e) {
             assertEquals(MojoResult.INVALID_ARGUMENT, e.getMojoResult());
             exception = true;
@@ -484,8 +472,9 @@ public class CoreImplTest extends MojoTestCase {
         // Checking waitMany.
         exception = false;
         try {
-            List<Pair<Handle, WaitFlags>> handles = new ArrayList<Pair<Handle, WaitFlags>>();
-            handles.add(Pair.create(handle, WaitFlags.all()));
+            List<Pair<Handle, Core.WaitFlags>> handles = new ArrayList<
+                    Pair<Handle, Core.WaitFlags>>();
+            handles.add(Pair.create(handle, Core.WaitFlags.all()));
             core.waitMany(handles, 0);
         } catch (MojoException e) {
             assertEquals(MojoResult.INVALID_ARGUMENT, e.getMojoResult());
@@ -499,11 +488,10 @@ public class CoreImplTest extends MojoTestCase {
         // - Receive an invalid handle on the other side.
         Pair<MessagePipeHandle, MessagePipeHandle> handles = core.createMessagePipe();
         try {
-            handles.first.writeMessage(null,
-                    Collections.<Handle> singletonList(handle),
-                    WriteFlags.none());
-            ReadMessageResult readMessageResult = handles.second.readMessage(null, 1,
-                    ReadFlags.none());
+            handles.first.writeMessage(null, Collections.<Handle> singletonList(handle),
+                    MessagePipeHandle.WriteFlags.NONE);
+            MessagePipeHandle.ReadMessageResult readMessageResult =
+                    handles.second.readMessage(null, 1, MessagePipeHandle.ReadFlags.NONE);
             assertEquals(1, readMessageResult.getHandlesCount());
             assertFalse(readMessageResult.getHandles().get(0).isValid());
         } catch (MojoException e) {
@@ -564,13 +552,13 @@ public class CoreImplTest extends MojoTestCase {
             assertEquals(Integer.MIN_VALUE, asyncWaiterResult.getResult());
             assertEquals(null, asyncWaiterResult.getException());
 
-            core.getDefaultAsyncWaiter().asyncWait(handles.first,
-                    WaitFlags.none().setReadable(true), Core.DEADLINE_INFINITE, asyncWaiterResult);
+            core.getDefaultAsyncWaiter().asyncWait(handles.first, Core.WaitFlags.READABLE,
+                    Core.DEADLINE_INFINITE, asyncWaiterResult);
             assertEquals(Integer.MIN_VALUE, asyncWaiterResult.getResult());
             assertEquals(null, asyncWaiterResult.getException());
 
             handles.second.writeMessage(ByteBuffer.allocateDirect(1), null,
-                    MessagePipeHandle.WriteFlags.none());
+                    MessagePipeHandle.WriteFlags.NONE);
             nativeRunLoop(RUN_LOOP_TIMEOUT_MS);
             assertNull(asyncWaiterResult.getException());
             assertEquals(MojoResult.OK, asyncWaiterResult.getResult());
@@ -594,8 +582,8 @@ public class CoreImplTest extends MojoTestCase {
             assertEquals(Integer.MIN_VALUE, asyncWaiterResult.getResult());
             assertEquals(null, asyncWaiterResult.getException());
 
-            core.getDefaultAsyncWaiter().asyncWait(handles.first,
-                    WaitFlags.none().setReadable(true), Core.DEADLINE_INFINITE, asyncWaiterResult);
+            core.getDefaultAsyncWaiter().asyncWait(handles.first, Core.WaitFlags.READABLE,
+                    Core.DEADLINE_INFINITE, asyncWaiterResult);
             assertEquals(Integer.MIN_VALUE, asyncWaiterResult.getResult());
             assertEquals(null, asyncWaiterResult.getException());
 
@@ -627,8 +615,8 @@ public class CoreImplTest extends MojoTestCase {
             assertEquals(Integer.MIN_VALUE, asyncWaiterResult.getResult());
             assertEquals(null, asyncWaiterResult.getException());
 
-            core.getDefaultAsyncWaiter().asyncWait(handles.first,
-                    WaitFlags.none().setReadable(true), Core.DEADLINE_INFINITE, asyncWaiterResult);
+            core.getDefaultAsyncWaiter().asyncWait(handles.first, Core.WaitFlags.READABLE,
+                    Core.DEADLINE_INFINITE, asyncWaiterResult);
             assertEquals(Integer.MIN_VALUE, asyncWaiterResult.getResult());
             assertEquals(null, asyncWaiterResult.getException());
 
@@ -662,8 +650,8 @@ public class CoreImplTest extends MojoTestCase {
             assertEquals(null, asyncWaiterResult.getException());
 
             handles.first.close();
-            core.getDefaultAsyncWaiter().asyncWait(handles.first,
-                    WaitFlags.none().setReadable(true), Core.DEADLINE_INFINITE, asyncWaiterResult);
+            core.getDefaultAsyncWaiter().asyncWait(handles.first, Core.WaitFlags.READABLE,
+                    Core.DEADLINE_INFINITE, asyncWaiterResult);
             assertEquals(Integer.MIN_VALUE, asyncWaiterResult.getResult());
             assertEquals(null, asyncWaiterResult.getException());
 
@@ -689,15 +677,14 @@ public class CoreImplTest extends MojoTestCase {
         assertEquals(Integer.MIN_VALUE, asyncWaiterResult.getResult());
         assertEquals(null, asyncWaiterResult.getException());
 
-        core.getDefaultAsyncWaiter().asyncWait(new InvalidHandle(),
-                WaitFlags.none().setReadable(true), Core.DEADLINE_INFINITE, asyncWaiterResult);
+        core.getDefaultAsyncWaiter().asyncWait(new InvalidHandle(), Core.WaitFlags.READABLE,
+                Core.DEADLINE_INFINITE, asyncWaiterResult);
         assertEquals(Integer.MIN_VALUE, asyncWaiterResult.getResult());
         assertEquals(null, asyncWaiterResult.getException());
 
         nativeRunLoop(RUN_LOOP_TIMEOUT_MS);
         assertNotNull(asyncWaiterResult.getException());
-        assertEquals(MojoResult.INVALID_ARGUMENT,
-                asyncWaiterResult.getException().getMojoResult());
+        assertEquals(MojoResult.INVALID_ARGUMENT, asyncWaiterResult.getException().getMojoResult());
         assertEquals(Integer.MIN_VALUE, asyncWaiterResult.getResult());
     }
 
@@ -715,8 +702,8 @@ public class CoreImplTest extends MojoTestCase {
             assertEquals(Integer.MIN_VALUE, asyncWaiterResult.getResult());
             assertEquals(null, asyncWaiterResult.getException());
 
-            core.getDefaultAsyncWaiter().asyncWait(handles.first,
-                    WaitFlags.none().setReadable(true), RUN_LOOP_TIMEOUT_MS, asyncWaiterResult);
+            core.getDefaultAsyncWaiter().asyncWait(handles.first, Core.WaitFlags.READABLE,
+                    RUN_LOOP_TIMEOUT_MS, asyncWaiterResult);
             assertEquals(Integer.MIN_VALUE, asyncWaiterResult.getResult());
             assertEquals(null, asyncWaiterResult.getException());
 
@@ -744,7 +731,7 @@ public class CoreImplTest extends MojoTestCase {
             assertEquals(null, asyncWaiterResult.getException());
 
             Cancellable cancellable = core.getDefaultAsyncWaiter().asyncWait(handles.first,
-                    WaitFlags.none().setReadable(true), Core.DEADLINE_INFINITE, asyncWaiterResult);
+                    Core.WaitFlags.READABLE, Core.DEADLINE_INFINITE, asyncWaiterResult);
             assertEquals(Integer.MIN_VALUE, asyncWaiterResult.getResult());
             assertEquals(null, asyncWaiterResult.getException());
 
@@ -758,7 +745,7 @@ public class CoreImplTest extends MojoTestCase {
             assertEquals(null, asyncWaiterResult.getException());
 
             handles.second.writeMessage(ByteBuffer.allocateDirect(1), null,
-                    MessagePipeHandle.WriteFlags.none());
+                    MessagePipeHandle.WriteFlags.NONE);
             nativeRunLoop(RUN_LOOP_TIMEOUT_MS);
             assertEquals(Integer.MIN_VALUE, asyncWaiterResult.getResult());
             assertEquals(null, asyncWaiterResult.getException());
@@ -784,7 +771,7 @@ public class CoreImplTest extends MojoTestCase {
             assertEquals(null, asyncWaiterResult.getException());
 
             Cancellable cancellable = core.getDefaultAsyncWaiter().asyncWait(handles.first,
-                    WaitFlags.none().setReadable(true), Core.DEADLINE_INFINITE, asyncWaiterResult);
+                    Core.WaitFlags.READABLE, Core.DEADLINE_INFINITE, asyncWaiterResult);
             assertEquals(Integer.MIN_VALUE, asyncWaiterResult.getResult());
             assertEquals(null, asyncWaiterResult.getException());
             cancellable.cancel();

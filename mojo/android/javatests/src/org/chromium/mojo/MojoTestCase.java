@@ -14,7 +14,7 @@ import org.chromium.base.library_loader.LibraryLoader;
  * Base class to test mojo. Setup the environment.
  */
 @JNINamespace("mojo::android")
-public class MojoTestCase  extends InstrumentationTestCase {
+public class MojoTestCase extends InstrumentationTestCase {
 
     private long mTestEnvironmentPointer;
 
