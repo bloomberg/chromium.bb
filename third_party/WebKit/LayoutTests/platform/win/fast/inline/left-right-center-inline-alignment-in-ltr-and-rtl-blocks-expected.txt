@@ -14,21 +14,21 @@ layer at (0,0) size 800x600
 layer at (159,563) size 249x27
   RenderBlock (positioned) {FONT} at (159.31,563) size 248.69x27
     RenderText {#text} at (0,0) size 249x26
-      text run at (0,0) width 248: "RTL-Center-Aligned"
+      text run at (0,0) width 249: "RTL-Center-Aligned"
 layer at (-87,469) size 95x81 backgroundClip at (0,0) size 903x600 clip at (0,0) size 903x600 outlineClip at (0,0) size 903x600
   RenderBlock (positioned) {FONT} at (-86.59,469) size 94.59x81
     RenderText {#text} at (0,0) size 95x80
       text run at (0,0) width 62: "RTL-"
       text run at (0,27) width 63: "Left-"
-      text run at (0,54) width 94: "Aligned"
+      text run at (0,54) width 95: "Aligned"
 layer at (575,473) size 233x27
   RenderBlock (positioned) {FONT} at (575.48,473) size 232.52x27
     RenderText {#text} at (0,0) size 233x26
-      text run at (0,0) width 232: "RTL-Right-Aligned"
+      text run at (0,0) width 233: "RTL-Right-Aligned"
 layer at (608,423) size 200x27
   RenderBlock (positioned) {FONT} at (608.48,423) size 199.52x27
     RenderText {#text} at (0,0) size 200x26
-      text run at (0,0) width 199: "RTL-No-Aligned"
+      text run at (0,0) width 200: "RTL-No-Aligned"
 layer at (408,373) size 249x27
   RenderBlock (positioned) {FONT} at (408,373) size 248.69x27
     RenderText {#text} at (0,0) size 249x26
@@ -39,9 +39,9 @@ layer at (8,323) size 219x27
       text run at (0,0) width 219: "LTR-Left-Aligned"
 layer at (808,219) size 95x81
   RenderBlock (positioned) {FONT} at (808,219) size 94.59x81
-    RenderText {#text} at (32,0) size 95x80
-      text run at (32,0) width 62: "LTR-"
-      text run at (17,27) width 77: "Right-"
+    RenderText {#text} at (33,0) size 95x80
+      text run at (33,0) width 62: "LTR-"
+      text run at (17,27) width 78: "Right-"
       text run at (0,54) width 95: "Aligned"
 layer at (8,223) size 200x27
   RenderBlock (positioned) {FONT} at (8,223) size 199.52x27

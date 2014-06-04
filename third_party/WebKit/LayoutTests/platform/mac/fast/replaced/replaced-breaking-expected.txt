@@ -47,8 +47,6 @@ layer at (0,0) size 800x600
         RenderBlock {INPUT} at (3.91,413) size 12x13
         RenderText {#text} at (0,0) size 0x0
         RenderText {#text} at (0,0) size 0x0
-        RenderEmbeddedObject {EMBED} at (1,483) size 27x27 [border: (1px solid #000000)]
-        RenderEmbeddedObject {EMBED} at (1,510) size 27x27 [border: (1px solid #000000)]
         RenderText {#text} at (0,0) size 0x0
 layer at (14,14) size 117x13
   RenderBlock {DIV} at (3,3) size 117x13
@@ -68,3 +66,7 @@ layer at (9,464) size 27x27
     layer at (0,0) size 25x25
       RenderBlock {HTML} at (0,0) size 25x25
         RenderBody {BODY} at (8,8) size 9x9
+layer at (9,491) size 27x27
+  RenderEmbeddedObject {EMBED} at (1,483) size 27x27 [border: (1px solid #000000)]
+layer at (9,518) size 27x27
+  RenderEmbeddedObject {EMBED} at (1,510) size 27x27 [border: (1px solid #000000)]

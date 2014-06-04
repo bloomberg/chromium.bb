@@ -83,7 +83,7 @@ layer at (258,198) size 400x16
 layer at (587,198) size 28x16
   RenderBlock (positioned) {SPAN} at (587.19,198.16) size 28.05x16 [bgcolor=#FF0000]
     RenderText {#text} at (0,0) size 29x15
-      text run at (0,0) width 28: "fixed"
+      text run at (0,0) width 29: "fixed"
 layer at (58,230) size 400x16
   RenderBlock (relative positioned) {DIV} at (0,80) size 400x16 [bgcolor=#008000]
     RenderText {#text} at (0,0) size 43x15
@@ -101,7 +101,7 @@ layer at (58,262) size 400x16
 layer at (387,262) size 28x16
   RenderBlock (positioned) {SPAN} at (387.19,262.16) size 28.05x16 [bgcolor=#FF0000]
     RenderText {#text} at (0,0) size 29x15
-      text run at (0,0) width 28: "fixed"
+      text run at (0,0) width 29: "fixed"
 layer at (258,294) size 400x16
   RenderBlock (relative positioned) {DIV} at (0,144) size 400x16 [bgcolor=#808080]
     RenderText {#text} at (0,0) size 47x15
@@ -127,7 +127,7 @@ layer at (358,326) size 96x15
 layer at (634,326) size 29x16
   RenderBlock (positioned) {SPAN} at (634.47,326.16) size 28.05x16 [bgcolor=#FF0000]
     RenderText {#text} at (0,0) size 29x15
-      text run at (0,0) width 28: "fixed"
+      text run at (0,0) width 29: "fixed"
 layer at (258,358) size 400x16
   RenderBlock (relative positioned) {DIV} at (0,208) size 400x16 [bgcolor=#808080]
     RenderText {#text} at (0,0) size 47x15
@@ -153,7 +153,7 @@ layer at (158,390) size 96x15
 layer at (434,390) size 29x16
   RenderBlock (positioned) {SPAN} at (434.47,390.16) size 28.05x16 [bgcolor=#FF0000]
     RenderText {#text} at (0,0) size 29x15
-      text run at (0,0) width 28: "fixed"
+      text run at (0,0) width 29: "fixed"
 layer at (58,422) size 400x16
   RenderBlock (relative positioned) {DIV} at (0,272) size 400x16 [bgcolor=#808080]
     RenderText {#text} at (0,0) size 47x15
@@ -179,7 +179,7 @@ layer at (158,454) size 96x15
 layer at (434,454) size 29x16
   RenderBlock (positioned) {SPAN} at (434.47,454.16) size 28.05x16 [bgcolor=#FF0000]
     RenderText {#text} at (0,0) size 29x15
-      text run at (0,0) width 28: "fixed"
+      text run at (0,0) width 29: "fixed"
 layer at (58,486) size 400x16
   RenderBlock (relative positioned) {DIV} at (0,336) size 400x16 [bgcolor=#808080]
     RenderText {#text} at (0,0) size 47x15
@@ -205,4 +205,4 @@ layer at (-42,518) size 96x15 backgroundClip at (0,0) size 800x600 clip at (0,0)
 layer at (234,518) size 29x16
   RenderBlock (positioned) {SPAN} at (234.47,518.16) size 28.05x16 [bgcolor=#FF0000]
     RenderText {#text} at (0,0) size 29x15
-      text run at (0,0) width 28: "fixed"
+      text run at (0,0) width 29: "fixed"
