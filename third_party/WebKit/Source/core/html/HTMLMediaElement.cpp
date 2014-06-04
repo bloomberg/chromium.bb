@@ -126,13 +126,8 @@ typedef WillBeHeapHashSet<RawPtrWillBeWeakMember<HTMLMediaElement> > WeakMediaEl
 typedef WillBeHeapHashMap<RawPtrWillBeWeakMember<Document>, WeakMediaElementSet> DocumentElementSetMap;
 static DocumentElementSetMap& documentToElementSetMap()
 {
-#if ENABLE(OILPAN)
-    DEFINE_STATIC_LOCAL(Persistent<DocumentElementSetMap>, map, (new DocumentElementSetMap()));
+    DEFINE_STATIC_LOCAL(OwnPtrWillBePersistent<DocumentElementSetMap>, map, (adoptPtrWillBeNoop(new DocumentElementSetMap())));
     return *map;
-#else
-    DEFINE_STATIC_LOCAL(DocumentElementSetMap, map, ());
-    return map;
-#endif
 }
 
 static void addElementToDocumentMap(HTMLMediaElement* element, Document* document)
@@ -318,10 +313,10 @@ HTMLMediaElement::~HTMLMediaElement()
     // document there is no need to change the delayed load counts
     // because no load event will fire anyway. If the document is
     // still alive we do have to decrement the load delay counts. We
-    // determine if the document is alive by inspecting the weak
-    // documentToElementSetMap. If the document is dead it has been
-    // removed from the map during weak processing.
-    if (documentToElementSetMap().contains(&document()))
+    // determine if the document is alive via the ActiveDOMObject
+    // which is a context lifecycle observer. If the Document has been
+    // destructed ActiveDOMObject::executionContext() returns 0.
+    if (ActiveDOMObject::executionContext())
         setShouldDelayLoadEvent(false);
 #else
     setShouldDelayLoadEvent(false);
