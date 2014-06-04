@@ -7,6 +7,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <fcntl.h>
+#include <linux/futex.h>
 #include <linux/net.h>
 #include <sched.h>
 #include <signal.h>
@@ -19,10 +20,12 @@
 
 #include "base/basictypes.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "build/build_config.h"
 #include "sandbox/linux/seccomp-bpf-helpers/sigsys_handlers.h"
 #include "sandbox/linux/seccomp-bpf/linux_seccomp.h"
 #include "sandbox/linux/seccomp-bpf/sandbox_bpf.h"
+#include "sandbox/linux/services/android_futex.h"
 
 #if defined(OS_ANDROID)
 #if !defined(F_DUPFD_CLOEXEC)
@@ -244,6 +247,30 @@ ErrorCode RestrictKillTarget(pid_t target_pid, SandboxBPF* sandbox, int sysno) {
       NOTREACHED();
       return sandbox->Trap(CrashSIGSYS_Handler, NULL);
   }
+}
+
+ErrorCode RestrictFutex(SandboxBPF* sandbox) {
+  // In futex.c, the kernel does "int cmd = op & FUTEX_CMD_MASK;". We need to
+  // make sure that the combination below will cover every way to get
+  // FUTEX_CMP_REQUEUE_PI.
+  const int kBannedFutexBits =
+      ~(FUTEX_CMD_MASK | FUTEX_PRIVATE_FLAG | FUTEX_CLOCK_REALTIME);
+  COMPILE_ASSERT(0 == kBannedFutexBits,
+                 need_to_explicitly_blacklist_more_bits);
+
+  return sandbox->Cond(1, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL,
+                       FUTEX_CMP_REQUEUE_PI,
+                       sandbox->Trap(SIGSYSFutexFailure, NULL),
+         sandbox->Cond(1, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL,
+                       FUTEX_CMP_REQUEUE_PI_PRIVATE,
+                       sandbox->Trap(SIGSYSFutexFailure, NULL),
+         sandbox->Cond(1, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL,
+                       FUTEX_CMP_REQUEUE_PI | FUTEX_CLOCK_REALTIME,
+                       sandbox->Trap(SIGSYSFutexFailure, NULL),
+         sandbox->Cond(1, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL,
+                       FUTEX_CMP_REQUEUE_PI_PRIVATE | FUTEX_CLOCK_REALTIME,
+                       sandbox->Trap(SIGSYSFutexFailure, NULL),
+         ErrorCode(ErrorCode::ERR_ALLOWED)))));
 }
 
 }  // namespace sandbox.

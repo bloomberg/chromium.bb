@@ -374,12 +374,12 @@ bool SyscallSets::IsAllowedProcessStartOrDeath(int sysno) {
 }
 
 // It's difficult to restrict those, but there is attack surface here.
-bool SyscallSets::IsFutex(int sysno) {
+bool SyscallSets::IsAllowedFutex(int sysno) {
   switch (sysno) {
-    case __NR_futex:
     case __NR_get_robust_list:
     case __NR_set_robust_list:
       return true;
+    case __NR_futex:
     default:
       return false;
   }

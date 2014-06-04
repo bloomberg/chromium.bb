@@ -18,6 +18,7 @@
 #define SECCOMP_MESSAGE_PRCTL_CONTENT "prctl() failure"
 #define SECCOMP_MESSAGE_IOCTL_CONTENT "ioctl() failure"
 #define SECCOMP_MESSAGE_KILL_CONTENT "(tg)kill() failure"
+#define SECCOMP_MESSAGE_FUTEX_CONTENT "futex() failure"
 
 namespace {
 
@@ -164,6 +165,18 @@ intptr_t SIGSYSKillFailure(const struct arch_seccomp_data& args,
     _exit(1);
 }
 
+intptr_t SIGSYSFutexFailure(const struct arch_seccomp_data& args,
+                            void* /* aux */) {
+  static const char kSeccompFutexError[] =
+      __FILE__ ":**CRASHING**:" SECCOMP_MESSAGE_FUTEX_CONTENT "\n";
+  WriteToStdErr(kSeccompFutexError, sizeof(kSeccompFutexError) - 1);
+  volatile int futex_op = args.args[1];
+  volatile char* addr = reinterpret_cast<volatile char*>(futex_op & 0xFFF);
+  *addr = '\0';
+  for (;;)
+    _exit(1);
+}
+
 const char* GetErrorMessageContentForTests() {
   return SECCOMP_MESSAGE_COMMON_CONTENT;
 }
@@ -182,6 +195,10 @@ const char* GetIoctlErrorMessageContentForTests() {
 
 const char* GetKillErrorMessageContentForTests() {
   return SECCOMP_MESSAGE_KILL_CONTENT;
+}
+
+const char* GetFutexErrorMessageContentForTests() {
+  return SECCOMP_MESSAGE_FUTEX_CONTENT;
 }
 
 }  // namespace sandbox.

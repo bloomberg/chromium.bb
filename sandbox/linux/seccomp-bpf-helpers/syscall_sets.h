@@ -37,7 +37,7 @@ class SANDBOX_EXPORT SyscallSets {
   // This should be thought through in conjunction with IsFutex().
   static bool IsAllowedProcessStartOrDeath(int sysno);
   // It's difficult to restrict those, but there is attack surface here.
-  static bool IsFutex(int sysno);
+  static bool IsAllowedFutex(int sysno);
   static bool IsAllowedEpoll(int sysno);
   static bool IsAllowedGetOrModifySocket(int sysno);
   static bool IsDeniedGetOrModifySocket(int sysno);

@@ -40,7 +40,12 @@ SANDBOX_EXPORT intptr_t
     SIGSYSIoctlFailure(const struct arch_seccomp_data& args, void* aux);
 // The crashing address will be (pid & 0xFFF), where pid is the first
 // argument (and can be a tid).
-intptr_t SIGSYSKillFailure(const struct arch_seccomp_data& args, void* aux);
+SANDBOX_EXPORT intptr_t
+    SIGSYSKillFailure(const struct arch_seccomp_data& args, void* aux);
+// The crashing address will be (op & 0xFFF), where op is the second
+// argument.
+SANDBOX_EXPORT intptr_t
+    SIGSYSFutexFailure(const struct arch_seccomp_data& args, void* aux);
 
 // Following four functions return substrings of error messages used
 // in the above four functions. They are useful in death tests.
@@ -49,6 +54,7 @@ SANDBOX_EXPORT const char* GetCloneErrorMessageContentForTests();
 SANDBOX_EXPORT const char* GetPrctlErrorMessageContentForTests();
 SANDBOX_EXPORT const char* GetIoctlErrorMessageContentForTests();
 SANDBOX_EXPORT const char* GetKillErrorMessageContentForTests();
+SANDBOX_EXPORT const char* GetFutexErrorMessageContentForTests();
 
 }  // namespace sandbox.
 

@@ -32,13 +32,13 @@ bool IsBaselinePolicyAllowed(int sysno) {
          SyscallSets::IsAllowedBasicScheduler(sysno) ||
          SyscallSets::IsAllowedEpoll(sysno) ||
          SyscallSets::IsAllowedFileSystemAccessViaFd(sysno) ||
+         SyscallSets::IsAllowedFutex(sysno) ||
          SyscallSets::IsAllowedGeneralIo(sysno) ||
          SyscallSets::IsAllowedGetOrModifySocket(sysno) ||
          SyscallSets::IsAllowedGettime(sysno) ||
          SyscallSets::IsAllowedPrctl(sysno) ||
          SyscallSets::IsAllowedProcessStartOrDeath(sysno) ||
          SyscallSets::IsAllowedSignalHandling(sysno) ||
-         SyscallSets::IsFutex(sysno) ||
          SyscallSets::IsGetSimpleId(sysno) ||
          SyscallSets::IsKernelInternalApi(sysno) ||
 #if defined(__arm__)
@@ -120,6 +120,9 @@ ErrorCode EvaluateSyscallImpl(int fs_denied_errno,
   if (sysno == __NR_fcntl64)
     return RestrictFcntlCommands(sandbox);
 #endif
+
+  if (sysno == __NR_futex)
+    return RestrictFutex(sandbox);
 
   if (sysno == __NR_madvise) {
     // Only allow MADV_DONTNEED (aka MADV_FREE).

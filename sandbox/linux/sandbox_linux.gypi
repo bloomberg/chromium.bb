@@ -257,6 +257,7 @@
       'type': 'none',
       'sources': [
         'services/android_arm_ucontext.h',
+        'services/android_futex.h',
         'services/android_ucontext.h',
         'services/android_i386_ucontext.h',
         'services/arm_linux_syscalls.h',
