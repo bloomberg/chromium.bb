@@ -74,5 +74,5 @@ bool AdjustOOMScore(pid_t process, int score) {
 
   ssize_t bytes_written = write(fd, buf, len);
   close(fd);
-  return (bytes_written == len);
+  return (bytes_written == (ssize_t)len);
 }
