@@ -63,7 +63,9 @@ class Base(unittest.TestCase):
                 self.get_test('failures/expected/needsmanualrebaseline.html'),
                 self.get_test('failures/expected/missing_text.html'),
                 self.get_test('failures/expected/image.html'),
+                self.get_test('failures/expected/timeout.html'),
                 self.get_test('passes/text.html')]
+
 
     def get_basic_expectations(self):
         return """
@@ -248,7 +250,7 @@ expectations:2 A reftest cannot be marked as NeedsRebaseline/NeedsManualRebaseli
     def test_pixel_tests_flag(self):
         def match(test, result, pixel_tests_enabled):
             return self._exp.matches_an_expected_result(
-                self.get_test(test), result, pixel_tests_enabled)
+                self.get_test(test), result, pixel_tests_enabled, sanitizer_is_enabled=False)
 
         self.parse_exp(self.get_basic_expectations())
         self.assertTrue(match('failures/expected/text.html', FAIL, True))
@@ -263,6 +265,22 @@ expectations:2 A reftest cannot be marked as NeedsRebaseline/NeedsManualRebaseli
         self.assertTrue(match('failures/expected/needsmanualrebaseline.html', TEXT, True))
         self.assertFalse(match('failures/expected/needsmanualrebaseline.html', CRASH, True))
         self.assertTrue(match('passes/text.html', PASS, False))
+
+    def test_sanitizer_flag(self):
+        def match(test, result):
+            return self._exp.matches_an_expected_result(
+                self.get_test(test), result, pixel_tests_are_enabled=False, sanitizer_is_enabled=True)
+
+        self.parse_exp("""
+Bug(test) failures/expected/crash.html [ Crash ]
+Bug(test) failures/expected/image.html [ ImageOnlyFailure ]
+Bug(test) failures/expected/text.html [ Failure ]
+Bug(test) failures/expected/timeout.html [ Timeout ]
+""")
+        self.assertTrue(match('failures/expected/crash.html', CRASH))
+        self.assertTrue(match('failures/expected/image.html', PASS))
+        self.assertTrue(match('failures/expected/text.html', PASS))
+        self.assertTrue(match('failures/expected/timeout.html', TIMEOUT))
 
     def test_more_specific_override_resets_skip(self):
         self.parse_exp("Bug(x) failures/expected [ Skip ]\n"

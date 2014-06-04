@@ -112,6 +112,8 @@ class SingleTestRunner(object):
         return DriverInput(test_name, self._timeout, image_hash, self._should_run_pixel_test, args)
 
     def run(self):
+        if self._options.enable_sanitizer:
+            return self._run_sanitized_test()
         if self._reference_files:
             if self._options.reset_results:
                 reftest_type = set([reference_file[0] for reference_file in self._reference_files])
@@ -122,6 +124,16 @@ class SingleTestRunner(object):
         if self._options.reset_results:
             return self._run_rebaseline()
         return self._run_compare_test()
+
+    def _run_sanitized_test(self):
+        # running a sanitized test means that we ignore the actual test output and just look
+        # for timeouts and crashes (real or forced by the driver). Most crashes should
+        # indicate problems found by a sanitizer (ASAN, LSAN, etc.), but we will report
+        # on other crashes and timeouts as well in order to detect at least *some* basic failures.
+        driver_output = self._driver.run_test(self._driver_input(), self._stop_when_done)
+        failures = self._handle_error(driver_output)
+        return TestResult(self._test_name, failures, driver_output.test_time, driver_output.has_stderr(),
+                          pid=driver_output.pid)
 
     def _run_compare_test(self):
         driver_output = self._driver.run_test(self._driver_input(), self._stop_when_done)

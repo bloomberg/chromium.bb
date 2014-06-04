@@ -261,6 +261,8 @@ def parse_args(args):
             help="Use LigHTTPd instead of Apache (default is port-specific)."),
         optparse.make_option("--enable-leak-detection", action="store_true",
             help="Enable the leak detection of DOM objects."),
+        optparse.make_option("--enable-sanitizer", action="store_true",
+            help="Only alert on sanitizer-related errors and crashes"),
     ]))
 
     option_group_definitions.append(("Miscellaneous Options", [

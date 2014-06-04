@@ -266,6 +266,9 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         tests_run = get_tests_run(['-n'])
         self.assertEqual(tests_run, [])
 
+    def test_enable_sanitizer(self):
+        self.assertTrue(passing_run(['--enable-sanitizer', 'failures/expected/text.html']))
+
     def test_exception_raised(self):
         # Exceptions raised by a worker are treated differently depending on
         # whether they are in-process or out. inline exceptions work as normal,

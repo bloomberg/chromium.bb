@@ -254,7 +254,9 @@ def summarize_results(port_obj, expectations, initial_results, retry_results, en
         test_dict['actual'] = " ".join(actual)
 
         def is_expected(actual_result):
-            return expectations.matches_an_expected_result(test_name, result_type, port_obj.get_option('pixel_tests') or result.reftest_type)
+            return expectations.matches_an_expected_result(test_name, result_type,
+                port_obj.get_option('pixel_tests') or result.reftest_type,
+                port_obj.get_option('enable_sanitizer'))
 
         # To avoid bloating the output results json too much, only add an entry for whether the failure is unexpected.
         if not all(is_expected(actual_result) for actual_result in actual):

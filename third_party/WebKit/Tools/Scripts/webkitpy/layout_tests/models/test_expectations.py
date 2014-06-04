@@ -884,6 +884,17 @@ class TestExpectations(object):
         return expected_results
 
     @staticmethod
+    def remove_non_sanitizer_failures(expected_results):
+        """Returns a copy of the expected results for a test, except that we
+        drop any failures that the sanitizers don't care about."""
+        expected_results = expected_results.copy()
+        for result in (IMAGE, FAIL, IMAGE_PLUS_TEXT):
+            if result in expected_results:
+                expected_results.remove(result)
+                expected_results.add(PASS)
+        return expected_results
+
+    @staticmethod
     def has_pixel_failures(actual_results):
         return IMAGE in actual_results or FAIL in actual_results
 
@@ -987,9 +998,11 @@ class TestExpectations(object):
     def expectation_to_string(self, expectation):
         return self._model.expectation_to_string(expectation)
 
-    def matches_an_expected_result(self, test, result, pixel_tests_are_enabled):
+    def matches_an_expected_result(self, test, result, pixel_tests_are_enabled, sanitizer_is_enabled):
         expected_results = self._model.get_expectations(test)
-        if not pixel_tests_are_enabled:
+        if sanitizer_is_enabled:
+            expected_results = self.remove_non_sanitizer_failures(expected_results)
+        elif not pixel_tests_are_enabled:
             expected_results = self.remove_pixel_failures(expected_results)
         return self.result_was_expected(result, expected_results, self.is_rebaselining(test))
 
