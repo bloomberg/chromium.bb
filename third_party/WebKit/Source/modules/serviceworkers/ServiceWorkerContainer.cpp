@@ -32,6 +32,7 @@
 
 #include "RuntimeEnabledFeatures.h"
 #include "bindings/v8/CallbackPromiseAdapter.h"
+#include "bindings/v8/ScriptPromise.h"
 #include "bindings/v8/ScriptPromiseResolverWithContext.h"
 #include "bindings/v8/ScriptState.h"
 #include "bindings/v8/SerializedScriptValue.h"
@@ -139,6 +140,19 @@ ScriptPromise ServiceWorkerContainer::unregisterServiceWorker(ScriptState* scrip
 
     m_provider->unregisterServiceWorker(patternURL, new CallbackPromiseAdapter<UndefinedValue, ServiceWorkerError>(resolver));
     return promise;
+}
+
+ScriptPromise ServiceWorkerContainer::ready(ScriptState* scriptState)
+{
+    if (m_controller.get()) {
+        RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
+        ScriptPromise promise = resolver->promise();
+        resolver->resolve(m_controller.get());
+        return promise;
+    }
+    // FIXME: Elaborate the implementation when the "waiting" property
+    // or replace() is implemented.
+    return ScriptPromise();
 }
 
 void ServiceWorkerContainer::setCurrentServiceWorker(blink::WebServiceWorker* serviceWorker)
