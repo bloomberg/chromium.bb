@@ -28,9 +28,11 @@
 #include "core/dom/ClassCollection.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/NodeRareData.h"
+#include "core/html/DocumentNameCollection.h"
 #include "core/html/HTMLElement.h"
 #include "core/html/HTMLObjectElement.h"
 #include "core/html/HTMLOptionElement.h"
+#include "core/html/WindowNameCollection.h"
 #include "wtf/HashSet.h"
 
 namespace WebCore {
@@ -206,6 +208,10 @@ template <> inline bool isMatchingElement(const HTMLCollection& htmlCollection, 
         return toTagCollection(htmlCollection).elementMatches(element);
     case HTMLTagCollectionType:
         return toHTMLTagCollection(htmlCollection).elementMatches(element);
+    case DocumentNamedItems:
+        return toDocumentNameCollection(htmlCollection).elementMatches(element);
+    case WindowNamedItems:
+        return toWindowNameCollection(htmlCollection).elementMatches(element);
     default:
         break;
     }

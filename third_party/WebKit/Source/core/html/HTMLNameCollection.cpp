@@ -23,19 +23,12 @@
 #include "config.h"
 #include "core/html/HTMLNameCollection.h"
 
-#include "HTMLNames.h"
-#include "core/dom/Element.h"
-#include "core/dom/ElementTraversal.h"
 #include "core/dom/NodeRareData.h"
-#include "core/html/HTMLEmbedElement.h"
-#include "core/html/HTMLObjectElement.h"
 
 namespace WebCore {
 
-using namespace HTMLNames;
-
 HTMLNameCollection::HTMLNameCollection(ContainerNode& document, CollectionType type, const AtomicString& name)
-    : HTMLCollection(document, type, OverridesItemAfter)
+    : HTMLCollection(document, type, DoesNotOverrideItemAfter)
     , m_name(name)
 {
 }
@@ -49,56 +42,4 @@ HTMLNameCollection::~HTMLNameCollection()
 #endif
 }
 
-Element* HTMLNameCollection::virtualItemAfter(Element* previous) const
-{
-    ASSERT(previous != ownerNode());
-
-    Element* current;
-    if (!previous)
-        current = ElementTraversal::firstWithin(ownerNode());
-    else
-        current = ElementTraversal::next(*previous, &ownerNode());
-
-    for (; current; current = ElementTraversal::next(*current, &ownerNode())) {
-        switch (type()) {
-        case WindowNamedItems:
-            // find only images, forms, applets, embeds and objects by name,
-            // but anything by id
-            if (isHTMLImageElement(*current)
-                || isHTMLFormElement(*current)
-                || isHTMLAppletElement(*current)
-                || isHTMLEmbedElement(*current)
-                || isHTMLObjectElement(*current)) {
-                if (current->getNameAttribute() == m_name)
-                    return current;
-            }
-            if (current->getIdAttribute() == m_name)
-                return current;
-            break;
-        case DocumentNamedItems:
-            // find images, forms, applets, embeds, objects and iframes by name,
-            // applets and object by id, and images by id but only if they have
-            // a name attribute (this very strange rule matches IE)
-            if (isHTMLFormElement(*current)
-                || isHTMLIFrameElement(*current)
-                || (isHTMLEmbedElement(*current) && toHTMLEmbedElement(*current).isExposed())) {
-                if (current->getNameAttribute() == m_name)
-                    return current;
-            } else if (isHTMLAppletElement(*current)
-                || (isHTMLObjectElement(*current) && toHTMLObjectElement(*current).isExposed())) {
-                if (current->getNameAttribute() == m_name || current->getIdAttribute() == m_name)
-                    return current;
-            } else if (isHTMLImageElement(*current)) {
-                if (current->getNameAttribute() == m_name || (current->getIdAttribute() == m_name && current->hasName()))
-                    return current;
-            }
-            break;
-        default:
-            ASSERT_NOT_REACHED();
-        }
-    }
-
-    return 0;
-}
-
-}
+} // namespace WebCore

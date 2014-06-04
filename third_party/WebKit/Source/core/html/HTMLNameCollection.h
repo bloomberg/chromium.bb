@@ -24,26 +24,16 @@
 #define HTMLNameCollection_h
 
 #include "core/html/HTMLCollection.h"
-
 #include "wtf/text/AtomicString.h"
 
 namespace WebCore {
 
-class Document;
-
-class HTMLNameCollection FINAL : public HTMLCollection {
+class HTMLNameCollection : public HTMLCollection {
 public:
-    static PassRefPtrWillBeRawPtr<HTMLNameCollection> create(ContainerNode& document, CollectionType type, const AtomicString& name)
-    {
-        return adoptRefWillBeNoop(new HTMLNameCollection(document, type, name));
-    }
+    virtual ~HTMLNameCollection();
 
-    ~HTMLNameCollection();
-
-private:
+protected:
     HTMLNameCollection(ContainerNode&, CollectionType, const AtomicString& name);
-
-    virtual Element* virtualItemAfter(Element*) const OVERRIDE;
 
     AtomicString m_name;
 };

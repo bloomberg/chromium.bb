@@ -116,6 +116,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
+#include "core/html/DocumentNameCollection.h"
 #include "core/html/HTMLAllCollection.h"
 #include "core/html/HTMLAnchorElement.h"
 #include "core/html/HTMLBaseElement.h"
@@ -130,12 +131,12 @@
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLLinkElement.h"
 #include "core/html/HTMLMetaElement.h"
-#include "core/html/HTMLNameCollection.h"
 #include "core/html/HTMLScriptElement.h"
 #include "core/html/HTMLStyleElement.h"
 #include "core/html/HTMLTemplateElement.h"
 #include "core/html/HTMLTitleElement.h"
 #include "core/html/PluginDocument.h"
+#include "core/html/WindowNameCollection.h"
 #include "core/html/canvas/CanvasRenderingContext.h"
 #include "core/html/canvas/CanvasRenderingContext2D.h"
 #include "core/html/canvas/WebGLRenderingContext.h"
@@ -4610,12 +4611,12 @@ PassRefPtrWillBeRawPtr<HTMLAllCollection> Document::all()
 
 PassRefPtrWillBeRawPtr<HTMLCollection> Document::windowNamedItems(const AtomicString& name)
 {
-    return ensureRareData().ensureNodeLists().addCache<HTMLNameCollection>(*this, WindowNamedItems, name);
+    return ensureRareData().ensureNodeLists().addCache<WindowNameCollection>(*this, WindowNamedItems, name);
 }
 
 PassRefPtrWillBeRawPtr<HTMLCollection> Document::documentNamedItems(const AtomicString& name)
 {
-    return ensureRareData().ensureNodeLists().addCache<HTMLNameCollection>(*this, DocumentNamedItems, name);
+    return ensureRareData().ensureNodeLists().addCache<DocumentNameCollection>(*this, DocumentNamedItems, name);
 }
 
 void Document::finishedParsing()
