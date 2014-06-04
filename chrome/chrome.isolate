@@ -58,7 +58,6 @@
       'variables': {
         'isolate_dependency_tracked': [
           '<(PRODUCT_DIR)/<(version_full).manifest',
-          '<(PRODUCT_DIR)/D3DCompiler_43.dll',
           '<(PRODUCT_DIR)/chrome.dll',
           '<(PRODUCT_DIR)/chrome_child.dll',
           '<(PRODUCT_DIR)/chrome_elf.dll',
