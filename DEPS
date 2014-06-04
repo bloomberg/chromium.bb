@@ -288,7 +288,7 @@ deps = {
 
   "src/third_party/webpagereplay":
     Var("chromium_git") + "/external/web-page-replay.git@" +
-    "d1447899a2176bc8700865e76ed70da329628abd",
+    "b62c02d3b64cf00a2f65a82cca0721aa42c3d6ad",
 
   "src/third_party/pywebsocket/src":
     (Var("googlecode_url") % "pywebsocket") + "/trunk/src@790",
