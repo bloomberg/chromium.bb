@@ -643,8 +643,8 @@ public:
 
 
     // Screen Orientation -------------------------------------------------
+    // FIXME: this is meant to be removed when the content layer will be updated.
 
-    virtual void setScreenOrientationListener(blink::WebScreenOrientationListener*) { }
     virtual void lockOrientation(WebScreenOrientationLockType) { }
     // Request a screen orientation lock and pass a |callback| object to be used
     // to notify of success/failure. The |callback| parameter is expected to be

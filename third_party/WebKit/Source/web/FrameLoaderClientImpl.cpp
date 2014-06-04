@@ -57,7 +57,6 @@
 #include "modules/device_orientation/DeviceMotionController.h"
 #include "modules/device_orientation/DeviceOrientationController.h"
 #include "modules/gamepad/NavigatorGamepad.h"
-#include "modules/screen_orientation/ScreenOrientationController.h"
 #include "modules/serviceworkers/NavigatorServiceWorker.h"
 #include "platform/MIMETypeRegistry.h"
 #include "platform/UserGestureIndicator.h"
@@ -125,8 +124,6 @@ void FrameLoaderClientImpl::dispatchDidClearWindowObjectInMainWorld()
             DeviceOrientationController::from(*document);
             if (RuntimeEnabledFeatures::deviceLightEnabled())
                 DeviceLightController::from(*document);
-            if (RuntimeEnabledFeatures::screenOrientationEnabled())
-                ScreenOrientationController::from(*document);
             if (RuntimeEnabledFeatures::gamepadEnabled())
                 NavigatorGamepad::from(*document);
             if (RuntimeEnabledFeatures::serviceWorkerEnabled())

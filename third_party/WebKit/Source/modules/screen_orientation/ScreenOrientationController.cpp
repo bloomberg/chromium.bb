@@ -13,6 +13,8 @@
 #include "core/page/Page.h"
 #include "platform/LayoutTestSupport.h"
 #include "platform/PlatformScreen.h"
+#include "public/platform/Platform.h"
+#include "public/platform/WebScreenOrientationClient.h"
 
 namespace WebCore {
 
@@ -20,20 +22,21 @@ ScreenOrientationController::~ScreenOrientationController()
 {
 }
 
-ScreenOrientationController& ScreenOrientationController::from(Document& document)
+void ScreenOrientationController::provideTo(Page& page, blink::WebScreenOrientationClient* client)
 {
-    ScreenOrientationController* controller = static_cast<ScreenOrientationController*>(DocumentSupplement::from(document, supplementName()));
-    if (!controller) {
-        controller = new ScreenOrientationController(document);
-        DocumentSupplement::provideTo(document, supplementName(), adoptPtrWillBeNoop(controller));
-    }
-    return *controller;
+    ScreenOrientationController* controller = new ScreenOrientationController(page, client);
+    WillBeHeapSupplement<Page>::provideTo(page, supplementName(), adoptPtrWillBeNoop(controller));
 }
 
-ScreenOrientationController::ScreenOrientationController(Document& document)
-    : PageLifecycleObserver(document.page())
-    , m_document(document)
+ScreenOrientationController& ScreenOrientationController::from(Page& page)
+{
+    return *static_cast<ScreenOrientationController*>(WillBeHeapSupplement<Page>::from(page, supplementName()));
+}
+
+ScreenOrientationController::ScreenOrientationController(Page& page, blink::WebScreenOrientationClient* client)
+    : PageLifecycleObserver(&page)
     , m_overrideOrientation(blink::WebScreenOrientationUndefined)
+    , m_client(client)
 {
 }
 
@@ -74,7 +77,7 @@ void ScreenOrientationController::pageVisibilityChanged()
     if (page() && page()->visibilityState() == PageVisibilityStateVisible) {
         blink::WebScreenOrientationType oldOrientation = m_overrideOrientation;
         m_overrideOrientation = blink::WebScreenOrientationUndefined;
-        LocalFrame* mainFrame = m_document.frame();
+        LocalFrame* mainFrame = page()->mainFrame();
         if (mainFrame && oldOrientation != orientation())
             mainFrame->sendOrientationChangeEvent();
     } else if (m_overrideOrientation == blink::WebScreenOrientationUndefined) {
@@ -93,7 +96,7 @@ blink::WebScreenOrientationType ScreenOrientationController::orientation() const
         return m_overrideOrientation;
     }
 
-    LocalFrame* mainFrame = m_document.frame();
+    LocalFrame* mainFrame = page() ? page()->mainFrame() : 0;
     if (!mainFrame)
         return blink::WebScreenOrientationPortraitPrimary;
     blink::WebScreenOrientationType orientationType = screenOrientationType(mainFrame->view());
@@ -103,6 +106,28 @@ blink::WebScreenOrientationType ScreenOrientationController::orientation() const
     }
     ASSERT(orientationType != blink::WebScreenOrientationUndefined);
     return orientationType;
+}
+
+void ScreenOrientationController::lockOrientation(blink::WebScreenOrientationLockType orientation, blink::WebLockOrientationCallback* callback)
+{
+    if (!m_client) {
+        // FIXME: temporary until the content layer gets updated.
+        blink::Platform::current()->lockOrientation(orientation, callback);
+        return;
+    }
+
+    m_client->lockOrientation(orientation, callback);
+}
+
+void ScreenOrientationController::unlockOrientation()
+{
+    if (!m_client) {
+        // FIXME: temporary until the content layer gets updated.
+        blink::Platform::current()->unlockOrientation();
+        return;
+    }
+
+    m_client->unlockOrientation();
 }
 
 } // namespace WebCore
