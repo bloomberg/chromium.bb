@@ -114,17 +114,10 @@ PassOwnPtr<Shape> ShapeOutsideInfo::createShapeForImage(StyleImage* styleImage, 
         ? toRenderImage(&m_renderer)->replacedContentRect()
         : LayoutRect(LayoutPoint(), imageSize);
 
-    Image* image = 0;
-    RefPtr<Image> generatedImage;
+    ASSERT(!styleImage->isPendingImage());
+    RefPtr<Image> image = styleImage->image(const_cast<RenderBox*>(&m_renderer), imageSize);
 
-    if (styleImage->isImageResource() || styleImage->isImageResourceSet()) {
-        image = styleImage->cachedImage()->imageForRenderer(&m_renderer);
-    } else if (styleImage->isGeneratedImage()) {
-        generatedImage = styleImage->image(const_cast<RenderBox*>(&m_renderer), imageSize);
-        image = generatedImage.get();
-    }
-
-    return Shape::createRasterShape(image, shapeImageThreshold, imageRect, marginRect, writingMode, margin);
+    return Shape::createRasterShape(image.get(), shapeImageThreshold, imageRect, marginRect, writingMode, margin);
 }
 
 const Shape& ShapeOutsideInfo::computedShape() const
