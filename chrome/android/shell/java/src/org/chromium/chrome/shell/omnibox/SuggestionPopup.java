@@ -10,6 +10,7 @@ import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.view.View;
+import android.view.View.OnLayoutChangeListener;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ListPopupWindow;
@@ -50,6 +51,16 @@ public class SuggestionPopup implements OnSuggestionsReceivedListener, TextWatch
         mUrlField = urlField;
         mToolbar = toolbar;
         mAutocomplete = new AutocompleteController(this);
+        OnLayoutChangeListener listener = new OnLayoutChangeListener() {
+            @Override
+            public void onLayoutChange(View v, int left, int top, int right, int bottom,
+                    int oldLeft, int oldTop, int oldRight, int oldBottom) {
+                if (mSuggestionsPopup == null || !mSuggestionsPopup.isShowing()) return;
+                mSuggestionsPopup.setWidth(mUrlField.getWidth());
+                mSuggestionsPopup.show();
+            }
+        };
+        mUrlField.addOnLayoutChangeListener(listener);
     }
 
     private void navigateToSuggestion(int position) {
