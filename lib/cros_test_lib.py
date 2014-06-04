@@ -64,9 +64,14 @@ def NetworkTest(reason='Skipping network test'):
         raise unittest.SkipTest(reason)
       test_item(*args, **kwargs)
 
-    if not (isinstance(test_item, type) and issubclass(test_item, TestCase)):
+    # We can't check GlobalTestConfig.NETWORK_TESTS_DISABLED here because
+    # __main__ hasn't run yet. Wrap each test so that we check the flag before
+    # running it.
+    if isinstance(test_item, type) and issubclass(test_item, TestCase):
+      test_item.setUp = Decorator(test_item.setUp)
+      return test_item
+    else:
       return NetworkWrapper
-    return test_item
 
   return Decorator
 
