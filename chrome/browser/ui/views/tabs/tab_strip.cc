@@ -430,6 +430,7 @@ class NewTabButtonTargeter : public views::MaskedViewTargeter {
   virtual bool GetHitTestMask(const views::View* view,
                               gfx::Path* mask) const OVERRIDE {
     DCHECK(mask);
+    DCHECK_EQ(view, masked_view());
 
     SkScalar w = SkIntToScalar(view->width());
     SkScalar v_offset = SkIntToScalar(kNewTabButtonVerticalOffset);

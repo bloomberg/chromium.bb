@@ -118,6 +118,9 @@ class MicButtonTargeter : public views::MaskedViewTargeter {
   // views::MaskedViewTargeter:
   virtual bool GetHitTestMask(const views::View* view,
                               gfx::Path* mask) const OVERRIDE {
+    DCHECK(mask);
+    DCHECK_EQ(view, masked_view());
+
     // The mic button icon is a circle.
     gfx::Rect local_bounds = view->GetLocalBounds();
     int radius = local_bounds.width() / 2 + kIndicatorRadiusMinOffset;

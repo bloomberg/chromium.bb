@@ -28,6 +28,8 @@ class VIEWS_EXPORT MaskedViewTargeter : public ViewTargeter {
   virtual bool GetHitTestMask(const View* view, gfx::Path* mask) const = 0;
 
  protected:
+  const View* masked_view() const { return masked_view_; }
+
   // ui::EventTargeter:
   virtual bool EventLocationInsideBounds(
       ui::EventTarget* target,
