@@ -39,15 +39,29 @@ enum GAIAServiceType {
   GAIA_SERVICE_TYPE_DEFAULT,                  // All other cases.
 };
 
-// Add X-Chrome-Connected header to all Gaia requests from a connected profile,
+// Struct describing the paramters received in the manage account header.
+struct ManageAccountsParams {
+  GAIAServiceType service_type;
+};
+
+// Adds X-Chrome-Connected header to all Gaia requests from a connected profile,
 // with the exception of requests from gaia webview. Must be called on IO
 // thread.
-void AppendMirrorRequestHeaderIfPossible(
+// Returns true if the account management header was added to the request.
+bool AppendMirrorRequestHeaderIfPossible(
     net::URLRequest* request,
     const GURL& redirect_url,
     ProfileIOData* io_data,
     int child_id,
     int route_id);
+
+// Returns the parameters contained in the X-Chrome-Manage-Accounts response
+// header.
+// If the request does not have a response header or if the header contains
+// garbage, then |service_type| is set to |GAIA_SERVICE_TYPE_NONE|.
+// Must be called on IO thread.
+ManageAccountsParams GetManageAccountsParams(net::URLRequest* request,
+                                             ProfileIOData* io_data);
 
 // Looks for the X-Chrome-Manage-Accounts response header, and if found,
 // tries to show the avatar bubble in the browser identified by the
