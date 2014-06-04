@@ -31,8 +31,10 @@
 #include "base/files/scoped_file.h"
 #include "base/logging.h"
 #include "base/posix/eintr_wrapper.h"
+#include "base/time/time.h"
 #include "sandbox/linux/seccomp-bpf-helpers/sigsys_handlers.h"
 #include "sandbox/linux/seccomp-bpf/bpf_tests.h"
+#include "sandbox/linux/services/linux_syscalls.h"
 #include "third_party/lss/linux_syscall_support.h"  // for MAKE_PROCESS_CPUCLOCK
 
 namespace {
@@ -408,6 +410,9 @@ BPF_TEST_C(NaClNonSfiSandboxTest,
   CheckClock(CLOCK_PROCESS_CPUTIME_ID);
   CheckClock(CLOCK_REALTIME);
   CheckClock(CLOCK_THREAD_CPUTIME_ID);
+#if defined(OS_CHROMEOS)
+  CheckClock(base::TimeTicks::kClockSystemTrace);
+#endif
 }
 
 BPF_DEATH_TEST_C(NaClNonSfiSandboxTest,
@@ -417,6 +422,16 @@ BPF_DEATH_TEST_C(NaClNonSfiSandboxTest,
   struct timespec ts;
   clock_gettime(CLOCK_MONOTONIC_RAW, &ts);
 }
+
+#if !defined(OS_CHROMEOS)
+BPF_DEATH_TEST_C(NaClNonSfiSandboxTest,
+                 clock_gettime_crash_system_trace,
+                 DEATH_MESSAGE(sandbox::GetErrorMessageContentForTests()),
+                 nacl::nonsfi::NaClNonSfiBPFSandboxPolicy) {
+  struct timespec ts;
+  clock_gettime(base::TimeTicks::kClockSystemTrace, &ts);
+}
+#endif
 
 BPF_DEATH_TEST_C(NaClNonSfiSandboxTest,
                  clock_gettime_crash_cpu_clock,

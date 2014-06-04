@@ -320,18 +320,19 @@ TimeTicks TimeTicks::ThreadNow() {
 #endif
 }
 
-#if defined(OS_CHROMEOS)
-// Force definition of the system trace clock; it is a chromeos-only api
-// at the moment and surfacing it in the right place requires mucking
-// with glibc et al.
-#define CLOCK_SYSTEM_TRACE 11
-
+// NaCl IRT does not support the Chrome OS specific clock
+// ID. build/common.gypi sets OS_CHROMEOS without any other OS_*
+// macros for untrusted NaCl build so we need to check
+// __native_client__ explicitly.
+// TODO(hamaji): Do not specify OS_CHROMEOS for untrusted NaCl build
+// and remove !defined(__native_client__).
+#if defined(OS_CHROMEOS) && !defined(__native_client__)
 // static
 TimeTicks TimeTicks::NowFromSystemTraceTime() {
   uint64_t absolute_micro;
 
   struct timespec ts;
-  if (clock_gettime(CLOCK_SYSTEM_TRACE, &ts) != 0) {
+  if (clock_gettime(kClockSystemTrace, &ts) != 0) {
     // NB: fall-back for a chrome os build running on linux
     return HighResNow();
   }
@@ -343,14 +344,14 @@ TimeTicks TimeTicks::NowFromSystemTraceTime() {
   return TimeTicks(absolute_micro);
 }
 
-#else // !defined(OS_CHROMEOS)
+#else // !(defined(OS_CHROMEOS) && !defined(__native_client__))
 
 // static
 TimeTicks TimeTicks::NowFromSystemTraceTime() {
   return HighResNow();
 }
 
-#endif // defined(OS_CHROMEOS)
+#endif // defined(OS_CHROMEOS) && !defined(__native_client__)
 
 #endif  // !OS_MACOSX
 
