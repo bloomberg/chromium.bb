@@ -50,15 +50,14 @@ void WaitForAllChangesToBeAcked(ViewManager* manager) {
   ViewManagerPrivate(manager).synchronizer()->ClearChangesAckedCallback();
 }
 
-// Used with IViewManager::Connect(). Creates a TestViewManagerClientConnection,
-// which creates and owns the ViewManagerProxy.
 class ConnectServiceLoader : public ServiceLoader {
  public:
   explicit ConnectServiceLoader(base::Callback<void(ViewManager*)> callback)
       : callback_(callback) {}
   virtual ~ConnectServiceLoader() {}
 
-  // ServiceLoader:
+ private:
+  // Overridden from ServiceLoader:
   virtual void LoadService(ServiceManager* manager,
                            const GURL& url,
                            ScopedMessagePipeHandle shell_handle) OVERRIDE {
@@ -70,7 +69,6 @@ class ConnectServiceLoader : public ServiceLoader {
                               const GURL& url) OVERRIDE {
   }
 
- private:
   ScopedVector<Application> apps_;
   base::Callback<void(ViewManager*)> callback_;
 
@@ -322,6 +320,10 @@ class ViewManagerTest : public testing::Test {
     return view_manager;
   }
 
+  void UnloadApplication(const GURL& url) {
+    test_helper_.SetLoaderForURL(scoped_ptr<ServiceLoader>(), url);
+  }
+
  private:
   // Overridden from testing::Test:
   virtual void SetUp() OVERRIDE {
@@ -476,19 +478,20 @@ TEST_F(ViewManagerTest, NodeDestroyed) {
   EXPECT_EQ(NULL, embedded->GetNodeById(id));
 }
 
-// TODO(beng): provide a way to terminate an application.
-TEST_F(ViewManagerTest, DISABLED_ViewManagerDestroyed_CleanupNode) {
-  ViewTreeNode* node1 = CreateNodeInParent(view_manager_1()->tree());
-  WaitForTreeSizeToMatch(view_manager_2()->tree(), 2);
+TEST_F(ViewManagerTest, ViewManagerDestroyed_CleanupNode) {
+  ViewTreeNode* node = ViewTreeNode::Create(window_manager());
+  window_manager()->tree()->AddChild(node);
+  ViewManager* embedded = Embed(window_manager(), node);
 
-  TransportNodeId id = node1->id();
-  DestroyViewManager1();
+  TransportNodeId node_id = node->id();
+
+  UnloadApplication(GURL(kTestServiceURL));
+
   std::set<TransportNodeId> nodes;
-  nodes.insert(id);
-  WaitForDestruction(view_manager_2(), &nodes, NULL);
+  nodes.insert(node_id);
+  WaitForDestruction(embedded, &nodes, NULL);
 
-  // tree() should still be valid, since it's owned by neither connection.
-  EXPECT_TRUE(view_manager_2()->tree()->children().empty());
+  EXPECT_EQ(NULL, embedded->tree());
 }
 
 TEST_F(ViewManagerTest, SetActiveView) {
@@ -530,30 +533,27 @@ TEST_F(ViewManagerTest, DestroyView) {
 
 // Destroying the connection that created a node and view should result in that
 // node and view disappearing from all connections that see them.
-TEST_F(ViewManagerTest, DISABLED_ViewManagerDestroyed_CleanupNodeAndView) {
-  ViewTreeNode* node1 = CreateNodeInParent(view_manager_1()->tree());
-  WaitForTreeSizeToMatch(view_manager_2()->tree(), 2);
+TEST_F(ViewManagerTest, ViewManagerDestroyed_CleanupNodeAndView) {
+  ViewTreeNode* node = ViewTreeNode::Create(window_manager());
+  window_manager()->tree()->AddChild(node);
+  View* view = View::Create(window_manager());
+  node->SetActiveView(view);
+  ViewManager* embedded = Embed(window_manager(), node);
 
-  View* view1 = View::Create(view_manager_1());
-  node1->SetActiveView(view1);
+  TransportNodeId node_id = node->id();
+  TransportViewId view_id = view->id();
 
-  ViewTreeNode* node1_2 = view_manager_2()->tree()->GetChildById(node1->id());
-  WaitForActiveViewToChange(node1_2);
+  UnloadApplication(GURL(kTestServiceURL));
 
-  TransportNodeId node1_id = node1->id();
-  TransportViewId view1_id = view1->id();
-
-  DestroyViewManager1();
   std::set<TransportNodeId> observed_nodes;
-  observed_nodes.insert(node1_id);
+  observed_nodes.insert(node_id);
   std::set<TransportViewId> observed_views;
-  observed_views.insert(view1_id);
-  WaitForDestruction(view_manager_2(), &observed_nodes, &observed_views);
+  observed_views.insert(view_id);
+  WaitForDestruction(embedded, &observed_nodes, &observed_views);
 
-  // tree() should still be valid, since it's owned by neither connection.
-  EXPECT_TRUE(view_manager_2()->tree()->children().empty());
-  EXPECT_EQ(NULL, view_manager_2()->GetNodeById(node1_id));
-  EXPECT_EQ(NULL, view_manager_2()->GetViewById(view1_id));
+  EXPECT_EQ(NULL, embedded->tree());
+  EXPECT_EQ(NULL, embedded->GetNodeById(node_id));
+  EXPECT_EQ(NULL, embedded->GetViewById(view_id));
 }
 
 // This test validates the following scenario:
@@ -563,32 +563,31 @@ TEST_F(ViewManagerTest, DISABLED_ViewManagerDestroyed_CleanupNodeAndView) {
 // -> the view should still exist (since the second connection is live) but
 //    should be disconnected from any nodes.
 TEST_F(ViewManagerTest,
-    DISABLED_ViewManagerDestroyed_CleanupNodeAndViewFromDifferentConnections) {
-  ViewTreeNode* node1 = CreateNodeInParent(view_manager_1()->tree());
-  WaitForTreeSizeToMatch(view_manager_2()->tree(), 2);
+       ViewManagerDestroyed_CleanupNodeAndViewFromDifferentConnections) {
+  ViewTreeNode* node = ViewTreeNode::Create(window_manager());
+  window_manager()->tree()->AddChild(node);
+  ViewManager* embedded = Embed(window_manager(), node);
+  View* view_in_embedded = View::Create(embedded);
+  ViewTreeNode* node_in_embedded = embedded->GetNodeById(node->id());
+  node_in_embedded->SetActiveView(view_in_embedded);
 
-  View* view1_2 = View::Create(view_manager_2());
-  ViewTreeNode* node1_2 = view_manager_2()->tree()->GetChildById(node1->id());
-  node1_2->SetActiveView(view1_2);
-  WaitForActiveViewToChange(node1);
+  WaitForActiveViewToChange(node);
 
-  TransportNodeId node1_id = node1->id();
-  TransportViewId view1_2_id = view1_2->id();
+  TransportNodeId node_id = node->id();
+  TransportViewId view_id = view_in_embedded->id();
 
-  DestroyViewManager1();
+  UnloadApplication(GURL(kTestServiceURL));
   std::set<TransportNodeId> nodes;
-  nodes.insert(node1_id);
-  WaitForDestruction(view_manager_2(), &nodes, NULL);
+  nodes.insert(node_id);
+  WaitForDestruction(embedded, &nodes, NULL);
 
-  // tree() should still be valid, since it's owned by neither connection.
-  EXPECT_TRUE(view_manager_2()->tree()->children().empty());
-  // node1 was owned by the first connection, so it should be gone.
-  EXPECT_EQ(NULL, view_manager_2()->GetNodeById(node1_id));
-  // view1_2 was owned by the second connection, so it should still exist, but
-  // disconnected from the node tree.
-  View* another_view1_2 = view_manager_2()->GetViewById(view1_2_id);
-  EXPECT_EQ(view1_2, another_view1_2);
-  EXPECT_EQ(NULL, view1_2->node());
+  EXPECT_EQ(NULL, embedded->tree());
+  // node was owned by the window manager, so it should be gone.
+  EXPECT_EQ(NULL, embedded->GetNodeById(node_id));
+  // view_in_embedded was owned by the embedded app, so it should still exist,
+  // but disconnected from the node tree.
+  EXPECT_EQ(view_in_embedded, embedded->GetViewById(view_id));
+  EXPECT_EQ(NULL, view_in_embedded->node());
 }
 
 // This test verifies that it is not possible to set the active view to a view

@@ -604,8 +604,11 @@ void ViewManagerSynchronizer::OnNodeDeleted(uint32_t node_id,
   next_server_change_id_ = server_change_id + 1;
 
   ViewTreeNode* node = view_manager()->GetNodeById(node_id);
-  if (node)
+  if (node) {
+    if (view_manager()->tree() == node)
+      ViewManagerPrivate(view_manager()).set_root(NULL);
     ViewTreeNodePrivate(node).LocalDestroy();
+  }
 }
 
 void ViewManagerSynchronizer::OnNodeViewReplaced(uint32_t node_id,

@@ -185,7 +185,9 @@ void ServiceManager::OnServiceFactoryError(ServiceFactory* service_factory) {
   DCHECK(it != url_to_service_factory_.end());
   delete it->second;
   url_to_service_factory_.erase(it);
-  GetLoaderForURL(url)->OnServiceError(this, url);
+  ServiceLoader* loader = GetLoaderForURL(url);
+  if (loader)
+    loader->OnServiceError(this, url);
 }
 
 }  // namespace mojo
