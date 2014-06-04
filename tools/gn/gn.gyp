@@ -201,6 +201,7 @@
         'parser_unittest.cc',
         'path_output_unittest.cc',
         'pattern_unittest.cc',
+        'run_all_unittests.cc',
         'scope_per_file_provider_unittest.cc',
         'scope_unittest.cc',
         'source_dir_unittest.cc',
@@ -215,7 +216,6 @@
       ],
       'dependencies': [
         'gn_lib',
-        '../../base/base.gyp:run_all_unittests',
         '../../base/base.gyp:test_support_base',
         '../../testing/gtest.gyp:gtest',
       ],
