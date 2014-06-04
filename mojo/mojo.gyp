@@ -51,6 +51,7 @@
         'mojo_service_manager_unittests',
         'mojo_shell',
         'mojo_shell_lib',
+        'mojo_shell_tests',
         'mojo_system',
         'mojo_system_impl',
         'mojo_system_unittests',
@@ -572,6 +573,29 @@
       ],
       'sources': [
         'shell/desktop/mojo_main.cc',
+      ],
+    },
+    {
+      'target_name': 'mojo_shell_tests',
+      'type': 'executable',
+      'dependencies': [
+        '../base/base.gyp:base',
+        '../base/base.gyp:test_support_base',
+        '../testing/gtest.gyp:gtest',
+        # TODO(vtl): We don't currently need this, but I imagine we will soon.
+        # '../ui/gl/gl.gyp:gl',
+        '../url/url.gyp:url_lib',
+        'mojo_common_lib',
+        'mojo_environment_chromium',
+        'mojo_service_manager',
+        'mojo_shell_lib',
+        'mojo_system_impl',
+      ],
+      'sources': [
+        'shell/child_process_host_unittest.cc',
+        'shell/shell_test_base.cc',
+        'shell/shell_test_base.h',
+        'shell/shell_test_main.cc',
       ],
     },
     {
