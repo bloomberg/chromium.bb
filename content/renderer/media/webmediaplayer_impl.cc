@@ -279,6 +279,8 @@ URLSchemeForHistogram URLScheme(const GURL& url) {
 
 void WebMediaPlayerImpl::load(LoadType load_type, const blink::WebURL& url,
                               CORSMode cors_mode) {
+  DVLOG(1) << __FUNCTION__ << "(" << load_type << ", " << url << ", "
+           << cors_mode << ")";
   if (!defer_load_cb_.is_null()) {
     defer_load_cb_.Run(base::Bind(
         &WebMediaPlayerImpl::DoLoad, AsWeakPtr(), load_type, url, cors_mode));
@@ -329,6 +331,7 @@ void WebMediaPlayerImpl::DoLoad(LoadType load_type,
 }
 
 void WebMediaPlayerImpl::play() {
+  DVLOG(1) << __FUNCTION__;
   DCHECK(main_loop_->BelongsToCurrentThread());
 
   paused_ = false;
@@ -343,6 +346,7 @@ void WebMediaPlayerImpl::play() {
 }
 
 void WebMediaPlayerImpl::pause() {
+  DVLOG(1) << __FUNCTION__;
   DCHECK(main_loop_->BelongsToCurrentThread());
 
   paused_ = true;
@@ -363,6 +367,7 @@ bool WebMediaPlayerImpl::supportsSave() const {
 }
 
 void WebMediaPlayerImpl::seek(double seconds) {
+  DVLOG(1) << __FUNCTION__ << "(" << seconds << ")";
   DCHECK(main_loop_->BelongsToCurrentThread());
 
   if (ready_state_ > WebMediaPlayer::ReadyStateHaveMetadata)
@@ -396,6 +401,7 @@ void WebMediaPlayerImpl::seek(double seconds) {
 }
 
 void WebMediaPlayerImpl::setRate(double rate) {
+  DVLOG(1) << __FUNCTION__ << "(" << rate << ")";
   DCHECK(main_loop_->BelongsToCurrentThread());
 
   // TODO(kylep): Remove when support for negatives is added. Also, modify the
@@ -420,6 +426,7 @@ void WebMediaPlayerImpl::setRate(double rate) {
 }
 
 void WebMediaPlayerImpl::setVolume(double volume) {
+  DVLOG(1) << __FUNCTION__ << "(" << volume << ")";
   DCHECK(main_loop_->BelongsToCurrentThread());
 
   pipeline_.SetVolume(volume);
@@ -435,6 +442,7 @@ COMPILE_ASSERT_MATCHING_ENUM(PreloadAuto, AUTO);
 #undef COMPILE_ASSERT_MATCHING_ENUM
 
 void WebMediaPlayerImpl::setPreload(WebMediaPlayer::Preload preload) {
+  DVLOG(1) << __FUNCTION__ << "(" << preload << ")";
   DCHECK(main_loop_->BelongsToCurrentThread());
 
   if (data_source_)
@@ -924,6 +932,7 @@ void WebMediaPlayerImpl::InvalidateOnMainThread() {
 }
 
 void WebMediaPlayerImpl::OnPipelineSeek(PipelineStatus status) {
+  DVLOG(1) << __FUNCTION__ << "(" << status << ")";
   DCHECK(main_loop_->BelongsToCurrentThread());
   starting_ = false;
   seeking_ = false;
@@ -946,6 +955,7 @@ void WebMediaPlayerImpl::OnPipelineSeek(PipelineStatus status) {
 }
 
 void WebMediaPlayerImpl::OnPipelineEnded() {
+  DVLOG(1) << __FUNCTION__;
   DCHECK(main_loop_->BelongsToCurrentThread());
   client_->timeChanged();
 }
@@ -977,7 +987,7 @@ void WebMediaPlayerImpl::OnPipelineError(PipelineStatus error) {
 
 void WebMediaPlayerImpl::OnPipelineMetadata(
     media::PipelineMetadata metadata) {
-  DVLOG(1) << "OnPipelineMetadata";
+  DVLOG(1) << __FUNCTION__;
 
   pipeline_metadata_ = metadata;
 
@@ -997,7 +1007,7 @@ void WebMediaPlayerImpl::OnPipelineMetadata(
 }
 
 void WebMediaPlayerImpl::OnPipelinePrerollCompleted() {
-  DVLOG(1) << "OnPipelinePrerollCompleted";
+  DVLOG(1) << __FUNCTION__;
 
   // Only transition to ReadyStateHaveEnoughData if we don't have
   // any pending seeks because the transition can cause Blink to
@@ -1233,16 +1243,16 @@ void WebMediaPlayerImpl::StartPipeline() {
 }
 
 void WebMediaPlayerImpl::SetNetworkState(WebMediaPlayer::NetworkState state) {
+  DVLOG(1) << __FUNCTION__ << "(" << state << ")";
   DCHECK(main_loop_->BelongsToCurrentThread());
-  DVLOG(1) << "SetNetworkState: " << state;
   network_state_ = state;
   // Always notify to ensure client has the latest value.
   client_->networkStateChanged();
 }
 
 void WebMediaPlayerImpl::SetReadyState(WebMediaPlayer::ReadyState state) {
+  DVLOG(1) << __FUNCTION__ << "(" << state << ")";
   DCHECK(main_loop_->BelongsToCurrentThread());
-  DVLOG(1) << "SetReadyState: " << state;
 
   if (state == WebMediaPlayer::ReadyStateHaveEnoughData && data_source_ &&
       data_source_->assume_fully_buffered() &&
