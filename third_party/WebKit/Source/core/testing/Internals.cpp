@@ -2220,7 +2220,7 @@ bool Internals::isSelectPopupVisible(Node* node)
     HTMLSelectElement& select = toHTMLSelectElement(*node);
 
     RenderObject* renderer = select.renderer();
-    if (!renderer->isMenuList())
+    if (!renderer || !renderer->isMenuList())
         return false;
 
     RenderMenuList* menuList = toRenderMenuList(renderer);
