@@ -472,7 +472,7 @@ void RenderView::repaintViewRectangle(const LayoutRect& ur) const
         if (hasLayer() && layer()->compositingState() == PaintsIntoOwnBacking)
             layer()->repainter().setBackingNeedsRepaintInRect(ur);
         else
-            m_frameView->repaintContentRectangle(pixelSnappedIntRect(ur));
+            m_frameView->contentRectangleForPaintInvalidation(pixelSnappedIntRect(ur));
     } else if (RenderBox* obj = elt->renderBox()) {
         LayoutRect vr = viewRect();
         LayoutRect r = intersection(ur, vr);

@@ -124,7 +124,7 @@ public:
 #endif
 
     bool shouldDoFullRepaintForNextLayout() const;
-    bool doingFullRepaint() const { return m_frameView->needsFullRepaint(); }
+    bool doingFullRepaint() const { return m_frameView->needsFullPaintInvalidation(); }
 
     // Subtree push
     void pushLayoutState(RenderObject&);

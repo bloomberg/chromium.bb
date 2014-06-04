@@ -1771,7 +1771,7 @@ bool WebViewImpl::isTrackingRepaints() const
     if (!page())
         return false;
     FrameView* view = page()->mainFrame()->view();
-    return view->isTrackingRepaints();
+    return view->isTrackingPaintInvalidations();
 }
 
 void WebViewImpl::themeChanged()

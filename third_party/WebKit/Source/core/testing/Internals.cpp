@@ -2002,7 +2002,7 @@ void Internals::startTrackingRepaints(Document* document, ExceptionState& except
 
     FrameView* frameView = document->view();
     frameView->updateLayoutAndStyleForPainting();
-    frameView->setTracksRepaints(true);
+    frameView->setTracksPaintInvalidations(true);
 }
 
 void Internals::stopTrackingRepaints(Document* document, ExceptionState& exceptionState)
@@ -2014,7 +2014,7 @@ void Internals::stopTrackingRepaints(Document* document, ExceptionState& excepti
 
     FrameView* frameView = document->view();
     frameView->updateLayoutAndStyleForPainting();
-    frameView->setTracksRepaints(false);
+    frameView->setTracksPaintInvalidations(false);
 }
 
 void Internals::updateLayoutIgnorePendingStylesheetsAndRunPostLayoutTasks(ExceptionState& exceptionState)

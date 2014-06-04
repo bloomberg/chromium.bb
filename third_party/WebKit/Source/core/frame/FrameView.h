@@ -111,7 +111,7 @@ public:
     void setLayoutSizeFixedToFrameSize(bool isFixed) { m_layoutSizeFixedToFrameSize = isFixed; }
     bool layoutSizeFixedToFrameSize() { return m_layoutSizeFixedToFrameSize; }
 
-    bool needsFullRepaint() const { return m_doFullRepaint; }
+    bool needsFullPaintInvalidation() const { return m_doFullPaintInvalidation; }
 
     void updateAcceleratedCompositingSettings();
 
@@ -262,10 +262,10 @@ public:
 
     RenderBox* embeddedContentBox() const;
 
-    void setTracksRepaints(bool);
-    bool isTrackingRepaints() const { return m_isTrackingRepaints; }
-    void resetTrackedRepaints();
-    String trackedRepaintRectsAsText() const;
+    void setTracksPaintInvalidations(bool);
+    bool isTrackingPaintInvalidations() const { return m_isTrackingPaintInvalidations; }
+    void resetTrackedPaintInvalidations();
+    String trackedPaintInvalidationRectsAsText() const;
 
     typedef HashSet<ScrollableArea*> ScrollableAreaSet;
     void addScrollableArea(ScrollableArea*);
@@ -367,7 +367,7 @@ private:
 
     DocumentLifecycle& lifecycle() const;
 
-    virtual void repaintContentRectangle(const IntRect&) OVERRIDE;
+    virtual void contentRectangleForPaintInvalidation(const IntRect&) OVERRIDE;
     virtual void contentsResized() OVERRIDE;
     virtual void scrollbarExistenceDidChange() OVERRIDE;
 
@@ -393,7 +393,7 @@ private:
     void didScrollTimerFired(Timer<FrameView>*);
 
     void updateLayersAndCompositingAfterScrollIfNeeded();
-    void updateFixedElementRepaintRectsAfterScroll();
+    void updateFixedElementPaintInvalidationRectsAfterScroll();
 
     bool hasCustomScrollbars() const;
     bool shouldUseCustomScrollbars(Element*& customScrollbarElement, LocalFrame*& customScrollbarFrame);
@@ -407,7 +407,7 @@ private:
 
     void setLayoutSizeInternal(const IntSize&);
 
-    bool repaintAllowed() const
+    bool paintInvalidationIsAllowed() const
     {
         if (!RuntimeEnabledFeatures::repaintAfterLayoutEnabled())
             return true;
@@ -428,7 +428,7 @@ private:
 
     RefPtr<LocalFrame> m_frame;
 
-    bool m_doFullRepaint;
+    bool m_doFullPaintInvalidation;
 
     bool m_canHaveScrollbars;
     bool m_cannotBlitToWindow;
@@ -469,8 +469,8 @@ private:
 
     double m_lastPaintTime;
 
-    bool m_isTrackingRepaints; // Used for testing.
-    Vector<IntRect> m_trackedRepaintRects;
+    bool m_isTrackingPaintInvalidations; // Used for testing.
+    Vector<IntRect> m_trackedPaintInvalidationRects;
 
     RefPtrWillBePersistent<Node> m_nodeToDraw;
     PaintBehavior m_paintBehavior;

@@ -107,7 +107,7 @@ public:
 
     // By default, paint events are clipped to the visible area.  If set to
     // false, paint events are no longer clipped.  paintsEntireContents() implies !clipsRepaints().
-    bool clipsRepaints() const { return m_clipsRepaints; }
+    bool clipsPaintInvalidations() const { return m_clipsRepaints; }
     void setClipsRepaints(bool);
 
     // Overridden by FrameView to create custom CSS scrollbars if applicable.
@@ -256,7 +256,7 @@ public:
 protected:
     ScrollView();
 
-    virtual void repaintContentRectangle(const IntRect&);
+    virtual void contentRectangleForPaintInvalidation(const IntRect&);
     virtual void paintContents(GraphicsContext*, const IntRect& damageRect) = 0;
 
     virtual void paintOverhangAreas(GraphicsContext*, const IntRect& horizontalOverhangArea, const IntRect& verticalOverhangArea, const IntRect& dirtyRect);

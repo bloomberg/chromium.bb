@@ -94,9 +94,9 @@ bool FrameView::s_inPaintContents = false;
 static const unsigned maxUpdateWidgetsIterations = 2;
 static const double resourcePriorityUpdateDelayAfterScroll = 0.250;
 
-static RenderLayer::UpdateLayerPositionsFlags updateLayerPositionFlags(RenderLayer* layer, bool isRelayoutingSubtree, bool didFullRepaint)
+static RenderLayer::UpdateLayerPositionsFlags updateLayerPositionFlags(RenderLayer* layer, bool isRelayoutingSubtree, bool didFullPaintInvalidation)
 {
-    RenderLayer::UpdateLayerPositionsFlags flags = didFullRepaint ? RenderLayer::NeedsFullRepaintInBacking : RenderLayer::CheckForRepaint;
+    RenderLayer::UpdateLayerPositionsFlags flags = didFullPaintInvalidation ? RenderLayer::NeedsFullRepaintInBacking : RenderLayer::CheckForRepaint;
 
     if (isRelayoutingSubtree && (layer->isPaginated() || layer->enclosingPaginationLayer()))
         flags |= RenderLayer::UpdatePagination;
@@ -148,7 +148,7 @@ FrameView::FrameView(LocalFrame* frame)
     , m_wasScrolledByUser(false)
     , m_inProgrammaticScroll(false)
     , m_safeToPropagateScrollToParent(true)
-    , m_isTrackingRepaints(false)
+    , m_isTrackingPaintInvalidations(false)
     , m_scrollCorner(0)
     , m_shouldAutoSize(false)
     , m_inAutoSize(false)
@@ -221,7 +221,7 @@ void FrameView::reset()
     m_contentIsOpaque = false;
     m_hasPendingLayout = false;
     m_layoutSubtreeRoot = 0;
-    m_doFullRepaint = false;
+    m_doFullPaintInvalidation = false;
     m_layoutSchedulingEnabled = true;
     m_inPerformLayout = false;
     m_canInvalidatePaintDuringPerformLayout = false;
@@ -236,8 +236,8 @@ void FrameView::reset()
     m_safeToPropagateScrollToParent = true;
     m_lastViewportSize = IntSize();
     m_lastZoomFactor = 1.0f;
-    m_isTrackingRepaints = false;
-    m_trackedRepaintRects.clear();
+    m_isTrackingPaintInvalidations = false;
+    m_trackedPaintInvalidationRects.clear();
     m_lastPaintTime = 0;
     m_paintBehavior = PaintBehaviorNormal;
     m_isPainting = false;
@@ -358,10 +358,10 @@ void FrameView::invalidateRect(const IntRect& rect)
     if (!renderer)
         return;
 
-    IntRect repaintRect = rect;
-    repaintRect.move(renderer->borderLeft() + renderer->paddingLeft(),
+    IntRect paintInvalidationRect = rect;
+    paintInvalidationRect.move(renderer->borderLeft() + renderer->paddingLeft(),
                      renderer->borderTop() + renderer->paddingTop());
-    renderer->repaintRectangle(repaintRect);
+    renderer->repaintRectangle(paintInvalidationRect);
 }
 
 void FrameView::setFrameRect(const IntRect& newRect)
@@ -810,7 +810,7 @@ void FrameView::performLayout(RenderObject* rootForThisLayout, bool inSubtreeLay
     TextAutosizer* textAutosizer = frame().document()->textAutosizer();
     bool autosized;
     {
-        AllowPaintInvalidationScope repaintAllowed(this);
+        AllowPaintInvalidationScope paintInvalidationAllowed(this);
         autosized = textAutosizer && textAutosizer->processSubtree(rootForThisLayout);
     }
 
@@ -930,7 +930,7 @@ void FrameView::layout(bool allowSubtree)
             if (m_firstLayout) {
                 setScrollbarsSuppressed(true);
 
-                m_doFullRepaint = true;
+                m_doFullPaintInvalidation = true;
                 m_firstLayout = false;
                 m_firstLayoutCallbackPending = true;
                 m_lastViewportSize = layoutSize(IncludeScrollbars);
@@ -962,9 +962,9 @@ void FrameView::layout(bool allowSubtree)
                     rootRenderer->setChildNeedsLayout();
             }
 
-            // We need to set m_doFullRepaint before triggering layout as RenderObject::checkForRepaint
-            // checks the boolean to disable local repaints.
-            m_doFullRepaint |= renderView()->shouldDoFullRepaintForNextLayout();
+            // We need to set m_doFullPaintInvalidation before triggering layout as RenderObject::checkForRepaint
+            // checks the boolean to disable local paint invalidations.
+            m_doFullPaintInvalidation |= renderView()->shouldDoFullRepaintForNextLayout();
         }
 
         layer = rootForThisLayout->enclosingLayer();
@@ -977,7 +977,7 @@ void FrameView::layout(bool allowSubtree)
     if (!inSubtreeLayout && !toRenderView(rootForThisLayout)->document().printing())
         adjustViewSize();
 
-    layer->updateLayerPositionsAfterLayout(renderView()->layer(), updateLayerPositionFlags(layer, inSubtreeLayout, m_doFullRepaint));
+    layer->updateLayerPositionsAfterLayout(renderView()->layer(), updateLayerPositionFlags(layer, inSubtreeLayout, m_doFullPaintInvalidation));
     renderView()->compositor()->setNeedsCompositingUpdate(CompositingUpdateAfterLayout);
 
     m_layoutCount++;
@@ -1006,14 +1006,14 @@ void FrameView::layout(bool allowSubtree)
 
     if (RuntimeEnabledFeatures::repaintAfterLayoutEnabled()) {
         invalidateTree(rootForThisLayout);
-    } else if (m_doFullRepaint) {
+    } else if (m_doFullPaintInvalidation) {
         // FIXME: This isn't really right, since the RenderView doesn't fully encompass
         // the visibleContentRect(). It just happens to work out most of the time,
         // since first layouts and printing don't have you scrolled anywhere.
         renderView()->repaint();
     }
 
-    m_doFullRepaint = false;
+    m_doFullPaintInvalidation = false;
 
 #ifndef NDEBUG
     // Post-layout assert that nobody was re-marked as needing layout during layout.
@@ -1030,7 +1030,7 @@ void FrameView::layout(bool allowSubtree)
         frame().page()->chrome().client().layoutUpdated(m_frame.get());
 }
 
-// The plan is to move to compositor-queried repainting, in which case this
+// The plan is to move to compositor-queried paint invalidation, in which case this
 // method would setNeedsRedraw on the GraphicsLayers with invalidations and
 // let the compositor pick which to actually draw.
 // See http://crbug.com/306706
@@ -1038,14 +1038,14 @@ void FrameView::invalidateTree(RenderObject* root)
 {
     ASSERT(RuntimeEnabledFeatures::repaintAfterLayoutEnabled());
     ASSERT(!root->needsLayout());
-    // We should only repaint for the outer most layout. This works as
-    // we continue to track repaint rects until this function is called.
+    // We should only invalidate paints for the outer most layout. This works as
+    // we continue to track paint invalidation rects until this function is called.
     ASSERT(!m_nestedLayoutCount);
 
-    TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("blink.invalidation"), "FrameView::repaintTree",
+    TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("blink.invalidation"), "FrameView::invalidateTree",
         "root", TRACE_STR_COPY(root->debugName().ascii().data()));
 
-    // FIXME: really, we're in the repaint phase here, and the compositing queries are legal.
+    // FIXME: really, we're in the paint invalidation phase here, and the compositing queries are legal.
     // Until those states are fully fledged, I'll just disable the ASSERTS.
     DisableCompositingQueryAsserts compositingQueryAssertsDisabler;
 
@@ -1053,7 +1053,7 @@ void FrameView::invalidateTree(RenderObject* root)
 
     root->invalidateTreeAfterLayout(*root->containerForRepaint());
 
-    // Repaint the frameviews scrollbars if needed
+    // Invalidate the paint of the frameviews scrollbars if needed
     if (hasVerticalBarDamage())
         invalidateRect(verticalBarDamage());
     if (hasHorizontalBarDamage())
@@ -1375,7 +1375,7 @@ void FrameView::scrollContentsIfNeeded()
     bool didScroll = !pendingScrollDelta().isZero();
     ScrollView::scrollContentsIfNeeded();
     if (didScroll)
-        updateFixedElementRepaintRectsAfterScroll();
+        updateFixedElementPaintInvalidationRectsAfterScroll();
 }
 
 bool FrameView::scrollContentsFastPath(const IntSize& scrollDelta, const IntRect& rectToScroll, const IntRect& clipRect)
@@ -1400,8 +1400,8 @@ bool FrameView::scrollContentsFastPath(const IntSize& scrollDelta, const IntRect
         RenderLayer* layer = toRenderBoxModelObject(renderer)->layer();
 
         // Layers that paint into their ancestor or into a grouped backing will still need
-        // to apply a repaint invalidation. If the layer paints into its own backing, then
-        // it does not need repainting just to scroll.
+        // to apply a paint invalidation. If the layer paints into its own backing, then
+        // it does not need paint invalidation just to scroll.
         if (layer->compositingState() == PaintsIntoOwnBacking)
             continue;
 
@@ -1431,9 +1431,9 @@ bool FrameView::scrollContentsFastPath(const IntSize& scrollDelta, const IntRect
             updateRect.unite(previousRect);
             enclosingCompositingLayer->repainter().setBackingNeedsRepaintInRect(updateRect);
         } else {
-            // Coalesce the repaints that will be issued to the renderView.
+            // Coalesce the paint invalidations that will be issued to the renderView.
             updateRect = contentsToRootView(updateRect);
-            if (!isCompositedContentLayer && clipsRepaints())
+            if (!isCompositedContentLayer && clipsPaintInvalidations())
                 updateRect.intersect(rectToScroll);
             if (!updateRect.isEmpty())
                 regionToUpdate.unite(updateRect);
@@ -1457,7 +1457,7 @@ bool FrameView::scrollContentsFastPath(const IntSize& scrollDelta, const IntRect
             renderView()->layer()->repainter().setBackingNeedsRepaintInRect(updateRect);
             continue;
         }
-        if (clipsRepaints())
+        if (clipsPaintInvalidations())
             updateRect.intersect(rectToScroll);
         hostWindow()->invalidateContentsAndRootView(updateRect);
     }
@@ -1505,7 +1505,7 @@ bool FrameView::scrollToFragment(const KURL& url)
 {
     // If our URL has no ref, then we have no place we need to jump to.
     // OTOH If CSS target was set previously, we want to set it to 0, recalc
-    // and possibly repaint because :target pseudo class may have been
+    // and possibly paint invalidation because :target pseudo class may have been
     // set (see bug 11321).
     if (!url.hasFragmentIdentifier() && !m_frame->document()->cssTarget())
         return false;
@@ -1699,12 +1699,12 @@ void FrameView::updateLayersAndCompositingAfterScrollIfNeeded()
         renderView->compositor()->setNeedsCompositingUpdate(CompositingUpdateOnScroll);
 }
 
-void FrameView::updateFixedElementRepaintRectsAfterScroll()
+void FrameView::updateFixedElementPaintInvalidationRectsAfterScroll()
 {
     if (!hasViewportConstrainedObjects())
         return;
 
-    // Update the repaint rects for fixed elements after scrolling and invalidation to reflect
+    // Update the paint invalidation rects for fixed elements after scrolling and invalidation to reflect
     // the new scroll position.
     ViewportConstrainedObjectSet::const_iterator end = m_viewportConstrainedObjects->end();
     for (ViewportConstrainedObjectSet::const_iterator it = m_viewportConstrainedObjects->begin(); it != end; ++it) {
@@ -1751,22 +1751,22 @@ HostWindow* FrameView::hostWindow() const
     return &page->chrome();
 }
 
-void FrameView::repaintContentRectangle(const IntRect& r)
+void FrameView::contentRectangleForPaintInvalidation(const IntRect& r)
 {
-    ASSERT(repaintAllowed());
+    ASSERT(paintInvalidationIsAllowed());
     ASSERT(!m_frame->owner());
 
-    if (m_isTrackingRepaints) {
-        IntRect repaintRect = r;
-        repaintRect.move(-scrollOffset());
-        m_trackedRepaintRects.append(repaintRect);
-        // FIXME: http://crbug.com/368518. Eventually, repaintContentRectangle
+    if (m_isTrackingPaintInvalidations) {
+        IntRect paintInvalidationRect = r;
+        paintInvalidationRect.move(-scrollOffset());
+        m_trackedPaintInvalidationRects.append(paintInvalidationRect);
+        // FIXME: http://crbug.com/368518. Eventually, invalidateContentRectangleForPaint
         // is going away entirely once all layout tests are FCM. In the short
-        // term, no code should be tracking non-composited FrameView repaints.
+        // term, no code should be tracking non-composited FrameView paint invalidations.
         RELEASE_ASSERT_NOT_REACHED();
     }
 
-    ScrollView::repaintContentRectangle(r);
+    ScrollView::contentRectangleForPaintInvalidation(r);
 }
 
 void FrameView::contentsResized()
@@ -3115,37 +3115,37 @@ IntPoint FrameView::convertFromContainingView(const IntPoint& parentPoint) const
     return parentPoint;
 }
 
-void FrameView::setTracksRepaints(bool trackRepaints)
+void FrameView::setTracksPaintInvalidations(bool trackPaintInvalidations)
 {
-    if (trackRepaints == m_isTrackingRepaints)
+    if (trackPaintInvalidations == m_isTrackingPaintInvalidations)
         return;
 
     for (LocalFrame* frame = m_frame->tree().top(); frame; frame = frame->tree().traverseNext()) {
         if (RenderView* renderView = frame->contentRenderer())
-            renderView->compositor()->setTracksRepaints(trackRepaints);
+            renderView->compositor()->setTracksRepaints(trackPaintInvalidations);
     }
 
     TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("blink.invalidation"),
-        "FrameView::setTracksRepaints", "enabled", trackRepaints);
+        "FrameView::setTracksPaintInvalidations", "enabled", trackPaintInvalidations);
 
-    resetTrackedRepaints();
-    m_isTrackingRepaints = trackRepaints;
+    resetTrackedPaintInvalidations();
+    m_isTrackingPaintInvalidations = trackPaintInvalidations;
 }
 
-void FrameView::resetTrackedRepaints()
+void FrameView::resetTrackedPaintInvalidations()
 {
-    m_trackedRepaintRects.clear();
+    m_trackedPaintInvalidationRects.clear();
     if (RenderView* renderView = this->renderView())
         renderView->compositor()->resetTrackedRepaintRects();
 }
 
-String FrameView::trackedRepaintRectsAsText() const
+String FrameView::trackedPaintInvalidationRectsAsText() const
 {
     TextStream ts;
-    if (!m_trackedRepaintRects.isEmpty()) {
+    if (!m_trackedPaintInvalidationRects.isEmpty()) {
         ts << "(repaint rects\n";
-        for (size_t i = 0; i < m_trackedRepaintRects.size(); ++i)
-            ts << "  (rect " << m_trackedRepaintRects[i].x() << " " << m_trackedRepaintRects[i].y() << " " << m_trackedRepaintRects[i].width() << " " << m_trackedRepaintRects[i].height() << ")\n";
+        for (size_t i = 0; i < m_trackedPaintInvalidationRects.size(); ++i)
+            ts << "  (rect " << m_trackedPaintInvalidationRects[i].x() << " " << m_trackedPaintInvalidationRects[i].y() << " " << m_trackedPaintInvalidationRects[i].width() << " " << m_trackedPaintInvalidationRects[i].height() << ")\n";
         ts << ")\n";
     }
     return ts.release();

@@ -1813,7 +1813,7 @@ void RenderObject::repaintOverflowIfNeeded()
 
 bool RenderObject::checkForRepaint() const
 {
-    return !document().view()->needsFullRepaint() && everHadLayout();
+    return !document().view()->needsFullPaintInvalidation() && everHadLayout();
 }
 
 bool RenderObject::checkForRepaintDuringLayout() const

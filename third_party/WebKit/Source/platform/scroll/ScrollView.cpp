@@ -766,10 +766,10 @@ bool ScrollView::shouldPlaceVerticalScrollbarOnLeft() const
     return false;
 }
 
-void ScrollView::repaintContentRectangle(const IntRect& rect)
+void ScrollView::contentRectangleForPaintInvalidation(const IntRect& rect)
 {
     IntRect paintRect = rect;
-    if (clipsRepaints() && !paintsEntireContents())
+    if (clipsPaintInvalidations() && !paintsEntireContents())
         paintRect.intersect(visibleContentRect());
     if (paintRect.isEmpty())
         return;

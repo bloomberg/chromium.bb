@@ -452,7 +452,7 @@ String LocalFrame::trackedRepaintRectsAsText() const
 {
     if (!m_view)
         return String();
-    return m_view->trackedRepaintRectsAsText();
+    return m_view->trackedPaintInvalidationRectsAsText();
 }
 
 void LocalFrame::setPageZoomFactor(float factor)
