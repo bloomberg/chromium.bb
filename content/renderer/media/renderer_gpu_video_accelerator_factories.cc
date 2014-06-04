@@ -200,12 +200,22 @@ void RendererGpuVideoAcceleratorFactories::ReadPixels(
   gles2->FramebufferTexture2D(
       GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, tmp_texture, 0);
   gles2->PixelStorei(GL_PACK_ALIGNMENT, 4);
+
 #if SK_B32_SHIFT == 0 && SK_G32_SHIFT == 8 && SK_R32_SHIFT == 16 && \
     SK_A32_SHIFT == 24
   GLenum skia_format = GL_BGRA_EXT;
+  GLenum read_format = GL_BGRA_EXT;
+  GLint supported_format = 0;
+  GLint supported_type = 0;
+  gles2->GetIntegerv(GL_IMPLEMENTATION_COLOR_READ_FORMAT, &supported_format);
+  gles2->GetIntegerv(GL_IMPLEMENTATION_COLOR_READ_TYPE, &supported_type);
+  if (supported_format != GL_BGRA_EXT || supported_type != GL_UNSIGNED_BYTE) {
+    read_format = GL_RGBA;
+  }
 #elif SK_R32_SHIFT == 0 && SK_G32_SHIFT == 8 && SK_B32_SHIFT == 16 && \
     SK_A32_SHIFT == 24
   GLenum skia_format = GL_RGBA;
+  GLenum read_format = GL_RGBA;
 #else
 #error Unexpected Skia ARGB_8888 layout!
 #endif
@@ -213,11 +223,28 @@ void RendererGpuVideoAcceleratorFactories::ReadPixels(
                     visible_rect.y(),
                     visible_rect.width(),
                     visible_rect.height(),
-                    skia_format,
+                    read_format,
                     GL_UNSIGNED_BYTE,
                     pixels.pixelRef()->pixels());
   gles2->DeleteFramebuffers(1, &fb);
   gles2->DeleteTextures(1, &tmp_texture);
+
+  if (skia_format != read_format) {
+    DCHECK(read_format == GL_RGBA);
+    int pixel_count = visible_rect.width() * visible_rect.height();
+    uint32_t* pixels_ptr = static_cast<uint32_t*>(pixels.pixelRef()->pixels());
+    for (int i = 0; i < pixel_count; ++i) {
+        uint32_t r = pixels_ptr[i] & 0xFF;
+        uint32_t g = (pixels_ptr[i] >> 8) & 0xFF;
+        uint32_t b = (pixels_ptr[i] >> 16) & 0xFF;
+        uint32_t a = (pixels_ptr[i] >> 24) & 0xFF;
+        pixels_ptr[i] = (r << SK_R32_SHIFT) |
+                        (g << SK_G32_SHIFT) |
+                        (b << SK_B32_SHIFT) |
+                        (a << SK_A32_SHIFT);
+    }
+  }
+
   DCHECK_EQ(gles2->GetError(), static_cast<GLenum>(GL_NO_ERROR));
 }
 
