@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/files/file_path.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
@@ -40,6 +41,7 @@
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/browser/web_ui_message_handler.h"
+#include "content/public/common/content_constants.h"
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -369,7 +371,21 @@ void PluginsDOMHandler::PluginsLoaded(
 
       base::DictionaryValue* plugin_file = new base::DictionaryValue();
       plugin_file->SetString("name", group_plugin.name);
-      plugin_file->SetString("description", group_plugin.desc);
+
+      // If this plugin is Pepper Flash, and the plugin path is the same as the
+      // path for the Pepper Flash Debugger plugin, then mark this plugin
+      // description as the debugger plugin to help the user disambiguate the
+      // two plugins.
+      base::string16 desc = group_plugin.desc;
+      if (group_plugin.is_pepper_plugin() &&
+          group_plugin.name == base::ASCIIToUTF16(content::kFlashPluginName)) {
+        base::FilePath debug_path;
+        PathService::Get(chrome::DIR_PEPPER_FLASH_DEBUGGER_PLUGIN, &debug_path);
+        if (group_plugin.path.DirName() == debug_path)
+          desc += base::ASCIIToUTF16(" Debug");
+      }
+      plugin_file->SetString("description", desc);
+
       plugin_file->SetString("path", group_plugin.path.value());
       plugin_file->SetString("version", group_plugin.version);
       plugin_file->SetString("type", PluginTypeToString(group_plugin.type));

@@ -231,9 +231,6 @@ bool MakePepperFlashPluginInfo(const base::FilePath& flash_path,
                                                 ver_nums[0],
                                                 ver_nums[1],
                                                 ver_nums[2]);
-  if (is_debugger) {
-    plugin_info->description += "Debug";
-  }
 
   plugin_info->version = flash_version.GetString();
 
