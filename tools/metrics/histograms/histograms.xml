@@ -24517,6 +24517,28 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="ServiceWorker.Database.OpenResult"
+    enum="ServiceWorkerDatabaseStatus">
+  <owner>nhiroki@chromium.org</owner>
+  <summary>
+    Records result of opening a database for ServiceWorkerDatabase.
+  </summary>
+</histogram>
+
+<histogram name="ServiceWorker.Database.ReadResult"
+    enum="ServiceWorkerDatabaseStatus">
+  <owner>nhiroki@chromium.org</owner>
+  <summary>Records result of read operations in ServiceWorkerDatabase.</summary>
+</histogram>
+
+<histogram name="ServiceWorker.Database.WriteResult"
+    enum="ServiceWorkerDatabaseStatus">
+  <owner>nhiroki@chromium.org</owner>
+  <summary>
+    Records result of write operations in ServiceWorkerDatabase.
+  </summary>
+</histogram>
+
 <histogram name="Settings.DefaultSearchProvider" enum="OmniboxSearchEngine">
   <obsolete>
     Deprecated in Chrome 30.  Use Search.DefaultSearchProviderType instead.
@@ -42780,6 +42802,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="8" label="SERVICE_UTILITY_SEMANTIC_CAPS_REQUEST"/>
   <int value="9" label="SERVICE_UTILITY_SEMANTIC_CAPS_SUCCEEDED"/>
   <int value="10" label="SERVICE_UTILITY_SEMANTIC_CAPS_FAILED"/>
+</enum>
+
+<enum name="ServiceWorkerDatabaseStatus" type="int">
+  <int value="0" label="OK"/>
+  <int value="1" label="Not Found Error"/>
+  <int value="2" label="IO Error"/>
+  <int value="3" label="Corruption Error"/>
+  <int value="4" label="Operation Error"/>
 </enum>
 
 <enum name="SessionStartupPref" type="int">

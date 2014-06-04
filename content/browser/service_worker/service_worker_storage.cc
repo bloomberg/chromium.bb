@@ -64,6 +64,8 @@ ServiceWorkerStatusCode DatabaseStatusToStatusCode(
       return SERVICE_WORKER_OK;
     case ServiceWorkerDatabase::STATUS_ERROR_NOT_FOUND:
       return SERVICE_WORKER_ERROR_NOT_FOUND;
+    case ServiceWorkerDatabase::STATUS_ERROR_MAX:
+      NOTREACHED();
     default:
       return SERVICE_WORKER_ERROR_FAILED;
   }

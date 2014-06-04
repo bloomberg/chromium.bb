@@ -39,11 +39,14 @@ class CONTENT_EXPORT ServiceWorkerDatabase {
   explicit ServiceWorkerDatabase(const base::FilePath& path);
   ~ServiceWorkerDatabase();
 
+  // Used in UMA. A new value must be appended only.
   enum Status {
     STATUS_OK,
     STATUS_ERROR_NOT_FOUND,
+    STATUS_ERROR_IO_ERROR,
     STATUS_ERROR_CORRUPTED,
     STATUS_ERROR_FAILED,
+    STATUS_ERROR_MAX,
   };
 
   struct CONTENT_EXPORT RegistrationData {
@@ -273,9 +276,18 @@ class CONTENT_EXPORT ServiceWorkerDatabase {
 
   bool IsOpen();
 
-  void HandleError(
+  void Disable(
       const tracked_objects::Location& from_here,
-      const leveldb::Status& status);
+      Status status);
+  void HandleOpenResult(
+      const tracked_objects::Location& from_here,
+      Status status);
+  void HandleReadResult(
+      const tracked_objects::Location& from_here,
+      Status status);
+  void HandleWriteResult(
+      const tracked_objects::Location& from_here,
+      Status status);
 
   base::FilePath path_;
   scoped_ptr<leveldb::Env> env_;
