@@ -57,6 +57,8 @@ LibcurlWrapper::LibcurlWrapper()
   return;
 }
 
+LibcurlWrapper::~LibcurlWrapper() {}
+
 bool LibcurlWrapper::SetProxy(const string& proxy_host,
                               const string& proxy_userpwd) {
   if (!init_ok_) {
