@@ -88,6 +88,9 @@ class ExtensionEnableFlow : public ExtensionInstallPrompt::Delegate,
   virtual void OnExtensionLoaded(
       content::BrowserContext* browser_context,
       const extensions::Extension* extension) OVERRIDE;
+  virtual void OnExtensionUninstalled(
+      content::BrowserContext* browser_context,
+      const extensions::Extension* extension) OVERRIDE;
 
   // ExtensionInstallPrompt::Delegate overrides:
   virtual void InstallUIProceed() OVERRIDE;

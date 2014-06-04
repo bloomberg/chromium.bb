@@ -116,36 +116,19 @@ void ExtensionEnableFlow::StartObserving() {
       extensions::ExtensionRegistry::Get(profile_));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOAD_ERROR,
                  content::Source<Profile>(profile_));
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_EXTENSION_UNINSTALLED_DEPRECATED,
-                 content::Source<Profile>(profile_));
 }
 
 void ExtensionEnableFlow::StopObserving() {
   registrar_.RemoveAll();
+  extension_registry_observer_.RemoveAll();
 }
 
 void ExtensionEnableFlow::Observe(int type,
                                   const content::NotificationSource& source,
                                   const content::NotificationDetails& details) {
-  switch (type) {
-    case chrome::NOTIFICATION_EXTENSION_LOAD_ERROR: {
-      StopObserving();
-      delegate_->ExtensionEnableFlowAborted(false);
-      break;
-    }
-    case chrome::NOTIFICATION_EXTENSION_UNINSTALLED_DEPRECATED: {
-      const Extension* extension =
-          content::Details<const Extension>(details).ptr();
-      if (extension->id() == extension_id_) {
-        StopObserving();
-        delegate_->ExtensionEnableFlowAborted(false);
-      }
-      break;
-    }
-    default:
-      NOTREACHED();
-  }
+  DCHECK_EQ(chrome::NOTIFICATION_EXTENSION_LOAD_ERROR, type);
+  StopObserving();
+  delegate_->ExtensionEnableFlowAborted(false);
 }
 
 void ExtensionEnableFlow::OnExtensionLoaded(
@@ -154,6 +137,15 @@ void ExtensionEnableFlow::OnExtensionLoaded(
   if (extension->id() == extension_id_) {
     StopObserving();
     CheckPermissionAndMaybePromptUser();
+  }
+}
+
+void ExtensionEnableFlow::OnExtensionUninstalled(
+    content::BrowserContext* browser_context,
+    const Extension* extension) {
+  if (extension->id() == extension_id_) {
+    StopObserving();
+    delegate_->ExtensionEnableFlowAborted(false);
   }
 }
 
