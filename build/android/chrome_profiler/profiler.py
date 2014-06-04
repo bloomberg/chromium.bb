@@ -2,43 +2,12 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import gzip
 import os
-import shutil
-import sys
-import zipfile
 
+from chrome_profiler import trace_packager
 from chrome_profiler import ui
-from chrome_profiler import util
 
 from pylib import constants
-
-sys.path.append(os.path.join(constants.DIR_SOURCE_ROOT,
-                             'third_party',
-                             'trace-viewer'))
-# pylint: disable=F0401
-from trace_viewer.build import trace2html
-
-
-def _CompressFile(host_file, output):
-  with gzip.open(output, 'wb') as out:
-    with open(host_file, 'rb') as input_file:
-      out.write(input_file.read())
-  os.unlink(host_file)
-
-
-def _ArchiveFiles(host_files, output):
-  with zipfile.ZipFile(output, 'w', zipfile.ZIP_DEFLATED) as z:
-    for host_file in host_files:
-      z.write(host_file)
-      os.unlink(host_file)
-
-
-def _PackageTracesAsHtml(trace_files, html_file):
-  with open(html_file, 'w') as f:
-    trace2html.WriteHTMLForTracesToFile(trace_files, f)
-  for trace_file in trace_files:
-    os.unlink(trace_file)
 
 
 def _StartTracing(controllers, interval):
@@ -53,27 +22,11 @@ def _StopTracing(controllers):
 
 def _PullTraces(controllers, output, compress, write_json):
   ui.PrintMessage('Downloading...', eol='')
-  trace_files = []
-  for controller in controllers:
-    trace_files.append(controller.PullTrace())
-
-  if not write_json:
-    html_file = os.path.splitext(trace_files[0])[0] + '.html'
-    _PackageTracesAsHtml(trace_files, html_file)
-    trace_files = [html_file]
-
-  if compress and len(trace_files) == 1:
-    result = output or trace_files[0] + '.gz'
-    _CompressFile(trace_files[0], result)
-  elif len(trace_files) > 1:
-    result = output or 'chrome-combined-trace-%s.zip' % util.GetTraceTimestamp()
-    _ArchiveFiles(trace_files, result)
-  elif output:
-    result = output
-    shutil.move(trace_files[0], result)
-  else:
-    result = trace_files[0]
-
+  trace_files = [controller.PullTrace() for controller in controllers]
+  result = trace_packager.PackageTraces(trace_files,
+                                        output=output,
+                                        compress=compress,
+                                        write_json=write_json)
   ui.PrintMessage('done')
   ui.PrintMessage('Trace written to file://%s' % os.path.abspath(result))
   return result

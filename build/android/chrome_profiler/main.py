@@ -11,6 +11,7 @@ import sys
 import webbrowser
 
 from chrome_profiler import chrome_controller
+from chrome_profiler import perf_controller
 from chrome_profiler import profiler
 from chrome_profiler import systrace_controller
 from chrome_profiler import ui
@@ -43,6 +44,21 @@ def _ComputeSystraceCategories(options):
   if not options.systrace_categories:
     return []
   return options.systrace_categories.split(',')
+
+
+def _ComputePerfCategories(options):
+  if not options.perf_categories:
+    return []
+  return options.perf_categories.split(',')
+
+
+def _OptionalValueCallback(default_value):
+  def callback(option, _, __, parser):
+    value = default_value
+    if parser.rargs and not parser.rargs[0].startswith('-'):
+      value = parser.rargs.pop(0)
+    setattr(parser.values, option.dest, value)
+  return callback
 
 
 def _CreateOptionParser():
@@ -103,6 +119,16 @@ def _CreateOptionParser():
                         'default.', metavar='SYS_CATEGORIES',
                         dest='systrace_categories', default='')
   parser.add_option_group(systrace_opts)
+
+  if perf_controller.PerfProfilerController.IsSupported():
+    perf_opts = optparse.OptionGroup(parser, 'Perf profiling options')
+    perf_opts.add_option('-p', '--perf', help='Capture a perf profile with '
+                         'the chosen comma-delimited event categories. '
+                         'Samples CPU cycles by default. Use "list" to see '
+                         'the available sample types.', action='callback',
+                         default='', callback=_OptionalValueCallback('cycles'),
+                         metavar='PERF_CATEGORIES', dest='perf_categories')
+    parser.add_option_group(perf_opts)
 
   output_options = optparse.OptionGroup(parser, 'Output options')
   output_options.add_option('-o', '--output', help='Save trace output to file.')
@@ -169,12 +195,18 @@ When in doubt, just try out --trace-frame-viewer.
         systrace_controller.SystraceController.GetCategories(device)))
     return 0
 
+  if options.perf_categories in ['list', 'help']:
+    ui.PrintMessage('\n'.join(
+        perf_controller.PerfProfilerController.GetCategories(device)))
+    return 0
+
   if not options.time and not options.continuous:
     ui.PrintMessage('Time interval or continuous tracing should be specified.')
     return 1
 
   chrome_categories = _ComputeChromeCategories(options)
   systrace_categories = _ComputeSystraceCategories(options)
+  perf_categories = _ComputePerfCategories(options)
 
   if chrome_categories and 'webview' in systrace_categories:
     logging.warning('Using the "webview" category in systrace together with '
@@ -194,6 +226,11 @@ When in doubt, just try out --trace-frame-viewer.
                                                systrace_categories,
                                                options.ring_buffer))
 
+  if perf_categories:
+    enabled_controllers.append(
+        perf_controller.PerfProfilerController(device,
+                                               perf_categories))
+
   if not enabled_controllers:
     ui.PrintMessage('No trace categories enabled.')
     return 1
@@ -211,7 +248,3 @@ When in doubt, just try out --trace-frame-viewer.
       os.system('/usr/bin/open %s' % os.path.abspath(result))
     else:
       webbrowser.open(result)
-
-
-if __name__ == '__main__':
-  sys.exit(main())
