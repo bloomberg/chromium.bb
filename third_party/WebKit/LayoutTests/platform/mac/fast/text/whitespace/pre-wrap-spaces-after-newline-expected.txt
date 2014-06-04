@@ -31,9 +31,9 @@ layer at (0,0) size 785x781
         RenderText {#text} at (225,0) size 4x18
           text run at (225,0) width 4: ":"
       RenderBlock {PRE} at (0,104) size 41.05x30 [bgcolor=#C0C0C0]
-        RenderText {#text} at (0,0) size 41x30
+        RenderText {#text} at (0,0) size 42x30
           text run at (0,0) width 24: "foo"
-          text run at (24,0) width 17: "      "
+          text run at (24,0) width 18: "      "
           text run at (0,15) width 24: "bar"
       RenderBlock {P} at (0,150) size 769x18
         RenderText {#text} at (0,0) size 35x18

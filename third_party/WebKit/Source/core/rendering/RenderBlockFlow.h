@@ -74,18 +74,6 @@ public:
     {
         return logicalLeftOffsetForLine(position, logicalLeftOffsetForContent(), shouldIndentText, logicalHeight);
     }
-    LayoutUnit pixelSnappedLogicalLeftOffsetForLine(LayoutUnit position, bool shouldIndentText, LayoutUnit logicalHeight = 0) const
-    {
-        return roundToInt(logicalLeftOffsetForLine(position, shouldIndentText, logicalHeight));
-    }
-    LayoutUnit pixelSnappedLogicalRightOffsetForLine(LayoutUnit position, bool shouldIndentText, LayoutUnit logicalHeight = 0) const
-    {
-        // FIXME: Multicolumn layouts break carrying over subpixel values to the logical right offset because the lines may be shifted
-        // by a subpixel value for all but the first column. This can lead to the actual pixel snapped width of the column being off
-        // by one pixel when rendered versus layed out, which can result in the line being clipped. For now, we have to floor.
-        // https://bugs.webkit.org/show_bug.cgi?id=105461
-        return floorToInt(logicalRightOffsetForLine(position, shouldIndentText, logicalHeight));
-    }
     LayoutUnit startOffsetForLine(LayoutUnit position, bool shouldIndentText, LayoutUnit logicalHeight = 0) const
     {
         return style()->isLeftToRightDirection() ? logicalLeftOffsetForLine(position, shouldIndentText, logicalHeight)

@@ -138,8 +138,8 @@ layer at (0,0) size 785x2714
             text run at (0,36) width 192: "background is yellow and the"
             text run at (0,54) width 87: "width is 25%."
       RenderBlock {P} at (0,1079) size 769x36
-        RenderText {#text} at (192,0) size 384x36
-          text run at (192,0) width 384: "This paragraph should appear between a blue box (on the"
+        RenderText {#text} at (192,0) size 385x36
+          text run at (192,0) width 385: "This paragraph should appear between a blue box (on the"
           text run at (192,18) width 30: "left) "
           text run at (221,18) width 200: "and a yellow box (on the right)."
       RenderBlock (anonymous) at (0,1115) size 769x36
@@ -155,11 +155,11 @@ layer at (0,0) size 785x2714
           RenderText {#text} at (0,0) size 576x126
             text run at (0,0) width 422: "This paragraph is inside a DIV which is floated left. The"
             text run at (0,18) width 422: "background of the DIV element is blue and its width is 75%. This"
-            text run at (0,36) width 364: "text should all be inside the blue rectangle. The blue DIV "
-            text run at (364,36) width 212: "element has another DIV element"
+            text run at (0,36) width 365: "text should all be inside the blue rectangle. The blue DIV "
+            text run at (365,36) width 211: "element has another DIV element"
             text run at (0,54) width 166: "as a child. It has a yellow "
-            text run at (166,54) width 361: "background color and is floated to the right. Since it is a "
-            text run at (527,54) width 49: "child of"
+            text run at (166,54) width 362: "background color and is floated to the right. Since it is a "
+            text run at (528,54) width 48: "child of"
             text run at (0,72) width 374: "the blue DIV, the yellow DIV should appear inside the "
             text run at (374,72) width 202: "blue rectangle. Due to it being"
             text run at (0,90) width 193: "floated to the right and having "

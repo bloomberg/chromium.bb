@@ -586,9 +586,7 @@ static void updateLogicalInlinePositions(RenderBlockFlow* block, float& lineLogi
 {
     LayoutUnit lineLogicalHeight = block->minLineHeightForReplacedRenderer(firstLine, boxLogicalHeight);
     lineLogicalLeft = block->logicalLeftOffsetForLine(block->logicalHeight(), shouldIndentText == IndentText, lineLogicalHeight).toFloat();
-    // FIXME: This shouldn't be pixel snapped once multicolumn layout has been updated to correctly carry over subpixel values.
-    // https://bugs.webkit.org/show_bug.cgi?id=105461
-    lineLogicalRight = block->pixelSnappedLogicalRightOffsetForLine(block->logicalHeight(), shouldIndentText == IndentText, lineLogicalHeight).toFloat();
+    lineLogicalRight = block->logicalRightOffsetForLine(block->logicalHeight(), shouldIndentText == IndentText, lineLogicalHeight).toFloat();
     availableLogicalWidth = lineLogicalRight - lineLogicalLeft;
 }
 
@@ -2065,7 +2063,7 @@ void RenderBlockFlow::deleteEllipsisLineBoxes()
             curr->clearTruncation();
 
             // Shift the line back where it belongs if we cannot accomodate an ellipsis.
-            float logicalLeft = pixelSnappedLogicalLeftOffsetForLine(curr->lineTop(), firstLine).toFloat();
+            float logicalLeft = logicalLeftOffsetForLine(curr->lineTop(), firstLine).toFloat();
             float availableLogicalWidth = logicalRightOffsetForLine(curr->lineTop(), false) - logicalLeft;
             float totalLogicalWidth = curr->logicalWidth();
             updateLogicalWidthForAlignment(textAlign, curr, 0, logicalLeft, totalLogicalWidth, availableLogicalWidth, 0);
@@ -2088,8 +2086,8 @@ void RenderBlockFlow::checkLinesForTextOverflow()
     const Font& firstLineFont = firstLineStyle()->font();
     // FIXME: We should probably not hard-code the direction here. https://crbug.com/333004
     TextDirection ellipsisDirection = LTR;
-    int firstLineEllipsisWidth = firstLineFont.width(constructTextRun(this, firstLineFont, &horizontalEllipsis, 1, firstLineStyle(), ellipsisDirection));
-    int ellipsisWidth = (font == firstLineFont) ? firstLineEllipsisWidth : font.width(constructTextRun(this, font, &horizontalEllipsis, 1, style(), ellipsisDirection));
+    float firstLineEllipsisWidth = firstLineFont.width(constructTextRun(this, firstLineFont, &horizontalEllipsis, 1, firstLineStyle(), ellipsisDirection));
+    float ellipsisWidth = (font == firstLineFont) ? firstLineEllipsisWidth : font.width(constructTextRun(this, font, &horizontalEllipsis, 1, style(), ellipsisDirection));
 
     // For LTR text truncation, we want to get the right edge of our padding box, and then we want to see
     // if the right edge of a line box exceeds that.  For RTL, we use the left edge of the padding box and
@@ -2099,12 +2097,10 @@ void RenderBlockFlow::checkLinesForTextOverflow()
     ETextAlign textAlign = style()->textAlign();
     bool firstLine = true;
     for (RootInlineBox* curr = firstRootBox(); curr; curr = curr->nextRootBox()) {
-        // FIXME: Use pixelSnappedLogicalRightOffsetForLine instead of snapping it ourselves once the column workaround in said method has been fixed.
-        // https://bugs.webkit.org/show_bug.cgi?id=105461
         float currLogicalLeft = curr->logicalLeft();
-        int blockRightEdge = snapSizeToPixel(logicalRightOffsetForLine(curr->lineTop(), firstLine), currLogicalLeft);
-        int blockLeftEdge = pixelSnappedLogicalLeftOffsetForLine(curr->lineTop(), firstLine);
-        int lineBoxEdge = ltr ? snapSizeToPixel(currLogicalLeft + curr->logicalWidth(), currLogicalLeft) : snapSizeToPixel(currLogicalLeft, 0);
+        LayoutUnit blockRightEdge = logicalRightOffsetForLine(curr->lineTop(), firstLine);
+        LayoutUnit blockLeftEdge = logicalLeftOffsetForLine(curr->lineTop(), firstLine);
+        LayoutUnit lineBoxEdge = ltr ? currLogicalLeft + curr->logicalWidth() : currLogicalLeft;
         if ((ltr && lineBoxEdge > blockRightEdge) || (!ltr && lineBoxEdge < blockLeftEdge)) {
             // This line spills out of our box in the appropriate direction.  Now we need to see if the line
             // can be truncated.  In order for truncation to be possible, the line must have sufficient space to
@@ -2114,11 +2110,10 @@ void RenderBlockFlow::checkLinesForTextOverflow()
             LayoutUnit width = firstLine ? firstLineEllipsisWidth : ellipsisWidth;
             LayoutUnit blockEdge = ltr ? blockRightEdge : blockLeftEdge;
             if (curr->lineCanAccommodateEllipsis(ltr, blockEdge, lineBoxEdge, width)) {
-                float totalLogicalWidth = curr->placeEllipsis(ellipsisStr, ltr, blockLeftEdge, blockRightEdge, width.toFloat());
+                float totalLogicalWidth = curr->placeEllipsis(ellipsisStr, ltr, blockLeftEdge.toFloat(), blockRightEdge.toFloat(), width.toFloat());
 
                 float logicalLeft = 0; // We are only intersted in the delta from the base position.
-                float snappedLogicalLeft = pixelSnappedLogicalLeftOffsetForLine(curr->lineTop(), firstLine).toFloat();
-                float availableLogicalWidth = pixelSnappedLogicalRightOffsetForLine(curr->lineTop(), firstLine) - snappedLogicalLeft;
+                float availableLogicalWidth = (blockRightEdge - blockLeftEdge).toFloat();
                 updateLogicalWidthForAlignment(textAlign, curr, 0, logicalLeft, totalLogicalWidth, availableLogicalWidth, 0);
                 if (ltr)
                     curr->adjustLogicalPosition(logicalLeft, 0);
