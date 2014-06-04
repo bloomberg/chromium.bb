@@ -104,7 +104,6 @@ public class ChromeShellToolbar extends LinearLayout {
                     return false;
                 }
 
-                mSuggestionPopup.dismissPopup();
                 mTab.loadUrlWithSanitization(mUrlTextView.getText().toString());
                 mUrlTextView.clearFocus();
                 setKeyboardVisibilityForUrl(false);
@@ -118,6 +117,7 @@ public class ChromeShellToolbar extends LinearLayout {
                 setKeyboardVisibilityForUrl(hasFocus);
                 if (!hasFocus) {
                     mUrlTextView.setText(mTab.getContentViewCore().getUrl());
+                    mSuggestionPopup.dismissPopup();
                 }
             }
         });
