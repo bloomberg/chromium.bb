@@ -15,6 +15,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/onc/onc_constants.h"
+#include "components/wifi/network_properties.h"
 
 #if !defined(MAC_OS_X_VERSION_10_7) || \
     MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_7
@@ -81,7 +82,8 @@ class WiFiServiceMac : public WiFiService {
                              std::string* error) OVERRIDE;
 
   virtual void GetVisibleNetworks(const std::string& network_type,
-                                  base::ListValue* network_list) OVERRIDE;
+                                  base::ListValue* network_list,
+                                  bool include_details) OVERRIDE;
 
   virtual void RequestNetworkScan() OVERRIDE;
 
@@ -126,7 +128,7 @@ class WiFiServiceMac : public WiFiService {
   // Converts |CWSecurityMode| into onc::wifi::k{WPA|WEP}* security constant.
   std::string SecurityFromCWSecurityMode(CWSecurityMode security) const;
 
-  // Converts |CWChannelBand| into WiFiService::Frequency constant.
+  // Converts |CWChannelBand| into Frequency constant.
   Frequency FrequencyFromCWChannelBand(CWChannelBand band) const;
 
   // Gets current |onc::connection_state| for given |network_guid|.
@@ -252,7 +254,7 @@ void WiFiServiceMac::CreateNetwork(
     scoped_ptr<base::DictionaryValue> properties,
     std::string* network_guid,
     std::string* error) {
-  WiFiService::NetworkProperties network_properties;
+  NetworkProperties network_properties;
   if (!network_properties.UpdateFromValue(*properties)) {
     *error = kErrorInvalidData;
     return;
@@ -269,7 +271,8 @@ void WiFiServiceMac::CreateNetwork(
 }
 
 void WiFiServiceMac::GetVisibleNetworks(const std::string& network_type,
-                                        base::ListValue* network_list) {
+                                        base::ListValue* network_list,
+                                        bool include_details) {
   if (!network_type.empty() &&
       network_type != onc::network_type::kAllTypes &&
       network_type != onc::network_type::kWiFi) {
@@ -279,10 +282,10 @@ void WiFiServiceMac::GetVisibleNetworks(const std::string& network_type,
   if (networks_.empty())
     UpdateNetworks();
 
-  for (WiFiService::NetworkList::const_iterator it = networks_.begin();
+  for (NetworkList::const_iterator it = networks_.begin();
        it != networks_.end();
        ++it) {
-    scoped_ptr<base::DictionaryValue> network(it->ToValue(true));
+    scoped_ptr<base::DictionaryValue> network(it->ToValue(!include_details));
     network_list->Append(network.release());
   }
 }
@@ -557,13 +560,11 @@ std::string WiFiServiceMac::SecurityFromCWSecurityMode(
   return onc::wifi::kWPA_EAP;
 }
 
-
-WiFiService::Frequency WiFiServiceMac::FrequencyFromCWChannelBand(
-    CWChannelBand band) const {
+Frequency WiFiServiceMac::FrequencyFromCWChannelBand(CWChannelBand band) const {
   return band == kCWChannelBand2GHz ? kFrequency2400 : kFrequency5000;
 }
 
-WiFiService::NetworkList::iterator WiFiServiceMac::FindNetwork(
+NetworkList::iterator WiFiServiceMac::FindNetwork(
     const std::string& network_guid) {
   for (NetworkList::iterator it = networks_.begin();
        it != networks_.end();

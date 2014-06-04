@@ -19,6 +19,8 @@
         'WIFI_IMPLEMENTATION',
       ],
       'sources': [
+        'wifi/network_properties.cc',
+        'wifi/network_properties.h',
         'wifi/wifi_export.h',
         'wifi/wifi_service.cc',
         'wifi/wifi_service.h',

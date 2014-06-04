@@ -3520,6 +3520,20 @@
             'browser/autofill/validation_rules_storage_factory.h',
           ],
         }],
+        [ 'enable_wifi_bootstrapping==1', {
+          'sources': [
+           'browser/local_discovery/wifi/wifi_manager.cc',
+           'browser/local_discovery/wifi/wifi_manager.h',
+          ],
+          'conditions' : [
+            [ 'OS=="win" or OS=="mac"', {
+              'sources': [
+                 'browser/local_discovery/wifi/wifi_manager_nonchromeos.cc',
+                 'browser/local_discovery/wifi/wifi_manager_nonchromeos.h',
+              ]
+            }]
+          ]
+        }],
       ],
     },
     {

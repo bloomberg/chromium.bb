@@ -83,7 +83,8 @@ class WIFI_EXPORT WiFiService {
   // Get list of visible networks of |network_type| (one of onc::network_type).
   // Populates |network_list| on success.
   virtual void GetVisibleNetworks(const std::string& network_type,
-                                  base::ListValue* network_list) = 0;
+                                  base::ListValue* network_list,
+                                  bool include_details) = 0;
 
   // Request network scan. Send |NetworkListChanged| event on completion.
   virtual void RequestNetworkScan() = 0;
@@ -119,50 +120,6 @@ class WIFI_EXPORT WiFiService {
 
  protected:
   WiFiService() {}
-
-  typedef int32 Frequency;
-  enum FrequencyEnum {
-    kFrequencyAny = 0,
-    kFrequencyUnknown = 0,
-    kFrequency2400 = 2400,
-    kFrequency5000 = 5000
-  };
-
-  typedef std::set<Frequency> FrequencySet;
-  // Network Properties, used as result of |GetProperties| and
-  // |GetVisibleNetworks|.
-  struct WIFI_EXPORT NetworkProperties {
-    NetworkProperties();
-    ~NetworkProperties();
-
-    std::string connection_state;
-    std::string guid;
-    std::string name;
-    std::string ssid;
-    std::string bssid;
-    std::string type;
-    std::string security;
-    // |password| field is used to pass wifi password for network creation via
-    // |CreateNetwork| or connection via |StartConnect|. It does not persist
-    // once operation is completed.
-    std::string password;
-    // WiFi Signal Strength. 0..100
-    uint32 signal_strength;
-    bool auto_connect;
-    Frequency frequency;
-    FrequencySet frequency_set;
-
-    std::string json_extra;  // Extra JSON properties for unit tests
-
-    scoped_ptr<base::DictionaryValue> ToValue(bool network_list) const;
-    // Updates only properties set in |value|.
-    bool UpdateFromValue(const base::DictionaryValue& value);
-    static std::string MacAddressAsString(const uint8 mac_as_int[6]);
-    static bool OrderByType(const NetworkProperties& l,
-                            const NetworkProperties& r);
-  };
-
-  typedef std::list<NetworkProperties> NetworkList;
 
   // Error constants.
   static const char kErrorAssociateToNetwork[];

@@ -14,7 +14,7 @@ namespace wifi {
 FakeWiFiService::FakeWiFiService() {
   // Populate data expected by unit test.
   {
-    WiFiService::NetworkProperties network_properties;
+    NetworkProperties network_properties;
     network_properties.connection_state = onc::connection_state::kConnected;
     network_properties.guid = "stub_wifi1";
     network_properties.name = "wifi1";
@@ -40,7 +40,7 @@ FakeWiFiService::FakeWiFiService() {
     networks_.push_back(network_properties);
   }
   {
-    WiFiService::NetworkProperties network_properties;
+    NetworkProperties network_properties;
     network_properties.connection_state = onc::connection_state::kNotConnected;
     network_properties.guid = "stub_wifi2";
     network_properties.name = "wifi2_PSK";
@@ -68,8 +68,7 @@ void FakeWiFiService::UnInitialize() {
 void FakeWiFiService::GetProperties(const std::string& network_guid,
                                     base::DictionaryValue* properties,
                                     std::string* error) {
-  WiFiService::NetworkList::iterator network_properties =
-      FindNetwork(network_guid);
+  NetworkList::iterator network_properties = FindNetwork(network_guid);
   if (network_properties == networks_.end()) {
     *error = "Error.InvalidNetworkGuid";
     return;
@@ -88,8 +87,7 @@ void FakeWiFiService::GetManagedProperties(
 void FakeWiFiService::GetState(const std::string& network_guid,
                                base::DictionaryValue* properties,
                                std::string* error) {
-  WiFiService::NetworkList::iterator network_properties =
-      FindNetwork(network_guid);
+  NetworkList::iterator network_properties = FindNetwork(network_guid);
   if (network_properties == networks_.end()) {
     *error = "Error.InvalidNetworkGuid";
     return;
@@ -101,8 +99,7 @@ void FakeWiFiService::SetProperties(
     const std::string& network_guid,
     scoped_ptr<base::DictionaryValue> properties,
     std::string* error) {
-  WiFiService::NetworkList::iterator network_properties =
-      FindNetwork(network_guid);
+  NetworkList::iterator network_properties = FindNetwork(network_guid);
   if (network_properties == networks_.end() ||
       !network_properties->UpdateFromValue(*properties)) {
     *error = "Error.DBusFailed";
@@ -114,7 +111,7 @@ void FakeWiFiService::CreateNetwork(
     scoped_ptr<base::DictionaryValue> properties,
     std::string* network_guid,
     std::string* error) {
-  WiFiService::NetworkProperties network_properties;
+  NetworkProperties network_properties;
   if (network_properties.UpdateFromValue(*properties)) {
     network_properties.guid = network_properties.ssid;
     networks_.push_back(network_properties);
@@ -125,13 +122,14 @@ void FakeWiFiService::CreateNetwork(
 }
 
 void FakeWiFiService::GetVisibleNetworks(const std::string& network_type,
-                                         base::ListValue* network_list) {
-  for (WiFiService::NetworkList::const_iterator it = networks_.begin();
+                                         base::ListValue* network_list,
+                                         bool include_details) {
+  for (NetworkList::const_iterator it = networks_.begin();
        it != networks_.end();
        ++it) {
     if (network_type.empty() || network_type == onc::network_type::kAllTypes ||
         it->type == network_type) {
-      scoped_ptr<base::DictionaryValue> network(it->ToValue(true));
+      scoped_ptr<base::DictionaryValue> network(it->ToValue(!include_details));
       network_list->Append(network.release());
     }
   }
@@ -157,8 +155,7 @@ void FakeWiFiService::StartConnect(const std::string& network_guid,
 
 void FakeWiFiService::StartDisconnect(const std::string& network_guid,
                                       std::string* error) {
-  WiFiService::NetworkList::iterator network_properties =
-      FindNetwork(network_guid);
+  NetworkList::iterator network_properties = FindNetwork(network_guid);
   if (network_properties == networks_.end()) {
     *error = "Error.InvalidNetworkGuid";
     return;
@@ -187,10 +184,9 @@ void FakeWiFiService::SetEventObservers(
 void FakeWiFiService::RequestConnectedNetworkUpdate() {
 }
 
-WiFiService::NetworkList::iterator FakeWiFiService::FindNetwork(
+NetworkList::iterator FakeWiFiService::FindNetwork(
     const std::string& network_guid) {
-  for (WiFiService::NetworkList::iterator it = networks_.begin();
-       it != networks_.end();
+  for (NetworkList::iterator it = networks_.begin(); it != networks_.end();
        ++it) {
     if (it->guid == network_guid)
       return it;
@@ -199,8 +195,7 @@ WiFiService::NetworkList::iterator FakeWiFiService::FindNetwork(
 }
 
 void FakeWiFiService::DisconnectAllNetworksOfType(const std::string& type) {
-  for (WiFiService::NetworkList::iterator it = networks_.begin();
-       it != networks_.end();
+  for (NetworkList::iterator it = networks_.begin(); it != networks_.end();
        ++it) {
     if (it->type == type)
       it->connection_state = onc::connection_state::kNotConnected;
@@ -210,14 +205,12 @@ void FakeWiFiService::DisconnectAllNetworksOfType(const std::string& type) {
 void FakeWiFiService::SortNetworks() {
   // Sort networks, so connected/connecting is up front, then by type:
   // Ethernet, WiFi, Cellular, VPN
-  networks_.sort(WiFiService::NetworkProperties::OrderByType);
+  networks_.sort(NetworkProperties::OrderByType);
 }
 
-void FakeWiFiService::NotifyNetworkListChanged(
-    const WiFiService::NetworkList& networks) {
+void FakeWiFiService::NotifyNetworkListChanged(const NetworkList& networks) {
   WiFiService::NetworkGuidList current_networks;
-  for (WiFiService::NetworkList::const_iterator it = networks.begin();
-       it != networks.end();
+  for (NetworkList::const_iterator it = networks.begin(); it != networks.end();
        ++it) {
     current_networks.push_back(it->guid);
   }

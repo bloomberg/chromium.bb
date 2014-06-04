@@ -7,6 +7,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "components/wifi/network_properties.h"
 #include "components/wifi/wifi_service.h"
 
 namespace wifi {
@@ -38,7 +39,8 @@ class FakeWiFiService : public WiFiService {
                              std::string* network_guid,
                              std::string* error) OVERRIDE;
   virtual void GetVisibleNetworks(const std::string& network_type,
-                                  base::ListValue* network_list) OVERRIDE;
+                                  base::ListValue* network_list,
+                                  bool include_details) OVERRIDE;
   virtual void RequestNetworkScan() OVERRIDE;
   virtual void StartConnect(const std::string& network_guid,
                             std::string* error) OVERRIDE;
