@@ -794,14 +794,6 @@ PP_NaClReadyState GetNaClReadyState(PP_Instance instance) {
   return PP_NACL_READY_STATE_UNSENT;
 }
 
-PP_Bool GetIsInstalled(PP_Instance instance) {
-  NexeLoadManager* load_manager = GetNexeLoadManager(instance);
-  DCHECK(load_manager);
-  if (load_manager)
-    return PP_FromBool(load_manager->is_installed());
-  return PP_FALSE;
-}
-
 int32_t GetExitStatus(PP_Instance instance) {
   NexeLoadManager* load_manager = GetNexeLoadManager(instance);
   DCHECK(load_manager);
@@ -847,7 +839,6 @@ bool CreateJsonManifest(PP_Instance instance,
                         const std::string& manifest_data);
 
 void RequestNaClManifest(PP_Instance instance,
-                         const char* url,
                          PP_CompletionCallback callback) {
   NexeLoadManager* load_manager = GetNexeLoadManager(instance);
   DCHECK(load_manager);
@@ -859,7 +850,8 @@ void RequestNaClManifest(PP_Instance instance,
     return;
   }
 
-  if (!load_manager->RequestNaClManifest(url)) {
+  std::string url = load_manager->GetManifestURLArgument();
+  if (url.empty() || !load_manager->RequestNaClManifest(url)) {
     ppapi::PpapiGlobals::Get()->GetMainThreadMessageLoop()->PostTask(
         FROM_HERE,
         base::Bind(callback.func, callback.user_data,
@@ -909,15 +901,6 @@ void ProcessNaClManifest(PP_Instance instance, const char* program_url) {
   nacl::NexeLoadManager* load_manager = GetNexeLoadManager(instance);
   if (load_manager)
     load_manager->ProcessNaClManifest(program_url);
-}
-
-PP_Var GetManifestURLArgument(PP_Instance instance) {
-  nacl::NexeLoadManager* load_manager = GetNexeLoadManager(instance);
-  if (load_manager) {
-    return ppapi::StringVar::StringToPPVar(
-        load_manager->GetManifestURLArgument());
-  }
-  return PP_MakeUndefined();
 }
 
 PP_Bool DevInterfacesEnabled(PP_Instance instance) {
@@ -1518,6 +1501,22 @@ void DownloadFile(PP_Instance instance,
   file_downloader->Load(url_request);
 }
 
+void ReportSelLdrStatus(PP_Instance instance,
+                        int32_t load_status,
+                        int32_t max_status) {
+  HistogramEnumerate("NaCl.LoadStatus.SelLdr", load_status, max_status);
+  NexeLoadManager* load_manager = GetNexeLoadManager(instance);
+  DCHECK(load_manager);
+  if (!load_manager)
+    return;
+
+  // Gather data to see if being installed changes load outcomes.
+  const char* name = load_manager->is_installed() ?
+      "NaCl.LoadStatus.SelLdr.InstalledApp" :
+      "NaCl.LoadStatus.SelLdr.NotInstalledApp";
+  HistogramEnumerate(name, load_status, max_status);
+}
+
 const PPB_NaCl_Private nacl_interface = {
   &LaunchSelLdr,
   &StartPpapiProxy,
@@ -1541,7 +1540,6 @@ const PPB_NaCl_Private nacl_interface = {
   &GetSandboxArch,
   &LogToConsole,
   &GetNaClReadyState,
-  &GetIsInstalled,
   &GetExitStatus,
   &SetExitStatus,
   &Vlog,
@@ -1550,7 +1548,6 @@ const PPB_NaCl_Private nacl_interface = {
   &RequestNaClManifest,
   &GetManifestBaseURL,
   &ProcessNaClManifest,
-  &GetManifestURLArgument,
   &DevInterfacesEnabled,
   &ManifestGetProgramURL,
   &ManifestResolveKey,
@@ -1558,7 +1555,8 @@ const PPB_NaCl_Private nacl_interface = {
   &GetCpuFeatureAttrs,
   &PostMessageToJavaScript,
   &DownloadNexe,
-  &DownloadFile
+  &DownloadFile,
+  &ReportSelLdrStatus
 };
 
 }  // namespace

@@ -75,21 +75,6 @@ void Plugin::HistogramTimeSmall(const std::string& name,
                                       kTimeSmallBuckets);
 }
 
-void Plugin::HistogramEnumerateSelLdrLoadStatus(NaClErrorCode error_code) {
-  if (error_code < 0 || error_code > NACL_ERROR_CODE_MAX)
-    error_code = LOAD_STATUS_UNKNOWN;
-
-  uma_interface_.HistogramEnumeration("NaCl.LoadStatus.SelLdr",
-                                      error_code,
-                                      NACL_ERROR_CODE_MAX);
-
-  // Gather data to see if being installed changes load outcomes.
-  const char* name = nacl_interface_->GetIsInstalled(pp_instance()) ?
-      "NaCl.LoadStatus.SelLdr.InstalledApp" :
-      "NaCl.LoadStatus.SelLdr.NotInstalledApp";
-  uma_interface_.HistogramEnumeration(name, error_code, NACL_ERROR_CODE_MAX);
-}
-
 bool Plugin::LoadNaClModuleFromBackgroundThread(
     PP_FileHandle file_handle,
     NaClSubprocess* subprocess,
@@ -316,10 +301,10 @@ bool Plugin::Init(uint32_t argc, const char* argn[], const char* argv[]) {
   PLUGIN_PRINTF(("Plugin::Init (argc=%" NACL_PRIu32 ")\n", argc));
   nacl_interface_->InitializePlugin(pp_instance(), argc, argn, argv);
   wrapper_factory_ = new nacl::DescWrapperFactory();
-  pp::Var manifest_url(pp::PASS_REF, nacl_interface_->GetManifestURLArgument(
-      pp_instance()));
-  if (manifest_url.is_string() && !manifest_url.AsString().empty())
-    RequestNaClManifest(manifest_url.AsString());
+  pp::CompletionCallback open_cb =
+      callback_factory_.NewCallback(&Plugin::NaClManifestFileDidOpen);
+  nacl_interface_->RequestNaClManifest(pp_instance(),
+                                       open_cb.pp_completion_callback());
   return true;
 }
 
@@ -420,18 +405,14 @@ void Plugin::NexeFileDidOpen(int32_t pp_error) {
 }
 
 void Plugin::NexeFileDidOpenContinuation(int32_t pp_error) {
-  bool was_successful;
-
   UNREFERENCED_PARAMETER(pp_error);
   NaClLog(4, "Entered NexeFileDidOpenContinuation\n");
-  NaClLog(4, "NexeFileDidOpenContinuation: invoking"
-          " LoadNaClModuleContinuationIntern\n");
-  was_successful = LoadNaClModuleContinuationIntern();
-  if (was_successful) {
+  if (LoadNaClModuleContinuationIntern()) {
     NaClLog(4, "NexeFileDidOpenContinuation: success;"
             " setting histograms\n");
     int64_t nexe_size = nacl_interface_->GetNexeSize(pp_instance());
-    ReportLoadSuccess(nexe_size, nexe_size);
+    nacl_interface_->ReportLoadSuccess(
+        pp_instance(), program_url_.c_str(), nexe_size, nexe_size);
   } else {
     NaClLog(4, "NexeFileDidOpenContinuation: failed.");
   }
@@ -478,15 +459,16 @@ void Plugin::BitcodeDidTranslate(int32_t pp_error) {
 }
 
 void Plugin::BitcodeDidTranslateContinuation(int32_t pp_error) {
-  bool was_successful = LoadNaClModuleContinuationIntern();
-
   NaClLog(4, "Entered BitcodeDidTranslateContinuation\n");
   UNREFERENCED_PARAMETER(pp_error);
-  if (was_successful) {
+  if (LoadNaClModuleContinuationIntern()) {
     int64_t loaded;
     int64_t total;
+    // TODO(teravest): Tighten this up so we can get rid of
+    // GetCurrentProgress(). loaded should always equal total.
     pnacl_coordinator_->GetCurrentProgress(&loaded, &total);
-    ReportLoadSuccess(loaded, total);
+    nacl_interface_->ReportLoadSuccess(
+        pp_instance(), program_url_.c_str(), loaded, total);
   }
 }
 
@@ -528,35 +510,11 @@ void Plugin::NaClManifestFileDidOpen(int32_t pp_error) {
   }
 }
 
-void Plugin::RequestNaClManifest(const nacl::string& url) {
-  PLUGIN_PRINTF(("Plugin::RequestNaClManifest (url='%s')\n", url.c_str()));
-  pp::CompletionCallback open_callback =
-      callback_factory_.NewCallback(&Plugin::NaClManifestFileDidOpen);
-  nacl_interface_->RequestNaClManifest(pp_instance(),
-                                       url.c_str(),
-                                       open_callback.pp_completion_callback());
-}
-
-void Plugin::ReportLoadSuccess(uint64_t loaded_bytes, uint64_t total_bytes) {
-  nacl_interface_->ReportLoadSuccess(
-      pp_instance(), program_url_.c_str(), loaded_bytes, total_bytes);
-}
-
-
 void Plugin::ReportLoadError(const ErrorInfo& error_info) {
   nacl_interface_->ReportLoadError(pp_instance(),
                                    error_info.error_code(),
                                    error_info.message().c_str(),
                                    error_info.console_message().c_str());
-}
-
-
-void Plugin::ReportLoadAbort() {
-  nacl_interface_->ReportLoadAbort(pp_instance());
-}
-
-void Plugin::ReportSelLdrLoadStatus(int status) {
-  HistogramEnumerateSelLdrLoadStatus(static_cast<NaClErrorCode>(status));
 }
 
 bool Plugin::DocumentCanRequest(const std::string& url) {

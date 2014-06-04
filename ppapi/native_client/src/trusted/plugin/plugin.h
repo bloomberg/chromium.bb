@@ -110,20 +110,10 @@ class Plugin : public pp::Instance {
                                        PP_FileHandle file_handle,
                                        ErrorInfo* error_info);
 
-  // Report successful loading of a module.
-  void ReportLoadSuccess(uint64_t loaded_bytes, uint64_t total_bytes);
   // Report an error that was encountered while loading a module.
   void ReportLoadError(const ErrorInfo& error_info);
-  // Report loading a module was aborted, typically due to user action.
-  void ReportLoadAbort();
-
-  // Report the error code that sel_ldr produces when starting a nexe.
-  void ReportSelLdrLoadStatus(int status);
 
   nacl::DescWrapperFactory* wrapper_factory() const { return wrapper_factory_; }
-
-  // Requests a NaCl manifest download from a |url| relative to the page origin.
-  void RequestNaClManifest(const nacl::string& url);
 
   // Called back by CallOnMainThread.  Dispatches the first enqueued progress
   // event.
@@ -153,8 +143,6 @@ class Plugin : public pp::Instance {
   // Histogram helper functions, internal to Plugin so they can use
   // uma_interface_ normally.
   void HistogramTimeSmall(const std::string& name, int64_t ms);
-  void HistogramEnumerateLoadStatus(PP_NaClError error_code);
-  void HistogramEnumerateSelLdrLoadStatus(NaClErrorCode error_code);
 
   // Load a nacl module from the file specified in file_handle.
   // Only to be used from a background (non-main) thread.

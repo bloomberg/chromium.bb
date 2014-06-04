@@ -574,8 +574,13 @@ bool ServiceRuntime::StartModule() {
   }
 
   NaClLog(4, "ServiceRuntime::StartModule (load_status=%d)\n", load_status);
-  if (main_service_runtime_)
-    plugin_->ReportSelLdrLoadStatus(load_status);
+  if (main_service_runtime_) {
+    if (load_status < 0 || load_status > NACL_ERROR_CODE_MAX)
+      load_status = LOAD_STATUS_UNKNOWN;
+    GetNaClInterface()->ReportSelLdrStatus(plugin_->pp_instance(),
+                                           load_status,
+                                           NACL_ERROR_CODE_MAX);
+  }
 
   if (LOAD_OK != load_status) {
     if (main_service_runtime_) {
