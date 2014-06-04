@@ -42,7 +42,7 @@ const size_t kDefaultMinTransferBufferSize = 1 * 256 * 1024;
 const size_t kDefaultMaxTransferBufferSize = 16 * 1024 * 1024;
 
 class WebGraphicsContext3DCommandBufferImpl
-    : public WebGraphicsContext3DImpl {
+    : public webkit::gpu::WebGraphicsContext3DImpl {
  public:
   enum MappedMemoryReclaimLimit {
     kNoLimit = 0,

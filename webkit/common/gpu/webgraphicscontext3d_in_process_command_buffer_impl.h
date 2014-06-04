@@ -33,7 +33,7 @@ namespace webkit {
 namespace gpu {
 
 class WEBKIT_GPU_EXPORT WebGraphicsContext3DInProcessCommandBufferImpl
-    : public content::WebGraphicsContext3DImpl {
+    : public WebGraphicsContext3DImpl {
  public:
   static scoped_ptr<WebGraphicsContext3DInProcessCommandBufferImpl>
       CreateViewContext(

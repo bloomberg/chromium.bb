@@ -18,7 +18,8 @@
 #endif
 #include "third_party/khronos/GLES2/gl2ext.h"
 
-namespace content {
+namespace webkit {
+namespace gpu {
 
 namespace {
 
@@ -33,7 +34,7 @@ uint32_t GenFlushID() {
 } // namespace anonymous
 
 class WebGraphicsContext3DErrorMessageCallback
-    : public gpu::gles2::GLES2ImplementationErrorMessageCallback {
+    : public ::gpu::gles2::GLES2ImplementationErrorMessageCallback {
  public:
   WebGraphicsContext3DErrorMessageCallback(
       WebGraphicsContext3DImpl* context)
@@ -943,7 +944,7 @@ GrGLInterface* WebGraphicsContext3DImpl::createGrGLInterface() {
   return skia_bindings::CreateCommandBufferSkiaGLBinding();
 }
 
-gpu::gles2::GLES2ImplementationErrorMessageCallback*
+::gpu::gles2::GLES2ImplementationErrorMessageCallback*
     WebGraphicsContext3DImpl::getErrorMessageCallback() {
   if (!client_error_message_callback_) {
     client_error_message_callback_.reset(
@@ -983,4 +984,5 @@ void WebGraphicsContext3DImpl::copyTextureToParentTextureCHROMIUM(
 void WebGraphicsContext3DImpl::releaseShaderCompiler() {
 }
 
-}  // namespace content
+}  // namespace gpu
+}  // namespace webkit

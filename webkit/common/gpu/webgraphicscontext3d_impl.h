@@ -37,7 +37,8 @@ using blink::WGC3Dclampf;
 using blink::WGC3Dintptr;
 using blink::WGC3Dsizeiptr;
 
-namespace content {
+namespace webkit {
+namespace gpu {
 
 class WebGraphicsContext3DErrorMessageCallback;
 
@@ -552,7 +553,7 @@ class WEBKIT_GPU_EXPORT WebGraphicsContext3DImpl
 
   virtual GrGLInterface* createGrGLInterface();
 
-  gpu::gles2::GLES2Interface* GetGLInterface() {
+  ::gpu::gles2::GLES2Interface* GetGLInterface() {
     return gl_;
   }
 
@@ -564,11 +565,11 @@ class WEBKIT_GPU_EXPORT WebGraphicsContext3DImpl
       bool lose_context_when_out_of_memory);
   virtual ~WebGraphicsContext3DImpl();
 
-  gpu::gles2::GLES2ImplementationErrorMessageCallback*
+  ::gpu::gles2::GLES2ImplementationErrorMessageCallback*
       getErrorMessageCallback();
   virtual void OnErrorMessage(const std::string& message, int id);
 
-  void setGLInterface(gpu::gles2::GLES2Interface* gl) {
+  void setGLInterface(::gpu::gles2::GLES2Interface* gl) {
     gl_ = gl;
   }
 
@@ -588,11 +589,12 @@ class WEBKIT_GPU_EXPORT WebGraphicsContext3DImpl
   // Errors raised by synthesizeGLError().
   std::vector<WGC3Denum> synthetic_errors_;
 
-  gpu::gles2::GLES2Interface* gl_;
+  ::gpu::gles2::GLES2Interface* gl_;
   bool lose_context_when_out_of_memory_;
   uint32_t flush_id_;
 };
 
-}  // namespace content
+}  // namespace gpu
+}  // namespace webkit
 
 #endif  // WEBKIT_COMMON_GPU_WEBGRAPHICSCONTEXT3D_IMPL_H_
