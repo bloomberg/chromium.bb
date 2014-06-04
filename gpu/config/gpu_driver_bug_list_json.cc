@@ -1080,7 +1080,20 @@ LONG_STRING_CONST(
         "type": "macosx"
       },
       "vendor_id": "0x8086",
-      "device_id": ["0x0d26", "0x0166", "0x0a2e", "0x0a26", "0x0116"],
+      "device_id": ["0x0d26", "0x0166", "0x0a2e", "0x0a26", "0x0116", "0x0126"],
+      "features": [
+        "disable_arb_sync"
+      ]
+    },
+    {
+      "id": 81,
+      "cr_bugs": [371530],
+      "description": "Testing ARB sync fences is broken with some ATI drivers on MacOSX",
+      "os": {
+        "type": "macosx"
+      },
+      "vendor_id": "0x1002",
+      "device_id": ["0x6741"],
       "features": [
         "disable_arb_sync"
       ]
