@@ -3358,6 +3358,21 @@ LayoutRect RenderLayer::physicalBoundingBoxIncludingReflectionAndStackingChildre
     return result;
 }
 
+static void expandCompositingRectForStackingChildren(const RenderLayer* ancestorLayer, RenderLayer::CalculateBoundsOptions options, LayoutRect& result)
+{
+    RenderLayerStackingNodeIterator iterator(*ancestorLayer->stackingNode(), AllChildren);
+    while (RenderLayerStackingNode* node = iterator.next()) {
+        // Here we exclude both directly composited layers and squashing layers
+        // because those RenderLayers don't paint into the graphics layer
+        // for this RenderLayer. For example, the bounds of squashed RenderLayers
+        // will be included in the computation of the appropriate squashing
+        // GraphicsLayer.
+        if (options != RenderLayer::ApplyBoundsChickenEggHacks && node->layer()->compositingState() != NotComposited)
+            continue;
+        result.unite(node->layer()->boundingBoxForCompositing(ancestorLayer, options));
+    }
+}
+
 LayoutRect RenderLayer::boundingBoxForCompositing(const RenderLayer* ancestorLayer, CalculateBoundsOptions options) const
 {
     if (!isSelfPaintingLayer())
@@ -3401,17 +3416,15 @@ LayoutRect RenderLayer::boundingBoxForCompositing(const RenderLayer* ancestorLay
     LayerListMutationDetector mutationChecker(const_cast<RenderLayer*>(this)->stackingNode());
 #endif
 
-    RenderLayerStackingNodeIterator iterator(*m_stackingNode.get(), AllChildren);
-    while (RenderLayerStackingNode* node = iterator.next()) {
-        // Here we exclude both directly composited layers and squashing layers
-        // because those RenderLayers don't paint into the graphics layer
-        // for this RenderLayer. For example, the bounds of squashed RenderLayers
-        // will be included in the computation of the appropriate squashing
-        // GraphicsLayer.
-        if (options != ApplyBoundsChickenEggHacks && node->layer()->compositingState() != NotComposited)
-            continue;
-        result.unite(node->layer()->boundingBoxForCompositing(this, options));
-    }
+    // Reflections are implemented with RenderLayers that hang off of the reflected layer. However,
+    // the reflection layer subtree does not include the subtree of the parent RenderLayer, so
+    // a recursive computation of stacking children yields no results. This breaks cases when there are stacking
+    // children of the parent, that need to be included in reflected composited bounds.
+    // Fix this by including composited bounds of stacking children of the reflected RenderLayer.
+    if (parent() && parent()->reflectionInfo() && parent()->reflectionInfo()->reflectionLayer() == this)
+        expandCompositingRectForStackingChildren(parent(), options, result);
+    else
+        expandCompositingRectForStackingChildren(this, options, result);
 
     // FIXME: We can optimize the size of the composited layers, by not enlarging
     // filtered areas with the outsets if we know that the filter is going to render in hardware.
