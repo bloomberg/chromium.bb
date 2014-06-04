@@ -450,27 +450,39 @@ void VpxVideoDecoder::CopyVpxImageTo(const vpx_image* vpx_image,
                                      scoped_refptr<VideoFrame>* video_frame) {
   CHECK(vpx_image);
   CHECK(vpx_image->fmt == VPX_IMG_FMT_I420 ||
-        vpx_image->fmt == VPX_IMG_FMT_YV12);
+        vpx_image->fmt == VPX_IMG_FMT_YV12 ||
+        vpx_image->fmt == VPX_IMG_FMT_I444);
+
+  VideoFrame::Format codec_format = VideoFrame::YV12;
+  int uv_rows = (vpx_image->d_h + 1) / 2;
+
+  if (vpx_image->fmt == VPX_IMG_FMT_I444) {
+    CHECK(!vpx_codec_alpha_);
+    codec_format = VideoFrame::YV24;
+    uv_rows = vpx_image->d_h;
+  } else if (vpx_codec_alpha_) {
+    codec_format = VideoFrame::YV12A;
+  }
 
   gfx::Size size(vpx_image->d_w, vpx_image->d_h);
 
   if (!vpx_codec_alpha_ && memory_pool_) {
     *video_frame = VideoFrame::WrapExternalYuvData(
-                       VideoFrame::YV12,
-                       size, gfx::Rect(size), config_.natural_size(),
-                       vpx_image->stride[VPX_PLANE_Y],
-                       vpx_image->stride[VPX_PLANE_U],
-                       vpx_image->stride[VPX_PLANE_V],
-                       vpx_image->planes[VPX_PLANE_Y],
-                       vpx_image->planes[VPX_PLANE_U],
-                       vpx_image->planes[VPX_PLANE_V],
-                       kNoTimestamp(),
-                       memory_pool_->CreateFrameCallback(vpx_image->fb_priv));
+        codec_format,
+        size, gfx::Rect(size), config_.natural_size(),
+        vpx_image->stride[VPX_PLANE_Y],
+        vpx_image->stride[VPX_PLANE_U],
+        vpx_image->stride[VPX_PLANE_V],
+        vpx_image->planes[VPX_PLANE_Y],
+        vpx_image->planes[VPX_PLANE_U],
+        vpx_image->planes[VPX_PLANE_V],
+        kNoTimestamp(),
+        memory_pool_->CreateFrameCallback(vpx_image->fb_priv));
     return;
   }
 
   *video_frame = frame_pool_.CreateFrame(
-      vpx_codec_alpha_ ? VideoFrame::YV12A : VideoFrame::YV12,
+      codec_format,
       size,
       gfx::Rect(size),
       config_.natural_size(),
@@ -482,11 +494,11 @@ void VpxVideoDecoder::CopyVpxImageTo(const vpx_image* vpx_image,
              video_frame->get());
   CopyUPlane(vpx_image->planes[VPX_PLANE_U],
              vpx_image->stride[VPX_PLANE_U],
-             (vpx_image->d_h + 1) / 2,
+             uv_rows,
              video_frame->get());
   CopyVPlane(vpx_image->planes[VPX_PLANE_V],
              vpx_image->stride[VPX_PLANE_V],
-             (vpx_image->d_h + 1) / 2,
+             uv_rows,
              video_frame->get());
   if (!vpx_codec_alpha_)
     return;
