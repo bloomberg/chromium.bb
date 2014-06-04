@@ -11,7 +11,6 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
-import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -174,7 +173,7 @@ class AppMenuAdapter extends BaseAdapter {
                 if (convertView == null) {
                     holder = new TitleButtonMenuItemViewHolder();
                     convertView = mInflater.inflate(R.layout.title_button_menu_item, null);
-                    holder.title = (Button) convertView.findViewById(R.id.title);
+                    holder.title = (TextView) convertView.findViewById(R.id.title);
                     holder.divider = convertView.findViewById(R.id.divider);
                     holder.button = (ImageButton) convertView.findViewById(R.id.button);
                     convertView.setTag(holder);
@@ -241,7 +240,7 @@ class AppMenuAdapter extends BaseAdapter {
     }
 
     static class TitleButtonMenuItemViewHolder {
-        public Button title;
+        public TextView title;
         public View divider;
         public ImageButton button;
     }
