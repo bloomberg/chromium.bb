@@ -93,7 +93,6 @@ google_apis::CancelCallback DriveServiceOnWorker::DownloadFile(
   return google_apis::CancelCallback();
 }
 
-
 google_apis::CancelCallback DriveServiceOnWorker::GetAboutResource(
     const google_apis::AboutResourceCallback& callback) {
   ui_task_runner_->PostTask(
@@ -107,7 +106,6 @@ google_apis::CancelCallback DriveServiceOnWorker::GetAboutResource(
 
   return google_apis::CancelCallback();
 }
-
 
 google_apis::CancelCallback DriveServiceOnWorker::GetChangeList(
     int64 start_changestamp,
@@ -233,10 +231,8 @@ google_apis::CancelCallback DriveServiceOnWorker::SearchByTitle(
 }
 
 bool DriveServiceOnWorker::HasRefreshToken() const {
-  // TODO(peria): Cache the state and returns it directly, before migration of
-  //    SyncWorker to a worker thread.
-  DCHECK(wrapper_);
-  return wrapper_->HasRefreshToken();
+  NOTREACHED();
+  return false;
 }
 
 void DriveServiceOnWorker::Initialize(const std::string& account_id) {

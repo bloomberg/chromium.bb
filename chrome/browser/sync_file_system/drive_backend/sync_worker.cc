@@ -102,6 +102,7 @@ SyncWorker::SyncWorker(
       network_available_(false),
       extension_service_(extension_service),
       context_(sync_engine_context.Pass()),
+      has_refresh_token_(false),
       weak_ptr_factory_(this) {}
 
 SyncWorker::~SyncWorker() {}
@@ -124,7 +125,7 @@ void SyncWorker::Initialize() {
 void SyncWorker::RegisterOrigin(
     const GURL& origin,
     const SyncStatusCallback& callback) {
-  if (!GetMetadataDatabase() && GetDriveService()->HasRefreshToken())
+  if (!GetMetadataDatabase() && has_refresh_token_)
     PostInitializeTask();
 
   scoped_ptr<RegisterAppTask> task(
@@ -346,6 +347,7 @@ void SyncWorker::OnNotificationReceived() {
 }
 
 void SyncWorker::OnReadyToSendRequests(const std::string& account_id) {
+  has_refresh_token_ = true;
   if (service_state_ == REMOTE_SERVICE_OK)
     return;
   UpdateServiceState(REMOTE_SERVICE_OK, "Authenticated");
@@ -361,6 +363,8 @@ void SyncWorker::OnReadyToSendRequests(const std::string& account_id) {
 }
 
 void SyncWorker::OnRefreshTokenInvalid() {
+  has_refresh_token_ = false;
+
   UpdateServiceState(
       REMOTE_SERVICE_AUTHENTICATION_REQUIRED,
       "Found invalid refresh token.");
@@ -442,7 +446,7 @@ void SyncWorker::PostInitializeTask() {
 void SyncWorker::DidInitialize(SyncEngineInitializer* initializer,
                                SyncStatusCode status) {
   if (status != SYNC_STATUS_OK) {
-    if (GetDriveService()->HasRefreshToken()) {
+    if (has_refresh_token_) {
       UpdateServiceState(REMOTE_SERVICE_TEMPORARY_UNAVAILABLE,
                          "Could not initialize remote service");
     } else {
@@ -671,7 +675,7 @@ void SyncWorker::UpdateServiceStateFromSyncStatusCode(
     case SYNC_STATUS_NETWORK_ERROR:
     case SYNC_STATUS_ABORT:
     case SYNC_STATUS_FAILED:
-      if (GetDriveService()->HasRefreshToken()) {
+      if (has_refresh_token_) {
         UpdateServiceState(REMOTE_SERVICE_TEMPORARY_UNAVAILABLE,
                            "Network or temporary service error.");
       } else {

@@ -152,7 +152,11 @@ class SyncEngineTest
   }
 
   MetadataDatabase* metadata_database() {
-    return sync_engine()->sync_worker_->GetMetadataDatabase();
+    return sync_engine_->sync_worker_->GetMetadataDatabase();
+  }
+
+  void SetHasRefreshToken(bool has_refresh_token) {
+    sync_engine_->sync_worker_->has_refresh_token_ = has_refresh_token;
   }
 
  private:
@@ -280,6 +284,8 @@ TEST_F(SyncEngineTest, GetOriginStatusMap) {
 
 TEST_F(SyncEngineTest, UpdateServiceState) {
   EXPECT_EQ(REMOTE_SERVICE_OK, sync_engine()->GetCurrentState());
+
+  SetHasRefreshToken(true);
 
   GetSyncEngineTaskManager()->ScheduleTask(
       FROM_HERE,
