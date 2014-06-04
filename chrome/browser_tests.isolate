@@ -139,7 +139,6 @@
           '<(PRODUCT_DIR)/clearkeycdm.dll',
           '<(PRODUCT_DIR)/clearkeycdmadapter.dll',
           '<(PRODUCT_DIR)/ppapi_tests.dll',
-          '<(PRODUCT_DIR)/security_tests.dll',
           'tools/build/repack_locales.py',
         ],
         'isolate_dependency_untracked': [

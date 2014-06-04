@@ -1598,8 +1598,6 @@
         'test/remoting/remote_desktop_browsertest.h',
         'test/remoting/waiter.cc',
         'test/remoting/waiter.h',
-        'test/security_tests/sandbox_browsertest_linux.cc',
-        'test/security_tests/sandbox_browsertest_win.cc',
         # TODO(craig): Rename this and run from base_unittests when the test
         # is safe to run there. See http://crbug.com/78722 for details.
         '../base/files/file_path_watcher_browsertest.cc',
@@ -1828,7 +1826,6 @@
           ],
           'dependencies': [
             'chrome_version_resources',
-            'security_tests',  # run time dependency
           ],
           'conditions': [
             ['win_use_allocator_shim==1', {
@@ -2612,31 +2609,6 @@
     ['OS=="mac"', {
       'targets': [
         {
-          # This is the mac equivalent of the security_tests target below. It
-          # generates a framework bundle which bundles tests to be run in a
-          # renderer process. The test code is built as a framework so it can be
-          # run in the context of a renderer without shipping the code to end
-          # users.
-          'target_name': 'renderer_sandbox_tests',
-          'type': 'shared_library',
-          'product_name': 'Renderer Sandbox Tests',
-          'mac_bundle': 1,
-          'xcode_settings': {
-            'INFOPLIST_FILE': 'test/security_tests/sandbox_tests_mac-Info.plist',
-          },
-          'sources': [
-            'test/security_tests/renderer_sandbox_tests_mac.mm',
-          ],
-          'include_dirs': [
-            '..',
-          ],
-          'link_settings': {
-            'libraries': [
-              '$(SDKROOT)/System/Library/Frameworks/Cocoa.framework',
-            ],
-          },
-        },  # target renderer_sandbox_tests
-        {
           # Tests for Mac app launcher.
           'target_name': 'app_mode_app_tests',
           'type': 'executable',
@@ -2735,24 +2707,6 @@
         },
       ],
     },],  # OS!="mac"
-    ['OS=="win"', {
-      'targets': [
-        {
-          'target_name': 'security_tests',
-          'type': 'shared_library',
-          'include_dirs': [
-            '..',
-          ],
-          'sources': [
-            'test/security_tests/ipc_security_tests.cc',
-            'test/security_tests/ipc_security_tests.h',
-            'test/security_tests/security_tests.cc',
-            '../sandbox/win/tests/validation_tests/commands.cc',
-            '../sandbox/win/tests/validation_tests/commands.h',
-          ],
-        },
-      ]},  # 'targets'
-    ],  # OS=="win"
     ['OS == "android"', {
       'targets': [
         {

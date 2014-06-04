@@ -181,7 +181,6 @@ int RendererMain(const MainFunctionParams& parameters) {
   platform.PlatformInitialize();
 
   bool no_sandbox = parsed_command_line.HasSwitch(switches::kNoSandbox);
-  platform.InitSandboxTests(no_sandbox);
 
   // Initialize histogram statistics gathering system.
   base::StatisticsRecorder::Initialize();
@@ -238,8 +237,6 @@ int RendererMain(const MainFunctionParams& parameters) {
 #endif
 
     base::HighResolutionTimerManager hi_res_timer_manager;
-
-    platform.RunSandboxTests(no_sandbox);
 
     startup_timer.Stop();  // End of Startup Time Measurement.
 

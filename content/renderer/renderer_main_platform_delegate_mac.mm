@@ -15,7 +15,6 @@
 #include "base/strings/sys_string_conversions.h"
 #include "content/common/sandbox_mac.h"
 #include "content/public/common/content_switches.h"
-#import "content/public/common/injection_test_mac.h"
 #include "content/common/sandbox_init_mac.h"
 
 namespace content {
@@ -128,35 +127,6 @@ void RendererMainPlatformDelegate::PlatformInitialize() {
 void RendererMainPlatformDelegate::PlatformUninitialize() {
 }
 
-static void LogTestMessage(std::string message, bool is_error) {
-  if (is_error)
-    LOG(ERROR) << message;
-  else
-    VLOG(0) << message;
-}
-
-bool RendererMainPlatformDelegate::InitSandboxTests(bool no_sandbox) {
-  const CommandLine& command_line = parameters_.command_line;
-
-  if (command_line.HasSwitch(switches::kTestSandbox)) {
-    std::string bundle_path =
-    command_line.GetSwitchValueNative(switches::kTestSandbox);
-    if (bundle_path.empty()) {
-      NOTREACHED() << "Bad bundle path";
-      return false;
-    }
-    NSBundle* tests_bundle =
-        [NSBundle bundleWithPath:base::SysUTF8ToNSString(bundle_path)];
-    if (![tests_bundle load]) {
-      NOTREACHED() << "Failed to load bundle";
-      return false;
-    }
-    sandbox_tests_bundle_ = [tests_bundle retain];
-    [objc_getClass("RendererSandboxTestsRunner") setLogFunction:LogTestMessage];
-  }
-  return true;
-}
-
 bool RendererMainPlatformDelegate::EnableSandbox() {
   // Enable the sandbox.
   bool sandbox_initialized = InitializeSandbox();
@@ -168,17 +138,6 @@ bool RendererMainPlatformDelegate::EnableSandbox() {
   DisconnectCFNotificationCenter();
 
   return sandbox_initialized;
-}
-
-void RendererMainPlatformDelegate::RunSandboxTests(bool no_sandbox) {
-  Class tests_runner = objc_getClass("RendererSandboxTestsRunner");
-  if (tests_runner) {
-    if (![tests_runner runTests])
-      LOG(ERROR) << "Running renderer with failing sandbox tests!";
-    [sandbox_tests_bundle_ unload];
-    [sandbox_tests_bundle_ release];
-    sandbox_tests_bundle_ = nil;
-  }
 }
 
 }  // namespace content

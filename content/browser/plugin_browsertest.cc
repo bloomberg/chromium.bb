@@ -64,9 +64,6 @@ class PluginTest : public ContentBrowserTest {
                       KEY_WRITE) == ERROR_SUCCESS) {
         regkey.CreateKey(L"BROWSER_TESTS.EXE", KEY_READ);
       }
-    } else if (strcmp(test_info->name(), "FlashSecurity") == 0) {
-      command_line->AppendSwitchASCII(switches::kTestSandbox,
-                                      "security_tests.dll");
     }
 #elif defined(OS_MACOSX)
     base::FilePath plugin_dir;

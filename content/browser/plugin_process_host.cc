@@ -198,7 +198,6 @@ bool PluginProcessHost::Init(const WebPluginInfo& info) {
     switches::kLogPluginMessages,
     switches::kNoSandbox,
     switches::kPluginStartupDialog,
-    switches::kTestSandbox,
     switches::kTraceStartup,
     switches::kUseGL,
 #if defined(OS_MACOSX)

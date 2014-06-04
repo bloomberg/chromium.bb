@@ -38,10 +38,6 @@ void RendererMainPlatformDelegate::PlatformInitialize() {
 void RendererMainPlatformDelegate::PlatformUninitialize() {
 }
 
-bool RendererMainPlatformDelegate::InitSandboxTests(bool no_sandbox) {
-  return true;
-}
-
 bool RendererMainPlatformDelegate::EnableSandbox() {
 #ifdef USE_SECCOMP_BPF
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -54,9 +50,6 @@ bool RendererMainPlatformDelegate::EnableSandbox() {
   CHECK(sandbox.StartSandbox(sandbox::SandboxBPF::PROCESS_MULTI_THREADED));
 #endif
   return true;
-}
-
-void RendererMainPlatformDelegate::RunSandboxTests(bool no_sandbox) {
 }
 
 }  // namespace content

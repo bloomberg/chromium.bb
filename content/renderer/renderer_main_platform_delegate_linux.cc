@@ -39,31 +39,12 @@ void RendererMainPlatformDelegate::PlatformInitialize() {
 void RendererMainPlatformDelegate::PlatformUninitialize() {
 }
 
-bool RendererMainPlatformDelegate::InitSandboxTests(bool no_sandbox) {
-  // The sandbox is started in the zygote process: zygote_main_linux.cc
-  // http://code.google.com/p/chromium/wiki/LinuxSUIDSandbox
-  return true;
-}
-
 bool RendererMainPlatformDelegate::EnableSandbox() {
   // The setuid sandbox is started in the zygote process: zygote_main_linux.cc
   // http://code.google.com/p/chromium/wiki/LinuxSUIDSandbox
   //
   // Anything else is started in InitializeSandbox().
   LinuxSandbox::InitializeSandbox();
-  return true;
-}
-
-void RendererMainPlatformDelegate::RunSandboxTests(bool no_sandbox) {
-  // The LinuxSandbox class requires going through initialization before
-  // GetStatus() and others can be used.  When we are not launched through the
-  // Zygote, this initialization will only happen in the renderer process if
-  // EnableSandbox() above is called, which it won't necesserily be.
-  // This only happens with flags such as --renderer-cmd-prefix which are
-  // for debugging.
-  if (no_sandbox)
-    return;
-
   // about:sandbox uses a value returned from LinuxSandbox::GetStatus() before
   // any renderer has been started.
   // Here, we test that the status of SeccompBpf in the renderer is consistent
@@ -89,6 +70,8 @@ void RendererMainPlatformDelegate::RunSandboxTests(bool no_sandbox) {
     CHECK_EQ(errno, EPERM);
   }
 #endif  // __x86_64__
+
+  return true;
 }
 
 }  // namespace content

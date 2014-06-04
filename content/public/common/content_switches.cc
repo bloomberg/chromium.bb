@@ -798,9 +798,6 @@ const char kTabCaptureUpscaleQuality[]      = "tab-capture-upscale-quality";
 const char kTestingFixedHttpPort[]          = "testing-fixed-http-port";
 const char kTestingFixedHttpsPort[]         = "testing-fixed-https-port";
 
-// Runs the security test for the renderer sandbox.
-const char kTestSandbox[]                   = "test-sandbox";
-
 // Type of the current test harness ("browser" or "ui").
 const char kTestType[]                      = "test-type";
 

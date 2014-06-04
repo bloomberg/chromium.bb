@@ -34,15 +34,8 @@ class CONTENT_EXPORT RendererMainPlatformDelegate {
   void PlatformInitialize();
   void PlatformUninitialize();
 
-  // Gives us an opportunity to initialize state used for tests before enabling
-  // the sandbox.
-  bool InitSandboxTests(bool no_sandbox);
-
   // Initiate Lockdown, returns true on success.
   bool EnableSandbox();
-
-  // Runs Sandbox tests.
-  void RunSandboxTests(bool no_sandbox);
 
  private:
   const MainFunctionParams& parameters_;
