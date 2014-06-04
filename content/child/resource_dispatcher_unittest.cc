@@ -9,6 +9,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/process/process.h"
 #include "base/process/process_handle.h"
+#include "base/run_loop.h"
 #include "content/child/request_extra_data.h"
 #include "content/child/request_info.h"
 #include "content/child/resource_dispatcher.h"
@@ -189,7 +190,7 @@ scoped_ptr<ResourceDispatcher> ResourceDispatcherTest::dispatcher_;
 // Does a simple request and tests that the correct data is received.
 TEST_F(ResourceDispatcherTest, RoundTrip) {
   TestRequestCallback callback;
-  ResourceLoaderBridge* bridge = CreateBridge();
+  scoped_ptr<ResourceLoaderBridge> bridge(CreateBridge());
 
   bridge->Start(&callback);
 
@@ -200,8 +201,6 @@ TEST_F(ResourceDispatcherTest, RoundTrip) {
   //EXPECT_TRUE(callback.complete());
   //EXPECT_STREQ(test_page_contents, callback.data().c_str());
   //EXPECT_EQ(test_page_contents_len, callback.total_encoded_data_length());
-
-  delete bridge;
 }
 
 // Tests that the request IDs are straight when there are multiple requests.
@@ -323,14 +322,13 @@ class DeferredResourceLoadingTest : public ResourceDispatcherTest,
 TEST_F(DeferredResourceLoadingTest, DeferredLoadTest) {
   base::MessageLoopForIO message_loop;
 
-  ResourceLoaderBridge* bridge = CreateBridge();
+  scoped_ptr<ResourceLoaderBridge> bridge(CreateBridge());
 
   bridge->Start(this);
   InitMessages();
 
   // Dispatch deferred messages.
-  message_loop.RunUntilIdle();
-  delete bridge;
+  base::RunLoop().RunUntilIdle();
 }
 
 class TimeConversionTest : public ResourceDispatcherTest,

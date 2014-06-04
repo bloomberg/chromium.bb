@@ -327,7 +327,7 @@ void ResourceDispatcher::OnUploadProgress(int request_id, int64 position,
   request_info->peer->OnUploadProgress(position, size);
 
   // Acknowledge receipt
-  message_sender()->Send(new ResourceHostMsg_UploadProgress_ACK(request_id));
+  message_sender_->Send(new ResourceHostMsg_UploadProgress_ACK(request_id));
 }
 
 void ResourceDispatcher::OnReceivedResponse(
@@ -449,15 +449,14 @@ void ResourceDispatcher::OnReceivedData(int request_id,
   }
 
   // Acknowledge the reception of this data.
-  message_sender()->Send(new ResourceHostMsg_DataReceived_ACK(request_id));
+  message_sender_->Send(new ResourceHostMsg_DataReceived_ACK(request_id));
 }
 
 void ResourceDispatcher::OnDownloadedData(int request_id,
                                           int data_len,
                                           int encoded_data_length) {
   // Acknowledge the reception of this message.
-  message_sender()->Send(
-      new ResourceHostMsg_DataDownloaded_ACK(request_id));
+  message_sender_->Send(new ResourceHostMsg_DataDownloaded_ACK(request_id));
 
   PendingRequestInfo* request_info = GetPendingRequestInfo(request_id);
   if (!request_info)
@@ -504,7 +503,7 @@ void ResourceDispatcher::FollowPendingRedirect(
     PendingRequestInfo& request_info) {
   IPC::Message* msg = request_info.pending_redirect_message.release();
   if (msg)
-    message_sender()->Send(msg);
+    message_sender_->Send(msg);
 }
 
 void ResourceDispatcher::OnRequestComplete(
@@ -591,7 +590,7 @@ void ResourceDispatcher::CancelPendingRequest(int request_id) {
   ReleaseResourcesInMessageQueue(&request_info.deferred_message_queue);
   pending_requests_.erase(it);
 
-  message_sender()->Send(new ResourceHostMsg_CancelRequest(request_id));
+  message_sender_->Send(new ResourceHostMsg_CancelRequest(request_id));
 }
 
 void ResourceDispatcher::SetDefersLoading(int request_id, bool value) {
@@ -620,7 +619,7 @@ void ResourceDispatcher::DidChangePriority(int request_id,
                                            net::RequestPriority new_priority,
                                            int intra_priority_value) {
   DCHECK(ContainsKey(pending_requests_, request_id));
-  message_sender()->Send(new ResourceHostMsg_DidChangePriority(
+  message_sender_->Send(new ResourceHostMsg_DidChangePriority(
       request_id, new_priority, intra_priority_value));
 }
 
