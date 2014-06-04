@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_number_conversions.h"
+#include "cc/layers/layer.h"
 #include "cc/output/copy_output_request.h"
 #include "cc/output/copy_output_result.h"
 #include "cc/resources/texture_mailbox.h"
@@ -622,6 +623,7 @@ void RenderWidgetHostViewAura::SetBounds(const gfx::Rect& rect) {
     }
   }
 
+  SnapToPhysicalPixelBoundary();
   InternalSetBounds(gfx::Rect(relative_origin, rect.size()));
 }
 
@@ -969,6 +971,25 @@ void RenderWidgetHostViewAura::EndFrameSubscription() {
 
 void RenderWidgetHostViewAura::AcceleratedSurfaceInitialized(int host_id,
                                                              int route_id) {
+}
+
+void RenderWidgetHostViewAura::SnapToPhysicalPixelBoundary() {
+  // The top left corner of our view in window coordinates might not land on a
+  // device pixel boundary if we have a non-integer device scale. In that case,
+  // to avoid the web contents area looking blurry we translate the web contents
+  // in the +x, +y direction to land on the nearest pixel boundary. This may
+  // cause the bottom and right edges to be clipped slightly, but that's ok.
+  gfx::Point view_offset_dips = window_->GetBoundsInRootWindow().origin();
+  gfx::PointF view_offset = view_offset_dips;
+  view_offset.Scale(current_device_scale_factor_);
+  gfx::PointF view_offset_snapped(std::ceil(view_offset.x()),
+                                  std::ceil(view_offset.y()));
+
+  gfx::Vector2dF fudge = view_offset_snapped - view_offset;
+  fudge.Scale(1.0 / current_device_scale_factor_);
+  gfx::Transform fudge_transform;
+  fudge_transform.Translate(fudge.x(), fudge.y());
+  GetLayer()->cc_layer()->SetTransform(fudge_transform);
 }
 
 void RenderWidgetHostViewAura::InternalSetBounds(const gfx::Rect& rect) {
