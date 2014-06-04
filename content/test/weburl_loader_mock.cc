@@ -16,10 +16,15 @@ WebURLLoaderMock::WebURLLoaderMock(WebURLLoaderMockFactory* factory,
       client_(NULL),
       default_loader_(default_loader),
       using_default_loader_(false),
-      is_deferred_(false) {
+      is_deferred_(false),
+      this_deleted_(NULL) {
 }
 
 WebURLLoaderMock::~WebURLLoaderMock() {
+  // When |this_deleted_| is not null, there is someone interested to know if
+  // |this| got deleted. We notify them by setting the pointed value to true.
+  if (this_deleted_)
+    *this_deleted_ = true;
 }
 
 void WebURLLoaderMock::ServeAsynchronousRequest(
@@ -30,7 +35,16 @@ void WebURLLoaderMock::ServeAsynchronousRequest(
   if (!client_)
     return;
 
+  bool this_deleted = false;
+  this_deleted_ = &this_deleted;
   client_->didReceiveResponse(this, response);
+
+  // didReceiveResponse might end up getting ::cancel() to be called which will
+  // make the ResourceLoader to delete |this|. If that happens, |this_deleted|,
+  // created on the stack, will be set to true.
+  if (this_deleted)
+    return;
+  this_deleted_ = NULL;
 
   if (error.reason) {
     client_->didFail(this, error);

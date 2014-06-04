@@ -57,6 +57,7 @@ class WebURLLoaderMock : public blink::WebURLLoader {
   scoped_ptr<blink::WebURLLoader> default_loader_;
   bool using_default_loader_;
   bool is_deferred_;
+  bool* this_deleted_;
 
   DISALLOW_COPY_AND_ASSIGN(WebURLLoaderMock);
 };
