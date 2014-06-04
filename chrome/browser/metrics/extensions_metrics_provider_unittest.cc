@@ -7,7 +7,7 @@
 #include <string>
 
 #include "base/prefs/testing_pref_service.h"
-#include "chrome/browser/metrics/metrics_state_manager.h"
+#include "components/metrics/metrics_state_manager.h"
 #include "components/metrics/proto/system_profile.pb.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/metrics/metrics_state_manager.h"
+#include "components/metrics/metrics_state_manager.h"
 
 #include <ctype.h>
 #include <string>
@@ -10,9 +10,8 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/prefs/testing_pref_service.h"
-#include "chrome/common/chrome_switches.h"
-#include "chrome/common/pref_names.h"
 #include "components/metrics/metrics_pref_names.h"
+#include "components/metrics/metrics_switches.h"
 #include "components/variations/caching_permuted_entropy_provider.h"
 #include "components/variations/pref_names.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -98,7 +97,7 @@ TEST_F(MetricsStateManagerTest, LowEntropySource0NotReset) {
 TEST_F(MetricsStateManagerTest,
        PermutedEntropyCacheClearedWhenLowEntropyReset) {
   const PrefService::Preference* low_entropy_pref =
-      prefs_.FindPreference(::prefs::kMetricsLowEntropySource);
+      prefs_.FindPreference(prefs::kMetricsLowEntropySource);
   const char* kCachePrefName = prefs::kVariationsPermutedEntropyCache;
   int low_entropy_value = -1;
 
@@ -124,7 +123,7 @@ TEST_F(MetricsStateManagerTest,
 
     EXPECT_EQ("test", prefs_.GetString(kCachePrefName));
     EXPECT_EQ(low_entropy_value,
-              prefs_.GetInteger(::prefs::kMetricsLowEntropySource));
+              prefs_.GetInteger(prefs::kMetricsLowEntropySource));
   }
 
   // Verify that the cache does get reset if --reset-variations-state is passed.
@@ -146,7 +145,7 @@ TEST_F(MetricsStateManagerTest, ResetMetricsIDs) {
   // Set an initial client id in prefs. It should not be possible for the
   // metrics state manager to generate this id randomly.
   const std::string kInitialClientId = "initial client id";
-  prefs_.SetString(::prefs::kMetricsClientID, kInitialClientId);
+  prefs_.SetString(prefs::kMetricsClientID, kInitialClientId);
 
   // Make sure the initial client id isn't reset by the metrics state manager.
   {
@@ -169,7 +168,7 @@ TEST_F(MetricsStateManagerTest, ResetMetricsIDs) {
     EXPECT_FALSE(prefs_.GetBoolean(prefs::kMetricsResetIds));
   }
 
-  EXPECT_NE(kInitialClientId, prefs_.GetString(::prefs::kMetricsClientID));
+  EXPECT_NE(kInitialClientId, prefs_.GetString(prefs::kMetricsClientID));
 }
 
 }  // namespace metrics

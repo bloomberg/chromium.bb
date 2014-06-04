@@ -187,7 +187,6 @@
 #include "chrome/browser/metrics/chrome_stability_metrics_provider.h"
 #include "chrome/browser/metrics/gpu_metrics_provider.h"
 #include "chrome/browser/metrics/metrics_log.h"
-#include "chrome/browser/metrics/metrics_state_manager.h"
 #include "chrome/browser/metrics/network_metrics_provider.h"
 #include "chrome/browser/metrics/omnibox_metrics_provider.h"
 #include "chrome/browser/metrics/profiler_metrics_provider.h"
@@ -200,6 +199,7 @@
 #include "components/metrics/metrics_pref_names.h"
 #include "components/metrics/metrics_reporting_scheduler.h"
 #include "components/metrics/metrics_service_client.h"
+#include "components/metrics/metrics_state_manager.h"
 #include "components/variations/entropy_provider.h"
 
 #if defined(ENABLE_PLUGINS)
@@ -319,7 +319,7 @@ void MetricsService::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterIntegerPref(prefs::kStabilityExecutionPhase,
                                 UNINITIALIZED_PHASE);
   registry->RegisterBooleanPref(prefs::kStabilitySessionEndCompleted, true);
-  registry->RegisterIntegerPref(prefs::kMetricsSessionID, -1);
+  registry->RegisterIntegerPref(metrics::prefs::kMetricsSessionID, -1);
   registry->RegisterIntegerPref(prefs::kStabilityLaunchCount, 0);
   registry->RegisterIntegerPref(prefs::kStabilityCrashCount, 0);
   registry->RegisterIntegerPref(prefs::kStabilityIncompleteSessionEndCount, 0);
@@ -633,7 +633,7 @@ void MetricsService::InitializeMetricsState() {
   local_state_->SetInt64(prefs::kStabilityStatsBuildTime,
                          MetricsLog::GetBuildTime());
 
-  session_id_ = local_state_->GetInteger(prefs::kMetricsSessionID);
+  session_id_ = local_state_->GetInteger(metrics::prefs::kMetricsSessionID);
 
   if (!local_state_->GetBoolean(prefs::kStabilityExitedCleanly)) {
     IncrementPrefValue(prefs::kStabilityCrashCount);
@@ -656,7 +656,7 @@ void MetricsService::InitializeMetricsState() {
 
   // Update session ID.
   ++session_id_;
-  local_state_->SetInteger(prefs::kMetricsSessionID, session_id_);
+  local_state_->SetInteger(metrics::prefs::kMetricsSessionID, session_id_);
 
   // Stability bookkeeping
   IncrementPrefValue(prefs::kStabilityLaunchCount);

@@ -1054,10 +1054,6 @@ const char kRendererPrintPreview[]          = "renderer-print-preview";
 // list hasn't been enabled (as in kEnableAppList) yet.
 const char kResetAppListInstallState[]      = "reset-app-list-install-state";
 
-// Forces a reset of the one-time-randomized FieldTrials on this client, also
-// known as the Chrome Variations state.
-const char kResetVariationState[]           = "reset-variation-state";
-
 // Indicates the last session should be restored on startup. This overrides the
 // preferences value and is primarily intended for testing. The value of this
 // switch is the number of tabs to wait until loaded before 'load completed' is

@@ -83,7 +83,7 @@ class TestMetricsLog : public MetricsLog {
  private:
   void InitPrefs() {
     prefs_->SetInt64(prefs::kInstallDate, kInstallDate);
-    prefs_->SetString(prefs::kMetricsReportingEnabledTimestamp,
+    prefs_->SetString(metrics::prefs::kMetricsReportingEnabledTimestamp,
                       base::Int64ToString(kEnabledDate));
   }
 

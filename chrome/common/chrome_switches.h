@@ -291,7 +291,6 @@ extern const char kQuicVersion[];
 extern const char kRecordMode[];
 extern const char kRendererPrintPreview[];
 extern const char kResetAppListInstallState[];
-extern const char kResetVariationState[];
 extern const char kRestoreLastSession[];
 extern const char kSavePageAsMHTML[];
 extern const char kSbDisableAutoUpdate[];

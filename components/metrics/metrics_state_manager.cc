@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/metrics/metrics_state_manager.h"
+#include "components/metrics/metrics_state_manager.h"
 
 #include "base/command_line.h"
 #include "base/guid.h"
@@ -13,11 +13,10 @@
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
-#include "chrome/common/chrome_switches.h"
-#include "chrome/common/pref_names.h"
 #include "components/metrics/cloned_install_detector.h"
 #include "components/metrics/machine_id_provider.h"
 #include "components/metrics/metrics_pref_names.h"
+#include "components/metrics/metrics_switches.h"
 #include "components/variations/caching_permuted_entropy_provider.h"
 
 namespace metrics {
@@ -29,7 +28,7 @@ namespace {
 // [0, 7999] as the entropy source (12.97 bits of entropy).
 const int kMaxLowEntropySize = 8000;
 
-// Default prefs value for ::prefs::kMetricsLowEntropySource to indicate that
+// Default prefs value for prefs::kMetricsLowEntropySource to indicate that
 // the value has not yet been set.
 const int kLowEntropySourceNotSet = -1;
 
@@ -72,21 +71,21 @@ void MetricsStateManager::ForceClientIdCreation() {
   if (!client_id_.empty())
     return;
 
-  client_id_ = local_state_->GetString(::prefs::kMetricsClientID);
+  client_id_ = local_state_->GetString(prefs::kMetricsClientID);
   if (!client_id_.empty())
     return;
 
   client_id_ = base::GenerateGUID();
-  local_state_->SetString(::prefs::kMetricsClientID, client_id_);
+  local_state_->SetString(prefs::kMetricsClientID, client_id_);
 
-  if (local_state_->GetString(::prefs::kMetricsOldClientID).empty()) {
+  if (local_state_->GetString(prefs::kMetricsOldClientID).empty()) {
     // Record the timestamp of when the user opted in to UMA.
-    local_state_->SetInt64(::prefs::kMetricsReportingEnabledTimestamp,
+    local_state_->SetInt64(prefs::kMetricsReportingEnabledTimestamp,
                            base::Time::Now().ToTimeT());
   } else {
     UMA_HISTOGRAM_BOOLEAN("UMA.ClientIdMigrated", true);
   }
-  local_state_->ClearPref(::prefs::kMetricsOldClientID);
+  local_state_->ClearPref(prefs::kMetricsOldClientID);
 }
 
 void MetricsStateManager::CheckForClonedInstall(
@@ -155,9 +154,9 @@ scoped_ptr<MetricsStateManager> MetricsStateManager::Create(
 // static
 void MetricsStateManager::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(prefs::kMetricsResetIds, false);
-  registry->RegisterStringPref(::prefs::kMetricsClientID, std::string());
-  registry->RegisterInt64Pref(::prefs::kMetricsReportingEnabledTimestamp, 0);
-  registry->RegisterIntegerPref(::prefs::kMetricsLowEntropySource,
+  registry->RegisterStringPref(prefs::kMetricsClientID, std::string());
+  registry->RegisterInt64Pref(prefs::kMetricsReportingEnabledTimestamp, 0);
+  registry->RegisterIntegerPref(prefs::kMetricsLowEntropySource,
                                 kLowEntropySourceNotSet);
 
   ClonedInstallDetector::RegisterPrefs(registry);
@@ -165,8 +164,8 @@ void MetricsStateManager::RegisterPrefs(PrefRegistrySimple* registry) {
 
   // TODO(asvitkine): Remove these once a couple of releases have passed.
   // http://crbug.com/357704
-  registry->RegisterStringPref(::prefs::kMetricsOldClientID, std::string());
-  registry->RegisterIntegerPref(::prefs::kMetricsOldLowEntropySource, 0);
+  registry->RegisterStringPref(prefs::kMetricsOldClientID, std::string());
+  registry->RegisterIntegerPref(prefs::kMetricsOldLowEntropySource, 0);
 }
 
 int MetricsStateManager::GetLowEntropySource() {
@@ -177,11 +176,11 @@ int MetricsStateManager::GetLowEntropySource() {
     return low_entropy_source_;
 
   const CommandLine* command_line(CommandLine::ForCurrentProcess());
-  // Only try to load the value from ::prefs if the user did not request a
+  // Only try to load the value from prefs if the user did not request a
   // reset.
   // Otherwise, skip to generating a new value.
   if (!command_line->HasSwitch(switches::kResetVariationState)) {
-    int value = local_state_->GetInteger(::prefs::kMetricsLowEntropySource);
+    int value = local_state_->GetInteger(prefs::kMetricsLowEntropySource);
     // If the value is outside the [0, kMaxLowEntropySize) range, re-generate
     // it below.
     if (value >= 0 && value < kMaxLowEntropySize) {
@@ -193,9 +192,9 @@ int MetricsStateManager::GetLowEntropySource() {
 
   UMA_HISTOGRAM_BOOLEAN("UMA.GeneratedLowEntropySource", true);
   low_entropy_source_ = GenerateLowEntropySource();
-  local_state_->SetInteger(::prefs::kMetricsLowEntropySource,
+  local_state_->SetInteger(prefs::kMetricsLowEntropySource,
                            low_entropy_source_);
-  local_state_->ClearPref(::prefs::kMetricsOldLowEntropySource);
+  local_state_->ClearPref(prefs::kMetricsOldLowEntropySource);
   CachingPermutedEntropyProvider::ClearCache(local_state_);
 
   return low_entropy_source_;
@@ -210,8 +209,8 @@ void MetricsStateManager::ResetMetricsIDsIfNecessary() {
   DCHECK(client_id_.empty());
   DCHECK_EQ(kLowEntropySourceNotSet, low_entropy_source_);
 
-  local_state_->ClearPref(::prefs::kMetricsClientID);
-  local_state_->ClearPref(::prefs::kMetricsLowEntropySource);
+  local_state_->ClearPref(prefs::kMetricsClientID);
+  local_state_->ClearPref(prefs::kMetricsLowEntropySource);
   local_state_->ClearPref(prefs::kMetricsResetIds);
 }
 

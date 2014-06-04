@@ -1345,30 +1345,10 @@ const char kDisableSSLRecordSplitting[] = "ssl.ssl_record_splitting.disabled";
 // A boolean pref of the EULA accepted flag.
 const char kEulaAccepted[] = "EulaAccepted";
 
-// The metrics client GUID, entropy source and session ID.
-// Note: The names client_id2 and low_entropy_source2 are a result of creating
-// new prefs to do a one-time reset of the previous values.
-const char kMetricsClientID[] = "user_experience_metrics.client_id2";
-const char kMetricsSessionID[] = "user_experience_metrics.session_id";
-const char kMetricsLowEntropySource[] =
-    "user_experience_metrics.low_entropy_source2";
-
-// Old client id and low entropy source values, cleared the first time this
-// version is launched.
-// TODO(asvitkine): Delete these after a few releases have gone by and old
-// values have been cleaned up. http://crbug.com/357704
-const char kMetricsOldClientID[] = "user_experience_metrics.client_id";
-const char kMetricsOldLowEntropySource[] =
-    "user_experience_metrics.low_entropy_source";
-
 // Boolean that specifies whether or not crash reporting and metrics reporting
 // are sent over the network for analysis.
 const char kMetricsReportingEnabled[] =
     "user_experience_metrics.reporting_enabled";
-// Date/time when the user opted in to UMA and generated the client id for the
-// very first time (local machine time, stored as a 64-bit time_t value).
-const char kMetricsReportingEnabledTimestamp[] =
-    "user_experience_metrics.client_id_timestamp";
 
 // Boolean that specifies whether or not crash reports are sent
 // over the network for analysis.

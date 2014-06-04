@@ -1230,8 +1230,6 @@
         'browser/metrics/metrics_service_accessor.h',
         'browser/metrics/metrics_services_manager.cc',
         'browser/metrics/metrics_services_manager.h',
-        'browser/metrics/metrics_state_manager.cc',
-        'browser/metrics/metrics_state_manager.h',
         'browser/metrics/network_metrics_provider.cc',
         'browser/metrics/network_metrics_provider.h',
         'browser/metrics/network_stats_uploader.cc',

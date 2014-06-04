@@ -1096,7 +1096,6 @@
         'browser/metrics/gpu_metrics_provider_unittest.cc',
         'browser/metrics/metrics_log_unittest.cc',
         'browser/metrics/metrics_service_unittest.cc',
-        'browser/metrics/metrics_state_manager_unittest.cc',
         'browser/metrics/plugin_metrics_provider_unittest.cc',
         'browser/metrics/profiler_metrics_provider_unittest.cc',
         'browser/metrics/thread_watcher_unittest.cc',

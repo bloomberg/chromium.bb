@@ -13,6 +13,7 @@
       'dependencies': [
         '../base/base.gyp:base',
         'component_metrics_proto',
+        'variations',
       ],
       'sources': [
         'metrics/metrics_provider.h',
@@ -36,6 +37,10 @@
         'metrics/metrics_service_client.h',
         'metrics/metrics_service_observer.cc',
         'metrics/metrics_service_observer.h',
+        'metrics/metrics_state_manager.cc',
+        'metrics/metrics_state_manager.h',
+        'metrics/metrics_switches.cc',
+        'metrics/metrics_switches.h',
         'metrics/persisted_logs.cc',
         'metrics/persisted_logs.h',
       ],

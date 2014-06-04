@@ -53,7 +53,7 @@ std::string GetMetricsEnabledDate(PrefService* pref) {
     return "0";
   }
 
-  return pref->GetString(prefs::kMetricsReportingEnabledTimestamp);
+  return pref->GetString(metrics::prefs::kMetricsReportingEnabledTimestamp);
 }
 
 // Computes a SHA-1 hash of |data| and returns it as a hex string.

@@ -14,6 +14,7 @@
 #include "components/autofill/core/common/autofill_pref_names.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
 #include "components/data_reduction_proxy/common/data_reduction_proxy_pref_names.h"
+#include "components/metrics/metrics_pref_names.h"
 #include "components/signin/core/common/signin_pref_names.h"
 
 namespace prefs {
@@ -426,13 +427,8 @@ extern const char kGLVersionString[];
 
 extern const char kEulaAccepted[];
 
-extern const char kMetricsClientID[];
-extern const char kMetricsSessionID[];
-extern const char kMetricsLowEntropySource[];
-extern const char kMetricsOldClientID[];
-extern const char kMetricsOldLowEntropySource[];
 extern const char kMetricsReportingEnabled[];
-extern const char kMetricsReportingEnabledTimestamp[];
+
 // Android has it's own metric / crash reporting implemented in Android
 // Java code so kMetricsReportingEnabled doesn't make sense. We use this
 // to inform crashes_ui that we have enabled crash reporting.
