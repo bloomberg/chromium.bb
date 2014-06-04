@@ -41,6 +41,15 @@ EncodedFrame::EncodedFrame()
 
 EncodedFrame::~EncodedFrame() {}
 
+void EncodedFrame::CopyMetadataTo(EncodedFrame* dest) const {
+  DCHECK(dest);
+  dest->dependency = this->dependency;
+  dest->frame_id = this->frame_id;
+  dest->referenced_frame_id = this->referenced_frame_id;
+  dest->rtp_timestamp = this->rtp_timestamp;
+  dest->reference_time = this->reference_time;
+}
+
 RtcpSenderInfo::RtcpSenderInfo()
     : ntp_seconds(0),
       ntp_fraction(0),

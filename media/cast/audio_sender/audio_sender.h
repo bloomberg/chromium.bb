@@ -16,7 +16,6 @@
 #include "media/cast/cast_config.h"
 #include "media/cast/rtcp/rtcp.h"
 #include "media/cast/rtp_timestamp_helper.h"
-#include "media/cast/transport/rtp_sender/rtp_sender.h"
 
 namespace media {
 namespace cast {
@@ -36,17 +35,16 @@ class AudioSender : public RtcpSenderFeedback,
   virtual ~AudioSender();
 
   CastInitializationStatus InitializationResult() const {
-    return cast_initialization_cb_;
+    return cast_initialization_status_;
   }
 
+  // Note: It is invalid to call this method if InitializationResult() returns
+  // anything but STATUS_AUDIO_INITIALIZED.
   void InsertAudio(scoped_ptr<AudioBus> audio_bus,
                    const base::TimeTicks& recorded_time);
 
   // Only called from the main cast thread.
   void IncomingRtcpPacket(scoped_ptr<Packet> packet);
-
- protected:
-  void SendEncodedAudioFrame(scoped_ptr<transport::EncodedFrame> audio_frame);
 
  private:
   void ResendPackets(
@@ -54,6 +52,9 @@ class AudioSender : public RtcpSenderFeedback,
 
   void ScheduleNextRtcpReport();
   void SendRtcpReport(bool schedule_future_reports);
+
+  // Called by the |audio_encoder_| with the next EncodedFrame to send.
+  void SendEncodedAudioFrame(scoped_ptr<transport::EncodedFrame> audio_frame);
 
   virtual void OnReceivedCastFeedback(const RtcpCastMessage& cast_feedback)
       OVERRIDE;
@@ -64,7 +65,9 @@ class AudioSender : public RtcpSenderFeedback,
   RtpTimestampHelper rtp_timestamp_helper_;
   Rtcp rtcp_;
   int num_aggressive_rtcp_reports_sent_;
-  CastInitializationStatus cast_initialization_cb_;
+
+  // If this sender is ready for use, this is STATUS_AUDIO_INITIALIZED.
+  CastInitializationStatus cast_initialization_status_;
 
   // Used to map the lower 8 bits of the frame id to a RTP timestamp. This is
   // good enough as we only use it for logging.

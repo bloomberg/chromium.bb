@@ -44,15 +44,21 @@ class VideoSender : public RtcpSenderFeedback,
               const VideoSenderConfig& video_config,
               const CreateVideoEncodeAcceleratorCallback& create_vea_cb,
               const CreateVideoEncodeMemoryCallback& create_video_encode_mem_cb,
-              const CastInitializationCallback& cast_initialization_cb,
               transport::CastTransportSender* const transport_sender);
 
   virtual ~VideoSender();
+
+  CastInitializationStatus InitializationResult() const {
+    return cast_initialization_status_;
+  }
 
   // The video_frame must be valid until the closure callback is called.
   // The closure callback is called from the video encoder thread as soon as
   // the encoder is done with the frame; it does not mean that the encoded frame
   // has been sent out.
+  //
+  // Note: It is invalid to call this method if InitializationResult() returns
+  // anything but STATUS_VIDEO_INITIALIZED.
   void InsertRawVideoFrame(const scoped_refptr<media::VideoFrame>& video_frame,
                            const base::TimeTicks& capture_time);
 
@@ -90,9 +96,9 @@ class VideoSender : public RtcpSenderFeedback,
   void ReceivedAck(uint32 acked_frame_id);
   void UpdateFramesInFlight();
 
-  void SendEncodedVideoFrameMainThread(
-      int requested_bitrate_before_encode,
-      scoped_ptr<transport::EncodedFrame> encoded_frame);
+  // Called by the |video_encoder_| with the next EncodeFrame to send.
+  void SendEncodedVideoFrame(int requested_bitrate_before_encode,
+                             scoped_ptr<transport::EncodedFrame> encoded_frame);
 
   void InitializeTimers();
 
@@ -121,6 +127,9 @@ class VideoSender : public RtcpSenderFeedback,
   // the bitrate drastically to ensure that we catch up. Without this we
   // risk getting stuck in a catch-up state forever.
   CongestionControl congestion_control_;
+
+  // If this sender is ready for use, this is STATUS_VIDEO_INITIALIZED.
+  CastInitializationStatus cast_initialization_status_;
 
   // This is a "good enough" mapping for finding the RTP timestamp associated
   // with a video frame. The key is the lowest 8 bits of frame id (which is

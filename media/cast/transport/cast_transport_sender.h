@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// This is the main interface for the cast transport sender. The cast sender
-// handles the cast pipeline from encoded frames (both audio and video), to
-// encryption, packetization and transport.
+// This is the main interface for the cast transport sender.  It accepts encoded
+// frames (both audio and video), encrypts their encoded data, packetizes them
+// and feeds them into a transport (e.g., UDP).
 
 // Construction of the Cast Sender and the Cast Transport Sender should be done
 // in the following order:

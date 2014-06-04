@@ -108,6 +108,10 @@ struct EncodedFrame {
     return reinterpret_cast<uint8*>(string_as_array(&data));
   }
 
+  // Copies all data members except |data| to |dest|.
+  // Does not modify |dest->data|.
+  void CopyMetadataTo(EncodedFrame* dest) const;
+
   // This frame's dependency relationship with respect to other frames.
   Dependency dependency;
 

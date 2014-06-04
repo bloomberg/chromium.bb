@@ -97,11 +97,12 @@ void CastSenderImpl::InitializeAudio(
   CHECK(audio_config.use_external_encoder ||
         cast_environment_->HasAudioThread());
 
+  VLOG(1) << "CastSenderImpl@" << this << "::InitializeAudio()";
+
   audio_sender_.reset(
       new AudioSender(cast_environment_, audio_config, transport_sender_));
 
-  CastInitializationStatus status = audio_sender_->InitializationResult();
-
+  const CastInitializationStatus status = audio_sender_->InitializationResult();
   if (status == STATUS_AUDIO_INITIALIZED) {
     ssrc_of_audio_sender_ = audio_config.incoming_feedback_ssrc;
     audio_frame_input_ =
@@ -118,22 +119,26 @@ void CastSenderImpl::InitializeVideo(
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
   CHECK(video_config.use_external_encoder ||
         cast_environment_->HasVideoThread());
-  VLOG(1) << "CastSender::ctor";
+
+  VLOG(1) << "CastSenderImpl@" << this << "::InitializeVideo()";
 
   video_sender_.reset(new VideoSender(cast_environment_,
                                       video_config,
                                       create_vea_cb,
                                       create_video_encode_mem_cb,
-                                      cast_initialization_cb,
                                       transport_sender_));
 
-  ssrc_of_video_sender_ = video_config.incoming_feedback_ssrc;
-  video_frame_input_ =
-      new LocalVideoFrameInput(cast_environment_, video_sender_->AsWeakPtr());
+  const CastInitializationStatus status = video_sender_->InitializationResult();
+  if (status == STATUS_VIDEO_INITIALIZED) {
+    ssrc_of_video_sender_ = video_config.incoming_feedback_ssrc;
+    video_frame_input_ =
+        new LocalVideoFrameInput(cast_environment_, video_sender_->AsWeakPtr());
+  }
+  cast_initialization_cb.Run(status);
 }
 
 CastSenderImpl::~CastSenderImpl() {
-  VLOG(1) << "CastSender::dtor";
+  VLOG(1) << "CastSenderImpl@" << this << "::~CastSenderImpl()";
 }
 
 // ReceivedPacket handle the incoming packets to the cast sender
@@ -166,8 +171,8 @@ void CastSenderImpl::ReceivedPacket(scoped_ptr<Packet> packet) {
   size_t length = packet->size();
   const uint8_t* data = &packet->front();
   if (!Rtcp::IsRtcpPacket(data, length)) {
-    // We should have no incoming RTP packets.
-    VLOG(1) << "Unexpectedly received a RTP packet in the cast sender";
+    VLOG(1) << "CastSenderImpl@" << this << "::ReceivedPacket() -- "
+            << "Received an invalid (non-RTCP?) packet in the cast sender.";
     return;
   }
   uint32 ssrc_of_sender = Rtcp::GetSsrcOfSender(data, length);
@@ -192,7 +197,8 @@ void CastSenderImpl::ReceivedPacket(scoped_ptr<Packet> packet) {
                                            video_sender_->AsWeakPtr(),
                                            base::Passed(&packet)));
   } else {
-    VLOG(1) << "Received a RTCP packet with a non matching sender SSRC "
+    VLOG(1) << "CastSenderImpl@" << this << "::ReceivedPacket() -- "
+            << "Received a RTCP packet with a non matching sender SSRC "
             << ssrc_of_sender;
   }
 }

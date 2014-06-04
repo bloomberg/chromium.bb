@@ -35,7 +35,7 @@ AudioSender::AudioSender(scoped_refptr<CastEnvironment> cast_environment,
             audio_config.rtcp_c_name,
             AUDIO_EVENT),
       num_aggressive_rtcp_reports_sent_(0),
-      cast_initialization_cb_(STATUS_AUDIO_UNINITIALIZED),
+      cast_initialization_status_(STATUS_AUDIO_UNINITIALIZED),
       weak_factory_(this) {
   rtcp_.SetCastReceiverEventHistorySize(kReceiverRtcpEventHistorySize);
   if (!audio_config.use_external_encoder) {
@@ -44,7 +44,10 @@ AudioSender::AudioSender(scoped_refptr<CastEnvironment> cast_environment,
                          audio_config,
                          base::Bind(&AudioSender::SendEncodedAudioFrame,
                                     weak_factory_.GetWeakPtr())));
-    cast_initialization_cb_ = audio_encoder_->InitializationResult();
+    cast_initialization_status_ = audio_encoder_->InitializationResult();
+  } else {
+    NOTREACHED();  // No support for external audio encoding.
+    cast_initialization_status_ = STATUS_AUDIO_INITIALIZED;
   }
 
   media::cast::transport::CastTransportAudioConfig transport_config;
@@ -64,6 +67,10 @@ AudioSender::~AudioSender() {}
 void AudioSender::InsertAudio(scoped_ptr<AudioBus> audio_bus,
                               const base::TimeTicks& recorded_time) {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
+  if (cast_initialization_status_ != STATUS_AUDIO_INITIALIZED) {
+    NOTREACHED();
+    return;
+  }
   DCHECK(audio_encoder_.get()) << "Invalid internal state";
   audio_encoder_->InsertAudio(audio_bus.Pass(), recorded_time);
 }
@@ -71,6 +78,7 @@ void AudioSender::InsertAudio(scoped_ptr<AudioBus> audio_bus,
 void AudioSender::SendEncodedAudioFrame(
     scoped_ptr<transport::EncodedFrame> audio_frame) {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
+
   DCHECK(!audio_frame->reference_time.is_null());
   rtp_timestamp_helper_.StoreLatestTime(audio_frame->reference_time,
                                         audio_frame->rtp_timestamp);

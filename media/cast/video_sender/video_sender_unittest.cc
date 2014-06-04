@@ -90,13 +90,11 @@ class PeerVideoSender : public VideoSender {
       const VideoSenderConfig& video_config,
       const CreateVideoEncodeAcceleratorCallback& create_vea_cb,
       const CreateVideoEncodeMemoryCallback& create_video_encode_mem_cb,
-      const CastInitializationCallback& cast_initialization_cb,
       transport::CastTransportSender* const transport_sender)
       : VideoSender(cast_environment,
                     video_config,
                     create_vea_cb,
                     create_video_encode_mem_cb,
-                    cast_initialization_cb,
                     transport_sender) {}
   using VideoSender::OnReceivedCastFeedback;
 };
@@ -164,8 +162,6 @@ class VideoSenderTest : public ::testing::Test {
                                          task_runner_,
                                          base::Passed(&fake_vea)),
                               base::Bind(&CreateSharedMemory),
-                              base::Bind(&VideoSenderTest::InitializationResult,
-                                         base::Unretained(this)),
                               transport_sender_.get()));
     } else {
       video_sender_.reset(
@@ -173,10 +169,9 @@ class VideoSenderTest : public ::testing::Test {
                               video_config,
                               CreateDefaultVideoEncodeAcceleratorCallback(),
                               CreateDefaultVideoEncodeMemoryCallback(),
-                              base::Bind(&VideoSenderTest::InitializationResult,
-                                         base::Unretained(this)),
                               transport_sender_.get()));
     }
+    ASSERT_EQ(STATUS_VIDEO_INITIALIZED, video_sender_->InitializationResult());
   }
 
   scoped_refptr<media::VideoFrame> GetNewVideoFrame() {
@@ -194,10 +189,6 @@ class VideoSenderTest : public ::testing::Test {
       testing_clock_->Advance(base::TimeDelta::FromMilliseconds(1));
       task_runner_->RunTasks();
     }
-  }
-
-  void InitializationResult(CastInitializationStatus result) {
-    EXPECT_EQ(STATUS_VIDEO_INITIALIZED, result);
   }
 
   base::SimpleTestTickClock* testing_clock_;  // Owned by CastEnvironment.

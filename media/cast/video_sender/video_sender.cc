@@ -28,7 +28,6 @@ VideoSender::VideoSender(
     const VideoSenderConfig& video_config,
     const CreateVideoEncodeAcceleratorCallback& create_vea_cb,
     const CreateVideoEncodeMemoryCallback& create_video_encode_mem_cb,
-    const CastInitializationCallback& cast_initialization_cb,
     transport::CastTransportSender* const transport_sender)
     : rtp_max_delay_(base::TimeDelta::FromMilliseconds(
           video_config.rtp_config.max_delay_ms)),
@@ -48,6 +47,7 @@ VideoSender::VideoSender(
                           video_config.max_bitrate,
                           video_config.min_bitrate,
                           video_config.start_bitrate),
+      cast_initialization_status_(STATUS_VIDEO_UNINITIALIZED),
       initialized_(false),
       active_session_(false),
       weak_factory_(this) {
@@ -56,7 +56,6 @@ VideoSender::VideoSender(
                              max_frame_rate_ / 1000);
   VLOG(1) << "max_unacked_frames " << static_cast<int>(max_unacked_frames_);
   DCHECK_GT(max_unacked_frames_, 0) << "Invalid argument";
-
   if (video_config.use_external_encoder) {
     video_encoder_.reset(new ExternalVideoEncoder(cast_environment,
                                                   video_config,
@@ -66,7 +65,7 @@ VideoSender::VideoSender(
     video_encoder_.reset(new VideoEncoderImpl(
         cast_environment, video_config, max_unacked_frames_));
   }
-
+  cast_initialization_status_ = STATUS_VIDEO_INITIALIZED;
 
   media::cast::transport::CastTransportVideoConfig transport_config;
   transport_config.codec = video_config.codec;
@@ -88,13 +87,6 @@ VideoSender::VideoSender(
                VIDEO_EVENT));
   rtcp_->SetCastReceiverEventHistorySize(kReceiverRtcpEventHistorySize);
 
-  // TODO(pwestin): pass cast_initialization_cb to |video_encoder_|
-  // and remove this call.
-  cast_environment_->PostTask(
-      CastEnvironment::MAIN,
-      FROM_HERE,
-      base::Bind(cast_initialization_cb, STATUS_VIDEO_INITIALIZED));
-
   memset(frame_id_to_rtp_timestamp_, 0, sizeof(frame_id_to_rtp_timestamp_));
 }
 
@@ -114,6 +106,10 @@ void VideoSender::InsertRawVideoFrame(
     const scoped_refptr<media::VideoFrame>& video_frame,
     const base::TimeTicks& capture_time) {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
+  if (cast_initialization_status_ != STATUS_VIDEO_INITIALIZED) {
+    NOTREACHED();
+    return;
+  }
   DCHECK(video_encoder_.get()) << "Invalid state";
 
   RtpTimestamp rtp_timestamp = GetVideoRtpTimestamp(capture_time);
@@ -136,7 +132,7 @@ void VideoSender::InsertRawVideoFrame(
   if (video_encoder_->EncodeVideoFrame(
           video_frame,
           capture_time,
-          base::Bind(&VideoSender::SendEncodedVideoFrameMainThread,
+          base::Bind(&VideoSender::SendEncodedVideoFrame,
                      weak_factory_.GetWeakPtr(),
                      current_requested_bitrate_))) {
     frames_in_encoder_++;
@@ -144,7 +140,7 @@ void VideoSender::InsertRawVideoFrame(
   }
 }
 
-void VideoSender::SendEncodedVideoFrameMainThread(
+void VideoSender::SendEncodedVideoFrame(
     int requested_bitrate_before_encode,
     scoped_ptr<transport::EncodedFrame> encoded_frame) {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
@@ -171,6 +167,7 @@ void VideoSender::SendEncodedVideoFrameMainThread(
   frame_id_to_rtp_timestamp_[frame_id & 0xff] = encoded_frame->rtp_timestamp;
 
   last_sent_frame_id_ = static_cast<int>(encoded_frame->frame_id);
+
   DCHECK(!encoded_frame->reference_time.is_null());
   rtp_timestamp_helper_.StoreLatestTime(encoded_frame->reference_time,
                                         encoded_frame->rtp_timestamp);

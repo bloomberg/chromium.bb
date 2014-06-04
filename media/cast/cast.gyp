@@ -217,10 +217,6 @@
         'transport/rtp_sender/rtp_sender.h',
         'transport/transport/udp_transport.cc',
         'transport/transport/udp_transport.h',
-        'transport/transport_audio_sender.cc',
-        'transport/transport_audio_sender.h',
-        'transport/transport_video_sender.cc',
-        'transport/transport_video_sender.h',
         'transport/utility/transport_encryption_handler.cc',
         'transport/utility/transport_encryption_handler.h',
       ], # source
