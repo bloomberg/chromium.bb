@@ -70,6 +70,7 @@
           '../third_party/pywebsocket/',
           '../third_party/tlslite/',
           '<(PRODUCT_DIR)/pyproto/',
+          '<(PRODUCT_DIR)/test_data/chrome/renderer/resources/extensions/',
         ],
       },
     }],

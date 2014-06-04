@@ -25,10 +25,25 @@ var results = {
 
 function createCallback(id) { }
 
+function notifyPass() { chrome.test.notifyPass(); }
+
 var onClosedHooks = {
+  FOO: notifyPass,
+  BAR: notifyPass,
   BIFF: function() {
-    notifications.create("BLAT", notificationData, createCallback);
-    notifications.create("BLOT", notificationData, createCallback);
+    notifications.create("BLAT", notificationData, function () {
+      if (chrome.runtime.lastError) {
+        chrome.test.notifyFail(lastError.message);
+        return;
+      }
+      notifications.create("BLOT", notificationData, function () {
+        if (chrome.runtime.lastError) {
+          chrome.test.notifyFail(lastError.message);
+          return;
+        }
+        chrome.test.notifyPass("Created the new notifications.");
+      });
+    });
   },
 };
 
@@ -38,19 +53,25 @@ function onClosedListener(id, by_user) {
                            " closed with bad by_user param ( "+ by_user +" )");
     return;
   }
-  chrome.test.notifyPass();
   delete results[id];
 
   if (typeof onClosedHooks[id] === "function")
     onClosedHooks[id]();
 
-  if (Object.keys(results).length === 0)
+  if (Object.keys(results).length === 0) {
+    chrome.test.notifyPass("Done!");
     theOnlyTestDone();
+  }
 }
 
 notifications.onClosed.addListener(onClosedListener);
 
 function theOnlyTest() {
+  // This test coordinates with the browser test.  First, 4 notifications are
+  // created.  Then 2 are manually cancelled in C++.  Then clearAll is called
+  // with false |by_user|.  Then once the BIFF notification is cleared, we
+  // create two more notifications in JS, and C++ calls the clearAll with true
+  // |by_user|.
   theOnlyTestDone = chrome.test.callbackAdded();
 
   notifications.create("FOO", notificationData, createCallback);

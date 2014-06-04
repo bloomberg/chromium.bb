@@ -19,6 +19,7 @@
 #include "chrome/renderer/extensions/file_browser_handler_custom_bindings.h"
 #include "chrome/renderer/extensions/file_browser_private_custom_bindings.h"
 #include "chrome/renderer/extensions/media_galleries_custom_bindings.h"
+#include "chrome/renderer/extensions/notifications_native_handler.h"
 #include "chrome/renderer/extensions/page_actions_custom_bindings.h"
 #include "chrome/renderer/extensions/page_capture_custom_bindings.h"
 #include "chrome/renderer/extensions/pepper_request_natives.h"
@@ -110,6 +111,10 @@ void ChromeExtensionsDispatcherDelegate::RegisterNativeHandlers(
       "file_browser_private",
       scoped_ptr<NativeHandler>(
           new extensions::FileBrowserPrivateCustomBindings(context)));
+  module_system->RegisterNativeHandler(
+      "notifications_private",
+      scoped_ptr<NativeHandler>(
+          new extensions::NotificationsNativeHandler(context)));
   module_system->RegisterNativeHandler(
       "mediaGalleries",
       scoped_ptr<NativeHandler>(
