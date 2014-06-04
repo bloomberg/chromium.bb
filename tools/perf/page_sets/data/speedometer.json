@@ -1,8 +1,8 @@
 {
     "description": "Describes the Web Page Replay archives for a page set. Don't edit by hand! Use record_wpr for updating.", 
     "archives": {
-        "doyouevenbench_000.wpr": [
-            "https://trac.webkit.org/export/164157/trunk/PerformanceTests/DoYouEvenBench/Full.html"
+        "speedometer_000.wpr": [
+            "http://browserbench.org/Speedometer/"
         ]
     }
 }
