@@ -61,7 +61,8 @@ cr.define('login', function() {
         this.needsRebuild_ = false;
       }
 
-      MenuButton.prototype.showMenu.apply(this, arguments);
+      if (this.data.length > 0)
+        MenuButton.prototype.showMenu.apply(this, arguments);
     },
 
     /**
@@ -147,7 +148,8 @@ cr.define('login', function() {
    */
   AppsMenuButton.setApps = function(apps) {
     $('show-apps-button').data = apps;
-    $('login-header-bar').hasApps = apps.length > 0;
+    $('login-header-bar').hasApps =
+        apps.length > 0 || loadTimeData.getBoolean('kioskAppHasLaunchError');
     chrome.send('kioskAppsLoaded');
   };
 

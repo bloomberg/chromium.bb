@@ -61,6 +61,9 @@ void KioskAppMenuHandler::GetLocalizedStrings(
   localized_strings->SetString(
       "confirmKioskAppDiagnosticModeNo",
       l10n_util::GetStringUTF16(IDS_CONFIRM_MESSAGEBOX_NO_BUTTON_LABEL));
+  localized_strings->SetBoolean(
+      "kioskAppHasLaunchError",
+      KioskAppLaunchError::Get() != KioskAppLaunchError::NONE);
 }
 
 void KioskAppMenuHandler::RegisterMessages() {
@@ -120,7 +123,6 @@ void KioskAppMenuHandler::SendKioskApps() {
 
     apps_list.Append(app_info.release());
   }
-
 
   web_ui()->CallJavascriptFunction(EnableNewKioskUI() ?
       kKioskSetAppsNewAPI : kKioskSetAppsOldAPI,
