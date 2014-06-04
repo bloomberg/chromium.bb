@@ -28,6 +28,7 @@
 #include "chrome/browser/extensions/api/omnibox/omnibox_api.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/google/google_url_tracker.h"
+#include "chrome/browser/google/google_url_tracker_factory.h"
 #include "chrome/browser/net/predictor.h"
 #include "chrome/browser/omnibox/omnibox_log.h"
 #include "chrome/browser/predictors/autocomplete_action_predictor.h"
@@ -688,8 +689,12 @@ void OmniboxEditModel::AcceptInput(WindowOpenDisposition disposition,
   }
 
   const TemplateURL* template_url = match.GetTemplateURL(profile_, false);
-  if (template_url && template_url->url_ref().HasGoogleBaseURLs())
-    GoogleURLTracker::GoogleURLSearchCommitted(profile_);
+  if (template_url && template_url->url_ref().HasGoogleBaseURLs()) {
+    GoogleURLTracker* tracker =
+        GoogleURLTrackerFactory::GetForProfile(profile_);
+    if (tracker)
+      tracker->SearchCommitted();
+  }
 
   DCHECK(popup_model());
   view_->OpenMatch(match, disposition, alternate_nav_url, base::string16(),

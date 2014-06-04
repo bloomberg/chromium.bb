@@ -73,30 +73,24 @@ GoogleURLTracker::~GoogleURLTracker() {
   DCHECK(entry_map_.empty());
 }
 
-// static
-GURL GoogleURLTracker::GoogleURL(Profile* profile) {
-  const GoogleURLTracker* tracker =
-      GoogleURLTrackerFactory::GetForProfile(profile);
-  return tracker ? tracker->google_url_ : GURL(kDefaultGoogleHomepage);
-}
-
-// static
-void GoogleURLTracker::RequestServerCheck(Profile* profile, bool force) {
-  GoogleURLTracker* tracker = GoogleURLTrackerFactory::GetForProfile(profile);
-  // If the tracker already has a fetcher, SetNeedToFetch() is unnecessary, and
-  // changing |already_fetched_| is wrong.
-  if (tracker && !tracker->fetcher_) {
+void GoogleURLTracker::RequestServerCheck(bool force) {
+  // If this instance already has a fetcher, SetNeedToFetch() is unnecessary,
+  // and changing |already_fetched_| is wrong.
+  if (!fetcher_) {
     if (force)
-      tracker->already_fetched_ = false;
-    tracker->SetNeedToFetch();
+      already_fetched_ = false;
+    SetNeedToFetch();
   }
 }
 
-// static
-void GoogleURLTracker::GoogleURLSearchCommitted(Profile* profile) {
-  GoogleURLTracker* tracker = GoogleURLTrackerFactory::GetForProfile(profile);
-  if (tracker)
-    tracker->SearchCommitted();
+void GoogleURLTracker::SearchCommitted() {
+  if (need_to_prompt_) {
+    search_committed_ = true;
+    // These notifications will fire a bit later in the same call chain we're
+    // currently in.
+    if (!client_->IsListeningForNavigationStart())
+      client_->SetListeningForNavigationStart(true);
+  }
 }
 
 void GoogleURLTracker::AcceptGoogleURL(bool redo_searches) {
@@ -259,16 +253,6 @@ void GoogleURLTracker::StartFetchIfDesirable() {
   fetcher_->SetMaxRetriesOn5xx(kMaxRetries);
 
   fetcher_->Start();
-}
-
-void GoogleURLTracker::SearchCommitted() {
-  if (need_to_prompt_) {
-    search_committed_ = true;
-    // These notifications will fire a bit later in the same call chain we're
-    // currently in.
-    if (!client_->IsListeningForNavigationStart())
-      client_->SetListeningForNavigationStart(true);
-  }
 }
 
 void GoogleURLTracker::OnNavigationPending(

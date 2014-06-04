@@ -9,6 +9,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/google/google_profile_helper.h"
 #include "chrome/browser/google/google_url_tracker.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -99,7 +100,8 @@ std::string UIThreadSearchTermsData::GoogleBaseURLValue() const {
   GURL base_url(google_util::CommandLineGoogleBaseURL());
   if (base_url.is_valid())
     return base_url.spec();
-  return profile_ ? GoogleURLTracker::GoogleURL(profile_).spec() :
+  return profile_ ?
+      google_profile_helper::GetGoogleHomePageURL(profile_).spec() :
       SearchTermsData::GoogleBaseURLValue();
 }
 

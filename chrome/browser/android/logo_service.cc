@@ -5,6 +5,7 @@
 #include "chrome/browser/android/logo_service.h"
 
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/google/google_profile_helper.h"
 #include "chrome/browser/google/google_url_tracker.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/image_decoder.h"
@@ -39,7 +40,7 @@ GURL GetGoogleDoodleURL(Profile* profile) {
 
   GURL base_url(google_util::CommandLineGoogleBaseURL());
   if (!base_url.is_valid())
-    base_url = GoogleURLTracker::GoogleURL(profile);
+    base_url = google_profile_helper::GetGoogleHomePageURL(profile);
   return base_url.ReplaceComponents(replacements);
 }
 

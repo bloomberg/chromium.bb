@@ -693,6 +693,8 @@
         'browser/google/chrome_google_url_tracker_client.h',
         'browser/google/google_search_counter.cc',
         'browser/google/google_search_counter.h',
+        'browser/google/google_profile_helper.cc',
+        'browser/google/google_profile_helper.h',
         'browser/google/google_update_settings_posix.cc',
         'browser/google/google_update_win.cc',
         'browser/google/google_update_win.h',

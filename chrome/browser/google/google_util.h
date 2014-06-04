@@ -12,7 +12,6 @@
 #include "base/basictypes.h"
 
 class GURL;
-class Profile;
 
 // This namespace provides various helpers around handling Google-related URLs
 // and state relating to Google Chrome distributions (such as RLZ).
@@ -40,11 +39,11 @@ GURL AppendGoogleLocaleParam(const GURL& url);
 // String version of AppendGoogleLocaleParam.
 std::string StringAppendGoogleLocaleParam(const std::string& url);
 
-// Returns the Google country code string for the given profile.
-std::string GetGoogleCountryCode(Profile* profile);
+// Returns the Google country code string for the given Google homepage URL.
+std::string GetGoogleCountryCode(GURL google_homepage_url);
 
-// Returns the Google search URL for the given profile.
-GURL GetGoogleSearchURL(Profile* profile);
+// Returns the Google search URL for the given Google homepage URL.
+GURL GetGoogleSearchURL(GURL google_homepage_url);
 
 // Returns in |brand| the brand code or distribution tag that has been
 // assigned to a partner. Returns false if the information is not available.

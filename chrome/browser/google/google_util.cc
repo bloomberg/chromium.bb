@@ -95,9 +95,8 @@ std::string StringAppendGoogleLocaleParam(const std::string& url) {
   return localized_url.spec();
 }
 
-std::string GetGoogleCountryCode(Profile* profile) {
-  const std::string google_hostname =
-      GoogleURLTracker::GoogleURL(profile).host();
+std::string GetGoogleCountryCode(GURL google_homepage_url) {
+  const std::string google_hostname = google_homepage_url.host();
   const size_t last_dot = google_hostname.find_last_of('.');
   if (last_dot == std::string::npos) {
     NOTREACHED();
@@ -117,15 +116,15 @@ std::string GetGoogleCountryCode(Profile* profile) {
   return country_code;
 }
 
-GURL GetGoogleSearchURL(Profile* profile) {
-  // The url returned by the tracker does not include the "/search" or the
-  // "q=" query string.
+GURL GetGoogleSearchURL(GURL google_homepage_url) {
+  // To transform the homepage URL into the corresponding search URL, add the
+  // "search" and the "q=" query string.
   std::string search_path = "search";
   std::string query_string = "q=";
   GURL::Replacements replacements;
   replacements.SetPathStr(search_path);
   replacements.SetQueryStr(query_string);
-  return GoogleURLTracker::GoogleURL(profile).ReplaceComponents(replacements);
+  return google_homepage_url.ReplaceComponents(replacements);
 }
 
 #if defined(OS_WIN)

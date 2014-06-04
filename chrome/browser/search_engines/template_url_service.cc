@@ -1567,8 +1567,12 @@ void TemplateURLService::Init(const Initializer* initializers,
   if (profile_ && default_search_provider &&
       default_search_provider->HasGoogleBaseURLs()) {
     scoped_ptr<base::Environment> env(base::Environment::Create());
-    if (!env->HasVar(env_vars::kHeadless))
-      GoogleURLTracker::RequestServerCheck(profile_, false);
+    if (!env->HasVar(env_vars::kHeadless)) {
+      GoogleURLTracker* tracker =
+          GoogleURLTrackerFactory::GetForProfile(profile_);
+      if (tracker)
+        tracker->RequestServerCheck(false);
+    }
   }
 }
 
@@ -2064,8 +2068,12 @@ bool TemplateURLService::ApplyDefaultSearchChangeNoMetrics(
   bool changed = default_search_provider_ != previous_default_search_engine;
 
   if (profile_ && changed && default_search_provider_ &&
-      default_search_provider_->HasGoogleBaseURLs())
-    GoogleURLTracker::RequestServerCheck(profile_, false);
+      default_search_provider_->HasGoogleBaseURLs()) {
+    GoogleURLTracker* tracker =
+        GoogleURLTrackerFactory::GetForProfile(profile_);
+    if (tracker)
+      tracker->RequestServerCheck(false);
+  }
 
   NotifyObservers();
 
