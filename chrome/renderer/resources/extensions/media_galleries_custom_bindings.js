@@ -103,6 +103,22 @@ binding.registerCustomHook(function(bindingsAPI, extensionId) {
     var blobUuid = blobNatives.GetBlobUuid(mediaFile)
     return [blobUuid, options, callback];
   });
+
+  apiFunctions.setCustomCallback('getMetadata',
+                                 function(name, request, response) {
+    if (response.attachedImagesBlobInfo) {
+      for (var i = 0; i < response.attachedImagesBlobInfo.length; i++) {
+        var blobInfo = response.attachedImagesBlobInfo[i];
+        var blob = blobNatives.TakeBrowserProcessBlob(
+            blobInfo.blobUUID, blobInfo.type, blobInfo.size);
+        response.metadata.attachedImages.push(blob);
+      }
+    }
+
+    if (request.callback)
+      request.callback(response.metadata);
+    request.callback = null;
+  });
 });
 
 exports.binding = binding.generate();

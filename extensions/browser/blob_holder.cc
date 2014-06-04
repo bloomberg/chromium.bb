@@ -44,8 +44,8 @@ void BlobHolder::HoldBlobReference(scoped_ptr<content::BlobHandle> blob) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(!ContainsBlobHandle(blob.get()));
 
-  held_blobs_.insert(
-      make_pair(blob->GetUUID(), make_linked_ptr(blob.release())));
+  std::string uuid = blob->GetUUID();
+  held_blobs_.insert(make_pair(uuid, make_linked_ptr(blob.release())));
 }
 
 BlobHolder::BlobHolder(content::RenderProcessHost* render_process_host)

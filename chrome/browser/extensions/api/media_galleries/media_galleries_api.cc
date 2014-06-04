@@ -14,6 +14,7 @@
 #include "apps/app_window_registry.h"
 #include "base/callback.h"
 #include "base/lazy_instance.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -36,11 +37,14 @@
 #include "chrome/common/pref_names.h"
 #include "components/storage_monitor/storage_info.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
+#include "content/public/browser/blob_handle.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/browser/blob_holder.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_system.h"
@@ -51,6 +55,7 @@
 #include "grit/generated_resources.h"
 #include "net/base/mime_sniffer.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "webkit/browser/blob/blob_data_handle.h"
 
 using content::WebContents;
 using storage_monitor::MediaStorageUtil;
@@ -81,6 +86,12 @@ const char kIsAvailableKey[] = "isAvailable";
 const char kIsMediaDeviceKey[] = "isMediaDevice";
 const char kIsRemovableKey[] = "isRemovable";
 const char kNameKey[] = "name";
+
+const char kMetadataKey[] = "metadata";
+const char kAttachedImagesBlobInfoKey[] = "attachedImagesBlobInfo";
+const char kBlobUUIDKey[] = "blobUUID";
+const char kTypeKey[] = "type";
+const char kSizeKey[] = "size";
 
 MediaFileSystemRegistry* media_file_system_registry() {
   return g_browser_process->media_file_system_registry();
@@ -821,30 +832,28 @@ bool MediaGalleriesGetMetadataFunction::RunAsync() {
   if (!options)
     return false;
 
-  bool mime_type_only = options->metadata_type ==
-      MediaGalleries::GET_METADATA_TYPE_MIMETYPEONLY;
-
   return Setup(GetProfile(), &error_, base::Bind(
       &MediaGalleriesGetMetadataFunction::OnPreferencesInit, this,
-      mime_type_only, blob_uuid));
+      options->metadata_type, blob_uuid));
 }
 
 void MediaGalleriesGetMetadataFunction::OnPreferencesInit(
-    bool mime_type_only, const std::string& blob_uuid) {
+    MediaGalleries::GetMetadataType metadata_type,
+    const std::string& blob_uuid) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   // BlobReader is self-deleting.
   BlobReader* reader = new BlobReader(
       GetProfile(),
       blob_uuid,
-      base::Bind(&MediaGalleriesGetMetadataFunction::SniffMimeType, this,
-                 mime_type_only, blob_uuid));
+      base::Bind(&MediaGalleriesGetMetadataFunction::GetMetadata, this,
+                 metadata_type, blob_uuid));
   reader->SetByteRange(0, net::kMaxBytesToSniff);
   reader->Start();
 }
 
-void MediaGalleriesGetMetadataFunction::SniffMimeType(
-    bool mime_type_only, const std::string& blob_uuid,
+void MediaGalleriesGetMetadataFunction::GetMetadata(
+    MediaGalleries::GetMetadataType metadata_type, const std::string& blob_uuid,
     scoped_ptr<std::string> blob_header, int64 total_blob_length) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
@@ -857,19 +866,27 @@ void MediaGalleriesGetMetadataFunction::SniffMimeType(
     return;
   }
 
-  if (mime_type_only) {
+  if (metadata_type == MediaGalleries::GET_METADATA_TYPE_MIMETYPEONLY) {
     MediaGalleries::MediaMetadata metadata;
     metadata.mime_type = mime_type;
-    SetResult(metadata.ToValue().release());
+
+    base::DictionaryValue* result_dictionary = new base::DictionaryValue;
+    result_dictionary->Set(kMetadataKey, metadata.ToValue().release());
+    SetResult(result_dictionary);
     SendResponse(true);
     return;
   }
 
-  // TODO(tommycli): Enable getting attached images.
+  // We get attached images by default. GET_METADATA_TYPE_NONE is the default
+  // value if the caller doesn't specify the metadata type.
+  bool get_attached_images =
+      metadata_type == MediaGalleries::GET_METADATA_TYPE_ALL ||
+      metadata_type == MediaGalleries::GET_METADATA_TYPE_NONE;
+
   scoped_refptr<metadata::SafeMediaMetadataParser> parser(
       new metadata::SafeMediaMetadataParser(GetProfile(), blob_uuid,
                                             total_blob_length, mime_type,
-                                            false /* get_attached_images */));
+                                            get_attached_images));
   parser->Start(base::Bind(
       &MediaGalleriesGetMetadataFunction::OnSafeMediaMetadataParserDone, this));
 }
@@ -877,12 +894,94 @@ void MediaGalleriesGetMetadataFunction::SniffMimeType(
 void MediaGalleriesGetMetadataFunction::OnSafeMediaMetadataParserDone(
     bool parse_success, scoped_ptr<base::DictionaryValue> metadata_dictionary,
     scoped_ptr<std::vector<metadata::AttachedImage> > attached_images) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
   if (!parse_success) {
     SendResponse(false);
     return;
   }
 
-  SetResult(metadata_dictionary->DeepCopy());
+  DCHECK(metadata_dictionary.get());
+  DCHECK(attached_images.get());
+
+  scoped_ptr<base::DictionaryValue> result_dictionary(
+      new base::DictionaryValue);
+  result_dictionary->Set(kMetadataKey, metadata_dictionary.release());
+
+  if (attached_images->empty()) {
+    SetResult(result_dictionary.release());
+    SendResponse(true);
+    return;
+  }
+
+  result_dictionary->Set(kAttachedImagesBlobInfoKey, new base::ListValue);
+  metadata::AttachedImage* first_image = &attached_images->front();
+  content::BrowserContext::CreateMemoryBackedBlob(
+      GetProfile(),
+      first_image->data.c_str(),
+      first_image->data.size(),
+      base::Bind(&MediaGalleriesGetMetadataFunction::ConstructNextBlob,
+                 this, base::Passed(&result_dictionary),
+                 base::Passed(&attached_images),
+                 base::Passed(make_scoped_ptr(new std::vector<std::string>))));
+}
+
+void MediaGalleriesGetMetadataFunction::ConstructNextBlob(
+    scoped_ptr<base::DictionaryValue> result_dictionary,
+    scoped_ptr<std::vector<metadata::AttachedImage> > attached_images,
+    scoped_ptr<std::vector<std::string> > blob_uuids,
+    scoped_ptr<content::BlobHandle> current_blob) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  DCHECK(result_dictionary.get());
+  DCHECK(attached_images.get());
+  DCHECK(blob_uuids.get());
+  DCHECK(current_blob.get());
+
+  DCHECK(!attached_images->empty());
+  DCHECK_LT(blob_uuids->size(), attached_images->size());
+
+  // For the newly constructed Blob, store its image's metadata and Blob UUID.
+  base::ListValue* attached_images_list = NULL;
+  result_dictionary->GetList(kAttachedImagesBlobInfoKey, &attached_images_list);
+  DCHECK(attached_images_list);
+  DCHECK_LT(attached_images_list->GetSize(), attached_images->size());
+
+  metadata::AttachedImage* current_image =
+      &(*attached_images)[blob_uuids->size()];
+  base::DictionaryValue* attached_image = new base::DictionaryValue;
+  attached_image->Set(kBlobUUIDKey, new base::StringValue(
+      current_blob->GetUUID()));
+  attached_image->Set(kTypeKey, new base::StringValue(
+      current_image->type));
+  attached_image->Set(kSizeKey, new base::FundamentalValue(
+      base::checked_cast<int>(current_image->data.size())));
+  attached_images_list->Append(attached_image);
+
+  blob_uuids->push_back(current_blob->GetUUID());
+  WebContents* contents = WebContents::FromRenderViewHost(render_view_host());
+  extensions::BlobHolder* holder =
+      extensions::BlobHolder::FromRenderProcessHost(
+          contents->GetRenderProcessHost());
+  holder->HoldBlobReference(current_blob.Pass());
+
+  // Construct the next Blob if necessary.
+  if (blob_uuids->size() < attached_images->size()) {
+    metadata::AttachedImage* next_image =
+        &(*attached_images)[blob_uuids->size()];
+    content::BrowserContext::CreateMemoryBackedBlob(
+        GetProfile(),
+        next_image->data.c_str(),
+        next_image->data.size(),
+        base::Bind(&MediaGalleriesGetMetadataFunction::ConstructNextBlob,
+                   this, base::Passed(&result_dictionary),
+                   base::Passed(&attached_images), base::Passed(&blob_uuids)));
+    return;
+  }
+
+  // All Blobs have been constructed. The renderer will take ownership.
+  SetResult(result_dictionary.release());
+  SetTransferredBlobUUIDs(*blob_uuids);
   SendResponse(true);
 }
 

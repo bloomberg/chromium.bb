@@ -17,8 +17,10 @@ namespace mediaGalleries {
   };
 
   [inline_doc] enum GetMetadataType {
-    // Retrieve all available metadata.
+    // Retrieve the mime type, metadata tags, and attached images.
     all,
+    // Retrieve only the mime type and the metadata tags.
+    mimeTypeAndTags,
     // Retrieve only the mime type.
     mimeTypeOnly
   };
@@ -147,6 +149,10 @@ namespace mediaGalleries {
     // All the metadata in the media file. For formats with multiple streams,
     // stream order will be preserved. Container metadata is the first element.
     StreamInfo[] rawTags;
+
+    // The images embedded in the media file's metadata. This is most often
+    // used for album art or video thumbnails.
+    [instanceof=Blob] object[] attachedImages;
   };
 
   callback MediaMetadataCallback = void (MediaMetadata metadata);

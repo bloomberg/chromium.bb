@@ -26,6 +26,9 @@ function RunMetadataTest(filename, callOptions, verifyMetadataFunction) {
 function ImageMIMETypeOnlyTest() {
   function verifyMetadata(metadata) {
     chrome.test.assertEq("image/jpeg", metadata.mimeType);
+
+    chrome.test.assertEq(0, metadata.attachedImages.length);
+
     chrome.test.succeed();
   }
 
@@ -47,6 +50,9 @@ function ImageTagsTest() {
     chrome.test.assertEq(3.2, metadata.fNumber);
     chrome.test.assertEq(100, metadata.focalLengthMm);
     chrome.test.assertEq(1600, metadata.isoEquivalent);
+
+    chrome.test.assertEq(0, metadata.attachedImages.length);
+
     chrome.test.succeed();
   }
 
@@ -57,6 +63,9 @@ function MP3MIMETypeOnlyTest() {
   function verifyMetadata(metadata) {
     chrome.test.assertEq("audio/mpeg", metadata.mimeType);
     chrome.test.assertEq(undefined, metadata.title);
+
+    chrome.test.assertEq(0, metadata.attachedImages.length);
+
     chrome.test.succeed();
   }
 
@@ -88,7 +97,40 @@ function MP3TagsTest() {
 
     chrome.test.assertEq("png", metadata.rawTags[2].type);
 
+    chrome.test.assertEq(0, metadata.attachedImages.length);
+
     chrome.test.succeed();
+  }
+
+  return RunMetadataTest("id3_png_test.mp3", {metadataType: 'mimeTypeAndTags'},
+                         verifyMetadata);
+}
+
+function MP3AttachedImageTest() {
+  function verifyMetadata(metadata) {
+    chrome.test.assertEq("audio/mpeg", metadata.mimeType);
+    chrome.test.assertEq("Airbag", metadata.title);
+    chrome.test.assertEq("Radiohead", metadata.artist);
+    chrome.test.assertEq("OK Computer", metadata.album);
+    chrome.test.assertEq(1, metadata.track);
+    chrome.test.assertEq("Alternative", metadata.genre);
+
+    chrome.test.assertEq(1, metadata.attachedImages.length);
+    chrome.test.assertEq('image/png', metadata.attachedImages[0].type);
+    chrome.test.assertEq(155752, metadata.attachedImages[0].size);
+
+    var reader = new FileReader();
+    reader.onload = function verifyBlobContents(event) {
+      var first = new Uint8Array(reader.result, 0, 8);
+      var last = new Uint8Array(reader.result, reader.result.byteLength - 8, 8);
+      chrome.test.assertEq("\x89PNG\r\n\x1a\n",
+                           String.fromCharCode.apply(null, first));
+      chrome.test.assertEq("IEND\xae\x42\x60\x82",
+                           String.fromCharCode.apply(null, last));
+
+      chrome.test.succeed();
+    }
+    reader.readAsArrayBuffer(metadata.attachedImages[0]);
   }
 
   return RunMetadataTest("id3_png_test.mp3", {}, verifyMetadata);
@@ -124,6 +166,8 @@ function RotatedVideoTest() {
                          metadata.rawTags[2].tags["handler_name"]);
     chrome.test.assertEq("eng", metadata.rawTags[2].tags["language"]);
 
+    chrome.test.assertEq(0, metadata.attachedImages.length);
+
     chrome.test.succeed();
   }
 
@@ -144,6 +188,7 @@ chrome.test.getConfig(function(config) {
     testsToRun = testsToRun.concat([
       MP3MIMETypeOnlyTest,
       MP3TagsTest,
+      MP3AttachedImageTest,
       RotatedVideoTest
     ]);
   }
