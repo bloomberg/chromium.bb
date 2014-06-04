@@ -1993,8 +1993,8 @@ void AppsGridView::OnImplicitAnimationsCompleted() {
 bool AppsGridView::EnableFolderDragDropUI() {
   // Enable drag and drop folder UI only if it is at the app list root level
   // and the switch is on and the target folder can still accept new items.
-  return switches::IsFolderUIEnabled() && !folder_delegate_ &&
-         CanDropIntoTarget(drop_target_);
+  return model_->folders_enabled() && !folder_delegate_ &&
+      CanDropIntoTarget(drop_target_);
 }
 
 bool AppsGridView::CanDropIntoTarget(const Index& drop_target) {

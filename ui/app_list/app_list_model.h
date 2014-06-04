@@ -112,11 +112,16 @@ class APP_LIST_EXPORT AppListModel : public AppListItemListObserver {
   // Call OnExtensionPreferenceChanged() for all items in the model.
   void NotifyExtensionPreferenceChanged();
 
+  // Sets wither or not folder UI should be enabled. If |folders_enabled| is
+  // false, removes any non-OEM folders.
+  void SetFoldersEnabled(bool folders_enabled);
+
   AppListItemList* top_level_item_list() { return top_level_item_list_.get(); }
 
   SearchBoxModel* search_box() { return search_box_.get(); }
   SearchResults* results() { return results_.get(); }
   Status status() const { return status_; }
+  bool folders_enabled() const { return folders_enabled_; }
 
  private:
   // AppListItemListObserver
@@ -157,6 +162,7 @@ class APP_LIST_EXPORT AppListModel : public AppListItemListObserver {
 
   Status status_;
   ObserverList<AppListModelObserver> observers_;
+  bool folders_enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListModel);
 };

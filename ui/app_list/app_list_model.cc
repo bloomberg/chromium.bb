@@ -18,7 +18,8 @@ AppListModel::AppListModel()
     : top_level_item_list_(new AppListItemList),
       search_box_(new SearchBoxModel),
       results_(new SearchResults),
-      status_(STATUS_NORMAL) {
+      status_(STATUS_NORMAL),
+      folders_enabled_(false) {
   top_level_item_list_->AddObserver(this);
 }
 
@@ -77,6 +78,8 @@ AppListItem* AppListModel::AddItemToFolder(scoped_ptr<AppListItem> item,
   DCHECK(!item->IsInFolder() || item->folder_id() == folder_id);
   DCHECK(item->GetItemType() != AppListFolderItem::kItemType);
   AppListFolderItem* dest_folder = FindOrCreateFolderItem(folder_id);
+  if (!dest_folder)
+    return NULL;
   DCHECK(!dest_folder->item_list()->FindItem(item->id()))
       << "Already in folder: " << dest_folder->id();
   return AddItemToFolderItemAndNotify(dest_folder, item.Pass());
@@ -84,6 +87,10 @@ AppListItem* AppListModel::AddItemToFolder(scoped_ptr<AppListItem> item,
 
 const std::string AppListModel::MergeItems(const std::string& target_item_id,
                                            const std::string& source_item_id) {
+  if (!folders_enabled()) {
+    LOG(ERROR) << "MergeItems called with folders disabled.";
+    return "";
+  }
   DVLOG(2) << "MergeItems: " << source_item_id << " -> " << target_item_id;
   // Find the target item.
   AppListItem* target_item = FindItem(target_item_id);
@@ -253,6 +260,31 @@ void AppListModel::NotifyExtensionPreferenceChanged() {
     top_level_item_list_->item_at(i)->OnExtensionPreferenceChanged();
 }
 
+void AppListModel::SetFoldersEnabled(bool folders_enabled) {
+  folders_enabled_ = folders_enabled;
+  if (folders_enabled)
+    return;
+  // Remove child items from folders.
+  std::vector<std::string> folder_ids;
+  for (size_t i = 0; i < top_level_item_list_->item_count(); ++i) {
+    AppListItem* item = top_level_item_list_->item_at(i);
+    if (item->GetItemType() != AppListFolderItem::kItemType)
+      continue;
+    AppListFolderItem* folder = static_cast<AppListFolderItem*>(item);
+    if (folder->folder_type() == AppListFolderItem::FOLDER_TYPE_OEM)
+      continue;  // Do not remove OEM folders.
+    while (folder->item_list()->item_count()) {
+      scoped_ptr<AppListItem> child = folder->item_list()->RemoveItemAt(0);
+      child->set_folder_id("");
+      AddItemToItemListAndNotifyUpdate(child.Pass());
+    }
+    folder_ids.push_back(folder->id());
+  }
+  // Delete folders.
+  for (size_t i = 0; i < folder_ids.size(); ++i)
+    DeleteItem(folder_ids[i]);
+}
+
 // Private methods
 
 void AppListModel::OnListItemMoved(size_t from_index,
@@ -271,6 +303,11 @@ AppListFolderItem* AppListModel::FindOrCreateFolderItem(
   AppListFolderItem* dest_folder = FindFolderItem(folder_id);
   if (dest_folder)
     return dest_folder;
+
+  if (!folders_enabled()) {
+    LOG(ERROR) << "Attempt to create folder item when disabled: " << folder_id;
+    return NULL;
+  }
 
   DVLOG(2) << "Creating new folder: " << folder_id;
   scoped_ptr<AppListFolderItem> new_folder(

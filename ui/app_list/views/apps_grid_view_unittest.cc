@@ -106,6 +106,7 @@ class AppsGridViewTest : public views::ViewsTestBase {
   virtual void SetUp() OVERRIDE {
     views::ViewsTestBase::SetUp();
     model_.reset(new AppListTestModel);
+    model_->SetFoldersEnabled(true);
 
     apps_grid_view_.reset(new AppsGridView(NULL));
     apps_grid_view_->SetLayout(kIconDimension, kCols, kRows);
@@ -280,7 +281,7 @@ TEST_F(AppsGridViewTest, RemoveSelectedLastApp) {
 }
 
 TEST_F(AppsGridViewTest, MouseDragWithFolderDisabled) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(switches::kDisableSyncAppList);
+  model_->SetFoldersEnabled(false);
   const int kTotalItems = 4;
   model_->PopulateApps(kTotalItems);
   EXPECT_EQ(std::string("Item 0,Item 1,Item 2,Item 3"),
@@ -550,7 +551,7 @@ TEST_F(AppsGridViewTest, MouseDragFlipPage) {
 }
 
 TEST_F(AppsGridViewTest, SimultaneousDragWithFolderDisabled) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(switches::kDisableSyncAppList);
+  model_->SetFoldersEnabled(false);
   const int kTotalItems = 4;
   model_->PopulateApps(kTotalItems);
   EXPECT_EQ(std::string("Item 0,Item 1,Item 2,Item 3"),

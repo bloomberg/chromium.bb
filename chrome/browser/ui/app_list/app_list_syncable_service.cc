@@ -483,6 +483,8 @@ syncer::SyncMergeResult AppListSyncableService::MergeDataAndStartSyncing(
 
   sync_processor_ = sync_processor.Pass();
   sync_error_handler_ = error_handler.Pass();
+  if (switches::IsFolderUIEnabled())
+    model_->SetFoldersEnabled(true);
 
   syncer::SyncMergeResult result = syncer::SyncMergeResult(type);
   result.set_num_items_before_association(sync_items_.size());
@@ -548,6 +550,7 @@ void AppListSyncableService::StopSyncing(syncer::ModelType type) {
 
   sync_processor_.reset();
   sync_error_handler_.reset();
+  model_->SetFoldersEnabled(false);
 }
 
 syncer::SyncDataList AppListSyncableService::GetAllSyncData(

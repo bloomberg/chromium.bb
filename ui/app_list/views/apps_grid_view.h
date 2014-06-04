@@ -213,6 +213,8 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
     return activated_folder_item_view_;
   }
 
+  const AppListModel* model() const { return model_; }
+
  private:
   friend class test::AppsGridViewTestApi;
 

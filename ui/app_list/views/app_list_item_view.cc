@@ -12,7 +12,6 @@
 #include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_folder_item.h"
 #include "ui/app_list/app_list_item.h"
-#include "ui/app_list/app_list_switches.h"
 #include "ui/app_list/views/apps_grid_view.h"
 #include "ui/app_list/views/cached_label.h"
 #include "ui/app_list/views/progress_bar_view.h"
@@ -344,7 +343,7 @@ void AppListItemView::OnPaint(gfx::Canvas* canvas) {
       canvas->FillRect(rect, kSelectedColor);
   }
 
-  if (!switches::IsFolderUIEnabled()) {
+  if (!apps_grid_view_->model()->folders_enabled()) {
     if (apps_grid_view_->IsSelectedView(this)) {
       canvas->FillRect(rect, kSelectedColor);
     } else if (state() == STATE_HOVERED || state() == STATE_PRESSED) {
@@ -382,7 +381,7 @@ void AppListItemView::ShowContextMenuForView(views::View* source,
 }
 
 void AppListItemView::StateChanged() {
-  const bool is_folder_ui_enabled = switches::IsFolderUIEnabled();
+  const bool is_folder_ui_enabled = apps_grid_view_->model()->folders_enabled();
   if (is_folder_ui_enabled)
     apps_grid_view_->ClearAnySelectedView();
 

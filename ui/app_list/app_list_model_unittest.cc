@@ -231,7 +231,9 @@ TEST_F(AppListModelTest, AppOrder) {
 
 class AppListModelFolderTest : public AppListModelTest {
  public:
-  AppListModelFolderTest() {}
+  AppListModelFolderTest() {
+    model_.SetFoldersEnabled(true);
+  }
   virtual ~AppListModelFolderTest() {}
 
   // testing::Test overrides:
@@ -464,6 +466,37 @@ TEST_F(AppListModelFolderTest, OemFolder) {
   bool move_res = model_.MoveItemToFolderAt(item1, "", syncer::StringOrdinal());
   EXPECT_FALSE(move_res);
   EXPECT_TRUE(item1->position().Equals(item1_pos));
+}
+
+TEST_F(AppListModelFolderTest, DisableFolders) {
+  // Set up a folder with two items and an OEM folder with one item.
+  AppListFolderItem* folder =
+      new AppListFolderItem("folder1", AppListFolderItem::FOLDER_TYPE_NORMAL);
+  model_.AddItem(folder);
+  std::string folder_id = folder->id();
+  AppListItem* item0 = new AppListItem("Item 0");
+  model_.AddItemToFolder(item0, folder_id);
+  AppListItem* item1 = new AppListItem("Item 1");
+  model_.AddItemToFolder(item1, folder_id);
+  AppListFolderItem* folder_item = model_.FindFolderItem(folder_id);
+  ASSERT_TRUE(folder_item);
+  EXPECT_EQ(2u, folder_item->item_list()->item_count());
+  AppListFolderItem* oem_folder =
+      new AppListFolderItem("oem_folder", AppListFolderItem::FOLDER_TYPE_OEM);
+  model_.AddItem(oem_folder);
+  AppListItem* oem_item = new AppListItem("OEM Item");
+  std::string oem_folder_id = oem_folder->id();
+  model_.AddItemToFolder(oem_item, oem_folder_id);
+  EXPECT_EQ("folder1,oem_folder", GetModelContents());
+
+  // Disable folders. Ensure non-oem folder is removed.
+  model_.SetFoldersEnabled(false);
+  ASSERT_FALSE(model_.FindFolderItem(folder_id));
+  ASSERT_TRUE(model_.FindFolderItem(oem_folder_id));
+  EXPECT_EQ("Item 0,Item 1,oem_folder", GetModelContents());
+
+  // Ensure folder creation fails.
+  EXPECT_EQ(std::string(), model_.MergeItems(item0->id(), item1->id()));
 }
 
 }  // namespace app_list

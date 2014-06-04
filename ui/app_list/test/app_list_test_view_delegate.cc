@@ -24,6 +24,7 @@ AppListTestViewDelegate::AppListTestViewDelegate()
       next_profile_app_count_(0),
       model_(new AppListTestModel),
       speech_ui_(SPEECH_RECOGNITION_OFF) {
+  model_->SetFoldersEnabled(true);
 }
 
 AppListTestViewDelegate::~AppListTestViewDelegate() {}

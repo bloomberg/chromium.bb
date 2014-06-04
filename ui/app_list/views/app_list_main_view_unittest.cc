@@ -75,6 +75,7 @@ class AppListMainViewTest : public views::ViewsTestBase {
 
     main_view_ = new AppListMainView(delegate_.get(), 0, GetContext());
     main_view_->SetPaintToLayer(true);
+    main_view_->model()->SetFoldersEnabled(true);
 
     widget_ = new views::Widget;
     views::Widget::InitParams params =

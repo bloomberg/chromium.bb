@@ -18,6 +18,7 @@
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_system.h"
+#include "ui/app_list/app_list_model.h"
 #include "ui/app_list/app_list_switches.h"
 
 using apps_helper::DisableApp;
@@ -483,6 +484,14 @@ class TwoClientAppListSyncFolderTest : public TwoClientAppListSyncTest {
 
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     TwoClientAppListSyncTest::SetUpCommandLine(command_line);
+  }
+
+  virtual bool SetupClients() OVERRIDE {
+    bool res = TwoClientAppListSyncTest::SetupClients();
+    app_list::AppListSyncableService* verifier_service =
+        app_list::AppListSyncableServiceFactory::GetForProfile(verifier());
+    verifier_service->model()->SetFoldersEnabled(true);
+    return res;
   }
 
  private:
