@@ -456,7 +456,8 @@ TargetList Clipboard::AuraX11Details::WaitAndGetTargetsList(
                                                   NULL,
                                                   &out_data_items,
                                                   &out_type)) {
-      if (out_type == XA_ATOM) {
+      // Some apps return an |out_type| of "TARGETS". (crbug.com/377893)
+      if (out_type == XA_ATOM || out_type == atom_cache_.GetAtom(kTargets)) {
         const ::Atom* atom_array =
             reinterpret_cast<const ::Atom*>(data->front());
         for (size_t i = 0; i < out_data_items; ++i)
