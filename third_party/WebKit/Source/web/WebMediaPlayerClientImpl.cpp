@@ -205,18 +205,6 @@ void WebMediaPlayerClientImpl::load(WebMediaPlayer::LoadType loadType, const WTF
     m_webMediaPlayer->load(loadType, kurl, corsMode);
 }
 
-void WebMediaPlayerClientImpl::play()
-{
-    if (m_webMediaPlayer)
-        m_webMediaPlayer->play();
-}
-
-void WebMediaPlayerClientImpl::pause()
-{
-    if (m_webMediaPlayer)
-        m_webMediaPlayer->pause();
-}
-
 double WebMediaPlayerClientImpl::duration() const
 {
     if (m_webMediaPlayer)
@@ -254,20 +242,6 @@ void WebMediaPlayerClientImpl::setRate(double rate)
     m_rate = rate;
     if (m_webMediaPlayer)
         m_webMediaPlayer->setRate(rate);
-}
-
-bool WebMediaPlayerClientImpl::paused() const
-{
-    if (m_webMediaPlayer)
-        return m_webMediaPlayer->paused();
-    return false;
-}
-
-bool WebMediaPlayerClientImpl::supportsSave() const
-{
-    if (m_webMediaPlayer)
-        return m_webMediaPlayer->supportsSave();
-    return false;
 }
 
 void WebMediaPlayerClientImpl::setPoster(const KURL& poster)
@@ -344,20 +318,6 @@ void WebMediaPlayerClientImpl::setPreload(MediaPlayer::Preload preload)
 
     if (m_webMediaPlayer)
         m_webMediaPlayer->setPreload(static_cast<WebMediaPlayer::Preload>(preload));
-}
-
-bool WebMediaPlayerClientImpl::hasSingleSecurityOrigin() const
-{
-    if (m_webMediaPlayer)
-        return m_webMediaPlayer->hasSingleSecurityOrigin();
-    return false;
-}
-
-double WebMediaPlayerClientImpl::mediaTimeForTimeValue(double timeValue) const
-{
-    if (m_webMediaPlayer)
-        return m_webMediaPlayer->mediaTimeForTimeValue(timeValue);
-    return timeValue;
 }
 
 #if ENABLE(WEB_AUDIO)
