@@ -53,8 +53,7 @@ LayerType RenderPart::layerTypeRequired() const
     LayerType type = RenderWidget::layerTypeRequired();
     if (type != NoLayer)
         return type;
-
-    return requiresAcceleratedCompositing() ? NormalLayer : NoLayer;
+    return ForcedLayer;
 }
 
 bool RenderPart::requiresAcceleratedCompositing() const

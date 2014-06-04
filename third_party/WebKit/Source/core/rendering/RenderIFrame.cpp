@@ -53,14 +53,9 @@ bool RenderIFrame::isInlineBlockOrInlineTable() const
 
 LayerType RenderIFrame::layerTypeRequired() const
 {
-    LayerType type = RenderPart::layerTypeRequired();
-    if (type != NoLayer)
-        return type;
-
     if (style()->resize() != RESIZE_NONE)
         return NormalLayer;
-
-    return ForcedLayer;
+    return RenderPart::layerTypeRequired();
 }
 
 void RenderIFrame::layout()

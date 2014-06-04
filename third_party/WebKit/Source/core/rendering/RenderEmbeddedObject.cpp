@@ -63,6 +63,18 @@ RenderEmbeddedObject::~RenderEmbeddedObject()
 {
 }
 
+LayerType RenderEmbeddedObject::layerTypeRequired() const
+{
+    // This can't just use RenderPart::layerTypeRequired, because RenderLayerCompositor
+    // doesn't loop through RenderEmbeddedObjects the way it does frames in order
+    // to update the self painting bit on their RenderLayer.
+    // Also, unlike iframes, embeds don't used the usesCompositing bit on RenderView
+    // in requiresAcceleratedCompositing.
+    if (requiresAcceleratedCompositing())
+        return NormalLayer;
+    return RenderPart::layerTypeRequired();
+}
+
 static String unavailablePluginReplacementText(Node* node, RenderEmbeddedObject::PluginUnavailabilityReason pluginUnavailabilityReason)
 {
     Locale& locale = node ? toElement(node)->locale() : Locale::defaultLocale();

@@ -3612,6 +3612,8 @@ bool RenderLayer::childBackgroundIsKnownToBeOpaqueInRect(const LayoutRect& local
 
 bool RenderLayer::shouldBeSelfPaintingLayer() const
 {
+    if (renderer()->isRenderPart() && toRenderPart(renderer())->requiresAcceleratedCompositing())
+        return true;
     return m_layerType == NormalLayer
         || (m_scrollableArea && m_scrollableArea->hasOverlayScrollbars())
         || needsCompositedScrolling();

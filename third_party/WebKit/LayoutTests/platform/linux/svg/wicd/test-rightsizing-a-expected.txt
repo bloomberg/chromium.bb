@@ -16,18 +16,6 @@ layer at (0,0) size 800x550
         RenderBlock (anonymous) at (0,128.14) size 752x19
           RenderBR {br} at (0,0) size 0x18
         RenderBlock {div} at (0,147.14) size 176x62 [bgcolor=#FF0000]
-          RenderEmbeddedObject {object} at (0,0) size 176x62
-            layer at (0,0) size 176x62
-              RenderView at (0,0) size 176x62
-            layer at (0,0) size 176x62
-              RenderSVGRoot {svg} at (0,0) size 176x62
-                RenderSVGRect {rect} at (0,0) size 176x62 [fill={[type=SOLID] [color=#CCCCCC]}] [x=0.00] [y=0.00] [width=176.00] [height=62.00]
-                RenderSVGRect {rect} at (2,2) size 174x60 [fill={[type=SOLID] [color=#333333]}] [x=2.00] [y=2.00] [width=174.00] [height=60.00]
-                RenderSVGRect {rect} at (2,2) size 172x58 [fill={[type=SOLID] [color=#FFFFFF]}] [x=2.00] [y=2.00] [width=172.00] [height=58.00]
-                RenderSVGRect {rect} at (86,2) size 88x58 [fill={[type=SOLID] [color=#FFCC33]}] [x=86.00] [y=2.00] [width=88.00] [height=58.00]
-                RenderSVGText {text} at (46,10) size 80x46 contains 1 chunk(s)
-                  RenderSVGInlineText {#text} at (0,0) size 79x46
-                    chunk 1 (middle anchor) text run 1 at (46.50,46.00) startOffset 0 endOffset 3 width 79.00: "SVG"
           RenderText {#text} at (0,0) size 0x0
         RenderBlock {p} at (0,212.02) size 691.83x34
           RenderText {#text} at (0,0) size 675x34
@@ -39,18 +27,6 @@ layer at (0,0) size 800x550
         RenderBlock (anonymous) at (0,313.77) size 752x19
           RenderBR {br} at (0,0) size 0x18
         RenderBlock {div} at (0,332.77) size 176x62 [bgcolor=#FF0000]
-          RenderEmbeddedObject {object} at (0,0) size 176x62
-            layer at (0,0) size 176x62
-              RenderView at (0,0) size 176x62
-            layer at (0,0) size 176x62
-              RenderSVGRoot {svg} at (0,0) size 176x62
-                RenderSVGRect {rect} at (0,0) size 176x62 [fill={[type=SOLID] [color=#CCCCCC]}] [x=0.00] [y=0.00] [width=176.00] [height=62.00]
-                RenderSVGRect {rect} at (2,2) size 174x60 [fill={[type=SOLID] [color=#333333]}] [x=2.00] [y=2.00] [width=174.00] [height=60.00]
-                RenderSVGRect {rect} at (2,2) size 172x58 [fill={[type=SOLID] [color=#FFFFFF]}] [x=2.00] [y=2.00] [width=172.00] [height=58.00]
-                RenderSVGRect {rect} at (86,2) size 88x58 [fill={[type=SOLID] [color=#FFCC33]}] [x=86.00] [y=2.00] [width=88.00] [height=58.00]
-                RenderSVGText {text} at (46,10) size 80x46 contains 1 chunk(s)
-                  RenderSVGInlineText {#text} at (0,0) size 79x46
-                    chunk 1 (middle anchor) text run 1 at (46.50,46.00) startOffset 0 endOffset 3 width 79.00: "SVG"
           RenderText {#text} at (0,0) size 0x0
         RenderBlock {p} at (0,397.64) size 691.83x34
           RenderText {#text} at (0,0) size 661x34
@@ -65,3 +41,29 @@ layer at (0,0) size 800x550
           RenderInline {a} at (0,0) size 31x17 [color=#000066]
             RenderText {#text} at (0,17) size 31x17
               text run at (0,17) width 31: "Back"
+layer at (48,178) size 176x62
+  RenderEmbeddedObject {object} at (0,0) size 176x62
+    layer at (0,0) size 176x62
+      RenderView at (0,0) size 176x62
+    layer at (0,0) size 176x62
+      RenderSVGRoot {svg} at (0,0) size 176x62
+        RenderSVGRect {rect} at (0,0) size 176x62 [fill={[type=SOLID] [color=#CCCCCC]}] [x=0.00] [y=0.00] [width=176.00] [height=62.00]
+        RenderSVGRect {rect} at (2,2) size 174x60 [fill={[type=SOLID] [color=#333333]}] [x=2.00] [y=2.00] [width=174.00] [height=60.00]
+        RenderSVGRect {rect} at (2,2) size 172x58 [fill={[type=SOLID] [color=#FFFFFF]}] [x=2.00] [y=2.00] [width=172.00] [height=58.00]
+        RenderSVGRect {rect} at (86,2) size 88x58 [fill={[type=SOLID] [color=#FFCC33]}] [x=86.00] [y=2.00] [width=88.00] [height=58.00]
+        RenderSVGText {text} at (46,10) size 80x46 contains 1 chunk(s)
+          RenderSVGInlineText {#text} at (0,0) size 79x46
+            chunk 1 (middle anchor) text run 1 at (46.50,46.00) startOffset 0 endOffset 3 width 79.00: "SVG"
+layer at (48,363) size 176x62
+  RenderEmbeddedObject {object} at (0,0) size 176x62
+    layer at (0,0) size 176x62
+      RenderView at (0,0) size 176x62
+    layer at (0,0) size 176x62
+      RenderSVGRoot {svg} at (0,0) size 176x62
+        RenderSVGRect {rect} at (0,0) size 176x62 [fill={[type=SOLID] [color=#CCCCCC]}] [x=0.00] [y=0.00] [width=176.00] [height=62.00]
+        RenderSVGRect {rect} at (2,2) size 174x60 [fill={[type=SOLID] [color=#333333]}] [x=2.00] [y=2.00] [width=174.00] [height=60.00]
+        RenderSVGRect {rect} at (2,2) size 172x58 [fill={[type=SOLID] [color=#FFFFFF]}] [x=2.00] [y=2.00] [width=172.00] [height=58.00]
+        RenderSVGRect {rect} at (86,2) size 88x58 [fill={[type=SOLID] [color=#FFCC33]}] [x=86.00] [y=2.00] [width=88.00] [height=58.00]
+        RenderSVGText {text} at (46,10) size 80x46 contains 1 chunk(s)
+          RenderSVGInlineText {#text} at (0,0) size 79x46
+            chunk 1 (middle anchor) text run 1 at (46.50,46.00) startOffset 0 endOffset 3 width 79.00: "SVG"

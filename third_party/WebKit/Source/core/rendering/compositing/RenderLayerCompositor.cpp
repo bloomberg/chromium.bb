@@ -147,6 +147,13 @@ void RenderLayerCompositor::setCompositingModeEnabled(bool enable)
 
     m_compositing = enable;
 
+    // RenderPart::requiresAcceleratedCompositing is used to determine self-paintingness
+    // and bases it's return value for frames on the m_compositing bit here.
+    if (HTMLFrameOwnerElement* ownerElement = m_renderView.document().ownerElement()) {
+        if (RenderPart* renderer = ownerElement->renderPart())
+            renderer->layer()->updateSelfPaintingLayer();
+    }
+
     if (m_compositing)
         ensureRootLayer();
     else
