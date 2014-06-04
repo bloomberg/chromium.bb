@@ -357,8 +357,8 @@ void InspectorBackendDispatcherImpl::sendResponse(long callId, PassRefPtr<JSONOb
     }
 
     RefPtr<JSONObject> responseMessage = JSONObject::create();
-    responseMessage->setObject("result", result);
     responseMessage->setNumber("id", callId);
+    responseMessage->setObject("result", result);
     if (m_inspectorFrontendChannel)
         m_inspectorFrontendChannel->sendMessageToFrontend(responseMessage.release());
 }
