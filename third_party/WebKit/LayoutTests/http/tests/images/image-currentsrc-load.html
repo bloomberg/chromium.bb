@@ -3,8 +3,6 @@
 <body>
 <script>
     document.body.innerHTML += '<img id="load" src="http://127.0.0.1:8000/resources/slow-image.php?name=square100.png&mimeType=image/png&sleep=100">';
-    document.body.innerHTML += '<img id="error" srcset="http://127.0.0.1:8000/resources/slow-image.php?name=not_there.png&mimeType=image/png&sleep=300">';
-    document.body.innerHTML += '<img id="redirect" src="http://127.0.0.1:8000/resources/slow-image.php?redirect_name=square100.png&mimeType=image/png&sleep=500">';
     jsTestIsAsync = true;
     var img = window.document.getElementById("load");
     shouldBe('img.currentSrc', '""');
@@ -13,15 +11,6 @@
         img.srcset = "http://127.0.0.1:8000/resources/slow-image.php?name=square200.png&mimeType=image/png&sleep=100 1x";
         shouldBe('img.currentSrc', 'expectedCurrentSrc');
         expectedCurrentSrc = "http://127.0.0.1:8000/resources/slow-image.php?name=square200.png&mimeType=image/png&sleep=100";
-    };
-    var img_err = window.document.getElementById("error");
-    img_err.onerror = function() {
-        shouldBe('img_err.currentSrc', '"http://127.0.0.1:8000/resources/slow-image.php?name=not_there.png&mimeType=image/png&sleep=300"');
-    };
-
-    var img_redirect = window.document.getElementById("redirect");
-    img_redirect.onload = function() {
-        shouldBe('img_redirect.currentSrc', '"http://127.0.0.1:8000/resources/slow-image.php?redirect_name=square100.png&mimeType=image/png&sleep=500"');
     };
     window.onload = function() {
         finishJSTest();

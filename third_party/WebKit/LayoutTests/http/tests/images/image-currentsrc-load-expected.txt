@@ -1,0 +1,6 @@
+PASS img.currentSrc is ""
+PASS img.currentSrc is expectedCurrentSrc
+PASS successfullyParsed is true
+
+TEST COMPLETE
+
