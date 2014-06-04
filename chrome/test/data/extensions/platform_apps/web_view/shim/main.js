@@ -580,16 +580,19 @@ function testCannotMutateEventName() {
 function testPartitionRaisesException() {
   var webview = document.createElement('webview');
   webview.setAttribute('partition', arguments.callee.name);
-  webview.setAttribute('src', 'data:text/html,trigger navigation');
-  document.body.appendChild(webview);
-  setTimeout(function() {
+
+  var loadstopHandler = function(e) {
     try {
       webview.partition = 'illegal';
       embedder.test.fail();
     } catch (e) {
       embedder.test.succeed();
     }
-  }, 0);
+  };
+  webview.addEventListener('loadstop', loadstopHandler);
+
+  document.body.appendChild(webview);
+  webview.setAttribute('src', 'data:text/html,trigger navigation');
 }
 
 function testExecuteScriptFail() {

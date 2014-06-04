@@ -909,19 +909,8 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestCannotMutateEventName) {
   TestHelper("testCannotMutateEventName", "web_view/shim", NO_TEST_SERVER);
 }
 
-// http://crbug.com/267304
-#if defined(OS_WIN)
-#define MAYBE_Shim_TestPartitionRaisesException \
-  DISABLED_Shim_TestPartitionRaisesException
-#else
-#define MAYBE_Shim_TestPartitionRaisesException \
-  Shim_TestPartitionRaisesException
-#endif
-
-IN_PROC_BROWSER_TEST_F(WebViewTest, MAYBE_Shim_TestPartitionRaisesException) {
-  TestHelper("testPartitionRaisesException",
-             "web_view/shim",
-             NO_TEST_SERVER);
+IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestPartitionRaisesException) {
+  TestHelper("testPartitionRaisesException", "web_view/shim", NO_TEST_SERVER);
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestExecuteScriptFail) {
