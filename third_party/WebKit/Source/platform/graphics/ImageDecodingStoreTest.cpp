@@ -77,7 +77,7 @@ protected:
     PassOwnPtr<ScaledImageFragment> createCompleteImage(const SkISize& size, bool discardable = false, size_t index = 0)
     {
         SkBitmap bitmap;
-        bitmap.setConfig(SkImageInfo::MakeN32Premul(size));
+        bitmap.setInfo(SkImageInfo::MakeN32Premul(size));
         if (!discardable) {
             bitmap.allocPixels();
         } else {
@@ -90,7 +90,7 @@ protected:
     PassOwnPtr<ScaledImageFragment> createIncompleteImage(const SkISize& size, bool discardable = false, size_t generation = 0)
     {
         SkBitmap bitmap;
-        bitmap.setConfig(SkImageInfo::MakeN32Premul(size));
+        bitmap.setInfo(SkImageInfo::MakeN32Premul(size));
         if (!discardable) {
             bitmap.allocPixels();
         } else {
