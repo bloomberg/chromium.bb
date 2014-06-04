@@ -1237,7 +1237,6 @@
         'browser/geolocation/access_token_store_browsertest.cc',
         'browser/geolocation/geolocation_browsertest.cc',
         'browser/history/history_browsertest.cc',
-        'browser/history/multipart_browsertest.cc',
         'browser/history/redirect_browsertest.cc',
         'browser/iframe_browsertest.cc',
         'browser/importer/firefox_importer_browsertest.cc',

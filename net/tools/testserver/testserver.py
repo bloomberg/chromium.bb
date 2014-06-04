@@ -329,7 +329,6 @@ class TestPageHandler(testserver_base.BasePageHandler):
       self.NoContentHandler,
       self.ServerRedirectHandler,
       self.ClientRedirectHandler,
-      self.MultipartHandler,
       self.GetSSLSessionCacheHandler,
       self.SSLManySmallRecords,
       self.GetChannelID,
@@ -1437,29 +1436,6 @@ class TestPageHandler(testserver_base.BasePageHandler):
     self.wfile.write('<meta http-equiv="refresh" content="0;url=%s">' % dest)
     self.wfile.write('</head><body>Redirecting to %s</body></html>' % dest)
 
-    return True
-
-  def MultipartHandler(self):
-    """Send a multipart response (10 text/html pages)."""
-
-    test_name = '/multipart'
-    if not self._ShouldHandleRequest(test_name):
-      return False
-
-    num_frames = 10
-    bound = '12345'
-    self.send_response(200)
-    self.send_header('Content-Type',
-                     'multipart/x-mixed-replace;boundary=' + bound)
-    self.end_headers()
-
-    for i in xrange(num_frames):
-      self.wfile.write('--' + bound + '\r\n')
-      self.wfile.write('Content-Type: text/html\r\n\r\n')
-      self.wfile.write('<title>page ' + str(i) + '</title>')
-      self.wfile.write('page ' + str(i))
-
-    self.wfile.write('--' + bound + '--')
     return True
 
   def GetSSLSessionCacheHandler(self):
