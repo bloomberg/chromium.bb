@@ -27,12 +27,6 @@
                 'chromevox/injected/mathjax.js',
               ],
             },
-            {
-              'destination': '<(PRODUCT_DIR)/resources/chromeos/chromevox/',
-              'files': [
-                '_locales/',
-              ],
-            },
           ],
           'conditions': [
             ['use_migrated_chromevox==0', {

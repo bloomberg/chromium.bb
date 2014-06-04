@@ -131,9 +131,7 @@
               'action_name': 'chromevox_strings',
               'variables': {
                 'grit_grd_file': 'strings/chromevox_strings.grd',
-                # TODO(plundblad): Change to use PRODUCT_DIR when we have
-                # translations.
-                'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/resources/chromeos/chromevox',
+                'grit_out_dir': '<(chromevox_dest_dir)',
                 # We don't generate any RC files, so no resource_ds file is needed.
                 'grit_resource_ids': '',
               },
