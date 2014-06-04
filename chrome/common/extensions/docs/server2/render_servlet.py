@@ -91,7 +91,7 @@ class RenderServlet(Servlet):
     if redirect is not None:
       # Absolute redirects stay absolute, relative redirects are relative to
       # |serve_from|; all redirects eventually need to be *served* as absolute.
-      if not redirect.startswith('/'):
+      if not redirect.startswith(('/', 'http://', 'https://')):
         redirect = '/' + posixpath.join(serve_from, redirect)
       return Response.Redirect(redirect, permanent=False)
 

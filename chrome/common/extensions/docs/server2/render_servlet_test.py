@@ -19,8 +19,8 @@ class _RenderServletDelegate(RenderServlet.Delegate):
 
 
 class RenderServletTest(unittest.TestCase):
-  def _Render(self, path, headers=None):
-    return RenderServlet(Request.ForTest(path, headers=headers),
+  def _Render(self, path, headers=None, host=None):
+    return RenderServlet(Request.ForTest(path, headers=headers, host=host),
                          _RenderServletDelegate()).Get()
 
   def testExtensionAppRedirect(self):
@@ -33,6 +33,16 @@ class RenderServletTest(unittest.TestCase):
       self.assertEqual(
           Response.Redirect('/extensions/storage', permanent=True),
           self._Render('%s/extensions/storage' % channel))
+
+  def testOldHostsRedirect(self):
+    self.assertEqual(
+        Response.Redirect('https://developer.chrome.com/extensions',
+            permanent=False),
+        self._Render('/chrome/extensions', host='http://code.google.com'))
+    self.assertEqual(
+        Response.Redirect('https://developer.chrome.com/extensions',
+            permanent=False),
+        self._Render('/chrome/extensions', host='https://code.google.com'))
 
   def testNotFound(self):
     def create_404_response(real_path):
