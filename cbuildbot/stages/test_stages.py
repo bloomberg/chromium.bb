@@ -91,6 +91,7 @@ class VMTestStage(generic_stages.BoardSpecificBuilderStage,
     """Returns True if |path| is not a directory or is an empty directory."""
     return not os.path.isdir(path) or not os.listdir(path)
 
+  @failures_lib.SetFailureType(failures_lib.InfrastructureFailure)
   def _ArchiveTestResults(self, test_results_dir, test_basename):
     """Archives test results to Google Storage.
 
@@ -127,6 +128,7 @@ class VMTestStage(generic_stages.BoardSpecificBuilderStage,
     # Remove the test results directory.
     osutils.RmDir(results_path, ignore_missing=True, sudo=True)
 
+  @failures_lib.SetFailureType(failures_lib.InfrastructureFailure)
   def _ArchiveVMFiles(self, test_results_dir):
     vm_files = commands.ArchiveVMFiles(
         self._build_root, os.path.join(test_results_dir, 'test_harness'),
@@ -211,6 +213,7 @@ class HWTestStage(generic_stages.BoardSpecificBuilderStage,
     self.suite_config = suite_config
     self.wait_for_results = True
 
+  @failures_lib.SetFailureType(failures_lib.GSFailure)
   def _CheckAborted(self):
     """Checks with GS to see if HWTest for this build's release_tag was aborted.
 
@@ -242,11 +245,21 @@ class HWTestStage(generic_stages.BoardSpecificBuilderStage,
     if self.suite_config.critical:
       return super(HWTestStage, self)._HandleStageException(exc_info)
 
-    if self._CheckAborted():
+    aborted = False
+    try:
+      # _CheckAborted accesses Google Storage and could fail for many
+      # reasons. Ignore any failures because we are already handling
+      # exceptions.
+      aborted = self._CheckAborted()
+    except Exception:
+      logging.warning('Unable to check whether HWTest was aborted.')
+
+    if aborted:
       # HWTest was aborted. This is only applicable to CQ.
       logging.warning(CQ_HWTEST_WAS_ABORTED)
       return self._HandleExceptionAsWarning(exc_info)
-    elif issubclass(exc_type, commands.TestWarning):
+
+    if issubclass(exc_type, commands.TestWarning):
       # HWTest passed with warning. All builders should pass.
       logging.warning('HWTest passed with warning code.')
       return self._HandleExceptionAsWarning(exc_info)
@@ -269,6 +282,14 @@ class HWTestStage(generic_stages.BoardSpecificBuilderStage,
 
     return super(HWTestStage, self)._HandleStageException(exc_info)
 
+  @failures_lib.SetFailureType(failures_lib.TestLabFailure)
+  def _CheckLabStatus(self):
+    """Checks whether lab is down or the boards has been disabled.
+
+    If tests cannot be run, raise an exception based on the reason.
+    """
+    lab_status.CheckLabStatus(self._current_board)
+
   def PerformStage(self):
     if self._CheckAborted():
       cros_build_lib.PrintBuildbotStepText('aborted')
@@ -281,7 +302,7 @@ class HWTestStage(generic_stages.BoardSpecificBuilderStage,
     else:
       debug = self._run.options.debug
 
-    lab_status.CheckLabStatus(self._current_board)
+    self._CheckLabStatus()
     with timeout_util.Timeout(
         self.suite_config.timeout + constants.HWTEST_TIMEOUT_EXTENSION):
       commands.RunHWTestSuite(build,

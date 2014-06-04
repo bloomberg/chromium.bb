@@ -22,6 +22,7 @@ from chromite.lib import cgroups
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_build_lib_unittest
 from chromite.lib import cros_test_lib
+from chromite.lib import osutils
 from chromite.lib import timeout_util
 
 from chromite.cbuildbot.stages.generic_stages_unittest import BuilderRunMock
@@ -42,7 +43,8 @@ class VMTestStageTest(generic_stages_unittest.AbstractStageTest):
                 'BuildAndArchiveTestResultsTarball'):
       self.PatchObject(commands, cmd, autospec=True)
     self.PatchObject(test_stages.VMTestStage, '_NoTestResults',
-                     autospec=True, return_value=True)
+                     autospec=True, return_value=False)
+    self.PatchObject(osutils, 'RmDir', autospec=True)
     self.PatchObject(cgroups, 'SimpleContainChildren', autospec=True)
     self.StartPatcher(BuilderRunMock())
     self._Prepare()
@@ -72,6 +74,13 @@ class VMTestStageTest(generic_stages_unittest.AbstractStageTest):
     self.PatchObject(test_stages.VMTestStage, '_RunTest',
                      autospec=True, side_effect=Exception())
     self.assertRaises(failures_lib.StepFailure, self.RunStage)
+
+  def testRaisesInfraFail(self):
+    """Tests that a infra failures has been raised."""
+    commands.BuildAndArchiveTestResultsTarball.side_effect = (
+        OSError('Cannot archive'))
+    stage = self.ConstructStage()
+    self.assertRaises(failures_lib.InfrastructureFailure, stage.PerformStage)
 
 
 class UnitTestStageTest(generic_stages_unittest.AbstractStageTest):
@@ -291,14 +300,41 @@ class HWTestStageTest(generic_stages_unittest.AbstractStageTest):
     self._Prepare('daisy-chromium-pfq')
     self._RunHWTestSuite(returncode=4, fails=True)
 
-  def testHandleLabDownAsWarning(self):
-    """Test that buildbot warn when lab is down."""
+  def testHandleLabDownAsWarningForCanary(self):
+    """Test that the stage passes with a warning if lab is down."""
+    self._Prepare('lumpy-release')
     check_lab = lab_status.CheckLabStatus(mox.IgnoreArg())
     check_lab.AndRaise(lab_status.LabIsDownException('Lab is not up.'))
     cros_build_lib.PrintBuildbotStepWarnings()
     cros_build_lib.Warning(mox.IgnoreArg())
     self.mox.ReplayAll()
     self.RunStage()
+    self.mox.VerifyAll()
+
+  def testHandleLabDownAsFatalForCQ(self):
+    """Test that the stage fails when lab is down."""
+    self._Prepare('lumpy-paladin')
+    commands.HaveCQHWTestsBeenAborted(mox.IgnoreArg()).AndReturn(False)
+    check_lab = lab_status.CheckLabStatus(mox.IgnoreArg())
+    check_lab.AndRaise(lab_status.LabIsDownException('Lab is not up.'))
+    commands.HaveCQHWTestsBeenAborted(mox.IgnoreArg()).AndReturn(False)
+    cros_build_lib.PrintBuildbotStepFailure()
+    cros_build_lib.Error(mox.IgnoreArg())
+    self.mox.ReplayAll()
+    self.assertRaises(failures_lib.StepFailure, self.RunStage)
+    self.mox.VerifyAll()
+
+  def testCheckAbortedFailedForCQ(self):
+    """Test that when unable to check, treat it as a failure."""
+    self._Prepare('lumpy-paladin')
+    commands.HaveCQHWTestsBeenAborted(mox.IgnoreArg()).AndRaise(
+        Exception('error'))
+    commands.HaveCQHWTestsBeenAborted(mox.IgnoreArg()).AndRaise(
+        Exception('error'))
+    cros_build_lib.PrintBuildbotStepFailure()
+    cros_build_lib.Error(mox.IgnoreArg())
+    self.mox.ReplayAll()
+    self.assertRaises(failures_lib.StepFailure, self.RunStage)
     self.mox.VerifyAll()
 
   def testBranchedBuildExtendsTimeouts(self):

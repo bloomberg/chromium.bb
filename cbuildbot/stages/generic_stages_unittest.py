@@ -49,9 +49,11 @@ class BuilderRunMock(partial_mock.PartialMock):
         version_string=self.VERSION, chrome_branch=DEFAULT_CHROME_BRANCH)
 
 
+# The inheritence order ensures the patchers are stopped before
+# cleaning up the temporary directories.
 # pylint: disable=E1111,E1120,W0212,R0901,R0904
-class StageTest(cros_test_lib.MoxTempDirTestCase,
-                cros_test_lib.MockOutputTestCase):
+class StageTest(cros_test_lib.MockOutputTestCase,
+                cros_test_lib.MoxTempDirTestCase):
   """Test running a single stage in isolation."""
 
   TARGET_MANIFEST_BRANCH = 'ooga_booga'
