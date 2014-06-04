@@ -554,15 +554,17 @@ FileTable.prototype.updateDate_ = function(div, filesystemProps) {
    */
   var MILLISECONDS_IN_DAY = 24 * 60 * 60 * 1000;
 
-  if (modTime >= today &&
+  if (isNaN(modTime.getTime())) {
+    // In case of 'Invalid Date'.
+    div.textContent = '--';
+  } else if (modTime >= today &&
       modTime < today.getTime() + MILLISECONDS_IN_DAY) {
     div.textContent = strf('TIME_TODAY', this.timeFormatter_.format(modTime));
   } else if (modTime >= today - MILLISECONDS_IN_DAY && modTime < today) {
     div.textContent = strf('TIME_YESTERDAY',
                            this.timeFormatter_.format(modTime));
   } else {
-    div.textContent =
-        this.dateFormatter_.format(filesystemProps.modificationTime);
+    div.textContent = this.dateFormatter_.format(modTime);
   }
 };
 
