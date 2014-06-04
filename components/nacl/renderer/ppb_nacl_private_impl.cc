@@ -105,11 +105,6 @@ typedef base::ScopedPtrHashMap<PP_Instance, NexeLoadManager>
 base::LazyInstance<NexeLoadManagerMap> g_load_manager_map =
     LAZY_INSTANCE_INITIALIZER;
 
-typedef base::ScopedPtrHashMap<PP_Instance, nacl::JsonManifest> JsonManifestMap;
-
-base::LazyInstance<JsonManifestMap> g_manifest_map =
-    LAZY_INSTANCE_INITIALIZER;
-
 nacl::NexeLoadManager* GetNexeLoadManager(PP_Instance instance) {
   NexeLoadManagerMap& map = g_load_manager_map.Get();
   NexeLoadManagerMap::iterator iter = map.find(instance);
@@ -757,7 +752,7 @@ void InstanceCreated(PP_Instance instance) {
 }
 
 void InstanceDestroyed(PP_Instance instance) {
-  g_manifest_map.Get().erase(instance);
+  DeleteJsonManifest(instance);
 
   NexeLoadManagerMap& map = g_load_manager_map.Get();
   DLOG_IF(ERROR, map.count(instance) == 0) << "Could not find instance ID";
@@ -1041,7 +1036,7 @@ bool CreateJsonManifest(PP_Instance instance,
           PP_ToBool(NaClDebugEnabledForURL(manifest_url.c_str()))));
   JsonManifest::ErrorInfo error_info;
   if (j->Init(manifest_data.c_str(), &error_info)) {
-    g_manifest_map.Get().add(instance, j.Pass());
+    AddJsonManifest(instance, j.Pass());
     return true;
   }
   load_manager->ReportLoadError(error_info.error, error_info.string);
@@ -1054,15 +1049,15 @@ PP_Bool ManifestGetProgramURL(PP_Instance instance,
                               PP_Bool* pp_uses_nonsfi_mode) {
   nacl::NexeLoadManager* load_manager = GetNexeLoadManager(instance);
 
-  JsonManifestMap::iterator it = g_manifest_map.Get().find(instance);
-  if (it == g_manifest_map.Get().end())
+  JsonManifest* manifest = GetJsonManifest(instance);
+  if (manifest == NULL)
     return PP_FALSE;
 
   bool uses_nonsfi_mode;
   std::string full_url;
   JsonManifest::ErrorInfo error_info;
-  if (it->second->GetProgramURL(&full_url, pnacl_options, &uses_nonsfi_mode,
-                                &error_info)) {
+  if (manifest->GetProgramURL(&full_url, pnacl_options, &uses_nonsfi_mode,
+                              &error_info)) {
     *pp_full_url = ppapi::StringVar::StringToPPVar(full_url);
     *pp_uses_nonsfi_mode = PP_FromBool(uses_nonsfi_mode);
     return PP_TRUE;
@@ -1100,12 +1095,12 @@ PP_Bool ManifestResolveKey(PP_Instance instance,
     return PP_TRUE;
   }
 
-  JsonManifestMap::iterator it = g_manifest_map.Get().find(instance);
-  if (it == g_manifest_map.Get().end())
+  JsonManifest* manifest = GetJsonManifest(instance);
+  if (manifest == NULL)
     return PP_FALSE;
 
   std::string full_url;
-  bool ok = it->second->ResolveKey(key, &full_url, pnacl_options);
+  bool ok = manifest->ResolveKey(key, &full_url, pnacl_options);
   if (ok)
     *pp_full_url = ppapi::StringVar::StringToPPVar(full_url);
   return PP_FromBool(ok);
