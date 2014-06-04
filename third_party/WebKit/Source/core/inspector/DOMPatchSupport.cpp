@@ -390,7 +390,7 @@ bool DOMPatchSupport::innerPatchChildren(ContainerNode* parentNode, const Vector
     for (size_t i = 0; i < oldMap.size(); ++i) {
         if (!oldMap[i].first)
             continue;
-        RefPtr<Node> node = oldMap[i].first->m_node;
+        RefPtrWillBeRawPtr<Node> node = oldMap[i].first->m_node;
         Node* anchorNode = parentNode->traverseToChildAt(oldMap[i].second);
         if (node == anchorNode)
             continue;
@@ -461,7 +461,7 @@ bool DOMPatchSupport::insertBeforeAndMarkAsUsed(ContainerNode* parentNode, Diges
 
 bool DOMPatchSupport::removeChildAndMoveToNew(Digest* oldDigest, ExceptionState& exceptionState)
 {
-    RefPtr<Node> oldNode = oldDigest->m_node;
+    RefPtrWillBeRawPtr<Node> oldNode = oldDigest->m_node;
     if (!m_domEditor->removeChild(oldNode->parentNode(), oldNode.get(), exceptionState))
         return false;
 

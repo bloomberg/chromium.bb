@@ -507,7 +507,7 @@ void Node::normalize()
     // Go through the subtree beneath us, normalizing all nodes. This means that
     // any two adjacent text nodes are merged and any empty text nodes are removed.
 
-    RefPtr<Node> node = this;
+    RefPtrWillBeRawPtr<Node> node = this;
     while (Node* firstChild = node->firstChild())
         node = firstChild;
     while (node) {
@@ -1518,7 +1518,7 @@ void Node::setTextContent(const String& text)
         case ATTRIBUTE_NODE:
         case DOCUMENT_FRAGMENT_NODE: {
             // FIXME: Merge this logic into replaceChildrenWithText.
-            RefPtr<ContainerNode> container = toContainerNode(this);
+            RefPtrWillBeRawPtr<ContainerNode> container = toContainerNode(this);
             // No need to do anything if the text is identical.
             if (container->hasOneTextChild() && toText(container->firstChild())->data() == text)
                 return;
@@ -2147,7 +2147,7 @@ void Node::unregisterMutationObserver(MutationObserverRegistration* registration
     // Deleting the registration may cause this node to be derefed, so we must make sure the Vector operation completes
     // before that, in case |this| is destroyed (see MutationObserverRegistration::m_registrationNodeKeepAlive).
     // FIXME: Simplify the registration/transient registration logic to make this understandable by humans.
-    RefPtr<Node> protect(this);
+    RefPtrWillBeRawPtr<Node> protect(this);
 #if ENABLE(OILPAN)
     // The explicit dispose() is needed to have the registration
     // object unregister itself promptly.

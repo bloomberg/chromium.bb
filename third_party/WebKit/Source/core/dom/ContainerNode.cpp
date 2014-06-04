@@ -87,7 +87,7 @@ void ContainerNode::removeDetachedChildren()
 
 void ContainerNode::parserTakeAllChildrenFrom(ContainerNode& oldParent)
 {
-    while (RefPtr<Node> child = oldParent.firstChild()) {
+    while (RefPtrWillBeRawPtr<Node> child = oldParent.firstChild()) {
         oldParent.parserRemoveChild(*child);
         treeScope().adoptIfNeeded(*child);
         parserAppendChild(child.get());
@@ -184,7 +184,7 @@ void ContainerNode::insertBefore(PassRefPtr<Node> newChild, Node* refChild, Exce
     ASSERT(refCount() || parentOrShadowHostNode());
 #endif
 
-    RefPtr<Node> protect(this);
+    RefPtrWillBeRawPtr<Node> protect(this);
 
     // insertBefore(node, 0) is equivalent to appendChild(node)
     if (!refChild) {
@@ -206,7 +206,7 @@ void ContainerNode::insertBefore(PassRefPtr<Node> newChild, Node* refChild, Exce
     if (refChild->previousSibling() == newChild || refChild == newChild) // nothing to do
         return;
 
-    RefPtr<Node> next = refChild;
+    RefPtrWillBeRawPtr<Node> next = refChild;
 
     NodeVector targets;
     collectChildrenAndRemoveFromOldParent(*newChild, targets, exceptionState);
@@ -303,7 +303,7 @@ void ContainerNode::replaceChild(PassRefPtr<Node> newChild, Node* oldChild, Exce
     ASSERT(refCount() || parentOrShadowHostNode());
 #endif
 
-    RefPtr<Node> protect(this);
+    RefPtrWillBeRawPtr<Node> protect(this);
 
     if (oldChild == newChild) // nothing to do
         return;
@@ -325,10 +325,11 @@ void ContainerNode::replaceChild(PassRefPtr<Node> newChild, Node* oldChild, Exce
 
     ChildListMutationScope mutation(*this);
 
-    RefPtr<Node> next = oldChild->nextSibling();
+    RefPtrWillBeRawPtr<Node> next = oldChild->nextSibling();
 
     // Remove the node we're replacing
-    RefPtr<Node> removedChild = oldChild;
+    RefPtrWillBeRawPtr<Node> protectRemovedChild = oldChild;
+    ASSERT_UNUSED(protectRemovedChild, protectRemovedChild);
     removeChild(oldChild, exceptionState);
     if (exceptionState.hadException())
         return;
@@ -429,7 +430,7 @@ void ContainerNode::removeChild(Node* oldChild, ExceptionState& exceptionState)
     ASSERT(refCount() || parentOrShadowHostNode());
 #endif
 
-    RefPtr<Node> protect(this);
+    RefPtrWillBeRawPtr<Node> protect(this);
 
     // NotFoundError: Raised if oldChild is not a child of this node.
     // FIXME: We should never really get PseudoElements in here, but editing will sometimes
@@ -440,7 +441,7 @@ void ContainerNode::removeChild(Node* oldChild, ExceptionState& exceptionState)
         return;
     }
 
-    RefPtr<Node> child = oldChild;
+    RefPtrWillBeRawPtr<Node> child = oldChild;
 
     document().removeFocusedElementOfSubtree(child.get());
 
@@ -526,7 +527,7 @@ void ContainerNode::removeChildren()
         return;
 
     // The container node can be removed from event handlers.
-    RefPtr<ContainerNode> protect(this);
+    RefPtrWillBeRawPtr<ContainerNode> protect(this);
 
     if (FullscreenElementStack* fullscreen = FullscreenElementStack::fromIfExists(document()))
         fullscreen->removeFullScreenElementOfSubtree(this, true);
@@ -574,7 +575,7 @@ void ContainerNode::removeChildren()
 
 void ContainerNode::appendChild(PassRefPtr<Node> newChild, ExceptionState& exceptionState)
 {
-    RefPtr<ContainerNode> protect(this);
+    RefPtrWillBeRawPtr<ContainerNode> protect(this);
 
 #if !ENABLE(OILPAN)
     // Check that this node is not "floating".
@@ -663,8 +664,8 @@ void ContainerNode::notifyNodeInserted(Node& root)
 
     InspectorInstrumentation::didInsertDOMNode(&root);
 
-    RefPtr<Node> protect(this);
-    RefPtr<Node> protectNode(root);
+    RefPtrWillBeRawPtr<Node> protect(this);
+    RefPtrWillBeRawPtr<Node> protectNode(root);
 
     NodeVector postInsertionNotificationTargets;
     notifyNodeInsertedInternal(root, postInsertionNotificationTargets);
