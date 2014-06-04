@@ -25,6 +25,7 @@ public:
     // multiple event types.
     enum EventHandlerClass {
         ScrollEvent,
+        WheelEvent,
 #if ASSERT_ENABLED
         // Additional event categories for verifying handler tracking logic.
         EventsForTesting,

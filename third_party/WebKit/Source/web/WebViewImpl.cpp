@@ -39,13 +39,13 @@
 #include "core/dom/Document.h"
 #include "core/dom/DocumentMarkerController.h"
 #include "core/dom/Text.h"
-#include "core/dom/WheelController.h"
 #include "core/editing/Editor.h"
 #include "core/editing/FrameSelection.h"
 #include "core/editing/InputMethodController.h"
 #include "core/editing/TextIterator.h"
 #include "core/events/KeyboardEvent.h"
 #include "core/events/WheelEvent.h"
+#include "core/frame/EventHandlerRegistry.h"
 #include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
@@ -1480,7 +1480,7 @@ void WebViewImpl::popupOpened(PopupContainer* popupContainer)
     m_selectPopup = popupContainer;
     ASSERT(mainFrameImpl()->frame()->document());
     Document& document = *mainFrameImpl()->frame()->document();
-    WheelController::from(document)->didAddWheelEventHandler(document);
+    page()->frameHost().eventHandlerRegistry().didAddEventHandler(document, EventHandlerRegistry::WheelEvent);
 }
 
 void WebViewImpl::popupClosed(PopupContainer* popupContainer)
@@ -1489,7 +1489,11 @@ void WebViewImpl::popupClosed(PopupContainer* popupContainer)
     m_selectPopup = nullptr;
     ASSERT(mainFrameImpl()->frame()->document());
     Document& document = *mainFrameImpl()->frame()->document();
-    WheelController::from(document)->didRemoveWheelEventHandler(document);
+    // Remove the handler we added in |popupOpened| conditionally, because the
+    // Document may have already removed it, for instance, due to a navigation.
+    EventHandlerRegistry* registry = &document.frameHost()->eventHandlerRegistry();
+    if (registry->eventHandlerTargets(EventHandlerRegistry::WheelEvent)->contains(&document))
+        registry->didRemoveEventHandler(document, EventHandlerRegistry::WheelEvent);
 }
 
 PagePopup* WebViewImpl::openPagePopup(PagePopupClient* client, const IntRect& originBoundsInRootView)

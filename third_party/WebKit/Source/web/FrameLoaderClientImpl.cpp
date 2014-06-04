@@ -38,7 +38,6 @@
 #include "bindings/v8/ScriptController.h"
 #include "core/dom/Document.h"
 #include "core/dom/DocumentFullscreen.h"
-#include "core/dom/WheelController.h"
 #include "core/events/MessageEvent.h"
 #include "core/events/MouseEvent.h"
 #include "core/frame/FrameView.h"
@@ -119,7 +118,6 @@ void FrameLoaderClientImpl::dispatchDidClearWindowObjectInMainWorld()
         m_webFrame->client()->didClearWindowObject(m_webFrame);
         Document* document = m_webFrame->frame()->document();
         if (document) {
-            WheelController::from(*document);
             DeviceMotionController::from(*document);
             DeviceOrientationController::from(*document);
             if (RuntimeEnabledFeatures::deviceLightEnabled())

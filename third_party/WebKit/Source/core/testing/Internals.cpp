@@ -64,7 +64,6 @@
 #include "core/dom/StaticNodeList.h"
 #include "core/dom/TreeScope.h"
 #include "core/dom/ViewportDescription.h"
-#include "core/dom/WheelController.h"
 #include "core/dom/shadow/ComposedTreeWalker.h"
 #include "core/dom/shadow/ElementShadow.h"
 #include "core/dom/shadow/SelectRuleFeatureSet.h"
@@ -1269,7 +1268,7 @@ unsigned Internals::wheelEventHandlerCount(Document* document, ExceptionState& e
         return 0;
     }
 
-    return WheelController::from(*document)->wheelEventHandlerCount();
+    return eventHandlerCount(*document, EventHandlerRegistry::WheelEvent);
 }
 
 unsigned Internals::scrollEventHandlerCount(Document* document, ExceptionState& exceptionState)

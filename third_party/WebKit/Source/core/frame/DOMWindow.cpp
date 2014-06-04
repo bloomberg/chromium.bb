@@ -416,7 +416,6 @@ PassRefPtrWillBeRawPtr<Document> DOMWindow::installNewDocument(const String& mim
     m_frame->selection().updateSecureKeyboardEntryIfActive();
 
     if (m_frame->isMainFrame()) {
-        m_frame->notifyChromeClientWheelEventHandlerCountChanged();
         if (m_document->hasTouchEventHandlers())
             m_frame->host()->chrome().client().needTouchEvents(true);
     }

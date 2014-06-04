@@ -56,7 +56,6 @@
 #include "core/dom/TreeScopeAdopter.h"
 #include "core/dom/UserActionElementSet.h"
 #include "core/dom/WeakNodeMap.h"
-#include "core/dom/WheelController.h"
 #include "core/dom/shadow/ElementShadow.h"
 #include "core/dom/shadow/InsertionPoint.h"
 #include "core/dom/shadow/ShadowRoot.h"
@@ -1947,19 +1946,6 @@ void Node::didMoveToNewDocument(Document& oldDocument)
 
     oldDocument.markers().removeMarkers(this);
 
-    const EventListenerVector& mousewheelListeners = getEventListeners(EventTypeNames::mousewheel);
-    WheelController* oldController = WheelController::from(oldDocument);
-    WheelController* newController = WheelController::from(document());
-    for (size_t i = 0; i < mousewheelListeners.size(); ++i) {
-        oldController->didRemoveWheelEventHandler(oldDocument);
-        newController->didAddWheelEventHandler(document());
-    }
-
-    const EventListenerVector& wheelListeners = getEventListeners(EventTypeNames::wheel);
-    for (size_t i = 0; i < wheelListeners.size(); ++i) {
-        oldController->didRemoveWheelEventHandler(oldDocument);
-        newController->didAddWheelEventHandler(document());
-    }
 
     if (const TouchEventTargetSet* touchHandlers = oldDocument.touchEventTargets()) {
         while (touchHandlers->contains(this)) {
@@ -1994,9 +1980,7 @@ static inline bool tryAddEventListener(Node* targetNode, const AtomicString& eve
 
     Document& document = targetNode->document();
     document.addListenerTypeIfNeeded(eventType);
-    if (eventType == EventTypeNames::wheel || eventType == EventTypeNames::mousewheel)
-        WheelController::from(document)->didAddWheelEventHandler(document);
-    else if (isTouchEventType(eventType))
+    if (isTouchEventType(eventType))
         document.didAddTouchEventHandler(targetNode);
     if (document.frameHost())
         document.frameHost()->eventHandlerRegistry().didAddEventHandler(*targetNode, eventType);
@@ -2017,9 +2001,7 @@ static inline bool tryRemoveEventListener(Node* targetNode, const AtomicString& 
     // FIXME: Notify Document that the listener has vanished. We need to keep track of a number of
     // listeners for each type, not just a bool - see https://bugs.webkit.org/show_bug.cgi?id=33861
     Document& document = targetNode->document();
-    if (eventType == EventTypeNames::wheel || eventType == EventTypeNames::mousewheel)
-        WheelController::from(document)->didRemoveWheelEventHandler(document);
-    else if (isTouchEventType(eventType))
+    if (isTouchEventType(eventType))
         document.didRemoveTouchEventHandler(targetNode);
     if (document.frameHost())
         document.frameHost()->eventHandlerRegistry().didRemoveEventHandler(*targetNode, eventType);

@@ -28,6 +28,8 @@ bool EventHandlerRegistry::eventTypeToClass(const AtomicString& eventType, Event
 {
     if (eventType == EventTypeNames::scroll) {
         *result = ScrollEvent;
+    } else if (eventType == EventTypeNames::wheel || eventType == EventTypeNames::mousewheel) {
+        *result = WheelEvent;
 #if ASSERT_ENABLED
     } else if (eventType == EventTypeNames::load || eventType == EventTypeNames::mousemove || eventType == EventTypeNames::touchstart) {
         *result = EventsForTesting;
@@ -155,11 +157,20 @@ void EventHandlerRegistry::updateAllEventHandlers(ChangeOperation op, EventTarge
 void EventHandlerRegistry::notifyHasHandlersChanged(EventHandlerClass handlerClass, bool hasActiveHandlers)
 {
     ScrollingCoordinator* scrollingCoordinator = m_frameHost.page().scrollingCoordinator();
+    LocalFrame* mainFrame = m_frameHost.page().mainFrame();
 
     switch (handlerClass) {
     case ScrollEvent:
         if (scrollingCoordinator)
             scrollingCoordinator->updateHaveScrollEventHandlers();
+        break;
+    case WheelEvent:
+        if (mainFrame) {
+            // FIXME: This notification is wired up to a black hole, so remove it.
+            mainFrame->notifyChromeClientWheelEventHandlerCountChanged();
+        }
+        if (scrollingCoordinator)
+            scrollingCoordinator->updateHaveWheelEventHandlers();
         break;
 #if ASSERT_ENABLED
     case EventsForTesting:

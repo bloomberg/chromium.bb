@@ -33,7 +33,6 @@
 #include "RuntimeEnabledFeatures.h"
 #include "bindings/v8/ScriptController.h"
 #include "core/dom/DocumentType.h"
-#include "core/dom/WheelController.h"
 #include "core/editing/Editor.h"
 #include "core/editing/FrameSelection.h"
 #include "core/editing/InputMethodController.h"
@@ -43,6 +42,7 @@
 #include "core/events/Event.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/frame/DOMWindow.h"
+#include "core/frame/EventHandlerRegistry.h"
 #include "core/frame/FrameConsole.h"
 #include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
@@ -513,13 +513,15 @@ void LocalFrame::deviceOrPageScaleFactorChanged()
 
 void LocalFrame::notifyChromeClientWheelEventHandlerCountChanged() const
 {
+    // FIXME: No-one is using this information, so remove this code.
     // Ensure that this method is being called on the main frame of the page.
     ASSERT(isMainFrame());
 
+    EventHandlerRegistry& registry = m_host->eventHandlerRegistry();
     unsigned count = 0;
-    for (const LocalFrame* frame = this; frame; frame = frame->tree().traverseNext()) {
-        if (frame->document())
-            count += WheelController::from(*frame->document())->wheelEventHandlerCount();
+    if (const EventTargetSet* targets = registry.eventHandlerTargets(EventHandlerRegistry::WheelEvent)) {
+        for (EventTargetSet::const_iterator iter = targets->begin(); iter != targets->end(); ++iter)
+            count += iter->value;
     }
 
     m_host->chrome().client().numWheelEventHandlersChanged(count);

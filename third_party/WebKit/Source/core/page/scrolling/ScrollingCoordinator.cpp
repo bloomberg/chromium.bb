@@ -31,7 +31,6 @@
 #include "core/dom/Document.h"
 #include "core/dom/FullscreenElementStack.h"
 #include "core/dom/Node.h"
-#include "core/dom/WheelController.h"
 #include "core/frame/EventHandlerRegistry.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
@@ -668,14 +667,8 @@ void ScrollingCoordinator::updateHaveWheelEventHandlers()
         return;
 
     if (WebLayer* scrollLayer = toWebLayer(m_page->mainFrame()->view()->layerForScrolling())) {
-        unsigned wheelEventHandlerCount = 0;
-
-        for (Frame* frame = m_page->mainFrame(); frame; frame = frame->tree().traverseNext()) {
-            if (frame->isLocalFrame())
-                wheelEventHandlerCount += WheelController::from(*toLocalFrame(frame)->document())->wheelEventHandlerCount();
-        }
-
-        scrollLayer->setHaveWheelEventHandlers(wheelEventHandlerCount);
+        bool haveHandlers = m_page->frameHost().eventHandlerRegistry().hasEventHandlers(EventHandlerRegistry::WheelEvent);
+        scrollLayer->setHaveWheelEventHandlers(haveHandlers);
     }
 }
 

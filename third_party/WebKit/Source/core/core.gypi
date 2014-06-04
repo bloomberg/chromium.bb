@@ -2142,8 +2142,6 @@
             'dom/VisitedLinkState.h',
             'dom/WeakNodeMap.cpp',
             'dom/WeakNodeMap.h',
-            'dom/WheelController.cpp',
-            'dom/WheelController.h',
             'dom/XMLDocument.cpp',
             'dom/XMLDocument.h',
             'dom/custom/CustomElement.cpp',
