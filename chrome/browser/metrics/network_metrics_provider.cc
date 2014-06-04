@@ -70,6 +70,8 @@ NetworkMetricsProvider::GetConnectionType() const {
       return SystemProfileProto::Network::CONNECTION_3G;
     case net::NetworkChangeNotifier::CONNECTION_4G:
       return SystemProfileProto::Network::CONNECTION_4G;
+    case net::NetworkChangeNotifier::CONNECTION_BLUETOOTH:
+      return SystemProfileProto::Network::CONNECTION_BLUETOOTH;
   }
   NOTREACHED();
   return SystemProfileProto::Network::CONNECTION_UNKNOWN;

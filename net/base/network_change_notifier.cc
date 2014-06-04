@@ -151,6 +151,11 @@ class HistogramWatcher
           UMA_HISTOGRAM_TIMES("NCN.CM.FastestRTTOnNone",
                               fastest_RTT_since_last_connection_change_);
           break;
+        case NetworkChangeNotifier::CONNECTION_BLUETOOTH:
+          UMA_HISTOGRAM_TIMES("NCN.CM.FirstReadOnBluetooth",
+                              first_byte_after_connection_change_);
+          UMA_HISTOGRAM_TIMES("NCN.CM.FastestRTTOnBluetooth",
+                              fastest_RTT_since_last_connection_change_);
       }
     }
     if (peak_kbps_since_last_connection_change_) {
@@ -183,6 +188,10 @@ class HistogramWatcher
           UMA_HISTOGRAM_COUNTS("NCN.CM.PeakKbpsOnNone",
                                peak_kbps_since_last_connection_change_);
           break;
+        case NetworkChangeNotifier::CONNECTION_BLUETOOTH:
+          UMA_HISTOGRAM_COUNTS("NCN.CM.PeakKbpsOnBluetooth",
+                               peak_kbps_since_last_connection_change_);
+          break;
       }
     }
     switch (last_connection_type_) {
@@ -213,6 +222,10 @@ class HistogramWatcher
       case NetworkChangeNotifier::CONNECTION_NONE:
         UMA_HISTOGRAM_LONG_TIMES("NCN.CM.TimeOnNone", state_duration);
         UMA_HISTOGRAM_COUNTS("NCN.CM.KBTransferedOnNone", kilobytes_read);
+        break;
+      case NetworkChangeNotifier::CONNECTION_BLUETOOTH:
+        UMA_HISTOGRAM_LONG_TIMES("NCN.CM.TimeOnBluetooth", state_duration);
+        UMA_HISTOGRAM_COUNTS("NCN.CM.KBTransferedOnBluetooth", kilobytes_read);
         break;
     }
 
@@ -540,13 +553,14 @@ const char* NetworkChangeNotifier::ConnectionTypeToString(
     "CONNECTION_2G",
     "CONNECTION_3G",
     "CONNECTION_4G",
-    "CONNECTION_NONE"
+    "CONNECTION_NONE",
+    "CONNECTION_BLUETOOTH"
   };
   COMPILE_ASSERT(
       arraysize(kConnectionTypeNames) ==
-          NetworkChangeNotifier::CONNECTION_NONE + 1,
+          NetworkChangeNotifier::CONNECTION_LAST + 1,
       ConnectionType_name_count_mismatch);
-  if (type < CONNECTION_UNKNOWN || type > CONNECTION_NONE) {
+  if (type < CONNECTION_UNKNOWN || type > CONNECTION_LAST) {
     NOTREACHED();
     return "CONNECTION_INVALID";
   }
@@ -625,6 +639,7 @@ bool NetworkChangeNotifier::IsConnectionCellular(ConnectionType type) {
     case CONNECTION_ETHERNET:
     case CONNECTION_WIFI:
     case CONNECTION_NONE:
+    case CONNECTION_BLUETOOTH:
       is_cellular = false;
       break;
   }

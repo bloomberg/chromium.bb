@@ -268,6 +268,7 @@ message SystemProfileProto {
       CONNECTION_2G = 3;
       CONNECTION_3G = 4;
       CONNECTION_4G = 5;
+      CONNECTION_BLUETOOTH = 6;
     }
     // The connection type according to NetworkChangeNotifier.
     optional ConnectionType connection_type = 2;

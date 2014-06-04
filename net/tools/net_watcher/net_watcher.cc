@@ -50,6 +50,8 @@ const char* ConnectionTypeToString(
       return "CONNECTION_4G";
     case net::NetworkChangeNotifier::CONNECTION_NONE:
       return "CONNECTION_NONE";
+    case net::NetworkChangeNotifier::CONNECTION_BLUETOOTH:
+      return "CONNECTION_BLUETOOTH";
     default:
       return "CONNECTION_UNEXPECTED";
   }

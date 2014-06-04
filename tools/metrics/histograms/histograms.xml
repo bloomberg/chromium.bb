@@ -45813,6 +45813,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <suffix name="CONNECTION_4G" label="mobile 4G are tallied."/>
   <suffix name="CONNECTION_NONE"
       label="NO(?) network are tallied (should be empty)."/>
+  <suffix name="CONNECTION_BLUETOOTH"
+      label="Bluetooth are tallied, but this may include connections to a
+             mobile hotspot."/>
   <affected-histogram
       name="Net.QuicSession.21CumulativePacketsReceived_First21"/>
   <affected-histogram

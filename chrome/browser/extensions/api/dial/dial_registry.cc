@@ -319,6 +319,7 @@ void DialRegistry::OnNetworkChanged(
     case NetworkChangeNotifier::CONNECTION_ETHERNET:
     case NetworkChangeNotifier::CONNECTION_WIFI:
     case NetworkChangeNotifier::CONNECTION_UNKNOWN:
+    case NetworkChangeNotifier::CONNECTION_BLUETOOTH:
       if (!dial_.get()) {
         VLOG(2) << "Connection detected, restarting discovery.";
         StartPeriodicDiscovery();

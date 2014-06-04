@@ -22,6 +22,8 @@ NetConnectionTypeToWebConnectionType(
     case net::NetworkChangeNotifier::CONNECTION_3G:
     case net::NetworkChangeNotifier::CONNECTION_4G:
       return blink::ConnectionTypeCellular;
+    case net::NetworkChangeNotifier::CONNECTION_BLUETOOTH:
+      return blink::ConnectionTypeBluetooth;
   }
 
   NOTREACHED();
