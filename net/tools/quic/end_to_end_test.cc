@@ -663,7 +663,9 @@ TEST_P(EndToEndTest, LargePostFEC) {
   VerifyCleanConnection(true);
 }
 
-TEST_P(EndToEndTest, LargePostSmallBandwidthLargeBuffer) {
+// TODO(shess): This is flaky on ChromiumOS bots.
+// http://crbug.com/374871
+TEST_P(EndToEndTest, DISABLED_LargePostSmallBandwidthLargeBuffer) {
   ASSERT_TRUE(Initialize());
   SetPacketSendDelay(QuicTime::Delta::FromMicroseconds(1));
   // 256KB per second with a 256KB buffer from server to client.  Wireless
