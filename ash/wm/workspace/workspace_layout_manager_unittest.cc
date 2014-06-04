@@ -25,6 +25,8 @@
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
+#include "ui/base/ime/dummy_text_input_client.h"
+#include "ui/base/ime/input_method.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/insets.h"
 #include "ui/gfx/screen.h"
@@ -938,6 +940,106 @@ TEST_F(WorkspaceLayoutManagerBackdropTest, VerifyBackdropAndItsStacking) {
   EXPECT_EQ("b",
             GetWindowOrderAsString(NULL, window1.get(), window2.get(),
                                    window3.get()));
+}
+
+class WorkspaceLayoutManagerKeyboardTest : public test::AshTestBase {
+ public:
+  WorkspaceLayoutManagerKeyboardTest() {}
+  virtual ~WorkspaceLayoutManagerKeyboardTest() {}
+
+  virtual void SetUp() OVERRIDE {
+    test::AshTestBase::SetUp();
+    UpdateDisplay("800x600");
+    aura::Window* default_container = Shell::GetContainer(
+        Shell::GetPrimaryRootWindow(), kShellWindowId_DefaultContainer);
+    layout_manager_ = new WorkspaceLayoutManager(Shell::GetPrimaryRootWindow());
+    default_container->SetLayoutManager(layout_manager_);
+  }
+
+  aura::Window* CreateTestWindow(const gfx::Rect& bounds) {
+    return CreateTestWindowInShellWithBounds(bounds);
+  }
+
+  void ShowKeyboard() {
+    restore_work_area_insets_ = Shell::GetScreen()->GetPrimaryDisplay().
+        GetWorkAreaInsets();
+    Shell::GetInstance()->SetDisplayWorkAreaInsets(
+        Shell::GetPrimaryRootWindow(),
+        gfx::Insets(0, 0, keyboard_bounds_.height(), 0));
+    layout_manager_->OnKeyboardBoundsChanging(keyboard_bounds_);
+  }
+
+  void HideKeyboard() {
+    Shell::GetInstance()->SetDisplayWorkAreaInsets(
+        Shell::GetPrimaryRootWindow(),
+        restore_work_area_insets_);
+    layout_manager_->OnKeyboardBoundsChanging(gfx::Rect());
+  }
+
+  void SetKeyboardBounds(const gfx::Rect& bounds) {
+    keyboard_bounds_ = bounds;
+  }
+
+ private:
+  gfx::Insets restore_work_area_insets_;
+  gfx::Rect keyboard_bounds_;
+  WorkspaceLayoutManager *layout_manager_;
+
+  DISALLOW_COPY_AND_ASSIGN(WorkspaceLayoutManagerKeyboardTest);
+};
+
+class FakeTextInputClient : public ui::DummyTextInputClient {
+ public:
+  FakeTextInputClient(gfx::NativeWindow window) : window_(window) {}
+  virtual ~FakeTextInputClient() {}
+
+  virtual gfx::NativeWindow GetAttachedWindow() const OVERRIDE {
+    return window_;
+  }
+
+ private:
+  gfx::NativeWindow window_;
+
+  DISALLOW_COPY_AND_ASSIGN(FakeTextInputClient);
+};
+
+TEST_F(WorkspaceLayoutManagerKeyboardTest, AdjustWindowForA11yKeyboard) {
+  gfx::Rect work_area(
+      Shell::GetScreen()->GetPrimaryDisplay().work_area());
+  gfx::Rect keyboard_bounds(work_area.x(),
+                            work_area.y() + work_area.height() / 2,
+                            work_area.width(),
+                            work_area.height() / 2);
+
+  SetKeyboardBounds(keyboard_bounds);
+  scoped_ptr<aura::Window> window(
+      CreateTestWindowInShellWithBounds(work_area));
+
+  aura::Window* root_window = ash::Shell::GetInstance()->GetPrimaryRootWindow();
+  FakeTextInputClient text_input_client(window.get());
+  ui::InputMethod* input_method =
+      root_window->GetProperty(aura::client::kRootWindowInputMethodKey);
+  input_method->SetFocusedTextInputClient(&text_input_client);
+
+  int available_height =
+      Shell::GetScreen()->GetPrimaryDisplay().bounds().height() -
+      keyboard_bounds.height();
+
+  EXPECT_EQ(gfx::Rect(work_area).ToString(),
+      window->bounds().ToString());
+  ShowKeyboard();
+  EXPECT_EQ(gfx::Rect(work_area.origin(),
+            gfx::Size(work_area.width(), available_height)).ToString(),
+            window->bounds().ToString());
+  HideKeyboard();
+
+  window->SetBounds(gfx::Rect(50, 50, 100, 500));
+  EXPECT_EQ("50,50 100x500", window->bounds().ToString());
+  ShowKeyboard();
+  EXPECT_EQ(gfx::Rect(50, 0, 100, available_height).ToString(),
+            window->bounds().ToString());
+  HideKeyboard();
+  input_method->SetFocusedTextInputClient(NULL);
 }
 
 }  // namespace ash

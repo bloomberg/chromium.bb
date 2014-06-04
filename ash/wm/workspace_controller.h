@@ -41,6 +41,8 @@ class ASH_EXPORT WorkspaceController {
   void SetMaximizeBackdropDelegate(
       scoped_ptr<WorkspaceLayoutManagerDelegate> delegate);
 
+  WorkspaceLayoutManager* layout_manager() { return layout_manager_; }
+
  private:
   friend class WorkspaceControllerTestHelper;
 

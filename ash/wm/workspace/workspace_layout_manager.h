@@ -17,6 +17,7 @@
 #include "ui/aura/layout_manager.h"
 #include "ui/aura/window_observer.h"
 #include "ui/gfx/rect.h"
+#include "ui/keyboard/keyboard_controller_observer.h"
 #include "ui/wm/public/activation_change_observer.h"
 
 namespace aura {
@@ -42,6 +43,7 @@ class ASH_EXPORT WorkspaceLayoutManager
     : public aura::LayoutManager,
       public aura::WindowObserver,
       public aura::client::ActivationChangeObserver,
+      public keyboard::KeyboardControllerObserver,
       public ShellObserver,
       public wm::WindowStateObserver {
  public:
@@ -84,6 +86,9 @@ class ASH_EXPORT WorkspaceLayoutManager
   // aura::client::ActivationChangeObserver overrides:
   virtual void OnWindowActivated(aura::Window* gained_active,
                                  aura::Window* lost_active) OVERRIDE;
+
+  // keyboard::KeyboardControllerObserver overrides:
+  virtual void OnKeyboardBoundsChanging(const gfx::Rect& new_bounds) OVERRIDE;
 
   // WindowStateObserver overrides:
   virtual void OnPostWindowStateTypeChange(

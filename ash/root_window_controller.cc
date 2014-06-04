@@ -688,6 +688,7 @@ void RootWindowController::ActivateKeyboard(
     keyboard_controller->AddObserver(shelf()->shelf_layout_manager());
     keyboard_controller->AddObserver(panel_layout_manager_);
     keyboard_controller->AddObserver(docked_layout_manager_);
+    keyboard_controller->AddObserver(workspace_controller_->layout_manager());
     Shell::GetInstance()->delegate()->VirtualKeyboardActivated(true);
   }
   aura::Window* parent = GetContainer(
@@ -722,6 +723,8 @@ void RootWindowController::DeactivateKeyboard(
       keyboard_controller->RemoveObserver(shelf()->shelf_layout_manager());
       keyboard_controller->RemoveObserver(panel_layout_manager_);
       keyboard_controller->RemoveObserver(docked_layout_manager_);
+      keyboard_controller->RemoveObserver(
+          workspace_controller_->layout_manager());
       Shell::GetInstance()->delegate()->VirtualKeyboardActivated(false);
     }
   }
