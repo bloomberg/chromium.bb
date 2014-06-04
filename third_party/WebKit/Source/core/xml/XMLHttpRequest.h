@@ -134,6 +134,8 @@ public:
     String responseType();
     ResponseTypeCode responseTypeCode() const { return m_responseTypeCode; }
 
+    String responseURL();
+
     // response attribute has custom getter.
     ArrayBuffer* responseArrayBuffer();
 

@@ -404,6 +404,11 @@ String XMLHttpRequest::responseType()
     return "";
 }
 
+String XMLHttpRequest::responseURL()
+{
+    return m_response.url().string();
+}
+
 XMLHttpRequestUpload* XMLHttpRequest::upload()
 {
     if (!m_upload)
