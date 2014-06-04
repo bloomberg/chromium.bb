@@ -27,7 +27,8 @@ function setUpTest()
 
     window.jsTestIsAsync = true;
     iframe = document.getElementById('scrollable');
-    if (iframe.contentDocument.readyState != "complete")
+    // iframes start in readyState complete, but with the about:blank doc, make sure our doc is loaded.
+    if (iframe.src != iframe.contentDocument.URL || iframe.contentDocument.readyState != "complete")
         iframe.onload = testIt;
     else
         testIt();
