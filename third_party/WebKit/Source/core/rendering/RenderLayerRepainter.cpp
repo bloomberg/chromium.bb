@@ -152,10 +152,14 @@ void RenderLayerRepainter::repaintIncludingNonCompositingDescendants()
 
 void RenderLayerRepainter::repaintIncludingNonCompositingDescendantsInternal(const RenderLayerModelObject* repaintContainer)
 {
-    m_renderer.repaintUsingContainer(repaintContainer, pixelSnappedIntRect(m_renderer.computeRepaintRect()), InvalidationLayer);
+    m_renderer.repaintUsingContainer(repaintContainer, pixelSnappedIntRect(m_renderer.boundsRectForRepaint(repaintContainer)), InvalidationLayer);
+
+    // FIXME: Repaints can be issued during style recalc at present, via RenderLayerModelObject::styleWillChange. This happens in scenarios when
+    // repaint is needed but not layout.
+    DisableCompositingQueryAsserts disabler;
 
     for (RenderLayer* curr = m_renderer.layer()->firstChild(); curr; curr = curr->nextSibling()) {
-        if (!curr->hasCompositedLayerMapping())
+        if (curr->compositingState() != PaintsIntoOwnBacking && curr->compositingState() != PaintsIntoGroupedBacking)
             curr->repainter().repaintIncludingNonCompositingDescendantsInternal(repaintContainer);
     }
 }
@@ -170,7 +174,7 @@ LayoutRect RenderLayerRepainter::repaintRectIncludingNonCompositingDescendants()
 
     for (RenderLayer* child = m_renderer.layer()->firstChild(); child; child = child->nextSibling()) {
         // Don't include repaint rects for composited child layers; they will paint themselves and have a different origin.
-        if (child->hasCompositedLayerMapping())
+        if (child->compositingState() == PaintsIntoOwnBacking || child->compositingState() == PaintsIntoGroupedBacking)
             continue;
 
         repaintRect.unite(child->repainter().repaintRectIncludingNonCompositingDescendants());

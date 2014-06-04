@@ -39,6 +39,7 @@ CASE 2, overlap3 gets added:
       (drawsContent 1)
       (repaint rects
         (rect 300.00 300.00 100.00 100.00)
+        (rect 300.00 300.00 100.00 100.00)
       )
       (children 1
         (GraphicsLayer
@@ -55,9 +56,9 @@ CASE 2, overlap3 gets added:
               (bounds 260.00 260.00)
               (drawsContent 1)
               (repaint rects
+                (rect 160.00 160.00 20.00 20.00)
                 (rect 140.00 140.00 40.00 40.00)
                 (rect 80.00 80.00 100.00 100.00)
-                (rect 0.00 0.00 100.00 100.00)
                 (rect 0.00 0.00 100.00 100.00)
               )
             )
@@ -142,6 +143,7 @@ CASE 5, overlap2 gets added back:
       (drawsContent 1)
       (repaint rects
         (rect 220.00 220.00 100.00 100.00)
+        (rect 220.00 220.00 100.00 100.00)
       )
       (children 1
         (GraphicsLayer
@@ -161,6 +163,7 @@ CASE 5, overlap2 gets added back:
                 (rect 0.00 0.00 100.00 100.00)
                 (rect 0.00 0.00 100.00 100.00)
                 (rect 0.00 0.00 100.00 100.00)
+                (rect 0.00 0.00 20.00 20.00)
               )
             )
           )
@@ -178,6 +181,7 @@ CASE 6, overlap1 gets added back, and overlap3 gets removed:
       (contentsOpaque 1)
       (drawsContent 1)
       (repaint rects
+        (rect 140.00 140.00 100.00 100.00)
         (rect 140.00 140.00 100.00 100.00)
       )
       (children 1
@@ -199,6 +203,7 @@ CASE 6, overlap1 gets added back, and overlap3 gets removed:
                 (rect 0.00 0.00 100.00 100.00)
                 (rect 0.00 0.00 100.00 100.00)
                 (rect 0.00 0.00 100.00 100.00)
+                (rect 0.00 0.00 20.00 20.00)
                 (rect 0.00 0.00 20.00 20.00)
               )
             )

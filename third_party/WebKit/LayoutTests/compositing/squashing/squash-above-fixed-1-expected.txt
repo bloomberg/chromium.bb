@@ -47,6 +47,9 @@ CASE 2, scrolling y to 80, new layers will be squashed, so things repaint:
       (contentsOpaque 1)
       (drawsContent 1)
       (repaint rects
+        (rect 0.00 500.00 200.00 100.00)
+        (rect 0.00 400.00 200.00 100.00)
+        (rect 0.00 300.00 200.00 100.00)
         (rect 0.00 200.00 200.00 100.00)
         (rect 0.00 100.00 200.00 100.00)
       )
@@ -123,6 +126,9 @@ CASE 4, scrolling y to 170 new layers will be squashed, so things repaint:
       (contentsOpaque 1)
       (drawsContent 1)
       (repaint rects
+        (rect 0.00 600.00 200.00 100.00)
+        (rect 0.00 500.00 200.00 100.00)
+        (rect 0.00 400.00 200.00 100.00)
         (rect 0.00 300.00 200.00 100.00)
         (rect 0.00 200.00 200.00 100.00)
       )

@@ -183,9 +183,6 @@ bool CompositingLayerAssigner::updateSquashingAssignment(RenderLayer* layer, Squ
 
         layer->clipper().clearClipRectsIncludingDescendants();
 
-        // If we need to repaint, do so before allocating the layer to the squashing layer.
-        m_compositor->repaintOnCompositingChange(layer);
-
         // FIXME: it seems premature to compute this before all compositing state has been updated?
         // This layer and all of its descendants have cached repaints rects that are relative to
         // the repaint container, so change when compositing changes; we need to update them here.
@@ -194,10 +191,15 @@ bool CompositingLayerAssigner::updateSquashingAssignment(RenderLayer* layer, Squ
         if (layer->parent())
             layer->repainter().computeRepaintRectsIncludingDescendants();
 
+        // Issue a repaint, since |layer| may have been added to an already-existing squashing layer.
+        m_compositor->repaintOnCompositingChange(layer);
+
         return true;
     }
     if (compositedLayerUpdate == RemoveFromSquashingLayer) {
         if (layer->groupedMapping()) {
+            // Before removing |layer| from an already-existing squashing layer that may have other content, issue a repaint.
+            m_compositor->repaintOnCompositingChange(layer);
             layer->groupedMapping()->setNeedsGraphicsLayerUpdate();
             layer->setGroupedMapping(0);
         }
@@ -206,7 +208,7 @@ bool CompositingLayerAssigner::updateSquashingAssignment(RenderLayer* layer, Squ
         // the repaint container, so change when compositing changes; we need to update them here.
         layer->repainter().computeRepaintRectsIncludingDescendants();
 
-        // If we need to repaint, do so now that we've removed it from a squashed layer
+        // If we need to repaint, do so now that we've removed it from a squashed layer.
         m_compositor->repaintOnCompositingChange(layer);
 
         layer->setLostGroupedMapping(false);

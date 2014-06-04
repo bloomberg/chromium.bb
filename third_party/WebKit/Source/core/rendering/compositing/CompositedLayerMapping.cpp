@@ -2182,10 +2182,12 @@ bool CompositedLayerMapping::updateSquashingLayerAssignment(RenderLayer* squashe
     bool updatedAssignment = false;
     if (nextSquashedLayerIndex < m_squashedLayers.size()) {
         if (!paintInfo.isEquivalentForSquashing(m_squashedLayers[nextSquashedLayerIndex])) {
+            compositor()->repaintOnCompositingChange(squashedLayer);
             updatedAssignment = true;
             m_squashedLayers[nextSquashedLayerIndex] = paintInfo;
         }
     } else {
+        compositor()->repaintOnCompositingChange(squashedLayer);
         m_squashedLayers.append(paintInfo);
         updatedAssignment = true;
     }
