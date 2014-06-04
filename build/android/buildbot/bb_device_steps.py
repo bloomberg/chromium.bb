@@ -148,7 +148,7 @@ def RunTelemetryPerfUnitTests(options):
     options: options object.
   """
   InstallApk(options, INSTRUMENTATION_TESTS['ChromeShell'], False)
-  args = ['--browser', 'android-chromium-testshell']
+  args = ['--browser', 'android-chrome-shell']
   devices = android_commands.GetAttachedDevices()
   if devices:
     args = args + ['--device', devices[0]]
