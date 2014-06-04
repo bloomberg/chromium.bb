@@ -45,7 +45,7 @@ class Node;
 
 class LayerRect FINAL : public RefCountedWillBeGarbageCollectedFinalized<LayerRect> {
 public:
-    static PassRefPtrWillBeRawPtr<LayerRect> create(PassRefPtr<Node> node, const String& layerType, int nodeOffsetX, int nodeOffsetY, PassRefPtrWillBeRawPtr<ClientRect> rect)
+    static PassRefPtrWillBeRawPtr<LayerRect> create(PassRefPtrWillBeRawPtr<Node> node, const String& layerType, int nodeOffsetX, int nodeOffsetY, PassRefPtrWillBeRawPtr<ClientRect> rect)
     {
         return adoptRefWillBeNoop(new LayerRect(node, layerType, nodeOffsetX, nodeOffsetY, rect));
     }
@@ -63,7 +63,7 @@ public:
     }
 
 private:
-    LayerRect(PassRefPtr<Node> node, const String& layerName, int nodeOffsetX, int nodeOffsetY, PassRefPtrWillBeRawPtr<ClientRect> rect)
+    LayerRect(PassRefPtrWillBeRawPtr<Node> node, const String& layerName, int nodeOffsetX, int nodeOffsetY, PassRefPtrWillBeRawPtr<ClientRect> rect)
         : m_layerAssociatedNode(node)
         , m_layerType(layerName)
         , m_associatedNodeOffsetX(nodeOffsetX)

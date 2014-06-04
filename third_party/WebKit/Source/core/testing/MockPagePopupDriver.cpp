@@ -51,7 +51,7 @@ private:
     void close(Timer<MockPagePopup>*);
 
     PagePopupClient* m_popupClient;
-    RefPtr<HTMLIFrameElement> m_iframe;
+    RefPtrWillBePersistent<HTMLIFrameElement> m_iframe;
     Timer<MockPagePopup> m_closeTimer;
 };
 
