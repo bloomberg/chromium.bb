@@ -29,7 +29,7 @@
 #include "chrome/browser/extensions/extension_special_storage_policy.h"
 #include "chrome/browser/extensions/extension_sync_service.h"
 #include "chrome/browser/extensions/extension_util.h"
-#include "chrome/browser/extensions/external_install_manager.h"
+#include "chrome/browser/extensions/external_install_ui.h"
 #include "chrome/browser/extensions/external_provider_impl.h"
 #include "chrome/browser/extensions/install_verifier.h"
 #include "chrome/browser/extensions/installed_loader.h"
@@ -289,8 +289,6 @@ ExtensionService::ExtensionService(Profile* profile,
       browser_terminating_(false),
       installs_delayed_for_gc_(false),
       is_first_run_(false),
-      external_install_manager_(
-          new extensions::ExternalInstallManager(profile_)),
       shared_module_service_(new extensions::SharedModuleService(profile_)) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -1344,7 +1342,7 @@ void ExtensionService::UpdateExternalExtensionAlert() {
   }
 
   if (extension) {
-    if (!external_install_manager_->HasExternalInstallError()) {
+    if (!extensions::HasExternalInstallError(this)) {
       if (extension_prefs_->IncrementAcknowledgePromptCount(extension->id()) >
               kMaxExtensionAcknowledgePromptCount) {
         // Stop prompting for this extension, and check if there's another
@@ -1373,8 +1371,10 @@ void ExtensionService::UpdateExternalExtensionAlert() {
       // (even if it's post-first run now).
       bool first_run = extension_prefs_->IsExternalInstallFirstRun(
           extension->id());
-      external_install_manager_->AddExternalInstallError(extension, first_run);
+      extensions::AddExternalInstallError(this, extension, first_run);
     }
+  } else {
+    extensions::RemoveExternalInstallError(this);
   }
 }
 
