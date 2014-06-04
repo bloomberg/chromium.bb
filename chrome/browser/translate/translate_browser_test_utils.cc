@@ -11,7 +11,7 @@
 #include "base/platform_file.h"
 #include "base/synchronization/lock.h"
 #include "chrome/browser/component_updater/cld_component_installer.h"
-#include "chrome/browser/translate/translate_tab_helper.h"
+#include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -155,12 +155,12 @@ void ScopedCLDDynamicDataHarness::ClearStandaloneDataFileState() {
 #if defined(CLD2_DYNAMIC_MODE)
   DLOG(INFO) << "Clearing CLD data file state";
   // This code must live within the class in order to gain "friend" access.
-  base::AutoLock lock(TranslateTabHelper::s_file_lock_.Get());
-  if (TranslateTabHelper::s_cached_file_) {
+  base::AutoLock lock(ChromeTranslateClient::s_file_lock_.Get());
+  if (ChromeTranslateClient::s_cached_file_) {
     // Leaks any open handle, no way to avoid safely.
-    TranslateTabHelper::s_cached_file_ = NULL;
-    TranslateTabHelper::s_cached_data_offset_ = 0;
-    TranslateTabHelper::s_cached_data_length_ = 0;
+    ChromeTranslateClient::s_cached_file_ = NULL;
+    ChromeTranslateClient::s_cached_data_offset_ = 0;
+    ChromeTranslateClient::s_cached_data_length_ = 0;
   }
 #endif  // defined(CLD2_DYNAMIC_MODE)
 }

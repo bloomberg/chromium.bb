@@ -31,7 +31,7 @@
 #include "chrome/browser/extensions/window_controller_list.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/translate/translate_tab_helper.h"
+#include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/ui/apps/chrome_app_window_delegate.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -1567,14 +1567,19 @@ bool TabsDetectLanguageFunction::RunAsync() {
 
   AddRef();  // Balanced in GotLanguage().
 
-  TranslateTabHelper* translate_tab_helper =
-      TranslateTabHelper::FromWebContents(contents);
-  if (!translate_tab_helper->GetLanguageState().original_language().empty()) {
+  ChromeTranslateClient* chrome_translate_client =
+      ChromeTranslateClient::FromWebContents(contents);
+  if (!chrome_translate_client->GetLanguageState()
+           .original_language()
+           .empty()) {
     // Delay the callback invocation until after the current JS call has
     // returned.
-    base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
-        &TabsDetectLanguageFunction::GotLanguage, this,
-        translate_tab_helper->GetLanguageState().original_language()));
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(
+            &TabsDetectLanguageFunction::GotLanguage,
+            this,
+            chrome_translate_client->GetLanguageState().original_language()));
     return true;
   }
   // The tab contents does not know its language yet.  Let's wait until it

@@ -27,7 +27,7 @@
 #include "chrome/browser/signin/signin_ui_util.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
-#include "chrome/browser/translate/translate_tab_helper.h"
+#include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/ui/bookmarks/bookmark_editor.h"
 #include "chrome/browser/ui/bookmarks/bookmark_utils.h"
 #include "chrome/browser/ui/browser.h"
@@ -1784,12 +1784,12 @@ enum {
 
   std::string sourceLanguage;
   std::string targetLanguage;
-  TranslateTabHelper::GetTranslateLanguages(contents,
-                                            &sourceLanguage, &targetLanguage);
+  ChromeTranslateClient::GetTranslateLanguages(
+      contents, &sourceLanguage, &targetLanguage);
 
   scoped_ptr<TranslateUIDelegate> uiDelegate(new TranslateUIDelegate(
-      TranslateTabHelper::FromWebContents(contents),
-      TranslateTabHelper::GetManagerFromWebContents(contents),
+      ChromeTranslateClient::FromWebContents(contents),
+      ChromeTranslateClient::GetManagerFromWebContents(contents),
       sourceLanguage,
       targetLanguage));
   scoped_ptr<TranslateBubbleModel> model(

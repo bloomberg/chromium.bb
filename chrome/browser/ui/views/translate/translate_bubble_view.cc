@@ -15,8 +15,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/translate/translate_service.h"
-#include "chrome/browser/translate/translate_tab_helper.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/translate/translate_bubble_model_impl.h"
 #include "chrome/common/url_constants.h"
@@ -138,12 +138,12 @@ void TranslateBubbleView::ShowBubble(views::View* anchor_view,
 
   std::string source_language;
   std::string target_language;
-  TranslateTabHelper::GetTranslateLanguages(web_contents,
-                                            &source_language, &target_language);
+  ChromeTranslateClient::GetTranslateLanguages(
+      web_contents, &source_language, &target_language);
 
   scoped_ptr<TranslateUIDelegate> ui_delegate(new TranslateUIDelegate(
-      TranslateTabHelper::FromWebContents(web_contents),
-      TranslateTabHelper::GetManagerFromWebContents(web_contents),
+      ChromeTranslateClient::FromWebContents(web_contents),
+      ChromeTranslateClient::GetManagerFromWebContents(web_contents),
       source_language,
       target_language));
   scoped_ptr<TranslateBubbleModel> model(

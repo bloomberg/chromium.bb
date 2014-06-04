@@ -6,8 +6,8 @@
 
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
+#include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/translate/translate_browser_test_utils.h"
-#include "chrome/browser/translate/translate_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -34,8 +34,8 @@ IN_PROC_BROWSER_TEST_F(TranslateManagerBrowserTest,
 
   content::WebContents* current_web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  TranslateTabHelper* translate_tab_helper =
-      TranslateTabHelper::FromWebContents(current_web_contents);
+  ChromeTranslateClient* chrome_translate_client =
+      ChromeTranslateClient::FromWebContents(current_web_contents);
   content::Source<content::WebContents> source(current_web_contents);
 
   ui_test_utils::WindowedNotificationObserverWithDetails<
@@ -51,7 +51,8 @@ IN_PROC_BROWSER_TEST_F(TranslateManagerBrowserTest,
   EXPECT_TRUE(fr_language_detected_signal.GetDetailsFor(
         source.map_key(), &details));
   EXPECT_EQ("fr", details.adopted_language);
-  EXPECT_EQ("fr", translate_tab_helper->GetLanguageState().original_language());
+  EXPECT_EQ("fr",
+            chrome_translate_client->GetLanguageState().original_language());
 }
 
 #if defined (OS_WIN)

@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/browser_content_translate_driver_observer.h"
 
-#include "chrome/browser/translate/translate_tab_helper.h"
+#include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -21,9 +21,9 @@ BrowserContentTranslateDriverObserver::
 void BrowserContentTranslateDriverObserver::OnIsPageTranslatedChanged(
     content::WebContents* source) {
   if (source == browser_->tab_strip_model()->GetActiveWebContents()) {
-    TranslateTabHelper* translate_tab_helper =
-        TranslateTabHelper::FromWebContents(source);
-    LanguageState& language_state = translate_tab_helper->GetLanguageState();
+    ChromeTranslateClient* chrome_translate_client =
+        ChromeTranslateClient::FromWebContents(source);
+    LanguageState& language_state = chrome_translate_client->GetLanguageState();
     browser_->window()->SetTranslateIconToggled(
         language_state.IsPageTranslated());
   }

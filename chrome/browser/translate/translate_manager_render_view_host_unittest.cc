@@ -15,8 +15,8 @@
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu_test_util.h"
+#include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/translate/translate_service.h"
-#include "chrome/browser/translate/translate_tab_helper.h"
 #include "chrome/browser/ui/translate/translate_bubble_factory.h"
 #include "chrome/browser/ui/translate/translate_bubble_model.h"
 #include "chrome/browser/ui/translate/translate_bubble_model_impl.h"
@@ -259,8 +259,8 @@ class TranslateManagerRenderViewHostTest
 
     ChromeRenderViewHostTestHarness::SetUp();
     InfoBarService::CreateForWebContents(web_contents());
-    TranslateTabHelper::CreateForWebContents(web_contents());
-    TranslateTabHelper::FromWebContents(web_contents())
+    ChromeTranslateClient::CreateForWebContents(web_contents());
+    ChromeTranslateClient::FromWebContents(web_contents())
         ->set_translate_max_reload_attempts(0);
 
     notification_registrar_.Add(
@@ -378,15 +378,15 @@ class MockTranslateBubbleFactory : public TranslateBubbleFactory {
       return;
     }
 
-    TranslateTabHelper* translate_tab_helper =
-        TranslateTabHelper::FromWebContents(web_contents);
+    ChromeTranslateClient* chrome_translate_client =
+        ChromeTranslateClient::FromWebContents(web_contents);
     std::string source_language =
-        translate_tab_helper->GetLanguageState().original_language();
+        chrome_translate_client->GetLanguageState().original_language();
     std::string target_language = TranslateDownloadManager::GetLanguageCode(
         g_browser_process->GetApplicationLocale());
     scoped_ptr<TranslateUIDelegate> ui_delegate(
-        new TranslateUIDelegate(translate_tab_helper,
-                                translate_tab_helper->GetTranslateManager(),
+        new TranslateUIDelegate(chrome_translate_client,
+                                chrome_translate_client->GetTranslateManager(),
                                 source_language,
                                 target_language));
     model_.reset(new TranslateBubbleModelImpl(step, ui_delegate.Pass()));
@@ -778,7 +778,7 @@ TEST_F(TranslateManagerRenderViewHostTest, Reload) {
 
   // If we set reload attempts to a high value, we will not see the infobar
   // immediately.
-  TranslateTabHelper::FromWebContents(web_contents())
+  ChromeTranslateClient::FromWebContents(web_contents())
       ->set_translate_max_reload_attempts(100);
   ReloadAndWait(true);
   EXPECT_TRUE(GetTranslateInfoBar() == NULL);
@@ -1068,10 +1068,10 @@ TEST_F(TranslateManagerRenderViewHostTest, NeverTranslateLanguagePref) {
   registrar.Init(prefs);
   registrar.Add(TranslatePrefs::kPrefTranslateBlockedLanguages, pref_callback_);
   scoped_ptr<TranslatePrefs> translate_prefs(
-      TranslateTabHelper::CreateTranslatePrefs(prefs));
+      ChromeTranslateClient::CreateTranslatePrefs(prefs));
   EXPECT_FALSE(translate_prefs->IsBlockedLanguage("fr"));
   TranslateAcceptLanguages* accept_languages =
-      TranslateTabHelper::GetTranslateAcceptLanguages(profile);
+      ChromeTranslateClient::GetTranslateAcceptLanguages(profile);
   EXPECT_TRUE(translate_prefs->CanTranslateLanguage(accept_languages, "fr"));
   SetPrefObserverExpectation(TranslatePrefs::kPrefTranslateBlockedLanguages);
   translate_prefs->BlockLanguage("fr");
@@ -1118,10 +1118,10 @@ TEST_F(TranslateManagerRenderViewHostTest, NeverTranslateSitePref) {
   registrar.Init(prefs);
   registrar.Add(TranslatePrefs::kPrefTranslateSiteBlacklist, pref_callback_);
   scoped_ptr<TranslatePrefs> translate_prefs(
-      TranslateTabHelper::CreateTranslatePrefs(prefs));
+      ChromeTranslateClient::CreateTranslatePrefs(prefs));
   EXPECT_FALSE(translate_prefs->IsSiteBlacklisted(host));
   TranslateAcceptLanguages* accept_languages =
-      TranslateTabHelper::GetTranslateAcceptLanguages(profile);
+      ChromeTranslateClient::GetTranslateAcceptLanguages(profile);
   EXPECT_TRUE(translate_prefs->CanTranslateLanguage(accept_languages, "fr"));
   SetPrefObserverExpectation(TranslatePrefs::kPrefTranslateSiteBlacklist);
   translate_prefs->BlacklistSite(host);
@@ -1159,7 +1159,7 @@ TEST_F(TranslateManagerRenderViewHostTest, AlwaysTranslateLanguagePref) {
   registrar.Init(prefs);
   registrar.Add(TranslatePrefs::kPrefTranslateWhitelists, pref_callback_);
   scoped_ptr<TranslatePrefs> translate_prefs(
-      TranslateTabHelper::CreateTranslatePrefs(prefs));
+      ChromeTranslateClient::CreateTranslatePrefs(prefs));
   SetPrefObserverExpectation(TranslatePrefs::kPrefTranslateWhitelists);
   translate_prefs->WhitelistLanguagePair("fr", "en");
 
@@ -1216,7 +1216,7 @@ TEST_F(TranslateManagerRenderViewHostTest, ContextMenu) {
   Profile* profile =
       Profile::FromBrowserContext(web_contents()->GetBrowserContext());
   scoped_ptr<TranslatePrefs> translate_prefs(
-      TranslateTabHelper::CreateTranslatePrefs(profile->GetPrefs()));
+      ChromeTranslateClient::CreateTranslatePrefs(profile->GetPrefs()));
   translate_prefs->BlockLanguage("fr");
   translate_prefs->BlacklistSite(url.host());
   EXPECT_TRUE(translate_prefs->IsBlockedLanguage("fr"));
@@ -1322,7 +1322,7 @@ TEST_F(TranslateManagerRenderViewHostTest, BeforeTranslateExtraButtons) {
   Profile* profile =
       Profile::FromBrowserContext(web_contents()->GetBrowserContext());
   scoped_ptr<TranslatePrefs> translate_prefs(
-      TranslateTabHelper::CreateTranslatePrefs(profile->GetPrefs()));
+      ChromeTranslateClient::CreateTranslatePrefs(profile->GetPrefs()));
   translate_prefs->ResetTranslationAcceptedCount("fr");
   translate_prefs->ResetTranslationDeniedCount("fr");
   translate_prefs->ResetTranslationAcceptedCount("de");

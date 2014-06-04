@@ -1,9 +1,9 @@
-// Copyright 2011 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_TRANSLATE_TRANSLATE_TAB_HELPER_H_
-#define CHROME_BROWSER_TRANSLATE_TRANSLATE_TAB_HELPER_H_
+#ifndef CHROME_BROWSER_TRANSLATE_CHROME_TRANSLATE_CLIENT_H_
+#define CHROME_BROWSER_TRANSLATE_CHROME_TRANSLATE_CLIENT_H_
 
 #include <string>
 
@@ -43,12 +43,12 @@ class TranslateAcceptLanguages;
 class TranslatePrefs;
 class TranslateManager;
 
-class TranslateTabHelper
+class ChromeTranslateClient
     : public TranslateClient,
       public content::WebContentsObserver,
-      public content::WebContentsUserData<TranslateTabHelper> {
+      public content::WebContentsUserData<ChromeTranslateClient> {
  public:
-  virtual ~TranslateTabHelper();
+  virtual ~ChromeTranslateClient();
 
   // Gets the LanguageState associated with the page.
   LanguageState& GetLanguageState();
@@ -105,8 +105,8 @@ class TranslateTabHelper
       const GURL& report_url) OVERRIDE;
 
  private:
-  explicit TranslateTabHelper(content::WebContents* web_contents);
-  friend class content::WebContentsUserData<TranslateTabHelper>;
+  explicit ChromeTranslateClient(content::WebContents* web_contents);
+  friend class content::WebContentsUserData<ChromeTranslateClient>;
   friend class test::ScopedCLDDynamicDataHarness;  // For cleaning static state.
 
   // content::WebContentsObserver implementation.
@@ -175,9 +175,9 @@ class TranslateTabHelper
   // Necessary for binding the callback to HandleCLDDataRequest on the blocking
   // pool and for delaying translation initialization until the page has
   // finished loading on a reload.
-  base::WeakPtrFactory<TranslateTabHelper> weak_pointer_factory_;
+  base::WeakPtrFactory<ChromeTranslateClient> weak_pointer_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(TranslateTabHelper);
+  DISALLOW_COPY_AND_ASSIGN(ChromeTranslateClient);
 };
 
-#endif  // CHROME_BROWSER_TRANSLATE_TRANSLATE_TAB_HELPER_H_
+#endif  // CHROME_BROWSER_TRANSLATE_CHROME_TRANSLATE_CLIENT_H_

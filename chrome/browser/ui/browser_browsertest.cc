@@ -29,8 +29,8 @@
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/sessions/session_backend.h"
 #include "chrome/browser/sessions/session_service_factory.h"
+#include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/translate/translate_browser_test_utils.h"
-#include "chrome/browser/translate/translate_tab_helper.h"
 #include "chrome/browser/ui/app_modal_dialogs/app_modal_dialog.h"
 #include "chrome/browser/ui/app_modal_dialogs/app_modal_dialog_queue.h"
 #include "chrome/browser/ui/app_modal_dialogs/javascript_app_modal_dialog.h"
@@ -1417,20 +1417,22 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, PageLanguageDetection) {
 
   WebContents* current_web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  TranslateTabHelper* translate_tab_helper =
-      TranslateTabHelper::FromWebContents(current_web_contents);
+  ChromeTranslateClient* chrome_translate_client =
+      ChromeTranslateClient::FromWebContents(current_web_contents);
   content::Source<WebContents> source(current_web_contents);
 
   ui_test_utils::WindowedNotificationObserverWithDetails<
     LanguageDetectionDetails>
       en_language_detected_signal(chrome::NOTIFICATION_TAB_LANGUAGE_DETERMINED,
                                   source);
-  EXPECT_EQ("", translate_tab_helper->GetLanguageState().original_language());
+  EXPECT_EQ("",
+            chrome_translate_client->GetLanguageState().original_language());
   en_language_detected_signal.Wait();
   EXPECT_TRUE(en_language_detected_signal.GetDetailsFor(
         source.map_key(), &details));
   EXPECT_EQ("en", details.adopted_language);
-  EXPECT_EQ("en", translate_tab_helper->GetLanguageState().original_language());
+  EXPECT_EQ("en",
+            chrome_translate_client->GetLanguageState().original_language());
 
   // Now navigate to a page in French.
   ui_test_utils::WindowedNotificationObserverWithDetails<
@@ -1444,7 +1446,8 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, PageLanguageDetection) {
   EXPECT_TRUE(fr_language_detected_signal.GetDetailsFor(
         source.map_key(), &details));
   EXPECT_EQ("fr", details.adopted_language);
-  EXPECT_EQ("fr", translate_tab_helper->GetLanguageState().original_language());
+  EXPECT_EQ("fr",
+            chrome_translate_client->GetLanguageState().original_language());
 }
 
 // Chromeos defaults to restoring the last session, so this test isn't

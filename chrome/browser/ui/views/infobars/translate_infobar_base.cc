@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/views/infobars/translate_infobar_base.h"
 
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/translate/translate_tab_helper.h"
+#include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/ui/views/infobars/after_translate_infobar.h"
 #include "chrome/browser/ui/views/infobars/before_translate_infobar.h"
 #include "chrome/browser/ui/views/infobars/translate_message_infobar.h"
@@ -18,10 +18,10 @@
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/label.h"
 
+// ChromeTranslateClient
+// ----------------------------------------------------------
 
-// TranslateTabHelper ----------------------------------------------------------
-
-scoped_ptr<infobars::InfoBar> TranslateTabHelper::CreateInfoBar(
+scoped_ptr<infobars::InfoBar> ChromeTranslateClient::CreateInfoBar(
     scoped_ptr<TranslateInfoBarDelegate> delegate) const {
   if (delegate->translate_step() ==
       translate::TRANSLATE_STEP_BEFORE_TRANSLATE) {

@@ -7,7 +7,7 @@
 #include "base/logging.h"
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
-#import "chrome/browser/translate/translate_tab_helper.h"
+#include "chrome/browser/translate/chrome_translate_client.h"
 #import "chrome/browser/ui/cocoa/hover_close_button.h"
 #include "chrome/browser/ui/cocoa/infobars/after_translate_infobar_controller.h"
 #import "chrome/browser/ui/cocoa/infobars/before_translate_infobar_controller.h"
@@ -28,7 +28,7 @@ using InfoBarUtilities::VerifyControlOrderAndSpacing;
 using InfoBarUtilities::CreateLabel;
 using InfoBarUtilities::AddMenuItem;
 
-scoped_ptr<infobars::InfoBar> TranslateTabHelper::CreateInfoBar(
+scoped_ptr<infobars::InfoBar> ChromeTranslateClient::CreateInfoBar(
     scoped_ptr<TranslateInfoBarDelegate> delegate) const {
   scoped_ptr<InfoBarCocoa> infobar(
       new InfoBarCocoa(delegate.PassAs<infobars::InfoBarDelegate>()));

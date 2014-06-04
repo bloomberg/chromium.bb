@@ -51,8 +51,8 @@
 #include "chrome/browser/spellchecker/spellcheck_host_metrics.h"
 #include "chrome/browser/spellchecker/spellcheck_service.h"
 #include "chrome/browser/tab_contents/retargeting_details.h"
+#include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/translate/translate_service.h"
-#include "chrome/browser/translate/translate_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -1173,12 +1173,12 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
       return true;
 
     case IDC_CONTENT_CONTEXT_TRANSLATE: {
-      TranslateTabHelper* translate_tab_helper =
-          TranslateTabHelper::FromWebContents(source_web_contents_);
-      if (!translate_tab_helper)
+      ChromeTranslateClient* chrome_translate_client =
+          ChromeTranslateClient::FromWebContents(source_web_contents_);
+      if (!chrome_translate_client)
         return false;
       std::string original_lang =
-          translate_tab_helper->GetLanguageState().original_language();
+          chrome_translate_client->GetLanguageState().original_language();
       std::string target_lang = g_browser_process->GetApplicationLocale();
       target_lang = TranslateDownloadManager::GetLanguageCode(target_lang);
       // Note that we intentionally enable the menu even if the original and
@@ -1187,7 +1187,7 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
       // language.
       return ((params_.edit_flags & WebContextMenuData::CanTranslate) != 0) &&
              !original_lang.empty() &&  // Did we receive the page language yet?
-             !translate_tab_helper->GetLanguageState().IsPageTranslated() &&
+             !chrome_translate_client->GetLanguageState().IsPageTranslated() &&
              !source_web_contents_->GetInterstitialPage() &&
              // There are some application locales which can't be used as a
              // target language for translation.
@@ -1723,24 +1723,25 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
     case IDC_CONTENT_CONTEXT_TRANSLATE: {
       // A translation might have been triggered by the time the menu got
       // selected, do nothing in that case.
-      TranslateTabHelper* translate_tab_helper =
-          TranslateTabHelper::FromWebContents(source_web_contents_);
-      if (!translate_tab_helper ||
-          translate_tab_helper->GetLanguageState().IsPageTranslated() ||
-          translate_tab_helper->GetLanguageState().translation_pending()) {
+      ChromeTranslateClient* chrome_translate_client =
+          ChromeTranslateClient::FromWebContents(source_web_contents_);
+      if (!chrome_translate_client ||
+          chrome_translate_client->GetLanguageState().IsPageTranslated() ||
+          chrome_translate_client->GetLanguageState().translation_pending()) {
         return;
       }
       std::string original_lang =
-          translate_tab_helper->GetLanguageState().original_language();
+          chrome_translate_client->GetLanguageState().original_language();
       std::string target_lang = g_browser_process->GetApplicationLocale();
       target_lang = TranslateDownloadManager::GetLanguageCode(target_lang);
       // Since the user decided to translate for that language and site, clears
       // any preferences for not translating them.
       scoped_ptr<TranslatePrefs> prefs(
-          TranslateTabHelper::CreateTranslatePrefs(profile_->GetPrefs()));
+          ChromeTranslateClient::CreateTranslatePrefs(profile_->GetPrefs()));
       prefs->UnblockLanguage(original_lang);
       prefs->RemoveSiteFromBlacklist(params_.page_url.HostNoBrackets());
-      TranslateManager* manager = translate_tab_helper->GetTranslateManager();
+      TranslateManager* manager =
+          chrome_translate_client->GetTranslateManager();
       DCHECK(manager);
       manager->TranslatePage(original_lang, target_lang, true);
       break;

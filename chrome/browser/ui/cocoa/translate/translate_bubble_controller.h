@@ -6,7 +6,7 @@
 
 #include "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/translate/translate_tab_helper.h"
+#include "chrome/browser/translate/chrome_translate_client.h"
 #import "chrome/browser/ui/cocoa/base_bubble_controller.h"
 #include "components/translate/core/common/translate_errors.h"
 

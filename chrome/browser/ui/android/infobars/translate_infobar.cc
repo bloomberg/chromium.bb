@@ -7,16 +7,16 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_weak_ref.h"
-#include "chrome/browser/translate/translate_tab_helper.h"
+#include "chrome/browser/translate/chrome_translate_client.h"
 #include "components/translate/core/browser/translate_infobar_delegate.h"
 #include "grit/generated_resources.h"
 #include "jni/TranslateInfoBarDelegate_jni.h"
 #include "ui/base/l10n/l10n_util.h"
 
+// ChromeTranslateClient
+// ----------------------------------------------------------
 
-// TranslateTabHelper ----------------------------------------------------------
-
-scoped_ptr<infobars::InfoBar> TranslateTabHelper::CreateInfoBar(
+scoped_ptr<infobars::InfoBar> ChromeTranslateClient::CreateInfoBar(
     scoped_ptr<TranslateInfoBarDelegate> delegate) const {
   return scoped_ptr<infobars::InfoBar>(new TranslateInfoBar(delegate.Pass()));
 }

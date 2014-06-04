@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/translate/translate_bubble_model_impl.h"
 
-#include "chrome/browser/translate/translate_tab_helper.h"
+#include "chrome/browser/translate/chrome_translate_client.h"
 #include "components/translate/core/browser/language_state.h"
 #include "components/translate/core/browser/translate_ui_delegate.h"
 

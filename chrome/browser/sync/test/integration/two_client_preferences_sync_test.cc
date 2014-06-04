@@ -7,7 +7,7 @@
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/sync_integration_test_util.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
-#include "chrome/browser/translate/translate_tab_helper.h"
+#include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/common/pref_names.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/sync_driver/pref_names.h"
@@ -417,9 +417,9 @@ IN_PROC_BROWSER_TEST_F(TwoClientPreferencesSyncTest,
   ASSERT_TRUE(BooleanPrefMatches(prefs::kEnableTranslate));
 
   scoped_ptr<TranslatePrefs> translate_client0_prefs(
-      TranslateTabHelper::CreateTranslatePrefs(GetPrefs(0)));
+      ChromeTranslateClient::CreateTranslatePrefs(GetPrefs(0)));
   scoped_ptr<TranslatePrefs> translate_client1_prefs(
-      TranslateTabHelper::CreateTranslatePrefs(GetPrefs(1)));
+      ChromeTranslateClient::CreateTranslatePrefs(GetPrefs(1)));
   ASSERT_FALSE(translate_client0_prefs->IsBlockedLanguage("fr"));
   translate_client0_prefs->BlockLanguage("fr");
   ASSERT_TRUE(translate_client0_prefs->IsBlockedLanguage("fr"));
@@ -441,9 +441,9 @@ IN_PROC_BROWSER_TEST_F(TwoClientPreferencesSyncTest,
   ASSERT_TRUE(BooleanPrefMatches(prefs::kEnableTranslate));
 
   scoped_ptr<TranslatePrefs> translate_client0_prefs(
-      TranslateTabHelper::CreateTranslatePrefs(GetPrefs(0)));
+      ChromeTranslateClient::CreateTranslatePrefs(GetPrefs(0)));
   scoped_ptr<TranslatePrefs> translate_client1_prefs(
-      TranslateTabHelper::CreateTranslatePrefs(GetPrefs(1)));
+      ChromeTranslateClient::CreateTranslatePrefs(GetPrefs(1)));
   ASSERT_FALSE(translate_client0_prefs->IsLanguagePairWhitelisted("en", "bg"));
   translate_client0_prefs->WhitelistLanguagePair("en", "bg");
   ASSERT_TRUE(translate_client0_prefs->IsLanguagePairWhitelisted("en", "bg"));
@@ -467,9 +467,9 @@ IN_PROC_BROWSER_TEST_F(TwoClientPreferencesSyncTest,
   GURL url("http://www.google.com");
   std::string host(url.host());
   scoped_ptr<TranslatePrefs> translate_client0_prefs(
-      TranslateTabHelper::CreateTranslatePrefs(GetPrefs(0)));
+      ChromeTranslateClient::CreateTranslatePrefs(GetPrefs(0)));
   scoped_ptr<TranslatePrefs> translate_client1_prefs(
-      TranslateTabHelper::CreateTranslatePrefs(GetPrefs(1)));
+      ChromeTranslateClient::CreateTranslatePrefs(GetPrefs(1)));
   ASSERT_FALSE(translate_client0_prefs->IsSiteBlacklisted(host));
   translate_client0_prefs->BlacklistSite(host);
   ASSERT_TRUE(translate_client0_prefs->IsSiteBlacklisted(host));
