@@ -163,7 +163,7 @@ class HistoryQueryTest : public testing::Test {
     ASSERT_TRUE(base::CreateDirectory(history_dir_));
 
     history_.reset(new HistoryService);
-    if (!history_->Init(history_dir_, NULL)) {
+    if (!history_->Init(history_dir_)) {
       history_.reset();  // Tests should notice this NULL ptr & fail.
       return;
     }

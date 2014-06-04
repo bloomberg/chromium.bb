@@ -21,12 +21,11 @@
 #include "sql/statement.h"
 #include "sql/transaction.h"
 
-class BookmarkService;
-
 namespace history {
 
 class AndroidProviderBackend;
 class AndroidURLsSQLHandler;
+class HistoryClient;
 class HistoryDatabase;
 class ThumbnailDatabase;
 
@@ -49,7 +48,7 @@ class AndroidProviderBackend {
   AndroidProviderBackend(const base::FilePath& cache_db_name,
                          HistoryDatabase* history_db,
                          ThumbnailDatabase* thumbnail_db,
-                         BookmarkService* bookmark_service,
+                         HistoryClient* history_client_,
                          HistoryBackend::Delegate* delegate);
 
   ~AndroidProviderBackend();
@@ -351,7 +350,7 @@ class AndroidProviderBackend {
 
   ThumbnailDatabase* thumbnail_db_;
 
-  BookmarkService* bookmark_service_;
+  HistoryClient* history_client_;
 
   // Whether AndroidProviderBackend has been initialized.
   bool initialized_;

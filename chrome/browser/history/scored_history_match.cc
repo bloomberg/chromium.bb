@@ -19,8 +19,8 @@
 #include "chrome/browser/autocomplete/history_url_provider.h"
 #include "chrome/browser/autocomplete/url_prefix.h"
 #include "chrome/browser/omnibox/omnibox_field_trial.h"
-#include "components/bookmarks/browser/bookmark_service.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
+#include "components/history/core/browser/history_client.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace history {
@@ -55,7 +55,7 @@ ScoredHistoryMatch::ScoredHistoryMatch(
     const WordStarts& terms_to_word_starts_offsets,
     const RowWordStarts& word_starts,
     const base::Time now,
-    BookmarkService* bookmark_service)
+    HistoryClient* history_client)
     : HistoryMatch(row, 0, false, false),
       raw_score_(0),
       can_inline_(false) {
@@ -153,7 +153,7 @@ ScoredHistoryMatch::ScoredHistoryMatch(
   const float topicality_score = GetTopicalityScore(
       terms.size(), url, terms_to_word_starts_offsets, word_starts);
   const float frequency_score = GetFrequency(
-      now, (bookmark_service && bookmark_service->IsBookmarked(gurl)), visits);
+      now, (history_client && history_client->IsBookmarked(gurl)), visits);
   raw_score_ = GetFinalRelevancyScore(topicality_score, frequency_score);
   raw_score_ =
       (raw_score_ <= kint32max) ? static_cast<int>(raw_score_) : kint32max;

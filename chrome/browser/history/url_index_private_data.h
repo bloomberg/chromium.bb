@@ -17,7 +17,6 @@
 #include "chrome/browser/history/in_memory_url_index_types.h"
 #include "chrome/browser/history/scored_history_match.h"
 
-class BookmarkService;
 class HistoryQuickProviderTest;
 
 namespace in_memory_url_index {
@@ -28,6 +27,7 @@ namespace history {
 
 namespace imui = in_memory_url_index;
 
+class HistoryClient;
 class HistoryDatabase;
 class InMemoryURLIndex;
 class RefCountedBool;
@@ -63,7 +63,7 @@ class URLIndexPrivateData
   // will be found in nearly all history candidates. Results are sorted by
   // descending score. The full results set (i.e. beyond the
   // |kItemsToScoreLimit| limit) will be retained and used for subsequent calls
-  // to this function. |bookmark_service| is used to boost a result's score if
+  // to this function. |history_client| is used to boost a result's score if
   // its URL is referenced by one or more of the user's bookmarks.  |languages|
   // is used to help parse/format the URLs in the history index.  In total,
   // |max_matches| of items will be returned in the |ScoredHistoryMatches|
@@ -72,7 +72,7 @@ class URLIndexPrivateData
                                             size_t cursor_position,
                                             size_t max_matches,
                                             const std::string& languages,
-                                            BookmarkService* bookmark_service);
+                                            HistoryClient* history_client);
 
   // Adds the history item in |row| to the index if it does not already already
   // exist and it meets the minimum 'quick' criteria. If the row already exists
@@ -199,7 +199,7 @@ class URLIndexPrivateData
    public:
     AddHistoryMatch(const URLIndexPrivateData& private_data,
                     const std::string& languages,
-                    BookmarkService* bookmark_service,
+                    HistoryClient* history_client,
                     const base::string16& lower_string,
                     const String16Vector& lower_terms,
                     const base::Time now);
@@ -212,7 +212,7 @@ class URLIndexPrivateData
    private:
     const URLIndexPrivateData& private_data_;
     const std::string& languages_;
-    BookmarkService* bookmark_service_;
+    HistoryClient* history_client_;
     ScoredHistoryMatches scored_matches_;
     const base::string16& lower_string_;
     const String16Vector& lower_terms_;

@@ -28,6 +28,7 @@
 #include "chrome/browser/search_engines/template_url_id.h"
 #include "chrome/common/ref_counted_util.h"
 #include "components/favicon_base/favicon_callback.h"
+#include "components/history/core/browser/history_client.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/visitedlink/browser/visitedlink_delegate.h"
 #include "content/public/browser/download_manager_delegate.h"
@@ -42,7 +43,6 @@
 class AndroidHistoryProviderService;
 #endif
 
-class BookmarkService;
 class GURL;
 class HistoryURLProvider;
 class PageUsageData;
@@ -103,10 +103,9 @@ class HistoryService : public CancelableRequestProvider,
 
   // Initializes the history service, returning true on success. On false, do
   // not call any other functions. The given directory will be used for storing
-  // the history files. The BookmarkService is used when deleting URLs to
-  // test if a URL is bookmarked; it may be NULL during testing.
-  bool Init(const base::FilePath& history_dir, BookmarkService* bookmark_service) {
-    return Init(history_dir, bookmark_service, false);
+  // the history files.
+  bool Init(const base::FilePath& history_dir) {
+    return Init(history_dir, false);
   }
 
   // Triggers the backend to load if it hasn't already, and then returns whether
@@ -623,9 +622,7 @@ class HistoryService : public CancelableRequestProvider,
 
   // Low-level Init().  Same as the public version, but adds a |no_db| parameter
   // that is only set by unittests which causes the backend to not init its DB.
-  bool Init(const base::FilePath& history_dir,
-            BookmarkService* bookmark_service,
-            bool no_db);
+  bool Init(const base::FilePath& history_dir, bool no_db);
 
   // Called by the HistoryURLProvider class to schedule an autocomplete, it
   // will be called back on the internal history thread with the history
@@ -1042,7 +1039,6 @@ class HistoryService : public CancelableRequestProvider,
 
   // Cached values from Init(), used whenever we need to reload the backend.
   base::FilePath history_dir_;
-  BookmarkService* bookmark_service_;
   bool no_db_;
 
   // The index used for quick history lookups.

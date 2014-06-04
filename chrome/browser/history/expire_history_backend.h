@@ -16,13 +16,13 @@
 #include "base/time/time.h"
 #include "chrome/browser/history/history_types.h"
 
-class BookmarkService;
 class GURL;
 class TestingProfile;
 
 namespace history {
 
 class ArchivedDatabase;
+class HistoryClient;
 class HistoryDatabase;
 struct HistoryDetails;
 class ThumbnailDatabase;
@@ -66,11 +66,11 @@ typedef std::vector<const ExpiringVisitsReader*> ExpiringVisitsReaders;
 class ExpireHistoryBackend {
  public:
   // The delegate pointer must be non-NULL. We will NOT take ownership of it.
-  // BookmarkService may be NULL. The BookmarkService is used when expiring
-  // URLs so that we don't remove any URLs or favicons that are bookmarked
-  // (visits are removed though).
+  // HistoryClient may be NULL. The HistoryClient is used when expiring URLS so
+  // that we don't remove any URLs or favicons that are bookmarked (visits are
+  // removed though).
   ExpireHistoryBackend(BroadcastNotificationDelegate* delegate,
-                       BookmarkService* bookmark_service);
+                       HistoryClient* history_client);
   ~ExpireHistoryBackend();
 
   // Completes initialization by setting the databases that this class will use.
@@ -251,9 +251,9 @@ class ExpireHistoryBackend {
   // and deletes items. For example, URLs with no visits.
   void ParanoidExpireHistory();
 
-  // Returns the BookmarkService, blocking until it is loaded. This may return
-  // NULL.
-  BookmarkService* GetBookmarkService();
+  // Returns the HistoryClient, blocking until the bookmarks are loaded. This
+  // may return NULL during testing.
+  HistoryClient* GetHistoryClient();
 
   // Initializes periodic expiration work queue by populating it with with tasks
   // for all known readers.
@@ -298,11 +298,11 @@ class ExpireHistoryBackend {
   scoped_ptr<ExpiringVisitsReader> all_visits_reader_;
   scoped_ptr<ExpiringVisitsReader> auto_subframe_visits_reader_;
 
-  // The BookmarkService; may be null. This is owned by the Profile.
+  // The HistoryClient; may be NULL.
   //
-  // Use GetBookmarkService to access this, which makes sure the service is
-  // loaded.
-  BookmarkService* bookmark_service_;
+  // Use GetHistoryClient to access this, which makes sure the bookmarks are
+  // loaded before returning.
+  HistoryClient* history_client_;
 
   DISALLOW_COPY_AND_ASSIGN(ExpireHistoryBackend);
 };

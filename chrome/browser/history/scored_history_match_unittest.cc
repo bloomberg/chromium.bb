@@ -8,7 +8,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/history/scored_history_match.h"
-#include "components/bookmarks/browser/bookmark_service.h"
+#include "components/history/core/test/history_client_fake_bookmarks.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::ASCIIToUTF16;
@@ -181,33 +181,6 @@ TEST_F(ScoredHistoryMatchTest, Scoring) {
   EXPECT_EQ(scored_f.raw_score(), 0);
 }
 
-class BookmarkServiceMock : public BookmarkService {
- public:
-  explicit BookmarkServiceMock(const GURL& url);
-  virtual ~BookmarkServiceMock() {}
-
-  // Returns true if the given |url| is the same as |url_|.
-  virtual bool IsBookmarked(const GURL& url) OVERRIDE;
-
-  // Required but unused.
-  virtual void GetBookmarks(std::vector<URLAndTitle>* bookmarks) OVERRIDE {}
-  virtual void BlockTillLoaded() OVERRIDE {}
-
- private:
-  const GURL url_;
-
-  DISALLOW_COPY_AND_ASSIGN(BookmarkServiceMock);
-};
-
-BookmarkServiceMock::BookmarkServiceMock(const GURL& url)
-    : BookmarkService(),
-      url_(url) {
-}
-
-bool BookmarkServiceMock::IsBookmarked(const GURL& url) {
-  return url == url_;
-}
-
 TEST_F(ScoredHistoryMatchTest, ScoringBookmarks) {
   // We use NowFromSystemTime() because MakeURLRow uses the same function
   // to calculate last visit time when building a row.
@@ -225,10 +198,11 @@ TEST_F(ScoredHistoryMatchTest, ScoringBookmarks) {
                             one_word_no_offset, word_starts, now, NULL);
   // Now bookmark that URL and make sure its score increases.
   base::AutoReset<int> reset(&ScoredHistoryMatch::bookmark_value_, 5);
-  BookmarkServiceMock bookmark_service_mock(url);
+  history::HistoryClientFakeBookmarks history_client;
+  history_client.AddBookmark(url);
   ScoredHistoryMatch scored_with_bookmark(
       row, visits, std::string(), ASCIIToUTF16("abc"), Make1Term("abc"),
-      one_word_no_offset, word_starts, now, &bookmark_service_mock);
+      one_word_no_offset, word_starts, now, &history_client);
   EXPECT_GT(scored_with_bookmark.raw_score(), scored.raw_score());
 }
 

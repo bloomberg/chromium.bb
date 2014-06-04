@@ -29,6 +29,7 @@
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
 #include "components/bookmarks/test/test_bookmark_client.h"
+#include "components/history/core/test/history_client_fake_bookmarks.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -57,10 +58,9 @@ class ExpireHistoryTest : public testing::Test,
                           public BroadcastNotificationDelegate {
  public:
   ExpireHistoryTest()
-      : bookmark_model_(bookmark_client_.CreateModel(false)),
-        ui_thread_(BrowserThread::UI, &message_loop_),
+      : ui_thread_(BrowserThread::UI, &message_loop_),
         db_thread_(BrowserThread::DB, &message_loop_),
-        expirer_(this, bookmark_model_.get()),
+        expirer_(this, &history_client_),
         now_(Time::Now()) {}
 
  protected:
@@ -89,10 +89,7 @@ class ExpireHistoryTest : public testing::Test,
     STLDeleteValues(&notifications_);
   }
 
-  void StarURL(const GURL& url) {
-    bookmark_model_->AddURL(
-        bookmark_model_->bookmark_bar_node(), 0, base::string16(), url);
-  }
+  void StarURL(const GURL& url) { history_client_.AddBookmark(url); }
 
   static bool IsStringInFile(const base::FilePath& filename, const char* str);
 
@@ -102,8 +99,7 @@ class ExpireHistoryTest : public testing::Test,
   // This must be destroyed last.
   base::ScopedTempDir tmp_dir_;
 
-  test::TestBookmarkClient bookmark_client_;
-  scoped_ptr<BookmarkModel> bookmark_model_;
+  HistoryClientFakeBookmarks history_client_;
 
   base::MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
@@ -521,7 +517,7 @@ TEST_F(ExpireHistoryTest, DontDeleteStarredURL) {
   // ASSERT_TRUE(HasThumbnail(url_row.id()));
 
   // Unstar the URL and delete again.
-  bookmark_utils::RemoveAllBookmarks(bookmark_model_.get(), url);
+  history_client_.ClearAllBookmarks();
   ClearLastNotifications();
   expirer_.DeleteURL(url);
 

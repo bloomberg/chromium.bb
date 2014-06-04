@@ -19,7 +19,7 @@
 #include "chrome/browser/history/history_database.h"
 #include "chrome/browser/history/history_notifications.h"
 #include "chrome/browser/history/thumbnail_database.h"
-#include "components/bookmarks/browser/bookmark_service.h"
+#include "components/history/core/browser/history_client.h"
 
 namespace history {
 
@@ -155,13 +155,13 @@ ExpireHistoryBackend::DeleteEffects::~DeleteEffects() {
 
 ExpireHistoryBackend::ExpireHistoryBackend(
     BroadcastNotificationDelegate* delegate,
-    BookmarkService* bookmark_service)
+    HistoryClient* history_client)
     : delegate_(delegate),
       main_db_(NULL),
       archived_db_(NULL),
       thumb_db_(NULL),
       weak_factory_(this),
-      bookmark_service_(bookmark_service) {
+      history_client_(history_client) {
 }
 
 ExpireHistoryBackend::~ExpireHistoryBackend() {
@@ -184,6 +184,7 @@ void ExpireHistoryBackend::DeleteURLs(const std::vector<GURL>& urls) {
     return;
 
   DeleteEffects effects;
+  HistoryClient* history_client = GetHistoryClient();
   for (std::vector<GURL>::const_iterator url = urls.begin(); url != urls.end();
        ++url) {
     URLRow url_row;
@@ -203,9 +204,8 @@ void ExpireHistoryBackend::DeleteURLs(const std::vector<GURL>& urls) {
     // URL, and not starting with visits in a given time range). We
     // therefore need to call the deletion and favicon update
     // functions manually.
-    BookmarkService* bookmark_service = GetBookmarkService();
     DeleteOneURL(url_row,
-                 bookmark_service && bookmark_service->IsBookmarked(*url),
+                 history_client && history_client->IsBookmarked(*url),
                  &effects);
   }
 
@@ -464,7 +464,7 @@ void ExpireHistoryBackend::ExpireURLsForVisits(const VisitVector& visits,
   }
 
   // Check each unique URL with deleted visits.
-  BookmarkService* bookmark_service = GetBookmarkService();
+  HistoryClient* history_client = GetHistoryClient();
   for (std::map<URLID, ChangedURL>::const_iterator i = changed_urls.begin();
        i != changed_urls.end(); ++i) {
     // The unique URL rows should already be filled in.
@@ -483,7 +483,7 @@ void ExpireHistoryBackend::ExpireURLsForVisits(const VisitVector& visits,
 
     // Don't delete URLs with visits still in the DB, or bookmarked.
     bool is_bookmarked =
-        (bookmark_service && bookmark_service->IsBookmarked(url_row.url()));
+        (history_client && history_client->IsBookmarked(url_row.url()));
     if (!is_bookmarked && url_row.last_visit().is_null()) {
       // Not bookmarked and no more visits. Nuke the url.
       DeleteOneURL(url_row, is_bookmarked, effects);
@@ -628,14 +628,13 @@ void ExpireHistoryBackend::ParanoidExpireHistory() {
   // TODO(brettw): Bug 1067331: write this to clean up any errors.
 }
 
-BookmarkService* ExpireHistoryBackend::GetBookmarkService() {
-  // We use the bookmark service to determine if a URL is bookmarked. The
-  // bookmark service is loaded on a separate thread and may not be done by the
-  // time we get here. We therefor block until the bookmarks have finished
-  // loading.
-  if (bookmark_service_)
-    bookmark_service_->BlockTillLoaded();
-  return bookmark_service_;
+HistoryClient* ExpireHistoryBackend::GetHistoryClient() {
+  // We use the history client to determine if a URL is bookmarked. The data is
+  // loaded on a separate thread and may not be done by the time we get here.
+  // We therefore block until the bookmarks have finished loading.
+  if (history_client_)
+    history_client_->BlockUntilBookmarksLoaded();
+  return history_client_;
 }
 
 }  // namespace history

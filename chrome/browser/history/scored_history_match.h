@@ -15,10 +15,9 @@
 #include "chrome/browser/history/in_memory_url_index_types.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
 
-class BookmarkService;
-
 namespace history {
 
+class HistoryClient;
 class ScoredHistoryMatchTest;
 
 // An HistoryMatch that has a score as well as metrics defining where in the
@@ -41,7 +40,7 @@ class ScoredHistoryMatch : public history::HistoryMatch {
   // terms, it's appropriate to look for the word boundary within the term.
   // For instance, the term ".net" should look for a word boundary at the "n".
   // These offsets (".net" should have an offset of 1) come from
-  // |terms_to_word_starts_offsets|.  |bookmark_service| is used to determine
+  // |terms_to_word_starts_offsets|.  |history_client| is used to determine
   // if the match's URL is referenced by any bookmarks, which can also affect
   // the raw score.  The raw score allows the matches to be ordered and can be
   // used to influence the final score calculated by the client of this index.
@@ -55,7 +54,7 @@ class ScoredHistoryMatch : public history::HistoryMatch {
                      const WordStarts& terms_to_word_starts_offsets,
                      const RowWordStarts& word_starts,
                      const base::Time now,
-                     BookmarkService* bookmark_service);
+                     HistoryClient* history_client);
   ~ScoredHistoryMatch();
 
   // Compares two matches by score.  Functor supporting URLIndexPrivateData's

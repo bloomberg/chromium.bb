@@ -16,7 +16,7 @@
 #include "chrome/browser/history/history_backend.h"
 #include "chrome/browser/history/history_database.h"
 #include "chrome/browser/history/thumbnail_database.h"
-#include "components/bookmarks/browser/bookmark_service.h"
+#include "components/history/core/browser/history_client.h"
 #include "content/public/common/page_transition_types.h"
 #include "sql/connection.h"
 
@@ -215,13 +215,13 @@ AndroidProviderBackend::AndroidProviderBackend(
     const base::FilePath& db_name,
     HistoryDatabase* history_db,
     ThumbnailDatabase* thumbnail_db,
-    BookmarkService* bookmark_service,
+    HistoryClient* history_client,
     HistoryBackend::Delegate* delegate)
     : android_cache_db_filename_(db_name),
       db_(&history_db->GetDB()),
       history_db_(history_db),
       thumbnail_db_(thumbnail_db),
-      bookmark_service_(bookmark_service),
+      history_client_(history_client),
       initialized_(false),
       delegate_(delegate) {
   DCHECK(delegate_);
@@ -793,20 +793,19 @@ bool AndroidProviderBackend::UpdateRemovedURLs() {
 }
 
 bool AndroidProviderBackend::UpdateBookmarks() {
-  if (bookmark_service_ == NULL) {
-    LOG(ERROR) << "Bookmark service is not available";
+  if (history_client_ == NULL) {
+    LOG(ERROR) << "HistoryClient is not available";
     return false;
   }
 
-  bookmark_service_->BlockTillLoaded();
-  std::vector<BookmarkService::URLAndTitle> bookmarks;
-  bookmark_service_->GetBookmarks(&bookmarks);
+  std::vector<URLAndTitle> bookmarks;
+  history_client_->GetBookmarks(&bookmarks);
 
   if (bookmarks.empty())
     return true;
 
   std::vector<URLID> url_ids;
-  for (std::vector<BookmarkService::URLAndTitle>::const_iterator i =
+  for (std::vector<URLAndTitle>::const_iterator i =
            bookmarks.begin(); i != bookmarks.end(); ++i) {
     URLID url_id = history_db_->GetRowForURL(i->url, NULL);
     if (url_id == 0) {

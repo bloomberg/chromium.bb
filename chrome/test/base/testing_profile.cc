@@ -29,6 +29,8 @@
 #include "chrome/browser/geolocation/chrome_geolocation_permission_context.h"
 #include "chrome/browser/geolocation/chrome_geolocation_permission_context_factory.h"
 #include "chrome/browser/guest_view/guest_view_manager.h"
+#include "chrome/browser/history/chrome_history_client.h"
+#include "chrome/browser/history/chrome_history_client_factory.h"
 #include "chrome/browser/history/history_backend.h"
 #include "chrome/browser/history/history_db_task.h"
 #include "chrome/browser/history/history_service.h"
@@ -425,8 +427,10 @@ void TestingProfile::CreateFaviconService() {
       this, BuildFaviconService);
 }
 
-static KeyedService* BuildHistoryService(content::BrowserContext* profile) {
-  return new HistoryService(NULL, static_cast<Profile*>(profile));
+static KeyedService* BuildHistoryService(content::BrowserContext* context) {
+  Profile* profile = static_cast<Profile*>(context);
+  return new HistoryService(ChromeHistoryClientFactory::GetForProfile(profile),
+                            profile);
 }
 
 bool TestingProfile::CreateHistoryService(bool delete_file, bool no_db) {
@@ -441,9 +445,7 @@ bool TestingProfile::CreateHistoryService(bool delete_file, bool no_db) {
   HistoryService* history_service = static_cast<HistoryService*>(
       HistoryServiceFactory::GetInstance()->SetTestingFactoryAndUse(
           this, BuildHistoryService));
-  if (!history_service->Init(this->GetPath(),
-                             BookmarkModelFactory::GetForProfile(this),
-                             no_db)) {
+  if (!history_service->Init(this->GetPath(), no_db)) {
     HistoryServiceFactory::GetInstance()->SetTestingFactoryAndUse(this, NULL);
   }
   // Disable WebHistoryService by default, since it makes network requests.
@@ -507,24 +509,22 @@ static KeyedService* BuildBookmarkModel(content::BrowserContext* context) {
   return bookmark_client;
 }
 
+static KeyedService* BuildChromeHistoryClient(
+    content::BrowserContext* context) {
+  Profile* profile = static_cast<Profile*>(context);
+  return new ChromeHistoryClient(BookmarkModelFactory::GetForProfile(profile));
+}
+
 void TestingProfile::CreateBookmarkModel(bool delete_file) {
   if (delete_file) {
     base::FilePath path = GetPath().Append(bookmarks::kBookmarksFileName);
     base::DeleteFile(path, false);
   }
   // This will create a bookmark model.
-  BookmarkModel* bookmark_service =
-      static_cast<ChromeBookmarkClient*>(
-          BookmarkModelFactory::GetInstance()->SetTestingFactoryAndUse(
-              this, BuildBookmarkModel))->model();
-
-  HistoryService* history_service =
-      HistoryServiceFactory::GetForProfileWithoutCreating(this);
-  if (history_service) {
-    history_service->history_backend_->bookmark_service_ = bookmark_service;
-    history_service->history_backend_->expirer_.bookmark_service_ =
-        bookmark_service;
-  }
+  ChromeHistoryClientFactory::GetInstance()->SetTestingFactory(
+      this, BuildChromeHistoryClient);
+  BookmarkModelFactory::GetInstance()->SetTestingFactoryAndUse(
+      this, BuildBookmarkModel);
 }
 
 static KeyedService* BuildWebDataService(content::BrowserContext* profile) {

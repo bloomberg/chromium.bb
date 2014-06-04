@@ -33,7 +33,6 @@
 #include "base/threading/thread.h"
 #include "base/time/time.h"
 #include "chrome/browser/autocomplete/history_url_provider.h"
-#include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/history/download_row.h"
@@ -56,7 +55,6 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/thumbnail_score.h"
 #include "chrome/common/url_constants.h"
-#include "components/bookmarks/browser/bookmark_model.h"
 #include "components/history/core/browser/history_client.h"
 #include "components/visitedlink/browser/visitedlink_master.h"
 #include "content/public/browser/browser_thread.h"
@@ -196,7 +194,6 @@ HistoryService::HistoryService()
       history_client_(NULL),
       profile_(NULL),
       backend_loaded_(false),
-      bookmark_service_(NULL),
       no_db_(false) {
 }
 
@@ -208,7 +205,6 @@ HistoryService::HistoryService(history::HistoryClient* client, Profile* profile)
       visitedlink_master_(new visitedlink::VisitedLinkMaster(
           profile, this, true)),
       backend_loaded_(false),
-      bookmark_service_(NULL),
       no_db_(false) {
   DCHECK(profile_);
   registrar_.Add(this, chrome::NOTIFICATION_HISTORY_URLS_DELETED,
@@ -331,19 +327,6 @@ history::TypedUrlSyncableService* HistoryService::GetTypedUrlSyncableService()
 
 void HistoryService::Shutdown() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  // It's possible that bookmarks haven't loaded and history is waiting for
-  // bookmarks to complete loading. In such a situation history can't shutdown
-  // (meaning if we invoked history_service_->Cleanup now, we would
-  // deadlock). To break the deadlock we tell BookmarkModel it's about to be
-  // deleted so that it can release the signal history is waiting on, allowing
-  // history to shutdown (history_service_->Cleanup to complete). In such a
-  // scenario history sees an incorrect view of bookmarks, but it's better
-  // than a deadlock.
-  BookmarkModel* bookmark_model = static_cast<BookmarkModel*>(
-      BookmarkModelFactory::GetForProfileIfExists(profile_));
-  if (bookmark_model)
-    bookmark_model->Shutdown();
-
   Cleanup();
 }
 
@@ -911,9 +894,7 @@ void HistoryService::RebuildTable(
   ScheduleAndForget(PRIORITY_NORMAL, &HistoryBackend::IterateURLs, enumerator);
 }
 
-bool HistoryService::Init(const base::FilePath& history_dir,
-                          BookmarkService* bookmark_service,
-                          bool no_db) {
+bool HistoryService::Init(const base::FilePath& history_dir, bool no_db) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (!thread_->Start()) {
     Cleanup();
@@ -921,14 +902,13 @@ bool HistoryService::Init(const base::FilePath& history_dir,
   }
 
   history_dir_ = history_dir;
-  bookmark_service_ = bookmark_service;
   no_db_ = no_db;
 
   if (profile_) {
     std::string languages =
         profile_->GetPrefs()->GetString(prefs::kAcceptLanguages);
-    in_memory_url_index_.reset(
-        new history::InMemoryURLIndex(profile_, history_dir_, languages));
+    in_memory_url_index_.reset(new history::InMemoryURLIndex(
+        profile_, history_dir_, languages, history_client_));
     in_memory_url_index_->Init();
   }
 
@@ -939,7 +919,7 @@ bool HistoryService::Init(const base::FilePath& history_dir,
                              weak_ptr_factory_.GetWeakPtr(),
                              base::ThreadTaskRunnerHandle::Get(),
                              profile_),
-                         bookmark_service_));
+                         history_client_));
   history_backend_.swap(backend);
 
   // There may not be a profile when unit testing.

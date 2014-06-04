@@ -60,7 +60,6 @@ void HistoryServiceFactory::ShutdownForProfile(Profile* profile) {
 HistoryServiceFactory::HistoryServiceFactory()
     : BrowserContextKeyedServiceFactory(
           "HistoryService", BrowserContextDependencyManager::GetInstance()) {
-  DependsOn(BookmarkModelFactory::GetInstance());
   DependsOn(ChromeHistoryClientFactory::GetInstance());
 }
 
@@ -72,8 +71,7 @@ KeyedService* HistoryServiceFactory::BuildServiceInstanceFor(
   Profile* profile = static_cast<Profile*>(context);
   HistoryService* history_service = new HistoryService(
       ChromeHistoryClientFactory::GetForProfile(profile), profile);
-  if (!history_service->Init(profile->GetPath(),
-                             BookmarkModelFactory::GetForProfile(profile))) {
+  if (!history_service->Init(profile->GetPath())) {
     return NULL;
   }
   return history_service;

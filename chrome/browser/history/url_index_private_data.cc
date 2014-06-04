@@ -23,8 +23,8 @@
 #include "chrome/browser/history/history_db_task.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/in_memory_url_index.h"
-#include "components/bookmarks/browser/bookmark_service.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
+#include "components/history/core/browser/history_client.h"
 #include "net/base/net_util.h"
 
 #if defined(USE_SYSTEM_PROTOBUF)
@@ -151,7 +151,7 @@ ScoredHistoryMatches URLIndexPrivateData::HistoryItemsForTerms(
     size_t cursor_position,
     size_t max_matches,
     const std::string& languages,
-    BookmarkService* bookmark_service) {
+    HistoryClient* history_client) {
   // If cursor position is set and useful (not at either end of the
   // string), allow the search string to be broken at cursor position.
   // We do this by pretending there's a space where the cursor is.
@@ -243,7 +243,7 @@ ScoredHistoryMatches URLIndexPrivateData::HistoryItemsForTerms(
     return scored_items;
   }
   scored_items = std::for_each(history_id_set.begin(), history_id_set.end(),
-      AddHistoryMatch(*this, languages, bookmark_service, lower_raw_string,
+      AddHistoryMatch(*this, languages, history_client, lower_raw_string,
                       lower_raw_terms, base::Time::Now())).ScoredMatches();
 
   // Select and sort only the top |max_matches| results.
@@ -1263,16 +1263,16 @@ URLIndexPrivateData::SearchTermCacheItem::~SearchTermCacheItem() {}
 URLIndexPrivateData::AddHistoryMatch::AddHistoryMatch(
     const URLIndexPrivateData& private_data,
     const std::string& languages,
-    BookmarkService* bookmark_service,
+    HistoryClient* history_client,
     const base::string16& lower_string,
     const String16Vector& lower_terms,
     const base::Time now)
-  : private_data_(private_data),
-    languages_(languages),
-    bookmark_service_(bookmark_service),
-    lower_string_(lower_string),
-    lower_terms_(lower_terms),
-    now_(now) {
+    : private_data_(private_data),
+      languages_(languages),
+      history_client_(history_client),
+      lower_string_(lower_string),
+      lower_terms_(lower_terms),
+      now_(now) {
   // Calculate offsets for each term.  For instance, the offset for
   // ".net" should be 1, indicating that the actual word-part of the term
   // starts at offset 1.
@@ -1305,7 +1305,7 @@ void URLIndexPrivateData::AddHistoryMatch::operator()(
     DCHECK(starts_pos != private_data_.word_starts_map_.end());
     ScoredHistoryMatch match(hist_item, visits, languages_, lower_string_,
                              lower_terms_, lower_terms_to_word_starts_offsets_,
-                             starts_pos->second, now_, bookmark_service_);
+                             starts_pos->second, now_, history_client_);
     if (match.raw_score() > 0)
       scored_matches_.push_back(match);
   }

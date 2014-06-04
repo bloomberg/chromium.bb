@@ -90,8 +90,10 @@ InMemoryURLIndex::RebuildPrivateDataFromHistoryDBTask::
 
 InMemoryURLIndex::InMemoryURLIndex(Profile* profile,
                                    const base::FilePath& history_dir,
-                                   const std::string& languages)
+                                   const std::string& languages,
+                                   HistoryClient* history_client)
     : profile_(profile),
+      history_client_(history_client),
       history_dir_(history_dir),
       languages_(languages),
       private_data_(new URLIndexPrivateData),
@@ -114,6 +116,7 @@ InMemoryURLIndex::InMemoryURLIndex(Profile* profile,
 // Called only by unit tests.
 InMemoryURLIndex::InMemoryURLIndex()
     : profile_(NULL),
+      history_client_(NULL),
       private_data_(new URLIndexPrivateData),
       restore_cache_observer_(NULL),
       save_cache_observer_(NULL),
@@ -167,7 +170,7 @@ ScoredHistoryMatches InMemoryURLIndex::HistoryItemsForTerms(
       cursor_position,
       max_matches,
       languages_,
-      BookmarkModelFactory::GetForProfile(profile_));
+      history_client_);
 }
 
 // Updating --------------------------------------------------------------------

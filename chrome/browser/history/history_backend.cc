@@ -37,8 +37,8 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/importer/imported_favicon_usage.h"
 #include "chrome/common/url_constants.h"
-#include "components/bookmarks/browser/bookmark_service.h"
 #include "components/favicon_base/select_favicon_frames.h"
+#include "components/history/core/browser/history_client.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
@@ -164,15 +164,15 @@ class CommitLaterTask : public base::RefCounted<CommitLaterTask> {
 
 HistoryBackend::HistoryBackend(const base::FilePath& history_dir,
                                Delegate* delegate,
-                               BookmarkService* bookmark_service)
+                               HistoryClient* history_client)
     : delegate_(delegate),
       history_dir_(history_dir),
       scheduled_kill_db_(false),
-      expirer_(this, bookmark_service),
+      expirer_(this, history_client),
       recent_redirects_(kMaxRedirectCount),
       backend_destroy_message_loop_(NULL),
       segment_queried_(false),
-      bookmark_service_(bookmark_service) {
+      history_client_(history_client) {
 }
 
 HistoryBackend::~HistoryBackend() {
@@ -663,9 +663,12 @@ void HistoryBackend::InitImpl(const std::string& languages) {
 
 #if defined(OS_ANDROID)
   if (thumbnail_db_) {
-    android_provider_backend_.reset(new AndroidProviderBackend(
-        GetAndroidCacheFileName(), db_.get(), thumbnail_db_.get(),
-        bookmark_service_, delegate_.get()));
+    android_provider_backend_.reset(
+        new AndroidProviderBackend(GetAndroidCacheFileName(),
+                                   db_.get(),
+                                   thumbnail_db_.get(),
+                                   history_client_,
+                                   delegate_.get()));
   }
 #endif
 
@@ -2042,7 +2045,7 @@ void HistoryBackend::SetImportedFavicons(
     }
 
     // Save the mapping from all the URLs to the favicon.
-    BookmarkService* bookmark_service = GetBookmarkService();
+    HistoryClient* history_client = GetHistoryClient();
     for (std::set<GURL>::const_iterator url = favicon_usage[i].urls.begin();
          url != favicon_usage[i].urls.end(); ++url) {
       URLRow url_row;
@@ -2052,7 +2055,7 @@ void HistoryBackend::SetImportedFavicons(
         // for regular bookmarked URLs with favicons - when history db is
         // cleaned, we keep an entry in the db with 0 visits as long as that
         // url is bookmarked.
-        if (bookmark_service && bookmark_service_->IsBookmarked(*url)) {
+        if (history_client && history_client->IsBookmarked(*url)) {
           URLRow url_info(*url);
           url_info.set_visit_count(0);
           url_info.set_typed_count(0);
@@ -2775,10 +2778,10 @@ void HistoryBackend::DeleteAllHistory() {
   // the original tables directly.
 
   // Get the bookmarked URLs.
-  std::vector<BookmarkService::URLAndTitle> starred_urls;
-  BookmarkService* bookmark_service = GetBookmarkService();
-  if (bookmark_service)
-    bookmark_service_->GetBookmarks(&starred_urls);
+  std::vector<URLAndTitle> starred_urls;
+  HistoryClient* history_client = GetHistoryClient();
+  if (history_client)
+    history_client->GetBookmarks(&starred_urls);
 
   URLRows kept_urls;
   for (size_t i = 0; i < starred_urls.size(); i++) {
@@ -2914,10 +2917,10 @@ bool HistoryBackend::ClearAllMainHistory(const URLRows& kept_urls) {
   return true;
 }
 
-BookmarkService* HistoryBackend::GetBookmarkService() {
-  if (bookmark_service_)
-    bookmark_service_->BlockTillLoaded();
-  return bookmark_service_;
+HistoryClient* HistoryBackend::GetHistoryClient() {
+  if (history_client_)
+    history_client_->BlockUntilBookmarksLoaded();
+  return history_client_;
 }
 
 void HistoryBackend::NotifyVisitObservers(const VisitRow& visit) {

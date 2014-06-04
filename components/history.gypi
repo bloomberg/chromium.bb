@@ -6,16 +6,34 @@
   'targets': [
     {
       'target_name': 'history_core_browser',
-      'type': 'none',
+      'type': 'static_library',
       'include_dirs': [
         '..',
       ],
       'dependencies': [
         '../base/base.gyp:base',
+        '../url/url.gyp:url_lib',
         'keyed_service_core',
       ],
       'sources': [
         'history/core/browser/history_client.h',
+        'history/core/browser/history_client.cc',
+      ],
+    },
+    {
+      'target_name': 'history_core_test_support',
+      'type': 'static_library',
+      'include_dirs': [
+        '..',
+      ],
+      'dependencies': [
+        'history_core_browser',
+        '../base/base.gyp:base',
+        '../url/url.gyp:url_lib',
+      ],
+      'sources': [
+        'history/core/test/history_client_fake_bookmarks.cc',
+        'history/core/test/history_client_fake_bookmarks.h',
       ],
     },
   ],

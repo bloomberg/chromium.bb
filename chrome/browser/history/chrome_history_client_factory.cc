@@ -4,6 +4,8 @@
 
 #include "chrome/browser/history/chrome_history_client_factory.h"
 
+#include "base/memory/singleton.h"
+#include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/history/chrome_history_client.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
@@ -25,6 +27,7 @@ ChromeHistoryClientFactory::ChromeHistoryClientFactory()
     : BrowserContextKeyedServiceFactory(
           "ChromeHistoryClient",
           BrowserContextDependencyManager::GetInstance()) {
+  DependsOn(BookmarkModelFactory::GetInstance());
 }
 
 ChromeHistoryClientFactory::~ChromeHistoryClientFactory() {
@@ -32,7 +35,8 @@ ChromeHistoryClientFactory::~ChromeHistoryClientFactory() {
 
 KeyedService* ChromeHistoryClientFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
-  return new ChromeHistoryClient();
+  return new ChromeHistoryClient(
+      BookmarkModelFactory::GetForProfile(static_cast<Profile*>(context)));
 }
 
 content::BrowserContext* ChromeHistoryClientFactory::GetBrowserContextToUse(
