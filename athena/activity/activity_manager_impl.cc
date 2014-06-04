@@ -45,7 +45,7 @@ class ActivityManagerImpl : public ActivityManager {
       activities_.erase(find);
 
       ActivityViewManager* manager = ActivityViewManager::Get();
-      manager->AddActivity(activity);
+      manager->RemoveActivity(activity);
     }
   }
 
