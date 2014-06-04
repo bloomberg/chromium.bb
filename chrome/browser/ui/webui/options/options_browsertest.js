@@ -287,12 +287,12 @@ TEST_F('OptionsWebUITest', 'emptySelectedIndexesDoesntCrash', function() {
   setTimeout(testDone);
 });
 
-// Flaky on win. See http://crbug.com/315250
-GEN('#if defined(OS_WIN)');
+// Flaky on win and Linux. See http://crbug.com/315250
+GEN('#if defined(OS_WIN) || defined(OS_LINUX)');
 GEN('#define MAYBE_OverlayShowDoesntShift DISABLED_OverlayShowDoesntShift');
 GEN('#else');
 GEN('#define MAYBE_OverlayShowDoesntShift OverlayShowDoesntShift');
-GEN('#endif  // defined(OS_WIN)');
+GEN('#endif  // defined(OS_WIN) || defined(OS_LINUX)');
 
 // An overlay's position should remain the same as it shows.
 TEST_F('OptionsWebUITest', 'MAYBE_OverlayShowDoesntShift', function() {
