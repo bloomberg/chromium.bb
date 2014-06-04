@@ -38,13 +38,13 @@ using extensions::Extension;
 
 // A class that shows a confirmation dialog to uninstall the given extension.
 // Also acts as the extension's UI delegate in order to display the dialog.
-class AsyncUninstaller : public ExtensionUninstallDialog::Delegate {
+class AsyncUninstaller : public extensions::ExtensionUninstallDialog::Delegate {
  public:
   AsyncUninstaller(const Extension* extension, Browser* browser)
       : extension_(extension),
         profile_(browser->profile()) {
     extension_uninstall_dialog_.reset(
-        ExtensionUninstallDialog::Create(profile_, browser, this));
+        extensions::ExtensionUninstallDialog::Create(profile_, browser, this));
     extension_uninstall_dialog_->ConfirmUninstall(extension_);
   }
 
@@ -64,7 +64,7 @@ class AsyncUninstaller : public ExtensionUninstallDialog::Delegate {
   // The current profile. Weak.
   Profile* profile_;
 
-  scoped_ptr<ExtensionUninstallDialog> extension_uninstall_dialog_;
+  scoped_ptr<extensions::ExtensionUninstallDialog> extension_uninstall_dialog_;
 
   DISALLOW_COPY_AND_ASSIGN(AsyncUninstaller);
 };

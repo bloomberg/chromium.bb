@@ -834,13 +834,14 @@ void AppLauncherHandler::ExtensionEnableFlowAborted(bool user_initiated) {
   CleanupAfterUninstall();
 }
 
-ExtensionUninstallDialog* AppLauncherHandler::GetExtensionUninstallDialog() {
+extensions::ExtensionUninstallDialog*
+AppLauncherHandler::GetExtensionUninstallDialog() {
   if (!extension_uninstall_dialog_.get()) {
     Browser* browser = chrome::FindBrowserWithWebContents(
         web_ui()->GetWebContents());
     extension_uninstall_dialog_.reset(
-        ExtensionUninstallDialog::Create(extension_service_->profile(),
-                                         browser, this));
+        extensions::ExtensionUninstallDialog::Create(
+            extension_service_->profile(), browser, this));
   }
   return extension_uninstall_dialog_.get();
 }

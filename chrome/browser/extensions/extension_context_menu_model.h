@@ -24,7 +24,7 @@ class ExtensionContextMenuModel
     : public base::RefCounted<ExtensionContextMenuModel>,
       public ui::SimpleMenuModel,
       public ui::SimpleMenuModel::Delegate,
-      public ExtensionUninstallDialog::Delegate {
+      public extensions::ExtensionUninstallDialog::Delegate {
  public:
   enum MenuEntries {
     NAME = 0,
@@ -96,7 +96,7 @@ class ExtensionContextMenuModel
   PopupDelegate* delegate_;
 
   // Keeps track of the extension uninstall dialog.
-  scoped_ptr<ExtensionUninstallDialog> extension_uninstall_dialog_;
+  scoped_ptr<extensions::ExtensionUninstallDialog> extension_uninstall_dialog_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionContextMenuModel);
 };

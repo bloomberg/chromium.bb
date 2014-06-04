@@ -139,9 +139,10 @@ void ExtensionDisabledDialogDelegate::InstallUIAbort(bool user_initiated) {
 
 // ExtensionDisabledGlobalError -----------------------------------------------
 
-class ExtensionDisabledGlobalError : public GlobalErrorWithStandardBubble,
-                                     public content::NotificationObserver,
-                                     public ExtensionUninstallDialog::Delegate {
+class ExtensionDisabledGlobalError
+    : public GlobalErrorWithStandardBubble,
+      public content::NotificationObserver,
+      public extensions::ExtensionUninstallDialog::Delegate {
  public:
   ExtensionDisabledGlobalError(ExtensionService* service,
                                const Extension* extension,
@@ -188,7 +189,7 @@ class ExtensionDisabledGlobalError : public GlobalErrorWithStandardBubble,
   };
   UserResponse user_response_;
 
-  scoped_ptr<ExtensionUninstallDialog> uninstall_dialog_;
+  scoped_ptr<extensions::ExtensionUninstallDialog> uninstall_dialog_;
 
   // Menu command ID assigned for this extension's error.
   int menu_command_id_;
@@ -341,13 +342,15 @@ void ExtensionDisabledGlobalError::BubbleViewAcceptButtonPressed(
 void ExtensionDisabledGlobalError::BubbleViewCancelButtonPressed(
     Browser* browser) {
 #if !defined(OS_ANDROID)
-  uninstall_dialog_.reset(
-      ExtensionUninstallDialog::Create(service_->profile(), browser, this));
+  uninstall_dialog_.reset(extensions::ExtensionUninstallDialog::Create(
+      service_->profile(), browser, this));
   // Delay showing the uninstall dialog, so that this function returns
   // immediately, to close the bubble properly. See crbug.com/121544.
-  base::MessageLoop::current()->PostTask(FROM_HERE,
-      base::Bind(&ExtensionUninstallDialog::ConfirmUninstall,
-                 uninstall_dialog_->AsWeakPtr(), extension_));
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&extensions::ExtensionUninstallDialog::ConfirmUninstall,
+                 uninstall_dialog_->AsWeakPtr(),
+                 extension_));
 #endif  // !defined(OS_ANDROID)
 }
 

@@ -36,10 +36,11 @@ class LaunchOptionsComboboxModel;
 
 // The Summary tab of the app info dialog, which provides basic information and
 // controls related to the app.
-class AppInfoSummaryTab : public AppInfoTab,
-                          public views::ComboboxListener,
-                          public views::ButtonListener,
-                          public ExtensionUninstallDialog::Delegate {
+class AppInfoSummaryTab
+    : public AppInfoTab,
+      public views::ComboboxListener,
+      public views::ButtonListener,
+      public extensions::ExtensionUninstallDialog::Delegate {
  public:
   AppInfoSummaryTab(gfx::NativeWindow parent_window,
                     Profile* profile,
@@ -89,7 +90,7 @@ class AppInfoSummaryTab : public AppInfoTab,
   views::Label* app_description_label_;
   views::LabelButton* create_shortcuts_button_;
 
-  scoped_ptr<ExtensionUninstallDialog> extension_uninstall_dialog_;
+  scoped_ptr<extensions::ExtensionUninstallDialog> extension_uninstall_dialog_;
   views::LabelButton* uninstall_button_;
 
   scoped_ptr<LaunchOptionsComboboxModel> launch_options_combobox_model_;

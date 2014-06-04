@@ -43,11 +43,13 @@ gfx::NativeWindow GetParent(Browser* browser) {
 }
 
 // Views implementation of the uninstall dialog.
-class ExtensionUninstallDialogViews : public ExtensionUninstallDialog {
+class ExtensionUninstallDialogViews
+    : public extensions::ExtensionUninstallDialog {
  public:
-  ExtensionUninstallDialogViews(Profile* profile,
-                                Browser* browser,
-                                ExtensionUninstallDialog::Delegate* delegate);
+  ExtensionUninstallDialogViews(
+      Profile* profile,
+      Browser* browser,
+      extensions::ExtensionUninstallDialog::Delegate* delegate);
   virtual ~ExtensionUninstallDialogViews();
 
   // Forwards the accept and cancels to the delegate.
@@ -114,8 +116,8 @@ class ExtensionUninstallDialogDelegateView : public views::DialogDelegateView {
 ExtensionUninstallDialogViews::ExtensionUninstallDialogViews(
     Profile* profile,
     Browser* browser,
-    ExtensionUninstallDialog::Delegate* delegate)
-    : ExtensionUninstallDialog(profile, browser, delegate),
+    extensions::ExtensionUninstallDialog::Delegate* delegate)
+    : extensions::ExtensionUninstallDialog(profile, browser, delegate),
       view_(NULL),
       show_in_app_list_(!browser) {
 }
@@ -245,9 +247,9 @@ void ExtensionUninstallDialogDelegateView::Layout() {
 }  // namespace
 
 // static
-ExtensionUninstallDialog* ExtensionUninstallDialog::Create(
-    Profile* profile,
-    Browser* browser,
-    Delegate* delegate) {
+extensions::ExtensionUninstallDialog*
+extensions::ExtensionUninstallDialog::Create(Profile* profile,
+                                             Browser* browser,
+                                             Delegate* delegate) {
   return new ExtensionUninstallDialogViews(profile, browser, delegate);
 }

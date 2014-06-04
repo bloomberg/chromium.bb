@@ -13,7 +13,8 @@ class Profile;
 // ExtensionUninstaller runs the extension uninstall flow. It shows the
 // extension uninstall dialog and wait for user to confirm or cancel the
 // uninstall.
-class ExtensionUninstaller : public ExtensionUninstallDialog::Delegate {
+class ExtensionUninstaller
+    : public extensions::ExtensionUninstallDialog::Delegate {
  public:
   ExtensionUninstaller(Profile* profile,
                        const std::string& extension_id,
@@ -31,7 +32,7 @@ class ExtensionUninstaller : public ExtensionUninstallDialog::Delegate {
   Profile* profile_;
   std::string app_id_;
   AppListControllerDelegate* controller_;
-  scoped_ptr<ExtensionUninstallDialog> dialog_;
+  scoped_ptr<extensions::ExtensionUninstallDialog> dialog_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionUninstaller);
 };

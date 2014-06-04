@@ -510,7 +510,7 @@ bool AppInfoSummaryTab::CanSetLaunchType() const {
 void AppInfoSummaryTab::UninstallApp() {
   DCHECK(CanUninstallApp());
   extension_uninstall_dialog_.reset(
-      ExtensionUninstallDialog::Create(profile_, NULL, this));
+      extensions::ExtensionUninstallDialog::Create(profile_, NULL, this));
   extension_uninstall_dialog_->ConfirmUninstall(app_);
 }
 

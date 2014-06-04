@@ -31,7 +31,8 @@ void ExtensionUninstaller::Run() {
     return;
   }
   controller_->OnShowChildDialog();
-  dialog_.reset(ExtensionUninstallDialog::Create(profile_, NULL, this));
+  dialog_.reset(
+      extensions::ExtensionUninstallDialog::Create(profile_, NULL, this));
   dialog_->ConfirmUninstall(extension);
 }
 

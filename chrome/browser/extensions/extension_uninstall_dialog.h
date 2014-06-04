@@ -20,13 +20,12 @@ namespace base {
 class MessageLoop;
 }
 
-namespace extensions {
-class Extension;
-}
-
 namespace gfx {
 class Image;
 }
+
+namespace extensions {
+class Extension;
 
 class ExtensionUninstallDialog
     : public content::NotificationObserver,
@@ -58,13 +57,12 @@ class ExtensionUninstallDialog
   // Starts the process of showing a confirmation UI, which is split into two.
   // 1) Set off a 'load icon' task.
   // 2) Handle the load icon response and show the UI (OnImageLoaded).
-  void ConfirmUninstall(const extensions::Extension* extension);
+  void ConfirmUninstall(const Extension* extension);
 
   // This shows the same dialog as above, except it also shows which extension
   // triggered the dialog by calling chrome.management.uninstall API.
-  void ConfirmProgrammaticUninstall(
-      const extensions::Extension* extension,
-      const extensions::Extension* triggering_extension);
+  void ConfirmProgrammaticUninstall(const Extension* extension,
+                                    const Extension* triggering_extension);
 
   std::string GetHeadingText();
 
@@ -82,11 +80,11 @@ class ExtensionUninstallDialog
   Delegate* delegate_;
 
   // The extension we are showing the dialog for.
-  const extensions::Extension* extension_;
+  const Extension* extension_;
 
   // The extension triggering the dialog if the dialog was shown by
   // chrome.management.uninstall.
-  const extensions::Extension* triggering_extension_;
+  const Extension* triggering_extension_;
 
   // The extensions icon.
   gfx::ImageSkia icon_;
@@ -122,5 +120,7 @@ class ExtensionUninstallDialog
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionUninstallDialog);
 };
+
+}  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_UNINSTALL_DIALOG_H_

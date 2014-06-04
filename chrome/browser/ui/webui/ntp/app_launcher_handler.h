@@ -32,10 +32,11 @@ struct FaviconImageResult;
 }
 
 // The handler for Javascript messages related to the "apps" view.
-class AppLauncherHandler : public content::WebUIMessageHandler,
-                           public ExtensionUninstallDialog::Delegate,
-                           public ExtensionEnableFlowDelegate,
-                           public content::NotificationObserver {
+class AppLauncherHandler
+    : public content::WebUIMessageHandler,
+      public extensions::ExtensionUninstallDialog::Delegate,
+      public ExtensionEnableFlowDelegate,
+      public content::NotificationObserver {
  public:
   explicit AppLauncherHandler(ExtensionService* extension_service);
   virtual ~AppLauncherHandler();
@@ -132,7 +133,7 @@ class AppLauncherHandler : public content::WebUIMessageHandler,
 
   // Returns the ExtensionUninstallDialog object for this class, creating it if
   // needed.
-  ExtensionUninstallDialog* GetExtensionUninstallDialog();
+  extensions::ExtensionUninstallDialog* GetExtensionUninstallDialog();
 
   // Continuation for installing a bookmark app after favicon lookup.
   void OnFaviconForApp(scoped_ptr<AppInstallInfo> install_info,
@@ -160,7 +161,7 @@ class AppLauncherHandler : public content::WebUIMessageHandler,
   PrefChangeRegistrar local_state_pref_change_registrar_;
 
   // Used to show confirmation UI for uninstalling extensions in incognito mode.
-  scoped_ptr<ExtensionUninstallDialog> extension_uninstall_dialog_;
+  scoped_ptr<extensions::ExtensionUninstallDialog> extension_uninstall_dialog_;
 
   // Used to show confirmation UI for enabling extensions.
   scoped_ptr<ExtensionEnableFlow> extension_enable_flow_;

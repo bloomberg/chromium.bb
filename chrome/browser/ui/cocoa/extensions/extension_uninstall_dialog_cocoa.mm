@@ -24,7 +24,8 @@ namespace {
 // complex life cycle than the Views and GTK implementations because the
 // dialog blocks the page from navigating away and destroying the dialog,
 // so there's no way for the dialog to outlive its delegate.
-class ExtensionUninstallDialogCocoa : public ExtensionUninstallDialog {
+class ExtensionUninstallDialogCocoa
+    : public extensions::ExtensionUninstallDialog {
  public:
   ExtensionUninstallDialogCocoa(
       Profile* profile,
@@ -39,8 +40,9 @@ class ExtensionUninstallDialogCocoa : public ExtensionUninstallDialog {
 ExtensionUninstallDialogCocoa::ExtensionUninstallDialogCocoa(
     Profile* profile,
     Browser* browser,
-    ExtensionUninstallDialog::Delegate* delegate)
-    : ExtensionUninstallDialog(profile, browser, delegate) {}
+    extensions::ExtensionUninstallDialog::Delegate* delegate)
+    : extensions::ExtensionUninstallDialog(profile, browser, delegate) {
+}
 
 ExtensionUninstallDialogCocoa::~ExtensionUninstallDialogCocoa() {}
 
@@ -70,9 +72,9 @@ void ExtensionUninstallDialogCocoa::Show() {
 }  // namespace
 
 // static
-ExtensionUninstallDialog* ExtensionUninstallDialog::Create(
-    Profile* profile,
-    Browser* browser,
-    Delegate* delegate) {
+extensions::ExtensionUninstallDialog*
+extensions::ExtensionUninstallDialog::Create(Profile* profile,
+                                             Browser* browser,
+                                             Delegate* delegate) {
   return new ExtensionUninstallDialogCocoa(profile, browser, delegate);
 }
