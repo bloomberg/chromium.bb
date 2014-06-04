@@ -209,7 +209,8 @@ class TestVolume {
   virtual ~TestVolume() {}
 
   bool CreateRootDirectory(const Profile* profile) {
-    return root_.Set(profile->GetPath().Append(name_));
+    const base::FilePath path = profile->GetPath().Append(name_);
+    return root_.path() == path || root_.Set(path);
   }
 
   const std::string& name() { return name_; }
@@ -291,10 +292,30 @@ class DownloadsTestVolume : public LocalTestVolume {
   }
 };
 
-class FakeUsbTestVolume : public LocalTestVolume {
+// Test volume for mimicing a specified type of volumes by a local folder.
+class FakeTestVolume : public LocalTestVolume {
  public:
-  FakeUsbTestVolume() : LocalTestVolume("fake-usb") {}
-  virtual ~FakeUsbTestVolume() {}
+  FakeTestVolume(const std::string& name,
+                 VolumeType volume_type,
+                 chromeos::DeviceType device_type)
+      : LocalTestVolume(name),
+        volume_type_(volume_type),
+        device_type_(device_type) {}
+  virtual ~FakeTestVolume() {}
+
+  // Simple test entries used for testing, e.g., read-only volumes.
+  bool PrepareTestEntries(Profile* profile) {
+    if (!CreateRootDirectory(profile))
+      return false;
+    // Must be in sync with BASIC_FAKE_ENTRY_SET in the JS test code.
+    CreateEntry(
+        TestEntryInfo(FILE, "text.txt", "hello.txt", "text/plain", NONE,
+                      base::Time::Now()));
+    CreateEntry(
+        TestEntryInfo(DIRECTORY, std::string(), "A", std::string(), NONE,
+                      base::Time::Now()));
+    return true;
+  }
 
   virtual bool Mount(Profile* profile) OVERRIDE {
     if (!CreateRootDirectory(profile))
@@ -312,12 +333,14 @@ class FakeUsbTestVolume : public LocalTestVolume {
     if (!result)
       return false;
 
-    VolumeManager::Get(profile)
-        ->AddVolumeInfoForTesting(root_path(),
-                                  VOLUME_TYPE_REMOVABLE_DISK_PARTITION,
-                                  chromeos::DEVICE_TYPE_USB);
+    VolumeManager::Get(profile)->AddVolumeInfoForTesting(
+        root_path(), volume_type_, device_type_);
     return true;
   }
+
+ private:
+  const VolumeType volume_type_;
+  const chromeos::DeviceType device_type_;
 };
 
 // The drive volume class for test.
@@ -539,7 +562,8 @@ class FileManagerBrowserTestBase : public ExtensionApiTest {
   scoped_ptr<LocalTestVolume> local_volume_;
   linked_ptr<DriveTestVolume> drive_volume_;
   std::map<Profile*, linked_ptr<DriveTestVolume> > drive_volumes_;
-  scoped_ptr<LocalTestVolume> usb_volume_;
+  scoped_ptr<FakeTestVolume> usb_volume_;
+  scoped_ptr<FakeTestVolume> mtp_volume_;
 
  private:
   drive::DriveIntegrationService* CreateDriveIntegrationService(
@@ -691,8 +715,18 @@ std::string FileManagerBrowserTestBase::OnMessage(const std::string& name,
     }
     return "onEntryAdded";
   } else if (name == "mountFakeUsb") {
-    usb_volume_.reset(new FakeUsbTestVolume());
+    usb_volume_.reset(new FakeTestVolume("fake-usb",
+                                         VOLUME_TYPE_REMOVABLE_DISK_PARTITION,
+                                         chromeos::DEVICE_TYPE_USB));
     usb_volume_->Mount(profile());
+    return "true";
+  } else if (name == "mountFakeMtp") {
+    mtp_volume_.reset(new FakeTestVolume("fake-mtp",
+                                         VOLUME_TYPE_MTP,
+                                         chromeos::DEVICE_TYPE_UNKNOWN));
+    if (!mtp_volume_->PrepareTestEntries(profile()))
+      return "false";
+    mtp_volume_->Mount(profile());
     return "true";
   }
   return "unknownMessage";
@@ -729,7 +763,8 @@ INSTANTIATE_TEST_CASE_P(
     FileManagerBrowserTest,
     ::testing::Values(TestParameter(NOT_IN_GUEST_MODE, "fileDisplayDownloads"),
                       TestParameter(IN_GUEST_MODE, "fileDisplayDownloads"),
-                      TestParameter(NOT_IN_GUEST_MODE, "fileDisplayDrive")));
+                      TestParameter(NOT_IN_GUEST_MODE, "fileDisplayDrive"),
+                      TestParameter(NOT_IN_GUEST_MODE, "fileDisplayMtp")));
 
 INSTANTIATE_TEST_CASE_P(
     OpenZipFiles,

@@ -50,3 +50,39 @@ testcase.fileDisplayDownloads = function() {
 testcase.fileDisplayDrive = function() {
   fileDisplay(RootPath.DRIVE);
 };
+
+testcase.fileDisplayMtp = function() {
+  var appId;
+  var MTP_VOLUME_QUERY = '#navigation-list > .root-item > ' +
+    '.volume-icon[volume-type-icon="mtp"]';
+
+  StepsRunner.run([
+    function() {
+      setupAndWaitUntilReady(null, RootPath.DOWNLOADS, this.next);
+    },
+    // Mount a fake MTP volume.
+    function(inAppId, files) {
+      appId = inAppId;
+      chrome.test.sendMessage(JSON.stringify({name: 'mountFakeMtp'}),
+                              this.next);
+    },
+    // Wait for the mount.
+    function(result) {
+      chrome.test.assertTrue(JSON.parse(result));
+      waitForElement(appId, MTP_VOLUME_QUERY).then(this.next);
+    },
+    // Click the MTP volume.
+    function() {
+      callRemoteTestUtil(
+          'fakeMouseClick', appId, [MTP_VOLUME_QUERY], this.next);
+    },
+    // Wait for the file list to change.
+    function(appIds) {
+      waitForFiles(appId, TestEntryInfo.getExpectedRows(BASIC_FAKE_ENTRY_SET),
+                   {ignoreLastModifiedTime: true}).then(this.next);
+    },
+    function() {
+      checkIfNoErrorsOccured(this.next);
+    }
+  ]);
+};

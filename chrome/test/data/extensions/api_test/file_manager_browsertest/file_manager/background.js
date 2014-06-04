@@ -372,6 +372,18 @@ var NESTED_ENTRY_SET = [
 ];
 
 /**
+ * Expecetd list of preset entries in fake test volumes. This should be in sync
+ * with FakeTestVolume::PrepareTestEntries in the test harness.
+ *
+ * @type {Array.<TestEntryInfo>}
+ * @const
+ */
+var BASIC_FAKE_ENTRY_SET = [
+  ENTRIES.hello,
+  ENTRIES.directoryA
+];
+
+/**
  * Expected files shown in "Recent". Directories (e.g. 'photos') are not in this
  * list as they are not expected in "Recent".
  *
