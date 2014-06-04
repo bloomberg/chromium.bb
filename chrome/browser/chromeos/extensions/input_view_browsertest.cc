@@ -74,28 +74,33 @@ class InputViewBrowserTest : public VirtualKeyboardBrowserTest {
   }
 };
 
-IN_PROC_BROWSER_TEST_F(InputViewBrowserTest, TypingTest) {
+// Disabled for leaking memory: http://crbug.com/380537
+IN_PROC_BROWSER_TEST_F(InputViewBrowserTest, DISABLED_TypingTest) {
   std::string id = InstallIMEExtension();
   ASSERT_FALSE(id.empty());
   RunTest(base::FilePath("typing_test.js"),
           InputViewConfig(id, kDefaultLayout));
 }
 
-IN_PROC_BROWSER_TEST_F(InputViewBrowserTest, CompactTypingTest) {
+// Disabled for leaking memory: http://crbug.com/380537
+IN_PROC_BROWSER_TEST_F(InputViewBrowserTest, DISABLED_CompactTypingTest) {
   std::string id = InstallIMEExtension();
   ASSERT_FALSE(id.empty());
   RunTest(base::FilePath("typing_test.js"),
           InputViewConfig(id, kCompactLayout));
 }
 
-IN_PROC_BROWSER_TEST_F(InputViewBrowserTest, KeysetTransitionTest) {
+// Disabled for leaking memory: http://crbug.com/380537
+IN_PROC_BROWSER_TEST_F(InputViewBrowserTest, DISABLED_KeysetTransitionTest) {
   std::string id = InstallIMEExtension();
   ASSERT_FALSE(id.empty());
   RunTest(base::FilePath("keyset_transition_test.js"),
           InputViewConfig(id, kDefaultLayout));
 }
 
-IN_PROC_BROWSER_TEST_F(InputViewBrowserTest, CompactKeysetTransitionTest) {
+// Disabled for leaking memory: http://crbug.com/380537
+IN_PROC_BROWSER_TEST_F(InputViewBrowserTest,
+                       DISABLED_CompactKeysetTransitionTest) {
   std::string id = InstallIMEExtension();
   ASSERT_FALSE(id.empty());
   RunTest(base::FilePath("keyset_transition_test.js"),
