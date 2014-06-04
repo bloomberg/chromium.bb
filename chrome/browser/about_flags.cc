@@ -1086,7 +1086,7 @@ const Experiment kExperiments[] = {
     "wallet-service-use-sandbox",
     IDS_FLAGS_WALLET_SERVICE_USE_SANDBOX_NAME,
     IDS_FLAGS_WALLET_SERVICE_USE_SANDBOX_DESCRIPTION,
-    kOsCrOS | kOsWin | kOsMac,
+    kOsAndroid | kOsDesktop,
     ENABLE_DISABLE_VALUE_TYPE_AND_VALUE(
         autofill::switches::kWalletServiceUseSandbox, "1",
         autofill::switches::kWalletServiceUseSandbox, "0")
