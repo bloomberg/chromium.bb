@@ -1069,6 +1069,8 @@ crbug.com/380151 fast/events/only-valid-drop-targets-receive-file-drop.html [ Fa
 
 crbug.com/380167 [ Mac ] plugins/destroy-reentry.html [ Failure Pass ]
 
+crbug.com/380649 [ Mac ] fast/dom/HTMLScriptElement/dont-load-unknown-type.html [ Failure ]
+
 # Temporarily skipped until Chromium side change lands.
 crbug.com/308768 http/tests/security/XFrameOptions/x-frame-options-deny-meta-tag-in-body.html [ Skip ]
 crbug.com/308768 http/tests/security/XFrameOptions/x-frame-options-deny-meta-tag-parent-same-origin-deny.html [ Skip ]
