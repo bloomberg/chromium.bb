@@ -192,7 +192,15 @@ cvox.BrailleUtil.getState = function(node) {
   }
   return cvox.NodeStateUtil.expand(
       cvox.DomUtil.getStateMsgs(node, true).map(function(state) {
-          if (cvox.ChromeVox.msgs.getMsg(state[0] + '_brl')) {
+          // Check to see if a variant of the message with '_brl' exists,
+          // and use it if so.
+          //
+          // Note: many messages are templatized, and if we don't pass any
+          // argument to substitute, getMsg might throw an error if the
+          // resulting string is empty. To avoid this, we pass a dummy
+          // substitution string array here.
+          var dummySubs = ['dummy', 'dummy', 'dummy'];
+          if (cvox.ChromeVox.msgs.getMsg(state[0] + '_brl', dummySubs)) {
             state[0] += '_brl';
           }
           return state;
