@@ -518,15 +518,25 @@ DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
   scroll_view_->SetContents(list_view_);
   AddChildView(scroll_view_);
 
-  WebContentsModalDialogManager* web_contents_modal_dialog_manager =
-      WebContentsModalDialogManager::FromWebContents(parent_web_contents);
-  DCHECK(web_contents_modal_dialog_manager);
-  WebContentsModalDialogManagerDelegate* delegate =
-      web_contents_modal_dialog_manager->delegate();
-  DCHECK(delegate);
-  views::Widget::CreateWindowAsFramelessChild(
-      this,
-      delegate->GetWebContentsModalDialogHost()->GetHostView());
+  // If |parent_web_contents| is set, the picker will be shown modal to the
+  // web contents. Otherwise, a new dialog widget inside |parent_window| will be
+  // created for the picker. Note that |parent_window| may also be NULL if
+  // parent web contents is not set. In this case the picker will be parented
+  // by a root window.
+  WebContentsModalDialogManager* web_contents_modal_dialog_manager = NULL;
+  if (parent_web_contents) {
+    web_contents_modal_dialog_manager =
+        WebContentsModalDialogManager::FromWebContents(parent_web_contents);
+    DCHECK(web_contents_modal_dialog_manager);
+    WebContentsModalDialogManagerDelegate* delegate =
+        web_contents_modal_dialog_manager->delegate();
+    DCHECK(delegate);
+    views::Widget::CreateWindowAsFramelessChild(
+        this,
+        delegate->GetWebContentsModalDialogHost()->GetHostView());
+  } else {
+    DialogDelegate::CreateDialogWidget(this, context, parent_window);
+  }
 
   // DesktopMediaList needs to know the ID of the picker window which
   // matches the ID it gets from the OS. Depending on the OS and configuration
@@ -547,8 +557,12 @@ DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
 
   list_view_->StartUpdating(dialog_window_id);
 
-  web_contents_modal_dialog_manager->ShowModalDialog(
-      GetWidget()->GetNativeView());
+  if (parent_web_contents) {
+    web_contents_modal_dialog_manager->ShowModalDialog(
+        GetWidget()->GetNativeView());
+  } else {
+    GetWidget()->Show();
+  }
 }
 
 DesktopMediaPickerDialogView::~DesktopMediaPickerDialogView() {}

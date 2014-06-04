@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/api/desktop_capture/desktop_capture_api.h"
 
+#include "ash/shell.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/strings/utf_string_conversions.h"
@@ -13,6 +14,7 @@
 #include "chrome/browser/media/media_capture_devices_dispatcher.h"
 #include "chrome/browser/media/native_desktop_media_list.h"
 #include "chrome/browser/ui/ash/ash_util.h"
+#include "chrome/browser/ui/host_desktop.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/api/tabs.h"
 #include "content/public/browser/render_process_host.h"
@@ -88,8 +90,9 @@ bool DesktopCaptureChooseDesktopMediaFunction::RunAsync() {
   DesktopCaptureRequestsRegistry::GetInstance()->AddRequest(
       render_view_host()->GetProcess()->GetID(), request_id_, this);
 
-  gfx::NativeWindow parent_window;
-  content::RenderViewHost* render_view;
+  gfx::NativeWindow parent_window = NULL;
+  content::RenderViewHost* render_view = NULL;
+  content::WebContents* web_contents = NULL;
   base::string16 target_name;
   if (params->target_tab) {
     if (!params->target_tab->url) {
@@ -112,7 +115,6 @@ bool DesktopCaptureChooseDesktopMediaFunction::RunAsync() {
       return false;
     }
 
-    content::WebContents* web_contents = NULL;
     if (!ExtensionTabUtil::GetTabById(*(params->target_tab->id), GetProfile(),
                                       true, NULL, NULL, &web_contents, NULL)) {
       error_ = kInvalidTabIdError;
@@ -135,9 +137,18 @@ bool DesktopCaptureChooseDesktopMediaFunction::RunAsync() {
     origin_ = GetExtension()->url();
     target_name = base::UTF8ToUTF16(GetExtension()->name());
     render_view = render_view_host();
-    parent_window =
-        GetAssociatedWebContents()->GetTopLevelNativeWindow();
+
+    web_contents = GetAssociatedWebContents();
+    if (web_contents) {
+      parent_window = web_contents->GetTopLevelNativeWindow();
+    } else {
+#if defined(USE_ASH)
+      if (chrome::GetActiveDesktop() == chrome::HOST_DESKTOP_TYPE_ASH)
+        parent_window = ash::Shell::GetPrimaryRootWindow();
+#endif
+    }
   }
+
   render_process_id_ = render_view->GetProcess()->GetID();
   render_view_id_ = render_view->GetRoutingID();
 
@@ -208,7 +219,7 @@ bool DesktopCaptureChooseDesktopMediaFunction::RunAsync() {
   DesktopMediaPicker::DoneCallback callback = base::Bind(
       &DesktopCaptureChooseDesktopMediaFunction::OnPickerDialogResults, this);
 
-  picker_->Show(web_contents(),
+  picker_->Show(web_contents,
                 parent_window, parent_window,
                 base::UTF8ToUTF16(GetExtension()->name()),
                 target_name,
