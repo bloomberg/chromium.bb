@@ -25,6 +25,7 @@ enum ChangeType {
   CHANGE_TYPE_NODE_DELETED,
   CHANGE_TYPE_VIEW_DELETED,
   CHANGE_TYPE_VIEW_REPLACED,
+  CHANGE_TYPE_INPUT_EVENT,
 };
 
 struct TestNode {
@@ -53,6 +54,7 @@ struct Change {
   TransportViewId view_id2;
   gfx::Rect bounds;
   gfx::Rect bounds2;
+  int32 event_action;
 };
 
 // Converts Changes to string descriptions.
@@ -109,6 +111,7 @@ class TestChangeTracker {
   void OnNodeViewReplaced(TransportNodeId node_id,
                           TransportViewId new_view_id,
                           TransportViewId old_view_id);
+  void OnViewInputEvent(TransportViewId view_id, EventPtr event);
 
  private:
   void AddChange(const Change& change);

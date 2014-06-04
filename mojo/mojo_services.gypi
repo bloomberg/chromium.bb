@@ -15,6 +15,28 @@
       ],
     },
     {
+      'target_name': 'mojo_input_events_lib',
+      'type': '<(component)',
+      'defines': [
+        'MOJO_INPUT_EVENTS_IMPLEMENTATION',
+      ],
+      'dependencies': [
+        '../base/base.gyp:base',
+        '../ui/events/events.gyp:events',
+        '../ui/gfx/gfx.gyp:gfx_geometry',
+        'mojo_environment_chromium',
+        'mojo_input_events_bindings',
+        'mojo_geometry_bindings',
+        'mojo_geometry_lib',
+        'mojo_system_impl',
+      ],
+      'sources': [
+        'services/public/cpp/input_events/lib/input_events_type_converters.cc',
+        'services/public/cpp/input_events/input_events_type_converters.h',
+        'services/public/cpp/input_events/mojo_input_events_export.h',
+      ],
+    },
+    {
       'target_name': 'mojo_input_events_bindings',
       'type': 'static_library',
       'sources': [
@@ -130,6 +152,7 @@
         'mojo_geometry_bindings',
         'mojo_geometry_lib',
         'mojo_gles2_service',
+        'mojo_input_events_lib',
         'mojo_native_viewport_bindings',
         'mojo_system_impl',
       ],
@@ -179,6 +202,7 @@
       'dependencies': [
         'mojo_cpp_bindings',
         'mojo_geometry_bindings',
+        'mojo_input_events_bindings',
       ],
     },
     {
@@ -271,6 +295,8 @@
             'mojo_geometry_bindings',
             'mojo_geometry_lib',
             'mojo_gles2',
+            'mojo_input_events_bindings',
+            'mojo_input_events_lib',
             'mojo_launcher_bindings',
             'mojo_main_chromium',
             'mojo_native_viewport_bindings',
@@ -330,6 +356,8 @@
             'mojo_environment_chromium',
             'mojo_geometry_bindings',
             'mojo_geometry_lib',
+            'mojo_input_events_bindings',
+            'mojo_input_events_lib',
             'mojo_service_manager',
             'mojo_shell_test_support',
             'mojo_system_impl',

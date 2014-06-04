@@ -5,6 +5,7 @@
 #include "mojo/services/native_viewport/native_viewport_service.h"
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/time/time.h"
 #include "mojo/public/interfaces/service_provider/service_provider.mojom.h"
@@ -12,6 +13,7 @@
 #include "mojo/services/native_viewport/native_viewport.h"
 #include "mojo/services/native_viewport/native_viewport.mojom.h"
 #include "mojo/services/public/cpp/geometry/geometry_type_converters.h"
+#include "mojo/services/public/cpp/input_events/input_events_type_converters.h"
 #include "ui/events/event.h"
 
 namespace mojo {
@@ -33,7 +35,8 @@ class NativeViewportImpl
   NativeViewportImpl(shell::Context* context)
       : context_(context),
         widget_(gfx::kNullAcceleratedWidget),
-        waiting_for_event_ack_(false) {}
+        waiting_for_event_ack_(false),
+        weak_factory_(this) {}
   virtual ~NativeViewportImpl() {
     // Destroy the NativeViewport early on as it may call us back during
     // destruction and we want to be in a known state.
@@ -112,33 +115,10 @@ class NativeViewportImpl
     if (waiting_for_event_ack_ && IsRateLimitedEventType(ui_event))
       return false;
 
-    EventPtr event(Event::New());
-    event->action = ui_event->type();
-    event->flags = ui_event->flags();
-    event->time_stamp = ui_event->time_stamp().ToInternalValue();
-
-    if (ui_event->IsMouseEvent() || ui_event->IsTouchEvent()) {
-      ui::LocatedEvent* located_event =
-          static_cast<ui::LocatedEvent*>(ui_event);
-      event->location = Point::New();
-      event->location->x = located_event->location().x();
-      event->location->y = located_event->location().y();
-    }
-
-    if (ui_event->IsTouchEvent()) {
-      ui::TouchEvent* touch_event = static_cast<ui::TouchEvent*>(ui_event);
-      event->touch_data = TouchData::New();
-      event->touch_data->pointer_id = touch_event->touch_id();
-    } else if (ui_event->IsKeyEvent()) {
-      ui::KeyEvent* key_event = static_cast<ui::KeyEvent*>(ui_event);
-      event->key_data = KeyData::New();
-      event->key_data->key_code = key_event->key_code();
-      event->key_data->is_char = key_event->is_char();
-    }
-
-    client()->OnEvent(event.Pass(),
-                      base::Bind(&NativeViewportImpl::AckEvent,
-                                 base::Unretained(this)));
+    client()->OnEvent(
+        TypeConverter<EventPtr, ui::Event>::ConvertFrom(*ui_event),
+        base::Bind(&NativeViewportImpl::AckEvent,
+                   weak_factory_.GetWeakPtr()));
     waiting_for_event_ack_ = true;
     return false;
   }
@@ -167,6 +147,7 @@ class NativeViewportImpl
   InterfaceRequest<CommandBuffer> command_buffer_request_;
   scoped_ptr<CommandBufferImpl> command_buffer_;
   bool waiting_for_event_ack_;
+  base::WeakPtrFactory<NativeViewportImpl> weak_factory_;
 };
 
 }  // namespace services

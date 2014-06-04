@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "mojo/public/interfaces/service_provider/service_provider.mojom.h"
+#include "mojo/services/view_manager/view.h"
 #include "mojo/services/view_manager/view_manager_connection.h"
 #include "ui/aura/env.h"
 
@@ -195,6 +196,11 @@ void RootNodeManager::OnNodeViewReplaced(const Node* node,
                                          const View* new_view,
                                          const View* old_view) {
   ProcessNodeViewReplaced(node, new_view, old_view);
+}
+
+void RootNodeManager::OnViewInputEvent(const View* view,
+                                       const ui::Event* event) {
+  GetConnection(view->id().connection_id)->ProcessViewInputEvent(view, event);
 }
 
 }  // namespace service

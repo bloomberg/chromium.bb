@@ -143,6 +143,10 @@ class IViewManagerClientImpl
   }
   virtual void OnViewDeleted(uint32_t view) OVERRIDE {
   }
+  virtual void OnViewInputEvent(uint32_t view_id,
+                                EventPtr event,
+                                const Callback<void()>& callback) OVERRIDE {
+  }
 
   AuraDemo* aura_demo_;
 

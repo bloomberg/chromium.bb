@@ -317,6 +317,11 @@ class TestViewManagerClientConnection
                                   TransportViewId old_view_id) OVERRIDE {
     tracker_.OnNodeViewReplaced(node, new_view_id, old_view_id);
   }
+  virtual void OnViewInputEvent(TransportViewId view_id,
+                                EventPtr event,
+                                const Callback<void()>& callback) OVERRIDE {
+    tracker_.OnViewInputEvent(view_id, event.Pass());
+  }
 
  private:
   TestChangeTracker tracker_;

@@ -4,8 +4,10 @@
 
 #include "mojo/services/view_manager/view_manager_connection.h"
 
+#include "base/bind.h"
 #include "base/stl_util.h"
 #include "mojo/services/public/cpp/geometry/geometry_type_converters.h"
+#include "mojo/services/public/cpp/input_events/input_events_type_converters.h"
 #include "mojo/services/view_manager/node.h"
 #include "mojo/services/view_manager/root_node_manager.h"
 #include "mojo/services/view_manager/view.h"
@@ -200,6 +202,15 @@ void ViewManagerConnection::ProcessViewDeleted(const ViewId& view,
   if (originated_change)
     return;
   client()->OnViewDeleted(ViewIdToTransportId(view));
+}
+
+void ViewManagerConnection::ProcessViewInputEvent(const View* view,
+                                                  const ui::Event* event) {
+  DCHECK_EQ(id_, view->id().connection_id);
+  client()->OnViewInputEvent(
+      ViewIdToTransportId(view->id()),
+      TypeConverter<EventPtr, ui::Event>::ConvertFrom(*event),
+      base::Bind(&base::DoNothing));
 }
 
 void ViewManagerConnection::OnConnectionError() {
@@ -616,6 +627,14 @@ void ViewManagerConnection::OnNodeViewReplaced(const Node* node,
                                                const View* new_view,
                                                const View* old_view) {
   root_node_manager_->ProcessNodeViewReplaced(node, new_view, old_view);
+}
+
+void ViewManagerConnection::OnViewInputEvent(const View* view,
+                                             const ui::Event* event) {
+  ViewManagerConnection* connection = root_node_manager_->GetConnection(
+      view->id().connection_id);
+  DCHECK(connection);
+  connection->ProcessViewInputEvent(view, event);
 }
 
 void ViewManagerConnection::OnConnectionEstablished() {

@@ -66,6 +66,12 @@ std::string ChangeToDescription1(const Change& change) {
           NodeIdToString(change.node_id).c_str(),
           NodeIdToString(change.view_id).c_str(),
           NodeIdToString(change.view_id2).c_str());
+
+    case CHANGE_TYPE_INPUT_EVENT:
+      return base::StringPrintf(
+          "InputEvent view=%s event_action=%d",
+          NodeIdToString(change.view_id).c_str(),
+          change.event_action);
   }
   return std::string();
 }
@@ -108,7 +114,8 @@ Change::Change()
       node_id2(0),
       node_id3(0),
       view_id(0),
-      view_id2(0) {}
+      view_id2(0),
+      event_action(0) {}
 
 Change::~Change() {
 }
@@ -193,6 +200,14 @@ void TestChangeTracker::OnNodeViewReplaced(TransportNodeId node_id,
   change.view_id = new_view_id;
   change.view_id2 = old_view_id;
   AddChange(change);
+}
+
+void TestChangeTracker::OnViewInputEvent(TransportViewId view_id,
+                                         EventPtr event) {
+  Change change;
+  change.type = CHANGE_TYPE_INPUT_EVENT;
+  change.view_id = view_id;
+  change.event_action = event->action;
 }
 
 void TestChangeTracker::AddChange(const Change& change) {
