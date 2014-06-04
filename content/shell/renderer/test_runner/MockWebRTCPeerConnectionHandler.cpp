@@ -4,11 +4,11 @@
 
 #include "content/shell/renderer/test_runner/MockWebRTCPeerConnectionHandler.h"
 
-#include "content/shell/renderer/test_runner/MockWebRTCDTMFSenderHandler.h"
 #include "content/shell/renderer/test_runner/TestInterfaces.h"
 #include "content/shell/renderer/test_runner/WebTestDelegate.h"
 #include "content/shell/renderer/test_runner/mock_constraints.h"
 #include "content/shell/renderer/test_runner/mock_webrtc_data_channel_handler.h"
+#include "content/shell/renderer/test_runner/mock_webrtc_dtmf_sender_handler.h"
 #include "third_party/WebKit/public/platform/WebMediaConstraints.h"
 #include "third_party/WebKit/public/platform/WebMediaStream.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
