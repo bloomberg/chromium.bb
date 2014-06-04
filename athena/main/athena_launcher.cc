@@ -13,6 +13,10 @@
 #include "ui/aura/window_property.h"
 #include "ui/wm/core/visibility_controller.h"
 
+#if defined(USE_X11)
+#include "ui/events/x/touch_factory_x11.h"
+#endif
+
 namespace athena {
 struct RootWindowState;
 }
@@ -31,6 +35,9 @@ DEFINE_OWNED_WINDOW_PROPERTY_KEY(athena::RootWindowState,
                                  NULL);
 
 void StartAthena(aura::Window* root_window) {
+#if defined(USE_X11)
+  ui::TouchFactory::SetTouchDeviceListFromCommandLine();
+#endif
   RootWindowState* root_window_state = new RootWindowState;
   root_window->SetProperty(kRootWindowStateKey, root_window_state);
 
