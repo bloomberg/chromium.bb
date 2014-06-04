@@ -5,10 +5,10 @@
 #ifndef CONTENT_COMMON_GPU_CLIENT_GPU_MEMORY_BUFFER_IMPL_IO_SURFACE_H_
 #define CONTENT_COMMON_GPU_CLIENT_GPU_MEMORY_BUFFER_IMPL_IO_SURFACE_H_
 
+#include <IOSurface/IOSurfaceAPI.h>
+
 #include "base/mac/scoped_cftyperef.h"
 #include "content/common/gpu/client/gpu_memory_buffer_impl.h"
-
-class IOSurfaceSupport;
 
 namespace content {
 
@@ -32,8 +32,7 @@ class GpuMemoryBufferImplIOSurface : public GpuMemoryBufferImpl {
   virtual gfx::GpuMemoryBufferHandle GetHandle() const OVERRIDE;
 
  private:
-  IOSurfaceSupport* io_surface_support_;
-  base::ScopedCFTypeRef<CFTypeRef> io_surface_;
+  base::ScopedCFTypeRef<IOSurfaceRef> io_surface_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuMemoryBufferImplIOSurface);
 };

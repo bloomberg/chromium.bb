@@ -16,10 +16,6 @@
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "ui/gl/gl_implementation.h"
 
-#if defined(OS_MACOSX)
-#include "ui/gl/io_surface_support_mac.h"
-#endif
-
 namespace gpu {
 namespace gles2 {
 
@@ -670,9 +666,7 @@ void FeatureInfo::InitializeFeatures() {
   }
 
 #if defined(OS_MACOSX)
-  if (IOSurfaceSupport::Initialize()) {
-    AddExtensionString("GL_CHROMIUM_iosurface");
-  }
+  AddExtensionString("GL_CHROMIUM_iosurface");
 #endif
 
   // TODO(gman): Add support for these extensions.

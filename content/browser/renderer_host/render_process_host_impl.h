@@ -23,6 +23,7 @@
 #include "mojo/public/cpp/bindings/interface_ptr.h"
 
 #if defined(OS_MACOSX)
+#include <IOSurface/IOSurfaceAPI.h>
 #include "base/mac/scoped_cftyperef.h"
 #endif
 
@@ -451,7 +452,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
   base::WeakPtrFactory<RenderProcessHostImpl> weak_factory_;
 
 #if defined(OS_MACOSX)
-  base::ScopedCFTypeRef<CFTypeRef> last_io_surface_;
+  base::ScopedCFTypeRef<IOSurfaceRef> last_io_surface_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(RenderProcessHostImpl);

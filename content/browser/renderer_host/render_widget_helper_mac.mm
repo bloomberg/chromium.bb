@@ -5,6 +5,7 @@
 #include "content/browser/renderer_host/render_widget_helper.h"
 
 #import <Cocoa/Cocoa.h>
+#include <IOSurface/IOSurfaceAPI.h>
 
 #include "base/bind.h"
 #include "content/browser/compositor/browser_compositor_view_mac.h"
@@ -15,6 +16,7 @@
 namespace {
 
 void OnNativeSurfaceBuffersSwappedOnUIThread(
+    base::ScopedCFTypeRef<IOSurfaceRef> io_surface,
     const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   gfx::AcceleratedWidget native_widget =
@@ -39,20 +41,21 @@ void RenderWidgetHelper::OnNativeSurfaceBuffersSwappedOnIOThread(
   // and a potential deadlock.
   // TODO(ccameron): This immediate ack circumvents GPU back-pressure that
   // is necessary to throttle renderers. Fix that.
-  // TODO(ccameron): It is possible that the IOSurface will be deleted or
-  // reused soon as it is acked. Take out a reference to the IOSurface here,
-  // to ensure the IOSurface does not disappear before routing to the UI
-  // thread.
   AcceleratedSurfaceMsg_BufferPresented_Params ack_params;
   ack_params.sync_point = 0;
   ack_params.renderer_id = 0;
   gpu_process_host->Send(new AcceleratedSurfaceMsg_BufferPresented(
       params.route_id, ack_params));
 
+  // Open the IOSurface handle before returning, to ensure that it is not
+  // closed as soon as the frame is acknowledged.
+  base::ScopedCFTypeRef<IOSurfaceRef> io_surface(IOSurfaceLookup(
+          static_cast<uint32>(params.surface_handle)));
+
   BrowserThread::PostTask(
       BrowserThread::UI,
       FROM_HERE,
-      base::Bind(&OnNativeSurfaceBuffersSwappedOnUIThread, params));
+      base::Bind(&OnNativeSurfaceBuffersSwappedOnUIThread, io_surface, params));
 }
 
 }  // namespace content

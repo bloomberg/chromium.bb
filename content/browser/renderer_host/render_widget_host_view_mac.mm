@@ -74,7 +74,6 @@
 #include "ui/gfx/screen.h"
 #include "ui/gfx/size_conversions.h"
 #include "ui/gl/gl_switches.h"
-#include "ui/gl/io_surface_support_mac.h"
 
 using content::BrowserAccessibility;
 using content::BrowserAccessibilityManager;

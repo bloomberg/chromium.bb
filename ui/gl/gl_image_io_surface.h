@@ -5,10 +5,10 @@
 #ifndef UI_GL_GL_IMAGE_IO_SURFACE_H_
 #define UI_GL_GL_IMAGE_IO_SURFACE_H_
 
+#include <IOSurface/IOSurfaceAPI.h>
+
 #include "base/mac/scoped_cftyperef.h"
 #include "ui/gl/gl_image.h"
-
-class IOSurfaceSupport;
 
 namespace gfx {
 
@@ -32,8 +32,7 @@ class GL_EXPORT GLImageIOSurface : public GLImage {
   virtual ~GLImageIOSurface();
 
  private:
-  IOSurfaceSupport* io_surface_support_;
-  base::ScopedCFTypeRef<CFTypeRef> io_surface_;
+  base::ScopedCFTypeRef<IOSurfaceRef> io_surface_;
   gfx::Size size_;
 
   DISALLOW_COPY_AND_ASSIGN(GLImageIOSurface);

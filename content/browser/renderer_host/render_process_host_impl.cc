@@ -161,7 +161,6 @@
 
 #if defined(OS_MACOSX)
 #include "content/common/gpu/client/gpu_memory_buffer_impl_io_surface.h"
-#include "ui/gl/io_surface_support_mac.h"
 #endif
 
 #if defined(OS_WIN)
@@ -2172,44 +2171,38 @@ void RenderProcessHostImpl::OnAllocateGpuMemoryBuffer(uint32 width,
   // GpuMemoryBufferImplIOSurface. crbug.com/325045, crbug.com/323304
   if (GpuMemoryBufferImplIOSurface::IsConfigurationSupported(internalformat,
                                                              usage)) {
-    IOSurfaceSupport* io_surface_support = IOSurfaceSupport::Initialize();
-    if (io_surface_support) {
-      base::ScopedCFTypeRef<CFMutableDictionaryRef> properties;
-      properties.reset(
-          CFDictionaryCreateMutable(kCFAllocatorDefault,
-                                    0,
-                                    &kCFTypeDictionaryKeyCallBacks,
-                                    &kCFTypeDictionaryValueCallBacks));
-      AddIntegerValue(
-          properties, io_surface_support->GetKIOSurfaceWidth(), width);
-      AddIntegerValue(
-          properties, io_surface_support->GetKIOSurfaceHeight(), height);
-      AddIntegerValue(properties,
-                      io_surface_support->GetKIOSurfaceBytesPerElement(),
-                      GpuMemoryBufferImpl::BytesPerPixel(internalformat));
-      AddIntegerValue(
-          properties,
-          io_surface_support->GetKIOSurfacePixelFormat(),
-          GpuMemoryBufferImplIOSurface::PixelFormat(internalformat));
-      // TODO(reveman): Remove this when using a mach_port_t to transfer
-      // IOSurface to renderer process. crbug.com/323304
-      AddBooleanValue(
-          properties, io_surface_support->GetKIOSurfaceIsGlobal(), true);
+    base::ScopedCFTypeRef<CFMutableDictionaryRef> properties;
+    properties.reset(
+        CFDictionaryCreateMutable(kCFAllocatorDefault,
+                                  0,
+                                  &kCFTypeDictionaryKeyCallBacks,
+                                  &kCFTypeDictionaryValueCallBacks));
+    AddIntegerValue(properties, kIOSurfaceWidth, width);
+    AddIntegerValue(properties, kIOSurfaceHeight, height);
+    AddIntegerValue(properties,
+                    kIOSurfaceBytesPerElement,
+                    GpuMemoryBufferImpl::BytesPerPixel(internalformat));
+    AddIntegerValue(
+        properties,
+        kIOSurfacePixelFormat,
+        GpuMemoryBufferImplIOSurface::PixelFormat(internalformat));
+    // TODO(reveman): Remove this when using a mach_port_t to transfer
+    // IOSurface to renderer process. crbug.com/323304
+    AddBooleanValue(
+        properties, kIOSurfaceIsGlobal, true);
 
-      base::ScopedCFTypeRef<CFTypeRef> io_surface(
-          io_surface_support->IOSurfaceCreate(properties));
-      if (io_surface) {
-        gfx::GpuMemoryBufferHandle handle;
-        handle.type = gfx::IO_SURFACE_BUFFER;
-        handle.io_surface_id = io_surface_support->IOSurfaceGetID(io_surface);
+    base::ScopedCFTypeRef<IOSurfaceRef> io_surface(IOSurfaceCreate(properties));
+    if (io_surface) {
+      gfx::GpuMemoryBufferHandle handle;
+      handle.type = gfx::IO_SURFACE_BUFFER;
+      handle.io_surface_id = IOSurfaceGetID(io_surface);
 
-        // TODO(reveman): This makes the assumption that the renderer will
-        // grab a reference to the surface before sending another message.
-        // crbug.com/325045
-        last_io_surface_ = io_surface;
-        GpuMemoryBufferAllocated(reply, handle);
-        return;
-      }
+      // TODO(reveman): This makes the assumption that the renderer will
+      // grab a reference to the surface before sending another message.
+      // crbug.com/325045
+      last_io_surface_ = io_surface;
+      GpuMemoryBufferAllocated(reply, handle);
+      return;
     }
   }
 #endif

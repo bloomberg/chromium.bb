@@ -33,10 +33,6 @@
 #include "ui/gfx/switches.h"
 #include "ui/gl/gl_switches.h"
 
-#if defined(OS_MACOSX)
-#include "ui/gl/io_surface_support_mac.h"
-#endif
-
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
 #include "ui/gfx/win/dpi.h"
@@ -223,10 +219,6 @@ class CompositingRenderWidgetHostViewBrowserTest
   }
 
   virtual bool SetUpSourceSurface(const char* wait_message) OVERRIDE {
-#if defined(OS_MACOSX)
-    CHECK(IOSurfaceSupport::Initialize());
-#endif
-
     content::DOMMessageQueue message_queue;
     NavigateToURL(shell(), TestUrl());
     if (wait_message != NULL) {

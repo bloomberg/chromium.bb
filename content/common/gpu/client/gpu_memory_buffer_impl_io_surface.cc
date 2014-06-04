@@ -6,17 +6,13 @@
 
 #include "base/logging.h"
 #include "ui/gl/gl_bindings.h"
-#include "ui/gl/io_surface_support_mac.h"
 
 namespace content {
 
 GpuMemoryBufferImplIOSurface::GpuMemoryBufferImplIOSurface(
     const gfx::Size& size,
     unsigned internalformat)
-    : GpuMemoryBufferImpl(size, internalformat),
-      io_surface_support_(IOSurfaceSupport::Initialize()) {
-  CHECK(io_surface_support_);
-}
+    : GpuMemoryBufferImpl(size, internalformat) {}
 
 GpuMemoryBufferImplIOSurface::~GpuMemoryBufferImplIOSurface() {}
 
@@ -61,7 +57,7 @@ uint32 GpuMemoryBufferImplIOSurface::PixelFormat(unsigned internalformat) {
 bool GpuMemoryBufferImplIOSurface::InitializeFromHandle(
     gfx::GpuMemoryBufferHandle handle) {
   DCHECK(IsFormatSupported(internalformat_));
-  io_surface_.reset(io_surface_support_->IOSurfaceLookup(handle.io_surface_id));
+  io_surface_.reset(IOSurfaceLookup(handle.io_surface_id));
   if (!io_surface_) {
     VLOG(1) << "IOSurface lookup failed";
     return false;
@@ -72,25 +68,25 @@ bool GpuMemoryBufferImplIOSurface::InitializeFromHandle(
 
 void* GpuMemoryBufferImplIOSurface::Map() {
   DCHECK(!mapped_);
-  io_surface_support_->IOSurfaceLock(io_surface_, 0, NULL);
+  IOSurfaceLock(io_surface_, 0, NULL);
   mapped_ = true;
-  return io_surface_support_->IOSurfaceGetBaseAddress(io_surface_);
+  return IOSurfaceGetBaseAddress(io_surface_);
 }
 
 void GpuMemoryBufferImplIOSurface::Unmap() {
   DCHECK(mapped_);
-  io_surface_support_->IOSurfaceUnlock(io_surface_, 0, NULL);
+  IOSurfaceUnlock(io_surface_, 0, NULL);
   mapped_ = false;
 }
 
 uint32 GpuMemoryBufferImplIOSurface::GetStride() const {
-  return io_surface_support_->IOSurfaceGetBytesPerRow(io_surface_);
+  return IOSurfaceGetBytesPerRow(io_surface_);
 }
 
 gfx::GpuMemoryBufferHandle GpuMemoryBufferImplIOSurface::GetHandle() const {
   gfx::GpuMemoryBufferHandle handle;
   handle.type = gfx::IO_SURFACE_BUFFER;
-  handle.io_surface_id = io_surface_support_->IOSurfaceGetID(io_surface_);
+  handle.io_surface_id = IOSurfaceGetID(io_surface_);
   return handle;
 }
 

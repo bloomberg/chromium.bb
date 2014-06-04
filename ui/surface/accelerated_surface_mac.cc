@@ -11,8 +11,10 @@
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_surface.h"
-#include "ui/gl/io_surface_support_mac.h"
 #include "ui/gl/scoped_make_current.h"
+
+// Note that this must be included after gl_bindings.h to avoid conflicts.
+#include <OpenGL/CGLIOSurface.h>
 
 AcceleratedSurface::AcceleratedSurface()
     : io_surface_id_(0),
@@ -192,10 +194,6 @@ uint32 AcceleratedSurface::SetSurfaceSize(const gfx::Size& size) {
   if (gfx::GetGLImplementation() != gfx::kGLImplementationDesktopGL)
     return 0;
 
-  IOSurfaceSupport* io_surface_support = IOSurfaceSupport::Initialize();
-  if (!io_surface_support)
-    return 0;
-
   ui::ScopedMakeCurrent make_current(gl_context_.get(), gl_surface_.get());
   if (!make_current.Succeeded())
     return 0;
@@ -219,24 +217,18 @@ uint32 AcceleratedSurface::SetSurfaceSize(const gfx::Size& size) {
                                              0,
                                              &kCFTypeDictionaryKeyCallBacks,
                                              &kCFTypeDictionaryValueCallBacks));
-  AddIntegerValue(properties,
-                  io_surface_support->GetKIOSurfaceWidth(),
-                  clamped_size.width());
-  AddIntegerValue(properties,
-                  io_surface_support->GetKIOSurfaceHeight(),
-                  clamped_size.height());
-  AddIntegerValue(properties,
-                  io_surface_support->GetKIOSurfaceBytesPerElement(), 4);
-  AddBooleanValue(properties,
-                  io_surface_support->GetKIOSurfaceIsGlobal(), true);
+  AddIntegerValue(properties, kIOSurfaceWidth, clamped_size.width());
+  AddIntegerValue(properties, kIOSurfaceHeight, clamped_size.height());
+  AddIntegerValue(properties, kIOSurfaceBytesPerElement, 4);
+  AddBooleanValue(properties, kIOSurfaceIsGlobal, true);
   // I believe we should be able to unreference the IOSurfaces without
   // synchronizing with the browser process because they are
   // ultimately reference counted by the operating system.
-  io_surface_.reset(io_surface_support->IOSurfaceCreate(properties));
+  io_surface_.reset(IOSurfaceCreate(properties));
 
   // Don't think we need to identify a plane.
   GLuint plane = 0;
-  CGLError error = io_surface_support->CGLTexImageIOSurface2D(
+  CGLError error = CGLTexImageIOSurface2D(
       static_cast<CGLContextObj>(gl_context_->GetHandle()),
       target,
       GL_RGBA,
@@ -265,7 +257,7 @@ uint32 AcceleratedSurface::SetSurfaceSize(const gfx::Size& size) {
   // make our IOSurfaces global and send back their identifiers. On
   // the browser process side the identifier is reconstituted into an
   // IOSurface for on-screen rendering.
-  io_surface_id_ = io_surface_support->IOSurfaceGetID(io_surface_);
+  io_surface_id_ = IOSurfaceGetID(io_surface_);
   return io_surface_id_;
 }
 

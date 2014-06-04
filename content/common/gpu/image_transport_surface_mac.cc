@@ -14,7 +14,9 @@
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_surface_cgl.h"
 #include "ui/gl/gl_surface_osmesa.h"
-#include "ui/gl/io_surface_support_mac.h"
+
+// Note that this must be included after gl_bindings.h to avoid conflicts.
+#include <OpenGL/CGLIOSurface.h>
 
 namespace content {
 namespace {
@@ -84,7 +86,7 @@ class IOSurfaceImageTransportSurface
   GLuint texture_id_;
   GLuint depth_stencil_renderbuffer_id_;
 
-  base::ScopedCFTypeRef<CFTypeRef> io_surface_;
+  base::ScopedCFTypeRef<IOSurfaceRef> io_surface_;
 
   // The id of |io_surface_| or 0 if that's NULL.
   uint64 io_surface_handle_;
@@ -383,8 +385,6 @@ void IOSurfaceImageTransportSurface::CreateIOSurface() {
   glGenFramebuffersEXT(1, &fbo_id_);
   glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fbo_id_);
 
-  IOSurfaceSupport* io_surface_support = IOSurfaceSupport::Initialize();
-
   glGenTextures(1, &texture_id_);
 
   // GL_TEXTURE_RECTANGLE_ARB is the best supported render target on
@@ -441,25 +441,25 @@ void IOSurfaceImageTransportSurface::CreateIOSurface() {
                                              &kCFTypeDictionaryKeyCallBacks,
                                              &kCFTypeDictionaryValueCallBacks));
   AddIntegerValue(properties,
-                  io_surface_support->GetKIOSurfaceWidth(),
+                  kIOSurfaceWidth,
                   rounded_size_.width());
   AddIntegerValue(properties,
-                  io_surface_support->GetKIOSurfaceHeight(),
+                  kIOSurfaceHeight,
                   rounded_size_.height());
   AddIntegerValue(properties,
-                  io_surface_support->GetKIOSurfaceBytesPerElement(), 4);
+                  kIOSurfaceBytesPerElement, 4);
   AddBooleanValue(properties,
-                  io_surface_support->GetKIOSurfaceIsGlobal(), true);
+                  kIOSurfaceIsGlobal, true);
   // I believe we should be able to unreference the IOSurfaces without
   // synchronizing with the browser process because they are
   // ultimately reference counted by the operating system.
-  io_surface_.reset(io_surface_support->IOSurfaceCreate(properties));
-  io_surface_handle_ = io_surface_support->IOSurfaceGetID(io_surface_);
+  io_surface_.reset(IOSurfaceCreate(properties));
+  io_surface_handle_ = IOSurfaceGetID(io_surface_);
 
   // Don't think we need to identify a plane.
   GLuint plane = 0;
   CGLError cglerror =
-      io_surface_support->CGLTexImageIOSurface2D(
+      CGLTexImageIOSurface2D(
           static_cast<CGLContextObj>(context_->GetHandle()),
           target,
           GL_RGBA,
@@ -517,15 +517,10 @@ scoped_refptr<gfx::GLSurface> ImageTransportSurface::CreateNativeSurface(
     const gfx::GLSurfaceHandle& surface_handle) {
   DCHECK(surface_handle.transport_type == gfx::NATIVE_DIRECT ||
          surface_handle.transport_type == gfx::NATIVE_TRANSPORT);
-  IOSurfaceSupport* io_surface_support = IOSurfaceSupport::Initialize();
 
   switch (gfx::GetGLImplementation()) {
     case gfx::kGLImplementationDesktopGL:
     case gfx::kGLImplementationAppleGL:
-      if (!io_surface_support) {
-        DLOG(WARNING) << "No IOSurface support";
-        return scoped_refptr<gfx::GLSurface>();
-      }
       return scoped_refptr<gfx::GLSurface>(new IOSurfaceImageTransportSurface(
           manager, stub, surface_handle.handle));
 

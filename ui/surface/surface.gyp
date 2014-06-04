@@ -13,6 +13,13 @@
           '../../third_party/khronos',
         ],
       }],
+      ['OS == "mac"', {
+        'link_settings': {
+          'libraries': [
+            '$(SDKROOT)/System/Library/Frameworks/IOSurface.framework',
+          ],
+        },
+      }],
     ],
   },
   'targets': [

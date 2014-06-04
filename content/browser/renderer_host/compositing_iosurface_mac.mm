@@ -4,6 +4,7 @@
 
 #include "content/browser/renderer_host/compositing_iosurface_mac.h"
 
+#include <OpenGL/CGLIOSurface.h>
 #include <OpenGL/CGLRenderers.h>
 #include <OpenGL/OpenGL.h>
 
@@ -28,7 +29,6 @@
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 #include "ui/gfx/size_conversions.h"
 #include "ui/gl/gl_context.h"
-#include "ui/gl/io_surface_support_mac.h"
 
 #ifdef NDEBUG
 #define CHECK_GL_ERROR()
@@ -218,12 +218,6 @@ void CompositingIOSurfaceMac::CopyContext::PrepareForAsynchronousReadback() {
 
 // static
 scoped_refptr<CompositingIOSurfaceMac> CompositingIOSurfaceMac::Create() {
-  IOSurfaceSupport* io_surface_support = IOSurfaceSupport::Initialize();
-  if (!io_surface_support) {
-    LOG(ERROR) << "No IOSurface support";
-    return NULL;
-  }
-
   scoped_refptr<CompositingIOSurfaceContext> offscreen_context =
       CompositingIOSurfaceContext::Get(
           CompositingIOSurfaceContext::kOffscreenContextWindowNumber);
@@ -232,15 +226,12 @@ scoped_refptr<CompositingIOSurfaceMac> CompositingIOSurfaceMac::Create() {
     return NULL;
   }
 
-  return new CompositingIOSurfaceMac(io_surface_support,
-                                     offscreen_context);
+  return new CompositingIOSurfaceMac(offscreen_context);
 }
 
 CompositingIOSurfaceMac::CompositingIOSurfaceMac(
-    IOSurfaceSupport* io_surface_support,
     const scoped_refptr<CompositingIOSurfaceContext>& offscreen_context)
-    : io_surface_support_(io_surface_support),
-      offscreen_context_(offscreen_context),
+    : offscreen_context_(offscreen_context),
       io_surface_handle_(0),
       scale_factor_(1.f),
       texture_(0),
@@ -493,8 +484,7 @@ bool CompositingIOSurfaceMac::MapIOSurfaceToTextureWithContextCurrent(
   if (io_surface_ && io_surface_handle == io_surface_handle_)
     return true;
 
-  io_surface_.reset(io_surface_support_->IOSurfaceLookup(
-      static_cast<uint32>(io_surface_handle)));
+  io_surface_.reset(IOSurfaceLookup(static_cast<uint32>(io_surface_handle)));
   // Can fail if IOSurface with that ID was already released by the gpu
   // process.
   if (!io_surface_) {
@@ -506,9 +496,8 @@ bool CompositingIOSurfaceMac::MapIOSurfaceToTextureWithContextCurrent(
 
   // Actual IOSurface size is rounded up to reduce reallocations during window
   // resize. Get the actual size to properly map the texture.
-  gfx::Size rounded_size(
-      io_surface_support_->IOSurfaceGetWidth(io_surface_),
-      io_surface_support_->IOSurfaceGetHeight(io_surface_));
+  gfx::Size rounded_size(IOSurfaceGetWidth(io_surface_),
+                         IOSurfaceGetHeight(io_surface_));
 
   glGenTextures(1, &texture_);
   glBindTexture(GL_TEXTURE_RECTANGLE_ARB, texture_);
@@ -516,7 +505,7 @@ bool CompositingIOSurfaceMac::MapIOSurfaceToTextureWithContextCurrent(
   glTexParameterf(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
   CHECK_AND_SAVE_GL_ERROR();
   GLuint plane = 0;
-  CGLError cgl_error = io_surface_support_->CGLTexImageIOSurface2D(
+  CGLError cgl_error = CGLTexImageIOSurface2D(
       current_context->cgl_context(),
       GL_TEXTURE_RECTANGLE_ARB,
       GL_RGBA,

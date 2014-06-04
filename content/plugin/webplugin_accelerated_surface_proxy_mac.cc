@@ -10,7 +10,6 @@
 #include "base/command_line.h"
 #include "content/plugin/webplugin_proxy.h"
 #include "content/public/common/content_switches.h"
-#include "ui/gl/io_surface_support_mac.h"
 #include "ui/surface/accelerated_surface_mac.h"
 #include "ui/surface/transport_dib.h"
 
@@ -23,10 +22,6 @@ WebPluginAcceleratedSurfaceProxy* WebPluginAcceleratedSurfaceProxy::Create(
   // because the CA drawing model shouldn't be advertised.
   DCHECK(!CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kDisableCoreAnimationPlugins));
-
-  // Require IOSurface support for drawing Core Animation plugins.
-  if (!IOSurfaceSupport::Initialize())
-    return NULL;
 
   AcceleratedSurface* surface = new AcceleratedSurface;
   // It's possible for OpenGL to fail to initialize (e.g., if an incompatible

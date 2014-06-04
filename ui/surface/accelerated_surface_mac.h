@@ -6,6 +6,7 @@
 #define UI_SURFACE_ACCELERATED_SURFACE_MAC_H_
 
 #include <CoreFoundation/CoreFoundation.h>
+#include <IOSurface/IOSurfaceAPI.h>
 
 #include "base/callback.h"
 #include "base/mac/scoped_cftyperef.h"
@@ -118,7 +119,7 @@ class SURFACE_EXPORT AcceleratedSurface {
   // to the shared region (IOSurface).
   scoped_refptr<gfx::GLSurface> gl_surface_;
   scoped_refptr<gfx::GLContext> gl_context_;
-  base::ScopedCFTypeRef<CFTypeRef> io_surface_;
+  base::ScopedCFTypeRef<IOSurfaceRef> io_surface_;
 
   // The id of |io_surface_| or 0 if that's NULL.
   uint32 io_surface_id_;

@@ -26,10 +26,6 @@
 #include "net/base/filename_util.h"
 #include "ui/gl/gl_implementation.h"
 
-#if defined(OS_MACOSX)
-#include "ui/gl/io_surface_support_mac.h"
-#endif
-
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
 #endif
@@ -116,11 +112,6 @@ class GpuFeatureTest : public InProcessBrowserTest {
 #if defined(OS_LINUX) && !defined(NDEBUG)
     // Bypass tests on GPU Linux Debug bots.
     if (gfx::GetGLImplementation() != gfx::kGLImplementationOSMesaGL)
-      return;
-#endif
-#if defined(OS_MACOSX)
-    // Bypass tests on Mac OSX 10.5 bots (IOSurfaceSupport is now required).
-    if (!IOSurfaceSupport::Initialize())
       return;
 #endif
 
@@ -431,9 +422,6 @@ IN_PROC_BROWSER_TEST_F(GpuFeatureTest, MAYBE_RafNoDamage) {
 
 #if defined(OS_MACOSX)
 IN_PROC_BROWSER_TEST_F(GpuFeatureTest, IOSurfaceReuse) {
-  if (!IOSurfaceSupport::Initialize())
-    return;
-
   if (gpu::GPUTestBotConfig::GpuBlacklistedOnBot())
     return;
 

@@ -10,6 +10,7 @@
 #include <vector>
 
 #import <Cocoa/Cocoa.h>
+#include <IOSurface/IOSurfaceAPI.h>
 #include <QuartzCore/QuartzCore.h>
 
 #include "base/callback.h"
@@ -25,7 +26,6 @@
 #include "ui/gfx/rect_conversions.h"
 #include "ui/gfx/size.h"
 
-class IOSurfaceSupport;
 class SkBitmap;
 
 namespace gfx {
@@ -46,7 +46,7 @@ class RenderWidgetHostViewMac;
 class CompositingIOSurfaceMac
     : public base::RefCounted<CompositingIOSurfaceMac> {
  public:
-  // Returns NULL if IOSurface support is missing or GL APIs fail.
+  // Returns NULL if IOSurface or GL API calls fail.
   static scoped_refptr<CompositingIOSurfaceMac> Create();
 
   // Set IOSurface that will be drawn on the next NSView drawRect.
@@ -204,7 +204,6 @@ class CompositingIOSurfaceMac
   };
 
   CompositingIOSurfaceMac(
-      IOSurfaceSupport* io_surface_support,
       const scoped_refptr<CompositingIOSurfaceContext>& context);
   ~CompositingIOSurfaceMac();
 
@@ -273,9 +272,6 @@ class CompositingIOSurfaceMac
 
   gfx::Rect IntersectWithIOSurface(const gfx::Rect& rect) const;
 
-  // Cached pointer to IOSurfaceSupport Singleton.
-  IOSurfaceSupport* io_surface_support_;
-
   // Offscreen context used for all operations other than drawing to the
   // screen. This is in the same share group as the contexts used for
   // drawing, and is the same for all IOSurfaces in all windows.
@@ -283,7 +279,7 @@ class CompositingIOSurfaceMac
 
   // IOSurface data.
   uint64 io_surface_handle_;
-  base::ScopedCFTypeRef<CFTypeRef> io_surface_;
+  base::ScopedCFTypeRef<IOSurfaceRef> io_surface_;
 
   // The width and height of the io surface.
   gfx::Size pixel_io_surface_size_;  // In pixels.
