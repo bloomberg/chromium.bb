@@ -149,6 +149,20 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementApiTest,
                                   "createAppShortcutNotInStable.html"));
 }
 
+IN_PROC_BROWSER_TEST_F(ExtensionManagementApiTest, GenerateAppForLink) {
+  LoadExtensions();
+  ASSERT_TRUE(RunExtensionSubtest("management/test",
+                                  "generateAppForLink.html"));
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionManagementApiTest,
+                       GenerateAppForLinkNotInStable) {
+  extensions::ScopedCurrentChannel channel(
+      chrome::VersionInfo::CHANNEL_STABLE);
+  ASSERT_TRUE(RunExtensionSubtest("management/test",
+                                  "generateAppForLinkNotInStable.html"));
+}
+
 // Fails often on Windows dbg bots. http://crbug.com/177163
 #if defined(OS_WIN)
 #define MAYBE_ManagementPolicyAllowed DISABLED_ManagementPolicyAllowed

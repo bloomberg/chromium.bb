@@ -25,6 +25,7 @@
 #include "chrome/browser/extensions/extension_ui_util.h"
 #include "chrome/browser/extensions/extension_uninstall_dialog.h"
 #include "chrome/browser/extensions/launch_util.h"
+#include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -56,6 +57,7 @@
 #include "extensions/common/permissions/permission_set.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/url_pattern.h"
+#include "ui/gfx/favicon_size.h"
 
 #if !defined(OS_ANDROID)
 #include "chrome/browser/ui/webui/ntp/core_app_launcher_handler.h"
@@ -849,6 +851,91 @@ bool ManagementSetLaunchTypeFunction::RunSync() {
 
   SetLaunchType(service(), params->id, launch_type);
 
+  return true;
+}
+
+ManagementGenerateAppForLinkFunction::ManagementGenerateAppForLinkFunction() {
+}
+
+ManagementGenerateAppForLinkFunction::~ManagementGenerateAppForLinkFunction() {
+}
+
+void ManagementGenerateAppForLinkFunction::FinishCreateBookmarkApp(
+    const extensions::Extension* extension,
+    const WebApplicationInfo& web_app_info) {
+  if (extension) {
+    scoped_ptr<management::ExtensionInfo> info =
+        CreateExtensionInfo(*extension, ExtensionSystem::Get(GetProfile()));
+    results_ = management::GenerateAppForLink::Results::Create(*info);
+
+    SendResponse(true);
+    Release();
+  } else {
+    error_ = keys::kGenerateAppForLinkInstallError;
+    SendResponse(false);
+    Release();
+  }
+}
+
+void ManagementGenerateAppForLinkFunction::OnFaviconForApp(
+    const favicon_base::FaviconImageResult& image_result) {
+  WebApplicationInfo web_app;
+  web_app.title = base::UTF8ToUTF16(title_);
+  web_app.app_url = launch_url_;
+
+  if (!image_result.image.IsEmpty()) {
+    WebApplicationInfo::IconInfo icon;
+    icon.data = image_result.image.AsBitmap();
+    icon.width = icon.data.width();
+    icon.height = icon.data.height();
+    web_app.icons.push_back(icon);
+  }
+
+  bookmark_app_helper_.reset(new BookmarkAppHelper(service(), web_app, NULL));
+  bookmark_app_helper_->Create(base::Bind(
+      &ManagementGenerateAppForLinkFunction::FinishCreateBookmarkApp, this));
+}
+
+bool ManagementGenerateAppForLinkFunction::RunAsync() {
+  if (!user_gesture()) {
+    error_ = keys::kGestureNeededForGenerateAppForLinkError;
+    return false;
+  }
+
+  scoped_ptr<management::GenerateAppForLink::Params> params(
+      management::GenerateAppForLink::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+
+  GURL launch_url(params->url);
+  if (!launch_url.is_valid() || !launch_url.SchemeIsHTTPOrHTTPS()) {
+    error_ = ErrorUtils::FormatErrorMessage(keys::kInvalidURLError,
+                                            params->url);
+    return false;
+  }
+
+  if (params->title.empty()) {
+    error_ = keys::kEmptyTitleError;
+    return false;
+  }
+
+  FaviconService* favicon_service =
+      FaviconServiceFactory::GetForProfile(GetProfile(),
+                                           Profile::EXPLICIT_ACCESS);
+  DCHECK(favicon_service);
+
+  title_ = params->title;
+  launch_url_ = launch_url;
+
+  favicon_service->GetFaviconImageForURL(
+      FaviconService::FaviconForURLParams(
+          launch_url, favicon_base::FAVICON, gfx::kFaviconSize),
+      base::Bind(&ManagementGenerateAppForLinkFunction::OnFaviconForApp, this),
+      &cancelable_task_tracker_);
+
+  // Matched with a Release() in OnExtensionLoaded().
+  AddRef();
+
+  // Response is sent async in OnExtensionLoaded().
   return true;
 }
 
