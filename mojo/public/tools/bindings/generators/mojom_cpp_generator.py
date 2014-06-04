@@ -186,7 +186,7 @@ def IsStructWithHandles(struct):
       return True
   return False
 
-def TranslateConstants(token, module):
+def TranslateConstants(token):
   if isinstance(token, (mojom.NamedValue, mojom.EnumValue)):
     # Both variable and enum constants are constructed like:
     # Namespace::Struct::CONSTANT_NAME
@@ -199,11 +199,8 @@ def TranslateConstants(token, module):
     return "::".join(name)
   return token
 
-def ExpressionToText(value, module):
-  if value[0] != "EXPRESSION":
-    raise Exception("Expected EXPRESSION, got" + value)
-  return "".join(generator.ExpressionMapper(value,
-      lambda token: TranslateConstants(token, module)))
+def ExpressionToText(value):
+  return TranslateConstants(value)
 
 def HasCallbacks(interface):
   for method in interface.methods:

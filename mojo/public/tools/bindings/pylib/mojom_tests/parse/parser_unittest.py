@@ -193,23 +193,16 @@ module
         r"^my_file\.mojom:4: Error: Unexpected '{':\n{$"):
       parser.Parse(source2, "my_file.mojom")
 
-  def testEnumExpressions(self):
-    """Tests an enum with values calculated using simple expressions."""
+  def testEnumInitializers(self):
+    """Tests an enum with simple initialized values."""
     source = """\
 module my_module {
 
 enum MyEnum {
-  MY_ENUM_1 = 1,
-  MY_ENUM_2 = 1 + 1,
-  MY_ENUM_3 = 1 * 3,
-  MY_ENUM_4 = 2 * (1 + 1),
-  MY_ENUM_5 = 1 + 2 * 2,
-  MY_ENUM_6 = -6 / -2,
-  MY_ENUM_7 = 3 | (1 << 2),
-  MY_ENUM_8 = 16 >> 1,
-  MY_ENUM_9 = 1 ^ 15 & 8,
-  MY_ENUM_10 = 110 % 100,
-  MY_ENUM_MINUS_1 = ~0
+  MY_ENUM_NEG1 = -1,
+  MY_ENUM_ZERO = 0,
+  MY_ENUM_1 = +1,
+  MY_ENUM_2,
 };
 
 }  // my_module
@@ -220,32 +213,33 @@ enum MyEnum {
   None,
   [('ENUM',
     'MyEnum',
-    [('ENUM_FIELD', 'MY_ENUM_1', ('EXPRESSION', ['1'])),
-     ('ENUM_FIELD', 'MY_ENUM_2', ('EXPRESSION', ['1', '+', '1'])),
-     ('ENUM_FIELD', 'MY_ENUM_3', ('EXPRESSION', ['1', '*', '3'])),
-     ('ENUM_FIELD',
-      'MY_ENUM_4',
-      ('EXPRESSION',
-       ['2', '*', '(', ('EXPRESSION', ['1', '+', '1']), ')'])),
-     ('ENUM_FIELD',
-      'MY_ENUM_5',
-      ('EXPRESSION', ['1', '+', '2', '*', '2'])),
-     ('ENUM_FIELD',
-      'MY_ENUM_6',
-      ('EXPRESSION',
-       ['-', ('EXPRESSION', ['6', '/', '-', ('EXPRESSION', ['2'])])])),
-     ('ENUM_FIELD',
-      'MY_ENUM_7',
-      ('EXPRESSION',
-       ['3', '|', '(', ('EXPRESSION', ['1', '<<', '2']), ')'])),
-     ('ENUM_FIELD', 'MY_ENUM_8', ('EXPRESSION', ['16', '>>', '1'])),
-     ('ENUM_FIELD',
-      'MY_ENUM_9',
-      ('EXPRESSION', ['1', '^', '15', '&', '8'])),
-     ('ENUM_FIELD', 'MY_ENUM_10', ('EXPRESSION', ['110', '%', '100'])),
-     ('ENUM_FIELD',
-      'MY_ENUM_MINUS_1',
-      ('EXPRESSION', ['~', ('EXPRESSION', ['0'])]))])])]
+    [('ENUM_FIELD', 'MY_ENUM_NEG1', '-1'),
+     ('ENUM_FIELD', 'MY_ENUM_ZERO', '0'),
+     ('ENUM_FIELD', 'MY_ENUM_1', '+1'),
+     ('ENUM_FIELD', 'MY_ENUM_2', None)])])]
+    self.assertEquals(parser.Parse(source, "my_file.mojom"), expected)
+
+  def testConst(self):
+    """Tests some constants and struct memebers initialized with them."""
+    source = """\
+module my_module {
+
+struct MyStruct {
+  const int8 kNumber = -1;
+  int8 number = kNumber @0;
+};
+
+}  // my_module
+"""
+    expected = \
+[('MODULE',
+  'my_module',
+  None,
+  [('STRUCT',
+    'MyStruct', None,
+    [('CONST', 'int8', 'kNumber', '-1'),
+     ('FIELD', 'int8', 'number',
+        ast.Ordinal(0), ('IDENTIFIER', 'kNumber'))])])]
     self.assertEquals(parser.Parse(source, "my_file.mojom"), expected)
 
   def testNoConditionals(self):

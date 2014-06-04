@@ -1,7 +1,7 @@
 {%- macro set_default(module, kind, value, depth) -%}
 {#--- Strings ---#}
 {%-   if kind|is_string_kind -%}
-{{caller(value|expression_to_text(module))}}
+{{caller(value|expression_to_text)}}
 {#--- Arrays ---#}
 {%-   elif kind|is_array_kind %}
 {%-     set _ = value|verify_token_type("ARRAY") %}
@@ -35,7 +35,7 @@ tmp{{depth}}.{{subfield.name}} = {{result}};
 }
 {#--- POD types ---#}
 {%-   else -%}
-{{caller(value|expression_to_text(module))}}
+{{caller(value|expression_to_text)}}
 {%-   endif %}
 {%- endmacro %}
 
@@ -52,7 +52,7 @@ tmp{{depth}}.{{subfield.name}} = {{result}};
 
 {#--- Constants #}
 {%  for constant in struct.constants %}
-  {{struct.name}}.{{constant.name}} = {{constant.value|expression_to_text(module)}};
+  {{struct.name}}.{{constant.name}} = {{constant.value|expression_to_text}};
 {%  endfor %}
 
 {#--- Set up defaults #}

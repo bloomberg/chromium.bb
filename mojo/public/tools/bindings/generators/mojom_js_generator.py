@@ -120,7 +120,7 @@ def JavaScriptEncodeSnippet(kind):
     return JavaScriptEncodeSnippet(mojom.INT32)
 
 
-def TranslateConstants(token, module):
+def TranslateConstants(token):
   if isinstance(token, (mojom.EnumValue, mojom.NamedValue)):
     # Both variable and enum constants are constructed like:
     # NamespaceUid.Struct[.Enum].CONSTANT_NAME
@@ -136,11 +136,8 @@ def TranslateConstants(token, module):
   return token
 
 
-def ExpressionToText(value, module):
-  if value[0] != "EXPRESSION":
-    raise Exception("Expected EXPRESSION, got" + value)
-  return "".join(generator.ExpressionMapper(value,
-      lambda token: TranslateConstants(token, module)))
+def ExpressionToText(value):
+  return TranslateConstants(value)
 
 
 def JavascriptType(kind):

@@ -64,6 +64,8 @@ class Lexer(object):
     'INTERFACE',
     'ENUM',
     'CONST',
+    'TRUE',
+    'FALSE',
   )
 
   keyword_map = {}
@@ -87,8 +89,8 @@ class Lexer(object):
     'STRING_LITERAL',
 
     # Operators
-    'PLUS', 'MINUS', 'TIMES', 'DIVIDE', 'MOD',
-    'OR', 'AND', 'NOT', 'XOR', 'LSHIFT', 'RSHIFT',
+    'MINUS',
+    'PLUS',
     'AMP',
 
     # Assignment
@@ -173,17 +175,8 @@ class Lexer(object):
     t.lexer.lineno += len(t.value)
 
   # Operators
-  t_PLUS              = r'\+'
   t_MINUS             = r'-'
-  t_TIMES             = r'\*'
-  t_DIVIDE            = r'/'
-  t_MOD               = r'%'
-  t_OR                = r'\|'
-  t_AND               = r'&'
-  t_NOT               = r'~'
-  t_XOR               = r'\^'
-  t_LSHIFT            = r'<<'
-  t_RSHIFT            = r'>>'
+  t_PLUS              = r'\+'
   t_AMP               = r'&'
 
   # =

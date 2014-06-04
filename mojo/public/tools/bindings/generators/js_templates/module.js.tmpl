@@ -15,7 +15,7 @@ define("{{module.path}}", [
 
 {#--- Constants #}
 {%  for constant in module.constants %}
-  var {{constant.name}} = {{constant.value|expression_to_text(module)}};
+  var {{constant.name}} = {{constant.value|expression_to_text}};
 {%- endfor %}
 
 {#--- Enums #}

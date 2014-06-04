@@ -121,9 +121,14 @@ class Parser(object):
       p[0] = _ListFromConcat(p[1], p[3])
 
   def p_attribute(self, p):
-    """attribute : NAME EQUALS expression
+    """attribute : NAME EQUALS evaled_literal
                  | NAME EQUALS NAME"""
     p[0] = ('ATTRIBUTE', p[1], p[3])
+
+  def p_evaled_literal(self, p):
+    """evaled_literal : literal"""
+    # 'eval' the literal to strip the quotes.
+    p[0] = eval(p[1])
 
   def p_struct(self, p):
     """struct : attribute_section STRUCT NAME LBRACE struct_body RBRACE SEMI"""
@@ -142,7 +147,7 @@ class Parser(object):
     p[0] = ('FIELD', p[1], p[2], p[3], p[4])
 
   def p_default(self, p):
-    """default : EQUALS expression
+    """default : EQUALS constant
                | """
     if len(p) > 2:
       p[0] = p[2]
@@ -249,74 +254,49 @@ class Parser(object):
 
   def p_enum_field(self, p):
     """enum_field : NAME
-                  | NAME EQUALS expression"""
+                  | NAME EQUALS constant"""
     if len(p) == 2:
       p[0] = ('ENUM_FIELD', p[1], None)
     else:
       p[0] = ('ENUM_FIELD', p[1], p[3])
 
   def p_const(self, p):
-    """const : CONST typename NAME EQUALS expression SEMI"""
+    """const : CONST typename NAME EQUALS constant SEMI"""
     p[0] = ('CONST', p[2], p[3], p[5])
 
-  ### Expressions ###
-
-  # TODO(vtl): This is now largely redundant.
-  def p_expression(self, p):
-    """expression : binary_expression"""
-    p[0] = ('EXPRESSION', p[1])
-
-  # PLY lets us specify precedence of operators, but since we don't actually
-  # evaluate them, we don't need that here.
-  # TODO(vtl): We're going to need to evaluate them.
-  def p_binary_expression(self, p):
-    """binary_expression : unary_expression
-                         | binary_expression binary_operator \
-                               binary_expression"""
-    p[0] = _ListFromConcat(*p[1:])
-
-  def p_binary_operator(self, p):
-    """binary_operator : TIMES
-                       | DIVIDE
-                       | MOD
-                       | PLUS
-                       | MINUS
-                       | RSHIFT
-                       | LSHIFT
-                       | AND
-                       | OR
-                       | XOR"""
+  def p_constant(self, p):
+    """constant : literal
+                | identifier_wrapped"""
     p[0] = p[1]
 
-  def p_unary_expression(self, p):
-    """unary_expression : primary_expression
-                        | unary_operator expression"""
-    p[0] = _ListFromConcat(*p[1:])
-
-  def p_unary_operator(self, p):
-    """unary_operator : PLUS
-                      | MINUS
-                      | NOT"""
-    p[0] = p[1]
-
-  def p_primary_expression(self, p):
-    """primary_expression : constant
-                          | identifier
-                          | LPAREN expression RPAREN"""
-    p[0] = _ListFromConcat(*p[1:])
+  def p_identifier_wrapped(self, p):
+    """identifier_wrapped : identifier"""
+    p[0] = ('IDENTIFIER', p[1])
 
   def p_identifier(self, p):
     """identifier : NAME
                   | NAME DOT identifier"""
     p[0] = ''.join(p[1:])
 
-  def p_constant(self, p):
-    """constant : INT_CONST_DEC
-                | INT_CONST_HEX
-                | FLOAT_CONST
-                | CHAR_CONST
-                | STRING_LITERAL"""
-    p[0] = _ListFromConcat(*p[1:])
+  def p_literal(self, p):
+    """literal : number
+               | CHAR_CONST
+               | TRUE
+               | FALSE
+               | STRING_LITERAL"""
+    p[0] = p[1]
+
+  def p_number(self, p):
+    """number : digits
+              | PLUS digits
+              | MINUS digits"""
+    p[0] = ''.join(p[1:])
+
+  def p_digits(self, p):
+    """digits : INT_CONST_DEC
+              | INT_CONST_HEX
+              | FLOAT_CONST"""
+    p[0] = p[1]
 
   def p_error(self, e):
     if e is None:

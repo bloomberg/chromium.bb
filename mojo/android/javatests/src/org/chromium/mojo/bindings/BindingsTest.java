@@ -31,8 +31,8 @@ public class BindingsTest extends TestCase {
      */
     @SmallTest
     public void testConstants() throws NoSuchFieldException, SecurityException {
-        assertEquals(3, SampleServiceConstants.THREE);
-        checkConstantField(SampleServiceConstants.class.getField("THREE"), byte.class);
+        assertEquals(12, SampleServiceConstants.TWELVE);
+        checkConstantField(SampleServiceConstants.class.getField("TWELVE"), byte.class);
 
         assertEquals(4405, InterfaceConstants.LONG);
         checkConstantField(InterfaceConstants.class.getField("LONG"), long.class);

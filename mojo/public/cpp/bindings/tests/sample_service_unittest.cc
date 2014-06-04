@@ -336,30 +336,32 @@ TEST(BindingsSampleTest, Basic) {
 }
 
 TEST(BindingsSampleTest, DefaultValues) {
-  DefaultsTestPtr full(DefaultsTest::New());
-  EXPECT_EQ(-12, full->a0);
-  EXPECT_EQ(12U, full->a1);
-  EXPECT_EQ(1234, full->a2);
-  EXPECT_EQ(34567U, full->a3);
-  EXPECT_EQ(123456, full->a4);
+  DefaultsTestPtr defaults(DefaultsTest::New());
+  EXPECT_EQ(-12, defaults->a0);
+  EXPECT_EQ(kTwelve, defaults->a1);
+  EXPECT_EQ(1234, defaults->a2);
+  EXPECT_EQ(34567U, defaults->a3);
+  EXPECT_EQ(123456, defaults->a4);
   // TODO(vtl): crbug.com/375522
-  // EXPECT_EQ(3456789012U, full->a5);
-  EXPECT_EQ(111111111111LL, full->a6);
+  // EXPECT_EQ(3456789012U, defaults->a5);
+  EXPECT_EQ(111111111111LL, defaults->a6);
   // TODO(vtl): crbug.com/375522
-  // EXPECT_EQ(9999999999999999999ULL, full->a7);
-  EXPECT_EQ(0x12345, full->a8);
-  EXPECT_EQ(-0x12345, full->a9);
-  EXPECT_EQ(1234, full->a10);
-  EXPECT_TRUE(full->a11);
-  EXPECT_FALSE(full->a12);
-  EXPECT_FLOAT_EQ(123.25f, full->a13);
-  EXPECT_DOUBLE_EQ(1234567890.123, full->a14);
-  EXPECT_DOUBLE_EQ(1E10, full->a15);
-  EXPECT_DOUBLE_EQ(-1.2E+20, full->a16);
-  EXPECT_DOUBLE_EQ(1.23E-20, full->a17);
-  EXPECT_TRUE(full->a18.is_null());
-  EXPECT_TRUE(full->a19.is_null());
-  EXPECT_TRUE(full->a20.is_null());
+  // EXPECT_EQ(9999999999999999999ULL, defaults->a7);
+  EXPECT_EQ(0x12345, defaults->a8);
+  EXPECT_EQ(-0x12345, defaults->a9);
+  EXPECT_EQ(1234, defaults->a10);
+  EXPECT_TRUE(defaults->a11);
+  EXPECT_FALSE(defaults->a12);
+  EXPECT_FLOAT_EQ(123.25f, defaults->a13);
+  EXPECT_DOUBLE_EQ(1234567890.123, defaults->a14);
+  EXPECT_DOUBLE_EQ(1E10, defaults->a15);
+  EXPECT_DOUBLE_EQ(-1.2E+20, defaults->a16);
+  EXPECT_DOUBLE_EQ(1.23E-20, defaults->a17);
+  EXPECT_TRUE(defaults->a18.is_null());
+  EXPECT_TRUE(defaults->a19.is_null());
+  // TODO(mpcomplete): Test defaults.Point and defaults.Thing once we can
+  // initialize them to "default".
+  EXPECT_EQ(Bar::TYPE_BOTH, defaults->a20);
 }
 
 }  // namespace

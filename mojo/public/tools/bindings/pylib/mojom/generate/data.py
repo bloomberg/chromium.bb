@@ -77,6 +77,14 @@ def LookupValue(values, name, scope):
 
   return values.get(name)
 
+def FixupExpression(module, value, scope):
+  """Translates an IDENTIFIER into a structured Value object."""
+  if isinstance(value, tuple) and value[0] == 'IDENTIFIER':
+    result = LookupValue(module.values, value[1], scope)
+    if result:
+      return result
+  return value
+
 def KindToData(kind):
   return kind.spec
 
@@ -156,19 +164,6 @@ def FieldToData(field):
   if field.default != None:
     data[istr(3, 'default')] = field.default
   return data
-
-def FixupExpression(module, value, scope):
-  if isinstance(value, (tuple, list)):
-    for i in xrange(len(value)):
-      if isinstance(value, tuple):
-        FixupExpression(module, value[i], scope)
-      else:
-        value[i] = FixupExpression(module, value[i], scope)
-  elif value:
-    result = LookupValue(module.values, value, scope)
-    if result:
-      return result
-  return value
 
 def FieldFromData(module, data, struct):
   field = mojom.Field()

@@ -79,11 +79,8 @@ def GetNameForElement(element):
   raise Exception("Unexpected element: " % element)
 
 def ParseStringAttribute(attribute):
-  if isinstance(attribute, basestring):
-    return attribute
-  assert attribute[0] == 'EXPRESSION'
-  assert len(attribute[1]) == 1
-  return attribute[1][0][1:-1].encode('string_escape')
+  assert isinstance(attribute, basestring)
+  return attribute
 
 def GetPackage(module):
   if 'JavaPackage' in module.attributes:
@@ -112,7 +109,7 @@ def GetJavaType(kind):
     return "int"
   return _spec_to_java_type[kind.spec]
 
-def TranslateConstants(token, module):
+def TranslateConstants(token):
   def _TranslateNamedValue(named_value):
     entity_name = GetNameForElement(named_value)
     if named_value.parent_kind:
@@ -130,11 +127,8 @@ def TranslateConstants(token, module):
     return token + 'L'
   return token
 
-def ExpressionToText(value, module):
-  if value[0] != "EXPRESSION":
-    raise Exception("Expected EXPRESSION, got" + value)
-  return "".join(generator.ExpressionMapper(value,
-      lambda token: TranslateConstants(token, module)))
+def ExpressionToText(token):
+  return TranslateConstants(token)
 
 def GetConstantsMainEntityName(module):
   if 'JavaConstantsClassName' in module.attributes:

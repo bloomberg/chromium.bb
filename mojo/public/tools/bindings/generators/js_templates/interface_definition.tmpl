@@ -112,6 +112,6 @@ params.{{parameter.name}}{% if not loop.last %}, {% endif -%}
 
 {#--- Constants. #}
 {%  for constant in interface.constants %}
-  {{interface.name}}Proxy.{{constant.name}} = {{constant.value|expression_to_text(module)}};
+  {{interface.name}}Proxy.{{constant.name}} = {{constant.value|expression_to_text}};
   {{interface.name}}Stub.{{constant.name}} = {{interface.name}}Proxy.{{constant.name}};
 {%  endfor %}

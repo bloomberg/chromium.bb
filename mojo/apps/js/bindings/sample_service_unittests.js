@@ -91,6 +91,7 @@ define([
   function checkDefaultValues() {
     var bar = new sample.Bar();
     expect(bar.alpha).toBe(255);
+    expect(bar.type).toBe(sample.Bar.Type.TYPE_VERTICAL);
 
     var foo = new sample.Foo();
     expect(foo.name).toBe("Fooby");
@@ -98,32 +99,34 @@ define([
     // TODO(vtl): crbug.com/375845
     // expect(foo.data).toBeNull();
 
-    var full = new sample.DefaultsTest();
-    expect(full.a0).toBe(-12);
-    expect(full.a1).toBe(12);
-    expect(full.a2).toBe(1234);
-    expect(full.a3).toBe(34567);
-    expect(full.a4).toBe(123456);
+    var defaults = new sample.DefaultsTest();
+    expect(defaults.a0).toBe(-12);
+    expect(defaults.a1).toBe(sample.kTwelve);
+    expect(defaults.a2).toBe(1234);
+    expect(defaults.a3).toBe(34567);
+    expect(defaults.a4).toBe(123456);
     // TODO(vtl): crbug.com/375522
-    // expect(full.a5).toBe(3456789012);
-    expect(full.a6).toBe(111111111111);
+    // expect(defaults.a5).toBe(3456789012);
+    expect(defaults.a6).toBe(111111111111);
     // TODO(vtl): crbug.com/375522 (Also, can we get exact values for large
     // int64/uint64's in JS?)
-    // expect(full.a7).toBe(9999999999999999999);
-    expect(full.a8).toBe(0x12345);
-    expect(full.a9).toBe(-0x12345);
-    expect(full.a10).toBe(1234);
-    expect(full.a11).toBe(true);
-    expect(full.a12).toBe(false);
-    expect(full.a13).toBe(123.25);
-    expect(full.a14).toBe(1234567890.123);
-    expect(full.a15).toBe(1E10);
-    expect(full.a16).toBe(-1.2E+20);
-    expect(full.a17).toBe(1.23E-20);
-    expect(full.a18).toBeNull();
+    // expect(defaults.a7).toBe(9999999999999999999);
+    expect(defaults.a8).toBe(0x12345);
+    expect(defaults.a9).toBe(-0x12345);
+    expect(defaults.a10).toBe(1234);
+    expect(defaults.a11).toBe(true);
+    expect(defaults.a12).toBe(false);
+    expect(defaults.a13).toBe(123.25);
+    expect(defaults.a14).toBe(1234567890.123);
+    expect(defaults.a15).toBe(1E10);
+    expect(defaults.a16).toBe(-1.2E+20);
+    expect(defaults.a17).toBe(1.23E-20);
+    expect(defaults.a20).toBe(sample.Bar.Type.TYPE_BOTH);
+    expect(defaults.a21).toBeNull();
+    expect(defaults.a22).toBeNull();
     // TODO(vtl): crbug.com/375845
-    // expect(full.a21).toBeNull();
-    // expect(full.a22).toBeNull();
+    // expect(defaults.a21).toBeNull();
+    // expect(defaults.a22).toBeNull();
   }
 
   function ServiceImpl() {

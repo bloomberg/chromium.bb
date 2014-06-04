@@ -127,22 +127,6 @@ class LexerTest(unittest.TestCase):
                       _MakeLexToken("PLUS", "+"))
     self.assertEquals(self._SingleTokenForInput("-"),
                       _MakeLexToken("MINUS", "-"))
-    self.assertEquals(self._SingleTokenForInput("*"),
-                      _MakeLexToken("TIMES", "*"))
-    self.assertEquals(self._SingleTokenForInput("/"),
-                      _MakeLexToken("DIVIDE", "/"))
-    self.assertEquals(self._SingleTokenForInput("%"),
-                      _MakeLexToken("MOD", "%"))
-    self.assertEquals(self._SingleTokenForInput("|"),
-                      _MakeLexToken("OR", "|"))
-    self.assertEquals(self._SingleTokenForInput("~"),
-                      _MakeLexToken("NOT", "~"))
-    self.assertEquals(self._SingleTokenForInput("^"),
-                      _MakeLexToken("XOR", "^"))
-    self.assertEquals(self._SingleTokenForInput("<<"),
-                      _MakeLexToken("LSHIFT", "<<"))
-    self.assertEquals(self._SingleTokenForInput(">>"),
-                      _MakeLexToken("RSHIFT", ">>"))
     self.assertEquals(self._SingleTokenForInput("&"),
                       _MakeLexToken("AMP", "&"))
     self.assertEquals(self._SingleTokenForInput("="),

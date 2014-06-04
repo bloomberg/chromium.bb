@@ -1,6 +1,6 @@
 {%- macro get_default(field) -%}
 {%-   if field.default -%}
-{{field.default|expression_to_text(module)}}
+{{field.default|expression_to_text}}
 {%-   endif -%}
 {%- endmacro -%}
 
