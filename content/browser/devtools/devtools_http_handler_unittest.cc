@@ -106,7 +106,8 @@ TEST_F(DevToolsHttpHandlerTest, TestStartStop) {
           new DummyListenSocketFactory(run_loop.QuitClosure(),
                                        run_loop_2.QuitClosure()),
           std::string(),
-          new DummyDelegate());
+          new DummyDelegate(),
+          base::FilePath());
   // Our dummy socket factory will post a quit message once the server will
   // become ready.
   run_loop.Run();

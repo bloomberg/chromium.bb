@@ -5,6 +5,7 @@
 #include "content/browser/devtools/devtools_http_handler_impl.h"
 
 #include <algorithm>
+#include <sstream>
 #include <utility>
 
 #include "base/bind.h"
@@ -37,6 +38,7 @@
 #include "net/base/escape.h"
 #include "net/base/io_buffer.h"
 #include "net/base/ip_endpoint.h"
+#include "net/base/net_errors.h"
 #include "net/server/http_server_request_info.h"
 #include "net/server/http_server_response_info.h"
 
@@ -47,6 +49,9 @@
 namespace content {
 
 namespace {
+
+const base::FilePath::CharType kDevToolsActivePortFileName[] =
+    FILE_PATH_LITERAL("DevToolsActivePort");
 
 const char kDevToolsHandlerThreadName[] = "Chrome_DevToolsHandlerThread";
 
@@ -150,11 +155,13 @@ int DevToolsHttpHandler::GetFrontendResourceId(const std::string& name) {
 DevToolsHttpHandler* DevToolsHttpHandler::Start(
     const net::StreamListenSocketFactory* socket_factory,
     const std::string& frontend_url,
-    DevToolsHttpHandlerDelegate* delegate) {
+    DevToolsHttpHandlerDelegate* delegate,
+    const base::FilePath& active_port_output_directory) {
   DevToolsHttpHandlerImpl* http_handler =
       new DevToolsHttpHandlerImpl(socket_factory,
                                   frontend_url,
-                                  delegate);
+                                  delegate,
+                                  active_port_output_directory);
   http_handler->Start();
   return http_handler;
 }
@@ -642,10 +649,12 @@ void DevToolsHttpHandlerImpl::OnCloseUI(int connection_id) {
 DevToolsHttpHandlerImpl::DevToolsHttpHandlerImpl(
     const net::StreamListenSocketFactory* socket_factory,
     const std::string& frontend_url,
-    DevToolsHttpHandlerDelegate* delegate)
+    DevToolsHttpHandlerDelegate* delegate,
+    const base::FilePath& active_port_output_directory)
     : frontend_url_(frontend_url),
       socket_factory_(socket_factory),
-      delegate_(delegate) {
+      delegate_(delegate),
+      active_port_output_directory_(active_port_output_directory) {
   if (frontend_url_.empty())
       frontend_url_ = "/devtools/devtools.html";
 
@@ -656,6 +665,8 @@ DevToolsHttpHandlerImpl::DevToolsHttpHandlerImpl(
 // Runs on the handler thread
 void DevToolsHttpHandlerImpl::Init() {
   server_ = new net::HttpServer(*socket_factory_.get(), this);
+  if (!active_port_output_directory_.empty())
+    WriteActivePortToUserProfile();
 }
 
 // Runs on the handler thread
@@ -673,6 +684,27 @@ void DevToolsHttpHandlerImpl::StopHandlerThread() {
       base::Bind(&DevToolsHttpHandlerImpl::Teardown, this));
   // Thread::Stop joins the thread.
   thread_->Stop();
+}
+
+void DevToolsHttpHandlerImpl::WriteActivePortToUserProfile() {
+  DCHECK(!active_port_output_directory_.empty());
+  net::IPEndPoint endpoint;
+  int err;
+  if ((err = server_->GetLocalAddress(&endpoint)) != net::OK) {
+    LOG(ERROR) << "Error " << err << " getting local address";
+    return;
+  }
+
+  // Write this port to a well-known file in the profile directory
+  // so Telemetry can pick it up.
+  base::FilePath path = active_port_output_directory_.Append(
+      kDevToolsActivePortFileName);
+  std::stringstream port_stream;
+  port_stream << endpoint.port();
+  std::string s = port_stream.str();
+  if (base::WriteFile(path, s.c_str(), s.length()) < 0) {
+    LOG(ERROR) << "Error writing DevTools active port to file";
+  }
 }
 
 void DevToolsHttpHandlerImpl::SendJson(int connection_id,

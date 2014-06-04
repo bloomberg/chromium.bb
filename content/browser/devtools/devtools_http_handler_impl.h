@@ -46,7 +46,8 @@ class DevToolsHttpHandlerImpl
   // Takes ownership over |socket_factory|.
   DevToolsHttpHandlerImpl(const net::StreamListenSocketFactory* socket_factory,
                           const std::string& frontend_url,
-                          DevToolsHttpHandlerDelegate* delegate);
+                          DevToolsHttpHandlerDelegate* delegate,
+                          const base::FilePath& active_port_output_directory);
   virtual ~DevToolsHttpHandlerImpl();
   void Start();
 
@@ -90,6 +91,8 @@ class DevToolsHttpHandlerImpl
   void StartHandlerThread();
   void StopHandlerThread();
 
+  void WriteActivePortToUserProfile();
+
   void SendJson(int connection_id,
                 net::HttpStatusCode status_code,
                 base::Value* value,
@@ -119,6 +122,7 @@ class DevToolsHttpHandlerImpl
   typedef std::map<int, DevToolsClientHost*> ConnectionToClientHostMap;
   ConnectionToClientHostMap connection_to_client_host_ui_;
   scoped_ptr<DevToolsHttpHandlerDelegate> delegate_;
+  base::FilePath active_port_output_directory_;
   typedef std::map<std::string, DevToolsTarget*> TargetMap;
   TargetMap target_map_;
   scoped_refptr<DevToolsBrowserTarget> browser_target_;

@@ -6,6 +6,7 @@
 
 #include "android_webview/native/aw_contents.h"
 #include "base/bind.h"
+#include "base/files/file_path.h"
 #include "base/json/json_writer.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -180,7 +181,8 @@ void AwDevToolsServer::Start() {
           "",
           base::Bind(&content::CanUserConnectToDevTools)),
       base::StringPrintf(kFrontEndURL, content::GetWebKitRevision().c_str()),
-      new AwDevToolsServerDelegate());
+      new AwDevToolsServerDelegate(),
+      base::FilePath());
 }
 
 void AwDevToolsServer::Stop() {

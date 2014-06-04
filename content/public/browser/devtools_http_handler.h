@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/files/file_path.h"
 #include "content/common/content_export.h"
 
 class GURL;
@@ -34,10 +35,15 @@ class DevToolsHttpHandler {
       const std::string& name);
 
   // Takes ownership over |socket_factory| and |delegate|.
+  // If |active_port_output_directory| is non-empty, it is assumed the
+  // socket_factory was initialized with an ephemeral port (0). The
+  // port selected by the OS will be written to a well-known file in
+  // the output directory.
   CONTENT_EXPORT static DevToolsHttpHandler* Start(
       const net::StreamListenSocketFactory* socket_factory,
       const std::string& frontend_url,
-      DevToolsHttpHandlerDelegate* delegate);
+      DevToolsHttpHandlerDelegate* delegate,
+      const base::FilePath& active_port_output_directory);
 
   // Called from the main thread in order to stop protocol handler.
   // Automatically destroys the handler instance.
