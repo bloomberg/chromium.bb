@@ -981,7 +981,7 @@ def CMDquery(parser, args):
     return 1
   timeout = datetime.timedelta(seconds=data['machine_death_timeout'])
   utcnow = datetime.datetime.utcnow()
-  for machine in natsort.natsorted(data['machines'], key=lambda x: x['tag']):
+  for machine in natsort.natsorted(data['machines'], key=lambda x: x['id']):
     last_seen = datetime.datetime.strptime(
         machine['last_seen'], '%Y-%m-%d %H:%M:%S')
     is_dead = utcnow - last_seen > timeout
@@ -1007,7 +1007,7 @@ def CMDquery(parser, args):
         if value != dimensions[key]:
           break
     else:
-      print machine['tag']
+      print machine['id']
       if not options.bare:
         print '  %s' % dimensions
   return 0

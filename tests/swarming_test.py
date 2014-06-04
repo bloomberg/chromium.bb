@@ -804,23 +804,23 @@ def mock_swarming_api_v1_bots():
     'machine_death_timeout': 10,
     'machines': [
       {
-        'tag': 'no-dimensions',
         'dimensions': {},
+        'id': 'no-dimensions',
         'last_seen': now,
       },
       {
-        'tag': 'amig1',
         'dimensions': {'os': 'amiga'},
+        'id': 'amig1',
         'last_seen': now,
       },
       {
-        'tag': 'amig2',
         'dimensions': {'os': ['amiga', 'atari'], 'foo': 1},
+        'id': 'amig2',
         'last_seen': now,
       },
       {
-        'tag': 'dead',
         'dimensions': {'os': 'amiga'},
+        'id': 'dead',
         'last_seen': dead,
       },
     ],
