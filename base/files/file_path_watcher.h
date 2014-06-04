@@ -93,7 +93,7 @@ class BASE_EXPORT FilePathWatcher {
   // true, to watch |path| and its children. The callback will be invoked on
   // the same loop. Returns true on success.
   //
-  // NOTE: Recursive watch is not supported on all platforms and file systems.
+  // Recursive watch is not supported on all platforms and file systems.
   // Watch() will return false in the case of failure.
   bool Watch(const FilePath& path, bool recursive, const Callback& callback);
 

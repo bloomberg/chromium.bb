@@ -463,6 +463,7 @@ void FilePathWatcherImpl::Cancel() {
 }
 
 void FilePathWatcherImpl::CancelOnMessageLoopThread() {
+  DCHECK(message_loop()->BelongsToCurrentThread());
   set_cancelled();
 
   if (!callback_.is_null()) {
