@@ -2033,6 +2033,7 @@ void RenderViewImpl::didCreateDataSource(WebLocalFrame* frame,
         document_state->set_load_type(DocumentState::LINK_LOAD_NORMAL);
         break;
       case WebURLRequest::ReloadIgnoringCacheData:  // reload.
+      case WebURLRequest::ReloadBypassingCache:  // end-to-end reload.
         document_state->set_load_type(DocumentState::LINK_LOAD_RELOAD);
         break;
       case WebURLRequest::ReturnCacheDataElseLoad:  // allow stale data.

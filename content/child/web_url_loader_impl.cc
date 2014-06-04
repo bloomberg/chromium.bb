@@ -342,6 +342,9 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
       // Required by LayoutTests/http/tests/misc/refresh-headers.php
       load_flags |= net::LOAD_VALIDATE_CACHE;
       break;
+    case WebURLRequest::ReloadBypassingCache:
+      load_flags |= net::LOAD_BYPASS_CACHE;
+      break;
     case WebURLRequest::ReturnCacheDataElseLoad:
       load_flags |= net::LOAD_PREFERRING_CACHE;
       break;
