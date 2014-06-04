@@ -52,6 +52,7 @@ def print_landmines(target):
   print 'Need to clobber everything due to an IDL change in r154579 (blink)'
   if (platform() != 'ios'):
     print 'Clobber to get rid of obselete test plugin after r248358'
+    print 'Clobber to rebuild GN files for V8'
 
 
 def main():
