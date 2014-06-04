@@ -979,8 +979,16 @@ IN_PROC_BROWSER_TEST_F(DomSerializerTests,
             base::Unretained(this), file_url, path_dir_url));
 }
 
+#if defined(THREAD_SANITIZER)
+// TSan reports a use-after-free in this test, see http://crbug.com/375672.
+#define MAYBE_SerializeHTMLDOMWithEmptyHead \
+    DISABLED_SerializeHTMLDOMWithEmptyHead
+#else
+#define MAYBE_SerializeHTMLDOMWithEmptyHead SerializeHTMLDOMWithEmptyHead
+#endif
 // Serializing page which has an empty HEAD tag.
-IN_PROC_BROWSER_TEST_F(DomSerializerTests, SerializeHTMLDOMWithEmptyHead) {
+IN_PROC_BROWSER_TEST_F(DomSerializerTests,
+                       MAYBE_SerializeHTMLDOMWithEmptyHead) {
   // Need to spin up the renderer and also navigate to a file url so that the
   // renderer code doesn't attempt a fork when it sees a load to file scheme
   // from non-file scheme.
