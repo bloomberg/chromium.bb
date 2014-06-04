@@ -12,6 +12,7 @@
       'type': '<(component)',
       'dependencies': [
         '../ui/aura/aura.gyp:aura',
+        '../ui/app_list/app_list.gyp:app_list',
         '../ui/views/views.gyp:views',
         '../ui/accessibility/accessibility.gyp:ax_gen',
         '../skia/skia.gyp:skia',
@@ -22,8 +23,8 @@
       'sources': [
         # All .cc, .h under athena, except unittests
         'athena_export.h',
-        'home/home_card_delegate_view.cc',
-        'home/home_card_delegate_view.h',
+        'home/app_list_view_delegate.cc',
+        'home/app_list_view_delegate.h',
         'home/home_card_impl.cc',
         'home/public/home_card.h',
         'screen/background_controller.cc',
