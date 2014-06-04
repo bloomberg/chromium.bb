@@ -23,11 +23,10 @@ class VideoCaptureDeviceChromeOS : public VideoCaptureDeviceLinux {
       const Name& device_name);
   virtual ~VideoCaptureDeviceChromeOS();
 
-  void SetDisplayRotation(const gfx::Display& display);
-
  private:
   class ScreenObserverDelegate;
 
+  void SetDisplayRotation(const gfx::Display& display);
   scoped_refptr<ScreenObserverDelegate> screen_observer_delegate_;
   DISALLOW_IMPLICIT_CONSTRUCTORS(VideoCaptureDeviceChromeOS);
 };
