@@ -201,6 +201,7 @@ const struct EnglishToResouceId {
   { "xkb:gr::gre", IDS_STATUSBAR_LAYOUT_GREECE },
   { "xkb:hr::scr", IDS_STATUSBAR_LAYOUT_CROATIA },
   { "xkb:hu::hun", IDS_STATUSBAR_LAYOUT_HUNGARY },
+  { "xkb:ie::ga", IDS_STATUSBAR_LAYOUT_IRISH },
   { "xkb:il::heb", IDS_STATUSBAR_LAYOUT_ISRAEL },
   { "xkb:is::ice", IDS_STATUSBAR_LAYOUT_ICELANDIC },
   { "xkb:it::ita", IDS_STATUSBAR_LAYOUT_ITALY },
@@ -223,10 +224,15 @@ const struct EnglishToResouceId {
   { "xkb:tr::tur", IDS_STATUSBAR_LAYOUT_TURKEY },
   { "xkb:ua::ukr", IDS_STATUSBAR_LAYOUT_UKRAINE },
   { "xkb:us::eng", IDS_STATUSBAR_LAYOUT_USA },
+  { "xkb:us::fil", IDS_STATUSBAR_LAYOUT_USA },
+  { "xkb:us::ind", IDS_STATUSBAR_LAYOUT_USA },
+  { "xkb:us::msa", IDS_STATUSBAR_LAYOUT_USA },
   { "xkb:us:altgr-intl:eng", IDS_STATUSBAR_LAYOUT_USA_EXTENDED },
   { "xkb:us:colemak:eng", IDS_STATUSBAR_LAYOUT_USA_COLEMAK },
   { "xkb:us:dvorak:eng", IDS_STATUSBAR_LAYOUT_USA_DVORAK },
   { "xkb:us:intl:eng", IDS_STATUSBAR_LAYOUT_USA_INTERNATIONAL },
+  { "xkb:us:intl:nld", IDS_STATUSBAR_LAYOUT_USA_INTERNATIONAL },
+  { "xkb:us:intl:por", IDS_STATUSBAR_LAYOUT_USA_INTERNATIONAL },
 };
 const size_t kEnglishToResourceIdArraySize =
     arraysize(kEnglishToResourceIdArray);

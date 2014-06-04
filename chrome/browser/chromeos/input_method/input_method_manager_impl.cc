@@ -407,7 +407,8 @@ bool InputMethodManagerImpl::IsXkbComponentExtensionAvailable() const {
   InputMethodDescriptors imes =
       component_extension_ime_manager_->GetAllIMEAsInputMethodDescriptor();
   for (size_t i = 0; i < imes.size(); ++i) {
-    if (StartsWithASCII(imes[i].id(), "xkb:", true))
+    if (StartsWithASCII(extension_ime_util::MaybeGetLegacyXkbId(
+        imes[i].id()), "xkb:", true))
       return true;
   }
   return false;
