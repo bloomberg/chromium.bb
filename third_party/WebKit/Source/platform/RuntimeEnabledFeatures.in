@@ -124,7 +124,7 @@ ShowModalDialog status=stable
 SpeechSynthesis status=stable
 Stream status=experimental
 StyleScoped status=experimental
-SubpixelFontScaling status=experimental
+SubpixelFontScaling status=stable
 SubresourceIntegrity status=test
 SVGPaintOrder status=stable
 
