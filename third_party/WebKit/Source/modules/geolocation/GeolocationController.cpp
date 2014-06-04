@@ -96,9 +96,9 @@ void GeolocationController::willBeDestroyed()
         m_client->geolocationDestroyed();
 }
 
-PassOwnPtrWillBeRawPtr<GeolocationController> GeolocationController::create(LocalFrame& frame, GeolocationClient* client)
+PassOwnPtr<GeolocationController> GeolocationController::create(LocalFrame& frame, GeolocationClient* client)
 {
-    return adoptPtrWillBeNoop(new GeolocationController(frame, client));
+    return adoptPtr(new GeolocationController(frame, client));
 }
 
 void GeolocationController::addObserver(Geolocation* observer, bool enableHighAccuracy)
@@ -154,7 +154,7 @@ void GeolocationController::positionChanged(GeolocationPosition* position)
         return;
     }
     m_lastPosition = position;
-    WillBeHeapVector<RefPtrWillBeMember<Geolocation> > observersVector;
+    WillBePersistentHeapVector<RefPtrWillBeMember<Geolocation> > observersVector;
     copyToVector(m_observers, observersVector);
     for (size_t i = 0; i < observersVector.size(); ++i)
         observersVector[i]->positionChanged();
@@ -162,7 +162,7 @@ void GeolocationController::positionChanged(GeolocationPosition* position)
 
 void GeolocationController::errorOccurred(GeolocationError* error)
 {
-    WillBeHeapVector<RefPtrWillBeMember<Geolocation> > observersVector;
+    WillBePersistentHeapVector<RefPtrWillBeMember<Geolocation> > observersVector;
     copyToVector(m_observers, observersVector);
     for (size_t i = 0; i < observersVector.size(); ++i)
         observersVector[i]->setError(error);
@@ -203,17 +203,9 @@ const char* GeolocationController::supplementName()
     return "GeolocationController";
 }
 
-void GeolocationController::trace(Visitor* visitor)
-{
-    visitor->trace(m_lastPosition);
-    visitor->trace(m_observers);
-    visitor->trace(m_highAccuracyObservers);
-    WillBeHeapSupplement<LocalFrame>::trace(visitor);
-}
-
 void provideGeolocationTo(LocalFrame& frame, GeolocationClient* client)
 {
-    WillBeHeapSupplement<LocalFrame>::provideTo(frame, GeolocationController::supplementName(), GeolocationController::create(frame, client));
+    Supplement<LocalFrame>::provideTo(frame, GeolocationController::supplementName(), GeolocationController::create(frame, client));
 }
 
 } // namespace WebCore
