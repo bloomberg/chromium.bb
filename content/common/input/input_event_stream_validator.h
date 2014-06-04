@@ -5,7 +5,10 @@
 #ifndef CONTENT_COMMON_INPUT_EVENT_STREAM_VALIDATOR
 #define CONTENT_COMMON_INPUT_EVENT_STREAM_VALIDATOR
 
+#include <string>
+
 #include "content/common/input/gesture_event_stream_validator.h"
+#include "content/common/input/touch_event_stream_validator.h"
 
 namespace blink {
 class WebInputEvent;
@@ -14,16 +17,21 @@ class WebInputEvent;
 namespace content {
 
 // DCHECKs that the stream of WebInputEvents passed to OnEvent is
-// valid. Currently only validates WebGestureEvents.
+// valid. Currently only validates touch and touchscreen gesture events.
 class InputEventStreamValidator {
  public:
   InputEventStreamValidator();
   ~InputEventStreamValidator();
-  void OnEvent(const blink::WebInputEvent&);
+
+  void Validate(const blink::WebInputEvent&);
 
  private:
+  bool ValidateImpl(const blink::WebInputEvent&, std::string* error_msg);
+
   GestureEventStreamValidator gesture_validator_;
-  bool enabled_;
+  TouchEventStreamValidator touch_validator_;
+  std::string error_msg_;
+  const bool enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(InputEventStreamValidator);
 };

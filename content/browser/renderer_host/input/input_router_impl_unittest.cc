@@ -241,29 +241,6 @@ class InputRouterImplTest : public testing::Test {
                                                     sourceDevice));
   }
 
-  void SimulateTouchEvent(WebInputEvent::Type type) {
-    touch_event_.ResetPoints();
-    int index = PressTouchPoint(0, 0);
-    switch (type) {
-      case WebInputEvent::TouchStart:
-        // Already handled by |PressTouchPoint()|.
-        break;
-      case WebInputEvent::TouchMove:
-        MoveTouchPoint(index, 5, 5);
-        break;
-      case WebInputEvent::TouchEnd:
-        ReleaseTouchPoint(index);
-        break;
-      case WebInputEvent::TouchCancel:
-        CancelTouchPoint(index);
-        break;
-      default:
-        FAIL() << "Invalid touch event type.";
-        break;
-    }
-    SendTouchEvent();
-  }
-
   void SetTouchTimestamp(base::TimeDelta timestamp) {
     touch_event_.SetTimestamp(timestamp);
   }
@@ -785,36 +762,34 @@ TEST_F(InputRouterImplTest, UnhandledWheelEvent) {
 
 TEST_F(InputRouterImplTest, TouchTypesIgnoringAck) {
   OnHasTouchEventHandlers(true);
+  // Only acks for TouchCancel should always be ignored.
+  ASSERT_FALSE(WebInputEventTraits::IgnoresAckDisposition(
+      GetEventWithType(WebInputEvent::TouchStart)));
+  ASSERT_FALSE(WebInputEventTraits::IgnoresAckDisposition(
+      GetEventWithType(WebInputEvent::TouchMove)));
+  ASSERT_FALSE(WebInputEventTraits::IgnoresAckDisposition(
+      GetEventWithType(WebInputEvent::TouchEnd)));
 
-  int start_type = static_cast<int>(WebInputEvent::TouchStart);
-  int end_type = static_cast<int>(WebInputEvent::TouchCancel);
-  ASSERT_LT(start_type, end_type);
-  for (int i = start_type; i <= end_type; ++i) {
-    WebInputEvent::Type type = static_cast<WebInputEvent::Type>(i);
-    if (!WebInputEventTraits::IgnoresAckDisposition(GetEventWithType(type)))
-      continue;
+  // Precede the TouchCancel with an appropriate TouchStart;
+  PressTouchPoint(1, 1);
+  SendTouchEvent();
+  SendInputEventACK(WebInputEvent::TouchStart, INPUT_EVENT_ACK_STATE_CONSUMED);
+  ASSERT_EQ(1U, GetSentMessageCountAndResetSink());
+  ASSERT_EQ(1U, ack_handler_->GetAndResetAckCount());
+  ASSERT_EQ(0, client_->in_flight_event_count());
 
-    // The TouchEventQueue requires an initial TouchStart for it to begin
-    // forwarding other touch event types.
-    if (type != WebInputEvent::TouchStart) {
-      SimulateTouchEvent(WebInputEvent::TouchStart);
-      SendInputEventACK(WebInputEvent::TouchStart,
-                        INPUT_EVENT_ACK_STATE_CONSUMED);
-      ASSERT_EQ(1U, GetSentMessageCountAndResetSink());
-      ASSERT_EQ(1U, ack_handler_->GetAndResetAckCount());
-      ASSERT_EQ(0, client_->in_flight_event_count());
-    }
-
-    SimulateTouchEvent(type);
-    EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
-    EXPECT_EQ(1U, ack_handler_->GetAndResetAckCount());
-    EXPECT_EQ(0, client_->in_flight_event_count());
-    EXPECT_FALSE(HasPendingEvents());
-    SendInputEventACK(type, INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
-    EXPECT_EQ(0U, GetSentMessageCountAndResetSink());
-    EXPECT_EQ(0U, ack_handler_->GetAndResetAckCount());
-    EXPECT_FALSE(HasPendingEvents());
-  }
+  // The TouchCancel ack is always ignored.
+  CancelTouchPoint(0);
+  SendTouchEvent();
+  EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
+  EXPECT_EQ(1U, ack_handler_->GetAndResetAckCount());
+  EXPECT_EQ(0, client_->in_flight_event_count());
+  EXPECT_FALSE(HasPendingEvents());
+  SendInputEventACK(WebInputEvent::TouchCancel,
+                    INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  EXPECT_EQ(0U, GetSentMessageCountAndResetSink());
+  EXPECT_EQ(0U, ack_handler_->GetAndResetAckCount());
+  EXPECT_FALSE(HasPendingEvents());
 }
 
 TEST_F(InputRouterImplTest, GestureTypesIgnoringAck) {

@@ -174,7 +174,8 @@ void InputRouterImpl::SendKeyboardEvent(const NativeWebKeyboardEvent& key_event,
 
 void InputRouterImpl::SendGestureEvent(
     const GestureEventWithLatencyInfo& original_gesture_event) {
-  event_stream_validator_.OnEvent(original_gesture_event.event);
+  input_stream_validator_.Validate(original_gesture_event.event);
+
   GestureEventWithLatencyInfo gesture_event(original_gesture_event);
 
   if (touch_action_filter_.FilterGestureEvent(&gesture_event.event))
@@ -191,6 +192,7 @@ void InputRouterImpl::SendGestureEvent(
 
 void InputRouterImpl::SendTouchEvent(
     const TouchEventWithLatencyInfo& touch_event) {
+  input_stream_validator_.Validate(touch_event.event);
   touch_event_queue_.QueueEvent(touch_event);
 }
 
@@ -340,6 +342,8 @@ void InputRouterImpl::FilterAndSendWebInputEvent(
 void InputRouterImpl::OfferToHandlers(const WebInputEvent& input_event,
                                       const ui::LatencyInfo& latency_info,
                                       bool is_keyboard_shortcut) {
+  output_stream_validator_.Validate(input_event);
+
   if (OfferToClient(input_event, latency_info))
     return;
 

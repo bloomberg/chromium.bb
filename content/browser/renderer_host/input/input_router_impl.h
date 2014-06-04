@@ -275,7 +275,8 @@ private:
   TouchEventQueue touch_event_queue_;
   GestureEventQueue gesture_event_queue_;
   TouchActionFilter touch_action_filter_;
-  InputEventStreamValidator event_stream_validator_;
+  InputEventStreamValidator input_stream_validator_;
+  InputEventStreamValidator output_stream_validator_;
 
   DISALLOW_COPY_AND_ASSIGN(InputRouterImpl);
 };

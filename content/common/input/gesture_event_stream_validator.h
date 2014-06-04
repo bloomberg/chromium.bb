@@ -5,6 +5,8 @@
 #ifndef CONTENT_COMMON_INPUT_GESTURE_EVENT_STREAM_VALIDATOR
 #define CONTENT_COMMON_INPUT_GESTURE_EVENT_STREAM_VALIDATOR
 
+#include <string>
+
 #include "base/basictypes.h"
 
 namespace blink {
@@ -13,15 +15,15 @@ class WebGestureEvent;
 
 namespace content {
 
-// In debug mode, logs an error and exits if the stream of WebGestureEvents
-// passed to Validate is invalid.
+// Utility class for validating a stream of WebGestureEvents.
 class GestureEventStreamValidator {
  public:
   GestureEventStreamValidator();
   ~GestureEventStreamValidator();
-  // Returns true iff |event| is valid for the current stream.
-  bool Validate(const blink::WebGestureEvent& event,
-                const char** error_message);
+
+  // If |event| is valid for the current stream, returns true.
+  // Otherwise, returns false with a corresponding error message.
+  bool Validate(const blink::WebGestureEvent& event, std::string* error_msg);
 
  private:
   bool scrolling_;

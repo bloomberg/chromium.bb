@@ -9,29 +9,40 @@
 #include "content/public/common/content_switches.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 
-namespace content {
-
 using blink::WebInputEvent;
 using blink::WebGestureEvent;
+using blink::WebTouchEvent;
 
-InputEventStreamValidator::InputEventStreamValidator() {
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
-  enabled_ = command_line->HasSwitch(switches::kValidateInputEventStream);
+namespace content {
+
+InputEventStreamValidator::InputEventStreamValidator()
+    : enabled_(CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kValidateInputEventStream)) {
 }
-InputEventStreamValidator::~InputEventStreamValidator() {}
 
-void InputEventStreamValidator::OnEvent(const WebInputEvent& event) {
+InputEventStreamValidator::~InputEventStreamValidator() {
+}
+
+void InputEventStreamValidator::Validate(const WebInputEvent& event) {
   if (!enabled_)
     return;
-  const char* error_message = NULL;
+
+  DCHECK(ValidateImpl(event, &error_msg_)) << error_msg_;
+}
+
+bool InputEventStreamValidator::ValidateImpl(const blink::WebInputEvent& event,
+                                             std::string* error_msg) {
+  DCHECK(error_msg);
   if (WebInputEvent::isGestureEventType(event.type)) {
-    const WebGestureEvent& gesture_event =
-        static_cast<const WebGestureEvent&>(event);
-    if (gesture_event.sourceDevice == blink::WebGestureDeviceTouchscreen) {
-      if (!gesture_validator_.Validate(gesture_event, &error_message))
-        NOTREACHED() << error_message;
-    }
+    const WebGestureEvent& gesture = static_cast<const WebGestureEvent&>(event);
+    // TODO(jdduke): Validate touchpad gesture streams.
+    if (gesture.sourceDevice == blink::WebGestureDeviceTouchscreen)
+      return gesture_validator_.Validate(gesture, error_msg);
+  } else if (WebInputEvent::isTouchEventType(event.type)) {
+    const WebTouchEvent& touch = static_cast<const WebTouchEvent&>(event);
+    return touch_validator_.Validate(touch, error_msg);
   }
+  return true;
 }
 
 }  // namespace content

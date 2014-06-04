@@ -4,73 +4,75 @@
 
 #include "content/common/input/gesture_event_stream_validator.h"
 
+#include "base/logging.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
-
-namespace content {
 
 using blink::WebInputEvent;
 
-GestureEventStreamValidator::GestureEventStreamValidator()
-    : scrolling_(false), pinching_(false), waiting_for_tap_end_(false) {}
+namespace content {
 
-GestureEventStreamValidator::~GestureEventStreamValidator() {}
+GestureEventStreamValidator::GestureEventStreamValidator()
+    : scrolling_(false), pinching_(false), waiting_for_tap_end_(false) {
+}
+
+GestureEventStreamValidator::~GestureEventStreamValidator() {
+}
 
 bool GestureEventStreamValidator::Validate(const blink::WebGestureEvent& event,
-                                           const char** error_message) {
-  *error_message = NULL;
+                                           std::string* error_msg) {
+  DCHECK(error_msg);
+  error_msg->clear();
   switch (event.type) {
     case WebInputEvent::GestureScrollBegin:
       if (scrolling_ || pinching_)
-        *error_message = "Scroll begin during scroll";
+        error_msg->append("Scroll begin during scroll\n");
       scrolling_ = true;
       break;
     case WebInputEvent::GestureScrollUpdate:
     case WebInputEvent::GestureScrollUpdateWithoutPropagation:
       if (!scrolling_)
-        *error_message = "Scroll update outside of scroll";
+        error_msg->append("Scroll update outside of scroll\n");
       break;
     case WebInputEvent::GestureScrollEnd:
     case WebInputEvent::GestureFlingStart:
       if (!scrolling_)
-        *error_message = "Scroll end outside of scroll";
+        error_msg->append("Scroll end outside of scroll\n");
       if (pinching_)
-        *error_message = "Ending scroll while pinching";
+        error_msg->append("Ending scroll while pinching\n");
       scrolling_ = false;
       break;
     case WebInputEvent::GesturePinchBegin:
       if (!scrolling_)
-        *error_message = "Pinch begin outside of scroll";
+        error_msg->append("Pinch begin outside of scroll\n");
       if (pinching_)
-        *error_message = "Pinch begin during pinch";
+        error_msg->append("Pinch begin during pinch\n");
       pinching_ = true;
       break;
     case WebInputEvent::GesturePinchUpdate:
       if (!pinching_ || !scrolling_)
-        *error_message = "Pinch update outside of pinch";
+        error_msg->append("Pinch update outside of pinch\n");
       break;
     case WebInputEvent::GesturePinchEnd:
       if (!pinching_ || !scrolling_)
-        *error_message = "Pinch end outside of pinch";
+        error_msg->append("Pinch end outside of pinch\n");
       pinching_ = false;
       break;
     case WebInputEvent::GestureTapDown:
       if (waiting_for_tap_end_)
-        *error_message = "Missing tap end event";
+        error_msg->append("Missing tap end event\n");
       waiting_for_tap_end_ = true;
       break;
     case WebInputEvent::GestureTap:
     case WebInputEvent::GestureTapCancel:
     case WebInputEvent::GestureDoubleTap:
       if (!waiting_for_tap_end_)
-        *error_message = "Missing GestureTapDown event";
+        error_msg->append("Missing GestureTapDown event\n");
       waiting_for_tap_end_ = false;
       break;
     default:
       break;
   }
-  if (*error_message == NULL)
-    return true;
-  return false;
+  return error_msg->empty();
 }
 
 }  // namespace content
