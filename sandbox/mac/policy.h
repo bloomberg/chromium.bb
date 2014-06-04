@@ -47,8 +47,20 @@ struct SANDBOX_EXPORT Rule {
   mach_port_t substitute_port;
 };
 
-// A SandboxPolicy maps bootstrap server names to policy Rules.
-typedef std::map<std::string, Rule> BootstrapSandboxPolicy;
+// A policy object manages the rules enforced on a target sandboxed process.
+struct SANDBOX_EXPORT BootstrapSandboxPolicy {
+  typedef std::map<std::string, Rule> NamedRules;
+
+  BootstrapSandboxPolicy();
+  ~BootstrapSandboxPolicy();
+
+  // The default action to take if the server name being looked up is not
+  // present in |rules|.
+  Rule default_rule;
+
+  // A map of bootstrap server names to policy Rules.
+  NamedRules rules;
+};
 
 // Checks that a policy is well-formed.
 SANDBOX_EXPORT bool IsPolicyValid(const BootstrapSandboxPolicy& policy);

@@ -88,7 +88,7 @@ class BootstrapSandboxTest : public base::MultiProcessTest {
   BootstrapSandboxPolicy BaselinePolicy() {
     BootstrapSandboxPolicy policy;
     if (base::mac::IsOSSnowLeopard())
-      policy["com.apple.SecurityServer"] = Rule(POLICY_ALLOW);
+      policy.rules["com.apple.SecurityServer"] = Rule(POLICY_ALLOW);
     return policy;
   }
 
@@ -149,11 +149,11 @@ TEST_F(BootstrapSandboxTest, DistributedNotifications_SandboxAllow) {
 
   BootstrapSandboxPolicy policy(BaselinePolicy());
   // 10.9:
-  policy["com.apple.distributed_notifications@Uv3"] = Rule(POLICY_ALLOW);
-  policy["com.apple.distributed_notifications@1v3"] = Rule(POLICY_ALLOW);
+  policy.rules["com.apple.distributed_notifications@Uv3"] = Rule(POLICY_ALLOW);
+  policy.rules["com.apple.distributed_notifications@1v3"] = Rule(POLICY_ALLOW);
   // 10.6:
-  policy["com.apple.system.notification_center"] = Rule(POLICY_ALLOW);
-  policy["com.apple.distributed_notifications.2"] = Rule(POLICY_ALLOW);
+  policy.rules["com.apple.system.notification_center"] = Rule(POLICY_ALLOW);
+  policy.rules["com.apple.distributed_notifications.2"] = Rule(POLICY_ALLOW);
   sandbox_->RegisterSandboxPolicy(2, policy);
 
   base::ProcessHandle pid;
@@ -175,7 +175,7 @@ const char kTestServer[] = "org.chromium.test_bootstrap_server";
 
 TEST_F(BootstrapSandboxTest, PolicyDenyError) {
   BootstrapSandboxPolicy policy(BaselinePolicy());
-  policy[kTestServer] = Rule(POLICY_DENY_ERROR);
+  policy.rules[kTestServer] = Rule(POLICY_DENY_ERROR);
   sandbox_->RegisterSandboxPolicy(1, policy);
 
   RunChildWithPolicy(1, "PolicyDenyError", NULL);
@@ -198,7 +198,7 @@ MULTIPROCESS_TEST_MAIN(PolicyDenyError) {
 
 TEST_F(BootstrapSandboxTest, PolicyDenyDummyPort) {
   BootstrapSandboxPolicy policy(BaselinePolicy());
-  policy[kTestServer] = Rule(POLICY_DENY_DUMMY_PORT);
+  policy.rules[kTestServer] = Rule(POLICY_DENY_DUMMY_PORT);
   sandbox_->RegisterSandboxPolicy(1, policy);
 
   RunChildWithPolicy(1, "PolicyDenyDummyPort", NULL);
@@ -247,7 +247,7 @@ TEST_F(BootstrapSandboxTest, PolicySubstitutePort) {
   EXPECT_EQ(1u, send_rights);
 
   BootstrapSandboxPolicy policy(BaselinePolicy());
-  policy[kTestServer] = Rule(port);
+  policy.rules[kTestServer] = Rule(port);
   sandbox_->RegisterSandboxPolicy(1, policy);
 
   RunChildWithPolicy(1, "PolicySubstitutePort", NULL);
@@ -338,6 +338,78 @@ TEST_F(BootstrapSandboxTest, ForwardMessageInProcess) {
     EXPECT_TRUE(send_rights == 3u || send_rights == 2u) << send_rights;
   else
     EXPECT_EQ(2u, send_rights);
+}
+
+const char kDefaultRuleTestAllow[] =
+    "org.chromium.sandbox.test.DefaultRuleAllow";
+const char kDefaultRuleTestDeny[] =
+    "org.chromium.sandbox.test.DefaultRuleAllow.Deny";
+
+TEST_F(BootstrapSandboxTest, DefaultRuleAllow) {
+  mach_port_t task = mach_task_self();
+
+  mach_port_t port;
+  ASSERT_EQ(KERN_SUCCESS, mach_port_allocate(task, MACH_PORT_RIGHT_RECEIVE,
+      &port));
+  base::mac::ScopedMachReceiveRight scoped_port_recv(port);
+
+  ASSERT_EQ(KERN_SUCCESS, mach_port_insert_right(task, port, port,
+      MACH_MSG_TYPE_MAKE_SEND));
+  base::mac::ScopedMachSendRight scoped_port_send(port);
+
+  BootstrapSandboxPolicy policy;
+  policy.default_rule = Rule(POLICY_ALLOW);
+  policy.rules[kDefaultRuleTestAllow] = Rule(port);
+  policy.rules[kDefaultRuleTestDeny] = Rule(POLICY_DENY_ERROR);
+  sandbox_->RegisterSandboxPolicy(3, policy);
+
+  base::scoped_nsobject<DistributedNotificationObserver> observer(
+      [[DistributedNotificationObserver alloc] init]);
+
+  int pid = 0;
+  RunChildWithPolicy(3, "DefaultRuleAllow", &pid);
+  EXPECT_GT(pid, 0);
+
+  [observer waitForNotification];
+  EXPECT_EQ(1, [observer receivedCount]);
+  EXPECT_EQ(pid, [[observer object] intValue]);
+
+  struct SubstitutePortAckRecv msg;
+  bzero(&msg, sizeof(msg));
+  msg.header.msgh_size = sizeof(msg);
+  msg.header.msgh_local_port = port;
+  kern_return_t kr = mach_msg(&msg.header, MACH_RCV_MSG, 0,
+      msg.header.msgh_size, port,
+      TestTimeouts::tiny_timeout().InMilliseconds(), MACH_PORT_NULL);
+  EXPECT_EQ(KERN_SUCCESS, kr);
+
+  EXPECT_EQ(0, strncmp(kSubstituteAck, msg.buf, sizeof(msg.buf)));
+}
+
+MULTIPROCESS_TEST_MAIN(DefaultRuleAllow) {
+  [[NSDistributedNotificationCenter defaultCenter]
+      postNotificationName:kTestNotification
+                    object:[NSString stringWithFormat:@"%d", getpid()]];
+
+  mach_port_t port = MACH_PORT_NULL;
+  CHECK_EQ(BOOTSTRAP_UNKNOWN_SERVICE, bootstrap_look_up(bootstrap_port,
+      const_cast<char*>(kDefaultRuleTestDeny), &port));
+  CHECK(port == MACH_PORT_NULL);
+
+  CHECK_EQ(KERN_SUCCESS, bootstrap_look_up(bootstrap_port,
+      const_cast<char*>(kDefaultRuleTestAllow), &port));
+  CHECK(port != MACH_PORT_NULL);
+
+  struct SubstitutePortAckSend msg;
+  bzero(&msg, sizeof(msg));
+  msg.header.msgh_size = sizeof(msg);
+  msg.header.msgh_remote_port = port;
+  msg.header.msgh_bits = MACH_MSGH_BITS_REMOTE(MACH_MSG_TYPE_MOVE_SEND);
+  strncpy(msg.buf, kSubstituteAck, sizeof(msg.buf));
+
+  CHECK_EQ(KERN_SUCCESS, mach_msg_send(&msg.header));
+
+  return 0;
 }
 
 }  // namespace sandbox

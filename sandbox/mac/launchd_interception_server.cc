@@ -191,10 +191,10 @@ void LaunchdInterceptionServer::HandleLookUp(mach_msg_header_t* request,
   // Find the Rule for this service. If one is not found, use
   // a safe default, POLICY_DENY_ERROR.
   const BootstrapSandboxPolicy* policy = sandbox_->PolicyForProcess(sender_pid);
-  const BootstrapSandboxPolicy::const_iterator it =
-      policy->find(request_service_name);
-  Rule rule(POLICY_DENY_ERROR);
-  if (it != policy->end())
+  const BootstrapSandboxPolicy::NamedRules::const_iterator it =
+      policy->rules.find(request_service_name);
+  Rule rule(policy->default_rule);
+  if (it != policy->rules.end())
     rule = it->second;
 
   if (rule.result == POLICY_ALLOW) {
