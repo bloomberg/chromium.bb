@@ -140,7 +140,7 @@ deps = {
     'src/third_party/webgl/src':
         Var('git_url') + '/external/khronosgroup/webgl.git@0475a2763fc30cbed22740f8a9ef53a82f03b4ac',
     'src/third_party/webpagereplay':
-        Var('git_url') + '/external/web-page-replay.git@d1447899a2176bc8700865e76ed70da329628abd',
+        Var('git_url') + '/external/web-page-replay.git@b62c02d3b64cf00a2f65a82cca0721aa42c3d6ad',
     'src/third_party/webrtc':
         Var('git_url') + '/external/webrtc/trunk/webrtc.git@ff6b4a8eddca609ad2691b54f443b6f1e9342579',
     'src/third_party/yasm/source/patched-yasm':
