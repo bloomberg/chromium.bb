@@ -394,7 +394,6 @@ private:
     bool potentiallyPlaying() const;
     bool endedPlayback() const;
     bool stoppedDueToErrors() const;
-    bool pausedForUserInteraction() const;
     bool couldPlayIfEnoughData() const;
 
     // Pauses playback without changing any states or generating events

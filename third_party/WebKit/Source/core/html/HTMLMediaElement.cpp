@@ -2940,7 +2940,7 @@ bool HTMLMediaElement::potentiallyPlaying() const
 
 bool HTMLMediaElement::couldPlayIfEnoughData() const
 {
-    return !paused() && !endedPlayback() && !stoppedDueToErrors() && !pausedForUserInteraction();
+    return !paused() && !endedPlayback() && !stoppedDueToErrors();
 }
 
 bool HTMLMediaElement::endedPlayback() const
@@ -2979,12 +2979,6 @@ bool HTMLMediaElement::stoppedDueToErrors() const
             return true;
     }
 
-    return false;
-}
-
-bool HTMLMediaElement::pausedForUserInteraction() const
-{
-//    return !paused() && m_readyState >= HAVE_FUTURE_DATA && [UA requires a decitions from the user]
     return false;
 }
 
@@ -3551,11 +3545,11 @@ bool HTMLMediaElement::isBlocked() const
 {
     // A media element is a blocked media element if its readyState attribute is in the
     // HAVE_NOTHING state, the HAVE_METADATA state, or the HAVE_CURRENT_DATA state,
+    // or if the element has paused for user interaction or paused for in-band content.
     if (m_readyState <= HAVE_CURRENT_DATA)
         return true;
 
-    // or if the element has paused for user interaction.
-    return pausedForUserInteraction();
+    return false;
 }
 
 bool HTMLMediaElement::isBlockedOnMediaController() const
