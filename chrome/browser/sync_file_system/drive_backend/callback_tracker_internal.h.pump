@@ -1,0 +1,73 @@
+$$ This is a pump file for generating file templates.  Pump is a python
+$$ script that is part of the Google Test suite of utilities.  Description
+$$ can be found here:
+$$
+$$ http://code.google.com/p/googletest/wiki/PumpManual
+$$
+$$ See comment for MAX_ARITY in base/bind.h.pump.
+$var MAX_ARITY = 7
+
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_BACKEND_CALLBACK_TRACKER_INTERNAL_H_
+#define CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_BACKEND_CALLBACK_TRACKER_INTERNAL_H_
+
+#include "base/callback.h"
+#include "base/callback_internal.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
+
+namespace sync_file_system {
+namespace drive_backend {
+
+class CallbackTracker;
+
+namespace internal {
+
+class AbortHelper {
+ public:
+  explicit AbortHelper(CallbackTracker* tracker);
+  ~AbortHelper();
+  base::WeakPtr<AbortHelper> AsWeakPtr();
+
+  static scoped_ptr<AbortHelper> TakeOwnership(
+      const base::WeakPtr<AbortHelper>& abort_helper);
+
+ private:
+  CallbackTracker* tracker_;  // Not owned.
+  base::WeakPtrFactory<AbortHelper> weak_ptr_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(AbortHelper);
+};
+
+template <typename>
+struct InvokeAndInvalidateHelper;
+
+$range ARITY 0..MAX_ARITY
+$for ARITY [[
+$range ARG 1..ARITY
+
+template <$for ARG , [[typename A$(ARG)]]>
+struct InvokeAndInvalidateHelper<void($for ARG , [[A$(ARG)]])> {
+  static void Run(const base::WeakPtr<AbortHelper>& abort_helper,
+                  const base::Callback<void($for ARG , [[A$(ARG)]])>& callback
+$if ARITY != 0 [[, ]]
+$for ARG , [[A$(ARG) a$(ARG)]]
+) {
+    scoped_ptr<AbortHelper> deleter = AbortHelper::TakeOwnership(abort_helper);
+    if (deleter) {
+      callback.Run(
+$for ARG , [[base::internal::CallbackForward(a$(ARG))]]);
+    }
+  }
+};
+
+]]  $$ for ARITY
+
+}  // namespace internal
+}  // namespace drive_backend
+}  // namespace sync_file_system
+
+#endif  // CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_BACKEND_CALLBACK_TRACKER_INTERNAL_H_
