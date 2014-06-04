@@ -1,0 +1,5 @@
+This is a testharness.js-based test.
+PASS audio.autoplay with preload="none" 
+PASS video.autoplay with preload="none" 
+Harness: the test ran to completion.
+

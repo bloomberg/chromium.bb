@@ -889,7 +889,7 @@ void HTMLMediaElement::loadResource(const KURL& url, ContentType& contentType, c
     if (attemptLoad && canLoadURL(url, contentType, keySystem)) {
         ASSERT(!webMediaPlayer());
 
-        if (m_preload == MediaPlayer::None)
+        if (!autoplay() && m_preload == MediaPlayer::None)
             m_delayingLoadForPreloadNone = true;
         else
             startPlayerLoad();
