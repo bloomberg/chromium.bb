@@ -35,6 +35,7 @@
     '../build/scripts/scripts.gypi',
     '../bindings/core/core.gypi',  # core can depend on bindings/core, but not on bindings
     'core.gypi',
+    '../modules/modules_generated.gypi', # FIXME: Required by <(blink_modules_output_dir) below.
   ],
 
   'variables': {
@@ -42,9 +43,13 @@
 
     'webcore_include_dirs': [
       '..',  # WebKit/Source
+      # FIXME: Remove this after cleaning up platform dependecies on core and modules.
+      # Needed now for RuntimeEnabledFeatures.h, etc. http://crbug.com/380361
       '<(SHARED_INTERMEDIATE_DIR)/blink',  # gen/blink
-      # FIXME: Remove these once core scripts generates qualified
+      # FIXME: Remove these once core scripts generate qualified
       # includes correctly: http://crbug.com/380054
+      '<(blink_core_output_dir)',
+      '<(blink_modules_output_dir)',
       '<(bindings_core_v8_output_dir)',
       '<(bindings_modules_v8_output_dir)',
     ],
@@ -83,12 +88,12 @@
             '../devtools/protocol.json',
           ],
           'outputs': [
-            '<(SHARED_INTERMEDIATE_DIR)/blink/InspectorBackendDispatcher.cpp',
-            '<(SHARED_INTERMEDIATE_DIR)/blink/InspectorBackendDispatcher.h',
-            '<(SHARED_INTERMEDIATE_DIR)/blink/InspectorFrontend.cpp',
-            '<(SHARED_INTERMEDIATE_DIR)/blink/InspectorFrontend.h',
-            '<(SHARED_INTERMEDIATE_DIR)/blink/InspectorTypeBuilder.cpp',
-            '<(SHARED_INTERMEDIATE_DIR)/blink/InspectorTypeBuilder.h',
+            '<(blink_core_output_dir)/InspectorBackendDispatcher.cpp',
+            '<(blink_core_output_dir)/InspectorBackendDispatcher.h',
+            '<(blink_core_output_dir)/InspectorFrontend.cpp',
+            '<(blink_core_output_dir)/InspectorFrontend.h',
+            '<(blink_core_output_dir)/InspectorTypeBuilder.cpp',
+            '<(blink_core_output_dir)/InspectorTypeBuilder.h',
           ],
           'variables': {
             'generator_include_dirs': [
@@ -98,7 +103,7 @@
             'python',
             'inspector/CodeGeneratorInspector.py',
             '../devtools/protocol.json',
-            '--output_dir', '<(SHARED_INTERMEDIATE_DIR)/blink',
+            '--output_dir', '<(blink_core_output_dir)',
           ],
           'message': 'Generating Inspector protocol backend sources from protocol.json',
         },
@@ -118,18 +123,18 @@
             'inspector/InspectorInstrumentation.idl',
           ],
           'outputs': [
-            '<(SHARED_INTERMEDIATE_DIR)/blink/InspectorCanvasInstrumentationInl.h',
-            '<(SHARED_INTERMEDIATE_DIR)/blink/InspectorConsoleInstrumentationInl.h',
-            '<(SHARED_INTERMEDIATE_DIR)/blink/InspectorInstrumentationInl.h',
-            '<(SHARED_INTERMEDIATE_DIR)/blink/InspectorOverridesInl.h',
-            '<(SHARED_INTERMEDIATE_DIR)/blink/InstrumentingAgentsInl.h',
-            '<(SHARED_INTERMEDIATE_DIR)/blink/InspectorInstrumentationImpl.cpp',
+            '<(blink_core_output_dir)/InspectorCanvasInstrumentationInl.h',
+            '<(blink_core_output_dir)/InspectorConsoleInstrumentationInl.h',
+            '<(blink_core_output_dir)/InspectorInstrumentationInl.h',
+            '<(blink_core_output_dir)/InspectorOverridesInl.h',
+            '<(blink_core_output_dir)/InstrumentingAgentsInl.h',
+            '<(blink_core_output_dir)/InspectorInstrumentationImpl.cpp',
           ],
           'action': [
             'python',
             'inspector/CodeGeneratorInstrumentation.py',
             'inspector/InspectorInstrumentation.idl',
-            '--output_dir', '<(SHARED_INTERMEDIATE_DIR)/blink',
+            '--output_dir', '<(blink_core_output_dir)',
           ],
           'message': 'Generating Inspector instrumentation code from InspectorInstrumentation.idl',
         }
@@ -146,7 +151,7 @@
             '../devtools/protocol.json',
           ],
           'outputs': [
-            '<(SHARED_INTERMEDIATE_DIR)/blink/InspectorProtocolVersion.h',
+            '<(blink_core_output_dir)/InspectorProtocolVersion.h',
           ],
           'variables': {
             'generator_include_dirs': [
@@ -168,7 +173,7 @@
       'type': 'none',
       'variables': {
         'input_file_path': 'inspector/InspectorOverlayPage.html',
-        'output_file_path': '<(SHARED_INTERMEDIATE_DIR)/blink/InspectorOverlayPage.h',
+        'output_file_path': '<(blink_core_output_dir)/InspectorOverlayPage.h',
         'character_array_name': 'InspectorOverlayPage_html',
       },
       'includes': [ '../build/ConvertFileToHeaderWithCharacterArray.gypi' ],
@@ -178,7 +183,7 @@
       'type': 'none',
       'variables': {
         'input_file_path': 'inspector/InjectedScriptCanvasModuleSource.js',
-        'output_file_path': '<(SHARED_INTERMEDIATE_DIR)/blink/InjectedScriptCanvasModuleSource.h',
+        'output_file_path': '<(blink_core_output_dir)/InjectedScriptCanvasModuleSource.h',
         'character_array_name': 'InjectedScriptCanvasModuleSource_js',
       },
       'includes': [ '../build/ConvertFileToHeaderWithCharacterArray.gypi' ],
@@ -188,7 +193,7 @@
       'type': 'none',
       'variables': {
         'input_file_path': 'inspector/InjectedScriptSource.js',
-        'output_file_path': '<(SHARED_INTERMEDIATE_DIR)/blink/InjectedScriptSource.h',
+        'output_file_path': '<(blink_core_output_dir)/InjectedScriptSource.h',
         'character_array_name': 'InjectedScriptSource_js',
       },
       'includes': [ '../build/ConvertFileToHeaderWithCharacterArray.gypi' ],
@@ -198,7 +203,7 @@
       'type': 'none',
       'variables': {
         'input_file_path': '<(bindings_v8_dir)/DebuggerScript.js',
-        'output_file_path': '<(SHARED_INTERMEDIATE_DIR)/blink/DebuggerScriptSource.h',
+        'output_file_path': '<(blink_core_output_dir)/DebuggerScriptSource.h',
         'character_array_name': 'DebuggerScriptSource_js',
       },
       'includes': [ '../build/ConvertFileToHeaderWithCharacterArray.gypi' ],
@@ -255,82 +260,82 @@
         '<@(bindings_core_v8_generated_aggregate_files)',
 
         # Additional .cpp files for HashTools.h
-        '<(SHARED_INTERMEDIATE_DIR)/blink/CSSPropertyNames.cpp',
-        '<(SHARED_INTERMEDIATE_DIR)/blink/CSSValueKeywords.cpp',
+        '<(blink_core_output_dir)/CSSPropertyNames.cpp',
+        '<(blink_core_output_dir)/CSSValueKeywords.cpp',
 
         # Additional .cpp files from make_core_generated actions.
-        '<(SHARED_INTERMEDIATE_DIR)/blink/Event.cpp',
-        '<(SHARED_INTERMEDIATE_DIR)/blink/EventHeaders.h',
-        '<(SHARED_INTERMEDIATE_DIR)/blink/EventInterfaces.h',
-        '<(SHARED_INTERMEDIATE_DIR)/blink/EventNames.cpp',
-        '<(SHARED_INTERMEDIATE_DIR)/blink/EventNames.h',
-        '<(SHARED_INTERMEDIATE_DIR)/blink/EventTargetHeaders.h',
-        '<(SHARED_INTERMEDIATE_DIR)/blink/EventTargetInterfaces.h',
-        '<(SHARED_INTERMEDIATE_DIR)/blink/EventTargetNames.cpp',
-        '<(SHARED_INTERMEDIATE_DIR)/blink/EventTargetNames.h',
-        '<(SHARED_INTERMEDIATE_DIR)/blink/EventTypeNames.cpp',
-        '<(SHARED_INTERMEDIATE_DIR)/blink/EventTypeNames.h',
-        '<(SHARED_INTERMEDIATE_DIR)/blink/FetchInitiatorTypeNames.cpp',
-        '<(SHARED_INTERMEDIATE_DIR)/blink/HTMLElementFactory.cpp',
-        '<(SHARED_INTERMEDIATE_DIR)/blink/HTMLElementFactory.h',
-        '<(SHARED_INTERMEDIATE_DIR)/blink/HTMLElementLookupTrie.cpp',
-        '<(SHARED_INTERMEDIATE_DIR)/blink/HTMLElementLookupTrie.h',
-        '<(SHARED_INTERMEDIATE_DIR)/blink/HTMLNames.cpp',
-        '<(SHARED_INTERMEDIATE_DIR)/blink/HTMLTokenizerNames.cpp',
-        '<(SHARED_INTERMEDIATE_DIR)/blink/InputTypeNames.cpp',
-        '<(SHARED_INTERMEDIATE_DIR)/blink/MathMLNames.cpp',
-        '<(SHARED_INTERMEDIATE_DIR)/blink/SVGNames.cpp',
-        '<(SHARED_INTERMEDIATE_DIR)/blink/UserAgentStyleSheetsData.cpp',
-        '<(SHARED_INTERMEDIATE_DIR)/blink/V8HTMLElementWrapperFactory.cpp',
-        '<(SHARED_INTERMEDIATE_DIR)/blink/XLinkNames.cpp',
-        '<(SHARED_INTERMEDIATE_DIR)/blink/XMLNSNames.cpp',
-        '<(SHARED_INTERMEDIATE_DIR)/blink/XMLNames.cpp',
+        '<(blink_core_output_dir)/Event.cpp',
+        '<(blink_core_output_dir)/EventHeaders.h',
+        '<(blink_core_output_dir)/EventInterfaces.h',
+        '<(blink_core_output_dir)/EventNames.cpp',
+        '<(blink_core_output_dir)/EventNames.h',
+        '<(blink_core_output_dir)/EventTargetHeaders.h',
+        '<(blink_core_output_dir)/EventTargetInterfaces.h',
+        '<(blink_core_output_dir)/EventTargetNames.cpp',
+        '<(blink_core_output_dir)/EventTargetNames.h',
+        '<(blink_core_output_dir)/EventTypeNames.cpp',
+        '<(blink_core_output_dir)/EventTypeNames.h',
+        '<(blink_core_output_dir)/FetchInitiatorTypeNames.cpp',
+        '<(blink_core_output_dir)/HTMLElementFactory.cpp',
+        '<(blink_core_output_dir)/HTMLElementFactory.h',
+        '<(blink_core_output_dir)/HTMLElementLookupTrie.cpp',
+        '<(blink_core_output_dir)/HTMLElementLookupTrie.h',
+        '<(blink_core_output_dir)/HTMLNames.cpp',
+        '<(blink_core_output_dir)/HTMLTokenizerNames.cpp',
+        '<(blink_core_output_dir)/InputTypeNames.cpp',
+        '<(blink_core_output_dir)/MathMLNames.cpp',
+        '<(blink_core_output_dir)/SVGNames.cpp',
+        '<(blink_core_output_dir)/UserAgentStyleSheetsData.cpp',
+        '<(blink_core_output_dir)/V8HTMLElementWrapperFactory.cpp',
+        '<(blink_core_output_dir)/XLinkNames.cpp',
+        '<(blink_core_output_dir)/XMLNSNames.cpp',
+        '<(blink_core_output_dir)/XMLNames.cpp',
 
         # Generated from HTMLEntityNames.in
-        '<(SHARED_INTERMEDIATE_DIR)/blink/HTMLEntityTable.cpp',
+        '<(blink_core_output_dir)/HTMLEntityTable.cpp',
 
         # Generated from MediaFeatureNames.in
-        '<(SHARED_INTERMEDIATE_DIR)/blink/MediaFeatureNames.cpp',
+        '<(blink_core_output_dir)/MediaFeatureNames.cpp',
 
         # Generated from MediaTypeNames.in
-        '<(SHARED_INTERMEDIATE_DIR)/blink/MediaTypeNames.cpp',
+        '<(blink_core_output_dir)/MediaTypeNames.cpp',
 
         # Generated from CSSTokenizer-in.cpp
-        '<(SHARED_INTERMEDIATE_DIR)/blink/CSSTokenizer.cpp',
+        '<(blink_core_output_dir)/CSSTokenizer.cpp',
 
         # Generated from BisonCSSParser-in.cpp
-        '<(SHARED_INTERMEDIATE_DIR)/blink/BisonCSSParser.cpp',
+        '<(blink_core_output_dir)/BisonCSSParser.cpp',
 
         # Generated from HTMLMetaElement-in.cpp
-        '<(SHARED_INTERMEDIATE_DIR)/blink/HTMLMetaElement.cpp',
+        '<(blink_core_output_dir)/HTMLMetaElement.cpp',
 
         # Additional .cpp files from the make_core_generated rules.
-        '<(SHARED_INTERMEDIATE_DIR)/blink/CSSGrammar.cpp',
-        '<(SHARED_INTERMEDIATE_DIR)/blink/XPathGrammar.cpp',
+        '<(blink_core_output_dir)/CSSGrammar.cpp',
+        '<(blink_core_output_dir)/XPathGrammar.cpp',
 
         # Additional .cpp files from the inspector_protocol_sources list.
-        '<(SHARED_INTERMEDIATE_DIR)/blink/InspectorFrontend.cpp',
-        '<(SHARED_INTERMEDIATE_DIR)/blink/InspectorBackendDispatcher.cpp',
-        '<(SHARED_INTERMEDIATE_DIR)/blink/InspectorTypeBuilder.cpp',
+        '<(blink_core_output_dir)/InspectorFrontend.cpp',
+        '<(blink_core_output_dir)/InspectorBackendDispatcher.cpp',
+        '<(blink_core_output_dir)/InspectorTypeBuilder.cpp',
 
         # Additional .cpp files from the inspector_instrumentation_sources list.
-        '<(SHARED_INTERMEDIATE_DIR)/blink/InspectorCanvasInstrumentationInl.h',
-        '<(SHARED_INTERMEDIATE_DIR)/blink/InspectorConsoleInstrumentationInl.h',
-        '<(SHARED_INTERMEDIATE_DIR)/blink/InspectorInstrumentationInl.h',
-        '<(SHARED_INTERMEDIATE_DIR)/blink/InspectorOverridesInl.h',
-        '<(SHARED_INTERMEDIATE_DIR)/blink/InstrumentingAgentsInl.h',
-        '<(SHARED_INTERMEDIATE_DIR)/blink/InspectorInstrumentationImpl.cpp',
+        '<(blink_core_output_dir)/InspectorCanvasInstrumentationInl.h',
+        '<(blink_core_output_dir)/InspectorConsoleInstrumentationInl.h',
+        '<(blink_core_output_dir)/InspectorInstrumentationInl.h',
+        '<(blink_core_output_dir)/InspectorOverridesInl.h',
+        '<(blink_core_output_dir)/InstrumentingAgentsInl.h',
+        '<(blink_core_output_dir)/InspectorInstrumentationImpl.cpp',
 
         # Additional .cpp files for SVG.
-        '<(SHARED_INTERMEDIATE_DIR)/blink/SVGElementFactory.cpp',
-        '<(SHARED_INTERMEDIATE_DIR)/blink/V8SVGElementWrapperFactory.cpp',
+        '<(blink_core_output_dir)/SVGElementFactory.cpp',
+        '<(blink_core_output_dir)/V8SVGElementWrapperFactory.cpp',
 
         # Generated from make_style_shorthands.py
-        '<(SHARED_INTERMEDIATE_DIR)/blink/StylePropertyShorthand.cpp',
+        '<(blink_core_output_dir)/StylePropertyShorthand.cpp',
 
         # Generated from make_style_builder.py
-        '<(SHARED_INTERMEDIATE_DIR)/blink/StyleBuilder.cpp',
-        '<(SHARED_INTERMEDIATE_DIR)/blink/StyleBuilderFunctions.cpp',
+        '<(blink_core_output_dir)/StyleBuilder.cpp',
+        '<(blink_core_output_dir)/StyleBuilderFunctions.cpp',
       ],
       'conditions': [
         ['OS=="win" and component=="shared_library"', {

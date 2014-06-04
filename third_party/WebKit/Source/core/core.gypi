@@ -1,4 +1,7 @@
 {
+    'includes': [
+      'core_generated.gypi',
+    ],
     'variables': {
         # Files for which bindings (.cpp and .h files) will be generated
         'core_idl_files': [
@@ -3297,12 +3300,12 @@
           'testing/TypeConversions.idl',
         ],
         'generated_webcore_testing_idl_files': [
-          '<(SHARED_INTERMEDIATE_DIR)/blink/InternalRuntimeFlags.idl',
-          '<(SHARED_INTERMEDIATE_DIR)/blink/InternalSettingsGenerated.idl',
+          '<(blink_core_output_dir)/InternalRuntimeFlags.idl',
+          '<(blink_core_output_dir)/InternalSettingsGenerated.idl',
         ],
         'webcore_testing_files': [
-            '<(SHARED_INTERMEDIATE_DIR)/blink/InternalSettingsGenerated.cpp',
-            '<(SHARED_INTERMEDIATE_DIR)/blink/InternalSettingsGenerated.h',
+            '<(blink_core_output_dir)/InternalSettingsGenerated.cpp',
+            '<(blink_core_output_dir)/InternalSettingsGenerated.h',
             'testing/DummyPageHolder.cpp',
             'testing/DummyPageHolder.h',
             'testing/GCObservation.cpp',

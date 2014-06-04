@@ -1,4 +1,8 @@
 {
+  'includes': [
+    '../core/core_generated.gypi',
+    'modules_generated.gypi',
+  ],
   'variables': {
     # Experimental hooks for embedder to provide extra IDL and source files.
     #
@@ -266,15 +270,15 @@
     ],
     'generated_modules_files': [
       # .cpp files from make_modules_generated actions.
-      '<(SHARED_INTERMEDIATE_DIR)/blink/EventModules.cpp',
-      '<(SHARED_INTERMEDIATE_DIR)/blink/EventModulesHeaders.h',
-      '<(SHARED_INTERMEDIATE_DIR)/blink/EventModulesInterfaces.h',
-      '<(SHARED_INTERMEDIATE_DIR)/blink/EventModulesNames.cpp',
-      '<(SHARED_INTERMEDIATE_DIR)/blink/EventModulesNames.h',
-      '<(SHARED_INTERMEDIATE_DIR)/blink/EventTargetModulesHeaders.h',
-      '<(SHARED_INTERMEDIATE_DIR)/blink/EventTargetModulesInterfaces.h',
-      '<(SHARED_INTERMEDIATE_DIR)/blink/EventTargetModulesNames.cpp',
-      '<(SHARED_INTERMEDIATE_DIR)/blink/EventTargetModulesNames.h',
+      '<(blink_modules_output_dir)/EventModules.cpp',
+      '<(blink_modules_output_dir)/EventModulesHeaders.h',
+      '<(blink_modules_output_dir)/EventModulesInterfaces.h',
+      '<(blink_modules_output_dir)/EventModulesNames.cpp',
+      '<(blink_modules_output_dir)/EventModulesNames.h',
+      '<(blink_modules_output_dir)/EventTargetModulesHeaders.h',
+      '<(blink_modules_output_dir)/EventTargetModulesInterfaces.h',
+      '<(blink_modules_output_dir)/EventTargetModulesNames.cpp',
+      '<(blink_modules_output_dir)/EventTargetModulesNames.h',
     ],
     'modules_files': [
       '<@(extra_blink_module_files)',

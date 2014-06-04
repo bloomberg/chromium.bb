@@ -48,6 +48,12 @@
       'BLINK_IMPLEMENTATION=1',
       'INSIDE_BLINK',
     ],
+    'include_dirs': [
+      # FIXME: Remove these once scripts generate qualified
+      # includes correctly: http://crbug.com/380054
+      '<(blink_core_output_dir)',
+      '<(blink_modules_output_dir)',
+    ],
     'sources': [
       '<@(modules_files)',
       '<@(bindings_modules_v8_generated_aggregate_files)',

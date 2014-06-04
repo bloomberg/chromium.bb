@@ -42,7 +42,7 @@
         ],
         'outputs': [
           # FIXME: should output to bindings_modules_output_dir  http://crbug.com/358074
-          '<(SHARED_INTERMEDIATE_DIR)/blink/EventModulesInterfaces.in',
+          '<(blink_modules_output_dir)/EventModulesInterfaces.in',
         ],
         'action': [
           'python',
@@ -50,7 +50,7 @@
           '--event-idl-files-list',
           '<(event_idl_files_list)',
           '--event-interfaces-file',
-          '<(SHARED_INTERMEDIATE_DIR)/blink/EventModulesInterfaces.in',
+          '<(blink_modules_output_dir)/EventModulesInterfaces.in',
           '--write-file-only-if-changed',
           '<(write_file_only_if_changed)',
           '--suffix',
@@ -61,37 +61,37 @@
         'action_name': 'EventModulesFactory',
         'inputs': [
           '<@(make_event_factory_files)',
-          '<(SHARED_INTERMEDIATE_DIR)/blink/EventModulesInterfaces.in',
+          '<(blink_modules_output_dir)/EventModulesInterfaces.in',
         ],
         'outputs': [
-          '<(SHARED_INTERMEDIATE_DIR)/blink/EventModules.cpp',
-          '<(SHARED_INTERMEDIATE_DIR)/blink/EventModulesHeaders.h',
-          '<(SHARED_INTERMEDIATE_DIR)/blink/EventModulesInterfaces.h',
+          '<(blink_modules_output_dir)/EventModules.cpp',
+          '<(blink_modules_output_dir)/EventModulesHeaders.h',
+          '<(blink_modules_output_dir)/EventModulesInterfaces.h',
         ],
         'action': [
           'python',
           '../../build/scripts/make_event_factory.py',
-          '<(SHARED_INTERMEDIATE_DIR)/blink/EventModulesInterfaces.in',
+          '<(blink_modules_output_dir)/EventModulesInterfaces.in',
           '--output_dir',
-          '<(SHARED_INTERMEDIATE_DIR)/blink',
+          '<(blink_modules_output_dir)',
         ],
       },
       {
         'action_name': 'EventModulesNames',
         'inputs': [
           '<@(make_names_files)',
-          '<(SHARED_INTERMEDIATE_DIR)/blink/EventModulesInterfaces.in',
+          '<(blink_modules_output_dir)/EventModulesInterfaces.in',
         ],
         'outputs': [
-          '<(SHARED_INTERMEDIATE_DIR)/blink/EventModulesNames.cpp',
-          '<(SHARED_INTERMEDIATE_DIR)/blink/EventModulesNames.h',
+          '<(blink_modules_output_dir)/EventModulesNames.cpp',
+          '<(blink_modules_output_dir)/EventModulesNames.h',
         ],
         'action': [
           'python',
           '../../build/scripts/make_names.py',
-          '<(SHARED_INTERMEDIATE_DIR)/blink/EventModulesInterfaces.in',
+          '<(blink_modules_output_dir)/EventModulesInterfaces.in',
           '--output_dir',
-          '<(SHARED_INTERMEDIATE_DIR)/blink',
+          '<(blink_modules_output_dir)',
         ],
       },
       {
@@ -101,15 +101,15 @@
           '../../modules/EventTargetModulesFactory.in',
         ],
         'outputs': [
-          '<(SHARED_INTERMEDIATE_DIR)/blink/EventTargetModulesHeaders.h',
-          '<(SHARED_INTERMEDIATE_DIR)/blink/EventTargetModulesInterfaces.h',
+          '<(blink_modules_output_dir)/EventTargetModulesHeaders.h',
+          '<(blink_modules_output_dir)/EventTargetModulesInterfaces.h',
         ],
         'action': [
           'python',
           '../../build/scripts/make_event_factory.py',
           '../../modules/EventTargetModulesFactory.in',
           '--output_dir',
-          '<(SHARED_INTERMEDIATE_DIR)/blink',
+          '<(blink_modules_output_dir)',
         ],
       },
       {
@@ -119,15 +119,15 @@
           '../../modules/EventTargetModulesFactory.in',
         ],
         'outputs': [
-          '<(SHARED_INTERMEDIATE_DIR)/blink/EventTargetModulesNames.cpp',
-          '<(SHARED_INTERMEDIATE_DIR)/blink/EventTargetModulesNames.h',
+          '<(blink_modules_output_dir)/EventTargetModulesNames.cpp',
+          '<(blink_modules_output_dir)/EventTargetModulesNames.h',
         ],
         'action': [
           'python',
           '../../build/scripts/make_names.py',
           '../../modules/EventTargetModulesFactory.in',
           '--output_dir',
-          '<(SHARED_INTERMEDIATE_DIR)/blink',
+          '<(blink_modules_output_dir)',
         ],
       },
     ],
