@@ -1,8 +1,8 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/network_time/network_time_tracker.h"
+#include "components/network_time/network_time_tracker.h"
 
 #include <math.h>
 
@@ -10,6 +10,8 @@
 #include "base/prefs/testing_pref_service.h"
 #include "base/time/tick_clock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+namespace network_time {
 
 namespace {
 
@@ -157,3 +159,5 @@ TEST_F(NetworkTimeTrackerTest, NetworkTimeUpdates) {
       old_ticks);
   EXPECT_TRUE(ValidateExpectedTime());
 }
+
+}  // namespace network_time

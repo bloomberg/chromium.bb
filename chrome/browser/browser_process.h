@@ -29,7 +29,6 @@ class IntranetRedirectDetector;
 class IOThread;
 class MediaFileSystemRegistry;
 class MetricsService;
-class NetworkTimeTracker;
 class NotificationUIManager;
 class PrefRegistrySimple;
 class PrefService;
@@ -61,6 +60,10 @@ class MessageCenter;
 
 namespace net {
 class URLRequestContextGetter;
+}
+
+namespace network_time {
+class NetworkTimeTracker;
 }
 
 namespace policy {
@@ -220,7 +223,7 @@ class BrowserProcess {
   virtual WebRtcLogUploader* webrtc_log_uploader() = 0;
 #endif
 
-  virtual NetworkTimeTracker* network_time_tracker() = 0;
+  virtual network_time::NetworkTimeTracker* network_time_tracker() = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BrowserProcess);

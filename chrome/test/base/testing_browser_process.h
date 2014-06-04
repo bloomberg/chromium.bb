@@ -118,7 +118,7 @@ class TestingBrowserProcess : public BrowserProcess {
   virtual WebRtcLogUploader* webrtc_log_uploader() OVERRIDE;
 #endif
 
-  virtual NetworkTimeTracker* network_time_tracker() OVERRIDE;
+  virtual network_time::NetworkTimeTracker* network_time_tracker() OVERRIDE;
 
   // Set the local state for tests. Consumer is responsible for cleaning it up
   // afterwards (using ScopedTestingLocalState, for example).
@@ -163,7 +163,7 @@ class TestingBrowserProcess : public BrowserProcess {
   scoped_ptr<MediaFileSystemRegistry> media_file_system_registry_;
 #endif
 
-  scoped_ptr<NetworkTimeTracker> network_time_tracker_;
+  scoped_ptr<network_time::NetworkTimeTracker> network_time_tracker_;
 
   // The following objects are not owned by TestingBrowserProcess:
   PrefService* local_state_;

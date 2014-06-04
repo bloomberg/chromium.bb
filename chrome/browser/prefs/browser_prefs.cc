@@ -45,7 +45,6 @@
 #include "chrome/browser/net/predictor.h"
 #include "chrome/browser/net/pref_proxy_config_tracker_impl.h"
 #include "chrome/browser/net/ssl_config_service_manager.h"
-#include "chrome/browser/network_time/network_time_tracker.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/notifications/message_center_notification_manager.h"
 #include "chrome/browser/pepper_flash_settings_manager.h"
@@ -89,6 +88,7 @@
 #include "chrome/common/pref_names.h"
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
+#include "components/network_time/network_time_tracker.h"
 #include "components/password_manager/core/browser/password_manager.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/rappor/rappor_service.h"
@@ -235,7 +235,7 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   IOThread::RegisterPrefs(registry);
   KeywordEditorController::RegisterPrefs(registry);
   MetricsService::RegisterPrefs(registry);
-  NetworkTimeTracker::RegisterPrefs(registry);
+  network_time::NetworkTimeTracker::RegisterPrefs(registry);
   PrefProxyConfigTrackerImpl::RegisterPrefs(registry);
   ProfileInfoCache::RegisterPrefs(registry);
   profiles::RegisterPrefs(registry);

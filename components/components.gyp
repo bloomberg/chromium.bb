@@ -31,6 +31,7 @@
     'language_usage_metrics.gypi',
     'metrics.gypi',
     'navigation_metrics.gypi',
+    'network_time.gypi',
     'onc.gypi',
     'os_crypt.gypi',
     'password_manager.gypi',

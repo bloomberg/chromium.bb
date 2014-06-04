@@ -50,7 +50,6 @@
 #include "chrome/browser/net/chrome_net_log.h"
 #include "chrome/browser/net/crl_set_fetcher.h"
 #include "chrome/browser/net/sdch_dictionary_fetcher.h"
-#include "chrome/browser/network_time/network_time_tracker.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/plugins/chrome_plugin_service_filter.h"
 #include "chrome/browser/plugins/plugin_finder.h"
@@ -77,6 +76,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/google_update_settings.h"
+#include "components/network_time/network_time_tracker.h"
 #include "components/policy/core/common/policy_service.h"
 #include "components/signin/core/common/profile_management_switches.h"
 #include "components/translate/core/browser/translate_download_manager.h"
@@ -633,9 +633,9 @@ WebRtcLogUploader* BrowserProcessImpl::webrtc_log_uploader() {
 }
 #endif
 
-NetworkTimeTracker* BrowserProcessImpl::network_time_tracker() {
+network_time::NetworkTimeTracker* BrowserProcessImpl::network_time_tracker() {
   if (!network_time_tracker_) {
-    network_time_tracker_.reset(new NetworkTimeTracker(
+    network_time_tracker_.reset(new network_time::NetworkTimeTracker(
         scoped_ptr<base::TickClock>(new base::DefaultTickClock()),
         local_state()));
   }

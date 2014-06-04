@@ -13,10 +13,10 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_impl.h"
 #include "chrome/browser/extensions/chrome_extensions_browser_client.h"
-#include "chrome/browser/network_time/network_time_tracker.h"
 #include "chrome/browser/printing/print_job_manager.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/test/base/testing_browser_process_platform_part.h"
+#include "components/network_time/network_time_tracker.h"
 #include "content/public/browser/notification_service.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -362,10 +362,11 @@ WebRtcLogUploader* TestingBrowserProcess::webrtc_log_uploader() {
 }
 #endif
 
-NetworkTimeTracker* TestingBrowserProcess::network_time_tracker() {
+network_time::NetworkTimeTracker*
+TestingBrowserProcess::network_time_tracker() {
   if (!network_time_tracker_) {
     DCHECK(local_state_);
-    network_time_tracker_.reset(new NetworkTimeTracker(
+    network_time_tracker_.reset(new network_time::NetworkTimeTracker(
         scoped_ptr<base::TickClock>(new base::DefaultTickClock()),
         local_state_));
   }

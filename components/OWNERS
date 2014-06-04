@@ -80,6 +80,9 @@ per-file nacl*=teravest@chromium.org
 
 per-file navigation_interception.gypi=mkosiba@chromium.org
 
+per-file network_time.gypi=zea@chromium.org
+per-file network_time.gypi=haitaol@chromium.org
+
 per-file onc.gypi=armansito@chromium.org
 per-file onc.gypi=gauravsh@chromium.org
 per-file onc.gypi=gspencer@chromium.org

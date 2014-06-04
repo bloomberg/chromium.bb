@@ -1,9 +1,9 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_NETWORK_TIME_NETWORK_TIME_TRACKER_H_
-#define CHROME_BROWSER_NETWORK_TIME_NETWORK_TIME_TRACKER_H_
+#ifndef COMPONENTS_NETWORK_TIME_NETWORK_TIME_TRACKER_H_
+#define COMPONENTS_NETWORK_TIME_NETWORK_TIME_TRACKER_H_
 
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
@@ -15,6 +15,8 @@ class PrefService;
 namespace base {
 class TickClock;
 }
+
+namespace network_time {
 
 // A class that receives network time updates and can provide the network time
 // for a corresponding local time. This class is not thread safe.
@@ -73,4 +75,6 @@ class NetworkTimeTracker {
   DISALLOW_COPY_AND_ASSIGN(NetworkTimeTracker);
 };
 
-#endif  // CHROME_BROWSER_NETWORK_TIME_NETWORK_TIME_TRACKER_H_
+}  // namespace network_time
+
+#endif  // COMPONENTS_NETWORK_TIME_NETWORK_TIME_TRACKER_H_

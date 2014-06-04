@@ -34,6 +34,7 @@ include_rules = [
   "+components/nacl/common",
   "+components/navigation_interception",
   "+components/navigation_metrics",
+  "+components/network_time",
   "+components/os_crypt",
   "+components/password_manager",
   "+components/policy",
