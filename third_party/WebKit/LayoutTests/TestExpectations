@@ -209,6 +209,18 @@ crbug.com/318980 [ Linux ] fast/ruby/select-ruby.html [ Pass ]
 crbug.com/318980 [ Linux ] fast/sub-pixel/selection/selection-gaps-at-fractional-offsets.html [ Pass ]
 crbug.com/318980 [ Linux ] svg/W3C-SVG-1.1/text-tselect-02-f.svg [ Pass ]
 
+# ICU 52 requires rebaseline for these tests
+crbug.com/378919 [ Linux Android ] fast/forms/calendar-picker/calendar-picker-appearance-ar.html [ NeedsManualRebaseline ]
+crbug.com/378919 [ Linux Android ] fast/forms/calendar-picker/calendar-picker-appearance-required-ar.html [ NeedsManualRebaseline ]
+crbug.com/378919 [ Linux Android ] fast/forms/date/date-appearance-l10n.html [ NeedsManualRebaseline ]
+crbug.com/378919 [ Linux Android ] fast/forms/datetimelocal/datetimelocal-appearance-basic.html [ NeedsManualRebaseline ]
+crbug.com/378919 [ Linux Android ] fast/forms/datetimelocal/datetimelocal-appearance-l10n.html [ NeedsManualRebaseline ]
+crbug.com/378919 [ Linux Android ] fast/forms/month/month-appearance-l10n.html [ NeedsManualRebaseline ]
+crbug.com/378919 [ Linux Android ] fast/forms/suggestion-picker/datetimelocal-suggestion-picker-appearance-locale-hebrew.html [ NeedsManualRebaseline ]
+crbug.com/378919 [ Linux Android ] fast/forms/suggestion-picker/datetimelocal-suggestion-picker-appearance-rtl.html [ NeedsManualRebaseline ]
+crbug.com/378919 [ Linux Android ] fast/forms/suggestion-picker/datetimelocal-suggestion-picker-appearance-with-scroll-bar.html [ NeedsManualRebaseline ]
+crbug.com/378919 [ Linux Android ] fast/forms/suggestion-picker/datetimelocal-suggestion-picker-appearance.html [ NeedsManualRebaseline ]
+
 # Untriaged Linux-specific Aura failures
 
 # Probably just needs new baseline, but image_diff is failing - investigate that.
@@ -221,6 +233,10 @@ crbug.com/314947 [ Mavericks ] fast/forms/datetimelocal-multiple-fields/datetime
 crbug.com/314947 [ Mavericks ] fast/forms/datetimelocal-multiple-fields/datetimelocal-multiple-fields-preserve-value-after-history-back.html [ Failure ]
 crbug.com/314947 [ Mavericks ] fast/forms/datetimelocal-multiple-fields/datetimelocal-multiple-fields-value-set-empty.html [ Failure ]
 crbug.com/314947 [ Mavericks ] http/tests/images/drag-image-to-desktop.html [ Failure ]
+
+# Will fail with new expected.txt until ICU 52 is rolled in.
+crbug.com/378919 [ Linux Android ] fast/forms/datetimelocal-multiple-fields/datetimelocal-multiple-fields-preserve-value-after-history-back.html [ Failure ]
+crbug.com/378919 [ Linux Android ] fast/forms/datetimelocal-multiple-fields/datetimelocal-multiple-fields-value-set-empty.html [ Failure ]
 
 # Mavericks bots seem to fail lots of tests on occasion.
 crbug.com/331582 [ Mavericks ] fast/inline/justify-emphasis-inline-box.html [ Pass ImageOnlyFailure ]

@@ -7,6 +7,12 @@ function fieldsText(input) {
     return window.internals.oldestShadowRoot(input).textContent;
 }
 
+// On Linux/Android with a newer ICU, date and time are separated by ','.
+function insertCommaIfNecessary(expected, input) {
+  return (fieldsText(input).indexOf(', ') == -1) ? expected :
+         expected.replace(' ', ', ');
+}
+
 function back(newState) {
     parent.state = newState;
     history.back();
@@ -53,7 +59,7 @@ window.onload = function() {
                 {
                     'description' : 'Went back to a page. Checking a form control which had a partial value',
                     'actual' : fieldsText(testInput2),
-                    'expected' : '01/dd/1999 --:00 --'
+                    'expected' : insertCommaIfNecessary('01/dd/1999 --:00 --', testInput1)
                 });
             forward('forwardTo2');
             break;
@@ -91,7 +97,7 @@ window.onload = function() {
                 {
                     'description' : 'Went forward to a page. Checking a form control which had a partial value',
                     'actual' : fieldsText(testInput2),
-                    'expected' : 'mm/31/yyyy 12:-- PM'
+                    'expected' : insertCommaIfNecessary('mm/31/yyyy 12:-- PM', testInput1)
                 });
             back('backTo1Second');
             break;
