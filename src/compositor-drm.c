@@ -2158,13 +2158,37 @@ drm_output_choose_initial_mode(struct drm_output *output,
 	return NULL;
 }
 
+static int
+connector_get_current_mode(drmModeConnector *connector, int drm_fd,
+			   drmModeModeInfo *mode)
+{
+	drmModeEncoder *encoder;
+	drmModeCrtc *crtc;
+
+	/* Get the current mode on the crtc that's currently driving
+	 * this connector. */
+	encoder = drmModeGetEncoder(drm_fd, connector->encoder_id);
+	memset(mode, 0, sizeof *mode);
+	if (encoder != NULL) {
+		crtc = drmModeGetCrtc(drm_fd, encoder->crtc_id);
+		drmModeFreeEncoder(encoder);
+		if (crtc == NULL)
+			return -1;
+		if (crtc->mode_valid)
+			*mode = crtc->mode;
+		drmModeFreeCrtc(crtc);
+	}
+
+	return 0;
+}
+
 /**
  * Create and configure a Weston output structure
  *
  * Given a DRM connector, create a matching drm_output structure and add it
  * to Weston's output list.
  *
- * @param ec DRM compositor structure
+ * @param b Weston backend structure structure
  * @param resources DRM resources for this device
  * @param connector DRM connector to use for this new output
  * @param x Horizontal offset to use into global co-ordinate space
@@ -2182,9 +2206,7 @@ create_output_for_connector(struct drm_backend *b,
 	struct drm_mode *drm_mode, *next, *current;
 	struct weston_mode *m;
 	struct weston_config_section *section;
-	drmModeEncoder *encoder;
 	drmModeModeInfo crtc_mode, modeline;
-	drmModeCrtc *crtc;
 	int i, width, height, scale;
 	char *s;
 	enum output_config config;
@@ -2253,19 +2275,8 @@ create_output_for_connector(struct drm_backend *b,
 	output->original_crtc = drmModeGetCrtc(b->drm.fd, output->crtc_id);
 	output->dpms_prop = drm_get_prop(b->drm.fd, connector, "DPMS");
 
-	/* Get the current mode on the crtc that's currently driving
-	 * this connector. */
-	encoder = drmModeGetEncoder(b->drm.fd, connector->encoder_id);
-	memset(&crtc_mode, 0, sizeof crtc_mode);
-	if (encoder != NULL) {
-		crtc = drmModeGetCrtc(b->drm.fd, encoder->crtc_id);
-		drmModeFreeEncoder(encoder);
-		if (crtc == NULL)
-			goto err_free;
-		if (crtc->mode_valid)
-			crtc_mode = crtc->mode;
-		drmModeFreeCrtc(crtc);
-	}
+	if (connector_get_current_mode(connector, b->drm.fd, &crtc_mode) < 0)
+		goto err_free;
 
 	for (i = 0; i < connector->count_modes; i++) {
 		drm_mode = drm_output_add_mode(output, &connector->modes[i]);
