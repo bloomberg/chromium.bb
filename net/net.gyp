@@ -1419,8 +1419,6 @@
           'dependencies': [
             '../base/base.gyp:base',
             '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
-            '../crypto/crypto.gyp:crypto',
-            '../third_party/openssl/openssl.gyp:openssl',
             '../url/url.gyp:url_lib',
             'balsa',
             'epoll_server',
@@ -1464,7 +1462,6 @@
           'type': 'executable',
           'dependencies': [
             '../base/base.gyp:base',
-            '../third_party/openssl/openssl.gyp:openssl',
             'net',
             'quic_base',
           ],
@@ -1477,7 +1474,6 @@
           'type': 'executable',
           'dependencies': [
             '../base/base.gyp:base',
-            '../third_party/openssl/openssl.gyp:openssl',
             'net',
             'quic_base',
           ],
