@@ -21,7 +21,7 @@ class DevToolsClient;
 class Status;
 
 // Take the heap snapshot.
-class HeapSnapshotTaker: public DevToolsEventListener {
+class HeapSnapshotTaker : public DevToolsEventListener {
  public:
   explicit HeapSnapshotTaker(DevToolsClient* client);
   virtual ~HeapSnapshotTaker();

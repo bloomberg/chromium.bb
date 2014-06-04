@@ -452,10 +452,11 @@ Status WebViewImpl::StopProfileInternal() {
   Status status_debug = client_->SendCommand("Debugger.disable", params);
   Status status_profiler = client_->SendCommand("Profiler.disable", params);
 
-  if (status_debug.IsError())
+  if (status_debug.IsError()) {
     return status_debug;
-  else if (status_profiler.IsError())
+  } else if (status_profiler.IsError()) {
     return status_profiler;
+  }
 
   return Status(kOk);
 }
@@ -479,7 +480,11 @@ Status WebViewImpl::EndProfile(scoped_ptr<base::Value>* profile_data) {
 
   if (status.IsError()) {
     Status disable_profile_status = StopProfileInternal();
-    return disable_profile_status;
+    if (disable_profile_status.IsError()) {
+      return disable_profile_status;
+    } else {
+      return status;
+    }
   }
 
   *profile_data = profile_result.PassAs<base::Value>();
