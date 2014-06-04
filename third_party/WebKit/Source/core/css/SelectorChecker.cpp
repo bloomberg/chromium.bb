@@ -407,12 +407,20 @@ SelectorChecker::Match SelectorChecker::matchForShadowDistributed(const Element*
     return SelectorFailsLocally;
 }
 
-static inline bool containsHTMLSpace(const AtomicString& string)
+template<typename CharType>
+static inline bool containsHTMLSpaceTemplate(const CharType* string, unsigned length)
 {
-    for (unsigned i = 0; i < string.length(); i++)
-        if (isHTMLSpace<UChar>(string[i]))
+    for (unsigned i = 0; i < length; ++i)
+        if (isHTMLSpace<CharType>(string[i]))
             return true;
     return false;
+}
+
+static inline bool containsHTMLSpace(const AtomicString& string)
+{
+    if (LIKELY(string.is8Bit()))
+        return containsHTMLSpaceTemplate<LChar>(string.characters8(), string.length());
+    return containsHTMLSpaceTemplate<UChar>(string.characters16(), string.length());
 }
 
 static bool attributeValueMatches(const Attribute& attributeItem, CSSSelector::Match match, const AtomicString& selectorValue, bool caseSensitive)
