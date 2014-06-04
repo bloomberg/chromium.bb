@@ -1224,5 +1224,18 @@
         }, # target_name: chromium_swarm_tests
       ],
     }],
-  ], # conditions
+    ['OS=="mac" and toolkit_views==1', {
+      'targets': [
+        {
+          'target_name': 'macviews_builder',
+          'type': 'none',
+          'dependencies': [
+            '../ui/views/examples/examples.gyp:views_examples_with_content_exe',
+            '../ui/views/views.gyp:views',
+            '../ui/views/views.gyp:views_unittests',
+          ],
+        },  # target_name: macviews_builder
+      ],  # targets
+    }],  # os=='mac' and toolkit_views==1
+  ],  # conditions
 }

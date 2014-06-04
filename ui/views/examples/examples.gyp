@@ -14,7 +14,6 @@
         '../../../skia/skia.gyp:skia',
         '../../../third_party/icu/icu.gyp:icui18n',
         '../../../third_party/icu/icu.gyp:icuuc',
-        '../../aura/aura.gyp:aura',
         '../../base/ui_base.gyp:ui_base',
         '../../events/events.gyp:events',
         '../../gfx/gfx.gyp:gfx',
@@ -90,6 +89,11 @@
           # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
           'msvs_disabled_warnings': [ 4267, ],
         }],
+        ['use_aura==1', {
+          'dependencies': [
+            '../../aura/aura.gyp:aura',
+          ],
+        }],
       ],
     },  # target_name: views_examples_lib
     {
@@ -98,7 +102,6 @@
       'dependencies': [
         '../../../base/base.gyp:base',
         '../../../base/base.gyp:base_i18n',
-        '../../aura/aura.gyp:aura',
         '../../base/ui_base.gyp:ui_base',
         '../../compositor/compositor.gyp:compositor',
         '../../compositor/compositor.gyp:compositor_test_support',
@@ -110,6 +113,13 @@
       ],
       'sources': [
         'examples_main.cc',
+      ],
+      'conditions': [
+        ['use_aura==1', {
+          'dependencies': [
+            '../../aura/aura.gyp:aura',
+          ],
+        }],
       ],
     },  # target_name: views_examples_exe
     {

@@ -210,7 +210,7 @@ class ExamplesWindowContents : public WidgetDelegateView,
 ExamplesWindowContents* ExamplesWindowContents::instance_ = NULL;
 
 void ShowExamplesWindow(Operation operation,
-                        aura::Window* window_context,
+                        gfx::NativeView window_context,
                         ScopedExamples extra_examples) {
   if (ExamplesWindowContents::instance()) {
     ExamplesWindowContents::instance()->GetWidget()->Activate();

@@ -18,24 +18,20 @@ namespace views {
 class ViewsDelegate;
 }
 
-namespace wm {
-class WMState;
-class WMTestHelper;
-}
-
 namespace ui {
 
 class ViewsContentClient;
 
 class ViewsContentClientMainParts : public content::BrowserMainParts {
  public:
-  ViewsContentClientMainParts(
+  // Platform-specific create function.
+  static ViewsContentClientMainParts* Create(
       const content::MainFunctionParams& content_params,
       ViewsContentClient* views_content_client);
+
   virtual ~ViewsContentClientMainParts();
 
   // content::BrowserMainParts:
-  virtual void ToolkitInitialized() OVERRIDE;
   virtual void PreMainMessageLoopRun() OVERRIDE;
   virtual bool MainMessageLoopRun(int* result_code) OVERRIDE;
   virtual void PostMainMessageLoopRun() OVERRIDE;
@@ -44,17 +40,19 @@ class ViewsContentClientMainParts : public content::BrowserMainParts {
     return browser_context_.get();
   }
 
+  ViewsContentClient* views_content_client() {
+    return views_content_client_;
+  }
+
+ protected:
+  ViewsContentClientMainParts(
+      const content::MainFunctionParams& content_params,
+      ViewsContentClient* views_content_client);
+
  private:
   scoped_ptr<content::ShellBrowserContext> browser_context_;
 
   scoped_ptr<views::ViewsDelegate> views_delegate_;
-
-#if defined(OS_CHROMEOS)
-  // Enable a minimal set of views::corewm to be initialized.
-  scoped_ptr<wm::WMTestHelper> wm_test_helper_;
-#endif
-
-  scoped_ptr<wm::WMState> wm_state_;
 
   ViewsContentClient* views_content_client_;
 

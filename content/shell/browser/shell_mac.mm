@@ -288,6 +288,16 @@ bool Shell::PlatformHandleContextMenu(
   return false;
 }
 
+#if defined(TOOLKIT_VIEWS)
+void Shell::PlatformWebContentsFocused(WebContents* contents) {
+  if (headless_)
+    return;
+
+  NOTIMPLEMENTED();
+  return;
+}
+#endif
+
 void Shell::Close() {
   if (headless_)
     delete this;

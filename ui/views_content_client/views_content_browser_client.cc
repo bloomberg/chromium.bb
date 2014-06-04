@@ -21,7 +21,7 @@ ViewsContentBrowserClient::~ViewsContentBrowserClient() {
 content::BrowserMainParts* ViewsContentBrowserClient::CreateBrowserMainParts(
     const content::MainFunctionParams& parameters) {
   views_content_main_parts_ =
-      new ViewsContentClientMainParts(parameters, views_content_client_);
+      ViewsContentClientMainParts::Create(parameters, views_content_client_);
   return views_content_main_parts_;
 }
 
