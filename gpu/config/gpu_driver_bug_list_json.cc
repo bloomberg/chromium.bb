@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "5.8",
+  "version": "5.9",
   "entries": [
     {
       "id": 1,
@@ -1062,38 +1062,10 @@ LONG_STRING_CONST(
     {
       "id": 79,
       "cr_bugs": [371530],
-      "description": "Testing ARB sync fences is broken with some NVIDIA drivers on MacOSX",
+      "description": "Testing ARB sync fences is broken on MacOSX",
       "os": {
         "type": "macosx"
       },
-      "vendor_id": "0x10de",
-      "device_id": ["0x0fd5", "0x0fe9", "0x08a3", "0x0867"],
-      "features": [
-        "disable_arb_sync"
-      ]
-    },
-    {
-      "id": 80,
-      "cr_bugs": [371530],
-      "description": "Testing ARB sync fences is broken with some Intel drivers on MacOSX",
-      "os": {
-        "type": "macosx"
-      },
-      "vendor_id": "0x8086",
-      "device_id": ["0x0d26", "0x0166", "0x0a2e", "0x0a26", "0x0116", "0x0126"],
-      "features": [
-        "disable_arb_sync"
-      ]
-    },
-    {
-      "id": 81,
-      "cr_bugs": [371530],
-      "description": "Testing ARB sync fences is broken with some ATI drivers on MacOSX",
-      "os": {
-        "type": "macosx"
-      },
-      "vendor_id": "0x1002",
-      "device_id": ["0x6741"],
       "features": [
         "disable_arb_sync"
       ]
