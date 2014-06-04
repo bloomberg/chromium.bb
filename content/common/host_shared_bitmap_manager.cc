@@ -63,7 +63,10 @@ scoped_ptr<cc::SharedBitmap> HostSharedBitmapManager::AllocateSharedBitmap(
   cc::SharedBitmapId id = cc::SharedBitmap::GenerateId();
   handle_map_[id] = data;
   return make_scoped_ptr(new cc::SharedBitmap(
-      data->pixels.get(), id, base::Bind(&FreeSharedMemory, data)));
+      data->pixels.get(),
+      id,
+      base::Bind(&HostSharedBitmapManager::FreeSharedMemoryFromMap,
+                 base::Unretained(this))));
 }
 
 scoped_ptr<cc::SharedBitmap> HostSharedBitmapManager::GetSharedBitmapFromId(
@@ -182,6 +185,12 @@ void HostSharedBitmapManager::ProcessRemoved(
     handle_map_.erase(*it);
   }
   process_map_.erase(proc_it);
+}
+
+void HostSharedBitmapManager::FreeSharedMemoryFromMap(
+    cc::SharedBitmap* bitmap) {
+  base::AutoLock lock(lock_);
+  handle_map_.erase(bitmap->id());
 }
 
 }  // namespace content

@@ -68,6 +68,8 @@ class CONTENT_EXPORT HostSharedBitmapManager : public cc::SharedBitmapManager {
   size_t AllocatedBitmapCount() const { return handle_map_.size(); }
 
  private:
+  void FreeSharedMemoryFromMap(cc::SharedBitmap* bitmap);
+
   base::Lock lock_;
 
   typedef base::hash_map<cc::SharedBitmapId, scoped_refptr<BitmapData> >
