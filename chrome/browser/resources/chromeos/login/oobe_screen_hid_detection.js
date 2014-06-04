@@ -132,6 +132,9 @@ login.createScreen('HIDDetectionScreen', 'hid-detection', function() {
             var pincodeSymbol = $('hid-keyboard-pincode-sym-' + (i + 1));
             pincodeSymbol.textContent = data['pincode'][i];
           }
+          announceAccessibleMessage(
+              data['keyboard-label'] + ' ' + data['pincode'] + ' ' +
+              loadTimeData.getString('hidDetectionBTEnterKey'));
         }
       } else if (state == 'update') {
         if ('keysEntered' in data) {

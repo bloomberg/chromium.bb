@@ -1,4 +1,5 @@
-<div class="step hidden" id="hid-detection" hidden>
+<div class="step hidden" id="hid-detection" hidden role="group"
+    i18n-values="aria-label:hidDetectionInvitation">
   <div class="step-contents">
     <div id="hid-invitation-text" i18n-content="hidDetectionInvitation"></div>
     <div id="hid-prerequisite-msg" i18n-content="hidDetectionPrerequisites">
@@ -11,13 +12,13 @@
             alt="">
       </div>
       <div id="hid-mouse-label">
-        <span id="hid-mouse-label-searching"
+        <span id="hid-mouse-label-searching" aria-live="polite"
             i18n-content="hidDetectionMouseSearching" class="label">
         </span>
-        <span id="hid-mouse-label-connected"
+        <span id="hid-mouse-label-connected" aria-live="polite"
             i18n-content="hidDetectionUSBMouseConnected" class="label">
         </span>
-        <span id="hid-mouse-label-paired"
+        <span id="hid-mouse-label-paired" aria-live="polite"
             i18n-content="hidDetectionBTMousePaired" class="label">
         </span>
       </div>
@@ -30,13 +31,13 @@
             src="chrome://theme/IDR_BLUETOOTH_PAIRING_TICK" alt="">
       </div>
       <div id="hid-keyboard-label">
-        <span id="hid-keyboard-label-searching"
+        <span id="hid-keyboard-label-searching" aria-live="polite"
             i18n-content="hidDetectionKeyboardSearching" class="label">
         </span>
-        <span id="hid-keyboard-label-connected"
+        <span id="hid-keyboard-label-connected" aria-live="polite"
             i18n-content="hidDetectionUSBKeyboardConnected" class="label">
         </span>
-        <span id="hid-keyboard-label-paired" class="label">
+        <span id="hid-keyboard-label-paired" class="label" aria-live="polite">
         </span>
         <span id="hid-keyboard-label-pairing" class="label"></span>
       </div>

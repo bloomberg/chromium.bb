@@ -52,13 +52,18 @@
 
 #hid-keyboard-tick,
 #hid-mouse-tick {
-  left: -20px;
+  -webkit-margin-start: -28px;
+  bottom: -20px;
   position: relative;
   visibility: hidden;
 }
 
 .searching {
   opacity: 0.6
+}
+
+#hid-detection #hid-keyboard-pincode {
+  padding: 10px 0 20px 40px;
 }
 
 .searching #hid-keyboard-label-searching,
