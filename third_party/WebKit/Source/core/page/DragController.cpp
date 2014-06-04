@@ -171,7 +171,7 @@ static PassRefPtrWillBeRawPtr<DocumentFragment> documentFragmentFromDragData(Dra
                     if (title.isEmpty())
                         title = url;
                 }
-                RefPtr<Node> anchorText = document.createTextNode(title);
+                RefPtrWillBeRawPtr<Node> anchorText = document.createTextNode(title);
                 anchor->appendChild(anchorText);
                 RefPtrWillBeRawPtr<DocumentFragment> fragment = document.createDocumentFragment();
                 fragment->appendChild(anchor);

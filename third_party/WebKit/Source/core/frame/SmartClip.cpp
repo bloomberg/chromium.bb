@@ -70,7 +70,7 @@ static Node* nodeInsideFrame(Node* node)
 // read/write code in one place!
 String SmartClipData::toString()
 {
-    if (!m_node)
+    if (m_isEmpty)
         return emptyString();
 
     const UChar fieldSeparator = 0xFFFE;
@@ -109,7 +109,7 @@ SmartClipData SmartClip::dataForRect(const IntRect& cropRect)
             bestNode = bestNodeInFrame;
     }
 
-    Vector<Node*> hitNodes;
+    WillBeHeapVector<RawPtrWillBeMember<Node> > hitNodes;
     collectOverlappingChildNodes(bestNode, resizedCropRect, hitNodes);
 
     if (hitNodes.isEmpty() || hitNodes.size() == bestNode->countChildren()) {
@@ -237,7 +237,7 @@ bool SmartClip::shouldSkipBackgroundImage(Node* node)
     return false;
 }
 
-void SmartClip::collectOverlappingChildNodes(Node* parentNode, const IntRect& cropRect, Vector<Node*>& hitNodes)
+void SmartClip::collectOverlappingChildNodes(Node* parentNode, const IntRect& cropRect, WillBeHeapVector<RawPtrWillBeMember<Node> >& hitNodes)
 {
     if (!parentNode)
         return;

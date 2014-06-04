@@ -132,8 +132,8 @@ protected:
         observer->setNotificationCallback(bind(&NetworkStateNotifier::removeObserver, &m_notifier, observerToRemove, executionContext()));
     }
 
-    RefPtr<Document> m_document;
-    RefPtr<Document> m_document2;
+    RefPtrWillBePersistent<Document> m_document;
+    RefPtrWillBePersistent<Document> m_document2;
     NetworkStateNotifier m_notifier;
 };
 

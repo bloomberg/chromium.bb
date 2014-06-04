@@ -472,7 +472,7 @@ private:
     bool m_isTrackingRepaints; // Used for testing.
     Vector<IntRect> m_trackedRepaintRects;
 
-    RefPtr<Node> m_nodeToDraw;
+    RefPtrWillBePersistent<Node> m_nodeToDraw;
     PaintBehavior m_paintBehavior;
     bool m_isPainting;
 
@@ -481,7 +481,7 @@ private:
     bool m_isVisuallyNonEmpty;
     bool m_firstVisuallyNonEmptyLayoutCallbackPending;
 
-    RefPtr<Node> m_maintainScrollPositionAnchor;
+    RefPtrWillBePersistent<Node> m_maintainScrollPositionAnchor;
 
     // Renderer to hold our custom scroll corner.
     RenderScrollbarPart* m_scrollCorner;

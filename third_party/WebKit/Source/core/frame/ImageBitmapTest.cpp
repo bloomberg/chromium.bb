@@ -200,7 +200,7 @@ TEST_F(ImageBitmapTest, ImageBitmapSourceChanged)
 // Verifies that ImageBitmaps constructed from ImageBitmaps hold onto their own Image.
 TEST_F(ImageBitmapTest, ImageResourceLifetime)
 {
-    RefPtr<HTMLCanvasElement> canvasElement = HTMLCanvasElement::create(*Document::create().get());
+    RefPtrWillBeRawPtr<HTMLCanvasElement> canvasElement = HTMLCanvasElement::create(*Document::create().get());
     canvasElement->setHeight(40);
     canvasElement->setWidth(40);
     RefPtrWillBeRawPtr<ImageBitmap> imageBitmapDerived = nullptr;
