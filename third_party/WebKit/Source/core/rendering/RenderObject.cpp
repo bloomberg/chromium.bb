@@ -1536,11 +1536,8 @@ void RenderObject::repaintUsingContainer(const RenderLayerModelObject* repaintCo
     RenderView* v = view();
     if (repaintContainer->isRenderView()) {
         ASSERT(repaintContainer == v);
-        bool viewHasCompositedLayer = v->hasLayer() && v->layer()->compositingState() == PaintsIntoOwnBacking;
-        if (!viewHasCompositedLayer) {
-            v->repaintViewRectangle(r);
-            return;
-        }
+        v->repaintViewRectangle(r);
+        return;
     }
 
     if (v->usesCompositing()) {
