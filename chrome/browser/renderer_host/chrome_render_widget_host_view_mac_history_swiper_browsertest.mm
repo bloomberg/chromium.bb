@@ -78,6 +78,8 @@ class ChromeRenderWidgetHostViewMacHistorySwiperTest
         base_path, base::FilePath(FILE_PATH_LITERAL("text.html")));
     url2_ = ui_test_utils::GetTestUrl(
         base_path, base::FilePath(FILE_PATH_LITERAL("blank.html")));
+    url_iframe_ = ui_test_utils::GetTestUrl(
+        base_path, base::FilePath(FILE_PATH_LITERAL("iframe.html")));
   }
 
   virtual void SetUpOnMainThread() OVERRIDE {
@@ -338,6 +340,7 @@ class ChromeRenderWidgetHostViewMacHistorySwiperTest
 
   GURL url1_;
   GURL url2_;
+  GURL url_iframe_;
   base::scoped_nsobject<NSMutableArray> event_queue_;
   // The current location of the user's fingers on the track pad.
   CGPoint touch_;
@@ -680,6 +683,48 @@ IN_PROC_BROWSER_TEST_F(ChromeRenderWidgetHostViewMacHistorySwiperTest,
     QueueScrollAndTouchMoved(1, 0);
 
   QueueEndEvents();
+  RunQueuedEvents();
+  ExpectUrlAndOffset(url1_, 0);
+}
+
+// Initial movements are vertical, and scroll the iframe. Subsequent movements
+// are horizontal, and should not trigger history swiping.
+IN_PROC_BROWSER_TEST_F(ChromeRenderWidgetHostViewMacHistorySwiperTest,
+                       TestIframeHistorySwiping) {
+  if (!IsHistorySwipingSupported())
+    return;
+
+  ui_test_utils::NavigateToURL(browser(), url_iframe_);
+  ASSERT_EQ(url_iframe_, GetWebContents()->GetURL());
+  QueueBeginningEvents(0, -1);
+  for (int i = 0; i < 10; ++i)
+    QueueScrollAndTouchMoved(0, -1);
+  for (int i = 0; i < 149; ++i)
+    QueueScrollAndTouchMoved(1, 0);
+
+  QueueEndEvents();
+  RunQueuedEvents();
+  content::WaitForLoadStop(GetWebContents());
+  EXPECT_EQ(url_iframe_, GetWebContents()->GetURL());
+}
+
+// The gesture ends before the touchesEndedWithEvent: method gets called.
+IN_PROC_BROWSER_TEST_F(ChromeRenderWidgetHostViewMacHistorySwiperTest,
+                       TestGestureEndTiming) {
+  if (!IsHistorySwipingSupported())
+    return;
+
+  QueueBeginningEvents(1, 0);
+  for (int i = 0; i < 150; ++i)
+    QueueScrollAndTouchMoved(1, 0);
+
+  QueueTouch(
+      DEPLOYMENT_TOUCHES_MOVED, NSEventTypeEndGesture, NSMouseEventSubtype, NO);
+  QueueGestureEnd();
+  QueueTouch(
+      DEPLOYMENT_TOUCHES_ENDED, NSEventTypeEndGesture, NSMouseEventSubtype, NO);
+  QueueTrackpadScroll(0, 0, NSEventPhaseEnded, YES);
+
   RunQueuedEvents();
   ExpectUrlAndOffset(url1_, 0);
 }

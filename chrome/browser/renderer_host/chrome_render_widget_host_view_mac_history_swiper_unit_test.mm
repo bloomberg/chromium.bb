@@ -6,11 +6,11 @@
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 
 #include "base/mac/scoped_nsobject.h"
-
 #import "base/mac/sdk_forward_declarations.h"
 #import "chrome/browser/renderer_host/chrome_render_widget_host_view_mac_history_swiper.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 #import "third_party/ocmock/ocmock_extensions.h"
+#include "third_party/WebKit/public/web/WebInputEvent.h"
 
 @interface HistorySwiper (MacHistorySwiperTest)
 - (BOOL)systemSettingsAllowHistorySwiping:(NSEvent*)event;
@@ -101,6 +101,7 @@ class MacHistorySwiperTest : public CocoaTest {
   void moveGestureAtPoint(NSPoint point);
   void momentumMoveGestureAtPoint(NSPoint point);
   void endGestureAtPoint(NSPoint point);
+  void rendererACKForBeganEvent();
 
   HistorySwiper* historySwiper_;
   NSView* view_;
@@ -168,9 +169,7 @@ void MacHistorySwiperTest::moveGestureInMiddle() {
   moveGestureAtPoint(makePoint(0.5, 0.5));
 
   // Callbacks from blink to set the relevant state for history swiping.
-  [historySwiper_ gotUnhandledWheelEvent];
-  [historySwiper_ scrollOffsetPinnedToLeft:YES toRight:YES];
-  [historySwiper_ setHasHorizontalScrollbar:NO];
+  rendererACKForBeganEvent();
 }
 
 void MacHistorySwiperTest::moveGestureAtPoint(NSPoint point) {
@@ -196,6 +195,12 @@ void MacHistorySwiperTest::endGestureAtPoint(NSPoint point) {
 
   NSEvent* scrollEvent = scrollWheelEventWithPhase(NSEventPhaseEnded);
   [historySwiper_ handleEvent:scrollEvent];
+}
+
+void MacHistorySwiperTest::rendererACKForBeganEvent() {
+  blink::WebMouseWheelEvent event;
+  event.phase = blink::WebMouseWheelEvent::PhaseBegan;
+  [historySwiper_ rendererHandledWheelEvent:event consumed:NO];
 }
 
 // Test that a simple left-swipe causes navigation.
@@ -281,8 +286,8 @@ TEST_F(MacHistorySwiperTest, SwipeDiagonal) {
   moveGestureAtPoint(makePoint(0.6, 0.59));
   endGestureAtPoint(makePoint(0.6, 0.59));
 
-  EXPECT_EQ(begin_count_, 0);
-  EXPECT_EQ(end_count_, 0);
+  EXPECT_EQ(begin_count_, 1);
+  EXPECT_EQ(end_count_, 1);
   EXPECT_FALSE(navigated_right_);
   EXPECT_FALSE(navigated_left_);
 }
@@ -307,7 +312,7 @@ TEST_F(MacHistorySwiperTest, SwipeLeftThenDown) {
 }
 
 // Sometimes Cocoa gets confused and sends us a momentum swipe event instead of
-// a swipe gesture event. We should still function appropriately.
+// a swipe gesture event. Momentum events should not cause history swiping.
 TEST_F(MacHistorySwiperTest, MomentumSwipeLeft) {
   // These tests require 10.7+ APIs.
   if (![NSEvent
@@ -322,21 +327,15 @@ TEST_F(MacHistorySwiperTest, MomentumSwipeLeft) {
   EXPECT_EQ(end_count_, 0);
 
   // Callbacks from blink to set the relevant state for history swiping.
-  [historySwiper_ gotUnhandledWheelEvent];
-  [historySwiper_ scrollOffsetPinnedToLeft:YES toRight:YES];
-  [historySwiper_ setHasHorizontalScrollbar:NO];
+  rendererACKForBeganEvent();
 
   momentumMoveGestureAtPoint(makePoint(0.2, 0.5));
-  EXPECT_EQ(begin_count_, 1);
+  EXPECT_EQ(begin_count_, 0);
   EXPECT_EQ(end_count_, 0);
-  EXPECT_FALSE(navigated_right_);
-  EXPECT_FALSE(navigated_left_);
 
   endGestureAtPoint(makePoint(0.2, 0.5));
-  EXPECT_EQ(begin_count_, 1);
-  EXPECT_EQ(end_count_, 1);
-  EXPECT_FALSE(navigated_right_);
-  EXPECT_TRUE(navigated_left_);
+  EXPECT_EQ(begin_count_, 0);
+  EXPECT_EQ(end_count_, 0);
 }
 
 // Momentum scroll events for magic mouse should not attempt to trigger the
@@ -354,9 +353,7 @@ TEST_F(MacHistorySwiperTest, MagicMouseMomentumSwipe) {
   [historySwiper_ handleEvent:scrollEvent];
 
   // Callbacks from blink to set the relevant state for history swiping.
-  [historySwiper_ gotUnhandledWheelEvent];
-  [historySwiper_ scrollOffsetPinnedToLeft:YES toRight:YES];
-  [historySwiper_ setHasHorizontalScrollbar:NO];
+  rendererACKForBeganEvent();
 
   // Send a momentum move gesture.
   scrollEvent =
@@ -378,8 +375,10 @@ TEST_F(MacHistorySwiperTest, NoSwipe) {
   moveGestureAtPoint(makePoint(0.5, 0.5));
   endGestureAtPoint(makePoint(0.5, 0.5));
 
-  EXPECT_EQ(begin_count_, 0);
-  EXPECT_EQ(end_count_, 0);
+  EXPECT_EQ(begin_count_, 1);
+  EXPECT_EQ(end_count_, 1);
+  EXPECT_FALSE(navigated_right_);
+  EXPECT_FALSE(navigated_left_);
 }
 
 // After a gesture is successfully recognized, momentum events should be

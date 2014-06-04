@@ -39,12 +39,10 @@ class SpellCheckObserver;
 
 - (void)viewGone:(NSView*)view;
 - (BOOL)handleEvent:(NSEvent*)event;
-- (void)gotUnhandledWheelEvent;
 - (void)scrollOffsetPinnedToLeft:(BOOL)left toRight:(BOOL)right;
 - (void)setHasHorizontalScrollbar:(BOOL)hasHorizontalScrollbar;
 - (BOOL)validateUserInterfaceItem:(id<NSValidatedUserInterfaceItem>)item
                       isValidItem:(BOOL*)valid;
-
 @end
 
 #endif  // CHROME_BROWSER_RENDERER_HOST_CHROME_RENDER_WIDGET_HOST_VIEW_MAC_DELEGATE_H_

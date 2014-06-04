@@ -7,6 +7,10 @@
 
 #import <Cocoa/Cocoa.h>
 
+namespace blink {
+class WebMouseWheelEvent;
+}
+
 @class HistorySwiper;
 @protocol HistorySwiperDelegate
 // Return NO from this method is the view/render_widget_host should not
@@ -21,33 +25,92 @@ enum NavigationDirection {
   kBackwards = 0,
   kForwards,
 };
+enum RecognitionState {
+  // Waiting to see whether the renderer will handle the event with phase
+  // NSEventPhaseBegan. The state machine will also stay in this state if
+  // external conditions prohibit the initialization of history swiping. New
+  // gestures always start in this state.
+  // Events are forwarded to the renderer.
+  kPending,
+  // The gesture looks like the beginning of a history swipe.
+  // Events are forwarded to the renderer.
+  // The history overlay is visible.
+  kPotential,
+  // The gesture is definitely a history swipe.
+  // Events are not forwarded to the renderer.
+  // The history overlay is visible.
+  kTracking,
+  // The history swipe gesture has finished.
+  // Events are not forwarded to the renderer.
+  kCompleted,
+  // The history swipe gesture was cancelled.
+  // Events are forwarded to the renderer.
+  kCancelled,
+};
 } // history_swiper
 
-// Responsible for maintaining state for 2-finger swipe history navigation.
-// Relevant blink/NSWindow touch events must be passed to this class.
-// We want to be able to cancel history swipes if the user's swipe has a lot of
-// vertical motion. The API [NSEvent trackSwipeEventWithOptions] doesn't give
-// vertical swipe distance, and it swallows the touch events so that we can't
-// independently gather them either. Instead of using that api, we manually
-// track all touch events using the low level APIs touches*WithEvent:
+// History swiping is the feature wherein a horizontal 2-finger swipe of of a
+// trackpad causes the browser to navigate forwards or backwards.
+// Unfortunately, the act of 2-finger swiping is overloaded, and has 3 possible
+// effects. In descending order of priority, the swipe should:
+//   1. Scroll the content on the web page.
+//   2. Perform a history swipe.
+//   3. Rubberband/overscroll the content past the edge of the window.
+// Effects (1) and (3) are managed by the renderer, whereas effect (2) is
+// managed by this class.
+//
+// Touches on the trackpad enter the run loop as NSEvents, grouped into
+// gestures. The phases of NSEvents within a gesture follow a well defined
+// order.
+//   1. NSEventPhaseMayBegin. (exactly 1 event with this phase)
+//   2. NSEventPhaseBegan. (exactly 1 event with this phase)
+//   3. NSEventPhaseMoved. (many events with this phase)
+//   4. NSEventPhaseEnded. (exactly 1 event with this phase)
+// Events with the phase NSEventPhaseCancelled may come in at any time, and
+// generally mean that an entity within the Cocoa framework has consumed the
+// gesture, and wants to "cancel" previous NSEvents that have been passed to
+// this class.
+//
+// The event handling stack in Chrome passes all events to this class, which is
+// given the opportunity to process and consume the event. If the event is not
+// consumed, it is passed to the renderer via IPC. The renderer returns an IPC
+// indicating whether the event was consumed. To prevent spamming the renderer
+// with IPCs, the browser waits for an ACK from the renderer from the previous
+// event before sending the next one. While waiting for an ACK, the browser
+// coalesces NSEvents with the same phase. It is common for dozens of events
+// with the phase NSEventPhaseMoved to be coalesced.
+//
+// It is difficult to determine from the initial events in a gesture whether
+// the gesture was intended to be a history swipe. The loss of information from
+// the coalescing of events with phase NSEventPhaseMoved before they are passed
+// to the renderer is also problematic. The general approach is as follows:
+//   1. Wait for the renderer to return an ACK for the event with phase
+//   NSEventPhaseBegan. If that event was not consumed, change the state to
+//   kPotential.  If the renderer is not certain about whether the event should
+//   be consumed, it tries to not consume the event.
+//   2. In the state kPotential, this class will process events and update its
+//   internal state machine, but it will also continue to pass events to the
+//   renderer. This class tries to aggressively cancel history swiping to make
+//   up for the fact that the renderer errs on the side of allowing history
+//   swiping to occur.
+//   3. As more events come in, if the gesture continues to appear horizontal,
+//   then this class will transition to the state kTracking. Events are
+//   consumed, and not passed to the renderer.
+//
+// There are multiple APIs that provide information about gestures on the
+// trackpad. This class uses two different set of APIs.
+//   1. The -[NSView touches*WithEvent:] APIs provide detailed information
+//   about the touches within a gesture. The callbacks happen with more
+//   frequency, and have higher accuracy. These APIs are used to transition
+//   between all state, exception for kPending -> kPotential.
+//   2. The -[NSView scrollWheel:] API provides less information, but the
+//   events are passed to the renderer. This class must process these events so
+//   that it can decide whether to consume the events and prevent them from
+//   being passed to the renderer. This API is used to transition from kPending
+//   -> kPotential.
 @class HistoryOverlayController;
 @interface HistorySwiper : NSObject {
  @private
-  // If the viewport is scrolled all the way to the left or right.
-  // Used for history swiping.
-  BOOL isPinnedLeft_;
-  BOOL isPinnedRight_;
-
-  // If the main frame has a horizontal scrollbar.
-  // Used for history swiping.
-  BOOL hasHorizontalScrollbar_;
-
-  // If a scroll event came back unhandled from the renderer. Set to |NO| at
-  // the start of a scroll gesture, and then to |YES| if a scroll event comes
-  // back unhandled from the renderer.
-  // Used for history swiping.
-  BOOL gotUnhandledWheelEvent_;
-
   // This controller will exist if and only if the UI is in history swipe mode.
   HistoryOverlayController* historyOverlay_;
   // Each gesture received by the window is given a unique id.
@@ -66,13 +129,15 @@ enum NavigationDirection {
   int gestureStartPointValid_;
   // The id of the last gesture that we processed as a history swipe.
   int lastProcessedGestureId_;
-  // A flag that indicates that we cancelled the history swipe for the current
-  // gesture.
-  BOOL historySwipeCancelled_;
   // A flag that indicates the user's intended direction with the history swipe.
   history_swiper::NavigationDirection historySwipeDirection_;
   // A flag that indicates whether the gesture has its direction inverted.
   BOOL historySwipeDirectionInverted_;
+
+  // Whether the event with phase NSEventPhaseBegan was not consumed by the
+  // renderer. This variables defaults to NO for new gestures.
+  BOOL beganEventUnconsumed_;
+  history_swiper::RecognitionState recognitionState_;
 
   id<HistorySwiperDelegate> delegate_;
 
@@ -95,9 +160,8 @@ enum NavigationDirection {
 // NSScrollWheel. We look at the phase to determine whether to trigger history
 // swiping
 - (BOOL)handleEvent:(NSEvent*)event;
-- (void)gotUnhandledWheelEvent;
-- (void)scrollOffsetPinnedToLeft:(BOOL)left toRight:(BOOL)right;
-- (void)setHasHorizontalScrollbar:(BOOL)hasHorizontalScrollbar;
+- (void)rendererHandledWheelEvent:(const blink::WebMouseWheelEvent&)event
+                         consumed:(BOOL)consumed;
 
 // The event passed in is a gesture event, and has touch data associated with
 // the trackpad.

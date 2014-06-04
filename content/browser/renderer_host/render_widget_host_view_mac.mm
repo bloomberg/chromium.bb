@@ -157,7 +157,9 @@ static BOOL SupportsBackingPropertiesChangedNotification() {
 
 + (BOOL)shouldAutohideCursorForEvent:(NSEvent*)event;
 - (id)initWithRenderWidgetHostViewMac:(RenderWidgetHostViewMac*)r;
-- (void)gotUnhandledWheelEvent;
+- (void)processedWheelEvent:(const blink::WebMouseWheelEvent&)event
+                   consumed:(BOOL)consumed;
+
 - (void)scrollOffsetPinnedToLeft:(BOOL)left toRight:(BOOL)right;
 - (void)setHasHorizontalScrollbar:(BOOL)has_horizontal_scrollbar;
 - (void)keyEvent:(NSEvent*)theEvent wasKeyEquivalent:(BOOL)equiv;
@@ -2029,13 +2031,11 @@ void RenderWidgetHostViewMac::UnlockMouse() {
 void RenderWidgetHostViewMac::WheelEventAck(
     const blink::WebMouseWheelEvent& event,
     InputEventAckState ack_result) {
-  if (ack_result == INPUT_EVENT_ACK_STATE_CONSUMED)
-    return;
-
+  bool consumed = ack_result == INPUT_EVENT_ACK_STATE_CONSUMED;
   // Only record a wheel event as unhandled if JavaScript handlers got a chance
   // to see it (no-op wheel events are ignored by the event dispatcher)
   if (event.deltaX || event.deltaY)
-    [cocoa_view_ gotUnhandledWheelEvent];
+    [cocoa_view_ processedWheelEvent:event consumed:consumed];
 }
 
 bool RenderWidgetHostViewMac::Send(IPC::Message* message) {
@@ -2556,12 +2556,9 @@ void RenderWidgetHostViewMac::AcceleratedLayerDidDrawFrame(bool succeeded) {
   }
 }
 
-- (void)gotUnhandledWheelEvent {
-  if (responderDelegate_ &&
-      [responderDelegate_
-          respondsToSelector:@selector(gotUnhandledWheelEvent)]) {
-    [responderDelegate_ gotUnhandledWheelEvent];
-  }
+- (void)processedWheelEvent:(const blink::WebMouseWheelEvent&)event
+                   consumed:(BOOL)consumed {
+  [responderDelegate_ rendererHandledWheelEvent:event consumed:consumed];
 }
 
 - (void)scrollOffsetPinnedToLeft:(BOOL)left toRight:(BOOL)right {
