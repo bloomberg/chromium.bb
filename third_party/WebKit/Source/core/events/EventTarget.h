@@ -74,8 +74,10 @@ public:
 
 class EventTarget : public WillBeGarbageCollectedMixin {
 public:
+#if !ENABLE(OILPAN)
     void ref() { refEventTarget(); }
     void deref() { derefEventTarget(); }
+#endif
 
     virtual const AtomicString& interfaceName() const = 0;
     virtual ExecutionContext* executionContext() const = 0;
@@ -120,9 +122,11 @@ protected:
     virtual EventTargetData& ensureEventTargetData() = 0;
 
 private:
+#if !ENABLE(OILPAN)
     // Subclasses should likely not override these themselves; instead, they should use the REFCOUNTED_EVENT_TARGET() macro.
     virtual void refEventTarget() = 0;
     virtual void derefEventTarget() = 0;
+#endif
 
     DOMWindow* executingWindow();
     void fireEventListeners(Event*, EventTargetData*, EventListenerVector&);
@@ -213,6 +217,15 @@ inline bool EventTarget::hasCapturingEventListeners(const AtomicString& eventTyp
 
 } // namespace WebCore
 
+#if ENABLE(OILPAN)
+#define DEFINE_EVENT_TARGET_REFCOUNTING(baseClass) \
+public: \
+    using baseClass::ref; \
+    using baseClass::deref; \
+private: \
+    typedef int thisIsHereToForceASemiColonAfterThisEventTargetMacro
+#define DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(baseClass)
+#else
 #define DEFINE_EVENT_TARGET_REFCOUNTING(baseClass) \
 public: \
     using baseClass::ref; \
@@ -221,6 +234,8 @@ private: \
     virtual void refEventTarget() OVERRIDE FINAL { ref(); } \
     virtual void derefEventTarget() OVERRIDE FINAL { deref(); } \
     typedef int thisIsHereToForceASemiColonAfterThisEventTargetMacro
+#define DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(baseClass) DEFINE_EVENT_TARGET_REFCOUNTING(baseClass)
+#endif
 
 // Use this macro if your EventTarget subclass is also a subclass of WTF::RefCounted.
 // A ref-counted class that uses a different method of refcounting should use DEFINE_EVENT_TARGET_REFCOUNTING directly.

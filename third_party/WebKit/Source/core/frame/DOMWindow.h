@@ -257,7 +257,7 @@ enum PageshowEventPersistence {
         virtual void removeAllEventListeners() OVERRIDE;
 
         using EventTarget::dispatchEvent;
-        bool dispatchEvent(PassRefPtrWillBeRawPtr<Event> prpEvent, PassRefPtr<EventTarget> prpTarget);
+        bool dispatchEvent(PassRefPtrWillBeRawPtr<Event> prpEvent, PassRefPtrWillBeRawPtr<EventTarget> prpTarget);
 
         void dispatchLoadEvent();
 

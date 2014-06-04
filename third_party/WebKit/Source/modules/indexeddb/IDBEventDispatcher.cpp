@@ -34,7 +34,7 @@
 
 namespace WebCore {
 
-bool IDBEventDispatcher::dispatch(Event* event, Vector<RefPtr<EventTarget> >& eventTargets)
+bool IDBEventDispatcher::dispatch(Event* event, WillBeHeapVector<RefPtrWillBeMember<EventTarget> >& eventTargets)
 {
     size_t size = eventTargets.size();
     ASSERT(size);

@@ -43,7 +43,7 @@ struct MessageEventInit : public EventInit {
 
     String origin;
     String lastEventId;
-    RefPtr<EventTarget> source;
+    RefPtrWillBeMember<EventTarget> source;
     MessagePortArray ports;
 };
 

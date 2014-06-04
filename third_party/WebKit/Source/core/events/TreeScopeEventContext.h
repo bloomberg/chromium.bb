@@ -51,10 +51,10 @@ public:
     TreeScope& treeScope() const { return m_treeScope; }
 
     EventTarget* target() const { return m_target.get(); }
-    void setTarget(PassRefPtr<EventTarget>);
+    void setTarget(PassRefPtrWillBeRawPtr<EventTarget>);
 
     EventTarget* relatedTarget() const { return m_relatedTarget.get(); }
-    void setRelatedTarget(PassRefPtr<EventTarget>);
+    void setRelatedTarget(PassRefPtrWillBeRawPtr<EventTarget>);
 
     TouchEventContext* touchEventContext() const { return m_touchEventContext.get(); }
     TouchEventContext* ensureTouchEventContext();
@@ -76,8 +76,8 @@ private:
 #endif
 
     TreeScope& m_treeScope;
-    RefPtr<EventTarget> m_target;
-    RefPtr<EventTarget> m_relatedTarget;
+    RefPtrWillBePersistent<EventTarget> m_target;
+    RefPtrWillBePersistent<EventTarget> m_relatedTarget;
     RefPtrWillBePersistent<NodeList> m_eventPath;
     RefPtrWillBePersistent<TouchEventContext> m_touchEventContext;
 
@@ -94,14 +94,14 @@ inline bool TreeScopeEventContext::isUnreachableNode(EventTarget& target)
 }
 #endif
 
-inline void TreeScopeEventContext::setTarget(PassRefPtr<EventTarget> target)
+inline void TreeScopeEventContext::setTarget(PassRefPtrWillBeRawPtr<EventTarget> target)
 {
     ASSERT(target);
     ASSERT(!isUnreachableNode(*target));
     m_target = target;
 }
 
-inline void TreeScopeEventContext::setRelatedTarget(PassRefPtr<EventTarget> relatedTarget)
+inline void TreeScopeEventContext::setRelatedTarget(PassRefPtrWillBeRawPtr<EventTarget> relatedTarget)
 {
     ASSERT(relatedTarget);
     ASSERT(!isUnreachableNode(*relatedTarget));

@@ -529,7 +529,7 @@ bool Dictionary::get(const String& key, RefPtr<MediaStream>& value) const
     return true;
 }
 
-bool Dictionary::get(const String& key, RefPtr<EventTarget>& value) const
+bool Dictionary::get(const String& key, RefPtrWillBeMember<EventTarget>& value) const
 {
     v8::Local<v8::Value> v8Value;
     if (!getKey(key, v8Value))

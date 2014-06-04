@@ -88,7 +88,7 @@ void GenericEventQueue::timerFired(Timer<GenericEventQueue>*)
     WillBeHeapVector<RefPtrWillBeMember<Event> > pendingEvents;
     m_pendingEvents.swap(pendingEvents);
 
-    RefPtr<EventTarget> protect(m_owner);
+    RefPtrWillBeRawPtr<EventTarget> protect(m_owner);
     for (size_t i = 0; i < pendingEvents.size(); ++i) {
         Event* event = pendingEvents[i].get();
         EventTarget* target = event->target() ? event->target() : m_owner;

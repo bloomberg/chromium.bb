@@ -52,10 +52,7 @@ public:
     static PassOwnPtrWillBeRawPtr<InputMethodContext> create(HTMLElement*);
     virtual ~InputMethodContext();
 
-#if ENABLE(OILPAN)
-    using RefCountedGarbageCollected<InputMethodContext>::ref;
-    using RefCountedGarbageCollected<InputMethodContext>::deref;
-#else
+#if !ENABLE(OILPAN)
     void ref() { m_element->ref(); }
     void deref() { m_element->deref(); }
 #endif
@@ -90,8 +87,10 @@ private:
     CompositionUnderline selectedSegment() const;
     InputMethodController& inputMethodController() const;
 
+#if !ENABLE(OILPAN)
     virtual void refEventTarget() OVERRIDE { ref(); }
     virtual void derefEventTarget() OVERRIDE { deref(); }
+#endif
 
     RawPtrWillBeMember<HTMLElement> m_element;
     Vector<unsigned> m_segments;

@@ -69,7 +69,7 @@ PassRefPtrWillBeRawPtr<MouseEvent> MouseEvent::create(const AtomicString& type, 
     int detail, int screenX, int screenY, int pageX, int pageY,
     int movementX, int movementY,
     bool ctrlKey, bool altKey, bool shiftKey, bool metaKey, unsigned short button,
-    PassRefPtr<EventTarget> relatedTarget, PassRefPtrWillBeRawPtr<Clipboard> clipboard, bool isSimulated)
+    PassRefPtrWillBeRawPtr<EventTarget> relatedTarget, PassRefPtrWillBeRawPtr<Clipboard> clipboard, bool isSimulated)
 {
     return adoptRefWillBeNoop(new MouseEvent(type, canBubble, cancelable, view,
         detail, screenX, screenY, pageX, pageY,
@@ -88,7 +88,7 @@ MouseEvent::MouseEvent(const AtomicString& eventType, bool canBubble, bool cance
     int detail, int screenX, int screenY, int pageX, int pageY,
     int movementX, int movementY,
     bool ctrlKey, bool altKey, bool shiftKey, bool metaKey,
-    unsigned short button, PassRefPtr<EventTarget> relatedTarget,
+    unsigned short button, PassRefPtrWillBeRawPtr<EventTarget> relatedTarget,
     PassRefPtrWillBeRawPtr<Clipboard> clipboard, bool isSimulated)
     : MouseRelatedEvent(eventType, canBubble, cancelable, view, detail, IntPoint(screenX, screenY),
                         IntPoint(pageX, pageY),
@@ -123,7 +123,7 @@ MouseEvent::~MouseEvent()
 void MouseEvent::initMouseEvent(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtrWillBeRawPtr<AbstractView> view,
                                 int detail, int screenX, int screenY, int clientX, int clientY,
                                 bool ctrlKey, bool altKey, bool shiftKey, bool metaKey,
-                                unsigned short button, PassRefPtr<EventTarget> relatedTarget)
+                                unsigned short button, PassRefPtrWillBeRawPtr<EventTarget> relatedTarget)
 {
     if (dispatched())
         return;
@@ -192,6 +192,7 @@ Node* MouseEvent::fromElement() const
 
 void MouseEvent::trace(Visitor* visitor)
 {
+    visitor->trace(m_relatedTarget);
     visitor->trace(m_clipboard);
     MouseRelatedEvent::trace(visitor);
 }

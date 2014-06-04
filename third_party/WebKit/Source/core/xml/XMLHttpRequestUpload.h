@@ -51,10 +51,7 @@ public:
         return adoptPtrWillBeRefCountedGarbageCollected(new XMLHttpRequestUpload(xmlHttpRequest));
     }
 
-#if ENABLE(OILPAN)
-    using RefCountedGarbageCollected::ref;
-    using RefCountedGarbageCollected::deref;
-#else
+#if !ENABLE(OILPAN)
     void ref() { m_xmlHttpRequest->ref(); }
     void deref() { m_xmlHttpRequest->deref(); }
 #endif
@@ -74,8 +71,10 @@ public:
 private:
     explicit XMLHttpRequestUpload(XMLHttpRequest*);
 
+#if !ENABLE(OILPAN)
     virtual void refEventTarget() OVERRIDE { ref(); }
     virtual void derefEventTarget() OVERRIDE { deref(); }
+#endif
 
     RawPtrWillBeMember<XMLHttpRequest> m_xmlHttpRequest;
     EventTargetData m_eventTargetData;

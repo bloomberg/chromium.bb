@@ -186,7 +186,7 @@ bool Event::isBeforeUnloadEvent() const
     return false;
 }
 
-void Event::setTarget(PassRefPtr<EventTarget> target)
+void Event::setTarget(PassRefPtrWillBeRawPtr<EventTarget> target)
 {
     if (m_target == target)
         return;

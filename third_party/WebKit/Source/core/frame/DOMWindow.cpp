@@ -442,7 +442,7 @@ void DOMWindow::enqueueDocumentEvent(PassRefPtrWillBeRawPtr<Event> event)
 {
     if (!m_eventQueue)
         return;
-    event->setTarget(m_document);
+    event->setTarget(m_document.get());
     m_eventQueue->enqueueEvent(event);
 }
 
@@ -1609,11 +1609,11 @@ void DOMWindow::dispatchLoadEvent()
     InspectorInstrumentation::loadEventFired(frame());
 }
 
-bool DOMWindow::dispatchEvent(PassRefPtrWillBeRawPtr<Event> prpEvent, PassRefPtr<EventTarget> prpTarget)
+bool DOMWindow::dispatchEvent(PassRefPtrWillBeRawPtr<Event> prpEvent, PassRefPtrWillBeRawPtr<EventTarget> prpTarget)
 {
     ASSERT(!NoEventDispatchAssertion::isEventDispatchForbidden());
 
-    RefPtr<EventTarget> protect = this;
+    RefPtrWillBeRawPtr<EventTarget> protect(this);
     RefPtrWillBeRawPtr<Event> event = prpEvent;
 
     event->setTarget(prpTarget ? prpTarget : this);

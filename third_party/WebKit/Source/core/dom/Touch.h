@@ -38,7 +38,7 @@ namespace WebCore {
 
 class LocalFrame;
 
-class Touch : public RefCountedWillBeGarbageCollectedFinalized<Touch>, public ScriptWrappable {
+class Touch FINAL : public RefCountedWillBeGarbageCollectedFinalized<Touch>, public ScriptWrappable {
 public:
     static PassRefPtrWillBeRawPtr<Touch> create(LocalFrame* frame, EventTarget* target,
             unsigned identifier, int screenX, int screenY, int pageX, int pageY,
@@ -63,7 +63,7 @@ public:
     const LayoutPoint& absoluteLocation() const { return m_absoluteLocation; }
     PassRefPtrWillBeRawPtr<Touch> cloneWithNewTarget(EventTarget*) const;
 
-    void trace(Visitor*) { }
+    void trace(Visitor*);
 
 private:
     Touch(LocalFrame* frame, EventTarget* target, unsigned identifier,
@@ -74,7 +74,7 @@ private:
         int screenX, int screenY, int pageX, int pageY,
         int radiusX, int radiusY, float rotationAngle, float force, LayoutPoint absoluteLocation);
 
-    RefPtr<EventTarget> m_target;
+    RefPtrWillBeMember<EventTarget> m_target;
     unsigned m_identifier;
     int m_clientX;
     int m_clientY;

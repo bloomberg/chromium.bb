@@ -235,8 +235,10 @@ private:
     static int s_nodeCount[NodeTypeEnd];
 #endif
 
+#if !ENABLE(OILPAN)
     virtual void refEventTarget() OVERRIDE FINAL { ref(); }
     virtual void derefEventTarget() OVERRIDE FINAL { deref(); }
+#endif
 
 protected:
     unsigned m_channelCount;

@@ -367,8 +367,9 @@ private:
     RefPtrWillBePersistent<Node> m_previousWheelScrolledNode;
 
     // The target of each active touch point indexed by the touch ID.
-    typedef HashMap<unsigned, RefPtr<EventTarget>, DefaultHash<unsigned>::Hash, WTF::UnsignedWithZeroKeyHashTraits<unsigned> > TouchTargetMap;
-    TouchTargetMap m_targetForTouchID;
+    typedef WillBeHeapHashMap<unsigned, RefPtrWillBeMember<EventTarget>, DefaultHash<unsigned>::Hash, WTF::UnsignedWithZeroKeyHashTraits<unsigned> > TouchTargetMap;
+    typedef WillBePersistentHeapHashMap<unsigned, RefPtrWillBeMember<EventTarget>, DefaultHash<unsigned>::Hash, WTF::UnsignedWithZeroKeyHashTraits<unsigned> > PersistentTouchTargetMap;
+    PersistentTouchTargetMap m_targetForTouchID;
 
     // If set, the document of the active touch sequence. Unset if no touch sequence active.
     RefPtrWillBePersistent<Document> m_touchSequenceDocument;

@@ -48,7 +48,7 @@ public:
 
 private:
     RefPtrWillBePersistent<DOMWindow> m_window;
-    RefPtr<EventTarget> m_target;
+    RefPtrWillBePersistent<EventTarget> m_target;
 };
 
 inline DOMWindow* WindowEventContext::window() const

@@ -36,7 +36,7 @@ class Node;
 struct FocusEventInit : public UIEventInit {
     FocusEventInit();
 
-    RefPtr<EventTarget> relatedTarget;
+    RefPtrWillBeMember<EventTarget> relatedTarget;
 };
 
 class FocusEvent FINAL : public UIEvent {
@@ -70,7 +70,7 @@ private:
     FocusEvent(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtrWillBeRawPtr<AbstractView>, int, EventTarget*);
     FocusEvent(const AtomicString& type, const FocusEventInit&);
 
-    RefPtr<EventTarget> m_relatedTarget;
+    RefPtrWillBeMember<EventTarget> m_relatedTarget;
 };
 
 DEFINE_EVENT_TYPE_CASTS(FocusEvent);

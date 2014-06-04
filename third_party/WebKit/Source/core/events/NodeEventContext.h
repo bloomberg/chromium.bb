@@ -42,7 +42,7 @@ class NodeEventContext {
     ALLOW_ONLY_INLINE_ALLOCATION();
 public:
     // FIXME: Use ContainerNode instead of Node.
-    NodeEventContext(PassRefPtrWillBeRawPtr<Node>, PassRefPtr<EventTarget> currentTarget);
+    NodeEventContext(PassRefPtrWillBeRawPtr<Node>, PassRefPtrWillBeRawPtr<EventTarget> currentTarget);
     ~NodeEventContext();
     void trace(Visitor*);
 
@@ -60,7 +60,7 @@ public:
 
 private:
     RefPtrWillBeMember<Node> m_node;
-    RefPtr<EventTarget> m_currentTarget;
+    RefPtrWillBeMember<EventTarget> m_currentTarget;
     RefPtr<TreeScopeEventContext> m_treeScopeEventContext;
 };
 

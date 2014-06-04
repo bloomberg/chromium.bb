@@ -3480,7 +3480,7 @@ bool EventHandler::handleTouchEvent(const PlatformTouchEvent& event)
     TargetTouchesHeapMap touchesByTarget;
 
     // Array of touches per state, used to assemble the 'changedTouches' list.
-    typedef HashSet<RefPtr<EventTarget> > EventTargetSet;
+    typedef WillBeHeapHashSet<RefPtrWillBeMember<EventTarget> > EventTargetSet;
     struct {
         // The touches corresponding to the particular change state this struct
         // instance represents.
@@ -3493,7 +3493,7 @@ bool EventHandler::handleTouchEvent(const PlatformTouchEvent& event)
         const PlatformTouchPoint& point = points[i];
         LayoutPoint pagePoint = documentPointForWindowPoint(m_frame, point.pos());
         PlatformTouchPoint::State pointState = point.state();
-        RefPtr<EventTarget> touchTarget;
+        RefPtrWillBeRawPtr<EventTarget> touchTarget = nullptr;
 
         if (pointState == PlatformTouchPoint::TouchReleased || pointState == PlatformTouchPoint::TouchCancelled) {
             // The target should be the original target for this touch, so get

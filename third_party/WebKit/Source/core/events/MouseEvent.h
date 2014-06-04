@@ -45,7 +45,7 @@ struct MouseEventInit : public UIEventInit {
     bool shiftKey;
     bool metaKey;
     unsigned short button;
-    RefPtr<EventTarget> relatedTarget;
+    RefPtrWillBeMember<EventTarget> relatedTarget;
 };
 
 class MouseEvent : public MouseRelatedEvent {
@@ -59,7 +59,7 @@ public:
         int detail, int screenX, int screenY, int pageX, int pageY,
         int movementX, int movementY,
         bool ctrlKey, bool altKey, bool shiftKey, bool metaKey, unsigned short button,
-        PassRefPtr<EventTarget> relatedTarget, PassRefPtrWillBeRawPtr<Clipboard>, bool isSimulated = false);
+        PassRefPtrWillBeRawPtr<EventTarget> relatedTarget, PassRefPtrWillBeRawPtr<Clipboard>, bool isSimulated = false);
 
     static PassRefPtrWillBeRawPtr<MouseEvent> create(const AtomicString& eventType, PassRefPtrWillBeRawPtr<AbstractView>, const PlatformMouseEvent&, int detail, PassRefPtrWillBeRawPtr<Node> relatedTarget);
 
@@ -70,7 +70,7 @@ public:
     void initMouseEvent(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtrWillBeRawPtr<AbstractView>,
         int detail, int screenX, int screenY, int clientX, int clientY,
         bool ctrlKey, bool altKey, bool shiftKey, bool metaKey,
-        unsigned short button, PassRefPtr<EventTarget> relatedTarget);
+        unsigned short button, PassRefPtrWillBeRawPtr<EventTarget> relatedTarget);
 
     // WinIE uses 1,4,2 for left/middle/right but not for click (just for mousedown/up, maybe others),
     // but we will match the standard DOM.
@@ -78,7 +78,7 @@ public:
     bool buttonDown() const { return m_buttonDown; }
     EventTarget* relatedTarget() const { return m_relatedTarget.get(); }
     EventTarget* relatedTarget(bool& isNull) const { isNull = !m_relatedTarget; return m_relatedTarget.get(); }
-    void setRelatedTarget(PassRefPtr<EventTarget> relatedTarget) { m_relatedTarget = relatedTarget; }
+    void setRelatedTarget(PassRefPtrWillBeRawPtr<EventTarget> relatedTarget) { m_relatedTarget = relatedTarget; }
 
     Node* toElement() const;
     Node* fromElement() const;
@@ -98,7 +98,7 @@ protected:
         int detail, int screenX, int screenY, int pageX, int pageY,
         int movementX, int movementY,
         bool ctrlKey, bool altKey, bool shiftKey, bool metaKey, unsigned short button,
-        PassRefPtr<EventTarget> relatedTarget, PassRefPtrWillBeRawPtr<Clipboard>, bool isSimulated);
+        PassRefPtrWillBeRawPtr<EventTarget> relatedTarget, PassRefPtrWillBeRawPtr<Clipboard>, bool isSimulated);
 
     MouseEvent(const AtomicString& type, const MouseEventInit&);
 
@@ -107,7 +107,7 @@ protected:
 private:
     unsigned short m_button;
     bool m_buttonDown;
-    RefPtr<EventTarget> m_relatedTarget;
+    RefPtrWillBeMember<EventTarget> m_relatedTarget;
     RefPtrWillBeMember<Clipboard> m_clipboard;
 };
 
