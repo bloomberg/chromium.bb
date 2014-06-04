@@ -181,6 +181,8 @@ GeolocationPosition* GeolocationController::lastPosition()
 
 void GeolocationController::setClientForTest(GeolocationClient* client)
 {
+    if (m_hasClientForTest)
+        m_client->controllerForTestRemoved(this);
     m_client = client;
     m_hasClientForTest = true;
 
