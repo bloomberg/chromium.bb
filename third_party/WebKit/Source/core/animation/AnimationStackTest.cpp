@@ -76,7 +76,7 @@ protected:
         return toLegacyStyleInterpolation(interpolation)->currentValue().get();
     }
 
-    RefPtr<Document> document;
+    RefPtrWillBePersistent<Document> document;
     RefPtrWillBePersistent<AnimationTimeline> timeline;
     RefPtrWillBePersistent<Element> element;
 };

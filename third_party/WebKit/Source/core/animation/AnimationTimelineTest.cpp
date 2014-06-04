@@ -109,7 +109,7 @@ protected:
         timeline->serviceAnimations(TimingUpdateForAnimationFrame);
     }
 
-    RefPtr<Document> document;
+    RefPtrWillBePersistent<Document> document;
     RefPtrWillBePersistent<Element> element;
     RefPtrWillBePersistent<AnimationTimeline> timeline;
     Timing timing;

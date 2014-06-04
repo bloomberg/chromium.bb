@@ -97,7 +97,7 @@ bool AXMenuList::canSetFocusAttribute() const
 
 void AXMenuList::didUpdateActiveOption(int optionIndex)
 {
-    RefPtr<Document> document(m_renderer->document());
+    RefPtrWillBeRawPtr<Document> document(m_renderer->document());
     AXObjectCache* cache = document->axObjectCache();
 
     const AccessibilityChildrenVector& childObjects = children();

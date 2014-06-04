@@ -46,9 +46,9 @@ public:
     virtual void checkNotify() OVERRIDE;
 
 private:
-    PassRefPtr<Document> createDocument(const KURL&);
+    PassRefPtrWillBeRawPtr<Document> createDocument(const KURL&);
 
-    RefPtr<Document> m_document;
+    RefPtrWillBePersistent<Document> m_document;
     OwnPtr<TextResourceDecoder> m_decoder;
 };
 

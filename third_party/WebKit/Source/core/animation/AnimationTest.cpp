@@ -28,7 +28,7 @@ protected:
         EXPECT_EQ(0, document->timeline().currentTime());
     }
 
-    RefPtr<Document> document;
+    RefPtrWillBePersistent<Document> document;
     RefPtrWillBePersistent<Element> element;
     TrackExceptionState exceptionState;
 };

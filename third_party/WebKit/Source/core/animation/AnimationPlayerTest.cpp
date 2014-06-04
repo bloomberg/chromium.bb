@@ -82,7 +82,7 @@ protected:
         return player->update(TimingUpdateOnDemand);
     }
 
-    RefPtr<Document> document;
+    RefPtrWillBePersistent<Document> document;
     RefPtrWillBePersistent<AnimationTimeline> timeline;
     RefPtrWillBePersistent<AnimationPlayer> player;
     TrackExceptionState exceptionState;

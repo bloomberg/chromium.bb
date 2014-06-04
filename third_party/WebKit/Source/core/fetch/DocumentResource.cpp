@@ -65,7 +65,7 @@ void DocumentResource::checkNotify()
     Resource::checkNotify();
 }
 
-PassRefPtr<Document> DocumentResource::createDocument(const KURL& url)
+PassRefPtrWillBeRawPtr<Document> DocumentResource::createDocument(const KURL& url)
 {
     switch (type()) {
     case SVGDocument:
