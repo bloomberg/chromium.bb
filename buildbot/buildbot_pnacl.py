@@ -83,6 +83,11 @@ def BuildScriptX86(status, context):
       tests = ['run_' + test + '_test_irt' for test in
                ['hello_world', 'float', 'malloc_realloc_calloc_free',
                 'dup', 'syscall', 'getpid']]
+      # Using skip_nonstable_bitcode=1 here disables the tests for
+      # zero-cost C++ exception handling, which don't pass for Non-SFI
+      # mode yet because we don't build libgcc_eh for Non-SFI mode.
+      tests.extend(['toolchain_tests_irt',
+                    'skip_nonstable_bitcode=1'])
       # Extra non-IRT-using test to run for x86-32
       tests.append('run_hello_world_test')
       SCons(context, parallel=True, mode=irt_mode,

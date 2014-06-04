@@ -30,6 +30,9 @@ readonly SCONS_EVERYTHING=""
 readonly SCONS_S_M="small_tests medium_tests"
 readonly SCONS_S_M_IRT="small_tests_irt medium_tests_irt"
 
+# Using skip_nonstable_bitcode=1 here disables the tests for zero-cost C++
+# exception handling, which don't pass for Non-SFI mode yet because we
+# don't build libgcc_eh for Non-SFI mode.
 # TODO(mseaborn): Run small_tests_irt with nonsfi_nacl=1 when it passes,
 # instead of the following whitelist of tests.
 readonly SCONS_NONSFI_TESTS="\
@@ -38,7 +41,9 @@ readonly SCONS_NONSFI_TESTS="\
     run_malloc_realloc_calloc_free_test_irt \
     run_dup_test_irt \
     run_syscall_test_irt \
-    run_getpid_test_irt"
+    run_getpid_test_irt \
+    toolchain_tests_irt \
+    skip_nonstable_bitcode=1"
 readonly SCONS_NONSFI="nonsfi_nacl=1 ${SCONS_NONSFI_TESTS}"
 # Extra non-IRT-using test to run for x86-32 and ARM on toolchain bots.
 # TODO(mseaborn): Run this on the main bots after the toolchain revision is
@@ -246,7 +251,10 @@ scons-stage-irt() {
       mode="--mode=dbg-host,nacl,nacl_irt_test"
   fi
 
-  echo "@@@BUILD_STEP scons-irt [${platform}] [${test}] [${info}]@@@"
+  # We truncate the test list ($test) because long BUILD_STEP strings cause
+  # Buildbot to fail (because the Buildbot master tries to use the string
+  # as a filename).
+  echo "@@@BUILD_STEP scons-irt [${platform}] [${test:0:100}] [${info}]@@@"
   ${SCONS_COMMON} ${extra} ${mode} platform=${platform} ${test} || handle-error
 }
 

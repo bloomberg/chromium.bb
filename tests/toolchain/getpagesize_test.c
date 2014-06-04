@@ -8,7 +8,10 @@
 #include <unistd.h>
 
 int main(void) {
-  /* The page size is always 64k under NaCl. */
-  assert(getpagesize() == 0x10000);
+  /* Check that getpagesize() works and returns a sensible value. */
+  int page_size = getpagesize();
+  assert(page_size == sysconf(_SC_PAGESIZE));
+  /* The page size is 64k under SFI NaCl but may be 4k under Non-SFI NaCl. */
+  assert(page_size == 0x10000 || page_size == 0x1000);
   return 0;
 }
