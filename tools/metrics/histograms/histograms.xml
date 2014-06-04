@@ -35037,8 +35037,8 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="28" label="DELETED_FILEBROWSERPRIVATE_ISFULLSCREEN"/>
   <int value="29" label="AUTOTESTPRIVATE_LOGOUT"/>
   <int value="30" label="EXPERIMENTAL_HISTORY_GETMOSTVISITED"/>
-  <int value="31" label="BLUETOOTH_DISCONNECT"/>
-  <int value="32" label="BLUETOOTH_SETOUTOFBANDPAIRINGDATA"/>
+  <int value="31" label="DELETED_BLUETOOTH_DISCONNECT"/>
+  <int value="32" label="DELETED_BLUETOOTH_SETOUTOFBANDPAIRINGDATA"/>
   <int value="33" label="BOOKMARKMANAGERPRIVATE_CANPASTE"/>
   <int value="34" label="AUTOTESTPRIVATE_RESTART"/>
   <int value="35" label="USB_CLAIMINTERFACE"/>
@@ -35144,7 +35144,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="135" label="CONTEXTMENUS_UPDATE"/>
   <int value="136" label="BOOKMARKS_SEARCH"/>
   <int value="137" label="EXPERIMENTAL_APP_CLEARALLNOTIFICATIONS"/>
-  <int value="138" label="BLUETOOTH_GETLOCALOUTOFBANDPAIRINGDATA"/>
+  <int value="138" label="DELETED_BLUETOOTH_GETLOCALOUTOFBANDPAIRINGDATA"/>
   <int value="139" label="SYSTEMPRIVATE_GETUPDATESTATUS"/>
   <int value="140" label="FONTSETTINGS_CLEARMINIMUMFONTSIZE"/>
   <int value="141" label="DELETED_FILEBROWSERPRIVATE_GETFILELOCATIONS"/>
@@ -35282,11 +35282,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="272" label="PAGEACTIONS_DISABLEFORTAB"/>
   <int value="273" label="DEVELOPERPRIVATE_ALLOWFILEACCESS"/>
   <int value="274" label="FILEBROWSERPRIVATE_REMOVEMOUNT"/>
-  <int value="275" label="BLUETOOTH_CONNECT"/>
+  <int value="275" label="DELETED_BLUETOOTH_CONNECT"/>
   <int value="276" label="TABCAPTURE_CAPTURE"/>
   <int value="277" label="NOTIFICATIONS_CREATE"/>
   <int value="278" label="TABS_DUPLICATE"/>
-  <int value="279" label="BLUETOOTH_WRITE"/>
+  <int value="279" label="DELETED_BLUETOOTH_WRITE"/>
   <int value="280" label="PAGEACTION_SHOW"/>
   <int value="281" label="WALLPAPERPRIVATE_GETTHUMBNAIL"/>
   <int value="282" label="DOWNLOADS_PAUSE"/>
@@ -35352,7 +35352,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="342" label="BROWSERACTION_SETPOPUP"/>
   <int value="343" label="TABS_GETSELECTED"/>
   <int value="344" label="FONTSETTINGS_GETFONT"/>
-  <int value="345" label="BLUETOOTH_READ"/>
+  <int value="345" label="DELETED_BLUETOOTH_READ"/>
   <int value="346" label="WEBREQUESTINTERNAL_EVENTHANDLED"/>
   <int value="347" label="EVENTS_ADDRULES"/>
   <int value="348" label="CONTEXTMENUS_CREATE"/>
@@ -35460,8 +35460,8 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="450" label="NETWORKINGPRIVATE_GETMANAGEDPROPERTIES"/>
   <int value="451" label="LOCATION_WATCHLOCATION"/>
   <int value="452" label="LOCATION_CLEARWATCH"/>
-  <int value="453" label="BLUETOOTH_ADDPROFILE"/>
-  <int value="454" label="BLUETOOTH_REMOVEPROFILE"/>
+  <int value="453" label="DELETED_BLUETOOTH_ADDPROFILE"/>
+  <int value="454" label="DELETED_BLUETOOTH_REMOVEPROFILE"/>
   <int value="455" label="DELETED_BLUETOOTH_GETPROFILES"/>
   <int value="456" label="EXPERIMENTAL_IDENTITY_REMOVECACHEDAUTHTOKEN"/>
   <int value="457" label="AUDIO_GETINFO"/>
@@ -35724,10 +35724,10 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="709" label="BLUETOOTHPRIVATE_SETPAIRINGRESPONSE"/>
   <int value="710" label="NETWORKINGPRIVATE_GETCAPTIVEPORTALSTATUS"/>
   <int value="711" label="AUTOMATIONINTERNAL_PERFORMACTION"/>
-  <int value="712" label="BLUETOOTH_UPDATE_SOCKET"/>
-  <int value="713" label="BLUETOOTH_SET_SOCKET_PAUSED"/>
-  <int value="714" label="BLUETOOTH_GET_SOCKET"/>
-  <int value="715" label="BLUETOOTH_GET_SOCKETS"/>
+  <int value="712" label="DELETED_BLUETOOTH_UPDATE_SOCKET"/>
+  <int value="713" label="DELETED_BLUETOOTH_SET_SOCKET_PAUSED"/>
+  <int value="714" label="DELETED_BLUETOOTH_GET_SOCKET"/>
+  <int value="715" label="DELETED_BLUETOOTH_GET_SOCKETS"/>
   <int value="716" label="FILESYSTEMPROVIDER_UNMOUNT"/>
   <int value="717" label="FILESYSTEMPROVIDERINTERNAL_UNMOUNTREQUESTEDSUCCESS"/>
   <int value="718" label="FILESYSTEMPROVIDERINTERNAL_UNMOUNTREQUESTEDERROR"/>
