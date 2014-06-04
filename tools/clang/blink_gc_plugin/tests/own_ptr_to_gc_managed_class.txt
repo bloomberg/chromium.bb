@@ -11,4 +11,7 @@ class HeapObject : public GarbageCollectedFinalized<HeapObject> {
 ./own_ptr_to_gc_managed_class.h:24:5: note: [blink-gc] OwnPtr field 'm_objs' to a GC managed class declared here:
     Vector<OwnPtr<HeapObject> > m_objs;
     ^
+./own_ptr_to_gc_managed_class.h:25:5: note: [blink-gc] OwnPtr field 'm_objs2' to a GC managed class declared here:
+    OwnPtr<HeapVector<Member<HeapObject> > > m_objs2;
+    ^
 2 warnings generated.

@@ -22,6 +22,7 @@ public:
     void trace(Visitor*);
 private:
     Vector<OwnPtr<HeapObject> > m_objs;
+    OwnPtr<HeapVector<Member<HeapObject> > > m_objs2;
 };
 
 }

@@ -486,7 +486,7 @@ class CheckFieldsVisitor : public RecursiveEdgeVisitor {
     return !invalid_fields_.empty();
   }
 
-  void VisitMember(Member* edge) override {
+  void AtMember(Member* edge) override {
     if (managed_host_)
       return;
     // A member is allowed to appear in the context of a root.
@@ -499,7 +499,7 @@ class CheckFieldsVisitor : public RecursiveEdgeVisitor {
     invalid_fields_.push_back(std::make_pair(current_, kMemberInUnmanaged));
   }
 
-  void VisitValue(Value* edge) override {
+  void AtValue(Value* edge) override {
     // TODO: what should we do to check unions?
     if (edge->value()->record()->isUnion())
       return;
@@ -538,6 +538,11 @@ class CheckFieldsVisitor : public RecursiveEdgeVisitor {
           current_, InvalidSmartPtr(Parent())));
       return;
     }
+  }
+
+  void AtCollection(Collection* edge) override {
+    if (edge->on_heap() && Parent() && Parent()->IsOwnPtr())
+      invalid_fields_.push_back(std::make_pair(current_, kOwnPtrToGCManaged));
   }
 
  private:
