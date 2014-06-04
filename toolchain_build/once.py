@@ -28,6 +28,10 @@ import command
 import substituter
 
 
+class UserError(Exception):
+  pass
+
+
 class HumanReadableSignature(object):
   """Accumator of signature information in human readable form.
 
@@ -255,6 +259,13 @@ class Once(object):
         nonpath_subst['build_signature'] = build_signature
         subst = substituter.Substituter(work_dir, paths, nonpath_subst)
         command.Invoke(cmd_options, subst)
+
+    # Confirm that we aren't hitting something we've cached.
+    for path in self._path_hash_cache:
+      if not os.path.relpath(output, path).startswith(os.pardir + os.sep):
+        raise UserError(
+            'Package %s outputs to a directory already used as an input: %s' %
+            (package, path))
 
     if memoize:
       self.WriteResultToCache(package, build_signature, output)

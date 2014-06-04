@@ -10,6 +10,7 @@ import unittest
 
 MODULES = [
     'once_test',
+    'toolchain_main_test',
 ]
 
 suite = unittest.TestLoader().loadTestsFromNames(MODULES)

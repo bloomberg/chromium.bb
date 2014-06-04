@@ -33,16 +33,6 @@ DEFAULT_CACHE_DIR = os.path.join(SCRIPT_DIR, 'cache')
 DEFAULT_SRC_DIR = os.path.join(SCRIPT_DIR, 'src')
 DEFAULT_OUT_DIR = os.path.join(SCRIPT_DIR, 'out')
 
-def PrintFlush(message):
-  """Flush stdout and print a message to stderr.
-
-  Buildbot annotator messages must be at the beginning of a line, and we want to
-  ensure that any output from the script or from subprocesses appears in the
-  correct order wrt BUILD_STEP messages. So we flush stdout before printing all
-  buildbot messages here.
-  """
-  sys.stdout.flush()
-  print >>sys.stderr, message
 
 def PrintAnnotatorURL(url):
   """Print an URL in buildbot annotator form.
@@ -50,7 +40,7 @@ def PrintAnnotatorURL(url):
   Args:
     url: A URL to print.
   """
-  PrintFlush('@@@STEP_LINK@download@%s@@@' % url)
+  pynacl.log_tools.WriteAnnotatorLine('@@@STEP_LINK@download@%s@@@' % url)
 
 
 class PackageBuilder(object):
@@ -143,11 +133,14 @@ class PackageBuilder(object):
     """Main entry point."""
     pynacl.file_tools.MakeDirectoryIfAbsent(self._options.source)
     pynacl.file_tools.MakeDirectoryIfAbsent(self._options.output)
-    pynacl.log_tools.SetupLogging(self._options.verbose,
-                                  open(os.path.join(self._options.output,
-                                                   'toolchain_build.log'), 'w'))
-    self.BuildAll()
-    self.OutputPackagesInformation()
+    with open(os.path.join(
+      self._options.output, 'toolchain_build.log'), 'w') as log_file:
+      pynacl.log_tools.SetupLogging(
+          self._options.verbose,
+          log_file,
+          self._options.quiet, self._options.no_annotator)
+      self.BuildAll()
+      self.OutputPackagesInformation()
 
   def GetOutputDir(self, package, use_subdir):
     # The output dir of source packages is in the source directory, and can be
@@ -156,10 +149,10 @@ class PackageBuilder(object):
       dirname = self._packages[package].get('output_dirname', package)
       return os.path.join(self._options.source, dirname)
     else:
-       root = os.path.join(self._options.output, package + '_install')
-       if use_subdir and 'output_subdir' in self._packages[package]:
-         return os.path.join(root, self._packages[package]['output_subdir'])
-       return root
+      root = os.path.join(self._options.output, package + '_install')
+      if use_subdir and 'output_subdir' in self._packages[package]:
+        return os.path.join(root, self._packages[package]['output_subdir'])
+      return root
 
   def BuildPackage(self, package):
     """Build a single package.
@@ -194,7 +187,8 @@ class PackageBuilder(object):
       logging.debug('Sync skipped: not running commands for %s' % package)
       return
 
-    PrintFlush('@@@BUILD_STEP %s (%s)@@@' % (package, type_text))
+    pynacl.log_tools.WriteAnnotatorLine(
+        '@@@BUILD_STEP %s (%s)@@@' % (package, type_text))
     logging.debug('Building %s package %s' % (type_text, package))
 
     dependencies = package_info.get('dependencies', [])
@@ -208,7 +202,8 @@ class PackageBuilder(object):
           raise Exception('key "%s" found in both dependencies and inputs of '
                           'package "%s"' % (key, package))
         inputs[key] = value
-    else:
+    elif type_text != 'source':
+      # Non-source packages default to a particular input directory.
       inputs['src'] = os.path.join(self._options.source, package)
     # Add in each dependency by package name.
     for dependency in dependencies:
@@ -350,6 +345,10 @@ class PackageBuilder(object):
         default=False, action='store_true',
         help='Produce more output.')
     parser.add_option(
+        '-q', '--quiet', dest='quiet',
+        default=False, action='store_true',
+        help='Produce no output.')
+    parser.add_option(
         '-c', '--clobber', dest='clobber',
         default=False, action='store_true',
         help='Clobber working directories before building.')
@@ -385,6 +384,10 @@ class PackageBuilder(object):
         '--no-pinned', dest='pinned',
         default=True, action='store_false',
         help='Do not use pinned revisions.')
+    parser.add_option(
+        '--no-annotator', dest='no_annotator',
+        default=True, action='store_true',
+        help='Do not print annotator headings.')
     parser.add_option(
         '--trybot', dest='trybot',
         default=False, action='store_true',
@@ -423,6 +426,7 @@ class PackageBuilder(object):
       sys.exit(1)
     if options.trybot or options.buildbot:
       options.verbose = True
+      options.quiet = False
       options.sync_sources = True
       options.clobber = True
       options.emit_signatures = '-'

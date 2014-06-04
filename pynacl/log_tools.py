@@ -10,11 +10,13 @@ import os
 import subprocess
 import sys
 
-# Module-level configuration
-LOG_FH = None
-VERBOSE = False
 
-def SetupLogging(verbose, file_handle=None, quiet=False):
+_log_fh = None
+_console_log_level = None
+_no_annotator = False
+
+
+def SetupLogging(verbose, file_handle=None, quiet=False, no_annotator=False):
   """Set up python logging.
 
   Args:
@@ -26,37 +28,62 @@ def SetupLogging(verbose, file_handle=None, quiet=False):
                  written, regardless of whether there are errors.
     quiet: If True, log to stderr at WARNING level only. Only valid if verbose
            is False.
+    no_annotator: If True, only emit scrubbed annotator tags to the console.
+                  Tags still go to the log.
   """
   # Since one of our handlers always wants debug, set the global level to debug.
   logging.getLogger().setLevel(logging.DEBUG)
-  stderr_handler = logging.StreamHandler()
-  stderr_handler.setFormatter(
+  console_handler = logging.StreamHandler()
+  console_handler.setFormatter(
       logging.Formatter(fmt='%(levelname)s: %(message)s'))
+  global _no_annotator
+  _no_annotator = no_annotator
+  global _console_log_level
   if verbose:
-    global VERBOSE
-    VERBOSE = True
-    stderr_handler.setLevel(logging.DEBUG)
+    _console_log_level = logging.DEBUG
   elif quiet:
-    stderr_handler.setLevel(logging.WARN)
+    _console_log_level = logging.WARN
   else:
-    stderr_handler.setLevel(logging.INFO)
-  logging.getLogger().addHandler(stderr_handler)
+    _console_log_level = logging.INFO
+  console_handler.setLevel(_console_log_level)
+  logging.getLogger().addHandler(console_handler)
 
   if file_handle:
-    global LOG_FH
+    global _log_fh
     file_handler = logging.StreamHandler(file_handle)
     file_handler.setLevel(logging.DEBUG)
     file_handler.setFormatter(
         logging.Formatter(fmt='%(levelname)s: %(message)s'))
     logging.getLogger().addHandler(file_handler)
-    LOG_FH = file_handle
+    _log_fh = file_handle
 
 
 def WriteToLog(text):
-  if VERBOSE:
+  """Write text to the current log file, and possibly stdout."""
+  if _console_log_level == logging.DEBUG:
     sys.stdout.write(text)
-  if LOG_FH:
-    LOG_FH.write(text)
+  if _log_fh:
+    _log_fh.write(text)
+
+
+def WriteAnnotatorLine(text):
+  """Flush stdout and print a message to stderr, also log.
+
+  Buildbot annotator messages must be at the beginning of a line, and we want to
+  ensure that any output from the script or from subprocesses appears in the
+  correct order wrt BUILD_STEP messages. So we flush stdout before printing all
+  buildbot messages here.
+
+  Leading and trailing newlines are added.
+  """
+  if _console_log_level in [logging.DEBUG, logging.INFO]:
+    sys.stdout.flush()
+    if _no_annotator:
+      sys.stderr.write('\n' + text.replace('@', '%') + '\n')
+    else:
+      sys.stderr.write('\n' + text + '\n')
+  if _log_fh:
+    _log_fh.write(text)
 
 
 def CheckCall(command, stdout=None, **kwargs):

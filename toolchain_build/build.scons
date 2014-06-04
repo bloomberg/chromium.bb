@@ -7,6 +7,7 @@
 Import('env')
 
 node = env.CommandTest('toolchain_python_tests.out',
-                       command=['${PYTHON}', env.File('toolchain_tests.py')],
+                       command=['${PYTHON}',
+                                env.File('toolchain_tests.py'), '-v'],
                        direct_emulation=False)
 env.AddNodeToTestSuite(node, ['small_tests'], 'run_toolchain_python_tests')

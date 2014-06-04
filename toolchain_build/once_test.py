@@ -267,5 +267,18 @@ class TestOnce(unittest.TestCase):
           pynacl.file_tools.ReadFile(self._output_files[0])
       )
 
+  def test_OutputsFlushPathHashCache(self):
+    # Test that commands that output to a directory that has an input hash
+    # value cached raise an error indicating an input output cycle.
+    with pynacl.working_directory.TemporaryWorkingDirectory() as work_dir:
+      self.GenerateTestData('CacheFlush', work_dir)
+      o = once.Once(storage=pynacl.fake_storage.FakeStorage(),
+                    system_summary='test')
+      self.assertRaises(
+          once.UserError, o.Run,
+          'test', self._input_dirs, self._input_dirs['input0'],
+          [command.Copy('%(input0)s/in0', '%(output)s/out')])
+
+
 if __name__ == '__main__':
   unittest.main()
