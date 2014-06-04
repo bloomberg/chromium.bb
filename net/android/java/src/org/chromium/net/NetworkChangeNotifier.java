@@ -41,6 +41,7 @@ public class NetworkChangeNotifier {
     public static final int CONNECTION_3G = 4;
     public static final int CONNECTION_4G = 5;
     public static final int CONNECTION_NONE = 6;
+    public static final int CONNECTION_BLUETOOTH = 7;
 
     private final Context mContext;
     private final ArrayList<Long> mNativeChangeNotifiers;

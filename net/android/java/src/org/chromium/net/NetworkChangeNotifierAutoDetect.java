@@ -163,6 +163,8 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver
                 return NetworkChangeNotifier.CONNECTION_WIFI;
             case ConnectivityManager.TYPE_WIMAX:
                 return NetworkChangeNotifier.CONNECTION_4G;
+            case ConnectivityManager.TYPE_BLUETOOTH:
+                return NetworkChangeNotifier.CONNECTION_BLUETOOTH;
             case ConnectivityManager.TYPE_MOBILE:
                 // Use information from TelephonyManager to classify the connection.
                 switch (mConnectivityManagerDelegate.getNetworkSubtype()) {
