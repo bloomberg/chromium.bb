@@ -15,7 +15,6 @@
 
 #include "base/basictypes.h"
 #include "base/logging.h"
-#include "base/time/time.h"
 #include "build/build_config.h"
 #include "content/public/common/sandbox_init.h"
 #include "sandbox/linux/seccomp-bpf-helpers/sigsys_handlers.h"
@@ -81,26 +80,19 @@ ErrorCode RestrictClockID(SandboxBPF* sb) {
   // returned by {clock,pthread}_getcpuclockid), which can leak information
   // about the state of the host OS.
   COMPILE_ASSERT(4 == sizeof(clockid_t), clockid_is_not_32bit);
-  ErrorCode result = sb->Cond(0, ErrorCode::TP_32BIT,
-                              ErrorCode::OP_EQUAL, CLOCK_MONOTONIC,
-                              ErrorCode(ErrorCode::ERR_ALLOWED),
-                     sb->Cond(0, ErrorCode::TP_32BIT,
-                              ErrorCode::OP_EQUAL, CLOCK_PROCESS_CPUTIME_ID,
-                              ErrorCode(ErrorCode::ERR_ALLOWED),
-                     sb->Cond(0, ErrorCode::TP_32BIT,
-                              ErrorCode::OP_EQUAL, CLOCK_REALTIME,
-                              ErrorCode(ErrorCode::ERR_ALLOWED),
-                     sb->Cond(0, ErrorCode::TP_32BIT,
-                              ErrorCode::OP_EQUAL, CLOCK_THREAD_CPUTIME_ID,
-                              ErrorCode(ErrorCode::ERR_ALLOWED),
-                     sb->Trap(sandbox::CrashSIGSYS_Handler, NULL)))));
-#if defined(OS_CHROMEOS)
-  // Allow the special clock for Chrome OS used by Chrome tracing.
-  result = sb->Cond(0, ErrorCode::TP_32BIT,
-                    ErrorCode::OP_EQUAL, base::TimeTicks::kClockSystemTrace,
-                    ErrorCode(ErrorCode::ERR_ALLOWED), result);
-#endif
-  return result;
+  return sb->Cond(0, ErrorCode::TP_32BIT,
+                  ErrorCode::OP_EQUAL, CLOCK_MONOTONIC,
+                  ErrorCode(ErrorCode::ERR_ALLOWED),
+         sb->Cond(0, ErrorCode::TP_32BIT,
+                  ErrorCode::OP_EQUAL, CLOCK_PROCESS_CPUTIME_ID,
+                  ErrorCode(ErrorCode::ERR_ALLOWED),
+         sb->Cond(0, ErrorCode::TP_32BIT,
+                  ErrorCode::OP_EQUAL, CLOCK_REALTIME,
+                  ErrorCode(ErrorCode::ERR_ALLOWED),
+         sb->Cond(0, ErrorCode::TP_32BIT,
+                  ErrorCode::OP_EQUAL, CLOCK_THREAD_CPUTIME_ID,
+                  ErrorCode(ErrorCode::ERR_ALLOWED),
+         sb->Trap(sandbox::CrashSIGSYS_Handler, NULL)))));
 }
 
 ErrorCode RestrictClone(SandboxBPF* sb) {

@@ -576,14 +576,6 @@ inline Time TimeDelta::operator+(Time t) const {
 
 class BASE_EXPORT TimeTicks {
  public:
-  // We define this even without OS_CHROMEOS for seccomp sandbox testing.
-#if defined(OS_LINUX)
-  // Force definition of the system trace clock; it is a chromeos-only api
-  // at the moment and surfacing it in the right place requires mucking
-  // with glibc et al.
-  static const clockid_t kClockSystemTrace = 11;
-#endif
-
   TimeTicks() : ticks_(0) {
   }
 
