@@ -558,19 +558,6 @@ class ExtensionPrefs : public ExtensionScopedPrefs, public KeyedService {
   void SetInstallParam(const std::string& extension_id,
                        const std::string& install_parameter);
 
-  // Gets/sets the next threshold for displaying a notification if an extension
-  // or app consumes excessive disk space. Returns 0 if the initial threshold
-  // has not yet been reached.
-  int64 GetNextStorageThreshold(const std::string& extension_id) const;
-  void SetNextStorageThreshold(const std::string& extension_id,
-                               int64 next_threshold);
-
-  // Gets/sets whether notifications should be shown if an extension or app
-  // consumes too much disk space.
-  bool IsStorageNotificationEnabled(const std::string& extension_id) const;
-  void SetStorageNotificationEnabled(const std::string& extension_id,
-                                     bool enable_notifications);
-
  private:
   friend class ExtensionPrefsBlacklistedExtensions;  // Unit test.
   friend class ExtensionPrefsUninstallExtension;     // Unit test.

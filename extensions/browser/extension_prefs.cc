@@ -194,15 +194,6 @@ const char kPrefInstallParam[] = "install_parameter";
 // A list of installed ids and a signature.
 const char kInstallSignature[] = "extensions.install_signature";
 
-// A preference that stores the next threshold for displaying a notification
-// when an extension or app consumes excessive disk space. This will not be
-// set until the extension/app reaches the initial threshold.
-const char kPrefNextStorageThreshold[] = "next_storage_threshold";
-
-// If this preference is set to true, notifications will be suppressed when an
-// extension or app consumes excessive disk space.
-const char kPrefDisableStorageNotifications[] = "disable_storage_notifications";
-
 // Provider of write access to a dictionary storing extension prefs.
 class ScopedExtensionPrefUpdate : public DictionaryPrefUpdate {
  public:
@@ -1937,44 +1928,6 @@ void ExtensionPrefs::SetInstallParam(const std::string& extension_id,
   UpdateExtensionPref(extension_id,
                       kPrefInstallParam,
                       new base::StringValue(install_parameter));
-}
-
-int64 ExtensionPrefs::GetNextStorageThreshold(
-    const std::string& extension_id) const {
-  int64 next_threshold;
-  if (ReadInt64(GetExtensionPref(extension_id),
-                kPrefNextStorageThreshold,
-                &next_threshold)) {
-    return next_threshold;
-  }
-
-  return 0;
-}
-
-void ExtensionPrefs::SetNextStorageThreshold(const std::string& extension_id,
-                                             int64 next_threshold) {
-  ScopedExtensionPrefUpdate update(prefs_, extension_id);
-  SaveInt64(update.Get(), kPrefNextStorageThreshold, next_threshold);
-}
-
-bool ExtensionPrefs::IsStorageNotificationEnabled(
-    const std::string& extension_id) const {
-  bool disable_notifications;
-  if (ReadPrefAsBoolean(extension_id,
-                        kPrefDisableStorageNotifications,
-                        &disable_notifications)) {
-    return !disable_notifications;
-  }
-
-  return true;
-}
-
-void ExtensionPrefs::SetStorageNotificationEnabled(
-    const std::string& extension_id, bool enable_notifications) {
-  UpdateExtensionPref(
-      extension_id,
-      kPrefDisableStorageNotifications,
-      enable_notifications ? NULL : new base::FundamentalValue(true));
 }
 
 ExtensionPrefs::ExtensionPrefs(

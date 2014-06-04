@@ -7,11 +7,13 @@
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_storage_monitor.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/extension_prefs.h"
+#include "extensions/browser/extension_system.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_observer.h"
 
@@ -72,37 +74,74 @@ class NotificationObserver : public message_center::MessageCenterObserver {
 }  // namespace
 
 class ExtensionStorageMonitorTest : public ExtensionBrowserTest {
+ public:
+  ExtensionStorageMonitorTest() : storage_monitor_(NULL) {}
+
  protected:
-  void InitStorageMonitor() {
-    ExtensionStorageMonitor* monitor = ExtensionStorageMonitor::Get(profile());
-    ASSERT_TRUE(monitor);
+  // ExtensionBrowserTest overrides:
+  virtual void SetUpOnMainThread() OVERRIDE {
+    ExtensionBrowserTest::SetUpOnMainThread();
 
-    // Override thresholds so that we don't have to write a huge amount of data
-    // to trigger notifications in these tests.
-    monitor->enable_for_all_extensions_ = true;
-    monitor->initial_extension_threshold_ = kInitialUsageThreshold;
+    InitStorageMonitor();
+  }
 
-    // To ensure storage events are dispatched from QuotaManager immediately.
-    monitor->observer_rate_ = 0;
+  ExtensionStorageMonitor* monitor() {
+    CHECK(storage_monitor_);
+    return storage_monitor_;
+  }
+
+  int64 GetInitialExtensionThreshold() {
+    CHECK(storage_monitor_);
+    return storage_monitor_->initial_extension_threshold_;
+  }
+
+  int64 GetInitialEphemeralThreshold() {
+    CHECK(storage_monitor_);
+    return storage_monitor_->initial_ephemeral_threshold_;
+  }
+
+  void DisableForInstalledExtensions() {
+    CHECK(storage_monitor_);
+    storage_monitor_->enable_for_all_extensions_ = false;
   }
 
   const Extension* InitWriteDataApp() {
-    InitStorageMonitor();
-
     base::FilePath path = test_data_dir_.AppendASCII(kWriteDataApp);
     const Extension* extension = InstallExtension(path, 1);
     EXPECT_TRUE(extension);
     return extension;
   }
 
+  const Extension* InitWriteDataEphemeralApp() {
+    // The threshold for installed extensions should be higher than ephemeral
+    // apps.
+    storage_monitor_->initial_extension_threshold_ =
+        storage_monitor_->initial_ephemeral_threshold_ * 4;
+
+    base::FilePath path = test_data_dir_.AppendASCII(kWriteDataApp);
+    const Extension* extension = InstallEphemeralAppWithSourceAndFlags(
+        path, 1, Manifest::INTERNAL, Extension::NO_FLAGS);
+    EXPECT_TRUE(extension);
+    return extension;
+  }
+
   std::string GetNotificationId(const std::string& extension_id) {
-    return ExtensionStorageMonitor::Get(profile())->
-        GetNotificationId(extension_id);
+    return monitor()->GetNotificationId(extension_id);
+  }
+
+  bool IsStorageNotificationEnabled(const std::string& extension_id) {
+    return monitor()->IsStorageNotificationEnabled(extension_id);
+  }
+
+  int64 GetNextStorageThreshold(const std::string& extension_id) {
+    return monitor()->GetNextStorageThreshold(extension_id);
   }
 
   void WriteBytesExpectingNotification(const Extension* extension,
                                        int num_bytes) {
+    int64 previous_threshold = GetNextStorageThreshold(extension->id());
     WriteBytes(extension, num_bytes, true);
+    EXPECT_GT(GetNextStorageThreshold(extension->id()), previous_threshold);
   }
 
   void WriteBytesNotExpectingNotification(const Extension* extension,
@@ -110,7 +149,21 @@ class ExtensionStorageMonitorTest : public ExtensionBrowserTest {
     WriteBytes(extension, num_bytes, false);
   }
 
-private:
+ private:
+  void InitStorageMonitor() {
+    storage_monitor_ = ExtensionStorageMonitor::Get(profile());
+    ASSERT_TRUE(storage_monitor_);
+
+    // Override thresholds so that we don't have to write a huge amount of data
+    // to trigger notifications in these tests.
+    storage_monitor_->enable_for_all_extensions_ = true;
+    storage_monitor_->initial_extension_threshold_ = kInitialUsageThreshold;
+    storage_monitor_->initial_ephemeral_threshold_ = kInitialUsageThreshold;
+
+    // To ensure storage events are dispatched from QuotaManager immediately.
+    storage_monitor_->observer_rate_ = 0;
+  }
+
   // Write a number of bytes to persistent storage.
   void WriteBytes(const Extension* extension,
                   int num_bytes,
@@ -136,6 +189,8 @@ private:
       EXPECT_FALSE(notification_observer.HasReceivedNotification());
     }
   }
+
+  ExtensionStorageMonitor* storage_monitor_;
 };
 
 // Control - No notifications should be shown if usage remains under the
@@ -150,7 +205,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionStorageMonitorTest, UnderThreshold) {
 IN_PROC_BROWSER_TEST_F(ExtensionStorageMonitorTest, ExceedInitialThreshold) {
   const Extension* extension = InitWriteDataApp();
   ASSERT_TRUE(extension);
-  WriteBytesExpectingNotification(extension, kInitialUsageThreshold);
+  WriteBytesExpectingNotification(extension, GetInitialExtensionThreshold());
 }
 
 // Ensure a notification is shown when usage immediately exceeds double the
@@ -158,7 +213,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionStorageMonitorTest, ExceedInitialThreshold) {
 IN_PROC_BROWSER_TEST_F(ExtensionStorageMonitorTest, DoubleInitialThreshold) {
   const Extension* extension = InitWriteDataApp();
   ASSERT_TRUE(extension);
-  WriteBytesExpectingNotification(extension, kInitialUsageThreshold*2);
+  WriteBytesExpectingNotification(extension,
+                                  GetInitialExtensionThreshold() * 2);
 }
 
 // Ensure that notifications are not fired if the next threshold has not been
@@ -168,7 +224,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionStorageMonitorTest, ThrottleNotifications) {
   ASSERT_TRUE(extension);
 
   // Exceed the first threshold.
-  WriteBytesExpectingNotification(extension, kInitialUsageThreshold);
+  WriteBytesExpectingNotification(extension, GetInitialExtensionThreshold());
 
   // Stay within the next threshold.
   WriteBytesNotExpectingNotification(extension, 1);
@@ -179,26 +235,81 @@ IN_PROC_BROWSER_TEST_F(ExtensionStorageMonitorTest, ThrottleNotifications) {
 IN_PROC_BROWSER_TEST_F(ExtensionStorageMonitorTest, UserDisabledNotifications) {
   const Extension* extension = InitWriteDataApp();
   ASSERT_TRUE(extension);
-  WriteBytesExpectingNotification(extension, kInitialUsageThreshold);
+  WriteBytesExpectingNotification(extension, GetInitialExtensionThreshold());
 
-  ExtensionPrefs* prefs = ExtensionPrefs::Get(profile());
-  ASSERT_TRUE(prefs);
-  EXPECT_TRUE(prefs->IsStorageNotificationEnabled(extension->id()));
+  EXPECT_TRUE(IsStorageNotificationEnabled(extension->id()));
 
   // Fake clicking the notification button.
   message_center::MessageCenter::Get()->ClickOnNotificationButton(
       GetNotificationId(extension->id()),
       ExtensionStorageMonitor::BUTTON_DISABLE_NOTIFICATION);
 
-  EXPECT_FALSE(prefs->IsStorageNotificationEnabled(extension->id()));
+  EXPECT_FALSE(IsStorageNotificationEnabled(extension->id()));
 
   // Expect to receive no further notifications when usage continues to
   // increase.
-  int64 next_threshold = prefs->GetNextStorageThreshold(extension->id());
-  int64 next_data_size = next_threshold - kInitialUsageThreshold;
-  ASSERT_GE(next_data_size, 0);
+  int64 next_threshold = GetNextStorageThreshold(extension->id());
+  int64 next_data_size = next_threshold - GetInitialExtensionThreshold();
+  ASSERT_GT(next_data_size, 0);
 
   WriteBytesNotExpectingNotification(extension, next_data_size);
 }
 
+// Verify that thresholds for ephemeral apps are reset when they are
+// promoted to regular installed apps.
+IN_PROC_BROWSER_TEST_F(ExtensionStorageMonitorTest, EphemeralAppLowUsage) {
+  const Extension* extension = InitWriteDataEphemeralApp();
+  ASSERT_TRUE(extension);
+  WriteBytesExpectingNotification(extension, GetInitialEphemeralThreshold());
+
+  // Store the number of bytes until the next threshold is reached.
+  int64 next_threshold = GetNextStorageThreshold(extension->id());
+  int64 next_data_size = next_threshold - GetInitialEphemeralThreshold();
+  ASSERT_GT(next_data_size, 0);
+  EXPECT_GE(GetInitialExtensionThreshold(), next_threshold);
+
+  // Promote the ephemeral app.
+  ExtensionService* service =
+      ExtensionSystem::Get(profile())->extension_service();
+  service->PromoteEphemeralApp(extension, false);
+
+  // The next threshold should now be equal to the initial threshold for
+  // extensions (which is higher than the initial threshold for ephemeral apps).
+  EXPECT_EQ(GetInitialExtensionThreshold(),
+            GetNextStorageThreshold(extension->id()));
+
+  // Since the threshold was increased, a notification should not be
+  // triggered.
+  WriteBytesNotExpectingNotification(extension, next_data_size);
+}
+
+// Verify that thresholds for ephemeral apps are not reset when they are
+// promoted to regular installed apps if their usage is higher than the initial
+// threshold for installed extensions.
+IN_PROC_BROWSER_TEST_F(ExtensionStorageMonitorTest, EphemeralAppWithHighUsage) {
+  const Extension* extension = InitWriteDataEphemeralApp();
+  ASSERT_TRUE(extension);
+  WriteBytesExpectingNotification(extension, GetInitialExtensionThreshold());
+  int64 saved_next_threshold = GetNextStorageThreshold(extension->id());
+
+  // Promote the ephemeral app.
+  ExtensionService* service =
+      ExtensionSystem::Get(profile())->extension_service();
+  service->PromoteEphemeralApp(extension, false);
+
+  // The next threshold should not have changed.
+  EXPECT_EQ(saved_next_threshold, GetNextStorageThreshold(extension->id()));
+}
+
+// Ensure that monitoring is disabled for installed extensions if
+// |enable_for_all_extensions_| is false. This test can be removed if monitoring
+// is eventually enabled for all extensions.
+IN_PROC_BROWSER_TEST_F(ExtensionStorageMonitorTest,
+                       DisableForInstalledExtensions) {
+  DisableForInstalledExtensions();
+
+  const Extension* extension = InitWriteDataApp();
+  ASSERT_TRUE(extension);
+  WriteBytesNotExpectingNotification(extension, GetInitialExtensionThreshold());
+}
 }  // namespace extensions

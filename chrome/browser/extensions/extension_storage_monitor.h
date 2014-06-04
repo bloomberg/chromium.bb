@@ -9,6 +9,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/scoped_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -25,6 +26,8 @@ class Image;
 namespace extensions {
 
 class Extension;
+class ExtensionPrefs;
+class ExtensionRegistry;
 class StorageEventObserver;
 
 // ExtensionStorageMonitor monitors the storage usage of extensions and apps
@@ -53,10 +56,18 @@ class ExtensionStorageMonitor : public KeyedService,
   // ExtensionRegistryObserver overrides:
   virtual void OnExtensionLoaded(content::BrowserContext* browser_context,
                                  const Extension* extension) OVERRIDE;
-  virtual void OnExtensionUnloaded(content::BrowserContext* browser_context,
-                                   const Extension* extension,
-                                   UnloadedExtensionInfo::Reason reason)
-      OVERRIDE;
+  virtual void OnExtensionUnloaded(
+      content::BrowserContext* browser_context,
+      const Extension* extension,
+      UnloadedExtensionInfo::Reason reason) OVERRIDE;
+  virtual void OnExtensionWillBeInstalled(
+      content::BrowserContext* browser_context,
+      const Extension* extension,
+      bool is_update,
+      bool from_ephemeral,
+      const std::string& old_name) OVERRIDE;
+  virtual void OnExtensionUninstalled(content::BrowserContext* browser_context,
+                                      const Extension* extension) OVERRIDE;
 
   std::string GetNotificationId(const std::string& extension_id);
 
@@ -73,23 +84,54 @@ class ExtensionStorageMonitor : public KeyedService,
   void StartMonitoringStorage(const Extension* extension);
   void StopMonitoringStorage(const std::string& extension_id);
   void StopMonitoringAll();
+
   void RemoveNotificationForExtension(const std::string& extension_id);
   void RemoveAllNotifications();
+
+  // Returns/sets the next threshold for displaying a notification if an
+  // extension or app consumes excessive disk space.
+  int64 GetNextStorageThreshold(const std::string& extension_id) const;
+  void SetNextStorageThreshold(const std::string& extension_id,
+                               int64 next_threshold);
+
+  // Returns the raw next storage threshold value stored in prefs. Returns 0 if
+  // the initial threshold has not yet been reached.
+  int64 GetNextStorageThresholdFromPrefs(const std::string& extension_id) const;
+
+  // Returns/sets whether notifications should be shown if an extension or app
+  // consumes too much disk space.
+  bool IsStorageNotificationEnabled(const std::string& extension_id) const;
+  void SetStorageNotificationEnabled(const std::string& extension_id,
+                                     bool enable_notifications);
 
   // Initially, monitoring will only be applied to ephemeral apps. This flag
   // is set by tests to enable for all extensions and apps.
   bool enable_for_all_extensions_;
 
+  // The first notification is shown after the initial threshold is exceeded.
+  // Ephemeral apps have a lower threshold than fully installed extensions.
   // A lower threshold is set by tests.
   int64 initial_extension_threshold_;
   int64 initial_ephemeral_threshold_;
+
+  // The rate (in seconds) at which we would like to receive storage updates
+  // from QuotaManager. Overridden in tests.
   int observer_rate_;
 
+  // IDs of extensions that notifications were shown for.
   std::set<std::string> notified_extension_ids_;
 
   content::BrowserContext* context_;
+  extensions::ExtensionPrefs* extension_prefs_;
+
   content::NotificationRegistrar registrar_;
+  ScopedObserver<extensions::ExtensionRegistry,
+                 extensions::ExtensionRegistryObserver>
+      extension_registry_observer_;
+
+  // StorageEventObserver monitors storage for extensions on the IO thread.
   scoped_refptr<StorageEventObserver> storage_observer_;
+
   base::WeakPtrFactory<ExtensionStorageMonitor> weak_ptr_factory_;
 
   friend class StorageEventObserver;
