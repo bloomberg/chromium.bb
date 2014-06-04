@@ -220,7 +220,7 @@ void DummyOperation(IndexedDBTransaction* transaction) {
 
 class IndexedDBDatabaseOperationTest : public testing::Test {
  public:
-  IndexedDBDatabaseOperationTest() : commit_success_(true) {}
+  IndexedDBDatabaseOperationTest() : commit_success_(leveldb::Status::OK()) {}
 
   virtual void SetUp() {
     backing_store_ = new IndexedDBFakeBackingStore();
@@ -268,7 +268,7 @@ class IndexedDBDatabaseOperationTest : public testing::Test {
   scoped_refptr<MockIndexedDBDatabaseCallbacks> callbacks_;
   scoped_refptr<IndexedDBTransaction> transaction_;
 
-  bool commit_success_;
+  leveldb::Status commit_success_;
 
  private:
   base::MessageLoop message_loop_;
@@ -321,7 +321,9 @@ TEST_F(IndexedDBDatabaseOperationTest, CreateIndex) {
 class IndexedDBDatabaseOperationAbortTest
     : public IndexedDBDatabaseOperationTest {
  public:
-  IndexedDBDatabaseOperationAbortTest() { commit_success_ = false; }
+  IndexedDBDatabaseOperationAbortTest() {
+    commit_success_ = leveldb::Status::NotFound("Bummer.");
+  }
 };
 
 TEST_F(IndexedDBDatabaseOperationAbortTest, CreateObjectStore) {

@@ -234,6 +234,9 @@ base::ListValue* IndexedDBContextImpl::GetAllOriginsDetails() {
               else
                 transaction_info->SetString("status", "started");
               break;
+            case IndexedDBTransaction::COMMITTING:
+              transaction_info->SetString("status", "committing");
+              break;
             case IndexedDBTransaction::FINISHED:
               transaction_info->SetString("status", "finished");
               break;
@@ -454,7 +457,7 @@ IndexedDBContextImpl::~IndexedDBContextImpl() {
       special_storage_policy_ &&
       special_storage_policy_->HasSessionOnlyOrigins();
 
-  // Clearning only session-only databases, and there are none.
+  // Clearing only session-only databases, and there are none.
   if (!has_session_only_databases)
     return;
 

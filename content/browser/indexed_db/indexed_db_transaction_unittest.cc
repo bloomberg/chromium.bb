@@ -79,7 +79,7 @@ class IndexedDBTransactionTestMode : public IndexedDBTransactionTest,
 TEST_F(IndexedDBTransactionTest, Timeout) {
   const int64 id = 0;
   const std::set<int64> scope;
-  const bool commit_success = true;
+  const leveldb::Status commit_success = leveldb::Status::OK();
   scoped_refptr<IndexedDBTransaction> transaction = new IndexedDBTransaction(
       id,
       new MockIndexedDBDatabaseCallbacks(),
@@ -123,7 +123,7 @@ TEST_F(IndexedDBTransactionTest, Timeout) {
 TEST_F(IndexedDBTransactionTest, NoTimeoutReadOnly) {
   const int64 id = 0;
   const std::set<int64> scope;
-  const bool commit_success = true;
+  const leveldb::Status commit_success = leveldb::Status::OK();
   scoped_refptr<IndexedDBTransaction> transaction = new IndexedDBTransaction(
       id,
       new MockIndexedDBDatabaseCallbacks(),
@@ -155,14 +155,14 @@ TEST_F(IndexedDBTransactionTest, NoTimeoutReadOnly) {
 TEST_P(IndexedDBTransactionTestMode, ScheduleNormalTask) {
   const int64 id = 0;
   const std::set<int64> scope;
-  const bool commit_failure = false;
+  const leveldb::Status commit_success = leveldb::Status::OK();
   scoped_refptr<IndexedDBTransaction> transaction = new IndexedDBTransaction(
       id,
       new MockIndexedDBDatabaseCallbacks(),
       scope,
       GetParam(),
       db_,
-      new IndexedDBFakeBackingStore::FakeTransaction(commit_failure));
+      new IndexedDBFakeBackingStore::FakeTransaction(commit_success));
 
   EXPECT_FALSE(transaction->HasPendingTasks());
   EXPECT_TRUE(transaction->IsTaskQueueEmpty());
@@ -217,7 +217,7 @@ TEST_P(IndexedDBTransactionTestMode, ScheduleNormalTask) {
 TEST_F(IndexedDBTransactionTest, SchedulePreemptiveTask) {
   const int64 id = 0;
   const std::set<int64> scope;
-  const bool commit_failure = false;
+  const leveldb::Status commit_failure = leveldb::Status::Corruption("Ouch.");
   scoped_refptr<IndexedDBTransaction> transaction = new IndexedDBTransaction(
       id,
       new MockIndexedDBDatabaseCallbacks(),
@@ -278,7 +278,7 @@ TEST_F(IndexedDBTransactionTest, SchedulePreemptiveTask) {
 TEST_P(IndexedDBTransactionTestMode, AbortTasks) {
   const int64 id = 0;
   const std::set<int64> scope;
-  const bool commit_failure = false;
+  const leveldb::Status commit_failure = leveldb::Status::Corruption("Ouch.");
   scoped_refptr<IndexedDBTransaction> transaction = new IndexedDBTransaction(
       id,
       new MockIndexedDBDatabaseCallbacks(),
@@ -308,7 +308,7 @@ TEST_P(IndexedDBTransactionTestMode, AbortTasks) {
 TEST_P(IndexedDBTransactionTestMode, AbortPreemptive) {
   const int64 id = 0;
   const std::set<int64> scope;
-  const bool commit_success = true;
+  const leveldb::Status commit_success = leveldb::Status::OK();
   scoped_refptr<IndexedDBTransaction> transaction = new IndexedDBTransaction(
       id,
       new MockIndexedDBDatabaseCallbacks(),

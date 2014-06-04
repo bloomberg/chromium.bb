@@ -20,6 +20,7 @@
 
 namespace content {
 
+class BlobWriteCallbackImpl;
 class IndexedDBCursor;
 class IndexedDBDatabaseCallbacks;
 
@@ -67,9 +68,11 @@ class CONTENT_EXPORT IndexedDBTransaction
   IndexedDBDatabaseCallbacks* connection() const { return callbacks_; }
 
   enum State {
-    CREATED,   // Created, but not yet started by coordinator.
-    STARTED,   // Started by the coordinator.
-    FINISHED,  // Either aborted or committed.
+    CREATED,     // Created, but not yet started by coordinator.
+    STARTED,     // Started by the coordinator.
+    COMMITTING,  // In the process of committing, possibly waiting for blobs
+                 // to be written.
+    FINISHED,    // Either aborted or committed.
   };
 
   State state() const { return state_; }
@@ -85,6 +88,8 @@ class CONTENT_EXPORT IndexedDBTransaction
   const Diagnostics& diagnostics() const { return diagnostics_; }
 
  private:
+  friend class BlobWriteCallbackImpl;
+
   FRIEND_TEST_ALL_PREFIXES(IndexedDBTransactionTestMode, AbortPreemptive);
   FRIEND_TEST_ALL_PREFIXES(IndexedDBTransactionTest, Timeout);
   FRIEND_TEST_ALL_PREFIXES(IndexedDBTransactionTest,
@@ -100,8 +105,10 @@ class CONTENT_EXPORT IndexedDBTransaction
   bool IsTaskQueueEmpty() const;
   bool HasPendingTasks() const;
 
+  void BlobWriteComplete(bool success);
   void ProcessTaskQueue();
   void CloseOpenCursors();
+  void CommitPhaseTwo();
   void Timeout();
 
   const int64 id_;

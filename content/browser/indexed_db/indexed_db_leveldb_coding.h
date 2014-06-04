@@ -136,7 +136,7 @@ class KeyPrefix {
   static const int64 kMaxIndexId =
       (1ULL << kMaxIndexIdBits) - 1;  // max signed int32
 
-  static bool IsValidDatabaseId(int64 database_id);
+  CONTENT_EXPORT static bool IsValidDatabaseId(int64 database_id);
   static bool IsValidObjectStoreId(int64 index_id);
   static bool IsValidIndexId(int64 index_id);
   static bool ValidIds(int64 database_id,

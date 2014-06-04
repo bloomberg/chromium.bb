@@ -88,6 +88,7 @@ IndexedDBTransaction::~IndexedDBTransaction() {
 
 void IndexedDBTransaction::ScheduleTask(IndexedDBDatabase::TaskType type,
                                         Operation task) {
+  DCHECK_NE(state_, COMMITTING);
   if (state_ == FINISHED)
     return;
 
@@ -206,6 +207,33 @@ void IndexedDBTransaction::Start() {
   RunTasksIfStarted();
 }
 
+class BlobWriteCallbackImpl : public IndexedDBBackingStore::BlobWriteCallback {
+ public:
+  BlobWriteCallbackImpl(scoped_refptr<IndexedDBTransaction> transaction)
+      : transaction_(transaction) {}
+  virtual void Run(bool succeeded) OVERRIDE {
+    transaction_->BlobWriteComplete(succeeded);
+  }
+
+ protected:
+  virtual ~BlobWriteCallbackImpl() {}
+
+ private:
+  scoped_refptr<IndexedDBTransaction> transaction_;
+};
+
+void IndexedDBTransaction::BlobWriteComplete(bool success) {
+  IDB_TRACE("IndexedDBTransaction::BlobWriteComplete");
+  if (state_ == FINISHED)  // aborted
+    return;
+  DCHECK_EQ(state_, COMMITTING);
+  if (success)
+    CommitPhaseTwo();
+  else
+    Abort(IndexedDBDatabaseError(blink::WebIDBDatabaseExceptionDataError,
+                                 "Failed to write blobs."));
+}
+
 void IndexedDBTransaction::Commit() {
   IDB_TRACE("IndexedDBTransaction::Commit");
 
@@ -214,6 +242,7 @@ void IndexedDBTransaction::Commit() {
   // back-end.
   if (state_ == FINISHED)
     return;
+  DCHECK_NE(state_, COMMITTING);
 
   DCHECK(!used_ || state_ == STARTED);
   commit_pending_ = true;
@@ -224,6 +253,28 @@ void IndexedDBTransaction::Commit() {
   if (HasPendingTasks())
     return;
 
+  state_ = COMMITTING;
+
+  if (!used_)
+    CommitPhaseTwo();
+  else {
+    scoped_refptr<IndexedDBBackingStore::BlobWriteCallback> callback(
+        new BlobWriteCallbackImpl(this));
+    // CommitPhaseOne will call the callback synchronously if there are no blobs
+    // to write.
+    if (!transaction_->CommitPhaseOne(callback).ok())
+      Abort(IndexedDBDatabaseError(blink::WebIDBDatabaseExceptionDataError,
+                                   "Error processing blob journal."));
+  }
+}
+
+void IndexedDBTransaction::CommitPhaseTwo() {
+  // Abort may have been called just as the blob write completed.
+  if (state_ == FINISHED)
+    return;
+
+  DCHECK_EQ(state_, COMMITTING);
+
   // The last reference to this object may be released while performing the
   // commit steps below. We therefore take a self reference to keep ourselves
   // alive while executing this method.
@@ -233,7 +284,7 @@ void IndexedDBTransaction::Commit() {
 
   state_ = FINISHED;
 
-  bool committed = !used_ || transaction_->Commit().ok();
+  bool committed = !used_ || transaction_->CommitPhaseTwo().ok();
 
   // Backing store resources (held via cursors) must be released
   // before script callbacks are fired, as the script callbacks may
@@ -289,7 +340,7 @@ void IndexedDBTransaction::ProcessTaskQueue() {
   TaskQueue* task_queue =
       pending_preemptive_events_ ? &preemptive_task_queue_ : &task_queue_;
   while (!task_queue->empty() && state_ != FINISHED) {
-    DCHECK_EQ(STARTED, state_);
+    DCHECK_EQ(state_, STARTED);
     Operation task(task_queue->pop());
     task.Run(this);
     if (!pending_preemptive_events_) {
@@ -312,6 +363,8 @@ void IndexedDBTransaction::ProcessTaskQueue() {
   // The transaction may have been aborted while processing tasks.
   if (state_ == FINISHED)
     return;
+
+  DCHECK(state_ == STARTED);
 
   // Otherwise, start a timer in case the front-end gets wedged and
   // never requests further activity. Read-only transactions don't

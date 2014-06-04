@@ -1207,34 +1207,16 @@ void IndexedDBDatabase::DeleteRangeOperation(
     scoped_refptr<IndexedDBCallbacks> callbacks,
     IndexedDBTransaction* transaction) {
   IDB_TRACE("IndexedDBDatabase::DeleteRangeOperation");
-  leveldb::Status s;
-  scoped_ptr<IndexedDBBackingStore::Cursor> backing_store_cursor =
-      backing_store_->OpenObjectStoreCursor(
-          transaction->BackingStoreTransaction(),
-          id(),
-          object_store_id,
-          *key_range,
-          indexed_db::CURSOR_NEXT,
-          &s);
-  if (backing_store_cursor && s.ok()) {
-    do {
-      if (!backing_store_->DeleteRecord(
-                               transaction->BackingStoreTransaction(),
-                               id(),
-                               object_store_id,
-                               backing_store_cursor->record_identifier())
-               .ok()) {
-        callbacks->OnError(
-            IndexedDBDatabaseError(blink::WebIDBDatabaseExceptionUnknownError,
-                                   "Internal error deleting data in range"));
-        return;
-      }
-    } while (backing_store_cursor->Continue(&s));
-  }
-
+  leveldb::Status s =
+      backing_store_->DeleteRange(transaction->BackingStoreTransaction(),
+                                  id(),
+                                  object_store_id,
+                                  *key_range);
   if (!s.ok()) {
+    base::string16 error_string =
+        ASCIIToUTF16("Internal error deleting data in range");
     IndexedDBDatabaseError error(blink::WebIDBDatabaseExceptionUnknownError,
-                                 ASCIIToUTF16("Internal error deleting range"));
+                                 error_string);
     transaction->Abort(error);
     if (leveldb_env::IsCorruption(s)) {
       factory_->HandleBackingStoreCorruption(backing_store_->origin_url(),
@@ -1242,7 +1224,6 @@ void IndexedDBDatabase::DeleteRangeOperation(
     }
     return;
   }
-
   callbacks->OnSuccess();
 }
 

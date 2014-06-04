@@ -103,7 +103,6 @@ class IndexedDBFakeBackingStore : public IndexedDBBackingStore {
                                                 const RecordIdentifier&)
       OVERRIDE;
   virtual void ReportBlobUnused(int64 database_id, int64 blob_key) OVERRIDE;
-
   virtual scoped_ptr<Cursor> OpenObjectStoreKeyCursor(
       Transaction* transaction,
       int64 database_id,
@@ -136,13 +135,15 @@ class IndexedDBFakeBackingStore : public IndexedDBBackingStore {
 
   class FakeTransaction : public IndexedDBBackingStore::Transaction {
    public:
-    FakeTransaction(bool result);
+    FakeTransaction(leveldb::Status phase_two_result);
     virtual void Begin() OVERRIDE;
-    virtual leveldb::Status Commit() OVERRIDE;
+    virtual leveldb::Status CommitPhaseOne(
+        scoped_refptr<BlobWriteCallback>) OVERRIDE;
+    virtual leveldb::Status CommitPhaseTwo() OVERRIDE;
     virtual void Rollback() OVERRIDE;
 
    private:
-    bool result_;
+    leveldb::Status result_;
   };
 
  protected:

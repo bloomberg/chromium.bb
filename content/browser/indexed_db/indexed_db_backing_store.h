@@ -64,7 +64,7 @@ class CONTENT_EXPORT IndexedDBBackingStore
  public:
   class CONTENT_EXPORT Transaction;
 
-  class Comparator : public LevelDBComparator {
+  class CONTENT_EXPORT Comparator : public LevelDBComparator {
    public:
     virtual int Compare(const base::StringPiece& a,
                         const base::StringPiece& b) const OVERRIDE;
@@ -203,6 +203,11 @@ class CONTENT_EXPORT IndexedDBBackingStore
       int64 database_id,
       int64 object_store_id,
       const RecordIdentifier& record) WARN_UNUSED_RESULT;
+  virtual leveldb::Status DeleteRange(
+      IndexedDBBackingStore::Transaction* transaction,
+      int64 database_id,
+      int64 object_store_id,
+      const IndexedDBKeyRange&) WARN_UNUSED_RESULT;
   virtual leveldb::Status GetKeyGeneratorCurrentNumber(
       IndexedDBBackingStore::Transaction* transaction,
       int64 database_id,
@@ -389,7 +394,10 @@ class CONTENT_EXPORT IndexedDBBackingStore
     explicit Transaction(IndexedDBBackingStore* backing_store);
     virtual ~Transaction();
     virtual void Begin();
-    virtual leveldb::Status Commit();
+    // The callback will be called eventually on success or failure, or
+    // immediately if phase one is complete due to lack of any blobs to write.
+    virtual leveldb::Status CommitPhaseOne(scoped_refptr<BlobWriteCallback>);
+    virtual leveldb::Status CommitPhaseTwo();
     virtual void Rollback();
     void Reset() {
       backing_store_ = NULL;
@@ -458,16 +466,23 @@ class CONTENT_EXPORT IndexedDBBackingStore
    private:
     class BlobWriteCallbackWrapper;
 
+    leveldb::Status HandleBlobPreTransaction(
+        BlobEntryKeyValuePairVec* new_blob_entries,
+        WriteDescriptorVec* new_files_to_write);
+    // Returns true on success, false on failure.
+    bool CollectBlobFilesToRemove();
     // The callback will be called eventually on success or failure.
     void WriteNewBlobs(BlobEntryKeyValuePairVec& new_blob_entries,
                        WriteDescriptorVec& new_files_to_write,
                        scoped_refptr<BlobWriteCallback> callback);
+    leveldb::Status SortBlobsToRemove();
 
     IndexedDBBackingStore* backing_store_;
     scoped_refptr<LevelDBTransaction> transaction_;
     BlobChangeMap blob_change_map_;
     BlobChangeMap incognito_blob_map_;
     int64 database_id_;
+    BlobJournalType blobs_to_remove_;
     scoped_refptr<ChainedBlobWriter> chained_blob_writer_;
   };
 

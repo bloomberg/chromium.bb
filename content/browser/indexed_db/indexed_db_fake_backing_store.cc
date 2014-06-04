@@ -10,25 +10,25 @@
 namespace content {
 
 IndexedDBFakeBackingStore::IndexedDBFakeBackingStore()
-    : IndexedDBBackingStore(NULL,
+    : IndexedDBBackingStore(NULL /* indexed_db_factory */,
                             GURL("http://localhost:81"),
                             base::FilePath(),
-                            NULL,
+                            NULL /* request_context */,
                             scoped_ptr<LevelDBDatabase>(),
                             scoped_ptr<LevelDBComparator>(),
-                            NULL) {}
-
+                            NULL /* task_runner */) {
+}
 IndexedDBFakeBackingStore::IndexedDBFakeBackingStore(
     IndexedDBFactory* factory,
     base::TaskRunner* task_runner)
     : IndexedDBBackingStore(factory,
                             GURL("http://localhost:81"),
                             base::FilePath(),
-                            NULL,
+                            NULL /* request_context */,
                             scoped_ptr<LevelDBDatabase>(),
                             scoped_ptr<LevelDBComparator>(),
-                            task_runner) {}
-
+                            task_runner) {
+}
 IndexedDBFakeBackingStore::~IndexedDBFakeBackingStore() {}
 
 std::vector<base::string16> IndexedDBFakeBackingStore::GetDatabaseNames(
@@ -200,14 +200,18 @@ IndexedDBFakeBackingStore::OpenIndexCursor(
   return scoped_ptr<IndexedDBBackingStore::Cursor>();
 }
 
-IndexedDBFakeBackingStore::FakeTransaction::FakeTransaction(bool result)
-    : IndexedDBBackingStore::Transaction(NULL), result_(result) {}
+IndexedDBFakeBackingStore::FakeTransaction::FakeTransaction(
+    leveldb::Status result)
+    : IndexedDBBackingStore::Transaction(NULL), result_(result) {
+}
 void IndexedDBFakeBackingStore::FakeTransaction::Begin() {}
-leveldb::Status IndexedDBFakeBackingStore::FakeTransaction::Commit() {
-  if (result_)
-    return leveldb::Status::OK();
-  else
-    return leveldb::Status::IOError("test error");
+leveldb::Status IndexedDBFakeBackingStore::FakeTransaction::CommitPhaseOne(
+    scoped_refptr<BlobWriteCallback> callback) {
+  callback->Run(true);
+  return leveldb::Status::OK();
+}
+leveldb::Status IndexedDBFakeBackingStore::FakeTransaction::CommitPhaseTwo() {
+  return result_;
 }
 void IndexedDBFakeBackingStore::FakeTransaction::Rollback() {}
 

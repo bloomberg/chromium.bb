@@ -1320,32 +1320,34 @@ bool IndexedDBBackingStore::UpdateIDBDatabaseIntVersion(
   return true;
 }
 
-static leveldb::Status DeleteRange(LevelDBTransaction* transaction,
-                                   const std::string& begin,
-                                   const std::string& end) {
+// If you're deleting a range that contains user keys that have blob info, this
+// won't clean up the blobs.
+static leveldb::Status DeleteRangeBasic(LevelDBTransaction* transaction,
+                                        const std::string& begin,
+                                        const std::string& end,
+                                        bool upper_open) {
   scoped_ptr<LevelDBIterator> it = transaction->CreateIterator();
   leveldb::Status s;
-  for (s = it->Seek(begin);
-       s.ok() && it->IsValid() && CompareKeys(it->Key(), end) < 0;
+  for (s = it->Seek(begin); s.ok() && it->IsValid() &&
+                                (upper_open ? CompareKeys(it->Key(), end) < 0
+                                            : CompareKeys(it->Key(), end) <= 0);
        s = it->Next())
     transaction->Remove(it->Key());
   return s;
 }
 
-static leveldb::Status DeleteBlobsInObjectStore(
+static leveldb::Status DeleteBlobsInRange(
     IndexedDBBackingStore::Transaction* transaction,
     int64 database_id,
-    int64 object_store_id) {
-  std::string start_key, end_key;
-  start_key =
-      BlobEntryKey::EncodeMinKeyForObjectStore(database_id, object_store_id);
-  end_key =
-      BlobEntryKey::EncodeStopKeyForObjectStore(database_id, object_store_id);
-
+    int64 object_store_id,
+    const std::string& start_key,
+    const std::string& end_key,
+    bool upper_open) {
   scoped_ptr<LevelDBIterator> it = transaction->transaction()->CreateIterator();
-
   leveldb::Status s = it->Seek(start_key);
-  for (; s.ok() && it->IsValid() && CompareKeys(it->Key(), end_key) < 0;
+  for (; s.ok() && it->IsValid() &&
+             (upper_open ? CompareKeys(it->Key(), end_key) < 0
+                         : CompareKeys(it->Key(), end_key) <= 0);
        s = it->Next()) {
     StringPiece key_piece(it->Key());
     std::string user_key =
@@ -1358,6 +1360,19 @@ static leveldb::Status DeleteBlobsInObjectStore(
         database_id, object_store_id, user_key, NULL, NULL);
   }
   return s;
+}
+
+static leveldb::Status DeleteBlobsInObjectStore(
+    IndexedDBBackingStore::Transaction* transaction,
+    int64 database_id,
+    int64 object_store_id) {
+  std::string start_key, stop_key;
+  start_key =
+      BlobEntryKey::EncodeMinKeyForObjectStore(database_id, object_store_id);
+  stop_key =
+      BlobEntryKey::EncodeStopKeyForObjectStore(database_id, object_store_id);
+  return DeleteBlobsInRange(
+      transaction, database_id, object_store_id, start_key, stop_key, true);
 }
 
 leveldb::Status IndexedDBBackingStore::DeleteDatabase(
@@ -1407,21 +1422,6 @@ leveldb::Status IndexedDBBackingStore::DeleteDatabase(
     need_cleanup = true;
   }
 
-  // TODO(ericu): Remove these fake calls, added to avoid "defined but unused"
-  // compiler errors until the code that makes the real calls can be added.
-  if (false) {
-    std::vector<IndexedDBBlobInfo*> fake;
-    EncodeBlobData(fake);
-
-    scoped_refptr<LevelDBTransaction> fake_transaction =
-        new LevelDBTransaction(NULL);
-    BlobJournalType fake_journal;
-    MergeBlobsIntoLiveBlobJournal(fake_transaction.get(), fake_journal);
-    UpdateBlobKeyGeneratorCurrentNumber(fake_transaction.get(), 0, 0);
-    int64 arg;
-    GetBlobKeyGeneratorCurrentNumber(fake_transaction.get(), 0, &arg);
-  }
-
   s = transaction->Commit();
   if (!s.ok()) {
     INTERNAL_WRITE_ERROR_UNTESTED(DELETE_DATABASE);
@@ -1444,13 +1444,14 @@ static bool CheckObjectStoreAndMetaDataType(const LevelDBIterator* it,
 
   StringPiece slice(it->Key());
   ObjectStoreMetaDataKey meta_data_key;
-  bool ok = ObjectStoreMetaDataKey::Decode(&slice, &meta_data_key);
+  bool ok =
+      ObjectStoreMetaDataKey::Decode(&slice, &meta_data_key) && slice.empty();
   DCHECK(ok);
   if (meta_data_key.ObjectStoreId() != object_store_id)
     return false;
   if (meta_data_key.MetaDataType() != meta_data_type)
     return false;
-  return true;
+  return ok;
 }
 
 // TODO(jsbell): This should do some error handling rather than
@@ -1745,26 +1746,29 @@ leveldb::Status IndexedDBBackingStore::DeleteObjectStore(
     return s;
   }
 
-  s = DeleteRange(
+  s = DeleteRangeBasic(
       leveldb_transaction,
       ObjectStoreMetaDataKey::Encode(database_id, object_store_id, 0),
-      ObjectStoreMetaDataKey::EncodeMaxKey(database_id, object_store_id));
+      ObjectStoreMetaDataKey::EncodeMaxKey(database_id, object_store_id),
+      true);
 
   if (s.ok()) {
     leveldb_transaction->Remove(
         ObjectStoreNamesKey::Encode(database_id, object_store_name));
 
-    s = DeleteRange(
+    s = DeleteRangeBasic(
         leveldb_transaction,
         IndexFreeListKey::Encode(database_id, object_store_id, 0),
-        IndexFreeListKey::EncodeMaxKey(database_id, object_store_id));
+        IndexFreeListKey::EncodeMaxKey(database_id, object_store_id),
+        true);
   }
 
   if (s.ok()) {
-    s = DeleteRange(
+    s = DeleteRangeBasic(
         leveldb_transaction,
         IndexMetaDataKey::Encode(database_id, object_store_id, 0, 0),
-        IndexMetaDataKey::EncodeMaxKey(database_id, object_store_id));
+        IndexMetaDataKey::EncodeMaxKey(database_id, object_store_id),
+        true);
   }
 
   if (!s.ok()) {
@@ -1908,7 +1912,7 @@ leveldb::Status IndexedDBBackingStore::ClearObjectStore(
       KeyPrefix(database_id, object_store_id + 1).Encode();
 
   leveldb::Status s =
-      DeleteRange(transaction->transaction(), start_key, stop_key);
+      DeleteRangeBasic(transaction->transaction(), start_key, stop_key, true);
   if (!s.ok()) {
     INTERNAL_WRITE_ERROR(CLEAR_OBJECT_STORE);
     return s;
@@ -1936,6 +1940,69 @@ leveldb::Status IndexedDBBackingStore::DeleteRecord(
       database_id, object_store_id, record_identifier.primary_key());
   leveldb_transaction->Remove(exists_entry_key);
   return leveldb::Status::OK();
+}
+
+leveldb::Status IndexedDBBackingStore::DeleteRange(
+    IndexedDBBackingStore::Transaction* transaction,
+    int64 database_id,
+    int64 object_store_id,
+    const IndexedDBKeyRange& key_range) {
+  leveldb::Status s;
+  scoped_ptr<IndexedDBBackingStore::Cursor> start_cursor =
+      OpenObjectStoreCursor(transaction,
+                            database_id,
+                            object_store_id,
+                            key_range,
+                            indexed_db::CURSOR_NEXT,
+                            &s);
+  if (!s.ok())
+    return s;
+  if (!start_cursor)
+    return leveldb::Status::OK();  // Empty range == delete success.
+
+  scoped_ptr<IndexedDBBackingStore::Cursor> end_cursor =
+      OpenObjectStoreCursor(transaction,
+                            database_id,
+                            object_store_id,
+                            key_range,
+                            indexed_db::CURSOR_PREV,
+                            &s);
+
+  if (!s.ok())
+    return s;
+  if (!end_cursor)
+    return leveldb::Status::OK();  // Empty range == delete success.
+
+  BlobEntryKey start_blob_key, end_blob_key;
+
+  std::string start_key = ObjectStoreDataKey::Encode(
+      database_id, object_store_id, start_cursor->key());
+  base::StringPiece start_key_piece(start_key);
+  if (!BlobEntryKey::FromObjectStoreDataKey(&start_key_piece, &start_blob_key))
+    return InternalInconsistencyStatus();
+  std::string stop_key = ObjectStoreDataKey::Encode(
+      database_id, object_store_id, end_cursor->key());
+  base::StringPiece stop_key_piece(stop_key);
+  if (!BlobEntryKey::FromObjectStoreDataKey(&stop_key_piece, &end_blob_key))
+    return InternalInconsistencyStatus();
+
+  s = DeleteBlobsInRange(transaction,
+                         database_id,
+                         object_store_id,
+                         start_blob_key.Encode(),
+                         end_blob_key.Encode(),
+                         false);
+  if (!s.ok())
+    return s;
+  s = DeleteRangeBasic(transaction->transaction(), start_key, stop_key, false);
+  if (!s.ok())
+    return s;
+  start_key =
+      ExistsEntryKey::Encode(database_id, object_store_id, start_cursor->key());
+  stop_key =
+      ExistsEntryKey::Encode(database_id, object_store_id, end_cursor->key());
+  return DeleteRangeBasic(
+      transaction->transaction(), start_key, stop_key, false);
 }
 
 leveldb::Status IndexedDBBackingStore::GetKeyGeneratorCurrentNumber(
@@ -2656,15 +2723,16 @@ leveldb::Status IndexedDBBackingStore::DeleteIndex(
       IndexMetaDataKey::Encode(database_id, object_store_id, index_id, 0);
   const std::string index_meta_data_end =
       IndexMetaDataKey::EncodeMaxKey(database_id, object_store_id, index_id);
-  leveldb::Status s = DeleteRange(
-      leveldb_transaction, index_meta_data_start, index_meta_data_end);
+  leveldb::Status s = DeleteRangeBasic(
+      leveldb_transaction, index_meta_data_start, index_meta_data_end, true);
 
   if (s.ok()) {
     const std::string index_data_start =
         IndexDataKey::EncodeMinKey(database_id, object_store_id, index_id);
     const std::string index_data_end =
         IndexDataKey::EncodeMaxKey(database_id, object_store_id, index_id);
-    s = DeleteRange(leveldb_transaction, index_data_start, index_data_end);
+    s = DeleteRangeBasic(
+        leveldb_transaction, index_data_start, index_data_end, true);
   }
 
   if (!s.ok())
@@ -3752,10 +3820,195 @@ void IndexedDBBackingStore::Transaction::Begin() {
     incognito_blob_map_[iter->first] = iter->second->Clone().release();
 }
 
-leveldb::Status IndexedDBBackingStore::Transaction::Commit() {
-  IDB_TRACE("IndexedDBBackingStore::Transaction::Commit");
-  DCHECK(transaction_.get());
-  leveldb::Status s = transaction_->Commit();
+static GURL getURLFromUUID(const string& uuid) {
+  return GURL("blob:uuid/" + uuid);
+}
+
+leveldb::Status IndexedDBBackingStore::Transaction::HandleBlobPreTransaction(
+    BlobEntryKeyValuePairVec* new_blob_entries,
+    WriteDescriptorVec* new_files_to_write) {
+  if (backing_store_->is_incognito())
+    return leveldb::Status::OK();
+
+  BlobChangeMap::iterator iter = blob_change_map_.begin();
+  new_blob_entries->clear();
+  new_files_to_write->clear();
+  if (iter != blob_change_map_.end()) {
+    // Create LevelDBTransaction for the name generator seed and add-journal.
+    scoped_refptr<LevelDBTransaction> pre_transaction =
+        new LevelDBTransaction(backing_store_->db_.get());
+    BlobJournalType journal;
+    for (; iter != blob_change_map_.end(); ++iter) {
+      std::vector<IndexedDBBlobInfo>::iterator info_iter;
+      std::vector<IndexedDBBlobInfo*> new_blob_keys;
+      for (info_iter = iter->second->mutable_blob_info().begin();
+           info_iter != iter->second->mutable_blob_info().end();
+           ++info_iter) {
+        int64 next_blob_key = -1;
+        bool result = GetBlobKeyGeneratorCurrentNumber(
+            pre_transaction.get(), database_id_, &next_blob_key);
+        if (!result || next_blob_key < 0)
+          return InternalInconsistencyStatus();
+        BlobJournalEntryType journal_entry =
+            std::make_pair(database_id_, next_blob_key);
+        journal.push_back(journal_entry);
+        if (info_iter->is_file()) {
+          new_files_to_write->push_back(
+              WriteDescriptor(info_iter->file_path(), next_blob_key));
+        } else {
+          new_files_to_write->push_back(WriteDescriptor(
+              getURLFromUUID(info_iter->uuid()), next_blob_key));
+        }
+        info_iter->set_key(next_blob_key);
+        new_blob_keys.push_back(&*info_iter);
+        result = UpdateBlobKeyGeneratorCurrentNumber(
+            pre_transaction.get(), database_id_, next_blob_key + 1);
+        if (!result)
+          return InternalInconsistencyStatus();
+      }
+      BlobEntryKey blob_entry_key;
+      StringPiece key_piece(iter->second->key());
+      if (!BlobEntryKey::FromObjectStoreDataKey(&key_piece, &blob_entry_key)) {
+        NOTREACHED();
+        return InternalInconsistencyStatus();
+      }
+      new_blob_entries->push_back(
+          std::make_pair(blob_entry_key, EncodeBlobData(new_blob_keys)));
+    }
+    UpdatePrimaryJournalWithBlobList(pre_transaction.get(), journal);
+    leveldb::Status s = pre_transaction->Commit();
+    if (!s.ok())
+      return InternalInconsistencyStatus();
+  }
+  return leveldb::Status::OK();
+}
+
+bool IndexedDBBackingStore::Transaction::CollectBlobFilesToRemove() {
+  if (backing_store_->is_incognito())
+    return true;
+
+  BlobChangeMap::const_iterator iter = blob_change_map_.begin();
+  // Look up all old files to remove as part of the transaction, store their
+  // names in blobs_to_remove_, and remove their old blob data entries.
+  if (iter != blob_change_map_.end()) {
+    scoped_ptr<LevelDBIterator> db_iter = transaction_->CreateIterator();
+    for (; iter != blob_change_map_.end(); ++iter) {
+      BlobEntryKey blob_entry_key;
+      StringPiece key_piece(iter->second->key());
+      if (!BlobEntryKey::FromObjectStoreDataKey(&key_piece, &blob_entry_key)) {
+        NOTREACHED();
+        INTERNAL_WRITE_ERROR_UNTESTED(TRANSACTION_COMMIT_METHOD);
+        transaction_ = NULL;
+        return false;
+      }
+      if (database_id_ < 0)
+        database_id_ = blob_entry_key.database_id();
+      else
+        DCHECK_EQ(database_id_, blob_entry_key.database_id());
+      std::string blob_entry_key_bytes = blob_entry_key.Encode();
+      db_iter->Seek(blob_entry_key_bytes);
+      if (db_iter->IsValid() &&
+          !CompareKeys(db_iter->Key(), blob_entry_key_bytes)) {
+        std::vector<IndexedDBBlobInfo> blob_info;
+        if (!DecodeBlobData(db_iter->Value().as_string(), &blob_info)) {
+          INTERNAL_READ_ERROR_UNTESTED(TRANSACTION_COMMIT_METHOD);
+          transaction_ = NULL;
+          return false;
+        }
+        std::vector<IndexedDBBlobInfo>::iterator blob_info_iter;
+        for (blob_info_iter = blob_info.begin();
+             blob_info_iter != blob_info.end();
+             ++blob_info_iter)
+          blobs_to_remove_.push_back(
+              std::make_pair(database_id_, blob_info_iter->key()));
+        transaction_->Remove(blob_entry_key_bytes);
+      }
+    }
+  }
+  return true;
+}
+
+leveldb::Status IndexedDBBackingStore::Transaction::SortBlobsToRemove() {
+  IndexedDBActiveBlobRegistry* registry =
+      backing_store_->active_blob_registry();
+  BlobJournalType::iterator iter;
+  BlobJournalType primary_journal, live_blob_journal;
+  for (iter = blobs_to_remove_.begin(); iter != blobs_to_remove_.end();
+       ++iter) {
+    if (registry->MarkDeletedCheckIfUsed(iter->first, iter->second))
+      live_blob_journal.push_back(*iter);
+    else
+      primary_journal.push_back(*iter);
+  }
+  UpdatePrimaryJournalWithBlobList(transaction_.get(), primary_journal);
+  leveldb::Status s =
+      MergeBlobsIntoLiveBlobJournal(transaction_.get(), live_blob_journal);
+  if (!s.ok())
+    return s;
+  // To signal how many blobs need attention right now.
+  blobs_to_remove_.swap(primary_journal);
+  return leveldb::Status::OK();
+}
+
+leveldb::Status IndexedDBBackingStore::Transaction::CommitPhaseOne(
+    scoped_refptr<BlobWriteCallback> callback) {
+  IDB_TRACE("IndexedDBBackingStore::Transaction::CommitPhaseOne");
+  DCHECK(transaction_);
+  DCHECK(backing_store_->task_runner()->RunsTasksOnCurrentThread());
+
+  leveldb::Status s;
+
+  s = backing_store_->CleanUpBlobJournal(BlobJournalKey::Encode());
+  if (!s.ok()) {
+    INTERNAL_WRITE_ERROR_UNTESTED(TRANSACTION_COMMIT_METHOD);
+    transaction_ = NULL;
+    return s;
+  }
+
+  BlobEntryKeyValuePairVec new_blob_entries;
+  WriteDescriptorVec new_files_to_write;
+  s = HandleBlobPreTransaction(&new_blob_entries, &new_files_to_write);
+  if (!s.ok()) {
+    INTERNAL_WRITE_ERROR_UNTESTED(TRANSACTION_COMMIT_METHOD);
+    transaction_ = NULL;
+    return s;
+  }
+
+  DCHECK(!new_files_to_write.size() ||
+         KeyPrefix::IsValidDatabaseId(database_id_));
+  if (!CollectBlobFilesToRemove()) {
+    INTERNAL_WRITE_ERROR_UNTESTED(TRANSACTION_COMMIT_METHOD);
+    transaction_ = NULL;
+    return InternalInconsistencyStatus();
+  }
+
+  if (new_files_to_write.size()) {
+    // This kicks off the writes of the new blobs, if any.
+    // This call will zero out new_blob_entries and new_files_to_write.
+    WriteNewBlobs(new_blob_entries, new_files_to_write, callback);
+    // Remove the add journal, if any; once the blobs are written, and we
+    // commit, this will do the cleanup.
+    ClearBlobJournal(transaction_.get(), BlobJournalKey::Encode());
+  } else {
+    callback->Run(true);
+  }
+
+  return leveldb::Status::OK();
+}
+
+leveldb::Status IndexedDBBackingStore::Transaction::CommitPhaseTwo() {
+  IDB_TRACE("IndexedDBBackingStore::Transaction::CommitPhaseTwo");
+  leveldb::Status s;
+  if (blobs_to_remove_.size()) {
+    s = SortBlobsToRemove();
+    if (!s.ok()) {
+      INTERNAL_READ_ERROR_UNTESTED(TRANSACTION_COMMIT_METHOD);
+      transaction_ = NULL;
+      return s;
+    }
+  }
+
+  s = transaction_->Commit();
   transaction_ = NULL;
 
   if (s.ok() && backing_store_->is_incognito() && !blob_change_map_.empty()) {
@@ -3776,6 +4029,9 @@ leveldb::Status IndexedDBBackingStore::Transaction::Commit() {
   }
   if (!s.ok())
     INTERNAL_WRITE_ERROR_UNTESTED(TRANSACTION_COMMIT_METHOD);
+  else if (blobs_to_remove_.size())
+    s = backing_store_->CleanUpBlobJournal(BlobJournalKey::Encode());
+
   return s;
 }
 

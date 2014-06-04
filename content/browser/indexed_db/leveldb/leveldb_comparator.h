@@ -6,10 +6,11 @@
 #define CONTENT_BROWSER_INDEXED_DB_LEVELDB_LEVELDB_COMPARATOR_H_
 
 #include "base/strings/string_piece.h"
+#include "content/common/content_export.h"
 
 namespace content {
 
-class LevelDBComparator {
+class CONTENT_EXPORT LevelDBComparator {
  public:
   virtual ~LevelDBComparator() {}
 
