@@ -58,18 +58,6 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
 
   static bool IsGuest(content::WebContents* web_contents);
 
-  // For GuestViewBases, we create special guest processes, which host the
-  // tag content separately from the main application that embeds the tag.
-  // A GuestViewBase can specify both the partition name and whether the storage
-  // for that partition should be persisted. Each tag gets a SiteInstance with
-  // a specially formatted URL, based on the application it is hosted by and
-  // the partition requested by it. The format for that URL is:
-  // chrome-guest://partition_domain/persist?partition_name
-  static bool GetGuestPartitionConfigForSite(const GURL& site,
-                                             std::string* partition_domain,
-                                             std::string* partition_name,
-                                             bool* in_memory);
-
   // By default, JavaScript and images are enabled in guest content.
   static void GetDefaultContentSettingRules(RendererContentSettingRules* rules,
                                             bool incognito);

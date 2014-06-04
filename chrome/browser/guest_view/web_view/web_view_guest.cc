@@ -48,6 +48,7 @@
 #include "content/public/common/url_constants.h"
 #include "extensions/common/constants.h"
 #include "ipc/ipc_message_macros.h"
+#include "net/base/escape.h"
 #include "net/base/net_errors.h"
 #include "third_party/WebKit/public/web/WebFindOptions.h"
 #include "ui/base/models/simple_menu_model.h"
@@ -210,9 +211,32 @@ WebViewGuest::WebViewGuest(int guest_instance_id,
 }
 
 // static
+bool WebViewGuest::GetGuestPartitionConfigForSite(
+    const GURL& site,
+    std::string* partition_domain,
+    std::string* partition_name,
+    bool* in_memory) {
+  if (!site.SchemeIs(content::kGuestScheme))
+    return false;
+
+  // Since guest URLs are only used for packaged apps, there must be an app
+  // id in the URL.
+  CHECK(site.has_host());
+  *partition_domain = site.host();
+  // Since persistence is optional, the path must either be empty or the
+  // literal string.
+  *in_memory = (site.path() != "/persist");
+  // The partition name is user supplied value, which we have encoded when the
+  // URL was created, so it needs to be decoded.
+  *partition_name =
+      net::UnescapeURLComponent(site.query(), net::UnescapeRule::NORMAL);
+  return true;
+}
+
+// static
 const char WebViewGuest::Type[] = "webview";
 
-// static.
+// static
 int WebViewGuest::GetViewInstanceId(WebContents* contents) {
   WebViewGuest* guest = FromWebContents(contents);
   if (!guest)
