@@ -157,6 +157,9 @@ private:
     virtual void didSendData(unsigned long long bytesSent, unsigned long long totalBytesToBeSent) OVERRIDE;
     virtual void didReceiveResponse(unsigned long identifier, const ResourceResponse&) OVERRIDE;
     virtual void didReceiveData(const char* data, int dataLength) OVERRIDE;
+    // When responseType is set to "blob", didDownloadData() is called instead
+    // of didReceiveData().
+    virtual void didDownloadData(int dataLength) OVERRIDE;
     virtual void didFinishLoading(unsigned long identifier, double finishTime) OVERRIDE;
     virtual void didFail(const ResourceError&) OVERRIDE;
     virtual void didFailRedirectCheck() OVERRIDE;
@@ -235,6 +238,8 @@ private:
     RefPtrWillBeMember<Document> m_responseDocument;
 
     RefPtr<SharedBuffer> m_binaryResponseBuilder;
+    long long m_downloadedBlobLength;
+
     RefPtr<ArrayBuffer> m_responseArrayBuffer;
 
     bool m_error;
