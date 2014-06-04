@@ -313,8 +313,8 @@ void OpaqueBrowserFrameViewLayout::LayoutTitleBar(views::View* host) {
 
   int size = delegate_->GetIconSize();
   int frame_thickness = FrameBorderThickness(false);
-  bool should_show_icon = delegate_->ShouldShowWindowIcon();
-  bool should_show_title = delegate_->ShouldShowWindowTitle();
+  bool should_show_icon = delegate_->ShouldShowWindowIcon() && window_icon_;
+  bool should_show_title = delegate_->ShouldShowWindowTitle() && window_title_;
 
   if (should_show_icon || should_show_title) {
     use_hidden_icon_location = false;
