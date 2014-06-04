@@ -211,6 +211,7 @@ void GuestViewBase::Attach(content::WebContents* embedder_web_contents,
 }
 
 void GuestViewBase::Destroy() {
+  WillDestroy();
   if (!destruction_callback_.is_null())
     destruction_callback_.Run();
   delete guest_web_contents();
@@ -242,6 +243,7 @@ void GuestViewBase::DidStopLoading(content::RenderViewHost* render_view_host) {
 }
 
 void GuestViewBase::WebContentsDestroyed() {
+  GuestDestroyed();
   delete this;
 }
 

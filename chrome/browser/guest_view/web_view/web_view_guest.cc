@@ -359,8 +359,24 @@ void WebViewGuest::EmbedderDestroyed() {
           view_instance_id()));
 }
 
+void WebViewGuest::GuestDestroyed() {
+  // Clean up custom context menu items for this guest.
+  extensions::MenuManager* menu_manager = extensions::MenuManager::Get(
+      Profile::FromBrowserContext(browser_context()));
+  menu_manager->RemoveAllContextItems(extensions::MenuItem::ExtensionKey(
+      embedder_extension_id(), view_instance_id()));
+
+  RemoveWebViewFromExtensionRendererState(web_contents());
+}
+
 bool WebViewGuest::IsDragAndDropEnabled() const {
   return true;
+}
+
+void WebViewGuest::WillDestroy() {
+  if (!attached() && GetOpener())
+    GetOpener()->pending_new_windows_.erase(this);
+  DestroyUnattachedWindows();
 }
 
 bool WebViewGuest::AddMessageToConsole(WebContents* source,
@@ -865,17 +881,6 @@ void WebViewGuest::RenderProcessGone(base::TerminationStatus status) {
   DispatchEvent(new GuestViewBase::Event(webview::kEventExit, args.Pass()));
 }
 
-void WebViewGuest::WebContentsDestroyed() {
-  // Clean up custom context menu items for this guest.
-  extensions::MenuManager* menu_manager = extensions::MenuManager::Get(
-      Profile::FromBrowserContext(browser_context()));
-  menu_manager->RemoveAllContextItems(extensions::MenuItem::ExtensionKey(
-      embedder_extension_id(), view_instance_id()));
-
-  RemoveWebViewFromExtensionRendererState(web_contents());
-  GuestViewBase::WebContentsDestroyed();
-}
-
 void WebViewGuest::UserAgentOverrideSet(const std::string& user_agent) {
   content::NavigationController& controller =
       guest_web_contents()->GetController();
@@ -1267,13 +1272,6 @@ void WebViewGuest::SetZoom(double zoom_factor) {
       new GuestViewBase::Event(webview::kEventZoomChange, args.Pass()));
 
   current_zoom_factor_ = zoom_factor;
-}
-
-void WebViewGuest::Destroy() {
-  if (!attached() && GetOpener())
-    GetOpener()->pending_new_windows_.erase(this);
-  DestroyUnattachedWindows();
-  GuestViewBase::Destroy();
 }
 
 void WebViewGuest::AddNewContents(content::WebContents* source,

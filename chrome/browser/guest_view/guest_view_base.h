@@ -76,14 +76,29 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
 
   virtual const char* GetViewType() const = 0;
 
-  // This method can be overriden by subclasses. This method is called when
+  // This method can be overridden by subclasses. This method is called when
   // the initial set of frames within the page have completed loading.
   virtual void DidStopLoading() {}
 
-  // This method can be overridden by subclasses. It indicates that this guest's
-  // embedder has been destroyed and the guest will be destroyed shortly. This
-  // method gives derived classes the opportunity to perform some cleanup.
+  // This method is called when the guest WebContents is about to be destroyed.
+  //
+  // This method can be overridden by subclasses. This gives the derived class
+  // an opportunity to perform some cleanup prior to destruction.
+  virtual void WillDestroy() {}
+
+  // This method is called when the guest's embedder WebContents has been
+  // destroyed and the guest will be destroyed shortly.
+  //
+  // This method can be overridden by subclasses. This gives the derived class
+  // an opportunity to perform some cleanup prior to destruction.
   virtual void EmbedderDestroyed() {}
+
+  // This method is called when the guest WebContents has been destroyed. This
+  // object will be destroyed after this call returns.
+  //
+  // This method can be overridden by subclasses. This gives the derived class
+  // opportunity to perform some cleanup.
+  virtual void GuestDestroyed() {}
 
   // This method queries whether drag-and-drop is enabled for this particular
   // view. By default, drag-and-drop is disabled. Derived classes can override
@@ -143,21 +158,11 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
 
   void SetOpener(GuestViewBase* opener);
 
-  // WebContentsObserver implementation.
-  virtual void DidStopLoading(
-      content::RenderViewHost* render_view_host) OVERRIDE FINAL;
-  virtual void WebContentsDestroyed() OVERRIDE;
-
-  // WebContentsDelegate implementation.
-  virtual bool ShouldFocusPageAfterCrash() OVERRIDE;
-  virtual bool PreHandleGestureEvent(
-      content::WebContents* source,
-      const blink::WebGestureEvent& event) OVERRIDE;
-
   // BrowserPluginGuestDelegate implementation.
-  virtual void Destroy() OVERRIDE;
+  virtual void Destroy() OVERRIDE FINAL;
   virtual void RegisterDestructionCallback(
-      const DestructionCallback& callback) OVERRIDE;
+      const DestructionCallback& callback) OVERRIDE FINAL;
+
  protected:
   GuestViewBase(int guest_instance_id,
                 content::WebContents* guest_web_contents,
@@ -171,6 +176,17 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
   class EmbedderWebContentsObserver;
 
   void SendQueuedEvents();
+
+  // WebContentsObserver implementation.
+  virtual void DidStopLoading(
+      content::RenderViewHost* render_view_host) OVERRIDE FINAL;
+  virtual void WebContentsDestroyed() OVERRIDE FINAL;
+
+  // WebContentsDelegate implementation.
+  virtual bool ShouldFocusPageAfterCrash() OVERRIDE FINAL;
+  virtual bool PreHandleGestureEvent(
+      content::WebContents* source,
+      const blink::WebGestureEvent& event) OVERRIDE FINAL;
 
   content::WebContents* embedder_web_contents_;
   const std::string embedder_extension_id_;

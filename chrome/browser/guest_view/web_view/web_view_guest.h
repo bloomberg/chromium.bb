@@ -71,7 +71,9 @@ class WebViewGuest : public GuestView<WebViewGuest>,
                       const base::DictionaryValue& args) OVERRIDE;
   virtual void DidStopLoading() OVERRIDE;
   virtual void EmbedderDestroyed() OVERRIDE;
+  virtual void GuestDestroyed() OVERRIDE;
   virtual bool IsDragAndDropEnabled() const OVERRIDE;
+  virtual void WillDestroy() OVERRIDE;
 
   // WebContentsDelegate implementation.
   virtual bool AddMessageToConsole(content::WebContents* source,
@@ -136,7 +138,6 @@ class WebViewGuest : public GuestView<WebViewGuest>,
       bool last_unlocked_by_target,
       const base::Callback<void(bool)>& callback) OVERRIDE;
   virtual void NavigateGuest(const std::string& src) OVERRIDE;
-  virtual void Destroy() OVERRIDE;
 
   // NotificationObserver implementation.
   virtual void Observe(int type,
@@ -299,7 +300,6 @@ class WebViewGuest : public GuestView<WebViewGuest>,
       const IPC::Message& message,
       content::RenderFrameHost* render_frame_host) OVERRIDE;
   virtual void RenderProcessGone(base::TerminationStatus status) OVERRIDE;
-  virtual void WebContentsDestroyed() OVERRIDE;
   virtual void UserAgentOverrideSet(const std::string& user_agent) OVERRIDE;
   virtual void RenderViewReady() OVERRIDE;
 
