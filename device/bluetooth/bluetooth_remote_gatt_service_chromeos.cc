@@ -194,6 +194,10 @@ void BluetoothRemoteGattServiceChromeOS::NotifyDescriptorValueChanged(
 void BluetoothRemoteGattServiceChromeOS::GattServicePropertyChanged(
     const dbus::ObjectPath& object_path,
     const std::string& property_name){
+  if (object_path != object_path_)
+    return;
+
+  VLOG(1) << "Service property changed: " << object_path.value();
   NotifyServiceChanged();
 }
 
