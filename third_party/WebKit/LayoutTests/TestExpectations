@@ -666,27 +666,6 @@ crbug.com/309675 compositing/gestures/gesture-tapHighlight-simple-longPress.html
 
 crbug.com/305345 fast/events/mouseover-mouseout.html [ Failure Pass ]
 
-crbug.com/370366 fast/repaint/inline-relative-positioned.html [ NeedsRebaseline ]
-crbug.com/370366 fast/repaint/overflow-scroll-body-appear.html [ NeedsRebaseline ]
-crbug.com/370366 fast/repaint/reflection-repaint-test.html [ NeedsRebaseline ]
-crbug.com/370366 fast/repaint/transform-disable-layoutstate.html [ NeedsRebaseline ]
-crbug.com/370366 fast/repaint/transform-layout-repaint.html [ NeedsRebaseline ]
-crbug.com/370366 fast/repaint/window-resize-media-query.html [ NeedsRebaseline ]
-crbug.com/370366 fast/repaint/window-resize-no-layout-change1.html [ NeedsRebaseline ]
-crbug.com/370366 fast/repaint/window-resize-no-layout-change2.html [ NeedsRebaseline ]
-crbug.com/370366 fast/repaint/window-resize-percent-html.html [ NeedsRebaseline ]
-crbug.com/370366 fast/repaint/window-resize-percent-width-height.html [ NeedsRebaseline ]
-crbug.com/370366 fast/repaint/window-resize-positioned-bottom.html [ NeedsRebaseline ]
-crbug.com/370366 fast/repaint/window-resize-positioned-percent-top.html [ NeedsRebaseline ]
-crbug.com/370366 fast/repaint/window-resize-vertical-writing-mode.html [ NeedsRebaseline ]
-crbug.com/370366 fast/repaint/window-resize-viewport-percent.html [ NeedsRebaseline ]
-crbug.com/370366 fast/repaint/line-flow-with-floats-9.html [ NeedsRebaseline ]
-crbug.com/370366 svg/custom/object-sizing-no-width-height-change-content-box-size.xhtml [ NeedsRebaseline ]
-crbug.com/370366 fast/repaint/window-resize-background-image-fixed-centered-composited.html [ NeedsRebaseline ]
-crbug.com/370366 fast/repaint/window-resize-background-image-fixed-centered.html [ NeedsRebaseline ]
-crbug.com/370366 fast/repaint/window-resize-background-image-generated.html [ NeedsRebaseline ]
-crbug.com/370366 fast/repaint/window-resize-background-image-non-fixed.html [ NeedsRebaseline ]
-
 # Android virtual suite shares the same expectation.
 crbug.com/100798 [ Debug ] virtual/android/fullscreen/full-screen-iframe-allowed.html [ Failure Pass ]
 crbug.com/100798 [ Debug ] virtual/android/fullscreen/full-screen-iframe-allowed-prefixed.html [ Failure Pass ]

@@ -23,6 +23,7 @@
       (drawsContent 1)
       (repaint rects
         (rect 0.00 0.00 200.00 300.00)
+        (rect 0.00 0.00 200.00 300.00)
       )
     )
   )
@@ -52,8 +53,8 @@
       (contentsOpaque 1)
       (drawsContent 1)
       (repaint rects
-        (rect 250.00 0.00 50.00 250.00)
         (rect 0.00 0.00 300.00 250.00)
+        (rect 0.00 0.00 250.00 250.00)
       )
     )
   )
