@@ -964,6 +964,8 @@
         'browser/local_discovery/gcd_api_flow.h',
         'browser/local_discovery/gcd_constants.cc',
         'browser/local_discovery/gcd_constants.h',
+        'browser/local_discovery/gcd_registration_ticket_request.cc',
+        'browser/local_discovery/gcd_registration_ticket_request.h',
         'browser/local_discovery/privet_confirm_api_flow.cc',
         'browser/local_discovery/privet_confirm_api_flow.h',
         'browser/local_discovery/privet_constants.cc',
