@@ -39,7 +39,7 @@ class ToughCompositorWaitPage(ToughCompositorPage):
 
   def RunSmoothness(self, action_runner):
     # We scroll back and forth a few times to reduce noise in the tests.
-    action_runner.RunAction(WaitAction({'seconds': 10}))
+    action_runner.RunAction(WaitAction({'seconds': 8}))
 
 
 class ToughCompositorCasesPageSet(page_set_module.PageSet):
@@ -56,11 +56,11 @@ class ToughCompositorCasesPageSet(page_set_module.PageSet):
       # Why: Baseline CC scrolling page. A long page with only text. """
       'http://jsbin.com/pixavefe/1/quiet?CC_SCROLL_TEXT_ONLY',
       # Why: Baseline JS scrolling page. A long page with only text. """
-      'http://jsbin.com/wixadinu/1/quiet?JS_SCROLL_TEXT_ONLY',
+      'http://jsbin.com/wixadinu/2/quiet?JS_SCROLL_TEXT_ONLY',
       # Why: Scroll by a large number of CC layers """
       'http://jsbin.com/yakagevo/1/quiet?CC_SCROLL_200_LAYER_GRID',
       # Why: Scroll by a large number of JS layers """
-      'http://jsbin.com/jevibahi/1/quiet?JS_SCROLL_200_LAYER_GRID',
+      'http://jsbin.com/jevibahi/4/quiet?JS_SCROLL_200_LAYER_GRID',
     ]
 
     wait_urls_list = [
