@@ -176,6 +176,7 @@ const Experiment::Choice kOverscrollHistoryNavigationChoices[] = {
 };
 #endif
 
+#if !defined(DISABLE_NACL)
 const Experiment::Choice kNaClDebugMaskChoices[] = {
   // Secure shell can be used on ChromeOS for forwarding the TCP port opened by
   // debug stub to a remote machine. Since secure shell uses NaCl, we usually
@@ -188,6 +189,7 @@ const Experiment::Choice kNaClDebugMaskChoices[] = {
   { IDS_NACL_DEBUG_MASK_CHOICE_INCLUDE_DEBUG,
       switches::kNaClDebugMask, "*://*/*debug.nmf" }
 };
+#endif
 
 const Experiment::Choice kImplSidePaintingChoices[] = {
   { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
@@ -589,12 +591,13 @@ const Experiment kExperiments[] = {
     kOsAll,
     MULTI_VALUE_TYPE(kEnableAcceleratedFixedRootBackgroundChoices)
   },
-  // TODO(bbudge): When NaCl is on by default, remove this flag entry.
+  // Native client is compiled out when DISABLE_NACL is defined.
+#if !defined(DISABLE_NACL)
   {
     "enable-nacl",  // FLAGS:RECORD_UMA
     IDS_FLAGS_ENABLE_NACL_NAME,
     IDS_FLAGS_ENABLE_NACL_DESCRIPTION,
-    kOsDesktop,
+    kOsAll,
     SINGLE_VALUE_TYPE(switches::kEnableNaCl)
   },
   {
@@ -618,6 +621,7 @@ const Experiment kExperiments[] = {
     kOsDesktop,
     MULTI_VALUE_TYPE(kNaClDebugMaskChoices)
   },
+#endif
   {
     "extension-apis",  // FLAGS:RECORD_UMA
     IDS_FLAGS_EXPERIMENTAL_EXTENSION_APIS_NAME,
@@ -895,6 +899,8 @@ const Experiment kExperiments[] = {
     kOsDesktop,
     SINGLE_VALUE_TYPE(switches::kEnableDownloadResumption)
   },
+  // Native client is compiled out when DISABLE_NACL is defined.
+#if !defined(DISABLE_NACL)
   {
     "allow-nacl-socket-api",
     IDS_FLAGS_ALLOW_NACL_SOCKET_API_NAME,
@@ -902,6 +908,7 @@ const Experiment kExperiments[] = {
     kOsDesktop,
     SINGLE_VALUE_TYPE_AND_VALUE(switches::kAllowNaClSocketAPI, "*")
   },
+#endif
   {
     "force-device-scale-factor",
     IDS_FLAGS_FORCE_HIGH_DPI_NAME,

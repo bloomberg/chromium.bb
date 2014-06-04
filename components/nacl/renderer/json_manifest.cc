@@ -452,7 +452,7 @@ bool JsonManifest::ResolveKey(const std::string& key,
   if (key == kProgramKey)
     return GetKeyUrl(dictionary_, key, full_url, pnacl_options);
 
-  std::string::const_iterator p = find(key.begin(), key.end(), '/');
+  std::string::const_iterator p = std::find(key.begin(), key.end(), '/');
   if (p == key.end()) {
     VLOG(1) << "ResolveKey failed: invalid key, no slash: " << key;
     return false;

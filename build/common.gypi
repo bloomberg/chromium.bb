@@ -982,6 +982,8 @@
       'google_api_key%': '',
       'google_default_client_id%': '',
       'google_default_client_secret%': '',
+      # Native Client is enabled by default.
+      'disable_nacl%': '0',
     },
 
     # Copy conditionally-set variables out one scope.
@@ -1347,8 +1349,8 @@
     # Disable Dart by default.
     'enable_dart%': 0,
 
-    # Native Client is enabled by default.
-    'disable_nacl%': 0,
+    # Copy out the setting of disable_nacl.
+    'disable_nacl%': '<(disable_nacl)',
 
     # Portable Native Client is enabled by default.
     'disable_pnacl%': 0,

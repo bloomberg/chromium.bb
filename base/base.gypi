@@ -772,7 +772,7 @@
               ['include', '^threading/platform_thread_linux\\.cc$'],
             ],
           }],
-          ['OS == "android" and _toolset == "target"', {
+          ['OS == "android" and _toolset == "target" and >(nacl_untrusted_build)==0', {
            'sources': [
              'memory/discardable_memory_ashmem_allocator.cc',
              'memory/discardable_memory_ashmem_allocator.h',

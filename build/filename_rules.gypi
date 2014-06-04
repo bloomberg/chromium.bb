@@ -35,7 +35,7 @@
         ['exclude', '(^|/)linux/'],
       ],
     }],
-    ['OS!="android" or _toolset=="host"', {
+    ['OS!="android" or _toolset=="host" or >(nacl_untrusted_build)==1', {
       'sources/': [
         ['exclude', '_android(_unittest)?\\.cc$'],
         ['exclude', '(^|/)android/'],

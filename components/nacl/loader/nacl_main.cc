@@ -27,7 +27,8 @@ int NaClMain(const content::MainFunctionParams& parameters) {
   base::PowerMonitor power_monitor(power_monitor_source.Pass());
   base::HighResolutionTimerManager hi_res_timer_manager;
 
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) || \
+    defined(OS_ANDROID)
   NaClMainPlatformDelegate platform(parameters);
   bool no_sandbox = parsed_command_line.HasSwitch(switches::kNoSandbox);
 

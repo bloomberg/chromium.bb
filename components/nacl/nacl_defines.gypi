@@ -5,32 +5,43 @@
 {
   'variables': {
     'conditions': [
-      ['OS=="win"', {
+      ['disable_nacl==1', {
         'nacl_defines': [
-          'NACL_WINDOWS=1',
-          'NACL_LINUX=0',
-          'NACL_OSX=0',
         ],
-      }],
-      ['OS=="linux"', {
-        'nacl_defines': [
-          'NACL_WINDOWS=0',
-          'NACL_LINUX=1',
-          'NACL_OSX=0',
-        ],
-      }],
-      ['OS=="mac"', {
-        'nacl_defines': [
-          'NACL_WINDOWS=0',
-          'NACL_LINUX=0',
-          'NACL_OSX=1',
-        ],
-      }],
-      # "disabled_nacl" is always set to "1" when building for "ios" or android,
-      # so set "nacl_defines" to the empty list to ensure the variable is
-      # always defined.
-      ['OS=="ios" or OS=="android"', {
-        'nacl_defines': [
+      }, {
+        'conditions': [
+          ['OS=="win"', {
+            'nacl_defines': [
+              'NACL_WINDOWS=1',
+              'NACL_LINUX=0',
+              'NACL_OSX=0',
+              'NACL_ANDROID=0',
+            ],
+          }],
+          ['OS=="linux"', {
+            'nacl_defines': [
+              'NACL_WINDOWS=0',
+              'NACL_LINUX=1',
+              'NACL_OSX=0',
+              'NACL_ANDROID=0',
+            ],
+          }],
+          ['OS=="mac"', {
+            'nacl_defines': [
+              'NACL_WINDOWS=0',
+              'NACL_LINUX=0',
+              'NACL_OSX=1',
+              'NACL_ANDROID=0',
+            ],
+          }],
+          ['OS=="android"', {
+            'nacl_defines': [
+              'NACL_WINDOWS=0',
+              'NACL_LINUX=1',
+              'NACL_OSX=0',
+              'NACL_ANDROID=1',
+            ],
+          }],
         ],
       }],
       # TODO(mcgrathr): This duplicates native_client/build/common.gypi;
