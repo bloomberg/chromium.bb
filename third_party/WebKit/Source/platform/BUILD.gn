@@ -11,6 +11,11 @@ platform_gypi = exec_script(
     [ rebase_path("blink_platform.gypi") ],
     "scope",
     [ "blink_platform.gypi" ])
+heap_gypi = exec_script(
+    "//build/gypi_to_gn.py",
+    [ rebase_path("heap/blink_heap.gypi") ],
+    "scope",
+    [ "heap/blink_heap.gypi" ])
 blink_platform_neon_files = [
   "graphics/cpu/arm/WebGLImageConversionNEON.h",
   "graphics/cpu/arm/filters/FEBlendNEON.h",
@@ -331,6 +336,98 @@ component("platform") {
     # deps += [ "//third_party/openmax_dl/dl" ]
   }
 }
+
+source_set("heap_run_all_tests") {
+  sources = [
+    "heap/RunAllTests.cpp"
+  ]
+
+  configs += [
+    "//third_party/WebKit/Source/wtf:wtf_config",
+    "//third_party/WebKit/Source:config",
+    "//third_party/WebKit/Source:non_test_config",
+  ]
+
+  deps = [
+    "//base/test:test_support",
+    "//testing/gmock",
+    "//testing/gtest",
+    "//third_party/WebKit/Source/wtf",
+  ]
+}
+
+test("heap_unittests") {
+  output_name = "blink_heap_unittests"
+
+  sources = rebase_path(heap_gypi.platform_heap_test_files, ".", "heap")
+
+  configs += [
+    "//third_party/WebKit/Source:config",
+  ]
+
+  deps = [
+    ":heap_run_all_tests",
+    ":platform",
+    "//base",
+    "//base/allocator",
+    "//testing/gmock",
+    "//testing/gtest",
+    "//third_party/WebKit/Source/wtf",
+    "//third_party/WebKit/Source/wtf:unittest_helpers",
+  ]
+}
+
+source_set("platform_run_all_tests") {
+  sources = [
+    "testing/RunAllTests.cpp"
+  ]
+
+  configs += [
+    "//third_party/WebKit/Source/wtf:wtf_config",
+    "//third_party/WebKit/Source:config",
+    "//third_party/WebKit/Source:non_test_config",
+  ]
+
+  deps = [
+    "//base/test:test_support",
+    "//testing/gmock",
+    "//testing/gtest",
+    "//third_party/WebKit/Source/wtf",
+  ]
+}
+
+test("platform_unittests") {
+  output_name = "blink_platform_unittests"
+
+  sources = platform_gypi.platform_test_files
+
+  configs += [
+    "//third_party/WebKit/Source:config",
+  ]
+
+  deps = [
+    ":blink_common",
+    ":heap_run_all_tests",
+    ":platform",
+    "//base",
+    "//base/allocator",
+    "//skia",
+    "//testing/gmock",
+    "//testing/gtest",
+    "//third_party/WebKit/Source/wtf",
+    "//third_party/WebKit/Source/wtf:unittest_helpers",
+    "//url",
+  ]
+
+  defines = [
+    "INSIDE_BLINK",
+  ]
+
+  include_dirs = [
+    "$root_gen_dir/blink",
+  ]
+}
+
 
 if (cpu_arch == "arm") {
   source_set("blink_arm_neon") {
