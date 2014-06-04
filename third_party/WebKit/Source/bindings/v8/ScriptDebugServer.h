@@ -80,6 +80,7 @@ public:
     ScriptValue currentCallFrames();
     ScriptValue currentCallFramesForAsyncStack();
     PassRefPtr<JavaScriptCallFrame> topCallFrameNoScopes();
+    int frameCount();
 
     class Task {
     public:

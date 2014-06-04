@@ -27,8 +27,13 @@ function addListenerAndClick()
     }
 
     var button = document.getElementById("test");
-    Framework.addEventListener(button, "click", Framework.bind(testElementClicked, null), true);
+    var remover = Framework.addEventListener(button, "click", Framework.empty, true); // Should be ignored.
     button.click();
+    remover();
+
+    remover = Framework.addEventListener(button, "click", Framework.bind(testElementClicked, null), true);
+    button.click();
+    remover();
 }
 
 function test()

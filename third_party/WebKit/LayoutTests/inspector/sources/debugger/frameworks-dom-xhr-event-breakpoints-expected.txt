@@ -22,7 +22,7 @@ Call stack:
     0) testElementClicked (frameworks-dom-xhr-event-breakpoints.html:26)
   * 1) Framework_bound (framework.js:105)
   * 2) Framework_eventListener (framework.js:87)
-    3) addListenerAndClick (frameworks-dom-xhr-event-breakpoints.html:31)
+    3) addListenerAndClick (frameworks-dom-xhr-event-breakpoints.html:35)
     4)  (:1)
 Paused on a "click" Event Listener.
 Debugger was disabled.

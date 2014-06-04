@@ -205,6 +205,11 @@ DebuggerScript.setPauseOnExceptionsState = function(newState)
         Debug.clearBreakOnUncaughtException();
 }
 
+DebuggerScript.frameCount = function(execState)
+{
+    return execState.frameCount();
+}
+
 DebuggerScript.currentCallFrame = function(execState, data)
 {
     var maximumLimit = data >> 2;

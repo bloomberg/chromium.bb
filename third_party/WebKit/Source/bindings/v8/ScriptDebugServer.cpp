@@ -168,8 +168,7 @@ void ScriptDebugServer::setPauseOnExceptionsState(PauseOnExceptionsState pauseOn
 
 void ScriptDebugServer::setPauseOnNextStatement(bool pause)
 {
-    if (isPaused())
-        return;
+    ASSERT(!isPaused());
     if (pause)
         v8::Debug::DebugBreak(m_isolate);
     else
@@ -312,6 +311,17 @@ bool ScriptDebugServer::setScriptSource(const String& sourceID, const String& ne
     }
     *error = "Unknown error.";
     return false;
+}
+
+int ScriptDebugServer::frameCount()
+{
+    ASSERT(isPaused());
+    ASSERT(!m_executionState.IsEmpty());
+    v8::Handle<v8::Value> argv[] = { m_executionState };
+    v8::Handle<v8::Value> result = callDebuggerMethod("frameCount", WTF_ARRAY_LENGTH(argv), argv);
+    if (result->IsInt32())
+        return result->Int32Value();
+    return 0;
 }
 
 PassRefPtr<JavaScriptCallFrame> ScriptDebugServer::wrapCallFrames(int maximumLimit, ScopeInfoDetails scopeDetails)
