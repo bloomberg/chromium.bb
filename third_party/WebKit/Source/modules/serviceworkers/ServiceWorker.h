@@ -52,15 +52,13 @@ class ServiceWorker
     , public ScriptWrappable
     , public blink::WebServiceWorkerProxy {
 public:
-    static PassRefPtr<ServiceWorker> create(ExecutionContext*, PassOwnPtr<blink::WebServiceWorker>);
-
     virtual ~ServiceWorker() { }
 
     // For CallbackPromiseAdapter
     typedef blink::WebServiceWorker WebType;
     static PassRefPtr<ServiceWorker> from(ScriptPromiseResolverWithContext*, WebType* worker);
 
-    static PassRefPtr<ServiceWorker> from(ScriptState*, WebType*);
+    static PassRefPtr<ServiceWorker> from(ExecutionContext*, WebType*);
 
     void postMessage(PassRefPtr<SerializedScriptValue> message, const MessagePortArray*, ExceptionState&);
 
@@ -79,6 +77,7 @@ public:
 private:
     class ThenFunction;
 
+    static PassRefPtr<ServiceWorker> create(ExecutionContext*, PassOwnPtr<blink::WebServiceWorker>);
     ServiceWorker(ExecutionContext*, PassOwnPtr<blink::WebServiceWorker>);
     void onPromiseResolved();
     void waitOnPromise(ScriptPromise);

@@ -64,6 +64,7 @@ public:
 
     void detachClient();
 
+    PassRefPtrWillBeRawPtr<ServiceWorker> waiting() { return m_waiting.get(); }
     PassRefPtrWillBeRawPtr<ServiceWorker> controller() { return m_controller.get(); }
     ScriptPromise ready(ScriptState*);
 
@@ -71,6 +72,7 @@ public:
     ScriptPromise unregisterServiceWorker(ScriptState*, const String& scope = String());
 
     // WebServiceWorkerProviderClient overrides.
+    virtual void setWaiting(blink::WebServiceWorker*) OVERRIDE;
     virtual void setController(blink::WebServiceWorker*) OVERRIDE;
     virtual void dispatchMessageEvent(const blink::WebString& message, const blink::WebMessagePortChannelArray&) OVERRIDE;
 
@@ -81,6 +83,7 @@ private:
     explicit ServiceWorkerContainer(ExecutionContext*);
 
     blink::WebServiceWorkerProvider* m_provider;
+    RefPtr<ServiceWorker> m_waiting;
     RefPtr<ServiceWorker> m_controller;
 };
 

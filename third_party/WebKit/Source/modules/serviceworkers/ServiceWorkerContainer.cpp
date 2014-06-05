@@ -160,13 +160,31 @@ void ServiceWorkerContainer::setCurrentServiceWorker(blink::WebServiceWorker* se
     setController(serviceWorker);
 }
 
+// If the WebServiceWorker is up for adoption (does not have a
+// WebServiceWorkerProxy owner), rejects the adoption by deleting the
+// WebServiceWorker.
+static void deleteIfNoExistingOwner(blink::WebServiceWorker* serviceWorker)
+{
+    if (serviceWorker && !serviceWorker->proxy())
+        delete serviceWorker;
+}
+
+void ServiceWorkerContainer::setWaiting(blink::WebServiceWorker* serviceWorker)
+{
+    if (!executionContext()) {
+        deleteIfNoExistingOwner(serviceWorker);
+        return;
+    }
+    m_waiting = ServiceWorker::from(executionContext(), serviceWorker);
+}
+
 void ServiceWorkerContainer::setController(blink::WebServiceWorker* serviceWorker)
 {
     if (!executionContext()) {
-        delete serviceWorker;
+        deleteIfNoExistingOwner(serviceWorker);
         return;
     }
-    m_controller = ServiceWorker::create(executionContext(), adoptPtr(serviceWorker));
+    m_controller = ServiceWorker::from(executionContext(), serviceWorker);
 }
 
 void ServiceWorkerContainer::dispatchMessageEvent(const blink::WebString& message, const blink::WebMessagePortChannelArray& webChannels)

@@ -43,7 +43,7 @@ class WebServiceWorkerProviderClient {
 public:
     virtual ~WebServiceWorkerProviderClient() { }
 
-    // The callee will take ownership of the given WebServiceWorker object.
+    virtual void setWaiting(WebServiceWorker*) = 0;
     virtual void setController(WebServiceWorker*) = 0;
 
     // FIXME: Remove when the embedder switches to setController.
