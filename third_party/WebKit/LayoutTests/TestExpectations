@@ -389,9 +389,6 @@ crbug.com/290411 [ XP Mac ] fast/text/sub-pixel/text-scaling-webfont.html [ Skip
 crbug.com/377696 printing/setPrinting.html [ Skip ]
 crbug.com/377696 printing/width-overflow.html [ Skip ]
 
-# FIXME: Remove windows-directwrite test suite once we're sure the DW won't be reverted. Keep it but skip it for now.
-crbug.com/378610 [ Win7 ] virtual/windows-directwrite [ Skip ]
-
 # Reftests that needs investigation.
 crbug.com/378610 [ Win7 ] compositing/gestures/gesture-tapHighlight-1-iframe-composited-scrolled-late-noncomposite.html [ ImageOnlyFailure ]
 crbug.com/378610 [ Win7 ] compositing/gestures/gesture-tapHighlight-1-iframe-scrolled.html [ ImageOnlyFailure ]
@@ -418,6 +415,7 @@ crbug.com/378610 [ Win7 ] fast/selectors/shadow-host-div-with-text.html [ ImageO
 crbug.com/378610 [ Win7 ] fast/sub-pixel/file-upload-control-at-fractional-offset.html [ ImageOnlyFailure ]
 crbug.com/378610 [ Win7 ] fast/table/td-width-fifty-percent-regression.html [ ImageOnlyFailure ]
 crbug.com/378610 [ Win7 ] fast/text/international/complex-text-missing-glyph-fallback.html [ ImageOnlyFailure ]
+crbug.com/378610 [ Win7 ] virtual/antialiasedtext/fast/text/international/complex-text-missing-glyph-fallback.html [ ImageOnlyFailure ]
 crbug.com/378610 [ Win7 ] fast/writing-mode/table-vertical-child-width.html [ ImageOnlyFailure ]
 crbug.com/378610 [ Win7 ] svg/text/alt-glyph-for-surrogate-pair.svg [ ImageOnlyFailure ]
 crbug.com/378610 [ Win7 ] svg/text/tspan-outline.html [ ImageOnlyFailure ]
@@ -442,14 +440,14 @@ crbug.com/378610 [ Win7 ] fast/text/selection-rect-rounding.html [ Failure ]
 crbug.com/371725 http/tests/webfont/slow-loading.html [ Pass ImageOnlyFailure Timeout ]
 
 # Issues on the mac-antialiased fonts virtual test suite.
-# crbug.com/367074 [ Mac ] virtual/mac-antialiasedtext/fast/text/sub-pixel/text-scaling-pixel.html [ Skip ]
-crbug.com/334269 [ Mac ] virtual/mac-antialiasedtext/fast/text/font-variant-ligatures.html [ ImageOnlyFailure ]
-crbug.com/334269 [ Mac ] virtual/mac-antialiasedtext/fast/text/international/zerowidthjoiner.html [ ImageOnlyFailure ]
-crbug.com/334269 [ Mac ] virtual/mac-antialiasedtext/fast/text/international/bdo-bidi-width.html [ ImageOnlyFailure ]
-crbug.com/348911 [ Mac ] virtual/mac-antialiasedtext/fast/text/international/rtl-space-in-ltr-element.html [ ImageOnlyFailure ]
-crbug.com/367078 [ Mac ] virtual/mac-antialiasedtext/fast/text/international/text-overflow-ellipsis-bidi.html [ ImageOnlyFailure ]
-crbug.com/367078 [ Mac ] virtual/mac-antialiasedtext/fast/text/international/inline-block-with-mixed-direction-words.html  [ ImageOnlyFailure ]
-crbug.com/290411 [ Mac ] virtual/mac-antialiasedtext/fast/text/sub-pixel/text-scaling-pixel.html [ Skip ]
+# crbug.com/367074 [ Mac ] virtual/antialiasedtext/fast/text/sub-pixel/text-scaling-pixel.html [ Skip ]
+crbug.com/334269 [ Mac ] virtual/antialiasedtext/fast/text/font-variant-ligatures.html [ ImageOnlyFailure ]
+crbug.com/334269 [ Mac ] virtual/antialiasedtext/fast/text/international/zerowidthjoiner.html [ ImageOnlyFailure ]
+crbug.com/334269 [ Mac ] virtual/antialiasedtext/fast/text/international/bdo-bidi-width.html [ ImageOnlyFailure ]
+crbug.com/348911 [ Mac ] virtual/antialiasedtext/fast/text/international/rtl-space-in-ltr-element.html [ ImageOnlyFailure ]
+crbug.com/367078 [ Mac ] virtual/antialiasedtext/fast/text/international/text-overflow-ellipsis-bidi.html [ ImageOnlyFailure ]
+crbug.com/367078 [ Mac ] virtual/antialiasedtext/fast/text/international/inline-block-with-mixed-direction-words.html  [ ImageOnlyFailure ]
+crbug.com/290411 [ Mac ] virtual/antialiasedtext/fast/text/sub-pixel/text-scaling-pixel.html [ Skip ]
 
 crbug.com/334269 [ Mac ] fast/text/international/bdo-bidi-width.html [ ImageOnlyFailure ]
 crbug.com/334269 [ Mac ] fast/text/font-variant-ligatures.html [ ImageOnlyFailure ]
@@ -1054,7 +1052,6 @@ crbug.com/376194 inspector/console/console-dir-es6.html [ Skip ]
 crbug.com/380151 fast/events/only-valid-drop-targets-receive-file-drop.html [ Failure Pass ]
 
 crbug.com/380167 [ Mac ] plugins/destroy-reentry.html [ Failure Pass ]
-crbug.com/380167 [ Mac ] plugins/attach-during-destroy.html [ Failure Pass ]
 
 crbug.com/380649 [ Mac ] fast/dom/HTMLScriptElement/dont-load-unknown-type.html [ Failure ]
 
