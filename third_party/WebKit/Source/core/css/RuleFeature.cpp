@@ -446,8 +446,10 @@ void RuleFeatureSet::scheduleStyleInvalidationForClassChange(const SpaceSplitStr
 
 void RuleFeatureSet::scheduleStyleInvalidationForClassChange(const SpaceSplitString& oldClasses, const SpaceSplitString& newClasses, Element& element)
 {
-    if (!oldClasses.size())
+    if (!oldClasses.size()) {
         scheduleStyleInvalidationForClassChange(newClasses, element);
+        return;
+    }
 
     // Class vectors tend to be very short. This is faster than using a hash table.
     BitVector remainingClassBits;
