@@ -63,6 +63,7 @@ class SessionTab;
 class SessionWindow;
 class SimpleCollapsedLayout;
 class SyncCycleCompletedEventInfo;
+class SyncEntity;
 class SyncedNotification;
 class SyncedNotificationAction;
 class SyncedNotificationAppInfo;
@@ -277,6 +278,10 @@ SYNC_EXPORT_PRIVATE base::DictionaryValue* TypedUrlSpecificsToValue(
 // key equal to the extension name.
 SYNC_EXPORT_PRIVATE base::DictionaryValue* EntitySpecificsToValue(
     const sync_pb::EntitySpecifics& specifics);
+
+SYNC_EXPORT_PRIVATE base::DictionaryValue* SyncEntityToValue(
+    const sync_pb::SyncEntity& entity,
+    bool include_specifics);
 
 SYNC_EXPORT_PRIVATE base::DictionaryValue* ClientToServerMessageToValue(
     const sync_pb::ClientToServerMessage& proto,

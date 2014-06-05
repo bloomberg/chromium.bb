@@ -6,6 +6,7 @@
 #define SYNC_ENGINE_NON_BLOCKING_TYPE_PROCESSOR_CORE_H_
 
 #include "base/memory/weak_ptr.h"
+#include "base/stl_util.h"
 #include "base/threading/non_thread_safe.h"
 #include "sync/base/sync_export.h"
 #include "sync/engine/commit_contributor.h"
@@ -20,7 +21,8 @@ class SingleThreadTaskRunner;
 
 namespace syncer {
 
-class NonBlockingTypeProcessor;
+class NonBlockingTypeProcessorInterface;
+class SyncThreadSyncEntity;
 
 // A smart cache for sync types that use message passing (rather than
 // transactions and the syncable::Directory) to communicate with the sync
@@ -28,9 +30,9 @@ class NonBlockingTypeProcessor;
 //
 // When the non-blocking sync type wants to talk with the sync server, it will
 // send a message from its thread to this object on the sync thread.  This
-// object is responsible for helping to ensure the appropriate sync server
-// communication gets scheduled and executed.  The response, if any, will be
-// returned to the non-blocking sync type's thread eventually.
+// object ensures the appropriate sync server communication gets scheduled and
+// executed.  The response, if any, will be returned to the non-blocking sync
+// type's thread eventually.
 //
 // This object also has a role to play in communications in the opposite
 // direction.  Sometimes the sync thread will receive changes from the sync
@@ -49,8 +51,8 @@ class SYNC_EXPORT NonBlockingTypeProcessorCore
  public:
   NonBlockingTypeProcessorCore(
       ModelType type,
-      scoped_refptr<base::SequencedTaskRunner> processor_task_runner,
-      base::WeakPtr<NonBlockingTypeProcessor> processor);
+      const DataTypeState& initial_state,
+      scoped_ptr<NonBlockingTypeProcessorInterface> processor_interface);
   virtual ~NonBlockingTypeProcessorCore();
 
   ModelType GetModelType() const;
@@ -69,20 +71,57 @@ class SYNC_EXPORT NonBlockingTypeProcessorCore
   virtual void PassiveApplyUpdates(sessions::StatusController* status) OVERRIDE;
 
   // Entry point for NonBlockingTypeProcessor to send commit requests.
-  void RequestCommits(const CommitRequestDataList& request_list);
+  void EnqueueForCommit(const CommitRequestDataList& request_list);
 
   // CommitContributor implementation.
   virtual scoped_ptr<CommitContribution> GetContribution(
       size_t max_entries) OVERRIDE;
 
+  // Callback for when our contribution gets a response.
+  void OnCommitResponse(const CommitResponseDataList& response_list);
+
   base::WeakPtr<NonBlockingTypeProcessorCore> AsWeakPtr();
 
  private:
-  ModelType type_;
-  sync_pb::DataTypeProgressMarker progress_marker_;
+  typedef std::map<std::string, SyncThreadSyncEntity*> EntityMap;
 
-  scoped_refptr<base::SequencedTaskRunner> processor_task_runner_;
-  base::WeakPtr<NonBlockingTypeProcessor> processor_;
+  // Stores a single commit request in this object's internal state.
+  void StorePendingCommit(const CommitRequestData& request);
+
+  // Returns true if all data type state required for commits is available.  In
+  // practice, this means that it returns true from the time this object first
+  // receives notice of a successful update fetch from the server.
+  bool CanCommitItems() const;
+
+  // Initializes the parts of a commit entity that are the responsibility of
+  // this class, and not the SyncThreadSyncEntity.  Some fields, like the
+  // client-assigned ID, can only be set by an entity with knowledge of the
+  // entire data type's state.
+  void HelpInitializeCommitEntity(sync_pb::SyncEntity* commit_entity);
+
+  ModelType type_;
+
+  // State that applies to the entire model type.
+  DataTypeState data_type_state_;
+
+  // Abstraction around the NonBlockingTypeProcessor so this class
+  // doesn't need to know about its specific implementation or
+  // which thread it's on.  This makes it easier to write tests.
+  scoped_ptr<NonBlockingTypeProcessorInterface> processor_interface_;
+
+  // A map of per-entity information known to this object.
+  //
+  // When commits are pending, their information is stored here.  This
+  // information is dropped from memory when the commit succeeds or gets
+  // cancelled.
+  //
+  // This also stores some information related to received server state in
+  // order to implement reflection blocking and conflict detection.  This
+  // information is kept in memory indefinitely.  With a bit more coordination
+  // with the model thread, we could optimize this to reduce memory usage in
+  // the steady state.
+  EntityMap entities_;
+  STLValueDeleter<EntityMap> entities_deleter_;
 
   base::WeakPtrFactory<NonBlockingTypeProcessorCore> weak_ptr_factory_;
 };

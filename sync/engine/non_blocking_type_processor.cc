@@ -51,7 +51,6 @@ void NonBlockingTypeProcessor::Enable(
   // TODO(rlarocque): At some point, this should be loaded from storage.
   data_type_state_.progress_marker.set_data_type_id(
       GetSpecificsFieldNumberFromModelType(type_));
-  data_type_state_.next_client_id = 0;
 
   sync_core_proxy_ = sync_core_proxy.Pass();
   sync_core_proxy_->ConnectTypeToCore(GetModelType(),
@@ -142,6 +141,10 @@ void NonBlockingTypeProcessor::FlushPendingCommitRequests() {
   if (!IsConnected())
     return;
 
+  // Don't send anything if the type is not ready to handle commits.
+  if (!data_type_state_.initial_sync_done)
+    return;
+
   // TODO(rlarocque): Do something smarter than iterate here.
   for (EntityMap::iterator it = entities_.begin(); it != entities_.end();
        ++it) {
@@ -184,6 +187,9 @@ void NonBlockingTypeProcessor::OnCommitCompletion(
 void NonBlockingTypeProcessor::OnUpdateReceived(
     const DataTypeState& data_type_state,
     const UpdateResponseDataList& response_list) {
+  bool initial_sync_just_finished =
+      !data_type_state_.initial_sync_done && data_type_state.initial_sync_done;
+
   data_type_state_ = data_type_state;
 
   for (UpdateResponseDataList::const_iterator list_it = response_list.begin();
@@ -214,6 +220,9 @@ void NonBlockingTypeProcessor::OnUpdateReceived(
       // TODO: Do something special when conflicts are detected.
     }
   }
+
+  if (initial_sync_just_finished)
+    FlushPendingCommitRequests();
 
   // TODO: Inform the model of the new or updated data.
 }

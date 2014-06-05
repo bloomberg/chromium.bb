@@ -15,7 +15,7 @@ scoped_ptr<ModelThreadSyncEntity> ModelThreadSyncEntity::NewLocalItem(
       1,
       0,
       0,
-      0,
+      kUncommittedVersion,
       true,
       std::string(),  // Sync thread will assign the initial ID.
       syncable::GenerateSyncableHash(GetModelTypeFromSpecifics(specifics),

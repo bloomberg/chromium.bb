@@ -14,6 +14,8 @@
 
 namespace syncer {
 
+static const int64 kUncommittedVersion = -1;
+
 // Data-type global state that must be accessed and updated on the sync thread,
 // but persisted on or through the model thread.
 struct SYNC_EXPORT_PRIVATE DataTypeState {
@@ -43,6 +45,11 @@ struct SYNC_EXPORT_PRIVATE DataTypeState {
   // client-tagged data types supported by non-blocking sync, but we will
   // continue to emulate the directory sync's behavior for now.
   int64 next_client_id;
+
+  // This flag is set to true when the first download cycle is complete.  The
+  // NonBlockingTypeProcessor should not attempt to commit any items until this
+  // flag is set.
+  bool initial_sync_done;
 };
 
 struct SYNC_EXPORT_PRIVATE CommitRequestData {

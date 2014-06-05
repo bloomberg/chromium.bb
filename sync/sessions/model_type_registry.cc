@@ -13,11 +13,63 @@
 #include "sync/engine/non_blocking_type_processor.h"
 #include "sync/engine/non_blocking_type_processor_core.h"
 #include "sync/engine/non_blocking_type_processor_core_interface.h"
+#include "sync/engine/non_blocking_type_processor_interface.h"
 #include "sync/sessions/directory_type_debug_info_emitter.h"
 
 namespace syncer {
 
 namespace {
+
+class NonBlockingTypeProcessorWrapper
+    : public NonBlockingTypeProcessorInterface {
+ public:
+  NonBlockingTypeProcessorWrapper(
+      base::WeakPtr<NonBlockingTypeProcessor> processor,
+      scoped_refptr<base::SequencedTaskRunner> processor_task_runner);
+  virtual ~NonBlockingTypeProcessorWrapper();
+
+  virtual void ReceiveCommitResponse(
+      const DataTypeState& type_state,
+      const CommitResponseDataList& response_list) OVERRIDE;
+  virtual void ReceiveUpdateResponse(
+      const DataTypeState& type_state,
+      const UpdateResponseDataList& response_list) OVERRIDE;
+
+ private:
+  base::WeakPtr<NonBlockingTypeProcessor> processor_;
+  scoped_refptr<base::SequencedTaskRunner> processor_task_runner_;
+};
+
+NonBlockingTypeProcessorWrapper::NonBlockingTypeProcessorWrapper(
+    base::WeakPtr<NonBlockingTypeProcessor> processor,
+    scoped_refptr<base::SequencedTaskRunner> processor_task_runner)
+    : processor_(processor), processor_task_runner_(processor_task_runner) {
+}
+
+NonBlockingTypeProcessorWrapper::~NonBlockingTypeProcessorWrapper() {
+}
+
+void NonBlockingTypeProcessorWrapper::ReceiveCommitResponse(
+    const DataTypeState& type_state,
+    const CommitResponseDataList& response_list) {
+  processor_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&NonBlockingTypeProcessor::OnCommitCompletion,
+                 processor_,
+                 type_state,
+                 response_list));
+}
+
+void NonBlockingTypeProcessorWrapper::ReceiveUpdateResponse(
+    const DataTypeState& type_state,
+    const UpdateResponseDataList& response_list) {
+  processor_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&NonBlockingTypeProcessor::OnUpdateReceived,
+                 processor_,
+                 type_state,
+                 response_list));
+}
 
 class NonBlockingTypeProcessorCoreWrapper
     : public NonBlockingTypeProcessorCoreInterface {
@@ -47,7 +99,7 @@ void NonBlockingTypeProcessorCoreWrapper::RequestCommits(
     const CommitRequestDataList& list) {
   sync_thread_->PostTask(
       FROM_HERE,
-      base::Bind(&NonBlockingTypeProcessorCore::RequestCommits, core_, list));
+      base::Bind(&NonBlockingTypeProcessorCore::EnqueueForCommit, core_, list));
 }
 
 }  // namespace
@@ -139,10 +191,11 @@ void ModelTypeRegistry::InitializeNonBlockingType(
   DVLOG(1) << "Enabling an off-thread sync type: " << ModelTypeToString(type);
 
   // Initialize CoreProcessor -> Processor communication channel.
+  scoped_ptr<NonBlockingTypeProcessorInterface> processor_interface(
+      new NonBlockingTypeProcessorWrapper(processor, type_task_runner));
   scoped_ptr<NonBlockingTypeProcessorCore> core(
-      new NonBlockingTypeProcessorCore(type, type_task_runner, processor));
-
-  // TODO(rlarocque): DataTypeState should be forwarded to core here.
+      new NonBlockingTypeProcessorCore(
+          type, data_type_state, processor_interface.Pass()));
 
   // Initialize Processor -> CoreProcessor communication channel.
   scoped_ptr<NonBlockingTypeProcessorCoreInterface> core_interface(

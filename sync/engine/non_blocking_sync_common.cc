@@ -6,25 +6,32 @@
 
 namespace syncer {
 
-DataTypeState::DataTypeState() {
+DataTypeState::DataTypeState() : next_client_id(0), initial_sync_done(false) {
 }
 
 DataTypeState::~DataTypeState() {
 }
 
-CommitRequestData::CommitRequestData() {
+CommitRequestData::CommitRequestData()
+    : sequence_number(0),
+      base_version(0),
+      deleted(false) {
 }
 
 CommitRequestData::~CommitRequestData() {
 }
 
-CommitResponseData::CommitResponseData() {
+CommitResponseData::CommitResponseData()
+    : sequence_number(0),
+      response_version(0) {
 }
 
 CommitResponseData::~CommitResponseData() {
 }
 
-UpdateResponseData::UpdateResponseData() {
+UpdateResponseData::UpdateResponseData()
+    : response_version(0),
+      deleted(false) {
 }
 
 UpdateResponseData::~UpdateResponseData() {

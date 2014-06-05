@@ -813,6 +813,8 @@ base::StringValue* UniquePositionToStringValue(
   return new base::StringValue(pos.ToDebugString());
 }
 
+}  // namespace
+
 base::DictionaryValue* SyncEntityToValue(const sync_pb::SyncEntity& proto,
                                          bool include_specifics) {
   base::DictionaryValue* value = new base::DictionaryValue();
@@ -838,6 +840,8 @@ base::DictionaryValue* SyncEntityToValue(const sync_pb::SyncEntity& proto,
   SET_STR(client_defined_unique_tag);
   return value;
 }
+
+namespace {
 
 base::ListValue* SyncEntitiesToValue(
     const ::google::protobuf::RepeatedPtrField<sync_pb::SyncEntity>& entities,
