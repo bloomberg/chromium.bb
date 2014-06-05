@@ -163,7 +163,6 @@
         'renderer/resources/extensions/page_action_custom_bindings.js',
         'renderer/resources/extensions/page_actions_custom_bindings.js',
         'renderer/resources/extensions/page_capture_custom_bindings.js',
-        'renderer/resources/extensions/platform_app.js',
         'renderer/resources/extensions/pepper_request.js',
         'renderer/resources/extensions/system_indicator_custom_bindings.js',
         'renderer/resources/extensions/tts_custom_bindings.js',
