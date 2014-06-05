@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ssl/ssl_blocking_page.h"
 
+#include "base/command_line.h"
 #include "base/i18n/rtl.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
@@ -19,6 +20,7 @@
 #include "chrome/browser/ssl/ssl_error_info.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/common/chrome_switches.h"
 #include "content/public/browser/cert_store.h"
 #include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/navigation_controller.h"
@@ -264,8 +266,11 @@ SSLBlockingPage::~SSLBlockingPage() {
 }
 
 std::string SSLBlockingPage::GetHTMLContents() {
-  if (base::FieldTrialList::FindFullName("SSLInterstitialVersion") == "V1")
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kSSLInterstitialVersionV1) ||
+      base::FieldTrialList::FindFullName("SSLInterstitialVersion") == "V1") {
     return GetHTMLContentsV1();
+  }
   return GetHTMLContentsV2();
 }
 
