@@ -263,7 +263,7 @@ void UserCloudPolicyStoreChromeOS::LoadImmediately() {
   validator->ValidateSignature(
       policy_key_,
       GetPolicyVerificationKey(),
-      ExtractDomain(sanitized_username),
+      ExtractDomain(username_),
       allow_rotation);
   validator->RunValidation();
   OnRetrievedPolicyValidated(validator.get());
