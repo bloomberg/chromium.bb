@@ -173,13 +173,13 @@ Consider the following <code>manifest.json</code> snippet:
       // In addition, any &lt;webview partition="trusted-audio"&gt; or
       // &lt;webview partition="persist:trusted-audio"&gt; will have access to
       // ".mp3" files. Note that this is in addition to "local_*.html",
-      // "*.png", "*.js" above because "trusted-audio" also matches the
-      // "trusted*" pattern.
+      // "*.png", "*.js" because "trusted-audio" also matches the "trusted*"
+      // pattern.
       {
         "name": "trusted-audio",
         "accessible_resources": ["*.mp3"]
       }
-      // Webviews in any other partition are denied access to package-local
+      // Webviews in any other partition are denied access to packaged
       // resources.
     ]
   }</strong>
