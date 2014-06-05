@@ -293,7 +293,18 @@ void Channel::OnReadMessage(
 }
 
 void Channel::OnFatalError(FatalError fatal_error) {
-  LOG(WARNING) << "RawChannel fatal error (type " << fatal_error << ")";
+  switch (fatal_error) {
+    case FATAL_ERROR_READ:
+      // Most read errors aren't notable: they just reflect that the other side
+      // tore down the channel.
+      DVLOG(1) << "RawChannel fatal error (read)";
+      break;
+    case FATAL_ERROR_WRITE:
+      // Write errors are slightly notable: they probably shouldn't happen under
+      // normal operation (but maybe the other side crashed).
+      LOG(WARNING) << "RawChannel fatal error (write)";
+      break;
+  }
   Shutdown();
 }
 

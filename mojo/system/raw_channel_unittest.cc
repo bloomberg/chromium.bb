@@ -112,7 +112,7 @@ class WriteOnlyRawChannelDelegate : public RawChannel::Delegate {
   }
   virtual void OnFatalError(FatalError fatal_error) OVERRIDE {
     // We'll get a read error when the connection is closed.
-    CHECK_EQ(fatal_error, FATAL_ERROR_FAILED_READ);
+    CHECK_EQ(fatal_error, FATAL_ERROR_READ);
   }
 
  private:
@@ -254,7 +254,7 @@ class ReadCheckerRawChannelDelegate : public RawChannel::Delegate {
   }
   virtual void OnFatalError(FatalError fatal_error) OVERRIDE {
     // We'll get a read error when the connection is closed.
-    CHECK_EQ(fatal_error, FATAL_ERROR_FAILED_READ);
+    CHECK_EQ(fatal_error, FATAL_ERROR_READ);
   }
 
   // Waits for all the messages (of sizes |expected_sizes_|) to be seen.
@@ -366,7 +366,7 @@ class ReadCountdownRawChannelDelegate : public RawChannel::Delegate {
   }
   virtual void OnFatalError(FatalError fatal_error) OVERRIDE {
     // We'll get a read error when the connection is closed.
-    CHECK_EQ(fatal_error, FATAL_ERROR_FAILED_READ);
+    CHECK_EQ(fatal_error, FATAL_ERROR_READ);
   }
 
   // Waits for all the messages to have been seen.
@@ -443,16 +443,17 @@ class FatalErrorRecordingRawChannelDelegate
   virtual ~FatalErrorRecordingRawChannelDelegate() {}
 
   virtual void OnFatalError(FatalError fatal_error) OVERRIDE {
-    if (fatal_error == FATAL_ERROR_FAILED_READ) {
-      ASSERT_TRUE(expecting_read_error_);
-      expecting_read_error_ = false;
-      got_read_fatal_error_event_.Signal();
-    } else if (fatal_error == FATAL_ERROR_FAILED_WRITE) {
-      ASSERT_TRUE(expecting_write_error_);
-      expecting_write_error_ = false;
-      got_write_fatal_error_event_.Signal();
-    } else {
-      ASSERT_TRUE(false);
+    switch (fatal_error) {
+      case FATAL_ERROR_READ:
+        ASSERT_TRUE(expecting_read_error_);
+        expecting_read_error_ = false;
+        got_read_fatal_error_event_.Signal();
+        break;
+      case FATAL_ERROR_WRITE:
+        ASSERT_TRUE(expecting_write_error_);
+        expecting_write_error_ = false;
+        got_write_fatal_error_event_.Signal();
+        break;
     }
   }
 
@@ -654,7 +655,7 @@ class ShutdownOnFatalErrorRawChannelDelegate : public RawChannel::Delegate {
 TEST_F(RawChannelTest, ShutdownOnFatalErrorRead) {
   scoped_ptr<RawChannel> rc(RawChannel::Create(handles[0].Pass()));
   ShutdownOnFatalErrorRawChannelDelegate delegate(
-      rc.get(), RawChannel::Delegate::FATAL_ERROR_FAILED_READ);
+      rc.get(), RawChannel::Delegate::FATAL_ERROR_READ);
   io_thread()->PostTaskAndWait(FROM_HERE,
                                base::Bind(&InitOnIOThread, rc.get(),
                                           base::Unretained(&delegate)));
@@ -669,7 +670,7 @@ TEST_F(RawChannelTest, ShutdownOnFatalErrorRead) {
 TEST_F(RawChannelTest, ShutdownOnFatalErrorWrite) {
   scoped_ptr<RawChannel> rc(RawChannel::Create(handles[0].Pass()));
   ShutdownOnFatalErrorRawChannelDelegate delegate(
-      rc.get(), RawChannel::Delegate::FATAL_ERROR_FAILED_WRITE);
+      rc.get(), RawChannel::Delegate::FATAL_ERROR_WRITE);
   io_thread()->PostTaskAndWait(FROM_HERE,
                                base::Bind(&InitOnIOThread, rc.get(),
                                           base::Unretained(&delegate)));

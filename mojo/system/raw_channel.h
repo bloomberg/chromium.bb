@@ -49,9 +49,8 @@ class MOJO_SYSTEM_IMPL_EXPORT RawChannel {
   class MOJO_SYSTEM_IMPL_EXPORT Delegate {
    public:
     enum FatalError {
-      FATAL_ERROR_UNKNOWN = 0,
-      FATAL_ERROR_FAILED_READ,
-      FATAL_ERROR_FAILED_WRITE
+      FATAL_ERROR_READ = 0,
+      FATAL_ERROR_WRITE
     };
 
     // Called when a message is read. This may call |Shutdown()| (on the
@@ -64,10 +63,10 @@ class MOJO_SYSTEM_IMPL_EXPORT RawChannel {
     // being viable. This may call |Shutdown()| (on the |RawChannel()|), but
     // must not destroy it.
     //
-    // For each raw channel, at most one |FATAL_ERROR_FAILED_READ| and at most
-    // one |FATAL_ERROR_FAILED_WRITE| notification will be issued (both may be
-    // issued). After a |OnFatalError(FATAL_ERROR_FAILED_READ)|, there will be
-    // no further calls to |OnReadMessage()|.
+    // For each raw channel, at most one |FATAL_ERROR_READ| and at most one
+    // |FATAL_ERROR_WRITE| notification will be issued (both may be issued).
+    // After a |OnFatalError(FATAL_ERROR_READ)|, there will be no further calls
+    // to |OnReadMessage()|.
     virtual void OnFatalError(FatalError fatal_error) = 0;
 
    protected:

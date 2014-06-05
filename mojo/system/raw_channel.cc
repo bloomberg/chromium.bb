@@ -257,7 +257,7 @@ bool RawChannel::WriteMessage(scoped_ptr<MessageInTransit> message) {
         FROM_HERE,
         base::Bind(&RawChannel::CallOnFatalError,
                    weak_ptr_factory_.GetWeakPtr(),
-                   Delegate::FATAL_ERROR_FAILED_WRITE));
+                   Delegate::FATAL_ERROR_WRITE));
   }
 
   return result;
@@ -287,7 +287,7 @@ void RawChannel::OnReadCompleted(bool result, size_t bytes_read) {
   do {
     if (io_result != IO_SUCCEEDED) {
       read_stopped_ = true;
-      CallOnFatalError(Delegate::FATAL_ERROR_FAILED_READ);
+      CallOnFatalError(Delegate::FATAL_ERROR_READ);
       return;
     }
 
@@ -322,14 +322,14 @@ void RawChannel::OnReadCompleted(bool result, size_t bytes_read) {
         DCHECK(error_message);
         LOG(WARNING) << "Received invalid message: " << error_message;
         read_stopped_ = true;
-        CallOnFatalError(Delegate::FATAL_ERROR_FAILED_READ);
+        CallOnFatalError(Delegate::FATAL_ERROR_READ);
         return;
       }
 
       if (message_view.type() == MessageInTransit::kTypeRawChannel) {
         if (!OnReadMessageForRawChannel(message_view)) {
           read_stopped_ = true;
-          CallOnFatalError(Delegate::FATAL_ERROR_FAILED_READ);
+          CallOnFatalError(Delegate::FATAL_ERROR_READ);
           return;
         }
       } else {
@@ -349,7 +349,7 @@ void RawChannel::OnReadCompleted(bool result, size_t bytes_read) {
             if (!platform_handles) {
               LOG(WARNING) << "Invalid number of platform handles received";
               read_stopped_ = true;
-              CallOnFatalError(Delegate::FATAL_ERROR_FAILED_READ);
+              CallOnFatalError(Delegate::FATAL_ERROR_READ);
               return;
             }
           }
@@ -434,7 +434,7 @@ void RawChannel::OnWriteCompleted(bool result,
   }
 
   if (did_fail)
-    CallOnFatalError(Delegate::FATAL_ERROR_FAILED_WRITE);
+    CallOnFatalError(Delegate::FATAL_ERROR_WRITE);
 }
 
 void RawChannel::EnqueueMessageNoLock(scoped_ptr<MessageInTransit> message) {
