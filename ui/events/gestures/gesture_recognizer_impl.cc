@@ -69,14 +69,14 @@ GestureProviderAura* CreateGestureProvider(GestureProviderAuraClient* client) {
 // GestureRecognizerImpl, public:
 
 GestureRecognizerImpl::GestureRecognizerImpl() {
-  // Default to using the unified gesture detector.
+  // Default to not using the unified gesture detector.
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   const std::string unified_gd_enabled_switch =
       command_line.HasSwitch(switches::kUnifiedGestureDetector) ?
       command_line.GetSwitchValueASCII(switches::kUnifiedGestureDetector) :
       switches::kUnifiedGestureDetectorAuto;
 
-  const bool kUseUnifiedGestureDetectorByDefault = true;
+  const bool kUseUnifiedGestureDetectorByDefault = false;
   if (unified_gd_enabled_switch.empty() ||
       unified_gd_enabled_switch == switches::kUnifiedGestureDetectorEnabled) {
     use_unified_gesture_detector_ = true;
