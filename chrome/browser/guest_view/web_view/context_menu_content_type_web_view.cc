@@ -4,6 +4,11 @@
 
 #include "chrome/browser/guest_view/web_view/context_menu_content_type_web_view.h"
 
+#include "base/command_line.h"
+#include "chrome/common/chrome_switches.h"
+#include "extensions/common/extension.h"
+#include "extensions/common/manifest.h"
+
 ContextMenuContentTypeWebView::ContextMenuContentTypeWebView(
     content::WebContents* web_contents,
     const content::ContextMenuParams& params)
@@ -26,6 +31,22 @@ bool ContextMenuContentTypeWebView::SupportsGroup(int group) {
     case ITEM_GROUP_CURRENT_EXTENSION:
       // Show contextMenus API items.
       return true;
+    case ITEM_GROUP_DEVELOPER:
+      // TODO(lazyboy): Enable this for mac too when http://crbug.com/380405 is
+      // fixed.
+#if !defined(OS_MACOSX)
+      {
+        // Add dev tools for unpacked extensions.
+        const extensions::Extension* embedder_platform_app = GetExtension();
+        return !embedder_platform_app ||
+            extensions::Manifest::IsUnpackedLocation(
+                embedder_platform_app->location()) ||
+            CommandLine::ForCurrentProcess()->HasSwitch(
+                switches::kDebugPackedApps);
+      }
+#else
+      return ContextMenuContentType::SupportsGroup(group);
+#endif
     default:
       return ContextMenuContentType::SupportsGroup(group);
   }
