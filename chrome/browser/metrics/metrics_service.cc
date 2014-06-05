@@ -186,13 +186,13 @@
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/metrics/chrome_stability_metrics_provider.h"
 #include "chrome/browser/metrics/gpu_metrics_provider.h"
-#include "chrome/browser/metrics/metrics_log.h"
 #include "chrome/browser/metrics/network_metrics_provider.h"
 #include "chrome/browser/metrics/omnibox_metrics_provider.h"
 #include "chrome/browser/metrics/profiler_metrics_provider.h"
 #include "chrome/browser/metrics/tracking_synchronizer.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/variations/variations_util.h"
+#include "components/metrics/metrics_log.h"
 #include "components/metrics/metrics_log_base.h"
 #include "components/metrics/metrics_log_manager.h"
 #include "components/metrics/metrics_log_uploader.h"
@@ -310,6 +310,7 @@ MetricsService::ExecutionPhase MetricsService::execution_phase_ =
 void MetricsService::RegisterPrefs(PrefRegistrySimple* registry) {
   DCHECK(IsSingleThreaded());
   metrics::MetricsStateManager::RegisterPrefs(registry);
+  MetricsLog::RegisterPrefs(registry);
 
   registry->RegisterInt64Pref(prefs::kStabilityLaunchTimeSec, 0);
   registry->RegisterInt64Pref(prefs::kStabilityLastTimestampSec, 0);
@@ -320,19 +321,6 @@ void MetricsService::RegisterPrefs(PrefRegistrySimple* registry) {
                                 UNINITIALIZED_PHASE);
   registry->RegisterBooleanPref(prefs::kStabilitySessionEndCompleted, true);
   registry->RegisterIntegerPref(metrics::prefs::kMetricsSessionID, -1);
-  registry->RegisterIntegerPref(prefs::kStabilityLaunchCount, 0);
-  registry->RegisterIntegerPref(prefs::kStabilityCrashCount, 0);
-  registry->RegisterIntegerPref(prefs::kStabilityIncompleteSessionEndCount, 0);
-  registry->RegisterIntegerPref(prefs::kStabilityBreakpadRegistrationFail, 0);
-  registry->RegisterIntegerPref(prefs::kStabilityBreakpadRegistrationSuccess,
-                                0);
-  registry->RegisterIntegerPref(prefs::kStabilityDebuggerPresent, 0);
-  registry->RegisterIntegerPref(prefs::kStabilityDebuggerNotPresent, 0);
-
-  registry->RegisterStringPref(prefs::kStabilitySavedSystemProfile,
-                               std::string());
-  registry->RegisterStringPref(prefs::kStabilitySavedSystemProfileHash,
-                               std::string());
 
   registry->RegisterListPref(metrics::prefs::kMetricsInitialLogs);
   registry->RegisterListPref(metrics::prefs::kMetricsOngoingLogs);
@@ -607,16 +595,16 @@ void MetricsService::SetExecutionPhase(ExecutionPhase execution_phase,
 
 void MetricsService::RecordBreakpadRegistration(bool success) {
   if (!success)
-    IncrementPrefValue(prefs::kStabilityBreakpadRegistrationFail);
+    IncrementPrefValue(metrics::prefs::kStabilityBreakpadRegistrationFail);
   else
-    IncrementPrefValue(prefs::kStabilityBreakpadRegistrationSuccess);
+    IncrementPrefValue(metrics::prefs::kStabilityBreakpadRegistrationSuccess);
 }
 
 void MetricsService::RecordBreakpadHasDebugger(bool has_debugger) {
   if (!has_debugger)
-    IncrementPrefValue(prefs::kStabilityDebuggerNotPresent);
+    IncrementPrefValue(metrics::prefs::kStabilityDebuggerNotPresent);
   else
-    IncrementPrefValue(prefs::kStabilityDebuggerPresent);
+    IncrementPrefValue(metrics::prefs::kStabilityDebuggerPresent);
 }
 
 //------------------------------------------------------------------------------
@@ -636,7 +624,7 @@ void MetricsService::InitializeMetricsState() {
   session_id_ = local_state_->GetInteger(metrics::prefs::kMetricsSessionID);
 
   if (!local_state_->GetBoolean(prefs::kStabilityExitedCleanly)) {
-    IncrementPrefValue(prefs::kStabilityCrashCount);
+    IncrementPrefValue(metrics::prefs::kStabilityCrashCount);
     // Reset flag, and wait until we call LogNeedForCleanShutdown() before
     // monitoring.
     local_state_->SetBoolean(prefs::kStabilityExitedCleanly, true);
@@ -659,13 +647,13 @@ void MetricsService::InitializeMetricsState() {
   local_state_->SetInteger(metrics::prefs::kMetricsSessionID, session_id_);
 
   // Stability bookkeeping
-  IncrementPrefValue(prefs::kStabilityLaunchCount);
+  IncrementPrefValue(metrics::prefs::kStabilityLaunchCount);
 
   DCHECK_EQ(UNINITIALIZED_PHASE, execution_phase_);
   SetExecutionPhase(START_METRICS_RECORDING, local_state_);
 
   if (!local_state_->GetBoolean(prefs::kStabilitySessionEndCompleted)) {
-    IncrementPrefValue(prefs::kStabilityIncompleteSessionEndCount);
+    IncrementPrefValue(metrics::prefs::kStabilityIncompleteSessionEndCount);
     // This is marked false when we get a WM_ENDSESSION.
     local_state_->SetBoolean(prefs::kStabilitySessionEndCompleted, true);
   }
@@ -1039,7 +1027,7 @@ void MetricsService::StageNewLog() {
 
 void MetricsService::PrepareInitialStabilityLog() {
   DCHECK_EQ(INITIALIZED, state_);
-  DCHECK_NE(0, local_state_->GetInteger(prefs::kStabilityCrashCount));
+  DCHECK_NE(0, local_state_->GetInteger(metrics::prefs::kStabilityCrashCount));
 
   scoped_ptr<MetricsLog> initial_stability_log(
       CreateLog(MetricsLog::INITIAL_STABILITY_LOG));

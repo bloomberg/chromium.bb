@@ -456,12 +456,7 @@ extern const char kStabilityExitedCleanly[];
 extern const char kStabilityStatsVersion[];
 extern const char kStabilityStatsBuildTime[];
 extern const char kStabilitySessionEndCompleted[];
-extern const char kStabilityLaunchCount[];
-extern const char kStabilityCrashCount[];
-extern const char kStabilityIncompleteSessionEndCount[];
 extern const char kStabilityPageLoadCount[];
-extern const char kStabilitySavedSystemProfile[];
-extern const char kStabilitySavedSystemProfileHash[];
 extern const char kStabilityRendererCrashCount[];
 extern const char kStabilityExtensionRendererCrashCount[];
 extern const char kStabilityLaunchTimeSec[];
@@ -477,11 +472,6 @@ extern const char kStabilityLaunchedActivityFlags[];
 extern const char kStabilityLaunchedActivityCounts[];
 extern const char kStabilityCrashedActivityCounts[];
 #endif
-
-extern const char kStabilityBreakpadRegistrationSuccess[];
-extern const char kStabilityBreakpadRegistrationFail[];
-extern const char kStabilityDebuggerPresent[];
-extern const char kStabilityDebuggerNotPresent[];
 
 extern const char kStabilityPluginStats[];
 extern const char kStabilityPluginName[];

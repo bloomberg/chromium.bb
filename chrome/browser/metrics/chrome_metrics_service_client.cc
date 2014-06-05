@@ -11,6 +11,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
+#include "base/prefs/pref_service.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -27,6 +28,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/crash_keys.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 #include "components/metrics/net/net_metrics_log_uploader.h"
 #include "content/public/browser/browser_thread.h"
@@ -178,6 +180,10 @@ std::string ChromeMetricsServiceClient::GetVersionString() {
   if (!version_info.IsOfficialBuild())
     version.append("-devel");
   return version;
+}
+
+int64 ChromeMetricsServiceClient::GetInstallDate() {
+  return g_browser_process->local_state()->GetInt64(prefs::kInstallDate);
 }
 
 void ChromeMetricsServiceClient::OnLogUploadComplete() {

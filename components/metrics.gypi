@@ -24,6 +24,8 @@
         'metrics/machine_id_provider_win.cc',
         'metrics/metrics_hashes.cc',
         'metrics/metrics_hashes.h',
+        'metrics/metrics_log.cc',
+        'metrics/metrics_log.h',
         'metrics/metrics_log_base.cc',
         'metrics/metrics_log_base.h',
         'metrics/metrics_log_uploader.cc',

@@ -64,7 +64,7 @@ IN_PROC_BROWSER_TEST_F(MetricsServiceBrowserTest, CloseRenderersNormally) {
 
   // Verify that the expected stability metrics were recorded.
   const PrefService* prefs = g_browser_process->local_state();
-  EXPECT_EQ(1, prefs->GetInteger(prefs::kStabilityLaunchCount));
+  EXPECT_EQ(1, prefs->GetInteger(metrics::prefs::kStabilityLaunchCount));
   EXPECT_EQ(3, prefs->GetInteger(prefs::kStabilityPageLoadCount));
   EXPECT_EQ(0, prefs->GetInteger(prefs::kStabilityRendererCrashCount));
   // TODO(isherman): We should also verify that prefs::kStabilityExitedCleanly
@@ -100,7 +100,7 @@ IN_PROC_BROWSER_TEST_F(MetricsServiceBrowserTest, MAYBE_CrashRenderers) {
   }
 
   // Verify that the expected stability metrics were recorded.
-  EXPECT_EQ(1, prefs->GetInteger(prefs::kStabilityLaunchCount));
+  EXPECT_EQ(1, prefs->GetInteger(metrics::prefs::kStabilityLaunchCount));
   EXPECT_EQ(4, prefs->GetInteger(prefs::kStabilityPageLoadCount));
   EXPECT_EQ(1, prefs->GetInteger(prefs::kStabilityRendererCrashCount));
   // TODO(isherman): We should also verify that prefs::kStabilityExitedCleanly

@@ -1,21 +1,20 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 // This file defines a set of user experience metrics data recorded by
 // the MetricsService.  This is the unit of data that is sent to the server.
 
-#ifndef CHROME_BROWSER_METRICS_METRICS_LOG_H_
-#define CHROME_BROWSER_METRICS_METRICS_LOG_H_
+#ifndef COMPONENTS_METRICS_METRICS_LOG_H_
+#define COMPONENTS_METRICS_METRICS_LOG_H_
 
 #include <string>
 #include <vector>
 
 #include "base/basictypes.h"
-#include "chrome/common/variations/variations_util.h"
 #include "components/metrics/metrics_log_base.h"
-#include "ui/gfx/size.h"
 
+class PrefRegistrySimple;
 class PrefService;
 
 namespace base {
@@ -55,6 +54,9 @@ class MetricsLog : public metrics::MetricsLogBase {
              metrics::MetricsServiceClient* client,
              PrefService* local_state);
   virtual ~MetricsLog();
+
+  // Registers local state prefs used by this class.
+  static void RegisterPrefs(PrefRegistrySimple* registry);
 
   // Records the current operating environment, including metrics provided by
   // the specified set of |metrics_providers|.  Takes the list of installed
@@ -136,4 +138,4 @@ class MetricsLog : public metrics::MetricsLogBase {
   DISALLOW_COPY_AND_ASSIGN(MetricsLog);
 };
 
-#endif  // CHROME_BROWSER_METRICS_METRICS_LOG_H_
+#endif  // COMPONENTS_METRICS_METRICS_LOG_H_

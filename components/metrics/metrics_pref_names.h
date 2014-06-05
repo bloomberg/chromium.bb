@@ -20,6 +20,15 @@ extern const char kMetricsOngoingLogs[];
 extern const char kMetricsResetIds[];
 extern const char kMetricsReportingEnabledTimestamp[];
 extern const char kMetricsSessionID[];
+extern const char kStabilityBreakpadRegistrationSuccess[];
+extern const char kStabilityBreakpadRegistrationFail[];
+extern const char kStabilityCrashCount[];
+extern const char kStabilityDebuggerPresent[];
+extern const char kStabilityDebuggerNotPresent[];
+extern const char kStabilityIncompleteSessionEndCount[];
+extern const char kStabilityLaunchCount[];
+extern const char kStabilitySavedSystemProfile[];
+extern const char kStabilitySavedSystemProfileHash[];
 
 }  // namespace prefs
 }  // namespace metrics

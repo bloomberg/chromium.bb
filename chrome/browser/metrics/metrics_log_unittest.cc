@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/metrics/metrics_log.h"
+#include "components/metrics/metrics_log.h"
 
 #include <string>
 
@@ -82,7 +82,6 @@ class TestMetricsLog : public MetricsLog {
 
  private:
   void InitPrefs() {
-    prefs_->SetInt64(prefs::kInstallDate, kInstallDate);
     prefs_->SetString(metrics::prefs::kMetricsReportingEnabledTimestamp,
                       base::Int64ToString(kEnabledDate));
   }
@@ -174,6 +173,7 @@ class MetricsLogTest : public testing::Test {
 
 TEST_F(MetricsLogTest, RecordEnvironment) {
   metrics::TestMetricsServiceClient client;
+  client.set_install_date(kInstallDate);
   TestMetricsLog log(
       kClientId, kSessionId, MetricsLog::ONGOING_LOG, &client, &prefs_);
 
@@ -189,7 +189,7 @@ TEST_F(MetricsLogTest, RecordEnvironment) {
 
   // Check that the system profile has also been written to prefs.
   const std::string base64_system_profile =
-      prefs_.GetString(prefs::kStabilitySavedSystemProfile);
+      prefs_.GetString(metrics::prefs::kStabilitySavedSystemProfile);
   EXPECT_FALSE(base64_system_profile.empty());
   std::string serialied_system_profile;
   EXPECT_TRUE(base::Base64Decode(base64_system_profile,
@@ -200,10 +200,12 @@ TEST_F(MetricsLogTest, RecordEnvironment) {
 }
 
 TEST_F(MetricsLogTest, LoadSavedEnvironmentFromPrefs) {
-  const char* kSystemProfilePref = prefs::kStabilitySavedSystemProfile;
-  const char* kSystemProfileHashPref = prefs::kStabilitySavedSystemProfileHash;
+  const char* kSystemProfilePref = metrics::prefs::kStabilitySavedSystemProfile;
+  const char* kSystemProfileHashPref =
+      metrics::prefs::kStabilitySavedSystemProfileHash;
 
   metrics::TestMetricsServiceClient client;
+  client.set_install_date(kInstallDate);
 
   // The pref value is empty, so loading it from prefs should fail.
   {

@@ -55,5 +55,41 @@ const char kMetricsReportingEnabledTimestamp[] =
 // The metrics client session ID.
 const char kMetricsSessionID[] = "user_experience_metrics.session_id";
 
+// Number of times the browser has been able to register crash reporting.
+const char kStabilityBreakpadRegistrationSuccess[] =
+    "user_experience_metrics.stability.breakpad_registration_ok";
+
+// Number of times the browser has failed to register crash reporting.
+const char kStabilityBreakpadRegistrationFail[] =
+    "user_experience_metrics.stability.breakpad_registration_fail";
+
+// Number of times the application exited uncleanly since the last report.
+const char kStabilityCrashCount[] =
+    "user_experience_metrics.stability.crash_count";
+
+// Number of times the browser has been run under a debugger.
+const char kStabilityDebuggerPresent[] =
+    "user_experience_metrics.stability.debugger_present";
+
+// Number of times the browser has not been run under a debugger.
+const char kStabilityDebuggerNotPresent[] =
+    "user_experience_metrics.stability.debugger_not_present";
+
+// Number of times the session end did not complete.
+const char kStabilityIncompleteSessionEndCount[] =
+    "user_experience_metrics.stability.incomplete_session_end_count";
+
+// Number of times the application was launched since last report.
+const char kStabilityLaunchCount[] =
+    "user_experience_metrics.stability.launch_count";
+
+// Base64 encoded serialized UMA system profile proto from the previous session.
+const char kStabilitySavedSystemProfile[] =
+    "user_experience_metrics.stability.saved_system_profile";
+
+// SHA-1 hash of the serialized UMA system profile proto (hex encoded).
+const char kStabilitySavedSystemProfileHash[] =
+    "user_experience_metrics.stability.saved_system_profile_hash";
+
 }  // namespace prefs
 }  // namespace metrics

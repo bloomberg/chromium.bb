@@ -43,6 +43,7 @@ class ChromeMetricsServiceClient : public metrics::MetricsServiceClient,
   virtual bool GetBrand(std::string* brand_code) OVERRIDE;
   virtual metrics::SystemProfileProto::Channel GetChannel() OVERRIDE;
   virtual std::string GetVersionString() OVERRIDE;
+  virtual int64 GetInstallDate() OVERRIDE;
   virtual void OnLogUploadComplete() OVERRIDE;
   virtual void StartGatheringMetrics(
       const base::Closure& done_callback) OVERRIDE;
