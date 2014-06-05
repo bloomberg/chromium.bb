@@ -174,6 +174,7 @@ class RawCheckout(CheckoutBase):
         filepath = os.path.join(self.project_path, p.filename)
         if p.is_delete:
           os.remove(filepath)
+          assert(not os.path.exists(filepath))
           stdout.append('Deleted.')
         else:
           dirname = os.path.dirname(p.filename)
@@ -361,6 +362,7 @@ class SvnCheckout(CheckoutBase, SvnMixIn):
         if p.is_delete:
           stdout.append(self._check_output_svn(
               ['delete', p.filename, '--force'], credentials=False))
+          assert(not os.path.exists(filepath))
           stdout.append('Deleted.')
         else:
           # svn add while creating directories otherwise svn add on the
@@ -654,6 +656,7 @@ class GitCheckout(CheckoutBase):
             pass
           else:
             stdout.append(self._check_output_git(['rm', p.filename]))
+            assert(not os.path.exists(filepath))
             stdout.append('Deleted.')
         else:
           dirname = os.path.dirname(p.filename)
