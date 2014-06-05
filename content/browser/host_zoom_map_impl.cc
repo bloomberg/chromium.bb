@@ -221,13 +221,16 @@ double HostZoomMapImpl::GetZoomLevelForWebContents(
   if (UsesTemporaryZoomLevel(render_process_id, routing_id))
     return GetTemporaryZoomLevel(render_process_id, routing_id);
 
-  // Since zoom map is updated using the url as stored in the navigation
-  // controller, we use that URL to get the zoom level.
+  // Get the url from the navigation controller directly, as calling
+  // WebContentsImpl::GetLastCommittedURL() may give us a virtual url that
+  // is different than is stored in the map.
   GURL url;
   NavigationEntry* entry =
       web_contents_impl.GetController().GetLastCommittedEntry();
+  // It is possible for a WebContent's zoom level to be queried before
+  // a navigation has occurred.
   if (entry)
-    url =  entry->GetURL();
+    url = entry->GetURL();
   return GetZoomLevelForHostAndScheme(url.scheme(),
                                       net::GetHostOrSpecFromURL(url));
 }
@@ -238,12 +241,18 @@ void HostZoomMapImpl::SetZoomLevelForWebContents(
   int render_process_id = web_contents_impl.GetRenderProcessHost()->GetID();
   int render_view_id = web_contents_impl.GetRenderViewHost()->GetRoutingID();
   if (UsesTemporaryZoomLevel(render_process_id, render_view_id)) {
-
     SetTemporaryZoomLevel(render_process_id, render_view_id, level);
   } else {
-    SetZoomLevelForHost(
-        net::GetHostOrSpecFromURL(web_contents_impl.GetLastCommittedURL()),
-        level);
+    // Get the url from the navigation controller directly, as calling
+    // WebContentsImpl::GetLastCommittedURL() may give us a virtual url that
+    // is different than what the render view is using. If the two don't match,
+    // the attempt to set the zoom will fail.
+    GURL url;
+    NavigationEntry* entry =
+        web_contents_impl.GetController().GetLastCommittedEntry();
+    DCHECK(entry);
+    url = entry->GetURL();
+    SetZoomLevelForHost(net::GetHostOrSpecFromURL(url), level);
   }
 }
 
