@@ -34,6 +34,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/frame/FrameView.h"
+#include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
 #include "core/html/HTMLDocument.h"
 #include "core/html/HTMLIFrameElement.h"
@@ -44,6 +45,7 @@
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderView.h"
 #include "platform/KeyboardCodes.h"
+#include "platform/geometry/IntSize.h"
 #include "platform/graphics/Color.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebDragData.h"
@@ -217,8 +219,9 @@ TEST_F(WebViewTest, SetBaseBackgroundColor)
     const WebColor kBlue     = 0xFF0000FF;
     const WebColor kDarkCyan = 0xFF227788;
     const WebColor kTranslucentPutty = 0x80BFB196;
+    const WebColor kTransparent = 0x00000000;
 
-    WebView* webView = m_webViewHelper.initialize();
+    WebViewImpl* webView = m_webViewHelper.initialize();
     EXPECT_EQ(kWhite, webView->backgroundColor());
 
     webView->setBaseBackgroundColor(kBlue);
@@ -235,6 +238,21 @@ TEST_F(WebViewTest, SetBaseBackgroundColor)
     webView->setBaseBackgroundColor(kTranslucentPutty);
     // Expected: red (50% alpha) blended atop kTranslucentPutty. Note the alpha.
     EXPECT_EQ(0xBFE93B32, webView->backgroundColor());
+
+    webView->setBaseBackgroundColor(kTransparent);
+    FrameTestHelpers::loadHTMLString(webView->mainFrame(), "<html><head><style>body {background-color:transparent}</style></head></html>", baseURL);
+    // Expected: transparent on top of kTransparent will still be transparent.
+    EXPECT_EQ(kTransparent, webView->backgroundColor());
+
+    WebCore::LocalFrame* frame = webView->mainFrameImpl()->frame();
+
+    // Creating a new frame view with the background color having 0 alpha.
+    frame->createView(WebCore::IntSize(1024, 768), WebCore::Color::transparent, true);
+    EXPECT_EQ(kTransparent, frame->view()->baseBackgroundColor());
+
+    WebCore::Color kTransparentRed(100, 0, 0, 0);
+    frame->createView(WebCore::IntSize(1024, 768), kTransparentRed, true);
+    EXPECT_EQ(kTransparentRed, frame->view()->baseBackgroundColor());
 }
 
 TEST_F(WebViewTest, SetBaseBackgroundColorBeforeMainFrame)
