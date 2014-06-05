@@ -22,9 +22,6 @@ class AcceleratorDelegate {
     KEY_TYPE_OTHER,
   };
 
-  // TODO(oshima): Move the repeat detection to AcceleratorFilter.
-  virtual void PreProcessAccelerator(const ui::Accelerator& accelerator) = 0;
-
   // Return true if the |accelerator| has been processed.
   virtual bool ProcessAccelerator(const ui::KeyEvent& event,
                                   const ui::Accelerator& accelerator,

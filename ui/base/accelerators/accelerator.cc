@@ -24,19 +24,22 @@ namespace ui {
 Accelerator::Accelerator()
     : key_code_(ui::VKEY_UNKNOWN),
       type_(ui::ET_KEY_PRESSED),
-      modifiers_(0) {
+      modifiers_(0),
+      is_repeat_(false) {
 }
 
 Accelerator::Accelerator(KeyboardCode keycode, int modifiers)
     : key_code_(keycode),
       type_(ui::ET_KEY_PRESSED),
-      modifiers_(modifiers) {
+      modifiers_(modifiers),
+      is_repeat_(false) {
 }
 
 Accelerator::Accelerator(const Accelerator& accelerator) {
   key_code_ = accelerator.key_code_;
   type_ = accelerator.type_;
   modifiers_ = accelerator.modifiers_;
+  is_repeat_ = accelerator.is_repeat_;
   if (accelerator.platform_accelerator_.get())
     platform_accelerator_ = accelerator.platform_accelerator_->CreateCopy();
 }
@@ -49,6 +52,7 @@ Accelerator& Accelerator::operator=(const Accelerator& accelerator) {
     key_code_ = accelerator.key_code_;
     type_ = accelerator.type_;
     modifiers_ = accelerator.modifiers_;
+    is_repeat_ = accelerator.is_repeat_;
     if (accelerator.platform_accelerator_.get())
       platform_accelerator_ = accelerator.platform_accelerator_->CreateCopy();
     else
@@ -95,6 +99,10 @@ bool Accelerator::IsAltDown() const {
 
 bool Accelerator::IsCmdDown() const {
   return (modifiers_ & EF_COMMAND_DOWN) != 0;
+}
+
+bool Accelerator::IsRepeat() const {
+  return is_repeat_;
 }
 
 base::string16 Accelerator::GetShortcutText() const {

@@ -479,6 +479,38 @@ void TouchEvent::UpdateForRootTransform(
 ////////////////////////////////////////////////////////////////////////////////
 // KeyEvent
 
+// static
+KeyEvent* KeyEvent::last_key_event_ = NULL;
+
+// static
+bool KeyEvent::IsRepeated(const KeyEvent& event) {
+  // A safe guard in case if there were continous key pressed events that are
+  // not auto repeat.
+  const int kMaxAutoRepeatTimeMs = 2000;
+
+  if (event.is_char())
+    return false;
+  if (event.type() == ui::ET_KEY_RELEASED) {
+    delete last_key_event_;
+    last_key_event_ = NULL;
+    return false;
+  }
+  CHECK_EQ(ui::ET_KEY_PRESSED, event.type());
+  if (!last_key_event_) {
+    last_key_event_ = new KeyEvent(event);
+    return false;
+  }
+  if (event.key_code() == last_key_event_->key_code() &&
+      event.flags() == last_key_event_->flags() &&
+      (event.time_stamp() - last_key_event_->time_stamp()).InMilliseconds() <
+      kMaxAutoRepeatTimeMs) {
+    return true;
+  }
+  delete last_key_event_;
+  last_key_event_ = new KeyEvent(event);
+  return false;
+}
+
 KeyEvent::KeyEvent(const base::NativeEvent& native_event, bool is_char)
     : Event(native_event,
             EventTypeFromNative(native_event),
@@ -487,6 +519,9 @@ KeyEvent::KeyEvent(const base::NativeEvent& native_event, bool is_char)
       code_(CodeFromNative(native_event)),
       is_char_(is_char),
       character_(0) {
+  if (IsRepeated(*this))
+    set_flags(flags() | ui::EF_IS_REPEAT);
+
 #if defined(USE_X11)
   NormalizeFlags();
 #endif

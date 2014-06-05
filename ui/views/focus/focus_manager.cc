@@ -68,6 +68,7 @@ bool FocusManager::OnKeyEvent(const ui::KeyEvent& event) {
     modifiers |= ui::EF_ALT_DOWN;
   ui::Accelerator accelerator(event.key_code(), modifiers);
   accelerator.set_type(event.type());
+  accelerator.set_is_repeat(event.IsRepeat());
 
   if (event.type() == ui::ET_KEY_PRESSED) {
     // If the focused view wants to process the key event as is, let it be.

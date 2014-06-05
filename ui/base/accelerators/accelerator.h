@@ -54,6 +54,7 @@ class UI_BASE_EXPORT Accelerator {
   bool IsCtrlDown() const;
   bool IsAltDown() const;
   bool IsCmdDown() const;
+  bool IsRepeat() const;
 
   // Returns a string with the localized shortcut if any.
   base::string16 GetShortcutText() const;
@@ -67,6 +68,7 @@ class UI_BASE_EXPORT Accelerator {
     return platform_accelerator_.get();
   }
 
+  void set_is_repeat(bool is_repeat) { is_repeat_ = is_repeat; }
 
  protected:
   // The keycode (VK_...).
@@ -77,6 +79,9 @@ class UI_BASE_EXPORT Accelerator {
 
   // The state of the Shift/Ctrl/Alt keys.
   int modifiers_;
+
+  // True if the accelerator is created for an auto repeated key event.
+  bool is_repeat_;
 
   // Stores platform specific data. May be NULL.
   scoped_ptr<PlatformAccelerator> platform_accelerator_;

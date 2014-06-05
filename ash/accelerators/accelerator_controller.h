@@ -30,33 +30,6 @@ class KeyboardBrightnessControlDelegate;
 class ScreenshotDelegate;
 class VolumeControlDelegate;
 
-// Stores information about accelerator context, eg. previous accelerator
-// or if the current accelerator is repeated or not.
-class ASH_EXPORT AcceleratorControllerContext {
- public:
-  AcceleratorControllerContext();
-  ~AcceleratorControllerContext() {}
-
-  // Updates context - determines if the accelerator is repeated, as well as
-  // event type of the previous accelerator.
-  void UpdateContext(const ui::Accelerator& accelerator);
-
-  const ui::Accelerator& previous_accelerator() const {
-    return previous_accelerator_;
-  }
-  bool repeated() const {
-    return current_accelerator_ == previous_accelerator_ &&
-        current_accelerator_.type() != ui::ET_UNKNOWN;
-  }
-
- private:
-  ui::Accelerator current_accelerator_;
-  // Used for NEXT_IME and DISABLE_CAPS_LOCK accelerator actions.
-  ui::Accelerator previous_accelerator_;
-
-  DISALLOW_COPY_AND_ASSIGN(AcceleratorControllerContext);
-};
-
 // AcceleratorController provides functions for registering or unregistering
 // global keyboard accelerators, which are handled earlier than any windows. It
 // also implements several handlers as an accelerator target.
@@ -115,18 +88,19 @@ class ASH_EXPORT AcceleratorController : public ui::AcceleratorTarget {
     return screenshot_delegate_.get();
   }
 
-  // Provides access to an object holding contextual information.
-  AcceleratorControllerContext* context() {
-    return &context_;
-  }
-
   // Provides access to the ExitWarningHandler for testing.
   ExitWarningHandler* GetExitWarningHandlerForTest() {
     return &exit_warning_handler_;
   }
 
+  const ui::Accelerator& previous_accelerator_for_test() const {
+    return previous_accelerator_;
+  }
+
  private:
   FRIEND_TEST_ALL_PREFIXES(AcceleratorControllerTest, GlobalAccelerators);
+  FRIEND_TEST_ALL_PREFIXES(AcceleratorControllerTest,
+                           DontRepeatToggleFullscreen);
 
   // Initializes the accelerators this class handles as a target.
   void Init();
@@ -149,8 +123,9 @@ class ASH_EXPORT AcceleratorController : public ui::AcceleratorTarget {
       keyboard_brightness_control_delegate_;
   scoped_ptr<ScreenshotDelegate> screenshot_delegate_;
 
-  // Contextual information, eg. if the current accelerator is repeated.
-  AcceleratorControllerContext context_;
+  // Remember previous accelerator as some accelerator needs to be fired
+  // with a specific sequence.
+  ui::Accelerator previous_accelerator_;
 
   // Handles the exit accelerator which requires a double press to exit and
   // shows a popup with an explanation.

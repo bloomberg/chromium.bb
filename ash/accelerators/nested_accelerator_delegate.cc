@@ -62,11 +62,6 @@ NestedAcceleratorDelegate::Result NestedAcceleratorDelegate::ProcessAccelerator(
       ash::Shell::GetInstance()->accelerator_controller();
   if (!accelerator_controller)
     return RESULT_NOT_PROCESSED;
-
-  // Fill out context object so AcceleratorController will know what
-  // was the previous accelerator or if the current accelerator is repeated.
-  Shell::GetInstance()->accelerator_controller()->context()->UpdateContext(
-      accelerator);
   return accelerator_controller->Process(accelerator) ? RESULT_PROCESSED
                                                       : RESULT_NOT_PROCESSED;
 }

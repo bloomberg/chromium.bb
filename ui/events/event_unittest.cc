@@ -65,7 +65,7 @@ TEST(EventTest, ClickCount) {
   }
 }
 
-TEST(EventTest, Repeated) {
+TEST(EventTest, RepeatedClick) {
   const gfx::Point origin(0, 0);
   MouseEvent mouse_ev1(ET_MOUSE_PRESSED, origin, origin, 0, 0);
   MouseEvent mouse_ev2(ET_MOUSE_PRESSED, origin, origin, 0, 0);
@@ -330,5 +330,52 @@ TEST(EventTest, KeyEventCode) {
   }
 #endif  // OS_WIN
 }
+
+#if defined(USE_X11) || defined(OS_WIN)
+TEST(EventTest, AutoRepeat) {
+  KeycodeConverter* conv = KeycodeConverter::GetInstance();
+
+  const uint16 kNativeCodeA = conv->CodeToNativeKeycode("KeyA");
+  const uint16 kNativeCodeB = conv->CodeToNativeKeycode("KeyB");
+#if defined(USE_X11)
+  ScopedXI2Event native_event_a_pressed;
+  native_event_a_pressed.InitKeyEvent(ET_KEY_PRESSED, VKEY_A, kNativeCodeA);
+  ScopedXI2Event native_event_a_released;
+  native_event_a_released.InitKeyEvent(ET_KEY_RELEASED, VKEY_A, kNativeCodeA);
+  ScopedXI2Event native_event_b_pressed;
+  native_event_b_pressed.InitKeyEvent(ET_KEY_PRESSED, VKEY_B, kNativeCodeB);
+#elif defined(OS_WIN)
+  const LPARAM lParam_a = GetLParamFromScanCode(kNativeCodeA);
+  const LPARAM lParam_b = GetLParamFromScanCode(kNativeCodeB);
+  MSG native_event_a_pressed = { NULL, WM_KEYDOWN, VKEY_A, lParam_a };
+  MSG native_event_a_released = { NULL, WM_KEYUP, VKEY_A, lParam_a };
+  MSG native_event_b_pressed = { NULL, WM_KEYUP, VKEY_B, lParam_b };
+#endif
+  KeyEvent key_a1(native_event_a_pressed, false);
+  DCHECK(!key_a1.IsRepeat());
+  KeyEvent key_a1_released(native_event_a_released, false);
+  DCHECK(!key_a1_released.IsRepeat());
+
+  KeyEvent key_a2(native_event_a_pressed, false);
+  DCHECK(!key_a2.IsRepeat());
+  KeyEvent key_a2_repeated(native_event_a_pressed, false);
+  DCHECK(key_a2_repeated.IsRepeat());
+  KeyEvent key_a2_released(native_event_a_released, false);
+  DCHECK(!key_a2_released.IsRepeat());
+
+  KeyEvent key_a3(native_event_a_pressed, false);
+  DCHECK(!key_a3.IsRepeat());
+  KeyEvent key_b(native_event_b_pressed, false);
+  DCHECK(!key_b.IsRepeat());
+  KeyEvent key_a3_again(native_event_a_pressed, false);
+  DCHECK(!key_a3_again.IsRepeat());
+  KeyEvent key_a3_repeated(native_event_a_pressed, false);
+  DCHECK(key_a3_repeated.IsRepeat());
+  KeyEvent key_a3_repeated2(native_event_a_pressed, false);
+  DCHECK(key_a3_repeated2.IsRepeat());
+  KeyEvent key_a3_released(native_event_a_released, false);
+  DCHECK(!key_a3_released.IsRepeat());
+}
+#endif  // USE_X11 || OS_WIN
 
 }  // namespace ui

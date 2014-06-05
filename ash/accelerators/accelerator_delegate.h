@@ -18,8 +18,6 @@ class ASH_EXPORT AcceleratorDelegate
   virtual ~AcceleratorDelegate();
 
   // wm::AcceleratorDelegate:
-  virtual void PreProcessAccelerator(
-      const ui::Accelerator& accelerator) OVERRIDE;
   virtual bool ProcessAccelerator(const ui::KeyEvent& event,
                                   const ui::Accelerator& accelerator,
                                   KeyType key_type) OVERRIDE;

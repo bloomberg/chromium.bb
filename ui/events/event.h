@@ -81,6 +81,7 @@ class EVENTS_EXPORT Event {
   bool IsCapsLockDown() const { return (flags_ & EF_CAPS_LOCK_DOWN) != 0; }
   bool IsAltDown() const { return (flags_ & EF_ALT_DOWN) != 0; }
   bool IsAltGrDown() const { return (flags_ & EF_ALTGR_DOWN) != 0; }
+  bool IsRepeat() const { return (flags_ & EF_IS_REPEAT) != 0; }
 
   bool IsKeyEvent() const {
     return type_ == ET_KEY_PRESSED ||
@@ -581,6 +582,10 @@ class EVENTS_EXPORT KeyEvent : public Event {
   bool is_char_;
 
   uint16 character_;
+
+  static bool IsRepeated(const KeyEvent& event);
+
+  static KeyEvent* last_key_event_;
 };
 
 class EVENTS_EXPORT ScrollEvent : public MouseEvent {

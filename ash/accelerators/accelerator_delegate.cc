@@ -19,14 +19,6 @@ AcceleratorDelegate::AcceleratorDelegate() {
 AcceleratorDelegate::~AcceleratorDelegate() {
 }
 
-void AcceleratorDelegate::PreProcessAccelerator(
-    const ui::Accelerator& accelerator) {
-  // Fill out context object so AcceleratorController will know what
-  // was the previous accelerator or if the current accelerator is repeated.
-  Shell::GetInstance()->accelerator_controller()->context()->UpdateContext(
-      accelerator);
-}
-
 bool AcceleratorDelegate::ProcessAccelerator(const ui::KeyEvent& key_event,
                                              const ui::Accelerator& accelerator,
                                              KeyType key_type) {

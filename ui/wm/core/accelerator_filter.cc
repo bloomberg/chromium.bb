@@ -57,8 +57,6 @@ void AcceleratorFilter::OnKeyEvent(ui::KeyEvent* event) {
 
   ui::Accelerator accelerator = CreateAcceleratorFromKeyEvent(*event);
 
-  delegate_->PreProcessAccelerator(accelerator);
-
   AcceleratorDelegate::KeyType key_type =
       IsSystemKey(event->key_code()) ? AcceleratorDelegate::KEY_TYPE_SYSTEM
                                      : AcceleratorDelegate::KEY_TYPE_OTHER;
@@ -75,6 +73,7 @@ ui::Accelerator CreateAcceleratorFromKeyEvent(const ui::KeyEvent& key_event) {
                               key_event.flags() & kModifierFlagMask);
   if (key_event.type() == ui::ET_KEY_RELEASED)
     accelerator.set_type(ui::ET_KEY_RELEASED);
+  accelerator.set_is_repeat(key_event.IsRepeat());
   return accelerator;
 }
 

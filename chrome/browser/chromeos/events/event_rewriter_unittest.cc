@@ -43,7 +43,7 @@ std::string GetExpectedResultAsString(ui::KeyboardCode ui_keycode,
                                       ui::EventType ui_type) {
   return base::StringPrintf("ui_keycode=0x%X ui_flags=0x%X ui_type=%d",
                             ui_keycode,
-                            ui_flags,
+                            ui_flags & ~ui::EF_IS_REPEAT,
                             ui_type);
 }
 
