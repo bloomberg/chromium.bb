@@ -571,13 +571,17 @@ void ServiceWorkerStorage::DidGetAllRegistrations(
   std::vector<ServiceWorkerRegistrationInfo> infos;
   for (RegistrationList::const_iterator it = registrations->begin();
        it != registrations->end(); ++it) {
-    DCHECK(pushed_registrations.insert(it->registration_id).second);
+    const bool inserted =
+        pushed_registrations.insert(it->registration_id).second;
+    DCHECK(inserted);
+
     ServiceWorkerRegistration* registration =
         context_->GetLiveRegistration(it->registration_id);
     if (registration) {
       infos.push_back(registration->GetInfo());
       continue;
     }
+
     ServiceWorkerRegistrationInfo info;
     info.pattern = it->scope;
     info.script_url = it->script;
