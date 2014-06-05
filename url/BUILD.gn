@@ -64,6 +64,7 @@ component("url") {
 
   deps = [
     "//base",
+    "//base/third_party/dynamic_annotations",
     "//third_party/icu:icudata",
     "//third_party/icu",
   ]
