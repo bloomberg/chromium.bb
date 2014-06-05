@@ -32,8 +32,6 @@
 # include "native_client/src/untrusted/irt/irt_private.h"
 #endif
 
-#define FUN_TO_VOID_PTR(a) ((void *) (uintptr_t) (a))
-
 /*
  * ABI tables for underyling NaCl thread interfaces.
  */
@@ -427,8 +425,7 @@ int pthread_create(pthread_t *thread_id,
   memset(esp, 0, kStackPadBelowAlign);
 
   /* Start the thread. */
-  retval = irt_thread.thread_create(
-      FUN_TO_VOID_PTR(nc_thread_starter), esp, new_tp);
+  retval = irt_thread.thread_create(nc_thread_starter, esp, new_tp);
   if (0 != retval) {
     pthread_mutex_lock(&__nc_thread_management_lock);
     /* TODO(gregoryd) : replace with atomic decrement? */
