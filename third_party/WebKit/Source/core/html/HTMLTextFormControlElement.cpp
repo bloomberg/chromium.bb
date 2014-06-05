@@ -191,8 +191,8 @@ void HTMLTextFormControlElement::dispatchFormControlChangeEvent()
 {
     String newValue = value();
     if (shouldDispatchFormControlChangeEvent(m_textAsOfLastFormControlChangeEvent, newValue)) {
-        dispatchChangeEvent();
         setTextAsOfLastFormControlChangeEvent(newValue);
+        dispatchChangeEvent();
     }
     setChangedSinceLastFormControlChangeEvent(false);
 }
