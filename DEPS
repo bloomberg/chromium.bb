@@ -765,6 +765,17 @@ hooks = [
     ],
   },
   {
+    "name": "drmemory",
+    "pattern": ".",
+    "action": [ "download_from_google_storage",
+                "--no_resume",
+                "--platform=win32",
+                "--no_auth",
+                "--bucket", "chromium-drmemory",
+                "-s", "src/third_party/drmemory/drmemory-windows-sfx.exe.sha1",
+              ],
+  },
+  {
     # A change to a .gyp, .gypi, or to GYP itself should run the generator.
     "name": "gyp",
     "pattern": ".",
