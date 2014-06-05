@@ -525,8 +525,6 @@ extern const char kContentSettingsWindowLastTabIndex[];
 extern const char kCertificateManagerWindowLastTabIndex[];
 extern const char kShowFirstRunBubbleOption[];
 
-extern const char kLastKnownGoogleURL[];
-extern const char kLastPromptedGoogleURL[];
 extern const char kLastKnownIntranetRedirectOrigin[];
 
 extern const char kCountryIDAtInstall[];

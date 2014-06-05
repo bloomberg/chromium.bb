@@ -20,6 +20,7 @@
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/testing_pref_service_syncable.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/google/core/browser/google_pref_names.h"
 #include "components/variations/entropy_provider.h"
 
 InstantUnitTestBase::InstantUnitTestBase() {

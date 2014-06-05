@@ -14,6 +14,8 @@
         '..',
       ],
       'sources': [
+        'google/core/browser/google_pref_names.cc',
+        'google/core/browser/google_pref_names.h',
         'google/core/browser/google_search_metrics.cc',
         'google/core/browser/google_search_metrics.h',
         'google/core/browser/google_switches.cc',

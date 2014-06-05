@@ -9,22 +9,28 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
+class Profile;
+
 class ChromeGoogleURLTrackerClient : public GoogleURLTrackerClient,
                                      public content::NotificationObserver {
  public:
-  ChromeGoogleURLTrackerClient();
+  explicit ChromeGoogleURLTrackerClient(Profile* profile);
   virtual ~ChromeGoogleURLTrackerClient();
 
   // GoogleURLTrackerClient:
   virtual void SetListeningForNavigationStart(bool listen) OVERRIDE;
   virtual bool IsListeningForNavigationStart() OVERRIDE;
   virtual bool IsBackgroundNetworkingEnabled() OVERRIDE;
+  virtual PrefService* GetPrefs() OVERRIDE;
+  virtual net::URLRequestContextGetter* GetRequestContext() OVERRIDE;
 
  private:
   // content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
+
+  Profile* profile_;
 
   content::NotificationRegistrar registrar_;
 

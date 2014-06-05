@@ -24,7 +24,6 @@
 class GoogleURLTrackerClient;
 class GoogleURLTrackerNavigationHelper;
 class PrefService;
-class Profile;
 
 namespace infobars {
 class InfoBar;
@@ -61,9 +60,7 @@ class GoogleURLTracker : public net::URLFetcherDelegate,
   static const char kDefaultGoogleHomepage[];
 
   // Only the GoogleURLTrackerFactory and tests should call this.
-  GoogleURLTracker(Profile* profile,
-                   scoped_ptr<GoogleURLTrackerClient> client,
-                   Mode mode);
+  GoogleURLTracker(scoped_ptr<GoogleURLTrackerClient> client, Mode mode);
 
   virtual ~GoogleURLTracker();
 
@@ -168,8 +165,6 @@ class GoogleURLTracker : public net::URLFetcherDelegate,
   void NotifyGoogleURLUpdated(GURL old_url, GURL new_url);
 
   CallbackList callback_list_;
-
-  Profile* profile_;
 
   scoped_ptr<GoogleURLTrackerClient> client_;
 

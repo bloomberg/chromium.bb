@@ -9,13 +9,15 @@
 #include "chrome/browser/google/google_url_tracker.h"
 #include "chrome/browser/google/google_url_tracker_navigation_helper_impl.h"
 #include "chrome/browser/infobars/infobar_service.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
 
-ChromeGoogleURLTrackerClient::ChromeGoogleURLTrackerClient() {
+ChromeGoogleURLTrackerClient::ChromeGoogleURLTrackerClient(Profile* profile)
+    : profile_(profile) {
 }
 
 ChromeGoogleURLTrackerClient::~ChromeGoogleURLTrackerClient() {
@@ -45,6 +47,15 @@ bool ChromeGoogleURLTrackerClient::IsListeningForNavigationStart() {
 bool ChromeGoogleURLTrackerClient::IsBackgroundNetworkingEnabled() {
   return !CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kDisableBackgroundNetworking);
+}
+
+PrefService* ChromeGoogleURLTrackerClient::GetPrefs() {
+  return profile_->GetPrefs();
+}
+
+net::URLRequestContextGetter*
+ChromeGoogleURLTrackerClient::GetRequestContext() {
+  return profile_->GetRequestContext();
 }
 
 void ChromeGoogleURLTrackerClient::Observe(

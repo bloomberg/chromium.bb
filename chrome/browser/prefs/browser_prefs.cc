@@ -88,6 +88,7 @@
 #include "chrome/common/pref_names.h"
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
+#include "components/google/core/browser/google_pref_names.h"
 #include "components/network_time/network_time_tracker.h"
 #include "components/password_manager/core/browser/password_manager.h"
 #include "components/pref_registry/pref_registry_syncable.h"

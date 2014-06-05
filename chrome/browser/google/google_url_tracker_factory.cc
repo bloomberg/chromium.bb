@@ -9,7 +9,7 @@
 #include "chrome/browser/google/google_url_tracker.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/pref_names.h"
+#include "components/google/core/browser/google_pref_names.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 
@@ -35,11 +35,10 @@ GoogleURLTrackerFactory::~GoogleURLTrackerFactory() {
 }
 
 KeyedService* GoogleURLTrackerFactory::BuildServiceInstanceFor(
-    content::BrowserContext* profile) const {
-  scoped_ptr<GoogleURLTrackerClient> client(new ChromeGoogleURLTrackerClient());
-  return new GoogleURLTracker(static_cast<Profile*>(profile),
-                              client.Pass(),
-                              GoogleURLTracker::NORMAL_MODE);
+    content::BrowserContext* context) const {
+  scoped_ptr<GoogleURLTrackerClient> client(
+      new ChromeGoogleURLTrackerClient(Profile::FromBrowserContext(context)));
+  return new GoogleURLTracker(client.Pass(), GoogleURLTracker::NORMAL_MODE);
 }
 
 void GoogleURLTrackerFactory::RegisterProfilePrefs(
