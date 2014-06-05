@@ -489,10 +489,12 @@
             ['OS=="linux" and use_udev==0', {
               'dependencies!': [
                 '../third_party/libusb/libusb.gyp:libusb',
+                'components.gyp:storage_monitor',
+                'components.gyp:storage_monitor_test_support',
               ],
-              'sources!': [
-                'storage_monitor/storage_monitor_linux_unittest.cc',
-                'usb_service/usb_context_unittest.cc',
+              'sources/': [
+                ['exclude', '^storage_monitor/'],
+                ['exclude', '^usb_service/'],
               ],
             }],
             ['OS=="win" and win_use_allocator_shim==1', {
