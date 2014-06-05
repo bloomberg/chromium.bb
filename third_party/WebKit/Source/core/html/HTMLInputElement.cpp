@@ -1082,13 +1082,17 @@ void* HTMLInputElement::preDispatchEventHandler(Event* event)
         return 0;
     if (!event->isMouseEvent() || toMouseEvent(event)->button() != LeftButton)
         return 0;
+#if ENABLE(OILPAN)
+    return m_inputTypeView->willDispatchClick();
+#else
     // FIXME: Check whether there are any cases where this actually ends up leaking.
     return m_inputTypeView->willDispatchClick().leakPtr();
+#endif
 }
 
 void HTMLInputElement::postDispatchEventHandler(Event* event, void* dataFromPreDispatch)
 {
-    OwnPtr<ClickHandlingState> state = adoptPtr(static_cast<ClickHandlingState*>(dataFromPreDispatch));
+    OwnPtrWillBeRawPtr<ClickHandlingState> state = adoptPtrWillBeNoop(static_cast<ClickHandlingState*>(dataFromPreDispatch));
     if (!state)
         return;
     m_inputTypeView->didDispatchClick(event, *state);

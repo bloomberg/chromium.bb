@@ -159,7 +159,7 @@ void InputTypeView::stepAttributeChanged()
 {
 }
 
-PassOwnPtr<ClickHandlingState> InputTypeView::willDispatchClick()
+PassOwnPtrWillBeRawPtr<ClickHandlingState> InputTypeView::willDispatchClick()
 {
     return nullptr;
 }
@@ -216,6 +216,11 @@ void InputTypeView::updateClearButtonVisibility()
 
 void InputTypeView::updatePlaceholderText()
 {
+}
+
+void ClickHandlingState::trace(Visitor* visitor)
+{
+    visitor->trace(checkedRadioButton);
 }
 
 } // namespace WebCore

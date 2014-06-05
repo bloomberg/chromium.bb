@@ -68,12 +68,12 @@ void CheckboxInputType::handleKeyupEvent(KeyboardEvent* event)
     dispatchSimulatedClickIfActive(event);
 }
 
-PassOwnPtr<ClickHandlingState> CheckboxInputType::willDispatchClick()
+PassOwnPtrWillBeRawPtr<ClickHandlingState> CheckboxInputType::willDispatchClick()
 {
     // An event handler can use preventDefault or "return false" to reverse the checking we do here.
     // The ClickHandlingState object contains what we need to undo what we did here in didDispatchClick.
 
-    OwnPtr<ClickHandlingState> state = adoptPtr(new ClickHandlingState);
+    OwnPtrWillBeRawPtr<ClickHandlingState> state = adoptPtrWillBeNoop(new ClickHandlingState);
 
     state->checked = element().checked();
     state->indeterminate = element().indeterminate();

@@ -54,13 +54,15 @@ class RenderObject;
 class RenderStyle;
 class TouchEvent;
 
-struct ClickHandlingState {
-    WTF_MAKE_FAST_ALLOCATED;
+struct ClickHandlingState FINAL : public NoBaseWillBeGarbageCollected<ClickHandlingState> {
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 
 public:
+    void trace(Visitor*);
+
     bool checked;
     bool indeterminate;
-    RefPtrWillBePersistent<HTMLInputElement> checkedRadioButton;
+    RefPtrWillBeMember<HTMLInputElement> checkedRadioButton;
 };
 
 // An InputTypeView object represents the UI-specific part of an
@@ -78,7 +80,7 @@ public:
     virtual bool sizeShouldIncludeDecoration(int defaultSize, int& preferredSize) const;
     virtual void handleClickEvent(MouseEvent*);
     virtual void handleMouseDownEvent(MouseEvent*);
-    virtual PassOwnPtr<ClickHandlingState> willDispatchClick();
+    virtual PassOwnPtrWillBeRawPtr<ClickHandlingState> willDispatchClick();
     virtual void didDispatchClick(Event*, const ClickHandlingState&);
     virtual void handleKeydownEvent(KeyboardEvent*);
     virtual void handleKeypressEvent(KeyboardEvent*);

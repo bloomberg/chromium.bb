@@ -145,7 +145,7 @@ bool RadioInputType::shouldSendChangeEventAfterCheckedChanged()
     return element().checked();
 }
 
-PassOwnPtr<ClickHandlingState> RadioInputType::willDispatchClick()
+PassOwnPtrWillBeRawPtr<ClickHandlingState> RadioInputType::willDispatchClick()
 {
     // An event handler can use preventDefault or "return false" to reverse the selection we do here.
     // The ClickHandlingState object contains what we need to undo what we did here in didDispatchClick.
@@ -154,7 +154,7 @@ PassOwnPtr<ClickHandlingState> RadioInputType::willDispatchClick()
     // Therefore if nothing is currently selected, we won't allow the upcoming action to be "undone", since
     // we want some object in the radio group to actually get selected.
 
-    OwnPtr<ClickHandlingState> state = adoptPtr(new ClickHandlingState);
+    OwnPtrWillBeRawPtr<ClickHandlingState> state = adoptPtrWillBeNoop(new ClickHandlingState);
 
     state->checked = element().checked();
     state->checkedRadioButton = element().checkedRadioButtonForGroup();
