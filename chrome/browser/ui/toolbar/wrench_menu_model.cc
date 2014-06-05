@@ -634,11 +634,15 @@ void WrenchMenuModel::Build(bool is_new_menu) {
 
   AddItemWithStringId(IDC_OPTIONS, IDS_SETTINGS);
 
+// On ChromeOS we don't want the about menu option.
+#if !defined(OS_CHROMEOS)
+  AddItem(IDC_ABOUT, l10n_util::GetStringUTF16(IDS_ABOUT));
+#endif
+
 #if defined(GOOGLE_CHROME_BUILD)
   help_menu_model_.reset(new HelpMenuModel(this, browser_));
   AddSubMenuWithStringId(IDC_HELP_MENU, IDS_HELP_MENU,
                          help_menu_model_.get());
-  AddSeparator(ui::NORMAL_SEPARATOR);
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -660,6 +664,7 @@ void WrenchMenuModel::Build(bool is_new_menu) {
   AddGlobalErrorMenuItems();
 
   if (is_new_menu) {
+    AddSeparator(ui::NORMAL_SEPARATOR);
     AddSubMenuWithStringId(IDC_ZOOM_MENU, IDS_MORE_TOOLS_MENU,
                            tools_menu_model_.get());
   }
