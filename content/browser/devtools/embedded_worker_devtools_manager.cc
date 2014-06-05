@@ -89,10 +89,8 @@ class EmbeddedWorkerDevToolsManager::EmbeddedWorkerDevToolsAgentHost
       public IPC::Listener {
  public:
   explicit EmbeddedWorkerDevToolsAgentHost(WorkerId worker_id)
-      : worker_id_(worker_id), worker_attached_(true) {
-    AddRef();
-    if (RenderProcessHost* host = RenderProcessHost::FromID(worker_id_.first))
-      host->AddRoute(worker_id_.second, this);
+      : worker_id_(worker_id), worker_attached_(false) {
+    AttachToWorker();
   }
 
   // DevToolsAgentHost override.
@@ -105,8 +103,12 @@ class EmbeddedWorkerDevToolsManager::EmbeddedWorkerDevToolsAgentHost
     else
       delete message;
   }
+  virtual void Attach() OVERRIDE {
+    AttachToWorker();
+    IPCDevToolsAgentHost::Attach();
+  }
   virtual void OnClientAttached() OVERRIDE {}
-  virtual void OnClientDetached() OVERRIDE {}
+  virtual void OnClientDetached() OVERRIDE { DetachFromWorker(); }
 
   // IPC::Listener implementation.
   virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE {
@@ -124,16 +126,16 @@ class EmbeddedWorkerDevToolsManager::EmbeddedWorkerDevToolsAgentHost
 
   void ReattachToWorker(WorkerId worker_id) {
     CHECK(!worker_attached_);
-    worker_attached_ = true;
     worker_id_ = worker_id;
-    AddRef();
-    if (RenderProcessHost* host = RenderProcessHost::FromID(worker_id_.first))
-      host->AddRoute(worker_id_.second, this);
+    if (!IsAttached())
+      return;
+    AttachToWorker();
     Reattach(state_);
   }
 
   void DetachFromWorker() {
-    CHECK(worker_attached_);
+    if (!worker_attached_)
+      return;
     worker_attached_ = false;
     if (RenderProcessHost* host = RenderProcessHost::FromID(worker_id_.first))
       host->RemoveRoute(worker_id_.second);
@@ -155,6 +157,15 @@ class EmbeddedWorkerDevToolsManager::EmbeddedWorkerDevToolsAgentHost
   }
 
   void OnSaveAgentRuntimeState(const std::string& state) { state_ = state; }
+
+  void AttachToWorker() {
+    if (worker_attached_)
+      return;
+    worker_attached_ = true;
+    AddRef();
+    if (RenderProcessHost* host = RenderProcessHost::FromID(worker_id_.first))
+      host->AddRoute(worker_id_.second, this);
+  }
 
   WorkerId worker_id_;
   bool worker_attached_;
@@ -254,12 +265,11 @@ void EmbeddedWorkerDevToolsManager::WorkerDestroyed(int worker_process_id,
       break;
     case WORKER_INSPECTED: {
       EmbeddedWorkerDevToolsAgentHost* agent_host = info->agent_host();
+      info->set_state(WORKER_TERMINATED);
       if (!agent_host->IsAttached()) {
-        scoped_ptr<WorkerInfo> worker_info = workers_.take_and_erase(it);
         agent_host->DetachFromWorker();
         return;
       }
-      info->set_state(WORKER_TERMINATED);
       // Client host is debugging this worker agent host.
       std::string notification =
           DevToolsProtocol::CreateNotification(
@@ -308,7 +318,13 @@ void EmbeddedWorkerDevToolsManager::RemoveInspectedWorkerData(
   const WorkerId id(agent_host->worker_id());
   scoped_ptr<WorkerInfo> worker_info = workers_.take_and_erase(id);
   if (worker_info) {
-    DCHECK_EQ(WORKER_TERMINATED, worker_info->state());
+    DCHECK_EQ(worker_info->agent_host(), agent_host);
+    if (worker_info->state() == WORKER_TERMINATED)
+      return;
+    DCHECK_EQ(worker_info->state(), WORKER_INSPECTED);
+    worker_info->set_agent_host(NULL);
+    worker_info->set_state(WORKER_UNINSPECTED);
+    workers_.set(id, worker_info.Pass());
     return;
   }
   for (WorkerInfoMap::iterator it = workers_.begin(); it != workers_.end();
