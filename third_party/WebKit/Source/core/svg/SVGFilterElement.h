@@ -39,6 +39,7 @@ class SVGFilterElement FINAL : public SVGElement,
                                public SVGURIReference {
 public:
     DEFINE_NODE_FACTORY(SVGFilterElement);
+    virtual void trace(Visitor*) OVERRIDE;
 
     void setFilterRes(unsigned x, unsigned y);
     void addClient(Node*);
@@ -75,7 +76,7 @@ private:
     RefPtr<SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType> > m_primitiveUnits;
     RefPtr<SVGAnimatedIntegerOptionalInteger> m_filterRes;
 
-    HashSet<RefPtr<Node> > m_clientsToAdd;
+    WillBeHeapHashSet<RefPtrWillBeMember<Node> > m_clientsToAdd;
 };
 
 }

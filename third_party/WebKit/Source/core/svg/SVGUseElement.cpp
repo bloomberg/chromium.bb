@@ -665,7 +665,7 @@ void SVGUseElement::expandUseElementsInShadowTree(Node* element)
         if (subtreeContainsDisallowedElement(cloneParent.get()))
             removeDisallowedElementsFromSubtree(*cloneParent);
 
-        RefPtr<Node> replacingElement(cloneParent.get());
+        RefPtrWillBeRawPtr<Node> replacingElement(cloneParent.get());
 
         // Replace <use> with referenced content.
         ASSERT(use->parentNode());
@@ -674,11 +674,11 @@ void SVGUseElement::expandUseElementsInShadowTree(Node* element)
         // Expand the siblings because the *element* is replaced and we will
         // lose the sibling chain when we are back from recursion.
         element = replacingElement.get();
-        for (RefPtr<Node> sibling = element->nextSibling(); sibling; sibling = sibling->nextSibling())
+        for (RefPtrWillBeRawPtr<Node> sibling = element->nextSibling(); sibling; sibling = sibling->nextSibling())
             expandUseElementsInShadowTree(sibling.get());
     }
 
-    for (RefPtr<Node> child = element->firstChild(); child; child = child->nextSibling())
+    for (RefPtrWillBeRawPtr<Node> child = element->firstChild(); child; child = child->nextSibling())
         expandUseElementsInShadowTree(child.get());
 }
 
@@ -710,7 +710,7 @@ void SVGUseElement::expandSymbolElementsInShadowTree(Node* element)
         if (subtreeContainsDisallowedElement(svgElement.get()))
             removeDisallowedElementsFromSubtree(*svgElement);
 
-        RefPtr<Node> replacingElement(svgElement.get());
+        RefPtrWillBeRawPtr<Node> replacingElement(svgElement.get());
 
         // Replace <symbol> with <svg>.
         element->parentNode()->replaceChild(svgElement.release(), element);
@@ -718,11 +718,11 @@ void SVGUseElement::expandSymbolElementsInShadowTree(Node* element)
         // Expand the siblings because the *element* is replaced and we will
         // lose the sibling chain when we are back from recursion.
         element = replacingElement.get();
-        for (RefPtr<Node> sibling = element->nextSibling(); sibling; sibling = sibling->nextSibling())
+        for (RefPtrWillBeRawPtr<Node> sibling = element->nextSibling(); sibling; sibling = sibling->nextSibling())
             expandSymbolElementsInShadowTree(sibling.get());
     }
 
-    for (RefPtr<Node> child = element->firstChild(); child; child = child->nextSibling())
+    for (RefPtrWillBeRawPtr<Node> child = element->firstChild(); child; child = child->nextSibling())
         expandSymbolElementsInShadowTree(child.get());
 }
 

@@ -60,6 +60,12 @@ SVGFilterElement::SVGFilterElement(Document& document)
     addToPropertyMap(m_filterRes);
 }
 
+void SVGFilterElement::trace(Visitor* visitor)
+{
+    visitor->trace(m_clientsToAdd);
+    SVGElement::trace(visitor);
+}
+
 void SVGFilterElement::setFilterRes(unsigned x, unsigned y)
 {
     filterResX()->baseValue()->setValue(x);
@@ -147,8 +153,8 @@ RenderObject* SVGFilterElement::createRenderer(RenderStyle*)
 {
     RenderSVGResourceFilter* renderer = new RenderSVGResourceFilter(this);
 
-    HashSet<RefPtr<Node> >::iterator layerEnd = m_clientsToAdd.end();
-    for (HashSet<RefPtr<Node> >::iterator it = m_clientsToAdd.begin(); it != layerEnd; ++it)
+    WillBeHeapHashSet<RefPtrWillBeMember<Node> >::iterator layerEnd = m_clientsToAdd.end();
+    for (WillBeHeapHashSet<RefPtrWillBeMember<Node> >::iterator it = m_clientsToAdd.begin(); it != layerEnd; ++it)
         renderer->addClientRenderLayer(it->get());
     m_clientsToAdd.clear();
 
