@@ -391,30 +391,32 @@ void Canvas::DrawImageIntInPixel(const ImageSkia& image,
                                  int dest_h,
                                  bool filter,
                                  const SkPaint& paint) {
+  // All values passed into this function are in pixels, i.e. no scaling needs
+  // be done.
   // Logic as below:-
-  // 1. Translate the destination rectangle using the current translation
-  //    values from the SkCanvas matrix stack.
-  // 2. Save the current state of the canvas.
-  // 3. Reset the scales and the translation values in the SkCanvas matrix
-  //    stack top.
-  // 4. Set the scale in gfx::Canvas instance to 1.0, 1.0.
-  // 5. Draw the image.
-  // 6. Restore the state of the canvas and the SkCanvas matrix stack.
+  // 1. Get the matrix transform from the canvas.
+  // 2. Set the scale in the matrix to 1.0 while honoring the direction of the
+  //    the scale (x/y). Example RTL layouts.
+  // 3. Round off the X and Y translation components in the matrix. This is to
+  //    reduce floating point errors during rect transformation. This is needed
+  //    for fractional scale factors like 1.25/1.5, etc.
+  // 4. Save the current state of the canvas.
+  // 5. Set the modified matrix in the canvas. This ensures that no scaling
+  //    will be done for draw operations on the canvas.
+  // 6. Draw the image.
+  // 7. Restore the state of the canvas and the SkCanvas matrix stack.
   SkMatrix matrix = canvas_->getTotalMatrix();
 
-  SkRect destination_rect;
-  destination_rect.set(SkIntToScalar(dest_x),
-                       SkIntToScalar(dest_y),
-                       SkIntToScalar(dest_x + dest_w),
-                       SkIntToScalar(dest_y + dest_h));
-  matrix.setScaleX(1.0f);
-  matrix.setScaleY(1.0f);
-  matrix.mapRect(&destination_rect, destination_rect);
+  // Ensure that the direction of the x and y scales is preserved. This is
+  // important for RTL layouts.
+  matrix.getScaleX() > 0 ? matrix.setScaleX(1.0f) : matrix.setScaleX(-1.0f);
+  matrix.getScaleY() > 0 ? matrix.setScaleY(1.0f) : matrix.setScaleY(-1.0f);
+
+  matrix.setTranslateX(SkScalarRoundToInt(matrix.getTranslateX()));
+  matrix.setTranslateY(SkScalarRoundToInt(matrix.getTranslateY()));
 
   Save();
 
-  // The destination is now in pixel values. No need for further translation.
-  matrix.setTranslate(0, 0);
   canvas_->setMatrix(matrix);
 
   DrawImageIntHelper(image,
@@ -422,10 +424,10 @@ void Canvas::DrawImageIntInPixel(const ImageSkia& image,
                      src_y,
                      src_w,
                      src_h,
-                     SkScalarRoundToInt(destination_rect.x()),
-                     SkScalarRoundToInt(destination_rect.y()),
-                     SkScalarRoundToInt(destination_rect.width()),
-                     SkScalarRoundToInt(destination_rect.height()),
+                     dest_x,
+                     dest_y,
+                     dest_w,
+                     dest_h,
                      filter,
                      paint,
                      image_scale_,
