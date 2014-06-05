@@ -8,12 +8,29 @@
       "exclude_builders": ["tryserver.chromium:win_chromium_x64_rel"]
     },
     "cacheinvalidation_unittests",
+    "cast_unittests",
     "cc_unittests",
     "chromedriver_unittests",
+    {
+      "test": "chrome_elf_unittests",
+      "platforms": ["win"]
+    },
     "components_unittests",
+    {
+      "test": "compositor_unittests",
+      "platforms": ["linux", "win"]
+    },
+    {
+      "test": "courgette_unittests",
+      "platforms": ["win"]
+    },
     "content_browsertests",
     "content_unittests",
     "crypto_unittests",
+    {
+      "test": "dbus_unittests",
+      "platforms": ["linux"]
+    },
     "device_unittests",
     "events_unittests",
     "gcm_unit_tests",
@@ -54,13 +71,19 @@
     "sync_unit_tests",
     "ui_unittests",
     "unit_tests",
+    "url_unittests",
+    "webkit_compositor_bindings_unittests",
+    {
+      "test": "wm_unittests",
+      "platforms": ["linux"]
+    },
     {
       "test": "app_shell_browsertests",
       "chromium_configs": ["chromium_chromeos", "chromium_chromeos_clang"]
     },
     {
       "test": "ash_unittests",
-      "chromium_configs": ["chromium_chromeos"]
+      "chromium_configs": ["chromium_chromeos", "chromium_chromeos_clang"]
     },
     {
       "test": "ash_unittests",
@@ -75,6 +98,10 @@
       "platforms": ["linux", "win"]
     },
     {
+      "test": "views_unittests",
+      "platforms": ["linux", "win"]
+    },
+    {
       "test": "sandbox_linux_unittests",
       "platforms": ["linux"],
       "args": ["--test-launcher-print-test-stdio=always"]
@@ -84,36 +111,7 @@
       "platforms": ["mac"]
     },
     {
-      "test": "views_unittests",
-      "platforms": ["win"]
-    },
-    {
-      "test": "views_unittests",
-      "platforms": ["linux"],
-      "chromium_configs": ["chromium_chromeos", "chromium_chromeos_clang"]
-    },
-    {
       "test": "chromeos_unittests",
-      "platforms": ["linux"],
-      "chromium_configs": ["chromium_chromeos", "chromium_chromeos_clang"]
-    },
-    {
-      "test": "ash_unittests",
-      "platforms": ["linux"],
-      "chromium_configs": ["chromium_chromeos", "chromium_chromeos_clang"]
-    },
-    {
-      "test": "dbus_unittests",
-      "platforms": ["linux"],
-      "chromium_configs": ["chromium_chromeos", "chromium_chromeos_clang"]
-    },
-    {
-      "test": "aura_unittests",
-      "platforms": ["linux"],
-      "chromium_configs": ["chromium_chromeos", "chromium_chromeos_clang"]
-    },
-    {
-      "test": "wm_unittests",
       "platforms": ["linux"],
       "chromium_configs": ["chromium_chromeos", "chromium_chromeos_clang"]
     }
