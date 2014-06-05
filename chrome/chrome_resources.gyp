@@ -118,20 +118,13 @@
             # TODO(dtseng): Remove use_chromevox_next once ChromeVox Next is ready for testing.
             ['use_chromevox_next==1', {
               'dependencies': [
-                'browser/resources/chromeos/chromevox2/chromevox.gyp:chromevox2_resources',
+                'browser/resources/chromeos/chromevox2/chromevox.gyp:chromevox2',
+              ],
+            }, { # else use_chromevox_next == 0
+              'dependencies': [
+                'browser/resources/chromeos/chromevox/chromevox.gyp:chromevox',
               ],
             }],
-          ],
-          'copies' : [
-            {
-              'destination': '<(PRODUCT_DIR)/resources/chromeos/braille_ime',
-              'files': [
-                'browser/resources/chromeos/braille_ime/manifest.json',
-              ],
-            },
-          ],
-          'dependencies': [
-            'browser/resources/chromeos/chromevox/chromevox.gyp:chromevox_resources',
           ],
         }],
       ],

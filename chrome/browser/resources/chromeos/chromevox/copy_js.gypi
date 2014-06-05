@@ -18,20 +18,21 @@
       'action_name': 'copy_js',
       'message': 'Copy JS for <(_target_name)',
       'variables': {
+        'js_bundler_path': 'tools/jsbundler.py',
         'js_files': [
-          '<!@(python tools/jsbundler.py <(js_root_flags) <(_sources))'
+          '<!@(python <(js_bundler_path) <(js_root_flags) <(_sources))'
         ],
       },
       'inputs': [
-        'tools/jsbundler.py',
+        '<(js_bundler_path)',
         '<@(js_files)',
       ],
       'outputs': [
-        '<!@(python tools/jsbundler.py <@(path_rewrite_flags) -d <(dest_dir) <@(js_files))'
+        '<!@(python <(js_bundler_path) <@(path_rewrite_flags) -d <(dest_dir) <@(js_files))'
       ],
       'action': [
         'python',
-        'tools/jsbundler.py',
+        '<(js_bundler_path)',
         '-m', 'copy',
         '-d', '<(dest_dir)',
         '<@(path_rewrite_flags)',

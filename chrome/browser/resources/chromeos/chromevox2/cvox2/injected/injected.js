@@ -10,8 +10,7 @@
  * keyboard events).
  */
 
-/** namespace */
-var cvox2 = function() {};
+goog.provide('cvox2.Injected');
 
 var port = chrome.extension.connect({name: 'chromevox2'});
 document.body.addEventListener('keydown', function(evt) {

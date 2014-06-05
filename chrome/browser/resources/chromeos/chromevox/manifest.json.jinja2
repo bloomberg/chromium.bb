@@ -5,10 +5,14 @@
   "version": "1.0",
   "description": "ChromeVox - Giving Voice to Chrome.",
 {% if is_guest_manifest == '1' %}
-    "incognito": "split",
+  "incognito": "split",
 {% endif %}
   "background": {
+{% if use_chromevox_next == '1' %}
+    "page": "cvox2/background/background.html"
+{% else %}
     "page": "chromevox/background/background.html"
+{% endif %}
   },
   "permissions": [
     "accessibilityPrivate",
@@ -29,7 +33,14 @@
       "exclude_globs": [ "chrome-extension://mndnfokpggljbaajbnioimlmbfngpief/chromevox/background/background.html" ],
       "all_frames": true,
       "js": [
+{% if use_chromevox_next == '1' %}
+        "closure/closure_preinit.js",
+        "closure/base.js",
+        "deps.js",
+        "cvox2/injected/loader.js"
+{% else %}
         "chromeVoxChromePageScript.js"
+{% endif %}
       ]
     }
   ],
@@ -39,5 +50,10 @@
     "chromevox/injected/mathjax.js",
     "chromevox/injected/mathjax_external_util.js"
   ],
+{% if use_chromevox_next == '1' %}
+  "automation": {
+    "desktop": true
+  },
+{% endif %}
   "default_locale": "en"
 }

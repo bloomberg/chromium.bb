@@ -7,11 +7,8 @@
  * background page.
  */
 
-/** ChromeVox2 namespace */
-var cvox2 = function() {};
-
-/** Namespace for global objects in the background page. */
-cvox2.global = function() {};
+goog.provide('cvox2.Background');
+goog.provide('cvox2.global');
 
 /** Classic Chrome accessibility API. */
 cvox2.global.accessibility =

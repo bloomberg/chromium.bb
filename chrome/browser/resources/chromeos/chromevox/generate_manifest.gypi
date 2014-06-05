@@ -11,18 +11,20 @@
 #
 # The following variable is optional:
 #
-# is_guest_manifest: 1 or 0; generates a manifest usable while in guest mode.
+# guest_manifest: 1 or 0; generates a manifest usable while in guest
+# mode.
 
 {
+  'variables': {
+    'generate_manifest_script_path': 'tools/generate_manifest.py',
+    'is_guest_manifest%': 0,
+  },
   'actions': [
     {
       'action_name': 'generate_manifest',
       'message': 'Generate manifest for <(_target_name)',
-      'variables': {
-        'is_guest_manifest%': 0,
-      },
       'inputs': [
-        'tools/generate_manifest.py',
+        '<(generate_manifest_script_path)',
         '<(template_manifest_path)',
       ],
       'outputs': [
@@ -30,10 +32,11 @@
       ],
       'action': [
         'python',
-        'tools/generate_manifest.py',
+        '<(generate_manifest_script_path)',
+        '--is_guest_manifest=<(is_guest_manifest)',
+        '--use_chromevox_next=<(use_chromevox_next)',
         '-o', '<(output_manifest_path)',
-        '-g', '<(is_guest_manifest)',
-        '<(template_manifest_path)'
+        '<(template_manifest_path)',
       ],
     },
   ],

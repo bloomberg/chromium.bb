@@ -120,9 +120,10 @@ class PathRewriter():
       parts = spec.split(':')
       if len(parts) != 2:
         Die('Invalid prefix rewrite spec %s' % spec)
-      if not parts[0].endswith('/'):
+      if not parts[0].endswith('/') and parts[0] != '':
         parts[0] += '/'
       self._prefix_map.append(parts)
+    self._prefix_map.sort(reverse=True)
 
   def RewritePath(self, in_path):
     '''Rewrites an input path according to the list of rules.

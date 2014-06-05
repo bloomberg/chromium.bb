@@ -25,7 +25,8 @@ from json_comment_eater import Nom
 
 def processJinjaTemplate(input_file, output_file, context):
   (template_path, template_name) = os.path.split(input_file)
-  env = jinja2.Environment(loader=jinja2.FileSystemLoader(template_path))
+  env = jinja2.Environment(loader=jinja2.FileSystemLoader(template_path),
+                           trim_blocks=True)
   template = env.get_template(template_name)
   rendered = template.render(context)
   rendered_without_comments = Nom(rendered)
@@ -44,6 +45,9 @@ def main():
   parser.add_option(
       '-g', '--is_guest_manifest', action='store', metavar='GUEST_MANIFEST',
       help='Generate a guest mode capable manifest')
+  parser.add_option(
+      '--use_chromevox_next', action='store', metavar='CHROMEVOX2',
+      help='Generate a ChromeVox next manifest')
 
   options, args = parser.parse_args()
   if len(args) != 1:
