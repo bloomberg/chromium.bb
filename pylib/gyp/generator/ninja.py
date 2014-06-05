@@ -1582,6 +1582,10 @@ def CommandWithWrapper(cmd, wrappers, prog):
 
 def GetDefaultConcurrentLinks():
   """Returns a best-guess for a number of concurrent links."""
+  pool_size = int(os.getenv('GYP_LINK_CONCURRENCY', 0))
+  if pool_size:
+    return pool_size
+
   if sys.platform in ('win32', 'cygwin'):
     import ctypes
 
