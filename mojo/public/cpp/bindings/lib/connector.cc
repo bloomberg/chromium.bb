@@ -93,6 +93,7 @@ void Connector::CallOnHandleReady(void* closure, MojoResult result) {
 }
 
 void Connector::OnHandleReady(MojoResult result) {
+  assert(async_wait_id_ != 0);
   async_wait_id_ = 0;
 
   if (result == MOJO_RESULT_OK) {

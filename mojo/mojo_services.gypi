@@ -183,6 +183,48 @@
       ],
     },
     {
+      'target_name': 'mojo_network_bindings',
+      'type': 'static_library',
+      'sources': [
+        'services/public/interfaces/network/network_error.mojom',
+        'services/public/interfaces/network/network_service.mojom',
+        'services/public/interfaces/network/url_loader.mojom',
+      ],
+      'includes': [ 'public/tools/bindings/mojom_bindings_generator.gypi' ],
+      'export_dependent_settings': [
+        'mojo_cpp_bindings',
+      ],
+      'dependencies': [
+        'mojo_cpp_bindings',
+      ],
+    },
+    {
+      'target_name': 'mojo_network_service',
+      'type': 'shared_library',
+      'dependencies': [
+        '../base/base.gyp:base',
+        '../net/net.gyp:net',
+        '../url/url.gyp:url_lib',
+        'mojo_application',
+        'mojo_common_lib',
+        'mojo_environment_chromium',
+        'mojo_network_bindings',
+        'mojo_system_impl',
+      ],
+      'export_dependent_settings': [
+        'mojo_network_bindings',
+      ],
+      'sources': [
+        'services/network/main.cc',
+        'services/network/network_context.cc',
+        'services/network/network_context.h',
+        'services/network/network_service_impl.cc',
+        'services/network/network_service_impl.h',
+        'services/network/url_loader_impl.cc',
+        'services/network/url_loader_impl.h',
+      ],
+    },
+    {
       'target_name': 'mojo_view_manager_common',
       'type': 'static_library',
       'sources': [

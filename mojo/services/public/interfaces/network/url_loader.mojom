@@ -1,0 +1,67 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+import "network_error.mojom"
+
+module mojo {
+
+struct URLRequest {
+  string url;
+  string method;
+  string[] headers;
+  handle<data_pipe_consumer> body;
+  int64 body_length;  // Set to -1 if length is unknown.
+  bool follow_redirects;
+};
+
+struct URLResponse {
+  string url;
+  string[] redirects;  // The sequence of redirected URLs.
+  uint32 status_code;
+  string status_line;
+  string[] headers;
+};
+
+[Client=URLLoaderClient]
+interface URLLoader {
+  // Start loading the given |request|. When available, the response body will
+  // be copied to |response_body_stream|.
+  //
+  // The client's |OnReceivedResponse| method will run when response meta data
+  // becomes available, or if a redirect is encountered and |follow_redirects|
+  // is false, the client's |OnRecievedRedirect| method will called.
+  //
+  // NOTE: You may observe data being pushed to |response_body_stream| before
+  // you receive |OnReceivedResponse|.
+  Start(URLRequest request, handle<data_pipe_producer> response_body_stream);
+
+  // If the request passed to |Start| was configured with |follow_redirects|
+  // set to false, then upon receiving a redirect, |OnReceivedRedirect| will be
+  // called. To follow the indicated redirect, call the |FollowRedirect|
+  // method.
+  FollowRedirect();
+};
+
+interface URLLoaderClient {
+  // This method is called when a redirect is encountered, provided the
+  // request's |follow_redirects| attribute was set to false.
+  OnReceivedRedirect(URLResponse response, string new_url, string new_method);
+
+  // This method is called when response meta data becomes available.
+  OnReceivedResponse(URLResponse response);
+
+  // This method is called when a network level error is encountered. This can
+  // happen before or after OnReceivedResponse, but cannot happen after
+  // OnReceivedEndOfResponseBody.
+  OnReceivedError(NetworkError error);
+
+  // This method is called when the response body has been successfully
+  // downloaded and copied in its entirety to |response_body_stream|.
+  //
+  // NOTE: Because |response_body_stream| is limited in size, this event may be
+  // delayed until |response_body_stream| is consumed.
+  OnReceivedEndOfResponseBody();
+};
+
+}

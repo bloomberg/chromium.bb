@@ -67,6 +67,28 @@
       'includes': [ 'build/package_app.gypi' ],
     },
     {
+      'target_name': 'mojo_wget',
+      'type': 'shared_library',
+      'dependencies': [
+        'mojo_cpp_bindings',
+        'mojo_environment_standalone',
+        'mojo_main_standalone',
+        'mojo_network_bindings',
+        'mojo_system',
+        'mojo_utility',
+      ],
+      'sources': [
+        'examples/wget/wget.cc',
+      ],
+    },
+    {
+      'target_name': 'package_mojo_wget',
+      'variables': {
+        'app_name': 'mojo_wget',
+      },
+      'includes': [ 'build/package_app.gypi' ],
+    },
+    {
       'target_name': 'mojo_pepper_container_app',
       'type': 'shared_library',
       'dependencies': [

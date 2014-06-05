@@ -39,6 +39,7 @@
         'mojo_js_unittests',
         'mojo_message_generator',
         'mojo_native_viewport_service',
+        'mojo_network_service',
         'mojo_pepper_container_app',
         'mojo_public_test_utils',
         'mojo_public_bindings_unittests',
@@ -58,6 +59,7 @@
         'mojo_utility',
         'mojo_view_manager_lib',
         'mojo_view_manager_lib_unittests',
+        'mojo_wget',
       ],
       'conditions': [
         ['use_aura==1', {
