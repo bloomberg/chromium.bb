@@ -1,0 +1,36 @@
+<html>
+<body>
+<script src="/js-test-resources/testharness.js"></script>
+<script src="/js-test-resources/testharnessreport.js"></script>
+<script>
+var t = async_test('Cookies set by document.cookie are sent in a WebSocket handshake');
+t.step(function() {
+    var cookie_id = 'test_' + Date.now() + '.' + Math.random();
+
+    document.cookie = cookie_id + '=1; Path=/echo-cookie';
+
+    new Promise(t.step_func(function(resolve, reject) {
+        var echo_ws = new WebSocket('ws://127.0.0.1:8880/echo-cookie');
+        echo_ws.onmessage = t.step_func(function (e) {
+            resolve(e.data);
+        });
+        echo_ws.onerror = t.step_func(function () {
+            reject('Unexpected error event');
+        });
+        echo_ws.onclose = t.step_func(function (e) {
+            reject('Unexpected close event: ' + e);
+        });
+    })).then(t.step_func(function(actual) {
+        var expected = cookie_id + '=1';
+        assert_equals(actual, expected);
+
+        document.cookie = cookie_id + '=1; Path=/echo-cookie; Max-Age=0';
+
+        t.done();
+    }), t.step_func(function(e) {
+        assert_unreached(e);
+    }));
+});
+</script>
+</body>
+</html>
