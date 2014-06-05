@@ -212,7 +212,7 @@
                         ],
                     },
                     'inputs': [
-                        'scripts/make-file-arrays.py',
+                        '../build/scripts/make-file-arrays.py',
                         '<@(resources)',
                     ],
                     'outputs': [
@@ -221,7 +221,7 @@
                         ],
                     'action': [
                         'python',
-                        'scripts/make-file-arrays.py',
+                        '../build/scripts/make-file-arrays.py',
                         '--out-h=<(SHARED_INTERMEDIATE_DIR)/blink/PickerCommon.h',
                         '--out-cpp=<(SHARED_INTERMEDIATE_DIR)/blink/PickerCommon.cpp',
                         '<@(resources)',
@@ -240,7 +240,7 @@
                         ],
                     },
                     'inputs': [
-                        'scripts/make-file-arrays.py',
+                        '../build/scripts/make-file-arrays.py',
                         '<@(resources)'
                     ],
                     'outputs': [
@@ -249,7 +249,7 @@
                     ],
                     'action': [
                         'python',
-                        'scripts/make-file-arrays.py',
+                        '../build/scripts/make-file-arrays.py',
                         '--out-h=<(SHARED_INTERMEDIATE_DIR)/blink/CalendarPicker.h',
                         '--out-cpp=<(SHARED_INTERMEDIATE_DIR)/blink/CalendarPicker.cpp',
                         '<@(resources)',
@@ -265,7 +265,7 @@
                         ],
                     },
                     'inputs': [
-                        'scripts/make-file-arrays.py',
+                        '../build/scripts/make-file-arrays.py',
                         '<@(resources)',
                     ],
                     'outputs': [
@@ -274,7 +274,7 @@
                     ],
                     'action': [
                         'python',
-                        'scripts/make-file-arrays.py',
+                        '../build/scripts/make-file-arrays.py',
                         '--out-h=<(SHARED_INTERMEDIATE_DIR)/blink/ColorSuggestionPicker.h',
                         '--out-cpp=<(SHARED_INTERMEDIATE_DIR)/blink/ColorSuggestionPicker.cpp',
                         '<@(resources)',

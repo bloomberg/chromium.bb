@@ -85,7 +85,7 @@ def process_file(file_name):
     return variable_name, content
 
 
-def write_header_file(header_file_name, flag, names_and_contents, namespace='blink'):
+def write_header_file(header_file_name, flag, names_and_contents, namespace):
     with open(header_file_name, 'w') as header_file:
         if flag:
             header_file.write('#if ' + flag + '\n')
@@ -98,7 +98,7 @@ def write_header_file(header_file_name, flag, names_and_contents, namespace='bli
             header_file.write('#endif\n')
 
 
-def write_cpp_file(cpp_file_name, flag, names_and_contents, header_file_name, namespace='blink'):
+def write_cpp_file(cpp_file_name, flag, names_and_contents, header_file_name, namespace):
     with open(cpp_file_name, 'w') as cpp_file:
         cpp_file.write('#include "config.h"\n')
         cpp_file.write('#include "%s"\n' % os.path.basename(header_file_name))
@@ -134,6 +134,7 @@ def main():
     parser.add_option('--out-h', dest='out_header')
     parser.add_option('--out-cpp', dest='out_cpp')
     parser.add_option('--condition', dest='flag')
+    parser.add_option('--namespace', dest='namespace', default='blink')
     (options, args) = parser.parse_args()
     if len(args) < 1:
         parser.error('Need one or more input files')
@@ -149,8 +150,8 @@ def main():
     names_and_contents = [process_file(file_name) for file_name in args]
 
     if options.out_header:
-        write_header_file(options.out_header, options.flag, names_and_contents)
-    write_cpp_file(options.out_cpp, options.flag, names_and_contents, options.out_header)
+        write_header_file(options.out_header, options.flag, names_and_contents, options.namespace)
+    write_cpp_file(options.out_cpp, options.flag, names_and_contents, options.out_header, options.namespace)
 
 
 if __name__ == '__main__':
