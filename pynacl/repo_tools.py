@@ -88,7 +88,7 @@ def ValidateGitRepo(url, directory, clobber_mismatch=False):
 
 
 def SyncGitRepo(url, destination, revision, reclone=False, clean=False,
-                pathspec=None):
+                pathspec=None, git_cache=None):
   """Sync an individual git repo.
 
   Args:
@@ -102,22 +102,49 @@ def SyncGitRepo(url, destination, revision, reclone=False, clean=False,
   pathspec: If not None, add the path to the git checkout command, which
             causes it to just update the working tree without switching
             branches.
+  git_cache: If set, assumes URL has been populated within the git cache
+             directory specified and sets the fetch URL to be from the
+             git_cache.
   """
-  git_dir = os.path.join(destination, '.git')
-  if os.path.exists(git_dir):
-    if not IsURLInRemoteRepoList(url, destination, include_fetch=True,
-                                 include_push=False):
-      logging.error('Git Repo (%s) does not track URL: %s', destination, url)
-      raise InvalidRepoException(url, 'Could not sync local git repo: %s',
-                                 destination)
-
   if reclone:
     logging.debug('Clobbering source directory %s' % destination)
     file_tools.RemoveDirectoryIfPresent(destination)
+
+  if git_cache:
+    fetch_url = GetGitCacheURL(git_cache, url)
+  else:
+    fetch_url = url
+
+  # If the destination is a git repository, validate the tracked origin.
+  git_dir = os.path.join(destination, '.git')
+  if os.path.exists(git_dir):
+    if not IsURLInRemoteRepoList(fetch_url, destination, include_fetch=True,
+                                 include_push=False):
+      # If the original URL is being tracked instead of the fetch URL, we
+      # can safely redirect it to the fetch URL instead.
+      if (fetch_url != url and IsURLInRemoteRepoList(url, destination,
+                                                     include_fetch=True,
+                                                     include_push=False)):
+        GitSetRemoteRepo(fetch_url, destination, push_url=url)
+      else:
+        logging.error('Git Repo (%s) does not track URL: %s',
+                      destination, fetch_url)
+        raise InvalidRepoException(fetch_url, 'Could not sync git repo: %s',
+                                   destination)
+
   git = GitCmd()
-  if not os.path.exists(destination) or len(os.listdir(destination)) == 0:
+  if not os.path.exists(git_dir):
     logging.info('Cloning %s...' % url)
-    log_tools.CheckCall(git + ['clone', '-n', url, destination])
+    clone_args = ['clone', '-n']
+    if git_cache:
+      clone_args.append('-s')
+
+    file_tools.MakeDirectoryIfAbsent(destination)
+    log_tools.CheckCall(git + clone_args + [fetch_url, '.'], cwd=destination)
+
+    if fetch_url != url:
+      GitSetRemoteRepo(fetch_url, destination, push_url=url)
+
   if revision is not None:
     logging.info('Checking out pinned revision...')
     log_tools.CheckCall(git + ['fetch', '--all'], cwd=destination)
@@ -138,6 +165,34 @@ def CleanGitWorkingDir(directory, path):
      path: path to clean, relative to the repo directory
   """
   log_tools.CheckCall(GitCmd() + ['clean', '-f', path], cwd=directory)
+
+
+def PopulateGitCache(cache_dir, url_list):
+  """Fetches a git repo that combines a list of git repos.
+
+  This is an interface to the "git cache" command found within depot_tools.
+  You can populate a cache directory then obtain the local cache url using
+  GetGitCacheURL(). It is best to sync with the shared option so that the
+  cloned repository shares the same git objects.
+
+  Args:
+    cache_dir: Local directory where git cache will be populated.
+    url_list: List of URLs which cache_dir should be populated with.
+  """
+  git = GitCmd()
+  for url in url_list:
+    log_tools.CheckCall(git + ['cache', 'populate', '-c', cache_dir, url])
+
+
+def GetGitCacheURL(cache_dir, url):
+  """Converts a regular git URL to a git cache URL within a cache directory.
+
+  Args:
+    url: original Git URL that is already populated within the cache directory.
+    cache_dir: Git cache directory that has already populated the URL.
+  """
+  return log_tools.CheckOutput(GitCmd() + ['cache', 'exists',
+                                           '-c', cache_dir, url]).strip()
 
 
 def GitRevInfo(directory):

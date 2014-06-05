@@ -30,6 +30,7 @@ import once
 import command_options
 
 DEFAULT_CACHE_DIR = os.path.join(SCRIPT_DIR, 'cache')
+DEFAULT_GIT_CACHE_DIR = os.path.join(SCRIPT_DIR, 'git_cache')
 DEFAULT_SRC_DIR = os.path.join(SCRIPT_DIR, 'src')
 DEFAULT_OUT_DIR = os.path.join(SCRIPT_DIR, 'out')
 
@@ -362,6 +363,10 @@ class PackageBuilder(object):
         default=DEFAULT_SRC_DIR,
         help='Select directory containing source checkouts.')
     parser.add_option(
+        '--git-cache', dest='git_cache',
+        default=DEFAULT_GIT_CACHE_DIR,
+        help='Select directory containing the git cache for syncing.')
+    parser.add_option(
         '-o', '--output', dest='output',
         default=DEFAULT_OUT_DIR,
         help='Select directory containing build output.')
@@ -409,6 +414,10 @@ class PackageBuilder(object):
         '--sync-only', dest='sync_sources_only',
         default=False, action='store_true',
         help='Run source target commands only')
+    parser.add_option(
+        '--disable-git-cache', dest='disable_git_cache',
+        default=False, action='store_true',
+        help='Disable git cache when syncing sources')
     parser.add_option(
         '--emit-signatures', dest='emit_signatures',
         help='Write human readable build signature for each step to FILE.',
@@ -468,6 +477,12 @@ class PackageBuilder(object):
 
   def ExtraSubstitutionPaths(self):
     """Returns a dictionary of extra substitution paths allowed for commands."""
+    if self._options.disable_git_cache:
+      git_cache_dir = ''
+    else:
+      git_cache_dir = self._options.git_cache
+
     return {
         'top_srcdir': NACL_DIR,
+        'git_cache_dir': git_cache_dir,
         }

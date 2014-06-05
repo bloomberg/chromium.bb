@@ -216,12 +216,14 @@ def GetGitSyncCmdsCallback(revisions):
   def GetGitSyncCmds(component):
     git_url = GIT_BASE_URL + GIT_REPOS[component]
     return (command.SyncGitRepoCmds(git_url, '%(output)s', revisions[component],
-                                    known_mirrors=KNOWN_MIRRORS) +
+                                    known_mirrors=KNOWN_MIRRORS,
+                                    git_cache='%(git_cache_dir)s') +
             [command.Runnable(None,
                               pnacl_commands.CmdCheckoutGitBundleForTrybot,
                               component, '%(output)s')])
 
   return GetGitSyncCmds
+
 
 def HostToolsSources(GetGitSyncCmds):
   sources = {
@@ -469,7 +471,8 @@ def GetGitSyncPNaClReposCmdsCallback(revisions):
     is_newlib = repo == 'nacl-newlib'
     return (command.SyncGitRepoCmds(git_url, '%(output)s', revisions[repo],
                                     clean=is_newlib,
-                                    known_mirrors=KNOWN_MIRRORS) +
+                                    known_mirrors=KNOWN_MIRRORS,
+                                    git_cache='%(git_cache_dir)s') +
             [command.Runnable(None,
                               pnacl_commands.CmdCheckoutGitBundleForTrybot,
                               repo, '%(output)s')])
@@ -614,6 +617,7 @@ if __name__ == '__main__':
   if args.legacy_repo_sync:
     packages = GetSyncPNaClReposSource(rev,
                                        GetGitSyncPNaClReposCmdsCallback(rev))
+
     # Make sure sync is inside of the args to toolchain_main.
     if not set(['-y', '--sync', '--sync-only']).intersection(leftover_args):
       leftover_args.append('--sync-only')

@@ -110,7 +110,8 @@ def CollectSources():
         'type': 'source',
         'commands': command.SyncGitRepoCmds(GitUrl(package), '%(output)s',
                                             info['rev'],
-                                            known_mirrors=KNOWN_MIRRORS),
+                                            known_mirrors=KNOWN_MIRRORS,
+                                            git_cache='%(git_cache_dir)s'),
         }
     patch_packages.append(package)
     patch_info = {'name': package}

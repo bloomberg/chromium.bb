@@ -302,7 +302,7 @@ def WriteData(data, dst, run_cond=None):
 
 def SyncGitRepoCmds(url, destination, revision, clobber_invalid_repo=False,
                     reclone=False, clean=False, pathspec=None, known_mirrors=[],
-                    run_cond=None):
+                    git_cache=None, run_cond=None):
   """Returns a list of commands to sync and validate a git repo.
 
   Args:
@@ -318,6 +318,9 @@ def SyncGitRepoCmds(url, destination, revision, clobber_invalid_repo=False,
               branches.
     known_mirrors: List of tuples specifying known mirrors for a subset of the
                    git URL. IE: [('http://mirror.com/mirror', 'http://git.com')]
+    git_cache: If not None, will use git_cache directory as a cache for the git
+               repository and share the objects with any other destination with
+               the same URL.
     run_cond: Run condition for when to sync the git repo.
 
   Returns:
@@ -344,15 +347,32 @@ def SyncGitRepoCmds(url, destination, revision, clobber_invalid_repo=False,
                      tracked_url, updated_url)
         pynacl.repo_tools.GitSetRemoteRepo(updated_url, abs_dir)
 
-  def validate(subst, url, directory):
-    pynacl.repo_tools.ValidateGitRepo(url, subst.SubstituteAbsPaths(directory),
+  def populate_cache(subst, git_cache, url):
+    if git_cache:
+      abs_git_cache = subst.SubstituteAbsPaths(git_cache)
+      if abs_git_cache:
+        pynacl.repo_tools.PopulateGitCache(abs_git_cache, [url])
+
+  def validate(subst, url, directory, git_cache):
+    expected_url = url
+    if git_cache:
+      abs_git_cache = subst.SubstituteAbsPaths(git_cache)
+      if abs_git_cache:
+        expected_url = pynacl.repo_tools.GetGitCacheURL(abs_git_cache, url)
+
+    pynacl.repo_tools.ValidateGitRepo(expected_url,
+                                      subst.SubstituteAbsPaths(directory),
                                       clobber_mismatch=True)
 
-  def sync(subst, url, dest, revision, reclone, clean, pathspec):
+  def sync(subst, url, dest, revision, reclone, clean, pathspec, git_cache):
     abs_dest = subst.SubstituteAbsPaths(dest)
+    if git_cache:
+      git_cache = subst.SubstituteAbsPaths(git_cache)
+
     try:
-      pynacl.repo_tools.SyncGitRepo(url, abs_dest, revision, reclone, clean,
-                                    pathspec)
+      pynacl.repo_tools.SyncGitRepo(url, abs_dest, revision,
+                                    reclone=reclone, clean=clean,
+                                    pathspec=pathspec, git_cache=git_cache)
     except pynacl.repo_tools.InvalidRepoException, e:
       remote_repos = dict(pynacl.repo_tools.GitRemoteRepoList(abs_dest))
       tracked_url = remote_repos.get('origin', 'None')
@@ -376,11 +396,17 @@ def SyncGitRepoCmds(url, destination, revision, clobber_invalid_repo=False,
       return True
     return cmd_opts.IsBot()
 
-  return [Runnable(run_cond, update_valid_mirrors, url, destination,
-                   known_mirrors),
-          Runnable(ClobberInvalidRepoCondition, validate, url, destination),
-          Runnable(run_cond, sync, url, destination, revision, reclone,
-                   clean, pathspec)]
+  commands = []
+  if git_cache:
+    commands.append(Runnable(run_cond, populate_cache, git_cache, url))
+
+  commands.extend([Runnable(run_cond, update_valid_mirrors, url, destination,
+                            known_mirrors),
+                   Runnable(ClobberInvalidRepoCondition, validate, url,
+                            destination, git_cache),
+                   Runnable(run_cond, sync, url, destination, revision, reclone,
+                            clean, pathspec, git_cache)])
+  return commands
 
 
 def CleanGitWorkingDir(directory, path, run_cond=None):
