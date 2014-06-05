@@ -186,6 +186,7 @@ class WebstoreStandaloneInstaller
       WebstoreInstaller::FailureReason reason) OVERRIDE;
 
   void ShowInstallUI();
+  void OnWebStoreDataFetcherDone();
 
   // Input configuration.
   std::string id_;

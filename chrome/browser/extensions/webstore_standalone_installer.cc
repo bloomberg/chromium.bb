@@ -98,11 +98,14 @@ WebstoreStandaloneInstaller::CreateApproval() const {
 }
 
 void WebstoreStandaloneInstaller::OnWebstoreRequestFailure() {
+  OnWebStoreDataFetcherDone();
   CompleteInstall(kWebstoreRequestError);
 }
 
 void WebstoreStandaloneInstaller::OnWebstoreResponseParseSuccess(
     scoped_ptr<base::DictionaryValue> webstore_data) {
+  OnWebStoreDataFetcherDone();
+
   if (!CheckRequestorAlive()) {
     CompleteInstall(std::string());
     return;
@@ -183,6 +186,7 @@ void WebstoreStandaloneInstaller::OnWebstoreResponseParseSuccess(
 
 void WebstoreStandaloneInstaller::OnWebstoreResponseParseFailure(
     const std::string& error) {
+  OnWebStoreDataFetcherDone();
   CompleteInstall(error);
 }
 
@@ -212,9 +216,6 @@ void WebstoreStandaloneInstaller::OnWebstoreParseSuccess(
     ShowInstallUI();
     // Control flow finishes up in InstallUIProceed or InstallUIAbort.
   } else {
-    // Balanced in InstallUIAbort or indirectly in InstallUIProceed via
-    // OnExtensionInstallSuccess or OnExtensionInstallFailure.
-    AddRef();
     InstallUIProceed();
   }
 }
@@ -272,14 +273,12 @@ void WebstoreStandaloneInstaller::InstallUIProceed() {
 
 void WebstoreStandaloneInstaller::InstallUIAbort(bool user_initiated) {
   CompleteInstall(kUserCancelledError);
-  Release();  // Balanced in ShowInstallUI.
 }
 
 void WebstoreStandaloneInstaller::OnExtensionInstallSuccess(
     const std::string& id) {
   CHECK_EQ(id_, id);
   CompleteInstall(std::string());
-  Release();  // Balanced in ShowInstallUI.
 }
 
 void WebstoreStandaloneInstaller::OnExtensionInstallFailure(
@@ -288,7 +287,6 @@ void WebstoreStandaloneInstaller::OnExtensionInstallFailure(
     WebstoreInstaller::FailureReason cancelled) {
   CHECK_EQ(id_, id);
   CompleteInstall(error);
-  Release();  // Balanced in ShowInstallUI.
 }
 
 void WebstoreStandaloneInstaller::AbortInstall() {
@@ -310,8 +308,7 @@ void WebstoreStandaloneInstaller::CompleteInstall(const std::string& error) {
   Release();  // Matches the AddRef in BeginInstall.
 }
 
-void
-WebstoreStandaloneInstaller::ShowInstallUI() {
+void WebstoreStandaloneInstaller::ShowInstallUI() {
   std::string error;
   localized_extension_for_display_ =
       ExtensionInstallPrompt::GetLocalizedExtensionForDisplay(
@@ -326,14 +323,18 @@ WebstoreStandaloneInstaller::ShowInstallUI() {
     return;
   }
 
-  // Keep this alive as long as the install prompt lives.
-  // Balanced in InstallUIAbort or indirectly in InstallUIProceed via
-  // OnExtensionInstallSuccess or OnExtensionInstallFailure.
-  AddRef();
-
   install_ui_ = CreateInstallUI();
   install_ui_->ConfirmStandaloneInstall(
       this, localized_extension_for_display_.get(), &icon_, *install_prompt_);
+}
+
+void WebstoreStandaloneInstaller::OnWebStoreDataFetcherDone() {
+  // An instance of this class is passed in as a delegate for the
+  // WebstoreInstallHelper, ExtensionInstallPrompt and WebstoreInstaller, and
+  // therefore needs to remain alive until they are done. Clear the webstore
+  // data fetcher to avoid calling Release in AbortInstall while any of these
+  // operations are in progress.
+  webstore_data_fetcher_.reset();
 }
 
 }  // namespace extensions
