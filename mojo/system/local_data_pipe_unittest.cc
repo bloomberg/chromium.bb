@@ -26,7 +26,7 @@ TEST(LocalDataPipeTest, Creation) {
     // Get default options.
     MojoCreateDataPipeOptions default_options = { 0 };
     EXPECT_EQ(MOJO_RESULT_OK,
-              DataPipe::ValidateOptions(NULL, &default_options));
+              DataPipe::ValidateCreateOptions(NULL, &default_options));
     scoped_refptr<LocalDataPipe> dp(new LocalDataPipe(default_options));
     dp->ProducerClose();
     dp->ConsumerClose();
@@ -42,7 +42,7 @@ TEST(LocalDataPipeTest, Creation) {
     };
     MojoCreateDataPipeOptions validated_options = { 0 };
     EXPECT_EQ(MOJO_RESULT_OK,
-              DataPipe::ValidateOptions(&options, &validated_options));
+              DataPipe::ValidateCreateOptions(&options, &validated_options));
     scoped_refptr<LocalDataPipe> dp(new LocalDataPipe(validated_options));
     dp->ProducerClose();
     dp->ConsumerClose();
@@ -56,7 +56,7 @@ TEST(LocalDataPipeTest, Creation) {
     };
     MojoCreateDataPipeOptions validated_options = { 0 };
     EXPECT_EQ(MOJO_RESULT_OK,
-              DataPipe::ValidateOptions(&options, &validated_options));
+              DataPipe::ValidateCreateOptions(&options, &validated_options));
     scoped_refptr<LocalDataPipe> dp(new LocalDataPipe(validated_options));
     dp->ProducerClose();
     dp->ConsumerClose();
@@ -70,7 +70,7 @@ TEST(LocalDataPipeTest, Creation) {
     };
     MojoCreateDataPipeOptions validated_options = { 0 };
     EXPECT_EQ(MOJO_RESULT_OK,
-              DataPipe::ValidateOptions(&options, &validated_options));
+              DataPipe::ValidateCreateOptions(&options, &validated_options));
     scoped_refptr<LocalDataPipe> dp(new LocalDataPipe(validated_options));
     dp->ProducerClose();
     dp->ConsumerClose();
@@ -85,7 +85,7 @@ TEST(LocalDataPipeTest, Creation) {
     };
     MojoCreateDataPipeOptions validated_options = { 0 };
     EXPECT_EQ(MOJO_RESULT_OK,
-              DataPipe::ValidateOptions(&options, &validated_options));
+              DataPipe::ValidateCreateOptions(&options, &validated_options));
     scoped_refptr<LocalDataPipe> dp(new LocalDataPipe(validated_options));
     dp->ProducerClose();
     dp->ConsumerClose();
@@ -101,7 +101,7 @@ TEST(LocalDataPipeTest, SimpleReadWrite) {
   };
   MojoCreateDataPipeOptions validated_options = { 0 };
   EXPECT_EQ(MOJO_RESULT_OK,
-            DataPipe::ValidateOptions(&options, &validated_options));
+            DataPipe::ValidateCreateOptions(&options, &validated_options));
 
   scoped_refptr<LocalDataPipe> dp(new LocalDataPipe(validated_options));
 
@@ -197,7 +197,7 @@ TEST(LocalDataPipeTest, BasicProducerWaiting) {
   };
   MojoCreateDataPipeOptions validated_options = { 0 };
   EXPECT_EQ(MOJO_RESULT_OK,
-            DataPipe::ValidateOptions(&options, &validated_options));
+            DataPipe::ValidateCreateOptions(&options, &validated_options));
 
   scoped_refptr<LocalDataPipe> dp(new LocalDataPipe(validated_options));
   Waiter waiter;
@@ -311,7 +311,7 @@ TEST(LocalDataPipeTest, BasicConsumerWaiting) {
   };
   MojoCreateDataPipeOptions validated_options = { 0 };
   EXPECT_EQ(MOJO_RESULT_OK,
-            DataPipe::ValidateOptions(&options, &validated_options));
+            DataPipe::ValidateCreateOptions(&options, &validated_options));
 
   {
     scoped_refptr<LocalDataPipe> dp(new LocalDataPipe(validated_options));
@@ -486,7 +486,7 @@ TEST(LocalDataPipeTest, BasicTwoPhaseWaiting) {
   };
   MojoCreateDataPipeOptions validated_options = { 0 };
   EXPECT_EQ(MOJO_RESULT_OK,
-            DataPipe::ValidateOptions(&options, &validated_options));
+            DataPipe::ValidateCreateOptions(&options, &validated_options));
 
   scoped_refptr<LocalDataPipe> dp(new LocalDataPipe(validated_options));
   Waiter waiter;
@@ -591,7 +591,7 @@ TEST(LocalDataPipeTest, BasicMayDiscardWaiting) {
   };
   MojoCreateDataPipeOptions validated_options = { 0 };
   EXPECT_EQ(MOJO_RESULT_OK,
-            DataPipe::ValidateOptions(&options, &validated_options));
+            DataPipe::ValidateCreateOptions(&options, &validated_options));
 
   scoped_refptr<LocalDataPipe> dp(new LocalDataPipe(validated_options));
   Waiter waiter;
@@ -679,7 +679,7 @@ TEST(LocalDataPipeTest, MayDiscard) {
   };
   MojoCreateDataPipeOptions validated_options = { 0 };
   EXPECT_EQ(MOJO_RESULT_OK,
-            DataPipe::ValidateOptions(&options, &validated_options));
+            DataPipe::ValidateCreateOptions(&options, &validated_options));
 
   scoped_refptr<LocalDataPipe> dp(new LocalDataPipe(validated_options));
 
@@ -851,7 +851,7 @@ TEST(LocalDataPipeTest, AllOrNone) {
   };
   MojoCreateDataPipeOptions validated_options = { 0 };
   EXPECT_EQ(MOJO_RESULT_OK,
-            DataPipe::ValidateOptions(&options, &validated_options));
+            DataPipe::ValidateCreateOptions(&options, &validated_options));
 
   scoped_refptr<LocalDataPipe> dp(new LocalDataPipe(validated_options));
 
@@ -994,7 +994,7 @@ TEST(LocalDataPipeTest, AllOrNoneMayDiscard) {
   };
   MojoCreateDataPipeOptions validated_options = { 0 };
   EXPECT_EQ(MOJO_RESULT_OK,
-            DataPipe::ValidateOptions(&options, &validated_options));
+            DataPipe::ValidateCreateOptions(&options, &validated_options));
 
   scoped_refptr<LocalDataPipe> dp(new LocalDataPipe(validated_options));
 
@@ -1080,7 +1080,7 @@ TEST(LocalDataPipeTest, TwoPhaseAllOrNone) {
   };
   MojoCreateDataPipeOptions validated_options = { 0 };
   EXPECT_EQ(MOJO_RESULT_OK,
-            DataPipe::ValidateOptions(&options, &validated_options));
+            DataPipe::ValidateCreateOptions(&options, &validated_options));
 
   scoped_refptr<LocalDataPipe> dp(new LocalDataPipe(validated_options));
 
@@ -1207,9 +1207,9 @@ TEST(LocalDataPipeTest, WrapAround) {
   };
   MojoCreateDataPipeOptions validated_options = { 0 };
   EXPECT_EQ(MOJO_RESULT_OK,
-            DataPipe::ValidateOptions(&options, &validated_options));
-  // This test won't be valid if |ValidateOptions()| decides to give the pipe
-  // more space.
+            DataPipe::ValidateCreateOptions(&options, &validated_options));
+  // This test won't be valid if |ValidateCreateOptions()| decides to give the
+  // pipe more space.
   ASSERT_EQ(100u, validated_options.capacity_num_bytes);
 
   scoped_refptr<LocalDataPipe> dp(new LocalDataPipe(validated_options));
@@ -1285,7 +1285,7 @@ TEST(LocalDataPipeTest, CloseWriteRead) {
   };
   MojoCreateDataPipeOptions validated_options = { 0 };
   EXPECT_EQ(MOJO_RESULT_OK,
-            DataPipe::ValidateOptions(&options, &validated_options));
+            DataPipe::ValidateCreateOptions(&options, &validated_options));
 
   // Close producer first, then consumer.
   {
@@ -1455,7 +1455,7 @@ TEST(LocalDataPipeTest, TwoPhaseMoreInvalidArguments) {
   };
   MojoCreateDataPipeOptions validated_options = { 0 };
   EXPECT_EQ(MOJO_RESULT_OK,
-            DataPipe::ValidateOptions(&options, &validated_options));
+            DataPipe::ValidateCreateOptions(&options, &validated_options));
 
   scoped_refptr<LocalDataPipe> dp(new LocalDataPipe(validated_options));
 
@@ -1575,7 +1575,7 @@ TEST(LocalDataPipeTest, DISABLED_MayDiscardTwoPhaseConsistent) {
   };
   MojoCreateDataPipeOptions validated_options = { 0 };
   EXPECT_EQ(MOJO_RESULT_OK,
-            DataPipe::ValidateOptions(&options, &validated_options));
+            DataPipe::ValidateCreateOptions(&options, &validated_options));
 
   scoped_refptr<LocalDataPipe> dp(new LocalDataPipe(validated_options));
 

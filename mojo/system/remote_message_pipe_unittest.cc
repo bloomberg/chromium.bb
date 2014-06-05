@@ -585,7 +585,8 @@ TEST_F(RemoteMessagePipeTest, MAYBE_SharedBufferPassing) {
   scoped_refptr<SharedBufferDispatcher> dispatcher;
   MojoCreateSharedBufferOptions validated_options = {};
   EXPECT_EQ(MOJO_RESULT_OK,
-            SharedBufferDispatcher::ValidateOptions(NULL, &validated_options));
+            SharedBufferDispatcher::ValidateCreateOptions(NULL,
+                                                          &validated_options));
   EXPECT_EQ(MOJO_RESULT_OK,
             SharedBufferDispatcher::Create(validated_options, 100,
                                            &dispatcher));

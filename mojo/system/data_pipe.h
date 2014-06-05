@@ -28,12 +28,14 @@ class WaiterList;
 class MOJO_SYSTEM_IMPL_EXPORT DataPipe :
     public base::RefCountedThreadSafe<DataPipe> {
  public:
-  // Validates and/or sets default options. If non-null, |in_options| must point
-  // to a struct of at least |in_options->struct_size| bytes. |out_options| must
-  // point to a (current) |MojoCreateDataPipeOptions| and will be entirely
-  // overwritten on success (it may be partly overwritten on failure).
-  static MojoResult ValidateOptions(const MojoCreateDataPipeOptions* in_options,
-                                    MojoCreateDataPipeOptions* out_options);
+  // Validates and/or sets default options for |MojoCreateDataPipeOptions|. If
+  // non-null, |in_options| must point to a struct of at least
+  // |in_options->struct_size| bytes. |out_options| must point to a (current)
+  // |MojoCreateDataPipeOptions| and will be entirely overwritten on success (it
+  // may be partly overwritten on failure).
+  static MojoResult ValidateCreateOptions(
+      const MojoCreateDataPipeOptions* in_options,
+      MojoCreateDataPipeOptions* out_options);
 
   // These are called by the producer dispatcher to implement its methods of
   // corresponding names.

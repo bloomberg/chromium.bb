@@ -17,11 +17,12 @@ namespace system {
 // have anything that's waitable. I want to add a "transferrable" wait flag.
 class MOJO_SYSTEM_IMPL_EXPORT SharedBufferDispatcher : public SimpleDispatcher {
  public:
-  // Validates and/or sets default options. If non-null, |in_options| must point
-  // to a struct of at least |in_options->struct_size| bytes. |out_options| must
-  // point to a (current) |MojoCreateSharedBufferOptions| and will be entirely
-  // overwritten on success (it may be partly overwritten on failure).
-  static MojoResult ValidateOptions(
+  // Validates and/or sets default options for |MojoCreateSharedBufferOptions|.
+  // If non-null, |in_options| must point to a struct of at least
+  // |in_options->struct_size| bytes. |out_options| must point to a (current)
+  // |MojoCreateSharedBufferOptions| and will be entirely overwritten on success
+  // (it may be partly overwritten on failure).
+  static MojoResult ValidateCreateOptions(
       const MojoCreateSharedBufferOptions* in_options,
       MojoCreateSharedBufferOptions* out_options);
 
@@ -47,6 +48,15 @@ class MOJO_SYSTEM_IMPL_EXPORT SharedBufferDispatcher : public SimpleDispatcher {
   explicit SharedBufferDispatcher(
       scoped_refptr<RawSharedBuffer> shared_buffer_);
   virtual ~SharedBufferDispatcher();
+
+  // Validates and/or sets default options for
+  // |MojoDuplicateBufferHandleOptions|. If non-null, |in_options| must point to
+  // a struct of at least |in_options->struct_size| bytes. |out_options| must
+  // point to a (current) |MojoDuplicateBufferHandleOptions| and will be
+  // entirely overwritten on success (it may be partly overwritten on failure).
+  static MojoResult ValidateDuplicateOptions(
+      const MojoDuplicateBufferHandleOptions* in_options,
+      MojoDuplicateBufferHandleOptions* out_options);
 
   // |Dispatcher| protected methods:
   virtual void CloseImplNoLock() OVERRIDE;

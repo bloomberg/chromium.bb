@@ -20,30 +20,29 @@ namespace mojo {
 namespace system {
 
 // static
-MojoResult DataPipe::ValidateOptions(
+MojoResult DataPipe::ValidateCreateOptions(
     const MojoCreateDataPipeOptions* in_options,
     MojoCreateDataPipeOptions* out_options) {
+  const MojoCreateDataPipeOptionsFlags kKnownFlags =
+      MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_MAY_DISCARD;
   static const MojoCreateDataPipeOptions kDefaultOptions = {
     static_cast<uint32_t>(sizeof(MojoCreateDataPipeOptions)),
     MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_NONE,
     1u,
     static_cast<uint32_t>(kDefaultDataPipeCapacityBytes)
   };
-  *out_options = kDefaultOptions;
 
+  *out_options = kDefaultOptions;
   if (!in_options)
     return MOJO_RESULT_OK;
 
-  if (!IsOptionsStructPointerAndSizeValid<MojoCreateDataPipeOptions>(
-          in_options))
-    return MOJO_RESULT_INVALID_ARGUMENT;
+  MojoResult result =
+      ValidateOptionsStructPointerSizeAndFlags<MojoCreateDataPipeOptions>(
+          in_options, kKnownFlags, out_options);
+  if (result != MOJO_RESULT_OK)
+    return result;
 
-  if (!HAS_OPTIONS_STRUCT_MEMBER(MojoCreateDataPipeOptions, flags, in_options))
-    return MOJO_RESULT_OK;
-  if (!AreOptionsFlagsAllKnown<MojoCreateDataPipeOptions>(
-          in_options, MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_MAY_DISCARD))
-    return MOJO_RESULT_UNIMPLEMENTED;
-  out_options->flags = in_options->flags;
+  // Checks for fields beyond |flags|:
 
   if (!HAS_OPTIONS_STRUCT_MEMBER(MojoCreateDataPipeOptions, element_num_bytes,
                                  in_options))
@@ -361,7 +360,7 @@ DataPipe::DataPipe(bool has_local_producer,
       consumer_two_phase_max_num_bytes_read_(0) {
   // Check that the passed in options actually are validated.
   MojoCreateDataPipeOptions unused ALLOW_UNUSED = { 0 };
-  DCHECK_EQ(ValidateOptions(&validated_options, &unused), MOJO_RESULT_OK);
+  DCHECK_EQ(ValidateCreateOptions(&validated_options, &unused), MOJO_RESULT_OK);
 }
 
 DataPipe::~DataPipe() {

@@ -15,6 +15,7 @@
 #include <stdint.h>
 
 #include "base/macros.h"
+#include "mojo/public/c/system/types.h"
 #include "mojo/system/memory.h"
 #include "mojo/system/system_impl_export.h"
 
@@ -82,6 +83,38 @@ bool HasOptionsStructMember(const void* buffer) {
 template <class Options>
 bool AreOptionsFlagsAllKnown(const void* buffer, uint32_t known_flags) {
   return (static_cast<const Options*>(buffer)->flags & ~known_flags) == 0;
+}
+
+// Does basic cursory checks on |in_options| (|struct_size| and |flags|; |flags|
+// must immediately follow |struct_size|); |in_options| must be non-null. The
+// following should be done before calling this:
+//   - Set |out_options| to the default options.
+//   - If |in_options| is null, don't continue (success).
+// This function then:
+//   - Checks if (according to |IsOptionsStructPointerAndSizeValid()|),
+//     |struct_size| is valid; if not returns |MOJO_RESULT_INVALID_ARGUMENT|.
+//   - If |in_options| has a |flags| field, checks that it only has
+//     |known_flags| set; if so copies it to |out_options->flags|, and if not
+//     returns |MOJO_RESULT_UNIMPLEMENTED|.
+//   - At this point, returns |MOJO_RESULT_OK|.
+template <class Options>
+MojoResult ValidateOptionsStructPointerSizeAndFlags(
+    const Options* in_options,
+    uint32_t known_flags,
+    Options* out_options) {
+  COMPILE_ASSERT(offsetof(Options, flags) == sizeof(uint32_t),
+                 Options_flags_doesnt_immediately_follow_struct_size);
+
+  if (!IsOptionsStructPointerAndSizeValid<Options>(in_options))
+    return MOJO_RESULT_INVALID_ARGUMENT;
+
+  if (HAS_OPTIONS_STRUCT_MEMBER(Options, flags, in_options)) {
+    if (!AreOptionsFlagsAllKnown<Options>(in_options, known_flags))
+      return MOJO_RESULT_UNIMPLEMENTED;
+    out_options->flags = in_options->flags;
+  }
+
+  return MOJO_RESULT_OK;
 }
 
 }  // namespace system

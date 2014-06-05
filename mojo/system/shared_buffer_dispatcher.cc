@@ -27,29 +27,29 @@ struct SerializedSharedBufferDispatcher {
 }  // namespace
 
 // static
-MojoResult SharedBufferDispatcher::ValidateOptions(
+MojoResult SharedBufferDispatcher::ValidateCreateOptions(
     const MojoCreateSharedBufferOptions* in_options,
     MojoCreateSharedBufferOptions* out_options) {
+  const MojoCreateSharedBufferOptionsFlags kKnownFlags =
+      MOJO_CREATE_SHARED_BUFFER_OPTIONS_FLAG_NONE;
   static const MojoCreateSharedBufferOptions kDefaultOptions = {
     static_cast<uint32_t>(sizeof(MojoCreateSharedBufferOptions)),
     MOJO_CREATE_SHARED_BUFFER_OPTIONS_FLAG_NONE
   };
-  *out_options = kDefaultOptions;
 
+  *out_options = kDefaultOptions;
   if (!in_options)
     return MOJO_RESULT_OK;
 
-  if (!IsOptionsStructPointerAndSizeValid<MojoCreateSharedBufferOptions>(
-          in_options))
-    return MOJO_RESULT_INVALID_ARGUMENT;
+  MojoResult result =
+      ValidateOptionsStructPointerSizeAndFlags<MojoCreateSharedBufferOptions>(
+          in_options, kKnownFlags, out_options);
+  if (result != MOJO_RESULT_OK)
+    return result;
 
-  if (!HAS_OPTIONS_STRUCT_MEMBER(MojoCreateSharedBufferOptions, flags,
-                                 in_options))
-    return MOJO_RESULT_OK;
-  if (!AreOptionsFlagsAllKnown<MojoCreateSharedBufferOptions>(
-          in_options, MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_NONE))
-    return MOJO_RESULT_UNIMPLEMENTED;
-  out_options->flags = in_options->flags;
+  // Checks for fields beyond |flags|:
+
+  // (Nothing here yet.)
 
   return MOJO_RESULT_OK;
 }
@@ -135,6 +135,35 @@ SharedBufferDispatcher::SharedBufferDispatcher(
 SharedBufferDispatcher::~SharedBufferDispatcher() {
 }
 
+// static
+MojoResult SharedBufferDispatcher::ValidateDuplicateOptions(
+    const MojoDuplicateBufferHandleOptions* in_options,
+    MojoDuplicateBufferHandleOptions* out_options) {
+  const MojoDuplicateBufferHandleOptionsFlags kKnownFlags =
+      MOJO_DUPLICATE_BUFFER_HANDLE_OPTIONS_FLAG_NONE;
+  static const MojoDuplicateBufferHandleOptions kDefaultOptions = {
+    static_cast<uint32_t>(sizeof(MojoDuplicateBufferHandleOptions)),
+    MOJO_DUPLICATE_BUFFER_HANDLE_OPTIONS_FLAG_NONE
+  };
+
+  *out_options = kDefaultOptions;
+  if (!in_options)
+    return MOJO_RESULT_OK;
+
+  MojoResult result =
+      ValidateOptionsStructPointerSizeAndFlags<
+          MojoDuplicateBufferHandleOptions>(
+              in_options, kKnownFlags, out_options);
+  if (result != MOJO_RESULT_OK)
+    return result;
+
+  // Checks for fields beyond |flags|:
+
+  // (Nothing here yet.)
+
+  return MOJO_RESULT_OK;
+}
+
 void SharedBufferDispatcher::CloseImplNoLock() {
   lock().AssertAcquired();
   DCHECK(shared_buffer_);
@@ -154,19 +183,11 @@ MojoResult SharedBufferDispatcher::DuplicateBufferHandleImplNoLock(
     const MojoDuplicateBufferHandleOptions* options,
     scoped_refptr<Dispatcher>* new_dispatcher) {
   lock().AssertAcquired();
-  if (options) {
-    // The |struct_size| field must be valid to read.
-    if (!VerifyUserPointer<uint32_t>(&options->struct_size))
-      return MOJO_RESULT_INVALID_ARGUMENT;
-    // And then |options| must point to at least |options->struct_size| bytes.
-    if (!VerifyUserPointerWithSize<MOJO_ALIGNOF(int64_t)>(options,
-                                                          options->struct_size))
-      return MOJO_RESULT_INVALID_ARGUMENT;
 
-    if (options->struct_size < sizeof(*options))
-      return MOJO_RESULT_INVALID_ARGUMENT;
-    // We don't actually do anything with |options|.
-  }
+  MojoDuplicateBufferHandleOptions validated_options;
+  MojoResult result = ValidateDuplicateOptions(options, &validated_options);
+  if (result != MOJO_RESULT_OK)
+    return result;
 
   *new_dispatcher = new SharedBufferDispatcher(shared_buffer_);
   return MOJO_RESULT_OK;

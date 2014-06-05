@@ -308,7 +308,8 @@ MojoResult Core::CreateDataPipe(const MojoCreateDataPipeOptions* options,
     return MOJO_RESULT_INVALID_ARGUMENT;
 
   MojoCreateDataPipeOptions validated_options = { 0 };
-  MojoResult result = DataPipe::ValidateOptions(options, &validated_options);
+  MojoResult result = DataPipe::ValidateCreateOptions(options,
+                                                      &validated_options);
   if (result != MOJO_RESULT_OK)
     return result;
 
@@ -427,7 +428,8 @@ MojoResult Core::CreateSharedBuffer(
 
   MojoCreateSharedBufferOptions validated_options = { 0 };
   MojoResult result =
-      SharedBufferDispatcher::ValidateOptions(options, &validated_options);
+      SharedBufferDispatcher::ValidateCreateOptions(options,
+                                                    &validated_options);
   if (result != MOJO_RESULT_OK)
     return result;
 
