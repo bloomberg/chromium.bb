@@ -8,12 +8,12 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/login/managed/locally_managed_user_creation_flow.h"
+#include "chrome/browser/chromeos/login/screens/user_selection_screen.h"
 #include "chrome/browser/chromeos/login/users/supervised_user_manager.h"
 #include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
-#include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chrome/common/url_constants.h"
 #include "chromeos/audio/chromeos_sounds.h"
 #include "google_apis/gaia/gaia_auth_util.h"
@@ -220,7 +220,7 @@ void LocallyManagedUserCreationScreenHandler::Show() {
       continue;
     bool is_owner = ((*it)->email() == owner);
     base::DictionaryValue* user_dict = new base::DictionaryValue();
-    SigninScreenHandler::FillUserDictionary(
+    UserSelectionScreen::FillUserDictionary(
         *it,
         is_owner,
         false /* is_signin_to_add */,
