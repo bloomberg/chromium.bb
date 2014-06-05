@@ -146,82 +146,84 @@ static const int kAdbPort = 5037;
 
 static const int kAdbMessageHeaderSize = 4;
 
-
-class SingleConnectionServer : base::NonThreadSafe {
+class SimpleHttpServer : base::NonThreadSafe {
  public:
   class Parser {
    public:
     virtual int Consume(const char* data, int size) = 0;
-    virtual void Reset() = 0;
-
-   protected:
     virtual ~Parser() {}
   };
 
-  SingleConnectionServer(
-      Parser* parser, net::IPEndPoint endpoint, int buffer_size);
+  typedef base::Callback<void(const std::string&)> SendCallback;
+  typedef base::Callback<Parser*(const SendCallback&)> ParserFactory;
 
-  virtual ~SingleConnectionServer();
-
-  void Send(const std::string& message);
+  SimpleHttpServer(const ParserFactory& factory, net::IPEndPoint endpoint);
+  virtual ~SimpleHttpServer();
 
  private:
-  void SendData(const char* data, int size);
+  class Connection : base::NonThreadSafe {
+   public:
+    Connection(net::StreamSocket* socket, const ParserFactory& factory);
+    virtual ~Connection();
+
+   private:
+    void Send(const std::string& message);
+    void ReadData();
+    void OnDataRead(int count);
+    void WriteData();
+    void OnDataWritten(int count);
+
+    scoped_ptr<net::StreamSocket> socket_;
+    scoped_ptr<Parser> parser_;
+    scoped_refptr<net::GrowableIOBuffer> input_buffer_;
+    scoped_refptr<net::GrowableIOBuffer> output_buffer_;
+    int bytes_to_write_;
+    bool read_closed_;
+
+    DISALLOW_COPY_AND_ASSIGN(Connection);
+  };
 
   void AcceptConnection();
   void OnAccepted(int result);
 
-  void ReadData();
-  void OnDataRead(int count);
-
-  void WriteData();
-  void OnDataWritten(int count);
-
-  Parser* parser_;
-  int bytes_to_write_;
-  scoped_ptr<net::TCPServerSocket> server_socket_;
+  ParserFactory factory_;
+  scoped_ptr<net::TCPServerSocket> socket_;
   scoped_ptr<net::StreamSocket> client_socket_;
-  scoped_refptr<net::GrowableIOBuffer> input_buffer_;
-  scoped_refptr<net::GrowableIOBuffer> output_buffer_;
 
-  DISALLOW_COPY_AND_ASSIGN(SingleConnectionServer);
+  DISALLOW_COPY_AND_ASSIGN(SimpleHttpServer);
 };
 
-SingleConnectionServer::SingleConnectionServer(Parser* parser,
-                                               net::IPEndPoint endpoint,
-                                               int buffer_size)
-    : parser_(parser),
-      bytes_to_write_(0) {
-  CHECK(CalledOnValidThread());
-
-  input_buffer_ = new net::GrowableIOBuffer();
-  input_buffer_->SetCapacity(buffer_size);
-
-  output_buffer_ = new net::GrowableIOBuffer();
-
-  server_socket_.reset(new net::TCPServerSocket(NULL, net::NetLog::Source()));
-  server_socket_->Listen(endpoint, 1);
-
+SimpleHttpServer::SimpleHttpServer(const ParserFactory& factory,
+                                   net::IPEndPoint endpoint)
+    : factory_(factory),
+      socket_(new net::TCPServerSocket(NULL, net::NetLog::Source())) {
+  socket_->Listen(endpoint, 1);
   AcceptConnection();
 }
 
-SingleConnectionServer::~SingleConnectionServer() {
-  CHECK(CalledOnValidThread());
-
-  server_socket_.reset();
-
-  if (client_socket_) {
-    client_socket_->Disconnect();
-    client_socket_.reset();
-  }
+SimpleHttpServer::~SimpleHttpServer() {
 }
 
-void SingleConnectionServer::Send(const std::string& message) {
-  SendData(message.c_str(), message.size());
+SimpleHttpServer::Connection::Connection(net::StreamSocket* socket,
+                                         const ParserFactory& factory)
+    : socket_(socket),
+      parser_(factory.Run(base::Bind(&Connection::Send,
+                                     base::Unretained(this)))),
+      input_buffer_(new net::GrowableIOBuffer()),
+      output_buffer_(new net::GrowableIOBuffer()),
+      bytes_to_write_(0),
+      read_closed_(false) {
+  input_buffer_->SetCapacity(kBufferSize);
+  ReadData();
 }
 
-void SingleConnectionServer::SendData(const char* data, int size) {
+SimpleHttpServer::Connection::~Connection() {
+}
+
+void SimpleHttpServer::Connection::Send(const std::string& message) {
   CHECK(CalledOnValidThread());
+  const char* data = message.c_str();
+  int size = message.size();
 
   if ((output_buffer_->offset() + bytes_to_write_ + size) >
       output_buffer_->capacity()) {
@@ -245,64 +247,36 @@ void SingleConnectionServer::SendData(const char* data, int size) {
     WriteData();
 }
 
-void SingleConnectionServer::AcceptConnection() {
-  CHECK(CalledOnValidThread());
-
-  if (client_socket_) {
-    client_socket_->Disconnect();
-    client_socket_.reset();
-  }
-
-  int accept_result = server_socket_->Accept(&client_socket_,
-      base::Bind(&SingleConnectionServer::OnAccepted, base::Unretained(this)));
-
-  if (accept_result != net::ERR_IO_PENDING)
-    base::MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(&SingleConnectionServer::OnAccepted,
-                   base::Unretained(this),
-                   accept_result));
-}
-
-void SingleConnectionServer::OnAccepted(int result) {
-  CHECK(CalledOnValidThread());
-
-  ASSERT_EQ(result, 0);  // Fails if the socket is already in use.
-  parser_->Reset();
-  ReadData();
-}
-
-void SingleConnectionServer::ReadData() {
+void SimpleHttpServer::Connection::ReadData() {
   CHECK(CalledOnValidThread());
 
   if (input_buffer_->RemainingCapacity() == 0)
     input_buffer_->SetCapacity(input_buffer_->capacity() * 2);
 
-  int read_result = client_socket_->Read(
+  int read_result = socket_->Read(
       input_buffer_.get(),
       input_buffer_->RemainingCapacity(),
-      base::Bind(&SingleConnectionServer::OnDataRead, base::Unretained(this)));
+      base::Bind(&Connection::OnDataRead, base::Unretained(this)));
 
   if (read_result != net::ERR_IO_PENDING)
     OnDataRead(read_result);
 }
 
-void SingleConnectionServer::OnDataRead(int count) {
+void SimpleHttpServer::Connection::OnDataRead(int count) {
   CHECK(CalledOnValidThread());
-
   if (count <= 0) {
-    AcceptConnection();
+    if (bytes_to_write_ == 0)
+      delete this;
+    else
+      read_closed_ = true;
     return;
   }
-
   input_buffer_->set_offset(input_buffer_->offset() + count);
-
   int bytes_processed;
 
   do {
     char* data = input_buffer_->StartOfBuffer();
     int data_size = input_buffer_->offset();
-
     bytes_processed = parser_->Consume(data, data_size);
 
     if (bytes_processed) {
@@ -310,36 +284,32 @@ void SingleConnectionServer::OnDataRead(int count) {
       input_buffer_->set_offset(data_size - bytes_processed);
     }
   } while (bytes_processed);
-
-  // Posting is needed not to enter deep recursion in case too synchronous IO
+  // Posting to avoid deep recursion in case of synchronous IO
   base::MessageLoop::current()->PostTask(
       FROM_HERE,
-      base::Bind(&SingleConnectionServer::ReadData, base::Unretained(this)));
+      base::Bind(&Connection::ReadData, base::Unretained(this)));
 }
 
-void SingleConnectionServer::WriteData() {
+void SimpleHttpServer::Connection::WriteData() {
   CHECK(CalledOnValidThread());
-
   CHECK_GE(output_buffer_->capacity(),
            output_buffer_->offset() + bytes_to_write_) << "Overflow";
 
-  int write_result = client_socket_->Write(
+  int write_result = socket_->Write(
       output_buffer_,
       bytes_to_write_,
-      base::Bind(&SingleConnectionServer::OnDataWritten,
-                 base::Unretained(this)));
+      base::Bind(&Connection::OnDataWritten, base::Unretained(this)));
+
   if (write_result != net::ERR_IO_PENDING)
     OnDataWritten(write_result);
 }
 
-void SingleConnectionServer::OnDataWritten(int count) {
+void SimpleHttpServer::Connection::OnDataWritten(int count) {
   CHECK(CalledOnValidThread());
-
   if (count < 0) {
-    AcceptConnection();
+    delete this;
     return;
   }
-
   CHECK_GT(count, 0);
   CHECK_GE(output_buffer_->capacity(),
            output_buffer_->offset() + bytes_to_write_) << "Overflow";
@@ -348,26 +318,46 @@ void SingleConnectionServer::OnDataWritten(int count) {
   output_buffer_->set_offset(output_buffer_->offset() + count);
 
   if (bytes_to_write_ != 0)
-    // Posting is needed not to enter deep recursion in case too synchronous IO
+    // Posting to avoid deep recursion in case of synchronous IO
     base::MessageLoop::current()->PostTask(
         FROM_HERE,
-        base::Bind(&SingleConnectionServer::WriteData, base::Unretained(this)));
+        base::Bind(&Connection::WriteData, base::Unretained(this)));
+  else if (read_closed_)
+    delete this;
 }
 
+void SimpleHttpServer::AcceptConnection() {
+  CHECK(CalledOnValidThread());
 
-class MockAdbServer : SingleConnectionServer::Parser,
-                      base::NonThreadSafe {
+  int accept_result = socket_->Accept(&client_socket_,
+      base::Bind(&SimpleHttpServer::OnAccepted, base::Unretained(this)));
+
+  if (accept_result != net::ERR_IO_PENDING)
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&SimpleHttpServer::OnAccepted,
+                   base::Unretained(this),
+                   accept_result));
+}
+
+void SimpleHttpServer::OnAccepted(int result) {
+  CHECK(CalledOnValidThread());
+  ASSERT_EQ(result, 0);  // Fails if the socket is already in use.
+  new Connection(client_socket_.release(), factory_);
+  AcceptConnection();
+}
+
+class AdbParser : SimpleHttpServer::Parser, base::NonThreadSafe {
  public:
-  MockAdbServer() {
-    CHECK(CalledOnValidThread());
-    net::IPAddressNumber address;
-    net::ParseIPLiteralToNumber("127.0.0.1", &address);
-    net::IPEndPoint endpoint(address, kAdbPort);
-    server_.reset(new SingleConnectionServer(this, endpoint, kBufferSize));
+  static Parser* Create(const SimpleHttpServer::SendCallback& callback) {
+    return new AdbParser(callback);
   }
 
-  virtual ~MockAdbServer() {
-    CHECK(CalledOnValidThread());
+  explicit AdbParser(const SimpleHttpServer::SendCallback& callback)
+      : callback_(callback) {
+  }
+
+  virtual ~AdbParser() {
   }
 
  private:
@@ -382,7 +372,6 @@ class MockAdbServer : SingleConnectionServer::Parser,
       }
       return 0;
     }
-
     if (size >= kAdbMessageHeaderSize) {
       std::string message_header(data, kAdbMessageHeaderSize);
       int message_size;
@@ -390,21 +379,12 @@ class MockAdbServer : SingleConnectionServer::Parser,
       EXPECT_TRUE(base::HexStringToInt(message_header, &message_size));
 
       if (size >= message_size + kAdbMessageHeaderSize) {
-        std::string message_body(data + kAdbMessageHeaderSize, message_size );
-
+        std::string message_body(data + kAdbMessageHeaderSize, message_size);
         ProcessCommand(message_body);
-
         return kAdbMessageHeaderSize + message_size;
       }
     }
-
     return 0;
-  }
-
-  virtual void Reset() OVERRIDE {
-    CHECK(CalledOnValidThread());
-    selected_device_ = std::string();
-    selected_socket_ = std::string();
   }
 
   void ProcessHTTPRequest(const std::string& request) {
@@ -416,7 +396,6 @@ class MockAdbServer : SingleConnectionServer::Parser,
     CHECK_EQ("HTTP/1.1", tokens[2]);
 
     std::string path(tokens[1]);
-
     if (path == kJsonPath)
       path = kJsonListPath;
 
@@ -480,7 +459,9 @@ class MockAdbServer : SingleConnectionServer::Parser,
     }
   }
 
-  void SendResponse(const std::string& response) { Send("OKAY", response); }
+  void SendResponse(const std::string& response) {
+    Send("OKAY", response);
+  }
 
   void Send(const std::string& status, const std::string& response) {
     CHECK(CalledOnValidThread());
@@ -496,8 +477,7 @@ class MockAdbServer : SingleConnectionServer::Parser,
         response_stream << kHexChars[ (size >> 4*i) & 0x0f ];
       response_stream << response;
     }
-
-    server_->Send(response_stream.str());
+    callback_.Run(response_stream.str());
   }
 
   void SendHTTPResponse(const std::string& body) {
@@ -505,21 +485,24 @@ class MockAdbServer : SingleConnectionServer::Parser,
     std::string response_data(base::StringPrintf(kHttpResponse,
                                                  static_cast<int>(body.size()),
                                                  body.c_str()));
-    server_->Send(response_data);
+    callback_.Run(response_data);
   }
 
   std::string selected_device_;
   std::string selected_socket_;
-
-  scoped_ptr<SingleConnectionServer> server_;
+  SimpleHttpServer::SendCallback callback_;
 };
 
-static MockAdbServer* mock_adb_server_ = NULL;
+static SimpleHttpServer* mock_adb_server_ = NULL;
 
 void StartMockAdbServerOnIOThread() {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   CHECK(mock_adb_server_ == NULL);
-  mock_adb_server_ = new MockAdbServer();
+  net::IPAddressNumber address;
+  net::ParseIPLiteralToNumber("127.0.0.1", &address);
+  net::IPEndPoint endpoint(address, kAdbPort);
+  mock_adb_server_ =
+      new SimpleHttpServer(base::Bind(&AdbParser::Create), endpoint);
 }
 
 void StopMockAdbServerOnIOThread() {
