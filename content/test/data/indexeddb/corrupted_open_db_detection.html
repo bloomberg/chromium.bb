@@ -87,6 +87,19 @@ function databaseClosed(event) {
   done("Closed as expected");
 }
 
+function testXhr(url, onSuccess) {
+  var xmlhttp = new window.XMLHttpRequest();
+  xmlhttp.open("GET", url, /*async=*/false);
+  xmlhttp.onreadystatechange = function() {
+      if (xmlhttp.readyState === 4) {
+        if (xmlhttp.status === 200) {
+          onSuccess()
+        }
+      }
+    };
+  xmlhttp.send();
+}
+
 var tests = {
   // Common setup tasks for the other tests in this object
   testCommon: function(mode) {
@@ -97,50 +110,45 @@ var tests = {
     objectStore = transaction.objectStore('storeName');
   },
   get: function() {
-    tests.testCommon('readonly');
-    request = objectStore.get('key-0');
-    request.onsuccess = unexpectedSuccessCallback;
-    request.onerror = requestError;
+    testXhr("/corrupt/test/corruptdb?storeName", function() {
+      tests.testCommon('readonly');
+      request = objectStore.get('key-0');
+      request.onsuccess = unexpectedSuccessCallback;
+      request.onerror = requestError;
+    });
   },
   iterate: function() {
-    tests.testCommon('readonly');
-    request = objectStore.openCursor();
-    request.onerror = requestError;
-    request.onsuccess = function (event){
-      var cursor = request.result;
-      if (cursor) {
-        // Get an object. Probably shouldn't get this far, but won't call this an error.
-        cursor.continue();
-      } else {
-        // Got the last object. We shouldn't get this far.
-        fail("Should *not* have been able to iterate over database.");
-      }
-    };
+    testXhr("/corrupt/test/corruptdb?storeName", function() {
+      tests.testCommon('readonly');
+      request = objectStore.openCursor();
+      request.onerror = requestError;
+      request.onsuccess = function (event){
+        var cursor = request.result;
+        if (cursor) {
+          // Get an object. Probably shouldn't get this far, but won't call this an error.
+          cursor.continue();
+        } else {
+          // Got the last object. We shouldn't get this far.
+          fail("Should *not* have been able to iterate over database.");
+        }
+      };
+    });
   },
   clearObjectStore: function() {
-    tests.testCommon('readwrite');
-    request = objectStore.clear();
-    request.onerror = requestError;
-    request.onsuccess = unexpectedSuccessCallback
+    testXhr("/corrupt/test/corruptdb?storeName", function() {
+      tests.testCommon('readwrite');
+      request = objectStore.clear();
+      request.onerror = requestError;
+      request.onsuccess = unexpectedSuccessCallback
+    });
   }
 };
 
 function openCallback() {
-  var xmlhttp = new window.XMLHttpRequest();
-  xmlhttp.open("GET", "/corrupt/test/corruptdb?storeName", false /*sync*/);
-  xmlhttp.onreadystatechange = function() {
-      if (xmlhttp.readyState === 4) {
-        if (xmlhttp.status === 200) {
-          // The database is now corrupt.
-          if (testType in tests) {
-            tests[testType]();
-          } else {
-            fail('Unknown test: "' + testType + '"');
-          }
-        }
-      }
-    };
-  xmlhttp.send();
+  if (testType in tests)
+    tests[testType]();
+  else
+    fail('Unknown test: "' + testType + '"');
 }
 
 </script>
