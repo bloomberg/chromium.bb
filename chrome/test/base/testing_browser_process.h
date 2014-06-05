@@ -34,6 +34,10 @@ namespace extensions {
 class ExtensionsBrowserClient;
 }
 
+namespace gcm {
+class GCMDriver;
+}
+
 namespace policy {
 class BrowserPolicyConnector;
 class PolicyService;
@@ -119,6 +123,8 @@ class TestingBrowserProcess : public BrowserProcess {
 #endif
 
   virtual network_time::NetworkTimeTracker* network_time_tracker() OVERRIDE;
+
+  virtual gcm::GCMDriver* gcm_driver() OVERRIDE;
 
   // Set the local state for tests. Consumer is responsible for cleaning it up
   // afterwards (using ScopedTestingLocalState, for example).

@@ -41,6 +41,10 @@ namespace extensions {
 class ExtensionsBrowserClient;
 }
 
+namespace gcm {
+class GCMDriver;
+}
+
 namespace policy {
 class BrowserPolicyConnector;
 class PolicyService;
@@ -133,6 +137,7 @@ class BrowserProcessImpl : public BrowserProcess,
   virtual WebRtcLogUploader* webrtc_log_uploader() OVERRIDE;
 #endif
   virtual network_time::NetworkTimeTracker* network_time_tracker() OVERRIDE;
+  virtual gcm::GCMDriver* gcm_driver() OVERRIDE;
 
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
@@ -151,6 +156,7 @@ class BrowserProcessImpl : public BrowserProcess,
   void CreateSafeBrowsingDetectionService();
   void CreateStatusTray();
   void CreateBackgroundModeManager();
+  void CreateGCMDriver();
 
   MetricsServicesManager* GetMetricsServicesManager();
 
@@ -287,6 +293,8 @@ class BrowserProcessImpl : public BrowserProcess,
 #endif
 
   scoped_ptr<network_time::NetworkTimeTracker> network_time_tracker_;
+
+  scoped_ptr<gcm::GCMDriver> gcm_driver_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserProcessImpl);
 };

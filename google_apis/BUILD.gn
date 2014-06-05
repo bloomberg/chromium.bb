@@ -109,6 +109,8 @@ source_set("google_apis") {
     "drive/task_util.h",
     "drive/time_util.cc",
     "drive/time_util.h",
+    "gaia/dummy_identity_provider.cc",
+    "gaia/dummy_identity_provider.h",
     "gaia/gaia_auth_consumer.cc",
     "gaia/gaia_auth_consumer.h",
     "gaia/gaia_auth_fetcher.cc",
@@ -166,6 +168,13 @@ source_set("google_apis") {
     sources += [ "cup/client_update_protocol_openssl.cc" ]
   } else {
     sources += [ "cup/client_update_protocol_nss.cc" ]
+  }
+
+  if (is_chromeos || is_android) {
+    sources -= [
+      "gaia/dummy_identity_provider.cc",
+      "gaia/dummy_identity_provider.h",
+    ]
   }
 }
 

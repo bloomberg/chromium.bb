@@ -373,6 +373,10 @@ TestingBrowserProcess::network_time_tracker() {
   return network_time_tracker_.get();
 }
 
+gcm::GCMDriver* TestingBrowserProcess::gcm_driver() {
+  return NULL;
+}
+
 void TestingBrowserProcess::SetSystemRequestContext(
     net::URLRequestContextGetter* context_getter) {
   system_request_context_ = context_getter;

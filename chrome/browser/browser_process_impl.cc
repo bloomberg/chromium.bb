@@ -13,6 +13,7 @@
 #include "base/command_line.h"
 #include "base/debug/alias.h"
 #include "base/debug/leak_annotations.h"
+#include "base/files/file_path.h"
 #include "base/path_service.h"
 #include "base/prefs/json_pref_store.h"
 #include "base/prefs/pref_registry_simple.h"
@@ -76,6 +77,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/google_update_settings.h"
+#include "components/gcm_driver/gcm_driver.h"
 #include "components/network_time/network_time_tracker.h"
 #include "components/policy/core/common/policy_service.h"
 #include "components/signin/core/common/profile_management_switches.h"
@@ -90,6 +92,7 @@
 #include "content/public/browser/storage_partition.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension_l10n_util.h"
+#include "google_apis/gaia/identity_provider.h"
 #include "net/socket/client_socket_pool_manager.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -123,6 +126,20 @@
 
 #if defined(ENABLE_WEBRTC)
 #include "chrome/browser/media/webrtc_log_uploader.h"
+#endif
+
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/settings/device_identity_provider.h"
+#include "chrome/browser/chromeos/settings/device_oauth2_token_service_factory.h"
+#elif !defined(OS_ANDROID)
+#include "google_apis/gaia/dummy_identity_provider.h"
+#endif
+
+#if defined(OS_ANDROID)
+#include "components/gcm_driver/gcm_driver_android.h"
+#else
+#include "chrome/browser/services/gcm/gcm_desktop_utils.h"
+#include "components/gcm_driver/gcm_client_factory.h"
 #endif
 
 #if (defined(OS_WIN) || defined(OS_LINUX)) && !defined(OS_CHROMEOS)
@@ -261,6 +278,10 @@ void BrowserProcessImpl::StartTearDown() {
   if (browser_policy_connector_)
     browser_policy_connector_->Shutdown();
 #endif
+
+  // The |gcm_driver_| must shut down while the IO thread is still alive.
+  if (gcm_driver_)
+    gcm_driver_->Shutdown();
 
   // Stop the watchdog thread before stopping other threads.
   watchdog_thread_.reset();
@@ -642,6 +663,13 @@ network_time::NetworkTimeTracker* BrowserProcessImpl::network_time_tracker() {
   return network_time_tracker_.get();
 }
 
+gcm::GCMDriver* BrowserProcessImpl::gcm_driver() {
+  DCHECK(CalledOnValidThread());
+  if (!gcm_driver_)
+    CreateGCMDriver();
+  return gcm_driver_.get();
+}
+
 // static
 void BrowserProcessImpl::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(prefs::kDefaultBrowserSettingEnabled,
@@ -984,6 +1012,27 @@ void BrowserProcessImpl::CreateSafeBrowsingService() {
   safe_browsing_service_ = SafeBrowsingService::CreateSafeBrowsingService();
   safe_browsing_service_->Initialize();
 #endif
+}
+
+void BrowserProcessImpl::CreateGCMDriver() {
+  DCHECK(!gcm_driver_);
+
+#if defined(OS_ANDROID)
+  gcm_driver_.reset(new gcm::GCMDriverAndroid);
+#else
+  base::FilePath store_path;
+  CHECK(PathService::Get(chrome::DIR_GLOBAL_GCM_STORE, &store_path));
+  gcm_driver_ = gcm::CreateGCMDriverDesktop(
+      make_scoped_ptr(new gcm::GCMClientFactory),
+#if defined(OS_CHROMEOS)
+      scoped_ptr<IdentityProvider>(new chromeos::DeviceIdentityProvider(
+          chromeos::DeviceOAuth2TokenServiceFactory::Get())),
+#else
+      scoped_ptr<IdentityProvider>(new DummyIdentityProvider),
+#endif  // defined(OS_CHROMEOS)
+      store_path,
+      system_request_context());
+#endif  // defined(OS_ANDROID)
 }
 
 MetricsServicesManager* BrowserProcessImpl::GetMetricsServicesManager() {

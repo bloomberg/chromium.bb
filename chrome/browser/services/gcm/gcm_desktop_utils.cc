@@ -2,10 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/services/gcm/gcm_utils.h"
+#include "chrome/browser/services/gcm/gcm_desktop_utils.h"
 
 #include "base/logging.h"
+#include "base/sequenced_task_runner.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "chrome/common/chrome_version_info.h"
+#include "components/gcm_driver/gcm_client_factory.h"
+#include "components/gcm_driver/gcm_driver.h"
+#include "components/gcm_driver/gcm_driver_desktop.h"
+#include "content/public/browser/browser_thread.h"
+#include "google_apis/gcm/gcm_client.h"
 
 namespace gcm {
 
@@ -54,14 +61,38 @@ std::string GetVersion() {
   return version_info.Version();
 }
 
-}  // namespace
-
 GCMClient::ChromeBuildInfo GetChromeBuildInfo() {
   GCMClient::ChromeBuildInfo chrome_build_info;
   chrome_build_info.platform = GetPlatform();
   chrome_build_info.channel = GetChannel();
   chrome_build_info.version = GetVersion();
   return chrome_build_info;
+}
+
+}  // namespace
+
+scoped_ptr<GCMDriver> CreateGCMDriverDesktop(
+    scoped_ptr<GCMClientFactory> gcm_client_factory,
+    scoped_ptr<IdentityProvider> identity_provider,
+    const base::FilePath& store_path,
+    const scoped_refptr<net::URLRequestContextGetter>& request_context) {
+  scoped_refptr<base::SequencedWorkerPool> worker_pool(
+      content::BrowserThread::GetBlockingPool());
+  scoped_refptr<base::SequencedTaskRunner> blocking_task_runner(
+      worker_pool->GetSequencedTaskRunnerWithShutdownBehavior(
+          worker_pool->GetSequenceToken(),
+          base::SequencedWorkerPool::SKIP_ON_SHUTDOWN));
+  return scoped_ptr<GCMDriver>(new GCMDriverDesktop(
+      gcm_client_factory.Pass(),
+      identity_provider.Pass(),
+      GetChromeBuildInfo(),
+      store_path,
+      request_context,
+      content::BrowserThread::GetMessageLoopProxyForThread(
+          content::BrowserThread::UI),
+      content::BrowserThread::GetMessageLoopProxyForThread(
+          content::BrowserThread::IO),
+      blocking_task_runner));
 }
 
 }  // namespace gcm

@@ -577,6 +577,13 @@ bool PathProvider(int key, base::FilePath* result) {
       cur = cur.Append(FILE_PATH_LITERAL("NativeMessagingHosts"));
       break;
 #endif  // defined(OS_LINUX) || (defined(OS_MACOSX) && !defined(OS_IOS))
+#if !defined(OS_ANDROID)
+    case chrome::DIR_GLOBAL_GCM_STORE:
+      if (!PathService::Get(chrome::DIR_USER_DATA, &cur))
+        return false;
+      cur = cur.Append(kGCMStoreDirname);
+      break;
+#endif  // !defined(OS_ANDROID)
 
     default:
       return false;

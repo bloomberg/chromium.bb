@@ -36,29 +36,35 @@
             'GOOGLE_DEFAULT_CLIENT_SECRET="<(google_default_client_secret)"',
           ]
         }],
-        [ 'OS == "mac" or OS == "ios" or OS == "win"', {
+        ['OS == "mac" or OS == "ios" or OS == "win"', {
           'dependencies': [
             '../third_party/nss/nss.gyp:nspr',
             '../third_party/nss/nss.gyp:nss',
           ],
         }],
-        [ 'OS == "android"', {
-            'dependencies': [
-              '../third_party/openssl/openssl.gyp:openssl',
-            ],
-            'sources/': [
-              ['exclude', 'cup/client_update_protocol_nss\.cc$'],
-            ],
+        ['OS == "android"', {
+          'dependencies': [
+            '../third_party/openssl/openssl.gyp:openssl',
+          ],
+          'sources/': [
+            ['exclude', 'cup/client_update_protocol_nss\.cc$'],
+          ],
         }],
-        [ 'use_openssl==1', {
-            'sources!': [
-              'cup/client_update_protocol_nss.cc',
-            ],
-          }, {
-            'sources!': [
-              'cup/client_update_protocol_openssl.cc',
-            ],
-        },],
+        ['use_openssl==1', {
+          'sources!': [
+            'cup/client_update_protocol_nss.cc',
+          ],
+        }, {
+          'sources!': [
+            'cup/client_update_protocol_openssl.cc',
+          ],
+        }],
+        ['chromeos==1 or OS == "android"', {
+          'sources!': [
+            'gaia/dummy_identity_provider.cc',
+            'gaia/dummy_identity_provider.h',
+          ]
+        }],
       ],
       'sources': [
         'cup/client_update_protocol.cc',
@@ -95,6 +101,8 @@
         'drive/task_util.h',
         'drive/time_util.cc',
         'drive/time_util.h',
+        'gaia/dummy_identity_provider.cc',
+        'gaia/dummy_identity_provider.h',
         'gaia/gaia_auth_consumer.cc',
         'gaia/gaia_auth_consumer.h',
         'gaia/gaia_auth_fetcher.cc',

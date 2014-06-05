@@ -54,6 +54,10 @@ namespace extensions {
 class EventRouterForwarder;
 }
 
+namespace gcm {
+class GCMDriver;
+}
+
 namespace message_center {
 class MessageCenter;
 }
@@ -224,6 +228,8 @@ class BrowserProcess {
 #endif
 
   virtual network_time::NetworkTimeTracker* network_time_tracker() = 0;
+
+  virtual gcm::GCMDriver* gcm_driver() = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BrowserProcess);
