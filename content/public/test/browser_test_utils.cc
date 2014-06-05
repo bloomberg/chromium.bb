@@ -266,12 +266,13 @@ void SimulateTapAt(WebContents* web_contents, const gfx::Point& point) {
              ui::GestureConfiguration::
                  max_touch_down_duration_in_seconds_for_click());
   SyntheticWebTouchEvent touch;
-  touch.timeStampSeconds = 0;
+  // Set the timestamp to the base::TimeDelta representing the current time.
+  touch.SetTimestamp(base::TimeTicks::Now() - base::TimeTicks());
   touch.PressPoint(point.x(), point.y());
   RenderWidgetHostImpl* widget_host =
       RenderWidgetHostImpl::From(web_contents->GetRenderViewHost());
   widget_host->ForwardTouchEvent(touch);
-  touch.timeStampSeconds = kTapDurationSeconds;
+  touch.timeStampSeconds += kTapDurationSeconds;
   touch.ReleasePoint(0);
   widget_host->ForwardTouchEvent(touch);
 }
