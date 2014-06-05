@@ -25,6 +25,7 @@ backslashes. All directories should be relative to the source root and all
 file paths should be only lowercase.
 """
 
+import json
 import logging
 import optparse
 import os
@@ -298,9 +299,9 @@ def has_shebang_or_is_elf(full_path):
     return (data[:3] == '#!/', data == '\x7fELF')
 
 
-def check_file(root_path, rel_path, bare_output):
+def check_file(root_path, rel_path):
   """Checks the permissions of the file whose path is root_path + rel_path and
-  returns an error if it is inconsistent.
+  returns an error if it is inconsistent. Returns None on success.
 
   It is assumed that the file is not ignored by is_ignored().
 
@@ -310,6 +311,12 @@ def check_file(root_path, rel_path, bare_output):
   shebang or ELF header and compares this with the executable bit on the file.
   """
   full_path = os.path.join(root_path, rel_path)
+  def result_dict(error):
+    return {
+      'error': error,
+      'full_path': full_path,
+      'rel_path': rel_path,
+    }
   try:
     bit = has_executable_bit(full_path)
   except OSError:
@@ -320,40 +327,26 @@ def check_file(root_path, rel_path, bare_output):
 
   if must_be_executable(rel_path):
     if not bit:
-      if bare_output:
-        return full_path
-      return '%s: Must have executable bit set' % full_path
+      return result_dict('Must have executable bit set')
     return
   if must_not_be_executable(rel_path):
     if bit:
-      if bare_output:
-        return full_path
-      return '%s: Must not have executable bit set' % full_path
+      return result_dict('Must not have executable bit set')
     return
 
   # For the others, it depends on the file header.
   (shebang, elf) = has_shebang_or_is_elf(full_path)
   if bit != (shebang or elf):
-    if bare_output:
-      return full_path
     if bit:
-      return '%s: Has executable bit but not shebang or ELF header' % full_path
+      return result_dict('Has executable bit but not shebang or ELF header')
     if shebang:
-      return '%s: Has shebang but not executable bit' % full_path
-    return '%s: Has ELF header but not executable bit' % full_path
+      return result_dict('Has shebang but not executable bit')
+    return result_dict('Has ELF header but not executable bit')
 
 
-def check_files(root, files, bare_output):
-  errors = []
-  for rel_path in files:
-    if is_ignored(rel_path):
-      continue
-
-    error = check_file(root, rel_path, bare_output)
-    if error:
-      errors.append(error)
-
-  return errors
+def check_files(root, files):
+  gen = (check_file(root, f) for f in files if not is_ignored(f))
+  return filter(None, gen)
 
 
 class ApiBase(object):
@@ -371,7 +364,7 @@ class ApiBase(object):
         not must_not_be_executable(rel_path)):
       self.count_read_header += 1
 
-    return check_file(self.root_dir, rel_path, self.bare_output)
+    return check_file(self.root_dir, rel_path)
 
   def check_dir(self, rel_path):
     return self.check(rel_path)
@@ -502,6 +495,7 @@ Examples:
       '--file', action='append', dest='files',
       help='Specifics a list of files to check the permissions of. Only these '
       'files will be checked')
+  parser.add_option('--json', help='Path to JSON output file')
   options, args = parser.parse_args()
 
   levels = [logging.ERROR, logging.INFO, logging.DEBUG]
@@ -514,26 +508,29 @@ Examples:
     options.root = os.path.abspath(options.root)
 
   if options.files:
-    errors = check_files(options.root, options.files, options.bare)
-    print '\n'.join(errors)
-    return bool(errors)
+    # --file implies --bare (for PRESUBMIT.py).
+    options.bare = True
 
-  api = get_scm(options.root, options.bare)
-  if args:
-    start_dir = args[0]
+    errors = check_files(options.root, options.files)
   else:
-    start_dir = api.root_dir
+    api = get_scm(options.root, options.bare)
+    start_dir = args[0] if args else api.root_dir
+    errors = api.check(start_dir)
 
-  errors = api.check(start_dir)
+    if not options.bare:
+      print('Processed %s files, %d files where tested for shebang/ELF '
+            'header' % (api.count, api.count_read_header))
 
-  if not options.bare:
-    print 'Processed %s files, %d files where tested for shebang/ELF header' % (
-        api.count, api.count_read_header)
+  if options.json:
+    with open(options.json, 'w') as f:
+      json.dump(errors, f)
 
   if errors:
-    if not options.bare:
+    if options.bare:
+      print '\n'.join(e['full_path'] for e in errors)
+    else:
       print '\nFAILED\n'
-    print '\n'.join(errors)
+      print '\n'.join('%s: %s' % (e['full_path'], e['error']) for e in errors)
     return 1
   if not options.bare:
     print '\nSUCCESS\n'
