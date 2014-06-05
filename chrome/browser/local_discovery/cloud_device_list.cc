@@ -7,9 +7,14 @@
 #include <utility>
 
 #include "base/strings/stringprintf.h"
+#include "chrome/browser/local_discovery/gcd_constants.h"
 #include "components/cloud_devices/common/cloud_devices_urls.h"
 
 namespace local_discovery {
+
+namespace {
+const char kKindDevicesList[] = "clouddevices#devicesListResponse";
+}
 
 CloudDeviceList::CloudDeviceList(CloudDeviceListDelegate* delegate)
     : delegate_(delegate) {
@@ -23,9 +28,11 @@ void CloudDeviceList::OnGCDAPIFlowError(GCDApiFlow::Status status) {
 }
 
 void CloudDeviceList::OnGCDAPIFlowComplete(const base::DictionaryValue& value) {
-  const base::ListValue* devices;
+  std::string kind;
+  value.GetString(kGCDKeyKind, &kind);
 
-  if (!value.GetList("devices", &devices)) {
+  const base::ListValue* devices = NULL;
+  if (kind != kKindDevicesList || !value.GetList("devices", &devices)) {
     delegate_->OnDeviceListUnavailable();
     return;
   }
