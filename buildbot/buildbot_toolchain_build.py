@@ -131,6 +131,7 @@ def main(args):
       subprocess.check_call([sys.executable,
                              BUILDBOT_STANDARD,
                              '--no-gyp',
+                             '--step-suffix= [%s %s]' % (toolchain_name, mode),
                              '--scons-args', '%s=%s' % (scons_toolchain_arg,
                                                         toolchain_dir),
                              mode, arch, clib])
