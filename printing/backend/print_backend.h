@@ -38,20 +38,27 @@ struct PRINTING_EXPORT PrinterSemanticCapsAndDefaults {
   PrinterSemanticCapsAndDefaults();
   ~PrinterSemanticCapsAndDefaults();
 
-  bool color_changeable;
-  bool color_default;
-
-#if defined(USE_CUPS)
-  ColorModel color_model;
-  ColorModel bw_model;
-#endif
-
-#if defined(OS_WIN)
   bool collate_capable;
   bool collate_default;
 
   bool copies_capable;
 
+  bool duplex_capable;
+  DuplexMode duplex_default;
+
+  bool color_changeable;
+  bool color_default;
+
+  // These are CUPS specific data, which soon be removed altogether. They are
+  // not defined under USE_CUPS to do not pull CUPS dependency into common code.
+#if defined(OS_POSIX)
+  // TODO(alekseys): Resolve color model within printing context, do not expose
+  // it outside of the context.
+  ColorModel color_model;
+  ColorModel bw_model;
+#endif
+
+#if defined(OS_WIN)
   struct Paper {
     std::string name;
     gfx::Size size_um;
@@ -63,9 +70,6 @@ struct PRINTING_EXPORT PrinterSemanticCapsAndDefaults {
   std::vector<gfx::Size> dpis;
   gfx::Size default_dpi;
 #endif
-
-  bool duplex_capable;
-  DuplexMode duplex_default;
 };
 
 struct PRINTING_EXPORT PrinterCapsAndDefaults {

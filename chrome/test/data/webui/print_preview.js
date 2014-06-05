@@ -224,6 +224,40 @@ function checkElementDisplayed(el, isDisplayed) {
   expectEquals(isDisplayed, !el.hidden);
 }
 
+function getCddTemplate(printerId) {
+  return {
+    "printerId": printerId,
+    "capabilities": {
+      "version": "1.0",
+      "printer": {
+        "supported_content_type": [{"content_type": "application/pdf"}],
+        "collate": {},
+        "color": {
+          "option": [
+            {"is_default": true, "type": "STANDARD_COLOR"},
+            {"type": "STANDARD_MONOCHROME"}
+          ]
+        },
+        "copies": {},
+        "duplex": {
+          "option": [
+            {"is_default": true, "type": "NO_DUPLEX"},
+            {"type": "LONG_EDGE"},
+            {"type": "SHORT_EDGE"}
+          ]
+        },
+        "page_orientation": {
+          "option": [
+            {"is_default": true, "type": "PORTRAIT"},
+            {"type": "LANDSCAPE"},
+            {"type": "AUTO"}
+          ]
+        }
+      }
+    }
+  };
+}
+
 // Test that disabled settings hide the disabled sections.
 TEST_F('PrintPreviewWebUITest', 'TestSectionsDisabled', function() {
   checkSectionVisible($('layout-settings'), false);
@@ -242,14 +276,13 @@ TEST_F('PrintPreviewWebUITest', 'TestSectionsDisabled', function() {
 
   var capsSetEvent =
       new Event(print_preview.NativeLayer.EventType.CAPABILITIES_SET);
-  capsSetEvent.settingsInfo = {
-    'printerId': 'FooDevice',
-    'disableColorOption': true,
-    'setColorAsDefault': true,
-    'disableCopiesOption': true,
-    'disableLandscapeOption': false,
-    'printerDefaultDuplexValue': 0
+  capsSetEvent.settingsInfo = getCddTemplate("FooDevice");
+  capsSetEvent.settingsInfo.capabilities.printer.color = {
+    "option": [
+      {"is_default": true, "type": "STANDARD_COLOR"}
+    ]
   };
+  delete capsSetEvent.settingsInfo.capabilities.printer.copies;
   this.nativeLayer_.dispatchEvent(capsSetEvent);
 
   checkSectionVisible($('layout-settings'), true);
@@ -321,14 +354,7 @@ TEST_F('PrintPreviewWebUITest', 'SourceIsHTMLHideFitToPageOption', function() {
 
   var capsSetEvent =
       new Event(print_preview.NativeLayer.EventType.CAPABILITIES_SET);
-  capsSetEvent.settingsInfo = {
-    'printerId': 'FooDevice',
-    'disableColorOption': false,
-    'setColorAsDefault': true,
-    'disableCopiesOption': true,
-    'disableLandscapeOption': true,
-    'printerDefaultDuplexValue': 0
-  };
+  capsSetEvent.settingsInfo = getCddTemplate("FooDevice");
   this.nativeLayer_.dispatchEvent(capsSetEvent);
 
   checkElementDisplayed(
@@ -353,14 +379,7 @@ TEST_F('PrintPreviewWebUITest', 'SourceIsPDFShowFitToPageOption', function() {
 
   var capsSetEvent =
       new Event(print_preview.NativeLayer.EventType.CAPABILITIES_SET);
-  capsSetEvent.settingsInfo = {
-    'printerId': 'FooDevice',
-    'disableColorOption': false,
-    'setColorAsDefault': true,
-    'disableCopiesOption': true,
-    'disableLandscapeOption': true,
-    'printerDefaultDuplexValue': 0
-  };
+  capsSetEvent.settingsInfo = getCddTemplate("FooDevice");
   this.nativeLayer_.dispatchEvent(capsSetEvent);
 
   checkElementDisplayed(
@@ -388,14 +407,7 @@ TEST_F('PrintPreviewWebUITest', 'PrintScalingDisabledForPlugin', function() {
 
   var capsSetEvent =
       new Event(print_preview.NativeLayer.EventType.CAPABILITIES_SET);
-  capsSetEvent.settingsInfo = {
-    'printerId': 'FooDevice',
-    'disableColorOption': false,
-    'setColorAsDefault': true,
-    'disableCopiesOption': true,
-    'disableLandscapeOption': true,
-    'printerDefaultDuplexValue': 0
-  };
+  capsSetEvent.settingsInfo = getCddTemplate("FooDevice");
   this.nativeLayer_.dispatchEvent(capsSetEvent);
 
   // Indicate that the PDF does not support scaling by default.
@@ -424,14 +436,7 @@ TEST_F('PrintPreviewWebUITest', 'CustomMarginsControlsCheck', function() {
 
   var capsSetEvent =
       new Event(print_preview.NativeLayer.EventType.CAPABILITIES_SET);
-  capsSetEvent.settingsInfo = {
-    'printerId': 'FooDevice',
-    'disableColorOption': false,
-    'setColorAsDefault': true,
-    'disableCopiesOption': true,
-    'disableLandscapeOption': true,
-    'printerDefaultDuplexValue': 0
-  };
+  capsSetEvent.settingsInfo = getCddTemplate("FooDevice");
   this.nativeLayer_.dispatchEvent(capsSetEvent);
 
   printPreview.printTicketStore_.marginsType.updateValue(
@@ -462,14 +467,7 @@ TEST_F('PrintPreviewWebUITest',
 
   var capsSetEvent =
       new Event(print_preview.NativeLayer.EventType.CAPABILITIES_SET);
-  capsSetEvent.settingsInfo = {
-    'printerId': 'FooDevice',
-    'disableColorOption': false,
-    'setColorAsDefault': true,
-    'disableCopiesOption': true,
-    'disableLandscapeOption': true,
-    'printerDefaultDuplexValue': 0
-  };
+  capsSetEvent.settingsInfo = getCddTemplate("FooDevice");
   this.nativeLayer_.dispatchEvent(capsSetEvent);
 
   checkElementDisplayed(
@@ -502,14 +500,7 @@ TEST_F('PrintPreviewWebUITest',
 
   var capsSetEvent =
       new Event(print_preview.NativeLayer.EventType.CAPABILITIES_SET);
-  capsSetEvent.settingsInfo = {
-    'printerId': 'FooDevice',
-    'disableColorOption': false,
-    'setColorAsDefault': true,
-    'disableCopiesOption': true,
-    'disableLandscapeOption': true,
-    'printerDefaultDuplexValue': 0
-  };
+  capsSetEvent.settingsInfo = getCddTemplate("FooDevice");
   this.nativeLayer_.dispatchEvent(capsSetEvent);
 
   checkElementDisplayed(
@@ -542,14 +533,7 @@ TEST_F('PrintPreviewWebUITest',
 
   var capsSetEvent =
       new Event(print_preview.NativeLayer.EventType.CAPABILITIES_SET);
-  capsSetEvent.settingsInfo = {
-    'printerId': 'FooDevice',
-    'disableColorOption': false,
-    'setColorAsDefault': true,
-    'disableCopiesOption': true,
-    'disableLandscapeOption': true,
-    'printerDefaultDuplexValue': 0
-  };
+  capsSetEvent.settingsInfo = getCddTemplate("FooDevice");
   this.nativeLayer_.dispatchEvent(capsSetEvent);
 
   checkElementDisplayed(
@@ -583,14 +567,7 @@ TEST_F('PrintPreviewWebUITest',
 
   var capsSetEvent =
       new Event(print_preview.NativeLayer.EventType.CAPABILITIES_SET);
-  capsSetEvent.settingsInfo = {
-    'printerId': 'FooDevice',
-    'disableColorOption': false,
-    'setColorAsDefault': true,
-    'disableCopiesOption': true,
-    'disableLandscapeOption': true,
-    'printerDefaultDuplexValue': 0
-  };
+  capsSetEvent.settingsInfo = getCddTemplate("FooDevice");
   this.nativeLayer_.dispatchEvent(capsSetEvent);
 
   checkElementDisplayed(
@@ -621,14 +598,7 @@ TEST_F('PrintPreviewWebUITest', 'TestColorSettingsTrue', function() {
 
   var capsSetEvent =
       new Event(print_preview.NativeLayer.EventType.CAPABILITIES_SET);
-  capsSetEvent.settingsInfo = {
-    'printerId': 'FooDevice',
-    'disableColorOption': false,
-    'setColorAsDefault': true,
-    'disableCopiesOption': false,
-    'disableLandscapeOption': true,
-    'printerDefaultDuplexValue': 0
-  };
+  capsSetEvent.settingsInfo = getCddTemplate("FooDevice");
   this.nativeLayer_.dispatchEvent(capsSetEvent);
 
   checkSectionVisible($('color-settings'), true);
@@ -653,13 +623,11 @@ TEST_F('PrintPreviewWebUITest', 'TestColorSettingsFalse', function() {
 
   var capsSetEvent =
       new Event(print_preview.NativeLayer.EventType.CAPABILITIES_SET);
-  capsSetEvent.settingsInfo = {
-    'printerId': 'FooDevice',
-    'disableColorOption': true,
-    'setColorAsDefault': false,
-    'disableCopiesOption': false,
-    'disableLandscapeOption': true,
-    'printerDefaultDuplexValue': 0
+  capsSetEvent.settingsInfo = getCddTemplate("FooDevice");
+  capsSetEvent.settingsInfo.capabilities.printer.color = {
+    "option": [
+      {"is_default": true, "type": "STANDARD_MONOCHROME"}
+    ]
   };
   this.nativeLayer_.dispatchEvent(capsSetEvent);
 
@@ -690,15 +658,7 @@ TEST_F('PrintPreviewWebUITest', 'TestDuplexSettingsTrue', function() {
 
   var capsSetEvent =
       new Event(print_preview.NativeLayer.EventType.CAPABILITIES_SET);
-  capsSetEvent.settingsInfo = {
-    'printerId': 'FooDevice',
-    'disableColorOption': false,
-    'setColorAsDefault': true,
-    'disableCopiesOption': false,
-    'disableLandscapeOption': true,
-    'printerDefaultDuplexValue': 0,
-    'setDuplexAsDefault': false
-  };
+  capsSetEvent.settingsInfo = getCddTemplate("FooDevice");
   this.nativeLayer_.dispatchEvent(capsSetEvent);
 
   checkSectionVisible(otherOptionsDiv, true);
@@ -724,15 +684,8 @@ TEST_F('PrintPreviewWebUITest', 'TestDuplexSettingsFalse', function() {
 
   var capsSetEvent =
      new Event(print_preview.NativeLayer.EventType.CAPABILITIES_SET);
-  capsSetEvent.settingsInfo = {
-   'printerId': 'FooDevice',
-   'disableColorOption': false,
-   'setColorAsDefault': true,
-   'disableCopiesOption': false,
-   'disableLandscapeOption': true,
-   'printerDefaultDuplexValue': -1,
-   'setDuplexAsDefault': false
-  };
+  capsSetEvent.settingsInfo = getCddTemplate("FooDevice");
+  delete capsSetEvent.settingsInfo.capabilities.printer.duplex;
   this.nativeLayer_.dispatchEvent(capsSetEvent);
 
   checkSectionVisible(otherOptionsDiv, true);
@@ -754,14 +707,7 @@ TEST_F('PrintPreviewWebUITest', 'TestPrinterChangeUpdatesPreview', function() {
 
   var capsSetEvent =
       new Event(print_preview.NativeLayer.EventType.CAPABILITIES_SET);
-  capsSetEvent.settingsInfo = {
-    'printerId': 'FooDevice',
-    'disableColorOption': false,
-    'setColorAsDefault': true,
-    'disableCopiesOption': true,
-    'disableLandscapeOption': true,
-    'printerDefaultDuplexValue': 0
-  };
+  capsSetEvent.settingsInfo = getCddTemplate("FooDevice");
   this.nativeLayer_.dispatchEvent(capsSetEvent);
 
   var previewGenerator = mock(print_preview.PreviewGenerator);
@@ -781,13 +727,11 @@ TEST_F('PrintPreviewWebUITest', 'TestPrinterChangeUpdatesPreview', function() {
 
   var capsSetEvent =
       new Event(print_preview.NativeLayer.EventType.CAPABILITIES_SET);
-  capsSetEvent.settingsInfo = {
-    'printerId': 'BarDevice',
-    'disableColorOption': true,
-    'setColorAsDefault': false,
-    'disableCopiesOption': true,
-    'disableLandscapeOption': true,
-    'printerDefaultDuplexValue': 0
+  capsSetEvent.settingsInfo = getCddTemplate("BarDevice");
+  capsSetEvent.settingsInfo.capabilities.printer.color = {
+    "option": [
+      {"is_default": true, "type": "STANDARD_MONOCHROME"}
+    ]
   };
   this.nativeLayer_.dispatchEvent(capsSetEvent);
 });

@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/file_util.h"
+#include "base/json/json_writer.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/object_watcher.h"
@@ -13,6 +14,7 @@
 #include "base/win/scoped_comptr.h"
 #include "base/win/scoped_hdc.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/cloud_print/cloud_print_cdd_conversion.h"
 #include "chrome/common/cloud_print/cloud_print_constants.h"
 #include "chrome/common/crash_keys.h"
 #include "chrome/service/cloud_print/cdd_conversion_win.h"
@@ -565,7 +567,13 @@ class PrinterCapsHandler : public ServiceUtilityProcessHost::Client {
     printing::PrinterCapsAndDefaults printer_info;
     if (succeeded) {
       printer_info.caps_mime_type = kContentTypeJSON;
-      printer_info.printer_capabilities = CapabilitiesToCdd(semantic_info);
+      scoped_ptr<base::DictionaryValue> description(
+          PrinterSemanticCapsAndDefaultsToCdd(semantic_info));
+      if (description) {
+        base::JSONWriter::WriteWithOptions(
+            description.get(), base::JSONWriter::OPTIONS_PRETTY_PRINT,
+            &printer_info.printer_capabilities);
+      }
     }
     callback_.Run(succeeded, printer_name, printer_info);
     callback_.Reset();

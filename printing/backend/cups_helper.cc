@@ -365,6 +365,10 @@ bool ParsePpdCapabilities(
 #if !defined(OS_MACOSX)
   MarkLpOptions(printer_name, &ppd);
 #endif
+  caps.collate_capable = true;
+  caps.collate_default = true;
+  caps.copies_capable = true;
+
   ppd_choice_t* duplex_choice = ppdFindMarkedChoice(ppd, kDuplex);
   if (!duplex_choice) {
     ppd_option_t* option = ppdFindOption(ppd, kDuplex);

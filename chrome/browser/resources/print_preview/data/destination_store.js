@@ -733,17 +733,16 @@ cr.define('print_preview', function() {
           destinationId,
           '');
       var destination = this.destinationMap_[key];
+      var capabilities = DestinationStore.localizeCapabilities_(
+          event.settingsInfo.capabilities);
       // Special case for PDF printer (until local printers capabilities are
       // reported in CDD format too).
       if (destinationId ==
           print_preview.Destination.GooglePromotedId.SAVE_AS_PDF) {
         if (destination) {
-          destination.capabilities = DestinationStore.localizeCapabilities_(
-              event.settingsInfo.capabilities);
+          destination.capabilities = capabilities;
         }
       } else {
-        var capabilities = print_preview.LocalCapabilitiesParser.parse(
-            event.settingsInfo);
         if (destination) {
           // In case there were multiple capabilities request for this local
           // destination, just ignore the later ones.

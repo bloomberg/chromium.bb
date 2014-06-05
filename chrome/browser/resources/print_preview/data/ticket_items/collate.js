@@ -38,12 +38,13 @@ cr.define('print_preview.ticket_items', function() {
 
     /** @override */
     getDefaultValueInternal: function() {
-      return this.getCollateCapability_().default || false;
+      var capability = this.getCollateCapability_();
+      return capability.hasOwnProperty('default') ? capability.default : true;
     },
 
     /** @override */
     getCapabilityNotAvailableValueInternal: function() {
-      return false;
+      return true;
     },
 
     /**

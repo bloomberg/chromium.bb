@@ -85,6 +85,8 @@
         'common/chrome_version_info.h',
         'common/cloud_print/cloud_print_class_mac.h',
         'common/cloud_print/cloud_print_class_mac.mm',
+        'common/cloud_print/cloud_print_cdd_conversion.cc',
+        'common/cloud_print/cloud_print_cdd_conversion.h',
         'common/cloud_print/cloud_print_constants.cc',
         'common/cloud_print/cloud_print_constants.h',
         'common/cloud_print/cloud_print_helpers.cc',
