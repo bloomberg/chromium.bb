@@ -532,7 +532,7 @@ IN_PROC_BROWSER_TEST_F(MAYBE_ExtensionCrashRecoveryTest,
   chrome::NewTab(browser());
   ui_test_utils::NavigateToURL(browser(),
                                GURL(std::string(extensions::kExtensionScheme) +
-                                   content::kStandardSchemeSeparator +
+                                   url::kStandardSchemeSeparator +
                                    first_extension_id_ + "/background.html"));
 
   const int tabs_before = tab_strip->count();

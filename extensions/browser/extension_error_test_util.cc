@@ -32,7 +32,7 @@ scoped_ptr<ExtensionError> CreateNewRuntimeError(
 
   base::string16 source =
       base::UTF8ToUTF16(std::string(kExtensionScheme) +
-                            content::kStandardSchemeSeparator +
+                            url::kStandardSchemeSeparator +
                             extension_id);
 
   return scoped_ptr<ExtensionError>(

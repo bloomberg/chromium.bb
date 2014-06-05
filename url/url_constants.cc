@@ -18,4 +18,6 @@ const char kMailToScheme[] = "mailto";
 const char kWsScheme[] = "ws";
 const char kWssScheme[] = "wss";
 
+const char kStandardSchemeSeparator[] = "://";
+
 }  // namespace url

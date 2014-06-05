@@ -65,7 +65,7 @@ TEST_F(BuiltinProviderTest, TypingScheme) {
   const base::string16 kSeparator1 = ASCIIToUTF16(":");
   const base::string16 kSeparator2 = ASCIIToUTF16(":/");
   const base::string16 kSeparator3 =
-      ASCIIToUTF16(content::kStandardSchemeSeparator);
+      ASCIIToUTF16(url::kStandardSchemeSeparator);
 
   // These default URLs should correspond with those in BuiltinProvider::Start.
   const GURL kURL1 = GURL(chrome::kChromeUIChromeURLsURL);
@@ -112,7 +112,7 @@ TEST_F(BuiltinProviderTest, TypingScheme) {
   const base::string16 kSeparator1 = ASCIIToUTF16(":");
   const base::string16 kSeparator2 = ASCIIToUTF16(":/");
   const base::string16 kSeparator3 =
-      ASCIIToUTF16(content::kStandardSchemeSeparator);
+      ASCIIToUTF16(url::kStandardSchemeSeparator);
 
   // These default URLs should correspond with those in BuiltinProvider::Start.
   const GURL kURL1 = GURL(chrome::kChromeUIChromeURLsURL);
@@ -177,7 +177,7 @@ TEST_F(BuiltinProviderTest, ChromeURLs) {
   const base::string16 kSeparator1 = ASCIIToUTF16(":");
   const base::string16 kSeparator2 = ASCIIToUTF16(":/");
   const base::string16 kSeparator3 =
-      ASCIIToUTF16(content::kStandardSchemeSeparator);
+      ASCIIToUTF16(url::kStandardSchemeSeparator);
 
   // This makes assumptions about the chrome URLs listed by the BuiltinProvider.
   // Currently they are derived from chrome::kChromeHostURLs[].
@@ -230,7 +230,7 @@ TEST_F(BuiltinProviderTest, AboutBlank) {
   const base::string16 kAboutBlank = ASCIIToUTF16(content::kAboutBlankURL);
   const base::string16 kBlank = ASCIIToUTF16("blank");
   const base::string16 kSeparator1 =
-      ASCIIToUTF16(content::kStandardSchemeSeparator);
+      ASCIIToUTF16(url::kStandardSchemeSeparator);
   const base::string16 kSeparator2 = ASCIIToUTF16(":///");
   const base::string16 kSeparator3 = ASCIIToUTF16(";///");
 

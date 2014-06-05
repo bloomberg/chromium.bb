@@ -46,8 +46,6 @@ const char kChromeUIPpapiFlashHangURL[] = "chrome://ppapiflashhang";
 const char kChromeUIServiceWorkerInternalsURL[] =
     "chrome://serviceworker-internals";
 
-const char kStandardSchemeSeparator[] = "://";
-
 // This error URL is loaded in normal web renderer processes, so it should not
 // have a chrome:// scheme that might let it be confused with a WebUI page.
 const char kUnreachableWebDataURL[] = "data:text/html,chromewebdata";

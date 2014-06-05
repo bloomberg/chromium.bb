@@ -53,7 +53,7 @@ class GtalkExtensionTest : public ExtensionBrowserTest {
 
   std::string GetViewerUrl() {
     return std::string(extensions::kExtensionScheme) +
-        content::kStandardSchemeSeparator + GetInstalledExtensionId() +
+        url::kStandardSchemeSeparator + GetInstalledExtensionId() +
         "/viewer.html";
   }
 

@@ -41,7 +41,7 @@ struct InputViewConfig : public VirtualKeyboardBrowserTestConfig {
     extension_id_ = id;
     test_dir_ = kInputViewTestDir;
     url_ = std::string(extensions::kExtensionScheme) +
-        content::kStandardSchemeSeparator + id + "/inputview.html?id=" +
+        url::kStandardSchemeSeparator + id + "/inputview.html?id=" +
         layout;
   }
 };

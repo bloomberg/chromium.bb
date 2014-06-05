@@ -232,10 +232,10 @@ net::URLRequestJob* AndroidRequestInterceptorBase::MaybeInterceptRequest(
 
 AssetFileRequestInterceptor::AssetFileRequestInterceptor()
     : asset_prefix_(std::string(url::kFileScheme) +
-                    std::string(content::kStandardSchemeSeparator) +
+                    std::string(url::kStandardSchemeSeparator) +
                     android_webview::kAndroidAssetPath),
       resource_prefix_(std::string(url::kFileScheme) +
-                       std::string(content::kStandardSchemeSeparator) +
+                       std::string(url::kStandardSchemeSeparator) +
                        android_webview::kAndroidResourcePath) {
 }
 

@@ -66,7 +66,7 @@ GURL GetFeedUrl(net::SpawnedTestServer* server, const std::string& feed_page,
     // We navigate directly to the subscribe page for feeds where the feed
     // sniffing won't work, in other words, as is the case for malformed feeds.
     return GURL(std::string(extensions::kExtensionScheme) +
-        content::kStandardSchemeSeparator +
+        url::kStandardSchemeSeparator +
         extension_id + std::string(kSubscribePage) + std::string("?") +
         feed_url.spec() + std::string("&synchronous"));
   } else {

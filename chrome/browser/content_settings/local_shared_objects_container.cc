@@ -100,7 +100,7 @@ size_t LocalSharedObjectsContainer::GetObjectCountForDomain(
       // SameDomainOrHost method below. It does not matter which scheme is
       // used as the scheme is ignored by the SameDomainOrHost method.
       GURL domain_url(std::string(url::kHttpScheme) +
-                      content::kStandardSchemeSeparator + cookie_domain);
+                      url::kStandardSchemeSeparator + cookie_domain);
       if (SameDomainOrHost(origin, domain_url))
         ++count;
     }

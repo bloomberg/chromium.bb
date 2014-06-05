@@ -17,7 +17,7 @@ std::string OriginToString(const GURL& origin) {
                                  : std::string());
   std::string scheme_component(!origin.SchemeIs(url::kHttpScheme)
                                    ? origin.scheme() +
-                                     content::kStandardSchemeSeparator
+                                     url::kStandardSchemeSeparator
                                    : std::string());
    return scheme_component + origin.host() + port_component;
 }

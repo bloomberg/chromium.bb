@@ -71,9 +71,9 @@ void BuiltinProvider::Start(const AutocompleteInput& input,
 
   const size_t kAboutSchemeLength = strlen(content::kAboutScheme);
   const base::string16 kAbout = base::ASCIIToUTF16(content::kAboutScheme) +
-      base::ASCIIToUTF16(content::kStandardSchemeSeparator);
+      base::ASCIIToUTF16(url::kStandardSchemeSeparator);
   const base::string16 kChrome = base::ASCIIToUTF16(content::kChromeUIScheme) +
-      base::ASCIIToUTF16(content::kStandardSchemeSeparator);
+      base::ASCIIToUTF16(url::kStandardSchemeSeparator);
 
   const int kUrl = ACMatchClassification::URL;
   const int kMatch = kUrl | ACMatchClassification::MATCH;

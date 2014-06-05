@@ -489,7 +489,7 @@ void OmniboxEditModel::AdjustTextForCopy(int sel_min,
       url->SchemeIs(url::kHttpScheme) && perm_url.host() == url->host()) {
     *write_url = true;
     base::string16 http = base::ASCIIToUTF16(url::kHttpScheme) +
-        base::ASCIIToUTF16(content::kStandardSchemeSeparator);
+        base::ASCIIToUTF16(url::kStandardSchemeSeparator);
     if (text->compare(0, http.length(), http) != 0)
       *text = http + *text;
   }

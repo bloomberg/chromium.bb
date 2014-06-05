@@ -182,7 +182,7 @@ bool ContentSettingsPattern::Builder::Canonicalize(PatternParts* parts) {
   if (parts->scheme == std::string(url::kFileScheme) &&
       !parts->is_path_wildcard) {
     GURL url(std::string(url::kFileScheme) +
-             std::string(content::kStandardSchemeSeparator) + parts->path);
+             std::string(url::kStandardSchemeSeparator) + parts->path);
     parts->path = url.path();
   }
 

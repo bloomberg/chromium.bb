@@ -320,7 +320,7 @@ bool URLDatabase::IsTypedHost(const std::string& host) {
   URLRows dummy;
   for (size_t i = 0; i < arraysize(schemes); ++i) {
     std::string scheme_and_host(schemes[i]);
-    scheme_and_host += content::kStandardSchemeSeparator + host;
+    scheme_and_host += url::kStandardSchemeSeparator + host;
     if (AutocompleteForPrefix(scheme_and_host + '/', 1, true, &dummy) ||
         AutocompleteForPrefix(scheme_and_host + ':', 1, true, &dummy))
       return true;

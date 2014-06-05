@@ -2642,7 +2642,7 @@ IN_PROC_BROWSER_TEST_F(PolicyStatisticsCollectorTest, Startup) {
   content::RunAllPendingInMessageLoop();
 
   GURL kAboutHistograms = GURL(std::string(content::kAboutScheme) +
-                               std::string(content::kStandardSchemeSeparator) +
+                               std::string(url::kStandardSchemeSeparator) +
                                std::string(content::kChromeUIHistogramHost));
   ui_test_utils::NavigateToURL(browser(), kAboutHistograms);
   content::WebContents* contents =

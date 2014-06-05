@@ -123,7 +123,7 @@ GURL GetURLFromCanonicalCookie(const net::CanonicalCookie& cookie) {
       cookie.IsSecure() ? url::kHttpsScheme : url::kHttpScheme;
   const std::string host =
       domain_key.find('.') != 0 ? domain_key : domain_key.substr(1);
-  return GURL(scheme + content::kStandardSchemeSeparator + host + "/");
+  return GURL(scheme + url::kStandardSchemeSeparator + host + "/");
 }
 
 void AppendMatchingCookiesToVector(const net::CookieList& all_cookies,

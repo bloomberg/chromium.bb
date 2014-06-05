@@ -283,7 +283,7 @@ bool Extension::FormatPEMForFileOutput(const std::string& input,
 // static
 GURL Extension::GetBaseURLFromExtensionId(const std::string& extension_id) {
   return GURL(std::string(extensions::kExtensionScheme) +
-              content::kStandardSchemeSeparator + extension_id + "/");
+              url::kStandardSchemeSeparator + extension_id + "/");
 }
 
 bool Extension::HasAPIPermission(APIPermission::ID permission) const {

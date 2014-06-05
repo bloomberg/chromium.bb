@@ -75,7 +75,7 @@ bool HasOnlySecureTokens(base::StringTokenizer& tokenizer,
         StartsWithASCII(source, "chrome://", true) ||
         StartsWithASCII(source,
                         std::string(extensions::kExtensionScheme) +
-                            content::kStandardSchemeSeparator,
+                            url::kStandardSchemeSeparator,
                         true) ||
         StartsWithASCII(source, "chrome-extension-resource:", true)) {
       continue;

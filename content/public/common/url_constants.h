@@ -53,9 +53,6 @@ CONTENT_EXPORT extern const char kChromeUIPpapiFlashCrashURL[];
 CONTENT_EXPORT extern const char kChromeUIPpapiFlashHangURL[];
 CONTENT_EXPORT extern const char kChromeUIServiceWorkerInternalsURL[];
 
-// Used to separate a standard scheme and the hostname: "://".
-CONTENT_EXPORT extern const char kStandardSchemeSeparator[];
-
 // Special URL used to start a navigation to an error page.
 CONTENT_EXPORT extern const char kUnreachableWebDataURL[];
 
