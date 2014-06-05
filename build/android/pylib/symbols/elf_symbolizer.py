@@ -15,6 +15,13 @@ import sys
 import threading
 
 
+# addr2line builds a possibly infinite memory cache that can exhaust
+# the computer's memory if allowed to grow for too long. This constant
+# controls how many lookups we do before restarting the process. 4000
+# gives near peak performance without extreme memory usage.
+ADDR2LINE_RECYCLE_LIMIT = 4000
+
+
 class ELFSymbolizer(object):
   """An uber-fast (multiprocessing, pipelined and asynchronous) ELF symbolizer.
 
@@ -117,6 +124,7 @@ class ELFSymbolizer(object):
     # Essentially, this drains all the addr2line(s) out queues.
     for a2l_to_purge in self._a2l_instances:
       a2l_to_purge.ProcessAllResolvedSymbolsInQueue()
+      a2l_to_purge.RecycleIfNecessary()
 
     # Find the best instance according to this logic:
     # 1. Find an existing instance with the shortest queue.
@@ -183,6 +191,10 @@ class ELFSymbolizer(object):
       # This is essentially len(self._request_queue). It has been optimized to a
       # separate field because turned out to be a perf hot-spot.
       self.queue_size = 0
+
+      # Keep track of the number of symbols a process has processed to
+      # avoid a single process growing too big and using all the memory.
+      self._processed_symbols_count = 0
 
       # Objects required to handle the addr2line subprocess.
       self._proc = None  # Subprocess.Popen(...) instance.
@@ -251,6 +263,15 @@ class ELFSymbolizer(object):
           break
         self._ProcessSymbolOutput(lines)
 
+    def RecycleIfNecessary(self):
+      """Restarts the process if it has been used for too long.
+
+      A long running addr2line process will consume excessive amounts
+      of memory without any gain in performance."""
+      if self._processed_symbols_count >= ADDR2LINE_RECYCLE_LIMIT:
+        self._RestartAddr2LineProcess()
+
+
     def Terminate(self):
       """Kills the underlying addr2line process.
 
@@ -297,6 +318,7 @@ class ELFSymbolizer(object):
         if not innermost_sym_info:
           innermost_sym_info = sym_info
 
+      self._processed_symbols_count += 1
       self._symbolizer.callback(innermost_sym_info, callback_arg)
 
     def _RestartAddr2LineProcess(self):
@@ -324,6 +346,8 @@ class ELFSymbolizer(object):
           args=(self._proc.stdout, self._out_queue, self._symbolizer.inlines))
       self._thread.daemon = True  # Don't prevent early process exit.
       self._thread.start()
+
+      self._processed_symbols_count = 0
 
       # Replay the pending requests on the new process (only for the case
       # of a hung addr2line timing out during the game).
