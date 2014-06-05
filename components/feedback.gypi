@@ -12,7 +12,7 @@
         '../content/content.gyp:content_common',
         '../net/net.gyp:net',
         '../third_party/zlib/google/zip.gyp:zip',
-        'components.gyp:keyed_service_core',
+        'keyed_service_core',
         'feedback_proto',
       ],
       'include_dirs': [
