@@ -155,7 +155,7 @@ std::vector<base::string16> InnerBoundedLabel::GetWrappedText(int width,
     base::string16 last =
         wrapped[lines - 1] + base::UTF8ToUTF16(gfx::kEllipsis);
     if (width > 0 && gfx::GetStringWidth(last, font_list()) > width)
-      last = gfx::ElideText(last, font_list(), width, gfx::ELIDE_AT_END);
+      last = gfx::ElideText(last, font_list(), width, gfx::ELIDE_TAIL);
     wrapped.resize(lines - 1);
     wrapped.push_back(last);
   }

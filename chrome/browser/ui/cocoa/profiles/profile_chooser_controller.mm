@@ -111,11 +111,8 @@ void SetWindowSize(NSWindow* window, NSSize size) {
 }
 
 NSString* ElideEmail(const std::string& email, CGFloat width) {
-  base::string16 elidedEmail = gfx::ElideEmail(
-      base::UTF8ToUTF16(email),
-      ui::ResourceBundle::GetSharedInstance().GetFontList(
-          ui::ResourceBundle::BaseFont),
-      width);
+  const base::string16 elidedEmail = gfx::ElideText(
+      base::UTF8ToUTF16(email), gfx::FontList(), width, gfx::ELIDE_EMAIL);
   return base::SysUTF16ToNSString(elidedEmail);
 }
 
@@ -1352,10 +1349,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
         l10n_util::GetStringFUTF16(
             IDS_SYNC_START_SYNC_BUTTON_LABEL,
             l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME)),
-        ui::ResourceBundle::GetSharedInstance().GetFontList(
-            ui::ResourceBundle::BaseFont),
-        rect.size.width,
-        gfx::ELIDE_AT_END));
+        gfx::FontList(), rect.size.width, gfx::ELIDE_TAIL));
 
     [link setTitle:elidedButtonText];
     [link setTarget:self];
@@ -1482,10 +1476,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   NSString* elidedButtonText = base::SysUTF16ToNSString(gfx::ElideText(
       l10n_util::GetStringFUTF16(
           IDS_PROFILES_PROFILE_ADD_ACCOUNT_BUTTON, item.name),
-      ui::ResourceBundle::GetSharedInstance().GetFontList(
-          ui::ResourceBundle::BaseFont),
-      rect.size.width,
-      gfx::ELIDE_AT_END));
+      gfx::FontList(), rect.size.width, gfx::ELIDE_TAIL));
 
   NSButton* addAccountsButton =
       [self linkButtonWithTitle:elidedButtonText

@@ -29,7 +29,7 @@
                          toWidth:(int)width {
   NSFont* nsfont = [NSFont menuBarFontOfSize:0];  // 0 means "default"
   return gfx::ElideText(title, gfx::FontList(gfx::Font(nsfont)), width,
-                        gfx::ELIDE_AT_END);
+                        gfx::ELIDE_TAIL);
 }
 
 - (id)init {

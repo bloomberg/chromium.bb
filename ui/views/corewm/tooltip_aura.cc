@@ -135,7 +135,7 @@ void TooltipAura::TrimTooltipToFit(const gfx::FontList& font_list,
     if (line_width > available_width) {
       *width = available_width;
       result.append(gfx::ElideText(*l, font_list, available_width,
-                                   gfx::ELIDE_AT_END));
+                                   gfx::ELIDE_TAIL));
     } else {
       *width = std::max(*width, line_width);
       result.append(*l);

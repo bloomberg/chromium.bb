@@ -64,7 +64,7 @@ base::string16 ElideComponentizedPath(
         url_path_elements, url_filename, i);
     if (available_pixel_width >= GetStringWidthF(elided_path, font_list))
       return ElideText(elided_path + url_query, font_list,
-                       available_pixel_width, gfx::ELIDE_AT_END);
+                       available_pixel_width, gfx::ELIDE_TAIL);
   }
 
   return base::string16();
@@ -124,7 +124,7 @@ base::string16 ElideUrl(const GURL& url,
   // If non-standard, return plain eliding.
   if (!url.IsStandard())
     return ElideText(url_string, font_list, available_pixel_width,
-                     gfx::ELIDE_AT_END);
+                     gfx::ELIDE_TAIL);
 
   // Now start eliding url_string to fit within available pixel width.
   // Fist pass - check to see whether entire url_string fits.
@@ -143,7 +143,7 @@ base::string16 ElideUrl(const GURL& url,
       url_string.substr(0, path_start_index + path_len);
   if (available_pixel_width >= GetStringWidthF(url_minus_query, font_list))
     return ElideText(url_string, font_list, available_pixel_width,
-                     gfx::ELIDE_AT_END);
+                     gfx::ELIDE_TAIL);
 
   base::string16 url_host;
   base::string16 url_domain;
@@ -195,7 +195,7 @@ base::string16 ElideUrl(const GURL& url,
         (pixel_width_url_subdomain + pixel_width_url_domain +
          pixel_width_url_path - GetStringWidthF(url_query, font_list))) {
       return ElideText(url_subdomain + url_domain + url_path_query_etc,
-                       font_list, available_pixel_width, gfx::ELIDE_AT_END);
+                       font_list, available_pixel_width, gfx::ELIDE_TAIL);
     }
   }
 
@@ -223,7 +223,7 @@ base::string16 ElideUrl(const GURL& url,
     // No path to elide, or too long of a path (could overflow in loop below)
     // Just elide this as a text string.
     return ElideText(url_subdomain + url_domain + url_path_query_etc, font_list,
-                     available_pixel_width, gfx::ELIDE_AT_END);
+                     available_pixel_width, gfx::ELIDE_TAIL);
   }
 
   // Start eliding the path and replacing elements by ".../".
@@ -276,7 +276,7 @@ base::string16 ElideUrl(const GURL& url,
   }
 
   return ElideText(final_elided_url_string, font_list, available_pixel_width,
-                   gfx::ELIDE_AT_END);
+                   gfx::ELIDE_TAIL);
 }
 
 base::string16 ElideHost(const GURL& url,
@@ -299,7 +299,7 @@ base::string16 ElideHost(const GURL& url,
   if (subdomain_width <= 0)
     return base::string16(kEllipsisUTF16) + kDot + url_domain;
 
-  base::string16 elided_subdomain = ElideText(
-      url_subdomain, font_list, subdomain_width, gfx::ELIDE_AT_BEGINNING);
+  const base::string16 elided_subdomain = ElideText(
+      url_subdomain, font_list, subdomain_width, gfx::ELIDE_HEAD);
   return elided_subdomain + url_domain;
 }

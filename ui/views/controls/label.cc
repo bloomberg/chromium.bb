@@ -144,8 +144,8 @@ void Label::SetLineHeight(int height) {
 }
 
 void Label::SetMultiLine(bool multi_line) {
-  DCHECK(!multi_line || (elide_behavior_ != ELIDE_IN_MIDDLE &&
-      elide_behavior_ != ELIDE_AT_BEGINNING));
+  DCHECK(!multi_line || (elide_behavior_ == gfx::ELIDE_TAIL ||
+                         elide_behavior_ == gfx::TRUNCATE));
   if (multi_line != is_multi_line_) {
     is_multi_line_ = multi_line;
     ResetCachedSize();
@@ -170,8 +170,9 @@ void Label::SetAllowCharacterBreak(bool allow_character_break) {
   }
 }
 
-void Label::SetElideBehavior(ElideBehavior elide_behavior) {
-  DCHECK(elide_behavior != ELIDE_IN_MIDDLE || !is_multi_line_);
+void Label::SetElideBehavior(gfx::ElideBehavior elide_behavior) {
+  DCHECK(!is_multi_line_ || (elide_behavior_ == gfx::ELIDE_TAIL ||
+                             elide_behavior_ == gfx::TRUNCATE));
   if (elide_behavior != elide_behavior_) {
     elide_behavior_ = elide_behavior;
     ResetCachedSize();
@@ -322,18 +323,22 @@ void Label::PaintText(gfx::Canvas* canvas,
                       const base::string16& text,
                       const gfx::Rect& text_bounds,
                       int flags) {
-  gfx::ShadowValues shadows;
-  if (has_shadow_) {
-    shadows.push_back(gfx::ShadowValue(shadow_offset_, shadow_blur_,
-        enabled() ? enabled_shadow_color_ : disabled_shadow_color_));
-  }
   SkColor color = enabled() ? actual_enabled_color_ : actual_disabled_color_;
-  canvas->DrawStringRectWithShadows(text, font_list_, color, text_bounds,
-                                    line_height_, flags, shadows);
+  if (elide_behavior_ == gfx::FADE_TAIL) {
+    canvas->DrawFadedString(text, font_list_, color, text_bounds, flags);
+  } else {
+    gfx::ShadowValues shadows;
+    if (has_shadow_) {
+      shadows.push_back(gfx::ShadowValue(shadow_offset_, shadow_blur_,
+          enabled() ? enabled_shadow_color_ : disabled_shadow_color_));
+    }
+    canvas->DrawStringRectWithShadows(text, font_list_, color, text_bounds,
+                                      line_height_, flags, shadows);
 
-  if (SkColorGetA(halo_color_) != SK_AlphaTRANSPARENT) {
-    canvas->DrawStringRectWithHalo(text, font_list_, color, halo_color_,
-                                   text_bounds, flags);
+    if (SkColorGetA(halo_color_) != SK_AlphaTRANSPARENT) {
+      canvas->DrawStringRectWithHalo(text, font_list_, color, halo_color_,
+                                     text_bounds, flags);
+    }
   }
 
   if (HasFocus()) {
@@ -398,7 +403,7 @@ void Label::Init(const base::string16& text, const gfx::FontList& font_list) {
   is_multi_line_ = false;
   is_obscured_ = false;
   allow_character_break_ = false;
-  elide_behavior_ = ELIDE_AT_END;
+  elide_behavior_ = gfx::ELIDE_TAIL;
   collapse_when_hidden_ = false;
   directionality_mode_ = USE_UI_DIRECTIONALITY;
   enabled_shadow_color_ = 0;
@@ -511,35 +516,20 @@ void Label::CalculateDrawStringParams(base::string16* paint_text,
                                       int* flags) const {
   DCHECK(paint_text && text_bounds && flags);
 
-  // TODO(msw): Use ElideRectangleText to support eliding multi-line text.  Once
-  // this is done, we can set NO_ELLIPSIS unconditionally at the bottom.
-  if (is_multi_line_ || (elide_behavior_ == NO_ELIDE)) {
+  const bool forbid_ellipsis = elide_behavior_ == gfx::TRUNCATE ||
+                               elide_behavior_ == gfx::FADE_TAIL;
+  if (is_multi_line_ || forbid_ellipsis) {
     *paint_text = layout_text();
-  } else if (elide_behavior_ == ELIDE_AT_BEGINNING) {
-    *paint_text = gfx::ElideText(layout_text(),
-                                 font_list_,
-                                 GetAvailableRect().width(),
-                                 gfx::ELIDE_AT_BEGINNING);
-  } else if (elide_behavior_ == ELIDE_IN_MIDDLE) {
-    *paint_text = gfx::ElideText(layout_text(),
-                                 font_list_,
-                                 GetAvailableRect().width(),
-                                 gfx::ELIDE_IN_MIDDLE);
-  } else if (elide_behavior_ == ELIDE_AT_END) {
-    *paint_text = gfx::ElideText(layout_text(),
-                                 font_list_,
-                                 GetAvailableRect().width(),
-                                 gfx::ELIDE_AT_END);
   } else {
-    DCHECK_EQ(ELIDE_AS_EMAIL, elide_behavior_);
-    *paint_text =
-        gfx::ElideEmail(layout_text(), font_list_, GetAvailableRect().width());
+    *paint_text = gfx::ElideText(layout_text(), font_list_,
+                                 GetAvailableRect().width(), elide_behavior_);
   }
 
   *text_bounds = GetTextBounds();
   *flags = ComputeDrawStringFlags();
-  if (!is_multi_line_ || (elide_behavior_ == NO_ELIDE))
-     *flags |= gfx::Canvas::NO_ELLIPSIS;
+  // TODO(msw): Elide multi-line text with ElideRectangleText instead.
+  if (!is_multi_line_ || forbid_ellipsis)
+    *flags |= gfx::Canvas::NO_ELLIPSIS;
 }
 
 void Label::UpdateColorsFromTheme(const ui::NativeTheme* theme) {

@@ -361,7 +361,7 @@ base::string16 DownloadItemModel::GetTooltipText(const gfx::FontList& font_list,
       reason != content::DOWNLOAD_INTERRUPT_REASON_USER_CANCELED) {
     tooltip += base::ASCIIToUTF16("\n");
     tooltip += gfx::ElideText(InterruptReasonStatusMessage(reason),
-                             font_list, max_width, gfx::ELIDE_AT_END);
+                             font_list, max_width, gfx::ELIDE_TAIL);
   }
   return tooltip;
 }

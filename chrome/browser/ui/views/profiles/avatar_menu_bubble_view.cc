@@ -282,7 +282,7 @@ ProfileItemView::ProfileItemView(const AvatarMenu::Item& item,
   // Add a label to show the sync state.
   sync_state_label_ = new views::Label(item_.sync_state);
   if (item_.signed_in)
-    sync_state_label_->SetElideBehavior(views::Label::ELIDE_AS_EMAIL);
+    sync_state_label_->SetElideBehavior(gfx::ELIDE_EMAIL);
   sync_state_label_->SetFontList(
       rb->GetFontList(ui::ResourceBundle::SmallFont));
   sync_state_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);

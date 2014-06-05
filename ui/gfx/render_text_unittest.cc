@@ -446,7 +446,7 @@ TEST_F(RenderTextTest, ElidedText) {
 
   scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
   render_text->SetFontList(FontList("serif, Sans serif, 12px"));
-  render_text->SetElideBehavior(ELIDE_AT_END);
+  render_text->SetElideBehavior(ELIDE_TAIL);
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); i++) {
     // Compute expected width
@@ -477,7 +477,7 @@ TEST_F(RenderTextTest, ElidedObscuredText) {
 
   scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
   render_text->SetFontList(FontList("serif, Sans serif, 12px"));
-  render_text->SetElideBehavior(ELIDE_AT_END);
+  render_text->SetElideBehavior(ELIDE_TAIL);
   render_text->SetDisplayRect(
       Rect(0, 0, expected_render_text->GetContentWidth(), 100));
   render_text->SetObscured(true);

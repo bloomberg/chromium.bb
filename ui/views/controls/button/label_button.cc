@@ -123,7 +123,7 @@ void LabelButton::SetFontList(const gfx::FontList& font_list) {
       cached_bold_font_list_ : cached_normal_font_list_);
 }
 
-void LabelButton::SetElideBehavior(Label::ElideBehavior elide_behavior) {
+void LabelButton::SetElideBehavior(gfx::ElideBehavior elide_behavior) {
   label_->SetElideBehavior(elide_behavior);
 }
 

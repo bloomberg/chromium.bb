@@ -47,7 +47,7 @@ MediaGalleryCheckboxView::MediaGalleryCheckboxView(
   checkbox_->set_listener(button_listener);
   if (menu_controller)
     checkbox_->set_context_menu_controller(menu_controller);
-  checkbox_->SetElideBehavior(views::Label::ELIDE_IN_MIDDLE);
+  checkbox_->SetElideBehavior(gfx::ELIDE_MIDDLE);
   checkbox_->SetTooltipText(tooltip_text);
 
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
@@ -70,7 +70,7 @@ MediaGalleryCheckboxView::MediaGalleryCheckboxView(
     secondary_text_->set_context_menu_controller(menu_controller);
   secondary_text_->SetVisible(details.length() > 0);
   secondary_text_->SetEnabledColor(kDeemphasizedTextColor);
-  secondary_text_->SetElideBehavior(views::Label::ELIDE_AT_BEGINNING);
+  secondary_text_->SetElideBehavior(gfx::ELIDE_HEAD);
   secondary_text_->SetTooltipText(tooltip_text);
   secondary_text_->SetBorder(views::Border::CreateEmptyBorder(
       0, views::kRelatedControlSmallHorizontalSpacing, 0, 0));

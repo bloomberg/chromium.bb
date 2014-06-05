@@ -164,12 +164,12 @@ OriginChipView::OriginChipView(LocationBarView* location_bar_view,
 
   ev_label_ = new views::Label(base::string16(), GetFontList());
   ev_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  ev_label_->SetElideBehavior(views::Label::NO_ELIDE);
+  ev_label_->SetElideBehavior(gfx::TRUNCATE);
   AddChildView(ev_label_);
 
   host_label_ = new views::Label(base::string16(), GetFontList());
   host_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  host_label_->SetElideBehavior(views::Label::NO_ELIDE);
+  host_label_->SetElideBehavior(gfx::TRUNCATE);
   AddChildView(host_label_);
 
   fade_in_animation_.SetTweenType(gfx::Tween::LINEAR_OUT_SLOW_IN);

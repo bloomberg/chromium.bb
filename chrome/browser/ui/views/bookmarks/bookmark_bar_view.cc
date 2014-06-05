@@ -611,8 +611,8 @@ base::string16 BookmarkBarView::CreateToolTipForURLAndTitle(
   if (!title.empty()) {
     base::string16 localized_title = title;
     base::i18n::AdjustStringForLocaleDirection(&localized_title);
-    result.append(ElideText(localized_title, tt_fonts, max_width,
-                            gfx::ELIDE_AT_END));
+    result.append(gfx::ElideText(localized_title, tt_fonts, max_width,
+                                 gfx::ELIDE_TAIL));
   }
 
   // Only show the URL if the url and title differ.

@@ -1289,9 +1289,8 @@ void ProfileChooserView::CreateAccountButton(views::GridLayout* layout,
 
   views::LabelButton* email_button = new BackgroundColorHoverButton(
       NULL,
-      gfx::ElideEmail(base::UTF8ToUTF16(account),
-                      rb->GetFontList(ui::ResourceBundle::BaseFont),
-                      available_width),
+      gfx::ElideText(base::UTF8ToUTF16(account), gfx::FontList(),
+                     available_width, gfx::ELIDE_EMAIL),
       gfx::ImageSkia(),
       gfx::ImageSkia());
   layout->StartRow(1, 0);

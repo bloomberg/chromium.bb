@@ -106,10 +106,9 @@ TEST(TextEliderTest, MAYBE_ElideEmail) {
   for (size_t i = 0; i < arraysize(testcases); ++i) {
     const base::string16 expected_output = UTF8ToUTF16(testcases[i].output);
     EXPECT_EQ(expected_output,
-              ElideEmail(
-                  UTF8ToUTF16(testcases[i].input),
-                  font_list,
-                  GetStringWidthF(expected_output, font_list)));
+              ElideText(UTF8ToUTF16(testcases[i].input), font_list,
+                        GetStringWidthF(expected_output, font_list),
+                        ELIDE_EMAIL));
   }
 }
 
@@ -139,7 +138,8 @@ TEST(TextEliderTest, MAYBE_ElideEmailMoreSpace) {
     for (size_t j = 0; j < arraysize(test_emails); ++j) {
       // Extra space is available: the email should not be elided.
       const base::string16 test_email = UTF8ToUTF16(test_emails[j]);
-      EXPECT_EQ(test_email, ElideEmail(test_email, font_list, test_width));
+      EXPECT_EQ(test_email,
+                ElideText(test_email, font_list, test_width, ELIDE_EMAIL));
     }
   }
 }
@@ -225,7 +225,7 @@ TEST(TextEliderTest, MAYBE_ElideTextTruncate) {
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
     base::string16 result = ElideText(UTF8ToUTF16(cases[i].input), font_list,
-                                cases[i].width, TRUNCATE_AT_END);
+                                      cases[i].width, TRUNCATE);
     EXPECT_EQ(cases[i].output, UTF16ToUTF8(result));
   }
 }
@@ -257,7 +257,7 @@ TEST(TextEliderTest, MAYBE_ElideTextEllipsis) {
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
     base::string16 result = ElideText(UTF8ToUTF16(cases[i].input), font_list,
-                                cases[i].width, ELIDE_AT_END);
+                                      cases[i].width, ELIDE_TAIL);
     EXPECT_EQ(cases[i].output, UTF16ToUTF8(result));
   }
 }
@@ -292,7 +292,7 @@ TEST(TextEliderTest, MAYBE_ElideTextEllipsisFront) {
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
     base::string16 result = ElideText(UTF8ToUTF16(cases[i].input), font_list,
-                                      cases[i].width, ELIDE_AT_BEGINNING);
+                                      cases[i].width, ELIDE_HEAD);
     EXPECT_EQ(cases[i].output, result);
   }
 }
@@ -337,16 +337,16 @@ TEST(TextEliderTest, MAYBE_ElideTextSurrogatePairs) {
   // Elide |kTextString| to all possible widths and check that no instance of
   // |kSurrogate| was split in two.
   for (float width = 0; width <= kTestStringWidth; width++) {
-    result = ElideText(kTestString, font_list, width, TRUNCATE_AT_END);
+    result = ElideText(kTestString, font_list, width, TRUNCATE);
     CheckSurrogatePairs(result, kSurrogateFirstChar, kSurrogateSecondChar);
 
-    result = ElideText(kTestString, font_list, width, ELIDE_AT_END);
+    result = ElideText(kTestString, font_list, width, ELIDE_TAIL);
     CheckSurrogatePairs(result, kSurrogateFirstChar, kSurrogateSecondChar);
 
-    result = ElideText(kTestString, font_list, width, ELIDE_IN_MIDDLE);
+    result = ElideText(kTestString, font_list, width, ELIDE_MIDDLE);
     CheckSurrogatePairs(result, kSurrogateFirstChar, kSurrogateSecondChar);
 
-    result = ElideText(kTestString, font_list, width, ELIDE_AT_BEGINNING);
+    result = ElideText(kTestString, font_list, width, ELIDE_HEAD);
     CheckSurrogatePairs(result, kSurrogateFirstChar, kSurrogateSecondChar);
   }
 }
@@ -390,14 +390,12 @@ TEST(TextEliderTest, MAYBE_ElideTextLongStrings) {
     // Compare sizes rather than actual contents because if the test fails,
     // output is rather long.
     EXPECT_EQ(testcases_end[i].output.size(),
-              ElideText(
-                  testcases_end[i].input,
-                  font_list,
-                  GetStringWidthF(testcases_end[i].output, font_list),
-                  ELIDE_AT_END).size());
+              ElideText(testcases_end[i].input, font_list,
+                        GetStringWidthF(testcases_end[i].output, font_list),
+                        ELIDE_TAIL).size());
     EXPECT_EQ(kEllipsisStr,
               ElideText(testcases_end[i].input, font_list, ellipsis_width,
-                        ELIDE_AT_END));
+                        ELIDE_TAIL));
   }
 
   size_t number_of_trailing_as = (data_scheme_length + number_of_as) / 2;
@@ -417,14 +415,12 @@ TEST(TextEliderTest, MAYBE_ElideTextLongStrings) {
     // Compare sizes rather than actual contents because if the test fails,
     // output is rather long.
     EXPECT_EQ(testcases_middle[i].output.size(),
-              ElideText(
-                  testcases_middle[i].input,
-                  font_list,
-                  GetStringWidthF(testcases_middle[i].output, font_list),
-                  ELIDE_IN_MIDDLE).size());
+              ElideText(testcases_middle[i].input, font_list,
+                        GetStringWidthF(testcases_middle[i].output, font_list),
+                        ELIDE_MIDDLE).size());
     EXPECT_EQ(kEllipsisStr,
               ElideText(testcases_middle[i].input, font_list, ellipsis_width,
-                        ELIDE_IN_MIDDLE));
+                        ELIDE_MIDDLE));
   }
 
   base::string16 long_string_beginning(
@@ -442,10 +438,10 @@ TEST(TextEliderTest, MAYBE_ElideTextLongStrings) {
               ElideText(
                   testcases_beginning[i].input, font_list,
                   GetStringWidthF(testcases_beginning[i].output, font_list),
-                  ELIDE_AT_BEGINNING).size());
+                  ELIDE_HEAD).size());
     EXPECT_EQ(kEllipsisStr,
               ElideText(testcases_beginning[i].input, font_list, ellipsis_width,
-                        ELIDE_AT_BEGINNING));
+                        ELIDE_HEAD));
   }
 }
 

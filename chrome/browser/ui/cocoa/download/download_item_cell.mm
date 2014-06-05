@@ -378,8 +378,7 @@ using content::DownloadItem;
   return base::SysUTF16ToNSString(gfx::ElideText(
       base::SysNSStringToUTF16([self secondaryTitle]),
       gfx::FontList(gfx::Font([self secondaryFont])),
-      availableWidth,
-      gfx::ELIDE_AT_END));
+      availableWidth, gfx::ELIDE_TAIL));
 }
 
 - (ui::ThemeProvider*)backgroundThemeWrappingProvider:

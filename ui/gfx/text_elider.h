@@ -13,6 +13,7 @@
 #include "base/basictypes.h"
 #include "base/strings/string16.h"
 #include "ui/gfx/gfx_export.h"
+#include "ui/gfx/text_constants.h"
 
 class GURL;
 
@@ -62,35 +63,7 @@ class StringSlicer {
   DISALLOW_COPY_AND_ASSIGN(StringSlicer);
 };
 
-// Elides a well-formed email address (e.g. username@domain.com) to fit into
-// |available_pixel_width| using the specified |font_list|.
-// This function guarantees that the string returned will contain at least one
-// character, other than the ellipses, on either side of the '@'. If it is
-// impossible to achieve these requirements: only an ellipsis will be returned.
-// If possible: this elides only the username portion of the |email|. Otherwise,
-// the domain is elided in the middle so that it splits the available width
-// equally with the elided username (should the username be short enough that it
-// doesn't need half the available width: the elided domain will occupy that
-// extra width).
-GFX_EXPORT base::string16 ElideEmail(const base::string16& email,
-                                     const gfx::FontList& font_list,
-                                     float available_pixel_width);
-
-enum ElideBehavior {
-  // Add ellipsis at the beginning of the string.
-  ELIDE_AT_BEGINNING,
-  // Add ellipsis at the end of the string.
-  ELIDE_AT_END,
-  // Add ellipsis in the middle of the string.
-  ELIDE_IN_MIDDLE,
-  // Truncate the end of the string.
-  TRUNCATE_AT_END,
-  // No eliding of the string.
-  NO_ELIDE,
-};
-
-// Elides |text| to fit in |available_pixel_width| according to the specified
-// |elide_behavior|.
+// Elides |text| to fit the |available_pixel_width| with the specified behavior.
 GFX_EXPORT base::string16 ElideText(const base::string16& text,
                                     const gfx::FontList& font_list,
                                     float available_pixel_width,
@@ -106,10 +79,9 @@ GFX_EXPORT base::string16 ElideFilename(const base::FilePath& filename,
                                         const gfx::FontList& font_list,
                                         float available_pixel_width);
 
-// Functions to elide strings when the font information is unknown.  As
-// opposed to the above functions, the ElideString() and
-// ElideRectangleString() functions operate in terms of character units,
-// not pixels.
+// Functions to elide strings when the font information is unknown. As opposed
+// to the above functions, ElideString() and ElideRectangleString() operate in
+// terms of character units, not pixels.
 
 // If the size of |input| is more than |max_len|, this function returns
 // true and |input| is shortened into |output| by removing chars in the

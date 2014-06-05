@@ -1400,8 +1400,8 @@ void Tab::PaintTitle(gfx::Canvas* canvas, SkColor title_color) {
     Browser::FormatTitleForDisplay(&title);
   }
 
-  canvas->DrawFadeTruncatingStringRect(title, gfx::Canvas::TruncateFadeTail,
-      gfx::FontList(*font_), title_color, GetTitleBounds());
+  canvas->DrawFadedString(title, gfx::FontList(*font_), title_color,
+                          GetTitleBounds(), 0);
 }
 
 void Tab::AdvanceLoadingAnimation(TabRendererData::NetworkState old_state,

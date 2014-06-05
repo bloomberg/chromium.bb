@@ -84,7 +84,7 @@ bool PixelShouldGetHalo(const SkBitmap& bitmap,
 }
 
 // Strips accelerator character prefixes in |text| if needed, based on |flags|.
-// Returns a range in |text| to underline or gfx::Range::InvalidRange() if
+// Returns a range in |text| to underline or Range::InvalidRange() if
 // underlining is not needed.
 Range StripAcceleratorChars(int flags, base::string16* text) {
   if (flags & (Canvas::SHOW_PREFIX | Canvas::HIDE_PREFIX)) {
@@ -105,7 +105,7 @@ void ElideTextAndAdjustRange(const FontList& font_list,
                              Range* range) {
   const base::char16 start_char =
       (range->IsValid() ? text->at(range->start()) : 0);
-  *text = gfx::ElideText(*text, font_list, width, gfx::ELIDE_AT_END);
+  *text = ElideText(*text, font_list, width, ELIDE_TAIL);
   if (!range->IsValid())
     return;
   if (range->start() >= text->length() ||
@@ -171,17 +171,16 @@ void Canvas::SizeStringFloat(const base::string16& text,
 #endif
 
   if ((flags & MULTI_LINE) && *width != 0) {
-    gfx::WordWrapBehavior wrap_behavior = gfx::TRUNCATE_LONG_WORDS;
+    WordWrapBehavior wrap_behavior = TRUNCATE_LONG_WORDS;
     if (flags & CHARACTER_BREAK)
-      wrap_behavior = gfx::WRAP_LONG_WORDS;
+      wrap_behavior = WRAP_LONG_WORDS;
     else if (!(flags & NO_ELLIPSIS))
-      wrap_behavior = gfx::ELIDE_LONG_WORDS;
+      wrap_behavior = ELIDE_LONG_WORDS;
 
     Rect rect(*width, INT_MAX);
     std::vector<base::string16> strings;
-    gfx::ElideRectangleText(adjusted_text, font_list,
-                           rect.width(), rect.height(),
-                           wrap_behavior, &strings);
+    ElideRectangleText(adjusted_text, font_list, rect.width(), rect.height(),
+                       wrap_behavior, &strings);
     scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
     UpdateRenderText(rect, base::string16(), font_list, flags, 0,
                      render_text.get());
@@ -244,18 +243,15 @@ void Canvas::DrawStringRectWithShadows(const base::string16& text,
   render_text->SetTextShadows(shadows);
 
   if (flags & MULTI_LINE) {
-    gfx::WordWrapBehavior wrap_behavior = gfx::IGNORE_LONG_WORDS;
+    WordWrapBehavior wrap_behavior = IGNORE_LONG_WORDS;
     if (flags & CHARACTER_BREAK)
-      wrap_behavior = gfx::WRAP_LONG_WORDS;
+      wrap_behavior = WRAP_LONG_WORDS;
     else if (!(flags & NO_ELLIPSIS))
-      wrap_behavior = gfx::ELIDE_LONG_WORDS;
+      wrap_behavior = ELIDE_LONG_WORDS;
 
     std::vector<base::string16> strings;
-    gfx::ElideRectangleText(adjusted_text,
-                           font_list,
-                           text_bounds.width(), text_bounds.height(),
-                           wrap_behavior,
-                           &strings);
+    ElideRectangleText(adjusted_text, font_list, text_bounds.width(),
+                       text_bounds.height(), wrap_behavior, &strings);
 
     for (size_t i = 0; i < strings.size(); i++) {
       Range range = StripAcceleratorChars(flags, &strings[i]);
@@ -294,16 +290,14 @@ void Canvas::DrawStringRectWithShadows(const base::string16& text,
     if (elide_text) {
       render_text->SetText(adjusted_text);
       if (render_text->GetTextDirection() == base::i18n::LEFT_TO_RIGHT) {
-        render_text->set_fade_tail(true);
+        render_text->SetElideBehavior(FADE_TAIL);
         elide_text = false;
       }
     }
 #endif
 
     if (elide_text) {
-      ElideTextAndAdjustRange(font_list,
-                              text_bounds.width(),
-                              &adjusted_text,
+      ElideTextAndAdjustRange(font_list, text_bounds.width(), &adjusted_text,
                               &range);
     }
 
@@ -311,7 +305,6 @@ void Canvas::DrawStringRectWithShadows(const base::string16& text,
                      render_text.get());
 
     const int text_height = render_text->GetStringSize().height();
-    // Center the text vertically.
     rect += Vector2d(0, (text_bounds.height() - text_height) / 2);
     rect.set_height(text_height);
     render_text->SetDisplayRect(rect);
@@ -371,55 +364,32 @@ void Canvas::DrawStringRectWithHalo(const base::string16& text,
   DrawImageInt(text_image, display_rect.x() - 1, display_rect.y() - 1);
 }
 
-void Canvas::DrawFadeTruncatingStringRect(
-    const base::string16& text,
-    TruncateFadeMode truncate_mode,
-    const FontList& font_list,
-    SkColor color,
-    const Rect& display_rect) {
-  DrawFadeTruncatingStringRectWithFlags(
-      text, truncate_mode, font_list, color, display_rect, NO_ELLIPSIS);
-}
-
-void Canvas::DrawFadeTruncatingStringRectWithFlags(
-    const base::string16& text,
-    TruncateFadeMode truncate_mode,
-    const FontList& font_list,
-    SkColor color,
-    const Rect& display_rect,
-    int flags) {
+void Canvas::DrawFadedString(const base::string16& text,
+                             const FontList& font_list,
+                             SkColor color,
+                             const Rect& display_rect,
+                             int flags) {
   // If the whole string fits in the destination then just draw it directly.
   if (GetStringWidth(text, font_list) <= display_rect.width()) {
     DrawStringRectWithFlags(text, font_list, color, display_rect, flags);
     return;
   }
 
-  scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
-  const bool is_rtl = base::i18n::GetFirstStrongCharacterDirection(text) ==
-                      base::i18n::RIGHT_TO_LEFT;
-
-  switch (truncate_mode) {
-    case TruncateFadeTail:
-      render_text->set_fade_tail(true);
-      if (is_rtl)
-        flags |= TEXT_ALIGN_RIGHT;
-      break;
-    case TruncateFadeHead:
-      render_text->set_fade_head(true);
-      if (!is_rtl)
-        flags |= TEXT_ALIGN_RIGHT;
-      break;
+  // Align to content directionality instead of centering and fading both ends.
+  if (!(flags & TEXT_ALIGN_LEFT) && !(flags & TEXT_ALIGN_RIGHT)) {
+    flags &= ~TEXT_ALIGN_CENTER;
+    const bool is_rtl = base::i18n::GetFirstStrongCharacterDirection(text) ==
+                        base::i18n::RIGHT_TO_LEFT;
+    flags |= is_rtl ? TEXT_ALIGN_RIGHT : TEXT_ALIGN_LEFT;
   }
+  flags |= NO_ELLIPSIS;
 
-  // Default to left alignment unless right alignment was chosen above.
-  if (!(flags & TEXT_ALIGN_RIGHT))
-    flags |= TEXT_ALIGN_LEFT;
-
+  scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
   Rect rect = display_rect;
   UpdateRenderText(rect, text, font_list, flags, color, render_text.get());
+  render_text->SetElideBehavior(FADE_TAIL);
 
   const int line_height = render_text->GetStringSize().height();
-  // Center the text vertically.
   rect += Vector2d(0, (display_rect.height() - line_height) / 2);
   rect.set_height(line_height);
   render_text->SetDisplayRect(rect);

@@ -86,8 +86,8 @@ TEST_F(TooltipAuraTest, TrimTooltipToFitTests) {
   EXPECT_NEAR(max_pixel_width, width, 5);
   EXPECT_EQ(1, line_count);
   EXPECT_EQ(gfx::ElideText(UTF8ToUTF16(std::string('a', max_pixel_width)),
-                           font_list,
-                           max_pixel_width, gfx::ELIDE_AT_END), tooltip);
+                           font_list, max_pixel_width, gfx::ELIDE_TAIL),
+            tooltip);
 #endif
 
   // Normal small tooltip should stay as is.

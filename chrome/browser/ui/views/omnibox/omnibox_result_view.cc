@@ -339,7 +339,7 @@ scoped_ptr<gfx::RenderText> OmniboxResultView::CreateRenderText(
     const base::string16& text) const {
   scoped_ptr<gfx::RenderText> render_text(gfx::RenderText::CreateInstance());
   render_text->SetCursorEnabled(false);
-  render_text->SetElideBehavior(gfx::ELIDE_AT_END);
+  render_text->SetElideBehavior(gfx::ELIDE_TAIL);
   render_text->SetFontList(font_list_);
   render_text->SetText(text);
   return render_text.Pass();

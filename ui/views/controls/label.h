@@ -42,15 +42,6 @@ class VIEWS_EXPORT Label : public View {
     AUTO_DETECT_DIRECTIONALITY
   };
 
-  enum ElideBehavior {
-    NO_ELIDE,            // Do not elide the label text; truncate as needed.
-    ELIDE_AT_BEGINNING,  // Add ellipsis at the start of the string as needed.
-    ELIDE_IN_MIDDLE,     // Add ellipsis in the middle of the string as needed.
-    ELIDE_AT_END,        // Add ellipsis at the end of the string as needed.
-    ELIDE_AS_EMAIL,      // Elide while retaining username/domain chars
-                         // as needed.
-  };
-
   // Internal class name.
   static const char kViewClassName[];
 
@@ -150,10 +141,9 @@ class VIEWS_EXPORT Label : public View {
   // Default is false. This only works when is_multi_line is true.
   void SetAllowCharacterBreak(bool allow_character_break);
 
-  // Sets whether the label text should be elided in the middle or end (if
-  // necessary). The default is to elide at the end.
-  // NOTE: Eliding in the middle is not supported for multi-line strings.
-  void SetElideBehavior(ElideBehavior elide_behavior);
+  // Sets the eliding or fading behavior, applied as necessary. The default is
+  // to elide at the end. Eliding is not well supported for multi-line labels.
+  void SetElideBehavior(gfx::ElideBehavior elide_behavior);
 
   // Sets the tooltip text.  Default behavior for a label (single-line) is to
   // show the full text if it is wider than its bounds.  Calling this overrides
@@ -277,7 +267,7 @@ class VIEWS_EXPORT Label : public View {
   bool is_multi_line_;
   bool is_obscured_;
   bool allow_character_break_;
-  ElideBehavior elide_behavior_;
+  gfx::ElideBehavior elide_behavior_;
   gfx::HorizontalAlignment horizontal_alignment_;
   base::string16 tooltip_text_;
   // Whether to collapse the label when it's not visible.

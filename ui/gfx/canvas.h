@@ -15,6 +15,7 @@
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/shadow_value.h"
+#include "ui/gfx/text_constants.h"
 
 namespace gfx {
 
@@ -39,11 +40,6 @@ class Transform;
 // of kSrcOver_Mode.
 class GFX_EXPORT Canvas {
  public:
-  enum TruncateFadeMode {
-    TruncateFadeTail,
-    TruncateFadeHead,
-  };
-
   // Specifies the alignment for text rendered with the DrawStringRect method.
   enum {
     TEXT_ALIGN_LEFT = 1 << 0,
@@ -418,20 +414,12 @@ class GFX_EXPORT Canvas {
   // Apply transformation on the canvas.
   void Transform(const Transform& transform);
 
-  // Draws the given string with the beginning or the end using a fade gradient.
-  void DrawFadeTruncatingStringRect(
-      const base::string16& text,
-      TruncateFadeMode truncate_mode,
-      const FontList& font_list,
-      SkColor color,
-      const Rect& display_rect);
-  void DrawFadeTruncatingStringRectWithFlags(
-      const base::string16& text,
-      TruncateFadeMode truncate_mode,
-      const FontList& font_list,
-      SkColor color,
-      const Rect& display_rect,
-      int flags);
+  // Draws the given string with a fade gradient at the end.
+  void DrawFadedString(const base::string16& text,
+                       const FontList& font_list,
+                       SkColor color,
+                       const Rect& display_rect,
+                       int flags);
 
   skia::PlatformCanvas* platform_canvas() const { return owned_canvas_.get(); }
   SkCanvas* sk_canvas() const { return canvas_; }

@@ -47,13 +47,10 @@ scoped_ptr<views::Border> CreateBorder(const int normal_image_set[],
 base::string16 GetElidedText(const base::string16& original_text) {
   // Maximum characters the button can be before the text will get elided.
   const int kMaxCharactersToDisplay = 15;
-
   const gfx::FontList font_list;
-  return gfx::ElideText(
-      original_text,
-      font_list,
-      font_list.GetExpectedTextWidth(kMaxCharactersToDisplay),
-      gfx::ELIDE_AT_END);
+  return gfx::ElideText(original_text, font_list,
+                        font_list.GetExpectedTextWidth(kMaxCharactersToDisplay),
+                        gfx::ELIDE_TAIL);
 }
 
 base::string16 GetButtonText(Profile* profile) {

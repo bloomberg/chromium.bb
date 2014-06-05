@@ -81,10 +81,9 @@ base::string16 GetSigninMenuLabel(Profile* profile) {
     if (signin_manager)
       username = signin_manager->GetAuthenticatedUsername();
     if (!username.empty() && !signin_manager->AuthInProgress()) {
-      base::string16 elided_username = gfx::ElideEmail(
-          base::UTF8ToUTF16(username), gfx::FontList(), kUsernameMaxWidth);
-      return l10n_util::GetStringFUTF16(IDS_SYNC_MENU_SYNCED_LABEL,
-                                        elided_username);
+      const base::string16 elided = gfx::ElideText(base::UTF8ToUTF16(username),
+          gfx::FontList(), kUsernameMaxWidth, gfx::ELIDE_EMAIL);
+      return l10n_util::GetStringFUTF16(IDS_SYNC_MENU_SYNCED_LABEL, elided);
     }
   }
   return l10n_util::GetStringFUTF16(IDS_SYNC_MENU_PRE_SYNCED_LABEL,

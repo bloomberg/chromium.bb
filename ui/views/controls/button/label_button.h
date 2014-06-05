@@ -52,7 +52,7 @@ class VIEWS_EXPORT LabelButton : public CustomButton,
   void SetFontList(const gfx::FontList& font_list);
 
   // Set the elide behavior of this button.
-  void SetElideBehavior(Label::ElideBehavior elide_behavior);
+  void SetElideBehavior(gfx::ElideBehavior elide_behavior);
 
   // Get or set the horizontal alignment used for the button; reversed in RTL.
   // The optional image will lead the text, unless the button is right-aligned.

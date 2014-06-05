@@ -32,15 +32,85 @@ using base::WideToUTF16;
 
 namespace gfx {
 
+namespace {
+
+// Elides a well-formed email address (e.g. username@domain.com) to fit into
+// |available_pixel_width| using the specified |font_list|.
+// This function guarantees that the string returned will contain at least one
+// character, other than the ellipses, on either side of the '@'. If it is
+// impossible to achieve these requirements: only an ellipsis will be returned.
+// If possible: this elides only the username portion of the |email|. Otherwise,
+// the domain is elided in the middle so that it splits the available width
+// equally with the elided username (should the username be short enough that it
+// doesn't need half the available width: the elided domain will occupy that
+// extra width).
+base::string16 ElideEmail(const base::string16& email,
+                          const FontList& font_list,
+                          float available_pixel_width) {
+  if (GetStringWidthF(email, font_list) <= available_pixel_width)
+    return email;
+
+  // Split the email into its local-part (username) and domain-part. The email
+  // spec technically allows for @ symbols in the local-part (username) of the
+  // email under some special requirements. It is guaranteed that there is no @
+  // symbol in the domain part of the email however so splitting at the last @
+  // symbol is safe.
+  const size_t split_index = email.find_last_of('@');
+  DCHECK_NE(split_index, base::string16::npos);
+  base::string16 username = email.substr(0, split_index);
+  base::string16 domain = email.substr(split_index + 1);
+  DCHECK(!username.empty());
+  DCHECK(!domain.empty());
+
+  // Subtract the @ symbol from the available width as it is mandatory.
+  const base::string16 kAtSignUTF16 = ASCIIToUTF16("@");
+  available_pixel_width -= GetStringWidthF(kAtSignUTF16, font_list);
+
+  // Check whether eliding the domain is necessary: if eliding the username
+  // is sufficient, the domain will not be elided.
+  const float full_username_width = GetStringWidthF(username, font_list);
+  const float available_domain_width =
+      available_pixel_width -
+      std::min(full_username_width,
+               GetStringWidthF(username.substr(0, 1) + kEllipsisUTF16,
+                               font_list));
+  if (GetStringWidthF(domain, font_list) > available_domain_width) {
+    // Elide the domain so that it only takes half of the available width.
+    // Should the username not need all the width available in its half, the
+    // domain will occupy the leftover width.
+    // If |desired_domain_width| is greater than |available_domain_width|: the
+    // minimal username elision allowed by the specifications will not fit; thus
+    // |desired_domain_width| must be <= |available_domain_width| at all cost.
+    const float desired_domain_width =
+        std::min(available_domain_width,
+                 std::max(available_pixel_width - full_username_width,
+                          available_pixel_width / 2));
+    domain = ElideText(domain, font_list, desired_domain_width, ELIDE_MIDDLE);
+    // Failing to elide the domain such that at least one character remains
+    // (other than the ellipsis itself) remains: return a single ellipsis.
+    if (domain.length() <= 1U)
+      return base::string16(kEllipsisUTF16);
+  }
+
+  // Fit the username in the remaining width (at this point the elided username
+  // is guaranteed to fit with at least one character remaining given all the
+  // precautions taken earlier).
+  available_pixel_width -= GetStringWidthF(domain, font_list);
+  username = ElideText(username, font_list, available_pixel_width, ELIDE_TAIL);
+  return username + kAtSignUTF16 + domain;
+}
+
+}  // namespace
+
 // U+2026 in utf8
 const char kEllipsis[] = "\xE2\x80\xA6";
 const base::char16 kEllipsisUTF16[] = { 0x2026, 0 };
 const base::char16 kForwardSlash = '/';
 
 StringSlicer::StringSlicer(const base::string16& text,
-             const base::string16& ellipsis,
-             bool elide_in_middle,
-             bool elide_at_beginning)
+                           const base::string16& ellipsis,
+                           bool elide_in_middle,
+                           bool elide_at_beginning)
     : text_(text),
       ellipsis_(ellipsis),
       elide_in_middle_(elide_in_middle),
@@ -83,65 +153,6 @@ size_t StringSlicer::FindValidBoundaryAfter(size_t index) const {
   return index;
 }
 
-base::string16 ElideEmail(const base::string16& email,
-                          const FontList& font_list,
-                          float available_pixel_width) {
-  if (GetStringWidthF(email, font_list) <= available_pixel_width)
-    return email;
-
-  // Split the email into its local-part (username) and domain-part. The email
-  // spec technically allows for @ symbols in the local-part (username) of the
-  // email under some special requirements. It is guaranteed that there is no @
-  // symbol in the domain part of the email however so splitting at the last @
-  // symbol is safe.
-  const size_t split_index = email.find_last_of('@');
-  DCHECK_NE(split_index, base::string16::npos);
-  base::string16 username = email.substr(0, split_index);
-  base::string16 domain = email.substr(split_index + 1);
-  DCHECK(!username.empty());
-  DCHECK(!domain.empty());
-
-  // Subtract the @ symbol from the available width as it is mandatory.
-  const base::string16 kAtSignUTF16 = ASCIIToUTF16("@");
-  available_pixel_width -= GetStringWidthF(kAtSignUTF16, font_list);
-
-  // Check whether eliding the domain is necessary: if eliding the username
-  // is sufficient, the domain will not be elided.
-  const float full_username_width = GetStringWidthF(username, font_list);
-  const float available_domain_width =
-      available_pixel_width -
-      std::min(full_username_width,
-               GetStringWidthF(username.substr(0, 1) + kEllipsisUTF16,
-                               font_list));
-  if (GetStringWidthF(domain, font_list) > available_domain_width) {
-    // Elide the domain so that it only takes half of the available width.
-    // Should the username not need all the width available in its half, the
-    // domain will occupy the leftover width.
-    // If |desired_domain_width| is greater than |available_domain_width|: the
-    // minimal username elision allowed by the specifications will not fit; thus
-    // |desired_domain_width| must be <= |available_domain_width| at all cost.
-    const float desired_domain_width =
-        std::min(available_domain_width,
-                 std::max(available_pixel_width - full_username_width,
-                          available_pixel_width / 2));
-    domain = ElideText(domain, font_list, desired_domain_width,
-                       ELIDE_IN_MIDDLE);
-    // Failing to elide the domain such that at least one character remains
-    // (other than the ellipsis itself) remains: return a single ellipsis.
-    if (domain.length() <= 1U)
-      return base::string16(kEllipsisUTF16);
-  }
-
-  // Fit the username in the remaining width (at this point the elided username
-  // is guaranteed to fit with at least one character remaining given all the
-  // precautions taken earlier).
-  available_pixel_width -= GetStringWidthF(domain, font_list);
-  username = ElideText(username, font_list, available_pixel_width,
-                       ELIDE_AT_END);
-
-  return username + kAtSignUTF16 + domain;
-}
-
 base::string16 ElideFilename(const base::FilePath& filename,
                              const FontList& font_list,
                              float available_pixel_width) {
@@ -163,8 +174,8 @@ base::string16 ElideFilename(const base::FilePath& filename,
     return base::i18n::GetDisplayStringInLTRDirectionality(filename_utf16);
 
   if (rootname.empty() || extension.empty()) {
-    const base::string16 elided_name = ElideText(filename_utf16, font_list,
-                                           available_pixel_width, ELIDE_AT_END);
+    const base::string16 elided_name =
+        ElideText(filename_utf16, font_list, available_pixel_width, ELIDE_TAIL);
     return base::i18n::GetDisplayStringInLTRDirectionality(elided_name);
   }
 
@@ -179,14 +190,13 @@ base::string16 ElideFilename(const base::FilePath& filename,
 
   if (ext_width >= available_pixel_width) {
     const base::string16 elided_name = ElideText(
-        rootname + extension, font_list, available_pixel_width,
-        ELIDE_IN_MIDDLE);
+        rootname + extension, font_list, available_pixel_width, ELIDE_MIDDLE);
     return base::i18n::GetDisplayStringInLTRDirectionality(elided_name);
   }
 
   float available_root_width = available_pixel_width - ext_width;
   base::string16 elided_name =
-      ElideText(rootname, font_list, available_root_width, ELIDE_AT_END);
+      ElideText(rootname, font_list, available_root_width, ELIDE_TAIL);
   elided_name += extension;
   return base::i18n::GetDisplayStringInLTRDirectionality(elided_name);
 }
@@ -194,15 +204,17 @@ base::string16 ElideFilename(const base::FilePath& filename,
 base::string16 ElideText(const base::string16& text,
                          const FontList& font_list,
                          float available_pixel_width,
-                         ElideBehavior elide_behavior) {
-  if (text.empty())
+                         ElideBehavior behavior) {
+  DCHECK_NE(behavior, FADE_TAIL);
+  if (text.empty() || behavior == FADE_TAIL)
     return text;
+  if (behavior == ELIDE_EMAIL)
+    return ElideEmail(text, font_list, available_pixel_width);
 
   const float current_text_pixel_width = GetStringWidthF(text, font_list);
-  const bool elide_in_middle = (elide_behavior == ELIDE_IN_MIDDLE);
-  const bool elide_at_beginning = (elide_behavior == ELIDE_AT_BEGINNING);
-  const bool insert_ellipsis = (elide_behavior != TRUNCATE_AT_END);
-
+  const bool elide_in_middle = (behavior == ELIDE_MIDDLE);
+  const bool elide_at_beginning = (behavior == ELIDE_HEAD);
+  const bool insert_ellipsis = (behavior != TRUNCATE);
   const base::string16 ellipsis = base::string16(kEllipsisUTF16);
   StringSlicer slicer(text, ellipsis, elide_in_middle, elide_at_beginning);
 
@@ -214,10 +226,10 @@ base::string16 ElideText(const base::string16& text,
   // return positive numbers again. Detecting that is probably not worth it
   // (eliding way too much from a ridiculous string is probably still
   // ridiculous), but we should check other widths for bogus values as well.
-  if (current_text_pixel_width <= 0 && !text.empty()) {
+  if (current_text_pixel_width <= 0) {
     const base::string16 cut =
       slicer.CutString(text.length() / 2, insert_ellipsis);
-    return ElideText(cut, font_list, available_pixel_width, elide_behavior);
+    return ElideText(cut, font_list, available_pixel_width, behavior);
   }
 
   if (current_text_pixel_width <= available_pixel_width)
@@ -254,7 +266,8 @@ base::string16 ElideText(const base::string16& text,
   return slicer.CutString(guess, insert_ellipsis);
 }
 
-bool ElideString(const base::string16& input, int max_len,
+bool ElideString(const base::string16& input,
+                 int max_len,
                  base::string16* output) {
   DCHECK_GE(max_len, 0);
   if (static_cast<int>(input.length()) <= max_len) {
@@ -633,11 +646,10 @@ int RectangleText::WrapWord(const base::string16& word) {
   bool first_fragment = true;
   while (!insufficient_height_ && !text.empty()) {
     base::string16 fragment =
-        ElideText(text, font_list_, available_pixel_width_,
-                  TRUNCATE_AT_END);
+        ElideText(text, font_list_, available_pixel_width_, TRUNCATE);
     // At least one character has to be added at every line, even if the
     // available space is too small.
-    if(fragment.empty())
+    if (fragment.empty())
       fragment = text.substr(0, 1);
     if (!first_fragment && NewLine())
       lines_added++;
@@ -665,7 +677,7 @@ int RectangleText::AddWordOverflow(const base::string16& word) {
     lines_added += WrapWord(word);
   } else {
     const ElideBehavior elide_behavior =
-        (wrap_behavior_ == ELIDE_LONG_WORDS ? ELIDE_AT_END : TRUNCATE_AT_END);
+        (wrap_behavior_ == ELIDE_LONG_WORDS ? ELIDE_TAIL : TRUNCATE);
     const base::string16 elided_word =
         ElideText(word, font_list_, available_pixel_width_, elide_behavior);
     AddToCurrentLine(elided_word);

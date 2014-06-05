@@ -21,25 +21,19 @@ namespace {
 // A Label with a constrained preferred size to demonstrate eliding or wrapping.
 class PreferredSizeLabel : public Label {
  public:
-  PreferredSizeLabel();
-  virtual ~PreferredSizeLabel();
+  PreferredSizeLabel() : Label() {
+    SetBorder(Border::CreateSolidBorder(2, SK_ColorCYAN));
+  }
+  virtual ~PreferredSizeLabel() {}
 
   // Label:
-  virtual gfx::Size GetPreferredSize() const OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const OVERRIDE {
+    return gfx::Size(100, 40);
+  }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PreferredSizeLabel);
 };
-
-PreferredSizeLabel::PreferredSizeLabel() : Label() {
-  SetBorder(Border::CreateSolidBorder(2, SK_ColorCYAN));
-}
-
-PreferredSizeLabel::~PreferredSizeLabel() {}
-
-gfx::Size PreferredSizeLabel::GetPreferredSize() const {
-  return gfx::Size(100, 40);
-}
 
 }  // namespace
 
@@ -77,6 +71,12 @@ void LabelExample::CreateExampleView(View* container) {
 
   label = new PreferredSizeLabel();
   label->SetText(ASCIIToUTF16("A long label will elide toward its logical end "
+      "if the text's width exceeds the label's available width."));
+  container->AddChildView(label);
+
+  label = new PreferredSizeLabel();
+  label->SetElideBehavior(gfx::FADE_TAIL);
+  label->SetText(ASCIIToUTF16("Some long labels will fade, rather than elide, "
       "if the text's width exceeds the label's available width."));
   container->AddChildView(label);
 

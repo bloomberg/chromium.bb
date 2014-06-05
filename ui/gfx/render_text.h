@@ -256,17 +256,12 @@ class GFX_EXPORT RenderText {
   void set_truncate_length(size_t length) { truncate_length_ = length; }
 
   // Elides the text to fit in |display_rect| according to the specified
-  // |elide_behavior|. |ELIDE_IN_MIDDLE| is not supported.  If both truncate
-  // and elide are specified, the shorter of the two will be applicable.
+  // |elide_behavior|. |ELIDE_MIDDLE| is not supported. If a truncate length and
+  // an elide mode are specified, the shorter of the two will be applicable.
   void SetElideBehavior(ElideBehavior elide_behavior);
 
   const Rect& display_rect() const { return display_rect_; }
   void SetDisplayRect(const Rect& r);
-
-  void set_fade_head(bool fade_head) { fade_head_ = fade_head; }
-  bool fade_head() const { return fade_head_; }
-  void set_fade_tail(bool fade_tail) { fade_tail_ = fade_tail; }
-  bool fade_tail() const { return fade_tail_; }
 
   bool background_is_transparent() const { return background_is_transparent_; }
   void set_background_is_transparent(bool transparent) {
@@ -534,12 +529,10 @@ class GFX_EXPORT RenderText {
   Point ToTextPoint(const Point& point);
   Point ToViewPoint(const Point& point);
 
-  // Convert a text space x-coordinate range to corresponding rects in view
-  // space.
+  // Convert a text space x-coordinate range to rects in view space.
   std::vector<Rect> TextBoundsToViewBounds(const Range& x);
 
-  // Returns the line offset from the origin, accounting for text alignment
-  // only.
+  // Returns the line offset from the origin, accounts for text alignment only.
   Vector2d GetAlignmentOffset(size_t line_number);
 
   // Applies fade effects to |renderer|.
@@ -663,7 +656,7 @@ class GFX_EXPORT RenderText {
   // The maximum length of text to display, 0 forgoes a hard limit.
   size_t truncate_length_;
 
-  // The behavior for eliding or truncating.
+  // The behavior for eliding, fading, or truncating.
   ElideBehavior elide_behavior_;
 
   // The obscured and/or truncated text that will be displayed.
@@ -672,10 +665,6 @@ class GFX_EXPORT RenderText {
   // Whether the text should be broken into multiple lines. Uses the width of
   // |display_rect_| as the width cap.
   bool multiline_;
-
-  // Fade text head and/or tail, if text doesn't fit into |display_rect_|.
-  bool fade_head_;
-  bool fade_tail_;
 
   // Is the background transparent (either partially or fully)?
   bool background_is_transparent_;

@@ -164,7 +164,7 @@ gfx::NativeViewId ScreenCaptureNotificationUIViews::OnStarted(
     const base::Closure& stop_callback) {
   stop_callback_ = stop_callback;
 
-  label_->SetElideBehavior(views::Label::ELIDE_IN_MIDDLE);
+  label_->SetElideBehavior(gfx::ELIDE_MIDDLE);
   label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   label_->SetText(text_);
 
