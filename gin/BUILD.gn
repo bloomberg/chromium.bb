@@ -58,73 +58,68 @@ component("gin") {
   deps = [
     "//base",
     "//base/third_party/dynamic_annotations",
-    #TODO(GYP)
-    #"//v8",
+    "//v8",
   ]
 
   forward_dependent_configs_from = [
     "//base",
-    #TODO(GYP)
-    #"//v8",
+    "//v8",
   ]
 }
 
-# TODO(GYP) needs v8
-if (false) {
-  executable("gin_shell") {
-    sources = [
-      "shell/gin_main.cc",
-    ]
+executable("gin_shell") {
+  sources = [
+    "shell/gin_main.cc",
+  ]
 
-    deps = [
-      ":gin",
-      "//base",
-      "//base:i18n",
-      "//v8",
-    ]
-  }
+  deps = [
+    ":gin",
+    "//base",
+    "//base:i18n",
+    "//v8",
+  ]
+}
 
-  source_set("gin_test") {
-    sources = [
-      "test/file_runner.cc",
-      "test/file_runner.h",
-      "test/gc.cc",
-      "test/gc.h",
-      "test/gtest.cc",
-      "test/gtest.h",
-      "test/v8_test.cc",
-      "test/v8_test.h",
-    ]
+source_set("gin_test") {
+  sources = [
+    "test/file_runner.cc",
+    "test/file_runner.h",
+    "test/gc.cc",
+    "test/gc.h",
+    "test/gtest.cc",
+    "test/gtest.h",
+    "test/v8_test.cc",
+    "test/v8_test.h",
+  ]
 
-    deps = [
-      ":gin",
-      "//testing/gtest",
-      "//v8",
-    ]
+  deps = [
+    ":gin",
+    "//testing/gtest",
+    "//v8",
+  ]
 
-    forward_dependent_configs_from = [
-      ":gin",
-      "//testing/gtest",
-    ]
-  }
+  forward_dependent_configs_from = [
+    ":gin",
+    "//testing/gtest",
+  ]
+}
 
-  test("gin_unittests") {
-    sources = [
-      "converter_unittest.cc",
-      "interceptor_unittest.cc",
-      "modules/module_registry_unittest.cc",
-      "modules/timer_unittest.cc",
-      "per_context_data_unittest.cc",
-      "shell_runner_unittest.cc",
-      "test/run_all_unittests.cc",
-      "test/run_js_tests.cc",
-      "wrappable_unittest.cc",
-    ]
+test("gin_unittests") {
+  sources = [
+    "converter_unittest.cc",
+    "interceptor_unittest.cc",
+    "modules/module_registry_unittest.cc",
+    "modules/timer_unittest.cc",
+    "per_context_data_unittest.cc",
+    "shell_runner_unittest.cc",
+    "test/run_all_unittests.cc",
+    "test/run_js_tests.cc",
+    "wrappable_unittest.cc",
+  ]
 
-    deps = [
-      ":gin_test",
-      "//base/test:run_all_unittests",
-      "//v8",
-    ]
-  }
+  deps = [
+    ":gin_test",
+    "//base/test:test_support",
+    "//v8",
+  ]
 }

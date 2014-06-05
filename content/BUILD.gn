@@ -58,8 +58,10 @@ config("libjingle_stub_config") {
   }
 }
 
-# This config is a placeholder to set up the V8 include path while the V8 GN
-# build is being worked on.
+# This config is a placeholder to set up the V8 include path while Blink is
+# being worked on. Some targets include blink headers which include "v8.h",
+# expecting //v8/include to be on the include search path. We need to track
+# this down and set the include paths properly.
 config("v8_stub_config") {
   include_dirs = [ "//v8/include" ]
 }

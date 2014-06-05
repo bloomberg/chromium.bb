@@ -44,7 +44,7 @@ component("child") {
     "//ui/gfx/geometry",
     "//ui/native_theme",
     "//url",
-    #"//v8",  TODO(GYP)
+    "//v8",
     "//webkit/common",
   ]
 }

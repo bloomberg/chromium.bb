@@ -40,6 +40,11 @@ source_set("renderer") {
     "//ui/events:dom4_keycode_converter",
     "//ui/native_theme",
     "//ui/surface",
+    "//v8",
+    "//webkit/child",
+    "//webkit/common",
+    "//webkit/common:storage",
+    "//webkit/common/gpu",
     # TODO(GYP)
     #'../jingle/jingle.gyp:jingle_glue',
     #'../media/media.gyp:media',
@@ -47,13 +52,8 @@ source_set("renderer") {
     #'../third_party/WebKit/public/blink.gyp:blink',
     #'../third_party/libjingle/libjingle.gyp:libjingle',
     #'../third_party/widevine/cdm/widevine_cdm.gyp:widevine_cdm_version_h',
-    #'../v8/tools/gyp/v8.gyp:v8',
-    #'../webkit/child/webkit_child.gyp:webkit_child',
-    #'../webkit/common/gpu/webkit_gpu.gyp:webkit_gpu',
-    #'../webkit/common/webkit_common.gyp:webkit_common',
     #'../webkit/renderer/compositor_bindings/compositor_bindings.gyp:webkit_compositor_bindings',
     #'../webkit/renderer/compositor_bindings/compositor_bindings.gyp:webkit_compositor_support',
-    #'../webkit/storage_common.gyp:webkit_storage_common',
   ]
 
   if (!enable_notifications) {

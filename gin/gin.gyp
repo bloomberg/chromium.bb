@@ -119,7 +119,7 @@
       'target_name': 'gin_unittests',
       'type': 'executable',
       'dependencies': [
-        '../base/base.gyp:run_all_unittests',
+        '../base/base.gyp:test_support_base',
         '../v8/tools/gyp/v8.gyp:v8',
         'gin_test',
       ],
