@@ -77,10 +77,12 @@ class EVENTS_EXPORT EventTarget : public EventHandler {
   // Returns true if the event pre target list is empty.
   bool IsPreTargetListEmpty() const;
 
- protected:
   void set_target_handler(EventHandler* handler) {
     target_handler_ = handler;
   }
+
+ protected:
+  EventHandler* target_handler() { return target_handler_; }
 
   // Overridden from EventHandler:
   virtual void OnEvent(Event* event) OVERRIDE;

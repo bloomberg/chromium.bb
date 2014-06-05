@@ -5,6 +5,7 @@
 #include "athena/wm/public/window_manager.h"
 
 #include "athena/screen/public/screen_manager.h"
+#include "athena/wm/window_overview_mode.h"
 #include "base/logging.h"
 #include "ui/aura/layout_manager.h"
 #include "ui/aura/window.h"
@@ -12,14 +13,31 @@
 namespace athena {
 namespace {
 
-class WindowManagerImpl : public WindowManager, public aura::WindowObserver {
+class WindowManagerImpl : public WindowManager,
+                          public WindowOverviewModeDelegate,
+                          public aura::WindowObserver {
  public:
   WindowManagerImpl();
   virtual ~WindowManagerImpl();
 
   void Layout();
 
+  // WindowManager:
+  virtual void ToggleOverview() OVERRIDE {
+    if (overview_)
+      overview_.reset();
+    else
+      overview_ = WindowOverviewMode::Create(container_.get(), this);
+  }
+
  private:
+  // WindowOverviewModeDelegate:
+  virtual void OnSelectWindow(aura::Window* window) OVERRIDE {
+    CHECK_EQ(container_.get(), window->parent());
+    container_->StackChildAtTop(window);
+    overview_.reset();
+  }
+
   // aura::WindowObserver
   virtual void OnWindowDestroying(aura::Window* window) OVERRIDE {
     if (window == container_)
@@ -27,6 +45,8 @@ class WindowManagerImpl : public WindowManager, public aura::WindowObserver {
   }
 
   scoped_ptr<aura::Window> container_;
+  scoped_ptr<ui::EventHandler> temp_handler_;
+  scoped_ptr<WindowOverviewMode> overview_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowManagerImpl);
 };
@@ -61,17 +81,37 @@ class AthenaContainerLayoutManager : public aura::LayoutManager {
   DISALLOW_COPY_AND_ASSIGN(AthenaContainerLayoutManager);
 };
 
+class TempEventHandler : public ui::EventHandler {
+ public:
+  TempEventHandler() {}
+  virtual ~TempEventHandler() {}
+
+ private:
+  // ui::EventHandler:
+  virtual void OnKeyEvent(ui::KeyEvent* event) OVERRIDE {
+    if (event->type() == ui::ET_KEY_PRESSED &&
+        event->key_code() == ui::VKEY_F6) {
+      instance->ToggleOverview();
+    }
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(TempEventHandler);
+};
+
 WindowManagerImpl::WindowManagerImpl()
-    : container_(
-          ScreenManager::Get()->CreateDefaultContainer("MainContainer")) {
+    : container_(ScreenManager::Get()->CreateDefaultContainer("MainContainer")),
+      temp_handler_(new TempEventHandler()) {
   container_->SetLayoutManager(new AthenaContainerLayoutManager);
   container_->AddObserver(this);
+  container_->AddPreTargetHandler(temp_handler_.get());
   instance = this;
 }
 
 WindowManagerImpl::~WindowManagerImpl() {
-  if (container_)
+  if (container_) {
+    container_->RemovePreTargetHandler(temp_handler_.get());
     container_->RemoveObserver(this);
+  }
   container_.reset();
   instance = NULL;
 }
@@ -80,8 +120,6 @@ void WindowManagerImpl::Layout() {
   if (!container_)
     return;
   gfx::Rect bounds = gfx::Rect(container_->bounds().size());
-  // Just make it small a bit so that the background is visible.
-  bounds.Inset(10, 10, 10, 10);
   const aura::Window::Windows& children = container_->children();
   for (aura::Window::Windows::const_iterator iter = children.begin();
        iter != children.end();

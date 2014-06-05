@@ -10,7 +10,8 @@
 
 void CreateTestPages(content::BrowserContext* browser_context) {
   const char* kTestURLs[] = {
-      "http://cyan.bikeshed.com", "https://www.google.com",
+      "http://cyan.bikeshed.com", "https://news.google.com",
+      "http://blue.bikeshed.com", "https://www.google.com",
   };
   for (size_t i = 0; i < arraysize(kTestURLs); ++i) {
     content::WebContents::CreateParams params(browser_context);

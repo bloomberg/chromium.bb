@@ -37,8 +37,6 @@ class ActivityWidget : public views::LayoutManager {
     const gfx::FontList& font_list = title_->font_list();
     title_->SetFontList(font_list.Derive(1, gfx::Font::BOLD));
     title_->SetEnabledColor(SK_ColorBLACK);
-    title_->SetShadowColors(SK_ColorWHITE, SK_ColorWHITE);
-    title_->set_shadow_blur(.5);
     container_->AddChildView(title_);
     container_->SetLayoutManager(this);
 
@@ -67,8 +65,10 @@ class ActivityWidget : public views::LayoutManager {
   void Update() {
     title_->SetText(
         base::UTF8ToUTF16(activity_->GetActivityViewModel()->GetTitle()));
-    title_->set_background(views::Background::CreateSolidBackground(
-        activity_->GetActivityViewModel()->GetRepresentativeColor()));
+    SkColor bgcolor =
+        activity_->GetActivityViewModel()->GetRepresentativeColor();
+    title_->set_background(views::Background::CreateSolidBackground(bgcolor));
+    title_->SetBackgroundColor(bgcolor);
   }
 
  private:

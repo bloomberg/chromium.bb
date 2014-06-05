@@ -1371,9 +1371,10 @@ bool Window::CanAcceptEvent(const ui::Event& event) {
     return true;
 
   // For located events (i.e. mouse, touch etc.), an assumption is made that
-  // windows that don't have a delegate cannot process the event (see more in
-  // GetWindowForPoint()). This assumption is not made for key events.
-  return event.IsKeyEvent() || delegate_;
+  // windows that don't have a default event-handler cannot process the event
+  // (see more in GetWindowForPoint()). This assumption is not made for key
+  // events.
+  return event.IsKeyEvent() || target_handler();
 }
 
 ui::EventTarget* Window::GetParentTarget() {

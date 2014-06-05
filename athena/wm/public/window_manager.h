@@ -18,6 +18,8 @@ class ATHENA_EXPORT WindowManager {
   static void Shutdown();
 
   virtual ~WindowManager() {}
+
+  virtual void ToggleOverview() = 0;
 };
 
 }  // namespace athena

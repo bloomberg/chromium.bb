@@ -38,6 +38,8 @@
         'activity/activity_view_manager_impl.cc',
         'wm/public/window_manager.h',
         'wm/window_manager_impl.cc',
+        'wm/window_overview_mode.cc',
+        'wm/window_overview_mode.h',
       ],
     },
     {
