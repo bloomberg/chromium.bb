@@ -83,8 +83,8 @@ public:
     virtual InsertionNotificationRequest insertedInto(ContainerNode*) OVERRIDE;
     virtual void removedFrom(ContainerNode*) OVERRIDE;
 
-    void registerScopedHTMLStyleChild();
-    void unregisterScopedHTMLStyleChild();
+    virtual void registerScopedHTMLStyleChild() OVERRIDE;
+    virtual void unregisterScopedHTMLStyleChild() OVERRIDE;
 
     bool containsShadowElements() const;
     bool containsContentElements() const;
@@ -95,7 +95,6 @@ public:
 
     // For Internals, don't use this.
     unsigned childShadowRootCount() const;
-    unsigned numberOfStyles() const { return m_numberOfStyles; }
 
     HTMLShadowElement* shadowInsertionPointOfYoungerShadowRoot() const;
     void setShadowInsertionPointOfYoungerShadowRoot(PassRefPtrWillBeRawPtr<HTMLShadowElement>);

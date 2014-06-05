@@ -47,6 +47,7 @@ public:
 #endif
     enum FeatureType {
         DialogElement = 0,
+        StyleScoped,
         PagePopup,
         MutationEvents,
         PushState,
@@ -58,6 +59,7 @@ public:
     static PassRefPtrWillBeRawPtr<ContextFeatures> create(PassOwnPtr<ContextFeaturesClient>);
 
     static bool dialogElementEnabled(Document*);
+    static bool styleScopedEnabled(Document*);
     static bool pagePopupEnabled(Document*);
     static bool mutationEventsEnabled(Document*);
     static bool pushStateEnabled(Document*);

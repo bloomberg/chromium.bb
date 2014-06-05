@@ -49,15 +49,22 @@ ContainerNode* ScopedStyleResolver::scopingNodeFor(Document& document, const CSS
     Document* sheetDocument = sheet->ownerDocument();
     if (!sheetDocument)
         return 0;
-
     Node* ownerNode = sheet->ownerNode();
     if (!isHTMLStyleElement(ownerNode))
         return &document;
 
     HTMLStyleElement& styleElement = toHTMLStyleElement(*ownerNode);
-    if (styleElement.isInShadowTree())
-        return styleElement.containingShadowRoot();
-    return &document;
+    if (!styleElement.scoped()) {
+        if (styleElement.isInShadowTree())
+            return styleElement.containingShadowRoot();
+        return &document;
+    }
+
+    ContainerNode* parent = styleElement.parentNode();
+    if (!parent)
+        return 0;
+
+    return (parent->isElementNode() || parent->isShadowRoot()) ? parent : 0;
 }
 
 void ScopedStyleResolver::addRulesFromSheet(CSSStyleSheet* cssSheet, const MediaQueryEvaluator& medium, StyleResolver* resolver)

@@ -42,7 +42,22 @@ public:
 
     void setType(const AtomicString&);
 
+    bool scoped() const;
+    void setScoped(bool);
     ContainerNode* scopingNode();
+    bool isRegisteredAsScoped() const
+    {
+        // Note: We cannot rely on the 'scoped' attribute still being present when this method is invoked.
+        // Therefore we cannot rely on scoped()!
+        if (m_scopedStyleRegistrationState == NotRegistered)
+            return false;
+        return true;
+    }
+
+    bool isRegisteredInShadowRoot() const
+    {
+        return m_scopedStyleRegistrationState == RegisteredInShadowRoot;
+    }
 
     using StyleElement::sheet;
 
@@ -73,8 +88,19 @@ private:
     virtual const AtomicString& media() const OVERRIDE;
     virtual const AtomicString& type() const OVERRIDE;
 
+    void scopedAttributeChanged(bool);
+    void registerWithScopingNode(bool);
+    void unregisterWithScopingNode(ContainerNode*);
+
     bool m_firedLoad;
     bool m_loadedSheet;
+
+    enum ScopedStyleRegistrationState {
+        NotRegistered,
+        RegisteredAsScoped,
+        RegisteredInShadowRoot
+    };
+    ScopedStyleRegistrationState m_scopedStyleRegistrationState;
 };
 
 } //namespace

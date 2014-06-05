@@ -47,7 +47,8 @@ ScopedStyleResolver* ScopedStyleTree::ensureScopedStyleResolver(ContainerNode& s
 
 ScopedStyleResolver* ScopedStyleTree::scopedStyleResolverFor(const ContainerNode& scopingNode)
 {
-    if (!isShadowHost(&scopingNode)
+    if (!scopingNode.hasScopedHTMLStyleChild()
+        && !isShadowHost(&scopingNode)
         && !scopingNode.isDocumentNode()
         && !scopingNode.isShadowRoot())
         return 0;
@@ -124,7 +125,7 @@ void ScopedStyleTree::collectScopedResolversForHostedShadowTrees(const Element* 
 
     // Adding scoped resolver for active shadow roots for shadow host styling.
     for (ShadowRoot* shadowRoot = shadow->youngestShadowRoot(); shadowRoot; shadowRoot = shadowRoot->olderShadowRoot()) {
-        if (shadowRoot->numberOfStyles() > 0) {
+        if (shadowRoot->hasScopedHTMLStyleChild()) {
             if (ScopedStyleResolver* resolver = scopedStyleResolverFor(*shadowRoot))
                 resolvers.append(resolver);
         }

@@ -1,0 +1,2 @@
+CONSOLE MESSAGE: line 23: PASS unless crash
+
