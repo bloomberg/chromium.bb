@@ -216,6 +216,7 @@ void EnrollmentScreen::RegisterForDevicePolicy(
 void EnrollmentScreen::ShowEnrollmentStatusOnSuccess(
     const policy::EnrollmentStatus& status) {
   actor_->ShowEnrollmentStatus(status);
+  StartupUtils::MarkOobeCompleted();
 }
 
 void EnrollmentScreen::ReportEnrollmentStatus(

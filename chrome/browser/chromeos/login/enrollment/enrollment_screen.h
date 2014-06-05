@@ -9,6 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/gtest_prod_util.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/login/enrollment/enrollment_screen_actor.h"
 #include "chrome/browser/chromeos/login/screens/wizard_screen.h"
@@ -52,6 +53,8 @@ class EnrollmentScreen
   }
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(EnrollmentScreenTest, TestSuccess);
+
   // Starts the Lockbox storage process.
   void WriteInstallAttributesData();
 

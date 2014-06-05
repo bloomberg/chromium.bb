@@ -8,6 +8,7 @@
 #include "base/run_loop.h"
 #include "chrome/browser/chromeos/login/enrollment/enrollment_screen.h"
 #include "chrome/browser/chromeos/login/screens/mock_screen_observer.h"
+#include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/test/wizard_in_process_browser_test.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -53,6 +54,31 @@ IN_PROC_BROWSER_TEST_F(EnrollmentScreenTest, TestCancel) {
   enrollment_screen->OnCancel();
   content::RunThisRunLoop(&run_loop);
   Mock::VerifyAndClearExpectations(&mock_screen_observer);
+
+  static_cast<WizardScreen*>(enrollment_screen)->screen_observer_ =
+      WizardController::default_controller();
+}
+
+IN_PROC_BROWSER_TEST_F(EnrollmentScreenTest, TestSuccess) {
+  ASSERT_TRUE(WizardController::default_controller() != NULL);
+  EXPECT_FALSE(StartupUtils::IsOobeCompleted());
+
+  EnrollmentScreen* enrollment_screen =
+      WizardController::default_controller()->GetEnrollmentScreen();
+  ASSERT_TRUE(enrollment_screen != NULL);
+
+  base::RunLoop run_loop;
+  MockScreenObserver mock_screen_observer;
+  static_cast<WizardScreen*>(enrollment_screen)->screen_observer_ =
+      &mock_screen_observer;
+
+  ASSERT_EQ(WizardController::default_controller()->current_screen(),
+            enrollment_screen);
+
+  enrollment_screen->ReportEnrollmentStatus(policy::EnrollmentStatus::ForStatus(
+      policy::EnrollmentStatus::STATUS_SUCCESS));
+  run_loop.RunUntilIdle();
+  EXPECT_TRUE(StartupUtils::IsOobeCompleted());
 
   static_cast<WizardScreen*>(enrollment_screen)->screen_observer_ =
       WizardController::default_controller();
