@@ -4,6 +4,8 @@
 
 #include "media/filters/frame_processor_base.h"
 
+#include <cstdlib>
+
 #include "base/stl_util.h"
 #include "media/base/buffers.h"
 
@@ -55,6 +57,9 @@ void FrameProcessorBase::SetGroupStartTimestampIfInSequenceMode(
   DCHECK(kNoTimestamp() != timestamp_offset);
   if (sequence_mode_)
     group_start_timestamp_ = timestamp_offset;
+
+  // Changes to timestampOffset should invalidate the preroll buffer.
+  audio_preroll_buffer_ = NULL;
 }
 
 bool FrameProcessorBase::AddTrack(StreamParser::TrackId id,
@@ -126,6 +131,11 @@ bool FrameProcessorBase::HandlePartialAppendWindowTrimming(
     return false;
   }
 
+  // There's nothing to be done if we have no preroll and the buffer starts on
+  // the append window start.
+  if (buffer->timestamp() == append_window_start && !audio_preroll_buffer_)
+    return false;
+
   // See if a partial discard can be done around |append_window_start|.
   DCHECK(buffer->timestamp() <= append_window_start);
   DCHECK(buffer->IsKeyframe());
@@ -137,9 +147,12 @@ bool FrameProcessorBase::HandlePartialAppendWindowTrimming(
   // the last buffer discarded for preroll.  This ensures that the partially
   // trimmed buffer can be correctly decoded.
   if (audio_preroll_buffer_) {
-    if (audio_preroll_buffer_->timestamp() +
-            audio_preroll_buffer_->duration() ==
-        buffer->timestamp()) {
+    // We only want to use the preroll buffer if it directly precedes (less than
+    // one sample apart) the current buffer.
+    const int64 delta = std::abs((audio_preroll_buffer_->timestamp() +
+                                  audio_preroll_buffer_->duration() -
+                                  buffer->timestamp()).InMicroseconds());
+    if (delta < sample_duration_.InMicroseconds()) {
       buffer->SetPrerollBuffer(audio_preroll_buffer_);
     } else {
       // TODO(dalecurtis): Add a MEDIA_LOG() for when this is dropped unused.
@@ -161,6 +174,21 @@ bool FrameProcessorBase::HandlePartialAppendWindowTrimming(
   buffer->set_timestamp(append_window_start);
   buffer->SetDecodeTimestamp(append_window_start);
   return true;
+}
+
+void FrameProcessorBase::OnPossibleAudioConfigUpdate(
+    const AudioDecoderConfig& config) {
+  DCHECK(config.IsValidConfig());
+
+  // Always clear the preroll buffer when a config update is received.
+  audio_preroll_buffer_ = NULL;
+
+  if (config.Matches(current_audio_config_))
+    return;
+
+  current_audio_config_ = config;
+  sample_duration_ = base::TimeDelta::FromSecondsD(
+      1.0 / current_audio_config_.samples_per_second());
 }
 
 }  // namespace media
