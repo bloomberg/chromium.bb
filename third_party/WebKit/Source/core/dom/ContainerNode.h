@@ -81,10 +81,10 @@ public:
     PassRefPtrWillBeRawPtr<Element> querySelector(const AtomicString& selectors, ExceptionState&);
     PassRefPtrWillBeRawPtr<NodeList> querySelectorAll(const AtomicString& selectors, ExceptionState&);
 
-    void insertBefore(PassRefPtr<Node> newChild, Node* refChild, ExceptionState& = ASSERT_NO_EXCEPTION);
-    void replaceChild(PassRefPtr<Node> newChild, Node* oldChild, ExceptionState& = ASSERT_NO_EXCEPTION);
+    void insertBefore(PassRefPtrWillBeRawPtr<Node> newChild, Node* refChild, ExceptionState& = ASSERT_NO_EXCEPTION);
+    void replaceChild(PassRefPtrWillBeRawPtr<Node> newChild, Node* oldChild, ExceptionState& = ASSERT_NO_EXCEPTION);
     void removeChild(Node* child, ExceptionState& = ASSERT_NO_EXCEPTION);
-    void appendChild(PassRefPtr<Node> newChild, ExceptionState& = ASSERT_NO_EXCEPTION);
+    void appendChild(PassRefPtrWillBeRawPtr<Node> newChild, ExceptionState& = ASSERT_NO_EXCEPTION);
 
     Element* getElementById(const AtomicString& id) const;
     PassRefPtrWillBeRawPtr<HTMLCollection> getElementsByTagName(const AtomicString&);
@@ -95,9 +95,9 @@ public:
 
     // These methods are only used during parsing.
     // They don't send DOM mutation events or handle reparenting.
-    void parserAppendChild(PassRefPtr<Node>);
+    void parserAppendChild(PassRefPtrWillBeRawPtr<Node>);
     void parserRemoveChild(Node&);
-    void parserInsertBefore(PassRefPtr<Node> newChild, Node& refChild);
+    void parserInsertBefore(PassRefPtrWillBeRawPtr<Node> newChild, Node& refChild);
     void parserTakeAllChildrenFrom(ContainerNode&);
 
     void removeChildren();

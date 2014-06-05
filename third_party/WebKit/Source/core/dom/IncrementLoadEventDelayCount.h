@@ -5,6 +5,7 @@
 #ifndef IncrementLoadEventDelayCount_h
 #define IncrementLoadEventDelayCount_h
 
+#include "platform/heap/Handle.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/RefPtr.h"
 
@@ -25,7 +26,7 @@ public:
     void documentChanged(Document& newDocument);
 
 private:
-    RefPtr<Document> m_document;
+    RefPtrWillBePersistent<Document> m_document;
 };
 }
 

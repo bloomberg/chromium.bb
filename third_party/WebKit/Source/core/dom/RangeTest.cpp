@@ -35,7 +35,7 @@ private:
 void RangeTest::SetUp()
 {
     m_document = HTMLDocument::create();
-    RefPtr<HTMLHtmlElement> html = HTMLHtmlElement::create(*m_document);
+    RefPtrWillBeRawPtr<HTMLHtmlElement> html = HTMLHtmlElement::create(*m_document);
     html->appendChild(HTMLBodyElement::create(*m_document));
     m_document->appendChild(html.release());
 }

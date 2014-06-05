@@ -552,7 +552,8 @@ public:
 
     T* operator->() const { return m_raw; }
     T& operator*() const { return *m_raw; }
-    operator RawPtr<T>() const { return m_raw; }
+    template<typename U>
+    operator RawPtr<U>() const { return m_raw; }
 
     template<typename U>
     Member& operator=(const Persistent<U>& other)

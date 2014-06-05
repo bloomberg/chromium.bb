@@ -176,7 +176,7 @@ bool ContainerNode::checkAcceptChildGuaranteedNodeTypes(const Node& newChild, Ex
     return true;
 }
 
-void ContainerNode::insertBefore(PassRefPtr<Node> newChild, Node* refChild, ExceptionState& exceptionState)
+void ContainerNode::insertBefore(PassRefPtrWillBeRawPtr<Node> newChild, Node* refChild, ExceptionState& exceptionState)
 {
 #if !ENABLE(OILPAN)
     // Check that this node is not "floating".
@@ -271,14 +271,14 @@ void ContainerNode::insertBeforeCommon(Node& nextChild, Node& newChild)
     newChild.setNextSibling(&nextChild);
 }
 
-void ContainerNode::parserInsertBefore(PassRefPtr<Node> newChild, Node& nextChild)
+void ContainerNode::parserInsertBefore(PassRefPtrWillBeRawPtr<Node> newChild, Node& nextChild)
 {
     ASSERT(newChild);
     ASSERT(nextChild.parentNode() == this);
     ASSERT(!newChild->isDocumentFragment());
     ASSERT(!isHTMLTemplateElement(this));
 
-    if (nextChild.previousSibling() == newChild || nextChild == newChild) // nothing to do
+    if (nextChild.previousSibling() == newChild || &nextChild == newChild) // nothing to do
         return;
 
     if (document() != newChild->document())
@@ -295,7 +295,7 @@ void ContainerNode::parserInsertBefore(PassRefPtr<Node> newChild, Node& nextChil
     notifyNodeInserted(*newChild);
 }
 
-void ContainerNode::replaceChild(PassRefPtr<Node> newChild, Node* oldChild, ExceptionState& exceptionState)
+void ContainerNode::replaceChild(PassRefPtrWillBeRawPtr<Node> newChild, Node* oldChild, ExceptionState& exceptionState)
 {
 #if !ENABLE(OILPAN)
     // Check that this node is not "floating".
@@ -573,7 +573,7 @@ void ContainerNode::removeChildren()
     dispatchSubtreeModifiedEvent();
 }
 
-void ContainerNode::appendChild(PassRefPtr<Node> newChild, ExceptionState& exceptionState)
+void ContainerNode::appendChild(PassRefPtrWillBeRawPtr<Node> newChild, ExceptionState& exceptionState)
 {
     RefPtrWillBeRawPtr<ContainerNode> protect(this);
 
@@ -631,7 +631,7 @@ void ContainerNode::appendChild(PassRefPtr<Node> newChild, ExceptionState& excep
     dispatchSubtreeModifiedEvent();
 }
 
-void ContainerNode::parserAppendChild(PassRefPtr<Node> newChild)
+void ContainerNode::parserAppendChild(PassRefPtrWillBeRawPtr<Node> newChild)
 {
     ASSERT(newChild);
     ASSERT(!newChild->parentNode()); // Use appendChild if you need to handle reparenting (and want DOM mutation events).

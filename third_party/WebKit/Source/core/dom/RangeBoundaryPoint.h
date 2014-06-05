@@ -34,7 +34,7 @@ namespace WebCore {
 class RangeBoundaryPoint {
     DISALLOW_ALLOCATION();
 public:
-    explicit RangeBoundaryPoint(PassRefPtr<Node> container);
+    explicit RangeBoundaryPoint(PassRefPtrWillBeRawPtr<Node> container);
 
     explicit RangeBoundaryPoint(const RangeBoundaryPoint&);
 
@@ -46,7 +46,7 @@ public:
 
     void clear();
 
-    void set(PassRefPtr<Node> container, int offset, Node* childBefore);
+    void set(PassRefPtrWillBeRawPtr<Node> container, int offset, Node* childBefore);
     void setOffset(int offset);
 
     void setToBeforeChild(Node&);
@@ -67,7 +67,7 @@ private:
     RefPtrWillBeMember<Node> m_childBeforeBoundary;
 };
 
-inline RangeBoundaryPoint::RangeBoundaryPoint(PassRefPtr<Node> container)
+inline RangeBoundaryPoint::RangeBoundaryPoint(PassRefPtrWillBeRawPtr<Node> container)
     : m_containerNode(container)
     , m_offsetInContainer(0)
     , m_childBeforeBoundary(nullptr)
@@ -120,7 +120,7 @@ inline void RangeBoundaryPoint::clear()
     m_childBeforeBoundary = nullptr;
 }
 
-inline void RangeBoundaryPoint::set(PassRefPtr<Node> container, int offset, Node* childBefore)
+inline void RangeBoundaryPoint::set(PassRefPtrWillBeRawPtr<Node> container, int offset, Node* childBefore)
 {
     ASSERT(container);
     ASSERT(offset >= 0);
@@ -149,14 +149,14 @@ inline void RangeBoundaryPoint::setToBeforeChild(Node& child)
 
 inline void RangeBoundaryPoint::setToStartOfNode(Node& container)
 {
-    m_containerNode = PassRefPtr<Node>(container);
+    m_containerNode = &container;
     m_offsetInContainer = 0;
     m_childBeforeBoundary = nullptr;
 }
 
 inline void RangeBoundaryPoint::setToEndOfNode(Node& container)
 {
-    m_containerNode = PassRefPtr<Node>(container);
+    m_containerNode = &container;
     if (m_containerNode->offsetInCharacters()) {
         m_offsetInContainer = m_containerNode->maxCharacterOffset();
         m_childBeforeBoundary = nullptr;

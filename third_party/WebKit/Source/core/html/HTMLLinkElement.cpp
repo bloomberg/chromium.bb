@@ -473,7 +473,7 @@ void LinkStyle::setCSSStyleSheet(const String& href, const KURL& baseURL, const 
 
     }
     // Completing the sheet load may cause scripts to execute.
-    RefPtrWillBeRawPtr<Node> protector(m_owner);
+    RefPtrWillBeRawPtr<Node> protector(m_owner.get());
 
     CSSParserContext parserContext(m_owner->document(), 0, baseURL, charset);
 

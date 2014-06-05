@@ -1290,7 +1290,7 @@ void WebLocalFrameImpl::extendSelectionAndDelete(int before, int after)
 
 void WebLocalFrameImpl::addStyleSheetByURL(const WebString& url)
 {
-    RefPtr<Element> styleElement = frame()->document()->createElement(HTMLNames::linkTag, false);
+    RefPtrWillBeRawPtr<Element> styleElement = frame()->document()->createElement(HTMLNames::linkTag, false);
 
     styleElement->setAttribute(HTMLNames::typeAttr, "text/css");
     styleElement->setAttribute(HTMLNames::relAttr, "stylesheet");

@@ -141,7 +141,7 @@ namespace Private {
 
                 tail = n;
             } else {
-                RefPtr<GenericNode> protect(n); // removedFromDocument may remove all references to this node.
+                RefPtrWillBeRawPtr<GenericNode> protect(n); // removedFromDocument may remove all references to this node.
                 NodeRemovalDispatcher<GenericNode, GenericNodeContainer, ShouldDispatchRemovalNotification<GenericNode>::value>::dispatch(*n, container);
             }
         }

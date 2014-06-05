@@ -54,7 +54,7 @@ protected:
     DocumentMarkerController& markerController() const { return m_document->markers(); }
 
     PassRefPtrWillBeRawPtr<Text> createTextNode(const char*);
-    void markNodeContents(PassRefPtr<Node>);
+    void markNodeContents(PassRefPtrWillBeRawPtr<Node>);
     void setBodyInnerHTML(const char*);
 
 private:
@@ -74,7 +74,7 @@ PassRefPtrWillBeRawPtr<Text> DocumentMarkerControllerTest::createTextNode(const 
     return document().createTextNode(String::fromUTF8(textContents));
 }
 
-void DocumentMarkerControllerTest::markNodeContents(PassRefPtr<Node> node)
+void DocumentMarkerControllerTest::markNodeContents(PassRefPtrWillBeRawPtr<Node> node)
 {
     // Force renderers to be created; TextIterator, which is used in
     // DocumentMarkerControllerTest::addMarker(), needs them.

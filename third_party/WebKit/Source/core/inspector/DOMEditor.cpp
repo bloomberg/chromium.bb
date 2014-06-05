@@ -305,13 +305,17 @@ public:
 
     virtual bool undo(ExceptionState& exceptionState) OVERRIDE
     {
-        m_parentNode->replaceChild(m_oldNode, m_newNode.get(), exceptionState);
+        // FIXME: Oilpan: The first .get() is unnecessary if m_oldNode is a
+        // Persistent or a Member.
+        m_parentNode->replaceChild(m_oldNode.get(), m_newNode.get(), exceptionState);
         return !exceptionState.hadException();
     }
 
     virtual bool redo(ExceptionState& exceptionState) OVERRIDE
     {
-        m_parentNode->replaceChild(m_newNode, m_oldNode.get(), exceptionState);
+        // FIXME: Oilpan: The first .get() is unnecessary if m_newNode is a
+        // Persistent or a Member.
+        m_parentNode->replaceChild(m_newNode.get(), m_oldNode.get(), exceptionState);
         return !exceptionState.hadException();
     }
 

@@ -699,10 +699,8 @@ void SVGUseElement::expandSymbolElementsInShadowTree(Node* element)
         svgElement->cloneDataFromElement(*toElement(element));
 
         // Only clone symbol children, and add them to the new <svg> element
-        for (Node* child = element->firstChild(); child; child = child->nextSibling()) {
-            RefPtr<Node> newChild = child->cloneNode(true);
-            svgElement->appendChild(newChild.release());
-        }
+        for (Node* child = element->firstChild(); child; child = child->nextSibling())
+            svgElement->appendChild(child->cloneNode(true));
 
         // We don't walk the target tree element-by-element, and clone each element,
         // but instead use cloneNode(deep=true). This is an optimization for the common
