@@ -92,24 +92,19 @@ static bool hasDistributedRule(StyleSheetContents* styleSheetContents)
     return false;
 }
 
-static Node* determineScopingNodeForStyleScoped(HTMLStyleElement* ownerElement, StyleSheetContents* styleSheetContents)
+static Node* determineScopingNodeForStyleInShadow(HTMLStyleElement* ownerElement, StyleSheetContents* styleSheetContents)
 {
-    ASSERT(ownerElement && ownerElement->isRegisteredAsScoped());
+    ASSERT(ownerElement && ownerElement->isInShadowTree());
 
-    if (ownerElement->isInShadowTree()) {
-        if (hasDistributedRule(styleSheetContents)) {
-            ContainerNode* scope = ownerElement;
-            do {
-                scope = scope->containingShadowRoot()->shadowHost();
-            } while (scope->isInShadowTree());
-
-            return scope;
-        }
-        if (ownerElement->isRegisteredAsScoped())
-            return ownerElement->containingShadowRoot()->shadowHost();
+    if (hasDistributedRule(styleSheetContents)) {
+        ContainerNode* scope = ownerElement;
+        do {
+            scope = scope->containingShadowRoot()->shadowHost();
+        } while (scope->isInShadowTree());
+        return scope;
     }
 
-    return ownerElement->isRegisteredInShadowRoot() ? ownerElement->containingShadowRoot()->shadowHost() : ownerElement->parentNode();
+    return ownerElement->containingShadowRoot()->shadowHost();
 }
 
 static bool ruleAdditionMightRequireDocumentStyleRecalc(StyleRuleBase* rule)
@@ -157,8 +152,8 @@ void StyleSheetInvalidationAnalysis::analyzeStyleSheet(StyleSheetContents* style
     }
     if (styleSheetContents->hasSingleOwnerNode()) {
         Node* ownerNode = styleSheetContents->singleOwnerNode();
-        if (isHTMLStyleElement(ownerNode) && toHTMLStyleElement(*ownerNode).isRegisteredAsScoped()) {
-            m_scopingNodes.append(determineScopingNodeForStyleScoped(toHTMLStyleElement(ownerNode), styleSheetContents));
+        if (isHTMLStyleElement(ownerNode) && toHTMLStyleElement(*ownerNode).isInShadowTree()) {
+            m_scopingNodes.append(determineScopingNodeForStyleInShadow(toHTMLStyleElement(ownerNode), styleSheetContents));
             return;
         }
     }
