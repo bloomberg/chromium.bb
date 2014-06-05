@@ -63,7 +63,8 @@ remoting.tryShare = function() {
 
     // If we failed to initialize the dispatcher then prompt the user to install
     // the host manually.
-    if (hostInstallDialog == null) {
+    var hasHostDialog = (hostInstallDialog != null);  /** jscompile hack */
+    if (!hasHostDialog) {
       hostInstallDialog = new remoting.HostInstallDialog();
 
       hostInstallDialog.show(tryInitializeDispatcher, onInstallError);
