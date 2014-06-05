@@ -64,6 +64,8 @@
         'browser/devtools/devtools_file_helper.h',
         'browser/devtools/devtools_file_system_indexer.cc',
         'browser/devtools/devtools_file_system_indexer.h',
+        'browser/devtools/devtools_network_conditions.cc',
+        'browser/devtools/devtools_network_conditions.h',
         'browser/devtools/devtools_network_controller.cc',
         'browser/devtools/devtools_network_controller.h',
         'browser/devtools/devtools_network_transaction.cc',

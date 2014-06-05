@@ -8,9 +8,11 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "chrome/browser/devtools/devtools_protocol.h"
 #include "content/public/browser/devtools_manager_delegate.h"
 
+class DevToolsNetworkConditions;
 class Profile;
 
 class ChromeDevToolsManagerDelegate : public content::DevToolsManagerDelegate {
@@ -36,7 +38,9 @@ class ChromeDevToolsManagerDelegate : public content::DevToolsManagerDelegate {
       content::DevToolsAgentHost* agent_host,
       DevToolsProtocol::Command* command);
 
-  void UpdateNetworkState(content::DevToolsAgentHost* agent_host, bool offline);
+  void UpdateNetworkState(
+      content::DevToolsAgentHost* agent_host,
+      const scoped_refptr<DevToolsNetworkConditions> conditions);
 
   void OnDevToolsStateChanged(content::DevToolsAgentHost* agent_host,
                               bool attached);

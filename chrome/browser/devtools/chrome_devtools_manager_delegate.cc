@@ -5,6 +5,7 @@
 #include "chrome/browser/devtools/chrome_devtools_manager_delegate.h"
 
 #include "base/values.h"
+#include "chrome/browser/devtools/devtools_network_conditions.h"
 #include "chrome/browser/devtools/devtools_network_controller.h"
 #include "chrome/browser/devtools/devtools_protocol.h"
 #include "chrome/browser/devtools/devtools_protocol_constants.h"
@@ -87,22 +88,25 @@ ChromeDevToolsManagerDelegate::EmulateNetworkConditions(
     return command->InvalidParamResponse(offline_param);
 
   EnsureDevtoolsCallbackRegistered();
-  UpdateNetworkState(agent_host, offline);
+  scoped_refptr<DevToolsNetworkConditions> conditions;
+  if (offline)
+    conditions = new DevToolsNetworkConditions(std::vector<std::string>());
+  UpdateNetworkState(agent_host, conditions);
   return command->SuccessResponse(NULL);
 }
 
 void ChromeDevToolsManagerDelegate::UpdateNetworkState(
     content::DevToolsAgentHost* agent_host,
-    bool offline) {
+    scoped_refptr<DevToolsNetworkConditions> conditions) {
   Profile* profile = GetProfile(agent_host);
   if (!profile)
     return;
   profile->GetDevToolsNetworkController()->SetNetworkState(
-      agent_host->GetId(), offline);
+      agent_host->GetId(), conditions);
 }
 
 void ChromeDevToolsManagerDelegate::OnDevToolsStateChanged(
     content::DevToolsAgentHost* agent_host,
     bool attached) {
-  UpdateNetworkState(agent_host, false);
+  UpdateNetworkState(agent_host, scoped_refptr<DevToolsNetworkConditions>());
 }

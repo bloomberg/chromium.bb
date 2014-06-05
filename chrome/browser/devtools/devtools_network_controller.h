@@ -9,10 +9,12 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 
+class DevToolsNetworkConditions;
 class DevToolsNetworkTransaction;
 class GURL;
 class Profile;
@@ -44,7 +46,7 @@ class DevToolsNetworkController {
   // |client_id| should be DevToolsAgentHost GUID.
   void SetNetworkState(
       const std::string& client_id,
-      bool disable_network);
+      const scoped_refptr<DevToolsNetworkConditions> conditions);
 
   bool ShouldFail(const net::HttpRequestInfo* request);
 
@@ -55,15 +57,20 @@ class DevToolsNetworkController {
   // Controller must be constructed on IO thread.
   base::ThreadChecker thread_checker_;
 
+  typedef scoped_refptr<DevToolsNetworkConditions> Conditions;
+
   void SetNetworkStateOnIO(
       const std::string& client_id,
-      bool disable_network);
+      const Conditions conditions);
 
   typedef std::set<DevToolsNetworkTransaction*> Transactions;
   Transactions transactions_;
 
-  typedef std::set<std::string> Clients;
-  Clients clients_;
+  // Active client id.
+  std::string active_client_id_;
+
+  // Active network conditions.
+  Conditions conditions_;
 
   base::WeakPtrFactory<DevToolsNetworkController> weak_ptr_factory_;
 

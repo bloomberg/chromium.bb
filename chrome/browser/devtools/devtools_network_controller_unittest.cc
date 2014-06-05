@@ -8,6 +8,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "chrome/browser/devtools/devtools_network_conditions.h"
 #include "chrome/browser/devtools/devtools_network_controller.h"
 #include "chrome/browser/devtools/devtools_network_transaction.h"
 #include "net/http/http_transaction_test_util.h"
@@ -18,6 +19,10 @@ namespace test {
 
 const char kClientId[] = "42";
 const char kAnotherClientId[] = "24";
+
+const char kHttpDotCom[] = "http://dot.com";
+const char kHttpDotOrg[] = "http://dot.org";
+const char kCom[] = "com";
 
 class TestCallback {
  public:
@@ -42,7 +47,7 @@ class DevToolsNetworkControllerHelper {
       mock_transaction_(kSimpleGET_Transaction),
       buffer_(new net::IOBuffer(64)) {
     mock_transaction_.test_mode = TEST_MODE_SYNC_NET_START;
-    mock_transaction_.url = "http://dot.com";
+    mock_transaction_.url = kHttpDotCom;
     AddMockTransaction(&mock_transaction_);
 
     scoped_ptr<net::HttpTransaction> network_transaction;
@@ -59,7 +64,12 @@ class DevToolsNetworkControllerHelper {
   }
 
   void SetNetworkState(const std::string& client_id, bool offline) {
-    controller_.SetNetworkStateOnIO(client_id, offline);
+    std::vector<std::string> domains;
+    domains.push_back(kCom);
+    scoped_refptr<DevToolsNetworkConditions> conditions;
+    if (offline)
+      conditions = new DevToolsNetworkConditions(domains);
+    controller_.SetNetworkStateOnIO(client_id, conditions);
   }
 
   int Start() {
@@ -182,6 +192,17 @@ TEST(DevToolsNetworkControllerTest, AllowsDevToolsRequests) {
   DevToolsNetworkControllerHelper helper;
   helper.mock_transaction()->request_headers =
       "X-DevTools-Request-Initiator: frontend\r\n";
+  DevToolsNetworkController* controller = helper.controller();
+  net::HttpRequestInfo* request = helper.GetRequest();
+
+  EXPECT_FALSE(controller->ShouldFail(request));
+  helper.SetNetworkState(kClientId, true);
+  EXPECT_FALSE(controller->ShouldFail(request));
+}
+
+TEST(DevToolsNetworkControllerTest, AllowsNotMatchingRequests) {
+  DevToolsNetworkControllerHelper helper;
+  helper.mock_transaction()->url = kHttpDotOrg;
   DevToolsNetworkController* controller = helper.controller();
   net::HttpRequestInfo* request = helper.GetRequest();
 

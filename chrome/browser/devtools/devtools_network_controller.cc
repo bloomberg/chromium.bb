@@ -4,6 +4,7 @@
 
 #include "chrome/browser/devtools/devtools_network_controller.h"
 
+#include "chrome/browser/devtools/devtools_network_conditions.h"
 #include "chrome/browser/devtools/devtools_network_transaction.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_io_data.h"
@@ -40,7 +41,7 @@ void DevToolsNetworkController::RemoveTransaction(
 
 void DevToolsNetworkController::SetNetworkState(
     const std::string& client_id,
-    bool offline) {
+    const scoped_refptr<DevToolsNetworkConditions> conditions) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   BrowserThread::PostTask(
       content::BrowserThread::IO,
@@ -49,18 +50,22 @@ void DevToolsNetworkController::SetNetworkState(
           &DevToolsNetworkController::SetNetworkStateOnIO,
           weak_ptr_factory_.GetWeakPtr(),
           client_id,
-          offline));
+          conditions));
 }
 
 void DevToolsNetworkController::SetNetworkStateOnIO(
     const std::string& client_id,
-    bool offline) {
+    const scoped_refptr<DevToolsNetworkConditions> conditions) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (!offline) {
-    clients_.erase(client_id);
+  if (!conditions) {
+    if (client_id == active_client_id_) {
+      conditions_ = NULL;
+      active_client_id_ = std::string();
+    }
     return;
   }
-  clients_.insert(client_id);
+  conditions_ = conditions;
+  active_client_id_ = client_id;
 
   // Iterate over a copy of set, because failing of transaction could result in
   // creating a new one, or (theoretically) destroying one.
@@ -80,13 +85,11 @@ bool DevToolsNetworkController::ShouldFail(
     const net::HttpRequestInfo* request) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(request);
-  if (clients_.empty())
+  if (!conditions_ || !conditions_->IsOffline())
     return false;
 
-  if (request->extra_headers.HasHeader(kDevToolsRequestInitiator))
+  if (!conditions_->HasMatchingDomain(request->url))
     return false;
 
-  // TODO: Add domain blacklist.
-
-  return true;
+  return !request->extra_headers.HasHeader(kDevToolsRequestInitiator);
 }
