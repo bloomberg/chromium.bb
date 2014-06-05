@@ -11,9 +11,12 @@
 namespace safe_browsing {
 namespace zip_analyzer {
 
-void AnalyzeZipFile(base::PlatformFile zip_file, Results* results) {
+void AnalyzeZipFile(base::File zip_file, Results* results) {
   zip::ZipReader reader;
-  if (!reader.OpenFromPlatformFile(zip_file)) {
+  // OpenFromPlatformFile may close the handle even when it fails, but there is
+  // no way to know if it did that or not. Assume it did (that's the common
+  // case).
+  if (!reader.OpenFromPlatformFile(zip_file.TakePlatformFile())) {
     VLOG(1) << "Failed to open zip file";
     return;
   }

@@ -6,9 +6,9 @@
 #define CHROME_UTILITY_CHROME_CONTENT_UTILITY_CLIENT_H_
 
 #include "base/compiler_specific.h"
+#include "base/files/file.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
-#include "base/platform_file.h"
 #include "chrome/common/media_galleries/picasa_types.h"
 #include "content/public/utility/content_utility_client.h"
 #include "ipc/ipc_platform_file.h"
@@ -82,7 +82,7 @@ class ChromeContentUtilityClient : public content::ContentUtilityClient {
   // specified pages will be rendered. If an empty vector is supplied it will
   // be filled with a range of all pages that were rendered.
   bool RenderPDFToWinMetafile(
-      base::PlatformFile pdf_file,
+      base::File pdf_file,
       const base::FilePath& metafile_path,
       const printing::PdfRenderSettings& settings,
       std::vector<printing::PageRange>* page_ranges,
@@ -91,10 +91,10 @@ class ChromeContentUtilityClient : public content::ContentUtilityClient {
 #endif   // defined(OS_WIN)
 
   bool RenderPDFPagesToPWGRaster(
-      base::PlatformFile pdf_file,
+      base::File pdf_file,
       const printing::PdfRenderSettings& settings,
       const printing::PwgRasterSettings& bitmap_settings,
-      base::PlatformFile bitmap_file);
+      base::File bitmap_file);
 
   void OnGetPrinterCapsAndDefaults(const std::string& printer_name);
   void OnGetPrinterSemanticCapsAndDefaults(const std::string& printer_name);

@@ -8,7 +8,7 @@
 #ifndef CHROME_COMMON_SAFE_BROWSING_ZIP_ANALYZER_H_
 #define CHROME_COMMON_SAFE_BROWSING_ZIP_ANALYZER_H_
 
-#include "base/platform_file.h"
+#include "base/files/file.h"
 
 namespace safe_browsing {
 namespace zip_analyzer {
@@ -21,7 +21,7 @@ struct Results {
   Results() : success(false), has_executable(false), has_archive(false) {}
 };
 
-void AnalyzeZipFile(base::PlatformFile zip_file, Results* results);
+void AnalyzeZipFile(base::File zip_file, Results* results);
 
 }  // namespace zip_analyzer
 }  // namespace safe_browsing

@@ -573,12 +573,11 @@ void ChromeContentUtilityClient::OnRenderPDFPagesToMetafile(
     const std::vector<printing::PageRange>& page_ranges_const) {
   bool succeeded = false;
 #if defined(OS_WIN)
-  base::PlatformFile pdf_file =
-      IPC::PlatformFileForTransitToPlatformFile(pdf_transit);
+  base::File pdf_file = IPC::PlatformFileForTransitToFile(pdf_transit);
   int highest_rendered_page_number = 0;
   double scale_factor = 1.0;
   std::vector<printing::PageRange> page_ranges = page_ranges_const;
-  succeeded = RenderPDFToWinMetafile(pdf_file,
+  succeeded = RenderPDFToWinMetafile(pdf_file.Pass(),
                                      metafile_path,
                                      settings,
                                      &page_ranges,
@@ -603,11 +602,10 @@ void ChromeContentUtilityClient::OnRenderPDFPagesToPWGRaster(
     const printing::PdfRenderSettings& settings,
     const printing::PwgRasterSettings& bitmap_settings,
     IPC::PlatformFileForTransit bitmap_transit) {
-  base::PlatformFile pdf =
-      IPC::PlatformFileForTransitToPlatformFile(pdf_transit);
-  base::PlatformFile bitmap =
-      IPC::PlatformFileForTransitToPlatformFile(bitmap_transit);
-  if (RenderPDFPagesToPWGRaster(pdf, settings, bitmap_settings, bitmap)) {
+  base::File pdf = IPC::PlatformFileForTransitToFile(pdf_transit);
+  base::File bitmap = IPC::PlatformFileForTransitToFile(bitmap_transit);
+  if (RenderPDFPagesToPWGRaster(pdf.Pass(), settings, bitmap_settings,
+                                bitmap.Pass())) {
     Send(new ChromeUtilityHostMsg_RenderPDFPagesToPWGRaster_Succeeded());
   } else {
     Send(new ChromeUtilityHostMsg_RenderPDFPagesToPWGRaster_Failed());
@@ -617,7 +615,7 @@ void ChromeContentUtilityClient::OnRenderPDFPagesToPWGRaster(
 
 #if defined(OS_WIN)
 bool ChromeContentUtilityClient::RenderPDFToWinMetafile(
-    base::PlatformFile pdf_file,
+    base::File pdf_file,
     const base::FilePath& metafile_path,
     const printing::PdfRenderSettings& settings,
     std::vector<printing::PageRange>* page_ranges,
@@ -626,7 +624,6 @@ bool ChromeContentUtilityClient::RenderPDFToWinMetafile(
   DCHECK(page_ranges);
   *highest_rendered_page_number = -1;
   *scale_factor = 1.0;
-  base::win::ScopedHandle file(pdf_file);
 
   if (!g_pdf_lib.Get().IsValid())
     return false;
@@ -634,17 +631,14 @@ bool ChromeContentUtilityClient::RenderPDFToWinMetafile(
   // TODO(sanjeevr): Add a method to the PDF DLL that takes in a file handle
   // and a page range array. That way we don't need to read the entire PDF into
   // memory.
-  DWORD length = ::GetFileSize(file, NULL);
-  if (length == INVALID_FILE_SIZE)
+  int64 length = pdf_file.GetLength();
+  if (length < 0)
     return false;
 
-  std::vector<uint8> buffer;
+  std::vector<char> buffer;
   buffer.resize(length);
-  DWORD bytes_read = 0;
-  if (!ReadFile(pdf_file, &buffer.front(), length, &bytes_read, NULL) ||
-      (bytes_read != length)) {
+  if (length != pdf_file.Read(0, &buffer.front(), length))
     return false;
-  }
 
   int total_page_count = 0;
   if (!g_pdf_lib.Get().GetPDFDocInfo(&buffer.front(), buffer.size(),
@@ -705,20 +699,20 @@ bool ChromeContentUtilityClient::RenderPDFToWinMetafile(
 #endif  // defined(OS_WIN)
 
 bool ChromeContentUtilityClient::RenderPDFPagesToPWGRaster(
-    base::PlatformFile pdf_file,
+    base::File pdf_file,
     const printing::PdfRenderSettings& settings,
     const printing::PwgRasterSettings& bitmap_settings,
-    base::PlatformFile bitmap_file) {
+    base::File bitmap_file) {
   bool autoupdate = true;
   if (!g_pdf_lib.Get().IsValid())
     return false;
 
-  base::PlatformFileInfo info;
-  if (!base::GetPlatformFileInfo(pdf_file, &info) || info.size <= 0)
+  base::File::Info info;
+  if (!pdf_file.GetInfo(&info) || info.size <= 0)
     return false;
 
   std::string data(info.size, 0);
-  int data_size = base::ReadPlatformFile(pdf_file, 0, &data[0], data.size());
+  int data_size = pdf_file.Read(0, &data[0], data.size());
   if (data_size != static_cast<int>(data.size()))
     return false;
 
@@ -731,9 +725,8 @@ bool ChromeContentUtilityClient::RenderPDFPagesToPWGRaster(
   cloud_print::PwgEncoder encoder;
   std::string pwg_header;
   encoder.EncodeDocumentHeader(&pwg_header);
-  int bytes_written = base::WritePlatformFileAtCurrentPos(bitmap_file,
-                                                          pwg_header.data(),
-                                                          pwg_header.size());
+  int bytes_written = bitmap_file.WriteAtCurrentPos(pwg_header.data(),
+                                                    pwg_header.size());
   if (bytes_written != static_cast<int>(pwg_header.size()))
     return false;
 
@@ -788,9 +781,8 @@ bool ChromeContentUtilityClient::RenderPDFPagesToPWGRaster(
     std::string pwg_page;
     if (!encoder.EncodePage(image, header_info, &pwg_page))
       return false;
-    bytes_written = base::WritePlatformFileAtCurrentPos(bitmap_file,
-                                                        pwg_page.data(),
-                                                        pwg_page.size());
+    bytes_written = bitmap_file.WriteAtCurrentPos(pwg_page.data(),
+                                                  pwg_page.size());
     if (bytes_written != static_cast<int>(pwg_page.size()))
       return false;
   }
@@ -920,7 +912,7 @@ void ChromeContentUtilityClient::OnAnalyzeZipFileForDownloadProtection(
     const IPC::PlatformFileForTransit& zip_file) {
   safe_browsing::zip_analyzer::Results results;
   safe_browsing::zip_analyzer::AnalyzeZipFile(
-      IPC::PlatformFileForTransitToPlatformFile(zip_file), &results);
+      IPC::PlatformFileForTransitToFile(zip_file), &results);
   Send(new ChromeUtilityHostMsg_AnalyzeZipFileForDownloadProtection_Finished(
       results));
   ReleaseProcessIfNeeded();
@@ -931,7 +923,7 @@ void ChromeContentUtilityClient::OnCheckMediaFile(
     int64 milliseconds_of_decoding,
     const IPC::PlatformFileForTransit& media_file) {
   media::MediaFileChecker checker(
-      base::File(IPC::PlatformFileForTransitToPlatformFile(media_file)));
+      IPC::PlatformFileForTransitToFile(media_file));
   const bool check_success = checker.Start(
       base::TimeDelta::FromMilliseconds(milliseconds_of_decoding));
   Send(new ChromeUtilityHostMsg_CheckMediaFile_Finished(check_success));
