@@ -818,7 +818,6 @@ crbug.com/339373 http/tests/websocket/deflate-frame-set-bfinal.html [ Skip ]
 crbug.com/339373 http/tests/websocket/handshake-fail-by-no-cr.html [ Skip ]
 
 crbug.com/349537 http/tests/websocket/workers/worker-reload-repeated.html [ Pass Timeout ]
-crbug.com/349537 virtual/stable/http/tests/websocket/workers/worker-reload-repeated.html [ Pass Timeout ]
 
 crbug.com/339778 [ Debug ] fast/dom/timer-throttling-hidden-page.html [ Failure Pass ]
 
