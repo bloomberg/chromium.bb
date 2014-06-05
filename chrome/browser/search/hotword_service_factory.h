@@ -19,9 +19,6 @@ class HotwordServiceFactory : public BrowserContextKeyedServiceFactory {
 
   static HotwordServiceFactory* GetInstance();
 
-  // Returns true to show the opt in pop up for |context|.
-  static bool ShouldShowOptInPopup(content::BrowserContext* context);
-
   // Returns true if the hotwording service is available for |context|.
   static bool IsServiceAvailable(content::BrowserContext* context);
 

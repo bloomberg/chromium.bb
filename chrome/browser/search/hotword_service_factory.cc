@@ -26,12 +26,6 @@ HotwordServiceFactory* HotwordServiceFactory::GetInstance() {
 }
 
 // static
-bool HotwordServiceFactory::ShouldShowOptInPopup(BrowserContext* context) {
-  HotwordService* hotword_service = GetForProfile(context);
-  return hotword_service && hotword_service->ShouldShowOptInPopup();
-}
-
-// static
 bool HotwordServiceFactory::IsServiceAvailable(BrowserContext* context) {
   HotwordService* hotword_service = GetForProfile(context);
   return hotword_service && hotword_service->IsServiceAvailable();
@@ -66,9 +60,6 @@ void HotwordServiceFactory::RegisterProfilePrefs(
   prefs->RegisterBooleanPref(prefs::kHotwordSearchEnabled,
                              false,
                              user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
-  prefs->RegisterIntegerPref(prefs::kHotwordOptInPopupTimesShown,
-                             0,
-                             user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   // Although this is default true, users will not send back information to
   // Google unless they have opted in to Hotwording at which point they must
   // also confirm that they wish this preference to be true or opt out of it.

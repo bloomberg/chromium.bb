@@ -41,7 +41,6 @@ using extensions::HotwordPrivateEventService;
 #endif
 
 namespace {
-const int kMaxTimesToShowOptInPopup = 10;
 
 // Allowed languages for hotwording.
 static const char* kSupportedLocales[] = {
@@ -237,31 +236,6 @@ void HotwordService::Observe(int type,
                         content::Source<Profile>(profile_));
     }
   }
-}
-
-bool HotwordService::ShouldShowOptInPopup() {
-  if (profile_->IsOffTheRecord())
-    return false;
-
-  // Profile is not off the record.
-  if (profile_->GetPrefs()->HasPrefPath(prefs::kHotwordSearchEnabled))
-    return false;  // Already opted in or opted out;
-
-  int number_shown = profile_->GetPrefs()->GetInteger(
-      prefs::kHotwordOptInPopupTimesShown);
-  return number_shown < MaxNumberTimesToShowOptInPopup();
-}
-
-int HotwordService::MaxNumberTimesToShowOptInPopup() {
-  return kMaxTimesToShowOptInPopup;
-}
-
-void HotwordService::ShowOptInPopup() {
-  int number_shown = profile_->GetPrefs()->GetInteger(
-      prefs::kHotwordOptInPopupTimesShown);
-  profile_->GetPrefs()->SetInteger(prefs::kHotwordOptInPopupTimesShown,
-                                   ++number_shown);
-  // TODO(rlp): actually show opt in popup when linked up to extension.
 }
 
 bool HotwordService::IsServiceAvailable() {

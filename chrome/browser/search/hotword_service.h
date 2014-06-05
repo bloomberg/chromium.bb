@@ -37,16 +37,6 @@ class HotwordService : public content::NotificationObserver,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  bool ShouldShowOptInPopup();
-
-  // Used in testing to ensure that the popup is not shown more than this
-  // maximum number of times.
-  int MaxNumberTimesToShowOptInPopup();
-
-  // In addition to showing the popup, the preferences
-  // kHotwordOptInPopupTimesShown is also incremented.
-  void ShowOptInPopup();
-
   // Checks for whether all the necessary files have downloaded to allow for
   // using the extension.
   virtual bool IsServiceAvailable();
