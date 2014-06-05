@@ -455,26 +455,41 @@ def RunElfSymbolizer(outfile, library, addr2line_binary, nm_binary, jobs):
   symbolizer = elf_symbolizer.ELFSymbolizer(library, addr2line_binary,
                                             map_address_symbol,
                                             max_concurrent_jobs=jobs)
-  for line in nm_output_lines:
-    match = sNmPattern.match(line)
-    if match:
-      location = match.group(5)
-      if not location:
-        addr = int(match.group(1), 16)
-        size = int(match.group(2), 16)
-        if addr in address_symbol:  # Already looked up, shortcut ELFSymbolizer.
-          map_address_symbol(address_symbol[addr], addr)
-          continue
-        elif size == 0:
-          # Save time by not looking up empty symbols (do they even exist?)
-          print('Empty symbol: ' + line)
-        else:
-          symbolizer.SymbolizeAsync(addr, addr)
-          continue
+  user_interrupted = False
+  try:
+    for line in nm_output_lines:
+      match = sNmPattern.match(line)
+      if match:
+        location = match.group(5)
+        if not location:
+          addr = int(match.group(1), 16)
+          size = int(match.group(2), 16)
+          if addr in address_symbol:  # Already looked up, shortcut
+                                      # ELFSymbolizer.
+            map_address_symbol(address_symbol[addr], addr)
+            continue
+          elif size == 0:
+            # Save time by not looking up empty symbols (do they even exist?)
+            print('Empty symbol: ' + line)
+          else:
+            symbolizer.SymbolizeAsync(addr, addr)
+            continue
 
-    progress.skip_count += 1
+      progress.skip_count += 1
+  except KeyboardInterrupt:
+    user_interrupted = True
+    print('Interrupting - killing subprocesses. Please wait.')
 
-  symbolizer.Join()
+  try:
+    symbolizer.Join()
+  except KeyboardInterrupt:
+    # Don't want to abort here since we will be finished in a few seconds.
+    user_interrupted = True
+    print('Patience you must have my young padawan.')
+
+  if user_interrupted:
+    print('Skipping the rest of the file mapping. '
+          'Output will not be fully classified.')
 
   with open(outfile, 'w') as out:
     for line in nm_output_lines:
@@ -483,15 +498,16 @@ def RunElfSymbolizer(outfile, library, addr2line_binary, nm_binary, jobs):
         location = match.group(5)
         if not location:
           addr = int(match.group(1), 16)
-          symbol = address_symbol[addr]
-          path = '??'
-          if symbol.source_path is not None:
-            path = symbol.source_path
-          line_number = 0
-          if symbol.source_line is not None:
-            line_number = symbol.source_line
-          out.write('%s\t%s:%d\n' % (line, path, line_number))
-          continue
+          symbol = address_symbol.get(addr)
+          if symbol is not None:
+            path = '??'
+            if symbol.source_path is not None:
+              path = symbol.source_path
+            line_number = 0
+            if symbol.source_line is not None:
+              line_number = symbol.source_line
+            out.write('%s\t%s:%d\n' % (line, path, line_number))
+            continue
 
       out.write('%s\n' % line)
 
@@ -500,7 +516,8 @@ def RunElfSymbolizer(outfile, library, addr2line_binary, nm_binary, jobs):
 
 def RunNm(binary, nm_binary):
   print('Starting nm')
-  cmd = [nm_binary, '-C', '--print-size', binary]
+  cmd = [nm_binary, '-C', '--print-size', '--size-sort', '--reverse-sort',
+         binary]
   nm_process = subprocess.Popen(cmd,
                                 stdout=subprocess.PIPE,
                                 stderr=subprocess.PIPE)
@@ -678,12 +695,10 @@ def main():
                                 'template')
     shutil.copy(os.path.join(d3_src, 'LICENSE'), d3_out)
     shutil.copy(os.path.join(d3_src, 'd3.js'), d3_out)
-    print('Copying index.html')
     shutil.copy(os.path.join(template_src, 'index.html'), opts.destdir)
     shutil.copy(os.path.join(template_src, 'D3SymbolTreeMap.js'), opts.destdir)
 
-  if opts.verbose:
-    print 'Report saved to ' + opts.destdir + '/index.html'
+  print 'Report saved to ' + opts.destdir + '/index.html'
 
 
 if __name__ == '__main__':
