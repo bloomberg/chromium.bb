@@ -37,6 +37,8 @@
         '<(DEPTH)/mojo/public/tools/bindings/generators/cpp_templates/wrapper_class_definition.tmpl',
         '<(DEPTH)/mojo/public/tools/bindings/generators/java_templates/constant_definition.tmpl',
         '<(DEPTH)/mojo/public/tools/bindings/generators/java_templates/constants.java.tmpl',
+        '<(DEPTH)/mojo/public/tools/bindings/generators/java_templates/enum_definition.tmpl',
+        '<(DEPTH)/mojo/public/tools/bindings/generators/java_templates/enum.java.tmpl',
         '<(DEPTH)/mojo/public/tools/bindings/generators/java_templates/header.java.tmpl',
         '<(DEPTH)/mojo/public/tools/bindings/generators/java_templates/java_macros.tmpl',
         '<(DEPTH)/mojo/public/tools/bindings/generators/js_templates/enum_definition.tmpl',

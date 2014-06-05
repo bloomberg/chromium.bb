@@ -109,7 +109,7 @@ def GetJavaType(kind):
     return "int"
   return _spec_to_java_type[kind.spec]
 
-def TranslateConstants(token):
+def ExpressionToText(token):
   def _TranslateNamedValue(named_value):
     entity_name = GetNameForElement(named_value)
     if named_value.parent_kind:
@@ -126,9 +126,6 @@ def TranslateConstants(token):
   if re.match('^[0-9]+$', token):
     return token + 'L'
   return token
-
-def ExpressionToText(token):
-  return TranslateConstants(token)
 
 def GetConstantsMainEntityName(module):
   if 'JavaConstantsClassName' in module.attributes:
@@ -153,6 +150,13 @@ class Generator(generator.Generator):
       "package": GetPackage(self.module),
     }
 
+  @UseJinja("java_templates/enum.java.tmpl", filters=java_filters,
+            lstrip_blocks=True, trim_blocks=True)
+  def GenerateEnumSource(self, enum):
+    exports = self.GetJinjaExports()
+    exports.update({"enum": enum})
+    return exports
+
   @UseJinja("java_templates/constants.java.tmpl", filters=java_filters,
             lstrip_blocks=True, trim_blocks=True)
   def GenerateConstantsSource(self, module):
@@ -174,6 +178,10 @@ class Generator(generator.Generator):
         except:
           # Ignore errors on directory creation.
           pass
+
+    for enum in self.module.enums:
+      self.Write(self.GenerateEnumSource(enum),
+                 "%s.java" % GetNameForElement(enum))
 
     if self.module.constants:
       self.Write(self.GenerateConstantsSource(self.module),
