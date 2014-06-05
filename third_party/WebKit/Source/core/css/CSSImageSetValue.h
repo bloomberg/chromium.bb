@@ -28,6 +28,7 @@
 
 #include "core/css/CSSValueList.h"
 #include "core/fetch/ResourceFetcher.h"
+#include "platform/weborigin/Referrer.h"
 
 namespace WebCore {
 
@@ -56,6 +57,7 @@ public:
 
     struct ImageWithScale {
         String imageURL;
+        Referrer referrer;
         float scaleFactor;
     };
 

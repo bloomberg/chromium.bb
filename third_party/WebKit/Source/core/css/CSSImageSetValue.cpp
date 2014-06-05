@@ -57,8 +57,8 @@ void CSSImageSetValue::fillImageSet()
     size_t length = this->length();
     size_t i = 0;
     while (i < length) {
-        CSSValue* imageValue = item(i);
-        String imageURL = toCSSImageValue(imageValue)->url();
+        CSSImageValue* imageValue = toCSSImageValue(item(i));
+        String imageURL = imageValue->url();
 
         ++i;
         ASSERT_WITH_SECURITY_IMPLICATION(i < length);
@@ -67,6 +67,7 @@ void CSSImageSetValue::fillImageSet()
 
         ImageWithScale image;
         image.imageURL = imageURL;
+        image.referrer = imageValue->referrer();
         image.scaleFactor = scaleFactor;
         m_imagesInSet.append(image);
         ++i;
@@ -104,6 +105,7 @@ StyleFetchedImageSet* CSSImageSetValue::cachedImageSet(ResourceFetcher* loader, 
         ImageWithScale image = bestImageForScaleFactor();
         if (Document* document = loader->document()) {
             FetchRequest request(ResourceRequest(document->completeURL(image.imageURL)), FetchInitiatorTypeNames::css, options);
+            request.mutableResourceRequest().setHTTPReferrer(image.referrer);
 
             if (options.corsEnabled == IsCORSEnabled)
                 request.setCrossOriginAccessControl(loader->document()->securityOrigin(), options.allowCredentials, options.credentialsRequested);

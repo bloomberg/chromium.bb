@@ -74,12 +74,15 @@ void StyleRuleImport::setCSSStyleSheet(const String& href, const KURL& baseURL, 
 
     CSSParserContext context = m_parentStyleSheet ? m_parentStyleSheet->parserContext() : strictCSSParserContext();
     context.setCharset(charset);
-    if (!baseURL.isNull())
+    Document* document = m_parentStyleSheet ? m_parentStyleSheet->singleOwnerDocument() : 0;
+    if (!baseURL.isNull()) {
         context.setBaseURL(baseURL);
+        if (document)
+            context.setReferrer(Referrer(baseURL.strippedForUseAsReferrer(), document->referrerPolicy()));
+    }
 
     m_styleSheet = StyleSheetContents::create(this, href, context);
 
-    Document* document = m_parentStyleSheet ? m_parentStyleSheet->singleOwnerDocument() : 0;
     m_styleSheet->parseAuthorStyleSheet(cachedStyleSheet, document ? document->securityOrigin() : 0);
 
     m_loading = false;
