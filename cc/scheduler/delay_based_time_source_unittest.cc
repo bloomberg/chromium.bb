@@ -35,7 +35,7 @@ TEST(DelayBasedTimeSourceTest, TaskPostedAndTickCalled) {
   EXPECT_TRUE(client.TickCalled());
 }
 
-TEST(DelayBasedTimeSource, TickNotCalledWithTaskPosted) {
+TEST(DelayBasedTimeSourceTest, TickNotCalledWithTaskPosted) {
   scoped_refptr<base::TestSimpleTaskRunner> task_runner =
       new base::TestSimpleTaskRunner;
   FakeTimeSourceClient client;
@@ -49,7 +49,7 @@ TEST(DelayBasedTimeSource, TickNotCalledWithTaskPosted) {
   EXPECT_FALSE(client.TickCalled());
 }
 
-TEST(DelayBasedTimeSource, StartTwiceEnqueuesOneTask) {
+TEST(DelayBasedTimeSourceTest, StartTwiceEnqueuesOneTask) {
   scoped_refptr<base::TestSimpleTaskRunner> task_runner =
       new base::TestSimpleTaskRunner;
   FakeTimeSourceClient client;
@@ -63,7 +63,7 @@ TEST(DelayBasedTimeSource, StartTwiceEnqueuesOneTask) {
   EXPECT_FALSE(task_runner->HasPendingTask());
 }
 
-TEST(DelayBasedTimeSource, StartWhenRunningDoesntTick) {
+TEST(DelayBasedTimeSourceTest, StartWhenRunningDoesntTick) {
   scoped_refptr<base::TestSimpleTaskRunner> task_runner =
       new base::TestSimpleTaskRunner;
   FakeTimeSourceClient client;
@@ -80,7 +80,7 @@ TEST(DelayBasedTimeSource, StartWhenRunningDoesntTick) {
 
 // At 60Hz, when the tick returns at exactly the requested next time, make sure
 // a 16ms next delay is posted.
-TEST(DelayBasedTimeSource, NextDelaySaneWhenExactlyOnRequestedTime) {
+TEST(DelayBasedTimeSourceTest, NextDelaySaneWhenExactlyOnRequestedTime) {
   scoped_refptr<base::TestSimpleTaskRunner> task_runner =
       new base::TestSimpleTaskRunner;
   FakeTimeSourceClient client;
@@ -101,7 +101,7 @@ TEST(DelayBasedTimeSource, NextDelaySaneWhenExactlyOnRequestedTime) {
 
 // At 60Hz, when the tick returns at slightly after the requested next time,
 // make sure a 16ms next delay is posted.
-TEST(DelayBasedTimeSource, NextDelaySaneWhenSlightlyAfterRequestedTime) {
+TEST(DelayBasedTimeSourceTest, NextDelaySaneWhenSlightlyAfterRequestedTime) {
   scoped_refptr<base::TestSimpleTaskRunner> task_runner =
       new base::TestSimpleTaskRunner;
   FakeTimeSourceClient client;
@@ -123,7 +123,8 @@ TEST(DelayBasedTimeSource, NextDelaySaneWhenSlightlyAfterRequestedTime) {
 
 // At 60Hz, when the tick returns at exactly 2*interval after the requested next
 // time, make sure a 0ms next delay is posted.
-TEST(DelayBasedTimeSource, NextDelaySaneWhenExactlyTwiceAfterRequestedTime) {
+TEST(DelayBasedTimeSourceTest,
+     NextDelaySaneWhenExactlyTwiceAfterRequestedTime) {
   scoped_refptr<base::TestSimpleTaskRunner> task_runner =
       new base::TestSimpleTaskRunner;
   FakeTimeSourceClient client;
@@ -144,7 +145,8 @@ TEST(DelayBasedTimeSource, NextDelaySaneWhenExactlyTwiceAfterRequestedTime) {
 
 // At 60Hz, when the tick returns at 2*interval and a bit after the requested
 // next time, make sure a 16ms next delay is posted.
-TEST(DelayBasedTimeSource, NextDelaySaneWhenSlightlyAfterTwiceRequestedTime) {
+TEST(DelayBasedTimeSourceTest,
+     NextDelaySaneWhenSlightlyAfterTwiceRequestedTime) {
   scoped_refptr<base::TestSimpleTaskRunner> task_runner =
       new base::TestSimpleTaskRunner;
   FakeTimeSourceClient client;
@@ -166,7 +168,7 @@ TEST(DelayBasedTimeSource, NextDelaySaneWhenSlightlyAfterTwiceRequestedTime) {
 
 // At 60Hz, when the tick returns halfway to the next frame time, make sure
 // a correct next delay value is posted.
-TEST(DelayBasedTimeSource, NextDelaySaneWhenHalfAfterRequestedTime) {
+TEST(DelayBasedTimeSourceTest, NextDelaySaneWhenHalfAfterRequestedTime) {
   scoped_refptr<base::TestSimpleTaskRunner> task_runner =
       new base::TestSimpleTaskRunner;
   FakeTimeSourceClient client;
@@ -188,7 +190,7 @@ TEST(DelayBasedTimeSource, NextDelaySaneWhenHalfAfterRequestedTime) {
 
 // If the timebase and interval are updated with a jittery source, we want to
 // make sure we do not double tick.
-TEST(DelayBasedTimeSource, SaneHandlingOfJitteryTimebase) {
+TEST(DelayBasedTimeSourceTest, SaneHandlingOfJitteryTimebase) {
   scoped_refptr<base::TestSimpleTaskRunner> task_runner =
       new base::TestSimpleTaskRunner;
   FakeTimeSourceClient client;
@@ -219,7 +221,7 @@ TEST(DelayBasedTimeSource, SaneHandlingOfJitteryTimebase) {
   EXPECT_EQ(15, task_runner->NextPendingTaskDelay().InMilliseconds());
 }
 
-TEST(DelayBasedTimeSource, HandlesSignificantTimebaseChangesImmediately) {
+TEST(DelayBasedTimeSourceTest, HandlesSignificantTimebaseChangesImmediately) {
   scoped_refptr<base::TestSimpleTaskRunner> task_runner =
       new base::TestSimpleTaskRunner;
   FakeTimeSourceClient client;
@@ -263,7 +265,7 @@ TEST(DelayBasedTimeSource, HandlesSignificantTimebaseChangesImmediately) {
   EXPECT_EQ(16 - 7, task_runner->NextPendingTaskDelay().InMilliseconds());
 }
 
-TEST(DelayBasedTimeSource, HanldlesSignificantIntervalChangesImmediately) {
+TEST(DelayBasedTimeSourceTest, HanldlesSignificantIntervalChangesImmediately) {
   scoped_refptr<base::TestSimpleTaskRunner> task_runner =
       new base::TestSimpleTaskRunner;
   FakeTimeSourceClient client;
@@ -305,7 +307,7 @@ TEST(DelayBasedTimeSource, HanldlesSignificantIntervalChangesImmediately) {
   EXPECT_EQ(16, task_runner->NextPendingTaskDelay().InMilliseconds());
 }
 
-TEST(DelayBasedTimeSource, JitteryRuntimeWithFutureTimebases) {
+TEST(DelayBasedTimeSourceTest, JitteryRuntimeWithFutureTimebases) {
   scoped_refptr<base::TestSimpleTaskRunner> task_runner =
       new base::TestSimpleTaskRunner;
   FakeTimeSourceClient client;
@@ -441,7 +443,7 @@ TEST(DelayBasedTimeSourceTest, AchievesTargetRateWithNoNoise) {
   EXPECT_NEAR(1.0 / 60.0, average_interval, 0.1);
 }
 
-TEST(DelayBasedTimeSource, TestDeactivateWhilePending) {
+TEST(DelayBasedTimeSourceTest, TestDeactivateWhilePending) {
   scoped_refptr<base::TestSimpleTaskRunner> task_runner =
       new base::TestSimpleTaskRunner;
   FakeTimeSourceClient client;
@@ -456,7 +458,7 @@ TEST(DelayBasedTimeSource, TestDeactivateWhilePending) {
   task_runner->RunPendingTasks();
 }
 
-TEST(DelayBasedTimeSource, TestDeactivateAndReactivateBeforeNextTickTime) {
+TEST(DelayBasedTimeSourceTest, TestDeactivateAndReactivateBeforeNextTickTime) {
   scoped_refptr<base::TestSimpleTaskRunner> task_runner =
       new base::TestSimpleTaskRunner;
   FakeTimeSourceClient client;
@@ -481,7 +483,7 @@ TEST(DelayBasedTimeSource, TestDeactivateAndReactivateBeforeNextTickTime) {
   EXPECT_EQ(12, task_runner->NextPendingTaskDelay().InMilliseconds());
 }
 
-TEST(DelayBasedTimeSource, TestDeactivateAndReactivateAfterNextTickTime) {
+TEST(DelayBasedTimeSourceTest, TestDeactivateAndReactivateAfterNextTickTime) {
   scoped_refptr<base::TestSimpleTaskRunner> task_runner =
       new base::TestSimpleTaskRunner;
   FakeTimeSourceClient client;
@@ -506,7 +508,7 @@ TEST(DelayBasedTimeSource, TestDeactivateAndReactivateAfterNextTickTime) {
   EXPECT_EQ(13, task_runner->NextPendingTaskDelay().InMilliseconds());
 }
 
-TEST(DelayBasedTimeSource, TestOverflow) {
+TEST(DelayBasedTimeSourceTest, TestOverflow) {
   // int(big_now / interval) < 0, so this causes a crash if the number of
   // intervals elapsed is attempted to be stored in an int.
   base::TimeDelta interval = base::TimeDelta::FromInternalValue(4000);
@@ -521,6 +523,22 @@ TEST(DelayBasedTimeSource, TestOverflow) {
   timer->SetNow(big_now);
   timer->SetActive(true);
   EXPECT_EQ(0, task_runner->NextPendingTaskDelay().InMilliseconds());
+}
+
+TEST(DelayBasedTimeSourceTest, TestReturnValueWhenTimerIsDeActivated) {
+  scoped_refptr<base::TestSimpleTaskRunner> task_runner =
+      new base::TestSimpleTaskRunner;
+  FakeTimeSourceClient client;
+  scoped_refptr<FakeDelayBasedTimeSource> timer =
+      FakeDelayBasedTimeSource::Create(Interval(), task_runner.get());
+  timer->SetClient(&client);
+
+  timer->SetActive(true);
+  task_runner->RunPendingTasks();
+
+  // SetActive should return empty TimeTicks when the timer is deactivated.
+  base::TimeTicks missed_tick_time = timer->SetActive(false);
+  EXPECT_TRUE(missed_tick_time.is_null());
 }
 
 }  // namespace
