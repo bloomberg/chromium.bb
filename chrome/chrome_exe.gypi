@@ -517,8 +517,13 @@
                 'oleaut32.dll',
               ],
               'AdditionalDependencies': [ 'wintrust.lib' ],
-              # Set /SUBSYSTEM:WINDOWS for chrome.exe itself.
-              'SubSystem': '2',
+              'conditions': [
+                ['asan==0', {
+                  # Set /SUBSYSTEM:WINDOWS for chrome.exe itself, except for the
+                  # AddressSanitizer build where console output is important.
+                  'SubSystem': '2',
+                }],
+              ],
             },
             'VCManifestTool': {
               'AdditionalManifestFiles': [

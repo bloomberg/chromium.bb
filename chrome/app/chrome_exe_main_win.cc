@@ -79,7 +79,14 @@ bool AttemptFastNotify(const CommandLine& command_line) {
 
 }  // namespace
 
+#if !defined(ADDRESS_SANITIZER)
 int APIENTRY wWinMain(HINSTANCE instance, HINSTANCE prev, wchar_t*, int) {
+#else
+// The AddressSanitizer build should be a console program as it prints out stuff
+// on stderr.
+int main() {
+  HINSTANCE instance = GetModuleHandle(NULL);
+#endif
   startup_metric_utils::RecordExeMainEntryTime();
 
   // Signal Chrome Elf that Chrome has begun to start.
