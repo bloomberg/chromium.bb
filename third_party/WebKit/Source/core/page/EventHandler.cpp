@@ -237,6 +237,24 @@ EventHandler::~EventHandler()
     ASSERT(!m_fakeMouseMoveEventTimer.isActive());
 }
 
+void EventHandler::trace(Visitor* visitor)
+{
+    visitor->trace(m_mousePressNode);
+    visitor->trace(m_capturingMouseEventsNode);
+    visitor->trace(m_nodeUnderMouse);
+    visitor->trace(m_lastNodeUnderMouse);
+    visitor->trace(m_clickNode);
+    visitor->trace(m_dragTarget);
+    visitor->trace(m_frameSetBeingResized);
+    visitor->trace(m_latchedWheelEventNode);
+    visitor->trace(m_previousWheelScrolledNode);
+    visitor->trace(m_targetForTouchID);
+    visitor->trace(m_touchSequenceDocument);
+    visitor->trace(m_scrollGestureHandlingNode);
+    visitor->trace(m_previousGestureScrolledNode);
+    visitor->trace(m_lastDeferredTapElement);
+}
+
 DragState& EventHandler::dragState()
 {
 #if ENABLE(OILPAN)

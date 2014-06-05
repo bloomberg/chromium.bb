@@ -96,7 +96,7 @@ inline LocalFrame::LocalFrame(FrameLoaderClient* client, FrameHost* host, FrameO
     , m_editor(Editor::create(*this))
     , m_spellChecker(SpellChecker::create(*this))
     , m_selection(FrameSelection::create(this))
-    , m_eventHandler(adoptPtr(new EventHandler(this)))
+    , m_eventHandler(adoptPtrWillBeNoop(new EventHandler(this)))
     , m_console(FrameConsole::create(*this))
     , m_inputMethodController(InputMethodController::create(*this))
     , m_pageZoomFactor(parentPageZoomFactor(this))

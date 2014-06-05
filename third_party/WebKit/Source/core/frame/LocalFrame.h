@@ -164,7 +164,7 @@ namespace WebCore {
         const OwnPtrWillBePersistent<Editor> m_editor;
         const OwnPtr<SpellChecker> m_spellChecker;
         const OwnPtrWillBePersistent<FrameSelection> m_selection;
-        const OwnPtr<EventHandler> m_eventHandler;
+        const OwnPtrWillBePersistent<EventHandler> m_eventHandler;
         const OwnPtr<FrameConsole> m_console;
         OwnPtr<InputMethodController> m_inputMethodController;
 
