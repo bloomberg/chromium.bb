@@ -155,8 +155,6 @@
         'browser/renderer_host/compositing_iosurface_transformer_mac.h',
         'browser/renderer_host/media/mock_media_observer.cc',
         'browser/renderer_host/media/mock_media_observer.h',
-        'gpu/gpu_idirect3d9_mock_win.cc',
-        'gpu/gpu_idirect3d9_mock_win.h',
         'test/appcache_test_helper.cc',
         'test/appcache_test_helper.h',
         'test/content_browser_test_utils_internal.cc',
