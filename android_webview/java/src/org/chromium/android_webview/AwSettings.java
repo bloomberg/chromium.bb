@@ -280,11 +280,17 @@ public class AwSettings {
             if (nativeWebContents != 0) {
                 mEventHandler.bindUiThread();
                 mNativeAwSettings = nativeInit(nativeWebContents);
-                nativeUpdateEverythingLocked(mNativeAwSettings);
-                onGestureZoomSupportChanged(
-                        supportsDoubleTapZoomLocked(), supportsMultiTouchZoomLocked());
+                updateEverythingLocked();
             }
         }
+    }
+
+    private void updateEverythingLocked() {
+        assert Thread.holdsLock(mAwSettingsLock);
+        assert mNativeAwSettings != 0;
+        nativeUpdateEverythingLocked(mNativeAwSettings);
+        onGestureZoomSupportChanged(
+                supportsDoubleTapZoomLocked(), supportsMultiTouchZoomLocked());
     }
 
     /**
@@ -1574,8 +1580,7 @@ public class AwSettings {
     @CalledByNative
     private void updateEverything() {
         synchronized (mAwSettingsLock) {
-            assert mNativeAwSettings != 0;
-            nativeUpdateEverythingLocked(mNativeAwSettings);
+            updateEverythingLocked();
         }
     }
 
