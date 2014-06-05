@@ -2081,6 +2081,7 @@ _config.add_group('beaglebone-release-group',
 _release.add_config('stumpy_moblab-release',
   brillo_non_testable,
   boards=['stumpy_moblab'],
+  paygen_skip_delta_payloads=True,
 )
 
 ### Per-chipset release groups

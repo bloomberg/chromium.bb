@@ -40483,7 +40483,7 @@
         ],
         "paladin_builder_name": null,
         "paygen": true,
-        "paygen_skip_delta_payloads": false,
+        "paygen_skip_delta_payloads": true,
         "paygen_skip_testing": true,
         "pgo_generate": false,
         "pgo_use": false,
