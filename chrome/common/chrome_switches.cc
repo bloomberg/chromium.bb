@@ -811,6 +811,10 @@ const char kLoadComponentExtension[]        = "load-component-extension";
 // Loads an extension from the specified directory.
 const char kLoadExtension[]                 = "load-extension";
 
+// Controls which version of the malware and phishing interstitials is shown.
+const char kMalwareInterstitialVersionV2[]  = "malware-interstitial-v2";
+const char kMalwareInterstitialVersionV3[]  = "malware-interstitial-v3";
+
 // Makes Chrome default browser
 const char kMakeDefaultBrowser[]            = "make-default-browser";
 
@@ -1138,6 +1142,11 @@ const char kSpellingServiceFeedbackUrl[] = "spelling-service-feedback-url";
 // August 2013.
 const char kSpellingServiceFeedbackIntervalSeconds[] =
     "spelling-service-feedback-interval-seconds";
+
+// Controls which version of the TLS/SSL interstitial is shown.
+const char kSSLInterstitialVersionV1[]         = "ssl-interstitial-v1";
+const char kSSLInterstitialVersionV2Gray[]     = "ssl-interstitial-v2-gray";
+const char kSSLInterstitialVersionV2Colorful[] = "ssl-interstitial-v2-colorful";
 
 // Specifies the maximum SSL/TLS version ("ssl3", "tls1", "tls1.1", or
 // "tls1.2").

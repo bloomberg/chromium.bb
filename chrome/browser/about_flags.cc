@@ -403,6 +403,30 @@ const Experiment::Choice kExtensionContentVerificationChoices[] = {
     extensions::switches::kExtensionContentVerificationEnforceStrict },
 };
 
+// Using independent flags (instead of flag=value flags) to be able to
+// associate the version with a FieldTrial. FieldTrials don't currently support
+// flag=value flags.
+const Experiment::Choice kSSLInterstitialVersions[] = {
+  { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
+  { IDS_FLAGS_SSL_INTERSTITIAL_VERSION_V1,
+    switches::kSSLInterstitialVersionV1, "" },
+  { IDS_FLAGS_SSL_INTERSTITIAL_VERSION_V2_GRAY,
+    switches::kSSLInterstitialVersionV2Gray, "" },
+  { IDS_FLAGS_SSL_INTERSTITIAL_VERSION_V2_COLORFUL,
+    switches::kSSLInterstitialVersionV2Colorful, "" },
+};
+
+// Using independent flags (instead of flag=value flags) to be able to
+// associate the version with a FieldTrial. FieldTrials don't currently support
+// flag=value flags.
+const Experiment::Choice kMalwareInterstitialVersions[] = {
+  { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
+  { IDS_FLAGS_MALWARE_INTERSTITIAL_VERSION_V2,
+    switches::kMalwareInterstitialVersionV2, "" },
+  { IDS_FLAGS_MALWARE_INTERSTITIAL_VERSION_V3,
+    switches::kMalwareInterstitialVersionV3, "" },
+};
+
 // RECORDING USER METRICS FOR FLAGS:
 // -----------------------------------------------------------------------------
 // The first line of the experiment is the internal name. If you'd like to
@@ -1844,6 +1868,20 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kEnableAnswersInSuggest)
   },
 #endif
+  {
+    "ssl-interstitial-version",
+    IDS_FLAGS_SSL_INTERSTITIAL_TRIAL_NAME,
+    IDS_FLAGS_SSL_INTERSTITIAL_TRIAL_DESCRIPTION,
+    kOsAll,
+    MULTI_VALUE_TYPE(kSSLInterstitialVersions)
+  },
+  {
+    "malware-interstitial-version",
+    IDS_FLAGS_MALWARE_INTERSTITIAL_TRIAL_NAME,
+    IDS_FLAGS_MALWARE_INTERSTITIAL_TRIAL_DESCRIPTION,
+    kOsAll,
+    MULTI_VALUE_TYPE(kMalwareInterstitialVersions)
+  },
 };
 
 const Experiment* experiments = kExperiments;
