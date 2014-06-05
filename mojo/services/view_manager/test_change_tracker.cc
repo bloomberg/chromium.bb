@@ -31,6 +31,9 @@ std::string ChangeToDescription1(const Change& change) {
     case CHANGE_TYPE_CONNECTION_ESTABLISHED:
       return "OnConnectionEstablished";
 
+    case CHANGE_TYPE_ROOTS_ADDED:
+      return "OnRootsAdded";
+
     case CHANGE_TYPE_SERVER_CHANGE_ID_ADVANCED:
       return base::StringPrintf(
           "ServerChangeIdAdvanced %d", static_cast<int>(change.change_id));
@@ -135,6 +138,13 @@ void TestChangeTracker::OnViewManagerConnectionEstablished(
   change.type = CHANGE_TYPE_CONNECTION_ESTABLISHED;
   change.connection_id = connection_id;
   change.change_id = next_server_change_id;
+  INodesToTestNodes(nodes, &change.nodes);
+  AddChange(change);
+}
+
+void TestChangeTracker::OnRootsAdded(Array<INodePtr> nodes) {
+  Change change;
+  change.type = CHANGE_TYPE_ROOTS_ADDED;
   INodesToTestNodes(nodes, &change.nodes);
   AddChange(change);
 }

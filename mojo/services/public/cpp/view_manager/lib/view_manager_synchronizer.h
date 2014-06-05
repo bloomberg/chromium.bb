@@ -71,6 +71,7 @@ class ViewManagerSynchronizer : public InterfaceImpl<IViewManagerClient> {
       TransportConnectionId connection_id,
       TransportChangeId next_server_change_id,
       mojo::Array<INodePtr> nodes) OVERRIDE;
+  virtual void OnRootsAdded(Array<INodePtr> nodes) OVERRIDE;
   virtual void OnServerChangeIdAdvanced(
       uint32_t next_server_change_id) OVERRIDE;
   virtual void OnNodeBoundsChanged(uint32 node_id,

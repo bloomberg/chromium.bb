@@ -567,6 +567,9 @@ void ViewManagerSynchronizer::OnViewManagerConnectionEstablished(
   private_manager.NotifyReady();
 }
 
+void ViewManagerSynchronizer::OnRootsAdded(Array<INodePtr> nodes) {
+}
+
 void ViewManagerSynchronizer::OnServerChangeIdAdvanced(
     uint32_t next_server_change_id) {
   next_server_change_id_ = next_server_change_id;

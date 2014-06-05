@@ -19,6 +19,7 @@ namespace service {
 
 enum ChangeType {
   CHANGE_TYPE_CONNECTION_ESTABLISHED,
+  CHANGE_TYPE_ROOTS_ADDED,
   CHANGE_TYPE_SERVER_CHANGE_ID_ADVANCED,
   CHANGE_TYPE_NODE_BOUNDS_CHANGED,
   CHANGE_TYPE_NODE_HIERARCHY_CHANGED,
@@ -96,6 +97,7 @@ class TestChangeTracker {
       TransportConnectionId connection_id,
       TransportChangeId next_server_change_id,
       Array<INodePtr> nodes);
+  void OnRootsAdded(Array<INodePtr> nodes);
   void OnServerChangeIdAdvanced(TransportChangeId change_id);
   void OnNodeBoundsChanged(TransportNodeId node_id,
                            RectPtr old_bounds,

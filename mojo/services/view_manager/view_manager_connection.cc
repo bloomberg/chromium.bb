@@ -34,9 +34,13 @@ void GetDescendants(const Node* node, std::vector<const Node*>* nodes) {
 
 }  // namespace
 
-ViewManagerConnection::ViewManagerConnection(RootNodeManager* root_node_manager)
+ViewManagerConnection::ViewManagerConnection(RootNodeManager* root_node_manager,
+                                             TransportConnectionId creator_id,
+                                             const std::string& url)
     : root_node_manager_(root_node_manager),
       id_(root_node_manager_->GetAndAdvanceNextConnectionId()),
+      url_(url),
+      creator_id_(creator_id),
       delete_on_connection_error_(false) {
 }
 
@@ -97,6 +101,12 @@ void ViewManagerConnection::SetRoots(const Array<TransportNodeId>& node_ids) {
     roots.insert(node_ids[i]);
   }
   roots_.swap(roots);
+}
+
+void ViewManagerConnection::OnViewManagerConnectionDestroyed(
+    TransportConnectionId id) {
+  if (creator_id_ == id)
+    creator_id_ = kRootConnection;
 }
 
 void ViewManagerConnection::ProcessNodeBoundsChanged(
@@ -362,6 +372,31 @@ void ViewManagerConnection::RemoveFromKnown(const Node* node) {
     RemoveFromKnown(children[i]);
 }
 
+bool ViewManagerConnection::AddRoots(
+    const std::vector<TransportNodeId>& node_ids) {
+  std::vector<const Node*> to_send;
+  bool did_add_root = false;
+  for (size_t i = 0; i < node_ids.size(); ++i) {
+    CHECK_EQ(creator_id_, NodeIdFromTransportId(node_ids[i]).connection_id);
+    if (roots_.count(node_ids[i]) > 0)
+      continue;
+
+    did_add_root = true;
+    roots_.insert(node_ids[i]);
+    if (known_nodes_.count(node_ids[i]) == 0) {
+      Node* node = GetNode(NodeIdFromTransportId(node_ids[i]));
+      DCHECK(node);
+      GetUnknownNodesFrom(node, &to_send);
+    }
+  }
+
+  if (!did_add_root)
+    return false;
+
+  client()->OnRootsAdded(NodesToINodes(to_send));
+  return true;
+}
+
 bool ViewManagerConnection::IsNodeDescendantOfRoots(const Node* node) const {
   if (roots_.empty())
     return true;
@@ -611,9 +646,16 @@ void ViewManagerConnection::SetNodeBounds(
 void ViewManagerConnection::Connect(const String& url,
                                     Array<uint32_t> node_ids,
                                     const Callback<void(bool)>& callback) {
-  const bool success = CanConnect(node_ids);
-  if (success)
-    root_node_manager_->Connect(url, node_ids);
+  bool success = CanConnect(node_ids);
+  if (success) {
+    // We may already have this connection, if so reuse it.
+    ViewManagerConnection* existing_connection =
+        root_node_manager_->GetConnectionByCreator(id_, url.To<std::string>());
+    if (existing_connection)
+      success = existing_connection->AddRoots(node_ids.storage());
+    else
+      root_node_manager_->Connect(id_, url, node_ids);
+  }
   callback.Run(success);
 }
 

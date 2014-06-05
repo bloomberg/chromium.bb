@@ -70,18 +70,25 @@ void RootNodeManager::AddConnection(ViewManagerConnection* connection) {
 void RootNodeManager::RemoveConnection(ViewManagerConnection* connection) {
   connection_map_.erase(connection->id());
   connections_created_by_connect_.erase(connection);
+
+  // Notify remaining connections so that they can cleanup.
+  for (ConnectionMap::const_iterator i = connection_map_.begin();
+       i != connection_map_.end(); ++i) {
+    i->second->OnViewManagerConnectionDestroyed(connection->id());
+  }
 }
 
 void RootNodeManager::InitialConnect(const std::string& url) {
   CHECK(connection_map_.empty());
   Array<TransportNodeId> roots(0);
-  ConnectImpl(String::From(url), roots);
+  ConnectImpl(kRootConnection, String::From(url), roots);
 }
 
-void RootNodeManager::Connect(const String& url,
+void RootNodeManager::Connect(TransportConnectionId creator_id,
+                              const String& url,
                               const Array<TransportNodeId>& node_ids) {
   CHECK_GT(node_ids.size(), 0u);
-  ConnectImpl(url, node_ids)->set_delete_on_connection_error();
+  ConnectImpl(creator_id, url, node_ids)->set_delete_on_connection_error();
 }
 
 ViewManagerConnection* RootNodeManager::GetConnection(
@@ -110,6 +117,17 @@ void RootNodeManager::OnConnectionMessagedClient(TransportConnectionId id) {
 bool RootNodeManager::DidConnectionMessageClient(
     TransportConnectionId id) const {
   return current_change_ && current_change_->DidMessageConnection(id);
+}
+
+ViewManagerConnection* RootNodeManager::GetConnectionByCreator(
+    TransportConnectionId creator_id,
+    const std::string& url) const {
+  for (ConnectionMap::const_iterator i = connection_map_.begin();
+       i != connection_map_.end(); ++i) {
+    if (i->second->creator_id() == creator_id && i->second->url() == url)
+      return i->second;
+  }
+  return NULL;
 }
 
 void RootNodeManager::ProcessNodeBoundsChanged(const Node* node,
@@ -173,6 +191,7 @@ void RootNodeManager::FinishChange() {
 }
 
 ViewManagerConnection* RootNodeManager::ConnectImpl(
+    const TransportConnectionId creator_id,
     const String& url,
     const Array<TransportNodeId>& node_ids) {
   MessagePipe pipe;
@@ -181,7 +200,8 @@ ViewManagerConnection* RootNodeManager::ConnectImpl(
       ViewManagerConnection::Client::Name_,
       pipe.handle1.Pass(),
       String());
-  ViewManagerConnection* connection = new ViewManagerConnection(this);
+  ViewManagerConnection* connection =
+      new ViewManagerConnection(this, creator_id, url.To<std::string>());
   connection->SetRoots(node_ids);
   BindToPipe(connection, pipe.handle0.Pass());
   connections_created_by_connect_.insert(connection);

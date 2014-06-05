@@ -98,7 +98,9 @@ class MOJO_VIEW_MANAGER_EXPORT RootNodeManager : public NodeDelegate {
 
   // See description of IViewManager::Connect() for details. This assumes
   // |node_ids| has been validated.
-  void Connect(const String& url, const Array<TransportNodeId>& node_ids);
+  void Connect(TransportConnectionId creator_id,
+               const String& url,
+               const Array<TransportNodeId>& node_ids);
 
   // Returns the connection by id.
   ViewManagerConnection* GetConnection(TransportConnectionId connection_id);
@@ -122,6 +124,10 @@ class MOJO_VIEW_MANAGER_EXPORT RootNodeManager : public NodeDelegate {
 
   // Returns true if OnConnectionMessagedClient() was invoked for id.
   bool DidConnectionMessageClient(TransportConnectionId id) const;
+
+  ViewManagerConnection* GetConnectionByCreator(
+      TransportConnectionId creator_id,
+      const std::string& url) const;
 
   // These functions trivially delegate to all ViewManagerConnections, which in
   // term notify their clients.
@@ -163,7 +169,8 @@ class MOJO_VIEW_MANAGER_EXPORT RootNodeManager : public NodeDelegate {
   }
 
   // Implementation of the two connect variants.
-  ViewManagerConnection* ConnectImpl(const String& url,
+  ViewManagerConnection* ConnectImpl(TransportConnectionId creator_id,
+                                     const String& url,
                                      const Array<TransportNodeId>& node_ids);
 
   // Overridden from NodeDelegate:

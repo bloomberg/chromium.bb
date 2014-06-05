@@ -287,6 +287,9 @@ class TestViewManagerClientConnection
     tracker_.OnViewManagerConnectionEstablished(
         connection_id, next_server_change_id, nodes.Pass());
   }
+  virtual void OnRootsAdded(Array<INodePtr> nodes) OVERRIDE {
+    tracker_.OnRootsAdded(nodes.Pass());
+  }
   virtual void OnServerChangeIdAdvanced(
       TransportChangeId next_server_change_id) OVERRIDE {
     tracker_.OnServerChangeIdAdvanced(next_server_change_id);
@@ -1200,6 +1203,33 @@ TEST_F(ViewManagerConnectionTest, CantGetNodeTreeOfOtherRoots) {
   connection2_->GetNodeTree(BuildNodeId(1, 1), &nodes);
   ASSERT_EQ(1u, nodes.size());
   EXPECT_EQ("node=1,1 parent=null view=null", nodes[0].ToString());
+}
+
+TEST_F(ViewManagerConnectionTest, ConnectTwice) {
+  ASSERT_TRUE(connection_->CreateNode(BuildNodeId(1, 1)));
+  ASSERT_TRUE(connection_->CreateNode(BuildNodeId(1, 2)));
+  ASSERT_NO_FATAL_FAILURE(EstablishSecondConnection(false));
+
+  // Try to connect again to 1,1, this should fail as already connected to that
+  // root.
+  {
+    std::vector<TransportNodeId> node_ids;
+    node_ids.push_back(BuildNodeId(1, 1));
+    ASSERT_FALSE(connection_->Connect(node_ids));
+  }
+
+  // Connecting to 1,2 should succeed and end up in connection2.
+  {
+    std::vector<TransportNodeId> node_ids;
+    node_ids.push_back(BuildNodeId(1, 2));
+    ASSERT_TRUE(connection_->Connect(node_ids));
+    connection2_->DoRunLoopUntilChangesCount(1);
+    const Changes changes(ChangesToDescription1(connection2_->changes()));
+    ASSERT_EQ(1u, changes.size());
+    EXPECT_EQ("OnRootsAdded", changes[0]);
+    EXPECT_EQ("[node=1,2 parent=null view=null]",
+              ChangeNodeDescription(connection2_->changes()));
+  }
 }
 
 // TODO(sky): add coverage of test that destroys connections and ensures other

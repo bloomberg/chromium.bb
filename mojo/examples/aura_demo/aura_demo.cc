@@ -120,6 +120,9 @@ class IViewManagerClientImpl
       uint16_t connection_id,
       uint32_t next_server_change_id,
       mojo::Array<view_manager::INodePtr> nodes) OVERRIDE;
+  virtual void OnRootsAdded(Array<view_manager::INodePtr> nodes) OVERRIDE {
+    NOTREACHED();
+  }
   virtual void OnServerChangeIdAdvanced(
       uint32_t next_server_change_id) OVERRIDE {
   }
