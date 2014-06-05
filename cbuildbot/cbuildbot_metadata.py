@@ -16,7 +16,7 @@ import time
 
 from chromite.cbuildbot import cbuildbot_archive
 from chromite.cbuildbot import cbuildbot_config
-from chromite.cbuildbot import cbuildbot_results as results_lib
+from chromite.cbuildbot import results_lib
 from chromite.cbuildbot import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import gs

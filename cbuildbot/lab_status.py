@@ -11,7 +11,7 @@ import time
 import urllib
 
 from chromite.cbuildbot import constants
-from chromite.cbuildbot import cbuildbot_failures as failures_lib
+from chromite.cbuildbot import failures_lib
 
 
 logger = logging.getLogger('chromite')

@@ -8,9 +8,9 @@ import logging
 import os
 import sys
 
-from chromite.cbuildbot import cbuildbot_commands as commands
+from chromite.cbuildbot import commands
 from chromite.cbuildbot import cbuildbot_metadata
-from chromite.cbuildbot import cbuildbot_results as results_lib
+from chromite.cbuildbot import results_lib
 from chromite.cbuildbot import constants
 from chromite.cbuildbot.stages import completion_stages
 from chromite.cbuildbot.stages import generic_stages

@@ -12,7 +12,7 @@ import sys
 
 sys.path.insert(0, os.path.abspath('%s/../..' % os.path.dirname(__file__)))
 from chromite.cbuildbot import cbuildbot_metadata
-from chromite.cbuildbot import cbuildbot_results as results_lib
+from chromite.cbuildbot import results_lib
 from chromite.cbuildbot import constants
 from chromite.lib import cros_test_lib
 from chromite.lib import parallel

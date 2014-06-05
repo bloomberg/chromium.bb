@@ -15,7 +15,7 @@ import sys
 
 import constants
 sys.path.insert(0, constants.SOURCE_ROOT)
-from chromite.cbuildbot import cbuildbot_commands as commands
+from chromite.cbuildbot import commands
 from chromite.cbuildbot import cbuildbot_config as config
 from chromite.cbuildbot import cbuildbot_run
 from chromite.cbuildbot import manifest_version

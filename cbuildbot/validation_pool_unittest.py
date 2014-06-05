@@ -22,8 +22,8 @@ import unittest
 import constants
 sys.path.insert(0, constants.SOURCE_ROOT)
 
-from chromite.cbuildbot import cbuildbot_failures as failures_lib
-from chromite.cbuildbot import cbuildbot_results as results_lib
+from chromite.cbuildbot import failures_lib
+from chromite.cbuildbot import results_lib
 from chromite.cbuildbot import cbuildbot_metadata
 from chromite.cbuildbot import repository
 from chromite.cbuildbot import validation_pool

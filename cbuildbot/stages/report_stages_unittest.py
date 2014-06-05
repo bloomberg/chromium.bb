@@ -9,7 +9,7 @@ import os
 import sys
 
 sys.path.insert(0, os.path.abspath('%s/../../..' % os.path.dirname(__file__)))
-from chromite.cbuildbot import cbuildbot_commands as commands
+from chromite.cbuildbot import commands
 from chromite.cbuildbot import constants
 from chromite.cbuildbot import validation_pool
 from chromite.cbuildbot.stages import sync_stages

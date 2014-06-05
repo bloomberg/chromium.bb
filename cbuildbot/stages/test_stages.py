@@ -7,9 +7,9 @@
 import logging
 import os
 
-from chromite.cbuildbot import cbuildbot_commands as commands
+from chromite.cbuildbot import commands
 from chromite.cbuildbot import cbuildbot_config
-from chromite.cbuildbot import cbuildbot_failures as failures_lib
+from chromite.cbuildbot import failures_lib
 from chromite.cbuildbot import constants
 from chromite.cbuildbot import lab_status
 from chromite.cbuildbot import validation_pool

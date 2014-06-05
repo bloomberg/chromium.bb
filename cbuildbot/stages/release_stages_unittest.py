@@ -13,8 +13,8 @@ sys.path.insert(0, os.path.abspath('%s/../../..' % os.path.dirname(__file__)))
 from chromite.cbuildbot.stages import artifact_stages
 from chromite.cbuildbot.stages import generic_stages_unittest
 from chromite.cbuildbot.stages import release_stages
-from chromite.cbuildbot import cbuildbot_failures
-from chromite.cbuildbot import cbuildbot_results
+from chromite.cbuildbot import failures_lib
+from chromite.cbuildbot import results_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import timeout_util
 
@@ -364,14 +364,14 @@ class PaygenStageTest(generic_stages_unittest.AbstractStageTest):
   def testPerformStageBackgroundFail(self):
     """Test that exception from background processes are properly handled."""
     with patch(paygen_build_lib, 'CreatePayloads') as create_payloads:
-      create_payloads.side_effect = cbuildbot_failures.TestLabFailure
+      create_payloads.side_effect = failures_lib.TestLabFailure
 
       stage = release_stages.PaygenStage(
           self._run, self._current_board,
           archive_stage=None, channels=['foo', 'bar'])
 
       with patch(stage, '_HandleExceptionAsWarning') as warning_handler:
-        warning_handler.return_value = (cbuildbot_results.Results.FORGIVEN,
+        warning_handler.return_value = (results_lib.Results.FORGIVEN,
                                         'description',
                                         0)
 

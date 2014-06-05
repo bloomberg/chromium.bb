@@ -28,7 +28,7 @@ import sys
 import tempfile
 
 from chromite.cbuildbot import constants
-from chromite.cbuildbot import cbuildbot_commands as commands
+from chromite.cbuildbot import commands
 from chromite.cbuildbot import portage_utilities
 from chromite.lib import binpkg
 from chromite.lib import commandline

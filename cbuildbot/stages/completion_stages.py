@@ -6,10 +6,10 @@
 
 import logging
 
-from chromite.cbuildbot import cbuildbot_commands as commands
+from chromite.cbuildbot import commands
 from chromite.cbuildbot import cbuildbot_config
-from chromite.cbuildbot import cbuildbot_failures as failures_lib
-from chromite.cbuildbot import cbuildbot_results as results_lib
+from chromite.cbuildbot import failures_lib
+from chromite.cbuildbot import results_lib
 from chromite.cbuildbot import constants
 from chromite.cbuildbot import manifest_version
 from chromite.cbuildbot import portage_utilities

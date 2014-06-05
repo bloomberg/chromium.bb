@@ -11,8 +11,8 @@ import sys
 
 import constants
 sys.path.insert(0, constants.SOURCE_ROOT)
-from chromite.cbuildbot import cbuildbot_commands as commands
-from chromite.cbuildbot import cbuildbot_failures as failures_lib
+from chromite.cbuildbot import commands
+from chromite.cbuildbot import failures_lib
 from chromite.lib import cros_build_lib_unittest
 from chromite.lib import cros_test_lib
 from chromite.lib import gs

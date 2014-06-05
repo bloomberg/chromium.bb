@@ -7,7 +7,7 @@
 import os
 
 from chromite.cbuildbot import cbuildbot_config
-from chromite.cbuildbot import cbuildbot_commands as commands
+from chromite.cbuildbot import commands
 from chromite.cbuildbot import constants
 
 from chromite.lib import cros_build_lib

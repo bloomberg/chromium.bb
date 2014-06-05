@@ -4,13 +4,13 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Test the cbuildbot_failures module."""
+"""Test the failures_lib module."""
 
 import os
 import sys
 
 sys.path.insert(0, os.path.abspath('%s/../..' % os.path.dirname(__file__)))
-from chromite.cbuildbot import cbuildbot_failures as failures_lib
+from chromite.cbuildbot import failures_lib
 from chromite.lib import cros_test_lib
 
 

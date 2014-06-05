@@ -33,7 +33,7 @@ import zipfile
 
 
 from chromite.cbuildbot import constants
-from chromite.cbuildbot import cbuildbot_failures as failures_lib
+from chromite.cbuildbot import failures_lib
 from chromite.cros.commands import cros_chrome_sdk
 from chromite.lib import chrome_util
 from chromite.lib import cros_build_lib

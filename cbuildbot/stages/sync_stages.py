@@ -12,7 +12,7 @@ import sys
 from xml.etree import ElementTree
 
 from chromite.cbuildbot import cbuildbot_config
-from chromite.cbuildbot import cbuildbot_failures as failures_lib
+from chromite.cbuildbot import failures_lib
 from chromite.cbuildbot import constants
 from chromite.cbuildbot import lkgm_manager
 from chromite.cbuildbot import manifest_version

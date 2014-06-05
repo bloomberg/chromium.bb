@@ -13,8 +13,8 @@ import time
 
 sys.path.insert(0, os.path.abspath('%s/../../..' % os.path.dirname(__file__)))
 from chromite.cbuildbot import cbuildbot_config as config
-from chromite.cbuildbot import cbuildbot_failures as failures_lib
-from chromite.cbuildbot import cbuildbot_results as results_lib
+from chromite.cbuildbot import failures_lib
+from chromite.cbuildbot import results_lib
 from chromite.cbuildbot import cbuildbot_run
 from chromite.cbuildbot.stages import generic_stages
 from chromite.cbuildbot.stages import sync_stages

@@ -8,8 +8,8 @@ import json
 import logging
 import os
 
-from chromite.cbuildbot import cbuildbot_commands as commands
-from chromite.cbuildbot import cbuildbot_failures
+from chromite.cbuildbot import commands
+from chromite.cbuildbot import failures_lib
 from chromite.cbuildbot import cbuildbot_run
 from chromite.cbuildbot.stages import artifact_stages
 from chromite.lib import cros_build_lib
@@ -40,31 +40,31 @@ class SignerTestStage(artifact_stages.ArchivingStage):
       commands.RunSignerTests(self._build_root, self._current_board)
 
 
-class SignerResultsTimeout(cbuildbot_failures.StepFailure):
+class SignerResultsTimeout(failures_lib.StepFailure):
   """The signer did not produce any results inside the expected time."""
 
 
-class SignerFailure(cbuildbot_failures.StepFailure):
+class SignerFailure(failures_lib.StepFailure):
   """The signer returned an error result."""
 
 
-class MissingInstructionException(cbuildbot_failures.StepFailure):
+class MissingInstructionException(failures_lib.StepFailure):
   """We didn't receive the list of signing instructions PushImage uploaded."""
 
 
-class MalformedResultsException(cbuildbot_failures.StepFailure):
+class MalformedResultsException(failures_lib.StepFailure):
   """The Signer results aren't formatted as we expect."""
 
 
-class PaygenSigningRequirementsError(cbuildbot_failures.StepFailure):
+class PaygenSigningRequirementsError(failures_lib.StepFailure):
   """Paygen stage can't run if signing failed."""
 
 
-class PaygenCrostoolsNotAvailableError(cbuildbot_failures.StepFailure):
+class PaygenCrostoolsNotAvailableError(failures_lib.StepFailure):
   """Paygen stage can't run if signing failed."""
 
 
-class PaygenNoPaygenConfigForBoard(cbuildbot_failures.StepFailure):
+class PaygenNoPaygenConfigForBoard(failures_lib.StepFailure):
   """Paygen can't run with a release.conf config for the board."""
 
 
@@ -120,9 +120,9 @@ class PaygenStage(artifact_stages.ArchivingStage):
     # test. We don't fail the build for that. We do the CompoundFailure dance,
     # because that's how we'll get failures from background processes returned
     # to us.
-    if (issubclass(exc_type, cbuildbot_failures.TestLabFailure) or
-        (issubclass(exc_type, cbuildbot_failures.CompoundFailure) and
-         exc_value.MatchesFailureType(cbuildbot_failures.TestLabFailure))):
+    if (issubclass(exc_type, failures_lib.TestLabFailure) or
+        (issubclass(exc_type, failures_lib.CompoundFailure) and
+         exc_value.MatchesFailureType(failures_lib.TestLabFailure))):
       return self._HandleExceptionAsWarning(exc_info)
 
     return super(PaygenStage, self)._HandleStageException(exc_info)
