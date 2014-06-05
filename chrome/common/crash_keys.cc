@@ -142,6 +142,8 @@ size_t RegisterChromeCrashKeys() {
     { kGPURenderer, kSmallSize },
 #endif
 
+    // base/:
+    { "dm-usage", kSmallSize },
     // content/:
     { "ppapi_path", kMediumSize },
     { "subresource_url", kLargeSize },

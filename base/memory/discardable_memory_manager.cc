@@ -7,7 +7,9 @@
 #include "base/bind.h"
 #include "base/containers/hash_tables.h"
 #include "base/containers/mru_cache.h"
+#include "base/debug/crash_logging.h"
 #include "base/debug/trace_event.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/synchronization/lock.h"
 
 namespace base {
@@ -213,6 +215,10 @@ void DiscardableMemoryManager::EnforcePolicyWithLockAcquired() {
 
 void DiscardableMemoryManager::BytesAllocatedChanged() const {
   TRACE_COUNTER_ID1("base", "DiscardableMemoryUsage", this, bytes_allocated_);
+
+  static const char kDiscardableMemoryUsageKey[] = "dm-usage";
+  base::debug::SetCrashKeyValue(kDiscardableMemoryUsageKey,
+                                Uint64ToString(bytes_allocated_));
 }
 
 }  // namespace internal
