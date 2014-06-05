@@ -51,8 +51,6 @@ using google_apis::InitiateUploadCallback;
 using google_apis::Link;
 using google_apis::ProgressCallback;
 using google_apis::RequestSender;
-using google_apis::ResourceEntry;
-using google_apis::UploadRangeCallback;
 using google_apis::UploadRangeResponse;
 using google_apis::drive::AboutGetRequest;
 using google_apis::drive::AppsListRequest;
@@ -73,6 +71,7 @@ using google_apis::drive::GetUploadStatusRequest;
 using google_apis::drive::InitiateUploadExistingFileRequest;
 using google_apis::drive::InitiateUploadNewFileRequest;
 using google_apis::drive::ResumeUploadRequest;
+using google_apis::drive::UploadRangeCallback;
 
 namespace drive {
 
@@ -122,34 +121,6 @@ const char kChangeListFields[] =
     "parents(id,parentLink),alternateLink,modifiedDate,"
     "lastViewedByMeDate,shared),deleted,id,fileId,modificationDate),nextLink,"
     "largestChangeId";
-
-// Converts the FileResource value to ResourceEntry for upload range request,
-// and runs |callback| on the UI thread.
-void ConvertFileResourceToResourceEntryForUploadRangeAndRun(
-    const UploadRangeCallback& callback,
-    const UploadRangeResponse& response,
-    scoped_ptr<FileResource> value) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
-  if (!value) {
-    callback.Run(response, scoped_ptr<ResourceEntry>());
-    return;
-  }
-
-  // Converting to ResourceEntry is cheap enough to do on UI thread.
-  scoped_ptr<ResourceEntry> entry =
-      util::ConvertFileResourceToResourceEntry(*value);
-  if (!entry) {
-    callback.Run(UploadRangeResponse(GDATA_PARSE_ERROR,
-                                     response.start_position_received,
-                                     response.end_position_received),
-                 scoped_ptr<ResourceEntry>());
-    return;
-  }
-
-  callback.Run(response, entry.Pass());
-}
 
 void ExtractOpenUrlAndRun(const std::string& app_id,
                           const AuthorizeAppCallback& callback,
@@ -659,8 +630,7 @@ CancelCallback DriveAPIService::ResumeUpload(
           content_length,
           content_type,
           local_file_path,
-          base::Bind(&ConvertFileResourceToResourceEntryForUploadRangeAndRun,
-                     callback),
+          callback,
           progress_callback));
 }
 
@@ -675,8 +645,7 @@ CancelCallback DriveAPIService::GetUploadStatus(
       sender_.get(),
       upload_url,
       content_length,
-      base::Bind(&ConvertFileResourceToResourceEntryForUploadRangeAndRun,
-                 callback)));
+      callback));
 }
 
 CancelCallback DriveAPIService::AuthorizeApp(

@@ -336,7 +336,7 @@ class JobScheduler
       const google_apis::GetResourceEntryCallback& callback,
       google_apis::GDataErrorCode error,
       const GURL& upload_location,
-      scoped_ptr<google_apis::ResourceEntry> resource_entry);
+      scoped_ptr<google_apis::FileResource> entry);
 
   // Callback for DriveUploader::ResumeUploadFile().
   void OnResumeUploadFileDone(
@@ -345,7 +345,7 @@ class JobScheduler
       const google_apis::GetResourceEntryCallback& callback,
       google_apis::GDataErrorCode error,
       const GURL& upload_location,
-      scoped_ptr<google_apis::ResourceEntry> resource_entry);
+      scoped_ptr<google_apis::FileResource> entry);
 
   // Updates the progress status of the specified job.
   void UpdateProgress(JobID job_id, int64 progress, int64 total);

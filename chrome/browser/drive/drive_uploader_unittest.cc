@@ -15,10 +15,12 @@
 #include "base/values.h"
 #include "chrome/browser/drive/dummy_drive_service.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "google_apis/drive/drive_api_parser.h"
 #include "google_apis/drive/test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using google_apis::CancelCallback;
+using google_apis::FileResource;
 using google_apis::GDataErrorCode;
 using google_apis::GDATA_NO_CONNECTION;
 using google_apis::GDATA_OTHER_ERROR;
@@ -30,16 +32,15 @@ using google_apis::HTTP_RESUME_INCOMPLETE;
 using google_apis::HTTP_SUCCESS;
 using google_apis::InitiateUploadCallback;
 using google_apis::ProgressCallback;
-using google_apis::ResourceEntry;
-using google_apis::UploadRangeCallback;
 using google_apis::UploadRangeResponse;
+using google_apis::drive::UploadRangeCallback;
 namespace test_util = google_apis::test_util;
 
 namespace drive {
 
 namespace {
 
-const char kTestDummyId[] = "file:dummy_id";
+const char kTestDummyMd5[] = "dummy_md5";
 const char kTestDocumentTitle[] = "Hello world";
 const char kTestInitiateUploadParentResourceId[] = "parent_resource_id";
 const char kTestInitiateUploadResourceId[] = "resource_id";
@@ -179,16 +180,15 @@ class MockDriveServiceWithUploadExpectation : public DummyDriveService {
                                const UploadRangeCallback& callback) {
     // Callback with response.
     UploadRangeResponse response;
-    scoped_ptr<ResourceEntry> entry;
+    scoped_ptr<FileResource> entry;
     if (received_bytes_ == expected_content_length_) {
       GDataErrorCode response_code =
           upload_location == GURL(kTestUploadNewFileURL) ?
           HTTP_CREATED : HTTP_SUCCESS;
       response = UploadRangeResponse(response_code, -1, -1);
 
-      base::DictionaryValue dict;
-      dict.Set("id.$t", new base::StringValue(kTestDummyId));
-      entry = ResourceEntry::CreateFrom(dict);
+      entry.reset(new FileResource);
+      entry->set_md5_checksum(kTestDummyMd5);
     } else {
       response = UploadRangeResponse(
           HTTP_RESUME_INCOMPLETE, 0, received_bytes_);
@@ -284,7 +284,7 @@ class MockDriveServiceNoConnectionAtResume : public DummyDriveService {
     base::MessageLoop::current()->PostTask(FROM_HERE,
         base::Bind(callback,
                    UploadRangeResponse(GDATA_NO_CONNECTION, -1, -1),
-                   base::Passed(scoped_ptr<ResourceEntry>())));
+                   base::Passed(scoped_ptr<FileResource>())));
     return CancelCallback();
   }
 };
@@ -299,7 +299,7 @@ class MockDriveServiceNoConnectionAtGetUploadStatus : public DummyDriveService {
     base::MessageLoop::current()->PostTask(FROM_HERE,
         base::Bind(callback,
                    UploadRangeResponse(GDATA_NO_CONNECTION, -1, -1),
-                   base::Passed(scoped_ptr<ResourceEntry>())));
+                   base::Passed(scoped_ptr<FileResource>())));
     return CancelCallback();
   }
 };
@@ -325,7 +325,7 @@ TEST_F(DriveUploaderTest, UploadExisting0KB) {
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
   GURL upload_location;
-  scoped_ptr<ResourceEntry> resource_entry;
+  scoped_ptr<FileResource> entry;
 
   MockDriveServiceWithUploadExpectation mock_service(local_path, data.size());
   DriveUploader uploader(&mock_service,
@@ -337,7 +337,7 @@ TEST_F(DriveUploaderTest, UploadExisting0KB) {
       kTestMimeType,
       DriveUploader::UploadExistingFileOptions(),
       test_util::CreateCopyResultCallback(
-          &error, &upload_location, &resource_entry),
+          &error, &upload_location, &entry),
       base::Bind(&test_util::AppendProgressCallbackResult,
                  &upload_progress_values));
   base::RunLoop().RunUntilIdle();
@@ -346,8 +346,8 @@ TEST_F(DriveUploaderTest, UploadExisting0KB) {
   EXPECT_EQ(0, mock_service.received_bytes());
   EXPECT_EQ(HTTP_SUCCESS, error);
   EXPECT_TRUE(upload_location.is_empty());
-  ASSERT_TRUE(resource_entry);
-  EXPECT_EQ(kTestDummyId, resource_entry->id());
+  ASSERT_TRUE(entry);
+  EXPECT_EQ(kTestDummyMd5, entry->md5_checksum());
   ASSERT_EQ(1U, upload_progress_values.size());
   EXPECT_EQ(test_util::ProgressInfo(0, 0), upload_progress_values[0]);
 }
@@ -360,7 +360,7 @@ TEST_F(DriveUploaderTest, UploadExisting512KB) {
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
   GURL upload_location;
-  scoped_ptr<ResourceEntry> resource_entry;
+  scoped_ptr<FileResource> entry;
 
   MockDriveServiceWithUploadExpectation mock_service(local_path, data.size());
   DriveUploader uploader(&mock_service,
@@ -372,7 +372,7 @@ TEST_F(DriveUploaderTest, UploadExisting512KB) {
       kTestMimeType,
       DriveUploader::UploadExistingFileOptions(),
       test_util::CreateCopyResultCallback(
-          &error, &upload_location, &resource_entry),
+          &error, &upload_location, &entry),
       base::Bind(&test_util::AppendProgressCallbackResult,
                  &upload_progress_values));
   base::RunLoop().RunUntilIdle();
@@ -382,8 +382,8 @@ TEST_F(DriveUploaderTest, UploadExisting512KB) {
   EXPECT_EQ(512 * 1024, mock_service.received_bytes());
   EXPECT_EQ(HTTP_SUCCESS, error);
   EXPECT_TRUE(upload_location.is_empty());
-  ASSERT_TRUE(resource_entry);
-  EXPECT_EQ(kTestDummyId, resource_entry->id());
+  ASSERT_TRUE(entry);
+  EXPECT_EQ(kTestDummyMd5, entry->md5_checksum());
   ASSERT_EQ(1U, upload_progress_values.size());
   EXPECT_EQ(test_util::ProgressInfo(512 * 1024, 512 * 1024),
             upload_progress_values[0]);
@@ -397,7 +397,7 @@ TEST_F(DriveUploaderTest, InitiateUploadFail) {
 
   GDataErrorCode error = HTTP_SUCCESS;
   GURL upload_location;
-  scoped_ptr<ResourceEntry> resource_entry;
+  scoped_ptr<FileResource> entry;
 
   MockDriveServiceNoConnectionAtInitiate mock_service;
   DriveUploader uploader(&mock_service,
@@ -407,13 +407,13 @@ TEST_F(DriveUploaderTest, InitiateUploadFail) {
                               kTestMimeType,
                               DriveUploader::UploadExistingFileOptions(),
                               test_util::CreateCopyResultCallback(
-                                  &error, &upload_location, &resource_entry),
+                                  &error, &upload_location, &entry),
                               google_apis::ProgressCallback());
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(GDATA_NO_CONNECTION, error);
   EXPECT_TRUE(upload_location.is_empty());
-  EXPECT_FALSE(resource_entry);
+  EXPECT_FALSE(entry);
 }
 
 TEST_F(DriveUploaderTest, InitiateUploadNoConflict) {
@@ -424,7 +424,7 @@ TEST_F(DriveUploaderTest, InitiateUploadNoConflict) {
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
   GURL upload_location;
-  scoped_ptr<ResourceEntry> resource_entry;
+  scoped_ptr<FileResource> entry;
 
   MockDriveServiceWithUploadExpectation mock_service(local_path, data.size());
   DriveUploader uploader(&mock_service,
@@ -436,7 +436,7 @@ TEST_F(DriveUploaderTest, InitiateUploadNoConflict) {
                               kTestMimeType,
                               options,
                               test_util::CreateCopyResultCallback(
-                                  &error, &upload_location, &resource_entry),
+                                  &error, &upload_location, &entry),
                               google_apis::ProgressCallback());
   base::RunLoop().RunUntilIdle();
 
@@ -453,7 +453,7 @@ TEST_F(DriveUploaderTest, InitiateUploadConflict) {
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
   GURL upload_location;
-  scoped_ptr<ResourceEntry> resource_entry;
+  scoped_ptr<FileResource> entry;
 
   MockDriveServiceWithUploadExpectation mock_service(local_path, data.size());
   DriveUploader uploader(&mock_service,
@@ -465,7 +465,7 @@ TEST_F(DriveUploaderTest, InitiateUploadConflict) {
                               kTestMimeType,
                               options,
                               test_util::CreateCopyResultCallback(
-                                  &error, &upload_location, &resource_entry),
+                                  &error, &upload_location, &entry),
                               google_apis::ProgressCallback());
   base::RunLoop().RunUntilIdle();
 
@@ -481,7 +481,7 @@ TEST_F(DriveUploaderTest, ResumeUploadFail) {
 
   GDataErrorCode error = HTTP_SUCCESS;
   GURL upload_location;
-  scoped_ptr<ResourceEntry> resource_entry;
+  scoped_ptr<FileResource> entry;
 
   MockDriveServiceNoConnectionAtResume mock_service;
   DriveUploader uploader(&mock_service,
@@ -491,7 +491,7 @@ TEST_F(DriveUploaderTest, ResumeUploadFail) {
                               kTestMimeType,
                               DriveUploader::UploadExistingFileOptions(),
                               test_util::CreateCopyResultCallback(
-                                  &error, &upload_location, &resource_entry),
+                                  &error, &upload_location, &entry),
                               google_apis::ProgressCallback());
   base::RunLoop().RunUntilIdle();
 
@@ -507,7 +507,7 @@ TEST_F(DriveUploaderTest, GetUploadStatusFail) {
 
   GDataErrorCode error = HTTP_SUCCESS;
   GURL upload_location;
-  scoped_ptr<ResourceEntry> resource_entry;
+  scoped_ptr<FileResource> entry;
 
   MockDriveServiceNoConnectionAtGetUploadStatus mock_service;
   DriveUploader uploader(&mock_service,
@@ -516,7 +516,7 @@ TEST_F(DriveUploaderTest, GetUploadStatusFail) {
                             local_path,
                             kTestMimeType,
                             test_util::CreateCopyResultCallback(
-                                &error, &upload_location, &resource_entry),
+                                &error, &upload_location, &entry),
                             google_apis::ProgressCallback());
   base::RunLoop().RunUntilIdle();
 
@@ -527,7 +527,7 @@ TEST_F(DriveUploaderTest, GetUploadStatusFail) {
 TEST_F(DriveUploaderTest, NonExistingSourceFile) {
   GDataErrorCode error = GDATA_OTHER_ERROR;
   GURL upload_location;
-  scoped_ptr<ResourceEntry> resource_entry;
+  scoped_ptr<FileResource> entry;
 
   DriveUploader uploader(NULL,  // NULL, the service won't be used.
                          base::MessageLoopProxy::current().get());
@@ -537,7 +537,7 @@ TEST_F(DriveUploaderTest, NonExistingSourceFile) {
       kTestMimeType,
       DriveUploader::UploadExistingFileOptions(),
       test_util::CreateCopyResultCallback(
-          &error, &upload_location, &resource_entry),
+          &error, &upload_location, &entry),
       google_apis::ProgressCallback());
   base::RunLoop().RunUntilIdle();
 
@@ -554,7 +554,7 @@ TEST_F(DriveUploaderTest, ResumeUpload) {
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
   GURL upload_location;
-  scoped_ptr<ResourceEntry> resource_entry;
+  scoped_ptr<FileResource> entry;
 
   MockDriveServiceWithUploadExpectation mock_service(local_path, data.size());
   DriveUploader uploader(&mock_service,
@@ -569,7 +569,7 @@ TEST_F(DriveUploaderTest, ResumeUpload) {
       local_path,
       kTestMimeType,
       test_util::CreateCopyResultCallback(
-          &error, &upload_location, &resource_entry),
+          &error, &upload_location, &entry),
       base::Bind(&test_util::AppendProgressCallbackResult,
                  &upload_progress_values));
   base::RunLoop().RunUntilIdle();
@@ -578,8 +578,8 @@ TEST_F(DriveUploaderTest, ResumeUpload) {
   EXPECT_EQ(1024 * 1024, mock_service.received_bytes());
   EXPECT_EQ(HTTP_SUCCESS, error);
   EXPECT_TRUE(upload_location.is_empty());
-  ASSERT_TRUE(resource_entry);
-  EXPECT_EQ(kTestDummyId, resource_entry->id());
+  ASSERT_TRUE(entry);
+  EXPECT_EQ(kTestDummyMd5, entry->md5_checksum());
   ASSERT_EQ(1U, upload_progress_values.size());
   EXPECT_EQ(test_util::ProgressInfo(1024 * 1024, 1024 * 1024),
             upload_progress_values[0]);

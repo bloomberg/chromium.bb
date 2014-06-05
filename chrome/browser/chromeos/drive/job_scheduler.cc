@@ -15,6 +15,7 @@
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
 #include "google_apis/drive/drive_api_parser.h"
+#include "google_apis/drive/gdata_wapi_parser.h"
 
 using content::BrowserThread;
 
@@ -1010,7 +1011,7 @@ void JobScheduler::OnUploadCompletionJobDone(
     const google_apis::GetResourceEntryCallback& callback,
     google_apis::GDataErrorCode error,
     const GURL& upload_location,
-    scoped_ptr<google_apis::ResourceEntry> resource_entry) {
+    scoped_ptr<google_apis::FileResource> entry) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
@@ -1037,8 +1038,11 @@ void JobScheduler::OnUploadCompletionJobDone(
     job_entry->task = base::Bind(&RunResumeUploadFile, uploader_.get(), params);
   }
 
-  if (OnJobDone(job_id, error))
-    callback.Run(error, resource_entry.Pass());
+  if (OnJobDone(job_id, error)) {
+    callback.Run(error, entry ?
+                 util::ConvertFileResourceToResourceEntry(*entry) :
+                 scoped_ptr<google_apis::ResourceEntry>());
+  }
 }
 
 void JobScheduler::OnResumeUploadFileDone(
@@ -1047,7 +1051,7 @@ void JobScheduler::OnResumeUploadFileDone(
     const google_apis::GetResourceEntryCallback& callback,
     google_apis::GDataErrorCode error,
     const GURL& upload_location,
-    scoped_ptr<google_apis::ResourceEntry> resource_entry) {
+    scoped_ptr<google_apis::FileResource> entry) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!original_task.is_null());
   DCHECK(!callback.is_null());
@@ -1060,8 +1064,11 @@ void JobScheduler::OnResumeUploadFileDone(
     job_entry->task = original_task;
   }
 
-  if (OnJobDone(job_id, error))
-    callback.Run(error, resource_entry.Pass());
+  if (OnJobDone(job_id, error)) {
+    callback.Run(error, entry ?
+                 util::ConvertFileResourceToResourceEntry(*entry) :
+                 scoped_ptr<google_apis::ResourceEntry>());
+  }
 }
 
 void JobScheduler::UpdateProgress(JobID job_id, int64 progress, int64 total) {

@@ -31,10 +31,10 @@ namespace drive_backend {
 namespace {
 
 void UploadResultCallback(GDataErrorCode* error_out,
-                          scoped_ptr<ResourceEntry>* entry_out,
+                          scoped_ptr<FileResource>* entry_out,
                           GDataErrorCode error,
                           const GURL& upload_location,
-                          scoped_ptr<ResourceEntry> entry) {
+                          scoped_ptr<FileResource> entry) {
   ASSERT_TRUE(error_out);
   ASSERT_TRUE(entry_out);
   *error_out = error;
@@ -107,7 +107,7 @@ GDataErrorCode FakeDriveServiceHelper::AddFile(
   base::FilePath temp_file = WriteToTempFile(content);
 
   GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
-  scoped_ptr<ResourceEntry> file;
+  scoped_ptr<FileResource> file;
   drive_uploader_->UploadNewFile(
       parent_folder_id, temp_file, title,
       "application/octet-stream",
@@ -117,7 +117,7 @@ GDataErrorCode FakeDriveServiceHelper::AddFile(
   base::RunLoop().RunUntilIdle();
 
   if (error == google_apis::HTTP_SUCCESS && file_id)
-    *file_id = file->resource_id();
+    *file_id = file->file_id();
   return error;
 }
 
@@ -126,7 +126,7 @@ GDataErrorCode FakeDriveServiceHelper::UpdateFile(
     const std::string& content) {
   base::FilePath temp_file = WriteToTempFile(content);
   GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
-  scoped_ptr<ResourceEntry> file;
+  scoped_ptr<FileResource> file;
   drive_uploader_->UploadExistingFile(
       file_id, temp_file,
       "application/octet-stream",

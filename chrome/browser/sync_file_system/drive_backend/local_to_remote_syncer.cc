@@ -426,7 +426,7 @@ void LocalToRemoteSyncer::DidUploadExistingFile(
     const SyncStatusCallback& callback,
     google_apis::GDataErrorCode error,
     const GURL&,
-    scoped_ptr<google_apis::ResourceEntry> entry) {
+    scoped_ptr<google_apis::FileResource> entry) {
   if (error == google_apis::HTTP_PRECONDITION ||
       error == google_apis::HTTP_CONFLICT ||
       error == google_apis::HTTP_NOT_FOUND) {
@@ -455,7 +455,7 @@ void LocalToRemoteSyncer::DidUploadExistingFile(
 
   DCHECK(entry);
   metadata_database()->UpdateByFileResource(
-      *drive::util::ConvertResourceEntryToFileResource(*entry),
+      *entry,
       base::Bind(&LocalToRemoteSyncer::DidUpdateDatabaseForUploadExistingFile,
                  weak_ptr_factory_.GetWeakPtr(),
                  callback));
@@ -585,7 +585,7 @@ void LocalToRemoteSyncer::DidUploadNewFile(
     const SyncStatusCallback& callback,
     google_apis::GDataErrorCode error,
     const GURL& upload_location,
-    scoped_ptr<google_apis::ResourceEntry> entry) {
+    scoped_ptr<google_apis::FileResource> entry) {
   if (error == google_apis::HTTP_NOT_FOUND)
     needs_remote_change_listing_ = true;
 
@@ -602,9 +602,7 @@ void LocalToRemoteSyncer::DidUploadNewFile(
   }
 
   metadata_database()->ReplaceActiveTrackerWithNewResource(
-      remote_parent_folder_tracker_->tracker_id(),
-      *drive::util::ConvertResourceEntryToFileResource(*entry),
-      callback);
+      remote_parent_folder_tracker_->tracker_id(), *entry, callback);
 }
 
 void LocalToRemoteSyncer::CreateRemoteFolder(

@@ -9,7 +9,6 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_proxy.h"
-#include "chrome/browser/drive/drive_api_util.h"
 #include "google_apis/drive/drive_api_parser.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -19,9 +18,7 @@ using google_apis::CancelCallback;
 using google_apis::FileResource;
 using google_apis::FileResourceCallback;
 using google_apis::GDataErrorCode;
-using google_apis::GetResourceEntryCallback;
 using google_apis::ProgressCallback;
-using google_apis::ResourceEntry;
 
 namespace sync_file_system {
 namespace drive_backend {
@@ -45,8 +42,7 @@ void DidAddFileForUploadNew(
       base::Bind(callback,
                  google_apis::HTTP_SUCCESS,
                  GURL(),
-                 base::Passed(
-                     drive::util::ConvertFileResourceToResourceEntry(*entry))));
+                 base::Passed(&entry)));
 }
 
 void DidGetFileResourceForUploadExisting(
@@ -58,10 +54,7 @@ void DidGetFileResourceForUploadExisting(
       base::Bind(callback,
                  error,
                  GURL(),
-                 base::Passed(
-                     entry ?
-                     drive::util::ConvertFileResourceToResourceEntry(*entry) :
-                     scoped_ptr<ResourceEntry>())));
+                 base::Passed(&entry)));
 }
 
 }  // namespace

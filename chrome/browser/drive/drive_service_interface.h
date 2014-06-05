@@ -389,7 +389,7 @@ class DriveServiceInterface {
       int64 content_length,
       const std::string& content_type,
       const base::FilePath& local_file_path,
-      const google_apis::UploadRangeCallback& callback,
+      const google_apis::drive::UploadRangeCallback& callback,
       const google_apis::ProgressCallback& progress_callback) = 0;
 
   // Gets the current status of the uploading to |upload_url| from the server.
@@ -399,7 +399,7 @@ class DriveServiceInterface {
   virtual google_apis::CancelCallback GetUploadStatus(
       const GURL& upload_url,
       int64 content_length,
-      const google_apis::UploadRangeCallback& callback) = 0;
+      const google_apis::drive::UploadRangeCallback& callback) = 0;
 
   // Authorizes a Drive app with the id |app_id| to open the given file.
   // Upon completion, invokes |callback| with the link to open the file with

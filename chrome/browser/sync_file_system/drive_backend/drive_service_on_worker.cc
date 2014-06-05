@@ -376,7 +376,7 @@ google_apis::CancelCallback DriveServiceOnWorker::ResumeUpload(
     int64 content_length,
     const std::string& content_type,
     const base::FilePath& local_file_path,
-    const google_apis::UploadRangeCallback& callback,
+    const google_apis::drive::UploadRangeCallback& callback,
     const google_apis::ProgressCallback& progress_callback) {
   NOTREACHED();
   return google_apis::CancelCallback();
@@ -385,7 +385,7 @@ google_apis::CancelCallback DriveServiceOnWorker::ResumeUpload(
 google_apis::CancelCallback DriveServiceOnWorker::GetUploadStatus(
     const GURL& upload_url,
     int64 content_length,
-    const google_apis::UploadRangeCallback& callback) {
+    const google_apis::drive::UploadRangeCallback& callback) {
   NOTREACHED();
   return google_apis::CancelCallback();
 }

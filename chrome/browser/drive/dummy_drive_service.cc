@@ -21,7 +21,7 @@ using google_apis::GetContentCallback;
 using google_apis::GetShareUrlCallback;
 using google_apis::InitiateUploadCallback;
 using google_apis::ProgressCallback;
-using google_apis::UploadRangeCallback;
+using google_apis::drive::UploadRangeCallback;
 
 namespace drive {
 

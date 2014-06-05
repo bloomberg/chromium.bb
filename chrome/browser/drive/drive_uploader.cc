@@ -14,10 +14,11 @@
 #include "chrome/browser/drive/drive_service_interface.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/power_save_blocker.h"
-#include "google_apis/drive/gdata_wapi_parser.h"
+#include "google_apis/drive/drive_api_parser.h"
 
 using content::BrowserThread;
 using google_apis::CancelCallback;
+using google_apis::FileResource;
 using google_apis::GDATA_CANCELLED;
 using google_apis::GDataErrorCode;
 using google_apis::GDATA_NO_SPACE;
@@ -29,7 +30,6 @@ using google_apis::HTTP_PRECONDITION;
 using google_apis::HTTP_RESUME_INCOMPLETE;
 using google_apis::HTTP_SUCCESS;
 using google_apis::ProgressCallback;
-using google_apis::ResourceEntry;
 using google_apis::UploadRangeResponse;
 
 namespace drive {
@@ -355,7 +355,7 @@ void DriveUploader::UploadNextChunk(
 void DriveUploader::OnUploadRangeResponseReceived(
     scoped_ptr<UploadFileInfo> upload_file_info,
     const UploadRangeResponse& response,
-    scoped_ptr<ResourceEntry> entry) {
+    scoped_ptr<FileResource> entry) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (response.code == HTTP_CREATED || response.code == HTTP_SUCCESS) {
@@ -428,7 +428,7 @@ void DriveUploader::UploadFailed(scoped_ptr<UploadFileInfo> upload_file_info,
   }
 
   upload_file_info->completion_callback.Run(
-      error, upload_file_info->upload_location, scoped_ptr<ResourceEntry>());
+      error, upload_file_info->upload_location, scoped_ptr<FileResource>());
 }
 
 }  // namespace drive

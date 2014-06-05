@@ -13,7 +13,6 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/drive/drive_service_interface.h"
 #include "google_apis/drive/gdata_errorcode.h"
-#include "google_apis/drive/gdata_wapi_parser.h"
 
 class GURL;
 
@@ -36,7 +35,7 @@ class DriveServiceInterface;
 typedef base::Callback<void(
     google_apis::GDataErrorCode error,
     const GURL& upload_location,
-    scoped_ptr<google_apis::ResourceEntry> resource_entry)>
+    scoped_ptr<google_apis::FileResource> resource_entry)>
     UploadCompletionCallback;
 
 class DriveUploaderInterface {
@@ -186,7 +185,7 @@ class DriveUploader : public DriveUploaderInterface {
   void OnUploadRangeResponseReceived(
       scoped_ptr<UploadFileInfo> upload_file_info,
       const google_apis::UploadRangeResponse& response,
-      scoped_ptr<google_apis::ResourceEntry> entry);
+      scoped_ptr<google_apis::FileResource> entry);
   void OnUploadProgress(const google_apis::ProgressCallback& callback,
                         int64 start_position,
                         int64 total_size,

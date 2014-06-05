@@ -16,6 +16,7 @@
 #include "chrome/browser/chromeos/drive/sync/entry_revert_performer.h"
 #include "chrome/browser/chromeos/drive/sync/remove_performer.h"
 #include "content/public/browser/browser_thread.h"
+#include "google_apis/drive/gdata_wapi_parser.h"
 
 using content::BrowserThread;
 
