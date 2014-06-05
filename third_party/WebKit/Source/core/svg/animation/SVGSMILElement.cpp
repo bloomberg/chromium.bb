@@ -1154,13 +1154,15 @@ bool SVGSMILElement::progress(SMILTime elapsed, SVGSMILElement* resultElement, b
 
     if (elapsed < m_interval.begin) {
         ASSERT(m_activeState != Active);
-        if (m_activeState == Frozen) {
+        bool isFrozen = (m_activeState == Frozen);
+        if (isFrozen) {
             if (this == resultElement)
                 resetAnimatedType();
             updateAnimation(m_lastPercent, m_lastRepeat, resultElement);
         }
         m_nextProgressTime = m_interval.begin;
-        return false;
+        // If the animation is frozen, it's still contributing.
+        return isFrozen;
     }
 
     m_previousIntervalBegin = m_interval.begin;
