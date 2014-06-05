@@ -151,7 +151,7 @@ nacl_list="bison cmake xvfb gawk texinfo autoconf libtool
            libgconf-2-4:i386 libfontconfig:i386
            libpango1.0-0:i386 libxi6:i386 libxcursor1:i386 libxcomposite1:i386
            libasound2:i386 libxdamage1:i386 libxtst6:i386 libxrandr2:i386
-           libcap2:i386 libudev0:i386 libgtk2.0-0:i386 libxss1:i386
+           libcap2:i386 libgtk2.0-0:i386 libxss1:i386
            libexif12:i386 libgl1-mesa-glx:i386"
 
 # Some package names have changed over time
@@ -174,8 +174,10 @@ else
 fi
 if package_exists libudev1; then
   dev_list="${dev_list} libudev1"
+  nacl_list="${nacl_list} libudev1:i386"
 else
   dev_list="${dev_list} libudev0"
+  nacl_list="${nacl_list} libudev0:i386"
 fi
 if package_exists libbrlapi0.6; then
   dev_list="${dev_list} libbrlapi0.6"
