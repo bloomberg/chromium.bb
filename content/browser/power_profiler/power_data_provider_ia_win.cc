@@ -4,9 +4,15 @@
 
 #include "content/browser/power_profiler/power_data_provider_ia_win.h"
 
+#include "base/basictypes.h"
 #include "base/logging.h"
 
 namespace content {
+
+// Default sampling period, as recommended by Intel Power Gadget.
+// Section 3.1 of
+// http://software.intel.com/en-us/blogs/2013/10/03/using-the-intel-power-gadget-api-on-windows
+const int kDefaultSamplePeriodMs = 50;
 
 scoped_ptr<PowerDataProvider> PowerDataProvider::Create() {
   scoped_ptr<PowerDataProviderIA> provider(new PowerDataProviderIA());
@@ -52,6 +58,10 @@ PowerEventVector PowerDataProviderIA::GetData() {
   events.push_back(event);
 
   return events;
+}
+
+base::TimeDelta PowerDataProviderIA::GetSamplingRate() {
+  return base::TimeDelta::FromMilliseconds(kDefaultSamplePeriodMs);
 }
 
 bool PowerDataProviderIA::Initialize() {

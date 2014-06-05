@@ -10,6 +10,10 @@
 #include "base/memory/scoped_ptr.h"
 #include "content/browser/power_profiler/power_event.h"
 
+namespace base {
+class TimeDelta;
+}  // namespace base
+
 namespace content {
 
 typedef std::vector<PowerEvent> PowerEventVector;
@@ -24,6 +28,9 @@ class PowerDataProvider {
 
   // Returns a vector of power events, one per type, for the types it supports.
   virtual PowerEventVector GetData() = 0;
+
+  // Returns sampling rate at which the provider can operate.
+  virtual base::TimeDelta GetSamplingRate() = 0;
 };
 
 }  // namespace content

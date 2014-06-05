@@ -9,26 +9,17 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "content/public/browser/browser_thread.h"
 
-namespace {
-
-// Default sampling period, as recommended by Intel Power Gadget.
-// Section 3.1 of http://software.intel.com/en-us/blogs/2013/10/03/using-the-intel-power-gadget-api-on-windows
-const int kDefaultSamplePeriodMs = 50;
-
-}  // namespace
-
 namespace content {
 
 PowerProfilerService::PowerProfilerService()
     : status_(UNINITIALIZED),
-      sample_period_(base::TimeDelta::FromMilliseconds(kDefaultSamplePeriodMs)),
       data_provider_(PowerDataProvider::Create()) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // No provider supported for current platform.
   if (!data_provider_.get())
     return;
-
+  sample_period_ = data_provider_->GetSamplingRate();
   status_ = INITIALIZED;
   task_runner_ = BrowserThread::GetBlockingPool()->GetSequencedTaskRunner(
       BrowserThread::GetBlockingPool()->GetSequenceToken());

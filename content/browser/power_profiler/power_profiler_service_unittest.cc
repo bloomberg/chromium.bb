@@ -13,6 +13,7 @@ namespace content {
 namespace {
 
 const int kNumEvents = 3;
+const int kDefaultSamplePeriodMs = 50;
 
 // Provide a set number of power events.
 class TestPowerDataProvider : public PowerDataProvider {
@@ -33,6 +34,10 @@ class TestPowerDataProvider : public PowerDataProvider {
 
     num_events_to_send_--;
     return events;
+  }
+
+  virtual base::TimeDelta GetSamplingRate() OVERRIDE {
+    return base::TimeDelta::FromMilliseconds(kDefaultSamplePeriodMs);
   }
 
  private:

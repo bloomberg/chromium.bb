@@ -5,7 +5,6 @@
 #ifndef CONTENT_BROWSER_POWER_PROFILER_POWER_DATA_PROVIDER_IA_WIN_H_
 #define CONTENT_BROWSER_POWER_PROFILER_POWER_DATA_PROVIDER_IA_WIN_H_
 
-#include "base/basictypes.h"
 #include "content/browser/power_profiler/power_data_provider.h"
 #include "third_party/power_gadget/PowerGadgetLib.h"
 
@@ -20,6 +19,7 @@ class PowerDataProviderIA : public PowerDataProvider {
 
   bool Initialize();
   virtual PowerEventVector GetData() OVERRIDE;
+  virtual base::TimeDelta GetSamplingRate() OVERRIDE;
 
  private:
   CIntelPowerGadgetLib energy_lib_;
