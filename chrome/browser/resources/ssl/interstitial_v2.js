@@ -5,14 +5,28 @@
 var expandedDetails = false;
 
 function setupEvents() {
-  $('safety-button').addEventListener('click', function() {
-    sendCommand(CMD_DONT_PROCEED);
+  var overridable = loadTimeData.getBoolean('overridable');
+
+  $('primary-button').addEventListener('click', function() {
+    if (overridable)
+      sendCommand(CMD_DONT_PROCEED);
+    else
+      sendCommand(CMD_RELOAD);
   });
 
-  $('proceed-link').addEventListener('click', function(event) {
-    sendCommand(CMD_PROCEED);
-    event.preventDefault();  // Don't let the fragment navigate.
-  });
+  if (overridable) {
+    $('proceed-link').addEventListener('click', function(event) {
+      sendCommand(CMD_PROCEED);
+      event.preventDefault();
+    });
+  }
+
+  if (!overridable) {
+    $('help-link').addEventListener('click', function(event) {
+      sendCommand(CMD_HELP);
+      event.preventDefault();
+    });
+  }
 
   $('details-button').addEventListener('click', function(event) {
     var hiddenDetails = $('details').classList.toggle('hidden');
@@ -24,7 +38,7 @@ function setupEvents() {
       sendCommand(CMD_MORE);
       expandedDetails = true;
     }
-    event.preventDefault();  // Don't let the fragment navigate.
+    event.preventDefault();
   });
 }
 

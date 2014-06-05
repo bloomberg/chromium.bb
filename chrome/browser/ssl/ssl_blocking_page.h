@@ -66,7 +66,9 @@ class SSLBlockingPage : public content::InterstitialPageDelegate,
   void NotifyDenyCertificate();
   void NotifyAllowCertificate();
 
-  // Implements the new interstitial.
+  // These fetch the appropriate HTML page, depending on the
+  // SSLInterstitialVersion Finch trial.
+  std::string GetHTMLContentsV1();
   std::string GetHTMLContentsV2();
 
   // Used to query the HistoryService to see if the URL is in history. For UMA.

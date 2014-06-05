@@ -5,11 +5,11 @@
     <meta name="viewport"
         content="initial-scale=1, minimum-scale=1, width=device-width">
     <title i18n-content="tabTitle"></title>
-    <link rel="stylesheet" href="overridable_v2.css">
+    <link rel="stylesheet" href="interstitial_v2.css">
     <script src="../../../../ui/webui/resources/js/util.js"></script>
     <script src="../../../../ui/webui/resources/js/load_time_data.js"></script>
     <script src="ssl_errors_common.js"></script>
-    <script src="overridable_v2.js"></script>
+    <script src="interstitial_v2.js"></script>
   </head>
 <body i18n-values=".style.fontFamily:fontfamily;.style.fontSize:fontsize">
   <div class="interstitial-wrapper">
@@ -19,12 +19,12 @@
       <p i18n-values=".innerHTML:primaryParagraph"></p>
     </div>
     <div class="nav-wrapper">
-      <button i18n-content="safetyButtonText" id="safety-button"></button>
+      <button i18n-content="primaryButtonText" id="primary-button"></button>
       <a href="#" id="details-button" i18n-content="openDetails"></a>
     </div>
     <div id="details" class="hidden">
       <p i18n-values=".innerHTML:explanationParagraph"></p>
-      <p i18n-values=".innerHTML:proceedParagraph"></p>
+      <p i18n-values=".innerHTML:finalParagraph"></p>
     </div>
   </div>
 </body>
