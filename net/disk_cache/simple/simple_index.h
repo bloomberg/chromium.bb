@@ -195,12 +195,6 @@ class NET_EXPORT_PRIVATE SimpleIndex
   // background we can write the index much more frequently, to insure fresh
   // index on next startup.
   bool app_on_background_;
-
-  // The time in milliseconds for the index to be idle before it gets flushed to
-  // the disk. When the app is on foreground the delay is different from the
-  // background state.
-  int foreground_flush_delay_;
-  int background_flush_delay_;
 };
 
 }  // namespace disk_cache
