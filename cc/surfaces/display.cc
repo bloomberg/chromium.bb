@@ -24,7 +24,8 @@ Display::Display(DisplayClient* client,
       client_(client),
       manager_(manager),
       aggregator_(manager),
-      bitmap_manager_(bitmap_manager) {
+      bitmap_manager_(bitmap_manager),
+      schedule_draw_factory_(this) {
 }
 
 Display::~Display() {
@@ -88,7 +89,8 @@ void Display::ScheduleComposite() {
   scheduled_draw_ = true;
 
   base::MessageLoop::current()->PostTask(
-      FROM_HERE, base::Bind(&Display::DoComposite, base::Unretained(this)));
+      FROM_HERE,
+      base::Bind(&Display::DoComposite, schedule_draw_factory_.GetWeakPtr()));
 }
 
 void Display::ScheduleAnimation() {

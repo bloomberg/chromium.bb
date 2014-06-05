@@ -84,6 +84,7 @@ class CC_SURFACES_EXPORT Display
   scoped_refptr<DelegatedFrameResourceCollection> resource_collection_;
   scoped_refptr<DelegatedFrameProvider> delegated_frame_provider_;
   scoped_refptr<DelegatedRendererLayer> delegated_layer_;
+  base::WeakPtrFactory<Display> schedule_draw_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(Display);
 };
