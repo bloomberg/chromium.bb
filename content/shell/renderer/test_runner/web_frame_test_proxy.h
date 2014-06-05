@@ -115,8 +115,8 @@ class WebFrameTestProxy : public Base {
   }
 
   virtual void didFinishLoad(blink::WebLocalFrame* frame) {
-    base_proxy_->DidFinishLoad(frame);
     Base::didFinishLoad(frame);
+    base_proxy_->DidFinishLoad(frame);
   }
 
   virtual blink::WebNotificationPresenter* notificationPresenter() {
