@@ -2452,3 +2452,16 @@
    fun:_ZN7content17UnitTestTestSuiteC2EPN4base9TestSuiteE
    fun:_ZN7content17UnitTestTestSuiteC1EPN4base9TestSuiteE
 }
+{
+   bug_380568
+   Memcheck:Leak
+   fun:calloc
+   fun:_internal_class_createInstanceFromZone
+   fun:_internal_class_createInstance
+   fun:NSAllocateObject
+   fun:+[NSObject(NSObject) alloc]
+   fun:-[VideoCaptureDeviceQTKit initWithFrameReceiver:]
+   fun:_ZN5media21VideoCaptureDeviceMac4InitENS_18VideoCaptureDevice4Name14CaptureApiTypeE
+   fun:_ZN5media28VideoCaptureDeviceFactoryMac6CreateERKNS_18VideoCaptureDevice4NameE
+   fun:_ZN5media45VideoCaptureDeviceTest_OpenInvalidDevice_Test8TestBodyEv
+}
