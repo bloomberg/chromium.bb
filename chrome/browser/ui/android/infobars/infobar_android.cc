@@ -50,6 +50,8 @@ void InfoBarAndroid::OnButtonClicked(JNIEnv* env,
 }
 
 void InfoBarAndroid::OnCloseButtonClicked(JNIEnv* env, jobject obj) {
+  if (!owner())
+    return; // We're closing; don't call anything, it might access the owner.
   delegate()->InfoBarDismissed();
   RemoveSelf();
 }
