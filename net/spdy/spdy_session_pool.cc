@@ -71,6 +71,12 @@ SpdySessionPool::SpdySessionPool(
 SpdySessionPool::~SpdySessionPool() {
   CloseAllSessions();
 
+  while (!sessions_.empty()) {
+    // Destroy sessions to enforce that lifetime is scoped to SpdySessionPool.
+    // Write callbacks queued upon session drain are not invoked.
+    RemoveUnavailableSession((*sessions_.begin())->GetWeakPtr());
+  }
+
   if (ssl_config_service_.get())
     ssl_config_service_->RemoveObserver(this);
   NetworkChangeNotifier::RemoveIPAddressObserver(this);
@@ -244,7 +250,7 @@ void SpdySessionPool::CloseCurrentIdleSessions() {
 }
 
 void SpdySessionPool::CloseAllSessions() {
-  while (!sessions_.empty()) {
+  while (!available_sessions_.empty()) {
     CloseCurrentSessionsHelper(ERR_ABORTED, "Closing all sessions.",
                                false /* idle_only */);
   }
@@ -280,7 +286,7 @@ void SpdySessionPool::OnIPAddressChanged() {
 #else
     (*it)->CloseSessionOnError(ERR_NETWORK_CHANGED,
                                "Closing current sessions.");
-    DCHECK(!*it);
+    DCHECK((*it)->IsDraining());
 #endif  // defined(OS_ANDROID) || defined(OS_WIN) || defined(OS_IOS)
     DCHECK(!IsSessionAvailable(*it));
   }
@@ -389,7 +395,6 @@ void SpdySessionPool::CloseCurrentSessionsHelper(
 
     (*it)->CloseSessionOnError(error, description);
     DCHECK(!IsSessionAvailable(*it));
-    DCHECK(!*it);
   }
 }
 

@@ -14,6 +14,7 @@
 #include "net/socket/client_socket_handle.h"
 #include "net/socket/transport_client_socket_pool.h"
 #include "net/spdy/spdy_session.h"
+#include "net/spdy/spdy_stream_test_util.h"
 #include "net/spdy/spdy_test_util_common.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -138,7 +139,7 @@ TEST_P(SpdySessionPoolTest, CloseCurrentSessions) {
 TEST_P(SpdySessionPoolTest, CloseCurrentIdleSessions) {
   MockConnect connect_data(SYNCHRONOUS, OK);
   MockRead reads[] = {
-    MockRead(ASYNC, 0, 0)  // EOF
+      MockRead(SYNCHRONOUS, ERR_IO_PENDING)  // Stall forever.
   };
 
   session_deps_.host_resolver->set_synchronous_mode(true);
@@ -195,20 +196,20 @@ TEST_P(SpdySessionPoolTest, CloseCurrentIdleSessions) {
 
   // All sessions are active and not closed
   EXPECT_TRUE(session1->is_active());
-  EXPECT_FALSE(session1->IsClosed());
+  EXPECT_TRUE(session1->IsAvailable());
   EXPECT_TRUE(session2->is_active());
-  EXPECT_FALSE(session2->IsClosed());
+  EXPECT_TRUE(session2->IsAvailable());
   EXPECT_TRUE(session3->is_active());
-  EXPECT_FALSE(session3->IsClosed());
+  EXPECT_TRUE(session3->IsAvailable());
 
   // Should not do anything, all are active
   spdy_session_pool_->CloseCurrentIdleSessions();
   EXPECT_TRUE(session1->is_active());
-  EXPECT_FALSE(session1->IsClosed());
+  EXPECT_TRUE(session1->IsAvailable());
   EXPECT_TRUE(session2->is_active());
-  EXPECT_FALSE(session2->IsClosed());
+  EXPECT_TRUE(session2->IsAvailable());
   EXPECT_TRUE(session3->is_active());
-  EXPECT_FALSE(session3->IsClosed());
+  EXPECT_TRUE(session3->IsAvailable());
 
   // Make sessions 1 and 3 inactive, but keep them open.
   // Session 2 still open and active
@@ -217,32 +218,40 @@ TEST_P(SpdySessionPoolTest, CloseCurrentIdleSessions) {
   session3->CloseCreatedStream(spdy_stream3, OK);
   EXPECT_EQ(NULL, spdy_stream3.get());
   EXPECT_FALSE(session1->is_active());
-  EXPECT_FALSE(session1->IsClosed());
+  EXPECT_TRUE(session1->IsAvailable());
   EXPECT_TRUE(session2->is_active());
-  EXPECT_FALSE(session2->IsClosed());
+  EXPECT_TRUE(session2->IsAvailable());
   EXPECT_FALSE(session3->is_active());
-  EXPECT_FALSE(session3->IsClosed());
+  EXPECT_TRUE(session3->IsAvailable());
 
   // Should close session 1 and 3, 2 should be left open
   spdy_session_pool_->CloseCurrentIdleSessions();
+  base::MessageLoop::current()->RunUntilIdle();
+
   EXPECT_TRUE(session1 == NULL);
   EXPECT_TRUE(session2->is_active());
-  EXPECT_FALSE(session2->IsClosed());
+  EXPECT_TRUE(session2->IsAvailable());
   EXPECT_TRUE(session3 == NULL);
 
   // Should not do anything
   spdy_session_pool_->CloseCurrentIdleSessions();
+  base::MessageLoop::current()->RunUntilIdle();
+
   EXPECT_TRUE(session2->is_active());
-  EXPECT_FALSE(session2->IsClosed());
+  EXPECT_TRUE(session2->IsAvailable());
 
   // Make 2 not active
   session2->CloseCreatedStream(spdy_stream2, OK);
+  base::MessageLoop::current()->RunUntilIdle();
+
   EXPECT_EQ(NULL, spdy_stream2.get());
   EXPECT_FALSE(session2->is_active());
-  EXPECT_FALSE(session2->IsClosed());
+  EXPECT_TRUE(session2->IsAvailable());
 
   // This should close session 2
   spdy_session_pool_->CloseCurrentIdleSessions();
+  base::MessageLoop::current()->RunUntilIdle();
+
   EXPECT_TRUE(session2 == NULL);
 }
 
@@ -420,8 +429,9 @@ void SpdySessionPoolTest::RunIPPoolingTest(
   switch (close_sessions_type) {
     case SPDY_POOL_CLOSE_SESSIONS_MANUALLY:
       session->CloseSessionOnError(ERR_ABORTED, std::string());
-      EXPECT_TRUE(session == NULL);
       session2->CloseSessionOnError(ERR_ABORTED, std::string());
+      base::MessageLoop::current()->RunUntilIdle();
+      EXPECT_TRUE(session == NULL);
       EXPECT_TRUE(session2 == NULL);
       break;
     case SPDY_POOL_CLOSE_CURRENT_SESSIONS:
@@ -449,27 +459,30 @@ void SpdySessionPoolTest::RunIPPoolingTest(
 
       // Check spdy_session and spdy_session1 are not closed.
       EXPECT_FALSE(session->is_active());
-      EXPECT_FALSE(session->IsClosed());
+      EXPECT_TRUE(session->IsAvailable());
       EXPECT_FALSE(session1->is_active());
-      EXPECT_FALSE(session1->IsClosed());
+      EXPECT_TRUE(session1->IsAvailable());
       EXPECT_TRUE(session2->is_active());
-      EXPECT_FALSE(session2->IsClosed());
+      EXPECT_TRUE(session2->IsAvailable());
 
       // Test that calling CloseIdleSessions, does not cause a crash.
       // http://crbug.com/181400
       spdy_session_pool_->CloseCurrentIdleSessions();
+      base::MessageLoop::current()->RunUntilIdle();
 
       // Verify spdy_session and spdy_session1 are closed.
       EXPECT_TRUE(session == NULL);
       EXPECT_TRUE(session1 == NULL);
       EXPECT_TRUE(session2->is_active());
-      EXPECT_FALSE(session2->IsClosed());
+      EXPECT_TRUE(session2->IsAvailable());
 
       spdy_stream2->Cancel();
       EXPECT_EQ(NULL, spdy_stream.get());
       EXPECT_EQ(NULL, spdy_stream1.get());
       EXPECT_EQ(NULL, spdy_stream2.get());
+
       session2->CloseSessionOnError(ERR_ABORTED, std::string());
+      base::MessageLoop::current()->RunUntilIdle();
       EXPECT_TRUE(session2 == NULL);
       break;
   }
@@ -490,6 +503,93 @@ TEST_P(SpdySessionPoolTest, IPPoolingCloseCurrentSessions) {
 
 TEST_P(SpdySessionPoolTest, IPPoolingCloseIdleSessions) {
   RunIPPoolingTest(SPDY_POOL_CLOSE_IDLE_SESSIONS);
+}
+
+// Construct a Pool with SpdySessions in various availability states. Simulate
+// an IP address change. Ensure sessions gracefully shut down. Regression test
+// for crbug.com/379469.
+TEST_P(SpdySessionPoolTest, IPAddressChanged) {
+  MockConnect connect_data(SYNCHRONOUS, OK);
+  MockRead reads[] = {
+      MockRead(SYNCHRONOUS, ERR_IO_PENDING)  // Stall forever.
+  };
+  session_deps_.host_resolver->set_synchronous_mode(true);
+
+  StaticSocketDataProvider data(reads, arraysize(reads), NULL, 0);
+  data.set_connect_data(connect_data);
+  session_deps_.socket_factory->AddSocketDataProvider(&data);
+
+  SSLSocketDataProvider ssl(SYNCHRONOUS, OK);
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
+
+  CreateNetworkSession();
+
+  // Set up session 1: Available, but idle.
+  const std::string kTestHost1("http://www.a.com");
+  HostPortPair test_host_port_pair1(kTestHost1, 80);
+  SpdySessionKey key1(
+      test_host_port_pair1, ProxyServer::Direct(), PRIVACY_MODE_DISABLED);
+  base::WeakPtr<SpdySession> session1 =
+      CreateInsecureSpdySession(http_session_, key1, BoundNetLog());
+  EXPECT_TRUE(session1->IsAvailable());
+
+  // Set up session 2: Going away, but with an active stream.
+  session_deps_.socket_factory->AddSocketDataProvider(&data);
+  const std::string kTestHost2("http://www.b.com");
+  HostPortPair test_host_port_pair2(kTestHost2, 80);
+  SpdySessionKey key2(
+      test_host_port_pair2, ProxyServer::Direct(), PRIVACY_MODE_DISABLED);
+  base::WeakPtr<SpdySession> session2 =
+      CreateInsecureSpdySession(http_session_, key2, BoundNetLog());
+  GURL url2(kTestHost2);
+  base::WeakPtr<SpdyStream> spdy_stream2 = CreateStreamSynchronously(
+      SPDY_BIDIRECTIONAL_STREAM, session2, url2, MEDIUM, BoundNetLog());
+  test::StreamDelegateDoNothing delegate2(spdy_stream2);
+  spdy_stream2->SetDelegate(&delegate2);
+
+  scoped_ptr<SpdyHeaderBlock> headers(
+      SpdyTestUtil(GetParam()).ConstructGetHeaderBlock(url2.spec()));
+  spdy_stream2->SendRequestHeaders(headers.Pass(), NO_MORE_DATA_TO_SEND);
+  EXPECT_TRUE(spdy_stream2->HasUrlFromHeaders());
+
+  session2->MakeUnavailable();
+  EXPECT_TRUE(session2->IsGoingAway());
+
+  // Set up session 3: Draining.
+  session_deps_.socket_factory->AddSocketDataProvider(&data);
+  const std::string kTestHost3("http://www.c.com");
+  HostPortPair test_host_port_pair3(kTestHost3, 80);
+  SpdySessionKey key3(
+      test_host_port_pair3, ProxyServer::Direct(), PRIVACY_MODE_DISABLED);
+  base::WeakPtr<SpdySession> session3 =
+      CreateInsecureSpdySession(http_session_, key3, BoundNetLog());
+
+  session3->CloseSessionOnError(ERR_SPDY_PROTOCOL_ERROR, "Error!");
+  EXPECT_TRUE(session3->IsDraining());
+
+  spdy_session_pool_->OnIPAddressChanged();
+
+#if defined(OS_ANDROID) || defined(OS_WIN) || defined(OS_IOS)
+  // TODO(jgraettinger): This should be draining when crbug.com/324653 is fixed.
+  EXPECT_TRUE(session1->IsGoingAway());
+  EXPECT_TRUE(session2->IsGoingAway());
+  EXPECT_TRUE(session3->IsDraining());
+
+  EXPECT_FALSE(delegate2.StreamIsClosed());
+
+  session1->CloseSessionOnError(ERR_ABORTED, "Closing");
+  session2->CloseSessionOnError(ERR_ABORTED, "Closing");
+
+  EXPECT_TRUE(delegate2.StreamIsClosed());
+  EXPECT_EQ(ERR_ABORTED, delegate2.WaitForClose());
+#else
+  EXPECT_TRUE(session1->IsDraining());
+  EXPECT_TRUE(session2->IsDraining());
+  EXPECT_TRUE(session3->IsDraining());
+
+  EXPECT_TRUE(delegate2.StreamIsClosed());
+  EXPECT_EQ(ERR_NETWORK_CHANGED, delegate2.WaitForClose());
+#endif  // defined(OS_ANDROID) || defined(OS_WIN) || defined(OS_IOS)
 }
 
 }  // namespace
