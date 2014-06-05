@@ -1,401 +1,373 @@
 // Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-//
-// Tool to log the execution of the process (Chrome). Writes logs containing
-// time and address of the callback being called for the first time.
-//
-// To speed up the logging, buffering logs is implemented. Every thread have its
-// own buffer and log file so the contention between threads is minimal. As a
-// side-effect, functions called might be mentioned in many thread logs.
-//
-// Special thread is created in the process to periodically flushes logs for all
-// threads for the case the thread has stopped before flushing its logs.
-//
-// Use this profiler with use_allocator!="none".
-//
-// Note for the ChromeOS Chrome. Remove renderer process from the sandbox (add
-// --no-sandbox option to running Chrome in /sbin/session_manager_setup.sh).
-// Otherwise renderer will not be able to write logs (and will assert on that).
-//
-// Also note that the instrumentation code is self-activated. It begins to
-// record the log data when it is called first, including the run-time startup.
-// Have it in mind when modifying it, in particular do not use global objects
-// with constructors as they are called during startup (too late for us).
+
+#include "tools/cygprofile/cygprofile.h"
 
 #include <fcntl.h>
-#include <fstream>
 #include <pthread.h>
-#include <stdarg.h>
-#include <string>
 #include <sys/stat.h>
 #include <sys/syscall.h>
 #include <sys/time.h>
 #include <sys/types.h>
+
+#include <cstdio>
+#include <fstream>
+#include <string>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/containers/hash_tables.h"
+#include "base/files/scoped_file.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
-#include "base/memory/singleton.h"
+#include "base/macros.h"
+#include "base/stl_util.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/strings/string_piece.h"
+#include "base/strings/stringprintf.h"
 #include "base/synchronization/lock.h"
 
 namespace cygprofile {
+namespace {
 
-extern "C" {
+// Allow 8 MBytes of data for each thread log.
+const int kMaxBufferSize = 8 * 1024 * 1024 / sizeof(LogEntry);
 
-// Note that these are linked internally by the compiler. Don't call
-// them directly!
-void __cyg_profile_func_enter(void* this_fn, void* call_site)
-    __attribute__((no_instrument_function));
-void __cyg_profile_func_exit(void* this_fn, void* call_site)
-    __attribute__((no_instrument_function));
+// Have the background internal thread do its flush every 15 sec.
+const int kFlushThreadIdleTimeSec = 15;
 
-}
+const char kLogFileNamePrefix[] = "/data/local/tmp/chrome/cyglog/";
 
-// Single log entry layout.
-struct CygLogEntry {
-  time_t seconds;
-  long int usec;
-  pid_t pid;
-  pthread_t tid;
-  const void* this_fn;
-  CygLogEntry(time_t seconds, long int usec,
-              pid_t pid, pthread_t tid, const void* this_fn)
-      : seconds(seconds), usec(usec),
-        pid(pid), tid(tid), this_fn(this_fn) {}
-};
+// "cyglog.PID.LWP.PPID"
+const char kLogFilenameFormat[] = "%scyglog.%d.%d-%d";
 
-// Common data for the process. Singleton.
-class CygCommon {
- public:
-  static CygCommon* GetInstance();
-  std::string header() const { return header_line_; }
- private:
-  CygCommon();
-  std::string header_line_;
-  friend struct DefaultSingletonTraits<CygCommon>;
+// Magic value of above to prevent instrumentation. Used when ThreadLog is being
+// constructed (to prevent reentering by malloc, for example) and by the flush
+// log thread (to prevent it from being logged0.
+ThreadLog* const kMagicBeingConstructed = reinterpret_cast<ThreadLog*>(1);
 
-  DISALLOW_COPY_AND_ASSIGN(CygCommon);
-};
+// Per-thread pointer to the current log object.
+static __thread ThreadLog* g_tls_log = NULL;
 
-// Returns light-weight process ID.  On linux, this is a system-wide
-// unique thread id.
-static pid_t GetLwp() {
+// Returns light-weight process ID. On Linux, this is a system-wide unique
+// thread id.
+pid_t GetTID() {
   return syscall(__NR_gettid);
 }
 
-// A per-thread structure representing the log itself.
-class CygTlsLog {
- public:
-  CygTlsLog()
-      : in_use_(false), lwp_(GetLwp()), pthread_self_(pthread_self()) { }
+timespec GetCurrentTime() {
+  timespec timestamp;
+  clock_gettime(CLOCK_MONOTONIC, &timestamp);
+  return timestamp;
+}
 
-  // Enter a log entity.
-  void LogEnter(void* this_fn);
+// Sleeps for |sec| seconds.
+void SleepSec(int sec) {
+  for (int secs_to_sleep = sec; secs_to_sleep != 0;)
+    secs_to_sleep = sleep(secs_to_sleep);
+}
 
-  // Add newly created CygTlsLog object to the list of all such objects.
-  // Needed for the timer callback: it will enumerate each object and flush.
-  static void AddNewLog(CygTlsLog* newlog);
+// Exposes the string header that will appear at the top of every trace file.
+// This string contains memory mapping information for the mapped
+// library/executable which is used offline during symbolization. Note that
+// this class is meant to be instantiated once per process and lazily (during
+// the first flush).
+struct ImmutableFileHeaderLine {
+  ImmutableFileHeaderLine() : value(MakeFileHeaderLine()) {}
 
-  // Starts a thread in this process that periodically flushes all the threads.
-  // Must be called once per process.
-  static void StartFlushLogThread();
+  const std::string value;
 
  private:
-  static const int kBufMaxSize;
-  static const char kLogFilenameFmt[];
-  static const char kLogFileNamePrefix[];
+  // Returns whether the integer representation of the hexadecimal address
+  // stored in |line| at position |start_offset| was successfully stored in
+  // |result|.
+  static bool ParseAddress(const std::string& line,
+                           off_t start_offset,
+                           size_t length,
+                           uint64* result) {
+    if (start_offset >= line.length())
+      return false;
 
-  // Flush the log to file. Create file if needed.
-  // Must be called with locked log_mutex_.
-  void FlushLog();
+    uint64 address;
+    const bool ret = HexStringToUInt64(
+        base::StringPiece(line.c_str() + start_offset, length), &address);
+    if (!ret)
+      return false;
 
-  // Fork hooks. Needed to keep data in consistent state during fork().
-  static void AtForkPrepare();
-  static void AtForkParent();
-  static void AtForkChild();
-
-  // Thread callback to flush all logs periodically.
-  static void* FlushLogThread(void*);
-
-  std::string log_filename_;
-  std::vector<CygLogEntry> buf_;
-
-  // A lock that guards buf_ usage between per-thread instrumentation
-  // routine and timer flush callback. So the contention could happen
-  // only during the flush, every 30 secs.
-  base::Lock log_mutex_;
-
-  // Current thread is inside the instrumentation routine.
-  bool in_use_;
-
-  // Keeps track of all functions that have been logged on this thread
-  // so we do not record dublicates.
-  std::hash_set<void*> functions_called_;
-
-  // Thread identifier as Linux kernel shows it. For debugging purposes.
-  // LWP (light-weight process) is a unique ID of the thread in the system,
-  // unlike pthread_self() which is the same for fork()-ed threads.
-  pid_t lwp_;
-  pthread_t pthread_self_;
-
-  DISALLOW_COPY_AND_ASSIGN(CygTlsLog);
-};
-
-// Storage for logs for all threads in the process.
-// Using std::list may be better, but it fails when used before main().
-struct AllLogs {
-  std::vector<CygTlsLog*> logs;
-  base::Lock mutex;
-};
-
-base::LazyInstance<AllLogs>::Leaky all_logs_ = LAZY_INSTANCE_INITIALIZER;
-
-// Per-thread pointer to the current log object.
-static __thread CygTlsLog* tls_current_log = NULL;
-
-// Magic value of above to prevent the instrumentation. Used when CygTlsLog is
-// being constructed (to prevent reentering by malloc, for example) and by
-// the FlushLogThread (to prevent it being logged - see comment in its code).
-CygTlsLog* const kMagicBeingConstructed = reinterpret_cast<CygTlsLog*>(1);
-
-// Number of entries in the per-thread log buffer before we flush.
-// Note, that we also flush by timer so not all thread logs may grow up to this.
-const int CygTlsLog::kBufMaxSize = 3000;
-
-#if defined(OS_ANDROID)
-const char CygTlsLog::kLogFileNamePrefix[] =
-    "/data/local/tmp/chrome/cyglog/";
-#else
-const char CygTlsLog::kLogFileNamePrefix[] = "/var/log/chrome/";
-#endif
-
-// "cyglog.PID.LWP.pthread_self.PPID"
-const char CygTlsLog::kLogFilenameFmt[] = "%scyglog.%d.%d.%ld-%d";
-
-CygCommon* CygCommon::GetInstance() {
-  return Singleton<CygCommon>::get();
-}
-
-CygCommon::CygCommon() {
-  // Determine our module addresses.
-  std::ifstream mapsfile("/proc/self/maps");
-  CHECK(mapsfile.good());
-  static const int kMaxLineSize = 512;
-  char line[kMaxLineSize];
-  void (*this_fn)(void) =
-      reinterpret_cast<void(*)()>(__cyg_profile_func_enter);
-  while (mapsfile.getline(line, kMaxLineSize)) {
-    const std::string str_line = line;
-    size_t permindex = str_line.find("r-xp");
-    if (permindex != std::string::npos) {
-      int dashindex = str_line.find("-");
-      int spaceindex = str_line.find(" ");
-      char* p;
-      void* start = reinterpret_cast<void*>
-          (strtol((str_line.substr(0, dashindex)).c_str(),
-                  &p, 16));
-      CHECK(*p == 0);  // Could not determine start address.
-      void* end = reinterpret_cast<void*>
-          (strtol((str_line.substr(dashindex + 1,
-                                   spaceindex - dashindex - 1)).c_str(),
-                  &p, 16));
-      CHECK(*p == 0);  // Could not determine end address.
-
-      if (this_fn >= start && this_fn < end)
-        header_line_ = str_line;
-    }
+    *result = address;
+    return true;
   }
-  mapsfile.close();
-  header_line_.append("\nsecs\tusecs\tpid:threadid\tfunc\n");
+
+  // Parses /proc/self/maps and returns a two line string such as:
+  // 758c6000-79f4b000 r-xp 00000000 b3:17 309475 libchrome.2009.0.so
+  // secs    usecs   pid:threadid    func
+  static std::string MakeFileHeaderLine() {
+    std::ifstream mapsfile("/proc/self/maps");
+    CHECK(mapsfile.good());
+    std::string result;
+
+    for (std::string line; std::getline(mapsfile, line); ) {
+      if (line.find("r-xp") == std::string::npos)
+        continue;
+
+      const size_t address_length = line.find('-');
+      uint64 start_address = 0;
+      CHECK(ParseAddress(line, 0, address_length, &start_address));
+
+      uint64 end_address = 0;
+      CHECK(ParseAddress(line, address_length + 1, address_length,
+                         &end_address));
+
+      const uintptr_t current_func_addr = reinterpret_cast<uintptr_t>(
+          &MakeFileHeaderLine);
+      if (current_func_addr >= start_address &&
+          current_func_addr < end_address) {
+        result.swap(line);
+        break;
+      }
+    }
+    CHECK(!result.empty());
+    result.append("\nsecs\tusecs\tpid:threadid\tfunc\n");
+    return result;
+  }
+};
+
+base::LazyInstance<ThreadLogsManager>::Leaky g_logs_manager =
+    LAZY_INSTANCE_INITIALIZER;
+
+base::LazyInstance<ImmutableFileHeaderLine>::Leaky g_file_header_line =
+    LAZY_INSTANCE_INITIALIZER;
+
+}  // namespace
+
+// Custom thread implementation that joins on destruction. Note that
+// base::Thread has non-trivial dependencies on e.g. AtExitManager which makes
+// it hard to use it early.
+class Thread {
+ public:
+  Thread(const base::Closure& thread_callback)
+      : thread_callback_(thread_callback) {
+    CHECK_EQ(0, pthread_create(&handle_, NULL, &Thread::EntryPoint, this));
+  }
+
+  ~Thread() {
+    CHECK_EQ(0, pthread_join(handle_, NULL));
+  }
+
+ private:
+  static void* EntryPoint(void* data) {
+    // Disable logging on this thread. Although this routine is not instrumented
+    // (cygprofile.gyp provides that), the called routines are and thus will
+    // call instrumentation.
+    CHECK(g_tls_log == NULL);  // Must be 0 as this is a new thread.
+    g_tls_log = kMagicBeingConstructed;
+
+    Thread* const instance = reinterpret_cast<Thread*>(data);
+    instance->thread_callback_.Run();
+    return NULL;
+  }
+
+  const base::Closure thread_callback_;
+  pthread_t handle_;
+
+  DISALLOW_COPY_AND_ASSIGN(Thread);
+};
+
+// Single log entry recorded for each function call.
+LogEntry::LogEntry(const void* address)
+    : time(GetCurrentTime()),
+      pid(getpid()),
+      tid(GetTID()),
+      address(address) {
 }
 
-void CygTlsLog::LogEnter(void* this_fn) {
+ThreadLog::ThreadLog()
+  : tid_(GetTID()),
+    in_use_(false),
+    flush_callback_(
+        base::Bind(&ThreadLog::FlushInternal, base::Unretained(this))) {
+}
+
+ThreadLog::ThreadLog(const FlushCallback& flush_callback)
+  : tid_(GetTID()),
+    in_use_(false),
+    flush_callback_(flush_callback) {
+}
+
+ThreadLog::~ThreadLog() {
+  g_tls_log = NULL;
+}
+
+void ThreadLog::AddEntry(void* address) {
   if (in_use_)
     return;
   in_use_ = true;
 
-  if (functions_called_.find(this_fn) ==
-      functions_called_.end()) {
-    functions_called_.insert(this_fn);
-    base::AutoLock lock(log_mutex_);
-    if (buf_.capacity() < kBufMaxSize)
-      buf_.reserve(kBufMaxSize);
-    struct timespec timestamp;
-    clock_gettime(CLOCK_MONOTONIC, &timestamp);
-    buf_.push_back(CygLogEntry(timestamp.tv_sec, timestamp.tv_nsec / 1000,
-                               getpid(), pthread_self(), this_fn));
-    if (buf_.size() == kBufMaxSize) {
-      FlushLog();
-    }
+  CHECK_EQ(tid_, GetTID());
+  const std::pair<std::hash_set<void*>::iterator, bool> pair =
+      called_functions_.insert(address);
+  const bool did_insert = pair.second;
+
+  if (did_insert) {
+    base::AutoLock auto_lock(lock_);
+    entries_.push_back(LogEntry(address));
+    // Crash in a quickly understandable way instead of crashing (or maybe not
+    // though) due to OOM.
+    CHECK_LE(entries_.size(), kMaxBufferSize);
   }
 
   in_use_ = false;
 }
 
-void CygTlsLog::AtForkPrepare() {
-  CHECK(tls_current_log);
-  CHECK(tls_current_log->lwp_ == GetLwp());
-  CHECK(tls_current_log->pthread_self_ == pthread_self());
-  all_logs_.Get().mutex.Acquire();
+void ThreadLog::TakeEntries(std::vector<LogEntry>* destination) {
+  base::AutoLock auto_lock(lock_);
+  destination->swap(entries_);
+  STLClearObject(&entries_);
 }
 
-void CygTlsLog::AtForkParent() {
-  CHECK(tls_current_log);
-  CHECK(tls_current_log->lwp_ == GetLwp());
-  CHECK(tls_current_log->pthread_self_ == pthread_self());
-  all_logs_.Get().mutex.Release();
+void ThreadLog::Flush(std::vector<LogEntry>* entries) const {
+  flush_callback_.Run(entries);
 }
 
-void CygTlsLog::AtForkChild() {
-  CHECK(tls_current_log);
+void ThreadLog::FlushInternal(std::vector<LogEntry>* entries) const {
+  const std::string log_filename(
+      base::StringPrintf(
+          kLogFilenameFormat, kLogFileNamePrefix, getpid(), tid_, getppid()));
+  const base::ScopedFILE file(fopen(log_filename.c_str(), "a"));
+  CHECK(file.get());
 
-  // Update the IDs of this new thread of the new process.
-  // Note that the process may (and Chrome main process forks zygote this way)
-  // call exec(self) after we return (to launch new shiny self). If done like
-  // that, PID and LWP will remain the same, but pthread_self() changes.
-  pid_t lwp = GetLwp();
-  CHECK(tls_current_log->lwp_ != lwp);  // LWP is system-wide unique thread ID.
-  tls_current_log->lwp_ = lwp;
+  const long offset = ftell(file.get());
+  if (offset == 0)
+    fprintf(file.get(), "%s", g_file_header_line.Get().value.c_str());
 
-  CHECK(tls_current_log->pthread_self_ == pthread_self());
-
-  // Leave the only current thread tls object because fork() clones only the
-  // current thread (the one that called fork) to the child process.
-  AllLogs& all_logs = all_logs_.Get();
-  all_logs.logs.clear();
-  all_logs.logs.push_back(tls_current_log);
-  CHECK(all_logs.logs.size() == 1);
-
-  // Clear log filename so it will be re-calculated with the new PIDs.
-  tls_current_log->log_filename_.clear();
-
-  // Create the thread that will periodically flush all logs for this process.
-  StartFlushLogThread();
-
-  // We do not update log header line (CygCommon data) as it will be the same
-  // because the new process is just a forked copy.
-  all_logs.mutex.Release();
-}
-
-void CygTlsLog::StartFlushLogThread() {
-  pthread_t tid;
-  CHECK(!pthread_create(&tid, NULL, &CygTlsLog::FlushLogThread, NULL));
-}
-
-void CygTlsLog::AddNewLog(CygTlsLog* newlog) {
-  CHECK(tls_current_log == kMagicBeingConstructed);
-  AllLogs& all_logs = all_logs_.Get();
-  base::AutoLock lock(all_logs.mutex);
-  if (all_logs.logs.empty()) {
-
-    // An Android app never fork, it always starts with a pre-defined number of
-    // process descibed by the android manifest file. In fact, there is not
-    // support for pthread_atfork at the android system libraries.  All chrome
-    // for android processes will start as independent processs and each one
-    // will generate its own logs that will later have to be merged as usual.
-#if !defined(OS_ANDROID)
-    CHECK(!pthread_atfork(CygTlsLog::AtForkPrepare,
-                          CygTlsLog::AtForkParent,
-                          CygTlsLog::AtForkChild));
-#endif
-
-    // The very first process starts its flush thread here. Forked processes
-    // will do it in AtForkChild().
-    StartFlushLogThread();
+  for (std::vector<LogEntry>::const_iterator it = entries->begin();
+       it != entries->end(); ++it) {
+    fprintf(file.get(), "%ld %ld\t%d:%ld\t%p\n", it->time.tv_sec,
+            it->time.tv_nsec / 1000, it->pid, it->tid, it->address);
   }
-  all_logs.logs.push_back(newlog);
+
+  STLClearObject(entries);
 }
 
-// Printf-style routine to write to open file.
-static void WriteLogLine(int fd, const char* fmt, ...) {
-  va_list arg_ptr;
-  va_start(arg_ptr, fmt);
-  char msg[160];
-  int len = vsnprintf(msg, sizeof(msg), fmt, arg_ptr);
-  int rc = write(fd, msg, (len > sizeof(msg))? sizeof(msg): len);
-  va_end(arg_ptr);
+ThreadLogsManager::ThreadLogsManager()
+    : wait_callback_(base::Bind(&SleepSec, kFlushThreadIdleTimeSec)) {
+}
+
+ThreadLogsManager::ThreadLogsManager(const base::Closure& wait_callback,
+                                     const base::Closure& notify_callback)
+
+    : wait_callback_(wait_callback),
+      notify_callback_(notify_callback) {
+}
+
+ThreadLogsManager::~ThreadLogsManager() {
+  // Note that the internal thread does some work until it sees |flush_thread_|
+  // = NULL.
+  scoped_ptr<Thread> flush_thread;
+  {
+    base::AutoLock auto_lock(lock_);
+    flush_thread_.swap(flush_thread);
+  }
+  flush_thread.reset();  // Joins the flush thread.
+
+  STLDeleteContainerPointers(logs_.begin(), logs_.end());
+}
+
+void ThreadLogsManager::AddLog(scoped_ptr<ThreadLog> new_log) {
+  base::AutoLock auto_lock(lock_);
+
+  if (logs_.empty())
+    StartInternalFlushThread_Locked();
+
+  logs_.push_back(new_log.release());
+}
+
+void ThreadLogsManager::StartInternalFlushThread_Locked() {
+  lock_.AssertAcquired();
+  CHECK(!flush_thread_);
+  // Note that the |flush_thread_| joins at destruction which guarantees that it
+  // will never outlive |this|, i.e. it's safe not to use ref-counting.
+  flush_thread_.reset(
+      new Thread(base::Bind(&ThreadLogsManager::FlushAllLogsOnFlushThread,
+                            base::Unretained(this))));
+}
+
+// Type used below for flushing.
+struct LogData {
+  LogData(ThreadLog* thread_log) : thread_log(thread_log) {}
+
+  ThreadLog* const thread_log;
+  std::vector<LogEntry> entries;
 };
 
-void CygTlsLog::FlushLog() {
-  bool first_log_write = false;
-  if (log_filename_.empty()) {
-    first_log_write = true;
-    char buf[80];
-    snprintf(buf, sizeof(buf), kLogFilenameFmt,
-             kLogFileNamePrefix, getpid(), lwp_, pthread_self_, getppid());
-    log_filename_ = buf;
-    unlink(log_filename_.c_str());
-  }
-
-  int file = open(log_filename_.c_str(), O_CREAT | O_WRONLY | O_APPEND, 00600);
-  CHECK(file != -1);
-
-  if (first_log_write)
-    WriteLogLine(file, "%s", CygCommon::GetInstance()->header().c_str());
-
-  for (int i = 0; i != buf_.size(); ++i) {
-    const CygLogEntry& p = buf_[i];
-    WriteLogLine(file, "%ld %ld\t%d:%ld\t%p\n",
-                 p.seconds, p.usec, p.pid, p.tid, p.this_fn);
-  }
-
-  close(file);
-  buf_.clear();
-}
-
-void* CygTlsLog::FlushLogThread(void*) {
-  // Disable logging this thread.  Although this routine is not instrumented
-  // (cygprofile.gyp provides that), the called routines are and thus will
-  // call instrumentation.
-  CHECK(tls_current_log == NULL);  // Must be 0 as this is a new thread.
-  tls_current_log = kMagicBeingConstructed;
-
-  // Run this loop infinitely: sleep 30 secs and the flush all thread's
-  // buffers.  There is a danger that, when quitting Chrome, this thread may
-  // see unallocated data and segfault. We do not care because we need logs
-  // when Chrome is working.
+void ThreadLogsManager::FlushAllLogsOnFlushThread() {
   while (true) {
-    for(int secs_to_sleep = 30; secs_to_sleep != 0;)
-      secs_to_sleep = sleep(secs_to_sleep);
-
-    AllLogs& all_logs = all_logs_.Get();
-    base::AutoLock lock(all_logs.mutex);
-    for (int i = 0; i != all_logs.logs.size(); ++i) {
-      CygTlsLog* current_log = all_logs.logs[i];
-      base::AutoLock current_lock(current_log->log_mutex_);
-      if (current_log->buf_.size()) {
-        current_log->FlushLog();
-      } else {
-        // The thread's log is still empty. Probably the thread finished prior
-        // to previous timer fired - deallocate its buffer. Even if the thread
-        // ever resumes, it will allocate its buffer again in
-        // std::vector::push_back().
-        current_log->buf_.clear();
-      }
+    {
+      base::AutoLock auto_lock(lock_);
+      // The |flush_thread_| field is reset during destruction.
+      if (!flush_thread_)
+        return;
     }
+    // Sleep for a few secs and then flush all thread's buffers. There is a
+    // danger that, when quitting Chrome, this thread may see unallocated data
+    // and segfault. We do not care because we need logs when Chrome is working.
+    wait_callback_.Run();
+
+    // Copy the ThreadLog pointers to avoid acquiring both the logs manager's
+    // lock and the one for individual thread logs.
+    std::vector<ThreadLog*> thread_logs_copy;
+    {
+      base::AutoLock auto_lock(lock_);
+      thread_logs_copy = logs_;
+    }
+
+    // Move the logs' data before flushing them so that the mutexes are not
+    // acquired for too long.
+    std::vector<LogData> logs;
+    for (std::vector<ThreadLog*>::const_iterator it =
+             thread_logs_copy.begin();
+         it != thread_logs_copy.end(); ++it) {
+      ThreadLog* const thread_log = *it;
+      LogData log_data(thread_log);
+      logs.push_back(log_data);
+      thread_log->TakeEntries(&logs.back().entries);
+    }
+
+    for (std::vector<LogData>::iterator it = logs.begin();
+         it != logs.end(); ++it) {
+      if (!it->entries.empty())
+        it->thread_log->Flush(&it->entries);
+    }
+
+    if (!notify_callback_.is_null())
+      notify_callback_.Run();
   }
 }
 
-// Gcc Compiler callback, called on every function invocation providing
+extern "C" {
+
+// The GCC compiler callbacks, called on every function invocation providing
 // addresses of caller and callee codes.
+void __cyg_profile_func_enter(void* this_fn, void* call_site)
+    __attribute__((no_instrument_function));
+void __cyg_profile_func_exit(void* this_fn, void* call_site)
+    __attribute__((no_instrument_function));
+
 void __cyg_profile_func_enter(void* this_fn, void* callee_unused) {
-  if (tls_current_log == NULL) {
-    tls_current_log = kMagicBeingConstructed;
-    CygTlsLog* newlog = new CygTlsLog;
-    CHECK(newlog);
-    CygTlsLog::AddNewLog(newlog);
-    tls_current_log = newlog;
+  if (g_tls_log == NULL) {
+    g_tls_log = kMagicBeingConstructed;
+    ThreadLog* new_log = new ThreadLog();
+    CHECK(new_log);
+    g_logs_manager.Pointer()->AddLog(make_scoped_ptr(new_log));
+    g_tls_log = new_log;
   }
-  if (tls_current_log != kMagicBeingConstructed) {
-    tls_current_log->LogEnter(this_fn);
-  }
+
+  if (g_tls_log != kMagicBeingConstructed)
+    g_tls_log->AddEntry(this_fn);
 }
 
-// Gcc Compiler callback, called after every function invocation providing
-// addresses of caller and callee codes.
-void __cyg_profile_func_exit(void* this_fn, void* call_site) {
-}
+void __cyg_profile_func_exit(void* this_fn, void* call_site) {}
 
+}  // extern "C"
 }  // namespace cygprofile
