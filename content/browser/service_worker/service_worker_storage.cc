@@ -688,17 +688,19 @@ ServiceWorkerRegistration*
 ServiceWorkerStorage::FindInstallingRegistrationForDocument(
     const GURL& document_url) {
   DCHECK(!document_url.has_ref());
-  // TODO(michaeln): if there are multiple matches the one with
-  // the longest scope should win.
+
+  LongestScopeMatcher matcher(document_url);
+  ServiceWorkerRegistration* match = NULL;
+
+  // TODO(nhiroki): This searches over installing registrations linearly and it
+  // couldn't be scalable. Maybe the regs should be partitioned by origin.
   for (RegistrationRefsById::const_iterator it =
            installing_registrations_.begin();
        it != installing_registrations_.end(); ++it) {
-    if (ServiceWorkerUtils::ScopeMatches(
-            it->second->pattern(), document_url)) {
-      return it->second;
-    }
+    if (matcher.MatchLongest(it->second->pattern()))
+      match = it->second;
   }
-  return NULL;
+  return match;
 }
 
 ServiceWorkerRegistration*
@@ -902,20 +904,20 @@ void ServiceWorkerStorage::FindForDocumentInDB(
     return;
   }
 
-  // Find one with a pattern match.
-  // TODO(michaeln): if there are multiple matches the one with
-  // the longest scope should win.
   ServiceWorkerDatabase::RegistrationData data;
   ResourceList resources;
   status = ServiceWorkerDatabase::STATUS_ERROR_NOT_FOUND;
-  for (RegistrationList::const_iterator it = registrations.begin();
-       it != registrations.end(); ++it) {
-    if (!ServiceWorkerUtils::ScopeMatches(it->scope, document_url))
-      continue;
-    status = database->ReadRegistration(it->registration_id, origin,
-                                        &data, &resources);
-    break;  // We're done looping.
+
+  // Find one with a pattern match.
+  LongestScopeMatcher matcher(document_url);
+  int64 match = kInvalidServiceWorkerRegistrationId;
+  for (size_t i = 0; i < registrations.size(); ++i) {
+    if (matcher.MatchLongest(registrations[i].scope))
+      match = registrations[i].registration_id;
   }
+
+  if (match != kInvalidServiceWorkerRegistrationId)
+    status = database->ReadRegistration(match, origin, &data, &resources);
 
   original_task_runner->PostTask(
       FROM_HERE,

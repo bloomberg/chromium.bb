@@ -69,4 +69,35 @@ TEST(ServiceWorkerUtilsTest, ScopeMatches) {
       GURL("http://www.example.com/\\*"), GURL("http://www.example.com/\\x")));
 }
 
+TEST(ServiceWorkerUtilsTest, FindLongestScopeMatch_Basic) {
+  LongestScopeMatcher matcher(GURL("http://www.example.com/xxx"));
+
+  // "/xx*" should be matched longest.
+  ASSERT_TRUE(matcher.MatchLongest(GURL("http://www.example.com/x*")));
+  ASSERT_FALSE(matcher.MatchLongest(GURL("http://www.example.com/*")));
+  ASSERT_TRUE(matcher.MatchLongest(GURL("http://www.example.com/xx*")));
+
+  // "xxx*" should be matched longer than "/xx*".
+  ASSERT_TRUE(matcher.MatchLongest(GURL("http://www.example.com/xxx*")));
+
+  ASSERT_FALSE(matcher.MatchLongest(GURL("http://www.example.com/xxxx*")));
+}
+
+TEST(ServiceWorkerUtilsTest, FindLongestScopeMatch_SameLength) {
+  LongestScopeMatcher matcher1(GURL("http://www.example.com/xxx"));
+
+  // "/xxx" has the same length with "/xx*", so they are compared as strings
+  // and "/xxx" should win.
+  // TODO(nhiroki): This isn't in the spec (see: service_worker_utils.cc)
+  ASSERT_TRUE(matcher1.MatchLongest(GURL("http://www.example.com/xxx")));
+  ASSERT_FALSE(matcher1.MatchLongest(GURL("http://www.example.com/xx*")));
+
+  LongestScopeMatcher matcher2(GURL("http://www.example.com/x(1)"));
+
+  // "/xx*" should be prioritized over "/x(1)".
+  // TODO(nhiroki): This isn't in the spec (see: service_worker_utils.cc)
+  ASSERT_TRUE(matcher2.MatchLongest(GURL("http://www.example.com/x(1)")));
+  ASSERT_TRUE(matcher2.MatchLongest(GURL("http://www.example.com/x(1*")));
+}
+
 }  // namespace content

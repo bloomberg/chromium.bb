@@ -9,6 +9,8 @@
 #include "content/common/service_worker/service_worker_status_code.h"
 #include "webkit/common/resource_type.h"
 
+class GURL;
+
 namespace content {
 
 class ServiceWorkerUtils {
@@ -31,6 +33,21 @@ class ServiceWorkerUtils {
 
   // Returns true if |scope| matches |url|.
   CONTENT_EXPORT static bool ScopeMatches(const GURL& scope, const GURL& url);
+};
+
+class CONTENT_EXPORT LongestScopeMatcher {
+ public:
+  explicit LongestScopeMatcher(const GURL& url) : url_(url) {}
+  virtual ~LongestScopeMatcher() {}
+
+  // Returns true if |scope| matches |url_| longer than |match_|.
+  bool MatchLongest(const GURL& scope);
+
+ private:
+  const GURL url_;
+  GURL match_;
+
+  DISALLOW_COPY_AND_ASSIGN(LongestScopeMatcher);
 };
 
 }  // namespace content

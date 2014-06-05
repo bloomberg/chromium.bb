@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <string>
+
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -608,6 +610,113 @@ TEST_F(ServiceWorkerStorageTest, ResourceIdsAreStoredAndPurged) {
 
   EXPECT_FALSE(VerifyBasicResponse(storage(), kResourceId1, false));
   EXPECT_FALSE(VerifyBasicResponse(storage(), kResourceId2, false));
+}
+
+TEST_F(ServiceWorkerStorageTest, FindRegistration_LongestScopeMatch) {
+  const GURL kDocumentUrl("http://www.example.com/scope/foo");
+  bool was_called = false;
+  ServiceWorkerStatusCode result = SERVICE_WORKER_OK;
+  scoped_refptr<ServiceWorkerRegistration> found_registration;
+
+  // Registration for "/scope/*".
+  const GURL kScope1("http://www.example.com/scope/*");
+  const GURL kScript1("http://www.example.com/script1.js");
+  const int64 kRegistrationId1 = 1;
+  const int64 kVersionId1 = 1;
+  scoped_refptr<ServiceWorkerRegistration> live_registration1 =
+      new ServiceWorkerRegistration(
+          kScope1, kScript1, kRegistrationId1, context_ptr_);
+  scoped_refptr<ServiceWorkerVersion> live_version1 =
+      new ServiceWorkerVersion(
+          live_registration1, kVersionId1, context_ptr_);
+  live_version1->SetStatus(ServiceWorkerVersion::INSTALLED);
+  live_registration1->set_waiting_version(live_version1);
+
+  // Registration for "/scope/foo*".
+  const GURL kScope2("http://www.example.com/scope/foo*");
+  const GURL kScript2("http://www.example.com/script2.js");
+  const int64 kRegistrationId2 = 2;
+  const int64 kVersionId2 = 2;
+  scoped_refptr<ServiceWorkerRegistration> live_registration2 =
+      new ServiceWorkerRegistration(
+          kScope2, kScript2, kRegistrationId2, context_ptr_);
+  scoped_refptr<ServiceWorkerVersion> live_version2 =
+      new ServiceWorkerVersion(
+          live_registration2, kVersionId2, context_ptr_);
+  live_version2->SetStatus(ServiceWorkerVersion::INSTALLED);
+  live_registration2->set_waiting_version(live_version2);
+
+  // Registration for "/scope/foo".
+  const GURL kScope3("http://www.example.com/scope/foo");
+  const GURL kScript3("http://www.example.com/script3.js");
+  const int64 kRegistrationId3 = 3;
+  const int64 kVersionId3 = 3;
+  scoped_refptr<ServiceWorkerRegistration> live_registration3 =
+      new ServiceWorkerRegistration(
+          kScope3, kScript3, kRegistrationId3, context_ptr_);
+  scoped_refptr<ServiceWorkerVersion> live_version3 =
+      new ServiceWorkerVersion(
+          live_registration3, kVersionId3, context_ptr_);
+  live_version3->SetStatus(ServiceWorkerVersion::INSTALLED);
+  live_registration3->set_waiting_version(live_version3);
+
+  // Notify storage of they being installed.
+  storage()->NotifyInstallingRegistration(live_registration1);
+  storage()->NotifyInstallingRegistration(live_registration2);
+  storage()->NotifyInstallingRegistration(live_registration3);
+
+  // Find a registration among installing ones.
+  storage()->FindRegistrationForDocument(
+      kDocumentUrl,
+      MakeFindCallback(&was_called, &result, &found_registration));
+  base::RunLoop().RunUntilIdle();
+  ASSERT_TRUE(was_called);
+  EXPECT_EQ(SERVICE_WORKER_OK, result);
+  EXPECT_EQ(live_registration2, found_registration);
+  was_called = false;
+  found_registration = NULL;
+
+  // Store registrations.
+  storage()->StoreRegistration(live_registration1, live_version1,
+                               MakeStatusCallback(&was_called, &result));
+  EXPECT_FALSE(was_called);
+  base::RunLoop().RunUntilIdle();
+  ASSERT_TRUE(was_called);
+  EXPECT_EQ(SERVICE_WORKER_OK, result);
+  was_called = false;
+  storage()->StoreRegistration(live_registration2, live_version2,
+                               MakeStatusCallback(&was_called, &result));
+  EXPECT_FALSE(was_called);
+  base::RunLoop().RunUntilIdle();
+  ASSERT_TRUE(was_called);
+  EXPECT_EQ(SERVICE_WORKER_OK, result);
+  was_called = false;
+  storage()->StoreRegistration(live_registration3, live_version3,
+                               MakeStatusCallback(&was_called, &result));
+  EXPECT_FALSE(was_called);
+  base::RunLoop().RunUntilIdle();
+  ASSERT_TRUE(was_called);
+  EXPECT_EQ(SERVICE_WORKER_OK, result);
+  was_called = false;
+
+  // Notify storage of installations no longer happening.
+  storage()->NotifyDoneInstallingRegistration(
+      live_registration1, NULL, SERVICE_WORKER_OK);
+  storage()->NotifyDoneInstallingRegistration(
+      live_registration2, NULL, SERVICE_WORKER_OK);
+  storage()->NotifyDoneInstallingRegistration(
+      live_registration3, NULL, SERVICE_WORKER_OK);
+
+  // Find a registration among installed ones.
+  storage()->FindRegistrationForDocument(
+      kDocumentUrl,
+      MakeFindCallback(&was_called, &result, &found_registration));
+  base::RunLoop().RunUntilIdle();
+  ASSERT_TRUE(was_called);
+  EXPECT_EQ(SERVICE_WORKER_OK, result);
+  EXPECT_EQ(live_registration2, found_registration);
+  was_called = false;
+  found_registration = NULL;
 }
 
 }  // namespace content
