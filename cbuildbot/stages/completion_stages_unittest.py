@@ -332,7 +332,6 @@ class PublishUprevChangesStageTest(generic_stages_unittest.AbstractStageTest):
     # pylint: disable=E1120
     self.mox.StubOutWithMock(completion_stages.PublishUprevChangesStage,
                              '_GetPortageEnvVar')
-    self.mox.StubOutWithMock(commands, 'UploadPrebuilts')
     self.mox.StubOutWithMock(commands, 'UprevPush')
     self.mox.StubOutWithMock(completion_stages.PublishUprevChangesStage,
                              '_ExtractOverlays')

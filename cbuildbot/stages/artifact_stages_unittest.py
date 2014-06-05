@@ -13,6 +13,7 @@ sys.path.insert(0, os.path.abspath('%s/../../..' % os.path.dirname(__file__)))
 from chromite.cbuildbot import commands
 from chromite.cbuildbot import constants
 from chromite.cbuildbot import failures_lib
+from chromite.cbuildbot import prebuilts
 from chromite.cbuildbot.stages import artifact_stages
 from chromite.cbuildbot.stages import build_stages_unittest
 from chromite.cbuildbot.stages import generic_stages_unittest
@@ -260,7 +261,7 @@ class UploadDevInstallerPrebuiltsStageTest(
   RELEASE_TAG = 'RT'
 
   def setUp(self):
-    self.mox.StubOutWithMock(commands, 'UploadDevInstallerPrebuilts')
+    self.mox.StubOutWithMock(prebuilts, 'UploadDevInstallerPrebuilts')
 
     self.StartPatcher(BuilderRunMock())
 
@@ -284,7 +285,7 @@ class UploadDevInstallerPrebuiltsStageTest(
     """Basic sanity test testing uploads of dev installer prebuilts."""
     version = 'R%s-%s' % (DEFAULT_CHROME_BRANCH, self.RELEASE_TAG)
 
-    commands.UploadDevInstallerPrebuilts(
+    prebuilts.UploadDevInstallerPrebuilts(
         binhost_bucket=self._run.config.binhost_bucket,
         binhost_key=self._run.config.binhost_key,
         binhost_base_url=self._run.config.binhost_base_url,

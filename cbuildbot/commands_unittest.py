@@ -59,10 +59,10 @@ class RunBuildScriptTest(cros_test_lib.TempDirTestCase):
         with cros_test_lib.LoggingCapturer():
           # If the script failed, the exception should be raised and printed.
           if raises:
-            self.assertRaises(raises, commands._RunBuildScript, buildroot,
+            self.assertRaises(raises, commands.RunBuildScript, buildroot,
                               cmd, enter_chroot=in_chroot)
           else:
-            commands._RunBuildScript(buildroot, cmd, enter_chroot=in_chroot)
+            commands.RunBuildScript(buildroot, cmd, enter_chroot=in_chroot)
 
   def testSuccessOutsideChroot(self):
     """Test executing a command outside the chroot."""
@@ -240,86 +240,6 @@ class CBuildBotTest(cros_build_lib_unittest.RunCommandTempDirTestCase):
     """Test if we get None in revisions.pfq indicating Full Builds."""
     commands.UprevPackages(self._buildroot, [self._board], self._overlays)
     self.assertCommandContains(['--boards=%s' % self._board, 'commit'])
-
-  def testUploadPrebuilts(self, builder_type=constants.PFQ_TYPE, private=False,
-                          chrome_rev=None):
-    """Test UploadPrebuilts with a public location."""
-    commands.UploadPrebuilts(builder_type, chrome_rev, private,
-                             buildroot=self._buildroot, board=self._board)
-    self.assertCommandContains([builder_type, 'gs://chromeos-prebuilt'])
-
-  def testUploadPrivatePrebuilts(self):
-    """Test UploadPrebuilts with a private location."""
-    self.testUploadPrebuilts(private=True)
-
-  def testChromePrebuilts(self):
-    """Test UploadPrebuilts for Chrome prebuilts."""
-    self.testUploadPrebuilts(builder_type=constants.CHROME_PFQ_TYPE,
-                             chrome_rev='tot')
-
-  def testSdkPrebuilts(self):
-    """Test UploadPrebuilts for SDK builds."""
-    # A magical date for a magical time.
-    version = '1994.04.02.000000'
-
-    # Fake out toolchain tarballs.
-    tarball_dir = os.path.join(self._buildroot, constants.DEFAULT_CHROOT_DIR,
-                               constants.SDK_TOOLCHAINS_OUTPUT)
-    osutils.SafeMakedirs(tarball_dir)
-
-    tarball_args = []
-    for tarball_base in ('i686', 'arm-none-eabi'):
-      tarball = '%s.tar.xz' % tarball_base
-      tarball_path = os.path.join(tarball_dir, tarball)
-      osutils.Touch(tarball_path)
-      tarball_arg = '%s:%s' % (tarball_base, tarball_path)
-      tarball_args.append(['--toolchain-tarball', tarball_arg])
-
-    with mock.patch.object(commands, '_GenerateSdkVersion',
-                           return_value=version):
-      self.testUploadPrebuilts(builder_type=constants.CHROOT_BUILDER_TYPE)
-    self.assertCommandContains(['--toolchain-upload-path',
-                                '1994/04/%%(target)s-%(version)s.tar.xz'])
-    for args in tarball_args:
-      self.assertCommandContains(args)
-    self.assertCommandContains(['--set-version', version])
-    self.assertCommandContains(['--prepackaged-tarball',
-                                os.path.join(self._buildroot,
-                                             'built-sdk.tar.xz')])
-
-  def testDevInstallerPrebuilts(self, packages=('package1', 'package2')):
-    """Test UploadDevInstallerPrebuilts."""
-    args = ['gs://dontcare', 'some_path_to_key', 'https://my_test/location']
-    with mock.patch.object(commands, 'AddPackagesForPrebuilt',
-                           return_value=packages):
-      commands.UploadDevInstallerPrebuilts(*args, buildroot=self._buildroot,
-                                           board=self._board)
-    self.assertCommandContains([constants.CANARY_TYPE] + args[2:] + args[0:2])
-
-  def testAddPackagesForPrebuilt(self):
-    """Test AddPackagesForPrebuilt."""
-    self.assertEqual(commands.AddPackagesForPrebuilt('/'), None)
-
-    data = """# comment!
-cat/pkg-0
-ca-t2/pkg2-123
-ca-t3/pk-g4-4.0.1-r333
-"""
-    pkgs = [
-        'cat/pkg',
-        'ca-t2/pkg2',
-        'ca-t3/pk-g4',
-    ]
-    cmds = ['--packages=' + x for x in pkgs]
-    f = os.path.join(self.tempdir, 'package.provided')
-    osutils.WriteFile(f, data)
-    self.assertEqual(commands.AddPackagesForPrebuilt(f), cmds)
-
-  def testMissingDevInstallerFile(self):
-    """Test that we raise an exception when the installer file is missing."""
-    self.assertRaises(commands.PackageFileMissing,
-                      self.testDevInstallerPrebuilts, packages=())
-
 
   def testBuild(self, default=False, **kwargs):
     """Base case where Build is called with minimal options."""

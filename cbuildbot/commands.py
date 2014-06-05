@@ -4,7 +4,6 @@
 
 """Module containing the various individual commands a builder can run."""
 
-from datetime import datetime
 import fnmatch
 import glob
 import logging
@@ -18,7 +17,6 @@ import time
 from chromite.cbuildbot import cbuildbot_config
 from chromite.cbuildbot import failures_lib
 from chromite.cbuildbot import constants
-from chromite.cbuildbot import portage_utilities
 from chromite.cros.tests import cros_vm_test
 from chromite.lib import cros_build_lib
 from chromite.lib import gclient
@@ -35,15 +33,8 @@ from chromite.scripts import upload_symbols
 
 _PACKAGE_FILE = '%(buildroot)s/src/scripts/cbuildbot_package.list'
 CHROME_KEYWORDS_FILE = ('/build/%(board)s/etc/portage/package.keywords/chrome')
-_PREFLIGHT_BINHOST = 'PREFLIGHT_BINHOST'
-_CHROME_BINHOST = 'CHROME_BINHOST'
 _CROS_ARCHIVE_URL = 'CROS_ARCHIVE_URL'
 _FACTORY_SHIM = 'factory_shim'
-_FULL_BINHOST = 'FULL_BINHOST'
-_PRIVATE_BINHOST_CONF_DIR = ('src/private-overlays/chromeos-partner-overlay/'
-                             'chromeos/binhost')
-_BINHOST_PACKAGE_FILE = ('/usr/share/dev-install/portage/make.profile/'
-                         'package.installable')
 _AUTOTEST_RPC_CLIENT = ('/b/build_internal/scripts/slave-internal/autotest_rpc/'
                         'autotest_rpc_client.py')
 _AUTOTEST_RPC_HOSTNAME = 'master2'
@@ -68,8 +59,8 @@ class SuiteTimedOut(failures_lib.TestLabFailure):
 # =========================== Command Helpers =================================
 
 
-def _RunBuildScript(buildroot, cmd, chromite_cmd=False, possibly_flaky=False,
-                    **kwargs):
+def RunBuildScript(buildroot, cmd, chromite_cmd=False, possibly_flaky=False,
+                   **kwargs):
   """Run a build script, wrapping exceptions as needed.
 
   This wraps RunCommand(cmd, cwd=buildroot, **kwargs), adding extra logic to
@@ -262,7 +253,7 @@ def MakeChroot(buildroot, replace, use_sdk, chrome_root=None, extra_env=None):
   if chrome_root:
     cmd.append('--chrome_root=%s' % chrome_root)
 
-  _RunBuildScript(buildroot, cmd, extra_env=extra_env)
+  RunBuildScript(buildroot, cmd, extra_env=extra_env)
 
 
 def RunChrootUpgradeHooks(buildroot, chrome_root=None):
@@ -271,15 +262,15 @@ def RunChrootUpgradeHooks(buildroot, chrome_root=None):
   if chrome_root:
     chroot_args.append('--chrome_root=%s' % chrome_root)
 
-  _RunBuildScript(buildroot, ['./run_chroot_version_hooks'],
-                  enter_chroot=True, chroot_args=chroot_args)
+  RunBuildScript(buildroot, ['./run_chroot_version_hooks'],
+                 enter_chroot=True, chroot_args=chroot_args)
 
 
 def RefreshPackageStatus(buildroot, boards, debug):
   """Wrapper around refresh_package_status"""
   # First run check_gdata_token to validate or refresh auth token.
   cmd = ['check_gdata_token']
-  _RunBuildScript(buildroot, cmd, chromite_cmd=True)
+  RunBuildScript(buildroot, cmd, chromite_cmd=True)
 
   # Prepare refresh_package_status command to update the package spreadsheet.
   cmd = ['refresh_package_status']
@@ -293,7 +284,7 @@ def RefreshPackageStatus(buildroot, boards, debug):
     cmd.append('--test-spreadsheet')
 
   # Actually run prepared refresh_package_status command.
-  _RunBuildScript(buildroot, cmd, chromite_cmd=True, enter_chroot=True)
+  RunBuildScript(buildroot, cmd, chromite_cmd=True, enter_chroot=True)
 
   # Disabling the auto-filing of Tracker issues for now - crbug.com/334260.
   #SyncPackageStatus(buildroot, debug)
@@ -313,14 +304,14 @@ def SyncPackageStatus(buildroot, debug):
 
   for cmdargs in cmdargslist:
     cmd = basecmd + cmdargs
-    _RunBuildScript(buildroot, cmd, chromite_cmd=True, enter_chroot=True)
+    RunBuildScript(buildroot, cmd, chromite_cmd=True, enter_chroot=True)
 
 
 def SetSharedUserPassword(buildroot, password):
   """Wrapper around set_shared_user_password.sh"""
   if password is not None:
     cmd = ['./set_shared_user_password.sh', password]
-    _RunBuildScript(buildroot, cmd, enter_chroot=True)
+    RunBuildScript(buildroot, cmd, enter_chroot=True)
   else:
     passwd_file = os.path.join(buildroot, 'chroot/etc/shared_user_passwd.txt')
     osutils.SafeUnlink(passwd_file, sudo=True)
@@ -363,7 +354,7 @@ def SetupBoard(buildroot, board, usepkg, chrome_binhost_only=False,
   if force:
     cmd.append('--force')
 
-  _RunBuildScript(buildroot, cmd, extra_env=extra_env, enter_chroot=True)
+  RunBuildScript(buildroot, cmd, extra_env=extra_env, enter_chroot=True)
 
 
 def Build(buildroot, board, build_autotest, usepkg, chrome_binhost_only,
@@ -409,8 +400,8 @@ def Build(buildroot, board, build_autotest, usepkg, chrome_binhost_only,
     chroot_args.append('--chrome_root=%s' % chrome_root)
 
   cmd.extend(packages)
-  _RunBuildScript(buildroot, cmd, extra_env=extra_env, chroot_args=chroot_args,
-                  enter_chroot=True)
+  RunBuildScript(buildroot, cmd, extra_env=extra_env, chroot_args=chroot_args,
+                 enter_chroot=True)
 
 
 def BuildImage(buildroot, board, images_to_build, version=None,
@@ -432,7 +423,7 @@ def BuildImage(buildroot, board, images_to_build, version=None,
 
   cmd += images_to_build
 
-  _RunBuildScript(buildroot, cmd, extra_env=extra_env, enter_chroot=True)
+  RunBuildScript(buildroot, cmd, extra_env=extra_env, enter_chroot=True)
 
 
 def GenerateAuZip(buildroot, image_dir, extra_env=None):
@@ -448,7 +439,7 @@ def GenerateAuZip(buildroot, image_dir, extra_env=None):
   """
   chroot_image_dir = git.ReinterpretPathForChroot(image_dir)
   cmd = ['./build_library/generate_au_zip.py', '-o', chroot_image_dir]
-  _RunBuildScript(buildroot, cmd, extra_env=extra_env, enter_chroot=True)
+  RunBuildScript(buildroot, cmd, extra_env=extra_env, enter_chroot=True)
 
 
 def TestAuZip(buildroot, image_dir, extra_env=None):
@@ -463,21 +454,20 @@ def TestAuZip(buildroot, image_dir, extra_env=None):
     failures_lib.BuildScriptFailure if the test script fails.
   """
   cmd = ['./build_library/test_au_zip.py', '-o', image_dir]
-  _RunBuildScript(buildroot, cmd,
-                  cwd=constants.CROSUTILS_DIR,
-                  extra_env=extra_env)
+  RunBuildScript(buildroot, cmd, cwd=constants.CROSUTILS_DIR,
+                 extra_env=extra_env)
 
 
 def BuildVMImageForTesting(buildroot, board, extra_env=None, disk_layout=None):
   cmd = ['./image_to_vm.sh', '--board=%s' % board, '--test_image']
   if disk_layout:
     cmd += ['--disk_layout=%s' % disk_layout]
-  _RunBuildScript(buildroot, cmd, extra_env=extra_env, enter_chroot=True)
+  RunBuildScript(buildroot, cmd, extra_env=extra_env, enter_chroot=True)
 
 
 def RunSignerTests(buildroot, board):
   cmd = ['./security_test_image', '--board=%s' % board]
-  _RunBuildScript(buildroot, cmd, enter_chroot=True)
+  RunBuildScript(buildroot, cmd, enter_chroot=True)
 
 
 def RunUnitTests(buildroot, board, full, blacklist=None, extra_env=None):
@@ -492,7 +482,7 @@ def RunUnitTests(buildroot, board, full, blacklist=None, extra_env=None):
   if blacklist:
     cmd += ['--blacklist_packages=%s' % ' '.join(blacklist)]
 
-  _RunBuildScript(buildroot, cmd, enter_chroot=True, extra_env=extra_env or {})
+  RunBuildScript(buildroot, cmd, enter_chroot=True, extra_env=extra_env or {})
 
 
 def RunTestSuite(buildroot, board, image_dir, results_dir, test_type,
@@ -1027,7 +1017,7 @@ def UprevPackages(buildroot, boards, overlays, enter_chroot=True):
          '--overlays=%s' % ':'.join(overlays),
          '--drop_file=%s' % drop_file,
          'commit']
-  _RunBuildScript(buildroot, cmd, chromite_cmd=True, enter_chroot=enter_chroot)
+  RunBuildScript(buildroot, cmd, chromite_cmd=True, enter_chroot=enter_chroot)
 
 
 def UprevPush(buildroot, overlays, dryrun):
@@ -1039,178 +1029,7 @@ def UprevPush(buildroot, overlays, dryrun):
   if dryrun:
     cmd.append('--dryrun')
   cmd.append('push')
-  _RunBuildScript(buildroot, cmd, chromite_cmd=True)
-
-
-def AddPackagesForPrebuilt(filename):
-  """Add list of packages for upload.
-
-  Process a file that lists all the packages that can be uploaded to the
-  package prebuilt bucket and generates the command line args for
-  upload_prebuilts.
-
-  Args:
-    filename: file with the package full name (category/name-version), one
-              package per line.
-
-  Returns:
-    A list of parameters for upload_prebuilts. For example:
-    ['--packages=net-misc/dhcp', '--packages=app-admin/eselect-python']
-  """
-  try:
-    cmd = []
-    with open(filename) as f:
-      # Get only the package name and category as that is what upload_prebuilts
-      # matches on.
-      for line in f:
-        atom = line.split('#', 1)[0].strip()
-        try:
-          cpv = portage_utilities.SplitCPV(atom)
-        except ValueError:
-          cros_build_lib.Warning('Could not split atom %r (line: %r)',
-                                 atom, line)
-          continue
-        if cpv:
-          cmd.extend(['--packages=%s/%s' % (cpv.category, cpv.package)])
-    return cmd
-  except IOError as e:
-    cros_build_lib.Warning('Problem with package file %s' % filename)
-    cros_build_lib.Warning('Skipping uploading of prebuilts.')
-    cros_build_lib.Warning('ERROR(%d): %s' % (e.errno, e.strerror))
-    return None
-
-
-def _GenerateSdkVersion():
-  """Generate a version string for sdk builds
-
-  This needs to be global for test overrides.  It also needs to be done here
-  rather than in upload_prebuilts because we want to put toolchain tarballs
-  in a specific subdir and that requires keeping the version string in one
-  place.  Otherwise we'd have to have the various scripts re-interpret the
-  string and try and sync dates across.
-  """
-  return datetime.now().strftime('%Y.%m.%d.%H%M%S')
-
-
-def UploadPrebuilts(category, chrome_rev, private_bucket, buildroot, **kwargs):
-  """Upload Prebuilts for non-dev-installer use cases.
-
-  Args:
-    category: Build type. Can be [binary|full|chrome|chroot|paladin].
-    chrome_rev: Chrome_rev of type constants.VALID_CHROME_REVISIONS.
-    private_bucket: True if we are uploading to a private bucket.
-    buildroot: The root directory where the build occurs.
-    board: Board type that was built on this machine.
-    extra_args: Extra args to pass to prebuilts script.
-  """
-  extra_args = ['--prepend-version', category]
-  extra_args.extend(['--upload', 'gs://chromeos-prebuilt'])
-  if private_bucket:
-    extra_args.extend(['--private', '--binhost-conf-dir',
-                       _PRIVATE_BINHOST_CONF_DIR])
-
-  if category == constants.CHROOT_BUILDER_TYPE:
-    extra_args.extend(['--sync-host',
-                       '--upload-board-tarball'])
-    tarball_location = os.path.join(buildroot, 'built-sdk.tar.xz')
-    extra_args.extend(['--prepackaged-tarball', tarball_location])
-
-    # See _GenerateSdkVersion comments for more details.
-    version = _GenerateSdkVersion()
-    extra_args.extend(['--set-version', version])
-
-    # The local tarballs will be simply "<tuple>.tar.xz".  We need
-    # them to be "<tuple>-<version>.tar.xz" to avoid collisions.
-    for tarball in glob.glob(os.path.join(
-        buildroot, constants.DEFAULT_CHROOT_DIR,
-        constants.SDK_TOOLCHAINS_OUTPUT, '*.tar.*')):
-      tarball_components = os.path.basename(tarball).split('.', 1)
-
-      # Only add the path arg when processing the first tarball.  We do
-      # this to get access to the tarball suffix dynamically (so it can
-      # change and this code will still work).
-      if '--toolchain-upload-path' not in extra_args:
-        # Stick the toolchain tarballs into <year>/<month>/ subdirs so
-        # we don't start dumping even more stuff into the top level.
-        subdir = ('/'.join(version.split('.')[0:2]) + '/' +
-                  '%%(target)s-%(version)s.' + tarball_components[1])
-        extra_args.extend(['--toolchain-upload-path', subdir])
-
-      arg = '%s:%s' % (tarball_components[0], tarball)
-      extra_args.extend(['--toolchain-tarball', arg])
-
-  if category == constants.CHROME_PFQ_TYPE:
-    assert chrome_rev
-    key = '%s_%s' % (chrome_rev, _CHROME_BINHOST)
-    extra_args.extend(['--key', key.upper()])
-  elif cbuildbot_config.IsPFQType(category):
-    extra_args.extend(['--key', _PREFLIGHT_BINHOST])
-  else:
-    assert category in (constants.BUILD_FROM_SOURCE_TYPE,
-                        constants.CHROOT_BUILDER_TYPE)
-    extra_args.extend(['--key', _FULL_BINHOST])
-
-  if category == constants.CHROME_PFQ_TYPE:
-    extra_args.extend(['--packages=%s' % constants.CHROME_PN])
-
-  kwargs.setdefault('extra_args', []).extend(extra_args)
-  return _UploadPrebuilts(buildroot=buildroot, **kwargs)
-
-
-class PackageFileMissing(Exception):
-  """Raised when the dev installer package file is missing."""
-  pass
-
-
-def UploadDevInstallerPrebuilts(binhost_bucket, binhost_key, binhost_base_url,
-                                buildroot, board, **kwargs):
-  """Upload Prebuilts for dev-installer use case.
-
-  Args:
-    binhost_bucket: bucket for uploading prebuilt packages. If it equals None
-                    then the default bucket is used.
-    binhost_key: key parameter to pass onto upload_prebuilts. If it equals
-                 None, then chrome_rev is used to select a default key.
-    binhost_base_url: base url for upload_prebuilts. If None the parameter
-                      --binhost-base-url is absent.
-    buildroot: The root directory where the build occurs.
-    board: Board type that was built on this machine.
-    extra_args: Extra args to pass to prebuilts script.
-  """
-  extra_args = ['--prepend-version', constants.CANARY_TYPE]
-  extra_args.extend(['--binhost-base-url', binhost_base_url])
-  extra_args.extend(['--upload', binhost_bucket])
-  extra_args.extend(['--key', binhost_key])
-
-  filename = os.path.join(buildroot, 'chroot', 'build', board,
-                          _BINHOST_PACKAGE_FILE.lstrip('/'))
-  cmd_packages = AddPackagesForPrebuilt(filename)
-  if cmd_packages:
-    extra_args.extend(cmd_packages)
-  else:
-    raise PackageFileMissing()
-
-  kwargs.setdefault('extra_args', []).extend(extra_args)
-  return _UploadPrebuilts(buildroot=buildroot, board=board, **kwargs)
-
-
-def _UploadPrebuilts(buildroot, board, extra_args):
-  """Upload prebuilts.
-
-  Args:
-    buildroot: The root directory where the build occurs.
-    board: Board type that was built on this machine.
-    extra_args: Extra args to pass to prebuilts script.
-  """
-  cwd = constants.CHROMITE_BIN_DIR
-  cmd = ['./upload_prebuilts',
-         '--build-path', buildroot]
-
-  if board:
-    cmd.extend(['--board', board])
-
-  cmd.extend(extra_args)
-  _RunBuildScript(buildroot, cmd, cwd=cwd, possibly_flaky=True)
+  RunBuildScript(buildroot, cmd, chromite_cmd=True)
 
 
 def GenerateCPEExport(buildroot, board, useflags=None):
@@ -1230,9 +1049,9 @@ def GenerateCPEExport(buildroot, board, useflags=None):
   env = {}
   if useflags:
     env['USE'] = ' '.join(useflags)
-  result = _RunBuildScript(buildroot, cmd, enter_chroot=True,
-                           chromite_cmd=True, capture_output=True,
-                           extra_env=env)
+  result = RunBuildScript(buildroot, cmd, enter_chroot=True,
+                          chromite_cmd=True, capture_output=True,
+                          extra_env=env)
   return result
 
 
@@ -1253,7 +1072,7 @@ def GenerateBreakpadSymbols(buildroot, board, debug):
   cmd += ['--exclude-dir=%s' % x for x in exclude_dirs]
   if debug:
     cmd += ['--debug']
-  _RunBuildScript(buildroot, cmd, enter_chroot=True, chromite_cmd=True)
+  RunBuildScript(buildroot, cmd, enter_chroot=True, chromite_cmd=True)
 
 
 def GenerateDebugTarball(buildroot, board, archive_path, gdb_symbols):
@@ -1480,8 +1299,8 @@ def BuildFactoryInstallImage(buildroot, board, extra_env):
          '--symlink=%s' % alias,
          '--build_attempt=3',
          'factory_install']
-  _RunBuildScript(buildroot, cmd, extra_env=extra_env, capture_output=True,
-                  enter_chroot=True)
+  RunBuildScript(buildroot, cmd, extra_env=extra_env, capture_output=True,
+                 enter_chroot=True)
   return alias
 
 
@@ -1496,7 +1315,7 @@ def MakeNetboot(buildroot, board, image_dir):
   cmd = ['./make_netboot.sh',
          '--board=%s' % board,
          '--image_dir=%s' % git.ReinterpretPathForChroot(image_dir)]
-  _RunBuildScript(buildroot, cmd, capture_output=True, enter_chroot=True)
+  RunBuildScript(buildroot, cmd, capture_output=True, enter_chroot=True)
 
 
 def MakeFactoryToolkit(buildroot, board, output_dir, version=None):
@@ -1513,7 +1332,7 @@ def MakeFactoryToolkit(buildroot, board, output_dir, version=None):
          '--output_dir=%s' % git.ReinterpretPathForChroot(output_dir)]
   if version is not None:
     cmd.extend(['--version', version])
-  _RunBuildScript(buildroot, cmd, capture_output=True, enter_chroot=True)
+  RunBuildScript(buildroot, cmd, capture_output=True, enter_chroot=True)
 
 
 def BuildRecoveryImage(buildroot, board, image_dir, extra_env):
@@ -1529,8 +1348,8 @@ def BuildRecoveryImage(buildroot, board, image_dir, extra_env):
   cmd = ['./mod_image_for_recovery.sh',
          '--board=%s' % board,
          '--image=%s' % git.ReinterpretPathForChroot(image)]
-  _RunBuildScript(buildroot, cmd, extra_env=extra_env, capture_output=True,
-                  enter_chroot=True)
+  RunBuildScript(buildroot, cmd, extra_env=extra_env, capture_output=True,
+                 enter_chroot=True)
 
 
 def BuildTarball(buildroot, input_list, tarball_output, cwd=None,

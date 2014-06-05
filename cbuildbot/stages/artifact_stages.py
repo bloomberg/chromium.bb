@@ -17,6 +17,7 @@ from chromite.cbuildbot import failures_lib
 from chromite.cbuildbot import cbuildbot_config
 from chromite.cbuildbot import constants
 from chromite.cbuildbot import portage_utilities
+from chromite.cbuildbot import prebuilts
 from chromite.cbuildbot.stages import generic_stages
 from chromite.lib import cros_build_lib
 from chromite.lib import git
@@ -555,14 +556,14 @@ class MasterUploadPrebuiltsStage(generic_stages.BuilderStage):
 
     # Upload the public prebuilts, if any.
     if public_builders:
-      commands.UploadPrebuilts(
+      prebuilts.UploadPrebuilts(
           category=self._prebuilt_type, chrome_rev=self._chrome_rev,
           private_bucket=False, buildroot=self._build_root, board=None,
           extra_args=generated_args + public_args)
 
     # Upload the private prebuilts, if any.
     if private_builders:
-      commands.UploadPrebuilts(
+      prebuilts.UploadPrebuilts(
           category=self._prebuilt_type, chrome_rev=self._chrome_rev,
           private_bucket=True, buildroot=self._build_root, board=None,
           extra_args=generated_args + private_args)
@@ -673,7 +674,7 @@ class UploadPrebuiltsStage(generic_stages.BoardSpecificBuilderStage):
     # Upload the public prebuilts, if any.
     if public_builders or public:
       public_board = board if public else None
-      commands.UploadPrebuilts(
+      prebuilts.UploadPrebuilts(
           category=prebuilt_type, chrome_rev=self._chrome_rev,
           private_bucket=False, buildroot=self._build_root,
           board=public_board, extra_args=generated_args + public_args)
@@ -681,7 +682,7 @@ class UploadPrebuiltsStage(generic_stages.BoardSpecificBuilderStage):
     # Upload the private prebuilts, if any.
     if private_builders or not public:
       private_board = board if not public else None
-      commands.UploadPrebuilts(
+      prebuilts.UploadPrebuilts(
           category=prebuilt_type, chrome_rev=self._chrome_rev,
           private_bucket=True, buildroot=self._build_root, board=private_board,
           extra_args=generated_args + private_args)
@@ -695,7 +696,7 @@ class DevInstallerPrebuiltsStage(UploadPrebuiltsStage):
   @failures_lib.SetFailureType(failures_lib.InfrastructureFailure)
   def PerformStage(self):
     generated_args = generated_args = self.GenerateCommonArgs()
-    commands.UploadDevInstallerPrebuilts(
+    prebuilts.UploadDevInstallerPrebuilts(
         binhost_bucket=self._run.config.binhost_bucket,
         binhost_key=self._run.config.binhost_key,
         binhost_base_url=self._run.config.binhost_base_url,
