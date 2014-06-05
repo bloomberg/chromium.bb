@@ -382,10 +382,8 @@ InputHandlerProxy::HandleGestureFling(
       const float vx = gesture_event.data.flingStart.velocityX;
       const float vy = gesture_event.data.flingStart.velocityY;
       current_fling_velocity_ = gfx::Vector2dF(vx, vy);
-      // TODO(rjkroege): Remove cast after landing 3rd patch for
-      // http://crbug.com/343327
       fling_curve_.reset(client_->CreateFlingAnimationCurve(
-          (blink::WebGestureDevice)gesture_event.sourceDevice,
+          gesture_event.sourceDevice,
           WebFloatPoint(vx, vy),
           blink::WebSize()));
       disallow_horizontal_fling_scroll_ = !vx;
@@ -532,9 +530,8 @@ bool InputHandlerProxy::FilterInputEventForFlingBoosting(
                              current_fling_velocity_.y());
       deferred_fling_cancel_time_seconds_ = 0;
       last_fling_boost_event_ = WebGestureEvent();
-      // TODO(rjkroege): Remove cast after 3rd patch of http://crbug.com/343327
       fling_curve_.reset(client_->CreateFlingAnimationCurve(
-          (blink::WebGestureDevice)gesture_event.sourceDevice,
+          gesture_event.sourceDevice,
           velocity,
           blink::WebSize()));
       fling_parameters_.startTime = gesture_event.timeStampSeconds;
