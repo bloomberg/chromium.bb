@@ -109,28 +109,3 @@ TEST_F(LauncherContextMenuTest,
       menu.get(), LauncherContextMenu::MENU_NEW_WINDOW));
   EXPECT_FALSE(menu->IsCommandIdEnabled(LauncherContextMenu::MENU_NEW_WINDOW));
 }
-
-// Verifies that the "auto hide" menu items are not present in maximized mode.
-TEST_F(LauncherContextMenuTest, NoAutoHideOptionInMaximizedMode) {
-  {
-    scoped_ptr<LauncherContextMenu> menu(
-        CreateLauncherContextMenu(ash::TYPE_BROWSER_SHORTCUT));
-    ASSERT_TRUE(IsItemPresentInMenu(
-        menu.get(), LauncherContextMenu::MENU_AUTO_HIDE));
-  }
-  ash::Shell::GetInstance()->EnableMaximizeModeWindowManager(true);
-  {
-    scoped_ptr<LauncherContextMenu> menu(
-        CreateLauncherContextMenu(ash::TYPE_BROWSER_SHORTCUT));
-    ASSERT_FALSE(IsItemPresentInMenu(
-        menu.get(), LauncherContextMenu::MENU_AUTO_HIDE));
-  }
-  ash::Shell::GetInstance()->EnableMaximizeModeWindowManager(false);
-  {
-    scoped_ptr<LauncherContextMenu> menu(
-        CreateLauncherContextMenu(ash::TYPE_BROWSER_SHORTCUT));
-    ASSERT_TRUE(IsItemPresentInMenu(
-        menu.get(), LauncherContextMenu::MENU_AUTO_HIDE));
-  }
-}
-

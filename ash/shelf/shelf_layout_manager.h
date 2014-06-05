@@ -176,7 +176,6 @@ class ASH_EXPORT ShelfLayoutManager :
   // Overridden from ash::ShellObserver:
   virtual void OnLockStateChanged(bool locked) OVERRIDE;
   virtual void OnMaximizeModeStarted() OVERRIDE;
-  virtual void OnMaximizeModeEnded() OVERRIDE;
 
   // Overriden from aura::client::ActivationChangeObserver:
   virtual void OnWindowActivated(aura::Window* gained_active,
@@ -321,9 +320,6 @@ class ASH_EXPORT ShelfLayoutManager :
 
   int GetWorkAreaSize(const State& state, int size) const;
 
-  // Returns true if the shelf should be forced to be visible.
-  bool IsShelfForcedToBeVisible() const;
-
   // Overridden from keyboard::KeyboardControllerObserver:
   virtual void OnKeyboardBoundsChanging(const gfx::Rect& new_bounds) OVERRIDE;
 
@@ -340,10 +336,6 @@ class ASH_EXPORT ShelfLayoutManager :
   // True when inside UpdateBoundsAndOpacity() method. Used to prevent calling
   // UpdateBoundsAndOpacity() again from SetChildBounds().
   bool updating_bounds_;
-
-  // If true, the shelf gets forced (e.g. by the maximize mode) to be always
-  // visible.
-  bool force_shelf_always_visibile_;
 
   // See description above setter.
   ShelfAutoHideBehavior auto_hide_behavior_;
