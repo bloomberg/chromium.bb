@@ -27,7 +27,6 @@
 #include "config.h"
 #include "Internals.h"
 
-#include <v8.h>
 #include "InternalProfilers.h"
 #include "InternalRuntimeFlags.h"
 #include "InternalSettings.h"
@@ -137,6 +136,7 @@
 #include "wtf/PassOwnPtr.h"
 #include "wtf/dtoa.h"
 #include "wtf/text/StringBuffer.h"
+#include <v8.h>
 
 namespace WebCore {
 

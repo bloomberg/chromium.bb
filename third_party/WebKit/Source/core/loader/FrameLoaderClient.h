@@ -38,11 +38,7 @@
 #include "platform/weborigin/Referrer.h"
 #include "wtf/Forward.h"
 #include "wtf/Vector.h"
-
-namespace v8 {
-class Context;
-template<class T> class Handle;
-}
+#include <v8.h>
 
 namespace blink {
 class WebCookieJar;

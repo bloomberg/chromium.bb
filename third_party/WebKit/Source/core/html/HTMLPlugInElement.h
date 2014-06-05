@@ -25,6 +25,7 @@
 
 #include "bindings/v8/SharedPersistent.h"
 #include "core/html/HTMLFrameOwnerElement.h"
+#include <v8.h>
 
 struct NPObject;
 

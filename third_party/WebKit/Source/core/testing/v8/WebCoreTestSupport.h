@@ -26,6 +26,9 @@
 #ifndef WebCoreTestSupport_h
 #define WebCoreTestSupport_h
 
+// Normally we'd have:
+// #include <v8.h>
+// ...but this file is used in cases where we don't have V8 (e.g., Skia)
 namespace v8 {
 class Context;
 template <class T> class Local;

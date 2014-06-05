@@ -39,6 +39,7 @@
 #include "core/xml/XMLHttpRequestUpload.h"
 #include "wtf/text/AtomicStringHash.h"
 #include "wtf/text/StringBuilder.h"
+#include <v8.h>
 
 namespace {
 

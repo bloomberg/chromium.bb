@@ -34,10 +34,7 @@
 #include "InspectorTypeBuilder.h"
 #include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
-
-namespace v8 {
-class CpuProfile;
-}
+#include <v8-profiler.h>
 
 namespace WebCore {
 

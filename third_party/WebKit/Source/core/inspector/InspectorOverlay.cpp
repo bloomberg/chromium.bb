@@ -54,6 +54,7 @@
 #include "platform/PlatformMouseEvent.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
 #include "wtf/text/StringBuilder.h"
+#include <v8.h>
 
 namespace WebCore {
 

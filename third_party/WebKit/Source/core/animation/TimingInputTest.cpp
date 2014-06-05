@@ -8,8 +8,8 @@
 #include "bindings/v8/Dictionary.h"
 #include "core/animation/AnimationNodeTiming.h"
 #include "core/animation/AnimationTestHelper.h"
-
 #include <gtest/gtest.h>
+#include <v8.h>
 
 namespace WebCore {
 

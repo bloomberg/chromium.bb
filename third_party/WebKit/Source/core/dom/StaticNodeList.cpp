@@ -30,6 +30,7 @@
 #include "core/dom/StaticNodeList.h"
 
 #include "core/dom/Element.h"
+#include <v8.h>
 
 namespace WebCore {
 

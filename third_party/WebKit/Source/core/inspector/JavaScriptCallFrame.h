@@ -35,9 +35,9 @@
 #include "bindings/v8/ScopedPersistent.h"
 #include "bindings/v8/ScriptState.h"
 #include "bindings/v8/ScriptWrappable.h"
-#include <v8-debug.h>
 #include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
+#include <v8.h>
 
 namespace WebCore {
 

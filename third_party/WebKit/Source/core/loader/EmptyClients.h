@@ -47,7 +47,6 @@
 #include "platform/text/TextCheckerClient.h"
 #include "public/platform/WebScreenInfo.h"
 #include "wtf/Forward.h"
-
 #include <v8.h>
 
 /*

@@ -53,6 +53,7 @@
 #include "platform/transforms/AffineTransform.h"
 #include "public/platform/Platform.h"
 #include <math.h>
+#include <v8.h>
 
 namespace WebCore {
 

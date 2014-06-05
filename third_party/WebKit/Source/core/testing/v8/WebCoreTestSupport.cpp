@@ -33,8 +33,6 @@
 #include "core/dom/ExecutionContext.h"
 #include "core/frame/LocalFrame.h"
 
-#include <v8.h>
-
 using namespace WebCore;
 
 namespace WebCoreTestSupport {
