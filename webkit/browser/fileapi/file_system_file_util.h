@@ -127,12 +127,12 @@ class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemFileUtil {
   // For |option|, please see file_system_operation.h
   //
   // This returns:
-  // - PLATFORM_FILE_ERROR_NOT_FOUND if |src_url|
+  // - File::FILE_ERROR_NOT_FOUND if |src_url|
   //   or the parent directory of |dest_url| does not exist.
-  // - PLATFORM_FILE_ERROR_NOT_A_FILE if |src_url| exists but is not a file.
-  // - PLATFORM_FILE_ERROR_INVALID_OPERATION if |dest_url| exists and
+  // - File::FILE_ERROR_NOT_A_FILE if |src_url| exists but is not a file.
+  // - File::FILE_ERROR_INVALID_OPERATION if |dest_url| exists and
   //   is not a file.
-  // - PLATFORM_FILE_ERROR_FAILED if |dest_url| does not exist and
+  // - File::FILE_ERROR_FAILED if |dest_url| does not exist and
   //   its parent path is a file.
   //
   virtual base::File::Error CopyOrMoveFile(

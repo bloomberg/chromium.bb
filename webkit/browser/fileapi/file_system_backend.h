@@ -71,7 +71,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemBackend {
   virtual AsyncFileUtil* GetAsyncFileUtil(FileSystemType type) = 0;
 
   // Returns the specialized CopyOrMoveFileValidatorFactory for this backend
-  // and |type|.  If |error_code| is PLATFORM_FILE_OK and the result is NULL,
+  // and |type|.  If |error_code| is File::FILE_OK and the result is NULL,
   // then no validator is required.
   virtual CopyOrMoveFileValidatorFactory* GetCopyOrMoveFileValidatorFactory(
       FileSystemType type, base::File::Error* error_code) = 0;

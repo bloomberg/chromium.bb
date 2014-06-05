@@ -203,7 +203,7 @@ bool MappedFile::Initialize(base::File file) {
                   << " are not supported.";
     }
   } else {
-    PLOG(DFATAL) << "GetPlatformFileInfo failed";
+    PLOG(DFATAL) << "file.GetInfo failed";
   }
   file_ = file.Pass();
   return result;

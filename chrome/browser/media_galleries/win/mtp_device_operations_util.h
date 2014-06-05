@@ -29,7 +29,7 @@ base::win::ScopedComPtr<IPortableDevice> OpenDevice(
     const base::string16& pnp_device_id);
 
 // Gets the details of the object specified by |object_id| from the given MTP
-// |device|. On success, returns no error (base::PLATFORM_FILE_OK) and fills in
+// |device|. On success, returns no error (base::File::FILE_OK) and fills in
 // |file_entry_info|. On failure, returns the corresponding platform file error
 // and |file_entry_info| is not set.
 base::File::Error GetFileEntryInfo(

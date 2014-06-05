@@ -42,7 +42,6 @@
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
 #include "base/debug/leak_annotations.h"
-#include "base/platform_file.h"
 #include "components/breakpad/app/breakpad_linux.h"
 #include "components/breakpad/browser/crash_handler_host_linux.h"
 #include "content/public/common/content_descriptors.h"
@@ -296,7 +295,7 @@ void ShellContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
     int child_process_id,
     std::vector<FileDescriptorInfo>* mappings) {
 #if defined(OS_ANDROID)
-  int flags = base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_READ;
+  int flags = base::File::FLAG_OPEN | base::File::FLAG_READ;
   base::FilePath pak_file;
   bool r = PathService::Get(base::DIR_ANDROID_APP_DATA, &pak_file);
   CHECK(r);

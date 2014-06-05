@@ -17,7 +17,7 @@ class UtilityProcessHost;
 }
 
 // Uses a utility process to validate a media file.  If the callback returns
-// PLATFORM_FILE_OK, then the file appears to be a valid media file. This does
+// File::FILE_OK, then the file appears to be a valid media file. This does
 // not attempt to decode the entire file, which may take a considerable amount
 // of time.  This class may be constructed on any thread, but should run on the
 // IO thread.

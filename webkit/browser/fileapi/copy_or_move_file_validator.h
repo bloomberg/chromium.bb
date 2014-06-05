@@ -20,7 +20,7 @@ class FileSystemURL;
 class WEBKIT_STORAGE_BROWSER_EXPORT CopyOrMoveFileValidator {
  public:
   // Callback that is invoked when validation completes. A result of
-  // base::PLATFORM_FILE_OK means the file validated.
+  // base::File::FILE_OK means the file validated.
   typedef base::Callback<void(base::File::Error result)> ResultCallback;
 
   virtual ~CopyOrMoveFileValidator() {}

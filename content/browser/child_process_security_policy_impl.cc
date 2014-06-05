@@ -8,7 +8,6 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
-#include "base/platform_file.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "content/browser/plugin_process_host.h"
@@ -274,7 +273,7 @@ class ChildProcessSecurityPolicyImpl::SecurityState {
  private:
   typedef std::map<std::string, bool> SchemeMap;
 
-  typedef int FilePermissionFlags;  // bit-set of PlatformFileFlags
+  typedef int FilePermissionFlags;  // bit-set of base::File::Flags
   typedef std::map<base::FilePath, FilePermissionFlags> FileMap;
   typedef std::map<std::string, FilePermissionFlags> FileSystemMap;
   typedef std::set<base::FilePath> FileSet;

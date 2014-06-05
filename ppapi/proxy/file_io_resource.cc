@@ -93,8 +93,8 @@ FileIOResource::WriteOp::~WriteOp() {
 }
 
 int32_t FileIOResource::WriteOp::DoWork() {
-  // In append mode, we can't call WritePlatformFile, since NaCl doesn't
-  // implement fcntl, causing the function to call pwrite, which is incorrect.
+  // In append mode, we can't call Write, since NaCl doesn't implement fcntl,
+  // causing the function to call pwrite, which is incorrect.
   if (append_) {
     return file_holder_->file()->WriteAtCurrentPos(buffer_.get(),
                                                    bytes_to_write_);

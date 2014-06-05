@@ -161,11 +161,11 @@ class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemOperationRunner
   // Copies in a single file from a different filesystem.
   //
   // This returns:
-  // - PLATFORM_FILE_ERROR_NOT_FOUND if |src_file_path|
+  // - File::FILE_ERROR_NOT_FOUND if |src_file_path|
   //   or the parent directory of |dest_url| does not exist.
-  // - PLATFORM_FILE_ERROR_INVALID_OPERATION if |dest_url| exists and
+  // - File::FILE_ERROR_INVALID_OPERATION if |dest_url| exists and
   //   is not a file.
-  // - PLATFORM_FILE_ERROR_FAILED if |dest_url| does not exist and
+  // - File::FILE_ERROR_FAILED if |dest_url| does not exist and
   //   its parent path is a file.
   //
   OperationID CopyInForeignFile(const base::FilePath& src_local_disk_path,
@@ -175,8 +175,8 @@ class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemOperationRunner
   // Removes a single file.
   //
   // This returns:
-  // - PLATFORM_FILE_ERROR_NOT_FOUND if |url| does not exist.
-  // - PLATFORM_FILE_ERROR_NOT_A_FILE if |url| is not a file.
+  // - File::FILE_ERROR_NOT_FOUND if |url| does not exist.
+  // - File::FILE_ERROR_NOT_A_FILE if |url| is not a file.
   //
   OperationID RemoveFile(const FileSystemURL& url,
                          const StatusCallback& callback);
@@ -184,9 +184,9 @@ class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemOperationRunner
   // Removes a single empty directory.
   //
   // This returns:
-  // - PLATFORM_FILE_ERROR_NOT_FOUND if |url| does not exist.
-  // - PLATFORM_FILE_ERROR_NOT_A_DIRECTORY if |url| is not a directory.
-  // - PLATFORM_FILE_ERROR_NOT_EMPTY if |url| is not empty.
+  // - File::FILE_ERROR_NOT_FOUND if |url| does not exist.
+  // - File::FILE_ERROR_NOT_A_DIRECTORY if |url| is not a directory.
+  // - File::FILE_ERROR_NOT_EMPTY if |url| is not empty.
   //
   OperationID RemoveDirectory(const FileSystemURL& url,
                               const StatusCallback& callback);
@@ -198,12 +198,12 @@ class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemOperationRunner
   // details.
   //
   // This returns:
-  // - PLATFORM_FILE_ERROR_NOT_FOUND if |src_url|
+  // - File::FILE_ERROR_NOT_FOUND if |src_url|
   //   or the parent directory of |dest_url| does not exist.
-  // - PLATFORM_FILE_ERROR_NOT_A_FILE if |src_url| exists but is not a file.
-  // - PLATFORM_FILE_ERROR_INVALID_OPERATION if |dest_url| exists and
+  // - File::FILE_ERROR_NOT_A_FILE if |src_url| exists but is not a file.
+  // - File::FILE_ERROR_INVALID_OPERATION if |dest_url| exists and
   //   is not a file.
-  // - PLATFORM_FILE_ERROR_FAILED if |dest_url| does not exist and
+  // - File::FILE_ERROR_FAILED if |dest_url| does not exist and
   //   its parent path is a file.
   //
   OperationID CopyFileLocal(const FileSystemURL& src_url,
@@ -218,12 +218,12 @@ class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemOperationRunner
   // For |option|, see file_system_operation.h for details.
   //
   // This returns:
-  // - PLATFORM_FILE_ERROR_NOT_FOUND if |src_url|
+  // - File::FILE_ERROR_NOT_FOUND if |src_url|
   //   or the parent directory of |dest_url| does not exist.
-  // - PLATFORM_FILE_ERROR_NOT_A_FILE if |src_url| exists but is not a file.
-  // - PLATFORM_FILE_ERROR_INVALID_OPERATION if |dest_url| exists and
+  // - File::FILE_ERROR_NOT_A_FILE if |src_url| exists but is not a file.
+  // - File::FILE_ERROR_INVALID_OPERATION if |dest_url| exists and
   //   is not a file.
-  // - PLATFORM_FILE_ERROR_FAILED if |dest_url| does not exist and
+  // - File::FILE_ERROR_FAILED if |dest_url| does not exist and
   //   its parent path is a file.
   //
   OperationID MoveFileLocal(const FileSystemURL& src_url,
