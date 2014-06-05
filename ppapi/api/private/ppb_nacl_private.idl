@@ -310,8 +310,7 @@ interface PPB_NaCl_Private {
   /* Report an error that occured while attempting to load a nexe. */
   void ReportLoadError([in] PP_Instance instance,
                        [in] PP_NaClError error,
-                       [in] str_t error_message,
-                       [in] str_t console_message);
+                       [in] str_t error_message);
 
   /* Reports that loading a nexe was aborted. */
   void ReportLoadAbort([in] PP_Instance instance);

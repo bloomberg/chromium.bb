@@ -439,13 +439,19 @@ void LaunchSelLdr(PP_Instance instance,
   }
 }
 
-// Forward declaration.
-void ReportLoadError(PP_Instance instance,
-                     PP_NaClError error,
-                     const char* error_message,
-                     const char* console_message);
-
 PP_Bool StartPpapiProxy(PP_Instance instance) {
+  NexeLoadManager* load_manager = GetNexeLoadManager(instance);
+  DCHECK(load_manager);
+  if (!load_manager)
+    return PP_FALSE;
+
+  content::PepperPluginInstance* plugin_instance =
+      content::PepperPluginInstance::Get(instance);
+  if (!plugin_instance) {
+    DLOG(ERROR) << "GetInstance() failed";
+    return PP_FALSE;
+  }
+
   InstanceInfoMap& map = g_instance_info.Get();
   InstanceInfoMap::iterator it = map.find(instance);
   if (it == map.end()) {
@@ -454,13 +460,6 @@ PP_Bool StartPpapiProxy(PP_Instance instance) {
   }
   InstanceInfo instance_info = it->second;
   map.erase(it);
-
-  content::PepperPluginInstance* plugin_instance =
-      content::PepperPluginInstance::Get(instance);
-  if (!plugin_instance) {
-    DLOG(ERROR) << "GetInstance() failed";
-    return PP_FALSE;
-  }
 
   PP_ExternalPluginResult result = plugin_instance->SwitchToOutOfProcessProxy(
       base::FilePath().AppendASCII(instance_info.url.spec()),
@@ -473,20 +472,14 @@ PP_Bool StartPpapiProxy(PP_Instance instance) {
     // Log the amound of time that has passed between the trusted plugin being
     // initialized and the untrusted plugin being initialized.  This is
     // (roughly) the cost of using NaCl, in terms of startup time.
-    NexeLoadManager* load_manager = GetNexeLoadManager(instance);
-    if (load_manager)
-      load_manager->ReportStartupOverhead();
+    load_manager->ReportStartupOverhead();
     return PP_TRUE;
   } else if (result == PP_EXTERNAL_PLUGIN_ERROR_MODULE) {
-    ReportLoadError(instance,
-                    PP_NACL_ERROR_START_PROXY_MODULE,
-                    "could not initialize module.",
-                    "could not initialize module.");
+    load_manager->ReportLoadError(PP_NACL_ERROR_START_PROXY_MODULE,
+                                  "could not initialize module.");
   } else if (result == PP_EXTERNAL_PLUGIN_ERROR_INSTANCE) {
-    ReportLoadError(instance,
-                    PP_NACL_ERROR_START_PROXY_MODULE,
-                    "could not create instance.",
-                    "could not create instance.");
+    load_manager->ReportLoadError(PP_NACL_ERROR_START_PROXY_MODULE,
+                                  "could not create instance.");
   }
   return PP_FALSE;
 }
@@ -725,11 +718,10 @@ void ReportLoadSuccess(PP_Instance instance,
 
 void ReportLoadError(PP_Instance instance,
                      PP_NaClError error,
-                     const char* error_message,
-                     const char* console_message) {
+                     const char* error_message) {
   NexeLoadManager* load_manager = GetNexeLoadManager(instance);
   if (load_manager)
-    load_manager->ReportLoadError(error, error_message, console_message);
+    load_manager->ReportLoadError(error, error_message);
 }
 
 void ReportLoadAbort(PP_Instance instance) {

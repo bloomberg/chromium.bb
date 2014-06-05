@@ -46,7 +46,6 @@ struct SelLdrStartParams {
                     bool uses_irt,
                     bool uses_ppapi,
                     bool uses_nonsfi_mode,
-                    bool enable_dev_interfaces,
                     bool enable_dyncode_syscalls,
                     bool enable_exception_handling,
                     bool enable_crash_throttling)
@@ -54,7 +53,6 @@ struct SelLdrStartParams {
         uses_irt(uses_irt),
         uses_ppapi(uses_ppapi),
         uses_nonsfi_mode(uses_nonsfi_mode),
-        enable_dev_interfaces(enable_dev_interfaces),
         enable_dyncode_syscalls(enable_dyncode_syscalls),
         enable_exception_handling(enable_exception_handling),
         enable_crash_throttling(enable_crash_throttling) {

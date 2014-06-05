@@ -2,19 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifdef _MSC_VER
-// Do not warn about use of std::copy with raw pointers.
-#pragma warning(disable : 4996)
-#endif
-
 #include "ppapi/native_client/src/trusted/plugin/plugin.h"
 
 #include <sys/stat.h>
 #include <sys/types.h>
 
-#include <algorithm>
 #include <string>
-#include <vector>
 
 #include "native_client/src/include/nacl_base.h"
 #include "native_client/src/include/nacl_macros.h"
@@ -30,7 +23,6 @@
 #include "native_client/src/trusted/service_runtime/nacl_error_code.h"
 
 #include "ppapi/c/pp_errors.h"
-#include "ppapi/c/ppb_var.h"
 #include "ppapi/c/private/ppb_nacl_private.h"
 #include "ppapi/cpp/dev/url_util_dev.h"
 #include "ppapi/cpp/module.h"
@@ -171,13 +163,10 @@ void Plugin::LoadNaClModule(PP_NaClFileInfo file_info,
   pp::Var manifest_base_url =
       pp::Var(pp::PASS_REF, nacl_interface_->GetManifestBaseURL(pp_instance()));
   std::string manifest_base_url_str = manifest_base_url.AsString();
-  bool enable_dev_interfaces =
-      nacl_interface_->DevInterfacesEnabled(pp_instance());
   SelLdrStartParams params(manifest_base_url_str,
                            true /* uses_irt */,
                            true /* uses_ppapi */,
                            uses_nonsfi_mode,
-                           enable_dev_interfaces,
                            enable_dyncode_syscalls,
                            enable_exception_handling,
                            enable_crash_throttling);
@@ -255,15 +244,10 @@ NaClSubprocess* Plugin::LoadHelperNaClModule(const nacl::string& helper_url,
   // TODO(sehr): define new UMA stats for translator related nexe events.
   // NOTE: The PNaCl translator nexes are not built to use the IRT.  This is
   // done to save on address space and swap space.
-  // TODO(jvoung): See if we still need the uses_ppapi variable, now that
-  // LaunchSelLdr always happens on the main thread.
-  bool enable_dev_interfaces =
-      nacl_interface_->DevInterfacesEnabled(pp_instance());
   SelLdrStartParams params(helper_url,
                            false /* uses_irt */,
                            false /* uses_ppapi */,
                            false /* uses_nonsfi_mode */,
-                           enable_dev_interfaces,
                            false /* enable_dyncode_syscalls */,
                            false /* enable_exception_handling */,
                            true /* enable_crash_throttling */);
@@ -319,7 +303,6 @@ Plugin::Plugin(PP_Instance pp_instance)
       main_subprocess_("main subprocess", NULL, NULL),
       uses_nonsfi_mode_(false),
       wrapper_factory_(NULL),
-      time_of_last_progress_event_(0),
       nacl_interface_(NULL),
       uma_interface_(this) {
   PLUGIN_PRINTF(("Plugin::Plugin (this=%p, pp_instance=%"
@@ -519,8 +502,7 @@ void Plugin::NaClManifestFileDidOpen(int32_t pp_error) {
 void Plugin::ReportLoadError(const ErrorInfo& error_info) {
   nacl_interface_->ReportLoadError(pp_instance(),
                                    error_info.error_code(),
-                                   error_info.message().c_str(),
-                                   error_info.console_message().c_str());
+                                   error_info.message().c_str());
 }
 
 bool Plugin::DocumentCanRequest(const std::string& url) {

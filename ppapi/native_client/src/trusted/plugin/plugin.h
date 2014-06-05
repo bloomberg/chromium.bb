@@ -115,10 +115,6 @@ class Plugin : public pp::Instance {
 
   nacl::DescWrapperFactory* wrapper_factory() const { return wrapper_factory_; }
 
-  // Called back by CallOnMainThread.  Dispatches the first enqueued progress
-  // event.
-  void DispatchProgressEvent(int32_t result);
-
   // A helper function that indicates if |url| can be requested by the document
   // under the same-origin policy. Strictly speaking, it may be possible for the
   // document to request the URL using CORS even if this function returns false.
@@ -211,11 +207,6 @@ class Plugin : public pp::Instance {
   // Processes the JSON manifest string and starts loading the nexe.
   void ProcessNaClManifest(const nacl::string& manifest_json);
 
-  // Logs timing information to a UMA histogram, and also logs the same timing
-  // information divided by the size of the nexe to another histogram.
-  void HistogramStartupTimeSmall(const std::string& name, float dt);
-  void HistogramStartupTimeMedium(const std::string& name, float dt);
-
   void SetExitStatusOnMainThread(int32_t pp_error, int exit_status);
 
   // Keep track of the NaCl module subprocess that was spun up in the plugin.
@@ -232,7 +223,6 @@ class Plugin : public pp::Instance {
 
   nacl::scoped_ptr<PnaclCoordinator> pnacl_coordinator_;
 
-  int64_t time_of_last_progress_event_;
   int exit_status_;
 
   PP_NaClFileInfo nexe_file_info_;

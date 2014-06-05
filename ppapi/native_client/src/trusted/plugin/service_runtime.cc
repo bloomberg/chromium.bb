@@ -617,13 +617,16 @@ void ServiceRuntime::StartSelLdr(const SelLdrStartParams& params,
 
   ManifestService* manifest_service =
       new ManifestService(anchor_->Ref(), rev_interface_);
+  bool enable_dev_interfaces =
+      GetNaClInterface()->DevInterfacesEnabled(plugin_->pp_instance());
+
   tmp_subprocess->Start(plugin_->pp_instance(),
                         main_service_runtime_,
                         params.url.c_str(),
                         params.uses_irt,
                         params.uses_ppapi,
                         params.uses_nonsfi_mode,
-                        params.enable_dev_interfaces,
+                        enable_dev_interfaces,
                         params.enable_dyncode_syscalls,
                         params.enable_exception_handling,
                         params.enable_crash_throttling,
