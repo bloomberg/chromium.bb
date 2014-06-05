@@ -351,6 +351,20 @@ ui.StatusArea = base.extends('div',  {
 });
 
 ui.revisionDetails = base.extends('span', {
+    updateUI: function() {
+        this.appendChild(document.createElement("br"));
+        this.appendChild(document.createTextNode('Last roll is to '));
+        this.appendChild(ui.createLinkNode(trac.changesetURL(this.lastRolledRevision), this.lastRolledRevision));
+        this.appendChild(document.createTextNode(', current autoroll '));
+        if (this.roll) {
+            var linkText = "" + this.roll.fromRevision + ":" + this.roll.toRevision;
+            this.appendChild(ui.createLinkNode(this.roll.url, linkText));
+            if (this.roll.isStopped)
+                this.appendChild(document.createTextNode(' (STOPPED) '));
+        } else {
+            this.appendChild(document.createTextNode(' None'));
+        }
+    },
     init: function() {
         var theSpan = this;
         theSpan.appendChild(document.createTextNode('Latest revision processed by every bot: '));
@@ -407,21 +421,10 @@ ui.revisionDetails = base.extends('span', {
         theSpan.appendChild(document.createTextNode(', trunk is at '));
         theSpan.appendChild(ui.createLinkNode(trac.changesetURL(totRevision), totRevision));
 
-        checkout.lastBlinkRollRevision().then(function(revision) {
-            theSpan.appendChild(document.createTextNode(', last roll is to '));
-            theSpan.appendChild(ui.createLinkNode(trac.changesetURL(revision), revision));
-        }, function() {});
-
-        rollbot.fetchCurrentRoll().then(function(roll) {
-            theSpan.appendChild(document.createTextNode(', current autoroll '));
-            if (roll) {
-                var linkText = "" + roll.fromRevision + ":" + roll.toRevision;
-                theSpan.appendChild(ui.createLinkNode(roll.url, linkText));
-                if (roll.isStopped)
-                    theSpan.appendChild(document.createTextNode(' (STOPPED) '));
-            } else {
-                theSpan.appendChild(document.createTextNode(' None'));
-            }
+        Promise.all([checkout.lastBlinkRollRevision(), rollbot.fetchCurrentRoll()]).then(function(results) {
+            theSpan.lastRolledRevision = results[0];
+            theSpan.roll = results[1];
+            theSpan.updateUI();
         });
     }
 });
