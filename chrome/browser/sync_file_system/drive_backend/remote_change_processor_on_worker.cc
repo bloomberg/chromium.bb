@@ -22,13 +22,17 @@ RemoteChangeProcessorOnWorker::RemoteChangeProcessorOnWorker(
       base::SequencedTaskRunner* worker_task_runner)
     : wrapper_(wrapper),
       ui_task_runner_(ui_task_runner),
-      worker_task_runner_(worker_task_runner) {}
+      worker_task_runner_(worker_task_runner) {
+  sequence_checker_.DetachFromSequence();
+}
 
 RemoteChangeProcessorOnWorker::~RemoteChangeProcessorOnWorker() {}
 
 void RemoteChangeProcessorOnWorker::PrepareForProcessRemoteChange(
     const fileapi::FileSystemURL& url,
     const PrepareChangeCallback& callback) {
+  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
+
   ui_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&RemoteChangeProcessorWrapper::PrepareForProcessRemoteChange,
@@ -45,6 +49,8 @@ void RemoteChangeProcessorOnWorker::ApplyRemoteChange(
     const base::FilePath& local_path,
     const fileapi::FileSystemURL& url,
     const SyncStatusCallback& callback) {
+  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
+
   ui_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&RemoteChangeProcessorWrapper::ApplyRemoteChange,
@@ -62,6 +68,8 @@ void RemoteChangeProcessorOnWorker::FinalizeRemoteSync(
     const fileapi::FileSystemURL& url,
     bool clear_local_changes,
     const base::Closure& completion_callback) {
+  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
+
   ui_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&RemoteChangeProcessorWrapper::FinalizeRemoteSync,
@@ -78,6 +86,8 @@ void RemoteChangeProcessorOnWorker::RecordFakeLocalChange(
     const fileapi::FileSystemURL& url,
     const FileChange& change,
     const SyncStatusCallback& callback) {
+  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
+
   ui_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&RemoteChangeProcessorWrapper::RecordFakeLocalChange,

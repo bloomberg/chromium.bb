@@ -14,6 +14,7 @@
 #include "base/location.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/sequence_checker.h"
 #include "base/threading/non_thread_safe.h"
 #include "chrome/browser/sync_file_system/drive_backend/sync_task.h"
 #include "chrome/browser/sync_file_system/drive_backend/task_dependency_manager.h"
@@ -118,6 +119,8 @@ class SyncTaskManager
 
   bool IsRunningTask(int64 task_token_id) const;
 
+  void DetachFromSequence();
+
  private:
   struct PendingTask {
     base::Closure task;
@@ -188,6 +191,8 @@ class SyncTaskManager
   scoped_ptr<SyncTaskToken> token_;
 
   TaskDependencyManager dependency_manager_;
+
+  base::SequenceChecker sequence_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncTaskManager);
 };

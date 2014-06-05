@@ -33,56 +33,75 @@ SyncEngineContext::SyncEngineContext(
       remote_change_processor_(NULL),
       ui_task_runner_(ui_task_runner),
       worker_task_runner_(worker_task_runner),
-      file_task_runner_(file_task_runner) {}
+      file_task_runner_(file_task_runner) {
+  sequence_checker_.DetachFromSequence();
+}
 
-SyncEngineContext::~SyncEngineContext() {}
+SyncEngineContext::~SyncEngineContext() {
+  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
+}
 
 drive::DriveServiceInterface* SyncEngineContext::GetDriveService() {
+  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
   return drive_service_.get();
 }
 
 drive::DriveUploaderInterface* SyncEngineContext::GetDriveUploader() {
+  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
   return drive_uploader_.get();
 }
 
 base::WeakPtr<TaskLogger> SyncEngineContext::GetTaskLogger() {
+  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
   return task_logger_;
 }
 
 MetadataDatabase* SyncEngineContext::GetMetadataDatabase() {
+  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
   return metadata_database_.get();
 }
 
 scoped_ptr<MetadataDatabase> SyncEngineContext::PassMetadataDatabase() {
+  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
   return metadata_database_.Pass();
 }
 
 RemoteChangeProcessor* SyncEngineContext::GetRemoteChangeProcessor() {
+  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
   return remote_change_processor_;
 }
 
 base::SingleThreadTaskRunner* SyncEngineContext::GetUITaskRunner() {
+  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
   return ui_task_runner_.get();
 }
 
 base::SequencedTaskRunner* SyncEngineContext::GetWorkerTaskRunner() {
+  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
   return worker_task_runner_.get();
 }
 
 base::SequencedTaskRunner* SyncEngineContext::GetFileTaskRunner() {
+  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
   return file_task_runner_.get();
 }
 
 void SyncEngineContext::SetMetadataDatabase(
     scoped_ptr<MetadataDatabase> metadata_database) {
+  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
   if (metadata_database)
     metadata_database_ = metadata_database.Pass();
 }
 
 void SyncEngineContext::SetRemoteChangeProcessor(
     RemoteChangeProcessor* remote_change_processor) {
+  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
   DCHECK(remote_change_processor);
   remote_change_processor_ = remote_change_processor;
+}
+
+void SyncEngineContext::DetachFromSequence() {
+  sequence_checker_.DetachFromSequence();
 }
 
 }  // namespace drive_backend

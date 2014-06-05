@@ -7,6 +7,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/sequence_checker.h"
 #include "chrome/browser/drive/drive_uploader.h"
 
 namespace base {
@@ -60,6 +61,8 @@ class DriveUploaderOnWorker : public drive::DriveUploaderInterface {
   base::WeakPtr<DriveUploaderWrapper> wrapper_;
   scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
   scoped_refptr<base::SequencedTaskRunner> worker_task_runner_;
+
+  base::SequenceChecker sequece_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(DriveUploaderOnWorker);
 };

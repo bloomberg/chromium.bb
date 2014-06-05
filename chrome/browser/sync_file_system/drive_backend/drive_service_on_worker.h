@@ -7,6 +7,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/sequence_checker.h"
 #include "chrome/browser/drive/drive_service_interface.h"
 
 namespace base {
@@ -176,6 +177,8 @@ class DriveServiceOnWorker : public drive::DriveServiceInterface {
   base::WeakPtr<DriveServiceWrapper> wrapper_;
   scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
   scoped_refptr<base::SequencedTaskRunner> worker_task_runner_;
+
+  base::SequenceChecker sequence_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(DriveServiceOnWorker);
 };

@@ -215,8 +215,10 @@ SyncEngine::~SyncEngine() {
     delete worker_observer;
 
   SyncWorker* sync_worker = sync_worker_.release();
-  if (!worker_task_runner_->DeleteSoon(FROM_HERE, sync_worker))
+  if (!worker_task_runner_->DeleteSoon(FROM_HERE, sync_worker)) {
+    sync_worker->DetachFromSequence();
     delete sync_worker;
+  }
 }
 
 void SyncEngine::Initialize(const base::FilePath& base_dir,

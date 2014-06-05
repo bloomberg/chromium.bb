@@ -22,7 +22,9 @@ DriveUploaderOnWorker::DriveUploaderOnWorker(
       base::SequencedTaskRunner* worker_task_runner)
     : wrapper_(wrapper),
       ui_task_runner_(ui_task_runner),
-      worker_task_runner_(worker_task_runner) {}
+      worker_task_runner_(worker_task_runner) {
+  sequece_checker_.DetachFromSequence();
+}
 
 DriveUploaderOnWorker::~DriveUploaderOnWorker() {}
 
@@ -34,6 +36,8 @@ google_apis::CancelCallback DriveUploaderOnWorker::UploadNewFile(
       const UploadNewFileOptions& options,
       const drive::UploadCompletionCallback& callback,
       const google_apis::ProgressCallback& progress_callback) {
+  DCHECK(sequece_checker_.CalledOnValidSequencedThread());
+
   ui_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&DriveUploaderWrapper::UploadNewFile,
@@ -58,6 +62,8 @@ google_apis::CancelCallback DriveUploaderOnWorker::UploadExistingFile(
       const UploadExistingFileOptions& options,
       const drive::UploadCompletionCallback& callback,
       const google_apis::ProgressCallback& progress_callback) {
+  DCHECK(sequece_checker_.CalledOnValidSequencedThread());
+
   ui_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&DriveUploaderWrapper::UploadExistingFile,

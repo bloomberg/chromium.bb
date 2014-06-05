@@ -498,6 +498,7 @@ void LocalToRemoteSyncer::UpdateRemoteMetadata(
     const std::string& file_id,
     const SyncStatusCallback& callback) {
   DCHECK(remote_file_tracker_);
+
   drive_service()->GetFileResource(
       file_id,
       base::Bind(&LocalToRemoteSyncer::DidGetRemoteMetadata,
@@ -510,6 +511,8 @@ void LocalToRemoteSyncer::DidGetRemoteMetadata(
     const SyncStatusCallback& callback,
     google_apis::GDataErrorCode error,
     scoped_ptr<google_apis::FileResource> entry) {
+  DCHECK(sync_context_->GetWorkerTaskRunner()->RunsTasksOnCurrentThread());
+
   if (error == google_apis::HTTP_NOT_FOUND) {
     metadata_database()->UpdateByDeletedRemoteFile(file_id, callback);
     return;

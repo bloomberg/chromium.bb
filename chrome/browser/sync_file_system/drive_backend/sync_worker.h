@@ -137,6 +137,8 @@ class SyncWorker : public SyncTaskManager::Client {
 
   void AddObserver(Observer* observer);
 
+  void DetachFromSequence();
+
  private:
   friend class SyncEngineTest;
 
@@ -191,6 +193,8 @@ class SyncWorker : public SyncTaskManager::Client {
   ObserverList<Observer> observers_;
 
   bool has_refresh_token_;
+
+  base::SequenceChecker sequence_checker_;
 
   base::WeakPtrFactory<SyncWorker> weak_ptr_factory_;
   DISALLOW_COPY_AND_ASSIGN(SyncWorker);

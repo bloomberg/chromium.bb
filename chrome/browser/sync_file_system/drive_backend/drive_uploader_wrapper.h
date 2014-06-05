@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_BACKEND_DRIVE_UPLOADER_WRAPPER_H_
 
 #include "base/memory/weak_ptr.h"
+#include "base/sequence_checker.h"
 #include "chrome/browser/drive/drive_uploader.h"
 
 namespace sync_file_system {
@@ -37,6 +38,7 @@ class DriveUploaderWrapper
 
  private:
   drive::DriveUploaderInterface* drive_uploader_;
+  base::SequenceChecker sequence_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(DriveUploaderWrapper);
 };

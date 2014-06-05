@@ -296,6 +296,8 @@ void RemoteToLocalSyncer::DidGetRemoteMetadata(
     const SyncStatusCallback& callback,
     google_apis::GDataErrorCode error,
     scoped_ptr<google_apis::FileResource> entry) {
+  DCHECK(sync_context_->GetWorkerTaskRunner()->RunsTasksOnCurrentThread());
+
   SyncStatusCode status = GDataErrorCodeToSyncStatusCode(error);
   if (status != SYNC_STATUS_OK &&
       error != google_apis::HTTP_NOT_FOUND) {
