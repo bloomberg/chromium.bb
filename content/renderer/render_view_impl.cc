@@ -78,7 +78,6 @@
 #include "content/renderer/dom_storage/webstoragenamespace_impl.h"
 #include "content/renderer/drop_data_builder.h"
 #include "content/renderer/external_popup_menu.h"
-#include "content/renderer/geolocation_dispatcher.h"
 #include "content/renderer/gpu/render_widget_compositor.h"
 #include "content/renderer/history_controller.h"
 #include "content/renderer/history_serialization.h"
@@ -649,7 +648,6 @@ RenderViewImpl::RenderViewImpl(RenderViewImplParams* params)
       cached_is_main_frame_pinned_to_right_(false),
       has_scrolled_focused_editable_node_into_rect_(false),
       push_messaging_dispatcher_(NULL),
-      geolocation_dispatcher_(NULL),
       speech_recognition_dispatcher_(NULL),
       media_stream_dispatcher_(NULL),
       browser_plugin_manager_(NULL),
@@ -3633,14 +3631,6 @@ bool RenderViewImpl::ScheduleFileChooser(
     Send(new ViewHostMsg_RunFileChooser(routing_id_, params));
   }
   return true;
-}
-
-blink::WebGeolocationClient* RenderViewImpl::geolocationClient() {
-  if (!geolocation_dispatcher_) {
-    geolocation_dispatcher_ = new GeolocationDispatcher(
-        main_render_frame_.get());
-  }
-  return geolocation_dispatcher_;
 }
 
 blink::WebSpeechRecognizer* RenderViewImpl::speechRecognizer() {

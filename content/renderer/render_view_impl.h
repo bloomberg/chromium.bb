@@ -93,7 +93,6 @@ class WebDOMMessageEvent;
 class WebDataSource;
 class WebDateTimeChooserCompletion;
 class WebDragData;
-class WebGeolocationClient;
 class WebGestureEvent;
 class WebIconURL;
 class WebImage;
@@ -132,7 +131,6 @@ class DevToolsAgent;
 class DocumentState;
 class ExternalPopupMenu;
 class FaviconHelper;
-class GeolocationDispatcher;
 class HistoryController;
 class HistoryEntry;
 class ImageResourceFetcher;
@@ -452,7 +450,6 @@ class CONTENT_EXPORT RenderViewImpl
       const blink::WebAXObject& obj, blink::WebAXEvent event);
   virtual void didUpdateInspectorSetting(const blink::WebString& key,
                                          const blink::WebString& value);
-  virtual blink::WebGeolocationClient* geolocationClient();
   virtual blink::WebSpeechRecognizer* speechRecognizer();
   virtual void zoomLimitsChanged(double minimum_level, double maximum_level);
   virtual void zoomLevelChanged();
@@ -1058,9 +1055,6 @@ class CONTENT_EXPORT RenderViewImpl
 
   // The push messaging dispatcher attached to this view, lazily initialized.
   PushMessagingDispatcher* push_messaging_dispatcher_;
-
-  // The geolocation dispatcher attached to this view, lazily initialized.
-  GeolocationDispatcher* geolocation_dispatcher_;
 
   // The speech recognition dispatcher attached to this view, lazily
   // initialized.
