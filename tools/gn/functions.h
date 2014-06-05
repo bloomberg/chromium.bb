@@ -163,6 +163,14 @@ Value RunGetLabelInfo(Scope* scope,
                       const std::vector<Value>& args,
                       Err* err);
 
+extern const char kGetPathInfo[];
+extern const char kGetPathInfo_HelpShort[];
+extern const char kGetPathInfo_Help[];
+Value RunGetPathInfo(Scope* scope,
+                     const FunctionCallNode* function,
+                     const std::vector<Value>& args,
+                     Err* err);
+
 extern const char kGetTargetOutputs[];
 extern const char kGetTargetOutputs_HelpShort[];
 extern const char kGetTargetOutputs_Help[];
