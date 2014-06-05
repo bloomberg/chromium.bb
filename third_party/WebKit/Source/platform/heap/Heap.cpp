@@ -1338,7 +1338,7 @@ public:
         }
         ObjectGraph::AddResult result = objectGraph().add(reinterpret_cast<uintptr_t>(objectPointer), std::make_pair(reinterpret_cast<uintptr_t>(m_hostObject), m_hostName));
         ASSERT(result.isNewEntry);
-        // printf("%s[%p] -> %s[%p]\n", m_hostName.ascii().data(), m_hostObject, className.ascii().data(), objectPointer);
+        // fprintf(stderr, "%s[%p] -> %s[%p]\n", m_hostName.ascii().data(), m_hostObject, className.ascii().data(), objectPointer);
 #endif
         if (callback)
             Heap::pushTraceCallback(const_cast<void*>(objectPointer), callback);
@@ -1426,14 +1426,14 @@ public:
 #if ENABLE(GC_TRACING)
     void reportStats()
     {
-        printf("\n---------- AFTER MARKING -------------------\n");
+        fprintf(stderr, "\n---------- AFTER MARKING -------------------\n");
         for (LiveObjectMap::iterator it = currentlyLive().begin(), end = currentlyLive().end(); it != end; ++it) {
-            printf("%s %u", it->key.ascii().data(), it->value.size());
+            fprintf(stderr, "%s %u", it->key.ascii().data(), it->value.size());
 
             if (it->key == "WebCore::Document")
                 reportStillAlive(it->value, previouslyLive().get(it->key));
 
-            printf("\n");
+            fprintf(stderr, "\n");
         }
 
         previouslyLive().swap(currentlyLive());
@@ -1448,7 +1448,7 @@ public:
     {
         int count = 0;
 
-        printf(" [previously %u]", previous.size());
+        fprintf(stderr, " [previously %u]", previous.size());
         for (LiveObjectSet::iterator it = current.begin(), end = current.end(); it != end; ++it) {
             if (previous.find(*it) == previous.end())
                 continue;
@@ -1458,27 +1458,27 @@ public:
         if (!count)
             return;
 
-        printf(" {survived 2GCs %d: ", count);
+        fprintf(stderr, " {survived 2GCs %d: ", count);
         for (LiveObjectSet::iterator it = current.begin(), end = current.end(); it != end; ++it) {
             if (previous.find(*it) == previous.end())
                 continue;
-            printf("%ld", *it);
+            fprintf(stderr, "%ld", *it);
             if (--count)
-                printf(", ");
+                fprintf(stderr, ", ");
         }
         ASSERT(!count);
-        printf("}");
+        fprintf(stderr, "}");
     }
 
     static void dumpPathToObjectFromObjectGraph(const ObjectGraph& graph, uintptr_t target)
     {
-        printf("Path to %lx of %s\n", target, classOf(reinterpret_cast<const void*>(target)).ascii().data());
+        fprintf(stderr, "Path to %lx of %s\n", target, classOf(reinterpret_cast<const void*>(target)).ascii().data());
         ObjectGraph::const_iterator it = graph.find(target);
         while (it != graph.end()) {
-            printf("<- %lx of %s\n", it->value.first, it->value.second.ascii().data());
+            fprintf(stderr, "<- %lx of %s\n", it->value.first, it->value.second.ascii().data());
             it = graph.find(it->value.first);
         }
-        printf("\n");
+        fprintf(stderr, "\n");
     }
 
     static void dumpPathToObjectOnNextGC(void* p)
