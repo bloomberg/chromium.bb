@@ -20,7 +20,7 @@ class DummyListenSocket : public StreamListenSocket,
                           public StreamListenSocket::Delegate {
  public:
   DummyListenSocket()
-      : StreamListenSocket(0, this) {}
+      : StreamListenSocket(net::kInvalidSocket, this) {}
 
   // StreamListenSocket::Delegate "implementation"
   virtual void DidAccept(StreamListenSocket* server,
