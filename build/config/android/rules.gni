@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("config.gni")
 import("internal_rules.gni")
 
 # Declare a jni target
@@ -30,17 +31,13 @@ template("generate_jni") {
   base_output_dir = "${root_gen_dir}/${target_name}/${jni_package}"
   jni_output_dir = "${base_output_dir}/jni"
 
-  jni_generator_includes =
-      rebase_path("//base/android/jni_generator/jni_generator_helper.h")
+  jni_generator_include = "//base/android/jni_generator/jni_generator_helper.h"
 
-  config("jni_includes_${target_name}") {
-    include_dirs = [ base_output_dir ]
-  }
-
-  action_foreach(target_name) {
+  foreach_target_name = "${target_name}__jni_gen"
+  action_foreach(foreach_target_name) {
     script = "//base/android/jni_generator/jni_generator.py"
-    direct_dependent_configs = [ ":jni_includes_${target_name}" ]
     sources = invoker.sources
+    source_prereqs = [ jni_generator_include ]
     outputs = [
       "${jni_output_dir}/{{source_name_part}}_jni.h"
     ]
@@ -49,14 +46,116 @@ template("generate_jni") {
       "--input_file={{source}}",
       "--optimize_generation=1",
       "--ptr_type=long",
-      "--output_dir", rebase_path(jni_output_dir),
-      "--includes=${jni_generator_includes}",
+      "--output_dir", rebase_path(jni_output_dir, root_build_dir),
+      "--includes", rebase_path(jni_generator_include, "//"),
     ]
     if (defined(invoker.jni_generator_jarjar_file)) {
       args += [
-        "--jarjar", rebase_path(jni_generator_jarjar_file)
+        "--jarjar", rebase_path(jni_generator_jarjar_file, root_build_dir),
       ]
     }
+  }
+
+  config("jni_includes_${target_name}") {
+    include_dirs = [ base_output_dir ]
+  }
+
+  group(target_name) {
+    deps = [ ":$foreach_target_name" ]
+    direct_dependent_configs = [ ":jni_includes_${target_name}" ]
+
+    if (defined(invoker.deps)) {
+      deps += invoker.deps
+    }
+    if (defined(invoker.forward_dependent_configs_from)) {
+      forward_dependent_configs_from = invoker.forward_dependent_configs_from
+    }
+  }
+}
+
+
+# Declare a jni target for a prebuilt jar
+#
+# This target generates the native jni bindings for a set of classes in a .jar.
+#
+# See base/android/jni_generator/jni_generator.py for more info about the
+# format of generating JNI bindings.
+#
+# Variables
+#   classes: list of .class files in the jar to generate jni for. These should
+#     include the full path to the .class file.
+#   jni_package: subdirectory path for generated bindings
+#   jar_file: the path to the .jar. If not provided, will default to the sdk's
+#     android.jar
+#
+# Example
+#   generate_jar_jni("foo_jni") {
+#     classes = [
+#       "android/view/Foo.class",
+#     ]
+#     jni_package = "foo"
+#   }
+template("generate_jar_jni") {
+  assert(defined(invoker.classes))
+  assert(defined(invoker.jni_package))
+
+  if (defined(invoker.jar_file)) {
+    jar_file = invoker.jar_file
+  } else {
+    jar_file = android_sdk_jar
+  }
+
+  jni_package = invoker.jni_package
+  base_output_dir = "${root_gen_dir}/${target_name}/${jni_package}"
+  jni_output_dir = "${base_output_dir}/jni"
+
+  jni_generator_include =
+      rebase_path("//base/android/jni_generator/jni_generator_helper.h",
+          root_build_dir)
+
+  # TODO(cjhopman): make jni_generator.py support generating jni for multiple
+  # .class files from a .jar.
+  jni_actions = []
+  foreach(class, invoker.classes) {
+    classname_list = process_file_template(
+        [class], "{{source_name_part}}")
+    classname = classname_list[0]
+    jni_target_name = "${target_name}__jni_${classname}"
+    jni_actions += [ ":$jni_target_name" ]
+    action(jni_target_name) {
+      script = "//base/android/jni_generator/jni_generator.py"
+      sources = [
+        jni_generator_include,
+        jar_file,
+      ]
+      outputs = [
+        "${jni_output_dir}/${classname}_jni.h"
+      ]
+
+      args = [
+        "--jar_file", rebase_path(jar_file, root_build_dir),
+        "--input_file", class,
+        "--optimize_generation=1",
+        "--ptr_type=long",
+        "--output_dir", rebase_path(jni_output_dir, root_build_dir),
+        "--includes", rebase_path(jni_generator_include, "//"),
+      ]
+    }
+  }
+
+  config("jni_includes_${target_name}") {
+    include_dirs = [ base_output_dir ]
+  }
+
+  group(target_name) {
+    deps = jni_actions
+    if (defined(invoker.deps)) {
+      deps += invoker.deps
+    }
+    if (defined(invoker.forward_dependent_configs_from)) {
+      forward_dependent_configs_from = invoker.forward_dependent_configs_from
+    }
+    direct_dependent_configs = [ ":jni_includes_${target_name}" ]
   }
 }
 

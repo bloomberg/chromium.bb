@@ -46,8 +46,12 @@ if (is_android) {
   # than just the current one) since these are needed by the Android toolchain
   # file to define toolchains for all possible targets in one pass.
 
-  # Path to the Android NDK.
+  # Path to the Android NDK and SDK.
   android_ndk_root = "//third_party/android_tools/ndk"
+  android_sdk_root = "//third_party/android_tools/sdk"
+
+  # Path to the SDK's android.jar
+  android_sdk_jar = "$android_sdk_root/platforms/android-19/android.jar"
 
   # Subdirectories inside android_ndk_root that contain the sysroot for the
   # associated platform.

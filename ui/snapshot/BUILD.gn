@@ -45,6 +45,10 @@ component("snapshot") {
       #"//ui/aura",  TODO(GYP)
       "//ui/compositor",
     ]
+  } else {
+    sources -= [
+      "snapshot_aura.cc"
+    ]
   }
 }
 

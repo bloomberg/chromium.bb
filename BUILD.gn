@@ -130,13 +130,6 @@ group("root") {
       # Not tested on Android yet:
       "//webkit/browser:storage",
       "//webkit/child",
-
-      # This stuff all depends on ui/surface which requires some .class jni
-      # generators (ui/gl/gl.gyp:surface_jni_headers).
-      "//ui/gl",
-      "//gpu",
-      "//ui/snapshot",
-      "//ui/surface",
     ]
   }
 }
