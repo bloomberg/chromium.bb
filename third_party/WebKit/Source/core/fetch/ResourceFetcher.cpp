@@ -462,8 +462,28 @@ bool ResourceFetcher::checkInsecureContent(Resource::Type type, const KURL& url,
             Frame* top = f->tree().top();
             if (!toLocalFrame(top)->loader().mixedContentChecker()->canDisplayInsecureContent(toLocalFrame(top)->document()->securityOrigin(), url))
                 return false;
-            if (type == Resource::Font && MixedContentChecker::isMixedContent(toLocalFrame(top)->document()->securityOrigin(), url))
-                UseCounter::count(toLocalFrame(top)->document(), UseCounter::MixedContentFont);
+            if (MixedContentChecker::isMixedContent(toLocalFrame(top)->document()->securityOrigin(), url)) {
+                switch (type) {
+                case Resource::TextTrack:
+                    UseCounter::count(toLocalFrame(top)->document(), UseCounter::MixedContentTextTrack);
+                    break;
+
+                case Resource::Raw:
+                    UseCounter::count(toLocalFrame(top)->document(), UseCounter::MixedContentRaw);
+                    break;
+
+                case Resource::Image:
+                    UseCounter::count(toLocalFrame(top)->document(), UseCounter::MixedContentImage);
+                    break;
+
+                case Resource::Media:
+                    UseCounter::count(toLocalFrame(top)->document(), UseCounter::MixedContentMedia);
+                    break;
+
+                default:
+                    ASSERT_NOT_REACHED();
+                }
+            }
         }
     } else {
         ASSERT(treatment == TreatAsAlwaysAllowedContent);
