@@ -109,9 +109,9 @@ class DirectoryLoaderTest : public testing::Test {
   }
 
   // Adds a new file to the root directory of the service.
-  scoped_ptr<google_apis::ResourceEntry> AddNewFile(const std::string& title) {
+  scoped_ptr<google_apis::FileResource> AddNewFile(const std::string& title) {
     google_apis::GDataErrorCode error = google_apis::GDATA_FILE_ERROR;
-    scoped_ptr<google_apis::ResourceEntry> entry;
+    scoped_ptr<google_apis::FileResource> entry;
     drive_service_->AddNewFile(
         "text/plain",
         "content text",

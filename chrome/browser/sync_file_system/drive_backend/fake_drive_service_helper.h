@@ -66,9 +66,9 @@ class FakeDriveServiceHelper {
       const std::string& folder_id,
       const std::string& title,
       ScopedVector<google_apis::ResourceEntry>* entries);
-  google_apis::GDataErrorCode GetResourceEntry(
+  google_apis::GDataErrorCode GetFileResource(
       const std::string& file_id,
-      scoped_ptr<google_apis::ResourceEntry>* entry);
+      scoped_ptr<google_apis::FileResource>* entry);
   google_apis::GDataErrorCode ReadFile(
       const std::string& file_id,
       std::string* file_content);

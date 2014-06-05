@@ -7,20 +7,20 @@
 #include "base/run_loop.h"
 #include "chrome/browser/drive/drive_api_util.h"
 #include "chrome/browser/drive/fake_drive_service.h"
-#include "google_apis/drive/gdata_wapi_parser.h"
+#include "google_apis/drive/drive_api_parser.h"
 #include "google_apis/drive/test_util.h"
 
+using google_apis::FileResource;
 using google_apis::GDATA_OTHER_ERROR;
 using google_apis::GDataErrorCode;
 using google_apis::HTTP_CREATED;
-using google_apis::ResourceEntry;
 
 namespace drive {
 namespace test_util {
 
 bool SetUpTestEntries(FakeDriveService* drive_service) {
   GDataErrorCode error = GDATA_OTHER_ERROR;
-  scoped_ptr<ResourceEntry> entry;
+  scoped_ptr<FileResource> entry;
 
   drive_service->AddNewFileWithResourceId(
       "file:2_file_resource_id",

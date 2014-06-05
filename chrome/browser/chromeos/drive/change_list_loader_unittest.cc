@@ -115,9 +115,9 @@ class ChangeListLoaderTest : public testing::Test {
   }
 
   // Adds a new file to the root directory of the service.
-  scoped_ptr<google_apis::ResourceEntry> AddNewFile(const std::string& title) {
+  scoped_ptr<google_apis::FileResource> AddNewFile(const std::string& title) {
     google_apis::GDataErrorCode error = google_apis::GDATA_FILE_ERROR;
-    scoped_ptr<google_apis::ResourceEntry> entry;
+    scoped_ptr<google_apis::FileResource> entry;
     drive_service_->AddNewFile(
         "text/plain",
         "content text",
@@ -195,7 +195,7 @@ TEST_F(ChangeListLoaderTest, Load_LocalMetadataAvailable) {
                            loader_controller_.get()));
 
   // Add a file to the service.
-  scoped_ptr<google_apis::ResourceEntry> gdata_entry = AddNewFile("New File");
+  scoped_ptr<google_apis::FileResource> gdata_entry = AddNewFile("New File");
   ASSERT_TRUE(gdata_entry);
 
   // Start loading. Because local metadata is available, the load results in
@@ -278,7 +278,7 @@ TEST_F(ChangeListLoaderTest, CheckForUpdates) {
   EXPECT_EQ(previous_changestamp, changestamp);
 
   // Add a file to the service.
-  scoped_ptr<google_apis::ResourceEntry> gdata_entry = AddNewFile("New File");
+  scoped_ptr<google_apis::FileResource> gdata_entry = AddNewFile("New File");
   ASSERT_TRUE(gdata_entry);
 
   // CheckForUpdates() results in update.
@@ -311,7 +311,7 @@ TEST_F(ChangeListLoaderTest, Lock) {
   EXPECT_EQ(FILE_ERROR_OK, error);
 
   // Add a new file.
-  scoped_ptr<google_apis::ResourceEntry> file = AddNewFile("New File");
+  scoped_ptr<google_apis::FileResource> file = AddNewFile("New File");
   ASSERT_TRUE(file);
 
   // Lock the loader.

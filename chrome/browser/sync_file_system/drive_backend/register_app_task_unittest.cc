@@ -21,7 +21,7 @@
 #include "chrome/browser/sync_file_system/drive_backend/sync_engine_context.h"
 #include "chrome/browser/sync_file_system/sync_file_system_test_util.h"
 #include "content/public/test/test_browser_thread_bundle.h"
-#include "google_apis/drive/gdata_wapi_parser.h"
+#include "google_apis/drive/drive_api_parser.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/leveldatabase/src/helpers/memenv/memenv.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
@@ -223,13 +223,12 @@ class RegisterAppTaskTest : public testing::Test {
     EXPECT_TRUE(context_->GetMetadataDatabase()->FindTrackerByTrackerID(
         files.active_tracker(), &app_root_tracker));
     std::string app_root_folder_id = app_root_tracker.file_id();
-    scoped_ptr<google_apis::ResourceEntry> entry;
+    scoped_ptr<google_apis::FileResource> entry;
     if (google_apis::HTTP_SUCCESS !=
-        fake_drive_service_helper_->GetResourceEntry(
-            app_root_folder_id, &entry))
+        fake_drive_service_helper_->GetFileResource(app_root_folder_id, &entry))
       return false;
 
-    return !entry->deleted();
+    return !entry->labels().is_trashed();
   }
 
  private:

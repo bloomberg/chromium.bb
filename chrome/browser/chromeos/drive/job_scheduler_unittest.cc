@@ -274,13 +274,13 @@ TEST_F(JobSchedulerTest, GetChangeList) {
 
   // Create a new directory.
   {
-    scoped_ptr<google_apis::ResourceEntry> resource_entry;
+    scoped_ptr<google_apis::FileResource> entry;
     fake_drive_service_->AddNewDirectory(
         fake_drive_service_->GetRootResourceId(),
         "new directory",
         DriveServiceInterface::AddNewDirectoryOptions(),
         google_apis::test_util::CreateCopyResultCallback(
-            &error, &resource_entry));
+            &error, &entry));
     base::RunLoop().RunUntilIdle();
     ASSERT_EQ(google_apis::HTTP_CREATED, error);
   }

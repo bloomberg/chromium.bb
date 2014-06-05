@@ -23,6 +23,7 @@ class DriveUploaderInterface;
 }
 
 namespace google_apis {
+class FileResource;
 class ResourceEntry;
 class ResourceList;
 }
@@ -82,7 +83,7 @@ class LocalToRemoteSyncer : public SyncTask {
   void DidGetRemoteMetadata(const std::string& file_id,
                             const SyncStatusCallback& callback,
                             google_apis::GDataErrorCode error,
-                            scoped_ptr<google_apis::ResourceEntry> entry);
+                            scoped_ptr<google_apis::FileResource> entry);
 
   void DidDeleteForUploadNewFile(const SyncStatusCallback& callback,
                                  SyncStatusCode status);

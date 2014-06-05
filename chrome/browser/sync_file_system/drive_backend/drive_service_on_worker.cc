@@ -31,7 +31,7 @@ google_apis::CancelCallback DriveServiceOnWorker::AddNewDirectory(
     const std::string& parent_resource_id,
     const std::string& directory_title,
     const AddNewDirectoryOptions& options,
-    const google_apis::GetResourceEntryCallback& callback) {
+    const google_apis::FileResourceCallback& callback) {
   ui_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&DriveServiceWrapper::AddNewDirectory,
@@ -162,12 +162,12 @@ google_apis::CancelCallback DriveServiceOnWorker::GetRemainingFileList(
 }
 
 
-google_apis::CancelCallback DriveServiceOnWorker::GetResourceEntry(
+google_apis::CancelCallback DriveServiceOnWorker::GetFileResource(
     const std::string& resource_id,
-    const google_apis::GetResourceEntryCallback& callback) {
+    const google_apis::FileResourceCallback& callback) {
   ui_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&DriveServiceWrapper::GetResourceEntry,
+      base::Bind(&DriveServiceWrapper::GetFileResource,
                  wrapper_,
                  resource_id,
                  RelayCallbackToTaskRunner(
@@ -316,7 +316,7 @@ google_apis::CancelCallback DriveServiceOnWorker::CopyResource(
     const std::string& parent_resource_id,
     const std::string& new_title,
     const base::Time& last_modified,
-    const google_apis::GetResourceEntryCallback& callback) {
+    const google_apis::FileResourceCallback& callback) {
   NOTREACHED();
   return google_apis::CancelCallback();
 }
@@ -327,7 +327,7 @@ google_apis::CancelCallback DriveServiceOnWorker::UpdateResource(
     const std::string& new_title,
     const base::Time& last_modified,
     const base::Time& last_viewed_by_me,
-    const google_apis::GetResourceEntryCallback& callback) {
+    const google_apis::FileResourceCallback& callback) {
   NOTREACHED();
   return google_apis::CancelCallback();
 }

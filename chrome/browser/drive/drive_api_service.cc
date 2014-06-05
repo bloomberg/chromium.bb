@@ -38,11 +38,11 @@ using google_apis::EntryActionCallback;
 using google_apis::FileList;
 using google_apis::FileListCallback;
 using google_apis::FileResource;
+using google_apis::FileResourceCallback;
 using google_apis::GDATA_OTHER_ERROR;
 using google_apis::GDATA_PARSE_ERROR;
 using google_apis::GDataErrorCode;
 using google_apis::GetContentCallback;
-using google_apis::GetResourceEntryCallback;
 using google_apis::GetResourceEntryRequest;
 using google_apis::GetShareUrlCallback;
 using google_apis::HTTP_NOT_IMPLEMENTED;
@@ -122,31 +122,6 @@ const char kChangeListFields[] =
     "parents(id,parentLink),alternateLink,modifiedDate,"
     "lastViewedByMeDate,shared),deleted,id,fileId,modificationDate),nextLink,"
     "largestChangeId";
-
-// Converts the FileResource value to ResourceEntry and runs |callback| on the
-// UI thread.
-void ConvertFileEntryToResourceEntryAndRun(
-    const GetResourceEntryCallback& callback,
-    GDataErrorCode error,
-    scoped_ptr<FileResource> value) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
-  if (!value) {
-    callback.Run(error, scoped_ptr<ResourceEntry>());
-    return;
-  }
-
-  // Converting to ResourceEntry is cheap enough to do on UI thread.
-  scoped_ptr<ResourceEntry> entry =
-      util::ConvertFileResourceToResourceEntry(*value);
-  if (!entry) {
-    callback.Run(GDATA_PARSE_ERROR, scoped_ptr<ResourceEntry>());
-    return;
-  }
-
-  callback.Run(error, entry.Pass());
-}
 
 // Converts the FileResource value to ResourceEntry for upload range request,
 // and runs |callback| on the UI thread.
@@ -401,15 +376,14 @@ CancelCallback DriveAPIService::GetRemainingFileList(
   return sender_->StartRequestWithRetry(request);
 }
 
-CancelCallback DriveAPIService::GetResourceEntry(
+CancelCallback DriveAPIService::GetFileResource(
     const std::string& resource_id,
-    const GetResourceEntryCallback& callback) {
+    const FileResourceCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
   FilesGetRequest* request = new FilesGetRequest(
-      sender_.get(), url_generator_,
-      base::Bind(&ConvertFileEntryToResourceEntryAndRun, callback));
+      sender_.get(), url_generator_, callback);
   request->set_file_id(resource_id);
   request->set_fields(kFileResourceFields);
   return sender_->StartRequestWithRetry(request);
@@ -508,13 +482,12 @@ CancelCallback DriveAPIService::AddNewDirectory(
     const std::string& parent_resource_id,
     const std::string& directory_title,
     const AddNewDirectoryOptions& options,
-    const GetResourceEntryCallback& callback) {
+    const FileResourceCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
   FilesInsertRequest* request = new FilesInsertRequest(
-      sender_.get(), url_generator_,
-      base::Bind(&ConvertFileEntryToResourceEntryAndRun, callback));
+      sender_.get(), url_generator_, callback);
   request->set_last_viewed_by_me_date(options.last_viewed_by_me_date);
   request->set_mime_type(kFolderMimeType);
   request->set_modified_date(options.modified_date);
@@ -529,13 +502,12 @@ CancelCallback DriveAPIService::CopyResource(
     const std::string& parent_resource_id,
     const std::string& new_title,
     const base::Time& last_modified,
-    const GetResourceEntryCallback& callback) {
+    const FileResourceCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
   FilesCopyRequest* request = new FilesCopyRequest(
-      sender_.get(), url_generator_,
-      base::Bind(&ConvertFileEntryToResourceEntryAndRun, callback));
+      sender_.get(), url_generator_, callback);
   request->set_file_id(resource_id);
   request->add_parent(parent_resource_id);
   request->set_title(new_title);
@@ -550,13 +522,12 @@ CancelCallback DriveAPIService::UpdateResource(
     const std::string& new_title,
     const base::Time& last_modified,
     const base::Time& last_viewed_by_me,
-    const GetResourceEntryCallback& callback) {
+    const FileResourceCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
   FilesPatchRequest* request = new FilesPatchRequest(
-      sender_.get(), url_generator_,
-      base::Bind(&ConvertFileEntryToResourceEntryAndRun, callback));
+      sender_.get(), url_generator_, callback);
   request->set_file_id(resource_id);
   request->set_title(new_title);
   if (!parent_resource_id.empty())

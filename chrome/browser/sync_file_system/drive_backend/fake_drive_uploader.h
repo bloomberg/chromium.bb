@@ -30,7 +30,7 @@ class FakeDriveServiceWrapper : public drive::FakeDriveService {
       const std::string& parent_resource_id,
       const std::string& directory_name,
       const AddNewDirectoryOptions& options,
-      const google_apis::GetResourceEntryCallback& callback) OVERRIDE;
+      const google_apis::FileResourceCallback& callback) OVERRIDE;
 
   void set_make_directory_conflict(bool enable) {
     make_directory_conflict_ = enable;

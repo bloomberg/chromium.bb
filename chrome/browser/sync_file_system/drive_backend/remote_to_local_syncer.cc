@@ -285,7 +285,7 @@ void RemoteToLocalSyncer::HandleMissingRemoteMetadata(
     const SyncStatusCallback& callback) {
   DCHECK(dirty_tracker_);
 
-  drive_service()->GetResourceEntry(
+  drive_service()->GetFileResource(
       dirty_tracker_->file_id(),
       base::Bind(&RemoteToLocalSyncer::DidGetRemoteMetadata,
                  weak_ptr_factory_.GetWeakPtr(),
@@ -295,7 +295,7 @@ void RemoteToLocalSyncer::HandleMissingRemoteMetadata(
 void RemoteToLocalSyncer::DidGetRemoteMetadata(
     const SyncStatusCallback& callback,
     google_apis::GDataErrorCode error,
-    scoped_ptr<google_apis::ResourceEntry> entry) {
+    scoped_ptr<google_apis::FileResource> entry) {
   SyncStatusCode status = GDataErrorCodeToSyncStatusCode(error);
   if (status != SYNC_STATUS_OK &&
       error != google_apis::HTTP_NOT_FOUND) {
@@ -316,7 +316,7 @@ void RemoteToLocalSyncer::DidGetRemoteMetadata(
   }
 
   metadata_database()->UpdateByFileResource(
-      *drive::util::ConvertResourceEntryToFileResource(*entry),
+      *entry,
       base::Bind(&RemoteToLocalSyncer::DidUpdateDatabaseForRemoteMetadata,
                  weak_ptr_factory_.GetWeakPtr(), callback));
 }

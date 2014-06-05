@@ -27,6 +27,7 @@
 #include "chrome/browser/sync_file_system/sync_file_system_test_util.h"
 #include "chrome/browser/sync_file_system/syncable_file_system_util.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "google_apis/drive/drive_api_parser.h"
 #include "google_apis/drive/gdata_errorcode.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/leveldatabase/src/helpers/memenv/memenv.h"
@@ -171,17 +172,10 @@ class ConflictResolverTest : public testing::Test {
   }
 
   int CountParents(const std::string& file_id) {
-    scoped_ptr<google_apis::ResourceEntry> entry;
+    scoped_ptr<google_apis::FileResource> entry;
     EXPECT_EQ(google_apis::HTTP_SUCCESS,
-              fake_drive_helper_->GetResourceEntry(file_id, &entry));
-    int count = 0;
-    const ScopedVector<google_apis::Link>& links = entry->links();
-    for (ScopedVector<google_apis::Link>::const_iterator itr = links.begin();
-        itr != links.end(); ++itr) {
-      if ((*itr)->type() == google_apis::Link::LINK_PARENT)
-        ++count;
-    }
-    return count;
+              fake_drive_helper_->GetFileResource(file_id, &entry));
+    return entry->parents().size();
   }
 
   SyncStatusCode RunRemoteToLocalSyncer() {

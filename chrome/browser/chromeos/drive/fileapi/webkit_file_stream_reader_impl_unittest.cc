@@ -19,7 +19,7 @@
 #include "chrome/browser/drive/fake_drive_service.h"
 #include "chrome/browser/drive/test_util.h"
 #include "content/public/test/test_browser_thread_bundle.h"
-#include "google_apis/drive/gdata_wapi_parser.h"
+#include "google_apis/drive/drive_api_parser.h"
 #include "google_apis/drive/time_util.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
@@ -182,7 +182,7 @@ TEST_F(WebkitFileStreamReaderImplTest, LastModification) {
   ASSERT_TRUE(entry);
 
   google_apis::GDataErrorCode status = google_apis::GDATA_OTHER_ERROR;
-  scoped_ptr<google_apis::ResourceEntry> resource_entry;
+  scoped_ptr<google_apis::FileResource> server_entry;
   fake_drive_service_->UpdateResource(
       entry->resource_id(),
       std::string(),  // parent_resource_id
@@ -190,7 +190,7 @@ TEST_F(WebkitFileStreamReaderImplTest, LastModification) {
       expected_modification_time,
       base::Time(),
       google_apis::test_util::CreateCopyResultCallback(&status,
-                                                       &resource_entry));
+                                                       &server_entry));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(google_apis::HTTP_SUCCESS, status);
 

@@ -137,7 +137,7 @@ class APIUtil : public APIUtilInterface,
                           const std::string& title,
                           const ResourceIdCallback& callback,
                           google_apis::GDataErrorCode error,
-                          scoped_ptr<google_apis::ResourceEntry> entry);
+                          scoped_ptr<google_apis::FileResource> entry);
 
   void DidEnsureUniquenessForCreateDirectory(
       const ResourceIdCallback& callback,
@@ -166,9 +166,9 @@ class APIUtil : public APIUtilInterface,
                         google_apis::GDataErrorCode error,
                         scoped_ptr<google_apis::ChangeList> change_list);
 
-  void DidGetResourceEntry(const ResourceEntryCallback& callback,
-                           google_apis::GDataErrorCode error,
-                           scoped_ptr<google_apis::ResourceEntry> entry);
+  void DidGetFileResource(const ResourceEntryCallback& callback,
+                          google_apis::GDataErrorCode error,
+                          scoped_ptr<google_apis::FileResource> entry);
 
   void DidGetTemporaryFileForDownload(
       const std::string& resource_id,

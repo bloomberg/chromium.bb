@@ -11,6 +11,7 @@
 #include "chrome/browser/extensions/api/file_system/file_system_api.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "content/public/test/test_utils.h"
+#include "google_apis/drive/drive_api_parser.h"
 #include "google_apis/drive/test_util.h"
 
 namespace extensions {
@@ -84,28 +85,25 @@ class FileSystemApiTestForDrive : public PlatformAppBrowserTest {
   bool AddTestFile(const std::string& title,
                    const std::string& data,
                    const std::string& parent_id) {
-    scoped_ptr<google_apis::ResourceEntry> resource_entry;
+    scoped_ptr<google_apis::FileResource> entry;
     google_apis::GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
     fake_drive_service_->AddNewFile(
         "text/plain", data, parent_id, title, false,
-        google_apis::test_util::CreateCopyResultCallback(&error,
-                                                         &resource_entry));
+        google_apis::test_util::CreateCopyResultCallback(&error, &entry));
     content::RunAllPendingInMessageLoop();
-    return error == google_apis::HTTP_CREATED && resource_entry;
+    return error == google_apis::HTTP_CREATED && entry;
   }
 
   std::string AddTestDirectory(const std::string& title,
                                const std::string& parent_id) {
-    scoped_ptr<google_apis::ResourceEntry> resource_entry;
+    scoped_ptr<google_apis::FileResource> entry;
     google_apis::GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
     fake_drive_service_->AddNewDirectory(
         parent_id, title,
         drive::DriveServiceInterface::AddNewDirectoryOptions(),
-        google_apis::test_util::CreateCopyResultCallback(&error,
-                                                         &resource_entry));
+        google_apis::test_util::CreateCopyResultCallback(&error, &entry));
     content::RunAllPendingInMessageLoop();
-    return error == google_apis::HTTP_CREATED && resource_entry ?
-        resource_entry->resource_id() : "";
+    return error == google_apis::HTTP_CREATED && entry ? entry->file_id() : "";
   }
 
   base::ScopedTempDir test_cache_root_;

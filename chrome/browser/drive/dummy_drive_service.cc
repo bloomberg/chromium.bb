@@ -16,8 +16,8 @@ using google_apis::ChangeListCallback;
 using google_apis::DownloadActionCallback;
 using google_apis::EntryActionCallback;
 using google_apis::FileListCallback;
+using google_apis::FileResourceCallback;
 using google_apis::GetContentCallback;
-using google_apis::GetResourceEntryCallback;
 using google_apis::GetShareUrlCallback;
 using google_apis::InitiateUploadCallback;
 using google_apis::ProgressCallback;
@@ -85,9 +85,9 @@ CancelCallback DummyDriveService::GetRemainingFileList(
     const GURL& next_link,
     const FileListCallback& callback) { return CancelCallback(); }
 
-CancelCallback DummyDriveService::GetResourceEntry(
+CancelCallback DummyDriveService::GetFileResource(
     const std::string& resource_id,
-    const GetResourceEntryCallback& callback) { return CancelCallback(); }
+    const FileResourceCallback& callback) { return CancelCallback(); }
 
 CancelCallback DummyDriveService::GetShareUrl(
     const std::string& resource_id,
@@ -121,7 +121,7 @@ CancelCallback DummyDriveService::CopyResource(
     const std::string& parent_resource_id,
     const std::string& new_title,
     const base::Time& last_modified,
-    const GetResourceEntryCallback& callback) { return CancelCallback(); }
+    const FileResourceCallback& callback) { return CancelCallback(); }
 
 CancelCallback DummyDriveService::UpdateResource(
     const std::string& resource_id,
@@ -129,7 +129,7 @@ CancelCallback DummyDriveService::UpdateResource(
     const std::string& new_title,
     const base::Time& last_modified,
     const base::Time& last_viewed_by_me,
-    const google_apis::GetResourceEntryCallback& callback) {
+    const google_apis::FileResourceCallback& callback) {
   return CancelCallback();
 }
 
@@ -152,7 +152,7 @@ CancelCallback DummyDriveService::AddNewDirectory(
     const std::string& parent_resource_id,
     const std::string& directory_title,
     const AddNewDirectoryOptions& options,
-    const GetResourceEntryCallback& callback) { return CancelCallback(); }
+    const FileResourceCallback& callback) { return CancelCallback(); }
 
 CancelCallback DummyDriveService::InitiateUploadNewFile(
     const std::string& content_type,

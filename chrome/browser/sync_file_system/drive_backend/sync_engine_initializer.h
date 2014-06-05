@@ -93,7 +93,7 @@ class SyncEngineInitializer : public SyncTask {
   void CreateSyncRoot(scoped_ptr<SyncTaskToken> token);
   void DidCreateSyncRoot(scoped_ptr<SyncTaskToken> token,
                          google_apis::GDataErrorCode error,
-                         scoped_ptr<google_apis::ResourceEntry> entry);
+                         scoped_ptr<google_apis::FileResource> entry);
   void DetachSyncRoot(scoped_ptr<SyncTaskToken> token);
   void DidDetachSyncRoot(scoped_ptr<SyncTaskToken> token,
                          google_apis::GDataErrorCode error);

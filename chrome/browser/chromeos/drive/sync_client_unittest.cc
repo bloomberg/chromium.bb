@@ -26,6 +26,7 @@
 #include "chrome/browser/drive/event_logger.h"
 #include "chrome/browser/drive/fake_drive_service.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "google_apis/drive/drive_api_parser.h"
 #include "google_apis/drive/test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -163,7 +164,7 @@ class SyncClientTest : public testing::Test {
   // Adds a file to the service root and |resource_ids_|.
   void AddFileEntry(const std::string& title) {
     google_apis::GDataErrorCode error = google_apis::GDATA_FILE_ERROR;
-    scoped_ptr<google_apis::ResourceEntry> entry;
+    scoped_ptr<google_apis::FileResource> entry;
     drive_service_->AddNewFile(
         "text/plain",
         kRemoteContent,
@@ -174,7 +175,7 @@ class SyncClientTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
     ASSERT_EQ(google_apis::HTTP_CREATED, error);
     ASSERT_TRUE(entry);
-    resource_ids_[title] = entry->resource_id();
+    resource_ids_[title] = entry->file_id();
   }
 
   // Sets up data for tests.
@@ -296,26 +297,24 @@ TEST_F(SyncClientTest, StartProcessingBacklog) {
 
   // Removed entry is not found.
   google_apis::GDataErrorCode status = google_apis::GDATA_OTHER_ERROR;
-  scoped_ptr<google_apis::ResourceEntry> resource_entry;
-  drive_service_->GetResourceEntry(
+  scoped_ptr<google_apis::FileResource> server_entry;
+  drive_service_->GetFileResource(
       resource_ids_["removed"],
-      google_apis::test_util::CreateCopyResultCallback(&status,
-                                                       &resource_entry));
+      google_apis::test_util::CreateCopyResultCallback(&status, &server_entry));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(google_apis::HTTP_SUCCESS, status);
-  ASSERT_TRUE(resource_entry);
-  EXPECT_TRUE(resource_entry->deleted());
+  ASSERT_TRUE(server_entry);
+  EXPECT_TRUE(server_entry->labels().is_trashed());
 
   // Moved entry was moved.
   status = google_apis::GDATA_OTHER_ERROR;
-  drive_service_->GetResourceEntry(
+  drive_service_->GetFileResource(
       resource_ids_["moved"],
-      google_apis::test_util::CreateCopyResultCallback(&status,
-                                                       &resource_entry));
+      google_apis::test_util::CreateCopyResultCallback(&status, &server_entry));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(google_apis::HTTP_SUCCESS, status);
-  ASSERT_TRUE(resource_entry);
-  EXPECT_EQ("moved_new_title", resource_entry->title());
+  ASSERT_TRUE(server_entry);
+  EXPECT_EQ("moved_new_title", server_entry->title());
 }
 
 TEST_F(SyncClientTest, AddFetchTask) {

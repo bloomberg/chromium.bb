@@ -108,7 +108,7 @@ class RemoteToLocalSyncer : public ExclusiveTask {
   void HandleMissingRemoteMetadata(const SyncStatusCallback& callback);
   void DidGetRemoteMetadata(const SyncStatusCallback& callback,
                             google_apis::GDataErrorCode error,
-                            scoped_ptr<google_apis::ResourceEntry> entry);
+                            scoped_ptr<google_apis::FileResource> entry);
   void DidUpdateDatabaseForRemoteMetadata(const SyncStatusCallback& callback,
                                           SyncStatusCode status);
 

@@ -35,7 +35,7 @@ class DriveServiceOnWorker : public drive::DriveServiceInterface {
       const std::string& parent_resource_id,
       const std::string& directory_title,
       const AddNewDirectoryOptions& options,
-      const google_apis::GetResourceEntryCallback& callback) OVERRIDE;
+      const google_apis::FileResourceCallback& callback) OVERRIDE;
 
   virtual google_apis::CancelCallback DeleteResource(
       const std::string& resource_id,
@@ -66,9 +66,9 @@ class DriveServiceOnWorker : public drive::DriveServiceInterface {
       const GURL& next_link,
       const google_apis::FileListCallback& callback) OVERRIDE;
 
-  virtual google_apis::CancelCallback GetResourceEntry(
+  virtual google_apis::CancelCallback GetFileResource(
       const std::string& resource_id,
-      const google_apis::GetResourceEntryCallback& callback) OVERRIDE;
+      const google_apis::FileResourceCallback& callback) OVERRIDE;
 
   virtual google_apis::CancelCallback GetFileListInDirectory(
       const std::string& directory_resource_id,
@@ -117,14 +117,14 @@ class DriveServiceOnWorker : public drive::DriveServiceInterface {
       const std::string& parent_resource_id,
       const std::string& new_title,
       const base::Time& last_modified,
-      const google_apis::GetResourceEntryCallback& callback) OVERRIDE;
+      const google_apis::FileResourceCallback& callback) OVERRIDE;
   virtual google_apis::CancelCallback UpdateResource(
       const std::string& resource_id,
       const std::string& parent_resource_id,
       const std::string& new_title,
       const base::Time& last_modified,
       const base::Time& last_viewed_by_me,
-      const google_apis::GetResourceEntryCallback& callback) OVERRIDE;
+      const google_apis::FileResourceCallback& callback) OVERRIDE;
   virtual google_apis::CancelCallback RenameResource(
       const std::string& resource_id,
       const std::string& new_title,

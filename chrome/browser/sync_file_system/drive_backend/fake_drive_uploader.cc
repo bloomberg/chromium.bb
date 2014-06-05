@@ -9,16 +9,19 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_proxy.h"
+#include "chrome/browser/drive/drive_api_util.h"
+#include "google_apis/drive/drive_api_parser.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using drive::FakeDriveService;
 using drive::UploadCompletionCallback;
 using google_apis::CancelCallback;
+using google_apis::FileResource;
+using google_apis::FileResourceCallback;
 using google_apis::GDataErrorCode;
 using google_apis::GetResourceEntryCallback;
 using google_apis::ProgressCallback;
 using google_apis::ResourceEntry;
-using google_apis::ResourceList;
 
 namespace sync_file_system {
 namespace drive_backend {
@@ -26,7 +29,7 @@ namespace drive_backend {
 namespace {
 
 void DidAddFileOrDirectoryForMakingConflict(GDataErrorCode error,
-                                            scoped_ptr<ResourceEntry> entry) {
+                                            scoped_ptr<FileResource> entry) {
   ASSERT_EQ(google_apis::HTTP_CREATED, error);
   ASSERT_TRUE(entry);
 }
@@ -34,7 +37,7 @@ void DidAddFileOrDirectoryForMakingConflict(GDataErrorCode error,
 void DidAddFileForUploadNew(
     const UploadCompletionCallback& callback,
     GDataErrorCode error,
-    scoped_ptr<ResourceEntry> entry) {
+    scoped_ptr<FileResource> entry) {
   ASSERT_EQ(google_apis::HTTP_CREATED, error);
   ASSERT_TRUE(entry);
   base::MessageLoopProxy::current()->PostTask(
@@ -42,19 +45,23 @@ void DidAddFileForUploadNew(
       base::Bind(callback,
                  google_apis::HTTP_SUCCESS,
                  GURL(),
-                 base::Passed(&entry)));
+                 base::Passed(
+                     drive::util::ConvertFileResourceToResourceEntry(*entry))));
 }
 
-void DidGetResourceEntryForUploadExisting(
+void DidGetFileResourceForUploadExisting(
     const UploadCompletionCallback& callback,
     GDataErrorCode error,
-    scoped_ptr<ResourceEntry> entry) {
+    scoped_ptr<FileResource> entry) {
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
       base::Bind(callback,
                  error,
                  GURL(),
-                 base::Passed(&entry)));
+                 base::Passed(
+                     entry ?
+                     drive::util::ConvertFileResourceToResourceEntry(*entry) :
+                     scoped_ptr<ResourceEntry>())));
 }
 
 }  // namespace
@@ -68,7 +75,7 @@ CancelCallback FakeDriveServiceWrapper::AddNewDirectory(
     const std::string& parent_resource_id,
     const std::string& directory_name,
     const AddNewDirectoryOptions& options,
-    const GetResourceEntryCallback& callback) {
+    const FileResourceCallback& callback) {
   if (make_directory_conflict_) {
     FakeDriveService::AddNewDirectory(
         parent_resource_id,
@@ -128,9 +135,9 @@ CancelCallback FakeDriveUploader::UploadExistingFile(
     const UploadCompletionCallback& callback,
     const ProgressCallback& progress_callback) {
   DCHECK(!callback.is_null());
-  return fake_drive_service_->GetResourceEntry(
+  return fake_drive_service_->GetFileResource(
       resource_id,
-      base::Bind(&DidGetResourceEntryForUploadExisting, callback));
+      base::Bind(&DidGetFileResourceForUploadExisting, callback));
 }
 
 CancelCallback FakeDriveUploader::ResumeUploadFile(

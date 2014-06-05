@@ -8,7 +8,7 @@
 #include "chrome/browser/chromeos/drive/change_list_loader.h"
 #include "chrome/browser/chromeos/drive/file_system/operation_test_base.h"
 #include "chrome/browser/drive/fake_drive_service.h"
-#include "google_apis/drive/gdata_wapi_parser.h"
+#include "google_apis/drive/drive_api_parser.h"
 #include "google_apis/drive/test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -52,16 +52,15 @@ TEST_F(SearchOperationTest, ContentSearchWithNewEntry) {
                             loader_controller());
 
   // Create a new directory in the drive service.
-  google_apis::GDataErrorCode gdata_error = google_apis::GDATA_OTHER_ERROR;
-  scoped_ptr<google_apis::ResourceEntry> resource_entry;
+  google_apis::GDataErrorCode status = google_apis::GDATA_OTHER_ERROR;
+  scoped_ptr<google_apis::FileResource> server_entry;
   fake_service()->AddNewDirectory(
       fake_service()->GetRootResourceId(),
       "New Directory 1!",
       DriveServiceInterface::AddNewDirectoryOptions(),
-      google_apis::test_util::CreateCopyResultCallback(
-          &gdata_error, &resource_entry));
+      google_apis::test_util::CreateCopyResultCallback(&status, &server_entry));
   test_util::RunBlockingPoolTask();
-  ASSERT_EQ(google_apis::HTTP_CREATED, gdata_error);
+  ASSERT_EQ(google_apis::HTTP_CREATED, status);
 
   // As the result of the first Search(), only entries in the current file
   // system snapshot are expected to be returned in the "right" path. New

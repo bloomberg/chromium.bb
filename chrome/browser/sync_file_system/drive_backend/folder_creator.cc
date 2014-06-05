@@ -50,7 +50,7 @@ void FolderCreator::Run(const FileIDCallback& callback) {
 void FolderCreator::DidCreateFolder(
     const FileIDCallback& callback,
     google_apis::GDataErrorCode error,
-    scoped_ptr<google_apis::ResourceEntry> entry) {
+    scoped_ptr<google_apis::FileResource> entry) {
   SyncStatusCode status = GDataErrorCodeToSyncStatusCode(error);
   if (status != SYNC_STATUS_OK) {
     callback.Run(std::string(), status);

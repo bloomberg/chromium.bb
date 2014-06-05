@@ -267,7 +267,7 @@ bool ConflictResolver::IsContextReady() {
 void ConflictResolver::UpdateFileMetadata(
     const std::string& file_id,
     const SyncStatusCallback& callback) {
-  drive_service()->GetResourceEntry(
+  drive_service()->GetFileResource(
       file_id,
       base::Bind(&ConflictResolver::DidGetRemoteMetadata,
                  weak_ptr_factory_.GetWeakPtr(), file_id, callback));
@@ -277,7 +277,7 @@ void ConflictResolver::DidGetRemoteMetadata(
     const std::string& file_id,
     const SyncStatusCallback& callback,
     google_apis::GDataErrorCode error,
-    scoped_ptr<google_apis::ResourceEntry> entry) {
+    scoped_ptr<google_apis::FileResource> entry) {
   SyncStatusCode status = GDataErrorCodeToSyncStatusCode(error);
   if (status != SYNC_STATUS_OK && error != google_apis::HTTP_NOT_FOUND) {
     callback.Run(status);
@@ -295,9 +295,7 @@ void ConflictResolver::DidGetRemoteMetadata(
     return;
   }
 
-  metadata_database()->UpdateByFileResource(
-      *drive::util::ConvertResourceEntryToFileResource(*entry),
-      callback);
+  metadata_database()->UpdateByFileResource(*entry, callback);
 }
 
 drive::DriveServiceInterface* ConflictResolver::drive_service() {

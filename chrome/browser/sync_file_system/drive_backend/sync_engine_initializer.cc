@@ -250,7 +250,7 @@ void SyncEngineInitializer::CreateSyncRoot(scoped_ptr<SyncTaskToken> token) {
 void SyncEngineInitializer::DidCreateSyncRoot(
     scoped_ptr<SyncTaskToken> token,
     google_apis::GDataErrorCode error,
-    scoped_ptr<google_apis::ResourceEntry> entry) {
+    scoped_ptr<google_apis::FileResource> entry) {
   DCHECK(!sync_root_folder_);
   cancel_callback_.Reset();
 

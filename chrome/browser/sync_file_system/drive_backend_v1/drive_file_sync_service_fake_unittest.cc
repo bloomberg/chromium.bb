@@ -10,6 +10,7 @@
 #include "base/file_util.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/run_loop.h"
+#include "chrome/browser/drive/drive_api_util.h"
 #include "chrome/browser/drive/drive_uploader.h"
 #include "chrome/browser/drive/fake_drive_service.h"
 #include "chrome/browser/extensions/test_extension_service.h"
@@ -58,8 +59,8 @@ using drive::FakeDriveService;
 
 using extensions::Extension;
 using extensions::DictionaryBuilder;
+using google_apis::FileResource;
 using google_apis::GDataErrorCode;
-using google_apis::ResourceEntry;
 
 namespace sync_file_system {
 
@@ -341,10 +342,12 @@ class DriveFileSyncServiceFakeTest : public testing::Test {
   bool AppendIncrementalRemoteChangeByResourceId(
       const std::string& resource_id,
       const GURL& origin) {
-    scoped_ptr<ResourceEntry> entry;
+    scoped_ptr<FileResource> entry;
     EXPECT_EQ(google_apis::HTTP_SUCCESS,
-              fake_drive_helper_->GetResourceEntry(resource_id, &entry));
-    return sync_service_->AppendRemoteChange(origin, *entry, 12345);
+              fake_drive_helper_->GetFileResource(resource_id, &entry));
+    return sync_service_->AppendRemoteChange(
+        origin, *drive::util::ConvertFileResourceToResourceEntry(*entry),
+        12345);
   }
 
   bool AppendIncrementalRemoteChange(
@@ -379,18 +382,18 @@ class DriveFileSyncServiceFakeTest : public testing::Test {
                   const std::string& parent_resource_id,
                   const std::string& title,
                   const std::string& content,
-                  scoped_ptr<google_apis::ResourceEntry>* entry) {
+                  scoped_ptr<google_apis::FileResource>* entry) {
     std::string file_id;
     ASSERT_EQ(google_apis::HTTP_SUCCESS,
               fake_drive_helper_->AddFile(
                   parent_resource_id, title, content, &file_id));
     ASSERT_EQ(google_apis::HTTP_SUCCESS,
-              fake_drive_helper_->GetResourceEntry(
+              fake_drive_helper_->GetFileResource(
                   file_id, entry));
 
     DriveMetadata metadata;
     metadata.set_resource_id(file_id);
-    metadata.set_md5_checksum((*entry)->file_md5());
+    metadata.set_md5_checksum((*entry)->md5_checksum());
     metadata.set_conflicted(false);
     metadata.set_to_be_fetched(false);
     metadata.set_type(DriveMetadata::RESOURCE_TYPE_FILE);

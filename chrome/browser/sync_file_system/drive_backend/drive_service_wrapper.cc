@@ -22,7 +22,7 @@ void DriveServiceWrapper::AddNewDirectory(
     const std::string& parent_resource_id,
     const std::string& directory_title,
     const drive::DriveServiceInterface::AddNewDirectoryOptions& options,
-    const google_apis::GetResourceEntryCallback& callback) {
+    const google_apis::FileResourceCallback& callback) {
   drive_service_->AddNewDirectory(parent_resource_id,
                                   directory_title,
                                   options,
@@ -74,10 +74,10 @@ void DriveServiceWrapper::GetRemainingFileList(
   drive_service_->GetRemainingFileList(next_link, callback);
 }
 
-void DriveServiceWrapper::GetResourceEntry(
+void DriveServiceWrapper::GetFileResource(
     const std::string& resource_id,
-    const google_apis::GetResourceEntryCallback& callback) {
-  drive_service_->GetResourceEntry(resource_id, callback);
+    const google_apis::FileResourceCallback& callback) {
+  drive_service_->GetFileResource(resource_id, callback);
 }
 
 void DriveServiceWrapper::GetFileListInDirectory(

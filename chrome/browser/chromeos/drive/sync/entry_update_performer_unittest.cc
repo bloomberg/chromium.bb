@@ -16,7 +16,6 @@
 #include "chrome/browser/drive/drive_api_util.h"
 #include "chrome/browser/drive/fake_drive_service.h"
 #include "google_apis/drive/drive_api_parser.h"
-#include "google_apis/drive/gdata_wapi_parser.h"
 #include "google_apis/drive/test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -106,8 +105,8 @@ TEST_F(EntryUpdatePerformerTest, UpdateEntry) {
 
   // Verify the file is updated on the server.
   google_apis::GDataErrorCode gdata_error = google_apis::GDATA_OTHER_ERROR;
-  scoped_ptr<google_apis::ResourceEntry> gdata_entry;
-  fake_service()->GetResourceEntry(
+  scoped_ptr<google_apis::FileResource> gdata_entry;
+  fake_service()->GetFileResource(
       src_entry.resource_id(),
       google_apis::test_util::CreateCopyResultCallback(&gdata_error,
                                                        &gdata_entry));
@@ -116,14 +115,11 @@ TEST_F(EntryUpdatePerformerTest, UpdateEntry) {
   ASSERT_TRUE(gdata_entry);
 
   EXPECT_EQ(src_entry.title(), gdata_entry->title());
-  EXPECT_EQ(new_last_modified, gdata_entry->updated_time());
-  EXPECT_EQ(new_last_accessed, gdata_entry->last_viewed_time());
+  EXPECT_EQ(new_last_modified, gdata_entry->modified_date());
+  EXPECT_EQ(new_last_accessed, gdata_entry->last_viewed_by_me_date());
 
-  const google_apis::Link* parent_link =
-      gdata_entry->GetLinkByType(google_apis::Link::LINK_PARENT);
-  ASSERT_TRUE(parent_link);
-  EXPECT_EQ(dest_entry.resource_id(),
-            util::ExtractResourceIdFromUrl(parent_link->href()));
+  ASSERT_FALSE(gdata_entry->parents().empty());
+  EXPECT_EQ(dest_entry.resource_id(), gdata_entry->parents()[0].file_id());
 }
 
 // Tests updating metadata of a file with a non-dirty cache file.
@@ -175,8 +171,8 @@ TEST_F(EntryUpdatePerformerTest, UpdateEntry_WithNonDirtyCache) {
 
   // Verify the file is updated on the server.
   google_apis::GDataErrorCode gdata_error = google_apis::GDATA_OTHER_ERROR;
-  scoped_ptr<google_apis::ResourceEntry> gdata_entry;
-  fake_service()->GetResourceEntry(
+  scoped_ptr<google_apis::FileResource> gdata_entry;
+  fake_service()->GetFileResource(
       src_entry->resource_id(),
       google_apis::test_util::CreateCopyResultCallback(&gdata_error,
                                                        &gdata_entry));
@@ -224,8 +220,8 @@ TEST_F(EntryUpdatePerformerTest, UpdateEntry_ContentUpdate) {
 
   // Check that the file size is updated to that of the updated content.
   google_apis::GDataErrorCode gdata_error = google_apis::GDATA_OTHER_ERROR;
-  scoped_ptr<google_apis::ResourceEntry> server_entry;
-  fake_service()->GetResourceEntry(
+  scoped_ptr<google_apis::FileResource> server_entry;
+  fake_service()->GetFileResource(
       kResourceId,
       google_apis::test_util::CreateCopyResultCallback(&gdata_error,
                                                        &server_entry));
@@ -268,8 +264,8 @@ TEST_F(EntryUpdatePerformerTest, UpdateEntry_ContentUpdateMd5Check) {
 
   // Check that the file size is updated to that of the updated content.
   google_apis::GDataErrorCode gdata_error = google_apis::GDATA_OTHER_ERROR;
-  scoped_ptr<google_apis::ResourceEntry> server_entry;
-  fake_service()->GetResourceEntry(
+  scoped_ptr<google_apis::FileResource> server_entry;
+  fake_service()->GetFileResource(
       kResourceId,
       google_apis::test_util::CreateCopyResultCallback(&gdata_error,
                                                        &server_entry));
@@ -418,15 +414,14 @@ TEST_F(EntryUpdatePerformerTest, UpdateEntry_UploadNewFile) {
 
   // Make sure that we really created a file.
   google_apis::GDataErrorCode status = google_apis::GDATA_OTHER_ERROR;
-  scoped_ptr<google_apis::ResourceEntry> resource_entry;
-  fake_service()->GetResourceEntry(
+  scoped_ptr<google_apis::FileResource> server_entry;
+  fake_service()->GetFileResource(
       entry.resource_id(),
-      google_apis::test_util::CreateCopyResultCallback(&status,
-                                                       &resource_entry));
+      google_apis::test_util::CreateCopyResultCallback(&status, &server_entry));
   test_util::RunBlockingPoolTask();
   EXPECT_EQ(google_apis::HTTP_SUCCESS, status);
-  ASSERT_TRUE(resource_entry);
-  EXPECT_FALSE(resource_entry->is_folder());
+  ASSERT_TRUE(server_entry);
+  EXPECT_FALSE(server_entry->IsDirectory());
 }
 
 TEST_F(EntryUpdatePerformerTest, UpdateEntry_NewFileOpendForWrite) {
@@ -545,15 +540,14 @@ TEST_F(EntryUpdatePerformerTest, UpdateEntry_CreateDirectory) {
 
   // Make sure that we really created a directory.
   google_apis::GDataErrorCode status = google_apis::GDATA_OTHER_ERROR;
-  scoped_ptr<google_apis::ResourceEntry> resource_entry;
-  fake_service()->GetResourceEntry(
+  scoped_ptr<google_apis::FileResource> server_entry;
+  fake_service()->GetFileResource(
       entry.resource_id(),
-      google_apis::test_util::CreateCopyResultCallback(&status,
-                                                       &resource_entry));
+      google_apis::test_util::CreateCopyResultCallback(&status, &server_entry));
   test_util::RunBlockingPoolTask();
   EXPECT_EQ(google_apis::HTTP_SUCCESS, status);
-  ASSERT_TRUE(resource_entry);
-  EXPECT_TRUE(resource_entry->is_folder());
+  ASSERT_TRUE(server_entry);
+  EXPECT_TRUE(server_entry->IsDirectory());
 }
 
 }  // namespace internal

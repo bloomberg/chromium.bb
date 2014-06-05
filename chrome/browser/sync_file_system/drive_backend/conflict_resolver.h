@@ -20,7 +20,7 @@ class DriveServiceInterface;
 }
 
 namespace google_apis {
-class ResourceEntry;
+class FileResource;
 }
 
 namespace sync_file_system {
@@ -62,7 +62,7 @@ class ConflictResolver : public ExclusiveTask {
   void DidGetRemoteMetadata(const std::string& file_id,
                             const SyncStatusCallback& callback,
                             google_apis::GDataErrorCode error,
-                            scoped_ptr<google_apis::ResourceEntry> entry);
+                            scoped_ptr<google_apis::FileResource> entry);
 
   std::string target_file_id_;
   std::vector<std::string> parents_to_remove_;

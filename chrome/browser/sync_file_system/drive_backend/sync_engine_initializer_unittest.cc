@@ -141,7 +141,7 @@ class SyncEngineInitializerTest : public testing::Test {
       const std::string& parent_folder_id,
       const std::string& title) {
     google_apis::GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
-    scoped_ptr<google_apis::ResourceEntry> entry;
+    scoped_ptr<google_apis::FileResource> entry;
     sync_context_->GetDriveService()->AddNewDirectory(
         parent_folder_id, title,
         drive::DriveServiceInterface::AddNewDirectoryOptions(),
@@ -149,9 +149,7 @@ class SyncEngineInitializerTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
 
     EXPECT_EQ(google_apis::HTTP_CREATED, error);
-    if (!entry)
-      scoped_ptr<google_apis::FileResource>();
-    return drive::util::ConvertResourceEntryToFileResource(*entry);
+    return entry.Pass();
   }
 
   scoped_ptr<google_apis::FileResource> CreateRemoteSyncRoot() {
@@ -193,13 +191,13 @@ class SyncEngineInitializerTest : public testing::Test {
 
   bool HasNoParent(const std::string& file_id) {
     google_apis::GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
-    scoped_ptr<google_apis::ResourceEntry> entry;
-    sync_context_->GetDriveService()->GetResourceEntry(
+    scoped_ptr<google_apis::FileResource> entry;
+    sync_context_->GetDriveService()->GetFileResource(
         file_id,
         CreateResultReceiver(&error, &entry));
     base::RunLoop().RunUntilIdle();
     EXPECT_EQ(google_apis::HTTP_SUCCESS, error);
-    return !entry->GetLinkByType(google_apis::Link::LINK_PARENT);
+    return entry->parents().empty();
   }
 
   size_t CountFileMetadata() {

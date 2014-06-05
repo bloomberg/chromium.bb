@@ -54,7 +54,7 @@
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/api/test/test_api.h"
 #include "extensions/common/extension.h"
-#include "google_apis/drive/gdata_wapi_parser.h"
+#include "google_apis/drive/drive_api_parser.h"
 #include "google_apis/drive/test_util.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "webkit/browser/fileapi/external_mount_points.h"
@@ -388,25 +388,23 @@ class DriveTestVolume : public TestVolume {
                        const std::string& target_name,
                        const base::Time& modification_time) {
     google_apis::GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
-    scoped_ptr<google_apis::ResourceEntry> resource_entry;
+    scoped_ptr<google_apis::FileResource> entry;
     fake_drive_service_->AddNewDirectory(
         parent_id,
         target_name,
         drive::DriveServiceInterface::AddNewDirectoryOptions(),
-        google_apis::test_util::CreateCopyResultCallback(&error,
-                                                         &resource_entry));
+        google_apis::test_util::CreateCopyResultCallback(&error, &entry));
     base::MessageLoop::current()->RunUntilIdle();
     ASSERT_EQ(google_apis::HTTP_CREATED, error);
-    ASSERT_TRUE(resource_entry);
+    ASSERT_TRUE(entry);
 
     fake_drive_service_->SetLastModifiedTime(
-        resource_entry->resource_id(),
+        entry->file_id(),
         modification_time,
-        google_apis::test_util::CreateCopyResultCallback(&error,
-                                                         &resource_entry));
+        google_apis::test_util::CreateCopyResultCallback(&error, &entry));
     base::MessageLoop::current()->RunUntilIdle();
     ASSERT_TRUE(error == google_apis::HTTP_SUCCESS);
-    ASSERT_TRUE(resource_entry);
+    ASSERT_TRUE(entry);
     CheckForUpdates();
   }
 
@@ -428,27 +426,25 @@ class DriveTestVolume : public TestVolume {
       ASSERT_TRUE(base::ReadFileToString(source_file_path, &content_data));
     }
 
-    scoped_ptr<google_apis::ResourceEntry> resource_entry;
+    scoped_ptr<google_apis::FileResource> entry;
     fake_drive_service_->AddNewFile(
         mime_type,
         content_data,
         parent_id,
         target_name,
         shared_with_me,
-        google_apis::test_util::CreateCopyResultCallback(&error,
-                                                         &resource_entry));
+        google_apis::test_util::CreateCopyResultCallback(&error, &entry));
     base::MessageLoop::current()->RunUntilIdle();
     ASSERT_EQ(google_apis::HTTP_CREATED, error);
-    ASSERT_TRUE(resource_entry);
+    ASSERT_TRUE(entry);
 
     fake_drive_service_->SetLastModifiedTime(
-        resource_entry->resource_id(),
+        entry->file_id(),
         modification_time,
-        google_apis::test_util::CreateCopyResultCallback(&error,
-                                                         &resource_entry));
+        google_apis::test_util::CreateCopyResultCallback(&error, &entry));
     base::MessageLoop::current()->RunUntilIdle();
     ASSERT_EQ(google_apis::HTTP_SUCCESS, error);
-    ASSERT_TRUE(resource_entry);
+    ASSERT_TRUE(entry);
 
     CheckForUpdates();
   }

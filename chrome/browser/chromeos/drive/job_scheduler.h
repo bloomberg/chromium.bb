@@ -289,12 +289,12 @@ class JobScheduler
       google_apis::GDataErrorCode error,
       scoped_ptr<google_apis::ChangeList> change_list);
 
-  // Callback for job finishing with a GetResourceEntryCallback.
-  void OnGetResourceEntryJobDone(
+  // Callback for job finishing with a FileResourceCallback.
+  void OnGetFileResourceJobDone(
       JobID job_id,
       const google_apis::GetResourceEntryCallback& callback,
       google_apis::GDataErrorCode error,
-      scoped_ptr<google_apis::ResourceEntry> entry);
+      scoped_ptr<google_apis::FileResource> entry);
 
   // Callback for job finishing with a AboutResourceCallback.
   void OnGetAboutResourceJobDone(

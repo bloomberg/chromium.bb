@@ -95,9 +95,9 @@ class DriveAPIService : public DriveServiceInterface,
   virtual google_apis::CancelCallback GetRemainingFileList(
       const GURL& next_link,
       const google_apis::FileListCallback& callback) OVERRIDE;
-  virtual google_apis::CancelCallback GetResourceEntry(
+  virtual google_apis::CancelCallback GetFileResource(
       const std::string& resource_id,
-      const google_apis::GetResourceEntryCallback& callback) OVERRIDE;
+      const google_apis::FileResourceCallback& callback) OVERRIDE;
   virtual google_apis::CancelCallback GetShareUrl(
       const std::string& resource_id,
       const GURL& embed_origin,
@@ -124,14 +124,14 @@ class DriveAPIService : public DriveServiceInterface,
       const std::string& parent_resource_id,
       const std::string& new_title,
       const base::Time& last_modified,
-      const google_apis::GetResourceEntryCallback& callback) OVERRIDE;
+      const google_apis::FileResourceCallback& callback) OVERRIDE;
   virtual google_apis::CancelCallback UpdateResource(
       const std::string& resource_id,
       const std::string& parent_resource_id,
       const std::string& new_title,
       const base::Time& last_modified,
       const base::Time& last_viewed_by_me,
-      const google_apis::GetResourceEntryCallback& callback) OVERRIDE;
+      const google_apis::FileResourceCallback& callback) OVERRIDE;
   virtual google_apis::CancelCallback RenameResource(
       const std::string& resource_id,
       const std::string& new_title,
@@ -148,7 +148,7 @@ class DriveAPIService : public DriveServiceInterface,
       const std::string& parent_resource_id,
       const std::string& directory_title,
       const AddNewDirectoryOptions& options,
-      const google_apis::GetResourceEntryCallback& callback) OVERRIDE;
+      const google_apis::FileResourceCallback& callback) OVERRIDE;
   virtual google_apis::CancelCallback InitiateUploadNewFile(
       const std::string& content_type,
       int64 content_length,

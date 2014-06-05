@@ -391,10 +391,10 @@ void JobScheduler::GetResourceEntry(
   JobEntry* new_job = CreateNewJob(TYPE_GET_RESOURCE_ENTRY);
   new_job->context = context;
   new_job->task = base::Bind(
-      &DriveServiceInterface::GetResourceEntry,
+      &DriveServiceInterface::GetFileResource,
       base::Unretained(drive_service_),
       resource_id,
-      base::Bind(&JobScheduler::OnGetResourceEntryJobDone,
+      base::Bind(&JobScheduler::OnGetFileResourceJobDone,
                  weak_ptr_factory_.GetWeakPtr(),
                  new_job->job_info.job_id,
                  callback));
@@ -463,7 +463,7 @@ void JobScheduler::CopyResource(
       parent_resource_id,
       new_title,
       last_modified,
-      base::Bind(&JobScheduler::OnGetResourceEntryJobDone,
+      base::Bind(&JobScheduler::OnGetFileResourceJobDone,
                  weak_ptr_factory_.GetWeakPtr(),
                  new_job->job_info.job_id,
                  callback));
@@ -492,7 +492,7 @@ void JobScheduler::UpdateResource(
       new_title,
       last_modified,
       last_viewed_by_me,
-      base::Bind(&JobScheduler::OnGetResourceEntryJobDone,
+      base::Bind(&JobScheduler::OnGetFileResourceJobDone,
                  weak_ptr_factory_.GetWeakPtr(),
                  new_job->job_info.job_id,
                  callback));
@@ -580,7 +580,7 @@ void JobScheduler::AddNewDirectory(
       parent_resource_id,
       directory_title,
       options,
-      base::Bind(&JobScheduler::OnGetResourceEntryJobDone,
+      base::Bind(&JobScheduler::OnGetFileResourceJobDone,
                  weak_ptr_factory_.GetWeakPtr(),
                  new_job->job_info.job_id,
                  callback));
@@ -930,16 +930,19 @@ void JobScheduler::OnGetChangeListJobDone(
   }
 }
 
-void JobScheduler::OnGetResourceEntryJobDone(
+void JobScheduler::OnGetFileResourceJobDone(
     JobID job_id,
     const google_apis::GetResourceEntryCallback& callback,
     google_apis::GDataErrorCode error,
-    scoped_ptr<google_apis::ResourceEntry> entry) {
+    scoped_ptr<google_apis::FileResource> entry) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  if (OnJobDone(job_id, error))
-    callback.Run(error, entry.Pass());
+  if (OnJobDone(job_id, error)) {
+    callback.Run(error, entry ?
+                 util::ConvertFileResourceToResourceEntry(*entry) :
+                 scoped_ptr<google_apis::ResourceEntry>());
+  }
 }
 
 void JobScheduler::OnGetAboutResourceJobDone(

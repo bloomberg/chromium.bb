@@ -18,7 +18,7 @@
 namespace google_apis {
 
 class AboutResource;
-class ResourceEntry;
+class FileResource;
 
 }  // namespace google_apis
 
@@ -141,12 +141,12 @@ class FakeFileSystem : public FileSystemInterface {
       const FileOperationCallback& completion_callback,
       FileError error,
       scoped_ptr<ResourceEntry> entry);
-  void GetFileContentAfterGetWapiResourceEntry(
+  void GetFileContentAfterGetFileResource(
       const GetFileContentInitializedCallback& initialized_callback,
       const google_apis::GetContentCallback& get_content_callback,
       const FileOperationCallback& completion_callback,
       google_apis::GDataErrorCode gdata_error,
-      scoped_ptr<google_apis::ResourceEntry> gdata_entry);
+      scoped_ptr<google_apis::FileResource> gdata_entry);
   void GetFileContentAfterDownloadFile(
       const FileOperationCallback& completion_callback,
       google_apis::GDataErrorCode gdata_error,
