@@ -18,7 +18,7 @@
 #include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if !defined(OS_ANDROID)
+#if defined(ENABLE_EXTENSIONS)
 #include "chrome/browser/extensions/api/downloads/downloads_api.h"
 #endif
 
@@ -444,7 +444,7 @@ class DownloadHistoryTest : public testing::Test {
     EXPECT_CALL(manager(), GetDownload(id))
         .WillRepeatedly(Return(&item(index)));
     EXPECT_CALL(item(index), IsTemporary()).WillRepeatedly(Return(false));
-#if !defined(OS_ANDROID)
+#if defined(ENABLE_EXTENSIONS)
     new extensions::DownloadedByExtension(
         &item(index), by_extension_id, by_extension_name);
 #endif

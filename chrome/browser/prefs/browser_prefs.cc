@@ -21,11 +21,7 @@
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/download/download_prefs.h"
-#include "chrome/browser/extensions/activity_log/activity_log.h"
-#include "chrome/browser/extensions/api/commands/command_service.h"
-#include "chrome/browser/extensions/api/tabs/tabs_api.h"
 #include "chrome/browser/extensions/extension_web_ui.h"
-#include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/geolocation/geolocation_prefs.h"
@@ -106,6 +102,13 @@
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/browser/url_blacklist_manager.h"
 #include "components/policy/core/common/policy_statistics_collector.h"
+#endif
+
+#if defined(ENABLE_EXTENSIONS)
+#include "chrome/browser/extensions/activity_log/activity_log.h"
+#include "chrome/browser/extensions/api/commands/command_service.h"
+#include "chrome/browser/extensions/api/tabs/tabs_api.h"
+#include "chrome/browser/extensions/launch_util.h"
 #endif
 
 #if defined(ENABLE_MANAGED_USERS)
@@ -347,9 +350,6 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   chrome_prefs::RegisterProfilePrefs(registry);
   DownloadPrefs::RegisterProfilePrefs(registry);
   easy_unlock::RegisterProfilePrefs(registry);
-  extensions::ExtensionPrefs::RegisterProfilePrefs(registry);
-  extensions::launch_util::RegisterProfilePrefs(registry);
-  ExtensionWebUI::RegisterProfilePrefs(registry);
   HostContentSettingsMap::RegisterProfilePrefs(registry);
   IncognitoModePrefs::RegisterProfilePrefs(registry);
   InstantUI::RegisterProfilePrefs(registry);
@@ -383,7 +383,12 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
 
 #if defined(ENABLE_EXTENSIONS)
   extensions::ActivityLog::RegisterProfilePrefs(registry);
+  extensions::launch_util::RegisterProfilePrefs(registry);
 #endif
+  // TODO(thestig) These should be in ifdef'd out, but too many parts of Chrome
+  // still expects it to be registered.
+  ExtensionWebUI::RegisterProfilePrefs(registry);
+  extensions::ExtensionPrefs::RegisterProfilePrefs(registry);
 
 #if defined(ENABLE_FULL_PRINTING)
   print_dialog_cloud::RegisterProfilePrefs(registry);

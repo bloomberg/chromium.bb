@@ -34,7 +34,7 @@ namespace user_prefs {
 class PrefRegistrySyncable;
 }
 
-#if defined(COMPILER_GCC)
+#if defined(COMPILER_GCC) && defined(ENABLE_EXTENSIONS)
 namespace BASE_HASH_NAMESPACE {
 template<>
 struct hash<extensions::CrxInstaller*> {
@@ -175,10 +175,12 @@ class ChromeDownloadManagerDelegate
   IdCallbackVector id_callbacks_;
   scoped_ptr<DownloadPrefs> download_prefs_;
 
+#if defined(ENABLE_EXTENSIONS)
   // Maps from pending extension installations to DownloadItem IDs.
   typedef base::hash_map<extensions::CrxInstaller*,
       content::DownloadOpenDelayedCallback> CrxInstallerMap;
   CrxInstallerMap crx_installers_;
+#endif
 
   content::NotificationRegistrar registrar_;
 

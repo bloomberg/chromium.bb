@@ -12,10 +12,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/autocomplete/autocomplete_provider_listener.h"
+#include "chrome/browser/autocomplete/keyword_extensions_delegate.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/extensions/api/omnibox/omnibox_api.h"
-#include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_service.h"
@@ -28,52 +26,9 @@
 #include "net/base/net_util.h"
 #include "ui/base/l10n/l10n_util.h"
 
-namespace omnibox_api = extensions::api::omnibox;
-
-// Helper functor for Start(), for ending keyword mode unless explicitly told
-// otherwise.
-class KeywordProvider::ScopedEndExtensionKeywordMode {
- public:
-  explicit ScopedEndExtensionKeywordMode(KeywordProvider* provider)
-      : provider_(provider) { }
-  ~ScopedEndExtensionKeywordMode() {
-    if (provider_)
-      provider_->MaybeEndExtensionKeywordMode();
-  }
-
-  void StayInKeywordMode() {
-    provider_ = NULL;
-  }
- private:
-  KeywordProvider* provider_;
-};
-
-KeywordProvider::KeywordProvider(AutocompleteProviderListener* listener,
-                                 Profile* profile)
-    : AutocompleteProvider(listener, profile,
-          AutocompleteProvider::TYPE_KEYWORD),
-      model_(NULL),
-      current_input_id_(0) {
-  // Extension suggestions always come from the original profile, since that's
-  // where extensions run. We use the input ID to distinguish whether the
-  // suggestions are meant for us.
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_EXTENSION_OMNIBOX_SUGGESTIONS_READY,
-                 content::Source<Profile>(profile->GetOriginalProfile()));
-  registrar_.Add(
-      this, chrome::NOTIFICATION_EXTENSION_OMNIBOX_DEFAULT_SUGGESTION_CHANGED,
-      content::Source<Profile>(profile->GetOriginalProfile()));
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_OMNIBOX_INPUT_ENTERED,
-                 content::Source<Profile>(profile));
-}
-
-KeywordProvider::KeywordProvider(AutocompleteProviderListener* listener,
-                                 TemplateURLService* model)
-    : AutocompleteProvider(listener, NULL, AutocompleteProvider::TYPE_KEYWORD),
-      model_(model),
-      current_input_id_(0) {
-}
-
+#if defined(ENABLE_EXTENSIONS)
+#include "chrome/browser/autocomplete/keyword_extensions_delegate_impl.h"
+#endif
 
 namespace {
 
@@ -92,11 +47,52 @@ class CompareQuality {
   }
 };
 
-// We need our input IDs to be unique across all profiles, so we keep a global
-// UID that each provider uses.
-static int global_input_uid_;
+// Helper for KeywordProvider::Start(), for ending keyword mode unless
+// explicitly told otherwise.
+class ScopedEndExtensionKeywordMode {
+ public:
+  explicit ScopedEndExtensionKeywordMode(KeywordExtensionsDelegate* delegate);
+  ~ScopedEndExtensionKeywordMode();
+
+  void StayInKeywordMode();
+
+ private:
+  KeywordExtensionsDelegate* delegate_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedEndExtensionKeywordMode);
+};
+
+ScopedEndExtensionKeywordMode::ScopedEndExtensionKeywordMode(
+    KeywordExtensionsDelegate* delegate)
+    : delegate_(delegate) {
+}
+
+ScopedEndExtensionKeywordMode::~ScopedEndExtensionKeywordMode() {
+  if (delegate_)
+    delegate_->MaybeEndExtensionKeywordMode();
+}
+
+void ScopedEndExtensionKeywordMode::StayInKeywordMode() {
+  delegate_ = NULL;
+}
 
 }  // namespace
+
+KeywordProvider::KeywordProvider(AutocompleteProviderListener* listener,
+                                 Profile* profile)
+    : AutocompleteProvider(listener, profile,
+                           AutocompleteProvider::TYPE_KEYWORD),
+      model_(NULL) {
+#if defined(ENABLE_EXTENSIONS)
+  extensions_delegate_.reset(new KeywordExtensionsDelegateImpl(this));
+#endif
+}
+
+KeywordProvider::KeywordProvider(AutocompleteProviderListener* listener,
+                                 TemplateURLService* model)
+    : AutocompleteProvider(listener, NULL, AutocompleteProvider::TYPE_KEYWORD),
+      model_(model) {
+}
 
 // static
 base::string16 KeywordProvider::SplitKeywordFromInput(
@@ -199,16 +195,11 @@ base::string16 KeywordProvider::GetKeywordForText(
     return base::string16();
 
   // Don't provide a keyword for inactive/disabled extension keywords.
-  if (template_url->GetType() == TemplateURL::OMNIBOX_API_EXTENSION) {
-    ExtensionService* extension_service =
-        extensions::ExtensionSystem::Get(profile_)->extension_service();
-    const extensions::Extension* extension = extension_service->
-        GetExtensionById(template_url->GetExtensionId(), false);
-    if (!extension ||
-        (profile_->IsOffTheRecord() &&
-        !extensions::util::IsIncognitoEnabled(extension->id(), profile_)))
-      return base::string16();
-  }
+  if ((template_url->GetType() == TemplateURL::OMNIBOX_API_EXTENSION) &&
+      extensions_delegate_ &&
+      !extensions_delegate_->IsEnabledExtension(
+          profile_, template_url->GetExtensionId()))
+    return base::string16();
 
   return keyword;
 }
@@ -227,7 +218,7 @@ void KeywordProvider::Start(const AutocompleteInput& input,
                             bool minimal_changes) {
   // This object ensures we end keyword mode if we exit the function without
   // toggling keyword mode to on.
-  ScopedEndExtensionKeywordMode keyword_mode_toggle(this);
+  ScopedEndExtensionKeywordMode keyword_mode_toggle(extensions_delegate_.get());
 
   matches_.clear();
 
@@ -236,7 +227,8 @@ void KeywordProvider::Start(const AutocompleteInput& input,
 
     // Input has changed. Increment the input ID so that we can discard any
     // stale extension suggestions that may be incoming.
-    current_input_id_ = ++global_input_uid_;
+    if (extensions_delegate_)
+      extensions_delegate_->IncrementInputId();
   }
 
   // Split user input into a keyword and some query input.
@@ -273,19 +265,12 @@ void KeywordProvider::Start(const AutocompleteInput& input,
     // Prune any extension keywords that are disallowed in incognito mode (if
     // we're incognito), or disabled.
     if (profile_ &&
-        (template_url->GetType() == TemplateURL::OMNIBOX_API_EXTENSION)) {
-      ExtensionService* service = extensions::ExtensionSystem::Get(profile_)->
-          extension_service();
-      const extensions::Extension* extension =
-          service->GetExtensionById(template_url->GetExtensionId(), false);
-      bool enabled =
-          extension && (!profile_->IsOffTheRecord() ||
-                        extensions::util::IsIncognitoEnabled(
-                            extension->id(), profile_));
-      if (!enabled) {
-        i = matches.erase(i);
-        continue;
-      }
+        (template_url->GetType() == TemplateURL::OMNIBOX_API_EXTENSION) &&
+        extensions_delegate_ &&
+        !extensions_delegate_->IsEnabledExtension(
+            profile_, template_url->GetExtensionId())) {
+      i = matches.erase(i);
+      continue;
     }
 
     // Prune any substituting keywords if there is no substitution.
@@ -327,42 +312,10 @@ void KeywordProvider::Start(const AutocompleteInput& input,
     matches_.push_back(CreateAutocompleteMatch(
         template_url, input, keyword.length(), remaining_input, true, -1));
 
-    if (profile_ && is_extension_keyword) {
-      if (input.want_asynchronous_matches()) {
-        if (template_url->GetExtensionId() != current_keyword_extension_id_)
-          MaybeEndExtensionKeywordMode();
-        if (current_keyword_extension_id_.empty())
-          EnterExtensionKeywordMode(template_url->GetExtensionId());
+    if (profile_ && is_extension_keyword && extensions_delegate_) {
+      if (extensions_delegate_->Start(input, minimal_changes, template_url,
+                                      remaining_input))
         keyword_mode_toggle.StayInKeywordMode();
-      }
-
-      extensions::ApplyDefaultSuggestionForExtensionKeyword(
-          profile_, template_url,
-          remaining_input,
-          &matches_[0]);
-
-      if (minimal_changes) {
-        // If the input hasn't significantly changed, we can just use the
-        // suggestions from last time. We need to readjust the relevance to
-        // ensure it is less than the main match's relevance.
-        for (size_t i = 0; i < extension_suggest_matches_.size(); ++i) {
-          matches_.push_back(extension_suggest_matches_[i]);
-          matches_.back().relevance = matches_[0].relevance - (i + 1);
-        }
-      } else if (input.want_asynchronous_matches()) {
-        extension_suggest_last_input_ = input;
-        extension_suggest_matches_.clear();
-
-        bool have_listeners =
-          extensions::ExtensionOmniboxEventRouter::OnInputChanged(
-              profile_, template_url->GetExtensionId(),
-              base::UTF16ToUTF8(remaining_input), current_input_id_);
-
-        // We only have to wait for suggest results if there are actually
-        // extensions listening for input changes.
-        if (have_listeners)
-          done_ = false;
-      }
     }
   } else {
     if (matches.size() > kMaxMatches)
@@ -377,7 +330,8 @@ void KeywordProvider::Start(const AutocompleteInput& input,
 
 void KeywordProvider::Stop(bool clear_cached_results) {
   done_ = true;
-  MaybeEndExtensionKeywordMode();
+  if (extensions_delegate_)
+    extensions_delegate_->MaybeEndExtensionKeywordMode();
 }
 
 KeywordProvider::~KeywordProvider() {}
@@ -520,92 +474,6 @@ void KeywordProvider::FillInURLAndContents(
   }
 }
 
-void KeywordProvider::Observe(int type,
-                              const content::NotificationSource& source,
-                              const content::NotificationDetails& details) {
-  TemplateURLService* model = GetTemplateURLService();
-  const AutocompleteInput& input = extension_suggest_last_input_;
-
-  switch (type) {
-    case chrome::NOTIFICATION_EXTENSION_OMNIBOX_INPUT_ENTERED:
-      // Input has been accepted, so we're done with this input session. Ensure
-      // we don't send the OnInputCancelled event, or handle any more stray
-      // suggestions_ready events.
-      current_keyword_extension_id_.clear();
-      current_input_id_ = 0;
-      return;
-
-    case chrome::NOTIFICATION_EXTENSION_OMNIBOX_DEFAULT_SUGGESTION_CHANGED: {
-      // It's possible to change the default suggestion while not in an editing
-      // session.
-      base::string16 keyword, remaining_input;
-      if (matches_.empty() || current_keyword_extension_id_.empty() ||
-          !ExtractKeywordFromInput(input, &keyword, &remaining_input))
-        return;
-
-      const TemplateURL* template_url(
-          model->GetTemplateURLForKeyword(keyword));
-      extensions::ApplyDefaultSuggestionForExtensionKeyword(
-          profile_, template_url,
-          remaining_input,
-          &matches_[0]);
-      listener_->OnProviderUpdate(true);
-      return;
-    }
-
-    case chrome::NOTIFICATION_EXTENSION_OMNIBOX_SUGGESTIONS_READY: {
-      const omnibox_api::SendSuggestions::Params& suggestions =
-          *content::Details<
-              omnibox_api::SendSuggestions::Params>(details).ptr();
-      if (suggestions.request_id != current_input_id_)
-        return;  // This is an old result. Just ignore.
-
-      base::string16 keyword, remaining_input;
-      bool result = ExtractKeywordFromInput(input, &keyword, &remaining_input);
-      DCHECK(result);
-      const TemplateURL* template_url =
-          model->GetTemplateURLForKeyword(keyword);
-
-      // TODO(mpcomplete): consider clamping the number of suggestions to
-      // AutocompleteProvider::kMaxMatches.
-      for (size_t i = 0; i < suggestions.suggest_results.size(); ++i) {
-        const omnibox_api::SuggestResult& suggestion =
-            *suggestions.suggest_results[i];
-        // We want to order these suggestions in descending order, so start with
-        // the relevance of the first result (added synchronously in Start()),
-        // and subtract 1 for each subsequent suggestion from the extension.
-        // We recompute the first match's relevance; we know that |complete|
-        // is true, because we wouldn't get results from the extension unless
-        // the full keyword had been typed.
-        int first_relevance = CalculateRelevance(input.type(), true, true,
-            input.prefer_keyword(), input.allow_exact_keyword_match());
-        // Because these matches are async, we should never let them become the
-        // default match, lest we introduce race conditions in the omnibox user
-        // interaction.
-        extension_suggest_matches_.push_back(CreateAutocompleteMatch(
-            template_url, input, keyword.length(),
-            base::UTF8ToUTF16(suggestion.content), false,
-            first_relevance - (i + 1)));
-
-        AutocompleteMatch* match = &extension_suggest_matches_.back();
-        match->contents.assign(base::UTF8ToUTF16(suggestion.description));
-        match->contents_class =
-            extensions::StyleTypesToACMatchClassifications(suggestion);
-      }
-
-      done_ = true;
-      matches_.insert(matches_.end(), extension_suggest_matches_.begin(),
-                      extension_suggest_matches_.end());
-      listener_->OnProviderUpdate(!extension_suggest_matches_.empty());
-      return;
-    }
-
-    default:
-      NOTREACHED();
-      return;
-  }
-}
-
 TemplateURLService* KeywordProvider::GetTemplateURLService() const {
   TemplateURLService* service = profile_ ?
       TemplateURLServiceFactory::GetForProfile(profile_) : model_;
@@ -614,22 +482,4 @@ TemplateURLService* KeywordProvider::GetTemplateURLService() const {
   DCHECK(service);
   service->Load();
   return service;
-}
-
-void KeywordProvider::EnterExtensionKeywordMode(
-    const std::string& extension_id) {
-  DCHECK(current_keyword_extension_id_.empty());
-  current_keyword_extension_id_ = extension_id;
-
-  extensions::ExtensionOmniboxEventRouter::OnInputStarted(
-      profile_, current_keyword_extension_id_);
-}
-
-void KeywordProvider::MaybeEndExtensionKeywordMode() {
-  if (!current_keyword_extension_id_.empty()) {
-    extensions::ExtensionOmniboxEventRouter::OnInputCancelled(
-        profile_, current_keyword_extension_id_);
-
-    current_keyword_extension_id_.clear();
-  }
 }

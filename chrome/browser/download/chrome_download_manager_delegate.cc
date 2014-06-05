@@ -33,9 +33,6 @@
 #include "chrome/browser/download/download_stats.h"
 #include "chrome/browser/download/download_target_determiner.h"
 #include "chrome/browser/download/save_package_file_picker.h"
-#include "chrome/browser/extensions/api/downloads/downloads_api.h"
-#include "chrome/browser/extensions/crx_installer.h"
-#include "chrome/browser/extensions/webstore_installer.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
@@ -49,13 +46,19 @@
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/page_navigator.h"
-#include "extensions/common/constants.h"
 #include "net/base/filename_util.h"
 #include "net/base/mime_util.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/drive/download_handler.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
+#endif
+
+#if defined(ENABLE_EXTENSIONS)
+#include "chrome/browser/extensions/api/downloads/downloads_api.h"
+#include "chrome/browser/extensions/crx_installer.h"
+#include "chrome/browser/extensions/webstore_installer.h"
+#include "extensions/common/constants.h"
 #endif
 
 using content::BrowserThread;
@@ -295,11 +298,13 @@ bool ChromeDownloadManagerDelegate::ShouldOpenFileBasedOnExtension(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (path.Extension().empty())
     return false;
+#if defined(ENABLE_EXTENSIONS)
   // TODO(asanka): This determination is done based on |path|, while
   // ShouldOpenDownload() detects extension downloads based on the
   // characteristics of the download. Reconcile this. http://crbug.com/167702
   if (path.MatchesExtension(extensions::kExtensionFileExtension))
     return false;
+#endif
   return download_prefs_->IsAutoOpenEnabledBasedOnExtension(path);
 }
 
@@ -370,6 +375,7 @@ bool ChromeDownloadManagerDelegate::ShouldCompleteDownload(
 
 bool ChromeDownloadManagerDelegate::ShouldOpenDownload(
     DownloadItem* item, const content::DownloadOpenDelayedCallback& callback) {
+#if defined(ENABLE_EXTENSIONS)
   if (download_crx_util::IsExtensionDownload(*item) &&
       !extensions::WebstoreInstaller::GetAssociatedApproval(*item)) {
     scoped_refptr<extensions::CrxInstaller> crx_installer =
@@ -389,6 +395,7 @@ bool ChromeDownloadManagerDelegate::ShouldOpenDownload(
     item->UpdateObservers();
     return false;
   }
+#endif
 
   return true;
 }
@@ -535,7 +542,7 @@ void ChromeDownloadManagerDelegate::NotifyExtensions(
     const base::FilePath& virtual_path,
     const NotifyExtensionsCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-#if !defined(OS_ANDROID)
+#if defined(ENABLE_EXTENSIONS)
   extensions::ExtensionDownloadsEventRouter* router =
       DownloadServiceFactory::GetForBrowserContext(profile_)
           ->GetExtensionEventRouter();
@@ -684,6 +691,7 @@ void ChromeDownloadManagerDelegate::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
+#if defined(ENABLE_EXTENSIONS)
   DCHECK(type == chrome::NOTIFICATION_CRX_INSTALLER_DONE);
 
   registrar_.Remove(this,
@@ -696,6 +704,7 @@ void ChromeDownloadManagerDelegate::Observe(
       crx_installers_[installer.get()];
   crx_installers_.erase(installer.get());
   callback.Run(installer->did_handle_successfully());
+#endif
 }
 
 void ChromeDownloadManagerDelegate::OnDownloadTargetDetermined(

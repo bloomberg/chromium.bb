@@ -15,11 +15,11 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/autocomplete/autocomplete_input.h"
 #include "chrome/browser/autocomplete/autocomplete_provider.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 
+class KeywordExtensionsDelegate;
 class Profile;
 class TemplateURL;
 class TemplateURLService;
@@ -46,8 +46,7 @@ class TemplateURLService;
 // action "[keyword] %s".  If the user has typed a (possibly partial) keyword
 // but no search terms, the suggested result is shown greyed out, with
 // "<enter term(s)>" as the substituted input, and does nothing when selected.
-class KeywordProvider : public AutocompleteProvider,
-                        public content::NotificationObserver {
+class KeywordProvider : public AutocompleteProvider {
  public:
   KeywordProvider(AutocompleteProviderListener* listener, Profile* profile);
   // For testing.
@@ -95,8 +94,7 @@ class KeywordProvider : public AutocompleteProvider,
   virtual void Stop(bool clear_cached_results) OVERRIDE;
 
  private:
-  class ScopedEndExtensionKeywordMode;
-  friend class ScopedEndExtensionKeywordMode;
+  friend class KeywordExtensionsDelegateImpl;
 
   virtual ~KeywordProvider();
 
@@ -138,38 +136,15 @@ class KeywordProvider : public AutocompleteProvider,
                             const TemplateURL* element,
                             AutocompleteMatch* match) const;
 
-  void EnterExtensionKeywordMode(const std::string& extension_id);
-  void MaybeEndExtensionKeywordMode();
-
-  // content::NotificationObserver interface.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
-
   TemplateURLService* GetTemplateURLService() const;
 
   // Model for the keywords.  This is only non-null when testing, otherwise the
   // TemplateURLService from the Profile is used.
   TemplateURLService* model_;
 
-  // Identifies the current input state. This is incremented each time the
-  // autocomplete edit's input changes in any way. It is used to tell whether
-  // suggest results from the extension are current.
-  int current_input_id_;
-
-  // The input state at the time we last asked the extension for suggest
-  // results.
-  AutocompleteInput extension_suggest_last_input_;
-
-  // We remember the last suggestions we've received from the extension in case
-  // we need to reset our matches without asking the extension again.
-  std::vector<AutocompleteMatch> extension_suggest_matches_;
-
-  // If non-empty, holds the ID of the extension whose keyword is currently in
-  // the URL bar while the autocomplete popup is open.
-  std::string current_keyword_extension_id_;
-
-  content::NotificationRegistrar registrar_;
+  // Delegate to handle the extensions-only logic for KeywordProvider.
+  // NULL when extensions are not enabled. May be NULL for tests.
+  scoped_ptr<KeywordExtensionsDelegate> extensions_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(KeywordProvider);
 };

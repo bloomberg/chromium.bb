@@ -1039,7 +1039,6 @@
             ['include', '^browser/extensions/api/messaging/message_service.cc'],
             ['include', '^browser/extensions/api/module/module.cc'],
             ['include', '^browser/extensions/api/networking_private/.*\.cc'],
-            ['include', '^browser/extensions/api/omnibox/omnibox_api.cc'],
             ['include', '^browser/extensions/api/preference/preference_api.cc'],
             ['include', '^browser/extensions/api/proxy/proxy_api.cc'],
             ['include', '^browser/extensions/api/proxy/proxy_api_constants.cc'],

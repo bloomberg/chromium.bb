@@ -37,7 +37,7 @@
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
 
-#if !defined(OS_ANDROID)
+#if defined(ENABLE_EXTENSIONS)
 #include "chrome/browser/extensions/api/downloads/downloads_api.h"
 #endif
 
@@ -114,7 +114,7 @@ const char DownloadHistoryData::kKey[] =
 history::DownloadRow GetDownloadRow(
     content::DownloadItem* item) {
   std::string by_ext_id, by_ext_name;
-#if !defined(OS_ANDROID)
+#if defined(ENABLE_EXTENSIONS)
   extensions::DownloadedByExtension* by_ext =
       extensions::DownloadedByExtension::Get(item);
   if (by_ext) {
@@ -272,7 +272,7 @@ void DownloadHistory::QueryCallback(scoped_ptr<InfoVector> infos) {
         it->danger_type,
         it->interrupt_reason,
         it->opened);
-#if !defined(OS_ANDROID)
+#if defined(ENABLE_EXTENSIONS)
     if (!it->by_ext_id.empty() && !it->by_ext_name.empty()) {
       new extensions::DownloadedByExtension(
           item, it->by_ext_id, it->by_ext_name);

@@ -38,7 +38,7 @@ class DownloadService : public KeyedService {
   // no HistoryService for profile. Virtual for testing.
   virtual DownloadHistory* GetDownloadHistory();
 
-#if !defined(OS_ANDROID)
+#if defined(ENABLE_EXTENSIONS)
   extensions::ExtensionDownloadsEventRouter* GetExtensionEventRouter() {
     return extension_event_router_.get();
   }
@@ -96,7 +96,7 @@ class DownloadService : public KeyedService {
   // Once we have extensions on android, we probably need the EventRouter
   // in ContentViewDownloadDelegate which knows about both GET and POST
   // downloads.
-#if !defined(OS_ANDROID)
+#if defined(ENABLE_EXTENSIONS)
   // The ExtensionDownloadsEventRouter dispatches download creation, change, and
   // erase events to extensions. Like ChromeDownloadManagerDelegate, it's a
   // chrome-level concept and its lifetime should match DownloadManager. There

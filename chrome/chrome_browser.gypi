@@ -257,6 +257,10 @@
         'browser/autocomplete/history_quick_provider.h',
         'browser/autocomplete/history_url_provider.cc',
         'browser/autocomplete/history_url_provider.h',
+        'browser/autocomplete/keyword_extensions_delegate.cc',
+        'browser/autocomplete/keyword_extensions_delegate.h',
+        'browser/autocomplete/keyword_extensions_delegate_impl.cc',
+        'browser/autocomplete/keyword_extensions_delegate_impl.h',
         'browser/autocomplete/keyword_provider.cc',
         'browser/autocomplete/keyword_provider.h',
         'browser/autocomplete/search_provider.cc',
@@ -2749,6 +2753,8 @@
           ],
         }, {
           'sources!': [
+            'browser/autocomplete/keyword_extensions_delegate_impl.cc',
+            'browser/autocomplete/keyword_extensions_delegate_impl.h',
             'browser/content_settings/content_settings_custom_extension_provider.cc',
             'browser/content_settings/content_settings_custom_extension_provider.h',
             'browser/content_settings/content_settings_internal_extension_provider.cc',
