@@ -364,7 +364,7 @@ AudioPlayer.prototype.syncHeight_ = function() {
  */
 AudioPlayer.TrackInfo = function(entry, onClick) {
   this.url = entry.toURL();
-  this.title = entry.name;
+  this.title = this.getDefaultTitle();
   this.artist = this.getDefaultArtist();
 
   // TODO(yoshiki): implement artwork.
@@ -406,13 +406,8 @@ AudioPlayer.TrackInfo.prototype.getDefaultArtist = function() {
  */
 AudioPlayer.TrackInfo.prototype.setMetadata = function(
     metadata, error) {
-  if (error) {
-    // TODO(yoshiki): Handle error in better way.
-    this.title = entry.name;
-    this.artist = this.getDefaultArtist();
-  } else if (metadata.thumbnail && metadata.thumbnail.url) {
-    // TODO(yoshiki): implement artwork.
-  }
+  // TODO(yoshiki): Handle error in better way.
+  // TODO(yoshiki): implement artwork (metadata.thumbnail)
   this.title = (metadata.media && metadata.media.title) ||
       this.getDefaultTitle();
   this.artist = error ||

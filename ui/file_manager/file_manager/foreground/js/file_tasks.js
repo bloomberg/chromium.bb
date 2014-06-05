@@ -532,16 +532,15 @@ FileTasks.prototype.executeInternalTask_ = function(id, entries) {
   var fm = this.fileManager_;
 
   if (id === 'play') {
-    var position = 0;
+    var selectedEntry = entries[0];
     if (entries.length === 1) {
       // If just a single audio file is selected pass along every audio file
       // in the directory.
-      var selectedEntries = entries[0];
       entries = fm.getAllEntriesInCurrentDirectory().filter(FileType.isAudio);
-      position = entries.indexOf(selectedEntries);
     }
     // TODO(mtomasz): Pass entries instead.
     var urls = util.entriesToURLs(entries);
+    var position = urls.indexOf(selectedEntry.toURL());
     chrome.fileBrowserPrivate.getProfiles(function(profiles,
                                                    currentId,
                                                    displayedId) {
