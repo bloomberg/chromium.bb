@@ -77,16 +77,26 @@ scoped_ptr<ChromeSettingsOverrides::Search_provider> ParseSearchEngine(
     base::string16* error) {
   if (!overrides->search_provider)
     return scoped_ptr<ChromeSettingsOverrides::Search_provider>();
-  if (!CreateManifestURL(overrides->search_provider->favicon_url)) {
-    *error = extensions::ErrorUtils::FormatErrorMessageUTF16(
-        manifest_errors::kInvalidSearchEngineURL,
-        overrides->search_provider->favicon_url);
-    return scoped_ptr<ChromeSettingsOverrides::Search_provider>();
-  }
   if (!CreateManifestURL(overrides->search_provider->search_url)) {
     *error = extensions::ErrorUtils::FormatErrorMessageUTF16(
         manifest_errors::kInvalidSearchEngineURL,
         overrides->search_provider->search_url);
+    return scoped_ptr<ChromeSettingsOverrides::Search_provider>();
+  }
+  if (overrides->search_provider->prepopulated_id)
+    return overrides->search_provider.Pass();
+  if (!overrides->search_provider->name ||
+      !overrides->search_provider->keyword ||
+      !overrides->search_provider->encoding ||
+      !overrides->search_provider->favicon_url) {
+    *error =
+        base::ASCIIToUTF16(manifest_errors::kInvalidSearchEngineMissingKeys);
+    return scoped_ptr<ChromeSettingsOverrides::Search_provider>();
+  }
+  if (!CreateManifestURL(*overrides->search_provider->favicon_url)) {
+    *error = extensions::ErrorUtils::FormatErrorMessageUTF16(
+        manifest_errors::kInvalidSearchEngineURL,
+        *overrides->search_provider->favicon_url);
     return scoped_ptr<ChromeSettingsOverrides::Search_provider>();
   }
   return overrides->search_provider.Pass();
