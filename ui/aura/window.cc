@@ -217,8 +217,11 @@ Window::Window(WindowDelegate* delegate)
 
 Window::~Window() {
   // |layer()| can be NULL during tests, or if this Window is layerless.
-  if (layer())
+  if (layer()) {
+    if (layer()->owner() == this)
+      layer()->CompleteAllAnimations();
     layer()->SuppressPaint();
+  }
 
   // Let the delegate know we're in the processing of destroying.
   if (delegate_)

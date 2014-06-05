@@ -31,6 +31,7 @@
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/hit_test.h"
 #include "ui/compositor/layer.h"
+#include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/compositor/test/test_layers.h"
@@ -1625,7 +1626,7 @@ TEST_F(WindowTest, SetBoundsInternalShouldCheckTargetBounds) {
 
   EXPECT_FALSE(!w1->layer());
   w1->layer()->GetAnimator()->set_disable_timer_for_test(true);
-  gfx::AnimationContainerElement* element = w1->layer()->GetAnimator();
+  ui::LayerAnimator* animator = w1->layer()->GetAnimator();
 
   EXPECT_EQ("0,0 100x100", w1->bounds().ToString());
   EXPECT_EQ("0,0 100x100", w1->layer()->GetTargetBounds().ToString());
@@ -1655,7 +1656,7 @@ TEST_F(WindowTest, SetBoundsInternalShouldCheckTargetBounds) {
   base::TimeTicks start_time =
       w1->layer()->GetAnimator()->last_step_time();
 
-  element->Step(start_time + base::TimeDelta::FromMilliseconds(1000));
+  animator->Step(start_time + base::TimeDelta::FromMilliseconds(1000));
 
   EXPECT_EQ("0,0 100x100", w1->bounds().ToString());
 }
@@ -2374,8 +2375,8 @@ TEST_F(WindowTest, DelegateNotifiedAsBoundsChange) {
   // Animate to the end, which should notify of the change.
   base::TimeTicks start_time =
       window->layer()->GetAnimator()->last_step_time();
-  gfx::AnimationContainerElement* element = window->layer()->GetAnimator();
-  element->Step(start_time + base::TimeDelta::FromMilliseconds(1000));
+  ui::LayerAnimator* animator = window->layer()->GetAnimator();
+  animator->Step(start_time + base::TimeDelta::FromMilliseconds(1000));
   EXPECT_TRUE(delegate.bounds_changed());
   EXPECT_NE("0,0 100x100", window->bounds().ToString());
 }
@@ -2416,8 +2417,8 @@ TEST_F(WindowTest, DelegateNotifiedAsBoundsChangeInHiddenLayer) {
   // Animate to the end: will *not* notify of the change since we are hidden.
   base::TimeTicks start_time =
       window->layer()->GetAnimator()->last_step_time();
-  gfx::AnimationContainerElement* element = window->layer()->GetAnimator();
-  element->Step(start_time + base::TimeDelta::FromMilliseconds(1000));
+  ui::LayerAnimator* animator = window->layer()->GetAnimator();
+  animator->Step(start_time + base::TimeDelta::FromMilliseconds(1000));
 
   // No bounds changed notification at the end of animation since layer
   // delegate is NULL.
@@ -3345,6 +3346,96 @@ TEST_F(WindowTest, StackChildAtLayerless) {
               BuildRootWindowTreeDescription(root))
         << "window tree doesn't match at " << i;
   }
+}
+
+namespace {
+
+class TestLayerAnimationObserver : public ui::LayerAnimationObserver {
+ public:
+  TestLayerAnimationObserver()
+      : animation_completed_(false),
+        animation_aborted_(false) {}
+  virtual ~TestLayerAnimationObserver() {}
+
+  bool animation_completed() const { return animation_completed_; }
+  bool animation_aborted() const { return animation_aborted_; }
+
+  void Reset() {
+    animation_completed_ = false;
+    animation_aborted_ = false;
+  }
+
+ private:
+  // ui::LayerAnimationObserver:
+  virtual void OnLayerAnimationEnded(
+      ui::LayerAnimationSequence* sequence) OVERRIDE {
+    animation_completed_ = true;
+  }
+
+  virtual void OnLayerAnimationAborted(
+      ui::LayerAnimationSequence* sequence) OVERRIDE {
+    animation_aborted_ = true;
+  }
+
+  virtual void OnLayerAnimationScheduled(
+      ui::LayerAnimationSequence* sequence) OVERRIDE {
+  }
+
+  bool animation_completed_;
+  bool animation_aborted_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestLayerAnimationObserver);
+};
+
+}
+
+TEST_F(WindowTest, WindowDestroyCompletesAnimations) {
+  ui::ScopedAnimationDurationScaleMode normal_duration_mode(
+      ui::ScopedAnimationDurationScaleMode::NORMAL_DURATION);
+  scoped_refptr<ui::LayerAnimator> animator =
+      ui::LayerAnimator::CreateImplicitAnimator();
+  TestLayerAnimationObserver observer;
+  animator->AddObserver(&observer);
+  // Make sure destroying a Window completes the animation.
+  {
+    scoped_ptr<Window> window(CreateTestWindowWithId(1, root_window()));
+    window->layer()->SetAnimator(animator);
+
+    gfx::Transform transform;
+    transform.Scale(0.5f, 0.5f);
+    window->SetTransform(transform);
+
+    EXPECT_TRUE(animator->is_animating());
+    EXPECT_FALSE(observer.animation_completed());
+  }
+  EXPECT_TRUE(animator);
+  EXPECT_FALSE(animator->is_animating());
+  EXPECT_TRUE(observer.animation_completed());
+  EXPECT_FALSE(observer.animation_aborted());
+  animator->RemoveObserver(&observer);
+  observer.Reset();
+
+  animator = ui::LayerAnimator::CreateImplicitAnimator();
+  animator->AddObserver(&observer);
+  ui::Layer layer;
+  layer.SetAnimator(animator);
+  {
+    scoped_ptr<Window> window(CreateTestWindowWithId(1, root_window()));
+    window->layer()->Add(&layer);
+
+    gfx::Transform transform;
+    transform.Scale(0.5f, 0.5f);
+    layer.SetTransform(transform);
+
+    EXPECT_TRUE(animator->is_animating());
+    EXPECT_FALSE(observer.animation_completed());
+  }
+
+  EXPECT_TRUE(animator);
+  EXPECT_FALSE(animator->is_animating());
+  EXPECT_TRUE(observer.animation_completed());
+  EXPECT_FALSE(observer.animation_aborted());
+  animator->RemoveObserver(&observer);
 }
 
 }  // namespace test
