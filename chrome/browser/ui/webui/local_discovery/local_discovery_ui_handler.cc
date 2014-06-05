@@ -155,7 +155,7 @@ void LocalDiscoveryUIHandler::RegisterMessages() {
         base::Bind(&LocalDiscoveryUIHandler::HandleDisableCloudPrintConnector,
                    base::Unretained(this)));
   }
-#endif  // defined(ENABLE_FULL_PRINTING)
+#endif  // defined(CLOUD_PRINT_CONNECTOR_UI_AVAILABLE)
 }
 
 void LocalDiscoveryUIHandler::HandleStart(const base::ListValue* args) {

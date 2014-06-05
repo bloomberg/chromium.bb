@@ -164,18 +164,29 @@ class PrivetHTTPClient {
  public:
   virtual ~PrivetHTTPClient() {}
 
+  // Creates operation to register local device using Privet v1 protocol.
   virtual scoped_ptr<PrivetRegisterOperation> CreateRegisterOperation(
       const std::string& user,
       PrivetRegisterOperation::Delegate* delegate) = 0;
+
+  // Creates operation to query basic information about local device.
   virtual scoped_ptr<PrivetJSONOperation> CreateInfoOperation(
       const PrivetJSONOperation::ResultCallback& callback) = 0;
+
+  // Creates operation to query capabilities of local printer.
   virtual scoped_ptr<PrivetJSONOperation> CreateCapabilitiesOperation(
       const PrivetJSONOperation::ResultCallback& callback) = 0;
+
+  // Creates operation to submit print job to local printer.
   virtual scoped_ptr<PrivetLocalPrintOperation> CreateLocalPrintOperation(
       PrivetLocalPrintOperation::Delegate* delegate) = 0;
+
+  // Creates operation to list files on local Privet storage.
   virtual scoped_ptr<PrivetJSONOperation> CreateStorageListOperation(
       const std::string& path,
       const PrivetJSONOperation::ResultCallback& callback) = 0;
+
+  // Creates operation to read data from local Privet storage.
   virtual scoped_ptr<PrivetDataReadOperation> CreateStorageReadOperation(
       const std::string& path,
       const PrivetDataReadOperation::ResultCallback& callback) = 0;
