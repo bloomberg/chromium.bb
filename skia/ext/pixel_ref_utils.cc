@@ -370,7 +370,7 @@ void PixelRefUtils::GatherDiscardablePixelRefs(
   canvas.clipRect(SkRect::MakeWH(picture->width(), picture->height()),
                   SkRegion::kIntersect_Op,
                   false);
-  canvas.drawPicture(*picture);
+  canvas.drawPicture(picture);
 }
 
 }  // namespace skia

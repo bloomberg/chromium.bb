@@ -114,11 +114,6 @@ public:
     SkProxyCanvas::drawSprite(bitmap, left, top, paint);
   }
 
-  virtual void drawPicture(SkPicture& picture) OVERRIDE {
-    AutoStamper stamper(this);
-    SkProxyCanvas::drawPicture(picture);
-  }
-
   virtual void drawVertices(VertexMode vmode, int vertexCount,
                             const SkPoint vertices[], const SkPoint texs[],
                             const SkColor colors[], SkXfermode* xmode,
@@ -184,6 +179,11 @@ protected:
                             SkRegion::Op op) OVERRIDE {
     AutoStamper stamper(this);
     SkProxyCanvas::onClipRegion(region, op);
+  }
+
+  virtual void onDrawPicture(const SkPicture* picture) OVERRIDE {
+    AutoStamper stamper(this);
+    SkProxyCanvas::onDrawPicture(picture);
   }
 
 private:

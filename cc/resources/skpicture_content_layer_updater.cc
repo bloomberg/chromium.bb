@@ -50,7 +50,7 @@ void SkPictureContentLayerUpdater::PrepareToUpdate(
 void SkPictureContentLayerUpdater::DrawPicture(SkCanvas* canvas) {
   TRACE_EVENT0("cc", "SkPictureContentLayerUpdater::DrawPicture");
   if (picture_)
-    canvas->drawPicture(*picture_);
+    canvas->drawPicture(picture_.get());
 }
 
 }  // namespace cc
