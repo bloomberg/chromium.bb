@@ -21,6 +21,37 @@ from chromite.lib import cros_build_lib
 from chromite.lib import git
 
 
+
+def CreateBuildFailureMessage(overlays, builder_name, dashboard_url):
+  """Creates a message summarizing the failures.
+
+  Args:
+    overlays: The overlays used for the build.
+    builder_name: The name of the builder.
+    dashboard_url: The URL of the build.
+
+  Returns:
+    A failures_lib.ValidationFailedMessage object.
+  """
+  internal = overlays in [constants.PRIVATE_OVERLAYS,
+                          constants.BOTH_OVERLAYS]
+  details = []
+  tracebacks = tuple(results_lib.Results.GetTracebacks())
+  for x in tracebacks:
+    details.append('The %s stage failed: %s' % (x.failed_stage, x.exception))
+  if not details:
+    details = ['cbuildbot failed']
+
+  # reason does not include builder name or URL. This is mainly for
+  # populating the "failure message" column in the stats sheet.
+  reason = ' '.join(details)
+  details.append('in %s' % dashboard_url)
+  msg = '%s: %s' % (builder_name, ' '.join(details))
+
+  return failures_lib.ValidationFailedMessage(msg, tracebacks, internal,
+                                              reason)
+
+
 class ManifestVersionedSyncCompletionStage(
     generic_stages.ForgivingBuilderStage):
   """Stage that records board specific results for a unique manifest file."""
@@ -36,7 +67,16 @@ class ManifestVersionedSyncCompletionStage(
     # UpdateStatus.
     self.message = None
 
+  def GetBuildFailureMessage(self):
+    """Returns message summarizing the failures."""
+    return CreateBuildFailureMessage(self._run.config.overlays,
+                                     self._run.config.name,
+                                     self._run.ConstructDashboardURL())
+
   def PerformStage(self):
+    if not self.success:
+      self.message = self.GetBuildFailureMessage()
+
     self._run.attrs.manifest_manager.UpdateStatus(
         success=self.success, message=self.message,
         dashboard_url=self.ConstructDashboardURL())
@@ -168,6 +208,9 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
           'Please check the logs of these builders for details.']))
 
   def PerformStage(self):
+    if not self.success:
+      self.message = self.GetBuildFailureMessage()
+
     # Upload our pass/fail status to Google Storage.
     self._run.attrs.manifest_manager.UploadStatus(
         success=self.success, message=self.message,
@@ -450,16 +493,6 @@ class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
                     x in sanity_check_slaves])
 
   def PerformStage(self):
-    # - If the build failed, and the builder was important, fetch a message
-    # listing the patches which failed to be validated. This message is sent
-    # along with the failed status to the master to indicate a failure.
-    # - This is skipped when sync_stage did not apply a validation pool. For
-    # instance on builders with do_not_apply_cq_patches=True, sync_stage will
-    # be a sync_stages.MasterSlaveSyncStage and not have a |pool| attribute.
-    if (not self.success and self._run.config.important
-        and hasattr(self.sync_stage, 'pool')):
-      self.message = self.sync_stage.pool.GetValidationFailedMessage()
-
     super(CommitQueueCompletionStage, self).PerformStage()
 
     self._run.attrs.manifest_manager.UpdateStatus(
@@ -475,12 +508,18 @@ class PreCQCompletionStage(generic_stages.BuilderStage):
     self.sync_stage = sync_stage
     self.success = success
 
+  def GetBuildFailureMessage(self):
+    """Returns message summarizing the failures."""
+    return CreateBuildFailureMessage(self._run.config.overlays,
+                                     self._run.config.name,
+                                     self._run.ConstructDashboardURL())
+
   def PerformStage(self):
     # Update Gerrit and Google Storage with the Pre-CQ status.
     if self.success:
       self.sync_stage.pool.HandlePreCQSuccess()
     else:
-      message = self.sync_stage.pool.GetValidationFailedMessage()
+      message = self.GetBuildFailureMessage()
       self.sync_stage.pool.HandleValidationFailure([message])
 
 

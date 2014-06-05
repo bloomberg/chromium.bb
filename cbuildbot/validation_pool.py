@@ -21,11 +21,9 @@ import urllib
 from xml.dom import minidom
 
 from chromite.cbuildbot import failures_lib
-from chromite.cbuildbot import results_lib
 from chromite.cbuildbot import constants
 from chromite.cbuildbot import lkgm_manager
 from chromite.cbuildbot import manifest_version
-from chromite.cbuildbot import portage_utilities
 from chromite.lib import cros_build_lib
 from chromite.lib import gerrit
 from chromite.lib import git
@@ -1065,123 +1063,6 @@ class _ManifestShim(object):
   def ProjectIsContentMerging(self, *_args, **_kwargs):
     """Check whether this project has content-merging enabled."""
     return self.content_merging
-
-
-class ValidationFailedMessage(object):
-  """Message indicating that changes failed to be validated."""
-
-  def __init__(self, message, tracebacks, internal, reason):
-    """Create a ValidationFailedMessage object.
-
-    Args:
-      message: The message to print.
-      tracebacks: Exceptions received by individual builders, if any.
-      internal: Whether this failure occurred on an internal builder.
-      reason: A string describing the failure.
-    """
-    # Convert each of the input arguments into simple Python datastructures
-    # (i.e. not generators) that can be easily pickled.
-    self.message = str(message)
-    self.tracebacks = tuple(tracebacks)
-    self.internal = bool(internal)
-    self.reason = str(reason)
-
-  def __str__(self):
-    return self.message
-
-  def MightBeFlakyFailure(self):
-    """Check if there is a good chance this is a flaky failure."""
-    # We only consider a failed build to be flaky if there is only one failure,
-    # and that failure is a flaky failure.
-    flaky = False
-    if len(self.tracebacks) == 1:
-      # TimeoutErrors are often flaky.
-      exc = self.tracebacks[0].exception
-      if (isinstance(exc, failures_lib.StepFailure) and exc.possibly_flaky or
-          isinstance(exc, timeout_util.TimeoutError)):
-        flaky = True
-    return flaky
-
-  def MatchesFailureType(self, cls):
-    """Check if all of the tracebacks match the specified failure type."""
-    for tb in self.tracebacks:
-      if not isinstance(tb.exception, cls):
-        if (isinstance(tb.exception, failures_lib.CompoundFailure) and
-            tb.exception.MatchesFailureType(cls)):
-          # If the exception is a CompoundFailure instance and all its
-          # stored exceptions match |cls|, it meets the criteria.
-          continue
-        else:
-          return False
-
-    return True
-
-  def HasFailureType(self, cls):
-    """Check if any of the failures match the specified failure type."""
-    for tb in self.tracebacks:
-      if isinstance(tb.exception, cls):
-        return True
-
-      if (isinstance(tb.exception, failures_lib.CompoundFailure) and
-          tb.exception.HasFailureType(cls)):
-        # If the exception is a CompoundFailure instance and any of its
-        # stored exceptions match |cls|, it meets the criteria.
-        return True
-
-    return False
-
-  def IsPackageBuildFailure(self):
-    """Check if all of the failures are package build failures."""
-    return self.MatchesFailureType(failures_lib.PackageBuildFailure)
-
-  def FindPackageBuildFailureSuspects(self, changes):
-    """Figure out what changes probably caused our failures.
-
-    We use a fairly simplistic algorithm to calculate breakage: If you changed
-    a package, and that package broke, you probably broke the build. If there
-    were multiple changes to a broken package, we fail them all.
-
-    Some safeguards are implemented to ensure that bad changes are kicked out:
-      1) Changes to overlays (e.g. ebuilds, eclasses, etc.) are always kicked
-         out if the build fails.
-      2) If a package fails that nobody changed, we kick out all of the
-         changes.
-      3) If any failures occur that we can't explain, we kick out all of the
-         changes.
-
-    It is certainly possible to trick this algorithm: If one developer submits
-    a change to libchromeos that breaks the power_manager, and another developer
-    submits a change to the power_manager at the same time, only the
-    power_manager change will be kicked out. That said, in that situation, the
-    libchromeos change will likely be kicked out on the next run, thanks to
-    safeguard #2 above.
-
-    Args:
-      changes: List of changes to examine.
-
-    Returns:
-      Set of changes that likely caused the failure.
-    """
-    blame_everything = False
-    suspects = set()
-    for traceback in self.tracebacks:
-      for package in traceback.exception.failed_packages:
-        failed_projects = portage_utilities.FindWorkonProjects([package])
-        blame_assigned = False
-        for change in changes:
-          if change.project in failed_projects:
-            blame_assigned = True
-            suspects.add(change)
-        if not blame_assigned:
-          blame_everything = True
-
-    if blame_everything or not suspects:
-      suspects = changes[:]
-    else:
-      # Never treat changes to overlays as innocent.
-      suspects.update(change for change in changes
-                      if '/overlays/' in change.project)
-    return suspects
 
 
 class CalculateSuspects(object):
@@ -2604,26 +2485,6 @@ class ValidationPool(object):
     inputs = [[change, messages, suspects, sanity, infra_fail,
                lab_fail, no_stat] for change in candidates]
     parallel.RunTasksInProcessPool(self._ChangeFailedValidation, inputs)
-
-  def GetValidationFailedMessage(self):
-    """Returns message indicating these changes failed to be validated."""
-    logging.info('Validation failed for all changes.')
-    internal = self._overlays in [constants.PRIVATE_OVERLAYS,
-                                  constants.BOTH_OVERLAYS]
-    details = []
-    tracebacks = tuple(results_lib.Results.GetTracebacks())
-    for x in tracebacks:
-      details.append('The %s stage failed: %s' % (x.failed_stage, x.exception))
-    if not details:
-      details = ['cbuildbot failed']
-
-    # reason does not include builder name or URL. This is mainly for
-    # populating the "failure message" column in the stats sheet.
-    reason = ' '.join(details)
-    details.append('in %s' % (self.build_log,))
-    msg = '%s: %s' % (self._builder_name, ' '.join(details))
-
-    return ValidationFailedMessage(msg, tracebacks, internal, reason)
 
   def HandleCouldNotApply(self, change):
     """Handler for when Paladin fails to apply a change.

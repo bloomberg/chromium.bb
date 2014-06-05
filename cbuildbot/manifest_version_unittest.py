@@ -14,9 +14,9 @@ import constants
 if __name__ == '__main__':
   sys.path.insert(0, constants.SOURCE_ROOT)
 
+from chromite.cbuildbot import failures_lib
 from chromite.cbuildbot import manifest_version
 from chromite.cbuildbot import repository
-from chromite.cbuildbot import validation_pool
 from chromite.lib import cros_build_lib_unittest
 from chromite.lib import git
 from chromite.lib import cros_test_lib
@@ -275,7 +275,7 @@ class BuildSpecsManagerTest(cros_test_lib.MoxTempDirTestCase,
 
   def testUnpickleBuildStatus(self):
     """Tests that _UnpickleBuildStatus returns the correct values."""
-    failed_msg = validation_pool.ValidationFailedMessage(
+    failed_msg = failures_lib.ValidationFailedMessage(
         'you failed', ['traceback'], True, 'taco')
     failed_input_status = manifest_version.BuilderStatus(
         manifest_version.BuilderStatus.STATUS_FAILED, failed_msg)

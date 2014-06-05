@@ -12,7 +12,9 @@ import sys
 sys.path.insert(0, os.path.abspath('%s/../../..' % os.path.dirname(__file__)))
 from chromite.cbuildbot import commands
 from chromite.cbuildbot import constants
+from chromite.cbuildbot import failures_lib
 from chromite.cbuildbot import manifest_version
+from chromite.cbuildbot import results_lib
 from chromite.cbuildbot import validation_pool
 from chromite.cbuildbot.stages import completion_stages
 from chromite.cbuildbot.stages import generic_stages_unittest
@@ -43,15 +45,16 @@ class ManifestVersionedSyncCompletionStageTest(
 
   def testManifestVersionedSyncCompletedFailure(self):
     """Tests basic ManifestVersionedSyncStageCompleted on failure"""
+    stage = completion_stages.ManifestVersionedSyncCompletionStage(
+        self._run, self.sync_stage, success=False)
     self.mox.StubOutWithMock(manifest_version.BuildSpecsManager, 'UpdateStatus')
+    self.mox.StubOutWithMock(stage, 'GetBuildFailureMessage')
 
     self.manager.UpdateStatus(message=None, success=False,
                               dashboard_url=mox.IgnoreArg())
-
+    stage.GetBuildFailureMessage()
 
     self.mox.ReplayAll()
-    stage = completion_stages.ManifestVersionedSyncCompletionStage(
-        self._run, self.sync_stage, success=False)
     stage.Run()
     self.mox.VerifyAll()
 
@@ -62,6 +65,26 @@ class ManifestVersionedSyncCompletionStageTest(
         self._run, self.sync_stage, success=False)
     stage.Run()
     self.mox.VerifyAll()
+
+  def testMeaningfulMessage(self):
+    """Tests that all essential components are in the message."""
+    stage = completion_stages.ManifestVersionedSyncCompletionStage(
+        self._run, self.sync_stage, success=False)
+
+    exception = Exception('failed!')
+    traceback = results_lib.RecordedTraceback(
+        'TacoStage', 'Taco', exception, 'traceback_str')
+    self.PatchObject(
+        results_lib.Results, 'GetTracebacks', return_value=[traceback])
+
+    msg = stage.GetBuildFailureMessage()
+    self.assertTrue(stage._run.config.name in msg.message)
+    self.assertTrue(stage._run.ConstructDashboardURL() in msg.message)
+    self.assertTrue('TacoStage' in msg.message)
+    self.assertTrue(str(exception) in msg.message)
+
+    self.assertTrue('TacoStage' in msg.reason)
+    self.assertTrue(str(exception) in msg.reason)
 
 
 class MasterSlaveSyncCompletionStageTest(
@@ -191,7 +214,7 @@ class MasterSlaveSyncCompletionStageTest(
 
     failing = {'a'}
     inflight = {}
-    failed_msg = validation_pool.ValidationFailedMessage(
+    failed_msg = failures_lib.ValidationFailedMessage(
         'message', [], True, 'reason')
     status = manifest_version.BuilderStatus('failed', failed_msg, 'url')
 
