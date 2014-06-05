@@ -21,13 +21,10 @@ from chromite.cbuildbot.stages import generic_stages_unittest
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_build_lib_unittest
 from chromite.lib import cros_test_lib
+from chromite.lib import osutils
 from chromite.lib import timeout_util
 
 from chromite.cbuildbot.stages.generic_stages_unittest import BuilderRunMock
-
-# TODO(build): Finish test wrapper (http://crosbug.com/37517).
-# Until then, this has to be after the chromite imports.
-import mock
 
 
 # pylint: disable=R0901
@@ -39,11 +36,14 @@ class VMTestStageTest(generic_stages_unittest.AbstractStageTest):
 
   def setUp(self):
     for cmd in ('RunTestSuite', 'CreateTestRoot', 'GenerateStackTraces',
-                'ArchiveFile', 'ArchiveTestResults', 'UploadArchivedFile',
-                'RunDevModeTest', 'RunCrosVMTest', 'ListFailedTests',
-                'GetTestResultsDir', 'BuildAndArchiveTestResultsTarball'):
+                'ArchiveFile', 'ArchiveTestResults', 'ArchiveVMFiles',
+                'UploadArchivedFile', 'RunDevModeTest', 'RunCrosVMTest',
+                'ListFailedTests', 'GetTestResultsDir',
+                'BuildAndArchiveTestResultsTarball'):
       self.PatchObject(commands, cmd, autospec=True)
-
+    self.PatchObject(test_stages.VMTestStage, '_NoTestResults',
+                     autospec=True, return_value=True)
+    self.PatchObject(osutils, 'RmDir', autospec=True)
     self.StartPatcher(BuilderRunMock())
     self._Prepare()
 
@@ -55,21 +55,23 @@ class VMTestStageTest(generic_stages_unittest.AbstractStageTest):
     # pylint: disable=W0212
     self._run.GetArchive().SetupArchivePath()
     stage = test_stages.VMTestStage(self._run, self._current_board)
-    stage._NoTestResults = mock.MagicMock()
-    stage._NoTestResults.return_value = True
     return stage
 
   def testFullTests(self):
     """Tests if full unit and cros_au_test_harness tests are run correctly."""
     self._run.config['vm_tests'] = [constants.FULL_AU_TEST_TYPE]
-    with mock.patch('chromite.lib.osutils.RmDir'):
-      self.RunStage()
+    self.RunStage()
 
   def testQuickTests(self):
     """Tests if quick unit and cros_au_test_harness tests are run correctly."""
     self._run.config['vm_tests'] = [constants.SIMPLE_AU_TEST_TYPE]
-    with mock.patch('chromite.lib.osutils.RmDir'):
-      self.RunStage()
+    self.RunStage()
+
+  def testFailedTest(self):
+    """Tests if quick unit and cros_au_test_harness tests are run correctly."""
+    self.PatchObject(test_stages.VMTestStage, '_RunTest',
+                     autospec=True, side_effect=Exception())
+    self.assertRaises(failures_lib.StepFailure, self.RunStage)
 
 
 class UnitTestStageTest(generic_stages_unittest.AbstractStageTest):
