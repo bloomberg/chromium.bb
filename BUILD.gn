@@ -72,7 +72,7 @@ group("root") {
     "//third_party/smhasher:cityhash",
     "//third_party/smhasher:murmurhash3",
     "//third_party/smhasher:pmurhash",
-    "//third_party/WebKit/Source/platform",
+    # "//third_party/WebKit/Source/platform",
     "//third_party/WebKit/Source/wtf",
     "//third_party/zlib",
     "//third_party:jpeg",
@@ -122,7 +122,7 @@ group("root") {
       "//extensions/common/api:extensions_api",
       "//ppapi:ppapi_c",
       "//third_party/libusb",
-      "//third_party/WebKit/Source/platform",
+      # "//third_party/WebKit/Source/platform",
       "//third_party/WebKit/Source/wtf",  # TODO(brettw) re-enable for Android.
       "//sandbox",
       "//tools/gn",
