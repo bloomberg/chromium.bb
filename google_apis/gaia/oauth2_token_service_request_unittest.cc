@@ -146,6 +146,7 @@ void MockOAuth2TokenService::InvalidateOAuth2Token(
 class OAuth2TokenServiceRequestTest : public testing::Test {
  public:
   virtual void SetUp() OVERRIDE;
+  virtual void TearDown() OVERRIDE;
 
  protected:
   class Provider : public OAuth2TokenServiceRequest::TokenServiceProvider {
@@ -175,6 +176,11 @@ void OAuth2TokenServiceRequestTest::SetUp() {
   oauth2_service_->AddAccount(kAccountId);
   provider_.reset(
       new Provider(base::MessageLoopProxy::current(), oauth2_service_.get()));
+}
+
+void OAuth2TokenServiceRequestTest::TearDown() {
+  // Run the loop to execute any pending tasks that may free resources.
+  ui_loop_.RunUntilIdle();
 }
 
 OAuth2TokenServiceRequestTest::Provider::Provider(

@@ -71,6 +71,8 @@ class OAuth2TokenServiceRequest::Core
  private:
   friend class base::RefCountedThreadSafe<OAuth2TokenServiceRequest::Core>;
 
+  void DoNothing();
+
   scoped_refptr<base::SingleThreadTaskRunner> token_service_task_runner_;
   OAuth2TokenServiceRequest* owner_;
   TokenServiceProvider* provider_;
@@ -104,10 +106,16 @@ void OAuth2TokenServiceRequest::Core::Stop() {
   // Detaches |owner_| from this instance so |owner_| will be called back only
   // if |Stop()| has never been called.
   owner_ = NULL;
-  token_service_task_runner_->PostTask(
+
+  // We are stopping and will likely be destroyed soon.  Use a reply closure
+  // (DoNothing) to retain "this" and ensure we are destroyed in the owner
+  // thread, not the task runner thread.  PostTaskAndReply guarantees that the
+  // reply closure will execute after StopOnTokenServiceThread has completed.
+  token_service_task_runner_->PostTaskAndReply(
       FROM_HERE,
       base::Bind(&OAuth2TokenServiceRequest::Core::StopOnTokenServiceThread,
-                 this));
+                 this),
+      base::Bind(&OAuth2TokenServiceRequest::Core::DoNothing, this));
 }
 
 bool OAuth2TokenServiceRequest::Core::IsStopped() const {
@@ -128,6 +136,10 @@ OAuth2TokenService* OAuth2TokenServiceRequest::Core::token_service() {
 OAuth2TokenServiceRequest* OAuth2TokenServiceRequest::Core::owner() {
   DCHECK(CalledOnValidThread());
   return owner_;
+}
+
+void OAuth2TokenServiceRequest::Core::DoNothing() {
+  DCHECK(CalledOnValidThread());
 }
 
 namespace {
