@@ -1,0 +1,77 @@
+<html>
+<head>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script>
+var t = async_test("Preflight request must not contain any cookie header");
+var runTest = t.step_func(function()
+{
+    var resolveSetCookiePromise = null;
+    var setCookiePromise = new Promise(function(resolve, reject)
+    {
+        resolveSetCookiePromise = resolve;
+    });
+
+    var resolveClearCookiesPromise = null;
+    var clearCookiesPromise = new Promise(function(resolve, reject)
+    {
+        resolveClearCookiesPromise = resolve;
+    });
+
+    var cookieSet = false;
+
+    window.onmessage = t.step_func(function(evt)
+    {
+        assert_equals(evt.data, "done");
+
+        if (!cookieSet) {
+            resolveSetCookiePromise();
+            cookieSet = true;
+        } else {
+            resolveClearCookiesPromise();
+        }
+    });
+
+    // Set a cookie for localhost:8000.
+    window.frames[0].postMessage("sendXHR setFooCookie", "*");
+
+    setCookiePromise.then(t.step_func(function()
+    {
+        var xhr = new XMLHttpRequest;
+        xhr.open("GET", "http://localhost:8000/xmlhttprequest/resources/access-control-preflight-request-must-not-contain-cookie.php");
+        xhr.setRequestHeader("X-Proprietary-Header", "foo")
+        xhr.withCredentials = true;
+        xhr.onerror = t.step_func(function (e) {
+            assert_unreached(e);
+        });
+        var doneXHRPromise = new Promise(function(resolve, reject)
+        {
+            xhr.onreadystatechange = t.step_func(function () {
+                if (xhr.readyState != xhr.DONE)
+                    return;
+                assert_equals(xhr.status, 200);
+                assert_equals(xhr.responseText, "awesomevalue");
+                resolve();
+            });
+        });
+        xhr.send();
+        return doneXHRPromise;
+    })).then(t.step_func(function()
+    {
+        // Clean up all cookies for localhost:8000.
+        window.frames[0].postMessage("resetCookiesAndNotifyDone", "*");
+        return resolveClearCookiesPromise;
+    })).then(t.step_func(function()
+    {
+        t.done();
+    })).catch(t.step_func(function(e)
+    {
+        assert_unreached(e);
+    }));
+});
+</script>
+</head>
+<body onload="runTest()">
+<iframe src="http://localhost:8000/cookies/resources/third-party-cookie-relaxing-iframe.html"></iframe>
+</body>
+</html>

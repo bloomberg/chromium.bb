@@ -73,6 +73,7 @@ void FetchRequest::setCrossOriginAccessControl(SecurityOrigin* origin, StoredCre
 {
     ASSERT(requested == ClientDidNotRequestCredentials || allowCredentials == AllowStoredCredentials);
     updateRequestForAccessControl(m_resourceRequest, origin, allowCredentials);
+    m_options.allowCredentials = allowCredentials;
     m_options.corsEnabled = IsCORSEnabled;
     m_options.securityOrigin = origin;
     m_options.credentialsRequested = requested;
