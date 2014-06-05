@@ -193,6 +193,28 @@ shouldHaveBorderColor('host/target', 'rgb(0, 128, 0)');
 
 cleanUp();
 
+debug('Test the case where there exists a style scoped in a contanining treescope.');
+
+sandbox.appendChild(
+    createDOM('style', {},
+        document.createTextNode('div:last-child { border: 1px solid blue; }')));
+sandbox.appendChild(
+    createDOM('div', {},
+        createDOM('style', {'scoped': 'scoped'},
+            document.createTextNode(':last-child { border: 1px solid red }')),
+        createDOM('div', {'id': 'host'},
+            createShadowRoot(
+                createDOM('style', {},
+                    document.createTextNode(':host { border: 1px solid green; }')),
+                createDOM('content', {})),
+            createDOM('div', {'id': 'host-child'},
+                document.createTextNode('Hello, Host!')))));
+
+// Rules from style scoped win, because styles in shadow trees are treated as registered with a root node of a containing treescope.
+shouldHaveBorderColor('host', 'rgb(255, 0, 0)');
+
+cleanUp();
+
 debug('Test that style sharing is disabled when styles in shadow trees would match shadow hosts.');
 
 sandbox.appendChild(

@@ -1,0 +1,21 @@
+Test that rules in an inner scoped stylesheet don't override !important rules declared in an outer scoped stylesheet.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+Case1: The target element has any matched important rule declared in an outer scoped stylesheet, and the element also has any matched normal rule declared in an inner scoped stylesheet.
+PASS getComputedStyle(target1).borderColor is "rgb(0, 128, 0)"
+Case2: The target element has any matched important rule declared in an outer scoped stylesheet, and the element also has a matched normal ID rule declared in an inner scoped stylesheet.
+PASS getComputedStyle(target2).borderColor is "rgb(0, 128, 0)"
+Case3: The target element has any matched important rule declared in an outer scoped stylesheet, and the element also has matched normal rules declared in an inner scoped stylesheet and in a STYLE attribute.
+PASS getComputedStyle(target3).borderColor is "rgb(0, 128, 0)"
+Case4: The target element has matched important rules. One is declared in an outer scoped stylesheet and the other is declared in an inner scoped stylesheet.
+PASS getComputedStyle(target4).borderColor is "rgb(0, 0, 255)"
+Case5: The target element has any matched important rule declared in an author stylesheet, and the element also has matched normal rules declared in an inner scoped stylesheet.
+PASS getComputedStyle(target5).borderColor is "rgb(0, 255, 0)"
+Case6: The target element has matched important rules. One is declared in an author stylesheet (not scoped) and the other is declared in a scoped stylesheet.
+PASS getComputedStyle(target6).borderColor is "rgb(0, 0, 255)"
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

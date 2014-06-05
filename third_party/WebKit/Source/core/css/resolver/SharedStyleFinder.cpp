@@ -226,6 +226,8 @@ bool SharedStyleFinder::canShareStyleWithElement(Element& candidate) const
         return false;
     if (candidate.hasID() && m_features.hasSelectorForId(candidate.idForStyleResolution()))
         return false;
+    if (candidate.hasScopedHTMLStyleChild())
+        return false;
     if (!sharingCandidateCanShareHostStyles(candidate))
         return false;
     if (!sharingCandidateDistributedToSameInsertionPoint(candidate))
@@ -253,6 +255,8 @@ bool SharedStyleFinder::canShareStyleWithElement(Element& candidate) const
 
     if (element().parentOrShadowHostElement() != parent) {
         if (!parent->isStyledElement())
+            return false;
+        if (parent->hasScopedHTMLStyleChild())
             return false;
         if (parent->inlineStyle())
             return false;

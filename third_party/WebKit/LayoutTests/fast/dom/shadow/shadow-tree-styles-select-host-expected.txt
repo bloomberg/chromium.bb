@@ -28,6 +28,8 @@ Test that descendant selector with a shadow host and descendants of a shadow roo
 PASS borderColorOf('host/spanD') is "rgb(255, 0, 0)"
 Test the case where there are no styles in a contanining treescope.
 PASS borderColorOf('host/target') is "rgb(0, 128, 0)"
+Test the case where there exists a style scoped in a contanining treescope.
+PASS borderColorOf('host') is "rgb(255, 0, 0)"
 Test that style sharing is disabled when styles in shadow trees would match shadow hosts.
 PASS borderColorOf('hostA') is "rgb(255, 0, 0)"
 PASS borderColorOf('hostB') is "rgb(0, 128, 0)"

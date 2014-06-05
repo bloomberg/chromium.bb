@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="../../../resources/js-test.js"></script>
+<script src="../../dom/shadow/resources/shadow-dom.js"></script>
+<script>
+shouldBeDefined("window.internals");
+
+var textColor;
+
+function shouldHaveTextColor(node, col)
+{
+    textColor = document.defaultView.getComputedStyle(node, null).getPropertyValue('color');
+    shouldBeEqualToString('textColor', col);
+}
+
+function cleanUp()
+{
+    document.getElementById('sandbox').innerHTML = '';
+}
+
+function testScopedStyle()
+{
+    debug('test a scoped style in shadow tree.');
+    document.getElementById('sandbox').appendChild(
+        createDOM('div', {'id': 'host'},
+            createShadowRoot(
+                createDOM('div', {},
+                    createDOM('style', {'scoped': 'scoped'},
+                        document.createTextNode('div { color: red; }')),
+                    createDOM('div', {'id': 'E'})),
+                createDOM('div', {'id': 'F'}))));
+
+    shouldHaveTextColor(getNodeInTreeOfTrees('host/E'), 'rgb(255, 0, 0)');
+    shouldHaveTextColor(getNodeInTreeOfTrees('host/F'), 'rgb(0, 0, 0)');
+    cleanUp();
+}
+
+function testStyle()
+{
+    debug('test a style in shadow tree.');
+    document.getElementById('sandbox').appendChild(
+        createDOM('div', {'id': 'host'},
+            createShadowRoot(
+                createDOM('div', {},
+                    createDOM('div', {'id': 'E'},
+                        createDOM('style', {},
+                            document.createTextNode('div { color: red; }')))),
+                createDOM('div', {'id': 'F'}))));
+
+    shouldHaveTextColor(getNodeInTreeOfTrees('host/E'), 'rgb(255, 0, 0)');
+    shouldHaveTextColor(getNodeInTreeOfTrees('host/F'), 'rgb(255, 0, 0)');
+    cleanUp();
+}
+
+function testStyleWithMultipleShadowRoots()
+{
+    debug('test styles in multiple shadow trees.');
+
+    document.getElementById('sandbox').appendChild(
+        createDOM('div', {'id': 'host'},
+            createShadowRoot(
+                createDOM('div', {},
+                    createDOM('style', {},
+                        document.createTextNode('div { color: red; }')),
+                    createDOM('div', {'id': 'E'})),
+                createDOM('div', {'id': 'F'})),
+
+            createShadowRoot(
+                createDOM('div', {},
+                    createDOM('style', {'scoped': 'scoped'},
+                        document.createTextNode('div { color: blue; }')),
+                    createDOM('shadow', {}),
+                    createDOM('div', {'id': 'G'})))));
+
+    shouldHaveTextColor(getNodeInTreeOfTrees('host/E'), 'rgb(255, 0, 0)');
+    shouldHaveTextColor(getNodeInTreeOfTrees('host/F'), 'rgb(255, 0, 0)');
+    shouldHaveTextColor(getNodeInTreeOfTrees('host//G'), 'rgb(0, 0, 255)');
+    cleanUp();
+}
+
+function testScopedStyleWithNestedShadowRoots()
+{
+    debug('test a scoped style in nested shadow tree.');
+    document.getElementById('sandbox').appendChild(
+        createDOM('div', {'id': 'host'},
+            createShadowRoot(
+                createDOM('div', {},
+                    createDOM('style', {'scoped': 'scoped'},
+                        document.createTextNode('div { color: red; }')),
+                    createDOM('div', {'id': 'E'},
+                        createShadowRoot(
+                            createDOM('div', {},
+                                createDOM('style', {'scoped': 'scoped'},
+                                    document.createTextNode('div { color: blue; }')),
+                                createDOM('div', {'id': 'G'})),
+                            createDOM('div', {'id': 'H'})))),
+                createDOM('div', {'id': 'F'}))));
+
+    shouldHaveTextColor(getNodeInTreeOfTrees('host/E'), 'rgb(255, 0, 0)');
+    shouldHaveTextColor(getNodeInTreeOfTrees('host/F'), 'rgb(0, 0, 0)');
+    shouldHaveTextColor(getNodeInTreeOfTrees('host/E/G'), 'rgb(0, 0, 255)');
+    shouldHaveTextColor(getNodeInTreeOfTrees('host/E/H'), 'rgb(255, 0, 0)');
+    cleanUp();
+}
+
+function testStyleWithNestedShadowRoots()
+{
+    debug('test a style in nested shadow tree.');
+    document.getElementById('sandbox').appendChild(
+        createDOM('div', {'id': 'host'},
+            createShadowRoot(
+                createDOM('div', {},
+                    createDOM('style', {},
+                        document.createTextNode('div { color: red; }')),
+                    createDOM('div', {'id': 'E'},
+                        createShadowRoot(
+                            createDOM('div', {},
+                                createDOM('style', {},
+                                    document.createTextNode('div { color: blue; }')),
+                                createDOM('div', {'id': 'G'})),
+                            createDOM('div', {'id': 'H'})))),
+                createDOM('div', {'id': 'F'}))));
+
+    shouldHaveTextColor(getNodeInTreeOfTrees('host/E'), 'rgb(255, 0, 0)');
+    shouldHaveTextColor(getNodeInTreeOfTrees('host/F'), 'rgb(255, 0, 0)');
+    shouldHaveTextColor(getNodeInTreeOfTrees('host/E/G'), 'rgb(0, 0, 255)');
+    shouldHaveTextColor(getNodeInTreeOfTrees('host/E/H'), 'rgb(0, 0, 255)');
+    cleanUp();
+}
+
+function testChangeScopedAttributeOnline()
+{
+    debug('test changing scoped attribute online.');
+    document.getElementById('sandbox').appendChild(
+        createDOM('div', {'id': 'host'},
+            createShadowRoot(
+                createDOM('div', {},
+                    createDOM('style', {'id': 'style-in-shadow', 'scoped': 'scoped'},
+                        document.createTextNode('div { color: red; }')),
+                    createDOM('div', {'id': 'E'})),
+                createDOM('div', {'id': 'F'}))));
+
+    shouldHaveTextColor(getNodeInTreeOfTrees('host/E'), 'rgb(255, 0, 0)');
+    shouldHaveTextColor(getNodeInTreeOfTrees('host/F'), 'rgb(0, 0, 0)');
+    document.body.offsetLeft;
+
+    // changing from scoped to scoped.
+    getNodeInTreeOfTrees('host/style-in-shadow').setAttribute('scoped', 'scoped');
+
+    shouldHaveTextColor(getNodeInTreeOfTrees('host/E'), 'rgb(255, 0, 0)');
+    shouldHaveTextColor(getNodeInTreeOfTrees('host/F'), 'rgb(0, 0, 0)');
+
+    // removing scoped.
+    getNodeInTreeOfTrees('host/style-in-shadow').removeAttribute('scoped');
+
+    shouldHaveTextColor(getNodeInTreeOfTrees('host/E'), 'rgb(255, 0, 0)');
+    shouldHaveTextColor(getNodeInTreeOfTrees('host/F'), 'rgb(255, 0, 0)');
+
+    // changing from not scoped to scoped.
+    getNodeInTreeOfTrees('host/style-in-shadow').setAttribute('scoped', 'scoped');
+    shouldHaveTextColor(getNodeInTreeOfTrees('host/E'), 'rgb(255, 0, 0)');
+    shouldHaveTextColor(getNodeInTreeOfTrees('host/F'), 'rgb(0, 0, 0)');
+    cleanUp();
+}
+
+function testRemoveScopedStyle()
+{
+    debug('test removing a scoped style from shadow tree.');
+    document.getElementById('sandbox').appendChild(
+        createDOM('div', {'id': 'host'},
+            createShadowRoot(
+                createDOM('div', {},
+                    createDOM('style', {'id': 'style-in-shadow', 'scoped': 'scoped'},
+                        document.createTextNode('div { color: red; }')),
+                    createDOM('div', {'id': 'E'})),
+                createDOM('div', {'id': 'F'}))));
+
+    // before
+    shouldHaveTextColor(getNodeInTreeOfTrees('host/E'), 'rgb(255, 0, 0)');
+    shouldHaveTextColor(getNodeInTreeOfTrees('host/F'), 'rgb(0, 0, 0)');
+
+    var styleInShadow = getNodeInTreeOfTrees('host/style-in-shadow');
+    styleInShadow.parentNode.removeChild(styleInShadow);
+
+    // after
+    shouldHaveTextColor(getNodeInTreeOfTrees('host/E'), 'rgb(0, 0, 0)');
+    shouldHaveTextColor(getNodeInTreeOfTrees('host/F'), 'rgb(0, 0, 0)');
+    cleanUp();
+}
+
+function testRemoveStyle()
+{
+    debug('test removing a style from shadow tree.');
+    document.getElementById('sandbox').appendChild(
+        createDOM('div', {'id': 'host'},
+            createShadowRoot(
+                createDOM('div', {},
+                    createDOM('style', {'id': 'style-in-shadow'},
+                        document.createTextNode('div { color: red; }')),
+                    createDOM('div', {'id': 'E'})),
+                createDOM('div', {'id': 'F'}))));
+
+    // before
+    shouldHaveTextColor(getNodeInTreeOfTrees('host/E'), 'rgb(255, 0, 0)');
+    shouldHaveTextColor(getNodeInTreeOfTrees('host/F'), 'rgb(255, 0, 0)');
+
+    var styleInShadow = getNodeInTreeOfTrees('host/style-in-shadow');
+    styleInShadow.parentNode.removeChild(styleInShadow);
+
+    // after
+    shouldHaveTextColor(getNodeInTreeOfTrees('host/E'), 'rgb(0, 0, 0)');
+    shouldHaveTextColor(getNodeInTreeOfTrees('host/F'), 'rgb(0, 0, 0)');
+    cleanUp();
+}
+
+function testInsertScopedStyle()
+{
+    debug('test inserting a scoped style into shadow tree.');
+    document.getElementById('sandbox').appendChild(
+        createDOM('div', {'id': 'host'},
+            createShadowRoot(
+                createDOM('div', {'id': 'D'},
+                    createDOM('div', {'id': 'E'})),
+                createDOM('div', {'id': 'F'}))));
+
+    var style = document.createElement('style');
+    style.innerHTML = 'div { color: red; }';
+    style.setAttribute('scoped', 'scoped');
+    getNodeInTreeOfTrees('host/D').appendChild(style);
+
+    shouldHaveTextColor(getNodeInTreeOfTrees('host/E'), 'rgb(255, 0, 0)');
+    shouldHaveTextColor(getNodeInTreeOfTrees('host/F'), 'rgb(0, 0, 0)');
+    cleanUp();
+}
+
+function testInsertStyle()
+{
+    debug('test inserting a style into shadow tree.');
+    document.getElementById('sandbox').appendChild(
+        createDOM('div', {'id': 'host'},
+            createShadowRoot(
+                createDOM('div', {'id': 'D'},
+                    createDOM('div', {'id': 'E'})),
+                createDOM('div', {'id': 'F'}))));
+
+    var style = document.createElement('style');
+    style.innerHTML = 'div { color: red; }';
+    getNodeInTreeOfTrees('host/D').appendChild(style);
+
+    shouldHaveTextColor(getNodeInTreeOfTrees('host/E'), 'rgb(255, 0, 0)');
+    shouldHaveTextColor(getNodeInTreeOfTrees('host/F'), 'rgb(255, 0, 0)');
+    cleanUp();
+}
+
+function testChangeScopedAttributeOffline()
+{
+    debug('test re-inserting a style after changing scoped attribute offline.');
+    document.getElementById('sandbox').appendChild(
+        createDOM('div', {'id': 'host'},
+            createShadowRoot(
+                createDOM('div', {'id': 'D'},
+                    createDOM('style', {'id': 'style-in-shadow', 'scoped': 'scoped'},
+                        document.createTextNode('div { color: red; }')),
+                    createDOM('div', {'id': 'E'})),
+                createDOM('div', {'id': 'F'}))));
+
+    var style = getNodeInTreeOfTrees('host/style-in-shadow');
+    style.parentNode.removeChild(style);
+    style.removeAttribute('scoped');
+    getNodeInTreeOfTrees('host/D').appendChild(style);
+
+    shouldHaveTextColor(getNodeInTreeOfTrees('host/E'), 'rgb(255, 0, 0)');
+    shouldHaveTextColor(getNodeInTreeOfTrees('host/F'), 'rgb(255, 0, 0)');
+
+    style.parentNode.removeChild(style);
+    style.setAttribute('scoped', 'scoped');
+    getNodeInTreeOfTrees('host/D').appendChild(style);
+
+    shouldHaveTextColor(getNodeInTreeOfTrees('host/E'), 'rgb(255, 0, 0)');
+    shouldHaveTextColor(getNodeInTreeOfTrees('host/F'), 'rgb(0, 0, 0)');
+    cleanUp();
+}
+
+function runTests()
+{
+    testScopedStyle();
+    testStyle();
+    testStyleWithMultipleShadowRoots();
+    testScopedStyleWithNestedShadowRoots();
+    testStyleWithNestedShadowRoots();
+    testChangeScopedAttributeOnline();
+    testRemoveScopedStyle();
+    testRemoveStyle();
+    testInsertScopedStyle();
+    testInsertStyle();
+    testChangeScopedAttributeOffline();
+}
+</script>
+</head>
+<body onload="runTests()">
+  <div id='sandbox'></div>
+</body>
+</html>

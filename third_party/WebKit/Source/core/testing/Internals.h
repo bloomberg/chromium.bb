@@ -92,6 +92,7 @@ public:
 
     bool isSharingStyle(Element*, Element*, ExceptionState&) const;
 
+    size_t numberOfScopedHTMLStyleChildren(const Node*, ExceptionState&) const;
     PassRefPtrWillBeRawPtr<CSSComputedStyleDeclaration> computedStyleIncludingVisitedInfo(Node*, ExceptionState&) const;
 
     ShadowRoot* shadowRoot(Element* host, ExceptionState&);
