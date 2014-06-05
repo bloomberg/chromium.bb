@@ -60,6 +60,10 @@ extern "C" bool RemoveDllFromBlacklist(const wchar_t* dll_name);
 // is only exposed in tests (and should stay that way).
 extern "C" void SuccessfullyBlocked(const wchar_t** blocked_dlls, int* size);
 
+// Add the dlls, originally passed in through finch, from the registry to the
+// blacklist so that they will be blocked identically to those hard coded in.
+extern "C" bool AddDllsFromRegistryToBlacklist();
+
 // Record that the dll at the given index was blocked.
 void BlockedDll(size_t blocked_index);
 

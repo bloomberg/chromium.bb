@@ -12,6 +12,7 @@
 #include "chrome_elf/blacklist/blacklist.h"
 #include "chrome_elf/chrome_elf_constants.h"
 #include "chrome_elf/dll_hash/dll_hash.h"
+#include "components/variations/variations_associated_data.h"
 #include "content/public/browser/browser_thread.h"
 #include "version.h"  // NOLINT
 
@@ -87,6 +88,7 @@ void InitializeChromeElf() {
     base::win::RegKey blacklist_registry_key(HKEY_CURRENT_USER);
     blacklist_registry_key.DeleteKey(blacklist::kRegistryBeaconPath);
   } else {
+    AddFinchBlacklistToRegistry();
     BrowserBlacklistBeaconSetup();
   }
 
@@ -101,6 +103,27 @@ void InitializeChromeElf() {
       FROM_HERE,
       base::Bind(&ReportSuccessfulBlocks),
       base::TimeDelta::FromSeconds(kBlacklistReportingDelaySec));
+}
+
+void AddFinchBlacklistToRegistry() {
+  base::win::RegKey finch_blacklist_registry_key(
+      HKEY_CURRENT_USER, blacklist::kRegistryFinchListPath, KEY_SET_VALUE);
+
+  // No point in trying to continue if the registry key isn't valid.
+  if (!finch_blacklist_registry_key.Valid())
+    return;
+
+  std::map<std::string, std::string> params;
+  chrome_variations::GetVariationParams(kBrowserBlacklistTrialName, &params);
+
+  for (std::map<std::string, std::string>::iterator it = params.begin();
+       it != params.end();
+       ++it) {
+    std::wstring name = base::UTF8ToWide(it->first);
+    std::wstring val = base::UTF8ToWide(it->second);
+
+    finch_blacklist_registry_key.WriteValue(name.c_str(), val.c_str());
+  }
 }
 
 void BrowserBlacklistBeaconSetup() {

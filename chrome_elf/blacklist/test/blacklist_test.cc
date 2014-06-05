@@ -32,6 +32,7 @@ extern "C" {
 // When modifying the blacklist in the test process, use the exported test dll
 // functions on the test blacklist dll, not the ones linked into the test
 // executable itself.
+__declspec(dllimport) bool TestDll_AddDllsFromRegistryToBlacklist();
 __declspec(dllimport) bool TestDll_AddDllToBlacklist(const wchar_t* dll_name);
 __declspec(dllimport) bool TestDll_IsBlacklistInitialized();
 __declspec(dllimport) bool TestDll_RemoveDllFromBlacklist(
@@ -53,6 +54,13 @@ class BlacklistTest : public testing::Test {
     TestDll_RemoveDllFromBlacklist(kTestDllName3);
   }
 };
+
+namespace {
+
+struct TestData {
+  const wchar_t* dll_name;
+  const wchar_t* dll_beacon;
+} test_data[] = {{kTestDllName2, kDll2Beacon}, {kTestDllName3, kDll3Beacon}};
 
 TEST_F(BlacklistTest, Beacon) {
   registry_util::RegistryOverrideManager override_manager;
@@ -138,34 +146,14 @@ TEST_F(BlacklistTest, SuccessfullyBlocked) {
   }
 }
 
-TEST_F(BlacklistTest, LoadBlacklistedLibrary) {
+void CheckBlacklistedDllsNotLoaded() {
   base::FilePath current_dir;
   ASSERT_TRUE(PathService::Get(base::DIR_EXE, &current_dir));
 
-  // Ensure that the blacklist is loaded.
-  ASSERT_TRUE(TestDll_IsBlacklistInitialized());
-
-  // Test that an un-blacklisted DLL can load correctly.
-  base::ScopedNativeLibrary dll1(current_dir.Append(kTestDllName1));
-  EXPECT_TRUE(dll1.is_valid());
-  dll1.Reset(NULL);
-
-  int num_blocked_dlls = 0;
-  TestDll_SuccessfullyBlocked(NULL, &num_blocked_dlls);
-  EXPECT_EQ(0, num_blocked_dlls);
-
-  struct TestData {
-    const wchar_t* dll_name;
-    const wchar_t* dll_beacon;
-  } test_data[] = {
-    { kTestDllName2, kDll2Beacon },
-    { kTestDllName3, kDll3Beacon }
-  };
-  for (int i = 0 ; i < arraysize(test_data); ++i) {
-    // Add the DLL to the blacklist, ensure that it is not loaded both by
-    // inspecting the handle returned by LoadLibrary and by looking for an
-    // environment variable that is set when the DLL's entry point is called.
-    EXPECT_TRUE(TestDll_AddDllToBlacklist(test_data[i].dll_name));
+  for (int i = 0; i < arraysize(test_data); ++i) {
+    // Ensure that the dll has not been loaded both by inspecting the handle
+    // returned by LoadLibrary and by looking for an environment variable that
+    // is set when the DLL's entry point is called.
     base::ScopedNativeLibrary dll_blacklisted(
         current_dir.Append(test_data[i].dll_name));
     EXPECT_FALSE(dll_blacklisted.is_valid());
@@ -203,7 +191,57 @@ TEST_F(BlacklistTest, LoadBlacklistedLibrary) {
 
     // The blocked dll was removed, so we shouldn't get anything returned
     // here.
+    int num_blocked_dlls = 0;
     TestDll_SuccessfullyBlocked(NULL, &num_blocked_dlls);
     EXPECT_EQ(0, num_blocked_dlls);
   }
 }
+
+TEST_F(BlacklistTest, LoadBlacklistedLibrary) {
+  base::FilePath current_dir;
+  ASSERT_TRUE(PathService::Get(base::DIR_EXE, &current_dir));
+
+  // Ensure that the blacklist is loaded.
+  ASSERT_TRUE(TestDll_IsBlacklistInitialized());
+
+  // Test that an un-blacklisted DLL can load correctly.
+  base::ScopedNativeLibrary dll1(current_dir.Append(kTestDllName1));
+  EXPECT_TRUE(dll1.is_valid());
+  dll1.Reset(NULL);
+
+  int num_blocked_dlls = 0;
+  TestDll_SuccessfullyBlocked(NULL, &num_blocked_dlls);
+  EXPECT_EQ(0, num_blocked_dlls);
+
+  // Add all DLLs to the blacklist then check they are blocked.
+  for (int i = 0; i < arraysize(test_data); ++i) {
+    EXPECT_TRUE(TestDll_AddDllToBlacklist(test_data[i].dll_name));
+  }
+  CheckBlacklistedDllsNotLoaded();
+}
+
+TEST_F(BlacklistTest, AddDllsFromRegistryToBlacklist) {
+  // Ensure that the blacklist is loaded.
+  ASSERT_TRUE(TestDll_IsBlacklistInitialized());
+
+  // Delete the finch registry key to clear its values.
+  base::win::RegKey key(HKEY_CURRENT_USER,
+                        blacklist::kRegistryFinchListPath,
+                        KEY_QUERY_VALUE | KEY_SET_VALUE);
+  key.DeleteKey(L"");
+
+  // Add the test dlls to the registry (with their name as both key and value).
+  base::win::RegKey finch_blacklist_registry_key(
+      HKEY_CURRENT_USER,
+      blacklist::kRegistryFinchListPath,
+      KEY_QUERY_VALUE | KEY_SET_VALUE);
+  for (int i = 0; i < arraysize(test_data); ++i) {
+    finch_blacklist_registry_key.WriteValue(test_data[i].dll_name,
+                                            test_data[i].dll_name);
+  }
+
+  EXPECT_TRUE(TestDll_AddDllsFromRegistryToBlacklist());
+  CheckBlacklistedDllsNotLoaded();
+}
+
+}  // namespace
