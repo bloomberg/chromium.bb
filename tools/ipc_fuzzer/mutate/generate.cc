@@ -515,19 +515,6 @@ struct GenerateTraits<base::TimeTicks> {
 };
 
 template <>
-struct GenerateTraits<base::PlatformFileInfo> {
-  static bool Generate(base::PlatformFileInfo* p, Generator* generator) {
-    return
-        GenerateParam(&p->size, generator) &&
-        GenerateParam(&p->is_directory, generator) &&
-        GenerateParam(&p->last_modified, generator) &&
-        GenerateParam(&p->last_accessed, generator) &&
-        GenerateParam(&p->creation_time, generator);
-  }
-};
-
-
-template <>
 struct GenerateTraits<base::ListValue> {
   static bool Generate(base::ListValue* p, Generator* generator) {
     ++g_depth;
