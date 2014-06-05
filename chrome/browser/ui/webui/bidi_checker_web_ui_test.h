@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_WEBUI_BIDI_CHECKER_WEB_UI_TEST_H_
 
 #include "base/command_line.h"
-#include "chrome/test/base/web_ui_browsertest.h"
+#include "chrome/test/base/web_ui_browser_test.h"
 
 namespace base {
 class WaitableEvent;

@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_TEST_BASE_WEB_UI_BROWSERTEST_H_
-#define CHROME_TEST_BASE_WEB_UI_BROWSERTEST_H_
+#ifndef CHROME_TEST_BASE_WEB_UI_BROWSER_TEST_H_
+#define CHROME_TEST_BASE_WEB_UI_BROWSER_TEST_H_
 
 #include <string>
 #include <vector>
@@ -188,4 +188,4 @@ class WebUIBrowserTest : public InProcessBrowserTest {
   scoped_ptr<TestChromeWebUIControllerFactory> test_factory_;
 };
 
-#endif  // CHROME_TEST_BASE_WEB_UI_BROWSERTEST_H_
+#endif  // CHROME_TEST_BASE_WEB_UI_BROWSER_TEST_H_

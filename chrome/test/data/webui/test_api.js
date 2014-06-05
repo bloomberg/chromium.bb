@@ -122,6 +122,17 @@ var testing = {};
     extraLibraries: [],
 
     /**
+     * Extra libraries to add before loading this test file.
+     * This list is in the form of Closure library style object
+     * names.  To support this, a closure deps.js file must
+     * be specified when generating the test C++ source.
+     * The specified libraries will be included with their transitive
+     * dependencies according to the deps file.
+     * @type {Array.<string>}
+     */
+    closureModuleDeps: [],
+
+    /**
      * Whether to run the accessibility checks.
      * @type {boolean}
      */

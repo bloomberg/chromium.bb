@@ -5,7 +5,6 @@
 {
   'conditions': [
     ['chromeos==1', {
-      'includes': ['common.gypi'],
       'variables': {
         # Whether to compress the 4 main ChromeVox scripts.  Applicable if
         # use_migrated_chromevox is true.
@@ -15,6 +14,10 @@
         'options_script_loader_file': 'chromevox/background/options_loader.js',
         'kbexplorer_loader_file': 'chromevox/background/kbexplorer_loader.js',
       },
+      'includes': [
+        'chromevox_tests.gypi',
+        'common.gypi',
+      ],
       'targets': [
         {
           'target_name': 'chromevox',

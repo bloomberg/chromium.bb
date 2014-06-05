@@ -18,7 +18,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "chrome/test/base/web_ui_browsertest.h"
+#include "chrome/test/base/web_ui_browser_test.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/browser/signin_manager_base.h"

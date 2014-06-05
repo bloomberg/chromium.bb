@@ -9,7 +9,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "chrome/test/base/web_ui_browsertest.h"
+#include "chrome/test/base/web_ui_browser_test.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"

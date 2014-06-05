@@ -15,9 +15,10 @@
 
 // Arguments from rules in chrome_tests.gypi are passed in through
 // python script gypv8sh.py.
-if (arguments.length < 4) {
+if (arguments.length != 6) {
   print('usage: ' +
-        arguments[0] + ' path-to-testfile.js testfile.js output.cc test-type');
+        arguments[0] +
+        ' path-to-testfile.js testfile.js path_to_deps.js output.cc test-type');
   quit(-1);
 }
 
@@ -35,16 +36,22 @@ var jsFile = arguments[1];
 var jsFileBase = arguments[2];
 
 /**
+ * Path to Closure library style deps.js file.
+ * @type {string?}
+ */
+var depsFile = arguments[3];
+
+/**
  * Path to C++ file generation is outputting to.
  * @type {string}
  */
-var outputFile = arguments[3];
+var outputFile = arguments[4];
 
 /**
  * Type of this test.
  * @type {string} ('unit'| 'webui')
  */
-var testType = arguments[4];
+var testType = arguments[5];
 
 /**
  * C++ gtest macro to use for TEST_F depending on |testType|.
@@ -91,7 +98,7 @@ if (testType === 'unit') {
   testF = 'TEST_F';
   addSetPreloadInfo = false;
 } else {
-  print('#include "chrome/test/base/web_ui_browsertest.h"');
+  print('#include "chrome/test/base/web_ui_browser_test.h"');
   testing.Test.prototype.typedefCppFixture = 'WebUIBrowserTest';
   testF = 'IN_PROC_BROWSER_TEST_F';
   addSetPreloadInfo = true;
@@ -112,6 +119,100 @@ function includeFileToPaths(includeFile) {
     path: jsFile.replace(/[^\/\\]+$/, includeFile),
     base: jsFileBase.replace(/[^\/\\]+$/, includeFile),
   };
+}
+
+
+/**
+ * Maps object names to the path to the file that provides them.
+ * Populated from the |depsFile| if any.
+ * @type {Object.<string, string>}
+ */
+var dependencyProvidesToPaths = {};
+
+/**
+ * Maps dependency path names to object names required by the file.
+ * Populated from the |depsFile| if any.
+ * @type {Object.<string, Array.<string>>}
+ */
+var dependencyPathsToRequires = {};
+
+if (depsFile) {
+  var goog = goog || {};
+  /**
+   * Called by the javascript in the deps file to add modules and their
+   * dependencies.
+   * @param {string} path Relative path to the file.
+   * @param Array.<string> provides Objects provided by this file.
+   * @param Array.<string> requires Objects required by this file.
+   */
+  goog.addDependency = function(path, provides, requires) {
+    provides.forEach(function(provide) {
+      dependencyProvidesToPaths[provide] = path;
+    });
+    dependencyPathsToRequires[path] = requires;
+  };
+
+  // Read and eval the deps file.  It should only contain goog.addDependency
+  // calls.
+  eval(read(depsFile));
+}
+
+/**
+ * Resolves a list of libraries to an ordered list of paths to load by the
+ * generated C++.  The input should contain object names provided
+ * by the deps file.  Dependencies will be resolved and included in the
+ * correct order, meaning that the returned array may contain more entries
+ * than the input.
+ * @param {Array.<string>} deps List of dependencies.
+ * @return {Array.<string>} List of paths to load.
+ */
+function resolveClosureModuleDeps(deps) {
+  if (!depsFile && deps.length > 0) {
+    print('Can\'t have closure dependencies without a deps file.');
+    quit(-1);
+  }
+  var resultPaths = [];
+  var addedPaths = {};
+
+  function addPath(path) {
+    addedPaths[path] = true;
+    resultPaths.push(path);
+  }
+
+  function resolveAndAppend(path) {
+    if (addedPaths[path]) {
+      return;
+    }
+    // Set before recursing to catch cycles.
+    addedPaths[path] = true;
+    dependencyPathsToRequires[path].forEach(function(require) {
+      var providingPath = dependencyProvidesToPaths[require];
+      if (!providingPath) {
+        print('Unknown object', require, 'required by', path);
+        quit(-1);
+      }
+      resolveAndAppend(providingPath);
+    });
+    resultPaths.push(path);
+  }
+
+  // Always add closure library's base.js if provided by deps.
+  var basePath = dependencyProvidesToPaths['goog'];
+  if (basePath) {
+    addPath(basePath);
+  }
+
+  deps.forEach(function(dep) {
+    var providingPath = dependencyProvidesToPaths[dep];
+    if (providingPath) {
+      resolveAndAppend(providingPath);
+    } else {
+      print('Unknown dependency:', dep);
+      quit(-1);
+    }
+  });
+
+  return resultPaths;
 }
 
 /**
@@ -158,7 +259,8 @@ function TEST_F(testFixture, testFunction, testBody) {
       this[testFixture].prototype.extraLibraries.map(
           function(includeFile) {
             return includeFileToPaths(includeFile).base;
-          }));
+          }),
+      resolveClosureModuleDeps(this[testFixture].prototype.closureModuleDeps));
 
   if (typedefCppFixture && !(testFixture in typedeffedCppFixtures)) {
     print('typedef ' + typedefCppFixture + ' ' + testFixture + ';');

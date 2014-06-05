@@ -60,7 +60,6 @@
         '<(gypv8sh)',
         '<(PRODUCT_DIR)/d8<(EXECUTABLE_SUFFIX)',
         '<(mock_js)',
-        '<(accessibility_audit_js)',
         '<(test_api_js)',
         '<(js2gtest)',
       ],

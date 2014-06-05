@@ -7,7 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "chrome/test/base/web_ui_browsertest.h"
+#include "chrome/test/base/web_ui_browser_test.h"
 #include "content/public/browser/web_ui_message_handler.h"
 
 // This is a helper class used by options_browsertest.js to feed the navigation

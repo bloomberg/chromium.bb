@@ -16,12 +16,10 @@ CvoxAriaUtilUnitTest.prototype = {
   __proto__: ChromeVoxUnitTestBase.prototype,
 
   /** @override */
-  extraLibraries: [
-    'aria_util.js',
-    'dom_util.js',
-    'node_state.js',
-    'chromevox.js',
-    '../host/interface/abstract_earcons.js']
+  closureModuleDeps: [
+    'cvox.AriaUtil',
+    'cvox.ChromeVox',
+    'cvox.DomUtil',]
 };
 
 TEST_F('CvoxAriaUtilUnitTest', 'GetStateGridWithActiveCell', function() {

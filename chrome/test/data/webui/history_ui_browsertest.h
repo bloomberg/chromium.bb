@@ -7,7 +7,7 @@
 
 #include "base/time/time.h"
 
-#include "chrome/test/base/web_ui_browsertest.h"
+#include "chrome/test/base/web_ui_browser_test.h"
 
 class HistoryService;
 

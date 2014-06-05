@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-#include "chrome/test/base/web_ui_browsertest.h"
+#include "chrome/test/base/web_ui_browser_test.h"
 
 class IdentityInternalsUIBrowserTest : public WebUIBrowserTest {
  public:
@@ -30,4 +30,3 @@ class IdentityInternalsUIBrowserTest : public WebUIBrowserTest {
 };
 
 #endif  // CHROME_BROWSER_UI_WEBUI_IDENTITY_INTERNALS_UI_BROWSERTEST_H_
-

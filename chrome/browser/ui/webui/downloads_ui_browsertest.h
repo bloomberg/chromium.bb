@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_DOWNLOADS_UI_BROWSERTEST_H_
 #define CHROME_BROWSER_UI_WEBUI_DOWNLOADS_UI_BROWSERTEST_H_
 
-#include "chrome/test/base/web_ui_browsertest.h"
+#include "chrome/test/base/web_ui_browser_test.h"
 
 // This is a helper class used by downloads_ui_browsertest.js.
 class DownloadsUIBrowserTest : public WebUIBrowserTest {

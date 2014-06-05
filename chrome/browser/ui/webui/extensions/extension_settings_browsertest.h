@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_WEBUI_EXTENSIONS_EXTENSION_SETTINGS_BROWSERTEST_H_
 
 #include "chrome/browser/extensions/extension_test_notification_observer.h"
-#include "chrome/test/base/web_ui_browsertest.h"
+#include "chrome/test/base/web_ui_browser_test.h"
 #include "extensions/common/extension.h"
 
 class Profile;
