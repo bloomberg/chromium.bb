@@ -51,7 +51,6 @@ void GeolocationProviderImpl::UserDidOptIntoLocationServices() {
 void GeolocationProviderImpl::OverrideLocationForTesting(
     const Geoposition& position) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  position_ = position;
   ignore_location_updates_ = true;
   NotifyClients(position);
 }
@@ -100,9 +99,11 @@ void GeolocationProviderImpl::OnClientsChanged() {
   base::Closure task;
   if (high_accuracy_callbacks_.empty() && low_accuracy_callbacks_.empty()) {
     DCHECK(IsRunning());
-    // We have no more observers, so we clear the cached geoposition so that
-    // when the next observer is added we will not provide a stale position.
-    position_ = Geoposition();
+    if (!ignore_location_updates_) {
+      // We have no more observers, so we clear the cached geoposition so that
+      // when the next observer is added we will not provide a stale position.
+      position_ = Geoposition();
+    }
     task = base::Bind(&GeolocationProviderImpl::StopProviders,
                       base::Unretained(this));
   } else {
