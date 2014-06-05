@@ -230,7 +230,7 @@ class MediaScanManagerTest : public MediaScanManagerObserver,
     EXPECT_EQ(video_count, pref_info->second.video_count);
   }
 
-  // MediaScanMangerObserver implementation.
+  // MediaScanManagerObserver implementation.
   virtual void OnScanFinished(
       const std::string& extension_id,
       int gallery_count,
@@ -240,6 +240,15 @@ class MediaScanManagerTest : public MediaScanManagerObserver,
     EXPECT_EQ(expected_file_counts_.audio_count, file_counts.audio_count);
     EXPECT_EQ(expected_file_counts_.image_count, file_counts.image_count);
     EXPECT_EQ(expected_file_counts_.video_count, file_counts.video_count);
+  }
+
+ protected:
+  // So derived tests can access ...::FindContainerScanResults().
+  MediaFolderFinder::MediaFolderFinderResults FindContainerScanResults(
+      const MediaFolderFinder::MediaFolderFinderResults& found_folders,
+      const std::vector<base::FilePath>& sensitive_locations) {
+    return MediaScanManager::FindContainerScanResults(found_folders,
+                                                      sensitive_locations);
   }
 
  private:
@@ -304,6 +313,205 @@ TEST_F(MediaScanManagerTest, SingleResult) {
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, FindFolderDestroyCount());
   EXPECT_EQ(galleries_before + 1, gallery_count());
+}
+
+// Generally test that it includes directories with sufficient density
+// and excludes others.
+//
+// A/ - NOT included
+// A/B/ - NOT included
+// A/B/C/files
+// A/D/ - NOT included
+// A/D/E/files
+// A/D/F/files
+// A/D/G/files
+// A/D/H/
+// A/H/ - included in results
+// A/H/I/files
+// A/H/J/files
+TEST_F(MediaScanManagerTest, MergeRedundant) {
+  base::FilePath path;
+  MediaFolderFinder::MediaFolderFinderResults found_folders;
+  std::vector<base::FilePath> sensitive_locations;
+  std::vector<base::FilePath> expected_folders;
+  MediaGalleryScanResult file_counts;
+  file_counts.audio_count = 1;
+  file_counts.image_count = 2;
+  file_counts.video_count = 3;
+  MakeTestFolder("A", &path);
+  MakeTestFolder("A/B", &path);
+  MakeTestFolder("A/B/C", &path);
+  found_folders[path] = file_counts;
+  // Not dense enough.
+  MakeTestFolder("A/D", &path);
+  MakeTestFolder("A/D/E", &path);
+  found_folders[path] = file_counts;
+  MakeTestFolder("A/D/F", &path);
+  found_folders[path] = file_counts;
+  MakeTestFolder("A/D/G", &path);
+  found_folders[path] = file_counts;
+  MakeTestFolder("A/D/H", &path);
+  // Dense enough to be reported.
+  MakeTestFolder("A/H", &path);
+  expected_folders.push_back(path);
+  MakeTestFolder("A/H/I", &path);
+  found_folders[path] = file_counts;
+  MakeTestFolder("A/H/J", &path);
+  found_folders[path] = file_counts;
+  MediaFolderFinder::MediaFolderFinderResults results =
+      FindContainerScanResults(found_folders, sensitive_locations);
+  EXPECT_EQ(expected_folders.size(), results.size());
+  for (std::vector<base::FilePath>::const_iterator it =
+           expected_folders.begin();
+       it != expected_folders.end();
+       ++it) {
+    EXPECT_TRUE(results.find(*it) != results.end());
+  }
+}
+
+// Make sure intermediates are not included.
+//
+// A/ - included in results
+// A/B1/ - NOT included
+// A/B1/B2/files
+// A/C1/ - NOT included
+// A/C1/C2/files
+TEST_F(MediaScanManagerTest, MergeRedundantNoIntermediates) {
+  base::FilePath path;
+  MediaFolderFinder::MediaFolderFinderResults found_folders;
+  std::vector<base::FilePath> sensitive_locations;
+  std::vector<base::FilePath> expected_folders;
+  MediaGalleryScanResult file_counts;
+  file_counts.audio_count = 1;
+  file_counts.image_count = 2;
+  file_counts.video_count = 3;
+  MakeTestFolder("A", &path);
+  expected_folders.push_back(path);
+  MakeTestFolder("A/B1", &path);
+  MakeTestFolder("A/B1/B2", &path);
+  found_folders[path] = file_counts;
+  MakeTestFolder("A/C1", &path);
+  MakeTestFolder("A/C1/C2", &path);
+  found_folders[path] = file_counts;
+  // Make "home dir" not dense enough.
+  MakeTestFolder("D", &path);
+  MediaFolderFinder::MediaFolderFinderResults results =
+      FindContainerScanResults(found_folders, sensitive_locations);
+  EXPECT_EQ(expected_folders.size(), results.size());
+  for (std::vector<base::FilePath>::const_iterator it =
+           expected_folders.begin();
+       it != expected_folders.end();
+       ++it) {
+    EXPECT_TRUE(results.find(*it) != results.end());
+  }
+}
+
+// Make sure "A/" only gets a count of 1, from "A/D/",
+// not 2 from "A/D/H/" and "A/D/I/".
+//
+// A/ - NOT included
+// A/D/ - included in results
+// A/D/E/files
+// A/D/F/files
+// A/D/G/files
+// A/D/H/files
+// A/D/I/ - NOT included
+// A/D/I/J/files
+TEST_F(MediaScanManagerTest, MergeRedundantVerifyNoOvercount) {
+  base::FilePath path;
+  MediaFolderFinder::MediaFolderFinderResults found_folders;
+  std::vector<base::FilePath> sensitive_locations;
+  std::vector<base::FilePath> expected_folders;
+  MediaGalleryScanResult file_counts;
+  file_counts.audio_count = 1;
+  file_counts.image_count = 2;
+  file_counts.video_count = 3;
+  MakeTestFolder("A", &path);
+  MakeTestFolder("A/D", &path);
+  expected_folders.push_back(path);
+  MakeTestFolder("A/D/E", &path);
+  found_folders[path] = file_counts;
+  MakeTestFolder("A/D/F", &path);
+  found_folders[path] = file_counts;
+  MakeTestFolder("A/D/G", &path);
+  found_folders[path] = file_counts;
+  MakeTestFolder("A/D/H", &path);
+  found_folders[path] = file_counts;
+  MakeTestFolder("A/D/I", &path);
+  MakeTestFolder("A/D/I/J", &path);
+  found_folders[path] = file_counts;
+  MediaFolderFinder::MediaFolderFinderResults results =
+      FindContainerScanResults(found_folders, sensitive_locations);
+  EXPECT_EQ(expected_folders.size(), results.size());
+  for (std::vector<base::FilePath>::const_iterator it =
+           expected_folders.begin();
+       it != expected_folders.end();
+       ++it) {
+    EXPECT_TRUE(results.find(*it) != results.end());
+  }
+}
+
+// Make sure that sensistive directories are pruned.
+//
+// A/ - NOT included
+// A/B/ - sensitive
+// A/C/ - included in results
+// A/C/G/files
+// A/C/H/files
+// A/D/ - included in results
+// A/D/I/files
+// A/D/J/files
+// A/E/ - included in results
+// A/E/K/files
+// A/E/L/files
+// A/F/ - included in results
+// A/F/M/files
+// A/F/N/files
+TEST_F(MediaScanManagerTest, MergeRedundantWithSensitive) {
+  base::FilePath path;
+  MediaFolderFinder::MediaFolderFinderResults found_folders;
+  std::vector<base::FilePath> sensitive_locations;
+  std::vector<base::FilePath> expected_folders;
+  MediaGalleryScanResult file_counts;
+  file_counts.audio_count = 1;
+  file_counts.image_count = 2;
+  file_counts.video_count = 3;
+  MakeTestFolder("A", &path);
+  MakeTestFolder("A/B", &path);
+  sensitive_locations.push_back(path);
+  MakeTestFolder("A/C", &path);
+  expected_folders.push_back(path);
+  MakeTestFolder("A/C/G", &path);
+  found_folders[path] = file_counts;
+  MakeTestFolder("A/C/H", &path);
+  found_folders[path] = file_counts;
+  MakeTestFolder("A/D", &path);
+  expected_folders.push_back(path);
+  MakeTestFolder("A/D/I", &path);
+  found_folders[path] = file_counts;
+  MakeTestFolder("A/D/J", &path);
+  found_folders[path] = file_counts;
+  MakeTestFolder("A/E", &path);
+  expected_folders.push_back(path);
+  MakeTestFolder("A/E/K", &path);
+  found_folders[path] = file_counts;
+  MakeTestFolder("A/E/L", &path);
+  found_folders[path] = file_counts;
+  MakeTestFolder("A/F", &path);
+  expected_folders.push_back(path);
+  MakeTestFolder("A/F/M", &path);
+  found_folders[path] = file_counts;
+  MakeTestFolder("A/F/N", &path);
+  found_folders[path] = file_counts;
+  MediaFolderFinder::MediaFolderFinderResults results =
+      FindContainerScanResults(found_folders, sensitive_locations);
+  EXPECT_EQ(expected_folders.size(), results.size());
+  for (std::vector<base::FilePath>::const_iterator it =
+           expected_folders.begin();
+       it != expected_folders.end();
+       ++it) {
+    EXPECT_TRUE(results.find(*it) != results.end());
+  }
 }
 
 TEST_F(MediaScanManagerTest, Containers) {
@@ -422,6 +630,8 @@ TEST_F(MediaScanManagerTest, UpdateExistingScanResults) {
   MakeTestFolder("gscan/dir1", &path);
   found_folders[path] = file_counts;
 
+  MakeTestFolder("junk", &path);
+
   SetFindFoldersResults(true, found_folders);
   file_counts.video_count = 7;
   SetExpectedScanResults(1 /*gallery_count*/, file_counts);
@@ -461,6 +671,8 @@ TEST_F(MediaScanManagerTest, UpdateExistingCounts) {
   file_counts.audio_count = 6;
   MakeTestFolder("scan", &path);
   found_folders[path] = file_counts;
+
+  MakeTestFolder("junk", &path);
 
   file_counts.audio_count = 5;
   MakeTestFolder("user/dir2", &path);

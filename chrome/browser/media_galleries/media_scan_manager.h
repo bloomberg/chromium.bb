@@ -53,12 +53,18 @@ class MediaScanManager : public extensions::ExtensionRegistryObserver {
 
  protected:
   friend class MediaGalleriesPlatformAppBrowserTest;
+  friend class MediaScanManagerTest;
 
   typedef base::Callback<MediaFolderFinder*(
       const MediaFolderFinder::MediaFolderFinderResultsCallback&)>
           MediaFolderFinderFactory;
 
   void SetMediaFolderFinderFactory(const MediaFolderFinderFactory& factory);
+
+  // Here so that friend MediaScanManagerTest can access it.
+  static MediaFolderFinder::MediaFolderFinderResults FindContainerScanResults(
+      const MediaFolderFinder::MediaFolderFinderResults& found_folders,
+      const std::vector<base::FilePath>& sensitive_locations);
 
  private:
   struct ScanObservers {
