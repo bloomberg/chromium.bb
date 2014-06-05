@@ -143,7 +143,6 @@ class Mirror(object):
   gsutil_exe = os.path.join(
     os.path.dirname(os.path.abspath(__file__)),
     'third_party', 'gsutil', 'gsutil')
-  bootstrap_bucket = 'chromium-git-cache'
 
   def __init__(self, url, refs=None, print_func=None):
     self.url = url
@@ -151,6 +150,13 @@ class Mirror(object):
     self.basedir = self.UrlToCacheDir(url)
     self.mirror_path = os.path.join(self.GetCachePath(), self.basedir)
     self.print = print_func or print
+
+  @property
+  def bootstrap_bucket(self):
+    if 'chrome-internal' in self.url:
+      return 'chrome-git-cache'
+    else:
+      return 'chromium-git-cache'
 
   @classmethod
   def FromPath(cls, path):
