@@ -446,7 +446,8 @@ ServiceRuntime::ServiceRuntime(Plugin* plugin,
       anchor_(new nacl::WeakRefAnchor()),
       rev_interface_(new PluginReverseInterface(anchor_, plugin, this,
                                                 init_done_cb, crash_cb)),
-      start_sel_ldr_done_(false) {
+      start_sel_ldr_done_(false),
+      nexe_started_(false) {
   NaClSrpcChannelInitialize(&command_channel_);
   NaClXMutexCtor(&mu_);
   NaClXCondVarCtor(&cond_);
@@ -664,7 +665,22 @@ void ServiceRuntime::SignalStartSelLdrDone() {
   NaClXCondVarSignal(&cond_);
 }
 
-bool ServiceRuntime::LoadNexeAndStart(PP_NaClFileInfo file_info,
+void ServiceRuntime::WaitForNexeStart() {
+  nacl::MutexLocker take(&mu_);
+  while (!nexe_started_)
+    NaClXCondVarWait(&cond_, &mu_);
+  // Reset nexe_started_ here in case we run again.
+  nexe_started_ = false;
+}
+
+void ServiceRuntime::SignalNexeStarted() {
+  nacl::MutexLocker take(&mu_);
+  nexe_started_ = true;
+  NaClXCondVarSignal(&cond_);
+}
+
+void ServiceRuntime::LoadNexeAndStart(PP_NaClFileInfo file_info,
+                                      const pp::CompletionCallback& started_cb,
                                       const pp::CompletionCallback& crash_cb) {
   NaClLog(4, "ServiceRuntime::LoadNexeAndStart (handle_valid=%d "
              "token_lo=%" NACL_PRIu64 " token_hi=%" NACL_PRIu64 ")\n",
@@ -693,11 +709,12 @@ bool ServiceRuntime::LoadNexeAndStart(PP_NaClFileInfo file_info,
     } else {
       NaClLog(LOG_ERROR, "Reverse service thread will pick up crash log\n");
     }
-    return false;
+    pp::Module::Get()->core()->CallOnMainThread(0, started_cb, PP_ERROR_FAILED);
+    return;
   }
 
   NaClLog(4, "ServiceRuntime::LoadNexeAndStart (return 1)\n");
-  return true;
+  pp::Module::Get()->core()->CallOnMainThread(0, started_cb, PP_OK);
 }
 
 SrpcClient* ServiceRuntime::SetupAppChannel() {
