@@ -227,10 +227,7 @@ bool RenderLayerCompositor::acceleratedCompositingForOverflowScrollEnabled() con
 void RenderLayerCompositor::setCompositingLayersNeedRebuild()
 {
     // FIXME: crbug.com/332248 ideally this could be merged with setNeedsCompositingUpdate().
-    // FIXME: We can remove the staleInCompositingMode check once we get rid of the
-    // forceCompositingMode setting.
-    if (staleInCompositingMode())
-        m_compositingLayersNeedRebuild = true;
+    m_compositingLayersNeedRebuild = true;
     page()->animator().scheduleVisualUpdate();
     lifecycle().ensureStateAtMost(DocumentLifecycle::LayoutClean);
 }
@@ -471,13 +468,7 @@ bool RenderLayerCompositor::allocateOrClearCompositedLayerMapping(RenderLayer* l
     switch (compositedLayerUpdate) {
     case AllocateOwnCompositedLayerMapping:
         ASSERT(!layer->hasCompositedLayerMapping());
-        {
-            // FIXME: This can go away once we get rid of the forceCompositingMode setting.
-            // It's needed because setCompositingModeEnabled call ensureRootLayer, which
-            // eventually calls WebViewImpl::enterForceCompositingMode.
-            DeprecatedDirtyCompositingDuringCompositingUpdate marker(lifecycle());
-            setCompositingModeEnabled(true);
-        }
+        setCompositingModeEnabled(true);
 
         // If this layer was previously squashed, we need to remove its reference to a groupedMapping right away, so
         // that computing repaint rects will know the layer's correct compositingState.
