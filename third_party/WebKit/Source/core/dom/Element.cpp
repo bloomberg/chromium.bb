@@ -1894,16 +1894,31 @@ PassRefPtrWillBeRawPtr<Attr> Element::setAttributeNode(Attr* attrNode, Exception
     UniqueElementData& elementData = ensureUniqueElementData();
 
     size_t index = elementData.getAttributeItemIndex(attrNode->qualifiedName(), shouldIgnoreAttributeCase());
+    AtomicString localName;
     if (index != kNotFound) {
-        if (oldAttrNode)
-            detachAttrNodeFromElementWithValue(oldAttrNode.get(), elementData.attributeItem(index).value());
-        else
-            oldAttrNode = Attr::create(document(), attrNode->qualifiedName(), elementData.attributeItem(index).value());
+        const Attribute& attr = elementData.attributeItem(index);
+
+        // If the name of the ElementData attribute doesn't
+        // (case-sensitively) match that of the Attr node, record it
+        // on the Attr so that it can correctly resolve the value on
+        // the Element.
+        if (!attr.name().matches(attrNode->qualifiedName()))
+            localName = attr.localName();
+
+        if (oldAttrNode) {
+            detachAttrNodeFromElementWithValue(oldAttrNode.get(), attr.value());
+        } else {
+            // FIXME: using attrNode's name rather than the
+            // Attribute's for the replaced Attr is compatible with
+            // all but Gecko (and, arguably, the DOM Level1 spec text.)
+            // Consider switching.
+            oldAttrNode = Attr::create(document(), attrNode->qualifiedName(), attr.value());
+        }
     }
 
     setAttributeInternal(index, attrNode->qualifiedName(), attrNode->value(), NotInSynchronizationOfLazyAttribute);
 
-    attrNode->attachToElement(this);
+    attrNode->attachToElement(this, localName);
     treeScope().adoptIfNeeded(*attrNode);
     ensureAttrNodeListForElement(this).append(attrNode);
 
