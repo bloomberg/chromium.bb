@@ -497,11 +497,16 @@
       // When |secondDataChannel| receive a message, send a message back.
       secondDataChannel.onmessage = function(event) {
         assertEquals(event.data, sendDataString);
-        assertEquals('open', secondDataChannel.readyState);
         console.log("gSecondConnection received data");
         if (secondDataChannel.reliable) {
+          // If we're reliable we will just send one message over the channel,
+          // and therefore channel one's message handler cannot have shut us
+          // down already.
+          assertEquals('open', secondDataChannel.readyState);
           secondDataChannel.send(sendDataString);
         } else {
+          // If unreliable, this could be one in a series of messages and it
+          // is possible we already replied (which will close our channel).
           sendDataRepeatedlyUntilClosed(secondDataChannel);
         }
       }
