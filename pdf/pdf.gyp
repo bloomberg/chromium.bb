@@ -17,7 +17,7 @@
         '../base/base.gyp:base',
         '../net/net.gyp:net',
         '../ppapi/ppapi.gyp:ppapi_cpp',
-        '../third_party/pdfium/pdfium.gyp:fpdfsdk',
+        '../third_party/pdfium/pdfium.gyp:pdfium',
       ],
       'xcode_settings': {
         'INFOPLIST_FILE': 'Info.plist',

@@ -47,6 +47,7 @@ group("root") {
     "//ipc",
     "//mojo",
     "//net",
+    "//pdf",
     "//ppapi:ppapi_c",
     "//printing",
     "//sandbox",
@@ -120,6 +121,7 @@ group("root") {
       "//content/public/renderer",
       "//dbus",
       "//extensions/common/api:extensions_api",
+      "//pdf",  # Not compiled on Android in GYP yet, either.
       "//ppapi:ppapi_c",
       "//third_party/libusb",
       # "//third_party/WebKit/Source/platform",
