@@ -645,7 +645,7 @@ PassRefPtr<RenderStyle> StyleResolver::styleForElement(Element* element, RenderS
         }
     }
 
-    state.fontBuilder().initForStyleResolve(state.document(), state.style(), state.useSVGZoomRules());
+    state.fontBuilder().initForStyleResolve(state.document(), state.style());
 
     if (element->isLink()) {
         state.style()->setIsLink(true);
@@ -713,7 +713,7 @@ PassRefPtr<RenderStyle> StyleResolver::styleForKeyframe(Element* element, const 
     state.setStyle(RenderStyle::clone(&elementStyle));
     state.setLineHeightValue(0);
 
-    state.fontBuilder().initForStyleResolve(state.document(), state.style(), state.useSVGZoomRules());
+    state.fontBuilder().initForStyleResolve(state.document(), state.style());
 
     // We don't need to bother with !important. Since there is only ever one
     // decl, there's nothing to override. So just add the first properties.
@@ -760,7 +760,7 @@ PassRefPtrWillBeRawPtr<AnimatableValue> StyleResolver::createAnimatableValueSnap
 {
     StyleResolverState state(element.document(), &element);
     state.setStyle(&style);
-    state.fontBuilder().initForStyleResolve(state.document(), state.style(), state.useSVGZoomRules());
+    state.fontBuilder().initForStyleResolve(state.document(), state.style());
     StyleBuilder::applyProperty(property, state, &value);
     return CSSAnimatableValueFactory::create(property, style);
 }
@@ -821,7 +821,7 @@ bool StyleResolver::pseudoStyleForElementInternal(Element& element, const Pseudo
         state.setParentStyle(RenderStyle::clone(state.style()));
     }
 
-    state.fontBuilder().initForStyleResolve(state.document(), state.style(), state.useSVGZoomRules());
+    state.fontBuilder().initForStyleResolve(state.document(), state.style());
 
     // Since we don't use pseudo-elements in any of our quirk/print
     // user agent rules, don't waste time walking those rules.
@@ -890,7 +890,7 @@ PassRefPtr<RenderStyle> StyleResolver::styleForPage(int pageIndex)
     ASSERT(rootElementStyle);
     state.style()->inheritFrom(rootElementStyle);
 
-    state.fontBuilder().initForStyleResolve(state.document(), state.style(), state.useSVGZoomRules());
+    state.fontBuilder().initForStyleResolve(state.document(), state.style());
 
     PageRuleCollector collector(rootElementStyle, pageIndex);
 
@@ -945,7 +945,7 @@ PassRefPtr<RenderStyle> StyleResolver::defaultStyleForElement()
 {
     StyleResolverState state(document(), 0);
     state.setStyle(RenderStyle::create());
-    state.fontBuilder().initForStyleResolve(document(), state.style(), state.useSVGZoomRules());
+    state.fontBuilder().initForStyleResolve(document(), state.style());
     state.style()->setLineHeight(RenderStyle::initialLineHeight());
     state.setLineHeightValue(0);
     state.fontBuilder().setInitial(state.style()->effectiveZoom());
@@ -1378,6 +1378,17 @@ void StyleResolver::applyMatchedProperties(StyleResolverState& state, const Matc
     applyMatchedProperties<HighPriorityProperties>(state, matchResult, true, matchResult.ranges.firstUserRule, matchResult.ranges.lastUserRule, applyInheritedOnly);
     applyMatchedProperties<HighPriorityProperties>(state, matchResult, true, matchResult.ranges.firstUARule, matchResult.ranges.lastUARule, applyInheritedOnly);
 
+    if (UNLIKELY(isSVGForeignObjectElement(element))) {
+        // RenderSVGRoot handles zooming for the whole SVG subtree, so foreignObject content should not be scaled again.
+        //
+        // FIXME: The following hijacks the zoom property for foreignObject so that children of foreignObject get the
+        // correct font-size in case of zooming. 'zoom' is part of HighPriorityProperties, along with other font-related
+        // properties used as input to the FontBuilder, so resetting it here may cause the FontBuilder to recompute the
+        // font used as inheritable font for foreignObject content. If we want to support zoom on foreignObject we'll
+        // need to find another way of handling the SVG zoom model.
+        state.setEffectiveZoom(RenderStyle::initialZoom());
+    }
+
     if (cachedMatchedProperties && cachedMatchedProperties->renderStyle->effectiveZoom() != state.style()->effectiveZoom()) {
         state.fontBuilder().setFontDirty(true);
         applyInheritedOnly = false;
@@ -1454,7 +1465,7 @@ void StyleResolver::applyPropertiesToStyle(const CSSPropertyValue* properties, s
     StyleResolverState state(document(), document().documentElement(), style);
     state.setStyle(style);
 
-    state.fontBuilder().initForStyleResolve(document(), style, state.useSVGZoomRules());
+    state.fontBuilder().initForStyleResolve(document(), style);
 
     for (size_t i = 0; i < count; ++i) {
         if (properties[i].value) {

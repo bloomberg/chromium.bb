@@ -62,18 +62,16 @@ private:
 
 FontBuilder::FontBuilder()
     : m_document(0)
-    , m_useSVGZoomRules(false)
     , m_fontSizehasViewportUnits(false)
     , m_style(0)
     , m_fontDirty(false)
 {
 }
 
-void FontBuilder::initForStyleResolve(const Document& document, RenderStyle* style, bool useSVGZoomRules)
+void FontBuilder::initForStyleResolve(const Document& document, RenderStyle* style)
 {
     ASSERT(document.frame());
     m_document = &document;
-    m_useSVGZoomRules = useSVGZoomRules;
     m_style = style;
     m_fontDirty = false;
 }
@@ -530,13 +528,10 @@ void FontBuilder::setSize(FontDescription& fontDescription, float effectiveZoom,
 
 float FontBuilder::getComputedSizeFromSpecifiedSize(FontDescription& fontDescription, float effectiveZoom, float specifiedSize)
 {
-    float zoomFactor = 1.0f;
-    if (!m_useSVGZoomRules) {
-        zoomFactor = effectiveZoom;
-        // FIXME: Why is this here!!!!?!
-        if (LocalFrame* frame = m_document->frame())
-            zoomFactor *= frame->textZoomFactor();
-    }
+    float zoomFactor = effectiveZoom;
+    // FIXME: Why is this here!!!!?!
+    if (LocalFrame* frame = m_document->frame())
+        zoomFactor *= frame->textZoomFactor();
 
     return FontSize::getComputedSizeFromSpecifiedSize(m_document, zoomFactor, fontDescription.isAbsoluteSize(), specifiedSize);
 }

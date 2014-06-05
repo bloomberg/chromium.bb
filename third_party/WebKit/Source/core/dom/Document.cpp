@@ -1705,7 +1705,7 @@ void Document::updateDistributionForNodeIfNeeded(Node* node)
 void Document::setupFontBuilder(RenderStyle* documentStyle)
 {
     FontBuilder fontBuilder;
-    fontBuilder.initForStyleResolve(*this, documentStyle, isSVGDocument());
+    fontBuilder.initForStyleResolve(*this, documentStyle);
     RefPtrWillBeRawPtr<CSSFontSelector> selector = m_styleEngine->fontSelector();
     fontBuilder.createFontForDocument(selector, documentStyle);
 }

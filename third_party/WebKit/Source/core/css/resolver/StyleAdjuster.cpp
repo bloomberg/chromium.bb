@@ -275,11 +275,6 @@ void StyleAdjuster::adjustRenderStyle(RenderStyle* style, RenderStyle* parentSty
         if (!(isSVGSVGElement(*e) && e->parentNode() && !e->parentNode()->isSVGElement()))
             style->setPosition(RenderStyle::initialPosition());
 
-        // RenderSVGRoot handles zooming for the whole SVG subtree, so foreignObject content should
-        // not be scaled again.
-        if (isSVGForeignObjectElement(*e))
-            style->setEffectiveZoom(RenderStyle::initialZoom());
-
         // SVG text layout code expects us to be a block-level style element.
         if ((isSVGForeignObjectElement(*e) || isSVGTextElement(*e)) && style->isDisplayInlineType())
             style->setDisplay(BLOCK);

@@ -1048,6 +1048,11 @@ crbug.com/377013 [ Mac Debug ] fast/repaint/4776765.html [ Pass Failure ]
 
 crbug.com/239722 http/tests/websocket/connection-throttling.html [ Failure ]
 
+crbug.com/374119 svg/zoom/page/zoom-foreignObject.svg [ NeedsRebaseline ]
+crbug.com/374119 svg/zoom/text/zoom-hixie-mixed-008.xml [ NeedsRebaseline ]
+crbug.com/374119 svg/zoom/text/zoom-hixie-mixed-009.xml [ NeedsRebaseline ]
+crbug.com/374119 svg/zoom/text/zoom-foreignObject.svg [ NeedsRebaseline ]
+
 crbug.com/376194 inspector/console/console-format-es6.html [ Skip ]
 crbug.com/376194 inspector/console/console-format-es6-symbols-error.html [ Skip ]
 crbug.com/376194 inspector/console/console-dir-es6.html [ Skip ]
