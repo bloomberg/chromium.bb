@@ -9,8 +9,8 @@
 #include "components/autofill/core/browser/test_autofill_driver.h"
 #include "components/autofill/core/browser/test_autofill_manager_delegate.h"
 #include "components/password_manager/core/browser/password_autofill_manager.h"
-#include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/browser/password_manager_driver.h"
+#include "components/password_manager/core/browser/stub_password_manager_client.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/rect_f.h"
@@ -54,16 +54,9 @@ class MockPasswordManagerDriver : public PasswordManagerDriver {
   MOCK_METHOD0(GetPasswordAutofillManager, PasswordAutofillManager*());
 };
 
-class TestPasswordManagerClient : public PasswordManagerClient {
+class TestPasswordManagerClient : public StubPasswordManagerClient {
  public:
-  virtual void PromptUserToSavePassword(
-      PasswordFormManager* form_to_save) OVERRIDE {}
-  virtual PasswordStore* GetPasswordStore() OVERRIDE { return NULL; }
-  virtual PrefService* GetPrefs() OVERRIDE { return NULL; }
   virtual PasswordManagerDriver* GetDriver() OVERRIDE { return &driver_; }
-  virtual void AuthenticateAutofillAndFillForm(
-      scoped_ptr<autofill::PasswordFormFillData> fill_data) OVERRIDE {}
-  virtual bool IsPasswordSyncEnabled() OVERRIDE { return false; }
 
   MockPasswordManagerDriver* mock_driver() { return &driver_; }
 
