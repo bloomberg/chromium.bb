@@ -391,10 +391,6 @@ const char kDisableSyncSyncedNotifications[] =
 // --disable-synctypes='Typed URLs, Bookmarks, Autofill Profiles'
 const char kDisableSyncTypes[]              = "disable-sync-types";
 
-// Disables some security measures when accessing user media devices like
-// webcams and microphones, especially on non-HTTPS pages.
-const char kDisableUserMediaSecurity[]      = "disable-user-media-security";
-
 // Disables the backend service for web resources.
 const char kDisableWebResources[]           = "disable-web-resources";
 

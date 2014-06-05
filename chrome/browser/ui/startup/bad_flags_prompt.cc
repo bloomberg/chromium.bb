@@ -52,7 +52,6 @@ void ShowBadFlagsPrompt(Browser* browser) {
     translate::switches::kTranslateSecurityOrigin,
 
     // These flags undermine HTTPS / connection security.
-    switches::kDisableUserMediaSecurity,
 #if defined(ENABLE_WEBRTC)
     switches::kDisableWebRtcEncryption,
 #endif

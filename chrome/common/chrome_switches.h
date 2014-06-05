@@ -115,7 +115,6 @@ extern const char kDisableSuggestionsService[];
 extern const char kDisableSync[];
 extern const char kDisableSyncSyncedNotifications[];
 extern const char kDisableSyncTypes[];
-extern const char kDisableUserMediaSecurity[];
 extern const char kDisableWebResources[];
 extern const char kDisableZeroBrowsersOpenForTests[];
 extern const char kDiskCacheDir[];

@@ -688,9 +688,7 @@ bool MediaStreamDevicesController::IsDefaultMediaAccessBlocked() const {
 
 bool MediaStreamDevicesController::IsSchemeSecure() const {
   return request_.security_origin.SchemeIsSecure() ||
-      request_.security_origin.SchemeIs(extensions::kExtensionScheme) ||
-      CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableUserMediaSecurity);
+      request_.security_origin.SchemeIs(extensions::kExtensionScheme);
 }
 
 bool MediaStreamDevicesController::ShouldAlwaysAllowOrigin() const {
