@@ -1285,6 +1285,11 @@ instrumented.notifications.onButtonClicked.addListener(
               recordButtonClick(notificationDataEntry.cardTypeId, buttonIndex);
             } else {
               verify(false, 'onButtonClicked: no url for a button');
+              console.log(
+                  'buttonIndex=' + buttonIndex + ' ' +
+                  'chromeNotificationId=' + chromeNotificationId + ' ' +
+                  'notificationDataEntry=' +
+                  JSON.stringify(notificationDataEntry));
             }
             return url;
           });
