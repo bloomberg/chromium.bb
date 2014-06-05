@@ -18,6 +18,7 @@ namespace internal {
 template <size_t size, size_t alignment>
 bool MOJO_SYSTEM_IMPL_EXPORT VerifyUserPointerHelper(const void* pointer);
 
+// Note: This is also used by options_validation.h.
 template <size_t size, size_t alignment>
 bool MOJO_SYSTEM_IMPL_EXPORT VerifyUserPointerWithCountHelper(
     const void* pointer,

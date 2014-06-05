@@ -4,9 +4,12 @@
 
 #include "mojo/system/data_pipe.h"
 
+#include <stddef.h>
+
 #include <limits>
 
 #include "base/basictypes.h"
+#include "mojo/system/constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {
@@ -28,7 +31,7 @@ void RevalidateOptions(const MojoCreateDataPipeOptions& validated_options) {
             validated_options.capacity_num_bytes %
                 validated_options.element_num_bytes);
 
-  MojoCreateDataPipeOptions revalidated_options = { 0 };
+  MojoCreateDataPipeOptions revalidated_options = {};
   EXPECT_EQ(MOJO_RESULT_OK,
             DataPipe::ValidateOptions(&validated_options,
                                       &revalidated_options));
@@ -40,14 +43,37 @@ void RevalidateOptions(const MojoCreateDataPipeOptions& validated_options) {
   EXPECT_EQ(validated_options.flags, revalidated_options.flags);
 }
 
+// Checks that a default-computed capacity is correct. (Does not duplicate the
+// checks done by |RevalidateOptions()|.)
+void CheckDefaultCapacity(const MojoCreateDataPipeOptions& validated_options) {
+  EXPECT_LE(validated_options.capacity_num_bytes,
+            kDefaultDataPipeCapacityBytes);
+  EXPECT_GT(validated_options.capacity_num_bytes +
+                validated_options.element_num_bytes,
+            kDefaultDataPipeCapacityBytes);
+}
+
 // Tests valid inputs to |ValidateOptions()|.
 TEST(DataPipeTest, ValidateOptionsValidInputs) {
   // Default options.
   {
-    MojoCreateDataPipeOptions validated_options = { 0 };
+    MojoCreateDataPipeOptions validated_options = {};
     EXPECT_EQ(MOJO_RESULT_OK,
               DataPipe::ValidateOptions(NULL, &validated_options));
     RevalidateOptions(validated_options);
+    CheckDefaultCapacity(validated_options);
+  }
+
+  // Size member, but nothing beyond.
+  {
+    MojoCreateDataPipeOptions options = {
+      offsetof(MojoCreateDataPipeOptions, flags)  // |struct_size|.
+    };
+    MojoCreateDataPipeOptions validated_options = {};
+    EXPECT_EQ(MOJO_RESULT_OK,
+              DataPipe::ValidateOptions(&options, &validated_options));
+    RevalidateOptions(validated_options);
+    CheckDefaultCapacity(validated_options);
   }
 
   // Different flags.
@@ -58,6 +84,21 @@ TEST(DataPipeTest, ValidateOptionsValidInputs) {
   for (size_t i = 0; i < arraysize(flags_values); i++) {
     const MojoCreateDataPipeOptionsFlags flags = flags_values[i];
 
+    // Flags member, but nothing beyond.
+    {
+      MojoCreateDataPipeOptions options = {
+        // |struct_size|.
+        offsetof(MojoCreateDataPipeOptions, element_num_bytes),
+        flags  // |flags|.
+      };
+      MojoCreateDataPipeOptions validated_options = {};
+      EXPECT_EQ(MOJO_RESULT_OK,
+                DataPipe::ValidateOptions(&options, &validated_options));
+      RevalidateOptions(validated_options);
+      EXPECT_EQ(options.flags, validated_options.flags);
+      CheckDefaultCapacity(validated_options);
+    }
+
     // Different capacities (size 1).
     for (uint32_t capacity = 1; capacity <= 100 * 1000 * 1000; capacity *= 10) {
       MojoCreateDataPipeOptions options = {
@@ -66,11 +107,16 @@ TEST(DataPipeTest, ValidateOptionsValidInputs) {
         1,  // |element_num_bytes|.
         capacity  // |capacity_num_bytes|.
       };
-      MojoCreateDataPipeOptions validated_options = { 0 };
+      MojoCreateDataPipeOptions validated_options = {};
       EXPECT_EQ(MOJO_RESULT_OK,
                 DataPipe::ValidateOptions(&options, &validated_options))
           << capacity;
       RevalidateOptions(validated_options);
+      EXPECT_EQ(options.flags, validated_options.flags);
+      EXPECT_EQ(options.element_num_bytes,
+                validated_options.element_num_bytes);
+      EXPECT_EQ(options.capacity_num_bytes,
+                validated_options.capacity_num_bytes);
     }
 
     // Small sizes.
@@ -83,11 +129,16 @@ TEST(DataPipeTest, ValidateOptionsValidInputs) {
           size,  // |element_num_bytes|.
           size * elements  // |capacity_num_bytes|.
         };
-        MojoCreateDataPipeOptions validated_options = { 0 };
+        MojoCreateDataPipeOptions validated_options = {};
         EXPECT_EQ(MOJO_RESULT_OK,
                   DataPipe::ValidateOptions(&options, &validated_options))
             << size << ", " << elements;
         RevalidateOptions(validated_options);
+        EXPECT_EQ(options.flags, validated_options.flags);
+        EXPECT_EQ(options.element_num_bytes,
+                  validated_options.element_num_bytes);
+        EXPECT_EQ(options.capacity_num_bytes,
+                  validated_options.capacity_num_bytes);
       }
 
       // Default capacity.
@@ -98,11 +149,34 @@ TEST(DataPipeTest, ValidateOptionsValidInputs) {
           size,  // |element_num_bytes|.
           0  // |capacity_num_bytes|.
         };
-        MojoCreateDataPipeOptions validated_options = { 0 };
+        MojoCreateDataPipeOptions validated_options = {};
         EXPECT_EQ(MOJO_RESULT_OK,
                   DataPipe::ValidateOptions(&options, &validated_options))
             << size;
         RevalidateOptions(validated_options);
+        EXPECT_EQ(options.flags, validated_options.flags);
+        EXPECT_EQ(options.element_num_bytes,
+                  validated_options.element_num_bytes);
+        CheckDefaultCapacity(validated_options);
+      }
+
+      // No capacity field.
+      {
+        MojoCreateDataPipeOptions options = {
+          // |struct_size|.
+          offsetof(MojoCreateDataPipeOptions, capacity_num_bytes),
+          flags,  // |flags|.
+          size  // |element_num_bytes|.
+        };
+        MojoCreateDataPipeOptions validated_options = {};
+        EXPECT_EQ(MOJO_RESULT_OK,
+                  DataPipe::ValidateOptions(&options, &validated_options))
+            << size;
+        RevalidateOptions(validated_options);
+        EXPECT_EQ(options.flags, validated_options.flags);
+        EXPECT_EQ(options.element_num_bytes,
+                  validated_options.element_num_bytes);
+        CheckDefaultCapacity(validated_options);
       }
     }
 
@@ -116,11 +190,16 @@ TEST(DataPipeTest, ValidateOptionsValidInputs) {
           size,  // |element_num_bytes|.
           1000 * size  // |capacity_num_bytes|.
         };
-        MojoCreateDataPipeOptions validated_options = { 0 };
+        MojoCreateDataPipeOptions validated_options = {};
         EXPECT_EQ(MOJO_RESULT_OK,
                   DataPipe::ValidateOptions(&options, &validated_options))
             << size;
         RevalidateOptions(validated_options);
+        EXPECT_EQ(options.flags, validated_options.flags);
+        EXPECT_EQ(options.element_num_bytes,
+                  validated_options.element_num_bytes);
+        EXPECT_EQ(options.capacity_num_bytes,
+                  validated_options.capacity_num_bytes);
       }
 
       // Default capacity.
@@ -131,11 +210,34 @@ TEST(DataPipeTest, ValidateOptionsValidInputs) {
           size,  // |element_num_bytes|.
           0  // |capacity_num_bytes|.
         };
-        MojoCreateDataPipeOptions validated_options = { 0 };
+        MojoCreateDataPipeOptions validated_options = {};
         EXPECT_EQ(MOJO_RESULT_OK,
                   DataPipe::ValidateOptions(&options, &validated_options))
             << size;
         RevalidateOptions(validated_options);
+        EXPECT_EQ(options.flags, validated_options.flags);
+        EXPECT_EQ(options.element_num_bytes,
+                  validated_options.element_num_bytes);
+        CheckDefaultCapacity(validated_options);
+      }
+
+      // No capacity field.
+      {
+        MojoCreateDataPipeOptions options = {
+          // |struct_size|.
+          offsetof(MojoCreateDataPipeOptions, capacity_num_bytes),
+          flags,  // |flags|.
+          size  // |element_num_bytes|.
+        };
+        MojoCreateDataPipeOptions validated_options = {};
+        EXPECT_EQ(MOJO_RESULT_OK,
+                  DataPipe::ValidateOptions(&options, &validated_options))
+            << size;
+        RevalidateOptions(validated_options);
+        EXPECT_EQ(options.flags, validated_options.flags);
+        EXPECT_EQ(options.element_num_bytes,
+                  validated_options.element_num_bytes);
+        CheckDefaultCapacity(validated_options);
       }
     }
   }
@@ -143,17 +245,28 @@ TEST(DataPipeTest, ValidateOptionsValidInputs) {
 
 TEST(DataPipeTest, ValidateOptionsInvalidInputs) {
   // Invalid |struct_size|.
-  // Note: If/when we extend |MojoCreateDataPipeOptions|, this will have to be
-  // updated.
-  for (uint32_t struct_size = 0; struct_size < kSizeOfOptions; struct_size++) {
+  {
     MojoCreateDataPipeOptions options = {
-      struct_size,  // |struct_size|.
+      1,  // |struct_size|.
       MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_NONE,  // |flags|.
       1,  // |element_num_bytes|.
-      1000  // |capacity_num_bytes|.
+      0  // |capacity_num_bytes|.
     };
-    MojoCreateDataPipeOptions unused = { 0 };
+    MojoCreateDataPipeOptions unused;
     EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
+              DataPipe::ValidateOptions(&options, &unused));
+  }
+
+  // Unknown |flags|.
+  {
+    MojoCreateDataPipeOptions options = {
+      kSizeOfOptions,  // |struct_size|.
+      ~0u,  // |flags|.
+      1,  // |element_num_bytes|.
+      0  // |capacity_num_bytes|.
+    };
+    MojoCreateDataPipeOptions unused;
+    EXPECT_EQ(MOJO_RESULT_UNIMPLEMENTED,
               DataPipe::ValidateOptions(&options, &unused));
   }
 
@@ -165,7 +278,7 @@ TEST(DataPipeTest, ValidateOptionsInvalidInputs) {
       0,  // |element_num_bytes|.
       1000  // |capacity_num_bytes|.
     };
-    MojoCreateDataPipeOptions unused = { 0 };
+    MojoCreateDataPipeOptions unused;
     EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
               DataPipe::ValidateOptions(&options, &unused));
   }
@@ -177,7 +290,7 @@ TEST(DataPipeTest, ValidateOptionsInvalidInputs) {
       std::numeric_limits<uint32_t>::max(),  // |element_num_bytes|.
       std::numeric_limits<uint32_t>::max()  // |capacity_num_bytes|.
     };
-    MojoCreateDataPipeOptions unused = { 0 };
+    MojoCreateDataPipeOptions unused;
     EXPECT_EQ(MOJO_RESULT_RESOURCE_EXHAUSTED,
               DataPipe::ValidateOptions(&options, &unused));
   }
@@ -188,7 +301,7 @@ TEST(DataPipeTest, ValidateOptionsInvalidInputs) {
       std::numeric_limits<uint32_t>::max() - 1000,  // |element_num_bytes|.
       std::numeric_limits<uint32_t>::max() - 1000  // |capacity_num_bytes|.
     };
-    MojoCreateDataPipeOptions unused = { 0 };
+    MojoCreateDataPipeOptions unused;
     EXPECT_EQ(MOJO_RESULT_RESOURCE_EXHAUSTED,
               DataPipe::ValidateOptions(&options, &unused));
   }
@@ -201,7 +314,7 @@ TEST(DataPipeTest, ValidateOptionsInvalidInputs) {
       2,  // |element_num_bytes|.
       1  // |capacity_num_bytes|.
     };
-    MojoCreateDataPipeOptions unused = { 0 };
+    MojoCreateDataPipeOptions unused;
     EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
               DataPipe::ValidateOptions(&options, &unused));
   }
@@ -212,7 +325,7 @@ TEST(DataPipeTest, ValidateOptionsInvalidInputs) {
       2,  // |element_num_bytes|.
       111  // |capacity_num_bytes|.
     };
-    MojoCreateDataPipeOptions unused = { 0 };
+    MojoCreateDataPipeOptions unused;
     EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
               DataPipe::ValidateOptions(&options, &unused));
   }
@@ -223,7 +336,7 @@ TEST(DataPipeTest, ValidateOptionsInvalidInputs) {
       5,  // |element_num_bytes|.
       104  // |capacity_num_bytes|.
     };
-    MojoCreateDataPipeOptions unused = { 0 };
+    MojoCreateDataPipeOptions unused;
     EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
               DataPipe::ValidateOptions(&options, &unused));
   }
@@ -235,7 +348,7 @@ TEST(DataPipeTest, ValidateOptionsInvalidInputs) {
       8,  // |element_num_bytes|.
       0xffff0000  // |capacity_num_bytes|.
     };
-    MojoCreateDataPipeOptions unused = { 0 };
+    MojoCreateDataPipeOptions unused;
     EXPECT_EQ(MOJO_RESULT_RESOURCE_EXHAUSTED,
               DataPipe::ValidateOptions(&options, &unused));
   }

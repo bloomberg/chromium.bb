@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "mojo/system/constants.h"
 #include "mojo/system/memory.h"
+#include "mojo/system/options_validation.h"
 #include "mojo/system/waiter_list.h"
 
 namespace mojo {
@@ -28,36 +29,45 @@ MojoResult DataPipe::ValidateOptions(
     1u,
     static_cast<uint32_t>(kDefaultDataPipeCapacityBytes)
   };
-  if (!in_options) {
-    *out_options = kDefaultOptions;
+  *out_options = kDefaultOptions;
+
+  if (!in_options)
     return MOJO_RESULT_OK;
-  }
 
-  if (in_options->struct_size < sizeof(*in_options))
+  if (!IsOptionsStructPointerAndSizeValid<MojoCreateDataPipeOptions>(
+          in_options))
     return MOJO_RESULT_INVALID_ARGUMENT;
-  out_options->struct_size = static_cast<uint32_t>(sizeof(*out_options));
 
-  // All flags are okay (unrecognized flags will be ignored).
+  if (!HAS_OPTIONS_STRUCT_MEMBER(MojoCreateDataPipeOptions, flags, in_options))
+    return MOJO_RESULT_OK;
+  if (!AreOptionsFlagsAllKnown<MojoCreateDataPipeOptions>(
+          in_options, MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_MAY_DISCARD))
+    return MOJO_RESULT_UNIMPLEMENTED;
   out_options->flags = in_options->flags;
 
+  if (!HAS_OPTIONS_STRUCT_MEMBER(MojoCreateDataPipeOptions, element_num_bytes,
+                                 in_options))
+    return MOJO_RESULT_OK;
   if (in_options->element_num_bytes == 0)
     return MOJO_RESULT_INVALID_ARGUMENT;
   out_options->element_num_bytes = in_options->element_num_bytes;
 
-  if (in_options->capacity_num_bytes == 0) {
+  if (!HAS_OPTIONS_STRUCT_MEMBER(MojoCreateDataPipeOptions, capacity_num_bytes,
+                                 in_options) ||
+      in_options->capacity_num_bytes == 0) {
     // Round the default capacity down to a multiple of the element size (but at
     // least one element).
     out_options->capacity_num_bytes = std::max(
         static_cast<uint32_t>(kDefaultDataPipeCapacityBytes -
-            (kDefaultDataPipeCapacityBytes % in_options->element_num_bytes)),
-        in_options->element_num_bytes);
-  } else {
-    if (in_options->capacity_num_bytes % in_options->element_num_bytes != 0)
-      return MOJO_RESULT_INVALID_ARGUMENT;
-    out_options->capacity_num_bytes = in_options->capacity_num_bytes;
+            (kDefaultDataPipeCapacityBytes % out_options->element_num_bytes)),
+        out_options->element_num_bytes);
+    return MOJO_RESULT_OK;
   }
-  if (out_options->capacity_num_bytes > kMaxDataPipeCapacityBytes)
+  if (in_options->capacity_num_bytes % out_options->element_num_bytes != 0)
+    return MOJO_RESULT_INVALID_ARGUMENT;
+  if (in_options->capacity_num_bytes > kMaxDataPipeCapacityBytes)
     return MOJO_RESULT_RESOURCE_EXHAUSTED;
+  out_options->capacity_num_bytes = in_options->capacity_num_bytes;
 
   return MOJO_RESULT_OK;
 }

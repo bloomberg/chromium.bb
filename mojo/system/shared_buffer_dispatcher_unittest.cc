@@ -30,7 +30,7 @@ void RevalidateOptions(const MojoCreateSharedBufferOptions& validated_options) {
   EXPECT_EQ(kSizeOfOptions, validated_options.struct_size);
   // Nothing to check for flags.
 
-  MojoCreateSharedBufferOptions revalidated_options = { 0 };
+  MojoCreateSharedBufferOptions revalidated_options = {};
   EXPECT_EQ(MOJO_RESULT_OK,
             SharedBufferDispatcher::ValidateOptions(&validated_options,
                                                     &revalidated_options));
@@ -42,7 +42,7 @@ void RevalidateOptions(const MojoCreateSharedBufferOptions& validated_options) {
 TEST(SharedBufferDispatcherTest, ValidateOptionsValidInputs) {
   // Default options.
   {
-    MojoCreateSharedBufferOptions validated_options = { 0 };
+    MojoCreateSharedBufferOptions validated_options = {};
     EXPECT_EQ(MOJO_RESULT_OK,
               SharedBufferDispatcher::ValidateOptions(NULL,
                                                       &validated_options));
@@ -62,33 +62,43 @@ TEST(SharedBufferDispatcherTest, ValidateOptionsValidInputs) {
         kSizeOfOptions,  // |struct_size|.
         flags  // |flags|.
       };
-      MojoCreateSharedBufferOptions validated_options = { 0 };
+      MojoCreateSharedBufferOptions validated_options = {};
       EXPECT_EQ(MOJO_RESULT_OK,
                 SharedBufferDispatcher::ValidateOptions(&options,
                                                         &validated_options))
           << capacity;
       RevalidateOptions(validated_options);
+      EXPECT_EQ(options.flags, validated_options.flags);
     }
   }
 }
 
 TEST(SharedBufferDispatcherTest, ValidateOptionsInvalidInputs) {
   // Invalid |struct_size|.
-  // Note: If/when we extend |MojoCreateSharedBufferOptions|, this will have to
-  // be updated.
-  for (uint32_t struct_size = 0; struct_size < kSizeOfOptions; struct_size++) {
+  {
     MojoCreateSharedBufferOptions options = {
-      struct_size,  // |struct_size|.
+      1,  // |struct_size|.
       MOJO_CREATE_SHARED_BUFFER_OPTIONS_FLAG_NONE  // |flags|.
     };
-    MojoCreateSharedBufferOptions unused = { 0 };
+    MojoCreateSharedBufferOptions unused;
     EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
+              SharedBufferDispatcher::ValidateOptions(&options, &unused));
+  }
+
+  // Unknown |flags|.
+  {
+    MojoCreateSharedBufferOptions options = {
+      kSizeOfOptions,  // |struct_size|.
+      ~0u  // |flags|.
+    };
+    MojoCreateSharedBufferOptions unused;
+    EXPECT_EQ(MOJO_RESULT_UNIMPLEMENTED,
               SharedBufferDispatcher::ValidateOptions(&options, &unused));
   }
 }
 
 TEST(SharedBufferDispatcherTest, CreateAndMapBuffer) {
-  MojoCreateSharedBufferOptions validated_options = { 0 };
+  MojoCreateSharedBufferOptions validated_options = {};
   EXPECT_EQ(MOJO_RESULT_OK,
             SharedBufferDispatcher::ValidateOptions(NULL,
                                                     &validated_options));
@@ -129,7 +139,7 @@ TEST(SharedBufferDispatcherTest, CreateAndMapBuffer) {
 }
 
 TEST(SharedBufferDispatcher, DuplicateBufferHandle) {
-  MojoCreateSharedBufferOptions validated_options = { 0 };
+  MojoCreateSharedBufferOptions validated_options = {};
   EXPECT_EQ(MOJO_RESULT_OK,
             SharedBufferDispatcher::ValidateOptions(NULL,
                                                     &validated_options));
@@ -168,7 +178,7 @@ TEST(SharedBufferDispatcher, DuplicateBufferHandle) {
 // TODO(vtl): Test |DuplicateBufferHandle()| with non-null (valid) |options|.
 
 TEST(SharedBufferDispatcherTest, CreateInvalidNumBytes) {
-  MojoCreateSharedBufferOptions validated_options = { 0 };
+  MojoCreateSharedBufferOptions validated_options = {};
   EXPECT_EQ(MOJO_RESULT_OK,
             SharedBufferDispatcher::ValidateOptions(NULL,
                                                     &validated_options));
@@ -188,7 +198,7 @@ TEST(SharedBufferDispatcherTest, CreateInvalidNumBytes) {
 }
 
 TEST(SharedBufferDispatcherTest, MapBufferInvalidArguments) {
-  MojoCreateSharedBufferOptions validated_options = { 0 };
+  MojoCreateSharedBufferOptions validated_options = {};
   EXPECT_EQ(MOJO_RESULT_OK,
             SharedBufferDispatcher::ValidateOptions(NULL,
                                                     &validated_options));

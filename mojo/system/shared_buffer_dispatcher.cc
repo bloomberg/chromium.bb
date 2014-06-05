@@ -11,6 +11,7 @@
 #include "mojo/public/c/system/macros.h"
 #include "mojo/system/constants.h"
 #include "mojo/system/memory.h"
+#include "mojo/system/options_validation.h"
 #include "mojo/system/raw_shared_buffer.h"
 
 namespace mojo {
@@ -33,16 +34,21 @@ MojoResult SharedBufferDispatcher::ValidateOptions(
     static_cast<uint32_t>(sizeof(MojoCreateSharedBufferOptions)),
     MOJO_CREATE_SHARED_BUFFER_OPTIONS_FLAG_NONE
   };
-  if (!in_options) {
-    *out_options = kDefaultOptions;
+  *out_options = kDefaultOptions;
+
+  if (!in_options)
     return MOJO_RESULT_OK;
-  }
 
-  if (in_options->struct_size < sizeof(*in_options))
+  if (!IsOptionsStructPointerAndSizeValid<MojoCreateSharedBufferOptions>(
+          in_options))
     return MOJO_RESULT_INVALID_ARGUMENT;
-  out_options->struct_size = static_cast<uint32_t>(sizeof(*out_options));
 
-  // All flags are okay (unrecognized flags will be ignored).
+  if (!HAS_OPTIONS_STRUCT_MEMBER(MojoCreateSharedBufferOptions, flags,
+                                 in_options))
+    return MOJO_RESULT_OK;
+  if (!AreOptionsFlagsAllKnown<MojoCreateSharedBufferOptions>(
+          in_options, MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_NONE))
+    return MOJO_RESULT_UNIMPLEMENTED;
   out_options->flags = in_options->flags;
 
   return MOJO_RESULT_OK;
