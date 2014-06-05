@@ -27,8 +27,10 @@ struct ProfileCounts {
   size_t signedin;
   size_t managed;
   size_t unused;
+  size_t gaia_icon;
 
-  ProfileCounts() : total(0), signedin(0), managed(0), unused(0) {}
+  ProfileCounts()
+      : total(0), signedin(0), managed(0), unused(0), gaia_icon(0) {}
 };
 
 ProfileMetrics::ProfileType GetProfileType(
@@ -72,8 +74,11 @@ bool CountProfileInformation(ProfileManager* manager, ProfileCounts* counts) {
     } else {
       if (info_cache.ProfileIsManagedAtIndex(i))
         counts->managed++;
-      if (!info_cache.GetUserNameOfProfileAtIndex(i).empty())
+      if (!info_cache.GetUserNameOfProfileAtIndex(i).empty()) {
         counts->signedin++;
+        if (info_cache.IsUsingGAIAPictureOfProfileAtIndex(i))
+          counts->gaia_icon++;
+      }
     }
   }
   return true;
@@ -144,6 +149,8 @@ void ProfileMetrics::LogNumberOfProfiles(ProfileManager* manager) {
                              counts.signedin);
     UMA_HISTOGRAM_COUNTS_100("Profile.NumberOfUnusedProfiles",
                              counts.unused);
+    UMA_HISTOGRAM_COUNTS_100("Profile.NumberOfSignedInProfilesWithGAIAIcons",
+                             counts.gaia_icon);
 
     UpdateReportedOSProfileStatistics(counts.total, counts.signedin);
   }
