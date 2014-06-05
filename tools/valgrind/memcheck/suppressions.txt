@@ -6508,3 +6508,17 @@
    fun:_ZN7content28ShellURLRequestContextGetter20GetURLRequestContextEv
    fun:_ZN7content21ChromeAppCacheService20InitializeOnIOThreadERKN4base8FilePathEPNS_15ResourceContextEPN3net23URLRequestContextGetterE13scoped_refptrIN5quota20SpecialStoragePolicyEE
 }
+{
+   bug_381065
+   Memcheck:Leak
+   fun:_Znw*
+   ...
+   fun:_ZN7WebCore18ModulesInitializer20registerEventFactoryEv
+   fun:_ZN7WebCore15CoreInitializer4initEv
+   fun:_ZN5blink19initializeWithoutV8EPNS_8PlatformE
+   fun:_ZN5blink10initializeEPNS_8PlatformE
+   fun:_ZN7content25TestWebKitPlatformSupportC2Ev
+   fun:_ZN7content25TestWebKitPlatformSupportC1Ev
+   fun:_ZN7content17UnitTestTestSuiteC2EPN4base9TestSuiteE
+   fun:_ZN7content17UnitTestTestSuiteC1EPN4base9TestSuiteE
+}
