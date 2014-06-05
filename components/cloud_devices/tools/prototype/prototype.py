@@ -393,7 +393,7 @@ class MDnsWrapper(object):
         'avahi-publish',
         '-s', '--subtype=_%s._sub._privet._tcp' % _DEVICE_TYPE,
         _DEVICE_NAME, '_privet._tcp', '%s' % _DEVICE_PORT,
-        'txtvers=2',
+        'txtvers=3',
         'type=%s' % _DEVICE_TYPE,
         'ty=%s' % _DEVICE_NAME,
         'id=%s' % self.device_id
