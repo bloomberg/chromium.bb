@@ -1021,10 +1021,8 @@ views::View* AppsGridView::CreateViewForItemAtIndex(size_t index) {
   AppListItemView* view = new AppListItemView(this,
                                               item_list_->item_at(index));
   view->SetIconSize(icon_size_);
-#if defined(USE_AURA)
   view->SetPaintToLayer(true);
   view->SetFillsBoundsOpaquely(false);
-#endif
   return view;
 }
 
@@ -1249,7 +1247,6 @@ void AppsGridView::AnimationBetweenRows(views::View* view,
   const int dir = current_page < target_page ||
       (current_page == target_page && current.y() < target.y()) ? 1 : -1;
 
-#if defined(USE_AURA)
   scoped_ptr<ui::Layer> layer;
   if (animate_current) {
     layer = view->RecreateLayer();
@@ -1261,7 +1258,6 @@ void AppsGridView::AnimationBetweenRows(views::View* view,
 
   gfx::Rect current_out(current);
   current_out.Offset(dir * kPreferredTileWidth, 0);
-#endif
 
   gfx::Rect target_in(target);
   if (animate_target)
@@ -1269,12 +1265,10 @@ void AppsGridView::AnimationBetweenRows(views::View* view,
   view->SetBoundsRect(target_in);
   bounds_animator_.AnimateViewTo(view, target);
 
-#if defined(USE_AURA)
   bounds_animator_.SetAnimationDelegate(
       view,
       new RowMoveAnimationDelegate(view, layer.release(), current_out),
       true);
-#endif
 }
 
 void AppsGridView::ExtractDragLocation(const ui::LocatedEvent& event,
@@ -1976,13 +1970,11 @@ void AppsGridView::OnAppListModelStatusChanged() {
 }
 
 void AppsGridView::SetViewHidden(views::View* view, bool hide, bool immediate) {
-#if defined(USE_AURA)
   ui::ScopedLayerAnimationSettings animator(view->layer()->GetAnimator());
   animator.SetPreemptionStrategy(
       immediate ? ui::LayerAnimator::IMMEDIATELY_SET_NEW_TARGET :
                   ui::LayerAnimator::BLEND_WITH_CURRENT_ANIMATION);
   view->layer()->SetOpacity(hide ? 0 : 1);
-#endif
 }
 
 void AppsGridView::OnImplicitAnimationsCompleted() {

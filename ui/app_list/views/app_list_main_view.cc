@@ -117,11 +117,9 @@ void AppListMainView::AddContentsView() {
 
   search_box_view_->set_contents_view(contents_view_);
 
-#if defined(USE_AURA)
   contents_view_->SetPaintToLayer(true);
   contents_view_->SetFillsBoundsOpaquely(false);
   contents_view_->layer()->SetMasksToBounds(true);
-#endif
 }
 
 AppListMainView::~AppListMainView() {

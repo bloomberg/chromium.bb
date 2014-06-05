@@ -37,8 +37,8 @@ bool IsAppListSyncEnabled() {
 }
 
 bool IsFolderUIEnabled() {
-#if defined(OS_MACOSX)
-  return false;  // Folder UI not implemented for OSX
+#if !defined(TOOLKIT_VIEWS)
+  return false;  // Folder UI not implemented for Cocoa.
 #endif
   // Folder UI is available only when AppList sync is enabled, and should
   // not be disabled separately.

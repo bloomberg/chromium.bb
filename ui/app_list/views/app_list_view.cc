@@ -31,7 +31,6 @@
 #include "ui/gfx/path.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/views/bubble/bubble_frame_view.h"
-#include "ui/views/bubble/bubble_window_targeter.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/widget/widget.h"
@@ -39,6 +38,7 @@
 #if defined(USE_AURA)
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
+#include "ui/views/bubble/bubble_window_targeter.h"
 #if defined(OS_WIN)
 #include "ui/base/win/shell.h"
 #endif
@@ -273,13 +273,9 @@ void AppListView::SetNextPaintCallback(const base::Closure& callback) {
 
 #if defined(OS_WIN)
 HWND AppListView::GetHWND() const {
-#if defined(USE_AURA)
   gfx::NativeWindow window =
       GetWidget()->GetTopLevelWidget()->GetNativeWindow();
   return window->GetHost()->GetAcceleratedWidget();
-#else
-  return GetWidget()->GetTopLevelWidget()->GetNativeWindow();
-#endif
 }
 #endif
 
@@ -298,21 +294,17 @@ void AppListView::InitAsBubbleInternal(gfx::NativeView parent,
   app_list_main_view_ =
       new AppListMainView(delegate_.get(), initial_apps_page, parent);
   AddChildView(app_list_main_view_);
-#if defined(USE_AURA)
   app_list_main_view_->SetPaintToLayer(true);
   app_list_main_view_->SetFillsBoundsOpaquely(false);
   app_list_main_view_->layer()->SetMasksToBounds(true);
-#endif
 
   // Speech recognition is available only when the start page exists.
   if (delegate_ && delegate_->GetSpeechRecognitionContents()) {
     speech_view_ = new SpeechView(delegate_.get());
     speech_view_->SetVisible(false);
-#if defined(USE_AURA)
     speech_view_->SetPaintToLayer(true);
     speech_view_->SetFillsBoundsOpaquely(false);
     speech_view_->layer()->SetOpacity(0.0f);
-#endif
     AddChildView(speech_view_);
   }
 
@@ -508,7 +500,6 @@ void AppListView::OnSpeechRecognitionStateChanged(
   if (recognizing)
     speech_view_->Reset();
 
-#if defined(USE_AURA)
   animation_observer_->set_frame(GetBubbleFrameView());
   gfx::Transform speech_transform;
   speech_transform.Translate(
@@ -545,13 +536,6 @@ void AppListView::OnSpeechRecognitionStateChanged(
     speech_view_->SetVisible(true);
   else
     app_list_main_view_->SetVisible(true);
-#else
-  speech_view_->SetVisible(recognizing);
-  app_list_main_view_->SetVisible(!recognizing);
-
-  // Needs to schedule paint of AppListView itself, to repaint the background.
-  GetBubbleFrameView()->SchedulePaint();
-#endif
 }
 
 }  // namespace app_list

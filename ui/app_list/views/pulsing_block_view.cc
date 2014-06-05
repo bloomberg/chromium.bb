@@ -71,7 +71,6 @@ void SchedulePulsingAnimation(ui::Layer* layer) {
 namespace app_list {
 
 PulsingBlockView::PulsingBlockView(const gfx::Size& size, bool start_delay) {
-#if defined(USE_AURA)
   SetPaintToLayer(true);
   SetFillsBoundsOpaquely(false);
 
@@ -81,9 +80,6 @@ PulsingBlockView::PulsingBlockView(const gfx::Size& size, bool start_delay) {
       FROM_HERE,
       base::TimeDelta::FromMilliseconds(delay),
       this, &PulsingBlockView::OnStartDelayTimer);
-#else
-  NOTREACHED() << "Pulsing animation is not supported on Windows";
-#endif
 }
 
 PulsingBlockView::~PulsingBlockView() {
