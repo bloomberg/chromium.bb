@@ -15,6 +15,7 @@
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/metrics/histogram.h"
 #include "base/sequenced_task_runner.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread.h"
@@ -210,8 +211,8 @@ void ContentVideoCaptureDeviceCore::AllocateAndStart(
   }
 
   if (params.requested_format.frame_rate <= 0) {
-    std::string error_msg = base::StringPrintf(
-        "invalid frame_rate: %d", params.requested_format.frame_rate);
+    std::string error_msg("Invalid frame_rate: ");
+    error_msg += base::DoubleToString(params.requested_format.frame_rate);
     DVLOG(1) << error_msg;
     client->OnError(error_msg);
     return;

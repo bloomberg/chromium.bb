@@ -118,9 +118,8 @@ void GetDesiredMinAndMaxAspectRatio(
       max_aspect_ratio);
 }
 
-// Returns true if |constraint| is fulfilled. |format| can be changed
-// changed by a constraint. Ie - the frame rate can be changed by setting
-// maxFrameRate.
+// Returns true if |constraint| is fulfilled. |format| can be changed by a
+// constraint, e.g. the frame rate can be changed by setting maxFrameRate.
 bool UpdateFormatForConstraint(
     const blink::WebMediaConstraint& constraint,
     bool mandatory,
@@ -157,31 +156,32 @@ bool UpdateFormatForConstraint(
     return base::StringToDouble(constraint_value, &value);
   }
 
-  int value;
-  if (!base::StringToInt(constraint_value, &value)) {
+  double value = 0.0;
+  if (!base::StringToDouble(constraint_value, &value)) {
     DLOG(WARNING) << "Can't parse MediaStream constraint. Name:"
                   <<  constraint_name << " Value:" << constraint_value;
     return false;
   }
+
   if (constraint_name == MediaStreamVideoSource::kMinWidth) {
     return (value <= format->frame_size.width());
   } else if (constraint_name == MediaStreamVideoSource::kMaxWidth) {
-    return value > 0;
+    return value > 0.0;
   } else if (constraint_name == MediaStreamVideoSource::kMinHeight) {
     return (value <= format->frame_size.height());
   } else if (constraint_name == MediaStreamVideoSource::kMaxHeight) {
-     return value > 0;
+     return value > 0.0;
   } else if (constraint_name == MediaStreamVideoSource::kMinFrameRate) {
     return (value <= format->frame_rate);
   } else if (constraint_name == MediaStreamVideoSource::kMaxFrameRate) {
-    if (value == 0) {
+    if (value == 0.0) {
       // The frame rate is set by constraint.
       // Don't allow 0 as frame rate if it is a mandatory constraint.
       // Set the frame rate to 1 if it is not mandatory.
       if (mandatory) {
         return false;
       } else {
-        value = 1;
+        value = 1.0;
       }
     }
     format->frame_rate =

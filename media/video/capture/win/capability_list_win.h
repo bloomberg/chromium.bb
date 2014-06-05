@@ -46,7 +46,7 @@ class CapabilityList : public base::NonThreadSafe {
   const VideoCaptureCapabilityWin& GetBestMatchedFormat(
       int requested_width,
       int requested_height,
-      int requested_frame_rate) const;
+      float requested_frame_rate) const;
 
  private:
   typedef std::list<VideoCaptureCapabilityWin> Capabilities;

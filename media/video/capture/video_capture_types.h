@@ -31,6 +31,10 @@ enum VideoPixelFormat {
   PIXEL_FORMAT_MAX,
 };
 
+// Some drivers use rational time per frame instead of float frame rate, this
+// constant k is used to convert between both: A fps -> [k/k*A] seconds/frame.
+const int kFrameRatePrecision = 10000;
+
 // Video capture format specification.
 // This class is used by the video capture device to specify the format of every
 // frame captured and returned to a client. It is also used to specify a
@@ -39,7 +43,7 @@ class MEDIA_EXPORT VideoCaptureFormat {
  public:
   VideoCaptureFormat();
   VideoCaptureFormat(const gfx::Size& frame_size,
-                     int frame_rate,
+                     float frame_rate,
                      VideoPixelFormat pixel_format);
 
   // Checks that all values are in the expected range. All limits are specified
@@ -47,7 +51,7 @@ class MEDIA_EXPORT VideoCaptureFormat {
   bool IsValid() const;
 
   gfx::Size frame_size;
-  int frame_rate;
+  float frame_rate;
   VideoPixelFormat pixel_format;
 };
 

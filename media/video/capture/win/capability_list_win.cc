@@ -54,7 +54,7 @@ void CapabilityList::Add(const VideoCaptureCapabilityWin& capability) {
 const VideoCaptureCapabilityWin& CapabilityList::GetBestMatchedFormat(
     int requested_width,
     int requested_height,
-    int requested_frame_rate) const {
+    float requested_frame_rate) const {
   DCHECK(CalledOnValidThread());
   DCHECK(!capabilities_.empty());
 

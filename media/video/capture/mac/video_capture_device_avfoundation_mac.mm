@@ -198,17 +198,20 @@
       connectionWithMediaType:AVFoundationGlue::AVMediaTypeVideo()];
   // Check selector existence, related to bugs http://crbug.com/327532 and
   // http://crbug.com/328096.
+  // CMTimeMake accepts integer argumenst but |frameRate| is float, round it.
   if ([captureConnection
            respondsToSelector:@selector(isVideoMinFrameDurationSupported)] &&
       [captureConnection isVideoMinFrameDurationSupported]) {
     [captureConnection setVideoMinFrameDuration:
-        CoreMediaGlue::CMTimeMake(1, frameRate)];
+        CoreMediaGlue::CMTimeMake(media::kFrameRatePrecision,
+                                  frameRate * media::kFrameRatePrecision)];
   }
   if ([captureConnection
            respondsToSelector:@selector(isVideoMaxFrameDurationSupported)] &&
       [captureConnection isVideoMaxFrameDurationSupported]) {
     [captureConnection setVideoMaxFrameDuration:
-        CoreMediaGlue::CMTimeMake(1, frameRate)];
+        CoreMediaGlue::CMTimeMake(media::kFrameRatePrecision,
+                                  frameRate * media::kFrameRatePrecision)];
   }
   return YES;
 }

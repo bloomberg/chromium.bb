@@ -12,7 +12,7 @@ VideoCaptureFormat::VideoCaptureFormat()
     : frame_rate(0), pixel_format(PIXEL_FORMAT_UNKNOWN) {}
 
 VideoCaptureFormat::VideoCaptureFormat(const gfx::Size& frame_size,
-                                       int frame_rate,
+                                       float frame_rate,
                                        VideoPixelFormat pixel_format)
     : frame_size(frame_size),
       frame_rate(frame_rate),

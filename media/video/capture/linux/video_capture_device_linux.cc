@@ -254,8 +254,7 @@ void VideoCaptureDeviceLinux::OnAllocateAndStart(int width,
   GetListOfUsableFourCCs(width > kMjpegWidth || height > kMjpegHeight,
                          &v4l2_formats);
 
-  v4l2_fmtdesc fmtdesc;
-  memset(&fmtdesc, 0, sizeof(v4l2_fmtdesc));
+  v4l2_fmtdesc fmtdesc = {0};
   fmtdesc.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
 
   // Enumerate image formats.
@@ -273,7 +272,7 @@ void VideoCaptureDeviceLinux::OnAllocateAndStart(int width,
 
   // Set format and frame size now.
   v4l2_format video_fmt;
-  memset(&video_fmt, 0, sizeof(video_fmt));
+  memset(&video_fmt, 0, sizeof(v4l2_format));
   video_fmt.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
   video_fmt.fmt.pix.sizeimage = 0;
   video_fmt.fmt.pix.width = width;
@@ -293,9 +292,12 @@ void VideoCaptureDeviceLinux::OnAllocateAndStart(int width,
   if (HANDLE_EINTR(ioctl(device_fd_.get(), VIDIOC_G_PARM, &streamparm)) >= 0) {
     // Now check if the device is able to accept a capture framerate set.
     if (streamparm.parm.capture.capability & V4L2_CAP_TIMEPERFRAME) {
-      streamparm.parm.capture.timeperframe.numerator = 1;
-      streamparm.parm.capture.timeperframe.denominator =
-          (frame_rate) ? frame_rate : kTypicalFramerate;
+      // |frame_rate| is float, approximate by a fraction.
+      streamparm.parm.capture.timeperframe.numerator =
+          media::kFrameRatePrecision;
+      streamparm.parm.capture.timeperframe.denominator = (frame_rate) ?
+          (frame_rate * media::kFrameRatePrecision) :
+          (kTypicalFramerate * media::kFrameRatePrecision);
 
       if (HANDLE_EINTR(ioctl(device_fd_.get(), VIDIOC_S_PARM, &streamparm)) <
           0) {

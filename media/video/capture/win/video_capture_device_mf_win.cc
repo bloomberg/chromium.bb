@@ -60,7 +60,6 @@ static bool FillCapabilitiesFromType(IMFMediaType* type,
           &capability->supported_format.pixel_format)) {
     return false;
   }
-  // Keep the integer version of the frame_rate for (potential) returns.
   capability->supported_format.frame_rate =
       capability->frame_rate_numerator / capability->frame_rate_denominator;
 
