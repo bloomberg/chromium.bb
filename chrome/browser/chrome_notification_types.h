@@ -326,10 +326,6 @@ enum NotificationType {
   // Profile, and the details the id of the TemplateURL being removed.
   NOTIFICATION_TEMPLATE_URL_REMOVED,
 
-  // Sent when the prefs relating to the default search engine have changed due
-  // to policy.  Source and details are unused.
-  NOTIFICATION_DEFAULT_SEARCH_POLICY_CHANGED,
-
   // The state of a web resource has been changed. A resource may have been
   // added, removed, or altered. Source is WebResourceService, and the
   // details are NoDetails.

@@ -12,7 +12,6 @@
 #include "chrome/browser/search_engines/search_terms_data.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/chrome_version_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(ENABLE_RLZ)

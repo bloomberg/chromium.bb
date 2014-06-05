@@ -28,7 +28,6 @@
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
-#include "chrome/common/url_constants.h"
 #include "extensions/common/constants.h"
 #include "google_apis/google_api_keys.h"
 #include "net/base/escape.h"

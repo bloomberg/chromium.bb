@@ -9,7 +9,6 @@
 #include "base/format_macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/search_engines/search_terms_data.h"

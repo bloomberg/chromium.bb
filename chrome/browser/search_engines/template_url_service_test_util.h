@@ -14,7 +14,6 @@
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/search_engines/template_url_service_observer.h"
-#include "chrome/test/base/testing_browser_process.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 
 class GURL;

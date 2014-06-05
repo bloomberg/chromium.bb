@@ -16,7 +16,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/google/google_util.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/prepopulated_engines.h"
 #include "chrome/browser/search_engines/search_terms_data.h"
 #include "chrome/browser/search_engines/template_url.h"

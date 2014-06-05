@@ -8,14 +8,12 @@
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/search_engines/default_search_manager.h"
 #include "chrome/browser/search_engines/search_terms_data.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/common/pref_names.h"
 #include "components/policy/core/browser/policy_error_map.h"
 #include "components/policy/core/common/policy_map.h"
-#include "content/public/browser/notification_service.h"
 #include "grit/components_strings.h"
 #include "policy/policy_constants.h"
 
@@ -389,10 +387,6 @@ void DefaultSearchPolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
                        std::string());
     }
   }
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_DEFAULT_SEARCH_POLICY_CHANGED,
-      content::NotificationService::AllSources(),
-      content::NotificationService::NoDetails());
 }
 
 bool DefaultSearchPolicyHandler::CheckIndividualPolicies(

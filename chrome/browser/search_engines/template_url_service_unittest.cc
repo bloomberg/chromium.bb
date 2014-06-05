@@ -14,7 +14,6 @@
 #include "base/test/mock_time_provider.h"
 #include "base/threading/thread.h"
 #include "base/time/time.h"
-#include "chrome/browser/extensions/extension_service_unittest.h"
 #include "chrome/browser/history/history_notifications.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"
@@ -25,10 +24,8 @@
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_test_util.h"
 #include "chrome/browser/webdata/web_data_service_factory.h"
-#include "chrome/common/url_constants.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/webdata/common/web_database.h"
-#include "content/public/test/test_browser_thread.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_constants.h"
@@ -37,7 +34,6 @@
 using base::ASCIIToUTF16;
 using base::Time;
 using base::TimeDelta;
-using content::BrowserThread;
 using ::testing::Return;
 using ::testing::StrictMock;
 
