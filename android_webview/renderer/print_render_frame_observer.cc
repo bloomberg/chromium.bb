@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "android_webview/renderer/aw_render_frame_observer.h"
+#include "android_webview/renderer/print_render_frame_observer.h"
 
 #include "android_webview/common/print_messages.h"
 #include "android_webview/renderer/print_web_view_helper.h"
@@ -10,16 +10,18 @@
 
 namespace android_webview {
 
-AwRenderFrameObserver::AwRenderFrameObserver(content::RenderFrame* render_frame)
+PrintRenderFrameObserver::PrintRenderFrameObserver(
+    content::RenderFrame* render_frame)
     : content::RenderFrameObserver(render_frame) {
 }
 
-AwRenderFrameObserver::~AwRenderFrameObserver() {
+PrintRenderFrameObserver::~PrintRenderFrameObserver() {
 }
 
-bool AwRenderFrameObserver::OnMessageReceived(const IPC::Message& message) {
+bool PrintRenderFrameObserver::OnMessageReceived(
+    const IPC::Message& message) {
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(AwRenderFrameObserver, message)
+  IPC_BEGIN_MESSAGE_MAP(PrintRenderFrameObserver, message)
     IPC_MESSAGE_HANDLER(PrintMsg_PrintNodeUnderContextMenu,
                         OnPrintNodeUnderContextMenu)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -28,7 +30,7 @@ bool AwRenderFrameObserver::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
-void AwRenderFrameObserver::OnPrintNodeUnderContextMenu() {
+void PrintRenderFrameObserver::OnPrintNodeUnderContextMenu() {
   printing::PrintWebViewHelper* helper =
       printing::PrintWebViewHelper::Get(render_frame()->GetRenderView());
   if (helper)

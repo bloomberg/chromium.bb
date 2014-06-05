@@ -2,20 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ANDROID_WEBVIEW_RENDERER_AW_RENDER_FRAME_OBSERVER_H_
-#define ANDROID_WEBVIEW_RENDERER_AW_RENDER_FRAME_OBSERVER_H_
+#ifndef ANDROID_WEBVIEW_RENDERER_PRINT_RENDER_FRAME_OBSERVER_H_
+#define ANDROID_WEBVIEW_RENDERER_PRINT_RENDER_FRAME_OBSERVER_H_
 
 #include "content/public/renderer/render_frame_observer.h"
 
 namespace android_webview {
 
-// Android WebView implementation of blink::WebPermissionClient.
-class AwRenderFrameObserver : public content::RenderFrameObserver {
+class PrintRenderFrameObserver : public content::RenderFrameObserver {
  public:
-  explicit AwRenderFrameObserver(content::RenderFrame* render_view);
+  explicit PrintRenderFrameObserver(content::RenderFrame* render_view);
 
  private:
-  virtual ~AwRenderFrameObserver();
+  virtual ~PrintRenderFrameObserver();
 
   // RenderFrameObserver implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
@@ -23,9 +22,9 @@ class AwRenderFrameObserver : public content::RenderFrameObserver {
   // IPC handlers
   void OnPrintNodeUnderContextMenu();
 
-  DISALLOW_COPY_AND_ASSIGN(AwRenderFrameObserver);
+  DISALLOW_COPY_AND_ASSIGN(PrintRenderFrameObserver);
 };
 
 }  // namespace android_webview
 
-#endif  // ANDROID_WEBVIEW_RENDERER_AW_RENDER_FRAME_OBSERVER_H_
+#endif  // ANDROID_WEBVIEW_RENDERER_PRINT_RENDER_FRAME_OBSERVER_H_
