@@ -159,16 +159,9 @@ class Plugin : public pp::Instance {
                                pp::CompletionCallback callback);
 
   // Signals that StartSelLdr has finished.
-  // This is invoked on the main thread.
   void SignalStartSelLdrDone(int32_t pp_error,
                              bool* started,
                              ServiceRuntime* service_runtime);
-
-  // Signals that the nexe is started.
-  // This is invoked on the main thread.
-  void SignalNexeStarted(int32_t pp_error,
-                         bool* started,
-                         ServiceRuntime* service_runtime);
 
   void LoadNexeAndStart(int32_t pp_error,
                         PP_NaClFileInfo file_info,

@@ -116,16 +116,12 @@ bool Plugin::LoadNaClModuleFromBackgroundThread(
   info.token_hi = 0;
 
   // Now actually load the nexe, which can happen on a background thread.
-  //
-  // We can't use pp::BlockUntilComplete() inside an in-process plugin, so we
-  // have to roll our own blocking logic, similar to WaitForSelLdrStart()
-  // above, except without timeout logic.
-  bool nexe_started = false;
-  pp::CompletionCallback started_cb = callback_factory_.NewCallback(
-      &Plugin::SignalNexeStarted, &nexe_started, service_runtime);
-  service_runtime->LoadNexeAndStart(info, started_cb, pp::CompletionCallback());
-  service_runtime->WaitForNexeStart();
-  return nexe_started;
+  bool nexe_loaded = service_runtime->LoadNexeAndStart(
+      info, pp::BlockUntilComplete());
+  PLUGIN_PRINTF(("Plugin::LoadNaClModuleFromBackgroundThread "
+                 "(nexe_loaded=%d)\n",
+                 nexe_loaded));
+  return nexe_loaded;
 }
 
 void Plugin::StartSelLdrOnMainThread(int32_t pp_error,
@@ -146,13 +142,6 @@ void Plugin::SignalStartSelLdrDone(int32_t pp_error,
                                    ServiceRuntime* service_runtime) {
   *started = (pp_error == PP_OK);
   service_runtime->SignalStartSelLdrDone();
-}
-
-void Plugin::SignalNexeStarted(int32_t pp_error,
-                               bool* started,
-                               ServiceRuntime* service_runtime) {
-  *started = (pp_error == PP_OK);
-  service_runtime->SignalNexeStarted();
 }
 
 void Plugin::LoadNaClModule(PP_NaClFileInfo file_info,
@@ -197,7 +186,8 @@ void Plugin::LoadNaClModule(PP_NaClFileInfo file_info,
   }
 
   pp::CompletionCallback callback = callback_factory_.NewCallback(
-      &Plugin::LoadNexeAndStart, file_info, service_runtime, crash_cb);
+      &Plugin::LoadNexeAndStart, file_info, service_runtime,
+      crash_cb);
   StartSelLdrOnMainThread(
       static_cast<int32_t>(PP_OK), service_runtime, params, callback);
 }
@@ -209,10 +199,14 @@ void Plugin::LoadNexeAndStart(int32_t pp_error,
   if (pp_error != PP_OK)
     return;
 
-  // We don't take any action once nexe loading has completed, so pass an empty
-  // callback here for |loaded_cb|.
-  service_runtime->LoadNexeAndStart(file_info, pp::CompletionCallback(),
-                                    crash_cb);
+  // Now actually load the nexe, which can happen on a background thread.
+  bool nexe_loaded = service_runtime->LoadNexeAndStart(file_info, crash_cb);
+  PLUGIN_PRINTF(("Plugin::LoadNaClModule (nexe_loaded=%d)\n",
+                 nexe_loaded));
+  if (nexe_loaded) {
+    PLUGIN_PRINTF(("Plugin::LoadNaClModule (%s)\n",
+                   main_subprocess_.detailed_description().c_str()));
+  }
 }
 
 bool Plugin::LoadNaClModuleContinuationIntern() {

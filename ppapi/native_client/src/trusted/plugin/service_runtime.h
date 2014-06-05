@@ -183,20 +183,14 @@ class ServiceRuntime {
 
   // Signal to waiting threads that StartSelLdr is complete (either
   // successfully or unsuccessfully).
+  // Done externally, in case external users want to write to shared
+  // memory that is yet to be fenced.
   void SignalStartSelLdrDone();
-
-  // If starting the nexe from a background thread, wait for the nexe to
-  // actually start.
-  void WaitForNexeStart();
-
-  // Signal to waiting threads that LoadNexeAndStart is complete (either
-  // successfully or unsuccessfully).
-  void SignalNexeStarted();
 
   // Establish an SrpcClient to the sel_ldr instance and load the nexe.
   // The nexe to be started is passed through |file_info|.
-  void LoadNexeAndStart(PP_NaClFileInfo file_info,
-                        const pp::CompletionCallback& started_cb,
+  // On success, returns true. On failure, returns false.
+  bool LoadNexeAndStart(PP_NaClFileInfo file_info,
                         const pp::CompletionCallback& crash_cb);
 
   // Starts the application channel to the nexe.
@@ -235,11 +229,10 @@ class ServiceRuntime {
 
   PluginReverseInterface* rev_interface_;
 
-  // Mutex and CondVar to protect start_sel_ldr_done_ and nexe_started_.
+  // Mutex and CondVar to protect start_sel_ldr_done_.
   NaClMutex mu_;
   NaClCondVar cond_;
   bool start_sel_ldr_done_;
-  bool nexe_started_;
 };
 
 }  // namespace plugin
