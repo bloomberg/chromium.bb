@@ -16,6 +16,9 @@ PASS window.history.pushState.length is 2
 PASS window.history.length is 1
 PASS window.URL.createObjectURL.length is 1
 PASS window.Storage.prototype.key.length is 1
+PASS document.importNode.length is 1
+PASS document.write.length is 0
+PASS CanvasRenderingContext2D.prototype.drawImage.length is 3
 PASS Array.prototype.concat.length is 1
 PASS Array.prototype.join.length is 1
 PASS Array.prototype.push.length is 1

@@ -257,6 +257,20 @@ def generate_interface(interface):
             # For overloaded methods, only generate one accessor
             ('overload_index' not in method or method['overload_index'] == 1))
 
+        # The value of the Function object’s “length” property is a Number
+        # determined as follows:
+        # 1. Let S be the effective overload set for regular operations (if the
+        # operation is a regular operation) or for static operations (if the
+        # operation is a static operation) with identifier id on interface I and
+        # with argument count 0.
+        # 2. Return the length of the shortest argument list of the entries in S.
+        # FIXME: This calculation doesn't take into account whether runtime
+        # enabled overloads are actually enabled, so length may be incorrect.
+        # E.g., [RuntimeEnabled=Foo] void f(); void f(long x);
+        # should have length 1 if Foo is not enabled, but length 0 if it is.
+        method['length'] = (method['overloads']['minarg'] if 'overloads' in method else
+                            method['number_of_required_arguments'])
+
     template_contents.update({
         'has_origin_safe_method_setter': any(
             method['is_check_security_for_frame'] and not method['is_read_only']
@@ -356,6 +370,18 @@ def generate_overloads(overloads):
 
     effective_overloads_by_length = effective_overload_set_by_length(overloads)
     lengths = [length for length, _ in effective_overloads_by_length]
+
+    # Check and fail if all overloads with the shortest acceptable arguments
+    # list are runtime enabled, since we would otherwise set 'length' on the
+    # function object to an incorrect value when none of those overloads were
+    # actually enabled at runtime. The exception is if all overloads are
+    # controlled by the same runtime enabled feature, in which case there would
+    # be no function object at all if it is not enabled.
+    shortest_overloads = effective_overloads_by_length[0][1]
+    if (all(method.get('runtime_enabled_function')
+            for method, _, _ in shortest_overloads) and
+        not common_value(overloads, 'runtime_enabled_function')):
+        raise ValueError('Function.length of %s depends on runtime enabled features' % overloads[0]['name'])
 
     return {
         'deprecate_all_as': common_value(overloads, 'deprecate_as'),  # [DeprecateAs]

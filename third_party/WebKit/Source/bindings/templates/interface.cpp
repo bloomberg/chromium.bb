@@ -57,7 +57,7 @@
 {% set method_callback_for_main_world =
    '%sV8Internal::%sMethodCallbackForMainWorld' % (cpp_class, method.name)
    if method.is_per_world_bindings else '0' %}
-{"{{method.name}}", {{method_callback}}, {{method_callback_for_main_world}}, {{method.number_of_required_or_variadic_arguments}}}
+{"{{method.name}}", {{method_callback}}, {{method_callback_for_main_world}}, {{method.length}}}
 {%- endmacro %}
 
 
@@ -1078,7 +1078,7 @@ static void configure{{v8_class}}Template(v8::Handle<v8::FunctionTemplate> funct
                          (cpp_class, method.name, world_suffix) %}
 {% set property_attribute = 'static_cast<v8::PropertyAttribute>(%s)' %
                             ' | '.join(method.property_attributes) %}
-{{method.function_template}}->Set(v8AtomicString(isolate, "{{method.name}}"), v8::FunctionTemplate::New(isolate, {{method_callback}}, v8Undefined(), {{method.signature}}, {{method.number_of_required_or_variadic_arguments}}){% if method.property_attributes %}, {{property_attribute}}{% endif %});
+{{method.function_template}}->Set(v8AtomicString(isolate, "{{method.name}}"), v8::FunctionTemplate::New(isolate, {{method_callback}}, v8Undefined(), {{method.signature}}, {{method.length}}){% if method.property_attributes %}, {{property_attribute}}{% endif %});
 {%- endmacro %}
 
 

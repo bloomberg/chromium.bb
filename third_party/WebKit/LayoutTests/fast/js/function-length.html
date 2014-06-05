@@ -23,6 +23,13 @@ shouldBe('window.history.length', '1');
 shouldBe('window.URL.createObjectURL.length', '1');
 shouldBe('window.Storage.prototype.key.length', '1');
 
+// One required and one optional argument
+shouldBe('document.importNode.length', '1');
+// One variadic argument
+shouldBe('document.write.length', '0');
+// Overloaded method with varying number of arguments
+shouldBe('CanvasRenderingContext2D.prototype.drawImage.length', '3');
+
 shouldBe('Array.prototype.concat.length', '1');
 shouldBe('Array.prototype.join.length', '1');
 shouldBe('Array.prototype.push.length', '1');
