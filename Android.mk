@@ -21,21 +21,53 @@ include $(CHROMIUM_DIR)/android_webview/Android.mk
 # If the gyp-generated makefile exists for the current host OS and primary
 # target architecture, we need to include it. If it doesn't exist then just do
 # nothing, since we may not have finished bringing up this architecture yet.
+ifneq (,$(wildcard $(CHROMIUM_DIR)/GypAndroid.$(HOST_OS)-$(TARGET_ARCH).mk))
+
 # We set GYP_VAR_PREFIX to the empty string to indicate that we are building for
 # the primary target architecture.
-ifneq (,$(wildcard $(CHROMIUM_DIR)/GypAndroid.$(HOST_OS)-$(TARGET_ARCH).mk))
 GYP_VAR_PREFIX :=
-include $(CHROMIUM_DIR)/GypAndroid.$(HOST_OS)-$(TARGET_ARCH).mk
+
+# If the host is declared as being 64-bit, set the host multilib variables
+# appropriately to ensure that the host targets are the same "bitness" as the
+# primary target, which is required by V8.
+ifeq ($(HOST_IS_64_BIT),true)
+ifeq ($(TARGET_IS_64_BIT),true)
+GYP_HOST_VAR_PREFIX :=
+GYP_HOST_MULTILIB := 64
+else  # Target is 32-bit.
+GYP_HOST_VAR_PREFIX := $(HOST_2ND_ARCH_VAR_PREFIX)
+GYP_HOST_MULTILIB := 32
 endif
+endif
+
+include $(CHROMIUM_DIR)/GypAndroid.$(HOST_OS)-$(TARGET_ARCH).mk
+
+endif  # End primary architecture handling.
 
 # Do the same check for the secondary architecture; if this doesn't exist then
 # the current target platform probably doesn't have a secondary architecture and
 # we can just do nothing.
+ifneq (,$(wildcard $(CHROMIUM_DIR)/GypAndroid.$(HOST_OS)-$(TARGET_2ND_ARCH).mk))
+
 # We set GYP_VAR_PREFIX to $(TARGET_2ND_ARCH_VAR_PREFIX) to indicate that we are
 # building for the secondary target architecture.
-ifneq (,$(wildcard $(CHROMIUM_DIR)/GypAndroid.$(HOST_OS)-$(TARGET_2ND_ARCH).mk))
 GYP_VAR_PREFIX := $(TARGET_2ND_ARCH_VAR_PREFIX)
-include $(CHROMIUM_DIR)/GypAndroid.$(HOST_OS)-$(TARGET_2ND_ARCH).mk
+
+# If the host is declared as being 64-bit, set the host multilib variables
+# appropriately to ensure that the host targets are the same "bitness" as the
+# secondary target, which is required by V8.
+ifeq ($(HOST_IS_64_BIT),true)
+ifeq ($(2ND_TARGET_IS_64_BIT),true)
+GYP_HOST_VAR_PREFIX :=
+GYP_HOST_MULTILIB := 64
+else  # Second target is 32-bit.
+GYP_HOST_VAR_PREFIX := $(HOST_2ND_ARCH_VAR_PREFIX)
+GYP_HOST_MULTILIB := 32
 endif
+endif
+
+include $(CHROMIUM_DIR)/GypAndroid.$(HOST_OS)-$(TARGET_2ND_ARCH).mk
+
+endif  # End secondary architecture handling.
 
 endif
