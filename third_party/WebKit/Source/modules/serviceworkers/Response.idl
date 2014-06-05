@@ -5,8 +5,6 @@
 // https://slightlyoff.github.io/ServiceWorker/spec/service_worker/index.html#response-objects
 // FIXME: Split this idl/impl into AbstractResponse and Response.
 [
-    // FIXME: Remove this legacy function after the required Chromium-side patch lands.
-    Constructor(optional Dictionary responseInitDict),
     // FIXME: Add ctors for String, Stream, and ArrayBuffer/ArrayBufferView response bodies.
     Constructor(Blob body, optional Dictionary responseInitDict),
     RuntimeEnabled=ServiceWorker,

@@ -13,12 +13,6 @@
 
 namespace WebCore {
 
-// FIXME: Remove this legacy function when the required Chromium-side patch lands.
-PassRefPtr<Response> Response::create(const Dictionary& responseInit)
-{
-    return create(nullptr, responseInit);
-}
-
 PassRefPtr<Response> Response::create(Blob* body, const Dictionary& responseInit)
 {
     RefPtr<BlobDataHandle> blobDataHandle = body ? body->blobDataHandle() : nullptr;
