@@ -4,7 +4,6 @@
 
 package org.chromium.mojo.system;
 
-
 import org.chromium.mojo.system.Core.WaitFlags;
 import org.chromium.mojo.system.DataPipe.ConsumerHandle;
 import org.chromium.mojo.system.DataPipe.ProducerHandle;
@@ -40,6 +39,14 @@ public class InvalidHandle implements UntypedHandle, MessagePipeHandle, Consumer
     @Override
     public boolean isValid() {
         return false;
+    }
+
+    /**
+     * @see Handle#getCore()
+     */
+    @Override
+    public Core getCore() {
+        return null;
     }
 
     /**

@@ -124,6 +124,42 @@ public class CoreImplTest extends MojoTestCase {
     }
 
     /**
+     * Testing that Core can be retrieved from a handle.
+     */
+    @SmallTest
+    public void testGetCore() {
+        Core core = CoreImpl.getInstance();
+
+        Pair<? extends Handle, ? extends Handle> handles = core.createMessagePipe();
+        try {
+            assertEquals(core, handles.first.getCore());
+            assertEquals(core, handles.second.getCore());
+        } finally {
+            handles.first.close();
+            handles.second.close();
+        }
+
+        handles = core.createDataPipe(null);
+        try {
+            assertEquals(core, handles.first.getCore());
+            assertEquals(core, handles.second.getCore());
+        } finally {
+            handles.first.close();
+            handles.second.close();
+        }
+
+        SharedBufferHandle handle = core.createSharedBuffer(null, 100);
+        SharedBufferHandle handle2 = handle.duplicate(null);
+        try {
+            assertEquals(core, handle.getCore());
+            assertEquals(core, handle2.getCore());
+        } finally {
+            handle.close();
+            handle2.close();
+        }
+    }
+
+    /**
      * Testing {@link MessagePipeHandle}.
      */
     @SmallTest

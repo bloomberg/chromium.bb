@@ -38,4 +38,10 @@ public interface Handle extends Closeable {
      */
     public UntypedHandle toUntypedHandle();
 
+    /**
+     * Returns the {@link Core} implementation for this handle. Can be null if this handle is
+     * invalid.
+     */
+    public Core getCore();
+
 }

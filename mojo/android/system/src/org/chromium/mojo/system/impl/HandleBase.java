@@ -6,6 +6,7 @@ package org.chromium.mojo.system.impl;
 
 import android.util.Log;
 
+import org.chromium.mojo.system.Core;
 import org.chromium.mojo.system.Core.WaitFlags;
 import org.chromium.mojo.system.Handle;
 import org.chromium.mojo.system.UntypedHandle;
@@ -82,6 +83,14 @@ abstract class HandleBase implements Handle {
     @Override
     public UntypedHandle toUntypedHandle() {
         return new UntypedHandleImpl(this);
+    }
+
+    /**
+     * @see org.chromium.mojo.system.Handle#getCore()
+     */
+    @Override
+    public Core getCore() {
+        return mCore;
     }
 
     /**
