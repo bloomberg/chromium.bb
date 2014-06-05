@@ -18,8 +18,8 @@
       var renderedData;
       // This threshold experimentally determined. It depends on the the gain value of the gain node
       // below and the dynamics compressor.  When the DynamicsCompressor had the pre-emphasis
-      // filters, the peak value is about 0.21.  Without it, the peak is 0.85.
-      var peakThreshold = 0.85;
+      // filters, the peak value is about 0.21.  Without it, the peak is about 0.84.
+      var peakThreshold = 0.83;
 
       function checkResult(event) {
         var renderedBuffer = event.renderedBuffer;
