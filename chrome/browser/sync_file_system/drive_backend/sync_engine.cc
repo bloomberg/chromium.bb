@@ -276,62 +276,68 @@ void SyncEngine::AddFileStatusObserver(FileStatusObserver* observer) {
   file_status_observers_.AddObserver(observer);
 }
 
-void SyncEngine::RegisterOrigin(
-    const GURL& origin, const SyncStatusCallback& callback) {
+void SyncEngine::RegisterOrigin(const GURL& origin,
+                                const SyncStatusCallback& callback) {
+  SyncStatusCallback relayed_callback = RelayCallbackToCurrentThread(
+      FROM_HERE, base::Bind(&DidRegisterOrigin, base::TimeTicks::Now(),
+                            TrackCallback(callback)));
+
   worker_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&SyncWorker::RegisterOrigin,
                  base::Unretained(sync_worker_.get()),
-                 origin,
-                 RelayCallbackToCurrentThread(
-                     FROM_HERE,
-                     base::Bind(&DidRegisterOrigin,
-                                base::TimeTicks::Now(),
-                                callback))));
+                 origin, relayed_callback));
 }
 
 void SyncEngine::EnableOrigin(
     const GURL& origin, const SyncStatusCallback& callback) {
+  SyncStatusCallback relayed_callback = RelayCallbackToCurrentThread(
+      FROM_HERE, TrackCallback(callback));
+
   worker_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&SyncWorker::EnableOrigin,
                  base::Unretained(sync_worker_.get()),
-                 origin,
-                 RelayCallbackToCurrentThread(
-                     FROM_HERE, callback)));
+                 origin, relayed_callback));
 }
 
 void SyncEngine::DisableOrigin(
     const GURL& origin, const SyncStatusCallback& callback) {
+  SyncStatusCallback relayed_callback = RelayCallbackToCurrentThread(
+      FROM_HERE, TrackCallback(callback));
+
   worker_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&SyncWorker::DisableOrigin,
                  base::Unretained(sync_worker_.get()),
                  origin,
-                 RelayCallbackToCurrentThread(
-                     FROM_HERE, callback)));
+                 relayed_callback));
 }
 
 void SyncEngine::UninstallOrigin(
     const GURL& origin,
     UninstallFlag flag,
     const SyncStatusCallback& callback) {
+  SyncStatusCallback relayed_callback = RelayCallbackToCurrentThread(
+      FROM_HERE, TrackCallback(callback));
   worker_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&SyncWorker::UninstallOrigin,
                  base::Unretained(sync_worker_.get()),
-                 origin, flag,
-                 RelayCallbackToCurrentThread(
-                     FROM_HERE, callback)));
+                 origin, flag, relayed_callback));
 }
 
 void SyncEngine::ProcessRemoteChange(const SyncFileCallback& callback) {
+  SyncFileCallback tracked_callback = callback_tracker_.Register(
+      base::Bind(callback, SYNC_STATUS_ABORT, fileapi::FileSystemURL()),
+      callback);
+  SyncFileCallback relayed_callback = RelayCallbackToCurrentThread(
+      FROM_HERE, tracked_callback);
   worker_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&SyncWorker::ProcessRemoteChange,
                  base::Unretained(sync_worker_.get()),
-                 RelayCallbackToCurrentThread(
-                     FROM_HERE, callback)));
+                 relayed_callback));
 }
 
 void SyncEngine::SetRemoteChangeProcessor(RemoteChangeProcessor* processor) {
@@ -360,31 +366,49 @@ RemoteServiceState SyncEngine::GetCurrentState() const {
 }
 
 void SyncEngine::GetOriginStatusMap(const StatusMapCallback& callback) {
+  StatusMapCallback tracked_callback =
+      callback_tracker_.Register(
+          base::Bind(callback, base::Passed(scoped_ptr<OriginStatusMap>())),
+          callback);
+
+  StatusMapCallback relayed_callback =
+      RelayCallbackToCurrentThread(FROM_HERE, tracked_callback);
+
   worker_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&SyncWorker::GetOriginStatusMap,
                  base::Unretained(sync_worker_.get()),
-                 RelayCallbackToCurrentThread(FROM_HERE, callback)));
+                 relayed_callback));
 }
 
 void SyncEngine::DumpFiles(const GURL& origin,
                            const ListCallback& callback) {
+  ListCallback tracked_callback =
+      callback_tracker_.Register(
+          base::Bind(callback, base::Passed(scoped_ptr<base::ListValue>())),
+          callback);
+
   PostTaskAndReplyWithResult(
       worker_task_runner_,
       FROM_HERE,
       base::Bind(&SyncWorker::DumpFiles,
                  base::Unretained(sync_worker_.get()),
                  origin),
-      callback);
+      tracked_callback);
 }
 
 void SyncEngine::DumpDatabase(const ListCallback& callback) {
+  ListCallback tracked_callback =
+      callback_tracker_.Register(
+          base::Bind(callback, base::Passed(scoped_ptr<base::ListValue>())),
+          callback);
+
   PostTaskAndReplyWithResult(
       worker_task_runner_,
       FROM_HERE,
       base::Bind(&SyncWorker::DumpDatabase,
                  base::Unretained(sync_worker_.get())),
-      callback);
+      tracked_callback);
 }
 
 void SyncEngine::SetSyncEnabled(bool enabled) {
@@ -408,6 +432,8 @@ void SyncEngine::ApplyLocalChange(
     const SyncFileMetadata& local_metadata,
     const fileapi::FileSystemURL& url,
     const SyncStatusCallback& callback) {
+  SyncStatusCallback relayed_callback = RelayCallbackToCurrentThread(
+      FROM_HERE, TrackCallback(callback));
   worker_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&SyncWorker::ApplyLocalChange,
@@ -416,8 +442,7 @@ void SyncEngine::ApplyLocalChange(
                  local_path,
                  local_metadata,
                  url,
-                 RelayCallbackToCurrentThread(
-                     FROM_HERE, callback)));
+                 relayed_callback));
 }
 
 void SyncEngine::OnNotificationReceived() {
@@ -430,6 +455,8 @@ void SyncEngine::OnNotificationReceived() {
 void SyncEngine::OnPushNotificationEnabled(bool) {}
 
 void SyncEngine::OnReadyToSendRequests() {
+  // TODO(tzik): Drop current Syncworker and replace with new one.
+
   const std::string account_id =
       signin_manager_ ? signin_manager_->GetAuthenticatedAccountId() : "";
 
@@ -545,6 +572,13 @@ void SyncEngine::UpdateRegisteredAppsForTesting() {
     else if (!is_app_enabled && is_app_root_tracker_enabled)
       DisableOrigin(origin, base::Bind(&EmptyStatusCallback));
   }
+}
+
+SyncStatusCallback SyncEngine::TrackCallback(
+    const SyncStatusCallback& callback) {
+  return callback_tracker_.Register(
+      base::Bind(callback, SYNC_STATUS_ABORT),
+      callback);
 }
 
 }  // namespace drive_backend
