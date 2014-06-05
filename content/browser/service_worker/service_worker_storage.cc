@@ -587,7 +587,7 @@ void ServiceWorkerStorage::DidGetAllRegistrations(
       if (it->is_active)
         info.active_version = version->GetInfo();
       else
-        info.pending_version = version->GetInfo();
+        info.waiting_version = version->GetInfo();
     } else {
       info.active_version.is_null = false;
       if (it->is_active)

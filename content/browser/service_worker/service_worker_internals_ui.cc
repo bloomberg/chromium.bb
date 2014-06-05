@@ -197,10 +197,10 @@ ListValue* GetRegistrationListValue(
       registration_info->Set("active", active_info);
     }
 
-    if (!registration.pending_version.is_null) {
-      DictionaryValue* pending_info = new DictionaryValue();
-      UpdateVersionInfo(registration.pending_version, pending_info);
-      registration_info->Set("pending", pending_info);
+    if (!registration.waiting_version.is_null) {
+      DictionaryValue* waiting_info = new DictionaryValue();
+      UpdateVersionInfo(registration.waiting_version, waiting_info);
+      registration_info->Set("waiting", waiting_info);
     }
 
     result->Append(registration_info);

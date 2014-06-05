@@ -41,14 +41,14 @@ class CONTENT_EXPORT ServiceWorkerRegistrationInfo {
       const GURL& pattern,
       int64 registration_id,
       const ServiceWorkerVersionInfo& active_version,
-      const ServiceWorkerVersionInfo& pending_version);
+      const ServiceWorkerVersionInfo& waiting_version);
   ~ServiceWorkerRegistrationInfo();
 
   GURL script_url;
   GURL pattern;
   int64 registration_id;
   ServiceWorkerVersionInfo active_version;
-  ServiceWorkerVersionInfo pending_version;
+  ServiceWorkerVersionInfo waiting_version;
 };
 
 }  // namespace content
