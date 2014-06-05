@@ -36,6 +36,7 @@
     '../bindings/core/core.gypi',  # core can depend on bindings/core, but not on bindings
     'core.gypi',
     '../modules/modules_generated.gypi', # FIXME: Required by <(blink_modules_output_dir) below.
+    '../platform/platform_generated.gypi', # FIXME: Required by <(blink_platform_output_dir) below.
   ],
 
   'variables': {
@@ -43,13 +44,13 @@
 
     'webcore_include_dirs': [
       '..',  # WebKit/Source
-      # FIXME: Remove this after cleaning up platform dependecies on core and modules.
-      # Needed now for RuntimeEnabledFeatures.h, etc. http://crbug.com/380361
+      # Needed to include the generated binding headers.
       '<(SHARED_INTERMEDIATE_DIR)/blink',  # gen/blink
       # FIXME: Remove these once core scripts generate qualified
       # includes correctly: http://crbug.com/380054
       '<(blink_core_output_dir)',
       '<(blink_modules_output_dir)',
+      '<(blink_platform_output_dir)',
       '<(bindings_core_v8_output_dir)',
       '<(bindings_modules_v8_output_dir)',
     ],

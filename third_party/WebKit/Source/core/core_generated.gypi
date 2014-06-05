@@ -4,7 +4,6 @@
 
 {
   'variables': {
-    # FIXME: core_generated should output to here http://crbug.com/358074
     'blink_core_output_dir': '<(SHARED_INTERMEDIATE_DIR)/blink/core',
   },
 }

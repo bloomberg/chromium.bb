@@ -32,6 +32,7 @@
   'includes': [
     '../build/features.gypi',
     '../build/scripts/scripts.gypi',
+    'platform_generated.gypi',
   ],
 
   'targets': [
@@ -47,15 +48,15 @@
             'fonts/FontFamilyNames.in',
           ],
           'outputs': [
-            '<(SHARED_INTERMEDIATE_DIR)/blink/FontFamilyNames.cpp',
-            '<(SHARED_INTERMEDIATE_DIR)/blink/FontFamilyNames.h',
+            '<(blink_platform_output_dir)/FontFamilyNames.cpp',
+            '<(blink_platform_output_dir)/FontFamilyNames.h',
           ],
           'action': [
             'python',
             '../build/scripts/make_names.py',
             'fonts/FontFamilyNames.in',
             '--output_dir',
-            '<(SHARED_INTERMEDIATE_DIR)/blink',
+            '<(blink_platform_output_dir)',
           ],
         },
         {
@@ -68,15 +69,15 @@
             '../build/scripts/templates/RuntimeEnabledFeatures.h.tmpl',
           ],
           'outputs': [
-            '<(SHARED_INTERMEDIATE_DIR)/blink/RuntimeEnabledFeatures.cpp',
-            '<(SHARED_INTERMEDIATE_DIR)/blink/RuntimeEnabledFeatures.h',
+            '<(blink_platform_output_dir)/RuntimeEnabledFeatures.cpp',
+            '<(blink_platform_output_dir)/RuntimeEnabledFeatures.h',
           ],
           'action': [
             'python',
             '../build/scripts/make_runtime_features.py',
             'RuntimeEnabledFeatures.in',
             '--output_dir',
-            '<(SHARED_INTERMEDIATE_DIR)/blink',
+            '<(blink_platform_output_dir)',
           ],
         },
         {
@@ -85,14 +86,14 @@
             'ColorData.gperf',
           ],
           'outputs': [
-            '<(SHARED_INTERMEDIATE_DIR)/blink/ColorData.cpp',
+            '<(blink_platform_output_dir)/ColorData.cpp',
           ],
           'action': [
             '<(gperf_exe)',
             '--key-positions=*',
             '-D', '-s', '2',
             '<@(_inputs)',
-            '--output-file=<(SHARED_INTERMEDIATE_DIR)/blink/ColorData.cpp',
+            '--output-file=<(blink_platform_output_dir)/ColorData.cpp',
           ],
         },
       ]

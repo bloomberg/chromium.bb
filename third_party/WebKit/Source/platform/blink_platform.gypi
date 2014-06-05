@@ -1,4 +1,7 @@
 {
+  'includes': [
+    'platform_generated.gypi',
+  ],
   'variables': {
     'platform_files': [
       'AsyncFileSystemCallbacks.h',

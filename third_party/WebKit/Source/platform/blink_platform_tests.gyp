@@ -95,7 +95,7 @@
         'INSIDE_BLINK',
       ],
       'include_dirs': [
-        '<(SHARED_INTERMEDIATE_DIR)/blink',
+        '<(blink_platform_output_dir)',
       ],
       'sources': [
         '<@(platform_test_files)',
