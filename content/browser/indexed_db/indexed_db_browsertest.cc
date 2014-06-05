@@ -609,8 +609,7 @@ class IndexedDBBrowserTestSingleProcess : public IndexedDBBrowserTest {
 };
 
 // Crashing on Android due to kSingleProcess flag: http://crbug.com/342525
-// Leaks memory by design: http://crbug.com/378404
-#if defined(OS_ANDROID) || defined(LEAK_SANITIZER)
+#if defined(OS_ANDROID)
 #define MAYBE_RenderThreadShutdownTest DISABLED_RenderThreadShutdownTest
 #else
 #define MAYBE_RenderThreadShutdownTest RenderThreadShutdownTest
