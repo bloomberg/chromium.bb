@@ -88,9 +88,14 @@ struct BASE_EXPORT LaunchOptions {
   // job if any.
   bool force_breakaway_from_job_;
 #else
-  // Set/unset environment variables. Empty (the default) means to inherit
-  // the same environment. See AlterEnvironment().
+  // Set/unset environment variables. These are applied on top of the parent
+  // process environment.  Empty (the default) means to inherit the same
+  // environment. See AlterEnvironment().
   EnvironmentMap environ;
+
+  // Clear the environment for the new process before processing changes from
+  // |environ|.
+  bool clear_environ;
 
   // If non-null, remap file descriptors according to the mapping of
   // src fd->dest fd to propagate FDs into the child process.

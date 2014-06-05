@@ -292,8 +292,12 @@ bool LaunchProcess(const std::vector<std::string>& argv,
 
   scoped_ptr<char*[]> argv_cstr(new char*[argv.size() + 1]);
   scoped_ptr<char*[]> new_environ;
+  char* const empty_environ = NULL;
+  char* const* old_environ = GetEnvironment();
+  if (options.clear_environ)
+    old_environ = &empty_environ;
   if (!options.environ.empty())
-    new_environ = AlterEnvironment(GetEnvironment(), options.environ);
+    new_environ = AlterEnvironment(old_environ, options.environ);
 
   sigset_t full_sigset;
   sigfillset(&full_sigset);
@@ -419,7 +423,7 @@ bool LaunchProcess(const std::vector<std::string>& argv,
       }
     }
 
-    if (!options.environ.empty())
+    if (!options.environ.empty() || options.clear_environ)
       SetEnvironment(new_environ.get());
 
     // fd_shuffle1 is mutated by this call because it cannot malloc.

@@ -26,6 +26,7 @@
 #include "base/posix/unix_domain_socket_linux.h"
 #include "base/process/kill.h"
 #include "base/process/launch.h"
+#include "base/strings/string_split.h"
 #include "base/third_party/dynamic_annotations/dynamic_annotations.h"
 #include "build/build_config.h"
 #include "components/nacl/common/nacl_nonsfi_util.h"
@@ -43,6 +44,19 @@ namespace {
 const char kNaClHelperReservedAtZero[] =
     "--reserved_at_zero=0xXXXXXXXXXXXXXXXX";
 const char kNaClHelperRDebug[] = "--r_debug=0xXXXXXXXXXXXXXXXX";
+
+// This is an environment variable which controls which (if any) other
+// environment variables are passed through to NaCl processes.  e.g.,
+// NACL_ENV_PASSTHROUGH="PATH,CWD" would pass both $PATH and $CWD to the child
+// process.
+const char kNaClEnvPassthrough[] = "NACL_ENV_PASSTHROUGH";
+char kNaClEnvPassthroughDelimiter = ',';
+
+// The following environment variables are always passed through if they exist
+// in the parent process.
+const char kNaClExeStderr[] = "NACL_EXE_STDERR";
+const char kNaClExeStdout[] = "NACL_EXE_STDOUT";
+const char kNaClVerbosity[] = "NACLVERBOSITY";
 
 #if defined(ARCH_CPU_X86)
 bool NonZeroSegmentBaseIsSlow() {
@@ -243,6 +257,11 @@ void NaClForkDelegate::Init(const int sandboxdesc,
     max_these_limits.push_back(RLIMIT_AS);
     options.maximize_rlimits = &max_these_limits;
 
+    // To avoid information leaks in Non-SFI mode, clear the environment for
+    // the NaCl Helper process.
+    options.clear_environ = true;
+    AddPassthroughEnvToOptions(&options);
+
     if (!base::LaunchProcess(argv_to_launch, options, NULL))
       status_ = kNaClHelperLaunchFailed;
     // parent and error cases are handled below
@@ -396,6 +415,26 @@ bool NaClForkDelegate::GetTerminationStatus(pid_t pid, bool known_dead,
   *status = static_cast<base::TerminationStatus>(termination_status);
   *exit_code = remote_exit_code;
   return true;
+}
+
+// static
+void NaClForkDelegate::AddPassthroughEnvToOptions(
+    base::LaunchOptions* options) {
+  scoped_ptr<base::Environment> env(base::Environment::Create());
+  std::string pass_through_string;
+  std::vector<std::string> pass_through_vars;
+  if (env->GetVar(kNaClEnvPassthrough, &pass_through_string)) {
+    base::SplitString(
+        pass_through_string, kNaClEnvPassthroughDelimiter, &pass_through_vars);
+  }
+  pass_through_vars.push_back(kNaClExeStderr);
+  pass_through_vars.push_back(kNaClExeStdout);
+  pass_through_vars.push_back(kNaClVerbosity);
+  for (size_t i = 0; i < pass_through_vars.size(); ++i) {
+    std::string temp;
+    if (env->GetVar(pass_through_vars[i].c_str(), &temp))
+      options->environ[pass_through_vars[i]] = temp;
+  }
 }
 
 }  // namespace nacl

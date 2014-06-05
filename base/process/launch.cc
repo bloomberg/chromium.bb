@@ -20,6 +20,7 @@ LaunchOptions::LaunchOptions()
       stderr_handle(NULL),
       force_breakaway_from_job_(false)
 #else
+      clear_environ(false),
       fds_to_remap(NULL),
       maximize_rlimits(NULL),
       new_process_group(false)

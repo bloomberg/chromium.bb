@@ -562,14 +562,11 @@ TEST_F(ProcessUtilTest, MAYBE_FDRemapping) {
 
 namespace {
 
-std::string TestLaunchProcess(const base::EnvironmentMap& env_changes,
+std::string TestLaunchProcess(const std::vector<std::string>& args,
+                              const base::EnvironmentMap& env_changes,
+                              const bool clear_environ,
                               const int clone_flags) {
-  std::vector<std::string> args;
   base::FileHandleMappingVector fds_to_remap;
-
-  args.push_back(kPosixShell);
-  args.push_back("-c");
-  args.push_back("echo $BASE_TEST");
 
   int fds[2];
   PCHECK(pipe(fds) == 0);
@@ -578,6 +575,7 @@ std::string TestLaunchProcess(const base::EnvironmentMap& env_changes,
   base::LaunchOptions options;
   options.wait = true;
   options.environ = env_changes;
+  options.clear_environ = clear_environ;
   options.fds_to_remap = &fds_to_remap;
 #if defined(OS_LINUX)
   options.clone_flags = clone_flags;
@@ -589,7 +587,6 @@ std::string TestLaunchProcess(const base::EnvironmentMap& env_changes,
 
   char buf[512];
   const ssize_t n = HANDLE_EINTR(read(fds[0], buf, sizeof(buf)));
-  PCHECK(n > 0);
 
   PCHECK(IGNORE_EINTR(close(fds[0])) == 0);
 
@@ -609,37 +606,69 @@ const char kLargeString[] =
 
 TEST_F(ProcessUtilTest, LaunchProcess) {
   base::EnvironmentMap env_changes;
+  std::vector<std::string> echo_base_test;
+  echo_base_test.push_back(kPosixShell);
+  echo_base_test.push_back("-c");
+  echo_base_test.push_back("echo $BASE_TEST");
+
+  std::vector<std::string> print_env;
+  print_env.push_back("/usr/bin/env");
   const int no_clone_flags = 0;
+  const bool no_clear_environ = false;
 
   const char kBaseTest[] = "BASE_TEST";
 
   env_changes[kBaseTest] = "bar";
-  EXPECT_EQ("bar\n", TestLaunchProcess(env_changes, no_clone_flags));
+  EXPECT_EQ("bar\n",
+            TestLaunchProcess(
+                echo_base_test, env_changes, no_clear_environ, no_clone_flags));
   env_changes.clear();
 
   EXPECT_EQ(0, setenv(kBaseTest, "testing", 1 /* override */));
-  EXPECT_EQ("testing\n", TestLaunchProcess(env_changes, no_clone_flags));
+  EXPECT_EQ("testing\n",
+            TestLaunchProcess(
+                echo_base_test, env_changes, no_clear_environ, no_clone_flags));
 
   env_changes[kBaseTest] = std::string();
-  EXPECT_EQ("\n", TestLaunchProcess(env_changes, no_clone_flags));
+  EXPECT_EQ("\n",
+            TestLaunchProcess(
+                echo_base_test, env_changes, no_clear_environ, no_clone_flags));
 
   env_changes[kBaseTest] = "foo";
-  EXPECT_EQ("foo\n", TestLaunchProcess(env_changes, no_clone_flags));
+  EXPECT_EQ("foo\n",
+            TestLaunchProcess(
+                echo_base_test, env_changes, no_clear_environ, no_clone_flags));
 
   env_changes.clear();
   EXPECT_EQ(0, setenv(kBaseTest, kLargeString, 1 /* override */));
   EXPECT_EQ(std::string(kLargeString) + "\n",
-            TestLaunchProcess(env_changes, no_clone_flags));
+            TestLaunchProcess(
+                echo_base_test, env_changes, no_clear_environ, no_clone_flags));
 
   env_changes[kBaseTest] = "wibble";
-  EXPECT_EQ("wibble\n", TestLaunchProcess(env_changes, no_clone_flags));
+  EXPECT_EQ("wibble\n",
+            TestLaunchProcess(
+                echo_base_test, env_changes, no_clear_environ, no_clone_flags));
 
 #if defined(OS_LINUX)
   // Test a non-trival value for clone_flags.
   // Don't test on Valgrind as it has limited support for clone().
   if (!RunningOnValgrind()) {
-    EXPECT_EQ("wibble\n", TestLaunchProcess(env_changes, CLONE_FS | SIGCHLD));
+    EXPECT_EQ(
+        "wibble\n",
+        TestLaunchProcess(
+            echo_base_test, env_changes, no_clear_environ, CLONE_FS | SIGCHLD));
   }
+
+  EXPECT_EQ(
+      "BASE_TEST=wibble\n",
+      TestLaunchProcess(
+          print_env, env_changes, true /* clear_environ */, no_clone_flags));
+  env_changes.clear();
+  EXPECT_EQ(
+      "",
+      TestLaunchProcess(
+          print_env, env_changes, true /* clear_environ */, no_clone_flags));
 #endif
 }
 

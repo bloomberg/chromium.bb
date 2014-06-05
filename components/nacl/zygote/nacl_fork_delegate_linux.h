@@ -10,7 +10,12 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/gtest_prod_util.h"
 #include "content/public/common/zygote_fork_delegate_linux.h"
+
+namespace base {
+struct LaunchOptions;
+}
 
 template <typename>
 class ScopedVector;
@@ -45,6 +50,8 @@ class NaClForkDelegate : public content::ZygoteForkDelegate {
                                     int* exit_code) OVERRIDE;
 
  private:
+  static void AddPassthroughEnvToOptions(base::LaunchOptions* options);
+
   // These values are reported via UMA and hence they become permanent
   // constants.  Old values cannot be reused, only new ones added.
   enum NaClHelperStatus {
@@ -61,6 +68,8 @@ class NaClForkDelegate : public content::ZygoteForkDelegate {
   const bool nonsfi_mode_;
   NaClHelperStatus status_;
   int fd_;
+
+  FRIEND_TEST_ALL_PREFIXES(NaClForkDelegateLinuxTest, EnvPassthrough);
 
   DISALLOW_COPY_AND_ASSIGN(NaClForkDelegate);
 };

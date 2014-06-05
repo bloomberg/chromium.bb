@@ -426,6 +426,7 @@
                 'nacl/browser/pnacl_host_unittest.cc',
                 'nacl/browser/pnacl_translation_cache_unittest.cc',
                 'nacl/browser/test_nacl_browser_delegate.cc',
+                'nacl/zygote/nacl_fork_delegate_linux_unittest.cc',
               ],
               'dependencies': [
                 'nacl.gyp:nacl_browser',
