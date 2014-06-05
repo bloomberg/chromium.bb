@@ -395,6 +395,16 @@
         'src/db/write_batch_test.cc',
       ],
     },
+    {
+      'target_name': 'leveldb_main',
+      'type': 'executable',
+      'dependencies': [
+        'leveldb_testutil',
+      ],
+      'sources': [
+        'src/db/leveldb_main.cc',
+      ],
+    },
   ],
 }
 
