@@ -8,8 +8,9 @@
 #include "chrome/browser/media/desktop_media_list.h"
 #include "chrome/browser/media/desktop_media_list_observer.h"
 #include "chrome/browser/ui/ash/ash_util.h"
-#include "chrome/browser/ui/views/constrained_window_views.h"
+#include "components/web_modal/web_contents_modal_dialog_host.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
+#include "components/web_modal/web_contents_modal_dialog_manager_delegate.h"
 #include "content/public/browser/browser_thread.h"
 #include "grit/generated_resources.h"
 #include "ui/aura/window_tree_host.h"
@@ -29,6 +30,8 @@
 #include "ui/wm/core/shadow_types.h"
 
 using content::DesktopMediaID;
+using web_modal::WebContentsModalDialogManager;
+using web_modal::WebContentsModalDialogManagerDelegate;
 
 namespace {
 
@@ -170,7 +173,6 @@ class DesktopMediaPickerDialogView : public views::DialogDelegateView {
   virtual void Layout() OVERRIDE;
 
   // views::DialogDelegateView overrides.
-  virtual ui::ModalType GetModalType() const OVERRIDE;
   virtual base::string16 GetWindowTitle() const OVERRIDE;
   virtual bool IsDialogButtonEnabled(ui::DialogButton button) const OVERRIDE;
   virtual base::string16 GetDialogButtonLabel(
@@ -521,37 +523,45 @@ DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
   // created for the picker. Note that |parent_window| may also be NULL if
   // parent web contents is not set. In this case the picker will be parented
   // by a root window.
-  views::Widget* widget = NULL;
-  if (parent_web_contents)
-    widget = CreateWebModalDialogViews(this, parent_web_contents);
-  else
-    widget = DialogDelegate::CreateDialogWidget(this, context, parent_window);
+  WebContentsModalDialogManager* web_contents_modal_dialog_manager = NULL;
+  if (parent_web_contents) {
+    web_contents_modal_dialog_manager =
+        WebContentsModalDialogManager::FromWebContents(parent_web_contents);
+    DCHECK(web_contents_modal_dialog_manager);
+    WebContentsModalDialogManagerDelegate* delegate =
+        web_contents_modal_dialog_manager->delegate();
+    DCHECK(delegate);
+    views::Widget::CreateWindowAsFramelessChild(
+        this,
+        delegate->GetWebContentsModalDialogHost()->GetHostView());
+  } else {
+    DialogDelegate::CreateDialogWidget(this, context, parent_window);
+  }
 
   // DesktopMediaList needs to know the ID of the picker window which
   // matches the ID it gets from the OS. Depending on the OS and configuration
   // we get this ID differently.
   content::DesktopMediaID::Id dialog_window_id = 0;
+
 #if defined(USE_ASH)
-  if (chrome::IsNativeWindowInAsh(widget->GetNativeWindow())) {
+  if (chrome::IsNativeWindowInAsh(GetWidget()->GetNativeWindow())) {
     dialog_window_id = content::DesktopMediaID::RegisterAuraWindow(
-        widget->GetNativeWindow()).id;
-    DCHECK_NE(dialog_window_id, 0);
-  }
+        GetWidget()->GetNativeWindow()).id;
+  } else
 #endif
-  if (dialog_window_id == 0) {
+  {
     dialog_window_id = AcceleratedWidgetToDesktopMediaId(
-        widget->GetNativeWindow()->GetHost()->GetAcceleratedWidget());
+        GetWidget()->GetNativeWindow()->GetHost()->
+            GetAcceleratedWidget());
   }
 
   list_view_->StartUpdating(dialog_window_id);
 
   if (parent_web_contents) {
-    web_modal::WebContentsModalDialogManager* manager =
-        web_modal::WebContentsModalDialogManager::FromWebContents(
-            parent_web_contents);
-    manager->ShowModalDialog(widget->GetNativeView());
+    web_contents_modal_dialog_manager->ShowModalDialog(
+        GetWidget()->GetNativeView());
   } else {
-    widget->Show();
+    GetWidget()->Show();
   }
 }
 
@@ -577,10 +587,6 @@ void DesktopMediaPickerDialogView::Layout() {
   scroll_view_->SetBounds(
       rect.x(), scroll_view_top,
       rect.width(), rect.height() - scroll_view_top);
-}
-
-ui::ModalType DesktopMediaPickerDialogView::GetModalType() const {
-  return ui::MODAL_TYPE_CHILD;
 }
 
 base::string16 DesktopMediaPickerDialogView::GetWindowTitle() const {
@@ -633,7 +639,8 @@ void DesktopMediaPickerDialogView::OnDoubleClick() {
   GetDialogClientView()->AcceptWindow();
 }
 
-DesktopMediaPickerViews::DesktopMediaPickerViews() : dialog_(NULL) {
+DesktopMediaPickerViews::DesktopMediaPickerViews()
+    : dialog_(NULL) {
 }
 
 DesktopMediaPickerViews::~DesktopMediaPickerViews() {
@@ -656,7 +663,8 @@ void DesktopMediaPickerViews::Show(content::WebContents* web_contents,
       media_list.Pass());
 }
 
-void DesktopMediaPickerViews::NotifyDialogResult(DesktopMediaID source) {
+void DesktopMediaPickerViews::NotifyDialogResult(
+    DesktopMediaID source) {
   // Once this method is called the |dialog_| will close and destroy itself.
   dialog_->DetachParent();
   dialog_ = NULL;

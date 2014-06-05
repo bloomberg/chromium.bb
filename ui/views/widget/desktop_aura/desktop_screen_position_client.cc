@@ -15,11 +15,13 @@ namespace views {
 namespace {
 
 gfx::Point GetOrigin(const aura::Window* root_window) {
-  gfx::Point origin_in_pixels = root_window->GetHost()->GetBounds().origin();
+  gfx::Point origin_in_pixels =
+      root_window->GetHost()->GetBounds().origin();
   aura::Window* window = const_cast<aura::Window*>(root_window);
   float scale = gfx::Screen::GetScreenFor(window)->
        GetDisplayNearestWindow(window).device_scale_factor();
-  return gfx::ToFlooredPoint(gfx::ScalePoint(origin_in_pixels, 1 / scale));
+  return gfx::ToFlooredPoint(
+      gfx::ScalePoint(origin_in_pixels, 1 / scale));
 }
 
 // Returns true if bounds passed to window are treated as though they are in
@@ -35,8 +37,7 @@ bool PositionWindowInScreenCoordinates(aura::Window* window) {
 }  // namespace
 
 DesktopScreenPositionClient::DesktopScreenPositionClient(
-    aura::Window* root_window)
-    : root_window_(root_window) {
+    aura::Window* root_window) : root_window_(root_window) {
   aura::client::SetScreenPositionClient(root_window_, this);
 }
 
@@ -45,8 +46,7 @@ DesktopScreenPositionClient::~DesktopScreenPositionClient() {
 }
 
 void DesktopScreenPositionClient::ConvertPointToScreen(
-    const aura::Window* window,
-    gfx::Point* point) {
+    const aura::Window* window, gfx::Point* point) {
   const aura::Window* root_window = window->GetRootWindow();
   aura::Window::ConvertPointToTarget(window, root_window, point);
   gfx::Point origin = GetOrigin(root_window);
@@ -54,23 +54,23 @@ void DesktopScreenPositionClient::ConvertPointToScreen(
 }
 
 void DesktopScreenPositionClient::ConvertPointFromScreen(
-    const aura::Window* window,
-    gfx::Point* point) {
+    const aura::Window* window, gfx::Point* point) {
   const aura::Window* root_window = window->GetRootWindow();
   gfx::Point origin = GetOrigin(root_window);
   point->Offset(-origin.x(), -origin.y());
   aura::Window::ConvertPointToTarget(root_window, window, point);
 }
 
-void DesktopScreenPositionClient::ConvertHostPointToScreen(aura::Window* window,
-                                                           gfx::Point* point) {
+void DesktopScreenPositionClient::ConvertHostPointToScreen(
+    aura::Window* window, gfx::Point* point) {
   aura::Window* root_window = window->GetRootWindow();
   ConvertPointToScreen(root_window, point);
 }
 
-void DesktopScreenPositionClient::SetBounds(aura::Window* window,
-                                            const gfx::Rect& bounds,
-                                            const gfx::Display& display) {
+void DesktopScreenPositionClient::SetBounds(
+    aura::Window* window,
+    const gfx::Rect& bounds,
+    const gfx::Display& display) {
   // TODO: Use the 3rd parameter, |display|.
   aura::Window* root = window->GetRootWindow();
 

@@ -4,8 +4,10 @@
 
 #include "chrome/browser/ui/views/extensions/media_galleries_scan_result_dialog_views.h"
 
-#include "chrome/browser/ui/views/constrained_window_views.h"
 #include "chrome/browser/ui/views/extensions/media_gallery_checkbox_view.h"
+#include "components/web_modal/web_contents_modal_dialog_host.h"
+#include "components/web_modal/web_contents_modal_dialog_manager.h"
+#include "components/web_modal/web_contents_modal_dialog_manager_delegate.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
@@ -60,10 +62,24 @@ void ScrollableView::Layout() {
 MediaGalleriesScanResultDialogViews::MediaGalleriesScanResultDialogViews(
     MediaGalleriesScanResultDialogController* controller)
     : controller_(controller),
+      window_(NULL),
       contents_(new views::View()),
       accepted_(false) {
   InitChildViews();
-  ShowWebModalDialogViews(this, controller->web_contents());
+
+  // Ownership of |contents_| is handed off by this call. |window_| will take
+  // care of deleting itself after calling DeleteDelegate().
+  web_modal::WebContentsModalDialogManager* web_contents_modal_dialog_manager =
+      web_modal::WebContentsModalDialogManager::FromWebContents(
+          controller->web_contents());
+  DCHECK(web_contents_modal_dialog_manager);
+  web_modal::WebContentsModalDialogManagerDelegate* modal_delegate =
+      web_contents_modal_dialog_manager->delegate();
+  DCHECK(modal_delegate);
+  window_ = views::Widget::CreateWindowAsFramelessChild(
+      this, modal_delegate->GetWebContentsModalDialogHost()->GetHostView());
+  web_contents_modal_dialog_manager->ShowModalDialog(
+      window_->GetNativeView());
 }
 
 MediaGalleriesScanResultDialogViews::~MediaGalleriesScanResultDialogViews() {}
@@ -198,7 +214,11 @@ base::string16 MediaGalleriesScanResultDialogViews::GetDialogButtonLabel(
 }
 
 ui::ModalType MediaGalleriesScanResultDialogViews::GetModalType() const {
+#if defined(USE_ASH)
   return ui::MODAL_TYPE_CHILD;
+#else
+  return views::WidgetDelegate::GetModalType();
+#endif
 }
 
 bool MediaGalleriesScanResultDialogViews::Cancel() {
@@ -207,6 +227,7 @@ bool MediaGalleriesScanResultDialogViews::Cancel() {
 
 bool MediaGalleriesScanResultDialogViews::Accept() {
   accepted_ = true;
+
   return true;
 }
 
@@ -263,8 +284,14 @@ void MediaGalleriesScanResultDialogViews::ShowContextMenu(
 }
 
 void MediaGalleriesScanResultDialogViews::AcceptDialogForTesting() {
-  Accept();
-  Close();
+  accepted_ = true;
+
+  web_modal::WebContentsModalDialogManager* web_contents_modal_dialog_manager =
+      web_modal::WebContentsModalDialogManager::FromWebContents(
+          controller_->web_contents());
+  DCHECK(web_contents_modal_dialog_manager);
+  web_modal::WebContentsModalDialogManager::TestApi(
+      web_contents_modal_dialog_manager).CloseAllDialogs();
 }
 
 // MediaGalleriesScanResultDialogViewsController -------------------------------

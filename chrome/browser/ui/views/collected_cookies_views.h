@@ -49,6 +49,7 @@ class CollectedCookiesViews : public views::DialogDelegateView,
   virtual int GetDialogButtons() const OVERRIDE;
   virtual base::string16 GetDialogButtonLabel(
       ui::DialogButton button) const OVERRIDE;
+  virtual void DeleteDelegate() OVERRIDE;
   virtual bool Cancel() OVERRIDE;
   virtual ui::ModalType GetModalType() const OVERRIDE;
 
@@ -91,6 +92,8 @@ class CollectedCookiesViews : public views::DialogDelegateView,
                        const content::NotificationDetails& details) OVERRIDE;
 
   content::NotificationRegistrar registrar_;
+
+  views::Widget* window_;
 
   // The web contents.
   content::WebContents* web_contents_;

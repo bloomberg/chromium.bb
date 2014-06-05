@@ -7,14 +7,9 @@
 
 #include "ui/gfx/native_widget_types.h"
 
-namespace content {
-class WebContents;
-}
-
 namespace views {
 class DialogDelegate;
 class Widget;
-class WidgetDelegate;
 }
 
 namespace web_modal {
@@ -31,14 +26,6 @@ void UpdateWebContentsModalDialogPosition(
 void UpdateBrowserModalDialogPosition(
     views::Widget* widget,
     web_modal::ModalDialogHost* dialog_host);
-
-// Calls CreateWebModalDialogViews, shows the dialog, and returns its widget.
-views::Widget* ShowWebModalDialogViews(views::WidgetDelegate* dialog,
-                                       content::WebContents* web_contents);
-
-// Create a widget for |dialog| that is modal to |web_contents|.
-views::Widget* CreateWebModalDialogViews(views::WidgetDelegate* dialog,
-                                         content::WebContents* web_contents);
 
 // Create a widget for |dialog| that is modal to the browser window |parent|.
 // This places the dialog appropriately if |parent| is a valid browser window.

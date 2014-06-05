@@ -67,6 +67,9 @@
 #include "ui/views/window/dialog_client_view.h"
 #include "ui/views/window/non_client_view.h"
 
+using web_modal::WebContentsModalDialogManager;
+using web_modal::WebContentsModalDialogManagerDelegate;
+
 namespace autofill {
 
 namespace {
@@ -1238,7 +1241,18 @@ void AutofillDialogViews::Show() {
   UpdateNotificationArea();
   UpdateButtonStripExtraView();
 
-  window_ = ShowWebModalDialogViews(this, delegate_->GetWebContents());
+  // Ownership of |contents_| is handed off by this call. The widget will take
+  // care of deleting itself after calling DeleteDelegate().
+  WebContentsModalDialogManager* web_contents_modal_dialog_manager =
+      WebContentsModalDialogManager::FromWebContents(
+          delegate_->GetWebContents());
+  WebContentsModalDialogManagerDelegate* modal_delegate =
+      web_contents_modal_dialog_manager->delegate();
+  DCHECK(modal_delegate);
+  window_ = views::Widget::CreateWindowAsFramelessChild(
+      this, modal_delegate->GetWebContentsModalDialogHost()->GetHostView());
+  web_contents_modal_dialog_manager->ShowModalDialog(
+      window_->GetNativeView());
   focus_manager_ = window_->GetFocusManager();
   focus_manager_->AddFocusChangeListener(this);
 
@@ -1522,10 +1536,6 @@ void AutofillDialogViews::OnNativeThemeChanged(
   legal_document_view_->SetDefaultStyle(default_style);
 }
 
-ui::ModalType AutofillDialogViews::GetModalType() const {
-  return ui::MODAL_TYPE_CHILD;
-}
-
 base::string16 AutofillDialogViews::GetWindowTitle() const {
   base::string16 title = delegate_->DialogTitle();
   // Hack alert: we don't want the dialog to jiggle when a title is added or
@@ -1798,7 +1808,7 @@ gfx::Size AutofillDialogViews::GetMinimumSignInViewSize() const {
 
 gfx::Size AutofillDialogViews::GetMaximumSignInViewSize() const {
   web_modal::WebContentsModalDialogHost* dialog_host =
-      web_modal::WebContentsModalDialogManager::FromWebContents(
+      WebContentsModalDialogManager::FromWebContents(
           delegate_->GetWebContents())->delegate()->
               GetWebContentsModalDialogHost();
 
@@ -2320,7 +2330,7 @@ void AutofillDialogViews::ContentsPreferredSizeChanged() {
   if (GetWidget() && delegate_ && delegate_->GetWebContents()) {
     UpdateWebContentsModalDialogPosition(
         GetWidget(),
-        web_modal::WebContentsModalDialogManager::FromWebContents(
+        WebContentsModalDialogManager::FromWebContents(
             delegate_->GetWebContents())->delegate()->
                 GetWebContentsModalDialogHost());
     SetBoundsRect(bounds());

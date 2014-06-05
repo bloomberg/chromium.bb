@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/constrained_window_views.h"
-
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -53,7 +51,10 @@ class TestDialog : public views::DialogDelegateView {
 // A helper function to create and show a web contents modal dialog.
 scoped_ptr<TestDialog> ShowModalDialog(content::WebContents* web_contents) {
   scoped_ptr<TestDialog> dialog(new TestDialog());
-  ShowWebModalDialogViews(dialog.get(), web_contents);
+  views::Widget* window = views::Widget::CreateWindowAsFramelessChild(
+      dialog.get(), web_contents->GetNativeView());
+  web_modal::WebContentsModalDialogManager::FromWebContents(web_contents)->
+      ShowModalDialog(window->GetNativeView());
   return dialog.Pass();
 }
 

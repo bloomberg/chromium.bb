@@ -5,10 +5,13 @@
 #include "chrome/browser/ui/views/ssl_client_certificate_selector.h"
 
 #include "base/compiler_specific.h"
+#include "base/i18n/time_formatting.h"
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/certificate_viewer.h"
-#include "chrome/browser/ui/views/constrained_window_views.h"
+#include "components/web_modal/web_contents_modal_dialog_host.h"
+#include "components/web_modal/web_contents_modal_dialog_manager.h"
+#include "components/web_modal/web_contents_modal_dialog_manager_delegate.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
@@ -17,6 +20,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/table_model.h"
 #include "ui/base/models/table_model_observer.h"
+#include "ui/gfx/native_widget_types.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/table/table_view.h"
@@ -28,6 +32,19 @@
 #if defined(USE_NSS)
 #include "chrome/browser/ui/crypto_module_password_dialog_nss.h"
 #endif
+
+using content::BrowserThread;
+using content::WebContents;
+using web_modal::WebContentsModalDialogManager;
+using web_modal::WebContentsModalDialogManagerDelegate;
+
+namespace {
+
+// The dimensions of the certificate selector table view, in pixels.
+static const int kTableViewWidth = 400;
+static const int kTableViewHeight = 100;
+
+}  // namespace
 
 ///////////////////////////////////////////////////////////////////////////////
 // CertificateSelectorTableModel:
@@ -81,13 +98,14 @@ void CertificateSelectorTableModel::SetObserver(
 // SSLClientCertificateSelector:
 
 SSLClientCertificateSelector::SSLClientCertificateSelector(
-    content::WebContents* web_contents,
+    WebContents* web_contents,
     const net::HttpNetworkSession* network_session,
     net::SSLCertRequestInfo* cert_request_info,
     const chrome::SelectCertificateCallback& callback)
     : SSLClientAuthObserver(network_session, cert_request_info, callback),
       model_(new CertificateSelectorTableModel(cert_request_info)),
       web_contents_(web_contents),
+      window_(NULL),
       table_(NULL),
       view_cert_button_(NULL) {
   DVLOG(1) << __FUNCTION__;
@@ -119,10 +137,6 @@ void SSLClientCertificateSelector::Init() {
 
   layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
 
-  // The dimensions of the certificate selector table view, in pixels.
-  static const int kTableViewWidth = 400;
-  static const int kTableViewHeight = 100;
-
   CreateCertTable();
   layout->StartRow(1, column_set_id);
   layout->AddView(table_->CreateParentIfNecessary(), 1, 1,
@@ -133,7 +147,15 @@ void SSLClientCertificateSelector::Init() {
 
   StartObserving();
 
-  ShowWebModalDialogViews(this, web_contents_);
+  WebContentsModalDialogManager* web_contents_modal_dialog_manager =
+      WebContentsModalDialogManager::FromWebContents(web_contents_);
+  WebContentsModalDialogManagerDelegate* modal_delegate =
+      web_contents_modal_dialog_manager->delegate();
+  DCHECK(modal_delegate);
+  window_ = views::Widget::CreateWindowAsFramelessChild(
+      this, modal_delegate->GetWebContentsModalDialogHost()->GetHostView());
+  web_contents_modal_dialog_manager->ShowModalDialog(
+      window_->GetNativeView());
 
   // Select the first row automatically.  This must be done after the dialog has
   // been created.
@@ -143,7 +165,8 @@ void SSLClientCertificateSelector::Init() {
 net::X509Certificate* SSLClientCertificateSelector::GetSelectedCert() const {
   int selected = table_->FirstSelectedRow();
   if (selected >= 0 &&
-      selected < static_cast<int>(cert_request_info()->client_certs.size()))
+      selected < static_cast<int>(
+          cert_request_info()->client_certs.size()))
     return cert_request_info()->client_certs[selected].get();
   return NULL;
 }
@@ -153,7 +176,8 @@ net::X509Certificate* SSLClientCertificateSelector::GetSelectedCert() const {
 
 void SSLClientCertificateSelector::OnCertSelectedByNotification() {
   DVLOG(1) << __FUNCTION__;
-  GetWidget()->Close();
+  DCHECK(window_);
+  window_->Close();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -183,6 +207,7 @@ bool SSLClientCertificateSelector::Cancel() {
   DVLOG(1) << __FUNCTION__;
   StopObserving();
   CertificateSelected(NULL);
+
   return true;
 }
 
@@ -199,7 +224,7 @@ bool SSLClientCertificateSelector::Accept() {
         cert,
         chrome::kCryptoModulePasswordClientAuth,
         cert_request_info()->host_and_port,
-        GetWidget()->GetNativeView(),
+        window_->GetNativeView(),
         base::Bind(&SSLClientCertificateSelector::Unlocked,
                    base::Unretained(this),
                    cert));
@@ -225,7 +250,11 @@ views::View* SSLClientCertificateSelector::CreateExtraView() {
 }
 
 ui::ModalType SSLClientCertificateSelector::GetModalType() const {
+#if defined(USE_ASH)
   return ui::MODAL_TYPE_CHILD;
+#else
+  return views::WidgetDelegate::GetModalType();
+#endif
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -250,7 +279,7 @@ void SSLClientCertificateSelector::OnSelectionChanged() {
 
 void SSLClientCertificateSelector::OnDoubleClick() {
   if (Accept())
-    GetWidget()->Close();
+    window_->Close();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -259,7 +288,9 @@ void SSLClientCertificateSelector::OnDoubleClick() {
 void SSLClientCertificateSelector::CreateCertTable() {
   std::vector<ui::TableColumn> columns;
   columns.push_back(ui::TableColumn());
-  table_ = new views::TableView(model_.get(), columns, views::TEXT_ONLY,
+  table_ = new views::TableView(model_.get(),
+                                columns,
+                                views::TEXT_ONLY,
                                 true /* single_selection */);
   table_->SetObserver(this);
 }
@@ -267,7 +298,7 @@ void SSLClientCertificateSelector::CreateCertTable() {
 void SSLClientCertificateSelector::Unlocked(net::X509Certificate* cert) {
   DVLOG(1) << __FUNCTION__;
   CertificateSelected(cert);
-  GetWidget()->Close();
+  window_->Close();
 }
 
 namespace chrome {
@@ -278,7 +309,7 @@ void ShowSSLClientCertificateSelector(
     net::SSLCertRequestInfo* cert_request_info,
     const chrome::SelectCertificateCallback& callback) {
   DVLOG(1) << __FUNCTION__ << " " << contents;
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   (new SSLClientCertificateSelector(
        contents, network_session, cert_request_info, callback))->Init();
 }

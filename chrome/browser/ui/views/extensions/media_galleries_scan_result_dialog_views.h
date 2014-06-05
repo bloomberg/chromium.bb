@@ -81,7 +81,10 @@ class MediaGalleriesScanResultDialogViews
 
   MediaGalleriesScanResultDialogController* controller_;
 
-  // The contents of the dialog. Owned by the view hierarchy.
+  // The containing window (a weak pointer).
+  views::Widget* window_;
+
+  // The contents of the dialog. Owned by |window_|'s RootView.
   views::View* contents_;
 
   // A map from media gallery ID to the view elements for each gallery.

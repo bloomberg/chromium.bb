@@ -5,10 +5,13 @@
 #include "base/compiler_specific.h"
 #include "chrome/browser/download/download_danger_prompt.h"
 #include "chrome/browser/download/download_stats.h"
-#include "chrome/browser/ui/views/constrained_window_views.h"
+#include "components/web_modal/web_contents_modal_dialog_host.h"
+#include "components/web_modal/web_contents_modal_dialog_manager.h"
+#include "components/web_modal/web_contents_modal_dialog_manager_delegate.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_danger_type.h"
 #include "content/public/browser/download_item.h"
+#include "content/public/browser/web_contents.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -20,6 +23,10 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/dialog_client_view.h"
 #include "ui/views/window/dialog_delegate.h"
+
+using content::BrowserThread;
+using web_modal::WebContentsModalDialogManager;
+using web_modal::WebContentsModalDialogManagerDelegate;
 
 namespace {
 
@@ -34,6 +41,7 @@ class DownloadDangerPromptViews : public DownloadDangerPrompt,
                                   public views::DialogDelegate {
  public:
   DownloadDangerPromptViews(content::DownloadItem* item,
+                            content::WebContents* web_contents,
                             bool show_context,
                             const OnDone& done);
 
@@ -74,6 +82,7 @@ class DownloadDangerPromptViews : public DownloadDangerPrompt,
 
 DownloadDangerPromptViews::DownloadDangerPromptViews(
     content::DownloadItem* item,
+    content::WebContents* web_contents,
     bool show_context,
     const OnDone& done)
     : download_(item),
@@ -149,7 +158,7 @@ base::string16 DownloadDangerPromptViews::GetDialogButtonLabel(
 
     default:
       return DialogDelegate::GetDialogButtonLabel(button);
-  }
+  };
 }
 
 base::string16 DownloadDangerPromptViews::GetWindowTitle() const {
@@ -160,28 +169,36 @@ base::string16 DownloadDangerPromptViews::GetWindowTitle() const {
 }
 
 void DownloadDangerPromptViews::DeleteDelegate() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
   delete this;
 }
 
 ui::ModalType DownloadDangerPromptViews::GetModalType() const {
+#if defined(USE_ASH)
   return ui::MODAL_TYPE_CHILD;
+#else
+  return views::WidgetDelegate::GetModalType();
+#endif
 }
 
 bool DownloadDangerPromptViews::Cancel() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
   RunDone(CANCEL);
   return true;
 }
 
 bool DownloadDangerPromptViews::Accept() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
   RunDone(ACCEPT);
   return true;
 }
 
 bool DownloadDangerPromptViews::Close() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
   RunDone(DISMISS);
   return true;
 }
@@ -330,7 +347,18 @@ DownloadDangerPrompt* DownloadDangerPrompt::Create(
     bool show_context,
     const OnDone& done) {
   DownloadDangerPromptViews* download_danger_prompt =
-      new DownloadDangerPromptViews(item, show_context, done);
-  ShowWebModalDialogViews(download_danger_prompt, web_contents);
+      new DownloadDangerPromptViews(item, web_contents, show_context, done);
+
+  WebContentsModalDialogManager* web_contents_modal_dialog_manager =
+      WebContentsModalDialogManager::FromWebContents(web_contents);
+  WebContentsModalDialogManagerDelegate* modal_delegate =
+      web_contents_modal_dialog_manager->delegate();
+  CHECK(modal_delegate);
+  views::Widget* dialog = views::Widget::CreateWindowAsFramelessChild(
+      download_danger_prompt,
+      modal_delegate->GetWebContentsModalDialogHost()->GetHostView());
+  web_contents_modal_dialog_manager->ShowModalDialog(
+      dialog->GetNativeView());
+
   return download_danger_prompt;
 }

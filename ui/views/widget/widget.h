@@ -285,6 +285,10 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
                                                   gfx::NativeView context,
                                                   const gfx::Rect& bounds);
 
+  // Creates an undecorated child window Widget parented to |parent|.
+  static Widget* CreateWindowAsFramelessChild(WidgetDelegate* widget_delegate,
+                                              gfx::NativeView parent);
+
   // Closes all Widgets that aren't identified as "secondary widgets". Called
   // during application shutdown when the last non-secondary widget is closed.
   static void CloseAllSecondaryWidgets();
