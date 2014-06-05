@@ -1828,8 +1828,7 @@ def _InitNinjaFlavor(params, target_list, target_dicts):
         path_to_ninja,
         '-C',
         '$(OutDir)',
-        '-t',
-        'clean',
+        '-tclean',
         '$(ProjectName)',
       ]
 
