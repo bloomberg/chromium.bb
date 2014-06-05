@@ -12,9 +12,9 @@ function checkEntry(entry, expectedName, isNew, shouldBeWritable) {
     var reader = new FileReader();
     reader.onloadend = chrome.test.callbackPass(function(e) {
       if (isNew)
-        chrome.test.assertEq(reader.result, "");
+        chrome.test.assertEq("", reader.result);
       else
-        chrome.test.assertEq(reader.result.indexOf("Can you see me?"), 0);
+        chrome.test.assertEq(0, reader.result.indexOf("Can you see me?"));
       // Test that we can write to the file, or not, depending on
       // |shouldBeWritable|.
       entry.createWriter(function(fileWriter) {

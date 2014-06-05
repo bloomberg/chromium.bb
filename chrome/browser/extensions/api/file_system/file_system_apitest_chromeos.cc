@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/path_service.h"
 #include "chrome/browser/apps/app_browsertest_util.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/drive/file_system_interface.h"
@@ -10,6 +11,7 @@
 #include "chrome/browser/drive/fake_drive_service.h"
 #include "chrome/browser/extensions/api/file_system/file_system_api.h"
 #include "chrome/browser/extensions/component_loader.h"
+#include "chrome/common/chrome_paths.h"
 #include "content/public/test/test_utils.h"
 #include "google_apis/drive/drive_api_parser.h"
 #include "google_apis/drive/test_util.h"
@@ -77,6 +79,9 @@ class FileSystemApiTestForDrive : public PlatformAppBrowserTest {
   void SetUpTestFileHierarchy() {
     const std::string root = fake_drive_service_->GetRootResourceId();
     ASSERT_TRUE(AddTestFile("open_existing.txt", "Can you see me?", root));
+    ASSERT_TRUE(AddTestFile("open_existing1.txt", "Can you see me?", root));
+    ASSERT_TRUE(AddTestFile("open_existing2.txt", "Can you see me?", root));
+    ASSERT_TRUE(AddTestFile("save_existing.txt", "Can you see me?", root));
     const std::string subdir = AddTestDirectory("subdir", root);
     ASSERT_FALSE(subdir.empty());
     ASSERT_TRUE(AddTestFile("open_existing.txt", "Can you see me?", subdir));
@@ -136,6 +141,33 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTestForDrive,
 }
 
 IN_PROC_BROWSER_TEST_F(FileSystemApiTestForDrive,
+                       FileSystemApiOpenMultipleSuggested) {
+  base::FilePath test_file = drive::util::GetDriveMountPointPath(
+      browser()->profile()).AppendASCII("root/open_existing.txt");
+  ASSERT_TRUE(PathService::OverrideAndCreateIfNeeded(
+      chrome::DIR_USER_DOCUMENTS, test_file.DirName(), true, false));
+  FileSystemChooseEntryFunction::SkipPickerAndSelectSuggestedPathForTest();
+  ASSERT_TRUE(RunPlatformAppTest(
+      "api_test/file_system/open_multiple_with_suggested_name"))
+      << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(FileSystemApiTestForDrive,
+                       FileSystemApiOpenMultipleExistingFilesTest) {
+  base::FilePath test_file1 = drive::util::GetDriveMountPointPath(
+      browser()->profile()).AppendASCII("root/open_existing1.txt");
+  base::FilePath test_file2 = drive::util::GetDriveMountPointPath(
+      browser()->profile()).AppendASCII("root/open_existing2.txt");
+  std::vector<base::FilePath> test_files;
+  test_files.push_back(test_file1);
+  test_files.push_back(test_file2);
+  FileSystemChooseEntryFunction::SkipPickerAndAlwaysSelectPathsForTest(
+      &test_files);
+  ASSERT_TRUE(RunPlatformAppTest("api_test/file_system/open_multiple_existing"))
+      << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(FileSystemApiTestForDrive,
                        FileSystemApiOpenDirectoryTest) {
   base::FilePath test_directory =
       drive::util::GetDriveMountPointPath(browser()->profile()).AppendASCII(
@@ -180,6 +212,46 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTestForDrive,
   ASSERT_TRUE(RunPlatformAppTest(
       "api_test/file_system/open_directory_with_only_write"))
       << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(FileSystemApiTestForDrive,
+                       FileSystemApiSaveNewFileTest) {
+  base::FilePath test_file = drive::util::GetDriveMountPointPath(
+      browser()->profile()).AppendASCII("root/save_new.txt");
+  FileSystemChooseEntryFunction::SkipPickerAndAlwaysSelectPathForTest(
+      &test_file);
+  ASSERT_TRUE(RunPlatformAppTest("api_test/file_system/save_new"))
+      << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(FileSystemApiTestForDrive,
+                       FileSystemApiSaveExistingFileTest) {
+  base::FilePath test_file = drive::util::GetDriveMountPointPath(
+      browser()->profile()).AppendASCII("root/save_existing.txt");
+  FileSystemChooseEntryFunction::SkipPickerAndAlwaysSelectPathForTest(
+      &test_file);
+  ASSERT_TRUE(RunPlatformAppTest("api_test/file_system/save_existing"))
+      << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(FileSystemApiTestForDrive,
+    FileSystemApiSaveNewFileWithWriteTest) {
+  base::FilePath test_file = drive::util::GetDriveMountPointPath(
+      browser()->profile()).AppendASCII("root/save_new.txt");
+  FileSystemChooseEntryFunction::SkipPickerAndAlwaysSelectPathForTest(
+      &test_file);
+  ASSERT_TRUE(RunPlatformAppTest("api_test/file_system/save_new_with_write"))
+      << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(FileSystemApiTestForDrive,
+    FileSystemApiSaveExistingFileWithWriteTest) {
+  base::FilePath test_file = drive::util::GetDriveMountPointPath(
+      browser()->profile()).AppendASCII("root/save_existing.txt");
+  FileSystemChooseEntryFunction::SkipPickerAndAlwaysSelectPathForTest(
+      &test_file);
+  ASSERT_TRUE(RunPlatformAppTest(
+      "api_test/file_system/save_existing_with_write")) << message_;
 }
 
 }  // namespace extensions
