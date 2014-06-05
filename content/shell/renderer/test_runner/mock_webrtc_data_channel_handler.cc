@@ -4,8 +4,7 @@
 
 #include "content/shell/renderer/test_runner/mock_webrtc_data_channel_handler.h"
 
-#include <assert.h>
-
+#include "base/logging.h"
 #include "content/shell/renderer/test_runner/WebTestDelegate.h"
 #include "third_party/WebKit/public/platform/WebRTCDataChannelHandlerClient.h"
 
@@ -88,19 +87,19 @@ unsigned long MockWebRTCDataChannelHandler::bufferedAmount() {
 }
 
 bool MockWebRTCDataChannelHandler::sendStringData(const WebString& data) {
-  assert(client_);
+  DCHECK(client_);
   client_->didReceiveStringData(data);
   return true;
 }
 
 bool MockWebRTCDataChannelHandler::sendRawData(const char* data, size_t size) {
-  assert(client_);
+  DCHECK(client_);
   client_->didReceiveRawData(data, size);
   return true;
 }
 
 void MockWebRTCDataChannelHandler::close() {
-  assert(client_);
+  DCHECK(client_);
   delegate_->postTask(new DataChannelReadyStateTask(
       this, client_, WebRTCDataChannelHandlerClient::ReadyStateClosed));
 }

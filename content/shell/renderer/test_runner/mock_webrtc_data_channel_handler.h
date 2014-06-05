@@ -19,10 +19,12 @@ class WebTestDelegate;
 class MockWebRTCDataChannelHandler : public blink::WebRTCDataChannelHandler {
  public:
   MockWebRTCDataChannelHandler(blink::WebString label,
-                               const blink::WebRTCDataChannelInit&,
-                               WebTestDelegate*);
+                               const blink::WebRTCDataChannelInit& init,
+                               WebTestDelegate* delegate);
 
-  virtual void setClient(blink::WebRTCDataChannelHandlerClient*) OVERRIDE;
+  // WebRTCDataChannelHandler related methods
+  virtual void setClient(
+      blink::WebRTCDataChannelHandlerClient* client) OVERRIDE;
   virtual blink::WebString label() OVERRIDE;
   virtual bool isReliable() OVERRIDE;
   virtual bool ordered() const OVERRIDE;
@@ -32,8 +34,8 @@ class MockWebRTCDataChannelHandler : public blink::WebRTCDataChannelHandler {
   virtual bool negotiated() const OVERRIDE;
   virtual unsigned short id() const OVERRIDE;
   virtual unsigned long bufferedAmount() OVERRIDE;
-  virtual bool sendStringData(const blink::WebString&) OVERRIDE;
-  virtual bool sendRawData(const char*, size_t) OVERRIDE;
+  virtual bool sendStringData(const blink::WebString& data) OVERRIDE;
+  virtual bool sendRawData(const char* data, size_t size) OVERRIDE;
   virtual void close() OVERRIDE;
 
   // WebTask related methods

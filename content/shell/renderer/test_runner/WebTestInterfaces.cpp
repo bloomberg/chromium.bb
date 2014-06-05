@@ -7,8 +7,8 @@
 #include "content/shell/renderer/test_runner/MockWebAudioDevice.h"
 #include "content/shell/renderer/test_runner/MockWebMIDIAccessor.h"
 #include "content/shell/renderer/test_runner/MockWebMediaStreamCenter.h"
-#include "content/shell/renderer/test_runner/MockWebRTCPeerConnectionHandler.h"
 #include "content/shell/renderer/test_runner/TestInterfaces.h"
+#include "content/shell/renderer/test_runner/mock_webrtc_peer_connection_handler.h"
 #include "content/shell/renderer/test_runner/test_runner.h"
 
 using namespace blink;
