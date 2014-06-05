@@ -56,10 +56,9 @@ shared_library("freetype2") {
     "FT_CONFIG_OPTION_SYSTEM_ZLIB",
     "FT2_BUILD_LIBRARY",
 
-    # TODO: crbug.com/358764 - we shouldn't need to escape these defines.
-    "'FT_CONFIG_CONFIG_H=<ftconfig.h>'",  # See comments in README.chromium.
-    "'FT_CONFIG_MODULES_H=<ftmodule.h>'",  # See comments in README.chromium.
-    "'FT_CONFIG_OPTIONS_H=<ftoption.h>'",  # See comments in README.chromium.
+    "FT_CONFIG_CONFIG_H=<ftconfig.h>",  # See comments in README.chromium.
+    "FT_CONFIG_MODULES_H=<ftmodule.h>",  # See comments in README.chromium.
+    "FT_CONFIG_OPTIONS_H=<ftoption.h>",  # See comments in README.chromium.
   ]
 
   configs -= [ "//build/config/compiler:chromium_code" ]
