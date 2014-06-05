@@ -145,6 +145,14 @@ bool IsInputViewEnabled() {
   return true;
 }
 
+bool IsExperimentalInputViewEnabled() {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableExperimentalInputViewFeatures)) {
+    return true;
+  }
+  return false;
+}
+
 bool InsertText(const base::string16& text, aura::Window* root_window) {
   if (!root_window)
     return false;

@@ -152,6 +152,8 @@ bool VirtualKeyboardPrivateGetKeyboardConfigFunction::RunSync() {
   base::DictionaryValue* results = new base::DictionaryValue();
   results->SetString("layout", keyboard::GetKeyboardLayout());
   results->SetBoolean("a11ymode", keyboard::GetAccessibilityKeyboardEnabled());
+  results->SetBoolean("experimental",
+      keyboard::IsExperimentalInputViewEnabled());
   SetResult(results);
   return true;
 #else

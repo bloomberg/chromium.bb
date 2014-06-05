@@ -21,6 +21,9 @@ KEYBOARD_EXPORT extern const char kDisableInputView[];
 // of the virtual keyboard container.
 KEYBOARD_EXPORT extern const char kEnableInputView[];
 
+// Enables experimental features for IME extensions.
+KEYBOARD_EXPORT extern const char kEnableExperimentalInputViewFeatures[];
+
 // Enables the virtual keyboard.
 KEYBOARD_EXPORT extern const char kEnableVirtualKeyboard[];
 

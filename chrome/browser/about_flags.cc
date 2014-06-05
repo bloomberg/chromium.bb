@@ -1284,6 +1284,13 @@ const Experiment kExperiments[] = {
     ENABLE_DISABLE_VALUE_TYPE(keyboard::switches::kEnableInputView,
                               keyboard::switches::kDisableInputView)
   },
+  {
+    "enable-experimental-input-view-features",
+    IDS_FLAGS_ENABLE_EXPERIMENTAL_INPUT_VIEW_FEATURES_NAME,
+    IDS_FLAGS_ENABLE_EXPERIMENTAL_INPUT_VIEW_FEATURES_DESCRIPTION,
+    kOsCrOS,
+    SINGLE_VALUE_TYPE(keyboard::switches::kEnableExperimentalInputViewFeatures)
+  },
 #endif
   {
     "enable-simple-cache-backend",

@@ -11,6 +11,8 @@ const char kEnableSwipeSelection[] = "enable-swipe-selection";
 
 const char kDisableInputView[] = "disable-input-view";
 const char kEnableInputView[] = "enable-input-view";
+const char kEnableExperimentalInputViewFeatures[] =
+    "enable-experimental-input-view-features";
 
 const char kEnableVirtualKeyboard[] = "enable-virtual-keyboard";
 

@@ -86,6 +86,9 @@ KEYBOARD_EXPORT void SetKeyboardOverscrollOverride(
 // virtual keyboard window.
 KEYBOARD_EXPORT bool IsInputViewEnabled();
 
+// Returns true if experimental features are enabled for IME input-views.
+KEYBOARD_EXPORT bool IsExperimentalInputViewEnabled();
+
 // Insert |text| into the active TextInputClient associated with |root_window|,
 // if there is one. Returns true if |text| was successfully inserted. Note
 // that this may convert |text| into ui::KeyEvents for injection in some

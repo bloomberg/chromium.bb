@@ -13610,6 +13610,13 @@ Do you accept?
       <message name="IDS_FLAGS_ENABLE_INPUT_VIEW_DESCRIPTION" desc="Description of about::flags option to enable IME extensions to override the virtual keyboard view">
         Enable IME extensions to supply custom views for user input such as  virtual keyboards.
       </message>
+
+      <message name="IDS_FLAGS_ENABLE_EXPERIMENTAL_INPUT_VIEW_FEATURES_NAME" desc="Name of about::flags option to enable experimental features for IME input-views">
+        Experimental input view features.
+      </message>
+      <message name="IDS_FLAGS_ENABLE_EXPERIMENTAL_INPUT_VIEW_FEATURES_DESCRIPTION" desc="Description of about::flags option to enable experimental features for IME input-views">
+        Enable experimental features for IME input views.
+      </message>
     </if>
 
     <!-- Simple Cache Backend experiment. -->
