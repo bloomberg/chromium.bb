@@ -77,7 +77,6 @@ Bug(gardener) [ Release Mavericks ] fast/forms/suggestion-picker/datetimelocal-s
 Bug(gardener) [ Release Mavericks ] fast/forms/suggestion-picker/month-suggestion-picker-reset-value-after-reload.html [ Failure Pass ]
 Bug(gardener) [ Release Win7 ] fast/forms/time-multiple-fields/time-multiple-fields-mouse-events.html [ Failure Pass ]
 Bug(gardener) [ Release Win7 ] fast/forms/week-multiple-fields/week-multiple-fields-mouse-events.html [ Failure Pass ]
-Bug(gardener) [ Release Linux ] fast/frames/sandboxed-iframe-autofocus-denied.html [ Failure Pass ]
 crbug.com/311301 [ Release Linux ] fast/history/history_reload.html [ Failure Missing Pass ]
 Bug(gardener) [ Release Linux ] fast/history/location-replace-hash.html [ Failure Pass ]
 Bug(gardener) [ Release Linux ] fast/history/multiple-classes-visited.html [ Failure Pass ]
