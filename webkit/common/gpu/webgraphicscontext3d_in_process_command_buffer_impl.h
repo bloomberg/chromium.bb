@@ -9,6 +9,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
+#include "gpu/command_buffer/client/gl_in_process_context.h"
 #include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "ui/gfx/native_widget_types.h"
@@ -88,6 +89,10 @@ class WEBKIT_GPU_EXPORT WebGraphicsContext3DInProcessCommandBufferImpl
   // Used to try to find bugs in code that calls gl directly through the gl api
   // instead of going through WebGraphicsContext3D.
   void ClearContext();
+
+  ::gpu::GLInProcessContextAttribs attribs_;
+  bool share_resources_;
+  bool webgl_context_;
 
   bool is_offscreen_;
   // Only used when not offscreen.

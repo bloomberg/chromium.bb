@@ -111,7 +111,8 @@ WebGraphicsContext3DCommandBufferImpl::WebGraphicsContext3DCommandBufferImpl(
     bool lose_context_when_out_of_memory,
     const SharedMemoryLimits& limits,
     WebGraphicsContext3DCommandBufferImpl* share_context)
-    : WebGraphicsContext3DImpl(attributes, lose_context_when_out_of_memory),
+    : lose_context_when_out_of_memory_(lose_context_when_out_of_memory),
+      attributes_(attributes),
       visible_(false),
       host_(host),
       surface_id_(surface_id),
@@ -169,27 +170,6 @@ bool WebGraphicsContext3DCommandBufferImpl::MaybeInitializeGL() {
                  weak_ptr_factory_.GetWeakPtr()));
 
   real_gl_->SetErrorMessageCallback(getErrorMessageCallback());
-
-  // Set attributes_ from created offscreen context.
-  {
-    static const int pcount = 4;
-    static const GLenum pnames[pcount] = {
-      GL_ALPHA_BITS,
-      GL_DEPTH_BITS,
-      GL_STENCIL_BITS,
-      GL_SAMPLE_BUFFERS,
-    };
-    GLint pvalues[pcount] = { 0, 0, 0, 0 };
-
-    TRACE_EVENT0("gpu", "WebGfxCtx3DCmdBfrImpl initializing actual attributes");
-    gl_->GetMultipleIntegervCHROMIUM(pnames, pcount,
-                                     pvalues, sizeof(pvalues));
-
-    attributes_.alpha = pvalues[0] > 0;
-    attributes_.depth = pvalues[1] > 0;
-    attributes_.stencil = pvalues[2] > 0;
-    attributes_.antialias = pvalues[3] > 0;
-  }
 
   visible_ = true;
   initialized_ = true;

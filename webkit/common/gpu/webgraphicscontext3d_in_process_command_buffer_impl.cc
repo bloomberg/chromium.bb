@@ -19,7 +19,6 @@
 #include "base/callback.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
-#include "gpu/command_buffer/client/gl_in_process_context.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "gpu/command_buffer/client/gles2_lib.h"
 #include "gpu/skia_bindings/gl_bindings_skia_cmd_buffer.h"
@@ -112,10 +111,13 @@ WebGraphicsContext3DInProcessCommandBufferImpl::
         bool lose_context_when_out_of_memory,
         bool is_offscreen,
         gfx::AcceleratedWidget window)
-    : WebGraphicsContext3DImpl(attributes, lose_context_when_out_of_memory),
+    : share_resources_(attributes.shareResources),
+      webgl_context_(attributes.noExtensions),
       is_offscreen_(is_offscreen),
       window_(window),
       context_(context.Pass()) {
+  ConvertAttributes(attributes, &attribs_);
+  attribs_.lose_context_when_out_of_memory = lose_context_when_out_of_memory;
 }
 
 WebGraphicsContext3DInProcessCommandBufferImpl::
@@ -153,17 +155,12 @@ bool WebGraphicsContext3DInProcessCommandBufferImpl::MaybeInitializeGL() {
     // discrete GPU is created, or the last one is destroyed.
     gfx::GpuPreference gpu_preference = gfx::PreferDiscreteGpu;
 
-    ::gpu::GLInProcessContextAttribs attrib_struct;
-    ConvertAttributes(attributes_, &attrib_struct);
-    attrib_struct.lose_context_when_out_of_memory =
-        lose_context_when_out_of_memory_;
-
     context_.reset(GLInProcessContext::CreateContext(
         is_offscreen_,
         window_,
         gfx::Size(1, 1),
-        attributes_.shareResources,
-        attrib_struct,
+        share_resources_,
+        attribs_,
         gpu_preference));
   }
 
@@ -180,24 +177,8 @@ bool WebGraphicsContext3DInProcessCommandBufferImpl::MaybeInitializeGL() {
   real_gl_ = context_->GetImplementation();
   setGLInterface(real_gl_);
 
-  if (real_gl_ && attributes_.noExtensions)
+  if (real_gl_ && webgl_context_)
     real_gl_->EnableFeatureCHROMIUM("webgl_enable_glsl_webgl_validation");
-
-  // Set attributes_ from created offscreen context.
-  {
-    GLint alpha_bits = 0;
-    getIntegerv(GL_ALPHA_BITS, &alpha_bits);
-    attributes_.alpha = alpha_bits > 0;
-    GLint depth_bits = 0;
-    getIntegerv(GL_DEPTH_BITS, &depth_bits);
-    attributes_.depth = depth_bits > 0;
-    GLint stencil_bits = 0;
-    getIntegerv(GL_STENCIL_BITS, &stencil_bits);
-    attributes_.stencil = stencil_bits > 0;
-    GLint sample_buffers = 0;
-    getIntegerv(GL_SAMPLE_BUFFERS, &sample_buffers);
-    attributes_.antialias = sample_buffers > 0;
-  }
 
   initialized_ = true;
   return true;

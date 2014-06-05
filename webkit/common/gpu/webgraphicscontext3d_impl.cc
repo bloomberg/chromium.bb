@@ -148,17 +148,13 @@ rt WebGraphicsContext3DImpl::name(t1 a1, t2 a2, t3 a3, t4 a4, t5 a5,    \
   return gl_->glname(a1, a2, a3, a4, a5, a6, a7, a8, a9);               \
 }
 
-WebGraphicsContext3DImpl::WebGraphicsContext3DImpl(
-      const Attributes& attributes,
-      bool lose_context_when_out_of_memory)
+WebGraphicsContext3DImpl::WebGraphicsContext3DImpl()
     : initialized_(false),
       initialize_failed_(false),
       context_lost_callback_(0),
       context_lost_reason_(GL_NO_ERROR),
       error_message_callback_(0),
-      attributes_(attributes),
       gl_(NULL),
-      lose_context_when_out_of_memory_(lose_context_when_out_of_memory),
       flush_id_(0) {
 }
 
@@ -404,11 +400,6 @@ DELEGATE_TO_GL_2(getBooleanv, GetBooleanv, WGC3Denum, WGC3Dboolean*)
 
 DELEGATE_TO_GL_3(getBufferParameteriv, GetBufferParameteriv,
                  WGC3Denum, WGC3Denum, WGC3Dint*)
-
-blink::WebGraphicsContext3D::Attributes
-WebGraphicsContext3DImpl::getContextAttributes() {
-  return attributes_;
-}
 
 WGC3Denum WebGraphicsContext3DImpl::getError() {
   if (!synthetic_errors_.empty()) {

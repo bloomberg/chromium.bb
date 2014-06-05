@@ -214,6 +214,9 @@ class WebGraphicsContext3DCommandBufferImpl
 
   virtual void OnGpuChannelLost();
 
+  bool lose_context_when_out_of_memory_;
+  blink::WebGraphicsContext3D::Attributes attributes_;
+
   bool visible_;
 
   // State needed by MaybeInitializeGL.
