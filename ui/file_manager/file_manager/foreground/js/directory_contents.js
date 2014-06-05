@@ -643,6 +643,9 @@ DirectoryContents.prototype.onNewEntries_ = function(entries) {
   // See crbug.com/370908 for detail.
   entriesFiltered.forEach(function(entry) { entry.cachedUrl = entry.toURL(); });
 
+  if (entriesFiltered.length === 0)
+    return;
+
   // Update the filelist without waiting the metadata.
   this.fileList_.push.apply(this.fileList_, entriesFiltered);
   cr.dispatchSimpleEvent(this, 'scan-updated');
