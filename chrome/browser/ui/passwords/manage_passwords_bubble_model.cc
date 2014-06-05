@@ -33,9 +33,13 @@ ManagePasswordsBubbleModel::ManagePasswordsBubbleModel(
     pending_credentials_ = controller->PendingCredentials();
   best_matches_ = controller->best_matches();
 
-  title_ = l10n_util::GetStringUTF16(
-      password_manager::ui::IsPendingState(state_) ? IDS_SAVE_PASSWORD
-                                                   : IDS_MANAGE_PASSWORDS);
+  if (password_manager::ui::IsPendingState(state_))
+    title_ = l10n_util::GetStringUTF16(IDS_SAVE_PASSWORD);
+  else if (state_ == password_manager::ui::BLACKLIST_STATE)
+    title_ = l10n_util::GetStringUTF16(IDS_MANAGE_PASSWORDS_BLACKLISTED_TITLE);
+  else
+    title_ = l10n_util::GetStringUTF16(IDS_MANAGE_PASSWORDS_TITLE);
+
   manage_link_ =
       l10n_util::GetStringUTF16(IDS_OPTIONS_PASSWORDS_MANAGE_PASSWORDS_LINK);
 }

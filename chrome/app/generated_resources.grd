@@ -7253,7 +7253,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
           Save password
         </message>
         <message name="IDS_PASSWORD_MANAGER_UNBLACKLIST_BUTTON" desc="Buton text to re-enable the password manager after blacklisting.">
-          Enable password manager
+          Undo
         </message>
         <message name="IDS_PASSWORD_MANAGER_BLACKLIST_BUTTON" desc="Button text for the 'Save Password' infobar's 'Never remember for this site' option">
           Never for this site
@@ -12810,11 +12810,14 @@ Some features may be unavailable.  Please check that the profile exists and you 
     <message name="IDS_SAVE_PASSWORD" desc="The status text that is used as tooltip text for the save password icon and as status text of the save password bubble when a password can be saved.">
       Would you like to save this password?
     </message>
-    <message name="IDS_MANAGE_PASSWORDS" desc="The title text that is used in the manage passwords bubble when a password is autofilled or after a user has stored a password.">
+    <message name="IDS_MANAGE_PASSWORDS_TITLE" desc="The title text that is used in the manage passwords bubble when a password is autofilled or after a user has stored a password.">
       Saved passwords for this site:
     </message>
     <message name="IDS_MANAGE_PASSWORDS_BLACKLISTED" desc="The text that is used in the manage passwords bubble when the current site is blacklisted.">
-      The password manager is disabled for this site; no passwords are saved.
+      You chose not to allow passwords to be saved on this site.
+    </message>
+    <message name="IDS_MANAGE_PASSWORDS_BLACKLISTED_TITLE" desc="The title text that is used in the manage passwords bubble when the current site is blacklisted.">
+      Passwords won't be saved
     </message>
     <message name="IDS_MANAGE_PASSWORDS_NO_PASSWORDS" desc="The text that is used in the manage passwords bubble when all passwords have been deleted.">
       No passwords saved.
