@@ -83,11 +83,16 @@ WebString WebBlob::uuid()
     return m_private->uuid();
 }
 
-v8::Handle<v8::Value> WebBlob::toV8Value()
+v8::Handle<v8::Value> WebBlob::toV8Value(v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     if (!m_private.get())
         return v8::Handle<v8::Value>();
-    return toV8(m_private.get(), v8::Handle<v8::Object>(), v8::Isolate::GetCurrent());
+    return toV8(m_private.get(), creationContext, isolate);
+}
+
+v8::Handle<v8::Value> WebBlob::toV8Value()
+{
+    return toV8Value(v8::Handle<v8::Object>(), v8::Isolate::GetCurrent());
 }
 
 WebBlob::WebBlob(const PassRefPtrWillBeRawPtr<WebCore::Blob>& blob)
