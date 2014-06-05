@@ -13,9 +13,7 @@ create a single log that is an ordered trace of calls by both processes.
 """
 
 import optparse
-import os
 import string
-import subprocess
 import sys
 
 def ParseLogLines(lines):
@@ -55,7 +53,7 @@ def ParseLogLines(lines):
   return (call_lines, vm_start, vm_end)
 
 def HasDuplicates(calls):
-  """Funcition is a sanity check to make sure that calls are only logged once.
+  """Makes sure that calls are only logged once.
 
   Args:
     calls: list of calls logged
@@ -63,12 +61,12 @@ def HasDuplicates(calls):
   Returns:
     boolean indicating if calls has duplicate calls
   """
-  seen = []
+  seen = set([])
   for call in calls:
     if call[3] in seen:
-      return true
-    else:
-      seen.append(call[3])
+      return True
+    seen.add(call[3])
+  return False
 
 def CheckTimestamps(calls):
   """Prints warning to stderr if the call timestamps are not in order.
@@ -137,6 +135,46 @@ def AddTrace (tracemap, trace):
         Timestamp(tracemap[call]) > Timestamp(trace_entry)):
       tracemap[call] = trace_entry
 
+def GroupByProcessAndThreadId(input_trace):
+  """Returns an array of traces grouped by pid and tid.
+
+  This is used to make the order of functions not depend on thread scheduling
+  which can be greatly impacted when profiling is done with cygprofile. As a
+  result each thread has its own contiguous segment of code (ordered by
+  timestamp) and processes also have their code isolated (i.e. not interleaved).
+  """
+  def MakeTimestamp(usec, sec):
+    return usec * 1000000 + sec
+
+  def PidAndTidFromString(pid_and_tid):
+    strings = pid_and_tid.split(':')
+    return (int(strings[0]), int(strings[1]))
+
+  pid_first_seen = {}
+  tid_first_seen = {}
+  for (sec, usec, pid_and_tid, _) in input_trace:
+    (pid, tid) = PidAndTidFromString(pid_and_tid)
+    if not pid in pid_first_seen:
+      pid_first_seen[pid] = MakeTimestamp(usec, sec)
+    if not tid in tid_first_seen:
+      tid_first_seen[tid] = MakeTimestamp(usec, sec)
+
+  def CompareEvents(event1, event2):
+    (sec1, usec1, pid_and_tid, _) = event1
+    (pid1, tid1) = PidAndTidFromString(pid_and_tid)
+    (sec2, usec2, pid_and_tid, _) = event2
+    (pid2, tid2) = PidAndTidFromString(pid_and_tid)
+
+    pid_cmp = cmp(pid_first_seen[pid1], pid_first_seen[pid2])
+    if pid_cmp != 0:
+      return pid_cmp
+    tid_cmp = cmp(tid_first_seen[tid1], tid_first_seen[tid2])
+    if tid_cmp != 0:
+      return tid_cmp
+    return cmp(MakeTimestamp(usec1, sec1), MakeTimestamp(usec2, sec2))
+
+  return sorted(input_trace, cmp=CompareEvents)
+
 def main():
   """Merge two traces for code in specified library and write to stdout.
 
@@ -151,7 +189,10 @@ def main():
     parser.error('expected at least the following args: trace1 trace2')
 
   step = 0
+
+  # Maps function addresses to their corresponding trace entry.
   tracemap = dict()
+
   for trace_file in args:
     step += 1
     sys.stderr.write("    " + str(step) + "/" + str(len(args)) +
@@ -176,9 +217,11 @@ def main():
     merged_trace.append(tracemap[call])
   merged_trace.sort(key=Timestamp)
 
+  grouped_trace = GroupByProcessAndThreadId(merged_trace)
+
   print "0-ffffffff r-xp 00000000 xx:00 00000 ./"
   print "secs\tusecs\tpid:threadid\tfunc"
-  for call in merged_trace:
+  for call in grouped_trace:
     print (str(call[0]) + "\t" + str(call[1]) + "\t" + call[2] + "\t" +
            hex(call[3]))
 
