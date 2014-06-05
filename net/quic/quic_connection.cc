@@ -1246,7 +1246,8 @@ void QuicConnection::WritePendingRetransmissions() {
           pending.sequence_number, serialized_packet.sequence_number);
     }
     sent_packet_manager_.OnRetransmittedPacket(
-        pending.sequence_number, serialized_packet.sequence_number);
+        pending.sequence_number,
+        serialized_packet.sequence_number);
 
     SendOrQueuePacket(pending.retransmittable_frames.encryption_level(),
                       serialized_packet,

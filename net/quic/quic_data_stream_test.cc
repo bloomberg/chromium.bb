@@ -497,7 +497,8 @@ TEST_P(QuicDataStreamTest, StreamFlowControlViolation) {
   string body;
   GenerateBody(&body, kWindow + 1);
   QuicStreamFrame frame(kClientDataStreamId1, false, 0, MakeIOVector(body));
-  EXPECT_CALL(*connection_, SendConnectionClose(QUIC_FLOW_CONTROL_ERROR));
+  EXPECT_CALL(*connection_,
+              SendConnectionClose(QUIC_FLOW_CONTROL_RECEIVED_TOO_MUCH_DATA));
   stream_->OnStreamFrame(frame);
 }
 
@@ -534,7 +535,8 @@ TEST_P(QuicDataStreamTest, ConnectionFlowControlViolation) {
   EXPECT_LT(body.size(),  kStreamWindow);
   QuicStreamFrame frame(kClientDataStreamId1, false, 0, MakeIOVector(body));
 
-  EXPECT_CALL(*connection_, SendConnectionClose(QUIC_FLOW_CONTROL_ERROR));
+  EXPECT_CALL(*connection_,
+              SendConnectionClose(QUIC_FLOW_CONTROL_RECEIVED_TOO_MUCH_DATA));
   stream_->OnStreamFrame(frame);
 }
 

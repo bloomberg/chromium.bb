@@ -42,13 +42,13 @@ class ProofVerifierChromium::Job {
 
   // Starts the proof verification.  If |PENDING| is returned, then |callback|
   // will be invoked asynchronously when the verification completes.
-  Status VerifyProof(const std::string& hostname,
-                     const std::string& server_config,
-                     const std::vector<std::string>& certs,
-                     const std::string& signature,
-                     std::string* error_details,
-                     scoped_ptr<ProofVerifyDetails>* verify_details,
-                     ProofVerifierCallback* callback);
+  QuicAsyncStatus VerifyProof(const std::string& hostname,
+                              const std::string& server_config,
+                              const std::vector<std::string>& certs,
+                              const std::string& signature,
+                              std::string* error_details,
+                              scoped_ptr<ProofVerifyDetails>* verify_details,
+                              ProofVerifierCallback* callback);
 
  private:
   enum State {
@@ -98,7 +98,7 @@ ProofVerifierChromium::Job::Job(ProofVerifierChromium* proof_verifier,
       net_log_(net_log) {
 }
 
-ProofVerifierChromium::Status ProofVerifierChromium::Job::VerifyProof(
+QuicAsyncStatus ProofVerifierChromium::Job::VerifyProof(
     const string& hostname,
     const string& server_config,
     const vector<string>& certs,
@@ -115,7 +115,7 @@ ProofVerifierChromium::Status ProofVerifierChromium::Job::VerifyProof(
   if (STATE_NONE != next_state_) {
     *error_details = "Certificate is already set and VerifyProof has begun";
     DLOG(DFATAL) << *error_details;
-    return FAILURE;
+    return QUIC_FAILURE;
   }
 
   verify_details_.reset(new ProofVerifyDetailsChromium);
@@ -125,7 +125,7 @@ ProofVerifierChromium::Status ProofVerifierChromium::Job::VerifyProof(
     DLOG(WARNING) << *error_details;
     verify_details_->cert_verify_result.cert_status = CERT_STATUS_INVALID;
     verify_details->reset(verify_details_.release());
-    return FAILURE;
+    return QUIC_FAILURE;
   }
 
   // Convert certs to X509Certificate.
@@ -139,7 +139,7 @@ ProofVerifierChromium::Status ProofVerifierChromium::Job::VerifyProof(
     DLOG(WARNING) << *error_details;
     verify_details_->cert_verify_result.cert_status = CERT_STATUS_INVALID;
     verify_details->reset(verify_details_.release());
-    return FAILURE;
+    return QUIC_FAILURE;
   }
 
   // We call VerifySignature first to avoid copying of server_config and
@@ -149,7 +149,7 @@ ProofVerifierChromium::Status ProofVerifierChromium::Job::VerifyProof(
     DLOG(WARNING) << *error_details;
     verify_details_->cert_verify_result.cert_status = CERT_STATUS_INVALID;
     verify_details->reset(verify_details_.release());
-    return FAILURE;
+    return QUIC_FAILURE;
   }
 
   hostname_ = hostname;
@@ -158,14 +158,14 @@ ProofVerifierChromium::Status ProofVerifierChromium::Job::VerifyProof(
   switch (DoLoop(OK)) {
     case OK:
       verify_details->reset(verify_details_.release());
-      return SUCCESS;
+      return QUIC_SUCCESS;
     case ERR_IO_PENDING:
       callback_.reset(callback);
-      return PENDING;
+      return QUIC_PENDING;
     default:
       *error_details = error_details_;
       verify_details->reset(verify_details_.release());
-      return FAILURE;
+      return QUIC_FAILURE;
   }
 }
 
@@ -317,7 +317,7 @@ ProofVerifierChromium::~ProofVerifierChromium() {
   STLDeleteElements(&active_jobs_);
 }
 
-ProofVerifierChromium::Status ProofVerifierChromium::VerifyProof(
+QuicAsyncStatus ProofVerifierChromium::VerifyProof(
     const std::string& hostname,
     const std::string& server_config,
     const std::vector<std::string>& certs,
@@ -328,14 +328,15 @@ ProofVerifierChromium::Status ProofVerifierChromium::VerifyProof(
     ProofVerifierCallback* callback) {
   if (!verify_context) {
     *error_details = "Missing context";
-    return FAILURE;
+    return QUIC_FAILURE;
   }
   const ProofVerifyContextChromium* chromium_context =
       reinterpret_cast<const ProofVerifyContextChromium*>(verify_context);
   scoped_ptr<Job> job(new Job(this, cert_verifier_, chromium_context->net_log));
-  Status status = job->VerifyProof(hostname, server_config, certs, signature,
-                                   error_details, verify_details, callback);
-  if (status == PENDING) {
+  QuicAsyncStatus status = job->VerifyProof(hostname, server_config, certs,
+                                            signature, error_details,
+                                            verify_details, callback);
+  if (status == QUIC_PENDING) {
     active_jobs_.insert(job.release());
   }
   return status;

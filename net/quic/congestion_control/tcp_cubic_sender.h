@@ -57,7 +57,7 @@ class NET_EXPORT_PRIVATE TcpCubicSender : public SendAlgorithmInterface {
   virtual QuicTime::Delta TimeUntilSend(
       QuicTime now,
       QuicByteCount bytes_in_flight,
-      HasRetransmittableData has_retransmittable_data) OVERRIDE;
+      HasRetransmittableData has_retransmittable_data) const OVERRIDE;
   virtual QuicBandwidth BandwidthEstimate() const OVERRIDE;
   virtual QuicTime::Delta RetransmissionDelay() const OVERRIDE;
   virtual QuicByteCount GetCongestionWindow() const OVERRIDE;
@@ -73,7 +73,7 @@ class NET_EXPORT_PRIVATE TcpCubicSender : public SendAlgorithmInterface {
   void OnPacketLost(QuicPacketSequenceNumber largest_loss,
                     QuicByteCount bytes_in_flight);
 
-  QuicByteCount SendWindow();
+  QuicByteCount SendWindow() const;
   void MaybeIncreaseCwnd(QuicPacketSequenceNumber acked_sequence_number,
                          QuicByteCount bytes_in_flight);
   bool IsCwndLimited(QuicByteCount bytes_in_flight) const;
@@ -81,7 +81,7 @@ class NET_EXPORT_PRIVATE TcpCubicSender : public SendAlgorithmInterface {
   // Methods for isolating PRR from the rest of TCP Cubic.
   void PrrOnPacketLost(QuicByteCount bytes_in_flight);
   void PrrOnPacketAcked(QuicByteCount acked_bytes);
-  QuicTime::Delta PrrTimeUntilSend(QuicByteCount bytes_in_flight);
+  QuicTime::Delta PrrTimeUntilSend(QuicByteCount bytes_in_flight) const;
 
 
   HybridSlowStart hybrid_slow_start_;

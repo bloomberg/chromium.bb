@@ -59,19 +59,20 @@ bool PacingSender::OnPacketSent(
     // invoked, allow the connection to make up for lost time.
     if (was_last_send_delayed_) {
       next_packet_send_time_ = next_packet_send_time_.Add(delay);
-      // As long as we're making up time and not application limited,
-      // continue to consider the packets delayed.
       // The send was application limited if it takes longer than the
       // pacing delay between sent packets.
       const bool application_limited =
           last_delayed_packet_sent_time_.IsInitialized() &&
           sent_time > last_delayed_packet_sent_time_.Add(delay);
-      const bool making_up_for_lost_time = next_packet_send_time_ > sent_time;
-      if (making_up_for_lost_time || application_limited) {
+      const bool making_up_for_lost_time = next_packet_send_time_ <= sent_time;
+      // As long as we're making up time and not application limited,
+      // continue to consider the packets delayed, allowing the packets to be
+      // sent immediately.
+      if (making_up_for_lost_time && !application_limited) {
+        last_delayed_packet_sent_time_ = sent_time;
+      } else {
         was_last_send_delayed_ = false;
         last_delayed_packet_sent_time_ = QuicTime::Zero();
-      } else {
-        last_delayed_packet_sent_time_ = sent_time;
       }
     } else {
       next_packet_send_time_ =
@@ -90,7 +91,7 @@ void PacingSender::OnRetransmissionTimeout(bool packets_retransmitted) {
 QuicTime::Delta PacingSender::TimeUntilSend(
       QuicTime now,
       QuicByteCount bytes_in_flight,
-      HasRetransmittableData has_retransmittable_data) {
+      HasRetransmittableData has_retransmittable_data) const {
   QuicTime::Delta time_until_send =
       sender_->TimeUntilSend(now, bytes_in_flight, has_retransmittable_data);
   if (!has_valid_rtt_) {

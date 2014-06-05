@@ -32,6 +32,13 @@ MATCHER(KeyEq, "") {
   return std::tr1::get<0>(arg).first == std::tr1::get<1>(arg);
 }
 
+class MockDebugDelegate : public QuicSentPacketManager::DebugDelegate {
+ public:
+  MOCK_METHOD2(OnSpuriousPacketRetransmition,
+               void(TransmissionType transmission_type,
+                    QuicByteCount byte_size));
+};
+
 class QuicSentPacketManagerTest : public ::testing::TestWithParam<bool> {
  protected:
   QuicSentPacketManagerTest()
@@ -129,7 +136,8 @@ class QuicSentPacketManagerTest : public ::testing::TestWithParam<bool> {
     EXPECT_EQ(old_sequence_number, next_retransmission.sequence_number);
     EXPECT_EQ(TLP_RETRANSMISSION,
               next_retransmission.transmission_type);
-    manager_.OnRetransmittedPacket(old_sequence_number, new_sequence_number);
+    manager_.OnRetransmittedPacket(old_sequence_number,
+                                   new_sequence_number);
     EXPECT_TRUE(QuicSentPacketManagerPeer::IsRetransmission(
         &manager_, new_sequence_number));
   }
@@ -232,8 +240,8 @@ class QuicSentPacketManagerTest : public ::testing::TestWithParam<bool> {
                     .Times(1).WillOnce(Return(true));
     const QuicSentPacketManager::PendingRetransmission pending =
         manager_.NextPendingRetransmission();
-    manager_.OnRetransmittedPacket(
-        pending.sequence_number, retransmission_sequence_number);
+    manager_.OnRetransmittedPacket(pending.sequence_number,
+                                   retransmission_sequence_number);
     manager_.OnPacketSent(retransmission_sequence_number, clock_.Now(),
                           kDefaultLength, pending.transmission_type,
                           HAS_RETRANSMITTABLE_DATA);
@@ -428,6 +436,11 @@ TEST_F(QuicSentPacketManagerTest, RetransmitTwiceThenAckPreviousBeforeSend) {
 }
 
 TEST_F(QuicSentPacketManagerTest, RetransmitTwiceThenAckFirst) {
+  StrictMock<MockDebugDelegate> debug_delegate;
+  EXPECT_CALL(debug_delegate, OnSpuriousPacketRetransmition(
+      TLP_RETRANSMISSION, kDefaultLength)).Times(2);
+  manager_.set_debug_delegate(&debug_delegate);
+
   SendDataPacket(1);
   RetransmitAndSendPacket(1, 2);
   RetransmitAndSendPacket(2, 3);
@@ -465,7 +478,7 @@ TEST_F(QuicSentPacketManagerTest, RetransmitTwiceThenAckFirst) {
 
   VerifyUnackedPackets(NULL, 0);
   EXPECT_FALSE(QuicSentPacketManagerPeer::HasPendingPackets(&manager_));
-  EXPECT_EQ(1u, stats_.packets_spuriously_retransmitted);
+  EXPECT_EQ(2u, stats_.packets_spuriously_retransmitted);
 }
 
 TEST_F(QuicSentPacketManagerTest, LoseButDontRetransmitRevivedPacket) {

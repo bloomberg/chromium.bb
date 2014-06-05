@@ -108,6 +108,9 @@ class QuicConnectionPeer {
   static QuicEncryptedPacket* GetConnectionClosePacket(
       QuicConnection* connection);
 
+  static void SetSupportedVersions(QuicConnection* connection,
+                                   QuicVersionVector versions);
+
  private:
   DISALLOW_COPY_AND_ASSIGN(QuicConnectionPeer);
 };

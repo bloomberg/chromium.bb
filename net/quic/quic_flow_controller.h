@@ -25,7 +25,7 @@ const QuicStreamId kConnectionLevelId = 0;
 // can send WINDOW_UPDATE or BLOCKED frames when needed.
 class NET_EXPORT_PRIVATE QuicFlowController {
  public:
-  QuicFlowController(QuicVersion version,
+  QuicFlowController(QuicConnection* connection,
                      QuicStreamId id,
                      bool is_server,
                      uint64 send_window_offset,
@@ -39,7 +39,8 @@ class NET_EXPORT_PRIVATE QuicFlowController {
   // in the case where |new_offset| is <= highest_received_byte_offset_.
   bool UpdateHighestReceivedOffset(uint64 new_offset);
 
-  // Called when bytes received from the peer are consumed locally.
+  // Called when bytes received from the peer are consumed locally. This may
+  // trigger the sending of a WINDOW_UPDATE frame using |connection|.
   void AddBytesConsumed(uint64 bytes_consumed);
 
   // Called when bytes are sent to the peer.
@@ -53,11 +54,8 @@ class NET_EXPORT_PRIVATE QuicFlowController {
   // Returns the current available send window.
   uint64 SendWindowSize() const;
 
-  // Send a BLOCKED frame on |connection| if appropriate.
-  void MaybeSendBlocked(QuicConnection* connection);
-
-  // Send a WINDOW_UPDATE frame on |connection| if appropriate.
-  void MaybeSendWindowUpdate(QuicConnection* connection);
+  // Send a BLOCKED frame if appropriate.
+  void MaybeSendBlocked();
 
   // Disable flow control.
   void Disable();
@@ -71,12 +69,22 @@ class NET_EXPORT_PRIVATE QuicFlowController {
   // Returns true if flow control receive limits have been violated by the peer.
   bool FlowControlViolation();
 
+  uint64 bytes_consumed() const { return bytes_consumed_; }
+
   uint64 highest_received_byte_offset() const {
     return highest_received_byte_offset_;
   }
 
  private:
   friend class test::QuicFlowControllerPeer;
+
+  // Send a WINDOW_UPDATE frame if appropriate.
+  void MaybeSendWindowUpdate();
+
+  // The parent connection, used to send connection close on flow control
+  // violation, and WINDOW_UPDATE and BLOCKED frames when appropriate.
+  // Not owned.
+  QuicConnection* connection_;
 
   // ID of stream this flow controller belongs to. This can be 0 if this is a
   // connection level flow controller.

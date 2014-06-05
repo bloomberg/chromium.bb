@@ -57,7 +57,8 @@ void QuicUnackedPacketMap::AddPacket(
 
 void QuicUnackedPacketMap::OnRetransmittedPacket(
     QuicPacketSequenceNumber old_sequence_number,
-    QuicPacketSequenceNumber new_sequence_number) {
+    QuicPacketSequenceNumber new_sequence_number,
+    TransmissionType transmission_type) {
   DCHECK(ContainsKey(unacked_packets_, old_sequence_number));
   DCHECK(unacked_packets_.empty() ||
          unacked_packets_.rbegin()->first < new_sequence_number);
@@ -77,6 +78,7 @@ void QuicUnackedPacketMap::OnRetransmittedPacket(
       TransmissionInfo(frames,
                        new_sequence_number,
                        transmission_info->sequence_number_length,
+                       transmission_type,
                        transmission_info->all_transmissions);
 }
 

@@ -215,5 +215,11 @@ QuicEncryptedPacket* QuicConnectionPeer::GetConnectionClosePacket(
   return connection->connection_close_packet_.get();
 }
 
+// static
+void QuicConnectionPeer::SetSupportedVersions(QuicConnection* connection,
+                                              QuicVersionVector versions) {
+  connection->framer_.SetSupportedVersions(versions);
+}
+
 }  // namespace test
 }  // namespace net

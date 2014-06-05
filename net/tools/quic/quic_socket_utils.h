@@ -11,8 +11,9 @@
 #include <sys/socket.h>
 #include <string>
 
+#include "base/basictypes.h"
 #include "net/base/ip_endpoint.h"
-#include "net/quic/quic_protocol.h"
+#include "net/quic/quic_types.h"
 
 namespace net {
 namespace tools {

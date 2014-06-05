@@ -130,7 +130,7 @@ TEST_F(QuicUnackedPacketMapTest, RetransmittedPacket) {
   // transmission being acked.
   unacked_packets_.AddPacket(CreateRetransmittablePacket(1));
   unacked_packets_.SetSent(1, now_, kDefaultLength, true);
-  unacked_packets_.OnRetransmittedPacket(1, 2);
+  unacked_packets_.OnRetransmittedPacket(1, 2, LOSS_RETRANSMISSION);
   unacked_packets_.SetSent(2, now_, kDefaultLength, true);
 
   QuicPacketSequenceNumber unacked[] = { 1, 2 };

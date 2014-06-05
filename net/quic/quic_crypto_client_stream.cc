@@ -237,7 +237,7 @@ void QuicCryptoClientStream::DoHandshakeLoop(
 
         verify_ok_ = false;
 
-        ProofVerifier::Status status = verifier->VerifyProof(
+        QuicAsyncStatus status = verifier->VerifyProof(
             server_id_.host(),
             cached->server_config(),
             cached->certs(),
@@ -248,14 +248,14 @@ void QuicCryptoClientStream::DoHandshakeLoop(
             proof_verify_callback);
 
         switch (status) {
-          case ProofVerifier::PENDING:
+          case QUIC_PENDING:
             proof_verify_callback_ = proof_verify_callback;
             DVLOG(1) << "Doing VerifyProof";
             return;
-          case ProofVerifier::FAILURE:
+          case QUIC_FAILURE:
             delete proof_verify_callback;
             break;
-          case ProofVerifier::SUCCESS:
+          case QUIC_SUCCESS:
             delete proof_verify_callback;
             verify_ok_ = true;
             break;

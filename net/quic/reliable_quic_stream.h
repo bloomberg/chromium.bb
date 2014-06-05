@@ -20,6 +20,7 @@
 #include "net/quic/quic_flow_controller.h"
 #include "net/quic/quic_protocol.h"
 #include "net/quic/quic_stream_sequencer.h"
+#include "net/quic/quic_types.h"
 
 namespace net {
 
@@ -99,7 +100,8 @@ class NET_EXPORT_PRIVATE ReliableQuicStream {
   QuicFlowController* flow_controller() { return &flow_controller_; }
 
   // Called when we see a frame which could increase the highest offset.
-  void MaybeIncreaseHighestReceivedOffset(uint64 new_offset);
+  // Returns true if the highest offset did increase.
+  bool MaybeIncreaseHighestReceivedOffset(uint64 new_offset);
   // Called when bytese are sent to the peer.
   void AddBytesSent(uint64 bytes);
   // Called by the stream sequencer as bytes are consumed from the buffer.

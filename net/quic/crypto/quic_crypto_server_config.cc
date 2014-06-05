@@ -1278,7 +1278,11 @@ string QuicCryptoServerConfig::NewSourceAddressToken(const Config& config,
                                                      QuicRandom* rand,
                                                      QuicWallTime now) const {
   SourceAddressToken source_address_token;
-  source_address_token.set_ip(IPAddressToPackedString(ip.address()));
+  IPAddressNumber ip_address = ip.address();
+  if (ip.GetSockAddrFamily() == AF_INET) {
+    ip_address = ConvertIPv4NumberToIPv6Number(ip_address);
+  }
+  source_address_token.set_ip(IPAddressToPackedString(ip_address));
   source_address_token.set_timestamp(now.ToUNIXSeconds());
 
   return config.source_address_token_boxer->Box(
@@ -1302,7 +1306,11 @@ bool QuicCryptoServerConfig::ValidateSourceAddressToken(
     return false;
   }
 
-  if (source_address_token.ip() != IPAddressToPackedString(ip.address())) {
+  IPAddressNumber ip_address = ip.address();
+  if (ip.GetSockAddrFamily() == AF_INET) {
+    ip_address = ConvertIPv4NumberToIPv6Number(ip_address);
+  }
+  if (source_address_token.ip() != IPAddressToPackedString(ip_address)) {
     // It's for a different IP address.
     return false;
   }

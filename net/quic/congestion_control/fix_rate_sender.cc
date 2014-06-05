@@ -26,7 +26,6 @@ FixRateSender::FixRateSender(const RttStats* rtt_stats)
       bitrate_(QuicBandwidth::FromBytesPerSecond(kInitialBitrate)),
       max_segment_size_(kDefaultMaxPacketSize),
       fix_rate_leaky_bucket_(bitrate_),
-      paced_sender_(bitrate_, max_segment_size_),
       latest_rtt_(QuicTime::Delta::Zero()) {
   DVLOG(1) << "FixRateSender";
 }
@@ -45,7 +44,6 @@ void FixRateSender::OnIncomingQuicCongestionFeedbackFrame(
   if (feedback.type == kFixRate) {
     bitrate_ = feedback.fix_rate.bitrate;
     fix_rate_leaky_bucket_.SetDrainingRate(feedback_receive_time, bitrate_);
-    paced_sender_.UpdateBandwidthEstimate(feedback_receive_time, bitrate_);
   }
   // Silently ignore invalid messages in release mode.
 }
@@ -63,7 +61,6 @@ bool FixRateSender::OnPacketSent(
     QuicByteCount bytes,
     HasRetransmittableData /*has_retransmittable_data*/) {
   fix_rate_leaky_bucket_.Add(sent_time, bytes);
-  paced_sender_.OnPacketSent(sent_time, bytes);
 
   return true;
 }
@@ -72,24 +69,12 @@ void FixRateSender::OnRetransmissionTimeout(bool packets_retransmitted) { }
 
 QuicTime::Delta FixRateSender::TimeUntilSend(
     QuicTime now,
-    QuicByteCount bytes_in_flight,
-    HasRetransmittableData /*has_retransmittable_data*/) {
-  if (CongestionWindow() > fix_rate_leaky_bucket_.BytesPending(now)) {
-    if (CongestionWindow() <= bytes_in_flight) {
-      // We need an ack before we send more.
-      return QuicTime::Delta::Infinite();
-    }
-    return paced_sender_.TimeUntilSend(now, QuicTime::Delta::Zero());
-  }
-  QuicTime::Delta time_remaining = fix_rate_leaky_bucket_.TimeRemaining(now);
-  if (time_remaining.IsZero()) {
-    // We need an ack before we send more.
-    return QuicTime::Delta::Infinite();
-  }
-  return paced_sender_.TimeUntilSend(now, time_remaining);
+    QuicByteCount /*bytes_in_flight*/,
+    HasRetransmittableData /*has_retransmittable_data*/) const {
+  return fix_rate_leaky_bucket_.TimeRemaining(now);
 }
 
-QuicByteCount FixRateSender::CongestionWindow() {
+QuicByteCount FixRateSender::CongestionWindow() const {
   QuicByteCount window_size_bytes = bitrate_.ToBytesPerPeriod(
       QuicTime::Delta::FromMicroseconds(kWindowSizeUs));
   // Make sure window size is not less than a packet.

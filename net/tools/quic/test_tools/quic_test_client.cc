@@ -38,17 +38,18 @@ namespace {
 class RecordingProofVerifier : public ProofVerifier {
  public:
   // ProofVerifier interface.
-  virtual Status VerifyProof(const string& hostname,
-                             const string& server_config,
-                             const vector<string>& certs,
-                             const string& signature,
-                             const ProofVerifyContext* context,
-                             string* error_details,
-                             scoped_ptr<ProofVerifyDetails>* details,
-                             ProofVerifierCallback* callback) OVERRIDE {
+  virtual QuicAsyncStatus VerifyProof(
+      const string& hostname,
+      const string& server_config,
+      const vector<string>& certs,
+      const string& signature,
+      const ProofVerifyContext* context,
+      string* error_details,
+      scoped_ptr<ProofVerifyDetails>* details,
+      ProofVerifierCallback* callback) OVERRIDE {
     common_name_.clear();
     if (certs.empty()) {
-      return FAILURE;
+      return QUIC_FAILURE;
     }
 
     // Convert certs to X509Certificate.
@@ -59,11 +60,11 @@ class RecordingProofVerifier : public ProofVerifier {
     scoped_refptr<net::X509Certificate> cert =
         net::X509Certificate::CreateFromDERCertChain(cert_pieces);
     if (!cert.get()) {
-      return FAILURE;
+      return QUIC_FAILURE;
     }
 
     common_name_ = cert->subject().GetDisplayName();
-    return SUCCESS;
+    return QUIC_SUCCESS;
   }
 
   const string& common_name() const { return common_name_; }

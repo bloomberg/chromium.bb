@@ -24,11 +24,15 @@ void LeakyBucket::Add(QuicTime now, QuicByteCount bytes) {
   bytes_ += bytes;
 }
 
-QuicTime::Delta LeakyBucket::TimeRemaining(QuicTime now) {
-  Update(now);
-  return QuicTime::Delta::FromMicroseconds(
+QuicTime::Delta LeakyBucket::TimeRemaining(QuicTime now) const {
+  QuicTime::Delta time_since_last_update = now.Subtract(time_last_updated_);
+  QuicTime::Delta send_delay = QuicTime::Delta::FromMicroseconds(
       (bytes_ * base::Time::kMicrosecondsPerSecond) /
       draining_rate_.ToBytesPerSecond());
+  if (send_delay < time_since_last_update) {
+    return QuicTime::Delta::Zero();
+  }
+  return send_delay.Subtract(time_since_last_update);
 }
 
 QuicByteCount LeakyBucket::BytesPending(QuicTime now) {

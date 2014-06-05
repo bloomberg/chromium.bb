@@ -319,7 +319,7 @@ NET_EXPORT_PRIVATE std::string QuicVersionVectorToString(
 NET_EXPORT_PRIVATE QuicTag MakeQuicTag(char a, char b, char c, char d);
 
 // Returns true if the tag vector contains the specified tag.
-bool ContainsQuicTag(QuicTagVector tag_vector, QuicTag tag);
+bool ContainsQuicTag(const QuicTagVector& tag_vector, QuicTag tag);
 
 // Size in bytes of the data or fec packet header.
 NET_EXPORT_PRIVATE size_t GetPacketHeaderSize(const QuicPacketHeader& header);
@@ -454,8 +454,12 @@ enum QuicErrorCode {
   QUIC_INVALID_STREAM_FRAME = 50,
   // We received invalid data on the headers stream.
   QUIC_INVALID_HEADERS_STREAM_DATA = 56,
-  // The peer violated the flow control protocol.
-  QUIC_FLOW_CONTROL_ERROR = 59,
+  // The peer received too much data, violating flow control.
+  QUIC_FLOW_CONTROL_RECEIVED_TOO_MUCH_DATA = 59,
+  // The peer sent too much data, violating flow control.
+  QUIC_FLOW_CONTROL_SENT_TOO_MUCH_DATA = 63,
+  // The peer received an invalid flow control window.
+  QUIC_FLOW_CONTROL_INVALID_WINDOW = 64,
   // The connection has been IP pooled into an existing connection.
   QUIC_CONNECTION_IP_POOLED = 62,
 
@@ -513,7 +517,7 @@ enum QuicErrorCode {
   QUIC_VERSION_NEGOTIATION_MISMATCH = 55,
 
   // No error. Used as bound while iterating.
-  QUIC_LAST_ERROR = 63,
+  QUIC_LAST_ERROR = 65,
 };
 
 struct NET_EXPORT_PRIVATE QuicPacketPublicHeader {
@@ -1030,6 +1034,7 @@ struct NET_EXPORT_PRIVATE TransmissionInfo {
   TransmissionInfo(RetransmittableFrames* retransmittable_frames,
                    QuicPacketSequenceNumber sequence_number,
                    QuicSequenceNumberLength sequence_number_length,
+                   TransmissionType transmission_type,
                    SequenceNumberSet* all_transmissions);
 
   RetransmittableFrames* retransmittable_frames;
@@ -1039,48 +1044,13 @@ struct NET_EXPORT_PRIVATE TransmissionInfo {
   // Zero when the packet is serialized, non-zero once it's sent.
   QuicByteCount bytes_sent;
   size_t nack_count;
+  // Reason why this packet was transmitted.
+  TransmissionType transmission_type;
   // Stores the sequence numbers of all transmissions of this packet.
   // Can never be null.
   SequenceNumberSet* all_transmissions;
   // In flight packets have not been abandoned or lost.
   bool in_flight;
-};
-
-// A struct for functions which consume data payloads and fins.
-struct NET_EXPORT_PRIVATE QuicConsumedData {
-  QuicConsumedData(size_t bytes_consumed, bool fin_consumed);
-
-  // By default, gtest prints the raw bytes of an object. The bool data
-  // member causes this object to have padding bytes, which causes the
-  // default gtest object printer to read uninitialize memory. So we need
-  // to teach gtest how to print this object.
-  NET_EXPORT_PRIVATE friend std::ostream& operator<<(
-      std::ostream& os, const QuicConsumedData& s);
-
-  // How many bytes were consumed.
-  size_t bytes_consumed;
-
-  // True if an incoming fin was consumed.
-  bool fin_consumed;
-};
-
-enum WriteStatus {
-  WRITE_STATUS_OK,
-  WRITE_STATUS_BLOCKED,
-  WRITE_STATUS_ERROR,
-};
-
-// A struct used to return the result of write calls including either the number
-// of bytes written or the error code, depending upon the status.
-struct NET_EXPORT_PRIVATE WriteResult {
-  WriteResult(WriteStatus status, int bytes_written_or_error_code);
-  WriteResult();
-
-  WriteStatus status;
-  union {
-    int bytes_written;  // only valid when status is OK
-    int error_code;  // only valid when status is ERROR
-  };
 };
 
 }  // namespace net

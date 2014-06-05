@@ -41,6 +41,19 @@ struct QuicConnectionStats;
 // previous transmission is acked, the data will not be retransmitted.
 class NET_EXPORT_PRIVATE QuicSentPacketManager {
  public:
+  // Interface which gets callbacks from the QuicSentPacketManager at
+  // interesting points.  Implementations must not mutate the state of
+  // the packet manager or connection as a result of these callbacks.
+  class NET_EXPORT_PRIVATE DebugDelegate {
+   public:
+    virtual ~DebugDelegate() {}
+
+    // Called when a spurious retransmission is detected.
+    virtual void OnSpuriousPacketRetransmition(
+        TransmissionType transmission_type,
+        QuicByteCount byte_size) {}
+  };
+
   // Struct to store the pending retransmission information.
   struct PendingRetransmission {
     PendingRetransmission(QuicPacketSequenceNumber sequence_number,
@@ -159,6 +172,10 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
 
   bool using_pacing() const { return using_pacing_; }
 
+  void set_debug_delegate(DebugDelegate* debug_delegate) {
+    debug_delegate_ = debug_delegate;
+  }
+
  private:
   friend class test::QuicConnectionPeer;
   friend class test::QuicSentPacketManagerPeer;
@@ -239,6 +256,11 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
   void MarkForRetransmission(QuicPacketSequenceNumber sequence_number,
                              TransmissionType transmission_type);
 
+  // Notify observers about spurious retransmits.
+  void RecordSpuriousRetransmissions(
+      const SequenceNumberSet& all_transmissions,
+      QuicPacketSequenceNumber acked_sequence_number);
+
   // Newly serialized retransmittable and fec packets are added to this map,
   // which contains owning pointers to any contained frames.  If a packet is
   // retransmitted, this map will contain entries for both the old and the new
@@ -262,6 +284,7 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
 
   const QuicClock* clock_;
   QuicConnectionStats* stats_;
+  DebugDelegate* debug_delegate_;
   RttStats rtt_stats_;
   scoped_ptr<SendAlgorithmInterface> send_algorithm_;
   scoped_ptr<LossDetectionInterface> loss_algorithm_;

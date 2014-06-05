@@ -14,7 +14,6 @@
 #include "net/quic/quic_connection_stats.h"
 #include "net/quic/quic_time.h"
 #include "net/quic/congestion_control/leaky_bucket.h"
-#include "net/quic/congestion_control/paced_sender.h"
 #include "net/quic/congestion_control/send_algorithm_interface.h"
 
 namespace net {
@@ -45,20 +44,19 @@ class NET_EXPORT_PRIVATE FixRateSender : public SendAlgorithmInterface {
   virtual QuicTime::Delta TimeUntilSend(
       QuicTime now,
       QuicByteCount bytes_in_flight,
-      HasRetransmittableData has_retransmittable_data) OVERRIDE;
+      HasRetransmittableData has_retransmittable_data) const OVERRIDE;
   virtual QuicBandwidth BandwidthEstimate() const OVERRIDE;
   virtual QuicTime::Delta RetransmissionDelay() const OVERRIDE;
   virtual QuicByteCount GetCongestionWindow() const OVERRIDE;
   // End implementation of SendAlgorithmInterface.
 
  private:
-  QuicByteCount CongestionWindow();
+  QuicByteCount CongestionWindow() const;
 
   const RttStats* rtt_stats_;
   QuicBandwidth bitrate_;
   QuicByteCount max_segment_size_;
   LeakyBucket fix_rate_leaky_bucket_;
-  PacedSender paced_sender_;
   QuicTime::Delta latest_rtt_;
 
   DISALLOW_COPY_AND_ASSIGN(FixRateSender);

@@ -557,6 +557,33 @@ TEST_F(ReliableQuicStreamTest, WriteAndBufferDataWithAckNotiferOnlyFinRemains) {
   proxy_delegate->OnAckNotification(10, 20, 30, 40, zero_);
 }
 
+
+// Verify that when we receive a packet which violates flow control (i.e. sends
+// too much data on the stream) that the stream sequencer never sees this frame,
+// as we check for violation and close the connection early.
+TEST_F(ReliableQuicStreamTest,
+       StreamSequencerNeverSeesPacketsViolatingFlowControl) {
+  ValueRestore<bool> old_stream_flag(
+      &FLAGS_enable_quic_stream_flow_control_2, true);
+  ValueRestore<bool> old_connection_flag(
+      &FLAGS_enable_quic_connection_flow_control, true);
+
+  Initialize(kShouldProcessData);
+
+  // Receive a stream frame that violates flow control: the byte offset is
+  // higher than the receive window offset.
+  QuicStreamFrame frame(stream_->id(), false,
+                        kInitialFlowControlWindowForTest + 1,
+                        MakeIOVector("."));
+  EXPECT_GT(frame.offset, QuicFlowControllerPeer::ReceiveWindowOffset(
+                              stream_->flow_controller()));
+
+  // Stream should not accept the frame, and the connection should be closed.
+  EXPECT_CALL(*connection_,
+              SendConnectionClose(QUIC_FLOW_CONTROL_RECEIVED_TOO_MUCH_DATA));
+  EXPECT_FALSE(stream_->OnStreamFrame(frame));
+}
+
 }  // namespace
 }  // namespace test
 }  // namespace net

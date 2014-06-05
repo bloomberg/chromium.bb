@@ -27,7 +27,8 @@ class NET_EXPORT_PRIVATE QuicUnackedPacketMap {
   // retransmittable data associated with it. |new_sequence_number| will
   // be both unacked and associated with retransmittable data.
   void OnRetransmittedPacket(QuicPacketSequenceNumber old_sequence_number,
-                             QuicPacketSequenceNumber new_sequence_number);
+                             QuicPacketSequenceNumber new_sequence_number,
+                             TransmissionType transmission_type);
 
   // Returns true if the packet |sequence_number| is unacked.
   bool IsUnacked(QuicPacketSequenceNumber sequence_number) const;

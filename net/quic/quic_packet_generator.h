@@ -54,6 +54,7 @@
 #define NET_QUIC_QUIC_PACKET_GENERATOR_H_
 
 #include "net/quic/quic_packet_creator.h"
+#include "net/quic/quic_types.h"
 
 namespace net {
 

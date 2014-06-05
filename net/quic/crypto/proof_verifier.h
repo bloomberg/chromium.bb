@@ -10,6 +10,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "net/base/net_export.h"
+#include "net/quic/quic_types.h"
 
 namespace net {
 
@@ -49,42 +50,33 @@ class NET_EXPORT_PRIVATE ProofVerifierCallback {
 // chain that backs the public key.
 class NET_EXPORT_PRIVATE ProofVerifier {
  public:
-  // Status enumerates the possible results of verifying a proof.
-  enum Status {
-    SUCCESS = 0,
-    FAILURE = 1,
-    // PENDING results from a verification which will occur asynchonously. When
-    // the verification is complete, |callback|'s |Run| method will be called.
-    PENDING = 2,
-  };
-
   virtual ~ProofVerifier() {}
 
   // VerifyProof checks that |signature| is a valid signature of
   // |server_config| by the public key in the leaf certificate of |certs|, and
   // that |certs| is a valid chain for |hostname|. On success, it returns
-  // SUCCESS. On failure, it returns ERROR and sets |*error_details| to a
-  // description of the problem. In either case it may set |*details|, which the
-  // caller takes ownership of.
+  // QUIC_SUCCESS. On failure, it returns QUIC_ERROR and sets |*error_details|
+  // to a description of the problem. In either case it may set |*details|,
+  // which the caller takes ownership of.
   //
   // |context| specifies an implementation specific struct (which may be NULL
   // for some implementations) that provides useful information for the
   // verifier, e.g. logging handles.
   //
-  // This function may also return PENDING, in which case the ProofVerifier
+  // This function may also return QUIC_PENDING, in which case the ProofVerifier
   // will call back, on the original thread, via |callback| when complete.
   // In this case, the ProofVerifier will take ownership of |callback|.
   //
   // The signature uses SHA-256 as the hash function and PSS padding in the
   // case of RSA.
-  virtual Status VerifyProof(const std::string& hostname,
-                             const std::string& server_config,
-                             const std::vector<std::string>& certs,
-                             const std::string& signature,
-                             const ProofVerifyContext* context,
-                             std::string* error_details,
-                             scoped_ptr<ProofVerifyDetails>* details,
-                             ProofVerifierCallback* callback) = 0;
+  virtual QuicAsyncStatus VerifyProof(const std::string& hostname,
+                                      const std::string& server_config,
+                                      const std::vector<std::string>& certs,
+                                      const std::string& signature,
+                                      const ProofVerifyContext* context,
+                                      std::string* error_details,
+                                      scoped_ptr<ProofVerifyDetails>* details,
+                                      ProofVerifierCallback* callback) = 0;
 };
 
 }  // namespace net

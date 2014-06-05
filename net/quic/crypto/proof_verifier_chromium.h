@@ -48,14 +48,15 @@ class NET_EXPORT_PRIVATE ProofVerifierChromium : public ProofVerifier {
   virtual ~ProofVerifierChromium();
 
   // ProofVerifier interface
-  virtual Status VerifyProof(const std::string& hostname,
-                             const std::string& server_config,
-                             const std::vector<std::string>& certs,
-                             const std::string& signature,
-                             const ProofVerifyContext* verify_context,
-                             std::string* error_details,
-                             scoped_ptr<ProofVerifyDetails>* verify_details,
-                             ProofVerifierCallback* callback) OVERRIDE;
+  virtual QuicAsyncStatus VerifyProof(
+      const std::string& hostname,
+      const std::string& server_config,
+      const std::vector<std::string>& certs,
+      const std::string& signature,
+      const ProofVerifyContext* verify_context,
+      std::string* error_details,
+      scoped_ptr<ProofVerifyDetails>* verify_details,
+      ProofVerifierCallback* callback) OVERRIDE;
 
  private:
   class Job;

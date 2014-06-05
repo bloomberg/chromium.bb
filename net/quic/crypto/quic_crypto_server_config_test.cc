@@ -14,6 +14,7 @@
 #include "net/quic/crypto/strike_register_client.h"
 #include "net/quic/quic_time.h"
 #include "net/quic/test_tools/mock_clock.h"
+#include "net/quic/test_tools/quic_test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -261,17 +262,20 @@ TEST(QuicCryptoServerConfigTest, SourceAddressTokens) {
   EXPECT_TRUE(peer.ConfigHasDefaultSourceAddressTokenBoxer(kPrimary));
   EXPECT_FALSE(peer.ConfigHasDefaultSourceAddressTokenBoxer(kOverride));
 
-  IPAddressNumber ip;
-  CHECK(ParseIPLiteralToNumber("192.0.2.33", &ip));
-  IPEndPoint ip4 = IPEndPoint(ip, 1);
-  CHECK(ParseIPLiteralToNumber("2001:db8:0::42", &ip));
-  IPEndPoint ip6 = IPEndPoint(ip, 2);
+  IPEndPoint ip4 = IPEndPoint(Loopback4(), 1);
+  IPEndPoint ip4d = IPEndPoint(ConvertIPv4NumberToIPv6Number(ip4.address()), 1);
+  IPEndPoint ip6 = IPEndPoint(Loopback6(), 2);
 
   // Primary config generates configs that validate successfully.
   const string token4 = peer.NewSourceAddressToken(kPrimary, ip4, rand, now);
+  const string token4d = peer.NewSourceAddressToken(kPrimary, ip4d, rand, now);
   const string token6 = peer.NewSourceAddressToken(kPrimary, ip6, rand, now);
   EXPECT_TRUE(peer.ValidateSourceAddressToken(kPrimary, token4, ip4, now));
+  EXPECT_TRUE(peer.ValidateSourceAddressToken(kPrimary, token4, ip4d, now));
   EXPECT_FALSE(peer.ValidateSourceAddressToken(kPrimary, token4, ip6, now));
+  EXPECT_TRUE(peer.ValidateSourceAddressToken(kPrimary, token4d, ip4, now));
+  EXPECT_TRUE(peer.ValidateSourceAddressToken(kPrimary, token4d, ip4d, now));
+  EXPECT_FALSE(peer.ValidateSourceAddressToken(kPrimary, token4d, ip6, now));
   EXPECT_TRUE(peer.ValidateSourceAddressToken(kPrimary, token6, ip6, now));
 
   // Override config generates configs that validate successfully.

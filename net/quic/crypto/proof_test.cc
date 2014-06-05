@@ -70,22 +70,22 @@ void RunVerification(ProofVerifier* verifier,
   TestProofVerifierCallback* callback =
       new TestProofVerifierCallback(&comp_callback, &ok, &error_details);
 
-  ProofVerifier::Status status = verifier->VerifyProof(
+  QuicAsyncStatus status = verifier->VerifyProof(
       hostname, server_config, certs, proof, verify_context.get(),
       &error_details, &details, callback);
 
   switch (status) {
-    case ProofVerifier::FAILURE:
+    case QUIC_FAILURE:
       delete callback;
       ASSERT_FALSE(expected_ok);
       ASSERT_NE("", error_details);
       return;
-    case ProofVerifier::SUCCESS:
+    case QUIC_SUCCESS:
       delete callback;
       ASSERT_TRUE(expected_ok);
       ASSERT_EQ("", error_details);
       return;
-    case ProofVerifier::PENDING:
+    case QUIC_PENDING:
       comp_callback.WaitForResult();
       ASSERT_EQ(expected_ok, ok);
       break;

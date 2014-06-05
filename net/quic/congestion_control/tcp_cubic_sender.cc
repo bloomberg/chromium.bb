@@ -170,7 +170,7 @@ bool TcpCubicSender::OnPacketSent(QuicTime /*sent_time*/,
 QuicTime::Delta TcpCubicSender::TimeUntilSend(
     QuicTime /* now */,
     QuicByteCount bytes_in_flight,
-    HasRetransmittableData has_retransmittable_data) {
+    HasRetransmittableData has_retransmittable_data) const {
   if (has_retransmittable_data == NO_RETRANSMITTABLE_DATA) {
     // For TCP we can always send an ACK immediately.
     return QuicTime::Delta::Zero();
@@ -184,7 +184,7 @@ QuicTime::Delta TcpCubicSender::TimeUntilSend(
   return QuicTime::Delta::Infinite();
 }
 
-QuicByteCount TcpCubicSender::SendWindow() {
+QuicByteCount TcpCubicSender::SendWindow() const {
   // What's the current send window in bytes.
   return min(receive_window_, GetCongestionWindow());
 }
@@ -294,7 +294,7 @@ void TcpCubicSender::PrrOnPacketAcked(QuicByteCount acked_bytes) {
 }
 
 QuicTime::Delta TcpCubicSender::PrrTimeUntilSend(
-    QuicByteCount bytes_in_flight) {
+    QuicByteCount bytes_in_flight) const {
   DCHECK(InRecovery());
   // Return QuicTime::Zero In order to ensure limited transmit always works.
   if (prr_out_ == 0) {

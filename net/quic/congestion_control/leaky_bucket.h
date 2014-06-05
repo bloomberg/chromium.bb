@@ -29,7 +29,7 @@ class NET_EXPORT_PRIVATE LeakyBucket {
   void Add(QuicTime now, QuicByteCount bytes);
 
   // Time until the buffer is empty.
-  QuicTime::Delta TimeRemaining(QuicTime now);
+  QuicTime::Delta TimeRemaining(QuicTime now) const;
 
   // Number of bytes in the buffer.
   QuicByteCount BytesPending(QuicTime now);

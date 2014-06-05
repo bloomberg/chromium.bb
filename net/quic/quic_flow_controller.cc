@@ -13,31 +13,32 @@ namespace net {
 
 #define ENDPOINT (is_server_ ? "Server: " : " Client: ")
 
-QuicFlowController::QuicFlowController(QuicVersion version,
+QuicFlowController::QuicFlowController(QuicConnection* connection,
                                        QuicStreamId id,
                                        bool is_server,
                                        uint64 send_window_offset,
                                        uint64 receive_window_offset,
                                        uint64 max_receive_window)
-      : id_(id),
-        is_enabled_(true),
-        is_server_(is_server),
-        bytes_consumed_(0),
-        highest_received_byte_offset_(0),
-        bytes_sent_(0),
-        send_window_offset_(send_window_offset),
-        receive_window_offset_(receive_window_offset),
-        max_receive_window_(max_receive_window),
-        last_blocked_send_window_offset_(0) {
+    : connection_(connection),
+      id_(id),
+      is_enabled_(true),
+      is_server_(is_server),
+      bytes_consumed_(0),
+      highest_received_byte_offset_(0),
+      bytes_sent_(0),
+      send_window_offset_(send_window_offset),
+      receive_window_offset_(receive_window_offset),
+      max_receive_window_(max_receive_window),
+      last_blocked_send_window_offset_(0) {
   DVLOG(1) << ENDPOINT << "Created flow controller for stream " << id_
            << ", setting initial receive window offset to: "
            << receive_window_offset_
            << ", max receive window to: "
            << max_receive_window_
            << ", setting send window offset to: " << send_window_offset_;
-  if (version < QUIC_VERSION_17) {
+  if (connection_->version() < QUIC_VERSION_17) {
     DVLOG(1) << ENDPOINT << "Disabling QuicFlowController for stream " << id_
-             << ", QUIC version " << version;
+             << ", QUIC version " << connection_->version();
     Disable();
   }
 }
@@ -49,6 +50,8 @@ void QuicFlowController::AddBytesConsumed(uint64 bytes_consumed) {
 
   bytes_consumed_ += bytes_consumed;
   DVLOG(1) << ENDPOINT << "Stream " << id_ << " consumed: " << bytes_consumed_;
+
+  MaybeSendWindowUpdate();
 }
 
 bool QuicFlowController::UpdateHighestReceivedOffset(uint64 new_offset) {
@@ -78,6 +81,9 @@ void QuicFlowController::AddBytesSent(uint64 bytes_sent) {
                 << bytes_sent << " bytes, when bytes_sent = " << bytes_sent_
                 << ", and send_window_offset_ = " << send_window_offset_;
     bytes_sent_ = send_window_offset_;
+
+    // This is an error on our side, close the connection as soon as possible.
+    connection_->SendConnectionClose(QUIC_FLOW_CONTROL_SENT_TOO_MUCH_DATA);
     return;
   }
 
@@ -101,7 +107,7 @@ bool QuicFlowController::FlowControlViolation() {
   return false;
 }
 
-void QuicFlowController::MaybeSendWindowUpdate(QuicConnection* connection) {
+void QuicFlowController::MaybeSendWindowUpdate() {
   if (!IsEnabled()) {
     return;
   }
@@ -109,6 +115,7 @@ void QuicFlowController::MaybeSendWindowUpdate(QuicConnection* connection) {
   // Send WindowUpdate to increase receive window if
   // (receive window offset - consumed bytes) < (max window / 2).
   // This is behaviour copied from SPDY.
+  DCHECK_LT(bytes_consumed_, receive_window_offset_);
   size_t consumed_window = receive_window_offset_ - bytes_consumed_;
   size_t threshold = (max_receive_window_ / 2);
 
@@ -124,11 +131,11 @@ void QuicFlowController::MaybeSendWindowUpdate(QuicConnection* connection) {
              << ". New receive window offset is: " << receive_window_offset_;
 
     // Inform the peer of our new receive window.
-    connection->SendWindowUpdate(id_, receive_window_offset_);
+    connection_->SendWindowUpdate(id_, receive_window_offset_);
   }
 }
 
-void QuicFlowController::MaybeSendBlocked(QuicConnection* connection) {
+void QuicFlowController::MaybeSendBlocked() {
   if (!IsEnabled()) {
     return;
   }
@@ -141,7 +148,7 @@ void QuicFlowController::MaybeSendBlocked(QuicConnection* connection) {
              << ", send limit: " << send_window_offset_;
     // The entire send_window has been consumed, we are now flow control
     // blocked.
-    connection->SendBlocked(id_);
+    connection_->SendBlocked(id_);
 
     // Keep track of when we last sent a BLOCKED frame so that we only send one
     // at a given send offset.

@@ -168,6 +168,8 @@ class TestSession : public QuicSession {
     return WritevData(id, IOVector(), 0, true, NULL);
   }
 
+  using QuicSession::PostProcessAfterData;
+
  private:
   StrictMock<TestCryptoStream> crypto_stream_;
 
@@ -661,7 +663,8 @@ TEST_P(QuicSessionTest, InvalidFlowControlWindowInHandshake) {
       session_.config()->ProcessPeerHello(msg, CLIENT, &error_details);
   EXPECT_EQ(QUIC_NO_ERROR, error);
 
-  EXPECT_CALL(*connection_, SendConnectionClose(QUIC_FLOW_CONTROL_ERROR));
+  EXPECT_CALL(*connection_,
+              SendConnectionClose(QUIC_FLOW_CONTROL_INVALID_WINDOW));
   session_.OnConfigNegotiated();
 }
 
@@ -674,6 +677,101 @@ TEST_P(QuicSessionTest, InvalidFlowControlWindow) {
 
   EXPECT_EQ(kDefaultFlowControlSendWindow,
             session.max_flow_control_receive_window_bytes());
+}
+
+TEST_P(QuicSessionTest, ConnectionFlowControlAccountingRstOutOfOrder) {
+  FLAGS_enable_quic_stream_flow_control_2 = true;
+  FLAGS_enable_quic_connection_flow_control = true;
+  if (version() < QUIC_VERSION_19) {
+    return;
+  }
+
+  // Test that when we receive an out of order stream RST we correctly adjust
+  // our connection level flow control receive window.
+  // On close, the stream should mark as consumed all bytes between the highest
+  // byte consumed so far and the final byte offset from the RST frame.
+  TestStream* stream = session_.CreateOutgoingDataStream();
+
+  const QuicStreamOffset kByteOffset = 1 + kInitialFlowControlWindowForTest / 2;
+  // Expect no stream WINDOW_UPDATE frames, as stream read side closed.
+  EXPECT_CALL(*connection_, SendWindowUpdate(stream->id(), _)).Times(0);
+  // We do expect a connection level WINDOW_UPDATE when the stream is reset.
+  EXPECT_CALL(*connection_,
+              SendWindowUpdate(
+                  0, kInitialFlowControlWindowForTest + kByteOffset)).Times(1);
+
+  QuicRstStreamFrame rst_frame(stream->id(), QUIC_STREAM_CANCELLED,
+                               kByteOffset);
+  session_.OnRstStream(rst_frame);
+  session_.PostProcessAfterData();
+  EXPECT_EQ(kByteOffset, session_.flow_controller()->bytes_consumed());
+}
+
+TEST_P(QuicSessionTest, ConnectionFlowControlAccountingFinAndLocalReset) {
+  FLAGS_enable_quic_stream_flow_control_2 = true;
+  FLAGS_enable_quic_connection_flow_control = true;
+  if (version() < QUIC_VERSION_19) {
+    return;
+  }
+
+  // Test the situation where we receive a FIN on a stream, and before we fully
+  // consume all the data from the sequencer buffer we locally RST the stream.
+  // The bytes between highest consumed byte, and the final byte offset that we
+  // determined when the FIN arrived, should be marked as consumed at the
+  // connection level flow controller when the stream is reset.
+  TestStream* stream = session_.CreateOutgoingDataStream();
+
+  const QuicStreamOffset kByteOffset = 1 + kInitialFlowControlWindowForTest / 2;
+  QuicStreamFrame frame(stream->id(), true, kByteOffset, IOVector());
+  vector<QuicStreamFrame> frames;
+  frames.push_back(frame);
+  session_.OnStreamFrames(frames);
+  session_.PostProcessAfterData();
+
+  EXPECT_EQ(0u, stream->flow_controller()->bytes_consumed());
+  EXPECT_EQ(kByteOffset,
+            stream->flow_controller()->highest_received_byte_offset());
+
+  // Expect no stream WINDOW_UPDATE frames, as stream read side closed.
+  EXPECT_CALL(*connection_, SendWindowUpdate(stream->id(), _)).Times(0);
+  // We do expect a connection level WINDOW_UPDATE when the stream is reset.
+  EXPECT_CALL(*connection_,
+              SendWindowUpdate(
+                  0, kInitialFlowControlWindowForTest + kByteOffset)).Times(1);
+
+  // Reset stream locally.
+  stream->Reset(QUIC_STREAM_CANCELLED);
+
+  EXPECT_EQ(kByteOffset, session_.flow_controller()->bytes_consumed());
+}
+
+TEST_P(QuicSessionTest, VersionNegotiationDisablesFlowControl) {
+  ValueRestore<bool> old_stream_flag(
+      &FLAGS_enable_quic_stream_flow_control_2, true);
+  ValueRestore<bool> old_connection_flag(
+      &FLAGS_enable_quic_connection_flow_control, true);
+  if (version() < QUIC_VERSION_19) {
+    return;
+  }
+
+  // Test that after successful version negotiation, flow control is disabled
+  // appropriately at both the connection and stream level.
+
+  // Initially both stream and connection flow control are enabled.
+  TestStream* stream = session_.CreateOutgoingDataStream();
+  EXPECT_TRUE(stream->flow_controller()->IsEnabled());
+  EXPECT_TRUE(session_.flow_controller()->IsEnabled());
+
+  // Version 17 implies that stream flow control is enabled, but connection
+  // level is disabled.
+  session_.OnSuccessfulVersionNegotiation(QUIC_VERSION_17);
+  EXPECT_FALSE(session_.flow_controller()->IsEnabled());
+  EXPECT_TRUE(stream->flow_controller()->IsEnabled());
+
+  // Version 16 means all flow control is disabled.
+  session_.OnSuccessfulVersionNegotiation(QUIC_VERSION_16);
+  EXPECT_FALSE(session_.flow_controller()->IsEnabled());
+  EXPECT_FALSE(stream->flow_controller()->IsEnabled());
 }
 
 }  // namespace

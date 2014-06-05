@@ -68,59 +68,33 @@ TEST_F(FixRateTest, SenderAPI) {
 
   sender_->OnPacketSent(clock_.Now(), kUnused, 1, kDefaultMaxPacketSize,
                         HAS_RETRANSMITTABLE_DATA);
+  EXPECT_FALSE(sender_->TimeUntilSend(clock_.Now(),
+                                      kDefaultMaxPacketSize,
+                                      HAS_RETRANSMITTABLE_DATA).IsZero());
+  clock_.AdvanceTime(sender_->TimeUntilSend(clock_.Now(),
+                                            kDefaultMaxPacketSize,
+                                            HAS_RETRANSMITTABLE_DATA));
   EXPECT_TRUE(sender_->TimeUntilSend(clock_.Now(),
                                      kDefaultMaxPacketSize,
                                      HAS_RETRANSMITTABLE_DATA).IsZero());
   sender_->OnPacketSent(clock_.Now(), kUnused, 2, kDefaultMaxPacketSize,
                         HAS_RETRANSMITTABLE_DATA);
-  sender_->OnPacketSent(clock_.Now(), kUnused, 3, 600,
-                        HAS_RETRANSMITTABLE_DATA);
-  EXPECT_EQ(QuicTime::Delta::FromMilliseconds(10),
-            sender_->TimeUntilSend(clock_.Now(),
-                                   kDefaultMaxPacketSize * 2 + 600,
-                                   HAS_RETRANSMITTABLE_DATA));
-  clock_.AdvanceTime(QuicTime::Delta::FromMilliseconds(2));
-  EXPECT_EQ(QuicTime::Delta::Infinite(),
-            sender_->TimeUntilSend(clock_.Now(),
-                                   kDefaultMaxPacketSize * 2 + 600,
-                                   HAS_RETRANSMITTABLE_DATA));
-  clock_.AdvanceTime(QuicTime::Delta::FromMilliseconds(8));
+  EXPECT_FALSE(sender_->TimeUntilSend(clock_.Now(),
+                                      kDefaultMaxPacketSize,
+                                      HAS_RETRANSMITTABLE_DATA).IsZero());
+  // Advance the time twice as much and expect only one packet to be sent.
+  clock_.AdvanceTime(sender_->TimeUntilSend(
+      clock_.Now(),
+      kDefaultMaxPacketSize,
+      HAS_RETRANSMITTABLE_DATA).Multiply(2));
   EXPECT_TRUE(sender_->TimeUntilSend(clock_.Now(),
-                                     0,
+                                     kDefaultMaxPacketSize,
                                      HAS_RETRANSMITTABLE_DATA).IsZero());
-}
-
-TEST_F(FixRateTest, FixRatePacing) {
-  const QuicByteCount packet_size = 1200;
-  const QuicBandwidth bitrate = QuicBandwidth::FromKBytesPerSecond(240);
-  const int64 num_packets = 200;
-  QuicCongestionFeedbackFrame feedback;
-  receiver_->SetBitrate(QuicBandwidth::FromKBytesPerSecond(240));
-  ASSERT_TRUE(receiver_->GenerateCongestionFeedback(&feedback));
-  sender_->OnIncomingQuicCongestionFeedbackFrame(feedback, clock_.Now());
-  QuicTime acc_advance_time(QuicTime::Zero());
-  QuicPacketSequenceNumber sequence_number = 0;
-  for (int i = 0; i < num_packets; i += 2) {
-    EXPECT_TRUE(sender_->TimeUntilSend(clock_.Now(),
-                                       0,
-                                       HAS_RETRANSMITTABLE_DATA).IsZero());
-    sender_->OnPacketSent(clock_.Now(), kUnused, sequence_number++, packet_size,
-                          HAS_RETRANSMITTABLE_DATA);
-    EXPECT_TRUE(sender_->TimeUntilSend(clock_.Now(),
-                                       kDefaultMaxPacketSize,
-                                       HAS_RETRANSMITTABLE_DATA).IsZero());
-    sender_->OnPacketSent(clock_.Now(), kUnused, sequence_number++, packet_size,
-                          HAS_RETRANSMITTABLE_DATA);
-    QuicTime::Delta advance_time =
-        sender_->TimeUntilSend(clock_.Now(),
-                               2 * kDefaultMaxPacketSize,
-                               HAS_RETRANSMITTABLE_DATA);
-    clock_.AdvanceTime(advance_time);
-    acc_advance_time = acc_advance_time.Add(advance_time);
-  }
-  EXPECT_EQ(num_packets * packet_size * 1000000 / bitrate.ToBytesPerSecond(),
-            static_cast<uint64>(acc_advance_time.Subtract(start_)
-                                .ToMicroseconds()));
+  sender_->OnPacketSent(clock_.Now(), kUnused, 3, kDefaultMaxPacketSize,
+                        HAS_RETRANSMITTABLE_DATA);
+  EXPECT_FALSE(sender_->TimeUntilSend(clock_.Now(),
+                                      kDefaultMaxPacketSize,
+                                      HAS_RETRANSMITTABLE_DATA).IsZero());
 }
 
 }  // namespace test

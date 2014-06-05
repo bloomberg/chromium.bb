@@ -144,7 +144,7 @@ uint32 MakeQuicTag(char a, char b, char c, char d) {
          static_cast<uint32>(d) << 24;
 }
 
-bool ContainsQuicTag(QuicTagVector tag_vector, QuicTag tag) {
+bool ContainsQuicTag(const QuicTagVector& tag_vector, QuicTag tag) {
   return std::find(tag_vector.begin(), tag_vector.end(),  tag)
       != tag_vector.end();
 }
@@ -751,6 +751,7 @@ TransmissionInfo::TransmissionInfo()
       sent_time(QuicTime::Zero()),
       bytes_sent(0),
       nack_count(0),
+      transmission_type(NOT_RETRANSMISSION),
       all_transmissions(NULL),
       in_flight(false) { }
 
@@ -763,6 +764,7 @@ TransmissionInfo::TransmissionInfo(
       sent_time(QuicTime::Zero()),
       bytes_sent(0),
       nack_count(0),
+      transmission_type(NOT_RETRANSMISSION),
       all_transmissions(new SequenceNumberSet),
       in_flight(false) {
   all_transmissions->insert(sequence_number);
@@ -772,38 +774,17 @@ TransmissionInfo::TransmissionInfo(
     RetransmittableFrames* retransmittable_frames,
     QuicPacketSequenceNumber sequence_number,
     QuicSequenceNumberLength sequence_number_length,
+    TransmissionType transmission_type,
     SequenceNumberSet* all_transmissions)
     : retransmittable_frames(retransmittable_frames),
       sequence_number_length(sequence_number_length),
       sent_time(QuicTime::Zero()),
       bytes_sent(0),
       nack_count(0),
+      transmission_type(transmission_type),
       all_transmissions(all_transmissions),
       in_flight(false) {
   all_transmissions->insert(sequence_number);
-}
-
-QuicConsumedData::QuicConsumedData(size_t bytes_consumed,
-                                   bool fin_consumed)
-      : bytes_consumed(bytes_consumed),
-        fin_consumed(fin_consumed) {
-}
-
-ostream& operator<<(ostream& os, const QuicConsumedData& s) {
-  os << "bytes_consumed: " << s.bytes_consumed
-     << " fin_consumed: " << s.fin_consumed;
-  return os;
-}
-
-WriteResult::WriteResult()
-    : status(WRITE_STATUS_ERROR),
-      bytes_written(0) {
-}
-
-WriteResult::WriteResult(WriteStatus status,
-                         int bytes_written_or_error_code)
-    : status(status),
-      bytes_written(bytes_written_or_error_code) {
 }
 
 }  // namespace net

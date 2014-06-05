@@ -118,8 +118,8 @@ QuicSession::QuicSession(QuicConnection* connection,
     max_flow_control_receive_window_bytes_ = kDefaultFlowControlSendWindow;
   }
   flow_controller_.reset(new QuicFlowController(
-      connection_->supported_versions().front(), 0, is_server(),
-      kDefaultFlowControlSendWindow, max_flow_control_receive_window_bytes_,
+      connection_.get(), 0, is_server(), kDefaultFlowControlSendWindow,
+      max_flow_control_receive_window_bytes_,
       max_flow_control_receive_window_bytes_));
 
   connection_->set_visitor(visitor_shim_.get());
@@ -422,7 +422,7 @@ void QuicSession::OnConfigNegotiated() {
           << "Peer sent us an invalid flow control send window: "
           << new_flow_control_send_window
           << ", below default: " << kDefaultFlowControlSendWindow;
-      connection_->SendConnectionClose(QUIC_FLOW_CONTROL_ERROR);
+      connection_->SendConnectionClose(QUIC_FLOW_CONTROL_INVALID_WINDOW);
       return;
     }
     DataStreamMap::iterator it = stream_map_.begin();
@@ -642,6 +642,15 @@ void QuicSession::PostProcessAfterData() {
 void QuicSession::OnSuccessfulVersionNegotiation(const QuicVersion& version) {
   if (version < QUIC_VERSION_19) {
     flow_controller_->Disable();
+  }
+
+  // Inform all streams about the negotiated version. They may have been created
+  // with a different version.
+  for (DataStreamMap::iterator it = stream_map_.begin();
+       it != stream_map_.end(); ++it) {
+    if (version < QUIC_VERSION_17) {
+      it->second->flow_controller()->Disable();
+    }
   }
 }
 

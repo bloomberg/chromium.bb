@@ -71,7 +71,7 @@ class NET_EXPORT_PRIVATE SendAlgorithmInterface {
   virtual QuicTime::Delta TimeUntilSend(
       QuicTime now,
       QuicByteCount bytes_in_flight,
-      HasRetransmittableData has_retransmittable_data) = 0;
+      HasRetransmittableData has_retransmittable_data) const = 0;
 
   // What's the current estimated bandwidth in bytes per second.
   // Returns 0 when it does not have an estimate.

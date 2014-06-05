@@ -410,6 +410,12 @@ IPAddressNumber Loopback4() {
   return addr;
 }
 
+IPAddressNumber Loopback6() {
+  IPAddressNumber addr;
+  CHECK(ParseIPLiteralToNumber("::1", &addr));
+  return addr;
+}
+
 void GenerateBody(string* body, int length) {
   body->clear();
   body->reserve(length);
