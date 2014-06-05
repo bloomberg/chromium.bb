@@ -14,7 +14,7 @@ import os
 import re
 import time
 
-from chromite.cbuildbot import cbuildbot_archive
+from chromite.cbuildbot import archive_lib
 from chromite.cbuildbot import cbuildbot_config
 from chromite.cbuildbot import results_lib
 from chromite.cbuildbot import constants
@@ -697,7 +697,7 @@ def FindLatestFullVersion(builder, version):
   """
   gs_ctx = gs.GSContext()
   config = cbuildbot_config.config[builder]
-  base_url = cbuildbot_archive.GetBaseUploadURI(config)
+  base_url = archive_lib.GetBaseUploadURI(config)
   latest_file_url = os.path.join(base_url, 'LATEST-%s' % version)
   try:
     return gs_ctx.Cat(latest_file_url).output.strip()
@@ -720,7 +720,7 @@ def GetBuildMetadata(builder, full_version):
   """
   gs_ctx = gs.GSContext()
   config = cbuildbot_config.config[builder]
-  base_url = cbuildbot_archive.GetBaseUploadURI(config)
+  base_url = archive_lib.GetBaseUploadURI(config)
   try:
     archive_url = os.path.join(base_url, full_version)
     metadata_url = os.path.join(archive_url, constants.METADATA_JSON)

@@ -9,7 +9,7 @@ import os
 import sys
 
 from chromite.cbuildbot import commands
-from chromite.cbuildbot import cbuildbot_metadata
+from chromite.cbuildbot import metadata_lib
 from chromite.cbuildbot import results_lib
 from chromite.cbuildbot import constants
 from chromite.cbuildbot.stages import completion_stages
@@ -292,7 +292,7 @@ class ReportStage(generic_stages.BuilderStage,
                    completion_stages.MasterSlaveSyncCompletionStage)
     )
 
-    return cbuildbot_metadata.CBuildbotMetadata.GetReportMetadataDict(
+    return metadata_lib.CBuildbotMetadata.GetReportMetadataDict(
         builder_run, get_changes_from_pool,
         get_statuses_from_slaves, config, stage, final_status, sync_instance,
         completion_instance)

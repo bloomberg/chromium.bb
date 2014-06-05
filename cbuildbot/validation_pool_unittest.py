@@ -24,7 +24,7 @@ sys.path.insert(0, constants.SOURCE_ROOT)
 
 from chromite.cbuildbot import failures_lib
 from chromite.cbuildbot import results_lib
-from chromite.cbuildbot import cbuildbot_metadata
+from chromite.cbuildbot import metadata_lib
 from chromite.cbuildbot import repository
 from chromite.cbuildbot import validation_pool
 from chromite.lib import cros_build_lib
@@ -662,7 +662,7 @@ class TestSubmitChange(MoxBase):
     change = self.MockPatch(change_id=12345, patch_number=1)
     pool = self.mox.CreateMock(validation_pool.ValidationPool)
     pool.dryrun = False
-    pool._metadata = cbuildbot_metadata.CBuildbotMetadata()
+    pool._metadata = metadata_lib.CBuildbotMetadata()
     pool._helper_pool = self.mox.CreateMock(validation_pool.HelperPool)
     helper = self.mox.CreateMock(validation_pool.gerrit.GerritHelper)
 

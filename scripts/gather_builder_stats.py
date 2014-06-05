@@ -12,7 +12,7 @@ import re
 import sys
 
 from chromite.cbuildbot import cbuildbot_config
-from chromite.cbuildbot import cbuildbot_metadata
+from chromite.cbuildbot import metadata_lib
 from chromite.cbuildbot import constants
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
@@ -35,12 +35,12 @@ PFQ = constants.PFQ_TYPE
 MAX_PARALLEL = 40
 
 # The graphite graphs use seconds since epoch start as time value.
-EPOCH_START = cbuildbot_metadata.EPOCH_START
+EPOCH_START = metadata_lib.EPOCH_START
 
 # Formats we like for output.
-NICE_DATE_FORMAT = cbuildbot_metadata.NICE_DATE_FORMAT
-NICE_TIME_FORMAT = cbuildbot_metadata.NICE_TIME_FORMAT
-NICE_DATETIME_FORMAT = cbuildbot_metadata.NICE_DATETIME_FORMAT
+NICE_DATE_FORMAT = metadata_lib.NICE_DATE_FORMAT
+NICE_TIME_FORMAT = metadata_lib.NICE_TIME_FORMAT
+NICE_DATETIME_FORMAT = metadata_lib.NICE_DATETIME_FORMAT
 
 # Spreadsheet keys
 # CQ master and slaves both use the same spreadsheet
@@ -334,7 +334,7 @@ class CQMasterTable(SpreadsheetMasterTable):
     row = super(CQMasterTable, self)._GetBuildRow(build_data)
     row[self.COL_CL_COUNT] = str(build_data.count_changes)
 
-    cl_actions = [cbuildbot_metadata.CLActionTuple(*x)
+    cl_actions = [metadata_lib.CLActionTuple(*x)
                   for x in build_data['cl_actions']]
     submitted_cl_count = len([x for x in cl_actions if
                               x.action == constants.CL_ACTION_SUBMITTED])
@@ -605,7 +605,7 @@ class StatsManager(object):
         logging.warn('No cl_actions for metadata at %s.', b.metadata_url)
         continue
       for a in b.metadata_dict['cl_actions']:
-        actions.append(cbuildbot_metadata.CLActionWithBuildTuple(*a,
+        actions.append(metadata_lib.CLActionWithBuildTuple(*a,
             bot_type=self.BOT_TYPE, build=b))
 
     return actions
@@ -621,9 +621,9 @@ class StatsManager(object):
     per_cl_actions = {}
     for a in actions:
       change_dict = a.change.copy()
-      change_with_patch = cbuildbot_metadata.GerritPatchTuple(**change_dict)
+      change_with_patch = metadata_lib.GerritPatchTuple(**change_dict)
       change_dict.pop('patch_number')
-      change_no_patch = cbuildbot_metadata.GerritChangeTuple(**change_dict)
+      change_no_patch = metadata_lib.GerritChangeTuple(**change_dict)
 
       per_patch_actions.setdefault(change_with_patch, []).append(a)
       per_cl_actions.setdefault(change_no_patch, []).append(a)
@@ -644,16 +644,16 @@ class StatsManager(object):
       gs_ctx: A gs.GSContext instance.
 
     Returns:
-      A list of of cbuildbot_metadata.BuildData objects that were fetched.
+      A list of of metadata_lib.BuildData objects that were fetched.
     """
     cros_build_lib.Info('Gathering data for %s since %s', config_target,
                         start_date)
-    urls = cbuildbot_metadata.GetMetadataURLsSince(config_target,
+    urls = metadata_lib.GetMetadataURLsSince(config_target,
                                                    start_date)
     cros_build_lib.Info('Found %d metadata.json URLs to process.\n'
                         '  From: %s\n  To  : %s', len(urls), urls[0], urls[-1])
 
-    builds = cbuildbot_metadata.BuildData.ReadMetadataURLs(
+    builds = metadata_lib.BuildData.ReadMetadataURLs(
         urls, gs_ctx, get_sheets_version=cls.GET_SHEETS_VERSION)
     cros_build_lib.Info('Read %d total metadata files.', len(builds))
     return builds
@@ -760,10 +760,10 @@ class StatsManager(object):
     True, as these do not want data from a given build to be re-uploaded.
     """
     if self.UPLOAD_ROW_PER_BUILD:
-      cbuildbot_metadata.BuildData.MarkBuildsGathered(self.builds,
-                                                      self.sheets_version,
-                                                      self.carbon_version,
-                                                      gs_ctx=self.gs_ctx)
+      metadata_lib.BuildData.MarkBuildsGathered(self.builds,
+                                                self.sheets_version,
+                                                self.carbon_version,
+                                                gs_ctx=self.gs_ctx)
 
 
 # TODO(mtennant): This class is an untested placeholder.

@@ -32,8 +32,8 @@ except ImportError:
   import queue as Queue
 import types
 
-from chromite.cbuildbot import cbuildbot_archive
-from chromite.cbuildbot import cbuildbot_metadata
+from chromite.cbuildbot import archive_lib
+from chromite.cbuildbot import metadata_lib
 from chromite.cbuildbot import constants
 from chromite.cbuildbot import manifest_version
 from chromite.cbuildbot import portage_utilities
@@ -600,7 +600,7 @@ class _BuilderRunBase(object):
     # Certain run attributes have sensible defaults which can be set here.
     # This allows all code to safely assume that the run attribute exists.
     attrs.chrome_version = None
-    attrs.metadata = cbuildbot_metadata.CBuildbotMetadata(
+    attrs.metadata = metadata_lib.CBuildbotMetadata(
         multiprocess_manager=multiprocess_manager)
 
   @property
@@ -626,8 +626,8 @@ class _BuilderRunBase(object):
     # which means it cannot be used until the version has been settled on.
     # However, because it does have some use before then we provide
     # the GetVersion function itself to be called when needed later.
-    return cbuildbot_archive.Archive(self.bot_id, self.GetVersion,
-                                     self.options, self.config)
+    return archive_lib.Archive(self.bot_id, self.GetVersion, self.options,
+                               self.config)
 
   def GetBoardRunAttrs(self, board):
     """Create a BoardRunAttributes object for this run and given |board|."""

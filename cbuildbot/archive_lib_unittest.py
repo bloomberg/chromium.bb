@@ -4,14 +4,14 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Test the cbuildbot_archive module."""
+"""Test the archive_lib module."""
 
 import logging
 import os
 import sys
 
 sys.path.insert(0, os.path.abspath('%s/../..' % os.path.dirname(__file__)))
-from chromite.cbuildbot import cbuildbot_archive
+from chromite.cbuildbot import archive_lib
 from chromite.cbuildbot import cbuildbot_config
 from chromite.cbuildbot import cbuildbot_run
 from chromite.lib import cros_test_lib
@@ -104,7 +104,7 @@ class GetBaseUploadURITest(cros_test_lib.TestCase):
 
   def _GetBaseUploadURI(self, *args, **kwargs):
     """Test GetBaseUploadURI with archive_base and no bot_id."""
-    return cbuildbot_archive.GetBaseUploadURI(self.cfg, *args, **kwargs)
+    return archive_lib.GetBaseUploadURI(self.cfg, *args, **kwargs)
 
   def testArchiveBaseRemoteTrybotFalse(self):
     expected_result = '%s/%s' % (self.ARCHIVE_BASE, DEFAULT_BOT_NAME)
@@ -133,14 +133,14 @@ class GetBaseUploadURITest(cros_test_lib.TestCase):
   def testRemoteTrybotTrue(self):
     """Test GetBaseUploadURI with no archive base but remote_trybot is True."""
     expected_result = ('%s/trybot-%s' %
-                       (cbuildbot_archive.constants.DEFAULT_ARCHIVE_BUCKET,
+                       (archive_lib.constants.DEFAULT_ARCHIVE_BUCKET,
                         DEFAULT_BOT_NAME))
     result = self._GetBaseUploadURI(remote_trybot=True)
     self.assertEqual(expected_result, result)
 
   def testBotIdRemoteTrybotTrue(self):
     expected_result = ('%s/%s' %
-                       (cbuildbot_archive.constants.DEFAULT_ARCHIVE_BUCKET,
+                       (archive_lib.constants.DEFAULT_ARCHIVE_BUCKET,
                         self.BOT_ID))
     result = self._GetBaseUploadURI(bot_id=self.BOT_ID, remote_trybot=True)
     self.assertEqual(expected_result, result)
@@ -151,14 +151,14 @@ class GetBaseUploadURITest(cros_test_lib.TestCase):
 
     # Test without bot_id.
     expected_result = ('%s/%s' %
-                       (cbuildbot_archive.constants.DEFAULT_ARCHIVE_BUCKET,
+                       (archive_lib.constants.DEFAULT_ARCHIVE_BUCKET,
                         DEFAULT_BOT_NAME))
     result = self._GetBaseUploadURI(remote_trybot=False)
     self.assertEqual(expected_result, result)
 
     # Test with bot_id.
     expected_result = ('%s/%s' %
-                       (cbuildbot_archive.constants.DEFAULT_ARCHIVE_BUCKET,
+                       (archive_lib.constants.DEFAULT_ARCHIVE_BUCKET,
                         self.BOT_ID))
     result = self._GetBaseUploadURI(bot_id=self.BOT_ID, remote_trybot=False)
     self.assertEqual(expected_result, result)
@@ -202,7 +202,7 @@ class ArchiveTest(cros_test_lib.TestCase):
     value = self._GetAttributeValue('archive_path', options=options)
     expected_value = ('%s/%s/%s/%s' %
                       (DEFAULT_BUILDROOT,
-                       cbuildbot_archive.Archive._TRYBOT_ARCHIVE,
+                       archive_lib.Archive._TRYBOT_ARCHIVE,
                        DEFAULT_BOT_NAME,
                        self._VERSION))
     self.assertEqual(expected_value, value)
@@ -211,7 +211,7 @@ class ArchiveTest(cros_test_lib.TestCase):
     value = self._GetAttributeValue('archive_path')
     expected_value = ('%s/%s/%s/%s' %
                       (DEFAULT_BUILDROOT,
-                       cbuildbot_archive.Archive._BUILDBOT_ARCHIVE,
+                       archive_lib.Archive._BUILDBOT_ARCHIVE,
                        DEFAULT_BOT_NAME,
                        self._VERSION))
     self.assertEqual(expected_value, value)
@@ -226,7 +226,7 @@ class ArchiveTest(cros_test_lib.TestCase):
   def testDownloadURLBuildbot(self):
     value = self._GetAttributeValue('download_url')
     expected_value = ('%s%s/%s/%s' %
-                      (cbuildbot_archive.gs.PRIVATE_BASE_HTTPS_URL,
+                      (archive_lib.gs.PRIVATE_BASE_HTTPS_URL,
                        DEFAULT_ARCHIVE_PREFIX,
                        DEFAULT_BOT_NAME,
                        self._VERSION))

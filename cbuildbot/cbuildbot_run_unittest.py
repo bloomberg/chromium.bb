@@ -208,7 +208,7 @@ class BuilderRunTest(_BuilderRunTestCase):
       self.assertEquals(DEFAULT_CONFIG, run.config)
       self.assertTrue(isinstance(run.attrs, cbuildbot_run.RunAttributes))
       self.assertTrue(isinstance(run.GetArchive(),
-                                 cbuildbot_run.cbuildbot_archive.Archive))
+                                 cbuildbot_run.archive_lib.Archive))
 
       # Make sure methods behave normally, since BuilderRun messes with them.
       meth1 = run.GetVersionInfo
@@ -262,7 +262,7 @@ class BuilderRunTest(_BuilderRunTestCase):
       # Check archive.archive_path.
       expected = ('%s/%s/%s/%s' %
                   (DEFAULT_BUILDROOT,
-                   cbuildbot_run.cbuildbot_archive.Archive._BUILDBOT_ARCHIVE,
+                   cbuildbot_run.archive_lib.Archive._BUILDBOT_ARCHIVE,
                    DEFAULT_BOT_NAME, DEFAULT_VERSION))
       self.assertEqual(expected, archive.archive_path)
 
@@ -273,7 +273,7 @@ class BuilderRunTest(_BuilderRunTestCase):
 
       # Check archive.download_url.
       expected = ('%s%s/%s/%s' %
-                  (cbuildbot_run.cbuildbot_archive.gs.PRIVATE_BASE_HTTPS_URL,
+                  (cbuildbot_run.archive_lib.gs.PRIVATE_BASE_HTTPS_URL,
                    DEFAULT_ARCHIVE_GS_PATH, DEFAULT_BOT_NAME, DEFAULT_VERSION))
       self.assertEqual(expected, archive.download_url)
 
@@ -402,7 +402,7 @@ class ChildBuilderRunTest(_BuilderRunTestCase):
       self.assertEquals('foo', crun.config.name)
       self.assertTrue(isinstance(crun.attrs, cbuildbot_run.RunAttributes))
       self.assertTrue(isinstance(crun.GetArchive(),
-                                 cbuildbot_run.cbuildbot_archive.Archive))
+                                 cbuildbot_run.archive_lib.Archive))
 
       # Make sure methods behave normally, since BuilderRun messes with them.
       meth1 = crun.GetVersionInfo

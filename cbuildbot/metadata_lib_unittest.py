@@ -3,7 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Test the cbuildbot_archive module."""
+"""Test the archive_lib module."""
 
 import logging
 import multiprocessing
@@ -11,7 +11,7 @@ import os
 import sys
 
 sys.path.insert(0, os.path.abspath('%s/../..' % os.path.dirname(__file__)))
-from chromite.cbuildbot import cbuildbot_metadata
+from chromite.cbuildbot import metadata_lib
 from chromite.cbuildbot import results_lib
 from chromite.cbuildbot import constants
 from chromite.lib import cros_test_lib
@@ -33,7 +33,7 @@ class LocalBuilderStatusTest(cros_test_lib.TestCase):
   def testEmptyFail(self):
     """Sometimes there is no board-specific information."""
     self.Results.Record('Sync', self.SUCCESS)
-    builder_status = cbuildbot_metadata.LocalBuilderStatus.Get()
+    builder_status = metadata_lib.LocalBuilderStatus.Get()
     self.assertEqual({}, builder_status.board_status_map)
     self.assertEqual(constants.FINAL_STATUS_FAILED,
                      builder_status.GetBuilderStatus('lumpy-paladin'))
@@ -45,7 +45,7 @@ class LocalBuilderStatusTest(cros_test_lib.TestCase):
     self.Results.Record('Sync', self.SUCCESS)
     self.Results.Record('BuildPackages', self.SUCCESS, board='lumpy')
     self.Results.Record('Completion', 'FAIL')
-    builder_status = cbuildbot_metadata.LocalBuilderStatus.Get()
+    builder_status = metadata_lib.LocalBuilderStatus.Get()
     self.assertEqual({'lumpy': constants.FINAL_STATUS_PASSED},
                      builder_status.board_status_map)
     self.assertEqual(constants.FINAL_STATUS_FAILED,
@@ -58,7 +58,7 @@ class LocalBuilderStatusTest(cros_test_lib.TestCase):
     self.Results.Record('Sync', self.SUCCESS)
     self.Results.Record('BuildPackages [lumpy]', 'FAIL', board='lumpy')
     self.Results.Record('BuildPackages [stumpy]', self.SUCCESS, board='stumpy')
-    builder_status = cbuildbot_metadata.LocalBuilderStatus.Get()
+    builder_status = metadata_lib.LocalBuilderStatus.Get()
     self.assertEqual({'lumpy': constants.FINAL_STATUS_FAILED,
                       'stumpy': constants.FINAL_STATUS_PASSED},
                      builder_status.board_status_map)
@@ -78,9 +78,9 @@ class MetadataFetchTest(cros_test_lib.TestCase):
 
   def testPaladinBuilder(self):
     bot, version = ('x86-mario-paladin', '5611.0.0')
-    full_version = cbuildbot_metadata.FindLatestFullVersion(bot, version)
+    full_version = metadata_lib.FindLatestFullVersion(bot, version)
     self.assertEqual(full_version, 'R35-5611.0.0-rc2')
-    metadata = cbuildbot_metadata.GetBuildMetadata(bot, full_version)
+    metadata = metadata_lib.GetBuildMetadata(bot, full_version)
     metadata_dict = metadata._metadata_dict # pylint: disable=W0212
     self.assertEqual(metadata_dict['status']['status'], 'passed')
 
@@ -92,13 +92,13 @@ class MetadataTest(cros_test_lib.TestCase):
     starting_dict = {'key1': 1,
                      'key2': '2',
                      'cl_actions': [('a', 1), ('b', 2)]}
-    metadata = cbuildbot_metadata.CBuildbotMetadata(starting_dict)
+    metadata = metadata_lib.CBuildbotMetadata(starting_dict)
     ending_dict = metadata.GetDict()
     self.assertEqual(starting_dict, ending_dict)
 
   def testMultiprocessSafety(self):
     m = multiprocessing.Manager()
-    metadata = cbuildbot_metadata.CBuildbotMetadata(multiprocess_manager=m)
+    metadata = metadata_lib.CBuildbotMetadata(multiprocess_manager=m)
     key_dict = {'key1': 1, 'key2': 2}
     starting_dict = {'key1': 1,
                      'key2': '2',
@@ -117,7 +117,7 @@ class MetadataTest(cros_test_lib.TestCase):
     self.assertEqual(starting_dict, ending_dict)
 
     # Test that RecordCLAction is process-safe
-    fake_change = cbuildbot_metadata.GerritPatchTuple(12345, 1, False)
+    fake_change = metadata_lib.GerritPatchTuple(12345, 1, False)
     fake_action = ('asdf,')
     parallel.RunParallelSteps([lambda: metadata.RecordCLAction(fake_change,
                                                                fake_action)])

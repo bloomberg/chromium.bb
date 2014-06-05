@@ -13,7 +13,7 @@ import logging
 import os
 import shutil
 import tempfile
-from chromite.cbuildbot import cbuildbot_archive
+from chromite.cbuildbot import archive_lib
 from chromite.cbuildbot import cbuildbot_config
 from chromite.cbuildbot import constants
 from chromite.cbuildbot import manifest_version
@@ -156,8 +156,8 @@ class ChromeCommitter(object):
       config: The builder config to update.
       versions: Versions of ChromeOS to look at, sorted in descending order.
     """
-    base_url = cbuildbot_archive.GetBaseUploadURI(config)
-    acl = cbuildbot_archive.GetUploadACL(config)
+    base_url = archive_lib.GetBaseUploadURI(config)
+    acl = archive_lib.GetUploadACL(config)
     latest_url = None
     # gs.GSContext skips over all commands (including read-only checks)
     # when dry_run is True, so we have to create two context objects.

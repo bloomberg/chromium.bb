@@ -14,7 +14,7 @@ import re
 import shutil
 import tempfile
 
-from chromite.cbuildbot import cbuildbot_metadata, constants, repository
+from chromite.cbuildbot import constants, metadata_lib, repository
 from chromite.lib import cros_build_lib
 from chromite.lib import git
 from chromite.lib import gs
@@ -758,7 +758,7 @@ class BuildSpecsManager(object):
 
   def _SetPassSymlinks(self):
     """Marks the buildspec as passed by creating a symlink in passed dir."""
-    local_builder_status = cbuildbot_metadata.LocalBuilderStatus.Get()
+    local_builder_status = metadata_lib.LocalBuilderStatus.Get()
     src_file = '%s.xml' % os.path.join(self.all_specs_dir, self.current_version)
     for i, build_name in enumerate(self.build_names):
       status = local_builder_status.GetBuilderStatus(build_name)

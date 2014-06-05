@@ -17,7 +17,7 @@ sys.path.insert(0, os.path.abspath('%s/../..' % os.path.dirname(__file__)))
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.scripts import gather_builder_stats
-from chromite.cbuildbot import cbuildbot_metadata
+from chromite.cbuildbot import metadata_lib
 from chromite.cbuildbot import constants
 
 import mock
@@ -34,13 +34,13 @@ class TestCLActionLogic(unittest.TestCase):
     """Generate a return test data.
 
     Returns:
-      A list of cbuildbot_metadata.BuildData objects to use as
+      A list of metadata_lib.BuildData objects to use as
       test data for CL action summary logic.
     """
     # Mock patches for test data.
-    c1p1 = cbuildbot_metadata.GerritPatchTuple(1, 1, False)
-    c2p1 = cbuildbot_metadata.GerritPatchTuple(2, 1, True)
-    c2p2 = cbuildbot_metadata.GerritPatchTuple(2, 2, True)
+    c1p1 = metadata_lib.GerritPatchTuple(1, 1, False)
+    c2p1 = metadata_lib.GerritPatchTuple(2, 1, True)
+    c2p2 = metadata_lib.GerritPatchTuple(2, 2, True)
 
     # Mock builder status dictionaries
     passed_status = {'status' : constants.FINAL_STATUS_PASSED}
@@ -50,20 +50,20 @@ class TestCLActionLogic(unittest.TestCase):
 
     TEST_METADATA = [
       # Build 1 picks up no patches.
-      cbuildbot_metadata.CBuildbotMetadata(
+      metadata_lib.CBuildbotMetadata(
           ).UpdateWithDict({'build-number' : 1,
                             'bot-config' : constants.CQ_MASTER,
                             'results' : [],
                             'status' : passed_status}),
       # Build 2 picks up c1p1 and does nothing.
-      cbuildbot_metadata.CBuildbotMetadata(
+      metadata_lib.CBuildbotMetadata(
           ).UpdateWithDict({'build-number' : 2,
                             'bot-config' : constants.CQ_MASTER,
                             'results' : [],
                             'status' : failed_status}
           ).RecordCLAction(c1p1, constants.CL_ACTION_PICKED_UP, t.next()),
       # Build 3 picks up c1p1 and c2p1 and rejects both.
-      cbuildbot_metadata.CBuildbotMetadata(
+      metadata_lib.CBuildbotMetadata(
           ).UpdateWithDict({'build-number' : 3,
                             'bot-config' : constants.CQ_MASTER,
                             'results' : [],
@@ -75,7 +75,7 @@ class TestCLActionLogic(unittest.TestCase):
       # Build 4 picks up c1p1 and c2p2 and submits both.
       # So  c1p1 should be detected as a 1-time rejected good patch,
       # and c2p1 should be detected as a possibly bad patch.
-      cbuildbot_metadata.CBuildbotMetadata(
+      metadata_lib.CBuildbotMetadata(
           ).UpdateWithDict({'build-number' : 4,
                             'bot-config' : constants.CQ_MASTER,
                             'results' : [],
@@ -93,7 +93,7 @@ class TestCLActionLogic(unittest.TestCase):
     random.shuffle(TEST_METADATA)
 
     # Wrap the test metadata into BuildData objects.
-    TEST_BUILDDATA = [cbuildbot_metadata.BuildData('', d.GetDict())
+    TEST_BUILDDATA = [metadata_lib.BuildData('', d.GetDict())
                       for d in TEST_METADATA]
 
     return TEST_BUILDDATA
@@ -128,8 +128,8 @@ class TestCLActionLogic(unittest.TestCase):
           'median_handling_time': -1, # This will be ignored in comparison
           'patch_handling_time': -1,  # This will be ignored in comparison
           'bad_cl_candidates': {CQ: [
-              cbuildbot_metadata.GerritChangeTuple(gerrit_number=2,
-                                                   internal=True)]},
+              metadata_lib.GerritChangeTuple(gerrit_number=2,
+                                             internal=True)]},
           'correctly_rejected_by_stage': {CQ: {}},
           'incorrectly_rejected_by_stage': {},
           'rejections': 2}
