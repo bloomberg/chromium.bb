@@ -33,6 +33,15 @@
           '<!@(pkg-config --libs-only-l <(harfbuzz_libraries))',
         ],
       },
+      'variables': {
+        'headers_root_path': 'src',
+        'header_filenames': [
+          'hb.h',
+        ],
+      },
+      'includes': [
+        '../../build/shim_headers.gypi',
+      ],
     },
   ],
 }
