@@ -45,7 +45,7 @@ class MockLoader : public Loader {
 
     bool match = (
         (files_[0] == a && files_[1] == b) ||
-        (files_[0] == b && files_[0] == a));
+        (files_[0] == b && files_[1] == a));
     files_.clear();
     return match;
   }
