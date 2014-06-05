@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
+#include "chrome/common/chrome_result_codes.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 
@@ -23,7 +24,9 @@
 // this is a useful test of the startup/quick-shutdown cycle.
 class TryChromeDialogBrowserTest : public InProcessBrowserTest {
 public:
-  TryChromeDialogBrowserTest() {}
+  TryChromeDialogBrowserTest() {
+    set_expected_exit_code(chrome::RESULT_CODE_NORMAL_EXIT_CANCEL);
+  }
 
 protected:
   virtual void SetUpCommandLine(CommandLine* command_line) {

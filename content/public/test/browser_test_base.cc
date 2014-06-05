@@ -123,7 +123,9 @@ class LocalHostResolverProc : public net::HostResolverProc {
 extern int BrowserMain(const MainFunctionParams&);
 
 BrowserTestBase::BrowserTestBase()
-    : enable_pixel_output_(false), use_software_compositing_(false) {
+    : expected_exit_code_(0),
+      enable_pixel_output_(false),
+      use_software_compositing_(false) {
 #if defined(OS_MACOSX)
   base::mac::SetOverrideAmIBundled(true);
 #endif
@@ -236,6 +238,7 @@ void BrowserTestBase::SetUp() {
 #if defined(OS_ANDROID)
   MainFunctionParams params(*command_line);
   params.ui_task = ui_task;
+  // TODO(phajdan.jr): Check return code, http://crbug.com/374738 .
   BrowserMainRunner::Create()->Initialize(params);
   // We are done running the test by now. During teardown we
   // need to be able to perform IO.
@@ -246,7 +249,7 @@ void BrowserTestBase::SetUp() {
                  true));
 #else
   GetContentMainParams()->ui_task = ui_task;
-  ContentMain(*GetContentMainParams());
+  EXPECT_EQ(expected_exit_code_, ContentMain(*GetContentMainParams()));
 #endif
   TearDownInProcessBrowserTestFixture();
 }

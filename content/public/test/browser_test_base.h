@@ -81,6 +81,9 @@ class BrowserTestBase : public testing::Test {
   // (RunTestOnMainThread), quits the browsers and returns.
   virtual void RunTestOnMainThreadLoop() = 0;
 
+  // Sets expected browser exit code, in case it's different than 0 (success).
+  void set_expected_exit_code(int code) { expected_exit_code_ = code; }
+
   // Returns the testing server. Guaranteed to be non-NULL.
   // TODO(phajdan.jr): Remove test_server accessor (http://crbug.com/96594).
   const net::SpawnedTestServer* test_server() const {
@@ -138,6 +141,9 @@ class BrowserTestBase : public testing::Test {
 
   // Host resolver used during tests.
   scoped_refptr<net::RuleBasedHostResolverProc> rule_based_resolver_;
+
+  // Expected exit code (default is 0).
+  int expected_exit_code_;
 
   // When true, the compositor will produce pixel output that can be read back
   // for pixel tests.
