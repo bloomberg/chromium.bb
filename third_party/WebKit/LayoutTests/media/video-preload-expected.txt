@@ -11,9 +11,27 @@ EVENT(play)
 EVENT(loadedmetadata)
 buffered automatically OK
 
+Will load with 'preload=none', should buffer automatically because 'load()' is called
+RUN(video.setAttribute('preload', 'none'))
+RUN(video.removeAttribute('autoplay'))
+RUN(video.load())
+EVENT(loadstart)
+EVENT(loadedmetadata)
+buffered automatically OK
+
+Will load with 'preload=none', should buffer automatically because 'play()' is called
+RUN(video.setAttribute('preload', 'none'))
+RUN(video.removeAttribute('autoplay'))
+RUN(video.play())
+EVENT(play)
+EVENT(loadstart)
+EVENT(loadedmetadata)
+buffered automatically OK
+
 Will load with 'preload=metadata', should buffer automatically 
 RUN(video.setAttribute('preload', 'metadata'))
 RUN(video.removeAttribute('autoplay'))
+RUN(video.load())
 EVENT(loadstart)
 EVENT(loadedmetadata)
 buffered automatically OK
@@ -21,6 +39,7 @@ buffered automatically OK
 Will load with 'preload=auto', should buffer automatically 
 RUN(video.setAttribute('preload', 'auto'))
 RUN(video.removeAttribute('autoplay'))
+RUN(video.load())
 EVENT(loadstart)
 EVENT(loadedmetadata)
 buffered automatically OK
@@ -28,6 +47,7 @@ buffered automatically OK
 Will load with 'preload=none', should buffer automatically because of 'autoplay'
 RUN(video.setAttribute('preload', 'none'))
 RUN(video.setAttribute('autoplay', 'true'))
+RUN(video.load())
 EVENT(loadstart)
 EVENT(loadedmetadata)
 buffered automatically OK

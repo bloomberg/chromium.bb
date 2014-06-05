@@ -889,10 +889,12 @@ void HTMLMediaElement::loadResource(const KURL& url, ContentType& contentType, c
     if (attemptLoad && canLoadURL(url, contentType, keySystem)) {
         ASSERT(!webMediaPlayer());
 
-        if (!autoplay() && m_preload == MediaPlayer::None)
+        if (!m_havePreparedToPlay && !autoplay() && m_preload == MediaPlayer::None) {
+            WTF_LOG(Media, "HTMLMediaElement::loadResource : Delaying load because preload == 'none'");
             m_delayingLoadForPreloadNone = true;
-        else
+        } else {
             startPlayerLoad();
+        }
     } else {
         mediaLoadingFailed(MediaPlayer::FormatError);
     }
