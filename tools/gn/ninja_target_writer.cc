@@ -114,7 +114,8 @@ std::string NinjaTargetWriter::WriteInputDepsStampAndGetDep(
   path_output_.WriteFile(stamp_file_stream, input_stamp_file);
   std::string stamp_file_string = stamp_file_stream.str();
 
-  out_ << "build " << stamp_file_string << ": stamp";
+  out_ << "build " << stamp_file_string << ": " +
+      helper_.GetRulePrefix(settings_) + "stamp";
 
   // Script file (if applicable).
   if (add_script_source_as_dep) {
