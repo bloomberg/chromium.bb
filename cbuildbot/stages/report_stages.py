@@ -9,6 +9,7 @@ import os
 import sys
 
 from chromite.cbuildbot import commands
+from chromite.cbuildbot import failures_lib
 from chromite.cbuildbot import metadata_lib
 from chromite.cbuildbot import results_lib
 from chromite.cbuildbot import constants
@@ -36,6 +37,7 @@ class ReportBuildStartStage(generic_stages.BuilderStage,
   def init(self, builder_run, **kwargs):
     super(ReportBuildStartStage, self).__init__(builder_run, **kwargs)
 
+  @failures_lib.SetFailureType(failures_lib.InfrastructureFailure)
   def PerformStage(self):
     config = self._run.config
     build_root = self._build_root

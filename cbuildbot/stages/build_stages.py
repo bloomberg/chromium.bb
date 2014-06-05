@@ -68,6 +68,7 @@ class CleanUpStage(generic_stages.BuilderStage):
     for out_dir in glob.glob(os.path.join(chrome_src, 'out_*')):
       osutils.RmDir(out_dir)
 
+  @failures_lib.SetFailureType(failures_lib.InfrastructureFailure)
   def PerformStage(self):
     if (not (self._run.options.buildbot or self._run.options.remote_trybot)
         and self._run.options.clobber):
