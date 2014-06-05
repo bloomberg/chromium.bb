@@ -169,6 +169,7 @@ const IdentityAPI::CachedTokens& IdentityAPI::GetAllCachedTokens() {
 }
 
 std::vector<std::string> IdentityAPI::GetAccounts() const {
+  const std::string primary_account_id = GetPrimaryAccountId(browser_context_);
   const std::vector<AccountIds> ids = account_tracker_.GetAccounts();
   std::vector<std::string> gaia_ids;
 
@@ -183,6 +184,10 @@ std::vector<std::string> IdentityAPI::GetAccounts() const {
   }
 
   return gaia_ids;
+}
+
+std::string IdentityAPI::FindAccountKeyByGaiaId(const std::string& gaia_id) {
+  return account_tracker_.FindAccountKeyByGaiaId(gaia_id);
 }
 
 void IdentityAPI::ReportAuthError(const GoogleServiceAuthError& error) {
@@ -317,8 +322,28 @@ bool IdentityGetAuthTokenFunction::RunAsync() {
 
   std::set<std::string> scopes(oauth2_info.scopes.begin(),
                                oauth2_info.scopes.end());
-  token_key_.reset(new ExtensionTokenKey(
-      GetExtension()->id(), GetPrimaryAccountId(GetProfile()), scopes));
+
+  std::string account_key = GetPrimaryAccountId(GetProfile());
+
+  if (params->details->account.get()) {
+    std::string detail_key =
+        extensions::IdentityAPI::GetFactoryInstance()
+            ->Get(GetProfile())
+            ->FindAccountKeyByGaiaId(params->details->account->id);
+
+    if (detail_key != account_key) {
+      if (detail_key.empty() || !switches::IsExtensionsMultiAccount()) {
+        // TODO(courage): should this be a different error?
+        error_ = identity_constants::kUserNotSignedIn;
+        return false;
+      }
+
+      account_key = detail_key;
+    }
+  }
+
+  token_key_.reset(
+      new ExtensionTokenKey(GetExtension()->id(), account_key, scopes));
 
   // From here on out, results must be returned asynchronously.
   StartAsyncRun();
@@ -645,7 +670,6 @@ void IdentityGetAuthTokenFunction::StartDeviceLoginAccessTokenRequest() {
 void IdentityGetAuthTokenFunction::StartLoginAccessTokenRequest() {
   ProfileOAuth2TokenService* service =
       ProfileOAuth2TokenServiceFactory::GetForProfile(GetProfile());
-  const std::string primary_account_id = GetPrimaryAccountId(GetProfile());
 #if defined(OS_CHROMEOS)
   if (chrome::IsRunningInForcedAppMode()) {
     std::string app_client_id;
@@ -653,7 +677,7 @@ void IdentityGetAuthTokenFunction::StartLoginAccessTokenRequest() {
     if (chromeos::UserManager::Get()->GetAppModeChromeClientOAuthInfo(
            &app_client_id, &app_client_secret)) {
       login_token_request_ =
-          service->StartRequestForClient(primary_account_id,
+          service->StartRequestForClient(token_key_->account_id,
                                          app_client_id,
                                          app_client_secret,
                                          OAuth2TokenService::ScopeSet(),
@@ -663,7 +687,7 @@ void IdentityGetAuthTokenFunction::StartLoginAccessTokenRequest() {
   }
 #endif
   login_token_request_ = service->StartRequest(
-      primary_account_id, OAuth2TokenService::ScopeSet(), this);
+      token_key_->account_id, OAuth2TokenService::ScopeSet(), this);
 }
 
 void IdentityGetAuthTokenFunction::StartGaiaRequest(
@@ -684,8 +708,12 @@ void IdentityGetAuthTokenFunction::ShowOAuthApprovalDialog(
   const std::string locale = g_browser_process->local_state()->GetString(
       prefs::kApplicationLocale);
 
-  gaia_web_auth_flow_.reset(new GaiaWebAuthFlow(
-      this, GetProfile(), GetExtension()->id(), oauth2_info, locale));
+  gaia_web_auth_flow_.reset(new GaiaWebAuthFlow(this,
+                                                GetProfile(),
+                                                token_key_->account_id,
+                                                GetExtension()->id(),
+                                                oauth2_info,
+                                                locale));
   gaia_web_auth_flow_->Start();
 }
 
@@ -707,8 +735,7 @@ OAuth2MintTokenFlow* IdentityGetAuthTokenFunction::CreateMintTokenFlow(
 bool IdentityGetAuthTokenFunction::HasLoginToken() const {
   ProfileOAuth2TokenService* token_service =
       ProfileOAuth2TokenServiceFactory::GetForProfile(GetProfile());
-  return token_service->RefreshTokenIsAvailable(
-      GetPrimaryAccountId(GetProfile()));
+  return token_service->RefreshTokenIsAvailable(token_key_->account_id);
 }
 
 std::string IdentityGetAuthTokenFunction::MapOAuth2ErrorToDescription(

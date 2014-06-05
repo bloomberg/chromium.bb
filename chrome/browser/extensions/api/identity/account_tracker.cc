@@ -77,6 +77,20 @@ std::vector<AccountIds> AccountTracker::GetAccounts() const {
   return accounts;
 }
 
+std::string AccountTracker::FindAccountKeyByGaiaId(const std::string& gaia_id) {
+  for (std::map<std::string, AccountState>::const_iterator it =
+           accounts_.begin();
+       it != accounts_.end();
+       ++it) {
+    const AccountState& state = it->second;
+    if (state.ids.gaia == gaia_id) {
+      return state.ids.account_key;
+    }
+  }
+
+  return std::string();
+}
+
 void AccountTracker::OnRefreshTokenAvailable(const std::string& account_id) {
   // Ignore refresh tokens if there is no primary account ID at all.
   if (signin_manager_account_id().empty())

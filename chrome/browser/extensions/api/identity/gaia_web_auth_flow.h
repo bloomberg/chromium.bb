@@ -14,7 +14,7 @@ namespace extensions {
 
 // Implements a web-based OAuth2 scope approval dialog. This flow has
 // four parts:
-// 1. Fetch an ubertoken for the signed-in user.
+// 1. Fetch an ubertoken for a signed-in user.
 // 2. Use the ubertoken to get session cookies using MergeSession.
 // 3. Start the OAuth flow and wait for final redirect.
 // 4. Parse results from the fragment component of the final redirect URI.
@@ -60,6 +60,7 @@ class GaiaWebAuthFlow : public UbertokenConsumer, public WebAuthFlow::Delegate {
 
   GaiaWebAuthFlow(Delegate* delegate,
                   Profile* profile,
+                  const std::string& account_id,
                   const std::string& extension_id,
                   const OAuth2Info& oauth2_info,
                   const std::string& locale);
@@ -84,6 +85,7 @@ class GaiaWebAuthFlow : public UbertokenConsumer, public WebAuthFlow::Delegate {
 
   Delegate* delegate_;
   Profile* profile_;
+  std::string account_id_;
   chrome::HostDesktopType host_desktop_type_;
   std::string redirect_scheme_;
   std::string redirect_path_prefix_;
@@ -94,6 +96,6 @@ class GaiaWebAuthFlow : public UbertokenConsumer, public WebAuthFlow::Delegate {
   DISALLOW_COPY_AND_ASSIGN(GaiaWebAuthFlow);
 };
 
-}  // extensions
+}  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_API_IDENTITY_GAIA_WEB_AUTH_FLOW_H_

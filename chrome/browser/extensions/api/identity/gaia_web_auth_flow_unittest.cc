@@ -33,6 +33,7 @@ class TestGaiaWebAuthFlow : public GaiaWebAuthFlow {
                       GoogleServiceAuthError::State ubertoken_error_state)
       : GaiaWebAuthFlow(delegate,
                         NULL,
+                        "account_id",
                         "extension_id",
                         oauth2_info,
                         "en-us"),

@@ -110,6 +110,7 @@ class IdentityAPI : public BrowserContextKeyedAPI,
 
   // Account queries.
   std::vector<std::string> GetAccounts() const;
+  std::string FindAccountKeyByGaiaId(const std::string& gaia_id);
 
   // Global error reporting.
   void ReportAuthError(const GoogleServiceAuthError& error);
@@ -194,6 +195,26 @@ class IdentityGetAuthTokenFunction : public ChromeAsyncExtensionFunction,
  protected:
   virtual ~IdentityGetAuthTokenFunction();
 
+  // IdentitySigninFlow::Delegate implementation:
+  virtual void SigninSuccess() OVERRIDE;
+  virtual void SigninFailed() OVERRIDE;
+
+  // GaiaWebAuthFlow::Delegate implementation:
+  virtual void OnGaiaFlowFailure(GaiaWebAuthFlow::Failure failure,
+                                 GoogleServiceAuthError service_error,
+                                 const std::string& oauth_error) OVERRIDE;
+  virtual void OnGaiaFlowCompleted(const std::string& access_token,
+                                   const std::string& expiration) OVERRIDE;
+
+  // OAuth2TokenService::Consumer implementation:
+  virtual void OnGetTokenSuccess(const OAuth2TokenService::Request* request,
+                                 const std::string& access_token,
+                                 const base::Time& expiration_time) OVERRIDE;
+  virtual void OnGetTokenFailure(const OAuth2TokenService::Request* request,
+                                 const GoogleServiceAuthError& error) OVERRIDE;
+
+  scoped_ptr<OAuth2TokenService::Request> login_token_request_;
+
  private:
   FRIEND_TEST_ALL_PREFIXES(GetAuthTokenFunctionTest,
                            ComponentWithChromeClientId);
@@ -227,24 +248,6 @@ class IdentityGetAuthTokenFunction : public ChromeAsyncExtensionFunction,
       const GoogleServiceAuthError& error) OVERRIDE;
   virtual void OnIssueAdviceSuccess(
       const IssueAdviceInfo& issue_advice) OVERRIDE;
-
-  // IdentitySigninFlow::Delegate implementation:
-  virtual void SigninSuccess() OVERRIDE;
-  virtual void SigninFailed() OVERRIDE;
-
-  // GaiaWebAuthFlow::Delegate implementation:
-  virtual void OnGaiaFlowFailure(GaiaWebAuthFlow::Failure failure,
-                                 GoogleServiceAuthError service_error,
-                                 const std::string& oauth_error) OVERRIDE;
-  virtual void OnGaiaFlowCompleted(const std::string& access_token,
-                                   const std::string& expiration) OVERRIDE;
-
-  // OAuth2TokenService::Consumer implementation:
-  virtual void OnGetTokenSuccess(const OAuth2TokenService::Request* request,
-                                 const std::string& access_token,
-                                 const base::Time& expiration_time) OVERRIDE;
-  virtual void OnGetTokenFailure(const OAuth2TokenService::Request* request,
-                                 const GoogleServiceAuthError& error) OVERRIDE;
 
   // IdentityAPI::ShutdownObserver implementation:
   virtual void OnShutdown() OVERRIDE;
@@ -290,7 +293,6 @@ class IdentityGetAuthTokenFunction : public ChromeAsyncExtensionFunction,
   IssueAdviceInfo issue_advice_;
   scoped_ptr<GaiaWebAuthFlow> gaia_web_auth_flow_;
   scoped_ptr<IdentitySigninFlow> signin_flow_;
-  scoped_ptr<OAuth2TokenService::Request> login_token_request_;
 };
 
 class IdentityRemoveCachedAuthTokenFunction

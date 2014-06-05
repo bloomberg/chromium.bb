@@ -20,11 +20,11 @@ namespace extensions {
 
 GaiaWebAuthFlow::GaiaWebAuthFlow(Delegate* delegate,
                                  Profile* profile,
+                                 const std::string& account_id,
                                  const std::string& extension_id,
                                  const OAuth2Info& oauth2_info,
                                  const std::string& locale)
-    : delegate_(delegate),
-      profile_(profile) {
+    : delegate_(delegate), profile_(profile), account_id_(account_id) {
   const char kOAuth2RedirectPathFormat[] = "/%s#";
   const char kOAuth2AuthorizeFormat[] =
       "?response_type=token&approval_prompt=force&authuser=0&"
@@ -64,10 +64,7 @@ void GaiaWebAuthFlow::Start() {
   ubertoken_fetcher_.reset(new UbertokenFetcher(token_service,
                                                 this,
                                                 profile_->GetRequestContext()));
-  SigninManagerBase* signin_manager =
-      SigninManagerFactory::GetForProfile(profile_);
-  ubertoken_fetcher_->StartFetchingToken(
-      signin_manager->GetAuthenticatedAccountId());
+  ubertoken_fetcher_->StartFetchingToken(account_id_);
 }
 
 void GaiaWebAuthFlow::OnUbertokenSuccess(const std::string& token) {
@@ -87,6 +84,7 @@ void GaiaWebAuthFlow::OnUbertokenSuccess(const std::string& token) {
 }
 
 void GaiaWebAuthFlow::OnUbertokenFailure(const GoogleServiceAuthError& error) {
+  DVLOG(1) << "OnUbertokenFailure: " << error.error_message();
   delegate_->OnGaiaFlowFailure(
       GaiaWebAuthFlow::SERVICE_AUTH_ERROR, error, std::string());
 }
@@ -99,6 +97,7 @@ void GaiaWebAuthFlow::OnAuthFlowFailure(WebAuthFlow::Failure failure) {
       gaia_failure = GaiaWebAuthFlow::WINDOW_CLOSED;
       break;
     case WebAuthFlow::LOAD_FAILED:
+      DVLOG(1) << "OnAuthFlowFailure LOAD_FAILED";
       gaia_failure = GaiaWebAuthFlow::LOAD_FAILED;
       break;
     default:

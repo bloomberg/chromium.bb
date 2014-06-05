@@ -5,6 +5,12 @@
 // Use the <code>chrome.identity</code> API to get OAuth2 access tokens.
 namespace identity {
 
+  dictionary AccountInfo {
+    // A unique identifier for the account. This ID will not change
+    // for the lifetime of the account.
+    DOMString id;
+  };
+
   dictionary TokenDetails {
     // Fetching a token may require the user to sign-in to Chrome, or
     // approve the application's requested scopes. If the interactive
@@ -13,6 +19,13 @@ namespace identity {
     // <code>false</code> or omitted, <code>getAuthToken</code> will
     // return failure any time a prompt would be required.
     boolean? interactive;
+
+    // The account ID whose token should be returned. If not
+    // specified, the primary account for the profile will be used.
+    //
+    // <code>account</code> is only supported when the
+    // "enable-new-profile-management" flag is set.
+    AccountInfo? account;
   };
 
   dictionary InvalidTokenDetails {
@@ -37,12 +50,6 @@ namespace identity {
     // will return with an error if the initial navigation does not
     // complete the flow.
     boolean? interactive;
-  };
-
-  dictionary AccountInfo {
-    // A unique identifier for the account. This ID will not change
-    // for the lifetime of the account.
-    DOMString id;
   };
 
   callback GetAuthTokenCallback = void (optional DOMString token);
