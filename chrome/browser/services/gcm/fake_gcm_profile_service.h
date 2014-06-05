@@ -28,14 +28,11 @@ class FakeGCMProfileService : public GCMProfileService {
   virtual ~FakeGCMProfileService();
 
   void RegisterFinished(const std::string& app_id,
-                        const std::vector<std::string>& sender_ids,
-                        const GCMDriver::RegisterCallback& callback);
-  void UnregisterFinished(const std::string& app_id,
-                          const GCMDriver::UnregisterCallback& callback);
+                        const std::vector<std::string>& sender_ids);
+  void UnregisterFinished(const std::string& app_id);
   void SendFinished(const std::string& app_id,
                     const std::string& receiver_id,
-                    const GCMClient::OutgoingMessage& message,
-                    const GCMDriver::SendCallback& callback);
+                    const GCMClient::OutgoingMessage& message);
 
   void AddExpectedUnregisterResponse(GCMClient::Result result);
 

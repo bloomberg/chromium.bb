@@ -50,6 +50,10 @@ class GCMDriverDesktop : public GCMDriver, public IdentityProvider::Observer {
       const scoped_refptr<base::SequencedTaskRunner>& blocking_task_runner);
   virtual ~GCMDriverDesktop();
 
+  // IdentityProvider::Observer implementation:
+  virtual void OnActiveAccountLogin() OVERRIDE;
+  virtual void OnActiveAccountLogout() OVERRIDE;
+
   // GCMDriver overrides:
   virtual void Shutdown() OVERRIDE;
   virtual void AddAppHandler(const std::string& app_id,
@@ -59,15 +63,6 @@ class GCMDriverDesktop : public GCMDriver, public IdentityProvider::Observer {
   // GCMDriver implementation:
   virtual void Enable() OVERRIDE;
   virtual void Disable() OVERRIDE;
-  virtual void Register(const std::string& app_id,
-                        const std::vector<std::string>& sender_ids,
-                        const RegisterCallback& callback) OVERRIDE;
-  virtual void Unregister(const std::string& app_id,
-                          const UnregisterCallback& callback) OVERRIDE;
-  virtual void Send(const std::string& app_id,
-                    const std::string& receiver_id,
-                    const GCMClient::OutgoingMessage& message,
-                    const SendCallback& callback) OVERRIDE;
   virtual GCMClient* GetGCMClientForTesting() const OVERRIDE;
   virtual bool IsStarted() const OVERRIDE;
   virtual bool IsGCMClientReady() const OVERRIDE;
@@ -77,19 +72,20 @@ class GCMDriverDesktop : public GCMDriver, public IdentityProvider::Observer {
                                bool recording) OVERRIDE;
   virtual std::string SignedInUserName() const OVERRIDE;
 
-  // IdentityProvider::Observer implementation:
-  virtual void OnActiveAccountLogin() OVERRIDE;
-  virtual void OnActiveAccountLogout() OVERRIDE;
+ protected:
+  // GCMDriver implementation:
+  virtual GCMClient::Result EnsureStarted() OVERRIDE;
+  virtual void RegisterImpl(
+      const std::string& app_id,
+      const std::vector<std::string>& sender_ids) OVERRIDE;
+  virtual void UnregisterImpl(const std::string& app_id) OVERRIDE;
+  virtual void SendImpl(const std::string& app_id,
+                        const std::string& receiver_id,
+                        const GCMClient::OutgoingMessage& message) OVERRIDE;
 
  private:
   class DelayedTaskController;
   class IOWorker;
-
-  // Ensures that the GCM service starts when all of the following conditions
-  // satisfy:
-  // 1) GCM is enabled.
-  // 2) The identity provider is able to supply an account ID.
-  GCMClient::Result EnsureStarted();
 
   //  Stops the GCM service. It can be restarted by calling EnsureStarted again.
   void Stop();
@@ -100,10 +96,6 @@ class GCMDriverDesktop : public GCMDriver, public IdentityProvider::Observer {
   // Checks out of GCM and erases any cached and persisted data.
   void CheckOut();
 
-  // Should be called when an app with |app_id| is trying to un/register.
-  // Checks whether another un/registration is in progress.
-  bool IsAsyncOperationPending(const std::string& app_id) const;
-
   void DoRegister(const std::string& app_id,
                   const std::vector<std::string>& sender_ids);
   void DoUnregister(const std::string& app_id);
@@ -112,13 +104,6 @@ class GCMDriverDesktop : public GCMDriver, public IdentityProvider::Observer {
               const GCMClient::OutgoingMessage& message);
 
   // Callbacks posted from IO thread to UI thread.
-  void RegisterFinished(const std::string& app_id,
-                        const std::string& registration_id,
-                        GCMClient::Result result);
-  void UnregisterFinished(const std::string& app_id, GCMClient::Result result);
-  void SendFinished(const std::string& app_id,
-                    const std::string& message_id,
-                    GCMClient::Result result);
   void MessageReceived(const std::string& app_id,
                        const GCMClient::IncomingMessage& message);
   void MessagesDeleted(const std::string& app_id);
@@ -147,15 +132,6 @@ class GCMDriverDesktop : public GCMDriver, public IdentityProvider::Observer {
   // For all the work occurring on the IO thread. Must be destroyed on the IO
   // thread.
   scoped_ptr<IOWorker> io_worker_;
-
-  // Callback map (from app_id to callback) for Register.
-  std::map<std::string, RegisterCallback> register_callbacks_;
-
-  // Callback map (from app_id to callback) for Unregister.
-  std::map<std::string, UnregisterCallback> unregister_callbacks_;
-
-  // Callback map (from <app_id, message_id> to callback) for Send.
-  std::map<std::pair<std::string, std::string>, SendCallback> send_callbacks_;
 
   // Callback for GetGCMStatistics.
   GetGCMStatisticsCallback request_gcm_statistics_callback_;

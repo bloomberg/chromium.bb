@@ -28,21 +28,6 @@ void FakeGCMDriver::Enable() {
 void FakeGCMDriver::Disable() {
 }
 
-void FakeGCMDriver::Register(const std::string& app_id,
-                             const std::vector<std::string>& sender_ids,
-                             const RegisterCallback& callback) {
-}
-
-void FakeGCMDriver::Unregister(const std::string& app_id,
-                               const UnregisterCallback& callback) {
-}
-
-void FakeGCMDriver::Send(const std::string& app_id,
-                         const std::string& receiver_id,
-                         const GCMClient::OutgoingMessage& message,
-                         const SendCallback& callback) {
-}
-
 GCMClient* FakeGCMDriver::GetGCMClientForTesting() const {
   return NULL;
 }
@@ -65,6 +50,22 @@ void FakeGCMDriver::SetGCMRecording(const GetGCMStatisticsCallback& callback,
 
 std::string FakeGCMDriver::SignedInUserName() const {
   return std::string();
+}
+
+GCMClient::Result FakeGCMDriver::EnsureStarted() {
+  return GCMClient::SUCCESS;
+}
+
+void FakeGCMDriver::RegisterImpl(const std::string& app_id,
+                                 const std::vector<std::string>& sender_ids) {
+}
+
+void FakeGCMDriver::UnregisterImpl(const std::string& app_id) {
+}
+
+void FakeGCMDriver::SendImpl(const std::string& app_id,
+                             const std::string& receiver_id,
+                             const GCMClient::OutgoingMessage& message) {
 }
 
 }  // namespace gcm

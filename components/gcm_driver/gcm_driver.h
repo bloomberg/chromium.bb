@@ -34,6 +34,35 @@ class GCMDriver {
   GCMDriver();
   virtual ~GCMDriver();
 
+  // Registers |sender_id| for an app. A registration ID will be returned by
+  // the GCM server.
+  // |app_id|: application ID.
+  // |sender_ids|: list of IDs of the servers that are allowed to send the
+  //               messages to the application. These IDs are assigned by the
+  //               Google API Console.
+  // |callback|: to be called once the asynchronous operation is done.
+  void Register(const std::string& app_id,
+                const std::vector<std::string>& sender_ids,
+                const RegisterCallback& callback);
+
+  // Unregisters an app from using GCM.
+  // |app_id|: application ID.
+  // |callback|: to be called once the asynchronous operation is done.
+  void Unregister(const std::string& app_id,
+                  const UnregisterCallback& callback);
+
+  // Sends a message to a given receiver.
+  // |app_id|: application ID.
+  // |receiver_id|: registration ID of the receiver party.
+  // |message|: message to be sent.
+  // |callback|: to be called once the asynchronous operation is done.
+  void Send(const std::string& app_id,
+            const std::string& receiver_id,
+            const GCMClient::OutgoingMessage& message,
+            const SendCallback& callback);
+
+  const GCMAppHandlerMap& app_handlers() const { return app_handlers_; }
+
   // This method must be called before destroying the GCMDriver. Once it has
   // been called, no other GCMDriver methods may be used.
   virtual void Shutdown();
@@ -47,33 +76,6 @@ class GCMDriver {
   // Enables/disables GCM service.
   virtual void Enable() = 0;
   virtual void Disable() = 0;
-
-  // Registers |sender_id| for an app. A registration ID will be returned by
-  // the GCM server.
-  // |app_id|: application ID.
-  // |sender_ids|: list of IDs of the servers that are allowed to send the
-  //               messages to the application. These IDs are assigned by the
-  //               Google API Console.
-  // |callback|: to be called once the asynchronous operation is done.
-  virtual void Register(const std::string& app_id,
-                        const std::vector<std::string>& sender_ids,
-                        const RegisterCallback& callback) = 0;
-
-  // Unregisters an app from using GCM.
-  // |app_id|: application ID.
-  // |callback|: to be called once the asynchronous operation is done.
-  virtual void Unregister(const std::string& app_id,
-                          const UnregisterCallback& callback) = 0;
-
-  // Sends a message to a given receiver.
-  // |app_id|: application ID.
-  // |receiver_id|: registration ID of the receiver party.
-  // |message|: message to be sent.
-  // |callback|: to be called once the asynchronous operation is done.
-  virtual void Send(const std::string& app_id,
-                    const std::string& receiver_id,
-                    const GCMClient::OutgoingMessage& message,
-                    const SendCallback& callback) = 0;
 
   // For testing purpose. Always NULL on Android.
   virtual GCMClient* GetGCMClientForTesting() const = 0;
@@ -97,13 +99,57 @@ class GCMDriver {
   // Returns the user name if the profile is signed in. Empty string otherwise.
   virtual std::string SignedInUserName() const = 0;
 
-  const GCMAppHandlerMap& app_handlers() const { return app_handlers_; }
-
  protected:
+  // Ensures that the GCM service starts (if necessary conditions are met).
+  virtual GCMClient::Result EnsureStarted() = 0;
+
+  // Platform-specific implementation of Register.
+  virtual void RegisterImpl(const std::string& app_id,
+                            const std::vector<std::string>& sender_ids) = 0;
+
+  // Platform-specific implementation of Unregister.
+  virtual void UnregisterImpl(const std::string& app_id) = 0;
+
+  // Platform-specific implementation of Send.
+  virtual void SendImpl(const std::string& app_id,
+                        const std::string& receiver_id,
+                        const GCMClient::OutgoingMessage& message) = 0;
+
+  // Runs the Register callback.
+  void RegisterFinished(const std::string& app_id,
+                        const std::string& registration_id,
+                        GCMClient::Result result);
+
+  // Runs the Unregister callback.
+  void UnregisterFinished(const std::string& app_id,
+                          GCMClient::Result result);
+
+  // Runs the Send callback.
+  void SendFinished(const std::string& app_id,
+                    const std::string& message_id,
+                    GCMClient::Result result);
+
+  bool HasRegisterCallback(const std::string& app_id);
+
+  void ClearCallbacks();
+
   // Returns the handler for the given app.
   GCMAppHandler* GetAppHandler(const std::string& app_id);
 
  private:
+  // Should be called when an app with |app_id| is trying to un/register.
+  // Checks whether another un/registration is in progress.
+  bool IsAsyncOperationPending(const std::string& app_id) const;
+
+  // Callback map (from app_id to callback) for Register.
+  std::map<std::string, RegisterCallback> register_callbacks_;
+
+  // Callback map (from app_id to callback) for Unregister.
+  std::map<std::string, UnregisterCallback> unregister_callbacks_;
+
+  // Callback map (from <app_id, message_id> to callback) for Send.
+  std::map<std::pair<std::string, std::string>, SendCallback> send_callbacks_;
+
   // App handler map (from app_id to handler pointer).
   // The handler is not owned.
   GCMAppHandlerMap app_handlers_;

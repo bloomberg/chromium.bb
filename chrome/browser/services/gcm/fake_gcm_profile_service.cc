@@ -22,16 +22,24 @@ class CustomFakeGCMDriver : public FakeGCMDriver {
   explicit CustomFakeGCMDriver(FakeGCMProfileService* service);
   virtual ~CustomFakeGCMDriver();
 
-  // GCMDriver overrides:
-  virtual void Register(const std::string& app_id,
-                        const std::vector<std::string>& sender_ids,
-                        const RegisterCallback& callback) OVERRIDE;
-  virtual void Unregister(const std::string& app_id,
-                          const UnregisterCallback& callback) OVERRIDE;
-  virtual void Send(const std::string& app_id,
-                    const std::string& receiver_id,
-                    const GCMClient::OutgoingMessage& message,
-                    const SendCallback& callback) OVERRIDE;
+  void OnRegisterFinished(const std::string& app_id,
+                          const std::string& registration_id,
+                          GCMClient::Result result);
+  void OnUnregisterFinished(const std::string& app_id,
+                            GCMClient::Result result);
+  void OnSendFinished(const std::string& app_id,
+                      const std::string& message_id,
+                      GCMClient::Result result);
+
+ protected:
+  // FakeGCMDriver overrides:
+  virtual void RegisterImpl(
+      const std::string& app_id,
+      const std::vector<std::string>& sender_ids) OVERRIDE;
+  virtual void UnregisterImpl(const std::string& app_id) OVERRIDE;
+  virtual void SendImpl(const std::string& app_id,
+                        const std::string& receiver_id,
+                        const GCMClient::OutgoingMessage& message) OVERRIDE;
 
  private:
   FakeGCMProfileService* service_;
@@ -46,40 +54,51 @@ CustomFakeGCMDriver::CustomFakeGCMDriver(FakeGCMProfileService* service)
 CustomFakeGCMDriver::~CustomFakeGCMDriver() {
 }
 
-void CustomFakeGCMDriver::Register(const std::string& app_id,
-                             const std::vector<std::string>& sender_ids,
-                             const RegisterCallback& callback) {
+void CustomFakeGCMDriver::RegisterImpl(
+    const std::string& app_id,
+    const std::vector<std::string>& sender_ids) {
   base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(&FakeGCMProfileService::RegisterFinished,
                  base::Unretained(service_),
                  app_id,
-                 sender_ids,
-                 callback));
+                 sender_ids));
 }
 
-void CustomFakeGCMDriver::Unregister(const std::string& app_id,
-                               const UnregisterCallback& callback) {
+void CustomFakeGCMDriver::UnregisterImpl(const std::string& app_id) {
   base::MessageLoop::current()->PostTask(
       FROM_HERE, base::Bind(
           &FakeGCMProfileService::UnregisterFinished,
           base::Unretained(service_),
-          app_id,
-          callback));
+          app_id));
 }
 
-void CustomFakeGCMDriver::Send(const std::string& app_id,
-                         const std::string& receiver_id,
-                         const GCMClient::OutgoingMessage& message,
-                         const SendCallback& callback) {
+void CustomFakeGCMDriver::SendImpl(const std::string& app_id,
+                                   const std::string& receiver_id,
+                                   const GCMClient::OutgoingMessage& message) {
   base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(&FakeGCMProfileService::SendFinished,
                  base::Unretained(service_),
                  app_id,
                  receiver_id,
-                 message,
-                 callback));
+                 message));
+}
+
+void CustomFakeGCMDriver::OnRegisterFinished(
+    const std::string& app_id,
+    const std::string& registration_id,
+    GCMClient::Result result) {
+  RegisterFinished(app_id, registration_id, result);
+}
+void CustomFakeGCMDriver::OnUnregisterFinished(const std::string& app_id,
+                                               GCMClient::Result result) {
+  UnregisterFinished(app_id, result);
+}
+void CustomFakeGCMDriver::OnSendFinished(const std::string& app_id,
+                                         const std::string& message_id,
+                                         GCMClient::Result result) {
+  SendFinished(app_id, message_id, result);
 }
 
 }  // namespace
@@ -99,39 +118,43 @@ FakeGCMProfileService::~FakeGCMProfileService() {}
 
 void FakeGCMProfileService::RegisterFinished(
     const std::string& app_id,
-    const std::vector<std::string>& sender_ids,
-    const GCMDriver::RegisterCallback& callback) {
+    const std::vector<std::string>& sender_ids) {
   if (collect_) {
     last_registered_app_id_ = app_id;
     last_registered_sender_ids_ = sender_ids;
   }
 
-  callback.Run(base::UintToString(sender_ids.size()), GCMClient::SUCCESS);
+  CustomFakeGCMDriver* custom_driver =
+      static_cast<CustomFakeGCMDriver*>(driver());
+  custom_driver->OnRegisterFinished(app_id,
+                           base::UintToString(sender_ids.size()),
+                           GCMClient::SUCCESS);
 }
 
-void FakeGCMProfileService::UnregisterFinished(
-    const std::string& app_id,
-    const GCMDriver::UnregisterCallback& callback) {
+void FakeGCMProfileService::UnregisterFinished(const std::string& app_id) {
   GCMClient::Result result = GCMClient::SUCCESS;
   if (!unregister_responses_.empty()) {
     result = unregister_responses_.front();
     unregister_responses_.pop_front();
   }
 
-  callback.Run(result);
+  CustomFakeGCMDriver* custom_driver =
+      static_cast<CustomFakeGCMDriver*>(driver());
+  custom_driver->OnUnregisterFinished(app_id, result);
 }
 
 void FakeGCMProfileService::SendFinished(
     const std::string& app_id,
     const std::string& receiver_id,
-    const GCMClient::OutgoingMessage& message,
-    const GCMDriver::SendCallback& callback) {
+    const GCMClient::OutgoingMessage& message) {
   if (collect_) {
     last_sent_message_ = message;
     last_receiver_id_ = receiver_id;
   }
 
-  callback.Run(message.id, GCMClient::SUCCESS);
+  CustomFakeGCMDriver* custom_driver =
+      static_cast<CustomFakeGCMDriver*>(driver());
+  custom_driver->OnSendFinished(app_id, message.id, GCMClient::SUCCESS);
 }
 
 void FakeGCMProfileService::AddExpectedUnregisterResponse(

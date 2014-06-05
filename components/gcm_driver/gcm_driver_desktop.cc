@@ -4,7 +4,6 @@
 
 #include "components/gcm_driver/gcm_driver_desktop.h"
 
-#include <algorithm>
 #include <utility>
 
 #include "base/bind.h"
@@ -366,6 +365,14 @@ GCMDriverDesktop::GCMDriverDesktop(
 GCMDriverDesktop::~GCMDriverDesktop() {
 }
 
+void GCMDriverDesktop::OnActiveAccountLogin() {
+  EnsureStarted();
+}
+
+void GCMDriverDesktop::OnActiveAccountLogout() {
+  CheckOut();
+}
+
 void GCMDriverDesktop::Shutdown() {
   DCHECK(ui_thread_->RunsTasksOnCurrentThread());
   identity_provider_->RemoveObserver(this);
@@ -426,28 +433,9 @@ void GCMDriverDesktop::Stop() {
                  base::Unretained(io_worker_.get())));
 }
 
-void GCMDriverDesktop::Register(const std::string& app_id,
-                                const std::vector<std::string>& sender_ids,
-                                const RegisterCallback& callback) {
-  DCHECK(ui_thread_->RunsTasksOnCurrentThread());
-  DCHECK(!app_id.empty());
-  DCHECK(!sender_ids.empty());
-  DCHECK(!callback.is_null());
-
-  GCMClient::Result result = EnsureStarted();
-  if (result != GCMClient::SUCCESS) {
-    callback.Run(std::string(), result);
-    return;
-  }
-
-  // If previous un/register operation is still in progress, bail out.
-  if (IsAsyncOperationPending(app_id)) {
-    callback.Run(std::string(), GCMClient::ASYNC_OPERATION_PENDING);
-    return;
-  }
-
-  register_callbacks_[app_id] = callback;
-
+void GCMDriverDesktop::RegisterImpl(
+    const std::string& app_id,
+    const std::vector<std::string>& sender_ids) {
   // Delay the register operation until GCMClient is ready.
   if (!delayed_task_controller_->CanRunTaskWithoutDelay()) {
     delayed_task_controller_->AddTask(base::Bind(&GCMDriverDesktop::DoRegister,
@@ -463,45 +451,20 @@ void GCMDriverDesktop::Register(const std::string& app_id,
 void GCMDriverDesktop::DoRegister(const std::string& app_id,
                                   const std::vector<std::string>& sender_ids) {
   DCHECK(ui_thread_->RunsTasksOnCurrentThread());
-  std::map<std::string, RegisterCallback>::iterator callback_iter =
-      register_callbacks_.find(app_id);
-  if (callback_iter == register_callbacks_.end()) {
+  if (!HasRegisterCallback(app_id)) {
     // The callback could have been removed when the app is uninstalled.
     return;
   }
-
-  // Normalize the sender IDs by making them sorted.
-  std::vector<std::string> normalized_sender_ids = sender_ids;
-  std::sort(normalized_sender_ids.begin(), normalized_sender_ids.end());
 
   io_thread_->PostTask(
       FROM_HERE,
       base::Bind(&GCMDriverDesktop::IOWorker::Register,
                  base::Unretained(io_worker_.get()),
                  app_id,
-                 normalized_sender_ids));
+                 sender_ids));
 }
 
-void GCMDriverDesktop::Unregister(const std::string& app_id,
-                                  const UnregisterCallback& callback) {
-  DCHECK(ui_thread_->RunsTasksOnCurrentThread());
-  DCHECK(!app_id.empty());
-  DCHECK(!callback.is_null());
-
-  GCMClient::Result result = EnsureStarted();
-  if (result != GCMClient::SUCCESS) {
-    callback.Run(result);
-    return;
-  }
-
-  // If previous un/register operation is still in progress, bail out.
-  if (IsAsyncOperationPending(app_id)) {
-    callback.Run(GCMClient::ASYNC_OPERATION_PENDING);
-    return;
-  }
-
-  unregister_callbacks_[app_id] = callback;
-
+void GCMDriverDesktop::UnregisterImpl(const std::string& app_id) {
   // Delay the unregister operation until GCMClient is ready.
   if (!delayed_task_controller_->CanRunTaskWithoutDelay()) {
     delayed_task_controller_->AddTask(
@@ -527,30 +490,9 @@ void GCMDriverDesktop::DoUnregister(const std::string& app_id) {
                  app_id));
 }
 
-void GCMDriverDesktop::Send(const std::string& app_id,
-                            const std::string& receiver_id,
-                            const GCMClient::OutgoingMessage& message,
-                            const SendCallback& callback) {
-  DCHECK(ui_thread_->RunsTasksOnCurrentThread());
-  DCHECK(!app_id.empty());
-  DCHECK(!receiver_id.empty());
-  DCHECK(!callback.is_null());
-
-  GCMClient::Result result = EnsureStarted();
-  if (result != GCMClient::SUCCESS) {
-    callback.Run(std::string(), result);
-    return;
-  }
-
-  // If the message with send ID is still in progress, bail out.
-  std::pair<std::string, std::string> key(app_id, message.id);
-  if (send_callbacks_.find(key) != send_callbacks_.end()) {
-    callback.Run(message.id, GCMClient::INVALID_PARAMETER);
-    return;
-  }
-
-  send_callbacks_[key] = callback;
-
+void GCMDriverDesktop::SendImpl(const std::string& app_id,
+                                const std::string& receiver_id,
+                                const GCMClient::OutgoingMessage& message) {
   // Delay the send operation until all GCMClient is ready.
   if (!delayed_task_controller_->CanRunTaskWithoutDelay()) {
     delayed_task_controller_->AddTask(base::Bind(&GCMDriverDesktop::DoSend,
@@ -618,14 +560,6 @@ void GCMDriverDesktop::SetGCMRecording(const GetGCMStatisticsCallback& callback,
                  recording));
 }
 
-void GCMDriverDesktop::OnActiveAccountLogin() {
-  EnsureStarted();
-}
-
-void GCMDriverDesktop::OnActiveAccountLogout() {
-  CheckOut();
-}
-
 GCMClient::Result GCMDriverDesktop::EnsureStarted() {
   DCHECK(ui_thread_->RunsTasksOnCurrentThread());
 
@@ -671,8 +605,7 @@ void GCMDriverDesktop::RemoveCachedData() {
   account_id_.clear();
   gcm_client_ready_ = false;
   delayed_task_controller_.reset();
-  register_callbacks_.clear();
-  send_callbacks_.clear();
+  ClearCallbacks();
 }
 
 void GCMDriverDesktop::CheckOut() {
@@ -688,62 +621,6 @@ void GCMDriverDesktop::CheckOut() {
       FROM_HERE,
       base::Bind(&GCMDriverDesktop::IOWorker::CheckOut,
                  base::Unretained(io_worker_.get())));
-}
-
-bool GCMDriverDesktop::IsAsyncOperationPending(
-    const std::string& app_id) const {
-  DCHECK(ui_thread_->RunsTasksOnCurrentThread());
-  return register_callbacks_.find(app_id) != register_callbacks_.end() ||
-         unregister_callbacks_.find(app_id) != unregister_callbacks_.end();
-}
-
-void GCMDriverDesktop::RegisterFinished(const std::string& app_id,
-                                        const std::string& registration_id,
-                                        GCMClient::Result result) {
-  DCHECK(ui_thread_->RunsTasksOnCurrentThread());
-
-  std::map<std::string, RegisterCallback>::iterator callback_iter =
-      register_callbacks_.find(app_id);
-  if (callback_iter == register_callbacks_.end()) {
-    // The callback could have been removed when the app is uninstalled.
-    return;
-  }
-
-  RegisterCallback callback = callback_iter->second;
-  register_callbacks_.erase(callback_iter);
-  callback.Run(registration_id, result);
-}
-
-void GCMDriverDesktop::UnregisterFinished(const std::string& app_id,
-                                          GCMClient::Result result) {
-  DCHECK(ui_thread_->RunsTasksOnCurrentThread());
-
-  std::map<std::string, UnregisterCallback>::iterator callback_iter =
-      unregister_callbacks_.find(app_id);
-  if (callback_iter == unregister_callbacks_.end())
-    return;
-
-  UnregisterCallback callback = callback_iter->second;
-  unregister_callbacks_.erase(callback_iter);
-  callback.Run(result);
-}
-
-void GCMDriverDesktop::SendFinished(const std::string& app_id,
-                                    const std::string& message_id,
-                                    GCMClient::Result result) {
-  DCHECK(ui_thread_->RunsTasksOnCurrentThread());
-
-  std::map<std::pair<std::string, std::string>, SendCallback>::iterator
-      callback_iter = send_callbacks_.find(
-          std::pair<std::string, std::string>(app_id, message_id));
-  if (callback_iter == send_callbacks_.end()) {
-    // The callback could have been removed when the app is uninstalled.
-    return;
-  }
-
-  SendCallback callback = callback_iter->second;
-  send_callbacks_.erase(callback_iter);
-  callback.Run(message_id, result);
 }
 
 void GCMDriverDesktop::MessageReceived(

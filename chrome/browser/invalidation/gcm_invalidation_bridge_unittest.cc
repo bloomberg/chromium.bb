@@ -25,14 +25,18 @@ class CustomFakeGCMDriver : public gcm::FakeGCMDriver {
   CustomFakeGCMDriver() {}
   virtual ~CustomFakeGCMDriver() {}
 
-  // GCMDriver overrides:
-  virtual void Register(const std::string& app_id,
-                        const std::vector<std::string>& sender_ids,
-                        const RegisterCallback& callback) OVERRIDE {
+ protected:
+  // FakeGCMDriver override:
+  virtual void RegisterImpl(
+      const std::string& app_id,
+      const std::vector<std::string>& sender_ids) OVERRIDE {
     base::MessageLoop::current()->PostTask(
         FROM_HERE,
-        base::Bind(
-            callback, std::string("registration.id"), gcm::GCMClient::SUCCESS));
+        base::Bind(&CustomFakeGCMDriver::RegisterFinished,
+                   base::Unretained(this),
+                   app_id,
+                   std::string("registration.id"),
+                   gcm::GCMClient::SUCCESS));
   }
 
  private:
