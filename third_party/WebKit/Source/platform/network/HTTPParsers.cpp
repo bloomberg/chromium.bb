@@ -607,74 +607,97 @@ size_t parseHTTPRequestLine(const char* data, size_t length, String& failureReas
     return end - data;
 }
 
-size_t parseHTTPHeader(const char* start, size_t length, String& failureReason, AtomicString& nameStr, AtomicString& valueStr)
+static bool parseHTTPHeaderName(const char* s, size_t start, size_t size, String& failureReason, size_t* position, AtomicString* name)
 {
-    const char* p = start;
-    const char* end = start + length;
-
-    Vector<char> name;
-    Vector<char> value;
-    nameStr = nullAtom;
-    valueStr = nullAtom;
-
-    for (; p < end; p++) {
-        switch (*p) {
+    size_t nameBegin = start;
+    for (size_t i = start; i < size; ++i) {
+        switch (s[i]) {
         case '\r':
-            if (name.isEmpty()) {
-                if (p + 1 < end && *(p + 1) == '\n')
-                    return (p + 2) - start;
-                failureReason = "CR doesn't follow LF at " + trimInputSample(p, end - p);
-                return 0;
-            }
-            failureReason = "Unexpected CR in name at " + trimInputSample(name.data(), name.size());
-            return 0;
+            failureReason = "Unexpected CR in name at " + trimInputSample(&s[nameBegin], i - nameBegin);
+            return false;
         case '\n':
-            failureReason = "Unexpected LF in name at " + trimInputSample(name.data(), name.size());
-            return 0;
+            failureReason = "Unexpected LF in name at " + trimInputSample(&s[nameBegin], i - nameBegin);
+            return false;
         case ':':
-            break;
+            if (i == nameBegin) {
+                failureReason = "Header name is missing";
+                return false;
+            }
+            *name = AtomicString::fromUTF8(&s[nameBegin], i - nameBegin);
+            if (name->isNull()) {
+                failureReason = "Invalid UTF-8 sequence in header name";
+                return false;
+            }
+            *position = i;
+            return true;
         default:
-            name.append(*p);
-            continue;
-        }
-        if (*p == ':') {
-            ++p;
             break;
         }
+    }
+    failureReason = "Unterminated header name";
+    return false;
+}
+
+static bool parseHTTPHeaderValue(const char* s, size_t start, size_t size, String& failureReason, size_t* position, AtomicString* value)
+{
+    size_t i = start;
+    for (; i < size && s[i] == ' '; ++i) {
+    }
+    size_t valueBegin = i;
+
+    for (; i < size && s[i] != '\r'; ++i) {
+        if (s[i] == '\n') {
+            failureReason = "Unexpected LF in value at " + trimInputSample(&s[valueBegin], i - valueBegin);
+            return false;
+        }
+    }
+    if (i == size) {
+        failureReason = "Unterminated header value";
+        return false;
     }
 
-    for (; p < end && *p == 0x20; p++) { }
+    ASSERT(i < size && s[i] == '\r');
+    if (i + 1 >= size || s[i + 1] != '\n') {
+        failureReason = "LF doesn't follow CR after value at " + trimInputSample(&s[i + 1], size - i - 1);
+        return false;
+    }
 
-    for (; p < end; p++) {
-        switch (*p) {
-        case '\r':
-            break;
-        case '\n':
-            failureReason = "Unexpected LF in value at " + trimInputSample(value.data(), value.size());
-            return 0;
-        default:
-            value.append(*p);
-        }
-        if (*p == '\r') {
-            ++p;
-            break;
-        }
-    }
-    if (p >= end || *p != '\n') {
-        failureReason = "CR doesn't follow LF after value at " + trimInputSample(p, end - p);
-        return 0;
-    }
-    nameStr = AtomicString::fromUTF8(name.data(), name.size());
-    valueStr = AtomicString::fromUTF8(value.data(), value.size());
-    if (nameStr.isNull()) {
-        failureReason = "Invalid UTF-8 sequence in header name";
-        return 0;
-    }
-    if (valueStr.isNull()) {
+    *value = AtomicString::fromUTF8(&s[valueBegin], i - valueBegin);
+    if (i != valueBegin && value->isNull()) {
         failureReason = "Invalid UTF-8 sequence in header value";
+        return false;
+    }
+
+    *position = i + 1;
+    return true;
+}
+
+// Note that the header is already parsed and re-formatted in chromium side.
+// We assume that the input is more restricted than RFC2616.
+size_t parseHTTPHeader(const char* s, size_t size, String& failureReason, AtomicString& name, AtomicString& value)
+{
+    name = nullAtom;
+    value = nullAtom;
+    if (size >= 1 && s[0] == '\r') {
+        if (size >= 2 && s[1] == '\n') {
+            // Skip an empty line.
+            return 2;
+        }
+        failureReason = "LF doesn't follow CR at " + trimInputSample(0, size);
         return 0;
     }
-    return p - start;
+    size_t current = 0;
+    if (!parseHTTPHeaderName(s, current, size, failureReason, &current, &name)) {
+        return 0;
+    }
+    ASSERT(s[current] == ':');
+    ++current;
+
+    if (!parseHTTPHeaderValue(s, current, size, failureReason, &current, &value)) {
+        return 0;
+    }
+
+    return current;
 }
 
 size_t parseHTTPRequestBody(const char* data, size_t length, Vector<unsigned char>& body)
