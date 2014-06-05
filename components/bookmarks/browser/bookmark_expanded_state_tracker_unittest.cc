@@ -24,6 +24,8 @@ scoped_ptr<PrefService> PrefServiceForTesting() {
   registry->RegisterListPref(prefs::kBookmarkEditorExpandedNodes,
                              new base::ListValue,
                              user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterListPref(prefs::kManagedBookmarks,
+                             user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   base::PrefServiceFactory factory;
   factory.set_user_prefs(make_scoped_refptr(new TestingPrefStore()));
   return factory.Create(registry.get());

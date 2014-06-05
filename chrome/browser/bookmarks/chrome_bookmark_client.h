@@ -40,8 +40,16 @@ class ChromeBookmarkClient : public BookmarkClient,
   virtual void GetTypedCountForNodes(
       const NodeSet& nodes,
       NodeTypedCountPairs* node_typed_count_pairs) OVERRIDE;
-  virtual bool IsPermanentNodeVisible(int node_type) OVERRIDE;
+  virtual bool IsPermanentNodeVisible(
+      const BookmarkPermanentNode* node) OVERRIDE;
   virtual void RecordAction(const base::UserMetricsAction& action) OVERRIDE;
+  virtual bookmarks::LoadExtraCallback GetLoadExtraNodesCallback() OVERRIDE;
+  virtual bool CanRemovePermanentNodeChildren(
+      const BookmarkNode* node) OVERRIDE;
+  virtual bool CanSetPermanentNodeTitle(
+      const BookmarkNode* permanent_node) OVERRIDE;
+  virtual bool CanSyncNode(const BookmarkNode* node) OVERRIDE;
+  virtual bool CanReorderChildren(const BookmarkNode* parent) OVERRIDE;
 
   // content::NotificationObserver:
   virtual void Observe(int type,
@@ -62,6 +70,9 @@ class ChromeBookmarkClient : public BookmarkClient,
   virtual void BookmarkAllNodesRemoved(
       BookmarkModel* model,
       const std::set<GURL>& removed_urls) OVERRIDE;
+
+  // Helper for GetLoadExtraNodesCallback().
+  static bookmarks::BookmarkPermanentNodeList LoadExtraNodes(int64* next_id);
 
   Profile* profile_;
 

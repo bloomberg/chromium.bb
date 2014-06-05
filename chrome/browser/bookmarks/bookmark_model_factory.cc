@@ -27,15 +27,23 @@
 
 // static
 BookmarkModel* BookmarkModelFactory::GetForProfile(Profile* profile) {
-  ChromeBookmarkClient* bookmark_client = static_cast<ChromeBookmarkClient*>(
-      GetInstance()->GetServiceForBrowserContext(profile, true));
+  ChromeBookmarkClient* bookmark_client =
+      GetChromeBookmarkClientForProfile(profile);
   return bookmark_client ? bookmark_client->model() : NULL;
 }
 
+// static
 BookmarkModel* BookmarkModelFactory::GetForProfileIfExists(Profile* profile) {
   ChromeBookmarkClient* bookmark_client = static_cast<ChromeBookmarkClient*>(
       GetInstance()->GetServiceForBrowserContext(profile, false));
   return bookmark_client ? bookmark_client->model() : NULL;
+}
+
+// static
+ChromeBookmarkClient* BookmarkModelFactory::GetChromeBookmarkClientForProfile(
+    Profile* profile) {
+  return static_cast<ChromeBookmarkClient*>(
+      GetInstance()->GetServiceForBrowserContext(profile, true));
 }
 
 // static

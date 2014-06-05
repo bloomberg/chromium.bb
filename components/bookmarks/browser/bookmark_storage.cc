@@ -53,6 +53,7 @@ void LoadCallback(const base::FilePath& path,
                   base::SequencedTaskRunner* task_runner) {
   startup_metric_utils::ScopedSlowStartupUMA
       scoped_timer("Startup.SlowStartupBookmarksLoad");
+  bool load_index = false;
   bool bookmark_file_exists = base::PathExists(path);
   if (bookmark_file_exists) {
     JSONFileValueSerializer serializer(path);
@@ -76,13 +77,32 @@ void LoadCallback(const base::FilePath& path,
       UMA_HISTOGRAM_TIMES("Bookmarks.DecodeTime",
                           TimeTicks::Now() - start_time);
 
-      start_time = TimeTicks::Now();
-      AddBookmarksToIndex(details, details->bb_node());
-      AddBookmarksToIndex(details, details->other_folder_node());
-      AddBookmarksToIndex(details, details->mobile_folder_node());
-      UMA_HISTOGRAM_TIMES("Bookmarks.CreateBookmarkIndexTime",
-                          TimeTicks::Now() - start_time);
+      load_index = true;
     }
+  }
+
+  // Load any extra root nodes now, after the IDs have been potentially
+  // reassigned.
+  details->LoadExtraNodes();
+
+  // Load the index if there are any bookmarks in the extra nodes.
+  const BookmarkPermanentNodeList& extra_nodes = details->extra_nodes();
+  for (size_t i = 0; i < extra_nodes.size(); ++i) {
+    if (!extra_nodes[i]->empty()) {
+      load_index = true;
+      break;
+    }
+  }
+
+  if (load_index) {
+    TimeTicks start_time = TimeTicks::Now();
+    AddBookmarksToIndex(details, details->bb_node());
+    AddBookmarksToIndex(details, details->other_folder_node());
+    AddBookmarksToIndex(details, details->mobile_folder_node());
+    for (size_t i = 0; i < extra_nodes.size(); ++i)
+      AddBookmarksToIndex(details, extra_nodes[i]);
+    UMA_HISTOGRAM_TIMES("Bookmarks.CreateBookmarkIndexTime",
+                        TimeTicks::Now() - start_time);
   }
 
   task_runner->PostTask(FROM_HERE,
@@ -97,11 +117,13 @@ BookmarkLoadDetails::BookmarkLoadDetails(
     BookmarkPermanentNode* bb_node,
     BookmarkPermanentNode* other_folder_node,
     BookmarkPermanentNode* mobile_folder_node,
+    const LoadExtraCallback& load_extra_callback,
     BookmarkIndex* index,
     int64 max_id)
     : bb_node_(bb_node),
       other_folder_node_(other_folder_node),
       mobile_folder_node_(mobile_folder_node),
+      load_extra_callback_(load_extra_callback),
       index_(index),
       model_sync_transaction_version_(
           BookmarkNode::kInvalidSyncTransactionVersion),
@@ -110,6 +132,10 @@ BookmarkLoadDetails::BookmarkLoadDetails(
 }
 
 BookmarkLoadDetails::~BookmarkLoadDetails() {
+}
+
+void BookmarkLoadDetails::LoadExtraNodes() {
+  extra_nodes_ = load_extra_callback_.Run(&max_id_);
 }
 
 // BookmarkStorage -------------------------------------------------------------

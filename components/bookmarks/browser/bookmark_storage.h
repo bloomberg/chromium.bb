@@ -5,10 +5,12 @@
 #ifndef COMPONENTS_BOOKMARKS_BROWSER_BOOKMARK_STORAGE_H_
 #define COMPONENTS_BOOKMARKS_BROWSER_BOOKMARK_STORAGE_H_
 
+#include "base/callback_forward.h"
 #include "base/files/file_path.h"
 #include "base/files/important_file_writer.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_vector.h"
 #include "components/bookmarks/browser/bookmark_node.h"
 
 class BookmarkModel;
@@ -20,6 +22,14 @@ class SequencedTaskRunner;
 namespace bookmarks {
 
 class BookmarkIndex;
+
+// A list of BookmarkPermanentNodes that owns them.
+typedef ScopedVector<BookmarkPermanentNode> BookmarkPermanentNodeList;
+
+// A callback that generates a BookmarkPermanentNodeList, given a max ID to
+// use. The max ID argument will be updated after any new nodes have been
+// created and assigned IDs.
+typedef base::Callback<BookmarkPermanentNodeList(int64*)> LoadExtraCallback;
 
 // BookmarkLoadDetails is used by BookmarkStorage when loading bookmarks.
 // BookmarkModel creates a BookmarkLoadDetails and passes it (including
@@ -34,9 +44,12 @@ class BookmarkLoadDetails {
   BookmarkLoadDetails(BookmarkPermanentNode* bb_node,
                       BookmarkPermanentNode* other_folder_node,
                       BookmarkPermanentNode* mobile_folder_node,
+                      const LoadExtraCallback& load_extra_callback,
                       BookmarkIndex* index,
                       int64 max_id);
   ~BookmarkLoadDetails();
+
+  void LoadExtraNodes();
 
   BookmarkPermanentNode* bb_node() { return bb_node_.get(); }
   BookmarkPermanentNode* release_bb_node() { return bb_node_.release(); }
@@ -51,6 +64,12 @@ class BookmarkLoadDetails {
   }
   BookmarkPermanentNode* release_other_folder_node() {
     return other_folder_node_.release();
+  }
+  const BookmarkPermanentNodeList& extra_nodes() {
+    return extra_nodes_;
+  }
+  void release_extra_nodes(std::vector<BookmarkPermanentNode*>* extra_nodes) {
+    extra_nodes_.release(extra_nodes);
   }
   BookmarkIndex* index() { return index_.get(); }
   BookmarkIndex* release_index() { return index_.release(); }
@@ -96,6 +115,8 @@ class BookmarkLoadDetails {
   scoped_ptr<BookmarkPermanentNode> bb_node_;
   scoped_ptr<BookmarkPermanentNode> other_folder_node_;
   scoped_ptr<BookmarkPermanentNode> mobile_folder_node_;
+  LoadExtraCallback load_extra_callback_;
+  BookmarkPermanentNodeList extra_nodes_;
   scoped_ptr<BookmarkIndex> index_;
   BookmarkNode::MetaInfoMap model_meta_info_map_;
   int64 model_sync_transaction_version_;

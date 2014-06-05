@@ -11,8 +11,9 @@
 
 template <typename T> struct DefaultSingletonTraits;
 
-class Profile;
 class BookmarkModel;
+class ChromeBookmarkClient;
+class Profile;
 
 // Singleton that owns all BookmarkModel and associates them with Profiles.
 class BookmarkModelFactory : public BrowserContextKeyedServiceFactory {
@@ -20,6 +21,9 @@ class BookmarkModelFactory : public BrowserContextKeyedServiceFactory {
   static BookmarkModel* GetForProfile(Profile* profile);
 
   static BookmarkModel* GetForProfileIfExists(Profile* profile);
+
+  static ChromeBookmarkClient* GetChromeBookmarkClientForProfile(
+      Profile* profile);
 
   static BookmarkModelFactory* GetInstance();
 

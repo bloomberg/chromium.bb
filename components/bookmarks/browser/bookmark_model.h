@@ -98,12 +98,10 @@ class BookmarkModel : public BookmarkService {
   bool is_root_node(const BookmarkNode* node) const { return node == &root_; }
 
   // Returns whether the given |node| is one of the permanent nodes - root node,
-  // 'bookmark bar' node, 'other' node or 'mobile' node.
+  // 'bookmark bar' node, 'other' node or 'mobile' node, or one of the root
+  // nodes supplied by the |client_|.
   bool is_permanent_node(const BookmarkNode* node) const {
-    return node == &root_ ||
-           node == bookmark_bar_node_ ||
-           node == other_node_ ||
-           node == mobile_node_;
+    return node && (node == &root_ || node->parent() == &root_);
   }
 
   // Returns the parent the last node was added to. This never returns NULL

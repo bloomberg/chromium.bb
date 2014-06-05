@@ -4,6 +4,7 @@
 
 #include "chrome/browser/bookmarks/chrome_bookmark_client.h"
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/favicon/favicon_changed_details.h"
@@ -99,19 +100,42 @@ void ChromeBookmarkClient::GetTypedCountForNodes(
   }
 }
 
+bool ChromeBookmarkClient::IsPermanentNodeVisible(
+    const BookmarkPermanentNode* node) {
+  DCHECK(node->type() == BookmarkNode::BOOKMARK_BAR ||
+         node->type() == BookmarkNode::OTHER_NODE ||
+         node->type() == BookmarkNode::MOBILE);
+#if !defined(OS_IOS)
+  return node->type() != BookmarkNode::MOBILE;
+#else
+  return node->type() == BookmarkNode::MOBILE;
+#endif
+}
+
 void ChromeBookmarkClient::RecordAction(const base::UserMetricsAction& action) {
   content::RecordAction(action);
 }
 
-bool ChromeBookmarkClient::IsPermanentNodeVisible(int node_type) {
-  DCHECK(node_type == BookmarkNode::BOOKMARK_BAR ||
-         node_type == BookmarkNode::OTHER_NODE ||
-         node_type == BookmarkNode::MOBILE);
-#if !defined(OS_IOS)
-  return node_type != BookmarkNode::MOBILE;
-#else
-  return node_type == BookmarkNode::MOBILE;
-#endif
+bookmarks::LoadExtraCallback ChromeBookmarkClient::GetLoadExtraNodesCallback() {
+  return base::Bind(&ChromeBookmarkClient::LoadExtraNodes);
+}
+
+bool ChromeBookmarkClient::CanRemovePermanentNodeChildren(
+    const BookmarkNode* node) {
+  return true;
+}
+
+bool ChromeBookmarkClient::CanSetPermanentNodeTitle(
+    const BookmarkNode* permanent_node) {
+  return false;
+}
+
+bool ChromeBookmarkClient::CanSyncNode(const BookmarkNode* node) {
+  return true;
+}
+
+bool ChromeBookmarkClient::CanReorderChildren(const BookmarkNode* parent) {
+  return true;
 }
 
 void ChromeBookmarkClient::Observe(
@@ -151,4 +175,11 @@ void ChromeBookmarkClient::BookmarkAllNodesRemoved(
     BookmarkModel* model,
     const std::set<GURL>& removed_urls) {
   NotifyHistoryOfRemovedURLs(profile_, removed_urls);
+}
+
+// static
+bookmarks::BookmarkPermanentNodeList ChromeBookmarkClient::LoadExtraNodes(
+    int64* next_id) {
+  // TODO(joaodasilva): load the managed node. http://crbug.com/49598
+  return bookmarks::BookmarkPermanentNodeList();
 }
