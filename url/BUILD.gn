@@ -21,6 +21,8 @@ component("url") {
     "android/url_jni_registrar.h",
     "gurl.cc",
     "gurl.h",
+    "origin.cc",
+    "origin.h",
     "third_party/mozilla/url_parse.cc",
     "third_party/mozilla/url_parse.h",
     "url_canon.h",
@@ -91,6 +93,7 @@ if (!is_android) {
   test("url_unittests") {
     sources = [
       "gurl_unittest.cc",
+      "origin_unittest.cc",
       "url_canon_icu_unittest.cc",
       "url_canon_unittest.cc",
       "url_parse_unittest.cc",

@@ -1283,7 +1283,6 @@
       'disk_cache/blockfile/addr_unittest.cc',
       'disk_cache/blockfile/bitmap_unittest.cc',
       'disk_cache/blockfile/block_bitmaps_v3_unittest.cc',
-      'disk_cache/blockfile/block_bitmaps_v3_unittest.cc',
       'disk_cache/blockfile/block_files_unittest.cc',
       'disk_cache/blockfile/index_table_v3_unittest.cc',
       'disk_cache/blockfile/mapped_file_unittest.cc',

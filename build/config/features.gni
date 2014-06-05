@@ -60,3 +60,6 @@ enable_webrtc = !is_ios
 # Enable notifications everywhere except Android.
 # Android is http://crbug.com/115320
 enable_notifications = !is_android
+
+# TODO(brettw) this should be moved to net and only dependents get this define.
+disable_ftp_support = is_ios

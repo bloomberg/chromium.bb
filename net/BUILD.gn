@@ -6,6 +6,7 @@ import("//build/config/crypto.gni")
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
 import("//tools/grit/grit_rule.gni")
+import("//url/config.gni")
 
 if (is_android) {
   import("//build/config/android/config.gni")
@@ -13,8 +14,6 @@ if (is_android) {
 } else if (is_mac) {
   import("//build/config/mac/mac_sdk.gni")
 }
-
-import("//url/config.gni")
 
 # The list of net files is kept in net.gypi. Read it.
 gypi_values = exec_script(
@@ -36,16 +35,14 @@ posix_avoid_mmap = is_android && cpu_arch != "x86"
 
 # WebSockets and socket stream code are used everywhere except iOS.
 enable_websockets = !is_ios
-# TODO(brettw) put back to "!is_ios" when v8 is supported in GN build.
-use_v8_in_net = false  # TODO(brettw)!is_ios
+use_v8_in_net = !is_ios
 enable_built_in_dns = !is_ios
+disable_ftp_support = is_ios
 
 declare_args() {
   # Disables support for file URLs.  File URL support requires use of icu.
   disable_file_support = false
 }
-
-enable_ftp_support = !is_ios
 
 config("net_config") {
   defines = []
@@ -91,7 +88,7 @@ component("net") {
     "//base/third_party/dynamic_annotations",
     "//crypto",
     "//crypto:platform",
-    "//net/base/registry_controlled_domains:registry_controlled_domains",
+    "//net/base/registry_controlled_domains",
     "//sdch",
     "//third_party/icu",
     "//third_party/zlib",
@@ -137,7 +134,7 @@ component("net") {
     ]
   }
 
-  if (!enable_ftp_support) {
+  if (disable_ftp_support) {
     sources -= [
       "ftp/ftp_auth_cache.cc",
       "ftp/ftp_auth_cache.h",
@@ -545,7 +542,7 @@ grit("net_resources") {
   source = "base/net_resources.grd"
 }
 
-source_set("http_server") {
+static_library("http_server") {
   sources = [
     "server/http_connection.cc",
     "server/http_connection.h",
@@ -621,6 +618,8 @@ source_set("test_support") {
     "dns/mock_host_resolver.h",
     "dns/mock_mdns_socket_factory.cc",
     "dns/mock_mdns_socket_factory.h",
+    "http/http_transaction_test_util.cc",
+    "http/http_transaction_test_util.h",
     "proxy/mock_proxy_resolver.cc",
     "proxy/mock_proxy_resolver.h",
     "proxy/mock_proxy_script_fetcher.cc",
@@ -855,7 +854,7 @@ if (is_linux) {
     ]
   }
 
-  source_set("epoll_server") {
+  static_library("epoll_server") {
     sources = [
       "tools/epoll_server/epoll_server.cc",
       "tools/epoll_server/epoll_server.h",
@@ -866,7 +865,7 @@ if (is_linux) {
     ]
   }
 
-  source_set("flip_in_mem_edsm_server_base") {
+  static_library("flip_in_mem_edsm_server_base") {
     sources = [
       "tools/dump_cache/url_to_filename_encoder.cc",
       "tools/dump_cache/url_to_filename_encoder.h",
@@ -1028,3 +1027,266 @@ if (is_android || is_linux) {
     ]
   }
 }
+
+# TODO(GYP) make this compile on Android, we need some native test deps done.
+if (!is_android) {
+
+test("net_unittests") {
+  sources = gypi_values.net_test_sources
+
+  configs += [ ":net_win_size_truncation" ]
+  defines = []
+
+  deps = [
+    ":http_server",
+    ":net",
+    ":test_support",
+    "//base",
+    "//base:i18n",
+    "//base/allocator",
+    "//base/third_party/dynamic_annotations",
+    "//crypto",
+    "//crypto:platform",
+    "//net/base/registry_controlled_domains",
+    "//testing/gmock",
+    "//testing/gtest",
+    "//third_party/zlib",
+    "//url",
+  ]
+
+  if (is_linux) {
+    sources += gypi_values.net_linux_test_sources
+    deps += [
+      ":balsa",
+      ":epoll_server",
+      ":flip_in_mem_edsm_server_base",
+      ":quic_base",
+    ]
+  }
+
+  if (is_chromeos) {
+    sources -= [
+      "base/network_change_notifier_linux_unittest.cc",
+      "proxy/proxy_config_service_linux_unittest.cc",
+    ]
+  }
+
+  if (is_android) {
+    sources -= [
+      # See bug http://crbug.com/344533.
+      "disk_cache/blockfile/index_table_v3_unittest.cc",
+      # No res_ninit() et al on Android, so this doesn't make a lot of
+      # sense.
+      "dns/dns_config_service_posix_unittest.cc",
+    ]
+    deps += [
+      ":net_javatests",  # FIXME(brettw)
+      ":net_test_jni_headers",
+    ]
+  }
+
+  if (!use_nss_certs) {
+    sources -= [
+      "ssl/client_cert_store_nss_unittest.cc",
+      "ssl/client_cert_store_chromeos_unittest.cc",
+    ]
+  }
+
+  if (use_openssl) {
+    # When building for OpenSSL, we need to exclude NSS specific tests
+    # or functionality not supported by OpenSSL yet.
+    # TODO(bulach): Add equivalent tests when the underlying
+    #               functionality is ported to OpenSSL.
+    sources -= [
+      "cert/ct_objects_extractor_unittest.cc",
+      "cert/multi_log_ct_verifier_unittest.cc",
+      "cert/nss_cert_database_unittest.cc",
+      "cert/nss_cert_database_chromeos_unittest.cc",
+      "cert/nss_profile_filter_chromeos_unittest.cc",
+      "cert/x509_util_nss_unittest.cc",
+      "quic/test_tools/crypto_test_utils_nss.cc",
+    ]
+  } else {
+    sources -= [
+      "cert/x509_util_openssl_unittest.cc",
+      "quic/test_tools/crypto_test_utils_openssl.cc",
+      "socket/ssl_client_socket_openssl_unittest.cc",
+      "socket/ssl_session_cache_openssl_unittest.cc",
+    ]
+    if (!is_desktop_linux && !is_chromeos) {
+      sources -= [ "cert/nss_cert_database_unittest.cc" ]
+    }
+  }
+
+  if (use_kerberos) {
+    defines += [ "USE_KERBEROS" ]
+  } else {
+    sources -= [
+      "http/http_auth_gssapi_posix_unittest.cc",
+      "http/http_auth_handler_negotiate_unittest.cc",
+      "http/mock_gssapi_library_posix.cc",
+      "http/mock_gssapi_library_posix.h",
+    ]
+  }
+
+  if (use_openssl || (!is_desktop_linux && !is_chromeos && !is_ios)) {
+    # Only include this test when on Posix and using NSS for
+    # cert verification or on iOS (which also uses NSS for certs).
+    sources -= [ "ocsp/nss_ocsp_unittest.cc" ]
+  }
+
+  if (!use_openssl_certs) {
+    sources -= [ "ssl/openssl_client_key_store_unittest.cc" ]
+  }
+
+  if (!enable_websockets) {
+    sources -= [
+      "socket_stream/socket_stream_metrics_unittest.cc",
+      "socket_stream/socket_stream_unittest.cc",
+      "spdy/spdy_websocket_stream_unittest.cc",
+      "websockets/websocket_basic_stream_test.cc",
+      "websockets/websocket_channel_test.cc",
+      "websockets/websocket_deflate_predictor_impl_test.cc",
+      "websockets/websocket_deflate_stream_test.cc",
+      "websockets/websocket_deflater_test.cc",
+      "websockets/websocket_errors_test.cc",
+      "websockets/websocket_extension_parser_test.cc",
+      "websockets/websocket_frame_parser_test.cc",
+      "websockets/websocket_frame_test.cc",
+      "websockets/websocket_handshake_handler_spdy_test.cc",
+      "websockets/websocket_handshake_handler_test.cc",
+      "websockets/websocket_handshake_stream_create_helper_test.cc",
+      "websockets/websocket_inflater_test.cc",
+      "websockets/websocket_job_test.cc",
+      "websockets/websocket_net_log_params_test.cc",
+      "websockets/websocket_stream_test.cc",
+      "websockets/websocket_test_util.cc",
+      "websockets/websocket_test_util.h",
+      "websockets/websocket_throttle_test.cc",
+    ]
+  }
+
+  if (disable_file_support) {
+    sources -= [
+      "base/directory_lister_unittest.cc",
+      "url_request/url_request_file_job_unittest.cc",
+    ]
+  }
+
+  if (disable_ftp_support) {
+    sources -= [
+      "ftp/ftp_auth_cache_unittest.cc",
+      "ftp/ftp_ctrl_response_buffer_unittest.cc",
+      "ftp/ftp_directory_listing_parser_ls_unittest.cc",
+      "ftp/ftp_directory_listing_parser_netware_unittest.cc",
+      "ftp/ftp_directory_listing_parser_os2_unittest.cc",
+      "ftp/ftp_directory_listing_parser_unittest.cc",
+      "ftp/ftp_directory_listing_parser_unittest.h",
+      "ftp/ftp_directory_listing_parser_vms_unittest.cc",
+      "ftp/ftp_directory_listing_parser_windows_unittest.cc",
+      "ftp/ftp_network_transaction_unittest.cc",
+      "ftp/ftp_util_unittest.cc",
+      "url_request/url_request_ftp_job_unittest.cc",
+    ]
+  }
+
+  if (!enable_built_in_dns) {
+    sources -= [
+      "dns/address_sorter_posix_unittest.cc",
+      "dns/address_sorter_unittest.cc",
+    ]
+  }
+
+  # Always need use_v8_in_net to be 1 to run on Android, so just remove
+  # net_unittest's dependency on v8 when using icu alternatives instead of
+  # setting use_v8_in_net to 0.
+  if (use_v8_in_net && !use_icu_alternatives_on_android) {
+    deps += [ ":net_with_v8" ]
+  } else {
+    sources -= [
+      "proxy/proxy_resolver_v8_unittest.cc",
+      "proxy/proxy_resolver_v8_tracing_unittest.cc",
+    ]
+  }
+
+  if (!enable_mdns) {
+    sources -= [
+      "dns/mdns_cache_unittest.cc",
+      "dns/mdns_client_unittest.cc",
+      "dns/mdns_query_unittest.cc",
+      "dns/record_parsed_unittest.cc",
+      "dns/record_rdata_unittest.cc",
+    ]
+  }
+
+  if (is_ios) {
+    # TODO(GYP)
+    #  'actions': [
+    #    {
+    #      'action_name': 'copy_test_data',
+    #      'variables': {
+    #        'test_data_files': [
+    #          'data/ssl/certificates/',
+    #          'data/test.html',
+    #          'data/url_request_unittest/',
+    #        ],
+    #        'test_data_prefix': 'net',
+    #      },
+    #      'includes': [ '../build/copy_test_data_ios.gypi' ],
+    #    },
+    #  ],
+    sources -= [
+      # TODO(droger): The following tests are disabled because the
+      # implementation is missing or incomplete.
+      # KeygenHandler::GenKeyAndSignChallenge() is not ported to iOS.
+      "base/keygen_handler_unittest.cc",
+      "disk_cache/backend_unittest.cc",
+      "disk_cache/blockfile/block_files_unittest.cc",
+      # Need to read input data files.
+      "filter/gzip_filter_unittest.cc",
+      "socket/ssl_server_socket_unittest.cc",
+      "spdy/fuzzing/hpack_fuzz_util_test.cc",
+      # Need TestServer.
+      "proxy/proxy_script_fetcher_impl_unittest.cc",
+      "socket/ssl_client_socket_unittest.cc",
+      "url_request/url_fetcher_impl_unittest.cc",
+      "url_request/url_request_context_builder_unittest.cc",
+      # Needs GetAppOutput().
+      "test/python_utils_unittest.cc",
+
+      # The following tests are disabled because they don't apply to
+      # iOS.
+      # OS is not "linux" or "freebsd" or "openbsd".
+      "socket/unix_domain_socket_posix_unittest.cc",
+
+      # See bug http://crbug.com/344533.
+      "disk_cache/blockfile/index_table_v3_unittest.cc",
+    ]
+  }
+
+  if (is_android) {
+    sources -= [
+      "dns/dns_config_service_posix_unittest.cc",
+    ]
+    # TODO(GYP)
+    # # TODO(mmenke):  This depends on test_support_base, which depends on
+    # #                icu.  Figure out a way to remove that dependency.
+    # 'dependencies': [
+    #   '../testing/android/native_test.gyp:native_test_native_code',
+    # ]
+
+    set_sources_assignment_filter([])
+    sources += [ "base/address_tracker_linux_unittest.cc" ]
+    set_sources_assignment_filter(sources_assignment_filter)
+  }
+
+  if (use_icu_alternatives_on_android) {
+    sources -= [
+      "base/filename_util_unittest.cc",
+      "base/net_util_icu_unittest.cc",
+    ]
+    deps -= [ "//base:i18n" ]
+  }
+}
+
+}  # !is_android
