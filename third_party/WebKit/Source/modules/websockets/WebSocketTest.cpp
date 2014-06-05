@@ -18,9 +18,9 @@
 #include "wtf/Vector.h"
 #include "wtf/testing/WTFTestHelpers.h"
 #include "wtf/text/WTFString.h"
-
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
+#include <v8.h>
 
 using testing::_;
 using testing::AnyNumber;

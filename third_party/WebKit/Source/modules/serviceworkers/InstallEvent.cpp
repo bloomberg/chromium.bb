@@ -35,6 +35,7 @@
 #include "modules/serviceworkers/WaitUntilObserver.h"
 #include "platform/NotImplemented.h"
 #include "wtf/RefPtr.h"
+#include <v8.h>
 
 namespace WebCore {
 

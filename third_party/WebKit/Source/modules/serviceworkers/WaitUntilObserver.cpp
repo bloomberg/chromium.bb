@@ -15,6 +15,7 @@
 #include "wtf/Assertions.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
+#include <v8.h>
 
 namespace WebCore {
 

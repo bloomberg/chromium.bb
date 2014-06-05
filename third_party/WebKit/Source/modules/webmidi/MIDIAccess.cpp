@@ -44,6 +44,7 @@
 #include "modules/webmidi/MIDIOptions.h"
 #include "modules/webmidi/MIDIPort.h"
 #include "platform/AsyncMethodRunner.h"
+#include <v8.h>
 
 namespace WebCore {
 

@@ -14,6 +14,7 @@
 #include "modules/serviceworkers/ServiceWorkerGlobalScopeClient.h"
 #include "wtf/Assertions.h"
 #include "wtf/RefPtr.h"
+#include <v8.h>
 
 namespace WebCore {
 

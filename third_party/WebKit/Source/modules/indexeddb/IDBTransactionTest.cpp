@@ -38,8 +38,8 @@
 #include "modules/indexeddb/IDBPendingTransactionMonitor.h"
 #include "platform/SharedBuffer.h"
 #include "public/platform/WebIDBDatabase.h"
-
 #include <gtest/gtest.h>
+#include <v8.h>
 
 using namespace WebCore;
 

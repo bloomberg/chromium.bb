@@ -45,6 +45,7 @@
 #include "public/platform/WebIDBKey.h"
 #include "public/platform/WebIDBKeyRange.h"
 #include "public/platform/WebVector.h"
+#include <v8.h>
 
 using blink::WebBlobInfo;
 using blink::WebIDBCallbacks;

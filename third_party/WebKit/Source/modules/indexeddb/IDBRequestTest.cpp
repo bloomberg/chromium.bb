@@ -37,6 +37,7 @@
 #include "public/platform/WebIDBDatabase.h"
 #include "wtf/PassOwnPtr.h"
 #include <gtest/gtest.h>
+#include <v8.h>
 
 using blink::WebBlobInfo;
 using namespace WebCore;

@@ -40,6 +40,7 @@
 #include "public/platform/WebMessagePortChannel.h"
 #include "public/platform/WebServiceWorkerState.h"
 #include "public/platform/WebString.h"
+#include <v8.h>
 
 namespace WebCore {
 
