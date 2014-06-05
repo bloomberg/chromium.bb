@@ -108,9 +108,9 @@ bool HasExpiredOrIncompleteResult(
   if (it != bitmap_results.end())
     return true;
 
-   // Any favicon size is good if the desired size is 0.
-   if (desired_size_in_dip == 0)
-     return false;
+  // Any favicon size is good if the desired size is 0.
+  if (desired_size_in_dip == 0)
+    return false;
 
   // Check if the favicon for at least one of the scale factors is missing.
   // |bitmap_results| should always be complete for data inserted by
@@ -354,18 +354,16 @@ void FaviconHandler::OnUpdateFaviconURL(
       image_urls_.push_back(*i);
   }
 
-  // TODO(davemoore) Should clear on empty url. Currently we ignore it.
-  // This appears to be what FF does as well.
-  if (image_urls_.empty())
-    return;
-
   if (!client_->GetFaviconService())
     return;
 
   if (download_largest_icon_)
     SortAndPruneImageUrls();
 
-  ProcessCurrentUrl();
+  // TODO(davemoore) Should clear on empty url. Currently we ignore it.
+  // This appears to be what FF does as well.
+  if (!image_urls_.empty())
+    ProcessCurrentUrl();
 }
 
 void FaviconHandler::ProcessCurrentUrl() {
