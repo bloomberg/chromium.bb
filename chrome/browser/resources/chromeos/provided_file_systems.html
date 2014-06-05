@@ -46,6 +46,29 @@
       </template>
     </polymer-element>
 
+    <polymer-element name="request-timeline">
+      <template>
+        <link rel="stylesheet"
+            href="chrome://provided-file-systems/provided_file_systems.css">
+        <div id="requestTimeline">
+          <div class="request-timeline-padding"
+              style="min-height: {{rows.length * rowHeight}}px">
+            <template id="request-timeline-request"
+                repeat="{{request in chart}}">
+              <div class="request-timeline-request"
+                  title="{{request.id}}"
+                  data-state="{{request.state}}"
+                  data-request-type="{{request.requestType}}"
+                  style="left: {{request.left * scale}}px;
+                      top: {{request.row * rowHeight}}px;
+                      width: {{request.length * scale}}px">
+              </div>
+            </template>
+          </div>
+        </div>
+      </template>
+    </polymer-element>
+
     <polymer-element name="request-events">
       <template>
         <link rel="stylesheet"
@@ -65,11 +88,18 @@
             <tbody>
               <template id="request-event" repeat="{{item in model}}">
                 <tr>
-                  <td>{{item.time | formatTime}}</td>
+                  <td>
+                    <a id="request-{{item.id}}"></a>
+                    {{item.time | formatTime}}
+                  </td>
                   <td>{{item.id}}</td>
-                  <td>{{item.requestType}}</td>
+                  <td data-request-type="{{item.requestType}}">
+                    <span>{{item.requestType}}</span>
+                  </td>
                   <td>{{item.eventType}}</td>
-                  <td>{{item.error}}</td>
+                  <td data-error="{{item.error}}">
+                    <span>{{item.error}}</span>
+                  </td>
                   <td>{{item.hasMore | formatHasMore}}</td>
                 </tr>
               </template>
@@ -81,6 +111,9 @@
 
     <file-systems id="file-systems">
     </file-systems>
+
+    <request-timeline hidden id="request-timeline">
+    </request-timeline>
 
     <request-events hidden id="request-events">
     </request-events>
