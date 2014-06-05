@@ -181,7 +181,10 @@ cvox.ChromeVoxUserCommands.isFocusedOnLinkControl_ = function() {
  * If a lingering tab dummy span exists, remove it.
  */
 cvox.ChromeVoxUserCommands.removeTabDummySpan = function() {
-  var previousDummySpan = document.getElementById('ChromeVoxTabDummySpan');
+  // Break the following line to get around a Chromium js linter warning.
+  // TODO(plundblad): Find a better solution.
+  var previousDummySpan = document.
+      getElementById('ChromeVoxTabDummySpan');
   if (previousDummySpan && document.activeElement != previousDummySpan) {
     previousDummySpan.parentNode.removeChild(previousDummySpan);
   }
@@ -651,7 +654,7 @@ cvox.ChromeVoxUserCommands.doCommand_ = function(cmdStruct) {
         'target': 'Prefs',
         'action': 'setPref',
         'pref': 'sticky',
-        'value': !cvox.ChromeVox.isStickyOn,
+        'value': !cvox.ChromeVox.isStickyPrefOn,
         'announce': true
       });
       break;

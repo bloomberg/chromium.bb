@@ -402,7 +402,7 @@ cvox.NavigationManager.prototype.clearPageSel = function(opt_announce) {
 /**
  * Begins or finishes a DOM selection at the current CursorSelection in the
  * document.
- * @return {boolean}
+ * @return {boolean} Whether selection is on or off after this call.
  */
 cvox.NavigationManager.prototype.togglePageSel = function() {
   this.pageSel_ = this.pageSel_ ? null :
@@ -803,14 +803,7 @@ cvox.NavigationManager.prototype.startReading = function(queueMode) {
   } else {
     this.startNonCallbackReading_(queueMode);
   }
-  this.prevStickyState_ = cvox.ChromeVox.isStickyOn;
-  cvox.ChromeVox.host.sendToBackgroundPage({
-    'target': 'Prefs',
-    'action': 'setPref',
-    'pref': 'sticky',
-    'value': true,
-    'announce': false
-  });
+  cvox.ChromeVox.stickyOverride = true;
 };
 
 /**
@@ -824,16 +817,7 @@ cvox.NavigationManager.prototype.stopReading = function(stopTtsImmediately) {
   if (stopTtsImmediately) {
     cvox.ChromeVox.tts.stop();
   }
-  if (this.prevStickyState_ != undefined) {
-    cvox.ChromeVox.host.sendToBackgroundPage({
-      'target': 'Prefs',
-      'action': 'setPref',
-      'pref': 'sticky',
-      'value': this.prevStickyState_,
-      'announce': false
-    });
-    this.prevStickyState_ = undefined;
-  }
+  cvox.ChromeVox.stickyOverride = null;
 };
 
 

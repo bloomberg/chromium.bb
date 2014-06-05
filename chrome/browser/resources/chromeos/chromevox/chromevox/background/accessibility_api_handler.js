@@ -25,8 +25,12 @@ goog.require('cvox.NavBraille');
  * TODO(dmazzoni): Remove after the stable version of Chrome no longer
  * has the experimental accessibility API.
  */
-if (!chrome.accessibilityPrivate)
-  chrome.accessibilityPrivate = chrome.experimental.accessibility;
+chrome.experimental = chrome.experimental || {};
+/**
+ * Fall back on the experimental API if the new name is not available.
+ */
+chrome.accessibilityPrivate = chrome.accessibilityPrivate ||
+    chrome.experimental.accessibility;
 
 
 /**
@@ -49,6 +53,13 @@ cvox.AccessibilityApiHandler = function(tts, braille, earcons) {
    * @private
    */
   this.prevDescription_ = {};
+  /**
+   * Array of strings to speak the next time TTS is idle.
+   * @type {!Array.<string>}
+   * @private
+   */
+  this.idleSpeechQueue_ = [];
+
   try {
     chrome.accessibilityPrivate.setAccessibilityEnabled(true);
     chrome.accessibilityPrivate.setNativeAccessibilityEnabled(
@@ -136,13 +147,6 @@ cvox.AccessibilityApiHandler.prototype.TEXT_CHANGE_DELAY = 10;
 cvox.AccessibilityApiHandler.prototype.idleSpeechTimeout_ = null;
 
 /**
- * Array of strings to speak the next time TTS is idle.
- * @type {!Array.<string>}
- * @private
- */
-cvox.AccessibilityApiHandler.prototype.idleSpeechQueue_ = [];
-
-/**
  * Milliseconds of silence to wait before considering speech to be idle.
  * @const
  */
@@ -153,16 +157,17 @@ cvox.AccessibilityApiHandler.prototype.IDLE_SPEECH_DELAY_MS = 500;
  * native UI. Clear the context and any state associated with the last
  * focused control.
  */
-cvox.AccessibilityApiHandler.prototype.setWebContext = function(control) {
+cvox.AccessibilityApiHandler.prototype.setWebContext = function() {
   // This will never be spoken - it's just supposed to be a string that
   // won't match the context of the next control that gets focused.
   this.lastContext = '--internal-web--';
   this.editableTextHandler = null;
   this.editableTextName = '';
-}
+};
 
 /**
  * Adds event listeners.
+ * @private
  */
 cvox.AccessibilityApiHandler.prototype.addEventListeners_ = function() {
   /** Alias getMsg as msg. */
@@ -233,13 +238,13 @@ cvox.AccessibilityApiHandler.prototype.addEventListeners_ = function() {
     }
     chrome.windows.get(windowId, goog.bind(function(window) {
       chrome.tabs.getSelected(windowId, goog.bind(function(tab) {
-        var msg_id = window.incognito ? 'chrome_incognito_window_selected' :
+        var msgId = window.incognito ? 'chrome_incognito_window_selected' :
           'chrome_normal_window_selected';
         var title = tab.title ? tab.title : tab.url;
-        this.tts.speak(msg(msg_id, [title]),
+        this.tts.speak(msg(msgId, [title]),
                        cvox.AbstractTts.QUEUE_MODE_FLUSH,
                        cvox.AbstractTts.PERSONALITY_ANNOUNCEMENT);
-        this.braille.write(cvox.NavBraille.fromText(msg(msg_id, [title])));
+        this.braille.write(cvox.NavBraille.fromText(msg(msgId, [title])));
         this.earcons.playEarcon(cvox.AbstractEarcons.OBJECT_SELECT);
       }, this));
     }, this));
@@ -384,6 +389,29 @@ cvox.AccessibilityApiHandler.prototype.addEventListeners_ = function() {
       this.earcons.playEarcon(description.earcon);
     }
   }, this));
+
+  try {
+    chrome.accessibilityPrivate.onControlHover.addListener(
+        goog.bind(function(ctl) {
+      if (!cvox.ChromeVox.isActive) {
+        return;
+      }
+
+      var hasTouch = 'ontouchstart' in window;
+      if (!hasTouch) {
+        return;
+      }
+
+      var description = this.describe(ctl, false);
+      this.tts.speak(description.utterance,
+                     cvox.AbstractTts.QUEUE_MODE_FLUSH,
+                     description.ttsProps);
+      description.braille.write();
+      if (description.earcon) {
+        this.earcons.playEarcon(description.earcon);
+      }
+    }, this));
+  } catch (e) {}
 
   chrome.accessibilityPrivate.onTextChanged.addListener(
        goog.bind(function(ctl) {

@@ -31,6 +31,12 @@ cvox.BrailleDisplayManager = function() {
    */
   this.content_ = new cvox.NavBraille({});
   /**
+   * @type {!cvox.ExpandingBrailleTranslator.ExpansionType} valueExpansion
+   * @private
+   */
+  this.expansionType_ =
+      cvox.ExpandingBrailleTranslator.ExpansionType.SELECTION;
+  /**
    * @type {!ArrayBuffer}
    * @private
    */
@@ -98,10 +104,15 @@ cvox.BrailleDisplayManager.CURSOR_DOTS_ = 1 << 6 | 1 << 7;
 
 
 /**
- * @param {!cvox.NavBraille} content to send to the braille display.
+ * @param {!cvox.NavBraille} content Content to send to the braille display.
+ * @param {!cvox.ExpandingBrailleTranslator.ExpansionType} expansionType
+ *     If the text has a {@code ValueSpan}, this indicates how that part
+ *     of the display content is expanded when translating to braille.
+ *     (See {@code cvox.ExpandingBrailleTranslator}).
  */
-cvox.BrailleDisplayManager.prototype.setContent = function(content) {
-  this.translateContent_(content);
+cvox.BrailleDisplayManager.prototype.setContent = function(
+    content, expansionType) {
+  this.translateContent_(content, expansionType);
 };
 
 
@@ -135,7 +146,7 @@ cvox.BrailleDisplayManager.prototype.setTranslator =
   } else {
     this.translator_ = null;
   }
-  this.translateContent_(this.content_);
+  this.translateContent_(this.content_, this.expansionType_);
   if (hadTranslator && !this.translator_) {
     this.refresh_();
   }
@@ -193,12 +204,17 @@ cvox.BrailleDisplayManager.prototype.refresh_ = function() {
 
 
 /**
- * @param {!cvox.NavBraille} newContent new display content
+ * @param {!cvox.NavBraille} newContent New display content.
+ * @param {cvox.ExpandingBrailleTranslator.ExpansionType} newExpansionType
+ *     How the value part of of the new content should be expanded
+ *     with regards to contractions.
  * @private
  */
-cvox.BrailleDisplayManager.prototype.translateContent_ = function(newContent) {
+cvox.BrailleDisplayManager.prototype.translateContent_ = function(
+    newContent, newExpansionType) {
   if (!this.translator_) {
     this.content_ = newContent;
+    this.expansionType_ = newExpansionType;
     this.translatedContent_ = new ArrayBuffer(0);
     this.textToBraille_.length = 0;
     this.brailleToText_.length = 0;
@@ -206,8 +222,10 @@ cvox.BrailleDisplayManager.prototype.translateContent_ = function(newContent) {
   }
   this.translator_.translate(
       newContent.text,
+      newExpansionType,
       goog.bind(function(cells, textToBraille, brailleToText) {
         this.content_ = newContent;
+        this.expansionType_ = newExpansionType;
         var startIndex = this.content_.startIndex;
         var endIndex = this.content_.endIndex;
         this.panPosition_ = 0;
@@ -250,26 +268,23 @@ cvox.BrailleDisplayManager.prototype.translateContent_ = function(newContent) {
 
 
 /**
- * @param {cvox.BrailleKeyEvent} event
+ * @param {cvox.BrailleKeyEvent} event The key event.
  * @private
  */
 cvox.BrailleDisplayManager.prototype.onKeyEvent_ = function(event) {
   switch (event.command) {
-    case cvox.BrailleKeyCommand.ROUTING:
-      event.displayPosition = this.brailleToTextPosition_(
-          event.displayPosition + this.panPosition_);
-      // fall through
-    case cvox.BrailleKeyCommand.LINE_UP:
-    case cvox.BrailleKeyCommand.LINE_DOWN:
-    case cvox.BrailleKeyCommand.TOP:
-    case cvox.BrailleKeyCommand.BOTTOM:
-      this.commandListener_(event, this.content_);
-      break;
     case cvox.BrailleKeyCommand.PAN_LEFT:
       this.panLeft_();
       break;
     case cvox.BrailleKeyCommand.PAN_RIGHT:
       this.panRight_();
+      break;
+    case cvox.BrailleKeyCommand.ROUTING:
+      event.displayPosition = this.brailleToTextPosition_(
+          event.displayPosition + this.panPosition_);
+      // fall through
+    default:
+      this.commandListener_(event, this.content_);
       break;
   }
 };
@@ -345,7 +360,7 @@ cvox.BrailleDisplayManager.prototype.writeCursor_ = function(
  * @private
  * @param {number} braillePosition Braille position relative to the startof
  *        the translated content.
- * @return {number}
+ * @return {number} The mapped position in code units.
  */
 cvox.BrailleDisplayManager.prototype.brailleToTextPosition_ =
     function(braillePosition) {

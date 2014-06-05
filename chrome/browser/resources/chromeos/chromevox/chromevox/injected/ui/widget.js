@@ -83,15 +83,9 @@ cvox.Widget.prototype.show = function() {
   this.initialNode =
       cvox.ChromeVox.navigationManager.getCurrentNode();
   this.initialFocus = document.activeElement;
-  this.isStickyOn = cvox.ChromeVox.isStickyOn;
 
   // Widgets do not respond to sticky key.
-  cvox.ChromeVox.host.sendToBackgroundPage({
-      'target': 'Prefs',
-      'action': 'setPref',
-      'pref': 'sticky',
-      'value': false,
-      'announce': false});
+  cvox.ChromeVox.stickyOverride = false;
 
   if (this.getNameMsg() && this.getHelpMsg()) {
     cvox.$m(this.getNameMsg()).
@@ -114,13 +108,7 @@ cvox.Widget.prototype.show = function() {
 cvox.Widget.prototype.hide = function(opt_noSync) {
   window.removeEventListener('keypress', this.onKeyPress, true);
   window.removeEventListener('keydown', this.onKeyDown, true);
-
-  cvox.ChromeVox.host.sendToBackgroundPage({
-      'target': 'Prefs',
-      'action': 'setPref',
-      'pref': 'sticky',
-      'value': this.isStickyOn,
-      'announce': false});
+  cvox.ChromeVox.stickyOverride = null;
 
   cvox.ChromeVox.earcons.playEarcon(cvox.AbstractEarcons.OBJECT_CLOSE);
   if (!opt_noSync) {

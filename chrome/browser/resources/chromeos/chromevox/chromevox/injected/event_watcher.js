@@ -577,7 +577,11 @@ cvox.ChromeVoxEventWatcher.mouseClickEventWatcher = function(evt) {
  * @return {boolean} True if the default action should be performed.
  */
 cvox.ChromeVoxEventWatcher.mouseOverEventWatcher = function(evt) {
-  if (!cvox.ChromeVoxEventWatcher.focusFollowsMouse) {
+  var hasTouch = 'ontouchstart' in window;
+  var mouseoverDelayMs = cvox.ChromeVoxEventWatcher.mouseoverDelayMs;
+  if (hasTouch) {
+    mouseoverDelayMs = 0;
+  } else if (!cvox.ChromeVoxEventWatcher.focusFollowsMouse) {
     return true;
   }
 
@@ -616,7 +620,7 @@ cvox.ChromeVoxEventWatcher.mouseOverEventWatcher = function(evt) {
         cvox.ApiImplementation.syncToNode(target, true,
             cvox.AbstractTts.QUEUE_MODE_FLUSH);
         cvox.ChromeVoxEventWatcher.announcedMouseOverNode = target;
-      }, cvox.ChromeVoxEventWatcher.mouseoverDelayMs);
+      }, mouseoverDelayMs);
 
   return true;
 };
@@ -764,12 +768,9 @@ cvox.ChromeVoxEventWatcher.keyDownEventWatcher = function(evt) {
   }
 
   // Store some extra ChromeVox-specific properties in the event.
-  /** @expose */
   evt.searchKeyHeld =
       cvox.ChromeVox.searchKeyHeld && cvox.ChromeVox.isActive;
-  /** @expose */
-  evt.stickyMode = cvox.ChromeVox.isStickyOn && cvox.ChromeVox.isActive;
-  /** @expose */
+  evt.stickyMode = cvox.ChromeVox.isStickyModeOn() && cvox.ChromeVox.isActive;
   evt.keyPrefix = cvox.ChromeVox.keyPrefixOn && cvox.ChromeVox.isActive;
 
   cvox.ChromeVox.keyPrefixOn = false;
@@ -1426,6 +1427,7 @@ cvox.ChromeVoxEventWatcher.processQueue_ = function() {
 cvox.ChromeVoxEventWatcher.handleEvent_ = function(evt) {
   switch (evt.type) {
     case 'keydown':
+    case 'input':
       cvox.ChromeVoxEventWatcher.setUpTextHandler();
       if (cvox.ChromeVoxEventWatcher.currentTextControl) {
         cvox.ChromeVoxEventWatcher.handleTextChanged(true);

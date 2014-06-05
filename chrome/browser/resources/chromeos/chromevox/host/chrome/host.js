@@ -191,7 +191,10 @@ cvox.ChromeHost.prototype.killChromeVox = function() {
  * @param {boolean} sticky Whether sticky mode should be active.
  */
 cvox.ChromeHost.prototype.activateOrDeactivateStickyMode = function(sticky) {
-  cvox.ChromeVox.isStickyOn = sticky;
+  cvox.ChromeVox.isStickyPrefOn = sticky;
 };
 
+/**
+ * The host constructor for Chrome.
+ */
 cvox.HostFactory.hostConstructor = cvox.ChromeHost;

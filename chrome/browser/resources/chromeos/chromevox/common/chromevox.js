@@ -121,9 +121,19 @@ cvox.ChromeVox.navigationManager = null;
  */
 cvox.ChromeVox.serializer = null;
 /**
+ * This indicates whether or not the sticky mode pref is toggled on.
+ * Use cvox.ChromeVox.isStickyModeOn() to test if sticky mode is enabled
+ * either through the pref or due to being temporarily toggled on.
  * @type {boolean}
  */
-cvox.ChromeVox.isStickyOn = false;
+cvox.ChromeVox.isStickyPrefOn = false;
+/**
+ * If set to true or false, this value overrides cvox.ChromeVox.isStickyPrefOn
+ * temporarily - in order to temporarily enable sticky mode while doing
+ * 'read from here' or to temporarily disable it while using a widget.
+ * @type {?boolean}
+ */
+cvox.ChromeVox.stickyOverride = null;
 /**
  * @type {boolean}
  */
@@ -158,12 +168,14 @@ cvox.ChromeVox.isMac = navigator.platform.indexOf('Mac') != -1;
 /**
  * @type {string}
  */
-if (cvox.ChromeVox.isChromeOS)
+cvox.ChromeVox.modKeyStr;
+if (cvox.ChromeVox.isChromeOS) {
   cvox.ChromeVox.modKeyStr = 'Shift+Search';
-else if (cvox.ChromeVox.isMac)
+} else if (cvox.ChromeVox.isMac) {
   cvox.ChromeVox.modKeyStr = 'Ctrl+Cmd';
-else
+} else {
   cvox.ChromeVox.modKeyStr = 'Shift+Alt';
+}
 /**
  * If any of these keys is pressed with the modifier key, we go in sequence mode
  * where the subsequent independent key downs (while modifier keys are down)
@@ -222,7 +234,7 @@ cvox.ChromeVox.entireDocumentIsHidden = false;
  * @param {Object} store The object.
  */
 cvox.ChromeVox.storeOn = function(store) {
-  store['isStickyOn'] = cvox.ChromeVox.isStickyOn;
+  store['isStickyPrefOn'] = cvox.ChromeVox.isStickyPrefOn;
   cvox.ChromeVox.navigationManager.storeOn(store);
 };
 
@@ -232,6 +244,20 @@ cvox.ChromeVox.storeOn = function(store) {
  * @param {Object} store The object.
  */
 cvox.ChromeVox.readFrom = function(store) {
-  cvox.ChromeVox.isStickyOn = store['isStickyOn'];
+  cvox.ChromeVox.isStickyPrefOn = store['isStickyPrefOn'];
   cvox.ChromeVox.navigationManager.readFrom(store);
+};
+
+/**
+ * Returns whether sticky mode is on, taking both the global sticky mode
+ * pref and the temporary sticky mode override into account.
+ *
+ * @return {boolean} Whether sticky mode is on.
+ */
+cvox.ChromeVox.isStickyModeOn = function() {
+  if (cvox.ChromeVox.stickyOverride !== null) {
+    return cvox.ChromeVox.stickyOverride;
+  } else {
+    return cvox.ChromeVox.isStickyPrefOn;
+  }
 };

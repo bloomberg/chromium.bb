@@ -485,7 +485,7 @@ cvox.ChromeVoxBackground.prototype.readPrefs = function() {
       (prefs['useIBeamCursor'] == 'true');
   cvox.ChromeVox.isActive =
       (prefs['active'] == 'true' || cvox.ChromeVox.isChromeOS);
-  cvox.ChromeVox.isStickyOn = (prefs['sticky'] == 'true');
+  cvox.ChromeVox.isStickyPrefOn = (prefs['sticky'] == 'true');
 };
 
 /**

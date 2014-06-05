@@ -10,6 +10,8 @@ goog.provide('cvox.BrailleBackground');
 
 goog.require('cvox.AbstractBraille');
 goog.require('cvox.BrailleDisplayManager');
+goog.require('cvox.BrailleInputHandler');
+goog.require('cvox.BrailleKeyEvent');
 goog.require('cvox.BrailleTable');
 goog.require('cvox.ChromeVox');
 goog.require('cvox.LibLouis');
@@ -18,10 +20,13 @@ goog.require('cvox.LibLouis');
 /**
  * @constructor
  * @param {cvox.BrailleDisplayManager=} opt_displayManagerForTest
- *        display manager (for mocking in tests)
+ *        Display manager (for mocking in tests).
+ * @param {cvox.BrailleInputHandler=} opt_inputHandlerForTest Input handler
+ *        (for mocking in tests).
  * @extends {cvox.AbstractBraille}
  */
-cvox.BrailleBackground = function(opt_displayManagerForTest) {
+cvox.BrailleBackground = function(opt_displayManagerForTest,
+                                  opt_inputHandlerForTest) {
   goog.base(this);
   /**
    * @type {cvox.BrailleDisplayManager}
@@ -37,7 +42,8 @@ cvox.BrailleBackground = function(opt_displayManagerForTest) {
     this.tables_ = tables;
     this.initialize_(0);
   }, this));
-  this.displayManager_.setCommandListener(goog.bind(this.sendCommand_, this));
+  this.displayManager_.setCommandListener(
+      goog.bind(this.onBrailleKeyEvent_, this));
   /**
    * @type {cvox.NavBraille}
    * @private
@@ -48,6 +54,13 @@ cvox.BrailleBackground = function(opt_displayManagerForTest) {
    * @private
    */
   this.lastContentId_ = null;
+  /**
+   * @type {!cvox.BrailleInputHandler}
+   * @private
+   */
+  this.inputHandler_ = opt_inputHandlerForTest ||
+      new cvox.BrailleInputHandler();
+  this.inputHandler_.init();
 };
 goog.inherits(cvox.BrailleBackground, cvox.AbstractBraille);
 
@@ -56,7 +69,9 @@ goog.inherits(cvox.BrailleBackground, cvox.AbstractBraille);
 cvox.BrailleBackground.prototype.write = function(params) {
   this.lastContentId_ = null;
   this.lastContent_ = null;
-  this.displayManager_.setContent(params);
+  this.inputHandler_.onDisplayContentChanged(params.text);
+  this.displayManager_.setContent(
+      params, this.inputHandler_.getExpansionType());
 };
 
 
@@ -134,10 +149,13 @@ cvox.BrailleBackground.prototype.refreshTranslator = function() {
       function(translator) {
         if (uncontractedTable.id === table.id) {
           this.displayManager_.setTranslator(translator);
+          this.inputHandler_.setTranslator(translator);
         } else {
           this.liblouis_.getTranslator(uncontractedTable.fileName, goog.bind(
               function(uncontractedTranslator) {
                 this.displayManager_.setTranslator(
+                    translator, uncontractedTranslator);
+                this.inputHandler_.setTranslator(
                     translator, uncontractedTranslator);
               }, this));
         }
@@ -153,7 +171,9 @@ cvox.BrailleBackground.prototype.onBrailleMessage = function(msg) {
   if (msg['action'] == 'write') {
     this.lastContentId_ = msg['contentId'];
     this.lastContent_ = cvox.NavBraille.fromJson(msg['params']);
-    this.displayManager_.setContent(this.lastContent_);
+    this.inputHandler_.onDisplayContentChanged(this.lastContent_.text);
+    this.displayManager_.setContent(
+        this.lastContent_, this.inputHandler_.getExpansionType());
   }
 };
 
@@ -189,9 +209,25 @@ cvox.BrailleBackground.prototype.initialize_ = function(retries) {
 
 
 /**
+ * Handles braille key events by dispatching either to the input handler or
+ * a content script.
+ * @param {!cvox.BrailleKeyEvent} brailleEvt The event.
+ * @param {cvox.NavBraille} content Content of display when event fired.
+ * @private
+ */
+cvox.BrailleBackground.prototype.onBrailleKeyEvent_ = function(
+    brailleEvt, content) {
+  if (this.inputHandler_.onBrailleKeyEvent(brailleEvt)) {
+    return;
+  }
+  this.sendCommand_(brailleEvt, content);
+};
+
+
+/**
  * Dispatches braille input commands to the content script.
  * @param {!cvox.BrailleKeyEvent} brailleEvt The event.
- * @param {cvox.NavBraille} content content of display when event fired.
+ * @param {cvox.NavBraille} content Content of display when event fired.
  * @private
  */
 cvox.BrailleBackground.prototype.sendCommand_ =
