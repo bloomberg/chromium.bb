@@ -83,11 +83,12 @@ void AthenaTestHelper::SetUp(ui::ContextFactory* context_factory) {
 void AthenaTestHelper::TearDown() {
   teardown_called_ = true;
 
+  athena::ShutdownAthena();
+
   aura::client::SetFocusClient(root_window(), NULL);
   focus_client_.reset();
   input_method_filter_.reset();
 
-  athena::ShutdownAthena();
   host_.reset();
   ui::GestureRecognizer::Reset();
   test_screen_.reset();
