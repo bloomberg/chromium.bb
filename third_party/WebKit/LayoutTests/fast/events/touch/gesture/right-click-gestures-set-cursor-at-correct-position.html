@@ -26,6 +26,9 @@ function setCursorPosition(position)
 if (window.testRunner)
     testRunner.dumpAsText();
 
+if (window.internals)
+    internals.settings.setTouchEditingEnabled(false);
+
 var text = document.getElementById("text");
 
 setCursorPosition(0);

@@ -2,10 +2,16 @@
 <html>
 <head>
 <script src="../../../../resources/js-test.js"></script>
+<style>
+#empty {
+    width: 100px;
+    height: 50px;
+}
+</style>
 </head>
 <body onload="test()">
 <p>This test checks that the context menu is shown on long press gesture.</p>
-<div id="text">Testing</div>
+<div id="empty"></div>
 <div id="result">FAIL</div>
 <script>
 function test()
@@ -15,10 +21,10 @@ function test()
 
     document.oncontextmenu = function() { document.getElementById("result").innerHTML = "PASS"; }
 
-    var text = document.getElementById("text");
+    var empty = document.getElementById("empty");
 
-    var x = text.offsetParent.offsetLeft + text.offsetLeft + 4;
-    var y = text.offsetParent.offsetTop + text.offsetTop + text.offsetHeight / 2;
+    var x = empty.offsetParent.offsetLeft + empty.offsetLeft + 4;
+    var y = empty.offsetParent.offsetTop + empty.offsetTop + empty.offsetHeight / 2;
 
     if (!window.eventSender)
         return;
