@@ -2358,6 +2358,17 @@ void RenderFrameImpl::willSendRequest(
   if (request.url().isEmpty())
     return;
 
+  // Set the first party for cookies url if it has not been set yet (new
+  // requests). For redirects, it is updated by WebURLLoaderImpl.
+  if (request.firstPartyForCookies().isEmpty()) {
+    if (request.targetType() == blink::WebURLRequest::TargetIsMainFrame) {
+      request.setFirstPartyForCookies(request.url());
+    } else {
+      request.setFirstPartyForCookies(
+          frame->top()->document().firstPartyForCookies());
+    }
+  }
+
   WebFrame* top_frame = frame->top();
   if (!top_frame)
     top_frame = frame;
