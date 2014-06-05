@@ -28,12 +28,10 @@ class CONTENT_EXPORT ScreenOrientationDispatcherHost
 
   void SetProviderForTests(ScreenOrientationProvider* provider);
 
- protected:
+ private:
   virtual ~ScreenOrientationDispatcherHost();
 
- private:
-  void OnLockRequest(blink::WebScreenOrientationLockType orientation,
-                     int request_id);
+  void OnLockRequest(blink::WebScreenOrientationLockType orientations);
   void OnUnlockRequest();
 
   static ScreenOrientationProvider* CreateProvider();

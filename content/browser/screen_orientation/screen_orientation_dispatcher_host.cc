@@ -23,7 +23,7 @@ bool ScreenOrientationDispatcherHost::OnMessageReceived(
   bool handled = true;
 
   IPC_BEGIN_MESSAGE_MAP(ScreenOrientationDispatcherHost, message)
-    IPC_MESSAGE_HANDLER(ScreenOrientationHostMsg_LockRequest, OnLockRequest)
+    IPC_MESSAGE_HANDLER(ScreenOrientationHostMsg_Lock, OnLockRequest)
     IPC_MESSAGE_HANDLER(ScreenOrientationHostMsg_Unlock, OnUnlockRequest)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
@@ -42,20 +42,10 @@ void ScreenOrientationDispatcherHost::SetProviderForTests(
 }
 
 void ScreenOrientationDispatcherHost::OnLockRequest(
-    blink::WebScreenOrientationLockType orientation,
-    int request_id) {
-  if (!provider_) {
-    Send(new ScreenOrientationMsg_LockError(
-         request_id,
-         blink::WebLockOrientationCallback::ErrorTypeNotAvailable));
+    blink::WebScreenOrientationLockType orientation) {
+  if (!provider_.get())
     return;
-  }
 
-  // TODO(mlamouri): pass real values.
-  Send(new ScreenOrientationMsg_LockSuccess(
-       request_id,
-       0,
-       blink::WebScreenOrientationPortraitPrimary));
   provider_->LockOrientation(orientation);
 }
 

@@ -148,8 +148,7 @@ class CONTENT_EXPORT RendererWebKitPlatformSupportImpl
   virtual void cancelVibration();
   virtual void setScreenOrientationListener(
       blink::WebScreenOrientationListener*);
-  virtual void lockOrientation(blink::WebScreenOrientationLockType,
-                               blink::WebLockOrientationCallback*);
+  virtual void lockOrientation(blink::WebScreenOrientationLockType);
   virtual void unlockOrientation();
   virtual void setBatteryStatusListener(
       blink::WebBatteryStatusListener* listener);
@@ -197,7 +196,6 @@ class CONTENT_EXPORT RendererWebKitPlatformSupportImpl
 
  private:
   bool CheckPreparsedJsCachingEnabled() const;
-  void EnsureScreenOrientationDispatcher();
 
   scoped_ptr<RendererClipboardClient> clipboard_client_;
   scoped_ptr<WebClipboardImpl> clipboard_;
