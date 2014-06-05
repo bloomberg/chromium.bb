@@ -62,7 +62,6 @@ _PREBUILT_BASE_DIR = 'src/third_party/chromiumos-overlay/chromeos/config/'
 # Created in the event of new host targets becoming available
 _PREBUILT_MAKE_CONF = {'amd64': os.path.join(_PREBUILT_BASE_DIR,
                                              'make.conf.amd64-host')}
-_BINHOST_CONF_DIR = 'src/third_party/chromiumos-overlay/chromeos/binhost'
 
 
 class BuildTarget(object):
@@ -701,7 +700,6 @@ def ParseOptions(argv):
                          'chromeos-overlay. Commit the changes, but don\'t '
                          'push them. This is used for preflight binhosts.')
   parser.add_option('', '--binhost-conf-dir', dest='binhost_conf_dir',
-                    default=_BINHOST_CONF_DIR,
                     help='Directory to commit binhost config with '
                          '--sync-binhost-conf.')
   parser.add_option('-P', '--private', dest='private', action='store_true',
@@ -765,6 +763,9 @@ def ParseOptions(argv):
     if options.binhost_base_url != _BINHOST_BASE_URL:
       parser.error('when using --private the --binhost-base-url '
                    'is automatically derived.')
+
+  if options.sync_binhost_conf and not options.binhost_conf_dir:
+    parser.error('--sync-binhost-conf requires --binhost-conf-dir')
 
   return options, target
 

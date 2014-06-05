@@ -21,6 +21,7 @@ _BINHOST_PACKAGE_FILE = ('/usr/share/dev-install/portage/make.profile/'
                          'package.installable')
 _PRIVATE_BINHOST_CONF_DIR = ('src/private-overlays/chromeos-partner-overlay/'
                              'chromeos/binhost')
+_PUBLIC_BINHOST_CONF_DIR = 'src/third_party/chromiumos-overlay/chromeos/binhost'
 
 
 def _AddPackagesForPrebuilt(filename):
@@ -89,6 +90,8 @@ def UploadPrebuilts(category, chrome_rev, private_bucket, buildroot, **kwargs):
   if private_bucket:
     extra_args.extend(['--private', '--binhost-conf-dir',
                        _PRIVATE_BINHOST_CONF_DIR])
+  else:
+    extra_args.extend(['--binhost-conf-dir', _PUBLIC_BINHOST_CONF_DIR])
 
   if category == constants.CHROOT_BUILDER_TYPE:
     extra_args.extend(['--sync-host',
