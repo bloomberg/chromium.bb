@@ -22,11 +22,13 @@ namespace cast {
 const int64 kDontShowTimeoutMs = 33;
 const float kDefaultCongestionControlBackOff = 0.875f;
 const uint32 kVideoFrequency = 90000;
-const int64 kSkippedFramesCheckPeriodkMs = 10000;
 const uint32 kStartFrameId = UINT32_C(0xffffffff);
 
-// Number of skipped frames threshold in fps (as configured) per period above.
-const int kSkippedFramesThreshold = 3;
+// This is an important system-wide constant.  This limits how much history the
+// implementation must retain in order to process the acknowledgements of past
+// frames.
+const int kMaxUnackedFrames = 255;
+
 const size_t kMaxIpPacketSize = 1500;
 const int kStartRttMs = 20;
 const int64 kCastMessageUpdateIntervalMs = 33;

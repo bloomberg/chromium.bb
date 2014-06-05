@@ -313,7 +313,7 @@ TEST_F(VideoSenderTest, LogAckReceivedEvent) {
   cast_environment_->Logging()->RemoveRawEventSubscriber(&event_subscriber);
 }
 
-TEST_F(VideoSenderTest, StopSendingIntheAbsenceOfAck) {
+TEST_F(VideoSenderTest, StopSendingInTheAbsenceOfAck) {
   InitEncoder(false);
   // Send a stream of frames and don't ACK; by default we shouldn't have more
   // than 4 frames in flight.

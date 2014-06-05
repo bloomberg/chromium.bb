@@ -19,7 +19,7 @@ namespace cast {
 
 static const uint32 kMinIntra = 300;
 
-static int ComputeMaxNumOfRepeatedBuffes(uint8 max_unacked_frames) {
+static int ComputeMaxNumOfRepeatedBuffes(int max_unacked_frames) {
   if (max_unacked_frames > kNumberOfVp8VideoBuffers)
     return (max_unacked_frames - 1) / kNumberOfVp8VideoBuffers;
 
@@ -27,7 +27,7 @@ static int ComputeMaxNumOfRepeatedBuffes(uint8 max_unacked_frames) {
 }
 
 Vp8Encoder::Vp8Encoder(const VideoSenderConfig& video_config,
-                       uint8 max_unacked_frames)
+                       int max_unacked_frames)
     : cast_config_(video_config),
       use_multiple_video_buffers_(
           cast_config_.max_number_of_video_buffers_used ==

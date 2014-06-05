@@ -31,7 +31,7 @@ class VideoEncoderImpl : public VideoEncoder {
 
   VideoEncoderImpl(scoped_refptr<CastEnvironment> cast_environment,
                    const VideoSenderConfig& video_config,
-                   uint8 max_unacked_frames);
+                   int max_unacked_frames);
 
   virtual ~VideoEncoderImpl();
 
@@ -49,17 +49,13 @@ class VideoEncoderImpl : public VideoEncoder {
 
   // The following functions are called from the main cast thread.
   virtual void SetBitRate(int new_bit_rate) OVERRIDE;
-  virtual void SkipNextFrame(bool skip_next_frame) OVERRIDE;
   virtual void GenerateKeyFrame() OVERRIDE;
   virtual void LatestFrameIdToReference(uint32 frame_id) OVERRIDE;
-  virtual int NumberOfSkippedFrames() const OVERRIDE;
 
  private:
   const VideoSenderConfig video_config_;
   scoped_refptr<CastEnvironment> cast_environment_;
   CodecDynamicConfig dynamic_config_;
-  bool skip_next_frame_;
-  int skip_count_;
 
   // This member belongs to the video encoder thread. It must not be
   // dereferenced on the main thread. We manage the lifetime of this member

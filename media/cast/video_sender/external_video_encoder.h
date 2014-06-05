@@ -47,10 +47,8 @@ class ExternalVideoEncoder : public VideoEncoder {
 
   // The following functions are called from the main cast thread.
   virtual void SetBitRate(int new_bit_rate) OVERRIDE;
-  virtual void SkipNextFrame(bool skip_next_frame) OVERRIDE;
   virtual void GenerateKeyFrame() OVERRIDE;
   virtual void LatestFrameIdToReference(uint32 frame_id) OVERRIDE;
-  virtual int NumberOfSkippedFrames() const OVERRIDE;
 
   // Called when a VEA is created.
   void OnCreateVideoEncodeAccelerator(
@@ -70,8 +68,6 @@ class ExternalVideoEncoder : public VideoEncoder {
 
   bool encoder_active_;
   bool key_frame_requested_;
-  bool skip_next_frame_;
-  int skip_count_;
 
   scoped_refptr<LocalVideoEncodeAcceleratorClient> video_accelerator_client_;
   scoped_refptr<base::SingleThreadTaskRunner> encoder_task_runner_;

@@ -336,8 +336,6 @@ ExternalVideoEncoder::ExternalVideoEncoder(
       cast_environment_(cast_environment),
       encoder_active_(false),
       key_frame_requested_(false),
-      skip_next_frame_(false),
-      skip_count_(0),
       weak_factory_(this) {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
 
@@ -393,12 +391,6 @@ bool ExternalVideoEncoder::EncodeVideoFrame(
   if (!encoder_active_)
     return false;
 
-  if (skip_next_frame_) {
-    VLOG(1) << "Skip encoding frame";
-    ++skip_count_;
-    return false;
-  }
-
   encoder_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&LocalVideoEncodeAcceleratorClient::EncodeVideoFrame,
@@ -421,12 +413,6 @@ void ExternalVideoEncoder::SetBitRate(int new_bit_rate) {
                  new_bit_rate));
 }
 
-// Inform the encoder to not encode the next frame.
-void ExternalVideoEncoder::SkipNextFrame(bool skip_next_frame) {
-  DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
-  skip_next_frame_ = skip_next_frame;
-}
-
 // Inform the encoder to encode the next frame as a key frame.
 void ExternalVideoEncoder::GenerateKeyFrame() {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
@@ -436,11 +422,6 @@ void ExternalVideoEncoder::GenerateKeyFrame() {
 // Inform the encoder to only reference frames older or equal to frame_id;
 void ExternalVideoEncoder::LatestFrameIdToReference(uint32 /*frame_id*/) {
   // Do nothing not supported.
-}
-
-int ExternalVideoEncoder::NumberOfSkippedFrames() const {
-  DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
-  return skip_count_;
 }
 
 }  //  namespace cast

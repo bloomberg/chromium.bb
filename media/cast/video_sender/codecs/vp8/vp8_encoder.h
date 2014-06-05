@@ -27,7 +27,7 @@ const int kNumberOfVp8VideoBuffers = 3;
 
 class Vp8Encoder : public SoftwareVideoEncoder {
  public:
-  Vp8Encoder(const VideoSenderConfig& video_config, uint8 max_unacked_frames);
+  Vp8Encoder(const VideoSenderConfig& video_config, int max_unacked_frames);
 
   virtual ~Vp8Encoder();
 

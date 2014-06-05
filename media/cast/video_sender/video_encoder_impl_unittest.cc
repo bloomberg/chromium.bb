@@ -103,7 +103,7 @@ class VideoEncoderImplTest : public ::testing::Test {
     task_runner_->RunTasks();
   }
 
-  void Configure(uint8 max_unacked_frames) {
+  void Configure(int max_unacked_frames) {
     video_encoder_.reset(new VideoEncoderImpl(
         cast_environment_, video_config_, max_unacked_frames));
   }
