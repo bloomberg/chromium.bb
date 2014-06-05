@@ -117,8 +117,8 @@ void HTMLVideoElement::parseAttribute(const QualifiedName& name, const AtomicStr
                 toRenderImage(renderer())->imageResource()->setImageResource(0);
         }
         // Notify the player when the poster image URL changes.
-        if (player())
-            player()->setPoster(posterImageURL());
+        if (webMediaPlayer())
+            webMediaPlayer()->setPoster(posterImageURL());
     } else
         HTMLMediaElement::parseAttribute(name, value);
 }

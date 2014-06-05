@@ -112,18 +112,8 @@ public:
 
     virtual void load(blink::WebMediaPlayer::LoadType, const String& url, blink::WebMediaPlayer::CORSMode) = 0;
 
-    virtual double duration() const = 0;
-
-    virtual double currentTime() const = 0;
-
-    virtual void seek(double) = 0;
-
-    virtual bool seeking() const = 0;
-
     virtual double rate() const = 0;
     virtual void setRate(double) = 0;
-
-    virtual void setPoster(const KURL&) = 0;
 
     enum NetworkState { Empty, Idle, Loading, Loaded, FormatError, NetworkError, DecodeError };
     virtual NetworkState networkState() const = 0;

@@ -1834,7 +1834,7 @@ void HTMLMediaElement::seek(double time, ExceptionState& exceptionState)
     scheduleEvent(EventTypeNames::seeking);
 
     // 9 - Set the current playback position to the given new playback position
-    m_player->seek(time);
+    webMediaPlayer()->seek(time);
 
     // 10-14 are handled, if necessary, when the engine signals a readystate change or otherwise
     // satisfies seek completion and signals a time change.
@@ -1874,7 +1874,10 @@ bool HTMLMediaElement::seeking() const
 
 void HTMLMediaElement::refreshCachedTime() const
 {
-    m_cachedTime = m_player->currentTime();
+    if (!webMediaPlayer())
+        return;
+
+    m_cachedTime = webMediaPlayer()->currentTime();
     m_cachedTimeWallClockUpdateTime = WTF::currentTime();
 }
 
@@ -1898,7 +1901,7 @@ double HTMLMediaElement::currentTime() const
     static const double minCachedDeltaForWarning = 0.01;
 #endif
 
-    if (!m_player)
+    if (!m_player || !webMediaPlayer())
         return 0;
 
     if (m_seeking) {
@@ -1908,7 +1911,7 @@ double HTMLMediaElement::currentTime() const
 
     if (m_cachedTime != MediaPlayer::invalidTime() && m_paused) {
 #if LOG_CACHED_TIME_WARNINGS
-        double delta = m_cachedTime - m_player->currentTime();
+        double delta = m_cachedTime - webMediaPlayer()->currentTime();
         if (delta > minCachedDeltaForWarning)
             WTF_LOG(Media, "HTMLMediaElement::currentTime - WARNING, cached time is %f seconds off of media time when paused", delta);
 #endif
@@ -1947,7 +1950,7 @@ double HTMLMediaElement::duration() const
     if (m_mediaSource)
         return m_mediaSource->duration();
 
-    return m_player->duration();
+    return webMediaPlayer()->duration();
 }
 
 bool HTMLMediaElement::paused() const
@@ -2763,7 +2766,7 @@ void HTMLMediaElement::mediaPlayerTimeChanged()
     invalidateCachedTime();
 
     // 4.8.10.9 steps 12-14. Needed if no ReadyState change is associated with the seek.
-    if (m_seeking && m_readyState >= HAVE_CURRENT_DATA && !m_player->seeking())
+    if (m_seeking && m_readyState >= HAVE_CURRENT_DATA && !webMediaPlayer()->seeking())
         finishSeek();
 
     // Always call scheduleTimeupdateEvent when the media engine reports a time discontinuity,
