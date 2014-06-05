@@ -24,6 +24,7 @@ if env.Bit('bitcode'):
 # object code bloat or possibly multiple definitions.
 
 SRCS_NEWLIB_SYSCALL =  [
+    'abort.c',
     'access.c',
     'chdir.c',
     'chmod.c',

@@ -19,7 +19,8 @@ nexe = env.ComponentProgram('untrusted_check_test',
 if env.Bit('nacl_glibc'):
   expected_exit_status = 'untrusted_sigsegv'
 else:
-  expected_exit_status = '1'
+  # abort() from libnacl exits via __builtin_trap().
+  expected_exit_status = 'untrusted_builtin_trap'
 
 # Valgrind and ASan interfere with the exit status
 testing_on_asan_or_valgrind = (env.Bit('running_on_valgrind') or

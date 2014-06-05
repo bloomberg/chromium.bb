@@ -179,6 +179,7 @@ def IndirectSignal(signum):
 
 # Windows exit codes that indicate unhandled exceptions.
 STATUS_ACCESS_VIOLATION = 0xc0000005
+STATUS_ILLEGAL_INSTRUCTION = 0xc000001d
 STATUS_PRIVILEGED_INSTRUCTION = 0xc0000096
 STATUS_FLOAT_DIVIDE_BY_ZERO = 0xc000008e
 STATUS_INTEGER_DIVIDE_BY_ZERO = 0xc0000094
@@ -313,6 +314,19 @@ status_map = {
         'win32':  win32_untrusted_crash_exit,
         'win64':  win64_exit_via_ntdll_patch,
         },
+    # Expectations for __builtin_trap(), which is compiled to different
+    # instructions by the GCC and LLVM toolchains.  The exact exit status
+    # does not matter too much, as long as it's a crash and not a graceful
+    # exit via exit() or _exit().  We want __builtin_trap() to trigger the
+    # debugger or a crash reporter.
+    'untrusted_builtin_trap': {
+        'linux2': [-4, -11],
+        'mac32': [-4, -10, -11],
+        'mac64': [-4, -10, -11],
+        'win32': win32_untrusted_crash_exit +
+                 [MungeWindowsErrorExit(STATUS_ILLEGAL_INSTRUCTION)],
+        'win64': win64_exit_via_ntdll_patch,
+        },
     }
 
 
@@ -383,6 +397,10 @@ def FormatExitStatus(number):
   # statuses (STATUS_*) more recognisable.
   return '%i (0x%x)' % (number, number & 0xffffffff)
 
+def FormatResult((exit_status, printed_status)):
+  return 'exit status %s and signal info %r' % (
+      FormatExitStatus(exit_status), printed_status)
+
 def PrintStdStreams(stdout, stderr):
   if stderr is not None:
     Banner('Stdout for %s:' % os.path.basename(GlobalSettings['name']))
@@ -428,23 +446,32 @@ def CheckExitStatus(failed, req_status, using_nacl_signal_handler,
     expected_statuses = [int(req_status)]
 
   expected_printed_status = None
-  if expected_sigtype != 'normal':
+  if expected_sigtype == 'normal':
+    expected_results = [(status, None) for status in expected_statuses]
+  else:
     if sys.platform == 'darwin':
       # Mac OS X
       default = '<mach_exception field missing for %r>' % req_status
       expected_printed_status = '** Mach exception %s from %s code' % (
           status_map.get(req_status, {}).get('mach_exception', default),
           expected_sigtype)
+      expected_results = [(status, expected_printed_status)
+                          for status in expected_statuses]
     else:
       # Linux
       assert sys.platform != 'win32'
-      assert len(expected_statuses) == 1
-      assert expected_statuses[0] < 0
-      expected_printed_signum = -expected_statuses[0]
-      expected_printed_status = '** Signal %d from %s code' % (
-          expected_printed_signum,
-          expected_sigtype)
-      expected_statuses = [IndirectSignal(expected_printed_signum)]
+
+      def MapStatus(status):
+        # Expected value should be a signal number, negated.
+        assert status < 0, status
+        expected_printed_signum = -status
+        expected_printed_status = '** Signal %d from %s code' % (
+            expected_printed_signum,
+            expected_sigtype)
+        return (IndirectSignal(expected_printed_signum),
+                expected_printed_status)
+
+      expected_results = [MapStatus(status) for status in expected_statuses]
 
   # If an uncaught signal occurs under QEMU (on ARM), the exit status
   # contains the signal number, mangled as per IndirectSignal().  We
@@ -454,21 +481,18 @@ def CheckExitStatus(failed, req_status, using_nacl_signal_handler,
   if stderr is not None:
     exit_status = GetQemuSignalFromStderr(stderr, exit_status)
 
-  msg = '\nERROR: Command returned exit status %s but we expected %s' % (
-      FormatExitStatus(exit_status),
-      ' or '.join(FormatExitStatus(value) for value in expected_statuses))
-  if exit_status not in expected_statuses:
-    Print(msg)
-    failed = True
   if using_nacl_signal_handler and stderr is not None:
     actual_printed_status = GetNaClSignalInfoFromStderr(stderr)
-    msg = ('\nERROR: Command printed the signal info %r to stderr '
-           'but we expected %r' %
-           (actual_printed_status, expected_printed_status))
-    if actual_printed_status != expected_printed_status:
-      Print(msg)
-      failed = True
+  else:
+    actual_printed_status = None
 
+  actual_result = (exit_status, actual_printed_status)
+  msg = '\nERROR: Command returned: %s\n' % FormatResult(actual_result)
+  msg += 'but we expected: %s' % '\n  or: '.join(FormatResult(r)
+                                                 for r in expected_results)
+  if actual_result not in expected_results:
+    Print(msg)
+    failed = True
   return not failed
 
 def CheckTimeBounds(total_time):
