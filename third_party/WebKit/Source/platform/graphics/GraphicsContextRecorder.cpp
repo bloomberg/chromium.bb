@@ -202,11 +202,6 @@ public:
         params->setObject("paint", objectForSkPaint(paint));
     }
 
-    void drawPicture(SkPicture& picture) OVERRIDE
-    {
-        addItemWithParams("drawPicture")->setObject("picture", objectForSkPicture(picture));
-    }
-
     void drawRect(const SkRect& rect, const SkPaint& paint) OVERRIDE
     {
         RefPtr<JSONObject> params = addItemWithParams("drawRect");
@@ -395,6 +390,11 @@ public:
     {
         RefPtr<JSONObject> params = addItemWithParams("clipRegion");
         params->setString("op", regionOpName(op));
+    }
+
+    void onDrawPicture(const SkPicture* picture) OVERRIDE
+    {
+        addItemWithParams("drawPicture")->setObject("picture", objectForSkPicture(*picture));
     }
 
     void didSetMatrix(const SkMatrix& matrix) OVERRIDE

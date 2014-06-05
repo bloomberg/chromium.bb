@@ -543,7 +543,7 @@ void GraphicsContext::drawDisplayList(DisplayList* displayList)
     if (bounds.x() || bounds.y())
         m_canvas->translate(bounds.x(), bounds.y());
 
-    m_canvas->drawPicture(*displayList->picture());
+    m_canvas->drawPicture(displayList->picture());
 
     if (bounds.x() || bounds.y())
         m_canvas->translate(-bounds.x(), -bounds.y());

@@ -162,7 +162,7 @@ TEST_F(DeferredImageDecoderTest, drawIntoSkPicture)
     RefPtr<SkPicture> picture = adoptRef(recorder.endRecording());
     EXPECT_EQ(0, m_frameBufferRequestCount);
 
-    m_canvas->drawPicture(*picture);
+    m_canvas->drawPicture(picture.get());
     EXPECT_EQ(0, m_frameBufferRequestCount);
 
     SkBitmap canvasBitmap;
@@ -183,7 +183,7 @@ TEST_F(DeferredImageDecoderTest, drawIntoSkPictureProgressive)
     SkCanvas* tempCanvas = recorder.beginRecording(100, 100, 0, 0);
     tempCanvas->drawBitmap(image->bitmap(), 0, 0);
     RefPtr<SkPicture> picture = adoptRef(recorder.endRecording());
-    m_canvas->drawPicture(*picture);
+    m_canvas->drawPicture(picture.get());
 
     // Fully received the file and draw the SkPicture again.
     m_lazyDecoder->setData(*m_data, true);
@@ -191,7 +191,7 @@ TEST_F(DeferredImageDecoderTest, drawIntoSkPictureProgressive)
     tempCanvas = recorder.beginRecording(100, 100, 0, 0);
     tempCanvas->drawBitmap(image->bitmap(), 0, 0);
     picture = adoptRef(recorder.endRecording());
-    m_canvas->drawPicture(*picture);
+    m_canvas->drawPicture(picture.get());
 
     SkBitmap canvasBitmap;
     ASSERT_TRUE(canvasBitmap.allocN32Pixels(100, 100));
@@ -202,7 +202,7 @@ TEST_F(DeferredImageDecoderTest, drawIntoSkPictureProgressive)
 
 static void rasterizeMain(SkCanvas* canvas, SkPicture* picture)
 {
-    canvas->drawPicture(*picture);
+    canvas->drawPicture(picture);
 }
 
 TEST_F(DeferredImageDecoderTest, decodeOnOtherThread)
@@ -325,7 +325,7 @@ TEST_F(DeferredImageDecoderTest, decodedSize)
     tempCanvas->drawBitmap(image->bitmap(), 0, 0);
     RefPtr<SkPicture> picture = adoptRef(recorder.endRecording());
     EXPECT_EQ(0, m_frameBufferRequestCount);
-    m_canvas->drawPicture(*picture);
+    m_canvas->drawPicture(picture.get());
     EXPECT_EQ(1, m_frameBufferRequestCount);
 }
 
