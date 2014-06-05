@@ -372,7 +372,7 @@ bool OpusAudioDecoder::ConfigureDecoder() {
                           &opus_extra_data))
     return false;
 
-  if (config_.codec_delay() <= 0) {
+  if (config_.codec_delay() < 0) {
     DLOG(ERROR) << "Invalid file. Incorrect value for codec delay: "
                 << config_.codec_delay();
     return false;
