@@ -573,9 +573,6 @@ cr.define('options', function() {
       this.addExtensionControlledBox_('newtab-section-content',
                                       'newtab-controlled',
                                       false);
-      this.addExtensionControlledBox_('proxy-section-content',
-                                      'proxy-controlled',
-                                      true);
 
       document.body.addEventListener('click', function(e) {
         var button = findAncestor(e.target, function(el) {
@@ -1511,14 +1508,10 @@ cr.define('options', function() {
     },
 
     /**
-     * Set the enabled state for the proxy settings button and its associated
-     * message when extension controlled.
-     * @param {boolean} disabled Whether the button should be disabled.
-     * @param {boolean} extensionControlled Whether the proxy is extension
-     *     controlled.
+     * Set the enabled state for the proxy settings button.
      * @private
      */
-    setupProxySettingsButton_: function(disabled, extensionControlled) {
+    setupProxySettingsSection_: function(disabled, extensionControlled) {
       if (!cr.isChromeOS) {
         $('proxiesConfigureButton').disabled = disabled;
         $('proxiesLabel').textContent =
@@ -1633,15 +1626,6 @@ cr.define('options', function() {
                                          'newtab-controlled',
                                          details.newTabPage.id,
                                          details.newTabPage.name);
-      this.toggleExtensionControlledBox_('proxy-section-content',
-                                         'proxy-controlled',
-                                         details.proxy.id,
-                                         details.proxy.name);
-
-      // The proxy section contains just the warning box and nothing else, so
-      // if we're hiding the proxy warning box, we should also hide its header
-      // section.
-      $('proxy-section').hidden = details.proxy.id.length == 0;
     },
 
 
@@ -1810,7 +1794,7 @@ cr.define('options', function() {
     'setThemesResetButtonEnabled',
     'setVirtualKeyboardCheckboxState',
     'setupPageZoomSelector',
-    'setupProxySettingsButton',
+    'setupProxySettingsSection',
     'showBluetoothSettings',
     'showCreateProfileError',
     'showCreateProfileSuccess',

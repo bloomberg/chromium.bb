@@ -19,40 +19,40 @@
 #include "content/public/browser/browser_url_handler.h"
 #include "content/public/browser/navigation_entry.h"
 
-namespace extensions {
-
 namespace {
 
-void ShowSettingsApiBubble(SettingsApiOverrideType type,
+void ShowSettingsApiBubble(extensions::SettingsApiOverrideType type,
                            const std::string& extension_id,
                            Profile* profile,
                            views::View* anchor_view,
                            views::BubbleBorder::Arrow arrow) {
-  scoped_ptr<SettingsApiBubbleController> settings_api_bubble(
-      new SettingsApiBubbleController(profile, type));
+  scoped_ptr<extensions::SettingsApiBubbleController> settings_api_bubble(
+      new extensions::SettingsApiBubbleController(profile, type));
   if (!settings_api_bubble->ShouldShow(extension_id))
     return;
 
-  SettingsApiBubbleController* controller = settings_api_bubble.get();
-  ExtensionMessageBubbleView* bubble_delegate =
-      new ExtensionMessageBubbleView(
+  extensions::SettingsApiBubbleController* controller =
+      settings_api_bubble.get();
+  extensions::ExtensionMessageBubbleView* bubble_delegate =
+      new extensions::ExtensionMessageBubbleView(
           anchor_view,
           arrow,
           settings_api_bubble.PassAs<
-              ExtensionMessageBubbleController>());
+              extensions::ExtensionMessageBubbleController>());
   views::BubbleDelegateView::CreateBubble(bubble_delegate);
   controller->Show(bubble_delegate);
 }
 
 }  // namespace
 
+namespace extensions {
+
 void MaybeShowExtensionControlledHomeNotification(Browser* browser) {
 #if !defined(OS_WIN)
   return;
 #endif
 
-  const Extension* extension =
-      GetExtensionOverridingHomepage(browser->profile(), NULL);
+  const Extension* extension = OverridesHomepage(browser->profile(), NULL);
   if (extension) {
     // The bubble will try to anchor itself against the home button
     views::View* anchor_view = BrowserView::GetBrowserViewForBrowser(browser)->
@@ -76,7 +76,7 @@ void MaybeShowExtensionControlledSearchNotification(
   if (AutocompleteMatch::IsSearchType(match.type) &&
       match.type != AutocompleteMatchType::SEARCH_OTHER_ENGINE) {
     const Extension* extension =
-        GetExtensionOverridingSearchEngine(profile, NULL);
+        OverridesSearchEngine(profile, NULL);
     if (extension) {
       ToolbarView* toolbar =
           BrowserView::GetBrowserViewForBrowser(

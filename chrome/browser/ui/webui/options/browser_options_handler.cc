@@ -309,7 +309,6 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
     { "sectionTitleAppearance", IDS_APPEARANCE_GROUP_NAME },
     { "sectionTitleDefaultBrowser", IDS_OPTIONS_DEFAULTBROWSER_GROUP_NAME },
     { "sectionTitleUsers", IDS_PROFILES_OPTIONS_GROUP_NAME },
-    { "sectionTitleProxy", IDS_OPTIONS_PROXY_GROUP_NAME },
     { "sectionTitleSearch", IDS_OPTIONS_DEFAULTSEARCH_GROUP_NAME },
     { "sectionTitleStartup", IDS_OPTIONS_STARTUP_GROUP_NAME },
     { "sectionTitleSync", IDS_SYNC_OPTIONS_GROUP_NAME },
@@ -1708,12 +1707,8 @@ void BrowserOptionsHandler::SetupProxySettingsSection() {
   base::FundamentalValue disabled(is_win_ash || (proxy_config &&
                                   !proxy_config->IsUserModifiable()));
   base::FundamentalValue extension_controlled(is_extension_controlled);
-  web_ui()->CallJavascriptFunction("BrowserOptions.setupProxySettingsButton",
+  web_ui()->CallJavascriptFunction("BrowserOptions.setupProxySettingsSection",
                                    disabled, extension_controlled);
-
-#if defined(OS_WIN)
-  SetupExtensionControlledIndicators();
-#endif  // defined(OS_WIN)
 
 #endif  // !defined(OS_CHROMEOS)
 }
@@ -1754,18 +1749,16 @@ void BrowserOptionsHandler::SetupExtensionControlledIndicators() {
   base::DictionaryValue extension_controlled;
 
   // Check if an extension is overriding the Search Engine.
-  const extensions::Extension* extension =
-      extensions::GetExtensionOverridingSearchEngine(
-          Profile::FromWebUI(web_ui()), NULL);
+  const extensions::Extension* extension = extensions::OverridesSearchEngine(
+      Profile::FromWebUI(web_ui()), NULL);
   AppendExtensionData("searchEngine", extension, &extension_controlled);
 
   // Check if an extension is overriding the Home page.
-  extension = extensions::GetExtensionOverridingHomepage(
-      Profile::FromWebUI(web_ui()), NULL);
+  extension = extensions::OverridesHomepage(Profile::FromWebUI(web_ui()), NULL);
   AppendExtensionData("homePage", extension, &extension_controlled);
 
   // Check if an extension is overriding the Startup pages.
-  extension = extensions::GetExtensionOverridingStartupPages(
+  extension = extensions::OverridesStartupPages(
       Profile::FromWebUI(web_ui()), NULL);
   AppendExtensionData("startUpPage", extension, &extension_controlled);
 
@@ -1785,11 +1778,6 @@ void BrowserOptionsHandler::SetupExtensionControlledIndicators() {
                                            ExtensionRegistry::ENABLED);
   }
   AppendExtensionData("newTabPage", extension, &extension_controlled);
-
-  // Check if an extension is overwriting the proxy setting.
-  extension = extensions::GetExtensionOverridingProxy(
-      Profile::FromWebUI(web_ui()));
-  AppendExtensionData("proxy", extension, &extension_controlled);
 
   web_ui()->CallJavascriptFunction("BrowserOptions.toggleExtensionIndicators",
                                    extension_controlled);

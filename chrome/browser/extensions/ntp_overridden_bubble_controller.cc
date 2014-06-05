@@ -36,8 +36,7 @@ class NtpOverriddenBubbleDelegate
           user_action) OVERRIDE;
   virtual void PerformAction(const extensions::ExtensionIdList& list) OVERRIDE;
   virtual base::string16 GetTitle() const OVERRIDE;
-  virtual base::string16 GetMessageBody(
-      bool anchored_to_browser_action) const OVERRIDE;
+  virtual base::string16 GetMessageBody() const OVERRIDE;
   virtual base::string16 GetOverflowText(
       const base::string16& overflow_count) const OVERRIDE;
   virtual base::string16 GetLearnMoreLabel() const OVERRIDE;
@@ -114,8 +113,7 @@ base::string16 NtpOverriddenBubbleDelegate::GetTitle() const {
       IDS_EXTENSIONS_NTP_CONTROLLED_TITLE_HOME_PAGE_BUBBLE);
 }
 
-base::string16 NtpOverriddenBubbleDelegate::GetMessageBody(
-    bool anchored_to_browser_action) const {
+base::string16 NtpOverriddenBubbleDelegate::GetMessageBody() const {
   base::string16 body =
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_NTP_CONTROLLED_FIRST_LINE);
   body += l10n_util::GetStringUTF16(

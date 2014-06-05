@@ -42,8 +42,7 @@ class SuspiciousExtensionBubbleDelegate
       ExtensionMessageBubbleController::BubbleAction user_action) OVERRIDE;
   virtual void PerformAction(const extensions::ExtensionIdList& list) OVERRIDE;
   virtual base::string16 GetTitle() const OVERRIDE;
-  virtual base::string16 GetMessageBody(
-      bool anchored_to_browser_action) const OVERRIDE;
+  virtual base::string16 GetMessageBody() const OVERRIDE;
   virtual base::string16 GetOverflowText(
       const base::string16& overflow_count) const OVERRIDE;
   virtual base::string16 GetLearnMoreLabel() const OVERRIDE;
@@ -99,8 +98,7 @@ base::string16 SuspiciousExtensionBubbleDelegate::GetTitle() const {
   return l10n_util::GetStringUTF16(IDS_EXTENSIONS_UNSUPPORTED_DISABLED_TITLE);
 }
 
-base::string16 SuspiciousExtensionBubbleDelegate::GetMessageBody(
-    bool anchored_to_browser_action) const {
+base::string16 SuspiciousExtensionBubbleDelegate::GetMessageBody() const {
   return l10n_util::GetStringFUTF16(IDS_EXTENSIONS_UNSUPPORTED_DISABLED_BODY,
       l10n_util::GetStringUTF16(IDS_EXTENSION_WEB_STORE_TITLE));
 }

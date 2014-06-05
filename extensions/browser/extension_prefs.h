@@ -329,13 +329,6 @@ class ExtensionPrefs : public ExtensionScopedPrefs, public KeyedService {
   void SetNtpOverriddenBubbleBeenAcknowledged(const std::string& extension_id,
                                               bool value);
 
-  // Whether the user has been notified about extension with |extension_id|
-  // overriding the proxy.
-  bool HasProxyOverriddenBubbleBeenAcknowledged(
-      const std::string& extension_id);
-  void SetProxyOverriddenBubbleBeenAcknowledged(const std::string& extension_id,
-                                                bool value);
-
   // Returns true if the extension notification code has already run for the
   // first time for this profile. Currently we use this flag to mean that any
   // extensions that would trigger notifications should get silently

@@ -15,7 +15,6 @@
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/toolbar/browser_actions_container.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "extensions/common/extension.h"
@@ -52,7 +51,6 @@ BrowserActionView::BrowserActionView(const Extension* extension,
       delegate_(delegate),
       button_(NULL),
       extension_(extension) {
-  set_id(VIEW_ID_BROWSER_ACTION);
   button_ = new BrowserActionButton(extension_, browser_, delegate_);
   button_->set_drag_controller(delegate_);
   button_->set_owned_by_client();

@@ -42,13 +42,7 @@ class ExtensionMessageBubbleController {
 
     // Text for various UI labels shown in the bubble.
     virtual base::string16 GetTitle() const = 0;
-    // Fetches the message to show in the body. |anchored_to_browser_action|
-    // will be true if the bubble is anchored against a specific extension
-    // icon, allowing the bubble to show a different message than when it is
-    // anchored against something else (e.g. show "This extension has..."
-    // instead of "An extension has...").
-    virtual base::string16 GetMessageBody(
-        bool anchored_to_browser_action) const = 0;
+    virtual base::string16 GetMessageBody() const = 0;
     virtual base::string16 GetOverflowText(
         const base::string16& overflow_count) const = 0;
     virtual base::string16 GetLearnMoreLabel() const = 0;
