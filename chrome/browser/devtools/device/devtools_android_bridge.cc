@@ -63,34 +63,43 @@ class DiscoveryRequest : public base::RefCountedThreadSafe<
     DiscoveryRequest,
     BrowserThread::DeleteOnUIThread> {
  public:
+  typedef base::Callback<void(const DevToolsAndroidBridge::RemoteDevices&)>
+      DiscoveryCallback;
   typedef AndroidDeviceManager::Device Device;
   typedef AndroidDeviceManager::Devices Devices;
-  typedef AndroidDeviceManager::DeviceInfo DeviceInfo;
-  typedef DevToolsAndroidBridge::RemoteDevice RemoteDevice;
-  typedef DevToolsAndroidBridge::RemoteDevices RemoteDevices;
-  typedef DevToolsAndroidBridge::RemoteBrowser RemoteBrowser;
-  typedef DevToolsAndroidBridge::RemoteBrowsers RemoteBrowsers;
-  typedef base::Callback<void(const RemoteDevices&)> DiscoveryCallback;
 
-  DiscoveryRequest(AndroidDeviceManager* device_manager,
-                   const DiscoveryCallback& callback);
+  DiscoveryRequest(
+      AndroidDeviceManager* device_manager,
+      const DiscoveryCallback& callback);
+
  private:
   friend struct BrowserThread::DeleteOnThread<BrowserThread::UI>;
   friend class base::DeleteHelper<DiscoveryRequest>;
+
   virtual ~DiscoveryRequest();
 
   void ReceivedDevices(const Devices& devices);
-  void ReceivedDeviceInfo(scoped_refptr<Device> device,
-                          const DeviceInfo& device_info);
-  void ReceivedVersion(scoped_refptr<RemoteBrowser>,
-                       int result,
-                       const std::string& response);
-  void ReceivedPages(scoped_refptr<RemoteBrowser>,
-                     int result,
-                     const std::string& response);
+  void ProcessDevices();
+  void ReceivedDeviceInfo(const AndroidDeviceManager::DeviceInfo& device_info);
+  void ProcessSockets();
+  void ReceivedVersion(int result, const std::string& response);
+  void ReceivedPages(int result, const std::string& response);
+
+  scoped_refptr<Device> current_device() { return devices_.back(); }
+
+  scoped_refptr<DevToolsAndroidBridge::RemoteBrowser> current_browser() const {
+    return browsers_.back();
+  }
+
+  void NextBrowser();
+  void NextDevice();
+
+  void Respond();
 
   DiscoveryCallback callback_;
-  RemoteDevices remote_devices_;
+  Devices devices_;
+  DevToolsAndroidBridge::RemoteBrowsers browsers_;
+  DevToolsAndroidBridge::RemoteDevices remote_devices_;
 };
 
 DiscoveryRequest::DiscoveryRequest(
@@ -98,78 +107,111 @@ DiscoveryRequest::DiscoveryRequest(
     const DiscoveryCallback& callback)
     : callback_(callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   device_manager->QueryDevices(
       base::Bind(&DiscoveryRequest::ReceivedDevices, this));
 }
 
 DiscoveryRequest::~DiscoveryRequest() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  callback_.Run(remote_devices_);
 }
 
 void DiscoveryRequest::ReceivedDevices(const Devices& devices) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  for (Devices::const_iterator it = devices.begin();
-       it != devices.end(); ++it) {
-    (*it)->QueryDeviceInfo(
-        base::Bind(&DiscoveryRequest::ReceivedDeviceInfo, this, *it));
-  }
+  devices_ = devices;
+  ProcessDevices();
 }
 
-void DiscoveryRequest::ReceivedDeviceInfo(scoped_refptr<Device> device,
-                                          const DeviceInfo& device_info) {
+void DiscoveryRequest::ProcessDevices() {
+  if (devices_.size() == 0) {
+    Respond();
+    return;
+  }
+
+  current_device()->QueryDeviceInfo(
+      base::Bind(&DiscoveryRequest::ReceivedDeviceInfo, this));
+}
+
+void DiscoveryRequest::ReceivedDeviceInfo(
+    const AndroidDeviceManager::DeviceInfo& device_info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  scoped_refptr<RemoteDevice> remote_device =
-      new RemoteDevice(device, device_info);
-  remote_devices_.push_back(remote_device);
-  for (RemoteBrowsers::iterator it = remote_device->browsers().begin();
-       it != remote_device->browsers().end(); ++it) {
-    (*it)->SendJsonRequest(
-        kVersionRequest,
-        base::Bind(&DiscoveryRequest::ReceivedVersion, this, *it));
-    (*it)->SendJsonRequest(
-        kPageListRequest,
-        base::Bind(&DiscoveryRequest::ReceivedPages, this, *it));
-  }
+  remote_devices_.push_back(
+      new DevToolsAndroidBridge::RemoteDevice(current_device(), device_info));
+  browsers_ = remote_devices_.back()->browsers();
+  ProcessSockets();
 }
 
-void DiscoveryRequest::ReceivedVersion(scoped_refptr<RemoteBrowser> browser,
-                                       int result,
+void DiscoveryRequest::ProcessSockets() {
+  if (browsers_.size() == 0) {
+    NextDevice();
+    return;
+  }
+
+  current_device()->SendJsonRequest(
+      current_browser()->socket(),
+      kVersionRequest,
+      base::Bind(&DiscoveryRequest::ReceivedVersion, this));
+}
+
+void DiscoveryRequest::ReceivedVersion(int result,
                                        const std::string& response) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (result < 0)
+  if (result < 0) {
+    NextBrowser();
     return;
+  }
+
   // Parse version, append to package name if available,
   scoped_ptr<base::Value> value(base::JSONReader::Read(response));
   base::DictionaryValue* dict;
   if (value && value->GetAsDictionary(&dict)) {
-    std::string browser_name;
-    if (dict->GetString("Browser", &browser_name)) {
+    std::string browser;
+    if (dict->GetString("Browser", &browser)) {
       std::vector<std::string> parts;
-      Tokenize(browser_name, "/", &parts);
+      Tokenize(browser, "/", &parts);
       if (parts.size() == 2)
-        browser->set_version(parts[1]);
+        current_browser()->set_version(parts[1]);
       else
-        browser->set_version(browser_name);
+        current_browser()->set_version(browser);
     }
     std::string package;
     if (dict->GetString("Android-Package", &package)) {
-      browser->set_display_name(
-          AdbDeviceInfoQuery::GetDisplayName(browser->socket(), package));
+      current_browser()->set_display_name(
+          AdbDeviceInfoQuery::GetDisplayName(current_browser()->socket(),
+                                             package));
     }
   }
+
+  current_device()->SendJsonRequest(
+      current_browser()->socket(),
+      kPageListRequest,
+      base::Bind(&DiscoveryRequest::ReceivedPages, this));
 }
 
-void DiscoveryRequest::ReceivedPages(scoped_refptr<RemoteBrowser> browser,
-                                     int result,
+void DiscoveryRequest::ReceivedPages(int result,
                                      const std::string& response) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (result < 0)
-    return;
-  scoped_ptr<base::Value> value(base::JSONReader::Read(response));
-  base::ListValue* list_value;
-  if (value && value->GetAsList(&list_value))
-    browser->SetPageDescriptors(*list_value);
+  if (result >= 0) {
+    scoped_ptr<base::Value> value(base::JSONReader::Read(response));
+    base::ListValue* list_value;
+    if (value && value->GetAsList(&list_value))
+      current_browser()->SetPageDescriptors(*list_value);
+  }
+  NextBrowser();
+}
+
+void DiscoveryRequest::NextBrowser() {
+  browsers_.pop_back();
+  ProcessSockets();
+}
+
+void DiscoveryRequest::NextDevice() {
+  devices_.pop_back();
+  ProcessDevices();
+}
+
+void DiscoveryRequest::Respond() {
+  callback_.Run(remote_devices_);
 }
 
 // ProtocolCommand ------------------------------------------------------------
