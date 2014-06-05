@@ -14,6 +14,7 @@ from chromite.cbuildbot import constants
 from chromite.cbuildbot import lab_status
 from chromite.cbuildbot import validation_pool
 from chromite.cbuildbot.stages import generic_stages
+from chromite.lib import cgroups
 from chromite.lib import cros_build_lib
 from chromite.lib import osutils
 from chromite.lib import timeout_util
@@ -178,8 +179,9 @@ class VMTestStage(generic_stages.BoardSpecificBuilderStage,
     try:
       for test_type in self._run.config.vm_tests:
         cros_build_lib.Info('Running VM test %s.', test_type)
-        with timeout_util.Timeout(self.VM_TEST_TIMEOUT):
-          self._RunTest(test_type, test_results_dir)
+        with cgroups.SimpleContainChildren('VMTest'):
+          with timeout_util.Timeout(self.VM_TEST_TIMEOUT):
+            self._RunTest(test_type, test_results_dir)
 
     except Exception:
       cros_build_lib.Error(_VM_TEST_ERROR_MSG %
