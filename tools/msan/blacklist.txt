@@ -16,3 +16,8 @@ fun:unpack_RGB888
 
 # Bug in MSan, fixed in clang r210020. http://crbug.com/378909
 fun:*convolveVertically_SSE2*
+
+# MSan issue, http://crbug.com/381233
+# (Both functions call __mm_maddubs_epi16()).
+fun:*ProcessPixelPairHelper*
+fun:*ProcessOnePixel*
