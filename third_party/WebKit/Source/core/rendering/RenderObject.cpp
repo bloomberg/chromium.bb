@@ -1410,14 +1410,14 @@ FloatRect RenderObject::absoluteBoundingBoxRectForRange(const Range* range)
 void RenderObject::addAbsoluteRectForLayer(LayoutRect& result)
 {
     if (hasLayer())
-        result.unite(absoluteBoundingBoxRectIgnoringTransforms());
+        result.unite(absoluteBoundingBoxRect());
     for (RenderObject* current = slowFirstChild(); current; current = current->nextSibling())
         current->addAbsoluteRectForLayer(result);
 }
 
 LayoutRect RenderObject::paintingRootRect(LayoutRect& topLevelRect)
 {
-    LayoutRect result = absoluteBoundingBoxRectIgnoringTransforms();
+    LayoutRect result = absoluteBoundingBoxRect();
     topLevelRect = result;
     for (RenderObject* current = slowFirstChild(); current; current = current->nextSibling())
         current->addAbsoluteRectForLayer(result);

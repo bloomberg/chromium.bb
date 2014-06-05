@@ -3165,8 +3165,7 @@ bool EventHandler::tryStartDrag(const MouseEventWithHitTestResults& event)
     // image and offset
     if (dragState().m_dragType == DragSourceActionDHTML) {
         if (RenderObject* renderer = dragState().m_dragSrc->renderer()) {
-            // FIXME: This doesn't work correctly with transforms.
-            FloatPoint absPos = renderer->localToAbsolute();
+            FloatPoint absPos = renderer->localToAbsolute(FloatPoint(), UseTransforms);
             IntSize delta = m_mouseDownPos - roundedIntPoint(absPos);
             dragState().m_dragClipboard->setDragImageElement(dragState().m_dragSrc.get(), IntPoint(delta));
         } else {
