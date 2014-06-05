@@ -162,11 +162,6 @@ EVENTS_EXPORT bool IsMouseEventFromTouch(UINT message);
 EVENTS_EXPORT uint16 GetScanCodeFromLParam(LPARAM lParam);
 EVENTS_EXPORT LPARAM GetLParamFromScanCode(uint16 scan_code);
 
-// Overrides the ui::KeyEvent's flags for test.
-// They're not exported to prevent it from leaking into production code.
-void SetKeyEventFlagsForTest(int flags);
-void ResetKeyEventFlagsForTest();
-
 #endif
 
 // Registers a custom event type.
