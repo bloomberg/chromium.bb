@@ -1126,6 +1126,13 @@ void RendererWebKitPlatformSupportImpl::cancelVibration() {
 
 //------------------------------------------------------------------------------
 
+void RendererWebKitPlatformSupportImpl::EnsureScreenOrientationDispatcher() {
+  if (screen_orientation_dispatcher_)
+    return;
+
+  screen_orientation_dispatcher_.reset(new ScreenOrientationDispatcher());
+}
+
 void RendererWebKitPlatformSupportImpl::setScreenOrientationListener(
     blink::WebScreenOrientationListener* listener) {
   if (RenderThreadImpl::current() &&
@@ -1138,22 +1145,23 @@ void RendererWebKitPlatformSupportImpl::setScreenOrientationListener(
     return;
   }
 
-  if (!screen_orientation_dispatcher_) {
-    screen_orientation_dispatcher_.reset(
-        new ScreenOrientationDispatcher(RenderThread::Get()));
-  }
 
+  EnsureScreenOrientationDispatcher();
   screen_orientation_dispatcher_->setListener(listener);
 }
 
 void RendererWebKitPlatformSupportImpl::lockOrientation(
-    blink::WebScreenOrientationLockType orientation) {
+    blink::WebScreenOrientationLockType orientation,
+    blink::WebLockOrientationCallback* callback) {
   if (RenderThreadImpl::current() &&
       RenderThreadImpl::current()->layout_test_mode()) {
     g_test_screen_orientation_controller.Get().UpdateLock(orientation);
     return;
   }
-  RenderThread::Get()->Send(new ScreenOrientationHostMsg_Lock(orientation));
+
+  EnsureScreenOrientationDispatcher();
+  screen_orientation_dispatcher_->LockOrientation(
+      orientation, scoped_ptr<blink::WebLockOrientationCallback>(callback));
 }
 
 void RendererWebKitPlatformSupportImpl::unlockOrientation() {
@@ -1162,7 +1170,9 @@ void RendererWebKitPlatformSupportImpl::unlockOrientation() {
     g_test_screen_orientation_controller.Get().ResetLock();
     return;
   }
-  RenderThread::Get()->Send(new ScreenOrientationHostMsg_Unlock);
+
+  EnsureScreenOrientationDispatcher();
+  screen_orientation_dispatcher_->UnlockOrientation();
 }
 
 // static
