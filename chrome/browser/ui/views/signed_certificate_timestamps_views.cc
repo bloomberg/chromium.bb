@@ -10,25 +10,16 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/ui/views/constrained_window_views.h"
 #include "chrome/browser/ui/views/signed_certificate_timestamp_info_view.h"
-#include "components/web_modal/web_contents_modal_dialog_host.h"
-#include "components/web_modal/web_contents_modal_dialog_manager.h"
-#include "components/web_modal/web_contents_modal_dialog_manager_delegate.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/signed_certificate_timestamp_store.h"
 #include "content/public/common/signed_certificate_timestamp_id_and_status.h"
 #include "grit/generated_resources.h"
-#include "net/cert/signed_certificate_timestamp.h"
-#include "net/ssl/signed_certificate_timestamp_and_status.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/combobox_model.h"
 #include "ui/views/controls/combobox/combobox.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_constants.h"
 #include "ui/views/widget/widget.h"
-
-using web_modal::WebContentsModalDialogManager;
-using web_modal::WebContentsModalDialogManagerDelegate;
-using views::GridLayout;
 
 namespace {
 
@@ -105,15 +96,7 @@ SignedCertificateTimestampsViews::SignedCertificateTimestampsViews(
     const net::SignedCertificateTimestampAndStatusList& sct_list)
     : sct_info_view_(NULL),
       sct_list_(sct_list) {
-  WebContentsModalDialogManager* web_contents_modal_dialog_manager =
-      WebContentsModalDialogManager::FromWebContents(web_contents);
-  WebContentsModalDialogManagerDelegate* modal_delegate =
-      web_contents_modal_dialog_manager->delegate();
-  DCHECK(modal_delegate);
-  views::Widget* window = views::Widget::CreateWindowAsFramelessChild(
-      this, modal_delegate->GetWebContentsModalDialogHost()->GetHostView());
-  web_contents_modal_dialog_manager->ShowModalDialog(
-      window->GetNativeView());
+  ShowWebModalDialogViews(this, web_contents);
 }
 
 SignedCertificateTimestampsViews::~SignedCertificateTimestampsViews() {}
@@ -127,11 +110,7 @@ int SignedCertificateTimestampsViews::GetDialogButtons() const {
 }
 
 ui::ModalType SignedCertificateTimestampsViews::GetModalType() const {
-#if defined(USE_ASH)
   return ui::MODAL_TYPE_CHILD;
-#else
-  return views::WidgetDelegate::GetModalType();
-#endif
 }
 
 void SignedCertificateTimestampsViews::OnPerformAction(
@@ -148,13 +127,13 @@ void SignedCertificateTimestampsViews::ViewHierarchyChanged(
 }
 
 void SignedCertificateTimestampsViews::Init() {
-  GridLayout* layout = GridLayout::CreatePanel(this);
+  views::GridLayout* layout = views::GridLayout::CreatePanel(this);
   SetLayoutManager(layout);
 
   const int kSelectorBoxLayoutId = 0;
   views::ColumnSet* column_set = layout->AddColumnSet(kSelectorBoxLayoutId);
-  column_set->AddColumn(
-      GridLayout::FILL, GridLayout::FILL, 1, GridLayout::USE_PREF, 0, 0);
+  column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 1,
+                        views::GridLayout::USE_PREF, 0, 0);
 
   layout->StartRow(0, kSelectorBoxLayoutId);
   layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);

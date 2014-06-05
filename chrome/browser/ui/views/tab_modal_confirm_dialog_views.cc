@@ -8,11 +8,8 @@
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/tab_modal_confirm_dialog_delegate.h"
+#include "chrome/browser/ui/views/constrained_window_views.h"
 #include "chrome/common/chrome_switches.h"
-#include "components/web_modal/web_contents_modal_dialog_host.h"
-#include "components/web_modal/web_contents_modal_dialog_manager.h"
-#include "components/web_modal/web_contents_modal_dialog_manager_delegate.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -22,15 +19,11 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/dialog_client_view.h"
 
-using web_modal::WebContentsModalDialogManager;
-using web_modal::WebContentsModalDialogManagerDelegate;
-
 // static
 TabModalConfirmDialog* TabModalConfirmDialog::Create(
     TabModalConfirmDialogDelegate* delegate,
     content::WebContents* web_contents) {
-  return new TabModalConfirmDialogViews(
-      delegate, web_contents);
+  return new TabModalConfirmDialogViews(delegate, web_contents);
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -39,8 +32,7 @@ TabModalConfirmDialog* TabModalConfirmDialog::Create(
 TabModalConfirmDialogViews::TabModalConfirmDialogViews(
     TabModalConfirmDialogDelegate* delegate,
     content::WebContents* web_contents)
-    : delegate_(delegate),
-      dialog_(NULL) {
+    : delegate_(delegate) {
   views::MessageBoxView::InitParams init_params(delegate->GetDialogMessage());
   init_params.inter_row_vertical_spacing =
       views::kUnrelatedControlVerticalSpacing;
@@ -50,15 +42,7 @@ TabModalConfirmDialogViews::TabModalConfirmDialogViews(
   if (!link_text.empty())
     message_box_view_->SetLink(link_text, this);
 
-  WebContentsModalDialogManager* web_contents_modal_dialog_manager =
-      WebContentsModalDialogManager::FromWebContents(web_contents);
-  WebContentsModalDialogManagerDelegate* modal_delegate =
-      web_contents_modal_dialog_manager->delegate();
-  DCHECK(modal_delegate);
-  dialog_ = views::Widget::CreateWindowAsFramelessChild(
-      this, modal_delegate->GetWebContentsModalDialogHost()->GetHostView());
-  web_contents_modal_dialog_manager->ShowModalDialog(
-      dialog_->GetNativeView());
+  ShowWebModalDialogViews(this, web_contents);
   delegate_->set_close_delegate(this);
 }
 
@@ -74,7 +58,7 @@ void TabModalConfirmDialogViews::CancelTabModalDialog() {
 }
 
 void TabModalConfirmDialogViews::CloseDialog() {
-  dialog_->Close();
+  GetWidget()->Close();
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -136,9 +120,5 @@ void TabModalConfirmDialogViews::DeleteDelegate() {
 }
 
 ui::ModalType TabModalConfirmDialogViews::GetModalType() const {
-#if defined(USE_ASH)
   return ui::MODAL_TYPE_CHILD;
-#else
-  return views::WidgetDelegate::GetModalType();
-#endif
 }

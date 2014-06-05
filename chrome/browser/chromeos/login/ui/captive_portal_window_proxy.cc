@@ -12,8 +12,25 @@
 #include "components/web_modal/web_contents_modal_dialog_manager_delegate.h"
 #include "ui/views/widget/widget.h"
 
-using web_modal::WebContentsModalDialogManager;
-using web_modal::WebContentsModalDialogManagerDelegate;
+namespace {
+// The captive portal dialog is system-modal, but uses the web-content-modal
+// dialog manager (odd) and requires this atypical dialog widget initialization.
+views::Widget* CreateWindowAsFramelessChild(views::WidgetDelegate* delegate,
+                                            gfx::NativeView parent) {
+  views::Widget* widget = new views::Widget;
+
+  views::Widget::InitParams params;
+  params.delegate = delegate;
+  params.child = true;
+  params.parent = parent;
+  params.remove_standard_frame = true;
+  params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
+
+  widget->Init(params);
+  return widget;
+}
+
+}  // namespace
 
 namespace chromeos {
 
@@ -54,21 +71,16 @@ void CaptivePortalWindowProxy::Show() {
 
   InitCaptivePortalView();
 
-  CaptivePortalView* captive_portal_view = captive_portal_view_.release();
-  WebContentsModalDialogManager* web_contents_modal_dialog_manager =
-      WebContentsModalDialogManager::FromWebContents(web_contents_);
-  DCHECK(web_contents_modal_dialog_manager);
-  WebContentsModalDialogManagerDelegate* delegate =
-      web_contents_modal_dialog_manager->delegate();
-  DCHECK(delegate);
-  widget_ = views::Widget::CreateWindowAsFramelessChild(
-      captive_portal_view,
-      delegate->GetWebContentsModalDialogHost()->GetHostView());
-  captive_portal_view->Init();
+  CaptivePortalView* portal = captive_portal_view_.release();
+  web_modal::WebContentsModalDialogManager* manager =
+      web_modal::WebContentsModalDialogManager::FromWebContents(web_contents_);
+  const gfx::NativeWindow parent =
+      manager->delegate()->GetWebContentsModalDialogHost()->GetHostView();
+  widget_ = CreateWindowAsFramelessChild(portal, parent);
+  portal->Init();
 
   widget_->AddObserver(this);
-  web_contents_modal_dialog_manager->ShowModalDialog(
-      widget_->GetNativeView());
+  manager->ShowModalDialog(widget_->GetNativeView());
   DCHECK(GetState() == STATE_DISPLAYED);
 }
 

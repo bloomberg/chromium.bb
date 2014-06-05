@@ -53,15 +53,12 @@ void PlatformVerificationDialog::ShowDialog(
       base::UTF8ToUTF16(origin),
       callback);
 
-  // Sets up the dialog widget and shows it.
-  web_modal::WebContentsModalDialogManager* web_contents_modal_dialog_manager =
+  web_modal::WebContentsModalDialogManager* manager =
       web_modal::WebContentsModalDialogManager::FromWebContents(web_contents);
-  web_modal::WebContentsModalDialogManagerDelegate* modal_delegate =
-      web_contents_modal_dialog_manager->delegate();
-  views::Widget* widget = views::Widget::CreateWindowAsFramelessChild(
-      dialog, modal_delegate->GetWebContentsModalDialogHost()->GetHostView());
-  web_contents_modal_dialog_manager->ShowModalDialog(
-      widget->GetNativeView());
+  const gfx::NativeWindow parent =
+      manager->delegate()->GetWebContentsModalDialogHost()->GetHostView();
+  views::Widget* widget = CreateDialogWidget(dialog, NULL, parent);
+  manager->ShowModalDialog(widget->GetNativeView());
   widget->Show();
 }
 

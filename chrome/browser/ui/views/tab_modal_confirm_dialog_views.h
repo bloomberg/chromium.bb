@@ -66,8 +66,6 @@ class TabModalConfirmDialogViews : public TabModalConfirmDialog,
   // The message box view whose commands we handle.
   views::MessageBoxView* message_box_view_;
 
-  views::Widget* dialog_;
-
   DISALLOW_COPY_AND_ASSIGN(TabModalConfirmDialogViews);
 };
 

@@ -15,21 +15,17 @@ typedef ViewsTestBase DesktopScreenPositionClientTest;
 // DesktopNativeWidgetAura is positioned correctly.
 TEST_F(DesktopScreenPositionClientTest, PositionDialog) {
   Widget parent_widget;
-  Widget::InitParams init_params =
-      CreateParams(Widget::InitParams::TYPE_WINDOW);
-  init_params.bounds = gfx::Rect(10, 11, 200, 200);
-  init_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  init_params.native_widget = new DesktopNativeWidgetAura(&parent_widget);
-  parent_widget.Init(init_params);
-  //  parent_widget.Show();
+  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
+  params.bounds = gfx::Rect(10, 11, 200, 200);
+  params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  params.native_widget = new DesktopNativeWidgetAura(&parent_widget);
+  parent_widget.Init(params);
 
   // Owned by |dialog|.
   DialogDelegateView* dialog_delegate_view = new DialogDelegateView;
   // Owned by |parent_widget|.
   Widget* dialog = DialogDelegate::CreateDialogWidget(
-      dialog_delegate_view,
-      NULL,
-      parent_widget.GetNativeView());
+      dialog_delegate_view, NULL, parent_widget.GetNativeView());
   dialog->SetBounds(gfx::Rect(11, 12, 200, 200));
   EXPECT_EQ("11,12", dialog->GetWindowBoundsInScreen().origin().ToString());
 }

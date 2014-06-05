@@ -5,10 +5,8 @@
 #include "chrome/browser/ui/views/extensions/media_galleries_dialog_views.h"
 
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/ui/views/constrained_window_views.h"
 #include "chrome/browser/ui/views/extensions/media_gallery_checkbox_view.h"
-#include "components/web_modal/web_contents_modal_dialog_host.h"
-#include "components/web_modal/web_contents_modal_dialog_manager.h"
-#include "components/web_modal/web_contents_modal_dialog_manager_delegate.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
@@ -27,9 +25,6 @@
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/dialog_client_view.h"
-
-using web_modal::WebContentsModalDialogManager;
-using web_modal::WebContentsModalDialogManagerDelegate;
 
 namespace {
 
@@ -68,28 +63,13 @@ typedef MediaGalleriesDialogController::GalleryPermissionsVector
 MediaGalleriesDialogViews::MediaGalleriesDialogViews(
     MediaGalleriesDialogController* controller)
     : controller_(controller),
-      window_(NULL),
       contents_(new views::View()),
       add_gallery_button_(NULL),
       confirm_available_(false),
       accepted_(false) {
   InitChildViews();
-
-  if (ControllerHasWebContents()) {
-    // Ownership of |contents_| is handed off by this call. |window_| will take
-    // care of deleting itself after calling DeleteDelegate().
-    WebContentsModalDialogManager* web_contents_modal_dialog_manager =
-        WebContentsModalDialogManager::FromWebContents(
-            controller->web_contents());
-    DCHECK(web_contents_modal_dialog_manager);
-    WebContentsModalDialogManagerDelegate* modal_delegate =
-        web_contents_modal_dialog_manager->delegate();
-    DCHECK(modal_delegate);
-    window_ = views::Widget::CreateWindowAsFramelessChild(
-        this, modal_delegate->GetWebContentsModalDialogHost()->GetHostView());
-    web_contents_modal_dialog_manager->ShowModalDialog(
-        window_->GetNativeView());
-  }
+  if (ControllerHasWebContents())
+    ShowWebModalDialogViews(this, controller->web_contents());
 }
 
 MediaGalleriesDialogViews::~MediaGalleriesDialogViews() {
@@ -257,11 +237,7 @@ bool MediaGalleriesDialogViews::IsDialogButtonEnabled(
 }
 
 ui::ModalType MediaGalleriesDialogViews::GetModalType() const {
-#if defined(USE_ASH)
   return ui::MODAL_TYPE_CHILD;
-#else
-  return views::WidgetDelegate::GetModalType();
-#endif
 }
 
 views::View* MediaGalleriesDialogViews::CreateExtraView() {
@@ -278,7 +254,6 @@ bool MediaGalleriesDialogViews::Cancel() {
 
 bool MediaGalleriesDialogViews::Accept() {
   accepted_ = true;
-
   return true;
 }
 

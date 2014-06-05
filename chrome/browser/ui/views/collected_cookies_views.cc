@@ -20,11 +20,9 @@
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/collected_cookies_infobar_delegate.h"
+#include "chrome/browser/ui/views/constrained_window_views.h"
 #include "chrome/browser/ui/views/cookie_info_view.h"
 #include "chrome/common/pref_names.h"
-#include "components/web_modal/web_contents_modal_dialog_host.h"
-#include "components/web_modal/web_contents_modal_dialog_manager.h"
-#include "components/web_modal/web_contents_modal_dialog_manager_delegate.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/web_contents.h"
@@ -46,10 +44,6 @@
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_constants.h"
 #include "ui/views/widget/widget.h"
-#include "ui/views/window/dialog_delegate.h"
-
-using web_modal::WebContentsModalDialogManager;
-using web_modal::WebContentsModalDialogManagerDelegate;
 
 namespace chrome {
 
@@ -90,11 +84,7 @@ class InfobarView : public views::View {
  public:
   InfobarView() {
     content_ = new views::View;
-#if defined(USE_AURA) || !defined(OS_WIN)
     SkColor border_color = SK_ColorGRAY;
-#else
-    SkColor border_color = color_utils::GetSysSkColor(COLOR_3DSHADOW);
-#endif
     content_->SetBorder(
         views::Border::CreateSolidBorder(kInfobarBorderSize, border_color));
 
@@ -207,15 +197,7 @@ CollectedCookiesViews::CollectedCookiesViews(content::WebContents* web_contents)
       TabSpecificContentSettings::FromWebContents(web_contents);
   registrar_.Add(this, chrome::NOTIFICATION_COLLECTED_COOKIES_SHOWN,
                  content::Source<TabSpecificContentSettings>(content_settings));
-  WebContentsModalDialogManager* web_contents_modal_dialog_manager =
-      WebContentsModalDialogManager::FromWebContents(web_contents);
-  WebContentsModalDialogManagerDelegate* modal_delegate =
-      web_contents_modal_dialog_manager->delegate();
-  DCHECK(modal_delegate);
-  window_ = views::Widget::CreateWindowAsFramelessChild(
-      this, modal_delegate->GetWebContentsModalDialogHost()->GetHostView());
-  web_contents_modal_dialog_manager->ShowModalDialog(
-      window_->GetNativeView());
+  ShowWebModalDialogViews(this, web_contents);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -234,25 +216,16 @@ base::string16 CollectedCookiesViews::GetDialogButtonLabel(
   return l10n_util::GetStringUTF16(IDS_CLOSE);
 }
 
-void CollectedCookiesViews::DeleteDelegate() {
-  delete this;
-}
-
 bool CollectedCookiesViews::Cancel() {
   if (status_changed_) {
     CollectedCookiesInfoBarDelegate::Create(
         InfoBarService::FromWebContents(web_contents_));
   }
-
   return true;
 }
 
 ui::ModalType CollectedCookiesViews::GetModalType() const {
-#if defined(USE_ASH)
   return ui::MODAL_TYPE_CHILD;
-#else
-  return views::WidgetDelegate::GetModalType();
-#endif
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -567,5 +540,5 @@ void CollectedCookiesViews::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   DCHECK_EQ(chrome::NOTIFICATION_COLLECTED_COOKIES_SHOWN, type);
-  window_->Close();
+  GetWidget()->Close();
 }

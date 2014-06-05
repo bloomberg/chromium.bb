@@ -4,9 +4,7 @@
 
 #include "chrome/browser/ui/pdf/pdf_tab_helper.h"
 
-#include "components/web_modal/web_contents_modal_dialog_host.h"
-#include "components/web_modal/web_contents_modal_dialog_manager.h"
-#include "components/web_modal/web_contents_modal_dialog_manager_delegate.h"
+#include "chrome/browser/ui/views/constrained_window_views.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -18,8 +16,7 @@
 
 namespace {
 
-// PDFPasswordDialogViews runs a tab-modal dialog that asks the user for a
-// password.
+// Runs a tab-modal dialog that asks the user for a password.
 class PDFPasswordDialogViews : public views::DialogDelegate {
  public:
   PDFPasswordDialogViews(content::WebContents* web_contents,
@@ -46,8 +43,6 @@ class PDFPasswordDialogViews : public views::DialogDelegate {
   // The message box view whose commands we handle.
   views::MessageBoxView* message_box_view_;
 
-  views::Widget* dialog_;
-
   PasswordDialogClosedCallback callback_;
 
   DISALLOW_COPY_AND_ASSIGN(PDFPasswordDialogViews);
@@ -58,7 +53,6 @@ PDFPasswordDialogViews::PDFPasswordDialogViews(
     const base::string16& prompt,
     const PasswordDialogClosedCallback& callback)
     : message_box_view_(NULL),
-      dialog_(NULL),
       callback_(callback) {
   views::MessageBoxView::InitParams init_params(prompt);
   init_params.options = views::MessageBoxView::HAS_PROMPT_FIELD;
@@ -66,16 +60,7 @@ PDFPasswordDialogViews::PDFPasswordDialogViews(
       views::kUnrelatedControlVerticalSpacing;
   message_box_view_ = new views::MessageBoxView(init_params);
   message_box_view_->text_box()->SetTextInputType(ui::TEXT_INPUT_TYPE_PASSWORD);
-
-  web_modal::WebContentsModalDialogManager* web_contents_modal_dialog_manager =
-      web_modal::WebContentsModalDialogManager::FromWebContents(web_contents);
-  web_modal::WebContentsModalDialogManagerDelegate* modal_delegate =
-      web_contents_modal_dialog_manager->delegate();
-  DCHECK(modal_delegate);
-  dialog_ = views::Widget::CreateWindowAsFramelessChild(
-      this, modal_delegate->GetWebContentsModalDialogHost()->GetHostView());
-  web_contents_modal_dialog_manager->ShowModalDialog(
-      dialog_->GetNativeView());
+  ShowWebModalDialogViews(this, web_contents);
 }
 
 PDFPasswordDialogViews::~PDFPasswordDialogViews() {
@@ -138,11 +123,7 @@ void PDFPasswordDialogViews::DeleteDelegate() {
 }
 
 ui::ModalType PDFPasswordDialogViews::GetModalType() const {
-#if defined(USE_ASH)
   return ui::MODAL_TYPE_CHILD;
-#else
-  return views::WidgetDelegate::GetModalType();
-#endif
 }
 
 }  // namespace
