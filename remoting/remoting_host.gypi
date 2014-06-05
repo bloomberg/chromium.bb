@@ -177,6 +177,8 @@
             'host/json_host_config.h',
             'host/linux/audio_pipe_reader.cc',
             'host/linux/audio_pipe_reader.h',
+            'host/linux/unicode_to_keysym.cc',
+            'host/linux/unicode_to_keysym.h',
             'host/linux/x11_util.cc',
             'host/linux/x11_util.h',
             'host/linux/x_server_clipboard.cc',
