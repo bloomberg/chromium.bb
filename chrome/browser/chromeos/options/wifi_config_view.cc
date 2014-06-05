@@ -1366,8 +1366,8 @@ void WifiConfigView::ParseUIProperty(NetworkPropertyUIData* property_ui_data,
   const base::DictionaryValue* onc =
       onc::FindPolicyForActiveUser(network->guid(), &onc_source);
   std::string onc_tag = network->type() == shill::kTypeEthernet
-                            ? ::onc::network_config::kWiFi
-                            : ::onc::network_config::kEthernet;
+                            ? ::onc::network_config::kEthernet
+                            : ::onc::network_config::kWiFi;
   property_ui_data->ParseOncProperty(onc_source, onc, onc_tag + '.' + key);
 }
 
