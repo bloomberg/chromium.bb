@@ -327,14 +327,6 @@ SigninScreenHandler::SigninScreenHandler(
   DCHECK(gaia_screen_handler_);
   gaia_screen_handler_->SetSigninScreenHandler(this);
   network_state_informer_->AddObserver(this);
-  allow_new_user_subscription_ = CrosSettings::Get()->AddSettingsObserver(
-      kAccountsPrefAllowNewUser,
-      base::Bind(&SigninScreenHandler::UserSettingsChanged,
-                 base::Unretained(this)));
-  allow_guest_subscription_ = CrosSettings::Get()->AddSettingsObserver(
-      kAccountsPrefAllowGuest,
-      base::Bind(&SigninScreenHandler::UserSettingsChanged,
-                 base::Unretained(this)));
 
   registrar_.Add(this,
                  chrome::NOTIFICATION_AUTH_NEEDED,

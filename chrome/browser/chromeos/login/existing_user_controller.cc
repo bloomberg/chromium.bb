@@ -161,6 +161,10 @@ ExistingUserController::ExistingUserController(LoginDisplayHost* host)
       kAccountsPrefAllowGuest,
       base::Bind(&ExistingUserController::DeviceSettingsChanged,
                  base::Unretained(this)));
+  allow_supervised_user_subscription_ = cros_settings_->AddSettingsObserver(
+      kAccountsPrefSupervisedUsersEnabled,
+      base::Bind(&ExistingUserController::DeviceSettingsChanged,
+                 base::Unretained(this)));
   users_subscription_ = cros_settings_->AddSettingsObserver(
       kAccountsPrefUsers,
       base::Bind(&ExistingUserController::DeviceSettingsChanged,

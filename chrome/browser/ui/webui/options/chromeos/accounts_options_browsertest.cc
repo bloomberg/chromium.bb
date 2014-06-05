@@ -91,6 +91,14 @@ class AccountsOptionsTest : public LoginManagerTest {
         &guest_option_enabled));
     EXPECT_EQ(is_owner, guest_option_enabled);
 
+    bool supervised_users_enabled;
+    ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+        contents,
+        "var e = document.getElementById('allowSupervisedCheck');"
+        "window.domAutomationController.send(!e.disabled);",
+        &supervised_users_enabled));
+    ASSERT_EQ(is_owner, supervised_users_enabled);
+
     bool user_pods_enabled;
     ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
         contents,

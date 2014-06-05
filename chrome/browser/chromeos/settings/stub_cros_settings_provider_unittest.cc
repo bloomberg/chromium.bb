@@ -69,6 +69,7 @@ TEST_F(StubCrosSettingsProviderTest, Defaults) {
   AssertPref(kAccountsPrefAllowGuest, &kTrueValue);
   AssertPref(kAccountsPrefAllowNewUser, &kTrueValue);
   AssertPref(kAccountsPrefShowUserNamesOnSignIn, &kTrueValue);
+  AssertPref(kAccountsPrefSupervisedUsersEnabled, &kTrueValue);
 }
 
 TEST_F(StubCrosSettingsProviderTest, Set) {

@@ -70,6 +70,9 @@ void AccountsOptionsHandler::GetLocalizedValues(
 
   localized_strings->SetString("allow_BWSI", l10n_util::GetStringUTF16(
       IDS_OPTIONS_ACCOUNTS_ALLOW_BWSI_DESCRIPTION));
+  localized_strings->SetString(
+      "allow_supervised_users",
+      l10n_util::GetStringUTF16(IDS_OPTIONS_ACCOUNTS_ENABLE_SUPERVISED_USERS));
   localized_strings->SetString("use_whitelist", l10n_util::GetStringUTF16(
       IDS_OPTIONS_ACCOUNTS_USE_WHITELIST_DESCRIPTION));
   localized_strings->SetString("show_user_on_signin", l10n_util::GetStringUTF16(

@@ -522,8 +522,6 @@ class SigninScreenHandler
   // NOTIFICATION_AUTH_CANCELLED.
   bool has_pending_auth_ui_;
 
-  scoped_ptr<CrosSettings::ObserverSubscription> allow_new_user_subscription_;
-  scoped_ptr<CrosSettings::ObserverSubscription> allow_guest_subscription_;
   scoped_ptr<AutoEnrollmentController::ProgressCallbackList::Subscription>
       auto_enrollment_progress_subscription_;
 

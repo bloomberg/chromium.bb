@@ -471,8 +471,6 @@ class UserManagerImpl
 
   scoped_ptr<CrosSettings::ObserverSubscription>
       local_accounts_subscription_;
-  scoped_ptr<CrosSettings::ObserverSubscription>
-      supervised_users_subscription_;
 
   scoped_ptr<MultiProfileUserController> multi_profile_user_controller_;
 

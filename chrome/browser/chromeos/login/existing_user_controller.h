@@ -305,6 +305,8 @@ class ExistingUserController : public LoginDisplay::Delegate,
 
   scoped_ptr<CrosSettings::ObserverSubscription> show_user_names_subscription_;
   scoped_ptr<CrosSettings::ObserverSubscription> allow_new_user_subscription_;
+  scoped_ptr<CrosSettings::ObserverSubscription>
+      allow_supervised_user_subscription_;
   scoped_ptr<CrosSettings::ObserverSubscription> allow_guest_subscription_;
   scoped_ptr<CrosSettings::ObserverSubscription> users_subscription_;
   scoped_ptr<CrosSettings::ObserverSubscription>

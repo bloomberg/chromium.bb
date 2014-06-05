@@ -25,10 +25,8 @@ namespace {
 
 const char kJsScreenPath[] = "login.GaiaSigninScreen";
 
-// Updates params dictionary passed to the auth extension with related
-// preferences from CrosSettings.
-void UpdateAuthParamsFromSettings(base::DictionaryValue* params,
-                                  const CrosSettings* cros_settings) {
+void UpdateAuthParams(base::DictionaryValue* params, bool has_users) {
+  CrosSettings* cros_settings = CrosSettings::Get();
   bool allow_new_user = true;
   cros_settings->GetBoolean(kAccountsPrefAllowNewUser, &allow_new_user);
   bool allow_guest = true;
@@ -36,20 +34,12 @@ void UpdateAuthParamsFromSettings(base::DictionaryValue* params,
   // Account creation depends on Guest sign-in (http://crosbug.com/24570).
   params->SetBoolean("createAccount", allow_new_user && allow_guest);
   params->SetBoolean("guestSignin", allow_guest);
-}
-
-void UpdateAuthParams(base::DictionaryValue* params, bool has_users) {
-  UpdateAuthParamsFromSettings(params, CrosSettings::Get());
 
   // Allow locally managed user creation only if:
   // 1. Enterprise managed device > is allowed by policy.
   // 2. Consumer device > owner exists.
   // 3. New users are allowed by owner.
-
-  CrosSettings* cros_settings = CrosSettings::Get();
-  bool allow_new_user = false;
-  cros_settings->GetBoolean(kAccountsPrefAllowNewUser, &allow_new_user);
-
+  // 4. Supervised users are allowed by owner.
   bool managed_users_allowed =
       UserManager::Get()->AreLocallyManagedUsersAllowed();
   bool managed_users_can_create = true;
@@ -58,7 +48,7 @@ void UpdateAuthParams(base::DictionaryValue* params, bool has_users) {
     managed_users_can_create = false;
     message_id = IDS_CREATE_LOCALLY_MANAGED_USER_NO_MANAGER_TEXT;
   }
-  if (!allow_new_user) {
+  if (!allow_new_user || !managed_users_allowed) {
     managed_users_can_create = false;
     message_id = IDS_CREATE_LOCALLY_MANAGED_USER_CREATION_RESTRICTED_TEXT;
   }

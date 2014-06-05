@@ -98,6 +98,7 @@ class DeviceOAuth2TokenServiceTest : public testing::Test {
 
   virtual void TearDown() OVERRIDE {
     CrosSettings::Shutdown();
+    TestingBrowserProcess::GetGlobal()->SetBrowserPolicyConnector(NULL);
     DeviceSettingsService::Get()->UnsetSessionManager();
     DeviceSettingsService::Shutdown();
     SystemSaltGetter::Shutdown();
