@@ -1419,8 +1419,8 @@ bool FrameView::scrollContentsFastPath(const IntSize& scrollDelta, const IntRect
 
         IntRect updateRect = pixelSnappedIntRect(layer->repainter().repaintRectIncludingNonCompositingDescendants());
 
-        RenderLayer* enclosingCompositingLayer = layer->enclosingCompositingLayer(ExcludeSelf);
-        if (enclosingCompositingLayer && !enclosingCompositingLayer->renderer()->isRenderView()) {
+        const RenderLayerModelObject* repaintContainer = layer->renderer()->containerForRepaint();
+        if (repaintContainer && !repaintContainer->isRenderView()) {
             // If the fixed-position layer is contained by a composited layer that is not its containing block,
             // then we have to invalidate that enclosing layer, not the RenderView.
             // FIXME: Why do we need to issue this invalidation? Won't the fixed position element just scroll
@@ -1429,7 +1429,7 @@ bool FrameView::scrollContentsFastPath(const IntSize& scrollDelta, const IntRect
             IntRect previousRect = updateRect;
             previousRect.move(scrollDelta);
             updateRect.unite(previousRect);
-            enclosingCompositingLayer->repainter().setBackingNeedsRepaintInRect(updateRect);
+            layer->renderer()->repaintUsingContainer(repaintContainer, updateRect, InvalidationScroll);
         } else {
             // Coalesce the paint invalidations that will be issued to the renderView.
             updateRect = contentsToRootView(updateRect);

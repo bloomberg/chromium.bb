@@ -5,9 +5,6 @@
       (bounds 785.00 30020.00)
       (contentsOpaque 1)
       (drawsContent 1)
-      (repaint rects
-        (rect 45.00 45.00 50.00 150.00)
-      )
       (children 1
         (GraphicsLayer
           (children 2
@@ -22,6 +19,9 @@
               (position 20.00 20.00)
               (bounds 100.00 30000.00)
               (drawsContent 1)
+              (repaint rects
+                (rect 45.00 45.00 50.00 150.00)
+              )
             )
           )
         )
