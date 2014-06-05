@@ -51,6 +51,7 @@ def SetDefaultContextAttributes(context):
   context['default_scons_mode'] = ['opt-host', 'nacl']
   context['default_scons_platform'] = ('x86-64' if platform == 'win'
                                        else 'x86-32')
+  context['android'] = False
   context['clang'] = False
   context['asan'] = False
   context['pnacl'] = False
@@ -121,11 +122,18 @@ def SetupGypDefines(context, extra_vars=[]):
 
 def SetupLinuxEnvironment(context):
   SetupGypDefines(context, ['target_arch='+context['gyp_arch']])
+  context.SetEnv('GYP_GENERATORS', 'ninja')
 
 
 def SetupMacEnvironment(context):
   SetupGypDefines(context, ['target_arch='+context['gyp_arch']])
   context.SetEnv('GYP_GENERATORS', 'ninja')
+
+
+def SetupAndroidEnvironment(context):
+  SetupGypDefines(context, ['OS=android', 'target_arch='+context['gyp_arch']])
+  context.SetEnv('GYP_GENERATORS', 'ninja')
+  context.SetEnv('GYP_CROSSCOMPILE', '1')
 
 
 def ParseStandardCommandLine(context):
@@ -143,6 +151,8 @@ def ParseStandardCommandLine(context):
   parser.add_option('--inside-toolchain', dest='inside_toolchain',
                     default=bool(os.environ.get('INSIDE_TOOLCHAIN')),
                     action='store_true', help='Inside toolchain build.')
+  parser.add_option('--android', dest='android', default=False,
+                    action='store_true', help='Build for Android.')
   parser.add_option('--clang', dest='clang', default=False,
                     action='store_true', help='Build trusted code with Clang.')
   parser.add_option('--coverage', dest='coverage', default=False,
@@ -185,6 +195,7 @@ def ParseStandardCommandLine(context):
   context['platform'] = platform
   context['mode'] = mode
   context['arch'] = arch
+  context['android'] = options.android
   # ASan is Clang, so set the flag to simplify other checks.
   context['clang'] = options.clang or options.asan
   context['validator'] = options.validator
@@ -419,6 +430,8 @@ def SCons(context, mode=None, platform=None, parallel=False, browser_test=False,
   if context['pnacl']: cmd.append('bitcode=1')
   if context['use_breakpad_tools']:
     cmd.append('breakpad_tools_dir=breakpad-out')
+  if context['android']:
+    cmd.append('android=1')
   # Append used-specified arguments.
   cmd.extend(args)
   Command(context, cmd, cwd)
@@ -587,8 +600,8 @@ class BuildContext(object):
   def Mac(self):
     return self.config['platform'] == 'mac'
 
-  def GetEnv(self, name):
-    return self.global_env[name]
+  def GetEnv(self, name, default=None):
+    return self.global_env.get(name, default)
 
   def SetEnv(self, name, value):
     self.global_env[name] = str(value)

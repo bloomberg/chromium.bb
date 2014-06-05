@@ -79,6 +79,12 @@ BOT_ASSIGNMENT = {
     'lucid_64-newlib-x86_64-spec':
         bash + ' buildbot/buildbot_spec2k.sh nacl-x8664',
 
+    # Android bots.
+    'precise64-newlib-dbg-android':
+        python + ' buildbot/buildbot_standard.py dbg arm newlib --android',
+    'precise64-newlib-opt-android':
+        python + ' buildbot/buildbot_standard.py opt arm newlib --android',
+
     # Valgrind bots.
     'precise-64-newlib-dbg-valgrind':
         echo + ' "Valgrind bots are disabled: see '
@@ -109,6 +115,11 @@ BOT_ASSIGNMENT = {
         bash + ' buildbot/buildbot_valgrind.sh newlib',
     'nacl-precise64_glibc_dbg_valgrind':
         bash + ' buildbot/buildbot_valgrind.sh glibc',
+    # Android trybots.
+    'nacl-precise64-newlib-dbg-android':
+        python + ' buildbot/buildbot_standard.py dbg arm newlib --android',
+    'nacl-precise64-newlib-opt-android':
+        python + ' buildbot/buildbot_standard.py opt arm newlib --android',
     # Coverage trybots.
     'nacl-mac10.6-newlib-coverage':
          python + (' buildbot/buildbot_standard.py '

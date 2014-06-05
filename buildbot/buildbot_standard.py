@@ -16,8 +16,8 @@ from buildbot_lib import (
     BuildContext, BuildStatus, Command, EnsureDirectoryExists,
     ParseStandardCommandLine, RemoveDirectory, RemoveGypBuildDirectories,
     RemoveSconsBuildDirectories, RunBuild, SCons, SetupLinuxEnvironment,
-    SetupMacEnvironment, SetupWindowsEnvironment, Step, StepLink, StepText,
-    TryToCleanContents)
+    SetupMacEnvironment, SetupWindowsEnvironment, SetupAndroidEnvironment,
+    Step, StepLink, StepText, TryToCleanContents)
 
 
 def SetupContextVars(context):
@@ -83,12 +83,11 @@ def CommandGypBuild(context):
              r'build\all.sln',
              '/build', context['gyp_mode']])
   elif context.Linux():
-    Command(context, cmd=['make', '-C', '..', '-k',
-                          '-j%d' % context['max_jobs'], 'V=1',
-                          'BUILDTYPE=' + context['gyp_mode']])
+    Command(context, cmd=[
+        'ninja', '-v', '-k', '0', '-C', '../out/' + context['gyp_mode']])
   elif context.Mac():
     Command(context, cmd=[
-        'ninja', '-k', '0', '-C', '../out/' + context['gyp_mode']])
+        'ninja', '-v', '-k', '0', '-C', '../out/' + context['gyp_mode']])
   else:
     raise Exception('Unknown platform')
 
@@ -110,7 +109,10 @@ def CommandGclientRunhooks(context):
   else:
     gclient = 'gclient'
   print 'Running gclient runhooks...'
-  print 'GYP_DEFINES=' + context.GetEnv('GYP_DEFINES')
+  print 'GYP_CROSSCOMPILE=' + context.GetEnv('GYP_CROSSCOMPILE', '')
+  print 'GYP_GENERATORS=' + context.GetEnv('GYP_GENERATORS', '')
+  print 'GYP_MSVS_VERSION=' + context.GetEnv('GYP_MSVS_VERSION', '')
+  print 'GYP_DEFINES=' + context.GetEnv('GYP_DEFINES', '')
   Command(context, cmd=[gclient, 'runhooks', '--force'])
 
 
@@ -246,6 +248,10 @@ def BuildScript(status, context):
         ArchiveCoverage(context)
     return
 
+  # Android bots don't run tests for now.
+  if context['android']:
+    return
+
   ### BEGIN tests ###
   with Step('small_tests', status, halt_on_fail=False):
     SCons(context, args=['small_tests'])
@@ -307,7 +313,10 @@ def Main():
   if context.Windows():
     SetupWindowsEnvironment(context)
   elif context.Linux():
-    SetupLinuxEnvironment(context)
+    if context['android']:
+      SetupAndroidEnvironment(context)
+    else:
+      SetupLinuxEnvironment(context)
   elif context.Mac():
     SetupMacEnvironment(context)
   else:
