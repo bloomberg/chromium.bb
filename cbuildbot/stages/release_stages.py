@@ -320,7 +320,7 @@ class PaygenStage(artifact_stages.ArchivingStage):
     with parallel.BackgroundTaskRunner(self._RunPaygenInProcess) as per_channel:
       def channel_notifier(channel):
         per_channel.put((channel, board, version, self._run.debug,
-                         self._run.config.perform_paygen_testing))
+                         self._run.config.paygen_skip_testing))
 
       if self.channels:
         logging.info("Using explicit channels: %s", self.channels)
@@ -332,7 +332,8 @@ class PaygenStage(artifact_stages.ArchivingStage):
         self._WaitForSigningResults(instruction_urls_per_channel,
                                     channel_notifier)
 
-  def _RunPaygenInProcess(self, channel, board, version, debug, test_payloads):
+  def _RunPaygenInProcess(self, channel, board, version, debug,
+                          skip_test_payloads):
     """Helper for PaygenStage that invokes payload generation.
 
     This method is intended to be safe to invoke inside a process.
@@ -342,7 +343,7 @@ class PaygenStage(artifact_stages.ArchivingStage):
       board: Board of payloads to generate ('x86-mario', 'x86-alex-he', etc)
       version: Version of payloads to generate.
       debug: Flag telling if this is a real run, or a test run.
-      test_payloads: Generate test payloads, and schedule auto testing.
+      skip_test_payloads: Skip generating test payloads, and auto tests.
     """
     # TODO(dgarrett): Remove when crbug.com/341152 is fixed.
     # These modules are imported here because they aren't always available at
@@ -373,8 +374,8 @@ class PaygenStage(artifact_stages.ArchivingStage):
                                         dry_run=debug,
                                         run_parallel=True,
                                         run_on_builder=True,
-                                        skip_test_payloads=not test_payloads,
-                                        skip_autotest=not test_payloads)
+                                        skip_test_payloads=skip_test_payloads,
+                                        skip_autotest=skip_test_payloads)
       except (paygen_build_lib.BuildFinished,
               paygen_build_lib.BuildLocked,
               paygen_build_lib.BuildSkip) as e:

@@ -465,7 +465,7 @@ class CBuildBotTest(cros_test_lib.MoxTestCase):
                         '%s has paygen without push_image' % build_name)
 
   def testPaygenTestDependancies(self):
-    """perform_paygen_testing requires upload_hw_test_artifacts."""
+    """paygen testing requires upload_hw_test_artifacts."""
     for build_name, config in cbuildbot_config.config.iteritems():
 
       # This requirement doesn't apply to payloads builds. Payloads are
@@ -473,10 +473,10 @@ class CBuildBotTest(cros_test_lib.MoxTestCase):
       if build_name.endswith('-payloads'):
         continue
 
-      if config['paygen'] and config['perform_paygen_testing']:
+      if config['paygen'] and not config['paygen_skip_testing']:
         self.assertTrue(config['upload_hw_test_artifacts'],
-                        '%s is trying to do perform_paygen_testing without'
-                        ' upload_hw_test_artifacts' % build_name)
+                        '%s is not upload_hw_test_artifacts, but also not'
+                        ' paygen_skip_testing' % build_name)
 
 
 class FindFullTest(cros_test_lib.TestCase):

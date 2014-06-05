@@ -488,10 +488,9 @@ _settings = dict(
 # paygen -- Run a stage that generates release payloads for signed images.
   paygen=False,
 
-# perform_paygen_testing -- If the paygen stage runs, generate test payloads,
+# paygen_skip_testing -- If the paygen stage runs, generate tests,
 #                           and schedule auto-tests for them.
-# If you disable this, you are BEING NAUGHTY!
-  perform_paygen_testing=True,
+  paygen_skip_testing=False,
 
 # cpe_export -- Run a stage that generates and uploads package CPE information.
   cpe_export=True,
@@ -976,7 +975,7 @@ brillo_non_testable = brillo.derive(
   vm_tests=[],
 
   # Since it doesn't generate test images, payloads can't be tested.
-  perform_paygen_testing=False,
+  paygen_skip_testing=True,
 )
 
 beaglebone = arm.derive(brillo_non_testable, rootfs_verification=False)
@@ -1888,7 +1887,7 @@ _config.add_group('x86-alex-release-group',
     boards=['x86-alex_he'],
     hw_tests=[],
     upload_hw_test_artifacts=False,
-    perform_paygen_testing=False,
+    paygen_skip_testing=True,
   ),
 )
 
@@ -1900,7 +1899,7 @@ _config.add_group('x86-zgb-release-group',
     boards=['x86-zgb_he'],
     hw_tests=[],
     upload_hw_test_artifacts=False,
-    perform_paygen_testing=False,
+    paygen_skip_testing=True,
   ),
 )
 
@@ -2038,7 +2037,7 @@ _brillo_release.add_config('duck-release',
    boards=['duck'],
 
    # Hw Lab can't test duck, yet.
-   perform_paygen_testing=False,
+   paygen_skip_testing=True,
 )
 
 _brillo_release.add_config('gizmo-release',
@@ -2054,7 +2053,7 @@ _arm_brillo_release.add_config('storm-release',
    boards=['storm'],
 
    # Hw Lab can't test duck, yet.
-   perform_paygen_testing=False,
+   paygen_skip_testing=True,
 )
 
 _beaglebone_release = _arm_brillo_release.derive(beaglebone)

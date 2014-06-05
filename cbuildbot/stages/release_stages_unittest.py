@@ -307,9 +307,10 @@ class PaygenStageTest(generic_stages_unittest.AbstractStageTest):
           stage.PerformStage()
 
       # Verify that we queue up work
-      queue.put.assert_any_call(('stable', 'x86-mario', '0.0.1', False, True))
-      queue.put.assert_any_call(('beta', 'x86-mario', '0.0.1', False, True))
-
+      self.assertEqual(
+          queue.put.call_args_list,
+          [mock.call(('stable', 'x86-mario', '0.0.1', False, False)),
+           mock.call(('beta', 'x86-mario', '0.0.1', False, False))])
 
   @unittest.skipIf(not CROSTOOLS_AVAILABLE,
                    'Internal crostools repository needed.')
@@ -333,8 +334,10 @@ class PaygenStageTest(generic_stages_unittest.AbstractStageTest):
           stage.PerformStage()
 
       # Verify that we queue up work
-      queue.put.assert_any_call(('stable', 'x86-alex-he', '0.0.1', False, True))
-      queue.put.assert_any_call(('beta', 'x86-alex-he', '0.0.1', False, True))
+      self.assertEqual(
+          queue.put.call_args_list,
+          [mock.call(('stable', 'x86-alex-he', '0.0.1', False, False)),
+           mock.call(('beta', 'x86-alex-he', '0.0.1', False, False))])
 
   @unittest.skipIf(not CROSTOOLS_AVAILABLE,
                    'Internal crostools repository needed.')
@@ -398,8 +401,10 @@ class PaygenStageTest(generic_stages_unittest.AbstractStageTest):
 
       # Notice that we didn't put anything in _wait_for_channel_signing, but
       # still got results right away.
-      queue.put.assert_any_call(('foo', 'x86-mario', '0.0.1', False, True))
-      queue.put.assert_any_call(('bar', 'x86-mario', '0.0.1', False, True))
+      self.assertEqual(
+          queue.put.call_args_list,
+          [mock.call(('foo', 'x86-mario', '0.0.1', False, False)),
+           mock.call(('bar', 'x86-mario', '0.0.1', False, False))])
 
   @unittest.skipIf(not CROSTOOLS_AVAILABLE,
                    'Internal crostools repository needed.')
@@ -418,7 +423,7 @@ class PaygenStageTest(generic_stages_unittest.AbstractStageTest):
     with patch(paygen_build_lib, 'CreatePayloads') as create_payloads:
       # Call the method under test.
       stage = self.ConstructStage()
-      stage._RunPaygenInProcess('foo', 'foo-board', 'foo-version', False, True)
+      stage._RunPaygenInProcess('foo', 'foo-board', 'foo-version', False, False)
 
       # Ensure arguments are properly converted and passed along.
       create_payloads.assert_called_with(gspaths.Build(version='foo-version',
@@ -440,7 +445,7 @@ class PaygenStageTest(generic_stages_unittest.AbstractStageTest):
       # Use release tools channel naming, and a board name including a variant.
       stage = self.ConstructStage()
       stage._RunPaygenInProcess('foo-channel', 'foo-board-variant',
-                                'foo-version', True, False)
+                                'foo-version', True, True)
 
       # Ensure arguments are properly converted and passed along.
       create_payloads.assert_called_with(
